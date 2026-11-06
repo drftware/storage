@@ -114,8 +114,7 @@ function UnitKit.prepare(unit: Model, size: string?)
 		p.Parent = folder
 	end
 	folder.Parent = unit
-	local door = unit:FindFirstChild("DoorCollider") :: BasePart?
-	if not door then
+	if not unit:FindFirstChild("DoorCollider") then
 		local p = Instance.new("Part")
 		p.Name = "DoorCollider"
 		p.Anchored = true
@@ -124,15 +123,9 @@ function UnitKit.prepare(unit: Model, size: string?)
 		p.CastShadow = false
 		p.Transparency = 1
 		p.Parent = unit
-		door = p
 	end
-	local col = door :: BasePart
-	local h = spec.DoorHeight - spec.Gap
-	col.CanCollide = true
-	col.Size = Vector3.new(spec.DoorWidth, h, 0.4)
-	col.CFrame = frame * CFrame.new(0, spec.Gap + h / 2, 0)
-
 	unit:SetAttribute("DoorMotion", Motion.encode("Close", 0, 0, 0))
+	RollUpDoor.fitCollider(unit) -- shut: fills the opening, RollUpDoor.ColliderDepth deep
 	unit:SetAttribute("DoorLocked", false)
 	unit.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
 	if origin then

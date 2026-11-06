@@ -75,6 +75,15 @@ export type Rig = {
 
 local RollUpDoor = {}
 
+--[[
+	How deep the door's invisible collider is, centred on the curtain. A player pushing into a shut
+	door stops half this (plus their torso) short of the slats. At 1.2 someone in the hall stops
+	flush with the facade, whose face is 0.55 in front of the curtain. A running arm still swings
+	about 0.8 past the slats (measured in Play: docs/STUDIO.md, "Arms through a shut door"), so
+	BehindDoors hides anyone on the far side of a shut door from you.
+]]
+RollUpDoor.ColliderDepth = 1.2
+
 local curtains: { [string]: Curtain.Curtain } = {}
 
 local function specFor(unit: Model): Spec
@@ -334,16 +343,30 @@ type ServerMove = {
 local serverMoving: { [Model]: ServerMove } = {}
 local serverConn: RBXScriptConnection? = nil
 
-local function placeCollider(m: ServerMove, rise: number)
-	local col = m.col
+-- Size the collider to the curtain's bottom edge at `rise`: it fills the opening below the drum.
+local function placeCollider(col: BasePart?, spec: Spec, frame: CFrame, rise: number)
 	if not col then
 		return
 	end
-	local bottom = m.spec.Gap + rise
-	local h = math.max(m.spec.DoorHeight - bottom, 0.05)
+	local bottom = spec.Gap + rise
+	local h = math.max(spec.DoorHeight - bottom, 0.05)
 	col.CanCollide = h > 0.25
-	col.Size = Vector3.new(m.spec.DoorWidth, h, 0.4)
-	col.CFrame = m.frame * CFrame.new(0, bottom + h / 2, 0)
+	col.Size = Vector3.new(spec.DoorWidth, h, RollUpDoor.ColliderDepth)
+	col.CFrame = frame * CFrame.new(0, bottom + h / 2, 0)
+end
+
+-- The unit's size spec (its UnitSize attribute; M when unset).
+function RollUpDoor.spec(unit: Model): Spec
+	return specFor(unit)
+end
+
+--[[
+	Fit the door's collider to where the door is now. UnitKit.prepare calls it; so does anything
+	placing units, so a template prepared before a change to ColliderDepth still gets the new depth.
+]]
+function RollUpDoor.fitCollider(unit: Model)
+	local col = unit:FindFirstChild("DoorCollider") :: BasePart?
+	placeCollider(col, specFor(unit), RollUpDoor.frame(unit), RollUpDoor.rise(unit))
 end
 
 local function serverStep()
@@ -353,7 +376,12 @@ local function serverStep()
 			serverMoving[unit] = nil
 			continue
 		end
-		placeCollider(m, Motion.sample(m.kind, m.from, m.to, t - m.start, m.spec.Rise.Open))
+		placeCollider(
+			m.col,
+			m.spec,
+			m.frame,
+			Motion.sample(m.kind, m.from, m.to, t - m.start, m.spec.Rise.Open)
+		)
 		if t >= m.ends then
 			serverMoving[unit] = nil
 		end
@@ -391,7 +419,7 @@ function RollUpDoor.play(unit: Model, kind: Motion.Kind): number
 		start = t,
 		ends = t + dur,
 	}
-	placeCollider(m, from)
+	placeCollider(m.col, spec, frame, from)
 	serverMoving[unit] = m
 	if not serverConn then
 		serverConn = RunService.Heartbeat:Connect(serverStep)

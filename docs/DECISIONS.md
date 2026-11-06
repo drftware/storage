@@ -90,3 +90,15 @@ sheets (`art/sheets/unit-hall.png`, `unit-hero.png`, `unit-inside.png`, the door
 light the game should have. The MCP's captures show the game as it really renders (the owner's
 darker shot was dimmed by the pause menu), and today the hall and units read flat and near white
 next to the sheets. P0-02d does it.
+
+## D-013 · 2026-11-06 · A shut door hides whoever is behind it
+Measured in Play (P0-02e): Roblox's run animation keeps playing while you push into a wall, so a
+hand swings up to 1.25 studs through a 0.4-deep door collider and still 0.8 through a 1.2-deep one.
+Hiding it with collision alone takes a collider about 3 deep, which would stand an invisible bump a
+full stud out from every door in the hall. Instead the collider is 1.2 deep (a hall player stops
+flush with the facade) and each client stops drawing anyone a shut door stands between it and
+(`BehindDoors`, rule in `ShutIn`): the door is solid metal, so that is what you'd see anyway, and it
+covers every avatar, accessory and tool. Footsteps still play. Not taken: a client guard that stops
+your walk into a door (Roblox's control script moves the character through flag-gated internal
+paths, so it would be fragile, and the swing on the last stride still crosses), or a custom run
+animation (feel the owner hasn't asked for).

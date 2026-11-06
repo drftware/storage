@@ -84,6 +84,16 @@ verified: a doc page, Studio, or "untested".
   height because its top curls back toward the drum, and as a client-side solid it nudged a player
   shut inside 0.36 studs away from the door as it landed. Default and Precise follow the sheet,
   0.07 thick below the header; Hull is a wedge, 0.1 deep at the floor to 0.6 at head height.
+- **Arms through a shut door** (Play, 2026-11-06, the owner's R15 avatar, walking straight into
+  101's shut door and holding W): the run animation keeps playing against the door, so the hands
+  swing through it the whole time, not just on the last stride. Furthest reach past the curtain,
+  by the hand's bounding box (its centre in brackets): 0.4-deep collider, from inside 1.25 (0.57);
+  1.2-deep, from inside 0.79 (0.10), from the hall 0.79 (0.13). The body stops 1.17 to 1.23
+  studs from the curtain at 1.2 deep. Why `BehindDoors` exists (D-013).
+- **The PlayerModule now lives at `StarterPlayer.PlayerModule`** (Play, 2026-11-06), not in
+  PlayerScripts. Its ControlModule moves the character with `self.moveFunction(player, worldVector,
+  false)` on most paths, but some flag-gated paths skip it. `Humanoid.MoveDirection` read in a
+  later render step still lags the input by a frame, so a guard built on it misses.
 - Right after the hall streamed back in, the first capture rendered black; a few seconds later it
   was lit. Watch for that flash after a teleport.
 

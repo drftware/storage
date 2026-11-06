@@ -37,10 +37,12 @@ local FAR_X = 700 -- far past the streaming target radius (256), so the hall str
 -- The prompts.
 -- In first person a prompt shows only while its point is on screen, so the points sit on the door
 -- at about eye height: pressed against the door with a level gaze, they still show.
-local PROMPT_OUT = 0.5 -- the door's prompts hang this far in front of the shut door's slats
+-- A point inside the door's invisible collider loses its sight line and hides, so both sit just
+-- outside it (RollUpDoor.ColliderDepth).
+local PROMPT_OUT = RollUpDoor.ColliderDepth / 2 + 0.1 -- the door's prompts hang just outside the collider, hall side
 local PROMPT_HEIGHT = 4 -- just under a standing player's eyes (about 4.4)
 local PROMPT_REACH = 8 -- close enough to touch the door, not the neighbour's
-local LIFT_IN = 0.5 -- Lift hangs this far behind the slats, so the shut door hides it from the hall
+local LIFT_IN = RollUpDoor.ColliderDepth / 2 + 0.1 -- Lift hangs just behind the collider, so the shut door hides it from the hall
 local LIFT_REACH = 5 -- only someone shut inside should see Lift
 local REFUSAL_SECONDS = 1.2 -- how long "Padlocked" or "Shut it first" shows before the unit's name returns
 
@@ -276,6 +278,7 @@ local function placeUnit(template: Model, face: CFrame, number: string, colour: 
 	unit.Name = `Unit{number}`
 	UnitKit.paint(unit, colour, UnitKit.Colours.Wall)
 	UnitKit.number(unit, number)
+	RollUpDoor.fitCollider(unit)
 	addDoorPrompts(unit, number)
 	return unit
 end

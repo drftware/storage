@@ -7,11 +7,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Brix = require(ReplicatedStorage.Brix)
+local BehindDoors = require(script.BehindDoors)
 local DoorView = require(script.DoorView)
 
 local host = Brix.Host.new({
 	systems = {
 		{ slot = "doorView", system = DoorView.new() },
+		{ slot = "behindDoors", system = BehindDoors.new() },
 	},
 })
 host:start()

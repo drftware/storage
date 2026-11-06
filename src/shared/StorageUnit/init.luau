@@ -7,6 +7,7 @@ return {
 	Curtain = require(script.Curtain),
 	Motion = require(script.Motion),
 	RollUpDoor = require(script.RollUpDoor),
+	ShutIn = require(script.ShutIn),
 	UnitKit = require(script.UnitKit),
 	Specs = require(script.Specs),
 }
