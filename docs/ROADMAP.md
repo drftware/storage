@@ -18,11 +18,17 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   Studio): the 10x10 unit built as code in Blender with baked PBR textures, an FBX for the 3D
   Importer, and the door rig (`RollUpDoor`, `Motion`, `Curtain`, `UnitKit`) with Lune specs
   (D-001 to D-007). Sizes S and L build but haven't been checked by eye.
-- [ ] **P0-02 The Roblox project, and the unit in Studio.** The full Rojo tree with server and
-  client entry points and the place's settings; Brix mounted at a pinned commit and started by a
-  Host; the unit imported and prepared into the place, with a saved copy in `assets/units/`
-  (D-009); a test corridor whose doors peek, open, slam and lock in Play. Sessions drive Studio
-  through its MCP server (`.mcp.json`). Full spec in HANDOFF.md.
+- [x] **P0-02 The Roblox project, and the unit in Studio.** Done Nov 5: the full Rojo tree with
+  the place's streaming and night lighting; Brix mounted at `4c21b5f` and a Host on each side; the
+  unit uploaded through Open Cloud (D-010), inserted and prepared into `ReplicatedStorage.Units.M`;
+  the dev corridor of nine units. Verified in Studio (one player): the corridor builds, Open runs
+  2 s and the door draws open with its collider out of the way, a padlocked door and a lock on a
+  moving door both refuse.
+- [ ] **P0-02b The corridor, played.** Every prompt by key, the refusals' flashes, the Lift from
+  inside, bolt and padlock on screen, paint and plates, Go far and Come back with doors in the
+  right state after streaming back in, the corridor's triangle and draw-call counts, phone-size
+  screenshots (Device Simulator), and the hall's light level judged (it reads bright for after
+  hours). Then the owner's two-player test (OWNER.md). Fix what's wrong in the rig.
 - [ ] **P0-03 The corridor kit (art).** Hall floor and ceiling, end walls and corners for the
   GDD's tile set (straight, corner, T, cross, dead end), and the motion-light fixture (the
   building's eyes), built the unit's way and judged at phone size.

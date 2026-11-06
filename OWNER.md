@@ -5,19 +5,34 @@ nowhere else.
 
 ## Now
 
+- [ ] **Save Studio's place.** It's still "Place1", unsaved and unpublished, and it now holds the
+  unit template at `ReplicatedStorage.Units.M`. File → Save to File as `storage.rbxl` in this
+  folder (git ignores it), or publish it to a new experience if you'd rather. If it's ever lost,
+  a session rebuilds the template from asset 135739386247346 in a minute.
+- [ ] **Two settings the session can't reach.** In Properties: Lighting → Technology = **Future**
+  (Rojo's live sync can't write it). Then check Workspace: StreamingMinRadius 64,
+  StreamingTargetRadius 256, StreamOutBehavior Opportunistic (Rojo should have set these; the
+  session's tools can't read them).
+- [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 - [ ] **Judge the storage unit's look.** Open `art/sheets/unit-contact-sheet.png`, then
-  `art/sheets/door-hall.mp4` and `door-mechanism.mp4`. Say yes, or what to change. It sets the
-  look for every asset after it: worn, real materials under cold corridor light (D-007).
-- [ ] **Before the next session (P0-02): Studio open on this game's place, ready to be driven.**
-  1. In Studio, keep only this game's place open (right now a second window is open too, and it's
-     unknown which one the session would talk to). Publish it to its experience first if it isn't
-     yet: the unit's import uploads meshes and textures, and they should belong to the game's owner.
-  2. Keep Studio's MCP option on, as it is for Game1, and the Rojo plugin installed. The session
-     starts `rojo serve` and may ask you to click Connect.
-  3. Start a new session here. If it asks to approve the `Roblox_Studio` server, approve it. If no
-     Studio tools appear, run this in this folder, then start again:
-     `claude mcp add Roblox_Studio -- /Applications/RobloxStudio.app/Contents/MacOS/StudioMCP`
-  4. The 3D Importer is a dialog. If the session can't run it, it will ask you to do just that one
-     import with the settings in `art/unit/README.md` ("Into Studio"), and do the rest itself.
+  `art/sheets/door-hall.mp4` and `door-mechanism.mp4`, and now `docs/art/P0-02-hall.jpg` and
+  `P0-02-open-101.jpg` (the real unit in Studio). Say yes, or what to change. It sets the look for
+  every asset after it: worn, real materials under cold corridor light (D-007).
 - [ ] **Branches:** everything so far is on `storage-unit`; `main` has no commits yet. Say if you
   want `storage-unit` to become `main`.
+
+## After P0-02b (the next session says when)
+
+- [ ] **Two-player door test.** Test tab → Clients and Servers → 2 players → Start. In both
+  windows walk to the same door (spawn is at the hall's west end; units 101 to 108).
+  - Player 1 presses E (Open) at 101: both windows see it roll up in about 2 s, matching.
+  - Player 2 stands in 101's doorway; player 1 presses G (Slam): the door lands in a blink on
+    both screens and pushes player 2 out or stops just above them, never through them.
+  - Player 2 walks into 101, player 1 presses F (Close): player 2 is shut in and can't walk out;
+    player 2 presses T (Lift) inside and it heaves up slowly.
+  - At 105 (padlocked) press E: "Padlocked" flashes. Shut a door, press R: the bolt and padlock
+    appear for both; R again takes them off. R on an open door flashes "Shut it first".
+  - One player presses E on the post by the spawn ("Go far"), waits 10 s, then "Come back": every
+    door is still where it was left.
+  - Look for: doors out of step between windows, a door you can walk through, a stutter when
+    many doors move at once.

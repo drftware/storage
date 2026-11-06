@@ -1,0 +1,3 @@
+[submodule "vendor/brix"]
+	path = vendor/brix
+	url = https://github.com/drftware/brix

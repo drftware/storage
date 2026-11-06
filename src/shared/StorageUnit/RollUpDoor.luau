@@ -7,8 +7,8 @@
 		RollUpDoor.setLocked(unit, true)      -- shoots the bolt, hangs the padlock (shut doors)
 		RollUpDoor.rise(unit) --> number      -- where the door is right now, in studs
 
-	Client (renders every unit the server moves; call once at startup):
-		RollUpDoor.watchTagged("StorageUnit")
+	Client (renders every unit the server moves; the client's DoorView system calls it):
+		local stop = RollUpDoor.watchTagged("StorageUnit")
 
 	Anywhere (cutscenes, Studio previews, a viewport):
 		local rig = RollUpDoor.rig(unit)
@@ -502,13 +502,30 @@ local function bind(unit: Instance)
 	refresh(unit)
 end
 
--- Client: render every unit carrying `tag`, now and as they stream in or out.
-function RollUpDoor.watchTagged(tag: string)
-	for _, unit in CollectionService:GetTagged(tag) do
-		task.spawn(bind, unit)
+--[[
+	Client: render every unit carrying `tag`, now and as they stream in or out. Returns a
+	function that stops watching and lets go of every door it was drawing.
+]]
+function RollUpDoor.watchTagged(tag: string): () -> ()
+	local watching = true
+	local function bindWhileWatching(unit: Instance)
+		if watching then
+			bind(unit)
+		end
 	end
-	CollectionService:GetInstanceAddedSignal(tag):Connect(bind)
-	CollectionService:GetInstanceRemovedSignal(tag):Connect(unbind)
+	local added = CollectionService:GetInstanceAddedSignal(tag):Connect(bindWhileWatching)
+	local removed = CollectionService:GetInstanceRemovedSignal(tag):Connect(unbind)
+	for _, unit in CollectionService:GetTagged(tag) do
+		task.spawn(bindWhileWatching, unit)
+	end
+	return function()
+		watching = false
+		added:Disconnect()
+		removed:Disconnect()
+		for unit in rigs do
+			unbind(unit)
+		end
+	end
 end
 
 return RollUpDoor

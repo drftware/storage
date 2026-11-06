@@ -60,19 +60,31 @@ and every size: DoorKit, TrimSheet and Concrete at 1024², Partition and Facade 
 
 ## Into Studio
 
-1. **3D Importer**, `art/unit/out/StorageUnit_M.fbx`: *Import as model*, **Scale Unit: Stud**,
-   World Forward: Front, World Up: Top, *Use Imported Pivot* on. Textures are embedded and
-   arrive as SurfaceAppearances.
-2. **Command bar**, once, with Rojo synced (`rojo serve`):
+No importer dialog: the FBX goes up through Open Cloud, as porch-pirates ships its art (D-010).
+
+1. **Upload:** `lune run scripts/upload_unit` sends each changed `StorageUnit_<Size>.fbx` as a
+   Model asset (the first time a new asset, after that the same ID updated in place) and records
+   its hash and ID in `art/unit/assets.json`. It needs `.config/.env` (git-ignored) with
+   `ROBLOX_API_KEY` (Assets read and write) and `ROBLOX_CREATOR_ID`. Embedded textures arrive as
+   SurfaceAppearances, already in AlphaMode Overlay; 1 unit of the FBX is 1 stud.
+2. **Insert and prepare** (a session does this through Studio's MCP; the command bar works too),
+   with Rojo synced:
    ```lua
-   require(game.ReplicatedStorage.Shared.StorageUnit).UnitKit.prepare(workspace.StorageUnit_M, "M")
+   -- insert_asset(<id from assets.json>) into Workspace, then:
+   local SU = require(game.ReplicatedStorage.Shared.StorageUnit)
+   local m = workspace.StorageUnit_M
+   m:FindFirstChildOfClass("PackageLink"):Destroy() -- a plain model, not a package
+   SU.UnitKit.prepare(m, "M")
+   local outer = SU.RollUpDoor.frame(m) * CFrame.new(0, 0, -SU.Specs.M.CurtainPlane)
+   m:PivotTo(outer:ToObjectSpace(m:GetPivot())) -- door face at the origin, looking down -Z
+   m.Name = "M"; m.Parent = game.ReplicatedStorage.Units
    ```
-   This stores the rig's calibration on each moving part, adds box colliders and the
-   DoorCollider, sets ModelStreamingMode Atomic, tags it `StorageUnit`, and forces the
-   tinted SurfaceAppearances to **AlphaMode Overlay**. That last step matters: the door and
-   facade ColorMaps carry alpha (0 = show the part's Color). If doors ever look see-through,
-   the importer chose another alpha mode and this step wasn't run.
-3. Keep the result as the template (e.g. `ReplicatedStorage.Units.M`) and clone it per unit.
+   `prepare` stores the rig's calibration on each moving part, anchors everything, adds box
+   colliders and the DoorCollider, sets ModelStreamingMode Atomic, tags it `StorageUnit`, and
+   forces the tinted SurfaceAppearances to AlphaMode Overlay (the door and facade ColorMaps carry
+   alpha: 0 shows the part's Color). If doors ever look see-through, that last step didn't run.
+3. **Save the place.** The template lives in it at `ReplicatedStorage.Units.<Size>` (D-009); a
+   fresh place gets it back from the asset ID with step 2.
 
 ## Moving the door
 
@@ -91,8 +103,8 @@ SU.RollUpDoor.setLocked(unit, true)    -- bolt shot, padlock on
 SU.RollUpDoor.rise(unit)               -- where it is now
 SU.UnitKit.paint(unit, SU.UnitKit.Colours.Door.Teal) -- any Color3
 SU.UnitKit.number(unit, "214")
--- client: src/client/StorageUnitDoors.client.luau already calls
-SU.RollUpDoor.watchTagged("StorageUnit")
+-- client: the DoorView system (src/client/DoorView.luau) calls
+local stop = SU.RollUpDoor.watchTagged("StorageUnit")
 -- anywhere (cutscene, viewport, Studio preview): pose it directly
 local rig = SU.RollUpDoor.rig(unit); rig:pose(3.2, false); rig:destroy()
 ```

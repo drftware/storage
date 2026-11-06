@@ -1,16 +1,71 @@
+// The game's Rojo tree. Rojo 7.7.1 reads this as JSON with comments.
+// Live sync (rojo serve) can't write Lighting.Technology, so Future is also set once in Studio
+// (docs/STUDIO.md); `rojo build` writes everything here.
 {
   "name": "storage",
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {
+      // Brix, pinned as the vendor/brix submodule (docs/FRAMEWORK.md).
+      "Brix": {
+        "$path": "vendor/brix/default.project.json"
+      },
       "Shared": {
         "$path": "src/shared"
+      }
+      // ReplicatedStorage.Units holds the imported unit templates. It lives in the place, not
+      // here: Rojo can't live-sync imported meshes (D-009).
+    },
+    "ServerScriptService": {
+      "Server": {
+        "$path": "src/server"
       }
     },
     "StarterPlayer": {
       "StarterPlayerScripts": {
         "Client": {
           "$path": "src/client"
+        }
+      }
+    },
+    "Workspace": {
+      "$properties": {
+        // Phones only hold what's near them: low-end Android is a target (GDD tech plan).
+        "StreamingEnabled": true,
+        // Always loaded around a player: the hall they stand in and the units either side.
+        "StreamingMinRadius": 64,
+        // Loaded when there's room: about a floor. Past this, the hall falls away into dark.
+        "StreamingTargetRadius": 256,
+        // Let far parts go even before memory runs short, so a phone stays light all climb.
+        "StreamOutBehavior": "Opportunistic"
+      }
+    },
+    "Lighting": {
+      "$properties": {
+        // Real shadows from each tube light; the building after hours is lit by fixtures only.
+        "Technology": "Future",
+        // Midnight, and no sun or moon light: only what the building's own lights throw.
+        "ClockTime": 0,
+        "Brightness": 0,
+        // Near-black fill, so a dead light means a dark hall. Raise it if phones read pure black.
+        "Ambient": [0.03, 0.03, 0.035],
+        "OutdoorAmbient": [0.03, 0.03, 0.035],
+        // No skybox glow on the concrete and paint.
+        "EnvironmentDiffuseScale": 0.15,
+        "EnvironmentSpecularScale": 0.3,
+        "ExposureCompensation": 0
+      },
+      "Atmosphere": {
+        "$className": "Atmosphere",
+        "$properties": {
+          // Haze that swallows the far end of a hall: units 30 studs away read as shapes.
+          "Density": 0.38,
+          "Offset": 0,
+          // Cold grey-blue, like dust under fluorescent tubes.
+          "Color": [0.42, 0.45, 0.5],
+          "Decay": [0.08, 0.09, 0.11],
+          "Glare": 0,
+          "Haze": 1.4
         }
       }
     }

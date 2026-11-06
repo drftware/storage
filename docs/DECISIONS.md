@@ -59,6 +59,17 @@ wait for a planned piece builds the smallest stand-in behind Brix's shape and sw
 Rojo's live sync can't set the mesh on an imported MeshPart (Studio won't let plugins write it),
 so a unit model synced from a file would arrive in Studio with blank parts. The prepared unit
 therefore lives in the place itself at `ReplicatedStorage.Units.<Size>`, where Rojo leaves it
-alone (ReplicatedStorage has no `$path`, so Rojo keeps children it didn't make). The repo keeps
-a saved copy at `assets/units/<Size>.rbxm` to restore a fresh place from. Re-importing after an
-art change replaces the template in the place and re-saves that copy.
+alone (ReplicatedStorage has no `$path`, so Rojo keeps children it didn't make). A fresh place gets
+the template back from its asset ID (D-010 replaced the saved `.rbxm` copy planned here).
+
+## D-010 · 2026-11-05 · Art goes up through Open Cloud, not the 3D Importer
+The owner's porch-pirates ships every model this way, so no art waits on someone clicking a
+dialog. `scripts/upload_unit.luau` (with `scripts/lib/OpenCloud.luau`, taken from porch-pirates)
+sends each changed FBX as a Model asset, updating the same ID in place after the first upload, and
+records the hash and ID in `art/unit/assets.json`. The key lives in the git-ignored `.config/.env`.
+A session then inserts the asset through Studio's MCP and prepares it (art/unit/README.md, "Into
+Studio"). The asset ID is the durable record, so the planned `assets/units/<Size>.rbxm` copy is
+dropped. Not taken: building meshes from repo data at run time, as the owner's fight game does,
+because a game script can't set SurfaceAppearance's normal and roughness maps and the unit's look
+depends on them.
+

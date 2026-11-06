@@ -46,4 +46,5 @@ system on the Host's clock when L-02 turns it into the GDD's state machine.
 
 A git submodule at `vendor/brix`, pinned to a commit and mapped by Rojo to `ReplicatedStorage.Brix`
 through Brix's own `default.project.json` (its README), until Brix publishes 0.1.0 (its ENG-08);
-then the Wally package at a pinned version. P0-02 sets it up.
+then the Wally package at a pinned version. Mounted in P0-02: `vendor/brix` at `4c21b5f`; the
+server and client entry points each run a Host.

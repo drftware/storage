@@ -16,13 +16,22 @@ verified: a doc page, Studio, or "untested".
   the texture cap (1024 vs 4096); we ship 1024.
 - **Instancing** (docs): MeshParts with the same mesh and identical SurfaceAppearance draw in one
   call, so clone one imported part rather than importing copies.
-- **Unknown until P0-02:** whether the importer keeps each object's origin as the part's pivot
-  (the door rig doesn't care: it calibrates against `Specs.Rest`), and which AlphaMode it picks
-  for an RGBA ColorMap (`UnitKit.prepare` forces Overlay). Write what Studio actually does here.
+- **What an Open Cloud FBX upload of the unit becomes** (Studio, P0-02, 2026-11-05): a Model of
+  20 MeshParts as direct children, unanchored, named as in Blender, at the right size (12.2 x 10.1
+  x 12.2 studs: 1 FBX unit is 1 stud). Each part keeps its Blender origin as its pivot (a
+  PivotOffset; the rig doesn't care). Every SurfaceAppearance arrives in **AlphaMode Overlay**.
+  `insert_asset` drops it in as a **package** at an arbitrary turn about Y; destroy the
+  PackageLink before preparing. Upload: `scripts/upload_unit.luau` (D-010).
+- **Open Cloud Assets API** (porch-pirates' STUDIO.md, used here 2026-11-05): `POST
+  assets/v1/assets`, multipart `request` JSON and `fileContent` (`model/fbx`); poll the operation
+  until `done`. Only an FBX updates in place (`PATCH`, same ID). The unit's 8.5 MB FBX took under
+  a minute.
 - **Rojo can't live-sync imported meshes** (Rojo's sync docs and DevForum, read 2026-11-05):
   `MeshPart.MeshId` isn't writable by plugins, so a `.rbxm` of MeshParts in the served tree
-  arrives blank. `rojo build` to a place file reportedly works. Hence D-009: templates live in
-  the place. Untested here whether Rojo 7.7.1 changed this.
+  arrives blank. Hence D-009: templates live in the place.
+- **Rojo 7.7.1 project files take comments and trailing commas** (tested with `rojo build`,
+  2026-11-05). `rojo build` writes `Lighting.Technology`; live sync can't (plugins can't write
+  it), so it's set once in Studio (OWNER.md).
 
 ## SurfaceAppearance
 
@@ -39,6 +48,21 @@ verified: a doc page, Studio, or "untested".
   needs a new session. Studio must be open on this game's place; with two places open it's
   unknown which one the server talks to. Search for its tools with ToolSearch (try `studio`,
   `run_code`, `Roblox_Studio`) before concluding Studio can't be driven.
+- **What the MCP can do** (P0-02): `execute_luau` in Edit, Server or Client; `insert_asset` by
+  ID; `start_stop_play` (one player only, so two-client tests are the owner's); `screen_capture`
+  with a camera position; `http_get` on create.roblox.com docs (`.md` URLs). This Studio build has
+  **no `open_cloud_invoke`**, so uploads go through `scripts/upload_unit.luau`.
+- **`execute_luau` isn't a full plugin:** members gated to PluginOrOpenCloud or RobloxScript read
+  as "not a valid member" or "lacking capability" (`Workspace.StreamingMinRadius`,
+  `StreamingTargetRadius`, `StreamOutBehavior`, `Lighting.Technology`). Check those in the
+  Properties panel. It can still require the game's modules, set AlphaMode, destroy a
+  PackageLink and set ChangeHistory waypoints.
+- **Rojo connects through the owner:** start `rojo serve` in the background; the owner clicks
+  Connect in Studio's Rojo plugin. Rojo keeps the place's own children (Baseplate,
+  `ReplicatedStorage.Units`) because no node there has a `$path`.
+- `ContentId: rbxassetid://203785492 failed due to: Asset type does not match requested type`
+  shows six times at each Play; nothing in the game references it (searched the client), so it's
+  Studio's or the avatar's. Ignore it.
 
 - **Blender 5.2 headless:** assigning `hide_render` while iterating `collection.all_objects`
   doesn't stick; wrap it in `list(...)`. The volume node is `ShaderNodeVolumePrincipled`. A camera

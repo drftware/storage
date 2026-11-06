@@ -2,66 +2,53 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-05, session 2 · **Checks:** green · **Git:** `storage-unit`, local only (`main` has no commits yet).
+**Updated:** 2026-11-05, session 3 · **Checks:** green · **Git:** `storage-unit`, local only (`main` has no commits yet).
 
 ## State
-- **The storage unit is built** (P0-01): Blender-made unit and roll-up door (`art/unit/`), baked PBR textures,
-  `art/unit/out/StorageUnit_M.fbx`, and the door rig in `src/shared/StorageUnit/` (Lune specs green).
-- **Sessions can now drive Studio.** Studio's MCP server was only set up for the owner's Game1 folder; `.mcp.json`
-  now starts it here too, from the next session on (session 2 stopped early so P0-02 runs with it). Nothing has
-  been in Studio yet, and no P0-02 code is written.
-- **D-009:** Rojo can't live-sync imported meshes, so the unit template lives in the place at
-  `ReplicatedStorage.Units.M`, not in Rojo's tree; the repo keeps a saved copy at `assets/units/M.rbxm`.
+- **The game runs in Studio** (P0-02): Rojo tree with night lighting and streaming; Brix mounted at `vendor/brix`
+  (`4c21b5f`), a Host on each side (`src/server/init.server.luau`, `src/client/init.client.luau`); the client's
+  `DoorView` system draws doors; the Studio-only `DevCorridor` system builds nine real units in Play.
+- **Art goes up through Open Cloud** (D-010), as porch-pirates does: `lune run scripts/upload_unit` (key in the
+  git-ignored `.config/.env`, now in place). The unit is Model asset 135739386247346, inserted and prepared into
+  `ReplicatedStorage.Units.M` in Studio's place, which is still unsaved "Place1" (OWNER.md).
+- **Verified in Studio, one player:** corridor builds (doors on their lines, shared walls dropped, 105 and 108
+  padlocked); Open takes 2 s and draws open on the client; the collider leaves the doorway; padlock and lock-while-
+  moving refuse. Not yet: prompts by key, slam, lift, streaming, counts, phone size, two players.
+- The MCP's `execute_luau` can't read streaming radii or Technology (docs/STUDIO.md, Tools); Rojo serve needs the
+  owner's Connect click each session.
 
-## Next task: P0-02 The Roblox project, and the unit in Studio
-The moment: in Studio Play, walk up to a real storage unit, peek under its door, haul it open and slam it, while a
-friend in the next unit sees the same door move and gets blocked by it.
-1. Owner verdicts or test results first. Then find the Studio tools (ToolSearch `studio`, `run_code`,
-   `Roblox_Studio`) and check Studio has this game's place open. If not, walk through OWNER.md's Studio item.
-2. **Brix:** `git clone ../engine vendor/brix`, check out `4c21b5f` (pushed, untagged), set its origin to
-   `https://github.com/drftware/brix`, then `git submodule add https://github.com/drftware/brix vendor/brix` adopts
-   it, and `git submodule absorbgitdirs`. Rojo: `ReplicatedStorage.Brix` → `vendor/brix/default.project.json`.
-3. **Entry points on Brix's Host:** `src/server/init.server.luau` → ServerScriptService.Server, and
-   `src/client/init.client.luau` replacing `StorageUnitDoors.client.luau`. Each builds `Brix.Host.new({ systems })`,
-   `start`s it, `advance`s it on Heartbeat and `stop`s it on close. Systems follow `System.luau`: `name`,
-   `start(context)` that never yields, `stop()`. The client's door watcher becomes one (make
-   `RollUpDoor.watchTagged` return a stop function).
-4. **Place settings** in `default.project.json`: StreamingEnabled, MinRadius 64, TargetRadius 256, StreamOutBehavior
-   Opportunistic; Lighting Future, ClockTime 0, Brightness 0, near-black Ambient, an Atmosphere for haze down the
-   hall. Check whether Rojo 7.7.1 takes comments in project files (feel numbers want them) and whether serve can
-   set Technology and StreamingEnabled; if not, set them through Studio.
-5. **Import:** 3D Importer per `art/unit/README.md` "Into Studio" (if the tools can't run the dialog, the owner
-   does just that), then with the tools: log each SurfaceAppearance's AlphaMode and each part's PivotOffset
-   before `UnitKit.prepare`, prepare, check the bounds read about 12 x 10 x 12, move it to
-   `ReplicatedStorage.Units.M`, save the place, and get `assets/units/M.rbxm` saved (Save to File).
-6. **Dev corridor** (`src/server/DevCorridor.luau`, a Studio-only System; prompts call `RollUpDoor` directly):
-   hall along X, 8 wide, corridor faces at z = ±4; four units a side at x = -18, -6, 6, 18, backs at z = ±16.
-   Place each clone by its outer face, `RollUpDoor.frame(u) * CFrame.new(0, 0, -spec.CurtainPlane)`, with
-   `u:PivotTo(target * face:ToObjectSpace(u:GetPivot()))`, and paint, number and lock before parenting. After the
-   first unit in a row, drop whichever of WallLeft/WallRight sits at lower X (`dropWall` looks at direct children
-   only; `Colliders` reuses those names). Hall floor top at -0.05 so it can't fight unit floors; building ceiling
-   at 16 (wire tops at 10); four cold tube lights (SurfaceLight, shadows on); spawn at the -X end; during Play only,
-   disable other SpawnLocations and remove a Baseplate. Prompts on an Attachment 1.5 studs into the hall, each on
-   its own key or they hide each other: Peek Q, Open E, Close F, Slam G, Lock/Unlock R, plus Lift inside. Refusals
-   flash the ObjectText ("Padlocked", "Shut it first"). Doors cycle the four colours, numbers 101 to 108 (odd one
-   side), 105 and 108 start padlocked. Streaming: a lone unit at x = 700 with "Go far" and "Come back" prompts
-   (`RequestStreamAroundAsync`, then `PivotTo`).
-7. **Play** with two clients, through the tools where they reach and the owner where they don't: each door action
-   looks right and the DoorCollider blocks or frees each player; bolt and padlock; paint; plates; units streaming
-   out and back in with their doors in the right state. Phone-size screenshots to `docs/art/P0-02-*.png`.
-8. `docs/STUDIO.md`: what the importer did (pivots, AlphaMode), what the MCP can and can't do, the corridor's
-   triangle and draw-call counts. Fix anything wrong in the rig.
-**Acceptance:** checks green; Brix mounted and both Hosts start clean in Play; two-client Play shows every door
-action looking and blocking right for both players; screenshots saved; STUDIO.md records the importer's behaviour.
-**Read first:** `art/unit/README.md` ("Into Studio", "Moving the door"); `docs/FRAMEWORK.md` (last section);
-`../engine/src/Contracts/System.luau`; `src/shared/StorageUnit/UnitKit.luau` (`prepare`, `dropWall`);
-`src/shared/StorageUnit/RollUpDoor.luau` (header, `frame`, `watchTagged`); `default.project.json`.
+## Next task: P0-02b The corridor, played
+The moment: a friend sprints into a unit, you slam the door on them, and both screens agree it's shut.
+1. Owner verdicts or test results first. Start `rojo serve default.project.json` in the background and ask the
+   owner to click Connect. Check Studio still has the template (`ReplicatedStorage.Units.M`); if the place was
+   lost, rebuild it per `art/unit/README.md` "Into Studio" step 2 from `art/unit/assets.json`.
+2. Play (start_stop_play). Walk to 101 with `character_navigation` and press each key with `user_keyboard_input`:
+   Q, E, F, G, R (Lock and Unlock), and T inside. Read results on the server (`DoorMotion`, `DoorLocked`,
+   `DoorCollider` size) and look with `screen_capture`. Prompts are CoreGui, so read `prompt.ObjectText` for the
+   refusal flashes ("Padlocked" at 105, "Shut it first" on an open door).
+3. Check on screen: bolt and padlock appear on lock; paint colours and plates 101 to 108 read; the slam lands and
+   bounces; the curtain coils on the drum with no gaps or popping.
+4. Streaming: press E at the "Go far" post, then on the client check the hall's units streamed out (Workspace
+   descendants), "Come back", and check each door's pose matches its `DoorMotion` after streaming back in.
+5. Counts: triangles and draw calls for the hall (rbx-scene-analysis or rbx-perf-profiling skill), into STUDIO.md.
+6. Phone size: Device Simulator on a small Android in landscape (rbx-device-simulator-lua), screenshots of the
+   hall, an open unit and a padlocked door to `docs/art/P0-02-*.jpg`.
+7. Light level: the hall reads bright for after hours (`docs/art/P0-02-hall.jpg`). Check Technology is Future
+   (OWNER.md), then tune the tube lights and Ambient in `DevCorridor.luau` and `default.project.json` until a
+   dead light would mean a dark stretch; note the numbers. The real fixture is P0-03's.
+8. Fix anything wrong in the rig with a failing Lune spec first where it's pure. Then hand the two-player test to
+   the owner (OWNER.md has it).
+**Acceptance:** checks green; every prompt and refusal shown working in Play with screenshots; streaming out and
+back keeps doors right; counts and phone-size shots saved; STUDIO.md updated.
+**Read first:** `src/server/DevCorridor.luau`; `src/shared/StorageUnit/RollUpDoor.luau` (header, `play`,
+`setLocked`); `docs/STUDIO.md` ("Getting assets into Roblox", "Tools"); `art/unit/README.md` ("Moving the door").
 
 ## Queue (the next run's order, from ROADMAP)
 1. **P0-03 The corridor kit:** hall floor and ceiling, the tile set's walls and corners, the motion-light fixture.
 2. **P0-04 The door's sounds and feel:** peek scrape, open rattle, slam bang and bounce, latch, padlock.
 3. **Phase 1, then Phase 2** (ROADMAP): the loop with real assets (L-01 to L-09), then the rest of the game.
 4. **Polish waiting:** judge sizes S and L by eye; a client-side door collider if the ~0.1 s lag feels wrong.
+5. **Found this session:** S and L need FBXs and uploads before they can be used (`SIZES` in `upload_unit`).
 
 ## Kickoff for the next agent
 ```text

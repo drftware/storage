@@ -9,3 +9,4 @@ art/unit/out/*/unit_geo.blend
 .DS_Store
 art/unit/out/*/anim/
 __pycache__/
+.config/
