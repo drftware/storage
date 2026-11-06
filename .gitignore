@@ -10,3 +10,4 @@ art/unit/out/*/unit_geo.blend
 art/unit/out/*/anim/
 __pycache__/
 .config/
+*.rbxl.lock
