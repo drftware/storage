@@ -17,6 +17,7 @@ touches. This file is read on demand, never at session start; keep each row to o
 | `art/unit/` | The unit's Blender pipeline; its README is the asset's doc |
 | `art/unit/out/` | Built outputs: `StorageUnit_M.fbx`, `textures/` (five sets), `M/unit.blend` |
 | `art/sheets/` | Look sheets and door animations |
+| `.mcp.json` | Starts Studio's MCP server so a session can drive Studio (`docs/STUDIO.md`, Tools) |
 | `scripts/check.sh` | Format, lint, strict types, Rojo build, Lune tests |
 | `scripts/art.sh` | Rebuild the unit's art (`SIZE=L scripts/art.sh geo export` for another size) |
 | `scripts/hooks/require-handoff.sh` | Stop hook: blocks ending a turn without a written, committed handoff |

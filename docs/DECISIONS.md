@@ -54,3 +54,11 @@ now; the keepers' chase (Pursuit) as soon as its system lands; remotes, save dat
 telemetry and the round loop as Brix releases them (owner). This game keeps only its policies,
 adapters, data and art; `docs/FRAMEWORK.md` maps each need to its Brix piece. A ticket that can't
 wait for a planned piece builds the smallest stand-in behind Brix's shape and swaps it out later.
+
+## D-009 · 2026-11-05 · The unit template lives in the place, not in Rojo's tree
+Rojo's live sync can't set the mesh on an imported MeshPart (Studio won't let plugins write it),
+so a unit model synced from a file would arrive in Studio with blank parts. The prepared unit
+therefore lives in the place itself at `ReplicatedStorage.Units.<Size>`, where Rojo leaves it
+alone (ReplicatedStorage has no `$path`, so Rojo keeps children it didn't make). The repo keeps
+a saved copy at `assets/units/<Size>.rbxm` to restore a fresh place from. Re-importing after an
+art change replaces the template in the place and re-saves that copy.

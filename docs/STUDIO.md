@@ -19,6 +19,10 @@ verified: a doc page, Studio, or "untested".
 - **Unknown until P0-02:** whether the importer keeps each object's origin as the part's pivot
   (the door rig doesn't care: it calibrates against `Specs.Rest`), and which AlphaMode it picks
   for an RGBA ColorMap (`UnitKit.prepare` forces Overlay). Write what Studio actually does here.
+- **Rojo can't live-sync imported meshes** (Rojo's sync docs and DevForum, read 2026-11-05):
+  `MeshPart.MeshId` isn't writable by plugins, so a `.rbxm` of MeshParts in the served tree
+  arrives blank. `rojo build` to a place file reportedly works. Hence D-009: templates live in
+  the place. Untested here whether Rojo 7.7.1 changed this.
 
 ## SurfaceAppearance
 
@@ -28,6 +32,13 @@ verified: a doc page, Studio, or "untested".
   plugins can, game scripts can't.
 
 ## Tools
+
+- **Driving Studio from a session:** `.mcp.json` starts Studio's own MCP server
+  (`/Applications/RobloxStudio.app/Contents/MacOS/StudioMCP`, the same one the owner's Game1
+  folder uses). A session only loads MCP servers when it starts, so a server added mid-session
+  needs a new session. Studio must be open on this game's place; with two places open it's
+  unknown which one the server talks to. Search for its tools with ToolSearch (try `studio`,
+  `run_code`, `Roblox_Studio`) before concluding Studio can't be driven.
 
 - **Blender 5.2 headless:** assigning `hide_render` while iterating `collection.all_objects`
   doesn't stick; wrap it in `list(...)`. The volume node is `ShaderNodeVolumePrincipled`. A camera

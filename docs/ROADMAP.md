@@ -20,8 +20,9 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   (D-001 to D-007). Sizes S and L build but haven't been checked by eye.
 - [ ] **P0-02 The Roblox project, and the unit in Studio.** The full Rojo tree with server and
   client entry points and the place's settings; Brix mounted at a pinned commit and started by a
-  Host; the unit imported, prepared and kept in the repo as a model file; a test corridor whose
-  doors peek, open, slam and lock in Play. Full spec in HANDOFF.md.
+  Host; the unit imported and prepared into the place, with a saved copy in `assets/units/`
+  (D-009); a test corridor whose doors peek, open, slam and lock in Play. Sessions drive Studio
+  through its MCP server (`.mcp.json`). Full spec in HANDOFF.md.
 - [ ] **P0-03 The corridor kit (art).** Hall floor and ceiling, end walls and corners for the
   GDD's tile set (straight, corner, T, cross, dead end), and the motion-light fixture (the
   building's eyes), built the unit's way and judged at phone size.
