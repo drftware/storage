@@ -12,34 +12,31 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   0.25 transparent (docs/STUDIO.md, "Camera and prompts"). A prepared unit's colliders are invisible and its meshes
   don't collide, so in the 8-stud hall the camera backs through the shut door behind you into the unit across the
   hall (`docs/art/P0-02b-camera-inside-102.jpg`), and the prompts you face hide because their line of sight starts
-  at the camera. That's P0-02c.
+  at the camera. **The owner chose first person** (D-011), which keeps the camera at the head: that's P0-02c.
 - Studio's place is `storage.rbxl` with the template at `ReplicatedStorage.Units.M`. A `rojo serve` from an earlier
   session was still running (port 34872, this repo); check with `lsof -iTCP:34872` before starting another.
 
-## Next task: P0-02c The camera stays in the hall
-The moment: you back away from a door with a friend behind you, and the camera stays in the hall with you.
-1. Owner verdicts first: if the owner picked a camera (OWNER.md), follow it. A first-person lock still needs this fix
-   only where the head can poke a wall; third person (the default for now) needs all of it.
-2. Reproduce: Play, stand at (-18, 3, 0) facing 101 at default zoom; the client's `CurrentCamera` sits past z = 4
-   (inside 102). Keep this as the acceptance probe.
-3. Walls: in `UnitKit.prepare`, make WallLeft, WallRight, WallBack and WireTop solid (CanCollide, CanQuery,
-   CollisionFidelity Box). Their bounding boxes match their spec colliders (WallLeft is 0.2 x 10 x 11.75), so the
-   visible part can stand in for the box or sit beside it; keeping the spec boxes as physics truth is the safe start.
-4. Shut curtain: solid on the client only while it shows. In `Rig.pose`, set CurtainClosed's CanCollide with its
-   Transparency (it hides while the chain moves). Never on the server: keepers would hit an open door. Prepare sets
-   its CollisionFidelity to Box. Tried live: forgetting to clear it when hidden blocks the doorway.
-5. Facade: it's a 0.001-thick panel with the doorway cut out, and a decomposition fills the doorway (tried live).
-   Recommended: split it in the Blender script (`art/unit/parts.py`, `parts.facade`) into three flat pieces named
-   like their spec colliders (FacadeLeft, FacadeRight, Header), each solid with Box fidelity; rebuild with
-   `scripts/art.sh`, upload with `lune run scripts/upload_unit`, insert and prepare per `art/unit/README.md`
-   "Into Studio". If that's too heavy, say why in DECISIONS and pick another way; the doorway must stay open.
-6. Re-prepare the template in Studio's Edit mode and ask the owner to save the place (OWNER.md).
-7. Play and probe: back to a shut door, the camera stays in the hall; inside a shut unit it stays inside; you walk
-   in and out of an open doorway freely; Lift never shows from the hall; the server's CurtainClosed never collides.
-**Acceptance:** checks green; the probes above pass in Play with screenshots; STUDIO.md, CODEMAP and README updated.
-**Read first:** `src/shared/StorageUnit/UnitKit.luau` (`prepare`); `src/shared/StorageUnit/RollUpDoor.luau`
-(`Rig.pose`); `docs/STUDIO.md` ("Camera and prompts", "Tools"); `art/unit/README.md` ("Parts", "Into Studio");
-`art/unit/parts.py` (`facade`).
+## Next task: P0-02c First person
+The moment: you lean into a dark doorway with the door hanging over your head, and it's your eyes, not a camera
+behind you, that see the slam coming.
+1. Owner verdicts or test results first. Check `lsof -iTCP:34872` for a running Rojo (start `rojo serve` in the
+   background if none) and ask the owner to click Connect. Check Studio still has `ReplicatedStorage.Units.M`.
+2. Lock first person in `default.project.json`: StarterPlayer `$properties` CameraMode `LockFirstPerson`, with a
+   comment on what it does to the player (as in Pressure, D-011). Prove the enum syntax with `rojo build` first.
+   Field of view stays Roblox's 70 for now; if it feels wrong, it becomes a commented feel number.
+3. Play and probe: the client's camera sits at the head (within about 1 stud of the Head part); facing 101 at
+   (-18, 3, -0.3) its five prompts show (track `ProximityPromptService.PromptShown`), and each key still works.
+4. Lift through a shut door: stand outside shut 102 at (-18, 3, 3.5) facing it. If Lift@Unit102 shows, the
+   prompt's line of sight ignores the invisible DoorCollider: move the Lift point deeper or shorten its reach
+   (`LIFT_IN`, `LIFT_REACH` in DevCorridor) and note the rule in STUDIO.md.
+5. Up close: stand in 101's open doorway, slam it from the server, and screenshot from the eyes; the door must push
+   you out, never pass through your view. Then inside a shut unit, check the view and that Lift shows.
+6. Phone: the Device Simulator on a small Android in landscape (MCP skill rbx-device-simulator-lua): look by
+   dragging, walk with the thumbstick, tap a prompt. Note anything clumsy; the shots themselves are P0-02d's.
+**Acceptance:** checks green; probes 3 to 6 pass in Play with screenshots in `docs/art/P0-02c-*.jpg`; STUDIO.md
+updated; OWNER.md's two-player test moved to "Now" with first-person wording.
+**Read first:** `default.project.json`; `src/server/DevCorridor.luau` (prompt constants and `addDoorPrompts`);
+`docs/STUDIO.md` ("Camera and prompts", "Tools"); `docs/DECISIONS.md` (D-011); OWNER.md (the two-player test).
 
 ## Queue (the next run's order, from ROADMAP)
 1. **P0-02d The hall measured and lit:** triangle and draw-call counts, phone-size shots, the light level (too

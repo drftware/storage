@@ -73,3 +73,12 @@ dropped. Not taken: building meshes from repo data at run time, as the owner's f
 because a game script can't set SurfaceAppearance's normal and roughness maps and the unit's look
 depends on them.
 
+
+## D-011 · 2026-11-05 · First-person camera
+The owner's call: players see the building through their own eyes, as in Pressure. It keeps the
+dark close and a keeper's arrival sudden, and it fixes what P0-02b found: Roblox's third-person
+camera backed through the shut door behind you into the unit across the 8-stud hall, because a
+unit has no part that stops it (docs/STUDIO.md, "Camera and prompts"). With the camera locked at
+the head, the units keep their invisible box colliders as the only collision and need no
+camera-blocking walls. Not taken: third person with solid unit walls, which would also need the
+facade remodelled in three pieces so the doorway stays open.

@@ -30,12 +30,12 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   the curtain coils cleanly; the slam lands in about 0.27 s and bounces. Go far streams the hall
   out, Come back brings every door back as left. Shots in `docs/art/P0-02b-*.jpg`. Found: the
   camera passes through every unit (P0-02c).
-- [ ] **P0-02c The camera stays in the hall.** Roblox's camera stops only at solid, visible parts,
-  and a unit has none, so in the 8-stud hall the camera backs through the shut door behind you into
-  the unit across the hall: the player sees the back of that door, and prompts hide because their
-  line of sight starts at the camera (`docs/art/P0-02b-camera-inside-102.jpg`). Make the walls,
-  facade and shut curtain stop it without blocking an open doorway or touching the server's
-  colliders. Then the owner's two-player test (OWNER.md).
+- [ ] **P0-02c First person.** Lock the camera at the head (D-011, as in Pressure), which ends the
+  third-person camera backing into the unit across the hall
+  (`docs/art/P0-02b-camera-inside-102.jpg`). Prove the doors still play from the eyes: every
+  prompt shows when you face its door, Lift never shows through a shut door from the hall, a slam
+  reads from up close, and look and move feel right on a phone. Then the owner's two-player test
+  (OWNER.md).
 - [ ] **P0-02d The hall measured and lit.** Triangle and draw-call counts for the hall, phone-size
   screenshots (Device Simulator), and the hall's light level: it reads bright for after hours.
 - [ ] **P0-03 The corridor kit (art).** Hall floor and ceiling, end walls and corners for the

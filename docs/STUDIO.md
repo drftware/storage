@@ -49,7 +49,8 @@ verified: a doc page, Studio, or "untested".
 - **What stops Roblox's camera** (the PlayerModule's `Popper`, read in Studio, 2026-11-05): its
   ray uses `RespectCanCollide` and the Default collision group, and it stops only at a part that is
   CanCollide with total transparency under 0.25. Invisible colliders and non-colliding meshes let
-  it straight through, so a unit as prepared today stops nothing (P0-02c).
+  it straight through, so a unit as prepared today stops nothing (the reason for D-011's first
+  person).
 - **A prompt shows only when on screen and in sight of the camera** (seen in Play, 2026-11-05):
   with the camera inside the unit across the hall, 101's prompts hid; with it in the hall, all five
   showed. Default Exclusivity is OnePerButton: one prompt per key at a time.
