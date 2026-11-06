@@ -18,7 +18,8 @@ touches. This file is read on demand, never at session start; keep each row to o
 | `src/server/DevCorridor.luau` | Studio-only system: a test hall of nine real units with a prompt per door action, and the streaming test (Go far, Come back) |
 | `src/client/init.client.luau` | The client's Brix Host, stepped on RenderStepped |
 | `src/client/DoorView.luau` | Client system: draws every unit's door (starts and stops `RollUpDoor.watchTagged`) |
-| `src/client/BehindDoors.luau` | Client system: stops drawing anyone a shut door stands between you and (`LocalTransparencyModifier`), so arms never show through |
+| `src/client/BehindDoors.luau` | Client system: stops drawing anyone a shut door stands between you and (`LocalTransparencyModifier`), so arms never show through, and hides their name tag (`DisplayDistanceType`) |
+| `src/client/FreeCursor.luau` | Client system, mouse players only: Left Alt frees the mouse and takes it back (a `Modal` button), and the once-a-session "Alt Cursor" hint; its feel numbers at the top |
 | `tests/*.spec.luau` | Lune specs (curtain against Python's fixture, motion timings); `tests/fixtures/` from `art/unit/fixture.py` |
 | `art/unit/` | The unit's Blender pipeline; its README is the asset's doc |
 | `art/unit/out/` | Built outputs: `StorageUnit_M.fbx`, `textures/` (five sets), `M/unit.blend` |

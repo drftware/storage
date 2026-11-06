@@ -102,3 +102,11 @@ covers every avatar, accessory and tool. Footsteps still play. Not taken: a clie
 your walk into a door (Roblox's control script moves the character through flag-gated internal
 paths, so it would be fragile, and the swing on the last stride still crosses), or a custom run
 animation (feel the owner hasn't asked for).
+
+## D-014 · 2026-11-06 · Left Alt frees the mouse, through a Modal button
+First person pins the mouse to the middle of the screen, so a computer player couldn't take a
+screenshot or reach another window. Left Alt (Option on a Mac) toggles a free cursor for mouse
+players; phones and gamepads get no key and no hint. It works the way Roblox documents: a visible
+GuiButton with `Modal` set leaves the mouse unlocked, and the right mouse button still looks around
+while it's free. Not taken: writing `MouseBehavior` ourselves (the camera script puts LockCenter back
+every frame), or a fork of the PlayerModule. The key is a default the owner can change (`OWNER.md`).

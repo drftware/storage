@@ -4,7 +4,10 @@
 	A friend shut in a unit is a sound behind the door (their footsteps still play), never a hand
 	through it: a running arm swings about 0.8 studs past the slats even against the thick collider
 	(docs/STUDIO.md, "Arms through a shut door"). The rule is ShutIn's; the moment the door starts
-	to lift, they appear. Your own character is first person's business and is never touched.
+	to lift, they appear. Their name tag goes with them: it belongs to the Humanoid, not the parts,
+	so hiding sets this client's copy of DisplayDistanceType to None and puts the old value back
+	(docs/STUDIO.md, "Hiding a character's name"). Your own character is first person's business
+	and is never touched.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -26,6 +29,13 @@ type Room = {
 	viewerInside: boolean, -- refreshed each step from the camera
 }
 
+-- A character hidden now.
+type Hidden = {
+	added: RBXScriptConnection, -- hides anything added to the character while hidden (a tool)
+	humanoid: Humanoid?, -- whose name display was turned off
+	display: Enum.HumanoidDisplayDistanceType, -- what it was before, put back on show
+}
+
 local BehindDoors = {}
 
 local function fade(inst: Instance, amount: number)
@@ -41,8 +51,7 @@ end
 function BehindDoors.new(): Brix.System
 	local rooms: { Room } = {}
 	local others: { Player } = {}
-	-- Characters hidden now, each with the connection that hides anything added to them (a tool).
-	local hidden: { [Model]: RBXScriptConnection } = {}
+	local hidden: { [Model]: Hidden } = {}
 	local connections: { RBXScriptConnection } = {}
 
 	local function addRoom(inst: Instance)
@@ -90,15 +99,29 @@ function BehindDoors.new(): Brix.System
 		for _, d in character:GetDescendants() do
 			fade(d, 1)
 		end
-		hidden[character] = character.DescendantAdded:Connect(function(d: Instance)
-			fade(d, 1)
-		end)
+		-- This write stays on this client: the friend and everyone else still see the name.
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		local display = Enum.HumanoidDisplayDistanceType.Viewer
+		if humanoid then
+			display = humanoid.DisplayDistanceType
+			humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+		end
+		hidden[character] = {
+			added = character.DescendantAdded:Connect(function(d: Instance)
+				fade(d, 1)
+			end),
+			humanoid = humanoid,
+			display = display,
+		}
 	end
 
 	local function show(character: Model)
-		local added = hidden[character]
-		if added then
-			added:Disconnect()
+		local was = hidden[character]
+		if was then
+			was.added:Disconnect()
+			if was.humanoid then
+				was.humanoid.DisplayDistanceType = was.display
+			end
 			hidden[character] = nil
 		end
 		for _, d in character:GetDescendants() do
@@ -170,10 +193,10 @@ function BehindDoors.new(): Brix.System
 					end
 				end
 			end
-			-- Forget characters that are gone (respawned or left).
-			for character, added in hidden do
+			-- Forget characters that are gone (respawned or left); their name went with them.
+			for character, was in hidden do
 				if not character.Parent then
-					added:Disconnect()
+					was.added:Disconnect()
 					hidden[character] = nil
 				end
 			end

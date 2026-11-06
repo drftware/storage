@@ -44,21 +44,17 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   door stands between it and (`BehindDoors`, D-013). P0-02c's probes pass. The owner's
   two-player test passed (Nov 6): nothing through the door, no invisible-wall feel. One miss: the
   hidden player's name tag still floats through the door, now in P0-02f.
-- [ ] **P0-02f The hidden friend's name tag, and the cursor key** (from the owner's tests, Nov 6).
-  1. **The name tag.** `BehindDoors` hides a player shut in a unit, but their name tag ("Player1")
-     still floats over the door (`docs/art/P0-02e-name-tag-through-door.png`): fading every part
-     with `LocalTransparencyModifier` doesn't hide Roblox's name display. When `BehindDoors` hides
-     a character, also hide its name on this client, and put it back exactly as it was on show.
-     Likely route: set that Humanoid's `DisplayDistanceType` to `None` locally and restore the old
-     value; check on create.roblox.com that a client's write only changes its own view, and
-     whether `NameOcclusion` would do it instead (the collider is invisible and the curtain thin,
-     so occlusion may not catch it). Note what you learn in docs/STUDIO.md.
-  2. **The cursor key.** First person traps the mouse, so a computer player can't take a screenshot
-     or move between windows. A key (default Left Alt; name it in OWNER.md) toggles between look
-     and a free cursor. Roblox's documented way is a visible GuiButton with `Modal` set, which
-     frees the mouse in first person; verify it before relying on it. Mouse players only; the
-     cursor appearing is the answer, plus one short hint the first time. Brix has no input piece
-     (checked Nov 6), so it's this game's client controller.
+- [x] **P0-02f The hidden friend's name tag, and the cursor key** (owner's tests, Nov 6). Done
+  Nov 6. A friend `BehindDoors` hides now loses their name tag too: this client's copy of their
+  Humanoid's `DisplayDistanceType` goes to None and the old value comes back on show and stop
+  (a client's write stays on that client, checked in Play; name occlusion can't do it, since an
+  invisible collider never occludes). Left Alt frees the mouse and takes it back for mouse players
+  (`FreeCursor`, D-014), with a hint, "Alt Cursor", that fades in 3 s after you spawn and out 6 s
+  later, or as soon as you press it (`docs/art/P0-02f-cursor-hint.jpg`). Verified in Studio: Alt
+  toggles both ways; with the cursor free E, F, Q and R opened, closed, peeked and locked 102; the
+  hint shows once and cleans up. Not seen here: the mouse actually going free and the view holding
+  still (Studio doesn't lock the mouse while its window is out of focus), and the name tag with two
+  players. Both wait on `OWNER.md`.
 - [ ] **P0-02d The hall lit like the look sheets** (D-012). The owner likes the light in
   `art/sheets/unit-hall.png`, `unit-hero.png` and `unit-inside.png` and wants the game to match.
   The MCP's captures are accurate (the owner's darker shot was dimmed by the pause menu); today
@@ -121,3 +117,5 @@ launch.
 - The padlock is true to size (about 6 by 9 cm) and hard to spot from standing height
   (`docs/art/P0-02b-padlock.jpg`). A padlocked door should read from across the hall at phone
   size, since it's the bolt cutters' target: a bigger lock, a brighter body, or a hasp plate.
+- The cursor hint shows once per session; once ever needs the saved profile (Phase 1's player
+  data). On a Mac the key cap could read "Option" instead of "Alt".

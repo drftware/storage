@@ -90,9 +90,22 @@ verified: a doc page, Studio, or "untested".
   by the hand's bounding box (its centre in brackets): 0.4-deep collider, from inside 1.25 (0.57);
   1.2-deep, from inside 0.79 (0.10), from the hall 0.79 (0.13). The body stops 1.17 to 1.23
   studs from the curtain at 1.2 deep. Why `BehindDoors` exists (D-013).
-- **Hiding a character doesn't hide its name tag** (owner's two-player test, 2026-11-06): with
+- **Hiding a character's name** (owner's two-player test, then docs and Play, 2026-11-06): with
   every part and decal at `LocalTransparencyModifier` 1, the player's name still floated over the
-  shut door from the hall. The name display is the Humanoid's, not the parts'.
+  shut door from the hall, because the name display is the Humanoid's, not the parts'. Setting that
+  Humanoid's `DisplayDistanceType` to None hides its name and health bar "under any circumstances"
+  (create.roblox.com, Character name/health display), and a client's write stays on that client:
+  set on the client in Play, the server still read Viewer. `NameOcclusion` (default OccludeAll) is
+  no help here: an object more transparent than 0.99 never occludes, so the invisible collider
+  doesn't count, and the thin curtain didn't catch it in the owner's test.
+- **Freeing the mouse in first person** (create.roblox.com GuiButton.Modal, and Play, 2026-11-06):
+  "If true while the GUI element is visible, the mouse will not be locked unless the right mouse
+  button is down." The engine applies it on its own: the PlayerModule still writes
+  `MouseBehavior = LockCenter` every frame (`BaseCamera:UpdateMouseBehavior`), so the property keeps
+  reading LockCenter with the button showing, and setting it to Default yourself is undone the next
+  frame. The camera turns from the `MouseDelta` binding in `PlayerModule.InputContexts`, which an
+  unlocked mouse doesn't feed. Studio doesn't lock the mouse while its window is out of focus, and
+  the MCP's mouse moves are absolute, so neither the lock nor its release shows up from the MCP.
 - **The PlayerModule now lives at `StarterPlayer.PlayerModule`** (Play, 2026-11-06), not in
   PlayerScripts. Its ControlModule moves the character with `self.moveFunction(player, worldVector,
   false)` on most paths, but some flag-gated paths skip it. `Humanoid.MoveDirection` read in a

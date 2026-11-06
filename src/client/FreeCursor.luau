@@ -1,0 +1,236 @@
+--!strict
+--[[
+	FreeCursor: Left Alt lets go of a computer player's mouse and Alt again takes it back. First
+	person pins the mouse to the middle of the screen, so without this you can't grab a screenshot
+	or reach another window. The cursor appearing is the answer; the first time you spawn, a small
+	hint shows the key, then fades. Mouse players only: a phone or a gamepad gets neither.
+
+	The mouse goes free while a visible GuiButton has Modal set, and holding the right mouse button
+	still looks around (docs/STUDIO.md, "Camera and prompts"). Brix has no input piece, so this one
+	is the game's own.
+]]
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local Brix = require(ReplicatedStorage.Brix)
+
+-- The key that lets go of the mouse and takes it back (Option on a Mac). Named in OWNER.md.
+local KEY = Enum.KeyCode.LeftAlt
+-- Seconds after you first spawn before the hint shows: a moment to look around first, and it's up
+-- before you'd go looking for the cursor.
+local HINT_DELAY = 3
+-- Seconds the hint stays fully up: long enough to read two words twice, gone before it's furniture.
+local HINT_HOLD = 6
+-- How the hint arrives: a short fade while it rises a few pixels, so it eases in and never pops.
+local HINT_IN = 0.35
+local HINT_RISE = 8
+-- How the hint leaves, in seconds: slower than it came, so it melts back into the dark.
+local HINT_OUT = 0.9
+-- How far the hint sits above the bottom edge, in pixels: clear of a hotbar row.
+local HINT_LIFT = 72
+
+local INK = Color3.fromRGB(232, 226, 214) -- warm off-white, like the tubes' light on paper
+local BACKING = Color3.fromRGB(12, 12, 14)
+
+local FreeCursor = {}
+
+local function label(text: string, weight: Enum.Font, size: number): TextLabel
+	local l = Instance.new("TextLabel")
+	l.BackgroundTransparency = 1
+	l.AutomaticSize = Enum.AutomaticSize.X
+	l.Size = UDim2.fromOffset(0, 22)
+	l.Font = weight
+	l.TextSize = size
+	l.TextColor3 = INK
+	l.Text = text
+	return l
+end
+
+-- The hint: a key cap and one word on a dark pill, starting invisible and a little low.
+local function makeHint(): CanvasGroup
+	local hint = Instance.new("CanvasGroup")
+	hint.Name = "Hint"
+	hint.AnchorPoint = Vector2.new(0.5, 1)
+	hint.Position = UDim2.new(0.5, 0, 1, -HINT_LIFT + HINT_RISE)
+	hint.AutomaticSize = Enum.AutomaticSize.XY
+	hint.BackgroundColor3 = BACKING
+	hint.BackgroundTransparency = 0.25
+	hint.GroupTransparency = 1
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0.5, 0)
+	corner.Parent = hint
+	local padding = Instance.new("UIPadding")
+	padding.PaddingLeft = UDim.new(0, 8)
+	padding.PaddingRight = UDim.new(0, 14)
+	padding.PaddingTop = UDim.new(0, 6)
+	padding.PaddingBottom = UDim.new(0, 6)
+	padding.Parent = hint
+	local row = Instance.new("UIListLayout")
+	row.FillDirection = Enum.FillDirection.Horizontal
+	row.VerticalAlignment = Enum.VerticalAlignment.Center
+	row.Padding = UDim.new(0, 8)
+	row.SortOrder = Enum.SortOrder.LayoutOrder
+	row.Parent = hint
+
+	local cap = label("Alt", Enum.Font.BuilderSansBold, 14)
+	cap.Name = "Key"
+	cap.LayoutOrder = 1
+	local capCorner = Instance.new("UICorner")
+	capCorner.CornerRadius = UDim.new(0, 5)
+	capCorner.Parent = cap
+	local capStroke = Instance.new("UIStroke")
+	capStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	capStroke.Color = INK
+	capStroke.Transparency = 0.45
+	capStroke.Parent = cap
+	local capPadding = Instance.new("UIPadding")
+	capPadding.PaddingLeft = UDim.new(0, 7)
+	capPadding.PaddingRight = UDim.new(0, 7)
+	capPadding.Parent = cap
+	cap.Parent = hint
+
+	local word = label("Cursor", Enum.Font.BuilderSansMedium, 16)
+	word.Name = "Word"
+	word.LayoutOrder = 2
+	word.Parent = hint
+	return hint
+end
+
+function FreeCursor.new(): Brix.System
+	local gui: ScreenGui? = nil
+	local release: TextButton? = nil
+	local hint: CanvasGroup? = nil
+	local hintThread: thread? = nil
+	local free = false
+	local connections: { RBXScriptConnection } = {}
+
+	-- Fades the hint out and lets it go; it never comes back this session.
+	local function leave()
+		local h = hint
+		if not h then
+			return
+		end
+		hint = nil
+		local out = TweenService:Create(
+			h,
+			TweenInfo.new(HINT_OUT, Enum.EasingStyle.Sine, Enum.EasingDirection.In),
+			{ GroupTransparency = 1 }
+		)
+		out.Completed:Once(function()
+			h:Destroy()
+		end)
+		out:Play()
+	end
+
+	local function showHint()
+		local h = hint
+		if not h then
+			return
+		end
+		TweenService:Create(
+			h,
+			TweenInfo.new(HINT_IN, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+			{ GroupTransparency = 0, Position = UDim2.new(0.5, 0, 1, -HINT_LIFT) }
+		):Play()
+		task.wait(HINT_IN + HINT_HOLD)
+		hintThread = nil
+		leave()
+	end
+
+	local function scheduleHint()
+		if hint and not hintThread then
+			hintThread = task.delay(HINT_DELAY, showHint)
+		end
+	end
+
+	-- Whoever presses the key has found it, so the hint, shown or still waiting, goes.
+	local function dismissHint()
+		if hintThread then
+			task.cancel(hintThread)
+			hintThread = nil
+		end
+		leave()
+	end
+
+	local function setFree(on: boolean)
+		free = on
+		if release then
+			release.Visible = on
+		end
+		dismissHint()
+	end
+
+	return {
+		name = "FreeCursor",
+		start = function(_: any, _context: Brix.Context)
+			-- No mouse, nothing to free: phones and gamepads never see the key or the hint.
+			if not UserInputService.MouseEnabled then
+				return
+			end
+			local player = Players.LocalPlayer
+			local screen = Instance.new("ScreenGui")
+			screen.Name = "FreeCursor"
+			screen.ResetOnSpawn = false -- a free cursor and a used-up hint survive a respawn
+			screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+			-- Invisible, one pixel in the corner, and shown only while the mouse is free: Modal is
+			-- what lets the mouse go. It takes no clicks you'd miss and is never a gamepad target.
+			local button = Instance.new("TextButton")
+			button.Name = "Release"
+			button.Size = UDim2.fromOffset(1, 1)
+			button.BackgroundTransparency = 1
+			button.Text = ""
+			button.AutoButtonColor = false
+			button.Selectable = false
+			button.Modal = true
+			button.Visible = false
+			button.Parent = screen
+			release = button
+
+			local h = makeHint()
+			h.Parent = screen
+			hint = h
+
+			screen.Parent = player:WaitForChild("PlayerGui")
+			gui = screen
+
+			table.insert(
+				connections,
+				UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
+					-- Processed means a text box or Roblox's own menu has the key.
+					if processed or input.KeyCode ~= KEY then
+						return
+					end
+					setFree(not free)
+				end)
+			)
+			if player.Character then
+				scheduleHint()
+			else
+				table.insert(connections, player.CharacterAdded:Once(scheduleHint))
+			end
+		end,
+		stop = function(_: any)
+			for _, c in connections do
+				c:Disconnect()
+			end
+			table.clear(connections)
+			if hintThread then
+				task.cancel(hintThread)
+				hintThread = nil
+			end
+			if gui then
+				gui:Destroy() -- the mouse goes back to the camera with the button
+				gui = nil
+			end
+			release = nil
+			hint = nil
+			free = false
+		end,
+	}
+end
+
+return FreeCursor
