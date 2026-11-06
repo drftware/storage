@@ -16,7 +16,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - The owner approved P0-02d's look ("Looks good"), so its OWNER.md items and the 6-light budget
   default are taken as accepted. Lighting still has no `Grade` in Studio: Rojo needs a reconnect.
 - **Not done:** the low-graphics hall still looks flat (`docs/art/P0-02g-hall.jpg`), the haze,
-  counts and phone shots: all moved to P0-02h.
+  counts and phone shots: all moved to P0-02h. The owner saw the light "change oddly": that's
+  Automatic quality switching levels mid-Play (`docs/art/P0-02g-open-101.jpg`); they prefer the
+  low-graphics open unit, dimly readable inside, to full quality's black one.
 - `rojo serve` was running on port 34872 (`lsof -iTCP:34872`); Studio's Quality Level is back on
   Automatic.
 
@@ -29,7 +31,9 @@ dark between, and a grey haze glowing under each lit fixture.
    from the spawn camera in docs/STUDIO.md ("Lighting and captures"; the long view is (-28, 4.6,
    1.5) looking at (30, 4.4, -0.5), FOV 55). Geometry and range don't steer it (STUDIO.md, "Low
    graphics ignores geometry"); try the lights only: brightness, a second dim fill instead of one
-   strong tube, the tube's colour. Anything you change must still match the sheets at Level21.
+   strong tube, the tube's colour. Goal: the two levels close enough that Automatic switching
+   between them is barely seen, with an open unit dimly readable inside at both (the owner's
+   pick). Check the shut-in dark still holds.
 3. The sheets' haze near a fixture: try a soft glow part, slow dust particles (Roblox's built-in
    smoke texture, few particles, no per-frame code), or bloom. Judge it at both levels and keep its
    cost small: low-end Android pays for big see-through particles.

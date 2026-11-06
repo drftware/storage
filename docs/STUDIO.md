@@ -128,7 +128,9 @@ verified: a doc page, Studio, or "untested".
   shadow; at Level12 and up, sharp shadows, the cone holds and units stay dark. Forum reports put
   Realistic (Future) lighting at graphics quality about 4 of 10 and up, falling back on weaker
   devices ([Android rollout thread](https://devforum.roblox.com/t/future-is-bright-on-android-is-fully-rolled-out-client-beta/3235808?page=4)).
-  Studio sat on Automatic, which here gave the fallback. A session can set `QualityLevel` from the
+  Studio sat on Automatic, which here gave the fallback. **Automatic also switches levels by
+  itself during Play** as the frame rate moves (the owner saw an open unit flip between lit and
+  black, Nov 6; `docs/art/P0-02g-open-101.jpg`), so judge looks at a fixed Quality Level. A session can set `QualityLevel` from the
   MCP (Client); Play resets it to Automatic. Put it back to Automatic when done.
 - **Low graphics ignores geometry entirely** (Play at Level08, 2026-11-06): a 2-stud concrete
   slab over a unit and a 2-stud block in front of its door changed nothing inside; switching the

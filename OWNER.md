@@ -28,6 +28,9 @@ nowhere else.
   Look for: the room going dark as the door comes down, the line under the door. Then Lift (T)
   and watch the light come back with the door. Try it on Automatic and at Quality Level 21 (File
   > Studio Settings > Rendering), and put it back to Automatic after.
+- [ ] **When judging light, fix the Quality Level** (File > Studio Settings > Rendering): on
+  Automatic, Studio switches between low graphics and full quality by itself mid-Play, which is
+  the light changing between your two screenshots (Nov 6). P0-02h makes the two looks close.
 - [ ] **The low-graphics hall still looks flat:** `docs/art/P0-02g-hall.jpg` is the hall from the
   spawn at low graphics (left) and full quality (right). Nothing changed there this session;
   that's P0-02h. Say if anything beyond the white facades and the lit doors between fixtures bothers

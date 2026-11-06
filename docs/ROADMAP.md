@@ -66,10 +66,13 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   dims the hall's lights for whoever is shut in, draws the line under the door as a glowing
   strip, and lets the light flood back as the door lifts (D-016; `docs/art/P0-02g-inside.jpg`,
   `-peek.jpg`).
-- [ ] **P0-02h The hall on every phone.** At low graphics the facades go flat white and the
-  doors between fixtures stay lit (`docs/art/P0-02g-hall.jpg`): find what restores pools and dark
-  between there without changing full quality (in a real floor, unlit motion lights do much of
-  it). The sheets' grey haze glowing under the ceiling near a fixture (a soft glow part, slow
+- [ ] **P0-02h The hall on every phone.** Automatic graphics quality switches levels by itself
+  mid-play, so the hall jumps between two looks: low graphics lights everything in reach evenly
+  (flat white facades, open units lit inside), full quality leaves an open unit black inside
+  (`docs/art/P0-02g-open-101.jpg`, `-hall.jpg`). Bring the two together so a switch is barely
+  seen. The owner likes the low-graphics open unit (walls dimly readable) better than full
+  quality's black one (Nov 6), so meet in the middle: an open unit readable at both, pools and
+  dark between along the hall (in a real floor, unlit motion lights do much of that). The sheets' grey haze glowing under the ceiling near a fixture (a soft glow part, slow
   dust particles or bloom). The hall's triangle and draw-call counts, and phone-size shots in the
   Device Simulator at low and high quality.
 - [ ] **P0-03 The corridor kit (art).** Hall floor and ceiling, end walls and corners for the
