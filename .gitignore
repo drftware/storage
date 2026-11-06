@@ -1,0 +1,11 @@
+# generated
+sourcemap.json
+roblox.d.luau
+*.rbxl
+*.rbxlx
+*.blend1
+art/unit/out/*/checks/
+art/unit/out/*/unit_geo.blend
+.DS_Store
+art/unit/out/*/anim/
+__pycache__/
