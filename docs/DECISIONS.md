@@ -87,6 +87,6 @@ again on 2026-11-06, and it was built that day (P0-02c).
 ## D-012 · 2026-11-06 · The game is lit like the look sheets
 The owner's call after the two-player test: the storage units look right, and the light in the look
 sheets (`art/sheets/unit-hall.png`, `unit-hero.png`, `unit-inside.png`, the door videos) is the
-light the game should have. In Studio's play window the hall reads far darker and murkier than
-those sheets, while the session's own captures read brighter, so the player's window is what gets
-matched, never a capture alone. P0-02d does it.
+light the game should have. The MCP's captures show the game as it really renders (the owner's
+darker shot was dimmed by the pause menu), and today the hall and units read flat and near white
+next to the sheets. P0-02d does it.

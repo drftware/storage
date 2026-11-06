@@ -52,10 +52,10 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
      appearing is the answer, plus one short hint the first time.
 - [ ] **P0-02d The hall lit like the look sheets** (D-012). The owner likes the light in
   `art/sheets/unit-hall.png`, `unit-hero.png` and `unit-inside.png` and wants the game to match.
-  In Studio's play window the hall reads far darker and murkier than the sheets, while the MCP's
-  captures read brighter, so first find why the two differ (graphics quality, exposure), then tune
-  Lighting and the tubes against what a player's window shows. Also the hall's triangle and
-  draw-call counts and phone-size shots (Device Simulator).
+  The MCP's captures are accurate (the owner's darker shot was dimmed by the pause menu); today
+  the facades and unit insides read flat and near white next to the sheets. Compare the sheets'
+  light (the scene and shot lights in `art/unit/build.py` and `render.py`) with Lighting and the tubes, and tune until Studio
+  captures match. Also the hall's triangle and draw-call counts and phone-size shots.
 - [ ] **P0-03 The corridor kit (art).** Hall floor and ceiling, end walls and corners for the
   GDD's tile set (straight, corner, T, cross, dead end), and the motion-light fixture (the
   building's eyes), built the unit's way and judged at phone size.

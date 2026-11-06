@@ -9,9 +9,11 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - **The game plays in first person** (P0-02c, verified in Studio): the camera locks at the head, door prompts sit on
   the door at eye height, Lift hides behind a shut door, and a slam from the doorway shuts you in or pushes you out.
 - **The owner's two-player test passed** except two things, now ticket P0-02e: an arm shows through a shut door
-  (`docs/art/P0-02e-arm-through-door.png`), and first person traps the mouse with no way to free it.
-- **The owner approved the unit's look** and wants the game lit like the look sheets (D-012). Their play window
-  reads far darker than the sheets, while the MCP's captures read brighter: P0-02d.
+  (`docs/art/P0-02e-arm-through-door.png`, dimmed by the pause menu, the only way to free the mouse today), and
+  first person traps the mouse with no key to free it.
+- **The owner approved the unit's look** and wants the game lit like the look sheets (D-012). The MCP's captures
+  are accurate (the owner's dark shot was dimmed by the pause menu); in them the hall reads flat and near white
+  next to the sheets: P0-02d.
 - Streaming settings are confirmed in Studio. Studio's place is `storage.rbxl`; `rojo serve` was running on port
   34872 (`lsof -iTCP:34872`).
 
@@ -42,8 +44,8 @@ probes still pass; the cursor toggles both ways in Play; shots in `docs/art/P0-0
 constants); `src/client/init.client.luau`; `docs/STUDIO.md` ("Camera and prompts").
 
 ## Queue (the next run's order, from ROADMAP)
-1. **P0-02d The hall lit like the look sheets** (D-012): find why the play window and captures differ, then match
-   `art/sheets/unit-hall.png`; triangle and draw-call counts; phone shots.
+1. **P0-02d The hall lit like the look sheets** (D-012): match `art/sheets/unit-hall.png` and friends in Studio
+   captures, starting from the lights in `art/unit/build.py`; triangle and draw-call counts; phone shots.
 2. **P0-03 The corridor kit:** hall floor and ceiling, the tile set's walls and corners, the motion-light fixture.
 3. **P0-04 The door's sounds and feel:** peek scrape, open rattle, slam bang and bounce, latch, padlock.
 4. **Phase 1, then Phase 2** (ROADMAP): the loop with real assets (L-01 to L-09); L-02 carries the phone prompt
