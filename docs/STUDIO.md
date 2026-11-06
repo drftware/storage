@@ -30,8 +30,12 @@ verified: a doc page, Studio, or "untested".
   `MeshPart.MeshId` isn't writable by plugins, so a `.rbxm` of MeshParts in the served tree
   arrives blank. Hence D-009: templates live in the place.
 - **Rojo 7.7.1 project files take comments and trailing commas** (tested with `rojo build`,
-  2026-11-05). `rojo build` writes `Lighting.Technology`; live sync can't (plugins can't write
-  it), so it's set once in Studio (OWNER.md).
+  2026-11-05).
+- **`Lighting.Technology` is gone** (Lighting docs and Studio, 2026-11-05): deprecated, read-only,
+  RobloxScript only, and missing from the Properties panel. A place opened in this Studio carries
+  the attribute `RBX_LightingTechnologyUnifiedMigration`. Its replacements are
+  **`LightingStyle`** (Realistic or Soft) and **`PrioritizeLightingQuality`** (keep shadows and
+  shaders or view distance when quality drops); both are ordinary settings that Rojo live-syncs.
 
 ## SurfaceAppearance
 
@@ -54,8 +58,8 @@ verified: a doc page, Studio, or "untested".
   **no `open_cloud_invoke`**, so uploads go through `scripts/upload_unit.luau`.
 - **`execute_luau` isn't a full plugin:** members gated to PluginOrOpenCloud or RobloxScript read
   as "not a valid member" or "lacking capability" (`Workspace.StreamingMinRadius`,
-  `StreamingTargetRadius`, `StreamOutBehavior`, `Lighting.Technology`). Check those in the
-  Properties panel. It can still require the game's modules, set AlphaMode, destroy a
+  `StreamingTargetRadius`, `StreamOutBehavior`). `inspect_instance` returns no properties for
+  Workspace or Lighting either. Check those in the Properties panel. It can still require the game's modules, set AlphaMode, destroy a
   PackageLink and set ChangeHistory waypoints.
 - **Rojo connects through the owner:** start `rojo serve` in the background; the owner clicks
   Connect in Studio's Rojo plugin. Rojo keeps the place's own children (Baseplate,

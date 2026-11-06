@@ -5,14 +5,10 @@ nowhere else.
 
 ## Now
 
-- [ ] **Save Studio's place.** It's still "Place1", unsaved and unpublished, and it now holds the
-  unit template at `ReplicatedStorage.Units.M`. File → Save to File as `storage.rbxl` in this
-  folder (git ignores it), or publish it to a new experience if you'd rather. If it's ever lost,
-  a session rebuilds the template from asset 135739386247346 in a minute.
-- [ ] **Two settings the session can't reach.** In Properties: Lighting → Technology = **Future**
-  (Rojo's live sync can't write it). Then check Workspace: StreamingMinRadius 64,
-  StreamingTargetRadius 256, StreamOutBehavior Opportunistic (Rojo should have set these; the
-  session's tools can't read them).
+- [ ] **Check the streaming settings** (the session's tools can't read them). In the Explorer click
+  Workspace, then type `Stream` in the Properties filter box: StreamingEnabled ticked,
+  StreamingMinRadius 64, StreamingTargetRadius 256, StreamOutBehavior Opportunistic. Change any
+  that differ.
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 - [ ] **Judge the storage unit's look.** Open `art/sheets/unit-contact-sheet.png`, then
   `art/sheets/door-hall.mp4` and `door-mechanism.mp4`, and now `docs/art/P0-02-hall.jpg` and

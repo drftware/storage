@@ -14,8 +14,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - **Verified in Studio, one player:** corridor builds (doors on their lines, shared walls dropped, 105 and 108
   padlocked); Open takes 2 s and draws open on the client; the collider leaves the doorway; padlock and lock-while-
   moving refuse. Not yet: prompts by key, slam, lift, streaming, counts, phone size, two players.
-- The MCP's `execute_luau` can't read streaming radii or Technology (docs/STUDIO.md, Tools); Rojo serve needs the
-  owner's Connect click each session.
+- The MCP's `execute_luau` can't read the streaming radii (docs/STUDIO.md, Tools); Rojo serve needs the owner's
+  Connect click each session. Lighting's old Technology setting is gone; Rojo sets its replacements (LightingStyle
+  Realistic, PrioritizeLightingQuality on). The owner saved the place as `storage.rbxl` (git-ignored).
 
 ## Next task: P0-02b The corridor, played
 The moment: a friend sprints into a unit, you slam the door on them, and both screens agree it's shut.
@@ -33,8 +34,8 @@ The moment: a friend sprints into a unit, you slam the door on them, and both sc
 5. Counts: triangles and draw calls for the hall (rbx-scene-analysis or rbx-perf-profiling skill), into STUDIO.md.
 6. Phone size: Device Simulator on a small Android in landscape (rbx-device-simulator-lua), screenshots of the
    hall, an open unit and a padlocked door to `docs/art/P0-02-*.jpg`.
-7. Light level: the hall reads bright for after hours (`docs/art/P0-02-hall.jpg`). Check Technology is Future
-   (OWNER.md), then tune the tube lights and Ambient in `DevCorridor.luau` and `default.project.json` until a
+7. Light level: the hall reads bright for after hours (`docs/art/P0-02-hall.jpg`, taken before LightingStyle was
+   set). Tune the tube lights and Ambient in `DevCorridor.luau` and `default.project.json` until a
    dead light would mean a dark stretch; note the numbers. The real fixture is P0-03's.
 8. Fix anything wrong in the rig with a failing Lune spec first where it's pure. Then hand the two-player test to
    the owner (OWNER.md has it).

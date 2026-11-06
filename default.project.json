@@ -1,6 +1,4 @@
 // The game's Rojo tree. Rojo 7.7.1 reads this as JSON with comments.
-// Live sync (rojo serve) can't write Lighting.Technology, so Future is also set once in Studio
-// (docs/STUDIO.md); `rojo build` writes everything here.
 {
   "name": "storage",
   "tree": {
@@ -42,8 +40,12 @@
     },
     "Lighting": {
       "$properties": {
-        // Real shadows from each tube light; the building after hours is lit by fixtures only.
-        "Technology": "Future",
+        // Naturalistic light on worn, real materials (D-007). Roblox's replacement for the old
+        // Technology setting, with PrioritizeLightingQuality (docs/STUDIO.md).
+        "LightingStyle": "Realistic",
+        // When a phone scales down, keep the tube lights' shadows and lose view distance first:
+        // halls are short and hazy, and the shadows are the scare.
+        "PrioritizeLightingQuality": true,
         // Midnight, and no sun or moon light: only what the building's own lights throw.
         "ClockTime": 0,
         "Brightness": 0,
