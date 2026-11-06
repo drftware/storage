@@ -45,7 +45,7 @@ shut door.
 Galvanized partitions with spangle and white rust, enamel doors chalky and chipped, rust from
 chips and rib valleys, kick marks and dolly scuffs where people actually hit things, oily concrete
 with saw-cut joints, under cold corridor light. Detail stays where it wouldn't repeat visibly
-every rib. Awaiting the owner's look (OWNER.md).
+every rib. The owner approved the unit's look on 2026-11-06 (see D-012 for its light).
 
 ## D-008 · 2026-11-05 · Systems come from Brix first
 Brix, the shared library in `../engine`, is further along than this game, so the game leans on it
@@ -83,3 +83,10 @@ the head, the units keep their invisible box colliders as the only collision and
 camera-blocking walls. Not taken: third person with solid unit walls, which would also need the
 facade remodelled in three pieces so the doorway stays open. The owner confirmed first person
 again on 2026-11-06, and it was built that day (P0-02c).
+
+## D-012 · 2026-11-06 · The game is lit like the look sheets
+The owner's call after the two-player test: the storage units look right, and the light in the look
+sheets (`art/sheets/unit-hall.png`, `unit-hero.png`, `unit-inside.png`, the door videos) is the
+light the game should have. In Studio's play window the hall reads far darker and murkier than
+those sheets, while the session's own captures read brighter, so the player's window is what gets
+matched, never a capture alone. P0-02d does it.

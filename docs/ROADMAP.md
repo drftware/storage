@@ -37,8 +37,25 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   the eyes. Found and fixed: walking up to a door hid its prompts, because a prompt shows only
   while its point is on screen; the points now sit on the door at eye height. On a small Android
   the thumbstick walks and a drag looks. Shots in `docs/art/P0-02c-*.jpg`.
-- [ ] **P0-02d The hall measured and lit.** Triangle and draw-call counts for the hall, phone-size
-  screenshots (Device Simulator), and the hall's light level: it reads bright for after hours.
+- [ ] **P0-02e What the two-player test found** (owner, Nov 6; everything else passed).
+  1. A player shut inside shows an arm through the door (the owner's shot, from the hall at 101).
+     The door's invisible collider is 0.4 thick (hard-coded in `RollUpDoor.placeCollider` and
+     `UnitKit.prepare`), so a body stops 0.2 from the slats and a swinging arm crosses them. Measure
+     how far every character part and accessory reaches past the door while walking into it, from
+     both sides; thicken the collider into one commented feel number that keeps that behind the
+     slats; then move the prompt points (`PROMPT_OUT`, `LIFT_IN`) outside the thicker collider,
+     because a point inside it loses its sight line. Recheck P0-02c's probes.
+  2. First person traps the mouse, so a computer player can't take a screenshot or move between
+     windows. A key (default Left Alt; name it in OWNER.md) toggles between look and a free
+     cursor. Roblox's documented way is a visible GuiButton with `Modal` set, which frees the
+     mouse in first person; verify it before relying on it. Mouse players only; the cursor
+     appearing is the answer, plus one short hint the first time.
+- [ ] **P0-02d The hall lit like the look sheets** (D-012). The owner likes the light in
+  `art/sheets/unit-hall.png`, `unit-hero.png` and `unit-inside.png` and wants the game to match.
+  In Studio's play window the hall reads far darker and murkier than the sheets, while the MCP's
+  captures read brighter, so first find why the two differ (graphics quality, exposure), then tune
+  Lighting and the tubes against what a player's window shows. Also the hall's triangle and
+  draw-call counts and phone-size shots (Device Simulator).
 - [ ] **P0-03 The corridor kit (art).** Hall floor and ceiling, end walls and corners for the
   GDD's tile set (straight, corner, T, cross, dead end), and the motion-light fixture (the
   building's eyes), built the unit's way and judged at phone size.
