@@ -30,12 +30,13 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   the curtain coils cleanly; the slam lands in about 0.27 s and bounces. Go far streams the hall
   out, Come back brings every door back as left. Shots in `docs/art/P0-02b-*.jpg`. Found: the
   camera passes through every unit (P0-02c).
-- [ ] **P0-02c First person.** Lock the camera at the head (D-011, as in Pressure), which ends the
-  third-person camera backing into the unit across the hall
-  (`docs/art/P0-02b-camera-inside-102.jpg`). Prove the doors still play from the eyes: every
-  prompt shows when you face its door, Lift never shows through a shut door from the hall, a slam
-  reads from up close, and look and move feel right on a phone. Then the owner's two-player test
-  (OWNER.md).
+- [x] **P0-02c First person.** Done Nov 6, verified in Studio (one player): the camera locks at the
+  head (D-011); from the eyes every key works at 101 with both refusals, Lift stays hidden behind a
+  shut door (the invisible collider blocks its sight line) and shows from inside, and a slam from
+  the doorway shuts you in or pushes you out, the slats never closer than half a stud in front of
+  the eyes. Found and fixed: walking up to a door hid its prompts, because a prompt shows only
+  while its point is on screen; the points now sit on the door at eye height. On a small Android
+  the thumbstick walks and a drag looks. Shots in `docs/art/P0-02c-*.jpg`.
 - [ ] **P0-02d The hall measured and lit.** Triangle and draw-call counts for the hall, phone-size
   screenshots (Device Simulator), and the hall's light level: it reads bright for after hours.
 - [ ] **P0-03 The corridor kit (art).** Hall floor and ceiling, end walls and corners for the
@@ -55,6 +56,10 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
 - [ ] **L-02 Doors as the GDD's state machine.** Closed, peeking, opening, open, slamming,
   locked; prompts for Peek, Open, Slam and Lift from inside; range, tool and rate checks. Brix: the
   door becomes a system on the Host's clock, with Signal for door events; Remotes once ENG-09 ships.
+  Phone first: offer only the actions the door's state allows (Lift only when shut, no Open on an
+  open door) and space them with `UIOffset`. The test hall's five prompts on one point draw as
+  five 138×72 tap buttons on top of each other, so a phone can't pick one (P0-02c). Keep each
+  prompt's point on the door at about eye height so it stays on screen up close.
 - [ ] **L-03 Motion lights the building watches.** Fixtures wake for anything moving near them;
   the server owns their state; real lights near the camera, a glow farther out (GDD Lights).
   Brix: Zone for each fixture's watch area.

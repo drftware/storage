@@ -20,6 +20,11 @@
       }
     },
     "StarterPlayer": {
+      "$properties": {
+        // You see the building through your own eyes, as in Pressure (D-011): the dark stays close,
+        // a keeper arrives without warning, and the camera never backs into the unit behind you.
+        "CameraMode": "LockFirstPerson"
+      },
       "StarterPlayerScripts": {
         "Client": {
           "$path": "src/client"

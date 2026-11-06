@@ -54,6 +54,21 @@ verified: a doc page, Studio, or "untested".
 - **A prompt shows only when on screen and in sight of the camera** (seen in Play, 2026-11-05):
   with the camera inside the unit across the hall, 101's prompts hid; with it in the hall, all five
   showed. Default Exclusivity is OnePerButton: one prompt per key at a time.
+- **First person** (Play, 2026-11-06): `StarterPlayer.CameraMode` `LockFirstPerson` (Rojo writes
+  the string as enum 1) puts the camera half a stud behind the head's centre and hides your own
+  body. Vertical field of view is 70°, so a point more than 35° below your gaze is off screen: a
+  prompt at chest height 1.5 studs out from a door vanished when you walked up to it. Put prompt
+  points on the object at about eye height (4 for a standing player, eyes at about 4.4).
+- **A prompt's sight line is blocked by invisible colliders** (Play, 2026-11-06): Lift, 0.5 behind
+  a shut door, in reach and on screen, stayed hidden from the hall because the ray from the camera
+  hit the transparent DoorCollider. A shut door hides what's behind it without extra rules.
+- **Prompts on one point stack** (Play, 2026-11-06): the default UI is a `Prompt` BillboardGui per
+  prompt in PlayerGui, 138×72 on touch, with no offset, so prompts sharing an attachment draw on
+  top of each other. Space them with `ProximityPrompt.UIOffset` or give each its own point.
+- **Phone in the Device Simulator:** set the device in Edit first, then the orientation (it errors
+  with no phone active), then Play. Touch is on: the dynamic thumbstick is the left part of the
+  screen (`PlayerGui.TouchGui`), and `user_mouse_input` drags drive it and the look. A
+  `screen_capture` right after a teleport can come back black; take it again.
 - **A thin mesh gets a bad decomposition:** the unit's Facade (0.001 thick, doorway cut out) given
   PreciseConvexDecomposition at runtime got a hull across the doorway (a ray down the doorway's
   middle hit it). `CollisionFidelity` is writable in Edit (a read in the same script can still show

@@ -35,10 +35,12 @@ local FLOOR_TOP = -0.05 -- just under the units' own floors (top at 0), so the t
 local FAR_X = 700 -- far past the streaming target radius (256), so the hall streams out
 
 -- The prompts.
-local PROMPT_OUT = 1.5 -- studs into the hall from a door's outer face
-local PROMPT_HEIGHT = 3 -- about a player's chest
+-- In first person a prompt shows only while its point is on screen, so the points sit on the door
+-- at about eye height: pressed against the door with a level gaze, they still show.
+local PROMPT_OUT = 0.5 -- the door's prompts hang this far in front of the shut door's slats
+local PROMPT_HEIGHT = 4 -- just under a standing player's eyes (about 4.4)
 local PROMPT_REACH = 8 -- close enough to touch the door, not the neighbour's
-local LIFT_IN = 2 -- the Lift prompt sits this far behind the shut door, inside the unit
+local LIFT_IN = 0.5 -- Lift hangs this far behind the slats, so the shut door hides it from the hall
 local LIFT_REACH = 5 -- only someone shut inside should see Lift
 local REFUSAL_SECONDS = 1.2 -- how long "Padlocked" or "Shut it first" shows before the unit's name returns
 
@@ -217,7 +219,6 @@ local function pointOn(unit: Model, at: CFrame): Attachment
 end
 
 local function addDoorPrompts(unit: Model, number: string)
-	local spec = specOf(unit)
 	local frame = RollUpDoor.frame(unit)
 	local objectText = `Unit {number}`
 
@@ -229,8 +230,7 @@ local function addDoorPrompts(unit: Model, number: string)
 		RollUpDoor.play(unit, kind)
 	end
 
-	local outside =
-		pointOn(unit, frame * CFrame.new(0, PROMPT_HEIGHT, -(spec.CurtainPlane + PROMPT_OUT)))
+	local outside = pointOn(unit, frame * CFrame.new(0, PROMPT_HEIGHT, -PROMPT_OUT))
 	for _, action in OUTSIDE_ACTIONS do
 		local p = prompt(outside, objectText, action, PROMPT_REACH)
 		local refuse = refuser(p, objectText)

@@ -81,4 +81,5 @@ camera backed through the shut door behind you into the unit across the 8-stud h
 unit has no part that stops it (docs/STUDIO.md, "Camera and prompts"). With the camera locked at
 the head, the units keep their invisible box colliders as the only collision and need no
 camera-blocking walls. Not taken: third person with solid unit walls, which would also need the
-facade remodelled in three pieces so the doorway stays open.
+facade remodelled in three pieces so the doorway stays open. The owner confirmed first person
+again on 2026-11-06, and it was built that day (P0-02c).
