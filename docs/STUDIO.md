@@ -130,6 +130,17 @@ verified: a doc page, Studio, or "untested".
   devices ([Android rollout thread](https://devforum.roblox.com/t/future-is-bright-on-android-is-fully-rolled-out-client-beta/3235808?page=4)).
   Studio sat on Automatic, which here gave the fallback. A session can set `QualityLevel` from the
   MCP (Client); Play resets it to Automatic. Put it back to Automatic when done.
+- **Low graphics ignores geometry entirely** (Play at Level08, 2026-11-06): a 2-stud concrete
+  slab over a unit and a 2-stud block in front of its door changed nothing inside; switching the
+  tubes off made it black. Range barely matters there either (15 against 22 looked the same): the
+  light spreads coarsely past it. Only the lights themselves (brightness, on or off) steer that
+  look, so scale them per client (D-016).
+- **Neon blooms into blobs at low graphics:** a neon strip brighter than about 150 grey smeared
+  into round blotches at Level08 (Lighting's Bloom, Threshold 2). Keep small glowing details at
+  mid grey; Neon still reads white.
+- **Saving captures:** `screen_capture` images land in the session's `tool-results` folder (the
+  path comes back with each image); compose them with ffmpeg `hstack`. In zsh, write ffmpeg's
+  options out rather than in a variable: zsh doesn't split it into words.
 - **Roblox lights barely fade inside their Range**, and a SurfaceLight's `Angle` is a hard edge
   (Blender's area-light spread fades softly), so a cone a little wider than the sheets' (130° for
   105°) catches the facade above each door.

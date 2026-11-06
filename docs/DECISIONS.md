@@ -124,3 +124,15 @@ walls, which is where the flat, near-white facades came from. P0-02g takes on th
 default until the owner says otherwise: at most 6 real lights awake on one client at once; the
 test hall uses 3. Not taken: matching the sheets' haze with Atmosphere (it stays black indoors at
 midnight) or classic fog (barely shows in a dark hall).
+
+## D-016 · 2026-11-06 · Shut in, the client keeps the hall's light out
+Below graphics quality about 10 (Studio's levels; a low-graphics phone), the hall's lights cast no
+shadows at all: a 2-stud concrete roof and a 2-stud block in front of the door changed nothing
+inside a shut unit, and range barely matters there. So no wall thickness keeps a unit dark. The
+door does it on the shut-in player's own screen instead: `BehindDoors` scales every light tagged
+`HallLight.Tag` by `ShutIn.light` (6% while shut, about half at a friend's peek, full when open,
+cut as fast as a slam falls) and draws the line under the door as a thin glowing strip on the hall
+floor. Full quality gets the same treatment, so the moment looks the same on every device; its
+real shadows already kept the room dark. Not taken: thicker walls or a unit roof (no effect),
+guessing the device's quality (Roblox doesn't say on Automatic), a light under the door (one more
+real light, and it would leak in too). The hall's own low-graphics look is P0-02h.

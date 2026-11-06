@@ -61,13 +61,17 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   above the wire tops, a 130° cone (`HallLight`); the exit sign's red at the far end; a slight
   desaturation. Matches the sheets at full graphics quality (`docs/art/P0-02d-*.jpg`). The flat
   white look was Studio's Automatic quality falling back to coarse lighting.
-- [ ] **P0-02g The hall on every phone.** Below graphics quality about 11 (Studio's levels),
-  Roblox's fallback lighting ignores the tubes' cone and shines through thin walls: facades go
-  flat white and a shut unit's inside is lit (`docs/art/P0-02d-hall-low-quality.jpg`). Find what
-  holds the look there (light placement, the facade's thickness, a darker fallback, or the client
-  dimming hall light while you're shut in), then the hall's triangle and draw-call counts and
-  phone-size shots in the Device Simulator at low and high quality. Also the sheets' grey haze
-  glowing under the ceiling, which Atmosphere doesn't give at midnight indoors.
+- [x] **P0-02g A shut unit stays dark on every phone.** Below graphics quality about 10, the
+  hall's lights cast no shadows at all, so walls of any thickness let them in. Now the client
+  dims the hall's lights for whoever is shut in, draws the line under the door as a glowing
+  strip, and lets the light flood back as the door lifts (D-016; `docs/art/P0-02g-inside.jpg`,
+  `-peek.jpg`).
+- [ ] **P0-02h The hall on every phone.** At low graphics the facades go flat white and the
+  doors between fixtures stay lit (`docs/art/P0-02g-hall.jpg`): find what restores pools and dark
+  between there without changing full quality (in a real floor, unlit motion lights do much of
+  it). The sheets' grey haze glowing under the ceiling near a fixture (a soft glow part, slow
+  dust particles or bloom). The hall's triangle and draw-call counts, and phone-size shots in the
+  Device Simulator at low and high quality.
 - [ ] **P0-03 The corridor kit (art).** Hall floor and ceiling, end walls and corners for the
   GDD's tile set (straight, corner, T, cross, dead end), and the motion-light fixture (the
   building's eyes), built the unit's way and judged at phone size.

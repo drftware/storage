@@ -10,20 +10,25 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
-## Now: judge P0-02d (built Nov 6)
+## Now: judge P0-02g (built Nov 6)
 
-- [ ] **Reconnect Rojo once** (Disconnect, then Connect; or restart `rojo serve`): this session
-  added a colour correction to Lighting called `Grade` that Studio hasn't picked up yet. After the
-  reconnect, Lighting has a `Grade` with Saturation -0.15.
-- [ ] **Judge the match:** `docs/art/P0-02d-hall.jpg`, `P0-02d-hero.jpg` and `P0-02d-inside.jpg`
-  put each look sheet (left) next to Studio from the same camera spot (right), with every door
-  painted oxblood for the comparison. Look for: cold pools of light under the fixture with dark
-  between; the door ribs catching light; the red exit glow at the far end; a shut unit black inside
-  with a bright line under the door. Known gap: the sheets' grey haze glowing under the ceiling.
-  Say what still feels off.
-- [ ] **See it yourself at full quality:** File > Studio Settings > Rendering, set Quality Level
-  (and Edit Quality Level) to 21, Play, and walk from the spawn to 105. Then set both back to
-  Automatic and walk it again: that flat, white-walled look is what low-graphics phones get,
-  `docs/art/P0-02d-hall-low-quality.jpg`. P0-02g fixes it.
-- [ ] **Light budget (a default, change it if you like):** at most 6 real lights awake on one
-  player's screen at once; the test hall uses 3 (D-015). The GDD names no number.
+- [ ] **Reconnect Rojo once** (Disconnect, then Connect; or restart `rojo serve`): Lighting still
+  has no colour correction called `Grade` in Studio (checked Nov 6). After the reconnect, Lighting
+  has a `Grade` with Saturation -0.15.
+- [ ] **Judge the shots:** `docs/art/P0-02g-inside.jpg` is the view from inside shut unit 105:
+  low graphics before (lit grey box), low graphics now, full quality now. `P0-02g-peek.jpg` is the
+  same spot while someone peeks the door: low graphics (left), full quality (right). Look for:
+  black inside with the door's slats faintly showing and one bright line under the door, the same
+  at both qualities; at a peek, light pours in. Known gap at low graphics: the peeked room lights
+  evenly rather than from the floor up.
+- [ ] **Feel it yourself:** Play, open 101 (E) and walk in, turn to face the door, then shut it
+  on yourself: Close (F) if the prompt shows from inside; otherwise, in the Command Bar with the
+  Server view selected, run
+  `require(game.ReplicatedStorage.Shared.StorageUnit.RollUpDoor).play(workspace.DevCorridor:FindFirstChild("Unit101", true), "Close")`.
+  Look for: the room going dark as the door comes down, the line under the door. Then Lift (T)
+  and watch the light come back with the door. Try it on Automatic and at Quality Level 21 (File
+  > Studio Settings > Rendering), and put it back to Automatic after.
+- [ ] **The low-graphics hall still looks flat:** `docs/art/P0-02g-hall.jpg` is the hall from the
+  spawn at low graphics (left) and full quality (right). Nothing changed there this session;
+  that's P0-02h. Say if anything beyond the white facades and the lit doors between fixtures bothers
+  you.

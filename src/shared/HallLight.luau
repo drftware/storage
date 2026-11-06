@@ -43,7 +43,23 @@ HallLight.ExitColour = Color3.fromRGB(255, 42, 26)
 HallLight.ExitBrightness = 0.45 -- a tint on the far doors' edges, never a red room
 HallLight.ExitRange = 12 -- reaches the last pair of units only
 
+-- The line of light under a shut door, seen from inside: the lit hall floor through the door's
+-- gap. Neon glows brighter than its colour, so this mid grey reads as a hard white line against
+-- the dark; any brighter and low-graphics bloom smears it into blobs.
+HallLight.UnderDoorColour = Color3.fromRGB(140, 145, 144)
+
+-- Every light the hall throws carries this tag, and its lit brightness in the attribute
+-- `HallLight.LitAttribute`, so a client can scale it on its own screen and put it back exactly
+-- (BehindDoors darkens them for a player shut in a unit).
+HallLight.Tag = "HallLight"
+HallLight.LitAttribute = "LitBrightness"
+
 local DEAD_TUBE = Color3.fromRGB(40, 42, 44) -- an unlit diffuser: dark plastic
+
+local function mark(light: Light)
+	light:SetAttribute(HallLight.LitAttribute, light.Brightness)
+	light:AddTag(HallLight.Tag)
+end
 
 -- Turns `tube` (the fixture's diffuser part) into a lit tube at `level` (0 to 1).
 function HallLight.light(tube: BasePart, level: number)
@@ -55,6 +71,7 @@ function HallLight.light(tube: BasePart, level: number)
 	light.Angle = HallLight.Angle
 	light.Shadows = true
 	light.Enabled = level > 0
+	mark(light)
 	light.Parent = tube
 	tube.CastShadow = false
 	if level > 0 then
@@ -77,6 +94,7 @@ function HallLight.exitSign(sign: BasePart)
 	glow.Brightness = HallLight.ExitBrightness
 	glow.Range = HallLight.ExitRange
 	glow.Shadows = true
+	mark(glow)
 	glow.Parent = sign
 end
 

@@ -8,6 +8,12 @@
 	so hiding sets this client's copy of DisplayDistanceType to None and puts the old value back
 	(docs/STUDIO.md, "Hiding a character's name"). Your own character is first person's business
 	and is never touched.
+
+	The same door keeps the hall's light out. Shut in, you sit in the dark with a bright line of
+	light under the door, and a friend lifting it floods light in (ShutIn.light). Full graphics
+	quality does that with real shadows; low-graphics phones light a unit through its walls
+	(D-016), so on your own screen the hall's lights (HallLight.Tag) are scaled down while you're
+	shut in and the line under the door is drawn as a thin glowing strip on the hall floor.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -15,6 +21,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local HallLight = require(ReplicatedStorage.Shared.HallLight)
 local StorageUnit = require(ReplicatedStorage.Shared.StorageUnit)
 
 local ShutIn = require(ReplicatedStorage.Shared.StorageUnit.ShutIn)
@@ -38,6 +45,12 @@ type Hidden = {
 
 local BehindDoors = {}
 
+-- The line under the door: a strip on the hall floor just outside the curtain, where an eye
+-- inside sees the floor through the door's gap (door-local, -Z is the hall).
+local LINE_DEPTH = 0.5
+local LINE_OUT = 0.3
+local LINE_THICK = 0.01
+
 local function fade(inst: Instance, amount: number)
 	-- Two classes share the property but no type, so each branch narrows on its own.
 	-- selene: allow(if_same_then_else)
@@ -53,6 +66,93 @@ function BehindDoors.new(): Brix.System
 	local others: { Player } = {}
 	local hidden: { [Model]: Hidden } = {}
 	local connections: { RBXScriptConnection } = {}
+	local lights: { Light } = {}
+	local dimmed = false -- whether the hall's lights are scaled down on this screen now
+	local line: Part? = nil -- the line under the door, made the first time you're shut in
+
+	local function addLight(inst: Instance)
+		if inst:IsA("Light") and not table.find(lights, inst) then
+			table.insert(lights, inst)
+		end
+	end
+
+	local function removeLight(inst: Instance)
+		local i = table.find(lights, inst :: any) -- any: the removed signal hands back an Instance
+		if i then
+			lights[i] = lights[#lights]
+			lights[#lights] = nil
+		end
+	end
+
+	-- Scales a hall light to `level` of its lit brightness, writing only when it differs.
+	local function scaleLight(light: Light, level: number)
+		local lit = light:GetAttribute(HallLight.LitAttribute)
+		if typeof(lit) == "number" then
+			local want = lit * level
+			if math.abs(light.Brightness - want) > 1e-3 then
+				light.Brightness = want
+			end
+		end
+	end
+
+	-- How lit the hall is at `at`, 0 to 1: the strongest tube that reaches it. Only the tubes
+	-- light the floor white; the exit sign's red glow doesn't draw a line.
+	local function hallLitAt(at: Vector3): number
+		local most = 0
+		for _, light in lights do
+			local tube = light.Parent
+			local lit = light:GetAttribute(HallLight.LitAttribute)
+			if
+				light:IsA("SurfaceLight")
+				and light.Enabled
+				and typeof(lit) == "number"
+				and tube
+				and tube:IsA("BasePart")
+				and (tube.Position - at).Magnitude < light.Range
+			then
+				most = math.max(most, lit / HallLight.Brightness)
+			end
+		end
+		return math.min(most, 1)
+	end
+
+	-- Draws the line under `room`'s door at `alpha` (0 hides it).
+	local function drawLine(room: Room?, alpha: number)
+		if not room or alpha <= 0 then
+			if line then
+				line.Parent = nil
+			end
+			return
+		end
+		local strip: Part
+		if line then
+			strip = line
+		else
+			strip = Instance.new("Part")
+			strip.Name = "LineUnderDoor"
+			strip.Anchored = true
+			strip.CanCollide = false
+			strip.CanQuery = false
+			strip.CanTouch = false
+			strip.CastShadow = false
+			strip.Material = Enum.Material.Neon
+			strip.Color = HallLight.UnderDoorColour
+			line = strip
+		end
+		local size = Vector3.new(room.spec.DoorWidth, LINE_THICK, LINE_DEPTH)
+		local at = room.frame * CFrame.new(0, LINE_THICK / 2, -LINE_OUT)
+		if strip.Size ~= size then
+			strip.Size = size
+		end
+		if strip.CFrame ~= at then
+			strip.CFrame = at
+		end
+		local transparency = 1 - alpha
+		if math.abs(strip.Transparency - transparency) > 1e-3 then
+			strip.Transparency = transparency
+		end
+		strip.Parent = Workspace
+	end
 
 	local function addRoom(inst: Instance)
 		if not inst:IsA("Model") or not inst:FindFirstChild("DoorOrigin", true) then
@@ -160,6 +260,17 @@ function BehindDoors.new(): Brix.System
 				connections,
 				CollectionService:GetInstanceRemovedSignal(tag):Connect(removeRoom)
 			)
+			table.insert(
+				connections,
+				CollectionService:GetInstanceAddedSignal(HallLight.Tag):Connect(addLight)
+			)
+			table.insert(
+				connections,
+				CollectionService:GetInstanceRemovedSignal(HallLight.Tag):Connect(removeLight)
+			)
+			for _, light in CollectionService:GetTagged(HallLight.Tag) do
+				addLight(light)
+			end
 			table.insert(connections, Players.PlayerAdded:Connect(addPlayer))
 			table.insert(connections, Players.PlayerRemoving:Connect(removePlayer))
 			for _, unit in CollectionService:GetTagged(tag) do
@@ -175,10 +286,32 @@ function BehindDoors.new(): Brix.System
 				return
 			end
 			local eye = camera.CFrame.Position
+			local shutIn: Room? = nil
 			for _, r in rooms do
 				local p = r.frame:PointToObjectSpace(eye)
 				r.viewerInside = ShutIn.inside(r.spec, p.X, p.Y, p.Z)
+				if r.viewerInside then
+					shutIn = r
+				end
 			end
+			-- The hall's light reaches you as far as your door lets it.
+			local level, lineAlpha = 1, 0
+			if shutIn then
+				local rise = RollUpDoor.rise(shutIn.unit)
+				level = ShutIn.light(rise, shutIn.spec.Rise.Open)
+				-- The line fades as the door lifts and the real light pours under it.
+				local closed = 1 - math.clamp(rise / shutIn.spec.Rise.Peek, 0, 1)
+				if closed > 0 then
+					lineAlpha = closed * hallLitAt(shutIn.frame.Position)
+				end
+			end
+			if level < 1 or dimmed then
+				for _, light in lights do
+					scaleLight(light, level)
+				end
+				dimmed = level < 1
+			end
+			drawLine(shutIn, lineAlpha)
 			for _, player in others do
 				local character = player.Character
 				local root = character and character.PrimaryPart
@@ -209,6 +342,15 @@ function BehindDoors.new(): Brix.System
 			for character in hidden do
 				show(character)
 			end
+			for _, light in lights do
+				scaleLight(light, 1)
+			end
+			dimmed = false
+			if line then
+				line:Destroy()
+				line = nil
+			end
+			table.clear(lights)
 			table.clear(rooms)
 			table.clear(others)
 		end,
