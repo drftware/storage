@@ -111,3 +111,16 @@ GuiButton with `Modal` set leaves the mouse unlocked, and the right mouse button
 while it's free. The mouse is either the view or a cursor, never both (owner, Nov 6): no cursor is
 drawn while it turns the view, the way first-person shooters hide theirs. Not taken: writing `MouseBehavior` ourselves (the camera script puts LockCenter back
 every frame), or a fork of the PlayerModule. The key is a default the owner can change (`OWNER.md`).
+
+## D-015 · 2026-11-06 · The hall's light: fixtures every two units, tuned at full quality
+The look sheets' light comes from a few fixtures, one every 24 studs, hanging 2 studs over the
+wire tops, each pooling hard cold light on the doors below with the dark between; the stairwell's
+exit sign tints the far end red. `HallLight` holds those numbers for the corridor kit (P0-03) and
+the motion lights (L-03). Tuned where Roblox draws its full lighting (graphics quality about 11 and
+up in Studio's levels): there the hall, the hero door and a shut unit's dark inside match the
+sheets. D-012's "captures are accurate" was wrong in one way: Studio on Automatic quality, like a
+low-end phone, falls back to coarse lighting that ignores a light's cone and shines through thin
+walls, which is where the flat, near-white facades came from. P0-02g takes on that fallback. A
+default until the owner says otherwise: at most 6 real lights awake on one client at once; the
+test hall uses 3. Not taken: matching the sheets' haze with Atmosphere (it stays black indoors at
+midnight) or classic fog (barely shows in a dark hall).

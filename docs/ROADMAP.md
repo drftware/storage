@@ -57,12 +57,17 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   while Roblox's menu is open; the hint shows once and cleans up. Not seen here: the mouse actually
   going free and the view holding still (Studio doesn't lock the mouse while its window is out of
   focus), the menu's cursor, and the name tag with two players. All wait on `OWNER.md`.
-- [ ] **P0-02d The hall lit like the look sheets** (D-012). The owner likes the light in
-  `art/sheets/unit-hall.png`, `unit-hero.png` and `unit-inside.png` and wants the game to match.
-  The MCP's captures are accurate (the owner's darker shot was dimmed by the pause menu); today
-  the facades and unit insides read flat and near white next to the sheets. Compare the sheets'
-  light (the scene and shot lights in `art/unit/build.py` and `render.py`) with Lighting and the tubes, and tune until Studio
-  captures match. Also the hall's triangle and draw-call counts and phone-size shots.
+- [x] **P0-02d The hall lit like the look sheets** (D-012, D-015). Fixtures every 24 studs, 2
+  above the wire tops, a 130° cone (`HallLight`); the exit sign's red at the far end; a slight
+  desaturation. Matches the sheets at full graphics quality (`docs/art/P0-02d-*.jpg`). The flat
+  white look was Studio's Automatic quality falling back to coarse lighting.
+- [ ] **P0-02g The hall on every phone.** Below graphics quality about 11 (Studio's levels),
+  Roblox's fallback lighting ignores the tubes' cone and shines through thin walls: facades go
+  flat white and a shut unit's inside is lit (`docs/art/P0-02d-hall-low-quality.jpg`). Find what
+  holds the look there (light placement, the facade's thickness, a darker fallback, or the client
+  dimming hall light while you're shut in), then the hall's triangle and draw-call counts and
+  phone-size shots in the Device Simulator at low and high quality. Also the sheets' grey haze
+  glowing under the ceiling, which Atmosphere doesn't give at midnight indoors.
 - [ ] **P0-03 The corridor kit (art).** Hall floor and ceiling, end walls and corners for the
   GDD's tile set (straight, corner, T, cross, dead end), and the motion-light fixture (the
   building's eyes), built the unit's way and judged at phone size.

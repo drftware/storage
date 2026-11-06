@@ -46,7 +46,9 @@
     "Lighting": {
       "$properties": {
         // Naturalistic light on worn, real materials (D-007). Roblox's replacement for the old
-        // Technology setting, with PrioritizeLightingQuality (docs/STUDIO.md).
+        // Technology setting, with PrioritizeLightingQuality (docs/STUDIO.md). The hall matches
+        // the look sheets only at graphics quality about 11 and up; below that the tubes light
+        // through walls (D-015).
         "LightingStyle": "Realistic",
         // When a phone scales down, keep the tube lights' shadows and lose view distance first:
         // halls are short and hazy, and the shadows are the scare.
@@ -73,6 +75,14 @@
           "Decay": [0.08, 0.09, 0.11],
           "Glare": 0,
           "Haze": 1.4
+        }
+      },
+      "Grade": {
+        "$className": "ColorCorrectionEffect",
+        "$properties": {
+          // Takes the edge off the door paint, as the look sheets' film curve does: oxblood reads
+          // as old paint under a tube, not a fire engine.
+          "Saturation": -0.15
         }
       }
     }

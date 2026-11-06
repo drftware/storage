@@ -120,6 +120,33 @@ verified: a doc page, Studio, or "untested".
 - Right after the hall streamed back in, the first capture rendered black; a few seconds later it
   was lit. Watch for that flash after a teleport.
 
+## Lighting and captures
+
+- **Graphics quality decides the hall's look** (Play, 2026-11-06, a plate held under a tube):
+  `settings().Rendering.QualityLevel` at Level08 and on Automatic, the tube cast no shadow, ignored
+  its cone and lit a shut unit's inside through the 0.001-thick facade; at Level10 a faint, blurry
+  shadow; at Level12 and up, sharp shadows, the cone holds and units stay dark. Forum reports put
+  Realistic (Future) lighting at graphics quality about 4 of 10 and up, falling back on weaker
+  devices ([Android rollout thread](https://devforum.roblox.com/t/future-is-bright-on-android-is-fully-rolled-out-client-beta/3235808?page=4)).
+  Studio sat on Automatic, which here gave the fallback. A session can set `QualityLevel` from the
+  MCP (Client); Play resets it to Automatic. Put it back to Automatic when done.
+- **Roblox lights barely fade inside their Range**, and a SurfaceLight's `Angle` is a hard edge
+  (Blender's area-light spread fades softly), so a cone a little wider than the sheets' (130° for
+  105°) catches the facade above each door.
+- **The environment light is negligible indoors here:** with every tube off, the hall stayed near
+  black at EnvironmentDiffuseScale 0.15 and EnvironmentSpecularScale 0.3.
+- **A light change can take a frame or more to show:** wait a second or two before a capture, or
+  you get the old lighting.
+- **Capturing from the look sheets' camera spots:** pin the camera with a `BindToRenderStep` that
+  sets `Scriptable`, the CFrame and the FOV every frame (the PlayerModule resets a one-off
+  `CameraType`). Blender to Studio for the hero unit 105: (x, y, z) → (x + 6, z, −4 − y). Blender's
+  lens is horizontal on a 36 mm sensor; Roblox's FOV is vertical: 20 mm → 53.7°, 17 mm → 61.5°,
+  22 mm → 49.4° at 16:9. Studio's view is wider than 16:9 (1430×515 here), so crop its middle.
+  ffmpeg composes the side by side (no PIL or ImageMagick on this Mac).
+- **Rojo may not push a project-file change to Studio** (2026-11-06): a new Lighting child in
+  `default.project.json` built fine with `rojo build` but never showed in Studio over a running
+  `rojo serve`. Reconnect, or restart `rojo serve`, after editing the project file.
+
 ## Tools
 
 - **Driving Studio from a session:** `.mcp.json` starts Studio's own MCP server

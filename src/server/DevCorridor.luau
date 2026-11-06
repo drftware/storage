@@ -20,6 +20,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local HallLight = require(ReplicatedStorage.Shared.HallLight)
 local Motion = require(ReplicatedStorage.Shared.StorageUnit.Motion)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
@@ -30,7 +31,7 @@ local HALL_HALF_WIDTH = 4 -- an 8-stud hall: door faces at z = -4 and z = +4
 local UNIT_XS = { -18, -6, 6, 18 } -- four 12-stud units a side, wall to wall
 local BUILDING_HALF_LENGTH = 30 -- end walls at x = -30 and 30
 local BUILDING_HALF_DEPTH = 17 -- side walls just behind the units' backs
-local CEILING = 16 -- the building's ceiling; unit walls and their wire tops stop at 10
+local CEILING = 13.4 -- the building's ceiling, as in the look sheets; unit walls and their wire tops stop at 10
 local FLOOR_TOP = -0.05 -- just under the units' own floors (top at 0), so the two never flicker
 local FAR_X = 700 -- far past the streaming target radius (256), so the hall streams out
 
@@ -46,13 +47,18 @@ local LIFT_IN = RollUpDoor.ColliderDepth / 2 + 0.1 -- Lift hangs just behind the
 local LIFT_REACH = 5 -- only someone shut inside should see Lift
 local REFUSAL_SECONDS = 1.2 -- how long "Padlocked" or "Shut it first" shows before the unit's name returns
 
--- The tube lights: cold, hard and few, so the hall reads as after hours.
-local TUBE_COLOUR = Color3.fromRGB(200, 214, 240)
-local TUBE_BRIGHTNESS = 1.6
-local TUBE_RANGE = 22 -- reaches the floor 16 studs down, then fades
-local TUBE_ANGLE = 140
+-- The hall's fixtures, laid out like the look sheets' hall (HallLight): one lit over 105 and 106,
+-- a weaker one over 101 and 102 by the spawn, and the dark between, with the exit sign's red at
+-- the far end.
+type Fixture = { x: number, level: number }
+local HALL_FIXTURES: { Fixture } = { { x = -18, level = HallLight.Low }, { x = 6, level = 1 } }
+local EXIT_SIGN_SIZE = Vector3.new(0.2, 0.7, 1.8)
+local EXIT_SIGN_HEIGHT = 9.95 -- over the stairwell door's frame, as in the sheets
 
 local CONCRETE = Color3.fromRGB(74, 74, 76)
+-- Light concrete, like the sheets' floor, so a fixture's pool reads on it. The corridor kit's
+-- floor replaces it (P0-03).
+local FLOOR_COLOUR = Color3.fromRGB(120, 120, 118)
 local CEILING_COLOUR = Color3.fromRGB(38, 38, 40)
 local SPAWN = CFrame.lookAt(Vector3.new(-26, 3, 0), Vector3.new(0, 3, 0))
 local FAR_SPOT = CFrame.lookAt(Vector3.new(FAR_X + 6, 3, 0), Vector3.new(FAR_X, 3, -4))
@@ -96,25 +102,16 @@ local function block(
 	return p
 end
 
-local function tubeLight(x: number, parent: Instance)
+local function fixture(f: Fixture, parent: Instance)
 	local tube = block(
 		"TubeLight",
-		Vector3.new(6, 0.2, 0.35),
-		CFrame.new(x, CEILING - 0.5, 0),
-		TUBE_COLOUR,
+		HallLight.TubeSize,
+		CFrame.new(f.x, HallLight.Height, 0),
+		HallLight.Colour,
 		parent
 	)
-	tube.Material = Enum.Material.Neon
 	tube.CanCollide = false
-	tube.CastShadow = false
-	local light = Instance.new("SurfaceLight")
-	light.Face = Enum.NormalId.Bottom
-	light.Color = TUBE_COLOUR
-	light.Brightness = TUBE_BRIGHTNESS
-	light.Range = TUBE_RANGE
-	light.Angle = TUBE_ANGLE
-	light.Shadows = true
-	light.Parent = tube
+	HallLight.light(tube, f.level)
 end
 
 -- A closed concrete box around a stretch of hall: floor, ceiling, end walls and side walls.
@@ -122,9 +119,9 @@ local function building(
 	name: string,
 	centreX: number,
 	halfLength: number,
-	lightXs: { number },
+	fixtures: { Fixture },
 	parent: Instance
-)
+): Folder
 	local folder = Instance.new("Folder")
 	folder.Name = name
 	local length = halfLength * 2
@@ -134,7 +131,7 @@ local function building(
 		"Floor",
 		Vector3.new(length, 1, depth),
 		CFrame.new(centreX, FLOOR_TOP - 0.5, 0),
-		CONCRETE,
+		FLOOR_COLOUR,
 		folder
 	)
 	block(
@@ -162,10 +159,11 @@ local function building(
 			folder
 		)
 	end
-	for _, x in lightXs do
-		tubeLight(x, folder)
+	for _, f in fixtures do
+		fixture(f, folder)
 	end
 	folder.Parent = parent
+	return folder
 end
 
 -- Where a door's outer face goes: at x on one side of the hall, looking across it.
@@ -350,8 +348,17 @@ local function build(): Folder?
 
 	local folder = Instance.new("Folder")
 	folder.Name = "DevCorridor"
-	building("Hall", 0, BUILDING_HALF_LENGTH, UNIT_XS, folder)
-	building("FarHall", FAR_X, 12, { FAR_X }, folder)
+	local hall = building("Hall", 0, BUILDING_HALF_LENGTH, HALL_FIXTURES, folder)
+	local sign = block(
+		"ExitSign",
+		EXIT_SIGN_SIZE,
+		CFrame.new(BUILDING_HALF_LENGTH - EXIT_SIGN_SIZE.X / 2, EXIT_SIGN_HEIGHT, 0),
+		HallLight.ExitColour,
+		hall
+	)
+	sign.CanCollide = false
+	HallLight.exitSign(sign)
+	building("FarHall", FAR_X, 12, { { x = FAR_X, level = 1 } }, folder)
 
 	local count = 0
 	for row, side in { -1, 1 } do
@@ -385,10 +392,11 @@ local function build(): Folder?
 	spawn.CFrame = CFrame.new(SPAWN.Position.X, FLOOR_TOP + 0.1, SPAWN.Position.Z)
 	spawn.Parent = folder
 
-	-- This runs only in Play, on the Play copy of the place: the place itself keeps its baseplate.
+	-- This runs only in Play, on the Play copy of the place: the place itself keeps its baseplate
+	-- and spawn pad. The pad sits in the middle of the hall, so it goes too.
 	for _, d in Workspace:GetDescendants() do
 		if d:IsA("SpawnLocation") then
-			d.Enabled = false
+			d:Destroy()
 		end
 	end
 	local baseplate = Workspace:FindFirstChild("Baseplate")
