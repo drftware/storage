@@ -2,19 +2,19 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-05, session 4 · **Checks:** green · **Git:** `storage-unit`, local only (`main` has no commits yet).
+**Updated:** 2026-11-06, session 5 · **Checks:** green · **Git:** `storage-unit`, local only (`main` has no commits yet).
 
 ## State
-- **The corridor plays** (P0-02b, verified in Studio, one player, by key): every door action and refusal at 101 and
-  105, Lift from inside, bolt and padlock, plates 101 to 108, the curtain's coil, the slam's bounce, and streaming out
-  and back with every door as left. Shots in `docs/art/P0-02b-*.jpg`. No code changed this session.
-- **Found: the camera passes through every unit.** Roblox's camera stops only at parts that are CanCollide and under
-  0.25 transparent (docs/STUDIO.md, "Camera and prompts"). A prepared unit's colliders are invisible and its meshes
-  don't collide, so in the 8-stud hall the camera backs through the shut door behind you into the unit across the
-  hall (`docs/art/P0-02b-camera-inside-102.jpg`), and the prompts you face hide because their line of sight starts
-  at the camera. **The owner chose first person** (D-011), which keeps the camera at the head: that's P0-02c.
-- Studio's place is `storage.rbxl` with the template at `ReplicatedStorage.Units.M`. A `rojo serve` from an earlier
-  session was still running (port 34872, this repo); check with `lsof -iTCP:34872` before starting another.
+- **The corridor plays** (P0-02b, verified in Studio, one player): every door action and refusal, Lift from inside,
+  streaming out and back. **The owner chose first person** (D-011): that's P0-02c, still to do.
+- **Session 5 built the passed-on option by mistake** (its handoff predated D-011): third person with solid unit
+  walls, a three-piece facade and a client-only solid curtain, verified in Play. It's parked on the local branch
+  `third-person-walls` (5f244a7); `storage-unit` has none of it. Studio's template is back to the session-start
+  unit, and asset 135739386247346's latest version is `storage-unit`'s FBX again (re-uploaded).
+- Learned on the way, now in docs/STUDIO.md: the camera rests up to 0.08 past what stops it and a prompt's sight
+  line starts at the camera; a client can't change CollisionFidelity; Edit-mode `require` is cached; a default
+  raycast hits the invisible DoorCollider (for step 4 below: it likely blocks Lift's sight line, still unproven).
+- Studio's place is `storage.rbxl`; `rojo serve` was still running on port 34872 (`lsof -iTCP:34872`).
 
 ## Next task: P0-02c First person
 The moment: you lean into a dark doorway with the door hanging over your head, and it's your eyes, not a camera

@@ -56,7 +56,19 @@ verified: a doc page, Studio, or "untested".
   showed. Default Exclusivity is OnePerButton: one prompt per key at a time.
 - **A thin mesh gets a bad decomposition:** the unit's Facade (0.001 thick, doorway cut out) given
   PreciseConvexDecomposition at runtime got a hull across the doorway (a ray down the doorway's
-  middle hit it). `CollisionFidelity` itself is writable from scripts (docs and Play).
+  middle hit it). `CollisionFidelity` is writable in Edit (a read in the same script can still show
+  the old value; it settles) but **a client's writes are ignored** (Play, 2026-11-06): set it in
+  `UnitKit.prepare`, never at runtime on a client.
+- **The camera rests a little past what stops it** (Play, 2026-11-06): up to about 0.08 studs
+  behind the surface it hit. A prompt's line of sight starts at the camera, so behind a flat panel
+  or a thin sheet the sight line crosses it and every prompt in view hides. Inside a box at least
+  0.2 deep it's harmless, because a ray that starts inside a part doesn't hit that part. A default
+  raycast does hit the invisible DoorCollider (CanQuery). Built and verified on the parked branch
+  `third-person-walls` (D-011 passed on that approach).
+- **The shut curtain's collision shapes** (Edit, rays, 2026-11-06): Box is 0.96 deep at every
+  height because its top curls back toward the drum, and as a client-side solid it nudged a player
+  shut inside 0.36 studs away from the door as it landed. Default and Precise follow the sheet,
+  0.07 thick below the header; Hull is a wedge, 0.1 deep at the floor to 0.6 at head height.
 - Right after the hall streamed back in, the first capture rendered black; a few seconds later it
   was lit. Watch for that flash after a teleport.
 
@@ -84,6 +96,14 @@ verified: a doc page, Studio, or "untested".
   shows in captures, so read `prompt.ObjectText` on the server for refusals, and track shown prompts
   with `ProximityPromptService.PromptShown` and `PromptHidden`. With Studio in the background the
   client ran at about 15 fps, so time feel by the clock, not by frames.
+- **`require` in Edit is cached:** after Rojo syncs a change, `execute_luau`'s `require` still
+  returns the module from the first call. Require a `:Clone()` of the module tree for fresh code.
+- `insert_asset` tags what it inserts `Assistant:<guid>`; remove the tag before keeping the model.
+- **One asset ID serves every branch:** after uploading the unit from one branch, re-upload from
+  the branch you return to (set its `sha256` in `art/unit/assets.json` to anything and run the
+  script; it writes the same hash back).
+- `ProximityPromptService.PromptShown` misses prompts already showing when you connect (the spawn
+  is within reach of 101's): step away first.
 - **Rojo connects through the owner:** start `rojo serve` in the background; the owner clicks
   Connect in Studio's Rojo plugin. Rojo keeps the place's own children (Baseplate,
   `ReplicatedStorage.Units`) because no node there has a `$path`.

@@ -15,7 +15,9 @@ nowhere else.
   `P0-02-open-101.jpg` (the real unit in Studio). Say yes, or what to change. It sets the look for
   every asset after it: worn, real materials under cold corridor light (D-007).
 - [ ] **Branches:** everything so far is on `storage-unit`; `main` has no commits yet. Say if you
-  want `storage-unit` to become `main`.
+  want `storage-unit` to become `main`. Also `third-person-walls` (local): session 5 built third
+  person with solid unit walls before your first-person call reached it, verified in Studio. Keep
+  it parked (say if third person ever comes back, or for a spectator camera) or delete it.
 
 ## After P0-02c (the next session says when)
 
