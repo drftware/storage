@@ -4,7 +4,8 @@ Co-op horror climb out of a living self-storage building. Design: the GDD (Claud
 in the owner's notes).
 
 Sessions hand off through `HANDOFF.md` (now), `AGENTS.md` (rules), `OWNER.md` (what waits on the
-owner) and `docs/` (roadmap, decisions, code map, Studio notes).
+owner) and `docs/` (roadmap, decisions, code map, Studio notes). Game systems come from Brix, the
+shared library in `../engine`, first (`docs/FRAMEWORK.md`).
 
 What's here so far:
 

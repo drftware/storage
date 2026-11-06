@@ -7,6 +7,7 @@ one-liners; each gets its full spec when it becomes HANDOFF's Next task.
 The order follows the owner's plan (2026-11-05): set up the project and bring the real assets in,
 build the gameplay loop with those real assets and hone it until it's awesome, then flesh out
 the rest of the floors and the game. It matches the GDD's build order (its "Build order" section).
+Every system checks Brix first (`docs/FRAMEWORK.md`, D-008); each ticket below names its Brix piece.
 
 ## Phase 0: Foundations
 
@@ -18,9 +19,9 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   Importer, and the door rig (`RollUpDoor`, `Motion`, `Curtain`, `UnitKit`) with Lune specs
   (D-001 to D-007). Sizes S and L build but haven't been checked by eye.
 - [ ] **P0-02 The Roblox project, and the unit in Studio.** The full Rojo tree with server and
-  client entry points and the place's settings; the unit imported, prepared and kept in the repo
-  as a model file; a test corridor whose doors peek, open, slam and lock in Play. Full spec in
-  HANDOFF.md.
+  client entry points and the place's settings; Brix mounted at a pinned commit and started by a
+  Host; the unit imported, prepared and kept in the repo as a model file; a test corridor whose
+  doors peek, open, slam and lock in Play. Full spec in HANDOFF.md.
 - [ ] **P0-03 The corridor kit (art).** Hall floor and ceiling, end walls and corners for the
   GDD's tile set (straight, corner, T, cross, dead end), and the motion-light fixture (the
   building's eyes), built the unit's way and judged at phone size.
@@ -34,30 +35,36 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
 
 - [ ] **L-01 The floor generator.** A floor laid from a seed on the GDD's tile grid: unit rows
   with shared walls dropped, numbers, paint per floor, the elevator lobby; built during the ride.
+  Brix: Random (seeded), Schema for tile rows.
 - [ ] **L-02 Doors as the GDD's state machine.** Closed, peeking, opening, open, slamming,
-  locked; prompts for Peek, Open, Slam and Lift from inside; range, tool and rate checks.
+  locked; prompts for Peek, Open, Slam and Lift from inside; range, tool and rate checks. Brix: the
+  door becomes a system on the Host's clock, with Signal for door events; Remotes once ENG-09 ships.
 - [ ] **L-03 Motion lights the building watches.** Fixtures wake for anything moving near them;
   the server owns their state; real lights near the camera, a glow farther out (GDD Lights).
+  Brix: Zone for each fixture's watch area.
 - [ ] **L-04 What's behind the door.** A first director deals each unit's contents on open: a
   find, a note, nothing, or a keeper (GDD "What's behind the door"). Needs find and box props.
 - [ ] **L-05 Notes, the keypad and the elevator.** The floor's 4-digit code on sticky notes, the
   keypad, the gate that shuts 30 s after the last digit (Dandy's World). Needs the elevator,
-  gate, keypad and note art first.
-- [ ] **L-06 The Mannequin.** The first keeper, at no more than player speed. Needs its model
-  and animations first, and the engine question settled (OWNER.md).
+  gate, keypad and note art first. Brix: Zone for "aboard", the Clock for the gate's timer.
+- [ ] **L-06 The Mannequin.** The first keeper, at no more than player speed: a data row on
+  Brix's Pursuit (floor pathing, a cone reach). Needs its model and animations first, and Brix's
+  ENG-06 and ENG-07.
 - [ ] **L-07 Getting kept and rescued.** Shrink-wrapped, stored in a random unit, banging to ping
   the team, cut free in a second, padlocked if left too long (GDD "Getting kept").
 - [ ] **L-08 The ride and the next floor.** The elevator ride and a second floor, so the climb is
-  a loop and not a single room.
+  a loop and not a single room. Brix: its round loop (ENG-13) if it has landed.
 - [ ] **L-09 Hone.** Playtest with friends, tune Config, add juice, repeat until Gate 1. May
-  repeat as several sessions; each one names what it changed and why.
+  repeat as several sessions; each one names what it changed and why. Brix: live config (ENG-11)
+  and the presentation kit (ENG-15) as they land.
 
 ## Phase 2: The rest of the game (GDD build order step 2)
 
 All ten floors with the ride, the stairwell set piece and both boss floors; the director; the
 other keepers; tools (bolt cutters, saw with the crawl-hole wall, ladder onto the wire tops); the
 hole trap with a dented-door variant; the light board; finds with rarity; your lobby unit; the
-store; Captures. Then soft launch.
+store; Captures. Player data, remotes, telemetry and UI from Brix (ENG-09 to ENG-16). Then soft
+launch.
 
 ## Polish waiting for a slot
 

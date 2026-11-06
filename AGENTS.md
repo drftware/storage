@@ -12,8 +12,8 @@ stays under 150 lines. Current state lives in HANDOFF.md; history lives in `git 
 - **Design source of truth:** the GDD, https://claude.ai/artifact/UtmFtWGEMRQkNmWmCEhFWN (a Claude
   Doc; read it with the docs tools, never WebFetch). Pull only the section your ticket names.
 - **Build state:** HANDOFF.md (now) · `docs/ROADMAP.md` (tickets) · `docs/DECISIONS.md` (why) ·
-  `docs/CODEMAP.md` (where code lives) · `docs/STUDIO.md` (Studio, API and tool notes) ·
-  `art/unit/README.md` (the storage unit and how art gets made).
+  `docs/CODEMAP.md` (where code lives) · `docs/FRAMEWORK.md` (what comes from Brix) ·
+  `docs/STUDIO.md` (Studio, API and tool notes) · `art/unit/README.md` (the unit, how art is made).
 - **OWNER.md is the one list of what waits on the owner:** actions, tests, decisions, in required
   order. Never put these in HANDOFF, ROADMAP or any new doc; those say "Waits on `OWNER.md`".
 
@@ -70,10 +70,12 @@ fresh one.
 
 ## Engineering bar
 
+- **Systems come from Brix first** (`../engine`, its own repository; `docs/FRAMEWORK.md`; owner,
+  2026-11-05). Before building any system, check what Brix exports or has planned; this game
+  supplies only its policies, adapters, data and art. Use only Brix's exports at a pinned version,
+  never edit it from here, and put a missing piece in Brix's ROADMAP in neutral terms.
 - **Reusable systems over shortcuts.** Build each feature as the system the next floor or keeper
-  reuses: keepers are data rows on one pursuit controller, doors one state machine (GDD tech plan).
-- **The engine** (`../engine`, Brix, its own repository) may supply the keepers' chase: waits on
-  `OWNER.md`. If adopted, use only what it exports at a pinned version and never edit it from here.
+  reuses: keepers are data rows on one pursuit system, doors one state machine (GDD tech plan).
 - **The server owns every value that matters:** door state, codes, keepers, finds, cash. Validate
   every client→server remote (type, then range, then ownership) and rate-limit it. Dev commands
   work only in Studio or for the owner's UserId.

@@ -46,3 +46,11 @@ Galvanized partitions with spangle and white rust, enamel doors chalky and chipp
 chips and rib valleys, kick marks and dolly scuffs where people actually hit things, oily concrete
 with saw-cut joints, under cold corridor light. Detail stays where it wouldn't repeat visibly
 every rib. Awaiting the owner's look (OWNER.md).
+
+## D-008 · 2026-11-05 · Systems come from Brix first
+Brix, the shared library in `../engine`, is further along than this game, so the game leans on it
+for as many components as it can: the lifecycle and clock, Schema, Signal, seeded Random and Zones
+now; the keepers' chase (Pursuit) as soon as its system lands; remotes, save data, live config,
+telemetry and the round loop as Brix releases them (owner). This game keeps only its policies,
+adapters, data and art; `docs/FRAMEWORK.md` maps each need to its Brix piece. A ticket that can't
+wait for a planned piece builds the smallest stand-in behind Brix's shape and swaps it out later.

@@ -5,7 +5,7 @@ touches. This file is read on demand, never at session start; keep each row to o
 
 | Path | Owns |
 | --- | --- |
-| `default.project.json` | Rojo tree: `src/shared` → ReplicatedStorage.Shared, `src/client` → StarterPlayerScripts.Client |
+| `default.project.json` | Rojo tree: `src/shared` → ReplicatedStorage.Shared, `src/client` → StarterPlayerScripts.Client (P0-02 adds the server and Brix) |
 | `src/shared/StorageUnit/init.luau` | The package: Curtain, Motion, RollUpDoor, UnitKit, Specs |
 | `src/shared/StorageUnit/Curtain.luau` | Pure roll-up kinematics: rise → every slat's frame and the drum angle (port of `art/unit/curtain.py`) |
 | `src/shared/StorageUnit/Motion.luau` | Pure door timing curves per action, targets, the replicated motion string |

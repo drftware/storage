@@ -13,9 +13,3 @@ nowhere else.
   Studio itself, it will add the exact import steps here for you.
 - [ ] **Branches:** everything so far is on `storage-unit`; `main` has no commits yet. Say if you
   want `storage-unit` to become `main`.
-
-## Decisions (each has a default the work follows until you answer)
-
-- [ ] **Build the keepers' chase on the engine (Brix), as Time Snatchers does?** Default: yes, on
-  its Pursuit once that's ready, pinned and never edited from here. The first keeper (L-06) waits
-  on this.
