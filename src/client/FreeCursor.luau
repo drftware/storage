@@ -2,12 +2,15 @@
 --[[
 	FreeCursor: Left Alt lets go of a computer player's mouse and Alt again takes it back. First
 	person pins the mouse to the middle of the screen, so without this you can't grab a screenshot
-	or reach another window. The cursor appearing is the answer; the first time you spawn, a small
-	hint shows the key, then fades. Mouse players only: a phone or a gamepad gets neither.
+	or reach another window. The mouse is either the view or a cursor, never both: while it turns
+	the view no cursor is drawn, and when Alt frees it the cursor appearing is the answer. The first
+	time you spawn, a small hint shows the key, then fades. Mouse players only: a phone or a gamepad
+	gets none of it.
 
-	The mouse goes free while a visible GuiButton has Modal set, and holding the right mouse button
-	still looks around (docs/STUDIO.md, "Camera and prompts"). Brix has no input piece, so this one
-	is the game's own.
+	The mouse goes free while a visible GuiButton has Modal set. Holding the right mouse button
+	still turns the view while it's free, so the cursor hides for that too. Roblox's own menu shows
+	its cursor whatever we set (docs/STUDIO.md, "Freeing the mouse"). Brix has no input piece, so
+	this one is the game's own.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -105,7 +108,14 @@ function FreeCursor.new(): Brix.System
 	local hint: CanvasGroup? = nil
 	local hintThread: thread? = nil
 	local free = false
+	local turning = false -- the right mouse button is down, so the mouse turns the view
+	local iconWas = true -- the cursor's visibility before start, put back on stop
 	local connections: { RBXScriptConnection } = {}
+
+	-- A cursor is drawn only while it's a cursor: free, and not turning the view.
+	local function drawCursor()
+		UserInputService.MouseIconEnabled = free and not turning
+	end
 
 	-- Fades the hint out and lets it go; it never comes back this session.
 	local function leave()
@@ -160,6 +170,7 @@ function FreeCursor.new(): Brix.System
 		if release then
 			release.Visible = on
 		end
+		drawCursor()
 		dismissHint()
 	end
 
@@ -197,14 +208,40 @@ function FreeCursor.new(): Brix.System
 			screen.Parent = player:WaitForChild("PlayerGui")
 			gui = screen
 
+			iconWas = UserInputService.MouseIconEnabled
+			drawCursor()
+
 			table.insert(
 				connections,
 				UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
+					-- The right button turns the view wherever the cursor is, even over a button.
+					if input.UserInputType == Enum.UserInputType.MouseButton2 then
+						turning = true
+						drawCursor()
+						return
+					end
 					-- Processed means a text box or Roblox's own menu has the key.
 					if processed or input.KeyCode ~= KEY then
 						return
 					end
 					setFree(not free)
+				end)
+			)
+			table.insert(
+				connections,
+				UserInputService.InputEnded:Connect(function(input: InputObject)
+					if input.UserInputType == Enum.UserInputType.MouseButton2 then
+						turning = false
+						drawCursor()
+					end
+				end)
+			)
+			-- Leaving the window can swallow the button's release; don't strand a hidden cursor.
+			table.insert(
+				connections,
+				UserInputService.WindowFocusReleased:Connect(function()
+					turning = false
+					drawCursor()
 				end)
 			)
 			if player.Character then
@@ -225,10 +262,12 @@ function FreeCursor.new(): Brix.System
 			if gui then
 				gui:Destroy() -- the mouse goes back to the camera with the button
 				gui = nil
+				UserInputService.MouseIconEnabled = iconWas
 			end
 			release = nil
 			hint = nil
 			free = false
+			turning = false
 		end,
 	}
 end

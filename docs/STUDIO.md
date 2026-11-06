@@ -106,6 +106,13 @@ verified: a doc page, Studio, or "untested".
   frame. The camera turns from the `MouseDelta` binding in `PlayerModule.InputContexts`, which an
   unlocked mouse doesn't feed. Studio doesn't lock the mouse while its window is out of focus, and
   the MCP's mouse moves are absolute, so neither the lock nor its release shows up from the MCP.
+- **Hiding the cursor in first person** (Play and Roblox's core scripts, 2026-11-06): first person
+  draws the arrow in the middle of the screen while the mouse only turns the view.
+  `UserInputService.MouseIconEnabled` hides it, and the PlayerModule never writes it (it only swaps
+  `Mouse.Icon` for shift lock and the toggle camera), so the game owns it. Roblox's menu still gets
+  a cursor: its SettingsHub sets `OverrideMouseIconBehavior` to ForceShow while open
+  (Roblox/Core-Scripts on GitHub, archived; the property is core-script only, so a game script
+  can't even read it). While the menu is open, Left Alt arrives as processed input.
 - **The PlayerModule now lives at `StarterPlayer.PlayerModule`** (Play, 2026-11-06), not in
   PlayerScripts. Its ControlModule moves the character with `self.moveFunction(player, worldVector,
   false)` on most paths, but some flag-gated paths skip it. `Humanoid.MoveDirection` read in a

@@ -50,11 +50,13 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   (a client's write stays on that client, checked in Play; name occlusion can't do it, since an
   invisible collider never occludes). Left Alt frees the mouse and takes it back for mouse players
   (`FreeCursor`, D-014), with a hint, "Alt Cursor", that fades in 3 s after you spawn and out 6 s
-  later, or as soon as you press it (`docs/art/P0-02f-cursor-hint.jpg`). Verified in Studio: Alt
-  toggles both ways; with the cursor free E, F, Q and R opened, closed, peeked and locked 102; the
-  hint shows once and cleans up. Not seen here: the mouse actually going free and the view holding
-  still (Studio doesn't lock the mouse while its window is out of focus), and the name tag with two
-  players. Both wait on `OWNER.md`.
+  later, or as soon as you press it (`docs/art/P0-02f-cursor-hint.jpg`). The mouse is either the
+  view or a cursor (owner, Nov 6): no cursor is drawn while it turns the view, including the right
+  button held while free. Verified in Studio: Alt toggles both ways and the cursor shows only when
+  free; with the cursor free E, F, Q and R opened, closed, peeked and locked 102; Alt does nothing
+  while Roblox's menu is open; the hint shows once and cleans up. Not seen here: the mouse actually
+  going free and the view holding still (Studio doesn't lock the mouse while its window is out of
+  focus), the menu's cursor, and the name tag with two players. All wait on `OWNER.md`.
 - [ ] **P0-02d The hall lit like the look sheets** (D-012). The owner likes the light in
   `art/sheets/unit-hall.png`, `unit-hero.png` and `unit-inside.png` and wants the game to match.
   The MCP's captures are accurate (the owner's darker shot was dimmed by the pause menu); today

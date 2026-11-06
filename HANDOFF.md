@@ -9,13 +9,15 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   hides a friend behind a shut door, this client's copy of their Humanoid's `DisplayDistanceType`
   goes to None, and the old value comes back on show and on stop. A new client system,
   `FreeCursor`, frees the mouse on Left Alt for mouse players (a visible `Modal` button) and shows
-  an "Alt Cursor" hint once a session (`docs/art/P0-02f-cursor-hint.jpg`).
+  an "Alt Cursor" hint once a session (`docs/art/P0-02f-cursor-hint.jpg`). The mouse is either the
+  view or a cursor (the owner's call): no cursor is drawn while it turns the view.
 - **Verified in Studio** (solo Play): a client's `DisplayDistanceType` write stays on the client
-  (the server still read Viewer); Alt toggles the button both ways; with the cursor free, E, F, Q
-  and R opened, closed, peeked and locked 102; the hint fades in, holds, fades out and is gone.
+  (the server still read Viewer); Alt toggles both ways and the cursor shows only while free, never
+  with the right button held; Alt does nothing while Roblox's menu is open; with the cursor free,
+  E, F, Q and R opened, closed, peeked and locked 102; the hint fades in, holds, fades out and goes.
 - **Not seen here:** the mouse actually going free and the view holding still (Studio doesn't
-  lock the mouse while its window is out of focus; docs/STUDIO.md, "Freeing the mouse"), and the
-  name tag with two players. Both wait on `OWNER.md`.
+  lock the mouse while its window is out of focus; docs/STUDIO.md, "Freeing the mouse"), the menu's
+  cursor, and the name tag with two players. All wait on `OWNER.md`.
 - Studio's place is `storage.rbxl`; `rojo serve` was running on port 34872 (`lsof -iTCP:34872`).
 
 ## Next task: P0-02d The hall lit like the look sheets

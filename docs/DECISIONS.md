@@ -108,5 +108,6 @@ First person pins the mouse to the middle of the screen, so a computer player co
 screenshot or reach another window. Left Alt (Option on a Mac) toggles a free cursor for mouse
 players; phones and gamepads get no key and no hint. It works the way Roblox documents: a visible
 GuiButton with `Modal` set leaves the mouse unlocked, and the right mouse button still looks around
-while it's free. Not taken: writing `MouseBehavior` ourselves (the camera script puts LockCenter back
+while it's free. The mouse is either the view or a cursor, never both (owner, Nov 6): no cursor is
+drawn while it turns the view, the way first-person shooters hide theirs. Not taken: writing `MouseBehavior` ourselves (the camera script puts LockCenter back
 every frame), or a fork of the PlayerModule. The key is a default the owner can change (`OWNER.md`).
