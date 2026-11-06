@@ -24,11 +24,20 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   the dev corridor of nine units. Verified in Studio (one player): the corridor builds, Open runs
   2 s and the door draws open with its collider out of the way, a padlocked door and a lock on a
   moving door both refuse.
-- [ ] **P0-02b The corridor, played.** Every prompt by key, the refusals' flashes, the Lift from
-  inside, bolt and padlock on screen, paint and plates, Go far and Come back with doors in the
-  right state after streaming back in, the corridor's triangle and draw-call counts, phone-size
-  screenshots (Device Simulator), and the hall's light level judged (it reads bright for after
-  hours). Then the owner's two-player test (OWNER.md). Fix what's wrong in the rig.
+- [x] **P0-02b The corridor, played.** Done Nov 5, verified in Studio (one player, by key): Peek,
+  Open, Close, Slam, Lock and Unlock at 101, and Lift from inside after a slam; "Padlocked" at 105
+  and on a locked 101, "Shut it first" on an open door; bolt and padlock show; plates 101 to 108;
+  the curtain coils cleanly; the slam lands in about 0.27 s and bounces. Go far streams the hall
+  out, Come back brings every door back as left. Shots in `docs/art/P0-02b-*.jpg`. Found: the
+  camera passes through every unit (P0-02c).
+- [ ] **P0-02c The camera stays in the hall.** Roblox's camera stops only at solid, visible parts,
+  and a unit has none, so in the 8-stud hall the camera backs through the shut door behind you into
+  the unit across the hall: the player sees the back of that door, and prompts hide because their
+  line of sight starts at the camera (`docs/art/P0-02b-camera-inside-102.jpg`). Make the walls,
+  facade and shut curtain stop it without blocking an open doorway or touching the server's
+  colliders. Then the owner's two-player test (OWNER.md).
+- [ ] **P0-02d The hall measured and lit.** Triangle and draw-call counts for the hall, phone-size
+  screenshots (Device Simulator), and the hall's light level: it reads bright for after hours.
 - [ ] **P0-03 The corridor kit (art).** Hall floor and ceiling, end walls and corners for the
   GDD's tile set (straight, corner, T, cross, dead end), and the motion-light fixture (the
   building's eyes), built the unit's way and judged at phone size.
@@ -78,3 +87,6 @@ launch.
 - The unit's sizes S and L: render and judge them; the large door's slat texture stretches 1.46x.
 - A client-side door collider for the local player, if the server collider's ~0.1 s lag feels
   wrong in play (art/unit/README.md, "Not verified yet").
+- The padlock is true to size (about 6 by 9 cm) and hard to spot from standing height
+  (`docs/art/P0-02b-padlock.jpg`). A padlocked door should read from across the hall at phone
+  size, since it's the bolt cutters' target: a bigger lock, a brighter body, or a hasp plate.

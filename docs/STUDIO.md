@@ -44,6 +44,21 @@ verified: a doc page, Studio, or "untested".
 - Writing AlphaMode and the map properties needs plugin security (docs): the command bar and
   plugins can, game scripts can't.
 
+## Camera and prompts
+
+- **What stops Roblox's camera** (the PlayerModule's `Popper`, read in Studio, 2026-11-05): its
+  ray uses `RespectCanCollide` and the Default collision group, and it stops only at a part that is
+  CanCollide with total transparency under 0.25. Invisible colliders and non-colliding meshes let
+  it straight through, so a unit as prepared today stops nothing (P0-02c).
+- **A prompt shows only when on screen and in sight of the camera** (seen in Play, 2026-11-05):
+  with the camera inside the unit across the hall, 101's prompts hid; with it in the hall, all five
+  showed. Default Exclusivity is OnePerButton: one prompt per key at a time.
+- **A thin mesh gets a bad decomposition:** the unit's Facade (0.001 thick, doorway cut out) given
+  PreciseConvexDecomposition at runtime got a hull across the doorway (a ray down the doorway's
+  middle hit it). `CollisionFidelity` itself is writable from scripts (docs and Play).
+- Right after the hall streamed back in, the first capture rendered black; a few seconds later it
+  was lit. Watch for that flash after a teleport.
+
 ## Tools
 
 - **Driving Studio from a session:** `.mcp.json` starts Studio's own MCP server
@@ -61,6 +76,13 @@ verified: a doc page, Studio, or "untested".
   `StreamingTargetRadius`, `StreamOutBehavior`). `inspect_instance` returns no properties for
   Workspace or Lighting either. Check those in the Properties panel. It can still require the game's modules, set AlphaMode, destroy a
   PackageLink and set ChangeHistory waypoints.
+- **Playtesting through the MCP** (P0-02b): `user_keyboard_input` key presses trigger
+  ProximityPrompts; `character_navigation` walks the character there; setting
+  `workspace.CurrentCamera.CFrame` on the client turns the Custom camera. `screen_capture` with no
+  camera position shows the player's view, with one it moves the camera; CoreGui (prompts) never
+  shows in captures, so read `prompt.ObjectText` on the server for refusals, and track shown prompts
+  with `ProximityPromptService.PromptShown` and `PromptHidden`. With Studio in the background the
+  client ran at about 15 fps, so time feel by the clock, not by frames.
 - **Rojo connects through the owner:** start `rojo serve` in the background; the owner clicks
   Connect in Studio's Rojo plugin. Rojo keeps the place's own children (Baseplate,
   `ReplicatedStorage.Units`) because no node there has a `$path`.

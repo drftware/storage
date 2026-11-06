@@ -2,54 +2,53 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-05, session 3 · **Checks:** green · **Git:** `storage-unit`, local only (`main` has no commits yet).
+**Updated:** 2026-11-05, session 4 · **Checks:** green · **Git:** `storage-unit`, local only (`main` has no commits yet).
 
 ## State
-- **The game runs in Studio** (P0-02): Rojo tree with night lighting and streaming; Brix mounted at `vendor/brix`
-  (`4c21b5f`), a Host on each side (`src/server/init.server.luau`, `src/client/init.client.luau`); the client's
-  `DoorView` system draws doors; the Studio-only `DevCorridor` system builds nine real units in Play.
-- **Art goes up through Open Cloud** (D-010), as porch-pirates does: `lune run scripts/upload_unit` (key in the
-  git-ignored `.config/.env`, now in place). The unit is Model asset 135739386247346, inserted and prepared into
-  `ReplicatedStorage.Units.M` in Studio's place, which is still unsaved "Place1" (OWNER.md).
-- **Verified in Studio, one player:** corridor builds (doors on their lines, shared walls dropped, 105 and 108
-  padlocked); Open takes 2 s and draws open on the client; the collider leaves the doorway; padlock and lock-while-
-  moving refuse. Not yet: prompts by key, slam, lift, streaming, counts, phone size, two players.
-- The MCP's `execute_luau` can't read the streaming radii (docs/STUDIO.md, Tools); Rojo serve needs the owner's
-  Connect click each session. Lighting's old Technology setting is gone; Rojo sets its replacements (LightingStyle
-  Realistic, PrioritizeLightingQuality on). The owner saved the place as `storage.rbxl` (git-ignored).
+- **The corridor plays** (P0-02b, verified in Studio, one player, by key): every door action and refusal at 101 and
+  105, Lift from inside, bolt and padlock, plates 101 to 108, the curtain's coil, the slam's bounce, and streaming out
+  and back with every door as left. Shots in `docs/art/P0-02b-*.jpg`. No code changed this session.
+- **Found: the camera passes through every unit.** Roblox's camera stops only at parts that are CanCollide and under
+  0.25 transparent (docs/STUDIO.md, "Camera and prompts"). A prepared unit's colliders are invisible and its meshes
+  don't collide, so in the 8-stud hall the camera backs through the shut door behind you into the unit across the
+  hall (`docs/art/P0-02b-camera-inside-102.jpg`), and the prompts you face hide because their line of sight starts
+  at the camera. That's P0-02c.
+- Studio's place is `storage.rbxl` with the template at `ReplicatedStorage.Units.M`. A `rojo serve` from an earlier
+  session was still running (port 34872, this repo); check with `lsof -iTCP:34872` before starting another.
 
-## Next task: P0-02b The corridor, played
-The moment: a friend sprints into a unit, you slam the door on them, and both screens agree it's shut.
-1. Owner verdicts or test results first. Start `rojo serve default.project.json` in the background and ask the
-   owner to click Connect. Check Studio still has the template (`ReplicatedStorage.Units.M`); if the place was
-   lost, rebuild it per `art/unit/README.md` "Into Studio" step 2 from `art/unit/assets.json`.
-2. Play (start_stop_play). Walk to 101 with `character_navigation` and press each key with `user_keyboard_input`:
-   Q, E, F, G, R (Lock and Unlock), and T inside. Read results on the server (`DoorMotion`, `DoorLocked`,
-   `DoorCollider` size) and look with `screen_capture`. Prompts are CoreGui, so read `prompt.ObjectText` for the
-   refusal flashes ("Padlocked" at 105, "Shut it first" on an open door).
-3. Check on screen: bolt and padlock appear on lock; paint colours and plates 101 to 108 read; the slam lands and
-   bounces; the curtain coils on the drum with no gaps or popping.
-4. Streaming: press E at the "Go far" post, then on the client check the hall's units streamed out (Workspace
-   descendants), "Come back", and check each door's pose matches its `DoorMotion` after streaming back in.
-5. Counts: triangles and draw calls for the hall (rbx-scene-analysis or rbx-perf-profiling skill), into STUDIO.md.
-6. Phone size: Device Simulator on a small Android in landscape (rbx-device-simulator-lua), screenshots of the
-   hall, an open unit and a padlocked door to `docs/art/P0-02-*.jpg`.
-7. Light level: the hall reads bright for after hours (`docs/art/P0-02-hall.jpg`, taken before LightingStyle was
-   set). Tune the tube lights and Ambient in `DevCorridor.luau` and `default.project.json` until a
-   dead light would mean a dark stretch; note the numbers. The real fixture is P0-03's.
-8. Fix anything wrong in the rig with a failing Lune spec first where it's pure. Then hand the two-player test to
-   the owner (OWNER.md has it).
-**Acceptance:** checks green; every prompt and refusal shown working in Play with screenshots; streaming out and
-back keeps doors right; counts and phone-size shots saved; STUDIO.md updated.
-**Read first:** `src/server/DevCorridor.luau`; `src/shared/StorageUnit/RollUpDoor.luau` (header, `play`,
-`setLocked`); `docs/STUDIO.md` ("Getting assets into Roblox", "Tools"); `art/unit/README.md` ("Moving the door").
+## Next task: P0-02c The camera stays in the hall
+The moment: you back away from a door with a friend behind you, and the camera stays in the hall with you.
+1. Owner verdicts first: if the owner picked a camera (OWNER.md), follow it. A first-person lock still needs this fix
+   only where the head can poke a wall; third person (the default for now) needs all of it.
+2. Reproduce: Play, stand at (-18, 3, 0) facing 101 at default zoom; the client's `CurrentCamera` sits past z = 4
+   (inside 102). Keep this as the acceptance probe.
+3. Walls: in `UnitKit.prepare`, make WallLeft, WallRight, WallBack and WireTop solid (CanCollide, CanQuery,
+   CollisionFidelity Box). Their bounding boxes match their spec colliders (WallLeft is 0.2 x 10 x 11.75), so the
+   visible part can stand in for the box or sit beside it; keeping the spec boxes as physics truth is the safe start.
+4. Shut curtain: solid on the client only while it shows. In `Rig.pose`, set CurtainClosed's CanCollide with its
+   Transparency (it hides while the chain moves). Never on the server: keepers would hit an open door. Prepare sets
+   its CollisionFidelity to Box. Tried live: forgetting to clear it when hidden blocks the doorway.
+5. Facade: it's a 0.001-thick panel with the doorway cut out, and a decomposition fills the doorway (tried live).
+   Recommended: split it in the Blender script (`art/unit/parts.py`, `parts.facade`) into three flat pieces named
+   like their spec colliders (FacadeLeft, FacadeRight, Header), each solid with Box fidelity; rebuild with
+   `scripts/art.sh`, upload with `lune run scripts/upload_unit`, insert and prepare per `art/unit/README.md`
+   "Into Studio". If that's too heavy, say why in DECISIONS and pick another way; the doorway must stay open.
+6. Re-prepare the template in Studio's Edit mode and ask the owner to save the place (OWNER.md).
+7. Play and probe: back to a shut door, the camera stays in the hall; inside a shut unit it stays inside; you walk
+   in and out of an open doorway freely; Lift never shows from the hall; the server's CurtainClosed never collides.
+**Acceptance:** checks green; the probes above pass in Play with screenshots; STUDIO.md, CODEMAP and README updated.
+**Read first:** `src/shared/StorageUnit/UnitKit.luau` (`prepare`); `src/shared/StorageUnit/RollUpDoor.luau`
+(`Rig.pose`); `docs/STUDIO.md` ("Camera and prompts", "Tools"); `art/unit/README.md` ("Parts", "Into Studio");
+`art/unit/parts.py` (`facade`).
 
 ## Queue (the next run's order, from ROADMAP)
-1. **P0-03 The corridor kit:** hall floor and ceiling, the tile set's walls and corners, the motion-light fixture.
-2. **P0-04 The door's sounds and feel:** peek scrape, open rattle, slam bang and bounce, latch, padlock.
-3. **Phase 1, then Phase 2** (ROADMAP): the loop with real assets (L-01 to L-09), then the rest of the game.
-4. **Polish waiting:** judge sizes S and L by eye; a client-side door collider if the ~0.1 s lag feels wrong.
-5. **Found this session:** S and L need FBXs and uploads before they can be used (`SIZES` in `upload_unit`).
+1. **P0-02d The hall measured and lit:** triangle and draw-call counts, phone-size shots, the light level (too
+   bright for after hours: the facades read near white).
+2. **P0-03 The corridor kit:** hall floor and ceiling, the tile set's walls and corners, the motion-light fixture.
+3. **P0-04 The door's sounds and feel:** peek scrape, open rattle, slam bang and bounce, latch, padlock.
+4. **Phase 1, then Phase 2** (ROADMAP): the loop with real assets (L-01 to L-09), then the rest of the game.
+5. **Polish waiting:** sizes S and L by eye (they need FBXs and uploads first); a client-side door collider if the
+   ~0.1 s lag feels wrong; the padlock is too small to spot from standing height.
 
 ## Kickoff for the next agent
 ```text

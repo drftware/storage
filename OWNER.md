@@ -16,8 +16,12 @@ nowhere else.
   every asset after it: worn, real materials under cold corridor light (D-007).
 - [ ] **Branches:** everything so far is on `storage-unit`; `main` has no commits yet. Say if you
   want `storage-unit` to become `main`.
+- [ ] **Pick the camera: first person or third?** The design doc doesn't say. Pressure plays in
+  first person, Dandy's World in third. First person keeps the camera out of walls and makes the
+  dark closer; third lets you watch your back in a narrow hall. Until you say, the game keeps
+  Roblox's default third-person camera, and P0-02c makes the units stop it either way.
 
-## After P0-02b (the next session says when)
+## After P0-02c (the next session says when)
 
 - [ ] **Two-player door test.** Test tab → Clients and Servers → 2 players → Start. In both
   windows walk to the same door (spawn is at the hall's west end; units 101 to 108).
