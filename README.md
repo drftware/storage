@@ -3,6 +3,9 @@
 Co-op horror climb out of a living self-storage building. Design: the GDD (Claude Doc linked
 in the owner's notes).
 
+Sessions hand off through `HANDOFF.md` (now), `AGENTS.md` (rules), `OWNER.md` (what waits on the
+owner) and `docs/` (roadmap, decisions, code map, Studio notes).
+
 What's here so far:
 
 - `art/unit/` — the storage unit: Blender pipeline, baked textures, the FBX for Studio, and

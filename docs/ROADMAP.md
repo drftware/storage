@@ -1,0 +1,66 @@
+# Roadmap
+
+One ticket = one session. A ticket names what to build, how we know it's done, and what to read
+first. If a ticket grows past one session, split it here before starting. Later tickets are
+one-liners; each gets its full spec when it becomes HANDOFF's Next task.
+
+The order follows the owner's plan (2026-11-05): set up the project and bring the real assets in,
+build the gameplay loop with those real assets and hone it until it's awesome, then flesh out
+the rest of the floors and the game. It matches the GDD's build order (its "Build order" section).
+
+## Phase 0: Foundations
+
+Gate 0: two players walk a real corridor of units in Studio, and peeking, opening, slamming and
+locking doors looks, sounds and blocks right for both of them, at phone size, with no hitch.
+
+- [x] **P0-01 The storage unit and its roll-up door.** Done Nov 5 (passes checks, untested in
+  Studio): the 10x10 unit built as code in Blender with baked PBR textures, an FBX for the 3D
+  Importer, and the door rig (`RollUpDoor`, `Motion`, `Curtain`, `UnitKit`) with Lune specs
+  (D-001 to D-007). Sizes S and L build but haven't been checked by eye.
+- [ ] **P0-02 The Roblox project, and the unit in Studio.** The full Rojo tree with server and
+  client entry points and the place's settings; the unit imported, prepared and kept in the repo
+  as a model file; a test corridor whose doors peek, open, slam and lock in Play. Full spec in
+  HANDOFF.md.
+- [ ] **P0-03 The corridor kit (art).** Hall floor and ceiling, end walls and corners for the
+  GDD's tile set (straight, corner, T, cross, dead end), and the motion-light fixture (the
+  building's eyes), built the unit's way and judged at phone size.
+- [ ] **P0-04 The door's sounds and feel.** The quiet scrape of a peek, the loud rattle of an
+  open (keepers hear it), the bang and bounce of a slam with a little camera shake nearby, the
+  latch's clack, the padlock; from Roblox's audio library, timed off `RollUpDoor.play`'s duration.
+
+## Phase 1: The loop, with real assets
+
+Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtests.
+
+- [ ] **L-01 The floor generator.** A floor laid from a seed on the GDD's tile grid: unit rows
+  with shared walls dropped, numbers, paint per floor, the elevator lobby; built during the ride.
+- [ ] **L-02 Doors as the GDD's state machine.** Closed, peeking, opening, open, slamming,
+  locked; prompts for Peek, Open, Slam and Lift from inside; range, tool and rate checks.
+- [ ] **L-03 Motion lights the building watches.** Fixtures wake for anything moving near them;
+  the server owns their state; real lights near the camera, a glow farther out (GDD Lights).
+- [ ] **L-04 What's behind the door.** A first director deals each unit's contents on open: a
+  find, a note, nothing, or a keeper (GDD "What's behind the door"). Needs find and box props.
+- [ ] **L-05 Notes, the keypad and the elevator.** The floor's 4-digit code on sticky notes, the
+  keypad, the gate that shuts 30 s after the last digit (Dandy's World). Needs the elevator,
+  gate, keypad and note art first.
+- [ ] **L-06 The Mannequin.** The first keeper, at no more than player speed. Needs its model
+  and animations first, and the engine question settled (OWNER.md).
+- [ ] **L-07 Getting kept and rescued.** Shrink-wrapped, stored in a random unit, banging to ping
+  the team, cut free in a second, padlocked if left too long (GDD "Getting kept").
+- [ ] **L-08 The ride and the next floor.** The elevator ride and a second floor, so the climb is
+  a loop and not a single room.
+- [ ] **L-09 Hone.** Playtest with friends, tune Config, add juice, repeat until Gate 1. May
+  repeat as several sessions; each one names what it changed and why.
+
+## Phase 2: The rest of the game (GDD build order step 2)
+
+All ten floors with the ride, the stairwell set piece and both boss floors; the director; the
+other keepers; tools (bolt cutters, saw with the crawl-hole wall, ladder onto the wire tops); the
+hole trap with a dented-door variant; the light board; finds with rarity; your lobby unit; the
+store; Captures. Then soft launch.
+
+## Polish waiting for a slot
+
+- The unit's sizes S and L: render and judge them; the large door's slat texture stretches 1.46x.
+- A client-side door collider for the local player, if the server collider's ~0.1 s lag feels
+  wrong in play (art/unit/README.md, "Not verified yet").
