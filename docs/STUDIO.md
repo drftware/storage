@@ -90,6 +90,9 @@ verified: a doc page, Studio, or "untested".
   by the hand's bounding box (its centre in brackets): 0.4-deep collider, from inside 1.25 (0.57);
   1.2-deep, from inside 0.79 (0.10), from the hall 0.79 (0.13). The body stops 1.17 to 1.23
   studs from the curtain at 1.2 deep. Why `BehindDoors` exists (D-013).
+- **Hiding a character doesn't hide its name tag** (owner's two-player test, 2026-11-06): with
+  every part and decal at `LocalTransparencyModifier` 1, the player's name still floated over the
+  shut door from the hall. The name display is the Humanoid's, not the parts'.
 - **The PlayerModule now lives at `StarterPlayer.PlayerModule`** (Play, 2026-11-06), not in
   PlayerScripts. Its ControlModule moves the character with `self.moveFunction(player, worldVector,
   false)` on most paths, but some flag-gated paths skip it. `Humanoid.MoveDirection` read in a

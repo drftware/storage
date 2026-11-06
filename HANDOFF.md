@@ -2,7 +2,7 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-06, session 7 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-06, session 7 (owner's test added) · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
 - **A shut door hides whoever is behind it** (P0-02e, done; D-013). The run animation keeps swinging
@@ -14,30 +14,36 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - **Verified in Studio** (solo Play): collider 1.2 deep; prompt points 0.7 either side of the
   curtain; 101's five prompts show mid-hall and pressed to the door, Lift hidden from the hall and
   shown inside; a slam from the doorway pushes you out or shuts you in, never stuck; the hiding
-  rule gives hidden/hidden/drawn for a friend inside, deep inside and in the hall. **Untested:**
-  actually hiding a second player (needs two clients): waits on `OWNER.md`. No new screenshots:
-  solo Play can't show it.
-- The cursor key half of the old ticket is now P0-02f.
+  rule gives hidden/hidden/drawn for a friend inside, deep inside and in the hall.
+- **The owner's two-player test passed** (Nov 6): nothing shows through the door and stopping a
+  stud back doesn't feel like an invisible wall. One miss: the hidden player's name tag still
+  floats over the door (`docs/art/P0-02e-name-tag-through-door.png`). It and the cursor key are
+  P0-02f.
 - Studio's place is `storage.rbxl`; `rojo serve` was running on port 34872 (`lsof -iTCP:34872`).
 
-## Next task: P0-02f The cursor key
-The moment: a computer player lets go of the mouse to grab a screenshot or answer a message, then
-drops straight back into looking around.
-1. Owner verdicts or test results first (OWNER.md's two-player check of BehindDoors). Check
-   `lsof -iTCP:34872` for Rojo (start `rojo serve` in the background if none); ask for Connect.
-2. Verify on create.roblox.com that a visible GuiButton with `Modal = true` frees the mouse under
-   `LockFirstPerson`; note what you learn in docs/STUDIO.md ("Camera and prompts").
-3. Build a client system beside `DoorView` and `BehindDoors` (Brix has no input piece) that
+## Next task: P0-02f The hidden friend's name tag, and the cursor key
+The moments: a friend shut in a unit is a sound behind the door, never a name hanging in the air;
+and a computer player lets go of the mouse to grab a screenshot, then drops straight back in.
+1. Owner verdicts or test results first. Check `lsof -iTCP:34872` for Rojo (start `rojo serve` in
+   the background if none); ask for Connect.
+2. Name tag: on create.roblox.com, check that a client's write to another player's
+   `Humanoid.DisplayDistanceType` changes only its own view, and what `NameOcclusion` does. In
+   `BehindDoors.hide`, hide the Humanoid's name (keep the old value), and restore it exactly in
+   `show` and `stop`. Note the finding in docs/STUDIO.md ("Hiding a character...").
+3. Cursor: verify on create.roblox.com that a visible GuiButton with `Modal = true` frees the mouse
+   under `LockFirstPerson`; note it in docs/STUDIO.md ("Camera and prompts").
+4. Build a client system beside `DoorView` and `BehindDoors` (Brix has no input piece) that
    toggles a free cursor on Left Alt for mouse players only (`UserInputService.MouseEnabled`, not
-   on touch or gamepad), plus one short first-time hint ("Alt: cursor") that fades. Feel numbers
+   touch or gamepad), plus one short first-time hint ("Alt: cursor") that fades. Feel numbers
    (hint time, fade) as commented constants.
-4. In Play: `UserInputService.MouseBehavior` flips to Default and back; the view doesn't turn while
-   the cursor is free; prompt keys (E, F, Q, R) still work; Alt again returns to look.
-5. OWNER.md: fill in "After P0-02f" with the key and exact steps.
-**Acceptance:** checks green; the toggle works both ways in Play; the hint shows once; nothing on
-touch; a shot in `docs/art/P0-02f-*.jpg`.
-**Read first:** `docs/ROADMAP.md` (P0-02f); `src/client/init.client.luau`; `src/client/DoorView.luau`
-(the system shape); `docs/STUDIO.md` ("Camera and prompts").
+5. In Play: `MouseBehavior` flips to Default and back; the view doesn't turn while free; prompt
+   keys (E, F, Q, R) still work; Alt again returns to look.
+6. OWNER.md: fill in "After P0-02f" with the key and exact steps.
+**Acceptance:** checks green; the name stays hidden in code paths for hide, show and stop (the
+owner checks it with two players); the cursor toggles both ways in Play; the hint shows once;
+nothing on touch; a shot in `docs/art/P0-02f-*.jpg`.
+**Read first:** `docs/ROADMAP.md` (P0-02f); `src/client/BehindDoors.luau`;
+`src/client/init.client.luau`; `docs/STUDIO.md` ("Camera and prompts").
 
 ## Queue (the next run's order, from ROADMAP)
 1. **P0-02d The hall lit like the look sheets** (D-012): match `art/sheets/unit-hall.png` and

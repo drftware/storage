@@ -41,13 +41,24 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   animation swings a hand 1.25 studs through the old 0.4-deep collider and 0.8 through a 1.2-deep
   one (docs/STUDIO.md). The collider is now 1.2 deep (`RollUpDoor.ColliderDepth`, fitted at
   placement), the prompt points sit just outside it, and each client stops drawing anyone a shut
-  door stands between it and (`BehindDoors`, D-013). P0-02c's probes pass. Waits on `OWNER.md`.
-- [ ] **P0-02f The cursor key** (split from P0-02e). First person traps the mouse, so a computer
-  player can't take a screenshot or move between windows. A key (default Left Alt; name it in
-  OWNER.md) toggles between look and a free cursor. Roblox's documented way is a visible GuiButton
-  with `Modal` set, which frees the mouse in first person; verify it before relying on it. Mouse
-  players only; the cursor appearing is the answer, plus one short hint the first time. Brix has
-  no input piece (checked Nov 6), so it's this game's client controller.
+  door stands between it and (`BehindDoors`, D-013). P0-02c's probes pass. The owner's
+  two-player test passed (Nov 6): nothing through the door, no invisible-wall feel. One miss: the
+  hidden player's name tag still floats through the door, now in P0-02f.
+- [ ] **P0-02f The hidden friend's name tag, and the cursor key** (from the owner's tests, Nov 6).
+  1. **The name tag.** `BehindDoors` hides a player shut in a unit, but their name tag ("Player1")
+     still floats over the door (`docs/art/P0-02e-name-tag-through-door.png`): fading every part
+     with `LocalTransparencyModifier` doesn't hide Roblox's name display. When `BehindDoors` hides
+     a character, also hide its name on this client, and put it back exactly as it was on show.
+     Likely route: set that Humanoid's `DisplayDistanceType` to `None` locally and restore the old
+     value; check on create.roblox.com that a client's write only changes its own view, and
+     whether `NameOcclusion` would do it instead (the collider is invisible and the curtain thin,
+     so occlusion may not catch it). Note what you learn in docs/STUDIO.md.
+  2. **The cursor key.** First person traps the mouse, so a computer player can't take a screenshot
+     or move between windows. A key (default Left Alt; name it in OWNER.md) toggles between look
+     and a free cursor. Roblox's documented way is a visible GuiButton with `Modal` set, which
+     frees the mouse in first person; verify it before relying on it. Mouse players only; the
+     cursor appearing is the answer, plus one short hint the first time. Brix has no input piece
+     (checked Nov 6), so it's this game's client controller.
 - [ ] **P0-02d The hall lit like the look sheets** (D-012). The owner likes the light in
   `art/sheets/unit-hall.png`, `unit-hero.png` and `unit-inside.png` and wants the game to match.
   The MCP's captures are accurate (the owner's darker shot was dimmed by the pause menu); today
