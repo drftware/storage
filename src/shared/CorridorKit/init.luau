@@ -63,6 +63,19 @@ function CorridorKit.template(name: TemplateName): Model?
 	return if template and template:IsA("Model") then template else nil
 end
 
+-- The first of the kit's templates the place doesn't have yet, or nil once it has them all.
+local NAMES = { "Straight", "Corner", "T", "Cross", "Wall", "ShortWall", "DeadEnd", "Fixture" }
+function CorridorKit.missing(): string?
+	local folder = ReplicatedStorage:FindFirstChild("Corridor")
+	for _, name in NAMES do
+		local template = folder and folder:FindFirstChild(name)
+		if not (template and template:IsA("Model")) then
+			return name
+		end
+	end
+	return nil
+end
+
 local function part(model: Model, name: string): BasePart
 	local found = model:FindFirstChild(name, true)
 	assert(found and found:IsA("BasePart"), `CorridorKit: {model:GetFullName()} has no {name}`)
@@ -194,21 +207,37 @@ function CorridorKit.place(name: TemplateName, at: CFrame, parent: Instance): Mo
 	return piece
 end
 
+-- How near a wall's spot in the spec must be to one passed to `junction` to count as it, in studs.
+local SAME_SPOT = 0.05
+
 -- Lays a copy of a junction with its frame at `at` (the middle of its square, on the floor, turned
 -- so its arms point down the halls it joins: Specs.Junctions.<name>.Arms, in its frame), and stands
--- the walls it needs inside it, painted `paint` like the floor's units.
+-- the walls it needs inside it, painted `paint` like the floor's units. `units` are the faces, in
+-- the junction's frame, where a unit stands instead of one of its walls (Floor.JunctionSlots): the
+-- wall there is left out, so the unit's door is the hall's side.
 function CorridorKit.junction(
 	name: JunctionName,
 	at: CFrame,
 	paint: Color3,
-	parent: Instance
+	parent: Instance,
+	units: { Vector3 }?
 ): Model
 	local model = CorridorKit.place(name, at, parent)
 	-- any: a name keys the generated table, which strict mode can't index by a string
 	local spec: Junction = (Specs.Junctions :: any)[name]
+	local spots: { Vector3 } = units or {}
 	for _, w in spec.Walls do
-		local face = at * CFrame.lookAt(w.Position, w.Position + w.Look)
-		CorridorKit.wall(w.Name :: WallName, face, paint, model)
+		local unitHere = false
+		for _, u in spots do
+			if (u - w.Position).Magnitude < SAME_SPOT then
+				unitHere = true
+				break
+			end
+		end
+		if not unitHere then
+			local face = at * CFrame.lookAt(w.Position, w.Position + w.Look)
+			CorridorKit.wall(w.Name :: WallName, face, paint, model)
+		end
 	end
 	return model
 end

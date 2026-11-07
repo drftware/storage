@@ -348,3 +348,24 @@ apart from the M rows the owner's earlier tests use. Not chosen: baking a textur
 (five more sets to stream and keep in step); the S door squashing the M's texture (the grain reads
 finer than the M's beside it); the S row replacing two M units in the main hall (it would move
 units the open tests in `OWNER.md` name).
+
+## D-029 · 2026-11-07 · Laying a floor: piece by piece from the lobby, inside a frame's share
+`FloorBuilder.lay` (server) turns `Floor` data into the building (L-01c). It lays the lobby, then
+the hall pieces nearest the lobby first, each piece with everything on it (the kit's straight or
+junction, its units and plain walls, a dead end, its light) dressed in an unparented folder and
+parented once; between units, and after each piece, it waits a frame once 4 ms of that frame are
+spent. Floor 3 of seed 7 (67 units) took 65 ms of work over 15 frames, at most 6.2 ms in one, so
+L-08 can lay the next floor while the elevator rides without a stutter. A junction is laid with
+its own walls except where a unit stands (`CorridorKit.junction`'s `units`, faces in the
+junction's frame), so the unit's door is the hall's side; a junction's plain-wall slots keep the
+kit's wall. A unit's `drops` (floor Dirs) pick WallLeft or WallRight by whichever stands toward
+that way, so it holds at any turn of the floor. Each light's power zone is named for its floor
+(`Floor3.A`), so two floors laid at once never share a breaker. The lobby is a stand-in until
+L-05: one plain room, its square and the elevator's space behind it, lit only by a warm lamp in
+the car, the one light on a floor that is always on, so you arrive in a glow and the hall's mouth
+stays dark. The door's test prompts moved from the test hall to `DoorPrompts`, for any laid unit,
+until L-02 replaces them. In Studio the test hall lays floor 3 of seed 7 (Workspace's
+`DevFloorSeed` and `DevFloorNumber` change it) 600 studs off, and prints its map; "Walk a floor"
+by the spawn goes there. Not chosen: the floor replacing the test hall (the owner's open tests in
+`OWNER.md` name its units); a fixed count of pieces a frame (a piece holds none to six units, and
+six can take a whole frame); padlocks on a laid floor (L-04 deals those).

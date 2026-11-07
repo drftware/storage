@@ -210,6 +210,15 @@ verified: a doc page, Studio, or "untested".
   73,844 triangles in 28 opaque draw calls (P0-03b's fixtures made it 71,400 in 21), 39 in the
   main view with UI and haze, 105 over every pass. A plain wall is 556 triangles and a dead end
   958; each kind draws its three parts in three calls however many stand.
+- **A laid floor** (L-01c, floor 3 of seed 7, 67 units; Studio's full window, 1430x761, Quality
+  Automatic, not the phone viewport): from the lobby facing the hall, 96,344 triangles in 43
+  opaque draw calls, 55 over every pass; at the first T looking down a 96-stud aisle, 111,758 in
+  43, 55. All 67 units were streamed in on the client at once (a floor fits the target radius),
+  and most of those triangles are units behind walls. Measure it on the phone viewport next.
+- **Laying a floor in Play** (L-01c): the first Play frames are slow (Studio is loading the
+  client), so a floor laid at start takes about 1.4 s by the clock for 65 ms of work; judge
+  laying by its work per frame (`FloorBuilder`'s `Laid`), not by the clock. `execute_luau` on the
+  Server can require `FloorBuilder` and lay a test floor (it yields fine), then `:Destroy()` it.
 
 ## Importing kit pieces
 

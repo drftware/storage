@@ -135,7 +135,7 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
 
 Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtests.
 
-- [ ] **L-01 The floor generator**, in three sessions. **L-01a done Nov 7** (D-027): the floor
+- [x] **L-01 The floor generator**, in three sessions. **L-01a done Nov 7** (D-027): the floor
   as pure data from a seed (`src/shared/Floor.luau`): halls grown from the lobby on a grid of
   junction points 48 studs apart, so a straight always stands between two junctions; loops
   joining near halls; each hall side a row of two M or three S slots, the kit's slots at the
@@ -146,13 +146,15 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
   (`OWNER.md`). **L-01b done Nov 7** (D-028): the S unit exported, uploaded and kept at
   `ReplicatedStorage.Units.S`; its door wears the M's textures at the M's grain; the test hall's
   short hall past the corner is three S a side (109 to 114, 112 padlocked); every door action
-  verified on an S in Studio; phone shots beside the M rows (`docs/art/L-01b-*.jpg`). **L-01c** laying the data in Studio with `CorridorKit` and `UnitKit`,
-  replacing DevCorridor's hand-placed hall: each piece at its frame (`Floor.dir(turn)`), each
-  slot a unit (painted, numbered, the side walls in its `drops` left out) or the kit's plain or
-  short wall, each junction with the kit's wall left out where a unit stands
-  (`Floor.JunctionSlots`), the dead ends, the motion lights hung through L-03's system with their
-  power zones, and the lobby a stand-in until L-05; built during the ride (L-08).
-  Brix: Random (seeded), Schema for the plans.
+  verified on an S in Studio; phone shots beside the M rows (`docs/art/L-01b-*.jpg`). **L-01c done Nov 7** (D-029): `FloorBuilder` lays a floor from its data on the server: each
+  hall piece at its frame, a unit at every unit slot (painted, numbered, its shared side walls
+  left out), the kit's plain or short wall at the rest, each junction's own wall left out where a
+  unit stands (`CorridorKit.junction`'s `units`), the dead ends, a motion light over every piece
+  in its floor's power zone, and a stand-in lobby lit by the elevator car's lamp. It works out
+  from the lobby and never spends more than about 4 ms of a frame (65 ms in all for 67 units);
+  each piece is parented once. The test hall lays floor 3 of seed 7 beside it ("Walk a floor"),
+  checked slot by slot against the data on six floors in Studio; the door prompts moved to
+  `DoorPrompts`. The ride's laying is L-08's. Brix: Random (seeded), Schema for the plans.
 - [ ] **L-02 Doors as the GDD's state machine.** Closed, peeking, opening, open, slamming,
   locked; prompts for Peek, Open, Slam and Lift from inside; range, tool and rate checks. Brix: the
   door becomes a system on the Host's clock, with Signal for door events; Remotes once ENG-09 ships.
@@ -163,7 +165,8 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
   Every refusal answers at the door too: a padlocked door rattles when someone tries it (Pro Sound
   Effects "Door Shake 4", `rbxassetid://9114152830`, checked to load; a new cue in `DoorSound`).
 - [ ] **L-04 What's behind the door.** A first director deals each unit's contents on open: a
-  find, a note, nothing, or a keeper (GDD "What's behind the door"). Needs find and box props.
+  find, a note, nothing, or a keeper (GDD "What's behind the door"). Needs find and box props
+  It also decides which doors start padlocked: a laid floor's all start unlocked (L-01c).
 - [ ] **L-05 Notes, the keypad and the elevator.** The floor's 4-digit code on sticky notes, the
   keypad, the gate that shuts 30 s after the last digit (Dandy's World). Needs the elevator,
   gate, keypad and note art first. Brix: Zone for "aboard", the Clock for the gate's timer.
@@ -191,6 +194,11 @@ launch.
 
 ## Polish waiting for a slot
 
+- **What a laid floor costs to draw** (L-01c): the whole floor streams in at once, and from its
+  lobby the main view drew 96,000 triangles (112,000 down an aisle) in 43 draw calls in Studio's
+  window, most of them units hidden behind walls. If a low-end phone struggles (`OWNER.md`), try
+  a lower `StreamingTargetRadius`, the units' MeshParts on `RenderFidelity` Automatic, or a
+  cheaper unit far off.
 - **The junctions' girder from a unit:** behind a junction's corner block the two halls' decks
   overlap in a 4-stud square, unseen from the halls; a unit's wire top could show it (the floor
   keeps M units out of those slots; an S row there stops short of it, D-027).

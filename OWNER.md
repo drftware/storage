@@ -31,15 +31,31 @@ nowhere else.
   rather than odd on one side and even on the other; (3) the breaker's power zones are the lights
   from the lobby to the first fork, then one zone per wing.
 
+## Now: walk L-01c, a floor laid from the data (built Nov 7)
+
+- [ ] **Walk a floor:** Play. The post on your left at the spawn says "Walk a floor" (E): it sends
+  you to the lobby of floor 3 from seed 7, whose map Output prints at Play (the same one
+  `lune run scripts/floor-map 7 3` prints). Walk out: round the loop, into the dead end (top
+  right of the map), round the corners. Look for: the floor matching its map; no gap, doubled
+  wall or flicker where a unit stands in a junction (304 and 305 across the first T; 342 to 345
+  in the far left corner); the lights waking ahead of you down every hall and round every turn;
+  every door working as in the test hall; mustard doors numbered from 301 as you walk out. "Come
+  back", in the lobby's corner by the elevator, returns you. Shots: `docs/art/L-01c-floor.jpg`,
+  Studio's window, not a phone (top: the lobby, the first hall, the T's two units; bottom: an
+  aisle of plain walls, the arm to a corner, the corner of small units).
+- [ ] **Try other seeds:** select Workspace, add number attributes `DevFloorSeed` (any number) and
+  `DevFloorNumber` (1 to 10; 1 and 2 are the short floors), then Play. Delete them after.
+- [ ] **The lobby stand-in:** a plain room with a warm lamp where the elevator will stand, the one
+  light on a floor that's always on, so you arrive in a glow and the hall's mouth stays dark. Say
+  if the arrival should be darker or brighter (L-05 builds the real lobby and elevator).
+- [ ] **What it costs a phone:** Galaxy A16 in the Device Simulator, Quality Level 01 and 21:
+  stand in the lobby facing the hall, then at the first T looking down the long aisle, and read
+  View > Render stats. In Studio's full window it drew 96,000 triangles from the lobby and
+  112,000 down the aisle, in 43 draw calls; the test hall's spawn drew 74,000. Say if a low-end
+  phone stutters; ROADMAP's polish list has what to try.
+
 ## Now: judge L-01b, the small unit (built Nov 7)
 
-- [ ] **Judge the shots:** `docs/art/L-01b-rows.jpg` is a Galaxy A16, Level01 on top and Level21
-  below. Left: the short hall past the corner, now three small units a side. Right: the main
-  hall's big units from the spawn end. `L-01b-doors.jpg` (Level21) is small doors 114, 112, 110
-  (left) and big doors 104, 102 (right) from the same distance. `art/sheets/unit-S-hall.png`,
-  `unit-S-hero.png` and `unit-S-studio.png` are the Blender look. Look for: the small doors' slats
-  and scuffs the same grain as the big ones' (not finer); the thin strip of wall between small
-  doors making that hall feel cramped; the number plate (the big unit's size) not crowding them.
 - [ ] **Try a small door:** Play, go down the hall, take the T's arm that runs to a corner and
   round it into the short hall. At 110: Peek (Q), Open (E), Close (F), Slam (G), Lock and Unlock
   (R); 112 is padlocked. Then walk into 110, shut it on yourself (the Command Bar line under "Now:

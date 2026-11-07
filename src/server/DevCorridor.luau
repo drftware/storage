@@ -28,12 +28,13 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local CorridorKit = require(ReplicatedStorage.Shared.CorridorKit)
+local DoorPrompts = require(script.Parent.DoorPrompts)
+local Floor = require(ReplicatedStorage.Shared.Floor)
+local FloorBuilder = require(script.Parent.FloorBuilder)
 local HallLight = require(ReplicatedStorage.Shared.HallLight)
 local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
 local MotionLights = require(script.Parent.MotionLights)
-local Motion = require(ReplicatedStorage.Shared.StorageUnit.Motion)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
-local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
 local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
 
 -- The layout, in studs. The hall runs along X; doors face each other across Z.
@@ -46,18 +47,6 @@ local CEILING = 13.4 -- without the kit: a plain ceiling, as in the look sheets
 local BAY_WALL = 0.5 -- without the kit: the plain blocks along the hall past the last units
 local FLOOR_TOP = -0.05 -- just under the units' own floors (top at 0), so the two never flicker
 local FAR_X = 700 -- far past the streaming target radius (256), so the hall streams out
-
--- The prompts.
--- In first person a prompt shows only while its point is on screen, so the points sit on the door
--- at about eye height: pressed against the door with a level gaze, they still show.
--- A point inside the door's invisible collider loses its sight line and hides, so both sit just
--- outside it (RollUpDoor.ColliderDepth).
-local PROMPT_OUT = RollUpDoor.ColliderDepth / 2 + 0.1 -- the door's prompts hang just outside the collider, hall side
-local PROMPT_HEIGHT = 4 -- just under a standing player's eyes (about 4.4)
-local PROMPT_REACH = 8 -- close enough to touch the door, not the neighbour's
-local LIFT_IN = RollUpDoor.ColliderDepth / 2 + 0.1 -- Lift hangs just behind the collider, so the shut door hides it from the hall
-local LIFT_REACH = 5 -- only someone shut inside should see Lift
-local REFUSAL_SECONDS = 1.2 -- how long "Padlocked" or "Shut it first" shows before the unit's name returns
 
 -- The hall's fixtures, one every 24 studs: over 101 and 102 by the spawn, over 105 and 106, and
 -- past the last units, with the exit sign's red at the far end. Each sits midway between two of
@@ -113,6 +102,14 @@ local FLOOR_COLOUR = Color3.fromRGB(120, 120, 118)
 local CEILING_COLOUR = Color3.fromRGB(38, 38, 40)
 local SPAWN = CFrame.lookAt(Vector3.new(-32, 3, 0), Vector3.new(0, 3, 0))
 local FAR_SPOT = CFrame.lookAt(Vector3.new(FAR_X + 6, 3, 0), Vector3.new(FAR_X, 3, -4))
+-- The floor laid beside the hall (L-01c), its lobby's middle here: far enough off that the hall
+-- streams out while you walk it. Unless Workspace's DevFloorSeed and DevFloorNumber attributes say
+-- otherwise, it's floor 3 from seed 7, the one `lune run scripts/floor-map 7 3` prints.
+local FLOOR_ORIGIN = CFrame.new(0, 0, -600)
+local FLOOR_SEED = 7
+local FLOOR_NUMBER = 3
+local FLOOR_ARRIVAL = CFrame.lookAt(Vector3.new(0, 3, 6), Vector3.new(0, 3, -12)) -- in the lobby, facing the hall
+local FLOOR_POST = CFrame.new(9, 0, 9) -- "Come back", in the lobby's corner by the elevator
 
 local DOOR_COLOURS = {
 	UnitKit.Colours.Door.Oxblood,
@@ -121,17 +118,6 @@ local DOOR_COLOURS = {
 	UnitKit.Colours.Door.Navy,
 }
 local PADLOCKED = { ["105"] = true, ["108"] = true, ["112"] = true }
-
-type Action = { kind: Motion.Kind, text: string, key: Enum.KeyCode, pad: Enum.KeyCode }
-local OUTSIDE_ACTIONS: { Action } = {
-	{ kind = "Peek", text = "Peek", key = Enum.KeyCode.Q, pad = Enum.KeyCode.ButtonL1 },
-	{ kind = "Open", text = "Open", key = Enum.KeyCode.E, pad = Enum.KeyCode.ButtonX },
-	{ kind = "Close", text = "Close", key = Enum.KeyCode.F, pad = Enum.KeyCode.ButtonB },
-	{ kind = "Slam", text = "Slam", key = Enum.KeyCode.G, pad = Enum.KeyCode.ButtonY },
-}
-local LIFT_ACTION: Action =
-	{ kind = "LiftInside", text = "Lift", key = Enum.KeyCode.T, pad = Enum.KeyCode.ButtonX }
-local LIFTS: { [Motion.Kind]: true } = { Peek = true, Open = true, LiftInside = true }
 
 local function block(
 	name: string,
@@ -311,115 +297,6 @@ local function building(
 	return folder
 end
 
-local function specOf(unit: Model): Specs.Spec
-	local size = unit:GetAttribute("UnitSize")
-	return Specs[if type(size) == "string" then size else "M"]
-end
-
-local function prompt(
-	at: Attachment,
-	objectText: string,
-	action: Action,
-	reach: number
-): ProximityPrompt
-	local p = Instance.new("ProximityPrompt")
-	p.ObjectText = objectText
-	p.ActionText = action.text
-	p.KeyboardKeyCode = action.key
-	p.GamepadKeyCode = action.pad
-	p.HoldDuration = 0
-	p.MaxActivationDistance = reach
-	p.RequiresLineOfSight = true
-	p.Parent = at
-	return p
-end
-
--- Shows `text` on the prompt for a moment in place of the unit's name. A newer refusal wins.
-local function refuser(p: ProximityPrompt, objectText: string): (text: string) -> ()
-	local shown = 0
-	return function(text: string)
-		shown += 1
-		local mine = shown
-		p.ObjectText = text
-		task.delay(REFUSAL_SECONDS, function()
-			if shown == mine and p.Parent then
-				p.ObjectText = objectText
-			end
-		end)
-	end
-end
-
--- An attachment at a world frame, on the unit's own part, so its prompts stream with the unit.
-local function pointOn(unit: Model, at: CFrame): Attachment
-	local a = Instance.new("Attachment")
-	a.Parent = unit.PrimaryPart
-	a.WorldCFrame = at
-	return a
-end
-
-local function addDoorPrompts(unit: Model, number: string)
-	local frame = RollUpDoor.frame(unit)
-	local objectText = `Unit {number}`
-
-	local function act(kind: Motion.Kind, refuse: (string) -> ())
-		if LIFTS[kind] and unit:GetAttribute("DoorLocked") == true then
-			refuse("Padlocked")
-			return
-		end
-		RollUpDoor.play(unit, kind)
-	end
-
-	local outside = pointOn(unit, frame * CFrame.new(0, PROMPT_HEIGHT, -PROMPT_OUT))
-	for _, action in OUTSIDE_ACTIONS do
-		local p = prompt(outside, objectText, action, PROMPT_REACH)
-		local refuse = refuser(p, objectText)
-		p.Triggered:Connect(function()
-			act(action.kind, refuse)
-		end)
-	end
-
-	local lock = prompt(
-		outside,
-		objectText,
-		{ kind = "Close", text = "Lock", key = Enum.KeyCode.R, pad = Enum.KeyCode.ButtonR1 },
-		PROMPT_REACH
-	)
-	local refuseLock = refuser(lock, objectText)
-	local function showLock()
-		lock.ActionText = if unit:GetAttribute("DoorLocked") == true then "Unlock" else "Lock"
-	end
-	showLock()
-	unit:GetAttributeChangedSignal("DoorLocked"):Connect(showLock)
-	lock.Triggered:Connect(function()
-		local locked = unit:GetAttribute("DoorLocked") == true
-		if not RollUpDoor.setLocked(unit, not locked) then
-			refuseLock("Shut it first")
-		end
-	end)
-
-	local inside = pointOn(unit, frame * CFrame.new(0, PROMPT_HEIGHT, LIFT_IN))
-	local lift = prompt(inside, objectText, LIFT_ACTION, LIFT_REACH)
-	local refuseLift = refuser(lift, objectText)
-	lift.Triggered:Connect(function()
-		act("LiftInside", refuseLift)
-	end)
-end
-
--- A clone of the template with its door's outer face at `face`, painted, numbered and with its
--- prompts, ready to parent. Units are dressed before they reach Workspace: clients cache the door's
--- frame and colours when a unit arrives.
-local function placeUnit(template: Model, face: CFrame, number: string, colour: Color3): Model
-	local unit = template:Clone()
-	local outer = RollUpDoor.frame(unit) * CFrame.new(0, 0, -specOf(unit).CurtainPlane)
-	unit:PivotTo(face * outer:ToObjectSpace(unit:GetPivot()))
-	unit.Name = `Unit{number}`
-	UnitKit.paint(unit, colour, UnitKit.Colours.Wall)
-	UnitKit.number(unit, number)
-	RollUpDoor.fitCollider(unit)
-	addDoorPrompts(unit, number)
-	return unit
-end
-
 -- The neighbour at lower X already stands a wall where this unit's lower-X wall would go.
 local function dropSharedWall(unit: Model)
 	local left = unit:FindFirstChild("WallLeft")
@@ -447,7 +324,7 @@ local function unitRows(
 		for i, x in xs do
 			local number = tostring(first + (i - 1) * 2 + row - 1)
 			placed += 1
-			local unit = placeUnit(
+			local unit = FloorBuilder.unit(
 				template,
 				doorFace(x, side, hallZ),
 				number,
@@ -492,12 +369,7 @@ local function breakerPost(at: Vector3, lights: MotionLights.MotionLights, paren
 	local a = Instance.new("Attachment")
 	a.Position = Vector3.new(0, 1, 0)
 	a.Parent = post
-	local p = prompt(
-		a,
-		"Breaker",
-		{ kind = "Close", text = "Cut power", key = Enum.KeyCode.E, pad = Enum.KeyCode.ButtonX },
-		PROMPT_REACH
-	)
+	local p = DoorPrompts.post(a, "Breaker", "Cut power")
 	local isCut = false
 	p.Triggered:Connect(function()
 		isCut = not isCut
@@ -531,12 +403,15 @@ local function turn(parent: Instance, lights: MotionLights.MotionLights, smallUn
 	breakerPost(BREAKER_POST, lights, parent)
 end
 
+-- A post at `at` whose prompt sends you to `to`; while `ready` says no, it says so instead.
 local function travelPost(
 	name: string,
 	at: Vector3,
+	objectText: string,
 	actionText: string,
 	to: CFrame,
-	parent: Instance
+	parent: Instance,
+	ready: (() -> boolean)?
 )
 	local post = block(
 		name,
@@ -548,15 +423,68 @@ local function travelPost(
 	local a = Instance.new("Attachment")
 	a.Position = Vector3.new(0, 1, 0)
 	a.Parent = post
-	local p = prompt(
-		a,
-		"Streaming test",
-		{ kind = "Close", text = actionText, key = Enum.KeyCode.E, pad = Enum.KeyCode.ButtonX },
-		PROMPT_REACH
-	)
+	local p = DoorPrompts.post(a, objectText, actionText)
+	local refuse = DoorPrompts.refuser(p, objectText)
 	p.Triggered:Connect(function(player: Player)
+		if ready and not ready() then
+			refuse("Still laying it")
+			return
+		end
 		send(player, to)
 	end)
+end
+
+-- Lays a floor from the data beside the hall (L-01c), prints its map, and opens the way there:
+-- "Walk a floor" by the spawn, "Come back" in its lobby. Workspace's DevFloorSeed and
+-- DevFloorNumber attributes pick which. Yields while it lays.
+local function devFloor(folder: Folder)
+	local units, missing = FloorBuilder.units()
+	if not units then
+		warn(
+			`DevCorridor: no template at {missing}, so no floor to walk; import it (art/unit/README.md, art/corridor/README.md)`
+		)
+		return
+	end
+	local seed = Workspace:GetAttribute("DevFloorSeed")
+	local number = Workspace:GetAttribute("DevFloorNumber")
+	local s = if type(seed) == "number" then seed else FLOOR_SEED
+	local n = if type(number) == "number"
+		then math.clamp(math.floor(number), 1, 10)
+		else FLOOR_NUMBER
+	local ready = false
+	travelPost(
+		"WalkFloor",
+		Vector3.new(-34, 0, -3),
+		`Floor {n}`,
+		"Walk a floor",
+		FLOOR_ORIGIN * FLOOR_ARRIVAL,
+		folder,
+		function()
+			return ready
+		end
+	)
+	local floor = Floor.generate(n, Brix.Random.new({ seed = s }))
+	print(
+		`DevCorridor: floor {n} from seed {s}, seen from above, the lobby (L) at the bottom:\n{Floor.map(
+			floor
+		)}`
+	)
+	local model, laid = FloorBuilder.lay(floor, FLOOR_ORIGIN, folder)
+	travelPost(
+		"ComeBack",
+		(FLOOR_ORIGIN * FLOOR_POST).Position,
+		`Floor {n}`,
+		"Come back",
+		SPAWN,
+		model
+	)
+	ready = true
+	local work = string.format("%.0f ms", laid.working * 1000)
+	local most = string.format("%.1f ms", laid.longest * 1000)
+	local took = string.format("%.2f s", laid.seconds)
+	print(
+		`DevCorridor: floor {n} laid, {laid.units} units on {laid.pieces} hall pieces: {work} of work over {laid.frames} frames, at most {most} in one ({took} in all); "Walk a floor" is by the spawn`
+	)
 end
 
 -- Builds the whole corridor into one folder and parents it once. Returns nil, after a warning,
@@ -630,10 +558,18 @@ local function build(lights: MotionLights.MotionLights): Folder?
 	if smallUnits then
 		count = unitRows(small :: Model, SMALL_XS, EAST_HALL.Position.Z, 109, count, folder)
 	end
-	placeUnit(template, doorFace(FAR_X, -1), "901", UnitKit.Colours.Door.Teal).Parent = folder
+	FloorBuilder.unit(template, doorFace(FAR_X, -1), "901", UnitKit.Colours.Door.Teal).Parent =
+		folder
 
-	travelPost("GoFar", Vector3.new(-34, 0, 3), "Go far", FAR_SPOT, folder)
-	travelPost("ComeBack", Vector3.new(FAR_X + 8, 0, 3), "Come back", SPAWN, folder)
+	travelPost("GoFar", Vector3.new(-34, 0, 3), "Streaming test", "Go far", FAR_SPOT, folder)
+	travelPost(
+		"ComeBack",
+		Vector3.new(FAR_X + 8, 0, 3),
+		"Streaming test",
+		"Come back",
+		SPAWN,
+		folder
+	)
 
 	local spawn = Instance.new("SpawnLocation")
 	spawn.Name = "DevSpawn"
@@ -672,14 +608,23 @@ local DevCorridor = {}
 
 function DevCorridor.new(): Brix.System
 	local built: Folder? = nil
+	local laying: thread? = nil
 	return {
 		name = "DevCorridor",
 		start = function(_: any, context: Brix.Context)
 			-- any: the registry hands back a plain System; MotionLights fills this slot (init.server)
 			local lights = (context.registry:get("motionLights") :: any) :: MotionLights.MotionLights
-			built = build(lights)
+			local folder = build(lights)
+			built = folder
+			if folder then
+				laying = task.spawn(devFloor, folder)
+			end
 		end,
 		stop = function(_: any)
+			if laying and coroutine.status(laying) ~= "dead" then
+				task.cancel(laying)
+			end
+			laying = nil
 			if built then
 				built:Destroy()
 				built = nil
