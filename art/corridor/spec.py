@@ -46,6 +46,62 @@ assert STRAIGHT % TILE == 0 and STRAIGHT % JOIST_SPACING == 0
 assert SPAN % RIB_PITCH == 0
 
 
+# --- the hall light fixture: a steel strip light on two chains, with a motion sensor's eye ----------
+# The lens is the part the game lights (HallLight.light), so its place and size are read from the
+# game's own HallLight.Height and TubeSize: the light was tuned there and the art follows it.
+def hall_light():
+    """(height of the lens's middle, (length along the hall, thickness, width across))."""
+    with open(os.path.join(ROOT, "src", "shared", "HallLight.luau")) as f:
+        src = f.read()
+    height = float(re.search(r"HallLight\.Height = ([\d.]+)", src).group(1))
+    size = re.search(r"HallLight\.TubeSize = Vector3\.new\(([\d.]+), ([\d.]+), ([\d.]+)\)", src)
+    return height, tuple(float(g) for g in size.groups())
+
+
+LENS_Z, (LENS_LEN, LENS_THICK, LENS_W) = hall_light()
+LENS_TOP = LENS_Z + LENS_THICK / 2   # where the lens clips into the housing
+LENS_EDGE = 0.02    # the lens's edge below the housing's lips; it bows down to LENS_THICK mid-width
+
+HOUSING_LEN = LENS_LEN + 0.2   # the steel channel, a little past the lens at each end
+HOUSING_W = 0.58    # across the hall at its lips: a little wider than the lens
+HOUSING_TOP_W = 0.42  # its sloped sides narrow to this on top
+HOUSING_H = 0.23    # lens top to housing top
+LIP = 0.04          # the lips hold the lens's edges this far below its top
+
+# The occupancy sensor: a box on one end of the housing with a frosted dome under it, the building's
+# eye. The game lights the dome (HallLight.eye). A full half-sphere, as a ceiling sensor that sees
+# all round has, so it shows from anywhere in the hall; about twice a real one's size, because at a
+# 0.26-stud dome only the nearest eye in a dark hall read on a phone (Studio, Galaxy A16).
+SENSOR_LEN = 0.44
+SENSOR_W = 0.46
+SENSOR_H = 0.22
+EYE_R = 0.18        # the dome's radius
+EYE_DROP = 0.18     # how far it hangs below the sensor box: a half-sphere
+EYE_SEGS = 12       # facets around: a Fresnel lens is faceted
+EYE_RINGS = 4
+
+# Jack chain, galvanized, from an eye bolt on the housing's top to a clip on the deck's low flute
+# over the hall's middle. Links are drawn bigger than real ones (about 6 cm) so they read on a phone.
+CHAIN_X = 1.5       # either side of the middle: well inside the joists at +/- 3
+LINK_LEN = 0.2      # a link's outside length
+LINK_W = 0.1        # its outside width
+LINK_WIRE = 0.017   # the wire's radius
+LINK_POINTS = 8     # around a link's loop
+LINK_SIDES = 3      # around its wire
+
+# The fixture's power: a black cord from the sensor end up to a junction box on the deck.
+CORD_R = 0.022
+BOX_R = 0.2         # the octagonal junction box
+BOX_H = 0.14
+BOX_X = HOUSING_LEN / 2 + 0.25  # over the sensor end
+
+FIXTURE_TOP = LENS_TOP + HOUSING_H
+# how far the fixture reaches from its middle along the hall: the sensor box or the junction box
+REACH = max(HOUSING_LEN / 2 + SENSOR_LEN, BOX_X + BOX_R)
+assert JOIST_SPACING / 2 - (CHORD_GAP / 2 + CHORD_LEG) > REACH, "the fixture hits a joist"
+assert LENS_Z + LENS_THICK / 2 < JOIST_BOTTOM
+
+
 def joist_xs(length):
     """Joists sit half a spacing in from each end, so pieces in a row keep a 6-stud beat."""
     n = int(round(length / JOIST_SPACING))
@@ -66,8 +122,9 @@ def lua_num(x):
     return "0" if s in ("-0", "") else s
 
 
-def write_luau(path, pieces):
-    """pieces: {name: dict(length=, colliders={name: (pos, size)}, tris={part: n})}, Roblox axes."""
+def write_luau(path, pieces, fixture_tris):
+    """pieces: {name: dict(length=, colliders={name: (pos, size)}, tris={part: n})}, Roblox axes;
+    fixture_tris: {part: n} for the hall light fixture."""
     v3 = lambda t: f"Vector3.new({', '.join(lua_num(v) for v in t)})"
     lines = [
         "--!strict",
@@ -95,6 +152,21 @@ def write_luau(path, pieces):
         for part, n in sorted(p["tris"].items()):
             lines.append(f"\t\t\t\t{part} = {n},")
         lines += ["\t\t\t},", "\t\t},"]
-    lines += ["\t},", "}", ""]
+    lines += [
+        "\t},",
+        "",
+        "\t-- The hall light fixture: its frame is on the floor under the lens's middle, the hall along",
+        "\t-- X, the sensor's eye on +X.",
+        "\tFixture = {",
+        f"\t\tLensHeight = {lua_num(LENS_Z)}, -- the lens's middle (HallLight.Height)",
+        f"\t\tLensSize = Vector3.new({lua_num(LENS_LEN)}, {lua_num(LENS_THICK)}, {lua_num(LENS_W)}),"
+        " -- HallLight.TubeSize",
+        f"\t\tTop = {lua_num(FIXTURE_TOP)}, -- the housing's top; chains run from here to the deck",
+        f"\t\tReach = {lua_num(REACH)}, -- from its middle along the hall to its far end (the sensor's)",
+        "\t\tTriangles = {",
+    ]
+    for part, n in sorted(fixture_tris.items()):
+        lines.append(f"\t\t\t{part} = {n},")
+    lines += ["\t\t},", "\t},", "}", ""]
     with open(path, "w") as f:
         f.write("\n".join(lines))

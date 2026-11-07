@@ -6,9 +6,10 @@ nowhere else.
 ## Now
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
-- [ ] **Save the place** (File > Save to Roblox) after this session (Nov 7): the corridor piece's
-  template now lives in it at `ReplicatedStorage.Corridor.Straight`, beside the unit's. Unsaved,
-  the next open loses it and the test hall falls back to plain blocks (Output says so).
+- [ ] **Save the place** (File > Save to Roblox) after this session (Nov 7): the hall's templates
+  now live in it at `ReplicatedStorage.Corridor`: `Straight` (last session) and `Fixture` (the
+  new hall light). Unsaved, the next open loses them and the test hall falls back to plain blocks
+  and bare tubes (Output says so).
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
@@ -40,19 +41,22 @@ nowhere else.
   (the steps under "Now: judge P0-02g"), and check the dark and the line under the door still
   come, and go again when it lifts.
 
-## Now: judge P0-03a, the straight hall piece (built Nov 7)
+## Now: judge P0-03b, the hall light (built Nov 7)
 
-- [ ] **Judge the shots:** `docs/art/P0-03a-phone.jpg` is a Galaxy A16 at Level01 (top) and
-  Level21 (bottom): down the hall from the spawn (left) and looking up under the lit tube
-  (right). `art/sheets/corridor-hall.png` and `corridor-ceiling.png` are the Blender look. Look
-  for: a real building's steel ceiling (a ribbed deck on open-web joists) and a jointed concrete
-  floor. Known: at Level01 the deck reads mid grey, at Level21 near black, as the walls do (D-017).
-  If it's too busy or too bright at low graphics, say so: the deck can take the darker raw-steel
-  finish.
-- [ ] **Walk it yourself:** Play, walk the hall end to end, look up as you go. Look for: no line
-  where two pieces meet (x = -12 and 12: the walls between 101 and 103, and between 105 and 107), nothing
-  floating, footsteps that sound like concrete. The plain grey walls past the last units and at
-  both ends are stand-ins until the junction pieces (P0-03c).
+- [ ] **Judge the shots:** `docs/art/P0-03b-phone.jpg` is a Galaxy A16 at Level01 (top) and
+  Level21 (bottom). Left: standing under the lit fixture over 105, looking up. Middle: the same
+  fixture up close. Right: the hall from the spawn with every light switched off by hand, only
+  the eyes watching, which is how L-03's hall will mostly look. `art/sheets/corridor-fixture.png`
+  and `corridor-fixture-lit.png` are the Blender look. Look for: a real hung strip light (a
+  steel housing, a frosted lens, chains up to clips on the deck, a cord to a junction box) and a
+  red eye on its end you notice. Say if the eye should be bigger, brighter, or not red; and if
+  the watching eyes should be dimmer (scarier as pin-pricks) or brighter (easier to read).
+- [ ] **Walk it yourself:** Play, walk the hall end to end, looking up as you go. Look for: the
+  three fixtures (a weak one by the spawn, the lit one, a dead one past the last units) hanging
+  straight between the joists, nothing floating or poking through the deck; and from last
+  session, no line where two floor pieces meet (x = -12 and 12) and footsteps that sound like
+  concrete. The dead fixture's eye is hard to see in the exit sign's red; that end gets the dead
+  end piece (P0-03c).
 - [ ] **Decide later (the ladder):** the ceiling's lowest steel is now 12.8, so standing on a
   unit's wire top (10) leaves 2.8 studs overhead, and an avatar is about 5. Before the ladder is
   built: crawl-only up there (the default), or taller floors.

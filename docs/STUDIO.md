@@ -208,6 +208,14 @@ verified: a doc page, Studio, or "untested".
   Cloud FBX of two MeshParts gives a Model with both parts at the right size, every part's pivot
   at the Blender origin, both SurfaceAppearances in AlphaMode Overlay, and a 45° turn about Y.
   `CorridorKit.frame` reads the floor's own box, so the turn doesn't matter.
+- **An untextured part imports with no SurfaceAppearance** (Studio, P0-03b, 2026-11-07): the
+  fixture's lens and eye, each a Principled BSDF with only a base colour, came in as plain
+  MeshParts, so `Material = Neon` and `Color` work on them straight away. The insert also left
+  every part's local Y up (a 135° turn about Y), so a SurfaceLight on the lens's Bottom face points
+  down. `prepare` still strips any SurfaceAppearance from the two, in case a later export adds one.
+- **A small red Neon dome doesn't bloom into a blob** (Studio, P0-03b): the fixture's eye (0.36
+  across) at full red (255, 40, 24) stayed a clean dot at Level01 and Level21. The blob warning
+  above is for bright, near-white strips.
 - **An FBX's hash changes on every export** (Blender stamps the time), so `upload_art` sends a
   rebuilt piece again even when nothing changed. It updates the same asset in place.
 - **After setting `QualityLevel` from the MCP, wait several seconds before a capture.** At Level01

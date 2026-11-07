@@ -91,22 +91,27 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   walls past its last units; its end walls moved out to 36. Joists stop at 12.8, clear of the
   haze (a Lune spec holds it). From the spawn: 65,000 triangles in 18 opaque draw calls
   (`docs/art/P0-03a-phone.jpg`, Galaxy A16 at Level01 and Level21; `art/corridor/README.md`).
-- [ ] **P0-03b The motion-light fixture.** The building's eyes: a housing and diffuser on two
-  chains from the deck between two joists, the tube where `HallLight.Height` hangs it, and a small
-  sensor eye that shows it's watching (for example the red pip a real occupancy sensor blinks
-  when it trips; the owner judges). Built the unit's way, a TrimSheet or small new texture set, judged at phone size.
-  L-03 lights it.
-- [ ] **P0-03c The junctions.** Corner, T, cross and dead end for the GDD's tile set, on the
-  straight piece's grid (8-wide hall, ceiling over a 12-deep unit row each side), and the plain
-  wall a hall has where no unit stands (the test hall's end bays and end walls are plain blocks
-  until then). The dead end is one you back out of: its end wall at the hall's end, nothing to
-  hide behind.
+- [x] **P0-03b The motion-light fixture** (D-021). A steel strip light on two jack chains from
+  the deck, midway between two joists, its lens exactly the tuned tube (12.1 high, 3.8 long), and
+  a motion sensor on one end whose red dome is the building's eye: Watching, Seen or Blind
+  (`HallLight.eye`). `CorridorKit.hang` puts one up; the test hall has three (weak, lit, dead).
+  About 2,000 triangles each (half of it chain), three draw calls shared by all fixtures; from the
+  spawn the hall is now 71,400 triangles in 21 opaque draws (`docs/art/P0-03b-phone.jpg`).
+- [ ] **P0-03c The plain wall and the dead end.** The wall a hall has where no unit stands (the
+  test hall's end bays are plain blocks until then), and the dead end, on the straight piece's
+  grid (8-wide hall, ceiling over a 12-deep unit row each side). The dead end is one you back out
+  of: its end wall at the hall's end, nothing to hide behind. Replaces the test hall's end walls
+  and bay walls.
+- [ ] **P0-03d The corner, T and cross.** Where halls meet, for the GDD's tile set: the floor's
+  joints and the deck's ribs and joists carried round a turn and across a crossing without a seam.
 - [ ] **L-03 Motion lights the building watches.** Moved up from Phase 1 by the owner (Nov 7):
   the hall should light as you walk it, like a real storage building, and mostly-dark fixtures
   give the hall its pools of light and dark between. Fixtures wake for anything moving near them
   and fall dark a while after it leaves; the server owns their state; real lights near the
-  camera, a glow farther out (GDD Lights). Built on the kit's fixture (P0-03b), so
-  L-01 later places fixtures through the same system. Set every light through `HallLight` so it
+  camera, a glow farther out (GDD Lights). Built on the kit's fixture (P0-03b, `CorridorKit.hang`),
+  so L-01 later places fixtures through the same system. Each fixture's eye shows its state
+  (`HallLight.eye`): Watching while dark, a flare to Seen as it trips (with the click of the GDD),
+  Blind in a cut zone. Set every light through `HallLight` so it
   keeps the tag and lit brightness that `BehindDoors` scales for a player shut in a unit.
   Brix: Zone for each fixture's watch area. Budget: three lit fixtures awake near a player
   (each is two lights, D-017); the owner thinks that's enough and judges it once built (Nov 7).
@@ -168,3 +173,8 @@ Atmosphere effects wait until the loop is solid (owner, Nov 7); the haze stays a
 - At low graphics a haze puff cuts a faint straight edge where it meets the ceiling's corner
   (`docs/art/P0-02i-haze.jpg`, bottom left); full quality softens it. The corridor kit's ceiling
   height may move it.
+- The fixture's chains are half its 2,000 triangles. If a floor's triangle count bites on a
+  low-end phone, cut each link to 6 points round (about 260 fewer a fixture); at phone size the
+  links read as a beaded line either way.
+- A faint red glow on the housing round a Seen eye (a tiny light) would sell the flare, but costs
+  a light per tripped fixture; try it only if L-03's light budget has room.

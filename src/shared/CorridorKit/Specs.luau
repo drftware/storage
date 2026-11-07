@@ -26,4 +26,18 @@ return {
 			},
 		},
 	},
+
+	-- The hall light fixture: its frame is on the floor under the lens's middle, the hall along
+	-- X, the sensor's eye on +X.
+	Fixture = {
+		LensHeight = 12.1, -- the lens's middle (HallLight.Height)
+		LensSize = Vector3.new(3.8, 0.1, 0.44), -- HallLight.TubeSize
+		Top = 12.38, -- the housing's top; chains run from here to the deck
+		Reach = 2.45, -- from its middle along the hall to its far end (the sensor's)
+		Triangles = {
+			Diffuser = 40,
+			Eye = 118,
+			Housing = 1836,
+		},
+	},
 }

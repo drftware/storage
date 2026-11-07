@@ -201,3 +201,19 @@ MeshParts, so a hall of identical pieces draws in two calls. Templates live in t
 floor on plain parts (seamless at any length, but a second way of shipping art, outside the
 Blender pipeline); I-beams (cheaper, but read as a parking garage, not a storage building).
 
+## D-021 The hall light is a hung strip light whose sensor dome is the building's eye (P0-03b, 2026-11-07)
+
+The fixture is a steel strip light on two jack chains from the deck, midway between two joists,
+with an occupancy sensor on one end: the GDD's "motion lights are its eyes" made literal. Its own
+FBX and template (`ReplicatedStorage.Corridor.Fixture`), not part of the straight piece, so the
+floor generator places lights through L-03's system rather than every 24 studs by default. Three
+MeshParts: the Housing (TrimSheet: painted channel, galvanized chain, clips and junction box, a
+rubber cord) and two untextured parts the game colours, the Diffuser (the lens `HallLight.light`
+lights, its place and size read from `HallLight.Height` and `TubeSize`, so the art follows the
+tuned light) and the Eye. The eye has three looks: Watching (a red glow, so a dark hall is dotted
+with eyes), Seen (full red, the flare L-03 shows when it trips) and Blind (dead plastic, the
+breaker room's zone). Its dome is a half-sphere 0.36 across, about twice a real sensor's, because
+at 0.26 only the nearest eye in a dark hall read on a phone. Neon only, no light of its own: the
+light budget stays at two per lit fixture (D-017). Not chosen: a separate pinprick LED beside a
+white dome (real, but a pixel or two on a phone); the sensor mid-lens (it would split the tube
+the light was tuned on).

@@ -9,6 +9,7 @@
 
 		lune run scripts/upload_art        upload what changed since the last upload
 		lune run scripts/upload_art dry    say what would go up, touch nothing
+		lune run scripts/upload_art Fixture  only the named art (its key below); works with dry
 
 	Needs .config/.env (git-ignored): ROBLOX_API_KEY (Assets read and write) and ROBLOX_CREATOR_ID
 	(the key owner's user ID or username). The key is never printed.
@@ -34,10 +35,24 @@ local ART: { Art } = {
 		manifest = "art/corridor/assets.json",
 		description = "A straight stretch of a storage building's hall: its floor and steel ceiling",
 	},
+	{
+		key = "Fixture",
+		path = "art/corridor/out/Corridor_Fixture.fbx",
+		manifest = "art/corridor/assets.json",
+		description = "A storage building's hall light: a strip light on two chains with a motion sensor",
+	},
 }
 local MODEL: OpenCloud.Kind = { assetType = "Model", contentType = "model/fbx" }
 
-local dry = process.args[1] == "dry"
+local dry = false
+local only: { [string]: true } = {}
+for _, arg in process.args do
+	if arg == "dry" then
+		dry = true
+	else
+		only[arg] = true
+	end
+end
 type Manifest = { [string]: { sha256: string, assetId: number } }
 local manifests: { [string]: Manifest } = {}
 local function manifestOf(path: string): Manifest
@@ -50,6 +65,9 @@ end
 local session: OpenCloud.Session? = nil
 local changed = 0
 for _, art in ART do
+	if next(only) ~= nil and not only[art.key] then
+		continue
+	end
 	if not fs.isFile(art.path) then
 		print(`upload_art: {art.path} is missing; build it with scripts/art.sh`)
 		process.exit(1)

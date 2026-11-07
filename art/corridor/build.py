@@ -3,11 +3,13 @@
     blender -b --factory-startup -P art/corridor/build.py -- --stage export|renders
 
 Stages:
-    export   one FBX per piece in out/ for Open Cloud, and src/shared/CorridorKit/Specs.luau
+    export   one FBX per piece and one for the hall light fixture in out/ for Open Cloud, and
+             src/shared/CorridorKit/Specs.luau
     renders  the look sheets, art/sheets/corridor-*.png
 
 The pieces wear the unit's baked texture sets (art/unit/out/textures): build those first with
-scripts/art.sh. The kit bakes nothing of its own.
+scripts/art.sh. The kit bakes nothing of its own. The fixture's lens and eye are plain parts the
+game colours (HallLight), so they export untextured.
 """
 
 import argparse
@@ -30,8 +32,11 @@ import spec as K  # noqa: E402
 OUT = os.path.join(HERE, "out")
 TEX = os.path.join(UNIT, "out", "textures")
 SHEETS = os.path.join(K.ROOT, "art", "sheets")
-TEXSET = {"Floor": "Concrete", "Ceiling": "TrimSheet"}
+TEXSET = {"Floor": "Concrete", "Ceiling": "TrimSheet", "Housing": "TrimSheet"}
 PIECES = {"Straight": (pieces.straight, K.STRAIGHT)}
+# The fixture's parts the game colours: untextured, so Roblox's Neon and Color show on them. These
+# are only the colours they import with (a dead lens, a frosted dome); HallLight sets the real ones.
+PLAIN = {"Diffuser": (0.16, 0.17, 0.18), "Eye": (0.55, 0.55, 0.53)}
 
 
 def reset():
@@ -50,6 +55,45 @@ def build(name, at=0.0, coll=None, for_export=True):
     return objs
 
 
+def plain(name, colour):
+    """An untextured material: Roblox's importer makes no SurfaceAppearance for it."""
+    key = f"plain_{name}"
+    if key in bpy.data.materials:
+        return bpy.data.materials[key]
+    import render
+    return render.simple(key, colour, 0.5)
+
+
+def build_fixture(at=0.0, coll=None, for_export=True, lens=None, eye=None):
+    """The hall light fixture's parts as objects, `at` studs along the hall. `lens` and `eye` are
+    render materials for a lit lens and a glowing eye; export uses the plain ones."""
+    objs = {}
+    for part, mesh in pieces.fixture().items():
+        ob = mesh.build(coll)
+        ob.location.x = at
+        if part in PLAIN:
+            mat = {"Diffuser": lens, "Eye": eye}[part] if not for_export else None
+            ob.data.materials.append(mat or plain(part, PLAIN[part]))
+        else:
+            ob.data.materials.append(bake.textured(TEXSET[part], TEX, for_export=for_export))
+        objs[part] = ob
+    return objs
+
+
+def export_fbx(objs, active, name):
+    bpy.ops.object.select_all(action="DESELECT")
+    for ob in objs.values():
+        ob.select_set(True)
+    bpy.context.view_layer.objects.active = objs[active]
+    fbx = os.path.join(OUT, f"Corridor_{name}.fbx")
+    bpy.ops.export_scene.fbx(
+        filepath=fbx, use_selection=True, object_types={"MESH"},
+        apply_scale_options="FBX_SCALE_UNITS", axis_forward="Z", axis_up="Y",
+        use_mesh_modifiers=True, mesh_smooth_type="OFF", use_tspace=False,
+        add_leaf_bones=False, bake_anim=False, path_mode="COPY", embed_textures=True)
+    return fbx
+
+
 def stage_export():
     top = K.haze_top()
     assert K.JOIST_BOTTOM > top, f"joists at {K.JOIST_BOTTOM} cut into the haze ({top})"
@@ -59,26 +103,20 @@ def stage_export():
         reset()
         meshes = make()
         tris = {part: m.tris() for part, m in meshes.items()}
-        objs = build(name)
-        bpy.ops.object.select_all(action="DESELECT")
-        for ob in objs.values():
-            ob.select_set(True)
-        bpy.context.view_layer.objects.active = objs["Floor"]
-        fbx = os.path.join(OUT, f"Corridor_{name}.fbx")
-        bpy.ops.export_scene.fbx(
-            filepath=fbx, use_selection=True, object_types={"MESH"},
-            apply_scale_options="FBX_SCALE_UNITS", axis_forward="Z", axis_up="Y",
-            use_mesh_modifiers=True, mesh_smooth_type="OFF", use_tspace=False,
-            add_leaf_bones=False, bake_anim=False, path_mode="COPY", embed_textures=True)
+        fbx = export_fbx(build(name), "Floor", name)
         print("FBX", fbx, os.path.getsize(fbx), tris)
         # collision boxes in the piece's Roblox frame: X along the hall, Y up, Z across
         out[name] = dict(length=length, tris=tris, colliders={
             "Floor": ((0.0, -0.5, 0.0), (length, 1.0, K.HALL)),
             "Ceiling": ((0.0, K.DECK + 0.5, 0.0), (length, 1.0, K.SPAN)),
         })
+    reset()
+    fixture_tris = {part: m.tris() for part, m in pieces.fixture().items()}
+    fbx = export_fbx(build_fixture(), "Diffuser", "Fixture")
+    print("FBX", fbx, os.path.getsize(fbx), fixture_tris)
     lua = os.path.join(K.ROOT, "src", "shared", "CorridorKit", "Specs.luau")
     os.makedirs(os.path.dirname(lua), exist_ok=True)
-    K.write_luau(lua, out)
+    K.write_luau(lua, out, fixture_tris)
     print("SPEC", lua)
 
 
@@ -102,9 +140,12 @@ def stand_ins(coll, length):
 
 
 def hall_light(coll, x):
+    """A lit fixture at x, its eye seeing someone, with the light it throws (render stand-ins for
+    HallLight's tube light and fill)."""
     import render
-    dif = render.emissive("diffuser", (0.9, 0.95, 0.93), 6.0)
-    render.box_obj("tube", (x - 1.9, -0.22, 12.08), (x + 1.9, 0.22, 12.14), dif, coll)
+    lens = render.emissive("lens_lit", (0.9, 0.95, 0.93), 6.0)
+    eye = render.emissive("eye_seen", (1.0, 0.07, 0.04), 6.0)
+    build_fixture(x, coll, for_export=False, lens=lens, eye=eye)
     ld = bpy.data.lights.new("hall", "AREA")
     ld.shape = "RECTANGLE"
     ld.size, ld.size_y = 3.8, 0.44
@@ -112,12 +153,13 @@ def hall_light(coll, x):
     ld.spread = math.radians(105)
     ld.color = (0.86, 0.95, 0.93)
     lo = bpy.data.objects.new("hall", ld)
-    lo.location = (x, 0.0, 12.06)
+    lo.location = (x, 0.0, K.LENS_Z - K.LENS_THICK / 2 - 0.01)
     coll.objects.link(lo)
     fill = bpy.data.lights.new("fill", "POINT")
     fill.energy = 260.0
     fill.color = (0.86, 0.95, 0.93)
     fill.shadow_soft_size = 1.0
+    fill.use_shadow = False  # as the game's fill: it lights the chains above the housing too
     fo = bpy.data.objects.new("fill", fill)
     fo.location = (x, 0.0, 5.0)
     coll.objects.link(fo)
@@ -131,15 +173,23 @@ def stage_renders():
         build("Straight", at, coll, for_export=False)
     stand_ins(coll, 2 * K.STRAIGHT)
     hall_light(coll, 6.0)
+    # a dark fixture by the spawn end, its eye open: the building watching the stretch you're in
+    dead = render.simple("lens_dead", PLAIN["Diffuser"], 0.5)
+    watching = render.emissive("eye_watching", (1.0, 0.07, 0.04), 1.6)
+    build_fixture(-18.0, coll, for_export=False, lens=dead, eye=watching)
     render.setup(96, (1280, 720), exposure=0.4)
     os.makedirs(SHEETS, exist_ok=True)
     views = {
-        "hall": ((-21.0, 0.6, 4.4), (12.0, 0.0, 6.2), 22),       # a player's eyes down the hall
-        "ceiling": ((-3.0, 1.0, 4.4), (8.0, -2.0, 13.4), 18),    # looking up under the light
-        "seam": ((0.0, 0.0, 6.0), (0.0, 0.0, 0.0), 30),          # straight down on two pieces' joint
+        "hall": ((-21.0, 0.6, 4.4), (12.0, 0.0, 6.2), 22, False),     # a player's eyes down the hall
+        "ceiling": ((-3.0, 1.0, 4.4), (8.0, -2.0, 13.4), 18, False),  # looking up under the light
+        "seam": ((0.0, 0.0, 6.0), (0.0, 0.0, 0.0), 30, False),        # straight down on a joint
+        "fixture": ((-8.0, 1.6, 4.6), (-17.2, 0.0, 12.9), 42, True),  # a torch up at a dark one
+        "fixture-lit": ((-3.0, -1.6, 4.6), (6.3, 0.0, 12.9), 42, False),  # walking up to the lit one
     }
-    for name, (loc, target, lens) in views.items():
-        render.shoot(render.camera(loc, target, lens, name), os.path.join(SHEETS, f"corridor-{name}.png"))
+    for name, (loc, target, lens, torch) in views.items():
+        cam = render.camera(loc, target, lens, name)
+        render.flashlight(cam, torch, target)
+        render.shoot(cam, os.path.join(SHEETS, f"corridor-{name}.png"))
 
 
 def args():

@@ -13,8 +13,9 @@
 	"Come back" returns you, so the hall's units stream out and back in with their doors as left.
 
 	The hall's floor and ceiling are three of the corridor kit's straight pieces (P0-03a), with
-	plain walls past the last units; without the kit's template in the place it falls back to plain
-	blocks. The kit's fixture and dead end replace the lights and end walls here (P0-03b, P0-03c).
+	plain walls past the last units, and its lights are the kit's fixtures (P0-03b), each midway
+	between two joists; without the kit's templates in the place it falls back to plain blocks and
+	bare tubes. The kit's dead end replaces the end walls here (P0-03c).
 	The prompts call RollUpDoor directly; the GDD's door state machine replaces them (L-02).
 ]]
 local Players = game:GetService("Players")
@@ -52,11 +53,16 @@ local LIFT_IN = RollUpDoor.ColliderDepth / 2 + 0.1 -- Lift hangs just behind the
 local LIFT_REACH = 5 -- only someone shut inside should see Lift
 local REFUSAL_SECONDS = 1.2 -- how long "Padlocked" or "Shut it first" shows before the unit's name returns
 
--- The hall's fixtures, laid out like the look sheets' hall (HallLight): one lit over 105 and 106,
--- a weaker one over 101 and 102 by the spawn, and the dark between, with the exit sign's red at
--- the far end.
-type Fixture = { x: number, level: number }
-local HALL_FIXTURES: { Fixture } = { { x = -18, level = HallLight.Low }, { x = 6, level = 1 } }
+-- The hall's fixtures, one every 24 studs, laid out like the look sheets' hall (HallLight): one lit
+-- over 105 and 106 whose eye has seen you, a weaker one over 101 and 102 by the spawn, and a dead
+-- one past the last units with its eye open, with the exit sign's red at the far end. Each sits
+-- midway between two of the kit's joists (6 studs off a piece's middle).
+type Fixture = { x: number, level: number, eye: HallLight.EyeState }
+local HALL_FIXTURES: { Fixture } = {
+	{ x = -18, level = HallLight.Low, eye = "Watching" },
+	{ x = 6, level = 1, eye = "Seen" },
+	{ x = 30, level = 0, eye = "Watching" },
+}
 local EXIT_SIGN_SIZE = Vector3.new(0.2, 0.7, 1.8)
 local EXIT_SIGN_HEIGHT = 9.95 -- over the stairwell door's frame, as in the sheets
 
@@ -106,7 +112,14 @@ local function block(
 	return p
 end
 
-local function fixture(f: Fixture, parent: Instance)
+-- A hall light at f.x: the kit's fixture in a kit hall, or a bare tube where its lens would hang.
+local function fixture(f: Fixture, kit: boolean, parent: Instance)
+	if kit and CorridorKit.template("Fixture") then
+		local hung = CorridorKit.hang(CFrame.new(f.x, 0, 0), parent)
+		HallLight.light(hung.diffuser, f.level)
+		HallLight.eye(hung.eye, f.eye)
+		return
+	end
 	local tube = block(
 		"TubeLight",
 		HallLight.TubeSize,
@@ -194,7 +207,7 @@ local function building(
 		)
 	end
 	for _, f in fixtures do
-		fixture(f, folder)
+		fixture(f, kit, folder)
 	end
 	folder.Parent = parent
 	return folder
@@ -386,6 +399,11 @@ local function build(): Folder?
 			'DevCorridor: no corridor piece at ReplicatedStorage.Corridor.Straight, so the hall is plain blocks; import it (art/corridor/README.md, "Into Studio")'
 		)
 	end
+	if kit and not CorridorKit.template("Fixture") then
+		warn(
+			'DevCorridor: no fixture at ReplicatedStorage.Corridor.Fixture, so the hall lights are bare tubes; import it (art/corridor/README.md, "Into Studio")'
+		)
+	end
 
 	local folder = Instance.new("Folder")
 	folder.Name = "DevCorridor"
@@ -399,7 +417,7 @@ local function build(): Folder?
 	)
 	sign.CanCollide = false
 	HallLight.exitSign(sign)
-	building("FarHall", FAR_X, 12, { { x = FAR_X, level = 1 } }, false, folder)
+	building("FarHall", FAR_X, 12, { { x = FAR_X, level = 1, eye = "Watching" } }, false, folder)
 
 	local count = 0
 	for row, side in { -1, 1 } do

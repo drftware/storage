@@ -2,61 +2,65 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-07, session 14 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-07, session 15 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **P0-03 is split** (ROADMAP): a, the straight piece (done); b, the motion-light fixture; c, the
-  junctions (corner, T, cross, dead end, plain walls).
-- **The straight hall piece is built** (P0-03a, D-020): 24 studs of hall, a concrete floor between
-  the doors and a corrugated steel deck on open-web joists over the hall and its units. Built in
-  Blender from `art/corridor/` on the unit's own textures (nothing new baked), uploaded through
-  Open Cloud (`scripts/upload_art.luau`, renamed from `upload_unit`, now lists every FBX), and
-  stored in the place at `ReplicatedStorage.Corridor.Straight`. `CorridorKit` (src/shared) finds a
-  piece's frame, prepares the template and places copies.
-- **The test hall stands on three pieces:** end walls moved from 30 to 36, spawn to x = -32,
-  plain walls past the last units. Without the template it falls back to plain blocks.
-- **Verified in Studio:** the piece imports whole, prepares to floor top 0 and joists 12.8; the
-  hall reads at phone size at Level01 and Level21 (`docs/art/P0-03a-phone.jpg`); 65,000 triangles
-  and 18 opaque draw calls from the spawn. Not checked: footsteps on the floor's collider, two
-  players.
-- **The template must be saved with the place** (`OWNER.md`, top).
+- **The hall light is built** (P0-03b, D-021): a steel strip light on two jack chains from the
+  deck, midway between two joists, with a motion sensor on one end whose red half-sphere dome is
+  the building's eye. Built in Blender from `art/corridor/` (`pieces.fixture`), its lens read from
+  `HallLight.Height` and `TubeSize` so it sits exactly where the light was tuned; uploaded (asset
+  71843070521517) and stored in the place at `ReplicatedStorage.Corridor.Fixture`.
+- **Code:** `CorridorKit.hang(cframe, parent)` puts one up and returns `{ model, diffuser, eye }`;
+  `HallLight.light(diffuser, level)` lights the lens as before; the new `HallLight.eye(eye,
+  state)` sets Watching (red glow), Seen (full red) or Blind (dead plastic). The test hall hangs
+  three: weak by the spawn (-18), lit over 105 (6, eye Seen), dead past the last units (30).
+- **Verified in Studio** (Galaxy A16, Level01 and Level21, `docs/art/P0-03b-phone.jpg`): the
+  fixture imports whole with the lens and eye untextured, prepares to lens middle 12.1; reads as
+  a hung light up close; the eye stays a clean dot at full red at both qualities; no haze edge
+  on the housing at Level01. From the spawn: 71,400 triangles in 21 opaque draws (was 65,400 in
+  18); each fixture is about 2,000 triangles, half of it chain.
+- In a fully dark hall only the nearest eye or two read on a phone (a sharp dot, then
+  pin-pricks); the owner judges that (`OWNER.md`).
+- **The templates must be saved with the place** (`OWNER.md`, top).
+- `scripts/upload_art` now takes keys (`lune run scripts/upload_art Fixture`).
 - `rojo serve` runs on port 34872; Studio in Edit, Quality on Automatic, Device Simulator off.
 
-## Next task: P0-03b The motion-light fixture
-The moment: the building's eyes. You look up and see the fixture that will see you: a housing,
-its tube, and a small sensor that shows it is watching. L-03 then lights it as you walk.
+## Next task: P0-03c The plain wall and the dead end
+The moment: the hall that stops. You sprint round a turn and hit a wall with nothing to hide
+behind, and a keeper can wait at the mouth (GDD: Dead ends). And where no unit stands, the hall
+still reads as the same building.
 1. Owner test results first (`OWNER.md`).
-2. Read the GDD's Lights section (docs tools) for what the fixture must show.
-3. Model it in `art/corridor/` beside the straight piece: housing and diffuser (the tube where
-   `HallLight.Height` hangs it, `HallLight.TubeSize`), two chains up to the deck between two
-   joists, a sensor eye. The look sheets' fixture is the reference (`art/unit/render.py`,
-   `corridor()`). Its own FBX and asset; TrimSheet for the steel; the diffuser and the sensor's
-   pip need parts L-03 can light (a Neon or glowing part the game recolours).
-4. Fit it to `HallLight.light`: the tube part it lights should be the fixture's diffuser, so
-   `DevCorridor.fixture` places the fixture model and lights that part.
-5. Judge at phone size, Level01 and Level21, lit and dark; shots `docs/art/P0-03b-*.jpg`.
-**Acceptance:** checks green; fixture imported and hung in the test hall, lit through
-`HallLight.light`; shots; the owner judges.
-**Read first:** `docs/ROADMAP.md` (P0-03b, L-03); the GDD's Lights section;
-`art/corridor/README.md`; `art/corridor/pieces.py`; `src/shared/HallLight.luau` (top numbers and
-`light`); `src/server/DevCorridor.luau` (`fixture`, `building`).
+2. Read the GDD's "Dead ends" line and the tech plan's "Layout" (docs tools; search "dead end").
+3. Model both in `art/corridor/` on the straight piece's grid and the unit's textures: the plain
+   wall (a hall side with no unit: what a real storage building has there) as a piece or a wall
+   panel that fits the 12-stud unit beat, and the dead end (end wall at the hall's end, the deck
+   and floor closed off). Own FBX each, or one with parts; colliders from the spec.
+4. Teach `CorridorKit` their names, prepare and place them; replace `DevCorridor`'s plain bay
+   walls and end walls (`building`). Keep the exit sign readable on the far end wall.
+5. Judge at phone size, Level01 and Level21, looking down the hall both ways; shots
+   `docs/art/P0-03c-*.jpg`; update the render cost.
+**Acceptance:** checks green; both imported and placed in the test hall with no seams or gaps
+against the straight pieces and units; shots; the owner judges.
+**Read first:** `docs/ROADMAP.md` (P0-03c); the GDD's "Dead ends" and "Layout"; `art/corridor/README.md`;
+`art/corridor/pieces.py` (`floor`, `ceiling`); `src/server/DevCorridor.luau` (`building`);
+`src/shared/CorridorKit/init.luau` (`prepare`).
 
 ## Queue (the next run's order, from ROADMAP)
-1. **P0-03c The junctions:** corner, T, cross, dead end and the plain wall, on the straight
-   piece's grid (8-wide hall, ceiling 32 across); replaces the test hall's plain blocks.
+1. **P0-03d The corner, T and cross:** the floor's joints and the deck's ribs and joists carried
+   round a turn and across a crossing without a seam.
 2. **L-03 Motion lights** (moved up by the owner, Nov 7): fixtures wake as you walk the hall,
-   server-owned, set through `HallLight.light` so the fill, the haze and `BehindDoors` follow.
-   A lit fixture is two lights (D-017); the owner judges the three-fixture budget once built.
+   server-owned, through `CorridorKit.hang`, `HallLight.light` and `HallLight.eye` (the eye flares
+   to Seen as it trips, with the GDD's click). A lit fixture is two lights (D-017); the owner
+   judges the three-fixture budget once built.
 3. **P0-04 The door's sounds and feel**, then **Phase 1** (ROADMAP). L-01 lays pieces with
-   `CorridorKit.place`; pieces come in 24-stud steps (D-020), so a generator needing 12-stud
-   steps would need a half piece whose floor UVs start mid-texture.
+   `CorridorKit.place`; pieces come in 24-stud steps (D-020); fixtures go midway between joists.
 4. **The ladder** (GDD tools): a wire top leaves 2.8 studs under the joists (`OWNER.md`).
-5. **Polish waiting:** a faint haze edge near the ceiling at low graphics; at low graphics a
-   peeked unit lights evenly; re-run `UnitKit.prepare` so the template saves at 1.2 deep; sizes S
-   and L by eye; a client-side door collider if the lag feels wrong; the padlock is too small to
-   spot; the cursor hint once ever.
-6. **Particles added later** are thinned on low graphics too; judge them in their steady state
-   (docs/STUDIO.md). Any reader of the units' tag skips the template.
+5. **Polish waiting** (ROADMAP): cheaper chain links if triangles bite; a red glow round a Seen
+   eye if the light budget allows; a faint haze edge near the ceiling at low graphics; a peeked
+   unit lights evenly at low graphics; re-run `UnitKit.prepare` so the template saves at 1.2 deep;
+   sizes S and L; a client-side door collider; the padlock is too small; the cursor hint once ever.
+6. In Edit, `require` a `:Clone()` of a module for fresh code (docs/STUDIO.md). Any reader of the
+   units' tag skips the template.
 
 ## Kickoff for the next agent
 ```text

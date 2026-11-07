@@ -17,6 +17,9 @@
 
 	`HallLight.light(tube, level)` turns a fixture's diffuser part into a lit tube: level 1 is a
 	fixture at full strength, `HallLight.Low` a weaker one far down the hall, 0 a dead one.
+	`HallLight.eye(eye, state)` sets the dome of the fixture's motion sensor: the building's eye,
+	open, seeing something, or blind (GDD Lights). The fixture itself is the corridor kit's
+	(CorridorKit.hang); L-03 decides each one's level and eye.
 ]]
 local HallLight = {}
 
@@ -95,6 +98,19 @@ HallLight.ExitRange = 12 -- reaches the last pair of units only
 -- gap. Neon glows brighter than its colour, so this mid grey reads as a hard white line against
 -- the dark; any brighter and low-graphics bloom smears it into blobs.
 HallLight.UnderDoorColour = Color3.fromRGB(140, 145, 144)
+
+-- The motion sensor's dome on each fixture's end: the building's eye (GDD Lights: the motion
+-- lights are its eyes). Open, it glows red, so even a dark stretch of hall is dotted with eyes
+-- looking down at you; when it sees something move it flares to full red; when the breaker room
+-- cuts a zone's power it goes blind, dead grey plastic. The dome is small, so even full red stays
+-- a clean dot at Level01 rather than blooming into a blob (Studio, Galaxy A16, P0-03b).
+export type EyeState = "Watching" | "Seen" | "Blind"
+-- Open in the dark: from the spawn the nearest eye is a sharp red dot, the next a pin-prick.
+HallLight.EyeWatching = Color3.fromRGB(150, 16, 10)
+-- It saw something move: a clear jump up from watching, so a flare reads from down the hall.
+HallLight.EyeSeen = Color3.fromRGB(255, 40, 24)
+-- Power cut: frosted plastic, barely there in the dark.
+HallLight.EyeBlind = Color3.fromRGB(58, 58, 56)
 
 -- Every light the hall throws carries this tag, and its lit brightness in the attribute
 -- `HallLight.LitAttribute`, so a client can scale it on its own screen and put it back exactly
@@ -205,6 +221,18 @@ function HallLight.light(tube: BasePart, level: number)
 	else
 		tube.Material = Enum.Material.SmoothPlastic
 		tube.Color = DEAD_TUBE
+	end
+end
+
+-- Sets a fixture's sensor dome to show what the building's eye is doing there.
+function HallLight.eye(eye: BasePart, state: EyeState)
+	eye.CastShadow = false
+	if state == "Blind" then
+		eye.Material = Enum.Material.SmoothPlastic
+		eye.Color = HallLight.EyeBlind
+	else
+		eye.Material = Enum.Material.Neon
+		eye.Color = if state == "Seen" then HallLight.EyeSeen else HallLight.EyeWatching
 	end
 end
 
