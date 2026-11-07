@@ -80,8 +80,12 @@ local TURN_CORNER = CFrame.fromMatrix(Vector3.new(48, 0, 48), -Vector3.zAxis, Ve
 local TURN_STRAIGHTS = {
 	CFrame.fromMatrix(Vector3.new(48, 0, 24), Vector3.zAxis, Vector3.yAxis),
 	CFrame.fromMatrix(Vector3.new(48, 0, -24), Vector3.zAxis, Vector3.yAxis),
-	CFrame.new(72, 0, 48),
 }
+-- The short hall past the corner, running east to a dead end: the cramped part of the building,
+-- three small units a side (8 studs each, wall to wall from the corner to the dead end), 109 to
+-- 114. Plain walls line it when the place has no small unit's template.
+local EAST_HALL = CFrame.new(72, 0, 48)
+local SMALL_XS = { 64, 72, 80 }
 local TURN_DEAD_ENDS = {
 	CFrame.lookAt(Vector3.new(48, 0, -36), Vector3.new(48, 0, -35)),
 	CFrame.lookAt(Vector3.new(84, 0, 48), Vector3.new(83, 0, 48)),
@@ -116,7 +120,7 @@ local DOOR_COLOURS = {
 	UnitKit.Colours.Door.Mustard,
 	UnitKit.Colours.Door.Navy,
 }
-local PADLOCKED = { ["105"] = true, ["108"] = true }
+local PADLOCKED = { ["105"] = true, ["108"] = true, ["112"] = true }
 
 type Action = { kind: Motion.Kind, text: string, key: Enum.KeyCode, pad: Enum.KeyCode }
 local OUTSIDE_ACTIONS: { Action } = {
@@ -149,10 +153,10 @@ local function block(
 	return p
 end
 
--- Where a door's outer face goes: at x on one side of the hall, looking across it. A plain wall
--- stands on the same line.
-local function doorFace(x: number, side: number): CFrame
-	local at = Vector3.new(x, 0, side * HALL_HALF_WIDTH)
+-- Where a door's outer face goes: at x on one side of a hall along X (the main hall, or one
+-- centred on z = hallZ), looking across it. A plain wall stands on the same line.
+local function doorFace(x: number, side: number, hallZ: number?): CFrame
+	local at = Vector3.new(x, 0, (hallZ or 0) + side * HALL_HALF_WIDTH)
 	return CFrame.lookAt(at, at - Vector3.zAxis * side)
 end
 
@@ -428,6 +432,39 @@ local function dropSharedWall(unit: Model)
 	end
 end
 
+-- Units of one size down both sides of a hall along X centred on z = hallZ, wall to wall with
+-- door faces at `xs`: numbered up from `first` as you walk east, odd on the south (-Z) side, the
+-- four door colours in turn from `placed` (units placed so far). Returns the new count.
+local function unitRows(
+	template: Model,
+	xs: { number },
+	hallZ: number,
+	first: number,
+	placed: number,
+	parent: Instance
+): number
+	for row, side in { -1, 1 } do
+		for i, x in xs do
+			local number = tostring(first + (i - 1) * 2 + row - 1)
+			placed += 1
+			local unit = placeUnit(
+				template,
+				doorFace(x, side, hallZ),
+				number,
+				DOOR_COLOURS[(placed - 1) % 4 + 1]
+			)
+			if i > 1 then
+				dropSharedWall(unit)
+			end
+			if PADLOCKED[number] then
+				RollUpDoor.setLocked(unit, true)
+			end
+			unit.Parent = parent
+		end
+	end
+	return placed
+end
+
 local function send(player: Player, to: CFrame)
 	local ok, err = pcall(function()
 		player:RequestStreamAroundAsync(to.Position)
@@ -470,8 +507,9 @@ local function breakerPost(at: Vector3, lights: MotionLights.MotionLights, paren
 end
 
 -- The turn past the hall's far end: the T, its arms, the corner and the hall beyond, their walls
--- and dead ends, their fixtures and the breaker post.
-local function turn(parent: Instance, lights: MotionLights.MotionLights)
+-- and dead ends, their fixtures and the breaker post. With `smallUnits`, the units line the hall
+-- beyond (placed by the caller) instead of plain walls.
+local function turn(parent: Instance, lights: MotionLights.MotionLights, smallUnits: boolean)
 	local paint = UnitKit.Colours.Wall
 	CorridorKit.junction("T", TURN_T, paint, parent)
 	CorridorKit.junction("Corner", TURN_CORNER, paint, parent)
@@ -479,6 +517,10 @@ local function turn(parent: Instance, lights: MotionLights.MotionLights)
 	for _, at in TURN_STRAIGHTS do
 		CorridorKit.place("Straight", at, parent)
 		sideWalls(at, length, parent)
+	end
+	CorridorKit.place("Straight", EAST_HALL, parent)
+	if not smallUnits then
+		sideWalls(EAST_HALL, length, parent)
 	end
 	for _, at in TURN_DEAD_ENDS do
 		CorridorKit.wall("DeadEnd", at, paint, parent)
@@ -557,11 +599,19 @@ local function build(lights: MotionLights.MotionLights): Folder?
 		)
 	end
 
+	local small = units and units:FindFirstChild("S")
+	local smallUnits = turns and small ~= nil and small:IsA("Model")
+	if turns and not smallUnits then
+		warn(
+			'DevCorridor: no small unit at ReplicatedStorage.Units.S, so plain walls line the hall past the corner; import it (art/unit/README.md, "Into Studio")'
+		)
+	end
+
 	local folder = Instance.new("Folder")
 	folder.Name = "DevCorridor"
 	local hall = building("Hall", 0, BUILDING_HALF_LENGTH, HALL_FIXTURES, kit, folder, turns)
 	if turns then
-		turn(hall, lights)
+		turn(hall, lights, smallUnits)
 	end
 	-- on the far wall's face (the T's, or the dead end's), clear of its posts
 	local farWall = if turns then TURN_WALL_X else BUILDING_HALF_LENGTH
@@ -576,21 +626,9 @@ local function build(lights: MotionLights.MotionLights): Folder?
 	HallLight.exitSign(sign, -Vector3.xAxis)
 	building("FarHall", FAR_X, 12, { { x = FAR_X } }, false, folder)
 
-	local count = 0
-	for row, side in { -1, 1 } do
-		for i, x in UNIT_XS do
-			local number = tostring(100 + (i - 1) * 2 + row)
-			count += 1
-			local unit =
-				placeUnit(template, doorFace(x, side), number, DOOR_COLOURS[(count - 1) % 4 + 1])
-			if i > 1 then
-				dropSharedWall(unit)
-			end
-			if PADLOCKED[number] then
-				RollUpDoor.setLocked(unit, true)
-			end
-			unit.Parent = folder
-		end
+	local count = unitRows(template, UNIT_XS, 0, 101, 0, folder)
+	if smallUnits then
+		count = unitRows(small :: Model, SMALL_XS, EAST_HALL.Position.Z, 109, count, folder)
 	end
 	placeUnit(template, doorFace(FAR_X, -1), "901", UnitKit.Colours.Door.Teal).Parent = folder
 

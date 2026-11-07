@@ -22,12 +22,18 @@ local OpenCloud = require("./lib/OpenCloud")
 
 type Art = { key: string, path: string, manifest: string, description: string }
 local ART: { Art } = {
-	-- the unit's sizes S and L join when their FBX is built
+	-- the unit's size L joins when its FBX is built
 	{
 		key = "M",
 		path = "art/unit/out/StorageUnit_M.fbx",
 		manifest = "art/unit/assets.json",
 		description = "A self-storage unit with a working roll-up door",
+	},
+	{
+		key = "S",
+		path = "art/unit/out/StorageUnit_S.fbx",
+		manifest = "art/unit/assets.json",
+		description = "A small self-storage unit with a working roll-up door",
 	},
 	{
 		key = "Straight",

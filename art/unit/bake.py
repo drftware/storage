@@ -67,6 +67,37 @@ def pixels(img):
 
 # --- atlas --------------------------------------------------------------------------------
 
+def copy_atlas(objs, path):
+    """Give objs the atlas islands their namesakes have in the M's scene at `path`, so another
+    size wears the M's bake. Smart project packs a moved part differently, and the M's bake only
+    fits the M's pack. The parts are built face for face alike at every size, only moved; a face
+    whose shape differs stops the build rather than wearing the wrong texels."""
+    names = {o.data.name for o in objs}
+    with bpy.data.libraries.load(path) as (src, dst):
+        want = [n for n in src.meshes if n in names]
+        dst.meshes = list(want)  # Blender swaps the names in this list for the loaded meshes
+    ref = dict(zip(want, dst.meshes))  # loaded under new names, in the order asked
+    try:
+        for o in objs:
+            me, m = o.data, ref[o.data.name]
+            assert len(me.polygons) == len(m.polygons), f"{o.name}: face count differs from M"
+            flag, uv, muv = me.attributes["unwrap"].data, me.uv_layers.active.data, m.uv_layers.active.data
+            for p, q in zip(me.polygons, m.polygons):
+                if not flag[p.index].value:
+                    continue
+                a, b = list(p.vertices), list(q.vertices)
+                assert len(a) == len(b), f"{o.name}: face {p.index} differs from M"
+                pa, pb = me.vertices[a[0]].co, m.vertices[b[0]].co
+                for va, vb in zip(a, b):
+                    d = (me.vertices[va].co - pa) - (m.vertices[vb].co - pb)
+                    assert d.length < 1e-4, f"{o.name}: face {p.index} has another shape than M's"
+                for la, lb in zip(p.loop_indices, q.loop_indices):
+                    uv[la].uv = muv[lb].uv
+    finally:
+        for me in dst.meshes:
+            bpy.data.meshes.remove(me)
+
+
 def unwrap_atlas(objs, rect):
     """Smart-project every face flagged `unwrap` across objs, packed together into rect."""
     objs = [o for o in objs if any(v.value for v in o.data.attributes["unwrap"].data)]

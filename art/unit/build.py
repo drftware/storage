@@ -254,7 +254,10 @@ def stage_textures(spec, only=None):
     unit.pose(0.0, locked=True)
     dk = [unit.objs[n] for n in ("BottomBar", "LatchBolt", "Padlock", "Hardware", "Drum",
                                  "NumberPlate")]
-    bake.unwrap_atlas(dk, parts.ATLAS_RECT)
+    if spec.size == "M":
+        bake.unwrap_atlas(dk, parts.ATLAS_RECT)
+    else:  # the M's textures serve every size, so its small parts wear the M's atlas pack
+        bake.copy_atlas(dk, os.path.join(OUT, "M", "unit.blend"))
     tex = os.path.join(OUT, "textures")
     if only != ["none"]:
         bake.bake_all(unit, tex, only)
@@ -293,12 +296,16 @@ def build_scene(spec):
     view = R.hero_view(unit, tex)
     view.tint(R.DOOR_TINTS["oxblood"])
     neighbours = []
-    for x in (-36.0, -24.0, -12.0, 12.0, 24.0, 36.0, 48.0):
-        neighbours.append(R.clone(view, f"n_{x:+.0f}", Matrix.Translation((x, 0, 0)),
-                                  str(214 + int(x / 6))))
-    for x in (-36.0, -24.0, -12.0, 0.0, 12.0, 24.0, 36.0, 48.0):
-        m = Matrix.Translation((x, -R.HALL, 0)) @ Matrix.Rotation(math.pi, 4, "Z")
-        neighbours.append(R.clone(view, f"o_{x:+.0f}", m, str(215 + int(x / 6))))
+    # a row of this size each side, wall to wall, about 36 studs back and 48 on (four M a side)
+    W = spec.width
+    ks = range(-round(36.0 / W), round(48.0 / W) + 1)
+    for k in ks:
+        if k != 0:
+            neighbours.append(R.clone(view, f"n_{k * W:+.0f}", Matrix.Translation((k * W, 0, 0)),
+                                      str(214 + 2 * k)))
+    for k in ks:
+        m = Matrix.Translation((k * W, -R.HALL, 0)) @ Matrix.Rotation(math.pi, 4, "Z")
+        neighbours.append(R.clone(view, f"o_{k * W:+.0f}", m, str(215 + 2 * k)))
     for i, n in enumerate(neighbours):
         n.tint(R.DOOR_TINTS["oxblood"])
         n.pose(0.0, locked=(i % 3 == 1))
@@ -336,6 +343,11 @@ def set_studio(scene, on):
         R.world((0.012, 0.014, 0.02), 1.0)
 
 
+def sheet(spec, name):
+    """A look sheet's path: the M's are the unit's sheets, other sizes carry theirs in the name."""
+    return os.path.join(SHEETS, f"unit-{name}.png" if spec.size == "M" else f"unit-{spec.size}-{name}.png")
+
+
 def stage_renders(spec, quick=False, only=None):
     import render as R
     scene = build_scene(spec)
@@ -359,7 +371,7 @@ def stage_renders(spec, quick=False, only=None):
                 ob.hide_render = name == "tops"
         cam = R.camera(loc, tgt, lens, f"cam_{name}")
         R.flashlight(cam, torch, tgt)
-        R.shoot(cam, os.path.join(SHEETS, f"unit-{name}.png"), ev)
+        R.shoot(cam, sheet(spec, name), ev)
     fo.hide_render = True
     for ob in list(bpy.data.objects):
         if ob.name.startswith(("ceiling", "joist")):
@@ -376,7 +388,7 @@ def stage_renders(spec, quick=False, only=None):
             for n in hide:
                 view.objs[n].hide_render = True
             cam = R.camera(loc, tgt, lens, f"cam_{name}")
-            R.shoot(cam, os.path.join(SHEETS, f"unit-{name}.png"), 0.0)
+            R.shoot(cam, sheet(spec, name), 0.0)
             for n in hide:
                 view.objs[n].hide_render = False
         if not only or "palette" in only:
@@ -392,7 +404,7 @@ def stage_renders(spec, quick=False, only=None):
             sc = bpy.context.scene
             keep = (sc.render.resolution_x, sc.render.resolution_y)
             sc.render.resolution_y = int(keep[0] * 0.36)
-            R.shoot(cam, os.path.join(SHEETS, "unit-palette.png"), 0.0)
+            R.shoot(cam, sheet(spec, "palette"), 0.0)
             sc.render.resolution_x, sc.render.resolution_y = keep
             for v in row:
                 v.tint(R.DOOR_TINTS["oxblood"])

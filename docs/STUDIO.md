@@ -309,6 +309,10 @@ verified: a doc page, Studio, or "untested".
   script; it writes the same hash back).
 - `ProximityPromptService.PromptShown` misses prompts already showing when you connect (the spawn
   is within reach of 101's): step away first.
+- **Teleporting doesn't wake a motion light** (L-01b, 2026-11-07): after `PivotTo` the hall stayed
+  dark; walk a few studs with `Humanoid:MoveTo` (and wait for `MoveToFinished`) and capture within
+  a second or two, before the light's hold runs out. In LockFirstPerson the character turns to the
+  camera, so set `CurrentCamera.CFrame` after moving, then trigger prompts or capture.
 - **Rojo connects through the owner:** start `rojo serve` in the background; the owner clicks
   Connect in Studio's Rojo plugin. Rojo keeps the place's own children (Baseplate,
   `ReplicatedStorage.Units`) because no node there has a `$path`.
@@ -320,6 +324,15 @@ verified: a doc page, Studio, or "untested".
   doesn't stick; wrap it in `list(...)`. The volume node is `ShaderNodeVolumePrincipled`. A camera
   made this frame has a stale `matrix_world` until `view_layer.update()`. GPU bakes vary by at
   most 1/255 between runs, so texture hashes aren't stable.
+- **Smart project packs a moved part differently** (L-01b, 2026-11-07): the S's hardware, the same
+  shapes as the M's only shifted sideways, landed up to 0.7 of the atlas away from the M's, so it
+  would have worn the wrong texels of the M's bake. A shared bake needs the same pack: copy the
+  UVs face for face (`bake.copy_atlas`).
+- **`bpy.data.libraries.load` swaps the names in the list you assign** for the loaded datablocks,
+  in place; assign a copy (`dst.meshes = list(want)`) to keep the names.
+- **A Python error in `blender -b -P` still exits 0**, and `art.sh` filters the output, so a
+  failed rebuild used to leave the last `unit.blend` for the next stage to export. `art.sh` now
+  deletes it first for sizes other than M.
 - **luau-lsp 1.70.1 strict:** locals bound from a multi-return widen string-literal unions to
   `string`; annotate them (`local kind: Motion.Kind, from: number = Motion.decode(...)`).
 - **Lune** runs a spec with `lune run tests/<name>.spec` from the repo root; specs require

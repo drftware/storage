@@ -17,7 +17,7 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
 - [x] **P0-01 The storage unit and its roll-up door.** Done Nov 5 (passes checks, untested in
   Studio): the 10x10 unit built as code in Blender with baked PBR textures, an FBX for the 3D
   Importer, and the door rig (`RollUpDoor`, `Motion`, `Curtain`, `UnitKit`) with Lune specs
-  (D-001 to D-007). Sizes S and L build but haven't been checked by eye.
+  (D-001 to D-007). Size S joined in L-01b; L builds but hasn't been checked by eye.
 - [x] **P0-02 The Roblox project, and the unit in Studio.** Done Nov 5: the full Rojo tree with
   the place's streaming and night lighting; Brix mounted at `4c21b5f` and a Host on each side; the
   unit uploaded through Open Cloud (D-010), inserted and prepared into `ReplicatedStorage.Units.M`;
@@ -143,9 +143,10 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
   from the lobby as you walk out; one door colour per floor; a motion light over every hall piece,
   each in a power zone. Lune-checked over 400 floors (`tests/floor.spec.luau`);
   `lune run scripts/floor-map <seed> <floor>` prints one as a map. The owner judges the maps
-  (`OWNER.md`). **L-01b** the S unit into the game: exported, imported, prepared, its door
-  checked in Studio and judged at phone size beside an M (the floors place S rows and the
-  corners' S slots). **L-01c** laying the data in Studio with `CorridorKit` and `UnitKit`,
+  (`OWNER.md`). **L-01b done Nov 7** (D-028): the S unit exported, uploaded and kept at
+  `ReplicatedStorage.Units.S`; its door wears the M's textures at the M's grain; the test hall's
+  short hall past the corner is three S a side (109 to 114, 112 padlocked); every door action
+  verified on an S in Studio; phone shots beside the M rows (`docs/art/L-01b-*.jpg`). **L-01c** laying the data in Studio with `CorridorKit` and `UnitKit`,
   replacing DevCorridor's hand-placed hall: each piece at its frame (`Floor.dir(turn)`), each
   slot a unit (painted, numbered, the side walls in its `drops` left out) or the kit's plain or
   short wall, each junction with the kit's wall left out where a unit stands
@@ -209,7 +210,8 @@ Atmosphere effects wait until the loop is solid (owner, Nov 7); the haze stays a
 - **A "less camera shake" setting** with the settings menu (P0-04's `Shake`, scaled by it).
 - **The sound mix:** a SoundGroup for effects (the door, the lights) under the settings' volume.
 
-- The unit's sizes S and L: render and judge them; the large door's slat texture stretches 1.46x.
+- The unit's size L: render and judge it. Its door is wider than the M's bake, so its slats,
+  bottom bar and drum stretch the texture 1.46x (a narrower S crops it, D-028); tile it instead.
 - A client-side door collider for the local player, if the server collider's ~0.1 s lag feels
   wrong in play (art/unit/README.md, "Not verified yet").
 - The padlock is true to size (about 6 by 9 cm) and hard to spot from standing height

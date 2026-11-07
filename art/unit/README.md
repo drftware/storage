@@ -28,7 +28,12 @@ The corridor, lights, boxes and the kept figure are render dressing only.
 | Origin | middle of the doorway's outer face, on the floor; the hallway is -Z (LookVector) |
 
 `spec.py` holds every number; S (8x8, 6 wide door) and L (16x20, 12 wide) build from the same
-code with `SIZE=S scripts/art.sh geo export` (not yet rendered or checked by eye).
+code with `SIZE=S scripts/art.sh geo export`, and `renders` writes their sheets as
+`unit-S-<shot>.png` (S's `hall`, `hero`, `peek`, `open` and `studio`; the other shots' cameras sit
+for the M). Every size wears the M's bake: a narrower door shows the middle of the slats', bar's
+and drum's texture at the M's grain (`Spec.u_across`), and the hardware copies the M's atlas pack
+from `out/M/unit.blend` (`bake.copy_atlas`; D-028). S is in the game (L-01b); L is not yet
+checked by eye, and its wider door still stretches that texture 1.46x.
 
 ## Parts
 
@@ -145,10 +150,8 @@ stays on the bottom ribs, crests and valleys, never in a pattern that would repe
 
 ## Not verified yet
 
-- **Nothing has been opened in Roblox Studio.** Studio wasn't automatable from here. The FBX
-  re-imports cleanly in Blender with every name, origin, rotation and texture intact, but
-  the importer's pivot and alpha-mode choices are the open risk; `RollUpDoor.frame` and the
-  calibration offsets are built to absorb the first, `UnitKit.prepare` the second.
+- M and S are in Studio and their doors verified there (P0-02, L-01b; `docs/STUDIO.md`); the
+  rest of this list predates that.
 - No phone-size screenshot yet (the fight project's bar). Draw calls not measured in Studio.
 - The player collides with the server's DoorCollider, which trails the client's picture by
   one-way latency (about 0.1 s): a rising door blocks a moment after it looks open. If that

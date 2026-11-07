@@ -330,3 +330,21 @@ junctions on every grid point (two could touch and parallel halls collide, needi
 odd numbers on one side and even on the other, as the test hall does (with mixed S and M rows the
 sides don't pair up, and gaps would run a floor past 99); numbering by distance from the lobby
 (numbers would hop between wings).
+
+## D-028 · 2026-11-07 · The small unit wears the M's textures, cropped, not squashed
+The S (8 by 8, a 6-wide door) is built from the same scripts as the M and wears the same five
+texture sets (L-01b). Two things made that true, and neither was before. The slats, the bottom
+bar and the drum span the door's width, and their texture was laid across the whole M door, so a
+narrower door squashed the paint's grain to 77%; a narrower door now shows the middle of the
+texture at the M's grain (`Spec.u_across`). And Blender's smart project packs the small hardware
+(the padlock, latch, plates, drum ends) differently once a part moves, so the S's pack sampled
+the wrong texels of the M's bake; another size now copies the M's pack face for face from the M's
+scene (`bake.copy_atlas`), and the build stops if any of those faces differs in shape from the M's.
+`art.sh` never bakes for another size and rebuilds its scene before every stage, so an export
+never ships stale geometry. The curtain is identical at every size (the door height is common), so
+the rig, the motion and every sound cue are the M's. In the test hall the short hall past the
+corner holds three S a side, numbered 109 to 114, 112 padlocked: the cramped part of the building,
+apart from the M rows the owner's earlier tests use. Not chosen: baking a texture set per size
+(five more sets to stream and keep in step); the S door squashing the M's texture (the grain reads
+finer than the M's beside it); the S row replacing two M units in the main hall (it would move
+units the open tests in `OWNER.md` name).

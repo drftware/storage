@@ -48,6 +48,10 @@ COMMON = dict(
     peek=1.15,               # GDD: lift the door a foot and crouch
 )
 
+# The door's textures (slats, bottom bar, drum) are baked across the M's curtain. A narrower
+# door shows the middle of them at the same grain rather than squashing all of them in.
+REF_CURTAIN_WIDTH = SIZES["M"]["door_width"] + 2.0 * COMMON["into_guide"]
+
 
 class Spec:
     def __init__(self, size="M"):
@@ -68,6 +72,15 @@ class Spec:
                                bottom_closed=self.bottom_closed, guide_top=self.guide_top,
                                drum_z=-self.drum_back, drum_y=self.drum_up,
                                r0=self.drum_r, wrap=self.wrap).prime()
+
+    def u_across(self, extra=0.0):
+        """U range for a part as wide as the curtain plus `extra` each side: the whole texture
+        on the M, its middle on a narrower door, so the paint's grain never squashes. A wider
+        door (L) still stretches it (ROADMAP polish)."""
+        k = (self.curtain_width + 2.0 * extra) / (REF_CURTAIN_WIDTH + 2.0 * extra)
+        if k >= 1.0:
+            return (0.002, 0.998)  # a half-texel in from each edge
+        return (0.5 - 0.498 * k, 0.5 + 0.498 * k)
 
     # door-local (z_out, y) -> Blender (Y, Z)
     def to_blender(self, z_out, y):

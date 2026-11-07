@@ -6,11 +6,11 @@ nowhere else.
 ## Now
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
-- [ ] **Save the place** (File > Save to Roblox) after this session (Nov 7): the hall's templates
-  live in it at `ReplicatedStorage.Corridor`: `Straight`, `Fixture`, `Wall`, `DeadEnd`, and this
-  session's `Corner`, `T`, `Cross` and `ShortWall`. Unsaved, the next open loses them and the test
-  hall falls back to plain blocks, bare tubes and a dead end where the turn should be (Output
-  says so).
+- [ ] **Save the place** (File > Save to Roblox) after this session (Nov 7): the templates live
+  in it: the small unit at `ReplicatedStorage.Units.S` (new this session, beside the `M`), and the
+  hall's at `ReplicatedStorage.Corridor`: `Straight`, `Fixture`, `Wall`, `DeadEnd`, `Corner`, `T`,
+  `Cross` and `ShortWall`. Unsaved, the next open loses them: the short hall past the corner
+  falls back to plain walls, the hall to plain blocks and bare tubes (Output says which).
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
@@ -30,6 +30,22 @@ nowhere else.
   count up as you walk out from the lobby (floor 3: 301, 302 ...), across the hall back to back,
   rather than odd on one side and even on the other; (3) the breaker's power zones are the lights
   from the lobby to the first fork, then one zone per wing.
+
+## Now: judge L-01b, the small unit (built Nov 7)
+
+- [ ] **Judge the shots:** `docs/art/L-01b-rows.jpg` is a Galaxy A16, Level01 on top and Level21
+  below. Left: the short hall past the corner, now three small units a side. Right: the main
+  hall's big units from the spawn end. `L-01b-doors.jpg` (Level21) is small doors 114, 112, 110
+  (left) and big doors 104, 102 (right) from the same distance. `art/sheets/unit-S-hall.png`,
+  `unit-S-hero.png` and `unit-S-studio.png` are the Blender look. Look for: the small doors' slats
+  and scuffs the same grain as the big ones' (not finer); the thin strip of wall between small
+  doors making that hall feel cramped; the number plate (the big unit's size) not crowding them.
+- [ ] **Try a small door:** Play, go down the hall, take the T's arm that runs to a corner and
+  round it into the short hall. At 110: Peek (Q), Open (E), Close (F), Slam (G), Lock and Unlock
+  (R); 112 is padlocked. Then walk into 110, shut it on yourself (the Command Bar line under "Now:
+  judge P0-02g", with `Unit110`), turn to the door and Lift (T). Look for: the same sounds and
+  slam as a big door; the room feeling tight with the door down; the next door's prompts never
+  showing instead (the doors are 8 studs apart).
 
 ## Now: judge L-03, the motion lights (built Nov 7)
 
@@ -79,7 +95,7 @@ nowhere else.
 
 - [ ] **Walk it on a phone view:** Play with the Galaxy A16 in the Device Simulator at Quality
   Level 01 and again at 21. Walk to the hall's far end, where it meets a T under the red exit
-  sign: right is a dead end, left a hall to a corner and a short hall past it. Look for: no
+  sign: one arm is a dead end, the other a hall to a corner and a short hall past it. Look for: no
   seam in the floor or the ceiling where a junction meets a straight; the heavier girder over
   each place the ceiling's ribs turn; the steel column at each corner of wall; the blind corner
   feeling blind. Walk into the corners: nothing to snag on or see through. Shots so far, lit by

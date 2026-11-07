@@ -332,6 +332,7 @@ def drum(s):
     _, dy, dz = s.drum_center
     half = s.curtain_width / 2 + 0.04
     v0, v1 = DRUM_BAND
+    u0, u1 = s.u_across(0.04)
 
     def pipe_map(vs, n):
         c = sum((v for v in vs), Vector()) / len(vs)
@@ -343,7 +344,7 @@ def drum(s):
                 a -= 2 * math.pi
             while a - ac < -math.pi:
                 a += 2 * math.pi
-            out.append((0.002 + 0.996 * (v.x + half) / (2 * half),
+            out.append((u0 + (u1 - u0) * (v.x + half) / (2 * half),
                         v0 + (a + math.pi) / (2 * math.pi) * (v1 - v0) * 0.98))
         return out
     geo.cylinder(m, "x", (0, dy, dz), s.drum_r, 2 * half, segs=24, mapper=pipe_map, caps=False)
@@ -369,6 +370,7 @@ def slat(s, variant):
         lens.append(lens[-1] + math.hypot(tb - ta, nb - na))
     L = lens[-1]
     inset = 0.004  # half-texel guard inside each band
+    u0, u1 = s.u_across()
 
     def band(v0, v1, s_):
         return v0 + inset + (v1 - v0 - 2 * inset) * s_
@@ -378,16 +380,16 @@ def slat(s, variant):
         sa, sb = lens[i] / L, lens[i + 1] / L
         # front (faces -Y): x from -cw2 to cw2
         f = [(-cw2, -na, ta), (cw2, -na, ta), (cw2, -nb, tb), (-cw2, -nb, tb)]
-        uv = [(0.002, band(fv0, fv1, sa)), (0.998, band(fv0, fv1, sa)),
-              (0.998, band(fv0, fv1, sb)), (0.002, band(fv0, fv1, sb))]
+        uv = [(u0, band(fv0, fv1, sa)), (u1, band(fv0, fv1, sa)),
+              (u1, band(fv0, fv1, sb)), (u0, band(fv0, fv1, sb))]
         base = len(m.verts)
         for v in f:
             m.vert(v)
         m.face([base, base + 1, base + 2, base + 3], uv, True)
         # back (faces +Y), offset by the sheet
         b = [(-cw2, -na + th, ta), (-cw2, -nb + th, tb), (cw2, -nb + th, tb), (cw2, -na + th, ta)]
-        uvb = [(0.002, band(bv0, bv1, sa)), (0.002, band(bv0, bv1, sb)),
-               (0.998, band(bv0, bv1, sb)), (0.998, band(bv0, bv1, sa))]
+        uvb = [(u0, band(bv0, bv1, sa)), (u0, band(bv0, bv1, sb)),
+               (u1, band(bv0, bv1, sb)), (u1, band(bv0, bv1, sa))]
         base = len(m.verts)
         for v in b:
             m.vert(v)
@@ -401,8 +403,8 @@ def slat(s, variant):
         for v in e:
             m.vert(v)
         vv = band(bv0, bv1, 0.0 if sgn < 0 else 1.0)
-        m.face([base, base + 1, base + 2, base + 3], [(0.002, vv), (0.002, vv), (0.998, vv),
-                                                       (0.998, vv)], False)
+        m.face([base, base + 1, base + 2, base + 3], [(u0, vv), (u0, vv), (u1, vv),
+                                                       (u1, vv)], False)
     return m
 
 
@@ -453,8 +455,8 @@ def bottom_bar(s):
         body = body[::-1]
     if _signed_area(seal) < 0:
         seal = seal[::-1]
-    geo.extrude_x(m, body, -cw2, cw2, uv_band=(0.002, 0.998) + BAR_BODY_BAND)
-    geo.extrude_x(m, seal, -cw2 + 0.02, cw2 - 0.02, uv_band=(0.002, 0.998) + BAR_SEAL_BAND,
+    geo.extrude_x(m, body, -cw2, cw2, uv_band=s.u_across() + BAR_BODY_BAND)
+    geo.extrude_x(m, seal, -cw2 + 0.02, cw2 - 0.02, uv_band=s.u_across() + BAR_SEAL_BAND,
                   smooth=True)
     # lift handles, outside and in
     for sgn, y_face in ((-1, -0.088), (1, 0.075)):
