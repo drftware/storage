@@ -21,6 +21,8 @@ local Specs = require(script.Parent.Specs)
 
 local UnitKit = {}
 
+-- Every unit carries this tag, and so does the template in ReplicatedStorage it's copied from,
+-- which sits at the origin: anything reading the tag skips units outside Workspace.
 UnitKit.Tag = "StorageUnit"
 UnitKit.Colours = {
 	Door = {

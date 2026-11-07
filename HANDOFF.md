@@ -2,7 +2,7 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-07, session 13 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-07, session 13 (twice) · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
 - **The hall is cheap to draw** (P0-02j, done): about 61,000 triangles and 25 draw calls from the
@@ -15,17 +15,21 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   tube's puffs on a steady beat (`Pace`, a small pure module with a Lune spec), and bursts a
   tube already lit when the player first gets it, so a late joiner's air isn't clear (D-019).
 - **Verified in Studio:** about 11 puffs under the two lit tubes at Level01, Level08 and Level21
-  alike (Play, counted from `Stats.RenderBreakdown`); phone shots on a simulated Galaxy A16,
-  `docs/art/P0-02j-phone.jpg`.
-- Owner's judging is in `OWNER.md`, "Now: judge the haze" (P0-02i's and P0-02j's shots together).
-- `rojo serve` is running on port 34872; Studio is in Edit, Quality Level on Automatic, the
-  Device Simulator off.
+  alike; phone shots on a simulated Galaxy A16, `docs/art/P0-02j-phone.jpg`.
+- **The owner on the haze:** fine, but atmosphere waits until the loop is solid (now a rule in
+  AGENTS.md). It stays as built; don't polish it further.
+- **Fixed: the hall went dark mid-walk.** The unit template in ReplicatedStorage carries the
+  units' tag and sits at the origin; `BehindDoors` took it for a shut unit in mid-hall, so walking
+  through dimmed the hall to about 5% and drew the line under its door. It now skips units
+  outside Workspace, as `RollUpDoor` already did. Verified in Studio: mid-hall stays lit, shut in
+  101 still goes dark. The owner re-checks it (`OWNER.md`).
+- `rojo serve` runs on port 34872; Studio in Edit, Quality on Automatic, Device Simulator off.
 
 ## Next task: P0-03 The corridor kit
 The moment: the hall stops being a test strip and becomes the building: a real floor and
 ceiling, corners you can't see round, a dead end you back out of, and the fixture that will
 watch you (L-03 lights it).
-1. Owner test results first (`OWNER.md`). Thicker or fainter haze is `HallLight.HazeTransparency`.
+1. Owner test results first (`OWNER.md`).
 2. Read the GDD's tile set and Lights sections (the docs tools, not WebFetch). The ticket is big:
    split it in ROADMAP before building (for example the straight piece with floor and ceiling,
    then corner, T, cross and dead end, then the motion-light fixture), and do only the first.
@@ -56,8 +60,8 @@ watch you (L-03 lights it).
    peeked unit lights evenly; re-run `UnitKit.prepare` so the template saves at 1.2 deep; sizes S
    and L by eye; a client-side door collider if the lag feels wrong; the padlock is too small to
    spot; the cursor hint once ever.
-5. **Check other particles the same way:** any emitter added later (keepers, dust from a door)
-   is thinned on low graphics too; judge it in its steady state (docs/STUDIO.md).
+5. **Particles added later** (keepers, dust from a door) are thinned on low graphics too; judge
+   them in their steady state (docs/STUDIO.md). Any reader of the units' tag skips the template.
 
 ## Kickoff for the next agent
 ```text

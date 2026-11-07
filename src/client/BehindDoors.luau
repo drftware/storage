@@ -155,7 +155,14 @@ function BehindDoors.new(): Brix.System
 	end
 
 	local function addRoom(inst: Instance)
-		if not inst:IsA("Model") or not inst:FindFirstChild("DoorOrigin", true) then
+		-- Only units in the world. The template in ReplicatedStorage carries the same tag and sits
+		-- at the origin, mid-hall in DevCorridor: counted as a room, it "shut you in" as you walked
+		-- through it, darkening the hall and drawing the line under its door (P0-02j).
+		if
+			not inst:IsA("Model")
+			or not inst:IsDescendantOf(Workspace)
+			or not inst:FindFirstChild("DoorOrigin", true)
+		then
 			return
 		end
 		for _, r in rooms do

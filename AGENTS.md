@@ -52,6 +52,9 @@ Working code whose moment feels flat is not done.
 - **Hooked by fun, never by tricks.** Replay comes from tension, mastery, collection and friends.
   Roblox policy (paid random items, honest odds, young players) is a hard limit.
 - **Polish is never dropped.** Juice that doesn't fit the ticket goes in ROADMAP by name.
+- **Loop before atmosphere** (owner, 2026-11-07): effects that only set the mood (the haze, more
+  particles, ambience) wait until the gameplay loop is solid; list them in ROADMAP's polish
+  section and move on. An action's own feedback still ships with it.
 
 ## Context budget
 

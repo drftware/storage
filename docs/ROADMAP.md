@@ -142,6 +142,8 @@ launch.
 
 ## Polish waiting for a slot
 
+Atmosphere effects wait until the loop is solid (owner, Nov 7); the haze stays as built.
+
 - The unit's sizes S and L: render and judge them; the large door's slat texture stretches 1.46x.
 - A client-side door collider for the local player, if the server collider's ~0.1 s lag feels
   wrong in play (art/unit/README.md, "Not verified yet").

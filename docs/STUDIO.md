@@ -232,6 +232,10 @@ verified: a doc page, Studio, or "untested".
   done; the scaling mode (ScaleToPhysicalSize here) persists, so leave it alone.
 - **`start_stop_play` with Play already running** answers "Game Started" and changes nothing: stop
   first, or new code never loads.
+- **Tagged templates sit in ReplicatedStorage:** `CollectionService:GetTagged` and its added
+  signal return the unit template (`ReplicatedStorage.Units.M`, at the origin) along with the
+  placed units. Filter to `IsDescendantOf(Workspace)`. Missing it, BehindDoors took the template
+  for a shut unit in mid-hall and darkened the hall as you walked through (fixed Nov 7).
 - `insert_asset` tags what it inserts `Assistant:<guid>`; remove the tag before keeping the model.
 - **One asset ID serves every branch:** after uploading the unit from one branch, re-upload from
   the branch you return to (set its `sha256` in `art/unit/assets.json` to anything and run the
