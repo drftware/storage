@@ -37,6 +37,28 @@ nowhere else.
   on over you; the farthest lit tubes glowing without light (only the 3 nearest throw it) and no
   pool popping on and off as you walk. Read the View menu's Render stats with 4 or more lit.
 
+## Now: judge P0-04, the door's sounds and the slam's jolt (built Nov 7)
+
+- [ ] **Hear every door action:** Play, stand at unit 101 and use its prompts: Peek (Q), Open (E),
+  Close (F), Slam (G) from open and again from a peek, Lock and Unlock (R). Then go in, Slam it on
+  yourself with the Command Bar line under "Now: judge P0-02g", and Lift (T). Listen for: the
+  latch clack as any lift starts; a peek's rattle quiet and low, an open's loud; the lift from
+  inside loud and surging three times as the door heaves; the slam's bang on the very frame the
+  door hits the floor, a thump under it, then the bounce's clatter; a close settling with a
+  rattle; a clunk as an open reaches the top; locking: the bolt, then the padlock's snap;
+  unlocking: the pop, then the bolt. I picked every sound by measuring its loudness, not by ear,
+  so say which to swap: each is one row in `src/shared/StorageUnit/DoorSound.luau`. Most likely
+  to miss: the bang (a gas tank dropped on loose metal), the top's clunk (a car door slam pitched
+  up), the padlock (its snap is my reading of the recording).
+- [ ] **The slam's jolt:** slam 101 while standing at its door, and again shut inside. The view
+  should jump about half a degree and settle in half a second, on a Galaxy A16 at Level 01 and 21.
+  Say if it should be stronger or softer (`DoorSound.SlamShake`, `Shake.MaxAngle`).
+- [ ] **From down the hall:** have a door opened and slammed while you stand at the T (about 40
+  studs off): the open faint, the slam clear, a peek silent from there.
+- [ ] **With a friend** (Test > Clients and Servers, 2 players): one slams a door on the other.
+  Look for: both hear the bang as they see the door land; the one inside jolts; the one outside
+  jolts only standing close.
+
 ## Now: walk the turn (built Nov 7, P0-03d)
 
 - [ ] **Walk it on a phone view:** Play with the Galaxy A16 in the Device Simulator at Quality

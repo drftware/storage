@@ -5,6 +5,7 @@
 ]]
 return {
 	Curtain = require(script.Curtain),
+	DoorSound = require(script.DoorSound),
 	Motion = require(script.Motion),
 	RollUpDoor = require(script.RollUpDoor),
 	ShutIn = require(script.ShutIn),

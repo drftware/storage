@@ -59,6 +59,47 @@ end
 ok(peak > 0.05 and peak <= 0.32, string.format("slam bounces a little (%.3f)", peak))
 near(Motion.sample("Slam", FULL, 0, slam, FULL), 0, "slam settles")
 
+-- speed: the curve's slope, zero outside the motion
+ok(Motion.speed("Open", 0, FULL, -0.1, FULL) == 0, "no speed before a motion starts")
+ok(Motion.speed("Open", 0, FULL, 2.0, FULL) == 0, "no speed once it ends")
+local mid = Motion.speed("Open", 0, FULL, 1.0, FULL)
+ok(mid > FULL / 2 and mid > Motion.speed("Open", 0, FULL, 0.2, FULL), "an open is fastest mid-way")
+ok(
+	Motion.speed("Peek", 0, PEEK, 0.05, PEEK) > Motion.speed("Peek", 0, PEEK, 0.8, FULL),
+	"a peek starts quick and slows"
+)
+
+-- strikes: when the door hits something
+local function strikes(kind, from, to)
+	return Motion.strikes(kind, from, to, FULL)
+end
+local s1 = strikes("Slam", FULL, 0)
+local fallFull = math.sqrt(2 * FULL / 200)
+ok(#s1 == 2 and s1[1].what == "Floor" and s1[2].what == "Bounce", "a slam lands, then bounces")
+near(s1[1].at, fallFull, "a slam lands when its fall ends")
+near(s1[2].at, fallFull + 0.26, "its bounce lands when the bounce ends")
+near(s1[1].strength, 1, "a slam from open lands at full strength")
+near(
+	Motion.sample("Slam", FULL, 0, s1[1].at, FULL),
+	0,
+	"the floor strike is when it reaches the floor",
+	1e-3
+)
+local s2 = strikes("Slam", PEEK, 0)
+near(s2[1].strength, math.sqrt(PEEK / FULL), "a slam from a peek lands softer")
+local s3 = strikes("Close", FULL, 0)
+ok(#s3 == 1 and s3[1].what == "Floor", "a close settles on the floor")
+near(s3[1].at, 1.6, "when the close ends")
+local s4 = strikes("Open", 0, FULL)
+ok(#s4 == 1 and s4[1].what == "Top", "an open meets the stop bolts")
+near(s4[1].at, 2.0, "when the open ends")
+ok(#strikes("Open", PEEK, FULL) == 1, "an open from a peek meets them too")
+near(strikes("LiftInside", 0, FULL)[1].at, 6.0, "a lift from inside meets them after 6 s")
+ok(#strikes("Peek", 0, PEEK) == 0, "a peek hits nothing")
+ok(#strikes("Peek", FULL, PEEK) == 0, "dropping to a peek hits nothing")
+ok(#strikes("Close", 0, 0) == 0, "closing a shut door hits nothing")
+ok(#strikes("Slam", 0, 0) == 0, "slamming a shut door hits nothing")
+
 -- the replicated attribute round-trips
 local k, a, b, s = Motion.decode(Motion.encode("Slam", 7.65, 0, 12345.6789))
 ok(k == "Slam", "decode kind")

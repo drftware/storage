@@ -120,17 +120,25 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   owner's play (D-025): your screen predicts your own lights, the reach is 40 studs, the hold
   7.5 s, the flicker a tenth of a second, and every stretch of the turn has its fixture. Feel and
   two players: `OWNER.md`.
-- [ ] **P0-04 The door's sounds and feel.** The quiet scrape of a peek, the loud rattle of an
-  open (keepers hear it), the bang and bounce of a slam with a little camera shake nearby, the
-  latch's clack, the padlock; from Roblox's audio library, timed off `RollUpDoor.play`'s duration.
-  L-03's relay click shows the way: `search_asset` for Audio, Pro Sound Effects' library, checked
-  to load with `ContentProvider:PreloadAsync` (docs/STUDIO.md).
+- [x] **P0-04 The door's sounds and feel.** Done Nov 7 (D-026), verified in Studio (one player,
+  by server calls): every door action answers with its sound at the door. While a door moves, a
+  real roll-up door's rattle (a truck's rear door) follows its speed: quiet and low for a peek,
+  loud for an open or a lift from inside (whose three heaves surge), high and short for a slam's
+  fall. One-shots land on the frame the door hits something (`Motion.strikes`): the slam's bang
+  with a thump under it, then its bounce's clatter; a close settling; the stop bolts at the top;
+  the latch as a lift starts; the bolt and padlock when locking. A slam jolts the camera of anyone
+  within 6 studs, fading out by 30 (`CameraShake`, about 0.6 degrees beside it). All Pro Sound
+  Effects, each stretch found by measuring its loudness in Studio. The owner judges the sounds
+  (`OWNER.md`).
 
 ## Phase 1: The loop, with real assets
 
 Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtests.
 
-- [ ] **L-01 The floor generator.** A floor laid from a seed on the GDD's tile grid: unit rows
+- [ ] **L-01 The floor generator**, in two sessions: **L-01a** the floor as pure data from a
+  seed (the tile grid, halls and junctions, which slot holds a unit, a plain wall or a fixture,
+  the numbers and the floor's paint), Lune-tested; **L-01b** laying that data in Studio with
+  `CorridorKit` and `UnitKit`, replacing DevCorridor's hand-placed hall. A floor laid from a seed on the GDD's tile grid: unit rows
   with shared walls dropped, numbers, paint per floor, the elevator lobby, the motion lights
   placed through L-03's system (a fixture every 24 studs of hall and one over every junction's
   middle, so no stretch goes unwatched); built during the ride.
@@ -147,6 +155,8 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
   open door) and space them with `UIOffset`. The test hall's five prompts on one point draw as
   five 138×72 tap buttons on top of each other, so a phone can't pick one (P0-02c). Keep each
   prompt's point on the door at about eye height so it stays on screen up close.
+  Every refusal answers at the door too: a padlocked door rattles when someone tries it (Pro Sound
+  Effects "Door Shake 4", `rbxassetid://9114152830`, checked to load; a new cue in `DoorSound`).
 - [ ] **L-04 What's behind the door.** A first director deals each unit's contents on open: a
   find, a note, nothing, or a keeper (GDD "What's behind the door"). Needs find and box props.
 - [ ] **L-05 Notes, the keypad and the elevator.** The floor's 4-digit code on sticky notes, the
@@ -155,7 +165,9 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
   A wrong code flashes every light on the floor (GDD): add that to `MotionLights` beside `cut`.
 - [ ] **L-06 The Mannequin.** The first keeper, at no more than player speed: a data row on
   Brix's Pursuit (floor pathing, a cone reach). Needs its model and animations first, and Brix's
-  ENG-06 and ENG-07.
+  ENG-06 and ENG-07. Keepers hear a door (the GDD: an open, a slam, a lift from inside) as far as
+  its sound carries: take each action's reach from `DoorSound.Actions`, so what players hear and
+  what keepers hear stay one table.
 - [ ] **L-07 Getting kept and rescued.** Shrink-wrapped, stored in a random unit, banging to ping
   the team, cut free in a second, padlocked if left too long (GDD "Getting kept").
 - [ ] **L-08 The ride and the next floor.** The elevator ride and a second floor, so the climb is
@@ -179,6 +191,16 @@ launch.
   units out of those slots for now).
 
 Atmosphere effects wait until the loop is solid (owner, Nov 7); the haze stays as built.
+
+- **The bolt and the padlock move** (P0-04): locking now snaps the latch bolt across and shows the
+  padlock at once, with its sounds; a slide of the bolt (about 0.2 s) and the padlock swinging
+  once on its hasp would let the eye follow the sound.
+- **A shut door muffles the unit behind it** (P0-04): sounds from inside a shut unit, or the hall's
+  heard from inside, play as clear as an open one. A low-pass (an `EqualizerSoundEffect`) on a
+  door's sounds while BehindDoors says a shut door stands between would make a slam heard from
+  inside the hall sound like it.
+- **A "less camera shake" setting** with the settings menu (P0-04's `Shake`, scaled by it).
+- **The sound mix:** a SoundGroup for effects (the door, the lights) under the settings' volume.
 
 - The unit's sizes S and L: render and judge them; the large door's slat texture stretches 1.46x.
 - A client-side door collider for the local player, if the server collider's ~0.1 s lag feels

@@ -287,6 +287,21 @@ verified: a doc page, Studio, or "untested".
   Pro Sound Effects' and APM's uploads are Roblox's licensed library and load in any game. Check
   one in Edit with `ContentProvider:PreloadAsync` (status Success, `TimeLength` above 0) before
   relying on it.
+- **Measuring a sound** (Edit, P0-04, 2026-11-07): nobody here can listen, so find a recording's
+  events by its loudness. An `AudioPlayer` wired (`Wire`) to an `AudioAnalyzer` plays in Edit with
+  no output attached, silently; sample the analyzer's `PeakLevel` each frame against the player's
+  `TimePosition` and bin it (50 ms bins as a digit per bin of 6 dB). At `PlaybackSpeed` 0.25 the
+  bins resolve onsets to about 5 ms. Several players run at once.
+- **Playing a stretch of a recording** (Play, P0-04): a classic `Sound` with
+  `PlaybackRegionsEnabled`, `PlaybackRegion` and (looped) `LoopRegion` plays only that stretch;
+  set `TimePosition` to the region's start before `Play`. A fresh Sound with a preloaded id starts
+  at its region on its very first play. Fade the end with a delayed `TweenInfo` on `Volume`.
+- **Deferred events miss the first play:** a `Played` handler connected inside `DescendantAdded`
+  connects after the game's code has already called `Play` (Roblox defers events). A probe polls
+  `IsPlaying` each frame instead.
+- **String requires work for the game's own modules** (Play, P0-04): `require("./Motion")` from
+  `StorageUnit/DoorSound` loads its sibling in Roblox, and the same file runs under Lune and passes
+  luau-lsp, as Brix's modules do.
 - **One asset ID serves every branch:** after uploading the unit from one branch, re-upload from
   the branch you return to (set its `sha256` in `art/unit/assets.json` to anything and run the
   script; it writes the same hash back).

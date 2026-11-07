@@ -288,3 +288,17 @@ you walk into wins over the one behind you. Every stretch of the test hall now h
 watching it, junctions included: a junction's middle is midway between its joists, so L-01 can
 hang one there. Not chosen: the server alone with a longer reach (your own first step after a
 freeze would still wait a round trip).
+
+## D-026 · 2026-11-07 · A door sounds like its motion: a rattle that follows its speed, hits on its strikes
+Each player's screen plays a door's sounds from the motion the server already replicates, so no new
+traffic. While it moves, one looping roll-up door rattle (Pro Sound Effects' truck rear door)
+takes its volume and pitch from the door's speed every frame: the curve can't drift from the
+sound, and a lift from inside's three heaves surge on their own. Hits are one-shots timed off
+`Motion.strikes` (when a slam lands and bounces, a close settles, a lift meets the stop bolts), on
+the server's clock, so every player hears the slam when they see it. Loudness and reach per
+action follow the GDD's noise column and live in `DoorSound` for keepers to share. The slam
+shakes the camera with trauma that drains (squared on screen, smooth noise), layered on Roblox's
+camera by taking last frame's offset off before it updates, so aim never drifts; a stand-in for
+Brix's ENG-15. Recordings are Pro Sound Effects only (licensed, load in any game); their stretches
+were found by measuring loudness in Studio, since no one here can listen. Not chosen: one recorded
+open and close per action (its timing would fight the curve, and Peek and LiftInside have none).

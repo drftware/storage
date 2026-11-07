@@ -113,6 +113,60 @@ function Motion.sample(
 	return from + h * lift(t)
 end
 
+-- How fast the door is moving at `elapsed` seconds in (studs/s, either direction): the curve's
+-- slope over 2 ms. Zero before the motion starts and once it has ended.
+function Motion.speed(
+	kind: Kind,
+	from: number,
+	to: number,
+	elapsed: number,
+	fullStroke: number
+): number
+	local dur = Motion.duration(kind, from, to, fullStroke)
+	if dur <= 0 or elapsed < 0 or elapsed >= dur then
+		return 0
+	end
+	local a, b = math.max(elapsed - 0.001, 0), math.min(elapsed + 0.001, dur)
+	local ya = Motion.sample(kind, from, to, a, fullStroke)
+	local yb = Motion.sample(kind, from, to, b, fullStroke)
+	return math.abs(yb - ya) / (b - a)
+end
+
+--[[
+	The moments a door hits something during a motion, in order. Sounds and the slam's shake are
+	timed off these, so they land exactly when the door does.
+
+		Floor   a slam lands, or a close settles on the concrete
+		Bounce  a slam's one bounce comes back down
+		Top     a lift reaches the stop bolts at the top
+
+	Strength (0..1) is how hard: a slam from fully open lands at 1; one from a peek's height,
+	falling less far, lands softer (impact speed grows with the square root of the drop).
+]]
+export type Strike = { at: number, what: "Floor" | "Bounce" | "Top", strength: number }
+
+function Motion.strikes(kind: Kind, from: number, to: number, fullStroke: number): { Strike }
+	local h = math.abs(to - from)
+	if h < 1e-4 then
+		return {}
+	end
+	if kind == "Slam" then
+		local fall = math.sqrt(2 * h / SLAM_G)
+		local strength = math.min(1, math.sqrt(h / math.max(fullStroke, 1e-3)))
+		return {
+			{ at = fall, what = "Floor", strength = strength },
+			{ at = fall + BOUNCE_T, what = "Bounce", strength = strength },
+		}
+	end
+	local dur = Motion.duration(kind, from, to, fullStroke)
+	if to < 1e-4 then
+		return { { at = dur, what = "Floor", strength = 1 } }
+	elseif kind ~= "Peek" and to > from and to >= fullStroke - 1e-3 then
+		return { { at = dur, what = "Top", strength = 1 } }
+	end
+	return {}
+end
+
 -- True for the five door actions (guards anything a remote might pass in).
 function Motion.isKind(kind: any): boolean
 	return type(kind) == "string" and KINDS[kind] ~= nil

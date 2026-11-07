@@ -36,7 +36,7 @@ As of Brix commit `4c21b5f` (2026-11-05; 0.1.0 not tagged yet). Recheck its `src
 | Tuning live during playtests (L-09) | Live config and flags (ENG-11) | planned |
 | Retention and funnel gates (the GDD's) | Telemetry (ENG-12) | planned |
 | The climb as lobby, floors and results (L-08) | Round loop (ENG-13) | planned |
-| Juice, UI, debug overlay and cheat console | Presentation kit, UI, developer tooling (ENG-15 to ENG-17) | planned |
+| Juice, UI, debug overlay and cheat console | Presentation kit, UI, developer tooling (ENG-15 to ENG-17) | planned; camera shake stands in as `src/shared/Shake.luau` and `src/client/CameraShake.luau` (P0-04) until ENG-15 |
 
 What stays in this game: the storage unit and its roll-up door rig (`src/shared/StorageUnit/`),
 every keeper's row and its reason to be alive, floors as data, and all art. A door becomes a Brix
