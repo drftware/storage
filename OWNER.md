@@ -7,12 +7,26 @@ nowhere else.
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 - [ ] **Save the place** (File > Save to Roblox) after this session (Nov 7): the hall's templates
-  now live in it at `ReplicatedStorage.Corridor`: `Straight`, `Fixture`, and this session's
-  `Wall` (the plain wall) and `DeadEnd`. Unsaved, the next open loses them and the test hall
-  falls back to plain blocks and bare tubes (Output says so).
+  live in it at `ReplicatedStorage.Corridor`: `Straight`, `Fixture`, `Wall`, `DeadEnd`, and this
+  session's `Corner`, `T`, `Cross` and `ShortWall`. Unsaved, the next open loses them and the test
+  hall falls back to plain blocks, bare tubes and a dead end where the turn should be (Output
+  says so).
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
+
+## Now: walk the turn (built Nov 7, P0-03d)
+
+- [ ] **Walk it on a phone view:** Play with the Galaxy A16 in the Device Simulator at Quality
+  Level 01 and again at 21. Walk to the hall's far end, where it meets a T under the red exit
+  sign: right is a dead end, left a dim hall to a corner and a dark hall past it. Look for: no
+  seam in the floor or the ceiling where a junction meets a straight; the heavier girder over
+  each place the ceiling's ribs turn; the steel column at each corner of wall; the blind corner
+  feeling blind. Walk into the corners: nothing to snag on or see through. Shots so far, lit by
+  a debug fill: `docs/art/P0-03d-*.jpg` (`real-light-01` is the hall as it is, dark).
+- [ ] **The render cost with the turn:** in Play, from the spawn and from the T, read the View
+  menu's Render stats (triangles and draw calls). Before the turn the spawn's view was 73,844
+  triangles in 28 opaque draws; Studio stopped answering before this session could measure it.
 
 ## Now: judge P0-02g (built Nov 6)
 

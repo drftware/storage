@@ -263,6 +263,14 @@ verified: a doc page, Studio, or "untested".
   A16 (`samsung_galaxy_a16`, 780x360) is the list's mid-range Android; `screen_capture` then
   returns 668x308 with the touch thumbstick and jump button drawn. `StopSimulationAsync` when
   done; the scaling mode (ScaleToPhysicalSize here) persists, so leave it alone.
+- **The importer keeps each part's FBX axes** (P0-03d, 2026-11-07): an inserted MeshPart's own
+  frame is the FBX's, turned with the model: its local X is Blender's -x, Y Blender's z, Z
+  Blender's y (the export's `axis_forward="Z"`, `axis_up="Y"`). The fixture's eye, at Blender +x,
+  sits at the Diffuser's local -X. So a square part's own `CFrame` still tells its turn, which
+  is how `CorridorKit.frame` reads a junction's.
+- **`screen_capture` can stop answering mid-Play** (P0-03d): after about ten captures with camera
+  positions, each later one timed out and `Stats.RenderBreakdown` stopped changing. Take the shots
+  that matter first; measure the render cost early in a session.
 - **`start_stop_play` with Play already running** answers "Game Started" and changes nothing: stop
   first, or new code never loads.
 - **Tagged templates sit in ReplicatedStorage:** `CollectionService:GetTagged` and its added

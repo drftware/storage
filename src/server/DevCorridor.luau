@@ -14,8 +14,10 @@
 
 	The hall's floor and ceiling are three of the corridor kit's straight pieces (P0-03a), its
 	lights are the kit's fixtures (P0-03b), each midway between two joists, and past the last units
-	each side is the kit's plain wall, with a dead end closing each end of the hall (P0-03c). Without
-	the kit's templates in the place it falls back to plain blocks and bare tubes.
+	each side is the kit's plain wall, with a dead end closing the spawn's end (P0-03c). At the far
+	end the hall meets a T (P0-03d): one arm runs to a dead end, the other to a blind corner and a
+	short dark hall beyond it. Without the kit's templates in the place it falls back to plain
+	blocks and bare tubes, and a dead end where the T would be.
 	The prompts call RollUpDoor directly; the GDD's door state machine replaces them (L-02).
 ]]
 local Players = game:GetService("Players")
@@ -57,16 +59,41 @@ local REFUSAL_SECONDS = 1.2 -- how long "Padlocked" or "Shut it first" shows bef
 -- over 105 and 106 whose eye has seen you, a weaker one over 101 and 102 by the spawn, and a dead
 -- one past the last units with its eye open, with the exit sign's red at the far end. Each sits
 -- midway between two of the kit's joists (6 studs off a piece's middle).
-type Fixture = { x: number, level: number, eye: HallLight.EyeState }
+-- `z` and `turned` hang one in a hall along Z.
+type Fixture = { x: number, z: number?, turned: boolean?, level: number, eye: HallLight.EyeState }
 local HALL_FIXTURES: { Fixture } = {
 	{ x = -18, level = HallLight.Low, eye = "Watching" },
 	{ x = 6, level = 1, eye = "Seen" },
 	{ x = 30, level = 0, eye = "Watching" },
 }
 local EXIT_SIGN_SIZE = Vector3.new(0.2, 0.7, 1.8)
--- High on the far dead end, just under its cap (9.88), where exit signs hang: lit from across
--- the hall's length, so you see where the hall stops before you reach it.
+-- High on the far wall, just under its cap (9.88), where exit signs hang: lit from across the
+-- hall's length, so you see where the hall stops (or turns) before you reach it.
 local EXIT_SIGN_HEIGHT = 9.4
+local POST_PROUD = 0.07 -- a wall's posts stand this far into the hall; the sign hangs clear of them
+
+-- The turn past the hall's far end (P0-03d), on the kit's 24-stud grid: a T whose arms run along
+-- Z, its stub towards the hall; the south arm ends in a dead end, the north arm in a corner that
+-- turns east into a short dark hall and a dead end. Each piece is its frame: the middle of its
+-- floor, its X along its hall (a junction's along its deck, Specs.Junctions).
+local TURN_T = CFrame.fromMatrix(Vector3.new(48, 0, 0), Vector3.zAxis, Vector3.yAxis)
+local TURN_CORNER = CFrame.fromMatrix(Vector3.new(48, 0, 48), -Vector3.zAxis, Vector3.yAxis)
+local TURN_STRAIGHTS = {
+	CFrame.fromMatrix(Vector3.new(48, 0, 24), Vector3.zAxis, Vector3.yAxis),
+	CFrame.fromMatrix(Vector3.new(48, 0, -24), Vector3.zAxis, Vector3.yAxis),
+	CFrame.new(72, 0, 48),
+}
+local TURN_DEAD_ENDS = {
+	CFrame.lookAt(Vector3.new(48, 0, -36), Vector3.new(48, 0, -35)),
+	CFrame.lookAt(Vector3.new(84, 0, 48), Vector3.new(83, 0, 48)),
+}
+-- A weak light up the north arm, so the corner reads before you round it; past it, the east hall
+-- is dark, its fixture's eye open.
+local TURN_FIXTURES: { Fixture } = {
+	{ x = 48, z = 24, turned = true, level = HallLight.Low, eye = "Watching" },
+	{ x = 72, z = 48, level = 0, eye = "Watching" },
+}
+local TURN_WALL_X = 52 -- the T's far wall, across from the hall
 
 local CONCRETE = Color3.fromRGB(74, 74, 76)
 -- Light concrete, like the sheets' floor, so a fixture's pool reads on it, where the kit isn't.
@@ -124,7 +151,11 @@ end
 -- A hall light at f.x: the kit's fixture in a kit hall, or a bare tube where its lens would hang.
 local function fixture(f: Fixture, kit: boolean, parent: Instance)
 	if kit and CorridorKit.template("Fixture") then
-		local hung = CorridorKit.hang(CFrame.new(f.x, 0, 0), parent)
+		local at = CFrame.new(f.x, 0, f.z or 0)
+		if f.turned then
+			at *= CFrame.Angles(0, math.pi / 2, 0)
+		end
+		local hung = CorridorKit.hang(at, parent)
 		HallLight.light(hung.diffuser, f.level)
 		HallLight.eye(hung.eye, f.eye)
 		return
@@ -140,6 +171,43 @@ local function fixture(f: Fixture, kit: boolean, parent: Instance)
 	HallLight.light(tube, f.level)
 end
 
+-- Plain walls down both sides of a straight piece at `at` (its X along the hall).
+local function sideWalls(at: CFrame, length: number, parent: Instance)
+	local slot = CorridorKit.Specs.Walls.Wall.Width
+	for _, side in { -1, 1 } do
+		for i = 0, length // slot - 1 do
+			local face = at.Position
+				+ at.XVector * (-length / 2 + slot * (i + 0.5))
+				+ at.ZVector * side * HALL_HALF_WIDTH
+			CorridorKit.wall(
+				"Wall",
+				CFrame.lookAt(face, face - at.ZVector * side),
+				UnitKit.Colours.Wall,
+				parent
+			)
+		end
+	end
+end
+
+-- The turn past the hall's far end: the T, its arms, the corner and the hall beyond, their walls
+-- and dead ends, and two fixtures.
+local function turn(parent: Instance)
+	local paint = UnitKit.Colours.Wall
+	CorridorKit.junction("T", TURN_T, paint, parent)
+	CorridorKit.junction("Corner", TURN_CORNER, paint, parent)
+	local length = CorridorKit.Specs.Pieces.Straight.Length
+	for _, at in TURN_STRAIGHTS do
+		CorridorKit.place("Straight", at, parent)
+		sideWalls(at, length, parent)
+	end
+	for _, at in TURN_DEAD_ENDS do
+		CorridorKit.wall("DeadEnd", at, paint, parent)
+	end
+	for _, f in TURN_FIXTURES do
+		fixture(f, true, parent)
+	end
+end
+
 -- A closed box around a stretch of hall: floor, ceiling, end walls and side walls. With `kit`,
 -- the floor and ceiling are the corridor kit's straight pieces, the walls rise to their deck, the
 -- kit's plain walls line the hall past the last units, where no unit closes its side, and its dead
@@ -150,7 +218,8 @@ local function building(
 	halfLength: number,
 	fixtures: { Fixture },
 	kit: boolean,
-	parent: Instance
+	parent: Instance,
+	openFarEnd: boolean? -- the far (+X) end runs on into the turn: no end wall there
 ): Folder
 	local folder = Instance.new("Folder")
 	folder.Name = name
@@ -212,7 +281,9 @@ local function building(
 	for _, side in { -1, 1 } do
 		local endX = centreX + side * (halfLength + 0.5)
 		local wallZ = side * (depth / 2 + 0.5)
-		if deadEnds then
+		-- the far end stays open where the turn continues the hall
+		local closed = not (side > 0 and openFarEnd)
+		if closed and deadEnds then
 			local face = Vector3.new(centreX + side * halfLength, 0, 0)
 			CorridorKit.wall(
 				"DeadEnd",
@@ -220,7 +291,7 @@ local function building(
 				UnitKit.Colours.Wall,
 				folder
 			)
-		else
+		elseif closed then
 			block(
 				"EndWall",
 				Vector3.new(1, height, depth),
@@ -435,14 +506,29 @@ local function build(): Folder?
 		)
 	end
 
+	local turns = kit
+		and CorridorKit.template("T") ~= nil
+		and CorridorKit.template("Corner") ~= nil
+		and CorridorKit.template("ShortWall") ~= nil
+		and CorridorKit.template("DeadEnd") ~= nil
+	if kit and not turns then
+		warn(
+			'DevCorridor: no T, corner or short wall at ReplicatedStorage.Corridor, so the hall ends in a dead end; import them (art/corridor/README.md, "Into Studio")'
+		)
+	end
+
 	local folder = Instance.new("Folder")
 	folder.Name = "DevCorridor"
-	local hall = building("Hall", 0, BUILDING_HALF_LENGTH, HALL_FIXTURES, kit, folder)
+	local hall = building("Hall", 0, BUILDING_HALF_LENGTH, HALL_FIXTURES, kit, folder, turns)
+	if turns then
+		turn(hall)
+	end
+	-- on the far wall's face (the T's, or the dead end's), clear of its posts
+	local farWall = if turns then TURN_WALL_X else BUILDING_HALF_LENGTH
 	local sign = block(
 		"ExitSign",
 		EXIT_SIGN_SIZE,
-		-- on the far end's face, clear of its kick plate and posts (0.07 proud)
-		CFrame.new(BUILDING_HALF_LENGTH - EXIT_SIGN_SIZE.X / 2 - 0.01, EXIT_SIGN_HEIGHT, 0),
+		CFrame.new(farWall - POST_PROUD - EXIT_SIGN_SIZE.X / 2 - 0.01, EXIT_SIGN_HEIGHT, 0),
 		HallLight.ExitColour,
 		hall
 	)

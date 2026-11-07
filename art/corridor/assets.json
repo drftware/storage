@@ -1,4 +1,12 @@
 {
+  "Corner": {
+    "assetId": 130232251748500,
+    "sha256": "4d8a845b24db142a0a45973ce16d46a8f87d8f06c1f31267f19b377d77815c68"
+  },
+  "Cross": {
+    "assetId": 76740441869136,
+    "sha256": "f7e4bfeb90fde4bd8010d52b893913ddfaf1640954e00a739bf4347ac0024550"
+  },
   "DeadEnd": {
     "assetId": 100123098873935,
     "sha256": "a0f4bae39e60505cd34ba2d74e2c23092e590c6bd6f4cfc46aa327b697fe95a7"
@@ -7,9 +15,17 @@
     "assetId": 71843070521517,
     "sha256": "0682009700abc7aa99de165c4863686d555f5ab245d794678f4b31d4d088b900"
   },
+  "ShortWall": {
+    "assetId": 104832527772407,
+    "sha256": "8587dc3fe08481560178d849b206eae8a62a4c0363b274f619e13ecbb5510dd7"
+  },
   "Straight": {
     "assetId": 127417399035043,
     "sha256": "6d6b8cd679f08da5f6b4f2d0adb3c3fa3116c2a238a69c0ab9f2739d249e2da6"
+  },
+  "T": {
+    "assetId": 126231203439559,
+    "sha256": "45114338a1a792741c1fba61fbd089ee39fd9dce6a2eb42e68d68b9af8ccf721"
   },
   "Wall": {
     "assetId": 138816629045048,

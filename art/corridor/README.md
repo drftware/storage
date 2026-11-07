@@ -9,14 +9,17 @@ wearing the unit's own baked texture sets, so the kit bakes nothing.
 | ![hall](../sheets/corridor-hall.png) | ![ceiling](../sheets/corridor-ceiling.png) |
 | ![fixture lit](../sheets/corridor-fixture-lit.png) | ![fixture dark](../sheets/corridor-fixture.png) |
 | ![dead end](../sheets/corridor-deadend.png) | ![plain wall](../sheets/corridor-wall.png) |
+| ![a hall meets a T](../sheets/corridor-turn.png) | ![the girder at a T](../sheets/corridor-girder.png) |
 
 Sheets in `art/sheets/`: `corridor-hall` (a player's eyes down two pieces to the dead end),
 `corridor-ceiling` (looking up under a light), `corridor-seam` (straight down on the joint between
 two pieces), `corridor-fixture-lit` (walking up to a lit fixture, its eye flared),
 `corridor-fixture` (a torch up at a dark one, its eye watching), `corridor-deadend` (the hall that
 stops, plain walls either side) and `corridor-wall` (across the hall at a plain wall, up to the
-deck). The units there are plain stand-in boxes; the light a lit fixture throws is render
-dressing. In-game shots are in `docs/art/P0-03a-*.jpg`, `P0-03b-phone.jpg` and `P0-03c-*.jpg`.
+deck); `corridor-turn` (down a hall to a T), `corridor-girder` (up at the girder over the T's
+stub) and `corridor-corner` (up a turned arm to a corner). The units there are plain stand-in boxes; the light a lit fixture throws is render
+dressing. In-game shots are in `docs/art/P0-03a-*.jpg`, `P0-03b-phone.jpg`, `P0-03c-*.jpg` and
+`P0-03d-*.jpg`.
 
 ## Built so far
 
@@ -64,6 +67,26 @@ through it. On the dead end the panel's valleys are flush with the deck's end, s
 between them; its cap stands out further (0.12) to cover the ribs. Beside the hall, behind the
 unit rows' end walls, the dead end has a bare sheet, so a slot that ends there is closed.
 
+**The junctions** (P0-03d, D-023): the corner, the T and the cross, where halls meet. Each is a
+24-stud square on the straights' grid; the game turns one to fit (`CorridorKit.junction`), so one of
+each serves every turn. Three MeshParts:
+
+| Part | Set | Tris (Corner / T / Cross) | What it is |
+|---|---|---|---|
+| Floor | Concrete | 12 | the whole square, mapped like a straight's, so each arm meets it on a joint |
+| Ceiling | TrimSheet | 2316 / 1932 / 2260 | the deck along X, joists along Z on the 6-stud beat, a joist girder across each Z arm's mouth where the deck turns (a closure plate on top); to the span's edge on a closed side |
+| Trim | TrimSheet | 216 / 216 / 432 | a steel column from the floor to the deck at each corner where its walls meet |
+
+A straight's deck runs along its own hall, so a turned straight wears a turned deck; the girder
+hides where it meets the junction's. The walls are the kit's own, which `junction` stands where
+the spec lists them: short walls round each block of wall between two halls and along a corner's
+outer sides, two plain walls across a T's stub. **The short wall** (`ShortWall`) is the plain wall
+an S unit wide (8): Facade 2, Trim 304, Panel 170 tris.
+
+A junction's frame is the middle of its square, on the floor, its deck along X; its arms
+(`Specs.Junctions.<name>.Arms`) are in that frame: the corner's +X and +Z, the T's +X, -X and +Z
+(the stub), the cross's all four.
+
 ## Numbers (studs; `spec.py` holds them all)
 
 | | |
@@ -74,6 +97,7 @@ unit rows' end walls, the dead end has a bare sheet, so a slot that ends there i
 | Joists | every 6, half a spacing in from each end; lowest steel at 12.8 |
 | Floor texture | repeats every 8 with a saw-cut joint on its edge; a piece's UVs start on that edge |
 | Fixture | lens middle 12.1 (3.8 by 0.44), housing top 12.38, eye 0.36 across hanging to 11.91, chains 1.5 either side of the middle |
+| Junctions | 24 square; girder chords 0.24 legs, web a vertical every 1.5; corner columns 0.09 proud outside, 0.15 inside |
 | Walls | the unit's: cap at 10 (underside 9.88, 0.08 proud), posts 0.25 and 0.07 proud, kick plate 0.7; panel to the deck's top 14.35; collider 1 deep behind the face, to 14.35 |
 
 Why these: pieces are a multiple of 8 long, so two pieces meet on a joint and never show a seam,
@@ -86,7 +110,7 @@ the joists.
 ## Into Studio
 
 1. **Build and upload:** `scripts/art.sh corridor` (under a minute), then
-   `lune run scripts/upload_art` (or `upload_art Wall DeadEnd` for some). Each piece and the fixture
+   `lune run scripts/upload_art` (or `upload_art Corner T` for some). Each piece and the fixture
    is its own FBX, `out/Corridor_<Name>.fbx`, and its own Model asset, recorded in `assets.json`.
    Blender stamps the export time into the FBX, so a rebuild always uploads again (in place, same
    ID).
@@ -95,7 +119,8 @@ the joists.
    -- insert_asset(<id from assets.json>) into Workspace, then:
    -- a Clone: in Edit, require keeps the first version it loaded (docs/STUDIO.md)
    local CorridorKit = require(game.ReplicatedStorage.Shared.CorridorKit:Clone())
-   local m = workspace.Corridor_Straight -- or _Fixture, _Wall, _DeadEnd, prepared by that name
+   local m = workspace.Corridor_Straight -- or _Corner, _T, _Cross, _Wall, _ShortWall, _DeadEnd,
+   -- _Fixture, prepared by that name
    m:FindFirstChildOfClass("PackageLink"):Destroy() -- a plain model, not a package
    -- remove the insert's "Assistant:<guid>" tag too
    CorridorKit.prepare(m, "Straight")
@@ -103,7 +128,7 @@ the joists.
    m.Name = "Straight"; m.Parent = game.ReplicatedStorage.Corridor -- make the folder once
    ```
    Replacing a template: destroy the old one in `ReplicatedStorage.Corridor` first.
-   `prepare` finds the piece's frame from its floor's own box (the insert turns it to some angle
+   `prepare` finds a piece's or junction's frame from its floor part's own frame (the insert turns it to some angle
    about Y), anchors everything, takes the meshes out of physics and adds box colliders from the
    spec (the floor is Concrete and the ceiling Metal, for footsteps), pivots the model on its
    frame and streams it whole. A fixture gets no colliders (it hangs out of reach); its frame
@@ -113,8 +138,10 @@ the joists.
 3. **Save the place.** The templates live in it (D-009). `CorridorKit.place("Straight", cframe,
    parent)` clones a piece into a floor, `CorridorKit.wall(name, cframe, paint, parent)` puts up a
    wall painted like the floor's units, and `CorridorKit.hang(cframe, parent)` a fixture, handing
-   back its lens and eye to light. `DevCorridor` lays three pieces, four plain walls and two dead
-   ends, and hangs three fixtures.
+   back its lens and eye to light; `CorridorKit.junction(name, cframe, paint, parent)` lays a
+   junction with its walls. `DevCorridor` lays the hall's three pieces and a turn past its far
+   end (a T, three turned or straight pieces, a corner), its walls and dead ends, and five
+   fixtures.
 
 ## How it's made
 
@@ -132,5 +159,5 @@ and the M unit's spec (its wall numbers), and reads the unit's baked maps from
 
 ## Next
 
-- **P0-03d The junctions:** corner, T and cross, the floor's joints and the deck carried round a
-  turn and across a crossing without a seam.
+- **L-03 Motion lights** hang through `CorridorKit.hang`; **L-01** lays floors with `place`,
+  `junction` and `wall` (its rules for junctions are in `docs/ROADMAP.md`).

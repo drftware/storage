@@ -4,11 +4,16 @@
 
 	The straight piece is 24 studs of hall: the concrete floor between the two rows of doors, and
 	the steel ceiling over the hall and the units either side, a corrugated deck on open-web joists.
-	The corner, T and cross join it next (P0-03d).
+
+	The junctions are where halls meet: the corner, the T and the cross, each a 24-stud square on
+	the straights' grid. A straight's deck runs along its hall; a junction's continues its arms on
+	X, and a joist girder carries it across the mouth of each arm on Z, where the deck turns.
+	`junction` lays one with the walls it needs, turned however the floor needs it.
 
 	The hall's walls are a unit's front without the door, so the hall reads as one building: the
-	plain wall (Wall) stands where no unit does, one unit wide, and the dead end (DeadEnd) closes
-	the hall's end and the deck over it. `wall` puts one up, painted like the units on its floor.
+	plain wall (Wall) stands where no unit does, one M unit wide; the short wall (ShortWall), an S
+	unit wide, fills what a junction leaves of a hall side; the dead end (DeadEnd) closes the hall's
+	end and the deck over it. `wall` puts one up, painted like the units on its floor.
 
 	The hall light fixture is the building's eye: a steel strip light hung on two chains from the
 	deck, its lens the part HallLight lights, and a motion sensor on one end whose dome glows when
@@ -18,7 +23,8 @@
 	Each template lives in the place at ReplicatedStorage.Corridor.<Name>, because Rojo can't sync
 	imported meshes (D-009). `place` clones one into a floor: the test hall (DevCorridor) does now,
 	the floor generator (L-01) will. A piece's frame is the middle of its hall floor, on the floor,
-	with the hall running along its X; a wall's is the middle of its hall face, on the floor,
+	with the hall running along its X (a junction's is the middle of its square, its deck along X);
+	a wall's is the middle of its hall face, on the floor,
 	looking into the hall, as a unit's door face is; the fixture's is on the floor under its lens's
 	middle, with its sensor towards +X.
 ]]
@@ -27,9 +33,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Specs = require(script.Specs)
 
 export type PieceName = "Straight"
-export type WallName = "Wall" | "DeadEnd"
-export type TemplateName = PieceName | WallName | "Fixture"
+export type JunctionName = "Corner" | "T" | "Cross"
+export type WallName = "Wall" | "ShortWall" | "DeadEnd"
+export type TemplateName = PieceName | JunctionName | WallName | "Fixture"
 export type Piece = typeof(Specs.Pieces.Straight)
+export type Junction = typeof(Specs.Junctions.Corner)
 export type Wall = typeof(Specs.Walls.Wall)
 -- A hung fixture and the two parts the game lights: the lens (HallLight.light) and the sensor's
 -- dome (HallLight.eye).
@@ -41,7 +49,9 @@ CorridorKit.Specs = Specs
 -- A piece's or a wall's colliders, from the generated spec.
 local function collidersOf(name: TemplateName): { [string]: { Position: Vector3, Size: Vector3 } }
 	-- any: a name keys the generated tables, which strict mode can't index by a string
-	local spec = (Specs.Pieces :: any)[name] or (Specs.Walls :: any)[name]
+	local spec = (Specs.Pieces :: any)[name]
+		or (Specs.Junctions :: any)[name]
+		or (Specs.Walls :: any)[name]
 	assert(spec, `CorridorKit: no spec for {name}`)
 	return spec.Colliders
 end
@@ -77,13 +87,16 @@ local function box(p: BasePart): (Vector3, Vector3, number, Vector3)
 	return cf.Position, up, axes[1].len, (along * Vector3.new(1, 0, 1)).Unit
 end
 
--- Where a template's frame is. A hall piece's is the top middle of its Floor, with the hall along
--- X. A wall's is the bottom middle of its Facade, flat on the face, looking into the hall: away
+-- Where a template's frame is. A hall piece's or a junction's is the top middle of its Floor, in
+-- the Floor's own turn: the importer keeps each part's axes as the FBX has them, so the Floor's X
+-- is the piece's hall (or a junction's deck) whatever turn the insert gave it. A wall's is the bottom middle of its Facade, flat on the face, looking into the hall: away
 -- from the Panel, whose middle lies behind the face (the export checks it). The fixture's is on
 -- the floor under its lens's middle, with its sensor's eye towards +X.
 function CorridorKit.frame(model: Model): CFrame
 	if model:FindFirstChild("Floor", true) then
-		local middle, up, height, along = box(part(model, "Floor"))
+		local floor = part(model, "Floor")
+		local middle, up, height = box(floor)
+		local along = (floor.CFrame.RightVector * Vector3.new(1, 0, 1)).Unit
 		return CFrame.fromMatrix(middle + up * (height / 2), along, Vector3.yAxis)
 	end
 	if model:FindFirstChild("Facade", true) then
@@ -179,6 +192,25 @@ function CorridorKit.place(name: TemplateName, at: CFrame, parent: Instance): Mo
 	piece:PivotTo(at)
 	piece.Parent = parent
 	return piece
+end
+
+-- Lays a copy of a junction with its frame at `at` (the middle of its square, on the floor, turned
+-- so its arms point down the halls it joins: Specs.Junctions.<name>.Arms, in its frame), and stands
+-- the walls it needs inside it, painted `paint` like the floor's units.
+function CorridorKit.junction(
+	name: JunctionName,
+	at: CFrame,
+	paint: Color3,
+	parent: Instance
+): Model
+	local model = CorridorKit.place(name, at, parent)
+	-- any: a name keys the generated table, which strict mode can't index by a string
+	local spec: Junction = (Specs.Junctions :: any)[name]
+	for _, w in spec.Walls do
+		local face = at * CFrame.lookAt(w.Position, w.Position + w.Look)
+		CorridorKit.wall(w.Name :: WallName, face, paint, model)
+	end
+	return model
 end
 
 -- Puts up a copy of a wall with its frame at `at`: the middle of its hall face, on the floor,

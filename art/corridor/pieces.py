@@ -26,30 +26,31 @@ def floor(length):
     return m
 
 
-def deck_profile():
-    """The corrugation across the span, (y, z), low flutes straddling each pitch's edges so both
-    ends of the span (and its middle, over the hall) sit on a low flute."""
+def deck_profile(y0=-K.SPAN / 2, y1=K.SPAN / 2):
+    """The corrugation across the deck from y0 to y1 (whole studs), (y, z), low flutes straddling
+    each pitch's edges so both ends (and the middle of a span, over the hall) sit on a low flute."""
     p, d, flat = K.RIB_PITCH, K.RIB_DEPTH, K.RIB_FLAT
     slope = (p - 2 * flat) / 2
     lo, hi = K.DECK, K.DECK + d
-    pts = [(-K.SPAN / 2, lo)]
-    n = int(round(K.SPAN / p))
+    start = y0
+    pts = [(start, lo)]
+    n = int(round((y1 - y0) / p))
     for k in range(n):
-        y0 = -K.SPAN / 2 + k * p
+        y0 = start + k * p
         for dy, z in ((flat / 2, lo), (flat / 2 + slope, hi), (flat / 2 + slope + flat, hi),
                       (p - flat / 2, lo)):
             pts.append((y0 + dy, z))
-    pts.append((K.SPAN / 2, lo))
+    pts.append((y1, lo))
     return pts
 
 
-def deck(m, length):
-    """The deck's underside, every face looking down at the hall, plus a closed top."""
-    L2, S2 = length / 2, K.SPAN / 2
+def deck(m, x0, x1, y0=-K.SPAN / 2, y1=K.SPAN / 2):
+    """The deck's underside from x0 to x1, flutes along x, every face looking down at the hall,
+    plus a closed top."""
     strip = geo.map_strip("trim", along_axis=0)
-    geo.extrude_x(m, deck_profile(), -L2, L2, closed=False, mapper=strip, caps=False)
+    geo.extrude_x(m, deck_profile(y0, y1), x0, x1, closed=False, mapper=strip, caps=False)
     top = K.DECK + K.RIB_DEPTH + K.DECK_COVER
-    geo.add_faces(m, [(-L2, -S2, top), (L2, -S2, top), (L2, S2, top), (-L2, S2, top)],
+    geo.add_faces(m, [(x0, y0, top), (x1, y0, top), (x1, y1, top), (x0, y1, top)],
                   [[0, 1, 2, 3]], strip)
 
 
@@ -76,7 +77,8 @@ def _rod(m, a, b, r, segs, mapper):
 
 def joist(run):
     """One open-web steel joist along X (the piece turns it across the hall): a top chord under
-    the deck, a bottom chord, and a zigzag of round bars between them."""
+    the deck, a bottom chord, and a zigzag of round bars between them, close to 45 degrees."""
+    panels = K.WEB_PANELS if run == K.SPAN else 2 * max(1, round(run * K.WEB_PANELS / K.SPAN / 2))
     j = Mesh("joist")
     raw = geo.map_strip("raw", along_axis=0)
     g, leg, t = K.CHORD_GAP / 2, K.CHORD_LEG, K.CHORD_THICK
@@ -89,8 +91,8 @@ def joist(run):
                 (g, bot + leg)], run, raw)
     web = geo.map_strip("raw")
     z_lo, z_hi = bot + leg * 0.5, top - leg * 0.5
-    step = run / K.WEB_PANELS
-    for k in range(K.WEB_PANELS):
+    step = run / panels
+    for k in range(panels):
         x0, x1 = -run / 2 + k * step, -run / 2 + (k + 1) * step
         z0, z1 = (z_lo, z_hi) if k % 2 == 0 else (z_hi, z_lo)
         _rod(j, (x0, 0.0, z0), (x1, 0.0, z1), K.WEB_RADIUS, K.WEB_SEGS, web)
@@ -99,7 +101,7 @@ def joist(run):
 
 def ceiling(length):
     m = Mesh("Ceiling")
-    deck(m, length)
+    deck(m, -length / 2, length / 2)
     j = joist(K.SPAN)
     turn = Matrix.Rotation(math.radians(90), 4, "Z")
     for x in K.joist_xs(length):
@@ -110,6 +112,88 @@ def ceiling(length):
 def straight():
     """The straight piece: STRAIGHT long, the hall's floor and the ceiling over it and its units."""
     return {"Floor": floor(K.STRAIGHT), "Ceiling": ceiling(K.STRAIGHT)}
+
+
+# --- the junctions: the corner, the T and the cross (spec.py, "the junctions") -------------------
+# Three MeshParts: the Floor (Concrete), the whole square; the Ceiling (TrimSheet): the deck along x,
+# the joists along y, a joist girder across each y arm's mouth; and the Trim (TrimSheet): a steel
+# column at each corner where the junction's walls meet. The walls themselves are the kit's plain
+# walls, which the game stands where the spec says (CorridorKit.junction).
+
+def girder(run):
+    """A joist girder along X, centred: heavier chords than a joist's, a vertical every panel and a
+    diagonal across each, and the closure plate on its top chord that shuts the turned deck's
+    flutes."""
+    g = Mesh("girder")
+    raw = geo.map_strip("raw", along_axis=0)
+    a, leg, t = K.GIRDER_GAP / 2, K.GIRDER_LEG, K.GIRDER_THICK
+    top, bot = K.DECK, K.JOIST_BOTTOM
+    _angles(g, [(a, top - leg), (a + t, top - leg), (a + t, top - t), (a + leg, top - t),
+                (a + leg, top), (a, top)], run, raw)
+    _angles(g, [(a, bot), (a + leg, bot), (a + leg, bot + t), (a + t, bot + t), (a + t, bot + leg),
+                (a, bot + leg)], run, raw)
+    web = geo.map_strip("raw")
+    z_lo, z_hi = bot + t, top - t
+    n = max(2, round(run / K.GIRDER_PANEL))
+    step = run / n
+    for k in range(n + 1):
+        x = -run / 2 + k * step
+        _rod(g, (x, 0.0, z_lo), (x, 0.0, z_hi), K.GIRDER_WEB, K.WEB_SEGS, web)
+        if k < n:
+            z0, z1 = (z_lo, z_hi) if k % 2 == 0 else (z_hi, z_lo)
+            _rod(g, (x, 0.0, z0), (x + step, 0.0, z1), K.GIRDER_WEB, K.WEB_SEGS, web)
+    deck_top = K.DECK + K.RIB_DEPTH + K.DECK_COVER
+    geo.box(g, (-run / 2, -K.CLOSURE / 2, top), (run / 2, K.CLOSURE / 2, deck_top),
+            geo.map_strip("trim", along_axis=0))
+    return g
+
+
+def junction_floor():
+    """The whole square, mapped like a straight's floor so every arm meets it on a joint."""
+    m = Mesh("Floor")
+    h = K.JUNCTION / 2
+    uv = lambda vs, n: [((v.x + h) / K.TILE, (v.y + h) / K.TILE) for v in vs]
+    geo.box(m, (-h, -h, -K.FLOOR_SKIRT), (h, h, 0.0), uv)
+    return m
+
+
+def junction_ceiling(name):
+    """The deck along x over the junction's extent, the joists along y on the straights' beat, and a
+    girder across each y arm's mouth, where the arm's deck turns."""
+    m = Mesh("Ceiling")
+    x0, x1, y0, y1 = K.junction_extent(name)
+    h = K.JUNCTION / 2
+    deck(m, x0, x1, y0, y1)
+    j = joist(y1 - y0)
+    turn = Matrix.Rotation(math.radians(90), 4, "Z")
+    beat = [-h + K.JOIST_SPACING * (k + 0.5) for k in range(-1, int(K.JUNCTION / K.JOIST_SPACING) + 1)]
+    for x in beat:
+        if x0 < x < x1:
+            m.extend(j, Matrix.Translation((x, (y0 + y1) / 2, 0.0)) @ turn)
+    g = girder(x1 - x0)
+    for arm, y in (("+y", h), ("-y", -h)):
+        if arm in K.JUNCTIONS[name]:
+            m.extend(g, Matrix.Translation(((x0 + x1) / 2, y, 0.0)))
+    return m
+
+
+def junction_trim(name):
+    """A steel column from the floor to the deck at each corner where the junction's walls meet."""
+    m = Mesh("Trim")
+    post = geo.map_strip("trim", 2)
+    top = K.DECK + K.RIB_DEPTH + K.DECK_COVER
+    for kind, (cx, cy), (sx, sy) in K.junction_walls(name)[1]:
+        out, back = ((K.CORNER_PROUD, K.CORNER_BACK) if kind == "outside"
+                     else (K.INSIDE_PROUD, K.INSIDE_BACK))
+        xs = sorted((cx - sx * out, cx + sx * back))
+        ys = sorted((cy - sy * out, cy + sy * back))
+        geo.box(m, (xs[0], ys[0], 0.0), (xs[1], ys[1], top), post, bevel=0.015, segments=2,
+                edges=lambda e, c, sz: True)
+    return m
+
+
+def junction(name):
+    return {"Floor": junction_floor(), "Ceiling": junction_ceiling(name), "Trim": junction_trim(name)}
 
 
 # --- the hall light fixture ---------------------------------------------------------------------
@@ -376,9 +460,10 @@ def _panel(x0, x1, plane, backs):
     return m
 
 
-def plain_wall():
-    """The plain wall: a hall side where no unit stands, one unit wide, closed to the deck."""
-    w2 = K.PLAIN / 2
+def plain_wall(width=K.PLAIN):
+    """The plain wall: a hall side where no unit stands, one unit wide (an M's, or an S's for the
+    short wall), closed to the deck."""
+    w2 = width / 2
     return {
         "Facade": _facade(-w2 + K.POST, w2 - K.POST),
         "Trim": _trim(-w2, w2, K.CAP_PROUD),

@@ -76,6 +76,38 @@ ok(straight % plain == 0, `a straight piece ({straight}) holds whole plain walls
 ok(wallHeight == unitWalls, `the walls' cap ({wallHeight}) lines up with the units' ({unitWalls})`)
 ok(deadEnd == span, `the dead end ({deadEnd}) closes the whole deck ({span})`)
 
+-- The junctions sit on the straights' grid, and every wall they stand is a whole slot.
+local KIT_SRC = fs.readFile(KIT)
+local short = number(KIT, "ShortWall = {%s*Width = ([%d%.]+)")
+local hall = number(KIT, "HallWidth = ([%d%.]+)")
+local widths = { Wall = plain, ShortWall = short }
+local junctions = 0
+for name, body in string.gmatch(KIT_SRC, "\n\t\t(%a+) = {\n\t\t\tSize = ([^\n]+)") do
+	junctions += 1
+	local size = tonumber(string.match(body, "[%d%.]+")) or 0
+	ok(size == straight, `the {name} ({size}) takes a straight's place on the grid ({straight})`)
+end
+ok(junctions == 3, `the kit has a corner, a T and a cross ({junctions} junctions)`)
+ok(
+	(straight / 2 - hall / 2) % short == 0,
+	`a junction's corner block is whole short walls ({short})`
+)
+for wname, x, z, lx, lz in
+	string.gmatch(
+		KIT_SRC,
+		'Name = "(%a+)", Position = Vector3%.new%(([%-%d%.]+), 0, ([%-%d%.]+)%), Look = Vector3%.new%(([%-%d%.]+), 0, ([%-%d%.]+)%)'
+	)
+do
+	local w = widths[wname]
+	ok(w ~= nil, `a junction stands a plain wall, not {wname}`)
+	local px, pz, ax, az = tonumber(x) or 0, tonumber(z) or 0, tonumber(lx) or 0, tonumber(lz) or 0
+	-- on a face line, looking into the hall, and inside the square
+	local face = if ax ~= 0 then math.abs(px) else math.abs(pz)
+	local along = if ax ~= 0 then math.abs(pz) else math.abs(px)
+	ok(face == hall / 2, `a {wname} at ({px}, {pz}) stands on a face line ({hall / 2})`)
+	ok(along + (w or 0) / 2 <= straight / 2, `a {wname} at ({px}, {pz}) stays inside the junction`)
+end
+
 print(string.format("corridor: %d/%d checks passed", checks - failures, checks))
 if failures > 0 then
 	error("corridor spec failed")

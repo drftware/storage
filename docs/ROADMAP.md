@@ -104,8 +104,11 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   test hall has four plain walls and two dead ends; the exit sign hangs on the far one, its glow
   moved off the wall so the wall reads as a wall. From the spawn: 73,800 triangles in 28 opaque
   draws (`docs/art/P0-03c-*.jpg`).
-- [ ] **P0-03d The corner, T and cross.** Where halls meet, for the GDD's tile set: the floor's
-  joints and the deck's ribs and joists carried round a turn and across a crossing without a seam.
+- [x] **P0-03d The corner, T and cross.** Done Nov 7 (D-023): three 24-stud junction squares on
+  the straights' grid and a short plain wall (an S unit's 8); the junction's deck continues its X
+  arms and a joist girder carries it across each Z arm's mouth; a steel column at every corner of
+  wall. `CorridorKit.junction` lays one with its walls. The test hall ends in a T, a dead end down
+  one arm, a corner up the other into a dark hall. Walking it and the render cost: `OWNER.md`.
 - [ ] **L-03 Motion lights the building watches.** Moved up from Phase 1 by the owner (Nov 7):
   the hall should light as you walk it, like a real storage building, and mostly-dark fixtures
   give the hall its pools of light and dark between. Fixtures wake for anything moving near them
@@ -129,6 +132,11 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
   with shared walls dropped, numbers, paint per floor, the elevator lobby, the motion lights
   placed through L-03's system; built during the ride.
   Brix: Random (seeded), Schema for tile rows.
+  Junctions (D-023): lay them with `CorridorKit.junction` turned so `Specs.Junctions.<name>.Arms`
+  point down the halls; keep a straight between two junctions (two girders would meet on one
+  edge); a T's far side is two M slots (units or walls), a corner's outer sides S slots. Beside a
+  cross's or a T's block of wall, the first slots of the two halls overlap in their back corner:
+  make one of them a plain wall. A unit there would see the two halls' ceilings cross over it.
 - [ ] **L-02 Doors as the GDD's state machine.** Closed, peeking, opening, open, slamming,
   locked; prompts for Peek, Open, Slam and Lift from inside; range, tool and rate checks. Brix: the
   door becomes a system on the Host's clock, with Signal for door events; Remotes once ENG-09 ships.
@@ -161,6 +169,10 @@ store; Captures. Player data, remotes, telemetry and UI from Brix (ENG-09 to ENG
 launch.
 
 ## Polish waiting for a slot
+
+- **The junctions' girder from a unit:** behind a junction's corner block the two halls' decks
+  overlap in a 4-stud square, unseen from the halls; a unit's wire top could show it (L-01 keeps
+  units out of those slots for now).
 
 Atmosphere effects wait until the loop is solid (owner, Nov 7); the haze stays as built.
 

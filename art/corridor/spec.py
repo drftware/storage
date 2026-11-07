@@ -86,6 +86,83 @@ assert UNIT.width == STRAIGHT / 2, "a straight piece holds two plain walls a sid
 assert (SPAN / 2 - HALL / 2) % RIB_PITCH == 0, "the hall's sides sit under a low flute"
 
 
+# --- the junctions: the corner, the T and the cross ------------------------------------------------
+# A junction is a 24-stud square, the straight's length, so it sits on the same grid: its floor's
+# joints and its joists keep the straights' beat across it. Its floor is the whole square (under the
+# blocks of wall between the halls too, where nobody sees it), mapped like a straight's, so it meets
+# every arm on a saw-cut joint; a turned straight's floor meets it rotated, on that joint.
+#
+# The ceiling (D-023): every straight's deck runs along its own hall. A junction's deck runs along x,
+# continuing the hall through its x arms; where an arm leaves along y, the deck turns, and a joist
+# girder carries the seam across the arm's mouth, a closure plate on top shutting the flutes' ends.
+# The junction's joists run along y between its girders, on the straights' 6-stud beat along x. On a
+# closed side the ceiling reaches the span's edge (16), over the units or void behind the wall.
+#
+# Arms, in Blender's frame: the sides a hall leaves through. One of each junction serves every
+# turn: the game turns it (CorridorKit.junction), and a straight's deck always runs along its arm.
+JUNCTION = STRAIGHT
+SHORT = 8.0         # the short plain wall, an S unit wide: what a junction leaves of a hall side
+JUNCTIONS = {
+    "Corner": ("-x", "+y"),
+    "T": ("-x", "+x", "+y"),
+    "Cross": ("-x", "+x", "+y", "-y"),
+}
+# The joist girder: as deep as a joist (its bottom chord at JOIST_BOTTOM, clear of the haze), with
+# heavier chords and a web of verticals and diagonals, so it reads as the beam the deck turns on.
+GIRDER_LEG = 0.24
+GIRDER_THICK = 0.04
+GIRDER_GAP = 0.08
+GIRDER_PANEL = 1.5  # web panel: a vertical every 1.5, a diagonal across each
+GIRDER_WEB = 0.065  # round bar
+CLOSURE = 0.02      # the plate on the girder's top that shuts the turned deck's flutes
+# Where two walls meet, a steel corner column from the floor to the deck covers both walls' ends:
+# their half posts, the caps' corner (which would otherwise flicker where the caps overlap) and the
+# R-panels' cut ends (which would otherwise leave a slit at an inside corner).
+CORNER_PROUD = 0.09   # an outside corner's column: out from the face lines (the posts stand 0.07)
+CORNER_BACK = 0.27    # and back along each wall, past the panels' sheets
+INSIDE_PROUD = 0.15   # an inside corner's column: out from each face line, in front of the caps
+INSIDE_BACK = 0.12    # and back behind the panels' sheets
+
+
+def junction_extent(name):
+    """The junction's ceiling in Blender's frame, (x0, x1, y0, y1): to the square's edge on an open
+    side, where a straight's ceiling takes over, and to the span's on a closed one."""
+    arms, h, s = JUNCTIONS[name], JUNCTION / 2, SPAN / 2
+    return (-h if "-x" in arms else -s, h if "+x" in arms else s,
+            -h if "-y" in arms else -s, h if "+y" in arms else s)
+
+
+def junction_walls(name):
+    """The walls a junction stands, [(wall name, (x, y) on the face line, (dx, dy) into the hall)]
+    in Blender's frame; and its corners, [(kind, (x, y), (sx, sy))], (sx, sy) pointing from the
+    corner into the block of wall (outside) or out of the hall (inside)."""
+    arms, f = JUNCTIONS[name], HALL / 2
+    walls, corners = [], []
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            if ("+x" if sx > 0 else "-x") in arms and ("+y" if sy > 0 else "-y") in arms:
+                walls += [("ShortWall", (sx * (f + SHORT / 2), sy * f), (0, -sy)),
+                          ("ShortWall", (sx * f, sy * (f + SHORT / 2)), (-sx, 0))]
+                corners.append(("outside", (sx * f, sy * f), (sx, sy)))
+    if name == "T":  # the side across from the stub: a hall side of two M slots, units or walls
+        walls += [("Wall", (x, -f), (0, 1)) for x in (-PLAIN / 2, PLAIN / 2)]
+    if name == "Corner":  # the outer side of the turn: two S slots along each closed side
+        walls += [("ShortWall", (x, -f), (0, 1)) for x in (-f - SHORT / 2, 0.0)]
+        walls += [("ShortWall", (f, y), (-1, 0)) for y in (0.0, f + SHORT / 2)]
+        corners.append(("inside", (f, -f), (1, -1)))
+    return walls, corners
+
+
+def blender_to_roblox(x, y, z):
+    """A point in a junction's Blender frame, in its Roblox frame: the frame of the imported floor
+    part, whose local X is Blender's -x and local Z Blender's y (the FBX axes, docs/STUDIO.md)."""
+    return (-x, z, y)
+
+
+assert JUNCTION % TILE == 0 and JUNCTION % JOIST_SPACING == 0
+assert (JUNCTION / 2 - HALL / 2) % SHORT == 0, "a junction's corner block is whole short walls"
+
+
 # --- the hall light fixture: a steel strip light on two chains, with a motion sensor's eye ----------
 # The lens is the part the game lights (HallLight.light), so its place and size are read from the
 # game's own HallLight.Height and TubeSize: the light was tuned there and the art follows it.
@@ -162,7 +239,7 @@ def lua_num(x):
     return "0" if s in ("-0", "") else s
 
 
-def write_luau(path, pieces, walls, fixture_tris):
+def write_luau(path, pieces, walls, junctions, fixture_tris):
     """pieces: {name: dict(length=, colliders={name: (pos, size)}, tris={part: n})}, Roblox axes;
     walls: {name: dict(width=, colliders=, tris=)}, in the wall's frame; fixture_tris: {part: n}
     for the hall light fixture."""
@@ -208,6 +285,29 @@ def write_luau(path, pieces, walls, fixture_tris):
             lines.append(f"\t\t\t\t{cname} = {{ Position = {v3(pos)}, Size = {v3(size)} }},")
         lines += ["\t\t\t},", "\t\t\tTriangles = {"]
         for part, n in sorted(w["tris"].items()):
+            lines.append(f"\t\t\t\t{part} = {n},")
+        lines += ["\t\t\t},", "\t\t},"]
+    lines += [
+        "\t},",
+        "",
+        "\t-- The junctions: a square on the straights' grid. Its frame is its floor part's own: the",
+        "\t-- middle of the square, on the floor, +Y up; the deck runs along X. Arms are the sides a",
+        "\t-- hall leaves through; Walls are the walls it stands, each at a wall's frame (on the face",
+        "\t-- line, looking into the hall).",
+        "\tJunctions = {",
+    ]
+    for name, j in junctions.items():
+        lines += [f"\t\t{name} = {{", f"\t\t\tSize = {lua_num(j['size'])},", "\t\t\tArms = {"]
+        for arm in j["arms"]:
+            lines.append(f"\t\t\t\t{v3(arm)},")
+        lines += ["\t\t\t},", "\t\t\tWalls = {"]
+        for wname, pos, look in j["walls"]:
+            lines.append(f"\t\t\t\t{{ Name = \"{wname}\", Position = {v3(pos)}, Look = {v3(look)} }},")
+        lines += ["\t\t\t},", "\t\t\tColliders = {"]
+        for cname, (pos, size) in j["colliders"].items():
+            lines.append(f"\t\t\t\t{cname} = {{ Position = {v3(pos)}, Size = {v3(size)} }},")
+        lines += ["\t\t\t},", "\t\t\tTriangles = {"]
+        for part, n in sorted(j["tris"].items()):
             lines.append(f"\t\t\t\t{part} = {n},")
         lines += ["\t\t\t},", "\t\t},"]
     lines += [

@@ -43,6 +43,17 @@ return {
 				Trim = 304,
 			},
 		},
+		ShortWall = {
+			Width = 8,
+			Colliders = {
+				Wall = { Position = Vector3.new(0, 7.175, 0.5), Size = Vector3.new(8, 14.35, 1) },
+			},
+			Triangles = {
+				Facade = 2,
+				Panel = 170,
+				Trim = 304,
+			},
+		},
 		DeadEnd = {
 			Width = 32,
 			Colliders = {
@@ -52,6 +63,162 @@ return {
 				Facade = 2,
 				Panel = 652,
 				Trim = 304,
+			},
+		},
+	},
+
+	-- The junctions: a square on the straights' grid. Its frame is its floor part's own: the
+	-- middle of the square, on the floor, +Y up; the deck runs along X. Arms are the sides a
+	-- hall leaves through; Walls are the walls it stands, each at a wall's frame (on the face
+	-- line, looking into the hall).
+	Junctions = {
+		Corner = {
+			Size = 24,
+			Arms = {
+				Vector3.new(1, 0, 0),
+				Vector3.new(0, 0, 1),
+			},
+			Walls = {
+				{
+					Name = "ShortWall",
+					Position = Vector3.new(8, 0, 4),
+					Look = Vector3.new(0, 0, -1),
+				},
+				{
+					Name = "ShortWall",
+					Position = Vector3.new(4, 0, 8),
+					Look = Vector3.new(-1, 0, 0),
+				},
+				{
+					Name = "ShortWall",
+					Position = Vector3.new(8, 0, -4),
+					Look = Vector3.new(0, 0, 1),
+				},
+				{
+					Name = "ShortWall",
+					Position = Vector3.new(0, 0, -4),
+					Look = Vector3.new(0, 0, 1),
+				},
+				{
+					Name = "ShortWall",
+					Position = Vector3.new(-4, 0, 0),
+					Look = Vector3.new(1, 0, 0),
+				},
+				{
+					Name = "ShortWall",
+					Position = Vector3.new(-4, 0, 8),
+					Look = Vector3.new(1, 0, 0),
+				},
+			},
+			Colliders = {
+				Floor = { Position = Vector3.new(0, -0.5, 0), Size = Vector3.new(24, 1, 24) },
+				Ceiling = { Position = Vector3.new(0, 14.5, 0), Size = Vector3.new(24, 1, 24) },
+			},
+			Triangles = {
+				Ceiling = 2316,
+				Floor = 12,
+				Trim = 216,
+			},
+		},
+		T = {
+			Size = 24,
+			Arms = {
+				Vector3.new(1, 0, 0),
+				Vector3.new(-1, 0, 0),
+				Vector3.new(0, 0, 1),
+			},
+			Walls = {
+				{
+					Name = "ShortWall",
+					Position = Vector3.new(8, 0, 4),
+					Look = Vector3.new(0, 0, -1),
+				},
+				{
+					Name = "ShortWall",
+					Position = Vector3.new(4, 0, 8),
+					Look = Vector3.new(-1, 0, 0),
+				},
+				{
+					Name = "ShortWall",
+					Position = Vector3.new(-8, 0, 4),
+					Look = Vector3.new(0, 0, -1),
+				},
+				{
+					Name = "ShortWall",
+					Position = Vector3.new(-4, 0, 8),
+					Look = Vector3.new(1, 0, 0),
+				},
+				{ Name = "Wall", Position = Vector3.new(6, 0, -4), Look = Vector3.new(0, 0, 1) },
+				{ Name = "Wall", Position = Vector3.new(-6, 0, -4), Look = Vector3.new(0, 0, 1) },
+			},
+			Colliders = {
+				Floor = { Position = Vector3.new(0, -0.5, 0), Size = Vector3.new(24, 1, 24) },
+				Ceiling = { Position = Vector3.new(0, 14.5, 0), Size = Vector3.new(24, 1, 24) },
+			},
+			Triangles = {
+				Ceiling = 1932,
+				Floor = 12,
+				Trim = 216,
+			},
+		},
+		Cross = {
+			Size = 24,
+			Arms = {
+				Vector3.new(1, 0, 0),
+				Vector3.new(-1, 0, 0),
+				Vector3.new(0, 0, 1),
+				Vector3.new(0, 0, -1),
+			},
+			Walls = {
+				{
+					Name = "ShortWall",
+					Position = Vector3.new(8, 0, -4),
+					Look = Vector3.new(0, 0, 1),
+				},
+				{
+					Name = "ShortWall",
+					Position = Vector3.new(4, 0, -8),
+					Look = Vector3.new(-1, 0, 0),
+				},
+				{
+					Name = "ShortWall",
+					Position = Vector3.new(8, 0, 4),
+					Look = Vector3.new(0, 0, -1),
+				},
+				{
+					Name = "ShortWall",
+					Position = Vector3.new(4, 0, 8),
+					Look = Vector3.new(-1, 0, 0),
+				},
+				{
+					Name = "ShortWall",
+					Position = Vector3.new(-8, 0, -4),
+					Look = Vector3.new(0, 0, 1),
+				},
+				{
+					Name = "ShortWall",
+					Position = Vector3.new(-4, 0, -8),
+					Look = Vector3.new(1, 0, 0),
+				},
+				{
+					Name = "ShortWall",
+					Position = Vector3.new(-8, 0, 4),
+					Look = Vector3.new(0, 0, -1),
+				},
+				{
+					Name = "ShortWall",
+					Position = Vector3.new(-4, 0, 8),
+					Look = Vector3.new(1, 0, 0),
+				},
+			},
+			Colliders = {
+				Floor = { Position = Vector3.new(0, -0.5, 0), Size = Vector3.new(24, 1, 24) },
+				Ceiling = { Position = Vector3.new(0, 14.5, 0), Size = Vector3.new(24, 1, 24) },
+			},
+			Triangles = {
+				Ceiling = 2260,
+				Floor = 12,
+				Trim = 432,
 			},
 		},
 	},

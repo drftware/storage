@@ -42,6 +42,30 @@ local ART: { Art } = {
 		description = "A plain stretch of a storage building's hall wall, where no unit stands",
 	},
 	{
+		key = "ShortWall",
+		path = "art/corridor/out/Corridor_ShortWall.fbx",
+		manifest = "art/corridor/assets.json",
+		description = "A short plain stretch of a storage building's hall wall, a small unit wide",
+	},
+	{
+		key = "Corner",
+		path = "art/corridor/out/Corridor_Corner.fbx",
+		manifest = "art/corridor/assets.json",
+		description = "Where a storage building's hall turns a corner: its floor and steel ceiling",
+	},
+	{
+		key = "T",
+		path = "art/corridor/out/Corridor_T.fbx",
+		manifest = "art/corridor/assets.json",
+		description = "Where a storage building's hall meets another: its floor and steel ceiling",
+	},
+	{
+		key = "Cross",
+		path = "art/corridor/out/Corridor_Cross.fbx",
+		manifest = "art/corridor/assets.json",
+		description = "Where two of a storage building's halls cross: their floor and steel ceiling",
+	},
+	{
 		key = "DeadEnd",
 		path = "art/corridor/out/Corridor_DeadEnd.fbx",
 		manifest = "art/corridor/assets.json",

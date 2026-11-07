@@ -233,3 +233,23 @@ a wall's frame is found from its flat Facade and the Panel behind it. Not chosen
 walls (a second material the building doesn't otherwise have); a plain wall full height in the
 facade paint (its texture is drawn for a 10-stud wall); a dead end with its own floor and ceiling
 (a second straight piece's worth of mesh for one wall).
+
+## D-023 · 2026-11-07 · Junctions: 24-stud squares, the deck turns on a girder
+The corner, T and cross are 24-stud squares, a straight's length, so they sit on the straights'
+grid (D-020): a junction's floor is the whole square mapped like a straight's, so every arm meets
+it on a saw-cut joint, and its joists keep the 6-stud beat along its X arms. Halls stay on 24-stud
+centres; a turned straight's floor meets a junction rotated, on a joint. Every straight keeps its
+deck running along its own hall (option b of the ticket); a junction's deck continues its X arms
+and a joist girder, as deep as a joist (clear of the haze) with heavier chords and a closure plate
+on top, carries the seam across each Z arm's mouth. Not chosen: one deck direction for the whole
+floor (option a), which needed a second straight for halls along Z, joists running along those
+halls instead of across, junction ceilings that can't turn with their floors, and joists 2 studs
+apart over the back-to-back rows of parallel Z halls (32 apart, not a multiple of 6). Not chosen
+either: 32-stud junctions covering the whole span, which break the floor joints (16 is not 4 off a
+joint) and the 24-stud grid. What a junction leaves of a hall side is whole slots: 8 (the new
+short wall, an S unit's width) beside its blocks of wall and along a corner's outer sides, and two
+12s across a T's stub. A steel column covers each corner where two walls meet (the posts' notch,
+the caps' overlap that would flicker, the R-panels' slit). A junction's frame is its floor part's
+own: Roblox's importer keeps each part's FBX axes (docs/STUDIO.md), so a square floor still knows
+its turn.
+
