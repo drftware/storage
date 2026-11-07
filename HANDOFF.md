@@ -2,59 +2,62 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-07, session 12 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-07, session 13 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **The owner judged P0-02h:** the before and after shots look good and Automatic looks decent.
-  Three lit fixtures awake at once is fine for now; they judge it once motion lights are built
-  (noted on L-03 in ROADMAP).
-- **Dust hangs in the air under each lit tube** (P0-02i, done; D-018). `HallLight.light` now adds
-  a ParticleEmitter on an attachment 2.5 studs under the tube: Roblox's smoke texture, about six
-  slow puffs alive, 4 to 6 studs wide, partly lit by the hall (LightInfluence 0.4) so low graphics
-  is only about 1.3x brighter than full quality from the spawn. A weak tube's dust is fainter, a
-  dead one's vanishes at once, and a tube coming on throws a burst of five (server `Emit` reaches
-  clients already watching). Its numbers are feel numbers in `HallLight` (`Haze*`).
-- **Verified in Studio** (Play at Level08 and Level21, spawn and near-tube views; shut in 105 at
-  Level08 stays dark with the line under the door, and the hall's lights dim to about 5%):
-  `docs/art/P0-02i-haze.jpg`, `P0-02i-inside-105.jpg`.
-- The ticket was split for the context budget: the cost counts and phone shots are P0-02j.
-- `rojo serve` is running on port 34872; Studio is in Edit, Quality Level back on Automatic.
+- **The hall is cheap to draw** (P0-02j, done): about 61,000 triangles and 25 draw calls from the
+  spawn, the units almost all of it; the haze adds 24 triangles and 3 draw calls at both
+  qualities, so its puffs stay. Full numbers in docs/STUDIO.md, "The hall's render cost".
+- **Found and fixed: the haze was nearly gone on low graphics.** Roblox thins an emitter's steady
+  puffs to about (graphics level ÷ 21) of its Rate, so a cheap phone held under one puff per tube.
+  The P0-02i shots hid it (fresh bursts aren't thinned). Now the server leaves each haze emitter's
+  Rate at 0 and tags it `HallLight.HazeTag`; the new client system `HallHaze` emits each lit
+  tube's puffs on a steady beat (`Pace`, a small pure module with a Lune spec), and bursts a
+  tube already lit when the player first gets it, so a late joiner's air isn't clear (D-019).
+- **Verified in Studio:** about 11 puffs under the two lit tubes at Level01, Level08 and Level21
+  alike (Play, counted from `Stats.RenderBreakdown`); phone shots on a simulated Galaxy A16,
+  `docs/art/P0-02j-phone.jpg`.
+- Owner's judging is in `OWNER.md`, "Now: judge the haze" (P0-02i's and P0-02j's shots together).
+- `rojo serve` is running on port 34872; Studio is in Edit, Quality Level on Automatic, the
+  Device Simulator off.
 
-## Next task: P0-02j The hall's cost and phone shots
-The moment: the hall, haze and all, plays smoothly on a cheap Android phone and still looks like
-the look sheets at phone size.
-1. Owner test results first (`OWNER.md`, "Now: judge P0-02i"). Thicker or fainter haze is
-   `HallLight.HazeTransparency`; compare with a fresh burst (docs/STUDIO.md, "Particles in the
-   hall").
-2. Play; at Level08 and Level21, from the spawn view and under the lit tube, read the hall's
-   triangle and draw-call counts (View > Stats, Render; or `Stats` from the MCP if it exposes
-   them) with the haze on and off. Note them in docs/STUDIO.md.
-3. Phone-size shots in the Device Simulator (the Studio MCP skill `rbx-device-simulator-lua`):
-   a mid-range Android phone, landscape, at low and full quality, spawn view.
-4. If the haze costs a lot on a phone, fewer puffs (`HazeRate`) before smaller ones.
-5. OWNER.md: the shots to judge. Put Quality Level back to Automatic, leave Studio in Edit.
-**Acceptance:** checks green; counts noted in docs/STUDIO.md; `docs/art/P0-02j-*.jpg` phone
-shots at both qualities; the owner judges.
-**Read first:** `docs/ROADMAP.md` (P0-02j); `docs/STUDIO.md` ("Lighting and captures" and
-"Tools"); `docs/DECISIONS.md` (D-018); `src/shared/HallLight.luau` (the `Haze` numbers); the
-Studio MCP skill `rbx-device-simulator-lua`.
+## Next task: P0-03 The corridor kit
+The moment: the hall stops being a test strip and becomes the building: a real floor and
+ceiling, corners you can't see round, a dead end you back out of, and the fixture that will
+watch you (L-03 lights it).
+1. Owner test results first (`OWNER.md`). Thicker or fainter haze is `HallLight.HazeTransparency`.
+2. Read the GDD's tile set and Lights sections (the docs tools, not WebFetch). The ticket is big:
+   split it in ROADMAP before building (for example the straight piece with floor and ceiling,
+   then corner, T, cross and dead end, then the motion-light fixture), and do only the first.
+3. Build it the unit's way (art/unit/README.md): a Blender 5.2 script with one spec for the
+   numbers, shared texture sets, baked PBR maps, an FBX, a generated `Specs` module, look sheets.
+4. The ceiling height must keep the haze clear of it: `HallLight.HazeHeight` (9.6) with puffs up
+   to 3 studs above it, against today's ceiling at 13.4. The tube hangs at `HallLight.Height`.
+5. Place it in `DevCorridor` and judge it at phone size at Level01 and Level21 (the Device
+   Simulator steps in docs/STUDIO.md, "Tools").
+**Acceptance:** checks green; the piece imported and placed; phone-size shots in
+`docs/art/P0-03*-*.jpg`; the owner judges.
+**Read first:** `docs/ROADMAP.md` (P0-03, L-03); the GDD's tile set and Lights sections;
+`art/unit/README.md`; `src/shared/HallLight.luau` (the top numbers); `src/server/DevCorridor.luau`;
+`docs/STUDIO.md` ("Getting assets into Roblox").
 
 ## Queue (the next run's order, from ROADMAP)
-1. **P0-03 The corridor kit:** hall floor and ceiling, the tile set's walls and corners, the
-   motion-light fixture, built around `HallLight`'s numbers (the haze must still clear the
-   ceiling: `HazeHeight` against the kit's ceiling height).
-2. **L-03 Motion lights** (moved up by the owner, Nov 7): fixtures wake as you walk the hall,
+1. **L-03 Motion lights** (moved up by the owner, Nov 7): fixtures wake as you walk the hall,
    server-owned, set through `HallLight.light` so the fill, the haze and `BehindDoors` follow.
    A lit fixture is two lights (D-017); the owner judges the three-fixture budget once built.
-3. **P0-04 The door's sounds and feel:** peek scrape, open rattle, slam bang and bounce, latch,
+   A fixture relit in front of a player gets the server's burst; one streamed in already lit
+   gets `HallHaze`'s.
+2. **P0-04 The door's sounds and feel:** peek scrape, open rattle, slam bang and bounce, latch,
    padlock.
-4. **Phase 1, then Phase 2** (ROADMAP): the loop with real assets (L-01, L-02, L-04 to L-09);
+3. **Phase 1, then Phase 2** (ROADMAP): the loop with real assets (L-01, L-02, L-04 to L-09);
    L-01 must call `RollUpDoor.fitCollider` on each placed unit, as DevCorridor does; L-02 carries
    the phone prompt layout (five prompts on one point stack into one tap button).
-5. **Polish waiting:** the haze starts clear for a late joiner or a fixture streamed in; a faint
-   haze edge near the ceiling at low graphics; at low graphics a peeked unit lights evenly; re-run
-   `UnitKit.prepare` so the template saves at 1.2 deep; sizes S and L by eye; a client-side door
-   collider if the lag feels wrong; the padlock is too small to spot; the cursor hint once ever.
+4. **Polish waiting:** a faint haze edge near the ceiling at low graphics; at low graphics a
+   peeked unit lights evenly; re-run `UnitKit.prepare` so the template saves at 1.2 deep; sizes S
+   and L by eye; a client-side door collider if the lag feels wrong; the padlock is too small to
+   spot; the cursor hint once ever.
+5. **Check other particles the same way:** any emitter added later (keepers, dust from a door)
+   is thinned on low graphics too; judge it in its steady state (docs/STUDIO.md).
 
 ## Kickoff for the next agent
 ```text

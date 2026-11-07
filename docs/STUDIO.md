@@ -149,6 +149,13 @@ verified: a doc page, Studio, or "untested".
   or a wall shows a hard straight edge (full quality fades it softly), so keep puffs clear of
   geometry. `Emit` called on the server shows on clients already watching. Compare looks with a
   fresh burst: a steady emitter's puffs are at different ages from one capture to the next.
+- **Roblox thins an emitter's Rate at lower graphics, never `Emit`** (Play, 2026-11-07, P0-02j):
+  puffs emitted over 2 s at Rate 20 came to about (level ÷ 21) of the rate: Level01 7%, Level04
+  17%, Level08 35%, Level12 55%, Level16 69%, Level21 92% (the rest is frame timing). Ten
+  `Emit(1)` calls gave ten puffs at every level. So a steady emitter that looks right at full
+  quality is nearly empty on a cheap phone, and a fresh burst hides it: judge particles in their
+  steady state, or emit them yourself (the haze does, D-019). Count puffs on screen with
+  `Stats.RenderBreakdown.Particles` (two triangles a puff).
 - **Neon blooms into blobs at low graphics:** a neon strip brighter than about 150 grey smeared
   into round blotches at Level08 (Lighting's Bloom, Threshold 2). Keep small glowing details at
   mid grey; Neon still reads white.
@@ -171,6 +178,25 @@ verified: a doc page, Studio, or "untested".
 - **Rojo may not push a project-file change to Studio** (2026-11-06): a new Lighting child in
   `default.project.json` built fine with `rojo build` but never showed in Studio over a running
   `rojo serve`. Reconnect, or restart `rojo serve`, after editing the project file.
+
+## The hall's render cost
+
+- **Reading the counts from the MCP** (2026-11-07): in Play, `execute_luau` on the Client can read
+  `Stats.RenderBreakdown`'s items (`Opaque`, `Transparent`, `Particles`, `UI` and the rest), each
+  a string like "17936 tris, 11 draws" for the main view, and `Stats.FrameRateManager.Batches`
+  for the draw calls of every pass together, shadow maps included. Studio's `PerformanceStats.GPU`
+  reads near 0 on this Mac, so GPU time on a phone can't be judged here.
+- **The test hall, measured** (P0-02j, Galaxy A16 viewport, 685x338; nine units, two lit tubes):
+  | View | Main view | Every pass |
+  |---|---|---|
+  | Spawn, haze off | 60,996 tris, 25 draws | 30 at Level08, 73 at Level21 |
+  | Spawn, haze on (12 puffs) | 61,044 tris, 28 draws | 33 at Level08, 76 at Level21 |
+  | Under a tube, haze off | 43,352 tris, 21 draws | 26 / 63 |
+  | Under a tube, haze on (6 puffs) | 43,376 tris, 23 draws | 28 / 65 |
+  The main view's counts are the same at Level08 and Level21; full quality's extra draw calls
+  are its shadow passes. The haze costs one particle draw call plus two in the see-through pass;
+  its real cost on a phone is the screen area its see-through puffs cover, which Studio can't
+  show. The units are almost all of the 61,000 triangles.
 
 ## Tools
 
@@ -198,6 +224,14 @@ verified: a doc page, Studio, or "untested".
   client ran at about 15 fps, so time feel by the clock, not by frames.
 - **`require` in Edit is cached:** after Rojo syncs a change, `execute_luau`'s `require` still
   returns the module from the first call. Require a `:Clone()` of the module tree for fresh code.
+- **The Device Simulator from the MCP** (2026-11-07, skill `rbx-device-simulator-lua`): set the
+  device in Edit before Play (its setters fail in Play's server view), then the orientation:
+  `SetOrientationAsync` before a phone is active fails ("only on mobile devices"). The Galaxy
+  A16 (`samsung_galaxy_a16`, 780x360) is the list's mid-range Android; `screen_capture` then
+  returns 668x308 with the touch thumbstick and jump button drawn. `StopSimulationAsync` when
+  done; the scaling mode (ScaleToPhysicalSize here) persists, so leave it alone.
+- **`start_stop_play` with Play already running** answers "Game Started" and changes nothing: stop
+  first, or new code never loads.
 - `insert_asset` tags what it inserts `Assistant:<guid>`; remove the tag before keeping the model.
 - **One asset ID serves every branch:** after uploading the unit from one branch, re-upload from
   the branch you return to (set its `sha256` in `art/unit/assets.json` to anything and run the

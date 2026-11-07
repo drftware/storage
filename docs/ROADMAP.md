@@ -78,12 +78,13 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   the hall so low graphics and full quality stay close (D-018; `docs/art/P0-02i-haze.jpg`). A dead
   fixture's dust vanishes at once; a fixture coming on throws a burst so the air is already dusty.
   The shut-in dark holds (`P0-02i-inside-105.jpg`).
-- [ ] **P0-02j The hall's cost and phone shots.** The hall's triangle and draw-call counts at
-  Level08 and Level21 (View > Stats, Render), with the haze, noted in docs/STUDIO.md; then
-  phone-size shots in the Device Simulator at low and full quality (the Studio MCP skill
-  `rbx-device-simulator-lua`). If the haze costs too much on a phone, fewer puffs
-  (`HallLight.HazeRate`) before smaller ones. If the owner wants the two looks closer still, the
-  lever is the fill's share (more fill, less tube).
+- [x] **P0-02j The hall's cost and phone shots.** The hall costs about 61,000 triangles and 25
+  draw calls from the spawn (43,000 from under a tube); the haze adds 24 triangles and 3 draw calls
+  at both qualities, so its puffs stay (docs/STUDIO.md, "The hall's render cost"). Found: Roblox
+  thinned the haze to under one puff per tube at low graphics, so each player's screen now emits
+  the puffs itself and they hold at every level (D-019). Phone shots on a Galaxy A16 at Level01,
+  Level08 and Level21 (`docs/art/P0-02j-phone.jpg`). If the owner wants the two looks closer
+  still, the lever is the fill's share (more fill, less tube).
 - [ ] **P0-03 The corridor kit (art).** Hall floor and ceiling, end walls and corners for the
   GDD's tile set (straight, corner, T, cross, dead end), and the motion-light fixture (the
   building's eyes), built the unit's way and judged at phone size.
@@ -149,9 +150,6 @@ launch.
   size, since it's the bolt cutters' target: a bigger lock, a brighter body, or a hasp plate.
 - The cursor hint shows once per session; once ever needs the saved profile (Phase 1's player
   data). On a Mac the key cap could read "Option" instead of "Alt".
-- The haze starts clear for a player who joins late or walks into a fixture streamed in from far
-  off: the air under it fills over about ten seconds (the burst only reaches players already
-  watching). A client could throw its own burst when a lit fixture's dust streams in.
 - At low graphics a haze puff cuts a faint straight edge where it meets the ceiling's corner
   (`docs/art/P0-02i-haze.jpg`, bottom left); full quality softens it. The corridor kit's ceiling
   height may move it.

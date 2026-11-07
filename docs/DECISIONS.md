@@ -168,3 +168,19 @@ them at once (transparency is read live), and a fixture coming on throws a burst
 air, so `BehindDoors` needn't dim it (checked at Level08). Not tried, since the puffs did it: a
 glow part, more bloom (it already smears bright neon into blobs at low graphics), a thicker
 Atmosphere (it would fog dead stretches as much as lit ones).
+
+## D-019 · 2026-11-07 · Each player's screen emits the haze's puffs
+Measured in Play (P0-02j): Roblox thins a ParticleEmitter's steady puffs with graphics quality,
+to about (level ÷ 21) of its Rate: 7% at Level01, 35% at Level08, all of it at Level21. The haze
+held about six puffs per lit tube at full quality, two at Level08, and under one at the levels a
+cheap phone plays at, where the look sheets' grey air simply wasn't there. The P0-02i shots hid
+it: each was taken on a fresh burst, and `Emit` is never thinned. So the server leaves each haze
+emitter's Rate at 0 and tags it `HallLight.HazeTag`, and the client system `HallHaze` emits one
+puff at a time at `HallLight.HazeRate` (`Pace` carries the timing between frames, and a hitch
+never dumps a cloud). Now about eleven puffs hang under the two lit tubes at Level01, Level08 and
+Level21 alike. The cost of keeping them on weak phones is small: the puffs add 24 triangles and
+3 draw calls. The haze is only for looks, so the client owning its timing breaks nothing the
+server must own. The same client bursts a tube already lit when it first gets it (joining late,
+or the tube streaming in), which fixes the haze starting clear for a late joiner. Not chosen:
+raising Rate to match the player's quality level, which Automatic changes mid-play; emitting
+directly needs no level at all.

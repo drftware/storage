@@ -75,7 +75,8 @@ HallLight.HazeTransparency = 0.5
 HallLight.HazeSizeStart = 4
 HallLight.HazeSizeEnd = 6
 -- Puffs per second and how long each lives: about six in the air per lit fixture, few enough for
--- a low-end phone (each is see-through, so it costs its whole screen area to draw).
+-- a low-end phone (each is see-through, so it costs its whole screen area to draw). Each player's
+-- screen emits these itself (HallHaze), because Roblox thins an emitter's own rate on low graphics.
 HallLight.HazeRate = 0.4
 HallLight.HazeLifetime = NumberRange.new(12, 16)
 -- How fast a puff drifts, in studs a second: slow enough that the cloud seems to hang.
@@ -99,6 +100,9 @@ HallLight.UnderDoorColour = Color3.fromRGB(140, 145, 144)
 -- (BehindDoors darkens them for a player shut in a unit).
 HallLight.Tag = "HallLight"
 HallLight.LitAttribute = "LitBrightness"
+-- Every fixture's dust emitter carries this tag, so each client can keep its puffs coming
+-- (HallHaze).
+HallLight.HazeTag = "HallHaze"
 
 local DEAD_TUBE = Color3.fromRGB(40, 42, 44) -- an unlit diffuser: dark plastic
 
@@ -147,7 +151,10 @@ local function haze(anchor: Attachment, level: number)
 	dust.Size = NumberSequence.new(HallLight.HazeSizeStart, HallLight.HazeSizeEnd)
 	dust.Transparency = if level > 0 then HAZE_SHOWN else HAZE_HIDDEN
 	dust.Lifetime = HallLight.HazeLifetime
-	dust.Rate = HallLight.HazeRate
+	-- Roblox thins an emitter's steady puffs to about (graphics level ÷ 21) of its Rate, leaving a
+	-- low-graphics phone under one puff per tube, but never thins Emit. So the steady puffs come
+	-- from each client, one Emit at a time (HallHaze), and the emitter's own rate stays 0.
+	dust.Rate = 0
 	dust.Speed = HallLight.HazeDrift
 	-- Puffs drift outward in a flat fan, so the cloud spreads along the hall, not into the ceiling.
 	dust.EmissionDirection = Enum.NormalId.Right
@@ -155,6 +162,7 @@ local function haze(anchor: Attachment, level: number)
 	dust.Rotation = NumberRange.new(0, 360)
 	dust.RotSpeed = NumberRange.new(-3, 3)
 	dust.Enabled = level > 0
+	dust:AddTag(HallLight.HazeTag)
 	dust.Parent = anchor
 	-- Emitting replicates to players already watching; the server is where fixtures are lit.
 	if level > 0 and not wasLit then

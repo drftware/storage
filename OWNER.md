@@ -29,14 +29,18 @@ nowhere else.
   Automatic, Studio switches between low graphics and full quality by itself mid-Play, which is
   the light changing between your two screenshots (Nov 6). P0-02h brought the two looks closer.
 
-## Now: judge P0-02i (built Nov 7)
+## Now: judge the haze (P0-02i and P0-02j, built Nov 7)
 
-- [ ] **Judge the shots:** `docs/art/P0-02i-haze.jpg`, low graphics left and full quality right.
-  Top row: the hall from the spawn, a grey cloud under the far lit tube. Bottom row: standing
-  near that tube, the dust hanging round it. Look for: grey air you'd notice around a lit tube
-  without it reading as smoke or fire, about the same at both qualities, the far doors still
-  showing through. Say if it should be thicker or fainter. Known: at low graphics the cloud's top
-  can show a faint straight edge near the ceiling.
-- [ ] **Feel it yourself:** Play, walk from the spawn to the far tube and stand under it. Look
-  for: the dust drifting slowly, never popping in or out, and nothing hazy in a dark stretch.
+- [ ] **Judge the phone shots:** `docs/art/P0-02j-phone.jpg` is a Galaxy A16's screen, landscape:
+  graphics Level01 (left, where the cheapest phones play), Level08 (middle), full quality (right).
+  Top row from the spawn, bottom row under the near lit tube. Look for: grey air you'd notice
+  round a lit tube without it reading as smoke or fire, about as thick at all three, the far doors
+  still showing through. From the spawn it's only a faint glow round the far tube at phone size;
+  say if it should be thicker (`HallLight.HazeTransparency`). The bigger Studio-size shots are
+  `docs/art/P0-02i-haze.jpg`. Known: at low graphics the cloud's top can show a faint straight
+  edge near the ceiling.
+- [ ] **Feel it yourself:** set File > Studio Settings > Rendering > Quality Level to 1, Play,
+  walk from the spawn to the far tube and stand under it; then again at 21, and put it back to
+  Automatic. Look for: the dust drifting slowly, never popping in or out, as thick at 1 as at 21
+  (before this fix Level 1 had almost none), and nothing hazy in a dark stretch.
   `docs/art/P0-02i-inside-105.jpg` checks a shut unit is still dark at low graphics.

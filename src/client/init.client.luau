@@ -10,12 +10,14 @@ local Brix = require(ReplicatedStorage.Brix)
 local BehindDoors = require(script.BehindDoors)
 local DoorView = require(script.DoorView)
 local FreeCursor = require(script.FreeCursor)
+local HallHaze = require(script.HallHaze)
 
 local host = Brix.Host.new({
 	systems = {
 		{ slot = "doorView", system = DoorView.new() },
 		{ slot = "behindDoors", system = BehindDoors.new() },
 		{ slot = "freeCursor", system = FreeCursor.new() },
+		{ slot = "hallHaze", system = HallHaze.new() },
 	},
 })
 host:start()

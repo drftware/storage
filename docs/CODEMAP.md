@@ -12,7 +12,8 @@ touches. This file is read on demand, never at session start; keep each row to o
 | `src/shared/StorageUnit/Motion.luau` | Pure door timing curves per action, targets, the replicated motion string |
 | `src/shared/StorageUnit/RollUpDoor.luau` | Server `play`/`setLocked`/`rise` and the DoorCollider (`ColliderDepth`, `fitCollider`); `spec`; client `watchTagged` rigs, the lazy slat chain, posing |
 | `src/shared/StorageUnit/UnitKit.luau` | One-time `prepare` of an imported unit; `paint`, `number`, `dropWall` |
-| `src/shared/HallLight.luau` | The hall fixture's light (D-015, D-017): the tube's height, cone, brightness and short reach, the fill at door height, the dust haze under a lit tube (D-018), the weaker far tube, the exit sign's glow, the line under a door; `light` (tube and fill) and `exitSign` tag each light `HallLight.Tag` with its lit brightness (D-016) |
+| `src/shared/HallLight.luau` | The hall fixture's light (D-015, D-017): the tube's height, cone, brightness and short reach, the fill at door height, the dust haze under a lit tube (D-018; its emitters tagged `HallLight.HazeTag`, their rate 0, D-019), the weaker far tube, the exit sign's glow, the line under a door; `light` (tube and fill) and `exitSign` tag each light `HallLight.Tag` with its lit brightness (D-016) |
+| `src/shared/Pace.luau` | Pure: something that happens at a steady rate, stepped by frame time; a hitch fires it once and drops the backlog (the haze's puffs) |
 | `src/shared/StorageUnit/ShutIn.luau` | Pure: who a shut door hides from whom (inside the unit's room or not, door shut or not), and `light`, how much hall light reaches you shut in as the door lifts; `tests/shutin.spec.luau` |
 | `src/shared/StorageUnit/Specs/` | Generated per size by `art/unit/build.py --stage export`; never hand-edit |
 | `src/server/init.server.luau` | The server's Brix Host: declares its systems, steps them on Heartbeat, stops them on close |
@@ -21,7 +22,8 @@ touches. This file is read on demand, never at session start; keep each row to o
 | `src/client/DoorView.luau` | Client system: draws every unit's door (starts and stops `RollUpDoor.watchTagged`) |
 | `src/client/BehindDoors.luau` | Client system: stops drawing anyone a shut door stands between you and (`LocalTransparencyModifier`), so arms never show through, and hides their name tag (`DisplayDistanceType`); shut in, dims the hall's lights on your screen and draws the line under the door (D-016) |
 | `src/client/FreeCursor.luau` | Client system, mouse players only: Left Alt frees the mouse and takes it back (a `Modal` button), draws the cursor only while it's free (`MouseIconEnabled`), and the once-a-session "Alt Cursor" hint; its feel numbers at the top |
-| `tests/*.spec.luau` | Lune specs (curtain against Python's fixture, motion timings); `tests/fixtures/` from `art/unit/fixture.py` |
+| `src/client/HallHaze.luau` | Client system: emits each lit tube's dust puffs on this screen at `HallLight.HazeRate`, so the haze is as thick at low graphics as at full quality, and bursts a tube already lit when it streams in (D-019) |
+| `tests/*.spec.luau` | Lune specs (curtain against Python's fixture, motion timings, who a shut door hides, the haze's pace); `tests/fixtures/` from `art/unit/fixture.py` |
 | `art/unit/` | The unit's Blender pipeline; its README is the asset's doc |
 | `art/unit/out/` | Built outputs: `StorageUnit_M.fbx`, `textures/` (five sets), `M/unit.blend` |
 | `art/sheets/` | Look sheets and door animations |
