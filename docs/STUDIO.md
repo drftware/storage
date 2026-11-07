@@ -21,7 +21,7 @@ verified: a doc page, Studio, or "untested".
   x 12.2 studs: 1 FBX unit is 1 stud). Each part keeps its Blender origin as its pivot (a
   PivotOffset; the rig doesn't care). Every SurfaceAppearance arrives in **AlphaMode Overlay**.
   `insert_asset` drops it in as a **package** at an arbitrary turn about Y; destroy the
-  PackageLink before preparing. Upload: `scripts/upload_unit.luau` (D-010).
+  PackageLink before preparing. Upload: `scripts/upload_art.luau` (D-010).
 - **Open Cloud Assets API** (porch-pirates' STUDIO.md, used here 2026-11-05): `POST
   assets/v1/assets`, multipart `request` JSON and `fileContent` (`model/fbx`); poll the operation
   until `done`. Only an FBX updates in place (`PATCH`, same ID). The unit's 8.5 MB FBX took under
@@ -197,6 +197,22 @@ verified: a doc page, Studio, or "untested".
   are its shadow passes. The haze costs one particle draw call plus two in the see-through pass;
   its real cost on a phone is the screen area its see-through puffs cover, which Studio can't
   show. The units are almost all of the 61,000 triangles.
+- **With the corridor kit** (P0-03a, same viewport, Level21, haze on, from the new spawn at
+  x = -32): 65,436 triangles in 18 opaque draw calls, 33 in the main view with UI and haze, 82
+  over every pass. The three straight pieces add about 5,000 triangles of steel ceiling, and
+  their identical meshes instance, so the main view has fewer draw calls than the old plain hall.
+
+## Importing kit pieces
+
+- **The corridor piece arrives whole** (Studio, P0-03a, 2026-11-07): `insert_asset` of an Open
+  Cloud FBX of two MeshParts gives a Model with both parts at the right size, every part's pivot
+  at the Blender origin, both SurfaceAppearances in AlphaMode Overlay, and a 45° turn about Y.
+  `CorridorKit.frame` reads the floor's own box, so the turn doesn't matter.
+- **An FBX's hash changes on every export** (Blender stamps the time), so `upload_art` sends a
+  rebuilt piece again even when nothing changed. It updates the same asset in place.
+- **After setting `QualityLevel` from the MCP, wait several seconds before a capture.** At Level01
+  the first capture 2.5 s after the switch was black but for the tubes; the next, 20 s later, was
+  lit normally.
 
 ## Tools
 
@@ -209,7 +225,7 @@ verified: a doc page, Studio, or "untested".
 - **What the MCP can do** (P0-02): `execute_luau` in Edit, Server or Client; `insert_asset` by
   ID; `start_stop_play` (one player only, so two-client tests are the owner's); `screen_capture`
   with a camera position; `http_get` on create.roblox.com docs (`.md` URLs). This Studio build has
-  **no `open_cloud_invoke`**, so uploads go through `scripts/upload_unit.luau`.
+  **no `open_cloud_invoke`**, so uploads go through `scripts/upload_art.luau`.
 - **`execute_luau` isn't a full plugin:** members gated to PluginOrOpenCloud or RobloxScript read
   as "not a valid member" or "lacking capability" (`Workspace.StreamingMinRadius`,
   `StreamingTargetRadius`, `StreamOutBehavior`). `inspect_instance` returns no properties for

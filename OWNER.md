@@ -6,6 +6,9 @@ nowhere else.
 ## Now
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
+- [ ] **Save the place** (File > Save to Roblox) after this session (Nov 7): the corridor piece's
+  template now lives in it at `ReplicatedStorage.Corridor.Straight`, beside the unit's. Unsaved,
+  the next open loses it and the test hall falls back to plain blocks (Output says so).
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
@@ -36,3 +39,20 @@ nowhere else.
   lights never dropping and no white line on the floor. Then walk into 101, shut it on yourself
   (the steps under "Now: judge P0-02g"), and check the dark and the line under the door still
   come, and go again when it lifts.
+
+## Now: judge P0-03a, the straight hall piece (built Nov 7)
+
+- [ ] **Judge the shots:** `docs/art/P0-03a-phone.jpg` is a Galaxy A16 at Level01 (top) and
+  Level21 (bottom): down the hall from the spawn (left) and looking up under the lit tube
+  (right). `art/sheets/corridor-hall.png` and `corridor-ceiling.png` are the Blender look. Look
+  for: a real building's steel ceiling (a ribbed deck on open-web joists) and a jointed concrete
+  floor. Known: at Level01 the deck reads mid grey, at Level21 near black, as the walls do (D-017).
+  If it's too busy or too bright at low graphics, say so: the deck can take the darker raw-steel
+  finish.
+- [ ] **Walk it yourself:** Play, walk the hall end to end, look up as you go. Look for: no line
+  where two pieces meet (x = -12 and 12: the walls between 101 and 103, and between 105 and 107), nothing
+  floating, footsteps that sound like concrete. The plain grey walls past the last units and at
+  both ends are stand-ins until the junction pieces (P0-03c).
+- [ ] **Decide later (the ladder):** the ceiling's lowest steel is now 12.8, so standing on a
+  unit's wire top (10) leaves 2.8 studs overhead, and an avatar is about 5. Before the ladder is
+  built: crawl-only up there (the default), or taller floors.

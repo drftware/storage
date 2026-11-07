@@ -1,0 +1,155 @@
+"""Build the corridor kit in Blender, headless (art/corridor/README.md).
+
+    blender -b --factory-startup -P art/corridor/build.py -- --stage export|renders
+
+Stages:
+    export   one FBX per piece in out/ for Open Cloud, and src/shared/CorridorKit/Specs.luau
+    renders  the look sheets, art/sheets/corridor-*.png
+
+The pieces wear the unit's baked texture sets (art/unit/out/textures): build those first with
+scripts/art.sh. The kit bakes nothing of its own.
+"""
+
+import argparse
+import math
+import os
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+UNIT = os.path.join(HERE, "..", "unit")
+sys.path.insert(0, UNIT)
+sys.path.insert(0, HERE)  # first: this folder's spec.py, not the unit's
+
+import bpy  # noqa: E402
+from mathutils import Vector  # noqa: E402
+
+import bake  # noqa: E402
+import pieces  # noqa: E402
+import spec as K  # noqa: E402
+
+OUT = os.path.join(HERE, "out")
+TEX = os.path.join(UNIT, "out", "textures")
+SHEETS = os.path.join(K.ROOT, "art", "sheets")
+TEXSET = {"Floor": "Concrete", "Ceiling": "TrimSheet"}
+PIECES = {"Straight": (pieces.straight, K.STRAIGHT)}
+
+
+def reset():
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+
+
+def build(name, at=0.0, coll=None, for_export=True):
+    """Builds one piece's parts as objects, `at` studs along the hall. Returns {part: object}."""
+    make, _ = PIECES[name]
+    objs = {}
+    for part, mesh in make().items():
+        ob = mesh.build(coll)
+        ob.location.x = at
+        ob.data.materials.append(bake.textured(TEXSET[part], TEX, for_export=for_export))
+        objs[part] = ob
+    return objs
+
+
+def stage_export():
+    top = K.haze_top()
+    assert K.JOIST_BOTTOM > top, f"joists at {K.JOIST_BOTTOM} cut into the haze ({top})"
+    os.makedirs(OUT, exist_ok=True)
+    out = {}
+    for name, (make, length) in PIECES.items():
+        reset()
+        meshes = make()
+        tris = {part: m.tris() for part, m in meshes.items()}
+        objs = build(name)
+        bpy.ops.object.select_all(action="DESELECT")
+        for ob in objs.values():
+            ob.select_set(True)
+        bpy.context.view_layer.objects.active = objs["Floor"]
+        fbx = os.path.join(OUT, f"Corridor_{name}.fbx")
+        bpy.ops.export_scene.fbx(
+            filepath=fbx, use_selection=True, object_types={"MESH"},
+            apply_scale_options="FBX_SCALE_UNITS", axis_forward="Z", axis_up="Y",
+            use_mesh_modifiers=True, mesh_smooth_type="OFF", use_tspace=False,
+            add_leaf_bones=False, bake_anim=False, path_mode="COPY", embed_textures=True)
+        print("FBX", fbx, os.path.getsize(fbx), tris)
+        # collision boxes in the piece's Roblox frame: X along the hall, Y up, Z across
+        out[name] = dict(length=length, tris=tris, colliders={
+            "Floor": ((0.0, -0.5, 0.0), (length, 1.0, K.HALL)),
+            "Ceiling": ((0.0, K.DECK + 0.5, 0.0), (length, 1.0, K.SPAN)),
+        })
+    lua = os.path.join(K.ROOT, "src", "shared", "CorridorKit", "Specs.luau")
+    os.makedirs(os.path.dirname(lua), exist_ok=True)
+    K.write_luau(lua, out)
+    print("SPEC", lua)
+
+
+# --- look sheets: two straight pieces with stand-ins for the unit rows, under one hall light ----
+
+def stand_ins(coll, length):
+    """Render dressing only: plain boxes where the unit rows stand, so the ceiling reads in place."""
+    import render
+    facade = render.simple("facade", (0.55, 0.53, 0.5), 0.7)
+    door = render.simple("door", (0.12, 0.2, 0.21), 0.5, 0.6)
+    wire = render.simple("wire", (0.3, 0.31, 0.32), 0.5, 0.8)
+    L2, W2 = length / 2, K.HALL / 2
+    for side in (-1, 1):
+        y0, y1 = sorted((side * W2, side * (W2 + 0.25)))
+        render.box_obj("facade", (-L2, y0, 0.0), (L2, y1, 10.0), facade, coll)
+        for x in range(int(-L2) + 6, int(L2), 12):
+            d0, d1 = sorted((side * (W2 - 0.02), side * W2))
+            render.box_obj("door", (x - 4, d0, 0.0), (x + 4, d1, 8.0), door, coll)
+        w0, w1 = sorted((side * W2, side * (W2 + K.UNIT_DEPTH)))
+        render.box_obj("wiretop", (-L2, w0, 9.95), (L2, w1, 10.0), wire, coll)
+
+
+def hall_light(coll, x):
+    import render
+    dif = render.emissive("diffuser", (0.9, 0.95, 0.93), 6.0)
+    render.box_obj("tube", (x - 1.9, -0.22, 12.08), (x + 1.9, 0.22, 12.14), dif, coll)
+    ld = bpy.data.lights.new("hall", "AREA")
+    ld.shape = "RECTANGLE"
+    ld.size, ld.size_y = 3.8, 0.44
+    ld.energy = 720.0
+    ld.spread = math.radians(105)
+    ld.color = (0.86, 0.95, 0.93)
+    lo = bpy.data.objects.new("hall", ld)
+    lo.location = (x, 0.0, 12.06)
+    coll.objects.link(lo)
+    fill = bpy.data.lights.new("fill", "POINT")
+    fill.energy = 260.0
+    fill.color = (0.86, 0.95, 0.93)
+    fill.shadow_soft_size = 1.0
+    fo = bpy.data.objects.new("fill", fill)
+    fo.location = (x, 0.0, 5.0)
+    coll.objects.link(fo)
+
+
+def stage_renders():
+    import render
+    reset()
+    coll = bpy.context.scene.collection
+    for at in (-K.STRAIGHT / 2, K.STRAIGHT / 2):
+        build("Straight", at, coll, for_export=False)
+    stand_ins(coll, 2 * K.STRAIGHT)
+    hall_light(coll, 6.0)
+    render.setup(96, (1280, 720), exposure=0.4)
+    os.makedirs(SHEETS, exist_ok=True)
+    views = {
+        "hall": ((-21.0, 0.6, 4.4), (12.0, 0.0, 6.2), 22),       # a player's eyes down the hall
+        "ceiling": ((-3.0, 1.0, 4.4), (8.0, -2.0, 13.4), 18),    # looking up under the light
+        "seam": ((0.0, 0.0, 6.0), (0.0, 0.0, 0.0), 30),          # straight down on two pieces' joint
+    }
+    for name, (loc, target, lens) in views.items():
+        render.shoot(render.camera(loc, target, lens, name), os.path.join(SHEETS, f"corridor-{name}.png"))
+
+
+def args():
+    argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+    p = argparse.ArgumentParser()
+    p.add_argument("--stage", default="export")
+    return p.parse_args(argv)
+
+
+if __name__ == "__main__":
+    a = args()
+    {"export": stage_export, "renders": stage_renders}[a.stage]()
+    print("DONE", a.stage)

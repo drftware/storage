@@ -12,14 +12,17 @@
 	A lone unit 700 studs down the hall tests streaming: "Go far" by the spawn sends you there and
 	"Come back" returns you, so the hall's units stream out and back in with their doors as left.
 
-	The prompts call RollUpDoor directly; the GDD's door state machine replaces them (L-02). The
-	corridor kit replaces the plain floor, walls and lights here (P0-03).
+	The hall's floor and ceiling are three of the corridor kit's straight pieces (P0-03a), with
+	plain walls past the last units; without the kit's template in the place it falls back to plain
+	blocks. The kit's fixture and dead end replace the lights and end walls here (P0-03b, P0-03c).
+	The prompts call RollUpDoor directly; the GDD's door state machine replaces them (L-02).
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local CorridorKit = require(ReplicatedStorage.Shared.CorridorKit)
 local HallLight = require(ReplicatedStorage.Shared.HallLight)
 local Motion = require(ReplicatedStorage.Shared.StorageUnit.Motion)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
@@ -29,9 +32,11 @@ local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
 -- The layout, in studs. The hall runs along X; doors face each other across Z.
 local HALL_HALF_WIDTH = 4 -- an 8-stud hall: door faces at z = -4 and z = +4
 local UNIT_XS = { -18, -6, 6, 18 } -- four 12-stud units a side, wall to wall
-local BUILDING_HALF_LENGTH = 30 -- end walls at x = -30 and 30
-local BUILDING_HALF_DEPTH = 17 -- side walls just behind the units' backs
-local CEILING = 13.4 -- the building's ceiling, as in the look sheets; unit walls and their wire tops stop at 10
+local UNITS_HALF_LENGTH = 24 -- the last units' outer walls
+local BUILDING_HALF_LENGTH = 36 -- three 24-stud kit pieces; end walls at x = -36 and 36
+local BUILDING_HALF_DEPTH = 17 -- without the kit: side walls just behind the units' backs
+local CEILING = 13.4 -- without the kit: a plain ceiling, as in the look sheets
+local BAY_WALL = 0.5 -- the plain walls along the hall past the last units
 local FLOOR_TOP = -0.05 -- just under the units' own floors (top at 0), so the two never flicker
 local FAR_X = 700 -- far past the streaming target radius (256), so the hall streams out
 
@@ -56,11 +61,10 @@ local EXIT_SIGN_SIZE = Vector3.new(0.2, 0.7, 1.8)
 local EXIT_SIGN_HEIGHT = 9.95 -- over the stairwell door's frame, as in the sheets
 
 local CONCRETE = Color3.fromRGB(74, 74, 76)
--- Light concrete, like the sheets' floor, so a fixture's pool reads on it. The corridor kit's
--- floor replaces it (P0-03).
+-- Light concrete, like the sheets' floor, so a fixture's pool reads on it, where the kit isn't.
 local FLOOR_COLOUR = Color3.fromRGB(120, 120, 118)
 local CEILING_COLOUR = Color3.fromRGB(38, 38, 40)
-local SPAWN = CFrame.lookAt(Vector3.new(-26, 3, 0), Vector3.new(0, 3, 0))
+local SPAWN = CFrame.lookAt(Vector3.new(-32, 3, 0), Vector3.new(0, 3, 0))
 local FAR_SPOT = CFrame.lookAt(Vector3.new(FAR_X + 6, 3, 0), Vector3.new(FAR_X, 3, -4))
 
 local DOOR_COLOURS = {
@@ -114,36 +118,66 @@ local function fixture(f: Fixture, parent: Instance)
 	HallLight.light(tube, f.level)
 end
 
--- A closed concrete box around a stretch of hall: floor, ceiling, end walls and side walls.
+-- A closed box around a stretch of hall: floor, ceiling, end walls and side walls. With `kit`,
+-- the floor and ceiling are the corridor kit's straight pieces, the walls rise to their deck, and
+-- plain walls line the hall past the last units, where no unit closes its side.
 local function building(
 	name: string,
 	centreX: number,
 	halfLength: number,
 	fixtures: { Fixture },
+	kit: boolean,
 	parent: Instance
 ): Folder
 	local folder = Instance.new("Folder")
 	folder.Name = name
 	local length = halfLength * 2
-	local depth = BUILDING_HALF_DEPTH * 2
-	local height = CEILING - FLOOR_TOP
-	block(
-		"Floor",
-		Vector3.new(length, 1, depth),
-		CFrame.new(centreX, FLOOR_TOP - 0.5, 0),
-		FLOOR_COLOUR,
-		folder
-	)
-	block(
-		"Ceiling",
-		Vector3.new(length, 1, depth),
-		CFrame.new(centreX, CEILING + 0.5, 0),
-		CEILING_COLOUR,
-		folder
-	)
+	local depth = if kit then CorridorKit.Specs.Span else BUILDING_HALF_DEPTH * 2
+	local top = if kit then CorridorKit.Specs.DeckTop else CEILING
+	local height = top - FLOOR_TOP
+	if kit then
+		local piece = CorridorKit.Specs.Pieces.Straight.Length
+		local count = length // piece
+		assert(count * piece == length, `DevCorridor: {name} isn't a whole number of kit pieces`)
+		for i = 0, count - 1 do
+			local x = centreX - halfLength + piece * (i + 0.5)
+			CorridorKit.place("Straight", CFrame.new(x, 0, 0), folder)
+		end
+		local bay = halfLength - UNITS_HALF_LENGTH
+		for _, side in { -1, 1 } do
+			for _, toEnd in { -1, 1 } do
+				block(
+					"BayWall",
+					Vector3.new(bay, height, BAY_WALL),
+					CFrame.new(
+						centreX + toEnd * (UNITS_HALF_LENGTH + bay / 2),
+						FLOOR_TOP + height / 2,
+						side * (HALL_HALF_WIDTH + BAY_WALL / 2)
+					),
+					CONCRETE,
+					folder
+				)
+			end
+		end
+	else
+		block(
+			"Floor",
+			Vector3.new(length, 1, depth),
+			CFrame.new(centreX, FLOOR_TOP - 0.5, 0),
+			FLOOR_COLOUR,
+			folder
+		)
+		block(
+			"Ceiling",
+			Vector3.new(length, 1, depth),
+			CFrame.new(centreX, CEILING + 0.5, 0),
+			CEILING_COLOUR,
+			folder
+		)
+	end
 	for _, side in { -1, 1 } do
 		local endX = centreX + side * (halfLength + 0.5)
-		local wallZ = side * (BUILDING_HALF_DEPTH + 0.5)
+		local wallZ = side * (depth / 2 + 0.5)
 		block(
 			"EndWall",
 			Vector3.new(1, height, depth),
@@ -346,9 +380,16 @@ local function build(): Folder?
 		return nil
 	end
 
+	local kit = CorridorKit.template("Straight") ~= nil
+	if not kit then
+		warn(
+			'DevCorridor: no corridor piece at ReplicatedStorage.Corridor.Straight, so the hall is plain blocks; import it (art/corridor/README.md, "Into Studio")'
+		)
+	end
+
 	local folder = Instance.new("Folder")
 	folder.Name = "DevCorridor"
-	local hall = building("Hall", 0, BUILDING_HALF_LENGTH, HALL_FIXTURES, folder)
+	local hall = building("Hall", 0, BUILDING_HALF_LENGTH, HALL_FIXTURES, kit, folder)
 	local sign = block(
 		"ExitSign",
 		EXIT_SIGN_SIZE,
@@ -358,7 +399,7 @@ local function build(): Folder?
 	)
 	sign.CanCollide = false
 	HallLight.exitSign(sign)
-	building("FarHall", FAR_X, 12, { { x = FAR_X, level = 1 } }, folder)
+	building("FarHall", FAR_X, 12, { { x = FAR_X, level = 1 } }, false, folder)
 
 	local count = 0
 	for row, side in { -1, 1 } do
@@ -378,7 +419,7 @@ local function build(): Folder?
 	end
 	placeUnit(template, doorFace(FAR_X, -1), "901", UnitKit.Colours.Door.Teal).Parent = folder
 
-	travelPost("GoFar", Vector3.new(-28, 0, 3), "Go far", FAR_SPOT, folder)
+	travelPost("GoFar", Vector3.new(-34, 0, 3), "Go far", FAR_SPOT, folder)
 	travelPost("ComeBack", Vector3.new(FAR_X + 8, 0, 3), "Come back", SPAWN, folder)
 
 	local spawn = Instance.new("SpawnLocation")

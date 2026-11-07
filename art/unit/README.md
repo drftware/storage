@@ -62,7 +62,7 @@ and every size: DoorKit, TrimSheet and Concrete at 1024², Partition and Facade 
 
 No importer dialog: the FBX goes up through Open Cloud, as porch-pirates ships its art (D-010).
 
-1. **Upload:** `lune run scripts/upload_unit` sends each changed `StorageUnit_<Size>.fbx` as a
+1. **Upload:** `lune run scripts/upload_art` sends each changed `StorageUnit_<Size>.fbx` as a
    Model asset (the first time a new asset, after that the same ID updated in place) and records
    its hash and ID in `art/unit/assets.json`. It needs `.config/.env` (git-ignored) with
    `ROBLOX_API_KEY` (Assets read and write) and `ROBLOX_CREATOR_ID`. Embedded textures arrive as

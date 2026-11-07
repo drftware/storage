@@ -85,14 +85,27 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   the puffs itself and they hold at every level (D-019). Phone shots on a Galaxy A16 at Level01,
   Level08 and Level21 (`docs/art/P0-02j-phone.jpg`). If the owner wants the two looks closer
   still, the lever is the fill's share (more fill, less tube).
-- [ ] **P0-03 The corridor kit (art).** Hall floor and ceiling, end walls and corners for the
-  GDD's tile set (straight, corner, T, cross, dead end), and the motion-light fixture (the
-  building's eyes), built the unit's way and judged at phone size.
+- [x] **P0-03a The straight hall piece** (D-020). 24 studs of hall: the concrete floor between
+  the doors and a corrugated steel deck on open-web joists over the hall and its units, on the
+  unit's own textures, two meshes that instance. The test hall now stands on three, with plain
+  walls past its last units; its end walls moved out to 36. Joists stop at 12.8, clear of the
+  haze (a Lune spec holds it). From the spawn: 65,000 triangles in 18 opaque draw calls
+  (`docs/art/P0-03a-phone.jpg`, Galaxy A16 at Level01 and Level21; `art/corridor/README.md`).
+- [ ] **P0-03b The motion-light fixture.** The building's eyes: a housing and diffuser on two
+  chains from the deck between two joists, the tube where `HallLight.Height` hangs it, and a small
+  sensor eye that shows it's watching (for example the red pip a real occupancy sensor blinks
+  when it trips; the owner judges). Built the unit's way, a TrimSheet or small new texture set, judged at phone size.
+  L-03 lights it.
+- [ ] **P0-03c The junctions.** Corner, T, cross and dead end for the GDD's tile set, on the
+  straight piece's grid (8-wide hall, ceiling over a 12-deep unit row each side), and the plain
+  wall a hall has where no unit stands (the test hall's end bays and end walls are plain blocks
+  until then). The dead end is one you back out of: its end wall at the hall's end, nothing to
+  hide behind.
 - [ ] **L-03 Motion lights the building watches.** Moved up from Phase 1 by the owner (Nov 7):
   the hall should light as you walk it, like a real storage building, and mostly-dark fixtures
   give the hall its pools of light and dark between. Fixtures wake for anything moving near them
   and fall dark a while after it leaves; the server owns their state; real lights near the
-  camera, a glow farther out (GDD Lights). Built on the test hall's fixtures (P0-03's kit), so
+  camera, a glow farther out (GDD Lights). Built on the kit's fixture (P0-03b), so
   L-01 later places fixtures through the same system. Set every light through `HallLight` so it
   keeps the tag and lit brightness that `BehindDoors` scales for a player shut in a unit.
   Brix: Zone for each fixture's watch area. Budget: three lit fixtures awake near a player

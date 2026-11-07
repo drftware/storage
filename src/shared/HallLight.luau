@@ -59,8 +59,9 @@ HallLight.FillRange = 20
 -- The haze: dust hanging in the air under a lit tube, glowing grey as in the look sheets, so a
 -- lit stretch of hall reads as somewhere you could be seen. A few slow puffs of Roblox's smoke
 -- texture drift around a point under the tube (P0-02i).
--- Where the puffs gather, in studs above the floor: low enough that none reaches the ceiling
--- (13.4), because low graphics draws a hard line where a puff cuts into it.
+-- Where the puffs gather, in studs above the floor: low enough that none reaches the ceiling's
+-- lowest steel (the corridor kit's joists, 12.8), because low graphics draws a hard line where a
+-- puff cuts into it. tests/corridor.spec.luau holds the two apart.
 HallLight.HazeHeight = 9.6
 -- Pale cold grey, like the tube. Dimmed with the fixture's level, so a weak tube's haze is faint.
 HallLight.HazeColour = Color3.fromRGB(190, 195, 200)

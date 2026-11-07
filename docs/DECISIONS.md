@@ -64,7 +64,7 @@ the template back from its asset ID (D-010 replaced the saved `.rbxm` copy plann
 
 ## D-010 · 2026-11-05 · Art goes up through Open Cloud, not the 3D Importer
 The owner's porch-pirates ships every model this way, so no art waits on someone clicking a
-dialog. `scripts/upload_unit.luau` (with `scripts/lib/OpenCloud.luau`, taken from porch-pirates)
+dialog. `scripts/upload_art.luau` (with `scripts/lib/OpenCloud.luau`, taken from porch-pirates)
 sends each changed FBX as a Model asset, updating the same ID in place after the first upload, and
 records the hash and ID in `art/unit/assets.json`. The key lives in the git-ignored `.config/.env`.
 A session then inserts the asset through Studio's MCP and prepares it (art/unit/README.md, "Into
@@ -184,3 +184,20 @@ server must own. The same client bursts a tube already lit when it first gets it
 or the tube streaming in), which fixes the haze starting clear for a late joiner. Not chosen:
 raising Rate to match the player's quality level, which Automatic changes mid-play; emitting
 directly needs no level at all.
+
+## D-020 · 2026-11-07 · The corridor kit: 24-stud pieces on the unit's textures, a steel ceiling
+The hall becomes pieces a floor is laid from (GDD tech plan: one tile graph). The straight piece
+is 24 studs: two M units a side, three S, and one hall light's stretch. Its length is set by the
+floor's texture: the unit's Concrete set repeats every 8 studs with a saw-cut joint on its edge,
+so a piece a multiple of 8 long, with UVs starting on that edge, meets the next on a joint and
+never shows a seam (12-stud pieces would land mid-texture). The ceiling is a corrugated steel deck
+on open-web joists, the look of a real storage building and of the look sheets, reaching over
+the hall and a row of units each side (32 across), so back-to-back unit rows between two halls
+meet under one continuous ceiling. Its deck sits at 14 (was 13.4) so the joists can be 1.2 deep
+and still stop at 12.8, clear of the haze's 12.6. The kit bakes nothing: the floor wears the
+unit's Concrete and the ceiling its TrimSheet (painted and raw-steel strips), and a piece is two
+MeshParts, so a hall of identical pieces draws in two calls. Templates live in the place at
+`ReplicatedStorage.Corridor.<Piece>`, beside the units' (D-009). Not chosen: a MaterialVariant
+floor on plain parts (seamless at any length, but a second way of shipping art, outside the
+Blender pipeline); I-beams (cheaper, but read as a parking garage, not a storage building).
+

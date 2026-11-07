@@ -1,5 +1,5 @@
 --!strict
--- Open Cloud asset uploads shared by the art uploaders (see scripts/upload_unit.luau): the key from the git-ignored
+-- Open Cloud asset uploads shared by the art uploaders (see scripts/upload_art.luau): the key from the git-ignored
 -- .config/.env, the creator's user ID, and one file sent and polled until its import is done.
 -- Never prints the key.
 
@@ -27,7 +27,7 @@ end
 local function readEnv(): { [string]: string }
 	local path = ".config/.env"
 	if not fs.isFile(path) then
-		fail(path .. " is missing (see scripts/upload_unit.luau)")
+		fail(path .. " is missing (see scripts/upload_art.luau)")
 	end
 	local env = {}
 	for line in string.gmatch(fs.readFile(path), "[^\r\n]+") do
