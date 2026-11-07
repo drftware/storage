@@ -302,3 +302,31 @@ camera by taking last frame's offset off before it updates, so aim never drifts;
 Brix's ENG-15. Recordings are Pro Sound Effects only (licensed, load in any game); their stretches
 were found by measuring loudness in Studio, since no one here can listen. Not chosen: one recorded
 open and close per action (its timing would fight the curve, and Peek and LiftInside have none).
+
+## D-027 · 2026-11-07 · The floor: halls grown from the lobby on a grid of junction points
+A floor is pure data from a seed (`Floor`, L-01a). Junctions and the lobby stand only on every
+other point of the 24-stud grid, 48 studs apart, with one straight on each link between two: the
+D-023 rule (a straight between two junctions) holds by construction, and parallel halls stand 48
+apart with both rows of units. A point with two arms in line is a straight; one with a single arm
+is a straight closed by a dead end. The halls grow from the lobby as a tree (from the newest point
+half the time, otherwise any; carrying straight on 60% of the time, for long aisles), so every
+hall is reachable, then loops join near halls, closing a dead end first. The lobby is the grid's
+first row's middle, at the origin, its one hall leading into the floor (-Z) and the elevator
+behind it, so every floor's elevator stands in the same spot. Each straight's side is two M slots
+or three S (25%); the kit fixes a junction's (two M across a T's stub, two S on each outer side of
+a corner). Where two halls leave one junction side by side, an M slot at that end is always a plain
+wall: both of them, not one, since either unit's wire top would show the decks' overlap; half such
+sides are three S instead, which stop short of it, so a hall between two junctions isn't all
+wall. Units are numbered floor then two digits in the order you meet them walking out (left, ahead,
+right at each fork), units across the hall back to back, your left first; a floor holds at most
+99, and past that units picked at random become walls (1 floor in 1,000 at today's sizes). Each
+floor's doors wear one colour, in turn. A light hangs over every hall piece's middle; with the
+40-stud watch every stud of hall is watched (the spec checks each one). Power zones: "Lobby" to
+the first fork, then a letter per wing. Short floors (1, 2): 5 by 3 points, 8 halls and a loop,
+about 60 units; full ones: 5 by 4, 11 halls and two loops, about 80. The module takes Brix's Random
+through its call (the contract's rule) and stays free of Roblox paths; Brix Schema checks the
+plans in the spec, and moves to their loader when live config (ENG-11) can change them. Not chosen:
+junctions on every grid point (two could touch and parallel halls collide, needing a repair pass);
+odd numbers on one side and even on the other, as the test hall does (with mixed S and M rows the
+sides don't pair up, and gaps would run a floor past 99); numbering by distance from the lobby
+(numbers would hop between wings).

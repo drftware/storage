@@ -15,6 +15,22 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-01a, the floor layouts (built Nov 7)
+
+- [ ] **Judge a few floors as maps:** in a terminal at the project, run
+  `lune run scripts/floor-map 7 3` (seed 7, floor 3), then other seeds, and floor 1 for a short
+  floor. Seen from above: the lobby (L) and its elevator (E) at the bottom, `.` hall, `+`
+  junction, `*` a light, `M`/`m` and `S`/`s` units (the case alternates so neighbours read
+  apart), `#` a plain wall, `|` or `-` a dead end. Look for: halls you'd want to search, aisles
+  long enough to see a keeper coming, a loop to run round, a dead end or two to get cornered in;
+  about 60 units on floors 1 and 2, about 80 above. Say if you want bigger or smaller floors, more
+  loops or dead ends, or fewer blank walls (`Floor.Plans` in `src/shared/Floor.luau`).
+- [ ] **Decide, defaults in place** (D-027): (1) all of a floor's doors are one colour, oxblood,
+  teal, mustard and navy in turn from floor 1 (the test hall mixes all four); (2) unit numbers
+  count up as you walk out from the lobby (floor 3: 301, 302 ...), across the hall back to back,
+  rather than odd on one side and even on the other; (3) the breaker's power zones are the lights
+  from the lobby to the first fork, then one zone per wing.
+
 ## Now: judge L-03, the motion lights (built Nov 7)
 
 - [ ] **Walk the hall again, retuned from your play** (D-025): your own lights now come on the

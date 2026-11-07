@@ -135,19 +135,23 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
 
 Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtests.
 
-- [ ] **L-01 The floor generator**, in two sessions: **L-01a** the floor as pure data from a
-  seed (the tile grid, halls and junctions, which slot holds a unit, a plain wall or a fixture,
-  the numbers and the floor's paint), Lune-tested; **L-01b** laying that data in Studio with
-  `CorridorKit` and `UnitKit`, replacing DevCorridor's hand-placed hall. A floor laid from a seed on the GDD's tile grid: unit rows
-  with shared walls dropped, numbers, paint per floor, the elevator lobby, the motion lights
-  placed through L-03's system (a fixture every 24 studs of hall and one over every junction's
-  middle, so no stretch goes unwatched); built during the ride.
-  Brix: Random (seeded), Schema for tile rows.
-  Junctions (D-023): lay them with `CorridorKit.junction` turned so `Specs.Junctions.<name>.Arms`
-  point down the halls; keep a straight between two junctions (two girders would meet on one
-  edge); a T's far side is two M slots (units or walls), a corner's outer sides S slots. Beside a
-  cross's or a T's block of wall, the first slots of the two halls overlap in their back corner:
-  make one of them a plain wall. A unit there would see the two halls' ceilings cross over it.
+- [ ] **L-01 The floor generator**, in three sessions. **L-01a done Nov 7** (D-027): the floor
+  as pure data from a seed (`src/shared/Floor.luau`): halls grown from the lobby on a grid of
+  junction points 48 studs apart, so a straight always stands between two junctions; loops
+  joining near halls; each hall side a row of two M or three S slots, the kit's slots at the
+  junctions, every slot a unit or a plain wall (never an M unit in a back corner); units numbered
+  from the lobby as you walk out; one door colour per floor; a motion light over every hall piece,
+  each in a power zone. Lune-checked over 400 floors (`tests/floor.spec.luau`);
+  `lune run scripts/floor-map <seed> <floor>` prints one as a map. The owner judges the maps
+  (`OWNER.md`). **L-01b** the S unit into the game: exported, imported, prepared, its door
+  checked in Studio and judged at phone size beside an M (the floors place S rows and the
+  corners' S slots). **L-01c** laying the data in Studio with `CorridorKit` and `UnitKit`,
+  replacing DevCorridor's hand-placed hall: each piece at its frame (`Floor.dir(turn)`), each
+  slot a unit (painted, numbered, the side walls in its `drops` left out) or the kit's plain or
+  short wall, each junction with the kit's wall left out where a unit stands
+  (`Floor.JunctionSlots`), the dead ends, the motion lights hung through L-03's system with their
+  power zones, and the lobby a stand-in until L-05; built during the ride (L-08).
+  Brix: Random (seeded), Schema for the plans.
 - [ ] **L-02 Doors as the GDD's state machine.** Closed, peeking, opening, open, slamming,
   locked; prompts for Peek, Open, Slam and Lift from inside; range, tool and rate checks. Brix: the
   door becomes a system on the Host's clock, with Signal for door events; Remotes once ENG-09 ships.
@@ -187,8 +191,11 @@ launch.
 ## Polish waiting for a slot
 
 - **The junctions' girder from a unit:** behind a junction's corner block the two halls' decks
-  overlap in a 4-stud square, unseen from the halls; a unit's wire top could show it (L-01 keeps
-  units out of those slots for now).
+  overlap in a 4-stud square, unseen from the halls; a unit's wire top could show it (the floor
+  keeps M units out of those slots; an S row there stops short of it, D-027).
+- **L units on a floor:** a large unit (20 deep) doesn't fit under a hall's 32-stud span, so the
+  floors place none. A dead end's far wall could hold one facing down the hall, under a deck of
+  its own (GDD: three sizes).
 
 Atmosphere effects wait until the loop is solid (owner, Nov 7); the haze stays as built.
 

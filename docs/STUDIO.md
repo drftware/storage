@@ -255,6 +255,8 @@ verified: a doc page, Studio, or "untested".
   shows in captures, so read `prompt.ObjectText` on the server for refusals, and track shown prompts
   with `ProximityPromptService.PromptShown` and `PromptHidden`. With Studio in the background the
   client ran at about 15 fps, so time feel by the clock, not by frames.
+- **Luau's negative zero:** `-j * 2` with `j = 0` is -0, equal to 0 but printed "-0", so a text
+  key like `` `{x},{z}` `` misses its match. Write `0 - j * 2` (Floor's grid, L-01a).
 - **`require` in Edit is cached:** after Rojo syncs a change, `execute_luau`'s `require` still
   returns the module from the first call. Require a `:Clone()` of the module tree for fresh code.
 - **The Device Simulator from the MCP** (2026-11-07, skill `rbx-device-simulator-lua`): set the
