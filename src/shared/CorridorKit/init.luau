@@ -222,7 +222,8 @@ function CorridorKit.wall(name: WallName, at: CFrame, paint: Color3, parent: Ins
 end
 
 -- Hangs a copy of the hall light fixture with its frame at `at`: on the floor under where its
--- lens should be, midway between two joists. Light it with HallLight.light and HallLight.eye.
+-- lens should be, midway between two joists. Tag its model MotionLight.Tag to make it a motion
+-- light (MotionLights), or light it by hand with HallLight.light and HallLight.eye.
 function CorridorKit.hang(at: CFrame, parent: Instance): Fixture
 	local model = CorridorKit.place("Fixture", at, parent)
 	return { model = model, diffuser = part(model, "Diffuser"), eye = part(model, "Eye") }

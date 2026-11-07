@@ -16,8 +16,10 @@
 	lights are the kit's fixtures (P0-03b), each midway between two joists, and past the last units
 	each side is the kit's plain wall, with a dead end closing the spawn's end (P0-03c). At the far
 	end the hall meets a T (P0-03d): one arm runs to a dead end, the other to a blind corner and a
-	short dark hall beyond it. Without the kit's templates in the place it falls back to plain
-	blocks and bare tubes, and a dead end where the T would be.
+	short dark hall beyond it. Every fixture is a motion light (L-03): the hall starts dark, its
+	eyes open, and lights as you walk it. A breaker post in the T cuts the north arm's power, so its
+	fixtures go blind. Without the kit's templates in the place it falls back to plain blocks and
+	bare lit tubes, and a dead end where the T would be.
 	The prompts call RollUpDoor directly; the GDD's door state machine replaces them (L-02).
 ]]
 local Players = game:GetService("Players")
@@ -27,6 +29,8 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local CorridorKit = require(ReplicatedStorage.Shared.CorridorKit)
 local HallLight = require(ReplicatedStorage.Shared.HallLight)
+local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
+local MotionLights = require(script.Parent.MotionLights)
 local Motion = require(ReplicatedStorage.Shared.StorageUnit.Motion)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
@@ -55,17 +59,12 @@ local LIFT_IN = RollUpDoor.ColliderDepth / 2 + 0.1 -- Lift hangs just behind the
 local LIFT_REACH = 5 -- only someone shut inside should see Lift
 local REFUSAL_SECONDS = 1.2 -- how long "Padlocked" or "Shut it first" shows before the unit's name returns
 
--- The hall's fixtures, one every 24 studs, laid out like the look sheets' hall (HallLight): one lit
--- over 105 and 106 whose eye has seen you, a weaker one over 101 and 102 by the spawn, and a dead
--- one past the last units with its eye open, with the exit sign's red at the far end. Each sits
--- midway between two of the kit's joists (6 studs off a piece's middle).
--- `z` and `turned` hang one in a hall along Z.
-type Fixture = { x: number, z: number?, turned: boolean?, level: number, eye: HallLight.EyeState }
-local HALL_FIXTURES: { Fixture } = {
-	{ x = -18, level = HallLight.Low, eye = "Watching" },
-	{ x = 6, level = 1, eye = "Seen" },
-	{ x = 30, level = 0, eye = "Watching" },
-}
+-- The hall's fixtures, one every 24 studs: over 101 and 102 by the spawn, over 105 and 106, and
+-- past the last units, with the exit sign's red at the far end. Each sits midway between two of
+-- the kit's joists (6 studs off a piece's middle). Each is a motion light, dark until something
+-- moves under it. `z` and `turned` hang one in a hall along Z; `power` puts it in a power zone.
+type Fixture = { x: number, z: number?, turned: boolean?, power: string? }
+local HALL_FIXTURES: { Fixture } = { { x = -18 }, { x = 6 }, { x = 30 } }
 local EXIT_SIGN_SIZE = Vector3.new(0.2, 0.7, 1.8)
 -- High on the far wall, just under its cap (9.88), where exit signs hang: lit from across the
 -- hall's length, so you see where the hall stops (or turns) before you reach it.
@@ -87,13 +86,16 @@ local TURN_DEAD_ENDS = {
 	CFrame.lookAt(Vector3.new(48, 0, -36), Vector3.new(48, 0, -35)),
 	CFrame.lookAt(Vector3.new(84, 0, 48), Vector3.new(83, 0, 48)),
 }
--- A weak light up the north arm, so the corner reads before you round it; past it, the east hall
--- is dark, its fixture's eye open.
+-- A light up the north arm and one in the east hall past the corner, both on the breaker's zone.
+local BREAKER_ZONE = "NorthArm"
 local TURN_FIXTURES: { Fixture } = {
-	{ x = 48, z = 24, turned = true, level = HallLight.Low, eye = "Watching" },
-	{ x = 72, z = 48, level = 0, eye = "Watching" },
+	{ x = 48, z = 24, turned = true, power = BREAKER_ZONE },
+	{ x = 72, z = 48, power = BREAKER_ZONE },
 }
 local TURN_WALL_X = 52 -- the T's far wall, across from the hall
+-- The breaker post: in the T's south half against its west wall, out of the way of the turn, with
+-- the north arm's fixture in sight up the arm.
+local BREAKER_POST = Vector3.new(45, 0, -8)
 
 local CONCRETE = Color3.fromRGB(74, 74, 76)
 -- Light concrete, like the sheets' floor, so a fixture's pool reads on it, where the kit isn't.
@@ -148,7 +150,8 @@ local function doorFace(x: number, side: number): CFrame
 	return CFrame.lookAt(at, at - Vector3.zAxis * side)
 end
 
--- A hall light at f.x: the kit's fixture in a kit hall, or a bare tube where its lens would hang.
+-- A hall light at f.x: the kit's fixture in a kit hall, a motion light the server and each
+-- screen light (MotionLights, HallLights), or a bare lit tube where its lens would hang.
 local function fixture(f: Fixture, kit: boolean, parent: Instance)
 	if kit and CorridorKit.template("Fixture") then
 		local at = CFrame.new(f.x, 0, f.z or 0)
@@ -156,8 +159,10 @@ local function fixture(f: Fixture, kit: boolean, parent: Instance)
 			at *= CFrame.Angles(0, math.pi / 2, 0)
 		end
 		local hung = CorridorKit.hang(at, parent)
-		HallLight.light(hung.diffuser, f.level)
-		HallLight.eye(hung.eye, f.eye)
+		if f.power then
+			hung.model:SetAttribute(MotionLight.PowerAttribute, f.power)
+		end
+		hung.model:AddTag(MotionLight.Tag)
 		return
 	end
 	local tube = block(
@@ -168,7 +173,7 @@ local function fixture(f: Fixture, kit: boolean, parent: Instance)
 		parent
 	)
 	tube.CanCollide = false
-	HallLight.light(tube, f.level)
+	HallLight.light(tube, 1)
 end
 
 -- Plain walls down both sides of a straight piece at `at` (its X along the hall).
@@ -186,25 +191,6 @@ local function sideWalls(at: CFrame, length: number, parent: Instance)
 				parent
 			)
 		end
-	end
-end
-
--- The turn past the hall's far end: the T, its arms, the corner and the hall beyond, their walls
--- and dead ends, and two fixtures.
-local function turn(parent: Instance)
-	local paint = UnitKit.Colours.Wall
-	CorridorKit.junction("T", TURN_T, paint, parent)
-	CorridorKit.junction("Corner", TURN_CORNER, paint, parent)
-	local length = CorridorKit.Specs.Pieces.Straight.Length
-	for _, at in TURN_STRAIGHTS do
-		CorridorKit.place("Straight", at, parent)
-		sideWalls(at, length, parent)
-	end
-	for _, at in TURN_DEAD_ENDS do
-		CorridorKit.wall("DeadEnd", at, paint, parent)
-	end
-	for _, f in TURN_FIXTURES do
-		fixture(f, true, parent)
 	end
 end
 
@@ -449,6 +435,53 @@ local function send(player: Player, to: CFrame)
 	end
 end
 
+-- The breaker post at `at`: "Cut power" blinds the north arm's fixtures as the breaker room will
+-- (GDD Lights), and "Restore power" brings them back, dark.
+local function breakerPost(at: Vector3, lights: MotionLights.MotionLights, parent: Instance)
+	local post = block(
+		"Breaker",
+		Vector3.new(0.4, 4, 0.4),
+		CFrame.new(at.X, FLOOR_TOP + 2, at.Z),
+		CONCRETE,
+		parent
+	)
+	local a = Instance.new("Attachment")
+	a.Position = Vector3.new(0, 1, 0)
+	a.Parent = post
+	local p = prompt(
+		a,
+		"Breaker",
+		{ kind = "Close", text = "Cut power", key = Enum.KeyCode.E, pad = Enum.KeyCode.ButtonX },
+		PROMPT_REACH
+	)
+	local isCut = false
+	p.Triggered:Connect(function()
+		isCut = not isCut
+		lights:cut(BREAKER_ZONE, isCut)
+		p.ActionText = if isCut then "Restore power" else "Cut power"
+	end)
+end
+
+-- The turn past the hall's far end: the T, its arms, the corner and the hall beyond, their walls
+-- and dead ends, two fixtures and the breaker post.
+local function turn(parent: Instance, lights: MotionLights.MotionLights)
+	local paint = UnitKit.Colours.Wall
+	CorridorKit.junction("T", TURN_T, paint, parent)
+	CorridorKit.junction("Corner", TURN_CORNER, paint, parent)
+	local length = CorridorKit.Specs.Pieces.Straight.Length
+	for _, at in TURN_STRAIGHTS do
+		CorridorKit.place("Straight", at, parent)
+		sideWalls(at, length, parent)
+	end
+	for _, at in TURN_DEAD_ENDS do
+		CorridorKit.wall("DeadEnd", at, paint, parent)
+	end
+	for _, f in TURN_FIXTURES do
+		fixture(f, true, parent)
+	end
+	breakerPost(BREAKER_POST, lights, parent)
+end
+
 local function travelPost(
 	name: string,
 	at: Vector3,
@@ -479,7 +512,7 @@ end
 
 -- Builds the whole corridor into one folder and parents it once. Returns nil, after a warning,
 -- when the place has no unit template yet.
-local function build(): Folder?
+local function build(lights: MotionLights.MotionLights): Folder?
 	local units = ReplicatedStorage:FindFirstChild("Units")
 	local template = units and units:FindFirstChild("M")
 	if not (template and template:IsA("Model")) then
@@ -521,7 +554,7 @@ local function build(): Folder?
 	folder.Name = "DevCorridor"
 	local hall = building("Hall", 0, BUILDING_HALF_LENGTH, HALL_FIXTURES, kit, folder, turns)
 	if turns then
-		turn(hall)
+		turn(hall, lights)
 	end
 	-- on the far wall's face (the T's, or the dead end's), clear of its posts
 	local farWall = if turns then TURN_WALL_X else BUILDING_HALF_LENGTH
@@ -534,7 +567,7 @@ local function build(): Folder?
 	)
 	sign.CanCollide = false
 	HallLight.exitSign(sign, -Vector3.xAxis)
-	building("FarHall", FAR_X, 12, { { x = FAR_X, level = 1, eye = "Watching" } }, false, folder)
+	building("FarHall", FAR_X, 12, { { x = FAR_X } }, false, folder)
 
 	local count = 0
 	for row, side in { -1, 1 } do
@@ -596,8 +629,10 @@ function DevCorridor.new(): Brix.System
 	local built: Folder? = nil
 	return {
 		name = "DevCorridor",
-		start = function(_: any, _context: Brix.Context)
-			built = build()
+		start = function(_: any, context: Brix.Context)
+			-- any: the registry hands back a plain System; MotionLights fills this slot (init.server)
+			local lights = (context.registry:get("motionLights") :: any) :: MotionLights.MotionLights
+			built = build(lights)
 		end,
 		stop = function(_: any)
 			if built then

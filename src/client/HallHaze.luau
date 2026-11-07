@@ -58,7 +58,7 @@ function HallHaze.new(): Brix.System
 			end
 		end,
 		step = function(_: any, dt: number)
-			-- A dead fixture's emitter is disabled by the server, so its air stays clear.
+			-- A dark fixture's emitter is disabled (HallLights), so its air stays clear.
 			for dust, carry in carried do
 				if dust.Enabled then
 					local puff, left = Pace.step(carry, dt, HallLight.HazeRate)

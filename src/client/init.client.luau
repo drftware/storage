@@ -11,10 +11,13 @@ local BehindDoors = require(script.BehindDoors)
 local DoorView = require(script.DoorView)
 local FreeCursor = require(script.FreeCursor)
 local HallHaze = require(script.HallHaze)
+local HallLights = require(script.HallLights)
 
 local host = Brix.Host.new({
 	systems = {
 		{ slot = "doorView", system = DoorView.new() },
+		-- before BehindDoors, so its dimming of the hall lands on a flickering tube each frame
+		{ slot = "hallLights", system = HallLights.new() },
 		{ slot = "behindDoors", system = BehindDoors.new() },
 		{ slot = "freeCursor", system = FreeCursor.new() },
 		{ slot = "hallHaze", system = HallHaze.new() },

@@ -15,11 +15,15 @@
 	that lights the walls and an open unit's inside alike at every quality (D-017). Under a lit
 	tube a few slow puffs of dust glow grey in the air, the look sheets' haze (D-018).
 
-	`HallLight.light(tube, level)` turns a fixture's diffuser part into a lit tube: level 1 is a
-	fixture at full strength, `HallLight.Low` a weaker one far down the hall, 0 a dead one.
+	`HallLight.light(tube, level, real)` turns a fixture's diffuser part into a lit tube: level 1 is
+	a fixture at full strength, `HallLight.Low` a weaker one far down the hall, 0 a dead one. With
+	`real` false the tube glows but throws no light and no dust: a phone draws real lights only
+	for the few lit fixtures nearest the camera (`NearFixtures`). `HallLight.glow` is the tube and
+	its lights alone, for the frames of a tube flickering on (`Flicker`).
 	`HallLight.eye(eye, state)` sets the dome of the fixture's motion sensor: the building's eye,
 	open, seeing something, or blind (GDD Lights). The fixture itself is the corridor kit's
-	(CorridorKit.hang); L-03 decides each one's level and eye.
+	(CorridorKit.hang); the server decides whether it's lit (MotionLights) and each player's
+	screen draws it (HallLights).
 ]]
 local HallLight = {}
 
@@ -43,6 +47,27 @@ HallLight.Angle = 130
 -- A weaker fixture far down the hall, like the sheets' distant tubes: you can see doors under it
 -- but it never competes with the one you're standing under.
 HallLight.Low = 0.3
+
+-- How many lit fixtures throw real light on a player's screen: the ones nearest the camera. Each
+-- is two lights (D-017), so three is six; a lit fixture farther out is its glowing tube alone,
+-- which reads at that distance (GDD tech plan; the owner judges it, Nov 7).
+HallLight.NearFixtures = 3
+-- A fixture already throwing light keeps it until another is this many studs nearer, so two
+-- fixtures about as far away don't trade their light back and forth as you walk.
+HallLight.NearMargin = 8
+-- How often each screen re-picks its nearest fixtures, in seconds.
+HallLight.NearSeconds = 0.25
+
+-- A tube flickering on, as a motion light's does when it trips: the starter catches twice before
+-- it holds (each step's level, at seconds after the trip). Short, so it never blocks the light
+-- you need, and only a couple of flashes.
+HallLight.Flicker = table.freeze({
+	{ at = 0.05, level = 0.8 },
+	{ at = 0.09, level = 0 },
+	{ at = 0.16, level = 1 },
+	{ at = 0.21, level = 0.15 },
+	{ at = 0.3, level = 1 },
+})
 
 -- The fill: a soft light at door height under each fixture, standing in for the light the pool
 -- bounces off the floor. It casts no shadow, so at full quality it reaches into an open unit and
@@ -116,6 +141,29 @@ HallLight.EyeWatching = Color3.fromRGB(150, 16, 10)
 HallLight.EyeSeen = Color3.fromRGB(255, 40, 24)
 -- Power cut: frosted plastic, barely there in the dark.
 HallLight.EyeBlind = Color3.fromRGB(58, 58, 56)
+-- The flare as it trips: a hot, nearly white red for an instant, the eye snapping open on you,
+-- before it settles to Seen. It reads from down the hall, ahead of the tube's flicker.
+HallLight.EyeFlare = Color3.fromRGB(255, 150, 120)
+-- How long the flare takes to settle to Seen, in seconds.
+HallLight.EyeFlareSeconds = 0.45
+-- How long a seen eye takes to sink back to Watching as its light falls dark, in seconds: slower
+-- than the flare, the building losing interest.
+HallLight.EyeRelaxSeconds = 0.8
+
+-- The sensor's relay clicking as the light trips, the GDD's click: a short clunky tick from
+-- Roblox's audio library (Pro Sound Effects, "Relay Clicks 15"). It carries two halls over, so a
+-- click with nobody in sight is a friend or a keeper, and you can't tell which.
+HallLight.ClickSound = "rbxassetid://9118138693"
+HallLight.ClickVolume = 0.7
+-- Each click's pitch is picked within this, so a row of lights waking doesn't sound stamped out.
+HallLight.ClickPitch = NumberRange.new(0.94, 1.06)
+-- The same relay letting go as the light falls dark: quieter and lower, so you hear that you've
+-- gone dark to it without it drawing the ear like a trip.
+HallLight.ClickOffVolume = 0.3
+HallLight.ClickOffPitch = 0.82
+-- Full volume within this many studs; it fades out by ClickReach (about two halls over).
+HallLight.ClickNear = 10
+HallLight.ClickReach = 90
 
 -- Every light the hall throws carries this tag, and its lit brightness in the attribute
 -- `HallLight.LitAttribute`, so a client can scale it on its own screen and put it back exactly
@@ -192,8 +240,10 @@ local function haze(anchor: Attachment, level: number)
 	end
 end
 
--- Turns `tube` (the fixture's diffuser part) into a lit tube at `level` (0 to 1).
-function HallLight.light(tube: BasePart, level: number)
+-- Sets `tube` (the fixture's diffuser part) glowing at `level` (0 to 1) and its two lights to
+-- match, or off when `real` is false. No dust: this is the light alone, for a tube flickering on.
+function HallLight.glow(tube: BasePart, level: number, real: boolean?)
+	local on = level > 0 and real ~= false
 	local light = tube:FindFirstChildWhichIsA("SurfaceLight") or Instance.new("SurfaceLight")
 	light.Face = Enum.NormalId.Bottom
 	light.Color = HallLight.Colour
@@ -201,7 +251,7 @@ function HallLight.light(tube: BasePart, level: number)
 	light.Range = HallLight.Range
 	light.Angle = HallLight.Angle
 	light.Shadows = true
-	light.Enabled = level > 0
+	light.Enabled = on
 	mark(light)
 	light.Parent = tube
 	tube.CastShadow = false
@@ -213,11 +263,9 @@ function HallLight.light(tube: BasePart, level: number)
 	fill.Brightness = HallLight.FillBrightness * level
 	fill.Range = HallLight.FillRange
 	fill.Shadows = false
-	fill.Enabled = level > 0
+	fill.Enabled = on
 	mark(fill)
 	fill.Parent = anchor
-
-	haze(under(tube, "Haze", HallLight.HazeHeight), level)
 
 	if level > 0 then
 		tube.Material = Enum.Material.Neon
@@ -227,6 +275,13 @@ function HallLight.light(tube: BasePart, level: number)
 		tube.Material = Enum.Material.SmoothPlastic
 		tube.Color = DEAD_TUBE
 	end
+end
+
+-- Turns `tube` into a lit tube at `level` (0 to 1): its glow, its two lights and the dust under
+-- it. With `real` false it only glows, with no light thrown and no dust (a far fixture).
+function HallLight.light(tube: BasePart, level: number, real: boolean?)
+	HallLight.glow(tube, level, real)
+	haze(under(tube, "Haze", HallLight.HazeHeight), if real == false then 0 else level)
 end
 
 -- Sets a fixture's sensor dome to show what the building's eye is doing there.

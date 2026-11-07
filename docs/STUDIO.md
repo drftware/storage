@@ -278,6 +278,15 @@ verified: a doc page, Studio, or "untested".
   placed units. Filter to `IsDescendantOf(Workspace)`. Missing it, BehindDoors took the template
   for a shut unit in mid-hall and darkened the hall as you walked through (fixed Nov 7).
 - `insert_asset` tags what it inserts `Assistant:<guid>`; remove the tag before keeping the model.
+- **Triggering a prompt and judging low graphics from the MCP** (L-03, 2026-11-07): a key press
+  from `user_keyboard_input` reaches a prompt only while it's shown, and it shows only with the
+  camera facing it; then `prompt:InputHoldBegin()` and `InputHoldEnd()` in the Client view trigger
+  it. `settings().Rendering.QualityLevel` can be set from the Client view mid-Play (Level01 for a
+  low-graphics phone); put it back to Automatic.
+- **Sounds from the audio library** (L-03): `search_asset` with `assetType = "Audio"` finds them;
+  Pro Sound Effects' and APM's uploads are Roblox's licensed library and load in any game. Check
+  one in Edit with `ContentProvider:PreloadAsync` (status Success, `TimeLength` above 0) before
+  relying on it.
 - **One asset ID serves every branch:** after uploading the unit from one branch, re-upload from
   the branch you return to (set its `sha256` in `art/unit/assets.json` to anything and run the
   script; it writes the same hash back).

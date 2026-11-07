@@ -253,3 +253,23 @@ the caps' overlap that would flicker, the R-panels' slit). A junction's frame is
 own: Roblox's importer keeps each part's FBX axes (docs/STUDIO.md), so a square floor still knows
 its turn.
 
+
+## D-024 · 2026-11-07 · Motion lights: the server keeps state, each screen draws it
+Every hall fixture is a motion light the server owns (L-03, GDD "Lights"). Ten times a second the
+server hands a pure watch (`MotionLight`, Lune-tested) where every body that trips lights is; it
+wakes the fixtures whose watch area someone moved in and darkens those that saw nothing move for
+5 s, and only those changes reach players, as a string attribute on the fixture's model. A body
+"moves" at 1 stud a second or more, so holding still under a light puts you in the dark (the GDD's
+"hold still and you go dark to it"). A watch area is a Brix box zone under the fixture: 32 studs
+down the hall (the next light wakes about 16 studs before you reach it), 10 across (the hall and a
+stud into each doorway, so a unit's inside is unseen), floor to deck. Fixtures sit in a spatial
+hash on the 24-stud grid. A fixture is a motion light by its tag; players' root parts trip lights
+by theirs, which keepers will carry too, all but the Mannequin's. Each screen draws the state
+(HallLights): the eye flares hot and settles red, the sensor's relay clicks (Pro Sound Effects,
+from Roblox's audio library), the tube flickers twice and holds; falling dark, it cuts out with a
+softer click and the eye sinks back; cut by the breaker, tube and eye die silently. Real light only
+for the three lit fixtures nearest the camera (two lights each, D-017), with 8 studs of
+stickiness against swapping; the rest glow, with no dust. Not chosen: the server lighting fixtures
+itself (every Light instance replicated, and a client couldn't budget or flicker them without
+fighting the server), and a fixture staying lit while anyone stands in it (a real sensor, but it
+would kill the freeze). The hold, the speed and the areas are first guesses for the owner to tune.

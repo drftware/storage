@@ -8,8 +8,12 @@ local RunService = game:GetService("RunService")
 
 local Brix = require(ReplicatedStorage.Brix)
 local DevCorridor = require(script.DevCorridor)
+local MotionLights = require(script.MotionLights)
 
-local systems: { Brix.HostEntry } = {}
+local systems: { Brix.HostEntry } = {
+	-- The building's motion lights: which fixtures are lit, for every player.
+	{ slot = "motionLights", system = MotionLights.new() },
+}
 if RunService:IsStudio() then
 	-- A test hall of real units to try the doors in. Never on a live server.
 	table.insert(systems, { slot = "devCorridor", system = DevCorridor.new() })

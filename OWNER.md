@@ -15,11 +15,30 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-03, the motion lights (built Nov 7)
+
+- [ ] **Walk the hall:** Play (Device Simulator, Galaxy A16, Quality Level 01, then 21). The hall
+  starts dark, its eyes dim red. Take a step: the light over you clicks, its eye flares and the
+  tube flickers on; the one ahead wakes about a second before you reach it; those behind go dark
+  5 s after you leave them, with a softer click. Look for: the click (a relay tick from Roblox's
+  library) clear but not tiring; the flicker reading as a tube catching, not a glitch; the flare
+  readable from down the hall. Shots: `docs/art/L-03-*.jpg`.
+- [ ] **Freeze under a light:** stop dead under one. It should cut out about 5 s later and leave
+  you in the dark. Say if 5 s is right (`MotionLight.HoldSeconds`), and whether the dark when
+  nothing moves (`L-03-level01-dark-eyes.jpg`: near black, one red eye) is right until the
+  flashlight exists, or a still player should still make out the hall.
+- [ ] **The breaker:** at the post in the T's south half, Cut power (E): the north arm's two eyes
+  die grey and the arm stays black as you walk it; Restore power brings the eyes back.
+- [ ] **With a friend** (Test > Clients and Servers, 2 players): walk apart and back. Look for:
+  each of you waking lights for both screens; a friend fidgeting keeping a light on over you; the
+  farthest lit tubes glowing without light (only the 3 nearest throw it) and no pool popping on
+  and off as you walk. Read the View menu's Render stats with 4 or more lit.
+
 ## Now: walk the turn (built Nov 7, P0-03d)
 
 - [ ] **Walk it on a phone view:** Play with the Galaxy A16 in the Device Simulator at Quality
   Level 01 and again at 21. Walk to the hall's far end, where it meets a T under the red exit
-  sign: right is a dead end, left a dim hall to a corner and a dark hall past it. Look for: no
+  sign: right is a dead end, left a hall to a corner and a short hall past it. Look for: no
   seam in the floor or the ceiling where a junction meets a straight; the heavier girder over
   each place the ceiling's ribs turn; the steel column at each corner of wall; the blind corner
   feeling blind. Walk into the corners: nothing to snag on or see through. Shots so far, lit by
@@ -51,7 +70,7 @@ nowhere else.
 
 - [ ] **Walk the hall's middle:** Play, walk from the spawn to the far end and back through the
   middle of the hall, on both sides, past the spot where it went dark for you. Look for: the
-  lights never dropping and no white line on the floor. Then walk into 101, shut it on yourself
+  lights waking ahead and none dropping while you keep walking, and no white line on the floor. Then walk into 101, shut it on yourself
   (the steps under "Now: judge P0-02g"), and check the dark and the line under the door still
   come, and go again when it lifts.
 
@@ -84,8 +103,7 @@ nowhere else.
   red eye on its end you notice. Say if the eye should be bigger, brighter, or not red; and if
   the watching eyes should be dimmer (scarier as pin-pricks) or brighter (easier to read).
 - [ ] **Walk it yourself:** Play, walk the hall end to end, looking up as you go. Look for: the
-  three fixtures (a weak one by the spawn, the lit one, a dead one past the last units) hanging
-  straight between the joists, nothing floating or poking through the deck; and from last
+  three fixtures hanging straight between the joists, nothing floating or poking through the deck; and from last
   session, no line where two floor pieces meet (x = -12 and 12) and footsteps that sound like
   concrete.
 - [ ] **Decide later (the ladder):** the ceiling's lowest steel is now 12.8, so standing on a

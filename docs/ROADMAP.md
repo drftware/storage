@@ -109,20 +109,20 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   arms and a joist girder carries it across each Z arm's mouth; a steel column at every corner of
   wall. `CorridorKit.junction` lays one with its walls. The test hall ends in a T, a dead end down
   one arm, a corner up the other into a dark hall. Walking it and the render cost: `OWNER.md`.
-- [ ] **L-03 Motion lights the building watches.** Moved up from Phase 1 by the owner (Nov 7):
-  the hall should light as you walk it, like a real storage building, and mostly-dark fixtures
-  give the hall its pools of light and dark between. Fixtures wake for anything moving near them
-  and fall dark a while after it leaves; the server owns their state; real lights near the
-  camera, a glow farther out (GDD Lights). Built on the kit's fixture (P0-03b, `CorridorKit.hang`),
-  so L-01 later places fixtures through the same system. Each fixture's eye shows its state
-  (`HallLight.eye`): Watching while dark, a flare to Seen as it trips (with the click of the GDD),
-  Blind in a cut zone. Set every light through `HallLight` so it
-  keeps the tag and lit brightness that `BehindDoors` scales for a player shut in a unit.
-  Brix: Zone for each fixture's watch area. Budget: three lit fixtures awake near a player
-  (each is two lights, D-017); the owner thinks that's enough and judges it once built (Nov 7).
+- [x] **L-03 Motion lights the building watches.** Done Nov 7 (D-024): every hall fixture is a
+  motion light the server owns (`MotionLights`, its rules in the pure `MotionLight`): anything
+  moving in its Brix box zone wakes it, and it falls dark 5 s after the last movement it saw, so
+  freezing under it puts you in the dark. Only state changes cross the wire; each screen draws
+  them (`HallLights`): the eye's flare, the relay's click and the tube's flicker as it trips, a
+  softer click and the eye sinking as it falls dark, silent death when the breaker cuts it. Real
+  light for the three lit fixtures nearest the camera, a glow beyond. The test hall's five
+  fixtures are motion lights, with a breaker post in the T for the north arm. Feel and two
+  players: `OWNER.md`.
 - [ ] **P0-04 The door's sounds and feel.** The quiet scrape of a peek, the loud rattle of an
   open (keepers hear it), the bang and bounce of a slam with a little camera shake nearby, the
   latch's clack, the padlock; from Roblox's audio library, timed off `RollUpDoor.play`'s duration.
+  L-03's relay click shows the way: `search_asset` for Audio, Pro Sound Effects' library, checked
+  to load with `ContentProvider:PreloadAsync` (docs/STUDIO.md).
 
 ## Phase 1: The loop, with real assets
 
@@ -149,6 +149,7 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
 - [ ] **L-05 Notes, the keypad and the elevator.** The floor's 4-digit code on sticky notes, the
   keypad, the gate that shuts 30 s after the last digit (Dandy's World). Needs the elevator,
   gate, keypad and note art first. Brix: Zone for "aboard", the Clock for the gate's timer.
+  A wrong code flashes every light on the floor (GDD): add that to `MotionLights` beside `cut`.
 - [ ] **L-06 The Mannequin.** The first keeper, at no more than player speed: a data row on
   Brix's Pursuit (floor pathing, a cone reach). Needs its model and animations first, and Brix's
   ENG-06 and ENG-07.
@@ -192,6 +193,10 @@ Atmosphere effects wait until the loop is solid (owner, Nov 7); the haze stays a
   links read as a beaded line either way.
 - A faint red glow on the housing round a Seen eye (a tiny light) would sell the flare, but costs
   a light per tripped fixture; try it only if L-03's light budget has room.
+- A lit tube's hum, faint and close, so a lit stretch sounds alive and a dark one dead (L-03;
+  ambience, so after the loop).
+- If a far fixture's pool shows popping on or off as the three nearest change (L-03's budget),
+  fade its light over a quarter second instead.
 - Each kit FBX brings its own copy of the unit's texture sets (Concrete, TrimSheet, and now Facade
   and Partition). If texture memory on a low-end phone shows the copies, `prepare` could point the
   kit's SurfaceAppearances at the unit template's maps (plugin security: the command bar can).
