@@ -143,6 +143,12 @@ verified: a doc page, Studio, or "untested".
   doubling a light's brightness doubled both (low graphics doesn't cap it). A light level with
   the walls (a fill at door height) narrows the gap; see D-017. A light fades to nothing at its
   Range at full quality, so a fill must reach a little past what it should light.
+- **Particles in the hall** (Play, 2026-11-07, P0-02i): a ParticleEmitter at LightInfluence 1
+  is lit by local lights at both Level08 and Level21 and goes dark when they switch off, but low
+  graphics lights it about twice as brightly. At low graphics a puff that cuts into the ceiling
+  or a wall shows a hard straight edge (full quality fades it softly), so keep puffs clear of
+  geometry. `Emit` called on the server shows on clients already watching. Compare looks with a
+  fresh burst: a steady emitter's puffs are at different ages from one capture to the next.
 - **Neon blooms into blobs at low graphics:** a neon strip brighter than about 150 grey smeared
   into round blotches at Level08 (Lighting's Bloom, Threshold 2). Keep small glowing details at
   mid grey; Neon still reads white.

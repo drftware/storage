@@ -29,17 +29,14 @@ nowhere else.
   Automatic, Studio switches between low graphics and full quality by itself mid-Play, which is
   the light changing between your two screenshots (Nov 6). P0-02h brought the two looks closer.
 
-## Now: judge P0-02h (built Nov 7)
+## Now: judge P0-02i (built Nov 7)
 
-- [ ] **Judge the shots:** `docs/art/P0-02h-hall.jpg` is the hall from the spawn, top row before,
-  bottom row now, low graphics left and full quality right. `P0-02h-open-101.jpg` is the same
-  layout looking into open unit 101. Look for: the bottom pair much closer than the top pair, a
-  pool of light under the far tube, and 101's walls dimly readable at both (it was black at full
-  quality). Known: low graphics is still about 1.7x brighter, and the facades near the spawn still
-  read near white there. `P0-02h-inside-105.jpg` checks a shut unit is still dark at low graphics.
-- [ ] **Feel it yourself:** Play on Automatic, walk the hall from the spawn, open 101 (E) and look
-  in. Look for: when Studio switches quality by itself, a small dimming, not a different hall.
-  Say if you want them closer still (more of the light from the fill, at some cost to the pools).
-- [ ] **The light budget:** each lit fixture is now two real lights (the tube and its fill), so the
-  6-light default (D-015) means three lit fixtures awake at once on a phone (D-017). Say if motion
-  lights (L-03) should allow more.
+- [ ] **Judge the shots:** `docs/art/P0-02i-haze.jpg`, low graphics left and full quality right.
+  Top row: the hall from the spawn, a grey cloud under the far lit tube. Bottom row: standing
+  near that tube, the dust hanging round it. Look for: grey air you'd notice around a lit tube
+  without it reading as smoke or fire, about the same at both qualities, the far doors still
+  showing through. Say if it should be thicker or fainter. Known: at low graphics the cloud's top
+  can show a faint straight edge near the ceiling.
+- [ ] **Feel it yourself:** Play, walk from the spawn to the far tube and stand under it. Look
+  for: the dust drifting slowly, never popping in or out, and nothing hazy in a dark stretch.
+  `docs/art/P0-02i-inside-105.jpg` checks a shut unit is still dark at low graphics.

@@ -12,7 +12,8 @@
 	Below graphics quality about 10 (Studio's levels; a low-graphics phone) lights ignore their cone
 	and shine through walls (D-015), and Automatic quality switches levels mid-play. So a fixture is
 	two lights: the tube's short, shadowed pool on the floor, and a shadowless fill at door height
-	that lights the walls and an open unit's inside alike at every quality (D-017).
+	that lights the walls and an open unit's inside alike at every quality (D-017). Under a lit
+	tube a few slow puffs of dust glow grey in the air, the look sheets' haze (D-018).
 
 	`HallLight.light(tube, level)` turns a fixture's diffuser part into a lit tube: level 1 is a
 	fixture at full strength, `HallLight.Low` a weaker one far down the hall, 0 a dead one.
@@ -55,6 +56,33 @@ HallLight.FillBrightness = 0.9
 -- next fixture's stretch. Low graphics spreads light farther than full quality in the same range.
 HallLight.FillRange = 20
 
+-- The haze: dust hanging in the air under a lit tube, glowing grey as in the look sheets, so a
+-- lit stretch of hall reads as somewhere you could be seen. A few slow puffs of Roblox's smoke
+-- texture drift around a point under the tube (P0-02i).
+-- Where the puffs gather, in studs above the floor: low enough that none reaches the ceiling
+-- (13.4), because low graphics draws a hard line where a puff cuts into it.
+HallLight.HazeHeight = 9.6
+-- Pale cold grey, like the tube. Dimmed with the fixture's level, so a weak tube's haze is faint.
+HallLight.HazeColour = Color3.fromRGB(190, 195, 200)
+-- How much the puffs take their brightness from the hall's lights rather than glowing by
+-- themselves. Low graphics lights a puff about twice as brightly as full quality does, as it does
+-- the walls (D-017), so most of it is their own glow: the two looks stay close.
+HallLight.HazeLightInfluence = 0.4
+-- A puff at its thickest: the far doors still show through the cloud.
+HallLight.HazeTransparency = 0.5
+-- A puff's width as it starts and as it spreads out, in studs: kept narrower than the hall
+-- (8 studs), so it doesn't cut into the facades either.
+HallLight.HazeSizeStart = 4
+HallLight.HazeSizeEnd = 6
+-- Puffs per second and how long each lives: about six in the air per lit fixture, few enough for
+-- a low-end phone (each is see-through, so it costs its whole screen area to draw).
+HallLight.HazeRate = 0.4
+HallLight.HazeLifetime = NumberRange.new(12, 16)
+-- How fast a puff drifts, in studs a second: slow enough that the cloud seems to hang.
+HallLight.HazeDrift = NumberRange.new(0.12, 0.28)
+-- Puffs thrown out at once when a fixture comes on, so the air is already dusty under it.
+HallLight.HazeBurst = 5
+
 -- The stairwell's exit sign at the end of a hall: the one warm thing in it, a red smear on the
 -- last doors that pulls the eye down the hall.
 HallLight.ExitColour = Color3.fromRGB(255, 42, 26)
@@ -79,6 +107,61 @@ local function mark(light: Light)
 	light:AddTag(HallLight.Tag)
 end
 
+-- The attachment named `name` under `tube`, hanging `height` studs above the floor; made if missing.
+local function under(tube: BasePart, name: string, height: number): Attachment
+	local found = tube:FindFirstChild(name)
+	local anchor: Attachment
+	if found and found:IsA("Attachment") then
+		anchor = found
+	else
+		anchor = Instance.new("Attachment")
+		anchor.Name = name
+		anchor.Parent = tube
+	end
+	anchor.Position = Vector3.new(0, height - HallLight.Height, 0)
+	return anchor
+end
+
+local function fadeInOut(peak: number): NumberSequence
+	-- A puff thickens in, hangs, and thins out again, so none pops in or out.
+	return NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 1),
+		NumberSequenceKeypoint.new(0.25, peak),
+		NumberSequenceKeypoint.new(0.7, peak),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+end
+local HAZE_SHOWN = fadeInOut(HallLight.HazeTransparency)
+local HAZE_HIDDEN = NumberSequence.new(1)
+
+-- The dust under a fixture at `level`. A dead fixture's dust vanishes at once (a puff's look is
+-- read from the emitter every frame, so hiding them reaches those already in the air).
+local function haze(anchor: Attachment, level: number)
+	local found = anchor:FindFirstChildWhichIsA("ParticleEmitter")
+	local wasLit = found ~= nil and found.Enabled
+	local dust = found or Instance.new("ParticleEmitter")
+	dust.Texture = "rbxasset://textures/particles/smoke_main.dds"
+	dust.Color = ColorSequence.new(HallLight.HazeColour:Lerp(Color3.new(), 1 - level))
+	dust.LightInfluence = HallLight.HazeLightInfluence
+	dust.LightEmission = 0
+	dust.Size = NumberSequence.new(HallLight.HazeSizeStart, HallLight.HazeSizeEnd)
+	dust.Transparency = if level > 0 then HAZE_SHOWN else HAZE_HIDDEN
+	dust.Lifetime = HallLight.HazeLifetime
+	dust.Rate = HallLight.HazeRate
+	dust.Speed = HallLight.HazeDrift
+	-- Puffs drift outward in a flat fan, so the cloud spreads along the hall, not into the ceiling.
+	dust.EmissionDirection = Enum.NormalId.Right
+	dust.SpreadAngle = Vector2.new(180, 12)
+	dust.Rotation = NumberRange.new(0, 360)
+	dust.RotSpeed = NumberRange.new(-3, 3)
+	dust.Enabled = level > 0
+	dust.Parent = anchor
+	-- Emitting replicates to players already watching; the server is where fixtures are lit.
+	if level > 0 and not wasLit then
+		dust:Emit(HallLight.HazeBurst)
+	end
+end
+
 -- Turns `tube` (the fixture's diffuser part) into a lit tube at `level` (0 to 1).
 function HallLight.light(tube: BasePart, level: number)
 	local light = tube:FindFirstChildWhichIsA("SurfaceLight") or Instance.new("SurfaceLight")
@@ -94,16 +177,7 @@ function HallLight.light(tube: BasePart, level: number)
 	tube.CastShadow = false
 
 	-- The fill hangs at door height on an attachment under the tube, so it moves with the fixture.
-	local found = tube:FindFirstChild("Fill")
-	local anchor: Attachment
-	if found and found:IsA("Attachment") then
-		anchor = found
-	else
-		anchor = Instance.new("Attachment")
-		anchor.Name = "Fill"
-		anchor.Parent = tube
-	end
-	anchor.Position = Vector3.new(0, HallLight.FillHeight - HallLight.Height, 0)
+	local anchor = under(tube, "Fill", HallLight.FillHeight)
 	local fill = anchor:FindFirstChildWhichIsA("PointLight") or Instance.new("PointLight")
 	fill.Color = HallLight.Colour
 	fill.Brightness = HallLight.FillBrightness * level
@@ -112,6 +186,8 @@ function HallLight.light(tube: BasePart, level: number)
 	fill.Enabled = level > 0
 	mark(fill)
 	fill.Parent = anchor
+
+	haze(under(tube, "Haze", HallLight.HazeHeight), level)
 
 	if level > 0 then
 		tube.Material = Enum.Material.Neon

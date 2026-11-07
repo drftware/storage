@@ -152,3 +152,19 @@ readable at both (the owner's pick, Nov 6). Cost: two real lights per lit fixtur
 budget (D-015) holds three lit fixtures; the fill is tagged like the tube, so `BehindDoors` dims
 it for a player shut in. Not taken: a fill at the tube's height (lit the units' tops, closed less
 of the gap), guessing the device's quality (Roblox doesn't say on Automatic).
+
+## D-018 · 2026-11-07 · The haze is a few dust puffs under each lit tube, mostly self-lit
+The look sheets show grey air glowing around a lit fixture. Roblox has no light shafts or
+volumetric fog indoors, so each lit tube carries a ParticleEmitter with Roblox's built-in smoke
+texture: about six slow puffs, 4 to 6 studs wide, gathered 2.5 studs under the tube
+(`HallLight.HazeHeight`). Measured in Play: low graphics draws a hard line where a puff cuts into
+the ceiling (full quality softens it), so the puffs hang low enough to miss it, and spread in a
+flat fan along the hall. A puff fully lit by the hall (LightInfluence 1) dims with its fixture but
+reads about twice as bright at low graphics as at full quality, like the walls (D-017), and faint
+at full quality; at 0.4 the two looks sit within about 1.3x from the spawn. The self-lit part
+can't dim with the light, so a fixture's level scales the puffs' colour, a dead fixture hides
+them at once (transparency is read live), and a fixture coming on throws a burst of five
+(`Emit` on the server reaches players already watching). Shut in a unit you can't see the hall's
+air, so `BehindDoors` needn't dim it (checked at Level08). Not tried, since the puffs did it: a
+glow part, more bloom (it already smears bright neon into blobs at low graphics), a thicker
+Atmosphere (it would fog dead stretches as much as lit ones).

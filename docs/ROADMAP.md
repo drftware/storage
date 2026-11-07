@@ -73,14 +73,17 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   about 1.7x full quality (was 1.9x in the hall, 2.35x in an open unit), and an open unit's
   walls read dimly at both (`docs/art/P0-02h-hall.jpg`, `-open-101.jpg`; the shut-in dark holds,
   `-inside-105.jpg`).
-- [ ] **P0-02i The hall's haze, cost and phone shots.** The sheets' grey haze glowing under the
-  ceiling near a lit fixture: try slow dust particles lit by the fixture (Roblox's built-in smoke
-  texture, few particles, LightInfluence 1 so they dim with the light and go dark with a dead
-  fixture), a soft glow part, or bloom; judge at Level08 and Level21 and keep the see-through
-  area small for low-end Android. Then the hall's triangle and draw-call counts at both levels
-  (View > Stats, Render) noted in docs/STUDIO.md, and phone-size shots in the Device Simulator
-  at low and full quality. If the owner wants the two looks closer still, the next lever is
-  the fill's share (more fill, less tube).
+- [x] **P0-02i The hall's haze.** Under each lit tube a few slow puffs of dust glow grey, as in
+  the look sheets: Roblox's smoke texture, about six in the air per lit fixture, partly lit by
+  the hall so low graphics and full quality stay close (D-018; `docs/art/P0-02i-haze.jpg`). A dead
+  fixture's dust vanishes at once; a fixture coming on throws a burst so the air is already dusty.
+  The shut-in dark holds (`P0-02i-inside-105.jpg`).
+- [ ] **P0-02j The hall's cost and phone shots.** The hall's triangle and draw-call counts at
+  Level08 and Level21 (View > Stats, Render), with the haze, noted in docs/STUDIO.md; then
+  phone-size shots in the Device Simulator at low and full quality (the Studio MCP skill
+  `rbx-device-simulator-lua`). If the haze costs too much on a phone, fewer puffs
+  (`HallLight.HazeRate`) before smaller ones. If the owner wants the two looks closer still, the
+  lever is the fill's share (more fill, less tube).
 - [ ] **P0-03 The corridor kit (art).** Hall floor and ceiling, end walls and corners for the
   GDD's tile set (straight, corner, T, cross, dead end), and the motion-light fixture (the
   building's eyes), built the unit's way and judged at phone size.
@@ -91,7 +94,8 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   camera, a glow farther out (GDD Lights). Built on the test hall's fixtures (P0-03's kit), so
   L-01 later places fixtures through the same system. Set every light through `HallLight` so it
   keeps the tag and lit brightness that `BehindDoors` scales for a player shut in a unit.
-  Brix: Zone for each fixture's watch area.
+  Brix: Zone for each fixture's watch area. Budget: three lit fixtures awake near a player
+  (each is two lights, D-017); the owner thinks that's enough and judges it once built (Nov 7).
 - [ ] **P0-04 The door's sounds and feel.** The quiet scrape of a peek, the loud rattle of an
   open (keepers hear it), the bang and bounce of a slam with a little camera shake nearby, the
   latch's clack, the padlock; from Roblox's audio library, timed off `RollUpDoor.play`'s duration.
@@ -145,3 +149,9 @@ launch.
   size, since it's the bolt cutters' target: a bigger lock, a brighter body, or a hasp plate.
 - The cursor hint shows once per session; once ever needs the saved profile (Phase 1's player
   data). On a Mac the key cap could read "Option" instead of "Alt".
+- The haze starts clear for a player who joins late or walks into a fixture streamed in from far
+  off: the air under it fills over about ten seconds (the burst only reaches players already
+  watching). A client could throw its own burst when a lit fixture's dust streams in.
+- At low graphics a haze puff cuts a faint straight edge where it meets the ceiling's corner
+  (`docs/art/P0-02i-haze.jpg`, bottom left); full quality softens it. The corridor kit's ceiling
+  height may move it.
