@@ -12,10 +12,10 @@
 	A lone unit 700 studs down the hall tests streaming: "Go far" by the spawn sends you there and
 	"Come back" returns you, so the hall's units stream out and back in with their doors as left.
 
-	The hall's floor and ceiling are three of the corridor kit's straight pieces (P0-03a), with
-	plain walls past the last units, and its lights are the kit's fixtures (P0-03b), each midway
-	between two joists; without the kit's templates in the place it falls back to plain blocks and
-	bare tubes. The kit's dead end replaces the end walls here (P0-03c).
+	The hall's floor and ceiling are three of the corridor kit's straight pieces (P0-03a), its
+	lights are the kit's fixtures (P0-03b), each midway between two joists, and past the last units
+	each side is the kit's plain wall, with a dead end closing each end of the hall (P0-03c). Without
+	the kit's templates in the place it falls back to plain blocks and bare tubes.
 	The prompts call RollUpDoor directly; the GDD's door state machine replaces them (L-02).
 ]]
 local Players = game:GetService("Players")
@@ -34,10 +34,10 @@ local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
 local HALL_HALF_WIDTH = 4 -- an 8-stud hall: door faces at z = -4 and z = +4
 local UNIT_XS = { -18, -6, 6, 18 } -- four 12-stud units a side, wall to wall
 local UNITS_HALF_LENGTH = 24 -- the last units' outer walls
-local BUILDING_HALF_LENGTH = 36 -- three 24-stud kit pieces; end walls at x = -36 and 36
+local BUILDING_HALF_LENGTH = 36 -- three 24-stud kit pieces; dead ends at x = -36 and 36
 local BUILDING_HALF_DEPTH = 17 -- without the kit: side walls just behind the units' backs
 local CEILING = 13.4 -- without the kit: a plain ceiling, as in the look sheets
-local BAY_WALL = 0.5 -- the plain walls along the hall past the last units
+local BAY_WALL = 0.5 -- without the kit: the plain blocks along the hall past the last units
 local FLOOR_TOP = -0.05 -- just under the units' own floors (top at 0), so the two never flicker
 local FAR_X = 700 -- far past the streaming target radius (256), so the hall streams out
 
@@ -64,7 +64,9 @@ local HALL_FIXTURES: { Fixture } = {
 	{ x = 30, level = 0, eye = "Watching" },
 }
 local EXIT_SIGN_SIZE = Vector3.new(0.2, 0.7, 1.8)
-local EXIT_SIGN_HEIGHT = 9.95 -- over the stairwell door's frame, as in the sheets
+-- High on the far dead end, just under its cap (9.88), where exit signs hang: lit from across
+-- the hall's length, so you see where the hall stops before you reach it.
+local EXIT_SIGN_HEIGHT = 9.4
 
 local CONCRETE = Color3.fromRGB(74, 74, 76)
 -- Light concrete, like the sheets' floor, so a fixture's pool reads on it, where the kit isn't.
@@ -112,6 +114,13 @@ local function block(
 	return p
 end
 
+-- Where a door's outer face goes: at x on one side of the hall, looking across it. A plain wall
+-- stands on the same line.
+local function doorFace(x: number, side: number): CFrame
+	local at = Vector3.new(x, 0, side * HALL_HALF_WIDTH)
+	return CFrame.lookAt(at, at - Vector3.zAxis * side)
+end
+
 -- A hall light at f.x: the kit's fixture in a kit hall, or a bare tube where its lens would hang.
 local function fixture(f: Fixture, kit: boolean, parent: Instance)
 	if kit and CorridorKit.template("Fixture") then
@@ -132,8 +141,9 @@ local function fixture(f: Fixture, kit: boolean, parent: Instance)
 end
 
 -- A closed box around a stretch of hall: floor, ceiling, end walls and side walls. With `kit`,
--- the floor and ceiling are the corridor kit's straight pieces, the walls rise to their deck, and
--- plain walls line the hall past the last units, where no unit closes its side.
+-- the floor and ceiling are the corridor kit's straight pieces, the walls rise to their deck, the
+-- kit's plain walls line the hall past the last units, where no unit closes its side, and its dead
+-- ends close the hall's ends (plain blocks where the place lacks those templates).
 local function building(
 	name: string,
 	centreX: number,
@@ -157,8 +167,18 @@ local function building(
 			CorridorKit.place("Straight", CFrame.new(x, 0, 0), folder)
 		end
 		local bay = halfLength - UNITS_HALF_LENGTH
+		local slot = CorridorKit.Specs.Walls.Wall.Width
+		local walls = CorridorKit.template("Wall") ~= nil
+		assert(bay % slot == 0, `DevCorridor: {name}'s end bays aren't whole plain walls`)
 		for _, side in { -1, 1 } do
 			for _, toEnd in { -1, 1 } do
+				if walls then
+					for i = 0, bay // slot - 1 do
+						local x = centreX + toEnd * (UNITS_HALF_LENGTH + slot * (i + 0.5))
+						CorridorKit.wall("Wall", doorFace(x, side), UnitKit.Colours.Wall, folder)
+					end
+					continue
+				end
 				block(
 					"BayWall",
 					Vector3.new(bay, height, BAY_WALL),
@@ -188,16 +208,27 @@ local function building(
 			folder
 		)
 	end
+	local deadEnds = kit and CorridorKit.template("DeadEnd") ~= nil
 	for _, side in { -1, 1 } do
 		local endX = centreX + side * (halfLength + 0.5)
 		local wallZ = side * (depth / 2 + 0.5)
-		block(
-			"EndWall",
-			Vector3.new(1, height, depth),
-			CFrame.new(endX, FLOOR_TOP + height / 2, 0),
-			CONCRETE,
-			folder
-		)
+		if deadEnds then
+			local face = Vector3.new(centreX + side * halfLength, 0, 0)
+			CorridorKit.wall(
+				"DeadEnd",
+				CFrame.lookAt(face, face - Vector3.xAxis * side),
+				UnitKit.Colours.Wall,
+				folder
+			)
+		else
+			block(
+				"EndWall",
+				Vector3.new(1, height, depth),
+				CFrame.new(endX, FLOOR_TOP + height / 2, 0),
+				CONCRETE,
+				folder
+			)
+		end
 		block(
 			"SideWall",
 			Vector3.new(length, height, 1),
@@ -211,12 +242,6 @@ local function building(
 	end
 	folder.Parent = parent
 	return folder
-end
-
--- Where a door's outer face goes: at x on one side of the hall, looking across it.
-local function doorFace(x: number, side: number): CFrame
-	local at = Vector3.new(x, 0, side * HALL_HALF_WIDTH)
-	return CFrame.lookAt(at, at - Vector3.zAxis * side)
 end
 
 local function specOf(unit: Model): Specs.Spec
@@ -399,6 +424,11 @@ local function build(): Folder?
 			'DevCorridor: no corridor piece at ReplicatedStorage.Corridor.Straight, so the hall is plain blocks; import it (art/corridor/README.md, "Into Studio")'
 		)
 	end
+	if kit and not (CorridorKit.template("Wall") and CorridorKit.template("DeadEnd")) then
+		warn(
+			'DevCorridor: no plain wall or dead end at ReplicatedStorage.Corridor, so the hall\'s ends are plain blocks; import them (art/corridor/README.md, "Into Studio")'
+		)
+	end
 	if kit and not CorridorKit.template("Fixture") then
 		warn(
 			'DevCorridor: no fixture at ReplicatedStorage.Corridor.Fixture, so the hall lights are bare tubes; import it (art/corridor/README.md, "Into Studio")'
@@ -411,12 +441,13 @@ local function build(): Folder?
 	local sign = block(
 		"ExitSign",
 		EXIT_SIGN_SIZE,
-		CFrame.new(BUILDING_HALF_LENGTH - EXIT_SIGN_SIZE.X / 2, EXIT_SIGN_HEIGHT, 0),
+		-- on the far end's face, clear of its kick plate and posts (0.07 proud)
+		CFrame.new(BUILDING_HALF_LENGTH - EXIT_SIGN_SIZE.X / 2 - 0.01, EXIT_SIGN_HEIGHT, 0),
 		HallLight.ExitColour,
 		hall
 	)
 	sign.CanCollide = false
-	HallLight.exitSign(sign)
+	HallLight.exitSign(sign, -Vector3.xAxis)
 	building("FarHall", FAR_X, 12, { { x = FAR_X, level = 1, eye = "Watching" } }, false, folder)
 
 	local count = 0

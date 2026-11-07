@@ -217,3 +217,19 @@ at 0.26 only the nearest eye in a dark hall read on a phone. Neon only, no light
 light budget stays at two per lit fixture (D-017). Not chosen: a separate pinprick LED beside a
 white dome (real, but a pixel or two on a phone); the sensor mid-lens (it would split the tube
 the light was tuned on).
+
+## D-022 · 2026-11-07 · The hall's walls are a unit's front without the door
+Where no unit stands, and at a hall's dead end, the wall is the corridor wall the units' fronts
+are: the same painted Facade panels (painted per floor, like the units), posts, diamond kick plate
+and cap at 10, so the hall reads as one building and a stretch with no doors reads as a blank wall,
+nothing to hide behind. Above the cap an R-panel (the units' Partition set) rises to the deck: a
+unit is open over its wire top, a wall isn't, which is what a real building has where a room or the
+outside lies behind. The plain wall is one M unit wide (12) and its frame is a unit's door face, so
+a hall side is a row of 12-stud slots, each a unit or a plain wall (L-01). The dead end is a wall
+placed at a piece's open end, not a piece of its own: it spans the whole deck (32), so any hall end
+can be closed, and a dead-end tile is a straight piece plus one. Its panel's valleys sit flush with
+the deck's end, so no gap opens where the flutes stop. Three MeshParts each (Facade, Trim, Panel);
+a wall's frame is found from its flat Facade and the Panel behind it. Not chosen: concrete block
+walls (a second material the building doesn't otherwise have); a plain wall full height in the
+facade paint (its texture is drawn for a 10-stud wall); a dead end with its own floor and ceiling
+(a second straight piece's worth of mesh for one wall).

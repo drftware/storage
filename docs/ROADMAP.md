@@ -97,11 +97,13 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   (`HallLight.eye`). `CorridorKit.hang` puts one up; the test hall has three (weak, lit, dead).
   About 2,000 triangles each (half of it chain), three draw calls shared by all fixtures; from the
   spawn the hall is now 71,400 triangles in 21 opaque draws (`docs/art/P0-03b-phone.jpg`).
-- [ ] **P0-03c The plain wall and the dead end.** The wall a hall has where no unit stands (the
-  test hall's end bays are plain blocks until then), and the dead end, on the straight piece's
-  grid (8-wide hall, ceiling over a 12-deep unit row each side). The dead end is one you back out
-  of: its end wall at the hall's end, nothing to hide behind. Replaces the test hall's end walls
-  and bay walls.
+- [x] **P0-03c The plain wall and the dead end** (D-022). A unit's front without the door: the
+  plain wall takes a unit's 12-stud place on the door faces' line, the dead end closes the hall's
+  end and the deck over the whole span; both are the units' painted corridor wall to 10 with an
+  R-panel above to the deck. `CorridorKit.wall` puts one up, painted like the floor's units. The
+  test hall has four plain walls and two dead ends; the exit sign hangs on the far one, its glow
+  moved off the wall so the wall reads as a wall. From the spawn: 73,800 triangles in 28 opaque
+  draws (`docs/art/P0-03c-*.jpg`).
 - [ ] **P0-03d The corner, T and cross.** Where halls meet, for the GDD's tile set: the floor's
   joints and the deck's ribs and joists carried round a turn and across a crossing without a seam.
 - [ ] **L-03 Motion lights the building watches.** Moved up from Phase 1 by the owner (Nov 7):
@@ -178,3 +180,9 @@ Atmosphere effects wait until the loop is solid (owner, Nov 7); the haze stays a
   links read as a beaded line either way.
 - A faint red glow on the housing round a Seen eye (a tiny light) would sell the flare, but costs
   a light per tripped fixture; try it only if L-03's light budget has room.
+- Each kit FBX brings its own copy of the unit's texture sets (Concrete, TrimSheet, and now Facade
+  and Partition). If texture memory on a low-end phone shows the copies, `prepare` could point the
+  kit's SurfaceAppearances at the unit template's maps (plugin security: the command bar can).
+- The slot behind a plain wall is empty, with no floor: unseen from the hall, but from a unit's
+  wire top (the ladder) you could look down into it. When the ladder comes, give it a floor or a
+  closed top.

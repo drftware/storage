@@ -4,7 +4,11 @@
 
 	The straight piece is 24 studs of hall: the concrete floor between the two rows of doors, and
 	the steel ceiling over the hall and the units either side, a corrugated deck on open-web joists.
-	The corner, T, cross and dead end join it next (P0-03c).
+	The corner, T and cross join it next (P0-03d).
+
+	The hall's walls are a unit's front without the door, so the hall reads as one building: the
+	plain wall (Wall) stands where no unit does, one unit wide, and the dead end (DeadEnd) closes
+	the hall's end and the deck over it. `wall` puts one up, painted like the units on its floor.
 
 	The hall light fixture is the building's eye: a steel strip light hung on two chains from the
 	deck, its lens the part HallLight lights, and a motion sensor on one end whose dome glows when
@@ -14,16 +18,19 @@
 	Each template lives in the place at ReplicatedStorage.Corridor.<Name>, because Rojo can't sync
 	imported meshes (D-009). `place` clones one into a floor: the test hall (DevCorridor) does now,
 	the floor generator (L-01) will. A piece's frame is the middle of its hall floor, on the floor,
-	with the hall running along its X; the fixture's is on the floor under its lens's middle, with
-	its sensor towards +X.
+	with the hall running along its X; a wall's is the middle of its hall face, on the floor,
+	looking into the hall, as a unit's door face is; the fixture's is on the floor under its lens's
+	middle, with its sensor towards +X.
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Specs = require(script.Specs)
 
 export type PieceName = "Straight"
-export type TemplateName = PieceName | "Fixture"
+export type WallName = "Wall" | "DeadEnd"
+export type TemplateName = PieceName | WallName | "Fixture"
 export type Piece = typeof(Specs.Pieces.Straight)
+export type Wall = typeof(Specs.Walls.Wall)
 -- A hung fixture and the two parts the game lights: the lens (HallLight.light) and the sensor's
 -- dome (HallLight.eye).
 export type Fixture = { model: Model, diffuser: BasePart, eye: BasePart }
@@ -31,11 +38,12 @@ export type Fixture = { model: Model, diffuser: BasePart, eye: BasePart }
 local CorridorKit = {}
 CorridorKit.Specs = Specs
 
-local function pieceSpec(name: PieceName): Piece
-	-- any: a piece's name keys the generated table, which strict mode can't index by a string
-	local spec = (Specs.Pieces :: any)[name]
-	assert(spec, `CorridorKit: no spec for the piece {name}`)
-	return spec
+-- A piece's or a wall's colliders, from the generated spec.
+local function collidersOf(name: TemplateName): { [string]: { Position: Vector3, Size: Vector3 } }
+	-- any: a name keys the generated tables, which strict mode can't index by a string
+	local spec = (Specs.Pieces :: any)[name] or (Specs.Walls :: any)[name]
+	assert(spec, `CorridorKit: no spec for {name}`)
+	return spec.Colliders
 end
 
 -- A template, or nil while the place doesn't have it.
@@ -70,11 +78,22 @@ local function box(p: BasePart): (Vector3, Vector3, number, Vector3)
 end
 
 -- Where a template's frame is. A hall piece's is the top middle of its Floor, with the hall along
--- X. The fixture's is on the floor under its lens's middle, with its sensor's eye towards +X.
+-- X. A wall's is the bottom middle of its Facade, flat on the face, looking into the hall: away
+-- from the Panel, whose middle lies behind the face (the export checks it). The fixture's is on
+-- the floor under its lens's middle, with its sensor's eye towards +X.
 function CorridorKit.frame(model: Model): CFrame
 	if model:FindFirstChild("Floor", true) then
 		local middle, up, height, along = box(part(model, "Floor"))
 		return CFrame.fromMatrix(middle + up * (height / 2), along, Vector3.yAxis)
+	end
+	if model:FindFirstChild("Facade", true) then
+		local middle, up, height, along = box(part(model, "Facade"))
+		local hall = along:Cross(Vector3.yAxis)
+		if (middle - part(model, "Panel").Position):Dot(hall) < 0 then
+			hall = -hall
+		end
+		local floor = middle - up * (height / 2)
+		return CFrame.lookAt(floor, floor + hall)
 	end
 	local middle, _, _, along = box(part(model, "Diffuser"))
 	if (part(model, "Eye").Position - middle):Dot(along) < 0 then
@@ -85,7 +104,7 @@ function CorridorKit.frame(model: Model): CFrame
 end
 
 -- Makes an inserted model a template: anchored, its meshes out of physics, pivoted on its frame,
--- streamed whole. A hall piece gets plain boxes from the spec to stand and bump on. Run once in
+-- streamed whole. A hall piece or a wall gets plain boxes from the spec to stand and bump on. Run once in
 -- Edit, from the command bar or Studio's MCP (art/corridor/README.md, "Into Studio").
 function CorridorKit.prepare(piece: Model, name: TemplateName)
 	local frame = CorridorKit.frame(piece)
@@ -120,9 +139,11 @@ function CorridorKit.prepare(piece: Model, name: TemplateName)
 		return
 	end
 
-	local spec = pieceSpec(name)
-	-- the floor is the ground: nothing lies under it to shade
-	part(piece, "Floor").CastShadow = false
+	local floor = piece:FindFirstChild("Floor", true)
+	if floor and floor:IsA("BasePart") then
+		-- the floor is the ground: nothing lies under it to shade
+		floor.CastShadow = false
+	end
 
 	local old = piece:FindFirstChild("Colliders")
 	if old then
@@ -130,7 +151,7 @@ function CorridorKit.prepare(piece: Model, name: TemplateName)
 	end
 	local folder = Instance.new("Folder")
 	folder.Name = "Colliders"
-	for colliderName, c in spec.Colliders :: any do
+	for colliderName, c in collidersOf(name) do
 		local p = Instance.new("Part")
 		p.Name = colliderName
 		p.Anchored = true
@@ -158,6 +179,14 @@ function CorridorKit.place(name: TemplateName, at: CFrame, parent: Instance): Mo
 	piece:PivotTo(at)
 	piece.Parent = parent
 	return piece
+end
+
+-- Puts up a copy of a wall with its frame at `at`: the middle of its hall face, on the floor,
+-- looking into the hall (a unit's door face). `paint` is the floor's wall paint, as its units wear.
+function CorridorKit.wall(name: WallName, at: CFrame, paint: Color3, parent: Instance): Model
+	local model = CorridorKit.place(name, at, parent)
+	part(model, "Facade").Color = paint
+	return model
 end
 
 -- Hangs a copy of the hall light fixture with its frame at `at`: on the floor under where its

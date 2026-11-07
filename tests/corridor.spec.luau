@@ -1,9 +1,10 @@
 --!strict
 -- lune run tests/corridor.spec
--- The corridor kit's numbers (generated from art/corridor/spec.py) against the hall's light: the
--- haze must stay clear of the ceiling's steel, pieces must tile without a seam, and the fixture's
--- lens must sit exactly where the light was tuned, between two joists. Both files build Roblox
--- values at load, so this reads their numbers as text.
+-- The corridor kit's numbers (generated from art/corridor/spec.py) against the hall's light and
+-- the units: the haze must stay clear of the ceiling's steel, pieces must tile without a seam, the
+-- fixture's lens must sit exactly where the light was tuned, between two joists, and the hall's
+-- walls must take a unit's place. These files build Roblox values at load, so this reads their
+-- numbers as text.
 local fs = require("@lune/fs")
 
 local failures, checks = 0, 0
@@ -35,6 +36,13 @@ local lens = number(KIT, "LensHeight = ([%d%.]+)")
 local reach = number(KIT, "Reach = ([%d%.]+)")
 local fixtureTop = number(KIT, "Fixture = {.-Top = ([%d%.]+)")
 local deck = number(KIT, "DeckHeight = ([%d%.]+)")
+local UNIT = "src/shared/StorageUnit/Specs/M.luau"
+local unitWidth = number(UNIT, "\n\tWidth = ([%d%.]+)")
+local unitWalls = number(UNIT, "WallHeight = ([%d%.]+)")
+local plain = number(KIT, "Wall = {%s*Width = ([%d%.]+)")
+local deadEnd = number(KIT, "DeadEnd = {%s*Width = ([%d%.]+)")
+local span = number(KIT, "Span = ([%d%.]+)")
+local wallHeight = number(KIT, "WallHeight = ([%d%.]+)")
 local function size(path: string, pattern: string): string
 	local found = string.match(fs.readFile(path), pattern)
 	assert(found, `{path}: no match for {pattern}`)
@@ -62,6 +70,11 @@ ok(
 	fixtureTop < joists and fixtureTop < deck,
 	`the fixture's housing ({fixtureTop}) hangs under the steel`
 )
+
+ok(plain == unitWidth, `a plain wall ({plain}) takes one unit's place ({unitWidth})`)
+ok(straight % plain == 0, `a straight piece ({straight}) holds whole plain walls ({plain})`)
+ok(wallHeight == unitWalls, `the walls' cap ({wallHeight}) lines up with the units' ({unitWalls})`)
+ok(deadEnd == span, `the dead end ({deadEnd}) closes the whole deck ({span})`)
 
 print(string.format("corridor: %d/%d checks passed", checks - failures, checks))
 if failures > 0 then

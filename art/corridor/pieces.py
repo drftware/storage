@@ -1,8 +1,9 @@
 """The corridor kit's pieces, UV-mapped to the unit's texture sets (art/unit/geo.py's mappers).
 
-Each piece is two MeshParts, one texture set each, so a hall of identical pieces draws in two
-calls: the hall's Floor (Concrete) and its Ceiling (TrimSheet: the deck in the painted strip, the
-joists in the raw-steel strip).
+Each part is one MeshPart with one texture set, so a hall of identical pieces draws in a call per
+part. The straight piece is the hall's Floor (Concrete) and its Ceiling (TrimSheet: the deck in
+the painted strip, the joists in the raw-steel strip). The plain wall and the dead end are a
+Facade (Facade), a Trim (TrimSheet) and a Panel (Partition). The fixture is at the end.
 """
 
 import math
@@ -10,6 +11,7 @@ import math
 from mathutils import Matrix, Vector
 
 import geo
+import parts as unit_parts  # the unit's parts.py (art/unit is on the path)
 import spec as K
 from geo import Mesh
 
@@ -317,3 +319,80 @@ def fixture():
         _chain(h, x, paint, galv)
     _power(h, centre[2] + K.SENSOR_H, paint, galv, rubber)
     return {"Housing": h, "Diffuser": _lens(), "Eye": _eye(centre)}
+
+
+# --- the hall's walls ---------------------------------------------------------------------------
+# The plain wall (Wall) and the dead end (DeadEnd), spec.py's "the hall's walls": a unit's front
+# without the door. Three MeshParts each: the Facade (the unit's Facade set, painted per floor like
+# a unit's), the Trim (TrimSheet: posts, diamond kick plate, cap) and the Panel (Partition: the
+# R-panel above the cap, and the bare sheet behind the wall). The Facade is flat on the face's
+# plane and the Panel's middle lies behind it, which is how CorridorKit.frame tells the hall's side.
+
+def _facade(x0, x1):
+    """The painted panels between the posts, from the floor (behind the kick plate) to the cap.
+    Panel seams fall every 2 studs from x = 0, so a wall centred on a whole stud ends on one."""
+    m = Mesh("Facade")
+    mp = unit_parts.map_wall_along(K.WALL_H, 0)
+    zt = K.WALL_H - K.CAP_DROP
+    unit_parts.quad(m, (x0, 0.0, 0.0), (x1, 0.0, 0.0), (x1, 0.0, zt), (x0, 0.0, zt), mp)  # faces -y
+    return m
+
+
+def _trim(x0, x1, cap_proud):
+    """Half a post at each end (a neighbour's half makes it whole), the kick plate between them, and
+    the cap along the top: the unit's own trim (art/unit/parts.py, `frame`)."""
+    m = Mesh("Trim")
+    H, P, F = K.WALL_H, K.POST, K.FACADE
+    trim_z = geo.map_strip("trim", 2)
+    for a, b in ((x0, x0 + P), (x1 - P, x1)):
+        geo.box(m, (a, -K.POST_PROUD, 0.0), (b, F, H), trim_z, bevel=0.015, segments=2,
+                edges=lambda e, c, sz: True)
+    geo.box(m, (x0 + P, -0.035, 0.0), (x1 - P, 0.0, K.KICK), geo.map_strip("diamond", 0),
+            bevel=0.01)
+    geo.box(m, (x0, -cap_proud, H - K.CAP_DROP), (x1, F + 0.02, H + K.CAP_RISE),
+            geo.map_strip("trim", 0), bevel=0.012)
+    return m
+
+
+def _panel(x0, x1, plane, backs):
+    """The R-panel from inside the cap up through the deck, its ribs towards the hall; and the bare
+    sheets behind, `backs` = [(x0, x1, facing)], facing +1 away from the hall, -1 towards it."""
+    m = Mesh("Panel")
+    H = K.WALL_H
+    z0, z1 = H - K.CAP_DROP, K.DECK + K.RIB_DEPTH + K.DECK_COVER
+    # Built as the top of a 10-stud wall and lifted into place, so it wears the clean upper part of
+    # the units' wall texture rather than the grime they carry at the floor.
+    rise = z1 - H
+    sheet = Mesh("sheet")
+    unit_parts.corrugated(sheet, 0, x0, x1, plane, -1, z0 - rise, H, H)
+    m.extend(sheet, Matrix.Translation((0.0, 0.0, rise)))
+    mp = unit_parts.map_wall_along(H, 0)
+    y, zt = K.BACKING, z0
+    for a, b, facing in backs:
+        if facing > 0:
+            unit_parts.quad(m, (b, y, 0.0), (a, y, 0.0), (a, y, zt), (b, y, zt), mp)
+        else:
+            unit_parts.quad(m, (a, y, 0.0), (b, y, 0.0), (b, y, zt), (a, y, zt), mp)
+    return m
+
+
+def plain_wall():
+    """The plain wall: a hall side where no unit stands, one unit wide, closed to the deck."""
+    w2 = K.PLAIN / 2
+    return {
+        "Facade": _facade(-w2 + K.POST, w2 - K.POST),
+        "Trim": _trim(-w2, w2, K.CAP_PROUD),
+        "Panel": _panel(-w2, w2, K.PANEL_PLANE, [(-w2, w2, +1)]),
+    }
+
+
+def dead_end():
+    """The dead end: the corridor wall across the hall's end, and the R-panel above it across the
+    whole span, closing off the deck's flutes. Beside the hall, behind the unit rows' end walls, a
+    bare sheet closes whatever slot ends there."""
+    h2, s2 = K.HALL / 2, K.SPAN / 2
+    return {
+        "Facade": _facade(-h2 + K.POST, h2 - K.POST),
+        "Trim": _trim(-h2, h2, K.END_CAP_PROUD),
+        "Panel": _panel(-s2, s2, K.END_PANEL_PLANE, [(-s2, -h2, -1), (h2, s2, -1)]),
+    }

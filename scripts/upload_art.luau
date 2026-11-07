@@ -36,6 +36,18 @@ local ART: { Art } = {
 		description = "A straight stretch of a storage building's hall: its floor and steel ceiling",
 	},
 	{
+		key = "Wall",
+		path = "art/corridor/out/Corridor_Wall.fbx",
+		manifest = "art/corridor/assets.json",
+		description = "A plain stretch of a storage building's hall wall, where no unit stands",
+	},
+	{
+		key = "DeadEnd",
+		path = "art/corridor/out/Corridor_DeadEnd.fbx",
+		manifest = "art/corridor/assets.json",
+		description = "The wall at the end of a storage building's hall, closed to the ceiling",
+	},
+	{
 		key = "Fixture",
 		path = "art/corridor/out/Corridor_Fixture.fbx",
 		manifest = "art/corridor/assets.json",

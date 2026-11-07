@@ -91,8 +91,13 @@ HallLight.HazeBurst = 5
 -- The stairwell's exit sign at the end of a hall: the one warm thing in it, a red smear on the
 -- last doors that pulls the eye down the hall.
 HallLight.ExitColour = Color3.fromRGB(255, 42, 26)
-HallLight.ExitBrightness = 0.45 -- a tint on the far doors' edges, never a red room
-HallLight.ExitRange = 12 -- reaches the last pair of units only
+-- A red wash on the wall the sign hangs on, so a dead end reads as a wall and not an opening; pale
+-- walls beside it only take a tint, never a red room (tuned at Level21 on the A16, P0-03c).
+HallLight.ExitBrightness = 0.2
+HallLight.ExitRange = 10 -- the wall it hangs on and the last unit's width before it
+-- The glow hangs this far out from the sign and below it: a light on the wall itself only grazes it.
+HallLight.ExitGlowOut = 1.5
+HallLight.ExitGlowDrop = 1
 
 -- The line of light under a shut door, seen from inside: the lit hall floor through the door's
 -- gap. Neon glows brighter than its colour, so this mid grey reads as a hard white line against
@@ -236,18 +241,28 @@ function HallLight.eye(eye: BasePart, state: EyeState)
 	end
 end
 
--- Turns `sign` into a lit exit sign whose glow tints the hall around it.
-function HallLight.exitSign(sign: BasePart)
+-- Turns `sign` into a lit exit sign whose glow washes the wall it hangs on and tints the hall
+-- around it. `facing` points from the wall into the hall.
+function HallLight.exitSign(sign: BasePart, facing: Vector3)
 	sign.Material = Enum.Material.Neon
 	sign.Color = HallLight.ExitColour
 	sign.CastShadow = false
-	local glow = sign:FindFirstChildWhichIsA("PointLight") or Instance.new("PointLight")
+	local found = sign:FindFirstChild("Glow")
+	local at: Attachment = if found and found:IsA("Attachment")
+		then found
+		else Instance.new("Attachment")
+	at.Name = "Glow"
+	at.Position = sign.CFrame:VectorToObjectSpace(
+		facing.Unit * HallLight.ExitGlowOut - Vector3.yAxis * HallLight.ExitGlowDrop
+	)
+	at.Parent = sign
+	local glow = at:FindFirstChildWhichIsA("PointLight") or Instance.new("PointLight")
 	glow.Color = HallLight.ExitColour
 	glow.Brightness = HallLight.ExitBrightness
 	glow.Range = HallLight.ExitRange
 	glow.Shadows = true
 	mark(glow)
-	glow.Parent = sign
+	glow.Parent = at
 end
 
 return HallLight

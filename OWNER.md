@@ -7,9 +7,9 @@ nowhere else.
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 - [ ] **Save the place** (File > Save to Roblox) after this session (Nov 7): the hall's templates
-  now live in it at `ReplicatedStorage.Corridor`: `Straight` (last session) and `Fixture` (the
-  new hall light). Unsaved, the next open loses them and the test hall falls back to plain blocks
-  and bare tubes (Output says so).
+  now live in it at `ReplicatedStorage.Corridor`: `Straight`, `Fixture`, and this session's
+  `Wall` (the plain wall) and `DeadEnd`. Unsaved, the next open loses them and the test hall
+  falls back to plain blocks and bare tubes (Output says so).
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
@@ -41,6 +41,24 @@ nowhere else.
   (the steps under "Now: judge P0-02g"), and check the dark and the line under the door still
   come, and go again when it lifts.
 
+## Now: judge P0-03c, the plain wall and the dead end (built Nov 7)
+
+- [ ] **Judge the shots:** `docs/art/P0-03c-ends.jpg` is a Galaxy A16, Level01 on top and Level21
+  below. Left: walking up to the far dead end with its exit sign. Right: looking back at the
+  spawn's dead end. `P0-03c-hall.jpg`: from the spawn down the whole hall (left), and up close
+  where unit 102 meets a plain wall, up to the deck (right). `art/sheets/corridor-deadend.png` and
+  `corridor-wall.png` are the Blender look. Look for: the hall plainly stopping in a wall (not a
+  dark doorway), and the doorless stretches reading as the same building as the units, with no
+  seam or gap where they meet the units, the floor or the ceiling.
+- [ ] **The exit sign's red, retuned:** beside the plain walls' pale paint the old glow turned
+  the last stretch into a red room, and the wall it hung on stayed dark. It's now dimmer (0.2,
+  was 0.45), shorter (10, was 12) and hung 1.5 off the wall, so it washes the end wall. Say if
+  the end should be redder (a beacon) or darker (only the sign).
+- [ ] **Walk it yourself:** Play, sprint to each end and turn round in the corner. Look for: no
+  snag on the kick plates or posts, nothing to hide behind, and the camera not clipping into the
+  end wall. Then look up at the end: the deck's ribs should stop against the wall with no light
+  showing through.
+
 ## Now: judge P0-03b, the hall light (built Nov 7)
 
 - [ ] **Judge the shots:** `docs/art/P0-03b-phone.jpg` is a Galaxy A16 at Level01 (top) and
@@ -55,8 +73,7 @@ nowhere else.
   three fixtures (a weak one by the spawn, the lit one, a dead one past the last units) hanging
   straight between the joists, nothing floating or poking through the deck; and from last
   session, no line where two floor pieces meet (x = -12 and 12) and footsteps that sound like
-  concrete. The dead fixture's eye is hard to see in the exit sign's red; that end gets the dead
-  end piece (P0-03c).
+  concrete.
 - [ ] **Decide later (the ladder):** the ceiling's lowest steel is now 12.8, so standing on a
   unit's wire top (10) leaves 2.8 studs overhead, and an avatar is about 5. Before the ladder is
   built: crawl-only up there (the default), or taller floors.

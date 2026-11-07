@@ -162,6 +162,11 @@ verified: a doc page, Studio, or "untested".
 - **Saving captures:** `screen_capture` images land in the session's `tool-results` folder (the
   path comes back with each image); compose them with ffmpeg `hstack`. In zsh, write ffmpeg's
   options out rather than in a variable: zsh doesn't split it into words.
+- **A light on a wall only grazes it** (P0-03c, 2026-11-07): the exit sign's PointLight at the
+  sign's middle, 0.1 off the dead end, lit the walls beside it bright red and left the wall it hung
+  on dark, so the end read as a dark opening. Hung on an Attachment 1.5 out and 1 below the sign,
+  it washes the wall it's on. Pale walls (the facade paint) take far more of a light than dark
+  concrete did, so a light tuned beside concrete needs retuning beside them.
 - **Roblox lights barely fade inside their Range**, and a SurfaceLight's `Angle` is a hard edge
   (Blender's area-light spread fades softly), so a cone a little wider than the sheets' (130° for
   105°) catches the facade above each door.
@@ -201,6 +206,10 @@ verified: a doc page, Studio, or "untested".
   x = -32): 65,436 triangles in 18 opaque draw calls, 33 in the main view with UI and haze, 82
   over every pass. The three straight pieces add about 5,000 triangles of steel ceiling, and
   their identical meshes instance, so the main view has fewer draw calls than the old plain hall.
+- **With the fixtures, plain walls and dead ends** (P0-03c, same viewport and spot, Level21):
+  73,844 triangles in 28 opaque draw calls (P0-03b's fixtures made it 71,400 in 21), 39 in the
+  main view with UI and haze, 105 over every pass. A plain wall is 556 triangles and a dead end
+  958; each kind draws its three parts in three calls however many stand.
 
 ## Importing kit pieces
 

@@ -27,6 +27,35 @@ return {
 		},
 	},
 
+	-- The hall's walls: the plain wall where no unit stands, and the dead end across the hall's
+	-- end. A wall's frame is the middle of its hall face, on the floor, looking into the hall (a
+	-- unit's door face): X along the wall, +Y up, +Z behind it.
+	WallHeight = 10, -- the cap's height, the units' walls
+	Walls = {
+		Wall = {
+			Width = 12,
+			Colliders = {
+				Wall = { Position = Vector3.new(0, 7.175, 0.5), Size = Vector3.new(12, 14.35, 1) },
+			},
+			Triangles = {
+				Facade = 2,
+				Panel = 250,
+				Trim = 304,
+			},
+		},
+		DeadEnd = {
+			Width = 32,
+			Colliders = {
+				Wall = { Position = Vector3.new(0, 7.175, 0.5), Size = Vector3.new(32, 14.35, 1) },
+			},
+			Triangles = {
+				Facade = 2,
+				Panel = 652,
+				Trim = 304,
+			},
+		},
+	},
+
 	-- The hall light fixture: its frame is on the floor under the lens's middle, the hall along
 	-- X, the sensor's eye on +X.
 	Fixture = {

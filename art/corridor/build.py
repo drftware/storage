@@ -23,7 +23,7 @@ sys.path.insert(0, UNIT)
 sys.path.insert(0, HERE)  # first: this folder's spec.py, not the unit's
 
 import bpy  # noqa: E402
-from mathutils import Vector  # noqa: E402
+from mathutils import Matrix, Vector  # noqa: E402
 
 import bake  # noqa: E402
 import pieces  # noqa: E402
@@ -32,8 +32,12 @@ import spec as K  # noqa: E402
 OUT = os.path.join(HERE, "out")
 TEX = os.path.join(UNIT, "out", "textures")
 SHEETS = os.path.join(K.ROOT, "art", "sheets")
-TEXSET = {"Floor": "Concrete", "Ceiling": "TrimSheet", "Housing": "TrimSheet"}
+TEXSET = {"Floor": "Concrete", "Ceiling": "TrimSheet", "Housing": "TrimSheet",
+          "Facade": "Facade", "Trim": "TrimSheet", "Panel": "Partition"}
 PIECES = {"Straight": (pieces.straight, K.STRAIGHT)}
+# The hall's walls, by their width along the wall: the plain wall is one unit's slot, the dead end
+# crosses the whole span.
+WALLS = {"Wall": (pieces.plain_wall, K.PLAIN), "DeadEnd": (pieces.dead_end, K.SPAN)}
 # The fixture's parts the game colours: untextured, so Roblox's Neon and Color show on them. These
 # are only the colours they import with (a dead lens, a frosted dome); HallLight sets the real ones.
 PLAIN = {"Diffuser": (0.16, 0.17, 0.18), "Eye": (0.55, 0.55, 0.53)}
@@ -43,14 +47,21 @@ def reset():
     bpy.ops.wm.read_factory_settings(use_empty=True)
 
 
-def build(name, at=0.0, coll=None, for_export=True):
-    """Builds one piece's parts as objects, `at` studs along the hall. Returns {part: object}."""
-    make, _ = PIECES[name]
+def build(name, at=0.0, coll=None, for_export=True, matrix=None):
+    """Builds one piece's or wall's parts as objects, `at` studs along the hall (or at `matrix`, a
+    wall's frame). Returns {part: object}."""
+    make, _ = PIECES.get(name) or WALLS[name]
     objs = {}
     for part, mesh in make().items():
         ob = mesh.build(coll)
-        ob.location.x = at
+        if matrix is not None:
+            ob.matrix_world = matrix
+        else:
+            ob.location.x = at
         ob.data.materials.append(bake.textured(TEXSET[part], TEX, for_export=for_export))
+        if part == "Facade" and not for_export:
+            import render
+            ob["tint"] = (*render.hexc(render.WALL_TINT), 1.0)  # the units' default paint
         objs[part] = ob
     return objs
 
@@ -110,20 +121,38 @@ def stage_export():
             "Floor": ((0.0, -0.5, 0.0), (length, 1.0, K.HALL)),
             "Ceiling": ((0.0, K.DECK + 0.5, 0.0), (length, 1.0, K.SPAN)),
         })
+    walls = {}
+    top = K.DECK + K.RIB_DEPTH + K.DECK_COVER
+    for name, (make, width) in WALLS.items():
+        reset()
+        meshes = make()
+        # CorridorKit.frame finds the hall's side this way: the Facade flat on the face's plane,
+        # the Panel's middle behind it
+        assert all(abs(v.y) < 1e-6 for v in meshes["Facade"].verts), f"{name}: the facade isn't flat"
+        ys = [v.y for v in meshes["Panel"].verts]
+        assert (min(ys) + max(ys)) / 2 > 0.05, f"{name}: the panel's middle isn't behind the face"
+        tris = {part: m.tris() for part, m in meshes.items()}
+        fbx = export_fbx(build(name), "Facade", name)
+        print("FBX", fbx, os.path.getsize(fbx), tris)
+        # one box behind the face, floor to the deck's top: X along the wall, Y up, Z behind it
+        walls[name] = dict(width=width, tris=tris, colliders={
+            "Wall": ((0.0, top / 2, 0.5), (width, top, 1.0)),
+        })
     reset()
     fixture_tris = {part: m.tris() for part, m in pieces.fixture().items()}
     fbx = export_fbx(build_fixture(), "Diffuser", "Fixture")
     print("FBX", fbx, os.path.getsize(fbx), fixture_tris)
     lua = os.path.join(K.ROOT, "src", "shared", "CorridorKit", "Specs.luau")
     os.makedirs(os.path.dirname(lua), exist_ok=True)
-    K.write_luau(lua, out, fixture_tris)
+    K.write_luau(lua, out, walls, fixture_tris)
     print("SPEC", lua)
 
 
 # --- look sheets: two straight pieces with stand-ins for the unit rows, under one hall light ----
 
-def stand_ins(coll, length):
-    """Render dressing only: plain boxes where the unit rows stand, so the ceiling reads in place."""
+def stand_ins(coll, length, units_to):
+    """Render dressing only: plain boxes where the unit rows stand, up to x = `units_to`, so the
+    ceiling reads in place."""
     import render
     facade = render.simple("facade", (0.55, 0.53, 0.5), 0.7)
     door = render.simple("door", (0.12, 0.2, 0.21), 0.5, 0.6)
@@ -131,12 +160,18 @@ def stand_ins(coll, length):
     L2, W2 = length / 2, K.HALL / 2
     for side in (-1, 1):
         y0, y1 = sorted((side * W2, side * (W2 + 0.25)))
-        render.box_obj("facade", (-L2, y0, 0.0), (L2, y1, 10.0), facade, coll)
-        for x in range(int(-L2) + 6, int(L2), 12):
+        render.box_obj("facade", (-L2, y0, 0.0), (units_to, y1, 10.0), facade, coll)
+        for x in range(int(-L2) + 6, int(units_to), 12):
             d0, d1 = sorted((side * (W2 - 0.02), side * W2))
             render.box_obj("door", (x - 4, d0, 0.0), (x + 4, d1, 8.0), door, coll)
         w0, w1 = sorted((side * W2, side * (W2 + K.UNIT_DEPTH)))
-        render.box_obj("wiretop", (-L2, w0, 9.95), (L2, w1, 10.0), wire, coll)
+        render.box_obj("wiretop", (-L2, w0, 9.95), (units_to, w1, 10.0), wire, coll)
+
+
+def wall_frame(x, y, hall):
+    """A wall's frame at (x, y) on the floor, its face looking along `hall` (+-x or +-y)."""
+    turn = {(0, 1): 180.0, (0, -1): 0.0, (1, 0): 90.0, (-1, 0): -90.0}[hall]
+    return Matrix.Translation((x, y, 0.0)) @ Matrix.Rotation(math.radians(turn), 4, "Z")
 
 
 def hall_light(coll, x):
@@ -171,7 +206,13 @@ def stage_renders():
     coll = bpy.context.scene.collection
     for at in (-K.STRAIGHT / 2, K.STRAIGHT / 2):
         build("Straight", at, coll, for_export=False)
-    stand_ins(coll, 2 * K.STRAIGHT)
+    # units up to the last slot each side, which is a plain wall; the hall ends in the dead end
+    end = K.STRAIGHT
+    stand_ins(coll, 2 * K.STRAIGHT, end - K.PLAIN)
+    for side in (-1, 1):
+        build("Wall", coll=coll, for_export=False,
+              matrix=wall_frame(end - K.PLAIN / 2, side * K.HALL / 2, (0, -side)))
+    build("DeadEnd", coll=coll, for_export=False, matrix=wall_frame(end, 0.0, (-1, 0)))
     hall_light(coll, 6.0)
     # a dark fixture by the spawn end, its eye open: the building watching the stretch you're in
     dead = render.simple("lens_dead", PLAIN["Diffuser"], 0.5)
@@ -185,6 +226,8 @@ def stage_renders():
         "seam": ((0.0, 0.0, 6.0), (0.0, 0.0, 0.0), 30, False),        # straight down on a joint
         "fixture": ((-8.0, 1.6, 4.6), (-17.2, 0.0, 12.9), 42, True),  # a torch up at a dark one
         "fixture-lit": ((-3.0, -1.6, 4.6), (6.3, 0.0, 12.9), 42, False),  # walking up to the lit one
+        "deadend": ((4.0, -1.2, 4.4), (24.0, 0.8, 6.4), 24, False),   # the hall that stops
+        "wall": ((9.0, -3.4, 4.4), (17.0, 4.0, 8.6), 22, False),      # across at a plain wall
     }
     for name, (loc, target, lens, torch) in views.items():
         cam = render.camera(loc, target, lens, name)

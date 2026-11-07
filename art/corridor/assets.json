@@ -1,4 +1,8 @@
 {
+  "DeadEnd": {
+    "assetId": 100123098873935,
+    "sha256": "a0f4bae39e60505cd34ba2d74e2c23092e590c6bd6f4cfc46aa327b697fe95a7"
+  },
   "Fixture": {
     "assetId": 71843070521517,
     "sha256": "0682009700abc7aa99de165c4863686d555f5ab245d794678f4b31d4d088b900"
@@ -6,5 +10,9 @@
   "Straight": {
     "assetId": 127417399035043,
     "sha256": "6d6b8cd679f08da5f6b4f2d0adb3c3fa3116c2a238a69c0ab9f2739d249e2da6"
+  },
+  "Wall": {
+    "assetId": 138816629045048,
+    "sha256": "380452c8e0a62f701c7debe08f35635af4d14ce2699a65cae9239e6a9e36efae"
   }
 }

@@ -46,6 +46,46 @@ assert STRAIGHT % TILE == 0 and STRAIGHT % JOIST_SPACING == 0
 assert SPAN % RIB_PITCH == 0
 
 
+# --- the hall's walls: the plain wall where no unit stands, and the dead end ----------------------
+# Both are the corridor wall a unit's front is (art/unit/parts.py, `facade` and `frame`), without a
+# door, so the hall reads as one building: painted steel panels (the unit's Facade set, painted per
+# floor) on a diamond kick plate between posts, capped at the units' wall height. Above the cap an
+# R-panel (the units' Partition set) closes the wall to the deck, where a unit is open over its wire
+# top. Built in the unit's frame: the wall's hall face is the plane y = 0 with the hall at -y, and
+# the origin is the face's middle, on the floor. So a plain wall goes wherever a unit would.
+def _unit():
+    """The M unit's spec (art/unit/spec.py), loaded under its own name: this folder has a spec.py."""
+    import importlib.util
+    path = os.path.join(ROOT, "art", "unit", "spec.py")
+    s = importlib.util.spec_from_file_location("unit_spec", path)
+    m = importlib.util.module_from_spec(s)
+    s.loader.exec_module(m)
+    return m.Spec("M")
+
+
+UNIT = _unit()
+WALL_H = UNIT.wall_height    # the units' walls, 10: the cap sits on top
+PLAIN = UNIT.width           # the plain wall is one M unit wide, so a hall side is a row of slots
+FACADE = UNIT.facade         # the corridor wall's thickness
+POST = UNIT.pilaster         # half a post at each end of a unit; two neighbours make it whole
+POST_PROUD = 0.07            # as the unit's: the posts stand this far into the hall
+KICK = UNIT.kick             # the diamond kick plate's height
+CAP_DROP = 0.12              # the cap's underside below WALL_H, as the unit's
+CAP_RISE = 0.012             # its top above WALL_H
+CAP_PROUD = 0.08             # how far the cap stands into the hall: the units' caps line up with it
+# The R-panel above the cap: its ribs are 0.1 deep (the unit's `corrugated`). On the plain wall the
+# ribs' crests sit just behind the cap's face, under the deck's low flute that runs over the wall.
+# On the dead end, which crosses the deck's flutes at the deck's end, the panel's valleys are flush
+# with that end, so no gap opens between them, and its cap stands out further to cover the crests.
+PANEL_PLANE = 0.1            # the plain wall's sheet, behind its face
+END_PANEL_PLANE = 0.015      # the dead end's sheet: its valleys' hall side on the face's plane
+END_CAP_PROUD = 0.12
+BACKING = FACADE             # the bare sheet behind a wall, seen only from the slot behind it
+
+assert UNIT.width == STRAIGHT / 2, "a straight piece holds two plain walls a side"
+assert (SPAN / 2 - HALL / 2) % RIB_PITCH == 0, "the hall's sides sit under a low flute"
+
+
 # --- the hall light fixture: a steel strip light on two chains, with a motion sensor's eye ----------
 # The lens is the part the game lights (HallLight.light), so its place and size are read from the
 # game's own HallLight.Height and TubeSize: the light was tuned there and the art follows it.
@@ -122,9 +162,10 @@ def lua_num(x):
     return "0" if s in ("-0", "") else s
 
 
-def write_luau(path, pieces, fixture_tris):
+def write_luau(path, pieces, walls, fixture_tris):
     """pieces: {name: dict(length=, colliders={name: (pos, size)}, tris={part: n})}, Roblox axes;
-    fixture_tris: {part: n} for the hall light fixture."""
+    walls: {name: dict(width=, colliders=, tris=)}, in the wall's frame; fixture_tris: {part: n}
+    for the hall light fixture."""
     v3 = lambda t: f"Vector3.new({', '.join(lua_num(v) for v in t)})"
     lines = [
         "--!strict",
@@ -150,6 +191,23 @@ def write_luau(path, pieces, fixture_tris):
             lines.append(f"\t\t\t\t{cname} = {{ Position = {v3(pos)}, Size = {v3(size)} }},")
         lines += ["\t\t\t},", "\t\t\tTriangles = {"]
         for part, n in sorted(p["tris"].items()):
+            lines.append(f"\t\t\t\t{part} = {n},")
+        lines += ["\t\t\t},", "\t\t},"]
+    lines += [
+        "\t},",
+        "",
+        "\t-- The hall's walls: the plain wall where no unit stands, and the dead end across the hall's",
+        "\t-- end. A wall's frame is the middle of its hall face, on the floor, looking into the hall (a",
+        "\t-- unit's door face): X along the wall, +Y up, +Z behind it.",
+        f"\tWallHeight = {lua_num(WALL_H)}, -- the cap's height, the units' walls",
+        "\tWalls = {",
+    ]
+    for name, w in walls.items():
+        lines += [f"\t\t{name} = {{", f"\t\t\tWidth = {lua_num(w['width'])},", "\t\t\tColliders = {"]
+        for cname, (pos, size) in w["colliders"].items():
+            lines.append(f"\t\t\t\t{cname} = {{ Position = {v3(pos)}, Size = {v3(size)} }},")
+        lines += ["\t\t\t},", "\t\t\tTriangles = {"]
+        for part, n in sorted(w["tris"].items()):
             lines.append(f"\t\t\t\t{part} = {n},")
         lines += ["\t\t\t},", "\t\t},"]
     lines += [
