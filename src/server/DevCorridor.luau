@@ -86,10 +86,16 @@ local TURN_DEAD_ENDS = {
 	CFrame.lookAt(Vector3.new(48, 0, -36), Vector3.new(48, 0, -35)),
 	CFrame.lookAt(Vector3.new(84, 0, 48), Vector3.new(83, 0, 48)),
 }
--- A light up the north arm and one in the east hall past the corner, both on the breaker's zone.
+-- A light over the T's middle, one down each arm, one over the corner and one in the east hall,
+-- so every step of the turn is under a light that watches it. The north arm, the corner and the
+-- east hall are on the breaker's zone. A junction's middle is midway between two of its joists,
+-- like a straight's.
 local BREAKER_ZONE = "NorthArm"
 local TURN_FIXTURES: { Fixture } = {
+	{ x = 48, z = 0, turned = true },
+	{ x = 48, z = -24, turned = true },
 	{ x = 48, z = 24, turned = true, power = BREAKER_ZONE },
+	{ x = 48, z = 48, turned = true, power = BREAKER_ZONE },
 	{ x = 72, z = 48, power = BREAKER_ZONE },
 }
 local TURN_WALL_X = 52 -- the T's far wall, across from the hall
@@ -435,7 +441,8 @@ local function send(player: Player, to: CFrame)
 	end
 end
 
--- The breaker post at `at`: "Cut power" blinds the north arm's fixtures as the breaker room will
+-- The breaker post at `at`: "Cut power" blinds the north arm's fixtures (and the corner's and the
+-- east hall's) as the breaker room will
 -- (GDD Lights), and "Restore power" brings them back, dark.
 local function breakerPost(at: Vector3, lights: MotionLights.MotionLights, parent: Instance)
 	local post = block(
@@ -463,7 +470,7 @@ local function breakerPost(at: Vector3, lights: MotionLights.MotionLights, paren
 end
 
 -- The turn past the hall's far end: the T, its arms, the corner and the hall beyond, their walls
--- and dead ends, two fixtures and the breaker post.
+-- and dead ends, their fixtures and the breaker post.
 local function turn(parent: Instance, lights: MotionLights.MotionLights)
 	local paint = UnitKit.Colours.Wall
 	CorridorKit.junction("T", TURN_T, paint, parent)

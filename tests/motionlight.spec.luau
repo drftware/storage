@@ -17,7 +17,7 @@ local HOLD = MotionLight.HoldSeconds
 local TICK = MotionLight.TickSeconds
 local LENGTH, WIDTH, HEIGHT =
 	MotionLight.WatchLength, MotionLight.WatchWidth, MotionLight.WatchHeight
-local REACH = math.sqrt((LENGTH / 2) ^ 2 + (WIDTH / 2) ^ 2)
+local REACH = MotionLight.Reach
 
 -- A test hall along X like the dev corridor's: fixtures every 24 studs, each watching the box
 -- under it. Returns the watch and each fixture's id.
@@ -25,11 +25,7 @@ local function hall(xs: { number }): (MotionLight.Watch, { number })
 	local watch = MotionLight.watch()
 	local ids = {}
 	for _, x in xs do
-		local area = Brix.Zone.box({
-			pathing = FREE,
-			center = vector.create(x, HEIGHT / 2, 0),
-			size = vector.create(LENGTH, HEIGHT, WIDTH),
-		})
+		local area = Brix.Zone.box(MotionLight.watchBox(FREE, x, 0, 0, MotionLight.turnOf(1, 0)))
 		table.insert(ids, watch:add(area, x, 0, REACH))
 	end
 	return watch, ids
@@ -168,7 +164,7 @@ do -- walking the hall: the light ahead wakes before you reach it, those behind 
 	local wokeAt: { [number]: number } = {}
 	local darkAt: { [number]: number } = {}
 	-- on past the last fixture, for longer than the hold since the first
-	while x < 96 do
+	while x < 130 do
 		t += TICK
 		x += 16 * TICK
 		local changed = watch:step(t, { me = at(x) })
@@ -186,13 +182,10 @@ do -- walking the hall: the light ahead wakes before you reach it, those behind 
 		ok(w ~= nil, "fixture " .. i .. " wakes as you walk the hall")
 		if w and i > 1 then
 			ok(
-				fixtureX - w >= 14,
-				"fixture "
-					.. i
-					.. " wakes at least 14 studs before you reach it ("
-					.. (fixtureX - w)
-					.. ")"
+				fixtureX - w >= 18,
+				`fixture {i} wakes 18 studs or more before you reach it ({fixtureX - w})`
 			)
+			ok(w - (fixtureX - 24) <= 6, `fixture {i} wakes as you pass under the one before it`)
 		end
 	end
 	ok(darkAt[ids[1]] ~= nil, "the first fixture falls dark behind you")
@@ -258,6 +251,17 @@ do -- power: a cut fixture is blind and sees nothing; restored, it's dark until 
 		false
 	)
 	ok(watch:state(blind) == "Blind", "a fixture can be added already cut")
+end
+
+do -- a fixture in a hall along Z watches along Z
+	local watch = MotionLight.watch()
+	local area = Brix.Zone.box(MotionLight.watchBox(FREE, 0, 0, 0, MotionLight.turnOf(0, -1)))
+	ok(area:contains(vector.create(0, 3, LENGTH / 2 - 1)), "its area runs along Z")
+	ok(not area:contains(vector.create(WIDTH / 2 + 1, 3, 0)), "and is a hall wide across X")
+	local id = watch:add(area, 0, 0, REACH)
+	watch:step(0, { me = vector.create(0, 3, -15) })
+	watch:step(TICK, { me = vector.create(0, 3, -14) })
+	ok(watch:state(id) == "Lit", "walking down a Z hall wakes it")
 end
 
 do -- a removed fixture is forgotten

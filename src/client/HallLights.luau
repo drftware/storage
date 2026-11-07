@@ -10,13 +10,20 @@
 	  back to a dim red, watching.
 	- Its power is cut: tube and eye die together, with no click (the relay has no power either).
 
-	Only the lit fixtures nearest the camera throw real light (HallLight.NearFixtures, each two
-	lights, D-017); one farther out is its glowing tube alone, the GDD's glow. A fixture that
-	streams in already lit just shows lit, without a click. Lights are set only through HallLight,
+	Your own lights follow you with no wait: this screen runs the same rules on your own character
+	(a MotionLight watch of its own) and shows a fixture lit as soon as either it or the server
+	says so; the server's word alone decides when it goes dark or blind, and it alone is what the
+	building sees (D-025). Other players' and keepers' lights come from the server.
+
+	Only the lit fixtures nearest the view throw real light (HallLight.NearFixtures, each two
+	lights, D-017), measured from a point ahead of the camera so the light you're walking into wins
+	over the one behind you; one farther out is its glowing tube alone, the GDD's glow. A fixture
+	that streams in already lit just shows lit, without a click. Lights are set only through HallLight,
 	so they carry its tag and lit brightness and BehindDoors keeps scaling them; this system runs
 	before BehindDoors each frame, so its dimming lands on top of a flicker.
 ]]
 local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
@@ -24,13 +31,17 @@ local Brix = require(ReplicatedStorage.Brix)
 local HallLight = require(ReplicatedStorage.Shared.HallLight)
 local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
 
+local FREE = Brix.Pathing.free()
+
 -- One fixture on this screen.
 type Shown = {
 	model: Model,
 	tube: BasePart,
 	eye: BasePart,
 	click: Sound,
-	state: MotionLight.State,
+	state: MotionLight.State, -- what it shows
+	server: MotionLight.State, -- what the server says
+	predicted: number, -- its id in this screen's own watch
 	real: boolean, -- throws real light (one of the nearest lit fixtures)
 	since: number, -- seconds since its state last changed
 	flicker: number?, -- the next step of its tube flickering on, nil once steady
@@ -65,6 +76,32 @@ function HallLights.new(): Brix.System
 	local connections: { RBXScriptConnection } = {}
 	local random = Random.new()
 	local untilPick = 0
+	local predicted = MotionLight.watch() -- the lights your own movement wakes, on this screen
+	local byPredicted: { [number]: Shown } = {}
+	local mine: { [unknown]: vector } = {} -- your character's place, the one body predicted
+	local root: BasePart? = nil
+	local clock = 0
+
+	-- Your character's root part, found again after a respawn.
+	local function myRoot(): BasePart?
+		if not (root and root.Parent) then
+			local character = Players.LocalPlayer.Character
+			local found = character and character:FindFirstChild("HumanoidRootPart")
+			root = if found and found:IsA("BasePart") then found else nil
+		end
+		return root
+	end
+
+	-- What a fixture shows: blind or dark as the server says, lit if the server or your own
+	-- movement says so.
+	local function shownState(s: Shown): MotionLight.State
+		if s.server == "Blind" then
+			return "Blind"
+		elseif s.server == "Lit" or predicted:state(s.predicted) == "Lit" then
+			return "Lit"
+		end
+		return "Dark"
+	end
 
 	local function byNearness(a: Shown, b: Shown): boolean
 		return nearness[a] < nearness[b]
@@ -76,7 +113,9 @@ function HallLights.new(): Brix.System
 		if not camera then
 			return
 		end
+		local look = camera.CFrame.LookVector * Vector3.new(1, 0, 1)
 		local from = camera.CFrame.Position
+			+ (if look.Magnitude > 1e-3 then look.Unit * HallLight.NearLead else Vector3.zero)
 		table.clear(ranked)
 		for _, s in shown do
 			if s.state == "Lit" then
@@ -169,13 +208,22 @@ function HallLights.new(): Brix.System
 		click.RollOffMinDistance = HallLight.ClickNear
 		click.RollOffMaxDistance = HallLight.ClickReach
 		click.Parent = eye
+		local frame = inst:GetPivot()
+		local at, along = frame.Position, frame.XVector
+		local server: MotionLight.State = stateOf(inst)
+		local area = Brix.Zone.box(
+			MotionLight.watchBox(FREE, at.X, at.Y, at.Z, MotionLight.turnOf(along.X, along.Z))
+		)
+		local id = predicted:add(area, at.X, at.Z, MotionLight.Reach, server ~= "Blind")
 		local s: Shown
 		s = {
 			model = inst,
 			tube = tube,
 			eye = eye,
 			click = click,
-			state = stateOf(inst),
+			state = server,
+			server = server,
+			predicted = id,
 			real = false,
 			since = 0,
 			flicker = nil,
@@ -183,10 +231,13 @@ function HallLights.new(): Brix.System
 			eyeTo = HallLight.EyeWatching,
 			eyeSeconds = 0,
 			changed = inst:GetAttributeChangedSignal(MotionLight.StateAttribute):Connect(function()
-				change(s, stateOf(inst))
+				s.server = stateOf(inst)
+				predicted:setPowered(s.predicted, s.server ~= "Blind")
+				change(s, shownState(s))
 			end),
 		}
 		shown[inst] = s
+		byPredicted[id] = s
 		settle(s)
 		untilPick = 0
 	end
@@ -196,6 +247,8 @@ function HallLights.new(): Brix.System
 		if s then
 			s.changed:Disconnect()
 			s.click:Destroy()
+			predicted:remove(s.predicted)
+			byPredicted[s.predicted] = nil
 			moving[s] = nil
 			shown[inst :: any] = nil
 		end
@@ -251,13 +304,29 @@ function HallLights.new(): Brix.System
 			end
 		end,
 		step = function(_: any, dt: number)
-			for s in moving do
-				animate(s, dt)
+			clock += dt
+			-- your own movement wakes your lights this frame, before the server hears of it
+			local body = myRoot()
+			-- any: a Vector3 is the native vector the watch measures, which the checker won't cast
+			if body then
+				mine.me = (body.Position :: any) :: vector
+			else
+				table.clear(mine)
 			end
+			for _, id in predicted:step(clock, mine) do
+				local s = byPredicted[id]
+				if s then
+					change(s, shownState(s))
+				end
+			end
+			-- picked before animating, so a light that just woke has its real light from its first flash
 			untilPick -= dt
 			if untilPick <= 0 then
 				untilPick = HallLight.NearSeconds
 				pick()
+			end
+			for s in moving do
+				animate(s, dt)
 			end
 		end,
 		stop = function(_: any)

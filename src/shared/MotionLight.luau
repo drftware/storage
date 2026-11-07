@@ -25,20 +25,22 @@ export type State = "Dark" | "Lit" | "Blind"
 export type Area = { contains: (self: any, position: vector) -> boolean }
 
 -- How long a light stays on after the last movement it saw, in seconds. It is the held breath
--- of freezing under a light: shorter and freezing is free, longer and a hall stays lit behind
--- you long after you've gone (about three fixtures at a walk).
-MotionLight.HoldSeconds = 5
+-- of freezing under a light, and the trail of light you leave: at a walk about five fixtures stay
+-- lit behind you, like a real storage hall's (the owner's pick, 7 to 8 s, Nov 7).
+MotionLight.HoldSeconds = 7.5
 -- Slower than this, in studs a second, is holding still. Low enough that any step, a slow
 -- thumbstick creep or a jump trips a light; above the drift of a standing character.
 MotionLight.MovingSpeed = 1
--- How often the server looks, in seconds: ten times a second, so a light answers within a
--- step of you moving and the check stays cheap with every fixture on a floor.
-MotionLight.TickSeconds = 0.1
+-- How often the server looks, in seconds: twenty times a second, so a light another player or
+-- a keeper trips answers within a stride; the check stays cheap with every fixture on a floor.
+-- Your own lights don't wait for it: your screen predicts them (HallLights).
+MotionLight.TickSeconds = 0.05
 
--- The watch area under a fixture, in studs. Along the hall it reaches 4 studs past the middle of
--- the stretch to the next fixture (24 studs apart), so the light ahead clicks on about 16 studs
--- before you reach it, a second at a walk, and you see it wake rather than walk into it.
-MotionLight.WatchLength = 32
+-- The watch area under a fixture, in studs. Along the hall it reaches 20 studs each way, 8 past
+-- the middle of the stretch to the next fixture (24 studs apart), so the light ahead clicks on
+-- as you pass under the one you're at, before its pool could reach you: the light follows you
+-- down the hall and you never step into the dark (the owner, Nov 7).
+MotionLight.WatchLength = 40
 -- Across: the 8-stud hall and a stud into each doorway. A unit's inside is out of its sight, so
 -- a unit is somewhere to hide from the lights.
 MotionLight.WatchWidth = 10
@@ -58,6 +60,38 @@ MotionLight.PowerAttribute = "PowerZone"
 -- Tagged on each part that trips lights when it moves: players' root parts, and keepers' except
 -- the Mannequin's (GDD "Lights").
 MotionLight.BodyTag = "TripsLights"
+
+-- Which way a fixture's hall runs, from its frame's X direction (dx, dz) along the floor: the turn
+-- Brix's Zone.box takes, which swings a box's x side towards -z for a positive turn, as a
+-- Roblox CFrame's turn about Y does.
+function MotionLight.turnOf(dx: number, dz: number): number
+	return math.atan2(-dz, dx)
+end
+
+-- The options for Brix's Zone.box of a fixture's watch area, for a fixture whose frame stands on
+-- the floor at (x, y, z), its hall turned `turn` (turnOf). `pathing` is what the box measures
+-- along (Brix's free pathing).
+function MotionLight.watchBox<P>(
+	pathing: P,
+	x: number,
+	y: number,
+	z: number,
+	turn: number
+): { pathing: P, center: vector, size: vector, turn: number }
+	return {
+		pathing = pathing,
+		center = vector.create(x, y + MotionLight.WatchHeight / 2, z),
+		size = vector.create(
+			MotionLight.WatchLength,
+			MotionLight.WatchHeight,
+			MotionLight.WatchWidth
+		),
+		turn = turn,
+	}
+end
+
+-- How far a watch area reaches from its fixture across the floor: its footprint's half-diagonal.
+MotionLight.Reach = math.sqrt((MotionLight.WatchLength / 2) ^ 2 + (MotionLight.WatchWidth / 2) ^ 2)
 
 -- One fixture, as the watch keeps it.
 type Fixture = {

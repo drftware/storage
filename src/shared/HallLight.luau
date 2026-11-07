@@ -55,18 +55,19 @@ HallLight.NearFixtures = 3
 -- A fixture already throwing light keeps it until another is this many studs nearer, so two
 -- fixtures about as far away don't trade their light back and forth as you walk.
 HallLight.NearMargin = 8
+-- Nearness is measured from this many studs ahead of the camera, along the floor, so the light
+-- you're walking into gets real light before the one you've just left behind.
+HallLight.NearLead = 12
 -- How often each screen re-picks its nearest fixtures, in seconds.
 HallLight.NearSeconds = 0.25
 
--- A tube flickering on, as a motion light's does when it trips: the starter catches twice before
--- it holds (each step's level, at seconds after the trip). Short, so it never blocks the light
--- you need, and only a couple of flashes.
+-- A tube coming on as a motion light trips: light at once, with the click, then one stutter as
+-- the starter catches, steady within a tenth of a second (each step's level, at seconds after the
+-- trip). Quick, so the light keeps up with you (the owner, Nov 7).
 HallLight.Flicker = table.freeze({
-	{ at = 0.05, level = 0.8 },
-	{ at = 0.09, level = 0 },
-	{ at = 0.16, level = 1 },
-	{ at = 0.21, level = 0.15 },
-	{ at = 0.3, level = 1 },
+	{ at = 0, level = 0.9 },
+	{ at = 0.05, level = 0.3 },
+	{ at = 0.1, level = 1 },
 })
 
 -- The fill: a soft light at door height under each fixture, standing in for the light the pool

@@ -2,25 +2,27 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-07, session 18 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-07, session 18 (and the owner's retune) · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **The motion lights are built** (L-03, D-024). The server owns every fixture tagged
-  `MotionLight.Tag` (`src/server/MotionLights.luau`; the rules, pure and Lune-tested, in
-  `src/shared/MotionLight.luau`): anything moving at 1 stud/s or more in its box zone (32 down the
-  hall, 10 across, floor to deck) wakes it; it falls dark 5 s after the last movement it saw.
-  State crosses the wire as the model's `Light` attribute; `src/client/HallLights.luau` draws it:
-  eye flare, relay click (Pro Sound Effects 9118138693), tube flicker; a softer click and the eye
-  sinking as it falls dark; silent death when cut. Real light only for the 3 lit fixtures nearest
-  the camera. `HallLight` gained `glow`, `light(tube, level, real)`, the flicker, flare and click.
-- **The test hall:** all five kit fixtures are motion lights; the hall starts dark; a breaker post
-  in the T's south half cuts the north arm's two (power zone `NorthArm`).
-- **Verified in Studio** (Studio window, Automatic and Level01; one player): walking wakes the
-  light overhead and the one ahead; the trip plays flare, click, flicker in order; freezing
-  darkened the light 5.4 s after stopping, with the soft click and the eye easing back; four lit
-  gave three with real light; the breaker blinds both and restoring brings them back. No errors in
-  Output. Shots `docs/art/L-03-*.jpg`. Not done here: the Galaxy A16 view, two players and the
-  render cost (`OWNER.md`).
+- **The motion lights are built** (L-03, D-024), retuned from the owner's play (D-025). The
+  server owns every fixture tagged `MotionLight.Tag` (`src/server/MotionLights.luau`; the rules,
+  pure and Lune-tested, in `src/shared/MotionLight.luau`): anything moving at 1 stud/s or more in
+  its box zone (40 down the hall, 10 across, floor to deck) wakes it; it falls dark 7.5 s after
+  the last movement it saw; 20 checks a second. State crosses the wire as the model's `Light`
+  attribute. `src/client/HallLights.luau` draws it (eye flare, relay click from Pro Sound Effects
+  9118138693, a tube lit within 0.1 s; a softer click and the eye sinking as it falls dark;
+  silent death when cut) and predicts your own character's lights with its own watch, so they
+  never wait on the network. Real light only for the 3 lit fixtures nearest a point 12 studs
+  ahead of the camera.
+- **The test hall:** eight fixtures, the turn's included (the T's middle, both arms, the corner);
+  the hall starts dark; a breaker post in the T's south half cuts the north arm, the corner and
+  the east hall (power zone `NorthArm`).
+- **Verified in Studio** (Studio window, Automatic and Level01; one player): your own light shows
+  about 0.2 s before the server's word; each light ahead wakes 18 studs before you reach it; the
+  T and corner light; freezing went dark 7.9 s after stopping; four lit gave three with real
+  light; the breaker blinds and restores. No errors in Output. Shots `docs/art/L-03-*.jpg`. Not
+  done here: the Galaxy A16 view, two players and the render cost (`OWNER.md`).
 - **The templates must be saved with the place** (`OWNER.md`, top).
 - `rojo serve` runs on port 34872; Studio in Edit, Quality on Automatic, Device Simulator off.
 

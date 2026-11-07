@@ -17,22 +17,25 @@ nowhere else.
 
 ## Now: judge L-03, the motion lights (built Nov 7)
 
-- [ ] **Walk the hall:** Play (Device Simulator, Galaxy A16, Quality Level 01, then 21). The hall
-  starts dark, its eyes dim red. Take a step: the light over you clicks, its eye flares and the
-  tube flickers on; the one ahead wakes about a second before you reach it; those behind go dark
-  5 s after you leave them, with a softer click. Look for: the click (a relay tick from Roblox's
-  library) clear but not tiring; the flicker reading as a tube catching, not a glitch; the flare
-  readable from down the hall. Shots: `docs/art/L-03-*.jpg`.
-- [ ] **Freeze under a light:** stop dead under one. It should cut out about 5 s later and leave
-  you in the dark. Say if 5 s is right (`MotionLight.HoldSeconds`), and whether the dark when
-  nothing moves (`L-03-level01-dark-eyes.jpg`: near black, one red eye) is right until the
-  flashlight exists, or a still player should still make out the hall.
-- [ ] **The breaker:** at the post in the T's south half, Cut power (E): the north arm's two eyes
-  die grey and the arm stays black as you walk it; Restore power brings the eyes back.
+- [ ] **Walk the hall again, retuned from your play** (D-025): your own lights now come on the
+  moment you move, with no wait on the server; the light ahead wakes as you pass under the one
+  you're at (the reach is 40 studs, was 32); the tube is full on within a tenth of a second (one
+  stutter); lights stay on 7.5 s after the last movement. The T, both its arms and the corner now
+  have a light each. Look for: the light following you down the hall and round the turn, never a
+  step into the dark; the click clear but not tiring at this pace. Galaxy A16, Quality Level 01
+  and 21. Shots: `docs/art/L-03-*.jpg`.
+- [ ] **Freeze under a light:** stop dead under one. It should cut out about 8 s later and leave
+  you in the dark. Say whether the dark when nothing moves (`L-03-level01-dark-eyes.jpg`: near
+  black, one red eye) is right until the flashlight exists, or a still player should still make
+  out the hall.
+- [ ] **The breaker:** at the post in the T's south half, Cut power (E): the eyes up the north
+  arm, at the corner and in the east hall die grey, and that stretch stays black as you walk it;
+  Restore power brings the eyes back.
 - [ ] **With a friend** (Test > Clients and Servers, 2 players): walk apart and back. Look for:
-  each of you waking lights for both screens; a friend fidgeting keeping a light on over you; the
-  farthest lit tubes glowing without light (only the 3 nearest throw it) and no pool popping on
-  and off as you walk. Read the View menu's Render stats with 4 or more lit.
+  each of you waking lights for both screens, a friend's within a stride of them moving (those
+  come from the server, 20 checks a second, plus the network); a friend fidgeting keeping a light
+  on over you; the farthest lit tubes glowing without light (only the 3 nearest throw it) and no
+  pool popping on and off as you walk. Read the View menu's Render stats with 4 or more lit.
 
 ## Now: walk the turn (built Nov 7, P0-03d)
 

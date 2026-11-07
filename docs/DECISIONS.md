@@ -273,3 +273,18 @@ stickiness against swapping; the rest glow, with no dust. Not chosen: the server
 itself (every Light instance replicated, and a client couldn't budget or flicker them without
 fighting the server), and a fixture staying lit while anyone stands in it (a real sensor, but it
 would kill the freeze). The hold, the speed and the areas are first guesses for the owner to tune.
+
+## D-025 · 2026-11-07 · The lights follow you: your screen predicts your own
+The owner played L-03: right, but the light lagged, so you could step into the dark before it
+came on, and it went out too soon. A real storage hall's lights follow you. So: each screen runs
+the same pure watch on its own character and shows a light lit the moment either it or the
+server says so; the server's word alone puts it dark or blind, and only the server's state is what
+the building sees (keepers, the light board). Other players' and keepers' lights still wait for
+the server, now ticking at 20 a second (was 10). The watch area is 40 studs long (was 32), so the
+light ahead wakes as you pass under the one you're at; the hold is 7.5 s (was 5; the owner said
+7 to 8); the tube lights at once and holds within a tenth of a second (one stutter, was 0.3 s).
+Real light goes to the lit fixtures nearest a point 12 studs ahead of the camera, so the light
+you walk into wins over the one behind you. Every stretch of the test hall now has a fixture
+watching it, junctions included: a junction's middle is midway between its joists, so L-01 can
+hang one there. Not chosen: the server alone with a longer reach (your own first step after a
+freeze would still wait a round trip).

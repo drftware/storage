@@ -32,24 +32,13 @@ export type MotionLights = Brix.System & {
 }
 
 local FREE = Brix.Pathing.free()
--- How far a watch area reaches from its fixture across the floor: its footprint's half-diagonal.
-local REACH = math.sqrt((MotionLight.WatchLength / 2) ^ 2 + (MotionLight.WatchWidth / 2) ^ 2)
 
 -- A fixture's watch area: a box from the floor up, centred under it, its length down the hall.
 local function areaOf(frame: CFrame): MotionLight.Area
-	local along = frame.XVector
-	local centre = frame.Position
-	return Brix.Zone.box({
-		pathing = FREE,
-		center = vector.create(centre.X, centre.Y + MotionLight.WatchHeight / 2, centre.Z),
-		size = vector.create(
-			MotionLight.WatchLength,
-			MotionLight.WatchHeight,
-			MotionLight.WatchWidth
-		),
-		-- Brix turns a box's x side towards -z for a positive turn, as Roblox's Y rotation does.
-		turn = math.atan2(-along.Z, along.X),
-	})
+	local at, along = frame.Position, frame.XVector
+	return Brix.Zone.box(
+		MotionLight.watchBox(FREE, at.X, at.Y, at.Z, MotionLight.turnOf(along.X, along.Z))
+	)
 end
 
 local MotionLights = {}
@@ -90,7 +79,7 @@ function MotionLights.new(): MotionLights
 			areaOf(frame),
 			frame.Position.X,
 			frame.Position.Z,
-			REACH,
+			MotionLight.Reach,
 			not (zone and cutZones[zone])
 		)
 		ids[inst] = id

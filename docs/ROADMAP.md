@@ -116,8 +116,10 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   them (`HallLights`): the eye's flare, the relay's click and the tube's flicker as it trips, a
   softer click and the eye sinking as it falls dark, silent death when the breaker cuts it. Real
   light for the three lit fixtures nearest the camera, a glow beyond. The test hall's five
-  fixtures are motion lights, with a breaker post in the T for the north arm. Feel and two
-  players: `OWNER.md`.
+  fixtures are motion lights, with a breaker post in the T for the north arm. Then, from the
+  owner's play (D-025): your screen predicts your own lights, the reach is 40 studs, the hold
+  7.5 s, the flicker a tenth of a second, and every stretch of the turn has its fixture. Feel and
+  two players: `OWNER.md`.
 - [ ] **P0-04 The door's sounds and feel.** The quiet scrape of a peek, the loud rattle of an
   open (keepers hear it), the bang and bounce of a slam with a little camera shake nearby, the
   latch's clack, the padlock; from Roblox's audio library, timed off `RollUpDoor.play`'s duration.
@@ -130,7 +132,8 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
 
 - [ ] **L-01 The floor generator.** A floor laid from a seed on the GDD's tile grid: unit rows
   with shared walls dropped, numbers, paint per floor, the elevator lobby, the motion lights
-  placed through L-03's system; built during the ride.
+  placed through L-03's system (a fixture every 24 studs of hall and one over every junction's
+  middle, so no stretch goes unwatched); built during the ride.
   Brix: Random (seeded), Schema for tile rows.
   Junctions (D-023): lay them with `CorridorKit.junction` turned so `Specs.Junctions.<name>.Arms`
   point down the halls; keep a straight between two junctions (two girders would meet on one
