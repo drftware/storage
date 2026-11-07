@@ -49,13 +49,14 @@ owner judges.
 ## Queue (the next run's order, from ROADMAP)
 1. **P0-03 The corridor kit:** hall floor and ceiling, the tile set's walls and corners, the
    motion-light fixture, built around `HallLight`'s numbers.
-2. **P0-04 The door's sounds and feel:** peek scrape, open rattle, slam bang and bounce, latch,
+2. **L-03 Motion lights** (moved up by the owner, Nov 7): fixtures wake as you walk the hall,
+   server-owned, set through `HallLight` so `BehindDoors` can still dim them for a player shut in.
+3. **P0-04 The door's sounds and feel:** peek scrape, open rattle, slam bang and bounce, latch,
    padlock.
-3. **Phase 1, then Phase 2** (ROADMAP): the loop with real assets (L-01 to L-09); L-01 must call
-   `RollUpDoor.fitCollider` on each placed unit, as DevCorridor does; L-02 carries the phone
-   prompt layout (five prompts on one point stack into one tap button). L-03's motion lights must
-   set lights through `HallLight` so they keep the tag and lit brightness `BehindDoors` scales.
-4. **Polish waiting:** at low graphics a peeked unit lights evenly, not from the floor up; re-run
+4. **Phase 1, then Phase 2** (ROADMAP): the loop with real assets (L-01, L-02, L-04 to L-09);
+   L-01 must call `RollUpDoor.fitCollider` on each placed unit, as DevCorridor does; L-02 carries
+   the phone prompt layout (five prompts on one point stack into one tap button).
+5. **Polish waiting:** at low graphics a peeked unit lights evenly, not from the floor up; re-run
    `UnitKit.prepare` on the template so it saves at 1.2 deep; sizes S and L by eye; a client-side
    door collider if the ~0.1 s lag feels wrong; the padlock is too small to spot from standing
    height; touch look speed may want a feel number; the cursor hint once ever (needs the saved

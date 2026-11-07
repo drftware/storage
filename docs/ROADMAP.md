@@ -78,6 +78,14 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
 - [ ] **P0-03 The corridor kit (art).** Hall floor and ceiling, end walls and corners for the
   GDD's tile set (straight, corner, T, cross, dead end), and the motion-light fixture (the
   building's eyes), built the unit's way and judged at phone size.
+- [ ] **L-03 Motion lights the building watches.** Moved up from Phase 1 by the owner (Nov 7):
+  the hall should light as you walk it, like a real storage building, and mostly-dark fixtures
+  give the hall its pools of light and dark between. Fixtures wake for anything moving near them
+  and fall dark a while after it leaves; the server owns their state; real lights near the
+  camera, a glow farther out (GDD Lights). Built on the test hall's fixtures (P0-03's kit), so
+  L-01 later places fixtures through the same system. Set every light through `HallLight` so it
+  keeps the tag and lit brightness that `BehindDoors` scales for a player shut in a unit.
+  Brix: Zone for each fixture's watch area.
 - [ ] **P0-04 The door's sounds and feel.** The quiet scrape of a peek, the loud rattle of an
   open (keepers hear it), the bang and bounce of a slam with a little camera shake nearby, the
   latch's clack, the padlock; from Roblox's audio library, timed off `RollUpDoor.play`'s duration.
@@ -87,7 +95,8 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
 Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtests.
 
 - [ ] **L-01 The floor generator.** A floor laid from a seed on the GDD's tile grid: unit rows
-  with shared walls dropped, numbers, paint per floor, the elevator lobby; built during the ride.
+  with shared walls dropped, numbers, paint per floor, the elevator lobby, the motion lights
+  placed through L-03's system; built during the ride.
   Brix: Random (seeded), Schema for tile rows.
 - [ ] **L-02 Doors as the GDD's state machine.** Closed, peeking, opening, open, slamming,
   locked; prompts for Peek, Open, Slam and Lift from inside; range, tool and rate checks. Brix: the
@@ -96,9 +105,6 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
   open door) and space them with `UIOffset`. The test hall's five prompts on one point draw as
   five 138×72 tap buttons on top of each other, so a phone can't pick one (P0-02c). Keep each
   prompt's point on the door at about eye height so it stays on screen up close.
-- [ ] **L-03 Motion lights the building watches.** Fixtures wake for anything moving near them;
-  the server owns their state; real lights near the camera, a glow farther out (GDD Lights).
-  Brix: Zone for each fixture's watch area.
 - [ ] **L-04 What's behind the door.** A first director deals each unit's contents on open: a
   find, a note, nothing, or a keeper (GDD "What's behind the door"). Needs find and box props.
 - [ ] **L-05 Notes, the keypad and the elevator.** The floor's 4-digit code on sticky notes, the
