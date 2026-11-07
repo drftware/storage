@@ -12,7 +12,7 @@ touches. This file is read on demand, never at session start; keep each row to o
 | `src/shared/StorageUnit/Motion.luau` | Pure door timing curves per action, targets, the replicated motion string |
 | `src/shared/StorageUnit/RollUpDoor.luau` | Server `play`/`setLocked`/`rise` and the DoorCollider (`ColliderDepth`, `fitCollider`); `spec`; client `watchTagged` rigs, the lazy slat chain, posing |
 | `src/shared/StorageUnit/UnitKit.luau` | One-time `prepare` of an imported unit; `paint`, `number`, `dropWall` |
-| `src/shared/HallLight.luau` | The hall fixture's light (D-015): height, cone, brightness, the weaker far tube, the exit sign's glow, the line under a door; `light`, `exitSign` tag each light `HallLight.Tag` with its lit brightness (D-016) |
+| `src/shared/HallLight.luau` | The hall fixture's light (D-015, D-017): the tube's height, cone, brightness and short reach, the fill at door height, the weaker far tube, the exit sign's glow, the line under a door; `light` (tube and fill) and `exitSign` tag each light `HallLight.Tag` with its lit brightness (D-016) |
 | `src/shared/StorageUnit/ShutIn.luau` | Pure: who a shut door hides from whom (inside the unit's room or not, door shut or not), and `light`, how much hall light reaches you shut in as the door lifts; `tests/shutin.spec.luau` |
 | `src/shared/StorageUnit/Specs/` | Generated per size by `art/unit/build.py --stage export`; never hand-edit |
 | `src/server/init.server.luau` | The server's Brix Host: declares its systems, steps them on Heartbeat, stops them on close |

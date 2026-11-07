@@ -134,9 +134,15 @@ verified: a doc page, Studio, or "untested".
   MCP (Client); Play resets it to Automatic. Put it back to Automatic when done.
 - **Low graphics ignores geometry entirely** (Play at Level08, 2026-11-06): a 2-stud concrete
   slab over a unit and a 2-stud block in front of its door changed nothing inside; switching the
-  tubes off made it black. Range barely matters there either (15 against 22 looked the same): the
-  light spreads coarsely past it. Only the lights themselves (brightness, on or off) steer that
-  look, so scale them per client (D-016).
+  tubes off made it black. Only the lights themselves steer that look, so scale them per client
+  (D-016). Range does steer it once it stops short of what it lit (2026-11-07): 15 against 22
+  looked the same, but a 14-stud tube left an open unit's back wall dark at low graphics.
+- **Low graphics against full quality, measured** (2026-11-07, `scripts/brightness.py` on the
+  spawn view): floors come out the same at both; upright walls, facades and a unit's insides
+  are 2 to 3 times brighter at low graphics. `ExposureCompensation` moves both levels alike, and
+  doubling a light's brightness doubled both (low graphics doesn't cap it). A light level with
+  the walls (a fill at door height) narrows the gap; see D-017. A light fades to nothing at its
+  Range at full quality, so a fill must reach a little past what it should light.
 - **Neon blooms into blobs at low graphics:** a neon strip brighter than about 150 grey smeared
   into round blotches at Level08 (Lighting's Bloom, Threshold 2). Keep small glowing details at
   mid grey; Neon still reads white.

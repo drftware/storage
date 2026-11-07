@@ -136,3 +136,19 @@ floor. Full quality gets the same treatment, so the moment looks the same on eve
 real shadows already kept the room dark. Not taken: thicker walls or a unit roof (no effect),
 guessing the device's quality (Roblox doesn't say on Automatic), a light under the door (one more
 real light, and it would leak in too). The hall's own low-graphics look is P0-02h.
+
+## D-017 · 2026-11-07 · A fixture is two lights: a short tube and a fill at door height
+Studio's Automatic quality (and a phone's) switches between low graphics and full quality
+mid-play. Measured from the spawn: floors came out the same at both, but low graphics lit upright
+walls, facades and an open unit's insides 2 to 3 times brighter, so the hall flickered between
+two looks and an open unit between lit and black. Neither exposure nor brightness separates the
+two (both move together; low graphics doesn't cap a light). Range does: low graphics ignores
+shadows, so a 22-stud tube flooded the units, while 14 reaches only the floor and doors under it.
+So each fixture is now the tube, shadowed, 14 studs, for the pool on the floor, plus a
+shadowless PointLight 5 studs up (`HallLight.FillHeight`) standing in for light bounced off that
+pool: level with the walls, it lights them at full quality as low graphics does, and it reaches
+into an open unit at both. Result: low graphics about 1.7x full quality, an open unit dimly
+readable at both (the owner's pick, Nov 6). Cost: two real lights per lit fixture, so the 6-light
+budget (D-015) holds three lit fixtures; the fill is tagged like the tube, so `BehindDoors` dims
+it for a player shut in. Not taken: a fill at the tube's height (lit the units' tops, closed less
+of the gap), guessing the device's quality (Roblox doesn't say on Automatic).

@@ -12,9 +12,6 @@ nowhere else.
 
 ## Now: judge P0-02g (built Nov 6)
 
-- [ ] **Reconnect Rojo once** (Disconnect, then Connect; or restart `rojo serve`): Lighting still
-  has no colour correction called `Grade` in Studio (checked Nov 6). After the reconnect, Lighting
-  has a `Grade` with Saturation -0.15.
 - [ ] **Judge the shots:** `docs/art/P0-02g-inside.jpg` is the view from inside shut unit 105:
   low graphics before (lit grey box), low graphics now, full quality now. `P0-02g-peek.jpg` is the
   same spot while someone peeks the door: low graphics (left), full quality (right). Look for:
@@ -30,8 +27,19 @@ nowhere else.
   > Studio Settings > Rendering), and put it back to Automatic after.
 - [ ] **When judging light, fix the Quality Level** (File > Studio Settings > Rendering): on
   Automatic, Studio switches between low graphics and full quality by itself mid-Play, which is
-  the light changing between your two screenshots (Nov 6). P0-02h makes the two looks close.
-- [ ] **The low-graphics hall still looks flat:** `docs/art/P0-02g-hall.jpg` is the hall from the
-  spawn at low graphics (left) and full quality (right). Nothing changed there this session;
-  that's P0-02h. Say if anything beyond the white facades and the lit doors between fixtures bothers
-  you.
+  the light changing between your two screenshots (Nov 6). P0-02h brought the two looks closer.
+
+## Now: judge P0-02h (built Nov 7)
+
+- [ ] **Judge the shots:** `docs/art/P0-02h-hall.jpg` is the hall from the spawn, top row before,
+  bottom row now, low graphics left and full quality right. `P0-02h-open-101.jpg` is the same
+  layout looking into open unit 101. Look for: the bottom pair much closer than the top pair, a
+  pool of light under the far tube, and 101's walls dimly readable at both (it was black at full
+  quality). Known: low graphics is still about 1.7x brighter, and the facades near the spawn still
+  read near white there. `P0-02h-inside-105.jpg` checks a shut unit is still dark at low graphics.
+- [ ] **Feel it yourself:** Play on Automatic, walk the hall from the spawn, open 101 (E) and look
+  in. Look for: when Studio switches quality by itself, a small dimming, not a different hall.
+  Say if you want them closer still (more of the light from the fill, at some cost to the pools).
+- [ ] **The light budget:** each lit fixture is now two real lights (the tube and its fill), so the
+  6-light default (D-015) means three lit fixtures awake at once on a phone (D-017). Say if motion
+  lights (L-03) should allow more.

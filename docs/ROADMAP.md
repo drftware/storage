@@ -66,15 +66,21 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
   dims the hall's lights for whoever is shut in, draws the line under the door as a glowing
   strip, and lets the light flood back as the door lifts (D-016; `docs/art/P0-02g-inside.jpg`,
   `-peek.jpg`).
-- [ ] **P0-02h The hall on every phone.** Automatic graphics quality switches levels by itself
-  mid-play, so the hall jumps between two looks: low graphics lights everything in reach evenly
-  (flat white facades, open units lit inside), full quality leaves an open unit black inside
-  (`docs/art/P0-02g-open-101.jpg`, `-hall.jpg`). Bring the two together so a switch is barely
-  seen. The owner likes the low-graphics open unit (walls dimly readable) better than full
-  quality's black one (Nov 6), so meet in the middle: an open unit readable at both, pools and
-  dark between along the hall (in a real floor, unlit motion lights do much of that). The sheets' grey haze glowing under the ceiling near a fixture (a soft glow part, slow
-  dust particles or bloom). The hall's triangle and draw-call counts, and phone-size shots in the
-  Device Simulator at low and high quality.
+- [x] **P0-02h The hall's light at every quality.** Automatic graphics quality switches levels
+  mid-play, and low graphics lit upright walls 2 to 3 times brighter than full quality (floors
+  matched), so open units flipped between lit and black. Each fixture is now a short shadowed
+  tube for the pool on the floor plus a shadowless fill at door height (D-017): low graphics is
+  about 1.7x full quality (was 1.9x in the hall, 2.35x in an open unit), and an open unit's
+  walls read dimly at both (`docs/art/P0-02h-hall.jpg`, `-open-101.jpg`; the shut-in dark holds,
+  `-inside-105.jpg`).
+- [ ] **P0-02i The hall's haze, cost and phone shots.** The sheets' grey haze glowing under the
+  ceiling near a lit fixture: try slow dust particles lit by the fixture (Roblox's built-in smoke
+  texture, few particles, LightInfluence 1 so they dim with the light and go dark with a dead
+  fixture), a soft glow part, or bloom; judge at Level08 and Level21 and keep the see-through
+  area small for low-end Android. Then the hall's triangle and draw-call counts at both levels
+  (View > Stats, Render) noted in docs/STUDIO.md, and phone-size shots in the Device Simulator
+  at low and full quality. If the owner wants the two looks closer still, the next lever is
+  the fill's share (more fill, less tube).
 - [ ] **P0-03 The corridor kit (art).** Hall floor and ceiling, end walls and corners for the
   GDD's tile set (straight, corner, T, cross, dead end), and the motion-light fixture (the
   building's eyes), built the unit's way and judged at phone size.
