@@ -43,6 +43,17 @@ nowhere else.
   light (the others' bulbs only glow): look for a pool popping on or off as you pass. Read View >
   Render stats with four open.
 
+## Now: judge L-04c, the first finds (built Nov 7, in Blender; Studio next session)
+
+- [ ] **Judge the four finds:** `art/sheets/finds-lineup.png` (the four in a studio),
+  `finds-close-a.png` and `finds-close-b.png` (up close), and `finds-unit.png` (among the boxes at
+  the back of a unit, by a dim warm bulb, from the doorway; a Blender render, not Studio yet).
+  Look for: each plain for what it is from the doorway (a boombox, a TV, a teddy, roller skates),
+  dusty and worn but worth taking. Say if any should be swapped for another 1980s bedroom thing.
+- [ ] **The rest of the bedroom set:** the GDD names the set, not its pieces. Default for the next
+  ones, about eight in all: an electric guitar, a lava lamp, a shoebox of mixtapes, a desk phone,
+  and the display piece a finished set unlocks. Say if you'd rather other things.
+
 ## Now: judge L-04a, the moving boxes (built Nov 7)
 
 - [ ] **Set the boxes' collision, then save:** select the five boxes in

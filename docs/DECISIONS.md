@@ -458,3 +458,21 @@ in (low graphics lights through walls), but leaves the bulb of the unit you're s
 chosen: a server-owned bulb state (one more replicated value that can only echo the door); the
 bulb as part of the unit's own model (the unit's FBX and bake are the unit pipeline's, and a
 lamp is a kit piece the lobby can reuse).
+
+## D-035 · 2026-11-07 · The bedroom set's first finds: four real things, one atlas, unwrapped one by one
+L-04c builds the GDD's 1980s bedroom set first, four pieces chosen to read from a doorway at phone
+size in a dim unit: shape first (two round speakers and a handle; a screen and rabbit ears; a
+bear's round ears; four pink wheels) and colours apart from the boxes' kraft (chrome and black;
+walnut and silver; cream; white and pink). Real sizes at the boxes' 10 inches a stud. One texture
+set per set (Bedroom: colour, normal, roughness and metalness, which the chrome needs), so a
+floor's finds cost one set of maps. Dust is baked in on whatever faces up; a mimic will wear the
+same atlas baked clean, not a second mesh. The GDD names no look for rarity, so there's none.
+The pipeline differs from the boxes' in three places, each a Blender trap met here: each find is
+smart-projected alone into its own square sized by its surface (unwrapped together, the teddy's
+islands folded over one another); the bake runs with no margin and pads the gutter afterwards from
+a coverage pass (each object's margin painted over its neighbours' island edges); and the bake's
+unwrap is saved and worn by the later stages, with spheres built point by point (smart project
+packs differently each run, and bmesh's `create_uvsphere` numbers its points differently). The
+import into Studio was split off to L-04c2. Not chosen: the boxes' face-by-face atlas (curved
+things have no flat faces to pack); printed words now (unreadable at phone size, in polish);
+a rarity glint.

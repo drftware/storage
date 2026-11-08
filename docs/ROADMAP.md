@@ -196,9 +196,17 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
     slam's bang included. Dim and warm (0.6, reach 11): the boxes at the back plain from the
     doorway, the back corners dark. The 3 nearest lit bulbs throw light and hum; the rest glow.
     `UnitLight`, `UnitLights`, `ShutIn.bulb`, `CorridorKit.hangBulb`; shots `docs/art/L-04b-*.jpg`.
-  - [ ] **L-04c The first finds.** A handful from one of the GDD's sets (the 1980s bedroom), each
-    one readable on a phone from the doorway, dusty (a mimic has no dust, GDD), and light enough
-    in triangles for a floor of them. Rarity's look (a glint, a colour) only if the GDD names one.
+  - [x] **L-04c The first finds' art.** Done Nov 7 (D-035), in Blender only: the 1980s bedroom
+    set's first four (a boombox, a portable TV, a mended teddy, a pair of roller skates), one
+    MeshPart each on one Bedroom atlas (colour, normal, roughness, metalness; 99 texels a stud),
+    dusty on whatever faces up, 1,004 to 2,248 triangles. `art/finds/` (README, sheets
+    `finds-*.png`), `Finds` (`prepare`, `clone`) and its generated Specs. The GDD names no look
+    for rarity, so none. Split from the import on Nov 7: the unwrap and bake traps took the
+    session (`docs/STUDIO.md`).
+  - [ ] **L-04c2 The finds into Studio.** Upload (`lune run scripts/upload_art Bedroom`), insert,
+    `Finds.prepare` each into `ReplicatedStorage.Props.Finds` (`art/finds/README.md`); judge them
+    among 101's boxes from the doorway under its bulb on the Galaxy A16 view at Level01 and 21:
+    each readable for what it is at phone size. Tune in `art/finds/spec.py` if one doesn't read.
   - [ ] **L-04d The director deals each unit.** On the open: a find, a tool, nothing, or a keeper
     (a marker until L-06), the boxes stacked to fit the unit's size; padlocked units get the best
     finds and the worst odds (GDD), and a laid floor decides which doors start padlocked (they all
@@ -244,6 +252,16 @@ launch.
   the corner); or make the tops crawl-only. `Floor.runs` lists each run's slots in order.
 
 ## Polish waiting for a slot
+
+- **The finds' printed words** (L-04c): the boombox's badge and "STEREO", the tuner's numbers,
+  the TV's channel numbers, from a label sheet the boxes' way.
+- **The bedroom set's other pieces** (L-04c): about four more and the display piece a finished set
+  unlocks (GDD); the owner picks (`OWNER.md`).
+- **A mimic's clean finds** (L-04c, needed by the mimic): the Bedroom atlas baked again with
+  `DUST = 0` (a mimic has no dust, GDD), uploaded as its own maps.
+- **The teddy's fuzz and the atlas's room** (L-04c): a soft fur edge on its outline; 63% of the
+  atlas is empty gutter round the teddy's small islands, so a tighter packer would raise 99
+  texels a stud.
 
 - **The boxes' second look** (L-04a): every box of a size looks alike (one atlas). A second label
   set, or a box turned so another face shows, before a unit holds three of one size side by side.

@@ -95,6 +95,12 @@ local ART: { Art } = {
 		manifest = "art/boxes/assets.json",
 		description = "Moving boxes in a self-storage unit: small, medium, large, wardrobe and an opened one",
 	},
+	{
+		key = "Bedroom",
+		path = "art/finds/out/Bedroom.fbx",
+		manifest = "art/finds/assets.json",
+		description = "A 1980s bedroom's things left in storage: a boombox, a portable TV, a teddy, roller skates",
+	},
 }
 local MODEL: OpenCloud.Kind = { assetType = "Model", contentType = "model/fbx" }
 

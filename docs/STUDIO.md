@@ -385,3 +385,13 @@ verified: a doc page, Studio, or "untested".
   (`local state: Door.State = Door.stateOf(...)`); the same for a loop over a `{ Door.Side }`
   (`for _, point: Door.Side in Door.Sides`). A table typed `{ [Union]: T }` rejects `t.Key`; give
   it a record type (`{ BoltCutters: boolean, Padlock: boolean }`) or index with a typed local.
+
+### Blender traps met building the finds (Nov 7, `art/finds/`)
+- `bmesh.ops.create_uvsphere` numbers its points differently from run to run. Anything whose
+  UVs are saved and worn later must build its spheres point by point (`build.py` `ellipsoid`).
+- Smart project over several objects at once can fold one object's islands over each other (the
+  teddy's, among three others; alone it was clean). Unwrap each object alone and place it.
+- Smart project packs differently each run: save the bake's UVs and wear them in later stages,
+  after the same trip through edit mode (it renumbers some faces' corners).
+- Baking several objects into one image: each object's margin paints over the others' island
+  edges, whole small islands included. Bake with margin 0, bake a coverage pass, pad afterwards.
