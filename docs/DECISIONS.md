@@ -432,3 +432,12 @@ memory for boxes alone); SurfaceGui labels (one draw call each, on every box of 
 corrugation at the cut edges (2 texels a flute at this density). Every box of a size looks alike;
 a second set of labels is in ROADMAP's polish list.
 
+## D-033 · 2026-11-07 · Each unit has its own dim bulb; players carry no torch
+The owner's call, after L-04a found the hall light stops at an open unit's doorway: "a small light
+in each unit, dim", and players don't need a torch. So what's behind a door is seen by the unit's
+own bulb, not by a beam the player aims. Default for the gap (`OWNER.md`): the bulb comes on as the
+door rises and goes out when it's shut, keeping a shut unit the GDD's blind spot and P0-02g's dark
+with a line under the door. On a phone only the nearest lit bulbs throw light, as the hall lights
+do. Not chosen: a torch every player carries (R.E.P.O.'s head lamp), which would make the dark
+something you push back yourself rather than the building's.
+

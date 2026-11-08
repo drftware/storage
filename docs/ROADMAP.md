@@ -188,15 +188,23 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
     generated Specs; templates at `ReplicatedStorage.Props.Boxes`. Stacked in unit 101 they read
     as boxes from the doorway, but only in a torch's beam: the hall light doesn't reach past the
     doorway, so they're unseen under it and in the dark (`docs/STUDIO.md`).
-  - [ ] **L-04b The first finds.** A handful from one of the GDD's sets (the 1980s bedroom), each
+  - [ ] **L-04b The unit's own light** (owner, Nov 7: "a small light in each unit, dim"; no
+    torch). The hall light stops at the doorway (L-04a), so an open unit is black inside and its
+    reveal is lost. Every unit gets one small caged bulb on a cord from its wire top (built the
+    unit's way; an S and an M at least), dim and warm, its pool just reaching the back wall and the
+    boxes. It comes on as the door rises (a peek lets a little out) and goes out when the door is
+    shut, so a shut unit stays the GDD's blind spot, black but for the line under the door
+    (P0-02g). The moment it serves: the door goes up and a weak bulb flickers on over whatever's
+    there. Its own feedback in the ticket: a click and a stutter on, a faint hum near it. Phone
+    cost: only lit bulbs near you throw light (the hall's rule, the 3 nearest), the rest glow.
+  - [ ] **L-04c The first finds.** A handful from one of the GDD's sets (the 1980s bedroom), each
     one readable on a phone from the doorway, dusty (a mimic has no dust, GDD), and light enough
     in triangles for a floor of them. Rarity's look (a glint, a colour) only if the GDD names one.
-  - [ ] **L-04c The director deals each unit.** On the open: a find, a tool, nothing, or a keeper
+  - [ ] **L-04d The director deals each unit.** On the open: a find, a tool, nothing, or a keeper
     (a marker until L-06), the boxes stacked to fit the unit's size; padlocked units get the best
     finds and the worst odds (GDD), and a laid floor decides which doors start padlocked (they all
-    start unlocked now, L-01c). The sticky note is L-05's. Needs light inside an open unit
-    first: the hall light stops at the doorway (L-04a), so the open's reveal can't be seen. The
-    default is a torch every player carries (`OWNER.md`); it may be its own ticket before this.
+    start unlocked now, L-01c). The sticky note is L-05's. Needs L-04b's light, so the
+    open's reveal can be seen.
 - [ ] **L-05 Notes, the keypad and the elevator.** The floor's 4-digit code on sticky notes, the
   keypad, the gate that shuts 30 s after the last digit (Dandy's World). Needs the elevator,
   gate, keypad and note art first. Brix: Zone for "aboard", the Clock for the gate's timer.

@@ -59,12 +59,10 @@ nowhere else.
 
 ## Decide: moving between units, and the map (your note, Nov 7)
 
-- [ ] **Light inside an open unit** (found Nov 7, L-04a): the hall light stops at the doorway, so
-  an open unit's floor and back wall stay black and what's in it can't be seen, which kills the
-  open's reveal. Default: every player carries a torch from the start, as R.E.P.O.'s players
-  carry a head lamp, built before the director deals units (L-04c), so a reveal is your beam
-  finding it. The alternative: a unit's own dim bulb that comes on with the door, which costs
-  a light per open unit on a phone and gives away less darkness. Say which.
+- [ ] **The unit's bulb comes on with its door** (default for your call on Nov 7, a dim light
+  in each unit and no torch; L-04b builds it): it lights as the door rises and goes out when the
+  door is shut, so hiding in a shut unit stays black but for the line under the door. Say if it
+  should stay on in a shut unit instead (easier to see who's in there with you, less dread).
 
 - [ ] **Where a saw hole and a ladder can go** (built Nov 7 on the default, L-01d): a crawl hole
   only into the unit beside you, and the tops run along a row (D-031). Behind each row is a

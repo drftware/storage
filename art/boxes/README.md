@@ -62,7 +62,7 @@ painted. The game reads the sizes from `src/shared/Boxes/Specs.luau`.
    last write doesn't take, so set CollisionFidelity in the Properties panel (`docs/STUDIO.md`).
 3. Save the place: the templates live in it at `ReplicatedStorage.Props.Boxes.<Name>` (D-009).
 
-`Boxes.clone(name, pivot, parent)` stands a copy anywhere; L-04c's director will stack them.
+`Boxes.clone(name, pivot, parent)` stands a copy anywhere; L-04d's director will stack them.
 
 ## How it's made
 
