@@ -12,12 +12,12 @@
 	elevator rides. Each hall piece and everything on it is dressed before it is parented, once:
 	clients cache a door's frame and colours when its unit arrives.
 
-	`unit` puts one unit at a door face, with its prompts; the test hall (DevCorridor) uses it too.
+	`unit` puts one unit at a door face; the test hall (DevCorridor) uses it too. Its door's buttons
+	come from the Doors system once it's in the world.
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local CorridorKit = require(ReplicatedStorage.Shared.CorridorKit)
-local DoorPrompts = require(script.Parent.DoorPrompts)
 local Floor = require(ReplicatedStorage.Shared.Floor)
 local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
@@ -98,8 +98,8 @@ local function specOf(unit: Model): Specs.Spec
 	return Specs[if type(size) == "string" then size else "M"]
 end
 
--- A clone of `template` with its door's outer face at `face` (looking into the hall), painted,
--- numbered and with its prompts, ready to parent. Units are dressed before they reach Workspace:
+-- A clone of `template` with its door's outer face at `face` (looking into the hall), painted and
+-- numbered, ready to parent (the Doors system gives it its buttons once it's in the world). Units are dressed before they reach Workspace:
 -- clients cache the door's frame and colours when a unit arrives.
 function FloorBuilder.unit(template: Model, face: CFrame, number: string, colour: Color3): Model
 	local unit = template:Clone()
@@ -109,7 +109,6 @@ function FloorBuilder.unit(template: Model, face: CFrame, number: string, colour
 	UnitKit.paint(unit, colour, UnitKit.Colours.Wall)
 	UnitKit.number(unit, number)
 	RollUpDoor.fitCollider(unit)
-	DoorPrompts.add(unit, number)
 	return unit
 end
 

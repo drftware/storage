@@ -39,8 +39,9 @@ As of Brix commit `4c21b5f` (2026-11-05; 0.1.0 not tagged yet). Recheck its `src
 | Juice, UI, debug overlay and cheat console | Presentation kit, UI, developer tooling (ENG-15 to ENG-17) | planned; camera shake stands in as `src/shared/Shake.luau` and `src/client/CameraShake.luau` (P0-04) until ENG-15 |
 
 What stays in this game: the storage unit and its roll-up door rig (`src/shared/StorageUnit/`),
-every keeper's row and its reason to be alive, floors as data, and all art. A door becomes a Brix
-system on the Host's clock when L-02 turns it into the GDD's state machine.
+every keeper's row and its reason to be alive, floors as data, and all art. The door is a system
+on the Host's clock (`Doors`, L-02), its events on a Brix Signal; its buttons are ProximityPrompts,
+so it needs no remotes until the tools (ENG-09).
 
 ## How the game references it
 

@@ -155,15 +155,27 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
   each piece is parented once. The test hall lays floor 3 of seed 7 beside it ("Walk a floor"),
   checked slot by slot against the data on six floors in Studio; the door prompts moved to
   `DoorPrompts`. The ride's laying is L-08's. Brix: Random (seeded), Schema for the plans.
-- [ ] **L-02 Doors as the GDD's state machine.** Closed, peeking, opening, open, slamming,
-  locked; prompts for Peek, Open, Slam and Lift from inside; range, tool and rate checks. Brix: the
-  door becomes a system on the Host's clock, with Signal for door events; Remotes once ENG-09 ships.
-  Phone first: offer only the actions the door's state allows (Lift only when shut, no Open on an
-  open door) and space them with `UIOffset`. The test hall's five prompts on one point draw as
-  five 138×72 tap buttons on top of each other, so a phone can't pick one (P0-02c). Keep each
-  prompt's point on the door at about eye height so it stays on screen up close.
-  Every refusal answers at the door too: a padlocked door rattles when someone tries it (Pro Sound
-  Effects "Door Shake 4", `rbxassetid://9114152830`, checked to load; a new cue in `DoorSound`).
+- [x] **L-02 Doors as the GDD's state machine.** Done Nov 7 (D-030), verified in Studio (one
+  player): the pure `Door` (closed, peeking, opening, lifting, open, closing, slamming, locked;
+  what each action does from each state and side, and what it refuses and why; 327 Lune checks)
+  and the server's `Doors` system on the Host clock in place of the test prompts. A door shows only
+  the buttons its state allows, side by side in fixed places (Peek left, Open middle, Slam right;
+  Close toggles with Peek), Lift just inside while it's down; every press checked for reach, side,
+  tools and rate. A padlocked door tried, from the hall or from inside, rattles: a few centimetres
+  of give against the bolt and Pro Sound Effects "Door Shake 4", with "Padlocked" on the button;
+  bolt cutters (held 1 s) take the padlock off. Door events on a Brix Signal with how far each is
+  heard. The owner judges the buttons on a phone (`OWNER.md`).
+- [ ] **L-01d The floor laid for the saw and the ladder** (owner, Nov 7: moving between units from
+  inside has to make sense, before the tools are built). Today a row's units share side walls, so
+  a crawl hole works between neighbours, but the rows behind two parallel halls stand 16 studs
+  apart with nothing between, and a plain-wall slot has no floor or top: a hole through a back
+  wall, or a run across the wire tops, dead-ends. In the pure `Floor`: each unit's neighbours (left,
+  right, back: a unit, a plain wall or nothing) and the wire tops as runs a ladder can use; rules
+  so every floor has neighbour pairs for the hole trap near the lobby on floors 1 and 2 (the GDD:
+  they teach it) and few units cut off by plain walls; a plain-wall slot closed on top so a run
+  doesn't drop into it; Lune checks over many seeds; `scripts/floor-map` showing the crawl links
+  and top runs. Waits on the owner's choice in `OWNER.md` (holes only between neighbours, as the
+  GDD's hole trap, or rows back to back so a hole or a top run crosses to the next hall).
 - [ ] **L-04 What's behind the door.** A first director deals each unit's contents on open: a
   find, a note, nothing, or a keeper (GDD "What's behind the door"). Needs find and box props
   It also decides which doors start padlocked: a laid floor's all start unlocked (L-01c).
@@ -180,6 +192,13 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
   the team, cut free in a second, padlocked if left too long (GDD "Getting kept").
 - [ ] **L-08 The ride and the next floor.** The elevator ride and a second floor, so the climb is
   a loop and not a single room. Brix: its round loop (ENG-13) if it has landed.
+- [ ] **L-10 The map** (owner, Nov 7: players shouldn't get lost and give up). A floor map you
+  open with a button, filling in only the halls you've walked, as R.E.P.O.'s map fills in rooms as
+  you find them; the lobby and elevator always marked, so the sprint for the gate always knows the
+  way; units you've opened ticked. Never keepers or lit fixtures: that stays the office light
+  board's (GDD), so working the board is still worth a player. Drawn from the same `Floor` data
+  as the building (GDD: one tile graph). Phone first: one tap to open, readable at phone size.
+  Whether friends show on it waits on the owner (`OWNER.md`). Needs L-05's elevator.
 - [ ] **L-09 Hone.** Playtest with friends, tune Config, add juice, repeat until Gate 1. May
   repeat as several sessions; each one names what it changed and why. Brix: live config (ENG-11)
   and the presentation kit (ENG-15) as they land.
@@ -245,3 +264,15 @@ Atmosphere effects wait until the loop is solid (owner, Nov 7); the haze stays a
 - The slot behind a plain wall is empty, with no floor: unseen from the hall, but from a unit's
   wire top (the ladder) you could look down into it. When the ladder comes, give it a floor or a
   closed top.
+- A door answers only when the server's word comes back (a round trip, about 0.1 s on a good
+  phone connection). If it feels late, start the motion on the presser's screen at once and let
+  the server confirm, as the lights do (D-025) (L-02).
+- The Cut button shows on every padlocked door, to players without bolt cutters too (it says "Need
+  bolt cutters"). When the tools land, a client layer could show tool buttons only to who carries
+  the tool, and the padlock tool its own Lock button (L-02, D-030).
+- Bolt cutters cutting a padlock play the padlock's pop; a real cutter's snip and the lock
+  dropping to the floor when the tools land (L-02).
+- If a friend griefs by slamming a door again the moment a lift from inside reaches the top, give
+  a lifted door a second's grace before it can be shut from the hall (L-02; nobody can shut it
+  while it rises).
+

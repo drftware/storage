@@ -9,8 +9,8 @@
 	  slow, the three heaves of a lift from inside surge three times, and it falls quiet as the door
 	  eases to a stop.
 	- Cues: one-shots at the moments Motion.strikes says the door hits something (the slam's bang
-	  and bounce, a close settling, a lift meeting the stop bolts), plus the latch as a lift starts
-	  and the padlock.
+	  and bounce, a close settling, a lift meeting the stop bolts), plus the latch as a lift starts,
+	  the padlock, and a padlocked door rattling against its bolt when someone tries it.
 
 	Every recording is from Roblox's licensed audio library (Pro Sound Effects), so it loads in any
 	game. Start and Stop pick the stretch of the recording to play; they were found by measuring
@@ -28,6 +28,7 @@ export type SoundName =
 	| "Latch"
 	| "PadlockShut"
 	| "PadlockOpen"
+	| "Rattle"
 
 export type Sound = {
 	Id: string,
@@ -142,6 +143,20 @@ DoorSound.Sounds = {
 		Near = 5,
 		Reach = 30,
 	},
+	-- A padlocked door yanked against its bolt (Pro Sound Effects "Door Shake 4"): the first of
+	-- its two shakes, from its onset at 0.15 s through the loudest stretch, cut as it starts to
+	-- ring out. Loud on purpose: trying a padlocked door is a risk (GDD: keepers hear doors).
+	Rattle = {
+		Id = "rbxassetid://9114152830",
+		Start = 0.14,
+		Stop = 0.9,
+		Fade = 0.18,
+		Volume = 1,
+		PitchMin = 0.94,
+		PitchMax = 1.06,
+		Near = 6,
+		Reach = 70,
+	},
 } :: { [SoundName]: Sound }
 
 --[[
@@ -157,6 +172,9 @@ DoorSound.Actions = {
 	Close = { Gain = 0.75, Pitch = 1.05, Reach = 80 },
 	Slam = { Gain = 0.9, Pitch = 1.22, Reach = 110 },
 	LiftInside = { Gain = 1, Pitch = 0.84, Reach = 110 },
+	-- A padlocked door doesn't roll: Gain 0 keeps the roll silent, and its Rattle cue is the sound.
+	-- Reach is the Rattle row's, so a keeper hears it exactly as far as a player does.
+	Rattle = { Gain = 0, Pitch = 1, Reach = 70 },
 } :: { [Motion.Kind]: { Gain: number, Pitch: number, Reach: number } }
 
 -- The roll is at full volume once the door moves at this fraction of its action's average speed;
@@ -203,6 +221,9 @@ end
 
 -- The one-shots of a door motion, in time order.
 function DoorSound.cues(kind: Motion.Kind, from: number, to: number, fullStroke: number): { Cue }
+	if kind == "Rattle" then
+		return { cue(0, "Rattle", 1, 1) }
+	end
 	local cues: { Cue } = {}
 	if from < SHUT and to > from then
 		-- the latch slides as the door breaks away; quietly for a peek
@@ -249,7 +270,7 @@ function DoorSound.roll(
 ): (number, number)
 	local action = DoorSound.Actions[kind]
 	local dur = Motion.duration(kind, from, to, fullStroke)
-	if dur <= 0 or elapsed < 0 or elapsed >= dur then
+	if action.Gain <= 0 or dur <= 0 or elapsed < 0 or elapsed >= dur then
 		return 0, action.Pitch
 	end
 	local pace = Motion.speed(kind, from, to, elapsed, fullStroke) / (math.abs(to - from) / dur)

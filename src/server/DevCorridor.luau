@@ -28,7 +28,7 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local CorridorKit = require(ReplicatedStorage.Shared.CorridorKit)
-local DoorPrompts = require(script.Parent.DoorPrompts)
+local Prompts = require(script.Parent.Prompts)
 local Floor = require(ReplicatedStorage.Shared.Floor)
 local FloorBuilder = require(script.Parent.FloorBuilder)
 local HallLight = require(ReplicatedStorage.Shared.HallLight)
@@ -369,7 +369,7 @@ local function breakerPost(at: Vector3, lights: MotionLights.MotionLights, paren
 	local a = Instance.new("Attachment")
 	a.Position = Vector3.new(0, 1, 0)
 	a.Parent = post
-	local p = DoorPrompts.post(a, "Breaker", "Cut power")
+	local p = Prompts.post(a, "Breaker", "Cut power")
 	local isCut = false
 	p.Triggered:Connect(function()
 		isCut = not isCut
@@ -423,14 +423,42 @@ local function travelPost(
 	local a = Instance.new("Attachment")
 	a.Position = Vector3.new(0, 1, 0)
 	a.Parent = post
-	local p = DoorPrompts.post(a, objectText, actionText)
-	local refuse = DoorPrompts.refuser(p, objectText)
+	local p = Prompts.post(a, objectText, actionText)
+	local refuse = Prompts.refuser(p, function()
+		return objectText
+	end)
 	p.Triggered:Connect(function(player: Player)
 		if ready and not ready() then
 			refuse("Still laying it")
 			return
 		end
 		send(player, to)
+	end)
+end
+
+-- "Bolt cutters" by the spawn (R): take them, and a padlocked door's Cut works for you; press
+-- again to drop them, and it says "Need bolt cutters". A stand-in for Phase 2's tools: the Doors
+-- system reads the player's CarriesBoltCutters attribute.
+local function cuttersPost(at: Vector3, parent: Instance)
+	local post = block(
+		"BoltCutters",
+		Vector3.new(0.4, 4, 0.4),
+		CFrame.new(at.X, FLOOR_TOP + 2, at.Z),
+		CONCRETE,
+		parent
+	)
+	local a = Instance.new("Attachment")
+	a.Position = Vector3.new(0, 1, 0)
+	a.Parent = post
+	local name = "Test tools"
+	local p = Prompts.post(a, name, "Bolt cutters", Enum.KeyCode.R, Enum.KeyCode.ButtonR1)
+	local say = Prompts.refuser(p, function()
+		return name
+	end)
+	p.Triggered:Connect(function(player: Player)
+		local has = player:GetAttribute("CarriesBoltCutters") == true
+		player:SetAttribute("CarriesBoltCutters", not has)
+		say(if has then "Dropped" else "Taken")
 	end)
 end
 
@@ -562,6 +590,7 @@ local function build(lights: MotionLights.MotionLights): Folder?
 		folder
 
 	travelPost("GoFar", Vector3.new(-34, 0, 3), "Streaming test", "Go far", FAR_SPOT, folder)
+	cuttersPost(Vector3.new(-30, 0, 3), folder)
 	travelPost(
 		"ComeBack",
 		Vector3.new(FAR_X + 8, 0, 3),

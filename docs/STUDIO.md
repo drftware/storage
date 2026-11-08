@@ -346,3 +346,13 @@ verified: a doc page, Studio, or "untested".
   `string`; annotate them (`local kind: Motion.Kind, from: number = Motion.decode(...)`).
 - **Lune** runs a spec with `lune run tests/<name>.spec` from the repo root; specs require
   modules by relative path.
+- **Captures miss the prompts** (L-02, 2026-11-07): `screen_capture` draws the 3D view only, not
+  Roblox's ProximityPrompt overlay. To check buttons on screen, listen to
+  `ProximityPromptService.PromptShown`/`PromptHidden` in the Client view and project each shown
+  prompt's attachment with `Camera:WorldToViewportPoint`, adding its `UIOffset`. Phone shots of
+  prompts are the owner's (the Device Simulator).
+- **Union string types across modules** (L-02): a function declared to return a string union
+  (`Door.State`) reads as plain `string` at the call site unless the local is annotated
+  (`local state: Door.State = Door.stateOf(...)`); the same for a loop over a `{ Door.Side }`
+  (`for _, point: Door.Side in Door.Sides`). A table typed `{ [Union]: T }` rejects `t.Key`; give
+  it a record type (`{ BoltCutters: boolean, Padlock: boolean }`) or index with a typed local.

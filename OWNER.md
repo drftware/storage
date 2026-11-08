@@ -15,6 +15,48 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: try L-02, the doors' buttons (built Nov 7)
+
+- [ ] **On a phone view first:** Play with the Galaxy A16 in the Device Simulator. Stand at 101:
+  two buttons side by side, Peek left and Open in the middle. Tap Open: they become Close (left)
+  and Slam (right), nothing in the middle, so a second tap lands on nothing. Tap Peek on a shut
+  door, then the same spot again: that drops it (Close). Look for: every button easy to hit with a
+  thumb, none on top of another, and on the S units past the corner (8 studs apart) the next
+  door's buttons not crowding yours. The captures can't draw the buttons, so no shots this time.
+- [ ] **A padlocked door:** 105 and 112 are padlocked. Press Open: the door jerks against its bolt
+  (watch the line of light under it flicker), rattles loud, and the button says "Padlocked". Hold
+  Cut (R): "Need bolt cutters". Take them at the "Test tools" post right of the spawn (R), come
+  back and hold Cut a second: the padlock pops, and the door offers Peek and Open. Say if the
+  rattle should be louder, longer or carry farther (`DoorSound.Sounds.Rattle`, 70 studs now).
+- [ ] **From inside:** open 101, walk in, turn to the door and Slam (G) or Close (F): its buttons
+  show from inside while it's up. Shut in, Lift (now E) heaves it up in 6 s. Then shut yourself
+  in again and, with the Server view selected, run
+  `workspace.DevCorridor:FindFirstChild("Unit101", true):SetAttribute("DoorLocked", true)` in the
+  Command Bar: Lift now rattles and says "Padlocked" (a padlocked friend needs bolt cutters).
+- [ ] **With a friend** (Test > Clients and Servers, 2 players): one shut inside lifts; the other,
+  in the hall, sees no buttons on that door until it's all the way up, so they can't slam it back
+  down mid-lift. Then slam the door on your friend: they can always Lift out.
+
+## Decide: moving between units, and the map (your note, Nov 7)
+
+- [ ] **Where a saw hole and a ladder can go** (L-01d, the next ticket). Today a row's units share
+  side walls, so a crawl hole between neighbours works (the GDD's hole trap). But behind each row
+  there's a 16-stud empty gap before the next hall's row, so a hole through a back wall, or a run
+  across the unit tops, leads nowhere. Default: holes only between side-by-side neighbours, tops
+  run along a row, and every floor gets enough neighbour pairs (floors 1 and 2 teach the hole trap
+  near the lobby). The alternative: put the rows back to back (deeper units, or halls closer
+  together), so a hole or a top run crosses to the next hall, a shortcut keepers can't take, like
+  Among Us's vents. Bigger change; say if you want it.
+- [ ] **The map** (L-10, after the elevator): a map you open with a button that fills in only the
+  halls you've walked (R.E.P.O.'s map does this), with the lobby and elevator always on it, never
+  keepers (that stays the office light board's job). Default: your friends show on it as dots, as
+  Lethal Company's ship radar shows the crew, so a team can regroup. Say if friends should stay
+  off it (more tension, more getting lost), or if you'd rather it be a small corner map.
+- [ ] **No Lock button on doors** (default, D-030): buttons show to everyone, so a padlock button
+  would sit on every shut door for a tool few carry. The padlock tool will lock a door when it's
+  built. Bolt cutters' Cut does show on every padlocked door and says "Need bolt cutters" without
+  them. Say if you want either the other way.
+
 ## Now: judge L-01a, the floor layouts (built Nov 7)
 
 - [ ] **Judge a few floors as maps:** in a terminal at the project, run
@@ -33,16 +75,6 @@ nowhere else.
 
 ## Now: walk L-01c, a floor laid from the data (built Nov 7)
 
-- [ ] **Walk a floor:** Play. The post on your left at the spawn says "Walk a floor" (E): it sends
-  you to the lobby of floor 3 from seed 7, whose map Output prints at Play (the same one
-  `lune run scripts/floor-map 7 3` prints). Walk out: round the loop, into the dead end (top
-  right of the map), round the corners. Look for: the floor matching its map; no gap, doubled
-  wall or flicker where a unit stands in a junction (304 and 305 across the first T; 342 to 345
-  in the far left corner); the lights waking ahead of you down every hall and round every turn;
-  every door working as in the test hall; mustard doors numbered from 301 as you walk out. "Come
-  back", in the lobby's corner by the elevator, returns you. Shots: `docs/art/L-01c-floor.jpg`,
-  Studio's window, not a phone (top: the lobby, the first hall, the T's two units; bottom: an
-  aisle of plain walls, the arm to a corner, the corner of small units).
 - [ ] **Try other seeds:** select Workspace, add number attributes `DevFloorSeed` (any number) and
   `DevFloorNumber` (1 to 10; 1 and 2 are the short floors), then Play. Delete them after.
 - [ ] **The lobby stand-in:** a plain room with a warm lamp where the elevator will stand, the one
@@ -57,9 +89,9 @@ nowhere else.
 ## Now: judge L-01b, the small unit (built Nov 7)
 
 - [ ] **Try a small door:** Play, go down the hall, take the T's arm that runs to a corner and
-  round it into the short hall. At 110: Peek (Q), Open (E), Close (F), Slam (G), Lock and Unlock
-  (R); 112 is padlocked. Then walk into 110, shut it on yourself (the Command Bar line under "Now:
-  judge P0-02g", with `Unit110`), turn to the door and Lift (T). Look for: the same sounds and
+  round it into the short hall. At 110: Peek (Q), Open (E), Close (F), Slam (G); 112 is padlocked
+  (Open rattles). Then walk into 110, shut it on yourself (Slam from inside), turn to the door and
+  Lift (E). Look for: the same sounds and
   slam as a big door; the room feeling tight with the door down; the next door's prompts never
   showing instead (the doors are 8 studs apart).
 
@@ -87,14 +119,15 @@ nowhere else.
 
 ## Now: judge P0-04, the door's sounds and the slam's jolt (built Nov 7)
 
-- [ ] **Hear every door action:** Play, stand at unit 101 and use its prompts: Peek (Q), Open (E),
-  Close (F), Slam (G) from open and again from a peek, Lock and Unlock (R). Then go in, Slam it on
-  yourself with the Command Bar line under "Now: judge P0-02g", and Lift (T). Listen for: the
+- [ ] **Hear every door action:** Play, stand at unit 101 and use its buttons: Peek (Q), Open (E),
+  Close (F), Slam (G) from open and again from a peek; cut 105's padlock (bolt cutters from the
+  "Test tools" post, then hold R). Then go in, Slam it on yourself from inside, and Lift (E). Listen for: the
   latch clack as any lift starts; a peek's rattle quiet and low, an open's loud; the lift from
   inside loud and surging three times as the door heaves; the slam's bang on the very frame the
   door hits the floor, a thump under it, then the bounce's clatter; a close settling with a
   rattle; a clunk as an open reaches the top; locking: the bolt, then the padlock's snap;
-  unlocking: the pop, then the bolt. I picked every sound by measuring its loudness, not by ear,
+  unlocking (cutting): the pop, then the bolt; locking is the Command Bar line under "Now: try
+  L-02" on a shut door. I picked every sound by measuring its loudness, not by ear,
   so say which to swap: each is one row in `src/shared/StorageUnit/DoorSound.luau`. Most likely
   to miss: the bang (a gas tank dropped on loose metal), the top's clunk (a car door slam pitched
   up), the padlock (its snap is my reading of the recording).
@@ -129,10 +162,7 @@ nowhere else.
   at both qualities; at a peek, light pours in. Known gap at low graphics: the peeked room lights
   evenly rather than from the floor up.
 - [ ] **Feel it yourself:** Play, open 101 (E) and walk in, turn to face the door, then shut it
-  on yourself: Close (F) if the prompt shows from inside; otherwise, in the Command Bar with the
-  Server view selected, run
-  `require(game.ReplicatedStorage.Shared.StorageUnit.RollUpDoor).play(workspace.DevCorridor:FindFirstChild("Unit101", true), "Close")`.
-  Look for: the room going dark as the door comes down, the line under the door. Then Lift (T)
+  on yourself: Close (F) from inside while it's up. Look for: the room going dark as the door comes down, the line under the door. Then Lift (E)
   and watch the light come back with the door. Try it on Automatic and at Quality Level 21 (File
   > Studio Settings > Rendering), and put it back to Automatic after.
 - [ ] **When judging light, fix the Quality Level** (File > Studio Settings > Rendering): on

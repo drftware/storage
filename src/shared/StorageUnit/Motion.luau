@@ -8,12 +8,13 @@
 		Close       1.6 s  pulled down by hand
 		Slam        drop   pulled hard: falls like a dropped curtain, bangs, bounces once
 		LiftInside  6 s    lifted from inside, heaving: always possible, never fast
+		Rattle      0.7 s  a padlocked door tried: it jerks against the bolt and drops back
 
 	Pure functions of (kind, from, to, elapsed), so the server and every client agree on where
 	a door is without streaming positions: the server sends one Motion, everyone samples it.
 ]]
 
-export type Kind = "Peek" | "Open" | "Close" | "Slam" | "LiftInside"
+export type Kind = "Peek" | "Open" | "Close" | "Slam" | "LiftInside" | "Rattle"
 
 local Motion = {}
 
@@ -23,6 +24,7 @@ local KINDS: { [string]: Kind } = {
 	Close = "Close",
 	Slam = "Slam",
 	LiftInside = "LiftInside",
+	Rattle = "Rattle",
 }
 
 local FULL = {
@@ -34,6 +36,11 @@ local FULL = {
 local SLAM_G = 200 -- studs/s^2: gravity plus a hard pull (a full stroke lands in 0.28 s)
 local BOUNCE_T = 0.26 -- s
 local MIN_T = 0.12
+-- A padlocked door yanked: three jerks against the bolt, each a little smaller, over the length of
+-- its sound (DoorSound's Rattle). The lift is a few centimetres: the light under the door flickers.
+local RATTLE_T = 0.7 -- s
+local RATTLE_LIFT = 0.12 -- studs at the first jerk
+local RATTLE_JERKS = 3
 
 local function clamp01(x: number): number
 	return if x < 0 then 0 elseif x > 1 then 1 else x
@@ -60,6 +67,9 @@ local function bounceHeight(h: number): number
 end
 
 function Motion.duration(kind: Kind, from: number, to: number, fullStroke: number): number
+	if kind == "Rattle" then
+		return RATTLE_T
+	end
 	local h = math.abs(to - from)
 	if kind == "Slam" then
 		if h < 1e-4 then
@@ -91,6 +101,10 @@ function Motion.sample(
 		return from
 	end
 	local h = to - from
+	if kind == "Rattle" then
+		local t = elapsed / dur
+		return from + RATTLE_LIFT * math.abs(math.sin(math.pi * RATTLE_JERKS * t)) * (1 - t)
+	end
 	if kind == "Slam" then
 		local fall = math.sqrt(2 * math.abs(h) / SLAM_G)
 		if elapsed < fall then
@@ -167,7 +181,7 @@ function Motion.strikes(kind: Kind, from: number, to: number, fullStroke: number
 	return {}
 end
 
--- True for the five door actions (guards anything a remote might pass in).
+-- True for the six door motions (guards anything a remote might pass in).
 function Motion.isKind(kind: any): boolean
 	return type(kind) == "string" and KINDS[kind] ~= nil
 end

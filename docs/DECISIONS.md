@@ -369,3 +369,27 @@ until L-02 replaces them. In Studio the test hall lays floor 3 of seed 7 (Worksp
 by the spawn goes there. Not chosen: the floor replacing the test hall (the owner's open tests in
 `OWNER.md` name its units); a fixed count of pieces a frame (a piece holds none to six units, and
 six can take a whole frame); padlocks on a laid floor (L-04 deals those).
+
+## D-030 · 2026-11-07 · The door as a state machine: buttons for its state, each in a fixed place
+The door is the GDD's state machine in a pure module (`Door`), read from what it's doing (its
+Motion) and its padlock: closed, peeking, opening, lifting (from inside), open, closing, slamming,
+locked. The GDD's list had no closing or lifting; both are needed, closing because a door pulled
+down by hand can be turned back, lifting so nobody outside can shut a door while a friend heaves it
+up from inside (the GDD: lifting from inside is always possible, a clip and never griefing). The
+server's `Doors` system (on the Host clock, only doors in motion stepped) shows only the buttons
+the state allows, each in a fixed place on screen (`Door.Slots`, `UIOffset` 150 px apart): Peek
+left, Open middle, Slam right; Close shares the left spot with Peek as a toggle, so after any tap
+the spot it hit holds nothing else and a double tap can't misfire. A press is checked for reach
+(plus 4 studs of lag), side (Lift only from inside the unit's doorway, Peek and Open only from the
+hall while the door is down), tools and rate (0.3 s a player), then decided by `Door`. A padlocked
+door tried from either side rattles: a new door motion (`Rattle`, three jerks of a few
+centimetres against the bolt, the light under the door flickering) whose sound is Pro Sound
+Effects "Door Shake 4" (its first shake, 0.14 to 0.9 s), so motion and sound ride one attribute
+and keepers hear it as far as players (`DoorSound.Actions.Rattle`). Every door event fires the
+system's `acted` signal with that reach. Not chosen: a Lock button on every door (server prompts
+show to everyone, so a padlock button would sit on every shut door for a tool few carry; the
+padlock tool will call `Doors:lock`); hiding Cut from players without bolt cutters (no per-player
+prompts without a client-side layer; "Need bolt cutters" teaches the tool exists); buttons stacked
+vertically (a landscape phone has room across, not down); Lift on T (inside, Lift is the only
+button, so it takes E). Tools are a stand-in: a player's `Carries<Tool>` attribute until Phase 2.
+

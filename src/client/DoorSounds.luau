@@ -181,6 +181,9 @@ function DoorSounds.new(kick: (amount: number) -> ()): Brix.System
 		for _, cue in DoorSound.cues(kind, from, to, door.fullStroke) do
 			schedule(door, cue, cue.at - elapsed, current)
 		end
+		if DoorSound.Actions[kind].Gain <= 0 then
+			return -- a padlocked door's rattle: its cue is the whole sound, no roll
+		end
 		local row = ROLL_ROW
 		local roll = soundFor(door, ROLL)
 		roll.RollOffMaxDistance = DoorSound.Actions[kind].Reach

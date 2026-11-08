@@ -152,6 +152,13 @@ near(
 	"none at its reach"
 )
 
+-- a padlocked door tried: its rattle and nothing else, as far as its sound carries
+ok(names(DoorSound.cues("Rattle", 0, 0, FULL)) == "Rattle", "a tried padlock rattles")
+local rv = DoorSound.roll("Rattle", 0, 0, 0.2, FULL)
+near(rv, 0, "and never rolls")
+ok(A.Rattle.Reach == DoorSound.Sounds.Rattle.Reach, "keepers hear a rattle as far as players")
+ok(A.Rattle.Reach > A.Peek.Reach, "a rattle carries farther than a peek")
+
 print(string.format("doorsound: %d checks, %d failures", checks, failures))
 if failures > 0 then
 	error("doorsound spec failed")

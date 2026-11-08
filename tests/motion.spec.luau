@@ -109,6 +109,19 @@ near(s, 12345.6789, "decode start", 1e-4)
 local k2 = Motion.decode(nil)
 ok(k2 == "Close", "missing attribute reads as shut")
 
+-- rattle: a padlocked door jerks a few centimetres against its bolt and ends where it began
+local rattle = Motion.duration("Rattle", 0, 0, FULL)
+ok(rattle > 0.4 and rattle < 1, "a rattle is a moment")
+local high, low = 0, math.huge
+for i = 0, 100 do
+	local r = Motion.sample("Rattle", 0, 0, rattle * i / 100, FULL)
+	high, low = math.max(high, r), math.min(low, r)
+end
+ok(high > 0.05 and high < 0.2 and low >= 0, string.format("a rattle lifts a little (%.3f)", high))
+near(Motion.sample("Rattle", 0, 0, rattle, FULL), 0, "and drops back")
+ok(#Motion.strikes("Rattle", 0, 0, FULL) == 0, "a rattle strikes nothing")
+near(Motion.target("Rattle", { Peek = PEEK, Open = FULL }), 0, "a rattle stays shut")
+
 print(string.format("motion: %d checks, %d failures", checks, failures))
 if failures > 0 then
 	error("motion spec failed")
