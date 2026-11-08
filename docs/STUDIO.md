@@ -196,6 +196,20 @@ verified: a doc page, Studio, or "untested".
   `default.project.json` built fine with `rojo build` but never showed in Studio over a running
   `rojo serve`. Reconnect, or restart `rojo serve`, after editing the project file.
 
+- **In Play, take the player's own view, not a placed camera** (L-05a2, 2026-11-08):
+  `screen_capture` with a `camera_position` in Play kept returning the same frame after the car's
+  lamp was switched off on the client. Turning the client's camera instead (Client view:
+  `workspace.CurrentCamera.CFrame = CFrame.lookAt(itsPosition, target)`; first person keeps the
+  new heading) and capturing with no camera gave the live view, the lobby black with the lamp off.
+- **A SurfaceGui draws on an invisible part, and in captures** (L-05a2): a Transparency 1 card
+  shows its text. But the first note made in the session drew no digits until its SurfaceGui was
+  switched off and on (Kalam's first use, Edit); later notes drew at once.
+- **Kalam's line is tall for its digits** (L-05a2): `TextScaled` in a short box comes out
+  height-limited and small; with no top or bottom padding the width sets the size.
+- **The car's lamp lights the lobby only through the opening** (L-05a2): with Shadows on, the
+  lattice gate prints on the lobby floor; the light fans wide (the lamp hangs 5.2 behind the
+  threshold), so the lobby's side walls catch it from about 5 studs in front of the back wall.
+
 ## The hall's render cost
 
 - **Reading the counts from the MCP** (2026-11-07): in Play, `execute_luau` on the Client can read
@@ -269,6 +283,11 @@ verified: a doc page, Studio, or "untested".
 - **A full FBX of props arrives as one Model of MeshParts** (Studio, L-04a): `Boxes.fbx` gave five
   MeshParts at their real sizes, each pivot at its Blender origin (the bottom's middle), each
   turned 135° about Y with the model, each with a SurfaceAppearance in Overlay and no MetalnessMap.
+
+- **The elevator arrived like the kit** (L-05a2): 24 MeshParts, every pivot on the threshold
+  (the gate's parts and the note too, as built at the FBX origin), a 45° turn, SurfaceAppearances
+  in Overlay; `LampGlass`, `KeypadReadout` and `KeypadLight` came plain. Each part's centre sat
+  within 0.0005 of `Specs.Parts`.
 
 ## Tools
 

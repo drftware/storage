@@ -6,8 +6,8 @@
 	from ReplicatedStorage.Units, in the floor's door colour and numbered; and a motion light over
 	every hall piece, in its power zone. A plain wall in a top run gets a lid over the empty slot
 	behind it, the unit's own wire top and floor, so a friend running the tops never drops in. The
-	lobby is a plain room with the elevator's space behind it, lit from there, until L-05 builds
-	both.
+	lobby is a plain room, the freight elevator standing in its back wall and lit only by the car's
+	lamp, until L-05 dresses the lobby.
 
 	Laying yields. It works out from the lobby a hall piece at a time and waits a frame whenever it
 	has spent its share of one, so the server never hitches: L-08 lays the next floor while the
@@ -20,6 +20,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local CorridorKit = require(ReplicatedStorage.Shared.CorridorKit)
+local Elevator = require(ReplicatedStorage.Shared.Elevator)
 local Floor = require(ReplicatedStorage.Shared.Floor)
 local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
@@ -30,17 +31,12 @@ local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
 -- for the next: low enough that a laying floor never stutters the floor being played.
 local FRAME_BUDGET = 0.004
 
--- The lobby stand-in, in studs and colours (L-05 builds the real one).
+-- The lobby stand-in, in studs and colours (L-05 dresses the real one). Its back wall is the
+-- elevator's landing wall, as deep as the art was built for.
 local LOBBY_HEIGHT = 14 -- up to the kit's deck, so the lobby's ceiling meets the hall's
-local LOBBY_WALL = 0.5
+local LOBBY_WALL = Elevator.Specs.Opening.Wall
 local CONCRETE = Color3.fromRGB(120, 120, 118) -- the hall floor's grey
 local CEILING_COLOUR = Color3.fromRGB(38, 38, 40)
-local PLATE_COLOUR = Color3.fromRGB(88, 90, 94) -- the elevator car's steel floor
--- The car's lamp, the one light on the floor that's always on: the warm glow you arrive in and
--- run back to. Its spill reaches about halfway into the lobby, so the hall's mouth stays dark.
-local LAMP_COLOUR = Color3.fromRGB(255, 206, 150)
-local LAMP_BRIGHTNESS = 1.2
-local LAMP_RANGE = 22
 
 local FloorBuilder = {}
 
@@ -234,18 +230,18 @@ local function block(
 	return p
 end
 
--- The lobby stand-in: its square (the hall leaving it toward -Z through an 8-stud mouth) and the
--- elevator's space behind it, one plain room lit only by the car's lamp.
+-- The lobby stand-in: its square (the hall leaving it toward -Z through an 8-stud mouth), its back
+-- wall built round the landing's opening, and the freight elevator standing in it, the car
+-- behind the wall in the floor's elevator space, its lamp the only light.
 local function lobby(origin: CFrame): Folder
 	local folder = Instance.new("Folder")
 	folder.Name = "Lobby"
 	local half = Floor.LobbySize / 2
-	local back = half + Floor.ElevatorDepth -- the car's back wall, from the lobby's middle
-	local length = back + half
-	local middleZ = (back - half) / 2
 	local width = Floor.LobbySize
 	local h = LOBBY_HEIGHT
 	local t = LOBBY_WALL
+	local length = Floor.LobbySize + t -- the back wall stands on the floor's far edge
+	local middleZ = t / 2
 	local function put(
 		name: string,
 		size: Vector3,
@@ -267,6 +263,8 @@ local function lobby(origin: CFrame): Folder
 		CEILING_COLOUR,
 		Enum.Material.Metal
 	)
+	local opening = Elevator.Specs.Opening
+	local ow, oh = opening.Width / 2, opening.Height
 	for _, side in { -1, 1 } do
 		put(
 			"SideWall",
@@ -288,41 +286,28 @@ local function lobby(origin: CFrame): Folder
 			UnitKit.Colours.Wall,
 			Enum.Material.Concrete
 		)
+		-- the back wall either side of the landing's opening, its face where the threshold is
+		put(
+			"BackWall",
+			Vector3.new(half - ow, h, t),
+			side * (ow + half) / 2,
+			h / 2,
+			half + t / 2,
+			UnitKit.Colours.Wall,
+			Enum.Material.Concrete
+		)
 	end
 	put(
 		"BackWall",
-		Vector3.new(width, h, t),
+		Vector3.new(ow * 2, h - oh, t),
 		0,
-		h / 2,
-		back + t / 2,
+		(h + oh) / 2,
+		half + t / 2,
 		UnitKit.Colours.Wall,
 		Enum.Material.Concrete
 	)
-	put(
-		"CarFloor",
-		Vector3.new(width - 4, 0.1, Floor.ElevatorDepth - 2),
-		0,
-		0.05,
-		half + Floor.ElevatorDepth / 2,
-		PLATE_COLOUR,
-		Enum.Material.DiamondPlate
-	)
-	local lamp = put(
-		"CarLamp",
-		Vector3.new(4, 0.2, 1),
-		0,
-		h - 0.1,
-		half + 4,
-		LAMP_COLOUR,
-		Enum.Material.Neon
-	)
-	lamp.CanCollide = false
-	lamp.CastShadow = false
-	local light = Instance.new("PointLight")
-	light.Color = LAMP_COLOUR
-	light.Brightness = LAMP_BRIGHTNESS
-	light.Range = LAMP_RANGE
-	light.Parent = lamp
+	-- its threshold on the back wall's face, the lobby before it
+	Elevator.clone(origin * CFrame.new(0, 0, half), folder)
 	return folder
 end
 

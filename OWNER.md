@@ -6,9 +6,34 @@ nowhere else.
 ## Now
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
+- [ ] **Save the place** (File > Save to Roblox) after this session (Nov 8): the elevator's
+  templates live only in the open place, at `ReplicatedStorage.Props.Elevator` and
+  `ReplicatedStorage.Props.Note`. Unsaved, the next open loses them and every floor's lobby has
+  an empty hole in its back wall (Output warns).
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
+
+## Now: judge L-05a2, the elevator in Studio (built Nov 8)
+
+- [ ] **Judge the shots** in `docs/art/`: on a Galaxy A16 at Quality Level 21,
+  `L-05a2-hall-mouth.jpg` (across the lobby from the hall), `L-05a2-at-gate.jpg` (a stride from
+  the gate, the keypad on the right) and `L-05a2-aboard.jpg` (inside, the gate three-quarters
+  shut); in Edit, `L-05a2-gate-open.jpg`, `-gate-half.jpg`, `-gate-shut.jpg` and `-note.jpg` (a
+  note reading `_ 7 _ _` on a box). Look for: the car the one warm, safe place; the gate reading
+  as a folding gate, its lattice shadow on the lobby floor; the note's digits plain.
+- [ ] **Walk it yourself:** Galaxy A16 in the Device Simulator, Play, take "Walk a floor" by the
+  spawn, walk across the lobby and into the car, turn and look out; at Quality Level 01 and 21.
+  Then, with the Server view selected, run
+  `require(game.ReplicatedStorage.Shared.Elevator).setGate(workspace.DevCorridor:FindFirstChild("Elevator",true),0.75)`
+  in the Command Bar and look again (0 folds it, 1 shuts it). The gate doesn't block you yet; that
+  comes with L-05b.
+- [ ] **Decide, defaults in place** (D-041): (1) the lamp lights the lobby only through the
+  opening, but its spill fans wide, so the lobby's side walls glow more than on the sheet; say if
+  it should be darker (`Elevator.Lamp`, range 22, brightness 1.2, in
+  `src/shared/Elevator/init.luau`); (2) the keypad's red light is too small to see from the hall
+  on a phone, so L-05b will show red dashes on the readout at rest; say if you'd rather the
+  keypad stay dark until someone types.
 
 ## Now: judge L-05a1, the elevator's art (built Nov 8)
 

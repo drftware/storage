@@ -235,17 +235,27 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
   `Elevator/Gate.luau`, Lune-checked), the landing's frame and sill, the keypad with ten engraved
   keys, and the sticky note (its digits written by the game in Kalam). 9,966 triangles; FBX,
   generated Specs and five look sheets. Split from L-05a when the Studio half wouldn't fit.
-- [ ] **L-05a2 The elevator in Studio.** Upload and insert `Elevator.fbx`; `Elevator.prepare` (the
-  pivots as `Mannequin.prepare` sets them, colliders from `Specs.Colliders`, the lamp's glass Neon
-  with FloorBuilder's lamp light, the readout's glass and status light, the gate's 85 parts cloned
-  from its three templates), `setGate(model, shut)` from `Gate.pose`, `clone`, and `note(pivot,
-  parent, slots)` writing the digits; FloorBuilder lays it at the lobby's back in place of the
-  stand-in's car. Judged on the Galaxy A16 from the hall's mouth, aboard, and with the gate at
-  0, 0.5 and 1; shots in `docs/art/`.
-- [ ] **L-05b Notes, the keypad and the gate.** The floor's 4-digit code on sticky notes laid
-  where L-04d says, the keypad, the gate that shuts 30 s after the last digit (Dandy's World).
-  Brix: Zone for "aboard", the Clock for the gate's timer. A wrong code flashes every light on the
-  floor (GDD): add that to `MotionLights` beside `cut`.
+- [x] **L-05a2 The elevator in Studio** (Nov 8, D-041). Uploaded (asset 89467597147215) and
+  prepared by `Elevator.prepare` into `ReplicatedStorage.Props.Elevator` and `Props.Note`; the
+  gate's 85 parts posed by `setGate`; `clone`, `note` and `write`. FloorBuilder lays it in the
+  lobby's back wall in place of the stand-in's car and lamp. Verified in Studio: the gate at 0,
+  0.5 and 1, a note reading `_ 7 _ _` on a box, and on the Galaxy A16 from the hall's mouth, at
+  the gate and aboard (`docs/art/L-05a2-*.jpg`).
+- [ ] **L-05b1 The notes and the keypad.** The floor's code on sticky notes, one per unit
+  `Deal` names, stuck in the unit with its digits in their slots (`Elevator.note`); preload
+  Kalam on clients before notes show (in Edit the first note drew no digits until refreshed).
+  The keypad: the gate is laid shut, with a collider from the left post to the lead; you punch
+  the code from a phone with a control of its own (the jump button sits over the keypad when you
+  stand at it); each press sinks its key `Specs.Keypad.Travel` along the elevator's +Z, beeps and
+  writes the readout, which shows red dashes at rest so the keypad reads from the lobby. The
+  server checks the code (validated, rate-limited). A wrong code buzzes and flashes every light
+  on the floor (GDD; add it to `MotionLights` beside `cut`); the right one chimes and the gate
+  folds open over a second or two, animated on the clients from a replicated value, not 85 parts
+  moved by the server.
+- [ ] **L-05b2 The gate's timer.** 30 s after the right code the gate folds shut on its own
+  (Dandy's World), with its sound and a countdown you feel (the lamp, a bell); Brix's Zone says
+  who's aboard and its Clock times it; the last friend sprinting through the closing gap
+  (`Gate.gap`); the car leaves with whoever is aboard (a stand-in until L-08's ride).
 - [ ] **L-11 Tools in hand.** You carry two tools plus whatever is in your hands (GDD), as Lethal
   Company's slots: pick a tool up off a unit's floor, switch, drop, hand one to a friend, each
   with a phone button. The flashlight everyone carries (signals friends; keepers with eyes see

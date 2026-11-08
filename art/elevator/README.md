@@ -74,7 +74,10 @@ scripts/art.sh elevator all four (about 4 minutes)
 
 ## Into Studio (L-05a2)
 
-`lune run scripts/upload_art Elevator`, insert the asset, then prepare it as the Mannequin's
-import is prepared: the pivots normalised, colliders built from `Specs.Colliders` (the meshes
-don't collide), the gate's 85 parts cloned from its three templates and posed folded, the note
-moved to its own template. The template lives in the place (D-009).
+`lune run scripts/upload_art Elevator` (asset 89467597147215, in `assets.json`), insert the asset,
+then with the Command Bar: `local note = require(game.ReplicatedStorage.Shared.Elevator).prepare(model)`,
+and move `model` and `note` into `ReplicatedStorage.Props` (D-009, D-041). `prepare` squares the
+pivots on the threshold, builds the colliders from `Specs.Colliders` (the meshes don't collide),
+lights the lamp, clones the gate's 85 parts from its three templates and poses them folded, and
+takes the note out with an invisible card for its digits. FloorBuilder clones it into each
+floor's lobby (`Elevator.clone`); `Elevator.note` sticks a written note anywhere.

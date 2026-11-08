@@ -555,3 +555,18 @@ small fittings (gate, lamp, keypad, keys, note) are baked at 133. Not chosen: a 
 well (two gates to read, and the car's is the one players watch); baked note faces; vertical
 bi-parting doors (solid, so you couldn't see what's coming while you wait).
 
+
+## D-041 · 2026-11-08 · The elevator in the place: one template, its lamp casting shadows
+The elevator is one template at `ReplicatedStorage.Props.Elevator` and the note another at
+`Props.Note` (D-009), both made by `Elevator.prepare` from the Open Cloud import. The lobby's back
+wall is three blocks round `Specs.Opening`, its face on the threshold, and the lobby is now just
+its square: the car fills the floor's elevator space alone. The car's lamp is the stand-in's
+light moved into the jelly jar (warm, 1.2, range 22) with shadows on, so it reaches the lobby only
+through the opening and prints the gate's lattice on the lobby floor, the strongest "elevator"
+read from across the room; the lamp, its glass and the keypad's small parts cast none. The whole
+elevator streams as one piece (`ModelStreamingMode` Atomic), so a phone never shows half a gate.
+`setGate` moves the gate's 85 parts in one `BulkMoveTo`. A note's digits are written on an
+invisible card over the paper's flat writing area, not on the curled paper's box, at 400 pixels
+a stud, with no padding top or bottom: Kalam's line is tall, so the width sets the size, as on
+the sheets. Not chosen: a light without shadows (it lit the lobby through the car's walls);
+writing on the paper's own face (its box stands 0.12 proud where the foot curls).
