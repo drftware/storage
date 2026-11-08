@@ -2,7 +2,7 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-08, session 33 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-08, session 33, the owner's keypad picks in · **Checks:** green · **Git:** `main`, local.
 
 ## State
 - **L-05b1a is done** (D-042), the keypad's rules and the server. L-05b1 is split three ways in
