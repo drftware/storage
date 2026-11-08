@@ -366,6 +366,16 @@ verified: a doc page, Studio, or "untested".
   `PlaybackRegionsEnabled`, `PlaybackRegion` and (looped) `LoopRegion` plays only that stretch;
   set `TimePosition` to the region's start before `Play`. A fresh Sound with a preloaded id starts
   at its region on its very first play. Fade the end with a delayed `TweenInfo` on `Volume`.
+- **The keypad's sounds, measured** (L-05b1a, 2026-11-08; 50 ms bins, one AudioAnalyzer each,
+  all six at once in Edit): beep 9114642536 is one blip, loud 0 to 0.2 s of 0.46; buzzer
+  9113085665 a burst 0 to 0.4 s of 0.98; the elevator alarm bell 9125544264 rings up from 0.2 s,
+  loudest 0.6 to 1.2 s, then decays over its 7.9 s; the double-ding 9119642644 is about 30 dB
+  under the others (play it loud); the fold 9117907728 is silent to 0.6 s, then a ratchet that
+  builds to its slam at about 2.2 s and dies by 3.3 s; the latch 9117910424 jiggles 0.2 to 0.8 s.
+- **Testing a remote from the MCP** (L-05b1a): `execute_luau` in the Client view can
+  `FireServer` as the player, bad payloads and all, and read the replicated attributes back; the
+  server's prints show in `get_console_output`. Move the character first (Server view,
+  `PivotTo`), since the server checks range.
 - **Deferred events miss the first play:** a `Played` handler connected inside `DescendantAdded`
   connects after the game's code has already called `Play` (Roblox defers events). A probe polls
   `IsPlaying` each frame instead.

@@ -28,6 +28,8 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local CorridorKit = require(ReplicatedStorage.Shared.CorridorKit)
+local Deal = require(ReplicatedStorage.Shared.Deal)
+local Elevators = require(script.Parent.Elevators)
 local Prompts = require(script.Parent.Prompts)
 local Floor = require(ReplicatedStorage.Shared.Floor)
 local FloorBuilder = require(script.Parent.FloorBuilder)
@@ -465,7 +467,7 @@ end
 -- Lays a floor from the data beside the hall (L-01c), prints its map, and opens the way there:
 -- "Walk a floor" by the spawn, "Come back" in its lobby. Workspace's DevFloorSeed and
 -- DevFloorNumber attributes pick which. Yields while it lays.
-local function devFloor(folder: Folder)
+local function devFloor(folder: Folder, elevators: Elevators.Elevators)
 	local units, missing = FloorBuilder.units()
 	if not units then
 		warn(
@@ -491,13 +493,19 @@ local function devFloor(folder: Folder)
 			return ready
 		end
 	)
-	local floor = Floor.generate(n, Brix.Random.new({ seed = s }))
+	local random = Brix.Random.new({ seed = s })
+	local floor = Floor.generate(n, random)
+	-- the floor's code, from the same seed, as the deal will have it (L-04e lays the rest)
+	local deck = Deal.new(floor, random)
 	print(
 		`DevCorridor: floor {n} from seed {s}, seen from above, the lobby (L) at the bottom:\n{Floor.map(
 			floor
 		)}`
 	)
 	local model, laid = FloorBuilder.lay(floor, FLOOR_ORIGIN, folder)
+	if laid.elevator then
+		elevators:arm(laid.elevator, deck.code, model)
+	end
 	travelPost(
 		"ComeBack",
 		(FLOOR_ORIGIN * FLOOR_POST).Position,
@@ -513,6 +521,8 @@ local function devFloor(folder: Folder)
 	print(
 		`DevCorridor: floor {n} laid, {laid.units} units on {laid.pieces} hall pieces: {work} of work over {laid.frames} frames, at most {most} in one ({took} in all); "Walk a floor" is by the spawn`
 	)
+	-- Studio only: the code to punch, so the keypad can be tried before the notes are laid (L-05b1b)
+	print(`DevCorridor: floor {n}'s code is {table.concat(deck.code)}`)
 end
 
 -- Builds the whole corridor into one folder and parents it once. Returns nil, after a warning,
@@ -643,10 +653,12 @@ function DevCorridor.new(): Brix.System
 		start = function(_: any, context: Brix.Context)
 			-- any: the registry hands back a plain System; MotionLights fills this slot (init.server)
 			local lights = (context.registry:get("motionLights") :: any) :: MotionLights.MotionLights
+			-- any: as above; Elevators fills this slot
+			local elevators = (context.registry:get("elevators") :: any) :: Elevators.Elevators
 			local folder = build(lights)
 			built = folder
 			if folder then
-				laying = task.spawn(devFloor, folder)
+				laying = task.spawn(devFloor, folder, elevators)
 			end
 		end,
 		stop = function(_: any)

@@ -14,6 +14,18 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: decide the keypad's rules before its buttons are built (L-05b1a, Nov 8)
+
+- [ ] **Decide, defaults in place** (D-042), before L-05b1c builds what you see: (1) one keypad
+  and readout shared by the whole team, so one of you can type while another fetches the last
+  digit; (2) no enter key: the fourth digit is checked at once, as door keypads do; (3) a Clear
+  key on the phone's keypad only, so a mistyped digit isn't a wrong code (say if a mistake
+  should cost you the alarm); (4) a wrong code rings the elevator's alarm bell, lights every
+  light on the floor and leaves the keypad dead for 3.5 s (`Keypad.AlarmSeconds`), then it
+  clears; (5) on a phone, the keypad's prompt opens a keypad on screen, right of centre and
+  clear of the jump button, while you can still walk away (DOORS' padlock at door 50 works this
+  way). Say which to change.
+
 ## Now: judge L-05a2, the elevator in Studio (built Nov 8)
 
 - [ ] **Judge the shots** in `docs/art/`: on a Galaxy A16 at Quality Level 21,
@@ -33,8 +45,12 @@ nowhere else.
   spawn, walk across the lobby and into the car, turn and look out; at Quality Level 01 and 21.
   Then, with the Server view selected, run
   `require(game.ReplicatedStorage.Shared.Elevator).setGate(workspace.DevCorridor:FindFirstChild("Elevator",true),0.75)`
-  in the Command Bar and look again (0 folds it, 1 shuts it). The gate doesn't block you yet; that
-  comes with L-05b.
+  in the Command Bar and look again (0 folds it, 1 shuts it). The gate is now laid shut and
+  blocks you (Nov 8). To get aboard before the keypad has its on-screen buttons (L-05b1c): stand at
+  the keypad, read the floor's code in Output ("floor 3's code is 5062"), select the Client view
+  and run, with your code in place of 5,0,6,2,
+  `local e=game:GetService("CollectionService"):GetTagged("FreightElevator")[1] for _,d in {5,0,6,2} do game.ReplicatedStorage.Remotes.Keypad:FireServer(e,d) task.wait(0.15) end require(game.ReplicatedStorage.Shared.Elevator).setGate(e,0)`.
+  The gate snaps open on your screen; it folds on its own once L-05b1c is built.
 - [ ] **Decide, defaults in place** (D-041): (1) the lamp lights the lobby only through the
   opening, but its spill fans wide, so the lobby's side walls glow more than on the sheet; say if
   it should be darker (`Elevator.Lamp`, range 22, brightness 1.2, in

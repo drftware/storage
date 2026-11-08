@@ -12,7 +12,9 @@
 	under it, turned with it down its hall.
 
 	`cut(zone, isCut)` is the breaker room's: every fixture whose `MotionLight.PowerAttribute` is
-	`zone` goes blind, or comes back dark. `woke` fires with each fixture's model as it wakes: the
+	`zone` goes blind, or comes back dark. `flash(floor)` is the elevator's alarm (a wrong code):
+	every powered fixture on that floor comes on at once and holds like any other, lighting up
+	whoever is out in the halls. `woke` fires with each fixture's model as it wakes: the
 	building sees that spot, and later sends a keeper to look (L-04, L-06).
 ]]
 local CollectionService = game:GetService("CollectionService")
@@ -27,6 +29,8 @@ local Pace = require(ReplicatedStorage.Shared.Pace)
 export type MotionLights = Brix.System & {
 	-- Cuts (true) or restores (false) the power to every fixture in power zone `zone`.
 	cut: (self: any, zone: string, isCut: boolean) -> (),
+	-- Lights every powered fixture under `within` (a floor) at once, as the alarm does.
+	flash: (self: any, within: Instance) -> (),
 	-- Fires with each fixture's model as it wakes.
 	woke: Brix.Signal<Model>,
 }
@@ -54,11 +58,13 @@ function MotionLights.new(): MotionLights
 	local woke = Brix.Signal.new() :: Brix.Signal<Model>
 	local now, carry = 0, 0
 
-	local function show(id: number)
+	-- Writes a fixture's state for clients to draw. `quiet` (the alarm's flash) wakes it without
+	-- `woke`: the building didn't see anything there, so it sends nothing to look.
+	local function show(id: number, quiet: boolean?)
 		local model = models[id]
 		local state = watch:state(id)
 		model:SetAttribute(MotionLight.StateAttribute, state)
-		if state == "Lit" then
+		if state == "Lit" and not quiet then
 			woke:fire(model)
 		end
 	end
@@ -172,6 +178,14 @@ function MotionLights.new(): MotionLights
 		end
 		table.clear(connections)
 		woke:disconnectAll()
+	end
+
+	function system.flash(_: any, within: Instance)
+		for model, id in ids do
+			if model:IsDescendantOf(within) and watch:wake(id, now) then
+				show(id, true)
+			end
+		end
 	end
 
 	function system.cut(_: any, zone: string, isCut: boolean)

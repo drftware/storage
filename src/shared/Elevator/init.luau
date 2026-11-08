@@ -11,10 +11,21 @@ local Workspace = game:GetService("Workspace")
 
 local Specs = require(script.Specs)
 local Gate = require(script.Gate)
+local Keypad = require(script.Keypad)
 
 local Elevator = {}
 Elevator.Specs = Specs
 Elevator.Gate = Gate
+Elevator.Keypad = Keypad
+
+-- Tagged on every elevator laid in the world, so the server's Elevators runs its keypad and gate
+-- and each player's screen draws them (ElevatorView, KeypadPad). The template carries no tag.
+Elevator.Tag = "FreightElevator"
+-- The readout's digits: an LED's red, a dim red for the dashes at rest (lit, so the keypad reads
+-- from across the lobby), and the green of the right code.
+Elevator.ReadoutLit = Color3.fromRGB(255, 52, 36)
+Elevator.ReadoutRest = Color3.fromRGB(150, 22, 14)
+Elevator.ReadoutRight = Color3.fromRGB(70, 255, 110)
 
 -- The car's lamp, the one light on a floor that's always on: the warm glow you arrive in and run
 -- back to. It throws shadows, so it reaches the lobby only through the opening, the gate's lattice
@@ -269,21 +280,41 @@ function Elevator.prepare(model: Model): Model
 	return note
 end
 
+-- What posing a gate reuses, made the first time it's posed: its parts in pose order, their
+-- targets, and the pose's tables. Keyed weakly, so a destroyed elevator takes its cache with it.
+type Posing = { parts: { BasePart }, to: { CFrame }, pose: Gate.Pose }
+local posings: { [Model]: Posing } = setmetatable({} :: any, { __mode = "k" })
+
+local function posingOf(model: Model, folder: Instance): Posing
+	local cached = posings[model]
+	if cached and cached.parts[1].Parent == folder then
+		return cached
+	end
+	local n = pickets() + straps()
+	local parts: { BasePart } = table.create(n)
+	for i = 1, n do
+		parts[i] = part(folder, gatePartName(i))
+	end
+	local posing: Posing =
+		{ parts = parts, to = table.create(n, CFrame.identity), pose = Gate.pose(0) }
+	posings[model] = posing
+	return posing
+end
+
 -- Poses the gate `shut` of the way closed (0 folded open against the left post, 1 shut at the
--- keypad's post), every picket and strap where Gate.pose puts it, in one move.
--- Allocates the pose's tables: fine for a gate shutting once a floor (L-05b may cache them).
+-- keypad's post), every picket and strap where Gate.pose puts it, in one move. Makes no tables
+-- after the first call, so a screen can fold the gate with it every frame.
 function Elevator.setGate(model: Model, shut: number)
 	local folder = model:FindFirstChild("Gate")
 	if not folder then
 		return
 	end
+	local posing = posingOf(model, folder)
 	local frame = model:GetPivot()
-	local pose = Gate.pose(shut)
+	local pose = Gate.pose(shut, posing.pose)
 	local G = Specs.Gate
-	local moved: { BasePart } = table.create(pickets() + straps())
-	local to: { CFrame } = table.create(pickets() + straps())
-	for i = 1, pickets() + straps() do
-		local p = part(folder, gatePartName(i))
+	local parts, to = posing.parts, posing.to
+	for i, p in parts do
 		local pivot
 		if i <= pickets() then
 			pivot = frame * CFrame.new(pose.Pickets[i], 0, G.Plane)
@@ -291,22 +322,85 @@ function Elevator.setGate(model: Model, shut: number)
 			local s = pose.Straps[i - pickets()]
 			pivot = frame * CFrame.new(s.X, s.Y, s.Z) * CFrame.Angles(0, 0, s.Angle)
 		end
-		table.insert(moved, p)
-		table.insert(to, pivot * p.PivotOffset:Inverse())
+		to[i] = pivot * p.PivotOffset:Inverse()
 	end
-	Workspace:BulkMoveTo(moved, to, Enum.BulkMoveMode.FireCFrameChanged)
+	Workspace:BulkMoveTo(parts, to, Enum.BulkMoveMode.FireCFrameChanged)
+end
+
+-- The gate's collider: an invisible wall across the opening from the left post to the lead, so
+-- the shut gate stops you and a half-shut one leaves exactly the gap you see. Made the first time.
+function Elevator.gateCollider(model: Model): Part
+	local folder = model:FindFirstChild("Colliders")
+	assert(folder, "the elevator has no Colliders")
+	local found = folder:FindFirstChild("Gate")
+	if found and found:IsA("Part") then
+		return found
+	end
+	local p = Instance.new("Part")
+	p.Name = "Gate"
+	p.Anchored = true
+	p.CanCollide = true
+	p.CanQuery = true
+	p.CanTouch = false
+	p.CastShadow = false
+	p.Transparency = 1
+	p.Material = Enum.Material.Metal
+	p.Parent = folder
+	return p
+end
+
+-- One of the spec's collider boxes, by name.
+local function postBox(name: string): Specs.Box
+	for _, c in Specs.Colliders do
+		if c.Name == name then
+			return c
+		end
+	end
+	error(`the elevator's spec has no {name}`)
+end
+
+-- Sizes the gate's collider for the gate `shut` of the way closed: from the left post's inner
+-- face to the lead's far edge, floor to the fascia, as deep as the posts.
+function Elevator.fitGate(model: Model, shut: number)
+	local G = Specs.Gate
+	local post = postBox("PostLeft")
+	local fascia = postBox("Fascia")
+	local left = post.Centre[1] - post.Size[1] / 2
+	local lead = Gate.lead(shut) - G.LeadWidth / 2
+	local top = fascia.Centre[2] - fascia.Size[2] / 2
+	local width = math.max(left - lead, 0.05)
+	local c = Elevator.gateCollider(model)
+	c.Size = Vector3.new(width, top, post.Size[3])
+	c.CFrame = model:GetPivot() * CFrame.new((left + lead) / 2, top / 2, post.Centre[3])
+end
+
+-- A key's part, 0 to 9.
+function Elevator.key(model: Model, digit: number): BasePart
+	return part(model, `Key{digit}`)
+end
+
+-- The middle of the keypad's face, in the world: where presses are measured from.
+function Elevator.keypadPoint(model: Model): Vector3
+	return model:GetPivot() * vec(Specs.Keypad.Centre)
 end
 
 -- A copy of the template with its threshold's middle at `pivot`, the lobby toward its
--- LookVector, the gate folded open. Nil, after a warning, if the place has no template.
-function Elevator.clone(pivot: CFrame, parent: Instance): Model?
+-- LookVector, its gate `shut` of the way closed (default folded open) with its collider, tagged
+-- for Elevators. Posed before it's parented, so nothing crosses the wire twice. Nil, after a
+-- warning, if the place has no template.
+function Elevator.clone(pivot: CFrame, parent: Instance, shut: number?): Model?
 	local template = Elevator.template()
 	if not template then
 		warn("Elevator: no template at ReplicatedStorage.Props.Elevator (art/elevator/README.md)")
 		return nil
 	end
+	local s = shut or 0
 	local m = template:Clone()
 	m:PivotTo(pivot)
+	Elevator.setGate(m, s)
+	Elevator.fitGate(m, s)
+	m:SetAttribute(Gate.Attribute, Gate.encode(s, s, 0))
+	m:AddTag(Elevator.Tag)
 	m.Parent = parent
 	return m
 end

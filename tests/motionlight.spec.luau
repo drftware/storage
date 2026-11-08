@@ -282,6 +282,21 @@ do -- the change list is reused, and a step with nothing to report returns it em
 	ok(first == second and #second == 0, "the same empty list each step")
 end
 
+do -- the alarm wakes every powered light at once, and they hold and fall dark as any other
+	local watch, ids = hall({ 0, 24, 48 })
+	local a, b, c = ids[1], ids[2], ids[3]
+	ok(watch:setPowered(c, false), "the third light's power is cut")
+	local woke = watch:wake(a, 10)
+	ok(woke and watch:state(a) == "Lit", "the alarm wakes a dark light")
+	ok(watch:wake(b, 10) and not watch:wake(b, 10), "a lit light woken again changes nothing")
+	ok(not watch:wake(c, 10) and watch:state(c) == "Blind", "a blind light stays blind")
+	local changed = watch:step(10 + HOLD - TICK, {})
+	ok(#changed == 0 and watch:state(a) == "Lit", "a woken light holds HoldSeconds")
+	changed = watch:step(10 + HOLD, {})
+	ok(has(changed, a) and has(changed, b) and watch:state(a) == "Dark", "then it falls dark")
+	ok(watch:wake(a, 20) and watch:state(a) == "Lit", "and the next alarm wakes it again")
+end
+
 if failures > 0 then
 	error(`{failures} of {checks} motion light checks failed`)
 end

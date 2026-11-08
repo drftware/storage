@@ -52,6 +52,7 @@ export type Laid = {
 	seconds: number,
 	working: number,
 	longest: number,
+	elevator: Model?, -- the lobby's freight elevator, its gate shut; nil if the place has none
 }
 
 -- The kit's junction a hall piece is laid as, or nil for a straight or the lobby.
@@ -233,7 +234,7 @@ end
 -- The lobby stand-in: its square (the hall leaving it toward -Z through an 8-stud mouth), its back
 -- wall built round the landing's opening, and the freight elevator standing in it, the car
 -- behind the wall in the floor's elevator space, its lamp the only light.
-local function lobby(origin: CFrame): Folder
+local function lobby(origin: CFrame): (Folder, Model?)
 	local folder = Instance.new("Folder")
 	folder.Name = "Lobby"
 	local half = Floor.LobbySize / 2
@@ -306,9 +307,9 @@ local function lobby(origin: CFrame): Folder
 		UnitKit.Colours.Wall,
 		Enum.Material.Concrete
 	)
-	-- its threshold on the back wall's face, the lobby before it
-	Elevator.clone(origin * CFrame.new(0, 0, half), folder)
-	return folder
+	-- its threshold on the back wall's face, the lobby before it, its gate shut until the code
+	local elevator = Elevator.clone(origin * CFrame.new(0, 0, half), folder, 1)
+	return folder, elevator
 end
 
 type Laying = {
@@ -403,7 +404,8 @@ function FloorBuilder.lay(floor: Floor.Floor, origin: CFrame, parent: Instance):
 	)
 	local started = os.clock()
 
-	local laid: Laid = { units = 0, pieces = 0, frames = 1, seconds = 0, working = 0, longest = 0 }
+	local laid: Laid =
+		{ units = 0, pieces = 0, frames = 1, seconds = 0, working = 0, longest = 0, elevator = nil }
 	local slice = started
 	local function endSlice()
 		local spent = os.clock() - slice
@@ -477,7 +479,9 @@ function FloorBuilder.lay(floor: Floor.Floor, origin: CFrame, parent: Instance):
 	local model = Instance.new("Model")
 	model.Name = `Floor{floor.number}`
 	model.WorldPivot = origin
-	lobby(origin).Parent = model
+	local hall, elevator = lobby(origin)
+	hall.Parent = model
+	laid.elevator = elevator
 	model.Parent = parent
 	breathe()
 

@@ -2,63 +2,66 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-08, session 32 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-08, session 33 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-05a2 is done** (D-041): the freight elevator is in the place. `Elevator.prepare` made two
-  templates from the upload (asset 89467597147215): `ReplicatedStorage.Props.Elevator` and
-  `Props.Note`. **Unsaved** until the owner saves the place (`OWNER.md`, first).
-- **`src/shared/Elevator/init.luau`:** `setGate(model, shut)` poses the gate's 85 parts in one
-  `BulkMoveTo`; `clone(pivot, parent)`; `note(pivot, parent, text)` and `write(note, text)` put
-  the digits in Kalam on an invisible card over the paper's writing area. The lamp's values
-  (`Elevator.Lamp`) moved here from FloorBuilder; the light casts shadows.
-- **FloorBuilder's lobby** is its square, the back wall built round `Specs.Opening`, the elevator
-  cloned with its threshold on the wall's face; the stand-in's car floor and lamp are gone.
-- **Verified in Studio:** the gate at 0, 0.5 and 1 (Edit), a note `_ 7 _ _` on a box, and on the
-  Galaxy A16 from the hall's mouth, at the gate and aboard with the server shutting it to 0.75
-  (`docs/art/L-05a2-*.jpg`). Laying floor 3 still peaks at 6.7 ms in a frame (6.2 before).
-- **The keypad lights itself** (owner's test): behind the wall from the lamp, it went black once
-  shadows settled; a red light 0.4 in front of it (`Elevator.KeypadGlow`) is in the template.
-- **Not yet:** the gate has no collider and is laid folded open; nothing writes the readout.
-- **L-05b is split** (ROADMAP): L-05b1 the notes and the keypad, L-05b2 the gate's timer.
-- **Brix's chase isn't ready:** ENG-07a and ENG-07b are still open in `../engine`.
+- **L-05b1a is done** (D-042), the keypad's rules and the server. L-05b1 is split three ways in
+  ROADMAP: 1a done, 1c the keypad and gate on every screen (next), 1b the notes (after).
+- **`Elevator/Keypad.luau`** (pure): `enter` checks on the fourth digit; `readout` "7 2 - -";
+  `isKey`, `isCode`; the state as one counted value (`Keypad.Attribute`: count, event, typed,
+  digit, who). **`Gate.luau`** gained the motion: `Gate.Attribute` (from, to, start),
+  `duration`, `settles`, `at` (ease-in to the slam, a 2.5% recoil), and `pose(shut, into)`.
+- **`Elevator`:** `Tag`; `clone(pivot, parent, shut)` poses, fits the collider and tags before
+  parenting; `setGate` makes no tables after its first call; `fitGate`, `key`, `keypadPoint`.
+- **`src/server/Elevators.luau`:** `arm(elevator, code, floor)`; the remote at
+  `ReplicatedStorage.Remotes.Keypad` (payload: the elevator, then a digit or "Clear"), checked
+  types, range (`Keypad.Reach` 9), rate (0.08 s), state; wrong: `MotionLights.flash(floor)`,
+  dead `AlarmSeconds` 3.5, then Rest; right: the gate opens after `Gate.Delay` 0.55, its
+  collider stepped. `acted` fires with how far each sound carries (for L-06b).
+- **FloorBuilder** lays the gate shut (`laid.elevator`); **DevCorridor** deals floor 3's code
+  from seed 7 (`Deal.new`, it's 5062), arms the elevator and prints the code.
+- **Verified in Studio** (Client view, through the remote): bad payloads and a too-fast press
+  dropped; 0000 Wrong, 24 hall lights lit at once, Rest 3.5 s later; Clear; 5062 Right, the
+  collider shrinking 11.5 to 2.6 studs with a recoil. **Nothing on screen moves yet.**
+- **Sounds found and measured** (`docs/STUDIO.md`, ids in ROADMAP). Brix's ENG-07a/b still open.
 
-## Next task: L-05b1 The notes and the keypad
+## Next task: L-05b1c The keypad and gate on every screen
 The moment: a friend shouting the last digit from a unit while you punch the first three in,
-the keypad answering every press. The ticket makes the code findable and the keypad work.
-1. Owner test results first (`OWNER.md`): the elevator's shots and sheets, then older.
-2. Check `../engine/docs/ROADMAP.md`: if ENG-07 has landed, say so and do L-06b instead.
-3. Read the GDD's "Codes, the elevator and the roof" and pick the keypad's phone control (a
-   proven one, named); gaps get a default and an `OWNER.md` line.
-4. Notes: stick each of `Deal`'s notes in its unit with its slots (`Elevator.note`), on the
-   floor's units as they're laid; preload Kalam on clients first.
-5. The gate laid shut with a collider (left post to the lead); a replicated value the clients
-   animate it from (`setGate` over a second or two), never 85 server moves a step.
-6. The keypad: a validated, rate-limited remote on the server (as `Doors` does); each press sinks
-   its key `Specs.Keypad.Travel` along +Z with a beep and writes the readout (red dashes at
-   rest); a wrong code buzzes and flashes every light on the floor (`MotionLights`, beside
-   `cut`); the right one chimes and folds the gate open.
-7. Studio, Galaxy A16: punch a wrong code then the right one; shots in `docs/art/`.
-**Acceptance:** checks green; Lune specs for any pure code (the code check, the readout's text);
-in Studio a note found in its unit, a wrong code's flash, the gate opening on the right code;
-`OWNER.md` has the feel to judge and two-player steps.
-**Read first:** GDD "Codes, the elevator and the roof"; `src/shared/Deal.luau` (notes, by grep);
-`src/shared/Elevator/init.luau`; `src/server/Doors.luau` (its remote's checks, by grep);
-`src/server/MotionLights.luau` (`cut`); `docs/FRAMEWORK.md` (what Brix has for input and remotes).
+the keypad answering every press, the gate slamming open on the right code.
+1. Owner test results first (`OWNER.md`), above all the keypad's decisions (D-042).
+2. `src/client/ElevatorView.luau`, a client system on the Host (as DoorView/DoorSounds): each
+   tagged elevator in Workspace (re-done on stream-in); the gate posed from `Gate.at` each frame
+   while it moves, only moving ones stepped; keys sink `Specs.Keypad.Travel` along +Z and back;
+   the readout on an invisible card just off `KeypadReadout` (as the note's), red LED digits,
+   dim dashes at rest, blinking on Wrong, green on Right; `KeypadLight` and the glow go green.
+3. Sounds (ROADMAP lists ids and stretches): a beep each press, the buzzer then the alarm bell
+   (loud, heard across the floor) on Wrong, the double-ding, the latch, then the fold timed so
+   its slam lands as the gate hits. Start each `Sound` at its stretch (STUDIO.md).
+4. `src/client/KeypadPad.luau`: a client prompt on the keypad ("Use", reach
+   `Keypad.PromptReach`) opens the on-screen keypad right of centre, clear of the jump button;
+   1-9, then [light] 0 [CLR]; its readout mirrors the wall's; a press beeps and sinks at once
+   (skip the echo whose `by` is you), throttled to `PressSeconds`; dead keys during the alarm;
+   closes on walking off, death, the gate opening, E or B; keyboard digits and Backspace;
+   gamepad selection; slides in and fades, never snaps; a `Modal` button frees the mouse.
+5. Studio, Galaxy A16: punch 0000 then 5062 from the screen keypad; shots in `docs/art/`.
+**Acceptance:** checks green; Lune specs for any new pure code; in Studio the keypad answering
+each press, the wrong code's alarm and lights, the gate folding open with its slam; `OWNER.md`
+has the feel to judge and two-player steps (one types, one watches from the hall).
+**Read first:** `src/shared/Elevator/Keypad.luau`; `src/shared/Elevator/Gate.luau` (motion, by
+grep); `src/shared/Elevator/init.luau` (by grep); `src/client/DoorSounds.luau` (how a sound
+plays a stretch); `src/client/FreeCursor.luau` (header); `src/client/init.client.luau`.
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-05b1 the notes and the keypad; L-05b2 the gate's timer (Brix Zone and Clock); L-11 tools in
-   hand; L-06b the Mannequin hunts (Brix ENG-07); L-04e the deal on the floor; L-12 the saw and
-   hole trap; L-13 the tops and the ladder; L-14 the other tools; then L-07, L-08, L-10, L-09.
-2. L-06b's keepers hear doors on `Doors.acted`, walk on `Pose.at`; L-08 lays the next floor
-   during the ride.
-3. **Polish waiting** (ROADMAP): a floor dial over the landing, a trim sheet if the big trim
-   reads soft, tally marks in the car, the shaft for the ride.
-4. Studio traps (docs/STUDIO.md): in Play, capture the player's own view (turn the client's
-   camera), not a placed camera, which can return a stale frame; `require` in Edit is cached
-   (require a `:Clone()`); an imported part's pivot carries the FBX's Z-up turn; a prompt
-   triggers from the MCP only while the camera faces it; set the Device Simulator's device
-   before its orientation, in Edit.
+1. L-05b1c; L-05b1b the notes; L-05b2 the gate's timer; L-11 tools in hand; L-06b the
+   Mannequin hunts (Brix ENG-07); L-04e; L-12; L-13; L-14; then L-07, L-08, L-10, L-09.
+2. L-06b's keepers hear doors on `Doors.acted` and the keypad on `Elevators.acted` (the alarm
+   sends them to the lobby), walk on `Pose.at`; L-08 lays the next floor during the ride.
+3. **Check:** floor 3 peaked at 13.0 ms in a frame (6.7 before; the lobby now poses the gate).
+   Re-measure; if it holds, breathe after the lobby. Find what loads `rbxassetid://203785492`
+   (Output: "Asset type does not match", six times).
+4. Studio traps (docs/STUDIO.md): capture the player's own view, not a placed camera; `require`
+   in Edit is cached (require a `:Clone()`); set the Device Simulator's device before its
+   orientation, in Edit; fire remotes from the Client view to test them.
 
 ## Kickoff for the next agent
 ```text

@@ -121,6 +121,9 @@ export type Watch = {
 	state: (self: Watch, id: number) -> State,
 	-- Cuts (false) or restores (true) a fixture's power. Returns whether its state changed.
 	setPowered: (self: Watch, id: number, powered: boolean) -> boolean,
+	-- Lights a fixture at `now` as if something moved under it (the alarm), unless it's blind.
+	-- It holds for HoldSeconds like any other. Returns whether its state changed.
+	wake: (self: Watch, id: number, now: number) -> boolean,
 	-- Looks once, at `now` seconds: `bodies` maps each body to where it is. Returns the ids of the
 	-- fixtures whose state changed, in a list the watch reuses on its next step.
 	step: (self: Watch, now: number, bodies: { [unknown]: vector }) -> { number },
@@ -211,6 +214,21 @@ function MotionLight.watch(): Watch
 			removeFrom(lit, id)
 		end
 		f.state = "Blind"
+		return true
+	end
+
+	function watch.wake(_: Watch, id: number, now: number): boolean
+		local f = fixtures[id]
+		assert(f, `MotionLight: no fixture {id}`)
+		if f.state == "Blind" then
+			return false
+		end
+		f.seen = math.max(f.seen, now)
+		if f.state == "Lit" then
+			return false
+		end
+		f.state = "Lit"
+		table.insert(lit, id)
 		return true
 	end
 

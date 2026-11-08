@@ -241,17 +241,32 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
   lobby's back wall in place of the stand-in's car and lamp. Verified in Studio: the gate at 0,
   0.5 and 1, a note reading `_ 7 _ _` on a box, and on the Galaxy A16 from the hall's mouth, at
   the gate and aboard (`docs/art/L-05a2-*.jpg`).
-- [ ] **L-05b1 The notes and the keypad.** The floor's code on sticky notes, one per unit
-  `Deal` names, stuck in the unit with its digits in their slots (`Elevator.note`); preload
-  Kalam on clients before notes show (in Edit the first note drew no digits until refreshed).
-  The keypad: the gate is laid shut, with a collider from the left post to the lead; you punch
-  the code from a phone with a control of its own (the jump button sits over the keypad when you
-  stand at it); each press sinks its key `Specs.Keypad.Travel` along the elevator's +Z, beeps and
-  writes the readout, which shows red dashes at rest so the keypad reads from the lobby. The
-  server checks the code (validated, rate-limited). A wrong code buzzes and flashes every light
-  on the floor (GDD; add it to `MotionLights` beside `cut`); the right one chimes and the gate
-  folds open over a second or two, animated on the clients from a replicated value, not 85 parts
-  moved by the server.
+- [x] **L-05b1a The keypad's rules and the server** (Nov 8, D-042). `Elevator/Keypad.luau` (one
+  digit at a time, the check on the fourth, the readout's text, the replicated state) and the
+  gate's motion in `Gate.luau` (it gathers speed into its slam, recoils, settles; one replicated
+  value); `Elevators` on the server: armed with the floor's code, the `Keypad` remote checked
+  (types, range, rate, state), the wrong code's alarm (every light on the floor via
+  `MotionLights.flash`, the keypad dead 3.5 s), the right code's gate with its collider; the gate
+  laid shut. The test floor deals its code and prints it. Verified in Studio from the client.
+- [ ] **L-05b1c The keypad and gate on every screen.** The moment: a friend shouting the last
+  digit while you punch the first three, the keypad answering every press. A client
+  `ElevatorView`: the gate folding from `Gate.Attribute` (`setGate` each frame while it moves,
+  re-posed when the elevator streams in), each press sinking its key `Specs.Keypad.Travel` along
+  +Z with a beep, the readout in red LED digits (dashes at rest, the wrong code blinking, green on
+  the right one), the status light and glow turning green; the sounds, all Pro Sound Effects and
+  measured (`docs/STUDIO.md`): beep 9114642536 (0 to 0.22 s), buzzer 9113085665 (0 to 0.45 s),
+  the elevator's alarm bell 9125544264, the double-ding 9119642644 (quiet: loud volume), the
+  door's latch 9117910424 (0.2 to 0.9 s) just before the gate moves, the fold 9117907728 (from
+  0.6 s; its slam lands 1.6 s in, on the gate's). A client `KeypadPad`, the phone control: the
+  keypad's own prompt opens an on-screen keypad (DOORS' padlock at door 50 does the same), right
+  of centre, clear of the jump button, 1 to 9 over [light] 0 [CLR] as on the wall, with its
+  readout; you can still walk, and walking off closes it; keys answer at once (a local beep and
+  sink, skipped when the server's echo names you); digits and Backspace on a keyboard, the D-pad
+  on a gamepad. Studio on the Galaxy A16: a wrong code, then the right one; shots in `docs/art/`.
+- [ ] **L-05b1b The notes in their units.** The floor's code on sticky notes, one per unit `Deal`
+  names, stuck in the unit with its digits in their slots (`Elevator.note`), as the floor's units
+  are laid; preload Kalam on clients before notes show (in Edit the first note drew no digits
+  until refreshed). In Studio: open a note's unit, read it, punch the floor's code.
 - [ ] **L-05b2 The gate's timer.** 30 s after the right code the gate folds shut on its own
   (Dandy's World), with its sound and a countdown you feel (the lamp, a bell); Brix's Zone says
   who's aboard and its Clock times it; the last friend sprinting through the closing gap
@@ -320,6 +335,8 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 
 ## Polish waiting for a slot
 
+- **A Clear key on the wall's keypad** (L-05b1a): the phone keypad has one; the wall's has a
+  blank spot under the 9 where the art could add it.
 - **Light that matches at every quality** (owner, Nov 8): at Quality Level 01 nothing casts
   shadows, so the car's lamp lights the lobby's back wall through it and the keypad's red glow
   doesn't show; at 21 the wall is dark but for the glow (`docs/art/L-05a2-keypad-*.jpg`). Pick

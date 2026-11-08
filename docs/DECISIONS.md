@@ -574,3 +574,23 @@ lights itself (owner's test, Nov 8): it hangs on the lobby's side of the wall, s
 shadows settle no light reaches it and it went black; a small red light just in front of the
 panel (`Elevator.KeypadGlow`, 1.6 studs) makes it the keypad's own glow, the sheets' "red glow"
 seen across the lobby. Not chosen: a landing light (the lobby stays lit only by the car).
+
+## D-042 The keypad is shared, checks on the fourth digit, and the server owns it (L-05b1a, Nov 8)
+
+One keypad per floor and one readout for the team, as a real keypad is: you can punch the first
+three digits while a friend runs back with the last (the GDD's co-op moment). There's no enter
+key: the fourth digit is checked at once, as door keypads do, so a fat thumb costs a wrong code.
+A Clear key (on the phone keypad only; the wall's keypad has a blank spot where one could go)
+takes back a mistyped digit before the fourth, so the alarm punishes guesses, not thumbs. A wrong
+code rings the alarm, lights every powered light on the floor at once (`MotionLights.flash`,
+which lights them without `woke`: the building didn't see anything there, the keepers come to
+the lobby instead, L-06b) and leaves the keypad dead for 3.5 s, its readout blinking the wrong
+digits, then clears it. The code never leaves the server; the keypad's state crosses as one
+counted value (`Keypad.Attribute`), so the same press twice still shows. The remote is the
+smallest stand-in for Brix's typed remotes (ENG-09), its checks in their order: types, range,
+rate, state. The gate's motion is one value too (`Gate.Attribute`: from, to, start), which every
+screen folds the gate from and the server sizes the collider from, so the gap you see is the gap
+there is; the gate gathers speed into its slam (ease-in) and recoils 2.5% for 0.22 s, as a
+yanked lattice gate does, and its fold sound builds to the same slam. Not chosen: 85 parts moved
+by the server; a ProximityPrompt per key (ten prompts on a panel a thumb wide); an idle timeout
+on the readout (it would wipe the first three digits while you wait for a friend).
