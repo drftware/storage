@@ -203,15 +203,18 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
     `finds-*.png`), `Finds` (`prepare`, `clone`) and its generated Specs. The GDD names no look
     for rarity, so none. Split from the import on Nov 7: the unwrap and bake traps took the
     session (`docs/STUDIO.md`).
-  - [ ] **L-04c2 The finds into Studio.** Upload (`lune run scripts/upload_art Bedroom`), insert,
-    `Finds.prepare` each into `ReplicatedStorage.Props.Finds` (`art/finds/README.md`); judge them
-    among 101's boxes from the doorway under its bulb on the Galaxy A16 view at Level01 and 21:
-    each readable for what it is at phone size. Tune in `art/finds/spec.py` if one doesn't read.
-  - [ ] **L-04d The director deals each unit.** On the open: a find, a tool, nothing, or a keeper
-    (a marker until L-06), the boxes stacked to fit the unit's size; padlocked units get the best
-    finds and the worst odds (GDD), and a laid floor decides which doors start padlocked (they all
-    start unlocked now, L-01c). The sticky note is L-05's. Needs L-04b's light, so the
-    open's reveal can be seen.
+  - [x] **L-04c2 The finds into Studio.** Done Nov 7 (D-036): uploaded, inserted and prepared into
+    `ReplicatedStorage.Props.Finds`; judged among 101's boxes from the doorway on the Galaxy A16
+    view at Level01 and 21 (`docs/art/L-04c-finds.jpg`). All four read once they stand behind
+    the unit's bulb; the skates re-posed so the fallen one lies in front, wheels to the door.
+  - [ ] **L-04d The deal.** Split Nov 7: the rules alone, pure and Lune-tested. From a floor's
+    seed, what each unit holds on the open: a find (which), a tool, nothing, or a keeper; padlocked
+    units get the best finds and the worst odds (GDD); which doors start padlocked (all start
+    unlocked now, L-01c); and where its boxes and find stand for the unit's size, the find deeper
+    than the bulb and facing the door within a small turn (D-036).
+  - [ ] **L-04e The deal on the floor.** The server lays each unit's boxes and find from L-04d on
+    the open (a keeper a marker until L-06) and padlocks the doors it says; judged from doorways on
+    the Galaxy A16 view. The sticky note is L-05's.
 - [ ] **L-05 Notes, the keypad and the elevator.** The floor's 4-digit code on sticky notes, the
   keypad, the gate that shuts 30 s after the last digit (Dandy's World). Needs the elevator,
   gate, keypad and note art first. Brix: Zone for "aboard", the Clock for the gate's timer.

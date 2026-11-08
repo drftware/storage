@@ -81,7 +81,9 @@ SKATE = dict(
     sole=0.05, heel=(-0.49, -0.26, 0.09),
     wheel_x=0.3, wheel_y=0.16, wheel_r=0.1, wheel_w=0.085,
     toe_stop=(0.5, 0.06, 0.13),         # where it sits along X, its radius, its length
-    pair=[((-0.05, 0.14, 0.0), 172.0, False), ((0.1, -0.14, 0.0), 12.0, True)],  # at, turn, on its side
+    # the pair: (at, turn, roll about its own length). One stands behind in profile; the other
+    # lies in front with its row of wheels to the door, the skates' tell from a doorway.
+    pair=[((-0.2, 0.72, 0.0), 172.0, 0.0), ((0.3, -0.45, 0.0), 8.0, -90.0)],
     seed=14.0,
 )
 

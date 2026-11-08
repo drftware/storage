@@ -476,3 +476,16 @@ packs differently each run, and bmesh's `create_uvsphere` numbers its points dif
 import into Studio was split off to L-04c2. Not chosen: the boxes' face-by-face atlas (curved
 things have no flat faces to pack); printed words now (unreadable at phone size, in polish);
 a rarity glint.
+
+## D-036 · 2026-11-07 · Finds stand behind the unit's bulb; the skates lie wheels to the door
+L-04c2 judged the four finds in unit 101 from its doorway on the Galaxy A16 view. Staged between
+the bulb (at the unit's middle) and the door, each showed the doorway its unlit side: the TV a
+black box, the boombox a dark lump, at Level21 with or without its metalness. A step deeper, behind
+the bulb, all four read at Level01 and 21. So the director deals a find deeper than the bulb,
+facing the door within a small turn, among the boxes in the back half, which is also where a real
+unit's things end up. The skates' pair was re-posed in `art/finds/spec.py`: the fallen skate lay
+behind with its wheels away, hiding the standing one's; it now lies in front with its row of pink
+wheels to the door, the shape that says roller skate at 30 pixels. The pair is placed after the
+bake, so the atlas didn't change. Not chosen: a brighter bulb (L-04b tuned it for dread, and the
+owner judges it); a glint or rim light on finds (no hit-game precedent named; a mimic's clean look
+is the tell, D-035); bigger-than-life finds (they match the boxes' real sizes).

@@ -29,7 +29,8 @@ Sheets in `art/sheets/`: `finds-lineup`, `finds-close-a` and `-b` (in the studio
   button sewn on for the other, a faded red bow.
 - **Skates:** a pair of ivory high-tops, creased at the ankle and scuffed at toe and heel, pink and
   teal stripes, laces through chrome eyelets, pink wheels with white hubs, red toe stops; one
-  standing, one fallen on its side.
+  standing behind in profile, one fallen on its side in front with its wheels to the door (side
+  by side, the fallen one hid the other's wheels, the skates' tell).
 
 Every find has dust on whatever faces up (`spec.DUST`). A mimic has none (GDD): its clean look is
 the same atlas baked with `DUST = 0`, for when the mimic is built.
@@ -41,7 +42,7 @@ the same atlas baked with `DUST = 0`, for when the mimic is built.
 | Boombox | 2.30 x 1.39 x 0.70 | 1,264 | its box |
 | Television | 1.62 x 2.50 x 1.20 (rabbit ears included) | 1,004 | its box |
 | Teddy | 1.01 x 1.44 x 0.91 | 1,624 | its hull |
-| Skates (the pair) | 1.37 x 0.95 x 1.56 | 2,248 | its hull |
+| Skates (the pair) | 1.69 x 0.93 x 1.46 | 2,248 | its hull |
 
 Each find is one MeshPart. Its pivot is the middle of its bottom; its front faces its LookVector.
 One texture set, Bedroom (1024², colour, normal, roughness and metalness, for the chrome), holds
@@ -87,8 +88,15 @@ boxes' build for the unit look sheet's room and boxes.
    end
    workspace.Bedroom:Destroy()
    ```
-   Remove the `Assistant:` tag `insert_asset` adds; set CollisionFidelity in the Properties panel
-   if the MCP's write didn't take (`docs/STUDIO.md`).
+   Remove the `Assistant:` tag `insert_asset` adds. CollisionFidelity takes, though a read in the
+   same call still says Default: check it in the next (`docs/STUDIO.md`).
 3. Save the place: the templates live in it at `ReplicatedStorage.Props.Finds.<Name>` (D-009).
 
 `Finds.clone(name, pivot, parent)` stands a copy anywhere; L-04d's director will deal them.
+
+## In a unit
+
+Judged in Studio on the Galaxy A16 view (L-04c2, `docs/art/L-04c-finds.jpg`): all four read for
+what they are from 101's doorway at Level01 and 21, among the boxes in the back half of the
+unit. A find between the bulb and the door shows the doorway its unlit side and reads as a dark
+lump, so finds are dealt deeper than the bulb, facing the door (D-036).

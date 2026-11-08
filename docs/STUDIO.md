@@ -175,6 +175,10 @@ verified: a doc page, Studio, or "untested".
   corners; 0.6 and 11 left the back corners dark with the boxes plain. Level01 looked close to
   Level21 (walls a little brighter), and lit the facades either side of the open door through
   the wall, which reads as light spilling out.
+- **A unit's contents read only behind its bulb** (Play, L-04c2, Galaxy A16): the bulb hangs at
+  the unit's middle, so a find standing between it and the door shows the doorway its unlit side:
+  the TV read as a black box and the boombox as a dark lump at Level21, metalness map or not. Two
+  studs deeper, behind the bulb, all four read at Level01 and 21. The hall's light doesn't help.
 - **Roblox lights barely fade inside their Range**, and a SurfaceLight's `Angle` is a hard edge
   (Blender's area-light spread fades softly), so a cone a little wider than the sheets' (130° for
   105°) catches the facade above each door.
@@ -247,9 +251,12 @@ verified: a doc page, Studio, or "untested".
 - **After setting `QualityLevel` from the MCP, wait several seconds before a capture.** At Level01
   the first capture 2.5 s after the switch was black but for the tubes; the next, 20 s later, was
   lit normally.
-- **CollisionFidelity doesn't take from the MCP** (Studio, L-04a, 2026-11-07): `execute_luau` in
-  Edit set it on the imported boxes without an error and it read back `Default`. Set it in the
-  Properties panel. Default on a plain box mesh collides as near enough the box.
+- **CollisionFidelity does take from the MCP in Edit** (Studio, L-04c2, 2026-11-07): written by
+  `execute_luau`, directly or through `Finds.prepare`, it reads back `Default` in the same call
+  and the value set in the next. L-04a's "doesn't take" was that read; the boxes were set all along.
+- **A re-uploaded FBX keeps its texture IDs** (Studio, L-04c2): the rebuilt Bedroom FBX (only the
+  skates' placing changed) inserted with the same ColorMap `rbxassetid` as the first upload, so
+  templates from two uploads still share one texture set.
 - **The hall light doesn't reach into an open unit** (Studio, L-04a): with the door up and the
   nearest fixture lit, unit 101's floor and back wall stayed black on the Galaxy A16 view; only the
   facades either side of the doorway lit. Its contents showed only in a stand-in torch's beam (a

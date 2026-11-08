@@ -495,10 +495,9 @@ def pair(ob):
     first = list(bm.verts)
     dup = bmesh.ops.duplicate(bm, geom=list(bm.verts) + list(bm.edges) + list(bm.faces))
     second = [e for e in dup["geom"] if isinstance(e, bmesh.types.BMVert)]
-    for verts, (at, turn, side) in zip((first, second), K.SKATE["pair"]):
-        M = Matrix.Rotation(math.radians(turn), 4, "Z")
-        if side:
-            M = M @ Matrix.Rotation(math.radians(90), 4, "X")
+    for verts, (at, turn, roll) in zip((first, second), K.SKATE["pair"]):
+        # roll first (about the skate's own length: -90 lays it down, wheels to -Y), then turn
+        M = Matrix.Rotation(math.radians(turn), 4, "Z") @ Matrix.Rotation(math.radians(roll), 4, "X")
         bmesh.ops.transform(bm, matrix=M, verts=verts)
         lo = min(v.co.z for v in verts)
         bmesh.ops.translate(bm, vec=Vector(at) - Vector((0, 0, lo)), verts=verts)

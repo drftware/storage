@@ -7,12 +7,14 @@ nowhere else.
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 - [ ] **Save the place** (File > Save to Roblox) after this session (Nov 7): the templates live
-  in it: the small unit at `ReplicatedStorage.Units.S` (new this session, beside the `M`), and the
-  hall's at `ReplicatedStorage.Corridor`: `Straight`, `Fixture`, `Wall`, `DeadEnd`, `Corner`, `T`,
-  `Cross` and `ShortWall`, and `Bulb`, the unit's bulb (new Nov 7, L-04b); and the moving boxes
-  at `ReplicatedStorage.Props.Boxes` (new Nov 7, L-04a). Unsaved, the next open loses them: the
-  short hall past the corner falls back to plain walls, the hall to plain blocks and bare tubes,
-  the units to no bulb (Output says which).
+  in it: the units at `ReplicatedStorage.Units` (`M` and `S`); the hall's at
+  `ReplicatedStorage.Corridor`: `Straight`, `Fixture`, `Wall`, `DeadEnd`, `Corner`, `T`, `Cross`,
+  `ShortWall` and `Bulb`, the unit's bulb (L-04b); the moving boxes at
+  `ReplicatedStorage.Props.Boxes` (L-04a); and the bedroom finds at
+  `ReplicatedStorage.Props.Finds`: `Boombox`, `Television`, `Teddy` and `Skates` (new Nov 7,
+  L-04c2). Unsaved, the next open loses them: the short hall past the corner falls back to plain
+  walls, the hall to plain blocks and bare tubes, the units to no bulb, the finds to nothing
+  (Output says which).
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
@@ -43,23 +45,28 @@ nowhere else.
   light (the others' bulbs only glow): look for a pool popping on or off as you pass. Read View >
   Render stats with four open.
 
-## Now: judge L-04c, the first finds (built Nov 7, in Blender; Studio next session)
+## Now: judge L-04c, the first finds (built Nov 7, in Studio since L-04c2)
 
-- [ ] **Judge the four finds:** `art/sheets/finds-lineup.png` (the four in a studio),
-  `finds-close-a.png` and `finds-close-b.png` (up close), and `finds-unit.png` (among the boxes at
-  the back of a unit, by a dim warm bulb, from the doorway; a Blender render, not Studio yet).
-  Look for: each plain for what it is from the doorway (a boombox, a TV, a teddy, roller skates),
-  dusty and worn but worth taking. Say if any should be swapped for another 1980s bedroom thing.
+- [ ] **Judge the four finds:** `docs/art/L-04c-finds.jpg` is unit 101 opened, seen from its
+  doorway on a Galaxy A16 by its bulb alone: Level21 left, Level01 right, the Level21 view
+  enlarged below. The four stand among the boxes in the back half of the unit: the teddy on a
+  box, the boombox on the floor, the TV on a box, the skates in front. `art/sheets/finds-*.png`
+  is the Blender look. Look for: each plain for what it is (a boombox, a TV, a teddy, roller
+  skates), dusty and worn but worth taking. The skates were re-posed this session: the fallen one
+  hid the other's wheels from the door, so it now lies in front with its wheels to you. Say if any
+  should be swapped for another 1980s bedroom thing.
+- [ ] **See them yourself:** Play, then in the Command Bar with the Server view selected run the
+  boxes line under "Now: judge L-04a", then
+  `local S=game.ReplicatedStorage.Shared local F=require(S.Finds) local f=require(S.StorageUnit).RollUpDoor.frame(workspace.DevCorridor:FindFirstChild("Unit101",true)) for i,n in F.Names do F.clone(n, f*CFrame.new(5-i*2.2,0,7.2), workspace) end`.
+  Open 101 (E), look in from the doorway, then walk in. Look for: each find flat on the floor with
+  its front to the door, nothing floating or sunk, walking into one stopping you at it, and the
+  dust on their tops up close. Try Quality Level 01 and 21.
 - [ ] **The rest of the bedroom set:** the GDD names the set, not its pieces. Default for the next
   ones, about eight in all: an electric guitar, a lava lamp, a shoebox of mixtapes, a desk phone,
   and the display piece a finished set unlocks. Say if you'd rather other things.
 
 ## Now: judge L-04a, the moving boxes (built Nov 7)
 
-- [ ] **Set the boxes' collision, then save:** select the five boxes in
-  `ReplicatedStorage.Props.Boxes` (Small, Medium, Large, Wardrobe, Open) and set
-  CollisionFidelity to Box (Open to Hull) in Properties; a script from the session couldn't. Then
-  save the place (the "Save the place" step above): unsaved, the boxes are gone next session.
 - [ ] **Judge the look:** `art/sheets/boxes-lineup.png` (all five), `boxes-close.png` (up close),
   `boxes-unit.png` (stacked at the back of a unit, lit from the hall) and `boxes-unit-dark.png` (in
   a torch). Then the game's own: `docs/art/L-04a-unit-torch.jpg` is unit 101 from the hall on a

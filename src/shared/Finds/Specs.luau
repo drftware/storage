@@ -26,7 +26,7 @@ local Finds: { [string]: Find } = {
 	},
 	Teddy = { Size = Vector3.new(1.01, 1.44, 0.90), Triangles = 1624, Set = "Bedroom", Hull = true },
 	Skates = {
-		Size = Vector3.new(1.37, 0.93, 1.55),
+		Size = Vector3.new(1.69, 0.93, 1.46),
 		Triangles = 2248,
 		Set = "Bedroom",
 		Hull = true,
