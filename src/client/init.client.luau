@@ -11,12 +11,16 @@ local BehindDoors = require(script.BehindDoors)
 local CameraShake = require(script.CameraShake)
 local DoorSounds = require(script.DoorSounds)
 local DoorView = require(script.DoorView)
+local ElevatorView = require(script.ElevatorView)
 local FreeCursor = require(script.FreeCursor)
 local HallHaze = require(script.HallHaze)
 local HallLights = require(script.HallLights)
+local KeypadPad = require(script.KeypadPad)
 local UnitLights = require(script.UnitLights)
 
 local cameraShake, kick = CameraShake.new()
+local freeCursor, needCursor = FreeCursor.new()
+local elevatorView, pressKeypad = ElevatorView.new(kick)
 
 local host = Brix.Host.new({
 	systems = {
@@ -27,7 +31,9 @@ local host = Brix.Host.new({
 		-- before BehindDoors too, so a unit's stuttering bulb is dimmed for whoever is shut in next door
 		{ slot = "unitLights", system = UnitLights.new() },
 		{ slot = "behindDoors", system = BehindDoors.new() },
-		{ slot = "freeCursor", system = FreeCursor.new() },
+		{ slot = "elevatorView", system = elevatorView },
+		{ slot = "keypadPad", system = KeypadPad.new(pressKeypad, needCursor) },
+		{ slot = "freeCursor", system = freeCursor },
 		{ slot = "hallHaze", system = HallHaze.new() },
 		{ slot = "cameraShake", system = cameraShake },
 	},

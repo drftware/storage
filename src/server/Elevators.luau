@@ -51,7 +51,7 @@ export type Elevators = Brix.System & {
 }
 
 -- Where the remote lives, for the clients: ReplicatedStorage.Remotes.Keypad.
-local FOLDER, REMOTE = "Remotes", "Keypad"
+local FOLDER, REMOTE = Keypad.RemoteFolder, Keypad.RemoteName
 
 -- Shut: the keypad takes digits. Alarm: dead until the alarm stops. Open: done for this floor.
 type Phase = "Shut" | "Alarm" | "Open"
@@ -162,7 +162,7 @@ function Elevators.new(): Elevators
 			return
 		end
 		if key == "Clear" then
-			write(entry, "Clear", "")
+			write(entry, "Clear", "", nil, player.UserId)
 			event(entry, "Clear", player)
 			return
 		end

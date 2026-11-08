@@ -372,6 +372,19 @@ verified: a doc page, Studio, or "untested".
   loudest 0.6 to 1.2 s, then decays over its 7.9 s; the double-ding 9119642644 is about 30 dB
   under the others (play it loud); the fold 9117907728 is silent to 0.6 s, then a ratchet that
   builds to its slam at about 2.2 s and dies by 3.3 s; the latch 9117910424 jiggles 0.2 to 0.8 s.
+- **A recording's first play is late** (Play, L-05b1c, 2026-11-08): the first `Play` of a
+  library recording in a session starts 0.26 to 0.35 s late (its `TimePosition` sits still),
+  even after `ContentProvider:PreloadAsync`; every play after, even from a new `Sound`, starts
+  within a frame. Play it once at volume 0 first (`SoundPrimer`). The double-ding 9119642644 is
+  5.2 s long, loudest to 1 s, down 18 dB by 2.6 s.
+- **Driving the phone's touch from the MCP** (L-05b1c, Galaxy A16): `user_mouse_input` lands taps
+  at about 0.9 of the x you give (and of an `instance_path`'s x); y lands true. Give x divided by
+  0.902 of the button's `AbsolutePosition` middle, and check where it landed with a
+  `UserInputService.InputBegan` listener kept in `_G` (an `execute_luau` that waits blocks the
+  input call until it returns). `ProximityPrompt:InputHoldBegin()` then `InputHoldEnd()` in the
+  Client view triggers a prompt as a tap would.
+- **Types don't pass through a table** (luau-lsp, L-05b1c): `local Keypad = Elevator.Keypad` gives
+  the module's values but not its types (`Keypad.State` is unknown); require the module itself.
 - **Testing a remote from the MCP** (L-05b1a): `execute_luau` in the Client view can
   `FireServer` as the player, bad payloads and all, and read the replicated attributes back; the
   server's prints show in `get_console_output`. Move the character first (Server view,

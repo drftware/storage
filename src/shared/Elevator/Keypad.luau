@@ -19,12 +19,16 @@ export type State = {
 	typed: string, -- the digits punched so far, "" to "7241"
 	event: Event, -- what just happened
 	digit: number?, -- the key that was pressed, for a Press
-	by: number?, -- who pressed it (their UserId), for a Press: their screen already beeped
+	by: number?, -- who pressed it (their UserId), for a press or a clear: their screen already beeped
 }
 
 local Keypad = {}
 
 Keypad.Attribute = "Keypad"
+-- The remote a press travels on: ReplicatedStorage.Remotes.Keypad, made by the server's
+-- Elevators; its payload is the elevator, then a digit or "Clear".
+Keypad.RemoteFolder = "Remotes"
+Keypad.RemoteName = "Keypad"
 -- Digits in a code.
 Keypad.Length = 4
 -- Studs from the keypad's face a press counts from. The prompt shows nearer (`PromptReach`); the

@@ -14,13 +14,37 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
-## Now: decide the keypad's rules before its buttons are built (L-05b1a, Nov 8)
+## Now: decide the keypad's rules (L-05b1a, Nov 8)
 
-- [ ] **Decide, defaults in place** (D-042), before L-05b1c builds what you see: (1) one keypad
+- [ ] **Decide, defaults in place** (D-042), now that you can play them (below): (1) one keypad
   and readout shared by the whole team, so one of you can type while another fetches the last
   digit; (2) no enter key: the fourth digit is checked at once, as door keypads do; (3) a wrong code rings the elevator's alarm bell, lights every light on the floor and leaves the
   keypad dead for 3.5 s (`Keypad.AlarmSeconds`), then it clears. Say which to change. Settled
   (Nov 8): Clear on the on-screen keypad only, and the keypad's prompt opening that keypad.
+
+## Now: judge L-05b1c, the keypad and gate on screen (built Nov 8)
+
+- [ ] **Play it alone**, on the Galaxy A16 in the Device Simulator, then on your computer: Play,
+  take "Walk a floor", read floor 3's code in Output, walk to the keypad by the gate and tap
+  "Use". Punch 0000, then the right code. Look and listen for: each key dipping and the wall's
+  key sinking with a beep the instant you press; the buzzer, then the alarm bell across the
+  floor, the readout and light blinking, every hall light on, the keys dim for 3.5 s; the
+  double-ding, green digits, the latch, then the gate ratcheting faster into a slam with a jolt,
+  the slam's sound landing as the gate hits, not before or after. Shots in `docs/art/`:
+  `L-05b1c-pad.jpg`, `-wrong.jpg`, `-right.jpg`, `-gate-open.jpg` (A16) and `-desktop.jpg`.
+- [ ] **Say what to change** (numbers in `src/shared/Elevator/Sounds.luau`, `Readout.luau` and
+  `src/client/KeypadPad.luau`): the beep's, ding's or bell's volume; the latch (0.3 s before the
+  gate moves); the blink (0.2 s on, 0.2 off); a key's travel (0.025 studs, maybe too small to see
+  on a phone); the pad's size and place (keys 44 points wide, its left edge 58% across); its 0.9 s
+  of green before it slides away; the slam's jolt.
+- [ ] **Two players** (Test > Clients and Servers, 2 players): one types the first three digits;
+  the other watches from the hall's mouth. Look for: the watcher hearing each beep and seeing the
+  wall's readout fill and its keys sink; both hearing the alarm on a wrong code; the gate folding
+  at the same moment on both screens. Then the watcher walks up and types the last digit: both
+  readouts go green.
+- [ ] **Keyboard and gamepad:** E opens it, the number keys type, Backspace clears, E closes; the
+  mouse is free while it's open and locked again after. With a gamepad: X opens, the D-pad moves
+  between keys, A presses, B closes.
 
 ## Now: judge L-05a2, the elevator in Studio (built Nov 8)
 
@@ -41,12 +65,8 @@ nowhere else.
   spawn, walk across the lobby and into the car, turn and look out; at Quality Level 01 and 21.
   Then, with the Server view selected, run
   `require(game.ReplicatedStorage.Shared.Elevator).setGate(workspace.DevCorridor:FindFirstChild("Elevator",true),0.75)`
-  in the Command Bar and look again (0 folds it, 1 shuts it). The gate is now laid shut and
-  blocks you (Nov 8). To get aboard before the keypad has its on-screen buttons (L-05b1c): stand at
-  the keypad, read the floor's code in Output ("floor 3's code is 5062"), select the Client view
-  and run, with your code in place of 5,0,6,2,
-  `local e=game:GetService("CollectionService"):GetTagged("FreightElevator")[1] for _,d in {5,0,6,2} do game.ReplicatedStorage.Remotes.Keypad:FireServer(e,d) task.wait(0.15) end require(game.ReplicatedStorage.Shared.Elevator).setGate(e,0)`.
-  The gate snaps open on your screen; it folds on its own once L-05b1c is built.
+  in the Command Bar and look again (0 folds it, 1 shuts it). The gate is laid shut: open it from
+  the keypad (L-05b1c, above).
 - [ ] **Decide, defaults in place** (D-041): (1) the lamp lights the lobby only through the
   opening, but its spill fans wide, so the lobby's side walls glow more than on the sheet; say if
   it should be darker (`Elevator.Lamp`, range 22, brightness 1.2, in

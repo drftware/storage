@@ -597,3 +597,32 @@ there is; the gate gathers speed into its slam (ease-in) and recoils 2.5% for 0.
 yanked lattice gate does, and its fold sound builds to the same slam. Not chosen: 85 parts moved
 by the server; a ProximityPrompt per key (ten prompts on a panel a thumb wide); an idle timeout
 on the readout (it would wipe the first three digits while you wait for a friend).
+
+## D-043 The keypad answers on every screen: LED digits, a pad by your thumb, sounds on the gate's clock (L-05b1c, Nov 8)
+
+The readout is four seven-segment LEDs drawn as segments (`LedReadout`), not a font: no Roblox
+font looks like a keypad's LEDs, and a dash at rest is then exactly the middle bar lit low, with
+the unlit segments faint under the glass as a real one's are. One pure rule set
+(`Elevator/Readout.luau`) feeds the wall and the screen, so they never disagree; the wrong code
+blinks 0.2 s on, 0.2 s off with the status light, and green holds once the code is right.
+
+The on-screen keypad (`KeypadPad`) opens from the keypad's own "Use" prompt (owner, Nov 8). Its
+left edge sits 58% across the screen so the wall's keypad stays in view and you see its keys
+sink; it fills 92% of the height under the top bar, which on the Galaxy A16 makes a key 44 by
+41 points (at 72% they were 36 and hard to hit) and still leaves 22 points to the jump button.
+A press dips the key and beeps and sinks the wall's key at once; the readout waits for the
+server (one ping), so it never shows a digit the server dropped. The server's echo names who
+pressed (`by`, now on a clear too), so your own press never beeps twice. Dead keys dim during the
+alarm; the right code shows green for 0.9 s, then the pad slides away as the gate folds.
+
+The sounds are timed off the server's clock (`Elevator/Sounds.luau`): the beep at once, the
+buzzer 0.12 s after the last beep and the bell 0.4 s after, ringing exactly as long as the keypad
+is dead; the ding 0.12 s after the right code, the latch 0.3 s before the gate moves, and the
+fold started where its recording's slam lands the instant the gate hits, for any distance it
+travels. A recording's first play in a session starts 0.26 to 0.35 s late even preloaded, which
+would put the slam after the gate; `SoundPrimer` plays each once silently at start. The slam
+jolts anyone within 5 studs (trauma 0.5, gone by 24), on the frame the gate hits.
+
+Not chosen: a font for the digits; showing a pressed digit before the server accepts it; the pad
+centred over the wall's keypad (it hid the keys you'd want to watch sink).
+

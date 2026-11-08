@@ -12,11 +12,15 @@ local Workspace = game:GetService("Workspace")
 local Specs = require(script.Specs)
 local Gate = require(script.Gate)
 local Keypad = require(script.Keypad)
+local Readout = require(script.Readout)
+local Sounds = require(script.Sounds)
 
 local Elevator = {}
 Elevator.Specs = Specs
 Elevator.Gate = Gate
 Elevator.Keypad = Keypad
+Elevator.Readout = Readout
+Elevator.Sounds = Sounds
 
 -- Tagged on every elevator laid in the world, so the server's Elevators runs its keypad and gate
 -- and each player's screen draws them (ElevatorView, KeypadPad). The template carries no tag.
@@ -26,6 +30,9 @@ Elevator.Tag = "FreightElevator"
 Elevator.ReadoutLit = Color3.fromRGB(255, 52, 36)
 Elevator.ReadoutRest = Color3.fromRGB(150, 22, 14)
 Elevator.ReadoutRight = Color3.fromRGB(70, 255, 110)
+-- A segment that isn't lit: faint under the glass, as a real LED's are, so the cells read as
+-- digits even before they show one.
+Elevator.ReadoutUnlit = Color3.fromRGB(84, 16, 12)
 
 -- The car's lamp, the one light on a floor that's always on: the warm glow you arrive in and run
 -- back to. It throws shadows, so it reaches the lobby only through the opening, the gate's lattice
@@ -39,7 +46,11 @@ Elevator.Lamp = {
 -- The keypad's status light, the red pin-prick you see from the hall's mouth (the hall light's
 -- eye showed this red stays a clean dot on a phone), and its readout's dark glass at rest.
 Elevator.KeypadLight = Color3.fromRGB(255, 40, 24)
-Elevator.Readout = Color3.fromRGB(46, 8, 8)
+-- The status light and the glow once the code is right: the green that says go; and the light
+-- dark between the wrong code's blinks.
+Elevator.KeypadRight = Color3.fromRGB(60, 255, 100)
+Elevator.KeypadDark = Color3.fromRGB(60, 10, 8)
+Elevator.ReadoutGlass = Color3.fromRGB(46, 8, 8)
 -- The keypad's own red glow. It hangs on the lobby's side of the wall, where the car's lamp
 -- (behind the wall) never reaches once its shadows settle, and no hall light reaches that far, so
 -- without this it goes black. Enough to read the keys up close and to show across the lobby as a
@@ -175,7 +186,7 @@ function Elevator.prepare(model: Model): Model
 	-- the keypad: its readout's dark glass and its red light; its small parts throw no shadow
 	local readout = part(model, "KeypadReadout")
 	readout.Material = Enum.Material.Glass
-	readout.Color = Elevator.Readout
+	readout.Color = Elevator.ReadoutGlass
 	local red = part(model, "KeypadLight")
 	red.Material = Enum.Material.Neon
 	red.Color = Elevator.KeypadLight

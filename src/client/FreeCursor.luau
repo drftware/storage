@@ -8,7 +8,9 @@
 	gets none of it.
 
 	The mouse goes free while a visible GuiButton has Modal set. Holding the right mouse button
-	still turns the view while it's free, so the cursor hides for that too. Roblox's own menu shows
+	still turns the view while it's free, so the cursor hides for that too. A screen you click on
+	(the elevator's keypad, KeypadPad) asks for the mouse with `need` while it's open, and gets it
+	back as it was when it closes. Roblox's own menu shows
 	its cursor whatever we set (docs/STUDIO.md, "Freeing the mouse"). Brix has no input piece, so
 	this one is the game's own.
 ]]
@@ -102,19 +104,37 @@ local function makeHint(): CanvasGroup
 	return hint
 end
 
-function FreeCursor.new(): Brix.System
+-- What a screen calls to have the mouse free while it's open (`on`) and to let it go (`who`
+-- names the screen, so two can ask at once).
+export type Need = (who: string, on: boolean) -> ()
+
+-- The system, and `need`.
+function FreeCursor.new(): (Brix.System, Need)
 	local gui: ScreenGui? = nil
 	local release: TextButton? = nil
 	local hint: CanvasGroup? = nil
 	local hintThread: thread? = nil
 	local free = false
+	local needed: { [string]: true } = {} -- screens open that need the mouse
 	local turning = false -- the right mouse button is down, so the mouse turns the view
 	local iconWas = true -- the cursor's visibility before start, put back on stop
 	local connections: { RBXScriptConnection } = {}
 
-	-- A cursor is drawn only while it's a cursor: free, and not turning the view.
+	-- Free when Alt let it go or a screen needs it.
+	local function isFree(): boolean
+		return free or next(needed) ~= nil
+	end
+
+	-- A cursor is drawn only while it's a cursor: free, and not turning the view. The button
+	-- whose Modal frees it shows exactly then.
 	local function drawCursor()
-		UserInputService.MouseIconEnabled = free and not turning
+		local on = isFree()
+		if release then
+			release.Visible = on
+		end
+		if gui then
+			UserInputService.MouseIconEnabled = on and not turning
+		end
 	end
 
 	-- Fades the hint out and lets it go; it never comes back this session.
@@ -167,14 +187,20 @@ function FreeCursor.new(): Brix.System
 
 	local function setFree(on: boolean)
 		free = on
-		if release then
-			release.Visible = on
-		end
 		drawCursor()
 		dismissHint()
 	end
 
-	return {
+	local function need(who: string, on: boolean)
+		if on then
+			needed[who] = true
+		else
+			needed[who] = nil
+		end
+		drawCursor()
+	end
+
+	local system: Brix.System = {
 		name = "FreeCursor",
 		start = function(_: any, _context: Brix.Context)
 			-- No mouse, nothing to free: phones and gamepads never see the key or the hint.
@@ -267,9 +293,11 @@ function FreeCursor.new(): Brix.System
 			release = nil
 			hint = nil
 			free = false
+			table.clear(needed)
 			turning = false
 		end,
 	}
+	return system, need
 end
 
 return FreeCursor
