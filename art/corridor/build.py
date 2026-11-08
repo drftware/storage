@@ -3,13 +3,13 @@
     blender -b --factory-startup -P art/corridor/build.py -- --stage export|renders
 
 Stages:
-    export   one FBX per piece and one for the hall light fixture in out/ for Open Cloud, and
-             src/shared/CorridorKit/Specs.luau
+    export   one FBX per piece, one for the hall light fixture and one for the unit's bulb in out/
+             for Open Cloud, and src/shared/CorridorKit/Specs.luau
     renders  the look sheets, art/sheets/corridor-*.png
 
 The pieces wear the unit's baked texture sets (art/unit/out/textures): build those first with
-scripts/art.sh. The kit bakes nothing of its own. The fixture's lens and eye are plain parts the
-game colours (HallLight), so they export untextured.
+scripts/art.sh. The kit bakes nothing of its own. The fixture's lens and eye and the bulb's glass
+are plain parts the game colours (HallLight, UnitLight), so they export untextured.
 """
 
 import argparse
@@ -32,7 +32,7 @@ import spec as K  # noqa: E402
 OUT = os.path.join(HERE, "out")
 TEX = os.path.join(UNIT, "out", "textures")
 SHEETS = os.path.join(K.ROOT, "art", "sheets")
-TEXSET = {"Floor": "Concrete", "Ceiling": "TrimSheet", "Housing": "TrimSheet",
+TEXSET = {"Floor": "Concrete", "Ceiling": "TrimSheet", "Housing": "TrimSheet", "Cage": "TrimSheet",
           "Facade": "Facade", "Trim": "TrimSheet", "Panel": "Partition"}
 PIECES = {"Straight": (pieces.straight, K.STRAIGHT)}
 # The hall's walls, by their width along the wall: the plain wall is one unit's slot, the dead end
@@ -42,9 +42,10 @@ WALLS = {"Wall": (pieces.plain_wall, K.PLAIN),
          "DeadEnd": (pieces.dead_end, K.SPAN)}
 # The junctions: the corner, the T and the cross, each a JUNCTION square.
 JUNCTIONS = {name: ((lambda n=name: pieces.junction(n)), K.JUNCTION) for name in K.JUNCTIONS}
-# The fixture's parts the game colours: untextured, so Roblox's Neon and Color show on them. These
-# are only the colours they import with (a dead lens, a frosted dome); HallLight sets the real ones.
-PLAIN = {"Diffuser": (0.16, 0.17, 0.18), "Eye": (0.55, 0.55, 0.53)}
+# The parts the game colours: untextured, so Roblox's Neon and Color show on them. These are only
+# the colours they import with (a dead lens, a frosted dome, a cold bulb); HallLight and UnitLight
+# set the real ones.
+PLAIN = {"Diffuser": (0.16, 0.17, 0.18), "Eye": (0.55, 0.55, 0.53), "Glass": (0.3, 0.29, 0.27)}
 
 
 def reset():
@@ -89,6 +90,22 @@ def build_fixture(at=0.0, coll=None, for_export=True, lens=None, eye=None):
         if part in PLAIN:
             mat = {"Diffuser": lens, "Eye": eye}[part] if not for_export else None
             ob.data.materials.append(mat or plain(part, PLAIN[part]))
+        else:
+            ob.data.materials.append(bake.textured(TEXSET[part], TEX, for_export=for_export))
+        objs[part] = ob
+    return objs
+
+
+def build_bulb(coll=None, for_export=True, glass=None, matrix=None):
+    """The unit's bulb as objects, its frame (the hang point) at `matrix`. `glass` is a render
+    material for a lit glass; export uses the plain one."""
+    objs = {}
+    for part, mesh in pieces.bulb().items():
+        ob = mesh.build(coll, sharp_angle=None)  # the guard's thin wires shade round, not as ribbons
+        if matrix is not None:
+            ob.matrix_world = matrix
+        if part in PLAIN:
+            ob.data.materials.append((glass if not for_export else None) or plain(part, PLAIN[part]))
         else:
             ob.data.materials.append(bake.textured(TEXSET[part], TEX, for_export=for_export))
         objs[part] = ob
@@ -163,9 +180,17 @@ def stage_export():
     fixture_tris = {part: m.tris() for part, m in pieces.fixture().items()}
     fbx = export_fbx(build_fixture(), "Diffuser", "Fixture")
     print("FBX", fbx, os.path.getsize(fbx), fixture_tris)
+    reset()
+    meshes = pieces.bulb()
+    bulb = dict(tris={part: m.tris() for part, m in meshes.items()})
+    zs = [v.z for v in meshes["Glass"].verts]
+    bulb["glass_mid"] = (min(zs) + max(zs)) / 2  # where Roblox puts the glass part's Position
+    bulb["glass_size"] = max(abs(v.x) for v in meshes["Glass"].verts) * 2, max(zs) - min(zs)
+    fbx = export_fbx(build_bulb(), "Glass", "Bulb")
+    print("FBX", fbx, os.path.getsize(fbx), bulb["tris"])
     lua = os.path.join(K.ROOT, "src", "shared", "CorridorKit", "Specs.luau")
     os.makedirs(os.path.dirname(lua), exist_ok=True)
-    K.write_luau(lua, out, walls, junctions, fixture_tris)
+    K.write_luau(lua, out, walls, junctions, fixture_tris, bulb)
     print("SPEC", lua)
 
 
@@ -284,6 +309,7 @@ def stage_renders():
         render.flashlight(cam, torch, target)
         render.shoot(cam, os.path.join(SHEETS, f"corridor-{name}.png"))
     stage_turn_renders()
+    stage_bulb_renders()
 
 
 def stage_turn_renders():
@@ -320,6 +346,59 @@ def stage_turn_renders():
         render.shoot(cam, os.path.join(SHEETS, f"corridor-{name}.png"))
 
 
+def stage_bulb_renders():
+    """The bulb's sheets: lit in a stand-in M unit with a few boxes at the back, up close and from
+    the hall through the open door."""
+    import render
+    reset()
+    coll = bpy.context.scene.collection
+    U = K.UNIT
+    w2, d, h, f = U.width / 2, U.depth, U.wall_height, U.facade
+    concrete = render.simple("concrete", (0.32, 0.31, 0.29), 0.85)
+    wall = render.simple("partition", (0.5, 0.5, 0.49), 0.5, 0.6)
+    wire = render.simple("wiretop", (0.3, 0.31, 0.32), 0.5, 0.8)
+    facade = render.simple("facade", (0.55, 0.53, 0.5), 0.7)
+    render.box_obj("floor", (-w2 - 4, -8.0, -0.2), (w2 + 4, d, 0.0), concrete, coll)
+    render.box_obj("back", (-w2, d, 0.0), (w2, d + 0.1, h), wall, coll)
+    for sd in (-1, 1):
+        x0, x1 = sorted((sd * w2, sd * (w2 + 0.1)))
+        render.box_obj("side", (x0, f, 0.0), (x1, d, h), wall, coll)
+        # the facade either side of the door, which is up
+        x0, x1 = sorted((sd * U.door_width / 2, sd * w2))
+        render.box_obj("facade", (x0, 0.0, 0.0), (x1, f, h), facade, coll)
+    render.box_obj("header", (-w2, 0.0, U.door_height), (w2, f, h), facade, coll)
+    render.box_obj("wiretop", (-w2, f, h), (w2, d, h + 0.02), wire, coll)
+    channel_y = f + (d - f) / 2
+    render.box_obj("channel", (-w2, channel_y - 0.07, h - K.CHANNEL_DROP), (w2, channel_y + 0.07, h),
+                   wire, coll)
+    for center, size, rot in (((-3.2, 9.6, 0.0), (2.6, 2.6, 2.0), 0.1),
+                              ((-3.0, 9.8, 2.0), (2.0, 2.0, 1.6), -0.2),
+                              ((2.8, 10.2, 0.0), (2.2, 2.0, 4.4), 0.05),
+                              ((0.2, 8.6, 0.0), (1.8, 1.8, 1.4), 0.4)):
+        render.box_prop(coll, center, size, rot)
+    hang = Matrix.Translation((0.0, channel_y, h - K.CHANNEL_DROP))
+    glass = render.emissive("glass_lit", (1.0, 0.78, 0.52), 9.0)
+    lit = build_bulb(coll, for_export=False, glass=glass, matrix=hang)
+    for ob in lit.values():
+        ob.visible_shadow = False  # the light sits inside it; the game's bulb shades nothing either
+    ld = bpy.data.lights.new("bulb", "POINT")
+    ld.energy = 140.0
+    ld.color = (1.0, 0.72, 0.46)
+    ld.shadow_soft_size = K.GLASS_R
+    lo = bpy.data.objects.new("bulb", ld)
+    lo.location = (0.0, channel_y, h - K.CHANNEL_DROP + K.BULB_NECK - 0.45 * K.GLASS_LEN)
+    coll.objects.link(lo)
+    render.setup(96, (1280, 720), exposure=0.0)
+    views = {
+        "bulb": ((1.6, channel_y - 2.2, 7.4), (0.0, channel_y, 8.4), 40),      # up close
+        "bulb-unit": ((0.8, -5.0, 4.6), (0.0, d, 2.6), 24),                     # from the hall
+    }
+    for name, (loc, target, lens) in views.items():
+        cam = render.camera(loc, target, lens, name)
+        render.flashlight(cam, False, target)
+        render.shoot(cam, os.path.join(SHEETS, f"corridor-{name}.png"))
+
+
 def args():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     p = argparse.ArgumentParser()
@@ -329,5 +408,5 @@ def args():
 
 if __name__ == "__main__":
     a = args()
-    {"export": stage_export, "renders": stage_renders}[a.stage]()
+    {"export": stage_export, "renders": stage_renders, "bulb": stage_bulb_renders}[a.stage]()
     print("DONE", a.stage)

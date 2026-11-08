@@ -219,6 +219,42 @@ assert JOIST_SPACING / 2 - (CHORD_GAP / 2 + CHORD_LEG) > REACH, "the fixture hit
 assert LENS_Z + LENS_THICK / 2 < JOIST_BOTTOM
 
 
+# --- the unit's bulb: a caged bulb on a short cord under the unit's wire top -------------------
+# One hangs in every unit, from the middle of the wire top's middle channel (art/unit/parts.py,
+# `wire_top`), and lights with the door (UnitLight). The glass is the part the game lights, so it
+# exports plain, as the fixture's lens does. The frame is the hang point, where the cord meets the
+# channel's underside, with the cord running down -z. Round all through, so the turn the importer
+# gives it never shows. Drawn a little bigger than a real one (a 6-inch guard is 0.5 studs) so it
+# reads from a unit's doorway on a phone.
+CHANNEL_DROP = 0.22  # the wire top's channels hang this far below the wall's top (parts.py)
+CANOPY_R = 0.055     # the cord grip clamped to the channel
+CANOPY_H = 0.07
+BULB_CORD = 0.62     # the cord, grip to socket: the glass's middle about 8.45 over the floor
+SOCKET_R = 0.072     # black bakelite, narrowing a little to the top
+SOCKET_TOP_R = 0.058
+SOCKET_H = 0.2
+COLLAR_R = 0.095     # the guard's clamp round the socket's bottom
+COLLAR_H = 0.05
+GLASS_NECK_R = 0.055  # where the glass leaves the socket
+GLASS_R = 0.165      # at its widest
+GLASS_LEN = 0.44     # neck to tip, a pear-shaped A bulb
+GLASS_SEGS = 10      # around
+GLASS_RINGS = 6      # neck to tip
+CAGE_R = 0.215       # the guard's wires at their widest, clear of the glass
+CAGE_WIRES = 6       # bowed wires from the collar to the bottom ring
+CAGE_WIRE = 0.013    # the wire's radius (a real guard's is about a third of this)
+CAGE_SEGS = 6        # along each wire
+CAGE_BOTTOM_R = 0.045  # the small ring the wires meet in, under the tip
+CAGE_GAP = 0.04      # tip of the glass to the bottom ring
+RING_SEGS = 12       # around the guard's middle ring and the bottom one
+
+BULB_SOCKET_TOP = -(CANOPY_H + BULB_CORD)
+BULB_NECK = BULB_SOCKET_TOP - SOCKET_H        # where the glass starts, under the socket
+BULB_TIP = BULB_NECK - GLASS_LEN
+BULB_BOTTOM = BULB_TIP - CAGE_GAP - CAGE_WIRE  # the guard's lowest wire
+assert CAGE_R - CAGE_WIRE > GLASS_R + 0.02, "the guard touches the glass"
+
+
 def joist_xs(length):
     """Joists sit half a spacing in from each end, so pieces in a row keep a 6-stud beat."""
     n = int(round(length / JOIST_SPACING))
@@ -239,10 +275,10 @@ def lua_num(x):
     return "0" if s in ("-0", "") else s
 
 
-def write_luau(path, pieces, walls, junctions, fixture_tris):
+def write_luau(path, pieces, walls, junctions, fixture_tris, bulb):
     """pieces: {name: dict(length=, colliders={name: (pos, size)}, tris={part: n})}, Roblox axes;
     walls: {name: dict(width=, colliders=, tris=)}, in the wall's frame; fixture_tris: {part: n}
-    for the hall light fixture."""
+    for the hall light fixture; bulb: dict(tris=, glass_mid=, glass_size=) for the unit's bulb."""
     v3 = lambda t: f"Vector3.new({', '.join(lua_num(v) for v in t)})"
     lines = [
         "--!strict",
@@ -324,6 +360,22 @@ def write_luau(path, pieces, walls, junctions, fixture_tris):
         "\t\tTriangles = {",
     ]
     for part, n in sorted(fixture_tris.items()):
+        lines.append(f"\t\t\t{part} = {n},")
+    width, height = bulb["glass_size"]
+    lines += [
+        "\t\t},",
+        "\t},",
+        "",
+        "\t-- The unit's bulb: its frame is the hang point under the wire top's middle channel, the cord",
+        "\t-- running down from it; round about Y, so its turn never shows.",
+        "\tBulb = {",
+        f"\t\tChannelDrop = {lua_num(CHANNEL_DROP)}, -- the hang point below the unit's wall top",
+        f"\t\tGlassDrop = {lua_num(-bulb['glass_mid'])}, -- the glass part's middle below the hang point",
+        f"\t\tGlassSize = Vector2.new({lua_num(width)}, {lua_num(height)}), -- across and tall",
+        f"\t\tBottom = {lua_num(-BULB_BOTTOM)}, -- the guard's lowest wire below the hang point",
+        "\t\tTriangles = {",
+    ]
+    for part, n in sorted(bulb["tris"].items()):
         lines.append(f"\t\t\t{part} = {n},")
     lines += ["\t\t},", "\t},", "}", ""]
     with open(path, "w") as f:

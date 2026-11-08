@@ -60,6 +60,34 @@ end
 ok(rising, "the light only grows as the door lifts")
 ok(near(ShutIn.light(1, 0), 1), "a door with no open rise never darkens anything")
 
+-- the unit's bulb, wired to the door like a fridge's light
+local PEEK = 1.15
+ok(not ShutIn.bulb(0, 0, false), "a shut door's bulb is out")
+ok(not ShutIn.bulb(OPEN, 0, false), "an open about to start is still dark on its first frame")
+ok(ShutIn.bulb(OPEN, 0.3, false), "the bulb comes on as the door starts up")
+ok(ShutIn.bulb(PEEK, 0.3, false), "a peek lights it too, so a little spills out under the door")
+ok(ShutIn.bulb(OPEN, OPEN, false), "a door held open has its bulb on")
+ok(ShutIn.bulb(OPEN, PEEK, true), "opening from a peek keeps it on")
+ok(ShutIn.bulb(0, 3, true), "a closing door's bulb burns until the door lands")
+ok(not ShutIn.bulb(0, 0, true), "it goes out the frame the door lands")
+ok(not ShutIn.bulb(0, 0.3, false), "and stays out as a slam bounces back up")
+ok(not ShutIn.bulb(0, 0.12, false), "a padlocked door's rattle never lights it")
+-- a whole slam from open, sampled as the client does: on until the bang, then out through the bounce
+local Motion = require("../src/shared/StorageUnit/Motion")
+local on, wentOut, relit = true, false, false
+for i = 0, 60 do
+	local rise = Motion.sample("Slam", OPEN, 0, i / 100, OPEN)
+	local now = ShutIn.bulb(0, rise, on)
+	if on and not now then
+		wentOut = true
+		ok(rise <= ShutIn.BulbOffRise, "the slam's bulb goes out only as the door lands")
+	elseif now and not on then
+		relit = true
+	end
+	on = now
+end
+ok(wentOut and not relit and not on, "a slam's bulb goes out on the bang and stays out")
+
 print(string.format("shutin: %d checks, %d failures", checks, failures))
 if failures > 0 then
 	error("shutin spec failed")

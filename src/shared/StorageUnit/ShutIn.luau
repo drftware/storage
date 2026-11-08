@@ -4,7 +4,8 @@
 	shut door is solid metal, so someone in the unit and someone outside it can't see each other,
 	and the one inside sits in the dark. BehindDoors uses this to stop drawing anyone a shut door
 	stands between (which also hides a running arm that swings through the slats) and to dim the
-	hall's lights for whoever is shut in.
+	hall's lights for whoever is shut in. The unit's own bulb is wired to the door like a fridge's
+	light (`bulb`): it never burns behind a shut door.
 
 	Points are door-local (RollUpDoor.frame): +Z runs back into the unit from the curtain, +Y up
 	from the floor, X across the opening. Pure, so the Lune tests cover it.
@@ -54,6 +55,27 @@ function ShutIn.light(rise: number, openRise: number): number
 	end
 	local shut = 1 - math.clamp(rise / openRise, 0, 1)
 	return ShutIn.Dark + (1 - ShutIn.Dark) * (1 - shut * shut * shut * shut)
+end
+
+-- The unit's bulb comes on as its door starts up, a peek's included: past this rise (studs) on
+-- the way up, about the first frames of the lift, so the light spills out under the rising door.
+ShutIn.BulbOnRise = 0.05
+-- And goes out the moment a closing door is down to this rise, the frame it lands: a slam is
+-- dark on its bang. It stays out through the slam's bounce, and a padlocked door's rattle (a few
+-- centimetres) never lights it.
+ShutIn.BulbOffRise = 0.02
+
+--[[
+	Whether a unit's bulb is on, its door `rise` studs up in a motion heading to `to` (0 is shut);
+	`was` is whether it was on a moment ago (for a motion just seen, whether the door started open).
+	Rising or held up, it's on once the door has lifted; heading shut, it stays on only until the
+	door lands, and once out it stays out for the rest of that motion.
+]]
+function ShutIn.bulb(to: number, rise: number, was: boolean): boolean
+	if to > ShutIn.BulbOffRise then
+		return was or rise > ShutIn.BulbOnRise
+	end
+	return was and rise > ShutIn.BulbOffRise
 end
 
 return ShutIn

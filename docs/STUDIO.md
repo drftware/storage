@@ -167,6 +167,14 @@ verified: a doc page, Studio, or "untested".
   on dark, so the end read as a dark opening. Hung on an Attachment 1.5 out and 1 below the sign,
   it washes the wall it's on. Pale walls (the facade paint) take far more of a light than dark
   concrete did, so a light tuned beside concrete needs retuning beside them.
+- **A point light's shadows are hard, even from thin wires** (L-04b, 2026-11-07): a PointLight in a
+  caged bulb, with the guard's 0.026-stud wires casting, threw six black bands a stud wide across
+  a unit's walls and floor at Level21 (`docs/art/L-04b-guard-shadows.jpg`). A real bulb's are soft;
+  Roblox draws no penumbra. Lights inside a model: the parts round them cast no shadow.
+- **A unit's bulb, tuned** (L-04b, Galaxy A16): Brightness 1 and Range 12 lit an M unit to its
+  corners; 0.6 and 11 left the back corners dark with the boxes plain. Level01 looked close to
+  Level21 (walls a little brighter), and lit the facades either side of the open door through
+  the wall, which reads as light spilling out.
 - **Roblox lights barely fade inside their Range**, and a SurfaceLight's `Angle` is a hard edge
   (Blender's area-light spread fades softly), so a cone a little wider than the sheets' (130° for
   105°) catches the facade above each door.
@@ -246,6 +254,11 @@ verified: a doc page, Studio, or "untested".
   nearest fixture lit, unit 101's floor and back wall stayed black on the Galaxy A16 view; only the
   facades either side of the doorway lit. Its contents showed only in a stand-in torch's beam (a
   client SpotLight at the camera, `docs/art/L-04a-unit-torch.jpg`).
+- **The bulb arrived like the fixture** (L-04b): two MeshParts, the textured one with a
+  SurfaceAppearance in Overlay, the plain one without, both with local Y up; every part casts
+  shadows until `prepare` says otherwise.
+- **Blender: an emission-only mesh blocks the light inside it** (L-04b): a point light inside the
+  bulb's glowing glass lit nothing until the glass's `visible_shadow` was off.
 - **A full FBX of props arrives as one Model of MeshParts** (Studio, L-04a): `Boxes.fbx` gave five
   MeshParts at their real sizes, each pivot at its Blender origin (the bottom's middle), each
   turned 135° about Y with the model, each with a SurfaceAppearance in Overlay and no MetalnessMap.
@@ -281,6 +294,9 @@ verified: a doc page, Studio, or "untested".
   key like `` `{x},{z}` `` misses its match. Write `0 - j * 2` (Floor's grid, L-01a).
 - **`require` in Edit is cached:** after Rojo syncs a change, `execute_luau`'s `require` still
   returns the module from the first call. Require a `:Clone()` of the module tree for fresh code.
+- **Measuring the bulb's click** (L-04b): Pro Sound Effects' "Moviola Toggle Switch Single Clicks
+  Sharp 8" (9117028600, 0.74 s) is a sharp tick in its first 0.1 s and a faint release at 0.25 s;
+  "Light Bulb Buzz 2" (9112823813) is a 49 s loop. Both preload in Edit.
 - **The Device Simulator from the MCP** (2026-11-07, skill `rbx-device-simulator-lua`): set the
   device in Edit before Play (its setters fail in Play's server view), then the orientation:
   `SetOrientationAsync` before a phone is active fails ("only on mobile devices"). The Galaxy

@@ -13,7 +13,9 @@
 	light under the door, and a friend lifting it floods light in (ShutIn.light). Full graphics
 	quality does that with real shadows; low-graphics phones light a unit through its walls
 	(D-016), so on your own screen the hall's lights (HallLight.Tag) are scaled down while you're
-	shut in and the line under the door is drawn as a thin glowing strip on the hall floor.
+	shut in and the line under the door is drawn as a thin glowing strip on the hall floor. The
+	units' bulbs carry the same tag (UnitLight), so a lit neighbour doesn't shine through your
+	wall; your own unit's bulb, which comes on as your door lifts, is left whole.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -313,8 +315,10 @@ function BehindDoors.new(): Brix.System
 				end
 			end
 			if level < 1 or dimmed then
+				-- your own unit's bulb is in there with you: it lights your room in full
+				local own = shutIn and shutIn.unit
 				for _, light in lights do
-					scaleLight(light, level)
+					scaleLight(light, if own and light:IsDescendantOf(own) then 1 else level)
 				end
 				dimmed = level < 1
 			end

@@ -188,15 +188,14 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
     generated Specs; templates at `ReplicatedStorage.Props.Boxes`. Stacked in unit 101 they read
     as boxes from the doorway, but only in a torch's beam: the hall light doesn't reach past the
     doorway, so they're unseen under it and in the dark (`docs/STUDIO.md`).
-  - [ ] **L-04b The unit's own light** (owner, Nov 7: "a small light in each unit, dim"; no
-    torch). The hall light stops at the doorway (L-04a), so an open unit is black inside and its
-    reveal is lost. Every unit gets one small caged bulb on a cord from its wire top (built the
-    unit's way; an S and an M at least), dim and warm, its pool just reaching the back wall and the
-    boxes. It comes on as the door rises (a peek lets a little out) and goes out when the door is
-    shut, so a shut unit stays the GDD's blind spot, black but for the line under the door
-    (P0-02g). The moment it serves: the door goes up and a weak bulb flickers on over whatever's
-    there. Its own feedback in the ticket: a click and a stutter on, a faint hum near it. Phone
-    cost: only lit bulbs near you throw light (the hall's rule, the 3 nearest), the rest glow.
+  - [x] **L-04b The unit's own light.** Done Nov 7 (D-034), verified in Studio on the Galaxy
+    A16 view at Level01 and 21: a caged bulb on a short cord under every unit's wire top (S and M,
+    the test hall's 15 and a laid floor's 77), a piece of the corridor kit (`Bulb`, 518
+    triangles). Wired to the door like a fridge's light: it clicks and stutters on as the door
+    starts up (a peek lets a warm band out under the door) and is out the frame the door lands, a
+    slam's bang included. Dim and warm (0.6, reach 11): the boxes at the back plain from the
+    doorway, the back corners dark. The 3 nearest lit bulbs throw light and hum; the rest glow.
+    `UnitLight`, `UnitLights`, `ShutIn.bulb`, `CorridorKit.hangBulb`; shots `docs/art/L-04b-*.jpg`.
   - [ ] **L-04c The first finds.** A handful from one of the GDD's sets (the 1980s bedroom), each
     one readable on a phone from the doorway, dusty (a mimic has no dust, GDD), and light enough
     in triangles for a floor of them. Rarity's look (a glint, a colour) only if the GDD names one.
@@ -249,6 +248,12 @@ launch.
 - **The boxes' second look** (L-04a): every box of a size looks alike (one atlas). A second label
   set, or a box turned so another face shows, before a unit holds three of one size side by side.
 - **The wardrobe box's hanging bar** and a lid lifted on the Open box's floor (L-04a).
+- **A unit's bulb swinging** on its cord after a slam or a bump, its pool rocking across the boxes
+  (L-04b): a small spring on the bulb model, stepped only while it swings.
+- **The guard's bars on the walls, softly** (L-04b): from a point light the six wires threw hard
+  black bands across the whole unit (`docs/art/L-04b-guard-shadows.jpg`), so the guard casts no
+  shadow. A faint striped texture on the walls near the bulb, or fewer, thinner wires, if the
+  owner wants the caged look back.
 
 - **What a laid floor costs to draw** (L-01c): the whole floor streams in at once, and from its
   lobby the main view drew 96,000 triangles (112,000 down an aisle) in 43 draw calls in Studio's

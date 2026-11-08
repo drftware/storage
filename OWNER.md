@@ -9,12 +9,39 @@ nowhere else.
 - [ ] **Save the place** (File > Save to Roblox) after this session (Nov 7): the templates live
   in it: the small unit at `ReplicatedStorage.Units.S` (new this session, beside the `M`), and the
   hall's at `ReplicatedStorage.Corridor`: `Straight`, `Fixture`, `Wall`, `DeadEnd`, `Corner`, `T`,
-  `Cross` and `ShortWall`; and the moving boxes at `ReplicatedStorage.Props.Boxes` (new Nov 7,
-  L-04a). Unsaved, the next open loses them: the short hall past the corner
-  falls back to plain walls, the hall to plain blocks and bare tubes (Output says which).
+  `Cross` and `ShortWall`, and `Bulb`, the unit's bulb (new Nov 7, L-04b); and the moving boxes
+  at `ReplicatedStorage.Props.Boxes` (new Nov 7, L-04a). Unsaved, the next open loses them: the
+  short hall past the corner falls back to plain walls, the hall to plain blocks and bare tubes,
+  the units to no bulb (Output says which).
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
+
+## Now: judge L-04b, the unit's bulb (built Nov 7)
+
+- [ ] **Judge the shots:** `docs/art/L-04b-open.jpg` is unit 101 opened with the boxes inside, seen
+  from the hall on a Galaxy A16, by its bulb alone (the hall light off): Level21 left, Level01
+  right. `L-04b-peek.jpg` is 101 peeked, from across the dark hall. `art/sheets/corridor-bulb.png`
+  is the bulb up close (Blender). Look for: the boxes plain from the doorway, the back corners dark,
+  a warm light that reads as a different thing from the hall's cold tubes; at a peek, a band of
+  warm light under the door. Say if it should be dimmer, brighter or reach farther
+  (`UnitLight.Brightness`, 0.6, and `UnitLight.Range`, 11, in `src/shared/UnitLight.luau`).
+- [ ] **The guard's shadows:** `L-04b-guard-shadows.jpg` is the same unit with the guard's wires
+  casting shadows (and the light at 1): six hard black bands across the room, which Roblox can't
+  soften. I turned them off. Say if you want that caged look back anyway.
+- [ ] **See and hear it yourself:** Play, put the L-04a boxes in 101 (the Command Bar line under
+  "Now: judge L-04a"), stand at 101 and Open (E). Look and listen for: a click as the door starts
+  up, the bulb stuttering on (on, out, on, dim, on within a third of a second), then a faint buzz
+  standing in the doorway. Slam (G): the bulb is out on the bang and stays out as the door
+  bounces. Peek (Q): a warm band under the door. Do it at Quality Level 01 and 21. Say if the
+  click is wrong for a bulb on a door switch, or the buzz too loud or too quiet
+  (`UnitLight.ClickSound`, `HumVolume`).
+- [ ] **Shut in next door:** open 101, then walk into 103 and Slam it on yourself, at Level 01.
+  Look for: 103 black but for the line under the door, no warm glow through the wall from 101.
+  Then Lift: 103's own bulb comes on with its door.
+- [ ] **Several open at once:** open 101 to 104 and walk past them. Only the three nearest throw
+  light (the others' bulbs only glow): look for a pool popping on or off as you pass. Read View >
+  Render stats with four open.
 
 ## Now: judge L-04a, the moving boxes (built Nov 7)
 
@@ -60,9 +87,9 @@ nowhere else.
 ## Decide: moving between units, and the map (your note, Nov 7)
 
 - [ ] **The unit's bulb comes on with its door** (default for your call on Nov 7, a dim light
-  in each unit and no torch; L-04b builds it): it lights as the door rises and goes out when the
-  door is shut, so hiding in a shut unit stays black but for the line under the door. Say if it
-  should stay on in a shut unit instead (easier to see who's in there with you, less dread).
+  in each unit and no torch; built Nov 7, L-04b): it lights as the door rises and goes out when
+  the door is shut, so hiding in a shut unit stays black but for the line under the door. Say if
+  it should stay on in a shut unit instead (easier to see who's in there with you, less dread).
 
 - [ ] **Where a saw hole and a ladder can go** (built Nov 7 on the default, L-01d): a crawl hole
   only into the unit beside you, and the tops run along a row (D-031). Behind each row is a

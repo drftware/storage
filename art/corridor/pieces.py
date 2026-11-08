@@ -405,6 +405,108 @@ def fixture():
     return {"Housing": h, "Diffuser": _lens(), "Eye": _eye(centre)}
 
 
+# --- the unit's bulb ------------------------------------------------------------------------------
+# Two MeshParts: the Cage (TrimSheet: a galvanized cord grip, the black cord and bakelite socket,
+# and a galvanized wire guard round the bulb) and the Glass, a plain part the game colours
+# (UnitLight). The frame is the hang point under the wire top's channel; everything hangs down -z
+# and is round about z, so it looks the same at any turn.
+
+def _glass_profile():
+    """The glass's outline from the neck down, (radius, z): a pear-shaped A bulb, widest a little
+    past the middle and rounded to its tip."""
+    out = []
+    for t in (0.0, 0.18, 0.38, 0.6, 0.78, 0.92):
+        if t <= 0.6:
+            r = K.GLASS_NECK_R + (K.GLASS_R - K.GLASS_NECK_R) * math.sin(math.pi / 2 * t / 0.6) ** 1.4
+        else:
+            r = K.GLASS_R * math.sqrt(1 - ((t - 0.6) / 0.4) ** 2)
+        out.append((r, K.BULB_NECK - K.GLASS_LEN * t))
+    return out
+
+
+def _glass_radius_at(z):
+    """The glass's radius at height z (0 above the neck or below the tip)."""
+    prof = _glass_profile() + [(0.0, K.BULB_TIP)]
+    for (r0, z0), (r1, z1) in zip(prof, prof[1:]):
+        if z1 <= z <= z0:
+            return r0 + (r1 - r0) * (z0 - z) / (z0 - z1)
+    return 0.0
+
+
+def _glass():
+    """The bulb's glass: the profile turned about z, closed at its tip; open at the neck, which
+    sits inside the socket."""
+    m = Mesh("Glass")
+    segs = K.GLASS_SEGS
+    rings = [[m.vert((r * math.cos(2 * math.pi * s / segs), r * math.sin(2 * math.pi * s / segs), z))
+              for s in range(segs)] for r, z in _glass_profile()]
+    for r0, r1 in zip(rings, rings[1:]):
+        for s in range(segs):
+            m.face([r0[s], r1[s], r1[(s + 1) % segs], r0[(s + 1) % segs]], smooth=True)
+    tip = m.vert((0.0, 0.0, K.BULB_TIP))
+    last = rings[-1]
+    for s in range(segs):
+        m.face([last[s], tip, last[(s + 1) % segs]], smooth=True)
+    uv = geo.map_floor(1.0)
+    m.uvs = [uv([m.verts[i] for i in f], None) for f in m.faces]
+    return m
+
+
+def _guard_wire(angle):
+    """One of the guard's bowed wires, (x, y, z) from the collar out round the glass to the bottom
+    ring, at `angle` about z."""
+    top = (K.COLLAR_R - 0.01, K.BULB_NECK)
+    bottom = (K.CAGE_BOTTOM_R, K.BULB_BOTTOM + K.CAGE_WIRE)
+    # a cubic in (radius, z) from the collar to the bottom ring, bowed out past the glass
+    p1 = (K.CAGE_R + 0.035, K.BULB_NECK - 0.05)
+    p2 = (K.CAGE_R + 0.03, bottom[1] + 0.05)
+    pts = []
+    for k in range(K.CAGE_SEGS + 1):
+        t = k / K.CAGE_SEGS
+        a, b, c, d = (1 - t) ** 3, 3 * t * (1 - t) ** 2, 3 * t * t * (1 - t), t ** 3
+        r = a * top[0] + b * p1[0] + c * p2[0] + d * bottom[0]
+        z = a * top[1] + b * p1[1] + c * p2[1] + d * bottom[1]
+        assert r - K.CAGE_WIRE > _glass_radius_at(z) + 0.012, \
+            f"the guard's wire touches the glass at z = {z:.3f}"
+        pts.append((r * math.cos(angle), r * math.sin(angle), z))
+    return pts
+
+
+def bulb():
+    """The unit's bulb: {"Cage", "Glass"}."""
+    galv = geo.map_strip("pipe")
+    wire = geo.map_strip("wire")
+    rubber = geo.map_strip("rubber")
+    m = Mesh("Cage")
+    # the cord grip on the channel, the cord, and the socket it holds
+    geo.cylinder(m, "z", (0.0, 0.0, -K.CANOPY_H / 2), K.CANOPY_R, K.CANOPY_H, segs=6, mapper=galv,
+                 smooth=False)
+    _tube(m, [(0.0, 0.0, -K.CANOPY_H + 0.01), (0.0, 0.0, K.BULB_SOCKET_TOP - 0.01)], K.CORD_R, 4,
+          rubber)
+    geo.cylinder(m, "z", (0.0, 0.0, K.BULB_SOCKET_TOP - K.SOCKET_H / 2), K.SOCKET_R, K.SOCKET_H,
+                 segs=8, mapper=rubber, radius2=K.SOCKET_TOP_R)
+    geo.cylinder(m, "z", (0.0, 0.0, K.BULB_NECK + K.COLLAR_H / 2), K.COLLAR_R, K.COLLAR_H, segs=8,
+                 mapper=galv, smooth=False)
+    # the guard: bowed wires from the collar, a ring round them at the glass's widest, and the
+    # small ring they meet in under the tip
+    widest_z, widest_r = None, 0.0
+    for w in range(K.CAGE_WIRES):
+        pts = _guard_wire(2 * math.pi * w / K.CAGE_WIRES)
+        _tube(m, pts, K.CAGE_WIRE, 3, wire)
+        for p in pts:
+            r = math.hypot(p[0], p[1])
+            if r > widest_r:
+                widest_r, widest_z = r, p[2]
+    ring = [(widest_r * math.cos(2 * math.pi * k / K.RING_SEGS),
+             widest_r * math.sin(2 * math.pi * k / K.RING_SEGS), widest_z) for k in range(K.RING_SEGS)]
+    _loop(m, ring, (0.0, 0.0, 1.0), K.CAGE_WIRE, 3, wire)
+    low = K.BULB_BOTTOM + K.CAGE_WIRE
+    foot = [(K.CAGE_BOTTOM_R * math.cos(2 * math.pi * k / 6),
+             K.CAGE_BOTTOM_R * math.sin(2 * math.pi * k / 6), low) for k in range(6)]
+    _loop(m, foot, (0.0, 0.0, 1.0), K.CAGE_WIRE, 3, wire)
+    return {"Cage": m, "Glass": _glass()}
+
+
 # --- the hall's walls ---------------------------------------------------------------------------
 # The plain wall (Wall) and the dead end (DeadEnd), spec.py's "the hall's walls": a unit's front
 # without the door. Three MeshParts each: the Facade (the unit's Facade set, painted per floor like

@@ -1,4 +1,8 @@
 {
+  "Bulb": {
+    "assetId": 120774005275794,
+    "sha256": "acb601e282600d902c1ca66ff0a2c3c409c8e1243e7e37ef761272514c0fb71e"
+  },
   "Corner": {
     "assetId": 130232251748500,
     "sha256": "4d8a845b24db142a0a45973ce16d46a8f87d8f06c1f31267f19b377d77815c68"

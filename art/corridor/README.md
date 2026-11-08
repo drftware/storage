@@ -10,6 +10,7 @@ wearing the unit's own baked texture sets, so the kit bakes nothing.
 | ![fixture lit](../sheets/corridor-fixture-lit.png) | ![fixture dark](../sheets/corridor-fixture.png) |
 | ![dead end](../sheets/corridor-deadend.png) | ![plain wall](../sheets/corridor-wall.png) |
 | ![a hall meets a T](../sheets/corridor-turn.png) | ![the girder at a T](../sheets/corridor-girder.png) |
+| ![the unit's bulb](../sheets/corridor-bulb.png) | ![a unit by its bulb](../sheets/corridor-bulb-unit.png) |
 
 Sheets in `art/sheets/`: `corridor-hall` (a player's eyes down two pieces to the dead end),
 `corridor-ceiling` (looking up under a light), `corridor-seam` (straight down on the joint between
@@ -17,9 +18,10 @@ two pieces), `corridor-fixture-lit` (walking up to a lit fixture, its eye flared
 `corridor-fixture` (a torch up at a dark one, its eye watching), `corridor-deadend` (the hall that
 stops, plain walls either side) and `corridor-wall` (across the hall at a plain wall, up to the
 deck); `corridor-turn` (down a hall to a T), `corridor-girder` (up at the girder over the T's
-stub) and `corridor-corner` (up a turned arm to a corner). The units there are plain stand-in boxes; the light a lit fixture throws is render
+stub) and `corridor-corner` (up a turned arm to a corner); `corridor-bulb` (up at a unit's lit
+bulb) and `corridor-bulb-unit` (into a stand-in unit by its bulb alone, `--stage bulb`). The units there are plain stand-in boxes; the light a lit fixture throws is render
 dressing. In-game shots are in `docs/art/P0-03a-*.jpg`, `P0-03b-phone.jpg`, `P0-03c-*.jpg` and
-`P0-03d-*.jpg`.
+`P0-03d-*.jpg`; the bulb's in `L-04b-*.jpg`.
 
 ## Built so far
 
@@ -87,6 +89,12 @@ A junction's frame is the middle of its square, on the floor, its deck along X; 
 (`Specs.Junctions.<name>.Arms`) are in that frame: the corner's +X and +Z, the T's +X, -X and +Z
 (the stub), the cross's all four.
 
+**Bulb** (L-04b, D-034): the unit's own light, a caged bulb on a short cord hung under the middle
+of a unit's wire top, from the underside of its middle channel (its frame, 9.78 up). Cage
+(TrimSheet: a galvanized cord grip and guard, a black cord and bakelite socket), 408 tris; Glass,
+a plain part `UnitLight` lights, 110 tris. Round about its cord, so the importer's turn never shows.
+The glass's middle is 1.11 below the hang point (8.67 over the floor), clear of any head.
+
 ## Numbers (studs; `spec.py` holds them all)
 
 | | |
@@ -134,14 +142,17 @@ the joists.
    frame and streams it whole. A fixture gets no colliders (it hangs out of reach); its frame
    comes from the lens's box, and every part stops casting shadows (no light reaches it from
    above). A wall's frame is the bottom middle of its Facade, looking away from its Panel's
-   middle, which lies behind the face (the export refuses to build otherwise).
+   middle, which lies behind the face (the export refuses to build otherwise). The bulb gets no
+   colliders; its frame is above its glass by the spec's drop, and none of it casts a shadow (its
+   light sits inside the glass, and the guard's wires would stripe the unit).
 3. **Save the place.** The templates live in it (D-009). `CorridorKit.place("Straight", cframe,
    parent)` clones a piece into a floor, `CorridorKit.wall(name, cframe, paint, parent)` puts up a
    wall painted like the floor's units, and `CorridorKit.hang(cframe, parent)` a fixture, handing
    back its lens and eye to light; `CorridorKit.junction(name, cframe, paint, parent)` lays a
    junction with its walls. `DevCorridor` lays the hall's three pieces and a turn past its far
    end (a T, three turned or straight pieces, a corner), its walls and dead ends, and five
-   fixtures.
+   fixtures. `CorridorKit.hangBulb(cframe, parent)` hangs a bulb; `FloorBuilder.unit` hangs one
+   in every unit.
 
 ## How it's made
 
@@ -150,7 +161,7 @@ art/corridor/spec.py    every number; writes src/shared/CorridorKit/Specs.luau
 art/corridor/pieces.py  the pieces', walls' and fixture's parts, UV-mapped with the unit's mappers
                         (art/unit/geo.py); the walls reuse the unit's corrugated R-panel; chain
                         links and the cord are drawn without twist
-art/corridor/build.py   stages: export (FBX + Specs) | renders (look sheets)
+art/corridor/build.py   stages: export (FBX + Specs) | renders (look sheets) | bulb (its sheets)
 ```
 
 It imports the unit's `geo`, `parts`, `bake` (textured materials), `nodes` and `render` helpers

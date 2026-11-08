@@ -14,6 +14,7 @@ local DoorView = require(script.DoorView)
 local FreeCursor = require(script.FreeCursor)
 local HallHaze = require(script.HallHaze)
 local HallLights = require(script.HallLights)
+local UnitLights = require(script.UnitLights)
 
 local cameraShake, kick = CameraShake.new()
 
@@ -23,6 +24,8 @@ local host = Brix.Host.new({
 		{ slot = "doorSounds", system = DoorSounds.new(kick) },
 		-- before BehindDoors, so its dimming of the hall lands on a flickering tube each frame
 		{ slot = "hallLights", system = HallLights.new() },
+		-- before BehindDoors too, so a unit's stuttering bulb is dimmed for whoever is shut in next door
+		{ slot = "unitLights", system = UnitLights.new() },
 		{ slot = "behindDoors", system = BehindDoors.new() },
 		{ slot = "freeCursor", system = FreeCursor.new() },
 		{ slot = "hallHaze", system = HallHaze.new() },

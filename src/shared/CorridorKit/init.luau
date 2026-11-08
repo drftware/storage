@@ -20,6 +20,11 @@
 	the building is watching (HallLight.eye). `hang` puts one up; it belongs midway between two
 	joists, which sit every 6 studs from 3 studs off a piece's middle.
 
+	The unit's bulb is a caged bulb on a short cord, hung under the middle of a unit's wire top: its
+	glass is the part UnitLight lights as the door rises. `hangBulb` puts one up. Its frame is the
+	hang point, where the cord meets the wire top's channel; the bulb is round, so its turn never
+	shows.
+
 	Each template lives in the place at ReplicatedStorage.Corridor.<Name>, because Rojo can't sync
 	imported meshes (D-009). `place` clones one into a floor: the test hall (DevCorridor) does now,
 	the floor generator (L-01) will. A piece's frame is the middle of its hall floor, on the floor,
@@ -35,13 +40,15 @@ local Specs = require(script.Specs)
 export type PieceName = "Straight"
 export type JunctionName = "Corner" | "T" | "Cross"
 export type WallName = "Wall" | "ShortWall" | "DeadEnd"
-export type TemplateName = PieceName | JunctionName | WallName | "Fixture"
+export type TemplateName = PieceName | JunctionName | WallName | "Fixture" | "Bulb"
 export type Piece = typeof(Specs.Pieces.Straight)
 export type Junction = typeof(Specs.Junctions.Corner)
 export type Wall = typeof(Specs.Walls.Wall)
 -- A hung fixture and the two parts the game lights: the lens (HallLight.light) and the sensor's
 -- dome (HallLight.eye).
 export type Fixture = { model: Model, diffuser: BasePart, eye: BasePart }
+-- A hung bulb and the glass the game lights (UnitLight).
+export type Bulb = { model: Model, glass: BasePart }
 
 local CorridorKit = {}
 CorridorKit.Specs = Specs
@@ -104,7 +111,8 @@ end
 -- the Floor's own turn: the importer keeps each part's axes as the FBX has them, so the Floor's X
 -- is the piece's hall (or a junction's deck) whatever turn the insert gave it. A wall's is the bottom middle of its Facade, flat on the face, looking into the hall: away
 -- from the Panel, whose middle lies behind the face (the export checks it). The fixture's is on
--- the floor under its lens's middle, with its sensor's eye towards +X.
+-- the floor under its lens's middle, with its sensor's eye towards +X. The bulb's is its hang point,
+-- above its glass, in the world's turn.
 function CorridorKit.frame(model: Model): CFrame
 	if model:FindFirstChild("Floor", true) then
 		local floor = part(model, "Floor")
@@ -120,6 +128,10 @@ function CorridorKit.frame(model: Model): CFrame
 		end
 		local floor = middle - up * (height / 2)
 		return CFrame.lookAt(floor, floor + hall)
+	end
+	if model:FindFirstChild("Glass", true) then
+		-- round about the up axis: only where it hangs matters, so the frame keeps the world's turn
+		return CFrame.new(part(model, "Glass").Position + Vector3.yAxis * Specs.Bulb.GlassDrop)
 	end
 	local middle, _, _, along = box(part(model, "Diffuser"))
 	if (part(model, "Eye").Position - middle):Dot(along) < 0 then
@@ -160,6 +172,22 @@ function CorridorKit.prepare(piece: Model, name: TemplateName)
 				if d:IsA("SurfaceAppearance") then
 					d:Destroy()
 				end
+			end
+		end
+		return
+	end
+	if name == "Bulb" then
+		-- the light hangs inside the glass (UnitLight), so nothing of the bulb may shade it: a point
+		-- light draws the guard's thin wires as hard black bands across the whole unit (Studio, L-04b)
+		for _, d in piece:GetDescendants() do
+			if d:IsA("BasePart") then
+				d.CastShadow = false
+			end
+		end
+		local glass = part(piece, "Glass")
+		for _, d in glass:GetChildren() do
+			if d:IsA("SurfaceAppearance") then
+				d:Destroy()
 			end
 		end
 		return
@@ -256,6 +284,13 @@ end
 function CorridorKit.hang(at: CFrame, parent: Instance): Fixture
 	local model = CorridorKit.place("Fixture", at, parent)
 	return { model = model, diffuser = part(model, "Diffuser"), eye = part(model, "Eye") }
+end
+
+-- Hangs a copy of the unit's bulb from `at`, the point under a wire top's channel where its cord
+-- is clipped on. Light its glass with UnitLight.
+function CorridorKit.hangBulb(at: CFrame, parent: Instance): Bulb
+	local model = CorridorKit.place("Bulb", at, parent)
+	return { model = model, glass = part(model, "Glass") }
 end
 
 return CorridorKit

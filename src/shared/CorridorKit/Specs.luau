@@ -236,4 +236,17 @@ return {
 			Housing = 1836,
 		},
 	},
+
+	-- The unit's bulb: its frame is the hang point under the wire top's middle channel, the cord
+	-- running down from it; round about Y, so its turn never shows.
+	Bulb = {
+		ChannelDrop = 0.22, -- the hang point below the unit's wall top
+		GlassDrop = 1.11, -- the glass part's middle below the hang point
+		GlassSize = Vector2.new(0.33, 0.44), -- across and tall
+		Bottom = 1.383, -- the guard's lowest wire below the hang point
+		Triangles = {
+			Cage = 408,
+			Glass = 110,
+		},
+	},
 }

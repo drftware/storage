@@ -84,6 +84,12 @@ local ART: { Art } = {
 		description = "A storage building's hall light: a strip light on two chains with a motion sensor",
 	},
 	{
+		key = "Bulb",
+		path = "art/corridor/out/Corridor_Bulb.fbx",
+		manifest = "art/corridor/assets.json",
+		description = "A caged bulb on a short cord, hung inside a self-storage unit",
+	},
+	{
 		key = "Boxes",
 		path = "art/boxes/out/Boxes.fbx",
 		manifest = "art/boxes/assets.json",

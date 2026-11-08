@@ -100,9 +100,29 @@ local function specOf(unit: Model): Specs.Spec
 	return Specs[if type(size) == "string" then size else "M"]
 end
 
--- A clone of `template` with its door's outer face at `face` (looking into the hall), painted and
--- numbered, ready to parent (the Doors system gives it its buttons once it's in the world). Units are dressed before they reach Workspace:
--- clients cache the door's frame and colours when a unit arrives.
+-- Where a unit's bulb hangs: under the middle of its wire top, from the underside of the channel
+-- across it (the wire top's box bottoms out on its channels; CorridorKit.Specs.Bulb.ChannelDrop).
+-- Read from the unit's own wire top, so it holds for every size.
+local function bulbPoint(unit: Model): CFrame?
+	local wire = unit:FindFirstChild("WireTop", true)
+	if not (wire and wire:IsA("BasePart")) then
+		return nil
+	end
+	local cf, size = wire.CFrame, wire.Size
+	local half = (
+		math.abs(cf.RightVector.Y) * size.X
+		+ math.abs(cf.UpVector.Y) * size.Y
+		+ math.abs(cf.LookVector.Y) * size.Z
+	) / 2
+	return CFrame.new(cf.Position - Vector3.yAxis * half)
+end
+
+local warnedBulb = false
+
+-- A clone of `template` with its door's outer face at `face` (looking into the hall), painted,
+-- numbered and with its bulb hung, ready to parent (the Doors system gives it its buttons once
+-- it's in the world, UnitLights lights the bulb with the door). Units are dressed before they
+-- reach Workspace: clients cache the door's frame and colours when a unit arrives.
 function FloorBuilder.unit(template: Model, face: CFrame, number: string, colour: Color3): Model
 	local unit = template:Clone()
 	local outer = RollUpDoor.frame(unit) * CFrame.new(0, 0, -specOf(unit).CurtainPlane)
@@ -111,6 +131,18 @@ function FloorBuilder.unit(template: Model, face: CFrame, number: string, colour
 	UnitKit.paint(unit, colour, UnitKit.Colours.Wall)
 	UnitKit.number(unit, number)
 	RollUpDoor.fitCollider(unit)
+	local at = bulbPoint(unit)
+	if not CorridorKit.template("Bulb") then
+		-- a unit without its bulb still plays; it's only dark inside
+		if not warnedBulb then
+			warnedBulb = true
+			warn(
+				"FloorBuilder: units hang no bulb; the place lacks ReplicatedStorage.Corridor.Bulb"
+			)
+		end
+	elseif at then
+		CorridorKit.hangBulb(at, unit)
+	end
 	return unit
 end
 

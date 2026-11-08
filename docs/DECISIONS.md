@@ -441,3 +441,20 @@ with a line under the door. On a phone only the nearest lit bulbs throw light, a
 do. Not chosen: a torch every player carries (R.E.P.O.'s head lamp), which would make the dark
 something you push back yourself rather than the building's.
 
+## D-034 · 2026-11-07 · The unit's bulb: wired to its door, drawn by each screen from the door
+L-04b builds D-033. Each unit hangs a caged bulb on a short cord from the middle of its wire top, a
+piece of the corridor kit (`Bulb`: a galvanized guard and a bakelite socket on the TrimSheet, a
+plain glass the game lights), hung by `FloorBuilder.unit` from the wire top's own box, so every
+size gets one. It's wired to the door like a fridge's light (`ShutIn.bulb`): on as the door starts
+up, a peek's included, out the frame a closing door lands, and out through a slam's bounce; a
+padlocked door's rattle never lights it. Each screen draws it from the door's replicated motion, as
+it draws the door, so the server sends nothing new and the bulb can never disagree with the door.
+Warm amber (the hall is cold white), 0.6 strong with an 11-stud reach, tuned at Level21 on the
+Galaxy A16 view: at 1 and 12 an M unit read as a lit room to its corners. The guard casts no
+shadow: from a point light its wires threw hard black bands across the whole unit. Real light and
+the hum go only to the 3 lit bulbs nearest a point ahead of the camera, as the hall's fixtures do.
+The light carries HallLight's tag, so BehindDoors dims a lit neighbour's bulb for whoever is shut
+in (low graphics lights through walls), but leaves the bulb of the unit you're shut in whole. Not
+chosen: a server-owned bulb state (one more replicated value that can only echo the door); the
+bulb as part of the unit's own model (the unit's FBX and bake are the unit pipeline's, and a
+lamp is a kit piece the lobby can reuse).
