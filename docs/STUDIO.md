@@ -393,6 +393,23 @@ verified: a doc page, Studio, or "untested".
   (`for _, point: Door.Side in Door.Sides`). A table typed `{ [Union]: T }` rejects `t.Key`; give
   it a record type (`{ BoltCutters: boolean, Padlock: boolean }`) or index with a typed local.
 
+- **R15's rig, by name** (Humanoid docs, `BuildRigFromAttachments`, read 2026-11-08; built and
+  posed in Studio, L-06a): a Motor6D's name is its attachments' name less "RigAttachment"
+  (`NeckRigAttachment` in UpperTorso and in Head make `Neck`), it sits in Part1, C0 is Part0's
+  attachment's CFrame and C1 Part1's. Animations find parts by these names and joints, so custom
+  rigid meshes named as R15's parts animate as R15 (docs; not played here). The fifteen joints:
+  Root, Waist, Neck, Left/Right Shoulder, Elbow, Wrist, Hip, Knee, Ankle.
+- **An imported part's pivot carries the FBX's Z-up turn** (Studio, L-06a): the Mannequin built
+  from `LowerTorso:GetPivot()` lay on its back. The pivot's position is the Blender origin, but
+  its orientation isn't the part's; take the position from the pivot and the turn from the part's
+  own CFrame (whose axes are the figure's, as the importer note above says).
+- **Motor6D C0 posing, verified** (Play, server, L-06a): with the root anchored, setting each
+  `C0 = RigAttachment.CFrame * turn` put all fifteen parts within 0.0001 studs of the pure
+  `Pose.solve`. Whether Edit moves parts when C0 changes wasn't tested: `Mannequin.pose` places
+  them itself when the game isn't running.
+- **A capture into an open unit timed out twice** (Play, L-06a): a capture with a camera position
+  in 101's doorway never answered, while the next, down the hall, did.
+
 ### Blender traps met building the finds (Nov 7, `art/finds/`)
 - `bmesh.ops.create_uvsphere` numbers its points differently from run to run. Anything whose
   UVs are saved and worn later must build its spheres point by point (`build.py` `ellipsoid`).

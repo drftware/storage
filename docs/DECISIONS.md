@@ -502,6 +502,20 @@ edges), bolt cutters, the padlock, bubble wrap, the air horn, the moving blanket
 splits: its art (L-06a) goes now, its chase (L-06b) waits on Brix's ENG-06 and ENG-07 and moves up
 when they land. Where a unit's boxes and find stand, and carrying finds out, moved to Phase 2.
 
+## D-039 · 2026-11-08 · The Mannequin: rigid R15 parts, posed by code, a stop-motion walk
+The Mannequin is a shop mannequin cut at every joint into R15's fifteen body parts, each a rigid
+MeshPart (no skinning), each end a dome that shows as a ball when bent, 6.3 studs tall (a head
+over a player). `Mannequin.prepare` joins them as `Humanoid:BuildRigFromAttachments` would: a
+RigAttachment pair at each pivot and a Motor6D named for the joint, under an anchored, invisible
+HumanoidRootPart; no Humanoid yet (L-06b adds one only if Brix's `MoveTo` driver is chosen).
+Poses are code, not uploaded animations (`Mannequin/Pose.luau`, pure, Lune-checked): its joints'
+turns in degrees within each joint's limits, solved through the joints so every pose is checked
+standing on the floor with no part through another, applied as `C0 = RigAttachment * turn`. Its
+walk is four held keys with a snap between (stop-motion), and a light freezes it on a key, never
+between two: it moves only unseen (GDD), so the keys are what players see, as Five Nights at
+Freddy's animatronics are seen only where they stopped and SCP-173 moves only while unseen.
+Uploading animations was possible but would put the poses beyond Lune's reach.
+
 ## D-038 · 2026-11-08 · The deal: notes and padlocks when the floor is laid, the rest on the first lift
 `Deal` splits the GDD's "What's behind the door" in two. When a floor is laid: the code, its notes
 (two with two digits each on floors 1 and 2, four with one above), placed one to each wing in turn

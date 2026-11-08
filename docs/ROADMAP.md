@@ -139,8 +139,8 @@ The loop comes first (owner, 2026-11-08): being chased, searching for the code a
 trapping keepers, slipping between units from inside. So every tool that works on any keeper is
 built here (the GDD's build order moved them into its first step the same day), and what only
 dresses a unit (where the finds and boxes stand, more finds, their polish) waits for Phase 2. The
-order puts a keeper on the floor as early as Brix's chase allows: L-06a builds the Mannequin's
-art now, and L-06b moves up the moment Brix's ENG-06 and ENG-07 land.
+order puts a keeper on the floor as early as Brix's chase allows: L-06a built the Mannequin's
+art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 land.
 
 - [x] **L-01 The floor generator**, in three sessions. **L-01a done Nov 7** (D-027): the floor
   as pure data from a seed (`src/shared/Floor.luau`): halls grown from the lobby on a grid of
@@ -223,15 +223,22 @@ art now, and L-06b moves up the moment Brix's ENG-06 and ENG-07 land.
     awake, the odds set by the director's mood, worse behind a padlock, never more awake than the
     floor's cap and no keeper in the lobby's hall on floors 1 and 2. `lune run scripts/floor-deal`
     prints a floor's deal. Where the boxes and the find stand moved to Phase 2 with the finds.
-- [ ] **L-06a The Mannequin's art.** The first keeper's model and its animations, built the
-  unit's way in Blender: a shop mannequin is jointed rigid parts, so it can be cut to Roblox's
-  R15 body parts and moved by Motor6Ds, no skinning. Its poses and walk, a freeze mid-step, its
-  tell when it moves. Read its row in the GDD's Keepers table first.
-- [ ] **L-05 Notes, the keypad and the elevator.** The floor's 4-digit code on sticky notes laid
+- [x] **L-06a The Mannequin's art.** Done Nov 8 (D-039): `art/mannequin/` builds it the unit's
+  way, 6.3 studs, faceless fibreglass, chipped, a seam and a ball at every joint, fifteen rigid
+  R15 parts (8,356 triangles, one 1024² set); `Mannequin.prepare` rigs the import with R15's
+  RigAttachments and Motor6Ds; `Mannequin/Pose.luau` (pure) holds its shop pose and a stop-motion
+  walk of four keys a light freezes it on, checked by 26,222 Lune checks (limits, standing,
+  nothing through anything, stride, mirroring). Verified in Studio: the Motor6Ds pose it exactly
+  as the pure maths says; it reads 30 studs down the hall (`docs/art/L-06a-hall.jpg`).
+- [ ] **L-05a The elevator's art.** The freight elevator car with its folding gate, the keypad
+  beside it and a sticky note, built the unit's way (`art/elevator/`): the car big enough for four
+  players and the lobby's opening it stands in, the gate's slats to slide shut, the keypad's ten
+  keys and its readout, the note in two or four handwritten digits. Into Studio and judged on the
+  Galaxy A16 view.
+- [ ] **L-05b Notes, the keypad and the gate.** The floor's 4-digit code on sticky notes laid
   where L-04d says, the keypad, the gate that shuts 30 s after the last digit (Dandy's World).
-  Needs the elevator, gate, keypad and note art first. Brix: Zone for "aboard", the Clock for the
-  gate's timer. A wrong code flashes every light on the floor (GDD): add that to `MotionLights`
-  beside `cut`.
+  Brix: Zone for "aboard", the Clock for the gate's timer. A wrong code flashes every light on the
+  floor (GDD): add that to `MotionLights` beside `cut`.
 - [ ] **L-11 Tools in hand.** You carry two tools plus whatever is in your hands (GDD), as Lethal
   Company's slots: pick a tool up off a unit's floor, switch, drop, hand one to a friend, each
   with a phone button. The flashlight everyone carries (signals friends; keepers with eyes see
@@ -241,7 +248,12 @@ art now, and L-06b moves up the moment Brix's ENG-06 and ENG-07 land.
   (floor pathing, a cone reach), frozen in a flashlight's beam. Needs Brix's ENG-06 and ENG-07.
   Keepers hear a door (the GDD: an open, a slam, a lift from inside) as far as its sound carries:
   take each action's reach from `DoorSound.Actions`, so what players hear and what keepers hear
-  stay one table.
+  stay one table. Its body is L-06a's: clone it with `Mannequin.clone`, drive its
+  HumanoidRootPart (add a Humanoid only if Pursuit's `MoveTo` driver is chosen), walk it with
+  `Pose.at(travelled)` and freeze it on `Pose.freeze(travelled)` the moment a light finds it.
+  Pose it on the clients (Motor6D `Transform`, smoothed) rather than replicating C0 every step.
+  Its tell, heard in the dark while it moves: fibreglass knocking at its joints and a stiff,
+  quick footfall per step, as Five Nights at Freddy's footsteps say an animatronic moved.
 - [ ] **L-04e The deal on the floor.** The server padlocks the doors L-04d says, deals each unit
   on its first lift (a peek or an open), and lays what it holds: a tool to pick up (L-11), a find,
   a keeper asleep or awake (L-06b). Judged from doorways on the Galaxy A16 view.
@@ -290,6 +302,20 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **The Mannequin's head turned to you** (L-06a): each time it moves unseen, its Neck turns
+  toward the nearest player, so the next look finds it watching you, as Five Nights at Freddy's
+  animatronics stare into the camera. A line in L-06b's mover, inside the Neck's limits.
+- **The Mannequin's inventory tag** (L-06a): a manila tag on a string round its wrist, a lot
+  number in pen, that swings when it stops; read up close in a torch.
+- **More of the Mannequin's keys** (L-06a): a lurch, a crouch round a corner, a head down at a
+  door's gap, so a long hunt shows new freezes; each one checked by the spec's stands().
+- **The Mannequin's feet** (L-06a): its root moves smoothly while its pose holds, so its feet
+  slide during a hold; move it in steps with the snap if anyone ever sees it walk.
+- **A doll-sized Mannequin for the Kept shelf** (GDD's Kept tier): the same model scaled, its head
+  turning when you look away.
+- **The Mannequin's walk without garbage** (L-06a): `Pose.at` builds a new table each call; reuse
+  one when L-06b steps it every frame for several keepers.
 
 - **The finds' printed words** (L-04c): the boombox's badge and "STEREO", the tuner's numbers,
   the TV's channel numbers, from a label sheet the boxes' way.

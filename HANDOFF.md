@@ -2,66 +2,63 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-08, session 29 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-08, session 30 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **The loop comes first** (owner, D-037): the owner judged the finds and boxes good, and wants a
-  keeper on the floor and the loop proved fun before more polish. Every tool that works on any
-  keeper moved into Phase 1 (L-11 to L-14); the GDD's build order now says so too. Where a unit's
-  boxes and find stand, and carrying finds out, moved to Phase 2.
-- **L-04d is done** (D-038): `src/shared/Deal.luau` lays a floor's code, notes and padlocks from a
-  seed and deals each unit on its first lift (a tool from a shuffled bag, nothing, a find, a keeper
-  asleep or awake) by the director's mood; `tests/deal.spec.luau`; `lune run scripts/floor-deal`.
-  Nothing in Studio uses it yet (L-04e).
-- **Brix's chase isn't ready:** ENG-06a, ENG-06b and ENG-07 are open in `../engine`, with pursuit
-  work landing there. The Mannequin's chase (L-06b) waits on them; its art doesn't.
-- **The place is unsaved** until the owner saves it (`OWNER.md`, first item): the kit, boxes and
-  finds templates live only in it. Studio wasn't opened this session.
+- **L-06a is done** (D-039): the Mannequin, 6.3 studs of faceless, chipped fibreglass in fifteen
+  rigid R15 parts (`art/mannequin/`, 8,356 triangles, one 1024² set). `Mannequin.prepare` rigs the
+  import with R15's RigAttachments and Motor6Ds; `Mannequin/Pose.luau` (pure, 26,222 Lune checks)
+  holds its shop pose and a stop-motion walk a light freezes on a key. In Studio, Motor6Ds pose it
+  exactly as the pure maths says, and it reads 30 studs down the hall (`docs/art/L-06a-hall.jpg`).
+- **The template is unsaved:** `ReplicatedStorage.Keepers.Mannequin` lives only in the open place
+  until the owner saves it (`OWNER.md`, first items), with the kit, boxes and finds.
+- **Brix's chase isn't ready:** ENG-06a, ENG-06b and ENG-07 are open in `../engine`. L-06b (the
+  Mannequin hunts) waits on them; its brief in ROADMAP now says how to drive the body.
+- **L-05 is split** (ROADMAP): L-05a the elevator's art, L-05b the notes, keypad and gate.
 
-## Next task: L-06a The Mannequin's art
-The moment: a shop mannequin standing in a unit's dark, and the next time your light finds it,
-it's a step closer. This ticket builds it, real art, ready for L-06b to make it hunt.
-1. Owner test results first (`OWNER.md`): the deal's defaults, then anything older.
+## Next task: L-05a The elevator's art
+The moment: the last friend sprinting for the lit car as its gate starts to fold shut. This
+ticket builds what that happens in: the freight elevator car, its folding gate, the keypad, a
+sticky note, real art the unit's way, ready for L-05b to make them work.
+1. Owner test results first (`OWNER.md`): the Mannequin's sheets, then anything older.
 2. Check `../engine/docs/ROADMAP.md`: if ENG-06 and ENG-07 have landed, say so in HANDOFF and
-   ROADMAP (L-06b moves up). Don't edit Brix.
-3. Read the Mannequin's row in the GDD's Keepers table, "The speed rule" and the flashlight's row
-   in Tools (docs tools, those blocks only). Name each trait's hit-game precedent.
-4. Verify on create.roblox.com: R15's part names, Motor6D joints and attachments, and whether a
-   custom-mesh R15 model plays Roblox animations; write it in `docs/STUDIO.md`.
-5. `art/mannequin/` the unit's way (spec, parts UV-mapped to one texture set, PBR bake, FBX,
-   generated Specs, look sheets): faceless fibreglass, chipped paint, a seam at every joint, each
-   rigid part one R15 body part, so Motor6Ds move it with no skinning.
-6. Into Studio (`ReplicatedStorage.Keepers.Mannequin`), standing in a unit and in the hall; judged
-   on the Galaxy A16 view by a unit's bulb and in the dark.
-7. Its poses: still, mid-step frozen, a walk no faster than a player. Decide uploaded animations
-   or poses set by code (a pure module, Lune-tested); default to code if uploading is a snag.
-If it won't fit, split it in ROADMAP first: the model and rig, then the poses. **Acceptance:** checks green; the Mannequin in Studio, jointed and posed, reads as a mannequin
-from a doorway and 30 studs down a dark hall at phone size; shots in `docs/art/`; `OWNER.md` has
-what to judge.
-**Read first:** the GDD's Keepers row and Tools row (above); `docs/ROADMAP.md` (L-06a, L-06b);
-`art/unit/README.md`; `docs/STUDIO.md` (Blender and FBX); `docs/FRAMEWORK.md` (the Pursuit row);
-`art/finds/README.md` (the last asset's pipeline).
+   ROADMAP and do L-06b instead. Don't edit Brix.
+3. Read the GDD's blocks on the elevator, the keypad and the notes (docs tools, search
+   "elevator", "keypad", "gate", "sticky"). Name each one's precedent (the gate's timer is
+   Dandy's World's).
+4. Read `FloorBuilder`'s stand-in lobby: where the car stands and how big the opening is. Size the
+   car for four players and the Mannequin (6.3 studs) to fit through its gate.
+5. `art/elevator/` the Mannequin's way (`art/mannequin/README.md`): spec, lofted or boxed parts,
+   one texture set, the finds' bake, FBX, generated Specs, look sheets. The car: steel walls
+   scuffed by years of dollies, a caged lamp, a floor of diamond plate; the gate: slats on
+   scissor links, built so its fold can be animated by code (slats as separate parts or one part
+   per stage); the keypad: ten keys and a dim readout; the note: yellow, curling, two or four
+   digits in pen (a label sheet, as the boxes' labels).
+6. Into Studio beside the lobby; judged on the Galaxy A16 view from the hall's far end and aboard.
+If it won't fit, split it in ROADMAP first: the car and gate, then the keypad and note.
+**Acceptance:** checks green; the car, gate, keypad and note in Studio, read at phone size from
+across the lobby; shots in `docs/art/`; `OWNER.md` has what to judge.
+**Read first:** the GDD's elevator, keypad and note blocks; `docs/ROADMAP.md` (L-05a, L-05b);
+`art/mannequin/README.md`; `docs/STUDIO.md` (Getting assets in, Importing kit pieces);
+`src/server/FloorBuilder.luau` (the lobby stand-in, by grep); `art/boxes/build.py` (labels, grep).
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-05 notes, keypad and elevator (notes where `Deal` puts them); L-11 tools in hand (two slots
-   and hands, the flashlight, bolt cutters and padlock off the test post); L-06b the Mannequin
-   hunts (Brix ENG-06, ENG-07); L-04e the deal on the floor; L-12 the saw and the hole trap; L-13
-   the tops' edges and the ladder; L-14 the other tools; then L-07, L-08, L-10, L-09.
-2. L-05 adds "flash every light" to `MotionLights`; L-06b's keepers hear doors on `Doors.acted` at
-   `DoorSound.Actions`' reach; L-04e calls `Deal.open` on a door's first lift, peek or open, and
-   tracks keepers awake for the cap; L-08 lays the next floor during the ride, each floor its own
-   seed (the same seed gives floors 3 and 6 the same layout).
-3. **Polish waiting** (ROADMAP): the finds' words, the set's other pieces, a mimic's clean finds;
-   a unit's bulb swinging; the guard's bars; a door answering before the server's word; tool
-   buttons per player; the cutters' snip; a lifted door's grace; a floor's draw cost on a phone;
-   the L unit; the bolt and padlock moving; a shut door muffling; a less-shake setting; a sound
-   mix; a lit tube's hum; fading a far pool; the kit's texture copies; cheaper chain links; a red
-   glow round a Seen eye; a haze edge; a client-side door collider; the padlock too small; the
-   cursor hint once ever; the junctions' overlapping decks.
-4. Studio traps (docs/STUDIO.md): a prompt triggers from the MCP only while the camera faces it;
-   captures don't draw prompts or far, unstreamed areas; standing still lets the hall go dark
+1. L-05a the elevator's art; L-05b notes, keypad and gate (notes where `Deal` puts them); L-11
+   tools in hand (two slots and hands, the flashlight, bolt cutters and padlock off the test post);
+   L-06b the Mannequin hunts (Brix ENG-06, ENG-07); L-04e the deal on the floor; L-12 the saw and
+   the hole trap; L-13 the tops' edges and the ladder; L-14 the other tools; then L-07, L-08,
+   L-10, L-09.
+2. L-05b adds "flash every light" to `MotionLights`; L-06b's keepers hear doors on `Doors.acted`
+   at `DoorSound.Actions`' reach, walk on `Pose.at`, freeze on `Pose.freeze`, posed on clients;
+   L-04e calls `Deal.open` on a door's first lift and clones a sleeping Mannequin in `Still`;
+   L-08 lays the next floor during the ride, each floor its own seed.
+3. **Polish waiting** (ROADMAP, "Polish waiting for a slot"): the Mannequin's head turned to
+   you, its tag, more keys and a garbage-free walk lead the list; the rest stand as before.
+4. Studio traps (docs/STUDIO.md): an imported part's pivot carries the FBX's Z-up turn (take the
+   part's own rotation); a prompt triggers from the MCP only while the camera faces it; captures
+   can time out mid-Play (take the shots that matter first); standing still lets the hall go dark
    in 7.5 s; CollisionFidelity reads back Default in the call that sets it; set the Device
-   Simulator's device before its orientation; a find in front of a unit's bulb reads dark.
+   Simulator's device before its orientation.
 
 ## Kickoff for the next agent
 ```text

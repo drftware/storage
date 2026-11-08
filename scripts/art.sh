@@ -12,8 +12,22 @@
 #   scripts/art.sh finds                the bedroom set's finds: their Bedroom bake, FBX, Specs
 #                                       module, look sheets (the unit look needs the boxes built)
 #   scripts/art.sh finds export         just the finds' FBX and Specs module
+#   scripts/art.sh mannequin            the Mannequin: its bake, FBX, Specs module, then its look
+#                                       sheets in the game's own poses (about 3 minutes)
+#   scripts/art.sh mannequin export     just the Mannequin's FBX and Specs module
 set -euo pipefail
 cd "$(dirname "$0")/.."
+if [ "${1:-}" = "mannequin" ]; then
+	shift
+	for st in ${*:-textures export renders}; do
+		# the sheets wear the poses from src/shared/Mannequin/Pose.luau, written out by Lune
+		if [ "$st" = "renders" ]; then lune run scripts/mannequin-poses; fi
+		echo "== mannequin $st"
+		blender -b --factory-startup -P art/mannequin/build.py -- --stage "$st" 2>&1 \
+			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|atlas|DONE" || true
+	done
+	exit 0
+fi
 if [ "${1:-}" = "finds" ]; then
 	shift
 	for st in ${*:-textures export renders}; do

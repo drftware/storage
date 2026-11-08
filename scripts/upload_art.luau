@@ -90,6 +90,12 @@ local ART: { Art } = {
 		description = "A caged bulb on a short cord, hung inside a self-storage unit",
 	},
 	{
+		key = "Mannequin",
+		path = "art/mannequin/out/Mannequin.fbx",
+		manifest = "art/mannequin/assets.json",
+		description = "A faceless fibreglass shop mannequin, jointed and chipped, left too long in storage",
+	},
+	{
 		key = "Boxes",
 		path = "art/boxes/out/Boxes.fbx",
 		manifest = "art/boxes/assets.json",

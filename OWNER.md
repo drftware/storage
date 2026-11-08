@@ -12,12 +12,35 @@ nowhere else.
   `ShortWall` and `Bulb`, the unit's bulb (L-04b); the moving boxes at
   `ReplicatedStorage.Props.Boxes` (L-04a); and the bedroom finds at
   `ReplicatedStorage.Props.Finds`: `Boombox`, `Television`, `Teddy` and `Skates` (new Nov 7,
-  L-04c2). Unsaved, the next open loses them: the short hall past the corner falls back to plain
+  L-04c2), and the Mannequin at
+  `ReplicatedStorage.Keepers.Mannequin` (new Nov 8, L-06a). Unsaved, the next open loses them: the short hall past the corner falls back to plain
   walls, the hall to plain blocks and bare tubes, the units to no bulb, the finds to nothing
   (Output says which).
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
+
+## Now: judge L-06a, the Mannequin (built Nov 8)
+
+- [ ] **Judge the sheets:** `art/sheets/mannequin-lineup.png` (as it's found, from behind,
+  mid-step, mid-stride), `mannequin-torch.png` (the bulb out, a step nearer, reaching, in a torch:
+  the GDD's moment), `mannequin-unit.png` (among the boxes by a unit's bulb), `mannequin-close.png`
+  (its face), and from Studio `docs/art/L-06a-hall.jpg` (30 studs down the hall in a stand-in
+  torch). Look for: a mannequin at a glance; the frozen reach scary rather than silly; a face you
+  can't read but can tell which way it faces; old paint, chipped, with seams. Say if it should be
+  taller or shorter (6.3 studs, `HEIGHT` in `art/mannequin/spec.py`; a player is about 5.2), if
+  the face wants a plain egg (no nose) or more of a face, or if it wants more wear.
+- [ ] **See it on the phone view** (the doorway capture timed out, so no shot): Galaxy A16 in the
+  Device Simulator, Play, open 101 (E), then with the Server view selected run in the Command Bar
+  `local M=require(game.ReplicatedStorage.Shared.Mannequin) local f=require(game.ReplicatedStorage.Shared.StorageUnit).RollUpDoor.frame(workspace.DevCorridor:FindFirstChild("Unit101",true)) M.clone(f*CFrame.new(-1.6,0,7.6)*CFrame.Angles(0,math.rad(-14),0),workspace,M.Pose.Poses.Still) M.clone(f*CFrame.new(-30,0,-5)*CFrame.Angles(0,math.rad(90),0),workspace,M.Pose.Poses.StepRight)`.
+  Look from 101's doorway (one standing by the bulb, head hung) and up the hall (one mid-step,
+  reaching, 30 studs off), at Quality Level 01 and 21. Look for: both read as mannequins at once,
+  pale against the dark; nothing about them reads as a player.
+- [ ] **Decide, defaults in place** (D-039): (1) it's posed by code, not uploaded animations, so
+  every pose is checked by tests; (2) its walk is stop-motion, holding each of four keys for 55%
+  of a step then snapping (`Pose.Walk.Hold`), and a light freezes it on a key; (3) its keys are
+  mid-step with one arm out level, palm down; (4) no Humanoid until the hunt (L-06b) needs one.
+  Say which to change.
 
 ## Now: read L-04d, the deal (built Nov 8)
 
