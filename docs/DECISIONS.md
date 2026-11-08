@@ -580,8 +580,11 @@ seen across the lobby. Not chosen: a landing light (the lobby stays lit only by 
 One keypad per floor and one readout for the team, as a real keypad is: you can punch the first
 three digits while a friend runs back with the last (the GDD's co-op moment). There's no enter
 key: the fourth digit is checked at once, as door keypads do, so a fat thumb costs a wrong code.
-A Clear key (on the phone keypad only; the wall's keypad has a blank spot where one could go)
-takes back a mistyped digit before the fourth, so the alarm punishes guesses, not thumbs. A wrong
+A Clear key, on the on-screen keypad only (owner, Nov 8; the wall's keypad has none), takes
+back a mistyped digit before the fourth, so the alarm punishes guesses, not thumbs. Every
+player types on that on-screen keypad, opened by the wall keypad's own prompt (owner, Nov 8),
+as DOORS' padlock at door 50 opens: the wall's keys are a fifth of a stud across, and on a
+phone the jump button sits over them. A wrong
 code rings the alarm, lights every powered light on the floor at once (`MotionLights.flash`,
 which lights them without `woke`: the building didn't see anything there, the keepers come to
 the lobby instead, L-06b) and leaves the keypad dead for 3.5 s, its readout blinking the wrong

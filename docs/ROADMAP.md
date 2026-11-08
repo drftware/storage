@@ -257,12 +257,12 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
   measured (`docs/STUDIO.md`): beep 9114642536 (0 to 0.22 s), buzzer 9113085665 (0 to 0.45 s),
   the elevator's alarm bell 9125544264, the double-ding 9119642644 (quiet: loud volume), the
   door's latch 9117910424 (0.2 to 0.9 s) just before the gate moves, the fold 9117907728 (from
-  0.6 s; its slam lands 1.6 s in, on the gate's). A client `KeypadPad`, the phone control: the
-  keypad's own prompt opens an on-screen keypad (DOORS' padlock at door 50 does the same), right
-  of centre, clear of the jump button, 1 to 9 over [light] 0 [CLR] as on the wall, with its
-  readout; you can still walk, and walking off closes it; keys answer at once (a local beep and
-  sink, skipped when the server's echo names you); digits and Backspace on a keyboard, the D-pad
-  on a gamepad. Studio on the Galaxy A16: a wrong code, then the right one; shots in `docs/art/`.
+  0.6 s; its slam lands 1.6 s in, on the gate's). A client `KeypadPad`, the on-screen keypad
+  every device types on (owner, Nov 8): the wall keypad's own prompt opens it (DOORS' padlock at
+  door 50 does the same), right of centre, clear of the jump button, laid out as the wall's with
+  Clear in its blank spot (1 to 9 over [light] 0 [CLR]), with its readout; you can still walk,
+  and walking off closes it; keys answer at once (a local beep and sink, skipped when the
+  server's echo names you); digits and Backspace on a keyboard, the D-pad on a gamepad. Studio on the Galaxy A16: a wrong code, then the right one; shots in `docs/art/`.
 - [ ] **L-05b1b The notes in their units.** The floor's code on sticky notes, one per unit `Deal`
   names, stuck in the unit with its digits in their slots (`Elevator.note`), as the floor's units
   are laid; preload Kalam on clients before notes show (in Edit the first note drew no digits
@@ -335,8 +335,7 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 
 ## Polish waiting for a slot
 
-- **A Clear key on the wall's keypad** (L-05b1a): the phone keypad has one; the wall's has a
-  blank spot under the 9 where the art could add it.
+
 - **Light that matches at every quality** (owner, Nov 8): at Quality Level 01 nothing casts
   shadows, so the car's lamp lights the lobby's back wall through it and the keypad's red glow
   doesn't show; at 21 the wall is dark but for the glow (`docs/art/L-05a2-keypad-*.jpg`). Pick

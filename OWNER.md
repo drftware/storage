@@ -18,13 +18,9 @@ nowhere else.
 
 - [ ] **Decide, defaults in place** (D-042), before L-05b1c builds what you see: (1) one keypad
   and readout shared by the whole team, so one of you can type while another fetches the last
-  digit; (2) no enter key: the fourth digit is checked at once, as door keypads do; (3) a Clear
-  key on the phone's keypad only, so a mistyped digit isn't a wrong code (say if a mistake
-  should cost you the alarm); (4) a wrong code rings the elevator's alarm bell, lights every
-  light on the floor and leaves the keypad dead for 3.5 s (`Keypad.AlarmSeconds`), then it
-  clears; (5) on a phone, the keypad's prompt opens a keypad on screen, right of centre and
-  clear of the jump button, while you can still walk away (DOORS' padlock at door 50 works this
-  way). Say which to change.
+  digit; (2) no enter key: the fourth digit is checked at once, as door keypads do; (3) a wrong code rings the elevator's alarm bell, lights every light on the floor and leaves the
+  keypad dead for 3.5 s (`Keypad.AlarmSeconds`), then it clears. Say which to change. Settled
+  (Nov 8): Clear on the on-screen keypad only, and the keypad's prompt opening that keypad.
 
 ## Now: judge L-05a2, the elevator in Studio (built Nov 8)
 

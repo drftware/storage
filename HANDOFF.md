@@ -28,7 +28,7 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 ## Next task: L-05b1c The keypad and gate on every screen
 The moment: a friend shouting the last digit from a unit while you punch the first three in,
 the keypad answering every press, the gate slamming open on the right code.
-1. Owner test results first (`OWNER.md`), above all the keypad's decisions (D-042).
+1. Owner test results first (`OWNER.md`). Settled: Clear on screen only, the prompt (D-042).
 2. `src/client/ElevatorView.luau`, a client system on the Host (as DoorView/DoorSounds): each
    tagged elevator in Workspace (re-done on stream-in); the gate posed from `Gate.at` each frame
    while it moves, only moving ones stepped; keys sink `Specs.Keypad.Travel` along +Z and back;
