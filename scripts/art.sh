@@ -15,8 +15,22 @@
 #   scripts/art.sh mannequin            the Mannequin: its bake, FBX, Specs module, then its look
 #                                       sheets in the game's own poses (about 3 minutes)
 #   scripts/art.sh mannequin export     just the Mannequin's FBX and Specs module
+#   scripts/art.sh elevator             the freight elevator: key labels, its Car, Elevator and Keypad
+#                                       bakes, FBX, Specs module, look sheets (about 6 minutes)
+#   scripts/art.sh elevator export      just the elevator's FBX and Specs module
 set -euo pipefail
 cd "$(dirname "$0")/.."
+if [ "${1:-}" = "elevator" ]; then
+	shift
+	for st in ${*:-labels textures export renders}; do
+		# the sheets stand the Mannequin in the game's own poses, written out by Lune
+		if [ "$st" = "renders" ]; then lune run scripts/mannequin-poses; fi
+		echo "== elevator $st"
+		blender -b --factory-startup -P art/elevator/build.py -- --stage "$st" 2>&1 \
+			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|atlas|DONE" || true
+	done
+	exit 0
+fi
 if [ "${1:-}" = "mannequin" ]; then
 	shift
 	for st in ${*:-textures export renders}; do

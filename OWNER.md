@@ -10,6 +10,22 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-05a1, the elevator's art (built Nov 8)
+
+- [ ] **Judge the sheets:** `art/sheets/elevator-lobby.png` (from the hall's mouth across the dark
+  lobby, the gate folded open), `elevator-shut.png` (the gate halfway, a stride away, in a torch),
+  `elevator-aboard.png` (inside, the gate nearly shut, the Mannequin come to the gate),
+  `elevator-keypad.png` and `elevator-note.png` (a note on a box, `_ 7 _ _`). Look for: an
+  elevator at a glance from across the lobby (from the hall's mouth only the lit car and the
+  keypad's red glow show, the frame lost in the dark); the gate reading as a folding gate; the
+  car feeling like the safe place; the note spotted from a unit's doorway and its digit plain.
+  Say if the car wants another paint than cream, steel boards instead of oak, a bigger note or a
+  bolder hand.
+- [ ] **Decide, defaults in place** (D-040): (1) one gate, the car's own lattice gate, seen
+  through while you wait; (2) it folds to the left post as you face the car and closes toward
+  the keypad on the right; (3) the notes' digits written by the game in Kalam, Roblox's pen hand,
+  not baked; (4) the lobby lit only by the car's lamp. Say which to change.
+
 ## Now: judge L-06a, the Mannequin (built Nov 8)
 
 - [ ] **Judge the sheets:** `art/sheets/mannequin-lineup.png` (as it's found, from behind,

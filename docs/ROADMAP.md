@@ -230,11 +230,18 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
   walk of four keys a light freezes it on, checked by 26,222 Lune checks (limits, standing,
   nothing through anything, stride, mirroring). Verified in Studio: the Motor6Ds pose it exactly
   as the pure maths says; it reads 30 studs down the hall (`docs/art/L-06a-hall.jpg`).
-- [ ] **L-05a The elevator's art.** The freight elevator car with its folding gate, the keypad
-  beside it and a sticky note, built the unit's way (`art/elevator/`): the car big enough for four
-  players and the lobby's opening it stands in, the gate's slats to slide shut, the keypad's ten
-  keys and its readout, the note in two or four handwritten digits. Into Studio and judged on the
-  Galaxy A16 view.
+- [x] **L-05a1 The elevator's art in Blender** (Nov 8, D-040). `art/elevator/`: the car (12.5 x 11
+  x 9.6 inside), its collapsible lattice gate (13 pickets, 72 straps, posed by the pure
+  `Elevator/Gate.luau`, Lune-checked), the landing's frame and sill, the keypad with ten engraved
+  keys, and the sticky note (its digits written by the game in Kalam). 9,966 triangles; FBX,
+  generated Specs and five look sheets. Split from L-05a when the Studio half wouldn't fit.
+- [ ] **L-05a2 The elevator in Studio.** Upload and insert `Elevator.fbx`; `Elevator.prepare` (the
+  pivots as `Mannequin.prepare` sets them, colliders from `Specs.Colliders`, the lamp's glass Neon
+  with FloorBuilder's lamp light, the readout's glass and status light, the gate's 85 parts cloned
+  from its three templates), `setGate(model, shut)` from `Gate.pose`, `clone`, and `note(pivot,
+  parent, slots)` writing the digits; FloorBuilder lays it at the lobby's back in place of the
+  stand-in's car. Judged on the Galaxy A16 from the hall's mouth, aboard, and with the gate at
+  0, 0.5 and 1; shots in `docs/art/`.
 - [ ] **L-05b Notes, the keypad and the gate.** The floor's 4-digit code on sticky notes laid
   where L-04d says, the keypad, the gate that shuts 30 s after the last digit (Dandy's World).
   Brix: Zone for "aboard", the Clock for the gate's timer. A wrong code flashes every light on the
@@ -302,6 +309,16 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **A floor dial over the landing** (L-05a1): an arrow dial in the frame's header that swings
+  floor to floor during the ride, read from across the lobby, as old elevators' indicators.
+- **A trim sheet for the elevator's big trim** (L-05a1): the car's posts, fascia and boards and the
+  landing's frame are at 41 texels a stud; if they read soft on a phone, map them onto tiling
+  strips at 80 like the car's walls.
+- **Tally marks in the car** (L-05a1): scratched into the paint by a back corner, someone counting
+  nights; a patch of its own, since the walls tile.
+- **The shaft** (L-05a1): rails, cables, the counterweight and the next landing passing during the
+  ride, and what's left when the car goes up without you (L-08).
 
 - **The Mannequin's head turned to you** (L-06a): each time it moves unseen, its Neck turns
   toward the nearest player, so the next look finds it watching you, as Five Nights at Freddy's

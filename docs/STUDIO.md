@@ -410,6 +410,14 @@ verified: a doc page, Studio, or "untested".
 - **A capture into an open unit timed out twice** (Play, L-06a): a capture with a camera position
   in 101's doorway never answered, while the next, down the hall, did.
 
+### Blender traps met building the elevator (Nov 8, `art/elevator/`)
+- The finds' unwrap (each object in its own square of the atlas) wastes most of it on long
+  strips: the elevator's trim filled 31%. `bpy.ops.uv.pack_islands` over all of a set's objects
+  at once (multi-object edit, `use_uv_select_sync` on, `shape_method="AABB"`, cardinal turns,
+  `scale=True`) keeps one texel density and packed 42%; past that, the limit is real surface.
+- A FONT object's `matrix_world` is stale after setting its `location` and `scale` until the view
+  layer updates: compose its matrix from `location` and `scale` before moving it elsewhere.
+
 ### Blender traps met building the finds (Nov 7, `art/finds/`)
 - `bmesh.ops.create_uvsphere` numbers its points differently from run to run. Anything whose
   UVs are saved and worn later must build its spheres point by point (`build.py` `ellipsoid`).

@@ -536,3 +536,22 @@ chosen: one random stream for everything (the order of opens would change every 
 random with spacing alone (all four could land in one wing); a cap on sleeping keepers (the GDD
 caps only awake ones; the owner judges the count from `scripts/floor-deal`). Fake notes wait for
 Phase 2's floors.
+
+## D-040 · 2026-11-08 · The elevator: the car's own lattice gate, notes written by the game
+The way up is a freight car behind a steel frame in the lobby's back wall (a 12.4 x 9.2 hole),
+12.5 x 11 x 9.6 inside: room for the GDD's six to stand clear of the gate and for the Mannequin
+to walk under its track. There is one gate, the car's own, a collapsible lattice gate as old
+freight cars have, so it rides up with the car and you watch the lobby through it while the
+timer runs (the gate shutting on its own timer is Dandy's World's). It folds to the left post as
+you face the car and closes toward the keypad on the right; its pickets and 72 straps are cloned
+from three meshes and posed by code (`Elevator/Gate.luau`, pure: a strap's angle is
+acos(pitch / its length), so its pins stay on the pickets at any spread). Its sills are striped:
+the line to be over when it shuts. The notes' digits aren't baked: a note shows one or two
+digits in four slots (`_ 7 _ _`, GDD), too many ways to bake, so the game writes them with a
+SurfaceGui in Kalam (Roblox's pen hand, Bold), as the units' numbers are written; the sheets use
+the same font. Notes are a big pad's (0.7 studs) so they're spotted from a doorway. Three
+texture sets: the car's walls and floor tile (80 texels a stud), the big trim is baked (41), the
+small fittings (gate, lamp, keypad, keys, note) are baked at 133. Not chosen: a landing gate as
+well (two gates to read, and the car's is the one players watch); baked note faces; vertical
+bi-parting doors (solid, so you couldn't see what's coming while you wait).
+

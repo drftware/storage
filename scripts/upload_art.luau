@@ -96,6 +96,12 @@ local ART: { Art } = {
 		description = "A faceless fibreglass shop mannequin, jointed and chipped, left too long in storage",
 	},
 	{
+		key = "Elevator",
+		path = "art/elevator/out/Elevator.fbx",
+		manifest = "art/elevator/assets.json",
+		description = "A freight elevator: its car, folding lattice gate, landing frame, keypad and a sticky note",
+	},
+	{
 		key = "Boxes",
 		path = "art/boxes/out/Boxes.fbx",
 		manifest = "art/boxes/assets.json",
