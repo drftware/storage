@@ -2,63 +2,60 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-07, session 23 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-07, session 24 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-02 is done** (D-030): the door is the GDD's state machine in the pure `Door` (closed,
-  peeking, opening, lifting, open, closing, slamming, locked; 327 Lune checks), run by the server's
-  `Doors` system on the Host clock, which replaced `DoorPrompts`. A door shows only the buttons its
-  state allows, side by side in fixed places (`Door.Slots`, 150 px apart), Lift just inside while
-  it's down; every press is checked for reach, side, tools and rate. A padlocked door tried
-  rattles (a new `Rattle` door motion plus Pro Sound Effects "Door Shake 4") and says "Padlocked";
-  bolt cutters (Cut, held 1 s) take the padlock off. Events fire `Doors.acted` with their reach.
-- **Tools are a stand-in:** a player's `CarriesBoltCutters` / `CarriesPadlock` attribute. The test
-  hall's "Test tools" post right of the spawn toggles bolt cutters (R). No Lock button on doors;
-  the padlock tool will call `Doors:lock`.
-- **Verified in Studio** (one player, pressing buttons from the Client view; Output clean but the
-  known `203785492` lines): 101's buttons through open, slam, peek and close; nothing shown
-  mid-slam or mid-lift; 105 rattles (0.1 studs of give, the sound plays, "Padlocked"); Cut
-  without cutters refuses as the hold starts; with them the padlock pops; slam yourself in from
-  inside, Lift out; padlocked inside, Lift rattles; all 82 units (test hall and laid floor) get
-  their buttons; Peek and Open show 150 px apart, centred. Not tested: two players, a phone,
-  the range and rate checks against a forged press.
+- **L-01d is done** (D-031), on the owner's default: crawl holes only between side-by-side units,
+  tops along a row. `Floor` records each slot's `left`, `right` and `back` (the slot sharing at
+  least 4 studs of that wall, `CrawlWidth`) and the floor's `runs` (a row's slots side by side);
+  every plain wall in a run with a unit has `top` set. Rules from 400 seeds: a random plain wall
+  never strands a unit; floors 1 and 2 (`teachHoles`) keep the hall from the lobby to the first
+  fork free of plain walls, three S units on a back-cornered side. Every floor has 36+ crawl
+  pairs; floors 1 and 2 have 4+ before the first fork and none cut off; full floors at most 2.
+- **Lids:** `FloorBuilder` puts the unit template's own wire top and floor (with colliders) over a
+  lidded plain wall's slot. Verified in Studio (Play, server): floor 3 of seed 7 got 9 lids, each
+  at 10.05 and flush with its neighbour's top, Output clean. Not seen on screen: a capture 600
+  studs from the player came back as sky (most likely streaming; `docs/STUDIO.md`).
+- **Maps:** `scripts/floor-map` marks a unit with no crawl neighbour `x` and prints "The tops"
+  (a letter per run); `scripts/floor-survey` prints each measure's spread over many seeds.
+- **L-02's doors** (D-030) are as last session: verified with one player; two players, a phone and
+  a forged press are untested (`OWNER.md`).
 - `rojo serve` runs on port 34872; Studio in Edit, Quality on Automatic, Device Simulator off.
 
-## Next task: L-01d The floor laid for the saw and the ladder
-The moment: a friend saws through to the next unit and crawls out of reach, or climbs onto the
-tops and runs a row while the keeper below loses them. The owner asked (Nov 7) that the layout
-make this work before the tools are built. Data and checks only: no tools this ticket.
-1. Owner test results first, and their answer on holes and tops (`OWNER.md`, "Decide"); without
-   one, the default: holes between side-by-side neighbours only, tops run along a row.
-2. Read the GDD's "The hole trap" and the Tools table (saw, ladder): only those.
-3. Measure first: over 400 seeds, how many neighbour pairs a floor has, how many units stand cut
-   off between plain walls, how long the top runs are. Print it; pick limits from the numbers.
-4. In `Floor`, Lune spec first: each unit's neighbours (left, right, back: a unit, a plain wall
-   or nothing) and the top runs; rules so floors 1 and 2 have neighbour pairs in the first hall
-   from the lobby (the GDD: they teach the hole trap) and every floor has enough; a plain-wall
-   slot marked closed on top so a run doesn't drop into it.
-5. `scripts/floor-map` shows the crawl links and the top runs; `FloorBuilder` closes the top of a
-   plain-wall slot if the unit's wire top is a part it can reuse, else ROADMAP gets the art step.
-**Acceptance:** checks green; the spec covers the neighbour and top rules over many seeds; maps
-show both; numbers and what to judge in `OWNER.md`.
-**Read first:** `OWNER.md` ("Decide: moving between units"); `docs/ROADMAP.md` (L-01d);
-`src/shared/Floor.luau` (header, where slots are made); `tests/floor.spec.luau`;
-`scripts/floor-map.luau`; the GDD's hole trap and Tools.
+## Next task: L-04 What's behind the door (split it first)
+The moment: the slow, loud open, and not knowing what's in there: a find to grab, a note with a
+digit of the code, nothing, or a keeper standing in the dark. The props come first (real assets).
+1. Owner test results first (`OWNER.md`), and any answer on holes and tops (its "Decide" section).
+2. Read the GDD's "What's behind the door" (only that section; the keepers' table only if it
+   names one that waits in a unit).
+3. Split L-04 in `docs/ROADMAP.md`: L-04a the props a unit's contents are made of (boxes, the
+   finds, whatever the GDD names), built the unit's way; L-04b a first director dealing each
+   unit's contents on open, and which doors start padlocked (`Doors:lock(unit, true)`). The
+   sticky note is L-05's; a keeper in a unit waits on L-06, so L-04b deals "a keeper" as a marker.
+4. Do L-04a: one Blender script per prop set under `art/`, parts UV-mapped to the unit's texture
+   sets where they fit, FBX, a generated Specs module, look sheets; imported and judged at phone
+   size inside an open unit, under the hall light and the dark.
+**Acceptance:** checks green; the props in the place, judged inside a unit in Studio at phone size;
+`OWNER.md` says what to judge and the template paths to save.
+**Read first:** `docs/ROADMAP.md` (L-04, L-05); the GDD's "What's behind the door";
+`art/unit/README.md`; `docs/STUDIO.md` (Blender 5.2 and the FBX recipe); `scripts/art.sh`.
 
 ## Queue (the next run's order, from ROADMAP)
-1. Then L-04 to L-08, and L-10 (the map) after L-05. L-04 deals contents and which doors start
-   padlocked (`Doors:lock(unit, true)`); L-05 adds "flash every light" to `MotionLights` and
-   builds the lobby and elevator where `FloorBuilder`'s stand-in is; L-06's keepers hear doors
-   on `Doors.acted` (each event's `reach`); L-08 lays the next floor during the ride.
-2. **The ladder** (GDD tools): a wire top leaves 2.8 studs under the joists (`OWNER.md`).
+1. Then L-05 to L-08, and L-10 (the map) after L-05. L-05 adds "flash every light" to
+   `MotionLights` and builds the lobby and elevator where `FloorBuilder`'s stand-in is; L-06's
+   keepers hear doors on `Doors.acted` (each event's `reach`); L-08 lays the next floor during the
+   ride.
+2. **Before the ladder** (ROADMAP Phase 2): close a run's back (the 16-stud gap, no floor or deck)
+   and its ends at a junction's hollow block; a wire top leaves 2.8 studs under the joists.
 3. **Polish waiting** (ROADMAP): a door answering before the server's word; tool buttons per
    player; the cutters' snip; a lifted door's grace; a laid floor's draw cost on a phone; the L
    unit; the bolt and padlock moving; a shut door muffling sounds; a less-shake setting; a sound
    mix; a lit tube's hum; fading a far pool; the kit's texture copies; cheaper chain links; a red
    glow round a Seen eye; a haze edge; a client-side door collider; the padlock too small; the
-   cursor hint once ever; the junctions' overlapping decks seen from a unit.
+   cursor hint once ever; the junctions' overlapping decks (and crossing lids) seen from the tops.
 4. Studio traps (docs/STUDIO.md): a prompt triggers from the MCP only while the camera faces it;
-   captures don't draw prompts; annotate locals of another module's string unions.
+   captures don't draw prompts or far, unstreamed areas; annotate locals and loop variables of
+   another module's string unions.
 
 ## Kickoff for the next agent
 ```text

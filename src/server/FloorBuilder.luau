@@ -4,8 +4,10 @@
 	every hall, unit, wall and light goes; this puts the real pieces there, so a seed becomes a
 	floor you can walk: CorridorKit's straights, junctions, walls and dead ends; the M and S units
 	from ReplicatedStorage.Units, in the floor's door colour and numbered; and a motion light over
-	every hall piece, in its power zone. The lobby is a plain room with the elevator's space behind
-	it, lit from there, until L-05 builds both.
+	every hall piece, in its power zone. A plain wall in a top run gets a lid over the empty slot
+	behind it, the unit's own wire top and floor, so a friend running the tops never drops in. The
+	lobby is a plain room with the elevator's space behind it, lit from there, until L-05 builds
+	both.
 
 	Laying yields. It works out from the lobby a hall piece at a time and waits a frame whenever it
 	has spent its share of one, so the server never hitches: L-08 lays the next floor while the
@@ -123,6 +125,41 @@ local function faceOf(x: number, z: number, facing: number): CFrame
 	local dx, dz = Floor.dir(facing)
 	local at = Vector3.new(x, 0, z)
 	return CFrame.lookAt(at, at + Vector3.new(dx, 0, dz))
+end
+
+-- The parts a plain wall's lid is made of: the unit's wire top to run across and its floor, so
+-- the empty slot under the wires reads as an empty unit, not the void below the building.
+local LID_PARTS = { "WireTop", "Floor" }
+local LID_SIZES: { Floor.Size } = { "M", "S" }
+
+--[[
+	A plain wall's lid, made once per size from the unit template's own parts and their colliders,
+	in a door face's frame (a plain wall's frame is a unit's door face): pivot it to the wall's face.
+	Nil and the missing part's name if the template lacks one.
+]]
+local function lidOf(template: Model): (Model?, string?)
+	local outer = RollUpDoor.frame(template) * CFrame.new(0, 0, -specOf(template).CurtainPlane)
+	local lid = Instance.new("Model")
+	lid.Name = "Lid"
+	local colliders = Instance.new("Folder")
+	colliders.Name = "Colliders"
+	colliders.Parent = lid
+	local templateColliders = template:FindFirstChild("Colliders")
+	for _, name in LID_PARTS do
+		local part = template:FindFirstChild(name, true)
+		local box = templateColliders and templateColliders:FindFirstChild(name)
+		if not (part and part:IsA("BasePart") and box and box:IsA("BasePart")) then
+			lid:Destroy()
+			return nil, name
+		end
+		for _, p in { part, box } :: { BasePart } do
+			local copy = p:Clone()
+			copy.CFrame = outer:ToObjectSpace(p.CFrame)
+			copy.Parent = if p == box then colliders else lid
+		end
+	end
+	lid.WorldPivot = CFrame.identity
+	return lid, nil
 end
 
 -- Leaves out the side walls a neighbour already stands. `drops` are floor Dirs; the unit's WallLeft
@@ -263,6 +300,7 @@ type Laying = {
 	units: Units,
 	door: Color3,
 	slots: { [number]: { Floor.Slot } },
+	lids: { [Floor.Size]: Model }, -- a plain wall's lid per size (lidOf), missing if it can't be made
 	deadEnds: { [number]: { Floor.DeadEnd } },
 	fixtures: { [number]: Floor.Fixture },
 	breathe: () -> (), -- waits for the next frame once this one's share is spent
@@ -306,8 +344,16 @@ local function piece(laying: Laying, index: number): (Folder, number)
 			unit.Parent = folder
 			laying.breathe()
 			count += 1
-		elseif not junction then
-			CorridorKit.wall(if s.size == "M" then "Wall" else "ShortWall", face, paint, folder)
+		else
+			if not junction then
+				CorridorKit.wall(if s.size == "M" then "Wall" else "ShortWall", face, paint, folder)
+			end
+			local lid = if s.top then laying.lids[s.size] else nil
+			if lid then
+				local copy = lid:Clone()
+				copy:PivotTo(face)
+				copy.Parent = folder
+			end
 		end
 	end
 	local deadEnds: { Floor.DeadEnd } = laying.deadEnds[index] or {}
@@ -363,11 +409,23 @@ function FloorBuilder.lay(floor: Floor.Floor, origin: CFrame, parent: Instance):
 		units = units,
 		door = (UnitKit.Colours.Door :: { [string]: Color3 })[floor.paint],
 		slots = {},
+		lids = {},
 		deadEnds = {},
 		fixtures = {},
 		breathe = breathe,
 	}
 	assert(laying.door, `FloorBuilder: no door colour {floor.paint}`)
+	for _, size: Floor.Size in LID_SIZES do
+		local lid, lacking = lidOf(if size == "S" then units.S else units.M)
+		if lid then
+			laying.lids[size] = lid
+		else
+			warn(
+				`FloorBuilder: ReplicatedStorage.Units.{size} has no {lacking} with its collider, so `
+					.. "its plain walls stay open on top: a friend running the tops drops in behind"
+			)
+		end
+	end
 	for _, s in floor.slots do
 		local list = laying.slots[s.cell] or {}
 		laying.slots[s.cell] = list

@@ -262,7 +262,10 @@ verified: a doc page, Studio, or "untested".
   `workspace.CurrentCamera.CFrame` on the client turns the Custom camera. `screen_capture` with no
   camera position shows the player's view, with one it moves the camera; CoreGui (prompts) never
   shows in captures, so read `prompt.ObjectText` on the server for refusals, and track shown prompts
-  with `ProximityPromptService.PromptShown` and `PromptHidden`. With Studio in the background the
+  with `ProximityPromptService.PromptShown` and `PromptHidden`. A capture with a camera position
+  far from the player (the laid floor, 600 studs off) showed only sky (L-01d): most likely
+  streaming hadn't sent that area to the client, so move the character there first ("Walk a
+  floor") or check by numbers on the server. With Studio in the background the
   client ran at about 15 fps, so time feel by the clock, not by frames.
 - **Luau's negative zero:** `-j * 2` with `j = 0` is -0, equal to 0 but printed "-0", so a text
   key like `` `{x},{z}` `` misses its match. Write `0 - j * 2` (Floor's grid, L-01a).

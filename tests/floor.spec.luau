@@ -4,7 +4,10 @@
 -- gives the same floor, and every layout rule holds: a straight between two junctions, the kit's
 -- slots at every junction, no unit in another or in a hall or over two decks' overlap, every
 -- door onto a hall, every stretch of hall under a light that watches it, numbers unique and in
--- order, shared walls stood once, every hall reachable from the lobby. First, the generator's
+-- order, shared walls stood once, every hall reachable from the lobby, and every unit's neighbours
+-- and top run (L-01d): crawl holes only between side-by-side units, enough of them on every floor
+-- and, on floors 1 and 2, in the hall out of the lobby; no top run dropping into a plain wall's
+-- empty slot. First, the generator's
 -- sizes against the kit's and the units' generated specs, read as text (they build Roblox values).
 local fs = require("@lune/fs")
 
@@ -119,6 +122,7 @@ local PLAN = S.shape({
 	keepOn = chance,
 	smallRows = chance,
 	plainWalls = chance,
+	teachHoles = S.boolean(),
 })
 for name, plan in Floor.Plans do
 	local problems = PLAN:validate(plan)
@@ -190,6 +194,8 @@ local function footprint(s: Floor.Slot): Rect
 	return rect(Floor.footprint(s))
 end
 
+local mostCutOff, fewestLinks, fewestFirst, shortestRun, longestRun =
+	0, math.huge, math.huge, math.huge, 0
 local SAME_SEED_ALIKE = 0
 local seen: { [string]: boolean } = {}
 local distinct, floors, atCap, maxUnits = 0, 0, 0, 0
@@ -203,7 +209,9 @@ local function checkFloor(seed: number, number: number)
 
 	-- the same seed, the same floor
 	local map = Floor.map(f)
-	local alike = map == Floor.map(again) and #f.slots == #again.slots
+	local alike = map == Floor.map(again)
+		and Floor.map(f, "tops") == Floor.map(again, "tops")
+		and #f.slots == #again.slots
 	for i, s in f.slots do
 		local t = again.slots[i]
 		alike = alike
@@ -483,6 +491,149 @@ local function checkFloor(seed: number, number: number)
 		)
 	end
 
+	-- neighbours: what stands past each slot's walls, found again from the footprints
+	local rects = {}
+	for i, s in f.slots do
+		rects[i] = footprint(s)
+	end
+	-- the stretch of slot i's wall on Dir d that slot j's footprint shares
+	local function shares(i: number, j: number, d: number): number
+		local a, b = rects[i], rects[j]
+		if
+			(d == 0 and math.abs(a.x1 - b.x0) < 0.01) or (d == 2 and math.abs(a.x0 - b.x1) < 0.01)
+		then
+			return math.max(0, math.min(a.z1, b.z1) - math.max(a.z0, b.z0))
+		elseif
+			(d == 1 and math.abs(a.z1 - b.z0) < 0.01) or (d == 3 and math.abs(a.z0 - b.z1) < 0.01)
+		then
+			return math.max(0, math.min(a.x1, b.x1) - math.max(a.x0, b.x0))
+		end
+		return 0
+	end
+	local SIDES: { Floor.Side } = { "left", "right", "back" }
+	local function sideOf(s: Floor.Slot, side: Floor.Side): number?
+		return if side == "left" then s.left elseif side == "right" then s.right else s.back
+	end
+	local links, backLinks, firstLinks, cutOff = 0, 0, 0, 0
+	for i, s in f.slots do
+		local anyUnit = false
+		for _, side in SIDES do
+			local d = Floor.sideDir(s, side)
+			local j = sideOf(s, side)
+			local longest, best = 0, nil
+			for k in f.slots do
+				local length = if k ~= i then shares(i, k, d) else 0
+				if length > longest then
+					longest, best = length, k
+				end
+			end
+			if longest >= Floor.CrawlWidth then
+				ok(
+					j ~= nil,
+					`{where}: slot {i}'s {side} wall shares {longest} studs, none recorded`
+				)
+				ok(
+					j == nil or shares(i, j, d) == longest,
+					`{where}: slot {i}'s {side} neighbour isn't the one sharing most of that wall`
+				)
+				local _ = best
+			else
+				ok(j == nil, `{where}: slot {i}'s {side} neighbour shares too little wall to crawl`)
+			end
+			if j and s.kind == "Unit" and f.slots[j].kind == "Unit" then
+				anyUnit = true
+				local o = f.slots[j]
+				local back = (d + 2) % 4
+				ok(
+					(Floor.sideDir(o, "left") == back and o.left == i)
+						or (Floor.sideDir(o, "right") == back and o.right == i)
+						or (Floor.sideDir(o, "back") == back and o.back == i),
+					`{where}: unit {s.number} crawls to {o.number}, not back`
+				)
+				if j > i then
+					links += 1
+					if side == "back" or Floor.sideDir(o, "back") == back then
+						backLinks += 1
+					end
+					if f.cells[s.cell].zone == "Lobby" and f.cells[o.cell].zone == "Lobby" then
+						firstLinks += 1
+					end
+				end
+			end
+		end
+		if s.kind == "Unit" then
+			ok(
+				(#Floor.crawlsTo(f, i) > 0) == anyUnit,
+				`{where}: unit {s.number}'s crawl holes miscounted`
+			)
+			if not anyUnit then
+				cutOff += 1
+			end
+		end
+	end
+	-- holes only between side-by-side neighbours (OWNER.md's default): no unit backs onto another
+	ok(backLinks == 0, `{where}: {backLinks} units back onto another`)
+	local short = number <= 2
+	ok(links >= (if short then 30 else 40), `{where}: only {links} crawl links`)
+	ok(cutOff <= (if short then 0 else 2), `{where}: {cutOff} units with no neighbour to crawl to`)
+	mostCutOff = math.max(mostCutOff, cutOff)
+	fewestLinks = math.min(fewestLinks, links)
+	if f.plan.teachHoles then
+		-- floors 1 and 2 teach the hole trap on the way out of the lobby
+		for _, s in f.slots do
+			ok(
+				f.cells[s.cell].zone ~= "Lobby" or s.kind == "Unit",
+				`{where}: a plain wall between the lobby and the first fork`
+			)
+		end
+		ok(firstLinks >= 4, `{where}: {firstLinks} crawl links before the first fork`)
+		fewestFirst = math.min(fewestFirst, firstLinks)
+	end
+
+	-- the tops: every unit's and every lidded wall's in one run along its row, and no run's
+	-- neighbour along the row left open for a friend running it to drop into
+	local inRow = function(i: number, j: number?): boolean
+		return j ~= nil and f.slots[j].facing == f.slots[i].facing
+	end
+	local seenIn: { [number]: number } = {}
+	for r, run in f.runs do
+		local length, unitsIn = 0, 0
+		for k, i in run.slots do
+			local s = f.slots[i]
+			ok(seenIn[i] == nil, `{where}: slot {i} in two top runs`)
+			seenIn[i] = r
+			ok(s.top and s.run == r, `{where}: slot {i} in run {r} not marked so`)
+			length += Floor.Sizes[s.size].width
+			unitsIn += if s.kind == "Unit" then 1 else 0
+			local nextIndex = run.slots[k + 1]
+			if nextIndex then
+				ok(
+					s.left == nextIndex and f.slots[nextIndex].right == i and inRow(i, nextIndex),
+					`{where}: run {r} skips along its row at slot {i}`
+				)
+			else
+				ok(not inRow(i, s.left), `{where}: run {r} stops short of its row's end`)
+			end
+		end
+		ok(not inRow(run.slots[1], f.slots[run.slots[1]].right), `{where}: run {r} starts mid-row`)
+		ok(length == run.length and unitsIn == run.units, `{where}: run {r}'s length or units`)
+		ok(run.units >= 1, `{where}: run {r} has no unit`)
+		ok(run.length >= Floor.Cell, `{where}: run {r} only {run.length} studs`)
+		shortestRun = math.min(shortestRun, run.length)
+		longestRun = math.max(longestRun, run.length)
+	end
+	for i, s in f.slots do
+		ok(s.top == (seenIn[i] ~= nil), `{where}: slot {i}'s top and its run disagree`)
+		ok(s.kind ~= "Unit" or s.top, `{where}: unit {s.number} without a top`)
+		for j = i + 1, #f.slots do
+			local o = f.slots[j]
+			if s.top and o.top and overlap(rects[i], rects[j]) then
+				-- only two lids at a junction's back corner, under the halls' overlapping decks
+				ok(s.kind == "Wall" and o.kind == "Wall", `{where}: a unit's top over another top`)
+			end
+		end
+	end
+
 	-- the lights: one over every hall piece's middle, and every step of hall watched
 	local lit: { [number]: number } = {}
 	local boxes = {}
@@ -570,7 +721,15 @@ ok(distinct >= floors * 0.95, `seeds lay different floors ({distinct} of {floors
 ok(overlapsFound > 0, "the back-corner deck overlaps were checked (some exist)")
 ok(atCap <= floors * 0.02, `floors rarely reach the unit cap ({atCap} of {floors})`)
 
+-- the side names: a door looking -Z, you face +Z to see it, so its left wall is toward +X
+ok(Floor.sideDir({ facing = 3 } :: any, "left") == 0, "a slot's left is your left facing its door") -- any: only facing is read
+ok(Floor.sideDir({ facing = 3 } :: any, "back") == 1, "a slot's back is away from the hall") -- any: as above
+
 if failures > 0 then
 	error(`{failures} of {checks} floor checks failed`)
 end
-print(`floor: {checks} checks passed over {floors} floors (at most {maxUnits} units)`)
+print(
+	`floor: {checks} checks passed over {floors} floors (at most {maxUnits} units; crawl links `
+		.. `at least {fewestLinks}, {fewestFirst} before the first fork on floors 1 and 2; at most `
+		.. `{mostCutOff} units cut off; top runs {shortestRun} to {longestRun} studs)`
+)

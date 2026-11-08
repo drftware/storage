@@ -73,6 +73,10 @@ export type Plan = {
 	keepOn: number, -- 0 to 1: how often a hall carries on straight rather than turning (long aisles)
 	smallRows: number, -- 0 to 1: how often a straight's side is three S units, not two M
 	plainWalls: number, -- 0 to 1: how often a slot is a plain wall: the rhythm of doors down a hall
+	-- The hall from the lobby to the first fork teaches the hole trap (GDD: floors 1 and 2): no
+	-- plain walls there but the ones a back corner needs, and a back-cornered side three small
+	-- units, so the first doors you meet stand side by side, neighbours to saw between.
+	teachHoles: boolean,
 }
 
 Floor.Plans = {
@@ -85,6 +89,7 @@ Floor.Plans = {
 		keepOn = 0.6,
 		smallRows = 0.25,
 		plainWalls = 0.08,
+		teachHoles = true,
 	} :: Plan,
 	-- Floors 3 and up: half as many halls again and a second loop, so four notes take searching
 	-- for and a chase has room. About 80 units (60 to 99); the short plan about 60.
@@ -96,6 +101,7 @@ Floor.Plans = {
 		keepOn = 0.6,
 		smallRows = 0.25,
 		plainWalls = 0.08,
+		teachHoles = false,
 	} :: Plan,
 }
 
@@ -141,6 +147,25 @@ export type Slot = {
 	cell: number, -- the hall piece it lines, an index into cells
 	number: string?, -- a unit's number, "214"
 	drops: { number }, -- the side walls a unit leaves out, as Dirs: its neighbour already stands them
+	-- What stands past each of its walls, as an index into slots: a unit or a plain wall's slot that
+	-- shares at least a crawl hole's stretch of that wall, or nil where nothing does (a junction's
+	-- block of wall, the gap behind a row, a dead end). Left and right as you see them from the
+	-- hall, facing the door (Floor.sideDir).
+	left: number?,
+	right: number?,
+	back: number?,
+	top: boolean, -- closed on top: a unit's wire top, or a plain wall's lid in a run with units
+	run: number?, -- the top run it's part of, an index into runs
+}
+
+-- A top run: slots side by side in one row, every one closed on top, so a friend up a ladder can
+-- run its length while a keeper below loses them (GDD Tools, the ladder). In order along the
+-- row, each slot the one on the previous one's left. A run ends at a junction's block of wall, a
+-- dead end or the lobby; its back is the gap behind the row.
+export type Run = {
+	slots: { number },
+	length: number, -- studs along the row
+	units: number, -- how many of its slots are units
 }
 
 -- A motion light over a hall piece's middle, its hall along `turn`.
@@ -157,6 +182,7 @@ export type Floor = {
 	slots: { Slot },
 	fixtures: { Fixture },
 	deadEnds: { DeadEnd },
+	runs: { Run },
 	lobby: number, -- the lobby's index in cells
 }
 
@@ -265,6 +291,103 @@ end
 
 local function key(gx: number, gz: number): number
 	return gx * 4096 + gz
+end
+
+-- The least stretch of wall two slots must share for a crawl hole between them: the saw's hole is
+-- about 3 studs wide and needs a stud of wall each side of it.
+Floor.CrawlWidth = 4
+
+export type Side = "left" | "right" | "back"
+
+-- The Dir a slot's wall on `side` faces outward, as you see it from the hall facing the door.
+function Floor.sideDir(slot: Slot, side: Side): number
+	return (slot.facing + (if side == "left" then 1 elseif side == "right" then 3 else 2)) % 4
+end
+
+-- How long a stretch of slot a's wall on Dir d slot b's footprint shares (0 if none). Footprints
+-- are given as { minX, maxX, minZ, maxZ }.
+local function sharedWall(a: { number }, b: { number }, d: number): number
+	local line, other, lo, hi
+	if d % 2 == 0 then
+		line, other = if d == 0 then a[2] else a[1], if d == 0 then b[1] else b[2]
+		lo, hi = math.max(a[3], b[3]), math.min(a[4], b[4])
+	else
+		line, other = if d == 1 then a[4] else a[3], if d == 1 then b[3] else b[4]
+		lo, hi = math.max(a[1], b[1]), math.min(a[2], b[2])
+	end
+	return if math.abs(line - other) < 0.01 then math.max(0, hi - lo) else 0
+end
+
+-- Fills in what stands past each slot's walls (left, right, back), from the footprints alone.
+local function findNeighbours(slots: { Slot })
+	local rects = {}
+	for i, s in slots do
+		rects[i] = { Floor.footprint(s) }
+	end
+	local function across(i: number, d: number): number?
+		local best, longest = nil, Floor.CrawlWidth - 0.01
+		for j in slots do
+			if j ~= i then
+				local length = sharedWall(rects[i], rects[j], d)
+				if length > longest then
+					best, longest = j, length
+				end
+			end
+		end
+		return best
+	end
+	for i, s in slots do
+		s.left = across(i, Floor.sideDir(s, "left"))
+		s.right = across(i, Floor.sideDir(s, "right"))
+		s.back = across(i, Floor.sideDir(s, "back"))
+	end
+end
+
+--[[
+	Finds the floor's top runs and closes their tops. A run is a row's slots linked side by side;
+	every plain wall in a run that has a unit gets a lid, so a friend running the tops never drops
+	into the empty slot behind it.
+]]
+local function findRuns(slots: { Slot }): { Run }
+	-- the next slot along the row on the left: the same row (facing the same way), each the other's
+	local function leftInRow(i: number): number?
+		local j = slots[i].left
+		if j and slots[j].facing == slots[i].facing and slots[j].right == i then
+			return j
+		end
+		return nil
+	end
+	local rightOf: { [number]: boolean } = {}
+	for i in slots do
+		local j = leftInRow(i)
+		if j then
+			rightOf[j] = true
+		end
+	end
+	local runs: { Run } = {}
+	for i in slots do
+		if rightOf[i] then
+			continue -- not a row's right-hand end
+		end
+		local run: Run = { slots = {}, length = 0, units = 0 }
+		local at: number? = i
+		while at do
+			table.insert(run.slots, at)
+			run.length += Floor.Sizes[slots[at].size].width
+			if slots[at].kind == "Unit" then
+				run.units += 1
+			end
+			at = leftInRow(at)
+		end
+		if run.units > 0 then
+			table.insert(runs, run)
+			for _, j in run.slots do
+				slots[j].top = true
+				slots[j].run = #runs
+			end
+		end
+	end
+	return runs
 end
 
 --[[
@@ -415,9 +538,37 @@ function Floor.generate(number: number, random: Random): Floor
 		local index = at[key(c.gx + sx, c.gz + sz)]
 		return if index then cells[index] else nil
 	end
+	-- the ways on from a piece, walking `walk`: left, ahead, right
+	local function waysOn(c: Cell, walk: number): { number }
+		local ways = {}
+		for _, d in { walk + 3, walk, walk + 1 } do
+			if c.arms[d % 4 + 1] then
+				table.insert(ways, d % 4)
+			end
+		end
+		return ways
+	end
+	-- The first stretch: the pieces from the lobby to the first fork, the fork included.
+	local lobby = at[key(0, 0)]
+	local firstStretch: { [number]: boolean } = {}
+	local fork, forkWalk = lobby, 3
+	while true do
+		firstStretch[fork] = true
+		local c = cells[fork]
+		local ways = waysOn(c, forkWalk)
+		if c.kind ~= "Lobby" and #ways ~= 1 then
+			break
+		end
+		local n = neighbour(c, ways[1])
+		if not n then
+			break
+		end
+		fork, forkWalk = at[key(n.gx, n.gz)], ways[1]
+	end
 
 	-- 3. The slots along every hall side, units or plain walls.
 	local slots: { Slot } = {}
+	local picked: { [number]: boolean } = {} -- the plain walls picked at random, not needed
 	local function addSlot(
 		cell: number,
 		size: Size,
@@ -426,14 +577,23 @@ function Floor.generate(number: number, random: Random): Floor
 		facing: number,
 		wall: boolean
 	)
+		-- the draw is made even where its answer is ignored, so every other choice stays the seed's
+		local pick = random:nextNumber() < plan.plainWalls and not wall
+		if pick and plan.teachHoles and firstStretch[cell] then
+			pick = false
+		end
+		if pick then
+			picked[#slots + 1] = true
+		end
 		table.insert(slots, {
-			kind = if wall or random:nextNumber() < plan.plainWalls then "Wall" else "Unit",
+			kind = if wall or pick then "Wall" else "Unit",
 			size = size,
 			x = x,
 			z = z,
 			facing = facing % 4,
 			cell = cell,
 			drops = {},
+			top = false,
 		})
 	end
 	for index, c in cells do
@@ -450,6 +610,9 @@ function Floor.generate(number: number, random: Random): Floor
 				local corners = backCornerAt(c.turn) or backCornerAt(c.turn + 2)
 				local small = if corners then BACK_CORNER_SMALL else plan.smallRows
 				local size: Size = if random:nextNumber() < small then "S" else "M"
+				if corners and plan.teachHoles and firstStretch[index] then
+					size = "S" -- three small units side by side, none of them walled
+				end
 				local sx, sz = dir(side)
 				for _, along in ROW[size] do
 					local backCorner = size == "M"
@@ -466,6 +629,28 @@ function Floor.generate(number: number, random: Random): Floor
 			end
 		end
 	end
+	-- What stands past each slot's walls. A plain wall picked at random never leaves a unit beside
+	-- it with no neighbour to crawl to: it stays a unit instead.
+	findNeighbours(slots)
+	local function cutOff(i: number): boolean
+		for _, j in { slots[i].left, slots[i].right, slots[i].back } do
+			if j and slots[j].kind == "Unit" then
+				return false
+			end
+		end
+		return true
+	end
+	for i, s in slots do
+		if picked[i] then
+			for _, j in { s.left, s.right, s.back } do
+				if j and slots[j].kind == "Unit" and cutOff(j) then
+					s.kind = "Unit"
+					break
+				end
+			end
+		end
+	end
+
 	-- A floor's numbers have two digits after the floor's (MAX_UNITS): past that, units picked at
 	-- random become plain walls. The plans keep this rare (tests/floor.spec counts).
 	local units = {}
@@ -505,23 +690,12 @@ function Floor.generate(number: number, random: Random): Floor
 	end
 
 	-- 5. Walk out from the lobby: number the units as you meet them, and zone the lights.
-	local lobby = at[key(0, 0)]
 	local slotsOf: { { number } } = {}
 	for i in cells do
 		slotsOf[i] = {}
 	end
 	for i, s in slots do
 		table.insert(slotsOf[s.cell], i)
-	end
-	-- the ways on from a piece, walking `walk`: left, ahead, right
-	local function waysOn(c: Cell, walk: number): { number }
-		local ways = {}
-		for _, d in { walk + 3, walk, walk + 1 } do
-			if c.arms[d % 4 + 1] then
-				table.insert(ways, d % 4)
-			end
-		end
-		return ways
 	end
 	local nextNumber = 1
 	local visited: { [number]: boolean } = {}
@@ -559,24 +733,12 @@ function Floor.generate(number: number, random: Random): Floor
 
 	-- The zones: from the lobby to the first fork is "Lobby"; past it, each way on is a wing.
 	local zoneOf: { [number]: string } = {}
-	local index, walk = lobby, 3
-	while true do
-		zoneOf[index] = "Lobby"
-		local c = cells[index]
-		local ways = waysOn(c, walk)
-		if c.kind ~= "Lobby" and #ways ~= 1 then
-			break
-		end
-		local n = neighbour(c, ways[1])
-		if not n then
-			break
-		end
-		index, walk = at[key(n.gx, n.gz)], ways[1]
+	for i in firstStretch do
+		zoneOf[i] = "Lobby"
 	end
 	local queue: { number } = {}
-	local fork = cells[index]
-	for w, d in waysOn(fork, walk) do
-		local n = neighbour(fork, d)
+	for w, d in waysOn(cells[fork], forkWalk) do
+		local n = neighbour(cells[fork], d)
 		local ni = n and at[key(n.gx, n.gz)]
 		if ni and not zoneOf[ni] then
 			zoneOf[ni] = string.char(64 + w)
@@ -629,6 +791,9 @@ function Floor.generate(number: number, random: Random): Floor
 		end
 	end
 
+	-- 7. The top runs: the rows of tops a ladder reaches.
+	local runs = findRuns(slots)
+
 	return {
 		number = number,
 		paint = Floor.Paints[(number - 1) % #Floor.Paints + 1],
@@ -637,15 +802,33 @@ function Floor.generate(number: number, random: Random): Floor
 		slots = slots,
 		fixtures = fixtures,
 		deadEnds = deadEnds,
+		runs = runs,
 		lobby = lobby,
 	}
 end
 
+-- The units a crawl hole from slot `index` can lead into: its neighbours that are units.
+function Floor.crawlsTo(floor: Floor, index: number): { number }
+	local s = floor.slots[index]
+	local into = {}
+	for _, j in { s.left, s.right, s.back } do
+		if j and floor.slots[j].kind == "Unit" then
+			table.insert(into, j)
+		end
+	end
+	return into
+end
+
 --[[
 	The floor as a small text map, seen from above (+X to the right, +Z down the page), 4 studs a
-	column and 8 a line: for the owner to judge a layout, and for Output while L-01b lays one.
+	column and 8 a line: for the owner to judge a layout, and for Output while L-01b lays one. Two
+	views: "units" (the default) shows each unit's size, a unit no crawl hole leads from as x;
+	"tops" shows each top run in a letter of its own, capital over a unit and small over a plain
+	wall's lid, so a run reads as one letter along its row.
 ]]
-function Floor.map(floor: Floor): string
+export type MapView = "units" | "tops"
+function Floor.map(floor: Floor, view: MapView?): string
+	local tops = view == "tops"
 	local minX, maxX, minZ, maxZ = math.huge, -math.huge, math.huge, -math.huge
 	for _, c in floor.cells do
 		minX, maxX = math.min(minX, c.x - SPAN / 2), math.max(maxX, c.x + SPAN / 2)
@@ -702,9 +885,12 @@ function Floor.map(floor: Floor): string
 			end
 		end
 	end
-	for _, s in floor.slots do
+	for i, s in floor.slots do
 		local x0, x1, z0, z1 = Floor.footprint(s)
-		if s.kind == "Wall" then
+		if tops and s.run then
+			local letter = string.char(65 + (s.run - 1) % 26)
+			fill(x0, x1, z0, z1, if s.kind == "Unit" then letter else string.lower(letter))
+		elseif s.kind == "Wall" then
 			-- a plain wall is its face: the first character behind it
 			local fx, fz = dir(s.facing)
 			local bx, bz = s.x - fx * 4, s.z - fz * 8
@@ -714,6 +900,10 @@ function Floor.map(floor: Floor): string
 				fill(x0, x1, math.min(s.z, bz), math.max(s.z, bz), "#")
 			end
 		else
+			if not tops and #Floor.crawlsTo(floor, i) == 0 then
+				fill(x0, x1, z0, z1, "x")
+				continue
+			end
 			-- neighbours alternate case so each unit reads on its own
 			local ax, az = dir(s.facing + 1)
 			local along = s.x * math.abs(ax) + s.z * math.abs(az)
@@ -726,7 +916,9 @@ function Floor.map(floor: Floor): string
 		mark(e.x - fx * 2, e.z - fz * 4, if fx ~= 0 then "|" else "-")
 	end
 	for _, f in floor.fixtures do
-		mark(f.x, f.z, "*")
+		if not tops then
+			mark(f.x, f.z, "*")
+		end
 	end
 
 	local lines = {}

@@ -39,14 +39,12 @@ nowhere else.
 
 ## Decide: moving between units, and the map (your note, Nov 7)
 
-- [ ] **Where a saw hole and a ladder can go** (L-01d, the next ticket). Today a row's units share
-  side walls, so a crawl hole between neighbours works (the GDD's hole trap). But behind each row
-  there's a 16-stud empty gap before the next hall's row, so a hole through a back wall, or a run
-  across the unit tops, leads nowhere. Default: holes only between side-by-side neighbours, tops
-  run along a row, and every floor gets enough neighbour pairs (floors 1 and 2 teach the hole trap
-  near the lobby). The alternative: put the rows back to back (deeper units, or halls closer
-  together), so a hole or a top run crosses to the next hall, a shortcut keepers can't take, like
-  Among Us's vents. Bigger change; say if you want it.
+- [ ] **Where a saw hole and a ladder can go** (built Nov 7 on the default, L-01d): a crawl hole
+  only into the unit beside you, and the tops run along a row (D-031). Behind each row is a
+  16-stud gap before the next hall's row, so a hole through a back wall or a run across to the
+  next hall goes nowhere. The alternative: rows back to back (deeper units, or halls closer), so a
+  hole or a top run crosses to the next hall, a shortcut keepers can't take, like Among Us's
+  vents. Bigger change; say if you want it.
 - [ ] **The map** (L-10, after the elevator): a map you open with a button that fills in only the
   halls you've walked (R.E.P.O.'s map does this), with the lobby and elevator always on it, never
   keepers (that stays the office light board's job). Default: your friends show on it as dots, as
@@ -56,6 +54,22 @@ nowhere else.
   would sit on every shut door for a tool few carry. The padlock tool will lock a door when it's
   built. Bolt cutters' Cut does show on every padlocked door and says "Need bolt cutters" without
   them. Say if you want either the other way.
+
+## Now: judge L-01d, where the hole trap and the tops fit (built Nov 7)
+
+- [ ] **Read a few floors' maps:** in a terminal at the project, run `lune run scripts/floor-map 7 3`,
+  then `lune run scripts/floor-map 3 1` and a few seeds of your own. The first map now marks a
+  unit no crawl hole leads from as `x` (it stands between plain walls, a dead end or the lobby);
+  the second, "The tops", draws each run along the unit tops in a letter of its own, capital over
+  a unit and small over a plain wall's lid. Look for: a pair of neighbours to saw between in the
+  first hall out of the lobby on floors 1 and 2; runs long enough to lose a keeper on (most are
+  48 studs, two straights; the longest on a floor usually 100 to 150); few `x`.
+- [ ] **The numbers over 400 seeds** (`lune run scripts/floor-survey`): every floor has 36 crawl
+  pairs or more (about 50 on floors 1 and 2, 64 above); floors 1 and 2 have 4 or more on the
+  way out of the lobby and no unit cut off; full floors at most 2 cut off, both in the lobby's own
+  hall. Plain walls are rarer than before (a random one that would strand a unit stays a unit),
+  so floors 1 and 2 have about 4 more units (63 in the middle) and full floors 2 more (82). Say
+  if you want more blank walls back, or more cut-off units as places to get cornered.
 
 ## Now: judge L-01a, the floor layouts (built Nov 7)
 

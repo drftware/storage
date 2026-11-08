@@ -165,20 +165,22 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
   of give against the bolt and Pro Sound Effects "Door Shake 4", with "Padlocked" on the button;
   bolt cutters (held 1 s) take the padlock off. Door events on a Brix Signal with how far each is
   heard. The owner judges the buttons on a phone (`OWNER.md`).
-- [ ] **L-01d The floor laid for the saw and the ladder** (owner, Nov 7: moving between units from
-  inside has to make sense, before the tools are built). Today a row's units share side walls, so
-  a crawl hole works between neighbours, but the rows behind two parallel halls stand 16 studs
-  apart with nothing between, and a plain-wall slot has no floor or top: a hole through a back
-  wall, or a run across the wire tops, dead-ends. In the pure `Floor`: each unit's neighbours (left,
-  right, back: a unit, a plain wall or nothing) and the wire tops as runs a ladder can use; rules
-  so every floor has neighbour pairs for the hole trap near the lobby on floors 1 and 2 (the GDD:
-  they teach it) and few units cut off by plain walls; a plain-wall slot closed on top so a run
-  doesn't drop into it; Lune checks over many seeds; `scripts/floor-map` showing the crawl links
-  and top runs. Waits on the owner's choice in `OWNER.md` (holes only between neighbours, as the
-  GDD's hole trap, or rows back to back so a hole or a top run crosses to the next hall).
+- [x] **L-01d The floor laid for the saw and the ladder.** Done Nov 7 (D-031), on the owner's
+  default: crawl holes only between side-by-side neighbours, tops run along a row. The pure
+  `Floor` knows what stands past each slot's left, right and back walls (a unit, a plain wall or
+  nothing; 4 studs of shared wall at least, `CrawlWidth`) and the floor's top runs (a row's slots
+  side by side; every plain wall in a run with a unit gets a lid). Two rules, from measuring 400
+  seeds: a plain wall picked at random never strands a unit with no neighbour to crawl to; on
+  floors 1 and 2 the hall from the lobby to the first fork has no plain walls and a back-cornered
+  side there is three small units, so 4 or more crawl pairs stand there (the GDD: they teach the
+  hole trap). Every floor has 36 crawl pairs or more; none cut off on floors 1 and 2, at most 2
+  above (the lobby's own hall); runs 24 to 216 studs. `FloorBuilder` lids a plain wall in a run
+  with the unit's own wire top and floor, verified in Studio (9 lids on floor 3, flush with their
+  neighbours' tops). `scripts/floor-map` marks a cut-off unit x and draws the tops;
+  `scripts/floor-survey` measures over many seeds.
 - [ ] **L-04 What's behind the door.** A first director deals each unit's contents on open: a
   find, a note, nothing, or a keeper (GDD "What's behind the door"). Needs find and box props
-  It also decides which doors start padlocked: a laid floor's all start unlocked (L-01c).
+  built first (art, the unit's way), so split it: the props, then the dealing. It also decides which doors start padlocked: a laid floor's all start unlocked (L-01c).
 - [ ] **L-05 Notes, the keypad and the elevator.** The floor's 4-digit code on sticky notes, the
   keypad, the gate that shuts 30 s after the last digit (Dandy's World). Needs the elevator,
   gate, keypad and note art first. Brix: Zone for "aboard", the Clock for the gate's timer.
@@ -211,6 +213,13 @@ hole trap with a dented-door variant; the light board; finds with rarity; your l
 store; Captures. Player data, remotes, telemetry and UI from Brix (ENG-09 to ENG-16). Then soft
 launch.
 
+- **Before the ladder, close a top run's edges** (L-01d). A run's back drops into the 16-stud gap
+  behind its row (no floor, no deck: you'd see the sky between the decks), and a run's end beside
+  a junction drops into the junction's hollow block of wall (floored, 8 by 8, no way out). Close
+  both before a ladder can reach the tops: a panel from each row's back up to the joists, as a
+  plain wall's above its cap, and a lid on each block (an S wire top fits it, and lets a run turn
+  the corner); or make the tops crawl-only. `Floor.runs` lists each run's slots in order.
+
 ## Polish waiting for a slot
 
 - **What a laid floor costs to draw** (L-01c): the whole floor streams in at once, and from its
@@ -220,7 +229,9 @@ launch.
   cheaper unit far off.
 - **The junctions' girder from a unit:** behind a junction's corner block the two halls' decks
   overlap in a 4-stud square, unseen from the halls; a unit's wire top could show it (the floor
-  keeps M units out of those slots; an S row there stops short of it, D-027).
+  keeps M units out of those slots; an S row there stops short of it, D-027). Where both halls'
+  slots there are M plain walls, their two lids cross in that square (L-01d): seen from the tops
+  once the ladder lands.
 - **L units on a floor:** a large unit (20 deep) doesn't fit under a hall's 32-stud span, so the
   floors place none. A dead end's far wall could hold one facing down the hall, under a deck of
   its own (GDD: three sizes).
@@ -261,9 +272,6 @@ Atmosphere effects wait until the loop is solid (owner, Nov 7); the haze stays a
 - Each kit FBX brings its own copy of the unit's texture sets (Concrete, TrimSheet, and now Facade
   and Partition). If texture memory on a low-end phone shows the copies, `prepare` could point the
   kit's SurfaceAppearances at the unit template's maps (plugin security: the command bar can).
-- The slot behind a plain wall is empty, with no floor: unseen from the hall, but from a unit's
-  wire top (the ladder) you could look down into it. When the ladder comes, give it a floor or a
-  closed top.
 - A door answers only when the server's word comes back (a round trip, about 0.1 s on a good
   phone connection). If it feels late, start the motion on the presser's screen at once and let
   the server confirm, as the lights do (D-025) (L-02).

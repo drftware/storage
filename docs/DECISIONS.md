@@ -393,3 +393,25 @@ prompts without a client-side layer; "Need bolt cutters" teaches the tool exists
 vertically (a landscape phone has room across, not down); Lift on T (inside, Lift is the only
 button, so it takes E). Tools are a stand-in: a player's `Carries<Tool>` attribute until Phase 2.
 
+
+## D-031 · 2026-11-07 · Crawl holes between side-by-side units; tops run along a row, plain walls lidded
+Built on the owner's default (their choice is still open in `OWNER.md`): a saw's crawl hole goes
+only into the unit beside you, as the GDD's hole trap, and a ladder's tops run along a row. Rows
+stay where L-01a put them, 16 studs apart back to back, so no unit backs onto another. The pure
+`Floor` records, for every slot, what shares each of its walls (left and right as you face the
+door from the hall, and back): the slot sharing the most of that wall, if at least 4 studs
+(`CrawlWidth`: a 3-stud hole and a stud of wall each side). A run is a row's slots side by side,
+facing the same way; every plain wall in a run that has a unit gets a lid, the unit's own wire top
+and floor (`FloorBuilder`), so a friend running the tops never drops into the empty slot behind a
+plain wall, and looking down through the wires shows an empty unit, not the sky under the building.
+Two rules came from measuring 400 seeds (`scripts/floor-survey`): up to 11 units on a short floor
+had no neighbour to crawl to and 1 short floor in 10 had at most one crawl pair before the first
+fork. So a plain wall picked at random stays a unit if it would strand a unit beside it, and on
+floors 1 and 2 (the plan's `teachHoles`) the hall from the lobby to the first fork has no plain
+walls but a back corner's, and a back-cornered side there is three S units: at least 4 crawl pairs
+on the way out of the lobby, none cut off anywhere on those floors. The random draws are made as
+before even where their answer is ignored, so every other choice of a seed stays the same. Not
+chosen: closing a run's back and its ends at a junction's hollow block (needed before the ladder,
+ROADMAP Phase 2; the deck's 2.8 studs over the tops may make them crawl-only anyway); one lid of the
+two that cross at a back corner where both halls' slots are M walls (the other slot would stay an
+open drop; the two wire grids cross unseen from any hall).
