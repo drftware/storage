@@ -239,6 +239,16 @@ verified: a doc page, Studio, or "untested".
 - **After setting `QualityLevel` from the MCP, wait several seconds before a capture.** At Level01
   the first capture 2.5 s after the switch was black but for the tubes; the next, 20 s later, was
   lit normally.
+- **CollisionFidelity doesn't take from the MCP** (Studio, L-04a, 2026-11-07): `execute_luau` in
+  Edit set it on the imported boxes without an error and it read back `Default`. Set it in the
+  Properties panel. Default on a plain box mesh collides as near enough the box.
+- **The hall light doesn't reach into an open unit** (Studio, L-04a): with the door up and the
+  nearest fixture lit, unit 101's floor and back wall stayed black on the Galaxy A16 view; only the
+  facades either side of the doorway lit. Its contents showed only in a stand-in torch's beam (a
+  client SpotLight at the camera, `docs/art/L-04a-unit-torch.jpg`).
+- **A full FBX of props arrives as one Model of MeshParts** (Studio, L-04a): `Boxes.fbx` gave five
+  MeshParts at their real sizes, each pivot at its Blender origin (the bottom's middle), each
+  turned 135° about Y with the model, each with a SurfaceAppearance in Overlay and no MetalnessMap.
 
 ## Tools
 

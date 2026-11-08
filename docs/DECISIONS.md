@@ -415,3 +415,20 @@ chosen: closing a run's back and its ends at a junction's hollow block (needed b
 ROADMAP Phase 2; the deck's 2.8 studs over the tops may make them crawl-only anyway); one lid of the
 two that cross at a back corner where both halls' slots are M walls (the other slot would stay an
 open drop; the two wire grids cross unseen from any hall).
+
+## D-032 · 2026-11-07 · The moving boxes: real sizes, one Cardboard atlas, faces shared in pairs
+L-04 split in three (boxes, the first finds, the director's dealing) because each prop set is a
+session of its own, built the unit's way. The boxes come first: every unit is full of them, the
+Stack keeper is a pile of them (GDD), and a unit dealt "nothing" is boxes alone. Five boxes at
+U-Haul's real sizes, 10 inches a stud (the unit's 10 feet are 12 studs), so a large box comes to an
+avatar's chest and a wardrobe box looms. Each box is one MeshPart sharing one 1024² Cardboard set
+(colour, normal, roughness; no metalness map). Its faces are packed whole into the atlas, and a
+face's opposite twin wears the same texels seen from outside, so the atlas holds half of each box at
+97 texels a stud, near the unit's walls (128) and door (118); the cost is a box showing the same
+label on both long sides, as people label boxes anyway. The recipe paints in each box's own studs
+and each face's, so the tape, holes and labels sit where they would on that box, and words come
+from a label sheet rendered from Studio's own fonts. Not chosen: a second texture set (twice the
+memory for boxes alone); SurfaceGui labels (one draw call each, on every box of every open unit);
+corrugation at the cut edges (2 texels a flute at this density). Every box of a size looks alike;
+a second set of labels is in ROADMAP's polish list.
+

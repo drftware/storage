@@ -2,60 +2,63 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-07, session 24 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-07, session 25 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-01d is done** (D-031), on the owner's default: crawl holes only between side-by-side units,
-  tops along a row. `Floor` records each slot's `left`, `right` and `back` (the slot sharing at
-  least 4 studs of that wall, `CrawlWidth`) and the floor's `runs` (a row's slots side by side);
-  every plain wall in a run with a unit has `top` set. Rules from 400 seeds: a random plain wall
-  never strands a unit; floors 1 and 2 (`teachHoles`) keep the hall from the lobby to the first
-  fork free of plain walls, three S units on a back-cornered side. Every floor has 36+ crawl
-  pairs; floors 1 and 2 have 4+ before the first fork and none cut off; full floors at most 2.
-- **Lids:** `FloorBuilder` puts the unit template's own wire top and floor (with colliders) over a
-  lidded plain wall's slot. Verified in Studio (Play, server): floor 3 of seed 7 got 9 lids, each
-  at 10.05 and flush with its neighbour's top, Output clean. Not seen on screen: a capture 600
-  studs from the player came back as sky (most likely streaming; `docs/STUDIO.md`).
-- **Maps:** `scripts/floor-map` marks a unit with no crawl neighbour `x` and prints "The tops"
-  (a letter per run); `scripts/floor-survey` prints each measure's spread over many seeds.
-- **L-02's doors** (D-030) are as last session: verified with one player; two players, a phone and
-  a forged press are untested (`OWNER.md`).
-- `rojo serve` runs on port 34872; Studio in Edit, Quality on Automatic, Device Simulator off.
+- **L-04 is split** (ROADMAP): L-04a the moving boxes (done), L-04b the first finds, L-04c the
+  director dealing each unit on open.
+- **L-04a is done** (D-032): five boxes at real moving-box sizes (Small, Medium, Large, Wardrobe,
+  Open with its flaps up), one MeshPart each on one 1024² Cardboard atlas at 97 texels a stud
+  (opposite faces share texels). `art/boxes/` builds them (`scripts/art.sh boxes`: label sheet,
+  bake, FBX, look sheets `art/sheets/boxes-*.png`); asset in `art/boxes/assets.json`. `Boxes`
+  (`src/shared/Boxes`) has `prepare`, `clone` and the generated Specs. Templates are in the place
+  at `ReplicatedStorage.Props.Boxes`, unsaved until the owner saves (`OWNER.md`).
+- **Verified in Studio** (Galaxy A16 view, Play): ten boxes cloned into unit 101 with its door
+  open stand on the floor and read as boxes from the doorway, but only in a stand-in torch
+  (`docs/art/L-04a-unit-torch.jpg`): the hall light stops at the doorway, so under it and in the
+  dark the inside is black. The owner decides how a unit is lit (`OWNER.md`, Decide); the default
+  is a torch every player carries, needed before L-04c. Not checked: Level01 quality, up close.
+- CollisionFidelity can't be set from the MCP; the owner sets it (`OWNER.md`).
+- `rojo serve` runs on port 34872; Studio in Edit, Device Simulator off, Quality on Automatic.
 
-## Next task: L-04 What's behind the door (split it first)
-The moment: the slow, loud open, and not knowing what's in there: a find to grab, a note with a
-digit of the code, nothing, or a keeper standing in the dark. The props come first (real assets).
-1. Owner test results first (`OWNER.md`), and any answer on holes and tops (its "Decide" section).
-2. Read the GDD's "What's behind the door" (only that section; the keepers' table only if it
-   names one that waits in a unit).
-3. Split L-04 in `docs/ROADMAP.md`: L-04a the props a unit's contents are made of (boxes, the
-   finds, whatever the GDD names), built the unit's way; L-04b a first director dealing each
-   unit's contents on open, and which doors start padlocked (`Doors:lock(unit, true)`). The
-   sticky note is L-05's; a keeper in a unit waits on L-06, so L-04b deals "a keeper" as a marker.
-4. Do L-04a: one Blender script per prop set under `art/`, parts UV-mapped to the unit's texture
-   sets where they fit, FBX, a generated Specs module, look sheets; imported and judged at phone
-   size inside an open unit, under the hall light and the dark.
-**Acceptance:** checks green; the props in the place, judged inside a unit in Studio at phone size;
-`OWNER.md` says what to judge and the template paths to save.
-**Read first:** `docs/ROADMAP.md` (L-04, L-05); the GDD's "What's behind the door";
-`art/unit/README.md`; `docs/STUDIO.md` (Blender 5.2 and the FBX recipe); `scripts/art.sh`.
+## Next task: L-04b The first finds
+The moment: the beam finds something on the floor of a dark unit and you want it. Finds are what
+the director deals and what players sell, trade and display (GDD), so they must read on a phone.
+1. Owner test results first (`OWNER.md`), and any answer on light inside a unit (its Decide).
+2. Read the GDD's "Meta: finds" list (sets and the six rarities) and the mimic line under "What's
+   behind the door" (a find with no dust may be a keeper). Only those.
+3. Pick 4 to 6 finds from one set the GDD names (the 1980s bedroom: say a boombox, a cassette,
+   a lava lamp, a rotary phone, a roller skate), each small enough to carry, under ~600
+   triangles, and judged at phone size from a unit's doorway in a torch's beam.
+4. Build them as `art/finds/`, the boxes' way: one spec, one build with stages, one shared
+   texture atlas (copy `art/boxes/build.py`'s Faces, packer and bake; real shapes need more
+   than boxes, so add the helpers you need from `art/unit/geo.py`), dust on what faces up, FBX,
+   a generated Specs module, look sheets.
+5. Upload, insert, `prepare` (a `Finds` module beside `Boxes`), templates at
+   `ReplicatedStorage.Props.Finds`, and judge them on the floor of unit 101 on the Galaxy A16
+   view (the torch stand-in: a client SpotLight at the camera, `docs/STUDIO.md`).
+**Acceptance:** checks green; the finds in the place, judged in a unit at phone size; `OWNER.md`
+says what to judge and the templates to save. Rarity's look only if the GDD names one.
+**Read first:** `docs/ROADMAP.md` (L-04b, L-04c); the GDD's "Meta: finds"; `art/boxes/README.md`;
+`art/boxes/build.py`; `docs/STUDIO.md` (Importing kit pieces); `scripts/art.sh`.
 
 ## Queue (the next run's order, from ROADMAP)
-1. Then L-05 to L-08, and L-10 (the map) after L-05. L-05 adds "flash every light" to
-   `MotionLights` and builds the lobby and elevator where `FloorBuilder`'s stand-in is; L-06's
-   keepers hear doors on `Doors.acted` (each event's `reach`); L-08 lays the next floor during the
-   ride.
+1. L-04c (needs light in a unit first), then L-05 to L-08, and L-10 (the map) after L-05. L-05
+   adds "flash every light" to `MotionLights` and builds the lobby and elevator where
+   `FloorBuilder`'s stand-in is; L-06's keepers hear doors on `Doors.acted` (each event's
+   `reach`); L-08 lays the next floor during the ride.
 2. **Before the ladder** (ROADMAP Phase 2): close a run's back (the 16-stud gap, no floor or deck)
    and its ends at a junction's hollow block; a wire top leaves 2.8 studs under the joists.
-3. **Polish waiting** (ROADMAP): a door answering before the server's word; tool buttons per
-   player; the cutters' snip; a lifted door's grace; a laid floor's draw cost on a phone; the L
-   unit; the bolt and padlock moving; a shut door muffling sounds; a less-shake setting; a sound
-   mix; a lit tube's hum; fading a far pool; the kit's texture copies; cheaper chain links; a red
-   glow round a Seen eye; a haze edge; a client-side door collider; the padlock too small; the
-   cursor hint once ever; the junctions' overlapping decks (and crossing lids) seen from the tops.
+3. **Polish waiting** (ROADMAP): the boxes' second look and the wardrobe's bar; a door answering
+   before the server's word; tool buttons per player; the cutters' snip; a lifted door's grace; a
+   laid floor's draw cost on a phone; the L unit; the bolt and padlock moving; a shut door muffling
+   sounds; a less-shake setting; a sound mix; a lit tube's hum; fading a far pool; the kit's
+   texture copies; cheaper chain links; a red glow round a Seen eye; a haze edge; a client-side
+   door collider; the padlock too small; the cursor hint once ever; the junctions' overlapping
+   decks (and crossing lids) seen from the tops.
 4. Studio traps (docs/STUDIO.md): a prompt triggers from the MCP only while the camera faces it;
-   captures don't draw prompts or far, unstreamed areas; annotate locals and loop variables of
-   another module's string unions.
+   captures don't draw prompts or far, unstreamed areas; standing still lets the hall go dark
+   in 7.5 s, so walk a step before a lit capture; CollisionFidelity won't set from the MCP.
 
 ## Kickoff for the next agent
 ```text

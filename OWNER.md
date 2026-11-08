@@ -9,11 +9,31 @@ nowhere else.
 - [ ] **Save the place** (File > Save to Roblox) after this session (Nov 7): the templates live
   in it: the small unit at `ReplicatedStorage.Units.S` (new this session, beside the `M`), and the
   hall's at `ReplicatedStorage.Corridor`: `Straight`, `Fixture`, `Wall`, `DeadEnd`, `Corner`, `T`,
-  `Cross` and `ShortWall`. Unsaved, the next open loses them: the short hall past the corner
+  `Cross` and `ShortWall`; and the moving boxes at `ReplicatedStorage.Props.Boxes` (new Nov 7,
+  L-04a). Unsaved, the next open loses them: the short hall past the corner
   falls back to plain walls, the hall to plain blocks and bare tubes (Output says which).
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
+
+## Now: judge L-04a, the moving boxes (built Nov 7)
+
+- [ ] **Set the boxes' collision, then save:** select the five boxes in
+  `ReplicatedStorage.Props.Boxes` (Small, Medium, Large, Wardrobe, Open) and set
+  CollisionFidelity to Box (Open to Hull) in Properties; a script from the session couldn't. Then
+  save the place (the "Save the place" step above): unsaved, the boxes are gone next session.
+- [ ] **Judge the look:** `art/sheets/boxes-lineup.png` (all five), `boxes-close.png` (up close),
+  `boxes-unit.png` (stacked at the back of a unit, lit from the hall) and `boxes-unit-dark.png` (in
+  a torch). Then the game's own: `docs/art/L-04a-unit-torch.jpg` is unit 101 from the hall on a
+  Galaxy A16 with ten boxes inside, lit by a stand-in torch. Look for: cardboard you'd know at a
+  glance, sizes that feel real next to you (a large box at chest height, the wardrobe box looming),
+  and labels you'd want to read up close. Say if the boxes should be bigger than life (Roblox
+  props often are) or carry other words (one line each in `art/boxes/spec.py`).
+- [ ] **See them yourself:** Play, then in the Command Bar with the Server view selected run
+  `local S=game.ReplicatedStorage.Shared local f=require(S.StorageUnit).RollUpDoor.frame(workspace.DevCorridor:FindFirstChild("Unit101",true)) for i,n in require(S.Boxes).Names do require(S.Boxes).clone(n, f*CFrame.new(-6+i*2.2,0,9), workspace) end`
+  (the same frame the session's test used), open 101 (E) and walk in. Look for: each box flat on
+  the floor with its words facing the door, nothing floating or sunk, walking into one stopping
+  you at the box, and the words readable up close on a phone view.
 
 ## Now: try L-02, the doors' buttons (built Nov 7)
 
@@ -38,6 +58,13 @@ nowhere else.
   down mid-lift. Then slam the door on your friend: they can always Lift out.
 
 ## Decide: moving between units, and the map (your note, Nov 7)
+
+- [ ] **Light inside an open unit** (found Nov 7, L-04a): the hall light stops at the doorway, so
+  an open unit's floor and back wall stay black and what's in it can't be seen, which kills the
+  open's reveal. Default: every player carries a torch from the start, as R.E.P.O.'s players
+  carry a head lamp, built before the director deals units (L-04c), so a reveal is your beam
+  finding it. The alternative: a unit's own dim bulb that comes on with the door, which costs
+  a light per open unit on a phone and gives away less darkness. Say which.
 
 - [ ] **Where a saw hole and a ladder can go** (built Nov 7 on the default, L-01d): a crawl hole
   only into the unit beside you, and the tops run along a row (D-031). Behind each row is a

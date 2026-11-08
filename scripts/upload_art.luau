@@ -1,7 +1,7 @@
 --!strict
 --[[
 	Sends the game's built art to Roblox through Open Cloud, the way porch-pirates ships its art:
-	no 3D Importer, no clicks. Each FBX in ART (the storage unit, the corridor kit's pieces) becomes
+	no 3D Importer, no clicks. Each FBX in ART (the storage unit, the corridor kit's pieces, the boxes) becomes
 	a Model asset on its first upload; later uploads update it in place, keeping its ID. The FBX's
 	embedded textures arrive as SurfaceAppearances. Records each file's hash and asset ID in its
 	folder's assets.json; a session then inserts the asset in Studio and prepares it
@@ -82,6 +82,12 @@ local ART: { Art } = {
 		path = "art/corridor/out/Corridor_Fixture.fbx",
 		manifest = "art/corridor/assets.json",
 		description = "A storage building's hall light: a strip light on two chains with a motion sensor",
+	},
+	{
+		key = "Boxes",
+		path = "art/boxes/out/Boxes.fbx",
+		manifest = "art/boxes/assets.json",
+		description = "Moving boxes in a self-storage unit: small, medium, large, wardrobe and an opened one",
 	},
 }
 local MODEL: OpenCloud.Kind = { assetType = "Model", contentType = "model/fbx" }

@@ -179,8 +179,24 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
   neighbours' tops). `scripts/floor-map` marks a cut-off unit x and draws the tops;
   `scripts/floor-survey` measures over many seeds.
 - [ ] **L-04 What's behind the door.** A first director deals each unit's contents on open: a
-  find, a note, nothing, or a keeper (GDD "What's behind the door"). Needs find and box props
-  built first (art, the unit's way), so split it: the props, then the dealing. It also decides which doors start padlocked: a laid floor's all start unlocked (L-01c).
+  find, a tool, nothing, or a keeper (GDD "What's behind the door"). Split in three (Nov 7):
+  - [x] **L-04a The moving boxes.** Done Nov 7 (D-032), verified in Studio on the Galaxy A16 view:
+    five boxes at real moving-box sizes (Small, Medium, Large, Wardrobe, and an Open one with its
+    flaps up), one MeshPart each on one Cardboard atlas: kraft board, packing tape lapping the
+    ends, hand holes, the maker's print, marker words, a crushed corner, a water mark, dust.
+    `art/boxes/` (label sheet, bake, FBX, look sheets), `Boxes` (`prepare`, `clone`) and its
+    generated Specs; templates at `ReplicatedStorage.Props.Boxes`. Stacked in unit 101 they read
+    as boxes from the doorway, but only in a torch's beam: the hall light doesn't reach past the
+    doorway, so they're unseen under it and in the dark (`docs/STUDIO.md`).
+  - [ ] **L-04b The first finds.** A handful from one of the GDD's sets (the 1980s bedroom), each
+    one readable on a phone from the doorway, dusty (a mimic has no dust, GDD), and light enough
+    in triangles for a floor of them. Rarity's look (a glint, a colour) only if the GDD names one.
+  - [ ] **L-04c The director deals each unit.** On the open: a find, a tool, nothing, or a keeper
+    (a marker until L-06), the boxes stacked to fit the unit's size; padlocked units get the best
+    finds and the worst odds (GDD), and a laid floor decides which doors start padlocked (they all
+    start unlocked now, L-01c). The sticky note is L-05's. Needs light inside an open unit
+    first: the hall light stops at the doorway (L-04a), so the open's reveal can't be seen. The
+    default is a torch every player carries (`OWNER.md`); it may be its own ticket before this.
 - [ ] **L-05 Notes, the keypad and the elevator.** The floor's 4-digit code on sticky notes, the
   keypad, the gate that shuts 30 s after the last digit (Dandy's World). Needs the elevator,
   gate, keypad and note art first. Brix: Zone for "aboard", the Clock for the gate's timer.
@@ -221,6 +237,10 @@ launch.
   the corner); or make the tops crawl-only. `Floor.runs` lists each run's slots in order.
 
 ## Polish waiting for a slot
+
+- **The boxes' second look** (L-04a): every box of a size looks alike (one atlas). A second label
+  set, or a box turned so another face shows, before a unit holds three of one size side by side.
+- **The wardrobe box's hanging bar** and a lid lifted on the Open box's floor (L-04a).
 
 - **What a laid floor costs to draw** (L-01c): the whole floor streams in at once, and from its
   lobby the main view drew 96,000 triangles (112,000 down an aisle) in 43 draw calls in Studio's

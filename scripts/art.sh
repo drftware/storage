@@ -6,8 +6,20 @@
 #   scripts/art.sh corridor             the corridor kit: FBX, Specs module, look sheets (under a
 #                                       minute; it wears the unit's textures, so build those first)
 #   scripts/art.sh corridor export      just the corridor kit's FBX and Specs module
+#   scripts/art.sh boxes                the moving boxes: labels, their Cardboard bake, FBX, Specs
+#                                       module, look sheets (about 3 minutes)
+#   scripts/art.sh boxes export         just the boxes' FBX and Specs module
 set -euo pipefail
 cd "$(dirname "$0")/.."
+if [ "${1:-}" = "boxes" ]; then
+	shift
+	for st in ${*:-labels textures export renders}; do
+		echo "== boxes $st"
+		blender -b --factory-startup -P art/boxes/build.py -- --stage "$st" 2>&1 \
+			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|atlas|DONE" || true
+	done
+	exit 0
+fi
 if [ "${1:-}" = "corridor" ]; then
 	shift
 	for st in ${*:-export renders}; do
