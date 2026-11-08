@@ -402,3 +402,8 @@ verified: a doc page, Studio, or "untested".
   after the same trip through edit mode (it renumbers some faces' corners).
 - Baking several objects into one image: each object's margin paints over the others' island
   edges, whole small islands included. Bake with margin 0, bake a coverage pass, pad afterwards.
+- **luau-lsp and lists of words** (L-04d): a list annotated `{ Kind }` (Kind a union of string
+  words) hands its loop variable back as plain strings, so indexing a `{ [Kind]: number }` table
+  or assigning to a `Kind` local from it fails strict checks. `Deal` keys its odds tables by
+  `string` and casts the one assignment (`k :: Kind`); `Door` gets away with `:: { Action }`
+  because it never indexes a table by the loop variable.

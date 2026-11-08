@@ -19,6 +19,22 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: read L-04d, the deal (built Nov 8)
+
+- [ ] **Read a few floors' deals:** in a terminal at the project, run `lune run scripts/floor-deal 7 1`,
+  then `lune run scripts/floor-deal 7 6` and seeds of your own (`floor-map` with the same two
+  numbers draws that floor). Each prints the code, the notes (which unit, which digits, which
+  wing), the padlocked doors, and what every door holds as you'd meet them from the lobby. Look
+  for: notes you'd split up to find; tools enough to play with (about 9 on a short floor); keepers
+  rare enough that a door is a gamble, not a trap.
+- [ ] **Decide, defaults in place** (D-038): (1) a door in a calm stretch holds, out of 100: 40
+  nothing, 25 a find, 20 a tool, 10 a keeper asleep, 5 awake (`Deal.Odds`); (2) padlocked: 6 in
+  100 units on floors 1 and 2, 12 above; (3) keepers awake at once from doors: 1 on floors 1 and
+  2, 2 on 3 and 4, 3 above; sleeping ones have no cap, so floor 1 can hold 5 or 6 sleeping
+  Mannequins behind its doors; (4) the lobby's hall on floors 1 and 2 holds no keeper; (5) the
+  bag of tools: two saws, two bolt cutters, two padlocks, one of each other tool, a saw first on
+  floors 1 and 2. Say which to change.
+
 ## Now: judge L-04b, the unit's bulb (built Nov 7)
 
 - [ ] **Judge the shots:** `docs/art/L-04b-open.jpg` is unit 101 opened with the boxes inside, seen
@@ -31,8 +47,9 @@ nowhere else.
 - [ ] **The guard's shadows:** `L-04b-guard-shadows.jpg` is the same unit with the guard's wires
   casting shadows (and the light at 1): six hard black bands across the room, which Roblox can't
   soften. I turned them off. Say if you want that caged look back anyway.
-- [ ] **See and hear it yourself:** Play, put the L-04a boxes in 101 (the Command Bar line under
-  "Now: judge L-04a"), stand at 101 and Open (E). Look and listen for: a click as the door starts
+- [ ] **See and hear it yourself:** Play, put the boxes in 101 (with the Server view selected, run
+  `local S=game.ReplicatedStorage.Shared local f=require(S.StorageUnit).RollUpDoor.frame(workspace.DevCorridor:FindFirstChild("Unit101",true)) for i,n in require(S.Boxes).Names do require(S.Boxes).clone(n, f*CFrame.new(-6+i*2.2,0,9), workspace) end`
+  in the Command Bar), stand at 101 and Open (E). Look and listen for: a click as the door starts
   up, the bulb stuttering on (on, out, on, dim, on within a third of a second), then a faint buzz
   standing in the doorway. Slam (G): the bulb is out on the bang and stays out as the door
   bounces. Peek (Q): a warm band under the door. Do it at Quality Level 01 and 21. Say if the
@@ -44,41 +61,6 @@ nowhere else.
 - [ ] **Several open at once:** open 101 to 104 and walk past them. Only the three nearest throw
   light (the others' bulbs only glow): look for a pool popping on or off as you pass. Read View >
   Render stats with four open.
-
-## Now: judge L-04c, the first finds (built Nov 7, in Studio since L-04c2)
-
-- [ ] **Judge the four finds:** `docs/art/L-04c-finds.jpg` is unit 101 opened, seen from its
-  doorway on a Galaxy A16 by its bulb alone: Level21 left, Level01 right, the Level21 view
-  enlarged below. The four stand among the boxes in the back half of the unit: the teddy on a
-  box, the boombox on the floor, the TV on a box, the skates in front. `art/sheets/finds-*.png`
-  is the Blender look. Look for: each plain for what it is (a boombox, a TV, a teddy, roller
-  skates), dusty and worn but worth taking. The skates were re-posed this session: the fallen one
-  hid the other's wheels from the door, so it now lies in front with its wheels to you. Say if any
-  should be swapped for another 1980s bedroom thing.
-- [ ] **See them yourself:** Play, then in the Command Bar with the Server view selected run the
-  boxes line under "Now: judge L-04a", then
-  `local S=game.ReplicatedStorage.Shared local F=require(S.Finds) local f=require(S.StorageUnit).RollUpDoor.frame(workspace.DevCorridor:FindFirstChild("Unit101",true)) for i,n in F.Names do F.clone(n, f*CFrame.new(5-i*2.2,0,7.2), workspace) end`.
-  Open 101 (E), look in from the doorway, then walk in. Look for: each find flat on the floor with
-  its front to the door, nothing floating or sunk, walking into one stopping you at it, and the
-  dust on their tops up close. Try Quality Level 01 and 21.
-- [ ] **The rest of the bedroom set:** the GDD names the set, not its pieces. Default for the next
-  ones, about eight in all: an electric guitar, a lava lamp, a shoebox of mixtapes, a desk phone,
-  and the display piece a finished set unlocks. Say if you'd rather other things.
-
-## Now: judge L-04a, the moving boxes (built Nov 7)
-
-- [ ] **Judge the look:** `art/sheets/boxes-lineup.png` (all five), `boxes-close.png` (up close),
-  `boxes-unit.png` (stacked at the back of a unit, lit from the hall) and `boxes-unit-dark.png` (in
-  a torch). Then the game's own: `docs/art/L-04a-unit-torch.jpg` is unit 101 from the hall on a
-  Galaxy A16 with ten boxes inside, lit by a stand-in torch. Look for: cardboard you'd know at a
-  glance, sizes that feel real next to you (a large box at chest height, the wardrobe box looming),
-  and labels you'd want to read up close. Say if the boxes should be bigger than life (Roblox
-  props often are) or carry other words (one line each in `art/boxes/spec.py`).
-- [ ] **See them yourself:** Play, then in the Command Bar with the Server view selected run
-  `local S=game.ReplicatedStorage.Shared local f=require(S.StorageUnit).RollUpDoor.frame(workspace.DevCorridor:FindFirstChild("Unit101",true)) for i,n in require(S.Boxes).Names do require(S.Boxes).clone(n, f*CFrame.new(-6+i*2.2,0,9), workspace) end`
-  (the same frame the session's test used), open 101 (E) and walk in. Look for: each box flat on
-  the floor with its words facing the door, nothing floating or sunk, walking into one stopping
-  you at the box, and the words readable up close on a phone view.
 
 ## Now: try L-02, the doors' buttons (built Nov 7)
 

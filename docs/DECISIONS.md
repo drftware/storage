@@ -489,3 +489,36 @@ wheels to the door, the shape that says roller skate at 30 pixels. The pair is p
 bake, so the atlas didn't change. Not chosen: a brighter bulb (L-04b tuned it for dread, and the
 owner judges it); a glint or rim light on finds (no hit-game precedent named; a mimic's clean look
 is the tell, D-035); bigger-than-life finds (they match the boxes' real sizes).
+
+## D-037 · 2026-11-08 · The loop first: every tool that works on any keeper moves into Phase 1
+The owner judged the finds and boxes good, and set the order: an entity on the floor and the loop
+proved fun (being chased, finding the code and tools, trapping keepers, slipping between units
+from inside) before more polish. The props only dress a unit; finds are the run's payout and the
+collection (GDD "Meta"), which the GDD's own build order already left to its second step. So
+Phase 1 now holds the flashlight, the saw and the hole trap, the ladder (with closing the tops'
+edges), bolt cutters, the padlock, bubble wrap, the air horn, the moving blanket and glow sticks
+(L-11 to L-14), and the GDD's build order says the same (edited that day). Keeper-specific tools
+(mothballs, the box cutter) stay with their keepers, the dolly with the finds. The Mannequin
+splits: its art (L-06a) goes now, its chase (L-06b) waits on Brix's ENG-06 and ENG-07 and moves up
+when they land. Where a unit's boxes and find stand, and carrying finds out, moved to Phase 2.
+
+## D-038 · 2026-11-08 · The deal: notes and padlocks when the floor is laid, the rest on the first lift
+`Deal` splits the GDD's "What's behind the door" in two. When a floor is laid: the code, its notes
+(two with two digits each on floors 1 and 2, four with one above), placed one to each wing in turn
+(the zones past the first fork) so a team splits up, at least 48 studs apart where any room
+allows (it held on all 600 test floors), as DOORS spreads its door-50 code through the library;
+the padlocked doors (6 in 100 units on floors 1 and 2, 12 above), never in the lobby's hall, and
+from floor 6 the first note behind one. When a door first lifts (a peek or an open), the director
+deals: nothing, a find, a tool, or a keeper asleep or awake, by its mood (Build 40/25/20/10/5,
+Peak and Relief wake nothing), times the padlock's (more finds and keepers, rarely empty, as
+Escape from Tarkov's locked rooms hold its best loot), the awake share turning asleep at the
+floor's cap (1 on floors 1 and 2, 2 on 3 and 4, 3 above, as Left 4 Dead caps its specials). Each
+unit's roll is drawn when the floor is laid, so a seed deals a unit the same kind of thing in the
+same mood whatever order doors open in. Tools come out of a shuffled bag of 11 (two saws, bolt
+cutters and padlocks, one of each other tool), as Tetris deals its pieces, so none goes missing
+for long. Floors 1 and 2 teach: the bag's first tool is a saw and the lobby's hall deals no
+keepers. A floor with no fork (about 1 in 50) counts its first 8 doors as the lobby's hall. Not
+chosen: one random stream for everything (the order of opens would change every kind); notes at
+random with spacing alone (all four could land in one wing); a cap on sleeping keepers (the GDD
+caps only awake ones; the owner judges the count from `scripts/floor-deal`). Fake notes wait for
+Phase 2's floors.

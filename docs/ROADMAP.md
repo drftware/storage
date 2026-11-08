@@ -135,6 +135,13 @@ locking doors looks, sounds and blocks right for both of them, at phone size, wi
 
 Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtests.
 
+The loop comes first (owner, 2026-11-08): being chased, searching for the code and the tools,
+trapping keepers, slipping between units from inside. So every tool that works on any keeper is
+built here (the GDD's build order moved them into its first step the same day), and what only
+dresses a unit (where the finds and boxes stand, more finds, their polish) waits for Phase 2. The
+order puts a keeper on the floor as early as Brix's chase allows: L-06a builds the Mannequin's
+art now, and L-06b moves up the moment Brix's ENG-06 and ENG-07 land.
+
 - [x] **L-01 The floor generator**, in three sessions. **L-01a done Nov 7** (D-027): the floor
   as pure data from a seed (`src/shared/Floor.luau`): halls grown from the lobby on a grid of
   junction points 48 studs apart, so a straight always stands between two junctions; loops
@@ -179,7 +186,7 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
   neighbours' tops). `scripts/floor-map` marks a cut-off unit x and draws the tops;
   `scripts/floor-survey` measures over many seeds.
 - [ ] **L-04 What's behind the door.** A first director deals each unit's contents on open: a
-  find, a tool, nothing, or a keeper (GDD "What's behind the door"). Split in three (Nov 7):
+  find, a tool, nothing, or a keeper (GDD "What's behind the door"). Split Nov 7, reshaped Nov 8:
   - [x] **L-04a The moving boxes.** Done Nov 7 (D-032), verified in Studio on the Galaxy A16 view:
     five boxes at real moving-box sizes (Small, Medium, Large, Wardrobe, and an Open one with its
     flaps up), one MeshPart each on one Cardboard atlas: kraft board, packing tape lapping the
@@ -207,23 +214,54 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
     `ReplicatedStorage.Props.Finds`; judged among 101's boxes from the doorway on the Galaxy A16
     view at Level01 and 21 (`docs/art/L-04c-finds.jpg`). All four read once they stand behind
     the unit's bulb; the skates re-posed so the fallen one lies in front, wheels to the door.
-  - [ ] **L-04d The deal.** Split Nov 7: the rules alone, pure and Lune-tested. From a floor's
-    seed, what each unit holds on the open: a find (which), a tool, nothing, or a keeper; padlocked
-    units get the best finds and the worst odds (GDD); which doors start padlocked (all start
-    unlocked now, L-01c); and where its boxes and find stand for the unit's size, the find deeper
-    than the bulb and facing the door within a small turn (D-036).
-  - [ ] **L-04e The deal on the floor.** The server lays each unit's boxes and find from L-04d on
-    the open (a keeper a marker until L-06) and padlocks the doors it says; judged from doorways on
-    the Galaxy A16 view. The sticky note is L-05's.
-- [ ] **L-05 Notes, the keypad and the elevator.** The floor's 4-digit code on sticky notes, the
-  keypad, the gate that shuts 30 s after the last digit (Dandy's World). Needs the elevator,
-  gate, keypad and note art first. Brix: Zone for "aboard", the Clock for the gate's timer.
-  A wrong code flashes every light on the floor (GDD): add that to `MotionLights` beside `cut`.
-- [ ] **L-06 The Mannequin.** The first keeper, at no more than player speed: a data row on
-  Brix's Pursuit (floor pathing, a cone reach). Needs its model and animations first, and Brix's
-  ENG-06 and ENG-07. Keepers hear a door (the GDD: an open, a slam, a lift from inside) as far as
-  its sound carries: take each action's reach from `DoorSound.Actions`, so what players hear and
-  what keepers hear stay one table.
+  - [x] **L-04d The deal.** Done Nov 8 (D-038), reshaped that day for the loop: the rules alone,
+    pure and Lune-tested (`Deal`, 326,000 checks over 600 floors). When a floor is laid: its code,
+    the notes that carry it (two on floors 1 and 2, four above), one to each wing in turn and 48
+    studs apart, a note behind a padlock from floor 6; and the padlocked doors (6 in 100 units on
+    floors 1 and 2, 12 above), none in the lobby's hall. When a door first lifts: a tool out of a
+    shuffled bag (Tetris; the saw first on floors 1 and 2), nothing, a find, or a keeper asleep or
+    awake, the odds set by the director's mood, worse behind a padlock, never more awake than the
+    floor's cap and no keeper in the lobby's hall on floors 1 and 2. `lune run scripts/floor-deal`
+    prints a floor's deal. Where the boxes and the find stand moved to Phase 2 with the finds.
+- [ ] **L-06a The Mannequin's art.** The first keeper's model and its animations, built the
+  unit's way in Blender: a shop mannequin is jointed rigid parts, so it can be cut to Roblox's
+  R15 body parts and moved by Motor6Ds, no skinning. Its poses and walk, a freeze mid-step, its
+  tell when it moves. Read its row in the GDD's Keepers table first.
+- [ ] **L-05 Notes, the keypad and the elevator.** The floor's 4-digit code on sticky notes laid
+  where L-04d says, the keypad, the gate that shuts 30 s after the last digit (Dandy's World).
+  Needs the elevator, gate, keypad and note art first. Brix: Zone for "aboard", the Clock for the
+  gate's timer. A wrong code flashes every light on the floor (GDD): add that to `MotionLights`
+  beside `cut`.
+- [ ] **L-11 Tools in hand.** You carry two tools plus whatever is in your hands (GDD), as Lethal
+  Company's slots: pick a tool up off a unit's floor, switch, drop, hand one to a friend, each
+  with a phone button. The flashlight everyone carries (signals friends; keepers with eyes see
+  it; freezing the Mannequin lands with L-06b). The bolt cutters and the padlock move off the
+  test post onto it (`Door.Tools`). Each tool's art first. Brix: check for an inventory first.
+- [ ] **L-06b The Mannequin hunts.** At no more than player speed: a data row on Brix's Pursuit
+  (floor pathing, a cone reach), frozen in a flashlight's beam. Needs Brix's ENG-06 and ENG-07.
+  Keepers hear a door (the GDD: an open, a slam, a lift from inside) as far as its sound carries:
+  take each action's reach from `DoorSound.Actions`, so what players hear and what keepers hear
+  stay one table.
+- [ ] **L-04e The deal on the floor.** The server padlocks the doors L-04d says, deals each unit
+  on its first lift (a peek or an open), and lays what it holds: a tool to pick up (L-11), a find,
+  a keeper asleep or awake (L-06b). Judged from doorways on the Galaxy A16 view.
+- [ ] **L-12 The saw and the hole trap.** Saw a crawl hole into the unit beside you (`Floor`'s
+  left and right, D-031); it's loud. Players crawl through, keepers can't. Lead a keeper into a
+  unit, crawl out the hole, run round and slam it in: it dents the door and breaks out after
+  about 90 s, unless the padlock tool locks it in for the floor; the team gets a bonus (GDD "The
+  hole trap"). Art first: the saw, a hole's cut edge, a dented door.
+- [ ] **L-13 The ladder and the tops.** First close a top run's edges: a run's back drops into
+  the 16-stud gap behind its row (no floor, no deck: you'd see the sky between the decks), and a
+  run's end beside a junction drops into the junction's hollow block of wall (floored, 8 by 8, no
+  way out). A panel from each row's back up to the joists, as a plain wall's above its cap, and a
+  lid on each block (an S wire top fits it, and lets a run turn the corner); `Floor.runs` lists
+  each run's slots in order. Then the ladder: lean it on a unit, climb onto the wire tops, run a
+  row while a keeper below loses you. A wire top leaves 2.8 studs under the joists: crawl-only up
+  there, or taller floors (`OWNER.md`).
+- [ ] **L-14 The other tools.** Bubble wrap across a hall (pops for anything that crosses, heard
+  floor-wide), the air horn (lures keepers to a spot, wakes sleeping ones), the moving blanket
+  (thrown over a keeper, blinds it a few seconds), glow sticks (light the building can't see,
+  keepers with eyes can). Each a row on L-11's tools, its art first; may split a tool a session.
 - [ ] **L-07 Getting kept and rescued.** Shrink-wrapped, stored in a random unit, banging to ping
   the team, cut free in a second, padlocked if left too long (GDD "Getting kept").
 - [ ] **L-08 The ride and the next floor.** The elevator ride and a second floor, so the climb is
@@ -242,24 +280,22 @@ Gate 1 (the GDD's): friends ask for another run. The owner judges it in playtest
 ## Phase 2: The rest of the game (GDD build order step 2)
 
 All ten floors with the ride, the stairwell set piece and both boss floors; the director; the
-other keepers; tools (bolt cutters, saw with the crawl-hole wall, ladder onto the wire tops); the
-hole trap with a dented-door variant; the light board; finds with rarity; your lobby unit; the
-store; Captures. Player data, remotes, telemetry and UI from Brix (ENG-09 to ENG-16). Then soft
-launch.
+other keepers and their own tools (mothballs, the box cutter); the dolly; the light board; finds
+with rarity; your lobby unit; the store; Captures. Player data, remotes, telemetry and UI from Brix
+(ENG-09 to ENG-16). Then soft launch.
 
-- **Before the ladder, close a top run's edges** (L-01d). A run's back drops into the 16-stud gap
-  behind its row (no floor, no deck: you'd see the sky between the decks), and a run's end beside
-  a junction drops into the junction's hollow block of wall (floored, 8 by 8, no way out). Close
-  both before a ladder can reach the tops: a panel from each row's back up to the joists, as a
-  plain wall's above its cap, and a lid on each block (an S wire top fits it, and lets a run turn
-  the corner); or make the tops crawl-only. `Floor.runs` lists each run's slots in order.
+- **Finds in a run** (moved from L-04d, Nov 8): where a unit's boxes and its find stand for the
+  unit's size, the find deeper than the bulb and facing the door within a small turn (D-036);
+  carrying finds out to the elevator; padlocked units' finds the best (rarity).
+- **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
 
 - **The finds' printed words** (L-04c): the boombox's badge and "STEREO", the tuner's numbers,
   the TV's channel numbers, from a label sheet the boxes' way.
 - **The bedroom set's other pieces** (L-04c): about four more and the display piece a finished set
-  unlocks (GDD); the owner picks (`OWNER.md`).
+  unlocks (GDD); the owner picks when finds come back in Phase 2. The default: an electric guitar,
+  a lava lamp, a shoebox of mixtapes, a desk phone.
 - **A mimic's clean finds** (L-04c, needed by the mimic): the Bedroom atlas baked again with
   `DUST = 0` (a mimic has no dust, GDD), uploaded as its own maps.
 - **The teddy's fuzz and the atlas's room** (L-04c): a soft fur edge on its outline; 63% of the
