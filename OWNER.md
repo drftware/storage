@@ -22,6 +22,13 @@ nowhere else.
   shut); in Edit, `L-05a2-gate-open.jpg`, `-gate-half.jpg`, `-gate-shut.jpg` and `-note.jpg` (a
   note reading `_ 7 _ _` on a box). Look for: the car the one warm, safe place; the gate reading
   as a folding gate, its lattice shadow on the lobby floor; the note's digits plain.
+- [ ] **The keypad's glow** (your test, Nov 8): it went black because the car's lamp is behind
+  the wall it hangs on, and no hall light reaches that far. It now has a dim red light of its
+  own (`docs/art/L-05a2-keypad-21.jpg`, a stride away at Level 21, after 15 s still). Stand at
+  it 15 s at Level 21: look for the keys readable and a glow round the panel, not a red disc on
+  the wall. Say if it should be brighter, wider or another colour (`Elevator.KeypadGlow`). At
+  Level 01 the wall stays lit and the glow doesn't show (`-keypad-01.jpg`); matching the two is
+  in ROADMAP's polish list. If yours went dark at 01, a screenshot would help: here it didn't.
 - [ ] **Walk it yourself:** Galaxy A16 in the Device Simulator, Play, take "Walk a floor" by the
   spawn, walk across the lobby and into the car, turn and look out; at Quality Level 01 and 21.
   Then, with the Server view selected, run
@@ -31,9 +38,8 @@ nowhere else.
 - [ ] **Decide, defaults in place** (D-041): (1) the lamp lights the lobby only through the
   opening, but its spill fans wide, so the lobby's side walls glow more than on the sheet; say if
   it should be darker (`Elevator.Lamp`, range 22, brightness 1.2, in
-  `src/shared/Elevator/init.luau`); (2) the keypad's red light is too small to see from the hall
-  on a phone, so L-05b will show red dashes on the readout at rest; say if you'd rather the
-  keypad stay dark until someone types.
+  `src/shared/Elevator/init.luau`); (2) the readout shows red dashes at rest (L-05b1), beside
+  the keypad's glow; say if you'd rather it stay dark until someone types.
 
 ## Now: judge L-05a1, the elevator's art (built Nov 8)
 

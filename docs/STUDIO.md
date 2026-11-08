@@ -206,6 +206,10 @@ verified: a doc page, Studio, or "untested".
   switched off and on (Kalam's first use, Edit); later notes drew at once.
 - **Kalam's line is tall for its digits** (L-05a2): `TextScaled` in a short box comes out
   height-limited and small; with no top or bottom padding the width sets the size.
+- **A lamp's shadows settle after a few seconds** (L-05a2, owner's test): the keypad, on the
+  lobby's face of the wall the lamp hangs behind, showed lit just after a teleport and went black
+  once the shadows settled, at Level 21. Judge light after standing still 10 s or more. At
+  Level 01 there are no shadows, so the lamp lit the wall through it and the keypad stayed lit.
 - **The car's lamp lights the lobby only through the opening** (L-05a2): with Shadows on, the
   lattice gate prints on the lobby floor; the light fans wide (the lamp hangs 5.2 behind the
   threshold), so the lobby's side walls catch it from about 5 studs in front of the back wall.

@@ -320,6 +320,10 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 
 ## Polish waiting for a slot
 
+- **Light that matches at every quality** (owner, Nov 8): at Quality Level 01 nothing casts
+  shadows, so the car's lamp lights the lobby's back wall through it and the keypad's red glow
+  doesn't show; at 21 the wall is dark but for the glow (`docs/art/L-05a2-keypad-*.jpg`). Pick
+  one look and make both qualities give it.
 - **A floor dial over the landing** (L-05a1): an arrow dial in the frame's header that swings
   floor to floor during the ride, read from across the lobby, as old elevators' indicators.
 - **A trim sheet for the elevator's big trim** (L-05a1): the car's posts, fascia and boards and the

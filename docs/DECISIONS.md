@@ -569,4 +569,8 @@ elevator streams as one piece (`ModelStreamingMode` Atomic), so a phone never sh
 invisible card over the paper's flat writing area, not on the curled paper's box, at 400 pixels
 a stud, with no padding top or bottom: Kalam's line is tall, so the width sets the size, as on
 the sheets. Not chosen: a light without shadows (it lit the lobby through the car's walls);
-writing on the paper's own face (its box stands 0.12 proud where the foot curls).
+writing on the paper's own face (its box stands 0.12 proud where the foot curls). The keypad
+lights itself (owner's test, Nov 8): it hangs on the lobby's side of the wall, so once the lamp's
+shadows settle no light reaches it and it went black; a small red light just in front of the
+panel (`Elevator.KeypadGlow`, 1.6 studs) makes it the keypad's own glow, the sheets' "red glow"
+seen across the lobby. Not chosen: a landing light (the lobby stays lit only by the car).

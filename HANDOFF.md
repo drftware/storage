@@ -17,6 +17,8 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - **Verified in Studio:** the gate at 0, 0.5 and 1 (Edit), a note `_ 7 _ _` on a box, and on the
   Galaxy A16 from the hall's mouth, at the gate and aboard with the server shutting it to 0.75
   (`docs/art/L-05a2-*.jpg`). Laying floor 3 still peaks at 6.7 ms in a frame (6.2 before).
+- **The keypad lights itself** (owner's test): behind the wall from the lamp, it went black once
+  shadows settled; a red light 0.4 in front of it (`Elevator.KeypadGlow`) is in the template.
 - **Not yet:** the gate has no collider and is laid folded open; nothing writes the readout.
 - **L-05b is split** (ROADMAP): L-05b1 the notes and the keypad, L-05b2 the gate's timer.
 - **Brix's chase isn't ready:** ENG-07a and ENG-07b are still open in `../engine`.

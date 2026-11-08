@@ -29,6 +29,17 @@ Elevator.Lamp = {
 -- eye showed this red stays a clean dot on a phone), and its readout's dark glass at rest.
 Elevator.KeypadLight = Color3.fromRGB(255, 40, 24)
 Elevator.Readout = Color3.fromRGB(46, 8, 8)
+-- The keypad's own red glow. It hangs on the lobby's side of the wall, where the car's lamp
+-- (behind the wall) never reaches once its shadows settle, and no hall light reaches that far, so
+-- without this it goes black. Enough to read the keys up close and to show across the lobby as a
+-- red glow; `Out` is how far in front of the panel it sits (studs), so it lights the keys' faces.
+-- Kept tight: at 2.5 studs it threw a hard red disc across the wall, a spotlight, not a glow.
+Elevator.KeypadGlow = {
+	Colour = Color3.fromRGB(255, 70, 50),
+	Brightness = 1,
+	Range = 1.6,
+	Out = 0.4,
+}
 -- The note's digits: how sharp (pixels a stud: 0.62 studs of writing is 250 pixels across) and
 -- how far off they still draw (a note is read up close; past this it's a yellow square).
 Elevator.NotePixels = 400
@@ -76,6 +87,29 @@ local function gatePartName(i: number): string
 		return "Lead"
 	end
 	return `Strap{i - n}`
+end
+
+-- The keypad's glow (`KeypadGlow`): a light just in front of the panel, in the Keypad part, with
+-- `frame` the elevator's. Part of `prepare`; replaces any glow already there.
+function Elevator.glowKeypad(model: Model, frame: CFrame)
+	local keypad = part(model, "Keypad")
+	local old = keypad:FindFirstChild("Glow")
+	if old then
+		old:Destroy()
+	end
+	local g = Elevator.KeypadGlow
+	local at = Instance.new("Attachment")
+	at.Name = "Glow"
+	at.CFrame = keypad.CFrame:ToObjectSpace(
+		frame * CFrame.new(vec(Specs.Keypad.Centre) + Vector3.new(0, 0, -g.Out))
+	)
+	local light = Instance.new("PointLight")
+	light.Color = g.Colour
+	light.Brightness = g.Brightness
+	light.Range = g.Range
+	light.Shadows = false -- too small to need them; it barely reaches the car's corner post
+	light.Parent = at
+	at.Parent = keypad
 end
 
 -- The import's last step, once, in Edit (CollisionFidelity can't be set while the game runs).
@@ -140,6 +174,7 @@ function Elevator.prepare(model: Model): Model
 	for d = 0, 9 do
 		part(model, `Key{d}`).CastShadow = false
 	end
+	Elevator.glowKeypad(model, frame)
 
 	-- the gate: one picket, the lead and one strap become 85 parts sharing their meshes (one draw)
 	local gate = Instance.new("Folder")
