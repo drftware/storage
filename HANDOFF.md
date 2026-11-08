@@ -10,8 +10,8 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   import with R15's RigAttachments and Motor6Ds; `Mannequin/Pose.luau` (pure, 26,222 Lune checks)
   holds its shop pose and a stop-motion walk a light freezes on a key. In Studio, Motor6Ds pose it
   exactly as the pure maths says, and it reads 30 studs down the hall (`docs/art/L-06a-hall.jpg`).
-- **The template is unsaved:** `ReplicatedStorage.Keepers.Mannequin` lives only in the open place
-  until the owner saves it (`OWNER.md`, first items), with the kit, boxes and finds.
+- **The place is saved** (owner, Nov 8): every template so far, the Mannequin's at
+  `ReplicatedStorage.Keepers.Mannequin`, lives in it (D-009). A new template needs saving again.
 - **Brix's chase isn't ready:** ENG-06a, ENG-06b and ENG-07 are open in `../engine`. L-06b (the
   Mannequin hunts) waits on them; its brief in ROADMAP now says how to drive the body.
 - **L-05 is split** (ROADMAP): L-05a the elevator's art, L-05b the notes, keypad and gate.

@@ -6,16 +6,6 @@ nowhere else.
 ## Now
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
-- [ ] **Save the place** (File > Save to Roblox) after this session (Nov 7): the templates live
-  in it: the units at `ReplicatedStorage.Units` (`M` and `S`); the hall's at
-  `ReplicatedStorage.Corridor`: `Straight`, `Fixture`, `Wall`, `DeadEnd`, `Corner`, `T`, `Cross`,
-  `ShortWall` and `Bulb`, the unit's bulb (L-04b); the moving boxes at
-  `ReplicatedStorage.Props.Boxes` (L-04a); and the bedroom finds at
-  `ReplicatedStorage.Props.Finds`: `Boombox`, `Television`, `Teddy` and `Skates` (new Nov 7,
-  L-04c2), and the Mannequin at
-  `ReplicatedStorage.Keepers.Mannequin` (new Nov 8, L-06a). Unsaved, the next open loses them: the short hall past the corner falls back to plain
-  walls, the hall to plain blocks and bare tubes, the units to no bulb, the finds to nothing
-  (Output says which).
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
