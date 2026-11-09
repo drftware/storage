@@ -10,6 +10,8 @@
 
 		TopHole.saw(unit, at?)  -- on the server: true if it cut one; the swap replicates
 		TopHole.frame(unit)     -- the hole's frame laid on a unit: hole numbers to the world
+		TopHole.cutFrame(unit)  -- the same turned for the saw's line (Sawing.line, Sawing.flat)
+		TopHole.unfallen(hole, rest) -- where a fallen piece was in the top before it fell
 		TopHole.sawn(unit)      -- whether its top is cut already
 		TopHole.prepare(kit)    -- once, in Studio's Edit, on the freshly imported kit
 
@@ -44,6 +46,12 @@ TopHole.Rect = {
 	top = HoleSpecs.Top,
 }
 
+-- The steel round the hole: its middle (sheet and ribs), up from the floor.
+TopHole.SteelMiddle = HoleSpecs.Parts.Top_M.Centre.Y
+
+-- The hole's frame turned so the saw's line is drawn as on a wall: X up, Y across the other way.
+local CUT_TURN = CFrame.fromMatrix(Vector3.zero, Vector3.yAxis, -Vector3.xAxis, Vector3.zAxis)
+
 local function kit(): Model?
 	local props = ReplicatedStorage:FindFirstChild("Props")
 	local found = props and props:FindFirstChild("TopHole")
@@ -77,6 +85,22 @@ function TopHole.frame(unit: Model): CFrame?
 	local channel = (HoleSpecs.Channel :: any)[size] :: number
 	-- the top's own frame is the unit's, its box's middle at the Specs' Centre
 	return top.CFrame * CFrame.new(-row.Centre) * CFrame.new(0, 0, channel)
+end
+
+--[[
+	The hole's frame turned for the saw's line: its origin in the steel's middle above the hole
+	frame's, X up through the steel, Y across the other way (-X), Z back. `Sawing.flat` gives the
+	hole in it, so `Sawing.line` runs round the hole as it runs round a wall's.
+]]
+function TopHole.cutFrame(unit: Model): CFrame?
+	local hole = TopHole.frame(unit)
+	return if hole then hole * CFrame.new(0, TopHole.SteelMiddle, 0) * CUT_TURN else nil
+end
+
+-- Where a piece `saw` laid fallen (the panel, its rim), at `rest` in the world, was in the top
+-- before it fell, `hole` being the hole's frame on its unit.
+function TopHole.unfallen(hole: CFrame, rest: CFrame): CFrame
+	return hole * HoleSpecs.Fall:Inverse() * hole:ToObjectSpace(rest)
 end
 
 function TopHole.sawn(unit: Model): boolean

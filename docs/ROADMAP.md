@@ -465,18 +465,22 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
             model, tagged with its cut time), opens the top's collision round the hole;
             `TopHole.frame(unit)` reads the hole's frame off any unit. Verified in Studio: an M
             and an S cut, looked at from the tops, head over the hole and inside, at phone size.
-          - [ ] **L-13b2d2b The cut.** The Saw button over the hole spot for a crawler lying by
-            it with the saw (D-053's hold, keys, sounds and checks; the server checks you're on
-            that top), the line crawling round the cut, sparks up top; through, the panel drops
-            ten studs and clangs on the floor below, heard floor-wide, `Saws.sawing` for keepers.
-            The drop needs the panel's pose in the top before it fell (the art's `lay`, tilt,
-            slide and turn): export it in `TopHole/Specs` from `art/tophole/build.py`, or start
-            the drop flat in the hole and turn it into its rest on the way down.
+          - [x] **L-13b2d2b The cut.** Done Nov 9 (D-063). A Saw button over every unit's hole
+            spot, only for someone lying up on the tops with a saw: the wall's hold (R/R2, 4 s),
+            sounds and checks in the same `Saws` system, plus up on this unit's top (Ladders) and
+            not lying on the hole ("Move off it"). A thin orange-hot line crawls round the cut on
+            the steel's face from the front edge, sparks rise off the blade, your view buzzes.
+            Through, the panel hangs a beat, drops ten studs at the game's gravity (its pose in
+            the hole from the art's own fall, `TopHole/Specs.Fall`), and lands with a heavy clang
+            heard floor-wide and a jolt. Verified in Studio: a player's lie, hold, let go early,
+            hold through, the line, the drop and the hole, on an M.
           - [ ] **L-13b2d2c The map.** The hole comes off the `Tops` map so nobody crawls over
             it, with a lip like a front's so your head can go out over it and your torch look
             down; the ladder's lying spots that touch it are out (on a small unit the hole
             reaches all three: move them behind it or refuse the ladder there). A lit unit's
             bulb shines up through a sawn top: the one thing that shows it from along the tops.
+            Anyone lying across the hole as it goes through (a friend; the sawer can't) slides
+            off its edge onto the steel, not into the hole: the drop in is L-13b2d3's, pressed.
         - [ ] **L-13b2d3 Drop in, and out again.** Drop in (pressed, as `Tops.drop`): through the
           hole feet first, arms up, a landing crouch inside, heard. The deal keeps the floor
           under every unit's hole clear, as it keeps the wall holes' spots. Out only by an
@@ -513,6 +517,10 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **A top's panel landing** (L-13b2d2b): a puff of dust off the concrete where it lands and a few
+  flakes of rust and paint falling through the hole after it, so someone inside sees it land, not
+  just hears it. And the line's glow lighting the hole's edge from below for anyone inside.
 
 - **The steel bowing under a crawler** (L-13b2c): the sheet you lie on dipping a hair as you pass
   and the lap seam creaking where two sheets meet; and a recording of its own for the pull's

@@ -107,6 +107,59 @@ ok(
 	"every edge cut through"
 )
 
+-- a unit's top (L-13b2d2b): lying on the hole is refused out loud, after the saw's own refusals
+ok(Sawing.decide("Hand", false, false, true).refusal == "Move off it", "lying on it: move off")
+ok(not Sawing.decide("Hand", false, false, true).ok, "lying on it: no cut")
+ok(Sawing.decide("Slot", false, false, true).refusal == "Hold the saw", "the saw comes first")
+ok(Sawing.decide("Hand", true, false, true).refusal == nil, "a holed top: silent")
+ok(Sawing.decide("Hand", false, false, false).ok, "lying beside it: cuts")
+
+-- the line on a flat rectangle: the top's hole (the kit's numbers, D-061), laid in its cut frame
+-- (X up, Y across the other way, Z back), mapped back to across (x = -up) and back (z = along)
+local L, R, F, B = -1.4, 1.4, -0.5, 1.55
+local flat = Sawing.flat(L, R, F, B)
+ok(flat.to - flat.from > 0 and flat.top - flat.bottom > 0, "the flat hole has a size")
+ok(near(flat.top - flat.bottom, R - L) and near(flat.to - flat.from, B - F), "and the hole's size")
+local function onEdge(x: number, z: number): boolean
+	local inX, inZ = x >= L - 1e-6 and x <= R + 1e-6, z >= F - 1e-6 and z <= B + 1e-6
+	return (inX and (near(z, F) or near(z, B))) or (inZ and (near(x, L) or near(x, R)))
+end
+local flatPerimeter = 2 * ((R - L) + (B - F))
+local lastX, lastZ = 0, 0
+local firstLeg = (R - L) / flatPerimeter -- the share of the hold the front edge takes
+for i = 0, steps do
+	local p = i / steps
+	local along, up = Sawing.line(p, flat, drawn)
+	local x, z = -up, along
+	local where = `top at {p}`
+	ok(onEdge(x, z), `{where}: the blade is on the hole's edge`)
+	if p <= firstLeg then
+		ok(near(z, F), `{where}: the front edge first, the one nearest the hall`)
+		ok(near(x, L + (R - L) * p / firstLeg), `{where}: left to right along it`)
+	end
+	if i > 0 then
+		local step = math.abs(x - lastX) + math.abs(z - lastZ)
+		ok(near(step, flatPerimeter / steps), `{where}: the blade moves at one speed`)
+	end
+	lastX, lastZ = x, z
+end
+local fa, fu = Sawing.line(0, flat, drawn)
+ok(near(-fu, L) and near(fa, F), "a top's cut starts at the front edge's left end")
+fa, fu = Sawing.line(1, flat, drawn)
+ok(near(-fu, L) and near(fa, F), "and ends back there")
+
+-- lying on the hole: your middle over it, or within half a body of it
+ok(Sawing.onHole(0, 0.5, L, R, F, B), "your middle over the hole: on it")
+ok(Sawing.onHole(R + Sawing.OffHole - 0.01, 0.5, L, R, F, B), "just past its side: still on it")
+ok(not Sawing.onHole(R + Sawing.OffHole + 0.01, 0.5, L, R, F, B), "beside it: off")
+ok(not Sawing.onHole(0, F - Sawing.OffHole - 0.01, L, R, F, B), "in front of it: off")
+ok(not Sawing.onHole(0, B + Sawing.OffHole + 0.01, L, R, F, B), "behind it: off")
+ok(Sawing.OffHole > 0 and Sawing.OffHole < 1.5, "half a lying body, not a whole one")
+ok(
+	Sawing.DropHeard >= Sawing.ClangHeard,
+	"a panel dropped ten studs is heard further than one tipped"
+)
+
 if failures > 0 then
 	print(`sawing: {failures} of {checks} checks failed`)
 	error("sawing spec failed")

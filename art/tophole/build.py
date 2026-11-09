@@ -378,7 +378,7 @@ def stage_export():
     rows = {name: hb.piece(ob) for name, ob in objs.items()}
     print("FBX", FBX, {n: r["tris"] for n, r in rows.items()})
     os.makedirs(os.path.dirname(SPECS), exist_ok=True)
-    K.write_luau(SPECS, rows)
+    K.write_luau(SPECS, rows, lay())
     print("SPEC", SPECS)
 
 

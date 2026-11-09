@@ -201,9 +201,22 @@ def to_roblox(v):
     return (-v[0], v[2], v[1])
 
 
-def write_luau(path, parts):
+def fall_cframe(m):
+    """A 4x4 transform in the hole's frame (Blender axes, rows of numbers) as a Roblox CFrame's
+    constructor: the same move in Roblox axes. Blender to Roblox is C = (x -> -X, y -> Z, z -> Y),
+    its own inverse, so the turn is C M C and the shift is C t."""
+    c = ((-1, 0, 0), (0, 0, 1), (0, 1, 0))
+    r = [[sum(c[i][a] * m[a][b] * c[b][j] for a in range(3) for b in range(3))
+          for j in range(3)] for i in range(3)]
+    t = to_roblox((m[0][3], m[1][3], m[2][3]))
+    nums = [lua_num(v) for v in t] + [f"{r[i][j]:.6f}" for i in range(3) for j in range(3)]
+    return "CFrame.new(" + ", ".join(n if n != "-0.000000" else "0.000000" for n in nums) + ")"
+
+
+def write_luau(path, parts, fall):
     """parts: {name: dict(size, centre, tris)} in Roblox axes, each in its own frame (a holed
-    top in its unit's, the rest in the hole's)."""
+    top in its unit's, the rest in the hole's). fall: the panel's fall (build.py's `lay`), a 4x4
+    in Blender axes."""
 
     def v3(v):
         return f"Vector3.new({lua_num(v[0])}, {lua_num(v[1])}, {lua_num(v[2])})"
@@ -238,6 +251,10 @@ def write_luau(path, parts):
         f"\tFront = {lua_num(Y0)},",
         f"\tBack = {lua_num(Y1)},",
         f"\tTop = {lua_num(Z_SHEET + RIB + SHEET / 2)}, -- the ribs' top face, up from the floor",
+        "\t-- The cut-out panel's fall, in the hole's frame: from where it was cut, in the top, to",
+        "\t-- where it lies on the floor (propped on the channel's stub, slid aside and turned).",
+        "\t-- Panel and PanelEdge are drawn where it fell; `Fall:Inverse()` puts them in the hole.",
+        f"\tFall = {fall_cframe(fall)},",
         "\tParts = {",
     ]
     for name in sorted(parts):

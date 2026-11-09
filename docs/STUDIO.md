@@ -730,3 +730,13 @@ verified: a doc page, Studio, or "untested".
   is 1.45 studs from it. `Model:ScaleTo` scales parts and attachments' places but leaves a light's
   `Range` alone. `execute_luau` (the MCP) sets the camera back to its own type after each call, so
   a test view must be held by a `BindToRenderStep` at `Camera.Value + 1` (unbind it after).
+
+- **Getting a player up on the tops from the MCP** (Play, L-13b2d2b, 2026-11-09): every press is
+  the prompt's own `InputHoldBegin()`/`InputHoldEnd()` on the Client, on the *nearest* prompt of
+  that name (the test hall and the walked floor both have a Unit 101), with the camera aimed at it
+  first (`CurrentCamera.CFrame = CFrame.lookAt(...)`): a prompt off screen never fires, and Lean
+  sits up at the front's top edge. Order: pick up the ladder (it takes both hands, so the saw
+  can't come first), aim and press Lean at Unit 101 from 2.5 studs out, pick up the saw, stand
+  2.5 studs from Climb and press it; four seconds later you're lying on the top. To catch a held
+  Saw mid-cut in a shot, set that prompt's `HoldDuration` long on the client; the server drops the
+  cut a second after its time, so press again with 4 to go through.

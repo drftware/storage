@@ -13,6 +13,10 @@
 	the bottom, up the far side, and back along the top, as a hand-held saw goes round a square.
 	`line` says how much of each of those four edges is cut at a share of the hold, and where the
 	blade is.
+
+	A unit's top is sawn the same way from lying beside its hole spot (L-13b2d2b, as Rainbow Six
+	Siege's floor hatches): the same hold, sounds and checks, the line laid flat (`flat`) and run
+	round from the front edge, the edge nearest the hall; and you can't saw the steel you lie on.
 ]]
 
 local Sawing = {}
@@ -36,6 +40,11 @@ Sawing.StaleSeconds = 1
 Sawing.Heard = 200
 -- And the panel's clang on the far side.
 Sawing.ClangHeard = 110
+-- A top's panel dropped ten studs onto the concrete: as loud as the saw, the whole floor.
+Sawing.DropHeard = 200
+-- Studs round a top's hole within which a crawler's middle counts as lying on it: half a lying
+-- body's thickness, so you lie beside the hole to cut it, not across it.
+Sawing.OffHole = 0.6
 
 -- On a wall being sawn (the server's, for every screen): the tag, the server time the motor
 -- started, the sawer's UserId, which side of the wall they're on (1 or -1 in the kit's frame's X)
@@ -45,6 +54,8 @@ Sawing.StartAttribute = "SawStart"
 Sawing.ByAttribute = "SawBy"
 Sawing.FromAttribute = "SawFrom"
 Sawing.FrameAttribute = "SawFrame"
+-- What's being sawn ("Wall" or "Top"): a top's line is laid flat round its own hole.
+Sawing.KindAttribute = "SawKind"
 
 -- Your view while you saw: a steady buzz, then a jolt as the panel goes (Shake trauma).
 Sawing.Buzz = 0.28 -- the trauma your view holds while your saw runs: the motor through your arms
@@ -54,22 +65,49 @@ Sawing.JoltReach = 30 -- and beyond which it's gone, as a slammed door's (DoorSo
 
 export type Holding = "Hand" | "Slot" | "None"
 export type Verdict = { ok: boolean, refusal: string? }
+export type Kind = "Wall" | "Top"
 
 --[[
-	Whether a player may start sawing a wall: the saw in their hand, the wall not holed yet, nobody
-	else sawing it. A saw in their other slot gets "Hold the saw"; none at all, "Need a saw" (the
-	button shows only to someone carrying one, so that's a stale press). A holed wall or one being
-	sawn is refused silently: its button is going.
+	Whether a player may start sawing a wall or a top: the saw in their hand, not holed yet, nobody
+	else sawing it, and (a top) not lying on the hole. A saw in their other slot gets "Hold the
+	saw"; none at all, "Need a saw" (the button shows only to someone carrying one, so that's a
+	stale press); lying across the hole, "Move off it". A holed one or one being sawn is refused
+	silently: its button is going.
 ]]
-function Sawing.decide(holding: Holding, holed: boolean, busy: boolean): Verdict
+function Sawing.decide(holding: Holding, holed: boolean, busy: boolean, onHole: boolean?): Verdict
 	if holed or busy then
 		return { ok = false }
 	elseif holding == "Slot" then
 		return { ok = false, refusal = "Hold the saw" }
 	elseif holding == "None" then
 		return { ok = false, refusal = "Need a saw" }
+	elseif onHole then
+		return { ok = false, refusal = "Move off it" }
 	end
 	return { ok = true }
+end
+
+--[[
+	A top's hole, across from `left` to `right` and back from `front` to `back` in its frame (X
+	across, Z back), as `line` cuts it in the top's cut frame (`TopHole.cutFrame`: X up through
+	the steel, Y across the other way, Z back), so the line starts at the front edge's left end and
+	runs along the front first.
+]]
+function Sawing.flat(left: number, right: number, front: number, back: number): Hole
+	return { from = front, to = back, bottom = -right, top = -left }
+end
+
+-- Whether a crawler whose middle is at (x, z) in a top hole's frame lies on the hole.
+function Sawing.onHole(
+	x: number,
+	z: number,
+	left: number,
+	right: number,
+	front: number,
+	back: number
+): boolean
+	local m = Sawing.OffHole
+	return x > left - m and x < right + m and z > front - m and z < back + m
 end
 
 -- How far through the cut a hold is, 0 to 1, `elapsed` seconds in.
@@ -161,6 +199,17 @@ Sawing.Sounds = {
 		pitch = 0.92,
 		near = 8,
 		reach = Sawing.ClangHeard,
+	} :: Sound,
+	-- The same hit, lower and heard floor-wide: a top's panel, heavier with its channel's stub,
+	-- landing from ten studs up
+	Drop = {
+		id = "rbxassetid://9116737135",
+		from = 0.36,
+		length = 1.3,
+		volume = 1,
+		pitch = 0.8,
+		near = 10,
+		reach = Sawing.DropHeard,
 	} :: Sound,
 }
 -- When the motor stops (let go, or through): it winds down this long, dropping to this pitch.

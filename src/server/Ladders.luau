@@ -72,6 +72,8 @@ export type ClimbEvent = {
 
 export type Ladders = Brix.System & {
 	climbed: Brix.Signal<ClimbEvent>,
+	-- whether `player` is lying up on the tops, crawling (not on the rungs or dropping down)
+	crawling: (self: Ladders, player: Player) -> boolean,
 }
 
 type Stand = {
@@ -685,6 +687,11 @@ function Ladders.new(): Ladders
 		name = "Ladders",
 		climbed = climbed,
 	}
+
+	function system.crawling(_: any, player: Player): boolean
+		local c = climbs[player]
+		return c ~= nil and c.move == "Top"
+	end
 
 	function system.start(_: any, context: Brix.Context)
 		-- any: the registry hands back a plain System; Slots fills this slot (init.server)

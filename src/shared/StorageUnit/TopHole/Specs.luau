@@ -25,6 +25,23 @@ return {
 	Front = -0.5,
 	Back = 1.55,
 	Top = 10.142, -- the ribs' top face, up from the floor
+	-- The cut-out panel's fall, in the hole's frame: from where it was cut, in the top, to
+	-- where it lies on the floor (propped on the channel's stub, slid aside and turned).
+	-- Panel and PanelEdge are drawn where it fell; `Fall:Inverse()` puts them in the hole.
+	Fall = CFrame.new(
+		-2.2881,
+		-9.6478,
+		-1.3456,
+		0.981627,
+		0.029945,
+		0.188445,
+		0.000000,
+		0.987609,
+		-0.156935,
+		-0.190809,
+		0.154052,
+		0.969464
+	),
 	Parts = {
 		Edge = {
 			Size = Vector3.new(3.1373, 0.362, 2.4259),

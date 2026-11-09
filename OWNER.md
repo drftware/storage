@@ -20,15 +20,25 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
-## Now: judge L-13b2d2a, the sawn top in the game (built Nov 9; no Saw button yet)
+## Now: judge L-13b2d2b, sawing down through a unit's top (built Nov 9)
 
-- [ ] **See one cut** (Play on a computer). There's no button to saw a top until L-13b2d2b, so cut
-  one by hand: in Play, switch the Command Bar to the server and run
-  `require(game.ReplicatedStorage.Shared.StorageUnit).TopHole.saw(workspace.DevCorridor.Unit101)`.
-  Its door's bulb is off, so open the door, step in and look up: the hole just behind the drum,
-  the channel sawn through, the panel on the floor beside where you'd land. Then lean the ladder,
-  climb and crawl to it: the bright cut and the tongues bent down. Look for: does it read as a way
-  down? (You can crawl over it for now; L-13b2d2c takes the hole off the tops.)
+- [ ] **Saw one** (Play on a computer). In the test hall pick up the ladder, lean it at Unit 101,
+  pick up the saw, climb, and crawl beside the middle of the top just behind the front edge (lying
+  across that spot gets "Move off it"). Turn your torch on. With the saw in hand, hold R (R2) on
+  Saw for four seconds. Look and listen for: the motor and the blade from the first moment, loud;
+  a thin orange-hot line crawling round the cut from the front edge, the blade's bright spot and
+  sparks rising off it; your view buzzing. Then the panel hangs a beat, drops into the unit and
+  lands with a heavy clang and a jolt. Let go early once first: the motor winds down, the line
+  cools, the next try starts over. Then open the door, step in and look up at the hole; the
+  panel lies on the floor beside where you'd land (the bulb's off: your torch). Does it feel like
+  breaking in, and is the four seconds tense rather than slow?
+- [ ] **Watch the panel drop** each time: once in Studio (the first cut of a session) it lay on
+  the floor at once with no fall; every cut after dropped. Say if you see that.
+- [ ] **Phone size** (Device Emulator, a Galaxy A16, the same lie): is the line clear but thin,
+  and is the Saw button easy to hold without catching Drop down at the front's edge?
+- [ ] **Two players:** a friend in the hall, and one inside the unit with the door shut, hear the
+  saw and the clang from where they are and see the line from the tops and the panel fall. A
+  friend lying across the hole when it goes through floats over it until L-13b2d2c.
 - [ ] **Where it is (a default, your call):** one spot per unit, in the middle of its width just
   behind the door's drum, so you land between the door and the bulb facing the room, the door at
   your back (the clear part of a unit; finds stand behind the bulb, D-036). The other choice was

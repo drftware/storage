@@ -1121,3 +1121,27 @@ are one Model (`TopPanel`, primary part the panel) that a screen moves as one wh
 tops and panel take their look from `Units.M.Top` (the top they replace), not the wall. Not
 chosen: one part for the panel (two texture sets can't share a MeshPart); placing the holed top
 from the unit's pivot (the pivot's axes are Blender's, the top's are the game's).
+
+## D-063 Sawing a top: the wall's saw on the tops, a thin line on the steel, the panel dropped (L-13b2d2b, Nov 9)
+A top is sawn by the same `Saws` system and rules as a wall (D-053): a held Saw button (R, R2 on a
+pad, 4 s), loud the whole time (the motor heard 200 studs off), lost if you let go, checked as you
+press and again before it goes through. A wall and a top differ only in where the button is, the
+frame the line is drawn in and what happens at the end, so each place a saw can cut is a job of
+one of two kinds in that system. The top's button sits over the middle of its hole's spot, a
+little above the steel, and only someone lying up on the tops with a saw sees it (the tops'
+buttons tag and the saw's). The server also checks you're crawling (`Ladders:crawling`), over this
+unit's top and above its steel, and not lying on the hole: your middle within 0.6 studs of it gets
+"Move off it" (you can't saw the steel you lie on). The line runs round from the front edge's end,
+the edge nearest the hall, through `Sawing.line` on the hole laid flat (`Sawing.flat`, a frame
+turned so the wall's maths holds). It's a thin bar on the ribs' face, not through the steel as a
+wall's is: lying beside it you look almost along the top, and a line through the steel showed its
+depth as a thick yellow band (Studio). Through, the panel hangs 0.1 s in the hole, drops at the
+game's gravity (about a third of a second for its ten studs), hops a tenth of a stud and settles,
+with the wall's clang pitched lower and heard floor-wide (a sheet with its channel's stub, falling
+ten studs, as loud as the saw) and the same jolt nearby. Where it was in the hole comes from the
+art's own fall exported as `TopHole/Specs.Fall` (`TopHole.unfallen`), so it leaves the hole exactly
+where it was cut and turns into its tilted rest as it nears the floor. `sawing` fires for keepers
+with the kind. Not chosen: a second system for tops (the hold, checks, rate and sounds would be
+copies); starting the drop flat and guessing the turn (the exported fall is exact); the line
+through the steel (the band); the clang at the wall's 110 studs; refusing a cut while a friend
+lies across the hole (L-13b2d2c slides them off instead).
