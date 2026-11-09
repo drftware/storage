@@ -868,3 +868,26 @@ falls away from whoever sawed. The wall's one collision box becomes four round t
 many prebuilt walls, for no gain in play); a hole down to the floor (the bottom track would have
 to be cut, and a saw cuts the sheet above it); a corner pair's two walls (a side against another
 unit's back wall) holed: those stay unsawable, the rarer case, until a floor needs them.
+
+## D-053 Sawing the hole: a four-second hold, loud the whole time, lost if you let go (L-12b2, Nov 9)
+Every two units side by side in a row get a Saw button each side of the wall they share, at the
+hole's front third (`Saws`). It shows only on the screen of someone carrying a saw (either slot):
+a saw in your other slot gets "Hold the saw", as the cutters' "Hold the cutters". Hold it 4 s (R,
+R2 on a pad, the cutters' keys): a held, noisy job, as Dead by Daylight's generators are worked by
+holding and Granny hears every sound you make. The motor (a grinder's whine) and the blade (a cold
+saw grinding pipe) are heard 200 studs off, further than any door (110), and `Saws.sawing` tells
+keepers the same as the motor starts and as the panel falls (L-06b). A bright orange-hot line
+crawls round the cut from its top front corner at one speed (`Sawing.line`, pure, 3,248 Lune
+checks), sparks fly on the sawer's side, the sawer's view buzzes and their saw shakes out at the
+wall. Through, the panel tips over from the hole and slaps flat on the far side with a sheet-metal
+clang that jolts anyone within 30 studs. The server checks the press as Cut's (inside the unit you
+saw from, in reach, the saw in hand, rate) and again before the hole goes through: the hold must
+have run its time (a faked press can't cut early); walk off, switch tools or die and the cut
+stops. Let go early and the cut is lost: the next try starts over (the prompt's own ring restarts,
+and a half-cut wall would need art of its own). The deal keeps tools off both side walls' hole
+spots, and finds and keepers too unless they'd have to stand in front of the bulb (D-036 first):
+in a small unit the hole's stretch is most of the back half, so its finds and keepers mostly
+stand on a spot anyway. Not chosen: progress kept between holds (no partial-cut art; a timer
+restarting is honest); the button shown to everyone (a Saw button in every unit's walls, for a
+tool most players don't carry); a hold under 3 s (the floor barely hears it) or over 5 s (too
+slow to cut one mid-chase for the hole trap).

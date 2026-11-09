@@ -16,6 +16,36 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-12b2, sawing the hole (built Nov 9)
+
+- [ ] **Saw a hole** (Play on a computer). A green saw now lies on the hall floor by the spawn,
+  between the cutters and the padlock: pick it up (E). Open unit 106 (the third door along on 102's
+  side of the hall) and walk to its side wall further from the spawn: a "Saw / Unit 108" button
+  low on the wall, just past the unit's middle. Hold R. Listen: a motor's whine and a
+  blade grinding steel, loud. Look: your saw out at the wall, shaking; a bright orange line
+  crawling down the hole's near side, along the bottom, up and back along the top; sparks; your
+  view buzzing. After 4 s the hole is through and the panel tips over and slaps flat in 108 with
+  a clang. Then hold Saw at 106's other side wall (into 104) and let go after 2 s: the motor winds down
+  and the line fades, no hole. I picked the three sounds by loudness, unheard (`docs/STUDIO.md`):
+  do they sound like a saw and a sheet of steel? Is the line readable, and too yellow or too
+  orange? Is 4 s right?
+- [ ] **The refusals:** with the saw in your other slot (press 2), the Saw button still shows and
+  holding it says "Hold the saw". With no saw, no Saw buttons anywhere. Padlocked 105 and 108
+  can't be walked into, so their walls are sawn from the other side.
+- [ ] **A friend hearing it** (Clients and Servers, 2 players): one saws in 106, the other stands
+  at the far end of the hall and then by the turn: the motor heard from anywhere in the test
+  hall, the clang only nearer; the line and sparks seen through 106's open door; the jolt only
+  close by. Your friend's arm doesn't move yet (ROADMAP polish).
+- [ ] **On the phone** (Galaxy A16, set in Edit first; I couldn't set the simulator from a script
+  this session): is the line readable at arm's length on a phone, and does the Saw button sit
+  where your eye already is when you face the wall?
+- [ ] **Decide, defaults in place** (D-053): (1) a 4 s hold, the cut lost if you let go (or kept,
+  so you can saw in bursts between keepers, as Dead by Daylight's generators keep progress?);
+  (2) the Saw button shows only to someone carrying a saw; (3) the saw heard 200 studs off, the
+  whole floor; (4) in a small unit the hole's stretch is most of the back half, so its finds and
+  keepers stand on a hole spot (the panel would land at their feet); the deal keeps tools off
+  them everywhere. Fine, or move the hole forward in small units?
+
 ## Now: judge L-12b1, the crawl hole (built Nov 9)
 
 - [ ] **Look at the two test holes** (Play on a computer, by the spawn; no saw yet, L-12b2 cuts

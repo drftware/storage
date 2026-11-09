@@ -19,6 +19,7 @@ local HallHaze = require(script.HallHaze)
 local HallLights = require(script.HallLights)
 local KeypadPad = require(script.KeypadPad)
 local NoteView = require(script.NoteView)
+local SawView = require(script.SawView)
 local ToolView = require(script.ToolView)
 local UnitLights = require(script.UnitLights)
 
@@ -41,6 +42,7 @@ local host = Brix.Host.new({
 		{ slot = "noteView", system = NoteView.new() },
 		{ slot = "flashlightView", system = FlashlightView.new() },
 		{ slot = "toolView", system = ToolView.new() },
+		{ slot = "sawView", system = SawView.new(kick) },
 		{ slot = "freeCursor", system = freeCursor },
 		{ slot = "hallHaze", system = HallHaze.new() },
 		{ slot = "cameraShake", system = cameraShake },

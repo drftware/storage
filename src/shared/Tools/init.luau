@@ -34,6 +34,11 @@ Tools.NoticeRemote = "ToolNotice" -- server → client: a short line for your sc
 Tools.HeldName = "HeldTool" -- the model's name in a character's hand
 -- A door's Lock button (Doors): every screen hides it unless a padlock is in that player's hand.
 Tools.LockTag = "PadlockButton"
+-- A wall's Saw button (Saws): every screen hides it unless that player carries a saw.
+Tools.SawTag = "SawButton"
+-- On a button a tool works away from a door (Saws' "Saw"): the action, as `DoorAction` is a door's,
+-- so your view brings the tool out while you hold it.
+Tools.ActionAttribute = "ToolAction"
 
 -- The attribute name for slot `i`.
 function Tools.slotAttribute(i: number): string

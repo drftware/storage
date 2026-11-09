@@ -18,6 +18,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Brix = require(ReplicatedStorage.Brix)
+local CrawlHoleSpecs = require(ReplicatedStorage.Shared.StorageUnit.CrawlHole.Specs)
 local Deal = require(ReplicatedStorage.Shared.Deal)
 local DealSpot = require(ReplicatedStorage.Shared.DealSpot)
 local Doors = require(script.Parent.Doors)
@@ -27,6 +28,13 @@ local NoteSpot = require(ReplicatedStorage.Shared.Elevator.NoteSpot)
 local Slots = require(script.Parent.Slots)
 local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
 local Tools = require(ReplicatedStorage.Shared.Tools)
+
+-- The stretch of each side wall a crawl hole and its fallen panel take, along from the door's
+-- curtain plane (D-052), with a little room either end: nothing is dealt there (DealSpot).
+local HOLE_MARGIN = 0.2
+local PANEL = CrawlHoleSpecs.Parts.Panel_Pos
+local HOLE_FROM = math.min(CrawlHoleSpecs.From, PANEL.Centre.Z - PANEL.Size.Z / 2) - HOLE_MARGIN
+local HOLE_TO = math.max(CrawlHoleSpecs.To, PANEL.Centre.Z + PANEL.Size.Z / 2) + HOLE_MARGIN
 
 export type Dealt = {
 	unit: Model,
@@ -90,8 +98,13 @@ function Deals.new(): Deals
 	): CFrame?
 		local slot = deck.floor.slots[index]
 		local spec = Specs[slot.size]
-		local size: DealSpot.Unit =
-			{ width = spec.Width, depth = spec.Depth, doorWidth = spec.DoorWidth }
+		-- DealSpot's frame is the door's outer face, the curtain plane's in front of it
+		local size: DealSpot.Unit = {
+			width = spec.Width,
+			depth = spec.Depth,
+			doorWidth = spec.DoorWidth,
+			hole = { from = HOLE_FROM + spec.CurtainPlane, to = HOLE_TO + spec.CurtainPlane },
+		}
 		local number = slot.number :: string
 		local note: number? = nil
 		for _, n in deck.notes do

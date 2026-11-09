@@ -368,17 +368,19 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
     in every unit (`crawl_*` in the unit's spec: 3.75 to 6.75 along, 0.3 to 2.9 up). The test
     hall saws 101 into 103 and 104 into 102; judged from both units on the Galaxy A16
     (`docs/art/L-12b1-*.jpg`).
-  - [ ] **L-12b2 Sawing it.** Hold Saw (R, R2 on a pad, as Cut and Lock) inside a unit, near its
-    side wall's hole spot (`CrawlHole.Specs` From/To), where a neighbour in the same row shares
-    the wall (a back corner's side against a back wall stays unsawable): the saw's `use` pose out
-    at the wall, the motor's whine and the blade's chatter, loud, heard floor-wide by keepers
-    (`Doors.acted`'s reach idea), a bright line growing round the cut as you hold, then
-    `CrawlHole.saw` and the panel's clang on the far side. Server-checked like Cut (range, tool in
-    hand, rate). Keep the floor's deal off the hole's spot on both sides (`DealSpot`: a tool or a
-    find can lie where the panel lands or block the crawl).
+  - [x] **L-12b2 Sawing it.** Done Nov 9 (D-053): a Saw button each side of every wall two
+    units in a row share (`Saws`), shown only to someone carrying a saw; hold it 4 s with the saw
+    in hand ("Hold the saw" if it's in your other slot) and the hole goes through. The motor and
+    blade are heard 200 studs off (`Saws.sawing` for keepers), a hot line crawls round the cut
+    with sparks, your view buzzes; the panel tips over and clangs flat on the far side, jolting
+    anyone near (`SawView`). Server-checked like Cut and again before it cuts. The deal keeps off
+    the hole spots (`DealSpot`). A saw lies by the test hall's spawn. Cut 103 into 105, 106 into
+    108 and the small 109 into 111 in Studio; a short hold stops clean.
   - [ ] **L-12b3 Crawling through.** "Crawl through" on both sides of a cut hole takes you through
     it (DOORS' and Pressure's vents): a short crouched move, the camera low, a scrape of steel;
-    keepers can't follow. Drop the test hall's two ready-cut holes once the saw cuts them.
+    keepers can't follow. Drop the test hall's two ready-cut holes once the saw cuts them. A
+    holed wall carries `CrawlHole.Tag` (a screen finds it streaming in); the button can stand
+    where the Saw button stood (`Saws`' spot), each side.
   - [ ] **L-12c The hole trap** (needs L-06b's keepers): slam a keeper in, the dented door, its
     break-out after about 90 s, a padlock keeping it in for the floor, the team's bonus.
 - [ ] **L-13 The ladder and the tops.** First close a top run's edges: a run's back drops into
@@ -432,6 +434,13 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
   its trigger (a quarter second of the motor's whine, quiet) would say "power tool" the moment
   it's in your hand, once L-12b has the motor's sound. Keep it quiet so nobody thinks a keeper
   heard it.
+- **A friend's arm while they saw** (L-12b2): a friend sawing shows the line, the sparks and the
+  sound, but they stand still with the saw at their side; their arm raised to the wall with the
+  saw's blade in the cut (as the torch's raise, `Torch.raise`) would show who's making the noise.
+- **The cut cooling into the edge** (L-12b2): the line fades over 0.6 s as the holed wall swaps
+  in; a quick orange glow on the cut edge's bright strip, cooling to steel, would join them.
+- **Saw dust on the sawer's side** (L-12b2): a little grey dust puffing off the blade with the
+  sparks, settling under the cut (with the filings above).
 - **Your hand on the saw** (L-12a): first person shows the saw alone, low on the left; a hand
   round its rear grip would sell the hold, with the cutters' and the torch's hands.
 

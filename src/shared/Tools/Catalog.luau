@@ -96,10 +96,11 @@ local Catalog: { [string]: Row } = {
 		-- reaching towards the middle of the view
 		hold = { -1.25, -1.1, -2.0 },
 		holdTurn = { -26, 10, 16 },
-		-- out in front of you, blade level and pointing ahead, the shoe towards the wall (L-12b
-		-- hones it once sawing exists)
-		use = { -0.35, -0.8, -1.75 },
-		useTurn = { -6, 2, 6 },
+		-- at the wall while you saw: further out and nearer the middle than its hold, still turned
+		-- in so you see its side, the blade reaching into the wall ahead (straight ahead showed
+		-- only its back end, L-12b2)
+		use = { -0.7, -0.9, -1.85 },
+		useTurn = { -18, 6, 10 },
 		-- by its rear handle, upright, blade forward: carried at the ready by your side
 		inHand = { 0, 0, 0 },
 		-- side on, its sticker to the front, a little from above, the blade to the upper right

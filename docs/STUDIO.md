@@ -65,6 +65,15 @@ verified: a doc page, Studio, or "untested".
 - **Prompts on one point stack** (Play, 2026-11-06): the default UI is a `Prompt` BillboardGui per
   prompt in PlayerGui, 138×72 on touch, with no offset, so prompts sharing an attachment draw on
   top of each other. Space them with `ProximityPrompt.UIOffset` or give each its own point.
+- **Driving a ProximityPrompt from a Client `execute_luau`** (L-12b2): `prompt:InputHoldBegin()`
+  then `InputHoldEnd()` presses it as the player would (a hold prompt runs its HoldDuration, the
+  server gets HoldBegan, Triggered and HoldEnded), but only while the prompt is shown: in first
+  person it isn't unless its point is on screen. Set `CurrentCamera.CameraType` to Scriptable and
+  point it at the prompt first; the Assistant puts the camera back to Custom after the call. A
+  `screen_capture` lands about 0.5 s after the call returns, so return early to catch a hold
+  mid-way.
+- **No Device Simulator from a script:** `game:GetService("StudioDeviceEmulatorService")` is nil
+  in an Edit `execute_luau` (L-12b2), so a phone view needs the Device Simulator set by hand.
 - **Phone in the Device Simulator:** set the device in Edit first, then the orientation (it errors
   with no phone active), then Play. Touch is on: the dynamic thumbstick is the left part of the
   screen (`PlayerGui.TouchGui`), and `user_mouse_input` drags drive it and the look. A
@@ -436,6 +445,13 @@ verified: a doc page, Studio, or "untested".
 - **The command bar caches `require`** (L-11c): after Rojo syncs a module, requiring it from
   `execute_luau` in Edit can still return the old one. Require a clone instead
   (`require(ReplicatedStorage.Shared.Tools:Clone())`), then destroy the clone.
+- **Sounds measured for the saw** (L-12b2; 50 ms bins at half speed, 0.5 s bins at 4x for long
+  ones): "Metal Blade Grind 1" 9116524165 is silent to 0.15 s, spins up to -18 dB by 0.3 s, full
+  (-12 to -6 dB, steady) from 0.8 s to about 14 s. "Cold Saw Humming Whir 2" 9113851035 (36.5 s)
+  grinds loudest at 8 to 11.5 s and steadiest at 16.5 to 20 s (-12 dB). "Metal Lid Drop Hard Lid
+  Close Drops 12" 9116737135 is silent to 0.40 s, one flat hit and rattle at -12 dB to 1.05 s,
+  gone by 1.35 s. "Sheet Metal 2" and "5" (9119068619, 9119068827) are handling and flexing, many
+  bangs: no single clang.
 - **Sounds measured for the padlock** (L-11c; 50 ms bins at half speed): "Scissors Snap 28"
   9118829487 is one snap at 0 s, about -15 dB, 0.47 s long; "Padlock Open Lock Pick Up Throw Down
   1" 9117185722 opens at 0.05 s, locks at 0.40 s, then its pick-up and throw-down run together

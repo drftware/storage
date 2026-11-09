@@ -90,13 +90,33 @@ local function covers(item: Item, spot: DealSpot.Spot, px: number, pz: number): 
 	return math.abs(lx) <= item.size.across / 2 and math.abs(lz) <= item.size.along / 2
 end
 
+-- The stretch of a side wall the crawl hole and its fallen panel take, as Deals works it out:
+-- along from the curtain plane, the hole or the panel's ends, 0.2 more each way.
+local holeText = fs.readFile("src/shared/StorageUnit/CrawlHole/Specs.luau")
+local holeFrom = number(holeText, "\n%s*From = ([%d%.]+)")
+local holeTo = number(holeText, "\n%s*To = ([%d%.]+)")
+local panelZ = number(holeText, "Panel_Pos = {%s*Size = Vector3%.new%([^,]+, [^,]+, ([%d%.]+)%)")
+local panelC = number(
+	holeText,
+	"Panel_Pos = {%s*Size = Vector3%.new%([^)]+%),%s*Centre = Vector3%.new%([^,]+, [^,]+, ([%d%.]+)%)"
+)
+local stretchFrom = math.min(holeFrom, panelC - panelZ / 2) - 0.2
+local stretchTo = math.max(holeTo, panelC + panelZ / 2) + 0.2
+ok(stretchFrom > 3 and stretchTo < 7.5, "the crawl hole's stretch read from its Specs")
+local onHole = { S = 0, M = 0 } :: { [string]: number }
+local laidCount = { S = 0, M = 0 } :: { [string]: number }
+
 for _, size in { "S", "M" } do
 	local spec = fs.readFile(`src/shared/StorageUnit/Specs/{size}.luau`)
+	local plane = number(spec, "\n\tCurtainPlane = ([%d%.]+)")
 	local unit: DealSpot.Unit = {
 		width = number(spec, "\n\tWidth = ([%d%.]+)"),
 		depth = number(spec, "\n\tDepth = ([%d%.]+)"),
 		doorWidth = number(spec, "\n\tDoorWidth = ([%d%.]+)"),
+		hole = { from = stretchFrom + plane, to = stretchTo + plane },
 	}
+	local zones = DealSpot.holes(unit)
+	ok(#zones == 2, `{size}: a hole spot on each side wall`)
 	local side, back = unit.width / 2 - DealSpot.Wall, unit.depth - DealSpot.Wall
 	for _, item in items do
 		local seen: { [string]: boolean } = {}
@@ -131,6 +151,19 @@ for _, size in { "S", "M" } do
 					nearest = math.min(nearest, poly[i + 1])
 				end
 				ok(inside, `{where}: inside the walls`)
+				-- off both side walls' hole spots: always for a tool, and for anything in a
+				-- medium unit; a small unit's find or keeper may stand on one behind the bulb
+				local clear = not DealSpot.near(poly, zones[1], 0)
+					and not DealSpot.near(poly, zones[2], 0)
+				if item.thing ~= "Tool" then
+					laidCount[size] += 1
+					if not clear then
+						onHole[size] += 1
+					end
+				end
+				if item.thing == "Tool" or size == "M" then
+					ok(clear, `{where}: off the crawl hole spots`)
+				end
 				ok(nearest >= DealSpot.Door - 1e-9, `{where}: clear of the door's line`)
 				local farthest = -math.huge
 				for i = 2, #poly, 2 do
@@ -183,10 +216,17 @@ for _, size in { "S", "M" } do
 				end
 			end
 		end
-		ok(distinct >= 12, `{size} {item.name}: varied unit to unit ({distinct} spots)`)
+		-- a small unit's tool keeps off both hole spots, which leaves it the band in front of
+		-- them and the middle: fewer places, still more than a few
+		local least = if size == "S" and item.thing == "Tool" then 8 else 12
+		ok(distinct >= least, `{size} {item.name}: varied unit to unit ({distinct} spots)`)
 	end
 end
 
+-- a small unit is tight: say how often its finds and keepers stand on a hole spot
+print(
+	`dealspot: {onHole.S} of {laidCount.S} small-unit spots on a crawl hole spot (finds, keepers)`
+)
 if failures > 0 then
 	print(`dealspot: {failures} of {checks} checks failed`)
 	error("dealspot spec failed")

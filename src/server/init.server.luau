@@ -13,6 +13,7 @@ local Doors = require(script.Doors)
 local Elevators = require(script.Elevators)
 local Flashlights = require(script.Flashlights)
 local MotionLights = require(script.MotionLights)
+local Saws = require(script.Saws)
 local Slots = require(script.Slots)
 
 local systems: { Brix.HostEntry } = {
@@ -27,6 +28,7 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "slots", system = Slots.new() },
 	-- The deal on the floor: each unit's contents dealt and laid as its door first lifts.
 	{ slot = "deals", system = Deals.new() },
+	{ slot = "saws", system = Saws.new() },
 }
 if RunService:IsStudio() then
 	-- A test hall of real units to try the doors in. Never on a live server.

@@ -64,8 +64,12 @@ local WORK_LINGER = 0.3 -- seconds it stays at the latch after it worked
 local KICK_DECAY = 6 -- of the jerk, a second
 local KICK_PITCH = 9 -- degrees the jerk tips it
 local KICK_PUSH = 0.07 -- studs it pushes forward
--- The door buttons a tool works (`Doors`' `DoorAction`), and the tool each needs in your hand.
-local WORKS: { [string]: string } = { Cut = "BoltCutters", Lock = "Padlock" }
+-- The buttons a tool works (a door's `DoorAction`, a wall's `Tools.ActionAttribute`), and the
+-- tool each needs in your hand.
+local WORKS: { [string]: string } = { Cut = "BoltCutters", Lock = "Padlock", Saw = "Saw" }
+-- While a running saw is out at the wall it shakes in your hand: studs, and how fast it changes.
+local SAW_SHAKE = 0.018
+local SAW_SHAKE_TURN = 0.6 -- degrees
 
 type SlotView = {
 	button: TextButton,
@@ -273,6 +277,7 @@ function ToolView.new(): Brix.System
 	local work = 0
 	local kick = 0
 	local lockReach: { [ProximityPrompt]: number } = {} -- each Lock button's reach from the server
+	local sawReach: { [ProximityPrompt]: number } = {} -- and each wall's Saw button's
 
 	local function alive(): boolean
 		local character = player.Character
@@ -379,6 +384,12 @@ function ToolView.new(): Brix.System
 		local padlock = keys[hand] == "Padlock"
 		for p, reach in lockReach do
 			p.MaxActivationDistance = if padlock then reach else 0
+		end
+		-- a wall's Saw button while you carry a saw in either slot: in the other one, the button
+		-- says "Hold the saw"
+		local saw = table.find(keys, "Saw") ~= nil
+		for p, reach in sawReach do
+			p.MaxActivationDistance = if saw then reach else 0
 		end
 		-- a slot newly filled: name it as it comes into your hand
 		for i = 1, Carry.Slots do
@@ -568,10 +579,20 @@ function ToolView.new(): Brix.System
 		local h = vec(row.hold):Lerp(vec(row.use), w)
 		local t0, t1 = row.holdTurn, row.useTurn
 		local yawT = t0[1] + (t1[1] - t0[1]) * w
-		local pitchT = t0[2] + (t1[2] - t0[2]) * w + KICK_PITCH * kick
+		-- a running saw out at the wall shakes in your hand (its motor; SawView buzzes your view)
+		local buzz, buzzTurn = Vector3.zero, 0
+		if shownKey == "Saw" and working and w > 0.5 then
+			buzz = Vector3.new(
+				(math.random() * 2 - 1) * SAW_SHAKE,
+				(math.random() * 2 - 1) * SAW_SHAKE,
+				0
+			)
+			buzzTurn = (math.random() * 2 - 1) * SAW_SHAKE_TURN
+		end
+		local pitchT = t0[2] + (t1[2] - t0[2]) * w + KICK_PITCH * kick + buzzTurn
 		local rollT = t0[3] + (t1[3] - t0[3]) * w
 		local grip = cam
-			* CFrame.new(h + SWING_FROM * away + Vector3.new(0, 0, -KICK_PUSH * kick))
+			* CFrame.new(h + SWING_FROM * away + Vector3.new(0, 0, -KICK_PUSH * kick) + buzz)
 			-- mirrored: the left hand's sway leans the other way
 			* CFrame.new(-p.x, p.y, p.z)
 			* CFrame.fromEulerAnglesYXZ(
@@ -658,6 +679,7 @@ function ToolView.new(): Brix.System
 		-- the door buttons your tool works: your view follows your hold on them
 		local function works(prompt: ProximityPrompt): boolean
 			local action = prompt:GetAttribute("DoorAction")
+				or prompt:GetAttribute(Tools.ActionAttribute)
 			return type(action) == "string" and WORKS[action] ~= nil and WORKS[action] == heldKey()
 		end
 		table.insert(
@@ -704,6 +726,28 @@ function ToolView.new(): Brix.System
 		)
 		for _, inst in CollectionService:GetTagged(Tools.LockTag) do
 			addLock(inst)
+		end
+		local function addSaw(inst: Instance)
+			if inst:IsA("ProximityPrompt") and sawReach[inst] == nil then
+				sawReach[inst] = inst.MaxActivationDistance
+				if table.find(serverSlots(), "Saw") == nil then
+					inst.MaxActivationDistance = 0
+				end
+			end
+		end
+		table.insert(
+			connections,
+			CollectionService:GetInstanceAddedSignal(Tools.SawTag):Connect(addSaw)
+		)
+		table.insert(
+			connections,
+			CollectionService:GetInstanceRemovedSignal(Tools.SawTag)
+				:Connect(function(inst: Instance)
+					sawReach[inst :: ProximityPrompt] = nil
+				end)
+		)
+		for _, inst in CollectionService:GetTagged(Tools.SawTag) do
+			addSaw(inst)
 		end
 		lastKeys = serverSlots()
 		refresh()
