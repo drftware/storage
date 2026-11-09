@@ -2,49 +2,50 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-09, session 45 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-09, session 46 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-12b3 is done** (D-054): crawling through. `Crawls` (server) puts a Crawl button (E / X)
-  each side of every holed wall (`CrawlHole.Tag`); checks inside, reach, rate, not crawling, the
-  hole free ("Wait for them"); tags the character `Crawling.Tag` with the start and the crawl's
-  frame; puts you through itself if your screen never moved you. `CrawlView` (every screen):
-  your screen moves your body along the path (PlatformStand, the `Crawling` collision group) and
-  your view with your head, handed back where first person sits; everyone's shoulders posed
-  reaching and hauling; a thud, two drags and a steel scrape at the hole. Each Crawl button shows
-  only on your side of its wall. Rules, path and numbers: `CrawlHole/Crawling` (pure,
-  `tests/crawling.spec.luau`). `Crawls.crawled` for keepers (35 studs). The test hall no longer
-  cuts holes as it's laid (`DEV_HOLES` gone): the saw makes them.
-- **Verified in Studio** (Play, a computer view, holes cut by `CrawlHole.saw` from the Server as
-  the saw does): crawled 106 into 108 and back, and the small 109 into 111, standing up 3.6
-  studs past the wall each time; refused from the hall and from a step away; 106's button hidden
-  from inside 108 (the server refused it when it showed, before the fix); the view hands back
-  with no jump; hands on the floor, arms inside the hole (tuck 35 measured held still; the crawls
-  ran at 30); no errors. Screens: the hole's mouth, mid-hole, and an outside view of the body
-  coming through. Not seen: a friend's screen, the phone, the sounds (nobody can listen).
-  Studio left in Edit, Play stopped. No owner results came (the overnight run).
+- **L-13a is done** (D-055): the tops closed. `Floor` (pure) now lists `lids`, an S unit's wire
+  top over every junction corner square a run reaches (blocks of wall, a corner's outside square),
+  so a run turns the corner (`Run.lids`), and `panels`, the kit's plain-wall panel from the cap up
+  through the deck at every other drop off the tops, found as 4-stud stretches and closed line by
+  line (rows' backs, the step beside an 8-deep unit, a run's end at the lobby, a lid over an empty
+  slot); `bare` panels turn their bare sheet and the wall's trim to a pit with no wall of its own.
+  `tests/floor.spec.luau` proves over 400 floors on a 2-stud raster that no edge is left open, no
+  panel blocks the tops or hangs in a hall, none is bare inside a unit. `CorridorKit.panel` lays
+  one (sheet on the face's line, collider cap to deck); `FloorBuilder` lays lids and panels with
+  their hall piece. The tops map shows lids as `=`.
+- **Verified in Studio** (Play, floor 1 of seed 7): 78 panels (19 bare) and 13 lids laid, matching
+  the data; 702 of 702 rays from the tops hit a panel, every lid point lands on a wire top;
+  frictionless blocks slid into every panel and across every lid four ways, none fell. Lit on the
+  client for screenshots: the backs closed to the deck, the step flush, corners closed, through a
+  corner's lid the junction's concrete and sheet walls (it showed the night sky before the bare
+  panels). A standing avatar teleported onto a lid wedges (3.9 studs to the deck), doesn't fall.
+  Laying: 72 ms over 15 frames. Studio left in Edit, Play stopped. No owner results came.
 
-## Next task: L-13a The tops' closed edges
-The moment (for L-13b): a keeper below, you up on the wire tops running a row; first the tops
-must be a place you can't fall off the world from.
+## Next task: L-13b1 The ladder's art, carried and dropped
+The moment (for L-13b2): the team hears a keeper, one friend drags the long ladder to a unit, and
+they go up out of reach. First the ladder must exist and be a heavy, visible thing to carry.
 1. Owner test results first (`OWNER.md`).
-2. Read D-031 (tops run along a row), D-023 (junctions) and how `FloorBuilder` lays a unit's
-   wire top and the gap behind a row.
-3. A panel from each row's back up to the joists (as a plain wall's above its cap), over the
-   16-stud gap behind the row; a lid on each junction's hollow 8-by-8 block (an S wire top fits).
-4. `Floor.runs`: each run's slots in order (pure, Lune-checked), for L-13b's ladder.
-5. Real art only: reuse the unit's and corridor kit's pieces; any new piece is built the unit's
-   way (`art/unit/README.md`).
-**Acceptance:** checks green; in Studio on floor 1, stand on a run's tops (teleport) and find no
-gap to fall through at a row's back or a junction; Lune checks for `Floor.runs`.
-**Read first:** ROADMAP L-13a; DECISIONS D-031 and D-023; `src/server/FloorBuilder.luau` (the
-wire top, grep "WireTop"); `src/shared/Floor.luau` (slots, junctions); `docs/CODEMAP.md` rows
-for FloorBuilder and Floor.
+2. Read the GDD's Tools section (the ladder) only; read how the saw was built and brought in
+   (`art/saw/`, its README, D-051) and its `Tools/Catalog` row.
+3. Build the ladder the unit's way (`art/unit/README.md`): an aluminium extension ladder that
+   leans on a unit's front and reaches the wire top (10 studs), rungs at a real pitch, scuffed
+   rails, its own small texture set or the TrimSheet; FBX, a generated Specs module, look sheets.
+4. Upload (`scripts/upload_art.luau`), insert and prepare it at `ReplicatedStorage.Props.Tools`
+   (the owner saves the place: add it to OWNER.md's save item).
+5. A `Tools/Catalog` row: carried in both hands, low and slow (Lethal Company's extension ladder),
+   laid where the deal puts it, picked up and dropped with its sounds.
+**Acceptance:** checks green; in Studio the ladder lies where dealt and by the spawn, is picked
+up, carried and dropped with sound; judged at phone size (Galaxy A16).
+**Read first:** ROADMAP L-13b1; DECISIONS D-051 (the saw's art) and D-050 (tools on the floor);
+`art/saw/README.md`; `src/shared/Tools/Catalog.luau` (the Saw row); GDD Tools (the ladder).
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-13a, then L-13b (the ladder). L-06b the Mannequin hunts **waits on Brix**: ENG-07a/b (a
-   chase in a place) aren't built, and this repo never edits Brix; a Brix session first. L-12c
-   the hole trap needs L-06b's keepers. Then L-14; then L-07, L-08, L-10, L-09.
+1. L-13b1, then L-13b2 (lean, climb, crawl the tops; default crawl-only, OWNER.md). L-06b the
+   Mannequin hunts **waits on Brix**: ENG-07a/b (a chase in a place) aren't built, and this repo
+   never edits Brix; a Brix session first. L-12c needs L-06b's keepers. Then L-14; L-07, L-08,
+   L-10, L-09.
 2. **Bug, small:** FlashlightView's `motor()` takes only `Motor6D`, but players' shoulders here
    are `AnimationConstraint`s (docs/STUDIO.md), so a friend's torch arm likely never raises.
    Take either, as CrawlView's `joint()`; check with two players.
@@ -55,12 +56,12 @@ for FloorBuilder and Floor.
 5. L-06b's keepers stand at `Deals.dealt`'s place, hear doors on `Doors.acted`, the keypad on
    `Elevators.acted`, a dropped tool on `Slots.changed`, the saw on `Saws.sawing` (200 studs), a
    crawl on `Crawls.crawled` (35); keepers with eyes see a torch (`Flashlights.switched`); a
-   keeper's path must treat a holed wall as solid (the hole is 2.6 tall).
+   keeper's path treats a holed wall as solid; keepers can't reach the tops (`Floor.runs`, lids).
 6. **Check:** Output warns six times per Play, "rbxassetid://203785492 failed: Asset type does
    not match": not in our code; find what asks for it (the place, a plugin).
-7. Studio traps (docs/STUDIO.md): the test hall and the walked floor share unit names (pick by
-   Z); a Client `execute_luau` has its own `require` (edit, sync, Play again); prompts pressed by
-   script need the camera on them, and the Assistant resets a Scriptable camera after each call.
+7. Studio traps (docs/STUDIO.md): the tops are black on screen (light the Client to judge them);
+   the test hall and the walked floor share unit names (pick by Z); physics probes spawned on one
+   spot fling each other.
 
 ## Kickoff for the next agent
 ```text

@@ -5,7 +5,10 @@
 	floor you can walk: CorridorKit's straights, junctions, walls and dead ends; the M and S units
 	from ReplicatedStorage.Units, in the floor's door colour and numbered; and a motion light over
 	every hall piece, in its power zone. A plain wall in a top run gets a lid over the empty slot
-	behind it, the unit's own wire top and floor, so a friend running the tops never drops in. Given
+	behind it, the unit's own wire top and floor, so a friend running the tops never drops in; a
+	junction's square a run reaches gets the S unit's wire top, so the run turns the corner; and
+	the kit's wall panel closes every other edge of the tops up to the deck (`Floor`'s lids and
+	panels, D-055). Given
 	the floor's deal, each unit holding one of the code's notes gets it stuck on its back wall
 	(NoteSpot), and each door the deal padlocked is padlocked, as the unit is laid: the floor
 	arrives that way, without a sound. What's behind each door is dealt when it first lifts (Deals,
@@ -169,16 +172,18 @@ local function faceOf(x: number, z: number, facing: number): CFrame
 end
 
 -- The parts a plain wall's lid is made of: the unit's wire top to run across and its floor, so
--- the empty slot under the wires reads as an empty unit, not the void below the building.
+-- the empty slot under the wires reads as an empty unit, not the void below the building. A
+-- junction's square already has the junction's floor, so its lid is the S unit's wire top alone.
 local LID_PARTS = { "WireTop", "Floor" }
+local SQUARE_LID_PARTS = { "WireTop" }
 local LID_SIZES: { Floor.Size } = { "M", "S" }
 
 --[[
-	A plain wall's lid, made once per size from the unit template's own parts and their colliders,
-	in a door face's frame (a plain wall's frame is a unit's door face): pivot it to the wall's face.
+	A lid of the unit template's own `parts` and their colliders, made once, in a door face's frame
+	(a plain wall's frame is a unit's door face, a junction lid's the same): pivot it to the face.
 	Nil and the missing part's name if the template lacks one.
 ]]
-local function lidOf(template: Model): (Model?, string?)
+local function lidOf(template: Model, parts: { string }): (Model?, string?)
 	local outer = RollUpDoor.frame(template) * CFrame.new(0, 0, -specOf(template).CurtainPlane)
 	local lid = Instance.new("Model")
 	lid.Name = "Lid"
@@ -186,7 +191,7 @@ local function lidOf(template: Model): (Model?, string?)
 	colliders.Name = "Colliders"
 	colliders.Parent = lid
 	local templateColliders = template:FindFirstChild("Colliders")
-	for _, name in LID_PARTS do
+	for _, name in parts do
 		local part = template:FindFirstChild(name, true)
 		local box = templateColliders and templateColliders:FindFirstChild(name)
 		if not (part and part:IsA("BasePart") and box and box:IsA("BasePart")) then
@@ -331,6 +336,9 @@ type Laying = {
 	door: Color3,
 	slots: { [number]: { Floor.Slot } },
 	lids: { [Floor.Size]: Model }, -- a plain wall's lid per size (lidOf), missing if it can't be made
+	squareLid: Model?, -- a junction square's lid, the S unit's wire top (lidOf)
+	squares: { [number]: { Floor.Lid } }, -- each junction's lidded squares
+	panels: { [number]: { Floor.Panel } }, -- the panels closing the tops, by the piece they close
 	deadEnds: { [number]: { Floor.DeadEnd } },
 	fixtures: { [number]: Floor.Fixture },
 	notes: { [Floor.Slot]: string }, -- what the code's note in a unit says, by its slot
@@ -409,6 +417,22 @@ local function piece(laying: Laying, index: number): (Folder, number)
 			end
 		end
 	end
+	-- the tops closed (D-055): a wire top over each of a junction's squares a run reaches, so the run
+	-- goes on round the corner, and a panel wherever stepping off the tops drops into nothing
+	local squareLid = laying.squareLid
+	if squareLid then
+		local squares: { Floor.Lid } = laying.squares[index] or {}
+		for _, l in squares do
+			local copy = squareLid:Clone()
+			copy:PivotTo(origin * faceOf(l.x, l.z, l.facing))
+			copy.Parent = folder
+		end
+	end
+	local panels: { Floor.Panel } = laying.panels[index] or {}
+	for _, p in panels do
+		local name: CorridorKit.PanelName = if p.size == "M" then "Wall" else "ShortWall"
+		CorridorKit.panel(name, origin * faceOf(p.x, p.z, p.facing), folder, p.bare)
+	end
 	local deadEnds: { Floor.DeadEnd } = laying.deadEnds[index] or {}
 	for _, e in deadEnds do
 		CorridorKit.wall("DeadEnd", origin * faceOf(e.x, e.z, e.facing), paint, folder)
@@ -479,6 +503,9 @@ function FloorBuilder.lay(
 		door = (UnitKit.Colours.Door :: { [string]: Color3 })[floor.paint],
 		slots = {},
 		lids = {},
+		squareLid = nil,
+		squares = {},
+		panels = {},
 		deadEnds = {},
 		fixtures = {},
 		notes = {},
@@ -489,7 +516,7 @@ function FloorBuilder.lay(
 	}
 	assert(laying.door, `FloorBuilder: no door colour {floor.paint}`)
 	for _, size: Floor.Size in LID_SIZES do
-		local lid, lacking = lidOf(if size == "S" then units.S else units.M)
+		local lid, lacking = lidOf(if size == "S" then units.S else units.M, LID_PARTS)
 		if lid then
 			laying.lids[size] = lid
 		else
@@ -498,6 +525,24 @@ function FloorBuilder.lay(
 					.. "its plain walls stay open on top: a friend running the tops drops in behind"
 			)
 		end
+	end
+	local squareLid, lacking = lidOf(units.S, SQUARE_LID_PARTS)
+	laying.squareLid = squareLid
+	if not squareLid then
+		warn(
+			`FloorBuilder: ReplicatedStorage.Units.S has no {lacking} with its collider, so the `
+				.. "junctions' squares stay open on top: a friend running the tops drops in at a corner"
+		)
+	end
+	for _, l in floor.lids do
+		local list = laying.squares[l.cell] or {}
+		laying.squares[l.cell] = list
+		table.insert(list, l)
+	end
+	for _, p in floor.panels do
+		local list = laying.panels[p.cell] or {}
+		laying.panels[p.cell] = list
+		table.insert(list, p)
 	end
 	for i, s in floor.slots do
 		laying.indexOf[s] = i

@@ -160,12 +160,50 @@ export type Slot = {
 
 -- A top run: slots side by side in one row, every one closed on top, so a friend up a ladder can
 -- run its length while a keeper below loses them (GDD Tools, the ladder). In order along the
--- row, each slot the one on the previous one's left. A run ends at a junction's block of wall, a
--- dead end or the lobby; its back is the gap behind the row.
+-- row, each slot the one on the previous one's left. A run ends at a junction's lid (and goes on
+-- round the corner across it), a dead end or the lobby; panels close its back and any other drop.
 export type Run = {
 	slots: { number },
 	length: number, -- studs along the row
 	units: number, -- how many of its slots are units
+	lids: { number }, -- the junction lids it reaches, indices into lids: the way round a corner
+}
+
+--[[
+	A lid over one of a junction's hollow squares: the 8-by-8 block of wall between two of its
+	halls, or a corner's outside square behind both its rows. The junction floors it and walls or
+	units close it, so a friend who stepped off a run's end into it could never climb out; an S
+	unit's wire top over it carries the run round the corner instead. Every such square a run
+	reaches gets one. Its frame is a slot's: the middle of one side, looking out of the square,
+	which runs back from it an S unit's depth.
+]]
+export type Lid = {
+	x: number,
+	z: number,
+	facing: number,
+	size: Size, -- always S: the square is an S unit's footprint, so its wire top fits
+	cell: number, -- the junction it's in, an index into cells
+	runs: { number }, -- the top runs that reach it, indices into runs
+}
+
+--[[
+	A panel that closes the tops up to the deck wherever stepping off them would drop you into
+	nothing or into a pit: a row's back over the gap behind it, a deep unit's side beside a shallow
+	one's back, a run's end beside the lobby, a lid's side over an empty slot. It is the plain
+	wall's panel above its cap, an M's or an S's width; where only 4 studs are open it reaches 4
+	on past them into the dark behind the tops, where nobody sees it. Where the tops have no wall
+	of their own under it (a plain wall's lid, a junction's square), it turns its bare sheet to
+	them, down to the floor, as a plain wall does to the empty slot behind it: looking down
+	through the wires shows a wall, not the sky under the building. Its frame is a wall's: the
+	middle of its face, on the floor, looking into the tops it closes.
+]]
+export type Panel = {
+	x: number,
+	z: number,
+	facing: number,
+	size: Size,
+	bare: boolean, -- its bare sheet to the tops, down to the floor: they have no wall of their own
+	cell: number, -- the hall piece whose slot or lid it closes, laid with it
 }
 
 -- A motion light over a hall piece's middle, its hall along `turn`.
@@ -183,6 +221,8 @@ export type Floor = {
 	fixtures: { Fixture },
 	deadEnds: { DeadEnd },
 	runs: { Run },
+	lids: { Lid },
+	panels: { Panel },
 	lobby: number, -- the lobby's index in cells
 }
 
@@ -206,8 +246,12 @@ function Floor.planFor(number: number): Plan
 	return if number <= 2 then Floor.Plans.Short else Floor.Plans.Full
 end
 
--- A slot's footprint on the floor: minX, maxX, minZ, maxZ (a plain wall's is the slot it fills).
-function Floor.footprint(slot: Slot): (number, number, number, number)
+-- Anything laid out from a face like a unit: a slot, a junction's lid.
+export type Placed = { x: number, z: number, facing: number, size: Size }
+
+-- A slot's footprint on the floor: minX, maxX, minZ, maxZ (a plain wall's is the slot it fills;
+-- a lid's the square it covers).
+function Floor.footprint(slot: Placed): (number, number, number, number)
 	local size = Floor.Sizes[slot.size]
 	local fx, fz = dir(slot.facing)
 	-- the footprint runs back from the face, away from the hall
@@ -369,7 +413,7 @@ local function findRuns(slots: { Slot }): { Run }
 		if rightOf[i] then
 			continue -- not a row's right-hand end
 		end
-		local run: Run = { slots = {}, length = 0, units = 0 }
+		local run: Run = { slots = {}, length = 0, units = 0, lids = {} }
 		local at: number? = i
 		while at do
 			table.insert(run.slots, at)
@@ -388,6 +432,293 @@ local function findRuns(slots: { Slot }): { Run }
 		end
 	end
 	return runs
+end
+
+local JUNCTIONS: { [Kind]: boolean } = { Corner = true, T = true, Cross = true }
+
+-- The middle of the square a junction leaves between Dirs a and a + 1 from its middle: 8 studs out
+-- along each, past the hall's half width.
+local function quadrant(c: Cell, a: number): (number, number)
+	local ax, az = dir(a)
+	local bx, bz = dir(a + 1)
+	return c.x + 8 * (ax + bx), c.z + 8 * (az + bz)
+end
+
+--[[
+	Lids every junction square a run reaches (Lid) and tells each run which lids it reaches. Of a
+	junction's four corner squares, those a slot stands in are the slot's; the rest are its blocks
+	of wall and a corner's outside square.
+]]
+local function findLids(cells: { Cell }, slots: { Slot }, runs: { Run }): { Lid }
+	local rects = {}
+	for i, s in slots do
+		rects[i] = { Floor.footprint(s) }
+	end
+	local lids: { Lid } = {}
+	for ci, c in cells do
+		if not JUNCTIONS[c.kind] then
+			continue
+		end
+		for a = 0, 3 do
+			local mx, mz = quadrant(c, a)
+			local square = { mx - 4, mx + 4, mz - 4, mz + 4 }
+			local taken = false
+			local reached: { number } = {}
+			for i, s in slots do
+				local r = rects[i]
+				if
+					r[1] < square[2]
+					and r[2] > square[1]
+					and r[3] < square[4]
+					and r[4] > square[3]
+				then
+					taken = true
+					break
+				end
+				local run = s.run
+				if run and not table.find(reached, run) then
+					for d = 0, 3 do
+						if sharedWall(square, r, d) > 0 then
+							table.insert(reached, run)
+							break
+						end
+					end
+				end
+			end
+			if taken or #reached == 0 then
+				continue
+			end
+			table.sort(reached)
+			-- its frame on the side toward the junction's middle, where a block's kit wall stands
+			local ax, az = dir(a)
+			table.insert(lids, {
+				x = mx - 4 * ax,
+				z = mz - 4 * az,
+				facing = (a + 2) % 4,
+				size = "S",
+				cell = ci,
+				runs = reached,
+			})
+			for _, r in reached do
+				table.insert(runs[r].lids, #lids)
+			end
+		end
+	end
+	return lids
+end
+
+-- Every hall, slot and square edge on a floor lies on a multiple of this many studs.
+local GRID = 4
+
+--[[
+	Finds where the tops (the top runs' slots and the lids) would drop a friend into nothing or into
+	a pit, and closes each stretch with a panel (Panel). Stepping off a unit's front into the hall
+	is the way down, and a junction's walls, a dead end and the lobby already reach the deck; every
+	other edge of the tops needs one.
+]]
+local function findPanels(
+	cells: { Cell },
+	slots: { Slot },
+	lids: { Lid },
+	deadEnds: { DeadEnd }
+): { Panel }
+	-- each 4-stud square of the floor: on the tops, in a hall (or the lobby), or nil: anywhere else
+	local ON_TOP, IN_HALL = 1, 2
+	local grid: { [number]: number } = {}
+	local function fill(x0: number, x1: number, z0: number, z1: number, value: number)
+		for gx = x0 // GRID, x1 // GRID - 1 do
+			for gz = z0 // GRID, z1 // GRID - 1 do
+				grid[key(gx, gz)] = value
+			end
+		end
+	end
+	for _, c in cells do
+		local h = CELL / 2
+		if c.kind == "Lobby" then
+			fill(c.x - h, c.x + h, c.z - h, c.z + h, IN_HALL)
+		elseif c.kind == "Straight" then
+			local hx = if c.turn % 2 == 0 then h else HALL / 2
+			local hz = if c.turn % 2 == 0 then HALL / 2 else h
+			fill(c.x - hx, c.x + hx, c.z - hz, c.z + hz, IN_HALL)
+		else
+			local w = HALL / 2
+			fill(c.x - w, c.x + w, c.z - w, c.z + w, IN_HALL)
+			for d = 0, 3 do
+				if c.arms[d + 1] then
+					local sx, sz = dir(d)
+					local mx, mz = c.x + sx * (w + 4), c.z + sz * (w + 4)
+					local hx = if sx ~= 0 then 4 else w
+					local hz = if sz ~= 0 then 4 else w
+					fill(mx - hx, mx + hx, mz - hz, mz + hz, IN_HALL)
+				end
+			end
+		end
+	end
+	type Piece = { rect: { number }, front: number?, cell: number, bare: boolean }
+	local pieces: { Piece } = {}
+	for _, s in slots do
+		if s.top then
+			table.insert(pieces, {
+				rect = { Floor.footprint(s) },
+				front = s.facing,
+				cell = s.cell,
+				bare = s.kind == "Wall",
+			})
+		end
+	end
+	for _, l in lids do
+		table.insert(
+			pieces,
+			{ rect = { Floor.footprint(l) }, front = nil, cell = l.cell, bare = true }
+		)
+	end
+	for _, p in pieces do
+		fill(p.rect[1], p.rect[2], p.rect[3], p.rect[4], ON_TOP)
+	end
+
+	-- whether the 4 studs from `t` along a line (x = line if `vertical`, else z = line) are a dead
+	-- end's, whose wall closes the rows' ends up to the deck
+	local function onDeadEnd(vertical: boolean, line: number, t: number): boolean
+		for _, e in deadEnds do
+			local fx = dir(e.facing)
+			if (fx ~= 0) == vertical then
+				local eLine, eAlong = if vertical then e.x else e.z, if vertical then e.z else e.x
+				if eLine == line and t >= eAlong - SPAN / 2 and t + GRID <= eAlong + SPAN / 2 then
+					return true
+				end
+			end
+		end
+		return false
+	end
+	-- the squares either side of those 4 studs: the lower x (or z) first
+	local function beside(vertical: boolean, line: number, t: number): (number, number)
+		local a, b = line // GRID, t // GRID
+		if vertical then
+			return key(a - 1, b), key(a, b)
+		end
+		return key(b, a - 1), key(b, a)
+	end
+	-- whether a panel can reach on along those 4 studs unseen: nothing but the dark either side
+	local function dark(vertical: boolean, line: number, t: number): boolean
+		local p, q = beside(vertical, line, t)
+		return grid[p] == nil and grid[q] == nil and not onDeadEnd(vertical, line, t)
+	end
+
+	-- every open 4 studs of the tops' edges, gathered by the line they lie on: the Dir a panel
+	-- there looks (into the tops) and the hall piece it closes, by where the 4 studs start
+	type Edge = { facing: number, cell: number, bare: boolean }
+	type Line = { vertical: boolean, line: number, open: { [number]: Edge } }
+	local lines: { Line } = {}
+	local lineOf: { [string]: Line } = {}
+	for _, p in pieces do
+		local r = p.rect
+		for d = 0, 3 do
+			if d == p.front then
+				continue
+			end
+			local vertical = d % 2 == 0
+			local line = if d == 0 then r[2] elseif d == 2 then r[1] elseif d == 1 then r[4] else r[3]
+			local from, to = if vertical then r[3] else r[1], if vertical then r[4] else r[2]
+			for t = from, to - GRID, GRID do
+				local below, above = beside(vertical, line, t)
+				if
+					grid[if d == 0 or d == 1 then above else below] == nil
+					and not onDeadEnd(vertical, line, t)
+				then
+					local name = `{if vertical then "x" else "z"}{line}`
+					if not lineOf[name] then
+						local made: Line = { vertical = vertical, line = line, open = {} }
+						lineOf[name] = made
+						table.insert(lines, made)
+					end
+					lineOf[name].open[t] = { facing = (d + 2) % 4, cell = p.cell, bare = p.bare }
+				end
+			end
+		end
+	end
+
+	-- each line's open stretches closed end to end, a stretch being the open studs that face the
+	-- same way and want the same sheet: 12-stud panels while they fit, 8s for the rest (every
+	-- stretch is a multiple of 4, and 8 or more of them is 12s and 8s); a lone 4 studs takes an 8
+	-- that reaches 4 on into the dark, past whichever end is dark and has no panel yet
+	local panels: { Panel } = {}
+	for _, l in lines do
+		local starts = {}
+		for t in l.open do
+			table.insert(starts, t)
+		end
+		table.sort(starts)
+		local covered: { [number]: boolean } = {}
+		local function put(lo: number, width: number, edge: Edge)
+			for t = lo, lo + width - GRID, GRID do
+				covered[t] = true
+			end
+			local middle = lo + width / 2
+			table.insert(panels, {
+				x = if l.vertical then l.line else middle,
+				z = if l.vertical then middle else l.line,
+				facing = edge.facing,
+				size = if width == 12 then "M" else "S",
+				bare = edge.bare,
+				cell = edge.cell,
+			})
+		end
+		local function free(t: number): boolean
+			return not covered[t] and dark(l.vertical, l.line, t)
+		end
+		-- closes start..stop with panels of one sheet
+		local function close(start: number, stop: number, edge: Edge)
+			if stop - start == GRID then
+				put(if free(stop) or not free(start - GRID) then start else start - GRID, 8, edge)
+				return
+			end
+			local at = start
+			while at < stop do
+				local left = stop - at
+				local width = if left == 8 or left % 12 == 4 then 8 else 12
+				put(at, width, edge)
+				at += width
+			end
+		end
+		for _, start in starts do
+			if covered[start] then
+				continue
+			end
+			local first = l.open[start]
+			local stop = start
+			while l.open[stop] and l.open[stop].facing == first.facing do
+				stop += GRID
+			end
+			-- the stretch in lengths of one sheet; a lone 4 studs of them with no dark to reach into
+			-- puts the units' sheet over the whole stretch (a bare one would stand inside a unit)
+			type Sheet = { from: number, to: number }
+			local sheets: { Sheet } = {}
+			local at = start
+			while at < stop do
+				local from, bare = at, l.open[at].bare
+				while at < stop and l.open[at].bare == bare do
+					at += GRID
+				end
+				table.insert(sheets, { from = from, to = at })
+			end
+			local stuck = false
+			for _, sheet in sheets do
+				local reaches = (sheet.from == start and free(start - GRID))
+					or (sheet.to == stop and free(stop))
+				if #sheets > 1 and sheet.to - sheet.from == GRID and not reaches then
+					stuck = true
+				end
+			end
+			if stuck then
+				close(start, stop, { facing = first.facing, cell = first.cell, bare = false })
+			else
+				for _, sheet in sheets do
+					close(sheet.from, sheet.to, l.open[sheet.from])
+				end
+			end
+		end
+	end
+	return panels
 end
 
 --[[
@@ -793,6 +1124,9 @@ function Floor.generate(number: number, random: Random): Floor
 
 	-- 7. The top runs: the rows of tops a ladder reaches.
 	local runs = findRuns(slots)
+	-- 8. The tops closed: lids carry runs round junctions' corners, panels close every drop.
+	local lids = findLids(cells, slots, runs)
+	local panels = findPanels(cells, slots, lids, deadEnds)
 
 	return {
 		number = number,
@@ -803,6 +1137,8 @@ function Floor.generate(number: number, random: Random): Floor
 		fixtures = fixtures,
 		deadEnds = deadEnds,
 		runs = runs,
+		lids = lids,
+		panels = panels,
 		lobby = lobby,
 	}
 end
@@ -824,7 +1160,7 @@ end
 	column and 8 a line: for the owner to judge a layout, and for Output while L-01b lays one. Two
 	views: "units" (the default) shows each unit's size, a unit no crawl hole leads from as x;
 	"tops" shows each top run in a letter of its own, capital over a unit and small over a plain
-	wall's lid, so a run reads as one letter along its row.
+	wall's lid, so a run reads as one letter along its row, and = over a junction's lid.
 ]]
 export type MapView = "units" | "tops"
 function Floor.map(floor: Floor, view: MapView?): string
@@ -909,6 +1245,12 @@ function Floor.map(floor: Floor, view: MapView?): string
 			local along = s.x * math.abs(ax) + s.z * math.abs(az)
 			local k = math.floor(along / Floor.Sizes[s.size].width)
 			fill(x0, x1, z0, z1, if k % 2 == 0 then s.size else string.lower(s.size))
+		end
+	end
+	if tops then
+		for _, l in floor.lids do
+			local x0, x1, z0, z1 = Floor.footprint(l)
+			fill(x0, x1, z0, z1, "=")
 		end
 	end
 	for _, e in floor.deadEnds do

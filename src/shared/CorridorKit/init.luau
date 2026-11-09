@@ -40,6 +40,8 @@ local Specs = require(script.Specs)
 export type PieceName = "Straight"
 export type JunctionName = "Corner" | "T" | "Cross"
 export type WallName = "Wall" | "ShortWall" | "DeadEnd"
+-- the plain walls whose panel above the cap `panel` puts up alone: an M unit's width or an S's
+export type PanelName = "Wall" | "ShortWall"
 export type TemplateName = PieceName | JunctionName | WallName | "Fixture" | "Bulb"
 export type Piece = typeof(Specs.Pieces.Straight)
 export type Junction = typeof(Specs.Junctions.Corner)
@@ -276,6 +278,74 @@ function CorridorKit.wall(name: WallName, at: CFrame, paint: Color3, parent: Ins
 	local model = CorridorKit.place(name, at, parent)
 	part(model, "Facade").Color = paint
 	return model
+end
+
+-- The plain walls' panels above their caps, alone (`panel`): made once from each wall's template,
+-- facing each way.
+local panels: { [string]: Model } = {}
+-- How far a plain wall's panel sheet lies behind its face (art/corridor/spec.py, PANEL_PLANE).
+-- `panel` stands its sheet on the face's line instead, turned or not, so panels meet flush along a
+-- line and at a corner, and over a unit the panel goes on up from the unit's own wall.
+local SHEET_BEHIND = 0.1
+
+--[[
+	Puts up a plain wall's panel above its cap alone, with its frame at `at`: a wall's, the middle
+	of its face on the floor, looking into the space it closes. It is the R-panel from the units'
+	cap height up through the deck, its sheet on the face's line (a unit's wall's sheet lies on its
+	line too), with a collider from the cap to the deck's top behind its face,
+	so it closes the units' wire tops wherever stepping off them would drop into nothing
+	(FloorBuilder, D-055). `name` is the wall whose panel it is: Wall's is an M unit wide,
+	ShortWall's an S's. `bare` turns the sheet about, keeping the collider where it is: the panel's
+	bare sheet then faces the space it closes from the floor up, as a plain wall's does the empty
+	slot behind it, for a space with no wall of its own under the panel; the wall's trim comes
+	with it, so its cap closes the seam where the bare sheet meets the panel (its posts and kick
+	plate stand on the far side, in the dark).
+]]
+function CorridorKit.panel(name: PanelName, at: CFrame, parent: Instance, bare: boolean?): Model
+	local key = if bare then `{name}Bare` else name
+	local made = panels[key]
+	if not made then
+		local wall = CorridorKit.template(name)
+		assert(
+			wall,
+			`CorridorKit: no template at ReplicatedStorage.Corridor.{name}; import it (art/corridor/README.md)`
+		)
+		local model = Instance.new("Model")
+		model.Name = "Panel"
+		model.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
+		local turn = if bare
+			then CFrame.new(0, 0, SHEET_BEHIND) * CFrame.Angles(0, math.pi, 0)
+			else CFrame.new(0, 0, -SHEET_BEHIND)
+		local partNames: { string } = if bare then { "Panel", "Trim" } else { "Panel" }
+		for _, partName in partNames do
+			local original = part(wall, partName)
+			local copy = original:Clone()
+			copy.CFrame = turn * wall.WorldPivot:ToObjectSpace(original.CFrame)
+			copy.Parent = model
+		end
+		local colliders = Instance.new("Folder")
+		colliders.Name = "Colliders"
+		colliders.Parent = model
+		local c = Instance.new("Part")
+		c.Name = "Panel"
+		c.Anchored = true
+		c.CanCollide = true
+		c.CanTouch = false
+		c.Transparency = 1
+		c.CastShadow = false
+		c.Material = Enum.Material.Metal
+		local width = (Specs.Walls :: any)[name].Width :: number -- any: a name keys the generated table
+		c.Size = Vector3.new(width, Specs.DeckTop - Specs.WallHeight, 1)
+		c.CFrame = CFrame.new(0, (Specs.WallHeight + Specs.DeckTop) / 2, 0.5)
+		c.Parent = colliders
+		model.WorldPivot = CFrame.identity
+		panels[key] = model
+		made = model
+	end
+	local placed = (made :: Model):Clone()
+	placed:PivotTo(at)
+	placed.Parent = parent
+	return placed
 end
 
 -- Hangs a copy of the hall light fixture with its frame at `at`: on the floor under where its

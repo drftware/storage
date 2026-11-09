@@ -389,16 +389,26 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
   - [ ] **L-12c The hole trap** (needs L-06b's keepers): slam a keeper in, the dented door, its
     break-out after about 90 s, a padlock keeping it in for the floor, the team's bonus.
 - [ ] **L-13 The ladder and the tops.** Split Nov 9:
-  - [ ] **L-13a The tops' closed edges.** A top run's back drops into the 16-stud gap behind its
-    row (no floor, no deck: you'd see the sky between the decks), and a run's end beside a
-    junction drops into the junction's hollow block of wall (floored, 8 by 8, no way out). A
-    panel from each row's back up to the joists, as a plain wall's above its cap, and a lid on
-    each block (an S wire top fits it, and lets a run turn the corner); `Floor.runs` lists each
-    run's slots in order.
-  - [ ] **L-13b The ladder.** Its art first (the unit's way); lean it on a unit, climb onto the
-    wire tops, run a row while a keeper below loses you. A wire top leaves 2.8 studs under the
-    joists: crawl-only up there, or taller floors (`OWNER.md`). May split again (the ladder's
-    art; climbing and the tops).
+  - [x] **L-13a The tops' closed edges** (D-055). Nothing on the tops drops you off the world: an
+    S unit's wire top over every junction square a run reaches (its blocks of wall, a corner's
+    outside square), so a run turns the corner, and the kit's plain-wall panel, from the cap up
+    through the deck, at every other drop (rows' backs, the 4-stud step beside an 8-deep unit, a
+    run's end at the lobby, a lid over an empty slot); over a pit with no wall of its own the
+    panel shows its bare sheet down to the floor. `Floor`'s lids, panels and `Run.lids` (pure,
+    Lune-checked over 400 floors that no edge is left open). In Studio on floor 1: 78 panels and
+    13 lids laid, rays and sliding probes found no way off, the corners closed flush.
+  - [ ] **L-13b The ladder.** Split Nov 9:
+    - [ ] **L-13b1 The ladder's art, carried and dropped.** Built the unit's way, as the saw was
+      (L-12a, `art/saw/`): an aluminium extension ladder long enough to lean on a unit's front
+      and reach its wire top (10 studs), carried in both hands (a big, slow, visible tool, as
+      Lethal Company's extension ladder); a `Tools/Catalog` row; laid where the deal puts it
+      (`Deal` already deals "Ladder"), picked up and dropped with its sounds.
+    - [ ] **L-13b2 Up the ladder and along the tops.** Lean it on a unit's front (a pressed verb,
+      as the saw's), climb it (Roblox's TrussPart climbing, or the game's own move as the
+      crawl's), and move on the tops crawl-only (the default; a standing avatar wedges, 3.9 studs
+      to the deck), along a run and round a junction's lid (`Run.lids`); down by dropping off a
+      unit's front into the hall. Keepers can't follow (L-06b reads `Run.lids` for where the tops
+      lead). May split again.
 - [ ] **L-14 The other tools.** Bubble wrap across a hall (pops for anything that crosses, heard
   floor-wide), the air horn (lures keepers to a spot, wakes sleeping ones), the moving blanket
   (thrown over a keeper, blinds it a few seconds), glow sticks (light the building can't see,
@@ -431,6 +441,10 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **Columns at the tops' corners** (L-13a): where two panels meet at a corner up on the tops,
+  their sheets' cut ends meet bare; a steel corner column, as the junctions' walls have, would
+  finish them. Unseen until the ladder takes players up there.
 
 - **Filings under the hole** (L-12b1): a scatter of bright steel filings on the floor under the
   cut, both sides, and a little drywall-white dust on the saw's side; a few on the fallen panel.

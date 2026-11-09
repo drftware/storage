@@ -7,7 +7,7 @@
 -- order, shared walls stood once, every hall reachable from the lobby, and every unit's neighbours
 -- and top run (L-01d): crawl holes only between side-by-side units, enough of them on every floor
 -- and, on floors 1 and 2, in the hall out of the lobby; no top run dropping into a plain wall's
--- empty slot. First, the generator's
+-- empty slot; the tops closed by lids and panels, no drop left open (L-13a). First, the generator's
 -- sizes against the kit's and the units' generated specs, read as text (they build Roblox values).
 local fs = require("@lune/fs")
 
@@ -200,6 +200,7 @@ local SAME_SEED_ALIKE = 0
 local seen: { [string]: boolean } = {}
 local distinct, floors, atCap, maxUnits = 0, 0, 0, 0
 local overlapsFound = 0
+local mostPanels, mostLids = 0, 0
 
 local function checkFloor(seed: number, number: number)
 	local f = Floor.generate(number, Brix.Random.new({ seed = seed }))
@@ -634,6 +635,143 @@ local function checkFloor(seed: number, number: number)
 		end
 	end
 
+	-- the tops closed (L-13a), on a 2-stud raster: every edge of a run's slots and of the lids is a
+	-- unit's front onto its hall, a wall the junction or the lobby stands to the deck, a dead end,
+	-- or a panel; no panel stands across the tops' way, hangs in a hall or looks away from the tops,
+	-- and none turns its bare sheet into a unit;
+	-- every lid is a free square of a junction, and it and the runs it joins agree
+	local STEP = 2
+	local function cellAt(x: number, z: number): number
+		return (x // STEP + 4096) * 8192 + (z // STEP + 4096)
+	end
+	local onTop: { [number]: boolean } = {}
+	local inHall: { [number]: boolean } = {}
+	local inUnit: { [number]: boolean } = {}
+	local function paint(into: { [number]: boolean }, r: Rect)
+		for x = r.x0, r.x1 - STEP, STEP do
+			for z = r.z0, r.z1 - STEP, STEP do
+				into[cellAt(x, z)] = true
+			end
+		end
+	end
+	for _, c in f.cells do
+		for _, r in walkable(c) do
+			paint(inHall, r)
+		end
+	end
+	type Top = { r: Rect, front: number? }
+	local tops: { Top } = {}
+	for i, s in f.slots do
+		if s.top then
+			table.insert(tops, { r = rects[i], front = s.facing })
+		end
+	end
+	for li, l in f.lids do
+		local c = f.cells[l.cell]
+		local r = rect(Floor.footprint(l))
+		ok(c.kind ~= "Lobby" and c.kind ~= "Straight", `{where}: lid {li} outside a junction`)
+		ok(
+			r.x0 >= c.x - HALF and r.x1 <= c.x + HALF and r.z0 >= c.z - HALF and r.z1 <= c.z + HALF,
+			`{where}: lid {li} off its junction's square`
+		)
+		ok(l.size == "S" and r.x1 - r.x0 == 8 and r.z1 - r.z0 == 8, `{where}: lid {li} not 8 by 8`)
+		for i in f.slots do
+			ok(overlap(r, rects[i]) == nil, `{where}: lid {li} over slot {i}`)
+		end
+		for _, w in walkable(c) do
+			ok(overlap(r, w) == nil, `{where}: lid {li} over the hall`)
+		end
+		ok(#l.runs > 0, `{where}: lid {li} reached by no run`)
+		for _, run in l.runs do
+			ok(table.find(f.runs[run].lids, li) ~= nil, `{where}: lid {li} and run {run} disagree`)
+		end
+		table.insert(tops, { r = r, front = nil })
+	end
+	for r, run in f.runs do
+		for _, li in run.lids do
+			ok(table.find(f.lids[li].runs, r) ~= nil, `{where}: run {r} and lid {li} disagree`)
+		end
+	end
+	for _, t in tops do
+		paint(onTop, t.r)
+	end
+	for i, s in f.slots do
+		if s.kind == "Unit" then
+			paint(inUnit, rects[i])
+		end
+	end
+	local function onDeadEnd(vertical: boolean, line: number, t: number): boolean
+		for _, e in f.deadEnds do
+			local fx = dir(e.facing)
+			if (fx ~= 0) == vertical then
+				local eLine, eAlong = if vertical then e.x else e.z, if vertical then e.z else e.x
+				if eLine == line and t >= eAlong - SPAN / 2 and t + STEP <= eAlong + SPAN / 2 then
+					return true
+				end
+			end
+		end
+		return false
+	end
+	local function edge(vertical: boolean, line: number, t: number): string
+		return `{if vertical then "x" else "z"}{line}:{t}`
+	end
+	-- the cells either side of an edge, the lower x (or z) first
+	local function besideEdge(vertical: boolean, line: number, t: number): (number, number)
+		if vertical then
+			return cellAt(line - STEP, t), cellAt(line, t)
+		end
+		return cellAt(t, line - STEP), cellAt(t, line)
+	end
+	local panelled: { [string]: boolean } = {}
+	for pi, p in f.panels do
+		local fx, fz = dir(p.facing)
+		local vertical = fx ~= 0
+		local line = if vertical then p.x else p.z
+		local middle = if vertical then p.z else p.x
+		local half = Floor.Sizes[p.size].width / 2
+		local looksAtTops = false
+		for t = middle - half, middle + half - STEP, STEP do
+			local k = edge(vertical, line, t)
+			ok(not panelled[k], `{where}: two panels on one stretch, {k}`)
+			panelled[k] = true
+			local lo, hi = besideEdge(vertical, line, t)
+			ok(not (onTop[lo] and onTop[hi]), `{where}: panel {pi} across the tops' way at {k}`)
+			ok(not inHall[lo] and not inHall[hi], `{where}: panel {pi} in a hall at {k}`)
+			local into = if fx + fz > 0 then hi else lo
+			if onTop[into] then
+				looksAtTops = true
+			end
+			ok(
+				not (p.bare and inUnit[into]),
+				`{where}: panel {pi}'s bare sheet inside a unit at {k}`
+			)
+		end
+		ok(looksAtTops, `{where}: panel {pi} looks away from the tops`)
+	end
+	for _, t in tops do
+		local r = t.r
+		for d = 0, 3 do
+			if d == t.front then
+				continue
+			end
+			local vertical = d % 2 == 0
+			local line = if d == 0 then r.x1 elseif d == 2 then r.x0 elseif d == 1 then r.z1 else r.z0
+			local from, to = if vertical then r.z0 else r.x0, if vertical then r.z1 else r.x1
+			for at = from, to - STEP, STEP do
+				local lo, hi = besideEdge(vertical, line, at)
+				local outside = if d == 0 or d == 1 then hi else lo
+				if not (onTop[outside] or inHall[outside] or onDeadEnd(vertical, line, at)) then
+					ok(
+						panelled[edge(vertical, line, at)] == true,
+						`{where}: the tops open at {edge(vertical, line, at)}`
+					)
+				end
+			end
+		end
+	end
+	mostPanels = math.max(mostPanels, #f.panels)
+	mostLids = math.max(mostLids, #f.lids)
+
 	-- the lights: one over every hall piece's middle, and every step of hall watched
 	local lit: { [number]: number } = {}
 	local boxes = {}
@@ -731,5 +869,6 @@ end
 print(
 	`floor: {checks} checks passed over {floors} floors (at most {maxUnits} units; crawl links `
 		.. `at least {fewestLinks}, {fewestFirst} before the first fork on floors 1 and 2; at most `
-		.. `{mostCutOff} units cut off; top runs {shortestRun} to {longestRun} studs)`
+		.. `{mostCutOff} units cut off; top runs {shortestRun} to {longestRun} studs, closed by at most `
+		.. `{mostPanels} panels and {mostLids} lids)`
 )

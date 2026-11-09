@@ -291,6 +291,20 @@ verified: a doc page, Studio, or "untested".
   lattice gate prints on the lobby floor; the light fans wide (the lamp hangs 5.2 behind the
   threshold), so the lobby's side walls catch it from about 5 studs in front of the back wall.
 
+- **The tops are black on screen** (Play, L-13a, 2026-11-09): Lighting's Brightness is 0 and the
+  Grade colour correction darkens everything, so a shot of the unit tops shows nothing. To judge
+  geometry from the MCP, on the Client set `Lighting.Brightness = 1`, `Ambient` to about
+  (90, 90, 90), disable the ColorCorrection, DepthOfField and Bloom effects and set the
+  Atmosphere's Density to 0; Play discards it all on stop. Move the player near first: the floor
+  600 studs off isn't streamed in at the spawn and shots of it come back empty sky.
+- **Test physics with probes one direction at a time** (Server, L-13a): several unanchored parts
+  spawned on one spot fling each other apart (twelve "fell" in the first sweep). Spawn them apart,
+  or one per round, frictionless (`PhysicalProperties.new(1, 0, 0, 100, 1)`) so each slides until
+  something stops it.
+- **A standing avatar on a wire top wedges** (Play, L-13a): 3.9 studs to the deck's collider
+  (the joists, 2.8 up, don't collide) is too little for a 5-stud avatar; teleported onto a lid it
+  stuck at root height 11.9 and `MoveTo` couldn't move it. It didn't fall either.
+
 ## The hall's render cost
 
 - **Reading the counts from the MCP** (2026-11-07): in Play, `execute_luau` on the Client can read

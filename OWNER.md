@@ -16,6 +16,18 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-13a, the tops closed (built Nov 9)
+
+- [ ] **Read the tops on a map:** in a terminal at the project, `lune run scripts/floor-map 7 1`.
+  Under "The tops", `=` now marks a junction's lid: an S unit's wire top over the hollow corner
+  square where two rows meet, so a run goes on round the corner into the next row's run instead
+  of dropping into a pit. Look for: runs joined round most corners, so a friend on the tops has
+  somewhere to go. Nothing to try by hand yet: nobody can get up there until L-13b's ladder.
+- [ ] **Decide before the ladder (now pressing):** a standing avatar wedges on the tops (3.9 studs
+  to the deck; it neither falls nor moves). The default stays crawl-only up there (L-13b builds a
+  crawl), the other way is taller floors (every unit and hall piece rebuilt). Say if you want
+  taller floors.
+
 ## Now: judge L-12b3, crawling through (built Nov 9)
 
 - [ ] **Crawl through** (Play on a computer). Saw 106 into 108 first (the next section's first
@@ -584,6 +596,3 @@ nowhere else.
   three fixtures hanging straight between the joists, nothing floating or poking through the deck; and from last
   session, no line where two floor pieces meet (x = -12 and 12) and footsteps that sound like
   concrete.
-- [ ] **Decide later (the ladder):** the ceiling's lowest steel is now 12.8, so standing on a
-  unit's wire top (10) leaves 2.8 studs overhead, and an avatar is about 5. Before the ladder is
-  built: crawl-only up there (the default), or taller floors.

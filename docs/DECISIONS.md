@@ -916,3 +916,29 @@ and can't fit the 2.6 hole. Not chosen: a crawl you steer yourself (a crouch mod
 for one gap; the ticket's moment is the escape, not the steering); holding the button (slow when
 it's the escape); a longer move (reads as a cutscene) or under a second (reads as a teleport); a
 wider hole (the default avatar fits with its arms tucked; OWNER.md asks).
+
+## D-055 The tops closed: lids round the junctions, a panel at every drop (L-13a, Nov 9)
+Before the ladder, the tops had to be a place you can't fall off the world from. A floor's pure
+`Floor` now says where everything goes, so Lune checks it over 400 floors on a 2-stud raster: no
+edge of the tops is open except a unit's front onto its hall (the way down), a wall a junction or
+the lobby already stands to the deck, or a dead end; no panel stands across the tops' way, hangs
+in a hall or turns its bare sheet into a unit. **Lids:** of a junction's four corner squares,
+those no slot stands in (its blocks of wall, and a corner's outside square behind both its rows)
+get an S unit's wire top (its floor is the junction's) wherever a run reaches them, so a run goes
+on round the corner instead of dropping into a floored pit with no way out; each run lists the
+lids it reaches (`Run.lids`) for L-13b's ladder and for keepers to know where the tops lead.
+**Panels:** every other open edge, found as 4-stud stretches and closed line by line, is the plain
+wall's panel above its cap (an M's 12 or an S's 8, the kit's own `Panel` mesh, `CorridorKit.panel`)
+with a collider from the cap to the deck: the rows' backs over the 16-stud gap, the 4-stud step
+where a 12-deep unit stands beside an 8-deep one (about ten a floor), a run's end beside the
+lobby, a lid's side over an empty slot. A lone 4 studs takes an 8 that reaches on into the dark
+behind the tops, which nobody can see once the backs are closed. Every panel's sheet stands on its
+line, so panels meet flush along a line and at corners, and over a unit it goes on up from the
+unit's own wall (whose sheet is on that line too). Where the tops have no wall of their own below
+(a plain wall's lid, a junction's square), the panel turns its bare sheet to them down to the floor
+and brings the wall's trim, whose cap closes the seam: looking down through the wires shows a wall,
+not the night sky under the building (Studio showed the sky there before). Up to 120 panels and 22
+lids a floor. Not chosen: a new 4-stud panel built in Blender (the 8 hides its spare 4 in the dark);
+a panel per slot side (back corners and two extensions meeting left gaps or overlaps on 9 floors
+in 400); the deck's edge for the backs of 8-deep units (leaves a 4-stud slot behind them to fall
+into); the whole plain wall for the pits (its painted face and kick plate inside an empty unit).
