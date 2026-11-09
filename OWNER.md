@@ -7,14 +7,34 @@ nowhere else.
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 - [ ] **Save the place** (File > Save to Roblox) after this session (Nov 9): the elevator's and
-  the flashlight's, the bolt cutters', the padlock's and the saw's templates live only in the open
-  place, at `ReplicatedStorage.Props.Elevator`, `Props.Note`, `Props.Flashlight`,
-  `Props.Tools.BoltCutters`, `Props.Tools.Padlock` and `Props.Tools.Saw` (without them nobody has
-  a torch and no tool lies anywhere; Output warns). Unsaved, the next open loses them and every floor's lobby has
+  the flashlight's, the bolt cutters', the padlock's, the saw's and the crawl hole's templates live
+  only in the open place, at `ReplicatedStorage.Props.Elevator`, `Props.Note`, `Props.Flashlight`,
+  `Props.Tools.BoltCutters`, `Props.Tools.Padlock`, `Props.Tools.Saw` and `Props.CrawlHole`
+  (without them nobody has a torch, no tool lies anywhere and no hole can be cut; Output warns). Unsaved, the next open loses them and every floor's lobby has
   an empty hole in its back wall (Output warns).
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
+
+## Now: judge L-12b1, the crawl hole (built Nov 9)
+
+- [ ] **Look at the two test holes** (Play on a computer, by the spawn; no saw yet, L-12b2 cuts
+  them in play). The test hall saws one from unit 101 into 103 and one from 104 into 102. Open
+  101 (E) and look at its right-hand wall: a low ragged hole, a bright strip of bare steel round
+  its cut, a few tongues of steel bent away from you, and the cut panel lying on 103's floor
+  beyond. Then open 103 and look back: the panel flat on its ribs in front of the hole, the
+  tongues bent toward you. Shut 103 and look from 101: its floor by the hole lit by 101's bulb
+  through it. Does it read as sawn, and does the far side's square of light land? Is the hole
+  too big or too small for a crawl (3 studs wide, 2.6 tall)?
+- [ ] **On the phone** (Galaxy A16, set in Edit first): from 101's and 103's doorways it reads as
+  a hole at once (`docs/art/L-12b1-a16-*.jpg`). The sheets in `art/sheets/hole-*.png` show the
+  dark side, the light through it, your torch on it.
+- [ ] **Decide, defaults in place** (D-052): (1) the hole opens at the same place in every
+  side wall (3.75 to 6.75 studs in from the hall, just past a unit's middle in a small one, in
+  front of it in an M), so you learn where to look; or wherever you saw? (2) 3 wide by 2.6 tall,
+  its bottom a third of a stud up (a saw cuts above the wall's bottom track); (3) the panel falls
+  flat into the unit it was pushed into, and stays; (4) only two units side by side in a row can
+  be sawn between (a unit's side against another's back, at a back corner, can't).
 
 ## Now: judge L-12a, the saw (built Nov 9)
 

@@ -137,6 +137,12 @@ local ART: { Art } = {
 		manifest = "art/saw/assets.json",
 		description = "A cordless reciprocating saw: green body, black rubber boot and grip, a demolition blade",
 	},
+	{
+		key = "CrawlHole",
+		path = "art/hole/out/CrawlHole.fbx",
+		manifest = "art/hole/assets.json",
+		description = "A crawl hole sawn through a storage unit's corrugated steel side wall, its cut-out panel",
+	},
 }
 local MODEL: OpenCloud.Kind = { assetType = "Model", contentType = "model/fbx" }
 

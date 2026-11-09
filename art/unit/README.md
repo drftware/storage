@@ -158,5 +158,5 @@ stays on the bottom ribs, crests and valleys, never in a pattern that would repe
   feels wrong in play, pose a client-side collider for the local player in the same step.
 - No door sounds: `RollUpDoor.play` returns the duration so the door system can time a
   rattle (Open), the bang (Slam) and the quiet peek.
-- The crawl-hole wall variant (GDD: saw) and a dented-door variant (trapped keeper) are not
-  modelled.
+- The crawl-hole wall is its own kit (`art/hole/`, the hole's place in `spec.py`'s `crawl_*`);
+  a dented-door variant (trapped keeper) is not modelled.

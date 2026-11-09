@@ -4,6 +4,7 @@
 	Art and its pipeline: art/unit/README.md.
 ]]
 return {
+	CrawlHole = require(script.CrawlHole),
 	Curtain = require(script.Curtain),
 	Door = require(script.Door),
 	DoorSound = require(script.DoorSound),

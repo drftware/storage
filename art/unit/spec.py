@@ -46,6 +46,16 @@ COMMON = dict(
     bar=0.20,                # bottom bar body
     travel=7.65,             # full open rise; the bar stops just under the header
     peek=1.15,               # GDD: lift the door a foot and crouch
+    # The crawl hole a saw cuts in a side wall (GDD "The hole trap"; built by art/hole/). It opens
+    # at the same place in every unit, so players learn where to look. Along the wall from the
+    # corridor wall's outer face: past the door's guides, in the bulb's light, and a stud short of
+    # a small unit's back wall, so it fits whichever neighbour stands the wall (D-031). Up from
+    # the floor: clear of the wall's bottom track, and too low for a keeper (the Mannequin stands
+    # 6.3 tall and can't bend), but a player ducks through on hands and knees.
+    crawl_from=3.75,
+    crawl_to=6.75,
+    crawl_bottom=0.3,
+    crawl_top=2.9,
 )
 
 # The door's textures (slats, bottom bar, drum) are baked across the M's curtain. A narrower

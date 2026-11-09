@@ -349,6 +349,19 @@ verified: a doc page, Studio, or "untested".
   look runs down the arm. Weld a held thing from the attachment's Position and turn it from the
   hand itself, or it points the wrong way on some avatars.
 
+- **`insert_asset` turns the whole model** (L-12b1): the crawl hole's kit came in turned 178.1°
+  about Y, every part alike. Square a kit by one part's own `CFrame` (its frame is the FBX's):
+  `CFrame.new(specCentre) * anchor.CFrame:ToObjectSpace(part.CFrame)` for each part
+  (`CrawlHole.prepare`); moving it by position alone leaves it turned.
+- **Thin strips in an atlas** (L-12b1, Blender): faces built as separate quads are each their own
+  UV island (376 for the hole's edge, most of the atlas margin); share their points. Smart
+  project's margin is per island, so long 3-texel strips with 6 texels of margin each side fill a
+  quarter of the atlas at best: a 2-texel margin and `uv.pack_islands(shape_method="CONCAVE")`
+  after it (works headless with `use_uv_select_sync`) got the edge to 123 texels a stud at 512².
+- **A bulb lights through a hole** (L-12b1, Galaxy A16): with a crawl hole between them, a lit
+  unit's bulb lights the shut neighbour's floor by the hole, as it should; nothing else of a
+  shut unit lights.
+
 ## Tools
 
 - **Driving Studio from a session:** `.mcp.json` starts Studio's own MCP server

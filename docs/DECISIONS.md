@@ -847,3 +847,24 @@ tip and the shoe's face for L-12b.
 Not chosen: a hand saw or a drywall jab saw (quiet, and the GDD says loud); a chainsaw (a horror
 villain's weapon, not a crew's, and too crude for a neat hole through a unit's wall); lying the saw
 on its side (its profile foreshortens from a doorway and its battery hides).
+
+## D-052 The crawl hole: one fixed spot per wall, its own kit swapped in (L-12b1, Nov 9)
+A saw's crawl hole opens at the same place in every unit's side wall: 3.75 to 6.75 studs along
+from the corridor wall's outer face, 0.3 to 2.9 up (`crawl_*` in `art/unit/spec.py`). Players
+learn where to look and where to crawl, the "Crawl through" button and keepers (L-12b2, L-12c)
+have one spot per wall, and the art is built once rather than cut anywhere at runtime. The spot is
+past the door's guides and in the bulb's light, and a stud short of a small unit's back wall, so
+it fits whichever neighbour stands the shared wall (D-031): two units side by side in a row share
+at least a small unit's whole side. It is 3 wide and 2.6 tall: a player ducks through on hands and
+knees, a standing body (4 studs to the top of its root) can't walk it, and the Mannequin (6.3 tall,
+and stiff: it can't bend) never fits. The hole is a kit of its own (`art/hole/`, asset
+`Props.CrawlHole`), not parts in the unit's FBX: the unit and its prepared templates stay as they
+are, and only a cut wall pays the hole's triangles (2,532 against the plain wall's 336). The holed
+walls and the fallen panel wear the unit's own Partition texture (`prepare` copies it from
+`Units.M`), so the swap changes nothing but the hole; the bright strips, cut faces and tongues are
+a small Hole set. Its pieces come both ways round (Pos and Neg): the tongues bend and the panel
+falls away from whoever sawed. The wall's one collision box becomes four round the hole
+(`CrawlHole.Boxes`). Not chosen: a hole cut wherever the saw meets the wall (runtime geometry, or
+many prebuilt walls, for no gain in play); a hole down to the floor (the bottom track would have
+to be cut, and a saw cuts the sheet above it); a corner pair's two walls (a side against another
+unit's back wall) holed: those stay unsawable, the rarer case, until a floor needs them.

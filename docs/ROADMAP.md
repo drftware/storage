@@ -353,23 +353,32 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
   left and right, D-031); it's loud. Players crawl through, keepers can't. Lead a keeper into a
   unit, crawl out the hole, run round and slam it in: it dents the door and breaks out after
   about 90 s, unless the padlock tool locks it in for the floor; the team gets a bonus (GDD "The
-  hole trap"). Split Nov 9, one session each:
+  hole trap"). Split Nov 9, one session each (L-12b split again into b1, b2, b3):
   - [x] **L-12a The saw's art.** Done Nov 9 (D-051): a green cordless reciprocating saw
     (`art/saw/`, 6,168 triangles, one baked set), standing on its battery where it's laid;
     `Props.Tools.Saw` and a `Catalog` row (held low on your left turned in, blade to the middle;
     carried upright at a friend's side; a plastic knock picking it up, a plastic slam dropping
     it). Floor 1's first tool, unit 104 on seed 7, lies as a saw, picked up and dropped in Studio
     on the Galaxy A16 (`docs/art/L-12a-*.jpg`).
-  - [ ] **L-12b1 The crawl hole's art.** A unit's side wall with a crawl hole sawn through it,
-    built the unit's way (`art/unit/`): a low square hole in the corrugated steel, its cut edge
-    ragged and bright with bent tabs, the cut panel lying on the far side; how one unit's side
-    wall (shared with its neighbour, `Floor`'s left and right, D-031) swaps for the holed one;
-    sized so a player fits crouched and a keeper doesn't.
-  - [ ] **L-12b2 Sawing it and crawling through.** Hold Saw (R, R2 on a pad, as Cut and Lock) at
-    a side wall inside a unit: the saw's `use` pose out at the wall, the motor's whine and the
-    blade's chatter, loud, heard floor-wide by keepers (`Doors.acted`'s reach idea,
-    `Specs/Saw.Shoe` where it bites); the hole opens; "Crawl through" on both sides takes you
-    through it (name the hit game it comes from: DOORS' and Pressure's vents); keepers can't.
+  - [x] **L-12b1 The crawl hole's art.** Done Nov 9 (D-052): `art/hole/` builds the holed side
+    wall (each size, each side, in the unit's own wall texture), the bright cut edge with its
+    tongues bent away from the saw and the panel fallen flat on the far side, both ways round;
+    `Props.CrawlHole`; `CrawlHole.saw(from, into)` swaps the wall two units in a row share and
+    opens its collision round the hole (`Boxes`, Lune-checked). The hole opens at the same place
+    in every unit (`crawl_*` in the unit's spec: 3.75 to 6.75 along, 0.3 to 2.9 up). The test
+    hall saws 101 into 103 and 104 into 102; judged from both units on the Galaxy A16
+    (`docs/art/L-12b1-*.jpg`).
+  - [ ] **L-12b2 Sawing it.** Hold Saw (R, R2 on a pad, as Cut and Lock) inside a unit, near its
+    side wall's hole spot (`CrawlHole.Specs` From/To), where a neighbour in the same row shares
+    the wall (a back corner's side against a back wall stays unsawable): the saw's `use` pose out
+    at the wall, the motor's whine and the blade's chatter, loud, heard floor-wide by keepers
+    (`Doors.acted`'s reach idea), a bright line growing round the cut as you hold, then
+    `CrawlHole.saw` and the panel's clang on the far side. Server-checked like Cut (range, tool in
+    hand, rate). Keep the floor's deal off the hole's spot on both sides (`DealSpot`: a tool or a
+    find can lie where the panel lands or block the crawl).
+  - [ ] **L-12b3 Crawling through.** "Crawl through" on both sides of a cut hole takes you through
+    it (DOORS' and Pressure's vents): a short crouched move, the camera low, a scrape of steel;
+    keepers can't follow. Drop the test hall's two ready-cut holes once the saw cuts them.
   - [ ] **L-12c The hole trap** (needs L-06b's keepers): slam a keeper in, the dented door, its
     break-out after about 90 s, a padlock keeping it in for the floor, the team's bonus.
 - [ ] **L-13 The ladder and the tops.** First close a top run's edges: a run's back drops into
@@ -413,6 +422,12 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 
 ## Polish waiting for a slot
 
+- **Filings under the hole** (L-12b1): a scatter of bright steel filings on the floor under the
+  cut, both sides, and a little drywall-white dust on the saw's side; a few on the fallen panel.
+- **The cut's corners overrun** (L-12b1): a hand-held saw overshoots where two cuts meet; short
+  thin slits past each corner of the hole would say "sawn" up close.
+- **The Hole set's atlas** (L-12b1): its strips are long and thin, so three quarters of its 512²
+  is gutter. Laid out by hand (each strip a row) it could go to 256² at the same sharpness.
 - **The saw's trigger blip** (L-12a): picking it up plays a plastic knock; a quick squeeze of
   its trigger (a quarter second of the motor's whine, quiet) would say "power tool" the moment
   it's in your hand, once L-12b has the motor's sound. Keep it quiet so nobody thinks a keeper
