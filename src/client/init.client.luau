@@ -16,6 +16,7 @@ local FreeCursor = require(script.FreeCursor)
 local HallHaze = require(script.HallHaze)
 local HallLights = require(script.HallLights)
 local KeypadPad = require(script.KeypadPad)
+local NoteView = require(script.NoteView)
 local UnitLights = require(script.UnitLights)
 
 local cameraShake, kick = CameraShake.new()
@@ -33,6 +34,7 @@ local host = Brix.Host.new({
 		{ slot = "behindDoors", system = BehindDoors.new() },
 		{ slot = "elevatorView", system = elevatorView },
 		{ slot = "keypadPad", system = KeypadPad.new(pressKeypad, needCursor) },
+		{ slot = "noteView", system = NoteView.new() },
 		{ slot = "freeCursor", system = freeCursor },
 		{ slot = "hallHaze", system = HallHaze.new() },
 		{ slot = "cameraShake", system = cameraShake },

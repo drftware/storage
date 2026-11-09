@@ -5,7 +5,9 @@
 	floor you can walk: CorridorKit's straights, junctions, walls and dead ends; the M and S units
 	from ReplicatedStorage.Units, in the floor's door colour and numbered; and a motion light over
 	every hall piece, in its power zone. A plain wall in a top run gets a lid over the empty slot
-	behind it, the unit's own wire top and floor, so a friend running the tops never drops in. The
+	behind it, the unit's own wire top and floor, so a friend running the tops never drops in. Given
+	the floor's deal, each unit holding one of the code's notes gets it stuck on its back wall
+	(NoteSpot) as the unit is laid. The
 	lobby is a plain room, the freight elevator standing in its back wall and lit only by the car's
 	lamp, until L-05 dresses the lobby.
 
@@ -20,7 +22,9 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local CorridorKit = require(ReplicatedStorage.Shared.CorridorKit)
+local Deal = require(ReplicatedStorage.Shared.Deal)
 local Elevator = require(ReplicatedStorage.Shared.Elevator)
+local NoteSpot = require(ReplicatedStorage.Shared.Elevator.NoteSpot)
 local Floor = require(ReplicatedStorage.Shared.Floor)
 local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
@@ -321,8 +325,20 @@ type Laying = {
 	lids: { [Floor.Size]: Model }, -- a plain wall's lid per size (lidOf), missing if it can't be made
 	deadEnds: { [number]: { Floor.DeadEnd } },
 	fixtures: { [number]: Floor.Fixture },
+	notes: { [Floor.Slot]: string }, -- what the code's note in a unit says, by its slot
 	breathe: () -> (), -- waits for the next frame once this one's share is spent
 }
+
+-- The code's note in a unit, on its back wall where NoteSpot says, `text` written on it ("_ 7 _ _").
+-- Without the place's note template Elevator.note warns and the unit stays bare.
+local function stickNote(unit: Model, face: CFrame, slot: Floor.Slot, text: string)
+	local spot = NoteSpot.inUnit(Specs[slot.size].Depth, slot.number :: string)
+	local pivot = face * CFrame.new(spot.x, spot.y, spot.z) * CFrame.Angles(0, 0, spot.tilt)
+	local note = Elevator.note(pivot, unit, text)
+	if note then
+		note:ScaleTo(NoteSpot.Scale) -- about its pivot, so its back stays on the wall
+	end
+end
 
 -- One hall piece and everything on it: its floor and deck (a junction with its walls), the units
 -- and plain walls lining it, a dead end closing it, its light. Returns its folder, unparented, and
@@ -359,6 +375,10 @@ local function piece(laying: Laying, index: number): (Folder, number)
 				laying.door
 			)
 			dropWalls(unit, s.drops, origin)
+			local text = laying.notes[s]
+			if text then
+				stickNote(unit, face, s, text)
+			end
 			unit.Parent = folder
 			laying.breathe()
 			count += 1
@@ -392,11 +412,17 @@ end
 
 --[[
 	Lays `floor` with its lobby's middle at `origin` (on the floor, the halls spreading along its
-	-Z) into a new model under `parent`, and returns the model and what it took. Yields: the lobby
+	-Z) into a new model under `parent`, and returns the model and what it took. With the floor's
+	`deck` (Deal.new), the code's notes go in the units it dealt them to. Yields: the lobby
 	comes first, then the hall pieces nearest it, each parented as it's finished. Errors if the place
 	lacks a template (FloorBuilder.units says which).
 ]]
-function FloorBuilder.lay(floor: Floor.Floor, origin: CFrame, parent: Instance): (Model, Laid)
+function FloorBuilder.lay(
+	floor: Floor.Floor,
+	origin: CFrame,
+	parent: Instance,
+	deck: Deal.Deck?
+): (Model, Laid)
 	local units, missing = FloorBuilder.units()
 	assert(
 		units,
@@ -431,6 +457,7 @@ function FloorBuilder.lay(floor: Floor.Floor, origin: CFrame, parent: Instance):
 		lids = {},
 		deadEnds = {},
 		fixtures = {},
+		notes = {},
 		breathe = breathe,
 	}
 	assert(laying.door, `FloorBuilder: no door colour {floor.paint}`)
@@ -457,6 +484,11 @@ function FloorBuilder.lay(floor: Floor.Floor, origin: CFrame, parent: Instance):
 	end
 	for _, f in floor.fixtures do
 		laying.fixtures[f.cell] = f
+	end
+	if deck then
+		for _, note in deck.notes do
+			laying.notes[floor.slots[note.slot]] = Deal.noteText(deck, note)
+		end
 	end
 
 	-- out from the lobby, nearest first, so the floor fills in around the players arriving

@@ -258,10 +258,14 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
   late. `KeypadPad` is the on-screen keypad every device types on, opened by the keypad's "Use"
   prompt; mouse, touch, keyboard and gamepad. Verified in Studio on the Galaxy A16 and desktop:
   0000's alarm, a clear, 5062 folding the gate open; shots `docs/art/L-05b1c-*.jpg`.
-- [ ] **L-05b1b The notes in their units.** The floor's code on sticky notes, one per unit `Deal`
-  names, stuck in the unit with its digits in their slots (`Elevator.note`), as the floor's units
-  are laid; preload Kalam on clients before notes show (in Edit the first note drew no digits
-  until refreshed). In Studio: open a note's unit, read it, punch the floor's code.
+- [x] **L-05b1b The notes in their units** (Nov 8, D-044). FloorBuilder takes the floor's deal and
+  sticks each note on its unit's back wall as it lays the unit: facing the door at eye height, on
+  a rib, a little off the middle and crooked, 1.6 times the art's size (`Elevator/NoteSpot.luau`,
+  pure, 75,928 Lune checks: on the wall, seen whole through the doorway, its digit about 2 mm on
+  the phone from 5 studs). `NoteView` loads Kalam as a client starts and redraws early notes.
+  Verified in Studio on the Galaxy A16: floor 3's four notes spell its code (5062); a note is a
+  plain square from a big unit's doorway and its "5" reads from 6 studs
+  (`docs/art/L-05b1b-*.jpg`). From the doorway itself the digit is a speck: `OWNER.md`.
 - [ ] **L-05b2 The gate's timer.** 30 s after the right code the gate folds shut on its own
   (Dandy's World), with its sound and a countdown you feel (the lamp, a bell); Brix's Zone says
   who's aboard and its Clock times it; the last friend sprinting through the closing gap
@@ -283,7 +287,9 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
   quick footfall per step, as Five Nights at Freddy's footsteps say an animatronic moved.
 - [ ] **L-04e The deal on the floor.** The server padlocks the doors L-04d says, deals each unit
   on its first lift (a peek or an open), and lays what it holds: a tool to pick up (L-11), a find,
-  a keeper asleep or awake (L-06b). Judged from doorways on the Galaxy A16 view.
+  a keeper asleep or awake (L-06b). Judged from doorways on the Galaxy A16 view. Whatever stands
+  in a note's unit leaves the sight line from its doorway to the note clear (D-044); `deck` is
+  already passed to `FloorBuilder.lay`, which sticks the notes.
 - [ ] **L-12 The saw and the hole trap.** Saw a crawl hole into the unit beside you (`Floor`'s
   left and right, D-031); it's loud. Players crawl through, keepers can't. Lead a keeper into a
   unit, crawl out the hole, run round and slam it in: it dents the door and breaks out after
@@ -330,6 +336,8 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 
 ## Polish waiting for a slot
 
+- **A note answers when it's found** (L-05b1b): the first time a note comes into your light, a
+  soft paper flutter and a faint sting, once per note, so the find lands even before it's read.
 
 - **Light that matches at every quality** (owner, Nov 8): at Quality Level 01 nothing casts
   shadows, so the car's lamp lights the lobby's back wall through it and the keypad's red glow

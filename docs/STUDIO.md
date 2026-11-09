@@ -204,6 +204,15 @@ verified: a doc page, Studio, or "untested".
 - **A SurfaceGui draws on an invisible part, and in captures** (L-05a2): a Transparency 1 card
   shows its text. But the first note made in the session drew no digits until its SurfaceGui was
   switched off and on (Kalam's first use, Edit); later notes drew at once.
+- **A note's digit at phone size** (L-05b1b, Galaxy A16, 668x308 captures): Kalam's digits on
+  the art's note stand 0.107 studs tall (a sixth of the note), about 5 rows of the capture from a
+  small unit's doorway: a speck. At the note's 1.6 scale, the "5" of `5 _ _ _` read plainly from
+  6 studs. A unit's walls show grey or warm brown in captures a few seconds apart (its bulb's
+  stutter and the shadows settling); judge colour after standing 10 s.
+- **The first Play after Rojo syncs new code is slow** (L-05b1b): floor 3's laying peaked at
+  168 ms in one frame, then 25.6 ms on the next Play with nothing changed. Measure on the second.
+  `Model:ScaleTo` grows a note's SurfaceGui writing with its card (TextScaled); a note with its
+  scale costs 0.43 ms to lay.
 - **Kalam's line is tall for its digits** (L-05a2): `TextScaled` in a short box comes out
   height-limited and small; with no top or bottom padding the width sets the size.
 - **A lamp's shadows settle after a few seconds** (L-05a2, owner's test): the keypad, on the

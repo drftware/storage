@@ -598,6 +598,8 @@ yanked lattice gate does, and its fold sound builds to the same slam. Not chosen
 by the server; a ProximityPrompt per key (ten prompts on a panel a thumb wide); an idle timeout
 on the readout (it would wipe the first three digits while you wait for a friend).
 
+Settled (owner, Nov 8, after playing L-05b1c: "looks good"): all three rules stay as built.
+
 ## D-043 The keypad answers on every screen: LED digits, a pad by your thumb, sounds on the gate's clock (L-05b1c, Nov 8)
 
 The readout is four seven-segment LEDs drawn as segments (`LedReadout`), not a font: no Roblox
@@ -626,3 +628,29 @@ jolts anyone within 5 studs (trauma 0.5, gone by 24), on the frame the gate hits
 Not chosen: a font for the digits; showing a pressed digit before the server accepts it; the pad
 centred over the wall's keypad (it hid the keys you'd want to watch sink).
 
+
+## D-044 The code's notes on the units' back walls, read from a few steps in (L-05b1b, Nov 8)
+
+Each note the deal hands a unit (`Deal.new`, two notes on floors 1 and 2, four above) is stuck as
+FloorBuilder lays that unit: always on the back wall, facing the door, at first person's eye
+height (4.5 studs), on a crest of the corrugated wall, a little off the middle and up to 4
+degrees crooked, varied by the unit's number (`Elevator/NoteSpot.luau`, pure, Lune-checked). One
+place to look, learned on floor 1, so the search is about which door, never where in the unit.
+The door lifts, the unit's bulb comes on, and the note is the one yellow thing in the box.
+
+Measured on the Galaxy A16: the writing's digits stand 0.107 studs tall on the art's 0.7-stud
+note, about 5 rows of the phone's view from a small unit's doorway, so nobody reads a digit from
+there. The note is drawn at 1.6 times the art's size (`NoteSpot.Scale`, a 1.1-stud note): a
+plain square from any doorway, its digit about 30 rows tall (2 mm on the phone) from 5 studs.
+So you see a note from the hall and read it two steps into a small unit, five into a big one.
+Reading from the doorway itself needs the writing laid out larger, four slots across with each
+digit as tall as the note allows (about twice today's), or the note held up to the screen as
+DOORS shows its library hints: the owner's choice (`OWNER.md`).
+
+The text is written on the server and replicates with the unit, so an exploiter can read every
+note on the floor; the hunt's honesty rests on the keypad's server check, not on hiding the
+notes. Clients load Kalam as they start (`NoteView`, by measuring text in it) and redraw any
+note that arrived first, since a note can stay blank until its writing is redrawn.
+
+Not chosen: notes on a box (units hold no boxes until L-04e, and boxes move); notes anywhere in
+the unit (a hunt inside the hunt, on a phone, in the dark); the note at the art's size.

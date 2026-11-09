@@ -66,6 +66,9 @@ Elevator.KeypadGlow = {
 -- how far off they still draw (a note is read up close; past this it's a yellow square).
 Elevator.NotePixels = 400
 Elevator.NoteReach = 40
+-- Every note laid in the world carries this tag, so each screen can redraw its digits once their
+-- hand (Kalam) has loaded (NoteView).
+Elevator.NoteTag = "CodeNote"
 
 local function vec(v: { number }): Vector3
 	return Vector3.new(v[1], v[2], v[3])
@@ -437,6 +440,7 @@ function Elevator.note(pivot: CFrame, parent: Instance, text: string): Model?
 	local n = template:Clone()
 	n:PivotTo(pivot)
 	Elevator.write(n, text)
+	n:AddTag(Elevator.NoteTag)
 	n.Parent = parent
 	return n
 end

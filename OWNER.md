@@ -14,29 +14,25 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
-## Now: decide the keypad's rules (L-05b1a, Nov 8)
+## Now: judge L-05b1b, the code's notes in their units (built Nov 8)
 
-- [ ] **Decide, defaults in place** (D-042), now that you can play them (below): (1) one keypad
-  and readout shared by the whole team, so one of you can type while another fetches the last
-  digit; (2) no enter key: the fourth digit is checked at once, as door keypads do; (3) a wrong code rings the elevator's alarm bell, lights every light on the floor and leaves the
-  keypad dead for 3.5 s (`Keypad.AlarmSeconds`), then it clears. Say which to change. Settled
-  (Nov 8): Clear on the on-screen keypad only, and the keypad's prompt opening that keypad.
+- [ ] **Find the notes yourself** on the Galaxy A16 in the Device Simulator: Play, take "Walk a
+  floor"; Output prints floor 3's code and where its notes are ("Unit313 (_ 0 _ _), ...").
+  Walk to one, Open its door, look in from the doorway, then step in until you can read it, and
+  do the same in a big unit (377). Look for: the note the first thing you see as the bulb comes
+  on; its digit plain a couple of steps into a small unit and about five into a big one; the four
+  notes spelling the code; then punch it at the keypad. Shots: `docs/art/L-05b1b-doorway.jpg`
+  (a big unit from its doorway, 14 studs) and `-close.jpg` (6 studs, the "5" plain).
+- [ ] **Decide, default in place** (D-044): a note is read from a few steps in, not from the
+  doorway, where its digit is a speck on a phone. To read it from the doorway, pick one: (a) the
+  writing laid out bigger, four slots across with each digit about twice today's height (no
+  game to point to; a look to judge); or (b) a "Read" button that holds the note up on your
+  screen, as DOORS shows its library hints (proven, but a tap). Also say if the note's size is
+  wrong (1.6 times the art's, `NoteSpot.Scale`) or it should go somewhere other than the back
+  wall at eye height.
 
 ## Now: judge L-05b1c, the keypad and gate on screen (built Nov 8)
 
-- [ ] **Play it alone**, on the Galaxy A16 in the Device Simulator, then on your computer: Play,
-  take "Walk a floor", read floor 3's code in Output, walk to the keypad by the gate and tap
-  "Use". Punch 0000, then the right code. Look and listen for: each key dipping and the wall's
-  key sinking with a beep the instant you press; the buzzer, then the alarm bell across the
-  floor, the readout and light blinking, every hall light on, the keys dim for 3.5 s; the
-  double-ding, green digits, the latch, then the gate ratcheting faster into a slam with a jolt,
-  the slam's sound landing as the gate hits, not before or after. Shots in `docs/art/`:
-  `L-05b1c-pad.jpg`, `-wrong.jpg`, `-right.jpg`, `-gate-open.jpg` (A16) and `-desktop.jpg`.
-- [ ] **Say what to change** (numbers in `src/shared/Elevator/Sounds.luau`, `Readout.luau` and
-  `src/client/KeypadPad.luau`): the beep's, ding's or bell's volume; the latch (0.3 s before the
-  gate moves); the blink (0.2 s on, 0.2 off); a key's travel (0.025 studs, maybe too small to see
-  on a phone); the pad's size and place (keys 44 points wide, its left edge 58% across); its 0.9 s
-  of green before it slides away; the slam's jolt.
 - [ ] **Two players** (Test > Clients and Servers, 2 players): one types the first three digits;
   the other watches from the hall's mouth. Look for: the watcher hearing each beep and seeing the
   wall's readout fill and its keys sink; both hearing the alarm on a wrong code; the gate folding

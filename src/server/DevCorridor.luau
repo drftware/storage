@@ -502,7 +502,7 @@ local function devFloor(folder: Folder, elevators: Elevators.Elevators)
 			floor
 		)}`
 	)
-	local model, laid = FloorBuilder.lay(floor, FLOOR_ORIGIN, folder)
+	local model, laid = FloorBuilder.lay(floor, FLOOR_ORIGIN, folder, deck)
 	if laid.elevator then
 		elevators:arm(laid.elevator, deck.code, model)
 	end
@@ -521,8 +521,17 @@ local function devFloor(folder: Folder, elevators: Elevators.Elevators)
 	print(
 		`DevCorridor: floor {n} laid, {laid.units} units on {laid.pieces} hall pieces: {work} of work over {laid.frames} frames, at most {most} in one ({took} in all); "Walk a floor" is by the spawn`
 	)
-	-- Studio only: the code to punch, so the keypad can be tried before the notes are laid (L-05b1b)
-	print(`DevCorridor: floor {n}'s code is {table.concat(deck.code)}`)
+	-- Studio only: the code and where its notes are, so a tester can walk straight to them
+	local where = {}
+	for _, note in deck.notes do
+		table.insert(where, `Unit{floor.slots[note.slot].number} ({Deal.noteText(deck, note)})`)
+	end
+	print(
+		`DevCorridor: floor {n}'s code is {table.concat(deck.code)}; its notes: {table.concat(
+			where,
+			", "
+		)}`
+	)
 end
 
 -- Builds the whole corridor into one folder and parents it once. Returns nil, after a warning,
