@@ -266,15 +266,15 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
   Verified in Studio on the Galaxy A16: floor 3's four notes spell its code (5062); a note is a
   plain square from a big unit's doorway and its "5" reads from 6 studs
   (`docs/art/L-05b1b-*.jpg`). From the doorway itself the digit is a speck: `OWNER.md`.
-- [ ] **L-05b1d Read a note** (owner, Nov 8, D-044). A "Read" button on each code note holds it
-  up on your screen, big, its digits in their slots, as DOORS shows the hint in a library book.
-  The moment: the door lifts, the yellow square on the back wall, two steps in, tap Read, shout
-  the digit. Client only (the note's text replicates): `NoteView` makes a prompt per note (as
-  `KeypadPad` makes the keypad's), and the card lifts into view with a paper rustle and drops
-  away on a tap, Read again, walking off or death. The card is the note's own paper and Kalam
-  ink, its digits as tall as a phone allows; touch, mouse, keyboard (E) and gamepad; reach and
-  sizes as feel numbers. Judged on the Galaxy A16. Taking a note and handing it over waits for
-  L-11 (the GDD's hand-offs).
+- [x] **L-05b1d Read a note** (Nov 8, D-045). Two steps into a note's unit a "Read" button shows
+  under the note; a tap lifts the note into the middle of the screen with a paper flap, crooked as
+  it hangs: its real paper mesh in a ViewportFrame, its four slots in Kalam over its writing area,
+  the digit 7.7 mm tall on the Galaxy A16 (on the wall, 2 mm from 5 studs). A tap on it, Read again
+  (E, gamepad X), B, a click, walking out to the doorway or dying drops it, after a 0.3 s grace.
+  `Elevator/NoteCard.luau` (pure: reach, layout, slots; 395 Lune checks over eight screens) and
+  `NoteView`. Verified in Studio on the Galaxy A16 (Unit 313's `_ 0 _ _`): the card, and every
+  way to drop it but the mouse; shot `docs/art/L-05b1d-card.jpg`. A real tap on Read, the click
+  and the motion are the owner's (`OWNER.md`).
 - [ ] **L-05b2 The gate's timer.** 30 s after the right code the gate folds shut on its own
   (Dandy's World), with its sound and a countdown you feel (the lamp, a bell); Brix's Zone says
   who's aboard and its Clock times it; the last friend sprinting through the closing gap
@@ -345,6 +345,8 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 
 ## Polish waiting for a slot
 
+- **The held-up note's shadow** (L-05b1d): a soft shadow under the card as it lifts, so it reads
+  as paper held off the world rather than pasted on the screen.
 - **A note answers when it's found** (L-05b1b): the first time a note comes into your light, a
   soft paper flutter and a faint sting, once per note, so the find lands even before it's read.
 

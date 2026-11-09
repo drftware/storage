@@ -204,6 +204,23 @@ verified: a doc page, Studio, or "untested".
 - **A SurfaceGui draws on an invisible part, and in captures** (L-05a2): a Transparency 1 card
   shows its text. But the first note made in the session drew no digits until its SurfaceGui was
   switched off and on (Kalam's first use, Edit); later notes drew at once.
+- **A ViewportFrame draws a mesh's SurfaceAppearance but no SurfaceGui** (Play, L-05b1d): the
+  note's paper showed its colour map (thumb smudge and all) and its curl, but the SurfaceGui
+  writing on its card drew nothing; write over it with screen labels. A parent's `Rotation` turns
+  a ViewportFrame and the labels with it, and a transparent ViewportFrame floats over the world.
+- **Kalam (bold) metrics** (`TextService:GetTextBoundsAsync`, L-05b1d): the line is exactly the
+  TextSize tall; widths over TextSize are "0" 0.325, "7" 0.30, "8" 0.375, "_" 0.39, and
+  "_ 7 _ _" 2.21. TextScaled sizes each label on its own, so a "_" and a "7" side by side need one
+  computed TextSize.
+- **The MCP's touch doesn't reach a ProximityPrompt's button** (Galaxy A16, L-05b1d): a tap
+  dead on the shown prompt arrived with `gameProcessedEvent` false and didn't trigger it, while
+  taps on ScreenGui buttons work. Trigger prompts with `InputHoldBegin`/`End`; a real tap on a
+  prompt is the owner's to check. `user_keyboard_input` with E, `ButtonX` and `ButtonB` does reach
+  ContextActionService bindings and a prompt's keyboard key.
+- **Paper sounds** (Play, L-05b1d, by `PlaybackLoudness` every 25 ms): Pro Sound Effects' "File
+  Folder Movement 5" (9114409576, 1.75 s) is near silent but one sharp flap at 0.78 to 0.88 s;
+  "Rip Perforated Computer Paper Paper Rustle 3" (9118184346) is a loud quarter second at 0.1 s,
+  the rip.
 - **A note's digit at phone size** (L-05b1b, Galaxy A16, 668x308 captures): Kalam's digits on
   the art's note stand 0.107 studs tall (a sixth of the note), about 5 rows of the capture from a
   small unit's doorway: a speck. At the note's 1.6 scale, the "5" of `5 _ _ _` read plainly from

@@ -429,6 +429,14 @@ function Elevator.write(note: Model, text: string)
 	end
 end
 
+-- What's written on a note ("_ 7 _ _"), or nil if its writing hasn't arrived.
+function Elevator.read(note: Model): string?
+	local card = note:FindFirstChild("Writing")
+	local gui = card and card:FindFirstChild("Digits")
+	local label = gui and gui:FindFirstChild("Label")
+	return if label and label:IsA("TextLabel") then label.Text else nil
+end
+
 -- A note stuck at `pivot` (its back on the surface, its face toward the LookVector) with `text`
 -- written on it. Nil, after a warning, if the place has no template.
 function Elevator.note(pivot: CFrame, parent: Instance, text: string): Model?

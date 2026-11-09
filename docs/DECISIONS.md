@@ -658,3 +658,35 @@ the unit (a hunt inside the hunt, on a phone, in the dark); the note at the art'
 Settled (owner, Nov 8): a "Read" button on each note holds it up on your screen, big, as DOORS
 shows the hint in a library book (L-05b1d). The note stays on the wall at 1.6 so it's spotted
 from the doorway; the button is how its digit gets read on a phone.
+
+## D-045 Reading a note: the real note held up on the screen (L-05b1d, Nov 8)
+
+Two steps into a note's unit (within 6 studs of the button, `NoteCard.Reach`) a "Read" button
+shows under the note, never over it and never from the hall: you go in to read it, as DOORS makes
+you walk to the library book. A tap lifts the note into the middle of the screen, as big as a
+phone held sideways allows (84% of the height under Roblox's bar, at most 48% of the width, so the
+thumbstick and jump button stay clear and stay usable). It rises from below, a little smaller
+and more crooked, and settles with a small overshoot at the same tilt it hangs at on the wall, to
+a paper flap; the world behind dims to 55% so the note stands out and you still see what's coming.
+
+The card is the note itself: its own paper mesh, drawn face on in a ViewportFrame under a warm
+light so it's the wall's yellow, brighter, with its thumb smudge and curled foot. A SurfaceGui
+draws nothing inside a ViewportFrame (seen in Studio), so the four slots are TextLabels laid over
+the paper's writing area (`Specs.Note.Write`, the wall's 4% margins), each a quarter of it, all
+at one TextSize, so a blank and a digit are written alike. On the Galaxy A16 that's TextSize 94
+and a digit 7.7 mm tall; on the wall from 5 studs it's 2 mm.
+
+It drops on a tap on it, Read again (E, gamepad X), B, a click (mouse), walking back out to about
+the doorway (8 studs, `NoteCard.LetGo`), dying, or the note leaving. For 0.3 s after it lifts,
+taps and keys are ignored, so the tap that pressed Read or an impatient second one can't throw it
+away. You can walk and look while it's up: the keepers don't wait while you read. The mouse isn't
+freed for it: a click anywhere drops it.
+
+The sound is Pro Sound Effects' "File Folder Movement 5" (9114409576), its one sharp flap at 0.78
+to 0.88 s; the drop plays it lower and softer. All on the client: the note's writing already
+replicates (D-044), so nothing new goes over the wire.
+
+Not chosen: the note's texture cropped from the Fittings atlas as a flat image (the UVs are packed
+and may turn, and it's the same 130 texels as the mesh); a plain yellow square (not the real art);
+the digits laid larger than the wall's writing area (the card should be the note you saw); freeing
+the cursor with FreeCursor (nothing to click but the note itself).

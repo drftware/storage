@@ -23,6 +23,22 @@ nowhere else.
   on; its digit plain a couple of steps into a small unit and about five into a big one; the four
   notes spelling the code; then punch it at the keypad. Shots: `docs/art/L-05b1b-doorway.jpg`
   (a big unit from its doorway, 14 studs) and `-close.jpg` (6 studs, the "5" plain).
+
+## Now: judge L-05b1d, reading a note (built Nov 8)
+
+- [ ] **Read one on the phone:** Galaxy A16 in the Device Simulator, Play, take "Walk a floor",
+  open Unit 313's door (a small unit) and take two steps in: "Read" shows under the note. Tap it
+  with a real tap (mine couldn't reach a prompt's button). Look for: the note rising from below
+  with a paper flap and settling crooked, as it hangs; its 0 plain at a glance; the tap that
+  opened it not dropping it. Then drop it each way: tap the card, press Read again (E), walk back
+  out (it drops at the doorway). Do the same in a big unit (377): Read shows about halfway in.
+  Judge the flap (brighter lifting, lower dropping), the lift's speed and overshoot (0.28 s), the
+  dim behind it, and its size. Shot: `docs/art/L-05b1d-card.jpg`.
+- [ ] **On a computer** (Device Simulator off): E reads, then a left click anywhere drops it.
+  With a gamepad, if you have one: X reads, X or B drops.
+- [ ] **Decide, defaults in place** (D-045): (1) you can walk and look while the note is up (a
+  keeper doesn't wait), or should reading hold you still? (2) the world dims to 55% behind it.
+
 ## Now: judge L-05b1c, the keypad and gate on screen (built Nov 8)
 
 - [ ] **Two players** (Test > Clients and Servers, 2 players): one types the first three digits;
