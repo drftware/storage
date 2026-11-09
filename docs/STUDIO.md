@@ -546,3 +546,17 @@ verified: a doc page, Studio, or "untested".
   or assigning to a `Kind` local from it fails strict checks. `Deal` keys its odds tables by
   `string` and casts the one assignment (`k :: Kind`); `Door` gets away with `:: { Action }`
   because it never indexes a table by the loop variable.
+- **The Device Simulator's calls** (L-11b, so the 10k-token skill needn't be loaded again):
+  `local svc = game:GetService("StudioDeviceSimulatorService")`, in Edit before Play:
+  `svc:SetDeviceAsync("samsung_galaxy_a16")`, `task.wait(0.3)`,
+  `svc:SetOrientationAsync(Enum.ScreenOrientation.LandscapeLeft)`; after Play is stopped,
+  `svc:StopSimulationAsync()`; `svc:GetDeviceAsync()` says which ("default" when off). Every call
+  yields; wrap in pcall. Setters fail in Play's server view. The A16's viewport is 685x338.
+- **The MCP's E reaches ProximityPrompts** (Play, L-11b): `user_keyboard_input` E (and ButtonX on a
+  pad) triggers the prompt Roblox shows for that key, but with two E prompts in reach only one
+  shows (Exclusivity OnePerButton): by the spawn E took "Walk a floor" over a tool's "Pick up"
+  and sent the player to the floor. Stand away from the posts (10 studs) when testing a prompt.
+  Prompts don't show in `screen_capture`.
+- **Setting `workspace.CurrentCamera.CFrame` on the client turns a first-person view** (Play,
+  L-11b): with LockFirstPerson the camera keeps the new look, so a shot can be aimed from the MCP.
+

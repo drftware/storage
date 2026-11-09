@@ -12,6 +12,7 @@ local Doors = require(script.Doors)
 local Elevators = require(script.Elevators)
 local Flashlights = require(script.Flashlights)
 local MotionLights = require(script.MotionLights)
+local Slots = require(script.Slots)
 
 local systems: { Brix.HostEntry } = {
 	-- The building's motion lights: which fixtures are lit, for every player.
@@ -21,6 +22,8 @@ local systems: { Brix.HostEntry } = {
 	-- Each floor's freight elevator: its keypad, the code check, the alarm, its gate.
 	{ slot = "elevators", system = Elevators.new() },
 	{ slot = "flashlights", system = Flashlights.new() },
+	-- Everyone's two tool slots: tools on floors, picked up, switched, dropped, handed over.
+	{ slot = "slots", system = Slots.new() },
 }
 if RunService:IsStudio() then
 	-- A test hall of real units to try the doors in. Never on a live server.

@@ -119,6 +119,12 @@ local ART: { Art } = {
 		manifest = "art/flashlight/assets.json",
 		description = "An old two-battery plastic torch, faded yellow with black ends and a rubber button",
 	},
+	{
+		key = "BoltCutters",
+		path = "art/boltcutters/out/BoltCutters.fbx",
+		manifest = "art/boltcutters/assets.json",
+		description = "A pair of 18-inch bolt cutters: chipped red handles, black rubber grips, a forged steel jaw",
+	},
 }
 local MODEL: OpenCloud.Kind = { assetType = "Model", contentType = "model/fbx" }
 

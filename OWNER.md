@@ -7,12 +7,38 @@ nowhere else.
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 - [ ] **Save the place** (File > Save to Roblox) after this session (Nov 8): the elevator's and
-  the flashlight's templates live only in the open place, at `ReplicatedStorage.Props.Elevator`,
-  `Props.Note` and `Props.Flashlight` (without it nobody has a torch; Output warns). Unsaved, the next open loses them and every floor's lobby has
+  the flashlight's and the bolt cutters' templates live only in the open place, at
+  `ReplicatedStorage.Props.Elevator`, `Props.Note`, `Props.Flashlight` and
+  `Props.Tools.BoltCutters` (without them nobody has a torch and no tool lies anywhere; Output
+  warns). Unsaved, the next open loses them and every floor's lobby has
   an empty hole in its back wall (Output warns).
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
+
+## Now: judge L-11b, two tool slots (built Nov 8)
+
+- [ ] **Hand the cutters to a friend** (Test > Clients and Servers, 2 players). One picks up the
+  pair on the hall floor by the spawn (stand a few steps off the posts: E there walks you to the
+  floor) and walks to the other. Look for: "Give" with the friend's name on them within about 10
+  studs; press it: the cutters leave your hand and bar, swing up into theirs with a clank, and
+  their screen reads "Bolt cutters from (you)". Then fill the friend's slots (the second pair is
+  in the first unit on the right: open its door) and try again: "Hands full" on the prompt. The
+  friend should see the cutters in your left hand, jaw forward, swinging as you walk.
+- [ ] **On the phone** (Galaxy A16 in the Device Simulator, set in Edit first; real taps, mine
+  can't reach buttons or prompts): tap "Pick up" on the cutters by the spawn; tap slot 2 and slot 1
+  on the bar; tap Drop. Look for: the clank and the name above the bar, the cutters swinging into
+  the left of your view, the raised slot, the fall and the clank on the concrete. Is the bar the
+  right size and place between the thumbstick and the jump button? Shots `docs/art/L-11b-*.jpg`.
+- [ ] **On a computer:** E picks up, 1 and 2 switch, G drops; with a gamepad, X, the d-pad's left
+  and right, and its down.
+- [ ] **Decide, defaults in place** (D-048): (1) handing over as a "Give" prompt on a friend:
+  Lethal Company has none (you drop it at their feet), so this is an untested bet; keep it, or
+  only drop? (2) the tool in your left hand, since the torch has the right; (3) keys 1, 2 and G,
+  the d-pad, and E/X to pick up; (4) the cutters' size (1.5 times life, 2.6 studs) and where they
+  sit in your view (`Tools/Catalog.luau`, `hold`).
+- [ ] **Brix:** it has no carried-items system; a Brix session should file the ticket in
+  `docs/FRAMEWORK.md` (the "Carried items" row) in Brix's ROADMAP. Say if you want that now.
 
 ## Now: judge L-11a, the flashlight (built Nov 8)
 

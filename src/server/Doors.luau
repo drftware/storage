@@ -21,8 +21,8 @@
 	motion ends.
 
 	Tools are a stand-in until Phase 2's tools: a player carries one while their attribute
-	`Carries<Tool>` is true (`CarriesBoltCutters`, `CarriesPadlock`). The test hall's post gives
-	bolt cutters.
+	`Carries<Tool>` is true (`CarriesBoltCutters`, `CarriesPadlock`). `Slots` keeps the first true while
+	you carry bolt cutters, until L-11c reads the slots here.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")

@@ -308,15 +308,28 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
     Verified in Studio: the torch in hand, right click and R1, the server's state and aim, the
     beam at Level 21 and Level 8 and on the Galaxy A16 (`docs/art/L-11a-*.jpg`). The phone tap,
     a friend's beam and arm, and six players' light: `OWNER.md`.
-  - [ ] **L-11b Two slots and your hands.** A slot needs a real tool to hold, so the bolt
-    cutters' art comes first, the unit's way (`art/boltcutters/`, as `art/flashlight/`). Then
-    Lethal Company's slots on the server: pick a tool up off a unit's floor, switch, drop, hand one
-    to a friend, each with a phone button; the slots' bar on screen; one table of tools (a row
-    each, as keepers are rows). The torch stays in your hand and out of the slots (GDD: everyone
-    has one). Ask Brix's ROADMAP for an inventory in neutral terms; build the smallest stand-in
-    behind that shape. If the art and the slots won't fit one session, split them.
-  - [ ] **L-11c The padlock, and the cutters at work.** The padlock's art; the bolt cutters and
-    the padlock used from the slots, off the test post (`Door.Tools` read from the slots).
+  - [x] **L-11b Two slots and your hands** (Nov 8, D-048). The bolt cutters built by script
+    (`art/boltcutters/`: chipped red handles, black grips, bolted black plates, a forged jaw ground
+    bright; baked, sheets) and imported to `ReplicatedStorage.Props.Tools.BoltCutters`. Lethal
+    Company's slots: a tool lies on a floor with "Pick up" (E, X); it comes into your hand (the
+    free slot if your hand is full) with a clank everyone near hears, and its name shows above the
+    bar; "Hands full" when both slots are. The bar at the bottom middle shows each tool as a real
+    3D picture, the one in hand raised: tap it, 1 and 2, or the d-pad. Drop (the round button, G,
+    d-pad down) lets it fall crosswise ahead of you and clank on the concrete. A friend holding a
+    tool sees "Give" on you within 10 studs; you hear the clank and read "Bolt cutters from Sam".
+    Yours is drawn low on the left of your view with the torch's sway, swinging up as it arrives
+    and down as it goes; friends see it in your left hand, jaw forward. Dying or leaving drops
+    everything. `Tools.Carry` (pure, 48 Lune checks), `Tools.Catalog` (a row per tool), `Slots`
+    (server), `ToolView` (client); two pairs lie in the test hall in place of the old post.
+    Verified in Studio: pick up, switch, switch back, drop, the bar and the held tool, on a
+    computer and on the Galaxy A16 (by gamepad keys; shots `docs/art/L-11b-*.jpg`). Handing over
+    and the phone's taps: `OWNER.md`.
+  - [ ] **L-11c The padlock, and the cutters at work.** The padlock's art first (as the cutters'),
+    its row in `Tools.Catalog`. Then `Doors` reads the slots instead of the `CarriesBoltCutters`
+    attribute (`Slots:carried`), needing the cutters in your hand to Cut and a padlock in your hand
+    to lock (`Door.Tools`); drop the attribute stand-in. The cutters' bite at the shackle, from
+    the jaw's tip (`Specs/BoltCutters.JawTip`): the jaw's snap and the padlock's clatter as it
+    falls; "One padlock per use" (GDD) decided with the owner.
 - [ ] **L-06b The Mannequin hunts.** At no more than player speed: a data row on Brix's Pursuit
   (floor pathing, a cone reach), frozen in a flashlight's beam. Needs Brix's ENG-06 and ENG-07.
   Keepers hear a door (the GDD: an open, a slam, a lift from inside) as far as its sound carries:
@@ -378,6 +391,12 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 
 ## Polish waiting for a slot
 
+- **Your hand on the cutters** (L-11b): first person shows the cutters alone, low on the left; a
+  left hand closing round the grips would sell the hold (with the torch's hand, one rig).
+- **A dropped tool's tumble** (L-11b): it falls straight and lands flat; a bounce and a skid on
+  the concrete in time with the drop's clanks would land the moment.
+- **The slots' bar wakes and sleeps** (L-11b): it shows always; it could fade to faint after a few
+  seconds with nothing new and come back on any change, as Minecraft's hotbar stays but quiet.
 - **Your hand on the torch** (L-11a): first person shows the torch alone, low on the right; a hand
   round its grip (the avatar's own colour) would sell it, as DOORS' and Pressure's held items do.
 - **A hint for the torch's right click** (L-11a): mouse players learn Alt from FreeCursor's pill;

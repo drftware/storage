@@ -32,6 +32,7 @@ As of Brix commit `4c21b5f` (2026-11-05; 0.1.0 not tagged yet). Recheck its `src
 | Keepers chasing players (L-06), getting caught (L-07) | Pursuit contract, Pathing (floor, free), Reach (sphere, cone) | contract and parts ready; the system is ENG-06, its Studio adapters ENG-07 |
 | Allocation-free hot paths | Pool | ready |
 | Remotes for door prompts, the keypad, tools | Remotes (ENG-09) | planned |
+| Carried items: slots, one in hand, pick up, switch, drop, hand over (L-11b) | none yet | not in Brix (checked Nov 8, `4c21b5f`); stand-in `Tools.Carry` (pure rules) and `src/server/Slots.luau`. Ticket for a Brix session to file, in neutral terms: "A carried-items system: a fixed number of slots per player, one active; take, switch, release and transfer between players, each validated (type, reach, room, rate) and replicated; items as data rows" |
 | Player data: finds, cash, best floor | Saves (ENG-10) | planned |
 | Tuning live during playtests (L-09) | Live config and flags (ENG-11) | planned |
 | Retention and funnel gates (the GDD's) | Telemetry (ENG-12) | planned |

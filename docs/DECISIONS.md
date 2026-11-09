@@ -746,3 +746,28 @@ close in front of you at low graphics, where a spotlight lights nothing nearer t
 Not chosen: F (the door's Close); the server switching lights (your own would show twice and lag a
 round trip); the torch as a Tool (Roblox's backpack and its arm pose); a battery (not in the GDD).
 
+
+## D-048 Two tool slots, Lethal Company's way; the tool in your left hand (L-11b, Nov 8)
+You carry two tools besides the torch (GDD: "two tools plus whatever's in your hands"), as Lethal
+Company's slots: one slot is in your hand, and an empty slot is an empty hand. Picking up or being
+handed a tool puts it in your hand if it's empty, otherwise in the other slot and into your hand
+(you see what you took); both refuse when both slots are full ("Hands full" on the prompt). Drop
+and Give take what's in your hand and leave that hand empty. Rules are pure (`Tools.Carry`); the
+server owns every tool (`Slots`): a tool lies on a floor with a "Pick up" prompt (E, X on a pad)
+until taken; carried, the one in hand is welded in the left hand for everyone, the rest are out of
+the world. A tool is one row in `Tools.Catalog`, keyed by `Deal.Tool`, as keepers are rows.
+The left hand, because the torch has the right (D-047); your own is drawn on your screen, low on the
+left with the torch's sway, swinging up as it arrives and down as it goes. Switching answers at
+once on your screen (a soft clank; the server is told and has the last word after 0.6 s); a pick-up,
+drop and handover wait for the server, whose clanks everyone near hears. A drop lands crosswise
+2.2 studs ahead of you, its middle on the floor a ray finds (short of a wall), falling 0.32 s.
+The bar: two squares at the bottom middle with a real 3D picture of each tool, tap or 1/2 or the
+d-pad; Drop beside it (G, d-pad down) while you hold something; the tool's name above the bar for a
+moment, as Minecraft's hotbar names what you switch to. Handing over is a local "Give" prompt on
+each friend within 10 studs while you hold a tool: Lethal Company has no handover (you drop it at
+their feet), so this one-press shortcut is an untested bet in `OWNER.md`. Brix has no carried-items
+piece (FRAMEWORK); `Carry` and `Slots` are the stand-in behind that shape. Until L-11c reads the
+slots, `Slots` keeps the old test attribute `CarriesBoltCutters` true while either slot holds
+cutters, so Cut still works; the test hall's "Bolt cutters" post is gone, two pairs lie on floors.
+Not chosen: Roblox's Tool and Backpack (its arm pose, its own hotbar and keys; the Backpack core UI
+is now off); the server drawing your own held tool (a round trip late, and it can't sway).

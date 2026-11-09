@@ -38,6 +38,7 @@ local HallLight = require(ReplicatedStorage.Shared.HallLight)
 local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
 local MotionLights = require(script.Parent.MotionLights)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
+local Slots = require(script.Parent.Slots)
 local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
 
 -- The layout, in studs. The hall runs along X; doors face each other across Z.
@@ -112,6 +113,12 @@ local FLOOR_ORIGIN = CFrame.new(0, 0, -600)
 local FLOOR_SEED = 7
 local FLOOR_NUMBER = 3
 local FLOOR_ARRIVAL = CFrame.lookAt(Vector3.new(0, 3, 6), Vector3.new(0, 3, -12)) -- in the lobby, facing the hall
+-- The test hall's bolt cutters (L-11b): a pair on the hall floor by the spawn, a pair in the first
+-- unit on the right (open its door to find them).
+local CUTTERS = {
+	{ at = Vector3.new(-28.5, FLOOR_TOP, 2.2), yaw = 64 },
+	{ at = Vector3.new(-17, 0, 11), yaw = 205 },
+}
 local FLOOR_POST = CFrame.new(9, 0, 9) -- "Come back", in the lobby's corner by the elevator
 
 local DOOR_COLOURS = {
@@ -439,32 +446,6 @@ local function travelPost(
 	end)
 end
 
--- "Bolt cutters" by the spawn (R): take them, and a padlocked door's Cut works for you; press
--- again to drop them, and it says "Need bolt cutters". A stand-in for Phase 2's tools: the Doors
--- system reads the player's CarriesBoltCutters attribute.
-local function cuttersPost(at: Vector3, parent: Instance)
-	local post = block(
-		"BoltCutters",
-		Vector3.new(0.4, 4, 0.4),
-		CFrame.new(at.X, FLOOR_TOP + 2, at.Z),
-		CONCRETE,
-		parent
-	)
-	local a = Instance.new("Attachment")
-	a.Position = Vector3.new(0, 1, 0)
-	a.Parent = post
-	local name = "Test tools"
-	local p = Prompts.post(a, name, "Bolt cutters", Enum.KeyCode.R, Enum.KeyCode.ButtonR1)
-	local say = Prompts.refuser(p, function()
-		return name
-	end)
-	p.Triggered:Connect(function(player: Player)
-		local has = player:GetAttribute("CarriesBoltCutters") == true
-		player:SetAttribute("CarriesBoltCutters", not has)
-		say(if has then "Dropped" else "Taken")
-	end)
-end
-
 -- Lays a floor from the data beside the hall (L-01c), prints its map, and opens the way there:
 -- "Walk a floor" by the spawn, "Come back" in its lobby. Workspace's DevFloorSeed and
 -- DevFloorNumber attributes pick which. Yields while it lays.
@@ -633,7 +614,6 @@ local function build(lights: MotionLights.MotionLights): Folder?
 		folder
 
 	travelPost("GoFar", Vector3.new(-34, 0, 3), "Streaming test", "Go far", FAR_SPOT, folder)
-	cuttersPost(Vector3.new(-30, 0, 3), folder)
 	travelPost(
 		"ComeBack",
 		Vector3.new(FAR_X + 8, 0, 3),
@@ -688,9 +668,16 @@ function DevCorridor.new(): Brix.System
 			local lights = (context.registry:get("motionLights") :: any) :: MotionLights.MotionLights
 			-- any: as above; Elevators fills this slot
 			local elevators = (context.registry:get("elevators") :: any) :: Elevators.Elevators
+			-- any: as above; Slots fills this slot
+			local slots = (context.registry:get("slots") :: any) :: Slots.Slots
 			local folder = build(lights)
 			built = folder
 			if folder then
+				-- bolt cutters to try the slots with (L-11b): one pair on the hall floor by the spawn,
+				-- one in the first unit on the right
+				for _, spot in CUTTERS do
+					slots:lay("BoltCutters", spot.at, spot.yaw)
+				end
 				laying = task.spawn(devFloor, folder, elevators)
 			end
 		end,
