@@ -5,7 +5,8 @@
 	sync imported meshes, D-009) and prepared by `prepare`: its grip (where a hand closes) at the
 	model's pivot, its business end towards the LookVector. A tool may have a second part that
 	moves on it later (the ladder's fly, `<template>Fly`), welded to the first. `Catalog` holds the
-	rows, `Carry` the slots' rules, `Specs/<key>` each tool's generated sizes.
+	rows, `Carry` the slots' rules, `Specs/<key>` each tool's generated sizes, `Leaning` and `Leaned`
+	the ladder leaned on a front and climbed.
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -40,6 +41,9 @@ Tools.HeldName = "HeldTool" -- the model's name in a character's hand
 Tools.LockTag = "PadlockButton"
 -- A wall's Saw button (Saws): every screen hides it unless that player carries a saw.
 Tools.SawTag = "SawButton"
+-- A unit front's Lean button (Ladders): every screen hides it unless the ladder is in that player's
+-- hand.
+Tools.LeanTag = "LeanButton"
 -- On a button a tool works away from a door (Saws' "Saw"): the action, as `DoorAction` is a door's,
 -- so your view brings the tool out while you hold it.
 Tools.ActionAttribute = "ToolAction"

@@ -17,6 +17,36 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-13b2a, leaning the ladder and climbing it (built Nov 9)
+
+- [ ] **Lean it, climb it, come down, take it** (Play on a computer). Pick up the ladder by the
+  spawn (E) and walk to unit 102 across the hall. Look up at the top of its front: a "Lean"
+  button (R) sits up there on the left of the door, only while the ladder's in your hand. Press
+  it: the ladder swings off your shoulder against the front (a bang as its top lands), the top
+  half runs up with a metal rattle and stops with a clack, rails resting on the edge and reaching
+  past it (`docs/art/L-13b2a-leaned.jpg`). At its foot: Climb (E) and Take (F). Climb: you go up
+  rung over rung in about a second and roll over the edge onto your belly on the wire top with a
+  rattling thump (`docs/art/L-13b2a-view.jpg`; the tops are dark, so turn your torch on). Look
+  ahead: "Climb down" (E). Down you go, a step back into the hall. Take: it's back on your
+  shoulder. Look for: is the climb quick enough for an escape and slow enough to read? Is the
+  roll onto the top too sudden or too slow? Is "Climb down" easy to find (it sits ahead of you,
+  so it's gone while you look back down at the hall)?
+- [ ] **Listen** (nobody here could): the top landing, the rattle running up, the locks' clack,
+  the rungs (one recording of a metal ladder climb) and the wire top's thump. Say which is wrong.
+- [ ] **Two players** (Clients and Servers, 2 players): you see your friend climb with Roblox's
+  own climb animation, then lie on the top reaching ahead (`docs/art/L-13b2a-lying.jpg`). A second
+  climber gets the next spot along the front (three fit on a small unit, four on a big one).
+  While one is on the rungs, Climb says "Wait for them"; while anyone's up there, Take says
+  "Someone's up there". Check a friend's climb looks smooth, not stepped.
+- [ ] **On the phone** (Galaxy A16): not checked this session (the simulator can't be set from a
+  script). Tap Lean, Climb, Take and Climb down; is the Lean button reachable without walking
+  under it, and does lying on the top read on a small screen?
+- [ ] **Decide, defaults in place** (D-057): (1) climbing is a pressed move the game makes, as
+  the crawl is, not Roblox's own truss climbing (on a leaned truss it flicked between climbing and
+  falling in Studio); (2) Take is refused while anyone's up there, so nobody is stranded until
+  L-13b2b's drop off the front exists; (3) the ladder leans on the left of the door as you face
+  the unit, so the doorway stays mostly clear.
+
 ## Now: judge L-13b1, the ladder carried (built Nov 9)
 
 - [ ] **Carry it** (Play on a computer). A ladder now lies along the hall past the saw, by the

@@ -971,3 +971,39 @@ wall as you carry it, and no small unit holds it); carried hanging from the hand
 posing both arms on it (the torch has the right hand; a friend's raised arm is in the polish list);
 leaning the dealt ladder on a unit's wall (a new resting pose; listed as polish for after L-13b2's
 lean).
+
+## D-057 The ladder leaned and climbed: a pressed Lean, a pressed Climb the game makes, a spot each on the top (L-13b2a, Nov 9)
+**Leaning:** a Lean button (R, R2 on a pad: the hold verbs' key, a tap here, so it never fights a
+door's E) sits up by each unit's top edge on the left of the door as you face the unit, shown
+only to whoever has the ladder in hand (ToolView, as the saw's button). Pressed, the ladder leaves
+your hand (`Slots:place`; Slots still owns it) and stands at the 4-to-1 rule (feet a quarter of
+the height out, about 2.7 studs into the 8-stud hall), its back resting on the front's top edge
+beside the door, so most of the doorway stays open; one ladder per front. Every screen plays it
+going up from the server's start time (`Leaning.raise`): a 0.4 s swing off the shoulder that
+settles, a bang as its top lands, then the fly runs out its 5 studs accelerating, rattling, and
+stops dead with its locks' clack at 0.85 s, as Lethal Company's extension ladder shoots up when
+placed. Collapsed it doesn't reach the edge; run out, its caps are 1.4 studs past it, under the
+deck. Its parts stay inert: nothing collides with it. **Climbing:** a pressed Climb (E) at its
+foot, and the game moves you, as the crawl does (D-054; DOORS' and Pressure's vents): onto it,
+up it at 7 studs a second in surges a step every two rungs, then over the edge in an arc onto
+your belly on the wire top, about 2 s in all, your screen moving your body (PlatformStand, the
+crawl's collision group) and playing Roblox's own climb animation from your character's Animate
+while you're on the rungs, so friends see a climber, not a sliding body. Your view stays yours to
+turn and rides with your head (Roblox's camera follows the root turned with it, so lying flat it
+sits at your head, 0.85 above the wire). Each climber lies in a spot of their own along the
+front, 2.2 apart (three on a small unit, four on a big one: "No room up there" after); one on
+the rungs at a time ("Wait for them"), the next free once the one before starts rolling over.
+**Down:** a Climb down button (E) just ahead of each spot, out of reach from the hall; the game
+slides you back onto the ladder, down it and a step back into the hall. **Take** (F, beside
+Climb) puts it back on your shoulder (`Slots:handBack`), refused while anyone's on it ("Someone's
+on it") or up there ("Someone's up there"): until L-13b2b's drop off a front exists, taking the
+ladder would strand them. Every press is checked on the server (reach plus lag, rate, the ladder
+in hand to lean it and not to climb, your spot to come down) and if your screen never moved you
+the server puts you at the move's end. Keepers never get these buttons; `Ladders.climbed` tells
+L-06b's keepers about the bang going up (60 studs) and each climb (30). Not chosen: Roblox's own
+truss climbing on an invisible TrussPart along the ladder (tried in Studio: a truss leaned 14
+degrees off vertical flicked the climber between Climbing, Running and Freefall, and a vertical
+one leaves a friend climbing a stud off the ladder); a climb you steer (stopping halfway is no use
+on an escape, and the crawl already set the pressed move); Climb down as a screen button (the
+prompt keeps every verb the same on phone, pad and keyboard); leaning in front of the door's
+middle (it would block the doorway).

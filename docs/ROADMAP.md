@@ -406,18 +406,23 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
       both hands (no switching slots or picking up, "Drop the ladder first"), and slows your walk
       to 12, as Lethal Company's two-handed items.
     - [ ] **L-13b2 Up the ladder and along the tops.** Split Nov 9:
-      - [ ] **L-13b2a Lean it and climb.** A "Lean" button at a unit's front with the ladder in
-        hand (a pressed verb, as the saw's): it goes up against the front at the 4-to-1 rule, the
-        fly runs out its 5 studs with the rope's rattle and the locks' clack (Lethal Company's
-        ladder shoots up when placed), and it stands there for anyone (`Specs/Ladder`: `Feet`,
-        `Top`, `Travel`, the fly weld's C0). Climb it (Roblox's TrussPart climbing on an
-        invisible truss, or the game's own move as the crawl's) to the top edge, then onto the
-        wire top on your belly. "Take" lifts it back down to carry. No crawling through a hole
-        with it in hand. Keepers can't climb it.
+      - [x] **L-13b2a Lean it and climb.** Done Nov 9 (D-057). A Lean button (R) up on each unit's
+        front, left of the door, for whoever holds the ladder: it swings up against the front at the
+        4-to-1 rule, rails on the top edge, the fly runs out and locks with a bang, a rattle and a
+        clack, every screen playing it (`Leaning`, `Leaned`, `Ladders`, `LadderView`). Climb (E) is
+        a pressed move the game makes, as the crawl's: up rung over rung (Roblox's own climb
+        animation on your body, so friends see it) and over the edge onto your belly in a spot of
+        your own on the wire top (3 on a small unit, 4 on a big one); Climb down (E) ahead of you
+        brings you back into the hall; Take (F) puts it back on your shoulder, refused while
+        anyone's on it or up there. Roblox's truss climbing was tried first: on a leaned truss it
+        flicks between climbing and falling. No crawling through a hole with it in hand. Keepers
+        never get the buttons. Verified in Studio; phone and two players wait on `OWNER.md`.
       - [ ] **L-13b2b Along the tops and down.** Crawl-only up there (the default; a standing
-        avatar wedges, 3.9 studs to the deck): along a run and round a junction's lid
-        (`Run.lids`), the view low, the wire top's sound under you; down by dropping off a unit's
-        front into the hall (a thud, a jolt). Keepers can't follow (L-06b reads `Run.lids`).
+        avatar wedges, 3.9 studs to the deck): from where L-13b2a lays you (lying in a spot,
+        `Leaning.lying`, your screen holding your body, the `OnLadder` tag's "Top"), crawl along a
+        run and round a junction's lid (`Run.lids`), the view low, the wire top's sound under you;
+        down by dropping off any unit's front into the hall (a thud, a jolt), so Take no longer
+        needs to wait for an empty top. Keepers can't follow (L-06b reads `Run.lids`).
 - [ ] **L-14 The other tools.** Bubble wrap across a hall (pops for anything that crosses, heard
   floor-wide), the air horn (lures keepers to a spot, wakes sleeping ones), the moving blanket
   (thrown over a keeper, blinds it a few seconds), glow sticks (light the building can't see,
@@ -459,6 +464,13 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
   seen.
 - **The ladder leaned in a unit** (L-13b1): the deal lays it flat; leaned on a unit's side wall
   it would read from further off (L-13b2's lean, reused).
+- **Taking the ladder down** (L-13b2a): Take puts it straight back on your shoulder with the
+  pick-up's bang; the fly sliding in and the ladder swinging down off the front onto your
+  shoulder (the raise played backwards) would answer the press as the lean does.
+- **Your hands on the rungs** (L-13b2a): climbing, first person shows the rungs passing close but
+  no hands; your hands taking each rung in turn would put you on the ladder.
+- **The ladder bowing under a climber** (L-13b2a): a slight flex and creak as each climber
+  steps on, so a full ladder sounds loaded.
 - **Columns at the tops' corners** (L-13a): where two panels meet at a corner up on the tops,
   their sheets' cut ends meet bare; a steel corner column, as the junctions' walls have, would
   finish them. Unseen until the ladder takes players up there.

@@ -39,7 +39,10 @@ local FALL = TweenInfo.new(0.32, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 local DROP_AHEAD = 2.2 -- studs in front of your middle where a dropped tool lands
 local REACH_SLACK = 2 -- studs the server allows past a prompt's reach (lag, a long arm)
 
-export type Change = { player: Player, kind: "PickUp" | "Drop" | "Give" | "Switch" | "Spend" }
+export type Change = {
+	player: Player,
+	kind: "PickUp" | "Drop" | "Give" | "Switch" | "Spend" | "Place",
+}
 
 export type Slots = Brix.System & {
 	-- Fires as anyone's slots change, for whoever cares (keepers that hear a drop, later).
@@ -52,6 +55,15 @@ export type Slots = Brix.System & {
 	-- Uses up what's in `player`'s hand if it's catalog key `key` (a padlock hung on a door): out
 	-- of their slots and gone. Whether it was.
 	spend: (self: any, player: Player, key: string) -> boolean,
+	-- Takes what's in `player`'s hand out of their slots if it's catalog key `key`, to stand in the
+	-- world (the ladder leaned on a front): Slots keeps it, carried by nobody and lying nowhere, its
+	-- body anchored where it was, for the caller to place. Its id and model, or nil.
+	place: (self: any, player: Player, key: string) -> (string?, Model?),
+	-- Puts placed tool `id` back in `player`'s hand, as a pick-up (their hands must be free of a
+	-- big tool and have room). Nil if it did, else the refusal to show ("" to refuse silently).
+	handBack: (self: any, player: Player, id: string) -> string?,
+	-- Lays placed tool `id` on the floor at `at`, turned `yaw` degrees (its front gone from under it).
+	lower: (self: any, id: string, at: Vector3, yaw: number) -> (),
 }
 
 type Tool = {
@@ -63,6 +75,7 @@ type Tool = {
 	refuse: ((string) -> ())?,
 	owner: Player?,
 	weld: Weld?,
+	placed: boolean?, -- standing in the world (`place`), not in a hand or on a floor
 }
 
 type Hand = {
@@ -638,6 +651,64 @@ function Slots.new(): Slots
 		publish(player)
 		changed:fire({ player = player, kind = "Spend" })
 		return true
+	end
+
+	function system.place(_: any, player: Player, key: string): (string?, Model?)
+		local h = handOfPlayer(player)
+		local id = Carry.held(h.carry)
+		local t = if id then tools[id] else nil
+		if not (t and t.key == key) then
+			return nil, nil
+		end
+		Carry.release(h.carry)
+		if t.weld then
+			t.weld:Destroy()
+			t.weld = nil
+		end
+		t.body.Anchored = true
+		t.owner = nil
+		t.placed = true
+		t.model.Name = t.key
+		publish(player)
+		changed:fire({ player = player, kind = "Place" })
+		return t.id, t.model
+	end
+
+	function system.handBack(_: any, player: Player, id: string): string?
+		local t = tools[id]
+		if not (t and t.placed) or not rootOf(player) then
+			return ""
+		end
+		local h = handOfPlayer(player)
+		local big = bothHands(h)
+		if big then
+			return `Drop the {string.lower(big.name)} first`
+		end
+		if Carry.room(h.carry) == nil then
+			return "Hands full"
+		end
+		if not allowed(h) then
+			return ""
+		end
+		t.placed = nil
+		Carry.take(h.carry, t.id)
+		t.owner = player
+		dress(player)
+		publish(player)
+		local character = player.Character
+		local hand = if character then handOf(character) else nil
+		Tools.play(Catalog[t.key].pickUp, hand or t.body, HAND_SOUND_REACH)
+		changed:fire({ player = player, kind = "PickUp" })
+		return nil
+	end
+
+	function system.lower(_: any, id: string, at: Vector3, yaw: number)
+		local t = tools[id]
+		if not (t and t.placed) then
+			return
+		end
+		t.placed = nil
+		layDown(t, resting(t.key, at, yaw), t.body.CFrame * t.body.PivotOffset)
 	end
 
 	return system :: any -- any: the table is the Slots shape built field by field above

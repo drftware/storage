@@ -27,7 +27,9 @@ local CrawlHole = require(ReplicatedStorage.Shared.StorageUnit.CrawlHole)
 local Crawling = require(ReplicatedStorage.Shared.StorageUnit.CrawlHole.Crawling)
 local Prompts = require(script.Parent.Prompts)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
+local Slots = require(script.Parent.Slots)
 local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
+local Tools = require(ReplicatedStorage.Shared.Tools)
 local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
 
 export type CrawlEvent = {
@@ -123,6 +125,7 @@ function Crawls.new(): Crawls
 	local lastPress: { [Player]: number } = {}
 	local connections: { RBXScriptConnection } = {}
 	local crawled = Brix.Signal.new() :: Brix.Signal<CrawlEvent>
+	local slots: Slots.Slots? = nil
 
 	local function clear(c: Crawl)
 		crawls[c.player] = nil
@@ -167,6 +170,16 @@ function Crawls.new(): Crawls
 			return
 		end
 		lastPress[player] = t
+		-- a big tool (the ladder) won't go through the hole with you
+		local s = slots
+		if s then
+			local keys, hand = s:carried(player)
+			local row = Tools.Catalog[keys[hand] or ""]
+			if row and row.bothHands then
+				side.refuse(`Drop the {string.lower(row.name)} first`)
+				return
+			end
+		end
 		local verdict = Crawling.decide(crawls[player] ~= nil, t < hole.busyUntil)
 		if not verdict.ok then
 			if verdict.refusal then
@@ -332,7 +345,9 @@ function Crawls.new(): Crawls
 		crawled = crawled,
 	}
 
-	function system.start(_: any, _context: Brix.Context)
+	function system.start(_: any, context: Brix.Context)
+		-- any: the registry hands back a plain System; Slots fills this slot (init.server)
+		slots = (context.registry:get("slots") :: any) :: Slots.Slots?
 		registerGroup()
 		table.insert(
 			connections,

@@ -19,6 +19,7 @@ local GateClock = require(script.GateClock)
 local HallHaze = require(script.HallHaze)
 local HallLights = require(script.HallLights)
 local KeypadPad = require(script.KeypadPad)
+local LadderView = require(script.LadderView)
 local NoteView = require(script.NoteView)
 local SawView = require(script.SawView)
 local ToolView = require(script.ToolView)
@@ -45,6 +46,7 @@ local host = Brix.Host.new({
 		{ slot = "toolView", system = ToolView.new() },
 		{ slot = "sawView", system = SawView.new(kick) },
 		{ slot = "crawlView", system = CrawlView.new(kick) },
+		{ slot = "ladderView", system = LadderView.new(kick) },
 		{ slot = "freeCursor", system = freeCursor },
 		{ slot = "hallHaze", system = HallHaze.new() },
 		{ slot = "cameraShake", system = cameraShake },

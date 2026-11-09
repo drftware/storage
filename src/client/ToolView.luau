@@ -278,6 +278,7 @@ function ToolView.new(): Brix.System
 	local kick = 0
 	local lockReach: { [ProximityPrompt]: number } = {} -- each Lock button's reach from the server
 	local sawReach: { [ProximityPrompt]: number } = {} -- and each wall's Saw button's
+	local leanReach: { [ProximityPrompt]: number } = {} -- and each front's Lean button's
 
 	local function alive(): boolean
 		local character = player.Character
@@ -390,6 +391,11 @@ function ToolView.new(): Brix.System
 		local saw = table.find(keys, "Saw") ~= nil
 		for p, reach in sawReach do
 			p.MaxActivationDistance = if saw then reach else 0
+		end
+		-- a front's Lean button only while the ladder's in your hand
+		local ladder = keys[hand] == "Ladder"
+		for p, reach in leanReach do
+			p.MaxActivationDistance = if ladder then reach else 0
 		end
 		-- a slot newly filled: name it as it comes into your hand
 		for i = 1, Carry.Slots do
@@ -764,6 +770,28 @@ function ToolView.new(): Brix.System
 		)
 		for _, inst in CollectionService:GetTagged(Tools.SawTag) do
 			addSaw(inst)
+		end
+		local function addLean(inst: Instance)
+			if inst:IsA("ProximityPrompt") and leanReach[inst] == nil then
+				leanReach[inst] = inst.MaxActivationDistance
+				if heldKey() ~= "Ladder" then
+					inst.MaxActivationDistance = 0
+				end
+			end
+		end
+		table.insert(
+			connections,
+			CollectionService:GetInstanceAddedSignal(Tools.LeanTag):Connect(addLean)
+		)
+		table.insert(
+			connections,
+			CollectionService:GetInstanceRemovedSignal(Tools.LeanTag)
+				:Connect(function(inst: Instance)
+					leanReach[inst :: ProximityPrompt] = nil
+				end)
+		)
+		for _, inst in CollectionService:GetTagged(Tools.LeanTag) do
+			addLean(inst)
 		end
 		lastKeys = serverSlots()
 		refresh()

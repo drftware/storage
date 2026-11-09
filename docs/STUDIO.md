@@ -506,6 +506,21 @@ verified: a doc page, Studio, or "untested".
   `camera_position`; set them back to LockFirstPerson and 0.5 after. `user_keyboard_input` key
   presses reach ContextActionService (1, 2, G); the slot bar's `Name` label keeps the last line
   it said (its Text stays after it fades).
+- **Climbing a TrussPart** (Play, L-13b2a): a TrussPart's X and Z are always 2, its Y any
+  length. Real key input (W from `user_keyboard_input`, with the first-person camera turned to
+  face the truss) climbs a vertical one at about 11 studs a second; `Humanoid:Move` from a script
+  walked into it but never climbed. Leaned 14 degrees off vertical, the climber flicked between
+  Climbing, Running and Freefall on the way up: don't build a leaned climb on Roblox's own.
+- **The first-person camera lying down** (Play, L-13b2a): Roblox's camera follows the root's
+  CFrame turned by its head offset (1.5 up in the root's own frame), so a body held flat on its
+  belly by script puts the view at its head, looking wherever the player turns it, with no
+  camera script of our own.
+- **Sounds measured for the ladder's lean and climb** (L-13b2a; 0.1 s bins at half speed):
+  "Chain Movement On Aluminum Ladder 13" 9113761047 (3.19 s) is a steady drag from 0.3 to 2.7 s;
+  "Fire Escape 2" 9114437085 (4.14 s), a grab and climb up a metal ladder, is loud at 0.2 to
+  0.4 s and 1.0 to 1.2 s with rattles between; "Chain- Link Fence Impacts Metal Rattle 1"
+  9113755181 (4.25 s) is silent to 0.3 s, hits at 0.3 to 0.7 s and rattles out by 1.6 s;
+  "Chain Movement On Aluminum Ladder 10" 9113760919 drags loud almost all through.
 - **Sounds measured for the padlock** (L-11c; 50 ms bins at half speed): "Scissors Snap 28"
   9118829487 is one snap at 0 s, about -15 dB, 0.47 s long; "Padlock Open Lock Pick Up Throw Down
   1" 9117185722 opens at 0.05 s, locks at 0.40 s, then its pick-up and throw-down run together
