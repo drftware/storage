@@ -28,6 +28,8 @@ export type SoundName =
 	| "Latch"
 	| "PadlockShut"
 	| "PadlockOpen"
+	| "Snap"
+	| "PadlockFall"
 	| "Rattle"
 
 export type Sound = {
@@ -143,6 +145,33 @@ DoorSound.Sounds = {
 		Near = 5,
 		Reach = 30,
 	},
+	-- The cutters' jaw biting through the shackle: one crisp metal snap ("Scissors Snap 28", a
+	-- single snap at its start, measured), played at half speed so it's a hardened bar going, not
+	-- scissors. Loud enough to carry: keepers hear a cut (GDD: they hear doors).
+	Snap = {
+		Id = "rbxassetid://9118829487",
+		Start = 0,
+		Stop = 0.3,
+		Fade = 0.08,
+		Volume = 2,
+		PitchMin = 0.5,
+		PitchMax = 0.56,
+		Near = 6,
+		Reach = 40,
+	},
+	-- The cut padlock hitting the hall floor: the cutters' concrete clank ("Crowbar Impact
+	-- Dropping To Concrete 1") played faster, a small heavy lump of steel and its bounce.
+	PadlockFall = {
+		Id = "rbxassetid://9114008989",
+		Start = 0,
+		Stop = 0.9,
+		Fade = 0.2,
+		Volume = 0.7,
+		PitchMin = 1.6,
+		PitchMax = 1.8,
+		Near = 5,
+		Reach = 30,
+	},
 	-- A padlocked door yanked against its bolt (Pro Sound Effects "Door Shake 4"): the first of
 	-- its two shakes, from its onset at 0.15 s through the loudest stretch, cut as it starts to
 	-- ring out. Loud on purpose: trying a padlocked door is a risk (GDD: keepers hear doors).
@@ -248,13 +277,19 @@ function DoorSound.cues(kind: Motion.Kind, from: number, to: number, fullStroke:
 	return cues
 end
 
--- The one-shots of locking (the bolt shoots, then the padlock snaps shut) or unlocking (the
--- padlock pops, then the bolt slides back): about the GDD's 1 s for a padlock, and quiet.
+-- The one-shots of locking (the bolt shoots, then the padlock snaps shut), quiet; or of the
+-- padlock coming off, which only bolt cutters do: the jaw's snap, the padlock hitting the floor
+-- a moment later, then the bolt slid back. A jolt for whoever's right at the door.
+DoorSound.CutShake = 0.18
 function DoorSound.lockCues(locked: boolean): { Cue }
 	if locked then
 		return { cue(0, "Latch", 0.8, 1.05), cue(0.32, "PadlockShut", 1, 1) }
 	end
-	return { cue(0, "PadlockOpen", 1, 1), cue(0.36, "Latch", 0.6, 0.95) }
+	return {
+		cue(0, "Snap", 1, 1, DoorSound.CutShake),
+		cue(0.2, "PadlockFall", 1, 1), -- as it lands (DoorView throws it)
+		cue(0.55, "Latch", 0.6, 0.95),
+	}
 end
 
 --[[

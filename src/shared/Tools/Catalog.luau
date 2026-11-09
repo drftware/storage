@@ -14,6 +14,7 @@ export type Sound = {
 	from: number, -- seconds into the recording where the sound starts
 	length: number, -- seconds of it played
 	volume: number,
+	pitch: number?, -- its playback speed (1 when nil): above 1 a smaller, lighter thing
 }
 
 export type Row = {
@@ -23,6 +24,9 @@ export type Row = {
 	-- its turn (degrees: yaw left, pitch up, roll), as `Torch.Hold` and `HoldTurn` are the torch's
 	hold: { number },
 	holdTurn: { number },
+	-- your view while you hold its button at a door (Cut, Lock): brought down to the latch
+	use: { number },
+	useTurn: { number },
 	-- a friend's hand: the grip's turn from their left hand's grip attachment, degrees about the
 	-- hand's X, Y, Z (CFrame.Angles); none leaves the jaw along the hand's front (-Z)
 	inHand: { number },
@@ -42,6 +46,10 @@ local Catalog: { [string]: Row } = {
 		-- low on your left, jaw forward and a little in, so it's plain without covering the hall
 		hold = { -0.72, -0.8, -1.3 },
 		holdTurn = { -10, 14, -12 },
+		-- out in front of you, reaching for the door, turned a little to show the handles and the
+		-- jaw dipped towards the latch
+		use = { -0.3, -0.45, -1.35 },
+		useTurn = { 16, -10, -12 },
 		-- through the fist front to back, as a hammer hangs at your side: the jaw forward, the
 		-- head's plates and bolts facing out to the side
 		inHand = { 0, 0, 90 },
@@ -52,6 +60,32 @@ local Catalog: { [string]: Row } = {
 		pickUp = { id = "rbxassetid://9116460746", from = 0, length = 0.42, volume = 0.9 },
 		-- Pro Sound Effects' "Crowbar Impact Dropping To Concrete 1": the hit and its bounces
 		drop = { id = "rbxassetid://9114008989", from = 0, length = 1.4, volume = 0.8 },
+	},
+	-- Locks a door so a trapped keeper stays trapped; one per door (GDD). The doors' laminated
+	-- padlock, open, twice their size so it reads on a phone (art/padlock).
+	Padlock = {
+		name = "Padlock",
+		template = "Padlock",
+		-- low on your left, its face to you and the open shackle towards the middle of the view
+		hold = { -0.62, -0.62, -1.75 },
+		holdTurn = { 160, 10, 8 },
+		-- out in front of you towards the door, the open shackle leading
+		use = { -0.12, -0.5, -1.9 },
+		useTurn = { 180, -20, 0 },
+		-- the body in the fist, the shackle forward out of it, face down
+		inHand = { -90, 0, 0 },
+		-- face on, a little from above, turned to show the shackle's swing
+		icon = { 0.6, 12, 200, 0 },
+		-- Pro Sound Effects' "Keys In Padlock 1": a hand closing on a padlock, its clink
+		pickUp = { id = "rbxassetid://9116175991", from = 0, length = 0.5, volume = 0.8 },
+		-- the cutters' concrete clank, played faster: a small, heavy lump of steel bouncing
+		drop = {
+			id = "rbxassetid://9114008989",
+			from = 0,
+			length = 1.4,
+			volume = 0.65,
+			pitch = 1.7,
+		},
 	},
 }
 

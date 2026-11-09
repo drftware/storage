@@ -324,12 +324,12 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
     Verified in Studio: pick up, switch, switch back, drop, the bar and the held tool, on a
     computer and on the Galaxy A16 (by gamepad keys; shots `docs/art/L-11b-*.jpg`). Handing over
     and the phone's taps: `OWNER.md`.
-  - [ ] **L-11c The padlock, and the cutters at work.** The padlock's art first (as the cutters'),
-    its row in `Tools.Catalog`. Then `Doors` reads the slots instead of the `CarriesBoltCutters`
-    attribute (`Slots:carried`), needing the cutters in your hand to Cut and a padlock in your hand
-    to lock (`Door.Tools`); drop the attribute stand-in. The cutters' bite at the shackle, from
-    the jaw's tip (`Specs/BoltCutters.JawTip`): the jaw's snap and the padlock's clatter as it
-    falls; "One padlock per use" (GDD) decided with the owner.
+  - [x] **L-11c The padlock, and the cutters at work** (D-049). The padlock built by script
+    (`art/padlock`, the doors' laminated padlock, open, twice their size); tools work only in your
+    hand ("Hold the cutters"); Lock, held 0.5 s, shows only to a padlock in hand and spends it;
+    Cut snaps the padlock off with a jolt, its copy tumbling out onto the hall floor, and its
+    clatter; your view brings the tool out to the door as you hold. "One padlock per use" read
+    as a cut padlock spent (`OWNER.md`).
 - [ ] **L-06b The Mannequin hunts.** At no more than player speed: a data row on Brix's Pursuit
   (floor pathing, a cone reach), frozen in a flashlight's beam. Needs Brix's ENG-06 and ENG-07.
   Keepers hear a door (the GDD: an open, a slam, a lift from inside) as far as its sound carries:
@@ -391,6 +391,13 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 
 ## Polish waiting for a slot
 
+- **The bite at the shackle** (L-11c): the cutters in your view reach the door, not the latch by
+  your feet; their jaw meeting the padlock (`Specs/BoltCutters.JawTip`) and closing as it snaps,
+  a bright fleck off the cut, and the cut padlock's shackle shown cut (a second mesh) would land
+  it. A friend sees nothing of your cut but the padlock flying off: their arm reaching down to
+  the latch with the cutters as you hold Cut.
+- **Your padlock flying to the door** (L-11c): on Lock it jerks and drops out of your view; it
+  could travel from your hand to the latch and snap shut there.
 - **Your hand on the cutters** (L-11b): first person shows the cutters alone, low on the left; a
   left hand closing round the grips would sell the hold (with the torch's hand, one rig).
 - **A dropped tool's tumble** (L-11b): it falls straight and lands flat; a bounce and a skid on

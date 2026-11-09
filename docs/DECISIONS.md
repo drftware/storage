@@ -771,3 +771,25 @@ slots, `Slots` keeps the old test attribute `CarriesBoltCutters` true while eith
 cutters, so Cut still works; the test hall's "Bolt cutters" post is gone, two pairs lie on floors.
 Not chosen: Roblox's Tool and Backpack (its arm pose, its own hotbar and keys; the Backpack core UI
 is now off); the server drawing your own held tool (a round trip late, and it can't sway).
+
+## D-049 Tools work in your hand; the padlock goes on and the cutters snap it off (L-11c, Nov 8)
+A tool works only in your hand, as Lethal Company's do: Cut needs the cutters in your hand, Lock a
+padlock in your hand. One in your other slot gets "Hold the cutters" or "Hold the padlock"; none at
+all gets "Need bolt cutters" or "Need a padlock" (`Door.decide` takes where each tool is: hand,
+slot or none; `Doors` reads it from `Slots:carried`). The `CarriesBoltCutters` stand-in is gone.
+Lock is a door button like Cut, in the same right-hand spot (they never show together), both held
+(Cut 1 s, the GDD's; Lock 0.5 s so nobody padlocks a friend in by a slip; `Door.Holds`), keys R
+and R2 (R1 is the torch's, D-047; Cut moved off R1). The server shows Lock on every shut door; each
+screen hides it unless a padlock is in that player's hand (ToolView sets the button's reach to 0:
+the server never changes a button's reach, so it stays). The padlock that goes on a door leaves
+your slots for good (`Slots:spend`); on the door the building's own padlock part shows.
+"One padlock per use" (GDD, the cutters' row) is read as: a cut padlock is spent, the cutters last;
+the owner may mean the cutters break instead (`OWNER.md`). The cut answers in three ways: the jaw's
+snap (Pro Sound Effects' "Scissors Snap 28" at half speed, loud, heard 40 studs: keepers hear a cut)
+with a jolt for whoever's at the door; a copy of the padlock thrown off the latch on every screen,
+tumbling about 1.5 studs out onto the hall floor, lying 20 s, then fading (`DoorView`); and its
+clatter as it lands. While you hold Cut or Lock with the right tool, your view brings it out to the
+door (the row's `use` pose), and it jerks as it works. The padlock you carry is the doors' laminated
+padlock, open, at twice their size so it reads on a phone (`art/padlock`).
+Not chosen: a brass padlock of the players' own (it would change look on the door unless the door
+drew it too); a per-player Lock prompt made on each client (the server owns the door's buttons).

@@ -13,8 +13,9 @@ local function ok(cond: boolean, what: string)
 	end
 end
 
-local NONE: Door.Tools = { BoltCutters = false, Padlock = false }
-local BOTH: Door.Tools = { BoltCutters = true, Padlock = true }
+local NONE: Door.Tools = { BoltCutters = "None", Padlock = "None" }
+local BOTH: Door.Tools = { BoltCutters = "Hand", Padlock = "Hand" }
+local STOWED: Door.Tools = { BoltCutters = "Slot", Padlock = "Slot" }
 
 local function has(list: { Door.Action }, action: Door.Action): boolean
 	return table.find(list, action) ~= nil
@@ -68,11 +69,10 @@ for _, state in Door.States do
 		end
 		for _, action in Door.Actions do
 			local v = Door.decide(state, action, side, BOTH)
-			-- an action no button offers never moves the door (a stale tap or an exploit); the
-			-- padlock is the one exception: the padlock tool will use it, not a door button
+			-- an action no button offers never moves the door (a stale tap or an exploit)
 			local shown = has(Door.offers(state, "Hall"), action)
 				or has(Door.offers(state, "Inside"), action)
-			if not shown and action ~= "Lock" then
+			if not shown then
 				ok(not v.ok, `{state}, {side}: {action} acts though not offered`)
 			end
 			-- refusals are a headline, never a sentence
@@ -92,7 +92,12 @@ for _, state in Door.States do
 		if v.ok then
 			local next = Door.after(action)
 			for _, other in Door.offers(next, "Hall") do
-				if Door.Slots[other] == Door.Slots[action] and other ~= action then
+				-- a held button can't be fired by a second tap
+				if
+					Door.Slots[other] == Door.Slots[action]
+					and other ~= action
+					and not Door.Holds[other]
+				then
 					ok(
 						action == "Peek" and other == "Close",
 						`{state}: {action} then {other} on the same spot`
@@ -109,6 +114,8 @@ local function offers(state: Door.State): { Door.Action }
 	return Door.offers(state, "Hall")
 end
 ok(has(offers("Closed"), "Peek") and has(offers("Closed"), "Open"), "a shut door: peek or open")
+ok(has(offers("Closed"), "Lock"), "or padlock it (the button shows only to a padlock in hand)")
+ok(not has(offers("Peeking"), "Lock"), "not while it's up a foot")
 ok(not has(offers("Closed"), "Close") and not has(offers("Closed"), "Slam"), "nothing to shut")
 ok(
 	not has(offers("Open"), "Open") and not has(offers("Opening"), "Open"),
@@ -146,6 +153,15 @@ local trapped = Door.decide("Locked", "Lift", "Inside", BOTH)
 ok(not trapped.ok and trapped.motion == "Rattle", "a padlocked door rattles from inside too")
 local noCutters = Door.decide("Locked", "Cut", "Hall", NONE)
 ok(not noCutters.ok and noCutters.refusal == "Need bolt cutters", "no cutters names the fix")
+local stowed = Door.decide("Locked", "Cut", "Hall", STOWED)
+ok(not stowed.ok and stowed.refusal == "Hold the cutters", "cutters in the other slot: hold them")
+ok(Door.decide("Closed", "Lock", "Hall", STOWED).refusal == "Hold the padlock", "and the padlock")
+local cutOnly: Door.Tools = { BoltCutters = "Hand", Padlock = "Slot" }
+ok(Door.decide("Locked", "Cut", "Hall", cutOnly).ok, "the cutters in hand cut, whatever else")
+ok(not Door.decide("Closed", "Lock", "Hall", cutOnly).ok, "but a padlock must be in hand to lock")
+for _, a in { "Cut", "Lock" } :: { Door.Action } do
+	ok(Door.Holds[a] == true, `{a} is held, not tapped`)
+end
 local cut = Door.decide("Locked", "Cut", "Hall", BOTH)
 ok(cut.ok and cut.lock == false, "bolt cutters take the padlock off")
 ok(Door.after("Cut") == "Closed", "a cut door is shut and free")

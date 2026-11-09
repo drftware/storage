@@ -113,11 +113,13 @@ local FLOOR_ORIGIN = CFrame.new(0, 0, -600)
 local FLOOR_SEED = 7
 local FLOOR_NUMBER = 3
 local FLOOR_ARRIVAL = CFrame.lookAt(Vector3.new(0, 3, 6), Vector3.new(0, 3, -12)) -- in the lobby, facing the hall
--- The test hall's bolt cutters (L-11b): a pair on the hall floor by the spawn, a pair in the first
--- unit on the right (open its door to find them).
-local CUTTERS = {
-	{ at = Vector3.new(-28.5, FLOOR_TOP, 2.2), yaw = 64 },
-	{ at = Vector3.new(-17, 0, 11), yaw = 205 },
+-- The test hall's tools (L-11b, L-11c): bolt cutters on the hall floor by the spawn and a pair in
+-- the first unit on the right (open its door to find them); a padlock across the spawn from the
+-- first pair, to lock any shut door with.
+local TOOLS = {
+	{ key = "BoltCutters", at = Vector3.new(-28.5, FLOOR_TOP, 2.2), yaw = 64 },
+	{ key = "BoltCutters", at = Vector3.new(-17, 0, 11), yaw = 205 },
+	{ key = "Padlock", at = Vector3.new(-28.5, FLOOR_TOP, -2.6), yaw = 200 },
 }
 local FLOOR_POST = CFrame.new(9, 0, 9) -- "Come back", in the lobby's corner by the elevator
 
@@ -673,10 +675,9 @@ function DevCorridor.new(): Brix.System
 			local folder = build(lights)
 			built = folder
 			if folder then
-				-- bolt cutters to try the slots with (L-11b): one pair on the hall floor by the spawn,
-				-- one in the first unit on the right
-				for _, spot in CUTTERS do
-					slots:lay("BoltCutters", spot.at, spot.yaw)
+				-- tools to try the slots and the doors with (L-11b, L-11c)
+				for _, spot in TOOLS do
+					slots:lay(spot.key, spot.at, spot.yaw)
 				end
 				laying = task.spawn(devFloor, folder, elevators)
 			end

@@ -18,8 +18,10 @@
 	Friends: a "Give" prompt on each friend while you hold a tool. If their hands are full it says
 	so on the prompt.
 ]]
+local CollectionService = game:GetService("CollectionService")
 local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
+local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
@@ -55,6 +57,15 @@ local NAME_SECONDS = 1.4 -- the name above the bar, before it fades
 local FADE = TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local PRESS = TweenInfo.new(0.16, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local REFUSAL_SECONDS = 1.2
+-- At a door: while you hold Cut or Lock with the right tool, it comes down to the latch
+-- (`Catalog` row's `use`), and the moment it works it jerks: the jaw clamping, the shackle shut.
+local WORK_RATE = 9 -- how fast it moves to the latch and back (of the way, a second)
+local WORK_LINGER = 0.3 -- seconds it stays at the latch after it worked
+local KICK_DECAY = 6 -- of the jerk, a second
+local KICK_PITCH = 9 -- degrees the jerk tips it
+local KICK_PUSH = 0.07 -- studs it pushes forward
+-- The door buttons a tool works (`Doors`' `DoorAction`), and the tool each needs in your hand.
+local WORKS: { [string]: string } = { Cut = "BoltCutters", Lock = "Padlock" }
 
 type SlotView = {
 	button: TextButton,
@@ -256,6 +267,12 @@ function ToolView.new(): Brix.System
 	local swing = 0
 	local rising = true
 	local switchSound: Sound? = nil
+	-- at a door
+	local working = false
+	local workUntil = 0
+	local work = 0
+	local kick = 0
+	local lockReach: { [ProximityPrompt]: number } = {} -- each Lock button's reach from the server
 
 	local function alive(): boolean
 		local character = player.Character
@@ -356,6 +373,12 @@ function ToolView.new(): Brix.System
 		local holding = (keys[hand] or "") ~= ""
 		for _, g in gives do
 			g.prompt.Enabled = holding
+		end
+		-- a door's Lock button only while a padlock's in your hand (on this screen only: the
+		-- server never changes a button's reach, so this stays)
+		local padlock = keys[hand] == "Padlock"
+		for p, reach in lockReach do
+			p.MaxActivationDistance = if padlock then reach else 0
 		end
 		-- a slot newly filled: name it as it comes into your hand
 		for i = 1, Carry.Slots do
@@ -537,15 +560,24 @@ function ToolView.new(): Brix.System
 		local row = Catalog[shownKey]
 		local e = if rising then backOut(swing) else swing * swing
 		local away = 1 - e
-		local h, t = vec(row.hold), row.holdTurn
+		-- down to the door's latch while you hold its button, and the jerk as it works
+		local target = if working or os.clock() < workUntil then 1 else 0
+		work += (target - work) * math.min(1, dt * WORK_RATE)
+		kick = math.max(0, kick - dt * KICK_DECAY)
+		local w = work * work * (3 - 2 * work)
+		local h = vec(row.hold):Lerp(vec(row.use), w)
+		local t0, t1 = row.holdTurn, row.useTurn
+		local yawT = t0[1] + (t1[1] - t0[1]) * w
+		local pitchT = t0[2] + (t1[2] - t0[2]) * w + KICK_PITCH * kick
+		local rollT = t0[3] + (t1[3] - t0[3]) * w
 		local grip = cam
-			* CFrame.new(h + SWING_FROM * away)
+			* CFrame.new(h + SWING_FROM * away + Vector3.new(0, 0, -KICK_PUSH * kick))
 			-- mirrored: the left hand's sway leans the other way
 			* CFrame.new(-p.x, p.y, p.z)
 			* CFrame.fromEulerAnglesYXZ(
-				(t[2] + SWING_TILT * away) * RAD + p.pitch,
-				t[1] * RAD - p.yaw,
-				t[3] * RAD - p.roll
+				(pitchT + SWING_TILT * away) * RAD + p.pitch,
+				yawT * RAD - p.yaw,
+				rollT * RAD - p.roll
 			)
 		body.CFrame = grip * bodyOff
 	end
@@ -623,6 +655,56 @@ function ToolView.new(): Brix.System
 				refresh()
 			end)
 		)
+		-- the door buttons your tool works: your view follows your hold on them
+		local function works(prompt: ProximityPrompt): boolean
+			local action = prompt:GetAttribute("DoorAction")
+			return type(action) == "string" and WORKS[action] ~= nil and WORKS[action] == heldKey()
+		end
+		table.insert(
+			connections,
+			ProximityPromptService.PromptButtonHoldBegan:Connect(function(prompt: ProximityPrompt)
+				if works(prompt) then
+					working = true
+				end
+			end)
+		)
+		table.insert(
+			connections,
+			ProximityPromptService.PromptButtonHoldEnded:Connect(function(_prompt: ProximityPrompt)
+				working = false
+			end)
+		)
+		table.insert(
+			connections,
+			ProximityPromptService.PromptTriggered:Connect(function(prompt: ProximityPrompt)
+				if works(prompt) then
+					kick = 1
+					workUntil = os.clock() + WORK_LINGER
+				end
+			end)
+		)
+		local function addLock(inst: Instance)
+			if inst:IsA("ProximityPrompt") and lockReach[inst] == nil then
+				lockReach[inst] = inst.MaxActivationDistance
+				if heldKey() ~= "Padlock" then
+					inst.MaxActivationDistance = 0
+				end
+			end
+		end
+		table.insert(
+			connections,
+			CollectionService:GetInstanceAddedSignal(Tools.LockTag):Connect(addLock)
+		)
+		table.insert(
+			connections,
+			CollectionService:GetInstanceRemovedSignal(Tools.LockTag)
+				:Connect(function(inst: Instance)
+					lockReach[inst :: ProximityPrompt] = nil
+				end)
+		)
+		for _, inst in CollectionService:GetTagged(Tools.LockTag) do
+			addLock(inst)
+		end
 		lastKeys = serverSlots()
 		refresh()
 		ContextActionService:BindAction(

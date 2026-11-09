@@ -7,14 +7,41 @@ nowhere else.
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 - [ ] **Save the place** (File > Save to Roblox) after this session (Nov 8): the elevator's and
-  the flashlight's and the bolt cutters' templates live only in the open place, at
-  `ReplicatedStorage.Props.Elevator`, `Props.Note`, `Props.Flashlight` and
-  `Props.Tools.BoltCutters` (without them nobody has a torch and no tool lies anywhere; Output
-  warns). Unsaved, the next open loses them and every floor's lobby has
+  the flashlight's, the bolt cutters' and the padlock's templates live only in the open place, at
+  `ReplicatedStorage.Props.Elevator`, `Props.Note`, `Props.Flashlight`,
+  `Props.Tools.BoltCutters` and `Props.Tools.Padlock` (without them nobody has a torch and no
+  tool lies anywhere; Output warns). Unsaved, the next open loses them and every floor's lobby has
   an empty hole in its back wall (Output warns).
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
+
+## Now: judge L-11c, the padlock and the cutters at work (built Nov 8)
+
+- [ ] **Lock a door, then cut it** (Play, a computer first). Pick up the padlock lying across the
+  spawn from the cutters (E; stand a few steps off the posts, where E walks you to a floor). Walk
+  to any shut door: a third button, "Lock", shows on the right (R, R2 on a pad); it shows to
+  nobody without a padlock in hand. Hold it half a second. Look for: the padlock coming out
+  towards the door as you hold, a jerk, the bolt shooting and the padlock snapping shut on the
+  latch, the padlock gone from your bar, "Padlocked" on the door. Then pick up the cutters, come
+  back, hold Cut (R) a second. Look for: the cutters reaching out at the door as you hold (the
+  shot I couldn't light: is the pose right? `Catalog.BoltCutters.use`), a hard metal snap with a
+  jolt of your view, the padlock flipping off the latch and landing about a stud and a half out
+  on the hall floor with a clank, the bolt sliding back. It lies there 20 s, then fades.
+- [ ] **The wrong hand:** with the cutters in slot 2 and the padlock in hand, hold Cut on a
+  padlocked door: "Hold the cutters". Press 2 and it cuts.
+- [ ] **A friend watching** (Clients and Servers, 2 players): one cuts, the other stands in the
+  hall. Look for: the snap heard down the hall, the padlock flying off on their screen too.
+- [ ] **On the phone** (Galaxy A16, set in Edit first; real taps): hold Lock and Cut with a thumb.
+  Look for: the hold ring filling, the padlock big enough to spot on a unit's floor from the
+  doorway (it's twice the doors' padlocks), the padlock in your view not crowding the bar.
+  Shots `art/sheets/padlock-*.png`.
+- [ ] **Decide, defaults in place** (D-049): (1) "One padlock per use" (GDD): I read it as the
+  cut padlock is spent and the cutters last; or should the cutters break after one cut? (2) Lock
+  held half a second, Cut a second; (3) Cut and Lock on R, and R2 on a pad (Cut was on R1, which
+  is the torch's); (4) the padlock you carry is the doors' own, open, at twice their size; or
+  should yours look different (brass, say) so friends know a keeper is shut in there? That one is
+  an untested bet and costs the door drawing your padlock too.
 
 ## Now: judge L-11b, two tool slots (built Nov 8)
 
@@ -236,8 +263,8 @@ nowhere else.
   door's buttons not crowding yours. The captures can't draw the buttons, so no shots this time.
 - [ ] **A padlocked door:** 105 and 112 are padlocked. Press Open: the door jerks against its bolt
   (watch the line of light under it flicker), rattles loud, and the button says "Padlocked". Hold
-  Cut (R): "Need bolt cutters". Take them at the "Test tools" post right of the spawn (R), come
-  back and hold Cut a second: the padlock pops, and the door offers Peek and Open. Say if the
+  Cut (R): "Need bolt cutters". Take the pair lying by the spawn (E), come back and hold Cut a
+  second: the padlock snaps off (L-11c, below), and the door offers Peek and Open. Say if the
   rattle should be louder, longer or carry farther (`DoorSound.Sounds.Rattle`, 70 studs now).
 - [ ] **From inside:** open 101, walk in, turn to the door and Slam (G) or Close (F): its buttons
   show from inside while it's up. Shut in, Lift (now E) heaves it up in 6 s. Then shut yourself

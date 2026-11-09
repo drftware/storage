@@ -32,6 +32,8 @@ Tools.DropRemote = "ToolDrop" -- client → server: drop what's in your hand
 Tools.GiveRemote = "ToolGive" -- client → server: hand what's in your hand to a friend
 Tools.NoticeRemote = "ToolNotice" -- server → client: a short line for your screen
 Tools.HeldName = "HeldTool" -- the model's name in a character's hand
+-- A door's Lock button (Doors): every screen hides it unless a padlock is in that player's hand.
+Tools.LockTag = "PadlockButton"
 
 -- The attribute name for slot `i`.
 function Tools.slotAttribute(i: number): string
@@ -135,6 +137,7 @@ function Tools.sound(s: SoundSpec, parent: Instance, reach: number): Sound
 	local snd = Instance.new("Sound")
 	snd.SoundId = s.id
 	snd.Volume = s.volume
+	snd.PlaybackSpeed = s.pitch or 1
 	snd.PlaybackRegionsEnabled = true
 	snd.PlaybackRegion = NumberRange.new(s.from, s.from + s.length)
 	snd.RollOffMode = Enum.RollOffMode.InverseTapered
@@ -149,7 +152,7 @@ function Tools.play(s: SoundSpec, parent: Instance, reach: number)
 	local snd = Tools.sound(s, parent, reach)
 	snd.TimePosition = s.from
 	snd:Play()
-	task.delay(s.length + 0.5, function()
+	task.delay(s.length / (s.pitch or 1) + 0.5, function()
 		snd:Destroy()
 	end)
 end

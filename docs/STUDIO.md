@@ -120,6 +120,19 @@ verified: a doc page, Studio, or "untested".
 - Right after the hall streamed back in, the first capture rendered black; a few seconds later it
   was lit. Watch for that flash after a teleport.
 
+- **The MCP's keys only tap** (L-11c, 2026-11-08): `user_keyboard_input` keyDown then keyUp
+  never starts a held prompt (no `PromptButtonHoldBegan`). Hold one from the Client with the
+  prompt's own `InputHoldBegin()` / `InputHoldEnd()`, as a custom prompt UI does; set its
+  `HoldDuration` long on that screen only to catch a shot mid-hold. A door's buttons hide while
+  their point (eye height on the door) is off screen, so aim level at the door, not at the latch.
+- **A screen's own prompt reach sticks** (L-11c): a client setting `MaxActivationDistance` on a
+  server's prompt keeps it until the server writes that property again; Doors never does, so
+  ToolView hides Lock that way.
+- **Loose parts a screen makes fall on that screen** (L-11c): a client's unanchored clone is
+  simulated there. One cloned into the corner of a door, its wall and the floor is wedged in all
+  three and never moves: start it clear (DoorView's cut padlock starts out and up, colliding after
+  0.08 s). It lands in a tenth of a second: sample it as it's made, or it looks frozen.
+
 ## Lighting and captures
 
 - **Graphics quality decides the hall's look** (Play, 2026-11-06, a plate held under a tube):
@@ -407,6 +420,13 @@ verified: a doc page, Studio, or "untested".
   Pro Sound Effects' and APM's uploads are Roblox's licensed library and load in any game. Check
   one in Edit with `ContentProvider:PreloadAsync` (status Success, `TimeLength` above 0) before
   relying on it.
+- **The command bar caches `require`** (L-11c): after Rojo syncs a module, requiring it from
+  `execute_luau` in Edit can still return the old one. Require a clone instead
+  (`require(ReplicatedStorage.Shared.Tools:Clone())`), then destroy the clone.
+- **Sounds measured for the padlock** (L-11c; 50 ms bins at half speed): "Scissors Snap 28"
+  9118829487 is one snap at 0 s, about -15 dB, 0.47 s long; "Padlock Open Lock Pick Up Throw Down
+  1" 9117185722 opens at 0.05 s, locks at 0.40 s, then its pick-up and throw-down run together
+  from 0.65 to 1.2 s (too blurred to cut apart).
 - **Measuring a sound** (Edit, P0-04, 2026-11-07): nobody here can listen, so find a recording's
   events by its loudness. An `AudioPlayer` wired (`Wire`) to an `AudioAnalyzer` plays in Edit with
   no output attached, silently; sample the analyzer's `PeakLevel` each frame against the player's

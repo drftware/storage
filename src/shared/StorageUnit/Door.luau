@@ -19,11 +19,13 @@
 		Peek, Open           from the hall, on a shut door
 		Close, Slam          on a door that's up, from either side (shut yourself in to hide)
 		Lift                 from inside, on a shut door: always possible unless padlocked
-		Cut                  bolt cutters on a padlock, from the hall
-		Lock                 a padlock on a shut door, from the hall (the padlock tool's use)
+		Cut                  bolt cutters on a padlock, from the hall, the cutters in your hand
+		Lock                 a padlock on a shut door, from the hall, the padlock in your hand
 
-	A refusal the player can see says why in a word or three ("Padlocked", "Need bolt cutters"). An
-	ask the door never offered (a stale tap, an exploit) is refused silently.
+	A tool works only in your hand, as Lethal Company's do: one in your other slot gets "Hold the
+	cutters", not "Need bolt cutters". A refusal the player can see says why in a word or
+	three ("Padlocked", "Need a padlock"). An ask the door never offered (a stale tap, an exploit)
+	is refused silently.
 ]]
 
 -- a string require, as Brix's modules do, so Lune can load this module for its tests too
@@ -41,8 +43,9 @@ export type State =
 export type Action = "Peek" | "Open" | "Close" | "Slam" | "Lift" | "Cut" | "Lock"
 export type Side = "Hall" | "Inside"
 export type Tool = "BoltCutters" | "Padlock"
--- What a player carries.
-export type Tools = { BoltCutters: boolean, Padlock: boolean }
+-- Where a player has a tool: in their hand, in their other slot, or nowhere.
+export type Holding = "Hand" | "Slot" | "None"
+export type Tools = { BoltCutters: Holding, Padlock: Holding }
 
 export type Verdict = {
 	ok: boolean,
@@ -83,6 +86,10 @@ Door.Slots = {
 	Lock = 1,
 } :: { [Action]: number }
 
+-- The buttons you hold rather than tap (a tool at work takes a moment), so a double tap on the
+-- spot can't fire them: Lock and then Cut share the right spot.
+Door.Holds = { Cut = true, Lock = true } :: { [Action]: true }
+
 -- What each action plays.
 local MOTIONS: { [Action]: Motion.Kind } = {
 	Peek = "Peek",
@@ -97,7 +104,7 @@ local SHUT = 0.05
 
 -- What the hall-side buttons offer in each state, left to right.
 local HALL: { [State]: { Action } } = {
-	Closed = { "Peek", "Open" },
+	Closed = { "Peek", "Open", "Lock" },
 	Peeking = { "Close", "Open", "Slam" },
 	Opening = { "Close", "Slam" },
 	Lifting = {},
@@ -119,8 +126,15 @@ local EITHER_SIDE: { [State]: true } = { Opening = true, Open = true, Closing = 
 
 local REFUSED: Verdict = { ok = false }
 
-local function carries(tools: Tools, tool: Tool): boolean
-	return if tool == "BoltCutters" then tools.BoltCutters else tools.Padlock
+-- The refusal for a tool not in hand: hold it if it's in your other slot, else find one.
+local function missing(tools: Tools, tool: Tool): string?
+	local holding = if tool == "BoltCutters" then tools.BoltCutters else tools.Padlock
+	if holding == "Hand" then
+		return nil
+	elseif tool == "BoltCutters" then
+		return if holding == "Slot" then "Hold the cutters" else "Need bolt cutters"
+	end
+	return if holding == "Slot" then "Hold the padlock" else "Need a padlock"
 end
 
 local function refuse(refusal: string, motion: Motion.Kind?): Verdict
@@ -190,8 +204,9 @@ function Door.decide(state: State, action: Action, side: Side, tools: Tools): Ve
 	local inHall = side == "Hall"
 	if state == "Locked" then
 		if action == "Cut" and inHall then
-			if not carries(tools, "BoltCutters") then
-				return refuse("Need bolt cutters")
+			local need = missing(tools, "BoltCutters")
+			if need then
+				return refuse(need)
 			end
 			return { ok = true, lock = false }
 		elseif (action == "Open" or action == "Peek") and inHall then
@@ -206,8 +221,10 @@ function Door.decide(state: State, action: Action, side: Side, tools: Tools): Ve
 			return REFUSED
 		elseif state ~= "Closed" then
 			return refuse("Shut it first")
-		elseif not carries(tools, "Padlock") then
-			return refuse("Need a padlock")
+		end
+		local need = missing(tools, "Padlock")
+		if need then
+			return refuse(need)
 		end
 		return { ok = true, lock = true }
 	end

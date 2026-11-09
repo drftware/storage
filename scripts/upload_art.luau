@@ -125,6 +125,12 @@ local ART: { Art } = {
 		manifest = "art/boltcutters/assets.json",
 		description = "A pair of 18-inch bolt cutters: chipped red handles, black rubber grips, a forged steel jaw",
 	},
+	{
+		key = "Padlock",
+		path = "art/padlock/out/Padlock.fbx",
+		manifest = "art/padlock/assets.json",
+		description = "An open laminated steel padlock: six riveted plates, a hardened shackle, a brass keyway",
+	},
 }
 local MODEL: OpenCloud.Kind = { assetType = "Model", contentType = "model/fbx" }
 

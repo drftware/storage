@@ -2,60 +2,59 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-08, session 39 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-08, session 40 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-11b is done** (D-048): two tool slots, Lethal Company's way. The bolt cutters are built by
-  script (`art/boltcutters/`, baked, sheets), uploaded and prepared at
-  `ReplicatedStorage.Props.Tools.BoltCutters`. A tool lies on a floor with "Pick up"; it comes
-  into your hand with a clank; the bar at the bottom shows each slot as a 3D picture (tap, 1/2,
-  d-pad); Drop (button, G, d-pad down) lets it fall ahead of you; "Give" on a friend hands it
-  over. Yours sways low on the left of your view; friends see it in your left hand.
-- **New code:** `src/shared/Tools/` (`init`, `Catalog` a row per tool, `Carry` pure with
-  `tests/carry.spec.luau`, generated `Specs/BoltCutters`), `src/server/Slots.luau`,
-  `src/client/ToolView.luau`. The test hall's "Bolt cutters" post is gone: two pairs lie on
-  floors (`DevCorridor`'s `CUTTERS`). `Slots` keeps `CarriesBoltCutters` for `Doors` until L-11c.
-- **Verified in Studio:** pick up, switch, switch back, drop, the bar, the slot picture and the
-  held tool, on a computer and on the Galaxy A16 by gamepad keys. Handing over (two players) and
-  the phone's real taps are the owner's (`OWNER.md`). Studio left in Edit, simulator off.
+- **L-11c is done** (D-049): the padlock and the cutters at work. The padlock you carry is built
+  by script (`art/padlock/`: the doors' laminated padlock, open, twice their size; baked, sheets),
+  uploaded and prepared at `ReplicatedStorage.Props.Tools.Padlock`; one lies across the spawn from
+  the cutters (`DevCorridor`'s `TOOLS`). Tools work only in your hand ("Hold the cutters"). Lock
+  (R, R2; held 0.5 s) shows on shut doors only to a padlock in hand and spends it (`Slots:spend`);
+  Cut (now R2 on a pad, R1 is the torch's) snaps the padlock off: a loud snap and a jolt, a copy
+  thrown 1.5 studs out onto the hall floor on every screen (`DoorView`), its clatter. Your view
+  brings the tool out to the door while you hold (`Catalog` rows' `use`). `CarriesBoltCutters`
+  is gone.
+- **Verified in Studio:** pick up the padlock, Lock hidden without it and shown with it, lock a
+  door (padlock leaves the bar), pick up the cutters, cut it, the copy landing on the hall floor;
+  the padlock's look on the floor, in hand and held at the door. Not seen in light: the cutters'
+  pose at the door (the torch key didn't land); handing over, phone taps, a friend's view are the
+  owner's (`OWNER.md`). Studio left in Edit, Play stopped, simulator off.
 - No owner test results came this session (the overnight run).
 
-## Next task: L-11c The padlock, and the cutters at work
-The moment: you hold the cutters to a padlocked door, hold Cut, the jaw bites the shackle with a
-snap and the padlock clatters to the floor. And the padlock you carry snaps shut on a door.
+## Next task: L-04e The deal on the floor
+The moment: you lift a door on a strange floor and what the deal put there is waiting in the bulb's
+light: a pair of bolt cutters, a padlock, a find; and the doors the deal padlocked won't budge.
 1. Owner test results first (`OWNER.md`).
-2. Read ROADMAP L-11c and the GDD's lines on the padlock and bolt cutters (docs tools: search
-   "padlock"; only its use, its cost, "One padlock per use").
-3. Art first, as the cutters: `art/padlock/` (spec.py, build.py borrowing the finds' bake, as
-   `art/boltcutters/build.py`): a brass-bodied padlock with a steel shackle, at a hand's size;
-   FBX, sheets; upload (`scripts/upload_art`), insert, `Tools.prepare(model, "Padlock")`.
-4. Its row in `Tools/Catalog.luau`; lay one in the test hall (`DevCorridor`'s `CUTTERS`).
-5. `Doors` reads the slots (`Slots:carried`) for `Door.Tools`: the cutters in your hand to Cut, a
-   padlock in your hand to lock (and the padlock leaves your slots when it's on the door). Drop
-   the `CarriesBoltCutters` stand-in in `Slots.publish` and `Doors.carries`.
-6. The feedback: the jaw's snap at the shackle, the lock's clatter, a refusal naming the fix
-   ("Hold the bolt cutters").
-7. If the art and the use won't fit one session, split L-11c in ROADMAP and stop at the art.
-**Acceptance:** checks green; art built by script with sheets; Lune specs for any new rules; in
-Studio: cut a padlocked door with the cutters in hand and lock one with a padlock (Galaxy A16
-shots); two players in OWNER.md.
-**Read first:** ROADMAP L-11c; the GDD's padlock lines; `art/boltcutters/build.py`;
-`src/server/Slots.luau` (`carried`, `publish`); `src/server/Doors.luau` (grep `carries`);
-`src/shared/StorageUnit/Door.luau` (grep `Tools`).
+2. Read ROADMAP L-04e, D-044 (a note's sight line) and how `Deal` names a unit's contents.
+3. When a floor is laid, padlock the doors the deal says (`Doors:lock(unit, true)`, no player).
+4. On a unit's first lift (a Peek or an Open: `Doors.acted`), lay what it holds: a tool with
+   `Slots:lay` (keys are `Deal.Tool`'s, which are the catalog's), a find, a keeper's place
+   (L-06b fills it). Where in the unit: a pure rule with Lune specs (on the floor, clear of the
+   walls and boxes, never between the doorway and a note).
+5. If laying everything won't fit one session, split L-04e in ROADMAP (tools and padlocks first).
+**Acceptance:** checks green; Lune specs for where things are laid; in Studio: walk floor 3 from
+seed 7, peek and open a few units, see their tools and finds, a dealt padlock that needs the
+cutters (Galaxy A16 shots from doorways); the owner's checks in OWNER.md.
+**Read first:** ROADMAP L-04e; DECISIONS D-044; `src/shared/Deal.luau` (its types); 
+`src/server/FloorBuilder.luau` (grep `deck`, `lay`); `src/server/Slots.luau` (`lay`);
+`src/server/Doors.luau` (`acted`, `lock`).
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-11c; L-06b the Mannequin hunts (Brix ENG-07; it reads `Flashlights:isOn`/`aim` to freeze);
-   L-04e (lay each unit's tool with `Slots:lay`; keep each note's sight line clear); L-12; L-13;
-   L-14; then L-07, L-08, L-10, L-09.
+1. L-04e; L-06b the Mannequin hunts **waits on Brix**: ENG-07a/b (a chase in a place) aren't
+   built, and this repo never edits Brix; a Brix session first. Then L-12, L-13, L-14; then
+   L-07, L-08, L-10, L-09.
 2. **Bug, small:** DoorSounds' first slam of a session lands up to 0.35 s late; swap its
    `preload` for `SoundPrimer.prime` (one call) and check the first slam in Studio.
-3. L-06b's keepers hear doors on `Doors.acted`, the keypad on `Elevators.acted` and a dropped tool
-   on `Slots.changed`; keepers with eyes see a torch (`Flashlights.switched`, GDD).
-4. **Check:** floor 3's laying peaked at 12.2 ms in a frame (session 37; 8.7 ms this session).
-5. Studio traps (docs/STUDIO.md): set the Device Simulator's device in Edit before Play (its calls
-   are written there) and stop it after; the MCP's E reaches prompts but one per key shows, so
-   stand away from the posts; judge light at a fixed Quality Level; the MCP's clicks don't reach a
-   ScreenGui button; a capture right after a teleport comes back black, take it again.
+3. **Check, small:** G is both a door's Slam and Drop (ToolView binds G since L-11b): with a tool
+   in hand, does G at an open door slam, drop, or both? Give Drop its own key if it clashes.
+4. L-06b's keepers hear doors on `Doors.acted` (a Cut carries 40 studs), the keypad on
+   `Elevators.acted`, a dropped tool on `Slots.changed`; keepers with eyes see a torch
+   (`Flashlights.switched`, GDD).
+5. **Check:** floor 3's laying peaked at 12.2 ms in a frame (session 37; 8.3 ms this session).
+6. Studio traps (docs/STUDIO.md): the MCP's keys only tap, so hold a prompt with
+   `InputHoldBegin`; door buttons hide while their eye-height point is off screen; the command
+   bar caches `require` (require a clone); set the Device Simulator's device in Edit before Play;
+   a capture right after a teleport comes back black, take it again.
 
 ## Kickoff for the next agent
 ```text

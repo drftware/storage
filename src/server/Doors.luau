@@ -3,26 +3,26 @@
 	Doors: every storage unit's roll-up door as the GDD's state machine (the pure `Door`), a system
 	on the server's Host clock. It finds each unit in the world by its tag and gives it buttons:
 
-	- On the door's hall side at eye height, the buttons its state allows and nothing else: Peek and
-	  Open on a shut door, Close and Slam on an open one, Open and Cut on a padlocked one. Each
+	- On the door's hall side at eye height, the buttons its state allows and nothing else: Peek,
+	  Open and Lock on a shut door, Close and Slam on an open one, Open and Cut on a padlocked one.
+	  Lock shows only on the screen of someone with a padlock in hand (ToolView hides it). Each
 	  action keeps one place on screen (`Door.Slots`), side by side, so a phone thumb can pick one
 	  and a double tap can't fire something else.
 	- Just inside the door, Lift, only while the door is down: someone shut in can always get out
 	  (unless it's padlocked: then it rattles).
 
 	Every press is checked before the door moves: the player must be within reach of the button (a
-	little slack for lag), on the right side of the door (Lift only from inside), carrying the tool
-	it needs (Cut needs bolt cutters), and not pressing faster than a hand can. A refusal the player
-	can see answers at the door: a padlocked door rattles against its bolt, loud, and the button
-	says "Padlocked" or "Need bolt cutters" for a moment.
+	little slack for lag), on the right side of the door (Lift only from inside), holding the tool it
+	needs in their hand (`Slots`: the cutters to Cut, a padlock to Lock, which then leaves their
+	slots for good), and not pressing faster than a hand can. A refusal the player can see answers at
+	the door: a padlocked door rattles against its bolt, loud, and the button says "Padlocked",
+	"Need bolt cutters" or "Hold the cutters" for a moment.
 
 	Every door event fires `acted` with how far it's heard (DoorSound), so keepers (L-06) hear
 	exactly what players hear. Only doors in motion are stepped, to refresh their buttons when the
 	motion ends.
 
-	Tools are a stand-in until Phase 2's tools: a player carries one while their attribute
-	`Carries<Tool>` is true (`CarriesBoltCutters`, `CarriesPadlock`). `Slots` keeps the first true while
-	you carry bolt cutters, until L-11c reads the slots here.
+	Each button carries its action as the attribute `DoorAction`, so a screen can find Lock and Cut.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -35,6 +35,8 @@ local DoorSound = require(ReplicatedStorage.Shared.StorageUnit.DoorSound)
 local Motion = require(ReplicatedStorage.Shared.StorageUnit.Motion)
 local Prompts = require(script.Parent.Prompts)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
+local Slots = require(script.Parent.Slots)
+local Tools = require(ReplicatedStorage.Shared.Tools)
 local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
 
 export type DoorEvent = {
@@ -72,6 +74,7 @@ local RANGE_SLACK = 4 -- studs past a button's reach still accepted: a moving pl
 local REPEAT_SECONDS = 0.3 -- a player's presses closer than this are dropped: a double tap
 local INSIDE_SLACK = 1 -- studs either side of the doorway that still count as inside the unit
 local CUT_SECONDS = 1 -- the bolt cutters' hold (GDD: cut free in a second)
+local LOCK_SECONDS = 0.5 -- the padlock's hold: long enough that nobody locks a friend in by a slip
 
 type Button = {
 	action: Door.Action,
@@ -80,6 +83,8 @@ type Button = {
 	pad: Enum.KeyCode,
 	hold: number?,
 }
+local Doors = {}
+
 -- Keys: one per action, so none hides another on a keyboard or pad.
 local HALL_BUTTONS: { Button } = {
 	{ action = "Peek", text = "Peek", key = Enum.KeyCode.Q, pad = Enum.KeyCode.ButtonL1 },
@@ -90,14 +95,24 @@ local HALL_BUTTONS: { Button } = {
 		action = "Cut",
 		text = "Cut",
 		key = Enum.KeyCode.R,
-		pad = Enum.KeyCode.ButtonR1,
+		pad = Enum.KeyCode.ButtonR2, -- R1 is the torch's (D-047)
 		hold = CUT_SECONDS,
 	},
+	-- Lock and Cut never show together (a shut door, a padlocked one), so they share keys
+	{
+		action = "Lock",
+		text = "Lock",
+		key = Enum.KeyCode.R,
+		pad = Enum.KeyCode.ButtonR2,
+		hold = LOCK_SECONDS,
+	},
 }
+Doors.ActionAttribute = "DoorAction"
 local LIFT_BUTTON: Button =
 	{ action = "Lift", text = "Lift", key = Enum.KeyCode.E, pad = Enum.KeyCode.ButtonX }
 
-local PADLOCK: DoorSound.SoundName = "PadlockShut" -- how far a padlock going on or off is heard
+local PADLOCK: DoorSound.SoundName = "PadlockShut" -- how far a padlock going on is heard
+local SNAP: DoorSound.SoundName = "Snap" -- and the cutters' snap taking one off
 local ATTR_MOTION = "DoorMotion"
 local ATTR_LOCKED = "DoorLocked"
 
@@ -120,14 +135,23 @@ local function now(): number
 	return Workspace:GetServerTimeNow()
 end
 
-local function carries(player: Player): Door.Tools
-	return {
-		BoltCutters = player:GetAttribute("CarriesBoltCutters") == true,
-		Padlock = player:GetAttribute("CarriesPadlock") == true,
-	}
+-- Where `player` has each tool, from their slots: in hand, in the other slot, or not at all.
+local function carries(slots: Slots.Slots?, player: Player): Door.Tools
+	local tools: Door.Tools = { BoltCutters = "None", Padlock = "None" }
+	if not slots then
+		return tools
+	end
+	local keys, hand = slots:carried(player)
+	for i, key in keys do
+		local where: Door.Holding = if i == hand then "Hand" else "Slot"
+		if key == "BoltCutters" and tools.BoltCutters ~= "Hand" then
+			tools.BoltCutters = where
+		elseif key == "Padlock" and tools.Padlock ~= "Hand" then
+			tools.Padlock = where
+		end
+	end
+	return tools
 end
-
-local Doors = {}
 
 function Doors.new(): Doors
 	local entries: { [Model]: Entry } = {}
@@ -135,6 +159,7 @@ function Doors.new(): Doors
 	local lastPress: { [Player]: number } = {}
 	local connections: { RBXScriptConnection } = {}
 	local acted = Brix.Signal.new() :: Brix.Signal<DoorEvent>
+	local slots: Slots.Slots? = nil -- what's in each hand (Slots fills its slot in init.server)
 
 	local function nameOf(entry: Entry): string
 		return if entry.state == "Locked" then "Padlocked" else entry.name
@@ -179,6 +204,7 @@ function Doors.new(): Doors
 	local function event(entry: Entry, action: Door.Action, motion: Motion.Kind?, player: Player?)
 		local reach = if motion
 			then DoorSound.Actions[motion].Reach
+			elseif action == "Cut" then DoorSound.Sounds[SNAP].Reach
 			else DoorSound.Sounds[PADLOCK].Reach
 		acted:fire({
 			unit = entry.unit,
@@ -219,12 +245,15 @@ function Doors.new(): Doors
 		lastPress[player] = t
 		refresh(entry)
 		local verdict =
-			Door.decide(entry.state, action, sideOf(entry, root.Position), carries(player))
+			Door.decide(entry.state, action, sideOf(entry, root.Position), carries(slots, player))
 		if verdict.motion then
 			RollUpDoor.play(entry.unit, verdict.motion)
 		end
 		if verdict.lock ~= nil then
-			RollUpDoor.setLocked(entry.unit, verdict.lock)
+			-- the padlock leaves your hand for the door (decide just saw it there, nothing yields)
+			if RollUpDoor.setLocked(entry.unit, verdict.lock) and verdict.lock and slots then
+				slots:spend(player, "Padlock")
+			end
 		end
 		if verdict.refusal then
 			local p = entry.buttons[action]
@@ -286,6 +315,10 @@ function Doors.new(): Doors
 			})
 			p.UIOffset = Vector2.new(Door.Slots[button.action] * SLOT_PIXELS, 0)
 			p.Enabled = false
+			p:SetAttribute(Doors.ActionAttribute, button.action)
+			if button.action == "Lock" then
+				CollectionService:AddTag(p, Tools.LockTag)
+			end
 			entry.buttons[button.action] = p
 			entry.refusers[p] = Prompts.refuser(p, function()
 				return nameOf(entry)
@@ -296,13 +329,24 @@ function Doors.new(): Doors
 					press(entry, button.action, player)
 				end)
 			)
-			if button.action == "Cut" then
-				-- answer the moment the hold starts: no cutters, no point holding
+			if button.hold then
+				-- answer the moment the hold starts: the wrong thing in hand, no point holding
 				table.insert(
 					entry.conns,
 					p.PromptButtonHoldBegan:Connect(function(player: Player)
-						if not carries(player).BoltCutters and entry.state == "Locked" then
-							entry.refusers[p]("Need bolt cutters")
+						local character = player.Character
+						local body = character and character:FindFirstChild("HumanoidRootPart")
+						if not (body and body:IsA("BasePart")) then
+							return
+						end
+						local verdict = Door.decide(
+							entry.state,
+							button.action,
+							sideOf(entry, body.Position),
+							carries(slots, player)
+						)
+						if verdict.refusal then
+							entry.refusers[p](verdict.refusal)
 						end
 					end)
 				)
@@ -344,7 +388,9 @@ function Doors.new(): Doors
 		acted = acted,
 	}
 
-	function system.start(_: any, _context: Brix.Context)
+	function system.start(_: any, context: Brix.Context)
+		-- any: the registry hands back a plain System; Slots fills this slot (init.server)
+		slots = (context.registry:get("slots") :: any) :: Slots.Slots?
 		table.insert(
 			connections,
 			CollectionService:GetInstanceAddedSignal(UnitKit.Tag):Connect(add)
@@ -403,9 +449,16 @@ function Doors.new(): Doors
 			if not (root and root:IsA("BasePart")) then
 				return false
 			end
-			local verdict =
-				Door.decide(entry.state, action, sideOf(entry, root.Position), carries(player))
+			local verdict = Door.decide(
+				entry.state,
+				action,
+				sideOf(entry, root.Position),
+				carries(slots, player)
+			)
 			took = verdict.ok and RollUpDoor.setLocked(unit, locked)
+			if took and locked and slots then
+				slots:spend(player, "Padlock")
+			end
 		else
 			took = (entry.state == "Locked") ~= locked and RollUpDoor.setLocked(unit, locked)
 		end

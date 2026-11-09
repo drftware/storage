@@ -24,6 +24,9 @@
 #   scripts/art.sh boltcutters          the bolt cutters: their bake, FBX, Specs module, look sheets
 #                                       (the floor and view sheets need the boxes built; about 3 min)
 #   scripts/art.sh boltcutters export   just the bolt cutters' FBX and Specs module
+#   scripts/art.sh padlock              the padlock you carry: its bake, FBX, Specs module, look
+#                                       sheets (the floor and view sheets need the boxes built)
+#   scripts/art.sh padlock export       just the padlock's FBX and Specs module
 set -euo pipefail
 cd "$(dirname "$0")/.."
 if [ "${1:-}" = "elevator" ]; then
@@ -42,6 +45,15 @@ if [ "${1:-}" = "boltcutters" ]; then
 	for st in ${*:-textures export renders}; do
 		echo "== boltcutters $st"
 		blender -b --factory-startup -P art/boltcutters/build.py -- --stage "$st" 2>&1 \
+			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|atlas|DONE" || true
+	done
+	exit 0
+fi
+if [ "${1:-}" = "padlock" ]; then
+	shift
+	for st in ${*:-textures export renders}; do
+		echo "== padlock $st"
+		blender -b --factory-startup -P art/padlock/build.py -- --stage "$st" 2>&1 \
 			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|atlas|DONE" || true
 	done
 	exit 0

@@ -96,9 +96,14 @@ end
 ok(#DoorSound.cues("Slam", 0, 0, FULL) == 0, "slamming a shut door: silence")
 ok(#DoorSound.cues("Close", 0, 0, FULL) == 0, "closing a shut door: silence")
 
--- locking: the bolt then the padlock; unlocking: the padlock then the bolt; about a second
+-- locking: the bolt then the padlock; cutting: the jaw's snap, the padlock landing, the bolt
 ok(names(DoorSound.lockCues(true)) == "Latch,PadlockShut", "locking")
-ok(names(DoorSound.lockCues(false)) == "PadlockOpen,Latch", "unlocking")
+ok(names(DoorSound.lockCues(false)) == "Snap,PadlockFall,Latch", "cutting")
+ok(DoorSound.lockCues(false)[1].shake > 0, "the snap jolts whoever's at the door")
+ok(
+	DoorSound.Sounds.Snap.Reach > DoorSound.Sounds.PadlockShut.Reach,
+	"a cut carries farther than a padlock snapping shut"
+)
 for _, locked in { true, false } do
 	for _, c in DoorSound.lockCues(locked) do
 		ok(c.at >= 0 and c.at < 1, "a padlock's sounds within its second")

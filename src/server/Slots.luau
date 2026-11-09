@@ -13,8 +13,8 @@
 	ToolSwitch takes a slot, ToolDrop nothing, ToolGive a Player. ToolNotice tells one screen a short
 	line ("Bolt cutters from Sam").
 
-	Until L-11c reads the slots, the server keeps the old test attribute `CarriesBoltCutters` true
-	while either slot holds bolt cutters, so a padlocked door's Cut still works (`Doors`).
+	`Doors` reads `carried` to know what's in your hand (the cutters to Cut, a padlock to Lock), and
+	`spend`s the padlock that goes on a door: it leaves your slots for good.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -33,9 +33,8 @@ local HAND_SOUND_REACH = 24 -- a hand closing on a tool, heard close by
 local FALL = TweenInfo.new(0.32, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 local DROP_AHEAD = 2.2 -- studs in front of your middle where a dropped tool lands
 local REACH_SLACK = 2 -- studs the server allows past a prompt's reach (lag, a long arm)
-local TEST_ATTRIBUTE = "CarriesBoltCutters" -- read by Doors until L-11c
 
-export type Change = { player: Player, kind: "PickUp" | "Drop" | "Give" | "Switch" }
+export type Change = { player: Player, kind: "PickUp" | "Drop" | "Give" | "Switch" | "Spend" }
 
 export type Slots = Brix.System & {
 	-- Fires as anyone's slots change, for whoever cares (keepers that hear a drop, later).
@@ -45,6 +44,9 @@ export type Slots = Brix.System & {
 	lay: (self: any, key: string, at: Vector3, yaw: number) -> string?,
 	-- The catalog keys `player` carries, slot by slot ("" for empty), and the slot in hand.
 	carried: (self: any, player: Player) -> ({ string }, number),
+	-- Uses up what's in `player`'s hand if it's catalog key `key` (a padlock hung on a door): out
+	-- of their slots and gone. Whether it was.
+	spend: (self: any, player: Player, key: string) -> boolean,
 }
 
 type Tool = {
@@ -129,26 +131,19 @@ function Slots.new(): Slots
 		end
 	end
 
-	-- Writes `player`'s slots to their attributes, and the test attribute Doors reads.
+	-- Writes `player`'s slots to their attributes, for every screen.
 	local function publish(player: Player)
 		local h = handOfPlayer(player)
-		local cutters = false
 		for i = 1, Carry.Slots do
 			local id = h.carry.slots[i]
 			local t = if id then tools[id] else nil
 			local key = if t then t.key else ""
-			if key == "BoltCutters" then
-				cutters = true
-			end
 			if player:GetAttribute(Tools.slotAttribute(i)) ~= key then
 				player:SetAttribute(Tools.slotAttribute(i), key)
 			end
 		end
 		if player:GetAttribute(Tools.HandAttribute) ~= h.carry.active then
 			player:SetAttribute(Tools.HandAttribute, h.carry.active)
-		end
-		if (player:GetAttribute(TEST_ATTRIBUTE) == true) ~= cutters then
-			player:SetAttribute(TEST_ATTRIBUTE, cutters)
 		end
 	end
 
@@ -573,6 +568,22 @@ function Slots.new(): Slots
 			out[i] = if t then t.key else ""
 		end
 		return out, h.carry.active
+	end
+
+	function system.spend(_: any, player: Player, key: string): boolean
+		local h = handOfPlayer(player)
+		local id = Carry.held(h.carry)
+		local t = if id then tools[id] else nil
+		if not (t and t.key == key) then
+			return false
+		end
+		Carry.release(h.carry)
+		tools[t.id] = nil
+		stow(t)
+		t.model:Destroy()
+		publish(player)
+		changed:fire({ player = player, kind = "Spend" })
+		return true
 	end
 
 	return system :: any -- any: the table is the Slots shape built field by field above
