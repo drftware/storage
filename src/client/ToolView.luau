@@ -10,7 +10,9 @@
 	friend's handover reads "Bolt cutters from Sam".
 
 	What's in your hand is drawn low on the left of your first-person view (the torch has the right),
-	swaying with the torch's own sway (`Torch.step`). A new tool swings up into view from below;
+	swaying with the torch's own sway (`Torch.step`), drawn small and near your eye so it never pokes
+	through a wall, a door or the steel, pulling back and ducking out of view with your nose to one
+	(`Hands`, D-060). A new tool swings up into view from below;
 	switching swings the old one down and the new one up. Your switch answers at once on your
 	screen (with a soft clank) and the server is told; the server decides pick-ups, drops and
 	handovers, and their clanks are its sounds, heard by everyone near.
@@ -31,6 +33,8 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
+local HandRoom = require(script.Parent.HandRoom)
+local Hands = require(ReplicatedStorage.Shared.Hands)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 
@@ -268,6 +272,10 @@ function ToolView.new(): Brix.System
 	local shownModel: Model? = nil
 	local shownBody: BasePart? = nil
 	local bodyOff = CFrame.identity
+	-- the shown tool's box from its grip (drawn small), for how far ahead of your eye it reaches
+	local boxOff = CFrame.identity
+	local boxHalf = Vector3.zero
+	local pull = 0 -- how far it's pulled back from a wall, studs
 	local swing = 0
 	local rising = true
 	local switchSound: Sound? = nil
@@ -532,6 +540,11 @@ function ToolView.new(): Brix.System
 				part.CastShadow = false
 			end
 		end
+		-- drawn small and near your eye (`Hands`): the same on your screen, never through a wall
+		model:ScaleTo(Hands.Scale)
+		local boxAt, boxSize = model:GetBoundingBox()
+		boxOff = model:GetPivot():Inverse() * boxAt
+		boxHalf = boxSize / 2
 		bodyOff = body.PivotOffset:Inverse()
 		model.Parent = viewFolder
 		shownModel, shownBody = model, body
@@ -607,15 +620,23 @@ function ToolView.new(): Brix.System
 		end
 		local pitchT = t0[2] + (t1[2] - t0[2]) * w + KICK_PITCH * kick + buzzTurn
 		local rollT = t0[3] + (t1[3] - t0[3]) * w
-		local grip = cam
-			* CFrame.new(h + SWING_FROM * away + Vector3.new(0, 0, -KICK_PUSH * kick) + buzz)
-			-- mirrored: the left hand's sway leans the other way
-			* CFrame.new(-p.x, p.y, p.z)
+		-- where your hand holds it at full size, from your eye; mirrored: the left hand's sway leans
+		-- the other way
+		local at = h
+			+ SWING_FROM * away
+			+ Vector3.new(0, 0, -KICK_PUSH * kick)
+			+ buzz
+			+ Vector3.new(-p.x, p.y, p.z)
+		-- drawn small and near, it looks the same; nose to a wall it pulls back and ducks
+		local small = CFrame.new(at * Hands.Scale)
 			* CFrame.fromEulerAnglesYXZ(
 				(pitchT + SWING_TILT * away) * RAD + p.pitch,
 				yawT * RAD - p.yaw,
 				rollT * RAD - p.roll
 			)
+		local reach = HandRoom.reach(small * boxOff, boxHalf)
+		pull = Hands.follow(pull, Hands.pull(HandRoom.room(cam, reach), reach), dt)
+		local grip = cam * CFrame.new(0, -Hands.Duck * pull, pull) * small
 		-- the whole model, so a second part (the ladder's fly) moves with it
 		local model = shownModel
 		if model then

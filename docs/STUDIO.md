@@ -718,3 +718,9 @@ verified: a doc page, Studio, or "untested".
   `CameraType` back to Custom after every `execute_luau` that changed it.
 - **Walk a step before a shot** (L-12a): a capture after a teleport came back black twice; a
   `Humanoid:MoveTo` a few studs out and back woke the motion light and the next capture was lit.
+
+- **Held things in first person** (L-13b2c2, 2026-11-09, checked in Studio): the camera's near
+  plane is 0.1 studs (`Camera.NearPlaneZ` = -0.1); standing flush to a wall your first-person eye
+  is 1.45 studs from it. `Model:ScaleTo` scales parts and attachments' places but leaves a light's
+  `Range` alone. `execute_luau` (the MCP) sets the camera back to its own type after each call, so
+  a test view must be held by a `BindToRenderStep` at `Camera.Value + 1` (unbind it after).

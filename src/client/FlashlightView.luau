@@ -3,7 +3,10 @@
 	Client system: the flashlights on this screen (L-11a, D-047).
 
 	Yours: held low on the right of your first-person view (`Torch.Hold`), swaying as you walk,
-	trailing a hard turn and dipping as your thumb clicks it, its beam leaving its lens. A right
+	trailing a hard turn and dipping as your thumb clicks it, its beam leaving its lens. It's drawn
+	small and near your eye so it never pokes through a wall, a door or the steel, pulling back and
+	ducking out of view with your nose to one; the beam still leaves where the full-size lens would
+	be, but never from past a surface (`Hands`, D-060). A right
 	click, a gamepad's R1 or the round button above the phone's jump button switches it: the click,
 	the lens and the beam answer at once on your screen, and the server is told the state you want
 	(it decides for everyone else). While it's on, your look's pitch goes to the server a few times
@@ -13,6 +16,8 @@
 	drawn here from the `On` attribute, their arm raised to their `Aim` (each screen poses other
 	players' shoulders after their animation, so the beam points where they look), the click heard
 	near them. Only the nearest few cast real light (`Torch.budget`): the rest show their lit lens.
+	A friend's beam never starts past a surface either: lying on the steel or pressed to a door,
+	their torch doesn't light the unit behind it.
 ]]
 local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
@@ -24,6 +29,8 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
+local HandRoom = require(script.Parent.HandRoom)
+local Hands = require(ReplicatedStorage.Shared.Hands)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 
 local Torch = Flashlight.Torch
@@ -44,9 +51,16 @@ local GLOW = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out
 local BUDGET_EVERY = 0.25 -- seconds between choosing which friends' beams are real
 local RAD = math.pi / 180
 
-local BODY_OFF = CFrame.new(Specs.Body.Centre)
-local LENS_OFF = CFrame.new(Specs.Lens.Centre)
-local HOLD = CFrame.new(Torch.Hold[1], Torch.Hold[2], Torch.Hold[3])
+-- your torch drawn small and near (`Hands`): its parts from the grip, and its box's half size
+local SCALE = Hands.Scale
+local BODY_OFF = CFrame.new(Specs.Body.Centre * SCALE)
+local LENS_OFF = CFrame.new(Specs.Lens.Centre * SCALE)
+local BODY_HALF = Specs.Body.Size * (SCALE / 2)
+-- where the beam leaves the full-size lens, from the grip (as `Flashlight`'s rig puts it), and the
+-- drawn lens's face
+local BEAM_OFF = CFrame.new(Specs.LensFront + Vector3.new(0, 0, -0.04))
+local LENS_FRONT = CFrame.new(Specs.LensFront * SCALE)
+local HOLD = Vector3.new(Torch.Hold[1], Torch.Hold[2], Torch.Hold[3])
 local HOLD_TURN = Vector3.new(Torch.HoldTurn[1], Torch.HoldTurn[2], Torch.HoldTurn[3]) * RAD
 
 type Click = { on: Sound, off: Sound }
@@ -61,6 +75,10 @@ type Friend = {
 	shoulder: Motor6D?,
 	elbow: Motor6D?,
 	wrist: Motor6D?,
+	head: BasePart?,
+	beamAt: Attachment?, -- the beam's mount, moved short of a surface
+	beamHome: CFrame, -- the mount's place on the torch
+	skip: RaycastParams, -- their own body, for the beam's check
 }
 
 local function clickSound(
@@ -171,6 +189,8 @@ local FlashlightView = {}
 function FlashlightView.new(): Brix.System
 	local connections: { RBXScriptConnection } = {}
 	local own: Flashlight.Rig? = nil
+	local ownBeam: Attachment? = nil
+	local ownPull = 0 -- how far your torch is pulled back from a wall, studs
 	local ownClick: Click? = nil
 	local sway = Torch.sway()
 	local pose = Torch.pose()
@@ -334,16 +354,29 @@ function FlashlightView.new(): Brix.System
 			speed = Vector3.new(v.X, 0, v.Z).Magnitude
 		end
 		local p = Torch.step(sway, dt, speed, turnYaw, turnPitch, pose)
-		local grip = cam
-			* HOLD
-			* CFrame.new(p.x, p.y, p.z)
-			* CFrame.fromEulerAnglesYXZ(
-				HOLD_TURN.Y + p.pitch,
-				HOLD_TURN.X + p.yaw,
-				HOLD_TURN.Z + p.roll
-			)
+		local turn = CFrame.fromEulerAnglesYXZ(
+			HOLD_TURN.Y + p.pitch,
+			HOLD_TURN.X + p.yaw,
+			HOLD_TURN.Z + p.roll
+		)
+		-- where your hand holds it at full size, from your eye
+		local at = HOLD + Vector3.new(p.x, p.y, p.z)
+		-- drawn small and near, it looks the same; nose to a wall it pulls back and ducks
+		local small = CFrame.new(at * SCALE) * turn
+		local reach = HandRoom.reach(small * BODY_OFF, BODY_HALF)
+		ownPull = Hands.follow(ownPull, Hands.pull(HandRoom.room(cam, reach), reach), dt)
+		local grip = cam * CFrame.new(0, -Hands.Duck * ownPull, ownPull) * small
 		r.body.CFrame = grip * BODY_OFF
 		r.lens.CFrame = grip * LENS_OFF
+		-- the beam where the full-size lens would be, so it falls as it always did; but it reaches
+		-- there from the drawn lens only as far as it's clear, so it never starts past a surface
+		-- (over a unit's front looking down, it still lights the hall below, not the steel)
+		local beamAt = ownBeam
+		if beamAt then
+			local full = cam * CFrame.new(at) * turn * BEAM_OFF
+			local from = (grip * LENS_FRONT).Position
+			beamAt.WorldCFrame = full.Rotation + HandRoom.clear(from, full.Position)
+		end
 		local shown = alive()
 		local t = if shown then 0 else 1
 		if r.body.LocalTransparencyModifier ~= t then
@@ -369,6 +402,9 @@ function FlashlightView.new(): Brix.System
 		if not rig then
 			return nil
 		end
+		local mount = rig.beam.Parent
+		local beamAt = if mount and mount:IsA("Attachment") then mount else nil
+		local head = character:FindFirstChild("Head")
 		f = {
 			rig = rig,
 			on = model:GetAttribute(Torch.OnAttribute) == true,
@@ -378,6 +414,10 @@ function FlashlightView.new(): Brix.System
 			shoulder = motor(character, "RightUpperArm", "RightShoulder"),
 			elbow = motor(character, "RightLowerArm", "RightElbow"),
 			wrist = motor(character, "RightHand", "RightWrist"),
+			head = if head and head:IsA("BasePart") then head else nil,
+			beamAt = beamAt,
+			beamHome = if beamAt then beamAt.CFrame else CFrame.identity,
+			skip = HandRoom.skipping(character),
 		}
 		friends[model] = f
 		return f
@@ -425,6 +465,13 @@ function FlashlightView.new(): Brix.System
 				end
 			end
 			Flashlight.light(f.rig, on, real[i] == true)
+			-- a real beam never starts past a surface (their lens through the steel or a door)
+			local beamAt, head = f.beamAt, f.head
+			if beamAt and head and on and real[i] == true then
+				local want = f.rig.body.CFrame * f.beamHome
+				beamAt.WorldCFrame = want.Rotation
+					+ HandRoom.clear(head.Position, want.Position, f.skip)
+			end
 			local aim = model:GetAttribute(Torch.AimAttribute)
 			local target = if type(aim) == "number" then aim else 0
 			f.pitch = target + (f.pitch - target) * math.exp(-Torch.AimFollow * dt)
@@ -487,6 +534,10 @@ function FlashlightView.new(): Brix.System
 		folder.Parent = Workspace
 		local r = Flashlight.clone(CFrame.identity, folder, true)
 		if r then
+			-- drawn small and near your eye (`Hands`); its lights keep their reach
+			r.model:ScaleTo(SCALE)
+			local mount = r.beam.Parent
+			ownBeam = if mount and mount:IsA("Attachment") then mount else nil
 			own = r
 			ownClick = clicks(r.body)
 		end

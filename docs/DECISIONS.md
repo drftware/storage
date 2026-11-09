@@ -1064,3 +1064,21 @@ steel (a body slides and clips at the panels' seams, and the server couldn't hol
 tops); a disc for the body (the head would poke through panels); the body turning with your view
 (the view, at your head, would swing round your hips whenever you looked about); a drop without a
 button (G clashes, and walking off an edge by accident on a phone is an instant, unwanted escape).
+
+## D-060 What you hold is drawn small and near your eye (L-13b2c2, Nov 9)
+The owner saw the torch and tools go through the roof and doors. Roblox draws held things in the
+world with everything else (no layer on top, as shooters draw your gun), and the full-size torch
+reached 2 studs from your eye. Each is now drawn at a third of its size a third as far away
+(`Hands.Scale`, scaled once with `Model:ScaleTo`): every point lies on the same line from your eye,
+so the screen shows exactly the same thing, but the torch reaches 0.61 from your eye, and standing
+flush to a wall your eye is 1.45 from it. Where even that touches (lying on a top looking down),
+a spherecast from behind your eye along your view finds the nearest solid surface and the thing
+pulls back at once and ducks under your view, easing back out (Ready or Not, Escape from Tarkov).
+The beam keeps its full-size spot so the light and its shadows fall as the owner approved, but
+reaches there from the drawn lens only as far as it's clear: never past a lid or a door (looking
+down over a front it still lights the hall; a lens spot behind your eye would have lit the steel).
+A friend's beam is checked from their head. Not chosen: a ViewportFrame overlay (its own lighting,
+so the torch wouldn't sit in the dark hall); pull-back alone at full size (the torch would duck
+whenever you came within 2 studs of a wall: in every tight spot); the third of size smaller (the
+torch's tail would cross the camera's 0.1-stud near plane). Friends' tools and the ladder on a
+friend's shoulder still pass through doors in third person, as nearly every Roblox game allows.

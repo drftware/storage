@@ -20,19 +20,23 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-13b2c2, what you hold kept out of walls (built Nov 9)
+
+- [ ] **Your hands** (Play on a computer). Your torch and a tool in your other hand (pick up the
+  bolt cutters or the saw) should look exactly as before: same size, same place, same sway. Walk
+  nose-first into a closed door and a wall: nothing pokes through. Lean the ladder, climb up and
+  lie on the steel: look straight down, up at the ceiling and about; nothing goes through the steel
+  or the roof, and looking straight down the torch ducks out of view and comes back as you look up.
+  At a unit's front, look down and out: the beam lights the hall below. Look for: does the duck read
+  as natural or as a glitch? Does the beam ever look like it starts in the wrong place?
+- [ ] **A tool in hand** (nobody here could pick one up from a script): walk the bolt cutters, the
+  saw and the ladder into a door; Cut a padlock and Saw a wall as before. The saw at the wall and
+  the cutters at the lock should look as they did.
+- [ ] **Two players** (Clients and Servers, 2 players): a friend lies on a top with their torch on,
+  or presses it to a closed door; the inside of the unit stays dark.
+
 ## Now: judge L-13b2c, crawling the tops and dropping down (built Nov 9)
 
-- [ ] **Crawl** (Play on a computer). Lean the ladder on unit 102 and climb up. You land facing
-  into the unit; push W, A, S, D and you creep over the steel the way you look, slow and low, the
-  body turning before it moves, surging with each pull (A takes you along the row to 104, about 3
-  seconds). Turn round to face the hall: Climb down sits just past the edge over the ladder.
-  Look for: is 4.5 studs a second the right crawl (a quarter of a walk)? Does turning round feel
-  like squirming or like being stuck? Can you ever slide off, or see through a wall at the back?
-- [ ] **Peek and drop**: crawl head first to any unit's front and look down: your view goes just
-  past the edge and you see the hall below. "Drop down" (F) sits over the middle of the edge.
-  Press it: over the edge, a short fall, a crouch, a thud and a jolt, standing in the hall facing
-  out (under a second). Look for: is the drop quick enough to escape and readable? Is Drop down
-  easy to find while you're looking down, and does it ever show where you didn't expect?
 - [ ] **Listen** (nobody here could): each pull is a soft low boom of the steel with a quiet
   drag; sliding off is the steel's ring; landing is a body's thud. From the hall below, a friend's
   crawl should be heard a unit or two away. Say which is wrong.

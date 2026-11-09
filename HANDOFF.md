@@ -2,27 +2,29 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-09, session 50 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-09, session 51 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-13b2c is done** (D-059): up a ladder, the stick steers your lying body over the steel, slow
-  and low, held on the tops by the pure `Tops` map each floor publishes on its model (run slots,
-  lids, a lip over each hall); your head can go just past a unit's front to look down. The server
-  checks every crawler's place five times a second. Each pull booms on the steel for every screen
-  (`climbed` "Crawl", 30 studs). Climb down sits over the ladder's top just past the edge; Drop
-  down (F) over every unit's front takes you over, down, a crouch, a thud and a jolt. Take no
-  longer waits for those up top. `Tops.luau`, `tests/tops.spec.luau` (34,372 checks).
-- **Verified in Studio** (Play): 102 to 104 along a run, the peek (view 0.4 past the edge, the
-  hall below), the drop (standing 1.9 out in the hall, body handed back), onto a lid on floor 1,
-  backward, Climb down from 4.4 studs off; Output clean but for the known six asset warnings. Not
-  checked: a corner onto another run, sounds by ear, two players, the phone. Studio in Edit.
-- Owner's L-13b2b results applied: the steel tops and their sound are good; a torch may look down
-  a sawn hole before you drop (now in ROADMAP L-13b2d).
+- **L-13b2c2 is done** (D-060, from the owner's L-13b2c test: the torch and tools went through
+  the roof and doors). Your torch and the tool in your other hand are drawn at a third of their
+  size a third as far from your eye (`Hands.Scale`, `Model:ScaleTo`), so the screen shows the same
+  thing but nothing reaches past 0.61 studs; where even that touches (lying on a top looking down)
+  it pulls back at once and ducks out of view (`HandRoom.room`, a spherecast from behind your eye).
+  The beam keeps its full-size spot but reaches there from the drawn lens only as far as it's
+  clear; a friend's beam is checked from their head. `Hands.luau`, `HandRoom.luau`,
+  `tests/hands.spec.luau` (20 checks).
+- **Verified in Studio** (Play): nose to the dead end's wall (eye 1.45 from it, torch clear, beam
+  short of the wall); a camera 0.6 over unit 102's top looking down, ahead, up and flat (nothing
+  touches, it ducks looking down); the peek over the front looking down and out (beam lands on the
+  hall floor). Output clean but for the known six asset warnings. Not checked: a tool in hand (its
+  Take prompt never showed to a script), a friend's beam, the phone. Studio in Edit.
+- The owner's L-13b2c results: the crawl and the drop look good; the rest of its checks stay in
+  `OWNER.md`.
 
 ## Next task: L-13b2d Saw down into a unit
 The moment: up on the tops with the saw, you hold Saw over a unit, the whole floor hears it, and
 you drop in blind (your torch can look first), as Rainbow Six Siege's floor hatches; one-way.
-1. Owner test results first (`OWNER.md`'s L-13b2c and L-13b2a sections).
+1. Owner test results first (`OWNER.md`'s L-13b2c2, L-13b2c and L-13b2a sections).
 2. Read ROADMAP L-13b2d, D-059, D-058, and how the wall hole was made (`art/hole/`, D-052/D-053
    by Grep in DECISIONS). Split in ROADMAP before starting if it won't fit (art first is likely
    its own session).
@@ -30,7 +32,7 @@ you drop in blind (your torch can look first), as Rainbow Six Siege's floor hatc
    sized for a body dropping through, judged at phone size.
 4. Then the cut: Saw (held, the saw's 4 s, heard floor-wide) from lying on a unit's top, the
    server checking you're on that top (`Tops`, `Ladders`' crawler record); the hole appears for
-   every screen; your torch can look down it.
+   every screen; your torch can look down it (its beam reaches from the drawn lens, D-060).
 5. Then the drop in: a pressed move (as `Tops.drop`), landing inside; out only by an unlocked
    door rolled up from inside, sawing out sideways, or a friend cutting the lock.
 **Acceptance:** checks green; in Studio saw a top and drop into the unit; phone-size judged.
@@ -54,14 +56,12 @@ you drop in blind (your torch can look first), as Rainbow Six Siege's floor hatc
    `preload` for `SoundPrimer.prime` (one call) and check the first slam in Studio.
 7. **Check, small:** G is both a door's Slam and Drop: with a tool in hand, does G at an open
    door slam, drop, or both? Give Drop its own key if it clashes.
-8. L-06b's keepers hear doors on `Doors.acted`, the keypad on `Elevators.acted`, a dropped tool on
-   `Slots.changed`, the saw on `Saws.sawing` (200), a crawl on `Crawls.crawled` (35), the ladder
-   on `Ladders.climbed` (60, 30; "Crawl" 30 every other pull, "Drop" 45); see a torch
-   (`Flashlights.switched`); treat a holed wall as solid; can't reach the tops (`Tops` map,
-   `Floor.runs`, lids) and never get the ladder's or the tops' buttons.
-9. **Check:** Output warns six times per Play, "rbxassetid://203785492 failed: Asset type does
+8. **Look, small:** your torch's flared head shows as a flat black disc from behind (no light
+   reaches its back); a faint rim or a little spill behind it may read better. Owner's call.
+9. L-06b's keepers hear doors, the keypad, a dropped tool, the saw, a crawl and the ladder (see
+   D-059's signals); see a torch; treat a holed wall as solid; can't reach the tops.
+10. **Check:** Output warns six times per Play, "rbxassetid://203785492 failed: Asset type does
    not match": not our code; find what asks for it.
-10. Studio traps (docs/STUDIO.md): press prompts with `InputHoldBegin`; stick: `MoveDirection`.
 
 ## Kickoff for the next agent
 ```text

@@ -435,6 +435,15 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
         peek, the drop). Verified in Studio: 102 to 104 along a run, the peek, the drop, onto a lid
         on floor 1, backward, Climb down from 4.4 studs off. Round a corner onto another run, two
         players and the phone wait on `OWNER.md`.
+      - [x] **L-13b2c2 Hands out of walls.** Done Nov 9 (D-060; owner: the torch and tools went
+        through the roof and doors). Your torch and the tool in your other hand are drawn at a
+        third of their size a third as far from your eye (`Hands`), so they look the same but never
+        poke through a wall, a door, the steel or the ceiling; when even that would touch (lying on
+        the steel looking down) they pull back and duck out of view, as Ready or Not's and Escape
+        from Tarkov's guns do. The beam still leaves where the full-size lens would be, but never
+        from past a surface, yours or a friend's (`HandRoom`). Verified in Studio: nose to a wall,
+        on a top looking down, the peek. A tool in hand, a friend's beam and the phone wait on
+        `OWNER.md`.
       - [ ] **L-13b2d Saw down into a unit** (owner, Nov 9). Up on the tops with the saw, hold Saw
         over a unit to cut its top (the saw's 4 s, heard floor-wide, waking what sleeps inside)
         and drop in blind, as Rainbow Six Siege's floor hatches; one-way, no ladder inside. Out:
