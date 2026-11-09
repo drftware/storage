@@ -823,3 +823,27 @@ Not chosen: dealing every unit when the floor is laid (the deal is the director'
 peek should be a gamble, D-038); keeping finds out of the whole floor fan in front of the note (in
 an S unit it left a boombox nowhere to stand, and nothing that short can hide the note); a glint or
 highlight on tools (no precedent named, D-036's reasoning); laying a stand-in for unbuilt tools.
+
+## D-051 The saw: a green cordless reciprocating saw, standing on its battery (L-12a, Nov 9)
+The GDD's saw ("cuts a crawl hole into the next unit; keepers can't fit through; loud") is a
+cordless reciprocating saw, the tool a real crew would cut drywall and sheet metal with, built
+from code the cutters' way (`art/saw/`): one MeshPart, one baked 1024² set, no brand. Green,
+because the torch is yellow and the cutters red, so the three never blur at a glance, and green
+stays green under a unit's warm bulb where blue goes grey. Sized about 1.3 times life (2.9 studs
+blade to tail), a little under the cutters' scale but a bigger thing, so it reads on a phone from
+a doorway as a green power tool with a blade. It's laid standing on its battery (every tool is
+laid with its lowest point on the floor and its own up kept up, `Slots`), its side profile the
+most readable thing in the unit. In your view it sits low on the left by its rear handle, turned
+in 26° so you see its side, sticker and blade reaching to the middle; far enough out and left
+that the slots' bar clears it on the Galaxy A16. A friend sees it carried upright by the rear
+handle at your side, blade forward (`inHand` 0, 0, 0), as you'd carry a drill at the ready; the
+honest carry (hanging nose-down from a relaxed hand) reads less as a saw, and is the owner's call
+(`OWNER.md`). Its `use` pose (out in front, blade level) is a placeholder for L-12b. Picking it up
+plays Pro Sound Effects' "Plastic Ice Chest 25" (a hollow plastic knock, 0 to 0.42 s); dropping
+it, "Chair Drop 3" from its first hard hit (0.22 s, 0.9 s long, a little higher pitched), both
+measured by loudness since nobody here can listen. The saw is the first tool out of the bag on
+floors 1 and 2 (D-038's teaching floors), so it now lies there; `Specs/Saw` carries its blade's
+tip and the shoe's face for L-12b.
+Not chosen: a hand saw or a drywall jab saw (quiet, and the GDD says loud); a chainsaw (a horror
+villain's weapon, not a crew's, and too crude for a neat hole through a unit's wall); lying the saw
+on its side (its profile foreshortens from a doorway and its battery hides).

@@ -87,6 +87,36 @@ local Catalog: { [string]: Row } = {
 			pitch = 1.7,
 		},
 	},
+	-- Cuts a crawl hole into the next unit; keepers can't fit through; loud (GDD). A cordless
+	-- reciprocating saw, green so it's never mistaken for the torch or the cutters (art/saw).
+	Saw = {
+		name = "Saw",
+		template = "Saw",
+		-- low on your left by its rear handle, turned in so you see its side and the blade
+		-- reaching towards the middle of the view
+		hold = { -1.25, -1.1, -2.0 },
+		holdTurn = { -26, 10, 16 },
+		-- out in front of you, blade level and pointing ahead, the shoe towards the wall (L-12b
+		-- hones it once sawing exists)
+		use = { -0.35, -0.8, -1.75 },
+		useTurn = { -6, 2, 6 },
+		-- by its rear handle, upright, blade forward: carried at the ready by your side
+		inHand = { 0, 0, 0 },
+		-- side on, its sticker to the front, a little from above, the blade to the upper right
+		icon = { 0.62, 15, -90, -25 },
+		-- Pro Sound Effects' "Plastic Ice Chest 25": its first knocks, a hand closing on a hollow
+		-- plastic body
+		pickUp = { id = "rbxassetid://9117544893", from = 0, length = 0.42, volume = 0.8 },
+		-- Pro Sound Effects' "Chair Drop 3": from its first hard hit (0.25 s), plastic slamming on
+		-- the floor and a short rattle, a little higher than a chair
+		drop = {
+			id = "rbxassetid://9113768847",
+			from = 0.22,
+			length = 0.9,
+			volume = 0.8,
+			pitch = 1.12,
+		},
+	},
 }
 
 return Catalog

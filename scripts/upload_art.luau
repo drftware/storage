@@ -131,6 +131,12 @@ local ART: { Art } = {
 		manifest = "art/padlock/assets.json",
 		description = "An open laminated steel padlock: six riveted plates, a hardened shackle, a brass keyway",
 	},
+	{
+		key = "Saw",
+		path = "art/saw/out/Saw.fbx",
+		manifest = "art/saw/assets.json",
+		description = "A cordless reciprocating saw: green body, black rubber boot and grip, a demolition blade",
+	},
 }
 local MODEL: OpenCloud.Kind = { assetType = "Model", contentType = "model/fbx" }
 

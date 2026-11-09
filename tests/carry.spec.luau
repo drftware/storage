@@ -4,9 +4,12 @@
 -- the other one; full hands refuse; a switch picks a slot; dropping or handing over takes what's
 -- in your hand and leaves that hand empty; a slot from the wire must be a whole 1 or 2; clearing
 -- gives every tool back; and a hand moves no faster than a quick thumb. Plus the catalog's rows
--- are whole.
+-- are whole, each a dealt tool with its built art's sizes.
+local fs = require("@lune/fs")
+
 local Carry = require("../src/shared/Tools/Carry")
 local Catalog = require("../src/shared/Tools/Catalog")
+local Deal = require("../src/shared/Deal")
 
 local failures, checks = 0, 0
 local function ok(cond: boolean, what: string)
@@ -121,10 +124,14 @@ do
 	ok(left == Carry.Burst - 1, "a long rest refills the burst, no more")
 end
 
--- the catalog: every row whole
+-- the catalog: every row whole, a tool the deal hands out (so a dealt one is laid), with the
+-- sizes its art build writes (Tools.specs reads them by key)
 for key, row in Catalog do
 	ok(type(row.name) == "string" and #row.name > 0, `{key}: a name`)
+	ok(table.find(Deal.Tools, key) ~= nil, `{key}: one of the deal's tools`)
+	ok(fs.isFile(`src/shared/Tools/Specs/{key}.luau`), `{key}: its generated Specs`)
 	ok(#row.hold == 3 and #row.holdTurn == 3 and #row.inHand == 3, `{key}: hold, turn, hand`)
+	ok(#row.use == 3 and #row.useTurn == 3, `{key}: its use pose`)
 	ok(#row.icon == 4, `{key}: icon`)
 	for _, s in { row.pickUp, row.drop } do
 		ok(string.find(s.id, "^rbxassetid://%d+$") ~= nil, `{key}: a sound id`)

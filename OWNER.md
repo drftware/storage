@@ -6,15 +6,36 @@ nowhere else.
 ## Now
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
-- [ ] **Save the place** (File > Save to Roblox) after this session (Nov 8): the elevator's and
-  the flashlight's, the bolt cutters' and the padlock's templates live only in the open place, at
-  `ReplicatedStorage.Props.Elevator`, `Props.Note`, `Props.Flashlight`,
-  `Props.Tools.BoltCutters` and `Props.Tools.Padlock` (without them nobody has a torch and no
-  tool lies anywhere; Output warns). Unsaved, the next open loses them and every floor's lobby has
+- [ ] **Save the place** (File > Save to Roblox) after this session (Nov 9): the elevator's and
+  the flashlight's, the bolt cutters', the padlock's and the saw's templates live only in the open
+  place, at `ReplicatedStorage.Props.Elevator`, `Props.Note`, `Props.Flashlight`,
+  `Props.Tools.BoltCutters`, `Props.Tools.Padlock` and `Props.Tools.Saw` (without them nobody has
+  a torch and no tool lies anywhere; Output warns). Unsaved, the next open loses them and every floor's lobby has
   an empty hole in its back wall (Output warns).
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
+
+## Now: judge L-12a, the saw (built Nov 9)
+
+- [ ] **Find it on floor 1** (Play on a computer, "Walk a floor" by the spawn; Workspace's
+  `DevFloorNumber` is now 1, seed 7). The first tool on floors 1 and 2 is a saw: on seed 7 it's
+  unit 104, among the doors nearest the lobby (Output: "Deals: Unit104 held a tool, Saw").
+  Open it. Look for: a green cordless saw standing on its battery in the bulb's light, its
+  blade out; does it say "saw" from the doorway before you walk in?
+- [ ] **Pick it up and carry it** (E). Look for: it low on your left, turned in so you see its
+  side, the sticker and the vents, the blade reaching towards the middle; the torch on your right
+  balancing it; nothing covering the hall ahead. Listen: the pick-up's hollow plastic knock (a
+  cooler lid, "Plastic Ice Chest 25"), then Drop (G): a plastic slam with a short rattle ("Chair
+  Drop 3"). I picked both by loudness, unheard: do they sound like a power tool?
+- [ ] **A friend carrying it** (Clients and Servers, 2 players). I could only check the numbers:
+  it's upright in their left hand by its rear handle, blade forward, at hip height, about 3
+  studs out ahead of them. Does it read as a saw? Too far out?
+- [ ] **On the phone** (Galaxy A16, set in Edit first): shots `docs/art/L-12a-*.jpg`. On the
+  floor it reads as a green power tool with a blade; in hand it sits left of the slots' bar.
+- [ ] **Decide, defaults in place** (D-051): (1) green (the torch yellow, the cutters red); (2)
+  standing on its battery where it's laid, not on its side; (3) a friend carries it upright at the
+  ready, not hanging nose-down; (4) its size, about 1.3 times life, 2.9 studs blade to tail.
 
 ## Now: judge L-04e, the deal on the floor (built Nov 9)
 
@@ -30,9 +51,9 @@ nowhere else.
 - [ ] **On the phone** (Galaxy A16, set in Edit first): from each doorway, can you tell what the
   thing is? The cutters read as a red-handled tool from the doorway, small; finds read plainly.
   Shots `docs/art/L-04e-*.jpg`.
-- [ ] **Decide, defaults in place** (D-050): (1) tools with no art yet (the saw, ladder, bubble
-  wrap, air horn, moving blanket, glow sticks: about 6 in 11 dealt tools) are dealt but lie
-  nowhere until L-12 to L-14 build them; or should the deal skip unbuilt tools for now? (2) a find
+- [ ] **Decide, defaults in place** (D-050): (1) tools with no art yet (the ladder, bubble
+  wrap, air horn, moving blanket, glow sticks: about 5 in 11 dealt tools; the saw is built now)
+  are dealt but lie nowhere until L-13 and L-14 build them; or should the deal skip unbuilt tools for now? (2) a find
   is a prop you can't carry yet (Phase 2); (3) a short thing (a tool, a find, under 3.5 studs) may
   stand under a note, only a keeper keeps off the whole line to it; (4) tools lie in the bulb's
   pool, never against the back wall, so they read on a phone.

@@ -591,3 +591,15 @@ verified: a doc page, Studio, or "untested".
 - **Setting `workspace.CurrentCamera.CFrame` on the client turns a first-person view** (Play,
   L-11b): with LockFirstPerson the camera keeps the new look, so a shot can be aimed from the MCP.
 
+- **The test hall and the walked floor share unit names** (Play, L-12a, 2026-11-09): both lay
+  `Unit101` and on under `Workspace.DevCorridor`; the floor's are 600 studs off, so pick them by
+  `GetPivot().Position.Z < -300` (and their `DoorButtons` attachment by `WorldPosition.Z`).
+- **A Client `execute_luau` has its own `require`** (Play, L-12a): changing a module's table from
+  the MCP (a Catalog row's `hold`) never reaches the game's scripts, which hold their own copy.
+  Edit the source, let Rojo sync, and Play again.
+- **`screen_capture` with a camera position works in Play** (L-12a, Galaxy A16): it aims the
+  client's camera for the shot, and the held tool and torch follow it (ToolView draws from the
+  camera each frame), so a level first-person shot needs no Scriptable camera. The MCP sets
+  `CameraType` back to Custom after every `execute_luau` that changed it.
+- **Walk a step before a shot** (L-12a): a capture after a teleport came back black twice; a
+  `Humanoid:MoveTo` a few studs out and back woke the motion light and the next capture was lit.
