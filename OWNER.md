@@ -20,30 +20,36 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
-## Now: judge L-13b2d2b, sawing down through a unit's top (built Nov 9)
+## Now: judge L-13b2d2c, the hole on the tops (built Nov 9)
 
-- [ ] **Saw one** (Play on a computer). In the test hall pick up the ladder, lean it at Unit 101,
-  pick up the saw, climb, and crawl beside the middle of the top just behind the front edge (lying
-  across that spot gets "Move off it"). Turn your torch on. With the saw in hand, hold R (R2) on
-  Saw for four seconds. Look and listen for: the motor and the blade from the first moment, loud;
-  a thin orange-hot line crawling round the cut from the front edge, the blade's bright spot and
-  sparks rising off it; your view buzzing. Then the panel hangs a beat, drops into the unit and
-  lands with a heavy clang and a jolt. Let go early once first: the motor winds down, the line
-  cools, the next try starts over. Then open the door, step in and look up at the hole; the
-  panel lies on the floor beside where you'd land (the bulb's off: your torch). Does it feel like
-  breaking in, and is the four seconds tense rather than slow?
+- [ ] **Crawl at a hole** (Play on a computer). Saw Unit 101's top as before, then crawl round
+  behind the hole and push at it: you stop at its edge, your view out over it. Torch on, look
+  straight down: the unit's floor and the fallen panel. Crawl along its sides too. Does stopping
+  at the edge feel like a ledge you're leaning over, or like an invisible wall?
+- [ ] **Slide off it.** Saw again on another unit lying beside the hole's spot with your feet or
+  side over it (your middle on it still gets "Move off it"). As it goes through you glide a stud
+  or two onto the steel with the steel's ring and a small jolt. Is the glide clear but not
+  jarring? **Two players:** a friend lying across the hole when it goes through glides off on
+  both screens, never into the hole.
+- [ ] **Climb onto a sawn top.** At a sawn unit's ladder, Climb: you land by the ladder, clear of
+  the hole. A second climber gets "No room up there" until the first crawls a body away. On a
+  small unit the first climber now lies a quarter stud further out from the ladder's middle (every
+  small unit, sawn or not): does it look off?
+- [ ] **The bulb from the tops** (phone, Galaxy A16). Open a unit so its bulb is on, saw its top,
+  crawl along the next units' tops and look back. On a computer at high graphics the hole's rim
+  glows and the ceiling above it catches light, the rest dark. On a phone, lower graphics may light
+  the whole top through the steel (they ignore what's in the way): say how it looks there.
+- [ ] **Decide, default in place** (D-065): on a sawn top the ladder gives one lying spot, by the
+  ladder (the others lie on the hole or roll across it), so a team climbs one at a time.
+
+## Still to judge from L-13b2d2b, sawing down through a unit's top
+
 - [ ] **Watch the panel drop** each time: once in Studio (the first cut of a session) it lay on
   the floor at once with no fall; every cut after dropped. Say if you see that.
 - [ ] **Phone size** (Device Emulator, a Galaxy A16, the same lie): is the line clear but thin,
   and is the Saw button easy to hold without catching Drop down at the front's edge?
 - [ ] **Two players:** a friend in the hall, and one inside the unit with the door shut, hear the
-  saw and the clang from where they are and see the line from the tops and the panel fall. A
-  friend lying across the hole when it goes through floats over it until L-13b2d2c.
-- [ ] **Where it is (a default, your call):** one spot per unit, in the middle of its width just
-  behind the door's drum, so you land between the door and the bulb facing the room, the door at
-  your back (the clear part of a unit; finds stand behind the bulb, D-036). The other choice was
-  the back half, behind the bulb, landing among the boxes and the finds' unlit backs. On a small
-  unit the hole reaches every lying spot a ladder gives (L-13b2d2c will move them or refuse it).
+  saw and the clang from where they are and see the line from the tops and the panel fall.
 
 ## Now: judge L-13b2c2, what you hold kept out of walls (built Nov 9)
 

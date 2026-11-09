@@ -498,13 +498,15 @@ on nothing in Brix.
             the hole from the art's own fall, `TopHole/Specs.Fall`), and lands with a heavy clang
             heard floor-wide and a jolt. Verified in Studio: a player's lie, hold, let go early,
             hold through, the line, the drop and the hole, on an M.
-          - [ ] **L-13b2d2c The map.** The hole comes off the `Tops` map so nobody crawls over
-            it, with a lip like a front's so your head can go out over it and your torch look
-            down; the ladder's lying spots that touch it are out (on a small unit the hole
-            reaches all three: move them behind it or refuse the ladder there). A lit unit's
-            bulb shines up through a sawn top: the one thing that shows it from along the tops.
-            Anyone lying across the hole as it goes through (a friend; the sawer can't) slides
-            off its edge onto the steel, not into the hole: the drop in is L-13b2d3's, pressed.
+          - [x] **L-13b2d2c The map.** Done Nov 9 (D-065). A sawn top's hole is on the tops'
+            map the moment it goes through (`Ladders:holed`): nobody crawls over it, your head
+            goes out over its edge to look down into the unit, anyone lying across it (a friend,
+            or the sawer's feet) glides off onto the steel with the steel's give and a jolt. The
+            ladder offers only spots clear of the hole and not rolled across it: one on a sawn
+            top of either size, the first, by the ladder (a small unit's moved a quarter stud
+            out). Verified in Studio: sawed with my feet over the spot and glided off, crawled at
+            the hole and stopped at its edge looking down, the bulb's light up through the hole
+            at full graphics.
         - [ ] **L-13b2d3 Drop in, and out again.** Drop in (pressed, as `Tops.drop`): through the
           hole feet first, arms up, a landing crouch inside, heard. The deal keeps the floor
           under every unit's hole clear, as it keeps the wall holes' spots. Out only by an
@@ -541,6 +543,9 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **A friend sliding off a sawn hole** (L-13b2d2c): only the slider hears the steel give; others
+  see the glide and hear a pull's boom. The steel's ring and a scrape for everyone near.
 
 - **A top's panel landing** (L-13b2d2b): a puff of dust off the concrete where it lands and a few
   flakes of rust and paint falling through the hole after it, so someone inside sees it land, not

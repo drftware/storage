@@ -20,6 +20,11 @@
 	the ladder: it can be taken, and you can come down any ladder's Climb down or drop off any unit's
 	front (Drop down, F): the game takes you over the edge and down into the hall.
 
+	A top sawn through (`holed`, from Saws) comes off the tops' map: nobody crawls over its hole,
+	your head may go out over it to look down, and anyone lying across it as it goes through slides
+	off its edge onto the steel. The ladder's lying spots on the hole, or across it from the
+	ladder, are out; the first, by the ladder, is always clear of it (L-13b2d2c).
+
 	Take: the fly runs in and the ladder's back on your shoulder (`Slots:handBack`), refused while
 	anyone's on it ("Someone's on it"). Those up top drop down instead.
 
@@ -39,6 +44,7 @@ local Prompts = require(script.Parent.Prompts)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 local Slots = require(script.Parent.Slots)
 local Tools = require(ReplicatedStorage.Shared.Tools)
+local TopHole = require(ReplicatedStorage.Shared.StorageUnit.TopHole)
 local Tops = require(ReplicatedStorage.Shared.Tops)
 local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
 
@@ -74,6 +80,8 @@ export type Ladders = Brix.System & {
 	climbed: Brix.Signal<ClimbEvent>,
 	-- whether `player` is lying up on the tops, crawling (not on the rungs or dropping down)
 	crawling: (self: Ladders, player: Player) -> boolean,
+	-- `unit`'s top just sawn through: its hole off the tops' map, anyone lying on it slid off
+	holed: (self: Ladders, unit: Model) -> (),
 }
 
 type Stand = {
@@ -204,6 +212,60 @@ function Ladders.new(): Ladders
 		return Leaned.outward(c.front.frame, x, y, z, p)
 	end
 
+	--[[
+		Whether spot `i` on `front` is clear of every sawn hole: the body lying there all on the
+		steel, and the roll from the ladder onto it never over a hole (on a sawn top the spots on
+		the hole, or past it from the ladder, are out).
+	]]
+	local function spotClear(front: Front, i: number): boolean
+		local fit = front.fit
+		local x, y, z, p = Leaning.lying(fit, i)
+		local lying = Leaned.pose(front.frame, x, y, z, p)
+		local map, origin = Leaned.tops(lying.Position)
+		if not (map and origin) or #map.holes == 0 then
+			return true
+		end
+		local _, top = Leaning.span(fit, 0) -- where the climb tops out doesn't hang on your height
+		local ax, ay, az = Leaning.onLadder(fit, top)
+		local a = origin:PointToObjectSpace(front.frame * Vector3.new(ax, ay, az))
+		local b = origin:PointToObjectSpace(lying.Position)
+		local head = origin:VectorToObjectSpace(lying.UpVector)
+		local yaw = Tops.yawOf(head.X, head.Z)
+		return Tops.fits(map, b.X, b.Z, yaw) and Tops.pathClear(map, a.X, a.Z, b.X, b.Z, yaw)
+	end
+
+	--[[
+		A crawler whose body no longer lies all on the steel (a top sawn through under them) slides
+		off the hole's edge to the nearest place it does: the server moves them and tells their
+		screen as it does putting anyone back, and their screen glides them there. True if moved.
+	]]
+	local function settle(c: Climb, root: BasePart): boolean
+		local map = c.map
+		if not map then
+			return false
+		end
+		local cf = root.CFrame
+		local q = c.origin:PointToObjectSpace(cf.Position)
+		local head = c.origin:VectorToObjectSpace(cf.UpVector)
+		local yaw = Tops.yawOf(head.X, head.Z)
+		if Tops.fits(map, q.X, q.Z, yaw) then
+			return false
+		end
+		local x, z = Tops.settle(map, q.X, q.Z, yaw)
+		if not (x and z) then
+			return false
+		end
+		local to = c.origin
+			* CFrame.new(x, q.Y, z)
+			* CFrame.Angles(0, yaw, 0)
+			* CFrame.Angles(-math.pi / 2, 0, 0)
+		c.character:PivotTo(to)
+		c.character:SetAttribute(Leaned.FixAttribute, to)
+		c.last = to
+		c.lastAt = os.clock()
+		return true
+	end
+
 	-- A climber off the ladder for good: their spot free, the tag off their character.
 	local function clear(c: Climb)
 		if climbs[c.player] == c then
@@ -290,10 +352,10 @@ function Ladders.new(): Ladders
 			refuse("Wait for them")
 			return
 		end
-		-- the first spot nobody's climbing to and no crawler lies on
+		-- the first spot nobody's climbing to, no crawler lies on and no sawn hole reaches
 		local spot: number? = nil
 		for i = 1, #front.fit.spots do
-			if not stand.spots[i] then
+			if not stand.spots[i] and spotClear(front, i) then
 				local x, y, z, p = Leaning.lying(front.fit, i)
 				local at = Leaned.pose(front.frame, x, y, z, p).Position
 				local free = true
@@ -693,6 +755,49 @@ function Ladders.new(): Ladders
 		return c ~= nil and c.move == "Top"
 	end
 
+	function system.holed(_: any, unit: Model)
+		local hole = TopHole.frame(unit)
+		-- the floor (or test hall) whose tops' map this unit's top is on
+		local container: Instance? = unit.Parent
+		while container and not container:HasTag(Tops.Tag) do
+			container = container.Parent
+		end
+		if not (hole and container) then
+			return
+		end
+		local text = container:GetAttribute(Tops.MapAttribute)
+		local origin = container:GetAttribute(Tops.OriginAttribute)
+		if type(text) ~= "string" or typeof(origin) ~= "CFrame" then
+			return
+		end
+		local map = Tops.decode(text)
+		if not map then
+			return
+		end
+		local r = TopHole.Rect
+		local a = origin:PointToObjectSpace(hole * Vector3.new(r.left, 0, r.front))
+		local b = origin:PointToObjectSpace(hole * Vector3.new(r.right, 0, r.back))
+		table.insert(map.holes, {
+			x0 = math.min(a.X, b.X),
+			x1 = math.max(a.X, b.X),
+			z0 = math.min(a.Z, b.Z),
+			z1 = math.max(a.Z, b.Z),
+		})
+		container:SetAttribute(Tops.MapAttribute, Tops.encode(map.tops, map.lips, map.holes))
+		-- every crawler checked against the new map, anyone lying across the hole slid off it
+		for _, c in climbs do
+			local root = rootOf(c.player)
+			if c.move == "Top" and root then
+				local fresh, at = Leaned.tops(root.Position)
+				if fresh and at then
+					c.map = fresh
+					c.origin = at
+				end
+				settle(c, root)
+			end
+		end
+	end
+
 	function system.start(_: any, context: Brix.Context)
 		-- any: the registry hands back a plain System; Slots fills this slot (init.server)
 		slots = (context.registry:get("slots") :: any) :: Slots.Slots?
@@ -804,6 +909,8 @@ function Ladders.new(): Ladders
 				end
 				c.lastAt = t
 				c.nextCheck = t + Tops.CheckEvery
+				-- a top sawn through under your spot as you climbed: off its edge
+				settle(c, root)
 			elseif c.move == "Top" and c.last and t >= c.nextCheck then
 				checkCrawl(c, root, t)
 			elseif c.move == "Down" and t >= c.ends + Leaning.EndSlack then

@@ -10,6 +10,7 @@ local Leaning = require(script.Parent.Leaning)
 local Tops = require(script.Parent.Parent.Tops)
 local Specs = require(script.Parent.Specs.Ladder)
 local UnitSpecs = require(script.Parent.Parent.StorageUnit.Specs)
+local HoleSpecs = require(script.Parent.Parent.StorageUnit.TopHole.Specs)
 
 local Leaned = {}
 
@@ -66,9 +67,20 @@ function Leaned.fit(size: string): Leaning.Fit
 		topY = top.Position.Y + top.Size.Y / 2,
 		doorWidth = spec.DoorWidth,
 		width = spec.Width,
+		clear = Leaned.holeClear(),
 	})
 	fits[size] = fit
 	return fit
+end
+
+-- How far across from a unit's middle a lying root must be for the body to clear a sawn top's
+-- hole: the hole's half width, the body's widest half (its middle), and a hair.
+function Leaned.holeClear(): number
+	local widest = 0
+	for _, p in Tops.Body do
+		widest = math.max(widest, p.half)
+	end
+	return HoleSpecs.Right + widest + 0.05
 end
 
 -- A unit of size `size`'s inside width, along its front.

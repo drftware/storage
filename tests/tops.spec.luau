@@ -5,7 +5,10 @@
 -- anywhere, any way, never leaves the steel (the head only out over a unit's front, never through
 -- a panel); you can crawl from one unit to the next along a run, round a junction's lid, and push
 -- your head out over a front to look down; the drop off a front is smooth, goes over the edge and
--- lands you standing in the hall in under a second.
+-- lands you standing in the hall in under a second. A top sawn through (L-13b2d2c) comes off the
+-- map: nobody's body goes over its hole, the head may, you can't crawl across it, a body lying
+-- on it as it goes through is slid off its edge, and the ladder's spots on it or past it are out
+-- while the one by the ladder always stays.
 local fs = require("@lune/fs")
 local Brix = require("../vendor/brix/src")
 local Floor = require("../src/shared/Floor")
@@ -48,6 +51,21 @@ local shape: Leaning.Shape = {
 	topZ = topZ,
 	travel = num(ladderText, "Travel = "),
 }
+-- A sawn top's hole, in its hole frame (TopHole): across from the unit's middle, back from the
+-- first channel, which is `Channel` back from the slot's face.
+local holeText = fs.readFile("src/shared/StorageUnit/TopHole/Specs.luau")
+local hole = {
+	left = num(holeText, "\n\tLeft = "),
+	right = num(holeText, "\n\tRight = "),
+	front = num(holeText, "\n\tFront = "),
+	back = num(holeText, "\n\tBack = "),
+}
+local channels = { M = num(holeText, "\n\t\tM = "), S = num(holeText, "\n\t\tS = ") }
+local widest = 0
+for _, p in Tops.Body do
+	widest = math.max(widest, p.half)
+end
+
 local fits: { [string]: Leaning.Fit } = {}
 local curtains: { [string]: number } = {}
 for _, size in { "S", "M" } do
@@ -63,6 +81,7 @@ for _, size in { "S", "M" } do
 		topY = wy + wh / 2,
 		doorWidth = num(text, "DoorWidth = "),
 		width = num(text, "Width = "),
+		clear = hole.right + widest + 0.05, -- as Leaned.holeClear
 	})
 	-- the header stands 0.08 proud of the slot's face line: near enough to count as the same edge
 	ok(
@@ -87,11 +106,52 @@ local function inRect(r: Tops.Rect, x: number, z: number): boolean
 	return x >= r.x0 - 1e-6 and x <= r.x1 + 1e-6 and z >= r.z0 - 1e-6 and z <= r.z1 + 1e-6
 end
 
+-- A slot's sawn hole on the floor: the hole frame's numbers through the front's frame, which
+-- starts a curtain in from the slot's face.
+local function holeOf(s: Floor.Slot): Tops.Rect
+	local c, ch = curtains[s.size], channels[s.size]
+	local ax, az = onFloor(s, hole.left, ch + hole.front - c)
+	local bx, bz = onFloor(s, hole.right, ch + hole.back - c)
+	return {
+		x0 = math.min(ax, bx),
+		x1 = math.max(ax, bx),
+		z0 = math.min(az, bz),
+		z1 = math.max(az, bz),
+	}
+end
+
+-- Whether a body's middle or feet (what must stay on the steel) reach into a hole: the squares'
+-- true overlap with the holes, worked out here, not through the map's corner checks. Pass the
+-- holes as the map has them (to a thousandth of a stud).
+local function bodyInHole(holes: { Tops.Rect }, x: number, z: number, yaw: number): boolean
+	local hx, hz = Tops.heading(yaw)
+	for _, p in Tops.Body do
+		if p.peek then
+			continue
+		end
+		local px, pz, h = x + hx * p.along, z + hz * p.along, p.half
+		for _, r in holes do
+			if
+				px + h > r.x0 + 1e-6
+				and px - h < r.x1 - 1e-6
+				and pz + h > r.z0 + 1e-6
+				and pz - h < r.z1 - 1e-6
+			then
+				return true
+			end
+		end
+	end
+	return false
+end
+
 -- A seeded walk's numbers, so a failure repeats.
 local rng = Brix.Random.new({ seed = 99 })
 local DT = 1 / 30
 
 local floors, spotsChecked, walks, pairsWalked, lidsWalked, peeks = 0, 0, 0, 0, 0, 0
+local holesCut, holeWalks, slides = 0, 0, 0
+-- whether each size's ladder spot is offered on a sawn top: the same on every unit of a size
+local offeredBySize: { [string]: { [number]: boolean } } = { S = {}, M = {} }
 for seed = 1, 6 do
 	for number = 1, 10 do
 		local floor = Floor.generate(number, Brix.Random.new({ seed = seed }))
@@ -230,7 +290,148 @@ for seed = 1, 6 do
 				ok(reached, `floor {number} seed {seed}: from a lid onto slot {i} beside it`)
 			end
 		end
+
+		-- every other unit's top sawn through: its hole off the map
+		local holes: { Tops.Rect } = {}
+		local holed: { [number]: Tops.Rect } = {}
+		for i, s in floor.slots do
+			if s.kind == "Unit" and s.top and i % 2 == 0 then
+				local r = holeOf(s)
+				table.insert(holes, r)
+				holed[i] = r
+			end
+		end
+		local hmap = Tops.decode(Tops.encode(tops, lips, holes))
+		ok(hmap ~= nil and #hmap.holes == #holes, `floor {number} seed {seed}: its holes read back`)
+		if not hmap then
+			continue
+		end
+		local function walkHoled(from: Tops.State, steps: number, what: string)
+			local s = from
+			local mx, mz, lx, lz = 0, 0, 0, -1
+			for n = 1, steps do
+				if n % 20 == 1 then
+					local a = rng:nextNumber() * 2 * math.pi
+					mx, mz = math.cos(a), math.sin(a)
+					local b = rng:nextNumber() * 2 * math.pi
+					lx, lz = math.cos(b), math.sin(b)
+				end
+				s = Tops.step(hmap, s, mx, mz, lx, lz, DT)
+				if
+					bodyInHole(hmap.holes, s.x, s.z, s.yaw) or not Tops.fits(hmap, s.x, s.z, s.yaw)
+				then
+					ok(false, `{what}: a random crawl by a hole never goes over it`)
+					return
+				end
+			end
+		end
+		for i, s in floor.slots do
+			if s.kind ~= "Unit" or not s.top then
+				continue
+			end
+			local fit = fits[s.size]
+			local fx, fz = Floor.dir(s.facing)
+			local inYaw = Tops.yawOf(-fx, -fz)
+			local r = holed[i]
+			local what = `floor {number} seed {seed} unit {s.number} ({s.size})`
+			if not r then
+				-- a unit beside a sawn one keeps every spot
+				for spot = 1, #fit.spots do
+					local lx, _, lz = Leaning.lying(fit, spot)
+					local x, z = onFloor(s, lx, lz)
+					ok(Tops.fits(hmap, x, z, inYaw), `{what}: spot {spot} untouched by a hole`)
+				end
+				continue
+			end
+			holesCut += 1
+			local foot = footprints[i]
+			ok(
+				foot ~= nil and inRect(foot, r.x0, r.z0) and inRect(foot, r.x1, r.z1),
+				`{what}: its hole in its own top`
+			)
+
+			-- the ladder's spots: out if on the hole or rolled onto past it; the first always in
+			local _, topAlong = Leaning.span(fit, 0)
+			local ax, _, az = Leaning.onLadder(fit, topAlong)
+			local lax, laz = onFloor(s, ax, az)
+			for spot = 1, #fit.spots do
+				local lx, _, lz = Leaning.lying(fit, spot)
+				local x, z = onFloor(s, lx, lz)
+				local offered = Tops.fits(hmap, x, z, inYaw)
+					and Tops.pathClear(hmap, lax, laz, x, z, inYaw)
+				if spot == 1 then
+					ok(offered, `{what}: the spot by the ladder stays`)
+				end
+				if bodyInHole(hmap.holes, x, z, inYaw) then
+					ok(not offered, `{what}: spot {spot}, on the hole, is out`)
+				end
+				local before = offeredBySize[s.size][spot]
+				ok(before == nil or before == offered, `{what}: spot {spot} as on every {s.size}`)
+				offeredBySize[s.size][spot] = offered
+			end
+
+			-- from behind the hole, push for the hall: your head goes out over it to look down,
+			-- your body stays on the steel and never gets past it
+			local behind = channels[s.size] + hole.back + 0.95 -- studs in from the slot's face
+			local bx, bz = onFloor(s, 0, behind - curtains[s.size])
+			local outYaw = Tops.yawOf(fx, fz)
+			local p: Tops.State = { x = bx, z = bz, yaw = outYaw, travel = 0 }
+			ok(Tops.fits(hmap, p.x, p.z, p.yaw), `{what}: a body fits behind the hole`)
+			local stayed = true
+			for _ = 1, 30 * 5 do
+				p = Tops.step(hmap, p, fx, fz, fx, fz, DT)
+				local inward = -((p.x - s.x) * fx + (p.z - s.z) * fz)
+				if bodyInHole(hmap.holes, p.x, p.z, p.yaw) or inward < behind - 0.05 then
+					stayed = false
+					break
+				end
+			end
+			ok(stayed, `{what}: pushing at the hole, you can't crawl over it`)
+			local hx, hz = Tops.heading(p.yaw)
+			local vx, vz = p.x + hx * 1.5, p.z + hz * 1.5
+			peeks += 1
+			ok(
+				vx > r.x0 and vx < r.x1 and vz > r.z0 and vz < r.z1,
+				`{what}: your view out over the hole, to look down into the unit`
+			)
+			if i % 4 == 0 then
+				holeWalks += 1
+				walkHoled(p, 240, what)
+				local lx, _, lz = Leaning.lying(fit, 1)
+				local x1, z1 = onFloor(s, lx, lz)
+				walkHoled({ x = x1, z = z1, yaw = inYaw, travel = 0 }, 240, what)
+			end
+
+			-- lying across it as it goes through: slid off its edge onto the steel, not far
+			local cx, cz = (r.x0 + r.x1) / 2, (r.z0 + r.z1) / 2
+			for n = 0, 5 do
+				local x = if n == 0 then cx else r.x0 + rng:nextNumber() * (r.x1 - r.x0)
+				local z = if n == 0 then cz else r.z0 + rng:nextNumber() * (r.z1 - r.z0)
+				local yaw = if n == 0 then inYaw else rng:nextNumber() * 2 * math.pi
+				slides += 1
+				ok(not Tops.fits(hmap, x, z, yaw), `{what}: a body on the hole doesn't fit`)
+				local sx, sz = Tops.settle(hmap, x, z, yaw)
+				if not (sx and sz) then
+					ok(false, `{what}: a body on the hole has somewhere to slide`)
+					continue
+				end
+				local d = math.sqrt((sx - x) ^ 2 + (sz - z) ^ 2)
+				ok(
+					Tops.fits(hmap, sx, sz, yaw) and not bodyInHole(hmap.holes, sx, sz, yaw),
+					`{what}: slid off onto the steel`
+				)
+				ok(d <= 3.6, `{what}: slid off the nearest edge ({d} studs)`)
+			end
+		end
 	end
+end
+ok(holesCut > 300 and holeWalks > 50 and slides > 1500, "enough sawn tops")
+for size, spots in offeredBySize do
+	local n = 0
+	for _, offered in spots do
+		n += if offered then 1 else 0
+	end
+	print(`  a sawn {size} top keeps {n} of its ladder's spots`)
 end
 ok(spotsChecked > 1000 and walks > 200 and pairsWalked > 300 and lidsWalked > 50, "enough cases")
 
@@ -287,7 +488,7 @@ do
 end
 
 print(
-	`tops: {checks - failures}/{checks} passed ({floors} floors, {spotsChecked} spots, {walks} walks, {pairsWalked} unit to unit, {lidsWalked} round lids, {peeks} peeks)`
+	`tops: {checks - failures}/{checks} passed ({floors} floors, {spotsChecked} spots, {walks} walks, {pairsWalked} unit to unit, {lidsWalked} round lids, {peeks} peeks, {holesCut} sawn tops, {slides} slid off)`
 )
 if failures > 0 then
 	error(`{failures} failed`)

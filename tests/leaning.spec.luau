@@ -8,6 +8,7 @@
 -- should, and take about two seconds; raising it swings, then runs out; the sounds come in order.
 local fs = require("@lune/fs")
 local Leaning = require("../src/shared/Tools/Leaning")
+local Tops = require("../src/shared/Tops")
 
 local failures, checks = 0, 0
 local function ok(cond: boolean, what: string)
@@ -53,6 +54,16 @@ local shape: Leaning.Shape = {
 local deck = num(fs.readFile("src/shared/CorridorKit/Specs.luau"), "DeckHeight = ")
 
 local STAND_UP = 3 -- R15's default: hip height 2, half its root
+
+-- A sawn top's hole (L-13b2d2c): its half width across, and how far out a lying root must be to
+-- clear it (as Leaned.holeClear: the hole, the body's widest half, a hair).
+local holeText = fs.readFile("src/shared/StorageUnit/TopHole/Specs.luau")
+local holeRight = num(holeText, "\n\tRight = ")
+local widest = 0
+for _, p in Tops.Body do
+	widest = math.max(widest, p.half)
+end
+local HOLE_CLEAR = holeRight + widest + 0.05
 local STEP = 1 / 240
 
 for _, size in { "S", "M" } do
@@ -71,6 +82,7 @@ for _, size in { "S", "M" } do
 		topY = wy + wh / 2,
 		doorWidth = doorWidth,
 		width = width,
+		clear = HOLE_CLEAR,
 	}
 	local fit = Leaning.fit(shape, front)
 	local s = math.sin(Leaning.Angle)
@@ -102,7 +114,14 @@ for _, size in { "S", "M" } do
 		#fit.spots >= (if size == "S" then 3 else 4),
 		`{size}: a team fits on the top ({#fit.spots})`
 	)
-	ok(near(fit.spots[1], fit.leanX), `{size}: the first climber lies by the ladder`)
+	ok(
+		near(fit.spots[1], fit.leanX, 0.3) and fit.spots[1] >= fit.leanX,
+		`{size}: the first climber lies by the ladder ({fit.spots[1]}, the ladder {fit.leanX})`
+	)
+	ok(
+		fit.spots[1] - widest >= holeRight,
+		`{size}: the first climber's body clear of a sawn top's hole ({fit.spots[1]})`
+	)
 	for i, x in fit.spots do
 		ok(math.abs(x) + 1 <= width / 2, `{size}: spot {i} inside the side walls`)
 		if i > 1 then

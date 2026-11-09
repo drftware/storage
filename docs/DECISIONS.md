@@ -1182,3 +1182,39 @@ the keeper is its core, so the game shapes the brain first and Brix takes it onc
 
 Not chosen: waiting on Brix (about five Brix sessions before the first keeper walks); building on
 Pursuit and filing each gap as it's met; a brain with shapes of its own (it couldn't move later).
+
+## D-065 A sawn top on the map: its hole air the head may go over, a body on it slid off (L-13b2d2c, Nov 9)
+A sawn top's hole joins the tops' map as a third list (`Tops.Map.holes`, the attribute's text
+`tops|lips|holes`): a point strictly inside a hole is off the steel, but, as a front's lip
+(D-059), your head may go out over it. So crawling at a hole you stop at its edge with your view
+about half a stud past it, looking straight down into the unit, and you can't cross it: your
+middle and feet never go over (Outlast's crawl spaces' ledges). The whole hole is the head's: the
+body itself keeps the head within about 1.3 studs of the edge, short of the far side (the hole is
+2.05 by 2.8). Every hole is bigger than any of the body's squares (1.8 at most), so the map's
+corner checks can't miss one a square straddles. The server cuts the hole in the moment a top goes
+through (`Ladders:holed`, called by Saws): it decodes the floor's (or test hall's) map, adds the
+hole's rectangle read off `TopHole.frame` (the same numbers as the art's hole; Studio matched it to
+the thousandth), publishes it, and hands every crawler the new map; each screen looks for a newer
+map every 0.4 s while crawling.
+
+Anyone lying across it then, the sawer too if their feet or side were over its spot (the saw only
+refuses your middle within 0.6 of it), slides off its edge to the nearest place the whole body lies
+on the steel (`Tops.settle`: rings a quarter stud apart, 32 ways round, at most 5 studs, the same
+heading). The server moves you and tells your screen through `FixAttribute` as any put-back; your
+screen glides you there in a quarter second (any put-back within 6 studs now glides, not jumps),
+and when the place you were in doesn't fit the new map it's the steel giving: its ring as you slide
+off a front (`Tops.Sounds.Shift`) and a small jolt. A climber still on the rungs as it goes through
+is slid off it the moment they're up.
+
+The ladder offers only the lying spots whose body clears every hole and whose roll from the ladder
+onto them never passes over one, brushing its edge by 0.3 at most (the roll is 0.6 s, a brush is
+never seen). The first spot, by the ladder, always clears it: it lies at least the hole's half
+width, the body's widest half and a hair (2.35) out from the unit's middle, which moves a small
+unit's first spot a quarter stud out from the ladder's middle (2.1) on every small unit, sawn or
+not. So a sawn top of either size has one spot, the ladder's own: a team climbs one at a time,
+each crawling off before the next ("No room up there" until they do). Not chosen: moving the spots
+behind the hole (a small unit has no room behind it for a five-stud body); refusing the ladder on a
+sawn small unit (the unit you just sawed is the one you most want to climb back onto); punching the
+hole out of the top rectangles (more rectangles, and "over a hole" has to be asked anyway for the
+slide and the spots); refusing the cut while a friend lies across it (the slide is the answer the
+GDD's co-op wants: no one is kept off a hole by a friend lying there).

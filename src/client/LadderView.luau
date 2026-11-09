@@ -43,6 +43,8 @@ local CLIMB_ANIM_RATE = 5 -- Roblox's Animate plays its climb at the climb's spe
 local VIEW_DIP = 0.07
 local VIEW_SWAY = 0.06
 local TELEPORT = 3 -- studs a crawler moves in a frame past which it's a jump, not a crawl
+local MAP_EVERY = 0.4 -- seconds between looks for a newer tops' map (a top sawn through) as you crawl
+local GLIDE_MAX = 6 -- studs: a put-back nearer than this glides you there; further, you're moved
 
 type Joint = Motor6D | AnimationConstraint
 type Move = "Up" | "Top" | "Down" | "Drop"
@@ -71,6 +73,9 @@ type Mine = {
 	origin: CFrame,
 	localY: number,
 	fix: CFrame?,
+	mapAt: number, -- os.clock() of the last look for a newer map
+	glide: CFrame?, -- where the server's word found you, gliding from it to where it put you
+	glideAt: number,
 }
 type Climb = {
 	character: Model,
@@ -277,14 +282,37 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 			reset = fix
 		end
 		local state = m.steer
+		local now = os.clock()
+		if state and not reset and now - m.mapAt >= MAP_EVERY then
+			-- a top sawn through since: its hole off your map
+			m.mapAt = now
+			local fresh = Leaned.tops(m.root.Position)
+			if fresh then
+				m.map = fresh
+			end
+		end
 		if not state or reset then
 			local lx, ly, lz, lp = Leaning.lying(c.fit, c.spot)
 			local lying = Leaned.pose(c.front, lx, ly, lz, lp)
 			local from = reset or lying
 			local map, origin = Leaned.tops(lying.Position)
 			m.map = map
+			m.mapAt = now
 			m.origin = origin or CFrame.identity
 			m.localY = m.origin:PointToObjectSpace(lying.Position).Y
+			if reset and state then
+				-- put back: glide there, not a jump; lying across a hole just sawn, it's the steel
+				-- giving under you as you slide off its edge
+				local was = m.root.CFrame
+				if (was.Position - reset.Position).Magnitude < GLIDE_MAX then
+					m.glide = was
+					m.glideAt = now
+				end
+				if map and not Tops.fits(map, state.x, state.z, state.yaw) then
+					play(Tops.Sounds.Shift, m.root)
+					kick(Tops.SlideKick)
+				end
+			end
 			local p = m.origin:PointToObjectSpace(from.Position)
 			local head = m.origin:VectorToObjectSpace(from.UpVector)
 			state = {
@@ -302,10 +330,20 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 			st = Tops.step(map, st, mx, mz, lx, lz, dt)
 		end
 		m.steer = st
-		m.root.CFrame = m.origin
+		local at = m.origin
 			* CFrame.new(st.x, m.localY, st.z)
 			* CFrame.Angles(0, st.yaw, 0)
 			* CFrame.Angles(-math.pi / 2, 0, 0)
+		local glide = m.glide
+		if glide then
+			local k = (now - m.glideAt) / Tops.SlideSeconds
+			if k < 1 then
+				at = glide:Lerp(at, smooth(k))
+			else
+				m.glide = nil
+			end
+		end
+		m.root.CFrame = at
 		m.root.AssemblyLinearVelocity = Vector3.zero
 		m.root.AssemblyAngularVelocity = Vector3.zero
 		local _, phase = Tops.pull(st.travel)
@@ -399,6 +437,9 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 			origin = CFrame.identity,
 			localY = 0,
 			fix = if typeof(fix) == "CFrame" then fix else nil,
+			mapAt = 0,
+			glide = nil,
+			glideAt = 0,
 		}
 		mine = c
 	end

@@ -740,3 +740,14 @@ verified: a doc page, Studio, or "untested".
   2.5 studs from Climb and press it; four seconds later you're lying on the top. To catch a held
   Saw mid-cut in a shot, set that prompt's `HoldDuration` long on the client; the server drops the
   cut a second after its time, so press again with 4 to go through.
+- **Placing a crawler exactly from the MCP** (Play, L-13b2d2c): once up on the tops, set the
+  character's `TopsFix` attribute to a lying CFrame on the Client (`origin * CFrame.new(x, y, z) *
+  CFrame.Angles(0, yaw, 0) * CFrame.Angles(-math.pi / 2, 0, 0)`, the map's frame); LadderView
+  takes it as the server's put-back and moves you there, and the server's check accepts it as a
+  crawl if it's a few studs off. To crawl a way, hold the view with a `BindToRenderStep` and hold
+  W with `user_keyboard_input`. The torch's R1 from `user_keyboard_input` doesn't reach its
+  ContextActionService binding; for a shot, enable the beam's SpotLight on the Client.
+- **A unit's bulb and its top at Studio's Automatic graphics** (Play, L-13b2d2c): a lit bulb
+  lit the whole steel top above it and the deck from below, through the steel; at Level21 only
+  the sawn hole glowed and the deck above it caught a patch. Judge light through a top at a fixed
+  high level, and on a phone for what most players see.

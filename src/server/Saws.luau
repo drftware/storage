@@ -306,6 +306,10 @@ function Saws.new(): Saws
 		local through = if job.kind == "Top"
 			then TopHole.saw(job.holder, now())
 			else CrawlHole.saw(side.from, side.into, now())
+		if through and job.kind == "Top" and ladders then
+			-- its hole off the tops' map, anyone lying across it slid off its edge
+			ladders:holed(job.holder)
+		end
 		if through then
 			sawing:fire({
 				kind = job.kind,

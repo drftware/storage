@@ -94,6 +94,10 @@ export type Front = {
 	topY: number, -- the steel top's upper surface
 	doorWidth: number,
 	width: number, -- the unit's inside width
+	-- the least distance from the unit's middle a lying root may be across it so the body is clear
+	-- of the hole a saw cuts in the top (L-13b2d2c): the first climber, by the ladder, lies there
+	-- or further out, so the ladder always has a spot on a sawn top
+	clear: number?,
 }
 
 -- A ladder leaned on a front: where its grip is and what the climb needs.
@@ -139,7 +143,7 @@ function Leaning.fit(shape: Shape, front: Front): Fit
 	local oz = front.faceZ + shape.back * s + contact * c
 	local spots = {}
 	local limit = front.width / 2 - Leaning.SpotMargin
-	local x = leanX
+	local x = math.max(leanX, front.clear or 0)
 	while math.abs(x) <= limit + 1e-6 do
 		table.insert(spots, x)
 		x -= Leaning.SpotStep

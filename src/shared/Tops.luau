@@ -12,7 +12,9 @@
 	head may go so you can look down. A body lying on the steel is checked at three points along it
 	(head, middle, feet), each a small square that must lie on the tops; only the head may reach out
 	over a unit's front. Panels, junction walls and dead ends need no checks of their own: they stand
-	on the map's edges.
+	on the map's edges. A top sawn through (L-13b2d2c) adds its hole: no longer steel, but, as a
+	front's lip, air your head may go out over to look down into the unit. Every hole is bigger
+	than any of the body's squares, so a square can't straddle one with its corners on the steel.
 
 	Headings are yaws as Roblox's (CFrame.Angles(0, yaw, 0) looks along (-sin yaw, 0, -cos yaw)).
 ]]
@@ -75,15 +77,27 @@ Tops.DropReach = 6 -- the Drop down button (middle of the front's edge): from an
 Tops.DropNear = 4.5 -- studs in from the front your root may be to drop
 Tops.LandKick = 0.4 -- the jolt to your view as you land (Shake trauma)
 
+-- Lying across a top as its hole goes through, you slide off its edge onto the steel (the server
+-- moves you, your screen glides you there): the nearest place your body fits, this far at most.
+Tops.SlideReach = 5 -- studs: a body across the middle of a hole is about 2.5 from clear
+Tops.SlideSeconds = 0.25 -- the glide on your screen
+Tops.SlideKick = 0.25 -- the jolt to your view as the steel gives under you (Shake trauma)
+-- Studs of a sawn hole's edge a climber's roll from the ladder onto the top may brush past: the
+-- roll takes 0.6 s, so a brush is never seen, but rolling across a hole would be.
+Tops.RollBrush = 0.3
+
 export type Rect = { x0: number, x1: number, z0: number, z1: number }
 
--- The tops of one floor (or test hall), in its own frame: the steel and the lips, and every
--- rectangle filed by the 4-stud squares it touches so a point finds its few quickly.
+-- The tops of one floor (or test hall), in its own frame: the steel, the lips and the sawn
+-- holes, and every rectangle filed by the 4-stud squares it touches so a point finds its few
+-- quickly.
 export type Map = {
 	tops: { Rect },
 	lips: { Rect },
+	holes: { Rect },
 	topCells: { [number]: { Rect } },
 	lipCells: { [number]: { Rect } },
+	holeCells: { [number]: { Rect } },
 }
 
 -- A crawler: where your root is on the map, your heading, and studs crawled (for the pulls).
@@ -110,13 +124,23 @@ local function file(cells: { [number]: { Rect } }, r: Rect)
 	end
 end
 
-function Tops.map(tops: { Rect }, lips: { Rect }): Map
-	local m: Map = { tops = tops, lips = lips, topCells = {}, lipCells = {} }
+function Tops.map(tops: { Rect }, lips: { Rect }, holes: { Rect }?): Map
+	local m: Map = {
+		tops = tops,
+		lips = lips,
+		holes = holes or {},
+		topCells = {},
+		lipCells = {},
+		holeCells = {},
+	}
 	for _, r in tops do
 		file(m.topCells, r)
 	end
 	for _, r in lips do
 		file(m.lipCells, r)
+	end
+	for _, r in m.holes do
+		file(m.holeCells, r)
 	end
 	return m
 end
@@ -170,7 +194,7 @@ function Tops.rects(floor: Floor.Floor): ({ Rect }, { Rect })
 end
 
 -- The map as text for an attribute, and back: "x0 x1 z0 z1" a rectangle, ";" between them, "|"
--- between the tops and the lips.
+-- between the tops, the lips and the holes.
 local function encodeList(list: { Rect }): string
 	local parts = table.create(#list)
 	for i, r in list do
@@ -178,8 +202,8 @@ local function encodeList(list: { Rect }): string
 	end
 	return table.concat(parts, ";")
 end
-function Tops.encode(tops: { Rect }, lips: { Rect }): string
-	return encodeList(tops) .. "|" .. encodeList(lips)
+function Tops.encode(tops: { Rect }, lips: { Rect }, holes: { Rect }?): string
+	return encodeList(tops) .. "|" .. encodeList(lips) .. "|" .. encodeList(holes or {})
 end
 local function decodeList(text: string): { Rect }?
 	local list: { Rect } = {}
@@ -194,22 +218,28 @@ local function decodeList(text: string): { Rect }?
 	return list
 end
 function Tops.decode(text: string): Map?
-	local a, b = string.match(text, "^([^|]*)|([^|]*)$")
-	if not (a and b) then
+	local parts = string.split(text, "|")
+	if #parts ~= 2 and #parts ~= 3 then
 		return nil
 	end
-	local tops, lips = decodeList(a), decodeList(b)
-	if not (tops and lips) then
+	local tops, lips = decodeList(parts[1]), decodeList(parts[2])
+	local holes = if parts[3] then decodeList(parts[3]) else {}
+	if not (tops and lips and holes) then
 		return nil
 	end
-	return Tops.map(tops, lips)
+	return Tops.map(tops, lips, holes)
 end
 
-local function inList(cells: { [number]: { Rect } }, x: number, z: number): boolean
-	local list = cells[key(math.floor(x / CELL), math.floor(z / CELL))]
+-- Whether a point is in one of a square's rectangles: on its edge counts, or, `strict`, only
+-- inside (the steel round a hole is still steel).
+local function inList(list: { Rect }?, x: number, z: number, strict: boolean?): boolean
 	if list then
 		for _, r in list do
-			if x >= r.x0 and x <= r.x1 and z >= r.z0 and z <= r.z1 then
+			if strict then
+				if x > r.x0 and x < r.x1 and z > r.z0 and z < r.z1 then
+					return true
+				end
+			elseif x >= r.x0 and x <= r.x1 and z >= r.z0 and z <= r.z1 then
 				return true
 			end
 		end
@@ -217,9 +247,18 @@ local function inList(cells: { [number]: { Rect } }, x: number, z: number): bool
 	return false
 end
 
--- Whether a point is on the steel (or, with `peek`, out over a unit's front too).
+-- Whether a point is out over a sawn hole.
+function Tops.overHole(m: Map, x: number, z: number): boolean
+	return inList(m.holeCells[key(math.floor(x / CELL), math.floor(z / CELL))], x, z, true)
+end
+
+-- Whether a point is on the steel (or, with `peek`, out over a unit's front or a sawn hole too).
 function Tops.within(m: Map, x: number, z: number, peek: boolean?): boolean
-	return inList(m.topCells, x, z) or (peek == true and inList(m.lipCells, x, z))
+	local k = key(math.floor(x / CELL), math.floor(z / CELL))
+	if inList(m.holeCells[k], x, z, true) then
+		return peek == true
+	end
+	return inList(m.topCells[k], x, z) or (peek == true and inList(m.lipCells[k], x, z))
 end
 
 -- Whether a point is on the steel or within `slack` of it: the server's lenient check.
@@ -260,6 +299,77 @@ function Tops.fits(m: Map, x: number, z: number, yaw: number): boolean
 		end
 	end
 	return true
+end
+
+-- Whether no part of a body lying at a pose is out over a sawn hole (its head neither), each part
+-- `inset` studs smaller: where a climber may roll onto the top past a hole.
+function Tops.clearOfHoles(m: Map, x: number, z: number, yaw: number, inset: number?): boolean
+	if next(m.holeCells) == nil then
+		return true
+	end
+	local hx, hz = Tops.heading(yaw)
+	for _, p in Tops.Body do
+		local px, pz = x + hx * p.along, z + hz * p.along
+		local h = math.max(0, p.half - (inset or 0))
+		if
+			Tops.overHole(m, px, pz)
+			or Tops.overHole(m, px - h, pz - h)
+			or Tops.overHole(m, px + h, pz - h)
+			or Tops.overHole(m, px - h, pz + h)
+			or Tops.overHole(m, px + h, pz + h)
+		then
+			return false
+		end
+	end
+	return true
+end
+
+-- Whether a body moved in a straight line from (ax, az) to (bx, bz), heading `yaw`, never
+-- passes over a sawn hole, brushing its edge at most `Tops.RollBrush`: a climber's roll from the
+-- ladder onto their spot.
+function Tops.pathClear(
+	m: Map,
+	ax: number,
+	az: number,
+	bx: number,
+	bz: number,
+	yaw: number
+): boolean
+	local length = math.sqrt((bx - ax) ^ 2 + (bz - az) ^ 2)
+	local steps = math.max(1, math.ceil(length / 0.25))
+	for i = 0, steps do
+		local k = i / steps
+		if
+			not Tops.clearOfHoles(m, ax + (bx - ax) * k, az + (bz - az) * k, yaw, Tops.RollBrush)
+		then
+			return false
+		end
+	end
+	return true
+end
+
+--[[
+	Where a body that no longer fits (lying across a top as its hole goes through) slides to: the
+	nearest root, the same heading, where it lies all on the steel, at most `Tops.SlideReach` off.
+	Nil if there's none.
+]]
+function Tops.settle(m: Map, x: number, z: number, yaw: number): (number?, number?)
+	if Tops.fits(m, x, z, yaw) then
+		return x, z
+	end
+	local rings = math.ceil(Tops.SlideReach / 0.25)
+	-- every way round at each distance in turn, so the first with room is off the nearest edge
+	for ring = 1, rings do
+		local d = ring * 0.25
+		for i = 0, 31 do
+			local a = i / 32 * 2 * math.pi
+			local nx, nz = x + math.cos(a) * d, z + math.sin(a) * d
+			if Tops.fits(m, nx, nz, yaw) then
+				return nx, nz
+			end
+		end
+	end
+	return nil, nil
 end
 
 -- Which way from your root the body's points that are off the tops lie (summed), at a pose.
