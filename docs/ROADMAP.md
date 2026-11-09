@@ -458,18 +458,25 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
           below, tilted on the channel's stub, slid aside. `Top_S`, `Top_M`, `Edge`,
           `PanelEdge`, `Panel`; generated `TopHole/Specs`. Judged in eight look sheets, one at
           phone size; not yet uploaded.
-        - [ ] **L-13b2d2 Saw the top.** First get the art in: `lune run scripts/upload_art
-          TopHole`, insert, prepare (as `CrawlHole.prepare`: square to the kit's frame, the
-          unit's wall texture on the tops and panel) into `Props.TopHole`, judge at phone size
-          in Studio from the tops and inside. Then the Saw button over the hole spot for a
-          crawler lying by it with the saw (D-053's hold, keys, sounds and checks; the server
-          checks you're on that top), the line crawling round the cut, sparks up top; through,
-          the panel drops and clangs on the floor below, heard floor-wide, `Saws.sawing` for
-          keepers. The hole comes off the `Tops` map so nobody crawls over it, with a lip like a
-          front's so your head can go out over it and your torch look down; the ladder's lying
-          spots that touch it are out (on a small unit the hole reaches all three: move them
-          behind it or refuse the ladder there). A lit unit's bulb shines up through a sawn top:
-          the one thing that shows it from along the tops.
+        - [ ] **L-13b2d2 Saw the top.** Split Nov 9 in three (the art in, the cut, the map):
+          - [x] **L-13b2d2a The sawn top in the place.** Done Nov 9 (D-062). Uploaded,
+            inserted and prepared into `Props.TopHole`; `TopHole.saw(unit, at?)` swaps the
+            unit's top for the holed one, lays the edge and the fallen panel (one `TopPanel`
+            model, tagged with its cut time), opens the top's collision round the hole;
+            `TopHole.frame(unit)` reads the hole's frame off any unit. Verified in Studio: an M
+            and an S cut, looked at from the tops, head over the hole and inside, at phone size.
+          - [ ] **L-13b2d2b The cut.** The Saw button over the hole spot for a crawler lying by
+            it with the saw (D-053's hold, keys, sounds and checks; the server checks you're on
+            that top), the line crawling round the cut, sparks up top; through, the panel drops
+            ten studs and clangs on the floor below, heard floor-wide, `Saws.sawing` for keepers.
+            The drop needs the panel's pose in the top before it fell (the art's `lay`, tilt,
+            slide and turn): export it in `TopHole/Specs` from `art/tophole/build.py`, or start
+            the drop flat in the hole and turn it into its rest on the way down.
+          - [ ] **L-13b2d2c The map.** The hole comes off the `Tops` map so nobody crawls over
+            it, with a lip like a front's so your head can go out over it and your torch look
+            down; the ladder's lying spots that touch it are out (on a small unit the hole
+            reaches all three: move them behind it or refuse the ladder there). A lit unit's
+            bulb shines up through a sawn top: the one thing that shows it from along the tops.
         - [ ] **L-13b2d3 Drop in, and out again.** Drop in (pressed, as `Tops.drop`): through the
           hole feet first, arms up, a landing crouch inside, heard. The deal keeps the floor
           under every unit's hole clear, as it keeps the wall holes' spots. Out only by an

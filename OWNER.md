@@ -7,11 +7,11 @@ nowhere else.
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 - [ ] **Save the place** (File > Save to Roblox) after this session (Nov 9): the elevator's and
-  the flashlight's, the bolt cutters', the padlock's, the saw's, the crawl hole's and the ladder's
-  templates live only in the open place, at `ReplicatedStorage.Props.Elevator`, `Props.Note`,
-  `Props.Flashlight`, `Props.Tools.BoltCutters`, `Props.Tools.Padlock`, `Props.Tools.Saw`,
-  `Props.Tools.Ladder` and `Props.CrawlHole` (without them nobody has a torch, no tool lies
-  anywhere and no hole can be cut; Output warns). Unsaved, the next open loses them and every
+  the flashlight's, the bolt cutters', the padlock's, the saw's, the crawl hole's, the ladder's and
+  the sawn top's templates live only in the open place, at `ReplicatedStorage.Props.Elevator`,
+  `Props.Note`, `Props.Flashlight`, `Props.Tools.BoltCutters`, `Props.Tools.Padlock`,
+  `Props.Tools.Saw`, `Props.Tools.Ladder`, `Props.CrawlHole` and `Props.TopHole` (without them
+  nobody has a torch, no tool lies anywhere and no hole can be cut; Output warns). Unsaved, the next open loses them and every
   floor's lobby has an empty hole in its back wall (Output warns). The units' own templates,
   `ReplicatedStorage.Units.M` and `Units.S`, were swapped this session for ones with the steel
   top: unsaved, the next open brings back the wire tops, and the junction lids and the units'
@@ -20,17 +20,20 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
-## Now: look at the sawn top's art, L-13b2d1 (built Nov 9; not in the game yet)
+## Now: judge L-13b2d2a, the sawn top in the game (built Nov 9; no Saw button yet)
 
-- [ ] **The look sheets** (`art/tophole/README.md`, eight pictures in `art/sheets/tophole-*`): a
-  hole sawn down through a unit's steel top, 2.8 across and 2 front to back, ragged and bright,
-  tongues bent down, the channel under it sawn through, the cut-out panel on the floor below.
-  Look for: does it read as sawn steel a body drops through? Too tidy, too ragged?
+- [ ] **See one cut** (Play on a computer). There's no button to saw a top until L-13b2d2b, so cut
+  one by hand: in Play, switch the Command Bar to the server and run
+  `require(game.ReplicatedStorage.Shared.StorageUnit).TopHole.saw(workspace.DevCorridor.Unit101)`.
+  Its door's bulb is off, so open the door, step in and look up: the hole just behind the drum,
+  the channel sawn through, the panel on the floor beside where you'd land. Then lean the ladder,
+  climb and crawl to it: the bright cut and the tongues bent down. Look for: does it read as a way
+  down? (You can crawl over it for now; L-13b2d2c takes the hole off the tops.)
 - [ ] **Where it is (a default, your call):** one spot per unit, in the middle of its width just
   behind the door's drum, so you land between the door and the bulb facing the room, the door at
   your back (the clear part of a unit; finds stand behind the bulb, D-036). The other choice was
   the back half, behind the bulb, landing among the boxes and the finds' unlit backs. On a small
-  unit the hole reaches every lying spot a ladder gives (L-13b2d2 will move them or refuse it).
+  unit the hole reaches every lying spot a ladder gives (L-13b2d2c will move them or refuse it).
 
 ## Now: judge L-13b2c2, what you hold kept out of walls (built Nov 9)
 

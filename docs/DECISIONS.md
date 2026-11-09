@@ -1106,3 +1106,18 @@ away. Not chosen: the back half (you'd land among the boxes, behind the finds' u
 between channels on an M only (two hole sizes, and a small unit could never be sawn); cutting
 anywhere you lie (runtime geometry for no gain, as D-052); the channel left across the hole (it
 would bar the drop); the panel landing flat on its face (the stub under it makes that impossible).
+
+## D-062 The sawn top in the place: swapped at the top's own CFrame, the panel one model (L-13b2d2a, Nov 9)
+`TopHole.saw(unit, at?)` cuts a unit's top as `CrawlHole.saw` cuts a wall: the unit's `Top` is
+swapped for the kit's `Top_<size>` at the same CFrame (the two meshes share their box and axes),
+keeping the old top's shadow, collision, query, touch and collision group, so the bulb, the
+torch's room and anything reading the top see the same part. The hole's frame is read from the
+unit's own top and the generated Specs alone (`TopHole.frame`), so the server can place the Saw
+button and the map can cut the hole out of the tops before or after a cut, with or without the
+kit in the place. The top's collision box is split round the hole by `Boxes.around` (the wall
+hole's), measured in the box's own frame from the hole's corners, so it holds whichever way the
+box's axes run. The fallen panel and its bright rim are two parts in two texture sets, so they
+are one Model (`TopPanel`, primary part the panel) that a screen moves as one when it falls. The
+tops and panel take their look from `Units.M.Top` (the top they replace), not the wall. Not
+chosen: one part for the panel (two texture sets can't share a MeshPart); placing the holed top
+from the unit's pivot (the pivot's axes are Blender's, the top's are the game's).

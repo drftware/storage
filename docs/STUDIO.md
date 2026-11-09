@@ -706,6 +706,12 @@ verified: a doc page, Studio, or "untested".
 - **Setting `workspace.CurrentCamera.CFrame` on the client turns a first-person view** (Play,
   L-11b): with LockFirstPerson the camera keeps the new look, so a shot can be aimed from the MCP.
 
+- **A unit's inside is pitch dark in Play** (L-13b2d2a, 2026-11-09): its bulb is off until its
+  door opens. To judge art inside or under a top, light it on your own client from the MCP:
+  `unit.Bulb.Glass.PointLight` Enabled, Brightness 1.5, Range 18 (it stays until Play stops).
+  An uploaded set whose textures match ones already up (the TopHole kit's Partition set) arrives
+  with the same `rbxassetid`s as the first upload's.
+
 - **The test hall and the walked floor share unit names** (Play, L-12a, 2026-11-09): both lay
   `Unit101` and on under `Workspace.DevCorridor`; the floor's are 600 studs off, so pick them by
   `GetPivot().Position.Z < -300` (and their `DoorButtons` attachment by `WorldPosition.Z`).

@@ -57,10 +57,12 @@ across and turned 11°, so whoever drops after it lands mostly beside it).
 
 ## In the place
 
-Not yet uploaded (L-13b2d2's first step): `lune run scripts/upload_art TopHole`, insert with the
-MCP, remove its `Assistant:` tag, square it to the kit's frame and give the tops and panel the
-unit's own wall texture from `ReplicatedStorage.Units.M`, as `CrawlHole.prepare` does, then into
-`ReplicatedStorage.Props`.
+Uploaded Nov 9 (`lune run scripts/upload_art TopHole`, asset in `assets.json`), inserted with the
+MCP, then `TopHole.prepare(model)` in Edit: it drops the package link and the `Assistant:` tag,
+squares every piece to the kit's frame by `Top_M` (Studio turns an inserted model) and gives the
+tops and the panel the unit's own top texture from `ReplicatedStorage.Units.M.Top`. The kit lives
+at `ReplicatedStorage.Props.TopHole`; `TopHole.saw(unit)` cuts a unit's top with it (D-062).
+After a rebuild: upload, insert, prepare and swap it for the old one there.
 
 ## Rebuild
 

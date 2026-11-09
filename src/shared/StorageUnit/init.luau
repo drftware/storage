@@ -11,6 +11,7 @@ return {
 	Motion = require(script.Motion),
 	RollUpDoor = require(script.RollUpDoor),
 	ShutIn = require(script.ShutIn),
+	TopHole = require(script.TopHole),
 	UnitKit = require(script.UnitKit),
 	Specs = require(script.Specs),
 }
