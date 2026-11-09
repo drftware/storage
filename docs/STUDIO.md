@@ -651,6 +651,13 @@ verified: a doc page, Studio, or "untested".
   `string`; annotate them (`local kind: Motion.Kind, from: number = Motion.decode(...)`).
 - **Lune** runs a spec with `lune run tests/<name>.spec` from the repo root; specs require
   modules by relative path.
+- **Lune 0.10.5 can mis-compare inside a loop** (L-06b1, 2026-11-09): `math.abs(a - b) <= f(c) * 10`
+  in a spec's loop failed with "attempt to compare number <= nil" (or string, or function) though
+  every part was a number; the same line alone, or in a closure, ran fine. Put the right side in a
+  local first (`local slack = f(c) * 10`). Not seen in Studio.
+- **`vector` is 32-bit floats** (Luau's native type, and Roblox's): a few hundred studs from the
+  origin a position is good to about 3e-5 studs, so a spec comparing distances between vectors
+  needs a tolerance near 1e-4, not 1e-9 (`tests/keepermap.spec.luau`).
 - **Captures miss the prompts** (L-02, 2026-11-07): `screen_capture` draws the 3D view only, not
   Roblox's ProximityPrompt overlay. To check buttons on screen, listen to
   `ProximityPromptService.PromptShown`/`PromptHidden` in the Client view and project each shown

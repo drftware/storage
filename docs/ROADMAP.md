@@ -337,23 +337,35 @@ on nothing in Brix.
   Brix's contracts and parts (Pathing, Reach, Zone, Signal, Random) so it can move to Brix later.
   It waits on nothing in Brix. Split Nov 9, a session each. Where the GDD doesn't give a number
   (how far a keeper sees, how long before it gives up), pick a default and list it in `OWNER.md`.
-  - [ ] **L-06b1 The halls as a map keepers walk.** Pure, with Lune checks: the floor's walk
-    graph from `Floor` (the hall pieces joined end to end, each unit's doorway a link that is shut
-    while its door is down), shortest trips over it by A* (the GDD's tech plan), in the shape of
-    Brix's Pathing contract: `length`, `advance`, and a `route` a keeper keeps between steps that
-    plans again when a door changes. Keepers can't use a crawl hole or reach the tops, so neither
-    is on the map. Checks: Brix's Pathing promises hold on seeded floors; no trip crosses a wall
-    or a shut door; a step along a route allocates nothing once warm.
-  - [ ] **L-06b2 The Mannequin goes to look.** The moment: you slam a door and, two halls off,
-    something starts walking toward it. The brain's first states (asleep, going to look, waiting
-    there, going back) and its first row. Keepers hear a door (the GDD: an open, a slam, a lift
-    from inside) as far as its sound carries: take each action's reach from `DoorSound.Actions`,
-    so what players hear and what keepers hear stay one table. Its body is L-06a's: clone it with
-    `Mannequin.clone`, an anchored model moved along the map by its HumanoidRootPart on the
-    server, with no Humanoid. Dealt keepers (L-04e): stand one at `Deals.dealt`'s place as its
-    door first lifts (asleep, in its shop pose; awake, up and looking), joining the brain at that
-    moment, and hand `Deal.open` the keepers awake now in place of `Deals`' tally of those dealt
-    awake. It may judder on screen until L-06b4 smooths it.
+  Each keeper's row lists its abilities (D-068): the Mannequin has none, it only walks.
+  - [x] **L-06b1 The halls as a map keepers walk.** Done Nov 9 (D-068): `KeeperMap` lays the
+    floor as places (each hall piece, a junction's middle and arms, the lobby, each unit) joined by
+    passages (the joints between hall pieces, each unit's doorway, shut while its door is down);
+    the elevator car isn't on it. Shortest trips by A* over the passages, in Brix's Pathing
+    contract (`length`, `advance`, `route`, a route planning again when a door changes or its
+    target moves into another place). A passage may need an ability ("Climb", "Crawl"), and each
+    keeper walks through a pathing made for its abilities; raised places (the tops) and passages
+    (ladders, crawl holes) can be added while a floor runs. `tests/keepermap.spec.luau`: 62,000
+    checks over 60 seeded floors of both plans (Brix's promises, no wall or shut door crossed,
+    routes arrive, abilities, a raised place, no allocation once warm); a length across a full
+    floor takes about 10 µs in Lune.
+  - [ ] **L-06b2 The Mannequin goes to look.** Split Nov 9 into two sessions.
+    - [ ] **L-06b2a It hears a door and walks to it.** The moment: you slam a door and, two halls
+      off, something starts walking toward it. The brain as a system on the Host's clock, its
+      first states (asleep, going to look, waiting there, going back) and its first row (speed
+      from the GDD's share of player sprint, `abilities = {}`). Keepers hear a door (the GDD: an
+      open, a slam, a lift from inside) as far as its sound carries: take each action's reach
+      from `DoorSound.Actions`, so what players hear and what keepers hear stay one table. The
+      map: one `KeeperMap.build` per floor laid, each door's state fed through
+      `KeeperMap.letsThrough` into `setDoor` as it changes, and world positions turned into the
+      floor's own (its lobby at the origin) going in and back coming out. Its body is L-06a's:
+      clone it with `Mannequin.clone`, an anchored model moved along its route by its
+      HumanoidRootPart on the server, with no Humanoid, stood in a hall by a dev command until
+      L-06b2b deals them. It may judder on screen until L-06b4 smooths it.
+    - [ ] **L-06b2b Dealt keepers join.** Dealt keepers (L-04e): stand one at `Deals.dealt`'s
+      place as its door first lifts (asleep, in its shop pose; awake, up and looking), joining
+      the brain at that moment, and hand `Deal.open` the keepers awake now in place of `Deals`'
+      tally of those dealt awake.
   - [ ] **L-06b3 It hunts, freezes and catches.** At no more than player speed (the GDD's speed
     rule): it notices a player by its row's senses, hunts them by the map, and gives up when it
     has lost them. Frozen (`Pose.freeze(travelled)`) the moment a hall light or a torch's beam is
@@ -367,6 +379,10 @@ on nothing in Brix.
     slide past the stop. Its tell, heard in the dark while it moves: fibreglass knocking at its
     joints and a stiff, quick footfall per step, as Five Nights at Freddy's footsteps say an
     animatronic moved. Judged at phone size.
+  - Later, with the first keeper that climbs or crawls (a new keeper is the owner's design,
+    D-068): the tops join its map as raised places (from `Tops.Map`), a leaned ladder as a
+    passage that needs Climb (shut when it's taken down), and a sawn wall's hole as one that
+    needs Crawl (from `Saws`). Only those calls and the keeper's row; the map stays as it is.
 - [x] **L-04e The deal on the floor.** Done Nov 9 (D-050): the deck's padlocks set as each unit
   is laid; `Deals` deals a unit on its first lift (a peek, an open, a lift from inside) and lays
   it: a tool to pick up, a find standing behind the bulb facing the doorway, a keeper's place
@@ -524,8 +540,8 @@ on nothing in Brix.
             padlocked door rattles and says "Saw a wall". Verified in Studio on the walked
             floor's Unit 102: sawed its top (it held a boombox, at the back), dropped in onto
             bare floor, tried Lift padlocked, then unlocked, sawed through to Unit 104 (dealt
-            a saw as the hole went through) and walked out under the lifted door. A friend's
-            cut and the foot in the fallen panel wait on `OWNER.md`.
+            a saw as the hole went through) and walked out under the lifted door. The owner
+            judged it in Studio on Nov 9: looks good, the foot in the fallen panel left as is.
 - [ ] **L-14 The other tools.** Bubble wrap across a hall (pops for anything that crosses, heard
   floor-wide), the air horn (lures keepers to a spot, wakes sleeping ones), the moving blanket
   (thrown over a keeper, blinds it a few seconds), glow sticks (light the building can't see,
@@ -562,7 +578,8 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **Your foot in the top's fallen panel** (L-13b2d3b): landed, the foot on the panel's side
   stands 0.6 studs into the panel's corner and 0.4 deep in it (the panel has no collision). A
   small unit has no room to lay the panel clear of your feet, so it wants a new resting pose in
-  `art/tophole` (leaned on the side wall?) or a kick as you land. The owner's call (`OWNER.md`).
+  `art/tophole` (leaned on the side wall?) or a kick as you land. The owner passed it as it is
+  (Nov 9), so it waits for a slot like the rest of this list.
 
 - **A friend sliding off a sawn hole** (L-13b2d2c): only the slider hears the steel give; others
   see the glide and hear a pull's boom. The steel's ring and a scrape for everyone near.

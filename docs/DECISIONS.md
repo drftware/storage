@@ -1271,3 +1271,43 @@ unit's pool reaches) and in one of four places, where they had eight or more.
 padlocked door's Lift now says "Saw a wall" as it rattles: the button already reads "Padlocked",
 the padlock is on the hall side, and the way out that is yours is a side wall (three words, as
 the door's test holds refusals to). Not chosen: "Padlocked" again (nothing on screen changed).
+
+## D-068 The keepers' map: places and passages, each keeper walking it with its own abilities (L-06b1, owner, Nov 9)
+The floor is a map of places and passages (`src/shared/KeeperMap.luau`). A place is floor a keeper
+crosses in a straight line, a plain rectangle: each straight hall piece, a junction's middle and
+each of its arms, the lobby, each unit. A passage joins two places: the joint between two hall
+pieces, and each unit's doorway. A keeper's shortest trip is A* over the passages (the GDD's tech
+plan), so it walks down the middle of the halls and turns at the middle of each joint: deliberate
+and stiff, as a mannequin should move. If that reads as robotic on screen, L-06b4 can cut corners
+tighter without touching the map.
+
+Keepers differ in what they can do (the GDD's row: "turning, climbing, senses"; owner, Nov 9: a
+later keeper may climb ladders, another crawl through cut-outs, each with different abilities). So
+a passage may need an ability (`"Climb"`, `"Crawl"`), each keeper's row lists its abilities, and
+the brain walks each keeper through `KeeperMap.pathing(map, row.abilities)`, a pathing that uses
+only the passages those abilities open (keepers with the same abilities share one). The floor's
+own passages need nothing. Raised places (the tops) and new passages (a leaned ladder, a sawn
+hole) can be added while a floor runs (`addPlace`, `connect`, `setOpen`); a point belongs to the
+highest place whose floor is at or under it, so someone up on the tops is on the tops, not in the
+unit below. A keeper that climbs or crawls is then its row plus the calls that add those, never a
+new map or a new brain. A new ability is a name in `KeeperMap.Ability` and the passages that need
+it. The Mannequin has none.
+
+Defaults the owner accepted (Nov 9): a keeper goes through a doorway only while its door is all the
+way up (`KeeperMap.letsThrough`: peeking, rising, coming down and locked are all shut, so pulling a
+door down is always safety); the lobby is on the map and the elevator car isn't (the GDD: keepers
+can't ride it), so a keeper hunting someone in the car stops at the lobby's edge nearest them.
+
+Each pathing keeps Brix's Pathing contract, checked by Lune over 60 seeded floors. Two things follow
+from it. A passage goes both ways at the same cost, because the contract measures every trip the
+same both ways: a one-way drop (down a top's hole) can't be a passage, and a keeper that drops in
+would need a contract question taken to Brix first. And a point off every place (inside the
+elevator, inside a wall) is measured from the nearest place's edge, the way out to it counted in;
+two such points that meet the map at the same spot measure straight between them. A trip with no
+way through is `math.huge` long and nothing moves along it. Heights: within a place height counts
+for nothing (as Brix's floor pathing), and a traveller keeps its height over its place's floor.
+
+Not chosen: a grid of nodes (thousands of points where a few hundred passages say the same);
+Roblox's PathfindingService (the GDD: per-keeper calls cost more, are less predictable, and the
+director can't read dead ends from them); abilities as separate maps per keeper (one map, one set
+of doors to keep in step, filtered per keeper instead).
