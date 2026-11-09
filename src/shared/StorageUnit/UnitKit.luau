@@ -204,7 +204,7 @@ function UnitKit.number(unit: Model, text: string)
 	label.Text = text
 end
 
--- Remove a wall a neighbour already provides (WallLeft, WallRight, WallBack, WireTop), with
+-- Remove a wall a neighbour already provides (WallLeft, WallRight, WallBack, Top), with
 -- its collider.
 function UnitKit.dropWall(unit: Model, name: string)
 	local part = unit:FindFirstChild(name)

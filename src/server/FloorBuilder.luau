@@ -5,8 +5,8 @@
 	floor you can walk: CorridorKit's straights, junctions, walls and dead ends; the M and S units
 	from ReplicatedStorage.Units, in the floor's door colour and numbered; and a motion light over
 	every hall piece, in its power zone. A plain wall in a top run gets a lid over the empty slot
-	behind it, the unit's own wire top and floor, so a friend running the tops never drops in; a
-	junction's square a run reaches gets the S unit's wire top, so the run turns the corner; and
+	behind it, the unit's own steel top and floor, so a friend running the tops never drops in; a
+	junction's square a run reaches gets the S unit's steel top, so the run turns the corner; and
 	the kit's wall panel closes every other edge of the tops up to the deck (`Floor`'s lids and
 	panels, D-055). Given
 	the floor's deal, each unit holding one of the code's notes gets it stuck on its back wall
@@ -106,15 +106,15 @@ local function specOf(unit: Model): Specs.Spec
 	return Specs[if type(size) == "string" then size else "M"]
 end
 
--- Where a unit's bulb hangs: under the middle of its wire top, from the underside of the channel
--- across it (the wire top's box bottoms out on its channels; CorridorKit.Specs.Bulb.ChannelDrop).
--- Read from the unit's own wire top, so it holds for every size.
+-- Where a unit's bulb hangs: under the middle of its steel top, from the underside of the channel
+-- across it (the steel top's box bottoms out on its channels; CorridorKit.Specs.Bulb.ChannelDrop).
+-- Read from the unit's own steel top, so it holds for every size.
 local function bulbPoint(unit: Model): CFrame?
-	local wire = unit:FindFirstChild("WireTop", true)
-	if not (wire and wire:IsA("BasePart")) then
+	local top = unit:FindFirstChild("Top", true)
+	if not (top and top:IsA("BasePart")) then
 		return nil
 	end
-	local cf, size = wire.CFrame, wire.Size
+	local cf, size = top.CFrame, top.Size
 	local half = (
 		math.abs(cf.RightVector.Y) * size.X
 		+ math.abs(cf.UpVector.Y) * size.Y
@@ -171,11 +171,11 @@ local function faceOf(x: number, z: number, facing: number): CFrame
 	return CFrame.lookAt(at, at + Vector3.new(dx, 0, dz))
 end
 
--- The parts a plain wall's lid is made of: the unit's wire top to run across and its floor, so
--- the empty slot under the wires reads as an empty unit, not the void below the building. A
--- junction's square already has the junction's floor, so its lid is the S unit's wire top alone.
-local LID_PARTS = { "WireTop", "Floor" }
-local SQUARE_LID_PARTS = { "WireTop" }
+-- The parts a plain wall's lid is made of: the unit's steel top to run across and its floor, so
+-- the empty slot under the steel reads as an empty unit, not the void below the building. A
+-- junction's square already has the junction's floor, so its lid is the S unit's steel top alone.
+local LID_PARTS = { "Top", "Floor" }
+local SQUARE_LID_PARTS = { "Top" }
 local LID_SIZES: { Floor.Size } = { "M", "S" }
 
 --[[
@@ -336,7 +336,7 @@ type Laying = {
 	door: Color3,
 	slots: { [number]: { Floor.Slot } },
 	lids: { [Floor.Size]: Model }, -- a plain wall's lid per size (lidOf), missing if it can't be made
-	squareLid: Model?, -- a junction square's lid, the S unit's wire top (lidOf)
+	squareLid: Model?, -- a junction square's lid, the S unit's steel top (lidOf)
 	squares: { [number]: { Floor.Lid } }, -- each junction's lidded squares
 	panels: { [number]: { Floor.Panel } }, -- the panels closing the tops, by the piece they close
 	deadEnds: { [number]: { Floor.DeadEnd } },
@@ -417,7 +417,7 @@ local function piece(laying: Laying, index: number): (Folder, number)
 			end
 		end
 	end
-	-- the tops closed (D-055): a wire top over each of a junction's squares a run reaches, so the run
+	-- the tops closed (D-055): a steel top over each of a junction's squares a run reaches, so the run
 	-- goes on round the corner, and a panel wherever stepping off the tops drops into nothing
 	local squareLid = laying.squareLid
 	if squareLid then

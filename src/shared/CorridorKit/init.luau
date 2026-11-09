@@ -20,9 +20,9 @@
 	the building is watching (HallLight.eye). `hang` puts one up; it belongs midway between two
 	joists, which sit every 6 studs from 3 studs off a piece's middle.
 
-	The unit's bulb is a caged bulb on a short cord, hung under the middle of a unit's wire top: its
+	The unit's bulb is a caged bulb on a short cord, hung under the middle of a unit's steel top: its
 	glass is the part UnitLight lights as the door rises. `hangBulb` puts one up. Its frame is the
-	hang point, where the cord meets the wire top's channel; the bulb is round, so its turn never
+	hang point, where the cord meets the steel top's channel; the bulb is round, so its turn never
 	shows.
 
 	Each template lives in the place at ReplicatedStorage.Corridor.<Name>, because Rojo can't sync
@@ -293,7 +293,7 @@ local SHEET_BEHIND = 0.1
 	of its face on the floor, looking into the space it closes. It is the R-panel from the units'
 	cap height up through the deck, its sheet on the face's line (a unit's wall's sheet lies on its
 	line too), with a collider from the cap to the deck's top behind its face,
-	so it closes the units' wire tops wherever stepping off them would drop into nothing
+	so it closes the units' unit tops wherever stepping off them would drop into nothing
 	(FloorBuilder, D-055). `name` is the wall whose panel it is: Wall's is an M unit wide,
 	ShortWall's an S's. `bare` turns the sheet about, keeping the collider where it is: the panel's
 	bare sheet then faces the space it closes from the floor up, as a plain wall's does the empty
@@ -356,7 +356,7 @@ function CorridorKit.hang(at: CFrame, parent: Instance): Fixture
 	return { model = model, diffuser = part(model, "Diffuser"), eye = part(model, "Eye") }
 end
 
--- Hangs a copy of the unit's bulb from `at`, the point under a wire top's channel where its cord
+-- Hangs a copy of the unit's bulb from `at`, the point under a steel top's channel where its cord
 -- is clipped on. Light its glass with UnitLight.
 function CorridorKit.hangBulb(at: CFrame, parent: Instance): Bulb
 	local model = CorridorKit.place("Bulb", at, parent)

@@ -154,7 +154,7 @@ export type Slot = {
 	left: number?,
 	right: number?,
 	back: number?,
-	top: boolean, -- closed on top: a unit's wire top, or a plain wall's lid in a run with units
+	top: boolean, -- closed on top: a unit's steel top, or a plain wall's lid in a run with units
 	run: number?, -- the top run it's part of, an index into runs
 }
 
@@ -173,7 +173,7 @@ export type Run = {
 	A lid over one of a junction's hollow squares: the 8-by-8 block of wall between two of its
 	halls, or a corner's outside square behind both its rows. The junction floors it and walls or
 	units close it, so a friend who stepped off a run's end into it could never climb out; an S
-	unit's wire top over it carries the run round the corner instead. Every such square a run
+	unit's steel top over it carries the run round the corner instead. Every such square a run
 	reaches gets one. Its frame is a slot's: the middle of one side, looking out of the square,
 	which runs back from it an S unit's depth.
 ]]
@@ -181,7 +181,7 @@ export type Lid = {
 	x: number,
 	z: number,
 	facing: number,
-	size: Size, -- always S: the square is an S unit's footprint, so its wire top fits
+	size: Size, -- always S: the square is an S unit's footprint, so its steel top fits
 	cell: number, -- the junction it's in, an index into cells
 	runs: { number }, -- the top runs that reach it, indices into runs
 }
@@ -194,7 +194,7 @@ export type Lid = {
 	on past them into the dark behind the tops, where nobody sees it. Where the tops have no wall
 	of their own under it (a plain wall's lid, a junction's square), it turns its bare sheet to
 	them, down to the floor, as a plain wall does to the empty slot behind it: looking down
-	through the wires shows a wall, not the sky under the building. Its frame is a wall's: the
+	past the tops' edges shows a wall, not the sky under the building. Its frame is a wall's: the
 	middle of its face, on the floor, looking into the tops it closes.
 ]]
 export type Panel = {

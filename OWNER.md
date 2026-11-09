@@ -12,10 +12,27 @@ nowhere else.
   `Props.Flashlight`, `Props.Tools.BoltCutters`, `Props.Tools.Padlock`, `Props.Tools.Saw`,
   `Props.Tools.Ladder` and `Props.CrawlHole` (without them nobody has a torch, no tool lies
   anywhere and no hole can be cut; Output warns). Unsaved, the next open loses them and every
-  floor's lobby has an empty hole in its back wall (Output warns).
+  floor's lobby has an empty hole in its back wall (Output warns). The units' own templates,
+  `ReplicatedStorage.Units.M` and `Units.S`, were swapped this session for ones with the steel
+  top: unsaved, the next open brings back the wire tops, and the junction lids and the units'
+  bulbs fail (Output warns).
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
+
+## Now: judge L-13b2b, the tops closed in steel (built Nov 9)
+
+- [ ] **Look at the tops** (Play on a computer). Lean the ladder on unit 102 and climb up, or see
+  `docs/art/L-13b2b-tops.jpg` (lit by a stand-in torch). The tops are now ribbed steel, like the
+  unit walls laid flat, with a seam halfway back where two sheets overlap. Turn your torch on and
+  look around: you can't see into any unit, only down into the hall over a unit's front edge.
+  Look for: does it read as a steel roof on a phone? Too bright, or too plain next to the walls?
+- [ ] **Listen**: landing on the top is now a body hitting thin steel with a ring (it was a fence
+  rattle), and climbing down plays its quiet tail. Say if it's wrong for something keepers will
+  one day hear.
+- [ ] **Decide, default in place** (for L-13b2d, sawing down into a unit): once you've sawn
+  through a top, can your torch look down the hole before you drop? Default yes: you paid for the
+  look with the saw's noise, and dropping in is still one-way.
 
 ## Now: judge L-13b2a, leaning the ladder and climbing it (built Nov 9)
 
@@ -25,14 +42,14 @@ nowhere else.
   it: the ladder swings off your shoulder against the front (a bang as its top lands), the top
   half runs up with a metal rattle and stops with a clack, rails resting on the edge and reaching
   past it (`docs/art/L-13b2a-leaned.jpg`). At its foot: Climb (E) and Take (F). Climb: you go up
-  rung over rung in about a second and roll over the edge onto your belly on the wire top with a
-  rattling thump (`docs/art/L-13b2a-view.jpg`; the tops are dark, so turn your torch on). Look
+  rung over rung in about a second and roll over the edge onto your belly on the top with a
+  thud (now steel, L-13b2b) (`docs/art/L-13b2a-view.jpg`; the tops are dark, so turn your torch on). Look
   ahead: "Climb down" (E). Down you go, a step back into the hall. Take: it's back on your
   shoulder. Look for: is the climb quick enough for an escape and slow enough to read? Is the
   roll onto the top too sudden or too slow? Is "Climb down" easy to find (it sits ahead of you,
   so it's gone while you look back down at the hall)?
 - [ ] **Listen** (nobody here could): the top landing, the rattle running up, the locks' clack,
-  the rungs (one recording of a metal ladder climb) and the wire top's thump. Say which is wrong.
+  the rungs (one recording of a metal ladder climb). Say which is wrong.
 - [ ] **Two players** (Clients and Servers, 2 players): you see your friend climb with Roblox's
   own climb animation, then lie on the top reaching ahead (`docs/art/L-13b2a-lying.jpg`). A second
   climber gets the next spot along the front (three fit on a small unit, four on a big one).

@@ -6,7 +6,7 @@ Each part is one MeshPart in Roblox, one texture set:
     FacadeBack                    Partition
     Facade                        Facade      (tinted per floor through Overlay)
     Frame                         TrimSheet   (trim, jambs, pilasters, kick plates, guides, posts)
-    WireTop                       TrimSheet   (optional: the open mesh top you can run across)
+    Top                           Partition   (the closed steel top you crawl across; D-058)
     Hardware                      DoorKit     (head plates, axle, tension wheel)
     Drum                          DoorKit     (turns as the curtain winds)
     Slat_A Slat_B Slat_C          DoorKit     (templates; RollUpDoor clones the chain)
@@ -94,16 +94,15 @@ def floor(s):
     return m
 
 
-def corrugated(m, along, a0, a1, plane, sign, z0, z1, H, u_off=0.0):
-    """R-panel sheet: trapezoid ribs every stud. along: 0 = runs in x, 1 = runs in y.
+RIB_DEPTH, SHEET_T = 0.10, 0.03  # R-panel: how far a rib stands out, the steel's thickness
 
-    The sheet's mid-plane is `plane` on the other horizontal axis; ribs stand out toward
-    `sign`. Two faces 0.03 apart; the tracks hide its top and bottom edges.
-    """
-    d, t = 0.10, 0.03
+
+def rib_points(a0, a1):
+    """An R-panel's cross-section from a0 to a1: [(position, how far out)], a trapezoid rib in the
+    middle of every stud, so the Partition texture's ribs (`materials.partition`) land on them."""
+    d = RIB_DEPTH
     pts = []
-    k0, k1 = math.floor(a0), math.ceil(a1)
-    for k in range(k0, k1 + 1):
+    for k in range(math.floor(a0), math.ceil(a1) + 1):
         for f, o in ((0.0, 0.0), (0.32, 0.0), (0.43, d), (0.57, d), (0.68, 0.0)):
             a = k + f
             if a0 - 1e-6 <= a <= a1 + 1e-6:
@@ -112,6 +111,17 @@ def corrugated(m, along, a0, a1, plane, sign, z0, z1, H, u_off=0.0):
         pts.insert(0, (a0, 0.0))
     if pts[-1][0] < a1 - 1e-6:
         pts.append((a1, 0.0))
+    return pts
+
+
+def corrugated(m, along, a0, a1, plane, sign, z0, z1, H, u_off=0.0):
+    """R-panel sheet: trapezoid ribs every stud. along: 0 = runs in x, 1 = runs in y.
+
+    The sheet's mid-plane is `plane` on the other horizontal axis; ribs stand out toward
+    `sign`. Two faces 0.03 apart; the tracks hide its top and bottom edges.
+    """
+    t = SHEET_T
+    pts = rib_points(a0, a1)
     mapper = map_wall_along(H, along, u_off=u_off)
 
     def P(a, off, z):
@@ -264,24 +274,62 @@ def frame(s):
     return m
 
 
-def wire_top(s):
-    m = Mesh("WireTop")
+TOP_BAND = (0.5, 0.97)  # the Partition texture's clean upper wall: above the scrapes, below the track
+TOP_LAP = 0.3           # how far the back sheet lies over the front one, on the middle channel
+
+
+def flat_sheet(m, x0, x1, ya, yb, z, v0, ends=()):
+    """R-panel laid flat, ribs up and running in y from ya to yb, its mid-plane's flats at z.
+
+    It wears the Partition texture from V = v0 at ya, at the walls' own scale (10 studs to the
+    texture's height) or squeezed into TOP_BAND if the sheet is longer. `ends`: the y of each end
+    that shows (the front edge, a lap's step), closed from the flats' underside to the ribs' top
+    as a roof's closure strips close them, so nobody looks down a rib into the unit; the sides at
+    x0 and x1 get their edge.
+    """
+    t = SHEET_T
+    pts = rib_points(x0, x1)
+    scale = min(1.0, (TOP_BAND[1] - v0) * 10.0 / (yb - ya))
+
+    def mapper(vs, n):
+        return [(v.x / 4.0, v0 + (v.y - ya) * scale / 10.0) for v in vs]
+
+    def add(v, want):
+        if geo._normal([Vector(x) for x in v]).dot(want) < 0:
+            v = v[::-1]
+        geo.add_faces(m, v, [[0, 1, 2, 3]], mapper)
+
+    for side in (+1, -1):  # the top face, then the underside a unit's bulb lights
+        for (a, o), (b, ob) in zip(pts, pts[1:]):
+            za, zb = z + o + side * t / 2, z + ob + side * t / 2
+            add([(a, ya, za), (b, ya, zb), (b, yb, zb), (a, yb, za)], Vector((0, 0, side)))
+    for y in ends:
+        face = Vector((0, -1 if y < (ya + yb) / 2 else 1, 0))
+        for (a, o), (b, ob) in zip(pts, pts[1:]):
+            add([(a, y, z - t / 2), (b, y, z - t / 2), (b, y, z + ob + t / 2),
+                 (a, y, z + o + t / 2)], face)
+    for x, sx in ((x0, -1), (x1, 1)):
+        add([(x, ya, z - t / 2), (x, yb, z - t / 2), (x, yb, z + t / 2), (x, ya, z + t / 2)],
+            Vector((sx, 0, 0)))
+
+
+def top(s):
+    """The closed top: the walls' R-panel laid flat over the unit, so nobody up there sees into a
+    unit (D-058). Two sheets run front to back, the back one's front end lapped over the front
+    one on the middle of three channels (the unit's bulb hangs from that one; the corridor kit's
+    `CHANNEL_DROP`). One part in the walls' Partition set: the sheets wear its clean upper band,
+    the channels map as the walls' tracks do."""
+    m = Mesh("Top")
     W2, D, H, F = s.width / 2, s.depth, s.wall_height, s.facade
-    wx = geo.map_strip("wire", 0)
-    wy = geo.map_strip("wire", 1)
-    r = 0.016
-    x = -W2 + 0.25
-    while x < W2 - 0.1:
-        geo.box(m, (x - r, F + 0.02, H + 0.012), (x + r, D, H + 0.012 + 2 * r), wy)
-        x += 0.5
-    y = F + 0.25
-    while y < D - 0.1:
-        geo.box(m, (-W2, y - r, H + 0.012 + 2 * r), (W2, y + r, H + 0.012 + 4 * r), wx)
-        y += 0.5
+    y0, mid = F + 0.02, (F + D) / 2
+    z = H + 0.012 + SHEET_T / 2  # resting on the walls' top tracks, as the old wire did
+    flat_sheet(m, -W2, W2, y0, mid + TOP_LAP / 2, z, TOP_BAND[0], ends=(y0,))
+    back = mid - TOP_LAP / 2
+    flat_sheet(m, -W2, W2, back, D, z + SHEET_T + 0.004, TOP_BAND[0] + 0.02, ends=(back,))
+    chan = map_wall_along(H, 0)
     for k in (1, 2, 3):
         yk = F + (D - F) * k / 4
-        geo.box(m, (-W2, yk - 0.07, H - 0.22), (W2, yk + 0.07, H + 0.012),
-                geo.map_strip("channel", 0), bevel=0.01)
+        geo.box(m, (-W2, yk - 0.07, H - 0.22), (W2, yk + 0.07, H + 0.012), chan, bevel=0.01)
     return m
 
 

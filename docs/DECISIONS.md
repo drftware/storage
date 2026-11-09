@@ -1007,3 +1007,24 @@ one leaves a friend climbing a stud off the ladder); a climb you steer (stopping
 on an escape, and the crawl already set the pressed move); Climb down as a screen button (the
 prompt keeps every verb the same on phone, pad and keyboard); leaning in front of the door's
 middle (it would block the doorway).
+
+## D-058 The tops closed in steel: nobody sees into a unit from above (L-13b2b, Nov 9)
+Owner, Nov 9: with open wire tops, a player up there could shine a torch down into every unit,
+find the floor's code and see which units to avoid without opening one. That kills the slow, loud
+open the game is built on. So every unit's top, and every lid round a junction, is now the walls'
+ribbed R-panel steel laid flat: two sheets running front to back, the back one lapped over the
+front one on the middle of the three channels (the unit's bulb still hangs from that one), the
+rib ends closed at the front edge and at the lap as a roof's closure strips close them, so
+nobody looks down a rib into a unit. One part, `Top` (was `WireTop`), in the walls' Partition
+set, wearing its clean upper band (no new texture set); 860 triangles on an M (the wire was 696);
+the same collider, so the ladder's spots didn't move. From the tops you now see only into the
+halls, over a unit's front edge: you scout where the keepers walk, not what the units hold.
+Landing on it is Pro Sound Effects' "Metal File Cabinet Body Impact Ringy Resonance 11", a body
+against thin steel that rings (measured in Studio: hit at 0.15 s, settles at 0.65 s, gone by
+1.6 s; unheard), and its tail as you slide off; the fence rattle went with the wire. Also decided
+(owner, Nov 9), for the tickets after: the crawl along the tops is steered, as Outlast's crawl
+spaces are, kept on the run so nobody slides off or clips (L-13b2c), and steel is loud under you,
+heard below as Alien: Isolation's vents are; and the saw can cut down through a top so you drop
+into a unit blind, as Rainbow Six Siege's floor hatches, one-way with no ladder inside (L-13b2d).
+Not chosen: leaving some tops as mesh (those units are scoutable again), a mesh kept dark (a
+torch defeats it), a texture set of the top's own (the walls' steel already is one).

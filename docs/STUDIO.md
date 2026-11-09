@@ -5,6 +5,13 @@ verified: a doc page, Studio, or "untested".
 
 ## Getting assets into Roblox
 
+- **The MCP's `require` in Edit can hand back stale modules** (L-13b2b, 2026-11-09): after Rojo
+  re-synced the generated unit specs, `require(ReplicatedStorage.Shared.StorageUnit)` from
+  `execute_luau` still returned the old `Specs` (no S at all, the M with its old colliders), so
+  `UnitKit.prepare` failed on S and gave the M stale colliders. Editing a module's Source doesn't
+  clear Studio's cache. Clone `ReplicatedStorage.Shared` into a scratch folder, require from the
+  clone, then destroy it. After preparing a template, check its `Colliders` match the spec.
+
 - **The FBX recipe** (create.roblox.com/docs/art/blender, read 2026-11-05): Blender Unit System
   None; FBX export "FBX Unit Scale", Forward Z, Up Y, Path Mode Copy, Embed Textures. In Studio's
   3D Importer: Import as model, Scale Unit Stud, World Forward Front, World Up Top. With Forward Z,
@@ -301,7 +308,7 @@ verified: a doc page, Studio, or "untested".
   spawned on one spot fling each other apart (twelve "fell" in the first sweep). Spawn them apart,
   or one per round, frictionless (`PhysicalProperties.new(1, 0, 0, 100, 1)`) so each slides until
   something stops it.
-- **A standing avatar on a wire top wedges** (Play, L-13a): 3.9 studs to the deck's collider
+- **A standing avatar on a unit's top wedges** (Play, L-13a): 3.9 studs to the deck's collider
   (the joists, 2.8 up, don't collide) is too little for a 5-stud avatar; teleported onto a lid it
   stuck at root height 11.9 and `MoveTo` couldn't move it. It didn't fall either.
 

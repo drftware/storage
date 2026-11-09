@@ -46,7 +46,7 @@ Each is one MeshPart with one texture set. Moving parts pivot where the rig expe
 | FacadeBack | Partition | 6 | corridor wall seen from inside |
 | Facade | Facade | 10 | corridor wall paint, tinted per floor (Overlay) |
 | Frame | TrimSheet | 2020 | jamb and header trim, pilasters, diamond kick plates, guides, posts, stop bolts |
-| WireTop | TrimSheet | 696 | the open mesh top you run across (GDD tools: ladder); optional |
+| Top | Partition | 860 | the closed top: the walls' steel laid flat in two lapped sheets on three channels; nobody sees into a unit from above (D-058) |
 | Hardware | DoorKit | 1004 | head plates, axle, the red spring tension wheel |
 | Drum | DoorKit | 568 | turns as the curtain winds |
 | CurtainClosed | DoorKit | 1520 | the whole shut curtain merged: what a door at rest shows |
@@ -57,7 +57,7 @@ Each is one MeshPart with one texture set. Moving parts pivot where the rig expe
 | NumberPlate | DoorKit | 44 | the unit number is a SurfaceGui on its hallway face |
 | DoorOrigin | - | 12 | invisible helper: the door's frame |
 
-**Budget:** 8.6k triangles per unit; about 4.8k of it faces the hallway when shut. A shut door
+**Budget:** 8.8k triangles per unit; about 4.8k of it faces the hallway when shut. A shut door
 is 16 MeshParts, one of them the merged curtain. Only a door that is moving or open gets its
 38-slat chain, cloned on that client from three meshes sharing one SurfaceAppearance, so
 Roblox instances them, and dropped again once it's shut. Five texture sets serve every unit

@@ -408,7 +408,7 @@ def fixture():
 # --- the unit's bulb ------------------------------------------------------------------------------
 # Two MeshParts: the Cage (TrimSheet: a galvanized cord grip, the black cord and bakelite socket,
 # and a galvanized wire guard round the bulb) and the Glass, a plain part the game colours
-# (UnitLight). The frame is the hang point under the wire top's channel; everything hangs down -z
+# (UnitLight). The frame is the hang point under the steel top's channel; everything hangs down -z
 # and is round about z, so it looks the same at any turn.
 
 def _glass_profile():

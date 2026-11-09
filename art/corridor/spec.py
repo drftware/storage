@@ -50,7 +50,7 @@ assert SPAN % RIB_PITCH == 0
 # Both are the corridor wall a unit's front is (art/unit/parts.py, `facade` and `frame`), without a
 # door, so the hall reads as one building: painted steel panels (the unit's Facade set, painted per
 # floor) on a diamond kick plate between posts, capped at the units' wall height. Above the cap an
-# R-panel (the units' Partition set) closes the wall to the deck, where a unit is open over its wire
+# R-panel (the units' Partition set) closes the wall to the deck, where a unit has open air over its
 # top. Built in the unit's frame: the wall's hall face is the plane y = 0 with the hall at -y, and
 # the origin is the face's middle, on the floor. So a plain wall goes wherever a unit would.
 def _unit():
@@ -219,14 +219,14 @@ assert JOIST_SPACING / 2 - (CHORD_GAP / 2 + CHORD_LEG) > REACH, "the fixture hit
 assert LENS_Z + LENS_THICK / 2 < JOIST_BOTTOM
 
 
-# --- the unit's bulb: a caged bulb on a short cord under the unit's wire top -------------------
-# One hangs in every unit, from the middle of the wire top's middle channel (art/unit/parts.py,
-# `wire_top`), and lights with the door (UnitLight). The glass is the part the game lights, so it
+# --- the unit's bulb: a caged bulb on a short cord under the unit's steel top -------------------
+# One hangs in every unit, from the middle of the steel top's middle channel (art/unit/parts.py,
+# `top`), and lights with the door (UnitLight). The glass is the part the game lights, so it
 # exports plain, as the fixture's lens does. The frame is the hang point, where the cord meets the
 # channel's underside, with the cord running down -z. Round all through, so the turn the importer
 # gives it never shows. Drawn a little bigger than a real one (a 6-inch guard is 0.5 studs) so it
 # reads from a unit's doorway on a phone.
-CHANNEL_DROP = 0.22  # the wire top's channels hang this far below the wall's top (parts.py)
+CHANNEL_DROP = 0.22  # the steel top's channels hang this far below the wall's top (parts.py)
 CANOPY_R = 0.055     # the cord grip clamped to the channel
 CANOPY_H = 0.07
 BULB_CORD = 0.62     # the cord, grip to socket: the glass's middle about 8.45 over the floor
@@ -366,7 +366,7 @@ def write_luau(path, pieces, walls, junctions, fixture_tris, bulb):
         "\t\t},",
         "\t},",
         "",
-        "\t-- The unit's bulb: its frame is the hang point under the wire top's middle channel, the cord",
+        "\t-- The unit's bulb: its frame is the hang point under the steel top's middle channel, the cord",
         "\t-- running down from it; round about Y, so its turn never shows.",
         "\tBulb = {",
         f"\t\tChannelDrop = {lua_num(CHANNEL_DROP)}, -- the hang point below the unit's wall top",

@@ -3,7 +3,7 @@
 -- The ladder leaned on a unit's front and climbed (L-13b2a), on both unit sizes with the real
 -- ladder's and units' numbers: it stands at the 4-to-1 rule with its feet on the floor and its back
 -- on the top edge, beside the door, reaching past the edge only once its fly is out, under the
--- deck; every climber's lying spot is on the wire top inside the walls and under the deck; the
+-- deck; every climber's lying spot is on the steel top inside the walls and under the deck; the
 -- climb up and the climb down are smooth (no jumps), go the right way, start and end where they
 -- should, and take about two seconds; raising it swings, then runs out; the sounds come in order.
 local fs = require("@lune/fs")
@@ -63,12 +63,12 @@ for _, size in { "S", "M" } do
 	local doorWidth = num(text, "DoorWidth = ")
 	local _, hy, hz = vec(text, "Header = { Position = ")
 	local _, hh, hd = vec(text, "Header = { Position = Vector3%.new%([^)]+%), Size = ")
-	local _, wy = vec(text, "WireTop = { Position = ")
-	local _, wh = vec(text, "WireTop = { Position = Vector3%.new%([^)]+%), Size = ")
+	local _, wy = vec(text, "Top = { Position = ")
+	local _, wh = vec(text, "Top = { Position = Vector3%.new%([^)]+%), Size = ")
 	local front: Leaning.Front = {
 		edgeY = hy + hh / 2,
 		faceZ = hz - hd / 2 - curtain,
-		wireY = wy + wh / 2,
+		topY = wy + wh / 2,
 		doorWidth = doorWidth,
 		width = width,
 	}
@@ -110,7 +110,7 @@ for _, size in { "S", "M" } do
 		end
 		local lx, ly, lz, lp = Leaning.lying(fit, i)
 		ok(near(lx, x) and near(lp, -math.pi / 2), `{size}: spot {i} flat on the belly`)
-		ok(near(ly - front.wireY, Leaning.ProneUp), `{size}: spot {i} on the wire`)
+		ok(near(ly - front.topY, Leaning.ProneUp), `{size}: spot {i} on the top`)
 		ok(ly + 0.6 < deck - 2, `{size}: spot {i} well under the deck`)
 		ok(lz - 3 > front.faceZ, `{size}: spot {i}'s feet on the top`)
 		ok(lz + 2.3 < depth - curtain - 0.3, `{size}: spot {i}'s head inside the back wall`)
@@ -229,26 +229,26 @@ do
 	local text = fs.readFile("src/shared/StorageUnit/Specs/M.luau")
 	local _, hy = vec(text, "Header = { Position = ")
 	local _, hh = vec(text, "Header = { Position = Vector3%.new%([^)]+%), Size = ")
-	local _, wy = vec(text, "WireTop = { Position = ")
-	local _, wh = vec(text, "WireTop = { Position = Vector3%.new%([^)]+%), Size = ")
+	local _, wy = vec(text, "Top = { Position = ")
+	local _, wh = vec(text, "Top = { Position = Vector3%.new%([^)]+%), Size = ")
 	local fit = Leaning.fit(shape, {
 		edgeY = hy + hh / 2,
 		faceZ = -0.63,
-		wireY = wy + wh / 2,
+		topY = wy + wh / 2,
 		doorWidth = num(text, "DoorWidth = "),
 		width = num(text, "Width = "),
 	})
 	local upCues = Leaning.cues("Up", fit, STAND_UP)
 	local busy = Leaning.upBusy(fit, STAND_UP)
 	ok(upCues[1].at < Leaning.Mount, "up: the rungs sound as you get on")
-	local wire = upCues[#upCues]
-	ok(wire.sound == Leaning.Sounds.Wire, "up: the wire last")
-	ok(wire.at > busy and wire.at < busy + Leaning.Roll, "up: the wire as you land on it")
-	ok(wire.kick > 0, "up: landing jolts your view")
+	local landing = upCues[#upCues]
+	ok(landing.sound == Leaning.Sounds.Steel, "up: the steel last")
+	ok(landing.at > busy and landing.at < busy + Leaning.Roll, "up: the steel as you land on it")
+	ok(landing.kick > 0, "up: landing jolts your view")
 	local downCues = Leaning.cues("Down", fit, STAND_UP)
 	ok(
 		downCues[1].at == 0 and downCues[1].sound == Leaning.Sounds.Shift,
-		"down: the wire shifts first"
+		"down: the steel gives first"
 	)
 	for _, cue in downCues do
 		ok(cue.kick == 0, "down: no jolts")

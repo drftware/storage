@@ -7,7 +7,7 @@
 	up and its fly running out (LadderView), and once it's up it has a Climb button (E) and a Take
 	button (F) at its foot for anyone. One ladder per front.
 
-	Climb: the game takes you up it and over the edge onto your belly on the wire top
+	Climb: the game takes you up it and over the edge onto your belly on the steel top
 	(`Leaning.up`), in a spot of your own along the front, as the crawl takes you through a hole:
 	your character carries `Leaned.ClimbTag` and the move's attributes, your own screen moves your
 	body and every screen plays it. Up there a Climb down button sits just ahead of you; pressed,
@@ -47,7 +47,7 @@ local BUTTON_OUT = 0.35 -- and this far out from the front's face
 local FOOT_UP = 3.5 -- Climb and Take: this high up the ladder, at a standing player's chest
 local FOOT_OUT = 0.8 -- and this far out from its middle, on its rungs
 local DOWN_AHEAD = 3.6 -- Climb down: this far into the unit from a lying root (past the head)
-local DOWN_UP = 1 -- and this high above the wire top
+local DOWN_UP = 1 -- and this high above the steel top
 local SIDE_PIXELS = 150 -- Take beside Climb on screen, as a door's buttons sit (a button's width)
 local NEAR_SPOT = 3 -- studs from where a move ends that count as there
 
@@ -412,7 +412,7 @@ function Ladders.new(): Ladders
 			local at = Instance.new("Attachment")
 			at.Name = "LadderDown"
 			at.Parent = body
-			at.WorldPosition = front.frame * Vector3.new(x, fit.wireY + DOWN_UP, z + DOWN_AHEAD)
+			at.WorldPosition = front.frame * Vector3.new(x, fit.topY + DOWN_UP, z + DOWN_AHEAD)
 			table.insert(stand.parts, at)
 			local p = Prompts.make(at, {
 				objectText = "Ladder",
@@ -421,7 +421,7 @@ function Ladders.new(): Ladders
 				pad = Enum.KeyCode.ButtonX,
 				reach = Leaning.DownReach,
 			})
-			-- lying on the wire, your view is down among its strands
+			-- lying up there your view is low over the steel, the button just ahead of it
 			p.RequiresLineOfSight = false
 			local refuseDown = Prompts.refuser(p, ladderName)
 			p.Triggered:Connect(function(player: Player)

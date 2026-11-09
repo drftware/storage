@@ -8,12 +8,12 @@
 
 	A climber (the server tags their character `Leaned.ClimbTag`): your own climb, your screen moves
 	your body along `Leaning.up` (onto the ladder, up it rung over rung, over the edge onto your
-	belly on the wire top) and holds you there until you climb down (`Leaning.down`), your body
+	belly on the steel top) and holds you there until you climb down (`Leaning.down`), your body
 	touching nothing while it goes (the crawl's collision group). Roblox's own climb animation plays
 	on your body while you're on the rungs, so friends see you climb. Your view stays yours to turn:
-	it rides with your head, low over the wire once you lie down. Everyone's climb, on every screen:
-	the rungs and the wire top's rattle, heard about a hall's length, and the arms of a friend lying
-	up there reaching ahead, hands on the wire.
+	it rides with your head, low over the steel once you lie down. Everyone's climb, on every screen:
+	the rungs and the steel top's rattle, heard about a hall's length, and the arms of a friend lying
+	up there reaching ahead, hands on the steel.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -490,7 +490,7 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 
 	function system.start(_: any, _context: Brix.Context)
 		local sounds = Leaning.Sounds
-		SoundPrimer.prime({ sounds.Lands.id, sounds.RunOut.id, sounds.Climb.id, sounds.Wire.id })
+		SoundPrimer.prime({ sounds.Lands.id, sounds.RunOut.id, sounds.Climb.id, sounds.Steel.id })
 		table.insert(
 			connections,
 			CollectionService:GetInstanceAddedSignal(Leaned.Tag):Connect(raiseAdded)

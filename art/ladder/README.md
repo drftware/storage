@@ -37,7 +37,7 @@ a little behind the ladder's middle, where a hand closes to carry it).
 
 The fly slides out 5 studs (whole rungs, so its locks land on a base rung): 11.8 studs from the
 pads to the caps, which leaned at the 4-to-1 rule reach 11.4 up, a stud and a half past a unit's
-wire top (10). The game reads the sizes, the whole collapsed box (`Bounds`), the feet, the top,
+steel top (10). The game reads the sizes, the whole collapsed box (`Bounds`), the feet, the top,
 the travel and the rungs from `src/shared/Tools/Specs/Ladder.luau`.
 
 Both sections are unwrapped together into the whole atlas (`unwrap` in `build.py`), with a

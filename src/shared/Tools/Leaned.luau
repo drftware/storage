@@ -47,12 +47,12 @@ function Leaned.fit(size: string): Leaning.Fit
 	end
 	local spec = UnitSpecs[size] or UnitSpecs.M
 	local header = spec.Colliders.Header
-	local wire = spec.Colliders.WireTop
+	local top = spec.Colliders.Top
 	local fit = Leaning.fit(shape, {
 		edgeY = header.Position.Y + header.Size.Y / 2,
 		-- the colliders are in the unit's frame, whose doorway is the curtain's plane out
 		faceZ = header.Position.Z - header.Size.Z / 2 - spec.CurtainPlane,
-		wireY = wire.Position.Y + wire.Size.Y / 2,
+		topY = top.Position.Y + top.Size.Y / 2,
 		doorWidth = spec.DoorWidth,
 		width = spec.Width,
 	})

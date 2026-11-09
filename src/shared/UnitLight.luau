@@ -3,7 +3,7 @@
 	UnitLight: the bulb in each unit and the light it throws (L-04b, D-033).
 
 	The hall's light stops at a unit's doorway, so every unit has its own: a caged bulb on a short
-	cord under its wire top (CorridorKit.hangBulb). It's wired to the door like a fridge's light
+	cord under its steel top (CorridorKit.hangBulb). It's wired to the door like a fridge's light
 	(ShutIn.bulb): the door starts up, the switch clicks and a weak bulb stutters on over whatever's
 	in there; the door lands and it's out. So a shut unit stays black but for the line under its
 	door, and an open one shows what it holds in a dim, warm light that leaves its back corners

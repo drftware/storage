@@ -26,8 +26,8 @@ end
 
 -- The ribs' crests stand d + t/2 proud of the back wall's line (art/unit/parts.py).
 local parts = fs.readFile("art/unit/parts.py")
-local d = number(parts, "d, t = ([%d%.]+), [%d%.]+")
-local t = number(parts, "d, t = [%d%.]+, ([%d%.]+)")
+local d = number(parts, "RIB_DEPTH, SHEET_T = ([%d%.]+), [%d%.]+")
+local t = number(parts, "RIB_DEPTH, SHEET_T = [%d%.]+, ([%d%.]+)")
 ok(math.abs(NoteSpot.RibProud - (d + t / 2)) < 1e-9, "the note lies on the ribs' crests")
 
 -- A phone's view: rows of the Galaxy A16's 1080 across first person's 70 degrees of view.

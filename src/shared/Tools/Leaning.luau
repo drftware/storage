@@ -2,14 +2,14 @@
 --[[
 	Leaning: the ladder leaned on a unit's front and climbed (L-13b2a), pure so Lune checks it
 	(tests/leaning.spec.luau). The moment: a keeper's coming, one friend leans the ladder on a
-	unit's front, it shoots up with a rattle, and the team climbs out of reach onto the wire top,
+	unit's front, it shoots up with a rattle, and the team climbs out of reach onto the steel top,
 	as Lethal Company's extension ladder shoots up when placed and is climbed.
 
 	Leaning it: the ladder swings up off your shoulder against the front beside the door, its feet
 	in the hall at the 4-to-1 rule (a stud out for every four up, as a real ladder stands), its back
 	resting on the front's top edge, then the fly runs out its travel and locks, so it reaches past
 	the edge. Climbing it is a pressed move the game makes, as the crawl is (DOORS' and Pressure's
-	vents): onto the ladder, up it rung over rung, and over the edge onto your belly on the wire top,
+	vents): onto the ladder, up it rung over rung, and over the edge onto your belly on the steel top,
 	where you lie until you climb back down. Each climber lies in their own spot along the front, so
 	the whole team fits.
 
@@ -42,7 +42,7 @@ Leaning.Raised = Leaning.Swing + Leaning.RunOut
 Leaning.Off = 1.1
 -- At the top of the climb your root is this far below the edge: chest and head over it.
 Leaning.TopRise = -0.3
--- Lying on the wire top: your root this far above it (Crawling's prone height), your feet just in
+-- Lying on the steel top: your root this far above it (Crawling's prone height), your feet just in
 -- from the edge, the climbers side by side along the front.
 Leaning.ProneUp = 0.8
 Leaning.LieIn = 3.3 -- from the front's face to your root: your feet (3 behind it) just over the edge
@@ -75,7 +75,7 @@ Leaning.RaiseHeard = 60
 Leaning.ClimbHeard = 30
 
 -- A friend's arms while they roll over and lie on the top (R15 shoulders, about X, as Crawling's):
--- reaching ahead, hands on the wire.
+-- reaching ahead, hands on the steel.
 Leaning.ArmRest = math.rad(145)
 
 -- The ladder's shape from `Specs/Ladder`, in its own frame (studs from the grip).
@@ -91,7 +91,7 @@ export type Shape = {
 export type Front = {
 	edgeY: number, -- the front's top edge (the header's top)
 	faceZ: number, -- the front's outer face (negative: out from the curtain)
-	wireY: number, -- the wire top's upper surface
+	topY: number, -- the steel top's upper surface
 	doorWidth: number,
 	width: number, -- the unit's inside width
 }
@@ -100,7 +100,7 @@ export type Front = {
 export type Fit = {
 	edgeY: number,
 	faceZ: number,
-	wireY: number,
+	topY: number,
 	leanX: number, -- the ladder's middle along the front
 	ox: number,
 	oy: number,
@@ -147,7 +147,7 @@ function Leaning.fit(shape: Shape, front: Front): Fit
 	return {
 		edgeY = front.edgeY,
 		faceZ = front.faceZ,
-		wireY = front.wireY,
+		topY = front.topY,
 		leanX = leanX,
 		ox = leanX + shape.centreX,
 		oy = oy,
@@ -172,10 +172,10 @@ function Leaning.span(fit: Fit, standUp: number): (number, number)
 	return (base - standUp) / s, (base - (fit.edgeY + Leaning.TopRise)) / s
 end
 
--- A climber lying on the wire top in spot `spot`.
+-- A climber lying on the steel top in spot `spot`.
 function Leaning.lying(fit: Fit, spot: number): (number, number, number, number)
 	local x = fit.spots[spot] or fit.leanX
-	return x, fit.wireY + Leaning.ProneUp, fit.faceZ + Leaning.LieIn, -math.pi / 2
+	return x, fit.topY + Leaning.ProneUp, fit.faceZ + Leaning.LieIn, -math.pi / 2
 end
 
 -- Where a climber stands in the hall after coming down.
@@ -363,21 +363,22 @@ Leaning.Sounds = {
 		near = 6,
 		reach = Leaning.ClimbHeard,
 	} :: Sound,
-	-- Pro Sound Effects' "Chain- Link Fence Impacts Metal Rattle 1": a hit at 0.3 s, rattling to
-	-- 1.6 s: your body landing on the wire top
-	Wire = {
-		id = "rbxassetid://9113755181",
-		from = 0.28,
-		length = 1.2,
-		volume = 0.55,
+	-- Pro Sound Effects' "Metal File Cabinet Body Impact Ringy Resonance 11": a body against thin
+	-- steel, the hit at 0.15 s, a second as it settles at 0.65 s, ringing out by 1.6 s (measured,
+	-- unheard): your body landing on the steel top (D-058)
+	Steel = {
+		id = "rbxassetid://9125668193",
+		from = 0.13,
+		length = 1.3,
+		volume = 0.5,
 		pitch = 1,
 		near = 6,
 		reach = Leaning.ClimbHeard,
 	} :: Sound,
-	-- its tail (from 0.9 s), quieter: the wire shifting as you slide off it
+	-- its ringing tail (from 0.75 s), quieter: the steel giving as you slide off it
 	Shift = {
-		id = "rbxassetid://9113755181",
-		from = 0.9,
+		id = "rbxassetid://9125668193",
+		from = 0.75,
 		length = 0.6,
 		volume = 0.35,
 		pitch = 1.1,
@@ -401,14 +402,14 @@ function Leaning.raiseCues(): { Cue }
 	}
 end
 
--- A climb: up the rungs and onto the wire with a thump, or off the wire and down the rungs.
+-- A climb: up the rungs and onto the top with a thump, or off the top and down the rungs.
 function Leaning.cues(move: "Up" | "Down", fit: Fit, standUp: number): { Cue }
 	if move == "Up" then
 		return {
 			{ at = Leaning.Mount * 0.5, sound = Leaning.Sounds.Climb, kick = 0 },
 			{
 				at = Leaning.upBusy(fit, standUp) + Leaning.Roll * 0.7,
-				sound = Leaning.Sounds.Wire,
+				sound = Leaning.Sounds.Steel,
 				kick = 0.15,
 			},
 		}

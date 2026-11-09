@@ -4,7 +4,7 @@
 	(art/sheets/unit-hall.png and unit-hero.png; D-012, D-015).
 
 	A fixture hangs over the middle of the hall, one every two units (24 studs), 2 studs above the
-	units' wire tops. Lit, it pools hard cold light on the doors and floor below and leaves the
+	units' unit tops. Lit, it pools hard cold light on the doors and floor below and leaves the
 	stretch to the next fixture dark, so the far end of a hall is swallowed. The corridor kit's
 	fixture (P0-03) and the motion lights (L-03) reuse these numbers; L-03 decides which fixture is
 	lit.
@@ -27,7 +27,7 @@
 ]]
 local HallLight = {}
 
--- Where the fixture's diffuser hangs (its centre, in studs above the floor). Low over the wire
+-- Where the fixture's diffuser hangs (its centre, in studs above the floor). Low over the unit
 -- tops (10), so the walls shade the units' insides from it, as in the sheets.
 HallLight.Height = 12.1
 -- The diffuser: a long thin tube across the hall's length.

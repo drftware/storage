@@ -99,7 +99,7 @@ return {
 		FacadeLeft = { Position = Vector3.new(5, 5, 0.17), Size = Vector3.new(2, 10, 0.5) },
 		FacadeRight = { Position = Vector3.new(-5, 5, 0.17), Size = Vector3.new(2, 10, 0.5) },
 		Header = { Position = Vector3.new(0, 9, 0.17), Size = Vector3.new(8, 2, 0.5) },
-		WireTop = { Position = Vector3.new(0, 10.05, 6.125), Size = Vector3.new(12, 0.1, 11.75) },
+		Top = { Position = Vector3.new(0, 10.05, 6.125), Size = Vector3.new(12, 0.1, 11.75) },
 	},
 
 	-- Number plate face (SurfaceGui), in studs.
@@ -121,9 +121,9 @@ return {
 		Slat_A = 40,
 		Slat_B = 40,
 		Slat_C = 40,
+		Top = 860,
 		WallBack = 336,
 		WallLeft = 336,
 		WallRight = 336,
-		WireTop = 696,
 	},
 }

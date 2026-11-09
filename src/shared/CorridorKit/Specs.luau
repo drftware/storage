@@ -237,7 +237,7 @@ return {
 		},
 	},
 
-	-- The unit's bulb: its frame is the hang point under the wire top's middle channel, the cord
+	-- The unit's bulb: its frame is the hang point under the steel top's middle channel, the cord
 	-- running down from it; round about Y, so its turn never shows.
 	Bulb = {
 		ChannelDrop = 0.22, -- the hang point below the unit's wall top

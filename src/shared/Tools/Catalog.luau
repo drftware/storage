@@ -128,7 +128,7 @@ local Catalog: { [string]: Row } = {
 		},
 	},
 	-- Gets you onto open unit tops to run across them (GDD). An aluminium extension ladder, carried
-	-- collapsed; leaned on a unit's front its fly runs out past the wire top (art/ladder, L-13b2).
+	-- collapsed; leaned on a unit's front its fly runs out past the steel top (art/ladder, L-13b2).
 	Ladder = {
 		name = "Ladder",
 		template = "Ladder",

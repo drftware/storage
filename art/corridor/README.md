@@ -54,7 +54,7 @@ building. The **plain wall** (`Wall`) stands where no unit does, one M unit wide
 faces' line; the **dead end** (`DeadEnd`) crosses the hall's end and closes the deck over the whole
 span (32). Below the units' wall height (10) each is the unit's corridor wall: painted panels
 between posts, a diamond kick plate, the cap; above it an R-panel rises to the deck, where a unit
-is open over its wire top. Three MeshParts each:
+is open over its steel top. Three MeshParts each:
 
 | Part | Set | Tris (Wall / DeadEnd) | What it is |
 |---|---|---|---|
@@ -90,7 +90,7 @@ A junction's frame is the middle of its square, on the floor, its deck along X; 
 (the stub), the cross's all four.
 
 **Bulb** (L-04b, D-034): the unit's own light, a caged bulb on a short cord hung under the middle
-of a unit's wire top, from the underside of its middle channel (its frame, 9.78 up). Cage
+of a unit's steel top, from the underside of its middle channel (its frame, 9.78 up). Cage
 (TrimSheet: a galvanized cord grip and guard, a black cord and bakelite socket), 408 tris; Glass,
 a plain part `UnitLight` lights, 110 tris. Round about its cord, so the importer's turn never shows.
 The glass's middle is 1.11 below the hang point (8.67 over the floor), clear of any head.

@@ -33,7 +33,7 @@ TEXSET = {
     "WallLeft": "Partition", "WallRight": "Partition", "WallBack": "Partition",
     "FacadeBack": "Partition",
     "Facade": "Facade",
-    "Frame": "TrimSheet", "WireTop": "TrimSheet",
+    "Frame": "TrimSheet", "Top": "Partition",
     "Hardware": "DoorKit", "Drum": "DoorKit", "BottomBar": "DoorKit", "LatchBolt": "DoorKit",
     "Padlock": "DoorKit", "NumberPlate": "DoorKit",
     "Slat_A": "DoorKit", "Slat_B": "DoorKit", "Slat_C": "DoorKit",
@@ -91,7 +91,7 @@ class Unit:
             "WallLeft": lambda s: parts.wall_side(s, -1),
             "WallRight": lambda s: parts.wall_side(s, 1),
             "FacadeBack": parts.facade_back, "Facade": parts.facade, "Frame": parts.frame,
-            "WireTop": parts.wire_top, "Hardware": parts.hardware, "Drum": parts.drum,
+            "Top": parts.top, "Hardware": parts.hardware, "Drum": parts.drum,
             "Slat_A": lambda s: parts.slat(s, "A"), "Slat_B": lambda s: parts.slat(s, "B"),
             "Slat_C": lambda s: parts.slat(s, "C"), "CurtainClosed": parts.curtain_closed,
             "BottomBar": parts.bottom_bar,
@@ -465,7 +465,7 @@ def stage_export(spec):
         "FacadeLeft": ((dw2 + side / 2, H / 2, 0.17), (side, H, 0.5)),
         "FacadeRight": ((-(dw2 + side / 2), H / 2, 0.17), (side, H, 0.5)),
         "Header": ((0.0, (dh + H) / 2, 0.17), (2 * dw2, H - dh, 0.5)),
-        "WireTop": ((0.0, H + 0.05, (F + D) / 2), (W, 0.1, D - F)),
+        "Top": ((0.0, H + 0.05, (F + D) / 2), (W, 0.1, D - F)),
     }
     extra = dict(rest=rest, latch_throw=L["throw"], colliders=colliders, plate=(1.8, 0.7),
                  tris=unit.tris)

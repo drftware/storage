@@ -4,7 +4,7 @@ An aluminium extension ladder that has done a lot of jobs: two sections, the fly
 base, rung locks at the fly's foot, a yellow rope over a pulley at the base's top, swivel feet with
 rubber pads, black caps on the fly's top, orange and yellow warning labels on the rails, paint
 splashes and scuffs. It gets you onto the open unit tops (GDD, the tools table): leaned on a
-unit's front with the fly run out it reaches past the wire top (10 studs up); collapsed you carry
+unit's front with the fly run out it reaches past the steel top (10 studs up); collapsed you carry
 it, 6.8 studs long, short enough to lie in a small unit and turn a hall's corner.
 
 Drawn in studs, at the building's scale (a stud is about a foot: the doors are 8 tall), not
@@ -33,7 +33,7 @@ SEED = 53.0
 # The sections (studs along u). The fly sits FLY_FROM up the base when collapsed and slides out
 # TRAVEL to full length: whole rungs, so its locks land on a base rung. Full length from the pads
 # to the fly's caps is about 11.8: leaned at the 4-to-1 rule (75 degrees) it reaches 11.4 up, a
-# stud and a half past a unit's wire top.
+# stud and a half past a unit's steel top.
 BASE_LEN = 6.4
 FLY_LEN = 6.4
 FLY_FROM = 0.2
