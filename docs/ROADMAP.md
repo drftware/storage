@@ -8,6 +8,7 @@ The order follows the owner's plan (2026-11-05): set up the project and bring th
 build the gameplay loop with those real assets and hone it until it's awesome, then flesh out
 the rest of the floors and the game. It matches the GDD's build order (its "Build order" section).
 Every system checks Brix first (`docs/FRAMEWORK.md`, D-008); each ticket below names its Brix piece.
+The keepers' brain is the one exception: it is built in this game (D-064).
 
 ## Phase 0: Foundations
 
@@ -139,8 +140,9 @@ The loop comes first (owner, 2026-11-08): being chased, searching for the code a
 trapping keepers, slipping between units from inside. So every tool that works on any keeper is
 built here (the GDD's build order moved them into its first step the same day), and what only
 dresses a unit (where the finds and boxes stand, more finds, their polish) waits for Phase 2. The
-order puts a keeper on the floor as early as Brix's chase allows: L-06a built the Mannequin's
-art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 land.
+order puts a keeper on the floor as early as it can: L-06a built the Mannequin's art and poses
+(Nov 8), and L-06b, the keepers' brain, is this game's own to build (D-064, Nov 9), so it waits
+on nothing in Brix.
 
 - [x] **L-01 The floor generator**, in three sessions. **L-01a done Nov 7** (D-027): the floor
   as pure data from a seed (`src/shared/Floor.luau`): halls grown from the lobby on a grid of
@@ -330,19 +332,41 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
     Cut snaps the padlock off with a jolt, its copy tumbling out onto the hall floor, and its
     clatter; your view brings the tool out to the door as you hold. "One padlock per use" read
     as a cut padlock spent (`OWNER.md`).
-- [ ] **L-06b The Mannequin hunts.** At no more than player speed: a data row on Brix's Pursuit
-  (floor pathing, a cone reach), frozen in a flashlight's beam. Needs Brix's ENG-06 and ENG-07.
-  Keepers hear a door (the GDD: an open, a slam, a lift from inside) as far as its sound carries:
-  take each action's reach from `DoorSound.Actions`, so what players hear and what keepers hear
-  stay one table. Its body is L-06a's: clone it with `Mannequin.clone`, drive its
-  HumanoidRootPart (add a Humanoid only if Pursuit's `MoveTo` driver is chosen), walk it with
-  `Pose.at(travelled)` and freeze it on `Pose.freeze(travelled)` the moment a light finds it.
-  Pose it on the clients (Motor6D `Transform`, smoothed) rather than replicating C0 every step.
-  Its tell, heard in the dark while it moves: fibreglass knocking at its joints and a stiff,
-  quick footfall per step, as Five Nights at Freddy's footsteps say an animatronic moved.
-  Dealt keepers (L-04e): stand one at `Deals.dealt`'s place as its door first lifts (asleep, in
-  its shop pose; awake, hunting), and hand `Deal.open` the keepers awake now in place of `Deals`'
-  tally of those dealt awake.
+- [ ] **L-06b The Mannequin hunts.** The first keeper, and with it the keepers' brain, which
+  lives in this game (D-064): one system on the Host's clock, each keeper a data row, built on
+  Brix's contracts and parts (Pathing, Reach, Zone, Signal, Random) so it can move to Brix later.
+  It waits on nothing in Brix. Split Nov 9, a session each. Where the GDD doesn't give a number
+  (how far a keeper sees, how long before it gives up), pick a default and list it in `OWNER.md`.
+  - [ ] **L-06b1 The halls as a map keepers walk.** Pure, with Lune checks: the floor's walk
+    graph from `Floor` (the hall pieces joined end to end, each unit's doorway a link that is shut
+    while its door is down), shortest trips over it by A* (the GDD's tech plan), in the shape of
+    Brix's Pathing contract: `length`, `advance`, and a `route` a keeper keeps between steps that
+    plans again when a door changes. Keepers can't use a crawl hole or reach the tops, so neither
+    is on the map. Checks: Brix's Pathing promises hold on seeded floors; no trip crosses a wall
+    or a shut door; a step along a route allocates nothing once warm.
+  - [ ] **L-06b2 The Mannequin goes to look.** The moment: you slam a door and, two halls off,
+    something starts walking toward it. The brain's first states (asleep, going to look, waiting
+    there, going back) and its first row. Keepers hear a door (the GDD: an open, a slam, a lift
+    from inside) as far as its sound carries: take each action's reach from `DoorSound.Actions`,
+    so what players hear and what keepers hear stay one table. Its body is L-06a's: clone it with
+    `Mannequin.clone`, an anchored model moved along the map by its HumanoidRootPart on the
+    server, with no Humanoid. Dealt keepers (L-04e): stand one at `Deals.dealt`'s place as its
+    door first lifts (asleep, in its shop pose; awake, up and looking), joining the brain at that
+    moment, and hand `Deal.open` the keepers awake now in place of `Deals`' tally of those dealt
+    awake. It may judder on screen until L-06b4 smooths it.
+  - [ ] **L-06b3 It hunts, freezes and catches.** At no more than player speed (the GDD's speed
+    rule): it notices a player by its row's senses, hunts them by the map, and gives up when it
+    has lost them. Frozen (`Pose.freeze(travelled)`) the moment a hall light or a torch's beam is
+    on it, decided on the server. The catch is a Brix cone reach measured along the map, so never
+    through a wall, and fires the event L-07 takes. Decide here whether `Brix.Pursuit` runs the
+    chase and the catch: only if it fits with no new Brix work (D-064).
+  - [ ] **L-06b4 What you see and hear of it.** On every screen its place is smoothed between
+    the server's steps, and it is posed on the clients (`Pose.at(travelled)`, Motor6D
+    `Transform`) rather than by replicating C0 every step. The freeze lands at once on your own
+    screen when your torch finds it, predicted as `HallLights` predicts your own lights, with no
+    slide past the stop. Its tell, heard in the dark while it moves: fibreglass knocking at its
+    joints and a stiff, quick footfall per step, as Five Nights at Freddy's footsteps say an
+    animatronic moved. Judged at phone size.
 - [x] **L-04e The deal on the floor.** Done Nov 9 (D-050): the deck's padlocks set as each unit
   is laid; `Deals` deals a unit on its first lift (a peek, an open, a lift from inside) and lays
   it: a tool to pick up, a find standing behind the bulb facing the doorway, a keeper's place

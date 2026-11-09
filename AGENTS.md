@@ -76,9 +76,11 @@ fresh one.
 - **Systems come from Brix first** (`../engine`, its own repository; `docs/FRAMEWORK.md`; owner,
   2026-11-05). Before building any system, check what Brix exports or has planned; this game
   supplies only its policies, adapters, data and art. Use only Brix's exports at a pinned version,
-  never edit it from here, and put a missing piece in Brix's ROADMAP in neutral terms.
+  never edit it from here, and put a missing piece in Brix's ROADMAP in neutral terms. The one
+  exception is the keepers' brain, which lives in this game and is built against Brix's contracts
+  so it can move there later (D-064).
 - **Reusable systems over shortcuts.** Build each feature as the system the next floor or keeper
-  reuses: keepers are data rows on one pursuit system, doors one state machine (GDD tech plan).
+  reuses: keepers are data rows on one keeper system, doors one state machine (GDD tech plan).
 - **The server owns every value that matters:** door state, codes, keepers, finds, cash. Validate
   every client→server remote (type, then range, then ownership) and rate-limit it. Dev commands
   work only in Studio or for the owner's UserId.

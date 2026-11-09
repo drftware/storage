@@ -38,9 +38,10 @@ look down it with the torch; what the MCP can't check goes to OWNER.md.
 (Grep `map`, `checkCrawl`); `src/shared/Tools/Leaning.luau` (Grep `function Leaning.lying`).
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-13b2d2c, then L-13b2d3 (the drop in; out by the door or sawing sideways). L-06b the
-   Mannequin hunts **waits on Brix** (ENG-07a/b); a Brix session first. None of the escapes has
-   been tried against a keeper yet. L-12c needs L-06b. Then L-14; L-07, L-08, L-10, L-09.
+1. L-13b2d2c, then L-13b2d3 (the drop in; out by the door or sawing sideways). Then L-06b the
+   Mannequin hunts, which **no longer waits on Brix**: the keepers' brain is this game's (D-064),
+   split into L-06b1 to L-06b4, the halls as a map first. None of the escapes has been tried
+   against a keeper yet. L-12c needs L-06b. Then L-14; L-07, L-08, L-10, L-09.
 2. **GDD, small:** its ladder line still says open mesh tops you run across (D-058/D-059 closed
    them, the crawl steered); update it (a Claude Doc: the docs tools).
 3. **Check, small:** lying at a unit's front, are that door's own buttons (Open, Slam) in reach

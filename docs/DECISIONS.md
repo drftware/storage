@@ -54,6 +54,7 @@ now; the keepers' chase (Pursuit) as soon as its system lands; remotes, save dat
 telemetry and the round loop as Brix releases them (owner). This game keeps only its policies,
 adapters, data and art; `docs/FRAMEWORK.md` maps each need to its Brix piece. A ticket that can't
 wait for a planned piece builds the smallest stand-in behind Brix's shape and swaps it out later.
+(Amended Nov 9 by D-064: the keepers' brain is built in this game, not on Pursuit.)
 
 ## D-009 · 2026-11-05 · The unit template lives in the place, not in Rojo's tree
 Rojo's live sync can't set the mesh on an imported MeshPart (Studio won't let plugins write it),
@@ -1145,3 +1146,39 @@ with the kind. Not chosen: a second system for tops (the hold, checks, rate and 
 copies); starting the drop flat and guessing the turn (the exported fall is exact); the line
 through the steel (the band); the clang at the wall's 110 studs; refusing a cut while a friend
 lies across the hole (L-13b2d2c slides them off instead).
+
+## D-064 The keepers' brain lives in this game; Brix keeps the core and the shared spine (owner, Nov 9)
+The keepers' brain is built in this game, not on Brix's Pursuit system. The brain is everything
+that decides what a keeper does: the halls as a map it walks (shortest trips over the floor's
+graph, the GDD's tech plan, with a doorway shut while its door is down), going to a place (a lit
+fixture, a door's noise, the air horn, the lobby on a wrong code), what it hears and sees, its
+states (asleep, roaming, going to look, hunting, frozen, blinded, trapped), the catch, and the
+director's orders to it. It is one system on the Host's clock with each keeper a data row (the
+GDD's "one chase engine, keepers as data"), so a new keeper is still a model, animations and a row.
+
+It is written against Brix's contracts and parts wherever they fit, so it can move later: the hall
+map keeps Brix's Pathing contract (`length`, `advance`, `route`), the catch is a Brix Reach (the
+cone), areas are Brix Zones, its events Brix Signals, its dice Brix's seeded Random. It does not
+run on `Brix.Pursuit` unless the session that builds the hunt (L-06b3) finds that the chase and
+the catch fit it with no new Brix work. Once the brain has shipped and been tuned with players,
+and if it still makes sense for another game, a Brix session lifts it into Brix in neutral terms
+and this game swaps to it. Until then it is the one named exception to D-008 and to FRAMEWORK's
+"never a parallel system that lives on".
+
+Everything else stays Brix first (D-008): the lifecycle, signals, zones and seeded random the game
+uses now, and remotes, save data, live config, telemetry, the round loop, the presentation kit, UI
+and developer tooling as Brix builds them. `docs/FRAMEWORK.md` lists each with its Brix ticket and
+what stands in until then.
+
+Why: Brix's Pursuit was shaped by another game's chase, a runner heading for a safe zone and a
+catch on a schedule. A keeper here spends most of its time not chasing, and that is what Pursuit
+lacks. As of Brix `3aee79e` its hunters travel in straight lines with no way round a wall, stand
+still unless they are chasing a player, and are taken once as the frame driver starts, and a caught
+player only comes back as a runner by respawning. Brix's roadmap after ENG-07b goes to that other
+game's swap (ENG-08), then remotes and saves. So every keeper need would be a ticket in neutral
+terms, a Brix session, an owner's Studio run, a new pin and then a session here: about double the
+sessions and the owner's testing, for a design only one game has shaped. This game has to earn and
+the keeper is its core, so the game shapes the brain first and Brix takes it once it's proven.
+
+Not chosen: waiting on Brix (about five Brix sessions before the first keeper walks); building on
+Pursuit and filing each gap as it's met; a brain with shapes of its own (it couldn't move later).
