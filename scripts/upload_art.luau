@@ -149,6 +149,12 @@ local ART: { Art } = {
 		manifest = "art/hole/assets.json",
 		description = "A crawl hole sawn through a storage unit's corrugated steel side wall, its cut-out panel",
 	},
+	{
+		key = "TopHole",
+		path = "art/tophole/out/TopHole.fbx",
+		manifest = "art/tophole/assets.json",
+		description = "A hole sawn down through a storage unit's steel top, its cut-out panel fallen below",
+	},
 }
 local MODEL: OpenCloud.Kind = { assetType = "Model", contentType = "model/fbx" }
 

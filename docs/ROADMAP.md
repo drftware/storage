@@ -448,9 +448,32 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
         over a unit to cut its top (the saw's 4 s, heard floor-wide, waking what sleeps inside)
         and drop in blind, as Rainbow Six Siege's floor hatches; one-way, no ladder inside. Out:
         an unlocked door rolls up from inside; a padlocked one keeps you in until you saw out
-        sideways or a friend cuts the lock. Art first: a top with a sawn hole, the hole kit's way
-        (`art/hole/`). Your torch can look down the hole before you drop (owner, Nov 9: you
-        paid for the look with the saw's noise).
+        sideways or a friend cuts the lock. Your torch can look down the hole before you drop
+        (owner, Nov 9: you paid for the look with the saw's noise). Split Nov 9, as the wall hole
+        was (art, the cut, the way through):
+        - [x] **L-13b2d1 The sawn top's art.** Done Nov 9 (D-061). A unit's steel top with a
+          hole sawn in it (`art/tophole/`, the wall hole's code and recipe loaded as a library):
+          2.8 across, 2.05 front to back, in the middle just behind the door's drum, across the
+          first channel (sawn through, bright ends); tongues bent down; the panel on the floor
+          below, tilted on the channel's stub, slid aside. `Top_S`, `Top_M`, `Edge`,
+          `PanelEdge`, `Panel`; generated `TopHole/Specs`. Judged in eight look sheets, one at
+          phone size; not yet uploaded.
+        - [ ] **L-13b2d2 Saw the top.** First get the art in: `lune run scripts/upload_art
+          TopHole`, insert, prepare (as `CrawlHole.prepare`: square to the kit's frame, the
+          unit's wall texture on the tops and panel) into `Props.TopHole`, judge at phone size
+          in Studio from the tops and inside. Then the Saw button over the hole spot for a
+          crawler lying by it with the saw (D-053's hold, keys, sounds and checks; the server
+          checks you're on that top), the line crawling round the cut, sparks up top; through,
+          the panel drops and clangs on the floor below, heard floor-wide, `Saws.sawing` for
+          keepers. The hole comes off the `Tops` map so nobody crawls over it, with a lip like a
+          front's so your head can go out over it and your torch look down; the ladder's lying
+          spots that touch it are out (on a small unit the hole reaches all three: move them
+          behind it or refuse the ladder there). A lit unit's bulb shines up through a sawn top:
+          the one thing that shows it from along the tops.
+        - [ ] **L-13b2d3 Drop in, and out again.** Drop in (pressed, as `Tops.drop`): through the
+          hole feet first, arms up, a landing crouch inside, heard. The deal keeps the floor
+          under every unit's hole clear, as it keeps the wall holes' spots. Out only by an
+          unlocked door rolled up from inside, sawing out sideways, or a friend cutting the lock.
 - [ ] **L-14 The other tools.** Bubble wrap across a hall (pops for anything that crosses, heard
   floor-wide), the air horn (lures keepers to a spot, wakes sleeping ones), the moving blanket
   (thrown over a keeper, blinds it a few seconds), glow sticks (light the building can't see,

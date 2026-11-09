@@ -20,6 +20,18 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: look at the sawn top's art, L-13b2d1 (built Nov 9; not in the game yet)
+
+- [ ] **The look sheets** (`art/tophole/README.md`, eight pictures in `art/sheets/tophole-*`): a
+  hole sawn down through a unit's steel top, 2.8 across and 2 front to back, ragged and bright,
+  tongues bent down, the channel under it sawn through, the cut-out panel on the floor below.
+  Look for: does it read as sawn steel a body drops through? Too tidy, too ragged?
+- [ ] **Where it is (a default, your call):** one spot per unit, in the middle of its width just
+  behind the door's drum, so you land between the door and the bulb facing the room, the door at
+  your back (the clear part of a unit; finds stand behind the bulb, D-036). The other choice was
+  the back half, behind the bulb, landing among the boxes and the finds' unlit backs. On a small
+  unit the hole reaches every lying spot a ladder gives (L-13b2d2 will move them or refuse it).
+
 ## Now: judge L-13b2c2, what you hold kept out of walls (built Nov 9)
 
 - [ ] **Your hands** (Play on a computer). Your torch and a tool in your other hand (pick up the

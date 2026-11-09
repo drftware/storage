@@ -1082,3 +1082,27 @@ so the torch wouldn't sit in the dark hall); pull-back alone at full size (the t
 whenever you came within 2 studs of a wall: in every tight spot); the third of size smaller (the
 torch's tail would cross the camera's 0.1-stud near plane). Friends' tools and the ladder on a
 friend's shoulder still pass through doors in third person, as nearly every Roblox game allows.
+
+## D-061 The sawn top: one spot per unit, behind the drum across the first channel (L-13b2d1, Nov 9)
+A saw's way down into a unit from the tops (Rainbow Six Siege's floor hatches) opens at one spot
+in every unit, as the wall hole does (D-052): in the middle of its width, from half a stud in front
+of the first of the three channels the steel rests on to 1.55 behind it, 2.8 across and 2.05 front
+to back. A body drops through that feet first, shoulders across and arms up; the drop is a move the
+game makes (as `Tops.drop`), so its size is for the eye, not for collision. The spot lands you in
+the clear part of a unit, between the door and the bulb (finds stand behind the bulb, D-036),
+facing the room with the door at your back, the way out if it's unlocked. It clears the door's drum
+(open, its coil reaches about 1.65 back on every size) and, on a small unit, the two sheets' lap
+(3.975), with the bulb hanging just behind it. No hole that size fits between two channels on a
+small unit (1.8 apart), so the saw cuts the first channel too: the hole is measured from that
+channel, the same in every size, so one cut edge and one panel serve both (an M's is a stud further
+back, as its channel is). The cut-out panel falls with the channel's stub still screwed under it and
+lies tilted on it, slid 1.7 aside and turned, so whoever drops after it lands mostly beside it, not
+on a slope. The kit is its own (`art/tophole/`, asset `Props.TopHole`), the wall hole's build loaded
+as a library with the top's spec, so the drawing, strips, cut faces, packing and recipe are one
+code; its pieces are the holed tops in their units' frames and the edge, the panel's edge and the
+panel in the hole's (`Specs.Channel[size]` along the unit). From along the tops the cut is only a
+glint (the tongues bend down); a lit unit's bulb shining up through it is what gives a sawn top
+away. Not chosen: the back half (you'd land among the boxes, behind the finds' unlit sides); a hole
+between channels on an M only (two hole sizes, and a small unit could never be sawn); cutting
+anywhere you lie (runtime geometry for no gain, as D-052); the channel left across the hole (it
+would bar the drop); the panel landing flat on its face (the stub under it makes that impossible).
