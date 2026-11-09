@@ -942,3 +942,32 @@ lids a floor. Not chosen: a new 4-stud panel built in Blender (the 8 hides its s
 a panel per slot side (back corners and two extensions meeting left gaps or overlaps on 9 floors
 in 400); the deck's edge for the backs of 8-deep units (leaves a 4-stud slot behind them to fall
 into); the whole plain wall for the pits (its painted face and kick plate inside an empty unit).
+
+## D-056 The ladder: a two-part aluminium extension ladder, on your shoulder, both hands (L-13b1, Nov 9)
+The GDD's ladder ("gets you onto open unit tops") is an aluminium extension ladder built from code
+the saw's way (`art/ladder/`), at the building's scale, not enlarged to a hand: 6.8 studs
+collapsed, so it lies across a small unit (7.2 inside) and turns a hall's corner, and two parts,
+the base (the tool's body) and the fly welded on it, so L-13b2 can run the fly out 5 studs when
+it's leaned (11.8 long, reaching 11.4 up at the 4-to-1 rule, past the 10-stud wire top), as
+Lethal Company's extension ladder shoots up when placed. Pale, mostly diffuse aluminium (shiny, it
+lay on a unit's floor as a black shape); a yellow rope and orange and yellow labels for detail,
+no colour of its own: its shape is the read. **Carrying:** friends see it on your left shoulder on
+its edge, top leading, welded to your upper torso (`Catalog` row `shoulder`): from the hand it
+would see-saw with the walk's arm swing and drag the floor. It takes both hands, as Lethal
+Company's two-handed items: while it's in your hand you can't switch slots or pick anything up
+("Drop the ladder first", said on your screen and refused by the server), and nobody can hand you
+a tool ("Their hands are full"); your torch stays in your other hand. It slows your walk to 12
+(Roblox's is 16), as Lethal Company's weight slows a carrier: the one with the ladder is the one
+the team waits for. In your view it sits low on the left on its edge, rolled to show its rungs,
+its top end reaching across the bottom of the view. Picking it up plays Pro Sound Effects' "Metal
+Ladder Bang Slams Against Body 1" (a bang and its rattle, 0.85 s); dropping it, "Metal Ladder
+Impact 1" from 0.62 s (a creak, the hard hit on concrete at 0.70 s, rattling bounces), both picked
+by loudness. **Where it lies:** by its whole collapsed box (`Tools.bounds`, both parts), at
+DealSpot's dropped turns; it can't keep off the crawl-hole strips in a small unit (wall to wall
+there, one place) or fit the bulb's pool beside them in a big one (it lies deeper), DealSpot's own
+fallbacks, and big enough to read anywhere.
+Not chosen: a one-piece ladder (L-13b2 couldn't extend it); a fixed 11-stud ladder (through every
+wall as you carry it, and no small unit holds it); carried hanging from the hand (swings, drags);
+posing both arms on it (the torch has the right hand; a friend's raised arm is in the polish list);
+leaning the dealt ladder on a unit's wall (a new resting pose; listed as polish for after L-13b2's
+lean).

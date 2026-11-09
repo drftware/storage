@@ -7,14 +7,38 @@ nowhere else.
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 - [ ] **Save the place** (File > Save to Roblox) after this session (Nov 9): the elevator's and
-  the flashlight's, the bolt cutters', the padlock's, the saw's and the crawl hole's templates live
-  only in the open place, at `ReplicatedStorage.Props.Elevator`, `Props.Note`, `Props.Flashlight`,
-  `Props.Tools.BoltCutters`, `Props.Tools.Padlock`, `Props.Tools.Saw` and `Props.CrawlHole`
-  (without them nobody has a torch, no tool lies anywhere and no hole can be cut; Output warns). Unsaved, the next open loses them and every floor's lobby has
-  an empty hole in its back wall (Output warns).
+  the flashlight's, the bolt cutters', the padlock's, the saw's, the crawl hole's and the ladder's
+  templates live only in the open place, at `ReplicatedStorage.Props.Elevator`, `Props.Note`,
+  `Props.Flashlight`, `Props.Tools.BoltCutters`, `Props.Tools.Padlock`, `Props.Tools.Saw`,
+  `Props.Tools.Ladder` and `Props.CrawlHole` (without them nobody has a torch, no tool lies
+  anywhere and no hole can be cut; Output warns). Unsaved, the next open loses them and every
+  floor's lobby has an empty hole in its back wall (Output warns).
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
+
+## Now: judge L-13b1, the ladder carried (built Nov 9)
+
+- [ ] **Carry it** (Play on a computer). A ladder now lies along the hall past the saw, by the
+  spawn: pick it up (E). You hear a bang and a rattle; in your view it sits low on your left,
+  rolled to show its rungs, its top end reaching across the bottom of the screen; your walk
+  slows to three quarters. Press 2 or pick up anything: "Drop the ladder first". Drop it (G): it
+  falls flat in front of you with a clatter on concrete and your walk comes back. Look for: does
+  it feel heavy and slow without being a chore (12 against 16; say a number)? Is it too big in
+  your view? With a light behind you it goes dark in your view (your own body's shadow): say if
+  it bothers you, and it moves further out.
+- [ ] **A friend carrying it** (Clients and Servers, 2 players): it rides on their left shoulder
+  on its edge, top leading, the rope and rungs showing (`docs/art/L-13b1-carried.jpg`). Their
+  arms swing free (a raised arm is in the polish list). Hand it over (the Give button near them):
+  they get it, slowed; a friend holding it can't be handed anything ("Their hands are full").
+- [ ] **Where the deal lays it** (floors 1 and 2, one ladder each): across a small unit wall to
+  wall under the bulb (`docs/art/L-13b1-unit144.jpg`), deeper in a big one. Open units until one
+  holds it (Output says "held a tool, Ladder"). Does it read from the doorway?
+- [ ] **On the phone** (Galaxy A16): not checked this session. Its size in your view, the slot's
+  picture, the "Drop the ladder first" line.
+- [ ] **Decide, defaults in place** (D-056): (1) friends see it on the shoulder, not in the hand;
+  (2) both hands, as Lethal Company's two-handed items: no switching or picking up while held;
+  (3) walk 12 while it's in your hand.
 
 ## Now: judge L-13a, the tops closed (built Nov 9)
 

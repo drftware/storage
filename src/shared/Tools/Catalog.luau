@@ -36,6 +36,15 @@ export type Row = {
 	icon: { number },
 	pickUp: Sound, -- your hand closing on it: heard by you, and near you by friends
 	drop: Sound, -- it landing on the concrete
+	-- A big tool friends see on your left shoulder instead of in your hand (it would swing with
+	-- your arm): where its grip sits from your upper torso's middle (right, up, back, in studs).
+	-- `inHand` then turns it from there.
+	shoulder: { number }?,
+	-- It takes both hands, as Lethal Company's two-handed items: while it's in your hand you can't
+	-- switch slots or pick anything up; drop it first.
+	bothHands: boolean?,
+	-- Your walk while it's in your hand (studs a second; Roblox's own is 16).
+	walkSpeed: number?,
 }
 
 local Catalog: { [string]: Row } = {
@@ -117,6 +126,34 @@ local Catalog: { [string]: Row } = {
 			volume = 0.8,
 			pitch = 1.12,
 		},
+	},
+	-- Gets you onto open unit tops to run across them (GDD). An aluminium extension ladder, carried
+	-- collapsed; leaned on a unit's front its fly runs out past the wire top (art/ladder, L-13b2).
+	Ladder = {
+		name = "Ladder",
+		template = "Ladder",
+		-- low on your left by its rail, on its edge and rolled so you see its rungs, its top end
+		-- reaching ahead across the bottom of your view: a big thing in your arms
+		hold = { -1.2, -1.25, -0.7 },
+		holdTurn = { -14, 8, -58 },
+		-- nothing to do at a door with it yet (L-13b2 leans it): the same as its hold
+		use = { -1.2, -1.25, -0.7 },
+		useTurn = { -14, 8, -58 },
+		-- on its edge on your shoulder, the arm through it, its top leading: the rail below hangs
+		-- at your side, the fly towards you
+		inHand = { 0, 0, -90 },
+		shoulder = { -1.6, 0.87, 0 },
+		-- the fly's face, from above and a little along, laid corner to corner
+		icon = { 0.42, 60, 0, -45 },
+		-- Pro Sound Effects' "Metal Ladder Bang Slams Against Body 1": a bang at once and its
+		-- rattle (to 0.85 s), the ladder heaved onto your shoulder
+		pickUp = { id = "rbxassetid://9116717868", from = 0, length = 0.85, volume = 0.5 },
+		-- Pro Sound Effects' "Metal Ladder Impact 1": from just before its hard hit on concrete
+		-- (0.70 s), the hit and the rattling bounces after it
+		drop = { id = "rbxassetid://9116719494", from = 0.62, length = 0.95, volume = 0.9 },
+		bothHands = true,
+		-- slow: three quarters of a walk, so the one carrying it is the one the team waits for
+		walkSpeed = 12,
 	},
 }
 

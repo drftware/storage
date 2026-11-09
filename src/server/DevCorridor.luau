@@ -118,12 +118,14 @@ local FLOOR_ARRIVAL = CFrame.lookAt(Vector3.new(0, 3, 6), Vector3.new(0, 3, -12)
 -- The test hall's tools (L-11b, L-11c): bolt cutters on the hall floor by the spawn and a pair in
 -- the first unit on the right (open its door to find them); a padlock across the spawn from the
 -- first pair, to lock any shut door with; a saw between them, to cut a hole between any two
--- units side by side (L-12b2: 106 into 108, say), then crawl through it (L-12b3).
+-- units side by side (L-12b2: 106 into 108, say), then crawl through it (L-12b3); a ladder along
+-- the hall beyond them (L-13b1), to carry.
 local TOOLS = {
 	{ key = "BoltCutters", at = Vector3.new(-28.5, FLOOR_TOP, 2.2), yaw = 64 },
 	{ key = "BoltCutters", at = Vector3.new(-17, 0, 11), yaw = 205 },
 	{ key = "Padlock", at = Vector3.new(-28.5, FLOOR_TOP, -2.6), yaw = 200 },
 	{ key = "Saw", at = Vector3.new(-25.5, FLOOR_TOP, -0.2), yaw = 100 },
+	{ key = "Ladder", at = Vector3.new(-20.5, FLOOR_TOP, 0.6), yaw = 84 },
 }
 local FLOOR_POST = CFrame.new(9, 0, 9) -- "Come back", in the lobby's corner by the elevator
 

@@ -123,7 +123,7 @@ function Deals.new(): Deals
 			if not (key and Tools.Catalog[key] and Tools.template(key) and slots) then
 				return nil -- not built yet (said in Output)
 			end
-			local body = Tools.specs(key).Body
+			local body = Tools.bounds(key)
 			local spot = DealSpot.inUnit(
 				size,
 				"Tool",

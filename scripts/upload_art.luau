@@ -138,6 +138,12 @@ local ART: { Art } = {
 		description = "A cordless reciprocating saw: green body, black rubber boot and grip, a demolition blade",
 	},
 	{
+		key = "Ladder",
+		path = "art/ladder/out/Ladder.fbx",
+		manifest = "art/ladder/assets.json",
+		description = "An aluminium extension ladder, collapsed: base and fly sections, rope and pulley",
+	},
+	{
 		key = "CrawlHole",
 		path = "art/hole/out/CrawlHole.fbx",
 		manifest = "art/hole/assets.json",

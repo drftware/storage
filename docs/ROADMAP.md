@@ -398,17 +398,26 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
     Lune-checked over 400 floors that no edge is left open). In Studio on floor 1: 78 panels and
     13 lids laid, rays and sliding probes found no way off, the corners closed flush.
   - [ ] **L-13b The ladder.** Split Nov 9:
-    - [ ] **L-13b1 The ladder's art, carried and dropped.** Built the unit's way, as the saw was
-      (L-12a, `art/saw/`): an aluminium extension ladder long enough to lean on a unit's front
-      and reach its wire top (10 studs), carried in both hands (a big, slow, visible tool, as
-      Lethal Company's extension ladder); a `Tools/Catalog` row; laid where the deal puts it
-      (`Deal` already deals "Ladder"), picked up and dropped with its sounds.
-    - [ ] **L-13b2 Up the ladder and along the tops.** Lean it on a unit's front (a pressed verb,
-      as the saw's), climb it (Roblox's TrussPart climbing, or the game's own move as the
-      crawl's), and move on the tops crawl-only (the default; a standing avatar wedges, 3.9 studs
-      to the deck), along a run and round a junction's lid (`Run.lids`); down by dropping off a
-      unit's front into the hall. Keepers can't follow (L-06b reads `Run.lids` for where the tops
-      lead). May split again.
+    - [x] **L-13b1 The ladder's art, carried and dropped.** Done Nov 9 (D-056): an aluminium
+      extension ladder built the unit's way (`art/ladder/`), two parts (the base, and the fly
+      welded on it, 5 studs of travel for L-13b2), 6.8 long collapsed. Lies where the deal puts
+      it (across a small unit, deeper in a big one) and by the test hall's spawn; picked up with a
+      bang and dropped with a clatter on concrete. Friends see it on your left shoulder; it takes
+      both hands (no switching slots or picking up, "Drop the ladder first"), and slows your walk
+      to 12, as Lethal Company's two-handed items.
+    - [ ] **L-13b2 Up the ladder and along the tops.** Split Nov 9:
+      - [ ] **L-13b2a Lean it and climb.** A "Lean" button at a unit's front with the ladder in
+        hand (a pressed verb, as the saw's): it goes up against the front at the 4-to-1 rule, the
+        fly runs out its 5 studs with the rope's rattle and the locks' clack (Lethal Company's
+        ladder shoots up when placed), and it stands there for anyone (`Specs/Ladder`: `Feet`,
+        `Top`, `Travel`, the fly weld's C0). Climb it (Roblox's TrussPart climbing on an
+        invisible truss, or the game's own move as the crawl's) to the top edge, then onto the
+        wire top on your belly. "Take" lifts it back down to carry. No crawling through a hole
+        with it in hand. Keepers can't climb it.
+      - [ ] **L-13b2b Along the tops and down.** Crawl-only up there (the default; a standing
+        avatar wedges, 3.9 studs to the deck): along a run and round a junction's lid
+        (`Run.lids`), the view low, the wire top's sound under you; down by dropping off a unit's
+        front into the hall (a thud, a jolt). Keepers can't follow (L-06b reads `Run.lids`).
 - [ ] **L-14 The other tools.** Bubble wrap across a hall (pops for anything that crosses, heard
   floor-wide), the air horn (lures keepers to a spot, wakes sleeping ones), the moving blanket
   (thrown over a keeper, blinds it a few seconds), glow sticks (light the building can't see,
@@ -442,6 +451,14 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 
 ## Polish waiting for a slot
 
+- **A friend's arms on the ladder** (L-13b1): the ladder rides on their left shoulder, but their
+  arms swing free; the left arm raised to steady its rail (as the torch's raise, `Torch.raise`)
+  would sell its weight.
+- **The ladder's rattle as you walk** (L-13b1): a soft aluminium rattle in step with your stride
+  while it's on your shoulder, heard by friends close by, so the slow one is heard as well as
+  seen.
+- **The ladder leaned in a unit** (L-13b1): the deal lays it flat; leaned on a unit's side wall
+  it would read from further off (L-13b2's lean, reused).
 - **Columns at the tops' corners** (L-13a): where two panels meet at a corner up on the tops,
   their sheets' cut ends meet bare; a steel corner column, as the junctions' walls have, would
   finish them. Unseen until the ladder takes players up there.

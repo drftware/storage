@@ -3,8 +3,9 @@
 	The tools in the place (L-11b, D-048): what you carry in your two slots. Each tool's template is
 	a MeshPart in a Model at ReplicatedStorage.Props.Tools.<template>, imported once (Rojo can't
 	sync imported meshes, D-009) and prepared by `prepare`: its grip (where a hand closes) at the
-	model's pivot, its business end towards the LookVector. `Catalog` holds the rows, `Carry` the
-	slots' rules, `Specs/<key>` each tool's generated sizes.
+	model's pivot, its business end towards the LookVector. A tool may have a second part that
+	moves on it later (the ladder's fly, `<template>Fly`), welded to the first. `Catalog` holds the
+	rows, `Carry` the slots' rules, `Specs/<key>` each tool's generated sizes.
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -19,6 +20,9 @@ export type Row = Catalog.Row
 export type SoundSpec = Catalog.Sound
 export type CarryState = Carry.Carry
 export type Piece = { Size: Vector3, Centre: Vector3, Triangles: number }
+-- A tool's generated sizes: its body, and for a tool of two parts the second (`Fly`) and both
+-- together (`Bounds`), each from the grip.
+export type Specs = { Body: Piece, Fly: Piece?, Bounds: Piece? }
 
 -- The attributes the server keeps on each Player for every screen: what's in each slot (the
 -- catalog key, or "" for empty) and which slot is in your hand.
@@ -46,10 +50,16 @@ function Tools.slotAttribute(i: number): string
 end
 
 -- A tool's generated sizes (art/<tool>/spec.py's export), by catalog key.
-function Tools.specs(key: string): { Body: Piece }
+function Tools.specs(key: string): Specs
 	local m = script.Specs:FindFirstChild(key)
 	assert(m and m:IsA("ModuleScript"), `Tools: no Specs for {key}`)
 	return (require :: any)(m) -- any: a generated module, required by name
+end
+
+-- The whole tool's box, every part together (what lies on a floor and what a unit must fit).
+function Tools.bounds(key: string): Piece
+	local specs = Tools.specs(key)
+	return specs.Bounds or specs.Body
 end
 
 local function folder(): Instance?
@@ -92,6 +102,22 @@ function Tools.prepare(import: Model, key: string): Model
 	body.CastShadow = true
 	body.CFrame = CFrame.new(specs.Body.Centre)
 	body.PivotOffset = CFrame.new(-specs.Body.Centre)
+	-- a second part (the ladder's fly): where it sits on the body, welded there, so a hand's weld
+	-- and an anchored body both carry it; never anchored itself, or a hand would be
+	local second = import:FindFirstChild(row.template .. "Fly")
+	if specs.Fly then
+		assert(second and second:IsA("MeshPart"), `Tools.prepare: no {row.template}Fly`)
+		inert(second)
+		second.Anchored = false
+		second.CastShadow = true
+		second.CFrame = CFrame.new(specs.Fly.Centre)
+		local weld = Instance.new("Weld")
+		weld.Name = "FlyWeld"
+		weld.Part0 = body
+		weld.Part1 = second
+		weld.C0 = CFrame.new(specs.Fly.Centre - specs.Body.Centre)
+		weld.Parent = second
+	end
 	import.Name = row.template
 	import.PrimaryPart = body
 	import.WorldPivot = CFrame.identity
@@ -127,7 +153,7 @@ function Tools.clone(key: string, at: CFrame): Model?
 	return model
 end
 
--- The part a tool's model is (each tool is one MeshPart).
+-- The part a tool's model is held by (its first MeshPart; a second rides on it).
 function Tools.body(model: Model): BasePart?
 	local p = model.PrimaryPart
 	if p then

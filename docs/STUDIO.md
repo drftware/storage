@@ -486,6 +486,26 @@ verified: a doc page, Studio, or "untested".
   Close Drops 12" 9116737135 is silent to 0.40 s, one flat hit and rattle at -12 dB to 1.05 s,
   gone by 1.35 s. "Sheet Metal 2" and "5" (9119068619, 9119068827) are handling and flexing, many
   bangs: no single clang.
+- **Sounds measured for the ladder** (L-13b1; 50 ms bins at half speed): "Metal Ladder Bang
+  Slams Against Body 1" 9116717868 (1.08 s) bangs at 0 s near 0 dB, rattles to 0.85 s; "Metal
+  Ladder Drop 1" 9116718698 is only 0.66 s, a soft hit then a loud one at 0.25 s; "Metal Ladder
+  Impact 1" 9116719494 is silent to 0.55 s, creaks, hits hard at 0.70 s, bounces to 1.45 s;
+  "Metal Ladder Hits 1" 9116718918 is a bang at 0 s and a long decay. The store's durations
+  run longer than `TimeLength`.
+- **The live deal isn't the map's** (L-13b1): `lune run scripts/floor-deal 7 1` deals the floor in
+  slot order, but in Play `Deals` deals each unit as its door first lifts (`Deal.open`, the
+  director's order), so a unit can hold something else (144: a ladder on the map, a saw in
+  Play). To judge a tool where the deal puts it, lay one with DealSpot's spot and Slots'
+  `resting` from the server (Tools, DealSpot, FloorBuilder.face), as Deals does.
+- **Your own body's shadow falls on your view's tool** (L-13b1): your character is hidden in
+  first person but still casts shadows, so a view model held close to the body (the ladder, 0.7
+  ahead) reads black when the light is behind you; moved off the body it's lit. The saw and
+  cutters sit 1.3 to 2 studs out, mostly clear of it.
+- **Seeing your own character carry something** (Play, one player): set the LocalPlayer's
+  `CameraMode` to Classic and both zoom distances to 14, then `screen_capture` with a
+  `camera_position`; set them back to LockFirstPerson and 0.5 after. `user_keyboard_input` key
+  presses reach ContextActionService (1, 2, G); the slot bar's `Name` label keeps the last line
+  it said (its Text stays after it fades).
 - **Sounds measured for the padlock** (L-11c; 50 ms bins at half speed): "Scissors Snap 28"
   9118829487 is one snap at 0 s, about -15 dB, 0.47 s long; "Padlock Open Lock Pick Up Throw Down
   1" 9117185722 opens at 0.05 s, locks at 0.40 s, then its pick-up and throw-down run together

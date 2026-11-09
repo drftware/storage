@@ -13,11 +13,16 @@
 	ToolSwitch takes a slot, ToolDrop nothing, ToolGive a Player. ToolNotice tells one screen a short
 	line ("Bolt cutters from Sam").
 
+	A big tool (the ladder) rides on your left shoulder for everyone to see, takes both hands (no
+	switching slots or picking up while it's in your hand, as Lethal Company's two-handed items) and
+	slows your walk (`Catalog` row's `shoulder`, `bothHands`, `walkSpeed`).
+
 	`Doors` reads `carried` to know what's in your hand (the cutters to Cut, a padlock to Lock), and
 	`spend`s the padlock that goes on a door: it leaves your slots for good.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPlayer = game:GetService("StarterPlayer")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
@@ -70,7 +75,7 @@ type Hand = {
 -- lowest point on the floor. By its middle, not its grip, so a long tool dropped by a wall lies
 -- along it rather than through it.
 local function resting(key: string, at: Vector3, yaw: number): CFrame
-	local body = Tools.specs(key).Body
+	local body = Tools.bounds(key)
 	local lift = body.Size.Y / 2 - body.Centre.Y
 	return CFrame.new(at + Vector3.new(0, lift, 0))
 		* CFrame.Angles(0, math.rad(yaw), 0)
@@ -131,9 +136,36 @@ function Slots.new(): Slots
 		end
 	end
 
-	-- Writes `player`'s slots to their attributes, for every screen.
+	-- The row of the tool in `h`'s hand if it takes both hands (the ladder), else nil.
+	local function bothHands(h: Hand): Tools.Row?
+		local id = Carry.held(h.carry)
+		local t = if id then tools[id] else nil
+		local row = if t then Catalog[t.key] else nil
+		return if row and row.bothHands then row else nil
+	end
+
+	-- `player`'s walk for what's in their hand: a big tool's pace, else the place's own.
+	local function pace(player: Player, h: Hand)
+		local character = player.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		if not humanoid then
+			return
+		end
+		local id = Carry.held(h.carry)
+		local t = if id then tools[id] else nil
+		local row = if t then Catalog[t.key] else nil
+		local speed = if row and row.walkSpeed
+			then row.walkSpeed
+			else StarterPlayer.CharacterWalkSpeed
+		if humanoid.WalkSpeed ~= speed then
+			humanoid.WalkSpeed = speed
+		end
+	end
+
+	-- Writes `player`'s slots to their attributes, for every screen, and sets their walk to match.
 	local function publish(player: Player)
 		local h = handOfPlayer(player)
+		pace(player, h)
 		for i = 1, Carry.Slots do
 			local id = h.carry.slots[i]
 			local t = if id then tools[id] else nil
@@ -177,7 +209,14 @@ function Slots.new(): Slots
 			stow(t)
 			return
 		end
+		local row = Catalog[t.key]
 		local hand, grip = handOf(character)
+		-- a big tool rides on the shoulder: welded to the torso, it doesn't swing with your arm
+		local torso = character:FindFirstChild("UpperTorso") or character:FindFirstChild("Torso")
+		local shoulder = row.shoulder
+		if shoulder and torso and torso:IsA("BasePart") then
+			hand, grip = torso, CFrame.new(shoulder[1], shoulder[2], shoulder[3])
+		end
 		if not hand then
 			stow(t)
 			return
@@ -188,7 +227,7 @@ function Slots.new(): Slots
 		if t.weld then
 			t.weld:Destroy()
 		end
-		local turn = Catalog[t.key].inHand
+		local turn = row.inHand
 		local inHand = grip * CFrame.Angles(math.rad(turn[1]), math.rad(turn[2]), math.rad(turn[3]))
 		t.model.Name = Tools.HeldName
 		t.model:PivotTo(hand.CFrame * inHand)
@@ -331,6 +370,13 @@ function Slots.new(): Slots
 			return
 		end
 		local h = handOfPlayer(player)
+		local big = bothHands(h)
+		if big then
+			if t.refuse then
+				t.refuse(`Drop the {string.lower(big.name)} first`)
+			end
+			return
+		end
 		if Carry.room(h.carry) == nil then
 			if t.refuse then
 				t.refuse("Hands full")
@@ -365,6 +411,13 @@ function Slots.new(): Slots
 		local h = handOfPlayer(player)
 		-- rate
 		if not allowed(h) then
+			publish(player)
+			return
+		end
+		-- both hands on a big tool: no switching away from it
+		local big = bothHands(h)
+		if big and s ~= h.carry.active then
+			tell(player, `Drop the {string.lower(big.name)} first`)
 			publish(player)
 			return
 		end
@@ -426,7 +479,7 @@ function Slots.new(): Slots
 		if not (id and t) then
 			return
 		end
-		if Carry.room(them.carry) == nil then
+		if Carry.room(them.carry) == nil or bothHands(them) then
 			tell(player, "Their hands are full")
 			return
 		end
@@ -464,6 +517,7 @@ function Slots.new(): Slots
 			end
 			if character.Parent then
 				dress(player)
+				pace(player, handOfPlayer(player))
 			end
 		end
 		table.insert(connections, player.CharacterAdded:Connect(onCharacter))

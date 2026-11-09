@@ -408,6 +408,12 @@ function ToolView.new(): Brix.System
 		if not alive() or slot == active() then
 			return
 		end
+		-- both hands on a big tool (the ladder): the server refuses too
+		local held = Catalog[heldKey()]
+		if held and held.bothHands then
+			say(`Drop the {string.lower(held.name)} first`)
+			return
+		end
 		predicted, predictedAt = slot, os.clock()
 		local r = switchRemote
 		if r then
@@ -515,7 +521,11 @@ function ToolView.new(): Brix.System
 			model:Destroy()
 			return
 		end
-		body.CastShadow = false
+		for _, part in model:GetDescendants() do
+			if part:IsA("BasePart") then
+				part.CastShadow = false
+			end
+		end
 		bodyOff = body.PivotOffset:Inverse()
 		model.Parent = viewFolder
 		shownModel, shownBody = model, body
@@ -600,7 +610,13 @@ function ToolView.new(): Brix.System
 				yawT * RAD - p.yaw,
 				rollT * RAD - p.roll
 			)
-		body.CFrame = grip * bodyOff
+		-- the whole model, so a second part (the ladder's fly) moves with it
+		local model = shownModel
+		if model then
+			model:PivotTo(grip)
+		else
+			body.CFrame = grip * bodyOff
+		end
 	end
 
 	local function onAction(

@@ -43,10 +43,12 @@ end
 
 type Item = { name: string, thing: DealSpot.Thing, size: DealSpot.Size }
 local items: { Item } = {}
-for _, key in { "BoltCutters", "Padlock" } do
+-- the ladder by its whole collapsed box (both sections), as Deals lays it
+for _, key in { "BoltCutters", "Padlock", "Ladder" } do
+	local part = if key == "Ladder" then "Bounds" else "Body"
 	table.insert(
 		items,
-		{ name = key, thing = "Tool", size = sizeOf(`src/shared/Tools/Specs/{key}.luau`, "Body") }
+		{ name = key, thing = "Tool", size = sizeOf(`src/shared/Tools/Specs/{key}.luau`, part) }
 	)
 end
 for _, find in { "Boombox", "Television", "Teddy", "Skates" } do
@@ -161,7 +163,10 @@ for _, size in { "S", "M" } do
 						onHole[size] += 1
 					end
 				end
-				if item.thing == "Tool" or size == "M" then
+				-- the ladder spans a small unit wall to wall, so there it lies over a hole spot
+				-- (the rule's own fallback: nowhere else fits)
+				local wide = item.name == "Ladder" and size == "S"
+				if (item.thing == "Tool" and not wide) or size == "M" then
 					ok(clear, `{where}: off the crawl hole spots`)
 				end
 				ok(nearest >= DealSpot.Door - 1e-9, `{where}: clear of the door's line`)
@@ -169,7 +174,12 @@ for _, size in { "S", "M" } do
 				for i = 2, #poly, 2 do
 					farthest = math.max(farthest, poly[i])
 				end
+				-- the ladder is too long for the bulb's pool clear of the hole spots: it lies
+				-- deeper, big enough to read anywhere (the pool keeps small tools from a smear)
 				local from, to = DealSpot.From[item.thing], DealSpot.To[item.thing]
+				if item.name == "Ladder" then
+					from, to = 0, 1
+				end
 				ok(
 					nearest >= from * unit.depth - 1e-9 and farthest <= to * unit.depth + 1e-9,
 					`{where}: as deep as its kind lies`
@@ -218,7 +228,11 @@ for _, size in { "S", "M" } do
 		end
 		-- a small unit's tool keeps off both hole spots, which leaves it the band in front of
 		-- them and the middle: fewer places, still more than a few
-		local least = if size == "S" and item.thing == "Tool" then 8 else 12
+		-- and the ladder, wall to wall in a small unit, has just the one place there
+		local least = if size == "S" and item.name == "Ladder"
+			then 1
+			elseif size == "S" and item.thing == "Tool" then 8
+			else 12
 		ok(distinct >= least, `{size} {item.name}: varied unit to unit ({distinct} spots)`)
 	end
 end
