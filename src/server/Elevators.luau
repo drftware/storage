@@ -12,12 +12,16 @@
 	- The fourth digit is checked, as a real keypad does. Wrong: the alarm rings, every light on the
 	  floor comes on (MotionLights.flash), and the keypad is dead for a moment, its readout blinking
 	  the wrong digits, then it clears. Right: the chime, the latch, and the gate folds open.
+	- Once it has slammed open the gate's clock runs (L-05b2, Departure): 30 s on every screen on
+	  the floor, then the gate folds shut on its own, and the instant it hits its post a Zone over
+	  the car says who rode (`Departure.AboardAttribute`, `departed`). Nobody can send it early.
 	- The gate's motion is one replicated value (`Gate.Attribute`) that every screen folds the gate
 	  from (ElevatorView); here only its collider follows, so the gap you see is the gap there is.
 	- Every keypad sound fires `acted` with how far it's heard, as Doors does, so keepers (L-06b)
 	  hear each beep and come running at the alarm.
 
-	The code never leaves the server. Only gates in motion and dead keypads are stepped.
+	The code never leaves the server. Only gates in motion, dead keypads and running clocks are
+	stepped.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -25,8 +29,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
 local Elevator = require(ReplicatedStorage.Shared.Elevator)
 local Gate = require(ReplicatedStorage.Shared.Elevator.Gate)
+local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
 local Keypad = require(ReplicatedStorage.Shared.Elevator.Keypad)
 local MotionLights = require(script.Parent.MotionLights)
 
@@ -40,11 +46,23 @@ export type KeypadEvent = {
 	reach: number, -- studs it's heard to (Keypad.Heard): a keeper within it hears it
 }
 
+-- The car leaving a floor: who rode, and who was on the floor (within the clock's reach) and
+-- didn't.
+export type Leaving = {
+	elevator: Model,
+	floor: Instance?,
+	aboard: { Player },
+	left: { Player },
+	at: number, -- server time the gate hit its post
+}
+
 export type Elevators = Brix.System & {
 	-- Fires for every sound the keypad makes: each press, a clear, the alarm, the chime.
 	acted: Brix.Signal<KeypadEvent>,
-	-- Gives `elevator` its floor's code and the floor whose lights its alarm flashes, and clears
-	-- its keypad.
+	-- Fires the instant a gate shut by its clock hits its post: the car leaves.
+	departed: Brix.Signal<Leaving>,
+	-- Gives `elevator` its floor's code and the floor whose lights its alarm flashes, clears its
+	-- keypad and stops its clock: shut, ready for the floor.
 	arm: (self: any, elevator: Model, code: { number }, floor: Instance) -> (),
 	-- Opens the gate as the right code does, chime and all (tests; the dev hall).
 	open: (self: any, elevator: Model) -> (),
@@ -53,8 +71,9 @@ export type Elevators = Brix.System & {
 -- Where the remote lives, for the clients: ReplicatedStorage.Remotes.Keypad.
 local FOLDER, REMOTE = Keypad.RemoteFolder, Keypad.RemoteName
 
--- Shut: the keypad takes digits. Alarm: dead until the alarm stops. Open: done for this floor.
-type Phase = "Shut" | "Alarm" | "Open"
+-- Shut: the keypad takes digits. Alarm: dead until the alarm stops. Open: the clock runs.
+-- Leaving: the clock ran out and the gate is shutting. Gone: the car left; done for this floor.
+type Phase = "Shut" | "Alarm" | "Open" | "Leaving" | "Gone"
 
 type Entry = {
 	model: Model,
@@ -66,7 +85,23 @@ type Entry = {
 	gateFrom: number,
 	gateTo: number,
 	gateStart: number,
+	departs: number, -- server time the clock runs out and the gate starts to shut
+	car: Brix.Zone, -- the car from the gate back: whoever's middle is in it rides
 }
+
+local FREE = Brix.Pathing.free()
+
+-- The car's zone for an elevator standing at `pivot`.
+local function carOf(pivot: CFrame): Brix.Zone
+	local at, x = pivot.Position, pivot.XVector
+	return Brix.Zone.box(Departure.carBox(FREE, at.X, at.Y, at.Z, MotionLight.turnOf(x.X, x.Z)))
+end
+
+local function rootOf(player: Player): BasePart?
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	return if root and root:IsA("BasePart") then root else nil
+end
 
 local function now(): number
 	return Workspace:GetServerTimeNow()
@@ -78,9 +113,11 @@ function Elevators.new(): Elevators
 	local entries: { [Instance]: Entry } = {}
 	local moving: { [Entry]: true } = {}
 	local alarms: { [Entry]: true } = {}
+	local clocks: { [Entry]: true } = {}
 	local lastPress: { [Player]: number } = {}
 	local connections: { RBXScriptConnection } = {}
 	local acted = Brix.Signal.new() :: Brix.Signal<KeypadEvent>
+	local departed = Brix.Signal.new() :: Brix.Signal<Leaving>
 	local lights: MotionLights.MotionLights? = nil
 	local remote: RemoteEvent? = nil
 
@@ -113,22 +150,57 @@ function Elevators.new(): Elevators
 		return Gate.at(entry.gateFrom, entry.gateTo, now() - entry.gateStart)
 	end
 
-	-- Sends the gate toward `to`, starting `delay` seconds from now, from wherever it is.
-	local function moveGate(entry: Entry, to: number, delay: number)
-		local from = shutNow(entry)
-		entry.gateFrom, entry.gateTo, entry.gateStart = from, to, now() + delay
-		entry.model:SetAttribute(Gate.Attribute, Gate.encode(from, to, entry.gateStart))
+	-- Sends the gate toward `to`, starting at server time `start`, from wherever it is then.
+	local function moveGate(entry: Entry, to: number, start: number)
+		local from = Gate.at(entry.gateFrom, entry.gateTo, start - entry.gateStart)
+		entry.gateFrom, entry.gateTo, entry.gateStart = from, to, start
+		entry.model:SetAttribute(Gate.Attribute, Gate.encode(from, to, start))
 		moving[entry] = true
 	end
 
+	-- The right code: the gate folds open and its clock is set to run out 30 s after it slams.
 	local function open(entry: Entry, player: Player?)
-		if entry.phase == "Open" then
+		if entry.phase ~= "Shut" and entry.phase ~= "Alarm" then
 			return
 		end
 		entry.phase = "Open"
 		alarms[entry] = nil
 		event(entry, "Right", player)
-		moveGate(entry, 0, Gate.Delay)
+		local t = now()
+		entry.departs = Departure.departs(t, shutNow(entry))
+		moveGate(entry, 0, t + Gate.Delay)
+		entry.model:SetAttribute(Departure.Attribute, entry.departs)
+		clocks[entry] = true
+	end
+
+	-- The shut gate hit its post: whoever is inside the car rode; whoever else is on the floor
+	-- (within the clock's reach) was left to the building.
+	local function leave(entry: Entry, at: number)
+		local aboard: { Player } = {}
+		local left: { Player } = {}
+		local ids: { number } = {}
+		local here = entry.model:GetPivot().Position
+		for _, player in Players:GetPlayers() do
+			local root = rootOf(player)
+			if not root then
+				continue
+			end
+			local p = root.Position
+			if entry.car:contains((p :: any) :: vector) then
+				table.insert(aboard, player)
+				table.insert(ids, player.UserId)
+			elseif (p - here).Magnitude <= Departure.Heard then
+				table.insert(left, player)
+			end
+		end
+		entry.model:SetAttribute(Departure.AboardAttribute, Departure.encodeAboard(at, ids))
+		departed:fire({
+			elevator = entry.model,
+			floor = entry.floor,
+			aboard = aboard,
+			left = left,
+			at = at,
+		})
 	end
 
 	-- A press of `key` on `elevator`'s keypad by `player`: checked, then done.
@@ -198,6 +270,7 @@ function Elevators.new(): Elevators
 			return found
 		end
 		local from, to, start = Gate.decode(inst:GetAttribute(Gate.Attribute))
+		-- an elevator left open in the place (Edit's tests): no clock was set, so it never leaves
 		local phase: Phase = if to < 1 then "Open" else "Shut"
 		local entry: Entry = {
 			model = inst,
@@ -209,6 +282,8 @@ function Elevators.new(): Elevators
 			gateFrom = from,
 			gateTo = to,
 			gateStart = start,
+			departs = math.huge,
+			car = carOf(inst:GetPivot()),
 		}
 		entries[inst] = entry
 		if inst:GetAttribute(Keypad.Attribute) == nil then
@@ -223,12 +298,14 @@ function Elevators.new(): Elevators
 			entries[inst] = nil
 			moving[entry] = nil
 			alarms[entry] = nil
+			clocks[entry] = nil
 		end
 	end
 
 	local system = {
 		name = "Elevators",
 		acted = acted,
+		departed = departed,
 	}
 
 	function system.start(_: any, context: Brix.Context)
@@ -265,10 +342,21 @@ function Elevators.new(): Elevators
 	end
 
 	function system.step(_: any, _dt: number)
-		if next(moving) == nil and next(alarms) == nil then
+		if next(moving) == nil and next(alarms) == nil and next(clocks) == nil then
 			return
 		end
 		local t = now()
+		-- the clocks first, so a gate set shutting this step is fitted this step
+		for entry in clocks do
+			if entry.phase == "Open" and t >= entry.departs then
+				entry.phase = "Leaving"
+				moveGate(entry, 1, entry.departs)
+			elseif entry.phase == "Leaving" and t >= Departure.leaves(entry.departs) then
+				entry.phase = "Gone"
+				clocks[entry] = nil
+				leave(entry, Departure.leaves(entry.departs))
+			end
+		end
 		for entry in moving do
 			local elapsed = t - entry.gateStart
 			if elapsed >= Gate.settles(entry.gateFrom, entry.gateTo) then
@@ -297,6 +385,7 @@ function Elevators.new(): Elevators
 			remote = nil
 		end
 		acted:disconnectAll()
+		departed:disconnectAll()
 	end
 
 	function system.arm(_: any, elevator: Model, code: { number }, floor: Instance)
@@ -306,8 +395,13 @@ function Elevators.new(): Elevators
 		entry.code = table.clone(code)
 		entry.floor = floor
 		alarms[entry] = nil
-		if entry.phase == "Alarm" then
-			entry.phase = "Shut"
+		clocks[entry] = nil
+		entry.phase = "Shut"
+		entry.departs = math.huge
+		entry.model:SetAttribute(Departure.Attribute, nil)
+		entry.model:SetAttribute(Departure.AboardAttribute, nil)
+		if entry.gateTo < 1 then
+			moveGate(entry, 1, now())
 		end
 		write(entry, "Rest", "")
 	end

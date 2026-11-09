@@ -690,3 +690,37 @@ Not chosen: the note's texture cropped from the Fittings atlas as a flat image (
 and may turn, and it's the same 130 texels as the mesh); a plain yellow square (not the real art);
 the digits laid larger than the wall's writing area (the card should be the note you saw); freeing
 the cursor with FreeCursor (nothing to click but the note itself).
+
+## D-046 The gate's clock: 30 s from the slam, felt everywhere on the floor (L-05b2, Nov 8)
+
+The clock starts when the right code's gate has slammed open (the chime, the latch, the 1.6 s
+fold), not at the code itself, so the 30 s are 30 s of open gate. It's the server's: one
+replicated value on the elevator (`Departs`, the server time the gate starts to shut) that every
+screen counts from, so friends count the same seconds; the server shuts the gate at zero with the
+gate's own 1.2 s slam (`Gate.ShutSeconds`), and nobody can send it early (GDD). The instant the
+shut gate hits its post, a Brix Zone box over the car (wall to wall, the gate's pickets to the back
+wall, floor to ceiling) says who rode: their UserIds go out as one value (`Aboard`) and the server
+fires `departed`. A player diving through the narrowing gap makes it if their middle is inside the
+pickets when the gate hits (verified: crossed at 28% shut).
+
+Everyone within 240 studs of the elevator is on its floor (a floor's farthest hall is 195 studs
+away, measured over 300 seeds); they see the clock and hear the PA. What they get, by the GDD's
+Dandy's World line (an alarm and a heartbeat over its elevator timer):
+- The clock: the elevator's own seven-segment LEDs on a dark plate, in the middle of Roblox's top
+  bar row (clear of its buttons, `GuiService.TopbarInset`), so it never covers the play or a held
+  note. Green while there's time, red from 10 s; it jumps each second of the warning.
+- The PA's chime as it starts (Pro Sound Effects' synth elevator chime, heard alike across the
+  floor), so a friend at the far end knows to run before they see anything.
+- From 10 s: the car's lamp blinks, slowly then ever faster (0.9 s blinks down to 0.16 s), and a
+  heartbeat (APM's, 78 a minute) swells from 0.2 to 0.6 volume and quickens to 1.45 times its pace.
+- The last five seconds: the elevator's bell (the right code's double-ding) once a second, each a
+  little higher.
+- Leaving: "Going up" in the lamp's warm colour for those aboard, a lurch 0.7 s after the slam;
+  "Left behind" in a cold red for the rest, and the car's light draws away over 1.6 s, leaving the
+  lobby dark. The stand-in ride (until L-08): 4 s, fading to black over its last 0.6 s while the
+  dev floor moves those aboard back to the spawn and re-arms the elevator.
+
+Not chosen: the clock started at the code (the gate isn't open yet); a timer label in the play
+area (it covered the held note and the keypad's pad on a phone); a client deciding who's aboard
+(the server owns it); positional countdown sounds (a friend at the far end must hear them);
+a PA voice now (no recording yet: ROADMAP polish).

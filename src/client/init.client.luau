@@ -13,6 +13,7 @@ local DoorSounds = require(script.DoorSounds)
 local DoorView = require(script.DoorView)
 local ElevatorView = require(script.ElevatorView)
 local FreeCursor = require(script.FreeCursor)
+local GateClock = require(script.GateClock)
 local HallHaze = require(script.HallHaze)
 local HallLights = require(script.HallLights)
 local KeypadPad = require(script.KeypadPad)
@@ -34,6 +35,7 @@ local host = Brix.Host.new({
 		{ slot = "behindDoors", system = BehindDoors.new() },
 		{ slot = "elevatorView", system = elevatorView },
 		{ slot = "keypadPad", system = KeypadPad.new(pressKeypad, needCursor) },
+		{ slot = "gateClock", system = GateClock.new(kick) },
 		{ slot = "noteView", system = NoteView.new() },
 		{ slot = "freeCursor", system = freeCursor },
 		{ slot = "hallHaze", system = HallHaze.new() },

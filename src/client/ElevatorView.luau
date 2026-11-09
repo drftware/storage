@@ -13,6 +13,9 @@
 	  the alarm rings; the right one turns the digits, the light and the glow green.
 	- The sounds (Elevator.Sounds) are timed off the server's clock, so the fold's slam lands as
 	  every player sees the gate hit.
+	- The car's lamp answers the gate's clock (Departure, L-05b2): steady while it counts, blinking
+	  ever faster through the warning, steady as the gate shuts; once the car leaves, its light
+	  draws away for everyone it left in the lobby, and they're in the dark.
 
 	The screen keypad (KeypadPad) calls `press` to beep and sink a key the instant it's pressed;
 	the server's echo of that press names this player (`by`), so it's skipped here.
@@ -29,6 +32,7 @@ local LedReadout = require(script.Parent.LedReadout)
 local Shake = require(ReplicatedStorage.Shared.Shake)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 
+local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
 local Gate = require(ReplicatedStorage.Shared.Elevator.Gate)
 local Keypad = require(ReplicatedStorage.Shared.Elevator.Keypad)
 local Readout = require(ReplicatedStorage.Shared.Elevator.Readout)
@@ -76,6 +80,14 @@ type View = {
 	light: BasePart?,
 	glow: PointLight?,
 	tone: Readout.Tone?, -- the status light's, as last shown
+	-- the car's lamp and the gate's clock
+	lamp: PointLight?,
+	lampGlass: BasePart?,
+	lampColour: Color3,
+	lampShare: number, -- of its brightness, as last shown
+	departs: number?, -- server time the clock runs out, while one is set
+	leftAt: number?, -- server time the car left, once it has
+	rode: boolean, -- this player was aboard when it left
 	-- the sounds
 	emitters: { [Sounds.Source]: Attachment },
 	sounds: { [Sounds.SoundName]: Sound },
@@ -101,6 +113,7 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 	local views: { [Model]: View } = {}
 	local moving: { [View]: true } = {}
 	local blinking: { [View]: true } = {}
+	local lamps: { [View]: true } = {} -- lamps blinking or drawing away
 	local connections: { RBXScriptConnection } = {}
 
 	-- Where this player hears from: their character, or the camera without one.
@@ -316,6 +329,64 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 		end
 	end
 
+	-- The car's lamp at `share` of its brightness: its light and its glowing glass.
+	local function showLamp(view: View, share: number)
+		if view.lampShare == share then
+			return
+		end
+		view.lampShare = share
+		local light = view.lamp
+		if light then
+			light.Brightness = Elevator.Lamp.Brightness * share
+			light.Enabled = share > 0
+		end
+		local glass = view.lampGlass
+		if glass then
+			local c = view.lampColour
+			glass.Color = Color3.new(c.R * share, c.G * share, c.B * share)
+		end
+	end
+
+	-- The lamp at server time `t`, and whether it's still changing.
+	local function lampAt(view: View, t: number): (number, boolean)
+		local leftAt = view.leftAt
+		if leftAt and not view.rode then
+			local since = t - leftAt
+			return Departure.away(since), since < Departure.LampAway
+		end
+		local departs = view.departs
+		if departs then
+			local left = departs - t
+			return Departure.lamp(left), left > 0
+		end
+		return 1, false
+	end
+
+	local function lampStep(view: View, t: number)
+		local share, changing = lampAt(view, t)
+		showLamp(view, share)
+		if changing then
+			lamps[view] = true
+		else
+			lamps[view] = nil
+		end
+	end
+
+	-- The server set the gate's clock running, or cleared it (the elevator armed again).
+	local function clockChanged(view: View)
+		local departs = view.model:GetAttribute(Departure.Attribute)
+		view.departs = if type(departs) == "number" then departs else nil
+		lampStep(view, now())
+	end
+
+	-- The car left (or, cleared, is back for the next floor): who rode decides the lamp.
+	local function aboardChanged(view: View)
+		local at, ids = Departure.decodeAboard(view.model:GetAttribute(Departure.AboardAttribute))
+		view.leftAt = at
+		view.rode = at ~= nil and table.find(ids, Players.LocalPlayer.UserId) ~= nil
+		lampStep(view, now())
+	end
+
 	-- The readout's digits on an invisible card just off its glass, facing the lobby.
 	local function makeReadout(view: View)
 		local glass = Specs.Parts.KeypadReadout
@@ -355,6 +426,7 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 		views[inst :: Model] = nil
 		moving[view] = nil
 		blinking[view] = nil
+		lamps[view] = nil
 		view.alive = false
 		for _, c in view.conns do
 			c:Disconnect()
@@ -388,6 +460,9 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 		local keypad = find(inst, "Keypad")
 		local glowAt = keypad and keypad:FindFirstChild("Glow")
 		local glow = glowAt and glowAt:FindFirstChildWhichIsA("PointLight")
+		local lampGlass = find(inst, "LampGlass")
+		local lampHolder = lampGlass and lampGlass:FindFirstChild("LampLight")
+		local lamp = lampHolder and lampHolder:FindFirstChildWhichIsA("PointLight")
 		local view: View = {
 			model = inst,
 			alive = true,
@@ -406,6 +481,13 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 			light = find(inst, "KeypadLight"),
 			glow = glow,
 			tone = nil,
+			lamp = lamp,
+			lampGlass = lampGlass,
+			lampColour = Elevator.Lamp.Colour,
+			lampShare = 1,
+			departs = nil,
+			leftAt = nil,
+			rode = false,
 			emitters = {},
 			sounds = {},
 			fades = {},
@@ -426,8 +508,22 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 				keypadChanged(view, true)
 			end)
 		)
+		table.insert(
+			view.conns,
+			inst:GetAttributeChangedSignal(Departure.Attribute):Connect(function()
+				clockChanged(view)
+			end)
+		)
+		table.insert(
+			view.conns,
+			inst:GetAttributeChangedSignal(Departure.AboardAttribute):Connect(function()
+				aboardChanged(view)
+			end)
+		)
 		gateChanged(view) -- mid-motion as it streams in: folding on, with only the sounds still to come
 		keypadChanged(view, false)
+		clockChanged(view)
+		aboardChanged(view)
 	end
 
 	-- Readies every elevator sound up front, so the first slam isn't late (SoundPrimer).
@@ -490,6 +586,12 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 				draw(view)
 				if not Readout.blinking(view.state) then
 					blinking[view] = nil
+				end
+			end
+			if next(lamps) ~= nil then
+				local t = now()
+				for view in lamps do
+					lampStep(view, t)
 				end
 			end
 		end,

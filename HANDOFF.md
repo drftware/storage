@@ -2,57 +2,63 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-08, session 36 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-08, session 37 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-05b1d is done** (D-045): two steps into a note's unit a "Read" button shows under the note;
-  a tap lifts the note onto the screen with a paper flap, crooked as it hangs, its real paper
-  mesh in a ViewportFrame and its four slots in Kalam over its writing area, the digit 7.7 mm on
-  the Galaxy A16. A tap, Read again (E, X), B, a click, walking out to the doorway or dying drops
-  it, after a 0.3 s grace. The world behind dims to 55%; you can still walk.
-- **`src/shared/Elevator/NoteCard.luau`** (pure): the button's reach and offsets, `LetGo`,
-  `layout(width, height, top, count)`, `slots(text)`, Kalam's measured metrics;
-  `tests/notecard.spec.luau` (395 checks over eight screens). `Elevator.read(note)` returns a
-  note's writing. `NoteView` holds the prompts and the card.
-- **Verified in Studio** on the Galaxy A16 with Unit 313's `_ 0 _ _`: the card (shot
-  `docs/art/L-05b1d-card.jpg`), the grace, and every drop but the mouse click (the simulator has
-  no mouse). The MCP's touch can't press a prompt's button, so a real tap on Read is the owner's.
-- Kickoff had no owner results; `OWNER.md` now lists L-05b1d's checks after L-05b1b's.
+- **L-05b2 is done** (D-046): once the right code's gate slams open, a 30 s clock runs for everyone
+  within 240 studs (a floor); at zero the gate slams shut on its own and a Brix Zone over the car
+  says who rode. The clock is the elevator's LED digits in the middle of the top bar (green, red
+  from 10, jumping each second); a PA chime starts it; from 10 s the car's lamp blinks ever faster
+  and a heartbeat swells and quickens; a bell rings each of the last five seconds. "Going up" (a
+  lurch, then the stand-in ride's fade back to the spawn) or "Left behind" (the car's light
+  draws away). The dev floor re-arms the elevator after each ride.
+- **New code:** `src/shared/Elevator/Departure.luau` (pure, `tests/departure.spec.luau`, 6,188
+  checks), `src/client/GateClock.luau`; `Elevators` keeps the clock (`Departs`, `Aboard`,
+  `departed`), `ElevatorView` the lamp, `LedReadout.row` draws any row of LED digits.
+- **Verified in Studio** on the Galaxy A16: the countdown, its sounds and the lamp, frame by
+  frame; a run through the closing gate (crossed at 28% shut) counted aboard and ridden back;
+  left behind. Two players and the sound mix are the owner's (`OWNER.md`).
+- The owner said at kickoff the current state "is fine for now"; no test results came with it.
+- L-11 is split into L-11a (the flashlight), L-11b (two slots and your hands), L-11c (bolt
+  cutters and the padlock): Brix has no inventory.
 
-## Next task: L-05b2 The gate's timer
-The moment: the code is right, the gate folds open, and the clock starts. 30 s later it folds
-shut on its own, as Dandy's World's elevator does, and the last friend sprints for the narrowing
-gap. The car leaves with whoever is aboard (a stand-in until L-08's ride).
+## Next task: L-11a The flashlight
+The moment: the hall's light clicks off behind you and you thumb your torch on: a small warm cone,
+a click, the beam shaking a little as you walk; a friend's beam swinging round a corner tells you
+where they are. Everyone carries one (GDD).
 1. Owner test results first (`OWNER.md`).
-2. Read ROADMAP L-05b2 and the GDD's elevator section (docs tools, only that section). Check
-   Brix's Zone (aboard the car) and the Host's Clock in `docs/FRAMEWORK.md` before building.
-3. Server (`Elevators`): on "Right", start the timer on the Host's clock; at 30 s fold the gate
-   shut with `Gate`'s motion (`Gate.encode`), and say who is aboard by a Zone over the car. Feel
-   numbers in shared Config: the 30 s, when the warning starts.
-4. Feedback in the same ticket: a countdown you feel (the lamp blinking faster, a bell in the
-   last seconds; `Elevator/Sounds.luau` cues), and the fold's own sound and slam as now.
-5. The leaving stand-in: those aboard told so ("Going up"), the rest left in the lobby.
-6. Lune specs for any pure timing; Studio on the Galaxy A16: the countdown, the fold, a run
-   through the closing gap (`Gate.gap`).
-**Acceptance:** checks green; Lune specs for the timer's pure parts; in Studio the gate folds
-shut 30 s after the code with its warning and sound, and the aboard list is right with one
-player in and one out; `OWNER.md` has the two-player test.
-**Read first:** ROADMAP L-05b2; docs/FRAMEWORK.md (Zone, Clock); `src/server/Elevators.luau`
-(by grep: `Right`, `write`, `arm`); `src/shared/Elevator/Gate.luau` (by grep: `gap`, `encode`,
-`duration`); `src/shared/Elevator/Sounds.luau` (by grep: `fold`, `Bell`); D-042 (DECISIONS).
+2. Read ROADMAP L-11a and the GDD's flashlight lines (docs tools: search "flashlight"; only what
+   it says about the torch: battery, flicker, who sees it). Proven-mechanic line: DOORS' and
+   Lethal Company's flashlights.
+3. Art first, the unit's way: `art/flashlight/` (spec.py, build.py, as `art/finds/`), an old
+   plastic torch at a hand's size, baked PBR, FBX, look sheets; import it (STUDIO's FBX recipe)
+   to `ReplicatedStorage.Props.Flashlight`; say in OWNER.md to save the place.
+4. Held in first person, low right, with a little walk sway (a pure module for the sway and the
+   beam's numbers, Lune specs); a SpotLight beam with Shadows, its range and angle in shared
+   Config. The other players see your torch in your hand and its beam.
+5. On and off: one phone button (thumb-sized, above the jump button), F, gamepad; the server owns
+   the state (a validated, rate-limited remote, as the keypad's), the click heard nearby.
+6. Light budget on the A16 (one shadowed SpotLight per player; check with six).
+**Acceptance:** checks green; art built by script with sheets; Lune specs for the sway and beam;
+in Studio on the Galaxy A16 the torch in hand, its button, the beam in a dark hall (shots); a
+friend's beam seen (OWNER.md two-player test).
+**Read first:** ROADMAP L-11a; the GDD's flashlight lines; `art/unit/README.md` ("How it's
+made"); `art/finds/spec.py` and `build.py` (the latest small prop); docs/STUDIO.md ("Importing
+kit pieces", the Blender traps); `src/server/Elevators.luau` (by grep: `press`, the remote checks).
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-05b2; L-11 tools in hand; L-06b the Mannequin hunts (Brix ENG-07); L-04e (keep each note's
-   sight line clear); L-12; L-13; L-14; then L-07, L-08, L-10, L-09.
+1. L-11a; L-11b; L-11c; L-06b the Mannequin hunts (Brix ENG-07); L-04e (keep each note's sight
+   line clear); L-12; L-13; L-14; then L-07, L-08, L-10, L-09.
 2. **Bug, small:** DoorSounds' first slam of a session lands up to 0.35 s late; swap its
    `preload` for `SoundPrimer.prime` (one call) and check the first slam in Studio.
 3. L-06b's keepers hear doors on `Doors.acted` and the keypad on `Elevators.acted` (the alarm
-   sends them to the lobby), walk on `Pose.at`; L-08 lays the next floor during the ride.
-4. **Check:** floor 3's laying peaked at 14.9 ms in a frame this session (25.6, 15.9, 13.0
-   before). Find what loads `rbxassetid://203785492` ("Asset type does not match", six times).
+   sends them to the lobby); the GDD's director "turns everything up" on the gate's clock
+   (`Departure`); L-08 replaces the stand-in ride (`Elevators.departed`, DevCorridor's re-arm).
+4. **Check:** floor 3's laying peaked at 12.2 ms in a frame this session (14.9, 25.6 before).
 5. Studio traps (docs/STUDIO.md): set the Device Simulator's device in Edit before Play and stop
-   it after; trigger a prompt with `InputHoldBegin`/`End` (the MCP's touch can't press one); a
-   capture right after a teleport comes back black, take it again; judge light after 10 s.
+   it after; trigger a prompt with `InputHoldBegin`/`End`; a capture right after a teleport
+   comes back black, take it again; screen captures land 2 s or more late, so hold a headline
+   on screen to shoot it; Studio runs about 15 fps under the simulator.
 
 ## Kickoff for the next agent
 ```text

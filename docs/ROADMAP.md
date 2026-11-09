@@ -275,15 +275,37 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
   `NoteView`. Verified in Studio on the Galaxy A16 (Unit 313's `_ 0 _ _`): the card, and every
   way to drop it but the mouse; shot `docs/art/L-05b1d-card.jpg`. A real tap on Read, the click
   and the motion are the owner's (`OWNER.md`).
-- [ ] **L-05b2 The gate's timer.** 30 s after the right code the gate folds shut on its own
-  (Dandy's World), with its sound and a countdown you feel (the lamp, a bell); Brix's Zone says
-  who's aboard and its Clock times it; the last friend sprinting through the closing gap
-  (`Gate.gap`); the car leaves with whoever is aboard (a stand-in until L-08's ride).
+- [x] **L-05b2 The gate's timer** (Nov 8, D-046). Once the right code's gate has slammed open,
+  a 30 s clock runs for everyone on the floor (within 240 studs), then the gate folds shut on its
+  own, as Dandy's World's elevator does; nobody can send it early. The clock is the elevator's own
+  LED digits in the middle of Roblox's top bar, popping in with the PA's chime, green, then red
+  from 10 s, jumping each second; from 10 s the car's lamp blinks ever faster and a heartbeat
+  swells and quickens under everything; the elevator's bell rings each of the last five seconds,
+  a little higher each time. The instant the shut gate hits its post a Brix Zone over the car says
+  who rode: "Going up" for them, a lurch, and (the stand-in ride) a fade to black while the dev
+  floor moves them back to the spawn and re-arms the elevator; "Left behind" for the rest, as
+  the car's light draws away and leaves them in the dark. `Elevator/Departure.luau` (pure, 6,188
+  Lune checks), `GateClock` (client), `Elevators` keeps the clock, `ElevatorView` the lamp,
+  `LedReadout.row`. Verified in Studio on the Galaxy A16: the whole countdown and its sounds, the
+  lamp, a run through the closing gate (crossed 28% shut, a 6.4-stud gap) counted aboard and
+  ridden back, and left behind; shots `docs/art/L-05b2-*.jpg`. Two players: `OWNER.md`.
 - [ ] **L-11 Tools in hand.** You carry two tools plus whatever is in your hands (GDD), as Lethal
   Company's slots: pick a tool up off a unit's floor, switch, drop, hand one to a friend, each
   with a phone button. The flashlight everyone carries (signals friends; keepers with eyes see
   it; freezing the Mannequin lands with L-06b). The bolt cutters and the padlock move off the
-  test post onto it (`Door.Tools`). Each tool's art first. Brix: check for an inventory first.
+  test post onto it (`Door.Tools`). Each tool's art first. Brix has no inventory (checked Nov 8,
+  `4c21b5f`). Split (Nov 8) so each fits a session:
+  - [ ] **L-11a The flashlight.** Its art first, the unit's way (`art/flashlight/`): an old
+    plastic torch, held low on the right of your first-person view with a little sway as you
+    walk. A click switches it on and off (a phone button, F, gamepad), its beam a SpotLight
+    with a soft edge; friends see your beam (the server owns on and off). The GDD's flashlight
+    entry decides anything else (a battery, a flicker). Its light budget on the Galaxy A16.
+  - [ ] **L-11b Two slots and your hands.** Lethal Company's slots on the server: pick a tool up
+    off a unit's floor, switch, drop, hand one to a friend, each with a phone button; the slots'
+    bar on screen; one table of tools (a row each, as keepers are rows). Ask Brix's ROADMAP for
+    an inventory in neutral terms; build the smallest stand-in behind that shape.
+  - [ ] **L-11c Bolt cutters and the padlock.** Their art, carried in the slots, used from them;
+    off the test post (`Door.Tools` read from the slots).
 - [ ] **L-06b The Mannequin hunts.** At no more than player speed: a data row on Brix's Pursuit
   (floor pathing, a cone reach), frozen in a flashlight's beam. Needs Brix's ENG-06 and ENG-07.
   Keepers hear a door (the GDD: an open, a slam, a lift from inside) as far as its sound carries:
@@ -345,6 +367,13 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 
 ## Polish waiting for a slot
 
+- **The PA's voice** (L-05b2): the GDD has the PA count the 30 s down aloud. Today a chime starts
+  the clock and the bell counts the last five; a voice ("Thirty seconds", "Ten", then the count)
+  wants a recording or Roblox's text-to-speech (`AudioTextToSpeech`, verify it first).
+- **The ride's motor** (L-05b2, for L-08): the lurch after the gate slams is felt but not heard;
+  the car wants its motor's whine and the cables' creak as it starts up.
+- **The thumbstick over the ride's fade** (L-05b2): Roblox's touch controls stay drawn over the
+  black while the car rides; hide them for the fade, or let them show (most games do).
 - **The held-up note's shadow** (L-05b1d): a soft shadow under the card as it lifts, so it reads
   as paper held off the world rather than pasted on the screen.
 - **A note answers when it's found** (L-05b1b): the first time a note comes into your light, a

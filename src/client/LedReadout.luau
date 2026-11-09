@@ -1,7 +1,8 @@
 --!strict
 --[[
 	LedReadout: the keypad's four seven-segment LED digits, drawn into any GuiObject: the wall's
-	readout (ElevatorView) and the screen keypad's (KeypadPad). What each cell shows comes from
+	readout (ElevatorView) and the screen keypad's (KeypadPad); and any row of them, as the gate's
+	clock on screen (GateClock). What each cell shows comes from
 	the shared Readout rules, so the two always agree. A redraw touches only the cells that
 	changed, so a screen can call it every frame while the digits blink.
 ]]
@@ -49,11 +50,21 @@ local function layout(): { { number } }
 end
 local SEGMENTS = layout()
 
+-- Lights cell `i` of a row with `char` in `tone`.
+export type Set = (i: number, char: string, tone: Readout.Tone) -> ()
+
 --[[
-	Fills `parent` with the four digits, centred, each `height` (a share of the parent's height)
-	tall with `spacing` (a share of its width) between them. Returns the function that draws them.
+	Fills `parent` with a row of `count` digits, centred, each `height` (a share of the parent's
+	height) tall with `spacing` (a share of its width) between them, all unlit. Returns the
+	function that lights a cell; it touches a cell only when what it shows changes.
 ]]
-function LedReadout.new(parent: Instance, look: Look, height: number, spacing: number): Draw
+function LedReadout.row(
+	parent: Instance,
+	look: Look,
+	height: number,
+	spacing: number,
+	count: number
+): Set
 	local row = Instance.new("Frame")
 	row.Name = "Digits"
 	row.BackgroundTransparency = 1
@@ -65,9 +76,8 @@ function LedReadout.new(parent: Instance, look: Look, height: number, spacing: n
 	list.SortOrder = Enum.SortOrder.LayoutOrder
 	list.Padding = UDim.new(spacing, 0)
 	list.Parent = row
-
-	local cells: { { Frame } } = table.create(Keypad.Length)
-	for i = 1, Keypad.Length do
+	local cells: { { Frame } } = table.create(count)
+	for i = 1, count do
 		local cell = Instance.new("Frame")
 		cell.Name = `Cell{i}`
 		cell.LayoutOrder = i
@@ -97,26 +107,36 @@ function LedReadout.new(parent: Instance, look: Look, height: number, spacing: n
 		cells[i] = segs
 	end
 	row.Parent = parent
-
 	local tones: { [Readout.Tone]: Color3 } =
 		{ Off = look.unlit, Rest = look.rest, Lit = look.lit, Right = look.right }
-	local chars: { string } = table.create(Keypad.Length, "")
-	local shown: { Readout.Tone } = table.create(Keypad.Length, "Off" :: Readout.Tone)
+	local chars: { string } = table.create(count, "")
+	local shown: { Readout.Tone } = table.create(count, "Off" :: Readout.Tone)
+	return function(i: number, char: string, tone: Readout.Tone)
+		local segs = cells[i]
+		if not segs or (chars[i] == char and shown[i] == tone) then
+			return
+		end
+		chars[i], shown[i] = char, tone
+		local pattern = Readout.pattern(char)
+		local colour = tones[tone]
+		for s, seg in segs do
+			local on = pattern[s] and tone ~= "Off"
+			seg.BackgroundColor3 = if on then colour else look.unlit
+			seg.BackgroundTransparency = if on then 0 else look.unlitTransparency
+		end
+	end
+end
 
+--[[
+	Fills `parent` with the keypad's four digits (`row`'s sizes). Returns the function that draws
+	them.
+]]
+function LedReadout.new(parent: Instance, look: Look, height: number, spacing: number): Draw
+	local set = LedReadout.row(parent, look, height, spacing, Keypad.Length)
 	return function(state: Keypad.State, since: number)
-		for i, segs in cells do
+		for i = 1, Keypad.Length do
 			local char: string, tone: Readout.Tone = Readout.cell(state, i, since)
-			if chars[i] == char and shown[i] == tone then
-				continue
-			end
-			chars[i], shown[i] = char, tone
-			local pattern = Readout.pattern(char)
-			local colour = tones[tone]
-			for s, seg in segs do
-				local on = pattern[s] and tone ~= "Off"
-				seg.BackgroundColor3 = if on then colour else look.unlit
-				seg.BackgroundTransparency = if on then 0 else look.unlitTransparency
-			end
+			set(i, char, tone)
 		end
 	end
 end

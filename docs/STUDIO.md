@@ -403,6 +403,24 @@ verified: a doc page, Studio, or "untested".
   even after `ContentProvider:PreloadAsync`; every play after, even from a new `Sound`, starts
   within a frame. Play it once at volume 0 first (`SoundPrimer`). The double-ding 9119642644 is
   5.2 s long, loudest to 1 s, down 18 dB by 2.6 s.
+- **The gate clock's sounds, measured** (L-05b2, 2026-11-08; 50 ms bins, AudioAnalyzer in Edit, all
+  at volume 0.3): APM's "Heartbeat 01" 9043365727 is a clean lub-dub about every 0.77 s (78 a
+  minute, though its title says 96 BPM), peaks -11 dB, 60 s, loops; Pro Sound Effects' "Elevator
+  Bell Synth Chimes 11" 9114302479 rings two tones by 0.35 s, -21 dB, gone by 1.5 s; the
+  double-ding 9119642644 is one strike at -43 dB ringing down slowly (play it at 5 or more).
+- **A UIAspectRatioConstraint can't make width from nothing** (L-05b2): a frame sized
+  `fromScale(0, h)` with `DominantAxis.Height` comes out 0 by 0 (the constraint fits inside the
+  size it's given). Give it the width to fit in, or size it in offsets.
+- **`GuiService.TopbarInset`** (read in Play on the Galaxy A16, 2026-11-08): a Rect of the top
+  bar's free stretch, right of Roblox's buttons: 208 to 685 across, 58 tall. A ScreenGui with
+  `ScreenInsets.TopbarSafeInsets` is laid in that stretch (its middle is then not the screen's);
+  `IgnoreGuiInset` plus offsets from TopbarInset centres a thing on the screen within the row.
+- **A client's `SetAttribute` on a replicated instance fires its changed signal locally**
+  (L-05b2): a quick way to preview what a screen does with a server value (a headline, a lamp)
+  without running the whole loop; the server's next write replaces it.
+- **Studio runs about 15 frames a second under the Device Simulator with the MCP driving**
+  (L-05b2): a per-frame probe logged the clock's seconds 0.07 s late. Judge timing from the
+  server's clock values, not a probe's frame times.
 - **Driving the phone's touch from the MCP** (L-05b1c, Galaxy A16): `user_mouse_input` lands taps
   at about 0.9 of the x you give (and of an `instance_path`'s x); y lands true. Give x divided by
   0.902 of the button's `AbsolutePosition` middle, and check where it landed with a

@@ -39,6 +39,26 @@ nowhere else.
 - [ ] **Decide, defaults in place** (D-045): (1) you can walk and look while the note is up (a
   keeper doesn't wait), or should reading hold you still? (2) the world dims to 55% behind it.
 
+## Now: judge L-05b2, the gate's clock (built Nov 8)
+
+- [ ] **Two players** (Test > Clients and Servers, 2 players, both on the Galaxy A16 if you can):
+  both take "Walk a floor". One punches 5062 at the keypad; the other walks to the far end of the
+  floor. Look for: both screens showing the green clock in the middle of the top bar as the gate
+  slams open, with the PA's chime; at 10 the clock going red, the car's lamp starting to blink
+  (watch it from the lobby) and the heartbeat starting; a bell on each of the last five seconds.
+  The far player runs back: one gets in, one stays in the lobby. At zero the gate slams shut;
+  the one inside reads "Going up", feels the lurch and fades out and back in at the spawn; the
+  one outside reads "Left behind" as the car's light draws away. Then swap, and try diving
+  through the gap as it shuts. Shots: `docs/art/L-05b2-clock.jpg`, `-warning.jpg`,
+  `-going-up.jpg`, `-left-behind.jpg`.
+- [ ] **Listen** with sound on: is the heartbeat too loud or too quiet under the rest
+  (`Departure.HeartQuiet` 0.2, `HeartLoud` 0.6), and do the bells and the chime sound like the
+  building's elevator?
+- [ ] **Decide, defaults in place** (D-046): (1) the 30 s start once the gate has slammed open,
+  not at the code; (2) the clock sits in the top bar's row, green then red at 10; (3) the car's
+  light goes out for those left behind (the car took it); (4) for now a chime and the bell count,
+  no PA voice (ROADMAP polish: a recording or text-to-speech). Say which to change.
+
 ## Now: judge L-05b1c, the keypad and gate on screen (built Nov 8)
 
 - [ ] **Two players** (Test > Clients and Servers, 2 players): one types the first three digits;

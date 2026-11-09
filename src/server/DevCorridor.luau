@@ -29,6 +29,7 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local CorridorKit = require(ReplicatedStorage.Shared.CorridorKit)
 local Deal = require(ReplicatedStorage.Shared.Deal)
+local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
 local Elevators = require(script.Parent.Elevators)
 local Prompts = require(script.Parent.Prompts)
 local Floor = require(ReplicatedStorage.Shared.Floor)
@@ -503,8 +504,31 @@ local function devFloor(folder: Folder, elevators: Elevators.Elevators)
 		)}`
 	)
 	local model, laid = FloorBuilder.lay(floor, FLOOR_ORIGIN, folder, deck)
-	if laid.elevator then
-		elevators:arm(laid.elevator, deck.code, model)
+	local elevator = laid.elevator
+	if elevator then
+		elevators:arm(elevator, deck.code, model)
+		-- The stand-in ride (until L-08's): once the car leaves, those aboard arrive back by the
+		-- spawn as their screens fade in (GateClock), and the elevator is armed again, shut and
+		-- ready, so the floor can be run again without stopping Play.
+		local riding = elevators.departed:connect(function(leaving: Elevators.Leaving)
+			if leaving.elevator ~= elevator then
+				return
+			end
+			local wait = leaving.at + Departure.Ride - Workspace:GetServerTimeNow()
+			task.delay(math.max(wait, 0), function()
+				for _, player in leaving.aboard do
+					if player.Parent then
+						send(player, SPAWN)
+					end
+				end
+				if elevator.Parent then
+					elevators:arm(elevator, deck.code, model)
+				end
+			end)
+		end)
+		model.Destroying:Once(function()
+			riding:disconnect()
+		end)
 	end
 	travelPost(
 		"ComeBack",

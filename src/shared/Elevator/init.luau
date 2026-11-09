@@ -14,9 +14,11 @@ local Gate = require(script.Gate)
 local Keypad = require(script.Keypad)
 local Readout = require(script.Readout)
 local Sounds = require(script.Sounds)
+local Departure = require(script.Departure)
 
 local Elevator = {}
 Elevator.Specs = Specs
+Elevator.Departure = Departure
 Elevator.Gate = Gate
 Elevator.Keypad = Keypad
 Elevator.Readout = Readout
