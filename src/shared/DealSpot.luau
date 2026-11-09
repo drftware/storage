@@ -16,7 +16,9 @@
 	at either side wall's crawl hole spot (L-12b2): the cut-out panel falls flat there on whichever
 	side wasn't sawn from, and a player crawls through it, so a tool or a keeper there would be lain
 	on or block the way; only where a unit is too tight to keep both clear does the deal use them
-	(a small unit's keeper). The same unit
+	(a small unit's keeper). Nor where someone dropping in through the unit's sawn top lands
+	(L-13b2d3b): under the hole's middle and on to the door, so you come down on bare concrete with
+	your way out clear, never onto a keeper; nor where the top's cut-out panel falls. The same unit
 	always gets the same spot (picked by its number), so a seed's floor looks the same twice. When
 	boxes arrive (Phase 2) they join the note's sight line as places to keep clear of.
 
@@ -30,12 +32,16 @@ local DealSpot = {}
 
 -- A unit's size in studs, as its generated Specs give it (`Width`, `Depth` wall to wall through
 -- their middles, `DoorWidth` the opening), and the stretch of each side wall its crawl hole and
--- fallen panel take (in this frame's Z; nil keeps nothing clear).
+-- fallen panel take (in this frame's Z; nil keeps nothing clear). `landing` is the floor under the
+-- middle of the hole a saw cuts in the unit's top, where someone dropping in comes down, and
+-- `fallen` the floor that hole's cut-out panel falls on, a polygon (nil keeps neither clear).
 export type Unit = {
 	width: number,
 	depth: number,
 	doorWidth: number,
 	hole: { from: number, to: number }?,
+	landing: { x: number, z: number }?,
+	fallen: { number }?,
 }
 export type Thing = "Tool" | "Find" | "Keeper"
 -- A thing's size as it stands at yaw 0: X across, Z along (front to back), Y tall.
@@ -71,6 +77,11 @@ DealSpot.Turns = { -8, -4, 0, 4, 8 }
 -- Studs kept clear out from each side wall's middle line along its crawl hole's stretch: the
 -- panel lying flat reaches 3.22 from the wall (art/hole), and a crawl starts as far out.
 DealSpot.Hole = 3.3
+-- Studs kept clear either side of where someone dropping in through the top lands, and behind it.
+-- A body is 2 across and 1 deep; the rest is room for its arms coming down and for a landing a
+-- little off the middle. In front it's kept clear all the way to the door: your step to the way out.
+DealSpot.LandSide = 1.5
+DealSpot.LandBack = 0.9
 -- A keeper's size until each keeper brings its own (L-06b): the Mannequin standing at rest, arms
 -- at its sides (1.89 across, its feet 1.34 heel to toe, 6.3 tall), with a little room round it.
 DealSpot.Keeper = { across = 2.1, along = 1.5, tall = 6.3 } :: Size
@@ -223,6 +234,18 @@ function DealSpot.holes(unit: Unit): { { number } }
 	return zones
 end
 
+-- The floor kept clear under the top's hole (nothing without `unit.landing`): where a body dropping
+-- in lands, and from there to the doorway's face.
+function DealSpot.landing(unit: Unit): { { number } }
+	local at = unit.landing
+	if not at then
+		return {}
+	end
+	local left, right = at.x - DealSpot.LandSide, at.x + DealSpot.LandSide
+	local back = at.z + DealSpot.LandBack
+	return { { left, 0, right, 0, right, back, left, back } }
+end
+
 -- Every spot that fits, by inUnit's order of preference, keeping clear of `holes`. `behind` keeps
 -- a find or keeper behind the bulb (D-036), not trying in front of it.
 local function search(
@@ -238,28 +261,17 @@ local function search(
 	local across, along = size.across, size.along
 	local found: { Spot } = {}
 	if thing == "Tool" then
+		-- in the bulb's pool at its unit's own turn, else at another; else anywhere past the door,
+		-- the same way (a small unit's pool is mostly landing and hole spots, D-067)
 		local count = #DealSpot.ToolYaws
-		for k = 0, count - 1 do
-			local yaw = DealSpot.ToolYaws[(n + k) % count + 1]
-			found = spots(
-				unit,
-				across,
-				along,
-				sight,
-				holes,
-				DealSpot.From.Tool,
-				DealSpot.To.Tool,
-				yaw,
-				0,
-				false
-			)
-			if #found > 0 then
-				break
+		for _, deep in { { DealSpot.From.Tool, DealSpot.To.Tool }, { 0, 1 } } do
+			for k = 0, count - 1 do
+				local yaw = DealSpot.ToolYaws[(n + k) % count + 1]
+				found = spots(unit, across, along, sight, holes, deep[1], deep[2], yaw, 0, false)
+				if #found > 0 then
+					return found
+				end
 			end
-		end
-		if #found == 0 then
-			local yaw = DealSpot.ToolYaws[n % count + 1]
-			found = spots(unit, across, along, sight, holes, 0, 1, yaw, 0, false)
 		end
 	else
 		-- behind the bulb facing the doorway; else facing straight out, then square (a back corner
@@ -287,9 +299,11 @@ end
 	(NoteSpot's x) or nil if it holds none. A tool tries its unit's own turn first, then the others,
 	then anywhere.
 	A find or keeper faces the doorway, or straight out where it can't turn, and stands wholly
-	behind the bulb unless it fits nowhere there. All of it off the crawl hole spots unless it fits
-	nowhere else, but a find or keeper rather stands on one behind the bulb than in front of it.
-	Nil only if it fits nowhere past the door.
+	behind the bulb unless it fits nowhere there. All of it off the crawl hole spots, the landing
+	under the top's hole and where the top's panel falls. Where that fits nowhere it gives them up
+	in that order, the crawl hole spots first and the landing last: a find or keeper rather stands
+	on a crawl hole spot behind the bulb than in front of it, and nothing lies where you'd land
+	while it fits anywhere else. Nil only if it fits nowhere past the door.
 ]]
 function DealSpot.inUnit(unit: Unit, thing: Thing, size: Size, note: number?, number: string): Spot?
 	local n = math.floor(math.abs(tonumber(number) or 0))
@@ -297,9 +311,30 @@ function DealSpot.inUnit(unit: Unit, thing: Thing, size: Size, note: number?, nu
 	local sight = if note and size.tall >= DealSpot.Under
 		then DealSpot.sightLine(unit, note)
 		else nil
-	local found = search(unit, thing, size, sight, DealSpot.holes(unit), n, turn, thing ~= "Tool")
-	if #found == 0 and unit.hole then
-		found = search(unit, thing, size, sight, {}, n, turn, false)
+	local land = DealSpot.landing(unit)
+	local top = table.clone(land)
+	if unit.fallen then
+		table.insert(top, unit.fallen)
+	end
+	local all = table.clone(top)
+	for _, zone in DealSpot.holes(unit) do
+		table.insert(all, zone)
+	end
+	local behind = thing ~= "Tool"
+	local found: { Spot } = {}
+	for _, try in
+		{
+			{ keep = all, behind = behind },
+			{ keep = top, behind = behind },
+			{ keep = land, behind = behind },
+			{ keep = land, behind = false },
+			{ keep = {}, behind = false },
+		}
+	do
+		found = search(unit, thing, size, sight, try.keep, n, turn, try.behind)
+		if #found > 0 then
+			break
+		end
 	end
 	if #found == 0 then
 		return nil

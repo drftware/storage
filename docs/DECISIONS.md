@@ -1247,3 +1247,27 @@ swap it); a rise to standing over the hole (the ceiling); offering Drop in from 
 hole (it would take F from Drop down along the whole front of a sawn unit); its own key (one verb,
 one key for leaving the tops by dropping). Left for L-13b2d3b: the floor under the hole kept clear
 by the deal, and every way out.
+
+## D-067 The floor under a top's hole kept clear, and a saw's hole deals the unit (L-13b2d3b, Nov 9)
+**A unit is dealt the first time anyone can see into it**, which is now also a saw's hole going
+through: the unit a wall's hole leads into, or the unit whose top was cut (`Deals` listens to
+`Saws.sawing`, the event that says the panel fell). Before this only a lifting door dealt, so you
+looked down a sawn top into an empty unit, dropped in, and what it held appeared round you when you
+lifted the door. It is D-050's rule (Left 4 Dead's director dealing as the team moves) with one
+more way to see in. Not at the saw's start: a short hold would deal units nobody opened.
+
+**Kept clear by the deal** (`DealSpot`, in the door's frame): the landing, 1.5 studs either side of
+the point under the hole's middle and 0.9 behind it, and on to the doorway's face, so a body 2
+across lands on concrete with its step to the door free; and the box the top's cut-out panel falls
+in, 0.2 bigger all round (`TopHole`'s Specs, read by `Deals`). A thing that fits nowhere gives up
+the crawl hole spots first, then the top's panel, then being behind the bulb, and the landing
+last. A tool's search now tries every dropped turn anywhere past the door before giving a zone up
+(it tried only its unit's own turn, so a ladder in a small unit lay on the landing in 200 units of
+300). **A small unit is tight**: its pool is mostly landing, panel and crawl spots, so the bolt
+cutters lie in a strip up its middle, deeper than the pool (6 studs in, nearer than a medium
+unit's pool reaches) and in one of four places, where they had eight or more.
+
+**Out again.** Lift from inside was already there and reaches from where you land (2.7 studs). A
+padlocked door's Lift now says "Saw a wall" as it rattles: the button already reads "Padlocked",
+the padlock is on the hall side, and the way out that is yours is a side wall (three words, as
+the door's test holds refusals to). Not chosen: "Padlocked" again (nothing on screen changed).

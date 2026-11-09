@@ -760,3 +760,15 @@ verified: a doc page, Studio, or "untested".
   lit the whole steel top above it and the deck from below, through the steel; at Level21 only
   the sawn hole glowed and the deck above it caught a patch. Judge light through a top at a fixed
   high level, and on a phone for what most players see.
+
+- **Testing the deal from the MCP** (Play, L-13b2d3b, 2026-11-09): the test hall's units are never
+  dealt; only the walked floor's are (600 studs off, under `DevCorridor.Floor1`), and Output says
+  "Deals: Unit102 held ..." as each is. The ladder and saw lie only in the test hall, and the
+  ladder takes both hands: pick up the ladder, set your root's CFrame to the floor's hall, Lean,
+  go back for the saw, return and Climb. A door's state is attributes, so on the Server
+  `require(RollUpDoor).setLocked(unit, true)` padlocks a door for a test though the MCP's
+  `require` is its own copy. A unit's door face from the MCP: origin at its `DoorButtons` side
+  of the wall on the floor, +Z toward its `LiftButton`.
+- **Which way you face can't be judged with the camera held** (first person, L-13b2d3b): the
+  character turns with the camera, so a `BindToRenderStep` look used to press a prompt also
+  turns the body. Read a move's facing from its own numbers, not from the root after.

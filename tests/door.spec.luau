@@ -151,6 +151,7 @@ for _, action in { "Open", "Peek" } :: { Door.Action } do
 end
 local trapped = Door.decide("Locked", "Lift", "Inside", BOTH)
 ok(not trapped.ok and trapped.motion == "Rattle", "a padlocked door rattles from inside too")
+ok(trapped.refusal == "Saw a wall", "and names the way out that's yours, not the padlock")
 local noCutters = Door.decide("Locked", "Cut", "Hall", NONE)
 ok(not noCutters.ok and noCutters.refusal == "Need bolt cutters", "no cutters names the fix")
 local stowed = Door.decide("Locked", "Cut", "Hall", STOWED)

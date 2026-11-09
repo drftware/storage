@@ -2,7 +2,8 @@
 --[[
 	Deals: the deal on the floor (L-04e). Every door is a gamble, and this is where it's settled.
 	A laid floor already has its code's notes stuck and its padlocked doors padlocked (FloorBuilder,
-	from the floor's deck); this deals each unit the first time its door lifts, a peek or an open,
+	from the floor's deck); this deals each unit the first time anyone can see into it, its door
+	lifting (a peek or an open) or a saw's hole going through its wall or top (D-067),
 	and lays what it holds before anyone sees in, so even a peek shows it on the floor: a tool to
 	pick up (Slots), a find standing behind the bulb, or the place a keeper stands, which `dealt`
 	hands on (L-06b stands the keeper there). Left 4 Dead's director deals its items the same way,
@@ -25,9 +26,11 @@ local Doors = require(script.Parent.Doors)
 local Finds = require(ReplicatedStorage.Shared.Finds)
 local FloorBuilder = require(script.Parent.FloorBuilder)
 local NoteSpot = require(ReplicatedStorage.Shared.Elevator.NoteSpot)
+local Saws = require(script.Parent.Saws)
 local Slots = require(script.Parent.Slots)
 local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
 local Tools = require(ReplicatedStorage.Shared.Tools)
+local TopHoleSpecs = require(ReplicatedStorage.Shared.StorageUnit.TopHole.Specs)
 
 -- The stretch of each side wall a crawl hole and its fallen panel take, along from the door's
 -- curtain plane (D-052), with a little room either end: nothing is dealt there (DealSpot).
@@ -35,6 +38,12 @@ local HOLE_MARGIN = 0.2
 local PANEL = CrawlHoleSpecs.Parts.Panel_Pos
 local HOLE_FROM = math.min(CrawlHoleSpecs.From, PANEL.Centre.Z - PANEL.Size.Z / 2) - HOLE_MARGIN
 local HOLE_TO = math.max(CrawlHoleSpecs.To, PANEL.Centre.Z + PANEL.Size.Z / 2) + HOLE_MARGIN
+-- Under the hole a saw cuts in a unit's top (D-067): the floor under its middle, where someone
+-- dropping in lands, and the box its cut-out panel falls in, both in the hole's frame (which starts
+-- `TopHoleSpecs.Channel` back from the doorway's face). Nothing is dealt on either.
+local LAND_X = (TopHoleSpecs.Left + TopHoleSpecs.Right) / 2
+local LAND_Z = (TopHoleSpecs.Front + TopHoleSpecs.Back) / 2
+local FELL = TopHoleSpecs.Parts.PanelEdge
 
 export type Dealt = {
 	unit: Model,
@@ -48,7 +57,7 @@ export type Deals = Brix.System & {
 	-- Fires as each unit is dealt, after what it holds is laid: L-06b stands a keeper at its place.
 	dealt: Brix.Signal<Dealt>,
 	-- A laid floor's deck and its units, each by its slot's index (FloorBuilder's `Laid.slots`).
-	-- Its units are dealt as their doors first lift, until `floor` (the floor's model) is destroyed.
+	-- Its units are dealt as their doors first lift or a saw first holes them, until `floor` (the floor's model) is destroyed.
 	add: (self: any, deck: Deal.Deck, units: { [Model]: number }, floor: Instance) -> (),
 }
 
@@ -98,12 +107,21 @@ function Deals.new(): Deals
 	): CFrame?
 		local slot = deck.floor.slots[index]
 		local spec = Specs[slot.size]
+		local channel = if slot.size == "S" then TopHoleSpecs.Channel.S else TopHoleSpecs.Channel.M
 		-- DealSpot's frame is the door's outer face, the curtain plane's in front of it
 		local size: DealSpot.Unit = {
 			width = spec.Width,
 			depth = spec.Depth,
 			doorWidth = spec.DoorWidth,
 			hole = { from = HOLE_FROM + spec.CurtainPlane, to = HOLE_TO + spec.CurtainPlane },
+			landing = { x = LAND_X, z = LAND_Z + channel },
+			fallen = DealSpot.footprint(
+				FELL.Centre.X,
+				FELL.Centre.Z + channel,
+				0,
+				FELL.Size.X + 2 * HOLE_MARGIN,
+				FELL.Size.Z + 2 * HOLE_MARGIN
+			),
 		}
 		local number = slot.number :: string
 		local note: number? = nil
@@ -169,26 +187,38 @@ function Deals.new(): Deals
 		return nil
 	end
 
-	local function onActed(event: Doors.DoorEvent)
-		local motion = event.motion
-		if not (motion and LIFTS[motion]) then
-			return
-		end
-		local entry = units[event.unit]
+	-- Deals `unit` the first time anyone can see into it; after that it holds what it held.
+	local function open(unit: Model)
+		local entry = units[unit]
 		if not entry then
 			return
 		end
-		units[event.unit] = nil -- dealt once: lifted again, it holds what it held
+		units[unit] = nil
 		local deck, index = entry.deck, entry.index
 		local contents = Deal.open(deck, index, { mood = "Build", awake = awakeOn(deck) })
-		local place = lay(event.unit, deck, index, contents)
+		local place = lay(unit, deck, index, contents)
 		if RunService:IsStudio() then
 			local laid = if place or contents.kind == "Nothing"
 				then ""
 				else " (no art yet, so nothing laid)"
-			print(`Deals: {event.unit.Name} held {said(contents)}{laid}`)
+			print(`Deals: {unit.Name} held {said(contents)}{laid}`)
 		end
-		dealt:fire({ unit = event.unit, contents = contents, place = place })
+		dealt:fire({ unit = unit, contents = contents, place = place })
+	end
+
+	local function onActed(event: Doors.DoorEvent)
+		local motion = event.motion
+		if motion and LIFTS[motion] then
+			open(event.unit)
+		end
+	end
+
+	-- A saw's hole going through shows the unit it leads into as a lifted door does (D-067): what
+	-- it holds is there as the panel falls, before anyone crawls or drops in.
+	local function onSawn(event: Saws.SawEvent)
+		if event.done then
+			open(event.into)
+		end
 	end
 
 	local system = {
@@ -201,6 +231,10 @@ function Deals.new(): Deals
 		local doors = (context.registry:get("doors") :: any) :: Doors.Doors
 		slots = (context.registry:get("slots") :: any) :: Slots.Slots?
 		table.insert(connections, doors.acted:connect(onActed))
+		local saws = (context.registry:get("saws") :: any) :: Saws.Saws?
+		if saws then
+			table.insert(connections, saws.sawing:connect(onSawn))
+		end
 	end
 
 	function system.stop(_: any)

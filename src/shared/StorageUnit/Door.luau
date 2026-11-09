@@ -18,7 +18,8 @@
 
 		Peek, Open           from the hall, on a shut door
 		Close, Slam          on a door that's up, from either side (shut yourself in to hide)
-		Lift                 from inside, on a shut door: always possible unless padlocked
+		Lift                 from inside, on a shut door: always possible unless padlocked,
+		                     when it rattles and says "Saw a wall"
 		Cut                  bolt cutters on a padlock, from the hall, the cutters in your hand
 		Lock                 a padlock on a shut door, from the hall, the padlock in your hand
 
@@ -101,6 +102,9 @@ local MOTIONS: { [Action]: Motion.Kind } = {
 
 -- A door counts as shut below this rise (studs), and as open within it of the top.
 local SHUT = 0.05
+
+-- What a padlocked door says to someone trying to lift it from inside.
+Door.ShutIn = "Saw a wall"
 
 -- What the hall-side buttons offer in each state, left to right.
 local HALL: { [State]: { Action } } = {
@@ -212,7 +216,10 @@ function Door.decide(state: State, action: Action, side: Side, tools: Tools): Ve
 		elseif (action == "Open" or action == "Peek") and inHall then
 			return refuse("Padlocked", "Rattle")
 		elseif action == "Lift" and not inHall then
-			return refuse("Padlocked", "Rattle")
+			-- the button already reads "Padlocked" and the padlock is on the hall side, out of
+			-- reach: say the way out that's yours, a saw through a side wall (a friend's cutters
+			-- are the other)
+			return refuse(Door.ShutIn, "Rattle")
 		end
 		return REFUSED
 	end

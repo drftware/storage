@@ -20,6 +20,34 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-13b2d3b, a clear floor under the hole and the ways out (built Nov 9)
+
+On the walked floor ("Walk a floor"; the test hall's units hold nothing): lean the ladder on a
+unit whose door you haven't touched, climb, saw its top, crawl to the hole's edge.
+- [ ] **What it holds is there as you look down.** Torch on, look down the hole before dropping:
+  the unit's tool or find is already on its floor (Output says "Deals: Unit... held ..." as the
+  panel falls), never under the hole, and never under the fallen panel. Drop in: bare concrete
+  under you and a clear step to the door.
+- [ ] **Decide: a saw's hole deals the unit** (D-067). Until now only a lifting door did, so a
+  sawn-into unit was empty until you lifted its door from inside and things appeared round you.
+  Now a hole through its top or a wall deals it. Say if a keeper waiting under a hole you just
+  cut is what you want, or if holes should deal differently.
+- [ ] **Your foot in the fallen panel** (your call). Landed, look at your feet, and have a
+  friend look: the foot on the panel's side stands 0.6 studs into the panel's corner, 0.4 deep
+  in the steel. A small unit has no room to lay the panel clear of both feet. Pick one: a new
+  resting pose for the panel (leaned on the side wall), a kick that slides it as you land, or
+  leave it. My captures were too dark to judge how much it shows.
+- [ ] **Out by the door.** From where you land, look at the door: Lift shows. Press it: the
+  door heaves up over six seconds and you walk out. On the phone too.
+- [ ] **Padlocked in** (two players, or lock it yourself first: padlock in hand, Lock, then go
+  in by the top). Lift rattles the door and the button says "Saw a wall" for a moment. Is that
+  the right three words? Then saw the side wall and crawl out.
+- [ ] **A friend cuts you out** (two players): shut in behind a padlock, your friend cuts it
+  from the hall; Lift then works. I could only take the padlock off from the server.
+- [ ] **A small unit's bolt cutters** now lie up the middle of the floor, about 6 studs in, in
+  one of four places (the landing, the panel and both crawl spots take the rest). Say if
+  that reads as staged.
+
 ## Now: judge L-13b2d3a, dropping in through a sawn top (built Nov 9)
 
 In the test hall: pick up the saw and the ladder, lean the ladder on Unit 101, climb, switch to the
@@ -37,8 +65,6 @@ saw (1), saw the top, then crawl at the hole until you stop at its edge.
   as they fall, and you hear the thud from the hall. Check a small unit too.
 - [ ] **On the phone:** the Drop in button can be tapped lying at the edge (the MCP's touch
   doesn't reach prompt buttons), and it isn't hidden behind your torch hand.
-- [ ] Getting out again isn't checked yet (next ticket). The door's Open and Lift buttons were
-  in reach from inside Unit 101, untried.
 
 ## Now: judge L-13b2d2c, the hole on the tops (built Nov 9)
 

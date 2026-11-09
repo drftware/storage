@@ -108,17 +108,63 @@ ok(stretchFrom > 3 and stretchTo < 7.5, "the crawl hole's stretch read from its 
 local onHole = { S = 0, M = 0 } :: { [string]: number }
 local laidCount = { S = 0, M = 0 } :: { [string]: number }
 
+-- The hole a saw cuts in a unit's top and where its cut-out panel falls, as Deals works them out
+-- from the top hole's Specs: the landing under the hole's middle, the panel's box 0.2 bigger all
+-- round. The hole's frame starts `Channel` back from the doorway's outer face.
+local topText = fs.readFile("src/shared/StorageUnit/TopHole/Specs.luau")
+local topLeft = number(topText, "\n\tLeft = ([%-%d%.]+)")
+local topRight = number(topText, "\n\tRight = ([%-%d%.]+)")
+local topFront = number(topText, "\n\tFront = ([%-%d%.]+)")
+local topBack = number(topText, "\n\tBack = ([%-%d%.]+)")
+local fellAcross, fellAlong, fellX, fellZ = string.match(
+	topText,
+	"PanelEdge = {%s*Size = Vector3%.new%(([%-%d%.]+), [^,]+, ([%-%d%.]+)%),"
+		.. "%s*Centre = Vector3%.new%(([%-%d%.]+), [^,]+, ([%-%d%.]+)%)"
+)
+ok(
+	topRight - topLeft > 2 and topBack - topFront > 2 and fellAcross ~= nil,
+	"the top hole and its fallen panel read from their Specs"
+)
+local onPanel = { S = 0, M = 0 } :: { [string]: number }
+local onLanding = { S = 0, M = 0 } :: { [string]: number }
+local everything = { S = 0, M = 0 } :: { [string]: number }
+
 for _, size in { "S", "M" } do
 	local spec = fs.readFile(`src/shared/StorageUnit/Specs/{size}.luau`)
 	local plane = number(spec, "\n\tCurtainPlane = ([%d%.]+)")
+	local channel = number(topText, `Channel = \{[^}]*{size} = ([%d%.]+)`)
+	local landing = { x = (topLeft + topRight) / 2, z = channel + (topFront + topBack) / 2 }
 	local unit: DealSpot.Unit = {
 		width = number(spec, "\n\tWidth = ([%d%.]+)"),
 		depth = number(spec, "\n\tDepth = ([%d%.]+)"),
 		doorWidth = number(spec, "\n\tDoorWidth = ([%d%.]+)"),
 		hole = { from = stretchFrom + plane, to = stretchTo + plane },
+		landing = landing,
+		fallen = DealSpot.footprint(
+			assert(tonumber(fellX)),
+			assert(tonumber(fellZ)) + channel,
+			0,
+			assert(tonumber(fellAcross)) + 0.4,
+			assert(tonumber(fellAlong)) + 0.4
+		),
 	}
 	local zones = DealSpot.holes(unit)
 	ok(#zones == 2, `{size}: a hole spot on each side wall`)
+	-- the floor kept clear under the top's hole: a body 2 across by 1 deep standing under the
+	-- hole's middle, with room to spare, and every step from there to the door's line
+	local land = DealSpot.landing(unit)
+	ok(#land == 1, `{size}: a landing under the top's hole`)
+	local body = DealSpot.footprint(landing.x, landing.z, 0, 2, 1)
+	local path = DealSpot.footprint(landing.x, (landing.z + DealSpot.Door) / 2, 0, 2, 1)
+	ok(
+		land[1] ~= nil
+			and DealSpot.near(body, land[1], -0.3)
+			and DealSpot.near(path, land[1], -0.3)
+			and landing.z - 0.5 > plane
+			and landing.z + DealSpot.LandBack < unit.depth / 2,
+		`{size}: the landing holds a body under the hole and the step to the door, in front of the bulb`
+	)
+	local fallen = assert(unit.fallen)
 	local side, back = unit.width / 2 - DealSpot.Wall, unit.depth - DealSpot.Wall
 	for _, item in items do
 		local seen: { [string]: boolean } = {}
@@ -126,7 +172,8 @@ for _, size in { "S", "M" } do
 		for n = 100, 399 do
 			local label = tostring(n)
 			local noteX = NoteSpot.inUnit(unit.depth, label).x
-			for _, note: number? in { nil, noteX } :: { number? } do
+			for pass = 1, 2 do
+				local note: number? = if pass == 2 then noteX else nil
 				local where =
 					`{size} {item.name} unit {label}{if note then " with its note" else ""}`
 				local spot = DealSpot.inUnit(unit, item.thing, item.size, note, label)
@@ -169,6 +216,25 @@ for _, size in { "S", "M" } do
 				if (item.thing == "Tool" and not wide) or size == "M" then
 					ok(clear, `{where}: off the crawl hole spots`)
 				end
+				-- nothing where someone dropping in through the top lands, or between there and
+				-- the door; nor where the top's cut-out panel falls
+				everything[size] += 1
+				if DealSpot.near(poly, land[1], 0) then
+					onLanding[size] += 1
+				end
+				ok(
+					not DealSpot.near(poly, land[1], 0),
+					`{where}: off the landing under the top's hole`
+				)
+				if DealSpot.near(poly, fallen, 0) then
+					onPanel[size] += 1
+				end
+				if size == "M" then
+					ok(
+						not DealSpot.near(poly, fallen, 0),
+						`{where}: not where the top's panel falls`
+					)
+				end
 				ok(nearest >= DealSpot.Door - 1e-9, `{where}: clear of the door's line`)
 				local farthest = -math.huge
 				for i = 2, #poly, 2 do
@@ -180,8 +246,19 @@ for _, size in { "S", "M" } do
 				if item.name == "Ladder" then
 					from, to = 0, 1
 				end
+				-- a small unit's pool is mostly the landing and the holes' spots, so a tool too
+				-- long for what's left of it lies deeper, clear of them all (still nearer the
+				-- door than a medium unit's pool reaches)
+				local deeper = size == "S"
+					and item.thing == "Tool"
+					and clear
+					and not DealSpot.near(poly, fallen, 0)
 				ok(
-					nearest >= from * unit.depth - 1e-9 and farthest <= to * unit.depth + 1e-9,
+					deeper
+						or (
+							nearest >= from * unit.depth - 1e-9
+							and farthest <= to * unit.depth + 1e-9
+						),
 					`{where}: as deep as its kind lies`
 				)
 				if item.thing == "Tool" then
@@ -226,12 +303,14 @@ for _, size in { "S", "M" } do
 				end
 			end
 		end
-		-- a small unit's tool keeps off both hole spots, which leaves it the band in front of
-		-- them and the middle: fewer places, still more than a few
-		-- and the ladder, wall to wall in a small unit, has just the one place there
+		-- a small unit's tool keeps off both hole spots, the landing and where the top's panel
+		-- falls, which leaves it a patch by the door and a strip up the middle: the bolt cutters
+		-- have four places there, and the ladder, wall to wall, just the one; a find loses a
+		-- place or two behind the bulb to the top's panel
 		local least = if size == "S" and item.name == "Ladder"
 			then 1
-			elseif size == "S" and item.thing == "Tool" then 8
+			elseif size == "S" and item.thing == "Tool" then 4
+			elseif size == "S" then 10
 			else 12
 		ok(distinct >= least, `{size} {item.name}: varied unit to unit ({distinct} spots)`)
 	end
@@ -240,6 +319,9 @@ end
 -- a small unit is tight: say how often its finds and keepers stand on a hole spot
 print(
 	`dealspot: {onHole.S} of {laidCount.S} small-unit spots on a crawl hole spot (finds, keepers)`
+)
+print(
+	`dealspot: {onPanel.S} of {everything.S} small-unit spots where the top's panel falls, {onLanding.S} on the landing`
 )
 if failures > 0 then
 	print(`dealspot: {failures} of {checks} checks failed`)

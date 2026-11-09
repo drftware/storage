@@ -412,7 +412,7 @@ on nothing in Brix.
     into 111, in Studio.
   - [ ] **L-12c The hole trap** (needs L-06b's keepers): slam a keeper in, the dented door, its
     break-out after about 90 s, a padlock keeping it in for the floor, the team's bonus.
-- [ ] **L-13 The ladder and the tops.** Split Nov 9:
+- [x] **L-13 The ladder and the tops.** Split Nov 9:
   - [x] **L-13a The tops' closed edges** (D-055). Nothing on the tops drops you off the world: an
     S unit's wire top over every junction square a run reaches (its blocks of wall, a corner's
     outside square), so a run turns the corner, and the kit's plain-wall panel, from the cap up
@@ -421,7 +421,7 @@ on nothing in Brix.
     panel shows its bare sheet down to the floor. `Floor`'s lids, panels and `Run.lids` (pure,
     Lune-checked over 400 floors that no edge is left open). In Studio on floor 1: 78 panels and
     13 lids laid, rays and sliding probes found no way off, the corners closed flush.
-  - [ ] **L-13b The ladder.** Split Nov 9:
+  - [x] **L-13b The ladder.** Split Nov 9:
     - [x] **L-13b1 The ladder's art, carried and dropped.** Done Nov 9 (D-056): an aluminium
       extension ladder built the unit's way (`art/ladder/`), two parts (the base, and the fly
       welded on it, 5 studs of travel for L-13b2), 6.8 long collapsed. Lies where the deal puts
@@ -429,7 +429,7 @@ on nothing in Brix.
       bang and dropped with a clatter on concrete. Friends see it on your left shoulder; it takes
       both hands (no switching slots or picking up, "Drop the ladder first"), and slows your walk
       to 12, as Lethal Company's two-handed items.
-    - [ ] **L-13b2 Up the ladder and along the tops.** Split Nov 9:
+    - [x] **L-13b2 Up the ladder and along the tops.** Split Nov 9:
       - [x] **L-13b2a Lean it and climb.** Done Nov 9 (D-057). A Lean button (R) up on each unit's
         front, left of the door, for whoever holds the ladder: it swings up against the front at the
         4-to-1 rule, rails on the top edge, the fly runs out and locks with a bang, a rattle and a
@@ -468,7 +468,7 @@ on nothing in Brix.
         from past a surface, yours or a friend's (`HandRoom`). Verified in Studio: nose to a wall,
         on a top looking down, the peek. A tool in hand, a friend's beam and the phone wait on
         `OWNER.md`.
-      - [ ] **L-13b2d Saw down into a unit** (owner, Nov 9). Up on the tops with the saw, hold Saw
+      - [x] **L-13b2d Saw down into a unit** (owner, Nov 9). Up on the tops with the saw, hold Saw
         over a unit to cut its top (the saw's 4 s, heard floor-wide, waking what sleeps inside)
         and drop in blind, as Rainbow Six Siege's floor hatches; one-way, no ladder inside. Out:
         an unlocked door rolls up from inside; a padlocked one keeps you in until you saw out
@@ -482,7 +482,7 @@ on nothing in Brix.
           below, tilted on the channel's stub, slid aside. `Top_S`, `Top_M`, `Edge`,
           `PanelEdge`, `Panel`; generated `TopHole/Specs`. Judged in eight look sheets, one at
           phone size; not yet uploaded.
-        - [ ] **L-13b2d2 Saw the top.** Split Nov 9 in three (the art in, the cut, the map):
+        - [x] **L-13b2d2 Saw the top.** Split Nov 9 in three (the art in, the cut, the map):
           - [x] **L-13b2d2a The sawn top in the place.** Done Nov 9 (D-062). Uploaded,
             inserted and prepared into `Props.TopHole`; `TopHole.saw(unit, at?)` swaps the
             unit's top for the holed one, lays the edge and the fallen panel (one `TopPanel`
@@ -507,7 +507,7 @@ on nothing in Brix.
             out). Verified in Studio: sawed with my feet over the spot and glided off, crawled at
             the hole and stopped at its edge looking down, the bulb's light up through the hole
             at full graphics.
-        - [ ] **L-13b2d3 Drop in, and out again.** Split Nov 9 in two (the drop; what's below):
+        - [x] **L-13b2d3 Drop in, and out again.** Split Nov 9 in two (the drop; what's below):
           - [x] **L-13b2d3a Drop in.** Done Nov 9 (D-066). Lying at a sawn hole's edge with your
             head out over it, a Drop in button (F, pad B) shows down the hole and the Drop down
             button hides. Pressed, you tip up, your legs slide down the hole's middle, you hang
@@ -516,12 +516,16 @@ on nothing in Brix.
             as you push off, a thud and a jolt, heard 45 studs (`climbed` "In"). Verified in
             Studio as a player on the test hall's Unit 101: sawed, crawled to the edge, pressed
             F, landed under the hole's middle, head never above 13.66 under the 14-stud ceiling.
-          - [ ] **L-13b2d3b A clear floor, and out again.** The deal keeps the floor under every
-            unit's hole clear (the landing is under the hole's middle, a body 2 by 1), as
-            `DealSpot.Hole` keeps the wall holes' spots; check your left foot against the
-            fallen panel's corner. Out only by an unlocked door rolled up from inside, sawing
-            out sideways, or a friend cutting the lock: try each from inside a unit you dropped
-            into, refusals naming the fix.
+          - [x] **L-13b2d3b A clear floor, and out again.** Done Nov 9 (D-067): the deal lays
+            nothing where you land under a top's hole (3 studs across, from the door's line to
+            0.9 behind the hole's middle) nor where the top's cut-out panel falls, and a unit
+            is now dealt when a saw's hole first opens it (its top or a wall), not only when
+            its door lifts, so what it holds is there as you look down. Lift from inside a
+            padlocked door rattles and says "Saw a wall". Verified in Studio on the walked
+            floor's Unit 102: sawed its top (it held a boombox, at the back), dropped in onto
+            bare floor, tried Lift padlocked, then unlocked, sawed through to Unit 104 (dealt
+            a saw as the hole went through) and walked out under the lifted door. A friend's
+            cut and the foot in the fallen panel wait on `OWNER.md`.
 - [ ] **L-14 The other tools.** Bubble wrap across a hall (pops for anything that crosses, heard
   floor-wide), the air horn (lures keepers to a spot, wakes sleeping ones), the moving blanket
   (thrown over a keeper, blinds it a few seconds), glow sticks (light the building can't see,
@@ -554,6 +558,11 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **Your foot in the top's fallen panel** (L-13b2d3b): landed, the foot on the panel's side
+  stands 0.6 studs into the panel's corner and 0.4 deep in it (the panel has no collision). A
+  small unit has no room to lay the panel clear of your feet, so it wants a new resting pose in
+  `art/tophole` (leaned on the side wall?) or a kick as you land. The owner's call (`OWNER.md`).
 
 - **A friend sliding off a sawn hole** (L-13b2d2c): only the slider hears the steel give; others
   see the glide and hear a pull's boom. The steel's ring and a scrape for everyone near.

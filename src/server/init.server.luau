@@ -28,7 +28,7 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "flashlights", system = Flashlights.new() },
 	-- Everyone's two tool slots: tools on floors, picked up, switched, dropped, handed over.
 	{ slot = "slots", system = Slots.new() },
-	-- The deal on the floor: each unit's contents dealt and laid as its door first lifts.
+	-- The deal on the floor: each unit's contents dealt and laid as its door first lifts or a saw holes it.
 	{ slot = "deals", system = Deals.new() },
 	{ slot = "saws", system = Saws.new() },
 	-- Crawling through a sawn hole: its Crawl buttons, the checks on a press, the move's start.
