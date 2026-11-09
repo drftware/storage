@@ -61,7 +61,7 @@ you drop in blind (your torch can look first), as Rainbow Six Siege's floor hatc
    `Floor.runs`, lids) and never get the ladder's or the tops' buttons.
 9. **Check:** Output warns six times per Play, "rbxassetid://203785492 failed: Asset type does
    not match": not our code; find what asks for it.
-10. Studio traps (docs/STUDIO.md): press prompts with `InputHoldBegin`; no PlayerModule here.
+10. Studio traps (docs/STUDIO.md): press prompts with `InputHoldBegin`; stick: `MoveDirection`.
 
 ## Kickoff for the next agent
 ```text

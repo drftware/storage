@@ -79,11 +79,13 @@ verified: a doc page, Studio, or "untested".
   point it at the prompt first; the Assistant puts the camera back to Custom after the call. A
   `screen_capture` lands about 0.5 s after the call returns, so return early to catch a hold
   mid-way.
-- **No PlayerModule here; MoveDirection still works lying down** (L-13b2c, 2026-11-09): this
-  place's PlayerScripts hold only `RbxCharacterSounds` and our `Client`, so there's no
-  `PlayerModule:GetControls():GetMoveVector()` to ask. `Humanoid.MoveDirection` keeps following
-  the keys (camera-relative, flat) while the Humanoid is PlatformStand: holding A read (1, 0, 0)
-  with the camera looking +Z. Read the stick there.
+- **Reading the stick: the PlayerModule no longer gives it out** (L-13b2c, 2026-11-09): the
+  PlayerModule is at `StarterPlayer.PlayerModule` (see below), not in PlayerScripts, and
+  requiring it returns only `{ ControlModule = { Enabled } }`: no `GetControls()`, no
+  `GetMoveVector()`. Input now runs on Roblox's Input Action System: the stick is
+  `PlayerModule.InputContexts.CharacterContext.MoveAction` (Direction2D, screen-relative).
+  `Humanoid.MoveDirection` is the easy read (camera-relative, flat) and keeps following the keys
+  while the Humanoid is PlatformStand: holding A read (1, 0, 0) with the camera looking +Z.
 - **Aiming the Custom camera from a script sticks** (L-13b2c): a Client `execute_luau` setting
   `CurrentCamera.CFrame` in Custom mode keeps that rotation (first person) until the mouse moves
   it, so a test can point the view, then hold W with `user_keyboard_input` to crawl that way.

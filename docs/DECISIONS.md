@@ -1046,7 +1046,7 @@ off the edge (the first lying spot by a run's end is too near it to swing a 5-st
 The server checks your claimed place five times a second (on the map within 1.5 studs, at lying
 height, no faster than the crawl's surge allows plus lag) and puts you back where you last were,
 telling your screen. Push comes from `Humanoid.MoveDirection` (Roblox keeps it current while you
-lie PlatformStand; this place has no PlayerModule to ask). Your view sways and dips a few
+lie PlatformStand; the PlayerModule no longer hands out its move vector, docs/STUDIO.md). Your view sways and dips a few
 hundredths of a stud with each pull (`CameraOffset`). Every screen hears each crawler's pulls from
 how far their body moves: a soft low boom of the steel (the landing's recording, pitched down and
 quiet), every other one higher, with a quiet drag; every other pull is a `Ladders.climbed` "Crawl"

@@ -242,7 +242,7 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 
 	-- The stick's push and the way you look, flat, in the tops' frame `origin`. The push is your
 	-- Humanoid's MoveDirection, which Roblox keeps setting from the stick while you lie
-	-- PlatformStand (Studio: this place has no PlayerModule to ask).
+	-- PlatformStand (the PlayerModule no longer hands out its move vector: docs/STUDIO.md).
 	local function input(origin: CFrame, humanoid: Humanoid): (number, number, number, number)
 		local camera = Workspace.CurrentCamera
 		if not camera then
