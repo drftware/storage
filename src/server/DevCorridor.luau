@@ -4,8 +4,8 @@
 	friend before the game's floors exist. The server's Host runs it only in Studio Play.
 
 	Eight units face each other across an 8-stud hall that runs along X, numbered 101 to 108 (odd
-	numbers on one side) and painted in the four door colours; 105 and 108 start padlocked; a crawl
-	hole is sawn from 101 into 103 and from 104 into 102 (the saw cuts them in play, L-12b2). Each door
+	numbers on one side) and painted in the four door colours; 105 and 108 start padlocked; no wall
+	is holed until the saw by the spawn cuts one (L-12b2), then Crawl takes you through (L-12b3). Each door
 	has one prompt per action, each on its own key so none hides another: Peek Q, Open E, Close F,
 	Slam G, Lock or Unlock R, and Lift T from inside. A refusal flashes on the prompt ("Padlocked",
 	"Shut it first").
@@ -41,7 +41,6 @@ local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
 local MotionLights = require(script.Parent.MotionLights)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 local Slots = require(script.Parent.Slots)
-local CrawlHole = require(ReplicatedStorage.Shared.StorageUnit.CrawlHole)
 local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
 
 -- The layout, in studs. The hall runs along X; doors face each other across Z.
@@ -119,7 +118,7 @@ local FLOOR_ARRIVAL = CFrame.lookAt(Vector3.new(0, 3, 6), Vector3.new(0, 3, -12)
 -- The test hall's tools (L-11b, L-11c): bolt cutters on the hall floor by the spawn and a pair in
 -- the first unit on the right (open its door to find them); a padlock across the spawn from the
 -- first pair, to lock any shut door with; a saw between them, to cut a hole between any two
--- units side by side that aren't holed yet (L-12b2: 103 and 105, say).
+-- units side by side (L-12b2: 106 into 108, say), then crawl through it (L-12b3).
 local TOOLS = {
 	{ key = "BoltCutters", at = Vector3.new(-28.5, FLOOR_TOP, 2.2), yaw = 64 },
 	{ key = "BoltCutters", at = Vector3.new(-17, 0, 11), yaw = 205 },
@@ -135,9 +134,6 @@ local DOOR_COLOURS = {
 	UnitKit.Colours.Door.Navy,
 }
 local PADLOCKED = { ["105"] = true, ["108"] = true, ["112"] = true }
--- Crawl holes sawn as the hall is laid, until the saw cuts them (L-12b2): from the first unit
--- into the second, so the panel lies in the second. One each way round, to see both.
-local DEV_HOLES = { { "101", "103" }, { "104", "102" } }
 
 local function block(
 	name: string,
@@ -626,13 +622,6 @@ local function build(lights: MotionLights.MotionLights): Folder?
 	building("FarHall", FAR_X, 12, { { x = FAR_X } }, false, folder)
 
 	local count = unitRows(template, UNIT_XS, 0, 101, 0, folder)
-	for _, pair in DEV_HOLES do
-		local from, into =
-			folder:FindFirstChild("Unit" .. pair[1]), folder:FindFirstChild("Unit" .. pair[2])
-		if from and into and from:IsA("Model") and into:IsA("Model") then
-			CrawlHole.saw(from, into)
-		end
-	end
 	if smallUnits then
 		count = unitRows(small :: Model, SMALL_XS, EAST_HALL.Position.Z, 109, count, folder)
 	end

@@ -5,7 +5,7 @@
 	with the hole cut through it, lays the bright cut edge with its tongues of steel bent away from
 	the saw, and drops the cut-out panel flat on the floor of the unit it was pushed into. The
 	wall's collision opens round the hole: too low for anyone to walk through, so crawling it is
-	the "Crawl through" button's job (L-12b2), and a keeper never fits. Art and its numbers:
+	the Crawl button's job (`Crawls`, L-12b3), and a keeper never fits. Art and its numbers:
 	art/hole/README.md, Specs (generated).
 
 		CrawlHole.saw(from, into, at?)  -- on the server: true if it cut one; the swap replicates
@@ -14,6 +14,7 @@
 		CrawlHole.prepare(kit)          -- once, in Studio's Edit, on the freshly imported kit
 
 	Sawing it is `Saws` on the server and `SawView` on screens; its rules are `Sawing` (pure).
+	Crawling through it is `Crawls` and `CrawlView`; its rules and path are `Crawling` (pure).
 
 	The kit lives in the place at ReplicatedStorage.Props.CrawlHole (Rojo can't sync imported
 	meshes, D-009). Its walls and panel wear the unit's own wall texture, copied from

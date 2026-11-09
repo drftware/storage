@@ -9,6 +9,7 @@ local RunService = game:GetService("RunService")
 local Brix = require(ReplicatedStorage.Brix)
 local BehindDoors = require(script.BehindDoors)
 local CameraShake = require(script.CameraShake)
+local CrawlView = require(script.CrawlView)
 local DoorSounds = require(script.DoorSounds)
 local DoorView = require(script.DoorView)
 local ElevatorView = require(script.ElevatorView)
@@ -43,6 +44,7 @@ local host = Brix.Host.new({
 		{ slot = "flashlightView", system = FlashlightView.new() },
 		{ slot = "toolView", system = ToolView.new() },
 		{ slot = "sawView", system = SawView.new(kick) },
+		{ slot = "crawlView", system = CrawlView.new(kick) },
 		{ slot = "freeCursor", system = freeCursor },
 		{ slot = "hallHaze", system = HallHaze.new() },
 		{ slot = "cameraShake", system = cameraShake },

@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Crawls = require(script.Crawls)
 local Deals = require(script.Deals)
 local DevCorridor = require(script.DevCorridor)
 local Doors = require(script.Doors)
@@ -29,6 +30,8 @@ local systems: { Brix.HostEntry } = {
 	-- The deal on the floor: each unit's contents dealt and laid as its door first lifts.
 	{ slot = "deals", system = Deals.new() },
 	{ slot = "saws", system = Saws.new() },
+	-- Crawling through a sawn hole: its Crawl buttons, the checks on a press, the move's start.
+	{ slot = "crawls", system = Crawls.new() },
 }
 if RunService:IsStudio() then
 	-- A test hall of real units to try the doors in. Never on a live server.

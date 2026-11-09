@@ -366,7 +366,7 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
     `Props.CrawlHole`; `CrawlHole.saw(from, into)` swaps the wall two units in a row share and
     opens its collision round the hole (`Boxes`, Lune-checked). The hole opens at the same place
     in every unit (`crawl_*` in the unit's spec: 3.75 to 6.75 along, 0.3 to 2.9 up). The test
-    hall saws 101 into 103 and 104 into 102; judged from both units on the Galaxy A16
+    hall sawed 101 into 103 and 104 into 102 until L-12b3; judged from both units on the Galaxy A16
     (`docs/art/L-12b1-*.jpg`).
   - [x] **L-12b2 Sawing it.** Done Nov 9 (D-053): a Saw button each side of every wall two
     units in a row share (`Saws`), shown only to someone carrying a saw; hold it 4 s with the saw
@@ -376,21 +376,29 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
     anyone near (`SawView`). Server-checked like Cut and again before it cuts. The deal keeps off
     the hole spots (`DealSpot`). A saw lies by the test hall's spawn. Cut 103 into 105, 106 into
     108 and the small 109 into 111 in Studio; a short hold stops clean.
-  - [ ] **L-12b3 Crawling through.** "Crawl through" on both sides of a cut hole takes you through
-    it (DOORS' and Pressure's vents): a short crouched move, the camera low, a scrape of steel;
-    keepers can't follow. Drop the test hall's two ready-cut holes once the saw cuts them. A
-    holed wall carries `CrawlHole.Tag` (a screen finds it streaming in); the button can stand
-    where the Saw button stood (`Saws`' spot), each side.
+  - [x] **L-12b3 Crawling through.** Done Nov 9 (D-054): a Crawl button (E, X on a pad) each side
+    of every holed wall (`Crawls`, watching `CrawlHole.Tag`), shown only on your own side and not
+    while you crawl. Press it and the game takes you through in about 1.4 s, as DOORS' and
+    Pressure's vents: down onto your belly at the hole's mouth (a thud, a jolt), two pulls through
+    (a drag each, the cut steel scraping your shoulders, your view low and rocking), up on your
+    feet in the next unit (`Crawling`, pure, Lune-checked). Your screen moves your body (touching
+    nothing on the way); every screen poses the crawler's arms reaching and hauling (`CrawlView`).
+    One body in a hole at a time ("Wait for them"); `Crawls.crawled` for keepers (35 studs). The
+    test hall no longer cuts holes as it's laid. Crawled 106 into 108 and back, and the small 109
+    into 111, in Studio.
   - [ ] **L-12c The hole trap** (needs L-06b's keepers): slam a keeper in, the dented door, its
     break-out after about 90 s, a padlock keeping it in for the floor, the team's bonus.
-- [ ] **L-13 The ladder and the tops.** First close a top run's edges: a run's back drops into
-  the 16-stud gap behind its row (no floor, no deck: you'd see the sky between the decks), and a
-  run's end beside a junction drops into the junction's hollow block of wall (floored, 8 by 8, no
-  way out). A panel from each row's back up to the joists, as a plain wall's above its cap, and a
-  lid on each block (an S wire top fits it, and lets a run turn the corner); `Floor.runs` lists
-  each run's slots in order. Then the ladder: lean it on a unit, climb onto the wire tops, run a
-  row while a keeper below loses you. A wire top leaves 2.8 studs under the joists: crawl-only up
-  there, or taller floors (`OWNER.md`).
+- [ ] **L-13 The ladder and the tops.** Split Nov 9:
+  - [ ] **L-13a The tops' closed edges.** A top run's back drops into the 16-stud gap behind its
+    row (no floor, no deck: you'd see the sky between the decks), and a run's end beside a
+    junction drops into the junction's hollow block of wall (floored, 8 by 8, no way out). A
+    panel from each row's back up to the joists, as a plain wall's above its cap, and a lid on
+    each block (an S wire top fits it, and lets a run turn the corner); `Floor.runs` lists each
+    run's slots in order.
+  - [ ] **L-13b The ladder.** Its art first (the unit's way); lean it on a unit, climb onto the
+    wire tops, run a row while a keeper below loses you. A wire top leaves 2.8 studs under the
+    joists: crawl-only up there, or taller floors (`OWNER.md`). May split again (the ladder's
+    art; climbing and the tops).
 - [ ] **L-14 The other tools.** Bubble wrap across a hall (pops for anything that crosses, heard
   floor-wide), the air horn (lures keepers to a spot, wakes sleeping ones), the moving blanket
   (thrown over a keeper, blinds it a few seconds), glow sticks (light the building can't see,
@@ -441,6 +449,14 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
   in; a quick orange glow on the cut edge's bright strip, cooling to steel, would join them.
 - **Saw dust on the sawer's side** (L-12b2): a little grey dust puffing off the blade with the
   sparks, settling under the cut (with the filings above).
+- **A friend's legs while they crawl** (L-12b3): their arms reach and haul, but their legs trail
+  straight; a knee drawn up in turn with each pull (hips and knees posed, as the shoulders are)
+  would sell the drag.
+- **Your hands through the hole** (L-12b3): crawling, first person shows only the tool in your
+  hand floating ahead; your hands planting on the floor at each pull (with the saw's and the
+  torch's hands) would put you on your belly.
+- **Dust at the lip** (L-12b3): a puff of floor dust as you land on your belly at the hole, and a
+  grey smear on the cut's lip after the first body has dragged over it.
 - **Your hand on the saw** (L-12a): first person shows the saw alone, low on the left; a hand
   round its rear grip would sell the hold, with the cutters' and the torch's hands.
 

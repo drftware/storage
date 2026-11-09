@@ -74,6 +74,26 @@ verified: a doc page, Studio, or "untested".
   mid-way.
 - **No Device Simulator from a script:** `game:GetService("StudioDeviceEmulatorService")` is nil
   in an Edit `execute_luau` (L-12b2), so a phone view needs the Device Simulator set by hand.
+- **Avatar joints are AnimationConstraints** (Play, L-12b3): a player's R15 shoulders here
+  (`RightUpperArm.RightShoulder`) are `AnimationConstraint`s, not `Motor6D`s (Roblox's newer avatar
+  joints). Both have `Transform`, and a write in `PreSimulation` holds through physics; code that
+  looks only for a `Motor6D` finds nothing (FlashlightView's `motor()` does). Luau can't index
+  `Transform` through the two classes' union, so CrawlView sets it through one `any`.
+- **First person's camera spot** (Play, L-12b3, LockFirstPerson): 1.5 studs above the root and
+  half a stud back along the look (the closest zoom). A Scriptable camera handed back to Custom at
+  exactly that spot carries on with no jump and keeps its look.
+- **Moving your own body by script** (Play, L-12b3): the owner's screen sets the root's CFrame
+  (velocities zeroed) in `PreSimulation`, with `Humanoid.PlatformStand` on (Animate stops its
+  tracks) and the parts in a server-registered collision group that collides with nothing: the
+  body holds the path (lying at 0.77 for 0.8: one step of gravity) and stands up cleanly after.
+  To tune a pose without restarting Play, hold the body there from a Client `execute_luau` the
+  same way, set the joints there, and read the parts' positions in the hole's frame.
+- **Sounds measured for the crawl** (L-12b3; 0.1 s bins at half speed): "Body Fall Master 28"
+  9113475819 hits at 0 s (-6 dB) and rolls to 0.5 s; "Sand Bag Slide 6" 9118767703 slides at
+  0.6 to 1.0 s (-30 to -18 dB) and 1.4 to 1.8 s, hits at 1.8 and 2.4 s; "Metal Scrapes 1"
+  9116818437 is one steady hollow drag, -12 to -6 dB, from 0.1 to 5.5 s; "Metal Impacts And
+  Scrapes 8" 9116709512 is a hit at 0 s, not a scrape; "Slide By Books Across Table 5" 9119195573
+  is a soft hiss peaking at 0.5 s.
 - **Phone in the Device Simulator:** set the device in Edit first, then the orientation (it errors
   with no phone active), then Play. Touch is on: the dynamic thumbstick is the left part of the
   screen (`PlayerGui.TouchGui`), and `user_mouse_input` drags drive it and the look. A

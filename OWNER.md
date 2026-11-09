@@ -16,6 +16,32 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-12b3, crawling through (built Nov 9)
+
+- [ ] **Crawl through** (Play on a computer). Saw 106 into 108 first (the next section's first
+  check). A "Crawl / Unit 108" button now sits low at the hole on 106's side: press E. You drop
+  onto your belly at the hole's mouth (a body's thud, a small jolt), drag yourself through in two
+  pulls (a drag on each, a steel scrape as your shoulders reach the cut, your view rocking, your
+  eyes just over the bright lip), then stand up in 108 looking on the way you went: about 1.4 s.
+  108 is padlocked, so this is the only way in; crawl back ("Crawl / Unit 106" on 108's side).
+  Is the length right, tense with a keeper behind you and not a cutscene? Do the three sounds
+  sound like a body and steel (picked by loudness, unheard)?
+- [ ] **The button:** you see only your own side's (the far one shows through the hole
+  otherwise), none while you crawl, and none from the hall or more than 5 studs off.
+- [ ] **A friend watching** (Clients and Servers, 2 players): one crawls while the other watches
+  from 106, then from 108. Look for: the body dropping, sliding through head first with the arms
+  reaching ahead and hauling in turn, the hands meeting ahead of the head, then standing up; the
+  sounds heard about a unit each way. Both press Crawl at once: the second gets "Wait for them".
+  Screens here show the crawler's own view and an outside view of the same body (Studio).
+- [ ] **A small unit:** saw 109 into 111 (the short hall past the turn) and crawl it both ways:
+  you stand up clear of the far wall.
+- [ ] **On the phone** (Galaxy A16): where the Crawl button sits, and the low view's read.
+- [ ] **Decide, defaults in place** (D-054): (1) a pressed button and a short move the game makes
+  (or a crawl you steer, as DOORS' vents?); (2) one body in a hole at a time; (3) the hole's 3
+  studs fit a default avatar's shoulders only with its arms tucked to its head, so a bulky avatar
+  may graze the sides for a moment: widen the hole to 4 (an art rebuild) if you see it; (4) E to
+  crawl, the door's key.
+
 ## Now: judge L-12b2, sawing the hole (built Nov 9)
 
 - [ ] **Saw a hole** (Play on a computer). A green saw now lies on the hall floor by the spawn,
@@ -48,15 +74,15 @@ nowhere else.
 
 ## Now: judge L-12b1, the crawl hole (built Nov 9)
 
-- [ ] **Look at the two test holes** (Play on a computer, by the spawn; no saw yet, L-12b2 cuts
-  them in play). The test hall saws one from unit 101 into 103 and one from 104 into 102. Open
-  101 (E) and look at its right-hand wall: a low ragged hole, a bright strip of bare steel round
-  its cut, a few tongues of steel bent away from you, and the cut panel lying on 103's floor
-  beyond. Then open 103 and look back: the panel flat on its ribs in front of the hole, the
-  tongues bent toward you. Shut 103 and look from 101: its floor by the hole lit by 101's bulb
-  through it. Does it read as sawn, and does the far side's square of light land? Is the hole
-  too big or too small for a crawl (3 studs wide, 2.6 tall)?
-- [ ] **On the phone** (Galaxy A16, set in Edit first): from 101's and 103's doorways it reads as
+- [ ] **Look at a sawn hole** (Play on a computer, after sawing 106 into 108 above; the test
+  hall no longer cuts holes as it's laid). Open 106 (E) and look at its wall toward 108: a low
+  ragged hole, a bright strip of bare steel round its cut, a few tongues of steel bent away from
+  you, and the cut panel lying on 108's floor beyond. Then crawl through and look back from 108:
+  the panel flat on its ribs in front of the hole, the tongues bent toward you; 108's door stays
+  shut (padlocked), so its floor by the hole is lit only by 106's bulb through it. Does it read
+  as sawn, and does that square of light land? Is the hole too big or too small for a crawl (3
+  studs wide, 2.6 tall)?
+- [ ] **On the phone** (Galaxy A16, set in Edit first): from 106's doorway, once sawn, it reads as
   a hole at once (`docs/art/L-12b1-a16-*.jpg`). The sheets in `art/sheets/hole-*.png` show the
   dark side, the light through it, your torch on it.
 - [ ] **Decide, defaults in place** (D-052): (1) the hole opens at the same place in every

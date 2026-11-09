@@ -891,3 +891,28 @@ stand on a spot anyway. Not chosen: progress kept between holds (no partial-cut 
 restarting is honest); the button shown to everyone (a Saw button in every unit's walls, for a
 tool most players don't carry); a hold under 3 s (the floor barely hears it) or over 5 s (too
 slow to cut one mid-chase for the hole trap).
+
+## D-054 Crawling through: a pressed button, a short move the game makes, your screen moving you (L-12b3, Nov 9)
+Every holed wall gets a Crawl button each side at the hole (`Crawls`), E (X on a pad), the door's
+key: a verb you press, not hold, because it's the escape with a keeper on your heels. The game
+then takes you through in about 1.4 s, as DOORS' and Pressure's vents take you low through a gap:
+0.3 s down onto your belly at the hole's mouth (from wherever you pressed), 0.75 s in two pulls
+that surge in their middle, 0.35 s up on your feet a step past the hole (`Crawling.pose`, pure,
+Lune-checked: always forward, flat at the hole's height wherever any of you is in the wall's
+plane, both ends fitting a small unit). Your own screen moves your body (Roblox gives each screen
+its own player's body, so friends see it move smoothly; a server-moved body steps at the network's
+rate), with PlatformStand on and your parts in a collision group that touches nothing, so the
+hole's edges and the floor can't snag it; the server checks the press (inside the unit you crawl
+from, within reach, rate, not crawling already, the hole free) and, if you're still in that unit
+once the move is over, puts you through itself. Your view rides with your head: low, looking at
+the hole, rocking toward each hauling arm, then rising, handed back exactly where Roblox's
+first-person camera sits (1.5 up, 0.5 back) so nothing jumps. Every screen poses a crawler's arms
+up past the head, tucked in so they fit the hole, the hauling hand planting on the floor; plays a
+body's thud as you land, a drag on each pull and a steel scrape as your shoulders reach the cut,
+heard 35 studs (`Crawls.crawled` tells keepers the same). One body in a hole at a time: a second
+press gets "Wait for them". A Crawl button shows only on your own side of its wall (through the
+hole you'd see the far one) and none while you crawl. A keeper (6.3 tall) never gets the button
+and can't fit the 2.6 hole. Not chosen: a crawl you steer yourself (a crouch mode and its camera
+for one gap; the ticket's moment is the escape, not the steering); holding the button (slow when
+it's the escape); a longer move (reads as a cutscene) or under a second (reads as a teleport); a
+wider hole (the default avatar fits with its arms tucked; OWNER.md asks).
