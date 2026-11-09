@@ -507,10 +507,21 @@ on nothing in Brix.
             out). Verified in Studio: sawed with my feet over the spot and glided off, crawled at
             the hole and stopped at its edge looking down, the bulb's light up through the hole
             at full graphics.
-        - [ ] **L-13b2d3 Drop in, and out again.** Drop in (pressed, as `Tops.drop`): through the
-          hole feet first, arms up, a landing crouch inside, heard. The deal keeps the floor
-          under every unit's hole clear, as it keeps the wall holes' spots. Out only by an
-          unlocked door rolled up from inside, sawing out sideways, or a friend cutting the lock.
+        - [ ] **L-13b2d3 Drop in, and out again.** Split Nov 9 in two (the drop; what's below):
+          - [x] **L-13b2d3a Drop in.** Done Nov 9 (D-066). Lying at a sawn hole's edge with your
+            head out over it, a Drop in button (F, pad B) shows down the hole and the Drop down
+            button hides. Pressed, you tip up, your legs slide down the hole's middle, you hang
+            a beat with your head under the ceiling, drop feet first with your arms going up,
+            and land in a crouch on the unit's floor facing its door: 0.96 s, the steel's ring
+            as you push off, a thud and a jolt, heard 45 studs (`climbed` "In"). Verified in
+            Studio as a player on the test hall's Unit 101: sawed, crawled to the edge, pressed
+            F, landed under the hole's middle, head never above 13.66 under the 14-stud ceiling.
+          - [ ] **L-13b2d3b A clear floor, and out again.** The deal keeps the floor under every
+            unit's hole clear (the landing is under the hole's middle, a body 2 by 1), as
+            `DealSpot.Hole` keeps the wall holes' spots; check your left foot against the
+            fallen panel's corner. Out only by an unlocked door rolled up from inside, sawing
+            out sideways, or a friend cutting the lock: try each from inside a unit you dropped
+            into, refusals naming the fix.
 - [ ] **L-14 The other tools.** Bubble wrap across a hall (pops for anything that crosses, heard
   floor-wide), the air horn (lures keepers to a spot, wakes sleeping ones), the moving blanket
   (thrown over a keeper, blinds it a few seconds), glow sticks (light the building can't see,

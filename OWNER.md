@@ -20,6 +20,26 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-13b2d3a, dropping in through a sawn top (built Nov 9)
+
+In the test hall: pick up the saw and the ladder, lean the ladder on Unit 101, climb, switch to the
+saw (1), saw the top, then crawl at the hole until you stop at its edge.
+- [ ] **The button.** Look down into the unit: "Drop in" shows down the hole, and Unit 101's
+  "Drop down" is gone while it does. Back off or turn away: Drop in goes, Drop down returns. Is
+  only seeing it when you look down the hole right, or should it show as soon as you're at the edge?
+- [ ] **The drop.** Press F. Look for: you tip up and your legs go down the hole, a beat hanging
+  in it, the fall, a crouch on the unit's floor; the steel's ring as you leave it, a thud and a
+  jolt as you land; your view never pokes through the ceiling or the steel. Under a second.
+  Does the half-beat hang in the hole feel right, or should it be one motion?
+- [ ] **Which way you land** (your call, D-066): you land facing the door. The last handoff's
+  sketch also said "the door at your back"; say if you'd rather land looking into the unit.
+- [ ] **With a friend watching** (two players): their body goes cleanly through the hole, arms up
+  as they fall, and you hear the thud from the hall. Check a small unit too.
+- [ ] **On the phone:** the Drop in button can be tapped lying at the edge (the MCP's touch
+  doesn't reach prompt buttons), and it isn't hidden behind your torch hand.
+- [ ] Getting out again isn't checked yet (next ticket). The door's Open and Lift buttons were
+  in reach from inside Unit 101, untried.
+
 ## Now: judge L-13b2d2c, the hole on the tops (built Nov 9)
 
 - [ ] **Crawl at a hole** (Play on a computer). Saw Unit 101's top as before, then crawl round

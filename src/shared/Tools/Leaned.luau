@@ -36,9 +36,15 @@ Leaned.SpotAttribute = "LadderSpot"
 -- `FixAttribute` to where it puts you back when your screen claims a place off the tops.
 Leaned.DropAttribute = "LadderDropX"
 Leaned.FixAttribute = "TopsFix"
+-- Dropping in through a sawn top's hole (L-13b2d3a) the move is "In", and the front's frame the
+-- hole's (`TopHole.frame`).
 -- On the buttons only someone up on the tops sees: Climb down at a ladder's top, Drop down at
--- every unit's front.
+-- every unit's front, Saw and Drop in over a top's hole.
 Leaned.TopButtonTag = "TopsButton"
+-- Also on each Drop in button, which you see only lying at its hole's edge with your head out
+-- over it, and on each Drop down button, which you don't see then (they share a key).
+Leaned.InButtonTag = "TopsDropIn"
+Leaned.DropButtonTag = "TopsDropDown"
 
 local fits: { [string]: Leaning.Fit } = {}
 

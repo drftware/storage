@@ -77,6 +77,27 @@ Tops.DropReach = 6 -- the Drop down button (middle of the front's edge): from an
 Tops.DropNear = 4.5 -- studs in from the front your root may be to drop
 Tops.LandKick = 0.4 -- the jolt to your view as you land (Shake trauma)
 
+-- The drop in through a sawn top's hole (L-13b2d3a), played by the game as the drop off a front
+-- is: you tip up and slide your legs down through the hole's middle, hang a moment upright in it,
+-- drop feet first with your arms up, and land in a crouch on the unit's floor, facing its door.
+-- Under a second, as Rainbow Six Siege's drop through a hatch.
+Tops.InOver = 0.36 -- tipping up and sliding your legs down the hole until you hang in it
+Tops.InFall = 0.3 -- the fall: Roblox's gravity over the eight and a half studs left to the floor
+Tops.InSeconds = Tops.InOver + Tops.InFall + Tops.Land
+Tops.InClear = 0.25 -- studs your feet clear the steel by as they swing round to the hole
+-- Studs over the steel the top of your head keeps under as you tip up: the halls' ceiling is 3.86
+-- over a unit's top, too low to stand under, so your legs go down the hole as your body comes up.
+Tops.InHead = 3.6
+Tops.InHeadUp = 2.2 -- studs from your root to the top of your head
+Tops.InBack = 1 -- studs toward the door your body's line may start from the hole's middle
+Tops.InEdge = 0.3 -- studs short of a hole's edge your head still counts as out over it
+Tops.InReach = 6.5 -- the Drop in button (down the hole's middle): from lying anywhere round its edge
+Tops.InArm = math.rad(170) -- your arms up over your head as you go through
+Tops.InKick = 0.5 -- the jolt to your view as you land (Shake trauma): a longer fall than the hall's
+-- Your body going through the hole, for the checks: shoulders across, chest to back.
+Tops.InWide = 2
+Tops.InDeep = 1
+
 -- Lying across a top as its hole goes through, you slide off its edge onto the steel (the server
 -- moves you, your screen glides you there): the nearest place your body fits, this far at most.
 Tops.SlideReach = 5 -- studs: a body across the middle of a hole is about 2.5 from clear
@@ -558,6 +579,80 @@ function Tops.dropX(x: number, width: number): number
 	return math.clamp(x, -limit, limit)
 end
 
+--[[
+	The drop in through a sawn hole, `t` seconds in, in the hole's frame (`TopHole.frame`: x across,
+	y up from the unit's floor, +Z back from the hall): your root's place and pitch (0 standing,
+	-pi/2 on your belly) facing the door, and how far from where you lay as you pressed to blend
+	toward that (0 to 1). (`cx`, `cz`) is the hole's middle, `top` the steel's top face, `lieY` your
+	root's height lying, `standUp` its height standing.
+
+	You tip up about a point over the hole's middle, your head toward the door, so the line of your
+	body always goes down through the middle of the hole. Your feet stay over the steel until
+	you're steep enough to fit the hole front to back, then slide down it as your head comes up
+	under the ceiling (`InHead`); upright, you hang in the hole and drop.
+]]
+function Tops.dropIn(
+	t: number,
+	cx: number,
+	cz: number,
+	top: number,
+	lieY: number,
+	standUp: number
+): (number, number, number, number, number)
+	local hang = top + Tops.InHead - Tops.InHeadUp -- upright in the hole, your head under the ceiling
+	if t < Tops.InOver then
+		local k = smooth(t / Tops.InOver)
+		local tilt = math.pi / 2 * k -- 0 lying, a quarter turn upright
+		local s, c = math.sin(tilt), math.cos(tilt)
+		-- the point you tip about: at your lying height, coming down to the steel's face as you
+		-- come upright, and set toward the door so your body's line meets that face mid-hole
+		local up = (lieY - top) * (1 - s)
+		local back = if up * c < Tops.InBack * s then up * c / s else Tops.InBack
+		-- how far up your body's line from that point your root is: your feet just clear of the
+		-- steel, or less once your head would reach the ceiling
+		local along = standUp + Tops.InClear
+		if s > 1e-3 then
+			along = math.min(along, (Tops.InHead - up - c / 2) / s - Tops.InHeadUp)
+		end
+		return cx, top + up + along * s, cz - back - along * c, tilt - math.pi / 2, k
+	end
+	local f = t - Tops.InOver
+	if f < Tops.InFall then
+		local k = f / Tops.InFall
+		-- falling from rest: the drop grows with the square of the time
+		return cx, lerp(hang, standUp, k * k), cz, 0, 1
+	end
+	local k = math.clamp((f - Tops.InFall) / Tops.Land, 0, 1)
+	return cx, standUp - Tops.Squat * math.sin(math.pi * k) * (1 - k * 0.3), cz, 0, 1
+end
+
+-- A body dropping in's arms, `t` seconds in: how far they've gone from the crawl's reach to up
+-- over your head (0 to 1; up only once you're falling, under the ceiling), and how much of the
+-- pose they wear over their animation (1 to 0 as you land).
+function Tops.inArms(t: number): (number, number)
+	local f = t - Tops.InOver
+	return smooth(2 * f / Tops.InFall), 1 - smooth((f - Tops.InFall) / Tops.Land)
+end
+
+--[[
+	Whether a crawler lies at a sawn hole's edge with their head out over it, where Drop in is
+	offered and taken: root at (x, z) heading (hx, hz), in any flat frame `hole` is a rectangle in.
+	`slack` is studs past the edge's own allowance (the server's, for lag).
+]]
+function Tops.atHole(
+	hole: Rect,
+	x: number,
+	z: number,
+	hx: number,
+	hz: number,
+	slack: number?
+): boolean
+	local along = Tops.Body[1].along
+	local px, pz = x + hx * along, z + hz * along
+	local s = Tops.InEdge + (slack or 0)
+	return px >= hole.x0 - s and px <= hole.x1 + s and pz >= hole.z0 - s and pz <= hole.z1 + s
+end
+
 -- A stretch of a recording (as Leaning's): played once from `from` for `length` seconds.
 export type Sound = {
 	id: string,
@@ -625,6 +720,14 @@ function Tops.dropCues(): { Cue }
 	return {
 		{ at = 0, sound = Tops.Sounds.Shift, kick = 0 },
 		{ at = Tops.Over + Tops.Fall - 0.02, sound = Tops.Sounds.Land, kick = Tops.LandKick },
+	}
+end
+
+-- The drop in's: the steel giving as you push off it, your landing on the unit's floor.
+function Tops.inCues(): { Cue }
+	return {
+		{ at = 0, sound = Tops.Sounds.Shift, kick = 0 },
+		{ at = Tops.InOver + Tops.InFall - 0.02, sound = Tops.Sounds.Land, kick = Tops.InKick },
 	}
 end
 

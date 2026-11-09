@@ -23,7 +23,9 @@
 	A top sawn through (`holed`, from Saws) comes off the tops' map: nobody crawls over its hole,
 	your head may go out over it to look down, and anyone lying across it as it goes through slides
 	off its edge onto the steel. The ladder's lying spots on the hole, or across it from the
-	ladder, are out; the first, by the ladder, is always clear of it (L-13b2d2c).
+	ladder, are out; the first, by the ladder, is always clear of it (L-13b2d2c). A sawn top gets a
+	Drop in button over its hole (F), taken lying at the hole's edge with your head out over it: the
+	game takes you down through it onto the unit's floor, facing its door (L-13b2d3a).
 
 	Take: the fly runs in and the ladder's back on your shoulder (`Slots:handBack`), refused while
 	anyone's on it ("Someone's on it"). Those up top drop down instead.
@@ -67,11 +69,15 @@ local EDGE_UP = 0.3
 local SPOT_CLEAR = 1.6 -- studs from a crawler's root that a lying spot counts as taken
 local SIDE_PIXELS = 150 -- Take beside Climb on screen, as a door's buttons sit (a button's width)
 local NEAR_SPOT = 3 -- studs from where a move ends that count as there
+-- Drop in: this far down the hole from the steel's face, in its middle, so it's on screen as you
+-- look down at the unit's floor from the hole's edge (at the steel's face, or a stud under it, it
+-- sat off the top of that view; Studio)
+local IN_DOWN = 3
 
 export type ClimbEvent = {
 	player: Player,
 	unit: Model,
-	kind: "Raise" | "Up" | "Down" | "Crawl" | "Drop",
+	kind: "Raise" | "Up" | "Down" | "Crawl" | "Drop" | "In",
 	at: Vector3,
 	reach: number, -- studs it's heard to: a keeper within it hears it
 }
@@ -103,14 +109,16 @@ type Front = {
 	at: Attachment,
 	prompt: ProximityPrompt,
 	drop: Attachment, -- its Drop down button, for those up on the tops
+	into: Attachment?, -- its Drop in button, over its top's hole once that's sawn
 	stand: Stand?,
 }
-type Move = "Up" | "Top" | "Down" | "Drop"
+type Move = "Up" | "Top" | "Down" | "Drop" | "In"
 type Climb = {
 	player: Player,
 	character: Model,
 	stand: Stand?, -- the ladder you're on, going up or down; nil while you crawl the tops
 	front: Front, -- your move's front: the ladder's going up or down, the unit's as you drop
+	into: CFrame?, -- dropping in: the hole's frame (TopHole.frame)
 	spot: number,
 	move: Move,
 	ends: number, -- os.clock() at which the move is over
@@ -210,6 +218,21 @@ function Ladders.new(): Ladders
 		local x, y, z, p =
 			Tops.drop(Tops.DropSeconds, c.dropX, fit.faceZ, fit.topY, Leaning.ProneUp, c.standUp)
 		return Leaned.outward(c.front.frame, x, y, z, p)
+	end
+
+	-- Where a drop in through the hole at `hole` lands you: on the unit's floor under its middle,
+	-- facing the door.
+	local function landedIn(hole: CFrame, standUp: number): CFrame
+		local r = TopHole.Rect
+		local x, y, z, p = Tops.dropIn(
+			Tops.InSeconds,
+			(r.left + r.right) / 2,
+			(r.front + r.back) / 2,
+			r.top,
+			r.top + Leaning.ProneUp,
+			standUp
+		)
+		return Leaned.outward(hole, x, y, z, p)
 	end
 
 	--[[
@@ -399,6 +422,7 @@ function Ladders.new(): Ladders
 			nextCheck = 0,
 			travel = 0,
 			dropX = 0,
+			into = nil,
 		}
 		climbs[player] = c
 		character:SetAttribute(Leaned.FrontAttribute, front.frame)
@@ -493,6 +517,81 @@ function Ladders.new(): Ladders
 			at = landedAt(c).Position,
 			reach = Tops.DropHeard,
 		})
+	end
+
+	-- Drop in through a sawn top's hole: lying at its edge, head out over it, down onto the unit's
+	-- floor.
+	local function dropIn(front: Front, player: Player)
+		local c = climbs[player]
+		if not (c and c.move == "Top" and pressOk(player)) then
+			return
+		end
+		local root = rootOf(player)
+		local hole = TopHole.frame(front.unit)
+		if not (root and hole and TopHole.sawn(front.unit)) then
+			return
+		end
+		if math.abs(root.Position.Y - c.lyingY) > Tops.HeightSlack then
+			return
+		end
+		local r = TopHole.Rect
+		local p = hole:PointToObjectSpace(root.Position)
+		-- lying, your root's up is the way your head points
+		local head = hole:VectorToObjectSpace(root.CFrame.UpVector)
+		local flat = math.sqrt(head.X * head.X + head.Z * head.Z)
+		if flat < 0.5 then
+			return
+		end
+		local rect: Tops.Rect = { x0 = r.left, x1 = r.right, z0 = r.front, z1 = r.back }
+		if not Tops.atHole(rect, p.X, p.Z, head.X / flat, head.Z / flat, Tops.Slack) then
+			return
+		end
+		c.stand = nil
+		c.into = hole
+		c.ends = os.clock() + Tops.InSeconds
+		c.check = nil
+		setFront(c, front, 1)
+		-- this move's frame is the hole's, which every screen plays it in
+		c.character:SetAttribute(Leaned.FrontAttribute, hole)
+		setMove(c, "In", true)
+		climbed:fire({
+			player = player,
+			unit = front.unit,
+			kind = "In",
+			at = landedIn(hole, c.standUp).Position,
+			reach = Tops.DropHeard,
+		})
+	end
+
+	-- A sawn top's Drop in button, over the middle of its hole, for those up there (L-13b2d3a).
+	local function addIn(front: Front)
+		local root = front.unit.PrimaryPart
+		local hole = TopHole.frame(front.unit)
+		if front.into or not (root and hole) then
+			return
+		end
+		local r = TopHole.Rect
+		local at = Instance.new("Attachment")
+		at.Name = "DropInButton"
+		at.Parent = root
+		-- turned as the hole is, so a screen reads the hole's sides off it
+		at.WorldCFrame = hole
+			* CFrame.new((r.left + r.right) / 2, r.top - IN_DOWN, (r.front + r.back) / 2)
+		local number = string.match(front.unit.Name, "^Unit(.+)$") or front.unit.Name
+		local p = Prompts.make(at, {
+			objectText = `Unit {number}`,
+			actionText = "Drop in",
+			key = Enum.KeyCode.F,
+			pad = Enum.KeyCode.ButtonB,
+			reach = Tops.InReach,
+		})
+		p.RequiresLineOfSight = false
+		p:AddTag(Leaned.TopButtonTag)
+		p:AddTag(Leaned.InButtonTag)
+		front.into = at
+		p.Triggered:Connect(function(player: Player)
+			dropIn(front, player)
+		end)
 	end
 
 	local function take(stand: Stand, player: Player, refuse: (string) -> ())
@@ -700,6 +799,7 @@ function Ladders.new(): Ladders
 		})
 		d.RequiresLineOfSight = false
 		d:AddTag(Leaned.TopButtonTag)
+		d:AddTag(Leaned.DropButtonTag)
 		local front: Front = {
 			unit = unit,
 			frame = frame,
@@ -708,9 +808,13 @@ function Ladders.new(): Ladders
 			at = at,
 			prompt = p,
 			drop = drop,
+			into = nil,
 			stand = nil,
 		}
 		fronts[unit] = front
+		if TopHole.sawn(unit) then
+			addIn(front)
+		end
 		p.Triggered:Connect(function(player: Player)
 			lean(front, player)
 		end)
@@ -738,6 +842,10 @@ function Ladders.new(): Ladders
 		end
 		front.at:Destroy()
 		front.drop:Destroy()
+		local into = front.into
+		if into then
+			into:Destroy()
+		end
 		for _, c in climbs do
 			if c.front == front and c.move ~= "Top" then
 				clear(c)
@@ -784,6 +892,10 @@ function Ladders.new(): Ladders
 			z1 = math.max(a.Z, b.Z),
 		})
 		container:SetAttribute(Tops.MapAttribute, Tops.encode(map.tops, map.lips, map.holes))
+		local front = fronts[unit]
+		if front then
+			addIn(front)
+		end
 		-- every crawler checked against the new map, anyone lying across the hole slid off it
 		for _, c in climbs do
 			local root = rootOf(c.player)
@@ -924,6 +1036,15 @@ function Ladders.new(): Ladders
 				clear(c)
 				if (root.Position - landed.Position).Magnitude > NEAR_SPOT then
 					c.character:PivotTo(landed)
+				end
+			elseif c.move == "In" and t >= c.ends + Leaning.EndSlack then
+				local hole = c.into
+				clear(c)
+				if hole then
+					local landed = landedIn(hole, c.standUp)
+					if (root.Position - landed.Position).Magnitude > NEAR_SPOT then
+						c.character:PivotTo(landed)
+					end
 				end
 			end
 		end

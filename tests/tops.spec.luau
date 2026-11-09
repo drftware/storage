@@ -487,6 +487,97 @@ do
 	)
 end
 
+-- The drop in through a sawn hole (L-13b2d3a), in the hole's own frame: you start lying on the
+-- steel, no part of you ever goes through the steel beside the hole or the hall's ceiling over
+-- it, you go down the hole's middle with room to spare, and stand on the unit's floor in under a
+-- second.
+do
+	local top = num(holeText, "\n\tTop = ")
+	local ceiling = 14 -- the halls' ceiling, up from the floor (Studio: Colliders.Ceiling)
+	local standUp = 3
+	local lieY = top + Leaning.ProneUp
+	local cx, cz = (hole.left + hole.right) / 2, (hole.front + hole.back) / 2
+	-- A stiff body can't both stay under the ceiling and go in upright, so it slides in tipped:
+	-- its middle line keeps well inside the hole, its belly and heels just clear the cut edge.
+	local room, skim = 0.3, 0.05
+	local thick = 0.4 -- the steel, its ribs and the tongues bent down round the cut (the Edge piece)
+	local last: { number }? = nil
+	local maxJump, lastBlend, through, highest, endY, endP = 0, 0, false, 0, 0, -1
+	local t = 0
+	while t <= Tops.InSeconds + 1e-9 do
+		local x, y, z, p, blend = Tops.dropIn(t, cx, cz, top, lieY, standUp)
+		if last then
+			maxJump = math.max(maxJump, math.sqrt((y - last[1]) ^ 2 + (z - last[2]) ^ 2))
+		end
+		ok(x == cx, "the drop in keeps to the middle of the hole's width")
+		ok(blend >= lastBlend - 1e-9 and blend <= 1, "it blends from where you lay, never back")
+		-- your body, side on: a line from your feet to the top of your head, half your depth
+		-- thick either side of it; your head is toward the door (-Z) as you lie
+		local upY, upZ = math.cos(p), math.sin(p)
+		for i = 0, 60 do
+			local s = -standUp + i / 60 * (standUp + Tops.InHeadUp)
+			for _, side in { -1, 0, 1 } do
+				local by = y + upY * s - upZ * side * Tops.InDeep / 2
+				local bz = z + upZ * s + upY * side * Tops.InDeep / 2
+				highest = math.max(highest, by)
+				if by < top and by > top - thick then
+					through = true
+					local keep = if side == 0 then room else skim
+					ok(
+						bz >= hole.front + keep and bz <= hole.back - keep,
+						`dropping in, your body keeps {keep} off the hole's front and back (t {t}, {bz - cz} from its middle)`
+					)
+				end
+			end
+		end
+		last = { y, z }
+		lastBlend = blend
+		endY, endP = y, p
+		t += 1 / 240
+	end
+	ok(through, "the drop in goes down through the steel")
+	ok(
+		cx - Tops.InWide / 2 >= hole.left + 0.3 and cx + Tops.InWide / 2 <= hole.right - 0.3,
+		"your shoulders clear the hole's sides"
+	)
+	ok(highest < ceiling - 0.2, `your head stays under the hall's ceiling (up to {highest})`)
+	ok(maxJump < 0.3, `the drop in never jumps ({maxJump} studs in a frame)`)
+	local _, y0, _, p0, b0 = Tops.dropIn(0, cx, cz, top, lieY, standUp)
+	ok(
+		math.abs(y0 - lieY) < 1e-9 and p0 == -math.pi / 2 and b0 == 0,
+		"it starts on your belly at the height you lay"
+	)
+	local _, _, zEnd = Tops.dropIn(Tops.InSeconds, cx, cz, top, lieY, standUp)
+	ok(zEnd == cz, "you land under the hole's middle")
+	ok(math.abs(endY - standUp) < 0.05 and endP == 0, "and ends standing on the unit's floor")
+	ok(Tops.InSeconds < 1, "in under a second")
+	-- the fall is Roblox's gravity (196.2) from rest, near enough
+	local fell = top + Tops.InHead - Tops.InHeadUp - standUp
+	ok(
+		math.abs(math.sqrt(2 * fell / 196.2) - Tops.InFall) < 0.03,
+		"the fall is as fast as a real one"
+	)
+	local lift0, wear0 = Tops.inArms(0)
+	local lift1, wear1 = Tops.inArms(Tops.InOver + Tops.InFall)
+	local _, wear2 = Tops.inArms(Tops.InSeconds)
+	ok(lift0 == 0 and wear0 == 1, "your arms stay low while you tip up under the ceiling")
+	ok(lift1 == 1 and wear1 == 1, "and are up over your head as you fall")
+	ok(wear2 == 0, "and your own again once you've landed")
+	local cues = Tops.inCues()
+	ok(
+		#cues == 2 and cues[2].at > Tops.InOver and cues[2].at <= Tops.InOver + Tops.InFall,
+		"the landing's thud comes at the end of the fall"
+	)
+	-- Drop in is offered lying at the hole's edge with your head out over it, from any side
+	local r: Tops.Rect = { x0 = hole.left, x1 = hole.right, z0 = hole.front, z1 = hole.back }
+	ok(Tops.atHole(r, hole.right + 1.2, cz, -1, 0), "offered lying beside it, head over it")
+	ok(Tops.atHole(r, cx, hole.back + 1.2, 0, -1), "and lying behind it")
+	ok(not Tops.atHole(r, hole.right + 1.2, cz, 1, 0), "not with your head turned away from it")
+	ok(not Tops.atHole(r, hole.right + 1.2, cz, 0, 1), "nor lying alongside it")
+	ok(not Tops.atHole(r, hole.right + 4, cz, -1, 0), "nor from further off")
+	ok(Tops.atHole(r, hole.right + 3, cz, -1, 0, Tops.Slack), "the server allows a moment's lag")
+end
+
 print(
 	`tops: {checks - failures}/{checks} passed ({floors} floors, {spotsChecked} spots, {walks} walks, {pairsWalked} unit to unit, {lidsWalked} round lids, {peeks} peeks, {holesCut} sawn tops, {slides} slid off)`
 )

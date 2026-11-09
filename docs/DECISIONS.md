@@ -1218,3 +1218,32 @@ sawn small unit (the unit you just sawed is the one you most want to climb back 
 hole out of the top rectangles (more rectangles, and "over a hole" has to be asked anyway for the
 slide and the spots); refusing the cut while a friend lies across it (the slide is the answer the
 GDD's co-op wants: no one is kept off a hole by a friend lying there).
+
+## D-066 Dropping in through a sawn top: tipped in under the ceiling, landed facing the door (L-13b2d3a, Nov 9)
+Drop in is Rainbow Six Siege's drop through a hatch, played by the game as the drop off a front is
+(D-059), in the hole's own frame (`TopHole.frame`, which the server puts in the climber's front
+attribute for this move, "In"). **Offered** only lying at the hole's edge with your head out over
+it (`Tops.atHole`: your head's point within 0.3 of the hole, the server allowing 1.5 more for lag),
+and while it's offered that unit's Drop down is hidden on your screen: both are F, Roblox shows one
+button per key, and at a hole's edge looking down it you mean the hole. The button sits three studs
+down the hole's middle: at the steel's face, or a stud under it, it was off the top of the screen
+as you looked at the floor below (Studio).
+
+**The move.** The halls' ceiling is 3.86 studs over a unit's top, so nobody can stand up there:
+the first build, springing upright over the hole and dropping straight, put the view 1.07 studs
+through the ceiling (Studio). And a stiff 5-stud body can't go through a 2.05-stud hole until it's
+steep. So you tip up about a point over the hole's middle, head toward the door, your body's line
+always meeting the steel's face mid-hole: your feet stay over the steel to about 33 degrees, then
+your legs slide down the hole as your head comes up to 3.6 over the steel, you hang upright in it a
+beat, and fall the last 8.5 studs at Roblox's gravity (0.36 s in, 0.3 falling, 0.3 landing crouch).
+Your arms keep the crawl's reach until you fall, then go up over your head. Lune holds it to: head
+under the ceiling, your body's middle line 0.3 inside the hole front and back through the steel's
+0.4 thickness, its belly and heels clear of the cut edge, shoulders 0.4 clear each side. You land
+under the hole's middle **facing the door**: the body has to face along the hole's short way to
+fit its 2.8 width, the door is your way out, and in first person your view stays your own.
+
+Not chosen: landing facing the back of the unit (the handoff's sketch said both; the owner can
+swap it); a rise to standing over the hole (the ceiling); offering Drop in from anywhere near the
+hole (it would take F from Drop down along the whole front of a sawn unit); its own key (one verb,
+one key for leaving the tops by dropping). Left for L-13b2d3b: the floor under the hole kept clear
+by the deal, and every way out.

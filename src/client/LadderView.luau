@@ -20,6 +20,8 @@
 	dipping and swaying with each pull. Every screen hears each crawler's pulls boom on the steel
 	and sees their arms reach and haul in turn. Up there only you see the Climb down and Drop down
 	buttons; Drop down takes you over a front's edge and down into the hall with a thud and a jolt.
+	Lying at a sawn hole's edge with your head out over it you get Drop in instead: up, legs over
+	the hole, straight down through it with your arms up, a crouch on the unit's floor (L-13b2d3a).
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -33,6 +35,7 @@ local Crawling = require(ReplicatedStorage.Shared.StorageUnit.CrawlHole.Crawling
 local Leaned = require(ReplicatedStorage.Shared.Tools.Leaned)
 local Leaning = require(ReplicatedStorage.Shared.Tools.Leaning)
 local SoundPrimer = require(script.Parent.SoundPrimer)
+local TopHole = require(ReplicatedStorage.Shared.StorageUnit.TopHole)
 local Tops = require(ReplicatedStorage.Shared.Tops)
 
 local LINGER = 1.6 -- seconds a sounds' spot outlives its move: the last sound's tail
@@ -45,9 +48,20 @@ local VIEW_SWAY = 0.06
 local TELEPORT = 3 -- studs a crawler moves in a frame past which it's a jump, not a crawl
 local MAP_EVERY = 0.4 -- seconds between looks for a newer tops' map (a top sawn through) as you crawl
 local GLIDE_MAX = 6 -- studs: a put-back nearer than this glides you there; further, you're moved
+local OFFER_EVERY = 0.2 -- seconds between looks for a hole your head is out over (its Drop in)
+-- A sawn hole about its own middle, where its Drop in button sits (the server's, turned as the
+-- hole is), and that middle in the hole's frame.
+local HOLE = TopHole.Rect
+local IN_X, IN_Z = (HOLE.left + HOLE.right) / 2, (HOLE.front + HOLE.back) / 2
+local IN_RECT: Tops.Rect = {
+	x0 = HOLE.left - IN_X,
+	x1 = HOLE.right - IN_X,
+	z0 = HOLE.front - IN_Z,
+	z1 = HOLE.back - IN_Z,
+}
 
 type Joint = Motor6D | AnimationConstraint
-type Move = "Up" | "Top" | "Down" | "Drop"
+type Move = "Up" | "Top" | "Down" | "Drop" | "In"
 
 -- A ladder going up.
 type Raise = {
@@ -81,7 +95,7 @@ type Climb = {
 	character: Model,
 	move: Move,
 	start: number, -- os.clock() on this screen at which the move began
-	front: CFrame,
+	front: CFrame, -- the move's frame: a unit's front, or dropping in its hole's (TopHole.frame)
 	fit: Leaning.Fit,
 	spot: number,
 	standUp: number,
@@ -170,6 +184,13 @@ local function standUpOf(character: Model): number
 	return (if humanoid then humanoid.HipHeight else 2) + half
 end
 
+-- A body's root `t` seconds into dropping in through the hole whose frame is `hole`, from lying
+-- at height `lieY` in that frame, and how far to blend to it from where they lay.
+local function inPose(hole: CFrame, t: number, lieY: number, standUp: number): (CFrame, number)
+	local x, y, z, p, blend = Tops.dropIn(t, IN_X, IN_Z, HOLE.top, lieY, standUp)
+	return Leaned.outward(hole, x, y, z, p), blend
+end
+
 -- The climb animation Roblox's Animate script plays on this character, if it has one.
 local function climbAnimation(character: Model): Animation?
 	local animate = character:FindFirstChild("Animate")
@@ -186,6 +207,8 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 	local player = Players.LocalPlayer
 	local mine: Climb? = nil
 	local buttonsOn = true -- as the server makes them, until the first pass turns them off
+	local offered: Instance? = nil -- the Drop in button of the hole your head is out over
+	local offerAt = 0 -- os.clock() of the last look for one
 	local setButtons: (on: boolean) -> ()
 
 	-- How far into its move a climb is, on this screen.
@@ -208,6 +231,10 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 				Tops.drop(t, c.dropX, fit.faceZ, fit.topY, Leaning.ProneUp, standUp)
 			local target = Leaned.outward(c.front, x, y, z, p)
 			return if blend < 1 then m.from:Lerp(target, blend) else target
+		elseif c.move == "In" then
+			local lieY = c.front:PointToObjectSpace(m.from.Position).Y
+			local target, blend = inPose(c.front, t, lieY, standUp)
+			return if blend < 1 then m.from:Lerp(target, blend) else target
 		end
 		if c.move == "Top" or t >= Leaning.upSeconds(fit, standUp) then
 			local x, y, z, p = Leaning.lying(fit, c.spot)
@@ -229,10 +256,24 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 		return false
 	end
 
-	-- The buttons only someone up on the tops sees (Climb down, Drop down): on while you crawl.
+	-- The buttons only someone up on the tops sees (Climb down, Drop down, Saw): on while you
+	-- crawl. Drop in shows only for the hole your head is out over, and Drop down not then: they
+	-- share a key, and at a hole's edge looking down it you mean the hole.
 	local function showButton(inst: Instance)
-		if inst:IsA("ProximityPrompt") then
-			inst.Enabled = buttonsOn
+		if not inst:IsA("ProximityPrompt") then
+			return
+		end
+		local on = buttonsOn
+		if inst:HasTag(Leaned.InButtonTag) then
+			on = on and inst == offered
+		elseif offered and inst:HasTag(Leaned.DropButtonTag) then
+			on = false
+		end
+		inst.Enabled = on
+	end
+	local function showButtons()
+		for _, inst in CollectionService:GetTagged(Leaned.TopButtonTag) do
+			showButton(inst)
 		end
 	end
 	function setButtons(on: boolean)
@@ -240,8 +281,32 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 			return
 		end
 		buttonsOn = on
-		for _, inst in CollectionService:GetTagged(Leaned.TopButtonTag) do
-			showButton(inst)
+		if not on then
+			offered = nil
+		end
+		showButtons()
+	end
+
+	-- Lying at `at`: which hole's Drop in is yours to press, the one your head is out over.
+	local function offer(at: CFrame)
+		local found: Instance? = nil
+		for _, inst in CollectionService:GetTagged(Leaned.InButtonTag) do
+			local a = inst.Parent
+			if a and a:IsA("Attachment") then
+				local cf = a.WorldCFrame
+				local p = cf:PointToObjectSpace(at.Position)
+				-- lying, your root's up is the way your head points
+				local h = cf:VectorToObjectSpace(at.UpVector)
+				-- the button is a stud down the hole: within a body's height of it is this floor's
+				if math.abs(p.Y) < 4 and Tops.atHole(IN_RECT, p.X, p.Z, h.X, h.Z) then
+					found = inst
+					break
+				end
+			end
+		end
+		if found ~= offered then
+			offered = found
+			showButtons()
 		end
 	end
 
@@ -346,6 +411,10 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 		m.root.CFrame = at
 		m.root.AssemblyLinearVelocity = Vector3.zero
 		m.root.AssemblyAngularVelocity = Vector3.zero
+		if now - offerAt >= OFFER_EVERY then
+			offerAt = now
+			offer(at)
+		end
 		local _, phase = Tops.pull(st.travel)
 		local a = 2 * math.pi * phase
 		m.humanoid.CameraOffset =
@@ -378,6 +447,8 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 					c.standUp
 				)
 				m.root.CFrame = Leaned.outward(c.front, x, y, z, p)
+			elseif c.move == "In" then
+				m.root.CFrame = inPose(c.front, Tops.InSeconds, HOLE.top, c.standUp)
 			else
 				local x, y, z, p = Leaning.stood(c.fit, c.standUp)
 				m.root.CFrame = Leaned.pose(c.front, x, y, z, p)
@@ -453,7 +524,7 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 		local spot = character:GetAttribute(Leaned.SpotAttribute)
 		local dropX = character:GetAttribute(Leaned.DropAttribute)
 		if
-			(move ~= "Up" and move ~= "Top" and move ~= "Down" and move ~= "Drop")
+			(move ~= "Up" and move ~= "Top" and move ~= "Down" and move ~= "Drop" and move ~= "In")
 			or type(started) ~= "number"
 			or typeof(front) ~= "CFrame"
 			or type(size) ~= "string"
@@ -478,14 +549,16 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 			then "Up"
 			elseif move == "Down" then "Down"
 			elseif move == "Drop" then "Drop"
+			elseif move == "In" then "In"
 			else "Top"
 		local cues: { Leaning.Cue } = if kind == "Up" or kind == "Down"
 			then Leaning.cues(kind, fit, standUp)
 			elseif kind == "Drop" then Tops.dropCues()
+			elseif kind == "In" then Tops.inCues()
 			else {}
 		local x = if type(dropX) == "number" then dropX else 0
 		-- a move on another front (down another ladder, off a unit) plays its sounds there
-		local same = c and c.front == front and kind ~= "Drop"
+		local same = c and c.front == front and kind ~= "Drop" and kind ~= "In"
 		if c and not same then
 			local old = c.sounds
 			task.delay(LINGER, function()
@@ -497,6 +570,10 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 			elseif kind == "Drop" then spotAt(
 				"TopsDrop",
 				(front * CFrame.new(x, fit.topY, fit.faceZ - Tops.Out)).Position
+			)
+			elseif kind == "In" then spotAt(
+				"TopsDropIn",
+				(front * CFrame.new(IN_X, standUp, IN_Z)).Position
 			)
 			else spotAt(
 				"LadderSounds",
@@ -539,7 +616,7 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 		end
 		-- off the tops: from wherever you crawled to, your view back to rest
 		local fm = fresh.mine
-		if fm and (kind == "Down" or kind == "Drop") then
+		if fm and (kind == "Down" or kind == "Drop" or kind == "In") then
 			fm.from = fm.root.CFrame
 			fm.steer = nil
 			fm.humanoid.CameraOffset = Vector3.zero
@@ -596,6 +673,7 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 			and (
 				(c.move == "Down" and t < Leaning.downSeconds(c.fit, c.standUp))
 				or (c.move == "Drop" and t < Tops.DropSeconds)
+				or (c.move == "In" and t < Tops.InSeconds)
 			)
 		then
 			return
@@ -680,6 +758,7 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 			elseif
 				(c.move == "Down" and t >= Leaning.downSeconds(c.fit, c.standUp))
 				or (c.move == "Drop" and t >= Tops.DropSeconds)
+				or (c.move == "In" and t >= Tops.InSeconds)
 			then
 				release(c, true)
 				if not c.character:HasTag(Leaned.ClimbTag) then
@@ -711,6 +790,23 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 			end
 		end
 		for _, cl in climbs do
+			if cl.move == "In" then
+				-- dropping in: your arms from the crawl's reach to up over your head as you fall
+				local lift, w = Tops.inArms(elapsed(cl))
+				if w > 0 then
+					local up =
+						CFrame.Angles(Leaning.ArmRest + (Tops.InArm - Leaning.ArmRest) * lift, 0, 0)
+					local tuck = Crawling.ArmTuck * (1 - lift)
+					local r, l = cl.right, cl.left
+					if r then
+						bend(r, CFrame.Angles(0, 0, tuck) * up, w)
+					end
+					if l then
+						bend(l, CFrame.Angles(0, 0, -tuck) * up, w)
+					end
+				end
+				continue
+			end
 			local move: "Up" | "Top" | "Down" = if cl.move == "Up"
 				then "Up"
 				elseif cl.move == "Top" then "Top"
@@ -748,6 +844,14 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 		table.insert(
 			connections,
 			CollectionService:GetInstanceAddedSignal(Leaned.TopButtonTag):Connect(showButton)
+		)
+		table.insert(
+			connections,
+			CollectionService:GetInstanceAddedSignal(Leaned.InButtonTag):Connect(showButton)
+		)
+		table.insert(
+			connections,
+			CollectionService:GetInstanceAddedSignal(Leaned.DropButtonTag):Connect(showButton)
 		)
 		table.insert(
 			connections,

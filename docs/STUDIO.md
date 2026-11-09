@@ -5,6 +5,15 @@ verified: a doc page, Studio, or "untested".
 
 ## Getting assets into Roblox
 
+- **Nobody can stand on a unit's top** (L-13b2d3a, 2026-11-09): the halls' ceiling
+  (`Colliders.Ceiling`) is at 14 studs and a unit's steel top at 10.14, so there are 3.86 studs
+  up there; a standing body needs about 5.2 and its view sits 4.8 up. A move played on the tops
+  has to stay lying or tipped (the first Drop in stood you up and put the view at 15.07).
+- **A prompt right under a first-person view falls off the top of the screen** (L-13b2d3a): lying
+  at a sawn hole's edge and looking at the floor ten studs below, a button at the steel's face in
+  the hole's middle is about 45 degrees above where you look; three studs down the hole it's in
+  view. `screen_capture` showed no prompt either way (two captures with it enabled and in view),
+  though F from `user_keyboard_input` triggered it, so judge a prompt's look by eye, not by capture.
 - **The MCP's `require` in Edit can hand back stale modules** (L-13b2b, 2026-11-09): after Rojo
   re-synced the generated unit specs, `require(ReplicatedStorage.Shared.StorageUnit)` from
   `execute_luau` still returned the old `Specs` (no S at all, the M with its old colliders), so
