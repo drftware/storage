@@ -16,6 +16,27 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-04e, the deal on the floor (built Nov 9)
+
+- [ ] **Walk floor 3 and open doors** (Play on a computer, "Walk a floor" by the spawn). Output
+  lists the code, the notes' units and the padlocked doors, and says what each unit held as its
+  door first lifts. Peek a few doors, open a few. Look for: a peek's foot of gap already showing
+  what's on the floor; bolt cutters (unit 301) or a padlock lying in the bulb's light, picked up
+  with E; a find (TV in 306, boombox in 310) standing behind the bulb, facing you; a note unit
+  with a find (332) where the note is still the first thing you see. Does every door feel like a
+  gamble, or is it too often nothing (about 4 in 10 in Build; padlocked ones rarely)?
+- [ ] **A dealt padlock** (unit 311, 314 and others in Output's list): Open rattles it; pick up
+  the cutters from 301, hold Cut a second, then open it. It deals then, not before.
+- [ ] **On the phone** (Galaxy A16, set in Edit first): from each doorway, can you tell what the
+  thing is? The cutters read as a red-handled tool from the doorway, small; finds read plainly.
+  Shots `docs/art/L-04e-*.jpg`.
+- [ ] **Decide, defaults in place** (D-050): (1) tools with no art yet (the saw, ladder, bubble
+  wrap, air horn, moving blanket, glow sticks: about 6 in 11 dealt tools) are dealt but lie
+  nowhere until L-12 to L-14 build them; or should the deal skip unbuilt tools for now? (2) a find
+  is a prop you can't carry yet (Phase 2); (3) a short thing (a tool, a find, under 3.5 studs) may
+  stand under a note, only a keeper keeps off the whole line to it; (4) tools lie in the bulb's
+  pool, never against the back wall, so they read on a phone.
+
 ## Now: judge L-11c, the padlock and the cutters at work (built Nov 8)
 
 - [ ] **Lock a door, then cut it** (Play, a computer first). Pick up the padlock lying across the

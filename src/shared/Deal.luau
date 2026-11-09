@@ -36,8 +36,9 @@ export type Tool =
 -- What the director knows when a door lifts: its mood, and how many keepers are awake now.
 export type Situation = { mood: Mood, awake: number }
 
--- What a unit holds once dealt: a tool says which, a keeper says which and whether it's awake.
-export type Contents = { kind: Kind, tool: Tool?, keeper: string? }
+-- What a unit holds once dealt: a tool says which, a find which, a keeper which and whether it's
+-- awake.
+export type Contents = { kind: Kind, tool: Tool?, find: string?, keeper: string? }
 
 -- A note: the unit it lies in (an index into the floor's slots) and the places of the code it
 -- shows, 1 to 4, in order. The note itself shows them in their slots, "_ 7 _ _" (`Deal.noteText`).
@@ -50,7 +51,7 @@ export type Deck = {
 	padlocked: { [number]: boolean }, -- by slot index
 	firstHall: { [number]: boolean }, -- the units in the lobby's hall, by slot index
 	rolls: { [number]: number }, -- each unit's roll for what kind of thing it holds, 0 to 1
-	picks: { [number]: number }, -- each unit's roll for which keeper, 0 to 1
+	picks: { [number]: number }, -- each unit's roll for which find or keeper, 0 to 1
 	dealt: { [number]: Contents }, -- what each unit got, once its door has lifted
 	bag: { Tool }, -- the tools left in the bag, the next one last
 	random: Random,
@@ -120,6 +121,11 @@ Deal.Bag = {
 	MovingBlanket = 1,
 	GlowSticks = 1,
 } :: { [string]: number }
+
+-- The finds a door can hold, each a name in `Finds.Names` (art/finds/): the GDD's 1980s bedroom
+-- set first (D-035). Each is as likely until Phase 2 deals finds by rarity, the best behind
+-- padlocks (ROADMAP "Finds in a run").
+Deal.Finds = { "Boombox", "Television", "Teddy", "Skates" } :: { string }
 
 -- Floors 1 and 2 teach the lights, the doors and the hole trap (GDD "The building"), so on them
 -- the first tool out of the bag is a saw, and the lobby's hall deals no keepers: your first doors
@@ -391,6 +397,8 @@ function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 	local contents: Contents = { kind = kind }
 	if kind == "Tool" then
 		contents.tool = Deal.drawTool(deck)
+	elseif kind == "Find" then
+		contents.find = Deal.Finds[math.floor(deck.picks[index] * #Deal.Finds) + 1]
 	elseif kind == "Asleep" or kind == "Awake" then
 		local joined = {}
 		for _, keeper in Deal.Keepers do

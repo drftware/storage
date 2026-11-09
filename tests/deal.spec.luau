@@ -9,6 +9,7 @@
 local Brix = require("../vendor/brix/src")
 local Floor = require("../src/shared/Floor")
 local Deal = require("../src/shared/Deal")
+local fs = require("@lune/fs")
 
 local failures, checks = 0, 0
 local function ok(cond: boolean, what: string)
@@ -208,6 +209,11 @@ for seed = 1, SEEDS do
 					got.tool ~= nil and Deal.Bag[got.tool :: Deal.Tool] ~= nil,
 					`{where}: a tool from the bag`
 				)
+			elseif got.kind == "Find" then
+				ok(
+					got.find ~= nil and table.find(Deal.Finds, got.find) ~= nil,
+					`{where}: a find from the deal's list`
+				)
 			elseif got.kind == "Asleep" or got.kind == "Awake" then
 				local joined = false
 				for _, keeper in Deal.Keepers do
@@ -227,6 +233,13 @@ for seed = 1, SEEDS do
 			add(relief, Deal.open(inRelief, i, { mood = "Relief", awake = 0 }).kind)
 		end
 	end
+end
+
+-- Every find the deal hands out has its art (art/finds/), read from its generated Specs (they
+-- build Vector3s, which Lune lacks).
+local findSpecs = fs.readFile("src/shared/Finds/Specs.luau")
+for _, name in Deal.Finds do
+	ok(string.find(findSpecs, "\n\t" .. name .. " = {", 1, true) ~= nil, `{name} is a built find`)
 end
 
 -- The odds, over every unlocked door in Build: each kind within 3 in 100 of its odds.

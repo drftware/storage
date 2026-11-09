@@ -7,8 +7,9 @@
 	every hall piece, in its power zone. A plain wall in a top run gets a lid over the empty slot
 	behind it, the unit's own wire top and floor, so a friend running the tops never drops in. Given
 	the floor's deal, each unit holding one of the code's notes gets it stuck on its back wall
-	(NoteSpot) as the unit is laid. The
-	lobby is a plain room, the freight elevator standing in its back wall and lit only by the car's
+	(NoteSpot), and each door the deal padlocked is padlocked, as the unit is laid: the floor
+	arrives that way, without a sound. What's behind each door is dealt when it first lifts (Deals,
+	L-04e). The lobby is a plain room, the freight elevator standing in its back wall and lit only by the car's
 	lamp, until L-05 dresses the lobby.
 
 	Laying yields. It works out from the lobby a hall piece at a time and waits a frame whenever it
@@ -57,6 +58,7 @@ export type Laid = {
 	working: number,
 	longest: number,
 	elevator: Model?, -- the lobby's freight elevator, its gate shut; nil if the place has none
+	slots: { [Model]: number }, -- each unit laid, and its slot's index in the floor's `slots`
 }
 
 -- The kit's junction a hall piece is laid as, or nil for a straight or the lobby.
@@ -120,13 +122,19 @@ end
 
 local warnedBulb = false
 
+-- A unit's door face: the middle of its doorway's outer face on the floor, looking into the hall
+-- (NoteSpot's and DealSpot's frame: +Z into the unit).
+function FloorBuilder.face(unit: Model): CFrame
+	return RollUpDoor.frame(unit) * CFrame.new(0, 0, -specOf(unit).CurtainPlane)
+end
+
 -- A clone of `template` with its door's outer face at `face` (looking into the hall), painted,
 -- numbered and with its bulb hung, ready to parent (the Doors system gives it its buttons once
 -- it's in the world, UnitLights lights the bulb with the door). Units are dressed before they
 -- reach Workspace: clients cache the door's frame and colours when a unit arrives.
 function FloorBuilder.unit(template: Model, face: CFrame, number: string, colour: Color3): Model
 	local unit = template:Clone()
-	local outer = RollUpDoor.frame(unit) * CFrame.new(0, 0, -specOf(unit).CurtainPlane)
+	local outer = FloorBuilder.face(unit)
 	unit:PivotTo(face * outer:ToObjectSpace(unit:GetPivot()))
 	unit.Name = `Unit{number}`
 	UnitKit.paint(unit, colour, UnitKit.Colours.Wall)
@@ -326,6 +334,9 @@ type Laying = {
 	deadEnds: { [number]: { Floor.DeadEnd } },
 	fixtures: { [number]: Floor.Fixture },
 	notes: { [Floor.Slot]: string }, -- what the code's note in a unit says, by its slot
+	padlocked: { [Floor.Slot]: boolean }, -- the doors the deal padlocked
+	indexOf: { [Floor.Slot]: number }, -- each slot's index in the floor's `slots`
+	laid: { [Model]: number }, -- each unit laid so far, and its slot's index
 	breathe: () -> (), -- waits for the next frame once this one's share is spent
 }
 
@@ -379,6 +390,10 @@ local function piece(laying: Laying, index: number): (Folder, number)
 			if text then
 				stickNote(unit, face, s, text)
 			end
+			if laying.padlocked[s] then
+				RollUpDoor.setLocked(unit, true)
+			end
+			laying.laid[unit] = laying.indexOf[s]
 			unit.Parent = folder
 			laying.breathe()
 			count += 1
@@ -413,7 +428,8 @@ end
 --[[
 	Lays `floor` with its lobby's middle at `origin` (on the floor, the halls spreading along its
 	-Z) into a new model under `parent`, and returns the model and what it took. With the floor's
-	`deck` (Deal.new), the code's notes go in the units it dealt them to. Yields: the lobby
+	`deck` (Deal.new), the code's notes go in the units it dealt them to and the doors it padlocked
+	are padlocked. Yields: the lobby
 	comes first, then the hall pieces nearest it, each parented as it's finished. Errors if the place
 	lacks a template (FloorBuilder.units says which).
 ]]
@@ -430,8 +446,16 @@ function FloorBuilder.lay(
 	)
 	local started = os.clock()
 
-	local laid: Laid =
-		{ units = 0, pieces = 0, frames = 1, seconds = 0, working = 0, longest = 0, elevator = nil }
+	local laid: Laid = {
+		units = 0,
+		pieces = 0,
+		frames = 1,
+		seconds = 0,
+		working = 0,
+		longest = 0,
+		elevator = nil,
+		slots = {},
+	}
 	local slice = started
 	local function endSlice()
 		local spent = os.clock() - slice
@@ -458,6 +482,9 @@ function FloorBuilder.lay(
 		deadEnds = {},
 		fixtures = {},
 		notes = {},
+		padlocked = {},
+		indexOf = {},
+		laid = laid.slots,
 		breathe = breathe,
 	}
 	assert(laying.door, `FloorBuilder: no door colour {floor.paint}`)
@@ -472,7 +499,8 @@ function FloorBuilder.lay(
 			)
 		end
 	end
-	for _, s in floor.slots do
+	for i, s in floor.slots do
+		laying.indexOf[s] = i
 		local list = laying.slots[s.cell] or {}
 		laying.slots[s.cell] = list
 		table.insert(list, s)
@@ -488,6 +516,9 @@ function FloorBuilder.lay(
 	if deck then
 		for _, note in deck.notes do
 			laying.notes[floor.slots[note.slot]] = Deal.noteText(deck, note)
+		end
+		for i in deck.padlocked do
+			laying.padlocked[floor.slots[i]] = true
 		end
 	end
 

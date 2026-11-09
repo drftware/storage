@@ -340,16 +340,29 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
   Pose it on the clients (Motor6D `Transform`, smoothed) rather than replicating C0 every step.
   Its tell, heard in the dark while it moves: fibreglass knocking at its joints and a stiff,
   quick footfall per step, as Five Nights at Freddy's footsteps say an animatronic moved.
-- [ ] **L-04e The deal on the floor.** The server padlocks the doors L-04d says, deals each unit
-  on its first lift (a peek or an open), and lays what it holds: a tool to pick up (L-11), a find,
-  a keeper asleep or awake (L-06b). Judged from doorways on the Galaxy A16 view. Whatever stands
-  in a note's unit leaves the sight line from its doorway to the note clear (D-044); `deck` is
-  already passed to `FloorBuilder.lay`, which sticks the notes.
+  Dealt keepers (L-04e): stand one at `Deals.dealt`'s place as its door first lifts (asleep, in
+  its shop pose; awake, hunting), and hand `Deal.open` the keepers awake now in place of `Deals`'
+  tally of those dealt awake.
+- [x] **L-04e The deal on the floor.** Done Nov 9 (D-050): the deck's padlocks set as each unit
+  is laid; `Deals` deals a unit on its first lift (a peek, an open, a lift from inside) and lays
+  it: a tool to pick up, a find standing behind the bulb facing the doorway, a keeper's place
+  handed to L-06b (`Deals.dealt`). Where is `DealSpot` (pure, 32,000 Lune checks): tools in the
+  bulb's pool, nothing tall in the note's sight line. Tools without art (the saw and L-14's) are
+  dealt but lie nowhere until their tickets. Judged on the Galaxy A16 (`docs/art/L-04e-*.jpg`).
 - [ ] **L-12 The saw and the hole trap.** Saw a crawl hole into the unit beside you (`Floor`'s
   left and right, D-031); it's loud. Players crawl through, keepers can't. Lead a keeper into a
   unit, crawl out the hole, run round and slam it in: it dents the door and breaks out after
   about 90 s, unless the padlock tool locks it in for the floor; the team gets a bonus (GDD "The
-  hole trap"). Art first: the saw, a hole's cut edge, a dented door.
+  hole trap"). Split Nov 9, one session each:
+  - [ ] **L-12a The saw's art.** Built the bolt cutters' way (`art/boltcutters/`): a battery
+    reciprocating saw, its spec, baked set, FBX, generated `Specs`, sheets; prepared at
+    `Props.Tools.Saw` and a `Catalog` row (hold, use pose, sounds), so the deal's saws lie on
+    floors 1 and 2 (`Deals` lays any catalog tool).
+  - [ ] **L-12b Sawing a crawl hole.** Hold Saw at a side wall inside a unit: loud, heard
+    floor-wide by keepers (`Doors.acted`'s reach idea); the hole's cut edge (art first); players
+    crawl through, keepers can't.
+  - [ ] **L-12c The hole trap** (needs L-06b's keepers): slam a keeper in, the dented door, its
+    break-out after about 90 s, a padlock keeping it in for the floor, the team's bonus.
 - [ ] **L-13 The ladder and the tops.** First close a top run's edges: a run's back drops into
   the 16-stud gap behind its row (no floor, no deck: you'd see the sky between the decks), and a
   run's end beside a junction drops into the junction's hollow block of wall (floored, 8 by 8, no

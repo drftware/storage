@@ -30,6 +30,7 @@ local Brix = require(ReplicatedStorage.Brix)
 local CorridorKit = require(ReplicatedStorage.Shared.CorridorKit)
 local Deal = require(ReplicatedStorage.Shared.Deal)
 local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
+local Deals = require(script.Parent.Deals)
 local Elevators = require(script.Parent.Elevators)
 local Prompts = require(script.Parent.Prompts)
 local Floor = require(ReplicatedStorage.Shared.Floor)
@@ -451,7 +452,7 @@ end
 -- Lays a floor from the data beside the hall (L-01c), prints its map, and opens the way there:
 -- "Walk a floor" by the spawn, "Come back" in its lobby. Workspace's DevFloorSeed and
 -- DevFloorNumber attributes pick which. Yields while it lays.
-local function devFloor(folder: Folder, elevators: Elevators.Elevators)
+local function devFloor(folder: Folder, elevators: Elevators.Elevators, deals: Deals.Deals)
 	local units, missing = FloorBuilder.units()
 	if not units then
 		warn(
@@ -479,7 +480,8 @@ local function devFloor(folder: Folder, elevators: Elevators.Elevators)
 	)
 	local random = Brix.Random.new({ seed = s })
 	local floor = Floor.generate(n, random)
-	-- the floor's code, from the same seed, as the deal will have it (L-04e lays the rest)
+	-- the floor's deal, from the same seed: its code, notes and padlocks laid with it, each unit's
+	-- contents dealt as its door first lifts (Deals)
 	local deck = Deal.new(floor, random)
 	print(
 		`DevCorridor: floor {n} from seed {s}, seen from above, the lobby (L) at the bottom:\n{Floor.map(
@@ -487,6 +489,7 @@ local function devFloor(folder: Folder, elevators: Elevators.Elevators)
 		)}`
 	)
 	local model, laid = FloorBuilder.lay(floor, FLOOR_ORIGIN, folder, deck)
+	deals:add(deck, laid.slots, model)
 	local elevator = laid.elevator
 	if elevator then
 		elevators:arm(elevator, deck.code, model)
@@ -539,6 +542,13 @@ local function devFloor(folder: Folder, elevators: Elevators.Elevators)
 			", "
 		)}`
 	)
+	-- and the doors the deal padlocked, so a tester can find one for the cutters
+	local locked = {}
+	for i in deck.padlocked do
+		table.insert(locked, `Unit{floor.slots[i].number}`)
+	end
+	table.sort(locked)
+	print(`DevCorridor: floor {n}'s padlocked doors: {table.concat(locked, ", ")}`)
 end
 
 -- Builds the whole corridor into one folder and parents it once. Returns nil, after a warning,
@@ -672,6 +682,8 @@ function DevCorridor.new(): Brix.System
 			local elevators = (context.registry:get("elevators") :: any) :: Elevators.Elevators
 			-- any: as above; Slots fills this slot
 			local slots = (context.registry:get("slots") :: any) :: Slots.Slots
+			-- any: as above; Deals fills this slot
+			local deals = (context.registry:get("deals") :: any) :: Deals.Deals
 			local folder = build(lights)
 			built = folder
 			if folder then
@@ -679,7 +691,7 @@ function DevCorridor.new(): Brix.System
 				for _, spot in TOOLS do
 					slots:lay(spot.key, spot.at, spot.yaw)
 				end
-				laying = task.spawn(devFloor, folder, elevators)
+				laying = task.spawn(devFloor, folder, elevators, deals)
 			end
 		end,
 		stop = function(_: any)

@@ -498,6 +498,17 @@ verified: a doc page, Studio, or "untested".
 - `ContentId: rbxassetid://203785492 failed due to: Asset type does not match requested type`
   shows six times at each Play; nothing in the game references it (searched the client), so it's
   Studio's or the avatar's. Ignore it.
+  `rbxassetid://87642977759407 failed due to: Asset content representation is being generated`
+  showed about thirty times once mid-Play (L-04e, Nov 9); no instance on either side names it
+  (searched MeshId, TextureID, the four maps, SoundId, Image). Same verdict.
+- **Lune can't require a generated Specs that builds Vector3s** (the unit's, the tools', the
+  finds'): read the numbers from the file's text, as `tests/dealspot.spec.luau` and
+  `tests/deal.spec.luau` do. The Mannequin's and the Elevator's Specs use plain lists and load.
+- **Shots and prompts from the MCP, a recipe** (L-04e): set `CurrentCamera.CameraType` to
+  Scriptable on the Client before aiming (the default camera takes the CFrame back next frame),
+  aim for about a second, then `InputHoldBegin`, wait the prompt's `HoldDuration` plus a little,
+  `InputHoldEnd`; put the camera back to Custom after. A hall shot taken after standing still a
+  while comes back black for a different reason: the motion light went out. Move, then shoot.
 
 - **Blender 5.2 headless:** assigning `hide_render` while iterating `collection.all_objects`
   doesn't stick; wrap it in `list(...)`. The volume node is `ShaderNodeVolumePrincipled`. A camera

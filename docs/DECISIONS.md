@@ -793,3 +793,33 @@ door (the row's `use` pose), and it jerks as it works. The padlock you carry is 
 padlock, open, at twice their size so it reads on a phone (`art/padlock`).
 Not chosen: a brass padlock of the players' own (it would change look on the door unless the door
 drew it too); a per-player Lock prompt made on each client (the server owns the door's buttons).
+
+## D-050 The deal laid on the floor: padlocks as the floor is laid, the rest on a door's first lift (L-04e, Nov 9)
+The doors a floor's deck padlocks arrive padlocked: FloorBuilder sets each one's padlock as it
+lays the unit, before it reaches Workspace, so no padlock sound plays and every screen gets the
+unit already locked (`Doors:lock` with no player would fire a padlock's sound for each door).
+Everything else is dealt when a door first lifts, a peek, an open or a lift from inside, by the
+new `Deals` system listening to `Doors.acted`, as Left 4 Dead's director deals as the team moves:
+`Deal.open` in the Build mood (the director is Phase 2), the keepers awake counted from those dealt
+awake on the floor so far. What's laid goes down at the start of the lift, so a peek's foot of gap
+shows it on the floor. A tool lies to be picked up (`Slots:lay`); a find stands as a prop (carrying
+finds out is Phase 2, "Finds in a run"), which find picked by the unit's own roll from `Deal.Finds`
+(the bedroom set, equal odds until rarity); a keeper's place is handed on by `Deals.dealt` for
+L-06b to stand the keeper there. A tool with no art yet (the saw, the ladder, bubble wrap, the air
+horn, the moving blanket, glow sticks) is dealt but lies nowhere: about 6 dealt tools in 11 show
+nothing until L-12 to L-14 build them; Output in Studio says so per door.
+Where in the unit is `DealSpot`, pure and Lune-checked: on the floor, 0.4 studs off the walls'
+middle lines, 2.5 studs clear of the door's line; finds and keepers wholly behind the bulb, facing
+the doorway's middle within 8 degrees (D-036); tools in the bulb's pool (their footprint between a
+quarter and 70% of the depth: at the back wall of an M unit the bolt cutters read as a red smear
+on the Galaxy A16, `docs/art/L-04e-cutters-301.jpg`), at one of six careless turns; the spot picked
+by the unit's number. The note's sight line (D-044) is kept as a real line, not a floor plan: the
+eye looks at the note from 4.5 studs up or higher, so a thing under 3.5 studs (every tool and find)
+may stand under the note, and anything taller (a keeper) keeps 0.3 studs off the whole floor
+between the doorway's width and the note's. A small unit's 6-stud door in its 8-stud box leaves a
+keeper only the back corner beside the note's line, too tight to turn in, so there a keeper faces
+straight out (then square on) instead of at the doorway.
+Not chosen: dealing every unit when the floor is laid (the deal is the director's to pace, and a
+peek should be a gamble, D-038); keeping finds out of the whole floor fan in front of the note (in
+an S unit it left a boombox nowhere to stand, and nothing that short can hide the note); a glint or
+highlight on tools (no precedent named, D-036's reasoning); laying a stand-in for unbuilt tools.
