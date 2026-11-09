@@ -16,32 +16,33 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   note that arrived first.
 - **Verified in Studio** (Galaxy A16): floor 3's four notes (Units 313, 377, 332, 367) spell its
   code, 5062; a note is a plain square from a big unit's doorway and its "5" reads from 6 studs.
-  From the doorway the digit is a speck: the owner picks whether that's fine (`OWNER.md`).
+  From the doorway the digit is a speck, so the owner picked a Read button (L-05b1d, next).
   Not re-punched this session (5062 opened the gate in session 34). A note costs 0.43 ms to lay.
-- The owner settled D-042's keypad rules and L-05b1c's solo feel ("looks good", Nov 8).
+- The owner settled D-042's keypad rules and L-05b1c's solo feel ("looks good", Nov 8), and
+  chose the Read button for notes (D-044).
 
-## Next task: L-05b2 The gate's timer
-The moment: the gate folds open and the whole floor hears the clock start; 30 s later the gate
-ratchets shut on its own, and the last friend dives through the closing gap or is left behind.
-1. Owner test results first (`OWNER.md`), above all L-05b1b's notes and its doorway decision.
-2. Read the GDD's "Codes, the elevator and the roof" bullet "Right code" (docs tools: search the
-   tab for "Right code."): 30 s for everyone on the floor, nobody can send it early.
-3. Check Brix first (`docs/FRAMEWORK.md`: Zone for who's aboard, Clock for the countdown).
-4. On the right code, `Elevators` starts a 30 s countdown (a Config number with its comment);
-   at zero it moves the gate shut (`moveGate`), the collider following, and marks who's aboard.
-5. The countdown everyone feels, every action answering: the car's lamp and a bell as it runs
-   out, the gate's own ratchet and slam on close (`Elevator/Sounds.luau`), a toast at most.
-   `Gate.gap` says the gap left, so someone sprinting through it makes it or doesn't.
-6. The car "leaves" with whoever is aboard: a stand-in (print, a fade) until L-08's ride.
-**Acceptance:** checks green; Lune specs for the countdown's pure rules (aboard, timing, the
-close); in Studio on the Galaxy A16 the gate shuts 30 s after the code with its warning, and a
-player outside is left; `OWNER.md` has what to judge, two players included.
-**Read first:** ROADMAP L-05b2; GDD "Right code."; `src/server/Elevators.luau` (by grep:
-`open`, `moveGate`, `step`); `src/shared/Elevator/Gate.luau` (`gap`, the motion);
-`src/shared/Elevator/Sounds.luau`; `docs/FRAMEWORK.md` (Zone, Clock).
+## Next task: L-05b1d Read a note
+The owner's pick (Nov 8, D-044): a "Read" button holds a note up on your screen, as DOORS shows
+the hint in a library book. The moment: the door lifts, the yellow square on the back wall, two
+steps in, tap Read, and the digit is big and plain: "I've got a 0, second!"
+1. Owner test results first (`OWNER.md`).
+2. In `NoteView`, a "Read" prompt per tagged note (`Elevator.NoteTag`), made on the client the
+   way `KeypadPad` makes the keypad's; mind STUDIO.md's prompt traps (sight line, stacking).
+3. The card: the note's own paper (its colour or texture from `ReplicatedStorage.Props.Note`'s
+   Paper) and Kalam ink (`Elevator.Specs.Note`), its digits in their slots as tall as the A16
+   allows; it lifts in with a paper rustle and drops away on a tap, Read again, walking off,
+   death. A SurfaceGui may not draw inside a ViewportFrame: check before building on one.
+4. Touch, mouse (FreeCursor's `need` if the cursor must be free), keyboard E, gamepad.
+5. Studio on the Galaxy A16: open a note's unit, Read, shots of the card; close each way.
+**Acceptance:** checks green; Lune specs for any pure layout (the slots' sizes); in Studio every
+note's card readable at a glance on the A16 and closing every way; `OWNER.md` has what to judge.
+**Read first:** ROADMAP L-05b1d; D-044 (DECISIONS); `src/client/NoteView.luau`;
+`src/client/KeypadPad.luau` (by grep: `Prompt`, `open`, `close`); docs/STUDIO.md "Camera and
+prompts"; `src/shared/Elevator/init.luau` (by grep: `Note`, `write`).
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-05b2; L-11 tools in hand; L-06b the Mannequin hunts (Brix ENG-07); L-04e (keep each note's
+1. L-05b1d; L-05b2 the gate's timer (30 s after the code it shuts on its own, Dandy's World; Brix
+   Zone and Clock; `Gate.gap`); L-11 tools in hand; L-06b the Mannequin hunts (Brix ENG-07); L-04e (keep each note's
    sight line clear); L-12; L-13; L-14; then L-07, L-08, L-10, L-09.
 2. **Bug, small:** DoorSounds' first slam of a session lands up to 0.35 s late; swap its
    `preload` for `SoundPrimer.prime` (one call) and check the first slam in Studio.

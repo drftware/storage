@@ -23,14 +23,6 @@ nowhere else.
   on; its digit plain a couple of steps into a small unit and about five into a big one; the four
   notes spelling the code; then punch it at the keypad. Shots: `docs/art/L-05b1b-doorway.jpg`
   (a big unit from its doorway, 14 studs) and `-close.jpg` (6 studs, the "5" plain).
-- [ ] **Decide, default in place** (D-044): a note is read from a few steps in, not from the
-  doorway, where its digit is a speck on a phone. To read it from the doorway, pick one: (a) the
-  writing laid out bigger, four slots across with each digit about twice today's height (no
-  game to point to; a look to judge); or (b) a "Read" button that holds the note up on your
-  screen, as DOORS shows its library hints (proven, but a tap). Also say if the note's size is
-  wrong (1.6 times the art's, `NoteSpot.Scale`) or it should go somewhere other than the back
-  wall at eye height.
-
 ## Now: judge L-05b1c, the keypad and gate on screen (built Nov 8)
 
 - [ ] **Two players** (Test > Clients and Servers, 2 players): one types the first three digits;

@@ -654,3 +654,7 @@ note that arrived first, since a note can stay blank until its writing is redraw
 
 Not chosen: notes on a box (units hold no boxes until L-04e, and boxes move); notes anywhere in
 the unit (a hunt inside the hunt, on a phone, in the dark); the note at the art's size.
+
+Settled (owner, Nov 8): a "Read" button on each note holds it up on your screen, big, as DOORS
+shows the hint in a library book (L-05b1d). The note stays on the wall at 1.6 so it's spotted
+from the doorway; the button is how its digit gets read on a phone.
