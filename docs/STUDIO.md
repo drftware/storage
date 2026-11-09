@@ -143,6 +143,15 @@ verified: a doc page, Studio, or "untested".
   doubling a light's brightness doubled both (low graphics doesn't cap it). A light level with
   the walls (a fill at door height) narrows the gap; see D-017. A light fades to nothing at its
   Range at full quality, so a fill must reach a little past what it should light.
+- **A spotlight lights nothing close at low graphics** (Play, L-11a, 2026-11-08): the torch's
+  SpotLight (54 degrees, 42 studs) 2.7 studs from a wall lit it at Level21 but not at Level08 or on
+  Automatic; down a dark hall at Level08 it washed walls and floor warm, ignoring its cone. Low
+  graphics works light out in 4-stud blocks, and a narrow cone that close catches none. A
+  PointLight in the same place lit the wall at Level08, on a part or on an Attachment. Lights on
+  Attachments, and on parts under `Workspace.CurrentCamera`, render at both levels.
+- **Moving the camera from the MCP** (Play, L-11a): set the character's root with `CFrame.lookAt`,
+  then `workspace.CurrentCamera.CFrame`; first person keeps the new look. A teleport wakes the
+  hall's motion lights: stand still about 8 s for a dark hall.
 - **Particles in the hall** (Play, 2026-11-07, P0-02i): a ParticleEmitter at LightInfluence 1
   is lit by local lights at both Level08 and Level21 and goes dark when they switch off, but low
   graphics lights it about twice as brightly. At low graphics a puff that cuts into the ceiling
@@ -319,6 +328,14 @@ verified: a doc page, Studio, or "untested".
   in Overlay; `LampGlass`, `KeypadReadout` and `KeypadLight` came plain. Each part's centre sat
   within 0.0005 of `Specs.Parts`.
 
+- **The flashlight arrived like the finds** (L-11a): two MeshParts at the right size, the torch with
+  its SurfaceAppearance (Overlay), the lens plain, a 178-degree turn about Y, each pivot at the
+  Blender origin (the grip). `Flashlight.prepare` squares them to the world.
+- **Rigs turn the grip attachment differently** (Play, L-11a): Studio's own avatar's
+  `RightGripAttachment` sits near the hand's middle (its hand 0.75 x 0.89 x 0.77) turned so its
+  look runs down the arm. Weld a held thing from the attachment's Position and turn it from the
+  hand itself, or it points the wrong way on some avatars.
+
 ## Tools
 
 - **Driving Studio from a session:** `.mcp.json` starts Studio's own MCP server
@@ -353,6 +370,13 @@ verified: a doc page, Studio, or "untested".
 - **Measuring the bulb's click** (L-04b): Pro Sound Effects' "Moviola Toggle Switch Single Clicks
   Sharp 8" (9117028600, 0.74 s) is a sharp tick in its first 0.1 s and a faint release at 0.25 s;
   "Light Bulb Buzz 2" (9112823813) is a 49 s loop. Both preload in Edit.
+- **The MCP's clicks don't reach a ScreenGui button in the Device Simulator** (L-11a): neither
+  `instance_path` nor coordinates fired the torch button's InputBegan, MouseButton1Down or
+  Activated. A gamepad key from `user_keyboard_input` (ButtonR1) does reach ContextActionService;
+  it also hides Roblox's touch controls, as a real gamepad does.
+- **The flashlight's clicks, measured** (L-11a; 10 ms bins at PlaybackSpeed 0.25, AudioAnalyzer in
+  Edit): Pro Sound Effects' "Flashlight On Off Clicks 13" 9114480271 is one click at 0.40 s, about
+  60 ms, -20 dB, 1.17 s long; "15" 9114480269 one click at 0.12 s, -22 dB, 1.06 s long.
 - **The Device Simulator from the MCP** (2026-11-07, skill `rbx-device-simulator-lua`): set the
   device in Edit before Play (its setters fail in Play's server view), then the orientation:
   `SetOrientationAsync` before a phone is active fails ("only on mobile devices"). The Galaxy

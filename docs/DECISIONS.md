@@ -724,3 +724,25 @@ Not chosen: the clock started at the code (the gate isn't open yet); a timer lab
 area (it covered the held note and the keypad's pad on a phone); a client deciding who's aboard
 (the server owns it); positional countdown sounds (a friend at the far end must hear them);
 a PA voice now (no recording yet: ROADMAP polish).
+
+## D-047 The flashlight: yours drawn on your screen, the server owns on and off (L-11a, Nov 8)
+Everyone carries the torch from spawn, in the right hand, as the GDD's tools table says; it is no
+slot's tool. Your own is a copy on your screen only, held to the camera (`Torch.Hold`) in a local
+Workspace folder and stepped after the camera and its shake; the one in your character's hand is
+hidden from you by Roblox's first-person camera and drawn for friends. Each screen lights a torch
+itself: yours the moment you click (the click, the lens, the beam, the button), friends' from the
+`On` attribute the server writes. The client sends the state it wants, not a toggle, and sends it
+again if the server disagrees for 0.4 s, so a refused or lost message can't leave it inverted; the
+server takes a burst of four switches, then one each 0.08 s, so three blinks ("it's me", GDD) go
+through and mashing doesn't. While it's on, your look's pitch goes to the server (unreliable, at
+most ten a second, only when it moves 1.5 degrees); friends' screens raise your arm to it after
+your animation (the shoulder's Transform), and keepers will read it (L-06b). Keys: a right click
+(Lethal Company uses its mouse buttons for the held item) and R1, because F already closes a door;
+a phone button above the jump button. No battery and no flicker: the GDD gives the torch neither.
+Light budget: your beam and the nearest three friends' (within 140 studs) are shadowed spotlights;
+past that a friend's torch shows its lit lens only. A soft PointLight just above your torch's head
+throws the spill ring round the pool and lights your torch in a dead hall; it also lights a wall
+close in front of you at low graphics, where a spotlight lights nothing nearer than about 3 studs.
+Not chosen: F (the door's Close); the server switching lights (your own would show twice and lag a
+round trip); the torch as a Tool (Roblox's backpack and its arm pose); a battery (not in the GDD).
+

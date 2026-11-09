@@ -2,63 +2,64 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-08, session 37 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-08, session 38 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-05b2 is done** (D-046): once the right code's gate slams open, a 30 s clock runs for everyone
-  within 240 studs (a floor); at zero the gate slams shut on its own and a Brix Zone over the car
-  says who rode. The clock is the elevator's LED digits in the middle of the top bar (green, red
-  from 10, jumping each second); a PA chime starts it; from 10 s the car's lamp blinks ever faster
-  and a heartbeat swells and quickens; a bell rings each of the last five seconds. "Going up" (a
-  lurch, then the stand-in ride's fade back to the spawn) or "Left behind" (the car's light
-  draws away). The dev floor re-arms the elevator after each ride.
-- **New code:** `src/shared/Elevator/Departure.luau` (pure, `tests/departure.spec.luau`, 6,188
-  checks), `src/client/GateClock.luau`; `Elevators` keeps the clock (`Departs`, `Aboard`,
-  `departed`), `ElevatorView` the lamp, `LedReadout.row` draws any row of LED digits.
-- **Verified in Studio** on the Galaxy A16: the countdown, its sounds and the lamp, frame by
-  frame; a run through the closing gate (crossed at 28% shut) counted aboard and ridden back;
-  left behind. Two players and the sound mix are the owner's (`OWNER.md`).
-- The owner said at kickoff the current state "is fine for now"; no test results came with it.
-- L-11 is split into L-11a (the flashlight), L-11b (two slots and your hands), L-11c (bolt
-  cutters and the padlock): Brix has no inventory.
+- **L-11a is done** (D-047): everyone carries an old two-battery plastic torch, built by script
+  (`art/flashlight/`, baked, sheets) and imported to `ReplicatedStorage.Props.Flashlight`. Yours
+  is held low on the right of your view (sways, trails a turn, dips on the click); a right click,
+  R1 or a phone button above the jump button switches it at once with a click; the server owns
+  on, off and your aim; friends see the torch in your hand, its lens lit, your arm raised to your
+  aim, and the nearest three friends' beams cast real light.
+- **New code:** `src/shared/Flashlight/` (`init` prepare/clone/light, `Torch` pure with
+  `tests/torch.spec.luau`, generated `Specs`), `src/server/Flashlights.luau`,
+  `src/client/FlashlightView.luau`.
+- **Verified in Studio:** the torch in hand, right click and R1, the server's state and aim, the
+  beam at Level 21 and 8 and on the Galaxy A16. Found: a spotlight lights nothing within about
+  3 studs at low graphics, so a soft spill PointLight rides above the torch's head (STUDIO.md).
+  The phone tap, a friend's beam and arm, and six players are the owner's (`OWNER.md`).
+- No owner test results came this session (the overnight run).
+- ROADMAP reshaped: L-11b now builds the bolt cutters' art first (a slot needs a real tool);
+  L-11c is the padlock's art and using both from the slots.
 
-## Next task: L-11a The flashlight
-The moment: the hall's light clicks off behind you and you thumb your torch on: a small warm cone,
-a click, the beam shaking a little as you walk; a friend's beam swinging round a corner tells you
-where they are. Everyone carries one (GDD).
+## Next task: L-11b Two slots and your hands
+The moment: you spot bolt cutters on a unit's floor, tap Pick up, and they swing into your free
+hand with a clank; the slots' bar at the bottom shows them; you hand them to the friend at the
+padlocked door. Lethal Company's slots (two tools plus what's in your hands, GDD).
 1. Owner test results first (`OWNER.md`).
-2. Read ROADMAP L-11a and the GDD's flashlight lines (docs tools: search "flashlight"; only what
-   it says about the torch: battery, flicker, who sees it). Proven-mechanic line: DOORS' and
-   Lethal Company's flashlights.
-3. Art first, the unit's way: `art/flashlight/` (spec.py, build.py, as `art/finds/`), an old
-   plastic torch at a hand's size, baked PBR, FBX, look sheets; import it (STUDIO's FBX recipe)
-   to `ReplicatedStorage.Props.Flashlight`; say in OWNER.md to save the place.
-4. Held in first person, low right, with a little walk sway (a pure module for the sway and the
-   beam's numbers, Lune specs); a SpotLight beam with Shadows, its range and angle in shared
-   Config. The other players see your torch in your hand and its beam.
-5. On and off: one phone button (thumb-sized, above the jump button), F, gamepad; the server owns
-   the state (a validated, rate-limited remote, as the keypad's), the click heard nearby.
-6. Light budget on the A16 (one shadowed SpotLight per player; check with six).
-**Acceptance:** checks green; art built by script with sheets; Lune specs for the sway and beam;
-in Studio on the Galaxy A16 the torch in hand, its button, the beam in a dark hall (shots); a
-friend's beam seen (OWNER.md two-player test).
-**Read first:** ROADMAP L-11a; the GDD's flashlight lines; `art/unit/README.md` ("How it's
-made"); `art/finds/spec.py` and `build.py` (the latest small prop); docs/STUDIO.md ("Importing
-kit pieces", the Blender traps); `src/server/Elevators.luau` (by grep: `press`, the remote checks).
+2. Read ROADMAP L-11b and the GDD's lines on carrying (docs tools: search "slots" and "hands";
+   only what it says about how many, dropping and handing over).
+3. Check Brix for an inventory (`vendor/brix/src/init.luau`, its `docs/ROADMAP.md`); if none, add
+   it to Brix's ROADMAP in neutral terms and build the smallest stand-in behind that shape.
+4. Art first, the unit's way: `art/boltcutters/` (spec.py, build.py borrowing the finds' bake, as
+   `art/flashlight/build.py`), long red handles and a steel jaw, at a hand's size; FBX, sheets;
+   upload (`scripts/upload_art`), insert, `prepare` into `ReplicatedStorage.Props.Tools`.
+5. The slots on the server: one table of tools (a row each); pick up (a prompt on a tool lying on
+   a floor), switch, drop, hand to a friend; each validated and rate-limited like `Flashlights`.
+   The torch stays in the hand and out of the slots.
+6. On screen: the slots' bar (phone first, a button each), the held tool in first person (reuse
+   `FlashlightView`'s hold), a clank on pick-up, a toast for a refusal ("Hands full").
+7. If the art and the slots won't fit one session, split L-11b in ROADMAP and stop at the art.
+**Acceptance:** checks green; art built by script with sheets; Lune specs for the slots' rules;
+in Studio: pick up, switch, drop, hand over on the Galaxy A16 (shots); two players in OWNER.md.
+**Read first:** ROADMAP L-11b; the GDD's carrying lines; `art/flashlight/build.py` (the latest
+small prop); `src/server/Flashlights.luau` (remote checks); `src/client/FlashlightView.luau`
+(the hold, by grep: `hold`); docs/STUDIO.md ("Importing kit pieces").
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-11a; L-11b; L-11c; L-06b the Mannequin hunts (Brix ENG-07); L-04e (keep each note's sight
-   line clear); L-12; L-13; L-14; then L-07, L-08, L-10, L-09.
+1. L-11b; L-11c; L-06b the Mannequin hunts (Brix ENG-07; it reads `Flashlights:isOn`/`aim` to
+   freeze); L-04e (keep each note's sight line clear); L-12; L-13; L-14; then L-07, L-08, L-10,
+   L-09.
 2. **Bug, small:** DoorSounds' first slam of a session lands up to 0.35 s late; swap its
    `preload` for `SoundPrimer.prime` (one call) and check the first slam in Studio.
-3. L-06b's keepers hear doors on `Doors.acted` and the keypad on `Elevators.acted` (the alarm
-   sends them to the lobby); the GDD's director "turns everything up" on the gate's clock
-   (`Departure`); L-08 replaces the stand-in ride (`Elevators.departed`, DevCorridor's re-arm).
-4. **Check:** floor 3's laying peaked at 12.2 ms in a frame this session (14.9, 25.6 before).
+3. L-06b's keepers hear doors on `Doors.acted` and the keypad on `Elevators.acted`; keepers with
+   eyes see a torch (`Flashlights.switched`, GDD); the director "turns everything up" on the
+   gate's clock (`Departure`); L-08 replaces the stand-in ride.
+4. **Check:** floor 3's laying peaked at 12.2 ms in a frame (session 37).
 5. Studio traps (docs/STUDIO.md): set the Device Simulator's device in Edit before Play and stop
-   it after; trigger a prompt with `InputHoldBegin`/`End`; a capture right after a teleport
-   comes back black, take it again; screen captures land 2 s or more late, so hold a headline
-   on screen to shoot it; Studio runs about 15 fps under the simulator.
+   it after; judge light at a fixed Quality Level (Automatic drops to low graphics); the MCP's
+   clicks don't reach a ScreenGui button in the simulator (use a gamepad key or ask the owner);
+   a capture right after a teleport comes back black, take it again.
 
 ## Kickoff for the next agent
 ```text

@@ -1,0 +1,564 @@
+--!strict
+--[[
+	Client system: the flashlights on this screen (L-11a, D-047).
+
+	Yours: held low on the right of your first-person view (`Torch.Hold`), swaying as you walk,
+	trailing a hard turn and dipping as your thumb clicks it, its beam leaving its lens. A right
+	click, a gamepad's R1 or the round button above the phone's jump button switches it: the click,
+	the lens and the beam answer at once on your screen, and the server is told the state you want
+	(it decides for everyone else). While it's on, your look's pitch goes to the server a few times
+	a second so friends see your torch point where you look.
+
+	Friends': the server's torch in their right hand (`Flashlights`), its lens lit and its beam
+	drawn here from the `On` attribute, their arm raised to their `Aim` (each screen poses other
+	players' shoulders after their animation, so the beam points where they look), the click heard
+	near them. Only the nearest few cast real light (`Torch.budget`): the rest show their lit lens.
+]]
+local ContextActionService = game:GetService("ContextActionService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+
+local Brix = require(ReplicatedStorage.Brix)
+local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
+local SoundPrimer = require(script.Parent.SoundPrimer)
+
+local Torch = Flashlight.Torch
+local Specs = Flashlight.Specs
+
+local player = Players.LocalPlayer
+
+local RENDER = "FlashlightHold"
+local ACTION = "Flashlight"
+-- The phone's button: about three quarters of the jump button, a thumb's width above it.
+local BUTTON_OF_JUMP = 0.74
+local BUTTON_MIN, BUTTON_MAX = 52, 92 -- pixels
+local BUTTON_GAP = 0.18 -- of the button, between it and the jump button
+local INK = Color3.fromRGB(232, 226, 214) -- the hints' warm off-white
+local WARM = Color3.fromRGB(255, 214, 140) -- the glyph lit
+local PRESS = TweenInfo.new(0.16, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+local GLOW = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local BUDGET_EVERY = 0.25 -- seconds between choosing which friends' beams are real
+local RAD = math.pi / 180
+
+local BODY_OFF = CFrame.new(Specs.Body.Centre)
+local LENS_OFF = CFrame.new(Specs.Lens.Centre)
+local HOLD = CFrame.new(Torch.Hold[1], Torch.Hold[2], Torch.Hold[3])
+local HOLD_TURN = Vector3.new(Torch.HoldTurn[1], Torch.HoldTurn[2], Torch.HoldTurn[3]) * RAD
+
+type Click = { on: Sound, off: Sound }
+
+-- A friend's torch as this screen draws it.
+type Friend = {
+	rig: Flashlight.Rig,
+	on: boolean,
+	pitch: number, -- shown, following their aim
+	raise: number, -- how far their arm is up, 0 to 1
+	click: Click?,
+	shoulder: Motor6D?,
+	elbow: Motor6D?,
+	wrist: Motor6D?,
+}
+
+local function clickSound(
+	parent: Instance,
+	which: { id: string, from: number, length: number }
+): Sound
+	local s = Instance.new("Sound")
+	s.SoundId = which.id
+	s.PlaybackRegionsEnabled = true
+	s.PlaybackRegion = NumberRange.new(which.from, which.from + which.length)
+	s.Volume = Torch.ClickVolume
+	s.RollOffMode = Enum.RollOffMode.InverseTapered
+	s.RollOffMinDistance = Torch.ClickNear
+	s.RollOffMaxDistance = Torch.ClickReach
+	s.Parent = parent
+	return s
+end
+
+local function clicks(parent: Instance): Click
+	return { on = clickSound(parent, Torch.OnSound), off = clickSound(parent, Torch.OffSound) }
+end
+
+local function play(c: Click, on: boolean)
+	local s = if on then c.on else c.off
+	local which = if on then Torch.OnSound else Torch.OffSound
+	s.TimePosition = which.from
+	s:Play()
+end
+
+local function motor(character: Model, part: string, name: string): Motor6D?
+	local p = character:FindFirstChild(part)
+	local m = p and p:FindFirstChild(name)
+	return if m and m:IsA("Motor6D") then m else nil
+end
+
+-- The phone's button: a dark round button like the jump button, with a torch drawn on it that
+-- lights warm while yours is on.
+local function makeButton(): (ScreenGui, GuiButton, { GuiObject }, Frame, UIScale)
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "Flashlight"
+	gui.ResetOnSpawn = false
+	gui.Enabled = false
+	local button = Instance.new("TextButton")
+	button.Name = "Switch"
+	button.Text = ""
+	button.AutoButtonColor = false
+	button.AnchorPoint = Vector2.new(0.5, 1)
+	button.BackgroundColor3 = Color3.new(0, 0, 0)
+	button.BackgroundTransparency = 0.5
+	button.Parent = gui
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0.5, 0)
+	corner.Parent = button
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = INK
+	stroke.Transparency = 0.55
+	stroke.Thickness = 2
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.Parent = button
+	local scale = Instance.new("UIScale")
+	scale.Parent = button
+	-- the glow behind the torch while it's on
+	local glow = Instance.new("Frame")
+	glow.Name = "Glow"
+	glow.AnchorPoint = Vector2.new(0.5, 0.5)
+	glow.Position = UDim2.fromScale(0.5, 0.5)
+	glow.Size = UDim2.fromScale(0.86, 0.86)
+	glow.BackgroundColor3 = WARM
+	glow.BackgroundTransparency = 1
+	glow.Parent = button
+	local gc = Instance.new("UICorner")
+	gc.CornerRadius = UDim.new(0.5, 0)
+	gc.Parent = glow
+	-- the torch, tipped forward to the upper right: its tube, its flared head, its lens
+	local holder = Instance.new("Frame")
+	holder.AnchorPoint = Vector2.new(0.5, 0.5)
+	holder.Position = UDim2.fromScale(0.5, 0.52)
+	holder.Size = UDim2.fromScale(0.6, 0.6)
+	holder.BackgroundTransparency = 1
+	holder.Rotation = 40
+	holder.Parent = button
+	local parts: { GuiObject } = {}
+	local function piece(x: number, y: number, w: number, h: number, round: number): Frame
+		local f = Instance.new("Frame")
+		f.AnchorPoint = Vector2.new(0.5, 0.5)
+		f.Position = UDim2.fromScale(x, y)
+		f.Size = UDim2.fromScale(w, h)
+		f.BackgroundColor3 = INK
+		f.BorderSizePixel = 0
+		f.Parent = holder
+		local c = Instance.new("UICorner")
+		c.CornerRadius = UDim.new(round, 0)
+		c.Parent = f
+		table.insert(parts, f)
+		return f
+	end
+	piece(0.5, 0.64, 0.26, 0.6, 0.3) -- the tube
+	piece(0.5, 0.26, 0.42, 0.2, 0.2) -- the head
+	local lens = piece(0.5, 0.15, 0.36, 0.06, 0.5) -- the lens's edge
+	lens.BackgroundColor3 = Color3.new(0, 0, 0)
+	lens.BackgroundTransparency = 0.3
+	table.remove(parts) -- the lens keeps its own colour
+	return gui, button, parts, glow, scale
+end
+
+local FlashlightView = {}
+
+function FlashlightView.new(): Brix.System
+	local connections: { RBXScriptConnection } = {}
+	local own: Flashlight.Rig? = nil
+	local ownClick: Click? = nil
+	local sway = Torch.sway()
+	local pose = Torch.pose()
+	local mine = false -- what your torch is, on your screen
+	local lastSwitch: number? = nil
+	local burst = Torch.Burst
+	local sentAt = -math.huge -- when the state was last sent
+	local aimSent: number? = nil
+	local aimAt = -math.huge
+	local lastYaw: number?, lastPitch = nil, 0
+	local friends: { [Model]: Friend } = {}
+	local order: { Friend } = {}
+	local distances: { number } = {}
+	local real: { boolean } = {}
+	local budgetIn = 0
+	local switchRemote: RemoteEvent? = nil
+	local aimRemote: UnreliableRemoteEvent? = nil
+	local gui: ScreenGui? = nil
+	local button: GuiButton? = nil
+	local glyph: { GuiObject } = {}
+	local glow: Frame? = nil
+	local press: UIScale? = nil
+	local jump: GuiObject? = nil
+	local findJumpIn = 0
+
+	local function alive(): boolean
+		local character = player.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		return humanoid ~= nil and humanoid.Health > 0
+	end
+
+	local function showButton()
+		local g = glow
+		if not g then
+			return
+		end
+		TweenService:Create(g, GLOW, { BackgroundTransparency = if mine then 0.72 else 1 }):Play()
+		for _, p in glyph do
+			TweenService:Create(p, GLOW, { BackgroundColor3 = if mine then WARM else INK }):Play()
+		end
+	end
+
+	local function send()
+		local r = switchRemote
+		if r then
+			r:FireServer(mine)
+			sentAt = os.clock()
+		end
+	end
+
+	-- Your thumb on the button.
+	local function switch()
+		if not alive() then
+			return
+		end
+		local t = os.clock()
+		local may, left = Torch.allow(lastSwitch, burst, t)
+		if not may then
+			return
+		end
+		lastSwitch, burst = t, left
+		mine = not mine
+		Torch.click(sway)
+		if own then
+			Flashlight.light(own, mine, true)
+		end
+		if ownClick then
+			play(ownClick, mine)
+		end
+		local s = press
+		if s then
+			s.Scale = 0.86
+			TweenService:Create(s, PRESS, { Scale = 1 }):Play()
+		end
+		showButton()
+		aimSent = nil
+		send()
+	end
+
+	local function onAction(
+		_: string,
+		state: Enum.UserInputState,
+		_input: InputObject
+	): Enum.ContextActionResult
+		if state == Enum.UserInputState.Begin then
+			switch()
+		end
+		return Enum.ContextActionResult.Pass
+	end
+
+	-- Off and back in your hand whenever you get a new character.
+	local function respawned()
+		mine = false
+		lastSwitch, burst = nil, Torch.Burst
+		if own then
+			Flashlight.light(own, false, true)
+		end
+		showButton()
+	end
+
+	-- The phone's button sits over the jump button, sized from it, once the touch controls exist.
+	local function placeButton()
+		local j, b, g = jump, button, gui
+		if not (j and b and g) then
+			return
+		end
+		local touch = j:FindFirstAncestorOfClass("ScreenGui")
+		if touch then
+			g.IgnoreGuiInset = touch.IgnoreGuiInset
+			g.ScreenInsets = touch.ScreenInsets
+		end
+		local size =
+			math.clamp(math.round(j.AbsoluteSize.X * BUTTON_OF_JUMP), BUTTON_MIN, BUTTON_MAX)
+		b.Size = UDim2.fromOffset(size, size)
+		local at = j.AbsolutePosition
+		b.Position = UDim2.fromOffset(at.X + j.AbsoluteSize.X / 2, at.Y - size * BUTTON_GAP)
+		g.Enabled = j.Visible and UserInputService.TouchEnabled
+	end
+
+	local function findJump()
+		local pg = player:FindFirstChildOfClass("PlayerGui")
+		local touch = pg and pg:FindFirstChild("TouchGui")
+		local frame = touch and touch:FindFirstChild("TouchControlFrame")
+		local j = frame and frame:FindFirstChild("JumpButton")
+		if not (j and j:IsA("GuiObject")) or j == jump then
+			return
+		end
+		jump = j
+		for _, prop in { "AbsolutePosition", "AbsoluteSize", "Visible" } do
+			table.insert(connections, j:GetPropertyChangedSignal(prop):Connect(placeButton))
+		end
+		placeButton()
+	end
+
+	-- Each frame, after the camera (and its shake): your torch where your hand holds it.
+	local function hold(dt: number)
+		local r = own
+		local camera = Workspace.CurrentCamera
+		if not (r and camera) then
+			return
+		end
+		local cam = camera.CFrame
+		local pitch, yaw = cam:ToOrientation()
+		local turnYaw, turnPitch = 0, 0
+		if lastYaw then
+			turnYaw = (yaw - lastYaw + math.pi) % (2 * math.pi) - math.pi
+			turnPitch = pitch - lastPitch
+		end
+		lastYaw, lastPitch = yaw, pitch
+		local speed = 0
+		local character = player.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		if
+			root
+			and root:IsA("BasePart")
+			and humanoid
+			and humanoid.FloorMaterial ~= Enum.Material.Air
+		then
+			local v = root.AssemblyLinearVelocity
+			speed = Vector3.new(v.X, 0, v.Z).Magnitude
+		end
+		local p = Torch.step(sway, dt, speed, turnYaw, turnPitch, pose)
+		local grip = cam
+			* HOLD
+			* CFrame.new(p.x, p.y, p.z)
+			* CFrame.fromEulerAnglesYXZ(
+				HOLD_TURN.Y + p.pitch,
+				HOLD_TURN.X + p.yaw,
+				HOLD_TURN.Z + p.roll
+			)
+		r.body.CFrame = grip * BODY_OFF
+		r.lens.CFrame = grip * LENS_OFF
+		local shown = alive()
+		local t = if shown then 0 else 1
+		if r.body.LocalTransparencyModifier ~= t then
+			r.body.LocalTransparencyModifier = t
+			r.lens.LocalTransparencyModifier = t
+			if not shown then
+				Flashlight.light(r, false, true)
+			end
+		end
+	end
+
+	-- A friend's torch, found in their character the first time it's there.
+	local function friendOf(character: Model): Friend?
+		local model = character:FindFirstChild(Torch.ModelName)
+		if not (model and model:IsA("Model")) then
+			return nil
+		end
+		local f = friends[model]
+		if f then
+			return f
+		end
+		local rig = Flashlight.rigOf(model)
+		if not rig then
+			return nil
+		end
+		f = {
+			rig = rig,
+			on = model:GetAttribute(Torch.OnAttribute) == true,
+			pitch = 0,
+			raise = 0,
+			click = nil,
+			shoulder = motor(character, "RightUpperArm", "RightShoulder"),
+			elbow = motor(character, "RightLowerArm", "RightElbow"),
+			wrist = motor(character, "RightHand", "RightWrist"),
+		}
+		friends[model] = f
+		return f
+	end
+
+	-- Friends' torches: lit from their state, the nearest few with real light.
+	local function drawFriends(dt: number)
+		table.clear(order)
+		for _, other in Players:GetPlayers() do
+			local character = other.Character
+			if other ~= player and character then
+				local f = friendOf(character)
+				if f then
+					table.insert(order, f)
+				end
+			end
+		end
+		for model in friends do
+			if not model.Parent then
+				friends[model] = nil
+			end
+		end
+		budgetIn -= dt
+		local camera = Workspace.CurrentCamera
+		if budgetIn <= 0 and camera then
+			budgetIn = BUDGET_EVERY
+			table.clear(distances)
+			local eye = camera.CFrame.Position
+			for i, f in order do
+				distances[i] = if f.on then (f.rig.body.Position - eye).Magnitude else math.huge
+			end
+			Torch.budget(distances, real)
+		end
+		for i, f in order do
+			local model = f.rig.model
+			local on = model:GetAttribute(Torch.OnAttribute) == true
+			if on ~= f.on then
+				f.on = on
+				if not f.click then
+					f.click = clicks(f.rig.body)
+				end
+				play(f.click :: Click, on)
+				if on then
+					budgetIn = 0 -- find it a real beam now, not in a quarter second
+				end
+			end
+			Flashlight.light(f.rig, on, real[i] == true)
+			local aim = model:GetAttribute(Torch.AimAttribute)
+			local target = if type(aim) == "number" then aim else 0
+			f.pitch = target + (f.pitch - target) * math.exp(-Torch.AimFollow * dt)
+			local step = dt / Torch.ArmBlend
+			f.raise = math.clamp(f.raise + (if on then step else -step), 0, 1)
+		end
+	end
+
+	-- After other players' animations, before the frame: their right arm raised to their aim.
+	local function poseArms()
+		for _, f in order do
+			local w = f.raise
+			if w > 0 then
+				local k = w * w * (3 - 2 * w)
+				local s, e, wr = f.shoulder, f.elbow, f.wrist
+				if s then
+					s.Transform = s.Transform:Lerp(CFrame.Angles(Torch.raise(f.pitch), 0, 0), k)
+				end
+				if e then
+					e.Transform = e.Transform:Lerp(CFrame.identity, k)
+				end
+				if wr then
+					wr.Transform = wr.Transform:Lerp(CFrame.identity, k)
+				end
+			end
+		end
+	end
+
+	-- Your aim, a few times a second while your torch is on; and the server told again if it
+	-- disagrees with you for long (a refused or lost message).
+	local function report()
+		local character = player.Character
+		local model = character and character:FindFirstChild(Torch.ModelName)
+		local now = os.clock()
+		if model then
+			local theirs = model:GetAttribute(Torch.OnAttribute) == true
+			if theirs ~= mine and alive() and now - sentAt > Torch.Resend then
+				send()
+			end
+		end
+		local camera = Workspace.CurrentCamera
+		local r = aimRemote
+		if not (mine and camera and r) then
+			return
+		end
+		local pitch = math.deg(math.asin(math.clamp(camera.CFrame.LookVector.Y, -1, 1)))
+		if Torch.shouldSend(aimSent, aimAt, pitch, now) then
+			r:FireServer(pitch)
+			aimSent, aimAt = math.round(pitch), now
+		end
+	end
+
+	local system = { name = "FlashlightView" }
+
+	function system.start(_: any, _context: Brix.Context)
+		SoundPrimer.prime({ Torch.OnSound.id, Torch.OffSound.id })
+		-- your torch in a folder of this screen's own: a light under the camera draws nothing
+		local folder = Instance.new("Folder")
+		folder.Name = "YourFlashlight"
+		folder.Parent = Workspace
+		local r = Flashlight.clone(CFrame.identity, folder, true)
+		if r then
+			own = r
+			ownClick = clicks(r.body)
+		end
+		task.spawn(function()
+			local remotes = ReplicatedStorage:WaitForChild(Torch.RemoteFolder, 30)
+			local s = remotes and remotes:WaitForChild(Torch.SwitchRemote, 30)
+			local a = remotes and remotes:WaitForChild(Torch.AimRemote, 30)
+			if s and s:IsA("RemoteEvent") then
+				switchRemote = s
+			end
+			if a and a:IsA("UnreliableRemoteEvent") then
+				aimRemote = a
+			end
+		end)
+		local g, b, parts, gl, sc = makeButton()
+		gui, button, glyph, glow, press = g, b, parts, gl, sc
+		table.insert(
+			connections,
+			b.InputBegan:Connect(function(input: InputObject)
+				local t = input.UserInputType
+				if t == Enum.UserInputType.Touch or t == Enum.UserInputType.MouseButton1 then
+					switch()
+				end
+			end)
+		)
+		g.Parent = player:WaitForChild("PlayerGui")
+		ContextActionService:BindAction(
+			ACTION,
+			onAction,
+			false,
+			Enum.UserInputType.MouseButton2,
+			Enum.KeyCode.ButtonR1
+		)
+		table.insert(connections, player.CharacterAdded:Connect(respawned))
+		RunService:BindToRenderStep(RENDER, Enum.RenderPriority.Camera.Value + 2, hold)
+		table.insert(connections, RunService.PreSimulation:Connect(poseArms))
+	end
+
+	function system.step(_: any, dt: number)
+		findJumpIn -= dt
+		if findJumpIn <= 0 then
+			findJumpIn = 1
+			findJump()
+		end
+		drawFriends(dt)
+		report()
+	end
+
+	function system.stop(_: any)
+		RunService:UnbindFromRenderStep(RENDER)
+		ContextActionService:UnbindAction(ACTION)
+		for _, c in connections do
+			c:Disconnect()
+		end
+		table.clear(connections)
+		if own then
+			local folder = own.model.Parent
+			own.model:Destroy()
+			if folder then
+				folder:Destroy()
+			end
+			own = nil
+		end
+		if gui then
+			gui:Destroy()
+			gui = nil
+		end
+		table.clear(friends)
+		table.clear(order)
+	end
+
+	return system :: any -- any: a plain Brix system built field by field
+end
+
+return FlashlightView

@@ -10,6 +10,7 @@ local Brix = require(ReplicatedStorage.Brix)
 local DevCorridor = require(script.DevCorridor)
 local Doors = require(script.Doors)
 local Elevators = require(script.Elevators)
+local Flashlights = require(script.Flashlights)
 local MotionLights = require(script.MotionLights)
 
 local systems: { Brix.HostEntry } = {
@@ -19,6 +20,7 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "doors", system = Doors.new() },
 	-- Each floor's freight elevator: its keypad, the code check, the alarm, its gate.
 	{ slot = "elevators", system = Elevators.new() },
+	{ slot = "flashlights", system = Flashlights.new() },
 }
 if RunService:IsStudio() then
 	-- A test hall of real units to try the doors in. Never on a live server.

@@ -295,17 +295,28 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
   it; freezing the Mannequin lands with L-06b). The bolt cutters and the padlock move off the
   test post onto it (`Door.Tools`). Each tool's art first. Brix has no inventory (checked Nov 8,
   `4c21b5f`). Split (Nov 8) so each fits a session:
-  - [ ] **L-11a The flashlight.** Its art first, the unit's way (`art/flashlight/`): an old
-    plastic torch, held low on the right of your first-person view with a little sway as you
-    walk. A click switches it on and off (a phone button, F, gamepad), its beam a SpotLight
-    with a soft edge; friends see your beam (the server owns on and off). The GDD's flashlight
-    entry decides anything else (a battery, a flicker). Its light budget on the Galaxy A16.
-  - [ ] **L-11b Two slots and your hands.** Lethal Company's slots on the server: pick a tool up
-    off a unit's floor, switch, drop, hand one to a friend, each with a phone button; the slots'
-    bar on screen; one table of tools (a row each, as keepers are rows). Ask Brix's ROADMAP for
-    an inventory in neutral terms; build the smallest stand-in behind that shape.
-  - [ ] **L-11c Bolt cutters and the padlock.** Their art, carried in the slots, used from them;
-    off the test post (`Door.Tools` read from the slots).
+  - [x] **L-11a The flashlight** (Nov 8, D-047). Everyone carries an old two-battery plastic
+    torch (`art/flashlight/`, built by script, baked, sheets), held low on the right of your
+    first-person view: it sways with your stride, trails a hard turn, breathes when you stand and
+    dips as you click it. A right click, a gamepad's R1 or a round phone button above the jump
+    button switches it at once on your screen with a plastic click (heard 22 studs off); the server
+    owns on and off and the aim (`Flashlights`: a desired-state remote, checked for type, a living
+    hand and a burst-then-gap rate). Its beam is a shadowed SpotLight (54 degrees, 42 studs) with
+    a soft spill ring; friends see your torch in your hand, its lens lit, your arm raised to where
+    you look, and the nearest three friends' beams cast real light. No battery or flicker: the GDD
+    gives it none. `Flashlight/Torch.luau` (pure, 44 Lune checks), `FlashlightView` (client).
+    Verified in Studio: the torch in hand, right click and R1, the server's state and aim, the
+    beam at Level 21 and Level 8 and on the Galaxy A16 (`docs/art/L-11a-*.jpg`). The phone tap,
+    a friend's beam and arm, and six players' light: `OWNER.md`.
+  - [ ] **L-11b Two slots and your hands.** A slot needs a real tool to hold, so the bolt
+    cutters' art comes first, the unit's way (`art/boltcutters/`, as `art/flashlight/`). Then
+    Lethal Company's slots on the server: pick a tool up off a unit's floor, switch, drop, hand one
+    to a friend, each with a phone button; the slots' bar on screen; one table of tools (a row
+    each, as keepers are rows). The torch stays in your hand and out of the slots (GDD: everyone
+    has one). Ask Brix's ROADMAP for an inventory in neutral terms; build the smallest stand-in
+    behind that shape. If the art and the slots won't fit one session, split them.
+  - [ ] **L-11c The padlock, and the cutters at work.** The padlock's art; the bolt cutters and
+    the padlock used from the slots, off the test post (`Door.Tools` read from the slots).
 - [ ] **L-06b The Mannequin hunts.** At no more than player speed: a data row on Brix's Pursuit
   (floor pathing, a cone reach), frozen in a flashlight's beam. Needs Brix's ENG-06 and ENG-07.
   Keepers hear a door (the GDD: an open, a slam, a lift from inside) as far as its sound carries:
@@ -366,6 +377,19 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **Your hand on the torch** (L-11a): first person shows the torch alone, low on the right; a hand
+  round its grip (the avatar's own colour) would sell it, as DOORS' and Pressure's held items do.
+- **A hint for the torch's right click** (L-11a): mouse players learn Alt from FreeCursor's pill;
+  the torch's right click wants the same pill once ("Right click  Flashlight").
+- **The beam in the haze** (L-11a, atmosphere: after the loop): a faint visible cone in the hall's
+  dust (a Beam or a few lit puffs), as Lethal Company's torches show theirs.
+- **The torch into a wall** (L-11a): pressed face-first into a wall, the held torch's head sinks
+  into it; pull it back towards you when a wall is that close.
+- **A friend's arm, animated** (L-11a): their raised arm is a turned shoulder, stiff and straight;
+  an aim pose with a bent elbow would read as holding a torch rather than pointing.
+- **The view sheets' spill** (L-11a): rerender `art/sheets/flashlight-view*.png` with the game's
+  spill light (`Torch.SpillOffset`) when the torch's art is next rebuilt.
 
 - **The PA's voice** (L-05b2): the GDD has the PA count the 30 s down aloud. Today a chime starts
   the clock and the bell counts the last five; a voice ("Thirty seconds", "Ten", then the count)

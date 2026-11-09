@@ -113,6 +113,12 @@ local ART: { Art } = {
 		manifest = "art/finds/assets.json",
 		description = "A 1980s bedroom's things left in storage: a boombox, a portable TV, a teddy, roller skates",
 	},
+	{
+		key = "Flashlight",
+		path = "art/flashlight/out/Flashlight.fbx",
+		manifest = "art/flashlight/assets.json",
+		description = "An old two-battery plastic torch, faded yellow with black ends and a rubber button",
+	},
 }
 local MODEL: OpenCloud.Kind = { assetType = "Model", contentType = "model/fbx" }
 

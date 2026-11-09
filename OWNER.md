@@ -6,13 +6,35 @@ nowhere else.
 ## Now
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
-- [ ] **Save the place** (File > Save to Roblox) after this session (Nov 8): the elevator's
-  templates live only in the open place, at `ReplicatedStorage.Props.Elevator` and
-  `ReplicatedStorage.Props.Note`. Unsaved, the next open loses them and every floor's lobby has
+- [ ] **Save the place** (File > Save to Roblox) after this session (Nov 8): the elevator's and
+  the flashlight's templates live only in the open place, at `ReplicatedStorage.Props.Elevator`,
+  `Props.Note` and `Props.Flashlight` (without it nobody has a torch; Output warns). Unsaved, the next open loses them and every floor's lobby has
   an empty hole in its back wall (Output warns).
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
+
+## Now: judge L-11a, the flashlight (built Nov 8)
+
+- [ ] **Your torch on the phone:** Galaxy A16 in the Device Simulator (set it in Edit first), Play.
+  The round button with a torch on it sits above the jump button. Tap it with a real tap (my taps
+  can't reach it). Look for: the click, the lens and the warm pool at once; the button's torch and
+  a glow turning warm; tap three times quickly (off, on, off) and each blink lands. Walk: the torch
+  bobs and the pool shakes a little; stop and it settles; swing the view hard and it trails and
+  catches up. Is it the right size and place in the corner (`Torch.Hold`), or too big over the
+  thumb buttons? Shots `docs/art/L-11a-phone.jpg`, `-button.jpg`, `-hall.jpg`, `-wall.jpg`.
+- [ ] **On a computer:** a right click switches it; with a gamepad, R1.
+- [ ] **A friend's torch** (Test > Clients and Servers, 2 players): one walks into a dark hall and
+  switches on. The other looks for: the torch in their right hand, its lens lit, their arm coming
+  up to point it (and following them as they look up and down), the beam on the walls, the click
+  heard near them; three quick blinks read as "it's me". Off, the arm drops and the torch hangs.
+- [ ] **Six torches** (Clients and Servers, 6 players if your machine copes; the Galaxy A16 view
+  on one): all six on in one hall. Look for: the frame rate holding, the three nearest friends'
+  beams lit and the rest showing only their lens. Say if the budget (`Torch.RealBeams` 4) is
+  wrong either way.
+- [ ] **Decide, defaults in place** (D-047): (1) a right click and R1, since F closes a door, or
+  another key; (2) no battery and no flicker, as the GDD has none; (3) the beam 54 degrees wide and
+  42 studs long; (4) the torch about 1.5 times life so it reads in a fist.
 
 ## Now: judge L-05b1b, the code's notes in their units (built Nov 8)
 
