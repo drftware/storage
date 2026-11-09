@@ -423,20 +423,25 @@ art and poses (Nov 8), and L-06b moves up the moment Brix's ENG-06 and ENG-07 la
         ends closed (`Top`, was `WireTop`; the same collider, so the ladder's spots didn't move);
         from up there you see only the halls. Landing on it is a body against thin steel, not a
         fence rattle. Both unit templates swapped in the open place; verified in Studio.
-      - [ ] **L-13b2c Along the tops and down.** Steered (owner, Nov 9), as Outlast's crawl
-        spaces: from where L-13b2a lays you (`Leaning.lying`, your screen holding your body, the
-        `OnLadder` tag's "Top"), push the stick and creep, slow and low, the game keeping you on
-        the run so nobody slides off or clips; round a junction's lid (`Run.lids`). The steel
-        booms under you, heard below, as Alien: Isolation's vents. At a unit's front edge, look
-        down into the hall. Down by dropping off any front (a button, not G: G is already Slam and
-        Drop), a thud and a jolt, so Take no longer waits for an empty top (`Ladders.take`).
-        Keepers can't follow (L-06b reads `Run.lids`).
+      - [x] **L-13b2c Along the tops and down.** Done Nov 9 (D-059). The stick steers your lying
+        body over the steel, slow and low (4.5 a second, surging per pull, backward at half), held
+        on the tops by the pure `Tops` map each floor publishes (its run slots, lids and a lip over
+        each hall), your head only out over a front so you can look down; the server checks your
+        place five times a second. Each pull booms softly on the steel for every screen, every other
+        one a `climbed` "Crawl" for keepers (30). Climb down from wherever you are by a ladder; Drop
+        down (F) off any unit's front: over, down, a crouch, a thud and a jolt, standing in the
+        hall. Take no longer waits for those up top. Lune: 34,372 checks over 60 floors (every
+        lying spot fits, random crawls never leave the steel, unit to unit, onto every lid, the
+        peek, the drop). Verified in Studio: 102 to 104 along a run, the peek, the drop, onto a lid
+        on floor 1, backward, Climb down from 4.4 studs off. Round a corner onto another run, two
+        players and the phone wait on `OWNER.md`.
       - [ ] **L-13b2d Saw down into a unit** (owner, Nov 9). Up on the tops with the saw, hold Saw
         over a unit to cut its top (the saw's 4 s, heard floor-wide, waking what sleeps inside)
         and drop in blind, as Rainbow Six Siege's floor hatches; one-way, no ladder inside. Out:
         an unlocked door rolls up from inside; a padlocked one keeps you in until you saw out
         sideways or a friend cuts the lock. Art first: a top with a sawn hole, the hole kit's way
-        (`art/hole/`). Waits on `OWNER.md` for whether a torch can look down the hole first.
+        (`art/hole/`). Your torch can look down the hole before you drop (owner, Nov 9: you
+        paid for the look with the saw's noise).
 - [ ] **L-14 The other tools.** Bubble wrap across a hall (pops for anything that crosses, heard
   floor-wide), the air horn (lures keepers to a spot, wakes sleeping ones), the moving blanket
   (thrown over a keeper, blinds it a few seconds), glow sticks (light the building can't see,
@@ -470,6 +475,11 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 
 ## Polish waiting for a slot
 
+- **The steel bowing under a crawler** (L-13b2c): the sheet you lie on dipping a hair as you pass
+  and the lap seam creaking where two sheets meet; and a recording of its own for the pull's
+  boom (it's the landing's, pitched down).
+- **A hint the first time you're up top** (L-13b2c): nothing on screen says you can crawl; a
+  first-time nudge once the owner has played it.
 - **A friend's arms on the ladder** (L-13b1): the ladder rides on their left shoulder, but their
   arms swing free; the left arm raised to steady its rail (as the torch's raise, `Torch.raise`)
   would sell its weight.

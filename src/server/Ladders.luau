@@ -14,14 +14,20 @@
 	the game takes you back down the ladder into the hall. One climber on the ladder at a time
 	("Wait for them"); as many on the top as fit across the unit ("No room up there").
 
+	Up there you crawl (L-13b2c): your screen steers your lying body along the tops (`Tops.step`),
+	and the server checks the place it claims every fifth of a second (on the tops, at lying height,
+	no faster than a crawl), putting you back where you last were if not. Once you're up you're off
+	the ladder: it can be taken, and you can come down any ladder's Climb down or drop off any unit's
+	front (Drop down, F): the game takes you over the edge and down into the hall.
+
 	Take: the fly runs in and the ladder's back on your shoulder (`Slots:handBack`), refused while
-	anyone's on it or lying at its top ("Someone's up there"), so nobody is stranded.
+	anyone's on it ("Someone's on it"). Those up top drop down instead.
 
 	Every press is checked here: a living character within the button's reach (plus lag), not
 	pressing faster than a hand can, the ladder in hand to lean it, hands free of it to climb. If
 	your screen never moved you, the server puts you where the move ends. Keepers never get these
 	buttons, so they can't climb. `climbed` fires as a ladder goes up and as anyone climbs, with how
-	far it's heard, for keepers (L-06b).
+	far it's heard, for keepers (L-06b), and so do every other pull along the tops and a landing.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -33,6 +39,7 @@ local Prompts = require(script.Parent.Prompts)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 local Slots = require(script.Parent.Slots)
 local Tools = require(ReplicatedStorage.Shared.Tools)
+local Tops = require(ReplicatedStorage.Shared.Tops)
 local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
 
 local Leaning = require(ReplicatedStorage.Shared.Tools.Leaning)
@@ -46,15 +53,19 @@ local BUTTON_DOWN = 0.6 -- the Lean button: this far under the top edge
 local BUTTON_OUT = 0.35 -- and this far out from the front's face
 local FOOT_UP = 3.5 -- Climb and Take: this high up the ladder, at a standing player's chest
 local FOOT_OUT = 0.8 -- and this far out from its middle, on its rungs
-local DOWN_AHEAD = 3.6 -- Climb down: this far into the unit from a lying root (past the head)
-local DOWN_UP = 1 -- and this high above the steel top
+-- Climb down and Drop down: just out over the front's edge, a little above the steel, so they're
+-- on screen whether you look ahead along the top or down over the edge into the hall (a button
+-- back on the steel was behind your view as you looked down)
+local EDGE_OUT = 0.6
+local EDGE_UP = 0.3
+local SPOT_CLEAR = 1.6 -- studs from a crawler's root that a lying spot counts as taken
 local SIDE_PIXELS = 150 -- Take beside Climb on screen, as a door's buttons sit (a button's width)
 local NEAR_SPOT = 3 -- studs from where a move ends that count as there
 
 export type ClimbEvent = {
 	player: Player,
 	unit: Model,
-	kind: "Raise" | "Up" | "Down",
+	kind: "Raise" | "Up" | "Down" | "Crawl" | "Drop",
 	at: Vector3,
 	reach: number, -- studs it's heard to: a keeper within it hears it
 }
@@ -71,6 +82,7 @@ type Stand = {
 	busyUntil: number, -- os.clock() until which a climber is on the rungs
 	spots: { [number]: Player }, -- who lies in each spot on the top
 	foot: Attachment?,
+	top: Attachment?, -- its Climb down button, on the top above it
 	parts: { Instance }, -- its buttons' attachments
 }
 type Front = {
@@ -80,17 +92,29 @@ type Front = {
 	fit: Leaning.Fit,
 	at: Attachment,
 	prompt: ProximityPrompt,
+	drop: Attachment, -- its Drop down button, for those up on the tops
 	stand: Stand?,
 }
+type Move = "Up" | "Top" | "Down" | "Drop"
 type Climb = {
 	player: Player,
 	character: Model,
-	stand: Stand,
+	stand: Stand?, -- the ladder you're on, going up or down; nil while you crawl the tops
+	front: Front, -- your move's front: the ladder's going up or down, the unit's as you drop
 	spot: number,
-	move: "Up" | "Top" | "Down",
+	move: Move,
 	ends: number, -- os.clock() at which the move is over
 	check: number?, -- os.clock() at which the server checks your screen moved you
 	standUp: number,
+	-- crawling the tops: the map under you, your last checked place, how far you've crawled
+	map: Tops.Map?,
+	origin: CFrame,
+	lyingY: number,
+	last: CFrame?,
+	lastAt: number,
+	nextCheck: number,
+	travel: number,
+	dropX: number,
 }
 
 local function now(): number
@@ -161,13 +185,21 @@ function Ladders.new(): Ladders
 	end
 
 	local function lyingAt(c: Climb): CFrame
-		local x, y, z, p = Leaning.lying(c.stand.front.fit, c.spot)
-		return Leaned.pose(c.stand.front.frame, x, y, z, p)
+		local x, y, z, p = Leaning.lying(c.front.fit, c.spot)
+		return Leaned.pose(c.front.frame, x, y, z, p)
 	end
 
 	local function stoodAt(c: Climb): CFrame
-		local x, y, z, p = Leaning.stood(c.stand.front.fit, c.standUp)
-		return Leaned.pose(c.stand.front.frame, x, y, z, p)
+		local x, y, z, p = Leaning.stood(c.front.fit, c.standUp)
+		return Leaned.pose(c.front.frame, x, y, z, p)
+	end
+
+	-- Where a drop off `c.front` lands you, standing in the hall facing out.
+	local function landedAt(c: Climb): CFrame
+		local fit = c.front.fit
+		local x, y, z, p =
+			Tops.drop(Tops.DropSeconds, c.dropX, fit.faceZ, fit.topY, Leaning.ProneUp, c.standUp)
+		return Leaned.outward(c.front.frame, x, y, z, p)
 	end
 
 	-- A climber off the ladder for good: their spot free, the tag off their character.
@@ -175,8 +207,9 @@ function Ladders.new(): Ladders
 		if climbs[c.player] == c then
 			climbs[c.player] = nil
 		end
-		if c.stand.spots[c.spot] == c.player then
-			c.stand.spots[c.spot] = nil
+		local stand = c.stand
+		if stand and stand.spots[c.spot] == c.player then
+			stand.spots[c.spot] = nil
 		end
 		local character = c.character
 		if character.Parent then
@@ -188,6 +221,8 @@ function Ladders.new(): Ladders
 					Leaned.FrontAttribute,
 					Leaned.SizeAttribute,
 					Leaned.SpotAttribute,
+					Leaned.DropAttribute,
+					Leaned.FixAttribute,
 				}
 			do
 				character:SetAttribute(name, nil)
@@ -195,7 +230,7 @@ function Ladders.new(): Ladders
 		end
 	end
 
-	local function setMove(c: Climb, move: "Up" | "Top" | "Down", restart: boolean)
+	local function setMove(c: Climb, move: Move, restart: boolean)
 		c.move = move
 		c.character:SetAttribute(Leaned.MoveAttribute, move)
 		if restart then
@@ -210,6 +245,7 @@ function Ladders.new(): Ladders
 		end
 		table.clear(stand.parts)
 		stand.foot = nil
+		stand.top = nil
 		stand.ready = false
 		local model = stand.model
 		model:RemoveTag(Leaned.Tag)
@@ -252,11 +288,24 @@ function Ladders.new(): Ladders
 			refuse("Wait for them")
 			return
 		end
+		-- the first spot nobody's climbing to and no crawler lies on
 		local spot: number? = nil
 		for i = 1, #front.fit.spots do
 			if not stand.spots[i] then
-				spot = i
-				break
+				local x, y, z, p = Leaning.lying(front.fit, i)
+				local at = Leaned.pose(front.frame, x, y, z, p).Position
+				local free = true
+				for _, other in climbs do
+					local r = if other.move == "Top" then rootOf(other.player) else nil
+					if r and ((r.Position - at) * Vector3.new(1, 0, 1)).Magnitude < SPOT_CLEAR then
+						free = false
+						break
+					end
+				end
+				if free then
+					spot = i
+					break
+				end
 			end
 		end
 		if not spot then
@@ -267,15 +316,25 @@ function Ladders.new(): Ladders
 		local up = Leaning.upSeconds(front.fit, standUp)
 		stand.busyUntil = t + Leaning.upBusy(front.fit, standUp)
 		stand.spots[spot] = player
+		local x, y, z, p = Leaning.lying(front.fit, spot)
 		local c: Climb = {
 			player = player,
 			character = character,
 			stand = stand,
+			front = front,
 			spot = spot,
 			move = "Up",
 			ends = t + up,
 			check = nil,
 			standUp = standUp,
+			map = nil,
+			origin = CFrame.identity,
+			lyingY = Leaned.pose(front.frame, x, y, z, p).Position.Y,
+			last = nil,
+			lastAt = 0,
+			nextCheck = 0,
+			travel = 0,
+			dropX = 0,
 		}
 		climbs[player] = c
 		character:SetAttribute(Leaned.FrontAttribute, front.frame)
@@ -292,13 +351,24 @@ function Ladders.new(): Ladders
 		})
 	end
 
+	-- Your move's front set on your character, so every screen plays the move against it.
+	local function setFront(c: Climb, front: Front, spot: number)
+		c.front = front
+		c.spot = spot
+		c.character:SetAttribute(Leaned.FrontAttribute, front.frame)
+		c.character:SetAttribute(Leaned.SizeAttribute, front.size)
+		c.character:SetAttribute(Leaned.SpotAttribute, spot)
+	end
+
+	-- Climb down at a ladder's top, from wherever you crawled to by it.
 	local function climbDown(stand: Stand, player: Player, refuse: (string) -> ())
 		local c = climbs[player]
-		if not (c and c.stand == stand and c.move == "Top" and pressOk(player)) then
+		if not (c and c.move == "Top" and stand.ready and pressOk(player)) then
 			return
 		end
 		local root = rootOf(player)
-		if not root or (root.Position - lyingAt(c).Position).Magnitude > NEAR_SPOT + 1 then
+		local top = stand.top
+		if not (root and top and inReach(root, top.WorldPosition, Leaning.DownReach)) then
 			return
 		end
 		local t = os.clock()
@@ -308,8 +378,10 @@ function Ladders.new(): Ladders
 		end
 		local down = Leaning.downSeconds(stand.front.fit, c.standUp)
 		stand.busyUntil = t + down
+		c.stand = stand
 		c.ends = t + down
 		c.check = nil
+		setFront(c, stand.front, 1)
 		setMove(c, "Down", true)
 		local foot = stand.foot
 		climbed:fire({
@@ -318,6 +390,44 @@ function Ladders.new(): Ladders
 			kind = "Down",
 			at = if foot then foot.WorldPosition else root.Position,
 			reach = Leaning.ClimbHeard,
+		})
+	end
+
+	-- Drop down off a unit's front: lying by its edge, over it and down into the hall.
+	local function dropDown(front: Front, player: Player)
+		local c = climbs[player]
+		if not (c and c.move == "Top" and pressOk(player)) then
+			return
+		end
+		local root = rootOf(player)
+		if not (root and inReach(root, front.drop.WorldPosition, Tops.DropReach)) then
+			return
+		end
+		local fit = front.fit
+		local p = front.frame:PointToObjectSpace(root.Position)
+		local width = Leaned.width(front.size)
+		if
+			math.abs(p.X) > width / 2 + 0.5
+			or p.Z < fit.faceZ - 1
+			or p.Z > fit.faceZ + Tops.DropNear + Leaning.RangeSlack
+			or math.abs(p.Y - (fit.topY + Leaning.ProneUp)) > Tops.HeightSlack
+		then
+			return
+		end
+		local t = os.clock()
+		c.stand = nil
+		c.dropX = Tops.dropX(p.X, width)
+		c.ends = t + Tops.DropSeconds
+		c.check = nil
+		c.character:SetAttribute(Leaned.DropAttribute, c.dropX)
+		setFront(c, front, 1)
+		setMove(c, "Drop", true)
+		climbed:fire({
+			player = player,
+			unit = front.unit,
+			kind = "Drop",
+			at = landedAt(c).Position,
+			reach = Tops.DropHeard,
 		})
 	end
 
@@ -334,9 +444,10 @@ function Ladders.new(): Ladders
 		if climbs[player] then
 			return
 		end
+		-- those up top can drop down or take another ladder, so only a climber on it waits
 		for _, c in climbs do
 			if c.stand == stand then
-				refuse(if c.move == "Top" then "Someone's up there" else "Someone's on it")
+				refuse("Someone's on it")
 				return
 			end
 		end
@@ -406,28 +517,28 @@ function Ladders.new(): Ladders
 		takeIt.Triggered:Connect(function(player: Player)
 			take(stand, player, refuseTake)
 		end)
-		-- a Climb down button ahead of each lying spot, out of reach from the hall below
-		for i = 1, #fit.spots do
-			local x, _, z = Leaning.lying(fit, i)
-			local at = Instance.new("Attachment")
-			at.Name = "LadderDown"
-			at.Parent = body
-			at.WorldPosition = front.frame * Vector3.new(x, fit.topY + DOWN_UP, z + DOWN_AHEAD)
-			table.insert(stand.parts, at)
-			local p = Prompts.make(at, {
-				objectText = "Ladder",
-				actionText = "Climb down",
-				key = Enum.KeyCode.E,
-				pad = Enum.KeyCode.ButtonX,
-				reach = Leaning.DownReach,
-			})
-			-- lying up there your view is low over the steel, the button just ahead of it
-			p.RequiresLineOfSight = false
-			local refuseDown = Prompts.refuser(p, ladderName)
-			p.Triggered:Connect(function(player: Player)
-				climbDown(stand, player, refuseDown)
-			end)
-		end
+		-- Climb down on the top above it, out of reach from the hall below, for those up there
+		local at = Instance.new("Attachment")
+		at.Name = "LadderDown"
+		at.Parent = body
+		at.WorldPosition = front.frame
+			* Vector3.new(fit.leanX, fit.topY + EDGE_UP, fit.faceZ - EDGE_OUT)
+		table.insert(stand.parts, at)
+		stand.top = at
+		local down = Prompts.make(at, {
+			objectText = "Ladder",
+			actionText = "Climb down",
+			key = Enum.KeyCode.E,
+			pad = Enum.KeyCode.ButtonX,
+			reach = Leaning.DownReach,
+		})
+		-- lying up there your view is low over the steel, the button just past the edge's lip
+		down.RequiresLineOfSight = false
+		down:AddTag(Leaned.TopButtonTag)
+		local refuseDown = Prompts.refuser(down, ladderName)
+		down.Triggered:Connect(function(player: Player)
+			climbDown(stand, player, refuseDown)
+		end)
 		stand.ready = true
 	end
 
@@ -468,6 +579,7 @@ function Ladders.new(): Ladders
 			busyUntil = 0,
 			spots = {},
 			foot = nil,
+			top = nil,
 			parts = {},
 		}
 		front.stand = stand
@@ -510,6 +622,20 @@ function Ladders.new(): Ladders
 			reach = Leaning.LeanReach,
 		})
 		p:AddTag(Tools.LeanTag)
+		-- Drop down, over the middle of the front's edge, for those up there (L-13b2c)
+		local drop = Instance.new("Attachment")
+		drop.Name = "DropButton"
+		drop.Parent = root
+		drop.WorldPosition = frame * Vector3.new(0, fit.topY + EDGE_UP, fit.faceZ - EDGE_OUT)
+		local d = Prompts.make(drop, {
+			objectText = name,
+			actionText = "Drop down",
+			key = Enum.KeyCode.F,
+			pad = Enum.KeyCode.ButtonB,
+			reach = Tops.DropReach,
+		})
+		d.RequiresLineOfSight = false
+		d:AddTag(Leaned.TopButtonTag)
 		local front: Front = {
 			unit = unit,
 			frame = frame,
@@ -517,11 +643,15 @@ function Ladders.new(): Ladders
 			fit = fit,
 			at = at,
 			prompt = p,
+			drop = drop,
 			stand = nil,
 		}
 		fronts[unit] = front
 		p.Triggered:Connect(function(player: Player)
 			lean(front, player)
+		end)
+		d.Triggered:Connect(function(player: Player)
+			dropDown(front, player)
 		end)
 	end
 
@@ -543,6 +673,12 @@ function Ladders.new(): Ladders
 			end
 		end
 		front.at:Destroy()
+		front.drop:Destroy()
+		for _, c in climbs do
+			if c.front == front and c.move ~= "Top" then
+				clear(c)
+			end
+		end
 	end
 
 	local system = {
@@ -583,8 +719,45 @@ function Ladders.new(): Ladders
 		end
 	end
 
-	-- Only climbers: a move over, the server's check that your screen moved you, or the climber
-	-- dead or gone.
+	-- A crawler's place, checked: on the tops (the map), at lying height, no faster than a crawl.
+	-- Off any of those, the server puts you back where you last were and tells your screen.
+	local function checkCrawl(c: Climb, root: BasePart, t: number)
+		c.nextCheck = t + Tops.CheckEvery
+		local p = root.Position
+		local last = c.last
+		local map = c.map
+		local on = true
+		if map then
+			local q = c.origin:PointToObjectSpace(p)
+			on = Tops.near(map, q.X, q.Z, Tops.Slack)
+		end
+		local moved = if last then ((p - last.Position) * Vector3.new(1, 0, 1)).Magnitude else 0
+		local fastest = Tops.Speed * (1 + Tops.Surge) * Tops.FastSlack * (t - c.lastAt)
+			+ Tops.LagStuds
+		if on and math.abs(p.Y - c.lyingY) <= Tops.HeightSlack and moved <= fastest then
+			c.last = root.CFrame
+			c.lastAt = t
+			c.travel += moved
+			-- every other pull's boom is what a keeper below hears
+			while c.travel >= Tops.Pull * 2 do
+				c.travel -= Tops.Pull * 2
+				climbed:fire({
+					player = c.player,
+					unit = c.front.unit,
+					kind = "Crawl",
+					at = p,
+					reach = Tops.Heard,
+				})
+			end
+		elseif last then
+			c.lastAt = t
+			c.character:PivotTo(last)
+			c.character:SetAttribute(Leaned.FixAttribute, last)
+		end
+	end
+
+	-- Only climbers: a move over, the server's check that your screen moved you, a crawler's place,
+	-- or the climber dead or gone.
 	function system.step(_: any, _dt: number)
 		if next(climbs) == nil then
 			return
@@ -595,19 +768,48 @@ function Ladders.new(): Ladders
 			if c.player.Character ~= c.character or not root then
 				clear(c)
 			elseif c.move == "Up" and t >= c.ends then
+				-- up: off the ladder, your spot free for the next once you crawl from it
 				setMove(c, "Top", false)
+				local stand = c.stand
+				if stand and stand.spots[c.spot] == c.player then
+					stand.spots[c.spot] = nil
+				end
+				c.stand = nil
 				c.check = t + Leaning.EndSlack
+				local lying = lyingAt(c)
+				local map, origin = Leaned.tops(lying.Position)
+				c.map = map
+				c.origin = origin or CFrame.identity
 			elseif c.move == "Top" and c.check and t >= c.check then
+				-- your screen moved you up there (or you're already crawling); if not, the server does
 				c.check = nil
 				local lying = lyingAt(c)
-				if (root.Position - lying.Position).Magnitude > NEAR_SPOT then
+				local map = c.map
+				local q = c.origin:PointToObjectSpace(root.Position)
+				local onTops = math.abs(root.Position.Y - c.lyingY) <= Tops.HeightSlack
+					and (if map then Tops.near(map, q.X, q.Z, Tops.Slack) else false)
+				if (root.Position - lying.Position).Magnitude > NEAR_SPOT and not onTops then
 					c.character:PivotTo(lying)
+					c.character:SetAttribute(Leaned.FixAttribute, lying)
+					c.last = lying
+				else
+					c.last = root.CFrame
 				end
+				c.lastAt = t
+				c.nextCheck = t + Tops.CheckEvery
+			elseif c.move == "Top" and c.last and t >= c.nextCheck then
+				checkCrawl(c, root, t)
 			elseif c.move == "Down" and t >= c.ends + Leaning.EndSlack then
 				local stood = stoodAt(c)
 				clear(c)
 				if (root.Position - stood.Position).Magnitude > NEAR_SPOT then
 					c.character:PivotTo(stood)
+				end
+			elseif c.move == "Drop" and t >= c.ends + Leaning.EndSlack then
+				local landed = landedAt(c)
+				clear(c)
+				if (root.Position - landed.Position).Magnitude > NEAR_SPOT then
+					c.character:PivotTo(landed)
 				end
 			end
 		end

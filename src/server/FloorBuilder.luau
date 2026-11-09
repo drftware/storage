@@ -33,6 +33,7 @@ local Floor = require(ReplicatedStorage.Shared.Floor)
 local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
+local Tops = require(ReplicatedStorage.Shared.Tops)
 local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
 
 -- How long laying may take of each server frame (60 a second, about 16.7 ms each) before it waits
@@ -449,6 +450,42 @@ local function piece(laying: Laying, index: number): (Folder, number)
 	return folder, count
 end
 
+-- The tops' map (L-13b2c) on `container`, for the crawl along them: every screen and the server
+-- find it by its tag and read where the steel is (`Tops`).
+local function publishTops(
+	container: Instance,
+	origin: CFrame,
+	tops: { Tops.Rect },
+	lips: { Tops.Rect }
+)
+	container:SetAttribute(Tops.MapAttribute, Tops.encode(tops, lips))
+	container:SetAttribute(Tops.OriginAttribute, origin)
+	container:AddTag(Tops.Tag)
+end
+
+--[[
+	The tops of the units standing under `container` (the test hall's, which aren't a floor's),
+	published for the crawl: each unit's top and the lip over its hall, in the world's frame. A
+	floor publishes its own runs and lids as it's laid.
+]]
+function FloorBuilder.unitTops(container: Instance)
+	local tops: { Tops.Rect } = {}
+	local lips: { Tops.Rect } = {}
+	for _, d in container:GetDescendants() do
+		if d:IsA("Model") and d:HasTag(UnitKit.Tag) then
+			local face = FloorBuilder.face(d)
+			local spec = specOf(d)
+			local look = face.LookVector
+			table.insert(
+				tops,
+				Tops.footprint(face.X, face.Z, look.X, look.Z, spec.Width, spec.Depth)
+			)
+			table.insert(lips, Tops.lip(face.X, face.Z, look.X, look.Z, spec.Width))
+		end
+	end
+	publishTops(container, CFrame.identity, tops, lips)
+end
+
 --[[
 	Lays `floor` with its lobby's middle at `origin` (on the floor, the halls spreading along its
 	-Z) into a new model under `parent`, and returns the model and what it took. With the floor's
@@ -587,6 +624,8 @@ function FloorBuilder.lay(
 	local model = Instance.new("Model")
 	model.Name = `Floor{floor.number}`
 	model.WorldPivot = origin
+	local tops, lips = Tops.rects(floor)
+	publishTops(model, origin, tops, lips)
 	local hall, elevator = lobby(origin)
 	hall.Parent = model
 	laid.elevator = elevator

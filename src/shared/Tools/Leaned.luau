@@ -4,7 +4,10 @@
 	unit's front (L-13b2a): the tags and attributes they talk through, and `Leaning`'s numbers made
 	into places in the world. `Leaning` is the pure part; this reads the generated Specs.
 ]]
+local CollectionService = game:GetService("CollectionService")
+
 local Leaning = require(script.Parent.Leaning)
+local Tops = require(script.Parent.Parent.Tops)
 local Specs = require(script.Parent.Specs.Ladder)
 local UnitSpecs = require(script.Parent.Parent.StorageUnit.Specs)
 
@@ -27,6 +30,14 @@ Leaned.MoveStartAttribute = "LadderStart"
 Leaned.FrontAttribute = "LadderFront"
 Leaned.SizeAttribute = "LadderSize"
 Leaned.SpotAttribute = "LadderSpot"
+-- Along the tops (L-13b2c): the move is "Top" while you crawl, "Drop" as you drop off a front
+-- (the front's frame then the unit's, and this the place along it you go over); the server sets
+-- `FixAttribute` to where it puts you back when your screen claims a place off the tops.
+Leaned.DropAttribute = "LadderDropX"
+Leaned.FixAttribute = "TopsFix"
+-- On the buttons only someone up on the tops sees: Climb down at a ladder's top, Drop down at
+-- every unit's front.
+Leaned.TopButtonTag = "TopsButton"
 
 local fits: { [string]: Leaning.Fit } = {}
 
@@ -60,9 +71,61 @@ function Leaned.fit(size: string): Leaning.Fit
 	return fit
 end
 
+-- A unit of size `size`'s inside width, along its front.
+function Leaned.width(size: string): number
+	return (UnitSpecs[size] or UnitSpecs.M).Width
+end
+
 -- A body's root at a `Leaning` pose on `front`: facing into the unit, tipped forward `pitch`.
 function Leaned.pose(front: CFrame, x: number, y: number, z: number, pitch: number): CFrame
 	return front * CFrame.new(x, y, z) * CFrame.Angles(0, math.pi, 0) * CFrame.Angles(pitch, 0, 0)
+end
+
+-- A body's root at a pose on `front` facing out into the hall, tipped forward `pitch`.
+function Leaned.outward(front: CFrame, x: number, y: number, z: number, pitch: number): CFrame
+	return front * CFrame.new(x, y, z) * CFrame.Angles(pitch, 0, 0)
+end
+
+type MapEntry = { text: string, map: Tops.Map, origin: CFrame }
+local maps: { [Instance]: MapEntry } = {}
+
+--[[
+	The tops' map under a point in the world, and the frame it's in: whichever floor (or the test
+	hall) has steel there. Read from the tag and attributes the server puts on each (FloorBuilder),
+	decoded once per text.
+]]
+function Leaned.tops(at: Vector3): (Tops.Map?, CFrame?)
+	for inst in maps do
+		if not inst.Parent then
+			maps[inst] = nil
+		end
+	end
+	for _, inst in CollectionService:GetTagged(Tops.Tag) do
+		local text = inst:GetAttribute(Tops.MapAttribute)
+		local origin = inst:GetAttribute(Tops.OriginAttribute)
+		if type(text) ~= "string" or typeof(origin) ~= "CFrame" then
+			continue
+		end
+		local entry = maps[inst]
+		if not entry or entry.text ~= text then
+			local map = Tops.decode(text)
+			if not map then
+				continue
+			end
+			local fresh: MapEntry = { text = text, map = map, origin = origin }
+			maps[inst] = fresh
+			entry = fresh
+		end
+		local e = entry
+		if not e then
+			continue
+		end
+		local p = e.origin:PointToObjectSpace(at)
+		if Tops.near(e.map, p.X, p.Z, Tops.Slack) then
+			return e.map, e.origin
+		end
+	end
+	return nil, nil
 end
 
 -- The leaned ladder's pivot (its grip) on `front`.

@@ -79,6 +79,14 @@ verified: a doc page, Studio, or "untested".
   point it at the prompt first; the Assistant puts the camera back to Custom after the call. A
   `screen_capture` lands about 0.5 s after the call returns, so return early to catch a hold
   mid-way.
+- **No PlayerModule here; MoveDirection still works lying down** (L-13b2c, 2026-11-09): this
+  place's PlayerScripts hold only `RbxCharacterSounds` and our `Client`, so there's no
+  `PlayerModule:GetControls():GetMoveVector()` to ask. `Humanoid.MoveDirection` keeps following
+  the keys (camera-relative, flat) while the Humanoid is PlatformStand: holding A read (1, 0, 0)
+  with the camera looking +Z. Read the stick there.
+- **Aiming the Custom camera from a script sticks** (L-13b2c): a Client `execute_luau` setting
+  `CurrentCamera.CFrame` in Custom mode keeps that rotation (first person) until the mouse moves
+  it, so a test can point the view, then hold W with `user_keyboard_input` to crawl that way.
 - **No Device Simulator from a script:** `game:GetService("StudioDeviceEmulatorService")` is nil
   in an Edit `execute_luau` (L-12b2), so a phone view needs the Device Simulator set by hand.
 - **Avatar joints are AnimationConstraints** (Play, L-12b3): a player's R15 shoulders here

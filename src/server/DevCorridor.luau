@@ -629,6 +629,8 @@ local function build(lights: MotionLights.MotionLights): Folder?
 	end
 	FloorBuilder.unit(template, doorFace(FAR_X, -1), "901", UnitKit.Colours.Door.Teal).Parent =
 		folder
+	-- the tops you can crawl along once up a ladder (L-13b2c)
+	FloorBuilder.unitTops(folder)
 
 	travelPost("GoFar", Vector3.new(-34, 0, 3), "Streaming test", "Go far", FAR_SPOT, folder)
 	travelPost(

@@ -20,19 +20,33 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
-## Now: judge L-13b2b, the tops closed in steel (built Nov 9)
+## Now: judge L-13b2c, crawling the tops and dropping down (built Nov 9)
 
-- [ ] **Look at the tops** (Play on a computer). Lean the ladder on unit 102 and climb up, or see
-  `docs/art/L-13b2b-tops.jpg` (lit by a stand-in torch). The tops are now ribbed steel, like the
-  unit walls laid flat, with a seam halfway back where two sheets overlap. Turn your torch on and
-  look around: you can't see into any unit, only down into the hall over a unit's front edge.
-  Look for: does it read as a steel roof on a phone? Too bright, or too plain next to the walls?
-- [ ] **Listen**: landing on the top is now a body hitting thin steel with a ring (it was a fence
-  rattle), and climbing down plays its quiet tail. Say if it's wrong for something keepers will
-  one day hear.
-- [ ] **Decide, default in place** (for L-13b2d, sawing down into a unit): once you've sawn
-  through a top, can your torch look down the hole before you drop? Default yes: you paid for the
-  look with the saw's noise, and dropping in is still one-way.
+- [ ] **Crawl** (Play on a computer). Lean the ladder on unit 102 and climb up. You land facing
+  into the unit; push W, A, S, D and you creep over the steel the way you look, slow and low, the
+  body turning before it moves, surging with each pull (A takes you along the row to 104, about 3
+  seconds). Turn round to face the hall: Climb down sits just past the edge over the ladder.
+  Look for: is 4.5 studs a second the right crawl (a quarter of a walk)? Does turning round feel
+  like squirming or like being stuck? Can you ever slide off, or see through a wall at the back?
+- [ ] **Peek and drop**: crawl head first to any unit's front and look down: your view goes just
+  past the edge and you see the hall below. "Drop down" (F) sits over the middle of the edge.
+  Press it: over the edge, a short fall, a crouch, a thud and a jolt, standing in the hall facing
+  out (under a second). Look for: is the drop quick enough to escape and readable? Is Drop down
+  easy to find while you're looking down, and does it ever show where you didn't expect?
+- [ ] **Listen** (nobody here could): each pull is a soft low boom of the steel with a quiet
+  drag; sliding off is the steel's ring; landing is a body's thud. From the hall below, a friend's
+  crawl should be heard a unit or two away. Say which is wrong.
+- [ ] **Round a corner** (Walk a floor): where a row of units meets a junction and the cross hall
+  has units too, crawl past the last unit onto the steel lid in the corner and on round onto the
+  other row. Checked on floor 1 only onto a lid that ends a row (unit 105's).
+- [ ] **Two players** (Clients and Servers, 2 players): your friend crawls smoothly on your
+  screen, arms reaching and hauling in turn; you hear their booms from the hall. While they're up
+  there, Take works (they drop down instead). A second climber lands in a spot nobody lies in.
+- [ ] **On the phone** (Galaxy A16): crawl with the thumbstick; tap Drop down and Climb down.
+- [ ] **Decide, defaults in place** (D-059): (1) the crawl is 4.5 studs a second, backward at
+  half; (2) dropping off is a button, not crawling off the edge (on a phone an accidental crawl
+  off would be an unwanted escape); (3) your body turns toward where you crawl, not with your view,
+  so looking about doesn't swing your view round your hips.
 
 ## Now: judge L-13b2a, leaning the ladder and climbing it (built Nov 9)
 
@@ -43,26 +57,26 @@ nowhere else.
   half runs up with a metal rattle and stops with a clack, rails resting on the edge and reaching
   past it (`docs/art/L-13b2a-leaned.jpg`). At its foot: Climb (E) and Take (F). Climb: you go up
   rung over rung in about a second and roll over the edge onto your belly on the top with a
-  thud (now steel, L-13b2b) (`docs/art/L-13b2a-view.jpg`; the tops are dark, so turn your torch on). Look
-  ahead: "Climb down" (E). Down you go, a step back into the hall. Take: it's back on your
-  shoulder. Look for: is the climb quick enough for an escape and slow enough to read? Is the
-  roll onto the top too sudden or too slow? Is "Climb down" easy to find (it sits ahead of you,
-  so it's gone while you look back down at the hall)?
+  thud (now steel, L-13b2b) (`docs/art/L-13b2a-view.jpg`; the tops are dark, so turn your torch on).
+  Turn round to the hall: "Climb down" (E) sits just past the edge over the ladder (moved in
+  L-13b2c). Down you go, a step back into the hall. Take: it's back on your shoulder. Look for:
+  is the climb quick enough for an escape and slow enough to read? Is the roll onto the top too
+  sudden or too slow?
 - [ ] **Listen** (nobody here could): the top landing, the rattle running up, the locks' clack,
   the rungs (one recording of a metal ladder climb). Say which is wrong.
 - [ ] **Two players** (Clients and Servers, 2 players): you see your friend climb with Roblox's
   own climb animation, then lie on the top reaching ahead (`docs/art/L-13b2a-lying.jpg`). A second
   climber gets the next spot along the front (three fit on a small unit, four on a big one).
-  While one is on the rungs, Climb says "Wait for them"; while anyone's up there, Take says
-  "Someone's up there". Check a friend's climb looks smooth, not stepped.
+  While one is on the rungs, Climb and Take say "Wait for them" and "Someone's on it" (since
+  L-13b2c, Take works while people are up top: they drop down). Check a friend's climb looks
+  smooth, not stepped.
 - [ ] **On the phone** (Galaxy A16): not checked this session (the simulator can't be set from a
   script). Tap Lean, Climb, Take and Climb down; is the Lean button reachable without walking
   under it, and does lying on the top read on a small screen?
 - [ ] **Decide, defaults in place** (D-057): (1) climbing is a pressed move the game makes, as
   the crawl is, not Roblox's own truss climbing (on a leaned truss it flicked between climbing and
-  falling in Studio); (2) Take is refused while anyone's up there, so nobody is stranded until
-  L-13b2b's drop off the front exists; (3) the ladder leans on the left of the door as you face
-  the unit, so the doorway stays mostly clear.
+  falling in Studio); (2) the ladder leans on the left of the door as you face the unit, so the
+  doorway stays mostly clear.
 
 ## Now: judge L-13b1, the ladder carried (built Nov 9)
 

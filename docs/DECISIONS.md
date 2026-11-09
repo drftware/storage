@@ -1028,3 +1028,39 @@ heard below as Alien: Isolation's vents are; and the saw can cut down through a 
 into a unit blind, as Rainbow Six Siege's floor hatches, one-way with no ladder inside (L-13b2d).
 Not chosen: leaving some tops as mesh (those units are scoutable again), a mesh kept dark (a
 torch defeats it), a texture set of the top's own (the walls' steel already is one).
+
+## D-059 Along the tops: a steered crawl held on the map, a drop off any front (L-13b2c, Nov 9)
+Once you're up a ladder, the stick steers your lying body over the steel, as Outlast's crawl
+spaces: slow (4.5 studs a second, about a quarter of a walk, so being up there is a commitment and
+a unit's width takes a few seconds), each 2.2-stud pull surging as an arm hauls, backward at half
+speed with your head still the way you look, and your body turning toward where you crawl at 200
+degrees a second (it barely moves until it faces about the way, so it turns before it slides).
+Your screen moves your body (PlatformStand, the crawl's collision group, D-054) and nothing
+physical holds you: the pure `Tops` map does. Each floor publishes its tops as rectangles on its
+model (`Floor`'s run slots and lids, D-055, plus a 1.4-stud lip over each unit's hall), the test
+hall from its units; a lying body is three squares along it (head, middle, feet) that must lie on
+the steel, only the head may go out over a front's lip, so you can push your view about half a
+stud past the edge and look straight down into the hall, and never through a panel, a junction's
+wall or a dead end. Wedged by an edge while turning round, the body turns the long way or squirms
+off the edge (the first lying spot by a run's end is too near it to swing a 5-stud body round).
+The server checks your claimed place five times a second (on the map within 1.5 studs, at lying
+height, no faster than the crawl's surge allows plus lag) and puts you back where you last were,
+telling your screen. Push comes from `Humanoid.MoveDirection` (Roblox keeps it current while you
+lie PlatformStand; this place has no PlayerModule to ask). Your view sways and dips a few
+hundredths of a stud with each pull (`CameraOffset`). Every screen hears each crawler's pulls from
+how far their body moves: a soft low boom of the steel (the landing's recording, pitched down and
+quiet), every other one higher, with a quiet drag; every other pull is a `Ladders.climbed` "Crawl"
+heard 30 studs, for keepers. **Off the tops:** once up you're off the ladder (your spot free once
+you crawl from it), so Take is refused only while someone's on the rungs. Climb down sits over the
+ladder's top just past the edge, from wherever you crawled to (you slide over onto it). Drop down
+(F, pad B; G is already Slam and Drop) sits over the middle of every unit's front, just past the
+edge and a little above the steel, so it's on screen whether you look along the top or down over
+the edge (back on the steel it was behind your view as you looked down; Studio). Pressed lying by
+the front, the game takes you over the edge (0.3 s), down feet first (0.3 s, about Roblox's
+gravity over 8 studs) and into a crouch as you land (0.3 s), standing 1.8 studs out facing the
+hall, with the steel's tail as you slide off and a body's thud and a jolt as you land, heard 45
+studs (`climbed` "Drop"). Up there only you see these two buttons. Not chosen: real physics on the
+steel (a body slides and clips at the panels' seams, and the server couldn't hold anyone to the
+tops); a disc for the body (the head would poke through panels); the body turning with your view
+(the view, at your head, would swing round your hips whenever you looked about); a drop without a
+button (G clashes, and walking off an edge by accident on a phone is an instant, unwanted escape).
