@@ -2,47 +2,44 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-09, session 59 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-09, session 60 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-06b2a is done** (D-069): open or slam a door and the Mannequin walks the halls to stand
-  square in front of it, facing it, for 5 s, walks back and goes still mid-stride. Verified in
-  Studio on the walked floor: an open 40 studs off and one 79 studs round a corner brought it the
-  shortest way (every sample on the halls); one 86 studs off straight but 116 along the halls
-  left it still. Phone feel and two players are the owner's (`OWNER.md`).
-- **The brain:** pure `src/shared/Keeper.luau` (Asleep, Going, Waiting, Returning; `hear`
-  measures along the map; `step`), rows in `src/shared/KeeperRows.luau` (the Mannequin: top 0.9
-  of your run, looks at half that, hears as far as you, lingers 5 s, no abilities), run by
-  `src/server/Keepers.luau` on the Host's clock: `add` per laid floor (its map kept in step by the
-  new `Doors.changed`), `stand`, `remove`, `hallOff`. `tests/keeper.spec.luau`: 20,000 checks.
-- **Dev:** "Stand one" in the walked floor's lobby stands a Mannequin 60 studs down the halls.
-  Output traces what it hears and does in Studio; each body carries `KeeperState`.
+- **L-06b2b is done** (D-070): a keeper the deal puts behind a door stands where it was laid as
+  the door first lifts. Asleep: slack in its shop pose, still, until the first loud sound that
+  reaches it through its open doorway wakes it (its own door's open doesn't); then it goes to
+  look and stays awake. Awake: it holds a stride square to the doorway and steps out to look the
+  moment its door is all the way up. The deal's cap counts `Keepers:awakeOn`. Verified in Studio
+  on seed 7, floor 1 (Units 112 asleep, 126 awake, 154 asleep). Feel is the owner's (`OWNER.md`).
+- **The brain:** pure `src/shared/Keeper.luau`, states Asleep (dealt asleep), Watching (awake,
+  standing), Going, Waiting, Returning; `hear`, `lookOut`, `awake`, `step`. Rows in
+  `KeeperRows.luau`; run by `src/server/Keepers.luau` (`add`, `stand`, `awakeOn`, `remove`,
+  `hallOff`; takes `Deals.dealt`). `tests/keeper.spec.luau`: 20,572 checks.
+- **Dev:** "Stand one" in the walked floor's lobby stands a sleeping Mannequin 60 studs down the
+  halls. Output traces what each keeper hears and does; each body carries `KeeperState`.
 
-## Next task: L-06b2b Dealt keepers join
-The moment: you lift a door and something is standing in there, still, or already turning to you.
+## Next task: L-06b3a It sees you and hunts
+The moment: it steps out of the unit you opened, sees you, and comes, never faster than you run.
 1. Owner test results first, if pasted.
-2. Read the GDD's doors section ("What's behind") and keepers section (docs tools) for how a
-   dealt keeper sleeps and wakes; Granny and the GDD are the precedent, nothing invented.
-3. `Keepers` takes `deals.dealt` (look Deals up in `start`): for an Asleep or Awake contents,
-   stand the row named `contents.keeper` at `place` on that unit's floor (`floorOf`), facing as
-   placed. Asleep: in its shop pose, listening. Awake: up and looking (decide what "looking" is
-   before L-06b3's hunt: likely it goes to look at its own door's front once the door is all the
-   way up, which `Doors.changed` says).
-4. How a dealt keeper wakes: inside a unit it hears nothing while its door is down (D-069).
-   Choose with the GDD (its door all the way up? the noise of the open once it's up?), record it
-   in DECISIONS, and list the default in `OWNER.md`.
-5. `Deal.open`'s `awake` from the brain (a `Keepers` count of keepers awake on that floor) in
-   place of `Deals`' `awakeOn` tally; the cap (`Deal.awakeCap`) is unchanged.
-6. Lune checks on any pure part (a keeper's wake rule in `Keeper`); in Studio on the walked floor
-   (`DevFloorSeed`/`DevFloorNumber`), open units until Output prints a keeper dealt and watch it.
-**Acceptance:** checks green; in Studio a dealt keeper stands at its place as its door lifts,
-asleep ones still until the chosen wake, awake ones look; `Deal.open` sees the brain's count.
-**Read first:** ROADMAP L-06b2b; DECISIONS D-069; `src/server/Keepers.luau` (header, `add`,
-`stand`); `src/server/Deals.luau` (Grep `dealt`, `awakeOn`); `src/shared/Deal.luau` (Grep
-`Situation`, `awakeCap`); the GDD's doors and keepers sections (docs tools).
+2. Decide whether `Brix.Pursuit` runs the chase (only if it fits with no new Brix work, D-064):
+   Grep `../engine` for Pursuit's exports and read `docs/FRAMEWORK.md`'s keeper lines. Record it.
+3. Sight in the row (`KeeperRows`): how far and how wide it sees, from the GDD and a precedent
+   (Granny's sight, Left 4 Dead's specials); line of sight on the map (`KeeperMap`), never
+   through a wall or a shut door. Asleep sees nothing; Watching, Waiting and looking out notice.
+4. A Hunting state in `Keeper`: chase the seen player by the map at the row's top speed (0.9 of
+   your run), re-planning as they move; lose them, go to where it last saw them, look (linger),
+   go back (Granny's search). The server feeds players' positions in the floor's coordinates.
+5. Lune checks on the pure part (sees through no wall, never faster than its speed, gives up);
+   in Studio on the walked floor, open Unit 126 first (dealt awake) and watch it come for you.
+**Acceptance:** checks green; in Studio an awake Mannequin notices a player in its sight, hunts
+them along the halls at no more than 0.9 of their run, and gives up after losing them.
+**Read first:** ROADMAP L-06b3a; DECISIONS D-064, D-070; `src/shared/Keeper.luau` (header,
+`hear`, `step`, `lookOut`); `src/server/Keepers.luau` (header, `onActed`, `system.step`);
+`docs/FRAMEWORK.md` (Grep `Pursuit`); the GDD's keepers section (docs tools).
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-06b2b, L-06b3, L-06b4 (D-064, D-068, D-069); L-12c needs L-06b. Then L-14; L-07 to L-10.
+1. L-06b3a, L-06b3b (light freezes it), L-06b3c (the catch), L-06b4 (D-064, D-068, D-069,
+   D-070); L-12c needs L-06b. Then L-14; L-07 to L-10.
 2. **Check, small:** Climb down or Drop down while lying behind a sawn hole (a small unit) slides
    your body across the hole on the way to the edge; refuse it there or go round.
 3. **Look, small:** from a friend's view, dropping in from behind the hole lunges you toward the

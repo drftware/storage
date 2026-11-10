@@ -6,14 +6,15 @@
 	lifting (a peek or an open) or a saw's hole going through its wall or top (D-067),
 	and lays what it holds before anyone sees in, so even a peek shows it on the floor: a tool to
 	pick up (Slots), a find standing behind the bulb, or the place a keeper stands, which `dealt`
-	hands on (L-06b stands the keeper there). Left 4 Dead's director deals its items the same way,
+	hands on (Keepers stands the keeper there). Left 4 Dead's director deals its items the same way,
 	as the team moves rather than up front. Where in the unit is DealSpot's pure rule.
 
 	A tool whose art isn't built yet (the saw, the ladder...) is dealt but lies nowhere; in Studio
 	Output says so, and what every unit held, so a tester knows what each door was.
 
 	Until the director exists (Phase 2) every door deals in its Build mood, and the keepers awake
-	are those dealt awake on the floor so far (L-06b's keepers will say who is awake now).
+	are the brain's count of those awake on the floor now (`Keepers.awakeOn`: dealt awake, or woken
+	by a noise), so the cap (`Deal.awakeCap`) sees what's really loose.
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -54,7 +55,7 @@ export type Dealt = {
 }
 
 export type Deals = Brix.System & {
-	-- Fires as each unit is dealt, after what it holds is laid: L-06b stands a keeper at its place.
+	-- Fires as each unit is dealt, after what it holds is laid: Keepers stands a keeper at its place.
 	dealt: Brix.Signal<Dealt>,
 	-- A laid floor's deck and its units, each by its slot's index (FloorBuilder's `Laid.slots`).
 	-- Its units are dealt as their doors first lift or a saw first holes them, until `floor` (the floor's model) is destroyed.
@@ -62,6 +63,10 @@ export type Deals = Brix.System & {
 }
 
 type Entry = { deck: Deal.Deck, index: number }
+
+-- What the deal asks the keepers' brain. Keepers needs this module's `Dealt`, so this looks it up
+-- by its slot rather than requiring it.
+type Awake = { awakeOn: (self: any, unit: Model) -> number }
 
 -- The door motions that first show a unit's inside: a peek, an open, a lift from inside.
 local LIFTS = { Peek = true, Open = true, LiftInside = true } :: { [string]: boolean }
@@ -86,17 +91,7 @@ function Deals.new(): Deals
 	local connections: { Brix.SignalConnection } = {}
 	local dealt = Brix.Signal.new() :: Brix.Signal<Dealt>
 	local slots: Slots.Slots? = nil
-
-	-- The keepers dealt awake on `deck`'s floor so far.
-	local function awakeOn(deck: Deal.Deck): number
-		local count = 0
-		for _, contents in deck.dealt do
-			if contents.kind == "Awake" then
-				count += 1
-			end
-		end
-		return count
-	end
+	local keepers: Awake? = nil
 
 	-- Lays what unit `unit` (slot `index` of `deck`'s floor) was dealt; returns where, or nil.
 	local function lay(
@@ -195,7 +190,8 @@ function Deals.new(): Deals
 		end
 		units[unit] = nil
 		local deck, index = entry.deck, entry.index
-		local contents = Deal.open(deck, index, { mood = "Build", awake = awakeOn(deck) })
+		local awake = if keepers then keepers:awakeOn(unit) else 0
+		local contents = Deal.open(deck, index, { mood = "Build", awake = awake })
 		local place = lay(unit, deck, index, contents)
 		if RunService:IsStudio() then
 			local laid = if place or contents.kind == "Nothing"
@@ -227,9 +223,10 @@ function Deals.new(): Deals
 	}
 
 	function system.start(_: any, context: Brix.Context)
-		-- any: the registry hands back plain Systems; Doors and Slots fill these slots (init.server)
+		-- any: the registry hands back plain Systems; Doors, Slots and Keepers fill these (init.server)
 		local doors = (context.registry:get("doors") :: any) :: Doors.Doors
 		slots = (context.registry:get("slots") :: any) :: Slots.Slots?
+		keepers = (context.registry:get("keepers") :: any) :: Awake?
 		table.insert(connections, doors.acted:connect(onActed))
 		local saws = (context.registry:get("saws") :: any) :: Saws.Saws?
 		if saws then

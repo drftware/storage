@@ -7,10 +7,15 @@
 	- A floor joins with `add` as it's laid (FloorBuilder's `laid.slots`): its map is built once and
 	  each door's state fed in as it changes (`Doors.changed` through `KeeperMap.letsThrough`), so a
 	  doorway lets keepers through only while its door is all the way up. Its keepers go with it.
+	- A unit dealt a keeper (`Deals.dealt`, L-06b2b) has it stood where the deal laid it as its door
+	  first lifts. Asleep, it stands slack, facing as laid, until a sound wakes it. Awake, it stands
+	  mid-stride, square to the doorway, and steps out to look the moment its door is all the way
+	  up (D-070).
 	- A door's open, slam or lift from inside (`Keeper.Hears`) reaches every keeper on its floor
 	  within that sound's reach (`Doors.acted` carries DoorSound's, the one players hear by),
 	  measured along the halls, so no sound goes through a wall or a shut door. A keeper that hears
-	  it walks to the door's front, stands there looking, and goes back.
+	  it (waking, if it slept) walks to the door's front, stands there looking, and goes back.
+	- `awakeOn` tells the deal how many keepers are awake on a floor now, for its cap.
 	- Each keeper's body is an anchored model moved by its HumanoidRootPart, with no Humanoid, and
 	  only while something about it changed. Its walk is posed on the server for now, at most
 	  `POSE_EVERY` (L-06b4 poses it on each screen instead), so it may judder on a phone.
@@ -18,14 +23,14 @@
 	  height 0); positions are turned from the world going in and back coming out.
 
 	In Studio, Output says what each keeper hears and does, and each body carries its state as the
-	attribute `KeeperState`. `stand` puts a keeper on a laid floor (a dev command until L-06b2b
-	stands the dealt ones).
+	attribute `KeeperState`. `stand` puts a keeper on a laid floor (the dev command's).
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local StarterPlayer = game:GetService("StarterPlayer")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Deals = require(script.Parent.Deals)
 local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
 local Doors = require(script.Parent.Doors)
 local Floor = require(ReplicatedStorage.Shared.Floor)
@@ -66,7 +71,8 @@ local KITS: { [string]: Kit } = {
 
 -- Output's words for what it does next.
 local DOING: { [Keeper.State]: string } = {
-	Asleep = "is still again",
+	Asleep = "sleeps",
+	Watching = "stands still, watching",
 	Going = "goes to look",
 	Waiting = "stands at the door, looking",
 	Returning = "goes back",
@@ -104,9 +110,20 @@ export type Keepers = Brix.System & {
 		model: Model,
 		origin: CFrame
 	) -> (),
-	-- Stands a keeper (its row's name) on a laid floor, feet at `at`, facing `facing` (the world's).
-	-- Returns its body, or nil (an unknown floor or keeper, or no template: Output says).
-	stand: (self: any, name: string, model: Model, at: Vector3, facing: Vector3) -> Model?,
+	-- Stands a keeper (its row's name) on a laid floor, feet at `at`, facing `facing` (the world's),
+	-- asleep unless `awake`. Returns its body, or nil (an unknown floor or keeper, or no template:
+	-- Output says).
+	stand: (
+		self: any,
+		name: string,
+		model: Model,
+		at: Vector3,
+		facing: Vector3,
+		awake: boolean?
+	) -> Model?,
+	-- How many keepers are awake now on the floor `unit` is on (0 off any keepers' floor): the
+	-- deal's cap counts these (`Deal.awakeCap`).
+	awakeOn: (self: any, unit: Model) -> number,
 	-- Takes a keeper off its floor and destroys its body.
 	remove: (self: any, body: Model) -> (),
 	-- A spot in a hall about `studs` from a laid floor's lobby along the halls, and the way back
@@ -133,10 +150,12 @@ function Keepers.new(): Keepers
 		body.root.CFrame = entry.on.origin * CFrame.lookAt(at, at + facing) * body.rootOffset
 		local walking = k.state == "Going" or k.state == "Returning"
 		local kit = body.kit
+		-- asleep, slack; awake, held on a stride: mid-step where it stopped, or, never yet moved,
+		-- on its walk's first key, reaching at the doorway
 		local pose = if walking
 			then kit.walk(k.travelled)
-			elseif k.travelled > 0 then kit.stop(k.travelled)
-			else kit.still
+			elseif k.state == "Asleep" then kit.still
+			else kit.stop(k.travelled)
 		if pose ~= body.posed and (now or not walking or clock - body.posedAt >= POSE_EVERY) then
 			kit.pose(body.model, pose)
 			body.posed, body.posedAt = pose, clock
@@ -195,10 +214,29 @@ function Keepers.new(): Keepers
 			local heard = Keeper.hear(k, door, event.reach, spot)
 			if heard then
 				if TRACE then
+					local wakes = if was == "Asleep" then "wakes and goes" else "goes"
 					print(
 						`Keepers: the {k.row.name} heard Unit {slot.number}'s door {HEARD[motion]}, {math.round(
 							heard
-						)} studs off along the halls; it goes to look`
+						)} studs off along the halls; it {wakes} to look`
+					)
+				end
+				changedState(entry, was)
+			end
+		end
+	end
+
+	-- Unit `index`'s door on floor `on` is all the way up: an awake keeper standing in it steps out
+	-- to look.
+	local function lookOut(on: OnFloor, index: number)
+		local slot = on.floor.slots[index]
+		for _, entry in on.keepers do
+			local k = entry.keeper
+			local was: Keeper.State = k.state
+			if Keeper.lookOut(k, slot, index) then
+				if TRACE then
+					print(
+						`Keepers: Unit {slot.number}'s door is up; the {k.row.name} steps out to look`
 					)
 				end
 				changedState(entry, was)
@@ -210,7 +248,93 @@ function Keepers.new(): Keepers
 	local function onChanged(change: Doors.DoorChange)
 		local on = floorOf[change.unit]
 		if on then
-			KeeperMap.setDoor(on.map, on.slots[change.unit], KeeperMap.letsThrough(change.state))
+			local index = on.slots[change.unit]
+			local through = KeeperMap.letsThrough(change.state)
+			KeeperMap.setDoor(on.map, index, through)
+			if through then
+				lookOut(on, index)
+			end
+		end
+	end
+
+	-- Stands a keeper of row `name` on floor `on`, feet at `at`, facing `facing` (the floor's own
+	-- coordinates), asleep or awake. Its body, or nil (Output says why).
+	local function standOn(
+		on: OnFloor,
+		name: string,
+		at: vector,
+		facing: vector,
+		awake: boolean
+	): Model?
+		local row = KeeperRows[name]
+		local kit = KITS[name]
+		if not (row and kit) then
+			warn(`Keepers: can't stand a {name}: no such keeper`)
+			return nil
+		end
+		local k = Keeper.new(row, on.map, at, facing, awake)
+		-- any: as in `place`
+		local a, f = (k.at :: any) :: Vector3, (k.facing :: any) :: Vector3
+		local body = kit.clone(on.origin * CFrame.lookAt(a, a + f), on.folder)
+		local root = body and body.PrimaryPart
+		if not (body and root) then
+			Keeper.release(k)
+			return nil
+		end
+		body.ModelStreamingMode = Enum.ModelStreamingMode.Atomic -- the whole body streams in at once
+		body:SetAttribute(STATE_ATTRIBUTE, k.state)
+		local entry: Entry = {
+			keeper = k,
+			body = {
+				model = body,
+				root = root,
+				rootOffset = root.PivotOffset:Inverse(),
+				kit = kit,
+				posed = nil,
+				posedAt = -math.huge,
+			},
+			on = on,
+		}
+		table.insert(on.keepers, entry)
+		place(entry, true)
+		return body
+	end
+
+	-- A unit was dealt a keeper: it stands where the deal laid it, before anyone sees in. Asleep, it
+	-- faces as laid; awake, it faces square to the doorway's middle, and if the door is already all
+	-- the way up it steps out at once.
+	local function onDealt(d: Deals.Dealt)
+		local contents, laid = d.contents, d.place
+		local kind, name = contents.kind, contents.keeper
+		if not ((kind == "Asleep" or kind == "Awake") and name and laid) then
+			return
+		end
+		local on = floorOf[d.unit]
+		if not on then
+			return -- a unit on no keepers' floor (the test hall's)
+		end
+		local index = on.slots[d.unit]
+		local slot = on.floor.slots[index]
+		local p = on.origin:PointToObjectSpace(laid.Position)
+		local at = vector.create(p.X, p.Y, p.Z)
+		local awake = kind == "Awake"
+		local facing: vector
+		if awake then
+			local _, door = Keeper.front(slot)
+			facing = door - at
+		else
+			local l = on.origin:VectorToObjectSpace(laid.LookVector)
+			facing = vector.create(l.X, 0, l.Z)
+		end
+		if not standOn(on, name, at, facing, awake) then
+			return
+		end
+		if TRACE then
+			local how = if awake then "awake, facing its doorway" else "asleep"
+			print(`Keepers: the {name} stands in Unit {slot.number}, {how}`)
+		end
+		if awake and doors and KeeperMap.letsThrough(doors:stateOf(d.unit)) then
+			lookOut(on, index)
 		end
 	end
 
@@ -223,6 +347,11 @@ function Keepers.new(): Keepers
 		run = StarterPlayer.CharacterWalkSpeed
 		table.insert(connections, d.acted:connect(onActed))
 		table.insert(connections, d.changed:connect(onChanged))
+		-- any: as above; Deals fills this slot (init.server)
+		local deals = (context.registry:get("deals") :: any) :: Deals.Deals?
+		if deals then
+			table.insert(connections, deals.dealt:connect(onDealt))
+		end
 	end
 
 	-- Only keepers awake change; a body moves only when its keeper did.
@@ -284,40 +413,42 @@ function Keepers.new(): Keepers
 		end
 	end
 
-	function system.stand(_: any, name: string, model: Model, at: Vector3, facing: Vector3): Model?
+	function system.stand(
+		_: any,
+		name: string,
+		model: Model,
+		at: Vector3,
+		facing: Vector3,
+		awake: boolean?
+	): Model?
 		local on = floors[model]
-		local row = KeeperRows[name]
-		local kit = KITS[name]
-		if not (on and row and kit) then
-			warn(`Keepers: can't stand a {name} on {model:GetFullName()}: no such keeper or floor`)
+		if not on then
+			warn(`Keepers: can't stand a {name} on {model:GetFullName()}: no keepers' floor`)
 			return nil
 		end
 		local a = on.origin:PointToObjectSpace(at)
 		local f = on.origin:VectorToObjectSpace(facing)
-		local k = Keeper.new(row, on.map, vector.create(a.X, a.Y, a.Z), vector.create(f.X, 0, f.Z))
-		local body = kit.clone(CFrame.lookAt(at, at + facing), on.folder)
-		local root = body and body.PrimaryPart
-		if not (body and root) then
-			Keeper.release(k)
-			return nil
+		return standOn(
+			on,
+			name,
+			vector.create(a.X, a.Y, a.Z),
+			vector.create(f.X, 0, f.Z),
+			awake == true
+		)
+	end
+
+	function system.awakeOn(_: any, unit: Model): number
+		local on = floorOf[unit]
+		if not on then
+			return 0
 		end
-		body.ModelStreamingMode = Enum.ModelStreamingMode.Atomic -- the whole body streams in at once
-		body:SetAttribute(STATE_ATTRIBUTE, k.state)
-		local entry: Entry = {
-			keeper = k,
-			body = {
-				model = body,
-				root = root,
-				rootOffset = root.PivotOffset:Inverse(),
-				kit = kit,
-				posed = nil,
-				posedAt = -math.huge,
-			},
-			on = on,
-		}
-		table.insert(on.keepers, entry)
-		place(entry, true)
-		return body
+		local count = 0
+		for _, entry in on.keepers do
+			if Keeper.awake(entry.keeper) then
+				count += 1
+			end
+		end
+		return count
 	end
 
 	function system.remove(_: any, body: Model)

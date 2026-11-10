@@ -349,7 +349,7 @@ on nothing in Brix.
     checks over 60 seeded floors of both plans (Brix's promises, no wall or shut door crossed,
     routes arrive, abilities, a raised place, no allocation once warm); a length across a full
     floor takes about 10 µs in Lune.
-  - [ ] **L-06b2 The Mannequin goes to look.** Split Nov 9 into two sessions.
+  - [x] **L-06b2 The Mannequin goes to look.** Split Nov 9 into two sessions.
     - [x] **L-06b2a It hears a door and walks to it.** Done Nov 9 (D-069): you open or slam a
       door and, two halls off, the Mannequin walks the halls to stand square in front of it,
       facing it, for five seconds, then walks back and goes still, Granny's way with a noise. The
@@ -365,27 +365,39 @@ on nothing in Brix.
       Studio: an open 40 studs off and one 79 studs round a corner brought it the shortest way,
       every sample on the halls; one 86 studs off in a straight line but 116 along the halls left
       it still.
-    - [ ] **L-06b2b Dealt keepers join.** Dealt keepers (L-04e): stand one at `Deals.dealt`'s
-      place as its door first lifts (asleep, in its shop pose; awake, up and looking), joining
-      the brain at that moment, and hand `Deal.open` the keepers awake now in place of `Deals`'
-      tally of those dealt awake. `Keepers:stand` and `add` are ready for it (D-069); the real
-      floors' `add` goes where they're laid. A keeper inside a unit hears nothing while its door
-      is down, its own door's open included (the doorway is shut until the door is all the way
-      up), so how a dealt keeper wakes (on its door going all the way up? a peek's light on it?)
-      is this ticket's to decide, as the GDD and Granny say.
-  - [ ] **L-06b3 It hunts, freezes and catches.** At no more than player speed (the GDD's speed
-    rule): it notices a player by its row's senses, hunts them by the map, and gives up when it
-    has lost them. Frozen (`Pose.freeze(travelled)`) the moment a hall light or a torch's beam is
-    on it, decided on the server. The catch is a Brix cone reach measured along the map, so never
-    through a wall, and fires the event L-07 takes. Decide here whether `Brix.Pursuit` runs the
-    chase and the catch: only if it fits with no new Brix work (D-064).
+    - [x] **L-06b2b Dealt keepers join.** Done Nov 9 (D-070): a keeper the deal puts behind a
+      door stands where it was laid as the door first lifts, so a peek shows its feet. Asleep, it
+      stands slack in its shop pose, still, until the first loud sound that reaches it through its
+      open doorway wakes it (Left 4 Dead's Witch), and it goes to look; its own door's open
+      doesn't wake it, so a peek and a quiet close still save you. Awake, it holds a stride square
+      to the doorway and steps out to look the moment its door is all the way up. The brain gains
+      Asleep (dealt asleep) and Watching (awake, standing) and `Keeper.lookOut`; the deal's cap
+      counts the brain's keepers awake now (`Keepers:awakeOn`). 20,572 Lune checks. Verified in
+      Studio on seed 7, floor 1: Unit 112's sleeper stayed still through its own open and woke to
+      Unit 113's; Unit 126's awake one, dealt first, walked out once its door was up; dealt after
+      the sleeper woke, the cap turned it asleep.
+  - [ ] **L-06b3 It hunts, freezes and catches.** Split Nov 9 into three sessions, at no more than
+    player speed (the GDD's speed rule) throughout.
+    - [ ] **L-06b3a It sees you and hunts.** Decide first whether `Brix.Pursuit` runs the chase
+      and the catch (only if it fits with no new Brix work, D-064). An awake keeper notices a
+      player by its row's senses (sight: how far and how wide it sees, measured along the map so
+      never through a wall), hunts them by the map at its top speed, goes to where it last saw them
+      when it loses them, looks, and gives up (Granny's search). Watching and looking out are
+      where it notices you first. A sleeping keeper sees nothing.
+    - [ ] **L-06b3b Light freezes it.** Frozen (`Pose.freeze(travelled)`) the moment a hall light
+      or a torch's beam is on it, decided on the server; it walks on once no light is on it. Its
+      walk to look and its hunt both stop.
+    - [ ] **L-06b3c The catch.** A Brix cone reach measured along the map, so never through a
+      wall, that fires the event L-07 takes. Whether a keeper shut in or trapped counts toward
+      the deal's cap is L-12c's to settle (D-070 counts it for now).
   - [ ] **L-06b4 What you see and hear of it.** On every screen its place is smoothed between
     the server's steps, and it is posed on the clients (`Pose.at(travelled)`, Motor6D
     `Transform`) rather than by replicating C0 every step. The freeze lands at once on your own
     screen when your torch finds it, predicted as `HallLights` predicts your own lights, with no
     slide past the stop. Its tell, heard in the dark while it moves: fibreglass knocking at its
     joints and a stiff, quick footfall per step, as Five Nights at Freddy's footsteps say an
-    animatronic moved. Judged at phone size.
+    animatronic moved. A knock of its joints, once, as a lifted door first shows one standing in a
+    unit (L-06b2b's moment is silent until then). Judged at phone size.
   - Later, with the first keeper that climbs or crawls (a new keeper is the owner's design,
     D-068): the tops join its map as raised places (from `Tops.Map`), a leaned ladder as a
     passage that needs Climb (shut when it's taken down), and a sawn wall's hole as one that

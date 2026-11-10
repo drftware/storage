@@ -8,10 +8,14 @@
 	Granny's way with a noise: it walks to where the sound was, stands there a while looking, then
 	goes back to where it was. Its states:
 
-	- Asleep: standing where it was put, listening.
+	- Asleep: dealt asleep behind a door (L-06b2b, D-070), standing slack where it was put,
+	  listening. The first loud sound that reaches it wakes it, as a noise startles Left 4 Dead's
+	  sleeping Witch, and it goes to look; it never sleeps again.
+	- Watching: awake and standing where it was put or went back to. Dealt awake, it steps out to
+	  look the moment its own door is all the way up (`lookOut`).
 	- Going: walking to look at a sound, at its row's walking pace.
 	- Waiting: standing at the sound, facing it, for its row's `linger` seconds.
-	- Returning: walking back to where it woke, then Asleep again.
+	- Returning: walking back to where it woke, then Watching again.
 
 	It hears a door's open, slam or lift from inside (`Keeper.Hears`, the GDD's loud ones) as far as
 	that sound carries for a player (DoorSound's reach, scaled by its row's `hearing`), measured
@@ -26,10 +30,11 @@ local Floor = require("./Floor")
 local KeeperMap = require("./KeeperMap")
 local KeeperRows = require("./KeeperRows")
 
-export type State = "Asleep" | "Going" | "Waiting" | "Returning"
+export type State = "Asleep" | "Watching" | "Going" | "Waiting" | "Returning"
 
 export type Keeper = {
 	row: KeeperRows.Row,
+	map: KeeperMap.Map, -- the floor it's on
 	pathing: KeeperMap.Pathing, -- the map as it walks it (its abilities)
 	route: KeeperMap.Route, -- the trip it's on, planned again as doors change
 	state: State,
@@ -81,16 +86,23 @@ local function faceToward(k: Keeper, p: vector)
 	end
 end
 
---- A keeper of `row`, asleep with its feet at `at`, facing `facing`, walking `map` with its
---- row's abilities.
-function Keeper.new(row: KeeperRows.Row, map: KeeperMap.Map, at: vector, facing: vector): Keeper
+--- A keeper of `row` with its feet at `at`, facing `facing`, walking `map` with its row's
+--- abilities: asleep, or watching if `awake`.
+function Keeper.new(
+	row: KeeperRows.Row,
+	map: KeeperMap.Map,
+	at: vector,
+	facing: vector,
+	awake: boolean?
+): Keeper
 	local pathing = KeeperMap.pathing(map, row.abilities)
 	local f = flat(facing)
 	return {
 		row = row,
+		map = map,
 		pathing = pathing,
 		route = pathing:route(),
-		state = "Asleep",
+		state = if awake then "Watching" else "Asleep",
 		at = at,
 		facing = f,
 		home = at,
@@ -114,7 +126,7 @@ function Keeper.hear(k: Keeper, from: vector, reach: number, spot: vector): numb
 	if d > carries then
 		return nil
 	end
-	if k.state == "Asleep" then
+	if k.state == "Asleep" or k.state == "Watching" then
 		k.home, k.homeFacing = k.at, k.facing
 	end
 	k.state = "Going"
@@ -122,12 +134,37 @@ function Keeper.hear(k: Keeper, from: vector, reach: number, spot: vector): numb
 	return d
 end
 
+--- Whether it's awake: anything but dealt asleep and not yet woken. The deal's cap counts these.
+function Keeper.awake(k: Keeper): boolean
+	return k.state ~= "Asleep"
+end
+
+--- Unit `index`'s door (its slot `slot`) just got all the way up. An awake keeper standing in that
+--- unit steps out to look: it walks to the door's front and stands there facing out into the hall,
+--- away from the door, for its linger, then goes back in. Whether it went.
+function Keeper.lookOut(k: Keeper, slot: Floor.Slot, index: number): boolean
+	if k.state ~= "Watching" then
+		return false
+	end
+	local _, unit = KeeperMap.placeAt(k.map, k.at)
+	if unit ~= index then
+		return false
+	end
+	local spot = Keeper.front(slot)
+	local fx, fz = Floor.dir(slot.facing)
+	k.home, k.homeFacing = k.at, k.facing
+	k.state = "Going"
+	k.goal, k.waited = spot, 0
+	k.heard = vector.create(spot.x + fx * Keeper.Front, 0, spot.z + fz * Keeper.Front)
+	return true
+end
+
 --- Steps it by `dt` seconds, `run` being a player's full run (studs a second; its row's speeds are
 --- shares of it). Returns whether anything a body shows changed: where it stands, the way it faces
 --- or its state.
 function Keeper.step(k: Keeper, dt: number, run: number): boolean
 	local state = k.state
-	if state == "Asleep" then
+	if state == "Asleep" or state == "Watching" then
 		return false
 	elseif state == "Waiting" then
 		k.waited += dt
@@ -155,10 +192,10 @@ function Keeper.step(k: Keeper, dt: number, run: number): boolean
 			k.state, k.waited = "Waiting", 0
 			faceToward(k, k.heard)
 		elseif there then
-			k.state, k.facing = "Asleep", k.homeFacing
+			k.state, k.facing = "Watching", k.homeFacing
 		else
-			-- no way home: it sleeps where it stands
-			k.state, k.home, k.homeFacing = "Asleep", k.at, k.facing
+			-- no way home: it stands watching where it is
+			k.state, k.home, k.homeFacing = "Watching", k.at, k.facing
 		end
 	end
 	return true

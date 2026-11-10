@@ -5,8 +5,10 @@
 -- player hears it), so never through a wall or a shut door; heard, it walks the halls to the
 -- door's front, never faster than its walking pace and never into a unit whose door is down,
 -- arriving when the trip's length says; stands there facing the door for its linger; walks back
--- and sleeps facing as it was. A newer sound takes it there, its home kept; a door coming down
--- across its way stops it where it is. And a warm keeper's steps allocate nothing.
+-- and stands watching, facing as it was. A newer sound takes it there, its home kept; a door coming
+-- down across its way stops it where it is. Dealt (L-06b2b): asleep it stays still until a sound
+-- wakes it, and never sleeps again; awake, it steps out to look once its own door is up, facing
+-- out of the unit, and goes back in. And a warm keeper's steps allocate nothing.
 local Brix = require("../vendor/brix/src")
 local DoorSound = require("../src/shared/StorageUnit/DoorSound")
 local Floor = require("../src/shared/Floor")
@@ -208,7 +210,8 @@ local function checkFloor(seed: number, number: number)
 				ok(math.abs(waited - linger) <= 1, `{where}: lingered {waited} steps, not {linger}`)
 				ok(k.state == "Returning", `{where}: then it goes back`)
 				local _, backLongest, backStrayed = walkOut(k, map, "Returning", 100000)
-				ok(k.state == "Asleep", `{where}: and sleeps once home ({k.state})`)
+				ok(k.state == "Watching", `{where}: and stands watching once home ({k.state})`)
+				ok(Keeper.awake(k), `{where}: woken, it stays awake`)
 				ok(flat(k.at, home) < TOL, `{where}: right where it woke`)
 				ok(vector.dot(k.facing, homeFacing) > 0.9999, `{where}: facing as it was`)
 				ok(
@@ -299,7 +302,10 @@ do
 	walkOut(k, map, "Waiting", 100000)
 	local stopped = k.at
 	Keeper.step(k, DT, RUN)
-	ok(k.state == "Asleep", `its home behind a shut door, it sleeps where it stands ({k.state})`)
+	ok(
+		k.state == "Watching",
+		`its home behind a shut door, it stands watching where it is ({k.state})`
+	)
 	ok(flat(k.at, stopped) < TOL and k.home == k.at, "right where it stood")
 
 	-- a door coming down across its way stops it where it is, facing the sound
@@ -313,6 +319,56 @@ do
 	ok(k2.state == "Waiting", `a door down across its way stops it ({k2.state})`)
 	ok(flat(k2.at, at) < TOL, "where it was")
 	ok(facingToward(k2, door), "facing the sound")
+
+	-- Dealt in the unit (L-06b2b): asleep, it's still and not awake; awake, it watches.
+	local own, ownDoor = Keeper.front(f.slots[inside])
+	local fx, fz = Floor.dir(f.slots[inside].facing)
+	local out3 = vector.create(fx, 0, fz) -- out of the unit, into the hall
+	local towardDoor = vector.create(ownDoor.x - home.x, 0, ownDoor.z - home.z)
+	towardDoor = towardDoor / vector.magnitude(towardDoor)
+	KeeperMap.setDoor(map, inside, false)
+	local sleeper = Keeper.new(MANNEQUIN, map, home, towardDoor)
+	local watcher = Keeper.new(MANNEQUIN, map, home, towardDoor, true)
+	ok(sleeper.state == "Asleep" and not Keeper.awake(sleeper), "dealt asleep, it sleeps")
+	ok(watcher.state == "Watching" and Keeper.awake(watcher), "dealt awake, it watches")
+	for _ = 1, 120 do
+		ok(not Keeper.step(sleeper, DT, RUN), "asleep, nothing about it changes")
+		ok(not Keeper.step(watcher, DT, RUN), "watching, it stands where it is")
+	end
+	ok(flat(sleeper.at, home) < TOL and flat(watcher.at, home) < TOL, "both stand where dealt")
+
+	-- its door all the way up: an asleep one stays asleep; an awake one steps out to look
+	KeeperMap.setDoor(map, inside, true)
+	ok(not Keeper.lookOut(sleeper, f.slots[inside], inside), "asleep, its door going up leaves it")
+	ok(sleeper.state == "Asleep", "still asleep")
+	ok(not Keeper.lookOut(watcher, f.slots[near], near), "another unit's door isn't its own")
+	ok(Keeper.lookOut(watcher, f.slots[inside], inside), "awake, it steps out as its door gets up")
+	ok(watcher.state == "Going" and watcher.goal == own, "to its own door's front")
+	ok(
+		not Keeper.lookOut(watcher, f.slots[inside], inside),
+		"already on its way, it isn't sent twice"
+	)
+	local _, longest, _ = walkOut(watcher, map, "Going", 100000)
+	ok(watcher.state == "Waiting" and flat(watcher.at, own) < TOL, "it stands at its door's front")
+	ok(longest <= STEP + TOL, "at a walk")
+	ok(vector.dot(watcher.facing, out3) > 0.999, "facing out into the hall, away from its door")
+	walkOut(watcher, map, "Waiting", 100000)
+	walkOut(watcher, map, "Returning", 100000)
+	ok(watcher.state == "Watching" and flat(watcher.at, home) < TOL, "then it goes back in")
+	ok(vector.dot(watcher.facing, towardDoor) > 0.9999, "watching its doorway as it was")
+	-- out in the hall, an awake keeper isn't in that unit: its door going up again leaves it
+	local roamer = Keeper.new(MANNEQUIN, map, own, out3, true)
+	ok(not Keeper.lookOut(roamer, f.slots[inside], inside), "a keeper in the hall isn't sent")
+
+	-- a sound wakes the sleeper, and once woken it never sleeps again
+	ok(Keeper.hear(sleeper, door, SLAM, spot) ~= nil, "a slam next door reaches it, door up")
+	ok(sleeper.state == "Going" and Keeper.awake(sleeper), "it wakes and goes to look")
+	walkOut(sleeper, map, "Going", 100000)
+	walkOut(sleeper, map, "Waiting", 100000)
+	walkOut(sleeper, map, "Returning", 100000)
+	ok(sleeper.state == "Watching" and flat(sleeper.at, home) < TOL, "back where it slept, awake")
+	ok(Keeper.lookOut(sleeper, f.slots[inside], inside), "awake now, its door sends it out too")
+	KeeperMap.setDoor(map, inside, false)
 end
 
 -- Two halls off: the hall middle whose trip from the lobby is nearest the asked length.
@@ -354,7 +410,7 @@ do
 	local function run(steps: number)
 		n = 0 -- the same trips each run, so the measured run's buffers are already grown
 		for _ = 1, steps do
-			if k.state == "Asleep" then
+			if k.state == "Asleep" or k.state == "Watching" then
 				n += 1
 				local spot, door = Keeper.front(f.slots[doors[n % #doors + 1]])
 				Keeper.hear(k, door, 1e6, spot)

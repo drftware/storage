@@ -1349,3 +1349,36 @@ make every open a death; it stands at the door instead); hearing measured in a s
 would hear through walls, and the map exists so it doesn't); a hearing radius per keeper separate
 from the sound's reach (players and keepers would hear different worlds); PathfindingService
 (D-068).
+
+## D-070 A keeper behind a door: the Witch asleep, the one turning to you awake (L-06b2b, Nov 9)
+The deal can put a keeper behind a door asleep or awake (GDD: "a dormant Kept Thing or an awake
+one"), and now it stands where the deal laid it as the door first lifts, so even a peek shows its
+feet. Asleep, it stands slack in its shop pose, facing as laid, still and listening, the way Left
+4 Dead's Witch sits until a noise startles her: the first loud sound that reaches it along the
+halls (an open, a slam, a lift from inside; later the air horn, which the GDD says "wakes dormant
+things") wakes it, and it goes to look as Granny does (D-069). Woken, it never sleeps again.
+Awake, it stands on its walk's first stride, square to the doorway, reaching at whoever lifts the
+door; the moment its door is all the way up it walks out to the door's front and stands facing
+out into the hall for its linger, then goes back in and stands watching its doorway. Each time its
+door gets all the way up again it steps out again. Looking out is its stand-in for sight until
+L-06b3 lets it notice the player standing there.
+
+Its own door's open doesn't wake a sleeping one: the open's rattle sounds as the door starts up,
+while the doorway still counts as shut (D-069), so only the next loud sound wakes it. That keeps
+the peek meaningful (see the feet, close it quietly, padlock it, or open it and keep the noise
+down) and keeps the deal's cap honest: past the cap a keeper is dealt asleep so the halls aren't
+flooded (D-050), which would mean nothing if every open woke the one inside. A slam on its own
+door does wake it, shut in: the bang sounds before the door comes down (`Doors.acted` fires before
+`Doors.changed`). The cap now counts the brain's keepers awake on the floor (`Keepers:awakeOn`),
+dealt awake or woken, in place of the deal's tally of those dealt awake.
+
+How it's built: the brain gains two states, Asleep (dealt asleep, not yet woken) and Watching
+(awake and standing), in place of the old Asleep that meant both; `Keeper.awake` says which, and
+`Keeper.lookOut` sends an awake keeper standing in a unit out to look when that unit's door is
+up. `Keepers` takes `Deals.dealt` and stands the keeper; `Deals` asks `Keepers` for the count
+through the registry, since Keepers already requires Deals. Verified in Studio on seed 7, floor 1.
+
+Not chosen: waking on its own door's open (the cap's point, above); waking on a peek's light (the
+Mannequin's own rule is that light stops it, GDD Keepers); an awake one walking out on a peek (the
+doorway is shut until the door is all the way up, D-068); a new "awake" pose (its walk's first
+stride already reads as caught moving, the Mannequin's language, D-039).
