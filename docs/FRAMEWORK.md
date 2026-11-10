@@ -42,7 +42,7 @@ when a ticket first needs something newer; what the game already uses barely cha
 | Brix piece | State in Brix | This game's use |
 | --- | --- | --- |
 | The frame driver (`Brix.Roblox.HostDriver`): steps a Host each Heartbeat, catches up after a hitch of up to half a second and says when it had to drop time | Built, not yet run in Studio (its ENG-07a) | Take it when the pin moves; today the server steps the Host from Heartbeat itself |
-| The Pursuit system, its stock chases and targetings, and its Roblox adapters (players as runners, a hunter driver) | Built; the adapters not yet run in Studio (ENG-07a). What players see is ENG-07b, not started | Not what keepers run on (D-064). L-06b3 may use it for the chase and the catch if it fits with no new Brix work |
+| The Pursuit system, its stock chases and targetings, and its Roblox adapters (players as runners, a hunter driver) | Built; the adapters not yet run in Studio (ENG-07a). What players see is ENG-07b, not started | Not what keepers run on (D-064). L-06b3a2 may use it for the chase and the catch if it fits with no new Brix work |
 
 ## What Brix plans that this game will use
 

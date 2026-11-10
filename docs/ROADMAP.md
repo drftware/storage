@@ -375,29 +375,68 @@ on nothing in Brix.
       counts the brain's keepers awake now (`Keepers:awakeOn`). 20,572 Lune checks. Verified in
       Studio on seed 7, floor 1: Unit 112's sleeper stayed still through its own open and woke to
       Unit 113's; Unit 126's awake one, dealt first, walked out once its door was up; dealt after
-      the sleeper woke, the cap turned it asleep.
-  - [ ] **L-06b3 It hunts, freezes and catches.** Split Nov 9 into three sessions, at no more than
-    player speed (the GDD's speed rule) throughout.
-    - [ ] **L-06b3a It sees you and hunts.** Decide first whether `Brix.Pursuit` runs the chase
+      the sleeper woke, the cap turned it asleep. Judged by the owner Nov 9: not bad, but the
+      walk reads jerky (L-06b4a), and slamming an awake one in, or letting it walk home and
+      shutting it there, was too easy (D-071).
+  - [ ] **L-06b3 It roams, hunts, freezes, catches and breaks out.** Split Nov 9, a session each,
+    at no more than player speed (the GDD's speed rule) throughout. Reshaped with the owner Nov 9
+    (D-071): as built, a keeper went home after looking, so you could let it walk back in and
+    shut it there, and a slam ended an awake one for good. Run order: L-06b3a1, L-06b3a2, L-06b4a,
+    L-06b3b, L-06b3c, L-06b3d, then L-06b5 and L-06b4b.
+    - [ ] **L-06b3a1 Once out, it roams.** A keeper that has left its unit never goes back to it:
+      after looking at a noise, or looking out of its own doorway (D-070), it roams the halls
+      between noises, as Granny walks the house room to room. Phase 1's roam, until the director
+      steers it (Phase 2): walk at its looking speed to a hall place some way off that it hasn't
+      been to lately, linger there, pick another; never into a unit. A newer noise still takes it
+      to look. Its own door shut behind it changes nothing, so D-069's "no way home, sleep where it
+      stands" goes; a door coming down across its way makes it pick another place. Replaces the
+      brain's Returning state. Lune checks: a keeper that has left its unit never re-enters it,
+      never stops for good, keeps to the halls; in Studio, Unit 126's awake one walks out, looks,
+      and wanders off, and shutting 126 behind it gains you nothing.
+    - [ ] **L-06b3a2 It sees you and hunts.** Decide first whether `Brix.Pursuit` runs the chase
       and the catch (only if it fits with no new Brix work, D-064). An awake keeper notices a
       player by its row's senses (sight: how far and how wide it sees, measured along the map so
       never through a wall), hunts them by the map at its top speed, goes to where it last saw them
-      when it loses them, looks, and gives up (Granny's search). Watching and looking out are
-      where it notices you first. A sleeping keeper sees nothing.
+      when it loses them, looks, and goes back to roaming (Granny's search). Watching, looking out
+      and roaming are where it notices you. A sleeping keeper sees nothing.
     - [ ] **L-06b3b Light freezes it.** Frozen (`Pose.freeze(travelled)`) the moment a hall light
       or a torch's beam is on it, decided on the server; it walks on once no light is on it. Its
-      walk to look and its hunt both stop.
+      walk to look, its roam and its hunt all stop.
     - [ ] **L-06b3c The catch.** A Brix cone reach measured along the map, so never through a
-      wall, that fires the event L-07 takes. Whether a keeper shut in or trapped counts toward
-      the deal's cap is L-12c's to settle (D-070 counts it for now).
-  - [ ] **L-06b4 What you see and hear of it.** On every screen its place is smoothed between
-    the server's steps, and it is posed on the clients (`Pose.at(travelled)`, Motor6D
-    `Transform`) rather than by replicating C0 every step. The freeze lands at once on your own
-    screen when your torch finds it, predicted as `HallLights` predicts your own lights, with no
-    slide past the stop. Its tell, heard in the dark while it moves: fibreglass knocking at its
-    joints and a stiff, quick footfall per step, as Five Nights at Freddy's footsteps say an
-    animatronic moved. A knock of its joints, once, as a lifted door first shows one standing in a
-    unit (L-06b2b's moment is silent until then). Judged at phone size.
+      wall, that fires the event L-07 takes.
+    - [ ] **L-06b3d It breaks out** (moved from L-12c, D-071). Trapped means its doorway was open
+      (its door all the way up) and the door came down on it awake inside, by a slam or a close; a
+      peek lowered over an awake one isn't a trap, it just waits. A trapped keeper bangs at its
+      door every few seconds, heard as keepers hear (D-069), dents it more with each bang, and at
+      about 90 s bursts it up, loud, and goes after the last thing it heard, the way Amnesia's
+      monsters batter down a door you shut. A padlock on the door keeps it in for the floor. While
+      trapped or padlocked it takes no place in the floor's cap of awake keepers (`awakeOn`), so
+      the next door can hold a fresh one; out again, it counts again. The dent is the door's own
+      art, built the unit's way. Lune checks on the clock and the cap; in Studio, slam 126 on its
+      awake one and time the break-out.
+  - [ ] **L-06b4 What you see and hear of it.** Split Nov 9 (owner: the walk reads jerky, which
+    makes it less scary).
+    - [ ] **L-06b4a It moves smoothly on every screen.** Moved up to run right after L-06b3a2, so
+      the chase and the freeze are judged on smooth movement. Today the server moves and poses it
+      up to 20 times a second and each screen jumps between updates. On every screen its place is
+      smoothed between the server's steps, and it is posed on the clients (`Pose.at(travelled)`,
+      Motor6D `Transform`) rather than by replicating C0 every step. Judged at phone size.
+    - [ ] **L-06b4b Its sounds, and the freeze on your screen.** The freeze lands at once on your
+      own screen when your torch finds it, predicted as `HallLights` predicts your own lights, with
+      no slide past the stop. Its tell, heard in the dark while it moves: fibreglass knocking at its
+      joints and a stiff, quick footfall per step, as Five Nights at Freddy's footsteps say an
+      animatronic moved. A knock of its joints, once, as a lifted door first shows one standing in
+      a unit (L-06b2b's moment is silent until then). Judged at phone size.
+  - [ ] **L-06b5 The guarded note** (D-072; needs L-06b3d). One note on every floor sits in a
+    guarded unit that always holds an awake keeper, so no floor is cleared without a chase, as
+    DOORS puts the library's code hints in the room Figure walks (the GDD's floor 5 already does
+    it with Dale). The floor's build picks the guarded unit from the notes' units, seeded; the
+    deal always deals it a keeper, awake, standing clear of the note's sight line (`DealSpot`).
+    The guard holds one of the floor's awake places from the floor's start, so the deal leaves
+    room for it: on floors 1 and 2, which allow one, every other keeper is dealt asleep until the
+    guard is trapped. The peek is how you find it: a keeper's feet, and whether it stands awake.
+    One guarded note per floor is a default; list it in `OWNER.md` when built. Lune checks over
+    seeded floors: exactly one guarded unit, always holding a note, its keeper always awake.
   - Later, with the first keeper that climbs or crawls (a new keeper is the owner's design,
     D-068): the tops join its map as raised places (from `Tops.Map`), a leaned ladder as a
     passage that needs Climb (shut when it's taken down), and a sawn wall's hole as one that
@@ -410,9 +449,8 @@ on nothing in Brix.
   dealt but lie nowhere until their tickets. Judged on the Galaxy A16 (`docs/art/L-04e-*.jpg`).
 - [ ] **L-12 The saw and the hole trap.** Saw a crawl hole into the unit beside you (`Floor`'s
   left and right, D-031); it's loud. Players crawl through, keepers can't. Lead a keeper into a
-  unit, crawl out the hole, run round and slam it in: it dents the door and breaks out after
-  about 90 s, unless the padlock tool locks it in for the floor; the team gets a bonus (GDD "The
-  hole trap"). Split Nov 9, one session each (L-12b split again into b1, b2, b3):
+  unit, crawl out the hole, run round and slam it in: it breaks out after about 90 s unless
+  the padlock tool locks it in for the floor (L-06b3d; GDD "The hole trap"). Split Nov 9, one session each (L-12b split again into b1, b2, b3):
   - [x] **L-12a The saw's art.** Done Nov 9 (D-051): a green cordless reciprocating saw
     (`art/saw/`, 6,168 triangles, one baked set), standing on its battery where it's laid;
     `Props.Tools.Saw` and a `Catalog` row (held low on your left turned in, blade to the middle;
@@ -445,8 +483,11 @@ on nothing in Brix.
     One body in a hole at a time ("Wait for them"); `Crawls.crawled` for keepers (35 studs). The
     test hall no longer cuts holes as it's laid. Crawled 106 into 108 and back, and the small 109
     into 111, in Studio.
-  - [ ] **L-12c The hole trap** (needs L-06b's keepers): slam a keeper in, the dented door, its
-    break-out after about 90 s, a padlock keeping it in for the floor, the team's bonus.
+  - [ ] **L-12c The hole trap, end to end** (needs L-06b3d): lead a hunting keeper into a unit,
+    crawl out through the hole, run round and slam it in; it can't follow through the hole and
+    searches where it lost you. The break-out, the padlock and the cap moved to L-06b3d (D-071);
+    the team's bonus is dropped (owner, Nov 9). The first trap of each keeper type going in the
+    Catalog waits for the Catalog (Phase 2).
 - [x] **L-13 The ladder and the tops.** Split Nov 9:
   - [x] **L-13a The tops' closed edges** (D-055). Nothing on the tops drops you off the world: an
     S unit's wire top over every junction square a run reaches (its blocks of wall, a corner's
@@ -729,7 +770,7 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
   then it turns away. Today it stands square to the door, still.
 - **Its turns** (L-06b2a): it snaps to each new heading at a hall's joint and to face the door
   when it arrives; a stiff quarter-second turn, or a snap timed to its walk's key, may read better
-  once L-06b4 poses it on each screen.
+  once L-06b4a poses it on each screen.
 
 - **The finds' printed words** (L-04c): the boombox's badge and "STEREO", the tuner's numbers,
   the TV's channel numbers, from a label sheet the boxes' way.

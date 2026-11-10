@@ -24,24 +24,18 @@ nowhere else.
 
 The walked floor in the place is seed 7, floor 1 (Workspace's `DevFloorSeed`, `DevFloorNumber`):
 Unit 112 holds a Mannequin asleep, Unit 126 one awake, Unit 154 one asleep. Output says each.
-- [ ] **The sleeping one** (Play on a computer). "Walk a floor", go to Unit 112, Peek: its feet
-  under the door. Open it: it stands slack in there, head hung, and stays still. Then Open Unit
-  113 next door: it wakes, walks out to stand in front of 113, and goes back in to stand,
-  awake now. Does the peek-then-decide feel like a choice? Does the wake land as a scare?
-- [ ] **The awake one** (Stop and Play again, so it's dealt awake). Peek Unit 126 first: its legs
-  are mid-stride, square to the door. Open it: once the door is all the way up it walks straight
-  out at you, stands in the hall facing out for five seconds, then goes back in. Is it scary, or
-  does it read as a robot on rails until L-06b3 lets it see you?
-- [ ] **The cap.** Wake Unit 112's first (as above), then Peek Unit 126: Output says it held the
+You judged the sleeping and awake ones Nov 9 (not bad; the walk jerky; too easy to shut away):
+D-071 and D-072 answer it, and the tickets are in ROADMAP's L-06b3 to L-06b5.
+- [ ] **The cap.** Open Unit 112, then Unit 113 to wake 112's sleeper, then Peek Unit 126: Output says it held the
   Mannequin asleep, because floor 1 allows one awake keeper and one already is.
 - [ ] **Decide, defaults in place** (D-070): (1) a keeper dealt asleep doesn't wake to its own
   door opening, only to the next loud sound that reaches it while its door is up (the open's
   rattle starts while the doorway is shut, and the floor's cap of awake keepers would mean
   nothing if every open woke the one inside); should a full open wake it after all, or a peek
   never? (2) a slam on its own door while it's up does wake it, shut in (the bang sounds before
-  the door is down); (3) a woken keeper stays awake for the floor, and one shut in or trapped
-  still counts toward the cap until the director (Phase 2) or the hole trap (L-12c) says
-  otherwise; (4) the awake one, dealt, holds its walk's first stride, reaching at the door.
+  the door is down); (3) a woken keeper stays awake for the floor (one trapped will take no
+  place in the cap, D-071); (4) the awake one, dealt, holds its walk's first stride, reaching
+  at the door.
 
 ## Now: judge L-06b2a, the Mannequin comes to look (built Nov 9)
 
@@ -55,8 +49,6 @@ Unit 112 holds a Mannequin asleep, Unit 126 one awake, Unit 154 one asleep. Outp
   walk round to reach (a hall over): beyond 110 studs along the halls it stays still, even when a
   straight line is much shorter. A peek never brings it; a slam round a corner brings it the
   shortest way round. Stand inside a unit with the door pulled down while it waits outside.
-- [ ] **On a phone** (Galaxy A16, Device Emulator): its walk is stepped on the server for now
-  and may judder; say if it reads as a stop-motion walk or as lag (L-06b4 smooths it either way).
 - [ ] **Decide, defaults in place** (D-069): its walk to a sound at about 7 studs a second (half
   its top speed of 0.9 of your run); it waits 5 s; it hears an open, a slam and a lift from inside
   as far as you do, but not a close, a rattle at a padlocked door, a padlock going on or the

@@ -2,15 +2,14 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-09, session 60 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-09, session 61 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-06b2b is done** (D-070): a keeper the deal puts behind a door stands where it was laid as
-  the door first lifts. Asleep: slack in its shop pose, still, until the first loud sound that
-  reaches it through its open doorway wakes it (its own door's open doesn't); then it goes to
-  look and stays awake. Awake: it holds a stride square to the doorway and steps out to look the
-  moment its door is all the way up. The deal's cap counts `Keepers:awakeOn`. Verified in Studio
-  on seed 7, floor 1 (Units 112 asleep, 126 awake, 154 asleep). Feel is the owner's (`OWNER.md`).
+- **Session 61 was design, no code.** The owner judged L-06b2b (not bad; the walk jerky; keepers
+  too easy to shut away) and agreed: a keeper out of its unit roams and never goes home; a trapped
+  one breaks out at about 90 s and frees its place in the awake cap; no bonus for trapping (D-071);
+  one note on every floor is guarded by an awake keeper, which is what the peek is for (D-072).
+  The GDD, ROADMAP (L-06b3a1 to L-06b5, L-12c) and OWNER.md say so.
 - **The brain:** pure `src/shared/Keeper.luau`, states Asleep (dealt asleep), Watching (awake,
   standing), Going, Waiting, Returning; `hear`, `lookOut`, `awake`, `step`. Rows in
   `KeeperRows.luau`; run by `src/server/Keepers.luau` (`add`, `stand`, `awakeOn`, `remove`,
@@ -18,28 +17,32 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - **Dev:** "Stand one" in the walked floor's lobby stands a sleeping Mannequin 60 studs down the
   halls. Output traces what each keeper hears and does; each body carries `KeeperState`.
 
-## Next task: L-06b3a It sees you and hunts
-The moment: it steps out of the unit you opened, sees you, and comes, never faster than you run.
+## Next task: L-06b3a1 Once out, it roams
+The moment: you let it walk off and it doesn't go home; now you don't know where it is.
 1. Owner test results first, if pasted.
-2. Decide whether `Brix.Pursuit` runs the chase (only if it fits with no new Brix work, D-064):
-   Grep `../engine` for Pursuit's exports and read `docs/FRAMEWORK.md`'s keeper lines. Record it.
-3. Sight in the row (`KeeperRows`): how far and how wide it sees, from the GDD and a precedent
-   (Granny's sight, Left 4 Dead's specials); line of sight on the map (`KeeperMap`), never
-   through a wall or a shut door. Asleep sees nothing; Watching, Waiting and looking out notice.
-4. A Hunting state in `Keeper`: chase the seen player by the map at the row's top speed (0.9 of
-   your run), re-planning as they move; lose them, go to where it last saw them, look (linger),
-   go back (Granny's search). The server feeds players' positions in the floor's coordinates.
-5. Lune checks on the pure part (sees through no wall, never faster than its speed, gives up);
-   in Studio on the walked floor, open Unit 126 first (dealt awake) and watch it come for you.
-**Acceptance:** checks green; in Studio an awake Mannequin notices a player in its sight, hunts
-them along the halls at no more than 0.9 of their run, and gives up after losing them.
-**Read first:** ROADMAP L-06b3a; DECISIONS D-064, D-070; `src/shared/Keeper.luau` (header,
-`hear`, `step`, `lookOut`); `src/server/Keepers.luau` (header, `onActed`, `system.step`);
-`docs/FRAMEWORK.md` (Grep `Pursuit`); the GDD's keepers section (docs tools).
+2. Read Keeper's Returning state and every place that keeps "where it woke"; read how
+   `KeeperMap` tells a hall place from a unit and gives trip lengths.
+3. A Roaming state in `Keeper` replacing Returning: after its linger at a noise, or after
+   looking out of its own doorway, it picks a hall place (never a unit) some way along the
+   halls that it hasn't visited lately, walks there at its looking speed, lingers, picks again.
+   Picks come from the floor's seeded Random (Brix). A newer sound still sends it to look; a
+   door coming down across its way makes it pick again. Watching (never yet out) and Asleep stay.
+4. Remove D-069's "no way home, sleep where it stands"; a keeper out never sleeps again.
+5. Roam numbers in the row (how far a pick may be, how long it lingers), each commented; list
+   the defaults in `OWNER.md`.
+6. Lune checks: once out it never re-enters its unit, never stops for good, keeps to the
+   halls, avoids its recent places, and a sound interrupts a roam. In Studio on seed 7, floor 1:
+   open Unit 126, it looks out and wanders off; slam 126 behind it and it keeps wandering.
+**Acceptance:** checks green; in Studio an awake Mannequin out of its unit never goes back in and
+keeps moving round the halls between noises.
+**Read first:** ROADMAP L-06b3a1; DECISIONS D-069, D-070, D-071; `src/shared/Keeper.luau` (header,
+Returning, `step`, `lookOut`); `src/server/Keepers.luau` (header, `onActed`, `system.step`);
+`src/shared/KeeperMap.luau` (header, places); `tests/keeper.spec.luau` (its helpers).
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-06b3a, L-06b3b (light freezes it), L-06b3c (the catch), L-06b4 (D-064, D-068, D-069,
-   D-070); L-12c needs L-06b. Then L-14; L-07 to L-10.
+1. L-06b3a1, L-06b3a2 (it sees you and hunts), L-06b4a (smooth on every screen), L-06b3b (light
+   freezes it), L-06b3c (the catch), L-06b3d (the break-out), L-06b5 (the guarded note), L-06b4b
+   (its sounds); D-064, D-068 to D-072. L-12c needs L-06b3d. Then L-14; L-07 to L-10.
 2. **Check, small:** Climb down or Drop down while lying behind a sawn hole (a small unit) slides
    your body across the hole on the way to the edge; refuse it there or go round.
 3. **Look, small:** from a friend's view, dropping in from behind the hole lunges you toward the

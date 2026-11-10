@@ -1382,3 +1382,70 @@ Not chosen: waking on its own door's open (the cap's point, above); waking on a 
 Mannequin's own rule is that light stops it, GDD Keepers); an awake one walking out on a peek (the
 doorway is shut until the door is all the way up, D-068); a new "awake" pose (its walk's first
 stride already reads as caught moving, the Mannequin's language, D-039).
+
+## D-071 A keeper out roams, a trapped one breaks out, and a slam only buys time (owner, Nov 9)
+Playing L-06b2b, the owner found the keepers too easy to put away: open a unit, see an awake
+Mannequin, slam the door and it was gone for good; or stay quiet while it walked back into its unit
+after looking, and shut it in there. The GDD means the slam to be how you trap a keeper, but as a
+way to buy time, never to end the threat. Four changes, agreed with the owner:
+
+1. **Once out, never home.** A keeper that has left its unit roams the halls between noises, the
+   way Granny walks the house room to room after checking a sound, and never goes back to stand in
+   its unit. This replaces D-069's walk back to where it woke, D-070's step back into its unit
+   after looking out, and D-069's sleeping where it stands when its way home is shut. Until the
+   director steers it (Phase 2, as Alien: Isolation's director keeps the alien near you and pulls
+   it back after a close call), it picks hall places some way off that it hasn't visited lately.
+   Built in L-06b3a1, before the hunt, so the hunt's give-up is simply "roam again".
+2. **The break-out comes forward** from the hole trap (L-12c) to its own ticket after the catch
+   (L-06b3d), so every trap is a clock from the start. Trapped means its doorway was open and the
+   door came down on it awake inside; a peek lowered over an awake one isn't a trap, since it
+   never had a way out. It bangs, dents the door and bursts out at about 90 s going after the last
+   thing it heard, as Amnesia's monsters batter down a door you shut. A padlock keeps it in.
+3. **A trapped keeper takes no place in the cap.** D-070 counted one shut in toward the floor's
+   cap of awake keepers, so on floor 1 (one place) slamming the awake one in made every later deal
+   a sleeper: trapping made the floor safe. Now a keeper trapped or padlocked frees its place, so
+   the next door can hold a fresh one, and takes it back when it breaks out.
+4. **No bonus for trapping.** The GDD's "trapping a keeper pays the team a bonus" was drafted early
+   and never decided; the owner dropped it. The trap pays for itself in time. The first trap of
+   each keeper type still goes in the Catalog.
+
+The owner also judged the walk jerky, which makes it less scary: the smoothing on every screen
+moves up from L-06b4 to its own ticket (L-06b4a) right after the hunt, so the chase and the freeze
+are judged on smooth movement.
+
+Not chosen: keepers lifting doors themselves at will (the break-out does that job with a clock
+players can read); counting a trapped keeper toward the cap until it breaks out (it rewards the
+cheapest play); a bonus kept only for keepers you lured in (no precedent named, and the owner
+dropped the bonus outright).
+
+## D-072 The guarded note: every floor has a chase, and the peek finds it (owner, Nov 9)
+The owner saw that the peek did nothing as a mechanic: the notes are stuck when the floor is laid
+and keepers dealt at random as doors first lift, so on most floors you could peek, skip every unit
+with feet in it, and still find the whole code without letting one keeper out. A peek is only worth
+something when you might have to go in anyway.
+
+So one note on every floor sits in a guarded unit that always holds an awake keeper, as DOORS puts
+the library's code hints in the room Figure walks (the GDD already does it once, with Dale's digit
+on floor 5). The floor's build picks the guarded unit from the notes' units, seeded; the deal
+always deals it an awake keeper. The guard holds one of the floor's awake places from the start,
+so on floors 1 and 2 (one place) every other keeper is dealt asleep until the guard is trapped:
+those floors are one keeper that comes for you and sleepers you stay quiet around. A peek can't
+show the note (it's high on the back wall), so the team knows which units hold keepers and which
+stand awake, not which one has the code.
+
+The peek becomes scouting before you commit: it tells you, without the open's noise, which units
+need a plan. Every plan uses pieces built or planned: a friend's torch freezing the Mannequin while
+the other takes the note (the Mannequin's GDD rule), a slam elsewhere drawing it out of its doorway
+while you slip in behind (Granny going to a thrown vase), a sleeper passed quietly (Left 4 Dead's
+Witch), or a hole sawn in from next door. Built in L-06b5, after the break-out, since a guaranteed
+chase means nothing until a keeper can catch you.
+
+Left open: units the peek showed safe are still risk-free to open until you take on the guard, so
+the floor stays calm until you choose the fight. The planned answer is the Phase 2 director waking
+keepers while you search (GDD "Build wakes a keeper"); judged after the owner plays a floor with a
+guard and roaming keepers. One guarded note per floor is a default.
+
+Not chosen: the peek showing the note (it would make the peek a free answer key); a tool rather
+than a note as the guarded thing (tools are optional until floor 6's padlocked note; the note is
+the one thing every floor needs); the guard asleep on some floors (the owner wants a chase on
+every floor).
