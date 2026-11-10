@@ -15,6 +15,7 @@ local Elevators = require(script.Elevators)
 local Flashlights = require(script.Flashlights)
 local Horns = require(script.Horns)
 local Keepers = require(script.Keepers)
+local KeptPlayers = require(script.KeptPlayers)
 local Kneels = require(script.Kneels)
 local Minimaps = require(script.Minimaps)
 local Ladders = require(script.Ladders)
@@ -42,6 +43,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "ladders", system = Ladders.new() },
 	-- The keepers' brain: each floor's map kept in step with its doors, what each keeper hears, its walk.
 	{ slot = "keepers", system = Keepers.new() },
+	-- Getting kept: a caught player's things dropped, them stored in a unit, let out as its door lifts.
+	{ slot = "keptPlayers", system = KeptPlayers.new() },
 	-- Blowing the air horn: its gap between blows, the blast on every screen, keepers coming to it.
 	{ slot = "horns", system = Horns.new() },
 	-- Laying bubble wrap: a Lay checked against the halls, the roll spent, a sheet across the hall.

@@ -2126,3 +2126,39 @@ tick a unit); turning the map with you (a full map later would have to turn too,
 meaning the way out); drawing the doors' own state from each unit (far units aren't streamed to
 your screen, so a friend's opened unit wouldn't show).
 
+
+## D-095 Getting kept: stored in a shut unit away from you, let out as its door goes up (L-07a, Nov 10)
+The moment: the keeper's hands close, the screen goes black through the 2-second wrap, and you
+wake in the dark inside a unit somewhere on the floor, facing its door, until a friend opens it.
+Dead by Daylight's hook and Flee the Facility's freeze pods are the precedent (caught, stored, a
+teammate frees you). Stored at random and never the nearest is the GDD's own twist on the hook,
+an untested bet in `OWNER.md`.
+
+As built: Keepers marks the caught player kept (`Kept.Attribute`, a player attribute only the
+server sets) at the catch and skips them while it's on, so no keeper sees or catches them twice;
+`Caught.Out`'s 2-second spare became "while kept", and its length is now `Caught.Wrap`.
+`KeptPlayers` takes `Keepers.caught`: everything carried drops (`Slots:dropAll`, as dying does),
+the root is anchored (only the server moves a kept player; nothing to fall through while the far
+unit streams in), and `Kept.choose` picks the unit: its door all the way down (not padlocked, not
+open), no keeper dealt there nor the guard's place, no keeper's feet inside, nobody kept in it;
+never the nearest of those while another will do; an unopened one ahead of one already seen into,
+at random. That unit is never dealt (`Deals:hold`), so the friend who opens it finds only you,
+never a keeper beside you; a note already stuck there stays. At `Caught.Dark` (the screen black)
+the server pivots you 62% of the way in, facing the door. You're let out when its door's state
+reaches Open (`Doors.changed`): any friend's Open, the stand-in until L-07d's Cut free. Dying,
+leaving, a new character or the floor going lets you go too; no unit free holds you through the
+wrap and lets you go where you stand.
+
+Refused while kept, on the server: every prompt in the world (`Prompts.wrapped`: doors, the lift
+from inside, crawl holes, ladders, the saw's cut) and Slots' pick-up and hand-over either way.
+The screen (`CaughtView`): the catch's blackout as before; in the black the camera turns the way
+the server stood you and the body stops turning with the camera (`Humanoid.AutoRotate` off while
+held: the game is always first person, and the body turned to the old camera otherwise, so you
+woke facing the back wall); the prompts hidden (`ProximityPromptService.Enabled`); "Wait for a
+friend" comes up over 1 s; all of it undone as the attribute clears.
+
+Not chosen: only units already opened (few early in a floor, and a friend's map already ticks
+them); dealing the unit as usual when it's opened (a keeper could be dealt in beside you); the
+building rolling an open door down on you (needs a door motion the building doesn't have, and a
+shut door is the GDD's picture); a dev command to get out (Reset already does, alone); waiting on
+the stream before the move (an anchored root can't fall, and the screen is black anyway).

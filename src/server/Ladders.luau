@@ -590,6 +590,9 @@ function Ladders.new(): Ladders
 		p:AddTag(Leaned.InButtonTag)
 		front.into = at
 		p.Triggered:Connect(function(player: Player)
+			if Prompts.wrapped(player) then
+				return
+			end
 			dropIn(front, player)
 		end)
 	end
@@ -666,6 +669,9 @@ function Ladders.new(): Ladders
 		})
 		local refuseClimb = Prompts.refuser(climb, ladderName)
 		climb.Triggered:Connect(function(player: Player)
+			if Prompts.wrapped(player) then
+				return
+			end
 			climbUp(stand, player, refuseClimb)
 		end)
 		local takeIt = Prompts.make(foot, {
@@ -678,6 +684,9 @@ function Ladders.new(): Ladders
 		takeIt.UIOffset = Vector2.new(-SIDE_PIXELS, 0)
 		local refuseTake = Prompts.refuser(takeIt, ladderName)
 		takeIt.Triggered:Connect(function(player: Player)
+			if Prompts.wrapped(player) then
+				return
+			end
 			take(stand, player, refuseTake)
 		end)
 		-- Climb down on the top above it, out of reach from the hall below, for those up there
@@ -700,6 +709,9 @@ function Ladders.new(): Ladders
 		down:AddTag(Leaned.TopButtonTag)
 		local refuseDown = Prompts.refuser(down, ladderName)
 		down.Triggered:Connect(function(player: Player)
+			if Prompts.wrapped(player) then
+				return
+			end
 			climbDown(stand, player, refuseDown)
 		end)
 		stand.ready = true
@@ -816,9 +828,15 @@ function Ladders.new(): Ladders
 			addIn(front)
 		end
 		p.Triggered:Connect(function(player: Player)
+			if Prompts.wrapped(player) then
+				return
+			end
 			lean(front, player)
 		end)
 		d.Triggered:Connect(function(player: Player)
+			if Prompts.wrapped(player) then
+				return
+			end
 			dropDown(front, player)
 		end)
 	end

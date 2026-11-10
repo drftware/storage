@@ -273,6 +273,9 @@ function Crawls.new(): Crawls
 		table.insert(
 			hole.conns,
 			p.Triggered:Connect(function(player: Player)
+				if Prompts.wrapped(player) then
+					return
+				end
 				crawl(hole, side, player)
 			end)
 		)

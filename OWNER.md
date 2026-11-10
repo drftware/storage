@@ -22,6 +22,38 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-07a, getting kept (built Nov 10)
+
+Verified in Studio on seed 7, floor 1, alone: three catches, each one stored me in a different shut
+unit (153, 124, 112), never the nearest, facing its door, held still with no buttons showing;
+an air horn I carried lay 1.9 studs from where I stood; opening the unit's door from the server
+let me out the moment it reached the top, and I walked out. Not yet seen with a friend or on a
+phone, and getting out alone by Reset is untested.
+- [ ] **The moment** (Play on a computer, then at phone size). Open Unit 157 from (47, 3, -632)
+  and stand still: the Mannequin catches you, the screen closes to black with "Caught", and opens
+  on the dark inside of a unit somewhere on the floor, the door's slats ahead and "Wait for a
+  friend" low on the screen. You can look round but not walk, and no buttons show. Output names
+  the unit ("(you) is wrapped and kept in Unit124"). Does waking in the dark land? Is it too
+  dark to tell you're in a unit until the light under the door comes (L-07c)?
+- [ ] **Your things drop.** Carry a tool when it catches you: it lies where you stood, and a
+  friend can pick it up.
+- [ ] **Alone, Reset gets you out** (Esc, Reset Character): you come back at the spawn. Until
+  L-07d's Cut free, that's the only way out with nobody to open your door.
+- [ ] **With a friend** (Studio's Test > Clients and Servers, two players): one gets caught; the
+  other reads the unit from Output, goes there and opens it. As the door reaches the top, the kept
+  one can walk out. The friend sees the kept one standing still inside (the wrap you see is
+  L-07b). Neither of you can hand the other a tool while one is kept.
+- [ ] **Untested bet: stored in a random unit, never the nearest.** It's the GDD's own twist on
+  Dead by Daylight's hook, which hangs you close to where you fell. Is the search fun, or a chore
+  until banging shows your unit (L-07c)?
+- [ ] **Decide, defaults in place** (D-095): (1) which unit: door all the way down, not
+  padlocked, no keeper in it, nobody kept in it, never the nearest, and one nobody has opened
+  ahead of one that's been opened; (2) the unit you're kept in is never dealt, so a friend finds
+  only you there (a note already in it stays); (3) you wake 62% of the way in, facing the door;
+  (4) "Wait for a friend" until L-07c's Bang button; (5) the stand-in way out: your door all the
+  way up, by any friend's Open; (6) with no unit free (rare) you're held through the wrap and let
+  go where you stand. Numbers in `src/shared/Kept.luau`.
+
 ## Now: judge L-10, the minimap (built Nov 10)
 
 Verified in Studio at Galaxy A16 size (seed 7, floor 1): the map slides in at the top right as you
@@ -326,8 +358,8 @@ Seed 7, floor 1, as for L-06b3a2 below; Unit 126 holds the awake Mannequin.
 - [ ] **The moment** (Play on a computer, then at phone size). Stand in the dark outside 126
   (walk away from the hall lights until they're out), open it and stand still. It comes out, and
   as it reaches arm's length your view jerks, the screen drops half dark and closes to black,
-  "Caught" sits in the dark, and you can't move; then it opens on the floor's lobby (the
-  stand-in until L-07's wrap). Output says "the Mannequin catches (you)". Does it land as its
+  "Caught" sits in the dark, and you can't move; then it opens inside a unit (L-07a, above).
+  Output says "the Mannequin catches (you)". Does it land as its
   hand closing on you, or as a cut? Is 2 s in the dark right? (Verified in Studio Nov 10: caught
   at about 3.4 studs; held still exactly the 2 s.)
 - [ ] **The torch saves you.** Again, torch on it as the door lifts: it hunts you frozen and never
@@ -336,13 +368,12 @@ Seed 7, floor 1, as for L-06b3a2 below; Unit 126 holds the awake Mannequin.
 - [ ] **Run.** Let it chase you at your full run: it's slower (0.9 of your run), so it never
   catches you in a straight hall; stop, or walk, and it does. Is that fair, or too easy?
 - [ ] **With a friend** (two players, Studio's Test > Clients and Servers): it catches only the
-  one it hunts; a friend in its face is let be. Your friend sees you vanish (the stand-in's move
-  to the lobby, until L-07's wrap).
+  one it hunts; a friend in its face is let be. Your friend sees you vanish into a unit (L-07a).
 - [ ] **Decide, defaults in place** (D-077): (1) its grasp, 3.5 studs feet to feet (a stud past
   where its hunt stops) and 45 degrees either side of where it faces; (2) no wind-up: the moment
   it reaches you, you're caught; (3) a jump at its face is still caught, the units' tops never;
   (4) caught, it stands over the spot its 5 s linger, then roams; (5) keepers leave a caught
-  player alone 2 s; (6) "Caught" is the only word on screen. Numbers in
+  player alone until they're let out (L-07a); (6) "Caught" is the only word on screen. Numbers in
   `src/shared/KeeperRows.luau` (`reach`, `reachAngle`) and `src/shared/Caught.luau`.
 
 ## Now: judge L-06b3b, light freezes the Mannequin (built Nov 9)

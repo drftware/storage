@@ -54,9 +54,9 @@ Chase.Regain = 4
 -- Seconds after a sting before another can play: a second keeper that sees you just after the
 -- first only adds to the chase, it doesn't hit you again.
 Chase.StingGap = 8
--- Seconds of silence after you're caught: the whole blackout (`Caught.Out`). No bed and no sting
+-- Seconds of silence after you're caught: the whole wrap (`Caught.Wrap`). No bed and no sting
 -- in the black.
-Chase.Hush = Caught.Out
+Chase.Hush = Caught.Wrap
 
 -- What one player's screen keeps of the chase. All times are the screen's clock (seconds).
 export type Music = {

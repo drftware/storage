@@ -798,13 +798,40 @@ on nothing in Brix.
   the drawing apart). Verified in Studio at Galaxy A16 size on seed 7, floor 1: the lobby and car
   from the start, two walked halls filled in, unit 103 opened went green and ticked, the gate's
   mark on the edge, clear of the torch and jump buttons; Output clean.
-- [ ] **L-07 Getting kept and rescued.** Shrink-wrapped, stored in a random unit, banging to ping
-  the team, cut free in a second, padlocked if left too long (GDD "Getting kept"). It takes
-  `Keepers.caught` (L-06b3c, D-077) and replaces its stand-ins: DevCorridor's move to the lobby,
-  and the blackout's hold (`Caught`, `CaughtView`) with the 2-second wrap; keepers leaving a kept
-  player alone (`Caught.Out`) becomes "while kept". What you carried drops where you stood.
+- [ ] **L-07 Getting kept and rescued** (GDD "Getting kept"). Split Nov 10 into four, each its
+  own session. Precedents: Dead by Daylight's hook (a teammate frees you, worse the longer you
+  wait, everyone sees where you hang) and Flee the Facility's freeze pods (captured, stored, a
+  friend lets you out). Stored in a random unit, never the nearest, is the GDD's own twist on the
+  hook (`OWNER.md`).
+  - [x] **L-07a The wrap and being stored.** The keeper's hands close: a 2-second wrap in the
+    dark, what you carried drops where you stood, and you wake in a shut unit away from where you
+    were caught (never one a keeper is in), held still, facing the door. Keepers leave you alone
+    while you're kept. Until L-07d, the stand-in way out: your unit's door going all the way up.
+    Done Nov 10 (D-095): `Kept` (pure, Lune-tested: which unit), `KeptPlayers` (the server:
+    drop, hold, store, let out), `Caught.Wrap` (was `Out`), `CaughtView` (the wake inside, "Wait
+    for a friend", prompts hidden, the body not turning), every world prompt and Slots' pick-up
+    and hand-over refusing a kept player, `Deals:hold`. Replaced DevCorridor's move to the lobby,
+    which also ends the keeper by the lobby catching you every 2 s. Verified in Studio on seed 7,
+    floor 1: three catches stored me in 153, 124 and 112 facing the door; a carried horn dropped
+    where I stood; the door all the way up let me out and I walked out; one catch each, Output
+    clean.
+  - [ ] **L-07b The wrap you can see and hear.** The shrink-wrapped body friends find when they
+    open your unit, built in Blender the unit's way (art first, owner Nov 10): clear stretch film
+    in bands round a standing body, scaled to the kept character, hidden on its own screen. The
+    film's squeal as the wrap goes on, heard by you in the black and by anyone near. Takes
+    `KeptPlayers` (who's kept, where).
+  - [ ] **L-07c Banging.** A Bang button inside: each bang thuds on your door for everyone near,
+    shows your unit on friends' screens and the corner map, and keepers hear it
+    (`Keepers:hear`). The hall light under the door. Decide whether being wrapped puts your
+    torch out (it still works and lights the unit, L-07a).
+  - [ ] **L-07d Cut free.** A friend at your open door holds Cut free one second and you stand
+    up; it replaces L-07a's stand-in way out.
+  - [ ] **L-07e The padlock.** Left a few minutes, the building padlocks your unit; only bolt
+    cutters let you out.
 - [ ] **L-08 The ride and the next floor.** The elevator ride and a second floor, so the climb is
-  a loop and not a single room. Brix: its round loop (ENG-13) if it has landed.
+  a loop and not a single room. Brix: its round loop (ENG-13) if it has landed. Takes the GDD's
+  "Left behind" (the gate shuts with you still kept or outside: you spectate, or Cut Free to the
+  next floor) and "Whole team kept" (the climb ends, the Missing board), moved from L-07.
 - [ ] **L-09 Hone.** Playtest with friends, tune Config, add juice, repeat until Gate 1. May
   repeat as several sessions; each one names what it changed and why. Brix: live config (ENG-11)
   and the presentation kit (ENG-15) as they land.

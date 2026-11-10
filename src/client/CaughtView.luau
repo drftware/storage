@@ -1,23 +1,40 @@
 --!strict
 --[[
-	CaughtView: a keeper's catch on the caught player's own screen (L-06b3c). The server tells
-	only them (Remotes.Caught, from Keepers). Their view jerks (CameraShake), the screen drops half
-	dark at once and closes to black, "Caught" comes up in the dark, and they can't move until it
-	opens again (on the lobby, by the stand-in until L-07). Every number and the curves are
-	`Caught`'s. The sting and its sounds are L-06b4b's.
+	CaughtView: a keeper's catch and getting kept, on the caught player's own screen (L-06b3c,
+	L-07a). The server tells only them (Remotes.Caught, from Keepers). Their view jerks
+	(CameraShake), the screen drops half dark at once and closes to black, "Caught" comes up in the
+	dark through the 2-second wrap, and they can't move. In the black the server stores them in a
+	unit (KeptPlayers), so the screen opens on its dark inside, facing the door (the game is
+	always first person), and "Wait for a friend" comes up. They stay held, their body not turning
+	with the camera, every prompt hidden, until the server lets them out (`Kept.Attribute`
+	cleared): then their walk, their turn and the prompts come back.
+	Every number and the curves are `Caught`'s and `Kept`'s. The sting and its sounds are
+	L-06b4b's.
 
-	It steps only while a catch is on the screen.
+	It steps only while a catch is on the screen or they're kept.
 ]]
 local Players = game:GetService("Players")
+local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Caught = require(ReplicatedStorage.Shared.Caught)
+local Kept = require(ReplicatedStorage.Shared.Kept)
 
 -- The headline's size (pixels), as the gate's "Going up" (GateClock).
 local HEADLINE_SIZE = 34
+-- The hint's size (pixels): read at a glance, smaller than a headline.
+local HINT_SIZE = 22
 
-type Screen = { gui: ScreenGui, black: Frame, headline: TextLabel, stroke: UIStroke }
+type Screen = {
+	gui: ScreenGui,
+	black: Frame,
+	headline: TextLabel,
+	stroke: UIStroke,
+	hint: TextLabel,
+	hintStroke: UIStroke,
+}
 
 local function makeScreen(parent: Instance): Screen
 	local gui = Instance.new("ScreenGui")
@@ -36,32 +53,52 @@ local function makeScreen(parent: Instance): Screen
 	black.Active = false
 	black.ZIndex = 1
 	black.Parent = gui
-	local headline = Instance.new("TextLabel")
-	headline.Name = "Headline"
-	headline.AnchorPoint = Vector2.new(0.5, 0.5)
-	headline.Position = UDim2.fromScale(0.5, 0.45)
-	headline.Size = UDim2.new(0.9, 0, 0, HEADLINE_SIZE + 12)
-	headline.BackgroundTransparency = 1
-	headline.FontFace = Font.fromEnum(Enum.Font.BuilderSansBold)
-	headline.TextSize = HEADLINE_SIZE
-	headline.TextColor3 = Color3.fromRGB(214, 206, 196)
-	headline.TextTransparency = 1
-	headline.Text = "Caught"
-	headline.ZIndex = 2
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = Color3.new(0, 0, 0)
-	stroke.Thickness = 2
-	stroke.Transparency = 1
-	stroke.Parent = headline
-	headline.Parent = gui
+	local function label(name: string, size: number, y: number, text: string): (TextLabel, UIStroke)
+		local l = Instance.new("TextLabel")
+		l.Name = name
+		l.AnchorPoint = Vector2.new(0.5, 0.5)
+		l.Position = UDim2.fromScale(0.5, y)
+		l.Size = UDim2.new(0.9, 0, 0, size + 12)
+		l.BackgroundTransparency = 1
+		l.FontFace = Font.fromEnum(Enum.Font.BuilderSansBold)
+		l.TextSize = size
+		l.TextColor3 = Color3.fromRGB(214, 206, 196)
+		l.TextTransparency = 1
+		l.Text = text
+		l.ZIndex = 2
+		local stroke = Instance.new("UIStroke")
+		stroke.Color = Color3.new(0, 0, 0)
+		stroke.Thickness = 2
+		stroke.Transparency = 1
+		stroke.Parent = l
+		l.Parent = gui
+		return l, stroke
+	end
+	local headline, stroke = label("Headline", HEADLINE_SIZE, 0.45, "Caught")
+	-- low on the screen, clear of the thumbs' buttons' height, over the dark of the door
+	local hint, hintStroke = label("Hint", HINT_SIZE, 0.78, Kept.Hint)
 	gui.Parent = parent
-	return { gui = gui, black = black, headline = headline, stroke = stroke }
+	return {
+		gui = gui,
+		black = black,
+		headline = headline,
+		stroke = stroke,
+		hint = hint,
+		hintStroke = hintStroke,
+	}
 end
 
--- Who's held still, and their own walk and jump to give back. Held by the Humanoid's own walk
--- and jump set to 0 on this screen, which owns the character's movement: the PlayerModule's
--- switches don't hold it any more (docs/STUDIO.md).
-type Held = { humanoid: Humanoid, walk: number, jumpHeight: number, jumpPower: number }
+-- Who's held still, and their own walk, jump and turn to give back. Held by the Humanoid's own
+-- walk and jump set to 0 on this screen, which owns the character's movement: the PlayerModule's
+-- switches don't hold it any more (docs/STUDIO.md). Its turn with the camera is off too, so a
+-- kept body stays facing the door the server stood it at while you look round.
+type Held = {
+	humanoid: Humanoid,
+	walk: number,
+	jumpHeight: number,
+	jumpPower: number,
+	autoRotate: boolean,
+}
 
 local function hold(): Held?
 	local character = Players.LocalPlayer.Character
@@ -74,8 +111,10 @@ local function hold(): Held?
 		walk = humanoid.WalkSpeed,
 		jumpHeight = humanoid.JumpHeight,
 		jumpPower = humanoid.JumpPower,
+		autoRotate = humanoid.AutoRotate,
 	}
 	humanoid.WalkSpeed, humanoid.JumpHeight, humanoid.JumpPower = 0, 0, 0
+	humanoid.AutoRotate = false
 	return held
 end
 
@@ -92,31 +131,49 @@ local function letGo(held: Held)
 	if humanoid.JumpPower == 0 then
 		humanoid.JumpPower = held.jumpPower
 	end
+	humanoid.AutoRotate = held.autoRotate
+end
+
+-- Turns the camera the way your body faces: where the server stood you, facing the door.
+local function faceTheDoor()
+	local cam = Workspace.CurrentCamera
+	local character = Players.LocalPlayer.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	if cam and root and root:IsA("BasePart") then
+		local at = cam.CFrame.Position
+		cam.CFrame = CFrame.lookAt(at, at + root.CFrame.LookVector)
+	end
 end
 
 local CaughtView = {}
 
 -- The system; `kick` jerks the view (CameraShake's).
 function CaughtView.new(kick: (amount: number) -> ()): Brix.System
+	local player = Players.LocalPlayer
 	local screen: Screen? = nil
 	local since = -1 -- seconds since the catch on screen, or -1 with none
-	local held: Held? = nil -- held still while the catch is on screen
+	local kept = false -- the server has us kept (`Kept.Attribute`)
+	local awake = -1 -- seconds since the screen opened on the unit's inside, or -1
+	local held: Held? = nil -- held still while the catch is on screen or we're kept
 	local running = false
-	local connection: RBXScriptConnection? = nil
+	local connections: { RBXScriptConnection } = {}
 
+	-- Nothing of the catch left: the screen off, walk and turn back, prompts back.
 	local function finish()
-		since = -1
+		since, awake = -1, -1
 		if screen then
 			screen.gui.Enabled = false
+			screen.hint.TextTransparency, screen.hintStroke.Transparency = 1, 1
 		end
 		if held then
 			letGo(held)
 			held = nil
 		end
+		ProximityPromptService.Enabled = true
 	end
 
 	local function onCaught()
-		since = 0
+		since, awake = 0, -1
 		kick(Caught.Kick)
 		if not held then
 			held = hold()
@@ -126,40 +183,81 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 		end
 	end
 
+	local function onKept()
+		local now = player:GetAttribute(Kept.Attribute) == true
+		if now == kept then
+			return
+		end
+		kept = now
+		if kept then
+			-- no prompt answers a wrapped player; hide them so none is offered either
+			ProximityPromptService.Enabled = false
+			if not held then
+				held = hold()
+			end
+		elseif since < 0 then
+			finish()
+		end
+	end
+
 	return {
 		name = "CaughtView",
 		start = function(_: any, _context: Brix.Context)
 			running = true
-			screen = makeScreen(Players.LocalPlayer:WaitForChild("PlayerGui"))
+			screen = makeScreen(player:WaitForChild("PlayerGui"))
+			table.insert(
+				connections,
+				player:GetAttributeChangedSignal(Kept.Attribute):Connect(onKept)
+			)
+			onKept()
 			task.spawn(function()
 				local folder = ReplicatedStorage:WaitForChild(Caught.RemoteFolder, 30)
 				local remote = folder and folder:WaitForChild(Caught.Remote, 30)
 				if running and remote and remote:IsA("RemoteEvent") then
-					connection = remote.OnClientEvent:Connect(onCaught)
+					table.insert(connections, remote.OnClientEvent:Connect(onCaught))
 				end
 			end)
 		end,
 		step = function(_: any, dt: number)
-			if since < 0 then
-				return
-			end
-			since += dt
 			local s = screen
-			if not Caught.showing(since) then
-				finish()
-			elseif s then
-				s.black.BackgroundTransparency = 1 - Caught.blackout(since)
-				local clear = 1 - Caught.headline(since)
-				s.headline.TextTransparency = clear
-				s.stroke.Transparency = clear
+			if since >= 0 then
+				since += dt
+				local lifts = Caught.Dark + Caught.Hold
+				if kept and since >= Caught.Dark and since <= lifts then
+					faceTheDoor() -- in the black, where the server has put us by now
+				end
+				if not Caught.showing(since) then
+					since = -1
+					if not kept then
+						finish()
+						return
+					end
+					awake = 0
+				elseif s then
+					s.black.BackgroundTransparency = 1 - Caught.blackout(since)
+					local clear = 1 - Caught.headline(since)
+					s.headline.TextTransparency = clear
+					s.stroke.Transparency = clear
+				end
+			end
+			if since < 0 and kept and s then
+				-- awake inside: the black gone, "Wait for a friend" coming up
+				if awake < 0 then
+					awake = 0
+				end
+				awake += dt
+				s.black.BackgroundTransparency = 1
+				s.headline.TextTransparency, s.stroke.Transparency = 1, 1
+				local clear = 1 - math.min(awake / Kept.HintIn, 1)
+				s.hint.TextTransparency, s.hintStroke.Transparency = clear, clear
 			end
 		end,
 		stop = function(_: any)
 			running = false
-			if connection then
-				connection:Disconnect()
-				connection = nil
+			for _, c in connections do
+				c:Disconnect()
 			end
+			table.clear(connections)
 			finish()
 			if screen then
 				screen.gui:Destroy()

@@ -6,7 +6,17 @@
 	A refusal flashes on the prompt in place of its name for a moment ("Padlocked", "Still laying
 	it"), then the name comes back.
 ]]
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Kept = require(ReplicatedStorage.Shared.Kept)
+
 local Prompts = {}
+
+--- Whether `player` is wrapped and kept in a unit (L-07a): every prompt in the world refuses them,
+--- on the server, whatever their screen shows. Its own screen hides the prompts too.
+function Prompts.wrapped(player: Player): boolean
+	return player:GetAttribute(Kept.Attribute) == true
+end
 
 -- How long a refusal shows before the prompt's name returns.
 local REFUSAL_SECONDS = 1.2

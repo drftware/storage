@@ -356,6 +356,25 @@ verified: a doc page, Studio, or "untested".
   `screen_capture` with `camera_position` in Play draws the Client's view from there: a camera
   at (45.5, 0.9, -632.3) shows the guard's feet under a peek, where a standing eye 4.5 up sees
   only a stud or two in (the peek's kneel, L-06b5b, now drops your eye to 1.0).
+- **Testing getting kept from the MCP** (L-07a, 2026-11-10): seed 7, floor 1. Pivot the
+  character to (47, 3, -632) looking +X from the Server, point the camera at Unit 157's
+  `DoorOrigin.DoorButtons` (an Attachment: `WorldPosition`) and tap Open from the Client: caught in
+  about 2.5 s, Output names the unit you're kept in. To be let out alone, from a Server
+  `execute_luau`: `require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor).play(unit, "Open")`;
+  Doors hears the door's motion attribute change, so `changed` fires as from a press. The
+  roaming Mannequin catches you again if you stand 6 studs in front of it (`Keeper` tag, its
+  pivot's look). Dropped tools lie in `Workspace.Tools`; a tool's "Pick up" prompt sits on an
+  Attachment outside its model (find the nearest prompt to the tool).
+- **A script's `Humanoid:Move` on the Client barely moves you** (2026-11-10): the PlayerModule
+  sets the move from your (empty) input every frame, so `Move` from an `execute_luau` gets a
+  frame or so (a stud a second). `character_navigation` walks for real. This was the "couldn't
+  move after a catch" in the Queue: not a bug in the game.
+- **`ProximityPromptService.Enabled`** (read in Studio, 2026-11-10): exists (true by default);
+  set false on a client, it hides every prompt on that screen only. The server must still refuse.
+- **First person turns the body to the camera** (L-07a, 2026-11-10): with `LockFirstPerson`,
+  `Humanoid.AutoRotate` turns your root on your own screen to wherever the camera points, even
+  over a server pivot of an anchored root, so a camera turned "the way the body faces" chases its
+  own tail. Turn `AutoRotate` off first, then aim the camera along the root's look.
 - **Testing the peek's kneel from the MCP** (L-06b5b, 2026-11-10): seed 7, floor 1. From the
   Server pivot the character to (48.5, 3, -632) looking +X (157, the guard) or (47.5, 3, -624)
   looking -X (154, a sleeper). In one Client script point the camera at the unit's

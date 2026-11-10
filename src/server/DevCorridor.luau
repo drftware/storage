@@ -28,7 +28,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
-local Caught = require(ReplicatedStorage.Shared.Caught)
 local CorridorKit = require(ReplicatedStorage.Shared.CorridorKit)
 local Deal = require(ReplicatedStorage.Shared.Deal)
 local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
@@ -39,6 +38,7 @@ local Floor = require(ReplicatedStorage.Shared.Floor)
 local FloorBuilder = require(script.Parent.FloorBuilder)
 local HallLight = require(ReplicatedStorage.Shared.HallLight)
 local Keepers = require(script.Parent.Keepers)
+local KeptPlayers = require(script.Parent.KeptPlayers)
 local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
 local MotionLights = require(script.Parent.MotionLights)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
@@ -524,7 +524,8 @@ local function devFloor(
 	deals: Deals.Deals,
 	keepers: Keepers.Keepers,
 	wraps: Wraps.Wraps,
-	minimaps: Minimaps.Minimaps
+	minimaps: Minimaps.Minimaps,
+	keptPlayers: KeptPlayers.KeptPlayers
 )
 	local units, missing = FloorBuilder.units()
 	if not units then
@@ -563,6 +564,8 @@ local function devFloor(
 	)
 	local model, laid = FloorBuilder.lay(floor, FLOOR_ORIGIN, folder, deck)
 	deals:add(deck, laid.slots, model)
+	-- a player a keeper catches here is wrapped and stored in one of its units (L-07a)
+	keptPlayers:add(deck, laid.slots, model)
 	-- the keepers' roams draw from a fresh Random from the same seed, not the deal's, so where they
 	-- wander never changes what a unit holds
 	keepers:add(floor, laid.slots, model, FLOOR_ORIGIN, Brix.Random.new({ seed = s }))
@@ -595,25 +598,6 @@ local function devFloor(
 			riding:disconnect()
 		end)
 	end
-	-- The stand-in for getting kept (until L-07's wrap and storage): a keeper's catch blacks out
-	-- the caught player's screen (Keepers, Caught), and once it's black they're put back in this
-	-- floor's lobby, where their screen opens again, so the floor can be played on.
-	local kept = keepers.caught:connect(function(catch: Keepers.Catch)
-		if catch.floor ~= model then
-			return
-		end
-		task.delay(Caught.Dark, function()
-			if catch.player.Parent then
-				send(catch.player, FLOOR_ORIGIN * FLOOR_ARRIVAL)
-				print(
-					`DevCorridor: {catch.player.Name} is put back in the lobby (stand-in until L-07)`
-				)
-			end
-		end)
-	end)
-	model.Destroying:Once(function()
-		kept:disconnect()
-	end)
 	travelPost(
 		"ComeBack",
 		(FLOOR_ORIGIN * FLOOR_POST).Position,
@@ -795,6 +779,10 @@ function DevCorridor.new(): Brix.System
 			local wraps = (context.registry:get("wraps") :: any) :: Wraps.Wraps
 			-- any: as above; Minimaps fills this slot
 			local minimaps = (context.registry:get("minimaps") :: any) :: Minimaps.Minimaps
+			-- any: as above; KeptPlayers fills this slot
+			local keptPlayers = (
+				context.registry:get("keptPlayers") :: any
+			) :: KeptPlayers.KeptPlayers
 			local folder = build(lights)
 			built = folder
 			if folder then
@@ -803,7 +791,16 @@ function DevCorridor.new(): Brix.System
 					slots:lay(spot.key, spot.at, spot.yaw)
 				end
 				wraps:add(TEST_HALLS, folder, CFrame.identity)
-				laying = task.spawn(devFloor, folder, elevators, deals, keepers, wraps, minimaps)
+				laying = task.spawn(
+					devFloor,
+					folder,
+					elevators,
+					deals,
+					keepers,
+					wraps,
+					minimaps,
+					keptPlayers
+				)
 			end
 		end,
 		stop = function(_: any)

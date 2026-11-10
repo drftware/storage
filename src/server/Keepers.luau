@@ -30,9 +30,8 @@
 	- A hunting keeper whose hand closes on the one it hunts catches them (L-06b3c; `Keeper.step`
 	  decides, by Brix's cone reach along its map). The server then jolts the caught player's
 	  screen and blacks it out (Remotes.Caught to them alone, `Caught`), fires `caught` (the
-	  keeper's body, the player, the floor) for what follows, and leaves that player out of every
-	  keeper's sight for `Caught.Out` seconds. Until L-07, DevCorridor's stand-in takes `caught`
-	  and puts them back in the floor's lobby in the black.
+	  keeper's body, the player, the floor) for what follows, and marks them kept
+	  (`Kept.Attribute`): out of every keeper's sight until KeptPlayers lets them out (L-07a).
 	- A door that comes down from all the way up, by a slam or a close, traps an awake keeper
 	  standing in its unit (L-06b3d; `Keeper.trap`; a peek lowered over one isn't a trap). It bangs
 	  on the door from inside on its clock: each blow jolts the door on its rail with a boom and a
@@ -74,6 +73,7 @@ local Doors = require(script.Parent.Doors)
 local Flashlights = require(script.Parent.Flashlights)
 local Floor = require(ReplicatedStorage.Shared.Floor)
 local Horn = require(ReplicatedStorage.Shared.Tools.Horn)
+local Kept = require(ReplicatedStorage.Shared.Kept)
 local Keeper = require(ReplicatedStorage.Shared.Keeper)
 local Torch = require(ReplicatedStorage.Shared.Flashlight.Torch)
 local KeeperMap = require(ReplicatedStorage.Shared.KeeperMap)
@@ -216,7 +216,6 @@ function Keepers.new(): Keepers
 	local flashlights: Flashlights.Flashlights? = nil
 	local run = 16 -- a player's full run, studs a second (StarterPlayer's, read at start)
 	local everyone: { Player } = {} -- kept as players come and go: no list made each step
-	local out: { [Player]: number } = {} -- caught players keepers leave alone, till this os.clock
 	local caught = Brix.Signal.new() :: Brix.Signal<Catch>
 	local caughtRemote: RemoteEvent? = nil
 	local huntedRemote: RemoteEvent? = nil
@@ -231,14 +230,13 @@ function Keepers.new(): Keepers
 	-- from their eyes (their head), along where their screen last said it looks (its heading and
 	-- pitch; before it has said, the way their character faces, tipped up by their pitch); a zero
 	-- aim while it's off. Allocates nothing.
-	local function gather(on: OnFloor, now: number)
+	local function gather(on: OnFloor, _now: number)
 		local list = on.players
 		local origin = on.origin
 		local n = 0
 		for _, player in everyone do
-			local spared = out[player]
-			if spared and spared > now then
-				continue -- just caught: out of every keeper's sight while they're moved
+			if player:GetAttribute(Kept.Attribute) == true then
+				continue -- kept: out of every keeper's sight until they're let out
 			end
 			local character = player.Character
 			local root = character and character:FindFirstChild("HumanoidRootPart")
@@ -311,18 +309,16 @@ function Keepers.new(): Keepers
 	end
 
 	-- A keeper caught player `id`: the jolt on their screen, Output's line, and `caught`, unless
-	-- they're already out (two keepers' hands closing in one step).
+	-- they're already kept (two keepers' hands closing in one step, or a catch while kept).
 	local function catch(entry: Entry, id: number)
 		local player = Players:GetPlayerByUserId(id)
 		if not player then
 			return
 		end
-		local now = os.clock()
-		local spared = out[player]
-		if spared and spared > now then
+		if player:GetAttribute(Kept.Attribute) == true then
 			return
 		end
-		out[player] = now + Caught.Out
+		player:SetAttribute(Kept.Attribute, true)
 		if caughtRemote then
 			caughtRemote:FireClient(player)
 		end
@@ -709,7 +705,6 @@ function Keepers.new(): Keepers
 				if i then
 					table.remove(everyone, i)
 				end
-				out[player] = nil
 				told[player] = nil
 			end)
 		)
@@ -791,7 +786,6 @@ function Keepers.new(): Keepers
 		end
 		table.clear(joins)
 		table.clear(everyone)
-		table.clear(out)
 		if caughtRemote then
 			caughtRemote:Destroy()
 			caughtRemote = nil

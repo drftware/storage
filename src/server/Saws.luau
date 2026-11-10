@@ -384,6 +384,9 @@ function Saws.new(): Saws
 		table.insert(
 			job.conns,
 			p.Triggered:Connect(function(player: Player)
+				if Prompts.wrapped(player) then
+					return
+				end
 				finish(job, side, player)
 			end)
 		)

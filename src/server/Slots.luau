@@ -31,6 +31,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Kept = require(ReplicatedStorage.Shared.Kept)
 local Prompts = require(script.Parent.Prompts)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 
@@ -73,6 +74,8 @@ export type Slots = Brix.System & {
 	handBack: (self: any, player: Player, id: string) -> string?,
 	-- Lays placed tool `id` on the floor at `at`, turned `yaw` degrees (its front gone from under it).
 	lower: (self: any, id: string, at: Vector3, yaw: number) -> (),
+	-- Drops everything `player` carries where they stand, as dying does (caught by a keeper, L-07a).
+	dropAll: (self: any, player: Player) -> (),
 }
 
 type Tool = {
@@ -391,6 +394,9 @@ function Slots.new(): Slots
 		if not root or t.owner ~= nil or t.model.Parent ~= lying then
 			return
 		end
+		if player:GetAttribute(Kept.Attribute) == true then
+			return -- wrapped: no hands to pick anything up with (L-07a)
+		end
 		if (root.Position - t.body.Position).Magnitude > Carry.PickReach + REACH_SLACK + 2 then
 			return
 		end
@@ -511,6 +517,12 @@ function Slots.new(): Slots
 		local friend = target :: Player
 		if friend == player or friend.Parent ~= Players then
 			return
+		end
+		if
+			player:GetAttribute(Kept.Attribute) == true
+			or friend:GetAttribute(Kept.Attribute) == true
+		then
+			return -- either of you wrapped (L-07a)
 		end
 		-- range: both alive, within reach, something in your hand, room in theirs
 		local root, theirs = rootOf(player), rootOf(friend)
@@ -672,6 +684,10 @@ function Slots.new(): Slots
 			out[i] = if t then t.key else ""
 		end
 		return out, h.carry.active
+	end
+
+	function system.dropAll(_: any, player: Player)
+		dropAll(player, rootOf(player))
 	end
 
 	function system.spend(_: any, player: Player, key: string): boolean

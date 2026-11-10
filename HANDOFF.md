@@ -2,46 +2,50 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-10, session 81 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-10, session 82 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-10 done (D-094): the corner map.** Top right under the top bar, it slides in on a floor and
-  follows you: halls fill in as you walk them, the lobby and car drawn from the start, the gate's
-  amber mark held on the edge while it's off the window, opened units green with a tick, friends
-  as blue dots (`Minimap.Friends`). North stays up. Roblox's player list is off.
-- Pure core `src/shared/Minimap.luau` (Lune-tested); `Minimaps` on the server sends the layout as
-  shapes, never the seed (the seed would give away the code and every unit); `MinimapView` (the
-  window) and `MinimapDrawing` (the drawing, reusable for a full map later).
-- **Verified in Studio** at Galaxy A16 size, seed 7, floor 1: walked halls filled in, unit 103
-  opened went green and ticked, the gate's mark on the edge, buttons clear, Output clean.
-- Owner played the pops Nov 10 ("better"); the rustling pop sound is in ROADMAP's polish list.
+- **L-07 split in five** (ROADMAP): a the wrap and being stored, b the wrap you see and hear,
+  c banging, d cut free, e the padlock. "Left behind" and "Whole team kept" moved to L-08.
+- **L-07a done (D-095): getting kept.** Caught, what you carried drops where you stood, and in
+  the black the building stores you in a shut unit away from you (never the nearest, an
+  unopened one first, never one a keeper is in), held still facing its door, "Wait for a
+  friend" on screen, every prompt refused. Its door all the way up lets you out (the stand-in
+  until L-07d). The lobby stand-in is gone, and with it the repeat catch by the lobby.
+- Pure `Kept` (Lune-tested), server `KeptPlayers`, `Caught.Wrap` (was `Out`); keepers skip
+  anyone with the `Kept` attribute; `Prompts.wrapped`, `Slots:dropAll`, `Deals:hold`.
+- **Verified in Studio** (seed 7, floor 1): stored in 153, 124, 112 facing the door; a horn
+  dropped where I stood; the door opened let me out and I walked; one catch each; Output clean.
 
-## Next task: L-07 Getting kept and rescued
-The moment: the keeper's hands close, the screen goes dark, and you wake shrink-wrapped in a unit
-somewhere on the floor, banging on the door so your friends can find you before it's padlocked.
+## Next task: L-07b The wrap you can see and hear
+The moment: your friend lifts the door and there you are in the dark, shrink-wrapped head to
+foot in clear stretch film, and as the keeper wraps you, you hear the film squeal in the black.
 1. Owner test results first, if pasted.
-2. Read the GDD's "Getting kept" section (docs tools, never WebFetch) and ROADMAP L-07. It is
-   big: split it in ROADMAP before starting (likely: the wrap and being stored in a unit; the
-   banging that pings friends, on the map too; cutting free; the padlock if left too long).
-   Name each part's hit-game precedent (AGENTS.md); anything without one goes to OWNER.md.
-3. Brix first (`docs/FRAMEWORK.md`): nothing planned covers this; build it on `Keepers.caught`.
-4. Do the first part only: pure rules with a failing Lune test first, then server, then screen.
-   It replaces the stand-ins: DevCorridor's move to the lobby, `Caught`'s blackout hold
-   (`CaughtView`) and `Caught.Out`. What you carried drops where you stood.
-5. Fix the repeat catch: a keeper that chased you to the lobby catches you again every 2 s.
-**Acceptance (first part):** checks green; in Studio on seed 7, floor 1, let the awake Mannequin
-in Unit 157 catch you (D-069's recipe in docs/STUDIO.md): you end up wrapped in a unit, not the
-lobby, can't walk, and nothing catches you twice; Output clean.
-**Read first:** ROADMAP L-07; GDD "Getting kept"; D-077; `src/shared/Caught.luau`; DevCorridor's
-catch stand-in (`keepers.caught`); CODEMAP's `Keepers` and `CaughtView` rows.
+2. Art first, the unit's way (`art/unit/README.md`): a new `art/` script in Blender 5.2 for a
+   standing body's wrap: clear stretch film in overlapping bands, creased, a little cloudy,
+   UV-mapped to a baked PBR set; FBX, a generated Specs module, look sheets. Size it to Roblox's
+   default R15 body (the Mannequin's spec has the proportions) and scale it at runtime to the
+   kept character's bounding box. Judge it at phone size in a dark unit.
+3. Server: `KeptPlayers` puts the wrap on the kept character at the move (welded, massless, no
+   collision; arms down at the sides if they poke through) and takes it off as they're let out.
+   Hide it on the kept player's own screen.
+4. The squeal: a stretch-film sound on the catch, for the caught one in the black and anyone
+   near. Find a real asset (verify its id loads in Studio); list it in `docs/STUDIO.md`.
+**Acceptance:** checks green; in Studio on seed 7, floor 1, caught by 157's Mannequin, the
+kept body stands wrapped in its unit as seen from its open door (a capture with the ambient
+raised, `docs/STUDIO.md`), nothing of the film in your own view, the squeal in Output's sounds
+log or heard; Output clean.
+**Read first:** ROADMAP L-07b; D-095; `art/unit/README.md`; `art/bubblewrap/README.md` (clear
+film already made once); `art/mannequin/spec.py` (R15 proportions); `src/server/KeptPlayers.luau`.
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-07 (takes `Keepers.caught`); D-064, D-068 to D-094. L-14b2d if the owner asks. Then L-08, L-09.
+1. L-07b, then L-07c (banging, the light under the door), L-07d (cut free), L-07e (the
+   padlock). L-14b2d if the owner asks. Then L-08 (it takes Left behind), L-09.
 2. **Small, own session:** cut `MovingBlanket`, `GlowSticks` from `Deal.Tools`/`Deal.Bag` (D-091);
    it reshuffles every seed, so recheck the units `OWNER.md`'s steps name (seed 7, floors 1, 3).
-3. **Check, small:** caught (moved to the lobby), the MCP's Client couldn't move the character
-   54 s on; a Server pivot could. Can a real player walk after a catch? Caught crawling or on the
-   ladder, `CrawlView`/`LadderView` may keep holding PlatformStand.
+3. **Check, small:** caught crawling or on the ladder, `CrawlView`/`LadderView` may keep holding
+   PlatformStand after you're let out. (Walking after a plain catch works: the old "couldn't
+   move" was the MCP's `Humanoid:Move`, `docs/STUDIO.md`.)
 4. **Check, small:** a press made the moment you arrive reaches the server while it still sees you
    a few studs back (D-085): Saws, Ladders and a door's Cut and Lock check where you stand; allow
    for it as `Crawling.counts` does if one drops. Server facing is 0.4 s late (D-084).

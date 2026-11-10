@@ -343,6 +343,9 @@ function Doors.new(): Doors
 			table.insert(
 				entry.conns,
 				p.Triggered:Connect(function(player: Player)
+					if Prompts.wrapped(player) then
+						return
+					end
 					press(entry, button.action, player)
 				end)
 			)

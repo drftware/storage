@@ -61,6 +61,9 @@ export type Deals = Brix.System & {
 	-- A laid floor's deck and its units, each by its slot's index (FloorBuilder's `Laid.slots`).
 	-- Its units are dealt as their doors first lift or a saw first holes them, until `floor` (the floor's model) is destroyed.
 	add: (self: any, deck: Deal.Deck, units: { [Model]: number }, floor: Instance) -> (),
+	-- Unit `unit` holds someone kept (L-07a): it's never dealt, so the friend who opens it finds
+	-- only them, never a keeper beside them. Whether it was still to be dealt.
+	hold: (self: any, unit: Model) -> boolean,
 }
 
 type Entry = { deck: Deal.Deck, index: number }
@@ -243,6 +246,17 @@ function Deals.new(): Deals
 		table.clear(connections)
 		table.clear(units)
 		dealt:disconnectAll()
+	end
+
+	function system.hold(_: any, unit: Model): boolean
+		if not units[unit] then
+			return false
+		end
+		units[unit] = nil
+		if RunService:IsStudio() then
+			print(`Deals: {unit.Name} holds someone kept, so it's dealt nothing`)
+		end
+		return true
 	end
 
 	function system.add(_: any, deck: Deal.Deck, laid: { [Model]: number }, floor: Instance)
