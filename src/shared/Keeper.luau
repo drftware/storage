@@ -484,6 +484,36 @@ function Keeper.hear(k: Keeper, from: vector, reach: number, spot: vector): numb
 	return d
 end
 
+-- A sound counts as on a floor within this far off its map (studs: the elevator car beside the
+-- lobby), and from `SoundBelow` under its floor to `SoundAbove` over it (a player's middle up on
+-- the tops is about 13).
+Keeper.SoundOffMap = 8
+Keeper.SoundBelow = 4
+Keeper.SoundAbove = 20
+
+--- Whether a sound at `p` (the floor's coordinates) is on the floor whose map is `map`.
+function Keeper.onFloor(map: KeeperMap.Map, p: vector): boolean
+	return p.y >= -Keeper.SoundBelow
+		and p.y <= Keeper.SoundAbove
+		and KeeperMap.off(map, p) <= Keeper.SoundOffMap
+end
+
+--- A sound at `p` (the floor's coordinates): where it is, on the floor of the place it's in, and
+--- the spot a keeper comes to look from (clear of a unit's walls, as it searches, L-12c).
+function Keeper.soundAt(map: KeeperMap.Map, p: vector): (vector, vector)
+	local i = KeeperMap.placeAt(map, p)
+	local at = vector.create(p.x, map.y[i], p.z)
+	return at, KeeperMap.offWalls(map, at, Keeper.Against)
+end
+
+--- Keeper `k` hears a sound at `p` (the floor's coordinates) carrying `reach` studs along the
+--- halls: it comes to look, waking if it slept, as for a door (`Keeper.hear`). How far off it
+--- heard it along the map, or nil. The horn, the bubble wrap's pops, and later any loud thing.
+function Keeper.heardAt(k: Keeper, p: vector, reach: number): number?
+	local at, spot = Keeper.soundAt(k.map, p)
+	return Keeper.hear(k, at, reach, spot)
+end
+
 --- Whether it's awake: anything but dealt asleep and not yet woken.
 function Keeper.awake(k: Keeper): boolean
 	return k.state ~= "Asleep"

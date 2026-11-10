@@ -1018,3 +1018,19 @@ verified: a doc page, Studio, or "untested".
 - **The server reads a player's facing as their client holds it:** a Server `PivotTo` turning
   the character is undone within 0.3 s by the client (it owns the character), so a server check
   of facing after a teleport sees the client's way, not the pivot's.
+- **Bubble wrap's pops, measured** (L-14b2b, 2026-11-10; Edit, AudioPlayer to AudioAnalyzer, 50 ms
+  bins at half speed, then 10 ms at a quarter): Pro Sound Effects' "Plastic Bubble Wrap Short
+  Fluttering Movements" 2 9125745015 (7.75 s) is the loudest of the set: a crackle from 3.38 s
+  (onsets 3.38, 3.45, 3.61, about -17 dB) building to one sharp pop at 3.94 s (-6 dB), then
+  rustle to 4.4. 20 9125745994 (3.3 s) hits -14 dB at 0.38 s; 15 9125745716 crackles -15 to
+  -20 dB from 0.1 to 1.5 s; 1, 6 and 14 stay under -17 dB. "Elastic Twist Bubble Wrap Prop Turn
+  2" 9114234244 is quiet (-28 dB). Build2Inspire's user upload "Pop Bubble Wrap Sound Effect"
+  7158013361 is one lone pop at 1.2 s (-5 dB) and nothing else.
+- **`SurfaceAppearance.Color`** (Edit, Nov 10): exists and reads white (a tint on its ColorMap).
+  Set from a LocalScript in Play: untested; `WrapView` tries it once per pop under `pcall`.
+- **Picking a tool up from the MCP** (Play, Nov 10, again): `user_keyboard_input` E does press a
+  prompt, but the one Roblox picks among those in reach (a padlock, then the saw, beside the test
+  hall's roll). With every other prompt disabled on the Client, the roll's prompt (2.8 studs off,
+  enabled, no line of sight needed) never showed (`PromptShown` silent, even after walking off
+  and back) and neither E nor `InputHoldBegin` triggered it. Cause unknown. Next try: pick the
+  roll up first, before any other tool, or carry it in from a unit on the walked floor.

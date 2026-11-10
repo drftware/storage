@@ -57,6 +57,44 @@ Wrap.Down = 0.45
 Wrap.LaidAttribute = "Laid"
 Wrap.Tag = "BubbleSheet"
 
+-- The pops (L-14b2b), as a Minecraft tripwire trips under any mob or player that walks into it:
+-- a foot entering a laid sheet pops it, anyone's (a keeper's, a friend's, your own), once. The
+-- sheet counts `Slack` studs round its edges (a foot reaches past the middle of you), which with
+-- `Across` covers the hall wall to wall, so nobody slips by it. Feet more than `Lift` over it are
+-- in the air: a jump clears it, as you can hop a tripwire; feet read up to `Under` below it
+-- crawling. A step longer than `Stride` (flat) is a move (caught, a respawn), not a walk: it pops
+-- nothing on the way.
+Wrap.Slack = 0.4
+Wrap.Lift = 1.2
+Wrap.Under = 3
+Wrap.Stride = 8
+
+-- How far along the halls keepers hear the pops (studs): a door's open (DoorSound's, D-069), so
+-- a sheet two halls off brings a keeper as an opened door there would.
+Wrap.Reach = 110
+
+-- On a popped sheet: the server's clock (GetServerTimeNow) when it popped, so every screen plays
+-- the pops and flattens it. A pop older than `Fresh` seconds when a screen first sees it (streamed
+-- in late) just shows it flat.
+Wrap.PoppedAttribute = "Popped"
+
+-- The pops on every screen, heard as far as keepers hear them (`Reach`): Pro Sound Effects'
+-- "Plastic Bubble Wrap Short Fluttering Movements 2" from 3.34 s, a foot coming down on wrap: a
+-- crackle (pops at 3.38, 3.45, 3.61 s) into one sharp pop at 3.94 s, -6 dB (measured for
+-- L-14b2b, docs/STUDIO.md). Loud on purpose: it's an alarm.
+Wrap.Pops = { id = "rbxassetid://9125745015", from = 3.34, length = 1.05, volume = 2, pitch = 1 }
+-- The sheet goes flat as it pops, over `Flatten` seconds (fast, then settling): its bubbles
+-- squashed to `Flat` of their height, its colour tinted `Tint` (the film dulled, not dark).
+Wrap.Flatten = 0.6
+Wrap.Flat = 0.35
+Wrap.Tint = { r = 0.72, g = 0.72, b = 0.74 }
+-- Your view jolts this much (Shake trauma, 0..1) if it popped under you: the horn's is 0.32.
+Wrap.Kick = 0.16
+
+-- A laid sheet, in its place's coordinates: its middle on the floor, and the way across the hall
+-- (a flat unit vector, `Wrap.place`'s second answer).
+export type Sheet = { at: vector, across: vector }
+
 -- A stretch of hall a sheet may lie in, in the floor's coordinates: its middle, which way it runs
 -- (0 along X, 1 along Z, -1 a junction's middle square, either way), and half its length. Every
 -- hall is `Floor.HallWidth` across.
@@ -157,6 +195,72 @@ function Wrap.place(halls: { Hall }, at: vector, facing: vector): (vector?, vect
 	-- across, to your right: the right of facing along X is -Z, along Z it's +X
 	local across = if alongX then vector.create(0, 0, s) else vector.create(-s, 0, 0)
 	return point, across
+end
+
+-- Narrows the part [t0, t1] of a step that lies between `lo` and `hi` on one axis, the step
+-- starting at `a` and moving `d` along it. Nil if none of it does.
+local function slab(
+	t0: number,
+	t1: number,
+	a: number,
+	d: number,
+	lo: number,
+	hi: number
+): (number?, number)
+	if math.abs(d) < 1e-9 then
+		if a < lo or a > hi then
+			return nil, t1
+		end
+		return t0, t1
+	end
+	local ta, tb = (lo - a) / d, (hi - a) / d
+	if ta > tb then
+		ta, tb = tb, ta
+	end
+	t0, t1 = math.max(t0, ta), math.min(t1, tb)
+	if t0 > t1 then
+		return nil, t1
+	end
+	return t0, t1
+end
+
+--- Whether a foot at `p` (the sheet's place's coordinates) is on `sheet`, its slack counted.
+function Wrap.on(sheet: Sheet, p: vector): boolean
+	local a, o = sheet.across, sheet.at
+	local rx, rz = p.x - o.x, p.z - o.z
+	local y = p.y - o.y
+	return math.abs(rx * a.x + rz * a.z) <= Wrap.Across / 2 + Wrap.Slack
+		and math.abs(rz * a.x - rx * a.z) <= Wrap.Deep / 2 + Wrap.Slack
+		and y >= -Wrap.Under
+		and y <= Wrap.Lift
+end
+
+--- Whether a foot stepping from `from` to `to` (the sheet's place's coordinates) crosses `sheet`:
+--- it starts off the sheet (or over it in the air) and some of its step is on it.
+function Wrap.crosses(sheet: Sheet, from: vector, to: vector): boolean
+	local dx, dz = to.x - from.x, to.z - from.z
+	if dx * dx + dz * dz > Wrap.Stride * Wrap.Stride then
+		return false
+	end
+	-- each end across the sheet, along it (the hall: across turned a quarter left) and over it
+	local a, o = sheet.across, sheet.at
+	local rx, rz = from.x - o.x, from.z - o.z
+	local fu, fw, fy = rx * a.x + rz * a.z, rz * a.x - rx * a.z, from.y - o.y
+	rx, rz = to.x - o.x, to.z - o.z
+	local tu, tw, ty = rx * a.x + rz * a.z, rz * a.x - rx * a.z, to.y - o.y
+	local hu, hw = Wrap.Across / 2 + Wrap.Slack, Wrap.Deep / 2 + Wrap.Slack
+	if math.abs(fu) <= hu and math.abs(fw) <= hw and fy >= -Wrap.Under and fy <= Wrap.Lift then
+		return false -- already on it (`Wrap.on`): leaving or shuffling about pops nothing
+	end
+	local t0: number?, t1 = 0, 1
+	t0, t1 = slab(t0 :: number, t1, fu, tu - fu, -hu, hu)
+	if t0 then
+		t0, t1 = slab(t0, t1, fw, tw - fw, -hw, hw)
+	end
+	if t0 then
+		t0, t1 = slab(t0, t1, fy, ty - fy, -Wrap.Under, Wrap.Lift)
+	end
+	return t0 ~= nil
 end
 
 return Wrap

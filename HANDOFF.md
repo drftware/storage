@@ -2,45 +2,44 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-10, session 78 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-10, session 79 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-14b2a done (D-090): laying the bubble wrap.** Lay (HornView's round button, now every
-  verb tool's) unrolls the whole roll into one sheet square across the hall at your toes
-  (`Wrap.place`, `Wraps`); refused off a hall ("Lay it in a hall"). Every screen unrolls it
-  (`WrapView`). Verified in Studio: placement and the unroll; the press untested (the MCP
-  couldn't pick the roll up, docs/STUDIO.md). Crossing a sheet does nothing yet.
-- **Owner calls (D-091):** bubbles softened (looks swapped in the open place, unsaved); blanket
-  and glow sticks cut; the minimap shows friends (a Config switch) and comes next after this.
+- **L-14b2b done (D-092): the pops.** Anything that walks onto a laid sheet (a keeper, a
+  friend, you) pops it once (`Wrap.crosses`, Lune-tested); a jump clears it. Keepers hear it as
+  far as an opened door through the new general `Keepers:hear(at, reach, what)` (the horn runs
+  through it too; the pure rule is `Keeper.heardAt`). Every screen plays a measured burst of
+  pops, squashes and dulls the sheet, and jolts you if it's under you (`WrapView`).
+- **Passes checks, untested in Studio:** the MCP couldn't pick the roll up again (it took a
+  padlock, then the saw; the roll's prompt never showed). docs/STUDIO.md has what was tried.
 
-## Next task: L-14b2b The pops
-The moment: you laid a sheet behind you; seconds later, round the corner, it pops: something is
-coming, and every keeper on the floor heard it too.
-1. Owner test results first, if pasted.
-2. A failing test first: `Wrap.crosses(sheet frame, from, to)` in `tests/wrap.spec.luau`: a
-   foot entering the sheet's rectangle (`Across` x `Deep`, a little slack), or a step passing
-   clean over it, crosses; leaving it or walking along beside it doesn't.
-3. Server (`Wraps`): keep each laid sheet (its frame, unpopped) and last positions; each step
-   check living players' feet (root, down to the floor) and keepers' feet. A keeper's `at` is
-   in its floor's coordinates: add a small read on `Keepers` (each keeper's world feet) rather
-   than reaching into it. Only sheets on a floor with someone near need checking.
-4. A crossing pops it once: stamp `Popped` (server clock) on the sheet; `Keepers` gains a
-   general `hear(at, reach)` beside `hearHorn` (refactor `hearHorn` onto it), the pop's reach
-   a door's open (110, D-069), in `Wrap`. Friends pop it too; so do you.
-5. Every screen (`WrapView`): a loud burst of pops at the sheet (measure Pro Sound Effects'
-   bubble wrap pops with AudioAnalyzer, docs/STUDIO.md), heard as far as keepers hear it; the
-   sheet goes flat (its colour darkened a touch, or a flatter look); a small kick if it's under
-   you. Default: a popped sheet stays, flat and silent (`OWNER.md`).
-**Acceptance:** checks green; in Studio on the walked floor (seed 7), lay a sheet (or, if the
-MCP can't pick up, lay one from the Server as `Wraps` does), walk the character over it: the pop
-plays once, Output says a keeper heard it and comes; a stand-in friend (a second character or a
-keeper's walk) pops another; Output clean.
-**Read first:** ROADMAP L-14b2b; D-090; `Tools/Wrap.luau`; `server/Wraps.luau`; `Keepers:hearHorn`
-and `gather` in `server/Keepers.luau`; `client/WrapView.luau`.
+## Next task: L-10 The minimap
+The moment: deep in the building, a chase behind you, a glance at the corner map shows the way
+back to the lobby and the gate; the halls you've walked are drawn, the rest is dark.
+1. Owner test results first, if pasted. Then, small: try once more to verify L-14b2b in Studio
+   (pick up the test hall's roll first, before any other tool; lay it on seed 7's floor 1 and
+   walk over it: one pop, Output's "heard bubble wrap pop"). Don't sink calls into it.
+2. Brix first: check `docs/FRAMEWORK.md` for any map or HUD piece; build here only what it
+   lacks, and add a neutral line to Brix's ROADMAP if it's reusable.
+3. Pure core with a failing test first (`tests/minimap.spec.luau`): from a `Floor.Floor`, the
+   drawable pieces (each hall piece, the lobby, the elevator, each unit's door) and which piece a
+   point is on, so "walked" fills in by piece. The lobby and elevator are always drawn.
+4. A screen needs the floor's layout: FloorBuilder already sends the tops' map to screens as an
+   attribute (`Tops.MapAttribute`, `Tops.encode`); send the floor the same way (or its seed and
+   number, if `Floor.generate` rebuilds it the same on a screen: test that in Lune).
+5. Client (`MinimapView`): a small corner map, phone first, clear of the buttons and the hall;
+   halls fill in as you walk them, opened units ticked (their doors' state), you as an arrow,
+   friends as dots behind one Config switch (owner, D-091). Never keepers or lit fixtures (the
+   light board's job). Keep the drawing apart from its frame, so a full map behind a button is
+   a small change later. Each change eases in (no snapping).
+**Acceptance:** checks green; in Studio on seed 7, floor 1, walk two halls from the lobby: the
+lobby and elevator show from the start, the walked halls fill in, an opened unit is ticked; at
+Galaxy A16 size it leaves the buttons and the hall clear; Output clean.
+**Read first:** ROADMAP L-10; D-091; `Floor.map` and the cell fields in `src/shared/Floor.luau`;
+`Tops.encode` in `src/shared/Tops.luau`; `docs/FRAMEWORK.md`; CODEMAP's client rows.
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-14b2b (the pops); D-064, D-068 to D-091. Then L-10 (the minimap), L-07 (takes
-   `Keepers.caught`), L-08, L-09.
+1. L-10 (the minimap); D-064, D-068 to D-092. Then L-07 (takes `Keepers.caught`), L-08, L-09.
 2. **Small, own session:** cut `MovingBlanket`, `GlowSticks` from `Deal.Tools`/`Deal.Bag` (D-091);
    it reshuffles every seed, so recheck the units `OWNER.md`'s steps name (seed 7, floors 1, 3).
 3. **Check, small:** caught (moved to the lobby), the MCP's Client couldn't move the character
@@ -61,7 +60,8 @@ and `gather` in `server/Keepers.luau`; `client/WrapView.luau`.
    blows a horn (or lays wrap) even while clicking the slots' bar. Output's "rbxassetid://
    203785492 ... Asset type does not match" on Play: in none of our code, templates or services.
 8. Keepers should hear the keypad, a dropped tool, the saw, a crawl, the ladder and a drop in
-   (D-059, D-066) through L-14b2b's `hear`. **Small:** a trapped keeper's every blow prints.
+   (D-059, D-066) through `Keepers:hear` (D-092). **Small:** a trapped keeper's every blow prints;
+   a crawler's feet as `Wraps` reads them must sit within `Wrap.Under` (3), or crawling won't pop.
 
 ## Kickoff for the next agent
 ```text

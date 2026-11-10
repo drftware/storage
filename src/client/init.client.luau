@@ -39,7 +39,7 @@ local elevatorView, pressKeypad = ElevatorView.new(kick)
 local keeperSounds, keeperHeard = KeeperSounds.new()
 local flashlightView, myBeam = FlashlightView.new()
 local toolView, myHand = ToolView.new()
-local wrapView, lay = WrapView.new(myHand)
+local wrapView, lay = WrapView.new(myHand, kick)
 
 local host = Brix.Host.new({
 	systems = {

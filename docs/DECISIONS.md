@@ -2055,3 +2055,33 @@ stand (screens don't have the floor's layout; the server's refusal is one short 
   takes them out of `Deal.Tools` and its bag (it reshuffles every seed: Queue).
 - **The minimap shows friends as dots**, behind one Config switch so they can come off in a line.
 - **The minimap comes straight after the bubble wrap**, before getting kept (L-07).
+
+## D-092 The pops: a tripwire anyone treads on, heard as far as an opened door (L-14b2b, Nov 10)
+A laid sheet is Minecraft's tripwire: anything that walks into it sets it off, a keeper, a
+friend or you. A foot entering the sheet (its 7.35 by 1.8 studs, plus 0.4 round its edges for a
+foot reaching past your middle, which covers the hall wall to wall) pops it, once (`Wrap.crosses`,
+Lune-tested). So does a step passing clean over it between two server steps. Stepping off it or
+shuffling on it doesn't (a sheet laid under you at a dead end stays quiet as you leave it), nor
+does walking beside it. Feet more than 1.2 studs over it are in the air, so a jump clears it, as
+you can hop a tripwire: a skill for you and your friends, never for a keeper, which doesn't
+jump. Feet read up to 3 below it while crawling. A move longer than 8 studs in one step (caught,
+respawned) pops nothing on the way. The server (`Wraps`) checks only while a sheet lies unpopped,
+each step, from where each foot was last step: players' feet from their root down to the floor,
+keepers' from `Keepers:feet` (a read, so `Wraps` never reaches into the brain). A pop stamps the
+sheet `Popped` (the server's clock) and tells `Keepers:hear(at, reach, what)`, the general hearing
+the horn now uses too (`hearHorn` is `hear` at the horn's reach; the pure rule moved from `Horn`
+to `Keeper.onFloor`, `soundAt`, `heardAt`). Its reach is an opened door's, 110 studs along the
+halls (D-069): laid two halls back, it brings a keeper as a door opened there would. The keypad,
+a dropped tool, the saw and the rest can use `hear` later (Queue).
+On every screen (`WrapView`) the pops play at the sheet, heard as far as keepers hear them: Pro
+Sound Effects' "Plastic Bubble Wrap Short Fluttering Movements 2" from 3.34 s for 1.05 s, a
+crackle building to one sharp pop at -6 dB, at volume 2 (measured, docs/STUDIO.md). The sheet goes
+flat over 0.6 s, fast then settling: its bubbles squash to 0.35 of their height (the part's size
+scales its mesh, the bubbles are geometry) and its film dulls (`SurfaceAppearance.Color` to 0.72
+grey). Popped while still unrolling, it flattens as it unrolls. Under your feet, your view jolts
+(0.16, half the horn's). A sheet seen long after it popped just lies flat. Default (`OWNER.md`):
+a popped sheet stays, flat and silent; one roll, one alarm.
+Not chosen: popping as you walk on it (the layer at a dead end would set off their own);
+counting a jump (no skill, and a tripwire doesn't); a chain of pops per foot (one alarm reads
+cleaner, and the GDD names one).
+

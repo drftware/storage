@@ -176,6 +176,62 @@ for n = 1, 10 do
 	ok(bad == 0, `floor {n}: every sheet laid whole on hall floor near you ({bad} not)`)
 end
 
+-- The pops (L-14b2b): a step that enters a laid sheet crosses it, from any side, a foot's slack
+-- round its edges, or passes clean over it in one step; leaving it, walking along beside it,
+-- shuffling on it, jumping clear over it or being moved across the floor (caught) doesn't.
+do
+	-- a sheet across a hall along X at x = 10: 7.35 across (Z), 1.8 deep (X)
+	local sheet: Wrap.Sheet = { at = v(10, 0, 0), across = v(0, 0, 1) }
+	local d = Wrap.Deep / 2
+	local s = Wrap.Slack
+	ok(Wrap.crosses(sheet, v(8, 0, 0), v(9.5, 0, 0)), "walking onto it from the near side")
+	ok(Wrap.crosses(sheet, v(12, 0, 1), v(10.6, 0, 1)), "walking onto it from the far side")
+	ok(Wrap.crosses(sheet, v(8, 0, 3), v(12, 0, 3)), "a long step clean over it, near the wall")
+	ok(
+		Wrap.crosses(sheet, v(10 - d - s - 0.3, 0, 0), v(10 - d - s + 0.05, 0, 0)),
+		"a foot just inside its slack"
+	)
+	ok(
+		not Wrap.crosses(sheet, v(10 - d - s - 0.6, 0, 0), v(10 - d - s - 0.05, 0, 0)),
+		"stopping just short of it"
+	)
+	ok(
+		Wrap.crosses(sheet, v(10, 0, -6), v(10, 0, -Wrap.Across / 2 - s + 0.05)),
+		"coming at it from the wall's side"
+	)
+	ok(not Wrap.crosses(sheet, v(10, 0, 0), v(12, 0, 0)), "stepping off it")
+	ok(not Wrap.crosses(sheet, v(9.8, 0, 0.5), v(10.2, 0, -0.5)), "shuffling about on it")
+	ok(not Wrap.crosses(sheet, v(8, 0, 0), v(8.5, 0, 0)), "walking up to it, not yet on it")
+	ok(not Wrap.crosses(sheet, v(4, 0, -6), v(16, 0, -6)), "along beside it, past its end")
+	ok(not Wrap.crosses(sheet, v(8, 0, 0), v(8, 0, 0)), "standing still")
+	-- feet off the floor: a jump clears it; landing on it pops it
+	ok(not Wrap.crosses(sheet, v(9, 4, 0), v(11, 4.5, 0)), "jumping over it")
+	ok(Wrap.crosses(sheet, v(8.5, 3, 0), v(10, 0, 0)), "landing on it")
+	ok(Wrap.crosses(sheet, v(8.5, 0, 0), v(10, 3, 0)), "jumping too late, off its edge")
+	ok(not Wrap.crosses(sheet, v(8, 13, 0), v(12, 13, 0)), "up on the tops over it")
+	ok(not Wrap.crosses(sheet, v(8, -40, 0), v(12, -40, 0)), "on the floor under it")
+	-- crawling: the feet read a little under the floor
+	ok(Wrap.crosses(sheet, v(8, -0.8, 0), v(10, -0.8, 0)), "crawling onto it")
+	-- moved across the floor in one step (caught, a respawn): no pop on the way
+	ok(not Wrap.crosses(sheet, v(-30, 0, 0), v(40, 0, 0)), "moved clean across the floor")
+	-- a sheet across a hall along Z, and turned any way: the same rules in its own frame
+	local turned: Wrap.Sheet = { at = v(0, 0, 5), across = v(-1, 0, 0) }
+	ok(Wrap.crosses(turned, v(1, 0, 3), v(1, 0, 5.2)), "along Z: walking onto it")
+	ok(not Wrap.crosses(turned, v(-6, 0, 3), v(-6, 0, 7)), "along Z: past its end by the wall")
+	local r = math.sqrt(0.5)
+	local slant: Wrap.Sheet = { at = v(0, 0, 0), across = v(r, 0, r) }
+	ok(Wrap.crosses(slant, v(-2 * r, 0, 2 * r), v(0, 0, 0)), "slanted: walking onto it")
+	ok(not Wrap.crosses(slant, v(0, 0, 0), v(-2 * r, 0, 2 * r)), "slanted: stepping off it")
+	ok(not Wrap.crosses(slant, v(5 * r, 0, 5 * r), v(6 * r, 0, 6 * r)), "slanted: past its end")
+	-- on it: where a pop under you kicks your view
+	ok(Wrap.on(sheet, v(10.5, 0, 3)), "a foot on it")
+	ok(Wrap.on(sheet, v(10 - d - s + 0.05, -0.8, 0)), "a crawler's on its edge")
+	ok(not Wrap.on(sheet, v(8, 0, 0)), "a foot before it")
+	ok(not Wrap.on(sheet, v(10, 4, 0)), "a jump over it")
+	ok(not Wrap.on(slant, v(4.5 * r, 0, 4.5 * r)), "slanted: past its end")
+	ok(Wrap.Reach > 0 and Wrap.Flat > 0 and Wrap.Flat < 1, "a pop is heard, and flattens")
+end
+
 print(`wrap: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

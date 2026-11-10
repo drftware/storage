@@ -761,15 +761,16 @@ on nothing in Brix.
       brings the roll out and down. Verified in Studio: placement on the server, the unroll
       sampled mid-way, Output clean; the press itself untested (the MCP couldn't pick the roll
       up this session, docs/STUDIO.md).
-    - [ ] **L-14b2b The pops.** A pure step test in `Wrap` (`tests/wrap.spec.luau`): a foot
-      entering a laid sheet, or a step passing clean over it, crosses it; leaving it doesn't
-      (the layer stands clear of it anyway). The server checks players' feet (`Keepers`'
-      gather has them) and keepers' (`k.at`) each step against the sheets near them. A
-      crossing pops it: loud (measure Pro Sound Effects' bubble wrap pops, docs/STUDIO.md),
-      heard by keepers as a door is: `Keepers` gains a general `hear(at, reach)` beside
-      `hearHorn`, which the keypad, a dropped tool and the saw can use later (Queue). The sheet
-      shows it popped (flattened: a second look, or the sheet's colour darkened); default, a
-      popped sheet stays, flat and silent (`OWNER.md`). Friends pop it too.
+    - [x] **L-14b2b The pops.** Done Nov 10 (D-092): `Wrap.crosses` (Lune-tested) says a foot
+      stepping onto a laid sheet, or clean over it in one step, crosses it; stepping off,
+      shuffling on it, walking beside it, jumping over it or being moved across the floor
+      doesn't. `Wraps` keeps each sheet and, while any lies unpopped, checks every living
+      player's feet and every keeper's (`Keepers:feet`) each step; a crossing pops it once,
+      stamped `Popped`, and keepers hear it as far as an opened door (`Keepers:hear`, 110
+      studs; the horn's `hearHorn` now runs through it, and `Keeper.heardAt` is the pure
+      rule). Every screen (`WrapView`) plays a measured burst of pops at the sheet, heard as
+      far, squashes its bubbles and dulls its film; under you, your view jolts. Passes checks,
+      untested in Studio: the MCP couldn't pick the roll up again (docs/STUDIO.md).
 - [ ] **L-10 The minimap** (owner, Nov 7: players shouldn't get lost and give up; Nov 10: a small
   corner map, always on, for now, which the owner may later make a map you stop to open, exposed
   while you read it). It fills in only the halls you've walked, as R.E.P.O.'s map fills in rooms

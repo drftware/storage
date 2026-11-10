@@ -41,6 +41,9 @@
 	  padlock on its door holds it: it gives one last blow and goes quiet until the padlock is cut.
 	- `awakeOn` tells the deal how many keepers are loose on a floor now, for its cap: a trapped
 	  one takes no place (`Keeper.loose`).
+	- `hear` is any loud thing off a door (the air horn, bubble wrap's pops): each keeper on that
+	  floor whose way there along the halls is inside its reach comes to look (`Keeper.heardAt`).
+	  `feet` lets `Wraps` see where keepers tread, without reaching in.
 	- Each keeper's body is an anchored model moved by its HumanoidRootPart, with no Humanoid, its
 	  joints left at rest. The server tells screens how it moves (L-06b4a): a short record on the
 	  body's `KeeperMotion` attribute, sent only when its motion changes (`KeeperMotion.due`), which
@@ -183,10 +186,15 @@ export type Keepers = Brix.System & {
 		facing: Vector3,
 		awake: boolean?
 	) -> Model?,
-	-- A blast of the air horn at `at` (the world's), heard by every keeper on the floor it's on as
-	-- far as `Horn.Reach` along the halls (L-14a2): each comes to look where it was blown, waking
-	-- if it slept (`Horn.heard`). How many heard it.
+	-- A loud sound at `at` (the world's), heard by every keeper on the floor it's on as far as
+	-- `reach` studs along the halls (L-14b2b): each comes to look where it was, waking if it slept
+	-- (`Keeper.heardAt`). `what` names it in Output ("an air horn"). How many heard it.
+	hear: (self: any, at: Vector3, reach: number, what: string) -> number,
+	-- A blast of the air horn at `at` (the world's): `hear` as far as `Horn.Reach` (L-14a2).
 	hearHorn: (self: any, at: Vector3) -> number,
+	-- Calls `each` with every keeper's body and where its feet are (the world's), on every floor.
+	-- Bubble wrap's pops read it (`Wraps`). Allocates nothing.
+	feet: (self: any, each: (body: Model, at: Vector3) -> ()) -> (),
 	-- How many keepers are loose now on the floor `unit` is on (0 off any keepers' floor): awake
 	-- and not trapped behind a door. The deal's cap counts these (`Deal.awakeCap`).
 	awakeOn: (self: any, unit: Model) -> number,
@@ -864,18 +872,18 @@ function Keepers.new(): Keepers
 		)
 	end
 
-	function system.hearHorn(_: any, at: Vector3): number
+	function system.hear(_: any, at: Vector3, reach: number, what: string): number
 		local count = 0
 		for _, on in floors do
 			local p = on.origin:PointToObjectSpace(at)
 			local here = vector.create(p.X, p.Y, p.Z)
-			if not Horn.onFloor(on.map, here) then
+			if not Keeper.onFloor(on.map, here) then
 				continue
 			end
 			for _, entry in on.keepers do
 				local k = entry.keeper
 				local was: Keeper.State = k.state
-				local heard = Horn.heard(k, here)
+				local heard = Keeper.heardAt(k, here, reach)
 				if heard then
 					count += 1
 					if TRACE then
@@ -884,7 +892,7 @@ function Keepers.new(): Keepers
 							elseif was == "Asleep" then "it wakes and goes to look"
 							else "it goes to look"
 						print(
-							`Keepers: the {k.row.name} heard an air horn {math.round(heard)} studs off along the halls; {doing}`
+							`Keepers: the {k.row.name} heard {what} {math.round(heard)} studs off along the halls; {doing}`
 						)
 					end
 					changedState(entry, was)
@@ -892,6 +900,22 @@ function Keepers.new(): Keepers
 			end
 		end
 		return count
+	end
+
+	function system.hearHorn(self: any, at: Vector3): number
+		return system.hear(self, at, Horn.Reach, "an air horn")
+	end
+
+	function system.feet(_: any, each: (body: Model, at: Vector3) -> ())
+		for _, on in floors do
+			for _, entry in on.keepers do
+				-- any: as in `putRoot`
+				each(
+					entry.body.model,
+					on.origin:PointToWorldSpace((entry.keeper.at :: any) :: Vector3)
+				)
+			end
+		end
 	end
 
 	function system.awakeOn(_: any, unit: Model): number

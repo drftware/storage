@@ -7,11 +7,10 @@
 	hears nothing, as it hears no door (D-069); nothing hears it through a shut door.
 
 	Pure: the numbers and the rules, Lune-tested (tests/horn.spec.luau). The server's `Horns` checks
-	a press and tells keepers (`Keepers:hear`); `HornView` is the press, the blast and the raise on
+	a press and tells keepers (`Keepers:hearHorn`); `HornView` is the press, the blast and the raise on
 	each screen.
 ]]
 local Keeper = require("../Keeper")
-local KeeperMap = require("../KeeperMap")
 
 local Horn = {}
 
@@ -62,13 +61,6 @@ Horn.ArmOut = 0.35
 Horn.BlownAttribute = "Blown"
 Horn.Fresh = 0.5
 
--- A point counts as on a floor within this far off its map (studs: the elevator car beside the
--- lobby), and from `Below` under its floor to `Above` over it (a player's middle up on the tops
--- is about 13).
-Horn.OffMap = 8
-Horn.Below = 4
-Horn.Above = 20
-
 --- Whether a blow `now` (seconds) may follow the last one, at `last` (nil: never blown). The
 --- server takes it `Slack` early.
 function Horn.allow(last: number?, now: number, slack: number?): boolean
@@ -93,24 +85,10 @@ function Horn.arm(since: number): number
 	return w * w * (3 - 2 * w)
 end
 
---- Whether a point (the floor's coordinates) is on the floor whose map is `map`.
-function Horn.onFloor(map: KeeperMap.Map, p: vector): boolean
-	return p.y >= -Horn.Below and p.y <= Horn.Above and KeeperMap.off(map, p) <= Horn.OffMap
-end
-
---- A blast at `p` (the floor's coordinates): the sound, on the floor of the place it's in, and
---- the spot a keeper comes to look from (clear of a unit's walls, as it searches, L-12c).
-function Horn.where(map: KeeperMap.Map, p: vector): (vector, vector)
-	local i = KeeperMap.placeAt(map, p)
-	local at = vector.create(p.x, map.y[i], p.z)
-	return at, KeeperMap.offWalls(map, at, Keeper.Against)
-end
-
 --- Keeper `k` hears a blast at `p` (the floor's coordinates): it comes to look, waking if it
---- slept, as for a door (`Keeper.hear`). How far off it heard it along the map, or nil.
+--- slept, as for a door (`Keeper.heardAt`). How far off it heard it along the map, or nil.
 function Horn.heard(k: Keeper.Keeper, p: vector): number?
-	local at, spot = Horn.where(k.map, p)
-	return Keeper.hear(k, at, Horn.Reach, spot)
+	return Keeper.heardAt(k, p, Horn.Reach)
 end
 
 return Horn

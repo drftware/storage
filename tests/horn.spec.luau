@@ -85,13 +85,13 @@ local walker = KeeperMap.pathing(map)
 local lobby = vector.zero
 
 -- whether a point is on the floor at all
-ok(Horn.onFloor(map, vector.create(0, 3, 0)), "a player's middle in the lobby is on the floor")
-ok(not Horn.onFloor(map, vector.create(0, 40, 0)), "a floor up isn't")
-ok(not Horn.onFloor(map, vector.create(5000, 3, 0)), "far off the map isn't")
-ok(Horn.onFloor(map, vector.create(0, 13, 0)), "up as high as the tops is")
+ok(Keeper.onFloor(map, vector.create(0, 3, 0)), "a player's middle in the lobby is on the floor")
+ok(not Keeper.onFloor(map, vector.create(0, 40, 0)), "a floor up isn't")
+ok(not Keeper.onFloor(map, vector.create(5000, 3, 0)), "far off the map isn't")
+ok(Keeper.onFloor(map, vector.create(0, 13, 0)), "up as high as the tops is")
 
 -- a blast where you stand: the sound on the floor under you; in a hall, the keeper's spot is it
-local at, spot = Horn.where(map, vector.create(1, 5, 2))
+local at, spot = Keeper.soundAt(map, vector.create(1, 5, 2))
 ok(at.y == 0 and at.x == 1 and at.z == 2, "the sound is dropped to the floor you stand on")
 ok(spot == at, "in a hall the keeper comes to where you blew it")
 
@@ -168,7 +168,7 @@ do
 		KeeperMap.setDoor(map, slot, true)
 		local i = KeeperMap.placeAt(map, inside)
 		local corner = vector.create(map.minX[i] + 0.2, 4, map.minZ[i] + 0.2)
-		local _, s2 = Horn.where(map, corner)
+		local _, s2 = Keeper.soundAt(map, corner)
 		ok(
 			s2.x >= map.minX[i] + Keeper.Against - TOL or s2.x == (map.minX[i] + map.maxX[i]) / 2,
 			"blown in a unit's corner, the keeper looks from off its walls"

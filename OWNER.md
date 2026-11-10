@@ -22,6 +22,29 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-14b2b, the pops (built Nov 10)
+
+Passes checks; untested in Studio: the MCP couldn't pick the roll up again, so nothing here has
+been seen or heard. Test it with L-14b2a's steps below (pick up the roll first, before any
+other tool).
+- [ ] **The moment** (Play on a computer, "Walk a floor", seed 7). Lay a sheet in a hall, walk
+  away, turn and walk back onto it: one loud burst of pops at the sheet, the sheet squashes flat
+  and goes duller, your view jolts. Output says "Wraps: (you) popped the bubble wrap", and with a
+  keeper within 110 studs along the halls, "Keepers: the Mannequin heard bubble wrap pop" and it
+  comes to look. Walk over it again: silent, it stays flat. Does the flat look read as popped
+  from standing height, on a phone too?
+- [ ] **A keeper treads on it:** lay one in a hall between you and the awake Mannequin in Unit
+  157 (D-069's recipe in docs/STUDIO.md: open its door and back off down the hall). It should
+  pop as the keeper walks through, and you hear it from where you hide.
+- [ ] **By ear:** Pro Sound Effects' bubble wrap take 2, a crackle into one sharp pop (1 s, at
+  volume 2), measured but never heard here. Loud and sharp enough for an alarm? Heard 110 studs.
+- [ ] **A jump clears it** (a default, D-092): you can hop a sheet, as you can hop a Minecraft
+  tripwire; keepers never jump. Say if any step over it should pop it.
+- [ ] **A popped sheet stays, flat and silent** (a default): one roll, one alarm. Say if it
+  should clear away, or pop again.
+- [ ] **Friends pop it too** (Team Test, two players): your friend walking onto your sheet pops
+  it on both screens; the jolt only on theirs.
+
 ## Now: judge L-14b2a, laying the bubble wrap (built Nov 10)
 
 Verified in Studio: where the sheet lies (the server, as `Wraps` does it) and the unroll sampled
@@ -34,7 +57,7 @@ pick the roll up (no prompt showed to it). A phone, a friend and your ears are y
   after: one roll, one sheet. Output says "Wraps: (you) laid bubble wrap across the hall". Try
   it in a unit, up on the tops and in the lobby: your screen says "Lay it in a hall" and you
   keep the roll. On the walked floor ("Walk a floor") lay one at a junction. Does the unroll
-  read as wrap going down, or as a stretched picture? Crossing it does nothing yet (L-14b2b).
+  read as wrap going down, or as a stretched picture?
 - [ ] **The softer bubbles** (your note, Nov 10): each now goes gently milky toward its edge
   with a soft glint on one side instead of a white ring (sheets `art/sheets/bubblewrap-*.png`).
   Look at a laid sheet and the roll on a phone (Galaxy A16): rounder and more real, or too faint
