@@ -543,7 +543,9 @@ local function devFloor(
 	)
 	local model, laid = FloorBuilder.lay(floor, FLOOR_ORIGIN, folder, deck)
 	deals:add(deck, laid.slots, model)
-	keepers:add(floor, laid.slots, model, FLOOR_ORIGIN)
+	-- the keepers' roams draw from a fresh Random from the same seed, not the deal's, so where they
+	-- wander never changes what a unit holds
+	keepers:add(floor, laid.slots, model, FLOOR_ORIGIN, Brix.Random.new({ seed = s }))
 	mannequinPost(model, keepers)
 	local elevator = laid.elevator
 	if elevator then

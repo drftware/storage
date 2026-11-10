@@ -20,9 +20,17 @@ export type Row = {
 	-- How far it hears, as a share of each sound's reach (DoorSound): 1 hears a door exactly as
 	-- far as a player does, 0 hears nothing.
 	hearing: number,
-	-- Seconds it stands where it heard something, facing it, before it goes back. Long enough to
+	-- Seconds it stands where it heard something, facing it, before it wanders off. Long enough to
 	-- make whoever made the noise hold their breath behind the door.
 	linger: number,
+	-- Once out, it roams the halls between noises and never goes home (D-071): it walks at its
+	-- looking pace to a hall piece's middle whose trip along the halls is from `roamNear` to
+	-- `roamFar` studs, stands there `roamLinger` seconds, and picks again, never one of the last
+	-- `roamMemory` places it stood in.
+	roamNear: number,
+	roamFar: number,
+	roamLinger: number,
+	roamMemory: number,
 }
 
 local Mannequin: Row = {
@@ -35,6 +43,16 @@ local Mannequin: Row = {
 	abilities = {}, -- it only walks: no ladders, no crawl holes (D-068)
 	hearing = 1,
 	linger = 5,
+	-- at least about two hall pieces off, so it visibly moves on and you lose track of it, rather
+	-- than shuffling about the door it looked at
+	roamNear = 40,
+	-- at most about five, some 17 s at its walk: it works one part of the floor for a while, so
+	-- you can learn where it went, instead of crossing the floor each time
+	roamFar = 120,
+	-- long enough to read as stopping to look, short enough that it's soon moving again
+	roamLinger = 3,
+	-- the last four places it stood: it doesn't pace back and forth between two halls
+	roamMemory = 4,
 }
 
 local KeeperRows: { [string]: Row } = {

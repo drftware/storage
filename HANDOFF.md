@@ -2,47 +2,47 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-09, session 61 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-09, session 62 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **Session 61 was design, no code.** The owner judged L-06b2b (not bad; the walk jerky; keepers
-  too easy to shut away) and agreed: a keeper out of its unit roams and never goes home; a trapped
-  one breaks out at about 90 s and frees its place in the awake cap; no bonus for trapping (D-071);
-  one note on every floor is guarded by an awake keeper, which is what the peek is for (D-072).
-  The GDD, ROADMAP (L-06b3a1 to L-06b5, L-12c) and OWNER.md say so.
+- **L-06b3a1 done (D-073):** once out, a keeper roams. After looking at a noise or out of its
+  doorway it walks to a hall piece's middle 40 to 120 studs off along the halls, not one of its
+  last four stops, stops 3 s, picks again; a sound still takes it to look. Never into a unit, so
+  its door shut behind it changes nothing. Verified in Studio on seed 7, floor 1.
 - **The brain:** pure `src/shared/Keeper.luau`, states Asleep (dealt asleep), Watching (awake,
-  standing), Going, Waiting, Returning; `hear`, `lookOut`, `awake`, `step`. Rows in
-  `KeeperRows.luau`; run by `src/server/Keepers.luau` (`add`, `stand`, `awakeOn`, `remove`,
-  `hallOff`; takes `Deals.dealt`). `tests/keeper.spec.luau`: 20,572 checks.
-- **Dev:** "Stand one" in the walked floor's lobby stands a sleeping Mannequin 60 studs down the
-  halls. Output traces what each keeper hears and does; each body carries `KeeperState`.
+  never yet out, or shut in its unit), Going, Waiting (at a sound or a roam stop), Roaming;
+  `new(row, map, random, ...)`, `hear`, `lookOut`, `awake`, `step`. Rows in `KeeperRows.luau`
+  (roam numbers there); `KeeperMap`'s `stops` are the roam targets. Run by `src/server/Keepers.luau`
+  (`add` now takes the floor's Random; `stand`, `awakeOn`, `remove`, `hallOff`).
+  `tests/keeper.spec.luau`: 23,420 checks.
+- **Dev:** Output traces what each keeper hears and does; each body carries `KeeperState`.
 
-## Next task: L-06b3a1 Once out, it roams
-The moment: you let it walk off and it doesn't go home; now you don't know where it is.
+## Next task: L-06b3a2 It sees you and hunts
+The moment: it rounds a corner, sees you, and comes at you; you break line of sight and it
+searches where it last saw you, then gives up and roams again.
 1. Owner test results first, if pasted.
-2. Read Keeper's Returning state and every place that keeps "where it woke"; read how
-   `KeeperMap` tells a hall place from a unit and gives trip lengths.
-3. A Roaming state in `Keeper` replacing Returning: after its linger at a noise, or after
-   looking out of its own doorway, it picks a hall place (never a unit) some way along the
-   halls that it hasn't visited lately, walks there at its looking speed, lingers, picks again.
-   Picks come from the floor's seeded Random (Brix). A newer sound still sends it to look; a
-   door coming down across its way makes it pick again. Watching (never yet out) and Asleep stay.
-4. Remove D-069's "no way home, sleep where it stands"; a keeper out never sleeps again.
-5. Roam numbers in the row (how far a pick may be, how long it lingers), each commented; list
-   the defaults in `OWNER.md`.
-6. Lune checks: once out it never re-enters its unit, never stops for good, keeps to the
-   halls, avoids its recent places, and a sound interrupts a roam. In Studio on seed 7, floor 1:
-   open Unit 126, it looks out and wanders off; slam 126 behind it and it keeps wandering.
-**Acceptance:** checks green; in Studio an awake Mannequin out of its unit never goes back in and
-keeps moving round the halls between noises.
-**Read first:** ROADMAP L-06b3a1; DECISIONS D-069, D-070, D-071; `src/shared/Keeper.luau` (header,
-Returning, `step`, `lookOut`); `src/server/Keepers.luau` (header, `onActed`, `system.step`);
-`src/shared/KeeperMap.luau` (header, places); `tests/keeper.spec.luau` (its helpers).
+2. Decide whether `Brix.Pursuit` runs the chase (only if the pinned Brix has it and it fits with
+   no new Brix work, D-064); the pinned `vendor/brix` has `Contracts/Pursuit.luau` but check its
+   exports before leaning on it. Record the answer in DECISIONS.
+3. Sight in the row (how far, how wide, each commented), measured so it never sees through a wall
+   or a shut door: a straight line of sight that the map confirms (both ends in places joined
+   without a shut doorway between). Watching, looking out and roaming notice; Asleep sees nothing.
+4. A Hunting state at its top speed (`speed`) along the map toward the player it sees; lost, it
+   goes to where it last saw them, looks (its `linger`), then roams (D-073's roam is the give-up).
+5. The server feeds players' positions to the brain (floor coordinates) and says in Output when
+   it sees and loses someone; feel numbers in the row, defaults listed in `OWNER.md`.
+6. Lune checks: never sees through a wall, sees within its cone and range, hunts no faster than
+   its top speed (never over a player's run), goes to the last place seen, roams after.
+**Acceptance:** checks green; in Studio on seed 7, floor 1, stand in the hall as 126's keeper
+roams by: it turns and comes; duck behind a corner and it searches, then roams.
+**Read first:** ROADMAP L-06b3a2; DECISIONS D-064, D-073; `docs/FRAMEWORK.md` (the Pursuit row);
+`vendor/brix/src/Contracts/Pursuit.luau`; `src/shared/Keeper.luau` (header, `step`, `pick`); the
+GDD's Keepers section (the Mannequin's senses).
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-06b3a1, L-06b3a2 (it sees you and hunts), L-06b4a (smooth on every screen), L-06b3b (light
-   freezes it), L-06b3c (the catch), L-06b3d (the break-out), L-06b5 (the guarded note), L-06b4b
-   (its sounds); D-064, D-068 to D-072. L-12c needs L-06b3d. Then L-14; L-07 to L-10.
+1. L-06b3a2, L-06b4a (smooth on every screen), L-06b3b (light freezes it), L-06b3c (the catch),
+   L-06b3d (the break-out), L-06b5 (the guarded note), L-06b4b (its sounds); D-064, D-068 to
+   D-073. L-12c needs L-06b3d. Then L-14; L-07 to L-10.
 2. **Check, small:** Climb down or Drop down while lying behind a sawn hole (a small unit) slides
    your body across the hole on the way to the edge; refuse it there or go round.
 3. **Look, small:** from a friend's view, dropping in from behind the hole lunges you toward the

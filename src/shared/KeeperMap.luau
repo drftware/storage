@@ -97,6 +97,10 @@ export type Map = {
 	needs: { number }, -- the abilities it needs, as bits
 	open: { boolean },
 	doorways: { [number]: number }, -- a unit's slot: its doorway's passage
+	-- the places a roaming keeper stops in, one per hall piece in the floor's cell order: each
+	-- straight, each junction's middle square and the lobby (never a junction's arm, a unit or a
+	-- place added later, such as the tops)
+	stops: { number },
 	-- the search's scratch, kept so a search allocates nothing once warm
 	g: { number },
 	came: { number },
@@ -135,6 +139,7 @@ local function new(): Map
 		needs = {},
 		open = {},
 		doorways = {},
+		stops = {},
 		g = {},
 		came = {},
 		seen = {},
@@ -293,9 +298,11 @@ function KeeperMap.build(floor: Floor.Floor): Map
 			local hz = if c.kind == "Lobby" or c.turn % 2 == 1 then HALF else HALL / 2
 			local p = place(map, c.x - hx, c.x + hx, c.z - hz, c.z + hz, 0, 0)
 			ends[i] = { p, p, p, p }
+			table.insert(map.stops, p)
 		else
 			local w = HALL / 2
 			local middle = place(map, c.x - w, c.x + w, c.z - w, c.z + w, 0, 0)
+			table.insert(map.stops, middle)
 			local these = { 0, 0, 0, 0 }
 			for d = 0, 3 do
 				if c.arms[d + 1] then

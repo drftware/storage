@@ -20,6 +20,25 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-06b3a1, once out it roams (built Nov 9)
+
+Seed 7, floor 1, as below; Unit 126 holds the awake Mannequin.
+- [ ] **The moment** (Play on a computer). "Walk a floor", open Unit 126 and step back: it walks
+  out, stands at the door's front looking for five seconds, then wanders off down the halls.
+  Slam 126 behind it: nothing changes, it never goes home. Follow it a minute: it walks some way,
+  stops three seconds mid-stride, walks on, never to one of its last four stops. Open a door
+  near it and it comes to look, then roams again. Output says "wanders off down the halls" each
+  time it sets off. Does losing track of it make the next door scarier? Does it read as hunting
+  for you, or as aimless? (Verified in Studio Nov 9: it left 126, roamed 75 s without going back
+  in, never stood still over 3 s, and came to Unit 139's open 33 studs off.)
+- [ ] **Decide, defaults in place** (D-073): (1) each roam goes 40 to 120 studs along the halls to
+  a hall piece's middle, at its looking pace (about 7 studs a second), and it stops there 3 s;
+  (2) it avoids the last 4 places it stood; (3) it may roam the lobby and past the elevator's
+  gate; (4) stopped, it holds the stride it stopped on, facing the way it walked, rather than
+  turning to look down the hall; (5) one whose door came down before it got out stands watching
+  in its unit until the door is up again (the break-out, L-06b3d, will have it bang). Numbers
+  live in `src/shared/KeeperRows.luau`.
+
 ## Now: judge L-06b2b, keepers behind doors (built Nov 9)
 
 The walked floor in the place is seed 7, floor 1 (Workspace's `DevFloorSeed`, `DevFloorNumber`):
@@ -42,7 +61,8 @@ D-071 and D-072 answer it, and the tickets are in ROADMAP's L-06b3 to L-06b5.
 - [ ] **The moment** (Play on a computer). "Walk a floor", then press **Stand one** on the post in
   the lobby's corner (across from "Come back"): a Mannequin stands 60 studs down the halls, facing
   the lobby. Open or slam a door near the lobby and watch it come down the hall, stand square in
-  front of that door facing it for five seconds, walk back and go still mid-stride. Output says
+  front of that door facing it for five seconds, then wander off down the halls (L-06b3a1: it no
+  longer walks back). Output says
   each step ("heard Unit 101's door open, 40 studs off along the halls"). Does it feel like
   something heard you? Does seven seconds or so from a slam two halls off give you time to hide?
 - [ ] **Never through walls.** Open a door the Mannequin could see past a wall but would have to

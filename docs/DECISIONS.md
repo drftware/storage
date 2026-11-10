@@ -1449,3 +1449,33 @@ Not chosen: the peek showing the note (it would make the peek a free answer key)
 than a note as the guarded thing (tools are optional until floor 6's padlocked note; the note is
 the one thing every floor needs); the guard asleep on some floors (the owner wants a chase on
 every floor).
+
+## D-073 How a keeper roams: hall pieces some way off, never its last few (L-06b3a1, Nov 9)
+D-071 says a keeper out of its unit roams the halls between noises and never goes home. As built:
+after looking at a noise, or out of its own doorway, it picks the middle of a hall piece (a
+straight, a junction's middle square or the lobby: one stop per piece, so junctions with four arms
+aren't picked four times as often) whose trip along the halls is 40 to 120 studs, that it hasn't
+stood in among its last four stops, walks there at its looking pace (about 7 studs a second),
+stands 3 s holding the stride it stopped on, and picks again: Granny's walk from room to room.
+With nothing in that band it takes any piece it can reach and hasn't stood in lately, then any it
+can reach. A newer sound still takes it to look, from a roam as from anything else. Each pick is
+one draw from the floor's own seeded Random, a fresh Brix Random from the floor's seed handed to
+`Keepers:add` (not the deal's, whose later draws at a door's first lift would shift with every
+roam and change what a unit holds), so a seed roams the same way for the same play. Those numbers
+are row data (`roamNear`, `roamFar`, `roamLinger`, `roamMemory`); the owner tunes them (OWNER.md).
+
+It never walks into a unit: every goal it ever has is in the halls (a door's front, a hall
+piece's middle), and a trip between two hall places never passes a doorway, as each unit has only
+the one. So its own door shut behind it changes nothing, and D-069's "no way home, it sleeps where
+it stands" is gone with the walk home. A door coming down across its way makes it pick again; one
+that came down before it got out of its unit leaves it nowhere to go, so it stands watching there
+until its door is all the way up and it steps out again (the break-out, L-06b3d, gives it a clock).
+The brain's Returning state is replaced by Roaming, and Waiting now covers both its stops (at a
+sound, facing it, for `linger`; on a roam, for `roamLinger`). Verified in Studio on seed 7,
+floor 1.
+
+Not chosen: roaming toward players (Phase 2's director steers picks, as Alien: Isolation's keeps
+the alien near you; until then it would be a hunt with no sight); picking any map place (a
+junction's arms would weigh junctions four times over, and units are never goals); a turn to look
+down the hall at each stop (no precedent named and its stopped stride already reads as caught
+moving; OWNER.md asks); the deal's Random for picks (above).

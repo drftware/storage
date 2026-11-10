@@ -383,16 +383,16 @@ on nothing in Brix.
     (D-071): as built, a keeper went home after looking, so you could let it walk back in and
     shut it there, and a slam ended an awake one for good. Run order: L-06b3a1, L-06b3a2, L-06b4a,
     L-06b3b, L-06b3c, L-06b3d, then L-06b5 and L-06b4b.
-    - [ ] **L-06b3a1 Once out, it roams.** A keeper that has left its unit never goes back to it:
-      after looking at a noise, or looking out of its own doorway (D-070), it roams the halls
-      between noises, as Granny walks the house room to room. Phase 1's roam, until the director
-      steers it (Phase 2): walk at its looking speed to a hall place some way off that it hasn't
-      been to lately, linger there, pick another; never into a unit. A newer noise still takes it
-      to look. Its own door shut behind it changes nothing, so D-069's "no way home, sleep where it
-      stands" goes; a door coming down across its way makes it pick another place. Replaces the
-      brain's Returning state. Lune checks: a keeper that has left its unit never re-enters it,
-      never stops for good, keeps to the halls; in Studio, Unit 126's awake one walks out, looks,
-      and wanders off, and shutting 126 behind it gains you nothing.
+    - [x] **L-06b3a1 Once out, it roams.** Done Nov 9 (D-073). After looking at a noise, or out
+      of its own doorway, a keeper roams the halls between noises, as Granny walks the house room
+      to room: to a hall piece's middle 40 to 120 studs off along the halls that isn't one of its
+      last four stops, at its looking pace, stopping 3 s, picked by a fresh Brix Random from the
+      floor's seed (`Keepers:add` takes it). Never into a unit, so its door shut behind it changes
+      nothing; a door down across its way makes it pick again, and one shut in its unit before it
+      got out watches until the door is up. Roaming replaces Returning. 23,420 Lune checks.
+      Verified in Studio on seed 7, floor 1: Unit 126's awake one walked out, looked, roamed 75 s
+      without going back in (126 slammed behind it), never stood still over 3 s, and came to Unit
+      139's open 33 studs off. Waits on `OWNER.md` for feel and the defaults.
     - [ ] **L-06b3a2 It sees you and hunts.** Decide first whether `Brix.Pursuit` runs the chase
       and the catch (only if it fits with no new Brix work, D-064). An awake keeper notices a
       player by its row's senses (sight: how far and how wide it sees, measured along the map so

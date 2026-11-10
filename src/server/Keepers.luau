@@ -6,7 +6,8 @@
 
 	- A floor joins with `add` as it's laid (FloorBuilder's `laid.slots`): its map is built once and
 	  each door's state fed in as it changes (`Doors.changed` through `KeeperMap.letsThrough`), so a
-	  doorway lets keepers through only while its door is all the way up. Its keepers go with it.
+	  doorway lets keepers through only while its door is all the way up. It brings a seeded Random
+	  of its own, which its keepers share to pick where they roam. Its keepers go with it.
 	- A unit dealt a keeper (`Deals.dealt`, L-06b2b) has it stood where the deal laid it as its door
 	  first lifts. Asleep, it stands slack, facing as laid, until a sound wakes it. Awake, it stands
 	  mid-stride, square to the doorway, and steps out to look the moment its door is all the way
@@ -14,7 +15,8 @@
 	- A door's open, slam or lift from inside (`Keeper.Hears`) reaches every keeper on its floor
 	  within that sound's reach (`Doors.acted` carries DoorSound's, the one players hear by),
 	  measured along the halls, so no sound goes through a wall or a shut door. A keeper that hears
-	  it (waking, if it slept) walks to the door's front, stands there looking, and goes back.
+	  it (waking, if it slept) walks to the door's front, stands there looking, then roams the
+	  halls between noises and never goes back into a unit (L-06b3a1, D-071).
 	- `awakeOn` tells the deal how many keepers are awake on a floor now, for its cap.
 	- Each keeper's body is an anchored model moved by its HumanoidRootPart, with no Humanoid, and
 	  only while something about it changed. Its walk is posed on the server for now, at most
@@ -75,7 +77,7 @@ local DOING: { [Keeper.State]: string } = {
 	Watching = "stands still, watching",
 	Going = "goes to look",
 	Waiting = "stands at the door, looking",
-	Returning = "goes back",
+	Roaming = "wanders off down the halls",
 }
 local HEARD: { [string]: string } =
 	{ Open = "open", Slam = "slam", LiftInside = "lift from inside" }
@@ -91,6 +93,7 @@ type Body = {
 type OnFloor = {
 	floor: Floor.Floor,
 	map: KeeperMap.Map,
+	random: Floor.Random, -- the floor's own, for its keepers' roams
 	origin: CFrame, -- the lobby's middle on the floor: the map's origin
 	slots: { [Model]: number }, -- each unit, its slot in the floor
 	model: Model,
@@ -102,13 +105,16 @@ type Entry = { keeper: Keeper.Keeper, body: Body, on: OnFloor }
 
 export type Keepers = Brix.System & {
 	-- Lays a floor's map for keepers to walk as FloorBuilder lays it: `slots` maps each unit to its
-	-- slot (`laid.slots`), `origin` is where it was laid. Its keepers go when `model` is destroyed.
+	-- slot (`laid.slots`), `origin` is where it was laid, and `random` (a fresh Brix Random from the
+	-- floor's seed, not the deal's, so roams never change what the units hold) picks where its
+	-- keepers roam. Its keepers go when `model` is destroyed.
 	add: (
 		self: any,
 		floor: Floor.Floor,
 		slots: { [Model]: number },
 		model: Model,
-		origin: CFrame
+		origin: CFrame,
+		random: Floor.Random
 	) -> (),
 	-- Stands a keeper (its row's name) on a laid floor, feet at `at`, facing `facing` (the world's),
 	-- asleep unless `awake`. Returns its body, or nil (an unknown floor or keeper, or no template:
@@ -148,7 +154,7 @@ function Keepers.new(): Keepers
 		local at = (k.at :: any) :: Vector3
 		local facing = (k.facing :: any) :: Vector3
 		body.root.CFrame = entry.on.origin * CFrame.lookAt(at, at + facing) * body.rootOffset
-		local walking = k.state == "Going" or k.state == "Returning"
+		local walking = k.state == "Going" or k.state == "Roaming"
 		local kit = body.kit
 		-- asleep, slack; awake, held on a stride: mid-step where it stopped, or, never yet moved,
 		-- on its walk's first key, reaching at the doorway
@@ -168,7 +174,8 @@ function Keepers.new(): Keepers
 			return
 		end
 		entry.body.model:SetAttribute(STATE_ATTRIBUTE, state)
-		if TRACE and state ~= "Going" then
+		-- its stops on a roam go unsaid: each roam's start is enough
+		if TRACE and state ~= "Going" and not (state == "Waiting" and was == "Roaming") then
 			print(`Keepers: the {entry.keeper.row.name} {DOING[state]}`)
 		end
 	end
@@ -272,7 +279,7 @@ function Keepers.new(): Keepers
 			warn(`Keepers: can't stand a {name}: no such keeper`)
 			return nil
 		end
-		local k = Keeper.new(row, on.map, at, facing, awake)
+		local k = Keeper.new(row, on.map, on.random, at, facing, awake)
 		-- any: as in `place`
 		local a, f = (k.at :: any) :: Vector3, (k.facing :: any) :: Vector3
 		local body = kit.clone(on.origin * CFrame.lookAt(a, a + f), on.folder)
@@ -384,7 +391,8 @@ function Keepers.new(): Keepers
 		floor: Floor.Floor,
 		slots: { [Model]: number },
 		model: Model,
-		origin: CFrame
+		origin: CFrame,
+		random: Floor.Random
 	)
 		if floors[model] then
 			return
@@ -396,6 +404,7 @@ function Keepers.new(): Keepers
 		on = {
 			floor = floor,
 			map = KeeperMap.build(floor),
+			random = random,
 			origin = origin,
 			slots = slots,
 			model = model,
