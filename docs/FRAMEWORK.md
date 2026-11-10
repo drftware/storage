@@ -30,9 +30,10 @@ At the pinned commit, `4c21b5f` (2026-11-05). Checked against `src/` on 2026-11-
 | Signal | Events between systems: a door opened or slammed, a light woke, a tool taken, a wall sawn, a crawl, a climb | `Doors`, `MotionLights`, `Elevators`, `Deals`, `Slots`, `Flashlights`, `Saws`, `Crawls`, `Ladders` |
 | Random (seeded) | A floor laid from a seed, and its deals | `src/shared/Floor.luau`, `src/server/DevCorridor.luau` |
 | Zone (`box`) measured along Pathing (`free`) | A motion light's watch area; who is aboard the elevator | `MotionLights`, `Elevators`, `src/client/HallLights.luau` |
+| Reach (`cone`) measured along the keepers' map (their own Pathing) | A keeper's grasp: whom its hand closes on (L-06b3c, D-077) | `src/server/Keepers.luau` hands it to `src/shared/Keeper.luau` |
 
 Exported at the pin but not used here yet: Schema (data shapes for keeper rows and Config), Pool,
-the other zones (sphere, polygon, any-of, grown), the floor pathing and both reaches (sphere, cone).
+the other zones (sphere, polygon, any-of, grown), the floor pathing and the sphere reach.
 
 ## What Brix has built since the pin
 

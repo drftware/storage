@@ -416,9 +416,20 @@ on nothing in Brix.
       0.05 studs), and walked on to arm's length when I turned away; running under the lights, it
       froze in the light 24 studs back, and when I stood still the lights went out after 7.5 s and
       it closed in. Waits on `OWNER.md` for feel.
-    - [ ] **L-06b3c The catch.** A Brix cone reach measured along the map, so never through a
-      wall, that fires the event L-07 takes.
-    - [ ] **L-06b3d It breaks out** (moved from L-12c, D-071). Trapped means its doorway was open
+    - [x] **L-06b3c The catch.** Done Nov 10 (D-077). Hunting, its hand closes on the one it
+      hunts within its row's grasp (`reach` 3.5 studs, a stud past arm's length, and `reachAngle`
+      45 degrees either side), Brix's cone reach measured along its map, along a line the map
+      clears (never through a wall or a shut door, never from the tops) and no higher than its
+      head; never while a light holds it, never asleep, never anyone else. Caught, it stands over
+      the spot its linger, then roams. The caught player's view jerks, the screen drops half dark
+      and closes to black with "Caught", and they're held still 2 s (`Caught`, `CaughtView`); the
+      server fires `Keepers.caught` and keepers leave them alone 2 s. Stand-in until L-07: in the
+      black, DevCorridor puts them back in the floor's lobby. 63,436 keeper checks (exact against
+      Brix's cone on eight floors). Verified in Studio on seed 7, floor 1: out of 126 it caught me
+      at arm's length; with my torch on it, it hunted frozen 12 s and never came. Waits on
+      `OWNER.md` for feel.
+    - [ ] **L-06b3d It breaks out** (moved from L-12c, D-071). Split Nov 10: L-06b3d1 is the
+      brain, the bangs' feedback and the cap; L-06b3d2 is the dent, the door's own art. Trapped means its doorway was open
       (its door all the way up) and the door came down on it awake inside, by a slam or a close; a
       peek lowered over an awake one isn't a trap, it just waits. A trapped keeper bangs at its
       door every few seconds, heard as keepers hear (D-069), dents it more with each bang, and at
@@ -428,6 +439,12 @@ on nothing in Brix.
       the next door can hold a fresh one; out again, it counts again. The dent is the door's own
       art, built the unit's way. Lune checks on the clock and the cap; in Studio, slam 126 on its
       awake one and time the break-out.
+      - [ ] **L-06b3d1 Trapped, it bangs and breaks out.** The brain's trapped state and clock,
+        each bang heard as keepers hear and answered for players (the door jolts on its rail and
+        booms, as a slam does, quieter), the burst up and the hunt for the last thing it heard,
+        the padlock holding it, and the cap. Lune and Studio checks as above.
+      - [ ] **L-06b3d2 The dent.** The door's panels bowing out more with each bang, built in
+        `art/unit` the unit's way (a shape key or a few baked steps), shown by DoorView.
   - [ ] **L-06b4 What you see and hear of it.** Split Nov 9 (owner: the walk reads jerky, which
     makes it less scary).
     - [x] **L-06b4a It moves smoothly on every screen.** Done Nov 9 (D-075). The server sends
@@ -631,7 +648,10 @@ on nothing in Brix.
   (thrown over a keeper, blinds it a few seconds), glow sticks (light the building can't see,
   keepers with eyes can). Each a row on L-11's tools, its art first; may split a tool a session.
 - [ ] **L-07 Getting kept and rescued.** Shrink-wrapped, stored in a random unit, banging to ping
-  the team, cut free in a second, padlocked if left too long (GDD "Getting kept").
+  the team, cut free in a second, padlocked if left too long (GDD "Getting kept"). It takes
+  `Keepers.caught` (L-06b3c, D-077) and replaces its stand-ins: DevCorridor's move to the lobby,
+  and the blackout's hold (`Caught`, `CaughtView`) with the 2-second wrap; keepers leaving a kept
+  player alone (`Caught.Out`) becomes "while kept". What you carried drops where you stood.
 - [ ] **L-08 The ride and the next floor.** The elevator ride and a second floor, so the climb is
   a loop and not a single room. Brix: its round loop (ENG-13) if it has landed.
 - [ ] **L-10 The map** (owner, Nov 7: players shouldn't get lost and give up). A floor map you
@@ -658,6 +678,10 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **The catch turns you to its face** (L-06b3c): as the dark closes, your view snaps round to the
+  keeper's face, as a grab would spin you, so you see what had you. Needs the camera taken over
+  for half a second without fighting Roblox's (CameraShake's way, or Scriptable and back).
 
 - **Each screen's keeper delay fitted to its own lag** (L-06b4a): screens show keepers a fixed
   0.1 s behind the server (`KeeperMotion.Delay`). A screen could measure how late its records

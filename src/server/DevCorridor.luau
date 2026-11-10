@@ -28,6 +28,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Caught = require(ReplicatedStorage.Shared.Caught)
 local CorridorKit = require(ReplicatedStorage.Shared.CorridorKit)
 local Deal = require(ReplicatedStorage.Shared.Deal)
 local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
@@ -573,6 +574,25 @@ local function devFloor(
 			riding:disconnect()
 		end)
 	end
+	-- The stand-in for getting kept (until L-07's wrap and storage): a keeper's catch blacks out
+	-- the caught player's screen (Keepers, Caught), and once it's black they're put back in this
+	-- floor's lobby, where their screen opens again, so the floor can be played on.
+	local kept = keepers.caught:connect(function(catch: Keepers.Catch)
+		if catch.floor ~= model then
+			return
+		end
+		task.delay(Caught.Dark, function()
+			if catch.player.Parent then
+				send(catch.player, FLOOR_ORIGIN * FLOOR_ARRIVAL)
+				print(
+					`DevCorridor: {catch.player.Name} is put back in the lobby (stand-in until L-07)`
+				)
+			end
+		end)
+	end)
+	model.Destroying:Once(function()
+		kept:disconnect()
+	end)
 	travelPost(
 		"ComeBack",
 		(FLOOR_ORIGIN * FLOOR_POST).Position,

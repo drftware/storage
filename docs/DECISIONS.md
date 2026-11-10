@@ -1574,3 +1574,41 @@ freeze); a beat of hold after the light leaves (the GDD says the moment); a froz
 turns to face you (it reads as moving; OWNER.md asks); its clocks running while frozen (a light
 on a waiting one would cut its wait short); the beam's edge measured against its width (a stud
 either side, ignored for now).
+
+## D-077 How a keeper catches you: Brix's cone, in its brain, and a stand-in in the black (L-06b3c, Nov 10)
+The moment: you stood still too long in the dark, and it's there; its hand closes on you. A
+hunting keeper that reaches you catches you, as Granny's grab or Piggy's swing ends the chase the
+moment she reaches you. The GDD's "Getting kept" then wraps you and stores you (L-07).
+
+As built: each row has a grasp, `reach` (studs, feet to feet along the halls) and `reachAngle`
+(degrees either side of the way it faces); the Mannequin's is 3.5 studs, a stud past arm's length
+(`Keeper.Close`, where its hunt stops), and 45 degrees. The brain makes its grasp with Brix's
+cone reach (`Reach.cone`) over its own map's pathing, handed in by the server
+(`Keeper.new(..., cone)`), since the pure brain requires no Brix. `Keeper.catches` asks: is it
+hunting, are the feet of the one it hunts within the cone (measured along the halls, so the way
+round a wall is the walk, not the straight line), along a line `KeeperMap.clear` passes (never
+through a wall, a shut door or a door's posts, never from up on the tops) and no higher or lower
+than its height (a jump at its face is caught; the tops are not). `step` checks it after the
+keeper moves, so never while a light holds it (it returns first) and never asleep (it only hunts
+awake). Caught, it stands over the spot its linger and roams, the one it hunted let go; `caught`
+names whom for that step. A straight-line check comes first, so most steps never ask the map.
+
+The server then: tells the caught player's screen (Remotes.Caught, to them alone; nothing goes
+client to server), says it in Output, fires `Keepers.caught` (body, player, floor) for L-07, and
+leaves that player out of every keeper's sight for `Caught.Out` (2 s, the GDD's wrap), so the one
+that caught you can't catch you again before you're moved; a second hand on the same step is
+ignored. The screen (`CaughtView`): the view jerks (CameraShake 0.85), the screen drops to 55%
+dark at once and closes to black over 0.4 s, "Caught" in the dark for 0.9 s, then it opens over
+0.7 s; you're held still the whole time (walk and jump 0 on your own screen, which owns your
+movement). The stand-in until L-07 (DevCorridor, like the stand-in ride): once the screen is
+black, the server puts you in the floor's lobby, facing the hall. Verified in Studio on seed 7,
+floor 1: it came out of 126 and caught me at arm's length; with my torch on it, it hunted frozen
+for 12 s and never came; torch off, it came and caught me.
+
+Not chosen: Pursuit's catch (D-074: Pursuit doesn't run keepers); a wind-up before the grab (the
+GDD says it catches you; a speed under your run already gives the chance to flee); the cone alone
+without the clear line (measured along the halls it already won't go through a shut door, but a
+thin wall between two halls is long to walk round and short to the eye; the line keeps "never
+through a wall" plain); the PlayerModule's control switches to hold you (they don't hold
+movement any more, see docs/STUDIO.md); turning your view to its face as the dark closes (a
+strong grab, but it fights Roblox's camera; ROADMAP's polish list).

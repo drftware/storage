@@ -13,7 +13,9 @@
 -- the same seed roams the same way; shut in its unit, it watches until its door is up. Sight
 -- (L-06b3a2): it notices exactly within its sight and view along a line the map clears, hunts at
 -- no more than its top speed to arm's length, and, lost, searches where it saw you, then roams.
--- It says its pace and how far it walks before it stops (for screens, L-06b4a).
+-- It says its pace and how far it walks before it stops (for screens, L-06b4a). The catch
+-- (L-06b3c): hunting, it catches the one it hunts exactly within Brix's cone reach along its map,
+-- along a clear line, never asleep, frozen or anyone else, then stands its linger and roams.
 -- And a warm keeper's steps allocate nothing, a roam's picks and a hunt included.
 local Brix = require("../vendor/brix/src")
 local DoorSound = require("../src/shared/StorageUnit/DoorSound")
@@ -1067,6 +1069,279 @@ do
 	end
 end
 
+-- The catch (L-06b3c): hunting, its hand closes on the one it hunts exactly when Brix's cone reach
+-- along its map has them (its row's reach and angle), the map clears the line between them (never
+-- through a wall or a shut door, never up on the tops) and they're no higher or lower than its
+-- height; never anyone else, never while a light holds it, never asleep. Caught, it stands over
+-- the spot its linger, the one it hunted let go, then roams. A warm catch check allocates nothing.
+local caughtCount, missedCount, walledCount = 0, 0, 0
+do
+	local CONE = Brix.Reach.cone
+	local REACH = MANNEQUIN.reach
+	local EYE = 4.5 -- a player's eyes over their feet
+	for name, row in KeeperRows do
+		ok(
+			row.reach > Keeper.Close and row.reach <= Keeper.Close + 2,
+			`{name}: it grasps a little past arm's length ({row.reach})`
+		)
+		ok(
+			row.reachAngle > 0 and row.reachAngle <= 90,
+			`{name}: it grasps ahead of it, not behind ({row.reachAngle})`
+		)
+	end
+	local players = Keeper.players()
+	local function only(id: number, p: vector)
+		players.ids[1], players.at[1], players.eye[1], players.aim[1] = id, p, p, vector.zero
+		players.count = 1
+	end
+	local function hunter(map: KeeperMap.Map, at: vector, facing: vector, id: number, p: vector)
+		local k = Keeper.new(MANNEQUIN, map, RANDOM, at, facing, true, CONE)
+		k.state, k.target, k.seen, k.goal = "Hunting", id, p, p
+		return k
+	end
+	local function way(degrees: number): vector
+		local r = math.rad(degrees)
+		return vector.create(math.cos(r), 0, math.sin(r))
+	end
+
+	-- exactly Brix's cone along its map, a clear line and its height, on seeded floors
+	local crng = Brix.Random.new({ seed = 31 })
+	for seed = 1, 8 do
+		local number = (seed + 2) % 10 + 1
+		local f = Floor.generate(number, Brix.Random.new({ seed = seed + 40 }))
+		local map = KeeperMap.build(f)
+		local where = `floor {number} seed {seed + 40}`
+		local cone = CONE({
+			pathing = KeeperMap.pathing(map, MANNEQUIN.abilities),
+			radius = REACH,
+			halfAngle = math.rad(MANNEQUIN.reachAngle),
+		})
+		local halls: { number } = {}
+		for i = 1, #map.minX do
+			if map.unit[i] == 0 and map.y[i] == 0 then
+				table.insert(halls, i)
+			end
+		end
+		for _ = 1, 500 do
+			local i = halls[crng:nextInteger(1, #halls)]
+			local a = vector.create(
+				map.minX[i] + crng:nextNumber() * (map.maxX[i] - map.minX[i]),
+				0,
+				map.minZ[i] + crng:nextNumber() * (map.maxZ[i] - map.minZ[i])
+			)
+			local ups = { 0, 0, 0, 0, 3, 6, 6.5, 10 }
+			local b = a
+				+ way(crng:nextNumber() * 360) * (crng:nextNumber() * REACH * 1.5)
+				+ vector.create(0, ups[crng:nextInteger(1, #ups)], 0)
+			local k = hunter(map, a, way(crng:nextNumber() * 360), 7, b)
+			only(7, b)
+			local clear = KeeperMap.clear(map, a, b)
+			local expect = math.abs(b.y - a.y) <= MANNEQUIN.height
+				and cone:distance(a, k.facing, b) == 0
+				and clear
+			ok(
+				(Keeper.catches(k, players) == 7) == expect,
+				`{where}: a hunter at {a} facing {k.facing} {if expect
+					then "catches"
+					else "doesn't catch"} its quarry at {b}`
+			)
+			if expect then
+				caughtCount += 1
+			else
+				missedCount += 1
+			end
+			if not clear and flat(a, b) <= REACH and b.y == 0 then
+				walledCount += 1
+			end
+			only(8, b)
+			ok(Keeper.catches(k, players) == 0, `{where}: never someone it doesn't hunt`)
+			k.state = "Searching"
+			only(7, b)
+			ok(Keeper.catches(k, players) == 0, `{where}: never unless it hunts`)
+			Keeper.release(k)
+		end
+	end
+	ok(
+		caughtCount > 300 and missedCount > 300 and walledCount > 20,
+		`enough grasps, misses and walls between to check ({caughtCount}, {missedCount}, {walledCount})`
+	)
+
+	-- along one straight hall: its reach and its angle, to the hundredth
+	local f = Floor.generate(2, Brix.Random.new({ seed = 8 }))
+	local map = KeeperMap.build(f)
+	local pathing = KeeperMap.pathing(map)
+	local hall, along = 0, vector.zero
+	for i = 1, #map.minX do
+		local w, d = map.maxX[i] - map.minX[i], map.maxZ[i] - map.minZ[i]
+		if map.unit[i] == 0 and map.y[i] == 0 and math.min(w, d) >= 7 and math.max(w, d) >= 14 then
+			hall = i
+			along = if w >= d then vector.create(1, 0, 0) else vector.create(0, 0, 1)
+			break
+		end
+	end
+	ok(hall > 0, "found a straight hall to grasp in")
+	if hall > 0 then
+		local a = middleOf(map, hall) - along * 4
+		local side = vector.create(-along.z, 0, along.x)
+		local function grasps(p: vector): boolean
+			local k = hunter(map, a, along, 7, p)
+			only(7, p)
+			local got = Keeper.catches(k, players) == 7
+			Keeper.release(k)
+			return got
+		end
+		local ahead = a + along * REACH
+		ok(math.abs(pathing:length(a, ahead) - REACH) < 1e-6, "in one hall the walk is straight")
+		ok(grasps(a + along * (REACH - 0.01)), "it catches just inside its reach")
+		ok(not grasps(a + along * (REACH + 0.01)), "but not just past it")
+		local edge = MANNEQUIN.reachAngle
+		local function at(degrees: number): vector
+			local r = math.rad(degrees)
+			return a + (along * math.cos(r) + side * math.sin(r)) * 3
+		end
+		ok(grasps(at(edge - 1)) and grasps(at(1 - edge)), "it catches just inside its angle")
+		ok(not grasps(at(edge + 1)) and not grasps(at(-1 - edge)), "but not just outside it")
+		ok(not grasps(a - along * 1), "nor behind it, however near")
+		ok(not grasps(a + along * 2 + vector.create(0, 10, 0)), "nor up on the tops")
+		ok(grasps(a + along * 2 + vector.create(0, 6, 0)), "a jump at its face is caught")
+
+		-- a light holds it: no catch while it's lit, the moment it isn't
+		local b = a + along * 3
+		local k = hunter(map, a, along, 7, b)
+		only(7, b)
+		local eye = b + vector.create(0, EYE, 0)
+		players.eye[1] = eye
+		players.aim[1] = vector.normalize(a + vector.create(0, 3, 0) - eye)
+		for _ = 1, 120 do
+			Keeper.step(k, DT, RUN, players)
+		end
+		ok(
+			k.lit == 7 and k.caught == 0 and k.state == "Hunting",
+			`a torch on it, it never catches ({k.lit}, {k.caught}, {k.state})`
+		)
+		players.aim[1] = vector.zero
+		for _ = 1, 120 do
+			Keeper.step(k, DT, RUN, players, true)
+		end
+		ok(
+			k.lit == Keeper.HallLight and k.caught == 0 and k.state == "Hunting",
+			"under a lit hall light, it never catches"
+		)
+		Keeper.step(k, DT, RUN, players, false)
+		ok(
+			k.caught == 7 and k.state == "Waiting" and k.target == 0,
+			`no light on it, its hand closes at once ({k.caught}, {k.state})`
+		)
+		ok(
+			flat(k.at, b) <= REACH and facingToward(k, b),
+			"a stride on, its hand closes, facing the one it caught"
+		)
+		-- caught, the server takes them out of its sight; it stands its linger, then roams
+		players.count = 0
+		Keeper.step(k, DT, RUN, players)
+		ok(k.caught == 0, "a catch is said once")
+		local stood = 0
+		while k.state == "Waiting" and stood < 100 do
+			Keeper.step(k, 0.1, RUN, players)
+			stood += 1
+		end
+		ok(
+			k.state == "Roaming" and math.abs(stood * 0.1 - MANNEQUIN.linger) < 0.15,
+			`it stands over the spot its linger, then roams ({k.state} after {stood * 0.1} s)`
+		)
+		Keeper.release(k)
+
+		-- asleep, a player in its face is never caught; awake, one stepping in front is at once,
+		-- one behind it never
+		local sleeper = Keeper.new(MANNEQUIN, map, RANDOM, a, along, false, CONE)
+		only(7, a + along * 2)
+		for _ = 1, 120 do
+			Keeper.step(sleeper, DT, RUN, players)
+		end
+		ok(sleeper.state == "Asleep" and sleeper.caught == 0, "asleep, it never catches")
+		Keeper.release(sleeper)
+		local watcher = Keeper.new(MANNEQUIN, map, RANDOM, a, along, true, CONE)
+		only(7, a - along * 2)
+		for _ = 1, 120 do
+			Keeper.step(watcher, DT, RUN, players)
+		end
+		ok(watcher.state == "Watching" and watcher.caught == 0, "behind it, unseen, you're safe")
+		only(7, a + along * 3)
+		Keeper.step(watcher, DT, RUN, players)
+		ok(watcher.caught == 7, "step in front of it and it has you")
+		Keeper.release(watcher)
+
+		-- only the one it hunts: a friend in its face is let be while it hunts another
+		local chaser = hunter(map, a, along, 7, a + along * 9)
+		players.ids[1], players.at[1], players.aim[1] = 7, a + along * 9, vector.zero
+		players.ids[2], players.at[2], players.aim[2] = 8, a + along * 2 + side * 0.5, vector.zero
+		players.count = 2
+		Keeper.step(chaser, DT, RUN, players)
+		ok(chaser.caught == 0 and chaser.target == 7, "a friend in its face isn't the one it hunts")
+		Keeper.release(chaser)
+
+		-- standing still in its sight: it comes, and its hand closes at arm's length
+		local runner = Keeper.new(MANNEQUIN, map, RANDOM, a - along * 2, along, true, CONE)
+		local stand = a + along * 8
+		only(7, stand)
+		local steps = 0
+		while runner.caught == 0 and steps < 600 do
+			Keeper.step(runner, DT, RUN, players)
+			steps += 1
+		end
+		local off = flat(runner.at, stand)
+		ok(
+			runner.caught == 7 and off <= REACH + 1e-6 and off >= Keeper.Close - TOL,
+			`stand still and it comes and catches you ({runner.caught}, {off} studs off)`
+		)
+		Keeper.release(runner)
+
+		-- a warm catch check allocates nothing, catching or not
+		local warm = hunter(map, a, along, 7, a)
+		local spots = { 1, 2, 3, 3.4, 3.6, 5 }
+		local function run(times: number)
+			for i = 1, times do
+				only(7, a + along * spots[i % #spots + 1] + side * ((i % 5) - 2) * 0.5)
+				Keeper.catches(warm, players)
+			end
+		end
+		run(2000)
+		local before = collectgarbage("count")
+		run(4000)
+		local grew = collectgarbage("count") - before
+		ok(grew < 1, `a warm catch check allocates nothing ({grew} KB)`)
+		Keeper.release(warm)
+	end
+
+	-- never through a shut door: at a unit's doorway, the door up, it catches you just inside;
+	-- the door down, never
+	local unit = 0
+	for i, s in f.slots do
+		if s.kind == "Unit" then
+			unit = i
+			break
+		end
+	end
+	if unit > 0 then
+		local slot = f.slots[unit]
+		local fx, fz = Floor.dir(slot.facing)
+		local out = vector.create(fx, 0, fz)
+		local door = vector.create(slot.x, 0, slot.z)
+		local a, b = door + out * 1.5, door - out * 1.5
+		local function grasps(): boolean
+			local k = hunter(map, a, -out, 7, b)
+			only(7, b)
+			local got = Keeper.catches(k, players) == 7
+			Keeper.release(k)
+			return got
+		end
+		KeeperMap.setDoor(map, unit, true)
+		ok(grasps(), "its door up, it catches you just inside a unit")
+		KeeperMap.setDoor(map, unit, false)
+		ok(not grasps(), "its door down between you, never")
+	end
+end
+
 -- A warm keeper's steps allocate nothing: walking, waiting, roaming (its picks included),
 -- looking for players, hunting, searching and planning again.
 do
@@ -1125,5 +1400,5 @@ if failures > 0 then
 	error(`keeper: {failures} of {checks} checks failed`)
 end
 print(
-	`keeper: all {checks} checks passed ({floors} floors, {heardCount} heard, {wallCount} kept out by walls, {walks} walks to look, {noticed} sightings, {hunts} hunts, {searches} searches, {frozenRuns} freezes, {torchHits} beams on it)`
+	`keeper: all {checks} checks passed ({floors} floors, {heardCount} heard, {wallCount} kept out by walls, {walks} walks to look, {noticed} sightings, {hunts} hunts, {searches} searches, {frozenRuns} freezes, {torchHits} beams on it, {caughtCount} grasps, {missedCount} misses)`
 )

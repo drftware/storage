@@ -42,6 +42,13 @@ export type Row = {
 	freezesInLight: boolean,
 	-- How tall it stands (studs): a torch's beam on it anywhere from its feet to its head counts.
 	height: number,
+	-- Its grasp (L-06b3c): hunting, it catches the one it hunts once their feet are within `reach`
+	-- studs of its own along the halls, within `reachAngle` degrees either side of the way it
+	-- faces, along a line the map clears, and no higher than its head. A little past `Keeper.Close`,
+	-- where its hunt stops, so standing still at arm's length is caught, and a step away as it
+	-- arrives isn't always enough.
+	reach: number,
+	reachAngle: number,
 }
 
 local Mannequin: Row = {
@@ -74,6 +81,12 @@ local Mannequin: Row = {
 	-- pointing your torch at it, and it can't come for you
 	freezesInLight = true,
 	height = MannequinSpecs.Height,
+	-- a stud past arm's length: its hand closes on you as it arrives, unless you're already moving
+	-- away at a run (it's slower than you, so you pull clear)
+	reach = 3.5,
+	-- both arms reaching ahead, 90 degrees across: it has to turn to you to grab, so it can't catch
+	-- you as you slip past its side
+	reachAngle = 45,
 }
 
 local KeeperRows: { [string]: Row } = {

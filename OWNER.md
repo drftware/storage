@@ -20,6 +20,31 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-06b3c, the catch (built Nov 10)
+
+Seed 7, floor 1, as for L-06b3a2 below; Unit 126 holds the awake Mannequin.
+- [ ] **The moment** (Play on a computer, then at phone size). Stand in the dark outside 126
+  (walk away from the hall lights until they're out), open it and stand still. It comes out, and
+  as it reaches arm's length your view jerks, the screen drops half dark and closes to black,
+  "Caught" sits in the dark, and you can't move; then it opens on the floor's lobby (the
+  stand-in until L-07's wrap). Output says "the Mannequin catches (you)". Does it land as its
+  hand closing on you, or as a cut? Is 2 s in the dark right? (Verified in Studio Nov 10: caught
+  at about 3.4 studs; held still exactly the 2 s.)
+- [ ] **The torch saves you.** Again, torch on it as the door lifts: it hunts you frozen and never
+  comes, however long you hold it. Torch off: it comes and catches you. (Verified in Studio: 12 s
+  frozen, then caught 1 s after the torch went off.)
+- [ ] **Run.** Let it chase you at your full run: it's slower (0.9 of your run), so it never
+  catches you in a straight hall; stop, or walk, and it does. Is that fair, or too easy?
+- [ ] **With a friend** (two players, Studio's Test > Clients and Servers): it catches only the
+  one it hunts; a friend in its face is let be. Your friend sees you vanish (the stand-in's move
+  to the lobby, until L-07's wrap).
+- [ ] **Decide, defaults in place** (D-077): (1) its grasp, 3.5 studs feet to feet (a stud past
+  where its hunt stops) and 45 degrees either side of where it faces; (2) no wind-up: the moment
+  it reaches you, you're caught; (3) a jump at its face is still caught, the units' tops never;
+  (4) caught, it stands over the spot its 5 s linger, then roams; (5) keepers leave a caught
+  player alone 2 s; (6) "Caught" is the only word on screen. Numbers in
+  `src/shared/KeeperRows.luau` (`reach`, `reachAngle`) and `src/shared/Caught.luau`.
+
 ## Now: judge L-06b3b, light freezes the Mannequin (built Nov 9)
 
 Seed 7, floor 1, as for L-06b3a2 below; Unit 126 holds the awake Mannequin.

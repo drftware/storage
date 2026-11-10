@@ -26,8 +26,10 @@
 	  unit. A door coming down across its way makes it pick again. Phase 2's director will steer
 	  these picks, as Alien: Isolation's keeps the alien near you.
 	- Hunting (L-06b3a2): it saw a player and comes at them at its top speed (`speed`, never over
-	  your run) along the halls, stopping at arm's length (`Close`) facing them until the catch
-	  (L-06b3c) lands. It keeps them while it sees them any way it faces; no sound pulls it off.
+	  your run) along the halls, stopping at arm's length (`Close`) facing them. It keeps them
+	  while it sees them any way it faces; no sound pulls it off. Its hand closes on them the
+	  moment they're within its grasp (the catch, below): then it stands over where it caught
+	  them for its linger, as if Waiting at a sound, and roams.
 	- Searching: it lost the one it hunted and rushes, at its top speed, to where it last saw
 	  them, then stands there for its `linger`, looking on the way it was going, then roams.
 
@@ -45,6 +47,13 @@
 	it stands, as it stands, keeping its state, its trip and its clocks: it doesn't walk or turn,
 	but it still sees and hears, so it may start hunting you while frozen and comes the moment the
 	light leaves it. Screens hold it on the key its stride was on (`Pose.freeze`).
+
+	It catches the one it hunts (L-06b3c), as Granny's grab or Piggy's swing ends the chase the
+	moment she reaches you: their feet within its row's `reach` along the halls and its
+	`reachAngle` either side of the way it faces (Brix's cone reach, `Reach.cone`, measured along
+	its map), along a line the map clears (never through a wall or a shut door, never from up on
+	the tops), and no higher than its head. Never while a light holds it, never asleep, and never
+	anyone but the one it hunts. A step's catch is `caught`; what follows is the server's (L-07).
 
 	It hears a door's open, slam or lift from inside (`Keeper.Hears`, the GDD's loud ones) as far as
 	that sound carries for a player (DoorSound's reach, scaled by its row's `hearing`), measured
@@ -81,6 +90,17 @@ export type Players = {
 	count: number,
 }
 
+--- A reach, Brix's contract (Contracts/Pursuit): how far `runner` is from being within reach of
+--- a hunter at `hunter` heading along `heading`, in studs: 0 once within.
+export type Reach = {
+	distance: (self: any, hunter: vector, heading: vector, runner: vector) -> number, -- self: Brix's contract types it any
+}
+--- What makes a keeper's grasp: Brix's `Reach.cone`, handed in, since the pure brain doesn't
+--- require Brix (the server and the specs do).
+export type Cone = (
+	options: { pathing: KeeperMap.Pathing, radius: number, halfAngle: number }
+) -> Reach
+
 export type Keeper = {
 	row: KeeperRows.Row,
 	map: KeeperMap.Map, -- the floor it's on
@@ -102,6 +122,8 @@ export type Keeper = {
 	seen: vector, -- where it last saw them
 	widthCos: number, -- the cosine of its row's sightAngle: how wide it sees
 	lit: number, -- the light on it: 0 none, `Keeper.HallLight`, or the id of whose torch it's in
+	reach: Reach?, -- its grasp, along its map; none, it never catches (specs of the walk alone)
+	caught: number, -- the id of the player it caught this step, or 0
 }
 
 local Keeper = {}
@@ -117,7 +139,7 @@ Keeper.Hears =
 Keeper.Front = 3
 
 -- How near it comes to the player it hunts, feet to feet (studs): face to face, arm's length.
--- The catch (L-06b3c) lands within this.
+-- Its grasp (its row's `reach`) is a little past this, so it catches whoever it stands at.
 Keeper.Close = 2.5
 
 -- `lit` while it stands under a lit hall light.
@@ -291,6 +313,38 @@ local function look(k: Keeper, players: Players, still: boolean): boolean
 	return false
 end
 
+--- The id of the one it hunts if its hand would close on them where they all stand now, else 0:
+--- hunting, their feet within its row's reach along the halls and ahead of it within its reach's
+--- angle (`k.reach`, Brix's cone), no higher or lower than its height, along a line the map clears.
+--- Only asks: `step` acts on it. Allocates nothing.
+function Keeper.catches(k: Keeper, players: Players): number
+	local reach = k.reach
+	if not reach or k.state ~= "Hunting" then
+		return 0
+	end
+	local ids = players.ids
+	for i = 1, players.count do
+		if ids[i] == k.target then
+			local p, at, row = players.at[i], k.at, k.row
+			local dy = p.y - at.y
+			if dy > row.height or dy < -row.height then
+				return 0
+			end
+			-- a walk along the halls is never shorter than the straight line: most steps end here
+			local dx, dz = p.x - at.x, p.z - at.z
+			local radius = row.reach
+			if dx * dx + dz * dz > radius * radius then
+				return 0
+			end
+			if reach:distance(at, k.facing, p) > 0 or not KeeperMap.clear(k.map, at, p) then
+				return 0
+			end
+			return ids[i]
+		end
+	end
+	return 0
+end
+
 -- It sets off roaming, or, with nowhere it can reach, stands watching where it is.
 local function roam(k: Keeper)
 	local goal = pick(k)
@@ -302,16 +356,21 @@ local function roam(k: Keeper)
 end
 
 --- A keeper of `row` with its feet at `at`, facing `facing`, walking `map` with its row's
---- abilities and roaming by `random` (the floor's): asleep, or watching if `awake`.
+--- abilities and roaming by `random` (the floor's): asleep, or watching if `awake`. `cone` (Brix's
+--- `Reach.cone`) makes its grasp from its row; with none it never catches.
 function Keeper.new(
 	row: KeeperRows.Row,
 	map: KeeperMap.Map,
 	random: Floor.Random,
 	at: vector,
 	facing: vector,
-	awake: boolean?
+	awake: boolean?,
+	cone: Cone?
 ): Keeper
 	local pathing = KeeperMap.pathing(map, row.abilities)
+	local reach = if cone
+		then cone({ pathing = pathing, radius = row.reach, halfAngle = math.rad(row.reachAngle) })
+		else nil
 	return {
 		row = row,
 		map = map,
@@ -333,6 +392,8 @@ function Keeper.new(
 		seen = at,
 		widthCos = math.cos(math.rad(row.sightAngle)),
 		lit = 0,
+		reach = reach,
+		caught = 0,
 	}
 end
 
@@ -431,7 +492,8 @@ end
 --- shares of it), with `players` those it may see (none: it sees no one) and `hallLit` whether a
 --- lit hall light's pool is where it stands (the server's MotionLights). Returns whether anything
 --- a body shows changed: where it stands, the way it faces or its state. Held by a light, it says
---- so every step; whether it is, and whose light, is `lit`.
+--- so every step; whether it is, and whose light, is `lit`. Whom it caught this step is `caught`
+--- (0 for no one): it stands over where it caught them, waiting, the one it hunted let go.
 function Keeper.step(
 	k: Keeper,
 	dt: number,
@@ -441,6 +503,7 @@ function Keeper.step(
 ): boolean
 	local lit = lightOn(k, players, hallLit == true)
 	k.lit = lit
+	k.caught = 0
 	local looked = false
 	if players and k.state ~= "Asleep" then
 		looked = look(k, players, lit ~= 0)
@@ -480,6 +543,12 @@ function Keeper.step(
 	if hunting then
 		if moved <= STUCK then
 			faceToward(k, k.goal) -- at arm's length: it stands facing them
+		end
+		local id = if players then Keeper.catches(k, players) else 0
+		if id ~= 0 then
+			-- its hand closes on them: it stands over the spot, then roams
+			k.caught, k.target = id, 0
+			stand(k, k.row.linger)
 		end
 	elseif (state == "Going" or state == "Searching") and (there or stuck) then
 		-- there, or a door came down across its way: it looks from where it is, at the sound it

@@ -373,6 +373,20 @@ verified: a doc page, Studio, or "untested".
   `user_mouse_input`. To chase in the dark, take the `TripsLights` tag off your root on the
   Server: no light wakes for you; put it back to test the hall lights. Fixtures' pivots stand on
   the floor (y 0 on floor 1), 24 apart down the hall.
+- **Testing the catch from the MCP** (L-06b3c, 2026-11-10): seed 7, floor 1. On the Server take
+  the `TripsLights` tag off your root and pivot the character to (90, 3, -694) facing -Z (4 studs
+  out from 126's door); on the Client point the camera at 126's Open prompt, wait a second, then
+  `InputHoldBegin`/`InputHoldEnd`. The Mannequin sees you through the doorway as it lifts, comes
+  and catches you at about 3.4 studs (pivot to root, flat), and you land in the lobby at
+  (0, 3, -594). Sample `PlayerGui.Caught` on the Client every 0.05 s to read the blackout. For
+  the torch half, right-click once (`user_mouse_input`, mid-viewport) before opening: the body's
+  `Flashlight` model's `On` attribute says it's lit; it then hunts frozen in the unit.
+- **Holding the player still** (L-06b3c, tested 2026-11-10): from a Client `execute_luau`,
+  neither `require(StarterPlayer.PlayerModule).ControlModule.Enabled = false` (the plugin's
+  require may get its own copy) nor `PlayerModule.InputContexts.CharacterContext.Enabled = false`
+  stopped W walking (4 studs in 0.8 s either way). The Humanoid's `WalkSpeed` 0 and `JumpHeight`
+  0, set on the Client, held it: 0.000 studs with W held and Space pressed. `CaughtView` does
+  that and gives them back only if still 0 (the server's Slots sets a heavy tool's pace).
 - **Counting what replicates** (L-06b4a): on the Server, `GetAttributeChangedSignal` on a body and
   `GetPropertyChangedSignal("CFrame")` and `("C0")` on its root and joints count every write.
 - **Reading the counts from the MCP** (2026-11-07): in Play, `execute_luau` on the Client can read

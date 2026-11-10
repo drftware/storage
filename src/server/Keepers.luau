@@ -25,6 +25,12 @@
 	  player's torch, from their eyes along their facing at their aim (`Flashlights`), so it
 	  decides whether a light is on it (`Keeper.step`). Frozen or let go, screens hear of it at
 	  once, not after the records' usual gap, so it stops on the stride it was on.
+	- A hunting keeper whose hand closes on the one it hunts catches them (L-06b3c; `Keeper.step`
+	  decides, by Brix's cone reach along its map). The server then jolts the caught player's
+	  screen and blacks it out (Remotes.Caught to them alone, `Caught`), fires `caught` (the
+	  keeper's body, the player, the floor) for what follows, and leaves that player out of every
+	  keeper's sight for `Caught.Out` seconds. Until L-07, DevCorridor's stand-in takes `caught`
+	  and puts them back in the floor's lobby in the black.
 	- `awakeOn` tells the deal how many keepers are awake on a floor now, for its cap.
 	- Each keeper's body is an anchored model moved by its HumanoidRootPart, with no Humanoid, its
 	  joints left at rest. The server tells screens how it moves (L-06b4a): a short record on the
@@ -47,6 +53,7 @@ local StarterPlayer = game:GetService("StarterPlayer")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Caught = require(ReplicatedStorage.Shared.Caught)
 local Deals = require(script.Parent.Deals)
 local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
 local Doors = require(script.Parent.Doors)
@@ -124,7 +131,13 @@ type OnFloor = {
 }
 type Entry = { keeper: Keeper.Keeper, body: Body, on: OnFloor }
 
+-- A keeper caught a player: its body, whom it caught, and the floor's model (FloorBuilder's).
+export type Catch = { body: Model, player: Player, floor: Model }
+
 export type Keepers = Brix.System & {
+	-- A keeper caught a player (L-06b3c), fired once per catch, after the caught player's screen
+	-- has been told: what L-07's getting kept takes. Until then DevCorridor's stand-in does.
+	caught: Brix.Signal<Catch>,
 	-- Lays a floor's map for keepers to walk as FloorBuilder lays it: `slots` maps each unit to its
 	-- slot (`laid.slots`), `origin` is where it was laid, and `random` (a fresh Brix Random from the
 	-- floor's seed, not the deal's, so roams never change what the units hold) picks where its
@@ -169,16 +182,23 @@ function Keepers.new(): Keepers
 	local flashlights: Flashlights.Flashlights? = nil
 	local run = 16 -- a player's full run, studs a second (StarterPlayer's, read at start)
 	local everyone: { Player } = {} -- kept as players come and go: no list made each step
+	local out: { [Player]: number } = {} -- caught players keepers leave alone, till this os.clock
+	local caught = Brix.Signal.new() :: Brix.Signal<Catch>
+	local caughtRemote: RemoteEvent? = nil
 	local joins: { RBXScriptConnection } = {}
 
 	-- Where each living player's feet are on floor `on`, in its own coordinates, and their torch:
 	-- from their eyes (their head), along the way they face (a first-person camera's), tipped up
 	-- by their aim; a zero aim while it's off. Allocates nothing.
-	local function gather(on: OnFloor)
+	local function gather(on: OnFloor, now: number)
 		local list = on.players
 		local origin = on.origin
 		local n = 0
 		for _, player in everyone do
+			local spared = out[player]
+			if spared and spared > now then
+				continue -- just caught: out of every keeper's sight while they're moved
+			end
 			local character = player.Character
 			local root = character and character:FindFirstChild("HumanoidRootPart")
 			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
@@ -240,6 +260,28 @@ function Keepers.new(): Keepers
 		end
 	end
 
+	-- A keeper caught player `id`: the jolt on their screen, Output's line, and `caught`, unless
+	-- they're already out (two keepers' hands closing in one step).
+	local function catch(entry: Entry, id: number)
+		local player = Players:GetPlayerByUserId(id)
+		if not player then
+			return
+		end
+		local now = os.clock()
+		local spared = out[player]
+		if spared and spared > now then
+			return
+		end
+		out[player] = now + Caught.Out
+		if caughtRemote then
+			caughtRemote:FireClient(player)
+		end
+		if TRACE then
+			print(`Keepers: the {entry.keeper.row.name} catches {player.Name}`)
+		end
+		caught:fire({ body = entry.body.model, player = player, floor = entry.on.model })
+	end
+
 	-- Puts its body's root where the brain has it.
 	local function putRoot(entry: Entry)
 		local k, body = entry.keeper, entry.body
@@ -296,6 +338,9 @@ function Keepers.new(): Keepers
 		then
 			local doing = if state == "Waiting" and was == "Searching"
 				then "stands where it lost them, looking about"
+				elseif
+					state == "Waiting" and was == "Hunting"
+				then "stands over where it caught them"
 				else DOING[state]
 			print(`Keepers: the {entry.keeper.row.name} {doing}`)
 		end
@@ -400,7 +445,7 @@ function Keepers.new(): Keepers
 			warn(`Keepers: can't stand a {name}: no such keeper`)
 			return nil
 		end
-		local k = Keeper.new(row, on.map, on.random, at, facing, awake)
+		local k = Keeper.new(row, on.map, on.random, at, facing, awake, Brix.Reach.cone)
 		-- any: as in `place`
 		local a, f = (k.at :: any) :: Vector3, (k.facing :: any) :: Vector3
 		local body = kit.clone(on.origin * CFrame.lookAt(a, a + f), on.folder)
@@ -467,7 +512,7 @@ function Keepers.new(): Keepers
 		end
 	end
 
-	local system = { name = "Keepers" }
+	local system = { name = "Keepers", caught = caught }
 
 	function system.start(_: any, context: Brix.Context)
 		-- any: the registry hands back a plain System; Doors fills this slot (init.server)
@@ -478,6 +523,16 @@ function Keepers.new(): Keepers
 		flashlights = (context.registry:get("flashlights") :: any) :: Flashlights.Flashlights?
 		run = StarterPlayer.CharacterWalkSpeed
 		everyone = Players:GetPlayers()
+		local folder = ReplicatedStorage:FindFirstChild(Caught.RemoteFolder)
+		if not folder then
+			folder = Instance.new("Folder")
+			folder.Name = Caught.RemoteFolder
+			folder.Parent = ReplicatedStorage
+		end
+		local remote = Instance.new("RemoteEvent")
+		remote.Name = Caught.Remote
+		remote.Parent = folder
+		caughtRemote = remote
 		table.insert(
 			joins,
 			Players.PlayerAdded:Connect(function(player: Player)
@@ -491,6 +546,7 @@ function Keepers.new(): Keepers
 				if i then
 					table.remove(everyone, i)
 				end
+				out[player] = nil
 			end)
 		)
 		table.insert(connections, d.acted:connect(onActed))
@@ -505,12 +561,13 @@ function Keepers.new(): Keepers
 	-- Only keepers awake change; a body moves only when its keeper did. Players are gathered only
 	-- for a floor with a keeper awake to see them.
 	function system.step(_: any, dt: number)
+		local now = os.clock()
 		for _, on in floors do
 			local list = on.players
 			list.count = 0
 			for _, entry in on.keepers do
 				if Keeper.awake(entry.keeper) then
-					gather(on)
+					gather(on, now)
 					break
 				end
 			end
@@ -535,11 +592,14 @@ function Keepers.new(): Keepers
 						if dx * dx + dz * dz > STILL * STILL then Keeper.pace(k, run) else 0,
 						froze
 					)
+					if k.caught ~= 0 then
+						catch(entry, k.caught) -- before its state's line: the catch, then the stand
+					end
 					changedState(entry, was)
 					if TRACE and froze then
 						traceLight(entry)
 					end
-					if TRACE and k.target ~= target then
+					if TRACE and k.caught == 0 and k.target ~= target then
 						traceSight(entry, target)
 					end
 				end
@@ -557,6 +617,11 @@ function Keepers.new(): Keepers
 		end
 		table.clear(joins)
 		table.clear(everyone)
+		table.clear(out)
+		if caughtRemote then
+			caughtRemote:Destroy()
+			caughtRemote = nil
+		end
 		for _, on in floors do
 			drop(on)
 		end
