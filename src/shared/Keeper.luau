@@ -4,10 +4,12 @@
 	tests it (tests/keeper.spec.luau). The server's `Keepers` system holds one of these per keeper,
 	tells it what it hears and steps it on the Host's clock; this module decides what it does.
 
-	The moment it serves: you slam a door and, two halls off, something starts walking toward it;
+	The moments it serves: you slam a door and, two halls off, something starts walking toward it;
 	it stands there looking, then wanders off down the halls, and now you don't know where it is.
-	Granny's way with a noise: it walks to where the sound was, stands there a while looking, then
-	walks the house room to room. Once out of its unit it never goes back (D-071). Its states:
+	Then it rounds a corner, sees you, and comes at you; you duck out of its sight and it rushes to
+	where it last saw you, looks about, and wanders off again. Granny's way: she walks to a noise,
+	stands there looking, walks the house room to room, chases you on sight and searches where she
+	lost you. Once out of its unit it never goes back (D-071). Its states:
 
 	- Asleep: dealt asleep behind a door (L-06b2b, D-070), standing slack where it was put,
 	  listening. The first loud sound that reaches it wakes it, as a noise startles Left 4 Dead's
@@ -23,6 +25,16 @@
 	  lately (its last `roamMemory` places), picked by the floor's seeded Random. Never into a
 	  unit. A door coming down across its way makes it pick again. Phase 2's director will steer
 	  these picks, as Alien: Isolation's keeps the alien near you.
+	- Hunting (L-06b3a2): it saw a player and comes at them at its top speed (`speed`, never over
+	  your run) along the halls, stopping at arm's length (`Close`) facing them until the catch
+	  (L-06b3c) lands. It keeps them while it sees them any way it faces; no sound pulls it off.
+	- Searching: it lost the one it hunted and rushes, at its top speed, to where it last saw
+	  them, then stands there for its `linger`, looking on the way it was going, then roams.
+
+	It sees a player (`step`'s `players`) awake in any state: within its row's `sight`, within its
+	`sightAngle` either side of the way it faces, along a straight line the map clears
+	(`KeeperMap.clear`): never through a wall, a shut door or a door's posts, and never up on the
+	units' tops. It hunts the nearest it sees. Asleep, it sees nothing.
 
 	It hears a door's open, slam or lift from inside (`Keeper.Hears`, the GDD's loud ones) as far as
 	that sound carries for a player (DoorSound's reach, scaled by its row's `hearing`), measured
@@ -37,7 +49,19 @@ local Floor = require("./Floor")
 local KeeperMap = require("./KeeperMap")
 local KeeperRows = require("./KeeperRows")
 
-export type State = "Asleep" | "Watching" | "Going" | "Waiting" | "Roaming"
+export type State =
+	"Asleep"
+	| "Watching"
+	| "Going"
+	| "Waiting"
+	| "Roaming"
+	| "Hunting"
+	| "Searching"
+
+--- The players a keeper may see this step, as parallel arrays `count` long, which the caller fills
+--- and reuses: each one's id (any number but 0; the server's are UserIds) and where their feet
+--- are, in the floor's coordinates.
+export type Players = { ids: { number }, at: { vector }, count: number }
 
 export type Keeper = {
 	row: KeeperRows.Row,
@@ -56,6 +80,9 @@ export type Keeper = {
 	recentAt: number, -- the ring's newest
 	trips: { number }, -- scratch for a roam's pick: each stop's trip from where it stands
 	travelled: number, -- studs walked since it was stood up: its walk's pose (Pose.at)
+	target: number, -- the id of the player it hunts, or 0
+	seen: vector, -- where it last saw them
+	widthCos: number, -- the cosine of its row's sightAngle: how wide it sees
 }
 
 local Keeper = {}
@@ -70,6 +97,13 @@ Keeper.Hears =
 -- short of the door, square in front of it, on an 8-stud hall.
 Keeper.Front = 3
 
+-- How near it comes to the player it hunts, feet to feet (studs): face to face, arm's length.
+-- The catch (L-06b3c) lands within this.
+Keeper.Close = 2.5
+
+-- Feet more than this over or under its own are out of its sight (studs): up on the units' tops
+-- (10 up) or on another floor. A jump (about 7 at the top) isn't.
+local SIGHT_HEIGHT = 8
 -- As good as there (studs): a route lands exactly on its end, so this is only float slack.
 local ARRIVE = 1e-3
 -- Moved less than this in a step that had studs to walk: there's no way there now.
@@ -168,6 +202,68 @@ local function pick(k: Keeper): vector?
 	return nil
 end
 
+-- How far off it sees a player whose feet are at `p` (straight across the floor), or nil: within
+-- its sight, within its view's width unless it looks `anyWay`, and along a line the map clears.
+local function sees(k: Keeper, p: vector, anyWay: boolean): number?
+	if math.abs(p.y - k.at.y) > SIGHT_HEIGHT then
+		return nil
+	end
+	local dx, dz = p.x - k.at.x, p.z - k.at.z
+	local d2 = dx * dx + dz * dz
+	local range = k.row.sight
+	if not (d2 <= range * range) then
+		return nil
+	end
+	local d = math.sqrt(d2)
+	if not anyWay and d > 1e-6 and dx * k.facing.x + dz * k.facing.z < k.widthCos * d then
+		return nil
+	end
+	if not KeeperMap.clear(k.map, k.at, p) then
+		return nil
+	end
+	return d
+end
+
+-- It looks for players. Hunting, it keeps its eyes on the one it hunts while it sees them any way
+-- it faces. Else it notices the nearest it sees within its view, turns to them and hunts them.
+-- Hunting and seeing no one, it has lost them: it rushes to where it last saw them. Returns
+-- whether its state or the one it hunts changed.
+local function look(k: Keeper, players: Players): boolean
+	local ids, at = players.ids, players.at
+	if k.state == "Hunting" then
+		for i = 1, players.count do
+			if ids[i] == k.target then
+				local p = at[i]
+				if sees(k, p, true) then
+					k.seen, k.goal = p, p
+					return false
+				end
+				break
+			end
+		end
+	end
+	local best, nearest = 0, math.huge
+	for i = 1, players.count do
+		local d = sees(k, at[i], false)
+		if d and d < nearest then
+			best, nearest = i, d
+		end
+	end
+	if best > 0 then
+		local changed = k.state ~= "Hunting" or k.target ~= ids[best]
+		k.state, k.target, k.waited = "Hunting", ids[best], 0
+		k.seen, k.goal = at[best], at[best]
+		if changed then
+			faceToward(k, k.seen) -- the turn: it has seen you
+		end
+		return changed
+	elseif k.state == "Hunting" then
+		k.state, k.target, k.goal = "Searching", 0, k.seen
+		return true
+	end
+	return false
+end
+
 -- It sets off roaming, or, with nowhere it can reach, stands watching where it is.
 local function roam(k: Keeper)
 	local goal = pick(k)
@@ -206,16 +302,20 @@ function Keeper.new(
 		recentAt = 0,
 		trips = table.create(#map.stops, 0),
 		travelled = 0,
+		target = 0,
+		seen = at,
+		widthCos = math.cos(math.rad(row.sightAngle)),
 	}
 end
 
 --- A sound at `from` carrying `reach` studs (DoorSound's), to be looked at from `spot`. If the
 --- keeper hears it (its trip to the sound is no longer than the reach, scaled by its row's
---- hearing) it goes to look, whatever it was doing: returns how far off it heard it, along the
---- map. Else nil.
+--- hearing) it goes to look, whatever it was doing but hunting: returns how far off it heard it,
+--- along the map. Else nil. Hunting, its eyes are on you and it hears nothing, so a slammed door
+--- never calls it off a chase; searching, it goes.
 function Keeper.hear(k: Keeper, from: vector, reach: number, spot: vector): number?
 	local carries = reach * k.row.hearing
-	if not (carries > 0) then
+	if not (carries > 0) or k.state == "Hunting" then
 		return nil
 	end
 	local d = k.pathing:length(k.at, from)
@@ -252,24 +352,34 @@ function Keeper.lookOut(k: Keeper, slot: Floor.Slot, index: number): boolean
 end
 
 --- Steps it by `dt` seconds, `run` being a player's full run (studs a second; its row's speeds are
---- shares of it). Returns whether anything a body shows changed: where it stands, the way it faces
---- or its state.
-function Keeper.step(k: Keeper, dt: number, run: number): boolean
+--- shares of it), with `players` those it may see (none: it sees no one). Returns whether anything
+--- a body shows changed: where it stands, the way it faces or its state.
+function Keeper.step(k: Keeper, dt: number, run: number, players: Players?): boolean
+	local looked = false
+	if players and k.state ~= "Asleep" then
+		looked = look(k, players)
+	end
 	local state = k.state
 	if state == "Asleep" or state == "Watching" then
-		return false
+		return looked
 	elseif state == "Waiting" then
 		k.waited += dt
 		if k.waited >= k.wait then
 			roam(k)
 			return true
 		end
-		return false
+		return looked
 	end
-	-- Going or Roaming: along its route, at a walk
-	local studs = k.row.speed * k.row.looking * run * dt
+	-- moving along its route: hunting and searching at its top speed, else at its walk
+	local hunting = state == "Hunting"
+	local studs = k.row.speed * run * dt
+	if hunting then
+		studs = math.min(studs, math.max(flatDistance(k.at, k.goal) - Keeper.Close, 0))
+	elseif state ~= "Searching" then
+		studs *= k.row.looking
+	end
 	local before = k.at
-	local after = k.route:advance(before, k.goal, studs)
+	local after = if studs > 0 then k.route:advance(before, k.goal, studs) else before
 	k.at = after
 	local dx, dz = after.x - before.x, after.z - before.z
 	local moved = math.sqrt(dx * dx + dz * dz)
@@ -278,16 +388,29 @@ function Keeper.step(k: Keeper, dt: number, run: number): boolean
 		k.facing = vector.create(dx / moved, 0, dz / moved)
 	end
 	local there = flatDistance(after, k.goal) <= ARRIVE
-	if state == "Going" and (there or (studs > 0 and moved <= STUCK)) then
-		-- there, or a door came down across its way: it looks from where it is
+	local stuck = studs > 0 and moved <= STUCK
+	if hunting then
+		if moved <= STUCK then
+			faceToward(k, k.goal) -- at arm's length: it stands facing them
+		end
+	elseif (state == "Going" or state == "Searching") and (there or stuck) then
+		-- there, or a door came down across its way: it looks from where it is, at the sound it
+		-- heard, or, searching, on the way it was going
 		stand(k, k.row.linger)
-		faceToward(k, k.heard)
+		if state == "Going" then
+			faceToward(k, k.heard)
+		end
 	elseif there then
 		stand(k, k.row.roamLinger)
-	elseif studs > 0 and moved <= STUCK then
+	elseif stuck then
 		roam(k) -- a door came down across its way: it picks another place
 	end
 	return true
+end
+
+--- A new, empty list of players for `step`, to fill and reuse.
+function Keeper.players(): Players
+	return { ids = {}, at = {}, count = 0 }
 end
 
 --- Lets go of its route (when its floor or body goes).

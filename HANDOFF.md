@@ -2,51 +2,50 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-09, session 62 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-09, session 63 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-06b3a1 done (D-073):** once out, a keeper roams. After looking at a noise or out of its
-  doorway it walks to a hall piece's middle 40 to 120 studs off along the halls, not one of its
-  last four stops, stops 3 s, picks again; a sound still takes it to look. Never into a unit, so
-  its door shut behind it changes nothing. Verified in Studio on seed 7, floor 1.
-- **The brain:** pure `src/shared/Keeper.luau`, states Asleep (dealt asleep), Watching (awake,
-  never yet out, or shut in its unit), Going, Waiting (at a sound or a roam stop), Roaming;
-  `new(row, map, random, ...)`, `hear`, `lookOut`, `awake`, `step`. Rows in `KeeperRows.luau`
-  (roam numbers there); `KeeperMap`'s `stops` are the roam targets. Run by `src/server/Keepers.luau`
-  (`add` now takes the floor's Random; `stand`, `awakeOn`, `remove`, `hallOff`).
-  `tests/keeper.spec.luau`: 23,420 checks.
-- **Dev:** Output traces what each keeper hears and does; each body carries `KeeperState`.
+- **L-06b3a2 done (D-074):** a keeper awake in any state sees a player within its row's `sight`
+  (48) and `sightAngle` (60 each side) along a line `KeeperMap.clear` passes (no wall, shut door
+  or door post; never up on the tops or in the car), turns and hunts the nearest at its top speed
+  to arm's length (`Keeper.Close`, 2.5); no sound pulls it off. Lost, it rushes to where it last
+  saw them (Searching), stands its linger, then roams. Pursuit doesn't run it. Verified in Studio
+  on seed 7, floor 1 (opened 126 on it, a 90-stud chase round a junction, lost, roamed, and a
+  roaming one turned on a player 18 studs ahead).
+- **The brain:** pure `src/shared/Keeper.luau` (Asleep, Watching, Going, Waiting, Roaming,
+  Hunting, Searching), rows in `KeeperRows.luau`, run by `src/server/Keepers.luau`.
+  `tests/keeper.spec.luau` 46,500 checks; `tests/keepermap.spec.luau` 73,126. Output traces
+  what each keeper hears, sees and loses; testing a chase from the MCP is in `docs/STUDIO.md`.
 
-## Next task: L-06b3a2 It sees you and hunts
-The moment: it rounds a corner, sees you, and comes at you; you break line of sight and it
-searches where it last saw you, then gives up and roams again.
+## Next task: L-06b4a It moves smoothly on every screen
+The moment: it comes down the hall at you and every screen, a phone included, sees one smooth
+stiff-limbed walk, not a body hopping between server updates.
 1. Owner test results first, if pasted.
-2. Decide whether `Brix.Pursuit` runs the chase (only if the pinned Brix has it and it fits with
-   no new Brix work, D-064); the pinned `vendor/brix` has `Contracts/Pursuit.luau` but check its
-   exports before leaning on it. Record the answer in DECISIONS.
-3. Sight in the row (how far, how wide, each commented), measured so it never sees through a wall
-   or a shut door: a straight line of sight that the map confirms (both ends in places joined
-   without a shut doorway between). Watching, looking out and roaming notice; Asleep sees nothing.
-4. A Hunting state at its top speed (`speed`) along the map toward the player it sees; lost, it
-   goes to where it last saw them, looks (its `linger`), then roams (D-073's roam is the give-up).
-5. The server feeds players' positions to the brain (floor coordinates) and says in Output when
-   it sees and loses someone; feel numbers in the row, defaults listed in `OWNER.md`.
-6. Lune checks: never sees through a wall, sees within its cone and range, hunts no faster than
-   its top speed (never over a player's run), goes to the last place seen, roams after.
-**Acceptance:** checks green; in Studio on seed 7, floor 1, stand in the hall as 126's keeper
-roams by: it turns and comes; duck behind a corner and it searches, then roams.
-**Read first:** ROADMAP L-06b3a2; DECISIONS D-064, D-073; `docs/FRAMEWORK.md` (the Pursuit row);
-`vendor/brix/src/Contracts/Pursuit.luau`; `src/shared/Keeper.luau` (header, `step`, `pick`); the
-GDD's Keepers section (the Mannequin's senses).
+2. Today `Keepers.place` sets the body's root CFrame every step and poses its joints (Motor6D C0)
+   at most 20 a second, both replicated. Instead the server publishes each keeper's motion as an
+   attribute on its body (where, facing, `travelled`, state, the server's time), only when it
+   changes, the way a door's `DoorMotion` attribute carries RollUpDoor's motion to each screen.
+3. A client view (new, `src/client/KeeperView.luau`, started by the Host like `DoorView`) moves
+   each streamed-in body on this screen: its place smoothed between the server's updates (no
+   overshoot past a stop, a snap on a jump of more than a few studs), and posed locally with
+   `Pose.at(travelled)` (walking) or the held stride (stopped) through Motor6D `Transform`, never
+   C0, so nothing per joint replicates. The server keeps the true position for the brain.
+4. Only bodies in motion are stepped; nothing allocates per frame; connections go with the body.
+5. Lune checks for any pure smoothing (e.g. a `KeeperMotion` encode/decode and the eased place
+   between two updates never overshooting).
+**Acceptance:** checks green; in Studio on seed 7, floor 1, open 126 and run: the chase reads
+smooth in the Client's view, Output still traces it, and far less replicates per second.
+**Read first:** ROADMAP L-06b4a; `src/server/Keepers.luau` (`place`, `Body`, `POSE_EVERY`);
+`src/shared/StorageUnit/RollUpDoor.luau` and `src/client/DoorView.luau` (headers: motion on an
+attribute, played per screen); `src/shared/Mannequin/Pose.luau` and `init.luau` (`pose`).
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-06b3a2, L-06b4a (smooth on every screen), L-06b3b (light freezes it), L-06b3c (the catch),
-   L-06b3d (the break-out), L-06b5 (the guarded note), L-06b4b (its sounds); D-064, D-068 to
-   D-073. L-12c needs L-06b3d. Then L-14; L-07 to L-10.
-2. **Check, small:** Climb down or Drop down while lying behind a sawn hole (a small unit) slides
-   your body across the hole on the way to the edge; refuse it there or go round.
-3. **Look, small:** from a friend's view, dropping in from behind the hole lunges you toward the
-   door before your legs go down; the landing crouch dips your feet 0.2 under the floor.
+1. L-06b4a, L-06b3b (light freezes it), L-06b3c (the catch, within `Keeper.Close`), L-06b3d (the
+   break-out), L-06b5 (the guarded note), L-06b4b (its sounds, now with the sting on sight);
+   D-064, D-068 to D-074. L-12c needs L-06b3d. Then L-14; L-07 to L-10.
+2. **Check, small:** Climb or Drop down lying behind a sawn hole slides you across the hole.
+3. **Look, small:** a friend's drop-in from behind the hole lunges toward the door; the landing
+   crouch dips your feet 0.2 under the floor.
 4. **GDD, small:** its ladder line still says open mesh tops you run across (D-058/D-059); fix it.
 5. **Check, small:** lying at a unit's front, are that door's own buttons (Open, Slam) in reach
    from the tops? If so, refuse them for crawlers (`Ladders:crawling` says who's up).
@@ -62,6 +61,7 @@ GDD's Keepers section (the Mannequin's senses).
 11. **Check:** Output's "rbxassetid://203785492 ... Asset type does not match" (six per Play) and
    "rbxassetid://139561946838090 ... content representation is being generated" (about thirty
    on reaching the walked floor); neither id is in our code, templates or the place's services.
+12. **Later, the elevator:** keepers can't see into the car; should a hunter come to the gate?
 
 ## Kickoff for the next agent
 ```text

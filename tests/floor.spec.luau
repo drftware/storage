@@ -31,6 +31,7 @@ local dir = Floor.dir
 -- 1. The generator's sizes are the kit's and the units'.
 local KIT = fs.readFile("src/shared/CorridorKit/Specs.luau")
 local UNIT_M = fs.readFile("src/shared/StorageUnit/Specs/M.luau")
+local UNIT_S = fs.readFile("src/shared/StorageUnit/Specs/S.luau")
 local UNIT_ART = fs.readFile("art/unit/spec.py")
 local UNIT_KIT = fs.readFile("src/shared/StorageUnit/UnitKit.luau")
 local function number(text: string, pattern: string): number?
@@ -51,6 +52,8 @@ ok(
 ok(number(KIT, "DeadEnd = {%s*Width = ([%d%.]+)") == Floor.Span, "a dead end closes the whole span")
 ok(number(UNIT_M, "\n\tWidth = ([%d%.]+)") == Floor.Sizes.M.width, "an M unit's width")
 ok(number(UNIT_M, "\n\tDepth = ([%d%.]+)") == Floor.Sizes.M.depth, "an M unit's depth")
+ok(number(UNIT_M, "\n\tDoorWidth = ([%d%.]+)") == Floor.Sizes.M.door, "an M unit's door opening")
+ok(number(UNIT_S, "\n\tDoorWidth = ([%d%.]+)") == Floor.Sizes.S.door, "an S unit's door opening")
 ok(number(UNIT_ART, '"S": dict%(width=([%d%.]+)') == Floor.Sizes.S.width, "an S unit's width")
 ok(
 	number(UNIT_ART, '"S": dict%(width=[%d%.]+, depth=([%d%.]+)') == Floor.Sizes.S.depth,

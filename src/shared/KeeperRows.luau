@@ -31,6 +31,11 @@ export type Row = {
 	roamFar: number,
 	roamLinger: number,
 	roamMemory: number,
+	-- How far it sees a player, in studs, in a straight line the map clears (never through a wall
+	-- or a shut door), and how wide: degrees either side of the way it faces. Seen, it hunts them
+	-- at its top speed; hunting, it keeps them in sight any way it faces, out to `sight`.
+	sight: number,
+	sightAngle: number,
 }
 
 local Mannequin: Row = {
@@ -53,6 +58,12 @@ local Mannequin: Row = {
 	roamLinger = 3,
 	-- the last four places it stood: it doesn't pace back and forth between two halls
 	roamMemory = 4,
+	-- two hall pieces: round a corner into its hall and it has you; a hall further off and you
+	-- can still slip past a junction unseen
+	sight = 48,
+	-- a wide look ahead (120 degrees across) but blind behind: you can creep up on one that walks
+	-- away from you, never on one coming toward you
+	sightAngle = 60,
 }
 
 local KeeperRows: { [string]: Row } = {

@@ -49,11 +49,12 @@ Floor.Span = SPAN
 
 export type Size = "S" | "M"
 -- A unit's footprint, door face to back wall and wall to wall (art/unit/spec.py; L doesn't fit a
--- hall's span, ROADMAP).
+-- hall's span, ROADMAP), and its door's opening across: a keeper sees into a unit only through
+-- that, never through the posts either side.
 Floor.Sizes = {
-	S = { width = 8, depth = 8 },
-	M = { width = 12, depth = 12 },
-} :: { [Size]: { width: number, depth: number } }
+	S = { width = 8, depth = 8, door = 6 },
+	M = { width = 12, depth = 12, door = 8 },
+} :: { [Size]: { width: number, depth: number, door: number } }
 
 -- The lobby's floor is one junction square; the freight elevator stands behind it, its car this
 -- deep (L-05 builds both, so these hold the room for them).

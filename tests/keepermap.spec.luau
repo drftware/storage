@@ -6,7 +6,8 @@
 -- leaves exactly the rest of the trip); no trip crosses a wall or goes through a shut door; a
 -- keeper's route gets there, never further per step than it's given, and plans again when a door
 -- shuts or opens; a passage that needs an ability is used only by keepers with it, and a raised
--- place holds only points up on it; and a warm route's steps allocate nothing.
+-- place holds only points up on it; a line of sight never goes through a wall, a shut door or
+-- a door's post; and a warm route's steps allocate nothing.
 local Brix = require("../vendor/brix/src")
 local Floor = require("../src/shared/Floor")
 local KeeperMap = require("../src/shared/KeeperMap")
@@ -344,6 +345,174 @@ do
 	ok(not pcall(function()
 		KeeperMap.pathing(map, { "Fly" :: any }) -- any: a row with an ability that doesn't exist
 	end), "an unknown ability is refused")
+end
+
+-- Sight (`clear`, L-06b3a2) on seeded floors of every plan: a line it clears never leaves the
+-- floor, never crosses a wall between two units or from a unit to the hall, and goes in or out
+-- of a unit only through its door's opening while the door is up. Two points in one place, or
+-- either side of a joint between halls, always see each other; a unit and the hall in front of it
+-- only while its door is up; never past a door's posts.
+local sightLines, sightSeen = 0, 0
+do
+	local srng = Brix.Random.new({ seed = 77 })
+	local STEP = 0.1 -- studs between the points a line is checked at
+	-- Where a point lies, by brute force over `near` (places): -1 a hall, a unit's slot, 0 off.
+	local function lies(map: KeeperMap.Map, near: { number }, p: vector): number
+		local unit = 0
+		for _, i in near do
+			local e = 1e-3
+			if
+				p.x >= map.minX[i] - e
+				and p.x <= map.maxX[i] + e
+				and p.z >= map.minZ[i] - e
+				and p.z <= map.maxZ[i] + e
+			then
+				if map.unit[i] == 0 then
+					return -1
+				end
+				unit = map.unit[i]
+			end
+		end
+		return unit
+	end
+	-- Whether `p` on unit `slot`'s face is within its door's opening.
+	local function inOpening(f: Floor.Floor, slot: number, p: vector): boolean
+		local s = f.slots[slot]
+		local fx, fz = Floor.dir(s.facing)
+		local side = math.abs((p.x - s.x) * fz - (p.z - s.z) * fx)
+		return side <= Floor.Sizes[s.size].door / 2 + STEP
+	end
+	-- Checks a line `clear` passes, point by point. Returns what's wrong, or nil.
+	local function walkLine(f: Floor.Floor, map: KeeperMap.Map, a: vector, b: vector): string?
+		local near: { number } = {}
+		for i = 1, #map.minX do
+			if
+				map.maxX[i] >= math.min(a.x, b.x) - 1
+				and map.minX[i] <= math.max(a.x, b.x) + 1
+				and map.maxZ[i] >= math.min(a.z, b.z) - 1
+				and map.minZ[i] <= math.max(a.z, b.z) + 1
+			then
+				table.insert(near, i)
+			end
+		end
+		local n = math.max(1, math.ceil(flat(a, b) / STEP))
+		local was = lies(map, near, a)
+		for j = 1, n do
+			local p = a + (b - a) * (j / n)
+			local now = lies(map, near, p)
+			if now == 0 then
+				return "it leaves the floor"
+			elseif now ~= was then
+				if was > 0 and now > 0 then
+					return "it goes through a wall from one unit into another"
+				end
+				local unit = if was > 0 then was else now
+				if not map.open[map.doorways[unit]] then
+					return "it goes through a shut door"
+				elseif not inOpening(f, unit, p) then
+					return "it goes through a wall beside a door"
+				end
+			end
+			was = now
+		end
+		return nil
+	end
+	local function anyPoint(map: KeeperMap.Map, i: number): vector
+		local x = map.minX[i] + srng:nextNumber() * (map.maxX[i] - map.minX[i])
+		local z = map.minZ[i] + srng:nextNumber() * (map.maxZ[i] - map.minZ[i])
+		return vector.create(x, map.y[i], z)
+	end
+	for seed = 1, 20 do
+		local number = (seed - 1) % 10 + 1
+		local f = Floor.generate(number, Brix.Random.new({ seed = seed }))
+		local map = KeeperMap.build(f)
+		local where = `floor {number} seed {seed}`
+		local places = #map.minX
+		-- doors at random: about half up
+		for slot in map.doorways do
+			KeeperMap.setDoor(map, slot, srng:nextNumber() < 0.5)
+		end
+		local wrong = 0
+		for _ = 1, 400 do
+			local a = anyPoint(map, srng:nextInteger(1, places))
+			local b: vector
+			if srng:nextNumber() < 0.7 then -- mostly near: within a sight's reach
+				local r = math.rad(srng:nextNumber() * 360)
+				local d = srng:nextNumber() * 60
+				b = a + vector.create(math.cos(r) * d, 0, math.sin(r) * d)
+			else
+				b = anyPoint(map, srng:nextInteger(1, places))
+			end
+			sightLines += 1
+			if KeeperMap.clear(map, a, b) then
+				sightSeen += 1
+				local why = walkLine(f, map, a, b)
+				if why then
+					wrong += 1
+					if wrong <= 3 then
+						ok(false, `{where}: a line it clears from {a} to {b}: {why}`)
+					end
+				end
+				ok(KeeperMap.clear(map, b, a), `{where}: what it sees sees it back`)
+			end
+		end
+		ok(wrong == 0, `{where}: no line it clears goes through a wall ({wrong})`)
+		-- one place: always; either side of a joint between halls: always
+		for i = 1, places do
+			ok(
+				KeeperMap.clear(map, anyPoint(map, i), anyPoint(map, i)),
+				`{where}: two points in one place see each other`
+			)
+		end
+		for k = 1, #map.cost do
+			local n1, n2 = 2 * k - 1, 2 * k
+			local pa, pb = map.nodePlace[n1], map.nodePlace[n2]
+			if map.unit[pa] == 0 and map.unit[pb] == 0 and map.needs[k] == 0 then
+				local node = vector.create(map.nodeX[n1], 0, map.nodeZ[n1])
+				local function inward(i: number): vector
+					local mid = vector.create(
+						(map.minX[i] + map.maxX[i]) / 2,
+						0,
+						(map.minZ[i] + map.maxZ[i]) / 2
+					)
+					local d = mid - node
+					return node + d / vector.magnitude(d)
+				end
+				ok(
+					KeeperMap.clear(map, inward(pa), inward(pb)),
+					`{where}: either side of the joint at {node} see each other`
+				)
+			end
+		end
+		-- a unit and the hall straight out from its door: only while the door is up, and never
+		-- past its posts
+		for slot, k in map.doorways do
+			local s = f.slots[slot]
+			local fx, fz = Floor.dir(s.facing)
+			local out = vector.create(fx, 0, fz)
+			local across = vector.create(-fz, 0, fx)
+			local door = vector.create(s.x, 0, s.z)
+			local inside, hall = door - out * 1, door + out * 3
+			KeeperMap.setDoor(map, slot, false)
+			ok(
+				not KeeperMap.clear(map, inside, hall),
+				`{where}: unit {s.number}'s shut door hides it`
+			)
+			KeeperMap.setDoor(map, slot, true)
+			ok(KeeperMap.clear(map, inside, hall), `{where}: unit {s.number}'s open door shows it`)
+			local post = (Floor.Sizes[s.size].width / 2 - 0.4)
+			local side, sideHall = inside + across * post, hall + across * post
+			local _, hallUnit = KeeperMap.placeAt(map, sideHall)
+			if hallUnit == 0 then
+				ok(
+					not KeeperMap.clear(map, side, sideHall),
+					`{where}: unit {s.number}'s post hides what's beside the door`
+				)
+			end
+			ok(map.opening[k] == Floor.Sizes[s.size].door / 2, `{where}: unit {s.number}'s opening`)
+		end
+	end
+	ok(sightSeen >= 500, `enough lines clear to check ({sightSeen} of {sightLines})`)
 end
 
 -- What a door lets through: only all the way up.

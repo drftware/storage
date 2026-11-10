@@ -393,12 +393,16 @@ on nothing in Brix.
       Verified in Studio on seed 7, floor 1: Unit 126's awake one walked out, looked, roamed 75 s
       without going back in (126 slammed behind it), never stood still over 3 s, and came to Unit
       139's open 33 studs off. Waits on `OWNER.md` for feel and the defaults.
-    - [ ] **L-06b3a2 It sees you and hunts.** Decide first whether `Brix.Pursuit` runs the chase
-      and the catch (only if it fits with no new Brix work, D-064). An awake keeper notices a
-      player by its row's senses (sight: how far and how wide it sees, measured along the map so
-      never through a wall), hunts them by the map at its top speed, goes to where it last saw them
-      when it loses them, looks, and goes back to roaming (Granny's search). Watching, looking out
-      and roaming are where it notices you. A sleeping keeper sees nothing.
+    - [x] **L-06b3a2 It sees you and hunts.** Done Nov 9 (D-074). Pursuit doesn't run it (a
+      placed hunter is never moved by Pursuit again). Awake in any state, a keeper sees a player
+      within its row's `sight` (48) and `sightAngle` (60 degrees each side) along a straight line
+      `KeeperMap.clear` passes (no wall, shut door or door post; not up on the tops), turns and
+      hunts the nearest at its top speed to arm's length (`Keeper.Close`, 2.5); no sound pulls it
+      off. Lost, it rushes to where it last saw them, stands its linger, then roams. Asleep it sees
+      nothing. The server feeds players' feet each step. 46,500 keeper and 73,126 map checks.
+      Verified in Studio on seed 7, floor 1: opening 126 in front of it, it came out at once;
+      chased 90 studs down the hall and round the junction 5 studs behind; lost, it searched,
+      stood 5 s and roamed; roaming, it turned on a player 18 studs ahead. Waits on `OWNER.md`.
     - [ ] **L-06b3b Light freezes it.** Frozen (`Pose.freeze(travelled)`) the moment a hall light
       or a torch's beam is on it, decided on the server; it walks on once no light is on it. Its
       walk to look, its roam and its hunt all stop.
@@ -421,7 +425,9 @@ on nothing in Brix.
       up to 20 times a second and each screen jumps between updates. On every screen its place is
       smoothed between the server's steps, and it is posed on the clients (`Pose.at(travelled)`,
       Motor6D `Transform`) rather than by replicating C0 every step. Judged at phone size.
-    - [ ] **L-06b4b Its sounds, and the freeze on your screen.** The freeze lands at once on your
+    - [ ] **L-06b4b Its sounds, and the freeze on your screen.** The sting the moment it sees you,
+      as Granny's chase music cuts in on sight, and a chase bed under the hunt that fades when it
+      loses you (L-06b3a2 ships the hunt with only its motion to answer it). The freeze lands at once on your
       own screen when your torch finds it, predicted as `HallLights` predicts your own lights, with
       no slide past the stop. Its tell, heard in the dark while it moves: fibreglass knocking at its
       joints and a stiff, quick footfall per step, as Five Nights at Freddy's footsteps say an

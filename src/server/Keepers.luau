@@ -17,6 +17,9 @@
 	  measured along the halls, so no sound goes through a wall or a shut door. A keeper that hears
 	  it (waking, if it slept) walks to the door's front, stands there looking, then roams the
 	  halls between noises and never goes back into a unit (L-06b3a1, D-071).
+	- Each step, every floor with a keeper awake is told where each living player's feet are (in its
+	  own coordinates), and its keepers look: one that sees a player hunts them, and one that loses
+	  them rushes to where it last saw them, looks, and roams again (L-06b3a2).
 	- `awakeOn` tells the deal how many keepers are awake on a floor now, for its cap.
 	- Each keeper's body is an anchored model moved by its HumanoidRootPart, with no Humanoid, and
 	  only while something about it changed. Its walk is posed on the server for now, at most
@@ -24,9 +27,10 @@
 	- The brain works in the floor's own coordinates (its lobby's middle at the origin, its floor at
 	  height 0); positions are turned from the world going in and back coming out.
 
-	In Studio, Output says what each keeper hears and does, and each body carries its state as the
+	In Studio, Output says what each keeper hears, sees and does, and each body carries its state as the
 	attribute `KeeperState`. `stand` puts a keeper on a laid floor (the dev command's).
 ]]
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local StarterPlayer = game:GetService("StarterPlayer")
@@ -78,6 +82,8 @@ local DOING: { [Keeper.State]: string } = {
 	Going = "goes to look",
 	Waiting = "stands at the door, looking",
 	Roaming = "wanders off down the halls",
+	Hunting = "hunts",
+	Searching = "rushes to where it last saw them",
 }
 local HEARD: { [string]: string } =
 	{ Open = "open", Slam = "slam", LiftInside = "lift from inside" }
@@ -99,6 +105,7 @@ type OnFloor = {
 	model: Model,
 	folder: Folder, -- its keepers' bodies
 	keepers: { Entry },
+	players: Keeper.Players, -- where each living player's feet are this step, reused
 	gone: RBXScriptConnection,
 }
 type Entry = { keeper: Keeper.Keeper, body: Body, on: OnFloor }
@@ -146,6 +153,41 @@ function Keepers.new(): Keepers
 	local doors: Doors.Doors? = nil
 	local run = 16 -- a player's full run, studs a second (StarterPlayer's, read at start)
 	local clock = 0
+	local everyone: { Player } = {} -- kept as players come and go: no list made each step
+	local joins: { RBXScriptConnection } = {}
+
+	-- Where each living player's feet are on floor `on`, in its own coordinates. Allocates nothing.
+	local function gather(on: OnFloor)
+		local list = on.players
+		local n = 0
+		for _, player in everyone do
+			local character = player.Character
+			local root = character and character:FindFirstChild("HumanoidRootPart")
+			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+			if root and root:IsA("BasePart") and humanoid and humanoid.Health > 0 then
+				local p = on.origin:PointToObjectSpace(root.Position)
+				n += 1
+				list.ids[n] = player.UserId
+				list.at[n] = vector.create(p.X, p.Y - humanoid.HipHeight - root.Size.Y / 2, p.Z)
+			end
+		end
+		list.count = n
+	end
+
+	-- Output: a keeper saw someone, or lost the one it hunted (`was`, their id).
+	local function traceSight(entry: Entry, was: number)
+		local k = entry.keeper
+		local id = if k.target ~= 0 then k.target else was
+		local player = Players:GetPlayerByUserId(id)
+		local who = if player then player.Name else `player {id}`
+		if k.target ~= 0 then
+			local dx, dz = k.seen.x - k.at.x, k.seen.z - k.at.z
+			local off = math.round(math.sqrt(dx * dx + dz * dz))
+			print(`Keepers: the {k.row.name} sees {who}, {off} studs off, and comes at them`)
+		else
+			print(`Keepers: the {k.row.name} lost {who}; it rushes to where it last saw them`)
+		end
+	end
 
 	-- Moves its body to where the brain has it and poses it.
 	local function place(entry: Entry, now: boolean?)
@@ -154,7 +196,10 @@ function Keepers.new(): Keepers
 		local at = (k.at :: any) :: Vector3
 		local facing = (k.facing :: any) :: Vector3
 		body.root.CFrame = entry.on.origin * CFrame.lookAt(at, at + facing) * body.rootOffset
-		local walking = k.state == "Going" or k.state == "Roaming"
+		local walking = k.state == "Going"
+			or k.state == "Roaming"
+			or k.state == "Hunting"
+			or k.state == "Searching"
 		local kit = body.kit
 		-- asleep, slack; awake, held on a stride: mid-step where it stopped, or, never yet moved,
 		-- on its walk's first key, reaching at the doorway
@@ -174,9 +219,19 @@ function Keepers.new(): Keepers
 			return
 		end
 		entry.body.model:SetAttribute(STATE_ATTRIBUTE, state)
-		-- its stops on a roam go unsaid: each roam's start is enough
-		if TRACE and state ~= "Going" and not (state == "Waiting" and was == "Roaming") then
-			print(`Keepers: the {entry.keeper.row.name} {DOING[state]}`)
+		-- its stops on a roam go unsaid: each roam's start is enough; seeing and losing someone
+		-- are said by `traceSight`
+		if
+			TRACE
+			and state ~= "Going"
+			and state ~= "Hunting"
+			and state ~= "Searching"
+			and not (state == "Waiting" and was == "Roaming")
+		then
+			local doing = if state == "Waiting" and was == "Searching"
+				then "stands where it lost them, looking about"
+				else DOING[state]
+			print(`Keepers: the {entry.keeper.row.name} {doing}`)
 		end
 	end
 
@@ -352,6 +407,22 @@ function Keepers.new(): Keepers
 		local d = (context.registry:get("doors") :: any) :: Doors.Doors
 		doors = d
 		run = StarterPlayer.CharacterWalkSpeed
+		everyone = Players:GetPlayers()
+		table.insert(
+			joins,
+			Players.PlayerAdded:Connect(function(player: Player)
+				table.insert(everyone, player)
+			end)
+		)
+		table.insert(
+			joins,
+			Players.PlayerRemoving:Connect(function(player: Player)
+				local i = table.find(everyone, player)
+				if i then
+					table.remove(everyone, i)
+				end
+			end)
+		)
 		table.insert(connections, d.acted:connect(onActed))
 		table.insert(connections, d.changed:connect(onChanged))
 		-- any: as above; Deals fills this slot (init.server)
@@ -361,16 +432,29 @@ function Keepers.new(): Keepers
 		end
 	end
 
-	-- Only keepers awake change; a body moves only when its keeper did.
+	-- Only keepers awake change; a body moves only when its keeper did. Players are gathered only
+	-- for a floor with a keeper awake to see them.
 	function system.step(_: any, dt: number)
 		clock += dt
 		for _, on in floors do
+			local list = on.players
+			list.count = 0
+			for _, entry in on.keepers do
+				if Keeper.awake(entry.keeper) then
+					gather(on)
+					break
+				end
+			end
 			for _, entry in on.keepers do
 				local k = entry.keeper
 				local was: Keeper.State = k.state
-				if Keeper.step(k, dt, run) then
+				local target = k.target
+				if Keeper.step(k, dt, run, list) then
 					place(entry)
 					changedState(entry, was)
+					if TRACE and k.target ~= target then
+						traceSight(entry, target)
+					end
 				end
 			end
 		end
@@ -381,6 +465,11 @@ function Keepers.new(): Keepers
 			c:disconnect()
 		end
 		table.clear(connections)
+		for _, c in joins do
+			c:Disconnect()
+		end
+		table.clear(joins)
+		table.clear(everyone)
 		for _, on in floors do
 			drop(on)
 		end
@@ -410,6 +499,7 @@ function Keepers.new(): Keepers
 			model = model,
 			folder = folder,
 			keepers = {},
+			players = Keeper.players(),
 			gone = model.Destroying:Once(function()
 				drop(on)
 			end),

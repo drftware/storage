@@ -10,8 +10,10 @@
 -- never sleeps again; awake, it steps out to look once its own door is up, facing out of the
 -- unit. Roaming: once out it never goes back into a unit, never stops for good, keeps to the
 -- halls at its walk, goes some way off each time, never back to a place it stood in lately, and
--- the same seed roams the same way; shut in its unit, it watches until its door is up. And a warm
--- keeper's steps allocate nothing, a roam's picks included.
+-- the same seed roams the same way; shut in its unit, it watches until its door is up. Sight
+-- (L-06b3a2): it notices exactly within its sight and view along a line the map clears, hunts at
+-- no more than its top speed to arm's length, and, lost, searches where it saw you, then roams.
+-- And a warm keeper's steps allocate nothing, a roam's picks and a hunt included.
 local Brix = require("../vendor/brix/src")
 local DoorSound = require("../src/shared/StorageUnit/DoorSound")
 local Floor = require("../src/shared/Floor")
@@ -570,8 +572,191 @@ do
 	ok(back ~= nil and vector.dot(facing, back[1] - at) > 0, "facing the way back to the lobby")
 end
 
--- A warm keeper's steps allocate nothing: walking, waiting, roaming (its picks included) and
--- planning again.
+-- Sight and the hunt (L-06b3a2), on seeded floors of every plan. An awake keeper notices a player
+-- exactly when they're within its sight and its view's width and the map clears the line between
+-- them (so never through a wall or a shut door, `KeeperMap.clear`), never up on the tops, and
+-- never while asleep; it hunts the nearest. Hunting, it comes at them along the halls no faster
+-- than its top speed (never over a player's run) and stops at arm's length facing them; no sound
+-- pulls it off. Lost, it rushes to where it last saw them, stands there its linger, then roams; a
+-- sound while it searches takes it to look.
+local noticed, hunts, searches = 0, 0, 0
+do
+	local SIGHT = MANNEQUIN.sight
+	local TOP = MANNEQUIN.speed * RUN * DT -- studs a step at its top speed
+	local srng = Brix.Random.new({ seed = 99 })
+	local players = Keeper.players()
+	local function only(id: number, p: vector)
+		players.ids[1], players.at[1], players.count = id, p, 1
+	end
+	local function turned(v: vector, degrees: number): vector
+		local r = math.rad(degrees)
+		local c, sn = math.cos(r), math.sin(r)
+		return vector.create(v.x * c - v.z * sn, 0, v.x * sn + v.z * c)
+	end
+	for seed = 1, 10 do
+		local number = (seed - 1) % 10 + 1
+		local f = Floor.generate(number, Brix.Random.new({ seed = seed }))
+		local map = KeeperMap.build(f)
+		local where = `floor {number} seed {seed}`
+		local halls: { number } = {}
+		for i = 1, #map.minX do
+			if map.unit[i] == 0 then
+				table.insert(halls, i)
+			end
+		end
+		local function hallPoint(): vector
+			local i = halls[srng:nextInteger(1, #halls)]
+			local x = map.minX[i] + srng:nextNumber() * (map.maxX[i] - map.minX[i])
+			local z = map.minZ[i] + srng:nextNumber() * (map.maxZ[i] - map.minZ[i])
+			return vector.create(x, 0, z)
+		end
+
+		-- noticing: exactly within its sight and view, along a line the map clears
+		local long: { vector }? = nil -- a keeper's spot and a player's, clear and far apart
+		for _ = 1, 150 do
+			local a = hallPoint()
+			local r = math.rad(srng:nextNumber() * 360)
+			local b = a
+				+ vector.create(math.cos(r), 0, math.sin(r)) * (srng:nextNumber() * SIGHT * 1.4)
+			local d = flat(a, b)
+			if d > 0.1 then
+				local toward = vector.create(b.x - a.x, 0, b.z - a.z) / d
+				local clear = KeeperMap.clear(map, a, b)
+				if clear and d >= SIGHT * 0.6 and d <= SIGHT then
+					long = { a, b }
+				end
+				for _, angle in { 0, 50, -55, 70, -110, 180 } do
+					local k = Keeper.new(MANNEQUIN, map, RANDOM, a, turned(toward, angle), true)
+					only(7, b)
+					Keeper.step(k, DT, RUN, players)
+					local expect = clear and d <= SIGHT and math.abs(angle) <= MANNEQUIN.sightAngle
+					ok(
+						(k.state == "Hunting") == expect,
+						`{where}: a keeper at {a} turned {angle} from a player {d} off ({clear}) {if expect
+							then "sees"
+							else "doesn't see"} them`
+					)
+					if expect then
+						noticed += 1
+						ok(k.target == 7, `{where}: it hunts the one it saw`)
+						ok(flat(k.seen, b) < 1e-6, `{where}: it knows where it saw them`)
+					end
+					Keeper.release(k)
+				end
+				-- asleep, it sees nothing; up on the tops, nobody is seen; a jump still is
+				local asleep = Keeper.new(MANNEQUIN, map, RANDOM, a, toward, false)
+				Keeper.step(asleep, DT, RUN, players)
+				ok(asleep.state == "Asleep", `{where}: asleep, it sees nothing`)
+				Keeper.release(asleep)
+				local up = Keeper.new(MANNEQUIN, map, RANDOM, a, toward, true)
+				only(7, b + vector.create(0, 10, 0))
+				Keeper.step(up, DT, RUN, players)
+				ok(up.state == "Watching", `{where}: a player up on the tops is out of its sight`)
+				Keeper.release(up)
+				local jump = Keeper.new(MANNEQUIN, map, RANDOM, a, toward, true)
+				only(7, b + vector.create(0, 6, 0))
+				Keeper.step(jump, DT, RUN, players)
+				ok(
+					(jump.state == "Hunting") == (clear and d <= SIGHT),
+					`{where}: a jumping player is seen as one standing`
+				)
+				Keeper.release(jump)
+			end
+		end
+
+		-- the hunt: no faster than its top speed, to arm's length, facing them; then lost
+		if long then
+			local a, b = long[1], long[2]
+			local k = Keeper.new(MANNEQUIN, map, RANDOM, a, b - a, true)
+			only(3, b)
+			local fastest, closest = 0, math.huge
+			for _ = 1, math.ceil(SIGHT / TOP) + 120 do
+				local before = k.at
+				Keeper.step(k, DT, RUN, players)
+				fastest = math.max(fastest, flat(before, k.at))
+				closest = math.min(closest, flat(k.at, b))
+				ok(k.state == "Hunting", `{where}: it keeps hunting someone it sees`)
+				ok(Keeper.hear(k, b, 1e6, b) == nil, `{where}: no sound calls it off a hunt`)
+			end
+			hunts += 1
+			ok(fastest <= TOP + TOL, `{where}: it hunts no faster than its top speed ({fastest})`)
+			ok(closest >= Keeper.Close - TOL, `{where}: it stops at arm's length ({closest})`)
+			ok(flat(k.at, b) <= Keeper.Close + 0.05, `{where}: it gets to arm's length`)
+			ok(facingToward(k, b), `{where}: it stands facing them`)
+			-- they climb onto the tops: lost, it rushes to where it last saw them
+			only(3, b + vector.create(0, 10, 0))
+			Keeper.step(k, DT, RUN, players)
+			ok(
+				k.state == "Searching" and k.target == 0,
+				`{where}: out of its sight, it's lost them`
+			)
+			local steps, longest, strayed = walkOut(k, map, "Searching", 2000)
+			searches += 1
+			ok(longest <= TOP + TOL, `{where}: it searches no faster than its top speed`)
+			ok(not strayed and steps < 2000, `{where}: it gets to where it saw them`)
+			ok(flat(k.at, b) <= 1e-2, `{where}: it stands where it last saw them`)
+			ok(k.state == "Waiting", `{where}: it stands there looking`)
+			local waited = walkOut(k, map, "Waiting", 2000)
+			ok(
+				math.abs(waited * DT - MANNEQUIN.linger) <= DT * 1.5,
+				`{where}: it looks there for its linger ({waited * DT} s)`
+			)
+			ok(k.state == "Roaming", `{where}: then it roams`)
+			Keeper.release(k)
+
+			-- the nearest of two it sees
+			local near = a + (b - a) * 0.4
+			local two = Keeper.new(MANNEQUIN, map, RANDOM, a, b - a, true)
+			players.ids[1], players.at[1] = 1, b
+			players.ids[2], players.at[2] = 2, near
+			players.count = 2
+			Keeper.step(two, DT, RUN, players)
+			ok(two.target == 2, `{where}: it hunts the nearest it sees`)
+			-- lost while searching, a sound takes it to look
+			players.count = 0
+			Keeper.step(two, DT, RUN, players)
+			ok(two.state == "Searching", `{where}: it searches`)
+			local spot, door = Keeper.front(f.slots[next(map.doorways) :: number])
+			ok(
+				Keeper.hear(two, door, 1e6, spot) ~= nil and two.state == "Going",
+				`{where}: searching, a sound takes it to look`
+			)
+			Keeper.release(two)
+		end
+
+		-- a keeper in its unit, facing the doorway: a player in the hall in front is hidden while
+		-- the door is down, seen once it's up, and never seen past the door's posts
+		for slot in map.doorways do
+			local s = f.slots[slot]
+			local fx, fz = Floor.dir(s.facing)
+			local out = vector.create(fx, 0, fz)
+			local door = vector.create(s.x, 0, s.z)
+			local k = Keeper.new(MANNEQUIN, map, RANDOM, door - out * 2, out, true)
+			only(5, door + out * 3)
+			KeeperMap.setDoor(map, slot, false)
+			Keeper.step(k, DT, RUN, players)
+			ok(k.state == "Watching", `{where}: unit {s.number}'s shut door hides you from it`)
+			KeeperMap.setDoor(map, slot, true)
+			Keeper.step(k, DT, RUN, players)
+			ok(k.state == "Hunting", `{where}: unit {s.number}'s door up, it sees you in front`)
+			Keeper.release(k)
+			local across = vector.create(-fz, 0, fx) * (Floor.Sizes[s.size].width / 2 - 0.4)
+			local beside = door + out * 3 + across
+			if inHall(map, beside) then
+				local post = Keeper.new(MANNEQUIN, map, RANDOM, door - out + across, out, true)
+				only(5, beside)
+				Keeper.step(post, DT, RUN, players)
+				ok(post.state == "Watching", `{where}: unit {s.number}'s post hides you`)
+				Keeper.release(post)
+			end
+			KeeperMap.setDoor(map, slot, false)
+		end
+	end
+	ok(noticed > 300 and hunts >= 8, `enough sightings and hunts to check ({noticed}, {hunts})`)
+end
+
+-- A warm keeper's steps allocate nothing: walking, waiting, roaming (its picks included),
+-- looking for players, hunting, searching and planning again.
 do
 	local f = Floor.generate(9, Brix.Random.new({ seed = 3 }))
 	local map = KeeperMap.build(f)
@@ -588,7 +773,8 @@ do
 		middleOf(map, KeeperMap.placeAt(map, vector.zero)),
 		vector.one
 	)
-	local n, roams = 0, 0
+	local players = Keeper.players()
+	local n, roams, hunted = 0, 0, 0
 	local function run(steps: number)
 		n = 0 -- the same trips each run, so the measured run's buffers are already grown
 		for i = 1, steps do
@@ -597,10 +783,18 @@ do
 				local spot, door = Keeper.front(f.slots[doors[n % #doors + 1]])
 				Keeper.hear(k, door, 1e6, spot)
 			end
+			-- a player stands a few studs ahead of it now and then, and goes up on the tops
+			if i % 90 == 1 then
+				players.ids[1], players.at[1], players.count = 9, k.at + k.facing * 6, 1
+			elseif i % 90 == 20 then
+				players.at[1] += vector.create(0, 10, 0)
+			end
 			local was = k.state
-			Keeper.step(k, 0.25, RUN) -- long steps: many trips in few steps
+			Keeper.step(k, 0.25, RUN, players) -- long steps: many trips in few steps
 			if k.state == "Roaming" and was ~= "Roaming" then
 				roams += 1
+			elseif k.state == "Hunting" and was ~= "Hunting" then
+				hunted += 1
 			end
 		end
 	end
@@ -609,12 +803,15 @@ do
 	run(4000)
 	local grew = collectgarbage("count") - before
 	ok(grew < 1, `a warm keeper allocates nothing ({grew} KB over 4000 steps)`)
-	ok(n > 10 and roams > 40, `it made enough trips and roams to check ({n}, {roams})`)
+	ok(
+		n > 10 and roams > 40 and hunted > 40,
+		`it made enough trips, roams and hunts to check ({n}, {roams}, {hunted})`
+	)
 end
 
 if failures > 0 then
 	error(`keeper: {failures} of {checks} checks failed`)
 end
 print(
-	`keeper: all {checks} checks passed ({floors} floors, {heardCount} heard, {wallCount} kept out by walls, {walks} walks to look)`
+	`keeper: all {checks} checks passed ({floors} floors, {heardCount} heard, {wallCount} kept out by walls, {walks} walks to look, {noticed} sightings, {hunts} hunts, {searches} searches)`
 )

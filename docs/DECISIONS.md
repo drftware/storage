@@ -1479,3 +1479,31 @@ the alien near you; until then it would be a hunt with no sight); picking any ma
 junction's arms would weigh junctions four times over, and units are never goals); a turn to look
 down the hall at each stop (no precedent named and its stopped stride already reads as caught
 moving; OWNER.md asks); the deal's Random for picks (above).
+
+## D-074 How a keeper sees and hunts, in its own brain, not on Pursuit (L-06b3a2, Nov 9)
+Brix's Pursuit doesn't run the chase. A hunter the game places (`moveHunter`) is never moved by
+Pursuit again, so a keeper couldn't hand back from the chase to its own roam and search; its
+runners all head for a safe zone this game doesn't have; and its `Reach` and targeting measure
+straight lines with no walls or sight. Fitting it would be new Brix work, which D-064 rules out.
+
+As built: a keeper awake in any state (watching, going to look, waiting, roaming, searching) sees
+a player within its row's `sight` (48 studs) and `sightAngle` (60 degrees either side of the way
+it faces), along a straight line `KeeperMap.clear` passes: on the floor all the way, crossing from
+place to place only at a joint between halls or a doorway whose door is all the way up, and there
+only within the door's opening (`Floor.Sizes`' `door`), so never through a wall, a shut or
+peeking door, or the posts beside a door. Feet more than 8 studs over or under its own are out
+of sight: up on the tops (10 up) or another floor; a jump isn't. Off the map (the elevator car)
+is out of sight. It hunts the nearest it sees, turning to them at once (Granny's chase on sight),
+at its top speed (`speed`, 0.9 of a run) along the halls, stopping 2.5 studs off (`Keeper.Close`,
+where L-06b3c's catch will land). Hunting, it keeps them while it sees them any way it faces, and
+no sound calls it off, so a slammed door is no free escape mid-chase. Lost, it rushes at its top
+speed to where it last saw them (Searching), stands its `linger` facing on, then roams (D-073):
+Granny's search. A sound heard while searching takes it to look, so a friend can draw it off.
+The server feeds each living player's feet (floor coordinates, reused lists) to a floor's
+keepers each step, only while one there is awake. Verified in Studio on seed 7, floor 1.
+
+Not chosen: a noticing build-up before the hunt (Alien: Isolation's; OWNER.md asks); sight that
+needs light (the Mannequin's light rule is L-06b3b's, and keepers seeing in the dark is Granny's);
+a small all-round sense of someone touching close behind (the catch covers contact); seeing by
+sampling points along the line (it can miss a wall's corner; `clear` follows the line place by
+place exactly).

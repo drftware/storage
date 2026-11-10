@@ -20,6 +20,30 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-06b3a2, it sees you and hunts (built Nov 9)
+
+Seed 7, floor 1, as below; Unit 126 holds the awake Mannequin. It doesn't catch you yet (L-06b3c):
+it comes to arm's length and stands in your face.
+- [ ] **The moment** (Play on a computer). "Walk a floor", stand in front of Unit 126 and open it:
+  the moment the door is up it sees you and comes straight out at you. Run west down the hall: it
+  stays a few studs behind, a little slower than you, and follows you round the junction if it
+  still has you in sight. Get out of its sight (round a corner well ahead of it, into a unit with
+  the door pulled down, or up on the tops) and it rushes to where it last saw you, stands there
+  five seconds, then wanders off. Stand in a hall it roams down and it turns and comes. Creep up
+  behind one walking away: it doesn't see you. Output says "sees (you), N studs off, and comes at
+  them" and "lost (you)". Does the chase feel fair, and scary? (Verified in Studio Nov 9: all of
+  the above but the unit and the creep, by teleporting and walking the character from the MCP.)
+- [ ] **Decide, defaults in place** (D-074): (1) it sees 48 studs (two hall pieces) and 60
+  degrees either side of the way it faces, blind behind; (2) it notices you the instant you're in
+  view, with no slow "it's noticing you" build-up (Alien: Isolation has one; Granny doesn't); (3)
+  hunting, it keeps you while it can see you at all, any way it faces, out to 48 studs; (4) it
+  hunts at 0.9 of your run and stops 2.5 studs from you; (5) hunting, no sound pulls it off you,
+  but once it has lost you a slammed door takes it to look (a friend can draw it away); (6) it
+  never sees you up on the tops, nor in the elevator car; (7) where it lost you it stands its
+  usual 5 s, facing the way it was going. Numbers live in `src/shared/KeeperRows.luau`.
+- [ ] **Heads-up on L-06b3a1's test below:** standing in front of 126 as you open it now starts a
+  hunt. To watch it step out and roam, open it from the side, out of its view.
+
 ## Now: judge L-06b3a1, once out it roams (built Nov 9)
 
 Seed 7, floor 1, as below; Unit 126 holds the awake Mannequin.

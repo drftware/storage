@@ -96,6 +96,9 @@ export type Map = {
 	slow: { number },
 	needs: { number }, -- the abilities it needs, as bits
 	open: { boolean },
+	-- how far either side of its middle a passage lets sight through (`clear`): a doorway, half its
+	-- door's opening; anything else, its whole edge (math.huge)
+	opening: { number },
 	doorways: { [number]: number }, -- a unit's slot: its doorway's passage
 	-- the places a roaming keeper stops in, one per hall piece in the floor's cell order: each
 	-- straight, each junction's middle square and the lobby (never a junction's arm, a unit or a
@@ -138,6 +141,7 @@ local function new(): Map
 		slow = {},
 		needs = {},
 		open = {},
+		opening = {},
 		doorways = {},
 		stops = {},
 		g = {},
@@ -253,6 +257,7 @@ local function addPassage(
 	table.insert(map.slow, slow)
 	table.insert(map.needs, needs)
 	table.insert(map.open, open)
+	table.insert(map.opening, math.huge)
 	local k = #map.cost
 	for e = 1, 2 do
 		local n = 2 * k - 2 + e
@@ -341,7 +346,9 @@ function KeeperMap.build(floor: Floor.Floor): Map
 			local fx, fz = dir(s.facing)
 			local hall = hallAt(map, s.x + fx * 0.5, s.z + fz * 0.5)
 			assert(hall, `unit {s.number}'s door opens onto no hall`)
-			map.doorways[i] = addPassage(map, hall, s.x, 0, s.z, u, s.x, 0, s.z, 0, 1, false)
+			local k = addPassage(map, hall, s.x, 0, s.z, u, s.x, 0, s.z, 0, 1, false)
+			map.doorways[i] = k
+			map.opening[k] = Floor.Sizes[s.size].door / 2
 		end
 	end
 	return map
@@ -423,6 +430,82 @@ end
 function KeeperMap.placeAt(map: Map, p: vector): (number, number)
 	local i = locate(map, p)
 	return i, map.unit[i]
+end
+
+-- Sight ------------------------------------------------------------------------------------------
+
+-- How far past a place's edge a line of sight is followed to find the place beyond it (studs).
+local SIGHT_PAST = 1e-3
+
+-- The share of the line from (ax, az) along (dx, dz) at which it leaves place `i`, a point on it
+-- being inside: where it first meets an edge it's heading out through, at most 1 (the far end).
+local function leaves(map: Map, i: number, ax: number, az: number, dx: number, dz: number): number
+	local out = 1
+	if dx > 0 then
+		out = math.min(out, (map.maxX[i] - ax) / dx)
+	elseif dx < 0 then
+		out = math.min(out, (map.minX[i] - ax) / dx)
+	end
+	if dz > 0 then
+		out = math.min(out, (map.maxZ[i] - az) / dz)
+	elseif dz < 0 then
+		out = math.min(out, (map.minZ[i] - az) / dz)
+	end
+	return out
+end
+
+--- Whether a keeper at `from` sees `to` in a straight line: both on the map's floor at the same
+--- height, and the line between them stays on the floor, going from place to place only where
+--- they meet at an open passage any keeper may use (a joint between halls, or a doorway whose
+--- door is all the way up, and there only within the door's opening). So never through a wall, a
+--- shut door, a door's posts or a hole only a crawler fits. It follows the line place by place,
+--- so it costs the places the line crosses. Allocates nothing.
+function KeeperMap.clear(map: Map, from: vector, to: vector): boolean
+	local cur, ax, az, off = locate(map, from)
+	local last, bx, bz, offTo = locate(map, to)
+	if off > 0 or offTo > 0 or map.y[last] ~= map.y[cur] then
+		return false
+	end
+	local dx, dz = bx - ax, bz - az
+	local len = math.sqrt(dx * dx + dz * dz)
+	if len < SIGHT_PAST then
+		return true
+	end
+	local past = SIGHT_PAST / len
+	-- a straight line never comes back into a rectangle it left, so it meets each place once
+	for _ = 1, #map.minX do
+		if cur == last then
+			return true
+		end
+		local t = leaves(map, cur, ax, az, dx, dz)
+		if t >= 1 then
+			return true -- `to` is on this place's edge too
+		end
+		local cx, cz = ax + dx * t, az + dz * t -- where it crosses the edge
+		local px, pz = cx + dx * past, cz + dz * past -- just beyond
+		local beyond = 0
+		for _, n in map.nodesOf[cur] do
+			local k = (n + 1) // 2
+			local other = map.nodePlace[if n % 2 == 1 then n + 1 else n - 1]
+			local w = map.opening[k]
+			if
+				map.open[k]
+				and map.needs[k] == 0
+				and map.y[other] == map.y[cur]
+				and contains(map, other, px, pz)
+				and math.abs(cx - map.nodeX[n]) <= w
+				and math.abs(cz - map.nodeZ[n]) <= w
+			then
+				beyond = other
+				break
+			end
+		end
+		if beyond == 0 then
+			return false -- a wall, a shut door or a door's post
+		end
+		cur = beyond
+	end
+	return false
 end
 
 -- The search -------------------------------------------------------------------------------------

@@ -340,6 +340,15 @@ verified: a doc page, Studio, or "untested".
   and read what happened off attributes (`KeeperState`, `DoorMotion`) and Output. A Server
   `execute_luau` can sample a keeper's pivot every 0.1 s for a path; the pure modules
   (`Floor.generate` with the dev floor's seed, `KeeperMap`) rebuild the same map to check against.
+- **Testing a chase from the MCP** (L-06b3a2, 2026-11-09): on seed 7, floor 1, Unit 126's door is
+  at world (90, 0, -700) facing +Z (the floor's origin is (0, 0, -600)). Set the character's root
+  at (90, 3, -696) from the Server, then press 126's Open prompt from the Client (camera pointed
+  at it, above): the awake Mannequin comes out at you. `character_navigation` walks the character
+  at its run, so it makes a real chase (west to (2, 3, -696), then (0, 3, -676) round the
+  junction); a Server loop sampling the body's pivot and `KeeperState` every 0.25 s into `_G`
+  shows it. Teleporting the root off the floor (the spawn, (-32, 3, 0)) loses it. Rebuilding
+  `KeeperMap` from `Floor.generate(1, Brix.Random.new({seed = 7}))` in a Server `execute_luau`
+  finds spots it can or can't see (`KeeperMap.clear`).
 - **Reading the counts from the MCP** (2026-11-07): in Play, `execute_luau` on the Client can read
   `Stats.RenderBreakdown`'s items (`Opaque`, `Transparent`, `Particles`, `UI` and the rest), each
   a string like "17936 tris, 11 draws" for the main view, and `Stats.FrameRateManager.Batches`
