@@ -2,23 +2,22 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-10, session 80 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-10, session 81 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-14b2c done (D-093), from the owner's test:** the pops were silent on screens because
-  `WrapView` dropped a sheet that reached the screen before its part; laid sheets now stream
-  `Atomic` and `WrapView` waits for a late part. A sheet now pops three times (`Wrap.ready`,
-  `Wrap.worn`, Lune-tested), not twice within 0.8 s, each pop at its own pitch and a step
-  flatter, greyer and clearer, then lies spent and silent.
-- **Verified in Studio** (test hall): lay, four walks across, Output "1 of 3" to "3 of 3" and
-  no fourth; three sounds playing on the screen; the sheet worn to 0.3 high, 0.35 clear, grey.
-  The MCP can pick the roll up now (docs/STUDIO.md). L-14b2d (a baked burst look) waits on OWNER.
+- **The bubble wrap is done (L-14b2a to c, D-090 to D-093).** A sheet pops three times, each
+  a step flatter, greyer and clearer, then lies spent and silent; every screen hears it.
+- **Owner played the pops (Nov 10): "better".** The sound reads as rustling, not popping: that
+  waits for polish (ROADMAP's polish list, "A pop that sounds like popping"). Read "better" as
+  the spent sheet looking popped enough, so L-14b2d (a baked burst look) stays parked unless the
+  owner says otherwise. The rest of the pops' checks (keeper, friends, a jump) are in OWNER.md.
+- Session 81 changed docs only (ROADMAP, OWNER.md); L-10 not started, awaiting the owner's go.
 
 ## Next task: L-10 The minimap
 The moment: deep in the building, a chase behind you, a glance at the corner map shows the way
 back to the lobby and the gate; the halls you've walked are drawn, the rest is dark.
-1. Owner test results first, if pasted (if the spent sheet doesn't read as popped, do L-14b2d
-   first instead: ROADMAP).
+1. Owner test results first, if pasted (if the owner says the spent sheet doesn't read as
+   popped, do L-14b2d first instead: ROADMAP).
 2. Brix first: check `docs/FRAMEWORK.md` for any map or HUD piece; build here only what it
    lacks, and add a neutral line to Brix's ROADMAP if it's reusable.
 3. Pure core with a failing test first (`tests/minimap.spec.luau`): from a `Floor.Floor`, the
