@@ -121,10 +121,12 @@ local FLOOR_ARRIVAL = CFrame.lookAt(Vector3.new(0, 3, 6), Vector3.new(0, 3, -12)
 -- the first unit on the right (open its door to find them); a padlock across the spawn from the
 -- first pair, to lock any shut door with; a saw between them, to cut a hole between any two
 -- units side by side (L-12b2: 106 into 108, say), then crawl through it (L-12b3); a ladder along
--- the hall beyond them (L-13b1), to carry; an air horn standing beside the first cutters (L-14a1).
+-- the hall beyond them (L-13b1), to carry; an air horn standing beside the first cutters (L-14a1),
+-- and a roll of bubble wrap on its side beyond the horn (L-14b1).
 local TOOLS = {
 	{ key = "BoltCutters", at = Vector3.new(-28.5, FLOOR_TOP, 2.2), yaw = 64 },
 	{ key = "AirHorn", at = Vector3.new(-26.3, FLOOR_TOP, 2.6), yaw = 160 },
+	{ key = "BubbleWrap", at = Vector3.new(-24.2, FLOOR_TOP, 2.9), yaw = 100 },
 	{ key = "BoltCutters", at = Vector3.new(-17, 0, 11), yaw = 205 },
 	{ key = "Padlock", at = Vector3.new(-28.5, FLOOR_TOP, -2.6), yaw = 200 },
 	{ key = "Saw", at = Vector3.new(-25.5, FLOOR_TOP, -0.2), yaw = 100 },

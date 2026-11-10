@@ -2,40 +2,43 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-10, session 76 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-10, session 77 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-14a2 done (D-087): blowing the air horn.** Blow (left click, L2, a round button left of a
-  phone's jump button or beside the slots' bar) while it's in your hand. Any tool whose `Catalog`
-  row has a `verb` now has a press of its own: `ToolUse`, checked by `Slots` and fired as
-  `Slots.used`. `Horns` (server) keeps one blow per 2.5 s, stamps the horn `Blown` and calls
-  `Keepers:hearHorn`: keepers on that floor within 130 studs along the halls come to where you
-  blew it, sleepers in an open unit wake (`Horn`, pure, `tests/horn.spec.luau`). `HornView` plays
-  the blast, raises the horn (`ToolView`'s new `Hand`) and kicks your view; friends hear it at
-  your horn and see your left arm go up. Verified in Studio on seed 7 (a sleeper woke 100 studs
-  off and came; a roamer came from 44); Output clean. Reach, phone, friend, sound: `OWNER.md`.
+- **L-14b1 done (D-088): bubble wrap's art.** Its precedent is Minecraft's tripwire. A roll of
+  large-bubble wrap on a cardboard core, taped shut (`Props.Tools.BubbleWrap`, its `Catalog`
+  row), and the sheet it unrolls (`Props.BubbleSheet`, its own template), from `art/bubblewrap/`.
+  One lies in the test hall beyond the horn. Picked up, held and dropped in Studio at desktop
+  size; Output clean. No `verb` yet: L-14b2 adds Lay. Phone, friend, bubbles, sound: `OWNER.md`.
+- **Owner calls (D-089):** a corner minimap; the blanket and glow sticks parked; the Moth out,
+  and no other monster built until the roster's rework (`OWNER.md`). "Keepers" isn't their name.
 
-## Next task: L-14b1 Bubble wrap's art
-The moment (L-14b2 builds it): you lay a sheet across the hall behind you, and seconds later,
-round the corner, it pops: something is coming, and every keeper on the floor heard it too.
-1. Owner test results first, if pasted.
-2. Name the hit game whose noise trap this is (Granny's creaking floor and things that fall?).
-   With no real precedent it's an untested bet: `OWNER.md`, and ask before building.
-3. Read `art/airhorn/` (newest, smallest) and `art/unit/README.md` for the recipe: one spec, parts
-   UV-mapped to a shared set, baked PBR, an FBX, a generated `Specs/BubbleWrap` (the sheet's
-   size, the roll's grip), look sheets. Two looks: a roll in your hand, a flat sheet on the
-   floor (the sheet as a second part, or its own template; say which in DECISIONS).
-4. The `Catalog` row: name "Bubble wrap", hold, use (held out to unroll), a friend's hand,
-   icon, pick-up and drop sounds (Pro Sound Effects, measured by AudioAnalyzer), `verb = "Lay"`.
-   Import into `Props.Tools` (`Tools.prepare`) and lay one in the test hall beside the horn.
-**Acceptance:** checks green; `scripts/art.sh` rebuilds it; in Studio at desktop size, picked
-up, held and dropped, the slot's picture reads at phone size; Output clean.
-**Read first:** ROADMAP L-14b; D-086 (the horn's art, the pattern); `art/airhorn/` (its spec and
-build); `art/unit/README.md`; `src/shared/Tools/Catalog.luau`; `docs/FRAMEWORK.md`.
+## Next task: L-14b2 Laying the bubble wrap, and the pops
+The moment: you lay a sheet across the hall behind you, and seconds later, round the corner, it
+pops: something is coming, and every keeper on the floor heard it too.
+1. Owner test results first, if pasted. Too big for a session? Split it (laying; the pops).
+2. Lay: add `verb = "Lay"` to `Catalog.BubbleWrap`. On `Slots.used` (as `Horns` takes the horn),
+   the server checks you're on a hall floor (not in a unit, not on the tops, not in the car),
+   lays a `Props.BubbleSheet` clone across the hall at your feet (`Specs/BubbleWrap.Sheet`,
+   along the hall piece's axis from `Floor`), and takes the roll from your slot (default: one
+   sheet a roll; the GDD gives no count, so add it to `OWNER.md`).
+3. The pop: a pure `Wrap` (`tests/wrap.spec.luau`) says when a step crosses a sheet; the server
+   checks players' and keepers' feet each step. A crossing pops it, loud (measure Pro Sound
+   Effects' pops, docs/STUDIO.md), and the sheet shows it; keepers hear it as a door: `Keepers`
+   gains a general `hear(at, reach)` beside `hearHorn`. Friends pop it too. Default: a popped
+   sheet stays, flat and silent (`OWNER.md`).
+4. Every action answers: your view brings the roll out and down as you lay it (the row's `use`),
+   an unrolling crinkle, the sheet unrolling across the floor rather than appearing.
+**Acceptance:** checks green; in Studio, lay a sheet in the test hall, cross it: the pop plays,
+a keeper on the floor comes to it; a friend's crossing (a second player or a stand-in) pops it
+too; Output clean.
+**Read first:** ROADMAP L-14b2; D-087 (the horn's press, the pattern); D-088;
+`src/server/Horns.luau`; `src/shared/Tools/Horn.luau`; `Keepers:hearHorn` in
+`src/server/Keepers.luau`.
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-14b1, L-14b2 (bubble wrap); D-064, D-068 to D-087. Then L-14c, L-14d; L-07 (takes
-   `Keepers.caught`) to L-10.
+1. L-14b2 (bubble wrap); D-064, D-068 to D-089. Then L-07 (takes `Keepers.caught`), L-08, L-10
+   (the corner minimap; the owner may move it up), L-09. L-14c and L-14d are parked.
 2. **Check, small:** caught (moved to the lobby), the MCP's Client couldn't move the character
    54 s on (CFrame or `MoveTo`); a Server pivot could. Can a real player walk after a catch?
    Caught crawling or on the ladder, `CrawlView`/`LadderView` may keep holding PlatformStand.
@@ -45,23 +48,19 @@ build); `art/unit/README.md`; `src/shared/Tools/Catalog.luau`; `docs/FRAMEWORK.m
    check where you stand: allow for it as `Crawling.counts` does if one drops. And any server
    check of where a player faces sees the turn 0.4 s late (D-084).
 4. **Checks on the tops, small:** Climb or Drop down lying behind a sawn hole slides you across
-   it; a friend's drop-in lunges toward the door and lands 0.2 under the floor; a door's own
-   buttons in reach while lying at its front, or the ladder to your shoulder while lying, should
-   be refused for crawlers (`Ladders:crawling`). **GDD:** its ladder line says open mesh (D-058/9).
-   A horn blown on the tops is heard from the unit under you (D-087).
+   it; a friend's drop-in lands 0.2 under the floor; crawlers should be refused a door's buttons
+   and the ladder (`Ladders:crawling`). A horn blown up there is heard from the unit under you.
 5. **Bugs, small:** FlashlightView's `motor()` takes only `Motor6D` (shoulders are
    `AnimationConstraint`s; KneelView's `joint()` and HornView's take both), so a friend's torch
    arm never raises; DoorSounds' first slam lands up to 0.35 s late (`SoundPrimer.prime`).
-6. **Check:** G is a door's Slam and a tool's Drop: at an open door, tool in hand, which? And a
-   left click blows a horn in hand even while clicking the slots' bar with a free cursor.
-7. **Check:** Output's "rbxassetid://203785492 ... Asset type does not match" (six per Play), and
-   139561946838090's "being generated"; neither id is in our code, templates or services.
-8. Keepers should hear the keypad, a dropped tool, the saw, a crawl, the ladder and a drop in
+6. **Check:** G is a door's Slam and a tool's Drop: which wins at an open door? A left click
+   blows a horn even while clicking the slots' bar. Output's six "rbxassetid://203785492 ...
+   Asset type does not match" a Play: the id is in none of our code, templates or services.
+7. Keepers should hear the keypad, a dropped tool, the saw, a crawl, the ladder and a drop in
    (D-059, D-066): L-14b2's general sound on `Keepers` is the place. **Later:** they can't see
    into the car, nor between tops and halls (OWNER.md).
-9. **Small:** a trapped keeper's every blow prints (about 28 a trap); a keeper stopped against a
-   wall may put its reaching hand through it; after an MCP Peek a door ignores presses until you
-   step out of reach and back (docs/STUDIO.md): does a real press?
+8. **Small:** a trapped keeper's every blow prints (about 28 a trap); a keeper stopped against a
+   wall may put its hand through it; after an MCP Peek a door ignores presses (docs/STUDIO.md).
 
 ## Kickoff for the next agent
 ```text

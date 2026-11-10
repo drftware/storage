@@ -168,6 +168,39 @@ local Catalog: { [string]: Row } = {
 			pitch = 1.3,
 		},
 	},
+	-- Laid across a hall, it pops when anything crosses, heard floor-wide; friends pop it too (GDD):
+	-- an alarm you set behind you, as Minecraft's tripwire is set off by any mob or player. A roll
+	-- of large-bubble wrap on a cardboard core, its loose end taped down (art/bubblewrap). L-14b2
+	-- gives it its press, Lay, and the sheet it unrolls (`Props.BubbleSheet`).
+	BubbleWrap = {
+		name = "Bubble wrap",
+		template = "BubbleWrap",
+		-- low on your left, its axis reaching ahead and in from the bottom corner of your view,
+		-- the taped end turned up to you
+		hold = { -1.3, -1.2, -2.6 },
+		holdTurn = { 240, -8, 0 },
+		-- held out ahead and low, across your view, to unroll onto the floor (a first pose: L-14b2
+		-- sets it against the unrolling)
+		use = { -0.3, -1.5, -2.4 },
+		useTurn = { 180, -10, 0 },
+		-- by its middle, its axis along your forearm: carried like a rolled mat
+		inHand = { 0, 90, 0 },
+		-- an end's wound layers and core to the front, a little from above to show the tape, laid
+		-- corner to corner
+		icon = { 0.62, 20, -35, -25 },
+		-- Pro Sound Effects' "Plastic Bubble Wrap Short Fluttering Movements 12": from its first
+		-- crinkle (0.22 s), a hand closing on the wrap and the rustle after it
+		pickUp = { id = "rbxassetid://9125745465", from = 0.2, length = 0.45, volume = 0.7 },
+		-- "Plastic Bubble Wrap Short Fluttering Movements 11": from just before its sharp crackle
+		-- (0.30 s), the roll landing and its wrap settling, a little lower for its weight
+		drop = {
+			id = "rbxassetid://9125745466",
+			from = 0.27,
+			length = 0.6,
+			volume = 0.8,
+			pitch = 0.92,
+		},
+	},
 	-- Gets you onto open unit tops to run across them (GDD). An aluminium extension ladder, carried
 	-- collapsed; leaned on a unit's front its fly runs out past the steel top (art/ladder, L-13b2).
 	Ladder = {

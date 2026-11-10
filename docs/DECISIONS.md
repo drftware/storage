@@ -1971,3 +1971,50 @@ than opening one); the horn heard from the tops by keepers below (the map puts a
 in the unit under you, so a shut door muffles it: the same open question as sight between the
 tops and the halls, `OWNER.md`); a client-only sound for friends (the server's stamp keeps one
 truth, and a late screen skips a stale blast).
+
+## D-088 Bubble wrap: a roll you carry, a sheet it lays (L-14b1, Nov 10)
+The GDD's bubble wrap ("Laid across a hall, it pops when anything crosses", its catch "Friends pop
+it too") is a tripwire alarm, and its precedent is Minecraft's tripwire, which any mob or player
+walking through sets off. Lethal Company's whoopie cushion sounds when stepped on too, but whether
+its monsters hear it is only anecdote, so it isn't the precedent. Built from code the air horn's
+way (`art/bubblewrap/`): one baked 1024² set and two MeshParts in one FBX. The roll is a 12-inch
+household roll of large-bubble wrap at 0.15 studs to the inch (1.6 times life, the horn's scale):
+1.8 studs long, 0.78 across, on a brown cardboard core that stands a little proud of each wound
+end, its loose end high on the front held down by a strip of brown packing tape. The sheet is that
+wrap unrolled across the 8-stud hall: 7.35 studs across (short of each door face), 1.8 deep, its
+ends curled up as a roll's wrap does, rippling a little, sitting just off the floor. Bubbles are a
+fat inch across in staggered rows ("large bubble" wrap), because half-inch bubbles are under four
+pixels a few studs off on a phone; each is painted as a clear dome with a white rim, which reads in
+Roblox as rings (the owner judges, `OWNER.md`). Clear film with a cool tint, milky where it's
+wound thick; on the floor the film is painted grey, as if over concrete. The sheet is its own
+template, `ReplicatedStorage.Props.BubbleSheet` (pivot: the middle of the floor under it), not a
+second part of the tool: the tool's template is what's carried, dropped and handed over, while a
+laid sheet stays where it was laid, and several may be down at once. The sheet is its top surface
+only: it lies on a floor and curls up towards the hall, so nothing sees its underside. The atlas is
+laid out by hand, the sheet a strip along the bottom at 137 texels a stud and the roll
+smart-projected into the square above it at 240, since packing a 4-to-1 strip into a square tile
+wastes most of it. Held low on your left, its axis reaching in from the bottom corner, the taped
+end up (`hold` -1.3, -1.2, -2.6, turned 240, -8, 0); a friend carries it by its middle along the
+forearm (`inHand` 0, 90, 0). Picking it up plays Pro Sound Effects' "Plastic Bubble Wrap Short
+Fluttering Movements 12" from its first crinkle; dropping it, "11" from just before its sharp
+crackle, a little lower; both measured by AudioAnalyzer. No `verb` yet: a Lay button that did
+nothing until L-14b2 would be a silent action, so the row gains `verb = "Lay"` there. Not chosen:
+pink anti-static wrap (reads as a toy); a 24-inch roll (3.6 studs in your hand covers the hall);
+a loose tail flapping off the roll (harder to read on a floor than the tape); real see-through film
+(`AlphaMode` Transparency, in ROADMAP's polish list).
+
+## D-089 Owner calls, Nov 10: a corner minimap, two tools parked, the Moth out
+- **The map is a small corner minimap, always on, for now** (L-10). The owner may later make it a
+  map you stop to open, so you're exposed while you read it; the drawing stays apart from its frame
+  so that's a small change. Friends as dots stays the default, and moving it up the queue is the
+  owner's call (`OWNER.md`).
+- **Only the bubble wrap of the tools left:** the moving blanket and glow sticks are parked, not
+  cut (L-14c, L-14d); the owner isn't sure we need them (`OWNER.md`).
+- **The Moth and its mothballs are out:** "taking the whole storage unit thing too literally".
+  Beyond the Mannequin, the GDD's roster was never the owner's pick; it waits on a rework from the
+  loop, each monster with a hit game's rule and storage only as its look (`OWNER.md`). The GDD
+  still lists them until then; build none of them.
+- **"Keepers" was never agreed as their name.** It's our working word in the docs and code only;
+  nothing on screen says it. The code keeps `Keepers` until a name is picked and reaches the screen.
+- **The air horn's controls pass** (the round Blow button left of a phone's jump button; a left
+  click): tweak if playtesters ask.

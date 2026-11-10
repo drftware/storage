@@ -10,7 +10,7 @@ nowhere else.
   the flashlight's, the bolt cutters', the padlock's, the saw's, the crawl hole's, the ladder's and
   the sawn top's templates live only in the open place, at `ReplicatedStorage.Props.Elevator`,
   `Props.Note`, `Props.Flashlight`, `Props.Tools.BoltCutters`, `Props.Tools.Padlock`,
-  `Props.Tools.Saw`, `Props.Tools.Ladder`, (Nov 10) `Props.Tools.AirHorn`, `Props.CrawlHole`, `Props.TopHole` and (Nov 10) the
+  `Props.Tools.Saw`, `Props.Tools.Ladder`, (Nov 10) `Props.Tools.AirHorn`, `Props.Tools.BubbleWrap`, `Props.BubbleSheet`, `Props.CrawlHole`, `Props.TopHole` and (Nov 10) the
   dent's `Props.DoorDent_M` and `Props.DoorDent_S` (without the dent's, doors never dent; without the others
   nobody has a torch, no tool lies anywhere and no hole can be cut; Output warns). Unsaved, the next open loses them and every
   floor's lobby has an empty hole in its back wall (Output warns). The units' own templates,
@@ -20,6 +20,23 @@ nowhere else.
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
+
+## Now: judge L-14b1, the bubble wrap's look (built Nov 10)
+
+Picked up, held and dropped in Studio at desktop size; a phone, a friend and your ears are yours.
+The look sheets are `art/sheets/bubblewrap-*.png`.
+- [ ] **On a phone** (Galaxy A16 in the Device Simulator): the test hall's roll lies on its side
+  beyond the air horn. From standing height it should read at once as a roll of bubble wrap, the
+  brown core at its ends and the tape on top. Pick it up: the slot's picture should read as a
+  roll, not a white blob. Held low on your left, does it cover too much of the hall?
+  (`Catalog.BubbleWrap.hold`)
+- [ ] **The bubbles:** in Roblox they read as white rings more than round domes (each bubble's
+  edge is painted white, its middle clear). Keep that, or should they look rounder and softer?
+- [ ] **A friend holding it** (Team Test, two players): they carry it by its middle along their
+  forearm, like a rolled mat. Tell me if it swallows their fist or points the wrong way
+  (`Catalog.BubbleWrap.inHand`).
+- [ ] **By ear:** Pro Sound Effects' bubble wrap rustles, measured but never heard here: a crinkle
+  as you pick it up, a sharp crackle as it lands. Right, or too busy?
 
 ## Now: judge L-14a2, blowing the air horn (built Nov 10)
 
@@ -31,12 +48,6 @@ wandered on. A phone, a friend and your ears are yours.
   last handoff suggested about 60 (a bit over two pieces), which would make it quieter than
   opening a door. Play a floor: if every blow wakes a sleeper you never meant to, try 80
   (`Horn.Reach`).
-- [ ] **On a phone** (Galaxy A16 in the Device Simulator): pick up the test hall's horn. A round
-  "Blow" button shows left of the jump button only while it's in your hand. Can your right thumb
-  hit it while you run, without catching the jump or the torch button above it? Tap it: the horn
-  comes up in your view, your view kicks, the button dims for 2.5 s then lights again.
-- [ ] **On a keyboard:** a left click blows it; the Blow button sits left of the slots' bar.
-  Does the raised horn (up and in, the mark to you) cover too much of the hall? (`Catalog.AirHorn.use`)
 - [ ] **A friend blowing it** (Team Test, two players): you hear it from their horn, and their
   left arm swings up and forward through the blast and back down (`Horn.Arm`, 135 degrees). Tell
   me if the horn goes through their head or the arm points the wrong way.
@@ -904,6 +915,21 @@ D-071 and D-072 answer it, and the tickets are in ROADMAP's L-06b3 to L-06b5.
   in the hall, sees no buttons on that door until it's all the way up, so they can't slam it back
   down mid-lift. Then slam the door on your friend: they can always Lift out.
 
+## Decide: the monsters, and two parked tools (Nov 10)
+
+- [ ] **The monsters, reworked:** the GDD's roster beyond the Mannequin was my early draft, never
+  your pick, and much of it starts from what a storage building holds (a rug, a clock, boxes, a
+  moth) rather than from the loop. The Moth and its mothballs are out (your call, Nov 10). My
+  proposal: rebuild the roster from what each one does to a floor (hunts you while you search,
+  cuts off a hall, goes after the code, chases you to the gate), each with a hit game's rule and
+  storage only as its look. The ones with a clear precedent today: the Mannequin (Lethal
+  Company's Coil-head), the Grandfather's rule (DOORS' Rush), the Tenant (Lethal Company's
+  Hoarding Bug) and the Haul (DOORS' Seek). Their name too: "keepers" is only our working word in
+  the docs and code, and nothing on screen says it. Say when you want a session on this.
+- [ ] **The moving blanket and glow sticks** (parked Nov 10, L-14c and L-14d): you weren't sure we
+  need them. The corner minimap does most of glow sticks' job; the blanket blinds a keeper for a
+  few seconds if it lands. Cut, keep, or decide after playtests?
+
 ## Decide: moving between units, and the map (your note, Nov 7)
 
 - [ ] **The unit's bulb comes on with its door** (default for your call on Nov 7, a dim light
@@ -917,11 +943,12 @@ D-071 and D-072 answer it, and the tickets are in ROADMAP's L-06b3 to L-06b5.
   next hall goes nowhere. The alternative: rows back to back (deeper units, or halls closer), so a
   hole or a top run crosses to the next hall, a shortcut keepers can't take, like Among Us's
   vents. Bigger change; say if you want it.
-- [ ] **The map** (L-10, after the elevator): a map you open with a button that fills in only the
-  halls you've walked (R.E.P.O.'s map does this), with the lobby and elevator always on it, never
-  keepers (that stays the office light board's job). Default: your friends show on it as dots, as
-  Lethal Company's ship radar shows the crew, so a team can regroup. Say if friends should stay
-  off it (more tension, more getting lost), or if you'd rather it be a small corner map.
+- [ ] **The minimap** (L-10; decided Nov 10: a small corner map, always on, for now): it fills in
+  only the halls you've walked (R.E.P.O.'s map does this), the lobby and elevator always on it,
+  never keepers (that stays the office light board's job). Two calls left. Friends show on it as
+  dots by default, as Lethal Company's ship radar shows the crew, so a team can regroup; say if
+  they should stay off it. And it's queued after getting kept and the next floor (L-07, L-08);
+  its elevator is built, so say if it should come straight after the bubble wrap.
 - [ ] **No Lock button on doors** (default, D-030): buttons show to everyone, so a padlock button
   would sit on every shut door for a tool few carry. The padlock tool will lock a door when it's
   built. Bolt cutters' Cut does show on every padlocked door and says "Need bolt cutters" without

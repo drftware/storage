@@ -156,6 +156,12 @@ local ART: { Art } = {
 		description = "A marine air horn: a white steel can with a black band, an orange trumpet in a black collar",
 	},
 	{
+		key = "BubbleWrap",
+		path = "art/bubblewrap/out/BubbleWrap.fbx",
+		manifest = "art/bubblewrap/assets.json",
+		description = "A roll of clear bubble wrap on a cardboard core, taped shut, and a sheet of it laid flat",
+	},
+	{
 		key = "Ladder",
 		path = "art/ladder/out/Ladder.fbx",
 		manifest = "art/ladder/assets.json",

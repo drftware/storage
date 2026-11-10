@@ -735,17 +735,27 @@ on nothing in Brix.
       sleeper in 154 woke 100 studs off and came; a roaming one came 44 studs off, looked, left.
   - [ ] **L-14b Bubble wrap.** Laid across a hall, it pops when anything crosses, heard
     floor-wide (and on the light board, Phase 2); friends pop it too. Split Nov 10, as the horn:
-    - [ ] **L-14b1 Bubble wrap's art.** Its hit-game precedent named first (`OWNER.md` if none);
-      a roll carried in your hand and a sheet laid flat across a hall, built from code the
-      unit's way (`art/<name>/`), a `Catalog` row (hold, a friend's hand, pick-up and drop
-      sounds, `verb` "Lay"), laid in the test hall by the horn.
-    - [ ] **L-14b2 Laying it and the pops.** Lay (the `ToolUse` press, D-087) unrolls a sheet
-      across the hall where you stand; anything crossing it pops it, loud, heard by keepers as a
-      door is (`Keepers` gains a general sound alongside `hearHorn`); friends pop it too.
-  - [ ] **L-14c The moving blanket.** Thrown over a keeper, it blinds it a few seconds; it has
-    to land.
-  - [ ] **L-14d Glow sticks.** Mark a route with light that never times out and the building
-    can't see; keepers with eyes can.
+    - [x] **L-14b1 Bubble wrap's art.** Done Nov 10 (D-088). Its precedent is Minecraft's
+      tripwire, set off by any mob or player that walks through it. A roll of large-bubble wrap
+      on a cardboard core, its loose end taped down, and the sheet it unrolls, curled at its ends
+      (`art/bubblewrap/`, one baked set; 1,840 and 768 triangles). The roll is
+      `Props.Tools.BubbleWrap` with its `Catalog` row (held low on your left, the taped end up; in
+      a friend's fist by its middle along the forearm; a crinkle picking it up, a crackle dropping
+      it); the sheet is its own template, `Props.BubbleSheet`. Laid in the test hall beyond the
+      horn; picked up, held and dropped in Studio at desktop size (the phone look waits on
+      `OWNER.md`). No `verb` yet, so no Lay button does nothing until L-14b2 gives it one.
+    - [ ] **L-14b2 Laying it and the pops.** Lay (the `ToolUse` press, D-087: add `verb = "Lay"`
+      to the row) unrolls `Props.BubbleSheet` across the hall where you stand (`Specs/BubbleWrap`
+      `.Sheet`: 7.35 studs across the 8-stud hall, 1.8 deep), the roll's `use` pose set against
+      the unroll. Anything crossing it pops it, loud, heard by keepers as a door is (`Keepers`
+      gains a general sound alongside `hearHorn`); friends pop it too. The GDD doesn't say how
+      many sheets a roll lays: default one, the roll used up (`OWNER.md` when built).
+  - [ ] **L-14c The moving blanket.** Parked Nov 10: the owner isn't sure we need it, and it may
+    come from reading the storage setting too literally (`OWNER.md`). Thrown over a keeper, it
+    blinds it a few seconds; it has to land.
+  - [ ] **L-14d Glow sticks.** Parked Nov 10 with the blanket (`OWNER.md`); the corner minimap
+    (L-10) does most of their job of keeping you from getting lost. Mark a route with light that
+    never times out and the building can't see; keepers with eyes can.
 - [ ] **L-07 Getting kept and rescued.** Shrink-wrapped, stored in a random unit, banging to ping
   the team, cut free in a second, padlocked if left too long (GDD "Getting kept"). It takes
   `Keepers.caught` (L-06b3c, D-077) and replaces its stand-ins: DevCorridor's move to the lobby,
@@ -753,13 +763,16 @@ on nothing in Brix.
   player alone (`Caught.Out`) becomes "while kept". What you carried drops where you stood.
 - [ ] **L-08 The ride and the next floor.** The elevator ride and a second floor, so the climb is
   a loop and not a single room. Brix: its round loop (ENG-13) if it has landed.
-- [ ] **L-10 The map** (owner, Nov 7: players shouldn't get lost and give up). A floor map you
-  open with a button, filling in only the halls you've walked, as R.E.P.O.'s map fills in rooms as
-  you find them; the lobby and elevator always marked, so the sprint for the gate always knows the
-  way; units you've opened ticked. Never keepers or lit fixtures: that stays the office light
+- [ ] **L-10 The minimap** (owner, Nov 7: players shouldn't get lost and give up; Nov 10: a small
+  corner map, always on, for now, which the owner may later make a map you stop to open, exposed
+  while you read it). It fills in only the halls you've walked, as R.E.P.O.'s map fills in rooms
+  as you find them; the lobby and elevator always marked, so the sprint for the gate always knows
+  the way; units you've opened ticked. Never keepers or lit fixtures: that stays the office light
   board's (GDD), so working the board is still worth a player. Drawn from the same `Floor` data
-  as the building (GDD: one tile graph). Phone first: one tap to open, readable at phone size.
-  Whether friends show on it waits on the owner (`OWNER.md`). Needs L-05's elevator.
+  as the building (GDD: one tile graph), the drawing kept apart from its frame so a full map
+  behind a button is a small change. Phone first: small enough to leave the buttons and the hall
+  clear, readable at phone size. Friends show as dots by default (`OWNER.md`). Its elevator is
+  built (L-05), so it can move up whenever the owner says.
 - [ ] **L-09 Hone.** Playtest with friends, tune Config, add juice, repeat until Gate 1. May
   repeat as several sessions; each one names what it changed and why. Brix: live config (ENG-11)
   and the presentation kit (ENG-15) as they land.
@@ -767,7 +780,8 @@ on nothing in Brix.
 ## Phase 2: The rest of the game (GDD build order step 2)
 
 All ten floors with the ride, the stairwell set piece and both boss floors; the director; the
-other keepers and their own tools (mothballs, the box cutter); the dolly; the light board; finds
+other keepers (the roster waits on the owner's rework, `OWNER.md`; the Moth and its mothballs
+are out, Nov 10) and their own tools; the dolly; the light board; finds
 with rarity; your lobby unit; the store; Captures. Player data, remotes, telemetry and UI from Brix
 (ENG-09 to ENG-16). Then soft launch.
 
@@ -777,6 +791,11 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **Bubble wrap you can see through (L-14b1):** the wrap is opaque, painted as clear film over
+  grey. A `SurfaceAppearance` with `AlphaMode` Transparency and an alpha in its colour map would
+  show the real floor through the sheet's film and the roll's outer layer (one transparent part a
+  sheet: check it on a low-end phone).
 
 - **The air horn, felt by friends (L-14a2):** a friend standing beside your blast gets a small
   kick to their view too, fading over a few studs; and a breath of air hissing out of the can as

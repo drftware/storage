@@ -331,6 +331,12 @@ verified: a doc page, Studio, or "untested".
   (the joists, 2.8 up, don't collide) is too little for a 5-stud avatar; teleported onto a lid it
   stuck at root height 11.9 and `MoveTo` couldn't move it. It didn't fall either.
 
+- **A held tool shows black in a capture once the hall's light times out** (L-14b1): the motion
+  light over your hall piece goes out a few seconds after you stop, and your view's tool and torch
+  are lit only by the world. Walk a few studs (`character_navigation`) to trip it, point the
+  camera, and capture at once. A Scriptable camera set from `execute_luau` is put back to Custom
+  by the Assistant after the call; Custom keeps the `CFrame` you set in first person.
+
 ## The hall's render cost
 
 - **Testing a server system from the MCP** (L-06b2a, 2026-11-09): the Host's systems live inside
@@ -682,6 +688,12 @@ verified: a doc page, Studio, or "untested".
 - **The command bar caches `require`** (L-11c): after Rojo syncs a module, requiring it from
   `execute_luau` in Edit can still return the old one. Require a clone instead
   (`require(ReplicatedStorage.Shared.Tools:Clone())`), then destroy the clone.
+- **Bubble wrap's sounds, measured** (L-14b1, 2026-11-10; Edit, AudioPlayer at half speed to
+  AudioAnalyzer, 50 ms bins): Pro Sound Effects' "Plastic Bubble Wrap Short Fluttering
+  Movements" 12 9125745465 (2.2 s) starts at 0.2 s, crinkles at 0.25 and rustles to about 1 s; 11
+  9125745466 (2.5 s) has a sharp crackle at 0.30 to 0.40 s (-12 to -6 dB), then rustle at -24 to
+  -36 dB to 1.6 s; 9 9125745458 (3.5 s) hits hardest at 0.35 to 0.40; 13 and 16 are soft
+  throughout. "Bubble Wrap Light Crinkling Plastic" 1 and 2 run 10 to 35 s (beds, not hits).
 - **The air horns, measured** (L-14a2, 2026-11-10; Edit, AudioPlayer to AudioAnalyzer, 0.1 s bins
   at half speed, then 20 ms at a quarter): Pro Sound Effects' "Air Horn Various Lengths" 1 to 14
   (9113071755, 9113071764, 9113071895, 9113071891, 9113071885, 9113072082, 9113072098,
