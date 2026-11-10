@@ -5,46 +5,43 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 **Updated:** 2026-11-10, session 81 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **The bubble wrap is done (L-14b2a to c, D-090 to D-093).** A sheet pops three times, each
-  a step flatter, greyer and clearer, then lies spent and silent; every screen hears it.
-- **Owner played the pops (Nov 10): "better".** The sound reads as rustling, not popping: that
-  waits for polish (ROADMAP's polish list, "A pop that sounds like popping"). Read "better" as
-  the spent sheet looking popped enough, so L-14b2d (a baked burst look) stays parked unless the
-  owner says otherwise. The rest of the pops' checks (keeper, friends, a jump) are in OWNER.md.
-- Session 81 changed docs only (ROADMAP, OWNER.md); L-10 not started, awaiting the owner's go.
+- **L-10 done (D-094): the corner map.** Top right under the top bar, it slides in on a floor and
+  follows you: halls fill in as you walk them, the lobby and car drawn from the start, the gate's
+  amber mark held on the edge while it's off the window, opened units green with a tick, friends
+  as blue dots (`Minimap.Friends`). North stays up. Roblox's player list is off.
+- Pure core `src/shared/Minimap.luau` (Lune-tested); `Minimaps` on the server sends the layout as
+  shapes, never the seed (the seed would give away the code and every unit); `MinimapView` (the
+  window) and `MinimapDrawing` (the drawing, reusable for a full map later).
+- **Verified in Studio** at Galaxy A16 size, seed 7, floor 1: walked halls filled in, unit 103
+  opened went green and ticked, the gate's mark on the edge, buttons clear, Output clean.
+- Owner played the pops Nov 10 ("better"); the rustling pop sound is in ROADMAP's polish list.
 
-## Next task: L-10 The minimap
-The moment: deep in the building, a chase behind you, a glance at the corner map shows the way
-back to the lobby and the gate; the halls you've walked are drawn, the rest is dark.
-1. Owner test results first, if pasted (if the owner says the spent sheet doesn't read as
-   popped, do L-14b2d first instead: ROADMAP).
-2. Brix first: check `docs/FRAMEWORK.md` for any map or HUD piece; build here only what it
-   lacks, and add a neutral line to Brix's ROADMAP if it's reusable.
-3. Pure core with a failing test first (`tests/minimap.spec.luau`): from a `Floor.Floor`, the
-   drawable pieces (each hall piece, the lobby, the elevator, each unit's door) and which piece a
-   point is on, so "walked" fills in by piece. The lobby and elevator are always drawn.
-4. A screen needs the floor's layout: FloorBuilder already sends the tops' map to screens as an
-   attribute (`Tops.MapAttribute`, `Tops.encode`); send the floor the same way (or its seed and
-   number, if `Floor.generate` rebuilds it the same on a screen: test that in Lune).
-5. Client (`MinimapView`): a small corner map, phone first, clear of the buttons and the hall;
-   halls fill in as you walk them, opened units ticked (their doors' state), you as an arrow,
-   friends as dots behind one Config switch (owner, D-091). Never keepers or lit fixtures (the
-   light board's job). Keep the drawing apart from its frame, so a full map behind a button is
-   a small change later. Each change eases in (no snapping).
-**Acceptance:** checks green; in Studio on seed 7, floor 1, walk two halls from the lobby: the
-lobby and elevator show from the start, the walked halls fill in, an opened unit is ticked; at
-Galaxy A16 size it leaves the buttons and the hall clear; Output clean.
-**Read first:** ROADMAP L-10; D-091; `Floor.map` and the cell fields in `src/shared/Floor.luau`;
-`Tops.encode` in `src/shared/Tops.luau`; `docs/FRAMEWORK.md`; CODEMAP's client rows.
+## Next task: L-07 Getting kept and rescued
+The moment: the keeper's hands close, the screen goes dark, and you wake shrink-wrapped in a unit
+somewhere on the floor, banging on the door so your friends can find you before it's padlocked.
+1. Owner test results first, if pasted.
+2. Read the GDD's "Getting kept" section (docs tools, never WebFetch) and ROADMAP L-07. It is
+   big: split it in ROADMAP before starting (likely: the wrap and being stored in a unit; the
+   banging that pings friends, on the map too; cutting free; the padlock if left too long).
+   Name each part's hit-game precedent (AGENTS.md); anything without one goes to OWNER.md.
+3. Brix first (`docs/FRAMEWORK.md`): nothing planned covers this; build it on `Keepers.caught`.
+4. Do the first part only: pure rules with a failing Lune test first, then server, then screen.
+   It replaces the stand-ins: DevCorridor's move to the lobby, `Caught`'s blackout hold
+   (`CaughtView`) and `Caught.Out`. What you carried drops where you stood.
+5. Fix the repeat catch: a keeper that chased you to the lobby catches you again every 2 s.
+**Acceptance (first part):** checks green; in Studio on seed 7, floor 1, let the awake Mannequin
+in Unit 157 catch you (D-069's recipe in docs/STUDIO.md): you end up wrapped in a unit, not the
+lobby, can't walk, and nothing catches you twice; Output clean.
+**Read first:** ROADMAP L-07; GDD "Getting kept"; D-077; `src/shared/Caught.luau`; DevCorridor's
+catch stand-in (`keepers.caught`); CODEMAP's `Keepers` and `CaughtView` rows.
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-10 (the minimap); D-064, D-068 to D-093. L-14b2d if the owner asks for it. Then L-07 (takes `Keepers.caught`), L-08, L-09.
+1. L-07 (takes `Keepers.caught`); D-064, D-068 to D-094. L-14b2d if the owner asks. Then L-08, L-09.
 2. **Small, own session:** cut `MovingBlanket`, `GlowSticks` from `Deal.Tools`/`Deal.Bag` (D-091);
    it reshuffles every seed, so recheck the units `OWNER.md`'s steps name (seed 7, floors 1, 3).
 3. **Check, small:** caught (moved to the lobby), the MCP's Client couldn't move the character
    54 s on; a Server pivot could. Can a real player walk after a catch? Caught crawling or on the
-   ladder, `CrawlView`/`LadderView` may keep holding PlatformStand. A keeper that chased you to
-   the lobby catches you there again every 2 s (L-07's to fix).
+   ladder, `CrawlView`/`LadderView` may keep holding PlatformStand.
 4. **Check, small:** a press made the moment you arrive reaches the server while it still sees you
    a few studs back (D-085): Saws, Ladders and a door's Cut and Lock check where you stand; allow
    for it as `Crawling.counts` does if one drops. Server facing is 0.4 s late (D-084).
