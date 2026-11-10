@@ -1507,3 +1507,37 @@ needs light (the Mannequin's light rule is L-06b3b's, and keepers seeing in the 
 a small all-round sense of someone touching close behind (the catch covers contact); seeing by
 sampling points along the line (it can miss a wall's corner; `clear` follows the line place by
 place exactly).
+
+## D-075 How keepers move on every screen: motion records, followed per screen (L-06b4a, Nov 9)
+The server moved each keeper's root every step and turned its fifteen joints (Motor6D C0) up to
+20 times a second, all replicated, and a phone drew the body hopping between updates: Roblox
+doesn't smooth an anchored part's moves, and nothing smooths a C0.
+
+As built: the brain stays on the server (`Keeper` is the truth). The server sends each keeper's
+motion as one short line of text on its body's `KeeperMotion` attribute: where its feet are (the
+world's), the way it faces and walks, its pace, how far it walks before it stops (`Keeper.left`:
+its trip along the halls, short of arm's length if it hunts), how far it has walked (its pose),
+its state and the server's time. It's dead reckoning, the way shooters move other players: the
+server keeps the last record as screens read it (rounding and all), works out each step where
+they show it, and sends a new one only when that drifts a quarter stud, or it starts, stops,
+turns 4 degrees, changes pace or state, or is about to walk past where the last one stops it;
+never more than one each 0.08 s in one state, while a new state goes at once. A straight walk is
+its start, its stop and one or two records as it nears the stop; a close chase about 6 a second.
+The server leaves the joints at rest and moves the root only with each record, or once it has
+walked 8 studs from the last: that's what streams the body (Atomic, as before) to whoever is near.
+
+Each screen's `KeeperView` follows the records (`KeeperMotion.follow`, `receive`, `update`): it
+shows the keeper 0.1 s behind the server's time, so a turn or stop that arrives in time is shown
+exactly (each record bent onto the next), never walked past (`left`); a late record's difference
+eases out over 0.12 s (more than 4 studs snaps); turns ease over 0.06 s; its pose follows how far
+it has walked, never backward. It's posed through each joint's `Transform` (C0 at rest) in one of
+33 fixed frames of the walk (`Pose.frame`: Still, each key, seven steps of each snap), each
+frame's turns worked out once per screen, so a joint is written only when the frame changes. Only
+bodies moving on that screen are stepped, in the Host's RenderStepped step (after replication
+lands, before the frame draws). Verified in Studio: the chase drew at its pace with no stalls.
+
+Not chosen: unanchored bodies moved by constraints so Roblox interpolates them (a fight with
+physics, at rates Roblox picks); replicating the root every step and posing only on screens (half
+the cost, still hops); sending every step for screens to buffer (60 records a second each); a
+delay fitted to each screen's lag (ROADMAP polish); a client copy of each body (two bodies, and a
+torch's ray would hit the wrong one).

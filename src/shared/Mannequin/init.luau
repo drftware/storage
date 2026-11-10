@@ -126,6 +126,51 @@ function Mannequin.pose(model: Model, pose: Pose.Pose)
 	end
 end
 
+-- Every joint back at rest (each Motor6D's C0 its RigAttachment's CFrame), for a body each
+-- screen poses through its joints' `Transform` (L-06b4a): the server never turns a joint, so no
+-- joint replicates.
+function Mannequin.rest(model: Model)
+	for _, j in Specs.Joints do
+		local motor = part(model, j.Part1):FindFirstChild(j.Name)
+		local a0 = part(model, j.Part0):FindFirstChild(j.Name .. "RigAttachment")
+		if motor and motor:IsA("Motor6D") and a0 and a0:IsA("Attachment") then
+			motor.C0 = a0.CFrame
+		end
+	end
+end
+
+-- Its joints in `Specs.Joints`' order, as `transforms` lists their turns; nil if one is missing.
+function Mannequin.motors(model: Model): { Motor6D }?
+	local out: { Motor6D } = table.create(#Specs.Joints)
+	for i, j in Specs.Joints do
+		local p1 = model:FindFirstChild(j.Part1)
+		local motor = p1 and p1:FindFirstChild(j.Name)
+		if not (motor and motor:IsA("Motor6D")) then
+			return nil
+		end
+		out[i] = motor
+	end
+	return out
+end
+
+-- Each joint's `Transform` for one of Pose's frames (`Pose.frame`), in `Specs.Joints`' order, over
+-- a body at rest (`rest`): worked out the first time a screen shows that frame, then kept, so
+-- posing a body never builds anything.
+local framed: { [number]: { CFrame } } = {}
+function Mannequin.transforms(frame: number): { CFrame }
+	local kept = framed[frame]
+	if kept then
+		return kept
+	end
+	local turns = Pose.turns(Pose.ofFrame(frame))
+	local out: { CFrame } = table.create(#Specs.Joints)
+	for i, j in Specs.Joints do
+		out[i] = cframe(turns[j.Name])
+	end
+	framed[frame] = out
+	return out
+end
+
 -- A copy of the template standing at `pivot` (its feet on it, facing its LookVector), posed.
 function Mannequin.clone(pivot: CFrame, parent: Instance, pose: Pose.Pose?): Model?
 	local template = Mannequin.template()

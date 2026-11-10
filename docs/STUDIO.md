@@ -349,6 +349,23 @@ verified: a doc page, Studio, or "untested".
   shows it. Teleporting the root off the floor (the spawn, (-32, 3, 0)) loses it. Rebuilding
   `KeeperMap` from `Floor.generate(1, Brix.Random.new({seed = 7}))` in a Server `execute_luau`
   finds spots it can or can't see (`KeeperMap.clear`).
+- **What a frame draws, and when** (Play, Client, L-06b4a, tested): in one frame the simulation's
+  steps (Heartbeat) and replicated changes come first, then every `BindToRenderStep` function (any
+  priority), then `RenderStepped` connections (the client Host steps there), then `PreRender`
+  connections, then the render. So a probe of what's drawn goes on `PreRender`; one bound with
+  `BindToRenderStep` reads the frame before. A Motor6D's `Transform` written in RenderStepped, with
+  no Animator and an anchored root, poses the parts: every Mannequin part stood within 0.0001
+  studs of `Pose.solve`.
+- **Studio drew 15 frames a second from the MCP** (L-06b4a): with its window in the background,
+  the Client drew a frame each 0.067 s while Heartbeat ran four times a frame. Judge smoothness by
+  speed per drawn frame, not by frame count.
+- **Pressing 126's Open from the Client** (L-06b4a): point the camera, then wait about a second
+  before `InputHoldBegin`; after 0.3 s the press did nothing, after a second it triggered.
+- **Watching a keeper unseen** (L-06b4a): teleporting the player to the spawn streams floor 1's
+  keeper out of the client. Anchor the player's root 12 studs over the keeper's hall from the
+  Server instead (above its sight's 8): it stays streamed in and never sees you.
+- **Counting what replicates** (L-06b4a): on the Server, `GetAttributeChangedSignal` on a body and
+  `GetPropertyChangedSignal("CFrame")` and `("C0")` on its root and joints count every write.
 - **Reading the counts from the MCP** (2026-11-07): in Play, `execute_luau` on the Client can read
   `Stats.RenderBreakdown`'s items (`Opaque`, `Transparent`, `Particles`, `UI` and the rest), each
   a string like "17936 tris, 11 draws" for the main view, and `Stats.FrameRateManager.Batches`

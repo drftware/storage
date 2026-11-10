@@ -405,7 +405,8 @@ on nothing in Brix.
       stood 5 s and roamed; roaming, it turned on a player 18 studs ahead. Waits on `OWNER.md`.
     - [ ] **L-06b3b Light freezes it.** Frozen (`Pose.freeze(travelled)`) the moment a hall light
       or a torch's beam is on it, decided on the server; it walks on once no light is on it. Its
-      walk to look, its roam and its hunt all stop.
+      walk to look, its roam and its hunt all stop. Screens need nothing new: a freeze reaches them
+      as a stop record, and KeeperView holds a stopped keeper on `Pose.freeze`'s key (D-075).
     - [ ] **L-06b3c The catch.** A Brix cone reach measured along the map, so never through a
       wall, that fires the event L-07 takes.
     - [ ] **L-06b3d It breaks out** (moved from L-12c, D-071). Trapped means its doorway was open
@@ -420,11 +421,19 @@ on nothing in Brix.
       awake one and time the break-out.
   - [ ] **L-06b4 What you see and hear of it.** Split Nov 9 (owner: the walk reads jerky, which
     makes it less scary).
-    - [ ] **L-06b4a It moves smoothly on every screen.** Moved up to run right after L-06b3a2, so
-      the chase and the freeze are judged on smooth movement. Today the server moves and poses it
-      up to 20 times a second and each screen jumps between updates. On every screen its place is
-      smoothed between the server's steps, and it is posed on the clients (`Pose.at(travelled)`,
-      Motor6D `Transform`) rather than by replicating C0 every step. Judged at phone size.
+    - [x] **L-06b4a It moves smoothly on every screen.** Done Nov 9 (D-075). The server sends
+      each keeper's motion as a short record on its body's `KeeperMotion` attribute (its feet, the
+      way it faces and walks, its pace, how far it walks before it stops, how far it has walked,
+      its state, the server's time), only when that changes (`KeeperMotion.due`), at most 12.5 a
+      second in one state. Each screen's `KeeperView` carries it on 0.1 s behind the server, so
+      turns and stops land exactly, eases late corrections and turns, never walks it past a stop,
+      and poses it through Motor6D `Transform` in one of 33 fixed frames (`Pose.frame`); the
+      server leaves its joints at rest and moves its root only with a record or every 8 studs.
+      253 motion checks (late, jittered, 30 fps). Verified in Studio on seed 7, floor 1: the chase
+      drew at its pace (median 14.4, p99 15.4 studs a second, no stalls) and a roam at 7.2; every
+      part within 0.0001 studs of `Pose.solve`; 50 records and 50 root moves over the chase and no
+      joint writes, where the old body sent 60 root moves and up to 300 joint writes a second.
+      Waits on `OWNER.md` for a phone and a second screen.
     - [ ] **L-06b4b Its sounds, and the freeze on your screen.** The sting the moment it sees you,
       as Granny's chase music cuts in on sight, and a chase bed under the hunt that fades when it
       loses you (L-06b3a2 ships the hunt with only its motion to answer it). The freeze lands at once on your
@@ -640,6 +649,11 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **Each screen's keeper delay fitted to its own lag** (L-06b4a): screens show keepers a fixed
+  0.1 s behind the server (`KeeperMotion.Delay`). A screen could measure how late its records
+  arrive and show them just that far behind: nearer the truth on a good connection, smoother on a
+  bad one.
 
 - **Your foot in the top's fallen panel** (L-13b2d3b): landed, the foot on the panel's side
   stands 0.6 studs into the panel's corner and 0.4 deep in it (the panel has no collision). A

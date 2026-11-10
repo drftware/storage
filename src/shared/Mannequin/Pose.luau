@@ -44,6 +44,10 @@ Pose.Walk = {
 	Keys = { "StepRight", "PassRight", "StepLeft", "PassLeft" },
 	Step = 2.7,
 	Hold = 0.55,
+	-- How many steps each screen shows a snap from one key to the next in (`Pose.frame`): at its
+	-- top speed a snap takes about 0.08 s, five frames of a 60 Hz screen, so 8 never shows a
+	-- stutter inside the snap. Fewer would read as a twitch, more costs nothing seen.
+	Snaps = 8,
 }
 
 local function mirrorName(name: string): string
@@ -195,6 +199,49 @@ function Pose.freeze(travelled: number): string
 	local keys = Pose.Walk.Keys
 	local k, f = keyAt(travelled)
 	return if f <= Pose.Walk.Hold then keys[k] else keys[k % #keys + 1]
+end
+
+-- How a screen poses a keeper: slack as it's found (Still), walking (Walk), or stopped mid-stride
+-- (Stop: frozen on a key, as `freeze` says).
+export type How = "Still" | "Walk" | "Stop"
+
+-- Every pose a screen shows is one of these frames (L-06b4a), so each screen works each one out
+-- once and turns a body's joints only when its frame changes. Frame 1 is Still; then, for each of
+-- the walk's keys, the key held and the `Walk.Snaps - 1` steps of the snap into the next.
+Pose.Frames = 1 + #Pose.Walk.Keys * Pose.Walk.Snaps
+
+-- The frame it shows after `travelled` studs: Still; its walk (the key it holds, or the nearest
+-- step of the snap to the next); or stopped, on the key `freeze` says.
+function Pose.frame(travelled: number, how: How): number
+	if how == "Still" then
+		return 1
+	end
+	local count, snaps, hold = #Pose.Walk.Keys, Pose.Walk.Snaps, Pose.Walk.Hold
+	local k, f = keyAt(travelled)
+	local s = 0
+	if f > hold then
+		s = if how == "Stop" then snaps else math.floor((f - hold) / (1 - hold) * snaps + 0.5)
+	end
+	if s >= snaps then
+		k, s = k % count + 1, 0
+	end
+	return 2 + (k - 1) * snaps + s
+end
+
+-- The pose a frame shows.
+function Pose.ofFrame(frame: number): Pose
+	if frame <= 1 then
+		return Poses.Still
+	end
+	local keys, snaps = Pose.Walk.Keys, Pose.Walk.Snaps
+	local i = frame - 2
+	local k, s = i // snaps + 1, i % snaps
+	local a = Poses[keys[k]]
+	if s == 0 then
+		return a
+	end
+	local t = s / snaps
+	return Pose.blend(a, Poses[keys[k % #keys + 1]], t * t * (3 - 2 * t))
 end
 
 -- A rotation from angles, applied about Z, then Y, then X (Roblox's CFrame.Angles), row by row.

@@ -258,6 +258,55 @@ do
 	)
 end
 
+-- The frames each screen poses it in (L-06b4a): frame 1 is Still; stopped, its frame is exactly
+-- the key a light freezes it on; walking, its frame is within half a step of the snap of its walk
+-- at every joint; every frame stands and keeps its limits.
+do
+	ok(Pose.frame(12.3, "Still") == 1 and Pose.ofFrame(1) == Pose.Poses.Still, "frame 1 is Still")
+	for f = 1, Pose.Frames do
+		stands(`frame {f}`, Pose.ofFrame(f))
+	end
+	local worst = 0
+	for i = 0, 1999 do
+		local d = i * Pose.Walk.Step * 4 / 2000 + 0.0037
+		local stop = Pose.frame(d, "Stop")
+		ok(
+			Pose.ofFrame(stop) == Pose.Poses[Pose.freeze(d)],
+			`frames: stopped at {d}, it's on the key it freezes on`
+		)
+		local walk = Pose.frame(d, "Walk")
+		ok(walk >= 2 and walk <= Pose.Frames, `frames: walking at {d}, a frame of the walk`)
+		local a, b = Pose.ofFrame(walk), Pose.at(d)
+		for joint in Pose.Limits do
+			local p: Pose.Angles, q: Pose.Angles = a[joint] or {}, b[joint] or {}
+			worst = math.max(
+				worst,
+				math.abs((p.x or 0) - (q.x or 0)),
+				math.abs((p.y or 0) - (q.y or 0)),
+				math.abs((p.z or 0) - (q.z or 0))
+			)
+		end
+	end
+	-- a frame is at most half a step of the snap off: the snap's steepest (smoothstep's 1.5) times
+	-- the biggest swing between two keys (the reaching arm's, about 95 degrees), over 2 * Snaps
+	local swing = 0
+	local keys = Pose.Walk.Keys
+	for k, key in keys do
+		local a, b = Pose.Poses[key], Pose.Poses[keys[k % #keys + 1]]
+		for joint in Pose.Limits do
+			local p: Pose.Angles, q: Pose.Angles = a[joint] or {}, b[joint] or {}
+			swing = math.max(
+				swing,
+				math.abs((p.x or 0) - (q.x or 0)),
+				math.abs((p.y or 0) - (q.y or 0)),
+				math.abs((p.z or 0) - (q.z or 0))
+			)
+		end
+	end
+	local bound = 1.5 * swing / (2 * Pose.Walk.Snaps) + 1e-6
+	ok(worst <= bound, `frames: walking, every joint within {bound} degrees of its walk ({worst})`)
+end
+
 print(`mannequin: {checks - failures}/{checks} checks passed`)
 if failures > 0 then
 	error(`{failures} failed`)

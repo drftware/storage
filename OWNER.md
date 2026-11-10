@@ -20,6 +20,26 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-06b4a, keepers move smoothly on every screen (built Nov 9)
+
+Seed 7, floor 1, as for L-06b3a2 below. What a keeper does is unchanged; how its walk reaches each
+screen changed.
+- [ ] **The moment, at phone size** (Studio's Device emulator; your own phone too if you can):
+  open Unit 126 and run. It comes after you in one smooth, stiff-limbed walk, holding each stride
+  and snapping to the next, never hopping or sliding, and pivots sharply at the junction rather
+  than popping round. Stopped at arm's length, it stands on a stride, never between two.
+  (Verified in Studio Nov 9 at Studio's 15 frames a second: drawn at its pace, no stalls. That's
+  numbers, not feel.)
+- [ ] **Two screens** (Test > Clients and Servers, 2 players): one opens 126 and runs, the other
+  watches from down the hall. Both see the same smooth walk in about the same place.
+- [ ] **Decide, defaults in place** (D-075): (1) each screen shows a keeper 0.1 s behind the
+  server, so turns and stops land exactly; at its top speed that's 1.4 studs behind where it truly
+  is (`Delay`); (2) at a corner it pivots in about 0.15 s (`Turn`); (3) on a bad connection a
+  correction over 4 studs snaps rather than slides (`Snap`). Numbers live in
+  `src/shared/KeeperMotion.luau`.
+- [ ] **Heads-up:** Studio's Server view now shows the keeper in its rest pose, moving in hops of
+  up to 8 studs. That's expected: only screens draw its walk. Judge from the Client view.
+
 ## Now: judge L-06b3a2, it sees you and hunts (built Nov 9)
 
 Seed 7, floor 1, as below; Unit 126 holds the awake Mannequin. It doesn't catch you yet (L-06b3c):

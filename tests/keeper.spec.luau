@@ -13,6 +13,7 @@
 -- the same seed roams the same way; shut in its unit, it watches until its door is up. Sight
 -- (L-06b3a2): it notices exactly within its sight and view along a line the map clears, hunts at
 -- no more than its top speed to arm's length, and, lost, searches where it saw you, then roams.
+-- It says its pace and how far it walks before it stops (for screens, L-06b4a).
 -- And a warm keeper's steps allocate nothing, a roam's picks and a hunt included.
 local Brix = require("../vendor/brix/src")
 local DoorSound = require("../src/shared/StorageUnit/DoorSound")
@@ -217,8 +218,17 @@ local function checkFloor(seed: number, number: number)
 			if Keeper.hear(k, door, SLAM, spot) then
 				walks += 1
 				local trip = walker:length(home, spot)
+				ok(
+					math.abs(Keeper.left(k) - trip) < 1e-6,
+					`{where}: it says how far it walks before it stops`
+				)
+				ok(math.abs(Keeper.pace(k, RUN) - PACE) < 1e-9, `{where}: it says its walking pace`)
 				local steps, longest, strayed = walkOut(k, map, "Going", 100000)
 				ok(k.state == "Waiting", `{where}: it gets to the door ({k.state})`)
+				ok(
+					Keeper.left(k) == 0 and Keeper.pace(k, RUN) == 0,
+					`{where}: standing, it walks no further`
+				)
 				ok(flat(k.at, spot) < TOL, `{where}: it stands at the door's front`)
 				ok(
 					longest <= STEP + TOL,

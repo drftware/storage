@@ -372,11 +372,9 @@ function Keeper.step(k: Keeper, dt: number, run: number, players: Players?): boo
 	end
 	-- moving along its route: hunting and searching at its top speed, else at its walk
 	local hunting = state == "Hunting"
-	local studs = k.row.speed * run * dt
+	local studs = Keeper.pace(k, run) * dt
 	if hunting then
 		studs = math.min(studs, math.max(flatDistance(k.at, k.goal) - Keeper.Close, 0))
-	elseif state ~= "Searching" then
-		studs *= k.row.looking
 	end
 	local before = k.at
 	local after = if studs > 0 then k.route:advance(before, k.goal, studs) else before
@@ -406,6 +404,33 @@ function Keeper.step(k: Keeper, dt: number, run: number, players: Players?): boo
 		roam(k) -- a door came down across its way: it picks another place
 	end
 	return true
+end
+
+--- How fast it walks in its state (studs a second), `run` being a player's full run: hunting and
+--- searching at its top speed, going to look and roaming at its looking pace; 0 standing.
+function Keeper.pace(k: Keeper, run: number): number
+	local state = k.state
+	if state == "Hunting" or state == "Searching" then
+		return k.row.speed * run
+	elseif state == "Going" or state == "Roaming" then
+		return k.row.speed * run * k.row.looking
+	end
+	return 0
+end
+
+--- How far it walks before it stops, if nothing changes (studs): its trip's length along the
+--- halls, short of arm's length if it hunts; 0 standing; math.huge with no way there. Screens
+--- never show it walking past this (`KeeperMotion`).
+function Keeper.left(k: Keeper): number
+	local state = k.state
+	if state == "Asleep" or state == "Watching" or state == "Waiting" then
+		return 0
+	end
+	local d = k.pathing:length(k.at, k.goal)
+	if state == "Hunting" then
+		d = math.max(d - Keeper.Close, 0)
+	end
+	return d
 end
 
 --- A new, empty list of players for `step`, to fill and reuse.

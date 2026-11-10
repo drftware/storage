@@ -21,19 +21,25 @@
 	  own coordinates), and its keepers look: one that sees a player hunts them, and one that loses
 	  them rushes to where it last saw them, looks, and roams again (L-06b3a2).
 	- `awakeOn` tells the deal how many keepers are awake on a floor now, for its cap.
-	- Each keeper's body is an anchored model moved by its HumanoidRootPart, with no Humanoid, and
-	  only while something about it changed. Its walk is posed on the server for now, at most
-	  `POSE_EVERY` (L-06b4 poses it on each screen instead), so it may judder on a phone.
+	- Each keeper's body is an anchored model moved by its HumanoidRootPart, with no Humanoid, its
+	  joints left at rest. The server tells screens how it moves (L-06b4a): a short record on the
+	  body's `KeeperMotion` attribute, sent only when its motion changes (`KeeperMotion.due`), which
+	  each screen's KeeperView carries on smoothly and poses through its joints' Transform. So no
+	  joint replicates, and the root moves on the server only with each record, or once it has
+	  walked `REFRESH` past the last: enough to stream it to whoever is near it.
 	- The brain works in the floor's own coordinates (its lobby's middle at the origin, its floor at
 	  height 0); positions are turned from the world going in and back coming out.
 
-	In Studio, Output says what each keeper hears, sees and does, and each body carries its state as the
-	attribute `KeeperState`. `stand` puts a keeper on a laid floor (the dev command's).
+	Each body is tagged `Keeper` and carries its row's name (`Keeper` attribute) for screens. In
+	Studio, Output says what each keeper hears, sees and does, and each body carries its state as
+	the attribute `KeeperState`. `stand` puts a keeper on a laid floor (the dev command's).
 ]]
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local StarterPlayer = game:GetService("StarterPlayer")
+local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Deals = require(script.Parent.Deals)
@@ -42,35 +48,34 @@ local Doors = require(script.Parent.Doors)
 local Floor = require(ReplicatedStorage.Shared.Floor)
 local Keeper = require(ReplicatedStorage.Shared.Keeper)
 local KeeperMap = require(ReplicatedStorage.Shared.KeeperMap)
+local KeeperMotion = require(ReplicatedStorage.Shared.KeeperMotion)
 local KeeperRows = require(ReplicatedStorage.Shared.KeeperRows)
 local Mannequin = require(ReplicatedStorage.Shared.Mannequin)
-local Pose = require(ReplicatedStorage.Shared.Mannequin.Pose)
 
--- How long a walking body holds a pose on the server before the next (seconds). Its stop-motion
--- walk holds each key and snaps to the next, so 20 a second reads as its walk; every pose sends its
--- joints to every player, until L-06b4 poses it on their screens instead.
-local POSE_EVERY = 1 / 20
 local TRACE = RunService:IsStudio() -- Output says what each keeper hears and does
 local STATE_ATTRIBUTE = "KeeperState"
+local MOTION_ATTRIBUTE = "KeeperMotion" -- its motion, for screens (KeeperMotion.encode)
+local ROW_ATTRIBUTE = "Keeper" -- its row's name: how screens pose it
+local TAG = "Keeper"
+-- How far a walking keeper gets from where the server last put its root before the server moves
+-- the root again (studs). Screens show it where its records say; the server's root is only what
+-- streams it to players near it and what Studio's server view shows.
+local REFRESH = 8
+-- Moved less than this in a step (studs), it's standing.
+local STILL = 1e-6
 
--- What each keeper's body is: its model, and its poses standing, walking and stopped.
+-- What each keeper's body is: a copy of its template, its joints at rest for screens to turn.
 type Kit = {
 	clone: (pivot: CFrame, parent: Instance) -> Model?,
-	pose: (model: Model, pose: Pose.Pose) -> (),
-	still: Pose.Pose, -- as it's first stood up
-	walk: (travelled: number) -> Pose.Pose, -- its walk once it has gone this far
-	stop: (travelled: number) -> Pose.Pose, -- stopped after going this far: mid-stride, held
 }
 local KITS: { [string]: Kit } = {
 	Mannequin = {
 		clone = function(pivot: CFrame, parent: Instance): Model?
-			return Mannequin.clone(pivot, parent)
-		end,
-		pose = Mannequin.pose,
-		still = Pose.Poses.Still,
-		walk = Pose.at,
-		stop = function(travelled: number): Pose.Pose
-			return Pose.Poses[Pose.freeze(travelled)]
+			local body = Mannequin.clone(pivot, parent)
+			if body then
+				Mannequin.rest(body)
+			end
+			return body
 		end,
 	},
 }
@@ -92,9 +97,8 @@ type Body = {
 	model: Model,
 	root: BasePart,
 	rootOffset: CFrame, -- from the body's pivot (its feet) to its root part
-	kit: Kit,
-	posed: Pose.Pose?, -- the pose it was last given
-	posedAt: number, -- when (the system's clock)
+	motion: KeeperMotion.Record?, -- the last record screens were sent, as they read it
+	placed: vector, -- where the server last put its root (the floor's coordinates)
 }
 type OnFloor = {
 	floor: Floor.Floor,
@@ -152,7 +156,6 @@ function Keepers.new(): Keepers
 	local connections: { Brix.SignalConnection } = {}
 	local doors: Doors.Doors? = nil
 	local run = 16 -- a player's full run, studs a second (StarterPlayer's, read at start)
-	local clock = 0
 	local everyone: { Player } = {} -- kept as players come and go: no list made each step
 	local joins: { RBXScriptConnection } = {}
 
@@ -189,27 +192,41 @@ function Keepers.new(): Keepers
 		end
 	end
 
-	-- Moves its body to where the brain has it and poses it.
-	local function place(entry: Entry, now: boolean?)
+	-- Puts its body's root where the brain has it.
+	local function putRoot(entry: Entry)
 		local k, body = entry.keeper, entry.body
 		-- any: the brain's vector is a Vector3 here, which the checker won't cast
 		local at = (k.at :: any) :: Vector3
 		local facing = (k.facing :: any) :: Vector3
 		body.root.CFrame = entry.on.origin * CFrame.lookAt(at, at + facing) * body.rootOffset
-		local walking = k.state == "Going"
-			or k.state == "Roaming"
-			or k.state == "Hunting"
-			or k.state == "Searching"
-		local kit = body.kit
-		-- asleep, slack; awake, held on a stride: mid-step where it stopped, or, never yet moved,
-		-- on its walk's first key, reaching at the doorway
-		local pose = if walking
-			then kit.walk(k.travelled)
-			elseif k.state == "Asleep" then kit.still
-			else kit.stop(k.travelled)
-		if pose ~= body.posed and (now or not walking or clock - body.posedAt >= POSE_EVERY) then
-			kit.pose(body.model, pose)
-			body.posed, body.posedAt = pose, clock
+		body.placed = k.at
+	end
+
+	-- Tells screens how it moves, walking at `speed` (0 standing), if that changed enough for a new
+	-- record (`KeeperMotion.due`); screens carry it on between records. The root follows each
+	-- record, and between them once it has walked `REFRESH` from where it was put.
+	local function publish(entry: Entry, speed: number)
+		local k, body = entry.keeper, entry.body
+		local origin = entry.on.origin
+		-- any: as in `putRoot`
+		local p = origin:PointToWorldSpace((k.at :: any) :: Vector3)
+		local d = origin:VectorToWorldSpace((k.facing :: any) :: Vector3)
+		local at, facing = vector.create(p.X, p.Y, p.Z), vector.create(d.X, 0, d.Z)
+		local now = Workspace:GetServerTimeNow()
+		if KeeperMotion.due(body.motion, now, at, facing, speed, k.state) then
+			local left = if speed > 0 then Keeper.left(k) else 0
+			local encoded = KeeperMotion.encode(now, at, facing, speed, left, k.travelled, k.state)
+			local motion = body.motion or KeeperMotion.record()
+			-- kept as screens read it, rounding and all, so `due` foresees exactly what they show
+			KeeperMotion.decode(encoded, motion)
+			body.motion = motion
+			body.model:SetAttribute(MOTION_ATTRIBUTE, encoded)
+			putRoot(entry)
+		else
+			local dx, dz = k.at.x - body.placed.x, k.at.z - body.placed.z
+			if dx * dx + dz * dz > REFRESH * REFRESH then
+				putRoot(entry)
+			end
 		end
 	end
 
@@ -345,20 +362,21 @@ function Keepers.new(): Keepers
 		end
 		body.ModelStreamingMode = Enum.ModelStreamingMode.Atomic -- the whole body streams in at once
 		body:SetAttribute(STATE_ATTRIBUTE, k.state)
+		body:SetAttribute(ROW_ATTRIBUTE, name)
 		local entry: Entry = {
 			keeper = k,
 			body = {
 				model = body,
 				root = root,
 				rootOffset = root.PivotOffset:Inverse(),
-				kit = kit,
-				posed = nil,
-				posedAt = -math.huge,
+				motion = nil,
+				placed = k.at,
 			},
 			on = on,
 		}
 		table.insert(on.keepers, entry)
-		place(entry, true)
+		publish(entry, 0) -- its first record, before any screen sees it
+		CollectionService:AddTag(body, TAG)
 		return body
 	end
 
@@ -435,7 +453,6 @@ function Keepers.new(): Keepers
 	-- Only keepers awake change; a body moves only when its keeper did. Players are gathered only
 	-- for a floor with a keeper awake to see them.
 	function system.step(_: any, dt: number)
-		clock += dt
 		for _, on in floors do
 			local list = on.players
 			list.count = 0
@@ -449,8 +466,13 @@ function Keepers.new(): Keepers
 				local k = entry.keeper
 				local was: Keeper.State = k.state
 				local target = k.target
+				local before = k.at
 				if Keeper.step(k, dt, run, list) then
-					place(entry)
+					local dx, dz = k.at.x - before.x, k.at.z - before.z
+					publish(
+						entry,
+						if dx * dx + dz * dz > STILL * STILL then Keeper.pace(k, run) else 0
+					)
 					changedState(entry, was)
 					if TRACE and k.target ~= target then
 						traceSight(entry, target)
