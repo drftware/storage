@@ -19,7 +19,9 @@
 	  halls between noises and never goes back into a unit (L-06b3a1, D-071).
 	- Each step, every floor with a keeper awake is told where each living player's feet are (in its
 	  own coordinates), and its keepers look: one that sees a player hunts them, and one that loses
-	  them rushes to where it last saw them, looks, and roams again (L-06b3a2).
+	  them rushes to where it last saw them, looks, and roams again (L-06b3a2). Each player's screen
+	  is told how many keepers hunt them (Remotes.Hunted to them alone, `Chase`), once each time
+	  that changes, for the sting and the chase bed only they hear (L-06b4b1).
 	- Light freezes a keeper whose row says so (the Mannequin, L-06b3b): each step it's told
 	  whether a lit hall light's pool is where it stands (`MotionLights.lightOn`), and each living
 	  player's torch, from their eyes along their facing at their aim (`Flashlights`), so it
@@ -61,6 +63,7 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Caught = require(ReplicatedStorage.Shared.Caught)
+local Chase = require(ReplicatedStorage.Shared.Chase)
 local Deals = require(script.Parent.Deals)
 local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
 local Dent = require(ReplicatedStorage.Shared.StorageUnit.Dent)
@@ -145,7 +148,8 @@ type OnFloor = {
 	players: Keeper.Players, -- where each living player's feet are this step, reused
 	gone: RBXScriptConnection,
 }
-type Entry = { keeper: Keeper.Keeper, body: Body, on: OnFloor }
+-- `quarry`: whom it hunted as last counted for screens (`tellHunted`), 0 for no one.
+type Entry = { keeper: Keeper.Keeper, body: Body, on: OnFloor, quarry: number }
 
 -- A keeper caught a player: its body, whom it caught, and the floor's model (FloorBuilder's).
 export type Catch = { body: Model, player: Player, floor: Model }
@@ -201,6 +205,12 @@ function Keepers.new(): Keepers
 	local out: { [Player]: number } = {} -- caught players keepers leave alone, till this os.clock
 	local caught = Brix.Signal.new() :: Brix.Signal<Catch>
 	local caughtRemote: RemoteEvent? = nil
+	local huntedRemote: RemoteEvent? = nil
+	-- Whom keepers hunt: each player's screen is told how many keepers hunt them (Chase), once each
+	-- time that changes. `recount` says a keeper's quarry may have changed since the last telling.
+	local hunters: { [number]: number } = {} -- player id to keepers hunting them (reused)
+	local told: { [Player]: number } = {} -- what each player's screen last heard
+	local recount = false
 	local joins: { RBXScriptConnection } = {}
 
 	-- Where each living player's feet are on floor `on`, in its own coordinates, and their torch:
@@ -387,6 +397,31 @@ function Keepers.new(): Keepers
 		end
 		table.clear(on.keepers)
 		on.folder:Destroy()
+		recount = true
+	end
+
+	-- Counts whom every keeper hunts and tells each player whose number changed: the sting and the
+	-- chase bed on their screen alone (Chase). Only after a keeper's quarry changed.
+	local function tellHunted()
+		recount = false
+		table.clear(hunters)
+		for _, on in floors do
+			for _, entry in on.keepers do
+				local id = entry.keeper.target
+				if id ~= 0 then
+					hunters[id] = (hunters[id] or 0) + 1
+				end
+			end
+		end
+		for _, player in everyone do
+			local n = hunters[player.UserId] or 0
+			if (told[player] or 0) ~= n then
+				told[player] = n
+				if huntedRemote then
+					huntedRemote:FireClient(player, n)
+				end
+			end
+		end
 	end
 
 	-- A door made a sound: every keeper on its floor that hears it goes to look.
@@ -565,6 +600,7 @@ function Keepers.new(): Keepers
 				placed = k.at,
 			},
 			on = on,
+			quarry = 0,
 		}
 		table.insert(on.keepers, entry)
 		publish(entry, 0, false) -- its first record, before any screen sees it
@@ -631,6 +667,11 @@ function Keepers.new(): Keepers
 		remote.Name = Caught.Remote
 		remote.Parent = folder
 		caughtRemote = remote
+		-- Chase's remote sits beside the catch's (both in `Caught.RemoteFolder`, "Remotes")
+		local hunted = Instance.new("RemoteEvent")
+		hunted.Name = Chase.Remote
+		hunted.Parent = folder
+		huntedRemote = hunted
 		table.insert(
 			joins,
 			Players.PlayerAdded:Connect(function(player: Player)
@@ -645,6 +686,7 @@ function Keepers.new(): Keepers
 					table.remove(everyone, i)
 				end
 				out[player] = nil
+				told[player] = nil
 			end)
 		)
 		table.insert(connections, d.acted:connect(onActed))
@@ -704,7 +746,14 @@ function Keepers.new(): Keepers
 				if k.blow ~= "None" then
 					onBlow(entry)
 				end
+				if k.target ~= entry.quarry then -- it saw, lost or caught someone, or was trapped
+					entry.quarry = k.target
+					recount = true
+				end
 			end
+		end
+		if recount then
+			tellHunted()
 		end
 	end
 
@@ -723,6 +772,11 @@ function Keepers.new(): Keepers
 			caughtRemote:Destroy()
 			caughtRemote = nil
 		end
+		if huntedRemote then
+			huntedRemote:Destroy()
+			huntedRemote = nil
+		end
+		table.clear(told)
 		for _, on in floors do
 			drop(on)
 		end
@@ -815,6 +869,7 @@ function Keepers.new(): Keepers
 					on.keepers[i] = on.keepers[#on.keepers]
 					on.keepers[#on.keepers] = nil
 					release(entry)
+					recount = true
 					return
 				end
 			end

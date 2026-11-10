@@ -2,46 +2,45 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-10, session 70 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-10, session 71 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-06b5b done (D-081):** tap Peek and your view eases down over 0.35 s to an eye 1.0 off the
-  floor, so you see under the door: the guard's legs mid-stride in 157, the sleeper's square feet
-  in 154 (`docs/art/L-06b5b-peek-*.jpg`). The door's buttons come down with you on your screen.
-  A step, a jump, your Open, Close or Slam, or any other move of the door stands you back up.
-  Friends see you kneel, chest to the floor (`-friend-kneels.jpg`): the server tags you
-  (`Kneels`), every screen poses your joints (`KneelView`). A cloth rustle as you go down and up.
-  Pure rule in `Kneel`, 94 Lune checks. Verified in Studio on seed 7, floor 1, one screen; two
-  screens, the phone view and the rustle by ear wait on `OWNER.md`.
-- **L-06b4b split** in ROADMAP into b1 (the sting and the chase bed), b2 (its tell: footfalls and
-  joint knocks) and b3 (the freeze predicted on your screen), a session each.
+- **L-06b4b1 done (D-082):** the instant a keeper sees you, a hit cuts in on your screen alone
+  (APM's "Rising Fear Hit 1") and a low drone swells under the chase ("Tension Repeat Drones
+  39"), fading over 4 s once no keeper hunts you. A glance back within 4 s of a loss doesn't hit
+  again, nor a second keeper within 8 s; a catch cuts both dead. The server tells each player
+  how many keepers hunt them only when that changes (`Remotes.Hunted`, from `Keepers`); the rule
+  is pure (`Chase`, 46 Lune checks), played by `ChaseMusic`. Verified in Studio on seed 7, floor
+  1: the hit on the sighting's frame, the rise, the fade after an escape, the catch's cut, no
+  sound errors. Sounds were chosen by measurement (the bed for a phone's speaker); judging them
+  by ear, on a phone and on two screens waits on `OWNER.md`.
 
-## Next task: L-06b4b1 The sting and the chase bed
-The moment: a keeper turns its head your way, and a sting cuts in the instant it sees you, as
-Granny's chase music does; a low bed runs under the chase and fades as it loses you.
+## Next task: L-06b4b2 Its tell
+The moment: in the dark you hear it before you see it: a stiff, quick footfall each step and
+fibreglass knocking at its joints, as Five Nights at Freddy's footsteps say an animatronic moved;
+and one knock of its joints as a lifted door first shows one standing in a unit.
 1. Owner test results first, if pasted.
-2. Find how your screen can tell a keeper hunts *you*: the body's `KeeperState` attribute says
-   Hunting, but whom? (`Keeper.luau` keeps `k.target`; `Keepers.luau` sends the catch over
-   `Remotes.Caught`). If no screen knows, have the server tell the hunted player's screen when
-   the hunt starts and ends, validated and cheap (one message per change, not per step).
-3. Pick the sting and the bed from Roblox's sound library (the game uses Pro Sound Effects';
-   `search_asset`, then check each loads and where its sound sits, as `docs/STUDIO.md` "Testing
-   the peek's kneel" did). Only on the hunted player's screen; friends hear the keeper, not your
-   music. Feel numbers (volumes, the bed's fade in and out, a short gap before a second sting)
-   in shared Config with what each does to the player.
-4. The rule for when the sting plays and the bed runs (a fresh sighting, not every glance back
-   after it lost you for a moment) is pure and Lune-tested.
-5. Every action answers; nothing new on screen. Too big? Split in ROADMAP first.
-**Acceptance:** checks green; in Studio on seed 7, floor 1, opening 157 in front of the guard
-plays the sting the moment it turns on you and runs the bed under the chase; losing it fades the
-bed; Output shows no sound errors. Judge by ear what you can; the rest goes to OWNER.md.
-**Read first:** ROADMAP L-06b4b1; D-074; `src/shared/Keeper.luau` (lines 310 to 365);
-`src/server/Keepers.luau` (its catch remote and `KeeperState`); `src/client/CaughtView.luau`
-(a screen answering a keeper); `docs/STUDIO.md` "Testing the catch from the MCP".
+2. Find where each screen's `KeeperView` knows a foot plants (it poses the body from the records'
+   walked distance, `Pose.frame`): footfalls come from each screen's own pose, so nothing new
+   crosses the network. Friends hear it too: it's a sound in the hall, from the body, heard to a
+   set distance (as doors are, `DoorSounds`).
+3. Pick the footfall and the joint knock from Roblox's library (Pro Sound Effects; `search_asset`,
+   then load and measure each as `docs/STUDIO.md` "Sounds measured for the chase" did). Feel
+   numbers on the keeper's row (`KeeperRows`: keepers are data rows), each with what it does to
+   the player. Cap sounds per keeper; only a keeper streamed to you plays (phone first).
+4. The knock as a door first lifts on a keeper standing in its unit: once, on each screen near.
+5. Whatever is pure (when a foot plants from the walked distance, the knock's once-only rule) is
+   Lune-tested. Every action answers; nothing new on screen. Too big? Split in ROADMAP first.
+**Acceptance:** checks green; in Studio on seed 7, floor 1, the guard walking out of 157 plays one
+footfall per planted foot (log each play against the pose's stride) and a peek at 157 or 154
+knocks once; Output shows no sound errors. Judge by ear what you can; the rest goes to OWNER.md.
+**Read first:** ROADMAP L-06b4b2; D-075; `src/client/KeeperView.luau`;
+`src/shared/Mannequin/Pose.luau` (the stride's frames); `src/shared/KeeperRows.luau`;
+`docs/STUDIO.md` "Testing the chase music from the MCP".
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-06b4b1, L-06b4b2, L-06b4b3; D-064, D-068 to D-081. L-12c needs L-06b3d (done). Then L-14;
-   L-07 (takes `Keepers.caught`) to L-10.
+1. L-06b4b2, L-06b4b3; D-064, D-068 to D-082. L-12c needs L-06b3d (done). Then L-14; L-07
+   (takes `Keepers.caught`) to L-10.
 2. **Check, small:** caught crawling a hole or on the ladder, the stand-in's move may leave
    `CrawlView`/`LadderView` holding PlatformStand; if a keeper can reach you there, end it.
 3. **Checks on the tops, small:** Climb or Drop down lying behind a sawn hole slides you across

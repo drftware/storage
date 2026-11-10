@@ -478,10 +478,14 @@ on nothing in Brix.
       Waits on `OWNER.md` for a phone and a second screen.
     - [ ] **L-06b4b Its sounds, and the freeze on your screen.** Split Nov 10 into three, a
       session each, in this order:
-      - [ ] **L-06b4b1 The sting and the chase bed.** The sting the moment it sees you, as
-        Granny's chase music cuts in on sight, and a chase bed under the hunt that fades when it
-        loses you (L-06b3a2 ships the hunt with only its motion to answer it). Judged at phone
-        size, by ear.
+      - [x] **L-06b4b1 The sting and the chase bed.** Done Nov 10 (D-082). The server tells
+        each player's screen how many keepers hunt them, only when that changes
+        (`Remotes.Hunted`); their screen alone plays APM's "Rising Fear Hit 1" on a fresh sighting
+        (not a glance back within 4 s of a loss, not within 8 s of the last sting) and runs
+        "Tension Repeat Drones 39" under the chase, up over 0.8 s, fading over 4 s once none
+        hunts you; a catch cuts both (`Chase`, pure, 46 Lune checks; `ChaseMusic`). Verified in
+        Studio on seed 7, floor 1 (the sting on the sighting's frame, the rise, the fade, the
+        catch's cut, no sound errors). Waits on `OWNER.md` to be judged by ear and on a phone.
       - [ ] **L-06b4b2 Its tell.** Heard in the dark while it moves: fibreglass knocking at its
         joints and a stiff, quick footfall per step, as Five Nights at Freddy's footsteps say an
         animatronic moved. A knock of its joints, once, as a lifted door first shows one standing

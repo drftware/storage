@@ -397,6 +397,17 @@ verified: a doc page, Studio, or "untested".
   `user_mouse_input`. To chase in the dark, take the `TripsLights` tag off your root on the
   Server: no light wakes for you; put it back to test the hall lights. Fixtures' pivots stand on
   the floor (y 0 on floor 1), 24 apart down the hall.
+- **Testing the chase music from the MCP** (L-06b4b1, 2026-11-10): seed 7, floor 1. The guard
+  recipe (157, standing at (47, 3, -632)) sees you as its door gets all the way up, 2.07 s after
+  the tap, and catches you 0.5 s later: enough for the sting and the catch's cut. To see the
+  fade, move yourself from the Client (it owns your character): set your root's CFrame to the
+  spawn (-32, 3, 0) 0.3 s after `Remotes.Hunted` says 1. For a long chase, read the roaming
+  keeper's `KeeperMotion` on the Server (state, server time, feet x y z in the world, facing x z,
+  pace, studs left to its stop, studs walked) and pivot the player `left - 2` studs (at most 34)
+  along its facing, looking back at it: it sees you at once along its own path. A keeper far
+  from you isn't streamed to your client, so do that on the Server. A sampler spawned with
+  `task.spawn` from a Client `execute_luau` keeps running after the call returns; a LocalPlayer
+  attribute carries its log back to a later call.
 - **Testing the catch from the MCP** (L-06b3c, 2026-11-10): seed 7, floor 1. On the Server take
   the `TripsLights` tag off your root and pivot the character to (90, 3, -694) facing -Z (4 studs
   out from 126's door); on the Client point the camera at 126's Open prompt, wait a second, then
@@ -608,6 +619,18 @@ verified: a doc page, Studio, or "untested".
   Pro Sound Effects' and APM's uploads are Roblox's licensed library and load in any game. Check
   one in Edit with `ContentProvider:PreloadAsync` (status Success, `TimeLength` above 0) before
   relying on it.
+- **Sounds measured for the chase** (L-06b4b1, 2026-11-10; Edit, AudioPlayer to AudioAnalyzer):
+  an unparented `Sound` reads `TimeLength` 0 even after a Success preload; an `AudioPlayer` in
+  SoundService reads it once `IsReady`. With `SpectrumEnabled` on, `AudioAnalyzer:GetSpectrum()`
+  gives 512 bins up to 24 kHz: sum their squares over a few seconds for where a sound's energy
+  sits. APM's stings, 0.1 s bins: "Rising Fear Hit 1" 1841353894 (7.55 s) full by 0.1 s, loud to
+  0.8 s, gone by 7 s, centroid 1.35 kHz; "Brute Force Sting 3" 1837950656 loud 0 to 1.2 s, mostly
+  under 150 Hz; "Shock (A)" 1840489046 silent to 0.3 s; "Evil Mind 9" 1846887425 peaks 0.2 to
+  0.6 s; "Midnight Horror - Sting" 92700004957359 a flat texture, no hit. APM's beds are steady
+  for two minutes, and seven of eight ("Rhythm Drone 44" and "50", "Tension Repeat Drones" 10,
+  23, 28, 29, "No Escape A") keep 60 to 96% of their energy under 150 Hz, which a phone speaker
+  barely plays; "Tension Repeat Drones 39" 1843739491 (128.6 s) keeps 82% at 150 to 500 Hz,
+  swells about every 5 s and fades out from about 120 s.
 - **The command bar caches `require`** (L-11c): after Rojo syncs a module, requiring it from
   `execute_luau` in Edit can still return the old one. Require a clone instead
   (`require(ReplicatedStorage.Shared.Tools:Clone())`), then destroy the clone.

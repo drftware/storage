@@ -21,6 +21,35 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-06b4b1, the sting and the chase bed (built Nov 10)
+
+Nobody here could listen: the sounds were picked by measuring them (D-082), so this is all by ear.
+- [ ] **The moment** (Play on a computer with sound on). "Walk a floor", stand in front of Unit
+  157 and tap Open: the instant the guard turns on you, a hit cuts in (APM's "Rising Fear Hit 1")
+  and a low drone swells under it ("Tension Repeat Drones 39"). Does the hit make you jump? Is
+  it louder than a slam, and should it be? Volumes are `Chase.Sting.volume` (0.8) and
+  `Chase.Bed.volume` (0.45) in `src/shared/Chase.luau`.
+- [ ] **On the phone's own speaker** (the Galaxy A16, no headphones): is the drone still there
+  under the chase? It was chosen because most of its sound sits where a phone speaker plays; the
+  other beds measured were mostly under 150 Hz and would vanish. If it doesn't feel like a chase
+  on headphones, try "Rhythm Drone 44" (1843764058) or "Tension Repeat Drones 28" (1843867230);
+  other hits to try: "Brute Force Sting 3" (1837950656), "Evil Mind 9" (1846887425).
+- [ ] **The fade and the glance back:** get seen in a long hall, run, and break its sight round a
+  corner: the drone should hang on and die away over about 4 s (`BedOut`). Step back into its
+  sight within 4 s: the drone comes back with no second hit (`Regain`). Get seen afresh later
+  (4 s after a loss, 8 s after the last hit, `StingGap`): a new hit.
+- [ ] **The catch:** let it catch you: the music should cut dead as the screen jolts, and the
+  black is silent.
+- [ ] **Two screens** (Test > Clients and Servers, 2 players): the hunted player hears it; the
+  friend beside them, not hunted, hears nothing of it.
+- [ ] **Decide, defaults in place** (D-082): (1) only the hunted player hears the music; (2) a
+  glance back within 4 s doesn't sting, nor a second keeper within 8 s; (3) a catch cuts the music
+  to silence; (4) the drone starts from its top on each fresh chase.
+- [ ] **Decide:** at 157 the guard sees you only once its door is all the way up, 11 studs off,
+  and catches you half a second later, so the hit lands with no time to run if you open it
+  standing in the doorway. Is that the lesson (peek first, open from the side), or should the
+  guard get a beat before it comes?
+
 ## Now: judge L-06b5b, the peek's kneel (built Nov 10)
 
 - [ ] **The moment** (Play on a computer, then at phone size, the Galaxy A16 view). "Walk a floor"

@@ -1746,3 +1746,41 @@ Not chosen: a prone body flat on the floor (Siege's): the GDD says crouch, and i
 feet five studs back into the hall; taking over the camera (Scriptable), which
 would fight Roblox's first-person turn; a new remote for the kneel (the server already knows who
 peeked and where they stand).
+
+## D-082 The sting and the chase bed, heard by the hunted player alone (L-06b4b1, Nov 10)
+A keeper seeing you had only its turn and its run to say so. Granny's chase music cuts in the
+instant she sees you and runs under the chase; that's the precedent.
+- **Who hears it.** Only the hunted player: it's your music, not a sound in the hall, so it plays
+  from SoundService, the same wherever you stand. Friends hear the keeper itself (its tell is
+  L-06b4b2), never your music.
+- **How the screen knows.** No screen knew whom a keeper hunts (`KeeperState` says only
+  Hunting). The server counts, after any step in which a keeper's quarry changed (it saw, lost or
+  caught someone, or was trapped), how many keepers hunt each player, and tells a player's screen
+  that number (`Remotes.Hunted`, to them alone) only when it changes: one message per sighting
+  or loss, never per step. A count rather than a yes or no, so a second keeper joining a chase
+  is a rise the screen can hear.
+- **The rule (`Chase`, pure, 46 Lune checks).** A rise is a sighting. It stings only if it's a
+  fresh one: not within 4 s of a keeper losing you (`Regain`: ducking out of sight for a moment
+  and being seen again is a glance back, and the bed just comes back up) and not within 8 s of the
+  last sting (`StingGap`: a second keeper right behind the first only adds to the chase). The bed
+  rises over 0.8 s (`BedIn`, under the sting's hit) while any keeper hunts you and fades over 4 s
+  (`BedOut`) once none does; the level moves evenly and its square is what's heard, so a fade
+  dies away. A catch cuts the sting and the bed at once and holds silence through the blackout
+  (`Hush` = `Caught.Out`); the first sighting after it is fresh.
+- **The sounds** (APM, Roblox's licensed library, each loaded and measured in Studio, none
+  judged by ear yet). The sting is "Rising Fear Hit 1" (1841353894): full by 0.1 s, loud for
+  0.8 s, rings down by 7 s, a boom with a bright edge (a third of it 500 Hz to 2 kHz). The bed is
+  "Tension Repeat Drones 39" (1843739491), looped over its first 118 s: of eight beds measured it
+  alone had most of its sound (82%) between 150 and 500 Hz; the rest sat under 150 Hz, where a
+  phone's speaker barely plays, and phone is first. Volumes 0.8 and 0.45 (`Chase.Sting`, `Bed`).
+- **Verified in Studio** on seed 7, floor 1: opening 157 in front of the guard, the server's
+  word came 2.07 s after the tap and the sting started that frame; the bed rose, and the catch
+  0.5 s later cut both. Escaping 0.3 s after the sighting, the loss reached the screen 0.2 s
+  later and the bed fell evenly to silence and stopped. A 34-stud sighting in the halls held the
+  bed full for 1.3 s until the catch cut it. No sound errors in Output.
+
+Not chosen: the server deciding when to sting (the rule is presentation, the screen's to keep;
+the server only says how many hunt you); a sting per keeper's own sighting by its id (more to
+send, and the gap would swallow most); music that swells with distance (Alien: Isolation's) or
+the bed's own loudness telling you how near it is: the bed only says "hunted"; the keeper's tell
+(L-06b4b2) says where.
