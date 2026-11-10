@@ -22,6 +22,28 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-10, the minimap (built Nov 10)
+
+Verified in Studio at Galaxy A16 size (seed 7, floor 1): the map slides in at the top right as you
+reach the floor, the lobby and the car drawn from the start; two walked halls filled in; unit 103,
+opened, went green with a tick; the gate's amber mark sat on the edge once the car was off the
+window; the torch and jump buttons stayed clear. Not yet seen on a real phone or with a friend.
+- [ ] **The moment** (Play, "Walk a floor", seed 7). Walk out of the lobby and through two or
+  three halls: each fills in as you step onto it, with its units beside it; the rest stays dark.
+  Turn round: your dot's point follows your view. Walk far enough that the lobby leaves the
+  window: an amber mark waits on the edge the way the gate is. Does a glance get you back?
+- [ ] **On a real phone:** the map top right under Roblox's buttons, clear of the torch and jump
+  buttons. Big enough to read the halls (about a third of the screen's height)? Too big?
+- [ ] **North stays up** (a default, D-094): the lobby and gate are always at the bottom and the
+  map never turns. Say if it should turn with you, as GTA's radar does.
+- [ ] **Opened units** (a default, D-094): any unit anyone has opened or peeked into goes green
+  with a tick, on everyone's map, once they've walked that hall. Say if it should be only the ones
+  you opened yourself.
+- [ ] **Friends** (Team Test, two players): your friend is a blue dot where they stand, held on
+  the window's edge (paler) when they're out of it; their walking fills in nothing on your map.
+- [ ] **The player list is off** (a default): Roblox's list of players (Tab on a computer) would
+  open over the map, so it's hidden. Say if you want it back somewhere.
+
 ## Now: judge L-14b2b and L-14b2c, the pops (built Nov 10)
 
 Verified in Studio (the test hall): lay a sheet, walk across it four times: Output says "popped

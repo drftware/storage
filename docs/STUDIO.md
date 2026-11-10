@@ -1028,6 +1028,15 @@ verified: a doc page, Studio, or "untested".
   7158013361 is one lone pop at 1.2 s (-5 dB) and nothing else.
 - **`SurfaceAppearance.Color`** (Edit, Nov 10): exists and reads white (a tint on its ColorMap).
   A LocalScript can set it in Play (verified Nov 10: the spent bubble wrap's grey).
+- **`AbsolutePosition` skips the top bar** (Play, Nov 10, the minimap): in a ScreenGui with
+  `IgnoreGuiInset` true, a frame placed at y 68 (58 under `GuiService.TopbarInset`'s row, plus
+  10) reads `AbsolutePosition.Y` 10: it's measured from under the inset. Place by `TopbarInset`
+  and check by eye, not by `AbsolutePosition`.
+- **"✓" draws in Builder Sans Bold** (Play, Nov 10): from a fallback font, thin; at 6 points it
+  doesn't read, so the minimap's opened units go green as well.
+- **Teleports right after Play starts can skip frames** (Nov 10): a client walked by `PivotTo` 3
+  studs every 0.08 s as Play began skipped the minimap's junction (slow first frames); walked
+  again later, it filled in. Wait a few seconds after Play before stepping a character along.
 - **A server-made model can reach a screen before its parts** (Play, Nov 10, the laid bubble
   wrap): with StreamingEnabled and the model's `ModelStreamingMode` Default, a client's
   `CollectionService` added handler can find the model with no part yet, and code that gives up

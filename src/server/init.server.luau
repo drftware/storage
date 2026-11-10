@@ -16,6 +16,7 @@ local Flashlights = require(script.Flashlights)
 local Horns = require(script.Horns)
 local Keepers = require(script.Keepers)
 local Kneels = require(script.Kneels)
+local Minimaps = require(script.Minimaps)
 local Ladders = require(script.Ladders)
 local MotionLights = require(script.MotionLights)
 local Saws = require(script.Saws)
@@ -45,6 +46,7 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "horns", system = Horns.new() },
 	-- Laying bubble wrap: a Lay checked against the halls, the roll spent, a sheet across the hall.
 	{ slot = "wraps", system = Wraps.new() },
+	{ slot = "minimaps", system = Minimaps.new() },
 }
 if RunService:IsStudio() then
 	-- A test hall of real units to try the doors in. Never on a live server.

@@ -45,6 +45,7 @@ local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 local Slots = require(script.Parent.Slots)
 local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
 local Wrap = require(ReplicatedStorage.Shared.Tools.Wrap)
+local Minimaps = require(script.Parent.Minimaps)
 local Wraps = require(script.Parent.Wraps)
 
 -- The layout, in studs. The hall runs along X; doors face each other across Z.
@@ -522,7 +523,8 @@ local function devFloor(
 	elevators: Elevators.Elevators,
 	deals: Deals.Deals,
 	keepers: Keepers.Keepers,
-	wraps: Wraps.Wraps
+	wraps: Wraps.Wraps,
+	minimaps: Minimaps.Minimaps
 )
 	local units, missing = FloorBuilder.units()
 	if not units then
@@ -565,6 +567,7 @@ local function devFloor(
 	-- wander never changes what a unit holds
 	keepers:add(floor, laid.slots, model, FLOOR_ORIGIN, Brix.Random.new({ seed = s }))
 	wraps:add(Wrap.halls(floor), model, FLOOR_ORIGIN)
+	minimaps:add(floor, laid.slots, model, FLOOR_ORIGIN)
 	mannequinPost(model, keepers)
 	local elevator = laid.elevator
 	if elevator then
@@ -790,6 +793,8 @@ function DevCorridor.new(): Brix.System
 			local keepers = (context.registry:get("keepers") :: any) :: Keepers.Keepers
 			-- any: as above; Wraps fills this slot
 			local wraps = (context.registry:get("wraps") :: any) :: Wraps.Wraps
+			-- any: as above; Minimaps fills this slot
+			local minimaps = (context.registry:get("minimaps") :: any) :: Minimaps.Minimaps
 			local folder = build(lights)
 			built = folder
 			if folder then
@@ -798,7 +803,7 @@ function DevCorridor.new(): Brix.System
 					slots:lay(spot.key, spot.at, spot.yaw)
 				end
 				wraps:add(TEST_HALLS, folder, CFrame.identity)
-				laying = task.spawn(devFloor, folder, elevators, deals, keepers, wraps)
+				laying = task.spawn(devFloor, folder, elevators, deals, keepers, wraps, minimaps)
 			end
 		end,
 		stop = function(_: any)

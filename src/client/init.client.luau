@@ -25,6 +25,7 @@ local KeeperSounds = require(script.KeeperSounds)
 local KeeperView = require(script.KeeperView)
 local KeypadPad = require(script.KeypadPad)
 local KneelView = require(script.KneelView)
+local MinimapView = require(script.MinimapView)
 local LadderView = require(script.LadderView)
 local NoteView = require(script.NoteView)
 local SawView = require(script.SawView)
@@ -56,6 +57,7 @@ local host = Brix.Host.new({
 		{ slot = "elevatorView", system = elevatorView },
 		{ slot = "keypadPad", system = KeypadPad.new(pressKeypad, needCursor) },
 		{ slot = "gateClock", system = GateClock.new(kick) },
+		{ slot = "minimapView", system = MinimapView.new() },
 		{ slot = "caughtView", system = CaughtView.new(kick) },
 		{ slot = "chaseMusic", system = ChaseMusic.new() },
 		{ slot = "noteView", system = NoteView.new() },

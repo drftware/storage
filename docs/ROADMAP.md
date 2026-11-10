@@ -782,7 +782,7 @@ on nothing in Brix.
       spent look): a second texture set baked by `art/bubblewrap` (the same atlas, the sheet's
       strip painted as burst bubbles: flat, creased film), swapped onto the sheet's part at its
       third pop. Small; one session.
-- [ ] **L-10 The minimap** (owner, Nov 7: players shouldn't get lost and give up; Nov 10: a small
+- [x] **L-10 The minimap** (owner, Nov 7: players shouldn't get lost and give up; Nov 10: a small
   corner map, always on, for now, which the owner may later make a map you stop to open, exposed
   while you read it). It fills in only the halls you've walked, as R.E.P.O.'s map fills in rooms
   as you find them; the lobby and elevator always marked, so the sprint for the gate always knows
@@ -793,6 +793,11 @@ on nothing in Brix.
   clear, readable at phone size. Friends show as dots (owner, Nov 10, as Lethal Company's ship
   radar shows the crew), behind one Config switch so they can come off in a line. Moved up to
   straight after the bubble wrap (owner, Nov 10).
+  Done Nov 10 (D-094): `Minimap` (pure, Lune-tested), `Minimaps` (the server sends the layout as
+  shapes, never the seed, and the opened list), `MinimapView` and `MinimapDrawing` (the window and
+  the drawing apart). Verified in Studio at Galaxy A16 size on seed 7, floor 1: the lobby and car
+  from the start, two walked halls filled in, unit 103 opened went green and ticked, the gate's
+  mark on the edge, clear of the torch and jump buttons; Output clean.
 - [ ] **L-07 Getting kept and rescued.** Shrink-wrapped, stored in a random unit, banging to ping
   the team, cut free in a second, padlocked if left too long (GDD "Getting kept"). It takes
   `Keepers.caught` (L-06b3c, D-077) and replaces its stand-ins: DevCorridor's move to the lobby,
@@ -818,6 +823,13 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **A full map behind a button (L-10):** the owner may later want a map you stop to open, exposed
+  while you read it (R.E.P.O.'s map in hand). `MinimapDrawing` draws the whole floor already; it
+  needs a bigger frame, a button and the pause it costs you.
+- **The map's marks drawn as art (L-10):** your dot's nose, the gate's mark and the tick are plain
+  Frames and a fallback-font "✓"; an arrow, a lift icon and a hand-drawn tick, made the art way,
+  would read sharper on a phone.
 
 - **The unroll's own sound (L-14b2a):** the sheet's unroll plays the pick-up's crinkle slowed
   down; a real unrolling rustle (measured, Pro Sound Effects) would sell the roll going across.

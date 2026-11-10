@@ -2103,3 +2103,26 @@ owner finds the grey, flat, clear look doesn't read as popped); clearing it away
 owner wants it seen); a rest per walker rather than per sheet (more state, and one alarm a moment
 reads cleaner).
 
+## D-094 The corner map: a window that follows you, filled in as you walk (L-10, Nov 10)
+The map sits top right under the top bar, a square about a third of the screen's height (104 to
+176 points), showing 112 studs of floor round you: halls at least 7 points wide on a phone. It
+fills in each hall piece you stand on (a straight, or a junction's middle and arms; standing in a
+unit or on its top fills in the hall it opens onto), as R.E.P.O.'s map fills in rooms as you find
+them; the lobby and the car are drawn from the start. While the car is off the window an amber
+mark waits on the edge the way it lies, as GTA's radar holds a waypoint on its rim, so the way
+back is always on screen. North stays up, the lobby and the gate at the bottom ("the way back is
+always down"); your dot turns with your view. Friends are blue dots, held on the edge, paler, when
+off the window (D-091). A unit is ticked once the deal has shown its inside (a peek, an open, a
+lift from inside, a saw's hole: `Deals.dealt`), for everyone on the floor, so friends see what's
+been searched; it goes green (the sign that reads at 6 points) with a tick on it. What you walked
+stays yours: a friend's walking draws nothing on your map. Roblox's player list is off: it would
+open over the map on a computer.
+**The layout reaches screens as shapes, never the seed.** `Floor.generate` would rebuild the floor
+from its seed on a screen, but the deal is drawn from the same seed, so a screen holding the seed
+holds the code, the notes and every unit's contents. `Minimaps` sends the drawn rectangles
+(`Minimap.encode`, about 2 KB a floor) and the opened list; the server owns both.
+Not chosen: the whole floor fitted in the corner (halls 4 points wide on a phone, too small to
+tick a unit); turning the map with you (a full map later would have to turn too, and "down" stops
+meaning the way out); drawing the doors' own state from each unit (far units aren't streamed to
+your screen, so a friend's opened unit wouldn't show).
+
