@@ -14,3 +14,4 @@ __pycache__/
 # other sizes rebuild their scene from the scripts before every stage (scripts/art.sh)
 art/unit/out/*/unit.blend
 !art/unit/out/M/unit.blend
+art/unit/out/*/dent/

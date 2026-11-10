@@ -90,6 +90,15 @@ return {
 	-- The bolt rests shot (locked). Unlocked = rest moved by (LatchThrow, 0, 0) in door-local X.
 	LatchThrow = 0.39,
 
+	-- The dent (art/unit/dent.py): a keeper shut in the unit bows its door out toward the hall,
+	-- worse at each step. A step swaps the chain's slats First..Last for its bowed copies, the
+	-- parts Dent<step>_<index> of ReplicatedStorage.Props.DoorDent_<Size>; Peak is how far out.
+	Dent = {
+		{ Name = "dented", First = 11, Last = 18, Peak = 0.34 },
+		{ Name = "bowed", First = 8, Last = 22, Peak = 0.662 },
+		{ Name = "buckling", First = 7, Last = 22, Peak = 0.951 },
+	},
+
 	-- Collision boxes in the unit's frame (origin: doorway middle, floor; -Z hallway).
 	Colliders = {
 		Floor = { Position = Vector3.new(0, -0.5, 6), Size = Vector3.new(12, 1, 12) },

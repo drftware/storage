@@ -6,6 +6,7 @@
 		RollUpDoor.play(unit, "Open")         -- Peek | Open | Close | Slam | LiftInside
 		RollUpDoor.setLocked(unit, true)      -- shoots the bolt, hangs the padlock (shut doors)
 		RollUpDoor.rise(unit) --> number      -- where the door is right now, in studs
+		RollUpDoor.dent(unit, share)          -- a trapped keeper's blow bows it out (never back)
 
 	Client (renders every unit the server moves; the client's DoorView system calls it):
 		local stop = RollUpDoor.watchTagged("StorageUnit")
@@ -20,13 +21,21 @@
 	merged mesh (CurtainClosed). Only while a door moves or stands open does its client
 	clone the 38-slat chain from three templates, posed with one BulkMoveTo per frame.
 	Place and paint units before parenting them to Workspace: rigs cache the door's frame.
+
+	The dent (L-06b3d2): a door a trapped keeper beats on keeps its chain, and the dent's step
+	(`Dent.step` of the unit's `DoorDent`) swaps in that step's bowed ribs from
+	ReplicatedStorage.Props.DoorDent_<Size> (art/unit/dent.py), each while it hangs below the
+	doorway's top; rolling up, a rib goes flat as it passes behind the header, so the coil stays
+	round. The collider never changes.
 ]]
 
 local CollectionService = game:GetService("CollectionService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Curtain = require(script.Parent.Curtain)
+local Dent = require(script.Parent.Dent)
 local Motion = require(script.Parent.Motion)
 local Specs = require(script.Parent.Specs)
 
@@ -37,6 +46,7 @@ local ATTR_LOCKED = "DoorLocked"
 local ATTR_SIZE = "UnitSize"
 local ATTR_OFFSET = "DoorOffset" -- CFrame, stored by UnitKit.prepare on each moving part
 local SHUT = 1e-4
+local DENT_KIT = "DoorDent_" -- ReplicatedStorage.Props.DoorDent_<Size>: the dent's bowed ribs
 
 type Moving = { part: BasePart, offset: CFrame }
 type Playing = {
@@ -69,7 +79,12 @@ export type Rig = {
 	cframes: { CFrame },
 	motion: Playing,
 	conns: { RBXScriptConnection },
+	dent: number, -- the dent's step shown, 0 for none
+	bowed: { [number]: BasePart }, -- by chain index: that step's bowed rib, cloned from the kit
+	bowedOffsets: { [number]: CFrame },
+	showBowed: { [number]: boolean }, -- whether the bowed rib stands in for the plain one now
 	pose: (self: Rig, rise: number, locked: boolean?, moving: boolean?) -> (),
+	setDent: (self: Rig, step: number) -> (),
 	destroy: (self: Rig) -> (),
 }
 
@@ -176,6 +191,10 @@ function RollUpDoor.rig(unit: Model): Rig
 		cframes = {},
 		motion = { kind = "Close", from = 0, to = 0, start = 0, dur = 0, locked = false },
 		conns = {},
+		dent = 0,
+		bowed = {},
+		bowedOffsets = {},
+		showBowed = {},
 	}, Rig) :: any
 	for _, v in { "A", "B", "C" } do
 		local t = unit:FindFirstChild("Slat_" .. v, true) :: BasePart?
@@ -189,6 +208,11 @@ function RollUpDoor.rig(unit: Model): Rig
 				for i, s in self.slats do
 					if spec.SlatOrder[i] == v then
 						s.Color = t.Color
+					end
+				end
+				for i, b in self.bowed do
+					if spec.SlatOrder[i] == v then
+						b.Color = t.Color
 					end
 				end
 			end)
@@ -215,7 +239,73 @@ local function buildChain(self: Rig)
 	self.chain = folder
 end
 
+-- The size's dent kit, or nil (said once) when the place has none: its doors then never dent.
+local dentKits: { [string]: Model } = {}
+local dentMissing: { [string]: boolean } = {}
+local function dentKitFor(spec: Spec): Model?
+	local kit = dentKits[spec.Size]
+	if kit then
+		return kit
+	end
+	local props = ReplicatedStorage:FindFirstChild("Props")
+	local found = props and props:FindFirstChild(DENT_KIT .. spec.Size)
+	if found and found:IsA("Model") then
+		dentKits[spec.Size] = found
+		return found
+	end
+	if not dentMissing[spec.Size] then
+		dentMissing[spec.Size] = true
+		warn(
+			`RollUpDoor: no ReplicatedStorage.Props.{DENT_KIT}{spec.Size}, so its doors never dent (art/unit/README.md, "The dent")`
+		)
+	end
+	return nil
+end
+
+-- Let go of the bowed ribs, showing the plain ones they stood in for.
+local function dropDent(self: Rig)
+	for i, shown in self.showBowed do
+		local s = self.slats[i]
+		if shown and s then
+			s.Transparency = 0
+		end
+	end
+	for _, b in self.bowed do
+		b:Destroy()
+	end
+	table.clear(self.bowed)
+	table.clear(self.bowedOffsets)
+	table.clear(self.showBowed)
+end
+
+-- Clone the dent step's bowed ribs into the chain, in the unit's paint; hidden until posed.
+local function buildDent(self: Rig)
+	local chain = self.chain
+	local row = self.spec.Dent[self.dent]
+	local kit = dentKitFor(self.spec)
+	if not (chain and row and kit) or next(self.bowed) ~= nil then
+		return
+	end
+	for i = row.First, row.Last do
+		local src = kit:FindFirstChild(`Dent{self.dent}_{i}`, true)
+		local offset = src and src:GetAttribute(ATTR_OFFSET)
+		local template = self.templates[self.spec.SlatOrder[i]]
+		if not (src and src:IsA("BasePart") and typeof(offset) == "CFrame" and template) then
+			continue -- an unprepared kit: that rib stays plain
+		end
+		local b = src:Clone()
+		b.Name = "Dent" .. i
+		b.Color = template.Color
+		b.Transparency = 1
+		b.Parent = chain
+		self.bowed[i] = b
+		self.bowedOffsets[i] = offset
+		self.showBowed[i] = false
+	end
+end
+
 local function dropChain(self: Rig)
+	dropDent(self)
 	table.clear(self.slats)
 	table.clear(self.slatOffsets)
 	self.phi = nil
@@ -232,26 +322,46 @@ end
 function Rig.pose(self: Rig, rise: number, locked: boolean?, isMoving: boolean?)
 	local spec = self.spec
 	rise = math.clamp(rise, 0, spec.Rise.Open + 0.4)
-	local useChain = isMoving == true or rise > SHUT or not self.closed
+	-- a dented door keeps its chain: the merged curtain is the plain door
+	local useChain = isMoving == true or rise > SHUT or not self.closed or self.dent > 0
 	local parts, cframes = self.parts, self.cframes
 	local f = self.frame
 	local n = 0
 	local drumAngle = 0
 	if useChain then
 		buildChain(self)
+		if self.dent > 0 then
+			buildDent(self)
+		end
 		local st = self.curtain:slats(rise, self.buf, self.phi)
 		self.phi = st.phi
 		drumAngle = self.curtain:drumAngle(st)
 		local buf = self.buf
+		-- a bowed rib shows while its top is below the doorway's top, in the hall's sight
+		local hangs = spec.DoorHeight - spec.Curtain.BottomClosed - rise
+		local pitch = spec.Curtain.Pitch
 		for i, s in self.slats do
 			local j = 4 * (i - 1)
 			local dz, dy = buf[j + 3], buf[j + 4]
-			n += 1
-			parts[n] = s
 			-- rotation about X taking +Y up the curtain: (dirY, -dirZ) in door-local Y/Z
-			cframes[n] = f
-				* CFrame.new(0, buf[j + 2], -buf[j + 1], 1, 0, 0, 0, dy, dz, 0, -dz, dy)
-				* self.slatOffsets[i]
+			local at = f * CFrame.new(0, buf[j + 2], -buf[j + 1], 1, 0, 0, 0, dy, dz, 0, -dz, dy)
+			n += 1
+			local b = self.bowed[i]
+			if b then
+				local show = i * pitch <= hangs
+				if show ~= self.showBowed[i] then
+					self.showBowed[i] = show
+					b.Transparency = if show then 0 else 1
+					s.Transparency = if show then 1 else 0
+				end
+				if show then
+					parts[n] = b
+					cframes[n] = at * self.bowedOffsets[i]
+					continue
+				end
+			end
+			parts[n] = s
+			cframes[n] = at * self.slatOffsets[i]
 		end
 	else
 		dropChain(self)
@@ -298,12 +408,29 @@ function Rig.pose(self: Rig, rise: number, locked: boolean?, isMoving: boolean?)
 	Workspace:BulkMoveTo(parts, cframes, Enum.BulkMoveMode.FireCFrameChanged)
 end
 
+--[[
+	Show the dent's step `step` (0: none; `Dent.step` of the unit's `DoorDent`). The next pose
+	puts its bowed ribs in. Without the size's dent kit the door stays plain.
+]]
+function Rig.setDent(self: Rig, step: number)
+	step = math.clamp(step, 0, #self.spec.Dent)
+	if step > 0 and not dentKitFor(self.spec) then
+		step = 0
+	end
+	if step == self.dent then
+		return
+	end
+	dropDent(self)
+	self.dent = step
+end
+
 -- Put the unit back as imported (shut, merged curtain) and stop listening.
 function Rig.destroy(self: Rig)
 	for _, c in self.conns do
 		c:Disconnect()
 	end
 	table.clear(self.conns)
+	self.dent = 0
 	dropChain(self)
 	if self.unit.Parent then
 		self:pose(0, self.unit:GetAttribute(ATTR_LOCKED) == true, false)
@@ -428,6 +555,19 @@ function RollUpDoor.play(unit: Model, kind: Motion.Kind): number
 	return dur
 end
 
+--[[
+	Server: a trapped keeper's blow, `share` of its time to break out gone (`Dent.share`), dents
+	its door that far if that's worse than it is; never back. Every screen shows the matching step
+	from the unit's `DoorDent`. A door keeps its dent for the floor, lifted or burst.
+]]
+function RollUpDoor.dent(unit: Model, share: number)
+	local was = unit:GetAttribute(Dent.Attribute)
+	local worse = Dent.raise(if type(was) == "number" then was else 0, share)
+	if worse ~= was then
+		unit:SetAttribute(Dent.Attribute, worse)
+	end
+end
+
 -- Server: lock or unlock. Locking needs the door down and still; returns whether it took.
 function RollUpDoor.setLocked(unit: Model, locked: boolean): boolean
 	if locked and (serverMoving[unit] or RollUpDoor.rise(unit) > 0.05) then
@@ -435,6 +575,68 @@ function RollUpDoor.setLocked(unit: Model, locked: boolean): boolean
 	end
 	unit:SetAttribute(ATTR_LOCKED, locked)
 	return true
+end
+
+--[[
+	Edit time: ready an inserted dent kit (DoorDent_<size>.fbx; art/unit/README.md, "The dent")
+	to live at ReplicatedStorage.Props.DoorDent_<size>. Measures each bowed rib against where its
+	chain index hangs when the door is shut and keeps that as its DoorOffset (the importer moves
+	and turns things), dresses it in the size's slat look from ReplicatedStorage.Units.<size>, and
+	drops the frame markers. Returns how many ribs it readied.
+]]
+function RollUpDoor.prepareDent(kit: Model, size: string): number
+	local spec = Specs[size]
+	assert(spec, `RollUpDoor.prepareDent: no spec for size {size}`)
+	local units = ReplicatedStorage:FindFirstChild("Units")
+	local unit = units and units:FindFirstChild(size)
+	local look = unit and unit:FindFirstChild("Slat_A", true)
+	assert(
+		look and look:IsA("BasePart"),
+		`RollUpDoor.prepareDent: no ReplicatedStorage.Units.{size}.Slat_A`
+	)
+	local link = kit:FindFirstChildOfClass("PackageLink")
+	if link then
+		link:Destroy()
+	end
+	local frame = RollUpDoor.frame(kit)
+	local buf = table.create(spec.Curtain.Count * 4, 0)
+	curtainFor(spec):slats(0, buf, nil)
+	local count = 0
+	for _, d in kit:GetDescendants() do
+		if not d:IsA("BasePart") then
+			continue
+		end
+		local index = string.match(d.Name, "^Dent%d+_(%d+)$")
+		local i = tonumber(index)
+		if not i then
+			d:Destroy() -- DoorOrigin and Drum: only for measuring
+			continue
+		end
+		local j = 4 * (i - 1)
+		local dz, dy = buf[j + 3], buf[j + 4]
+		local rest = CFrame.new(0, buf[j + 2], -buf[j + 1], 1, 0, 0, 0, dy, dz, 0, -dz, dy)
+		d:SetAttribute(ATTR_OFFSET, rest:Inverse() * frame:ToObjectSpace(d.CFrame))
+		d.Anchored = true
+		d.CanCollide = false
+		d.CanTouch = false
+		d.CanQuery = false
+		d.Massless = true
+		d.CastShadow = look.CastShadow
+		d.Material = look.Material
+		d.Reflectance = look.Reflectance
+		for _, c in d:GetChildren() do
+			if c:IsA("SurfaceAppearance") then
+				c:Destroy()
+			end
+		end
+		local skin = look:FindFirstChildOfClass("SurfaceAppearance")
+		if skin then
+			skin:Clone().Parent = d
+		end
+		count += 1
+	end
+	kit.Name = DENT_KIT .. size
+	return count
 end
 
 -- --- client rendering ------------------------------------------------------------------------
@@ -471,6 +673,8 @@ local function refresh(unit: Model)
 	end
 	local kind: Motion.Kind, from: number, to: number, start: number =
 		Motion.decode(unit:GetAttribute(ATTR_MOTION) :: string?)
+	local dent = unit:GetAttribute(Dent.Attribute)
+	rig:setDent(Dent.step(if type(dent) == "number" then dent else 0, #rig.spec.Dent))
 	rig.motion = {
 		kind = kind,
 		from = from,
@@ -519,6 +723,12 @@ local function bind(unit: Instance)
 	table.insert(
 		rig.conns,
 		unit:GetAttributeChangedSignal(ATTR_LOCKED):Connect(function()
+			refresh(unit)
+		end)
+	)
+	table.insert(
+		rig.conns,
+		unit:GetAttributeChangedSignal(Dent.Attribute):Connect(function()
 			refresh(unit)
 		end)
 	)

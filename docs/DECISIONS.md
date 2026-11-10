@@ -1650,3 +1650,36 @@ screen in step, one path for every door sound); the burst as a lift from inside 
 reads as a struggle, not a burst); banging forever behind a padlock (it would call every keeper on
 the floor to that door every few seconds for the rest of the floor, a lure the GDD doesn't give);
 its blow clock keyed to the last sound it heard (the GDD gives a fixed "about 90 seconds").
+
+## D-079 The dent: each blow bows the door out, in three baked steps (L-06b3d2, Nov 10)
+The moment: the door you slammed on it starts to bow out toward you, worse with each blow, so from
+the hall you can see how close it is to coming through (Amnesia's battered doors).
+
+As built: the server keeps one number on the unit, `DoorDent`, the share of the keeper's break-out
+time gone at its latest blow that landed (a `Bang` or the `Burst` that `Doors.move` played), and
+never lowers it (`Dent.raise`). Every screen turns it into one of three baked steps
+(`Dent.step`; `Dent.Lands` 0, 0.4, 0.75): dented from the first blow (a fist-sized pocket at chest
+height, 0.34 out), bowed from about 36 s of 90 (the ribs bowed guide to guide with a first fold,
+0.66 out, level with the wall's face), buckling from about 68 s (1 stud out, proud of the wall,
+the fold sharp, a third blow high). A door keeps its dent for the floor, lifted or burst (a
+default, OWNER.md). The rigid hinged ribs can't bend, so each step is bowed copies of the ribs it
+reaches, every one read from one displacement field at its place on the shut door, so they meet
+each other and the plain ribs exactly (`art/unit/dent.py`). They ship as their own small FBX per
+size, `Props.DoorDent_M` and `_S`, not in the unit (dozens of units a floor would each carry 39
+parts), dressed in the unit's own slat texture at prepare time and its paint at runtime. A dented
+door keeps its slat chain; `RollUpDoor`'s rig swaps a step's bowed ribs in while each hangs below
+the doorway's top and drops one flat as it rolls up behind the header, so the coil stays round
+and nothing pokes through the header. The collider and what keepers see are unchanged. Roblox's
+lighting is flatter than Blender's renders: at first the dent (0.2 to 0.55 out) barely showed in
+Studio, so the steps are deep enough that the ribs above the fold tip up into the hall's light
+and those below into shadow. Its worst passes the collider by about 0.4, so a player pressed to
+the door can clip it.
+
+With it: the trapped keeper stands 3.4 studs inside its doorway, not 1.2 (`Keeper.Against`). The
+Mannequin's walk holds an arm out level about 2.7 ahead of its feet, and at 1.2 its hand stood 2
+studs out in the hall through the shut door (`docs/art/L-06b3d2-arm-through-door-before.jpg`).
+
+Not chosen: a shape key or bones (Roblox's importer keeps neither for a plain mesh); merged dented
+curtains only (a blow's jolt and a peek pose the chain, where the dent would vanish); bowed ribs
+riding up onto the coil (lumps through the header and the unit's top); the dent counted per blow
+rather than by its time (a jittered clock would show different steps for the same wait).

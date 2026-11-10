@@ -378,7 +378,7 @@ on nothing in Brix.
       the sleeper woke, the cap turned it asleep. Judged by the owner Nov 9: not bad, but the
       walk reads jerky (L-06b4a), and slamming an awake one in, or letting it walk home and
       shutting it there, was too easy (D-071).
-  - [ ] **L-06b3 It roams, hunts, freezes, catches and breaks out.** Split Nov 9, a session each,
+  - [x] **L-06b3 It roams, hunts, freezes, catches and breaks out.** Split Nov 9, a session each,
     at no more than player speed (the GDD's speed rule) throughout. Reshaped with the owner Nov 9
     (D-071): as built, a keeper went home after looking, so you could let it walk back in and
     shut it there, and a slam ended an awake one for good. Run order: L-06b3a1, L-06b3a2, L-06b4a,
@@ -428,7 +428,7 @@ on nothing in Brix.
       Brix's cone on eight floors). Verified in Studio on seed 7, floor 1: out of 126 it caught me
       at arm's length; with my torch on it, it hunted frozen 12 s and never came. Waits on
       `OWNER.md` for feel.
-    - [ ] **L-06b3d It breaks out** (moved from L-12c, D-071). Split Nov 10: L-06b3d1 is the
+    - [x] **L-06b3d It breaks out** (moved from L-12c, D-071). Split Nov 10: L-06b3d1 is the
       brain, the bangs' feedback and the cap; L-06b3d2 is the dent, the door's own art. Trapped means its doorway was open
       (its door all the way up) and the door came down on it awake inside, by a slam or a close; a
       peek lowered over an awake one isn't a trap, it just waits. A trapped keeper bangs at its
@@ -450,8 +450,17 @@ on nothing in Brix.
         144 trap checks. Verified in Studio on seed 7, floor 1: slammed as 126 got up, 28 blows,
         out 90.25 s later; padlocked, quiet after 90 s and still in at 103 s. Waits on
         `OWNER.md` for feel.
-      - [ ] **L-06b3d2 The dent.** The door's panels bowing out more with each bang, built in
-        `art/unit` the unit's way (a shape key or a few baked steps), shown by DoorView.
+      - [x] **L-06b3d2 The dent.** Done Nov 10 (D-079). Each blow bows the door out toward the
+        hall: the server keeps the share of the keeper's time gone on the unit (`DoorDent`, never
+        back) and every screen shows one of three baked steps, a fist-sized pocket from the first
+        blow (0.34 out), bowed with a fold from 36 s (0.66), buckling 1 stud out, proud of the
+        wall, from 68 s. The steps are bowed copies of the ribs they reach (`art/unit/dent.py`,
+        `Props.DoorDent_M`/`_S`), swapped into the chain by `RollUpDoor`; a rib goes flat as it
+        rolls up behind the header. A trapped keeper now stands 3.4 in, so its reaching arm no
+        longer pokes through the door into the hall. 1,540 dent checks. Verified in Studio on
+        seed 7, floor 1: steps landed at the first blow, 38.5 s and 68 s, flat-out at the burst;
+        the bow reads at Level21 under the hall light (`docs/art/L-06b3d2-*.jpg`). Waits on
+        `OWNER.md` for phone size and low graphics.
   - [ ] **L-06b4 What you see and hear of it.** Split Nov 9 (owner: the walk reads jerky, which
     makes it less scary).
     - [x] **L-06b4a It moves smoothly on every screen.** Done Nov 9 (D-075). The server sends
@@ -685,6 +694,12 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **The dent, cheaper at rest (L-06b3d2):** a dented door keeps its 38-slat chain plus up to 16
+  bowed ribs (about 8k triangles, 17 draws) while it stands shut; three merged dented curtains,
+  one per step, would draw it as one part like a plain door.
+- **The dent's fist on the door (L-06b3d2):** the trapped keeper stands back from its door and
+  its hand never touches the slats; a blow could lunge its arm to the pocket the dent shows.
 
 - **The catch turns you to its face** (L-06b3c): as the dark closes, your view snaps round to the
   keeper's face, as a grab would spin you, so you see what had you. Needs the camera taken over

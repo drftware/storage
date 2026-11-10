@@ -416,7 +416,6 @@ def stage_renders(spec, quick=False, only=None):
 def stage_export(spec):
     """FBX for Studio's 3D Importer, plus the game's generated spec module."""
     import bake
-    from spec import write_luau
     bpy.ops.wm.open_mainfile(filepath=os.path.join(OUT, spec.size, "unit.blend"))
     unit = Unit.from_scene(spec)
     s = spec
@@ -441,6 +440,13 @@ def stage_export(spec):
         add_leaf_bones=False, bake_anim=False, path_mode="COPY", embed_textures=True)
     print("FBX", fbx, os.path.getsize(fbx))
 
+    write_spec(s, unit)
+
+
+def write_spec(s, unit):
+    """The game's generated spec module for this size (src/shared/StorageUnit/Specs/<Size>.luau)."""
+    import dent
+    from spec import write_luau
     # rest frames of the moving parts, door-local Roblox axes (+Y up, -Z hallway)
     frames, st = s.curtain.slats(0.0)
     rest = {}
@@ -467,12 +473,103 @@ def stage_export(spec):
         "Header": ((0.0, (dh + H) / 2, 0.17), (2 * dw2, H - dh, 0.5)),
         "Top": ((0.0, H + 0.05, (F + D) / 2), (W, 0.1, D - F)),
     }
+    dent.check(s)
+    bands = [dent.band(s, k) for k in range(1, len(dent.STEPS) + 1)]
+    dents = [(st["name"], b[0] + 1, b[-1] + 1, dent.peak(s, k + 1))
+             for k, (st, b) in enumerate(zip(dent.STEPS, bands))]
     extra = dict(rest=rest, latch_throw=L["throw"], colliders=colliders, plate=(1.8, 0.7),
-                 tris=unit.tris)
+                 tris=unit.tris, dent=dents)
     lua = os.path.join(ROOT, "src", "shared", "StorageUnit", "Specs", f"{s.size}.luau")
     os.makedirs(os.path.dirname(lua), exist_ok=True)
     write_luau(s, lua, extra)
     print("SPEC", lua)
+
+
+def stage_dent(spec):
+    """The dent's bowed ribs as their own FBX, DoorDent_<Size>.fbx (art/unit/dent.py): kept out of
+    the unit's FBX so the dozens of units on a floor don't each carry them. No textures: the game
+    dresses each rib in its unit's own slat look. Writes the spec module too (its Dent rows)."""
+    import dent
+    import geo
+    bpy.ops.wm.open_mainfile(filepath=os.path.join(OUT, spec.size, "unit.blend"))
+    write_spec(spec, Unit.from_scene(spec))
+    reset()
+    coll = collection("DoorDent")
+    s = spec
+    frames, _ = s.curtain.slats(0.0)
+    tris = {}
+    for step in range(1, len(dent.STEPS) + 1):
+        tris[step] = 0
+        for i in dent.band(s, step):
+            mesh = dent.bowed_slat(s, step, i)
+            tris[step] += mesh.tris()
+            ob = mesh.build(coll)
+            mz, my, dz, dy = frames[i]  # where rib i hangs when the door is shut
+            Y, Z = s.to_blender(mz, my)
+            ob.location = (0.0, Y, Z)
+            ob.rotation_euler = (math.atan2(dz, dy), 0.0, 0.0)
+    # the door's frame, for the game to measure each rib against (RollUpDoor.frame)
+    parts.door_origin(s).build(coll)
+    m = geo.Mesh("Drum")
+    c = Vector(s.drum_center)
+    geo.box(m, tuple(c - Vector((0.05, 0.05, 0.05))), tuple(c + Vector((0.05, 0.05, 0.05))), None)
+    m.build(coll)
+    bpy.ops.object.select_all(action="DESELECT")
+    for ob in coll.objects:
+        ob.select_set(True)
+    bpy.context.view_layer.objects.active = bpy.data.objects["DoorOrigin"]
+    fbx = os.path.join(OUT, f"DoorDent_{s.size}.fbx")
+    bpy.ops.export_scene.fbx(
+        filepath=fbx, use_selection=True, object_types={"MESH"},
+        apply_scale_options="FBX_SCALE_UNITS", axis_forward="Z", axis_up="Y",
+        use_mesh_modifiers=True, mesh_smooth_type="OFF", use_tspace=False,
+        add_leaf_bones=False, bake_anim=False, path_mode="AUTO", embed_textures=False)
+    print("FBX", fbx, os.path.getsize(fbx), "tris by step", tris)
+
+
+def stage_dentsheet(spec, quick=False):
+    """Look sheet: the door from the hall, shut and then at each step of the dent, left to right;
+    the top row as you come down the hall, the bottom along the wall, where the bulge shows."""
+    import subprocess
+    import dent
+    import render as R
+    scene = build_scene(spec)
+    view, neighbours, fig, rig = scene
+    R.setup(24 if quick else 96, (960, 540))
+    set_studio(scene, False)
+    for ob in fig:
+        ob.hide_render = True
+    s = spec
+    view.pose(0.0, False)
+    plain = [ob.data for ob in view.chain]
+    cams = [R.camera((-6.4, -5.8, 4.7), (0.3, 0.0, 4.3), 24, "cam_dent_hall"),
+            R.camera((-11.0, -3.4, 4.8), (0.6, 0.2, 4.4), 32, "cam_dent_along")]
+    tmp = os.path.join(OUT, s.size, "dent")
+    os.makedirs(tmp, exist_ok=True)
+    tiles = [[], []]
+    for step in range(0, len(dent.STEPS) + 1):
+        for i, ob in enumerate(view.chain):
+            ob.data = plain[i]
+        if step:
+            for i in dent.band(s, step):
+                tmp_ob = dent.bowed_slat(s, step, i).build(view.chain[i].users_collection[0])
+                me = tmp_ob.data
+                bpy.data.objects.remove(tmp_ob)
+                me.materials.append(plain[i].materials[0])
+                view.chain[i].data = me
+        for row, cam in enumerate(cams):
+            path = os.path.join(tmp, f"{row}_{step}.png")
+            R.shoot(cam, path, 0.35)
+            tiles[row].append(path)
+    n = len(tiles[0])
+    cmd = ["ffmpeg", "-y", "-loglevel", "error"]
+    for p in tiles[0] + tiles[1]:
+        cmd += ["-i", p]
+    top = "".join(f"[{k}]" for k in range(n)) + f"hstack={n}[top];"
+    bot = "".join(f"[{n + k}]" for k in range(n)) + f"hstack={n}[bot];"
+    cmd += ["-filter_complex", top + bot + "[top][bot]vstack", sheet(s, "dent")]
+    subprocess.run(cmd, check=True)
+    print("RENDERED", sheet(s, "dent"))
 
 
 ANIMS = {
@@ -535,5 +632,9 @@ if __name__ == "__main__":
         stage_export(spec)
     elif a.stage == "renders":
         stage_renders(spec, a.quick, a.only.split(",") if a.only else None)
+    elif a.stage == "dent":
+        stage_dent(spec)
+    elif a.stage == "dentsheet":
+        stage_dentsheet(spec, a.quick)
     elif a.stage == "anim":
         stage_anim(spec, a.only.split(",") if a.only else None, a.quick)

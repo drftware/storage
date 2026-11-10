@@ -2,46 +2,46 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-10, session 67 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-10, session 68 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-06b3d1 done (D-078):** a door down from all the way up on an awake keeper inside traps it
-  (`Keeper.trap`, state `Trapped`); it stands against the door and bangs, the first blow at 1.2 s,
-  then 5 s closing to 2 s. Each blow and its burst at 90 s are door motions (`Bang`, `Burst`) the
-  server plays with `Doors.move`, so every screen jolts, booms and shakes from the door's one
-  motion attribute, and keepers hear them. A padlock holds it (one last blow, then quiet);
-  trapped, it isn't counted in the cap (`Keeper.loose`). 144 checks in `tests/trapped.spec.luau`.
-  Verified in Studio on seed 7, floor 1: 28 blows, out at 90.25 s; padlocked, still in at 103 s.
+- **L-06b3d2 done (D-079), so L-06b3 is done:** each blow bows the slammed door out toward the
+  hall. The server keeps the share of the keeper's time gone on the unit (`DoorDent`, never back;
+  `RollUpDoor.dent`, pure `Dent.luau`); screens show one of three baked steps (pocket from the
+  first blow, bowed from 36 s, buckling a stud out from 68 s), bowed rib copies from
+  `Props.DoorDent_M`/`_S` (`art/unit/dent.py`, `scripts/art.sh dent`) swapped into the chain;
+  a rib goes flat as it rolls up behind the header. 1,540 dent checks. Verified in Studio on seed 7,
+  floor 1: steps at the first blow, 38.5 s, 68 s; flat-out at the burst; reads at Level21.
+- **Fixed with it:** a trapped keeper's arm poked 2 studs through its door; it stands 3.4 in now.
 - **The brain:** pure `src/shared/Keeper.luau`, rows in `KeeperRows.luau`, run by
-  `src/server/Keepers.luau`. MCP recipes for the chase, catch and trap: `docs/STUDIO.md`.
+  `src/server/Keepers.luau`. MCP recipes for the chase, catch, trap and hall shots: `docs/STUDIO.md`.
 
-## Next task: L-06b3d2 The dent
-The moment: the door you slammed on it starts to bow out toward you, a little more with each
-blow, so you can see from the hall how close it is to coming through (Amnesia's battered doors).
+## Next task: L-06b5 The guarded note
+The moment: you peek a unit, see feet standing, and know the note you still need is in there with
+it, so this floor can't be cleared without a chase (DOORS puts the library's code hints in the room
+Figure walks; the GDD's floor 5 does it with Dale).
 1. Owner test results first, if pasted.
-2. The art, the unit's way (`art/unit/README.md`; the curtain is `art/unit/curtain.py`): the
-   door's slats bowing out into the hall around chest height, a few baked steps (say 3: dented,
-   bowed, buckling) or a shape key, whichever Studio's importer keeps; rebuild with
-   `scripts/art.sh`, never hand-edit the generated FBX or Specs. Judge it at phone size.
-3. How screens know: the server counts each blow on the door (a door attribute, say `DoorDent`,
-   0 to 1 by the share of `breakOut` gone, set in `Keepers`' `onBlow` with each `Doors.move`
-   "Bang"); `RollUpDoor`'s rig (`Rig.pose`) or `DoorView` shows the matching step, the change
-   landing on the blow itself (the jolt already plays from the `Bang` motion). A door lifted all
-   the way up or burst keeps its dent for the floor (a sensible default; list it in OWNER.md).
-4. The dent never changes the collider or what keepers see through (`KeeperMap` stays as it is).
-5. Lune: the dent's step from the blows so far is pure (in `Door` or a small module): never
-   back, full at the burst. Studio: the trap recipe, peek at the door from the hall each 30 s.
-**Acceptance:** checks green; in Studio on seed 7, floor 1, slam 126 on its Mannequin (recipe in
-`docs/STUDIO.md`, "Testing the trap"): the door visibly bows more at 30, 60 and 85 s, at phone
-size; shots in `docs/art/`.
-**Read first:** ROADMAP L-06b3d2; `art/unit/README.md`; `art/unit/curtain.py`;
-`src/shared/StorageUnit/RollUpDoor.luau` (`Rig.pose`, the slat chain); `src/server/Keepers.luau`
-(`onBlow`); D-078.
+2. The floor's build picks one guarded unit from the units holding notes, seeded from the floor's
+   Random, and marks it in the floor's data (pure, in `Floor` or the deal's deck, wherever the
+   notes' units are chosen; read how notes are placed first).
+3. The deal always deals that unit a keeper, awake, standing clear of the note's sight line
+   (`DealSpot`). The guard holds one of the floor's awake places from the floor's start: on
+   floors 1 and 2 (one place) every other keeper is dealt asleep until the guard is trapped or
+   the cap otherwise frees a place (`Keepers.awakeOn`, `Keeper.loose`, `Deal.open`'s `awake`).
+4. Every action answers: nothing new on screen; the peek (feet in view) is the tell. If a guard's
+   stance needs a look (standing awake vs slumped asleep), check what the peek shows today first.
+5. Lune over seeded floors (say 400): exactly one guarded unit per floor, always holding a note,
+   its keeper always awake, the cap never exceeded with the guard counted.
+6. One guarded note per floor is a default: list it in `OWNER.md`.
+**Acceptance:** checks green; in Studio on seed 7, floor 1, Output names the guarded unit; peeking
+it shows standing feet; opening it, its keeper hunts you; other keepers that floor deal asleep.
+**Read first:** ROADMAP L-06b5; D-072; `src/shared/Deal.luau` (`open`, the deck); `src/server/Deals.luau`
+(how keepers are dealt, `awakeOn`); `src/shared/DealSpot.luau`; `src/shared/Floor.luau` (the notes).
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-06b3d2 (the dent), L-06b5 (the guarded note), L-06b4b (its sounds, the sting on sight, the
-   freeze predicted on your screen); D-064, D-068 to D-078. L-12c needs L-06b3d. Then L-14;
-   L-07 (takes `Keepers.caught`) to L-10.
+1. L-06b5 (the guarded note), L-06b4b (its sounds, the sting on sight, the freeze predicted on
+   your screen); D-064, D-068 to D-079. L-12c needs L-06b3d (done). Then L-14; L-07 (takes
+   `Keepers.caught`) to L-10.
 2. **Check, small:** caught crawling a hole or on the ladder, the stand-in's move may leave
    `CrawlView`/`LadderView` holding PlatformStand; if a keeper can reach you there, end it.
 3. **Checks on the tops, small:** Climb or Drop down lying behind a sawn hole slides you across
@@ -59,7 +59,9 @@ size; shots in `docs/art/`.
    tool, the saw, a crawl, the ladder and a drop in (D-059, D-066). **Later:** they can't see
    into the elevator car, nor between the tops and the halls (OWNER.md asks).
 8. **Small:** Output prints every blow of a trapped keeper (about 28 lines a trap); trim to the
-   first, every tenth and the last if it gets in the way.
+   first, every tenth, the dent's steps and the last if it gets in the way.
+9. **Check, small:** the walk holds an arm out level; a keeper stopped against any other wall or
+   door may put its hand through it (L-06b3d2 fixed only the trapped stand).
 
 ## Kickoff for the next agent
 ```text

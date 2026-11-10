@@ -176,9 +176,12 @@ Keeper.Close = 2.5
 -- `lit` while it stands under a lit hall light.
 Keeper.HallLight = -1
 
--- How far inside its door a trapped keeper stands to bang on it, feet to the door (studs): its
--- chest against the slats. A peek under the door shows its feet right there.
-Keeper.Against = 1.2
+-- How far inside its doorway a trapped keeper stands to bang on it, feet to the corridor wall's
+-- face (studs). The Mannequin's walk holds an arm out level, its hand about 2.7 ahead of its feet,
+-- and the slats are 0.55 behind the wall's face: at 3.4 its reaching hand meets the door at chest
+-- height, where the dent bows out (L-06b3d2), rather than passing through into the hall (it did
+-- at 1.2). A peek under the door shows its feet a few studs in.
+Keeper.Against = 3.4
 
 -- Feet more than this over or under its own are out of its sight (studs): up on the units' tops
 -- (10 up) or on another floor. A jump (about 7 at the top) isn't.

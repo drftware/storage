@@ -122,6 +122,28 @@ A padlocked door refuses to lift (`play` returns 0), and `setLocked` only takes 
 Place and paint a unit before parenting it to Workspace: clients cache its door frame and
 clone its colours when it arrives.
 
+## The dent
+
+A keeper shut in a unit beats its door out toward the hall (L-06b3d2, D-079): three steps, worst
+last, each a set of bowed copies of the ribs it reaches, `Dent<step>_<index>` (`dent.py`, every
+point pushed out by one field read at its place on the shut door, so bowed ribs meet each other
+and the plain ones exactly). Sheet: `art/sheets/unit-dent.png` (shut, dented, bowed, buckling;
+from the hall, then along the wall).
+
+| Step | From | Out | Ribs | Tris |
+|---|---|---|---|---|
+| dented | the first blow | 0.34 | 11-18 | 3.6k |
+| bowed | 0.4 of its time | 0.66 | 8-22 | 6.7k |
+| buckling | 0.75 of its time | 0.95 | 7-22 | 7.2k |
+
+They ship apart from the unit, `out/DoorDent_<Size>.fbx` with no textures (keys `DentM` and
+`DentS` in `assets.json`), so a floor's units don't each carry 39 more parts. In the place:
+`ReplicatedStorage.Props.DoorDent_M` and `_S`, inserted with the MCP, `Assistant:` tags removed,
+then `RollUpDoor.prepareDent(model, "M")` in Edit (it measures each rib against where its chain
+index hangs shut, puts on the unit's slat texture, drops the DoorOrigin and Drum markers) and moved
+into `Props`. The game's numbers are the Specs' `Dent` rows. Rebuild with `scripts/art.sh dent`
+(and `SIZE=S`), then `dentsheet`.
+
 ## How it's made
 
 ```
@@ -134,7 +156,8 @@ art/unit/materials.py  the procedural looks (galvanized spangle and white rust, 
                        dolly scuffs at cart height, oily concrete with saw-cut joints)
 art/unit/bake.py       Cycles bakes to 8-bit PNG maps (OpenGL normals), atlas unwrap
 art/unit/render.py     the look sheets' corridor, lights and dressing
-art/unit/build.py      stages: geo | textures | export | renders | anim
+art/unit/dent.py       the dent: its field and the bowed ribs of each step
+art/unit/build.py      stages: geo | textures | export | renders | anim | dent | dentsheet
 scripts/art.sh         rebuild everything (about 15 minutes on an M2 Pro)
 ```
 
@@ -158,5 +181,4 @@ stays on the bottom ribs, crests and valleys, never in a pattern that would repe
   feels wrong in play, pose a client-side collider for the local player in the same step.
 - No door sounds: `RollUpDoor.play` returns the duration so the door system can time a
   rattle (Open), the bang (Slam) and the quiet peek.
-- The crawl-hole wall is its own kit (`art/hole/`, the hole's place in `spec.py`'s `crawl_*`);
-  a dented-door variant (trapped keeper) is not modelled.
+- The crawl-hole wall is its own kit (`art/hole/`, the hole's place in `spec.py`'s `crawl_*`).

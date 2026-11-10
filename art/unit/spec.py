@@ -167,6 +167,16 @@ def write_luau(spec, path, extra):
         "\t-- The bolt rests shot (locked). Unlocked = rest moved by (LatchThrow, 0, 0) in door-local X.",
         f"\tLatchThrow = {lua_num(extra['latch_throw'])},",
         "",
+        "\t-- The dent (art/unit/dent.py): a keeper shut in the unit bows its door out toward the hall,",
+        "\t-- worse at each step. A step swaps the chain's slats First..Last for its bowed copies, the",
+        "\t-- parts Dent<step>_<index> of ReplicatedStorage.Props.DoorDent_<Size>; Peak is how far out.",
+        "\tDent = {",
+    ]
+    for name, first, last, peak in extra["dent"]:
+        lines.append(f'\t\t{{ Name = "{name}", First = {first}, Last = {last}, Peak = {lua_num(round(peak, 3))} }},')
+    lines += [
+        "\t},",
+        "",
         "\t-- Collision boxes in the unit's frame (origin: doorway middle, floor; -Z hallway).",
         "\tColliders = {",
     ]

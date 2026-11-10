@@ -10,7 +10,8 @@ nowhere else.
   the flashlight's, the bolt cutters', the padlock's, the saw's, the crawl hole's, the ladder's and
   the sawn top's templates live only in the open place, at `ReplicatedStorage.Props.Elevator`,
   `Props.Note`, `Props.Flashlight`, `Props.Tools.BoltCutters`, `Props.Tools.Padlock`,
-  `Props.Tools.Saw`, `Props.Tools.Ladder`, `Props.CrawlHole` and `Props.TopHole` (without them
+  `Props.Tools.Saw`, `Props.Tools.Ladder`, `Props.CrawlHole`, `Props.TopHole` and (Nov 10) the
+  dent's `Props.DoorDent_M` and `Props.DoorDent_S` (without the dent's, doors never dent; without the others
   nobody has a torch, no tool lies anywhere and no hole can be cut; Output warns). Unsaved, the next open loses them and every
   floor's lobby has an empty hole in its back wall (Output warns). The units' own templates,
   `ReplicatedStorage.Units.M` and `Units.S`, were swapped this session for ones with the steel
@@ -19,6 +20,27 @@ nowhere else.
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
+
+## Now: judge L-06b3d2, the dent (built Nov 10)
+
+Same setup as L-06b3d1 below: seed 7, floor 1, slam 126 on its Mannequin, then stand in the hall
+in front of it (a step or two back; walk a little so the hall light stays on).
+- [ ] **The moment, at phone size.** The first blow already leaves a fist-sized pocket at chest
+  height; by about 36 s the door is bowed from side to side with a fold across it; by about 68 s
+  it buckles a full stud out, past the wall's line. Peek at it every half minute: does it read
+  worse each time, and does the last step say "it's nearly through"? (Verified in Studio Nov 10:
+  the steps landed at the first blow, 38.5 s and 68 s; `docs/art/L-06b3d2-*.jpg`.)
+- [ ] **On low graphics** (a phone, or Studio's quality slider low): Studio's Automatic drew the
+  dent nearly flat and Level21 showed it clearly. If it's lost on your phone, say so: the fix is
+  deeper steps or a lighter fold in `art/unit/dent.py` (`STEPS`).
+- [ ] **Walk along the wall past it** at the worst step: it stands about 0.4 proud of where the
+  door stops you, so pressed right against it you may clip into the bulge. Fine, or should the
+  door's collider grow with it?
+- [ ] **Decide, defaults in place** (D-079): (1) a door keeps its dent for the floor, lifted or
+  burst; (2) three steps, from the first blow, 0.4 and 0.75 of its time (`Dent.Lands` in
+  `src/shared/StorageUnit/Dent.luau`); (3) as the door rolls up, each bowed rib goes flat behind
+  the header, so an open dented door's coil looks normal; (4) the trapped keeper stands 3.4 in
+  (`Keeper.Against`), its hand short of the door.
 
 ## Now: judge L-06b3d1, trapped, it bangs and breaks out (built Nov 10)
 
@@ -32,7 +54,8 @@ door is all the way up, before it walks out (you have about a second).
   door? Is the jolt too much or too little at phone size? Does the speed-up tell you time's
   running out? (Verified in Studio Nov 10: 28 blows, out 90.25 s after the slam, the door
   jumping 0.2 studs, the boom at 0.55 of a slam's, the view turning up to 0.46 degrees a frame.)
-- [ ] **Peek at it.** While it bangs, peek 126: its feet should be right at the door.
+- [ ] **Peek at it.** While it bangs, peek 126: its feet should show a few studs in (it now stands
+  3.4 inside the doorway, L-06b3d2, so its reaching arm no longer pokes out through the door).
 - [ ] **Padlock it** (with a real padlock in hand; my Studio test set the padlock from the
   server): it bangs on until its time, gives one last blow, then goes quiet for the floor. Cut the
   padlock with bolt cutters after that and it bursts out at once, in your face. Is that right?

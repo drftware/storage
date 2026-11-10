@@ -3,6 +3,9 @@
 #   scripts/art.sh                      textures, export, renders, anim (about 15 min)
 #   scripts/art.sh export               just the FBX and the game's spec module
 #   SIZE=S scripts/art.sh geo export    another size (the M's textures serve every size)
+#   scripts/art.sh dent                 the dent's bowed ribs: DoorDent_M.fbx and the Specs module
+#                                       (seconds; SIZE=S for the small unit's)
+#   scripts/art.sh dentsheet            the dent's look sheet, art/sheets/unit-dent.png (~2 min)
 #   scripts/art.sh corridor             the corridor kit: FBX, Specs module, look sheets (under a
 #                                       minute; it wears the unit's textures, so build those first)
 #   scripts/art.sh corridor export      just the corridor kit's FBX and Specs module

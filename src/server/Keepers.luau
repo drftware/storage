@@ -63,6 +63,7 @@ local Brix = require(ReplicatedStorage.Brix)
 local Caught = require(ReplicatedStorage.Shared.Caught)
 local Deals = require(script.Parent.Deals)
 local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
+local Dent = require(ReplicatedStorage.Shared.StorageUnit.Dent)
 local Doors = require(script.Parent.Doors)
 local Flashlights = require(script.Parent.Flashlights)
 local Floor = require(ReplicatedStorage.Shared.Floor)
@@ -72,6 +73,7 @@ local KeeperMotion = require(ReplicatedStorage.Shared.KeeperMotion)
 local KeeperRows = require(ReplicatedStorage.Shared.KeeperRows)
 local Mannequin = require(ReplicatedStorage.Shared.Mannequin)
 local MotionLights = require(script.Parent.MotionLights)
+local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 
 local TRACE = RunService:IsStudio() -- Output says what each keeper hears and does
 local STATE_ATTRIBUTE = "KeeperState"
@@ -481,6 +483,12 @@ function Keepers.new(): Keepers
 		end
 	end
 
+	-- The dent's step a unit's door shows now (for Output).
+	local function dentStep(unit: Model): number
+		local share = unit:GetAttribute(Dent.Attribute)
+		return Dent.step(if type(share) == "number" then share else 0, #RollUpDoor.spec(unit).Dent)
+	end
+
 	-- A trapped keeper hit its door from inside, burst it up, or gave its padlocked door one last
 	-- blow: the door answers on every screen, and keepers that hear it come to look.
 	local function onBlow(entry: Entry)
@@ -492,19 +500,31 @@ function Keepers.new(): Keepers
 			return
 		end
 		local number = on.floor.slots[k.trappedIn].number
+		-- every blow that lands dents the door as far as its time has run (L-06b3d2): the step
+		-- changes on the blow itself, as the door jolts
+		local share = Dent.share(k.trapped, k.row.breakOut)
 		if blow == "Burst" then
 			if doors:move(unit, "Burst") then
+				RollUpDoor.dent(unit, share)
 				if TRACE then
 					print(`Keepers: the {k.row.name} bursts out of Unit {number}`)
 				end
 			elseif doors:stateOf(unit) == "Locked" then
 				Keeper.padlock(k, true) -- padlocked as its time ran out: it holds
 			end
-		elseif doors:move(unit, "Bang") and TRACE then
-			local tail = if blow == "Held"
-				then "; the padlock holds and it goes quiet"
-				else ` ({math.round(k.trapped)} s)`
-			print(`Keepers: the {k.row.name} bangs on Unit {number}'s door{tail}`)
+		elseif doors:move(unit, "Bang") then
+			local before = dentStep(unit)
+			RollUpDoor.dent(unit, share)
+			if TRACE then
+				local after = dentStep(unit)
+				local tail = if blow == "Held"
+					then "; the padlock holds and it goes quiet"
+					else ` ({math.round(k.trapped)} s)`
+				local dented = if after > before
+					then `; the door bows out: {RollUpDoor.spec(unit).Dent[after].Name}`
+					else ""
+				print(`Keepers: the {k.row.name} bangs on Unit {number}'s door{tail}{dented}`)
+			end
 		end
 	end
 

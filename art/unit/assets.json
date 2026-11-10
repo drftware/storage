@@ -1,4 +1,12 @@
 {
+  "DentM": {
+    "assetId": 84766487921466,
+    "sha256": "bc5a2835009cd5046b51dd5f5a9c42d8b718a2cafea83dad6125c39c8d1d7ef4"
+  },
+  "DentS": {
+    "assetId": 130499029659235,
+    "sha256": "1248da8590eb71b6f7f2f08fadd8e27a4dd34f26cdc88551995ca602b3d7d15a"
+  },
   "M": {
     "assetId": 135739386247346,
     "sha256": "ccb9cfed0596f7e065eacaeb4713df8857d057f8e52b31d618811829611b5229"

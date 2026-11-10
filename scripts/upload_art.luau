@@ -36,6 +36,18 @@ local ART: { Art } = {
 		description = "A small self-storage unit with a working roll-up door",
 	},
 	{
+		key = "DentM",
+		path = "art/unit/out/DoorDent_M.fbx",
+		manifest = "art/unit/assets.json",
+		description = "A storage unit's roll-up door slats, bowed out where something beat on it",
+	},
+	{
+		key = "DentS",
+		path = "art/unit/out/DoorDent_S.fbx",
+		manifest = "art/unit/assets.json",
+		description = "A small storage unit's roll-up door slats, bowed out where something beat on it",
+	},
+	{
 		key = "Straight",
 		path = "art/corridor/out/Corridor_Straight.fbx",
 		manifest = "art/corridor/assets.json",

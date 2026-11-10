@@ -393,6 +393,20 @@ verified: a doc page, Studio, or "untested".
   unit's `DoorLocked` attribute once the slam has settled: Doors reads it at its next refresh,
   which the next blow's `Doors.move` makes. A sampler logging `KeeperState` and the door's motion
   kind every 0.05 s into `_G` reads the run back; waits of 50 s per `execute_luau` stayed safe.
+- **Shots of a door in the hall** (L-06b3d2, 2026-11-10): the hall's motion light wakes only for a
+  real walk (`character_navigation`; a pivot or `Humanoid:MoveTo` from the Server didn't) and goes
+  dark again after some 20 s standing still, so walk, aim the camera and capture at once. In
+  first person, setting `workspace.CurrentCamera.CFrame` from the Client and capturing with no
+  camera gave the live view. Setting `settings().Rendering.QualityLevel` from the Client dropped
+  that Client's MCP connection once (the next call worked). Studio's Automatic quality drew the
+  dent flat; Level21 showed it.
+- **An Edit session keeps old requires** (L-06b3d2): a module required earlier in the open Edit
+  session stays cached after Rojo syncs new Source (`RollUpDoor.prepareDent` was nil; the cached
+  `Specs` had no S). Require a fresh clone (`m:Clone()`, parented beside it, required, destroyed);
+  a cached table can be patched for the call. Play always starts fresh.
+- **Dented doors measured** (L-06b3d2): a bowed rib is about 450 triangles; the worst step shows 16
+  of them in place of plain ones, about 8k triangles for a dented door against a plain door's
+  1.5k merged curtain.
 - **Holding the player still** (L-06b3c, tested 2026-11-10): from a Client `execute_luau`,
   neither `require(StarterPlayer.PlayerModule).ControlModule.Enabled = false` (the plugin's
   require may get its own copy) nor `PlayerModule.InputContexts.CharacterContext.Enabled = false`
