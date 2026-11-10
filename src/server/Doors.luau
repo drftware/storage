@@ -21,7 +21,8 @@
 	Every door event fires `acted` with how far it's heard (DoorSound), so keepers (L-06) hear
 	exactly what players hear, and every change of a door's state fires `changed`, so the keepers'
 	map knows which doorways are open. Only doors in motion are stepped, to refresh their buttons
-	when the motion ends.
+	when the motion ends. The building moves a door itself with `move`: a keeper trapped behind it
+	bangs on it or bursts it up (L-06b3d).
 
 	Each button carries its action as the attribute `DoorAction`, so a screen can find Lock and Cut.
 ]]
@@ -42,7 +43,7 @@ local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
 
 export type DoorEvent = {
 	unit: Model,
-	action: Door.Action,
+	action: Door.Action?, -- what a player pressed; nil when the building moved it (`move`)
 	motion: Motion.Kind?, -- what the door did; a padlocked door tried rattles
 	player: Player?, -- nil when the game itself did it
 	at: Vector3, -- the middle of the doorway, on the floor
@@ -65,6 +66,11 @@ export type Doors = Brix.System & {
 	lock: (self: any, unit: Model, locked: boolean, player: Player?) -> boolean,
 	-- The door's state now.
 	stateOf: (self: any, unit: Model) -> Door.State,
+	-- Moves a door as the building does, no player's hand on it (L-06b3d): a trapped keeper's
+	-- blow from inside ("Bang"), only on a door at rest, shut, peeked or padlocked; or its burst up
+	-- ("Burst"), on any door that's down or coming down and not padlocked. Fires `acted` with its
+	-- sound's reach, so keepers hear it as they hear a player's. Whether it moved.
+	move: (self: any, unit: Model, kind: Motion.Kind) -> boolean,
 }
 
 -- Where the buttons sit. In first person a button shows only while its point is on screen, so the
@@ -212,7 +218,7 @@ function Doors.new(): Doors
 		changed:fire({ unit = unit, state = state })
 	end
 
-	local function event(entry: Entry, action: Door.Action, motion: Motion.Kind?, player: Player?)
+	local function event(entry: Entry, action: Door.Action?, motion: Motion.Kind?, player: Player?)
 		local reach = if motion
 			then DoorSound.Actions[motion].Reach
 			elseif action == "Cut" then DoorSound.Sounds[SNAP].Reach
@@ -446,6 +452,27 @@ function Doors.new(): Doors
 		end
 		acted:disconnectAll()
 		changed:disconnectAll()
+	end
+
+	-- The states a building's move works from: a bang only on a door at rest, a burst on any door
+	-- down or coming down (a padlocked one RollUpDoor refuses).
+	local BANGS: { [Door.State]: true } = { Closed = true, Peeking = true, Locked = true }
+	local BURSTS: { [Door.State]: true } =
+		{ Closed = true, Peeking = true, Closing = true, Slamming = true }
+
+	function system.move(_: any, unit: Model, kind: Motion.Kind): boolean
+		local entry = entries[unit]
+		if not entry then
+			return false
+		end
+		refresh(entry)
+		local from = if kind == "Bang" then BANGS elseif kind == "Burst" then BURSTS else nil
+		if not (from and from[entry.state]) or RollUpDoor.play(unit, kind) <= 0 then
+			return false
+		end
+		event(entry, nil, kind, nil)
+		refresh(entry)
+		return true
 	end
 
 	function system.lock(_: any, unit: Model, locked: boolean, player: Player?): boolean

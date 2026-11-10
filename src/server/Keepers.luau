@@ -31,7 +31,14 @@
 	  keeper's body, the player, the floor) for what follows, and leaves that player out of every
 	  keeper's sight for `Caught.Out` seconds. Until L-07, DevCorridor's stand-in takes `caught`
 	  and puts them back in the floor's lobby in the black.
-	- `awakeOn` tells the deal how many keepers are awake on a floor now, for its cap.
+	- A door that comes down from all the way up, by a slam or a close, traps an awake keeper
+	  standing in its unit (L-06b3d; `Keeper.trap`; a peek lowered over one isn't a trap). It bangs
+	  on the door from inside on its clock: each blow jolts the door on its rail with a boom and a
+	  shake for anyone near (`Doors.move`, "Bang"), heard by other keepers as a door is. At about
+	  90 s it bursts the door up ("Burst"), loud, and goes after the last thing it heard. A
+	  padlock on its door holds it: it gives one last blow and goes quiet until the padlock is cut.
+	- `awakeOn` tells the deal how many keepers are loose on a floor now, for its cap: a trapped
+	  one takes no place (`Keeper.loose`).
 	- Each keeper's body is an anchored model moved by its HumanoidRootPart, with no Humanoid, its
 	  joints left at rest. The server tells screens how it moves (L-06b4a): a short record on the
 	  body's `KeeperMotion` attribute, sent only when its motion changes (`KeeperMotion.due`), which
@@ -106,9 +113,15 @@ local DOING: { [Keeper.State]: string } = {
 	Roaming = "wanders off down the halls",
 	Hunting = "hunts",
 	Searching = "rushes to where it last saw them",
+	Trapped = "is trapped",
 }
-local HEARD: { [string]: string } =
-	{ Open = "open", Slam = "slam", LiftInside = "lift from inside" }
+local HEARD: { [string]: string } = {
+	Open = "open",
+	Slam = "slam",
+	LiftInside = "lift from inside",
+	Bang = "bang",
+	Burst = "burst open",
+}
 
 type Body = {
 	model: Model,
@@ -123,6 +136,7 @@ type OnFloor = {
 	random: Floor.Random, -- the floor's own, for its keepers' roams
 	origin: CFrame, -- the lobby's middle on the floor: the map's origin
 	slots: { [Model]: number }, -- each unit, its slot in the floor
+	units: { [number]: Model }, -- and back: each slot's unit
 	model: Model,
 	folder: Folder, -- its keepers' bodies
 	keepers: { Entry },
@@ -161,8 +175,8 @@ export type Keepers = Brix.System & {
 		facing: Vector3,
 		awake: boolean?
 	) -> Model?,
-	-- How many keepers are awake now on the floor `unit` is on (0 off any keepers' floor): the
-	-- deal's cap counts these (`Deal.awakeCap`).
+	-- How many keepers are loose now on the floor `unit` is on (0 off any keepers' floor): awake
+	-- and not trapped behind a door. The deal's cap counts these (`Deal.awakeCap`).
 	awakeOn: (self: any, unit: Model) -> number,
 	-- Takes a keeper off its floor and destroys its body.
 	remove: (self: any, body: Model) -> (),
@@ -336,11 +350,15 @@ function Keepers.new(): Keepers
 			and state ~= "Searching"
 			and not (state == "Waiting" and was == "Roaming")
 		then
+			local k = entry.keeper
 			local doing = if state == "Waiting" and was == "Searching"
 				then "stands where it lost them, looking about"
 				elseif
 					state == "Waiting" and was == "Hunting"
 				then "stands over where it caught them"
+				elseif
+					state == "Trapped" and k.trappedIn ~= 0
+				then `is trapped in Unit {entry.on.floor.slots[k.trappedIn].number}`
 				else DOING[state]
 			print(`Keepers: the {entry.keeper.row.name} {doing}`)
 		end
@@ -386,7 +404,13 @@ function Keepers.new(): Keepers
 			local was: Keeper.State = k.state
 			local heard = Keeper.hear(k, door, event.reach, spot)
 			if heard then
-				if TRACE then
+				if TRACE and k.state == "Trapped" then
+					print(
+						`Keepers: the {k.row.name}, trapped, hears Unit {slot.number}'s door {HEARD[motion]}, {math.round(
+							heard
+						)} studs off; it'll go there once out`
+					)
+				elseif TRACE then
 					local wakes = if was == "Asleep" then "wakes and goes" else "goes"
 					print(
 						`Keepers: the {k.row.name} heard Unit {slot.number}'s door {HEARD[motion]}, {math.round(
@@ -417,16 +441,70 @@ function Keepers.new(): Keepers
 		end
 	end
 
-	-- A door's state changed: its doorway lets keepers through only while it's all the way up.
+	-- Unit `index`'s door on floor `on` came down from all the way up: an awake keeper standing in
+	-- it is trapped.
+	local function trap(on: OnFloor, index: number)
+		local slot = on.floor.slots[index]
+		for _, entry in on.keepers do
+			local k = entry.keeper
+			local was: Keeper.State = k.state
+			if Keeper.trap(k, slot, index) then
+				changedState(entry, was)
+			end
+		end
+	end
+
+	-- A door's state changed: its doorway lets keepers through only while it's all the way up. One
+	-- that was up and comes down traps whoever is in its unit; a padlock on it holds them.
 	local function onChanged(change: Doors.DoorChange)
 		local on = floorOf[change.unit]
 		if on then
 			local index = on.slots[change.unit]
 			local through = KeeperMap.letsThrough(change.state)
+			local wasOpen = KeeperMap.doorOpen(on.map, index)
 			KeeperMap.setDoor(on.map, index, through)
 			if through then
 				lookOut(on, index)
+			elseif wasOpen then
+				trap(on, index)
 			end
+			local locked = change.state == "Locked"
+			for _, entry in on.keepers do
+				if entry.keeper.trappedIn == index and entry.keeper.padlocked ~= locked then
+					Keeper.padlock(entry.keeper, locked)
+					if TRACE then
+						local how = if locked then "padlocked: it'll never get out" else "unlocked"
+						print(`Keepers: Unit {on.floor.slots[index].number}'s door is {how}`)
+					end
+				end
+			end
+		end
+	end
+
+	-- A trapped keeper hit its door from inside, burst it up, or gave its padlocked door one last
+	-- blow: the door answers on every screen, and keepers that hear it come to look.
+	local function onBlow(entry: Entry)
+		local k = entry.keeper
+		local blow = k.blow
+		local on = entry.on
+		local unit = on.units[k.trappedIn]
+		if not (doors and unit) then
+			return
+		end
+		local number = on.floor.slots[k.trappedIn].number
+		if blow == "Burst" then
+			if doors:move(unit, "Burst") then
+				if TRACE then
+					print(`Keepers: the {k.row.name} bursts out of Unit {number}`)
+				end
+			elseif doors:stateOf(unit) == "Locked" then
+				Keeper.padlock(k, true) -- padlocked as its time ran out: it holds
+			end
+		elseif doors:move(unit, "Bang") and TRACE then
+			local tail = if blow == "Held"
+				then "; the padlock holds and it goes quiet"
+				else ` ({math.round(k.trapped)} s)`
+			print(`Keepers: the {k.row.name} bangs on Unit {number}'s door{tail}`)
 		end
 	end
 
@@ -603,6 +681,9 @@ function Keepers.new(): Keepers
 						traceSight(entry, target)
 					end
 				end
+				if k.blow ~= "None" then
+					onBlow(entry)
+				end
 			end
 		end
 	end
@@ -642,12 +723,17 @@ function Keepers.new(): Keepers
 		folder.Name = "Keepers"
 		folder.Parent = model
 		local on: OnFloor
+		local units: { [number]: Model } = {}
+		for unit, slot in slots do
+			units[slot] = unit
+		end
 		on = {
 			floor = floor,
 			map = KeeperMap.build(floor),
 			random = random,
 			origin = origin,
 			slots = slots,
+			units = units,
 			model = model,
 			folder = folder,
 			keepers = {},
@@ -695,7 +781,7 @@ function Keepers.new(): Keepers
 		end
 		local count = 0
 		for _, entry in on.keepers do
-			if Keeper.awake(entry.keeper) then
+			if Keeper.loose(entry.keeper) then
 				count += 1
 			end
 		end

@@ -439,10 +439,17 @@ on nothing in Brix.
       the next door can hold a fresh one; out again, it counts again. The dent is the door's own
       art, built the unit's way. Lune checks on the clock and the cap; in Studio, slam 126 on its
       awake one and time the break-out.
-      - [ ] **L-06b3d1 Trapped, it bangs and breaks out.** The brain's trapped state and clock,
-        each bang heard as keepers hear and answered for players (the door jolts on its rail and
-        booms, as a slam does, quieter), the burst up and the hunt for the last thing it heard,
-        the padlock holding it, and the cap. Lune and Studio checks as above.
+      - [x] **L-06b3d1 Trapped, it bangs and breaks out.** Done Nov 10 (D-078). A door down from
+        all the way up on an awake keeper inside traps it (`Keeper.trap`); it stands against the
+        door and bangs, the first blow 1.2 s after, then every 5 s closing to 2 s; each blow is a
+        door motion (`Bang`, `Doors.move`): the door jumps on its rail, the slam's boom quieter,
+        a jolt for anyone near, heard by keepers to 70 studs. At 90 s it bursts the door up
+        (`Burst`, 0.6 s, loud) and goes after the last thing it heard through its door, or steps
+        out to look. Lift it yourself and it's out. A padlock holds it: one last blow at 90 s,
+        then quiet; cut, it bursts out. Trapped, it takes no place in the cap (`Keeper.loose`).
+        144 trap checks. Verified in Studio on seed 7, floor 1: slammed as 126 got up, 28 blows,
+        out 90.25 s later; padlocked, quiet after 90 s and still in at 103 s. Waits on
+        `OWNER.md` for feel.
       - [ ] **L-06b3d2 The dent.** The door's panels bowing out more with each bang, built in
         `art/unit` the unit's way (a shape key or a few baked steps), shown by DoorView.
   - [ ] **L-06b4 What you see and hear of it.** Split Nov 9 (owner: the walk reads jerky, which

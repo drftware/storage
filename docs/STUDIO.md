@@ -381,6 +381,18 @@ verified: a doc page, Studio, or "untested".
   (0, 3, -594). Sample `PlayerGui.Caught` on the Client every 0.05 s to read the blackout. For
   the torch half, right-click once (`user_mouse_input`, mid-viewport) before opening: the body's
   `Flashlight` model's `On` attribute says it's lit; it then hunts frozen in the unit.
+- **Testing the trap from the MCP** (L-06b3d1, 2026-11-10): seed 7, floor 1. The Mannequin in
+  126 stands 9.6 studs inside and crosses the door line about 0.9 s after the door is all the way
+  up, so the slam has to land in that window. Stand beside the door, out of its sight through the
+  doorway: pivot the character to (96.5, 3, -698.5) from the Server (TripsLights tag off). In one
+  Client script: point the camera at 126's `DoorButtons` attachment, wait 1.2 s, tap Open
+  (`InputHoldBegin`/`End`), read the Open motion's start from `DoorMotion`, and tap Slam once
+  `GetServerTimeNow()` passes start + 2.1. Slam is offered from the moment the door starts up (an
+  opening door offers Close and Slam), but a tap in its first 0.1 s did nothing; one before the
+  door is all the way up would be a lowered door, not a trap. Padlock it from the Server with the
+  unit's `DoorLocked` attribute once the slam has settled: Doors reads it at its next refresh,
+  which the next blow's `Doors.move` makes. A sampler logging `KeeperState` and the door's motion
+  kind every 0.05 s into `_G` reads the run back; waits of 50 s per `execute_luau` stayed safe.
 - **Holding the player still** (L-06b3c, tested 2026-11-10): from a Client `execute_luau`,
   neither `require(StarterPlayer.PlayerModule).ControlModule.Enabled = false` (the plugin's
   require may get its own copy) nor `PlayerModule.InputContexts.CharacterContext.Enabled = false`

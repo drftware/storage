@@ -419,6 +419,12 @@ function KeeperMap.setDoor(map: Map, slot: number, open: boolean)
 	KeeperMap.setOpen(map, k, open)
 end
 
+--- Whether a unit's doorway lets keepers through now, by its slot in the floor.
+function KeeperMap.doorOpen(map: Map, slot: number): boolean
+	local k = map.doorways[slot]
+	return k ~= nil and map.open[k] == true
+end
+
 --- Whether a keeper can walk through a door in this state: only when it's all the way up. A door
 --- peeking, rising or coming down is shut to keepers, so pulling a door down is always safety.
 function KeeperMap.letsThrough(state: Door.State): boolean

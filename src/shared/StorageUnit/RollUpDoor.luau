@@ -403,7 +403,8 @@ function RollUpDoor.play(unit: Model, kind: Motion.Kind): number
 	local frame = RollUpDoor.frame(unit)
 	local t = now()
 	local from = RollUpDoor.rise(unit, t)
-	local to = Motion.target(kind, spec.Rise)
+	-- a keeper's bang jolts the door where it is, peeked or shut
+	local to = if kind == "Bang" then from else Motion.target(kind, spec.Rise)
 	if unit:GetAttribute(ATTR_LOCKED) == true and to > from then
 		return 0
 	end

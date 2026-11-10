@@ -204,6 +204,12 @@ DoorSound.Actions = {
 	-- A padlocked door doesn't roll: Gain 0 keeps the roll silent, and its Rattle cue is the sound.
 	-- Reach is the Rattle row's, so a keeper hears it exactly as far as a player does.
 	Rattle = { Gain = 0, Pitch = 1, Reach = 70 },
+	-- A trapped keeper's blow from inside (L-06b3d) doesn't roll either: its cues are the sound.
+	-- It carries as far as a rattle: a hall and a half, so keepers that far off come to look.
+	Bang = { Gain = 0, Pitch = 1, Reach = 70 },
+	-- Its burst: the loudest lift there is, flung up fast, so the roll runs high and carries past
+	-- the next hall.
+	Burst = { Gain = 1, Pitch = 1.18, Reach = 130 },
 } :: { [Motion.Kind]: { Gain: number, Pitch: number, Reach: number } }
 
 -- The roll is at full volume once the door moves at this fraction of its action's average speed;
@@ -224,6 +230,12 @@ DoorSound.RollRelease = 0.08
 -- bounce of 0.2 a faint second shiver.
 DoorSound.SlamShake = 0.75
 DoorSound.BounceShake = 0.2
+-- A trapped keeper's blow (L-06b3d): the slam's boom, quieter and lower, a body's thump under it,
+-- and a jolt for whoever is at the door (squared on screen: about a third of a slam's). Its burst
+-- lands as a full slam's boom as it tears free, and hits the stop bolts hard at the top.
+DoorSound.BangGain = 0.55
+DoorSound.BangShake = 0.45
+DoorSound.BurstTopShake = 0.35
 -- The shake reaches everyone within Near studs in full (inside the unit, or at its door) and
 -- fades to nothing by Reach (a few units down the hall).
 DoorSound.ShakeNear = 6
@@ -252,8 +264,18 @@ end
 function DoorSound.cues(kind: Motion.Kind, from: number, to: number, fullStroke: number): { Cue }
 	if kind == "Rattle" then
 		return { cue(0, "Rattle", 1, 1) }
+	elseif kind == "Bang" then
+		return {
+			cue(0, "Bang", DoorSound.BangGain, 0.82, DoorSound.BangShake),
+			cue(0, "Thump", 0.8, 0.62),
+		}
 	end
 	local cues: { Cue } = {}
+	if kind == "Burst" then
+		-- the blow that tears it free, as hard as a slam
+		table.insert(cues, cue(0, "Bang", 1, 0.78, DoorSound.SlamShake))
+		table.insert(cues, cue(0, "Thump", 1, 0.6))
+	end
 	if from < SHUT and to > from then
 		-- the latch slides as the door breaks away; quietly for a peek
 		table.insert(cues, cue(0, "Latch", if kind == "Peek" then 0.45 else 1, 1))
@@ -269,6 +291,9 @@ function DoorSound.cues(kind: Motion.Kind, from: number, to: number, fullStroke:
 			-- pulled down by hand: it settles with a rattle, no bang
 			table.insert(cues, cue(strike.at, "Clatter", 0.8, 0.9))
 			table.insert(cues, cue(strike.at, "Thump", 0.25, 0.9))
+		elseif strike.what == "Top" and kind == "Burst" then
+			table.insert(cues, cue(strike.at, "Bang", 0.6, 1.1, DoorSound.BurstTopShake))
+			table.insert(cues, cue(strike.at, "Clatter", 0.8, 1))
 		elseif strike.what == "Top" then
 			table.insert(cues, cue(strike.at, "Thump", 0.35, 1.2))
 		end

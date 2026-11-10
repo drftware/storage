@@ -49,6 +49,16 @@ export type Row = {
 	-- arrives isn't always enough.
 	reach: number,
 	reachAngle: number,
+	-- Trapped (L-06b3d): a door it was standing behind came down from all the way up. It goes to
+	-- stand against the door and bangs on it from inside: the first blow `bangFirst` seconds after
+	-- the door came down, then one every `bangEvery` seconds, closing to `bangEveryLast` as its time
+	-- runs out, each gap a random `bangJitter` share longer or shorter. At `breakOut` seconds it
+	-- bursts the door up, unless it's padlocked, and goes after the last thing it heard.
+	bangFirst: number,
+	bangEvery: number,
+	bangEveryLast: number,
+	bangJitter: number,
+	breakOut: number,
 }
 
 local Mannequin: Row = {
@@ -87,6 +97,17 @@ local Mannequin: Row = {
 	-- both arms reaching ahead, 90 degrees across: it has to turn to you to grab, so it can't catch
 	-- you as you slip past its side
 	reachAngle = 45,
+	-- you slam it and, a breath later, it hits the door: you know it's in there and it's angry
+	bangFirst = 1.2,
+	-- slow, heavy blows at first, so a minute and a half of them doesn't wear you out
+	bangEvery = 5,
+	-- faster and faster near the end: you hear its time running out without a clock
+	bangEveryLast = 2,
+	-- never a metronome: each gap up to a quarter longer or shorter
+	bangJitter = 0.25,
+	-- the GDD's "about 90 seconds": long enough to loot the floor, short enough that a slam only
+	-- buys time
+	breakOut = 90,
 }
 
 local KeeperRows: { [string]: Row } = {

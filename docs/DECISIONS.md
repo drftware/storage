@@ -1612,3 +1612,41 @@ thin wall between two halls is long to walk round and short to the eye; the line
 through a wall" plain); the PlayerModule's control switches to hold you (they don't hold
 movement any more, see docs/STUDIO.md); turning your view to its face as the dark closes (a
 strong grab, but it fights Roblox's camera; ROADMAP's polish list).
+
+## D-078 A trapped keeper bangs on its door, then bursts out; a padlock holds it (L-06b3d1, Nov 10)
+The moment: you led it into a unit and slammed the door on it. A breath later it hits the door
+from inside; the door jumps on its rail with each blow and the blows come faster; at about 90 s it
+throws the door up and comes out (the GDD's hole trap; Amnesia's battered doors). A slam buys
+time; it never ends the threat. A padlock does, for the floor.
+
+As built: a door that comes down from all the way up (a close or a slam, the only ways down from
+Open) traps an awake keeper standing in its unit (`Keeper.trap`, called by the server when a
+doorway that let keepers through stops). A peek lowered over one isn't a trap. The slam is heard
+before the door's state changes, so a sleeper woken by the slam it hears is awake inside and is
+trapped too: slam a door on a sleeping one and it wakes banging; close it quietly and it sleeps.
+Trapped, it walks to stand 1.2 studs inside the door, facing it (a peek shows its feet there),
+and bangs: the first blow 1.2 s after the door came down, then gaps from 5 s closing to 2 s as its
+time runs out, each a quarter longer or shorter from the floor's Random, none within a second of
+its burst (row numbers). Each blow is a door motion, `Bang`, played by `Doors.move`, so the door's
+one replicated motion carries it to every screen: the door jumps about 0.2 studs on its rail and
+drops back (0.5 s), the slam's boom at 0.55 and pitched down with a thump under it, and a camera
+jolt (0.45, about a third of a slam's on screen) for anyone within 6 studs, fading by 30. Keepers
+hear a blow to 70 studs (a rattle's reach), so others come to look at the door. At 90 s it bursts
+it: a `Burst` motion (a full stroke in 0.6 s, fastest at the start; the door reads Lifting, so
+nobody outside can pull it back down), a slam's full boom and jolt as it tears free and a boom at
+the stop bolts, heard 130 studs. Once the door is all the way up it goes after the last thing it
+heard while trapped, or steps out to look and roams. Lift the door yourself and it's just out.
+Trapped, it hears only through its own door: its way to the door plus the trip from the door's
+front along the halls (D-069's rule still holds: never through a wall); its own door's sounds it
+doesn't count. A padlock: it bangs on until its time, gives one last blow, then stands quiet for
+the floor; cut the padlock and it bursts out at once. While shut in it takes no place in the
+floor's cap (`Keeper.loose`, which `awakeOn` counts). Someone shut in with it gets hunted; after,
+with nowhere to roam, it goes back to its door, trapped, its clock carrying on. Verified in Studio
+on seed 7, floor 1: slammed as 126 got up, it was trapped, banged 28 times and burst out 90.25 s
+later; padlocked, it gave its last blow at 90 s and was still in at 103 s.
+
+Not chosen: the blows as their own remote (the door's motion attribute already reaches every
+screen in step, one path for every door sound); the burst as a lift from inside (6 s of heaving
+reads as a struggle, not a burst); banging forever behind a padlock (it would call every keeper on
+the floor to that door every few seconds for the rest of the floor, a lure the GDD doesn't give);
+its blow clock keyed to the last sound it heard (the GDD gives a fixed "about 90 seconds").

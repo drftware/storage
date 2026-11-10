@@ -32,6 +32,15 @@
 	  them for its linger, as if Waiting at a sound, and roams.
 	- Searching: it lost the one it hunted and rushes, at its top speed, to where it last saw
 	  them, then stands there for its `linger`, looking on the way it was going, then roams.
+	- Trapped (L-06b3d): a unit's door came down on it from all the way up, by a slam or a close,
+	  while it stood awake inside (`trap`). It walks to stand against the door, facing it, and
+	  bangs on it from inside (`blow`) on its row's clock, the blows coming faster as its time runs
+	  out; at its `breakOut` it bursts the door up, as Amnesia's monsters batter down a door you
+	  shut, and once the door is up it goes after the last thing it heard while trapped, or steps
+	  out to look and roams. Lift the door yourself and it's just out. A padlock on the door holds
+	  it: at its break-out time it gives up and stands quiet, until the padlock comes off. While
+	  trapped it hears through its own door (`hear`), and takes no place in the floor's cap of
+	  awake keepers (`loose`).
 
 	It sees a player (`step`'s `players`) awake in any state: within its row's `sight`, within its
 	`sightAngle` either side of the way it faces, along a straight line the map clears
@@ -77,6 +86,11 @@ export type State =
 	| "Roaming"
 	| "Hunting"
 	| "Searching"
+	| "Trapped"
+
+--- What a trapped keeper did to its door this step: nothing, a blow from inside, its burst up, or
+--- its last blow as a padlock holds it at its break-out time.
+export type Blow = "None" | "Bang" | "Burst" | "Held"
 
 --- The players a keeper may see this step, as parallel arrays `count` long, which the caller fills
 --- and reuses: each one's id (any number but 0; the server's are UserIds), where their feet are,
@@ -124,6 +138,17 @@ export type Keeper = {
 	lit: number, -- the light on it: 0 none, `Keeper.HallLight`, or the id of whose torch it's in
 	reach: Reach?, -- its grasp, along its map; none, it never catches (specs of the walk alone)
 	caught: number, -- the id of the player it caught this step, or 0
+	trappedIn: number, -- the unit (its slot in the floor) it's shut in by a door it was behind, or 0
+	doorway: vector, -- that unit's door's middle, on the floor: where its blows land
+	outside: vector, -- that door's front in the hall: whatever it hears, it hears through the door
+	against: vector, -- where it stands to bang: just inside the door, square to it
+	trapped: number, -- seconds since its door came down on it: its break-out clock
+	nextBang: number, -- when on that clock it bangs next
+	blow: Blow, -- what it did to its door this step
+	burst: boolean, -- it burst its door and waits for it to be all the way up
+	padlocked: boolean, -- its door is padlocked: it never bursts out
+	heardOut: boolean, -- it heard something while trapped: it goes there once out
+	heardSpot: vector, -- where it looks from at that sound (`heard` is the sound)
 }
 
 local Keeper = {}
@@ -131,8 +156,14 @@ local Keeper = {}
 -- Which door sounds (Motion.Kind) keepers hear: the GDD's loud ones. A peek is quiet on purpose
 -- (the GDD's door table), and a close, a rattle at a padlock, a padlock going on and the cutters'
 -- snap aren't in its list of what keepers hear (OWNER.md asks).
-Keeper.Hears =
-	table.freeze({ Open = true, Slam = true, LiftInside = true }) :: { [string]: boolean }
+-- A trapped keeper's blows on its door and its burst are loud too (L-06b3d): others come to look.
+Keeper.Hears = table.freeze({
+	Open = true,
+	Slam = true,
+	LiftInside = true,
+	Bang = true,
+	Burst = true,
+}) :: { [string]: boolean }
 
 -- How far out in the hall from a door's face a keeper stands to look at it (studs): a stride
 -- short of the door, square in front of it, on an 8-stud hall.
@@ -144,6 +175,10 @@ Keeper.Close = 2.5
 
 -- `lit` while it stands under a lit hall light.
 Keeper.HallLight = -1
+
+-- How far inside its door a trapped keeper stands to bang on it, feet to the door (studs): its
+-- chest against the slats. A peek under the door shows its feet right there.
+Keeper.Against = 1.2
 
 -- Feet more than this over or under its own are out of its sight (studs): up on the units' tops
 -- (10 up) or on another floor. A jump (about 7 at the top) isn't.
@@ -345,11 +380,14 @@ function Keeper.catches(k: Keeper, players: Players): number
 	return 0
 end
 
--- It sets off roaming, or, with nowhere it can reach, stands watching where it is.
+-- It sets off roaming, or, with nowhere it can reach, stands watching where it is; shut in where
+-- it was trapped (it hunted someone in there with it), it goes back to its door, trapped again.
 local function roam(k: Keeper)
 	local goal = pick(k)
 	if goal then
 		k.state, k.goal = "Roaming", goal
+	elseif k.trappedIn ~= 0 then
+		k.state, k.goal = "Trapped", k.against
 	else
 		k.state = "Watching"
 	end
@@ -394,6 +432,17 @@ function Keeper.new(
 		lit = 0,
 		reach = reach,
 		caught = 0,
+		trappedIn = 0,
+		doorway = at,
+		outside = at,
+		against = at,
+		trapped = 0,
+		nextBang = 0,
+		blow = "None",
+		burst = false,
+		padlocked = false,
+		heardOut = false,
+		heardSpot = at,
 	}
 end
 
@@ -401,11 +450,24 @@ end
 --- keeper hears it (its trip to the sound is no longer than the reach, scaled by its row's
 --- hearing) it goes to look, whatever it was doing but hunting: returns how far off it heard it,
 --- along the map. Else nil. Hunting, its eyes are on you and it hears nothing, so a slammed door
---- never calls it off a chase; searching, it goes.
+--- never calls it off a chase; searching, it goes. Trapped, it hears through its own door (its
+--- trip to the sound from the door's front, plus its own way to the door) and goes nowhere: it
+--- remembers the sound, to go after once out. Its own door's sounds it doesn't count.
 function Keeper.hear(k: Keeper, from: vector, reach: number, spot: vector): number?
 	local carries = reach * k.row.hearing
 	if not (carries > 0) or k.state == "Hunting" then
 		return nil
+	end
+	if k.state == "Trapped" then
+		if from == k.doorway then
+			return nil
+		end
+		local d = flatDistance(k.at, k.doorway) + k.pathing:length(k.outside, from)
+		if d > carries then
+			return nil
+		end
+		k.heardOut, k.heard, k.heardSpot = true, from, spot
+		return d
 	end
 	local d = k.pathing:length(k.at, from)
 	if d > carries then
@@ -416,15 +478,68 @@ function Keeper.hear(k: Keeper, from: vector, reach: number, spot: vector): numb
 	return d
 end
 
---- Whether it's awake: anything but dealt asleep and not yet woken. The deal's cap counts these.
+--- Whether it's awake: anything but dealt asleep and not yet woken.
 function Keeper.awake(k: Keeper): boolean
 	return k.state ~= "Asleep"
 end
 
+--- Whether it's loose on its floor: awake and not shut in where it was trapped. The deal's cap of
+--- awake keepers counts these (the GDD: a trapped keeper takes no place), so the next door can
+--- hold a fresh one; out again, it counts again.
+function Keeper.loose(k: Keeper): boolean
+	return k.state ~= "Asleep" and k.trappedIn == 0
+end
+
+--- Unit `index`'s door (its slot `slot`) just came down from all the way up, by a slam or a close.
+--- An awake keeper standing in that unit is trapped: it goes to stand against the door, its
+--- break-out clock started and its first blow due at its row's `bangFirst`. Whether it was.
+function Keeper.trap(k: Keeper, slot: Floor.Slot, index: number): boolean
+	local state = k.state
+	if state == "Asleep" or state == "Trapped" then
+		return false
+	end
+	local _, unit = KeeperMap.placeAt(k.map, k.at)
+	if unit ~= index then
+		return false
+	end
+	local outside, doorway = Keeper.front(slot)
+	local fx, fz = Floor.dir(slot.facing)
+	k.state, k.target = "Trapped", 0
+	k.trappedIn, k.doorway, k.outside = index, doorway, outside
+	k.against = vector.create(doorway.x - fx * Keeper.Against, 0, doorway.z - fz * Keeper.Against)
+	k.goal, k.waited = k.against, 0
+	k.trapped, k.nextBang = 0, k.row.bangFirst
+	k.burst, k.padlocked, k.heardOut = false, false, false
+	return true
+end
+
+--- The door it's trapped behind was padlocked (true) or the padlock cut off (false). Padlocked, it
+--- never bursts out; off, it bursts out at once if its time is up.
+function Keeper.padlock(k: Keeper, locked: boolean)
+	if k.trappedIn ~= 0 then
+		k.padlocked = locked
+		if locked then
+			k.burst = false
+		end
+	end
+end
+
 --- Unit `index`'s door (its slot `slot`) just got all the way up. An awake keeper standing in that
 --- unit steps out to look: it walks to the door's front and stands there facing out into the hall,
---- away from the door, for its linger, then roams. Whether it went.
+--- away from the door, for its linger, then roams. One trapped in it is out: it goes after the last
+--- thing it heard while trapped, or, having heard nothing, steps out to look. Whether it went.
 function Keeper.lookOut(k: Keeper, slot: Floor.Slot, index: number): boolean
+	if k.trappedIn == index then
+		k.trappedIn = 0
+		if k.state == "Trapped" then
+			k.burst, k.padlocked = false, false
+			if k.heardOut then
+				k.state, k.goal, k.waited = "Going", k.heardSpot, 0
+				return true
+			end
+			k.state = "Watching"
+		end
+	end
 	if k.state ~= "Watching" then
 		return false
 	end
@@ -488,12 +603,70 @@ local function lightOn(k: Keeper, players: Players?, hallLit: boolean): number
 	return 0
 end
 
+-- The gap to a trapped keeper's next blow: its row's `bangEvery` closing to `bangEveryLast` as its
+-- break-out clock runs, a random share (`bangJitter`, the floor's Random) longer or shorter.
+local function bangGap(k: Keeper): number
+	local row = k.row
+	local share = math.clamp(k.trapped / row.breakOut, 0, 1)
+	local base = row.bangEvery + (row.bangEveryLast - row.bangEvery) * share
+	return base * (1 + row.bangJitter * (2 * k.random:nextNumber() - 1))
+end
+
+-- Trapped: it walks to stand against its door, facing it, and bangs on it on its clock, from the
+-- moment it's there; at its break-out time it bursts it up (`blow`), or, padlocked, gives it one
+-- last blow and stands quiet. Burst, it waits for the door to be all the way up (`lookOut`).
+-- Whether anything a body shows changed.
+local function trappedStep(k: Keeper, dt: number, run: number): boolean
+	local changed = false
+	local there = flatDistance(k.at, k.goal) <= ARRIVE
+	if not there then
+		local before = k.at
+		local after = k.route:advance(before, k.goal, Keeper.pace(k, run) * dt)
+		local dx, dz = after.x - before.x, after.z - before.z
+		local moved = math.sqrt(dx * dx + dz * dz)
+		if moved > STUCK then
+			k.at, k.travelled = after, k.travelled + moved
+			k.facing = vector.create(dx / moved, 0, dz / moved)
+		end
+		there = moved <= STUCK or flatDistance(after, k.goal) <= ARRIVE
+		if there then
+			k.goal = k.at -- at its door, or as near as it gets: it stands here, facing the door
+			faceToward(k, k.doorway)
+		end
+		changed = true
+	end
+	if k.burst then
+		return changed
+	end
+	local row = k.row
+	local was = k.trapped
+	k.trapped += dt
+	if k.trapped >= row.breakOut then
+		if not k.padlocked then
+			k.blow, k.burst = "Burst", true
+		elseif was < row.breakOut then
+			k.blow = "Held"
+		end
+	elseif k.trapped >= k.nextBang then
+		if row.breakOut - k.trapped < row.bangEveryLast / 2 then
+			k.nextBang = row.breakOut -- too near its burst: the burst is its next blow, not a double
+		elseif there then
+			k.blow = "Bang"
+			k.nextBang = k.trapped + bangGap(k)
+		else
+			k.nextBang = k.trapped -- it hits the door the moment it gets there
+		end
+	end
+	return changed
+end
+
 --- Steps it by `dt` seconds, `run` being a player's full run (studs a second; its row's speeds are
 --- shares of it), with `players` those it may see (none: it sees no one) and `hallLit` whether a
 --- lit hall light's pool is where it stands (the server's MotionLights). Returns whether anything
 --- a body shows changed: where it stands, the way it faces or its state. Held by a light, it says
 --- so every step; whether it is, and whose light, is `lit`. Whom it caught this step is `caught`
---- (0 for no one): it stands over where it caught them, waiting, the one it hunted let go.
+--- (0 for no one): it stands over where it caught them, waiting, the one it hunted let go. What a
+--- trapped one did to its door this step is `blow`.
 function Keeper.step(
 	k: Keeper,
 	dt: number,
@@ -504,6 +677,7 @@ function Keeper.step(
 	local lit = lightOn(k, players, hallLit == true)
 	k.lit = lit
 	k.caught = 0
+	k.blow = "None"
 	local looked = false
 	if players and k.state ~= "Asleep" then
 		looked = look(k, players, lit ~= 0)
@@ -513,7 +687,9 @@ function Keeper.step(
 		return true
 	end
 	local state = k.state
-	if state == "Asleep" or state == "Watching" then
+	if state == "Trapped" then
+		return trappedStep(k, dt, run) or looked
+	elseif state == "Asleep" or state == "Watching" then
 		return looked
 	elseif state == "Waiting" then
 		k.waited += dt
@@ -566,13 +742,16 @@ function Keeper.step(
 end
 
 --- How fast it walks in its state (studs a second), `run` being a player's full run: hunting and
---- searching at its top speed, going to look and roaming at its looking pace; 0 standing.
+--- searching at its top speed, going to look, roaming and going to its door trapped at its looking
+--- pace; 0 standing.
 function Keeper.pace(k: Keeper, run: number): number
 	local state = k.state
 	if state == "Hunting" or state == "Searching" then
 		return k.row.speed * run
 	elseif state == "Going" or state == "Roaming" then
 		return k.row.speed * run * k.row.looking
+	elseif state == "Trapped" and flatDistance(k.at, k.goal) > ARRIVE then
+		return k.row.speed * run * k.row.looking -- on its way to stand against its door
 	end
 	return 0
 end

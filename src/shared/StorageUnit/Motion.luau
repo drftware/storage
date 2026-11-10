@@ -9,12 +9,14 @@
 		Slam        drop   pulled hard: falls like a dropped curtain, bangs, bounces once
 		LiftInside  6 s    lifted from inside, heaving: always possible, never fast
 		Rattle      0.7 s  a padlocked door tried: it jerks against the bolt and drops back
+		Bang        0.5 s  a keeper trapped inside hits it: it jumps on its rail and drops back
+		Burst       0.6 s  a trapped keeper bursts it up from inside: torn free, flung to the top
 
 	Pure functions of (kind, from, to, elapsed), so the server and every client agree on where
 	a door is without streaming positions: the server sends one Motion, everyone samples it.
 ]]
 
-export type Kind = "Peek" | "Open" | "Close" | "Slam" | "LiftInside" | "Rattle"
+export type Kind = "Peek" | "Open" | "Close" | "Slam" | "LiftInside" | "Rattle" | "Bang" | "Burst"
 
 local Motion = {}
 
@@ -25,6 +27,8 @@ local KINDS: { [string]: Kind } = {
 	Slam = "Slam",
 	LiftInside = "LiftInside",
 	Rattle = "Rattle",
+	Bang = "Bang",
+	Burst = "Burst",
 }
 
 local FULL = {
@@ -32,6 +36,8 @@ local FULL = {
 	Open = 2.0,
 	Close = 1.6,
 	LiftInside = 6.0,
+	-- a full stroke in 0.6 s, fastest at the start: something heavy threw it up from inside (L-06b3d)
+	Burst = 0.6,
 }
 local SLAM_G = 200 -- studs/s^2: gravity plus a hard pull (a full stroke lands in 0.28 s)
 local BOUNCE_T = 0.26 -- s
@@ -41,6 +47,10 @@ local MIN_T = 0.12
 local RATTLE_T = 0.7 -- s
 local RATTLE_LIFT = 0.12 -- studs at the first jerk
 local RATTLE_JERKS = 3
+-- A trapped keeper's blow from inside (L-06b3d): the door jumps on its rail, drops back and
+-- bounces once, over the length of its boom. Higher than a rattle's jerk: a body hit it.
+local BANG_T = 0.5 -- s
+local BANG_LIFT = 0.4 -- studs: the jump peaks at a little over half this
 
 local function clamp01(x: number): number
 	return if x < 0 then 0 elseif x > 1 then 1 else x
@@ -69,6 +79,8 @@ end
 function Motion.duration(kind: Kind, from: number, to: number, fullStroke: number): number
 	if kind == "Rattle" then
 		return RATTLE_T
+	elseif kind == "Bang" then
+		return BANG_T
 	end
 	local h = math.abs(to - from)
 	if kind == "Slam" then
@@ -104,6 +116,10 @@ function Motion.sample(
 	if kind == "Rattle" then
 		local t = elapsed / dur
 		return from + RATTLE_LIFT * math.abs(math.sin(math.pi * RATTLE_JERKS * t)) * (1 - t)
+	elseif kind == "Bang" then
+		-- one jump and a small bounce, dying fast
+		local t = elapsed / dur
+		return from + BANG_LIFT * math.abs(math.sin(math.pi * 2 * t)) * (1 - t) ^ 3
 	end
 	if kind == "Slam" then
 		local fall = math.sqrt(2 * math.abs(h) / SLAM_G)
@@ -119,6 +135,10 @@ function Motion.sample(
 		return from + h * outQuart(t)
 	elseif kind == "Close" then
 		return from + h * inOutCubic(t)
+	elseif kind == "Burst" then
+		-- torn free at its fastest, then slowing only as it nears the stop bolts
+		local u = 1 - t
+		return from + h * (1 - u * u * u)
 	elseif kind == "LiftInside" then
 		-- three heaves: the climb speeds up and stalls three times, never slipping back
 		local heave = math.sin(t * math.pi * 6) * 0.025 * (1 - t)
@@ -181,7 +201,7 @@ function Motion.strikes(kind: Kind, from: number, to: number, fullStroke: number
 	return {}
 end
 
--- True for the six door motions (guards anything a remote might pass in).
+-- True for the eight door motions (guards anything a remote might pass in).
 function Motion.isKind(kind: any): boolean
 	return type(kind) == "string" and KINDS[kind] ~= nil
 end
@@ -190,7 +210,7 @@ end
 function Motion.target(kind: Kind, rise: { Peek: number, Open: number }): number
 	if kind == "Peek" then
 		return rise.Peek
-	elseif kind == "Open" or kind == "LiftInside" then
+	elseif kind == "Open" or kind == "LiftInside" or kind == "Burst" then
 		return rise.Open
 	end
 	return 0

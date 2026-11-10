@@ -8,7 +8,8 @@
 		Closed    down and still; the building can't see in
 		Peeking   lifted a foot, or on its way there
 		Opening   rising for the full reveal
-		Lifting   heaved up from inside (6 s): nobody outside can shut it on you meanwhile
+		Lifting   heaved up from inside (6 s), or burst up by a keeper trapped inside: nobody
+		          outside can shut it meanwhile
 		Open      up at the stop bolts
 		Closing   pulled down by hand
 		Slamming  falling and bouncing; over in half a second
@@ -160,11 +161,11 @@ function Door.stateOf(
 	if elapsed < Motion.duration(kind, from, to, fullStroke) then
 		if kind == "Slam" then
 			return "Slamming"
-		elseif kind == "LiftInside" then
-			return "Lifting"
+		elseif kind == "LiftInside" or kind == "Burst" then
+			return "Lifting" -- a trapped keeper's burst too: nobody outside can pull it back down
 		elseif kind == "Peek" then
 			return "Peeking"
-		elseif kind ~= "Rattle" then
+		elseif kind ~= "Rattle" and kind ~= "Bang" then -- a rattle or a bang leaves it where it was
 			return if to > from then "Opening" else "Closing"
 		end
 	end

@@ -20,6 +20,35 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-06b3d1, trapped, it bangs and breaks out (built Nov 10)
+
+Seed 7, floor 1; Unit 126 holds the awake Mannequin. The trick: stand beside 126's door, not in
+front of it (it sees you through the doorway and hunts), press Open and press Slam the instant the
+door is all the way up, before it walks out (you have about a second).
+- [ ] **The moment** (Play on a computer, then at phone size). After the slam, a breath later it
+  hits the door from inside: the door jumps on its rail, a low boom, your view jolts if you're
+  near. The blows come every few seconds and faster toward the end; at about 90 s the door flies
+  up with a crash and it steps out to look. Does each blow land as something heavy behind the
+  door? Is the jolt too much or too little at phone size? Does the speed-up tell you time's
+  running out? (Verified in Studio Nov 10: 28 blows, out 90.25 s after the slam, the door
+  jumping 0.2 studs, the boom at 0.55 of a slam's, the view turning up to 0.46 degrees a frame.)
+- [ ] **Peek at it.** While it bangs, peek 126: its feet should be right at the door.
+- [ ] **Padlock it** (with a real padlock in hand; my Studio test set the padlock from the
+  server): it bangs on until its time, gives one last blow, then goes quiet for the floor. Cut the
+  padlock with bolt cutters after that and it bursts out at once, in your face. Is that right?
+- [ ] **Other keepers come.** With a second keeper awake on the floor, each blow (heard about a
+  hall and a half off) brings it to the trapped one's door to look. Watch for keepers piling up
+  there; say if blows should carry less.
+- [ ] **Decide, defaults in place** (D-078): (1) slamming a door on a sleeping one wakes it
+  trapped and banging, closing quietly lets it sleep; (2) the first blow at 1.2 s, then every 5 s
+  closing to 2 s, a quarter either way; (3) out at 90 s; (4) padlocked, it falls quiet at 90 s
+  instead of banging all floor (banging forever would call every keeper to that door); (5) the
+  padlock cut after its time, it bursts out at once; (6) a blow carries 70 studs, the burst 130;
+  (7) out, it goes after the last sound it heard through its door, else steps out to look.
+  Numbers in `src/shared/KeeperRows.luau` (`bangFirst`, `bangEvery`, `bangEveryLast`,
+  `bangJitter`, `breakOut`) and `src/shared/StorageUnit/DoorSound.luau` (`BangGain`,
+  `BangShake`, the `Bang` and `Burst` rows).
+
 ## Now: judge L-06b3c, the catch (built Nov 10)
 
 Seed 7, floor 1, as for L-06b3a2 below; Unit 126 holds the awake Mannequin.
