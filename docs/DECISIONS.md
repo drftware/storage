@@ -1938,3 +1938,36 @@ since nobody here can listen. Its `use` pose is its hold: L-14a2 raises it to bl
 carries the bell's mouth for the blast. The test hall lays one beside the spawn's bolt cutters.
 Not chosen: a trumpet bent forward (a sport horn's; harder to read standing on a floor, and the
 straight one is the familiar shape); a red can (the cutters are red); a brand or words on the band.
+
+## D-087 Blowing the air horn: a blast keepers hear as they hear doors (L-14a2, Nov 10)
+Lethal Company's air horn draws the monsters that hunt by sound; ours does the same through the
+keepers' own hearing (D-069), so nothing new decides who hears it. You press Blow with the horn in
+your hand (a left click as Lethal Company's use, a gamepad's L2, since R1, R2, L1, X, Y and B are
+taken, or a round button left of a phone's jump button, under the right thumb that turns and
+jumps, so you can blow and run). Every keeper on that floor whose trip along the halls to you is
+inside 130 studs comes to where you blew it and looks, as for a door; a sleeper in an open unit
+that near wakes and comes (the GDD's "wakes dormant things nearby"); a hunting one keeps its eyes
+on you; nothing hears it through a shut door. 130 is a door bursting open, the loudest door
+sound, past an open's or a slam's 110: the horn is the loudest thing a player makes, and players
+hear it to the same distance (D-069: players and keepers hear one world). The sound is placed
+where you stand, dropped to the floor of the place you're in, and the keeper's spot kept off a
+unit's walls, as a search's is (`Horn.where`). One blow every 2.5 s, kept by the server per player
+(a press up to 0.15 s early is taken), with no count: Lethal Company's never runs out and the GDD
+gives none (`OWNER.md` asks).
+How it's built: a tool whose catalog row has a `verb` ("Blow") has a press of its own, so bubble
+wrap, the blanket and glow sticks reuse it: `Tools.UseRemote` ("ToolUse"), taken by `Slots`
+(a living player with such a tool in hand, then its own rate, never the hand's) and fired as
+`Slots.used`. `Horns` (server) keeps the horn's gap, stamps the carried horn's model with the
+server's clock (`Blown`) and tells `Keepers:hearHorn` the bell's mouth; `Keepers` finds the floor
+the point is on (`Horn.onFloor`, by `KeeperMap.off`) and hands each keeper `Horn.heard`. On your
+screen (`HornView`) the blast plays at once, ToolView brings the horn up into the row's `use`
+pose for the 1.1 s blast with its jerk (`Hand.use`), and CameraShake kicks 0.32; the button dims
+until the gap is up. Friends' screens play the stamped blast at its bell (skipped if over 0.5 s
+old) and lift the blower's left arm to 135 degrees after their animation. The blast is Pro Sound
+Effects' "Air Horn Various Lengths 4" from 0.92 s (one 1.1 s stadium blast, then its echo).
+Not chosen: a separate wake radius for sleepers (keepers and players would hear different worlds,
+D-069); the 60 studs the last handoff suggested (quieter than a door, so the horn would lure less
+than opening one); the horn heard from the tops by keepers below (the map puts a blast up there
+in the unit under you, so a shut door muffles it: the same open question as sight between the
+tops and the halls, `OWNER.md`); a client-only sound for friends (the server's stamp keeps one
+truth, and a late screen skips a stale blast).

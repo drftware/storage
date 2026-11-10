@@ -24,7 +24,8 @@ export type Row = {
 	-- its turn (degrees: yaw left, pitch up, roll), as `Torch.Hold` and `HoldTurn` are the torch's
 	hold: { number },
 	holdTurn: { number },
-	-- your view while you hold its button at a door (Cut, Lock): brought down to the latch
+	-- your view while you hold its button at a door (Cut, Lock): brought down to the latch; or,
+	-- for a tool with a `verb`, while you use it (the air horn raised to blow)
 	use: { number },
 	useTurn: { number },
 	-- a friend's hand: the grip's turn from their left hand's grip attachment, degrees about the
@@ -45,6 +46,9 @@ export type Row = {
 	bothHands: boolean?,
 	-- Your walk while it's in your hand (studs a second; Roblox's own is 16).
 	walkSpeed: number?,
+	-- What you do with it in your hand, one word on the press (Blow): a tool with one has a press
+	-- of its own (`Tools.UseRemote`), wherever you stand.
+	verb: string?,
 }
 
 local Catalog: { [string]: Row } = {
@@ -136,11 +140,13 @@ local Catalog: { [string]: Row } = {
 		-- can's sound-wave mark faces you
 		hold = { -1.2, -1.15, -2.2 },
 		holdTurn = { 205, 4, 10 },
-		-- nothing to do at a door with it (L-14a2 raises it to blow): the same as its hold
-		use = { -1.2, -1.15, -2.2 },
-		useTurn = { 205, 4, 10 },
+		-- blowing it (L-14a2): brought up and in towards the middle of your view, the trumpet tipped
+		-- forward down the hall, the can's mark still to you
+		use = { -0.78, -0.62, -2.0 },
+		useTurn = { 200, 16, 4 },
 		-- the can in the fist, the trumpet up, its mark out to your side
 		inHand = { 0, 90, 0 },
+		verb = "Blow",
 		-- its mark to the front, a little from above to show the bell, the trumpet to the upper right
 		icon = { 0.62, 12, 180, -30 },
 		-- Pro Sound Effects' "Metal Hit Steel Plate Hit Slapped 2": its one slap (0 to 0.15 s),

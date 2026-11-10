@@ -70,6 +70,7 @@ local Dent = require(ReplicatedStorage.Shared.StorageUnit.Dent)
 local Doors = require(script.Parent.Doors)
 local Flashlights = require(script.Parent.Flashlights)
 local Floor = require(ReplicatedStorage.Shared.Floor)
+local Horn = require(ReplicatedStorage.Shared.Tools.Horn)
 local Keeper = require(ReplicatedStorage.Shared.Keeper)
 local Torch = require(ReplicatedStorage.Shared.Flashlight.Torch)
 local KeeperMap = require(ReplicatedStorage.Shared.KeeperMap)
@@ -115,7 +116,7 @@ local DOING: { [Keeper.State]: string } = {
 	Asleep = "sleeps",
 	Watching = "stands still, watching",
 	Going = "goes to look",
-	Waiting = "stands at the door, looking",
+	Waiting = "stands there, looking",
 	Roaming = "wanders off down the halls",
 	Hunting = "hunts",
 	Searching = "rushes to where it last saw them",
@@ -182,6 +183,10 @@ export type Keepers = Brix.System & {
 		facing: Vector3,
 		awake: boolean?
 	) -> Model?,
+	-- A blast of the air horn at `at` (the world's), heard by every keeper on the floor it's on as
+	-- far as `Horn.Reach` along the halls (L-14a2): each comes to look where it was blown, waking
+	-- if it slept (`Horn.heard`). How many heard it.
+	hearHorn: (self: any, at: Vector3) -> number,
 	-- How many keepers are loose now on the floor `unit` is on (0 off any keepers' floor): awake
 	-- and not trapped behind a door. The deal's cap counts these (`Deal.awakeCap`).
 	awakeOn: (self: any, unit: Model) -> number,
@@ -857,6 +862,36 @@ function Keepers.new(): Keepers
 			vector.create(f.X, 0, f.Z),
 			awake == true
 		)
+	end
+
+	function system.hearHorn(_: any, at: Vector3): number
+		local count = 0
+		for _, on in floors do
+			local p = on.origin:PointToObjectSpace(at)
+			local here = vector.create(p.X, p.Y, p.Z)
+			if not Horn.onFloor(on.map, here) then
+				continue
+			end
+			for _, entry in on.keepers do
+				local k = entry.keeper
+				local was: Keeper.State = k.state
+				local heard = Horn.heard(k, here)
+				if heard then
+					count += 1
+					if TRACE then
+						local doing = if k.state == "Trapped"
+							then "it'll go there once out"
+							elseif was == "Asleep" then "it wakes and goes to look"
+							else "it goes to look"
+						print(
+							`Keepers: the {k.row.name} heard an air horn {math.round(heard)} studs off along the halls; {doing}`
+						)
+					end
+					changedState(entry, was)
+				end
+			end
+		end
+		return count
 	end
 
 	function system.awakeOn(_: any, unit: Model): number

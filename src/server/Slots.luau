@@ -19,6 +19,10 @@
 
 	`Doors` reads `carried` to know what's in your hand (the cutters to Cut, a padlock to Lock), and
 	`spend`s the padlock that goes on a door: it leaves your slots for good.
+
+	A tool whose row has a `verb` (the air horn's Blow) is used where you stand: ToolUse takes
+	nothing, checked for a living character with such a tool in hand, then its own rate (so using
+	never spends the hand's), and fires `used` for that tool's system (`Horns`) to decide the rest.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -44,9 +48,14 @@ export type Change = {
 	kind: "PickUp" | "Drop" | "Give" | "Switch" | "Spend" | "Place",
 }
 
+-- A press of ToolUse that passed: who, the tool's catalog key, and its model in their hand.
+export type Use = { player: Player, key: string, model: Model }
+
 export type Slots = Brix.System & {
 	-- Fires as anyone's slots change, for whoever cares (keepers that hear a drop, later).
 	changed: Brix.Signal<Change>,
+	-- Fires as someone uses the tool in their hand (its row's `verb`), checked and rate-limited.
+	used: Brix.Signal<Use>,
 	-- Lays a new tool of catalog key `key` on the floor at `at` (a floor point), turned `yaw`
 	-- degrees. Returns its id, or nil if the place has no template.
 	lay: (self: any, key: string, at: Vector3, yaw: number) -> string?,
@@ -82,6 +91,8 @@ type Hand = {
 	carry: Tools.CarryState,
 	last: number?,
 	burst: number,
+	usedLast: number?, -- ToolUse's own rate, as `last` and `burst` are the hand's
+	usedBurst: number,
 }
 
 -- The tool's pivot for lying flat on a floor with its middle at `at`, turned `yaw` degrees: its
@@ -130,6 +141,7 @@ function Slots.new(): Slots
 	local connections: { RBXScriptConnection } = {}
 	local remotes: { Instance } = {}
 	local changed = Brix.Signal.new() :: Brix.Signal<Change>
+	local used = Brix.Signal.new() :: Brix.Signal<Use>
 	local lying: Folder? = nil
 	local notice: RemoteEvent? = nil
 	local nextId = 0
@@ -137,7 +149,7 @@ function Slots.new(): Slots
 	local function handOfPlayer(player: Player): Hand
 		local h = hands[player]
 		if not h then
-			h = { carry = Carry.new(), last = nil, burst = Carry.Burst }
+			h = { carry = Carry.new(), last = nil, burst = Carry.Burst, usedBurst = Carry.Burst }
 			hands[player] = h
 		end
 		return h
@@ -441,6 +453,28 @@ function Slots.new(): Slots
 		publish(player)
 	end
 
+	-- ToolUse: nothing to check for type (it takes nothing); range: a living character with a
+	-- tool in hand that has a verb; then its own rate.
+	local function onUse(player: Player)
+		if not rootOf(player) then
+			return
+		end
+		local h = handOfPlayer(player)
+		local id = Carry.held(h.carry)
+		local t = if id then tools[id] else nil
+		local row = if t then Catalog[t.key] else nil
+		if not (t and row and row.verb) then
+			return
+		end
+		local at = now()
+		local may, left = Carry.allow(h.usedLast, h.usedBurst, at)
+		if not may then
+			return
+		end
+		h.usedLast, h.usedBurst = at, left
+		used:fire({ player = player, key = t.key, model = t.model })
+	end
+
 	local function onDrop(player: Player)
 		-- range: a living character with something in hand
 		local root = rootOf(player)
@@ -555,6 +589,7 @@ function Slots.new(): Slots
 	local system = {
 		name = "Slots",
 		changed = changed,
+		used = used,
 	}
 
 	function system.start(_: any, _context: Brix.Context)
@@ -581,6 +616,7 @@ function Slots.new(): Slots
 		table.insert(connections, remote(Tools.SwitchRemote).OnServerEvent:Connect(onSwitch))
 		table.insert(connections, remote(Tools.DropRemote).OnServerEvent:Connect(onDrop))
 		table.insert(connections, remote(Tools.GiveRemote).OnServerEvent:Connect(onGive))
+		table.insert(connections, remote(Tools.UseRemote).OnServerEvent:Connect(onUse))
 		notice = remote(Tools.NoticeRemote)
 		table.insert(connections, Players.PlayerAdded:Connect(addPlayer))
 		table.insert(
@@ -605,6 +641,7 @@ function Slots.new(): Slots
 		end
 		table.clear(remotes)
 		changed:disconnectAll()
+		used:disconnectAll()
 	end
 
 	function system.lay(_: any, key: string, at: Vector3, yaw: number): string?

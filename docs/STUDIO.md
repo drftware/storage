@@ -682,6 +682,19 @@ verified: a doc page, Studio, or "untested".
 - **The command bar caches `require`** (L-11c): after Rojo syncs a module, requiring it from
   `execute_luau` in Edit can still return the old one. Require a clone instead
   (`require(ReplicatedStorage.Shared.Tools:Clone())`), then destroy the clone.
+- **The air horns, measured** (L-14a2, 2026-11-10; Edit, AudioPlayer to AudioAnalyzer, 0.1 s bins
+  at half speed, then 20 ms at a quarter): Pro Sound Effects' "Air Horn Various Lengths" 1 to 14
+  (9113071755, 9113071764, 9113071895, 9113071891, 9113071885, 9113072082, 9113072098,
+  9113072084, 9113072258, 9113072263...) are stadium canned horns, most silent for about 0.9 s
+  first. "4" 9113071891 (3.4 s) blasts from 0.94 s to about 2.05 s near -2 dB, -19 dB by 2.1,
+  -40 by 2.4; "1" 9113071755 blasts at once (0.25 to 1.0 s, 0 dB). The "Various Lengths And
+  Pitches" set is whining blasts; "Diesel Truck Horn" and "Tugboat Horn" are vehicles.
+- **Pressing a tool's use from the MCP** (L-14a2): `user_mouse_input` with a left
+  `mouseButtonClick` on the Client reaches a `ContextActionService` binding on MouseButton1, so it
+  presses Blow as a player would. To see a blast's keeper from the Server, sample the body's
+  `KeeperState` and pivot each second into `_G` from a spawned loop, and wait on the horn's
+  `Blown` attribute to pivot the player away the moment it's blown (a keeper that comes to the
+  spot and finds you there hunts you).
 - **Sounds measured for the saw** (L-12b2; 50 ms bins at half speed, 0.5 s bins at 4x for long
   ones): "Metal Blade Grind 1" 9116524165 is silent to 0.15 s, spins up to -18 dB by 0.3 s, full
   (-12 to -6 dB, steady) from 0.8 s to about 14 s. "Cold Saw Humming Whir 2" 9113851035 (36.5 s)

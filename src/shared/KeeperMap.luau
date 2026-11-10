@@ -438,6 +438,13 @@ function KeeperMap.placeAt(map: Map, p: vector): (number, number)
 	return i, map.unit[i]
 end
 
+--- How far `p` is off the map, across the floor (studs): 0 on a place, else to the nearest place
+--- at or under it. Whether a point is on this floor at all (a sound made on it). Allocates nothing.
+function KeeperMap.off(map: Map, p: vector): number
+	local _, _, _, d = locate(map, p)
+	return d
+end
+
 -- `v` kept at least `margin` inside `lo` to `hi`, or their middle if they're closer than that.
 local function keepWithin(v: number, lo: number, hi: number, margin: number): number
 	if lo + margin > hi - margin then

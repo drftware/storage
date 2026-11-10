@@ -16,6 +16,7 @@ local DoorSounds = require(script.DoorSounds)
 local DoorView = require(script.DoorView)
 local ElevatorView = require(script.ElevatorView)
 local FlashlightView = require(script.FlashlightView)
+local HornView = require(script.HornView)
 local FreeCursor = require(script.FreeCursor)
 local GateClock = require(script.GateClock)
 local HallHaze = require(script.HallHaze)
@@ -35,6 +36,7 @@ local freeCursor, needCursor = FreeCursor.new()
 local elevatorView, pressKeypad = ElevatorView.new(kick)
 local keeperSounds, keeperHeard = KeeperSounds.new()
 local flashlightView, myBeam = FlashlightView.new()
+local toolView, myHand = ToolView.new()
 
 local host = Brix.Host.new({
 	systems = {
@@ -55,7 +57,9 @@ local host = Brix.Host.new({
 		{ slot = "chaseMusic", system = ChaseMusic.new() },
 		{ slot = "noteView", system = NoteView.new() },
 		{ slot = "flashlightView", system = flashlightView },
-		{ slot = "toolView", system = ToolView.new() },
+		{ slot = "toolView", system = toolView },
+		-- after ToolView, so its button lands beside a bar that's there
+		{ slot = "hornView", system = HornView.new(myHand, kick) },
 		{ slot = "sawView", system = SawView.new(kick) },
 		{ slot = "crawlView", system = CrawlView.new(kick) },
 		{ slot = "ladderView", system = LadderView.new(kick) },

@@ -19,6 +19,10 @@
 
 	Friends: a "Give" prompt on each friend while you hold a tool. If their hands are full it says
 	so on the prompt.
+
+	`new()` also returns your `Hand` for the systems that use a tool where you stand (HornView): the
+	tool brought up into its row's `use` pose for a moment with a jerk, and a place beside the bar
+	for that tool's button.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local ContextActionService = game:GetService("ContextActionService")
@@ -248,12 +252,23 @@ end
 
 local ToolView = {}
 
-function ToolView.new(): Brix.System
+-- Your view's tool, as the systems that use one where you stand see it.
+export type Hand = {
+	-- the tool in your hand used (the air horn blown): up into its row's `use` pose for `seconds`,
+	-- jerking as it starts
+	use: (seconds: number) -> (),
+	-- puts `button` beside the slots' bar on its left, sized as the Drop button, kept there as the
+	-- screen changes
+	beside: (button: GuiButton) -> (),
+}
+
+function ToolView.new(): (Brix.System, Hand)
 	local connections: { RBXScriptConnection } = {}
 	local gui: ScreenGui? = nil
 	local bar: Frame? = nil
 	local views: { SlotView } = {}
 	local dropButton: TextButton? = nil
+	local besideButton: GuiButton? = nil
 	local nameLabel: TextLabel? = nil
 	local nameShown = 0
 	local switchRemote: RemoteEvent? = nil
@@ -350,6 +365,12 @@ function ToolView.new(): Brix.System
 			local ds = math.floor(size * 0.62)
 			d.Size = UDim2.fromOffset(math.floor(ds * 1.25), ds)
 			d.Position = UDim2.new(1, gap, 0.5, 0)
+			local u = besideButton
+			if u then
+				u.Size = d.Size
+				u.AnchorPoint = Vector2.new(1, 0.5)
+				u.Position = UDim2.new(0, -gap, 0.5, 0)
+			end
 		end
 		local n = nameLabel
 		if n then
@@ -682,6 +703,9 @@ function ToolView.new(): Brix.System
 		switchSound = s
 		local g, b, v, d, n = makeBar()
 		gui, bar, views, dropButton, nameLabel = g, b, v, d, n
+		if besideButton then
+			besideButton.Parent = b
+		end
 		for i, view in views do
 			table.insert(
 				connections,
@@ -889,7 +913,19 @@ function ToolView.new(): Brix.System
 		end
 	end
 
-	return system
+	local hand: Hand = {
+		use = function(seconds: number)
+			kick = 1
+			workUntil = math.max(workUntil, os.clock() + seconds)
+		end,
+		beside = function(button: GuiButton)
+			besideButton = button
+			button.Parent = bar
+			layout()
+		end,
+	}
+
+	return system :: any, hand -- any: a plain Brix system built field by field
 end
 
 return ToolView

@@ -36,6 +36,7 @@ Tools.SwitchRemote = "ToolSwitch" -- client → server: the slot you want in you
 Tools.DropRemote = "ToolDrop" -- client → server: drop what's in your hand
 Tools.GiveRemote = "ToolGive" -- client → server: hand what's in your hand to a friend
 Tools.NoticeRemote = "ToolNotice" -- server → client: a short line for your screen
+Tools.UseRemote = "ToolUse" -- client → server: use what's in your hand (its row's `verb`: Blow)
 Tools.HeldName = "HeldTool" -- the model's name in a character's hand
 -- A door's Lock button (Doors): every screen hides it unless a padlock is in that player's hand.
 Tools.LockTag = "PadlockButton"

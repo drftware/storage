@@ -716,7 +716,7 @@ on nothing in Brix.
   its art first, built the unit's way. Split Nov 10, one tool a session (split again into art and
   use if it won't fit, as L-12a and L-12b were); each names its hit-game precedent first, and one
   with none goes to `OWNER.md` as an untested bet, never built quietly:
-  - [ ] **L-14a The air horn.** Lures keepers to a spot, wakes dormant things nearby (GDD). Blown
+  - [x] **L-14a The air horn.** Lures keepers to a spot, wakes dormant things nearby (GDD). Blown
     where you stand, heard as keepers hear (`Keeper.hear`), so it pulls a keeper to you or sets
     up a trap (with the bubble wrap, or into a unit's mouth for the hole trap). Split Nov 10:
     - [x] **L-14a1 The air horn's art.** Done Nov 10 (D-086): a marine air horn (`art/airhorn/`,
@@ -725,11 +725,23 @@ on nothing in Brix.
       `Catalog` row (held low on your left, trumpet up; in a friend's fist, mark out; a steel
       slap picking it up, a can's clatter dropping it). Laid in the test hall by the spawn;
       picked up, held and dropped in Studio (desktop size; the phone look waits on `OWNER.md`).
-    - [ ] **L-14a2 Blowing it.** A pressed use, server-checked (in hand, a cooldown); a blast
-      keepers hear as they hear doors, so the awake walk to the spot and sleepers in reach wake;
-      the blast, your view's kick and a friend's raised arm. Pure rules Lune-tested.
+    - [x] **L-14a2 Blowing it.** Done Nov 10 (D-087): Blow (a click, L2, or a round button left
+      of a phone's jump button, beside the slots' bar elsewhere) while it's in your hand; a press
+      of its own (`ToolUse`, any tool with a `verb`), checked and rate-limited by `Slots`, then
+      one blow every 2.5 s (`Horns`). Keepers hear it 130 studs along the halls (`Horn`,
+      `Keepers:hearHorn`): the awake come to where you blew it, sleepers in reach wake. Your
+      screen plays a stadium horn's blast at once, brings the horn up and kicks your view;
+      friends hear it at your horn and see your arm go up. Verified in Studio on seed 7: a
+      sleeper in 154 woke 100 studs off and came; a roaming one came 44 studs off, looked, left.
   - [ ] **L-14b Bubble wrap.** Laid across a hall, it pops when anything crosses, heard
-    floor-wide (and on the light board, Phase 2); friends pop it too.
+    floor-wide (and on the light board, Phase 2); friends pop it too. Split Nov 10, as the horn:
+    - [ ] **L-14b1 Bubble wrap's art.** Its hit-game precedent named first (`OWNER.md` if none);
+      a roll carried in your hand and a sheet laid flat across a hall, built from code the
+      unit's way (`art/<name>/`), a `Catalog` row (hold, a friend's hand, pick-up and drop
+      sounds, `verb` "Lay"), laid in the test hall by the horn.
+    - [ ] **L-14b2 Laying it and the pops.** Lay (the `ToolUse` press, D-087) unrolls a sheet
+      across the hall where you stand; anything crossing it pops it, loud, heard by keepers as a
+      door is (`Keepers` gains a general sound alongside `hearHorn`); friends pop it too.
   - [ ] **L-14c The moving blanket.** Thrown over a keeper, it blinds it a few seconds; it has
     to land.
   - [ ] **L-14d Glow sticks.** Mark a route with light that never times out and the building
@@ -765,6 +777,11 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **The air horn, felt by friends (L-14a2):** a friend standing beside your blast gets a small
+  kick to their view too, fading over a few studs; and a breath of air hissing out of the can as
+  the blast dies, so a horn sounds held, not played. A keeper that hears it could snap its head
+  round before it walks (the Mannequin's stillness makes that an untested bet).
 
 - **Its tell, from its feet (L-06b4b2):** the footfalls and knocks play from the keeper's root,
   at its hips; from the planted foot (and the knock from the joint that snaps) would place them

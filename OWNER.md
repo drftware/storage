@@ -21,6 +21,30 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-14a2, blowing the air horn (built Nov 10)
+
+Blown in Studio at desktop size on seed 7: a sleeper in Unit 154 woke 100 studs off along the
+halls and came to where you blew it; a roaming one 44 studs off came, looked about 4 s and
+wandered on. A phone, a friend and your ears are yours.
+- [ ] **How far it carries** (a design call; D-087): keepers hear it 130 studs along the halls,
+  as far as a door bursting open, past an open's or a slam's 110, about five hall pieces. The
+  last handoff suggested about 60 (a bit over two pieces), which would make it quieter than
+  opening a door. Play a floor: if every blow wakes a sleeper you never meant to, try 80
+  (`Horn.Reach`).
+- [ ] **On a phone** (Galaxy A16 in the Device Simulator): pick up the test hall's horn. A round
+  "Blow" button shows left of the jump button only while it's in your hand. Can your right thumb
+  hit it while you run, without catching the jump or the torch button above it? Tap it: the horn
+  comes up in your view, your view kicks, the button dims for 2.5 s then lights again.
+- [ ] **On a keyboard:** a left click blows it; the Blow button sits left of the slots' bar.
+  Does the raised horn (up and in, the mark to you) cover too much of the hall? (`Catalog.AirHorn.use`)
+- [ ] **A friend blowing it** (Team Test, two players): you hear it from their horn, and their
+  left arm swings up and forward through the blast and back down (`Horn.Arm`, 135 degrees). Tell
+  me if the horn goes through their head or the arm points the wrong way.
+- [ ] **By ear:** Pro Sound Effects' stadium air horn, one 1.1 s blast and its echo, measured but
+  never heard here. Loud enough, too long, or too comic for the building?
+- [ ] **It never runs out** (a design call): Lethal Company's horn doesn't, and the GDD gives no
+  count, so it's one blow every 2.5 s forever. Say if a can should empty after a few blows.
+
 ## Now: judge L-14a1, the air horn's look (built Nov 10)
 
 Picked up, held and dropped in Studio at desktop size; a phone, a friend and your ears are yours.
