@@ -8,12 +8,13 @@
 	server's clock (`Wrap.LaidAttribute`) and tagged (`Wrap.Tag`), so every screen unrolls it
 	(`WrapView`). Refused, their screen says the fix (`Wrap.NotHere`) on Slots' short line.
 
-	The pops (L-14b2b): each step, while any sheet lies unpopped, every living player's feet (their
+	The pops (L-14b2b): each step, while any sheet has pops left, every living player's feet (their
 	root, down to the floor) and every keeper's (`Keepers:feet`) are checked against the sheets,
 	from where they were last step to where they are (`Wrap.crosses`). A crossing pops that sheet
-	once: it's stamped (`Wrap.PoppedAttribute`), so every screen plays the pops and flattens it,
-	and every keeper on the floor hears it as far as an opened door (`Keepers:hear`, `Wrap.Reach`).
-	A popped sheet stays, flat and silent.
+	if it's ready (`Wrap.ready`: pops left, and the last one done): it's stamped with its count and
+	the time (`Wrap.PopsAttribute`, `Wrap.PoppedAttribute`), so every screen plays the pop and
+	wears it down a step, and every keeper on the floor hears it as far as an opened door
+	(`Keepers:hear`, `Wrap.Reach`). After `Wrap.Uses` pops it stays, spent: flat and silent.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -30,10 +31,11 @@ local Wrap = require(ReplicatedStorage.Shared.Tools.Wrap)
 local SHEETS = "BubbleWrap" -- the folder in each place's model the sheets are laid in
 local SHEET_TEMPLATE = "BubbleSheet" -- under ReplicatedStorage.Props
 
--- A sheet laid in a place: where it lies (the place's coordinates), its model, whether it's popped.
-type Laid = { sheet: Wrap.Sheet, model: Model, popped: boolean }
+-- A sheet laid in a place: where it lies (the place's coordinates), its model, how many times it
+-- has popped and when last (os.clock; -math.huge never).
+type Laid = { sheet: Wrap.Sheet, model: Model, pops: number, last: number }
 -- A place sheets may be laid in: its halls in its own coordinates, and where those are; the
--- sheets laid there, and how many of them are still unpopped.
+-- sheets laid there, and how many of them still have pops left.
 type Area = {
 	halls: { Wrap.Hall },
 	model: Instance,
@@ -58,7 +60,7 @@ function Wraps.new(): Wraps
 	local slots: Slots.Slots? = nil
 	local keepers: Keepers.Keepers? = nil
 	local warned = false
-	-- The pops: how many sheets lie unpopped anywhere (none: nothing is checked), where each
+	-- The pops: how many sheets have pops left anywhere (none: nothing is checked), where each
 	-- living player's and keeper's feet were last step (the world's), and the players, kept as they
 	-- come and go so no list is made each step.
 	local live = 0
@@ -144,13 +146,16 @@ function Wraps.new(): Wraps
 			Vector3.yAxis
 		)
 		laid:PivotTo(found.origin * frame)
+		-- its part reaches screens with it, never after (WrapView watches the model as it arrives)
+		laid.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
 		laid:SetAttribute(Wrap.LaidAttribute, Workspace:GetServerTimeNow())
 		CollectionService:AddTag(laid, Wrap.Tag)
 		laid.Parent = folder
 		table.insert(found.laid, {
 			sheet = { at = point, across = across },
 			model = laid,
-			popped = false,
+			pops = 0,
+			last = -math.huge,
 		})
 		found.live += 1
 		live += 1
@@ -164,25 +169,32 @@ function Wraps.new(): Wraps
 		end
 	end
 
-	-- `who` (a name for Output) popped `l` in `area`: stamped for every screen, and heard.
+	-- `who` (a name for Output) popped `l` in `area`: counted and stamped for every screen (the
+	-- count first, so a screen reading the time sees it), and heard.
 	local function pop(area: Area, l: Laid, who: string)
-		l.popped = true
-		area.live -= 1
-		live -= 1
+		l.pops += 1
+		l.last = os.clock()
+		if l.pops >= Wrap.Uses then
+			area.live -= 1
+			live -= 1
+		end
 		if not l.model.Parent then
 			return -- cleared away: nothing to hear
 		end
+		l.model:SetAttribute(Wrap.PopsAttribute, l.pops)
 		l.model:SetAttribute(Wrap.PoppedAttribute, Workspace:GetServerTimeNow())
 		local at = area.origin:PointToWorldSpace((l.sheet.at :: any) :: Vector3) -- any: a vector
 		local heard = if keepers then keepers:hear(at, Wrap.Reach, "bubble wrap pop") else 0
 		if RunService:IsStudio() then
 			print(
-				`Wraps: {who} popped the bubble wrap at ({math.round(at.X)}, {math.round(at.Z)}); {heard} keeper(s) heard it`
+				`Wraps: {who} popped the bubble wrap ({l.pops} of {Wrap.Uses}) at ({math.round(at.X)}, {math.round(
+					at.Z
+				)}); {heard} keeper(s) heard it`
 			)
 		end
 	end
 
-	-- Feet that stepped from `from` to `to` (the world's): every unpopped sheet they crossed pops.
+	-- Feet that stepped from `from` to `to` (the world's): every sheet they crossed that's ready pops.
 	local function stepped(who: string, from: Vector3, to: Vector3)
 		for _, area in areas do
 			if area.live <= 0 then
@@ -191,8 +203,9 @@ function Wraps.new(): Wraps
 			local f = area.origin:PointToObjectSpace(from)
 			local t = area.origin:PointToObjectSpace(to)
 			local fv, tv = vector.create(f.X, f.Y, f.Z), vector.create(t.X, t.Y, t.Z)
+			local now = os.clock()
 			for _, l in area.laid do
-				if not l.popped and Wrap.crosses(l.sheet, fv, tv) then
+				if Wrap.ready(l.pops, now - l.last) and Wrap.crosses(l.sheet, fv, tv) then
 					pop(area, l, who)
 				end
 			end
@@ -263,7 +276,7 @@ function Wraps.new(): Wraps
 		)
 	end
 
-	-- Only while a sheet lies unpopped: everyone's feet, last step's to this step's.
+	-- Only while a sheet has pops left: everyone's feet, last step's to this step's.
 	function system.step(_: any, _dt: number)
 		if live <= 0 then
 			-- nothing to pop: forget where feet were, so a sheet laid later checks fresh steps only

@@ -1027,7 +1027,17 @@ verified: a doc page, Studio, or "untested".
   2" 9114234244 is quiet (-28 dB). Build2Inspire's user upload "Pop Bubble Wrap Sound Effect"
   7158013361 is one lone pop at 1.2 s (-5 dB) and nothing else.
 - **`SurfaceAppearance.Color`** (Edit, Nov 10): exists and reads white (a tint on its ColorMap).
-  Set from a LocalScript in Play: untested; `WrapView` tries it once per pop under `pcall`.
+  A LocalScript can set it in Play (verified Nov 10: the spent bubble wrap's grey).
+- **A server-made model can reach a screen before its parts** (Play, Nov 10, the laid bubble
+  wrap): with StreamingEnabled and the model's `ModelStreamingMode` Default, a client's
+  `CollectionService` added handler can find the model with no part yet, and code that gives up
+  there never sees it (the bubble wrap's pops were silent on screen while the server popped it).
+  It didn't happen with the same model cloned and tagged from the MCP. Make such a model
+  `Atomic` on the server (its parts arrive with it) and wait for a missing part on the client.
+- **The roll's prompt did show to the MCP** (Play, Nov 10, on the third try): every other prompt
+  under `Workspace.Tools` disabled on the Client, the character stood 2.5 studs off, the camera
+  Scriptable and pointed at the prompt from 4 up and 4 out, a 1.5 s wait: `PromptShown` fired and
+  `InputHoldBegin`/`InputHoldEnd` picked it up. `ToolUse:FireServer()` then presses the tool.
 - **Picking a tool up from the MCP** (Play, Nov 10, again): `user_keyboard_input` E does press a
   prompt, but the one Roblox picks among those in reach (a padlock, then the saw, beside the test
   hall's roll). With every other prompt disabled on the Client, the roll's prompt (2.8 studs off,

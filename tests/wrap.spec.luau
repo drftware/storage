@@ -232,6 +232,31 @@ do
 	ok(Wrap.Reach > 0 and Wrap.Flat > 0 and Wrap.Flat < 1, "a pop is heard, and flattens")
 end
 
+-- Three pops, then spent (owner, 2026-11-10): each walk across pops it, though not again while
+-- the last pop still crackles; after the third it lies spent and pops no more. Each pop wears it a
+-- step nearer flat, dull and clear, and sounds a little different from the one before.
+do
+	ok(Wrap.Uses == 3, "it pops three times")
+	ok(Wrap.ready(0, math.huge), "a fresh sheet pops")
+	ok(Wrap.ready(1, Wrap.Rest + 0.01), "it pops again once the last pop has died down")
+	ok(not Wrap.ready(1, Wrap.Rest - 0.01), "not twice in one crackle")
+	ok(Wrap.ready(Wrap.Uses - 1, 5), "the last pop")
+	ok(not Wrap.ready(Wrap.Uses, 5), "spent: it pops no more")
+	ok(not Wrap.ready(Wrap.Uses + 1, math.huge), "spent, long after")
+	ok(Wrap.Rest > 0 and Wrap.Rest < 2, "a short rest between pops")
+	ok(Wrap.worn(0) == 0, "fresh: not worn at all")
+	ok(Wrap.worn(Wrap.Uses) == 1 and Wrap.worn(Wrap.Uses + 2) == 1, "spent: worn all the way")
+	local a, b = Wrap.worn(1), Wrap.worn(2)
+	ok(a > 0 and b > a and b < 1, "each pop wears it a step further")
+	ok(#Wrap.PopSounds == Wrap.Uses, "a sound for each pop")
+	for i = 2, #Wrap.PopSounds do
+		local s, last = Wrap.PopSounds[i], Wrap.PopSounds[i - 1]
+		ok(s.pitch ~= last.pitch, `pop {i} sounds different from pop {i - 1}`)
+		ok(s.id == last.id and s.from == last.from, `pop {i} is the same crackle`)
+	end
+	ok(Wrap.Clear > 0 and Wrap.Clear < 1, "a spent sheet turns partly clear, never invisible")
+end
+
 print(`wrap: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

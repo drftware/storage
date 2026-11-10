@@ -58,7 +58,7 @@ Wrap.LaidAttribute = "Laid"
 Wrap.Tag = "BubbleSheet"
 
 -- The pops (L-14b2b), as a Minecraft tripwire trips under any mob or player that walks into it:
--- a foot entering a laid sheet pops it, anyone's (a keeper's, a friend's, your own), once. The
+-- a foot entering a laid sheet pops it, anyone's (a keeper's, a friend's, your own). The
 -- sheet counts `Slack` studs round its edges (a foot reaches past the middle of you), which with
 -- `Across` covers the hall wall to wall, so nobody slips by it. Feet more than `Lift` over it are
 -- in the air: a jump clears it, as you can hop a tripwire; feet read up to `Under` below it
@@ -73,21 +73,37 @@ Wrap.Stride = 8
 -- a sheet two halls off brings a keeper as an opened door there would.
 Wrap.Reach = 110
 
--- On a popped sheet: the server's clock (GetServerTimeNow) when it popped, so every screen plays
--- the pops and flattens it. A pop older than `Fresh` seconds when a screen first sees it (streamed
--- in late) just shows it flat.
+-- A sheet pops `Uses` times, one walk across each, then lies spent: flat, dull, half clear and
+-- silent (owner, 2026-11-10). It wears through in stages you can see, as Minecraft's anvil goes
+-- chipped, then damaged, then breaks. A walk across within `Rest` seconds of the last pop pops
+-- nothing and spends nothing (a second friend on your heels, a foot dithering at its edge): the
+-- pops never pile up into one long crackle.
+Wrap.Uses = 3
+Wrap.Rest = 0.8
+
+-- On a popped sheet: how many times it has popped (`PopsAttribute`), and the server's clock
+-- (GetServerTimeNow) at the last (`PoppedAttribute`), so every screen plays that pop and wears it
+-- down a step. The server sets the count first. A pop older than `Fresh` seconds when a screen
+-- first sees it (streamed in late) just shows it worn.
+Wrap.PopsAttribute = "Pops"
 Wrap.PoppedAttribute = "Popped"
 
 -- The pops on every screen, heard as far as keepers hear them (`Reach`): Pro Sound Effects'
 -- "Plastic Bubble Wrap Short Fluttering Movements 2" from 3.34 s, a foot coming down on wrap: a
 -- crackle (pops at 3.38, 3.45, 3.61 s) into one sharp pop at 3.94 s, -6 dB (measured for
--- L-14b2b, docs/STUDIO.md). Loud on purpose: it's an alarm.
-Wrap.Pops = { id = "rbxassetid://9125745015", from = 3.34, length = 1.05, volume = 2, pitch = 1 }
--- The sheet goes flat as it pops, over `Flatten` seconds (fast, then settling): its bubbles
--- squashed to `Flat` of their height, its colour tinted `Tint` (the film dulled, not dark).
+-- L-14b2b, docs/STUDIO.md). Loud on purpose: it's an alarm. Each of the three is pitched a little
+-- apart, so they don't sound like one clip again: the second a little higher, the last lower.
+local function popSound(pitch: number)
+	return { id = "rbxassetid://9125745015", from = 3.34, length = 1.05, volume = 2, pitch = pitch }
+end
+Wrap.PopSounds = { popSound(1), popSound(1.1), popSound(0.9) }
+-- Each pop wears the sheet a step down, over `Flatten` seconds (fast, then settling): spent, its
+-- bubbles are squashed to `Flat` of their height, its film tinted `Tint` (dulled, not dark) and
+-- `Clear` see-through, the air gone out of it.
 Wrap.Flatten = 0.6
-Wrap.Flat = 0.35
-Wrap.Tint = { r = 0.72, g = 0.72, b = 0.74 }
+Wrap.Flat = 0.3
+Wrap.Tint = { r = 0.66, g = 0.66, b = 0.68 }
+Wrap.Clear = 0.35
 -- Your view jolts this much (Shake trauma, 0..1) if it popped under you: the horn's is 0.32.
 Wrap.Kick = 0.16
 
@@ -222,6 +238,17 @@ local function slab(
 		return nil, t1
 	end
 	return t0, t1
+end
+
+--- Whether a walk across a sheet that has popped `pops` times, the last `since` seconds ago
+--- (math.huge if never), pops it again.
+function Wrap.ready(pops: number, since: number): boolean
+	return pops < Wrap.Uses and since >= Wrap.Rest
+end
+
+--- How worn a sheet that has popped `pops` times looks: 0 fresh, 1 spent (flat, dull, clear).
+function Wrap.worn(pops: number): number
+	return math.clamp(pops / Wrap.Uses, 0, 1)
 end
 
 --- Whether a foot at `p` (the sheet's place's coordinates) is on `sheet`, its slack counted.

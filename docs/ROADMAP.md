@@ -769,8 +769,19 @@ on nothing in Brix.
       stamped `Popped`, and keepers hear it as far as an opened door (`Keepers:hear`, 110
       studs; the horn's `hearHorn` now runs through it, and `Keeper.heardAt` is the pure
       rule). Every screen (`WrapView`) plays a measured burst of pops at the sheet, heard as
-      far, squashes its bubbles and dulls its film; under you, your view jolts. Passes checks,
-      untested in Studio: the MCP couldn't pick the roll up again (docs/STUDIO.md).
+      far, squashes its bubbles and dulls its film; under you, your view jolts. Verified in
+      Studio with L-14b2c.
+    - [x] **L-14b2c Three pops, and every screen hears them.** Done Nov 10 (D-093), from the
+      owner's test: the pops were silent on screen because `WrapView` gave up on a sheet that
+      reached it before its part; now laid sheets stream `Atomic` and `WrapView` waits for a
+      late part. A sheet pops three times (`Wrap.ready`, `Wrap.worn`, Lune-tested), never twice
+      within 0.8 s, each pop at its own pitch and a step flatter, greyer and clearer, then lies
+      spent. Verified in Studio: lay, four walks across, "1 of 3" to "3 of 3", three sounds
+      playing, the sheet worn to 0.3 of its height, 0.35 clear and grey.
+    - [ ] **L-14b2d The spent sheet's own look** (waits on `OWNER.md`'s judgement of the
+      spent look): a second texture set baked by `art/bubblewrap` (the same atlas, the sheet's
+      strip painted as burst bubbles: flat, creased film), swapped onto the sheet's part at its
+      third pop. Small; one session.
 - [ ] **L-10 The minimap** (owner, Nov 7: players shouldn't get lost and give up; Nov 10: a small
   corner map, always on, for now, which the owner may later make a map you stop to open, exposed
   while you read it). It fills in only the halls you've walked, as R.E.P.O.'s map fills in rooms

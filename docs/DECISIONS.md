@@ -2085,3 +2085,21 @@ Not chosen: popping as you walk on it (the layer at a dead end would set off the
 counting a jump (no skill, and a tripwire doesn't); a chain of pops per foot (one alarm reads
 cleaner, and the GDD names one).
 
+## D-093 Three pops, then spent; laid sheets stream whole (L-14b2c, Nov 10)
+The owner, Nov 10: a sheet should pop three times as it's walked over, then lie visibly spent
+and do nothing. It wears through in stages you can see, as Minecraft's anvil goes chipped, then
+damaged, then breaks. Each walk across (D-092's crossing) pops it while it has pops left and the
+last one is 0.8 s gone (`Wrap.ready`): a friend on your heels or a foot dithering at its edge
+doesn't spend a pop, and pops never blur into one crackle. Every pop is heard by keepers as the
+first was. On screens each pop plays the same measured crackle at its own pitch (1, 1.1, 0.9) and
+wears the sheet a third of the way (`Wrap.worn`): squashed toward 0.3 of its height, tinted grey
+and turned up to 0.35 see-through, the air gone out of it. The server stamps the count (`Pops`)
+before the time (`Popped`); screens act on the time and read the count.
+The owner's "only heard it once" was mostly a bug: `WrapView` dropped any sheet whose part
+reached the screen after its model, so it never played, popped or wore there. Laid sheets now
+stream `Atomic`, and `WrapView` waits for a late part (docs/STUDIO.md).
+Not chosen: a baked burst-bubble texture for the spent sheet now (an art session: L-14b2d, if the
+owner finds the grey, flat, clear look doesn't read as popped); clearing it away when spent (the
+owner wants it seen); a rest per walker rather than per sheet (more state, and one alarm a moment
+reads cleaner).
+

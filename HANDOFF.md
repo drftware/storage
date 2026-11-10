@@ -2,23 +2,23 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-10, session 79 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-10, session 80 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-14b2b done (D-092): the pops.** Anything that walks onto a laid sheet (a keeper, a
-  friend, you) pops it once (`Wrap.crosses`, Lune-tested); a jump clears it. Keepers hear it as
-  far as an opened door through the new general `Keepers:hear(at, reach, what)` (the horn runs
-  through it too; the pure rule is `Keeper.heardAt`). Every screen plays a measured burst of
-  pops, squashes and dulls the sheet, and jolts you if it's under you (`WrapView`).
-- **Passes checks, untested in Studio:** the MCP couldn't pick the roll up again (it took a
-  padlock, then the saw; the roll's prompt never showed). docs/STUDIO.md has what was tried.
+- **L-14b2c done (D-093), from the owner's test:** the pops were silent on screens because
+  `WrapView` dropped a sheet that reached the screen before its part; laid sheets now stream
+  `Atomic` and `WrapView` waits for a late part. A sheet now pops three times (`Wrap.ready`,
+  `Wrap.worn`, Lune-tested), not twice within 0.8 s, each pop at its own pitch and a step
+  flatter, greyer and clearer, then lies spent and silent.
+- **Verified in Studio** (test hall): lay, four walks across, Output "1 of 3" to "3 of 3" and
+  no fourth; three sounds playing on the screen; the sheet worn to 0.3 high, 0.35 clear, grey.
+  The MCP can pick the roll up now (docs/STUDIO.md). L-14b2d (a baked burst look) waits on OWNER.
 
 ## Next task: L-10 The minimap
 The moment: deep in the building, a chase behind you, a glance at the corner map shows the way
 back to the lobby and the gate; the halls you've walked are drawn, the rest is dark.
-1. Owner test results first, if pasted. Then, small: try once more to verify L-14b2b in Studio
-   (pick up the test hall's roll first, before any other tool; lay it on seed 7's floor 1 and
-   walk over it: one pop, Output's "heard bubble wrap pop"). Don't sink calls into it.
+1. Owner test results first, if pasted (if the spent sheet doesn't read as popped, do L-14b2d
+   first instead: ROADMAP).
 2. Brix first: check `docs/FRAMEWORK.md` for any map or HUD piece; build here only what it
    lacks, and add a neutral line to Brix's ROADMAP if it's reusable.
 3. Pure core with a failing test first (`tests/minimap.spec.luau`): from a `Floor.Floor`, the
@@ -39,7 +39,7 @@ Galaxy A16 size it leaves the buttons and the hall clear; Output clean.
 `Tops.encode` in `src/shared/Tops.luau`; `docs/FRAMEWORK.md`; CODEMAP's client rows.
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-10 (the minimap); D-064, D-068 to D-092. Then L-07 (takes `Keepers.caught`), L-08, L-09.
+1. L-10 (the minimap); D-064, D-068 to D-093. L-14b2d if the owner asks for it. Then L-07 (takes `Keepers.caught`), L-08, L-09.
 2. **Small, own session:** cut `MovingBlanket`, `GlowSticks` from `Deal.Tools`/`Deal.Bag` (D-091);
    it reshuffles every seed, so recheck the units `OWNER.md`'s steps name (seed 7, floors 1, 3).
 3. **Check, small:** caught (moved to the lobby), the MCP's Client couldn't move the character
