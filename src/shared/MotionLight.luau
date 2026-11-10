@@ -93,6 +93,31 @@ end
 -- How far a watch area reaches from its fixture across the floor: its footprint's half-diagonal.
 MotionLight.Reach = math.sqrt((MotionLight.WatchLength / 2) ^ 2 + (MotionLight.WatchWidth / 2) ^ 2)
 
+-- A lit fixture's pool: how far round it, across the floor, a body stands in its light, where the
+-- Mannequin, which moves only in the dark, is caught (L-06b3b). The tube's light reaches about
+-- 12 studs out at a body's height (HallLight's range from its height), and 13 is just past halfway
+-- to the next fixture (24 off), so two lit side by side leave no dark gap, even at the hall's
+-- walls; round, so a junction's arms are lit as players see them. A unit's walls shade its inside
+-- from it (the keeper's brain leaves units out).
+MotionLight.PoolReach = 13
+
+--- Whether a body whose feet are at (x, y, z) stands in the pool of a fixture whose frame stands on
+--- the floor at (fx, fy, fz): within `PoolReach` across the floor, on that floor (from a stud under
+--- it to the deck, `WatchHeight`), whether or not the fixture is lit.
+function MotionLight.inPool(
+	fx: number,
+	fy: number,
+	fz: number,
+	x: number,
+	y: number,
+	z: number
+): boolean
+	local dx, dz, dy = x - fx, z - fz, y - fy
+	return dx * dx + dz * dz <= MotionLight.PoolReach * MotionLight.PoolReach
+		and dy >= -1
+		and dy <= MotionLight.WatchHeight
+end
+
 -- One fixture, as the watch keeps it.
 type Fixture = {
 	area: Area,

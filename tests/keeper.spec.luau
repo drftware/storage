@@ -765,6 +765,308 @@ do
 	ok(noticed > 300 and hunts >= 8, `enough sightings and hunts to check ({noticed}, {hunts})`)
 end
 
+-- Light (L-06b3b): the Mannequin moves only while no light is on it. In a hall under a lit hall
+-- light's pool, or in a torch's beam that reaches it along a line the map clears, it holds where
+-- it stands, facing as it was, keeping its state, its trip and its clocks, however long; the
+-- light gone, it carries on exactly as a twin never lit does. Frozen, it still sees, so it may
+-- start hunting you, but it never turns. A beam lights it exactly within its reach and cone
+-- (Torch's), never through a wall, a shut door or round a corner; a hall light never lights it
+-- inside a unit; asleep it's never lit; and a row that doesn't freeze in light never does.
+local frozenRuns, torchHits, torchMisses, torchWalled = 0, 0, 0, 0
+do
+	local Torch = require("../src/shared/Flashlight/Torch")
+	local lrng = Brix.Random.new({ seed = 77 })
+	local EYE = 4.5 -- a player's eyes over their feet
+	local HALF = Torch.BeamAngle / 2
+	local REACH = Torch.BeamRange
+	local players = Keeper.players()
+	-- one player, feet at `feet`, their torch pointing `aim` (length 1; zero: off)
+	local function holding(id: number, feet: vector, aim: vector)
+		players.ids[1], players.at[1] = id, feet
+		players.eye[1], players.aim[1] = feet + vector.create(0, EYE, 0), aim
+		players.count = 1
+	end
+	local function toward(from: vector, to: vector): vector
+		return vector.normalize(to - from)
+	end
+	-- `v` turned `yaw` degrees about the vertical and tipped `pitch` degrees up
+	local function swung(v: vector, yaw: number, pitch: number): vector
+		local r = math.rad(yaw)
+		local c, s = math.cos(r), math.sin(r)
+		local x, z = v.x * c - v.z * s, v.x * s + v.z * c
+		local across = math.sqrt(x * x + z * z)
+		local up = math.atan2(v.y, across) + math.rad(pitch)
+		return vector.create(x / across * math.cos(up), math.sin(up), z / across * math.cos(up))
+	end
+
+	for seed = 1, 10 do
+		local number = (seed - 1) % 10 + 1
+		local f = Floor.generate(number, Brix.Random.new({ seed = seed + 300 }))
+		local map = KeeperMap.build(f)
+		local where = `floor {number} seed {seed + 300}`
+		local halls: { number } = {}
+		for i = 1, #map.minX do
+			if map.unit[i] == 0 and map.y[i] == 0 then
+				table.insert(halls, i)
+			end
+		end
+		local function hallPoint(): vector
+			local i = halls[lrng:nextInteger(1, #halls)]
+			local x = map.minX[i] + lrng:nextNumber() * (map.maxX[i] - map.minX[i])
+			local z = map.minZ[i] + lrng:nextNumber() * (map.maxZ[i] - map.minZ[i])
+			return vector.create(x, 0, z)
+		end
+		local units: { number } = {}
+		for i, s in f.slots do
+			if s.kind == "Unit" then
+				table.insert(units, i)
+			end
+		end
+
+		-- held and carried on: twins hear the same slam and roam on the same seed; one is held by
+		-- a hall light now and then, however long, and comes out of it exactly where its twin is
+		do
+			local start = hallPoint()
+			local r = math.rad(lrng:nextNumber() * 360)
+			local face = vector.create(math.cos(r), 0, math.sin(r))
+			local a =
+				Keeper.new(MANNEQUIN, map, Brix.Random.new({ seed = seed }), start, face, true)
+			local b =
+				Keeper.new(MANNEQUIN, map, Brix.Random.new({ seed = seed }), start, face, true)
+			local spot, door = Keeper.front(f.slots[units[lrng:nextInteger(1, #units)]])
+			Keeper.hear(a, door, 1e6, spot)
+			Keeper.hear(b, door, 1e6, spot)
+			local held, same, states = true, true, {}
+			for _ = 1, 12 do
+				for _ = 1, lrng:nextInteger(1, 400) do
+					Keeper.step(a, DT, RUN, nil, false)
+					Keeper.step(b, DT, RUN, nil, false)
+					same = same
+						and a.at == b.at
+						and a.facing == b.facing
+						and a.state == b.state
+						and a.travelled == b.travelled
+						and a.lit == 0
+				end
+				local _, unit = KeeperMap.placeAt(map, a.at)
+				if unit == 0 then
+					local at, facing, state, goal = a.at, a.facing, a.state, a.goal
+					local travelled, waited = a.travelled, a.waited
+					states[state] = true
+					for i = 1, lrng:nextInteger(1, 300) do
+						-- now and then a very long step: however long it's held
+						local changed =
+							Keeper.step(a, if i % 97 == 0 then 1000 else DT, RUN, nil, true)
+						held = held
+							and changed
+							and a.lit == Keeper.HallLight
+							and a.at == at
+							and a.facing == facing
+							and a.state == state
+							and a.goal == goal
+							and a.travelled == travelled
+							and a.waited == waited
+					end
+					frozenRuns += 1
+				end
+			end
+			ok(held, `{where}: a hall light holds it where it stands, as it stands, however long`)
+			ok(same, `{where}: the light gone, it carries on exactly as its twin`)
+			ok(b.travelled > 100, `{where}: the twins walked far enough to check ({b.travelled})`)
+		end
+
+		-- a beam lights it exactly within its reach and cone, and only along a line the map clears
+		for _ = 1, 400 do
+			local a = hallPoint()
+			local r = math.rad(lrng:nextNumber() * 360)
+			local feet = a
+				+ vector.create(math.cos(r), 0, math.sin(r)) * (3 + lrng:nextNumber() * 52)
+			local eye = feet + vector.create(0, EYE, 0)
+			local h = MANNEQUIN.height
+			local aim = swung(
+				toward(eye, a + vector.create(0, h * 0.6, 0)),
+				(lrng:nextNumber() * 2 - 1) * 45,
+				(lrng:nextNumber() * 2 - 1) * 25
+			)
+			local k = Keeper.new(MANNEQUIN, map, RANDOM, a, vector.one, true)
+			local facing = k.facing
+			holding(5, feet, aim)
+			Keeper.step(k, DT, RUN, players, false)
+			-- the truth, finely: the least angle off the beam of any point up its middle in reach,
+			-- and how far a point of it is from being caught (degrees, given the points' spacing)
+			local best = math.huge
+			for j = 0, 280 do
+				local p = a + vector.create(0, h * j / 280, 0)
+				local d = vector.magnitude(p - eye)
+				if d <= REACH then
+					local cos = math.clamp(vector.dot(p - eye, aim) / d, -1, 1)
+					best = math.min(best, math.deg(math.acos(cos)))
+				end
+			end
+			local margin = math.deg(math.atan2(h / 14 + 0.05, vector.magnitude(a - feet)))
+			local reachOk = vector.magnitude(a + vector.create(0, EYE, 0) - eye) < REACH - 1
+			if not KeeperMap.clear(map, feet, a) then
+				torchWalled += 1
+				ok(
+					k.lit == 0,
+					`{where}: no torch lights it through a wall, a shut door or a corner`
+				)
+			elseif best <= HALF - margin and reachOk then
+				torchHits += 1
+				ok(k.lit == 5, `{where}: a torch on it, {best} degrees off, lights it`)
+				ok(k.at == a and k.facing == facing, `{where}: held as it was`)
+			elseif best > HALF + 0.5 then
+				torchMisses += 1
+				ok(k.lit == 0, `{where}: a torch {best} degrees off misses it`)
+			end
+			Keeper.release(k)
+		end
+
+		-- a shut door: a player in a unit's doorway shines out at it standing in the hall in front
+		do
+			local slot = units[lrng:nextInteger(1, #units)]
+			local spot, door = Keeper.front(f.slots[slot])
+			local fx, fz = Floor.dir(f.slots[slot].facing)
+			local inside = door - vector.create(fx, 0, fz) * 3
+			local _, unit = KeeperMap.placeAt(map, inside)
+			ok(unit == slot, `{where}: the spot inside is in unit {slot}`)
+			local k = Keeper.new(MANNEQUIN, map, RANDOM, spot, vector.create(fx, 0, fz), true)
+			local eye = inside + vector.create(0, EYE, 0)
+			holding(6, inside, toward(eye, spot + vector.create(0, 3, 0)))
+			KeeperMap.setDoor(map, slot, true)
+			Keeper.step(k, DT, RUN, players, false)
+			ok(k.lit == 6, `{where}: its door up, a torch from inside lights it`)
+			KeeperMap.setDoor(map, slot, false)
+			Keeper.step(k, DT, RUN, players, false)
+			ok(k.lit == 0, `{where}: its door down, the same torch doesn't`)
+			-- a hall light: in the hall it's lit, inside the unit it isn't
+			players.count = 0
+			Keeper.step(k, DT, RUN, players, true)
+			ok(k.lit == Keeper.HallLight, `{where}: in the hall under a lit hall light, it's lit`)
+			local shut =
+				Keeper.new(MANNEQUIN, map, RANDOM, inside, vector.create(-fx, 0, -fz), true)
+			Keeper.step(shut, DT, RUN, players, true)
+			ok(shut.lit == 0, `{where}: inside a unit, a hall light doesn't reach it`)
+			-- asleep, nothing lights it; a row that doesn't freeze in light never is
+			local sleeper = Keeper.new(MANNEQUIN, map, RANDOM, spot, vector.create(fx, 0, fz))
+			holding(6, inside, toward(eye, spot + vector.create(0, 3, 0)))
+			KeeperMap.setDoor(map, slot, true)
+			Keeper.step(sleeper, DT, RUN, players, true)
+			ok(sleeper.lit == 0 and sleeper.state == "Asleep", `{where}: asleep, it's never lit`)
+			local row = table.clone(MANNEQUIN)
+			row.freezesInLight = false
+			local other = Keeper.new(row, map, RANDOM, spot, vector.create(fx, 0, fz), true)
+			Keeper.step(other, DT, RUN, players, true)
+			ok(other.lit == 0, `{where}: a keeper that doesn't freeze in light never is`)
+			KeeperMap.setDoor(map, slot, false)
+			for _, x in { k, shut, sleeper, other } do
+				Keeper.release(x)
+			end
+		end
+	end
+	ok(frozenRuns > 60, `enough freezes to check ({frozenRuns})`)
+	ok(
+		torchHits > 200 and torchMisses > 200 and torchWalled > 200,
+		`enough beams to check ({torchHits} on it, {torchMisses} off it, {torchWalled} walled)`
+	)
+
+	-- frozen, it still sees but never turns: a roamer held in the light notices a player off to
+	-- one side and hunts them where it stands; their torch on it holds it; off, it comes at them
+	do
+		local f = Floor.generate(2, Brix.Random.new({ seed = 8 }))
+		local map = KeeperMap.build(f)
+		local found = false
+		for _ = 1, 2000 do
+			local i = lrng:nextInteger(1, #map.minX)
+			if map.unit[i] == 0 and map.y[i] == 0 then
+				local a = middleOf(map, i)
+				local r = math.rad(lrng:nextNumber() * 360)
+				local ahead = vector.create(math.cos(r), 0, math.sin(r))
+				local b = a
+					+ vector.create(
+							ahead.x * 0.9 - ahead.z * 0.45,
+							0,
+							ahead.z * 0.9 + ahead.x * 0.45
+						)
+						* 20
+				if KeeperMap.clear(map, a, b) and inHall(map, b) then
+					found = true
+					local k = Keeper.new(MANNEQUIN, map, RANDOM, a, ahead, true)
+					k.state = "Roaming"
+					holding(4, b, vector.zero)
+					Keeper.step(k, DT, RUN, players, true)
+					ok(
+						k.state == "Hunting" and k.target == 4,
+						`held, it still sees them ({k.state})`
+					)
+					ok(k.facing == ahead and k.at == a, "but it doesn't turn or move")
+					for _ = 1, 600 do
+						Keeper.step(k, DT, RUN, players, true)
+					end
+					ok(k.at == a and k.facing == ahead, "however long the light holds it")
+					local eye = b + vector.create(0, EYE, 0)
+					holding(4, b, toward(eye, a + vector.create(0, 3, 0)))
+					for _ = 1, 600 do
+						Keeper.step(k, DT, RUN, players, false)
+					end
+					ok(
+						k.lit == 4 and k.at == a,
+						`the hall light gone, their torch holds it ({k.lit})`
+					)
+					holding(4, b, vector.zero)
+					Keeper.step(k, DT, RUN, players, false)
+					ok(
+						k.lit == 0 and flat(k.at, b) < flat(a, b),
+						"their torch off, it comes at them"
+					)
+					for _ = 1, 300 do
+						Keeper.step(k, DT, RUN, players, false)
+					end
+					ok(
+						math.abs(flat(k.at, b) - Keeper.Close) < 0.01,
+						`and reaches arm's length ({flat(k.at, b)})`
+					)
+					Keeper.release(k)
+					break
+				end
+			end
+		end
+		ok(found, "found a hall to hold a hunter in")
+	end
+
+	-- a warm keeper held and let go by lights and torches allocates nothing
+	do
+		local f = Floor.generate(5, Brix.Random.new({ seed = 4 }))
+		local map = KeeperMap.build(f)
+		local k = Keeper.new(
+			MANNEQUIN,
+			map,
+			Brix.Random.new({ seed = 2 }),
+			middleOf(map, KeeperMap.placeAt(map, vector.zero)),
+			vector.one,
+			true
+		)
+		k.state = "Roaming"
+		local function run(steps: number)
+			for i = 1, steps do
+				local feet = k.at + k.facing * 10
+				if i % 60 < 20 then
+					holding(3, feet, toward(feet + vector.create(0, EYE, 0), k.at))
+				else
+					holding(3, feet, vector.zero)
+				end
+				Keeper.step(k, 0.1, RUN, players, i % 50 < 10)
+			end
+		end
+		run(3000)
+		local before = collectgarbage("count")
+		run(3000)
+		local grew = collectgarbage("count") - before
+		ok(grew < 1, `a keeper in and out of the light allocates nothing ({grew} KB)`)
+		Keeper.release(k)
+	end
+end
+
 -- A warm keeper's steps allocate nothing: walking, waiting, roaming (its picks included),
 -- looking for players, hunting, searching and planning again.
 do
@@ -823,5 +1125,5 @@ if failures > 0 then
 	error(`keeper: {failures} of {checks} checks failed`)
 end
 print(
-	`keeper: all {checks} checks passed ({floors} floors, {heardCount} heard, {wallCount} kept out by walls, {walks} walks to look, {noticed} sightings, {hunts} hunts, {searches} searches)`
+	`keeper: all {checks} checks passed ({floors} floors, {heardCount} heard, {wallCount} kept out by walls, {walks} walks to look, {noticed} sightings, {hunts} hunts, {searches} searches, {frozenRuns} freezes, {torchHits} beams on it)`
 )

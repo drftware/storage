@@ -364,6 +364,15 @@ verified: a doc page, Studio, or "untested".
 - **Watching a keeper unseen** (L-06b4a): teleporting the player to the spawn streams floor 1's
   keeper out of the client. Anchor the player's root 12 studs over the keeper's hall from the
   Server instead (above its sight's 8): it stays streamed in and never sees you.
+- **Testing the light freeze from the MCP** (L-06b3b, 2026-11-09): every `execute_luau` that sets
+  the camera Scriptable has it put back to Custom when it returns, and in first person the camera
+  then turns your character back to where it looks; so do the turn in the same Client script,
+  with the camera Scriptable and `Humanoid.AutoRotate` off, and set the root's CFrame to face the
+  keeper. Firing `Remotes.Flashlight` from the Client doesn't hold: the torch's own view sends its
+  state back within 0.4 s (`Torch.Resend`); switch it as a player does, a right-click through
+  `user_mouse_input`. To chase in the dark, take the `TripsLights` tag off your root on the
+  Server: no light wakes for you; put it back to test the hall lights. Fixtures' pivots stand on
+  the floor (y 0 on floor 1), 24 apart down the hall.
 - **Counting what replicates** (L-06b4a): on the Server, `GetAttributeChangedSignal` on a body and
   `GetPropertyChangedSignal("CFrame")` and `("C0")` on its root and joints count every write.
 - **Reading the counts from the MCP** (2026-11-07): in Play, `execute_luau` on the Client can read

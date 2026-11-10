@@ -20,6 +20,11 @@
 	- Each step, every floor with a keeper awake is told where each living player's feet are (in its
 	  own coordinates), and its keepers look: one that sees a player hunts them, and one that loses
 	  them rushes to where it last saw them, looks, and roams again (L-06b3a2).
+	- Light freezes a keeper whose row says so (the Mannequin, L-06b3b): each step it's told
+	  whether a lit hall light's pool is where it stands (`MotionLights.lightOn`), and each living
+	  player's torch, from their eyes along their facing at their aim (`Flashlights`), so it
+	  decides whether a light is on it (`Keeper.step`). Frozen or let go, screens hear of it at
+	  once, not after the records' usual gap, so it stops on the stride it was on.
 	- `awakeOn` tells the deal how many keepers are awake on a floor now, for its cap.
 	- Each keeper's body is an anchored model moved by its HumanoidRootPart, with no Humanoid, its
 	  joints left at rest. The server tells screens how it moves (L-06b4a): a short record on the
@@ -45,12 +50,14 @@ local Brix = require(ReplicatedStorage.Brix)
 local Deals = require(script.Parent.Deals)
 local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
 local Doors = require(script.Parent.Doors)
+local Flashlights = require(script.Parent.Flashlights)
 local Floor = require(ReplicatedStorage.Shared.Floor)
 local Keeper = require(ReplicatedStorage.Shared.Keeper)
 local KeeperMap = require(ReplicatedStorage.Shared.KeeperMap)
 local KeeperMotion = require(ReplicatedStorage.Shared.KeeperMotion)
 local KeeperRows = require(ReplicatedStorage.Shared.KeeperRows)
 local Mannequin = require(ReplicatedStorage.Shared.Mannequin)
+local MotionLights = require(script.Parent.MotionLights)
 
 local TRACE = RunService:IsStudio() -- Output says what each keeper hears and does
 local STATE_ATTRIBUTE = "KeeperState"
@@ -63,6 +70,9 @@ local TAG = "Keeper"
 local REFRESH = 8
 -- Moved less than this in a step (studs), it's standing.
 local STILL = 1e-6
+-- Where a torch's beam leaves from with no head to measure: this far over the root's middle (an
+-- R15 head's middle, about where a first-person camera looks from).
+local EYE_OVER_ROOT = 1.5
 
 -- What each keeper's body is: a copy of its template, its joints at rest for screens to turn.
 type Kit = {
@@ -155,26 +165,64 @@ function Keepers.new(): Keepers
 	local floorOf: { [Model]: OnFloor } = {} -- each unit's floor
 	local connections: { Brix.SignalConnection } = {}
 	local doors: Doors.Doors? = nil
+	local motionLights: MotionLights.MotionLights? = nil
+	local flashlights: Flashlights.Flashlights? = nil
 	local run = 16 -- a player's full run, studs a second (StarterPlayer's, read at start)
 	local everyone: { Player } = {} -- kept as players come and go: no list made each step
 	local joins: { RBXScriptConnection } = {}
 
-	-- Where each living player's feet are on floor `on`, in its own coordinates. Allocates nothing.
+	-- Where each living player's feet are on floor `on`, in its own coordinates, and their torch:
+	-- from their eyes (their head), along the way they face (a first-person camera's), tipped up
+	-- by their aim; a zero aim while it's off. Allocates nothing.
 	local function gather(on: OnFloor)
 		local list = on.players
+		local origin = on.origin
 		local n = 0
 		for _, player in everyone do
 			local character = player.Character
 			local root = character and character:FindFirstChild("HumanoidRootPart")
 			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 			if root and root:IsA("BasePart") and humanoid and humanoid.Health > 0 then
-				local p = on.origin:PointToObjectSpace(root.Position)
+				local p = origin:PointToObjectSpace(root.Position)
 				n += 1
 				list.ids[n] = player.UserId
 				list.at[n] = vector.create(p.X, p.Y - humanoid.HipHeight - root.Size.Y / 2, p.Z)
+				local aim = vector.zero
+				if flashlights and flashlights:isOn(player) then
+					local head = (character :: Model):FindFirstChild("Head")
+					local eye = if head and head:IsA("BasePart")
+						then origin:PointToObjectSpace(head.Position)
+						else p + Vector3.yAxis * EYE_OVER_ROOT
+					list.eye[n] = vector.create(eye.X, eye.Y, eye.Z)
+					local look = root.CFrame.LookVector
+					local across = math.sqrt(look.X * look.X + look.Z * look.Z)
+					if across > 1e-6 then
+						local up = math.rad(flashlights:aim(player))
+						local c = math.cos(up) / across
+						local d = origin:VectorToObjectSpace(
+							Vector3.new(look.X * c, math.sin(up), look.Z * c)
+						)
+						aim = vector.create(d.X, d.Y, d.Z)
+					end
+				end
+				list.aim[n] = aim
 			end
 		end
 		list.count = n
+	end
+
+	-- Output: a light froze a keeper, or let it go.
+	local function traceLight(entry: Entry)
+		local k = entry.keeper
+		if k.lit == 0 then
+			print(`Keepers: the {k.row.name} walks on`)
+		elseif k.lit == Keeper.HallLight then
+			print(`Keepers: the {k.row.name} freezes in the light`)
+		else
+			local player = Players:GetPlayerByUserId(k.lit)
+			local whose = if player then `{player.Name}'s` else `player {k.lit}'s`
+			print(`Keepers: the {k.row.name} freezes in {whose} torch`)
+		end
 	end
 
 	-- Output: a keeper saw someone, or lost the one it hunted (`was`, their id).
@@ -203,19 +251,20 @@ function Keepers.new(): Keepers
 	end
 
 	-- Tells screens how it moves, walking at `speed` (0 standing), if that changed enough for a new
-	-- record (`KeeperMotion.due`); screens carry it on between records. The root follows each
-	-- record, and between them once it has walked `REFRESH` from where it was put.
-	local function publish(entry: Entry, speed: number)
+	-- record (`KeeperMotion.due`), or `now` (a light froze it or let it go); screens carry it on
+	-- between records. The root follows each record, and between them once it has walked `REFRESH`
+	-- from where it was put.
+	local function publish(entry: Entry, speed: number, now: boolean)
 		local k, body = entry.keeper, entry.body
 		local origin = entry.on.origin
 		-- any: as in `putRoot`
 		local p = origin:PointToWorldSpace((k.at :: any) :: Vector3)
 		local d = origin:VectorToWorldSpace((k.facing :: any) :: Vector3)
 		local at, facing = vector.create(p.X, p.Y, p.Z), vector.create(d.X, 0, d.Z)
-		local now = Workspace:GetServerTimeNow()
-		if KeeperMotion.due(body.motion, now, at, facing, speed, k.state) then
+		local t = Workspace:GetServerTimeNow()
+		if now or KeeperMotion.due(body.motion, t, at, facing, speed, k.state) then
 			local left = if speed > 0 then Keeper.left(k) else 0
-			local encoded = KeeperMotion.encode(now, at, facing, speed, left, k.travelled, k.state)
+			local encoded = KeeperMotion.encode(t, at, facing, speed, left, k.travelled, k.state)
 			local motion = body.motion or KeeperMotion.record()
 			-- kept as screens read it, rounding and all, so `due` foresees exactly what they show
 			KeeperMotion.decode(encoded, motion)
@@ -375,7 +424,7 @@ function Keepers.new(): Keepers
 			on = on,
 		}
 		table.insert(on.keepers, entry)
-		publish(entry, 0) -- its first record, before any screen sees it
+		publish(entry, 0, false) -- its first record, before any screen sees it
 		CollectionService:AddTag(body, TAG)
 		return body
 	end
@@ -424,6 +473,9 @@ function Keepers.new(): Keepers
 		-- any: the registry hands back a plain System; Doors fills this slot (init.server)
 		local d = (context.registry:get("doors") :: any) :: Doors.Doors
 		doors = d
+		-- any: as above; the lights fill these slots (init.server)
+		motionLights = (context.registry:get("motionLights") :: any) :: MotionLights.MotionLights?
+		flashlights = (context.registry:get("flashlights") :: any) :: Flashlights.Flashlights?
 		run = StarterPlayer.CharacterWalkSpeed
 		everyone = Players:GetPlayers()
 		table.insert(
@@ -467,13 +519,26 @@ function Keepers.new(): Keepers
 				local was: Keeper.State = k.state
 				local target = k.target
 				local before = k.at
-				if Keeper.step(k, dt, run, list) then
+				local wasLit = k.lit ~= 0
+				local hallLit = false
+				if motionLights and k.row.freezesInLight and Keeper.awake(k) then
+					-- any: as in `putRoot`
+					hallLit =
+						motionLights:lightOn(on.origin:PointToWorldSpace((k.at :: any) :: Vector3))
+				end
+				local changed = Keeper.step(k, dt, run, list, hallLit)
+				local froze = (k.lit ~= 0) ~= wasLit
+				if changed or froze then
 					local dx, dz = k.at.x - before.x, k.at.z - before.z
 					publish(
 						entry,
-						if dx * dx + dz * dz > STILL * STILL then Keeper.pace(k, run) else 0
+						if dx * dx + dz * dz > STILL * STILL then Keeper.pace(k, run) else 0,
+						froze
 					)
 					changedState(entry, was)
+					if TRACE and froze then
+						traceLight(entry)
+					end
 					if TRACE and k.target ~= target then
 						traceSight(entry, target)
 					end

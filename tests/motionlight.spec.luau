@@ -297,6 +297,31 @@ do -- the alarm wakes every powered light at once, and they hold and fall dark a
 	ok(watch:wake(a, 20) and watch:state(a) == "Lit", "and the next alarm wakes it again")
 end
 
+-- A lit fixture's pool (L-06b3b): round it to PoolReach on its floor, and two fixtures 24 apart
+-- leave no dark gap between their pools anywhere across an 8-stud hall, out to its walls.
+do
+	local R = MotionLight.PoolReach
+	ok(MotionLight.inPool(0, 0, 0, 0, 0, 0), "right under it is in its pool")
+	ok(MotionLight.inPool(0, 0, 0, R - 0.01, 0, 0), "just inside its reach")
+	ok(not MotionLight.inPool(0, 0, 0, R + 0.01, 0, 0), "just past its reach")
+	ok(MotionLight.inPool(0, 0, 0, 0, 0, -(R - 0.01)), "its reach is round: across too")
+	ok(MotionLight.inPool(10, 50, -4, 10, 50, 5), "on its own floor wherever it hangs")
+	ok(MotionLight.inPool(0, 0, 0, 1, 7, 1), "a jump is still in it")
+	ok(not MotionLight.inPool(0, 0, 0, 1, HEIGHT + 0.5, 1), "a floor above isn't")
+	ok(not MotionLight.inPool(0, 0, 0, 1, -1.5, 1), "nor one below")
+	local gaps = 0
+	for x = 0, 24, 0.25 do
+		for z = -4, 4, 0.5 do
+			if
+				not (MotionLight.inPool(0, 0, 0, x, 0, z) or MotionLight.inPool(24, 0, 0, x, 0, z))
+			then
+				gaps += 1
+			end
+		end
+	end
+	ok(gaps == 0, `two lit fixtures 24 apart light the hall between them end to end ({gaps} dark)`)
+end
+
 if failures > 0 then
 	error(`{failures} of {checks} motion light checks failed`)
 end

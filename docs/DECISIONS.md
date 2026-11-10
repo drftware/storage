@@ -1541,3 +1541,36 @@ physics, at rates Roblox picks); replicating the root every step and posing only
 the cost, still hops); sending every step for screens to buffer (60 records a second each); a
 delay fitted to each screen's lag (ROADMAP polish); a client copy of each body (two bodies, and a
 torch's ray would hit the wrong one).
+
+## D-076 How light freezes the Mannequin, decided in its brain (L-06b3b, Nov 9)
+The GDD's Mannequin moves only while no light is on it and never trips a light; you stop it by
+keeping a light on it, moving under the hall's lights or pointing your torch at it. It's
+SCP-173's rule in SCP: Containment Breach, and Five Nights at Freddy's animatronics never moving
+while the camera is on them.
+
+As built: a row says whether light freezes it (`freezesInLight`) and how tall it is (`height`).
+Each step the server tells its brain whether a lit hall light's pool is where it stands
+(`MotionLights.lightOn`) and each living player's torch: from their head, along the way their
+root faces (the first-person camera's), tipped by their aim, or none while it's off. The brain
+(`Keeper.step`) decides: a hall light counts only while it stands in a hall, since a unit's walls
+shade its inside from the tube; a torch counts when a point up its middle (seven, feet to head)
+is within the beam's 42 studs and 27 degrees of its middle (Torch's numbers, the cone players
+see) along a line `KeeperMap.clear` passes from the player's feet, so never through a wall, a
+shut door or round a corner. Who lit it is `lit` (Output names them). Lit, it holds where it
+stands, as it stands: no step, no turn, its state, trip and clocks kept, so the light gone, it
+carries on exactly as if no time had passed. It still sees and hears while frozen, so it can
+start hunting you while your light is on it, without turning, and comes the moment the light
+leaves. A freeze or a let-go goes to screens at once, not after the records' 0.08 s gap
+(D-075), so screens stop it on the stride it was on; in Studio it drew 0.07 studs past and eased
+back.
+
+A lit fixture's pool is round, 13 studs across the floor from it: the tube reaches about 12 at a
+body's height and fixtures hang 24 apart, so two lit ones leave no gap, junction arms included.
+The watch box (40 by 10, what the light sees) was not used: a junction's side arms would have
+been lit but not freezing, and players would see it walk in the light.
+
+Not chosen: the light decided on the server outside the brain (Lune couldn't check a whole
+freeze); a beat of hold after the light leaves (the GDD says the moment); a frozen keeper that
+turns to face you (it reads as moving; OWNER.md asks); its clocks running while frozen (a light
+on a waiting one would cut its wait short); the beam's edge measured against its width (a stud
+either side, ignored for now).

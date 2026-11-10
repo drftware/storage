@@ -36,6 +36,16 @@
 	(`KeeperMap.clear`): never through a wall, a shut door or a door's posts, and never up on the
 	units' tops. It hunts the nearest it sees. Asleep, it sees nothing.
 
+	Light freezes it (L-06b3b), if its row says so (`freezesInLight`, the GDD's Mannequin): it moves
+	only while no light is on it, as SCP-173 in SCP: Containment Breach moves only while unseen and
+	Five Nights at Freddy's animatronics never move while the camera is on them. A light is on it
+	while it stands in a hall (not inside a unit, whose walls shade it) under a lit hall light's
+	pool (`step`'s `hallLit`, the server's MotionLights), or while a player's torch beam reaches it
+	(`inTorch`: within the beam's reach and cone, along a line the map clears). Lit, it holds where
+	it stands, as it stands, keeping its state, its trip and its clocks: it doesn't walk or turn,
+	but it still sees and hears, so it may start hunting you while frozen and comes the moment the
+	light leaves it. Screens hold it on the key its stride was on (`Pose.freeze`).
+
 	It hears a door's open, slam or lift from inside (`Keeper.Hears`, the GDD's loud ones) as far as
 	that sound carries for a player (DoorSound's reach, scaled by its row's `hearing`), measured
 	along the map (`KeeperMap`), so no sound reaches it through a wall or a shut door. A newer sound
@@ -48,6 +58,7 @@
 local Floor = require("./Floor")
 local KeeperMap = require("./KeeperMap")
 local KeeperRows = require("./KeeperRows")
+local Torch = require("./Flashlight/Torch")
 
 export type State =
 	"Asleep"
@@ -59,9 +70,16 @@ export type State =
 	| "Searching"
 
 --- The players a keeper may see this step, as parallel arrays `count` long, which the caller fills
---- and reuses: each one's id (any number but 0; the server's are UserIds) and where their feet
---- are, in the floor's coordinates.
-export type Players = { ids: { number }, at: { vector }, count: number }
+--- and reuses: each one's id (any number but 0; the server's are UserIds), where their feet are,
+--- in the floor's coordinates, and their torch: where its beam leaves from (their eyes) and the
+--- way it points (length 1), or a zero `aim` (or none) while it's off.
+export type Players = {
+	ids: { number },
+	at: { vector },
+	eye: { vector },
+	aim: { vector },
+	count: number,
+}
 
 export type Keeper = {
 	row: KeeperRows.Row,
@@ -83,6 +101,7 @@ export type Keeper = {
 	target: number, -- the id of the player it hunts, or 0
 	seen: vector, -- where it last saw them
 	widthCos: number, -- the cosine of its row's sightAngle: how wide it sees
+	lit: number, -- the light on it: 0 none, `Keeper.HallLight`, or the id of whose torch it's in
 }
 
 local Keeper = {}
@@ -101,6 +120,9 @@ Keeper.Front = 3
 -- The catch (L-06b3c) lands within this.
 Keeper.Close = 2.5
 
+-- `lit` while it stands under a lit hall light.
+Keeper.HallLight = -1
+
 -- Feet more than this over or under its own are out of its sight (studs): up on the units' tops
 -- (10 up) or on another floor. A jump (about 7 at the top) isn't.
 local SIGHT_HEIGHT = 8
@@ -108,6 +130,11 @@ local SIGHT_HEIGHT = 8
 local ARRIVE = 1e-3
 -- Moved less than this in a step that had studs to walk: there's no way there now.
 local STUCK = 1e-6
+-- A torch's beam (Torch's): how far it reaches, and the cosine of half its cone, squared.
+local BEAM_REACH = Torch.BeamRange
+local BEAM_COS2 = math.cos(math.rad(Torch.BeamAngle / 2)) ^ 2
+-- Points up its middle, feet to head, that a beam may catch: about a stud apart on the Mannequin.
+local BODY_POINTS = 7
 
 local function flat(v: vector): vector
 	local m = math.sqrt(v.x * v.x + v.z * v.z)
@@ -225,10 +252,10 @@ local function sees(k: Keeper, p: vector, anyWay: boolean): number?
 end
 
 -- It looks for players. Hunting, it keeps its eyes on the one it hunts while it sees them any way
--- it faces. Else it notices the nearest it sees within its view, turns to them and hunts them.
--- Hunting and seeing no one, it has lost them: it rushes to where it last saw them. Returns
--- whether its state or the one it hunts changed.
-local function look(k: Keeper, players: Players): boolean
+-- it faces. Else it notices the nearest it sees within its view, turns to them (unless it's held
+-- `still` by a light) and hunts them. Hunting and seeing no one, it has lost them: it rushes to
+-- where it last saw them. Returns whether its state or the one it hunts changed.
+local function look(k: Keeper, players: Players, still: boolean): boolean
 	local ids, at = players.ids, players.at
 	if k.state == "Hunting" then
 		for i = 1, players.count do
@@ -253,7 +280,7 @@ local function look(k: Keeper, players: Players): boolean
 		local changed = k.state ~= "Hunting" or k.target ~= ids[best]
 		k.state, k.target, k.waited = "Hunting", ids[best], 0
 		k.seen, k.goal = at[best], at[best]
-		if changed then
+		if changed and not still then
 			faceToward(k, k.seen) -- the turn: it has seen you
 		end
 		return changed
@@ -305,6 +332,7 @@ function Keeper.new(
 		target = 0,
 		seen = at,
 		widthCos = math.cos(math.rad(row.sightAngle)),
+		lit = 0,
 	}
 end
 
@@ -351,13 +379,75 @@ function Keeper.lookOut(k: Keeper, slot: Floor.Slot, index: number): boolean
 	return true
 end
 
+--- Whether a torch beam leaving `eye` along `aim` (length 1), held by a player whose feet are at
+--- `from`, is on it: some point up its middle, feet to head, within the beam's reach and cone
+--- (Torch's), along a line the map clears from their feet to its own, so never through a wall, a
+--- shut door or round a corner. Allocates nothing.
+function Keeper.inTorch(k: Keeper, eye: vector, aim: vector, from: vector): boolean
+	local at = k.at
+	local dx, dz = at.x - eye.x, at.z - eye.z
+	local flat2 = dx * dx + dz * dz
+	if flat2 > BEAM_REACH * BEAM_REACH then
+		return false
+	end
+	local h, ax, ay, az = k.row.height, aim.x, aim.y, aim.z
+	for i = 1, BODY_POINTS do
+		local dy = at.y + h * (i - 0.5) / BODY_POINTS - eye.y
+		local d2 = flat2 + dy * dy
+		local along = dx * ax + dy * ay + dz * az
+		if d2 <= BEAM_REACH * BEAM_REACH and along > 0 and along * along >= BEAM_COS2 * d2 then
+			return KeeperMap.clear(k.map, from, at)
+		end
+	end
+	return false
+end
+
+-- The light on it now (`lit`'s values): none unless its row freezes in light and it's awake; a
+-- hall light if `hallLit` (a lit fixture's pool is where it stands) and it's in a hall, not inside
+-- a unit, whose walls shade it; else the first player whose torch is on it.
+local function lightOn(k: Keeper, players: Players?, hallLit: boolean): number
+	if not k.row.freezesInLight or k.state == "Asleep" then
+		return 0
+	end
+	if hallLit then
+		local _, unit = KeeperMap.placeAt(k.map, k.at)
+		if unit == 0 then
+			return Keeper.HallLight
+		end
+	end
+	if players then
+		local aims, eyes = players.aim, players.eye
+		for i = 1, players.count do
+			local aim: vector? = aims[i]
+			if aim and aim ~= vector.zero and Keeper.inTorch(k, eyes[i], aim, players.at[i]) then
+				return players.ids[i]
+			end
+		end
+	end
+	return 0
+end
+
 --- Steps it by `dt` seconds, `run` being a player's full run (studs a second; its row's speeds are
---- shares of it), with `players` those it may see (none: it sees no one). Returns whether anything
---- a body shows changed: where it stands, the way it faces or its state.
-function Keeper.step(k: Keeper, dt: number, run: number, players: Players?): boolean
+--- shares of it), with `players` those it may see (none: it sees no one) and `hallLit` whether a
+--- lit hall light's pool is where it stands (the server's MotionLights). Returns whether anything
+--- a body shows changed: where it stands, the way it faces or its state. Held by a light, it says
+--- so every step; whether it is, and whose light, is `lit`.
+function Keeper.step(
+	k: Keeper,
+	dt: number,
+	run: number,
+	players: Players?,
+	hallLit: boolean?
+): boolean
+	local lit = lightOn(k, players, hallLit == true)
+	k.lit = lit
 	local looked = false
 	if players and k.state ~= "Asleep" then
-		looked = look(k, players)
+		looked = look(k, players, lit ~= 0)
+	end
+	if lit ~= 0 then
+		-- held where it stands, as it stands, its clocks stopped: it only sees
+		return true
 	end
 	local state = k.state
 	if state == "Asleep" or state == "Watching" then
@@ -435,7 +525,7 @@ end
 
 --- A new, empty list of players for `step`, to fill and reuse.
 function Keeper.players(): Players
-	return { ids = {}, at = {}, count = 0 }
+	return { ids = {}, at = {}, eye = {}, aim = {}, count = 0 }
 end
 
 --- Lets go of its route (when its floor or body goes).

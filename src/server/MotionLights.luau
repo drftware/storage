@@ -15,7 +15,9 @@
 	`zone` goes blind, or comes back dark. `flash(floor)` is the elevator's alarm (a wrong code):
 	every powered fixture on that floor comes on at once and holds like any other, lighting up
 	whoever is out in the halls. `woke` fires with each fixture's model as it wakes: the
-	building sees that spot, and later sends a keeper to look (L-04, L-06).
+	building sees that spot, and later sends a keeper to look (L-04, L-06). `lightOn(at)` says
+	whether a lit fixture's pool is on a spot (`MotionLight.inPool`): the Mannequin standing there
+	is frozen in its light (L-06b3b).
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -33,6 +35,8 @@ export type MotionLights = Brix.System & {
 	flash: (self: any, within: Instance) -> (),
 	-- Fires with each fixture's model as it wakes.
 	woke: Brix.Signal<Model>,
+	-- Whether a lit fixture's pool is on `at` (feet on a floor, the world's).
+	lightOn: (self: any, at: Vector3) -> boolean,
 }
 
 local FREE = Brix.Pathing.free()
@@ -51,6 +55,8 @@ function MotionLights.new(): MotionLights
 	local watch = MotionLight.watch()
 	local ids: { [Model]: number } = {}
 	local models: { [number]: Model } = {}
+	local spots: { [number]: Vector3 } = {} -- each fixture's frame on the floor
+	local lit: { [number]: true } = {} -- the fixtures lit now
 	local bodies: { BasePart } = {}
 	local positions: { [BasePart]: vector } = {} -- refilled every tick, never reallocated
 	local cutZones: { [string]: true } = {}
@@ -63,6 +69,11 @@ function MotionLights.new(): MotionLights
 	local function show(id: number, quiet: boolean?)
 		local model = models[id]
 		local state = watch:state(id)
+		if state == "Lit" then
+			lit[id] = true
+		else
+			lit[id] = nil
+		end
 		model:SetAttribute(MotionLight.StateAttribute, state)
 		if state == "Lit" and not quiet then
 			woke:fire(model)
@@ -90,6 +101,7 @@ function MotionLights.new(): MotionLights
 		)
 		ids[inst] = id
 		models[id] = inst
+		spots[id] = frame.Position
 		show(id)
 	end
 
@@ -99,6 +111,8 @@ function MotionLights.new(): MotionLights
 			watch:remove(id)
 			ids[inst :: any] = nil
 			models[id] = nil
+			spots[id] = nil
+			lit[id] = nil
 		end
 	end
 
@@ -178,6 +192,16 @@ function MotionLights.new(): MotionLights
 		end
 		table.clear(connections)
 		woke:disconnectAll()
+	end
+
+	function system.lightOn(_: any, at: Vector3): boolean
+		for id in lit do
+			local spot = spots[id]
+			if MotionLight.inPool(spot.X, spot.Y, spot.Z, at.X, at.Y, at.Z) then
+				return true
+			end
+		end
+		return false
 	end
 
 	function system.flash(_: any, within: Instance)

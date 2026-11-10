@@ -403,10 +403,19 @@ on nothing in Brix.
       Verified in Studio on seed 7, floor 1: opening 126 in front of it, it came out at once;
       chased 90 studs down the hall and round the junction 5 studs behind; lost, it searched,
       stood 5 s and roamed; roaming, it turned on a player 18 studs ahead. Waits on `OWNER.md`.
-    - [ ] **L-06b3b Light freezes it.** Frozen (`Pose.freeze(travelled)`) the moment a hall light
-      or a torch's beam is on it, decided on the server; it walks on once no light is on it. Its
-      walk to look, its roam and its hunt all stop. Screens need nothing new: a freeze reaches them
-      as a stop record, and KeeperView holds a stopped keeper on `Pose.freeze`'s key (D-075).
+    - [x] **L-06b3b Light freezes it.** Done Nov 9 (D-076). A row that freezes in light (the
+      Mannequin) holds where it stands, as it stands, while it's in a hall under a lit hall
+      light's pool (13 studs round the fixture) or a torch's beam reaches it (42 studs, 27 degrees
+      off the beam's middle, along a line the map clears, so never through a wall, a shut door or
+      round a corner). Its walk to look, its roam, its hunt and its clocks all stop; it still sees
+      and hears, so it can start hunting you while frozen, but never turns; it walks on the moment
+      no light is on it, exactly as if no time had passed. A freeze reaches screens at once as a
+      stop record. 51,410 keeper checks (twins, one held, end up identical; beams against a fine
+      reference; a shut door). Verified in Studio on seed 7, floor 1: out of 126 and chasing me in
+      the dark, it froze 13.5 studs off the moment I turned my torch on it, held 3 s (drawn within
+      0.05 studs), and walked on to arm's length when I turned away; running under the lights, it
+      froze in the light 24 studs back, and when I stood still the lights went out after 7.5 s and
+      it closed in. Waits on `OWNER.md` for feel.
     - [ ] **L-06b3c The catch.** A Brix cone reach measured along the map, so never through a
       wall, that fires the event L-07 takes.
     - [ ] **L-06b3d It breaks out** (moved from L-12c, D-071). Trapped means its doorway was open

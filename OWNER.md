@@ -20,6 +20,29 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-06b3b, light freezes the Mannequin (built Nov 9)
+
+Seed 7, floor 1, as for L-06b3a2 below; Unit 126 holds the awake Mannequin.
+- [ ] **The moment, the torch** (Play on a computer, then at phone size). Open 126 and run west,
+  torch off. Round the junction, stop, turn and right-click your torch on it: it stops dead on a
+  stride, reaching for you, and stays however long you hold the beam on it. Look away or switch
+  off: it comes on at once. Output says "freezes in (your) torch" and "walks on". Does the stop
+  read as a freeze, not a stumble? (Verified in Studio Nov 9 with the motion lights blind to me:
+  froze 13.5 studs off the instant the beam found it, held 3 s, walked on to arm's length.)
+- [ ] **The moment, the hall lights.** Let it chase you down a lit hall: it can't follow through
+  the lights you leave behind you ("freezes in the light"). Stand still: the lights time out after
+  7.5 s, and it closes in. Is that the "freeze and it closes in" dread the GDD wants, or does it
+  make it too easy to outrun? (Verified in Studio: froze 24 studs back, closed in 3 s after the
+  lights went out.)
+- [ ] **Decide, defaults in place** (D-076): (1) frozen, it still sees you and can start hunting
+  you, but never turns to face you; (2) frozen, its clocks stop too (a light on one standing at a
+  door makes it stand there longer); (3) a hall light freezes it within 13 studs of a lit fixture,
+  in the hall only, never inside a unit; (4) a torch freezes it within the beam you see (42 studs,
+  54 degrees across), measured on its middle, not its width; (5) a torch shone from up on the
+  units' tops doesn't freeze it (keepers can't see between the tops and the halls yet); (6) it
+  walks on the very instant no light is on it, with no beat of hold. Numbers in
+  `src/shared/MotionLight.luau` (`PoolReach`) and `src/shared/Flashlight/Torch.luau`.
+
 ## Now: judge L-06b4a, keepers move smoothly on every screen (built Nov 9)
 
 Seed 7, floor 1, as for L-06b3a2 below. What a keeper does is unchanged; how its walk reaches each

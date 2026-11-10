@@ -7,6 +7,7 @@
 	(OWNER.md).
 ]]
 local KeeperMap = require("./KeeperMap")
+local MannequinSpecs = require("./Mannequin/Specs")
 
 export type Row = {
 	name: string,
@@ -36,6 +37,11 @@ export type Row = {
 	-- at its top speed; hunting, it keeps them in sight any way it faces, out to `sight`.
 	sight: number,
 	sightAngle: number,
+	-- Whether it moves only while no light is on it (the GDD's Mannequin): a lit hall light over
+	-- it or a torch's beam on it holds it where it stands, mid-stride, until no light is.
+	freezesInLight: boolean,
+	-- How tall it stands (studs): a torch's beam on it anywhere from its feet to its head counts.
+	height: number,
 }
 
 local Mannequin: Row = {
@@ -64,6 +70,10 @@ local Mannequin: Row = {
 	-- a wide look ahead (120 degrees across) but blind behind: you can creep up on one that walks
 	-- away from you, never on one coming toward you
 	sightAngle = 60,
+	-- the GDD's signature scare: keep a light on it, by moving under the hall's lights or by
+	-- pointing your torch at it, and it can't come for you
+	freezesInLight = true,
+	height = MannequinSpecs.Height,
 }
 
 local KeeperRows: { [string]: Row } = {
