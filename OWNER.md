@@ -28,13 +28,8 @@ Verified in Studio (the test hall): lay a sheet, walk across it four times: Outp
 the bubble wrap (1 of 3)", "(2 of 3)", "(3 of 3)" and nothing for the fourth; your screen plays
 each pop and wears the sheet down to flat, grey and partly clear. Your "only heard it once" was a
 bug: your screen ignored a sheet whose part reached it after the sheet itself, so its pops were
-silent there (fixed, D-093). Not yet heard by anyone, and not seen on a phone.
-- [ ] **The moment** (Play on a computer, "Walk a floor", seed 7). Lay a sheet in a hall, walk
-  away, turn and walk back over it: a loud burst of pops at the sheet, it squashes a step flatter
-  and greyer, your view jolts. Walk over it twice more, a second or so apart: each pop sounds a
-  little different (the second higher, the last lower), and after the third it lies spent and
-  silent. With a keeper within 110 studs along the halls, Output adds "Keepers: the Mannequin
-  heard bubble wrap pop" for each pop and it comes to look.
+silent there (fixed, D-093). You played it Nov 10: "better"; the sound reads as rustling, not
+popping, which waits for polish (ROADMAP's polish list). Not yet seen on a phone.
 - [ ] **Does the spent sheet read as popped?** Flat, grey and partly see-through, from standing
   height and on a phone. If not, say so and L-14b2d bakes it its own look (burst bubbles,
   creased film) before more tools.
@@ -44,8 +39,6 @@ silent there (fixed, D-093). Not yet heard by anyone, and not seen on a phone.
 - [ ] **A keeper treads on it:** lay one in a hall between you and the awake Mannequin in Unit
   157 (D-069's recipe in docs/STUDIO.md: open its door and back off down the hall). It should
   pop as the keeper walks through, and you hear it from where you hide.
-- [ ] **By ear:** Pro Sound Effects' bubble wrap take 2, a crackle into one sharp pop (1 s, at
-  volume 2). Loud and sharp enough for an alarm? Heard 110 studs.
 - [ ] **A jump clears it** (a default, D-092): you can hop a sheet, as you can hop a Minecraft
   tripwire; keepers never jump. Say if any step over it should pop it.
 - [ ] **Friends pop it too** (Team Test, two players): your friend walking onto your sheet pops

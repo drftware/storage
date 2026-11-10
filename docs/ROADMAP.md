@@ -822,6 +822,11 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **The unroll's own sound (L-14b2a):** the sheet's unroll plays the pick-up's crinkle slowed
   down; a real unrolling rustle (measured, Pro Sound Effects) would sell the roll going across.
 
+- **A pop that sounds like popping (L-14b2c):** the owner, Nov 10: the pops read as rustling, not
+  popping. Pro Sound Effects' bubble wrap take 2 is a crackle into one sharp pop; find or layer a
+  louder, sharper burst (several bubbles going at once, a hard snap on top) so a sheet underfoot
+  reads as an alarm to players across the hall, not a bag being moved.
+
 - **Bubble wrap you can see through (L-14b1):** the wrap is opaque, painted as clear film over
   grey. A `SurfaceAppearance` with `AlphaMode` Transparency and an alpha in its colour map would
   show the real floor through the sheet's film and the roll's outer layer (one transparent part a
