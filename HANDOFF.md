@@ -2,42 +2,42 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-10, session 74 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-10, session 75 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-12c done (D-085), and with it L-12, the saw and the hole trap.** Played end to end first:
-  three things broke it. Units two along a row passed as neighbours (`CrawlHole.between`), so a
-  wall's Saw and Crawl buttons could go to the wrong unit; each door face must now stand half its
-  unit's width from the wall. A Crawl pressed as you reached the hole was dropped (the server
-  sees a run late); a press now counts where it sees you or 0.4 s on (`Crawling.counts`). Lost in
-  a unit, the keeper stood on the wall's line, half through the hole; now it stops 3.4 studs off
-  a unit's walls facing where it lost you (`KeeperMap.offWalls`). `tests/holetrap.spec.luau`.
-  Verified in Studio on seed 7, floor 1: lured 157's guard from the junction, crawled 155 into
-  153, it stood in 155 staring at the hole, my slam 0.9 s later trapped it. `OWNER.md`. L-14 is
-  now split one tool a session (ROADMAP).
+- **L-14a1 done (D-086): the air horn's art.** L-14a is split into the art (this) and blowing
+  it (L-14a2). The precedent is Lethal Company's air horn, which draws the monsters that hunt by
+  sound. A marine air horn built from code (`art/airhorn/`, 6,000 triangles, one baked set): a
+  white steel can, a black band with an orange sound-wave mark, a black collar, an orange
+  trumpet standing straight up. `Props.Tools.AirHorn` (uploaded, prepared; the place needs
+  saving, `OWNER.md`), a `Catalog` row with its hold, a friend's hold, pick-up and drop sounds,
+  and `Specs/AirHorn` (the bell's `Mouth`). The test hall lays one beside the spawn's bolt
+  cutters. Verified in Studio at desktop size: picked up, held, dropped upright, Output clean.
+  A friend's hold, flipped to 90 after -90 measured facing the body, is unchecked (`OWNER.md`).
 
-## Next task: L-14a The air horn
+## Next task: L-14a2 Blowing the air horn
 The moment: two halls off something is walking; you blow the horn by an open unit and duck away,
-and it comes to the spot (GDD tool table: "Lures keepers to a spot", "Wakes dormant things
-nearby"; with the bubble wrap or a unit's mouth it sets a trap).
+and it comes to the spot. Blow it in the wrong place and a sleeper nearby wakes too (GDD).
 1. Owner test results first, if pasted.
-2. Read the GDD's tool table row and "Other traps" line only (docs tools, never WebFetch). Name
-   its hit-game precedent (Lethal Company's noisemakers drawing the monsters that hunt by sound
-   is the likely one: confirm it); none, and it goes to `OWNER.md` as an untested bet.
-3. Check Brix first (`docs/FRAMEWORK.md`). Too big for one session? Split L-14a into the horn's
-   art and blowing it, as L-12a and L-12b were, before starting.
-4. Art first, the unit's way (`art/unit/README.md`; `art/saw/` is the nearest tool): a script,
-   baked maps, FBX, Specs, look sheets; judged at phone size. A `Tools.Catalog` row.
-5. Blowing it: a pressed use, server-checked (in hand, rate); a blast keepers hear as doors
-   (`Keeper.hear`), so the awake go to look and sleepers in reach wake; feedback on every screen
-   (the blast, your view's kick, a friend's arm). Pure rules Lune-tested, numbers in Config.
-**Acceptance:** checks green; Lune checks on its rules; in Studio on seed 7, floor 1, a roaming
-keeper two halls off walks to where you blew it, a sleeper behind an open door wakes; Output clean.
-**Read first:** ROADMAP L-14; GDD tool table (the air horn row); D-069 (what keepers hear);
-D-051 (the saw: a tool's art and its row); `src/shared/Tools` (the Catalog); `docs/FRAMEWORK.md`.
+2. Check Brix first (`docs/FRAMEWORK.md`: Signal, the presentation kit ENG-15, typed remotes).
+3. The press: one verb, "Blow", with a key and a phone button, only while the horn is in your
+   hand (the torch's input in `FlashlightView` is the pattern). A client→server remote, checked
+   on the server (type, the horn in that player's hand, a cooldown) and rate-limited.
+4. The hearing: a blast at the bell's mouth (`Specs/AirHorn.Mouth`) that keepers hear as they
+   hear doors (`Keeper.hear`, `Keeper.Hears`, D-069), with its own reach in Config, so awake
+   keepers in reach walk to the spot and look; sleepers in reach wake (pick a sensible reach, a
+   bit over two hall pieces, and say so in `OWNER.md`). Pure rules Lune-tested.
+5. Feedback on every screen: the blast (a Pro Sound Effects air horn, measured by
+   AudioAnalyzer, heard far), the horn raised in your view and a small kick (`CameraShake`), a
+   friend's arm raising it (the row's `use` pose). Polish that doesn't fit goes in ROADMAP.
+**Acceptance:** checks green; Lune specs on the blow's rules; in Studio, carrying the test
+hall's horn to floor 1 of seed 7 ("Walk a floor"), a roaming keeper two halls off walks to
+where you blew it, and a sleeper behind an open door in reach wakes; Output clean.
+**Read first:** ROADMAP L-14a2; D-069 (what keepers hear); D-086 (the horn); `src/shared/Keeper.luau`
+(`Keeper.Hears`, `Keeper.hear`); `src/shared/Tools/Catalog.luau` (the AirHorn row); `docs/FRAMEWORK.md`.
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-14a; D-064, D-068 to D-085. Then L-14b to L-14d; L-07 (takes `Keepers.caught`) to L-10.
+1. L-14a2; D-064, D-068 to D-086. Then L-14b to L-14d; L-07 (takes `Keepers.caught`) to L-10.
 2. **Check, small:** caught (moved to the lobby), the MCP's Client couldn't move the character
    54 s on (CFrame or `MoveTo`); a Server pivot could. Can a real player walk after a catch?
    Caught crawling or on the ladder, `CrawlView`/`LadderView` may keep holding PlatformStand.

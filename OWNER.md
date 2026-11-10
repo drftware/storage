@@ -10,7 +10,7 @@ nowhere else.
   the flashlight's, the bolt cutters', the padlock's, the saw's, the crawl hole's, the ladder's and
   the sawn top's templates live only in the open place, at `ReplicatedStorage.Props.Elevator`,
   `Props.Note`, `Props.Flashlight`, `Props.Tools.BoltCutters`, `Props.Tools.Padlock`,
-  `Props.Tools.Saw`, `Props.Tools.Ladder`, `Props.CrawlHole`, `Props.TopHole` and (Nov 10) the
+  `Props.Tools.Saw`, `Props.Tools.Ladder`, (Nov 10) `Props.Tools.AirHorn`, `Props.CrawlHole`, `Props.TopHole` and (Nov 10) the
   dent's `Props.DoorDent_M` and `Props.DoorDent_S` (without the dent's, doors never dent; without the others
   nobody has a torch, no tool lies anywhere and no hole can be cut; Output warns). Unsaved, the next open loses them and every
   floor's lobby has an empty hole in its back wall (Output warns). The units' own templates,
@@ -20,6 +20,23 @@ nowhere else.
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
+
+## Now: judge L-14a1, the air horn's look (built Nov 10)
+
+Picked up, held and dropped in Studio at desktop size; a phone, a friend and your ears are yours.
+- [ ] **On a phone** (Galaxy A16 in the Device Simulator): the test hall's air horn stands beside
+  the bolt cutters by the spawn. Pick it up with your torch on. It
+  should read at once as an air horn, low on your left: the orange trumpet standing up beside the
+  hall, the black band's orange sound-wave mark facing you. Does it cover too much of the hall?
+  (`Catalog.AirHorn.hold`; the saw sits about as big.)
+- [ ] **In a friend's hand** (Team Test, two players): the horn in their left fist, trumpet up, the
+  band's mark out to their side. It was measured facing their body and the turn flipped
+  (`inHand` 0, 90, 0) without a second look: tell me if the mark faces in or the can goes through
+  the arm.
+- [ ] **By ear:** picking it up is a steel slap, dropping it an empty can landing and bouncing.
+  Do they sound like a steel can, or too tinny?
+- [ ] **The look** (a design call): a white can with a black band and an orange trumpet standing
+  straight up, as the common canned horns are (D-086). Keep it, or say what to change.
 
 ## Now: judge L-12c, the hole trap end to end (built Nov 10)
 

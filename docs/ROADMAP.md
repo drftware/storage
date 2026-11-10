@@ -718,7 +718,16 @@ on nothing in Brix.
   with none goes to `OWNER.md` as an untested bet, never built quietly:
   - [ ] **L-14a The air horn.** Lures keepers to a spot, wakes dormant things nearby (GDD). Blown
     where you stand, heard as keepers hear (`Keeper.hear`), so it pulls a keeper to you or sets
-    up a trap (with the bubble wrap, or into a unit's mouth for the hole trap).
+    up a trap (with the bubble wrap, or into a unit's mouth for the hole trap). Split Nov 10:
+    - [x] **L-14a1 The air horn's art.** Done Nov 10 (D-086): a marine air horn (`art/airhorn/`,
+      6,000 triangles, one baked set), a white can with a black band and an orange sound-wave
+      mark, an orange trumpet standing up out of a black collar; `Props.Tools.AirHorn` and a
+      `Catalog` row (held low on your left, trumpet up; in a friend's fist, mark out; a steel
+      slap picking it up, a can's clatter dropping it). Laid in the test hall by the spawn;
+      picked up, held and dropped in Studio (desktop size; the phone look waits on `OWNER.md`).
+    - [ ] **L-14a2 Blowing it.** A pressed use, server-checked (in hand, a cooldown); a blast
+      keepers hear as they hear doors, so the awake walk to the spot and sleepers in reach wake;
+      the blast, your view's kick and a friend's raised arm. Pure rules Lune-tested.
   - [ ] **L-14b Bubble wrap.** Laid across a hall, it pops when anything crosses, heard
     floor-wide (and on the light board, Phase 2); friends pop it too.
   - [ ] **L-14c The moving blanket.** Thrown over a keeper, it blinds it a few seconds; it has

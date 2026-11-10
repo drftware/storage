@@ -127,6 +127,41 @@ local Catalog: { [string]: Row } = {
 			pitch = 1.12,
 		},
 	},
+	-- Lures keepers to a spot; wakes dormant things nearby (GDD). A marine air horn: a white steel
+	-- can with a black band, an orange trumpet standing up out of its collar (art/airhorn).
+	AirHorn = {
+		name = "Air horn",
+		template = "AirHorn",
+		-- low on your left by the can, the trumpet standing up beside the hall and turned so the
+		-- can's sound-wave mark faces you
+		hold = { -1.2, -1.15, -2.2 },
+		holdTurn = { 205, 4, 10 },
+		-- nothing to do at a door with it (L-14a2 raises it to blow): the same as its hold
+		use = { -1.2, -1.15, -2.2 },
+		useTurn = { 205, 4, 10 },
+		-- the can in the fist, the trumpet up, its mark out to your side
+		inHand = { 0, 90, 0 },
+		-- its mark to the front, a little from above to show the bell, the trumpet to the upper right
+		icon = { 0.62, 12, 180, -30 },
+		-- Pro Sound Effects' "Metal Hit Steel Plate Hit Slapped 2": its one slap (0 to 0.15 s),
+		-- played a little faster, a hand closing on a steel can
+		pickUp = {
+			id = "rbxassetid://9116657808",
+			from = 0,
+			length = 0.3,
+			volume = 0.7,
+			pitch = 1.25,
+		},
+		-- Pro Sound Effects' "Metal Container 2": from just before its hard hit (0.40 s), an empty
+		-- can landing on concrete and bouncing, played faster for a smaller can
+		drop = {
+			id = "rbxassetid://9116546109",
+			from = 0.36,
+			length = 0.9,
+			volume = 0.75,
+			pitch = 1.3,
+		},
+	},
 	-- Gets you onto open unit tops to run across them (GDD). An aluminium extension ladder, carried
 	-- collapsed; leaned on a unit's front its fly runs out past the steel top (art/ladder, L-13b2).
 	Ladder = {

@@ -33,6 +33,9 @@
 #   scripts/art.sh saw                  the saw: its bake, FBX, Specs module, look sheets (the floor
 #                                       and view sheets need the boxes built; about 3 minutes)
 #   scripts/art.sh saw export           just the saw's FBX and Specs module
+#   scripts/art.sh airhorn              the air horn: its bake, FBX, Specs module, look sheets (the
+#                                       floor and view sheets need the boxes built; about 2 minutes)
+#   scripts/art.sh airhorn export       just the air horn's FBX and Specs module
 #   scripts/art.sh ladder               the extension ladder: its bake, FBX (the base and the fly),
 #                                       Specs module, look sheets (the floor and view sheets need the
 #                                       boxes built; about 3 minutes)
@@ -97,6 +100,15 @@ if [ "${1:-}" = "saw" ]; then
 	for st in ${*:-textures export renders}; do
 		echo "== saw $st"
 		blender -b --factory-startup -P art/saw/build.py -- --stage "$st" 2>&1 \
+			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|atlas|DONE" || true
+	done
+	exit 0
+fi
+if [ "${1:-}" = "airhorn" ]; then
+	shift
+	for st in ${*:-textures export renders}; do
+		echo "== airhorn $st"
+		blender -b --factory-startup -P art/airhorn/build.py -- --stage "$st" 2>&1 \
 			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|atlas|DONE" || true
 	done
 	exit 0

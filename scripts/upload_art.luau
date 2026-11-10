@@ -150,6 +150,12 @@ local ART: { Art } = {
 		description = "A cordless reciprocating saw: green body, black rubber boot and grip, a demolition blade",
 	},
 	{
+		key = "AirHorn",
+		path = "art/airhorn/out/AirHorn.fbx",
+		manifest = "art/airhorn/assets.json",
+		description = "A marine air horn: a white steel can with a black band, an orange trumpet in a black collar",
+	},
+	{
 		key = "Ladder",
 		path = "art/ladder/out/Ladder.fbx",
 		manifest = "art/ladder/assets.json",

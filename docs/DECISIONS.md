@@ -1916,3 +1916,25 @@ it delays a crawl that must start at once); trusting a position sent by your scr
 press carries none; the velocity the server already has is enough); pulling every search spot
 off the walls, halls too (it changes where a keeper stops after a corner, for no gain); the
 keeper hearing the crawl (queued with the other quiet sounds, D-059, D-066).
+
+## D-086 The air horn: a white can with an orange trumpet standing up (L-14a1, Nov 10)
+The GDD's air horn ("Lures keepers to a spot", its risk "Wakes dormant things nearby") comes from
+Lethal Company, whose air horn draws the monsters that hunt by sound. It's a marine air horn, the
+kind boats and stadiums use, built from code the saw's way (`art/airhorn/`): one MeshPart, one
+baked 1024² set, 6,000 triangles, no brand. A white steel can with a black band, a black collar,
+and a safety-orange trumpet standing straight up out of it, pressed down to blow, as the common
+canned horns are. White because the torch is yellow, the cutters red and the saw green: the can is
+the one white tool, and the flared trumpet is its outline from a doorway. The band carries an
+orange sound-wave mark (a dot and three arcs), the one picture on it, so it says "loud" at a glance
+without words. Sized about 1.6 times life (0.15 studs to the inch, 1.86 studs tall), more than the
+saw's 1.3 because it's a small thing, less than the padlock's two. It's laid standing on its foot.
+In your view it's held low on your left, the trumpet standing up beside the hall and the mark
+turned to you (`hold` -1.2, -1.15, -2.2, turned 205, 4, 10); a friend sees it in your fist,
+trumpet up, the mark out to your side (`inHand` 0, 90, 0: at -90 the mark faced your body,
+measured in Studio). Picking it up plays Pro Sound Effects' "Metal Hit Steel Plate Hit Slapped 2"
+(its one slap, a little faster); dropping it, "Metal Container 2" from just before its hard hit
+(0.36 s) at 1.3 times speed, an empty can landing and bouncing, both measured by AudioAnalyzer
+since nobody here can listen. Its `use` pose is its hold: L-14a2 raises it to blow. `Specs/AirHorn`
+carries the bell's mouth for the blast. The test hall lays one beside the spawn's bolt cutters.
+Not chosen: a trumpet bent forward (a sport horn's; harder to read standing on a floor, and the
+straight one is the familiar shape); a red can (the cutters are red); a brand or words on the band.

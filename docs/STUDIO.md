@@ -873,6 +873,18 @@ verified: a doc page, Studio, or "untested".
 - **A capture into an open unit timed out twice** (Play, L-06a): a capture with a camera position
   in 101's doorway never answered, while the next, down the hall, did.
 
+- **The command bar keeps the old tool list** (Edit, L-14a1): after Rojo synced a new `Catalog`
+  row, `require(ReplicatedStorage.Shared.Tools)` in an Edit `execute_luau` still returned the old
+  one (a module is cached for the Edit session), so `Tools.prepare` said "no catalog row".
+  Require a clone (`Shared.Tools:Clone()`, parented beside it, destroyed after) to read the new.
+- **The prompt you face wins** (Play, L-14a1): with two tools' Pick up prompts in reach,
+  `InputHoldBegin` on the one not shown does nothing, and E takes the one the camera faces. Point
+  the camera at the tool first (set `CurrentCamera.CFrame` on the Client), then press E.
+- **Move your own character from the Client** (Play, L-14a1, no catch): a Server `PivotTo` moved
+  it for the server only; the Client still stood at the spawn, and the next replication undid
+  it. A Client `PivotTo` stuck. In the test hall, z 5 by x -26 is past the hall's floor: the
+  character fell and respawned.
+
 ### Blender traps met building the elevator (Nov 8, `art/elevator/`)
 - The finds' unwrap (each object in its own square of the atlas) wastes most of it on long
   strips: the elevator's trim filled 31%. `bpy.ops.uv.pack_islands` over all of a set's objects
