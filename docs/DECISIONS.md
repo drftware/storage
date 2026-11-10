@@ -1311,3 +1311,41 @@ Not chosen: a grid of nodes (thousands of points where a few hundred passages sa
 Roblox's PathfindingService (the GDD: per-keeper calls cost more, are less predictable, and the
 director can't read dead ends from them); abilities as separate maps per keeper (one map, one set
 of doors to keep in step, filtered per keeper instead).
+
+## D-069 A keeper goes to look: Granny's walk to a noise, heard along the halls (L-06b2a, Nov 9)
+The first thing a keeper does is go and look at a noise, the way Granny walks to any sound you
+make, stands there looking, then wanders off. You open or slam a door and, two halls off, the
+Mannequin walks the halls to stand square in front of that door, three studs out, facing it, for
+its row's `linger` (5 s); then it walks back to where it woke and goes still, facing as it was. A
+newer sound it hears takes it there instead, as Granny turns to the latest noise, and where it goes
+back to stays where it first woke. A door coming down across its way stops it where it is (it
+waits there, or, with no way home, sleeps where it stands), so no keeper is ever stuck walking.
+
+What it hears: a door's open, slam and lift from inside (`Keeper.Hears`, the GDD's door table's
+loud rows), each as far as DoorSound's reach for that action, the one players hear by, times the
+row's `hearing` (1 for the Mannequin). The distance is the trip along the halls (`length` on the
+keeper's own pathing), so a door 86 studs off in a straight line but 116 round the walls is out of
+an open's 110-stud reach. A peek is quiet on purpose; a close, a rattle at a padlock, a padlock
+going on and the cutters' snap aren't in the GDD's list, so keepers don't hear them for now
+(`OWNER.md` asks). Asleep means still and listening. A keeper inside a unit hears nothing while
+its door is down, its own door rising included (a doorway counts as shut until its door is all the
+way up, D-068), so how a keeper dealt behind a door wakes is L-06b2b's to decide.
+
+How it's built: the brain is the pure `Keeper` (one keeper's states and hearing, Lune-tested) and
+its numbers a row in `KeeperRows`, so a new keeper is a model, its animations and a row (the
+GDD's "one chase engine, keepers as data"). The server's `Keepers` system runs every keeper on
+the Host's clock: a floor joins with `add` as it's laid (its map built once, each door's state
+fed in from the new `Doors.changed` signal through `letsThrough`), `stand` puts a keeper on it,
+and the brain works in the floor's own coordinates. Speeds are shares of a player's full run,
+`StarterPlayer.CharacterWalkSpeed` (there is no sprint): the Mannequin's top speed is 0.9 of it
+(its hunt, L-06b3) and it looks at half that, about 7 studs a second, so a slam two halls off
+gives you about seven seconds to get behind a door. The body is an anchored `Mannequin.clone`
+moved by its root part, streamed whole (Atomic), posed on the server at most 20 times a second
+while it walks and holding the key it stopped on (`Pose.freeze`) when it stops, so it stands
+mid-stride; L-06b4 moves posing to each screen.
+
+Not chosen: going into the unit whose door it heard (that's the hole trap's job, L-12c, and would
+make every open a death; it stands at the door instead); hearing measured in a straight line (it
+would hear through walls, and the map exists so it doesn't); a hearing radius per keeper separate
+from the sound's reach (players and keepers would hear different worlds); PathfindingService
+(D-068).

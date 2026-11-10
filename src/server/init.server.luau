@@ -13,6 +13,7 @@ local DevCorridor = require(script.DevCorridor)
 local Doors = require(script.Doors)
 local Elevators = require(script.Elevators)
 local Flashlights = require(script.Flashlights)
+local Keepers = require(script.Keepers)
 local Ladders = require(script.Ladders)
 local MotionLights = require(script.MotionLights)
 local Saws = require(script.Saws)
@@ -34,6 +35,8 @@ local systems: { Brix.HostEntry } = {
 	-- Crawling through a sawn hole: its Crawl buttons, the checks on a press, the move's start.
 	{ slot = "crawls", system = Crawls.new() },
 	{ slot = "ladders", system = Ladders.new() },
+	-- The keepers' brain: each floor's map kept in step with its doors, what each keeper hears, its walk.
+	{ slot = "keepers", system = Keepers.new() },
 }
 if RunService:IsStudio() then
 	-- A test hall of real units to try the doors in. Never on a live server.

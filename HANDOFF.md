@@ -2,49 +2,47 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-09, session 58 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-09, session 59 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-06b1, the keepers' map, is done** (D-068). `src/shared/KeeperMap.luau` lays a floor as
-  places (hall pieces, junction middles and arms, the lobby, units) joined by passages (joints,
-  doorways shut while their doors are down). Trips are A* over the passages, kept to Brix's
-  Pathing contract (`length`, `advance`, `route`). Pure; nothing on screen yet. Its spec runs
-  62,000 checks over 60 seeded floors; a length across a full floor takes about 10 µs.
-- **Abilities per keeper** (owner, Nov 9): a passage may need "Climb" or "Crawl", and each keeper
-  walks through `KeeperMap.pathing(map, row.abilities)`. The tops (raised places) and ladders or
-  sawn holes (passages) can be added while a floor runs, so a climbing or crawling keeper is a
-  row plus those calls, never a new map. The Mannequin has none.
-- **Defaults the owner accepted:** a doorway lets keepers through only while its door is all
-  the way up (`KeeperMap.letsThrough`); keepers walk the halls' middles; the elevator car is off
-  the map (the GDD: keepers can't ride it).
-- The owner judged L-13b2d3a and L-13b2d3b in Studio ("looking good"); both left `OWNER.md`.
+- **L-06b2a is done** (D-069): open or slam a door and the Mannequin walks the halls to stand
+  square in front of it, facing it, for 5 s, walks back and goes still mid-stride. Verified in
+  Studio on the walked floor: an open 40 studs off and one 79 studs round a corner brought it the
+  shortest way (every sample on the halls); one 86 studs off straight but 116 along the halls
+  left it still. Phone feel and two players are the owner's (`OWNER.md`).
+- **The brain:** pure `src/shared/Keeper.luau` (Asleep, Going, Waiting, Returning; `hear`
+  measures along the map; `step`), rows in `src/shared/KeeperRows.luau` (the Mannequin: top 0.9
+  of your run, looks at half that, hears as far as you, lingers 5 s, no abilities), run by
+  `src/server/Keepers.luau` on the Host's clock: `add` per laid floor (its map kept in step by the
+  new `Doors.changed`), `stand`, `remove`, `hallOff`. `tests/keeper.spec.luau`: 20,000 checks.
+- **Dev:** "Stand one" in the walked floor's lobby stands a Mannequin 60 studs down the halls.
+  Output traces what it hears and does in Studio; each body carries `KeeperState`.
 
-## Next task: L-06b2a It hears a door and walks to it
-The moment: you slam a door and, two halls off, something starts walking toward it.
+## Next task: L-06b2b Dealt keepers join
+The moment: you lift a door and something is standing in there, still, or already turning to you.
 1. Owner test results first, if pasted.
-2. Read the GDD's keepers and tech plan sections (docs tools; the doc says each row has a top
-   speed as a share of player sprint) and how `FloorBuilder.lay` places a floor (its origin).
-3. The keepers' system on the Host's clock (D-064), server side: rows as data (the Mannequin's:
-   speed, `abilities = {}`, how far it hears); states asleep, going to look, waiting there, going
-   back; each keeper keeps one `route` from its pathing and steps it each tick while it moves.
-4. The map per floor: `KeeperMap.build` as `FloorBuilder` lays it; `Doors`' state changes fed
-   through `letsThrough` into `setDoor`; world positions into the floor's own and back.
-5. Hearing: a door's open, slam or lift from inside reaches a keeper within that action's reach
-   from `DoorSound.Actions`, measured along the map (`length`), so no sound goes through walls.
-6. The body: `Mannequin.clone`, anchored, moved by its HumanoidRootPart; posed with
-   `Pose.at(travelled)` on the server for now (L-06b4 moves it to clients). A dev command stands
-   one in a hall of the walked floor.
-7. Lune checks on the pure parts (the states, hearing along the map); in Studio on the walked
-   floor, slam a door two halls off and watch it come, wait, then go back.
-**Acceptance:** checks green; in Studio a slam brings it the shortest way and a shut door stops
-it; numbers the GDD doesn't give (wait, hearing) are Config defaults listed in `OWNER.md`.
-**Read first:** ROADMAP L-06b (the ticket and its parts); DECISIONS D-064 and D-068;
-`src/shared/KeeperMap.luau` (its header and the exported functions); `src/server/Doors.luau`
-(Grep its Signal and states); `src/shared/StorageUnit/DoorSound.luau` (`Actions`); the GDD's
-keepers and tech plan sections (docs tools).
+2. Read the GDD's doors section ("What's behind") and keepers section (docs tools) for how a
+   dealt keeper sleeps and wakes; Granny and the GDD are the precedent, nothing invented.
+3. `Keepers` takes `deals.dealt` (look Deals up in `start`): for an Asleep or Awake contents,
+   stand the row named `contents.keeper` at `place` on that unit's floor (`floorOf`), facing as
+   placed. Asleep: in its shop pose, listening. Awake: up and looking (decide what "looking" is
+   before L-06b3's hunt: likely it goes to look at its own door's front once the door is all the
+   way up, which `Doors.changed` says).
+4. How a dealt keeper wakes: inside a unit it hears nothing while its door is down (D-069).
+   Choose with the GDD (its door all the way up? the noise of the open once it's up?), record it
+   in DECISIONS, and list the default in `OWNER.md`.
+5. `Deal.open`'s `awake` from the brain (a `Keepers` count of keepers awake on that floor) in
+   place of `Deals`' `awakeOn` tally; the cap (`Deal.awakeCap`) is unchanged.
+6. Lune checks on any pure part (a keeper's wake rule in `Keeper`); in Studio on the walked floor
+   (`DevFloorSeed`/`DevFloorNumber`), open units until Output prints a keeper dealt and watch it.
+**Acceptance:** checks green; in Studio a dealt keeper stands at its place as its door lifts,
+asleep ones still until the chosen wake, awake ones look; `Deal.open` sees the brain's count.
+**Read first:** ROADMAP L-06b2b; DECISIONS D-069; `src/server/Keepers.luau` (header, `add`,
+`stand`); `src/server/Deals.luau` (Grep `dealt`, `awakeOn`); `src/shared/Deal.luau` (Grep
+`Situation`, `awakeCap`); the GDD's doors and keepers sections (docs tools).
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-06b2a, L-06b2b, L-06b3, L-06b4 (D-064, D-068); L-12c needs L-06b. Then L-14; L-07 to L-10.
+1. L-06b2b, L-06b3, L-06b4 (D-064, D-068, D-069); L-12c needs L-06b. Then L-14; L-07 to L-10.
 2. **Check, small:** Climb down or Drop down while lying behind a sawn hole (a small unit) slides
    your body across the hole on the way to the edge; refuse it there or go round.
 3. **Look, small:** from a friend's view, dropping in from behind the hole lunges you toward the
@@ -59,9 +57,11 @@ keepers and tech plan sections (docs tools).
 8. **Bug, small:** DoorSounds' first slam of a session lands up to 0.35 s late; swap its
    `preload` for `SoundPrimer.prime` (one call) and check the first slam in Studio.
 9. **Check, small:** G is a door's Slam and a tool's Drop: at an open door, tool in hand, which?
-10. L-06b's keepers hear doors, the keypad, a dropped tool, the saw (`kind`), a crawl, the
+10. L-06b's keepers hear doors (done), the keypad, a dropped tool, the saw (`kind`), a crawl, the
    ladder and a drop in (D-059, D-066), and see a torch. The map already keeps them off the tops.
-11. **Check:** Output's "rbxassetid://203785492 ... Asset type does not match" (six per Play).
+11. **Check:** Output's "rbxassetid://203785492 ... Asset type does not match" (six per Play) and
+   "rbxassetid://139561946838090 ... content representation is being generated" (about thirty
+   on reaching the walked floor); neither id is in our code, templates or the place's services.
 
 ## Kickoff for the next agent
 ```text

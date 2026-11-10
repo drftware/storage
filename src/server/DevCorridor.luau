@@ -37,6 +37,7 @@ local Prompts = require(script.Parent.Prompts)
 local Floor = require(ReplicatedStorage.Shared.Floor)
 local FloorBuilder = require(script.Parent.FloorBuilder)
 local HallLight = require(ReplicatedStorage.Shared.HallLight)
+local Keepers = require(script.Parent.Keepers)
 local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
 local MotionLights = require(script.Parent.MotionLights)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
@@ -128,6 +129,11 @@ local TOOLS = {
 	{ key = "Ladder", at = Vector3.new(-20.5, FLOOR_TOP, 0.6), yaw = 84 },
 }
 local FLOOR_POST = CFrame.new(9, 0, 9) -- "Come back", in the lobby's corner by the elevator
+-- "Stand one" (L-06b2a), across the lobby from "Come back": it stands a Mannequin in the hall this
+-- far from the lobby along the halls, about two hall pieces past it, so a slam at a door by the
+-- lobby is well within its hearing and you watch it come the whole way.
+local MANNEQUIN_POST = CFrame.new(-9, 0, 9)
+local MANNEQUIN_OFF = 60
 
 local DOOR_COLOURS = {
 	UnitKit.Colours.Door.Oxblood,
@@ -454,10 +460,52 @@ local function travelPost(
 	end)
 end
 
+-- A post in the walked floor's lobby that stands a Mannequin in a hall about two halls off,
+-- facing back toward the lobby (L-06b2a): slam a door by the lobby and watch it come, wait, then
+-- go back. Each press stands a fresh one in place of the last.
+local function mannequinPost(model: Model, keepers: Keepers.Keepers)
+	local at = (FLOOR_ORIGIN * MANNEQUIN_POST).Position
+	local post = block(
+		"StandMannequin",
+		Vector3.new(0.4, 4, 0.4),
+		CFrame.new(at.X, FLOOR_TOP + 2, at.Z),
+		CONCRETE,
+		model
+	)
+	local a = Instance.new("Attachment")
+	a.Position = Vector3.new(0, 1, 0)
+	a.Parent = post
+	local p = Prompts.post(a, "Mannequin", "Stand one")
+	local refuse = Prompts.refuser(p, function()
+		return "Mannequin"
+	end)
+	local stood: Model? = nil
+	p.Triggered:Connect(function()
+		if stood then
+			keepers:remove(stood)
+			stood = nil
+		end
+		local spot, facing = keepers:hallOff(model, MANNEQUIN_OFF)
+		stood = if spot and facing then keepers:stand("Mannequin", model, spot, facing) else nil
+		if not stood then
+			refuse("No Mannequin") -- Output says why
+			return
+		end
+		print(
+			`DevCorridor: a Mannequin stands in the hall {MANNEQUIN_OFF} studs from the lobby, facing it; slam a door by the lobby and watch it come`
+		)
+	end)
+end
+
 -- Lays a floor from the data beside the hall (L-01c), prints its map, and opens the way there:
 -- "Walk a floor" by the spawn, "Come back" in its lobby. Workspace's DevFloorSeed and
 -- DevFloorNumber attributes pick which. Yields while it lays.
-local function devFloor(folder: Folder, elevators: Elevators.Elevators, deals: Deals.Deals)
+local function devFloor(
+	folder: Folder,
+	elevators: Elevators.Elevators,
+	deals: Deals.Deals,
+	keepers: Keepers.Keepers
+)
 	local units, missing = FloorBuilder.units()
 	if not units then
 		warn(
@@ -495,6 +543,8 @@ local function devFloor(folder: Folder, elevators: Elevators.Elevators, deals: D
 	)
 	local model, laid = FloorBuilder.lay(floor, FLOOR_ORIGIN, folder, deck)
 	deals:add(deck, laid.slots, model)
+	keepers:add(floor, laid.slots, model, FLOOR_ORIGIN)
+	mannequinPost(model, keepers)
 	local elevator = laid.elevator
 	if elevator then
 		elevators:arm(elevator, deck.code, model)
@@ -691,6 +741,8 @@ function DevCorridor.new(): Brix.System
 			local slots = (context.registry:get("slots") :: any) :: Slots.Slots
 			-- any: as above; Deals fills this slot
 			local deals = (context.registry:get("deals") :: any) :: Deals.Deals
+			-- any: as above; Keepers fills this slot
+			local keepers = (context.registry:get("keepers") :: any) :: Keepers.Keepers
 			local folder = build(lights)
 			built = folder
 			if folder then
@@ -698,7 +750,7 @@ function DevCorridor.new(): Brix.System
 				for _, spot in TOOLS do
 					slots:lay(spot.key, spot.at, spot.yaw)
 				end
-				laying = task.spawn(devFloor, folder, elevators, deals)
+				laying = task.spawn(devFloor, folder, elevators, deals, keepers)
 			end
 		end,
 		stop = function(_: any)

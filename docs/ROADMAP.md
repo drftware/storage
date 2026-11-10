@@ -350,22 +350,29 @@ on nothing in Brix.
     routes arrive, abilities, a raised place, no allocation once warm); a length across a full
     floor takes about 10 µs in Lune.
   - [ ] **L-06b2 The Mannequin goes to look.** Split Nov 9 into two sessions.
-    - [ ] **L-06b2a It hears a door and walks to it.** The moment: you slam a door and, two halls
-      off, something starts walking toward it. The brain as a system on the Host's clock, its
-      first states (asleep, going to look, waiting there, going back) and its first row (speed
-      from the GDD's share of player sprint, `abilities = {}`). Keepers hear a door (the GDD: an
-      open, a slam, a lift from inside) as far as its sound carries: take each action's reach
-      from `DoorSound.Actions`, so what players hear and what keepers hear stay one table. The
-      map: one `KeeperMap.build` per floor laid, each door's state fed through
-      `KeeperMap.letsThrough` into `setDoor` as it changes, and world positions turned into the
-      floor's own (its lobby at the origin) going in and back coming out. Its body is L-06a's:
-      clone it with `Mannequin.clone`, an anchored model moved along its route by its
-      HumanoidRootPart on the server, with no Humanoid, stood in a hall by a dev command until
-      L-06b2b deals them. It may judder on screen until L-06b4 smooths it.
+    - [x] **L-06b2a It hears a door and walks to it.** Done Nov 9 (D-069): you open or slam a
+      door and, two halls off, the Mannequin walks the halls to stand square in front of it,
+      facing it, for five seconds, then walks back and goes still, Granny's way with a noise. The
+      brain is the pure `Keeper` (asleep, going to look, waiting, going back) reading a row from
+      `KeeperRows` (the Mannequin: top speed 0.9 of your run, looking at half that, hears as far
+      as you do, lingers 5 s, no abilities), run by the server's `Keepers` system on the Host's
+      clock with one map per laid floor kept in step with its doors (`Doors.changed`). It hears an
+      open, a slam or a lift from inside within DoorSound's reach measured along the halls, so
+      never through a wall or a shut door; a newer sound takes it there. Its body is an anchored
+      `Mannequin.clone` moved by its root, posed on the server at most 20 times a second, holding
+      its stride when it stops. A "Stand one" post in the walked floor's lobby stands one 60 studs
+      down the halls. `tests/keeper.spec.luau`: 20,000 checks over 30 seeded floors. Verified in
+      Studio: an open 40 studs off and one 79 studs round a corner brought it the shortest way,
+      every sample on the halls; one 86 studs off in a straight line but 116 along the halls left
+      it still.
     - [ ] **L-06b2b Dealt keepers join.** Dealt keepers (L-04e): stand one at `Deals.dealt`'s
       place as its door first lifts (asleep, in its shop pose; awake, up and looking), joining
       the brain at that moment, and hand `Deal.open` the keepers awake now in place of `Deals`'
-      tally of those dealt awake.
+      tally of those dealt awake. `Keepers:stand` and `add` are ready for it (D-069); the real
+      floors' `add` goes where they're laid. A keeper inside a unit hears nothing while its door
+      is down, its own door's open included (the doorway is shut until the door is all the way
+      up), so how a dealt keeper wakes (on its door going all the way up? a peek's light on it?)
+      is this ticket's to decide, as the GDD and Granny say.
   - [ ] **L-06b3 It hunts, freezes and catches.** At no more than player speed (the GDD's speed
     rule): it notices a player by its row's senses, hunts them by the map, and gives up when it
     has lost them. Frozen (`Pose.freeze(travelled)`) the moment a hall light or a torch's beam is
@@ -705,6 +712,12 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
   turning when you look away.
 - **The Mannequin's walk without garbage** (L-06a): `Pose.at` builds a new table each call; reuse
   one when L-06b steps it every frame for several keepers.
+- **Its look at the door** (L-06b2a): while it waits at a door it heard, its head turns slowly
+  along the door and back, within the Neck's limits, as Granny looks round where she heard you;
+  then it turns away. Today it stands square to the door, still.
+- **Its turns** (L-06b2a): it snaps to each new heading at a hall's joint and to face the door
+  when it arrives; a stiff quarter-second turn, or a snap timed to its walk's key, may read better
+  once L-06b4 poses it on each screen.
 
 - **The finds' printed words** (L-04c): the boombox's badge and "STEREO", the tuner's numbers,
   the TV's channel numbers, from a label sheet the boxes' way.

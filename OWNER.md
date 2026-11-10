@@ -20,6 +20,25 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-06b2a, the Mannequin comes to look (built Nov 9)
+
+- [ ] **The moment** (Play on a computer). "Walk a floor", then press **Stand one** on the post in
+  the lobby's corner (across from "Come back"): a Mannequin stands 60 studs down the halls, facing
+  the lobby. Open or slam a door near the lobby and watch it come down the hall, stand square in
+  front of that door facing it for five seconds, walk back and go still mid-stride. Output says
+  each step ("heard Unit 101's door open, 40 studs off along the halls"). Does it feel like
+  something heard you? Does seven seconds or so from a slam two halls off give you time to hide?
+- [ ] **Never through walls.** Open a door the Mannequin could see past a wall but would have to
+  walk round to reach (a hall over): beyond 110 studs along the halls it stays still, even when a
+  straight line is much shorter. A peek never brings it; a slam round a corner brings it the
+  shortest way round. Stand inside a unit with the door pulled down while it waits outside.
+- [ ] **On a phone** (Galaxy A16, Device Emulator): its walk is stepped on the server for now
+  and may judder; say if it reads as a stop-motion walk or as lag (L-06b4 smooths it either way).
+- [ ] **Decide, defaults in place** (D-069): its walk to a sound at about 7 studs a second (half
+  its top speed of 0.9 of your run); it waits 5 s; it hears an open, a slam and a lift from inside
+  as far as you do, but not a close, a rattle at a padlocked door, a padlock going on or the
+  cutters' snap. Should a close or a rattle draw it too? Numbers live in `src/shared/KeeperRows.luau`.
+
 ## Now: judge L-13b2d2c, the hole on the tops (built Nov 9)
 
 - [ ] **Crawl at a hole** (Play on a computer). Saw Unit 101's top as before, then crawl round

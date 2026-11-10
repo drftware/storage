@@ -19,8 +19,9 @@
 	"Need bolt cutters" or "Hold the cutters" for a moment.
 
 	Every door event fires `acted` with how far it's heard (DoorSound), so keepers (L-06) hear
-	exactly what players hear. Only doors in motion are stepped, to refresh their buttons when the
-	motion ends.
+	exactly what players hear, and every change of a door's state fires `changed`, so the keepers'
+	map knows which doorways are open. Only doors in motion are stepped, to refresh their buttons
+	when the motion ends.
 
 	Each button carries its action as the attribute `DoorAction`, so a screen can find Lock and Cut.
 ]]
@@ -48,9 +49,17 @@ export type DoorEvent = {
 	reach: number, -- studs it's heard to (DoorSound): a keeper within it hears the door
 }
 
+export type DoorChange = {
+	unit: Model,
+	state: Door.State, -- what it is now
+}
+
 export type Doors = Brix.System & {
 	-- Fires for every door action that made a sound: each move, each rattle, each padlock on or off.
 	acted: Brix.Signal<DoorEvent>,
+	-- Fires as a door's state changes (a door rising fires again once it's all the way up), so the
+	-- keepers' map lets them through only while it's open.
+	changed: Brix.Signal<DoorChange>,
 	-- Puts a padlock on a shut door (true) or takes it off (false). With a player, as they would by
 	-- hand (their tools, their side); without, as the game (the director, a test). Whether it took.
 	lock: (self: any, unit: Model, locked: boolean, player: Player?) -> boolean,
@@ -159,6 +168,7 @@ function Doors.new(): Doors
 	local lastPress: { [Player]: number } = {}
 	local connections: { RBXScriptConnection } = {}
 	local acted = Brix.Signal.new() :: Brix.Signal<DoorEvent>
+	local changed = Brix.Signal.new() :: Brix.Signal<DoorChange>
 	local slots: Slots.Slots? = nil -- what's in each hand (Slots fills its slot in init.server)
 
 	local function nameOf(entry: Entry): string
@@ -199,6 +209,7 @@ function Doors.new(): Doors
 		for _, p in entry.buttons do
 			p.ObjectText = name
 		end
+		changed:fire({ unit = unit, state = state })
 	end
 
 	local function event(entry: Entry, action: Door.Action, motion: Motion.Kind?, player: Player?)
@@ -357,11 +368,11 @@ function Doors.new(): Doors
 		end
 		make(LIFT_BUTTON, inside, INSIDE_REACH)
 
-		local function changed()
+		local function moved()
 			refresh(entry)
 		end
-		table.insert(entry.conns, unit:GetAttributeChangedSignal(ATTR_MOTION):Connect(changed))
-		table.insert(entry.conns, unit:GetAttributeChangedSignal(ATTR_LOCKED):Connect(changed))
+		table.insert(entry.conns, unit:GetAttributeChangedSignal(ATTR_MOTION):Connect(moved))
+		table.insert(entry.conns, unit:GetAttributeChangedSignal(ATTR_LOCKED):Connect(moved))
 		entries[unit] = entry
 		-- every button starts hidden, which is Slamming's set; so the first refresh shows the
 		-- door's own unless it really is mid-slam, when hidden is right
@@ -386,6 +397,7 @@ function Doors.new(): Doors
 	local system = {
 		name = "Doors",
 		acted = acted,
+		changed = changed,
 	}
 
 	function system.start(_: any, context: Brix.Context)
@@ -433,6 +445,7 @@ function Doors.new(): Doors
 			remove(unit)
 		end
 		acted:disconnectAll()
+		changed:disconnectAll()
 	end
 
 	function system.lock(_: any, unit: Model, locked: boolean, player: Player?): boolean

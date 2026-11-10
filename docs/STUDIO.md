@@ -333,6 +333,13 @@ verified: a doc page, Studio, or "untested".
 
 ## The hall's render cost
 
+- **Testing a server system from the MCP** (L-06b2a, 2026-11-09): the Host's systems live inside
+  `init.server` and can't be reached from `execute_luau`. Drive them as a player would: move the
+  character next to the walked floor from the Server (it's 600 studs off and not streamed at the
+  spawn), then press its dev post or a door's button from the Client (`InputHoldBegin`, above),
+  and read what happened off attributes (`KeeperState`, `DoorMotion`) and Output. A Server
+  `execute_luau` can sample a keeper's pivot every 0.1 s for a path; the pure modules
+  (`Floor.generate` with the dev floor's seed, `KeeperMap`) rebuild the same map to check against.
 - **Reading the counts from the MCP** (2026-11-07): in Play, `execute_luau` on the Client can read
   `Stats.RenderBreakdown`'s items (`Opaque`, `Transparent`, `Particles`, `UI` and the rest), each
   a string like "17936 tris, 11 draws" for the main view, and `Stats.FrameRateManager.Batches`
