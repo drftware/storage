@@ -170,8 +170,8 @@ local Catalog: { [string]: Row } = {
 	},
 	-- Laid across a hall, it pops when anything crosses, heard floor-wide; friends pop it too (GDD):
 	-- an alarm you set behind you, as Minecraft's tripwire is set off by any mob or player. A roll
-	-- of large-bubble wrap on a cardboard core, its loose end taped down (art/bubblewrap). L-14b2
-	-- gives it its press, Lay, and the sheet it unrolls (`Props.BubbleSheet`).
+	-- of large-bubble wrap on a cardboard core, its loose end taped down (art/bubblewrap). Lay
+	-- unrolls the whole roll into one sheet across the hall (`Wrap`, `Props.BubbleSheet`).
 	BubbleWrap = {
 		name = "Bubble wrap",
 		template = "BubbleWrap",
@@ -179,12 +179,12 @@ local Catalog: { [string]: Row } = {
 		-- the taped end turned up to you
 		hold = { -1.3, -1.2, -2.6 },
 		holdTurn = { 240, -8, 0 },
-		-- held out ahead and low, across your view, to unroll onto the floor (a first pose: L-14b2
-		-- sets it against the unrolling)
+		-- laying it (L-14b2a): held out ahead and low, across your view, going down to the floor
 		use = { -0.3, -1.5, -2.4 },
 		useTurn = { 180, -10, 0 },
 		-- by its middle, its axis along your forearm: carried like a rolled mat
 		inHand = { 0, 90, 0 },
+		verb = "Lay",
 		-- an end's wound layers and core to the front, a little from above to show the tape, laid
 		-- corner to corner
 		icon = { 0.62, 20, -35, -25 },

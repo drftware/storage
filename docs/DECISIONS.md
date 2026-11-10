@@ -2018,3 +2018,40 @@ a loose tail flapping off the roll (harder to read on a floor than the tape); re
   nothing on screen says it. The code keeps `Keepers` until a name is picked and reaches the screen.
 - **The air horn's controls pass** (the round Blow button left of a phone's jump button; a left
   click): tweak if playtesters ask.
+
+## D-090 Laying the bubble wrap: one sheet across the hall at your toes (L-14b2a, Nov 10)
+Minecraft's tripwire is strung where you want the alarm; ours is laid where you stand. With the
+roll in your hand you press Lay (the same round button, click or L2 as the horn's Blow: HornView's
+button now takes any tool with a verb, each tool's view answering its own press), and the whole
+roll unrolls into one sheet square across the hall, its near edge just in front of your toes
+along the hall the way you face, on the hall's centreline (`Wrap.place`). Facing a dead end's
+wall it lies under your feet, or backed off the wall. Ahead, not under you, so you watch it go
+down and the natural move is to face the way the threat will come, lay it, turn and run; the
+layer is never standing on it. At a junction's middle it lies across whichever way you face
+more. Only in a hall: the straights and the junctions (`Wrap.halls`), never a unit, the tops
+(your middle over 6 studs up), the lobby (a room, and the car opens off it) or the car; refused,
+your screen says "Lay it in a hall" on Slots' short line. One sheet a roll, the roll spent
+(`Slots:spend`): the GDD gives no count (`OWNER.md`). The server facing is the character's as
+the client holds it, a moment late (D-084); the sheet is square to the hall either way.
+On every screen (`WrapView`) a sheet stamped within the last second unrolls from the layer's
+left to their right in 0.55 s, eased out like a pushed roll: a loose copy of the roll's body
+rolls over the floor along the hall's axis, turning by the distance over its radius and thinning
+to 0.4 of its girth, the sheet's part grown behind it from the left edge (a MeshPart's size
+scales its mesh; at this speed the stretch reads as wrap laid out), then the core sinks and
+fades in 0.18 s. A crinkle plays at the sheet (the pick-up's, slowed to 0.85: a real unroll
+rustle is in ROADMAP's polish list). Your view brings the roll out and down (the row's `use`).
+The test hall gives `Wraps` its own list of halls (DevCorridor's `TEST_HALLS`).
+Not chosen: under your feet (you'd stand on your own trap and not see it go down); a sheet as
+long as you like or two a roll (no precedent or GDD number); a client-side check of where you
+stand (screens don't have the floor's layout; the server's refusal is one short line away).
+
+## D-091 Owner calls, Nov 10: softer bubbles, two tools cut, the minimap's friends and slot
+- **The bubbles are softer** (L-14b1's look): each bubble now goes gently milky from a third of
+  its radius to its edge at half strength, with a soft glint high on one side (`MILK`, `GLINT`
+  in `art/bubblewrap/spec.py`), instead of a white ring. Re-uploaded in place; the new textures
+  have new IDs, so the templates' SurfaceAppearances were swapped in Studio (docs/STUDIO.md).
+- **The moving blanket and glow sticks are cut**, not parked (L-14c, L-14d gone). Bubble wrap
+  is the last of the GDD's tools. The deal still deals them as unbuilt tools until a session
+  takes them out of `Deal.Tools` and its bag (it reshuffles every seed: Queue).
+- **The minimap shows friends as dots**, behind one Config switch so they can come off in a line.
+- **The minimap comes straight after the bubble wrap**, before getting kept (L-07).

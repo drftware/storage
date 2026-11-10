@@ -10,7 +10,8 @@ nowhere else.
   the flashlight's, the bolt cutters', the padlock's, the saw's, the crawl hole's, the ladder's and
   the sawn top's templates live only in the open place, at `ReplicatedStorage.Props.Elevator`,
   `Props.Note`, `Props.Flashlight`, `Props.Tools.BoltCutters`, `Props.Tools.Padlock`,
-  `Props.Tools.Saw`, `Props.Tools.Ladder`, (Nov 10) `Props.Tools.AirHorn`, `Props.Tools.BubbleWrap`, `Props.BubbleSheet`, `Props.CrawlHole`, `Props.TopHole` and (Nov 10) the
+  `Props.Tools.Saw`, `Props.Tools.Ladder`, (Nov 10) `Props.Tools.AirHorn`, `Props.Tools.BubbleWrap`, `Props.BubbleSheet` (both
+  given the softer bubbles' look on Nov 10), `Props.CrawlHole`, `Props.TopHole` and (Nov 10) the
   dent's `Props.DoorDent_M` and `Props.DoorDent_S` (without the dent's, doors never dent; without the others
   nobody has a torch, no tool lies anywhere and no hole can be cut; Output warns). Unsaved, the next open loses them and every
   floor's lobby has an empty hole in its back wall (Output warns). The units' own templates,
@@ -21,22 +22,33 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
-## Now: judge L-14b1, the bubble wrap's look (built Nov 10)
+## Now: judge L-14b2a, laying the bubble wrap (built Nov 10)
 
-Picked up, held and dropped in Studio at desktop size; a phone, a friend and your ears are yours.
-The look sheets are `art/sheets/bubblewrap-*.png`.
-- [ ] **On a phone** (Galaxy A16 in the Device Simulator): the test hall's roll lies on its side
-  beyond the air horn. From standing height it should read at once as a roll of bubble wrap, the
-  brown core at its ends and the tape on top. Pick it up: the slot's picture should read as a
-  roll, not a white blob. Held low on your left, does it cover too much of the hall?
-  (`Catalog.BubbleWrap.hold`)
-- [ ] **The bubbles:** in Roblox they read as white rings more than round domes (each bubble's
-  edge is painted white, its middle clear). Keep that, or should they look rounder and softer?
-- [ ] **A friend holding it** (Team Test, two players): they carry it by its middle along their
-  forearm, like a rolled mat. Tell me if it swallows their fist or points the wrong way
-  (`Catalog.BubbleWrap.inHand`).
-- [ ] **By ear:** Pro Sound Effects' bubble wrap rustles, measured but never heard here: a crinkle
-  as you pick it up, a sharp crackle as it lands. Right, or too busy?
+Verified in Studio: where the sheet lies (the server, as `Wraps` does it) and the unroll sampled
+mid-way on a screen, Output clean. The press itself is untested: this session the MCP couldn't
+pick the roll up (no prompt showed to it). A phone, a friend and your ears are yours.
+- [ ] **The moment** (Play on a computer). In the test hall pick up the roll beyond the horn,
+  face down the hall and click (or L2): the roll comes out and down in your view, and a sheet
+  unrolls across the hall from your left to your right just in front of your toes, a roll
+  rolling over the floor and thinning to its core, then gone, with a crinkle. The slot is empty
+  after: one roll, one sheet. Output says "Wraps: (you) laid bubble wrap across the hall". Try
+  it in a unit, up on the tops and in the lobby: your screen says "Lay it in a hall" and you
+  keep the roll. On the walked floor ("Walk a floor") lay one at a junction. Does the unroll
+  read as wrap going down, or as a stretched picture? Crossing it does nothing yet (L-14b2b).
+- [ ] **The softer bubbles** (your note, Nov 10): each now goes gently milky toward its edge
+  with a soft glint on one side instead of a white ring (sheets `art/sheets/bubblewrap-*.png`).
+  Look at a laid sheet and the roll on a phone (Galaxy A16): rounder and more real, or too faint
+  to read as bubbles from standing height? (`MILK`, `GLINT` in `art/bubblewrap/spec.py`.)
+- [ ] **On a phone:** the Lay button sits left of the jump button, as the horn's Blow. Lay one
+  while walking backwards: is the sheet where you expected it?
+- [ ] **One sheet a roll** (a design call; the GDD gives no count): the roll is used up. Say if
+  a roll should lay two or three shorter sheets.
+- [ ] **By ear:** the unroll plays the pick-up's crinkle slowed down, a stand-in until a real
+  unrolling rustle is measured (ROADMAP's polish list). Fine for now?
+- [ ] **A friend holding the roll** (Team Test, two players; from L-14b1, you'll check later):
+  they carry it by its middle along their forearm, like a rolled mat. Tell me if it swallows
+  their fist or points the wrong way (`Catalog.BubbleWrap.inHand`). And watch them lay one: it
+  unrolls from their left as they face.
 
 ## Now: judge L-14a2, blowing the air horn (built Nov 10)
 
@@ -650,7 +662,8 @@ D-071 and D-072 answer it, and the tickets are in ROADMAP's L-06b3 to L-06b5.
   thing is? The cutters read as a red-handled tool from the doorway, small; finds read plainly.
   Shots `docs/art/L-04e-*.jpg`.
 - [ ] **Decide, defaults in place** (D-050): (1) tools with no art yet (the ladder, bubble
-  wrap, air horn, moving blanket, glow sticks: about 5 in 11 dealt tools; the saw is built now)
+  wrap, air horn, moving blanket, glow sticks: about 5 in 11 dealt tools; the saw is built now;
+  the blanket and glow sticks are cut, Nov 10, and leave the deal soon)
   are dealt but lie nowhere until L-13 and L-14 build them; or should the deal skip unbuilt tools for now? (2) a find
   is a prop you can't carry yet (Phase 2); (3) a short thing (a tool, a find, under 3.5 studs) may
   stand under a note, only a keeper keeps off the whole line to it; (4) tools lie in the bulb's
@@ -915,7 +928,7 @@ D-071 and D-072 answer it, and the tickets are in ROADMAP's L-06b3 to L-06b5.
   in the hall, sees no buttons on that door until it's all the way up, so they can't slam it back
   down mid-lift. Then slam the door on your friend: they can always Lift out.
 
-## Decide: the monsters, and two parked tools (Nov 10)
+## Decide: the monsters (Nov 10)
 
 - [ ] **The monsters, reworked:** the GDD's roster beyond the Mannequin was my early draft, never
   your pick, and much of it starts from what a storage building holds (a rug, a clock, boxes, a
@@ -926,9 +939,6 @@ D-071 and D-072 answer it, and the tickets are in ROADMAP's L-06b3 to L-06b5.
   Company's Coil-head), the Grandfather's rule (DOORS' Rush), the Tenant (Lethal Company's
   Hoarding Bug) and the Haul (DOORS' Seek). Their name too: "keepers" is only our working word in
   the docs and code, and nothing on screen says it. Say when you want a session on this.
-- [ ] **The moving blanket and glow sticks** (parked Nov 10, L-14c and L-14d): you weren't sure we
-  need them. The corner minimap does most of glow sticks' job; the blanket blinds a keeper for a
-  few seconds if it lands. Cut, keep, or decide after playtests?
 
 ## Decide: moving between units, and the map (your note, Nov 7)
 
@@ -943,12 +953,6 @@ D-071 and D-072 answer it, and the tickets are in ROADMAP's L-06b3 to L-06b5.
   next hall goes nowhere. The alternative: rows back to back (deeper units, or halls closer), so a
   hole or a top run crosses to the next hall, a shortcut keepers can't take, like Among Us's
   vents. Bigger change; say if you want it.
-- [ ] **The minimap** (L-10; decided Nov 10: a small corner map, always on, for now): it fills in
-  only the halls you've walked (R.E.P.O.'s map does this), the lobby and elevator always on it,
-  never keepers (that stays the office light board's job). Two calls left. Friends show on it as
-  dots by default, as Lethal Company's ship radar shows the crew, so a team can regroup; say if
-  they should stay off it. And it's queued after getting kept and the next floor (L-07, L-08);
-  its elevator is built, so say if it should come straight after the bubble wrap.
 - [ ] **No Lock button on doors** (default, D-030): buttons show to everyone, so a padlock button
   would sit on every shut door for a tool few carry. The padlock tool will lock a door when it's
   built. Bolt cutters' Cut does show on every padlocked door and says "Need bolt cutters" without

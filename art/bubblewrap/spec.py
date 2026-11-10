@@ -51,6 +51,12 @@ BUBBLE_D = 1.0
 PITCH = 1.18                      # centre to centre along a row
 ROW = PITCH * math.sqrt(3) / 2    # row to row: each row shifted half a bubble
 BUBBLE_H = 0.35                   # how far a bubble stands up off the film
+# Softened Nov 10 (owner: "a little softer to look more realistic"): each bubble goes milky
+# gradually from MILK[0] of its radius to MILK[1], at MILK[2] strength, instead of a white ring;
+# and a soft glint (GLINT: its offset up the film in radii, its size in radii, its strength) high
+# on one side, so it reads as a dome.
+MILK = (0.3, 0.95, 0.5)
+GLINT = (0.32, -0.32, 0.26, 0.55)
 LAYER = 0.42                      # one wound layer's thickness, seen on the roll's ends
 
 # The loose end: where the outer layer stops (degrees up from the front), and the strip of brown

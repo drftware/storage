@@ -9,6 +9,10 @@
 	everyone else. Your screen keeps the server's gap between blows (`Horn.allow`): the button dims
 	until the horn is ready again.
 
+	The button is every tool's with a verb (D-087): a press with another such tool in hand goes to
+	its own view's handler (`presses`: the bubble wrap's Lay, WrapView), which answers on your
+	screen, and is sent to the server the same way.
+
 	Friends': when the server stamps a carried horn as blown (`Horn.BlownAttribute`), the blast
 	plays at its bell, heard as far as keepers hear it (`Horn.Reach`), and the arm holding it rises
 	up and forward through the blast (their left shoulder, posed after their animation, as
@@ -103,7 +107,11 @@ end
 
 local HornView = {}
 
-function HornView.new(hand: ToolView.Hand, kick: (amount: number) -> ()): Brix.System
+function HornView.new(
+	hand: ToolView.Hand,
+	kick: (amount: number) -> (),
+	presses: { [string]: () -> boolean }?
+): Brix.System
 	local connections: { RBXScriptConnection } = {}
 	local horns: { [Model]: RBXScriptConnection } = {} -- carried horns, their blasts watched
 	local arms: { [Model]: Arm } = {} -- friends' characters with an arm raised
@@ -209,13 +217,34 @@ function HornView.new(hand: ToolView.Hand, kick: (amount: number) -> ()): Brix.S
 		showReady(false)
 	end
 
+	-- A press of the button with whatever tool with a verb is in your hand.
+	local function pressed()
+		if holding == Horn.Key then
+			blow()
+			return
+		end
+		local handler = presses and presses[holding]
+		if holding == "" or not handler or not alive() or not handler() then
+			return
+		end
+		local r = useRemote
+		if r then
+			r:FireServer()
+		end
+		local s = press
+		if s then
+			s.Scale = 0.86
+			TweenService:Create(s, PRESS, { Scale = 1 }):Play()
+		end
+	end
+
 	local function onAction(
 		_: string,
 		state: Enum.UserInputState,
 		_input: InputObject
 	): Enum.ContextActionResult
 		if state == Enum.UserInputState.Begin and holding ~= "" then
-			blow()
+			pressed()
 		end
 		return Enum.ContextActionResult.Pass
 	end
@@ -353,7 +382,7 @@ function HornView.new(hand: ToolView.Hand, kick: (amount: number) -> ()): Brix.S
 			g:Destroy()
 			gui = nil
 		end
-		table.insert(connections, b.Activated:Connect(blow))
+		table.insert(connections, b.Activated:Connect(pressed))
 		for i = 1, Carry.Slots do
 			table.insert(
 				connections,

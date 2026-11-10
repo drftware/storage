@@ -44,6 +44,8 @@ local MotionLights = require(script.Parent.MotionLights)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 local Slots = require(script.Parent.Slots)
 local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
+local Wrap = require(ReplicatedStorage.Shared.Tools.Wrap)
+local Wraps = require(script.Parent.Wraps)
 
 -- The layout, in studs. The hall runs along X; doors face each other across Z.
 local HALL_HALF_WIDTH = 4 -- an 8-stud hall: door faces at z = -4 and z = +4
@@ -131,6 +133,17 @@ local TOOLS = {
 	{ key = "Padlock", at = Vector3.new(-28.5, FLOOR_TOP, -2.6), yaw = 200 },
 	{ key = "Saw", at = Vector3.new(-25.5, FLOOR_TOP, -0.2), yaw = 100 },
 	{ key = "Ladder", at = Vector3.new(-20.5, FLOOR_TOP, 0.6), yaw = 84 },
+}
+-- Where bubble wrap may be laid in the test hall (L-14b2a), as `Wrap.halls` gives a floor's: the
+-- hall from its west dead end through the T's stub, the T's middle, its two arms, the corner's
+-- middle and the short east hall.
+local TEST_HALLS: { Wrap.Hall } = {
+	{ x = 4, z = 0, along = 0, half = 40 },
+	{ x = 48, z = 0, along = -1, half = 4 },
+	{ x = 48, z = -20, along = 1, half = 16 },
+	{ x = 48, z = 24, along = 1, half = 20 },
+	{ x = 48, z = 48, along = -1, half = 4 },
+	{ x = 68, z = 48, along = 0, half = 16 },
 }
 local FLOOR_POST = CFrame.new(9, 0, 9) -- "Come back", in the lobby's corner by the elevator
 -- "Stand one" (L-06b2a), across the lobby from "Come back": it stands a Mannequin in the hall this
@@ -508,7 +521,8 @@ local function devFloor(
 	folder: Folder,
 	elevators: Elevators.Elevators,
 	deals: Deals.Deals,
-	keepers: Keepers.Keepers
+	keepers: Keepers.Keepers,
+	wraps: Wraps.Wraps
 )
 	local units, missing = FloorBuilder.units()
 	if not units then
@@ -550,6 +564,7 @@ local function devFloor(
 	-- the keepers' roams draw from a fresh Random from the same seed, not the deal's, so where they
 	-- wander never changes what a unit holds
 	keepers:add(floor, laid.slots, model, FLOOR_ORIGIN, Brix.Random.new({ seed = s }))
+	wraps:add(Wrap.halls(floor), model, FLOOR_ORIGIN)
 	mannequinPost(model, keepers)
 	local elevator = laid.elevator
 	if elevator then
@@ -773,6 +788,8 @@ function DevCorridor.new(): Brix.System
 			local deals = (context.registry:get("deals") :: any) :: Deals.Deals
 			-- any: as above; Keepers fills this slot
 			local keepers = (context.registry:get("keepers") :: any) :: Keepers.Keepers
+			-- any: as above; Wraps fills this slot
+			local wraps = (context.registry:get("wraps") :: any) :: Wraps.Wraps
 			local folder = build(lights)
 			built = folder
 			if folder then
@@ -780,7 +797,8 @@ function DevCorridor.new(): Brix.System
 				for _, spot in TOOLS do
 					slots:lay(spot.key, spot.at, spot.yaw)
 				end
-				laying = task.spawn(devFloor, folder, elevators, deals, keepers)
+				wraps:add(TEST_HALLS, folder, CFrame.identity)
+				laying = task.spawn(devFloor, folder, elevators, deals, keepers, wraps)
 			end
 		end,
 		stop = function(_: any)

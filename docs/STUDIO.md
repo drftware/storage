@@ -1003,3 +1003,18 @@ verified: a doc page, Studio, or "untested".
 - **Which way you face can't be judged with the camera held** (first person, L-13b2d3b): the
   character turns with the camera, so a `BindToRenderStep` look used to press a prompt also
   turns the body. Read a move's facing from its own numbers, not from the root after.
+- **A re-uploaded FBX with changed textures gets new texture IDs** (Studio, Nov 10, the softer
+  bubbles): unlike a mesh-only change (L-04c2, above), `upload_art` updates the model in place
+  but its SurfaceAppearances arrive with new ColorMap, NormalMap and RoughnessMap IDs (the
+  MetalnessMap, unchanged, kept its). Insert the asset, clone its SurfaceAppearance onto each
+  template's MeshPart in place of the old one (keep the old one's AlphaMode), then destroy the
+  insert. Right after the upload Output may say "Asset content representation is being
+  generated" for a minute.
+- **Some runs no prompt shows to the MCP at all** (Play, Nov 10): standing over the test hall's
+  roll with the Scriptable camera pointed at it, `PromptShown` never fired, so neither
+  `InputHoldBegin`/`End` (after a 1.2 s wait) nor `user_keyboard_input` E picked it up. Cause
+  unknown (perhaps the viewport unfocused). Test what follows a pick-up from the Server instead:
+  the shared module required there, a template laid and tagged as the system would.
+- **The server reads a player's facing as their client holds it:** a Server `PivotTo` turning
+  the character is undone within 0.3 s by the client (it owns the character), so a server check
+  of facing after a teleport sees the client's way, not the pivot's.

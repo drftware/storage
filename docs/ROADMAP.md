@@ -715,7 +715,9 @@ on nothing in Brix.
 - [ ] **L-14 The other tools.** The GDD's tool table: each a row on L-11's tools (`Tools.Catalog`),
   its art first, built the unit's way. Split Nov 10, one tool a session (split again into art and
   use if it won't fit, as L-12a and L-12b were); each names its hit-game precedent first, and one
-  with none goes to `OWNER.md` as an untested bet, never built quietly:
+  with none goes to `OWNER.md` as an untested bet, never built quietly. The moving blanket and
+  glow sticks are cut (owner, Nov 10; the minimap does glow sticks' job), so the bubble wrap is
+  the last:
   - [x] **L-14a The air horn.** Lures keepers to a spot, wakes dormant things nearby (GDD). Blown
     where you stand, heard as keepers hear (`Keeper.hear`), so it pulls a keeper to you or sets
     up a trap (with the bubble wrap, or into a unit's mouth for the hole trap). Split Nov 10:
@@ -743,26 +745,31 @@ on nothing in Brix.
       a friend's fist by its middle along the forearm; a crinkle picking it up, a crackle dropping
       it); the sheet is its own template, `Props.BubbleSheet`. Laid in the test hall beyond the
       horn; picked up, held and dropped in Studio at desktop size (the phone look waits on
-      `OWNER.md`). No `verb` yet, so no Lay button does nothing until L-14b2 gives it one.
-    - [ ] **L-14b2 Laying it and the pops.** Lay (the `ToolUse` press, D-087: add `verb = "Lay"`
-      to the row) unrolls `Props.BubbleSheet` across the hall where you stand (`Specs/BubbleWrap`
-      `.Sheet`: 7.35 studs across the 8-stud hall, 1.8 deep), the roll's `use` pose set against
-      the unroll. Anything crossing it pops it, loud, heard by keepers as a door is (`Keepers`
-      gains a general sound alongside `hearHorn`); friends pop it too. The GDD doesn't say how
-      many sheets a roll lays: default one, the roll used up (`OWNER.md` when built).
-  - [ ] **L-14c The moving blanket.** Parked Nov 10: the owner isn't sure we need it, and it may
-    come from reading the storage setting too literally (`OWNER.md`). Thrown over a keeper, it
-    blinds it a few seconds; it has to land.
-  - [ ] **L-14d Glow sticks.** Parked Nov 10 with the blanket (`OWNER.md`); the corner minimap
-    (L-10) does most of their job of keeping you from getting lost. Mark a route with light that
-    never times out and the building can't see; keepers with eyes can.
-- [ ] **L-07 Getting kept and rescued.** Shrink-wrapped, stored in a random unit, banging to ping
-  the team, cut free in a second, padlocked if left too long (GDD "Getting kept"). It takes
-  `Keepers.caught` (L-06b3c, D-077) and replaces its stand-ins: DevCorridor's move to the lobby,
-  and the blackout's hold (`Caught`, `CaughtView`) with the 2-second wrap; keepers leaving a kept
-  player alone (`Caught.Out`) becomes "while kept". What you carried drops where you stood.
-- [ ] **L-08 The ride and the next floor.** The elevator ride and a second floor, so the climb is
-  a loop and not a single room. Brix: its round loop (ENG-13) if it has landed.
+      `OWNER.md`). No `verb` yet, so no Lay button does nothing until L-14b2 gives it one. The
+      owner judged it Nov 10: looks good, the bubbles a little softer: each now goes gently
+      milky toward its edge with a soft glint, no white ring (re-uploaded, the templates' looks
+      swapped in Studio).
+    - [x] **L-14b2a Laying it.** Done Nov 10 (D-090): `verb = "Lay"` on the row; the press goes
+      through HornView's round button (a click, L2, or the phone's button), which now takes
+      any tool with a verb (`presses`). The server (`Wraps`) finds the hall you stand in
+      (`Wrap.place` over `Wrap.halls` of a floor, or the test hall's own list), spends the roll
+      and lays one `Props.BubbleSheet` square across the hall, its near edge at your toes the
+      way you face (under your feet at a dead end), tagged and stamped `Laid`. In a unit, on the
+      tops, in the lobby or the car your screen says "Lay it in a hall". Every screen
+      (`WrapView`) unrolls it from the layer's left in 0.55 s, a roll rolling over the floor
+      and thinning to its core, then sinking away, with a crinkle at the sheet; your view
+      brings the roll out and down. Verified in Studio: placement on the server, the unroll
+      sampled mid-way, Output clean; the press itself untested (the MCP couldn't pick the roll
+      up this session, docs/STUDIO.md).
+    - [ ] **L-14b2b The pops.** A pure step test in `Wrap` (`tests/wrap.spec.luau`): a foot
+      entering a laid sheet, or a step passing clean over it, crosses it; leaving it doesn't
+      (the layer stands clear of it anyway). The server checks players' feet (`Keepers`'
+      gather has them) and keepers' (`k.at`) each step against the sheets near them. A
+      crossing pops it: loud (measure Pro Sound Effects' bubble wrap pops, docs/STUDIO.md),
+      heard by keepers as a door is: `Keepers` gains a general `hear(at, reach)` beside
+      `hearHorn`, which the keypad, a dropped tool and the saw can use later (Queue). The sheet
+      shows it popped (flattened: a second look, or the sheet's colour darkened); default, a
+      popped sheet stays, flat and silent (`OWNER.md`). Friends pop it too.
 - [ ] **L-10 The minimap** (owner, Nov 7: players shouldn't get lost and give up; Nov 10: a small
   corner map, always on, for now, which the owner may later make a map you stop to open, exposed
   while you read it). It fills in only the halls you've walked, as R.E.P.O.'s map fills in rooms
@@ -771,8 +778,16 @@ on nothing in Brix.
   board's (GDD), so working the board is still worth a player. Drawn from the same `Floor` data
   as the building (GDD: one tile graph), the drawing kept apart from its frame so a full map
   behind a button is a small change. Phone first: small enough to leave the buttons and the hall
-  clear, readable at phone size. Friends show as dots by default (`OWNER.md`). Its elevator is
-  built (L-05), so it can move up whenever the owner says.
+  clear, readable at phone size. Friends show as dots (owner, Nov 10, as Lethal Company's ship
+  radar shows the crew), behind one Config switch so they can come off in a line. Moved up to
+  straight after the bubble wrap (owner, Nov 10).
+- [ ] **L-07 Getting kept and rescued.** Shrink-wrapped, stored in a random unit, banging to ping
+  the team, cut free in a second, padlocked if left too long (GDD "Getting kept"). It takes
+  `Keepers.caught` (L-06b3c, D-077) and replaces its stand-ins: DevCorridor's move to the lobby,
+  and the blackout's hold (`Caught`, `CaughtView`) with the 2-second wrap; keepers leaving a kept
+  player alone (`Caught.Out`) becomes "while kept". What you carried drops where you stood.
+- [ ] **L-08 The ride and the next floor.** The elevator ride and a second floor, so the climb is
+  a loop and not a single room. Brix: its round loop (ENG-13) if it has landed.
 - [ ] **L-09 Hone.** Playtest with friends, tune Config, add juice, repeat until Gate 1. May
   repeat as several sessions; each one names what it changed and why. Brix: live config (ENG-11)
   and the presentation kit (ENG-15) as they land.
@@ -791,6 +806,9 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **The unroll's own sound (L-14b2a):** the sheet's unroll plays the pick-up's crinkle slowed
+  down; a real unrolling rustle (measured, Pro Sound Effects) would sell the roll going across.
 
 - **Bubble wrap you can see through (L-14b1):** the wrap is opaque, painted as clear film over
   grey. A `SurfaceAppearance` with `AlphaMode` Transparency and an alpha in its colour map would

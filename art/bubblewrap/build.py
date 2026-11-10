@@ -226,17 +226,23 @@ def bubble_dist(L, a, b):
     return nb.mn(cell(a, b), cell(nb.add(a, p / 2), nb.add(b, h)))
 
 
-def bubbles(C, L, d, keep, bubble, rim):
-    """Each bubble a clear dome standing off the film: a little lighter and glossier than the
-    film in its middle, where you see through it, and white round its edge, where the plastic
-    turns away from you."""
+def bubbles(C, L, a, b, keep, bubble, rim):
+    """Each bubble a clear dome standing off the film, rows along a: a little lighter and glossier
+    than the film in its middle, where you see through it, going gently milky toward its edge,
+    where the plastic turns away from you, with no hard ring; and a soft glint high on one side,
+    the light caught on the dome, so it reads round rather than flat."""
     nb = L.nb
     r = K.BUBBLE_D / 2
+    d = bubble_dist(L, a, b)
     q = nb.div(d, r)
-    inside = nb.mul(nb.ss(d, r + 0.03, r - 0.03), keep)
+    inside = nb.mul(nb.ss(d, r + 0.05, r - 0.05), keep)
     dome = nb.mul(nb.pw(nb.clamp(nb.sub(1.0, nb.mul(q, q))), 0.5), keep)
     C.paint(inside, bubble, 0.06)
-    C.paint(nb.mul(nb.band(d, r * 0.68, r * 0.97, 0.08), keep), rim)
+    edge = nb.mul(nb.ss(d, r * K.MILK[0], r * K.MILK[1]), nb.ss(d, r + 0.06, r * K.MILK[1]))
+    C.paint(nb.mul(edge, nb.mul(keep, K.MILK[2])), rim)
+    gx, gy = K.GLINT[0], K.GLINT[1]
+    g = bubble_dist(L, nb.add(a, gx * r), nb.add(b, gy * r))
+    C.paint(nb.mul(nb.ss(g, r * K.GLINT[2], r * 0.05), nb.mul(keep, K.GLINT[3])), rim, 0.03)
     C.paint(dome, height=1.0)
 
 
@@ -265,7 +271,7 @@ def roll_look(nb):
     wrap = L.k(WRAP)
     xe = K.ROLL_W / 2 - K.CORE_OUT
     keep = nb.mul(wrap, nb.band(xi, -xe + K.EDGE, xe - K.EDGE, 0.05))
-    bubbles(C, L, bubble_dist(L, xi, arc), keep, hexc("#B0C2CB"), hexc("#E9F2F6"))
+    bubbles(C, L, xi, arc, keep, hexc("#B0C2CB"), hexc("#E9F2F6"))
     # the sealed strips at the ends, a doubled film
     C.paint(nb.mul(wrap, nb.inv(nb.band(xi, -xe + K.EDGE, xe - K.EDGE, 0.05))), hexc("#B2C3CB"))
     # the seam: the outer layer's cut edge, bright, and the step down to the layer under it
@@ -324,7 +330,7 @@ def sheet_look(nb):
     hw = K.SHEET_W / 2
     keep = nb.band(yi, -hw + K.EDGE, hw - K.EDGE, 0.05)
     C.paint(nb.inv(keep), hexc("#76848B"))
-    bubbles(C, L, bubble_dist(L, xi, yi), keep, hexc("#7E9099"), hexc("#D6E3E9"))
+    bubbles(C, L, xi, yi, keep, hexc("#7E9099"), hexc("#D6E3E9"))
     crease = nb.band(L.noise(1.5, 3, stretch=(0.25, 1.0, 1.0), detail=2), 0.496, 0.504, 0.008)
     C.paint(nb.mul(crease, nb.mul(nb.ss(L.noise(1.0, 4), 0.45, 0.6), 0.45)), hexc("#8E9BA2"),
             height=0.15)

@@ -30,6 +30,8 @@ local NoteView = require(script.NoteView)
 local SawView = require(script.SawView)
 local ToolView = require(script.ToolView)
 local UnitLights = require(script.UnitLights)
+local Wrap = require(ReplicatedStorage.Shared.Tools.Wrap)
+local WrapView = require(script.WrapView)
 
 local cameraShake, kick = CameraShake.new()
 local freeCursor, needCursor = FreeCursor.new()
@@ -37,6 +39,7 @@ local elevatorView, pressKeypad = ElevatorView.new(kick)
 local keeperSounds, keeperHeard = KeeperSounds.new()
 local flashlightView, myBeam = FlashlightView.new()
 local toolView, myHand = ToolView.new()
+local wrapView, lay = WrapView.new(myHand)
 
 local host = Brix.Host.new({
 	systems = {
@@ -59,7 +62,8 @@ local host = Brix.Host.new({
 		{ slot = "flashlightView", system = flashlightView },
 		{ slot = "toolView", system = toolView },
 		-- after ToolView, so its button lands beside a bar that's there
-		{ slot = "hornView", system = HornView.new(myHand, kick) },
+		{ slot = "hornView", system = HornView.new(myHand, kick, { [Wrap.Key] = lay }) },
+		{ slot = "wrapView", system = wrapView },
 		{ slot = "sawView", system = SawView.new(kick) },
 		{ slot = "crawlView", system = CrawlView.new(kick) },
 		{ slot = "ladderView", system = LadderView.new(kick) },
