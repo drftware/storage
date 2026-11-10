@@ -1709,3 +1709,40 @@ D-072 built as the deck's rule, pure in `Deal`: `Deal.new` marks one note's unit
 Not chosen: the guard as a separate kind in `Deal.Kinds` (it's an awake keeper like any other,
 only certain); the guard's place kept by `Deals` rather than the deck (it's the deal's rule, so
 Lune proves it); a fixed guarded note (the first, say), which a team would learn.
+
+## D-081 The peek's kneel (L-06b5b, Nov 10)
+The GDD's peek crouches; as built it only lifted the door, and a standing eye 4.5 up sees a stud
+or two in under the foot of gap. Rainbow Six Siege's players drop to look under a door; this drop
+is quick and automatic, part of the Peek.
+- **Your view, not your body.** Your screen eases `Humanoid.CameraOffset` down over 0.35 s to an
+  eye 1.0 off the floor, just under the gap's top (1.15). Tried in Studio: at 1.2 to 1.3 only the
+  feet show; at 1.0 the feet and shins, so a guard's stride and a sleeper's square stance read
+  from the doorway (`docs/art/L-06b5b-peek-*.jpg`). Your root stays standing: the server's checks
+  on reach, the keepers' sight of your feet and the door buttons' reach are unchanged.
+- **Your screen first.** The drop starts the moment you tap (`PromptTriggered`), not when the
+  server answers; if the door hasn't started lifting within a second (a refused press) you stand.
+  Your Open, Close or Slam stands you as you press it; any other move of the door stands you when
+  it reaches your screen.
+- **Staying down.** While the door holds its peek and you stay within a stud of where you knelt
+  (1.5 up or down: a jump). A climb, crawl or catch taking your body (PlatformStand) stands you
+  at once. One pure rule (`Kneel.holds`, `doorMoved`) runs on your screen and on the server.
+- **The buttons come down with you,** on your screen only: at the door's standing height (4) they
+  sit above a low gaze and a prompt shows only while its spot is in view. They sit 16 degrees
+  over a level gaze, never lower than 1.8 so they don't hide the gap, and go home as you stand.
+  The server's reach check uses its own copy of the spot, a couple of studs higher: well inside
+  its slack.
+- **A friend sees you kneel.** The server tags your character (`Kneeling`) once it lifts the door
+  for you and keeps the same hold; every screen eases that body into the pose by its joints'
+  `Transform` before physics, from whatever its animation says (or rest, for a joint none
+  drives). Animations would replicate on their own, but need an uploaded asset; this needs none
+  and fits any R15 avatar (the drop and shift are shares of the hip height). The pose: both knees
+  down, chest to the floor, forearms out to the door, head up, tuned in Studio to within a tenth
+  of a stud of the floor. Your own body isn't posed on your screen: you never see it in first
+  person, and a torso leant into the door would push your character off its spot.
+- **The rustle.** Pro Sound Effects' "Cloth Rub Soft Rustle 3", 0.45 s from 0.55 s, as you drop
+  and stand, heard to 24 studs. Keepers don't hear it; the peek's latch is the door's noise.
+
+Not chosen: a prone body flat on the floor (Siege's): the GDD says crouch, and it would lay the
+feet five studs back into the hall; taking over the camera (Scriptable), which
+would fight Roblox's first-person turn; a new remote for the kneel (the server already knows who
+peeked and where they stand).

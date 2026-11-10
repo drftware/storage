@@ -2,54 +2,55 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-10, session 69 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-10, session 70 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-06b5a done (D-080):** every floor has a guarded note. `Deal.new` picks it last from the
-  notes' units (behind an unlocked door where it can), `Deal.odds` deals it a keeper awake in any
-  mood and past the cap, and every other door counts its place until it's dealt, so on floors 1
-  and 2 other keepers deal asleep until the guard is trapped. `tests/guard.spec.luau`, 379,934
-  checks. Verified in Studio on seed 7, floor 1: Unit 157 guarded; 126 and 154 dealt asleep;
-  opening 157 its guard caught me.
-- **Seed 7, floor 1's awake Mannequin is now 157's guard,** not 126's (`docs/STUDIO.md` has 157's
-  spots; OWNER.md warns the owner's older tests).
-- **Found:** the built peek has no crouch. A standing eye sees a stud or two under the gap, so no
-  keeper's feet show, the guard's tell included (`docs/art/L-06b5-guard-standing.jpg` vs
-  `-guard-low.jpg`). The GDD's peek: "Lift the door a foot and crouch". That's the next ticket.
+- **L-06b5b done (D-081):** tap Peek and your view eases down over 0.35 s to an eye 1.0 off the
+  floor, so you see under the door: the guard's legs mid-stride in 157, the sleeper's square feet
+  in 154 (`docs/art/L-06b5b-peek-*.jpg`). The door's buttons come down with you on your screen.
+  A step, a jump, your Open, Close or Slam, or any other move of the door stands you back up.
+  Friends see you kneel, chest to the floor (`-friend-kneels.jpg`): the server tags you
+  (`Kneels`), every screen poses your joints (`KneelView`). A cloth rustle as you go down and up.
+  Pure rule in `Kneel`, 94 Lune checks. Verified in Studio on seed 7, floor 1, one screen; two
+  screens, the phone view and the rustle by ear wait on `OWNER.md`.
+- **L-06b4b split** in ROADMAP into b1 (the sting and the chase bed), b2 (its tell: footfalls and
+  joint knocks) and b3 (the freeze predicted on your screen), a session each.
 
-## Next task: L-06b5b The peek's crouch
-The moment: you tap Peek, drop low as the door lifts a foot, and see a keeper's feet standing
-mid-stride in the bulb's light, or a sleeper's slack ones, before you make a sound.
+## Next task: L-06b4b1 The sting and the chase bed
+The moment: a keeper turns its head your way, and a sting cuts in the instant it sees you, as
+Granny's chase music does; a low bed runs under the chase and fades as it loses you.
 1. Owner test results first, if pasted.
-2. Read how your screen presses a door's buttons (`DoorView`) and how `LadderView` lowers your
-   view (`Humanoid.CameraOffset`); find any crouch pose already built (the drop-in's landing).
-3. Your own Peek drops your view to the gap's height (eye about 1.3 up), eased over about 0.35 s,
-   and holds while the door stays peeked and you stay where you knelt. Moving off, Open, Close,
-   Slam or the door moving stands you back up with the same ease. Feel numbers in shared Config,
-   each with what it does to the player. The rule for when it holds is pure and Lune-tested.
-4. A friend sees you kneel (reuse a built pose if one fits; otherwise the simplest that reads).
-5. Every action answers: the motion is the feedback; a soft cloth sound if one exists. Nothing new
-   on screen. Phone first: the buttons still sit right while low. Too big? Split in ROADMAP first.
-**Acceptance:** checks green; in Studio on seed 7, floor 1, peeking 157 the Client's first-person
-view shows the guard's stride under the door; peeking 154, a sleeper's slack stance; walking off
-stands you up. Judge at phone size (Galaxy A16 view).
-**Read first:** ROADMAP L-06b5b; D-080's last bullet; `src/client/DoorView.luau`;
-`src/client/LadderView.luau` (lines 40 to 60, 410 to 465); `src/shared/StorageUnit/Door.luau`
-(Peeking); `docs/STUDIO.md` "The awake Mannequin moved to Unit 157".
+2. Find how your screen can tell a keeper hunts *you*: the body's `KeeperState` attribute says
+   Hunting, but whom? (`Keeper.luau` keeps `k.target`; `Keepers.luau` sends the catch over
+   `Remotes.Caught`). If no screen knows, have the server tell the hunted player's screen when
+   the hunt starts and ends, validated and cheap (one message per change, not per step).
+3. Pick the sting and the bed from Roblox's sound library (the game uses Pro Sound Effects';
+   `search_asset`, then check each loads and where its sound sits, as `docs/STUDIO.md` "Testing
+   the peek's kneel" did). Only on the hunted player's screen; friends hear the keeper, not your
+   music. Feel numbers (volumes, the bed's fade in and out, a short gap before a second sting)
+   in shared Config with what each does to the player.
+4. The rule for when the sting plays and the bed runs (a fresh sighting, not every glance back
+   after it lost you for a moment) is pure and Lune-tested.
+5. Every action answers; nothing new on screen. Too big? Split in ROADMAP first.
+**Acceptance:** checks green; in Studio on seed 7, floor 1, opening 157 in front of the guard
+plays the sting the moment it turns on you and runs the bed under the chase; losing it fades the
+bed; Output shows no sound errors. Judge by ear what you can; the rest goes to OWNER.md.
+**Read first:** ROADMAP L-06b4b1; D-074; `src/shared/Keeper.luau` (lines 310 to 365);
+`src/server/Keepers.luau` (its catch remote and `KeeperState`); `src/client/CaughtView.luau`
+(a screen answering a keeper); `docs/STUDIO.md` "Testing the catch from the MCP".
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-06b5b (the peek's crouch), L-06b4b (its sounds, the sting on sight, the freeze predicted on
-   your screen); D-064, D-068 to D-080. L-12c needs L-06b3d (done). Then L-14; L-07 (takes
-   `Keepers.caught`) to L-10.
+1. L-06b4b1, L-06b4b2, L-06b4b3; D-064, D-068 to D-081. L-12c needs L-06b3d (done). Then L-14;
+   L-07 (takes `Keepers.caught`) to L-10.
 2. **Check, small:** caught crawling a hole or on the ladder, the stand-in's move may leave
    `CrawlView`/`LadderView` holding PlatformStand; if a keeper can reach you there, end it.
 3. **Checks on the tops, small:** Climb or Drop down lying behind a sawn hole slides you across
    it; a friend's drop-in lunges toward the door and lands 0.2 under the floor; a door's own
    buttons in reach while lying at its front, or the ladder to your shoulder while lying, should
    be refused for crawlers (`Ladders:crawling`). **GDD:** its ladder line says open mesh (D-058/9).
-4. **Bugs, small:** FlashlightView's `motor()` takes only `Motor6D`, but shoulders are
-   `AnimationConstraint`s, so a friend's torch arm never raises; DoorSounds' first slam lands up
-   to 0.35 s late (swap `preload` for `SoundPrimer.prime`), and the trap's first blow may too.
+4. **Bugs, small:** FlashlightView's `motor()` takes only `Motor6D` (shoulders are
+   `AnimationConstraint`s; KneelView's `joint()` takes both), so a friend's torch arm never
+   raises; DoorSounds' first slam lands up to 0.35 s late (`SoundPrimer.prime`), the trap's too.
 5. **Check:** G is a door's Slam and a tool's Drop: at an open door, tool in hand, which?
 6. **Check:** Output's "rbxassetid://203785492 ... Asset type does not match" (six per Play)
    and "rbxassetid://139561946838090 ... content representation is being generated"; neither

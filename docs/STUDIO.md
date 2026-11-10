@@ -349,7 +349,21 @@ verified: a doc page, Studio, or "untested".
   `execute_luau` in Play: `require(ServerScriptService.Server.FloorBuilder).face(unit)`.
   `screen_capture` with `camera_position` in Play draws the Client's view from there: a camera
   at (45.5, 0.9, -632.3) shows the guard's feet under a peek, where a standing eye 4.5 up sees
-  only a stud or two in (the peek's crouch is L-06b5b).
+  only a stud or two in (the peek's kneel, L-06b5b, now drops your eye to 1.0).
+- **Testing the peek's kneel from the MCP** (L-06b5b, 2026-11-10): seed 7, floor 1. From the
+  Server pivot the character to (48.5, 3, -632) looking +X (157, the guard) or (47.5, 3, -624)
+  looking -X (154, a sleeper). In one Client script point the camera at the unit's
+  `DoorButtons`, wait a second, `InputHoldBegin`/`End` on the prompt whose `DoorAction` is
+  `Peek`, wait 1.2 s, then set the camera level along the door's normal; `Humanoid.CameraOffset`
+  reads -3.5 and the camera's Y 1.01. A capture then draws your kneeling view; one came back all
+  black once (a retake was fine). To see a friend's kneel: clone your kneeling character
+  (`Archivable` on, then off): the clone keeps the server's `Kneeling` tag, so KneelView poses
+  it as any friend's; strip its scripts, anchor its root, set every part's
+  `LocalTransparencyModifier` to 0. The halls are too dark to judge a body: raise
+  `Lighting.Ambient` from the Client (the halls' is 0.03, 0.03, 0.035) and set it back by value;
+  a PointLight beside it didn't show, and the value kept in `_G` didn't come back. The rustle's
+  stretch was found by sampling `Sound.PlaybackLoudness` every 0.1 s (small numbers in Studio,
+  but they show where the sound is).
 - **Testing a chase from the MCP** (L-06b3a2, 2026-11-09): on seed 7, floor 1, Unit 126's door is
   at world (90, 0, -700) facing +Z (the floor's origin is (0, 0, -600)). Set the character's root
   at (90, 3, -696) from the Server, then press 126's Open prompt from the Client (camera pointed

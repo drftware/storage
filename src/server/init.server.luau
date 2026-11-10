@@ -14,6 +14,7 @@ local Doors = require(script.Doors)
 local Elevators = require(script.Elevators)
 local Flashlights = require(script.Flashlights)
 local Keepers = require(script.Keepers)
+local Kneels = require(script.Kneels)
 local Ladders = require(script.Ladders)
 local MotionLights = require(script.MotionLights)
 local Saws = require(script.Saws)
@@ -24,6 +25,7 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "motionLights", system = MotionLights.new() },
 	-- Every unit's roll-up door: its buttons, the checks on a press, its events.
 	{ slot = "doors", system = Doors.new() },
+	{ slot = "kneels", system = Kneels.new() },
 	-- Each floor's freight elevator: its keypad, the code check, the alarm, its gate.
 	{ slot = "elevators", system = Elevators.new() },
 	{ slot = "flashlights", system = Flashlights.new() },

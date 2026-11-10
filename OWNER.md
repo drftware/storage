@@ -21,6 +21,26 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-06b5b, the peek's kneel (built Nov 10)
+
+- [ ] **The moment** (Play on a computer, then at phone size, the Galaxy A16 view). "Walk a floor"
+  and peek Unit 157: you drop low in a blink as the door lifts and see the guard's legs mid-stride
+  under it. Peek 154: a sleeper's two feet, square and still. While down, Open, Close and Slam
+  should sit just above the gap, on screen; tap Close and you stand as it shuts. Step off a stud,
+  or jump, and you stand. Judge the eye's height (1.0 off the floor, `Kneel.Eye`), the drop's
+  speed (0.35 s, `Kneel.Down`) and where the buttons sit (`Kneel.ButtonAngle`). Captures show
+  neither the buttons nor sound, so both were checked by numbers only.
+- [ ] **The rustle, by ear:** a soft cloth rub as you drop and as you stand (Pro Sound Effects'
+  "Cloth Rub Soft Rustle 3", `Kneel.Rustle`). Too quiet, too loud, wrong stretch of the clip?
+- [ ] **Two screens** (Test > Clients and Servers, 2 players): one peeks while the other watches
+  from the hall. The kneeler's body should ease onto both knees, chest to the floor, forearms out
+  toward the door, head up, and ease back up when they step off or the door moves. Look for: the
+  body flickering against its standing animation, a head or hands reaching into the door when
+  they knelt pressed to it (in ROADMAP's polish list), odd poses on a non-standard avatar.
+- [ ] **Decide, defaults in place** (D-081): (1) every Peek drops you; there's no separate crouch
+  button; (2) eye 1.0, so shins show as well as feet; (3) a step of more than a stud stands you
+  (no shuffling along while down); (4) keepers don't hear the rustle.
+
 ## Now: judge L-06b5a, the guarded note (built Nov 10)
 
 - [ ] **Heads-up for every test below that opens Unit 126 for an awake Mannequin:** on seed 7,
@@ -30,8 +50,7 @@ nowhere else.
   west, stand beside the door) were for 126. To see 126 awake again, trap 157's guard first.
 - [ ] **The moment** (Play on a computer). "Walk a floor": Output's notes line says
   `Unit157 (1 _ 9 _, guarded)`. Peek 126: Output says it held the Mannequin asleep. Peek 157:
-  standing, you see only the band of light, not its feet; that's the peek's missing crouch,
-  next session's L-06b5b (`docs/art/L-06b5-guard-low.jpg` is what a crouch will show). Open 157
+  you drop low (L-06b5b) and see its feet under the door. Open 157
   in front of it: it comes for you. Then try D-072's plans for getting the note past it: a
   friend's torch freezing it while you grab the note, a slam elsewhere to draw it out, or the
   hole trap; once it's trapped, other doors can deal an awake keeper again.

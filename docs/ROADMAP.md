@@ -382,7 +382,7 @@ on nothing in Brix.
     at no more than player speed (the GDD's speed rule) throughout. Reshaped with the owner Nov 9
     (D-071): as built, a keeper went home after looking, so you could let it walk back in and
     shut it there, and a slam ended an awake one for good. Run order: L-06b3a1, L-06b3a2, L-06b4a,
-    L-06b3b, L-06b3c, L-06b3d, then L-06b5a, L-06b5b and L-06b4b.
+    L-06b3b, L-06b3c, L-06b3d, then L-06b5a, L-06b5b and L-06b4b (b1, b2, b3).
     - [x] **L-06b3a1 Once out, it roams.** Done Nov 9 (D-073). After looking at a noise, or out
       of its own doorway, a keeper roams the halls between noises, as Granny walks the house room
       to room: to a hall piece's middle 40 to 120 studs off along the halls that isn't one of its
@@ -476,14 +476,20 @@ on nothing in Brix.
       part within 0.0001 studs of `Pose.solve`; 50 records and 50 root moves over the chase and no
       joint writes, where the old body sent 60 root moves and up to 300 joint writes a second.
       Waits on `OWNER.md` for a phone and a second screen.
-    - [ ] **L-06b4b Its sounds, and the freeze on your screen.** The sting the moment it sees you,
-      as Granny's chase music cuts in on sight, and a chase bed under the hunt that fades when it
-      loses you (L-06b3a2 ships the hunt with only its motion to answer it). The freeze lands at once on your
-      own screen when your torch finds it, predicted as `HallLights` predicts your own lights, with
-      no slide past the stop. Its tell, heard in the dark while it moves: fibreglass knocking at its
-      joints and a stiff, quick footfall per step, as Five Nights at Freddy's footsteps say an
-      animatronic moved. A knock of its joints, once, as a lifted door first shows one standing in
-      a unit (L-06b2b's moment is silent until then). Judged at phone size.
+    - [ ] **L-06b4b Its sounds, and the freeze on your screen.** Split Nov 10 into three, a
+      session each, in this order:
+      - [ ] **L-06b4b1 The sting and the chase bed.** The sting the moment it sees you, as
+        Granny's chase music cuts in on sight, and a chase bed under the hunt that fades when it
+        loses you (L-06b3a2 ships the hunt with only its motion to answer it). Judged at phone
+        size, by ear.
+      - [ ] **L-06b4b2 Its tell.** Heard in the dark while it moves: fibreglass knocking at its
+        joints and a stiff, quick footfall per step, as Five Nights at Freddy's footsteps say an
+        animatronic moved. A knock of its joints, once, as a lifted door first shows one standing
+        in a unit (L-06b2b's moment is silent until then; with L-06b5b's crouch you now see its
+        feet first).
+      - [ ] **L-06b4b3 The freeze on your screen.** The freeze lands at once on your own screen
+        when your torch finds it, predicted as `HallLights` predicts your own lights, with no
+        slide past the stop.
   - **L-06b5 The guarded note** (D-072; needs L-06b3d). One note on every floor sits in a
     guarded unit that always holds an awake keeper, so no floor is cleared without a chase, as
     DOORS puts the library's code hints in the room Figure walks (the GDD's floor 5 already does
@@ -500,14 +506,22 @@ on nothing in Brix.
       its Mannequin asleep, 157 awake, guarding its note, 154 after it asleep; opening 157 the
       guard saw me 11 studs off and caught me. A peek doesn't show its feet to a standing eye
       (`docs/art/L-06b5-guard-standing.jpg`), only from low (`-guard-low.jpg`): L-06b5b.
-    - [ ] **L-06b5b The peek's crouch.** The GDD's peek is "Lift the door a foot and crouch. You
-      see the floor first: feet, boxes, legs", but the built peek only lifts the door: a standing
-      eye 4.5 up sees through the foot of gap no more than a stud or two in, so a keeper standing
-      6 or more studs back never shows. Your own peek drops your view low to the gap (as Rainbow
-      Six Siege's players drop prone to look under a door), smooth and quick, and stands you
-      back up as you move off, open, close or the door moves; a friend sees you kneel. It answers
-      with its motion (and a cloth rustle if it fits); nothing new on screen. Judge at phone
-      size: the guard's stride and a sleeper's slack stance both read under the door.
+    - [x] **L-06b5b The peek's crouch.** Done Nov 10 (D-081). Tap Peek and your view drops
+      over 0.35 s to an eye 1.0 off the floor, just under the foot of gap (Rainbow Six Siege's
+      drop to look under a door), so you see the floor under the door to the back wall: a
+      keeper's feet and shins. The door's buttons come down with you on your screen to sit 16
+      degrees over a level gaze. You stay down while the door holds its peek and you stay within
+      a stud of where you knelt; a step, a jump, your Open, Close or Slam, any other move of the
+      door, or a climb, crawl or catch taking your body stands you back up with the same ease. A
+      friend sees you kneel (the server tags you once it lifts the door; every screen poses your
+      joints): on both knees, chest to the floor, forearms out toward the door, head up. A soft
+      cloth rustle as you drop and stand, heard close by only. The rule is pure (`Kneel`, 94 Lune
+      checks). Verified in Studio on seed 7, floor 1: peeking 157 the guard's legs stand
+      mid-stride under the door (`docs/art/L-06b5b-peek-guard.jpg`), peeking 154 the sleeper's
+      stand square and slack (`-peek-sleeper.jpg`); a stud's walk, Close, and the door closed by
+      the server each stood me up; a copy of my kneeling body knelt as a friend's would
+      (`-friend-kneels.jpg`, ambient raised to see it). Waits on `OWNER.md` for two screens and a
+      phone.
   - Later, with the first keeper that climbs or crawls (a new keeper is the owner's design,
     D-068): the tops join its map as raised places (from `Tops.Map`), a leaned ladder as a
     passage that needs Climb (shut when it's taken down), and a sawn wall's hole as one that
@@ -708,6 +722,11 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **The kneel, fitted to the door (L-06b5b):** a friend's kneeling body puts its head about two
+  thirds of a stud and its hands about a stud and three quarters ahead of where they stand, so
+  one who knelt pressed to the door reaches into it on other screens. Fit `Back` to their
+  distance from the door.
 
 - **The dent, cheaper at rest (L-06b3d2):** a dented door keeps its 38-slat chain plus up to 16
   bowed ribs (about 8k triangles, 17 draws) while it stands shut; three merged dented curtains,
