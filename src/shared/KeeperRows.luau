@@ -7,6 +7,7 @@
 	(OWNER.md).
 ]]
 local KeeperMap = require("./KeeperMap")
+local KeeperTell = require("./KeeperTell")
 local MannequinSpecs = require("./Mannequin/Specs")
 
 export type Row = {
@@ -59,6 +60,10 @@ export type Row = {
 	bangEveryLast: number,
 	bangJitter: number,
 	breakOut: number,
+	-- How it gives itself away by sound (L-06b4b2; KeeperTell): a footfall each step its walk
+	-- lands and a knock of its joints each pass, from its body on every screen near, and one
+	-- knock as a door lifted on it standing in a unit first shows its feet.
+	tell: KeeperTell.Tell,
 }
 
 local Mannequin: Row = {
@@ -108,6 +113,54 @@ local Mannequin: Row = {
 	-- the GDD's "about 90 seconds": long enough to loot the floor, short enough that a slam only
 	-- buys time
 	breakOut = 90,
+	tell = {
+		-- a stiff, flat clack of fibreglass on concrete each step it lands: Pro Sound Effects'
+		-- "Wood Drop Light" 4 and 2 (a light board dropped flat on concrete), each cut to its first
+		-- hit, measured at about 860 Hz, where a phone's speaker plays it
+		footfall = {
+			takes = {
+				{ id = "rbxassetid://9120864768", start = 1.445, stop = 1.695 },
+				{ id = "rbxassetid://9120864539", start = 0.97, stop = 1.145 },
+			},
+			fade = 0.05,
+			-- the beat of its walk: the loudest thing it does
+			volume = 0.75,
+			-- a little lower than the board: heavier, and never the same clack twice
+			pitchMin = 0.88,
+			pitchMax = 0.98,
+			near = 6,
+			-- about three hall pieces: past the 48 it sees, so you hear it coming before it can
+			-- see you, and a hall further off it's only a tapping in the dark
+			reach = 70,
+		},
+		-- a thin, hollow knock at its joints each pass of its legs: "Knock Slap Plastic" 9 and 7 (a
+		-- hand knocking a thin plastic shell), each a single knock, about 700 Hz
+		knock = {
+			takes = {
+				{ id = "rbxassetid://9116201805", start = 0.145, stop = 0.45 },
+				{ id = "rbxassetid://9116201611", start = 0.145, stop = 0.45 },
+			},
+			fade = 0.1,
+			-- under the footfalls (about 6 dB): the texture between the beats, not a second beat
+			volume = 0.55,
+			pitchMin = 0.95,
+			pitchMax = 1.08,
+			near = 4,
+			-- heard closer than its feet: the knocking means it's near
+			reach = 40,
+		},
+		-- under a frame: a late record that jumps its pose makes one sound, not a burst
+		gap = 0.08,
+		-- the curtain's edge a few inches up, clearing its feet: the knock lands as a crouched
+		-- peek first sees them (a peek lifts 1.15)
+		revealRise = 0.4,
+		-- louder and deeper than its walking knock: one deliberate knock, its joints settling as
+		-- if it heard you
+		revealGain = 1.5,
+		revealPitch = 0.85,
+		-- a peek, a drop and a peek again in quick succession knocks once
+		revealGap = 3,
+	},
 }
 
 local KeeperRows: { [string]: Row } = {

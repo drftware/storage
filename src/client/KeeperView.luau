@@ -15,6 +15,10 @@
 	(`Pose.frame`), so a joint is turned only when the frame changes and nothing per joint
 	replicates.
 
+	Each key its walk lands as it's shown here is passed to `heard` (KeeperSounds), which plays
+	its footfall or the knock of its joints (`Pose.tell`, L-06b4b2): every screen hears the walk
+	it shows, and nothing more crosses the network.
+
 	Only bodies moving on this screen are stepped; a standing one is left alone until its next
 	record. Nothing allocates per frame. The Host steps this just before each frame renders, after
 	the frame's replicated changes have landed, so what's drawn is always this screen's place.
@@ -37,12 +41,14 @@ type Kit = {
 	motors: (model: Model) -> { Motor6D }?,
 	frame: (travelled: number, how: KeeperMotion.How) -> number,
 	transforms: (frame: number) -> { CFrame },
+	tell: (last: number?, travelled: number, how: KeeperMotion.How) -> (Pose.Sound?, number),
 }
 local KITS: { [string]: Kit } = {
 	Mannequin = {
 		motors = Mannequin.motors,
 		frame = Pose.frame,
 		transforms = Mannequin.transforms,
+		tell = Pose.tell,
 	},
 }
 
@@ -54,12 +60,14 @@ type View = {
 	kit: Kit,
 	follow: KeeperMotion.Follow,
 	frame: number, -- the frame it was last posed in (0: none yet)
+	told: number?, -- what its kit's `tell` last returned (nil: not posed yet)
 	conns: { RBXScriptConnection },
 }
 
 local KeeperView = {}
 
-function KeeperView.new(): Brix.System
+-- `heard` plays a body's footfall or knock (KeeperSounds).
+function KeeperView.new(heard: (model: Model, sound: Pose.Sound) -> ()): Brix.System
 	local views: { [Model]: View } = {}
 	local moving: { [Model]: View } = {} -- the ones to step
 	local connections: { RBXScriptConnection } = {}
@@ -78,7 +86,13 @@ function KeeperView.new(): Brix.System
 			Vector3.new(at.x, at.y, at.z),
 			Vector3.new(at.x + facing.x, at.y, at.z + facing.z)
 		) * view.rootOffset
-		local frame = view.kit.frame(f.travelled, KeeperMotion.how(f.state, f.speed))
+		local how: KeeperMotion.How = KeeperMotion.how(f.state, f.speed)
+		local frame = view.kit.frame(f.travelled, how)
+		local sound: Pose.Sound?, told: number = view.kit.tell(view.told, f.travelled, how)
+		view.told = told
+		if sound then
+			heard(view.model, sound)
+		end
 		if frame ~= view.frame then
 			view.frame = frame
 			local turns = view.kit.transforms(frame)
@@ -138,6 +152,7 @@ function KeeperView.new(): Brix.System
 			kit = kit,
 			follow = KeeperMotion.follow(),
 			frame = 0,
+			told = nil,
 			conns = {},
 		}
 		views[model] = view

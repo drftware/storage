@@ -21,6 +21,32 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-06b4b2, its tell: footfalls and knocks (built Nov 10)
+
+Nobody here could listen: the sounds were picked by measuring them (D-083), so this is by ear.
+- [ ] **Hear it before you see it** (Play with sound on). "Walk a floor", open Unit 157 from the
+  side and step back: the guard comes out and roams. Stand in a dark hall it walks toward: a
+  stiff clack each time a foot plants (Pro Sound Effects' "Wood Drop Light"), heard from about
+  three hall pieces off, and once it's within about 40 studs a hollow knock between the clacks
+  (its joints, "Knock Slap Plastic"). Does it sound like a hard, hollow figure walking, or like a
+  plank? Could you point to where it is with your eyes shut? Volumes and reaches are the row's
+  `tell` in `src/shared/KeeperRows.luau` (footfall 0.75 to 70 studs, knock 0.55 to 40).
+- [ ] **In a chase** the clack-knock comes about five times a second. Clatter that makes you run,
+  or too busy? If too busy, drop the knock's volume, or say and the knocks can go to every
+  other pass.
+- [ ] **The peek's knock:** peek at 157 (the guard) and at 154 (a sleeper, asleep in its shop
+  pose): as the door clears its feet, one deeper knock. Does it tell you "something stands in
+  here" without spoiling the look? Open after the peek: no second knock. Peek, drop it, peek again
+  within 3 s: one knock only (`revealGap`).
+- [ ] **On the phone's own speaker** (the Galaxy A16): the footfalls should still read; both
+  sounds sit at 700 to 900 Hz, where a phone speaker plays. If they don't, say so.
+- [ ] **Two screens** (2 players): a friend near the keeper hears its steps from the keeper, not
+  from you; a friend near the door you peek hears its knock too.
+- [ ] **Decide, defaults in place** (D-083): (1) a footfall on each step and a knock on each pass
+  (the stop-motion walk's every snap makes a sound); (2) a sleeper knocks as you peek it, as an
+  awake one does (a sleeper gives itself away); (3) everyone near hears the peek's knock, not
+  only the one peeking.
+
 ## Now: judge L-06b4b1, the sting and the chase bed (built Nov 10)
 
 Nobody here could listen: the sounds were picked by measuring them (D-082), so this is all by ear.

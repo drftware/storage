@@ -20,6 +20,7 @@ local FreeCursor = require(script.FreeCursor)
 local GateClock = require(script.GateClock)
 local HallHaze = require(script.HallHaze)
 local HallLights = require(script.HallLights)
+local KeeperSounds = require(script.KeeperSounds)
 local KeeperView = require(script.KeeperView)
 local KeypadPad = require(script.KeypadPad)
 local KneelView = require(script.KneelView)
@@ -32,11 +33,14 @@ local UnitLights = require(script.UnitLights)
 local cameraShake, kick = CameraShake.new()
 local freeCursor, needCursor = FreeCursor.new()
 local elevatorView, pressKeypad = ElevatorView.new(kick)
+local keeperSounds, keeperHeard = KeeperSounds.new()
 
 local host = Brix.Host.new({
 	systems = {
 		{ slot = "doorView", system = DoorView.new() },
-		{ slot = "keeperView", system = KeeperView.new() },
+		-- before KeeperView, so a body is ready to be heard by the time KeeperView first poses it
+		{ slot = "keeperSounds", system = keeperSounds },
+		{ slot = "keeperView", system = KeeperView.new(keeperHeard) },
 		{ slot = "doorSounds", system = DoorSounds.new(kick) },
 		-- before BehindDoors, so its dimming of the hall lands on a flickering tube each frame
 		{ slot = "hallLights", system = HallLights.new() },

@@ -486,11 +486,16 @@ on nothing in Brix.
         hunts you; a catch cuts both (`Chase`, pure, 46 Lune checks; `ChaseMusic`). Verified in
         Studio on seed 7, floor 1 (the sting on the sighting's frame, the rise, the fade, the
         catch's cut, no sound errors). Waits on `OWNER.md` to be judged by ear and on a phone.
-      - [ ] **L-06b4b2 Its tell.** Heard in the dark while it moves: fibreglass knocking at its
-        joints and a stiff, quick footfall per step, as Five Nights at Freddy's footsteps say an
-        animatronic moved. A knock of its joints, once, as a lifted door first shows one standing
-        in a unit (L-06b2b's moment is silent until then; with L-06b5b's crouch you now see its
-        feet first).
+      - [x] **L-06b4b2 Its tell.** Done Nov 10 (D-083). Each screen hears the walk it shows: a
+        stiff clack of its foot as each step key lands and a hollow knock of its joints as each
+        pass lands or it jerks out of its slack pose (`Pose.tell`, each key once), from the body,
+        footfalls to 70 studs and knocks to 40; and one deeper knock as a lift (Peek, Open, Lift)
+        first takes a door's curtain 0.4 up past the feet of one standing in its unit, asleep or
+        watching (`KeeperTell`, `KeeperSounds`; numbers on the row's `tell`). Pro Sound Effects'
+        "Wood Drop Light" 4 and 2 and "Knock Slap Plastic" 9 and 7, chosen by measurement. 168
+        Lune checks. Verified in Studio on seed 7, floor 1: every footfall on a step pose,
+        alternating feet 5.4 studs apart; knocks on the passes; the reveal at 157 and 154 within
+        a frame of the curtain clearing their feet; no sound errors. Waits on `OWNER.md` by ear.
       - [ ] **L-06b4b3 The freeze on your screen.** The freeze lands at once on your own screen
         when your torch finds it, predicted as `HallLights` predicts your own lights, with no
         slide past the stop.
@@ -726,6 +731,14 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **Its tell, from its feet (L-06b4b2):** the footfalls and knocks play from the keeper's root,
+  at its hips; from the planted foot (and the knock from the joint that snaps) would place them
+  a stud or two truer up close. A heavier, louder footfall while it hunts than while it roams,
+  and a different footfall on the tops' steel than on the halls' concrete.
+- **The reveal's knock, seen (L-06b4b2):** the knock as a door clears its feet has no motion; a
+  small settle of its head or a hand on the same frame would make it read as alive to anyone
+  looking, not only listening (an untested bet: it stands still in its shop pose by design).
 
 - **The kneel, fitted to the door (L-06b5b):** a friend's kneeling body puts its head about two
   thirds of a stud and its hands about a stud and three quarters ahead of where they stand, so

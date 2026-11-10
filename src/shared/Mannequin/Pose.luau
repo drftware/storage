@@ -210,22 +210,59 @@ export type How = "Still" | "Walk" | "Stop"
 -- the walk's keys, the key held and the `Walk.Snaps - 1` steps of the snap into the next.
 Pose.Frames = 1 + #Pose.Walk.Keys * Pose.Walk.Snaps
 
+-- The key a walking or stopped body shows after `travelled` studs, counted from its first key
+-- (0) and never going back, and how many steps of the snap into the next key it shows (0: it
+-- holds the key). Stopped mid-snap, it shows the key it was snapping into, as `freeze` says.
+local function shown(travelled: number, how: How): (number, number)
+	local snaps, hold = Pose.Walk.Snaps, Pose.Walk.Hold
+	local q = travelled / Pose.Walk.Step
+	local k = math.floor(q)
+	local f = q - k
+	local s = 0
+	if f > hold then
+		s = if how == "Stop" then snaps else math.floor((f - hold) / (1 - hold) * snaps + 0.5)
+	end
+	if s >= snaps then
+		k, s = k + 1, 0
+	end
+	return k, s
+end
+
 -- The frame it shows after `travelled` studs: Still; its walk (the key it holds, or the nearest
 -- step of the snap to the next); or stopped, on the key `freeze` says.
 function Pose.frame(travelled: number, how: How): number
 	if how == "Still" then
 		return 1
 	end
-	local count, snaps, hold = #Pose.Walk.Keys, Pose.Walk.Snaps, Pose.Walk.Hold
-	local k, f = keyAt(travelled)
-	local s = 0
-	if f > hold then
-		s = if how == "Stop" then snaps else math.floor((f - hold) / (1 - hold) * snaps + 0.5)
+	local k, s = shown(travelled, how)
+	return 2 + (k % #Pose.Walk.Keys) * Pose.Walk.Snaps + s
+end
+
+-- What its walk sounds like (L-06b4b2): a foot planting as a step key lands, its joints knocking
+-- as a pass key lands (its legs crossing) or as it jerks out of its slack pose into a stride.
+export type Sound = "Footfall" | "Knock"
+
+local SLACK = -1 -- what `tell` remembers of a body standing slack (Still)
+
+-- The sound a body makes as a screen poses it after `travelled` studs, if any, and what to pass
+-- as `last` next time. `last` is what this returned the last time, nil before the body's first
+-- pose on this screen (which is silent: it streamed in, it didn't move). Each key is heard once,
+-- the moment the screen shows it landing: a late record that jumps several keys makes one sound,
+-- the last key's, and a snap a light froze early (`freeze`) isn't heard again as it walks on.
+function Pose.tell(last: number?, travelled: number, how: How): (Sound?, number)
+	if how == "Still" then
+		return nil, SLACK
 	end
-	if s >= snaps then
-		k, s = k % count + 1, 0
+	local k = shown(travelled, how)
+	if last == nil then
+		return nil, k
+	elseif last == SLACK then
+		return "Knock", k
+	elseif k <= last then
+		return nil, last
 	end
-	return 2 + (k - 1) * snaps + s
+	local key = Pose.Walk.Keys[k % #Pose.Walk.Keys + 1]
+	return if string.sub(key, 1, 4) == "Step" then "Footfall" else "Knock", k
 end
 
 -- The pose a frame shows.

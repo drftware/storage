@@ -397,6 +397,17 @@ verified: a doc page, Studio, or "untested".
   `user_mouse_input`. To chase in the dark, take the `TripsLights` tag off your root on the
   Server: no light wakes for you; put it back to test the hall lights. Fixtures' pivots stand on
   the floor (y 0 on floor 1), 24 apart down the hall.
+- **Testing the keeper's tell from the MCP** (L-06b4b2, 2026-11-10): seed 7, floor 1. Log from
+  the Client with a `task.spawn`ed `RenderStepped` poll over each keeper body's root: a Sound
+  named `Keeper*` that is playing with a `TimePosition` lower than last frame's (or newly
+  playing) was just played; read `RightHip`'s and `LeftHip`'s `Transform` X angle then to see
+  the pose it landed (step right R30 L-20, pass right R6 L24, step left R-20 L30, pass left R24
+  L6, slack R8 L0), and keep the lines on a LocalPlayer attribute. Peek 157's guard from (48.5,
+  3, -632) and 154's sleeper from (47.5, 3, -624) as the kneel recipe does. **After a Peek pressed
+  with `InputHoldBegin`, that door's other buttons stop answering** (shown, but no `Triggered`
+  reaches the server, by `InputHoldBegin` or a key press): pivot the character out of reach
+  (20 studs) and back from the Server, wait a second, then press. After 157's catch the guard
+  roams the halls at its walk for a long log from the lobby.
 - **Testing the chase music from the MCP** (L-06b4b1, 2026-11-10): seed 7, floor 1. The guard
   recipe (157, standing at (47, 3, -632)) sees you as its door gets all the way up, 2.07 s after
   the tap, and catches you 0.5 s later: enough for the sting and the catch's cut. To see the
@@ -641,6 +652,16 @@ verified: a doc page, Studio, or "untested".
   Close Drops 12" 9116737135 is silent to 0.40 s, one flat hit and rattle at -12 dB to 1.05 s,
   gone by 1.35 s. "Sheet Metal 2" and "5" (9119068619, 9119068827) are handling and flexing, many
   bangs: no single clang.
+- **Sounds measured for the keeper's tell** (L-06b4b2, 2026-11-10; Edit, an `AudioPlayer` at half
+  speed wired to an `AudioAnalyzer`, `PeakLevel` binned by `TimePosition` in 25 ms; at half
+  speed a spectrum bin's frequency is half the real one, so double it): "Wood Drop Light 4"
+  9120864768 (4.8 s) is quiet to 1.45 s, one flat clack to 1.53 (-16 dB by then), a bounce at
+  1.725; "Wood Drop Light 2" 9120864539 clacks at 0.975, -29 dB by 1.125, a second clack at
+  1.15: both about 860 Hz. "Knock Slap Plastic" 9 9116201805 and 7 9116201611 (0.7 s, 0.8 s): one
+  knock each at 0.15 s, -22 dB by 0.225, room tone near -35 dB; about 700 to 760 Hz, -5.5 dBFS,
+  4 dB under the boards. Also measured: "Plastic Impact Hard Dropping Hollow Hits" 1 to 4 (two
+  or more hits each, mostly under 450 Hz), "Foot Stomp" 1 and 7 (a dull thud on carpet, -12
+  dBFS), "Pole Drops 6" 9117734474 (a hollow wood hit at 0.025, a bounce at 0.5, about 850 Hz).
 - **Sounds measured for the ladder** (L-13b1; 50 ms bins at half speed): "Metal Ladder Bang
   Slams Against Body 1" 9116717868 (1.08 s) bangs at 0 s near 0 dB, rattles to 0.85 s; "Metal
   Ladder Drop 1" 9116718698 is only 0.66 s, a soft hit then a loud one at 0.25 s; "Metal Ladder

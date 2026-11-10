@@ -1784,3 +1784,38 @@ the server only says how many hunt you); a sting per keeper's own sighting by it
 send, and the gap would swallow most); music that swells with distance (Alien: Isolation's) or
 the bed's own loudness telling you how near it is: the bed only says "hunted"; the keeper's tell
 (L-06b4b2) says where.
+
+## D-083 Its tell: the walk each screen shows, heard from the body (L-06b4b2, Nov 10)
+The moment: in the dark you hear it before you see it, as Five Nights at Freddy's footsteps say
+an animatronic moved. Its walk is stop-motion (D-074's keys: it holds each, then snaps to the
+next), so the sound is the snap landing: a stiff clack of its foot as a step key lands and a
+hollow knock of its joints as a pass key lands, alternating; a jerk from its slack shop pose
+into a stride knocks too.
+
+As built: nothing new crosses the network. Each screen's KeeperView already poses the body from
+its records, so it asks `Pose.tell` each time it poses one: the key it shows, counted from its
+first and never going back, against the last one heard. Each key is heard once, the moment that
+screen shows it landing; a late record jumping several keys makes one sound (the last key's); a
+snap a light froze early isn't heard again as it walks on; its first pose on a screen (it
+streamed in) is silent. KeeperSounds plays it from the body's root: two takes of each sound, in
+turn, at a random pitch in the row's range, cut to one hit with a short fade (one reusable fade
+per take), footfalls heard to 70 studs (past the 48 it sees: you hear it coming first), knocks to
+40 and 6 dB under (the knocking means it's near), never two from one body within 0.08 s, never
+played from past its reach. Every number is on the keeper's row (`tell`).
+
+The reveal: as a lift (Peek, Open, or a Lift from inside) first takes a door's curtain 0.4 up
+(its feet), a keeper standing in that unit, asleep or watching, knocks once, deeper and louder
+(1.5 times, pitch 0.85); not again within 3 s. It's timed off the door's own motion on the
+server's clock (`KeeperTell.reveal`), so it lands as the screen shows the gap open (0.10 s into
+a peek). The deal stands a keeper as its door first lifts, so its body reaches a screen just after
+that lift began: KeeperSounds checks the lift it arrived in. Everyone near hears it, as a door.
+
+The sounds, by measurement (docs/STUDIO.md): Pro Sound Effects' "Wood Drop Light" 4 and 2 (a
+light board dropped flat on concrete, about 860 Hz, where a phone speaker plays) for the foot;
+"Knock Slap Plastic" 9 and 7 (a hand knocking a thin plastic shell, about 700 Hz) for the joints.
+
+Not chosen: the server sending each footfall (it doesn't pose the body, and every screen would
+hear its own walk out of step with the one it shows); a sound per frame change (a snap is eight
+frames); a footfall per key (every key a clack reads as a machine, not a walk); the reveal from
+the server's deal (the screen knows when its curtain clears the feet); sounds at the feet (a stud
+or two truer up close: ROADMAP polish).

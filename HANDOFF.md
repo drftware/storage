@@ -2,45 +2,44 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-10, session 71 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-10, session 72 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-06b4b1 done (D-082):** the instant a keeper sees you, a hit cuts in on your screen alone
-  (APM's "Rising Fear Hit 1") and a low drone swells under the chase ("Tension Repeat Drones
-  39"), fading over 4 s once no keeper hunts you. A glance back within 4 s of a loss doesn't hit
-  again, nor a second keeper within 8 s; a catch cuts both dead. The server tells each player
-  how many keepers hunt them only when that changes (`Remotes.Hunted`, from `Keepers`); the rule
-  is pure (`Chase`, 46 Lune checks), played by `ChaseMusic`. Verified in Studio on seed 7, floor
-  1: the hit on the sighting's frame, the rise, the fade after an escape, the catch's cut, no
-  sound errors. Sounds were chosen by measurement (the bed for a phone's speaker); judging them
-  by ear, on a phone and on two screens waits on `OWNER.md`.
+- **L-06b4b2 done (D-083):** each screen hears the walk it shows. A stiff clack of its foot as
+  each step of its stop-motion walk lands and a hollow knock of its joints as each pass lands
+  (`Pose.tell`: each key once, from KeeperView's own pose, nothing new on the network), from
+  the body, footfalls to 70 studs, knocks to 40; and one deeper knock as a lift first clears the
+  feet of one standing in a unit, asleep or watching (`KeeperTell`, `KeeperSounds`; numbers on
+  the row's `tell`; 168 Lune checks). Verified in Studio on seed 7, floor 1: every footfall on a
+  step pose, alternating feet 5.4 studs apart; knocks on passes; the reveal at 157 and 154 within
+  a frame of the curtain clearing their feet; no sound errors. By ear and phone: `OWNER.md`.
 
-## Next task: L-06b4b2 Its tell
-The moment: in the dark you hear it before you see it: a stiff, quick footfall each step and
-fibreglass knocking at its joints, as Five Nights at Freddy's footsteps say an animatronic moved;
-and one knock of its joints as a lifted door first shows one standing in a unit.
+## Next task: L-06b4b3 The freeze on your screen
+The moment: you swing your torch onto it mid-stride and it stops dead that instant, on your
+screen, never a step on and back; as SCP-173 and FNAF's animatronics hold the moment you look.
 1. Owner test results first, if pasted.
-2. Find where each screen's `KeeperView` knows a foot plants (it poses the body from the records'
-   walked distance, `Pose.frame`): footfalls come from each screen's own pose, so nothing new
-   crosses the network. Friends hear it too: it's a sound in the hall, from the body, heard to a
-   set distance (as doors are, `DoorSounds`).
-3. Pick the footfall and the joint knock from Roblox's library (Pro Sound Effects; `search_asset`,
-   then load and measure each as `docs/STUDIO.md` "Sounds measured for the chase" did). Feel
-   numbers on the keeper's row (`KeeperRows`: keepers are data rows), each with what it does to
-   the player. Cap sounds per keeper; only a keeper streamed to you plays (phone first).
-4. The knock as a door first lifts on a keeper standing in its unit: once, on each screen near.
-5. Whatever is pure (when a foot plants from the walked distance, the knock's once-only rule) is
-   Lune-tested. Every action answers; nothing new on screen. Too big? Split in ROADMAP first.
-**Acceptance:** checks green; in Studio on seed 7, floor 1, the guard walking out of 157 plays one
-footfall per planted foot (log each play against the pose's stride) and a peek at 157 or 154
-knocks once; Output shows no sound errors. Judge by ear what you can; the rest goes to OWNER.md.
-**Read first:** ROADMAP L-06b4b2; D-075; `src/client/KeeperView.luau`;
-`src/shared/Mannequin/Pose.luau` (the stride's frames); `src/shared/KeeperRows.luau`;
-`docs/STUDIO.md` "Testing the chase music from the MCP".
+2. Today the freeze reaches your screen a round trip late (the brain decides it, D-076; a Stop
+   record goes out at once) and shows 0.1 s behind the server (D-075), so it walks on, then
+   eases back about 0.07 studs. Measure that first in Studio (log the beam landing, the screen's
+   stop, the record).
+3. Predict it on the torch holder's screen, as `HallLights` predicts your own lights: when your
+   own torch's beam (Torch's cone, the brain's test: a point up its middle within 42 studs and
+   27 degrees, a clear line) finds a body your screen shows walking, hold its pose on the key
+   `Pose.freeze` gives, at once; when the server's Stop arrives, settle onto it without a slide;
+   if no Stop comes within a round trip or two (a wall the screen missed), let it walk on.
+4. Make the beam test one pure rule both sides use (the brain's and the screen's), Lune-tested;
+   the screen's clear line is a raycast, the brain's `KeeperMap.clear`: note any disagreement.
+5. Every action answers: the stop is the feedback; nothing new on screen. Too big? Split first.
+**Acceptance:** checks green; in Studio on seed 7, floor 1, a torch swung onto the roaming
+Mannequin stops it on your screen the frame the beam lands (log it against the server's
+record), never past and back; a beam through a shut door doesn't stop it; Output clean.
+**Read first:** ROADMAP L-06b4b3; D-076 and D-075; `src/client/HallLights.luau` (its
+prediction); `src/client/KeeperView.luau`; `src/shared/KeeperMotion.luau` (`follow`,
+`receive`, `update`); `docs/STUDIO.md` "Testing the light freeze from the MCP".
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-06b4b2, L-06b4b3; D-064, D-068 to D-082. L-12c needs L-06b3d (done). Then L-14; L-07
-   (takes `Keepers.caught`) to L-10.
+1. L-06b4b3; D-064, D-068 to D-083. L-12c needs L-06b3d (done). Then L-14; L-07 (takes
+   `Keepers.caught`) to L-10.
 2. **Check, small:** caught crawling a hole or on the ladder, the stand-in's move may leave
    `CrawlView`/`LadderView` holding PlatformStand; if a keeper can reach you there, end it.
 3. **Checks on the tops, small:** Climb or Drop down lying behind a sawn hole slides you across
@@ -61,6 +60,8 @@ knocks once; Output shows no sound errors. Judge by ear what you can; the rest g
    first, every tenth, the dent's steps and the last if it gets in the way.
 9. **Check, small:** the walk holds an arm out level; a keeper stopped against any other wall or
    door may put its hand through it (L-06b3d2 fixed only the trapped stand).
+10. **Check, small:** after a Peek from the MCP, that door's other buttons ignore presses until
+    you step out of reach and back (docs/STUDIO.md); does a player's real press do the same?
 
 ## Kickoff for the next agent
 ```text
