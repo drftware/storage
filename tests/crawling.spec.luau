@@ -24,6 +24,32 @@ ok(Crawling.decide(true, false).refusal == nil, "already crawling: refused silen
 ok(not Crawling.decide(false, true).ok, "someone in the hole: no")
 ok(Crawling.decide(false, true).refusal == "Wait for them", "someone in the hole: wait for them")
 
+-- whose press counts (L-12c): in a small unit's door frame (+Z in from the door, X across), its
+-- Crawl button where Studio put 155's, 5.25 in and 3.4 across
+do
+	local W, D = 8, 8
+	local button = vector.create(3.4, 1.7, 5.25)
+	local still = vector.zero
+	local function counts(at: vector, v: vector): boolean
+		return Crawling.counts(at, v, button, W, D)
+	end
+	ok(counts(vector.create(2, 3, 5), still), "crouched at the hole: counts")
+	ok(counts(vector.create(-2, 3, 0.4), still), "just inside the door: counts")
+	-- measured in Studio: you ran in and pressed as you reached the hole; the server still saw
+	-- you a stud out in the doorway, running in at your full run
+	ok(
+		counts(vector.create(1.34, 3, -1.06), vector.create(2.5, 0, 16)),
+		"ran in and pressed at once, the server a run behind: counts"
+	)
+	ok(not counts(vector.create(1.34, 3, -1.06), still), "standing in the hall: no")
+	ok(not counts(vector.create(-3, 3, -1.5), vector.create(16, 0, 0)), "running past the door: no")
+	ok(not counts(vector.create(1, 3, -8), vector.create(0, 0, 16)), "far out in the hall: no")
+	ok(not counts(vector.create(-3.8, 3, 0.5), still), "across the unit from the button: no")
+	ok(not counts(vector.create(6, 3, 5), still), "in the unit beside it: no")
+	ok(counts(vector.create(2, 3, 5), vector.create(0, 0, -16)), "inside, running out: counts")
+	ok(Crawling.Lag >= 0.25 and Crawling.Lag <= 0.5, "covers the server's late view of a run")
+end
+
 -- about a second, as the ticket's moment wants
 ok(Crawling.Seconds >= 1 and Crawling.Seconds <= 1.6, "the move takes about a second")
 ok(Crawling.EndSlack > 0.3, "the server waits past the move for the screen")

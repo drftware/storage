@@ -31,7 +31,9 @@
 	  moment they're within its grasp (the catch, below): then it stands over where it caught
 	  them for its linger, as if Waiting at a sound, and roams.
 	- Searching: it lost the one it hunted and rushes, at its top speed, to where it last saw
-	  them, then stands there for its `linger`, looking on the way it was going, then roams.
+	  them, then stands there for its `linger`, looking on the way it was going, then roams. In a
+	  unit it stops short of the walls (`Against`, its reaching arm's room) and looks at where
+	  they were: in the hole trap (L-12c), the hole they crawled out through.
 	- Trapped (L-06b3d): a unit's door came down on it from all the way up, by a slam or a close,
 	  while it stood awake inside (`trap`). It walks to stand against the door, facing it, and
 	  bangs on it from inside (`blow`) on its row's clock, the blows coming faster as its time runs
@@ -344,7 +346,9 @@ local function look(k: Keeper, players: Players, still: boolean): boolean
 		end
 		return changed
 	elseif k.state == "Hunting" then
-		k.state, k.target, k.goal = "Searching", 0, k.seen
+		-- in a unit, it stops short of the walls: they may have crawled out through one (L-12c)
+		k.state, k.target, k.goal =
+			"Searching", 0, KeeperMap.offWalls(k.map, k.seen, Keeper.Against)
 		return true
 	end
 	return false
@@ -733,11 +737,10 @@ function Keeper.step(
 		end
 	elseif (state == "Going" or state == "Searching") and (there or stuck) then
 		-- there, or a door came down across its way: it looks from where it is, at the sound it
-		-- heard, or, searching, on the way it was going
+		-- heard, or, searching, at where it last saw them (on the way it was going, unless it
+		-- stopped short of a unit's wall: then at the wall, or the hole they went through)
 		stand(k, k.row.linger)
-		if state == "Going" then
-			faceToward(k, k.heard)
-		end
+		faceToward(k, if state == "Going" then k.heard else k.seen)
 	elseif there then
 		stand(k, k.row.roamLinger)
 	elseif stuck then

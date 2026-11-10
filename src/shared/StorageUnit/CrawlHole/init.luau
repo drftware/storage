@@ -64,14 +64,26 @@ local function piece(model: Model, name: string): BasePart?
 	return if p and p:IsA("BasePart") then p else nil
 end
 
+-- Half a unit's width: how far its door face's middle stands from either of its side walls.
+local function halfWidth(unit: Model): number
+	local spec = Specs[(unit:GetAttribute("UnitSize") :: string?) or "M"] or Specs.M
+	return spec.Width / 2
+end
+
+-- How far past half its width a door face may stand from the wall and still be the unit right
+-- beside it (studs): the wall's own thickness and float. The next unit along is a whole unit
+-- further, so it never passes.
+local BESIDE_SLACK = 0.5
+
 --[[
 	The wall `from` and `into` share: whichever of their side walls stands between their door
-	faces, the two on opposite sides of it. Returns the unit standing it and the wall; nil for two
-	units that aren't side by side in a row (across a hall, back to back, a corner's side against
-	a back wall).
+	faces, the two on opposite sides of it, each door face half its own unit's width from it.
+	Returns the unit standing it and the wall; nil for two units that aren't side by side in a row
+	(across a hall, back to back, a corner's side against a back wall, or a unit between them).
 ]]
 local function between(from: Model, into: Model): (Model?, BasePart?)
 	local a, b = from:GetPivot().Position, into:GetPivot().Position
+	local nearA, nearB = halfWidth(from) + BESIDE_SLACK, halfWidth(into) + BESIDE_SLACK
 	local best, bestUnit, bestReach = nil, nil, math.huge
 	for _, unit in { from, into } do
 		for _, name in WALLS do
@@ -85,7 +97,10 @@ local function between(from: Model, into: Model): (Model?, BasePart?)
 				local apart = la.X * lb.X < 0
 				local reach = math.abs(la.X) + math.abs(lb.X)
 				local level = math.abs(la.Y - lb.Y) < 0.5 and math.abs(la.Z - lb.Z) < 0.5
-				if apart and level and reach < 20 and reach < bestReach then
+				-- each right beside the wall: two along a row (157 and 153, 155 between them) line
+				-- up just as well, and once took the wall's Saw and Crawl buttons from 155
+				local beside = math.abs(la.X) <= nearA and math.abs(lb.X) <= nearB
+				if apart and level and beside and reach < bestReach then
 					best, bestUnit, bestReach = wall, unit, reach
 				end
 			end

@@ -1864,3 +1864,55 @@ the shooter (the beam is 54 degrees wide; ROADMAP polish if edges miss); sliding
 the server's stop (it moves while lit); predicting the let-go too (its records still say it
 stands, so it would slide). Known: a hunter that catches you right after the light leaves stops
 short of its record, so your screen shows it up to a stud short; the catch's blackout hides it.
+
+## D-085 The hole trap lands: neighbours paired right, a press on arrival counts, it searches off the walls (L-12c, Nov 10)
+The moment: it's on you, you dive into a unit, squeeze out through the hole you sawed, sprint
+round and slam its door on it while it stands staring at where you vanished (GDD "The hole trap";
+the crawl is DOORS' and Pressure's vents, D-054; the slam buys time, as Amnesia's battered doors,
+D-078). Played end to end in Studio first, on seed 7, floor 1: 155 and 153 open, a hole sawed
+between them, 157's guard let out and walked to the junction by 133's door, then up the hall by
+156's, so it saw me at 155's front from 24 studs. Three things broke it.
+
+1. **The wrong neighbour.** `CrawlHole.between` took any unit whose door face lines up along the
+   wall within 20 studs, so 157 and 153 (155 between them) matched 153's wall with 155. `Saws`
+   and `Crawls` pair every two units near each other and keep the first match, so on this floor
+   the 155|153 wall's Saw buttons went to 157 and 153 (nobody in 155 could saw it), and once
+   sawed, its Crawl button on 155's side belonged to 157: the server refused a crawl from 155
+   because you weren't in 157. Now each door face must stand within half its own unit's width
+   (plus half a stud) of the wall, so the unit two along never matches.
+2. **A press lost to the server's late view.** The server sees your run late (D-084's
+   measurement: 0.06 to 0.13 s, eased in over another 0.15 to 0.4 s). Run into the unit and
+   press Crawl as you reach the hole, and the server, 4 studs behind, still saw you in the
+   doorway: not inside the unit, so the press was dropped without a word and the keeper caught
+   me at the hole. Now a press counts if you're inside the unit and within reach of the button
+   where the server sees you, or where you'll be `Crawling.Lag` (0.4 s) on at the speed it sees
+   you moving (`Crawling.counts`, pure). In Studio the press then came with the server seeing me
+   on the door line, running in at 15.5: counted. It gives a cheat nothing: the client already
+   moves its own character. The door's Slam, pressed the same way on arrival, already landed.
+3. **It searched inside the wall.** Lost, it rushes to where it last saw you; mid-crawl that's
+   your feet on the wall's own line, so it stood half in the wall, its reaching arm through the
+   hole. Now in a unit the spot is kept `Keeper.Against` (3.4 studs, its arm's room, as the
+   trapped stand) off the unit's walls (`KeeperMap.offWalls`; a unit too small for that, its
+   middle), and on arriving it turns to where it last saw you: from 153 you see its legs
+   through the hole, standing back in 155, facing it. Halls keep the exact spot: nobody's feet
+   are ever in a hall's wall.
+
+What already held: it loses you through the wall (the hole is on no keeper's map, so no line of
+sight and no way through, D-068); it never follows; it stands its linger (5 s) where it lost you,
+and the run round took 0.9 s from the crawl's end to the slam, which traps it.
+
+Verified in Studio: the guard saw me from 24 studs at the junction, I reached the hole and pressed
+at once, crawled, it lost me, stood at 3.4 studs off both walls facing the hole, my slam came
+0.9 s after the crawl ("the Mannequin is trapped in Unit 155"), and it banged.
+
+Known, left to the owner (`OWNER.md`): the trap needs a lead. You're lost only once your body is
+through the wall (about 0.65 s into the crawl, plus the server's lag), and a hunter closes at its
+top speed while you lie at the mouth, so it must be about 16 studs behind as you press Crawl, a
+little over a second at its hunt; a keeper a few steps behind catches you at the mouth. The trap
+is something you set up and lure it into from afar, not a panic escape.
+
+Not chosen: making the server wait for its view to catch up before judging a press (sound, but
+it delays a crawl that must start at once); trusting a position sent by your screen (a prompt's
+press carries none; the velocity the server already has is enough); pulling every search spot
+off the walls, halls too (it changes where a keeper stops after a corner, for no gain); the
+keeper hearing the crawl (queued with the other quiet sounds, D-059, D-066).

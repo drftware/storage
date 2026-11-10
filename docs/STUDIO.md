@@ -455,6 +455,27 @@ verified: a doc page, Studio, or "untested".
   unit's `DoorLocked` attribute once the slam has settled: Doors reads it at its next refresh,
   which the next blow's `Doors.move` makes. A sampler logging `KeeperState` and the door's motion
   kind every 0.05 s into `_G` reads the run back; waits of 50 s per `execute_luau` stayed safe.
+- **Testing the hole trap from the MCP** (L-12c, 2026-11-10): seed 7, floor 1; 157, 155 and 153
+  stand in a row on the hall's east side (doors at z -632, -624, -616, facing -X), the junction
+  at (48, -648). Server: `TripsLights` off, `CrawlHole.saw(Unit155, Unit153)`, and a sampler
+  writing the guard's state and pivot to a `workspace` attribute every 0.05 s (a Client script
+  reads it to time its steps; a keeper far off isn't streamed to you). One Client script, moving
+  with `Humanoid:MoveTo` (it walks at the full run from a Client `execute_luau`): open 155 from
+  (49, 3, -624) and 153 from (49, 3, -616) (the guard behind 157's shut door hears neither);
+  open 157 from (50.5, 3, -638.5) and wait for the guard's `Waiting` at its front; open 133 from
+  (54, 3, -648.5) and step to (49, 3, -622): it walks to 133's front (54, -649); then open 156
+  from (47.5, 3, -630) and walk to 155's front (49, 3, -623): it comes up from the junction and
+  sees you 24 studs off. Walk to (55.8, 3, -621.8), press 155's `CrawlButton` prompt once
+  `PromptShown` fires, wait out the `Crawling` tag, walk to (49.5, 3, -616.5) then (49.5, 3,
+  -622.5) and press Slam on `PromptShown`: about 0.9 s from the crawl's end; it stands its 5 s.
+  A `screen_capture` mid-run took 16 s, long enough for it to roam off: capture in a run of its
+  own. Hook the prompts' `Triggered` on the Server to log where it saw you when each press came.
+- **A press made the moment you arrive** (L-12c, 2026-11-10): the server sees a run late, so a
+  prompt pressed as you reach it reaches the server while it still sees you a few studs back
+  (4 studs at a full run: the Crawl button 6.8 studs off, you still in the doorway). Any server
+  check of where you stand for a press must allow for it (`Crawling.counts`: where it sees you
+  or 0.4 s on at your speed, D-085). A door's Slam pressed the same way landed. After being
+  caught, setting your root's CFrame from the Client did nothing; pivot from the Server.
 - **Shots of a door in the hall** (L-06b3d2, 2026-11-10): the hall's motion light wakes only for a
   real walk (`character_navigation`; a pivot or `Humanoid:MoveTo` from the Server didn't) and goes
   dark again after some 20 s standing still, so walk, aim the camera and capture at once. In

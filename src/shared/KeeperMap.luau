@@ -438,6 +438,30 @@ function KeeperMap.placeAt(map: Map, p: vector): (number, number)
 	return i, map.unit[i]
 end
 
+-- `v` kept at least `margin` inside `lo` to `hi`, or their middle if they're closer than that.
+local function keepWithin(v: number, lo: number, hi: number, margin: number): number
+	if lo + margin > hi - margin then
+		return (lo + hi) / 2
+	end
+	return math.clamp(v, lo + margin, hi - margin)
+end
+
+--- `p` kept at least `margin` studs inside the walls of the unit it stands in (never past the
+--- unit's middle, for a unit too small for the margin); a point in a hall comes back as it is. A
+--- keeper sent to the spot where it last saw someone in a unit stands back from the wall they
+--- crawled out through (L-12c), its body and its reaching arm clear of it. Allocates nothing.
+function KeeperMap.offWalls(map: Map, p: vector, margin: number): vector
+	local i = locate(map, p)
+	if map.unit[i] == 0 then
+		return p
+	end
+	return vector.create(
+		keepWithin(p.x, map.minX[i], map.maxX[i], margin),
+		p.y,
+		keepWithin(p.z, map.minZ[i], map.maxZ[i], margin)
+	)
+end
+
 -- Sight ------------------------------------------------------------------------------------------
 
 -- How far past a place's edge a line of sight is followed to find the place beyond it (studs).

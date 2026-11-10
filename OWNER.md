@@ -21,6 +21,32 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-12c, the hole trap end to end (built Nov 10)
+
+Verified in Studio at a 1 ms ping (D-085); a real network, a friend and a phone are yours.
+- [ ] **Spring it** (published game, or a Team Test for a real ping), floor 1 of seed 7: take the
+  saw (it lies by the test hall's spawn), open Units 155 and 153 (east side of the hall north of
+  the junction), saw from 155 into 153, open 157 from beside it and let its guard out, then let
+  it see you at 155's front from well up the hall. Run into 155 and press Crawl the moment the
+  button shows: the crawl should start at once, never a dead press. Crawl through, run out of
+  153 and slam 155. It should never come through the hole, and your slam should trap it (it
+  bangs). Before this ticket the press did nothing and it caught you at the hole.
+- [ ] **Look back through the hole** before you run round: it should stand back in 155, a few
+  studs off the walls, facing the hole, nothing of it through the wall. Does it read as hunting
+  for you where you vanished? In a small unit it stands near the middle (default: it keeps its
+  arm's room, 3.4 studs, off a unit's walls; say if it should press closer).
+- [ ] **The lead it needs** (feel, a design call): you're only lost once you're through the wall,
+  so as you press Crawl it must be about 16 studs behind (a little over a second at its hunt); a
+  few steps behind, it catches you at the mouth. Today the trap is something you set up and lure
+  it into from afar. Keep that, or make the crawl a panic escape too (a quicker drop at the
+  mouth, or no catch on someone already lying in the hole)?
+- [ ] **Dead presses anywhere else:** the server sees your run up to 0.4 s late; Crawl now allows
+  for it. Press any other button the instant you reach it (Saw, Lean, Climb, Drop down, a door's
+  Cut or Lock) and tell me if one ever does nothing.
+- [ ] **Saw buttons where they belong:** on any floor, every wall two units in a row share should
+  show its Saw button in both of those units, never only in one or in a unit further along (one
+  went to the wrong unit before this ticket, so some walls couldn't be sawn).
+
 ## Now: judge L-06b4b3, the freeze on your screen (built Nov 10)
 
 Verified in Studio at a 1 ms ping only (D-084); a real network and a phone are yours.

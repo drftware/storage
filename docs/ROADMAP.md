@@ -550,7 +550,7 @@ on nothing in Brix.
   handed to L-06b (`Deals.dealt`). Where is `DealSpot` (pure, 32,000 Lune checks): tools in the
   bulb's pool, nothing tall in the note's sight line. Tools without art (the saw and L-14's) are
   dealt but lie nowhere until their tickets. Judged on the Galaxy A16 (`docs/art/L-04e-*.jpg`).
-- [ ] **L-12 The saw and the hole trap.** Saw a crawl hole into the unit beside you (`Floor`'s
+- [x] **L-12 The saw and the hole trap.** Saw a crawl hole into the unit beside you (`Floor`'s
   left and right, D-031); it's loud. Players crawl through, keepers can't. Lead a keeper into a
   unit, crawl out the hole, run round and slam it in: it breaks out after about 90 s unless
   the padlock tool locks it in for the floor (L-06b3d; GDD "The hole trap"). Split Nov 9, one session each (L-12b split again into b1, b2, b3):
@@ -586,11 +586,18 @@ on nothing in Brix.
     One body in a hole at a time ("Wait for them"); `Crawls.crawled` for keepers (35 studs). The
     test hall no longer cuts holes as it's laid. Crawled 106 into 108 and back, and the small 109
     into 111, in Studio.
-  - [ ] **L-12c The hole trap, end to end** (needs L-06b3d): lead a hunting keeper into a unit,
-    crawl out through the hole, run round and slam it in; it can't follow through the hole and
-    searches where it lost you. The break-out, the padlock and the cap moved to L-06b3d (D-071);
-    the team's bonus is dropped (owner, Nov 9). The first trap of each keeper type going in the
-    Catalog waits for the Catalog (Phase 2).
+  - [x] **L-12c The hole trap, end to end.** Done Nov 10 (D-085). Played first: two things broke
+    it. Units two along a row passed as neighbours (`CrawlHole.between`), so 155's Saw and Crawl
+    buttons for its wall with 153 went to 157 and a crawl from 155 was refused; now each door face
+    must stand half its own unit's width from the wall. And the server sees your run late, so a
+    Crawl pressed as you reached the hole was silently dropped (it still saw you in the doorway);
+    now a press counts where it sees you or where you'll be 0.4 s on (`Crawling.counts`, `Lag`).
+    Lost in a unit, the keeper stopped on the wall's own line, half through the hole; now it
+    stops 3.4 studs off a unit's walls and turns to where it lost you (`KeeperMap.offWalls`).
+    `tests/holetrap.spec.luau` plays the trap through. Verified in Studio on seed 7, floor 1:
+    lured the guard from the junction, crawled 155 into 153 (pressed on arrival), it stood in
+    155 staring at the hole, and the slam 0.9 s after the crawl trapped it. The first trap of
+    each keeper type going in the Catalog waits for the Catalog (Phase 2). Waits on `OWNER.md`.
 - [x] **L-13 The ladder and the tops.** Split Nov 9:
   - [x] **L-13a The tops' closed edges** (D-055). Nothing on the tops drops you off the world: an
     S unit's wire top over every junction square a run reaches (its blocks of wall, a corner's
@@ -705,10 +712,19 @@ on nothing in Brix.
             bare floor, tried Lift padlocked, then unlocked, sawed through to Unit 104 (dealt
             a saw as the hole went through) and walked out under the lifted door. The owner
             judged it in Studio on Nov 9: looks good, the foot in the fallen panel left as is.
-- [ ] **L-14 The other tools.** Bubble wrap across a hall (pops for anything that crosses, heard
-  floor-wide), the air horn (lures keepers to a spot, wakes sleeping ones), the moving blanket
-  (thrown over a keeper, blinds it a few seconds), glow sticks (light the building can't see,
-  keepers with eyes can). Each a row on L-11's tools, its art first; may split a tool a session.
+- [ ] **L-14 The other tools.** The GDD's tool table: each a row on L-11's tools (`Tools.Catalog`),
+  its art first, built the unit's way. Split Nov 10, one tool a session (split again into art and
+  use if it won't fit, as L-12a and L-12b were); each names its hit-game precedent first, and one
+  with none goes to `OWNER.md` as an untested bet, never built quietly:
+  - [ ] **L-14a The air horn.** Lures keepers to a spot, wakes dormant things nearby (GDD). Blown
+    where you stand, heard as keepers hear (`Keeper.hear`), so it pulls a keeper to you or sets
+    up a trap (with the bubble wrap, or into a unit's mouth for the hole trap).
+  - [ ] **L-14b Bubble wrap.** Laid across a hall, it pops when anything crosses, heard
+    floor-wide (and on the light board, Phase 2); friends pop it too.
+  - [ ] **L-14c The moving blanket.** Thrown over a keeper, it blinds it a few seconds; it has
+    to land.
+  - [ ] **L-14d Glow sticks.** Mark a route with light that never times out and the building
+    can't see; keepers with eyes can.
 - [ ] **L-07 Getting kept and rescued.** Shrink-wrapped, stored in a random unit, banging to ping
   the team, cut free in a second, padlocked if left too long (GDD "Getting kept"). It takes
   `Keepers.caught` (L-06b3c, D-077) and replaces its stand-ins: DevCorridor's move to the lobby,

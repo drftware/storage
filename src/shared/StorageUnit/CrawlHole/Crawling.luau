@@ -23,9 +23,18 @@ Crawling.Reach = 5
 Crawling.RangeSlack = 3
 -- A press closer than this to your last one is dropped: a double tap.
 Crawling.RepeatSeconds = 0.3
+-- Seconds the server's view of a run may trail your own screen (D-084 measured it 0.06 to 0.13 s
+-- late, eased in over another 0.15 to 0.4 s). Run in with a keeper behind you and press Crawl as
+-- you reach the hole, and the server may still see you in the doorway (Studio, L-12c: 4 studs back
+-- at a full run): so a press is judged where it sees you and where you'll be this much later, or
+-- the escape is silently lost.
+Crawling.Lag = 0.4
+-- Studs past a unit's side and back walls that still count as inside it.
+Crawling.InsideSlack = 0.5
 
--- The move, in three parts. Short enough that a keeper a few steps behind still loses you, long
--- enough to read as squeezing through and not as a teleport.
+-- The move, in three parts. Short enough that a keeper a second behind you (about 16 studs at the
+-- Mannequin's hunt as you press) loses you once you're through the wall, long enough to read as
+-- squeezing through and not as a teleport (L-12c, D-085: one closer catches you at the mouth).
 Crawling.Drop = 0.3 -- down onto your belly at the hole's mouth
 Crawling.Through = 0.75 -- two pulls through the hole
 Crawling.Rise = 0.35 -- up on your feet in the next unit
@@ -100,6 +109,33 @@ function Crawling.decide(crawling: boolean, busy: boolean): Verdict
 		return { ok = false, refusal = "Wait for them" }
 	end
 	return { ok = true }
+end
+
+--- Whether `p` is inside a unit `width` wide and `depth` deep, in its door's frame (+Z in from the
+--- door's plane, X across it): past the door, between its side walls, short of its back wall.
+function Crawling.inside(p: vector, width: number, depth: number): boolean
+	return p.z > 0
+		and p.z < depth + Crawling.InsideSlack
+		and math.abs(p.x) < width / 2 + Crawling.InsideSlack
+end
+
+--- Whether a press of the Crawl button counts: the presser's root at `at`, moving at `velocity`,
+--- is inside the unit and within reach of the button at `button`, either where the server sees
+--- it or where it will be `Lag` seconds on (the server sees a run late). All in the unit's door
+--- frame (`inside`); `width` and `depth` are the unit's.
+function Crawling.counts(
+	at: vector,
+	velocity: vector,
+	button: vector,
+	width: number,
+	depth: number
+): boolean
+	local reach = Crawling.Reach + Crawling.RangeSlack
+	if Crawling.inside(at, width, depth) and vector.magnitude(at - button) <= reach then
+		return true
+	end
+	local ahead = at + velocity * Crawling.Lag
+	return Crawling.inside(ahead, width, depth) and vector.magnitude(ahead - button) <= reach
 end
 
 local function smooth(k: number): number

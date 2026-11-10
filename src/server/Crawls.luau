@@ -8,6 +8,7 @@
 	for the hole and never gets the button, so it can't follow.
 
 	The press is checked here (you're inside the unit you crawl from, within reach of the button,
+	where the server sees you or a moment on, since it sees a run late: `Crawling.counts`;
 	not pressing faster than a hand can, not crawling already, nobody else in the hole), then your
 	character carries the `Crawling.Tag` tag, the server time and the crawl's frame, and your own
 	screen moves your body along the path (CrawlView: Roblox gives each player's screen its own
@@ -49,7 +50,6 @@ export type Crawls = Brix.System & {
 local BUTTON_UP = 1.7
 local BUTTON_OUT = 0.6 -- studs off the wall's middle plane, clear of its collider
 local NEAR = 20 -- units further apart than this (their pivots) can't share a wall
-local INSIDE_SLACK = 0.5 -- studs past a unit's side walls that still count as inside it
 
 type Side = {
 	from: Model,
@@ -87,14 +87,21 @@ local function rootOf(player: Player): BasePart?
 	return nil
 end
 
--- Whether `at` is inside `unit`: past its door, between its side walls, short of its back wall.
-local function inside(unit: Model, at: Vector3): boolean
+-- A unit's width and depth (studs, its Specs').
+local function measure(unit: Model): (number, number)
 	local size = (unit:GetAttribute("UnitSize") :: string?) or "M"
 	local spec = Specs[size] or Specs.M
-	local p = RollUpDoor.frame(unit):PointToObjectSpace(at)
-	return p.Z > 0
-		and p.Z < spec.Depth + INSIDE_SLACK
-		and math.abs(p.X) < spec.Width / 2 + INSIDE_SLACK
+	return spec.Width, spec.Depth
+end
+
+local function toVector(v: Vector3): vector
+	return vector.create(v.X, v.Y, v.Z)
+end
+
+-- Whether `at` is inside `unit`: past its door, between its side walls, short of its back wall.
+local function inside(unit: Model, at: Vector3): boolean
+	local width, depth = measure(unit)
+	return Crawling.inside(toVector(RollUpDoor.frame(unit):PointToObjectSpace(at)), width, depth)
 end
 
 -- The crawl's frame from `from` through `wall` (stood by `holder`): on the wall's middle plane at
@@ -162,10 +169,18 @@ function Crawls.new(): Crawls
 		if not (root and character) then
 			return
 		end
-		local reach = Crawling.Reach + Crawling.RangeSlack
+		-- inside the unit and in reach, where the server sees you or a moment on: it sees a run late,
+		-- and a press made as you reach the hole with a keeper behind you must never be lost
+		local frame = RollUpDoor.frame(side.from)
+		local width, depth = measure(side.from)
 		if
-			(root.Position - side.at.WorldPosition).Magnitude > reach
-			or not inside(side.from, root.Position)
+			not Crawling.counts(
+				toVector(frame:PointToObjectSpace(root.Position)),
+				toVector(frame:VectorToObjectSpace(root.AssemblyLinearVelocity)),
+				toVector(frame:PointToObjectSpace(side.at.WorldPosition)),
+				width,
+				depth
+			)
 		then
 			return
 		end
