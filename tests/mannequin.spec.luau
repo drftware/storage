@@ -276,6 +276,12 @@ do
 		)
 		local walk = Pose.frame(d, "Walk")
 		ok(walk >= 2 and walk <= Pose.Frames, `frames: walking at {d}, a frame of the walk`)
+		-- how far along: never behind the walk it had shown, the stop never behind the walk; a
+		-- screen that keeps the furthest shows the stop's key until its walk gets there
+		local alongStop, alongWalk = Pose.along(d, "Stop"), Pose.along(d, "Walk")
+		ok(Pose.frameAt(alongStop) == stop and Pose.frameAt(alongWalk) == walk, "frames: along")
+		ok(alongStop >= alongWalk, `frames: a stop at {d} is never behind its walk`)
+		ok(alongStop - alongWalk <= Pose.Walk.Snaps, "and at most the rest of one snap ahead")
 		local a, b = Pose.ofFrame(walk), Pose.at(d)
 		for joint in Pose.Limits do
 			local p: Pose.Angles, q: Pose.Angles = a[joint] or {}, b[joint] or {}

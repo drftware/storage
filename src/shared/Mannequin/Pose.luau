@@ -228,14 +228,28 @@ local function shown(travelled: number, how: How): (number, number)
 	return k, s
 end
 
+-- How far along its walk a walking or stopped body shows after `travelled` studs, in snap steps:
+-- the key (counted from its first, 0) times `Walk.Snaps`, plus the step of the snap into the next.
+-- A screen shows the furthest it has shown (L-06b4b3): stopped mid-snap, it showed the key it was
+-- snapping into, so as it walks on it holds that key until its walk reaches it, never flicking
+-- back into the snap.
+function Pose.along(travelled: number, how: How): number
+	local k, s = shown(travelled, how)
+	return k * Pose.Walk.Snaps + s
+end
+
+-- The frame for a walk shown `along` its keys (Pose.along).
+function Pose.frameAt(along: number): number
+	return 2 + along % (#Pose.Walk.Keys * Pose.Walk.Snaps)
+end
+
 -- The frame it shows after `travelled` studs: Still; its walk (the key it holds, or the nearest
 -- step of the snap to the next); or stopped, on the key `freeze` says.
 function Pose.frame(travelled: number, how: How): number
 	if how == "Still" then
 		return 1
 	end
-	local k, s = shown(travelled, how)
-	return 2 + (k % #Pose.Walk.Keys) * Pose.Walk.Snaps + s
+	return Pose.frameAt(Pose.along(travelled, how))
 end
 
 -- What its walk sounds like (L-06b4b2): a foot planting as a step key lands, its joints knocking

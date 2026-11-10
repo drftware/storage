@@ -9,8 +9,10 @@
 	be, but never from past a surface (`Hands`, D-060). A right
 	click, a gamepad's R1 or the round button above the phone's jump button switches it: the click,
 	the lens and the beam answer at once on your screen, and the server is told the state you want
-	(it decides for everyone else). While it's on, your look's pitch goes to the server a few times
-	a second so friends see your torch point where you look.
+	(it decides for everyone else). While it's on, where you look (its pitch and heading) goes to
+	the server a few times a second, so friends see your torch point where you look and keepers
+	that freeze in light are tested along it; a big swing goes sooner, and the moment your screen
+	sees your beam land on a keeper (`Beam.landed`, from KeeperView), at once (L-06b4b3).
 
 	Friends': the server's torch in their right hand (`Flashlights`), its lens lit and its beam
 	drawn here from the `On` attribute, their arm raised to their `Aim` (each screen poses other
@@ -186,7 +188,14 @@ end
 
 local FlashlightView = {}
 
-function FlashlightView.new(): Brix.System
+-- Your torch as other systems on this screen see it.
+export type Beam = {
+	on: () -> boolean, -- whether it's on, on your screen
+	landed: () -> (), -- your screen saw your beam land on a keeper: send where you look at once
+}
+
+-- The system, and your torch for KeeperView.
+function FlashlightView.new(): (Brix.System, Beam)
 	local connections: { RBXScriptConnection } = {}
 	local own: Flashlight.Rig? = nil
 	local ownBeam: Attachment? = nil
@@ -198,8 +207,10 @@ function FlashlightView.new(): Brix.System
 	local lastSwitch: number? = nil
 	local burst = Torch.Burst
 	local sentAt = -math.huge -- when the state was last sent
-	local aimSent: number? = nil
+	local aimSent: number? = nil -- the pitch last sent (whole degrees), nil since it went on
+	local headingSent = 0 -- and the heading
 	local aimAt = -math.huge
+	local soon = false -- your beam landed on a keeper since the last send
 	local lastYaw: number?, lastPitch = nil, 0
 	local friends: { [Model]: Friend } = {}
 	local order: { Friend } = {}
@@ -518,9 +529,14 @@ function FlashlightView.new(): Brix.System
 			return
 		end
 		local pitch = math.deg(math.asin(math.clamp(camera.CFrame.LookVector.Y, -1, 1)))
-		if Torch.shouldSend(aimSent, aimAt, pitch, now) then
-			r:FireServer(pitch)
-			aimSent, aimAt = math.round(pitch), now
+		local _, yaw = camera.CFrame:ToOrientation()
+		local heading = math.deg(yaw)
+		local sent = aimSent
+		local moved = if sent then Torch.moved(pitch, heading, sent, headingSent) else nil
+		if Torch.shouldSend(moved, now - aimAt, soon) then
+			r:FireServer(pitch, heading)
+			aimSent, headingSent, aimAt = math.round(pitch), math.round(heading), now
+			soon = false
 		end
 	end
 
@@ -609,7 +625,16 @@ function FlashlightView.new(): Brix.System
 		table.clear(order)
 	end
 
-	return system :: any -- any: a plain Brix system built field by field
+	local beam: Beam = {
+		on = function(): boolean
+			return mine
+		end,
+		landed = function()
+			soon = mine
+		end,
+	}
+
+	return system :: any, beam -- any: a plain Brix system built field by field
 end
 
 return FlashlightView

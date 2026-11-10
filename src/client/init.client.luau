@@ -34,13 +34,14 @@ local cameraShake, kick = CameraShake.new()
 local freeCursor, needCursor = FreeCursor.new()
 local elevatorView, pressKeypad = ElevatorView.new(kick)
 local keeperSounds, keeperHeard = KeeperSounds.new()
+local flashlightView, myBeam = FlashlightView.new()
 
 local host = Brix.Host.new({
 	systems = {
 		{ slot = "doorView", system = DoorView.new() },
 		-- before KeeperView, so a body is ready to be heard by the time KeeperView first poses it
 		{ slot = "keeperSounds", system = keeperSounds },
-		{ slot = "keeperView", system = KeeperView.new(keeperHeard) },
+		{ slot = "keeperView", system = KeeperView.new(keeperHeard, myBeam) },
 		{ slot = "doorSounds", system = DoorSounds.new(kick) },
 		-- before BehindDoors, so its dimming of the hall lands on a flickering tube each frame
 		{ slot = "hallLights", system = HallLights.new() },
@@ -53,7 +54,7 @@ local host = Brix.Host.new({
 		{ slot = "caughtView", system = CaughtView.new(kick) },
 		{ slot = "chaseMusic", system = ChaseMusic.new() },
 		{ slot = "noteView", system = NoteView.new() },
-		{ slot = "flashlightView", system = FlashlightView.new() },
+		{ slot = "flashlightView", system = flashlightView },
 		{ slot = "toolView", system = ToolView.new() },
 		{ slot = "sawView", system = SawView.new(kick) },
 		{ slot = "crawlView", system = CrawlView.new(kick) },

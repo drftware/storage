@@ -2,44 +2,43 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-10, session 72 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-10, session 73 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-06b4b2 done (D-083):** each screen hears the walk it shows. A stiff clack of its foot as
-  each step of its stop-motion walk lands and a hollow knock of its joints as each pass lands
-  (`Pose.tell`: each key once, from KeeperView's own pose, nothing new on the network), from
-  the body, footfalls to 70 studs, knocks to 40; and one deeper knock as a lift first clears the
-  feet of one standing in a unit, asleep or watching (`KeeperTell`, `KeeperSounds`; numbers on
-  the row's `tell`; 168 Lune checks). Verified in Studio on seed 7, floor 1: every footfall on a
-  step pose, alternating feet 5.4 studs apart; knocks on passes; the reveal at 157 and 154 within
-  a frame of the curtain clearing their feet; no sound errors. By ear and phone: `OWNER.md`.
+- **L-06b4b3 done (D-084), and with it L-06b4 and L-06b, the Mannequin hunts.** Measured first:
+  the server saw a player's turn up to 0.4 s late (Roblox eases a character in), so a hunter
+  walked on under your torch and caught you. Now your torch sends its heading with its pitch (at
+  once on a big swing or as your screen sees the beam land) and keepers test your beam along it;
+  one beam test serves the brain and your screen (`Torch.lights` at `Keeper.beamPoint`; the
+  screen's line a raycast). The frame your beam lands on a body shown walking, your screen holds
+  it on its freeze key (`KeeperMotion.hold`), never sliding; once the server lets it go it makes
+  the gap up as it walks. Verified in Studio on seed 7, floor 1: held the frame the beam landed,
+  the server's freeze 0.03 s later, 1.66 studs on; through 157's shut door nothing. `OWNER.md`.
 
-## Next task: L-06b4b3 The freeze on your screen
-The moment: you swing your torch onto it mid-stride and it stops dead that instant, on your
-screen, never a step on and back; as SCP-173 and FNAF's animatronics hold the moment you look.
+## Next task: L-12c The hole trap, end to end
+The moment: it's on you, you dive into a unit, squeeze out through the hole you sawed, sprint
+round and slam its door on it while it searches where you vanished (GDD "The hole trap"; name the
+hit-game precedent the GDD gives it before building anything new).
 1. Owner test results first, if pasted.
-2. Today the freeze reaches your screen a round trip late (the brain decides it, D-076; a Stop
-   record goes out at once) and shows 0.1 s behind the server (D-075), so it walks on, then
-   eases back about 0.07 studs. Measure that first in Studio (log the beam landing, the screen's
-   stop, the record).
-3. Predict it on the torch holder's screen, as `HallLights` predicts your own lights: when your
-   own torch's beam (Torch's cone, the brain's test: a point up its middle within 42 studs and
-   27 degrees, a clear line) finds a body your screen shows walking, hold its pose on the key
-   `Pose.freeze` gives, at once; when the server's Stop arrives, settle onto it without a slide;
-   if no Stop comes within a round trip or two (a wall the screen missed), let it walk on.
-4. Make the beam test one pure rule both sides use (the brain's and the screen's), Lune-tested;
-   the screen's clear line is a raycast, the brain's `KeeperMap.clear`: note any disagreement.
-5. Every action answers: the stop is the feedback; nothing new on screen. Too big? Split first.
-**Acceptance:** checks green; in Studio on seed 7, floor 1, a torch swung onto the roaming
-Mannequin stops it on your screen the frame the beam lands (log it against the server's
-record), never past and back; a beam through a shut door doesn't stop it; Output clean.
-**Read first:** ROADMAP L-06b4b3; D-076 and D-075; `src/client/HallLights.luau` (its
-prediction); `src/client/KeeperView.luau`; `src/shared/KeeperMotion.luau` (`follow`,
-`receive`, `update`); `docs/STUDIO.md` "Testing the light freeze from the MCP".
+2. Read the GDD's "The hole trap" section only (docs tools, never WebFetch).
+3. Play it end to end in Studio before changing anything: on seed 7, floor 1, saw a hole between
+   two units in a row (a saw lies by the test hall's spawn; or cut one from the Server with
+   `CrawlHole.saw`), let 157's guard hunt you into one, crawl out, run round, slam. Log its
+   state each 0.25 s. Find what breaks: does it lose you through the wall, search at the hole,
+   linger long enough for the run round, or walk out first? Can it follow through the hole (it
+   mustn't: crawl holes are for crawlers, D-068)?
+4. Fix only what stops the trap landing, in the brain (`Keeper`, pure, a failing Lune test first)
+   or its numbers (the row, each with a comment on what it does to the player).
+5. Every action answers: add feedback only where something is silent. Too big? Split first.
+**Acceptance:** checks green; in Studio on seed 7, floor 1, the guard hunted into a unit loses you
+through the hole, never comes through it, and is trapped by your slam after the run round
+(Output: "trapped"); Output clean.
+**Read first:** ROADMAP L-12c; GDD "The hole trap"; D-068, D-071, D-077; `src/shared/Keeper.luau`
+(how it loses you and searches); `src/server/Crawls.luau`; `docs/STUDIO.md` (the trap, the
+crawl and the chase recipes).
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-06b4b3; D-064, D-068 to D-083. L-12c needs L-06b3d (done). Then L-14; L-07 (takes
-   `Keepers.caught`) to L-10.
+1. L-12c; D-064, D-068 to D-084. Then L-14; L-07 (takes `Keepers.caught`) to L-10.
 2. **Check, small:** caught crawling a hole or on the ladder, the stand-in's move may leave
    `CrawlView`/`LadderView` holding PlatformStand; if a keeper can reach you there, end it.
 3. **Checks on the tops, small:** Climb or Drop down lying behind a sawn hole slides you across
@@ -62,6 +61,7 @@ prediction); `src/client/KeeperView.luau`; `src/shared/KeeperMotion.luau` (`foll
    door may put its hand through it (L-06b3d2 fixed only the trapped stand).
 10. **Check, small:** after a Peek from the MCP, that door's other buttons ignore presses until
     you step out of reach and back (docs/STUDIO.md); does a player's real press do the same?
+    And any other server check of where a player faces sees the turn 0.4 s late (D-084).
 
 ## Kickoff for the next agent
 ```text

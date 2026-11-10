@@ -397,6 +397,22 @@ verified: a doc page, Studio, or "untested".
   `user_mouse_input`. To chase in the dark, take the `TripsLights` tag off your root on the
   Server: no light wakes for you; put it back to test the hall lights. Fixtures' pivots stand on
   the floor (y 0 on floor 1), 24 apart down the hall.
+- **The server sees a player's turn late and eased** (L-06b4b3, 2026-11-10, measured in Studio
+  at a 1 ms ping): a snap turn of your root on the client starts to show in the server's
+  `HumanoidRootPart.CFrame` 0.06 to 0.13 s later and is eased in over another 0.15 to 0.4 s
+  (Roblox smooths a client-owned character). Anything the server judges from where a player
+  looks should take the client's own word, as the torch's heading does (D-084).
+  `Player:GetNetworkPing()` read 0.001 in Studio.
+- **Testing the torch's freeze on your screen from the MCP** (L-06b4b3, 2026-11-10): seed 7,
+  floor 1. Server: `TripsLights` off, character at (47, 3, -632) facing +X; right-click the torch
+  on. One Client script: turn the camera from `BindToRenderStep` at `Camera.Value + 1` (where
+  Roblox's camera turns it, before the Host's step; turned on `PreRender`, KeeperView sees it a
+  frame late), Scriptable with `AutoRotate` off, looking at 157's `DoorButtons`; tap Open, face
+  -X; 0.25 s after the first walking `Hunting` record turn to the drawn body, and log each
+  `PreRender` (the body's pivot, its `RightHip` Transform X: 6 is the pass-right key). Output's
+  `KeeperView:` lines say when your beam held it, when the server's stop came and how far on, and
+  when the light let go. A shut door: stand at (50.5, 3, -638.5), tap Open, tap Slam 2.15 s later
+  (the guard, going out to look, is trapped), then stand at (46, 3, -632) facing +X.
 - **Testing the keeper's tell from the MCP** (L-06b4b2, 2026-11-10): seed 7, floor 1. Log from
   the Client with a `task.spawn`ed `RenderStepped` poll over each keeper body's root: a Sound
   named `Keeper*` that is playing with a `TimePosition` lower than last frame's (or newly

@@ -200,10 +200,54 @@ ok(
 	Torch.aim(500) == Torch.AimMost and Torch.aim(-500) == -Torch.AimMost,
 	"clamped to how far you can look"
 )
-ok(Torch.shouldSend(nil, -math.huge, 3, 0), "the first aim is sent")
-ok(not Torch.shouldSend(3, 0, 30, Torch.AimEvery * 0.5), "not too soon")
-ok(not Torch.shouldSend(3, 0, 3 + Torch.AimStep * 0.5, 1), "not for a twitch")
-ok(Torch.shouldSend(3, 0, 3 + Torch.AimStep, 1), "a real move is sent")
+ok(Torch.heading("12") == nil and Torch.heading(0 / 0) == nil, "a heading must be a real number")
+ok(Torch.heading(math.huge) == nil, "not infinite")
+ok(Torch.heading(12.4) == 12 and Torch.heading(-12.6) == -13, "rounded to whole degrees")
+ok(Torch.heading(190) == -170 and Torch.heading(-180) == -180, "brought round to -180..180")
+ok(Torch.heading(180) == -180 and Torch.heading(725) == 5, "a full turn is no turn")
+near(Torch.moved(0, 175, 0, -175), 10, "a turn across the back is the short way round")
+near(Torch.moved(20, 0, 5, 3), 15, "the larger of up and round")
+
+-- When your aim goes: the first at once; a look about each AimEvery once it has moved AimStep; a
+-- big swing, or your screen seeing your beam land on a keeper, as soon as AimSoon.
+ok(Torch.shouldSend(nil, math.huge, false), "the first aim is sent")
+ok(not Torch.shouldSend(nil, Torch.AimSoon * 0.5, false), "but not straight after another")
+ok(not Torch.shouldSend(30, Torch.AimSoon * 0.5, true), "nothing sooner than AimSoon")
+ok(not Torch.shouldSend(Torch.AimStep, Torch.AimSoon, false), "a small move waits")
+ok(not Torch.shouldSend(Torch.AimStep * 0.5, 1, false), "not for a twitch")
+ok(Torch.shouldSend(Torch.AimStep, Torch.AimEvery, false), "a real move is sent")
+ok(Torch.shouldSend(Torch.AimSwing, Torch.AimSoon, false), "a big swing goes soon")
+ok(Torch.shouldSend(0.4, Torch.AimSoon, true), "a beam landing goes soon, however small")
+ok(not Torch.shouldSend(0, Torch.AimSoon, true), "but not with nothing new")
+ok(Torch.AimTake < Torch.AimSoon, "the server takes what the client sends soonest")
+
+-- Where an aim points: level and round as a camera turned that way looks.
+do
+	local function close(a: vector, b: vector, what: string)
+		ok(vector.magnitude(a - b) < 1e-6, what)
+	end
+	close(Torch.look(0, 0), vector.create(0, 0, -1), "no turn looks down -Z")
+	close(Torch.look(0, 90), vector.create(-1, 0, 0), "a quarter turn left looks down -X")
+	close(Torch.look(0, -90), vector.create(1, 0, 0), "and right, down +X")
+	close(Torch.look(90, 0), vector.create(0, 1, 0), "straight up")
+	near(vector.magnitude(Torch.look(-35, 123)), 1, "always length 1")
+end
+
+-- The beam on a point: within its reach and inside its cone, never behind the eye.
+do
+	local eye, aim = vector.create(0, 4.5, 0), vector.create(0, 0, -1)
+	local half = math.rad(Torch.BeamAngle / 2)
+	local function at(d: number, angle: number): vector
+		return eye + vector.create(math.sin(angle) * d, 0, -math.cos(angle) * d)
+	end
+	ok(Torch.lights(eye, aim, at(10, 0)), "straight ahead")
+	ok(Torch.lights(eye, aim, at(Torch.BeamRange - 0.01, 0)), "to the end of its reach")
+	ok(not Torch.lights(eye, aim, at(Torch.BeamRange + 0.01, 0)), "not past it")
+	ok(Torch.lights(eye, aim, at(10, half - 0.01)), "just inside the cone's edge")
+	ok(not Torch.lights(eye, aim, at(10, half + 0.01)), "not just outside")
+	ok(not Torch.lights(eye, aim, at(10, math.pi)), "never behind")
+	ok(not Torch.lights(eye, aim, eye + vector.create(0, 6, -1)), "nor far over the cone")
+end
 
 -- The arm: hanging is 0; level is a quarter turn; looking up raises it further, within reach.
 near(Torch.raise(0), math.pi / 2, "a level aim holds the arm straight out")

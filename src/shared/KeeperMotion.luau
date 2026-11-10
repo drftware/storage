@@ -26,6 +26,15 @@
 	stops (`left`). Its turns ease over `Turn`, and its pose follows how far it has walked, never
 	backward.
 
+	Your own torch's beam is the one thing a screen knows before the server (L-06b4b3): the moment
+	your screen sees it land on a keeper that freezes in light, it holds where it's shown, as it's
+	shown (`hold`), as SCP-173 and FNAF's animatronics hold the moment you look. The server's stop
+	follows a round trip later, a little further on (it walked while your look travelled, and the
+	screen shows it `Delay` behind); the screen keeps its own place while the light holds it, never
+	sliding, and makes the gap up only as it walks again, over its first stride (`CatchUp`) or
+	before the stop its record says it walks to, whichever comes first. If
+	no stop comes within its `patience` (a wall the screen missed), it walks on the same way.
+
 	Positions are the world's; a keeper's position is its feet. `update` allocates nothing, and each
 	follower reuses its few records.
 ]]
@@ -45,6 +54,16 @@ KeeperMotion.Settle = 0.12
 KeeperMotion.Turn = 0.06
 -- A correction bigger than this (studs) snaps rather than slides: it was stood somewhere new.
 KeeperMotion.Snap = 4
+-- Held by your own beam: how long your screen holds it on your beam's word alone (seconds), plus
+-- two of your pings, before deciding the server didn't agree and letting it walk on. Longer
+-- forgives a slow network; shorter lets a body your screen wrongly stopped walk on sooner.
+KeeperMotion.Patience = 0.15
+-- No longer than this, however slow the network (seconds).
+KeeperMotion.MostPatience = 0.5
+-- Once it walks again, how many studs it takes to make up where your hold left it behind the
+-- server (about two thirds of it in this distance): its stride, two steps, so it closes the gap
+-- a little quicker than it walks rather than lunging.
+KeeperMotion.CatchUp = 5.4
 
 -- What it costs to send:
 -- The least time between two records in one state (seconds): at most 12.5 a second, even for a
@@ -97,6 +116,13 @@ export type Follow = {
 	state: string, -- the state shown
 	speed: number, -- how fast it's shown walking
 	offset: vector, -- what's left of a late correction, easing out
+	held: boolean, -- your own beam holds it on this screen (`hold`)
+	heldAt: number, -- the time this screen showed as the hold began
+	patience: number, -- how long the hold waits for the server's stop (seconds)
+	stopped: number, -- the time of the server's stop that answered the hold (0: none yet)
+	behind: vector, -- what's left of a hold, made up as it walks (`CatchUp`)
+	behindWalk: number, -- and how far its pose is behind (studs walked)
+	base: number, -- how far its records had it walking at the last update
 }
 
 --- A blank record, to read into.
@@ -243,7 +269,32 @@ function KeeperMotion.follow(): Follow
 		state = "Asleep",
 		speed = 0,
 		offset = vector.zero,
+		held = false,
+		heldAt = 0,
+		patience = 0,
+		stopped = 0,
+		behind = vector.zero,
+		behindWalk = 0,
+		base = 0,
 	}
+end
+
+--- How long a hold waits for the server's stop on a screen whose ping is `ping` seconds.
+function KeeperMotion.patience(ping: number): number
+	local p = if ping == ping and ping > 0 then ping else 0
+	return math.min(KeeperMotion.Patience + 2 * p, KeeperMotion.MostPatience)
+end
+
+--- Your own beam just landed on it on this screen, showing time `t`: it holds where it's shown,
+--- as it's shown, at once, waiting up to `patience` seconds (`KeeperMotion.patience`) for the
+--- server's stop. Only a body shown walking can be held. Whether it took hold.
+function KeeperMotion.hold(f: Follow, t: number, patience: number): boolean
+	if f.held or f.count == 0 or f.state == "Asleep" or f.speed <= 0 then
+		return false
+	end
+	f.held, f.heldAt, f.patience, f.stopped = true, t, patience, 0
+	f.speed = 0
+	return true
 end
 
 -- Where the records held put it at time `t`, how far it has walked, and the record it's shown by:
@@ -306,6 +357,35 @@ function KeeperMotion.receive(f: Follow, encoded: string, t: number): boolean
 	return true
 end
 
+-- Whether your beam's hold on it stands at time `t`, `now` being the record it's shown by: until
+-- the server's stop answers it within its patience, then until the screen reaches the server
+-- letting it walk on. A stop far from where it's held (stood somewhere new) lets go at once.
+local function stillHeld(f: Follow, t: number, now: Record): boolean
+	if f.stopped == 0 then
+		local records = f.records
+		local i = f.head
+		for _ = 1, f.count do
+			local r = records[i]
+			if r.t <= f.heldAt then
+				break
+			end
+			if r.speed <= 0 then
+				f.stopped = r.t -- the earliest stop after the hold: the server's freeze
+			end
+			i = if i == 1 then RING else i - 1
+		end
+		if f.stopped == 0 then
+			return t - f.heldAt < f.patience
+		end
+	end
+	local newest = f.records[f.head]
+	local miss = newest.at - f.at
+	if newest.speed <= 0 and vector.dot(miss, miss) > SNAP2 then
+		return false
+	end
+	return not (now.t > f.stopped and now.speed > 0)
+end
+
 -- Turns the way it's shown facing toward `want`, eased over `Turn`. Whether it's still turning.
 local function turn(f: Follow, want: vector, dt: number): boolean
 	local have = f.facing
@@ -329,6 +409,42 @@ function KeeperMotion.update(f: Follow, t: number, dt: number): boolean
 		return false
 	end
 	local at, travelled, now = target(f, t)
+	if f.held and not stillHeld(f, t, now) then
+		-- let go: what the hold left behind is made up as it walks, unless it's a jump
+		f.held = false
+		local gap = f.at - at
+		local newest = f.records[f.head]
+		local miss = newest.at - f.at
+		if vector.dot(gap, gap) > SNAP2 or newest.speed <= 0 and vector.dot(miss, miss) > SNAP2 then
+			f.behind, f.behindWalk = vector.zero, 0
+		else
+			f.behind, f.behindWalk = gap, math.max(travelled - f.travelled, 0)
+		end
+		f.offset, f.base = vector.zero, travelled
+	end
+	if f.held then
+		-- held where it was shown, as it was shown; only its state follows the server
+		f.state, f.speed = now.state, 0
+		return true
+	end
+	local walked = travelled - f.base
+	f.base = travelled
+	if walked > 0 and (f.behind ~= vector.zero or f.behindWalk > 0) then
+		local keep = math.exp(-walked / KeeperMotion.CatchUp)
+		if now.speed > 0 then
+			-- made up by the time it stops, if its record says it stops sooner (a hunter's at
+			-- arm's length from you): it closes in a little quicker, but never stands short
+			local left = now.left - math.max(t - now.t, 0) * now.speed
+			keep = math.min(keep, if left > 0 then left / (left + walked) else 0)
+		end
+		local behind = f.behind * keep
+		if vector.dot(behind, behind) < SETTLED2 then
+			f.behind, f.behindWalk = vector.zero, 0
+		else
+			f.behind, f.behindWalk = behind, f.behindWalk * keep
+		end
+	end
+	travelled -= f.behindWalk
 	local offset = f.offset
 	if offset ~= vector.zero then
 		offset *= math.exp(-dt / KeeperMotion.Settle)
@@ -337,7 +453,7 @@ function KeeperMotion.update(f: Follow, t: number, dt: number): boolean
 		end
 		f.offset = offset
 	end
-	f.at = at + offset
+	f.at = at + offset + f.behind
 	if travelled > f.travelled then
 		f.travelled = travelled
 	end

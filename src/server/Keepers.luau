@@ -71,6 +71,7 @@ local Doors = require(script.Parent.Doors)
 local Flashlights = require(script.Parent.Flashlights)
 local Floor = require(ReplicatedStorage.Shared.Floor)
 local Keeper = require(ReplicatedStorage.Shared.Keeper)
+local Torch = require(ReplicatedStorage.Shared.Flashlight.Torch)
 local KeeperMap = require(ReplicatedStorage.Shared.KeeperMap)
 local KeeperMotion = require(ReplicatedStorage.Shared.KeeperMotion)
 local KeeperRows = require(ReplicatedStorage.Shared.KeeperRows)
@@ -214,8 +215,9 @@ function Keepers.new(): Keepers
 	local joins: { RBXScriptConnection } = {}
 
 	-- Where each living player's feet are on floor `on`, in its own coordinates, and their torch:
-	-- from their eyes (their head), along the way they face (a first-person camera's), tipped up
-	-- by their aim; a zero aim while it's off. Allocates nothing.
+	-- from their eyes (their head), along where their screen last said it looks (its heading and
+	-- pitch; before it has said, the way their character faces, tipped up by their pitch); a zero
+	-- aim while it's off. Allocates nothing.
 	local function gather(on: OnFloor, now: number)
 		local list = on.players
 		local origin = on.origin
@@ -240,15 +242,24 @@ function Keepers.new(): Keepers
 						then origin:PointToObjectSpace(head.Position)
 						else p + Vector3.yAxis * EYE_OVER_ROOT
 					list.eye[n] = vector.create(eye.X, eye.Y, eye.Z)
-					local look = root.CFrame.LookVector
-					local across = math.sqrt(look.X * look.X + look.Z * look.Z)
-					if across > 1e-6 then
-						local up = math.rad(flashlights:aim(player))
-						local c = math.cos(up) / across
-						local d = origin:VectorToObjectSpace(
-							Vector3.new(look.X * c, math.sin(up), look.Z * c)
-						)
+					local heading = flashlights:heading(player)
+					if heading then
+						-- where their screen looks, as it last said: their character's turn
+						-- reaches the server late and eased in (Flashlights)
+						local w = Torch.look(flashlights:aim(player), heading)
+						local d = origin:VectorToObjectSpace(Vector3.new(w.x, w.y, w.z))
 						aim = vector.create(d.X, d.Y, d.Z)
+					else
+						local look = root.CFrame.LookVector
+						local across = math.sqrt(look.X * look.X + look.Z * look.Z)
+						if across > 1e-6 then
+							local up = math.rad(flashlights:aim(player))
+							local c = math.cos(up) / across
+							local d = origin:VectorToObjectSpace(
+								Vector3.new(look.X * c, math.sin(up), look.Z * c)
+							)
+							aim = vector.create(d.X, d.Y, d.Z)
+						end
 					end
 				end
 				list.aim[n] = aim

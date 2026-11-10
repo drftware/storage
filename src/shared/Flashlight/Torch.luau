@@ -72,10 +72,19 @@ Torch.ClickReach = 22 -- heard to here: a friend round the corner hears you swit
 Torch.SwitchGap = 0.08 -- seconds between switches: three blinks in under a second, no faster
 Torch.Burst = 4 -- switches the server takes back to back before the gap applies
 Torch.Resend = 0.4 -- seconds the server may disagree with your torch before it's told again
--- Your aim, for friends' screens (their arm raises your torch to it) and later for keepers.
+-- Your aim: where you look, up and round, for friends' screens (their arm raises your torch to
+-- it) and for keepers that freeze in light (the server tests your beam along it, L-06b4b3).
 Torch.AimMost = 80 -- degrees up or down
 Torch.AimStep = 1.5 -- degrees it must move before it's sent again
-Torch.AimEvery = 0.1 -- seconds between sends at most
+Torch.AimEvery = 0.1 -- seconds between sends while you look about
+-- A swing this big (degrees), or your screen seeing your beam land on a keeper, is sent after
+-- only `AimSoon`: the server hears your beam land within a frame or two, not a tenth of a second
+-- later, so the keeper it catches walks no further there than it does on your screen.
+Torch.AimSwing = 10
+Torch.AimSoon = 0.05
+-- The server takes an aim no sooner than this after the last (seconds): half the client's
+-- soonest, so two sent `AimSoon` apart that arrive bunched up both count.
+Torch.AimTake = 0.025
 Torch.AimFollow = 12 -- how fast a friend's arm follows their aim on your screen (per second)
 Torch.ArmBlend = 0.2 -- seconds a friend's arm takes to raise the torch or drop it
 -- The light budget on a low-end phone: your beam and the nearest friends' cast real, shadowed
@@ -94,6 +103,8 @@ Torch.AimAttribute = "Aim" -- degrees, whole
 
 local TAU = 2 * math.pi
 local RAD = math.pi / 180
+local BEAM_REACH2 = Torch.BeamRange * Torch.BeamRange
+local BEAM_COS2 = math.cos(math.rad(Torch.BeamAngle / 2)) ^ 2
 
 -- What the sway carries from frame to frame.
 export type Sway = {
@@ -224,12 +235,55 @@ function Torch.aim(value: unknown): number?
 	return math.clamp(math.round(value), -Torch.AimMost, Torch.AimMost)
 end
 
--- Whether a new pitch is worth sending: moved far enough, and not too soon.
-function Torch.shouldSend(sent: number?, sentAt: number, pitch: number, now: number): boolean
-	if now - sentAt < Torch.AimEvery then
+-- A heading from a client, in degrees round from looking down -Z (Roblox's yaw, turning left):
+-- a real number, rounded and brought into -180 to under 180. Nil if it isn't one.
+function Torch.heading(value: unknown): number?
+	if type(value) ~= "number" or value ~= value or math.abs(value) == math.huge then
+		return nil
+	end
+	return (math.round(value) + 180) % 360 - 180
+end
+
+-- How far an aim has moved, in degrees: the larger of its change up and its turn round.
+function Torch.moved(pitch: number, yaw: number, wasPitch: number, wasYaw: number): number
+	local turn = math.abs((yaw - wasYaw + 180) % 360 - 180)
+	return math.max(math.abs(pitch - wasPitch), turn)
+end
+
+-- Whether to send your aim now, `since` seconds after the last send, having `moved` degrees
+-- (Torch.moved; nil if none was sent since the torch went on). `soon` says your screen just saw
+-- your beam land on a keeper: then it goes as soon as the server takes it.
+function Torch.shouldSend(moved: number?, since: number, soon: boolean): boolean
+	if moved == nil then
+		return since >= Torch.AimSoon
+	elseif soon then
+		return since >= Torch.AimSoon and moved > 0
+	elseif moved >= Torch.AimSwing then
+		return since >= Torch.AimSoon
+	end
+	return since >= Torch.AimEvery and moved >= Torch.AimStep
+end
+
+-- The way a torch aimed `pitch` degrees up and `yaw` degrees round (Torch.heading's) points:
+-- length 1, as a camera at that orientation looks.
+function Torch.look(pitch: number, yaw: number): vector
+	local p, y = pitch * RAD, yaw * RAD
+	local c = math.cos(p)
+	return vector.create(-math.sin(y) * c, math.sin(p), -math.cos(y) * c)
+end
+
+-- Whether a beam leaving `eye` along `aim` (length 1) lights `point`: within its reach and its
+-- cone (the cone players see). The one test the server's keepers (Keeper.inTorch) and your
+-- screen's prediction (KeeperView) both use, so they agree on everything but the line to it.
+-- Allocates nothing.
+function Torch.lights(eye: vector, aim: vector, point: vector): boolean
+	local d = point - eye
+	local d2 = vector.dot(d, d)
+	if d2 > BEAM_REACH2 then
 		return false
 	end
-	return sent == nil or math.abs(pitch - sent) >= Torch.AimStep
+	local along = vector.dot(d, aim)
+	return along > 0 and along * along >= BEAM_COS2 * d2
 end
 
 -- A friend's shoulder for a torch aimed at `pitch` degrees: the arm, hanging down, swung forward

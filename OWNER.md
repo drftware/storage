@@ -21,6 +21,25 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-06b4b3, the freeze on your screen (built Nov 10)
+
+Verified in Studio at a 1 ms ping only (D-084); a real network and a phone are yours.
+- [ ] **Swing onto it** (published game, or a Team Test with a friend for a real ping): open
+  Unit 157 from the side, let the guard come, then swing your lit torch onto it mid-stride. It
+  should stop dead the instant the beam lands, on a hard pose, never a step on and back. Then
+  look away: it comes, closing a little quicker than its walk for a stride. Does that read as
+  it lunging once the light leaves (good), or as a glitch? Feel numbers: `KeeperMotion.CatchUp`
+  (5.4 studs) and `KeeperMotion.Patience` (0.15 s plus two pings).
+- [ ] **It never catches you under your light:** let it hunt you and keep the beam on it as it
+  comes. Before this ticket it walked on under the beam for a quarter of a second and caught me;
+  now the server freezes it within a frame or two of your screen.
+- [ ] **Two screens:** a friend watching sees it stop where the server froze it, about a stud
+  and a half further on than on your screen at a hunt, never moving back; tell me if a friend
+  ever sees it step back or slide.
+- [ ] **A swipe across it:** flick the beam over it and off. It may stop for an instant on your
+  screen, then walk on (a short hold the server didn't answer). Does that ever look like a
+  stutter you'd notice?
+
 ## Now: judge L-06b4b2, its tell: footfalls and knocks (built Nov 10)
 
 Nobody here could listen: the sounds were picked by measuring them (D-083), so this is by ear.

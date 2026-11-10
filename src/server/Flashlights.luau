@@ -9,7 +9,10 @@
 	Two remotes (a stand-in for Brix ENG-09), both checked for type, then range, then rate:
 	ReplicatedStorage.Remotes.Flashlight takes the state you want (on or off: the client asks for
 	a state, not a toggle, so a dropped or refused message can't leave it inverted) and
-	Remotes.FlashlightAim (unreliable) takes your look's pitch while it's on.
+	Remotes.FlashlightAim (unreliable) takes where you look while it's on: its pitch (shown on
+	friends' screens) and its heading. Keepers test your beam along that heading, not along the
+	way your character faces here: the server sees a character's turn late and eased in (up to
+	0.4 s in Studio, docs/STUDIO.md), and a hunter walked on into you under your torch (L-06b4b3).
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -26,14 +29,18 @@ export type Flashlights = Brix.System & {
 	switched: Brix.Signal<Switch>,
 	-- Whether `player`'s torch is on.
 	isOn: (self: any, player: Player) -> boolean,
-	-- Where `player`'s torch points: degrees up from level (their facing gives the rest).
+	-- Where `player`'s torch points: degrees up from level.
 	aim: (self: any, player: Player) -> number,
+	-- And its heading (Torch.heading's degrees), nil until they've sent one since switching it on:
+	-- then their character's facing gives it.
+	heading: (self: any, player: Player) -> number?,
 }
 
 type Held = {
 	model: Model,
 	on: boolean,
 	aim: number,
+	heading: number?, -- where it points round, nil until sent since it went on
 	last: number?, -- when the last switch went through
 	burst: number, -- switches left in hand
 	aimAt: number, -- when the last aim was taken
@@ -96,12 +103,20 @@ function Flashlights.new(): Flashlights
 			weld.Parent = part
 			part.Anchored = false
 		end
-		held[player] =
-			{ model = r.model, on = false, aim = 0, last = nil, burst = Torch.Burst, aimAt = 0 }
+		held[player] = {
+			model = r.model,
+			on = false,
+			aim = 0,
+			heading = nil,
+			last = nil,
+			burst = Torch.Burst,
+			aimAt = 0,
+		}
 	end
 
 	local function set(player: Player, h: Held, on: boolean)
 		h.on = on
+		h.heading = nil -- an old heading never aims it as it comes back on
 		h.model:SetAttribute(Torch.OnAttribute, on)
 		switched:fire({ player = player, on = on })
 	end
@@ -135,10 +150,10 @@ function Flashlights.new(): Flashlights
 	end
 
 	-- Where `player` looks, while their torch is on: checked, then kept and shown.
-	local function onAim(player: Player, pitch: unknown)
-		-- type: a real number, clamped to how far you can look
-		local degrees = Torch.aim(pitch)
-		if degrees == nil then
+	local function onAim(player: Player, pitch: unknown, heading: unknown)
+		-- type: real numbers, the pitch clamped to how far you can look, the heading brought round
+		local degrees, round = Torch.aim(pitch), Torch.heading(heading)
+		if degrees == nil or round == nil then
 			return
 		end
 		-- range: a lit torch of theirs
@@ -146,12 +161,13 @@ function Flashlights.new(): Flashlights
 		if not (h and h.on) then
 			return
 		end
-		-- rate: no faster than the client sends
+		-- rate: no faster than the client sends at its soonest
 		local t = now()
-		if t - h.aimAt < Torch.AimEvery * 0.5 then
+		if t - h.aimAt < Torch.AimTake then
 			return
 		end
 		h.aimAt = t
+		h.heading = round
 		if degrees ~= h.aim then
 			h.aim = degrees
 			h.model:SetAttribute(Torch.AimAttribute, degrees)
@@ -227,6 +243,11 @@ function Flashlights.new(): Flashlights
 	function system.aim(_: any, player: Player): number
 		local h = held[player]
 		return if h then h.aim else 0
+	end
+
+	function system.heading(_: any, player: Player): number?
+		local h = held[player]
+		return if h then h.heading else nil
 	end
 
 	return system :: any -- any: the table is the Flashlights shape built field by field above

@@ -409,6 +409,149 @@ do
 	ok(still > 20, "then it needs no more steps")
 end
 
+-- Your own beam (L-06b4b3): the screen holds it the frame the beam lands, exactly where and as
+-- it was shown, while the server's stop comes a little further on; it never slides while held,
+-- lets go only once the screen reaches the server letting it go, and then makes the gap up as it
+-- walks, never stepping back, a little quicker than it walks, until it's where the records say.
+-- No stop within its patience (a wall the screen missed), it walks on the same way.
+do
+	ok(math.abs(KeeperMotion.patience(0) - KeeperMotion.Patience) < 1e-9, "patience, no ping")
+	ok(
+		math.abs(KeeperMotion.patience(0.1) - (KeeperMotion.Patience + 0.2)) < 1e-9,
+		"plus two pings"
+	)
+	ok(KeeperMotion.patience(5) == KeeperMotion.MostPatience, "never past the most")
+	ok(KeeperMotion.patience(0 / 0) == KeeperMotion.Patience, "a broken ping counts as none")
+
+	local SPEED, LATENCY, FRAME = 10, 0.05, 1 / 60
+	local function walking(t: number, x: number, travelled: number): string
+		return KeeperMotion.encode(t, v(x, 0), v(1, 0), SPEED, 999, travelled, "Hunting")
+	end
+	local function standing(t: number, x: number, travelled: number): string
+		return KeeperMotion.encode(t, v(x, 0), v(1, 0), 0, 0, travelled, "Hunting")
+	end
+	-- Plays the screen from server time `from` to `to`, a frame at a time, handing it each of
+	-- `sends` ({server time, record}) `LATENCY` after it was sent; calls `each(t)` after each frame.
+	local function play(
+		f: KeeperMotion.Follow,
+		sends: { { any } },
+		from: number,
+		to: number,
+		each: (t: number) -> ()
+	)
+		local n = math.floor((to - from) / FRAME + 0.5)
+		for i = 1, n do
+			local now = from + i * FRAME
+			for _, s in sends do
+				if s[1] + LATENCY <= now and not s[3] then
+					s[3] = true
+					KeeperMotion.receive(f, s[2], now - KeeperMotion.Delay)
+				end
+			end
+			KeeperMotion.update(f, now - KeeperMotion.Delay, FRAME)
+			each(now - KeeperMotion.Delay)
+		end
+	end
+
+	-- held, answered by the server's stop 1.6 studs on, let go a second later
+	local f = KeeperMotion.follow()
+	local sends = {
+		{ 0, walking(0, 0, 0) },
+		{ 1.16, standing(1.16, 11.6, 11.6) }, -- it froze when your look reached the server
+		{ 2.2, walking(2.2, 11.6, 11.6) }, -- the light left
+	}
+	play(f, sends, -0.2, 1, function() end)
+	ok(f.speed > 0 and math.abs(f.at.x - 9) < 0.2, "walking, shown a Delay behind")
+	ok(not KeeperMotion.hold(KeeperMotion.follow(), 0.9, 0.2), "nothing to hold with no record")
+	ok(KeeperMotion.hold(f, 1 - KeeperMotion.Delay, 0.2), "your beam lands: it holds")
+	ok(f.speed == 0 and KeeperMotion.how(f.state, f.speed) == "Stop", "posed stopped at once")
+	ok(not KeeperMotion.hold(f, 1 - KeeperMotion.Delay, 0.2), "held already")
+	local heldAt, heldTravelled = f.at, f.travelled
+	local slid, heldUntil = 0, -1
+	play(f, sends, 1, 2.5, function(t)
+		if f.held then
+			slid = math.max(slid, dist(f.at, heldAt), math.abs(f.travelled - heldTravelled))
+			heldUntil = t
+		end
+	end)
+	ok(slid == 0, `never slides or steps while held ({slid})`)
+	ok(
+		heldUntil >= 2.2 - 2 * FRAME and heldUntil < 2.2,
+		`held until the let-go shows ({heldUntil})`
+	)
+	ok(f.stopped > 1.15 and f.stopped < 1.17, "the server's stop answered it")
+	local back, fastest, lastX, lastWalk = 0, 0, f.at.x, f.travelled
+	play(f, sends, 2.5, 8, function()
+		back = math.max(back, lastX - f.at.x, lastWalk - f.travelled)
+		fastest = math.max(fastest, (f.at.x - lastX) / FRAME)
+		lastX, lastWalk = f.at.x, f.travelled
+	end)
+	ok(back <= 0, "walking on, never a step back")
+	ok(fastest < SPEED * 1.4, `makes the gap up a little quicker than it walks ({fastest})`)
+	ok(fastest > SPEED * 1.1, "but does make it up")
+	local truth = 11.6 + SPEED * (8 - KeeperMotion.Delay - 2.2)
+	ok(math.abs(f.at.x - truth) < 0.01, `and is where the records say ({f.at.x} vs {truth})`)
+	ok(f.behind == vector.zero and f.behindWalk == 0, "with nothing left to make up")
+
+	-- no stop comes within its patience: it walks on, the same way
+	local g = KeeperMotion.follow()
+	local alone = { { 0, walking(0, 0, 0) } }
+	play(g, alone, -0.2, 1, function() end)
+	ok(KeeperMotion.hold(g, 1 - KeeperMotion.Delay, 0.2), "held on your beam's word")
+	local heldFor = 0
+	play(g, alone, 1, 1.5, function()
+		if g.held then
+			heldFor += FRAME
+		end
+	end)
+	ok(heldFor > 0.2 - 2 * FRAME and heldFor < 0.2 + FRAME, `held its patience only ({heldFor})`)
+	local x = g.at.x
+	local stepBack = 0
+	play(g, alone, 1.5, 7, function()
+		stepBack = math.max(stepBack, x - g.at.x)
+		x = g.at.x
+	end)
+	ok(stepBack <= 0, "walks on from where it held, never back")
+	ok(math.abs(g.at.x - SPEED * (7 - KeeperMotion.Delay)) < 0.01, "and catches up with its walk")
+
+	-- a stop far from where it's held (it was stood somewhere new): lets go and is shown there
+	local h = KeeperMotion.follow()
+	local far = { { 0, walking(0, 0, 0) }, { 1.05, standing(1.05, 30, 30) } }
+	play(h, far, -0.2, 1, function() end)
+	KeeperMotion.hold(h, 1 - KeeperMotion.Delay, 0.2)
+	play(h, far, 1, 1.5, function() end)
+	ok(not h.held and dist(h.at, v(30, 0)) < 1e-6, "a far stop lets go at once, a jump")
+
+	-- let go just short of where its record stops it (a hunter at arm's length): the gap is made
+	-- up by the time it stops, so it never stands short of where it truly stands
+	local c = KeeperMotion.follow()
+	local short = {
+		{ 0, walking(0, 0, 0) },
+		{ 1.16, standing(1.16, 11.6, 11.6) },
+		{ 2.2, KeeperMotion.encode(2.2, v(11.6, 0), v(1, 0), SPEED, 1.5, 11.6, "Hunting") },
+	}
+	play(c, short, -0.2, 1, function() end)
+	KeeperMotion.hold(c, 1 - KeeperMotion.Delay, 0.2)
+	local cx, cBack = 0, 0
+	play(c, short, 1, 3, function()
+		cBack = math.max(cBack, cx - c.at.x)
+		cx = c.at.x
+	end)
+	ok(cBack <= 0, "it closes the gap without a step back")
+	ok(math.abs(c.at.x - 13.1) < 1e-3, `and stands where it stops ({c.at.x})`)
+	ok(c.behind == vector.zero, "nothing left behind")
+
+	-- standing, asleep: nothing to hold
+	local s = KeeperMotion.follow()
+	KeeperMotion.receive(s, standing(0, 0, 0), 0)
+	KeeperMotion.update(s, 0.1, FRAME)
+	ok(not KeeperMotion.hold(s, 0.1, 0.2), "a body standing isn't held")
+	local a = KeeperMotion.follow()
+	KeeperMotion.receive(a, KeeperMotion.encode(0, v(0, 0), v(1, 0), 5, 9, 0, "Asleep"), 0)
+	KeeperMotion.update(a, 0.1, FRAME)
+	ok(not KeeperMotion.hold(a, 0.1, 0.2), "nor one asleep")
+end
+
 print(`keepermotion: {checks - failures}/{checks} checks passed`)
 if failures > 0 then
 	error(`{failures} failed`)

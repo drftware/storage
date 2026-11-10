@@ -332,7 +332,7 @@ on nothing in Brix.
     Cut snaps the padlock off with a jolt, its copy tumbling out onto the hall floor, and its
     clatter; your view brings the tool out to the door as you hold. "One padlock per use" read
     as a cut padlock spent (`OWNER.md`).
-- [ ] **L-06b The Mannequin hunts.** The first keeper, and with it the keepers' brain, which
+- [x] **L-06b The Mannequin hunts.** The first keeper, and with it the keepers' brain, which
   lives in this game (D-064): one system on the Host's clock, each keeper a data row, built on
   Brix's contracts and parts (Pathing, Reach, Zone, Signal, Random) so it can move to Brix later.
   It waits on nothing in Brix. Split Nov 9, a session each. Where the GDD doesn't give a number
@@ -461,7 +461,7 @@ on nothing in Brix.
         seed 7, floor 1: steps landed at the first blow, 38.5 s and 68 s, flat-out at the burst;
         the bow reads at Level21 under the hall light (`docs/art/L-06b3d2-*.jpg`). Waits on
         `OWNER.md` for phone size and low graphics.
-  - [ ] **L-06b4 What you see and hear of it.** Split Nov 9 (owner: the walk reads jerky, which
+  - [x] **L-06b4 What you see and hear of it.** Split Nov 9 (owner: the walk reads jerky, which
     makes it less scary).
     - [x] **L-06b4a It moves smoothly on every screen.** Done Nov 9 (D-075). The server sends
       each keeper's motion as a short record on its body's `KeeperMotion` attribute (its feet, the
@@ -476,7 +476,7 @@ on nothing in Brix.
       part within 0.0001 studs of `Pose.solve`; 50 records and 50 root moves over the chase and no
       joint writes, where the old body sent 60 root moves and up to 300 joint writes a second.
       Waits on `OWNER.md` for a phone and a second screen.
-    - [ ] **L-06b4b Its sounds, and the freeze on your screen.** Split Nov 10 into three, a
+    - [x] **L-06b4b Its sounds, and the freeze on your screen.** Split Nov 10 into three, a
       session each, in this order:
       - [x] **L-06b4b1 The sting and the chase bed.** Done Nov 10 (D-082). The server tells
         each player's screen how many keepers hunt them, only when that changes
@@ -496,9 +496,18 @@ on nothing in Brix.
         Lune checks. Verified in Studio on seed 7, floor 1: every footfall on a step pose,
         alternating feet 5.4 studs apart; knocks on the passes; the reveal at 157 and 154 within
         a frame of the curtain clearing their feet; no sound errors. Waits on `OWNER.md` by ear.
-      - [ ] **L-06b4b3 The freeze on your screen.** The freeze lands at once on your own screen
-        when your torch finds it, predicted as `HallLights` predicts your own lights, with no
-        slide past the stop.
+      - [x] **L-06b4b3 The freeze on your screen.** Done Nov 10 (D-084). Measured first: the
+        server saw your turn up to 0.4 s late (Roblox eases a player's character in), so a hunter
+        walked on under your torch and caught you. Now your torch sends its heading with its pitch
+        (at once on a big swing or as your screen sees the beam land) and keepers test your beam
+        along it; one beam test serves the brain and your screen (`Torch.lights`,
+        `Keeper.beamPoint`; your screen's line a raycast). The frame your beam lands on a body
+        your screen shows walking, it stops dead there on the key a light freezes it on
+        (`KeeperMotion.hold`), never sliding while held; once the server lets it go it makes the
+        gap up as it walks, never stepping back; a walk going on from a mid-snap stop holds its
+        key (`Pose.along`). 280 motion and 69 torch checks. Verified in Studio on seed 7, floor 1:
+        held the frame the beam landed, the server's freeze 0.03 s later and 1.66 studs on; a
+        beam through 157's shut door held and froze nothing. Waits on `OWNER.md` (a real network).
   - **L-06b5 The guarded note** (D-072; needs L-06b3d). One note on every floor sits in a
     guarded unit that always holds an awake keeper, so no floor is cleared without a chase, as
     DOORS puts the library's code hints in the room Figure walks (the GDD's floor 5 already does
@@ -754,6 +763,11 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **The catch turns you to its face** (L-06b3c): as the dark closes, your view snaps round to the
   keeper's face, as a grab would spin you, so you see what had you. Needs the camera taken over
   for half a second without fighting Roblox's (CameraShake's way, or Scriptable and back).
+
+- **The torch's freeze, nearer still** (L-06b4b3): your screen holds a keeper where it showed it,
+  about 1.5 studs short of where the server froze it at a hunt (its 0.1 s delay plus your aim's
+  trip); the fitted delay below shrinks that. If players find a beam on its edge misses, the server
+  could test your beam against where your screen showed it (as shooters favour the shooter).
 
 - **Each screen's keeper delay fitted to its own lag** (L-06b4a): screens show keepers a fixed
   0.1 s behind the server (`KeeperMotion.Delay`). A screen could measure how late its records

@@ -190,11 +190,10 @@ local SIGHT_HEIGHT = 8
 local ARRIVE = 1e-3
 -- Moved less than this in a step that had studs to walk: there's no way there now.
 local STUCK = 1e-6
--- A torch's beam (Torch's): how far it reaches, and the cosine of half its cone, squared.
+-- A torch's beam reaches no further than this (Torch's), so a keeper further off isn't tested.
 local BEAM_REACH = Torch.BeamRange
-local BEAM_COS2 = math.cos(math.rad(Torch.BeamAngle / 2)) ^ 2
 -- Points up its middle, feet to head, that a beam may catch: about a stud apart on the Mannequin.
-local BODY_POINTS = 7
+Keeper.BeamPoints = 7
 
 local function flat(v: vector): vector
 	local m = math.sqrt(v.x * v.x + v.z * v.z)
@@ -565,20 +564,23 @@ end
 function Keeper.inTorch(k: Keeper, eye: vector, aim: vector, from: vector): boolean
 	local at = k.at
 	local dx, dz = at.x - eye.x, at.z - eye.z
-	local flat2 = dx * dx + dz * dz
-	if flat2 > BEAM_REACH * BEAM_REACH then
+	if dx * dx + dz * dz > BEAM_REACH * BEAM_REACH then
 		return false
 	end
-	local h, ax, ay, az = k.row.height, aim.x, aim.y, aim.z
-	for i = 1, BODY_POINTS do
-		local dy = at.y + h * (i - 0.5) / BODY_POINTS - eye.y
-		local d2 = flat2 + dy * dy
-		local along = dx * ax + dy * ay + dz * az
-		if d2 <= BEAM_REACH * BEAM_REACH and along > 0 and along * along >= BEAM_COS2 * d2 then
+	local h = k.row.height
+	for i = 1, Keeper.BeamPoints do
+		if Torch.lights(eye, aim, Keeper.beamPoint(at, h, i)) then
 			return KeeperMap.clear(k.map, from, at)
 		end
 	end
 	return false
+end
+
+--- The `i`th point up the middle of a keeper `height` tall whose feet are at `at` that a beam may
+--- catch (1 nearest its feet, `BeamPoints` nearest its head): where the server's brain
+--- (`inTorch`) and your screen (KeeperView) both test a torch's beam.
+function Keeper.beamPoint(at: vector, height: number, i: number): vector
+	return at + vector.create(0, height * (i - 0.5) / Keeper.BeamPoints, 0)
 end
 
 -- The light on it now (`lit`'s values): none unless its row freezes in light and it's awake; a

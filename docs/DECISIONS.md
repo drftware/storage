@@ -1819,3 +1819,48 @@ hear its own walk out of step with the one it shows); a sound per frame change (
 frames); a footfall per key (every key a clack reads as a machine, not a walk); the reveal from
 the server's deal (the screen knows when its curtain clears the feet); sounds at the feet (a stud
 or two truer up close: ROADMAP polish).
+
+## D-084 Your torch's freeze lands at once: the server takes your look, your screen holds it (L-06b4b3, Nov 10)
+The moment: you swing your torch onto it mid-stride and it stops dead that instant, as SCP-173
+and FNAF's animatronics hold the moment you look. Measured first in Studio (seed 7, floor 1,
+157's guard hunting at 14.4 studs a second): the server tested your beam along your character's
+facing as the server sees it, and the server sees a player's turn 0.06 to 0.13 s late and then
+eases it in over another 0.15 to 0.4 s (Roblox smooths a client's character on the server). Your
+screen showed it walk on under your light, and the server never froze it: it caught me with my
+beam on it for a quarter of a second.
+
+As built, three parts. The torch's aim (`Remotes.FlashlightAim`) carries its heading with its
+pitch, whole degrees (`Torch.heading`: a real number, brought round to -180..180), sent each
+0.1 s on a 1.5 degree move, after only 0.05 s on a 10 degree swing or the moment your screen sees
+your beam land on a keeper (`Torch.shouldSend`); the server takes one no sooner than 0.025 s
+after the last and forgets the heading as the torch switches. Keepers test your beam along it
+(`Torch.look`), your character's facing only until the first one. Trusting it gives a cheat
+nothing new: a client already turns its own character however it likes. One beam test serves
+both sides (`Torch.lights` at each `Keeper.beamPoint`): the brain's line is `KeeperMap.clear`,
+your screen's a raycast that respects CanCollide. They can disagree: a ray reaches a keeper's
+feet under a door that isn't all the way up, where the map says shut (the screen holds, no stop
+comes, it walks on after its patience); a friend or a box in the way stops the screen's ray and
+not the map's (the screen doesn't hold; the server's stop lands as before). And your screen holds
+it (`KeeperMotion.hold`, from `KeeperView`): exactly where and as it was shown, posed on the key
+the light freezes it on, until a stop record after the hold answers it within its patience (0.15 s
+plus two pings, at most 0.5), then until the screen reaches the server letting it go. The server's
+stop lies a little further on (the screen's 0.1 s `Delay` plus your aim's trip): the screen never
+slides there while the light holds it, and makes the gap up as it walks again, about two thirds
+of it within a stride (5.4 studs) or all of it by the stop its record walks to, so it never stands
+short and never steps back. A stop more than 4 studs off lets go at once and jumps. A walk going
+on from a stop that landed mid-snap holds the key it froze on until its walk reaches it
+(`Pose.along`, the furthest shown), never flicking back into the snap.
+
+Verified in Studio: the frame the camera turned onto it, it stopped (drawn at the same place
+every frame after, on its pass-right key); the server froze it 0.03 s later, 1.66 studs on; the
+light leaving, the server let go 0.03 s after the turn, and it closed on me about half again its
+pace for two frames. A beam on the trapped guard through 157's shut door hit `DoorCollider` with
+all seven points in the cone: no hold, no freeze.
+
+Not chosen: holding on your screen alone (the server's keeper walked on under your light and
+caught you); rewinding the server's keeper to where your screen held it (friends would see it
+step back); the server testing your beam against where your screen showed it, as shooters favour
+the shooter (the beam is 54 degrees wide; ROADMAP polish if edges miss); sliding the held body to
+the server's stop (it moves while lit); predicting the let-go too (its records still say it
+stands, so it would slide). Known: a hunter that catches you right after the light leaves stops
+short of its record, so your screen shows it up to a stud short; the catch's blackout hides it.
