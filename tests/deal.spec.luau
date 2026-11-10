@@ -4,7 +4,7 @@
 -- notes show every digit once, lie past the lobby's hall, one to a wing, spread out, and from
 -- floor 6 one sits behind a padlock; padlocks are the right few, never in the lobby's hall; the
 -- odds land where they say, worse behind a padlock; never more keepers awake than the cap, none
--- woken in a chase or after one, none in the lobby's hall on floors 1 and 2; the bag deals every tool before any comes round again, a saw
+-- woken in a chase or after one (the guarded note's keeper aside: guard.spec), none in the lobby's hall on floors 1 and 2; the bag deals every tool before any comes round again, a saw
 -- first on floors 1 and 2; a door lifted again holds what it held.
 local Brix = require("../vendor/brix/src")
 local Floor = require("../src/shared/Floor")
@@ -173,15 +173,23 @@ for seed = 1, SEEDS do
 			end
 		end
 
-		-- Dealing in Build: the odds, the same kinds in reverse order, a door lifted again.
+		-- Dealing in Build: the odds, the same kinds in reverse order, a door lifted again. The
+		-- guarded note's unit is dealt first each time (it holds a place for itself until it's
+		-- dealt: guard.spec) and its keeper, always awake, is left out of the odds.
+		local guard = deck.guarded :: number
 		local _, reverse = lay(seed, number)
+		Deal.open(reverse, guard, BUILD)
 		for k = #units, 1, -1 do
 			Deal.open(reverse, units[k], BUILD)
 		end
+		Deal.open(deck, guard, BUILD)
+		Deal.open(twin, guard, BUILD)
 		for _, i in units do
 			local before = #deck.bag
 			local got = Deal.open(deck, i, BUILD)
-			add(if deck.padlocked[i] then locked else open, got.kind)
+			if i ~= guard then
+				add(if deck.padlocked[i] then locked else open, got.kind)
+			end
 			ok(Deal.open(twin, i, BUILD).kind == got.kind, `{where}: the same seed deals the same`)
 			ok(
 				reverse.dealt[i].kind == got.kind,
@@ -228,9 +236,12 @@ for seed = 1, SEEDS do
 		local _, inPeak = lay(seed, number)
 		local _, inRelief = lay(seed, number)
 		for _, i in units do
-			add(capped, Deal.open(atCap, i, { mood = "Build", awake = Deal.awakeCap(number) }).kind)
-			add(peak, Deal.open(inPeak, i, { mood = "Peak", awake = 0 }).kind)
-			add(relief, Deal.open(inRelief, i, { mood = "Relief", awake = 0 }).kind)
+			if i ~= guard then
+				local cap = { mood = "Build", awake = Deal.awakeCap(number) } :: Deal.Situation
+				add(capped, Deal.open(atCap, i, cap).kind)
+				add(peak, Deal.open(inPeak, i, { mood = "Peak", awake = 0 }).kind)
+				add(relief, Deal.open(inRelief, i, { mood = "Relief", awake = 0 }).kind)
+			end
 		end
 	end
 end

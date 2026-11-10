@@ -340,6 +340,16 @@ verified: a doc page, Studio, or "untested".
   and read what happened off attributes (`KeeperState`, `DoorMotion`) and Output. A Server
   `execute_luau` can sample a keeper's pivot every 0.1 s for a path; the pure modules
   (`Floor.generate` with the dev floor's seed, `KeeperMap`) rebuild the same map to check against.
+- **The awake Mannequin moved to Unit 157** (L-06b5a, 2026-11-10): on seed 7, floor 1 the guard
+  of the note in 157 holds the floor's one awake place, so 126's (and 112's, 154's) Mannequin
+  deals asleep and the recipes below that open 126 for an awake one need 157 (or trap 157's guard
+  first). 157's door face is (52, 0, -632) looking -X into the hall; its guard stands 6.1 in at
+  (58.1, 0, -634.5). Stand at (47, 3, -632), point the camera at its `DoorButtons` and tap Open: it
+  sees you 11 studs off and catches you in about 3.5 s. A door's face from a Server
+  `execute_luau` in Play: `require(ServerScriptService.Server.FloorBuilder).face(unit)`.
+  `screen_capture` with `camera_position` in Play draws the Client's view from there: a camera
+  at (45.5, 0.9, -632.3) shows the guard's feet under a peek, where a standing eye 4.5 up sees
+  only a stud or two in (the peek's crouch is L-06b5b).
 - **Testing a chase from the MCP** (L-06b3a2, 2026-11-09): on seed 7, floor 1, Unit 126's door is
   at world (90, 0, -700) facing +Z (the floor's origin is (0, 0, -600)). Set the character's root
   at (90, 3, -696) from the Server, then press 126's Open prompt from the Client (camera pointed

@@ -1683,3 +1683,29 @@ Not chosen: a shape key or bones (Roblox's importer keeps neither for a plain me
 curtains only (a blow's jolt and a peek pose the chain, where the dent would vanish); bowed ribs
 riding up onto the coil (lumps through the header and the unit's top); the dent counted per blow
 rather than by its time (a jittered clock would show different steps for the same wait).
+
+## D-080 The guard on the deal (L-06b5a, Nov 10)
+D-072 built as the deck's rule, pure in `Deal`: `Deal.new` marks one note's unit guarded
+(`deck.guarded`) and `Deal.odds` deals it a keeper awake whatever the mood, the padlock or the cap.
+- **Which note.** One of the floor's notes, picked from the floor's Random, behind an unlocked door
+  wherever a note is: a padlocked door can't be peeked, and the peek is how D-072 has you find
+  the guard. With every note locked (17 floors in 4,000 of the spec's) the guard takes a locked
+  one. Notes already lie past the lobby's hall, so the guard never stands in the first doors.
+- **Drawn last.** The pick is the deck's last draw, so every seed lays and deals all else as
+  before: the code, notes, padlocks, each unit's roll and the bag.
+- **Its place under the cap.** Until the guard's unit is dealt, every other door counts it among
+  those awake (`awake + 1` against `Deal.awakeCap`); once dealt it's counted with the rest by
+  `Keepers:awakeOn`, and trapped it takes no place (`Keeper.loose`), so the place frees as D-072
+  says. On floors 1 and 2 every other keeper is dealt asleep until then. A keeper woken by a
+  noise isn't the deal's doing, so the guard can still make two loose on floor 1 after a slam
+  has woken a sleeper: the cap governs what the deal deals.
+- **Where it stands.** As every dealt keeper: `DealSpot` keeps it out of the note's sight line,
+  awake on its walk's first stride, square to the doorway (D-070).
+- **Output.** In Studio the dev floor's notes line marks the guarded one, and `Deals` says
+  "guarding its note" as it deals it.
+- **Found in Studio:** the built peek has no crouch, so a standing eye sees only a stud or two in
+  under the foot of gap and no keeper's feet. The GDD's peek crouches; that's L-06b5b.
+
+Not chosen: the guard as a separate kind in `Deal.Kinds` (it's an awake keeper like any other,
+only certain); the guard's place kept by `Deals` rather than the deck (it's the deal's rule, so
+Lune proves it); a fixed guarded note (the first, say), which a team would learn.

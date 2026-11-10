@@ -14,7 +14,8 @@
 
 	Until the director exists (Phase 2) every door deals in its Build mood, and the keepers awake
 	are the brain's count of those awake on the floor now (`Keepers.awakeOn`: dealt awake, or woken
-	by a noise), so the cap (`Deal.awakeCap`) sees what's really loose.
+	by a noise), so the cap (`Deal.awakeCap`) sees what's really loose. The guarded note's unit is
+	always dealt a keeper awake (D-072), and the deal keeps its place under the cap until then.
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -197,7 +198,8 @@ function Deals.new(): Deals
 			local laid = if place or contents.kind == "Nothing"
 				then ""
 				else " (no art yet, so nothing laid)"
-			print(`Deals: {unit.Name} held {said(contents)}{laid}`)
+			local guard = if index == deck.guarded then ", guarding its note" else ""
+			print(`Deals: {unit.Name} held {said(contents)}{guard}{laid}`)
 		end
 		dealt:fire({ unit = unit, contents = contents, place = place })
 	end

@@ -382,7 +382,7 @@ on nothing in Brix.
     at no more than player speed (the GDD's speed rule) throughout. Reshaped with the owner Nov 9
     (D-071): as built, a keeper went home after looking, so you could let it walk back in and
     shut it there, and a slam ended an awake one for good. Run order: L-06b3a1, L-06b3a2, L-06b4a,
-    L-06b3b, L-06b3c, L-06b3d, then L-06b5 and L-06b4b.
+    L-06b3b, L-06b3c, L-06b3d, then L-06b5a, L-06b5b and L-06b4b.
     - [x] **L-06b3a1 Once out, it roams.** Done Nov 9 (D-073). After looking at a noise, or out
       of its own doorway, a keeper roams the halls between noises, as Granny walks the house room
       to room: to a hall piece's middle 40 to 120 studs off along the halls that isn't one of its
@@ -484,16 +484,30 @@ on nothing in Brix.
       joints and a stiff, quick footfall per step, as Five Nights at Freddy's footsteps say an
       animatronic moved. A knock of its joints, once, as a lifted door first shows one standing in
       a unit (L-06b2b's moment is silent until then). Judged at phone size.
-  - [ ] **L-06b5 The guarded note** (D-072; needs L-06b3d). One note on every floor sits in a
+  - **L-06b5 The guarded note** (D-072; needs L-06b3d). One note on every floor sits in a
     guarded unit that always holds an awake keeper, so no floor is cleared without a chase, as
     DOORS puts the library's code hints in the room Figure walks (the GDD's floor 5 already does
-    it with Dale). The floor's build picks the guarded unit from the notes' units, seeded; the
-    deal always deals it a keeper, awake, standing clear of the note's sight line (`DealSpot`).
-    The guard holds one of the floor's awake places from the floor's start, so the deal leaves
-    room for it: on floors 1 and 2, which allow one, every other keeper is dealt asleep until the
-    guard is trapped. The peek is how you find it: a keeper's feet, and whether it stands awake.
-    One guarded note per floor is a default; list it in `OWNER.md` when built. Lune checks over
-    seeded floors: exactly one guarded unit, always holding a note, its keeper always awake.
+    it with Dale). The peek is how you find it: a keeper's feet, and whether it stands awake.
+    Split Nov 10, one session each:
+    - [x] **L-06b5a The guard on the deal.** Done Nov 10 (D-080). `Deal.new` picks the guarded
+      unit last from the notes' units (behind an unlocked door wherever a note is, so the peek
+      can find it), seeded, so nothing else a seed deals changed; `Deal.odds` deals it a keeper
+      awake in every mood and past the cap, standing clear of the note's sight line as every
+      keeper does (`DealSpot`), and every other door counts its place among those awake until
+      it's dealt. So on floors 1 and 2 every other keeper is dealt asleep until the guard is
+      trapped. 379,934 Lune checks over 400 seeds on all ten floors (`tests/guard.spec.luau`).
+      Verified in Studio on seed 7, floor 1: Output names Unit 157 guarded; 126 peeked first held
+      its Mannequin asleep, 157 awake, guarding its note, 154 after it asleep; opening 157 the
+      guard saw me 11 studs off and caught me. A peek doesn't show its feet to a standing eye
+      (`docs/art/L-06b5-guard-standing.jpg`), only from low (`-guard-low.jpg`): L-06b5b.
+    - [ ] **L-06b5b The peek's crouch.** The GDD's peek is "Lift the door a foot and crouch. You
+      see the floor first: feet, boxes, legs", but the built peek only lifts the door: a standing
+      eye 4.5 up sees through the foot of gap no more than a stud or two in, so a keeper standing
+      6 or more studs back never shows. Your own peek drops your view low to the gap (as Rainbow
+      Six Siege's players drop prone to look under a door), smooth and quick, and stands you
+      back up as you move off, open, close or the door moves; a friend sees you kneel. It answers
+      with its motion (and a cloth rustle if it fits); nothing new on screen. Judge at phone
+      size: the guard's stride and a sleeper's slack stance both read under the door.
   - Later, with the first keeper that climbs or crawls (a new keeper is the owner's design,
     D-068): the tops join its map as raised places (from `Tops.Map`), a leaned ladder as a
     passage that needs Climb (shut when it's taken down), and a sawn wall's hole as one that

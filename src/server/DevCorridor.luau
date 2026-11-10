@@ -608,10 +608,15 @@ local function devFloor(
 	print(
 		`DevCorridor: floor {n} laid, {laid.units} units on {laid.pieces} hall pieces: {work} of work over {laid.frames} frames, at most {most} in one ({took} in all); "Walk a floor" is by the spawn`
 	)
-	-- Studio only: the code and where its notes are, so a tester can walk straight to them
+	-- Studio only: the code and where its notes are, so a tester can walk straight to them, and
+	-- which is guarded (always an awake keeper with it, D-072)
 	local where = {}
 	for _, note in deck.notes do
-		table.insert(where, `Unit{floor.slots[note.slot].number} ({Deal.noteText(deck, note)})`)
+		local guarded = if note.slot == deck.guarded then ", guarded" else ""
+		table.insert(
+			where,
+			`Unit{floor.slots[note.slot].number} ({Deal.noteText(deck, note)}{guarded})`
+		)
 	end
 	print(
 		`DevCorridor: floor {n}'s code is {table.concat(deck.code)}; its notes: {table.concat(

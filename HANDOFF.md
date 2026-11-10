@@ -2,45 +2,44 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-10, session 68 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-10, session 69 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-06b3d2 done (D-079), so L-06b3 is done:** each blow bows the slammed door out toward the
-  hall. The server keeps the share of the keeper's time gone on the unit (`DoorDent`, never back;
-  `RollUpDoor.dent`, pure `Dent.luau`); screens show one of three baked steps (pocket from the
-  first blow, bowed from 36 s, buckling a stud out from 68 s), bowed rib copies from
-  `Props.DoorDent_M`/`_S` (`art/unit/dent.py`, `scripts/art.sh dent`) swapped into the chain;
-  a rib goes flat as it rolls up behind the header. 1,540 dent checks. Verified in Studio on seed 7,
-  floor 1: steps at the first blow, 38.5 s, 68 s; flat-out at the burst; reads at Level21.
-- **Fixed with it:** a trapped keeper's arm poked 2 studs through its door; it stands 3.4 in now.
-- **The brain:** pure `src/shared/Keeper.luau`, rows in `KeeperRows.luau`, run by
-  `src/server/Keepers.luau`. MCP recipes for the chase, catch, trap and hall shots: `docs/STUDIO.md`.
+- **L-06b5a done (D-080):** every floor has a guarded note. `Deal.new` picks it last from the
+  notes' units (behind an unlocked door where it can), `Deal.odds` deals it a keeper awake in any
+  mood and past the cap, and every other door counts its place until it's dealt, so on floors 1
+  and 2 other keepers deal asleep until the guard is trapped. `tests/guard.spec.luau`, 379,934
+  checks. Verified in Studio on seed 7, floor 1: Unit 157 guarded; 126 and 154 dealt asleep;
+  opening 157 its guard caught me.
+- **Seed 7, floor 1's awake Mannequin is now 157's guard,** not 126's (`docs/STUDIO.md` has 157's
+  spots; OWNER.md warns the owner's older tests).
+- **Found:** the built peek has no crouch. A standing eye sees a stud or two under the gap, so no
+  keeper's feet show, the guard's tell included (`docs/art/L-06b5-guard-standing.jpg` vs
+  `-guard-low.jpg`). The GDD's peek: "Lift the door a foot and crouch". That's the next ticket.
 
-## Next task: L-06b5 The guarded note
-The moment: you peek a unit, see feet standing, and know the note you still need is in there with
-it, so this floor can't be cleared without a chase (DOORS puts the library's code hints in the room
-Figure walks; the GDD's floor 5 does it with Dale).
+## Next task: L-06b5b The peek's crouch
+The moment: you tap Peek, drop low as the door lifts a foot, and see a keeper's feet standing
+mid-stride in the bulb's light, or a sleeper's slack ones, before you make a sound.
 1. Owner test results first, if pasted.
-2. The floor's build picks one guarded unit from the units holding notes, seeded from the floor's
-   Random, and marks it in the floor's data (pure, in `Floor` or the deal's deck, wherever the
-   notes' units are chosen; read how notes are placed first).
-3. The deal always deals that unit a keeper, awake, standing clear of the note's sight line
-   (`DealSpot`). The guard holds one of the floor's awake places from the floor's start: on
-   floors 1 and 2 (one place) every other keeper is dealt asleep until the guard is trapped or
-   the cap otherwise frees a place (`Keepers.awakeOn`, `Keeper.loose`, `Deal.open`'s `awake`).
-4. Every action answers: nothing new on screen; the peek (feet in view) is the tell. If a guard's
-   stance needs a look (standing awake vs slumped asleep), check what the peek shows today first.
-5. Lune over seeded floors (say 400): exactly one guarded unit per floor, always holding a note,
-   its keeper always awake, the cap never exceeded with the guard counted.
-6. One guarded note per floor is a default: list it in `OWNER.md`.
-**Acceptance:** checks green; in Studio on seed 7, floor 1, Output names the guarded unit; peeking
-it shows standing feet; opening it, its keeper hunts you; other keepers that floor deal asleep.
-**Read first:** ROADMAP L-06b5; D-072; `src/shared/Deal.luau` (`open`, the deck); `src/server/Deals.luau`
-(how keepers are dealt, `awakeOn`); `src/shared/DealSpot.luau`; `src/shared/Floor.luau` (the notes).
+2. Read how your screen presses a door's buttons (`DoorView`) and how `LadderView` lowers your
+   view (`Humanoid.CameraOffset`); find any crouch pose already built (the drop-in's landing).
+3. Your own Peek drops your view to the gap's height (eye about 1.3 up), eased over about 0.35 s,
+   and holds while the door stays peeked and you stay where you knelt. Moving off, Open, Close,
+   Slam or the door moving stands you back up with the same ease. Feel numbers in shared Config,
+   each with what it does to the player. The rule for when it holds is pure and Lune-tested.
+4. A friend sees you kneel (reuse a built pose if one fits; otherwise the simplest that reads).
+5. Every action answers: the motion is the feedback; a soft cloth sound if one exists. Nothing new
+   on screen. Phone first: the buttons still sit right while low. Too big? Split in ROADMAP first.
+**Acceptance:** checks green; in Studio on seed 7, floor 1, peeking 157 the Client's first-person
+view shows the guard's stride under the door; peeking 154, a sleeper's slack stance; walking off
+stands you up. Judge at phone size (Galaxy A16 view).
+**Read first:** ROADMAP L-06b5b; D-080's last bullet; `src/client/DoorView.luau`;
+`src/client/LadderView.luau` (lines 40 to 60, 410 to 465); `src/shared/StorageUnit/Door.luau`
+(Peeking); `docs/STUDIO.md` "The awake Mannequin moved to Unit 157".
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-06b5 (the guarded note), L-06b4b (its sounds, the sting on sight, the freeze predicted on
-   your screen); D-064, D-068 to D-079. L-12c needs L-06b3d (done). Then L-14; L-07 (takes
+1. L-06b5b (the peek's crouch), L-06b4b (its sounds, the sting on sight, the freeze predicted on
+   your screen); D-064, D-068 to D-080. L-12c needs L-06b3d (done). Then L-14; L-07 (takes
    `Keepers.caught`) to L-10.
 2. **Check, small:** caught crawling a hole or on the ladder, the stand-in's move may leave
    `CrawlView`/`LadderView` holding PlatformStand; if a keeper can reach you there, end it.

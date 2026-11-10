@@ -21,6 +21,27 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-06b5a, the guarded note (built Nov 10)
+
+- [ ] **Heads-up for every test below that opens Unit 126 for an awake Mannequin:** on seed 7,
+  floor 1 the floor's one awake keeper is now the guard of the note in **Unit 157** (`1 _ 9 _`),
+  so 126 (and 112, 154) deal theirs asleep. Use 157 instead: its door faces west, a short walk
+  east and north of the lobby; the guard stands 6 studs in. The directions in those tests (run
+  west, stand beside the door) were for 126. To see 126 awake again, trap 157's guard first.
+- [ ] **The moment** (Play on a computer). "Walk a floor": Output's notes line says
+  `Unit157 (1 _ 9 _, guarded)`. Peek 126: Output says it held the Mannequin asleep. Peek 157:
+  standing, you see only the band of light, not its feet; that's the peek's missing crouch,
+  next session's L-06b5b (`docs/art/L-06b5-guard-low.jpg` is what a crouch will show). Open 157
+  in front of it: it comes for you. Then try D-072's plans for getting the note past it: a
+  friend's torch freezing it while you grab the note, a slam elsewhere to draw it out, or the
+  hole trap; once it's trapped, other doors can deal an awake keeper again.
+- [ ] **Decide, defaults in place** (D-080): (1) one guarded note per floor; (2) the guard takes a
+  note behind an unlocked door where it can, since a padlocked door can't be peeked; (3) on floors
+  1 and 2 every other keeper is dealt asleep until the guard is trapped, so the floor stays calm
+  until you take it on (D-072's open question: should the director wake keepers while you
+  search?); (4) a sleeper woken by a noise plus the guard can make two loose on floor 1 (the cap
+  limits only what the deal deals).
+
 ## Now: judge L-06b3d2, the dent (built Nov 10)
 
 Same setup as L-06b3d1 below: seed 7, floor 1, slam 126 on its Mannequin, then stand in the hall

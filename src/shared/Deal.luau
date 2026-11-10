@@ -6,7 +6,7 @@
 
 	Two moments, as the GDD's "What's behind the door" splits them:
 	- When a floor is laid (`Deal.new`), the search is made real: the floor's code, the notes that
-	  carry it, spread across the floor, and which doors start padlocked.
+	  carry it, spread across the floor, which doors start padlocked, and which note is guarded.
 	- When a door first lifts, a peek or an open (`Deal.open`), the director deals the rest: a tool,
 	  nothing, a find, or a keeper asleep or awake, the odds set by its mood. Left 4 Dead's director
 	  paces a run the same way, placing items and infected as the team moves rather than up front.
@@ -53,6 +53,9 @@ export type Deck = {
 	rolls: { [number]: number }, -- each unit's roll for what kind of thing it holds, 0 to 1
 	picks: { [number]: number }, -- each unit's roll for which find or keeper, 0 to 1
 	dealt: { [number]: Contents }, -- what each unit got, once its door has lifted
+	-- the unit of the guarded note (D-072), by slot index: it's always dealt a keeper, awake, and
+	-- holds one of the floor's awake places from the floor's start (`Deal.odds`)
+	guarded: number?,
 	bag: { Tool }, -- the tools left in the bag, the next one last
 	random: Random,
 }
@@ -333,6 +336,26 @@ function Deal.new(floor: Floor, random: Random): Deck
 		local saw = table.find(bag, "Saw") :: number
 		bag[saw], bag[#bag] = bag[#bag], bag[saw]
 	end
+
+	--[[
+		The guarded note (D-072): one note's unit always holds a keeper, awake, so no floor is
+		cleared without a chase, as DOORS puts the library's code hints in the room Figure walks.
+		The peek is how you find it (feet standing in the light), and a padlocked door can't be
+		peeked, so the guard takes a note behind an unlocked door wherever there is one. Drawn after
+		everything else, so the guard changes nothing else a seed lays or deals.
+	]]
+	local open: { number } = {}
+	for _, note in notes do
+		if not padlocked[note.slot] then
+			table.insert(open, note.slot)
+		end
+	end
+	if #open == 0 then
+		for _, note in notes do
+			table.insert(open, note.slot)
+		end
+	end
+	deck.guarded = open[random:nextInteger(1, #open)]
 	return deck
 end
 
@@ -350,18 +373,34 @@ local function move(odds: { [string]: number }, from: Kind, to: Kind)
 	odds[from] = 0
 end
 
--- The odds behind unit `index` in `situation`, out of their total, in `Deal.Kinds` order.
+--[[
+	The odds behind unit `index` in `situation`, out of their total, in `Deal.Kinds` order.
+	The guarded note's unit is always a keeper awake, whatever the mood and however many are
+	loose. Every other door counts the guard among those awake from the floor's start, before
+	anyone has found it: until its unit is dealt (and the guard is counted with the rest), its
+	place is kept. So on floors 1 and 2, which allow one awake, every other keeper is dealt
+	asleep until the guard is trapped behind a door.
+]]
 function Deal.odds(deck: Deck, index: number, situation: Situation): { [string]: number }
+	local odds: { [string]: number } = {}
+	if index == deck.guarded then
+		for _, kind in KINDS do
+			odds[kind] = 0
+		end
+		odds.Awake = 1
+		return odds
+	end
 	local base = Deal.Odds[situation.mood]
 	local locked = deck.padlocked[index] == true
-	local odds: { [string]: number } = {}
 	for _, kind in KINDS do
 		odds[kind] = base[kind] * (if locked then Deal.Padlocked[kind] else 1)
 	end
+	local guard = deck.guarded
+	local awake = situation.awake + (if guard and not deck.dealt[guard] then 1 else 0)
 	if deck.floor.number <= Deal.TeachingFloors and deck.firstHall[index] then
 		move(odds, "Asleep", "Nothing")
 		move(odds, "Awake", "Nothing")
-	elseif situation.awake >= Deal.awakeCap(deck.floor.number) then
+	elseif awake >= Deal.awakeCap(deck.floor.number) then
 		move(odds, "Awake", "Asleep")
 	end
 	return odds
