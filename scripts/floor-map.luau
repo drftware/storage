@@ -8,12 +8,14 @@
 local process = require("@lune/process")
 
 local Brix = require("../vendor/brix/src")
+local Climb = require("../src/shared/Climb")
 local Floor = require("../src/shared/Floor")
 
 local seed = tonumber(process.args[1]) or 1
 local number = tonumber(process.args[2]) or 3
 
-local floor = Floor.generate(number, Brix.Random.new({ seed = seed }))
+-- each floor of a climb from `seed` has its own seed (Climb.seedOf), as the game lays it
+local floor = Floor.generate(number, Brix.Random.new({ seed = Climb.seedOf(seed, number) }))
 
 local units, walls, kinds = 0, 0, {} :: { [string]: number }
 local first, last = math.huge, 0

@@ -2521,3 +2521,49 @@ for the shudder (the owner's jitter line: the clanks and the sound carry it); co
 several floors (one floor per ride); a second plate for the counter (the clock's plate is where
 eyes already are). A Studio-only hold (`Ride.Hold`, Workspace's `DevRideHold`) stops every ride
 where it is, on the server and every screen, to look at one frame.
+
+## D-104 The climb: the next floor laid ahead, riders moved on the cable's knock (L-08b, Nov 11)
+The moment: the gate opens on a floor nobody has seen, and the one below is gone, as each of
+Dandy's World's elevator stops opens on a new floor. A server system, `Climbs`, runs it: the
+smallest stand-in for Brix's round loop (ENG-13, unbuilt), floors only, no lobby or results.
+
+Each floor has its own seed (`Climb.seedOf`: floor 1's is the climb's, each one above the seed
+plus a large stride), because one seed for every floor laid floor 2 as floor 1 again, its units
+numbered 2xx. `scripts/floor-map` and `floor-deal` use the same rule, so `floor-map 7 2` prints
+the floor 2 the game lays. Floor 1 of every seed is unchanged; floors above 1 of a seed differ
+from what those scripts printed before today.
+
+Each floor is laid at its own spot, 1000 studs on from the last along -Z (`Climb.Spacing`): two
+floors' nearest halls stand at least 792 studs apart over 600 Lune-checked floors, far past the
+256-stud streaming radius, so a phone near one never holds the other, and nothing left on a
+cleared floor can show up on a later one. The next floor is dealt and laid as the right code
+opens the gate (30 s before the car can leave), not as the car leaves: laying took 0.3 to 5 s in
+Studio, and the hand-off can't wait past `Climb.Latest`. It waits there with nobody on it;
+keepers wake only as its doors open. Laid during play, a floor once held the server 160 ms in one
+frame because a hall piece entered the game with all its units at once; each unit now joins its
+placed hall piece as it's dressed (peaks of 5 to 9 ms).
+
+The hand-off. The car never moves (D-103), so riders change cars. `Climb.Lead` (0.5 s) before
+the move the new floor's car takes the ride over (`Elevators:takeOver`: the same `Ride` and
+`Aboard` values, the old car marked done), after the server asks each rider's screen again to
+stream the new lobby (`RequestStreamAroundAsync`, waited on: a long hold let it go once). Every
+rider's screen lays a second shaft outside the new car, sliding in step (RideView), so whichever
+car a frame draws you in, the gate shows the shaft; the older one goes once you've stood in the
+new car 0.3 s, and a ride with no shaft at all is let go after 1.5 s. On the cable's second knock
+(6.1 s, `Climb.HandOff`) the server moves every rider to the same spot in the new car (turned with
+it if it faced another way) in one frame, so friends arrive together, and clears the floor below
+in the same frame: whoever's still on it goes to the spawn (L-08c makes them watch), its tools go
+with it. The move costs a screen a long frame (0.16 to 0.4 s in Studio at 15 frames a second);
+on the knock, under the clank, it reads as the jolt (cut on the bump, as film cuts on action).
+Measured in Studio across the hand-off: the camera moved 0.006 to 0.008 studs and turned 0° in
+the car's frame on the switch frame, the shaft never jumped, no frame lacked a shaft.
+
+The car leaving empty, from the top floor, or before the next floor is ready comes back to its
+own lobby and is armed again for the same floor; a next floor already laid waits for the next
+time it leaves. The new car's gate shuts `Ride.Linger` after it opens, armed with its floor's code.
+
+Not chosen: laying as the car leaves (the ticket's first plan; too tight when Studio took 5 s);
+one seed for every floor (the same layout); floors stacked up the Y axis (they'd stream
+together); the client moving its own character (no snap if walking, but a friend would vanish
+from your car for a round trip); clearing the floor below a second after the move (a second
+long frame, uncovered); a fade to hide the move (D-103's line: the ride never cuts).

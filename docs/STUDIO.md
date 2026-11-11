@@ -838,6 +838,36 @@ verified: a doc page, Studio, or "untested".
   car arrives, opens and is armed again at once. Turn the Client's camera to the gate
   (`CFrame.lookAt(pos, pos + Vector3.new(0, 0.1, -1))`) before capturing. A real-time ride is best
   logged from a `task.spawn`ed RenderStepped loop that the call leaves running (`_G` for results).
+- **Testing the climb from the MCP** (L-08b, 2026-11-11): a climb starting on floor f lays floor n
+  with its lobby's middle at (0, 0, -600 - 1000 (n - f)), its elevator 12 studs behind it (the
+  first at (0, 0, -588)); added to that pivot, the keypad spot is (-7.8, 3, -3.5) and aboard
+  is (0, 3, 7). Punch the code from the Client (`Remotes.Keypad`, as above): the next floor lays
+  then (Output prints its map, code and notes). Board and wait about 27 s for the gate; the move
+  lands 6.1 s into the ride ("rode up to floor n" in Output). `DevRideHold` holds the hand-off
+  too: the takeover waits for 5.6 s and the move for 6.1 s on the held clock. Unit doors open by
+  their Open prompt (`DoorAction`) as in "Driving a ProximityPrompt"; a door face is
+  `FloorBuilder.face(unit)` from the Server (require `ServerScriptService.Server.FloorBuilder`).
+  Caught and kept with nobody to cut you free, `Player:LoadCharacter()` from the Server lets you
+  out and "Walk a floor" (it names the climb's floor) takes you back. Seeds used: 7 (codes 1097,
+  0566, 4275 from floor 1) and 23 (1631, 8468, 4050).
+- **`screen_capture` with a camera position leaves the camera Scriptable** (Play, 2026-11-11), and
+  `execute_luau` puts back whatever camera type it found when the call began, so a later call
+  setting Custom is undone ("Resetting from Custom back to Scriptable"). A ride then logs the
+  camera standing where the capture left it. Put it back with `task.delay(1, ...)` setting
+  `CameraSubject` and Custom, which runs after the call, and capture without a camera position
+  while testing anything that moves the character.
+- **Studio stops drawing when the Mac's display sleeps or locks** (2026-11-11, overnight):
+  `RenderStepped` stops (0 frames a second) and every `screen_capture` times out while scripts
+  still run. `caffeinate -u -t 1800` in a background shell woke it and kept it drawing (`-d` alone
+  didn't); it ends on its own.
+- **A 1000-stud move under Automatic graphics quality** (Play, 2026-11-11): after the hand-off's
+  move the car drew black (only the readouts and plates, which light themselves) for 10 to 30 s,
+  the torch's view model hidden too, though its lamp was on at full brightness; the move's long
+  frame drops Automatic's level and it climbs back slowly. At a fixed `QualityLevel` Level12 the
+  same move drew the car lit at the first capture, 4 s later. Fix the level before judging a
+  far move's look. `Player:RequestStreamAroundAsync(position, timeOut)` (verified on
+  create.roblox.com: yields; temporary, no guarantee) streamed the new lobby in, but a 20 s
+  `DevRideHold` let it go again: ask again right before moving anyone.
 - **The kept wrap's squeal, measured** (L-07b, 2026-11-10; Edit, AudioPlayer at half speed to
   AudioAnalyzer, 0.1 s bins, spectral centroid per bin): nothing in the library is titled
   stretch film; a tape screeching off a roll is the same sound. Pro Sound Effects' "Duct Tape

@@ -422,6 +422,10 @@ function GateClock.new(): Brix.System
 		if not at or now() - at > STALE then
 			return
 		end
+		local r = ride
+		if r and math.abs(at - r) < 1e-3 then
+			return -- the same ride, taken over by the next floor's car (L-08b): nothing new
+		end
 		if table.find(ids, Players.LocalPlayer.UserId) then
 			ride, rideFrom, rideTo, floorShown = at, 0, 0, 0
 			rideFloors(clock)

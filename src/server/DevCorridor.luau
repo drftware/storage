@@ -28,24 +28,20 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Climbs = require(script.Parent.Climbs)
 local CorridorKit = require(ReplicatedStorage.Shared.CorridorKit)
 local Deal = require(ReplicatedStorage.Shared.Deal)
-local Ride = require(ReplicatedStorage.Shared.Elevator.Ride)
-local Deals = require(script.Parent.Deals)
-local Elevators = require(script.Parent.Elevators)
 local Prompts = require(script.Parent.Prompts)
 local Floor = require(ReplicatedStorage.Shared.Floor)
 local FloorBuilder = require(script.Parent.FloorBuilder)
 local HallLight = require(ReplicatedStorage.Shared.HallLight)
 local Keepers = require(script.Parent.Keepers)
-local KeptPlayers = require(script.Parent.KeptPlayers)
 local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
 local MotionLights = require(script.Parent.MotionLights)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 local Slots = require(script.Parent.Slots)
 local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
 local Wrap = require(ReplicatedStorage.Shared.Tools.Wrap)
-local Minimaps = require(script.Parent.Minimaps)
 local Wraps = require(script.Parent.Wraps)
 
 -- The layout, in studs. The hall runs along X; doors face each other across Z.
@@ -113,9 +109,10 @@ local FLOOR_COLOUR = Color3.fromRGB(120, 120, 118)
 local CEILING_COLOUR = Color3.fromRGB(38, 38, 40)
 local SPAWN = CFrame.lookAt(Vector3.new(-32, 3, 0), Vector3.new(0, 3, 0))
 local FAR_SPOT = CFrame.lookAt(Vector3.new(FAR_X + 6, 3, 0), Vector3.new(FAR_X, 3, -4))
--- The floor laid beside the hall (L-01c), its lobby's middle here: far enough off that the hall
--- streams out while you walk it. Unless Workspace's DevFloorSeed and DevFloorNumber attributes say
--- otherwise, it's floor 3 from seed 7, the one `lune run scripts/floor-map 7 3` prints.
+-- The climb beside the hall (L-01c, L-08b), its first floor's lobby's middle here: far enough off
+-- that the hall streams out while you walk it; each floor above is laid further on along -Z
+-- (Climbs). Unless Workspace's DevFloorSeed and DevFloorNumber attributes say otherwise, it starts
+-- on floor 3 from seed 7, the one `lune run scripts/floor-map 7 3` prints.
 local FLOOR_ORIGIN = CFrame.new(0, 0, -600)
 local FLOOR_SEED = 7
 local FLOOR_NUMBER = 3
@@ -445,16 +442,16 @@ local function turn(parent: Instance, lights: MotionLights.MotionLights, smallUn
 	breakerPost(BREAKER_POST, lights, parent)
 end
 
--- A post at `at` whose prompt sends you to `to`; while `ready` says no, it says so instead.
+-- A post at `at` whose prompt sends you where `to` says; while it says nowhere, the prompt says
+-- so instead.
 local function travelPost(
 	name: string,
 	at: Vector3,
 	objectText: string,
 	actionText: string,
-	to: CFrame,
-	parent: Instance,
-	ready: (() -> boolean)?
-)
+	to: () -> CFrame?,
+	parent: Instance
+): ProximityPrompt
 	local post = block(
 		name,
 		Vector3.new(0.4, 4, 0.4),
@@ -470,19 +467,27 @@ local function travelPost(
 		return objectText
 	end)
 	p.Triggered:Connect(function(player: Player)
-		if ready and not ready() then
+		local where = to()
+		if not where then
 			refuse("Still laying it")
 			return
 		end
-		send(player, to)
+		send(player, where)
 	end)
+	return p
+end
+
+local function fixed(to: CFrame): () -> CFrame?
+	return function(): CFrame?
+		return to
+	end
 end
 
 -- A post in the walked floor's lobby that stands a Mannequin in a hall about two halls off,
 -- facing back toward the lobby (L-06b2a): slam a door by the lobby and watch it come, wait, then
 -- go back. Each press stands a fresh one in place of the last.
-local function mannequinPost(model: Model, keepers: Keepers.Keepers)
-	local at = (FLOOR_ORIGIN * MANNEQUIN_POST).Position
+local function mannequinPost(model: Model, origin: CFrame, keepers: Keepers.Keepers)
+	local at = (origin * MANNEQUIN_POST).Position
 	local post = block(
 		"StandMannequin",
 		Vector3.new(0.4, 4, 0.4),
@@ -515,102 +520,32 @@ local function mannequinPost(model: Model, keepers: Keepers.Keepers)
 	end)
 end
 
--- Lays a floor from the data beside the hall (L-01c), prints its map, and opens the way there:
--- "Walk a floor" by the spawn, "Come back" in its lobby. Workspace's DevFloorSeed and
--- DevFloorNumber attributes pick which. Yields while it lays.
-local function devFloor(
-	folder: Folder,
-	elevators: Elevators.Elevators,
-	deals: Deals.Deals,
-	keepers: Keepers.Keepers,
-	wraps: Wraps.Wraps,
-	minimaps: Minimaps.Minimaps,
-	keptPlayers: KeptPlayers.KeptPlayers
-)
-	local units, missing = FloorBuilder.units()
-	if not units then
-		warn(
-			`DevCorridor: no template at {missing}, so no floor to walk; import it (art/unit/README.md, art/corridor/README.md)`
-		)
-		return
-	end
-	local seed = Workspace:GetAttribute("DevFloorSeed")
-	local number = Workspace:GetAttribute("DevFloorNumber")
-	local s = if type(seed) == "number" then seed else FLOOR_SEED
-	local n = if type(number) == "number"
-		then math.clamp(math.floor(number), 1, 10)
-		else FLOOR_NUMBER
-	local ready = false
+-- What a tester needs on each floor the climb lays (L-08b): "Come back" and "Stand one" in its
+-- lobby, and in Output its map, how laying it went, its code and where its notes are (which is
+-- guarded: always an awake keeper with it, D-072), and the doors the deal padlocked, so a tester
+-- can walk straight to them.
+local function dressFloor(on: Climbs.OnFloor, keepers: Keepers.Keepers)
+	local floor, deck, laid, n = on.floor, on.deck, on.laid, on.number
 	travelPost(
-		"WalkFloor",
-		Vector3.new(-34, 0, -3),
+		"ComeBack",
+		(on.origin * FLOOR_POST).Position,
 		`Floor {n}`,
-		"Walk a floor",
-		FLOOR_ORIGIN * FLOOR_ARRIVAL,
-		folder,
-		function()
-			return ready
-		end
+		"Come back",
+		fixed(SPAWN),
+		on.model
 	)
-	local random = Brix.Random.new({ seed = s })
-	local floor = Floor.generate(n, random)
-	-- the floor's deal, from the same seed: its code, notes and padlocks laid with it, each unit's
-	-- contents dealt as its door first lifts (Deals)
-	local deck = Deal.new(floor, random)
+	mannequinPost(on.model, on.origin, keepers)
 	print(
-		`DevCorridor: floor {n} from seed {s}, seen from above, the lobby (L) at the bottom:\n{Floor.map(
+		`DevCorridor: floor {n} (seed {on.seed}), seen from above, the lobby (L) at the bottom:\n{Floor.map(
 			floor
 		)}`
 	)
-	local model, laid = FloorBuilder.lay(floor, FLOOR_ORIGIN, folder, deck)
-	deals:add(deck, laid.slots, model)
-	-- a player a keeper catches here is wrapped and stored in one of its units (L-07a)
-	keptPlayers:add(deck, laid.slots, model)
-	-- the keepers' roams draw from a fresh Random from the same seed, not the deal's, so where they
-	-- wander never changes what a unit holds
-	keepers:add(floor, laid.slots, model, FLOOR_ORIGIN, Brix.Random.new({ seed = s }))
-	wraps:add(Wrap.halls(floor), model, FLOOR_ORIGIN)
-	minimaps:add(floor, laid.slots, model, FLOOR_ORIGIN)
-	mannequinPost(model, keepers)
-	local elevator = laid.elevator
-	if elevator then
-		elevators:arm(elevator, deck.code, model, n)
-		-- Until L-08b lays the next floor, the car rides and arrives back at this same lobby, its
-		-- readout one higher (Elevators, Ride); once the team has had `Ride.Linger` seconds to walk
-		-- out, the gate shuts behind them and the elevator is armed again with the same code, so
-		-- the floor can be run again without stopping Play.
-		local riding = elevators.arrived:connect(function(arrival: Elevators.Arrival)
-			if arrival.elevator ~= elevator then
-				return
-			end
-			local wait = arrival.at + Ride.Open + Ride.Linger - Workspace:GetServerTimeNow()
-			task.delay(math.max(wait, 0), function()
-				if elevator.Parent then
-					elevators:arm(elevator, deck.code, model, arrival.to)
-				end
-			end)
-		end)
-		model.Destroying:Once(function()
-			riding:disconnect()
-		end)
-	end
-	travelPost(
-		"ComeBack",
-		(FLOOR_ORIGIN * FLOOR_POST).Position,
-		`Floor {n}`,
-		"Come back",
-		SPAWN,
-		model
-	)
-	ready = true
 	local work = string.format("%.0f ms", laid.working * 1000)
 	local most = string.format("%.1f ms", laid.longest * 1000)
 	local took = string.format("%.2f s", laid.seconds)
 	print(
-		`DevCorridor: floor {n} laid, {laid.units} units on {laid.pieces} hall pieces: {work} of work over {laid.frames} frames, at most {most} in one ({took} in all); "Walk a floor" is by the spawn`
+		`DevCorridor: floor {n} laid, {laid.units} units on {laid.pieces} hall pieces: {work} of work over {laid.frames} frames, at most {most} in one ({took} in all)`
 	)
-	-- Studio only: the code and where its notes are, so a tester can walk straight to them, and
-	-- which is guarded (always an awake keeper with it, D-072)
 	local where = {}
 	for _, note in deck.notes do
 		local guarded = if note.slot == deck.guarded then ", guarded" else ""
@@ -625,13 +560,70 @@ local function devFloor(
 			", "
 		)}`
 	)
-	-- and the doors the deal padlocked, so a tester can find one for the cutters
 	local locked = {}
 	for i in deck.padlocked do
 		table.insert(locked, `Unit{floor.slots[i].number}`)
 	end
 	table.sort(locked)
 	print(`DevCorridor: floor {n}'s padlocked doors: {table.concat(locked, ", ")}`)
+end
+
+-- Starts the climb beside the hall (L-01c, L-08b) and opens the way there: "Walk a floor" by the
+-- spawn takes you to the lobby of the floor it's on, each floor is dressed for testing as it's
+-- laid (`dressFloor`), and the car carries you up from floor to floor. Workspace's DevFloorSeed and
+-- DevFloorNumber attributes pick the seed and the floor it starts on. Yields while it lays.
+local function devFloor(folder: Folder, climbs: Climbs.Climbs, keepers: Keepers.Keepers)
+	local units, missing = FloorBuilder.units()
+	if not units then
+		warn(
+			`DevCorridor: no template at {missing}, so no floor to walk; import it (art/unit/README.md, art/corridor/README.md)`
+		)
+		return
+	end
+	local seed = Workspace:GetAttribute("DevFloorSeed")
+	local number = Workspace:GetAttribute("DevFloorNumber")
+	local s = if type(seed) == "number" then seed else FLOOR_SEED
+	local n = if type(number) == "number"
+		then math.clamp(math.floor(number), 1, 10)
+		else FLOOR_NUMBER
+	local walk = travelPost(
+		"WalkFloor",
+		Vector3.new(-34, 0, -3),
+		`Floor {n}`,
+		"Walk a floor",
+		function(): CFrame?
+			local on = climbs:current()
+			return if on then on.origin * FLOOR_ARRIVAL else nil
+		end,
+		folder
+	)
+	local function named(on: Climbs.OnFloor)
+		walk.ObjectText = `Floor {on.number}`
+	end
+	local dressing = climbs.laid:connect(function(on: Climbs.OnFloor)
+		dressFloor(on, keepers)
+	end)
+	local moving = climbs.handedOff:connect(function(h: Climbs.HandOff)
+		named(h.to)
+		print(
+			`DevCorridor: {#h.riders} rode up to floor {h.to.number}, moved into its car {string.format(
+				"%.2f",
+				h.since
+			)} s into the ride`
+		)
+	end)
+	folder.Destroying:Once(function()
+		dressing:disconnect()
+		moving:disconnect()
+	end)
+	climbs:begin({
+		seed = s,
+		number = n,
+		origin = FLOOR_ORIGIN,
+		parent = folder,
+		away = SPAWN,
+	})
+	print(`DevCorridor: "Walk a floor" is by the spawn`)
 end
 
 -- Builds the whole corridor into one folder and parents it once. Returns nil, after a warning,
@@ -710,13 +702,13 @@ local function build(lights: MotionLights.MotionLights): Folder?
 	-- the tops you can crawl along once up a ladder (L-13b2c)
 	FloorBuilder.unitTops(folder)
 
-	travelPost("GoFar", Vector3.new(-34, 0, 3), "Streaming test", "Go far", FAR_SPOT, folder)
+	travelPost("GoFar", Vector3.new(-34, 0, 3), "Streaming test", "Go far", fixed(FAR_SPOT), folder)
 	travelPost(
 		"ComeBack",
 		Vector3.new(FAR_X + 8, 0, 3),
 		"Streaming test",
 		"Come back",
-		SPAWN,
+		fixed(SPAWN),
 		folder
 	)
 
@@ -763,22 +755,14 @@ function DevCorridor.new(): Brix.System
 		start = function(_: any, context: Brix.Context)
 			-- any: the registry hands back a plain System; MotionLights fills this slot (init.server)
 			local lights = (context.registry:get("motionLights") :: any) :: MotionLights.MotionLights
-			-- any: as above; Elevators fills this slot
-			local elevators = (context.registry:get("elevators") :: any) :: Elevators.Elevators
 			-- any: as above; Slots fills this slot
 			local slots = (context.registry:get("slots") :: any) :: Slots.Slots
-			-- any: as above; Deals fills this slot
-			local deals = (context.registry:get("deals") :: any) :: Deals.Deals
 			-- any: as above; Keepers fills this slot
 			local keepers = (context.registry:get("keepers") :: any) :: Keepers.Keepers
 			-- any: as above; Wraps fills this slot
 			local wraps = (context.registry:get("wraps") :: any) :: Wraps.Wraps
-			-- any: as above; Minimaps fills this slot
-			local minimaps = (context.registry:get("minimaps") :: any) :: Minimaps.Minimaps
-			-- any: as above; KeptPlayers fills this slot
-			local keptPlayers = (
-				context.registry:get("keptPlayers") :: any
-			) :: KeptPlayers.KeptPlayers
+			-- any: as above; Climbs fills this slot
+			local climbs = (context.registry:get("climbs") :: any) :: Climbs.Climbs
 			local folder = build(lights)
 			built = folder
 			if folder then
@@ -787,16 +771,7 @@ function DevCorridor.new(): Brix.System
 					slots:lay(spot.key, spot.at, spot.yaw)
 				end
 				wraps:add(TEST_HALLS, folder, CFrame.identity)
-				laying = task.spawn(
-					devFloor,
-					folder,
-					elevators,
-					deals,
-					keepers,
-					wraps,
-					minimaps,
-					keptPlayers
-				)
+				laying = task.spawn(devFloor, folder, climbs, keepers)
 			end
 		end,
 		stop = function(_: any)

@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Climbs = require(script.Climbs)
 local Crawls = require(script.Crawls)
 local Deals = require(script.Deals)
 local DevCorridor = require(script.DevCorridor)
@@ -50,6 +51,8 @@ local systems: { Brix.HostEntry } = {
 	-- Laying bubble wrap: a Lay checked against the halls, the roll spent, a sheet across the hall.
 	{ slot = "wraps", system = Wraps.new() },
 	{ slot = "minimaps", system = Minimaps.new() },
+	-- The climb: each floor dealt and laid while the team rides up to it, the one below cleared.
+	{ slot = "climbs", system = Climbs.new() },
 }
 if RunService:IsStudio() then
 	-- A test hall of real units to try the doors in. Never on a live server.

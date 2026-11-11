@@ -21,8 +21,14 @@
 	many seconds in (RideClock), so a frame can be looked at (docs/STUDIO.md).
 
 	ElevatorView dims the car's lamp and runs the car's readout; GateClock turns the clock's plate
-	into the floor counter. When L-08b moves riders into the next floor's car mid-ride, it writes
-	the same ride on that car, and this follows whichever riding car holds the player.
+	into the floor counter.
+
+	The hand-off (L-08b, Climbs): mid-cruise the next floor's car takes the ride over, the same
+	value written on it with the same riders, and a moment later the server moves each rider to the
+	same spot in it. As soon as that car carries this player's ride a second sleeve is laid outside
+	it, sliding in step with the first, so whichever car a frame draws you in, the gate shows the
+	shaft; once you've stood in the newer car a moment the older sleeve goes. The sway and the
+	sounds run off the ride's clock, so they never notice.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -43,14 +49,19 @@ local SoundPrimer = require(script.Parent.SoundPrimer)
 local STALE = Ride.opens()
 -- Pixels a stud on the painted number: crisp at the gate's distance, cheap.
 local PAINT_PIXELS = 60
+-- Seconds you stand in the car that took the ride over before the shaft outside the one you left
+-- goes: a few frames, so a move that lands late on a slow phone still finds the gate covered.
+local SETTLE = 0.3
+-- Seconds a ride runs on with no shaft outside any car (the car you left cleared before the one
+-- you were moved into reached this screen) before it's let go: the late car lays its shaft as it
+-- arrives; a rider left out of the move stops swaying soon after.
+local BARE = 1.5
 
 type Piece = { part: BasePart, at: CFrame } -- a sleeve part and where it sits, unmoved, in the elevator's frame
 
-type Trip = {
+-- The shaft outside one car: its parts, where they sit as the car stands at the floor it leaves.
+type Sleeve = {
 	model: Model,
-	at: number, -- server time the gate hit its post
-	from: number,
-	to: number,
 	folder: Folder,
 	pieces: { Piece },
 	parts: { BasePart }, -- the same parts, for BulkMoveTo
@@ -58,12 +69,18 @@ type Trip = {
 	places: { CFrame }, -- where they go this frame, rewritten in place
 	leaving: BasePart, -- the dark over the hall you left
 	arriving: BasePart, -- and over the next one
-	since: number, -- seconds into the ride last frame, for the cues crossed since
 }
 
-local function now(): number
-	return Workspace:GetServerTimeNow()
-end
+type Trip = {
+	at: number, -- server time the gate hit its post
+	from: number,
+	to: number,
+	sleeves: { Sleeve }, -- oldest first: the car that left, then the one that took the ride over
+	since: number, -- seconds into the ride last frame, for the cues crossed since
+	home: Sleeve?, -- the sleeve whose car you stood in last frame
+	homeFor: number, -- seconds you've stood in it
+	bare: number?, -- seconds into the ride its last sleeve went, while it has none
+}
 
 local function rgb(c: { number }): Color3
 	return Color3.fromRGB(c[1], c[2], c[3])
@@ -131,8 +148,9 @@ function RideView.new(hold: (pose: CameraShake.Pose?) -> ()): Brix.System
 		return p
 	end
 
-	-- Lays the shaft outside `model`'s gate, as the car stands at the floor it leaves.
-	local function lay(model: Model, from: number, to: number, at: number): Trip
+	-- Lays the shaft outside `model`'s gate, as the car stands at the floor it leaves, the next
+	-- floor's number `to` painted on it.
+	local function lay(model: Model, to: number): Sleeve
 		local s = Ride.Shaft
 		local folder = Instance.new("Folder")
 		folder.Name = "RideShaft"
@@ -241,9 +259,6 @@ function RideView.new(hold: (pose: CameraShake.Pose?) -> ()): Brix.System
 		folder.Parent = model
 		return {
 			model = model,
-			at = at,
-			from = from,
-			to = to,
 			folder = folder,
 			pieces = ride.pieces,
 			parts = parts,
@@ -251,8 +266,33 @@ function RideView.new(hold: (pose: CameraShake.Pose?) -> ()): Brix.System
 			places = places,
 			leaving = leaving,
 			arriving = arriving,
-			since = -math.huge,
 		}
+	end
+
+	-- Slides `sleeve` to where it is `since` seconds into the ride, its darks as dark as they are.
+	local function slide(sleeve: Sleeve, since: number)
+		local down = sleeve.model:GetPivot().UpVector * -Ride.climbed(since)
+		local homes, places = sleeve.homes, sleeve.places
+		for i, home in homes do
+			places[i] = home + down
+		end
+		Workspace:BulkMoveTo(sleeve.parts, places, Enum.BulkMoveMode.FireCFrameChanged)
+		local leaving, arriving = 1 - Ride.leaving(since), 1 - Ride.arriving(since)
+		if sleeve.leaving.Transparency ~= leaving then
+			sleeve.leaving.Transparency = leaving
+		end
+		if sleeve.arriving.Transparency ~= arriving then
+			sleeve.arriving.Transparency = arriving
+		end
+	end
+
+	local function sleeveOn(ride: Trip, model: Model): Sleeve?
+		for _, sleeve in ride.sleeves do
+			if sleeve.model == model then
+				return sleeve
+			end
+		end
+		return nil
 	end
 
 	local function play(cue: Ride.Cue, late: number)
@@ -302,11 +342,31 @@ function RideView.new(hold: (pose: CameraShake.Pose?) -> ()): Brix.System
 		end
 		current = nil
 		hold(nil)
-		ride.folder:Destroy()
+		for _, sleeve in ride.sleeves do
+			sleeve.folder:Destroy()
+		end
+		table.clear(ride.sleeves)
 		for _, s in { motorSound, rumbleSound } do
 			if s then
 				s:Stop()
 			end
+		end
+	end
+
+	-- The shaft outside `sleeve`'s car goes (the car's gone, or you've left it). The ride runs on
+	-- without one for `BARE` seconds at most, for a car that reaches this screen late.
+	local function drop(ride: Trip, sleeve: Sleeve)
+		local i = table.find(ride.sleeves, sleeve)
+		if not i then
+			return
+		end
+		table.remove(ride.sleeves, i)
+		sleeve.folder:Destroy()
+		if ride.home == sleeve then
+			ride.home, ride.homeFor = nil, 0
+		end
+		if #ride.sleeves == 0 then
+			ride.bare = RideClock(ride.at)
 		end
 	end
 
@@ -320,27 +380,19 @@ function RideView.new(hold: (pose: CameraShake.Pose?) -> ()): Brix.System
 		return CFrame.new(0, lift, 0) * CFrame.Angles(nod, 0, roll)
 	end
 
-	-- Something about `model`'s ride changed: begin it, follow it to this car, or let it go.
+	-- Something about `model`'s ride changed: begin it, lay the shaft outside the car that took it
+	-- over, or let this car go.
 	local function check(model: Model)
 		local at, from, to = Ride.decode(model:GetAttribute(Ride.Attribute))
 		local ride = current
-		if ride and ride.model == model and not at then
-			finish() -- armed again: the ride's long over
-			return
-		end
-		if not at or now() - at > STALE then
-			return
-		end
-		if ride and math.abs(ride.at - at) < 1e-3 then
-			-- the same ride on another car (L-08b's hand-off): follow it if this player's in it
-			if ride.model ~= model and inCar(model) then
-				local pivot = model:GetPivot()
-				ride.model = model
-				ride.folder.Parent = model
-				for i, p in ride.pieces do
-					ride.homes[i] = pivot * p.at
-				end
+		if ride then
+			local sleeve = sleeveOn(ride, model)
+			if sleeve and not (at and math.abs(ride.at - at) < 1e-3) then
+				drop(ride, sleeve) -- armed again: this car's done with the ride
+				ride = current
 			end
+		end
+		if not at or RideClock(at) > STALE then
 			return
 		end
 		local leftAt, ids = Departure.decodeAboard(model:GetAttribute(Departure.AboardAttribute))
@@ -350,8 +402,27 @@ function RideView.new(hold: (pose: CameraShake.Pose?) -> ()): Brix.System
 		if not rode then
 			return
 		end
+		if ride and math.abs(ride.at - at) < 1e-3 then
+			-- the same ride on the next floor's car (the hand-off): its shaft too, in step
+			if not sleeveOn(ride, model) then
+				local sleeve = lay(model, ride.to)
+				table.insert(ride.sleeves, sleeve)
+				ride.bare = nil
+				slide(sleeve, RideClock(ride.at))
+			end
+			return
+		end
 		finish()
-		current = lay(model, from, to, at)
+		current = {
+			at = at,
+			from = from,
+			to = to,
+			sleeves = { lay(model, to) },
+			since = -math.huge,
+			home = nil,
+			homeFor = 0,
+			bare = nil,
+		}
 		hold(pose)
 	end
 
@@ -365,8 +436,9 @@ function RideView.new(hold: (pose: CameraShake.Pose?) -> ()): Brix.System
 			c:Disconnect()
 		end
 		local ride = current
-		if ride and ride.model == inst then
-			finish()
+		local sleeve = if ride then sleeveOn(ride, inst :: Model) else nil
+		if ride and sleeve then
+			drop(ride, sleeve)
 		end
 	end
 
@@ -385,13 +457,9 @@ function RideView.new(hold: (pose: CameraShake.Pose?) -> ()): Brix.System
 		check(model)
 	end
 
-	local function step(_: any, _dt: number)
+	local function step(_: any, dt: number)
 		local ride = current
 		if not ride then
-			return
-		end
-		if not ride.model.Parent then
-			finish()
 			return
 		end
 		local since = RideClock(ride.at)
@@ -399,19 +467,40 @@ function RideView.new(hold: (pose: CameraShake.Pose?) -> ()): Brix.System
 			finish()
 			return
 		end
+		local sleeves = ride.sleeves
+		for i = #sleeves, 1, -1 do
+			if not sleeves[i].model.Parent then
+				drop(ride, sleeves[i])
+			end
+		end
+		local bare = ride.bare
+		if bare and since - bare >= BARE then
+			finish()
+			return
+		end
+		-- once you've stood a moment in a car that took the ride over, the shaft outside the one
+		-- you left goes (a newer one waits for you: you aren't moved into it yet)
+		local inside: Sleeve? = nil
+		for _, sleeve in sleeves do
+			if inCar(sleeve.model) then
+				inside = sleeve
+				break
+			end
+		end
+		if inside ~= ride.home then
+			ride.home, ride.homeFor = inside, 0
+		elseif inside then
+			ride.homeFor += dt
+			local i = table.find(sleeves, inside) or 1
+			if ride.homeFor >= SETTLE and i > 1 then
+				for j = i - 1, 1, -1 do
+					drop(ride, sleeves[j])
+				end
+			end
+		end
 		-- the shaft slides down past the gate
-		local down = ride.model:GetPivot().UpVector * -Ride.climbed(since)
-		local homes, places = ride.homes, ride.places
-		for i, home in homes do
-			places[i] = home + down
-		end
-		Workspace:BulkMoveTo(ride.parts, places, Enum.BulkMoveMode.FireCFrameChanged)
-		local leaving, arriving = 1 - Ride.leaving(since), 1 - Ride.arriving(since)
-		if ride.leaving.Transparency ~= leaving then
-			ride.leaving.Transparency = leaving
-		end
-		if ride.arriving.Transparency ~= arriving then
-			ride.arriving.Transparency = arriving
+		for _, sleeve in sleeves do
+			slide(sleeve, since)
 		end
 		-- the sounds whose moment has come since last frame
 		local was = ride.since

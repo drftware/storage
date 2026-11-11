@@ -7,6 +7,29 @@ nowhere else.
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 
+## Now: judge L-08b, the next floor (built Nov 11)
+
+Verified in Studio on seeds 7 and 23: punched floor 1's code, rode, and the gate opened on floor 2's
+own lobby (its own layout, teal doors, its own code), floor 1 gone; on floor 2 opened units and
+read its notes (237 and 249), woke 224's guard and got caught and kept there, punched floor 2's
+code and rode on to floor 3 (81 to 91 units, four notes, ten padlocks). A frame-by-frame log
+across the hand-off: the view moved under a hundredth of a stud and didn't turn, the shaft never
+jumped. The empty car came back and re-armed. What Studio can't tell: a phone's frame rate at the
+move, two players, and how it feels.
+- [ ] **Ride from floor 1 to floor 2 on a phone** (graphics on Automatic, as players have it).
+  About 6 s into the ride, on the second cable clank, you're moved into floor 2's car (in Studio
+  that frame took 0.16 to 0.4 s, and Studio's Automatic graphics then drew the car black for
+  10 to 30 s; at a fixed high quality it was lit). Does the view stutter there, the car's light
+  flicker or go out, or anything jump? Then walk floor 2: its map in the corner, its doors, its
+  notes, its keepers.
+- [ ] **With a friend** (two players), both riding: does your friend stay beside you the whole
+  ride, or vanish or pop for a moment at the clank? Then once more with one left on floor 1 (kept
+  or just outside the car): at the clank they should land at the spawn in the test hall as floor 1
+  goes (L-08c makes them watch you instead).
+- [ ] **Know:** floors above 1 now have their own layouts and codes per seed (one seed laid floor
+  2 as floor 1 again). `lune run scripts/floor-map 7 3` prints the new floor 3; older notes here
+  naming seed 7's floor 3 units are out of date.
+
 ## Now: judge L-08a, the ride (built Nov 11)
 
 Verified in Studio on seed 7, floor 1: punched 1097, rode from 1 to 2 and again from 2 to 3. A
@@ -27,9 +50,9 @@ two players: those are yours.
   are the parts a phone plays; the deep rumble is for headphones. Can you read the floor readout
   over the gate from the middle of the car, and the plate in the top bar?
 - [ ] **With a friend** (two players): one rides, one stays in the lobby. The one left should see
-  "Left behind" and the car's light draw away and go dark; for now the car comes back lit to the
-  same lobby when the ride ends (the next floor is the next session's). The rider should see and
-  hear the whole ride; the friend, none of it.
+  "Left behind" and the car's light draw away and go dark (and, since L-08b, land at the spawn as
+  the rider is moved to floor 2). The rider should see and hear the whole ride; the friend, none
+  of it.
 - [ ] **Decide, defaults in place** (D-103, numbers in `Ride`): (1) the ride's length: 9.6 s to
   level and about 12 s until the gate is open (longer is more breath and dread, shorter keeps the
   climb moving across ten floors); (2) the gate shuts 6 s after it opens on the new floor

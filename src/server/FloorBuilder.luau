@@ -16,9 +16,9 @@
 	lamp, until L-05 dresses the lobby.
 
 	Laying yields. It works out from the lobby a hall piece at a time and waits a frame whenever it
-	has spent its share of one, so the server never hitches: L-08 lays the next floor while the
-	elevator rides. Each hall piece and everything on it is dressed before it is parented, once:
-	clients cache a door's frame and colours when its unit arrives.
+	has spent its share of one, so the server never hitches: the climb lays the next floor while the
+	team plays this one (Climbs). Each unit is dressed before it joins its hall piece, once: clients
+	cache a door's frame and colours when its unit arrives.
 
 	`unit` puts one unit at a door face; the test hall (DevCorridor) uses it too. Its door's buttons
 	come from the Doors system once it's in the world.
@@ -363,12 +363,16 @@ end
 -- One hall piece and everything on it: its floor and deck (a junction with its walls), the units
 -- and plain walls lining it, a dead end closing it, its light. Returns its folder, unparented, and
 -- how many units it holds.
-local function piece(laying: Laying, index: number): (Folder, number)
+local function piece(laying: Laying, index: number, parent: Instance): (Folder, number)
 	local cell = laying.floor.cells[index]
 	local origin = laying.origin
 	local paint = UnitKit.Colours.Wall
 	local folder = Instance.new("Folder")
 	folder.Name = `{cell.kind}{index}`
+	-- in place first, empty: each unit then joins it whole as it's dressed, one at a time, so no
+	-- frame takes a whole hall's worth into the game at once (a piece of eight units at once
+	-- held the server 160 ms while the next floor laid during play, L-08b)
+	folder.Parent = parent
 	local slots: { Floor.Slot } = laying.slots[index] or {}
 	local frame = frameOf(cell.x, cell.z, cell.turn)
 	local junction: CorridorKit.JunctionName? = junctionOf(cell.kind)
@@ -633,8 +637,7 @@ function FloorBuilder.lay(
 	breathe()
 
 	for _, index in order do
-		local folder, count = piece(laying, index)
-		folder.Parent = model
+		local _, count = piece(laying, index, model)
 		laid.units += count
 		laying.breathe()
 	end

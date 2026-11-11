@@ -60,6 +60,9 @@ export type Slots = Brix.System & {
 	-- Lays a new tool of catalog key `key` on the floor at `at` (a floor point), turned `yaw`
 	-- degrees. Returns its id, or nil if the place has no template.
 	lay: (self: any, key: string, at: Vector3, yaw: number) -> string?,
+	-- Takes away every tool lying on a floor where `inside` says (a floor being cleared, L-08b);
+	-- carried and placed ones stay. Returns how many went.
+	clear: (self: any, inside: (at: Vector3) -> boolean) -> number,
 	-- The catalog keys `player` carries, slot by slot ("" for empty), and the slot in hand.
 	carried: (self: any, player: Player) -> ({ string }, number),
 	-- Uses up what's in `player`'s hand if it's catalog key `key` (a padlock hung on a door): out
@@ -673,6 +676,19 @@ function Slots.new(): Slots
 		tools[id] = t
 		layDown(t, pose, nil)
 		return id
+	end
+
+	function system.clear(_: any, inside: (at: Vector3) -> boolean): number
+		local gone = 0
+		for id, t in tools do
+			if t.owner == nil and t.model.Parent == lying and inside(t.body.Position) then
+				tools[id] = nil
+				unoffer(t)
+				t.model:Destroy()
+				gone += 1
+			end
+		end
+		return gone
 	end
 
 	function system.carried(_: any, player: Player): ({ string }, number)

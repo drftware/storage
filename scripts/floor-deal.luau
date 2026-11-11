@@ -1,8 +1,8 @@
 --!strict
 -- Prints a floor's deal (L-04d): lune run scripts/floor-deal [seed] [floor] [mood]
 -- (seed 1, floor 1 and Build by default; mood is Build, Peak or Relief). The floor is the one
--- `scripts/floor-map` draws for the same seed and floor, dealt as Studio's floor deals it (the
--- "Walk a floor" floor, Workspace's DevFloorSeed and DevFloorNumber: `DevCorridor`). Its code
+-- `scripts/floor-map` draws for the same seed and floor, dealt as the climb deals it (Studio's
+-- "Walk a floor" floor, Workspace's DevFloorSeed and DevFloorNumber: `DevCorridor`, `Climbs`). Its code
 -- and the notes that carry it, the padlocked doors, the guarded note (its keeper always awake:
 -- on floors 1 and 2, the floor's one awake keeper), then what each door holds, dealt in number
 -- order (the way you'd meet them walking out from the lobby) with the director in that mood. A
@@ -12,6 +12,7 @@
 local process = require("@lune/process")
 
 local Brix = require("../vendor/brix/src")
+local Climb = require("../src/shared/Climb")
 local Floor = require("../src/shared/Floor")
 local Deal = require("../src/shared/Deal")
 
@@ -20,9 +21,10 @@ local number = tonumber(process.args[2]) or 1
 local mood = (process.args[3] or "Build") :: Deal.Mood
 assert(Deal.Odds[mood], "mood: Build, Peak or Relief")
 
--- The deal carries on from the layout's Random, as `DevCorridor` lays it (tests/deal.spec seeds
--- its own apart instead: either way a seed deals the same every time).
-local random = Brix.Random.new({ seed = seed })
+-- The deal carries on from the layout's Random, as the climb lays it, from the floor's own seed
+-- (`Climb.seedOf`; tests/deal.spec seeds its own apart instead: either way a seed deals the same
+-- every time).
+local random = Brix.Random.new({ seed = Climb.seedOf(seed, number) })
 local floor = Floor.generate(number, random)
 local deck = Deal.new(floor, random)
 local units = Deal.units(floor)

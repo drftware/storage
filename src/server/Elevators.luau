@@ -17,8 +17,10 @@
 	  the car says who rode (`Departure.AboardAttribute`, `departed`). Nobody can send it early.
 	- Then the ride (L-08a, Ride): the car climbs one floor on the server's clock, one value
 	  (`Ride.Attribute`) every rider's screen draws it from, and as it levels the gate folds open
-	  on the next hall (`arrived`). Until L-08b lays the next floor, the car arrives back at the
-	  same lobby, its floor number one higher. Whoever runs the climb arms it again (`arm`).
+	  on the next hall (`arrived`). The climb (Climbs, L-08b) hands the ride mid-way to the next
+	  floor's car (`takeOver`): that car arrives and opens on the new floor, the one that left
+	  never does. With no next floor the car arrives back at its own lobby, its number one
+	  higher. Whoever runs the climb arms the car again (`arm`).
 	- The gate's motion is one replicated value (`Gate.Attribute`) that every screen folds the gate
 	  from (ElevatorView); here only its collider follows, so the gap you see is the gap there is.
 	- Every keypad sound fires `acted` with how far it's heard, as Doors does, so keepers (L-06b)
@@ -85,6 +87,10 @@ export type Elevators = Brix.System & {
 	arm: (self: any, elevator: Model, code: { number }, floor: Instance, number: number?) -> (),
 	-- Opens the gate as the right code does, chime and all (tests; the dev hall).
 	open: (self: any, elevator: Model) -> (),
+	-- `to` takes over `from`'s ride mid-way (the next floor's car, L-08b): the same ride and riders
+	-- written on it, so riders' screens follow it once they stand in it, and it arrives and opens
+	-- on the ride's clock; `from` is done and never arrives. False if `from` isn't riding.
+	takeOver: (self: any, from: Model, to: Model) -> boolean,
 }
 
 -- Where the remote lives, for the clients: ReplicatedStorage.Remotes.Keypad.
@@ -472,6 +478,39 @@ function Elevators.new(): Elevators
 			moveGate(entry, 1, now())
 		end
 		write(entry, "Rest", "")
+	end
+
+	function system.takeOver(_: any, from: Model, to: Model): boolean
+		local a = entries[from]
+		local b = add(to)
+		if not (a and b and a.phase == "Riding" and a ~= b) then
+			return false
+		end
+		-- the new car: shut, its keypad dead, riding the same ride from the same floor
+		alarms[b] = nil
+		b.phase = "Riding"
+		b.number = a.number
+		b.leftAt = a.leftAt
+		b.riders = a.riders
+		b.departs = math.huge
+		if b.gateTo < 1 then
+			moveGate(b, 1, now())
+		end
+		b.model:SetAttribute(Ride.FloorAttribute, a.number)
+		b.model:SetAttribute(Departure.Attribute, nil)
+		-- the ride first, then who rode, as `leave` writes them
+		b.model:SetAttribute(Ride.Attribute, a.model:GetAttribute(Ride.Attribute))
+		b.model:SetAttribute(
+			Departure.AboardAttribute,
+			a.model:GetAttribute(Departure.AboardAttribute)
+		)
+		write(b, "Rest", "")
+		clocks[b] = true
+		-- the car that left is done: it never arrives (its floor is cleared under it)
+		a.phase = "Gone"
+		a.riders = {}
+		clocks[a] = nil
+		return true
 	end
 
 	function system.open(_: any, elevator: Model)

@@ -973,23 +973,37 @@ L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
     dark, the shaft mid-climb, the painted 2, the tick to 2, the dark lifting at the top, the
     gate open on 3); left in the lobby, no shaft or ride sound played there; Output clean. By
     ear, on a phone and with friends: `OWNER.md`.
-  - [ ] **L-08b The next floor.** Dealt and laid while you ride, with its own code and the
-    harder odds `Deal` already has for floors 1 to 10; the floor below is cleared away so a
-    phone never holds two. Laying floor 1 took 2.27 s in Studio, well inside the ride's 9.6 s.
-    The hand-off, mid-ride while the shaft hides everything (about `Ride.cruising()` +
-    `Ride.Cruise` / 2): lay the next floor's elevator, write the same `Ride.Attribute` on it,
-    move each rider to the same spot in the new car (rotated if it faces another way), and run
-    its arrival (`Elevators` needs a way to take over a ride mid-way on another car: today only
-    the car that left arrives); RideView already follows the ride onto a car the rider stands in.
-    Then arm the new car with the new floor's code and number (`arm(..., number)`), and replace
-    DevCorridor's stand-in (the `arrived` handler that re-arms the same floor).
+  - [x] **L-08b The next floor. Done Nov 11** (D-104). The gate opens on a floor nobody has
+    seen and the one below is gone, as each of Dandy's World's elevator stops opens on a new
+    floor. `Climbs` (server; pure numbers in `Climb`) runs the climb: each floor dealt from its
+    own seed (one seed for all laid floor 2 as floor 1 again) with `Deal`'s harder odds, laid
+    1000 studs on from the last so a phone never streams two, put in every floor system and
+    armed; the next floor laid as the right code opens the gate. Mid-ride the new car takes the
+    ride over (`Elevators:takeOver`), riders' screens lay a second shaft outside it, and on the
+    cable's second knock (6.1 s) every rider is moved to the same spot in it and the floor below
+    is cleared in that frame, its lying tools with it (`Slots:clear`, after a stood ladder has
+    fallen flat as its unit goes; the ladder untested);
+    whoever's left there goes to the spawn. An empty car comes back and re-arms. FloorBuilder now
+    adds each unit to its placed hall piece as it's dressed (a floor laid during play had held
+    the server 160 ms in one frame; now 5 to 9 ms). Verified in Studio on seeds 7 and 23: floor 1
+    to 2 to 3 three times, floor 2 played (its notes found in 237 and 249, its guard woken in 224
+    and caught by it, its code punched), floor 1 gone (server instances 13,355 to 7,385), a frame
+    log across the hand-off (the view moved 0.006 to 0.008 studs and didn't turn on the switch
+    frame; no frame without a shaft), frames held either side of the move and captured
+    (`docs/art/L-08b-*.jpg`), the empty car re-armed and the waiting floor 3 used next time, a
+    dealt saw cleared with floor 1; Output clean but the known asset line. A phone's frame at the
+    move and two players: `OWNER.md`.
   - [ ] **L-08c Left behind.** Whoever the gate shuts on, kept or still outside, watches their
     friends on the floor above, as Lethal Company's crew watch once they're dead; the rest is
-    the GDD's "Left behind" (its "Cut Free to the next floor").
+    the GDD's "Left behind" (its "Cut Free to the next floor"). Hand-off notes: `Climbs`' `clear`
+    finds who's still on the floor below at the move (6.1 s into the ride) and sends them to
+    `away` (the spawn, from DevCorridor); replace that, and `Elevators.departed`'s `left` names
+    them as the car leaves. A kept player is let out by `KeptPlayers` as the floor goes.
   - [ ] **L-08d The climb ends.** The whole team kept ends the run on the Missing board (GDD
     "Whole team kept"); a results screen with one "Again" button, as DOORS' Play Again, since
     Gate 1 is friends asking for another run. Until Phase 2's top floor the climb stops at a
-    stand-in top, floor 3 (a default; its `OWNER.md` line comes with the build).
+    stand-in top, floor 3 (a default; its `OWNER.md` line comes with the build). Hand-off notes:
+    `Climbs`' `comeBack` (the car left empty, or at `Climb.Top`) is the stand-in to replace.
   - [ ] **L-08e The start** (waits: the owner brings the full lobby plan Nov 11; don't build
     any of it before then). Friends gather and the climb starts on a short countdown once
     everyone's in, as DOORS' lobby elevators do: the smallest form of the GDD's lobby (your own
@@ -1048,6 +1062,11 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **The hand-off's long frame (L-08b):** if a phone stutters or the car goes dark at the
+  second clank (`OWNER.md`), spread the cost: clear the floor below a hall piece a frame over the
+  slowdown instead of at once, and warm the new car's lighting first (`Camera.Focus` there a
+  moment before the move, D-104).
 
 - **A full map behind a button (L-10):** the owner may later want a map you stop to open, exposed
   while you read it (R.E.P.O.'s map in hand). `MinimapDrawing` draws the whole floor already; it
