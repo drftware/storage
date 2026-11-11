@@ -16,7 +16,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   first press, then a fresh floor 1 with everyone side by side (`ClimbEnds.go`, the owner's
   lobby replaces it). Watching's "Alone" let-in is gone.
 - Verified in Studio on seed 7 (a real catch, the top ridden alone, left behind into a wipe;
-  Again by mouse and Enter). Two players, a phone, the sounds: `OWNER.md`.
+  Again by mouse and Enter; a carried saw went with the floor, none in the new floor 1: the
+  climb's tools are now cleared after its floors go, as at a hand-off). Two players, a phone,
+  the sounds: `OWNER.md`.
 - Studio: nothing imported; left in Edit, seed 7, floor 1; `DevRideHold` unset; quality back on
   Automatic. The Mac's screen was locked: Studio only drew with `caffeinate -d -u` running (a
   40-minute timer that ends on its own; STUDIO.md, "A locked Mac stops Studio drawing").
