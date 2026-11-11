@@ -914,16 +914,25 @@ L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
     Friends' lines with a real second player and the sounds by ear are the owner's (`OWNER.md`).
 - [ ] **L-06c Scarier keepers** (owner, Nov 10: make the walk and the catch scarier, "nothing
   gorey but leaning more toward jump scare"; L-07e is done, so these are next).
-  Two sessions. Today's walk is smooth and steady with a clack each step and joint knocks
-  (L-06b4); today's catch is a jerk of the view, the screen going black and "Caught" (L-06b3c).
-  - [ ] **L-06c1 A walk that frightens.** The moment: you hear it before you see it, and what you
-    see moves wrong. Pick from (each with its precedent): a stiff, uneven gait, one foot dragged
-    and the head lagging a beat behind the body (Doors' Figure, Silent Hill's mannequins); dead
-    still, then a sudden fast, jerky rush across the gap (SCP-173, Doors' Seek); footfalls that
-    get heavier the nearer it is, and a fibreglass creak as it turns. Poses, timing and sound on
-    each screen (`KeeperView`, `Pose`, `KeeperSounds`); the server's motion stays as it is.
-    Owner, Nov 10 night: today's steps "sound like fucking pinnoccio walking around": the light
-    wooden clack has to go. Heavy, wrong, close-sounding steps, and silence that means danger.
+  Two sessions. The walk was smooth and steady with a clack each step and joint knocks
+  (L-06b4; L-06c1 made it limp); today's catch is a jerk of the view, the screen going black and "Caught" (L-06b3c).
+  - [x] **L-06c1 A walk that frightens. Done Nov 10 (D-101).** The light wooden clack and the
+    plastic knocks are gone. It limps now: a stiff left leg it drags round on its toe, its steps
+    uneven (a short heavy plant, a long slow drag, a short stiff heel, a silent swing through), the
+    plant held long and then a jerk, and its head lolling hard to one side and landing a beat after
+    its body (Silent Hill's mannequins, Doors' Figure). Each beat is layered recordings, measured
+    for a phone's speaker: a hollow fibreglass thunk that carries 70 studs, and under it a body's
+    weight that only comes in as it nears (full within 10 studs, a tenth by 40, and higher pitched
+    far off), so the steps get heavier as it comes (Five Nights at Freddy's); a rock-on-concrete
+    scrape for the drag (SCP-173); a rubber creak when it turns 40 degrees or jerks out of its shop
+    pose; a deep thunk and a creak as a lifted door shows its feet. Standing still or held in light
+    it's silent. Verified in Studio on seed 7, floor 1: 157's guard walked out and roamed while I
+    watched from above, every beat logged at the body with its distance (the weight 0.88 at 12.6
+    studs, 0.61 at 22, 0.36 at 29, 0.09 at 46, none past 50; the thunk heard to 63), the limp's
+    rhythm 0.27, 0.47 and 0.73 s, silence through its 5 s looks, a creak on a corner; the poses
+    captured on lit copies (`docs/art/L-06c1-gait-front.jpg`, `-side.jpg`). By ear and on a phone
+    is the owner's (`OWNER.md`). Not built: the dead-still-then-rush (a change to the server's
+    motion; polish list below).
   - [ ] **L-06c2 The catch as a jump scare.** The moment: its blank face fills your screen with a
     hit of sound, then the black. The Mannequin's faceless head lunges into your camera for
     about half a second with a loud sting over the wrap's squeal (Piggy's and Five Nights at
@@ -1060,13 +1069,23 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
   the blast dies, so a horn sounds held, not played. A keeper that hears it could snap its head
   round before it walks (the Mannequin's stillness makes that an untested bet).
 
-- **Its tell, from its feet (L-06b4b2):** the footfalls and knocks play from the keeper's root,
-  at its hips; from the planted foot (and the knock from the joint that snaps) would place them
-  a stud or two truer up close. A heavier, louder footfall while it hunts than while it roams,
+- **Its tell, from its feet (L-06b4b2):** the footfalls and scrapes play from the keeper's root,
+  at its hips; from the planted foot (and the scrape from the dragged one) would place them a
+  stud or two truer up close. A heavier, louder footfall while it hunts than while it roams,
   and a different footfall on the tops' steel than on the halls' concrete.
-- **The reveal's knock, seen (L-06b4b2):** the knock as a door clears its feet has no motion; a
-  small settle of its head or a hand on the same frame would make it read as alive to anyone
+- **The reveal, seen (L-06b4b2):** the thunk and creak as a door clears its feet have no motion;
+  a small settle of its head or a hand on the same frame would make it read as alive to anyone
   looking, not only listening (an untested bet: it stands still in its shop pose by design).
+- **The rush (L-06c1):** dead still while lit, then the moment the light leaves it a fast, jerky
+  rush across the gap before it settles back to its limp (SCP-173, Doors' Seek). It needs the
+  server to move it faster for a moment, against the GDD's "nothing outruns you" unless the rush
+  stays short; the owner's call, then its own ticket.
+- **Its walk heard through walls (L-06c1):** its steps carry the same through a wall as down an
+  open hall. Muffling the thunk (less top) when a wall stands between, as Lethal Company's
+  footsteps go dull through doors, would let you tell next door from your hall.
+- **Breath in the silence (L-06c1):** when it stops close to you in the dark, a faint creak of
+  its shell settling every few seconds would make you sure it's still there (an untested bet:
+  the silence may be scarier; the owner judges).
 
 - **The kneel, fitted to the door (L-06b5b):** a friend's kneeling body puts its head about two
   thirds of a stud and its hands about a stud and three quarters ahead of where they stand, so

@@ -8,6 +8,10 @@
 -- and a light that catches it freezes it on a key, never in a blur between two (`freeze`). Those
 -- keys are what players remember: mid-step, an arm reaching for whoever is holding the light.
 --
+-- And it walks wrong (L-06c1): it limps on a stiff left leg it drags through each stride, its
+-- steps land unevenly, and its head lolls a beat behind its body, as if loose on its neck, as
+-- Silent Hill's mannequins and Doors' Figure move like something that shouldn't walk at all.
+--
 -- Pure: no Roblox types, so Lune checks every pose stands on the floor, stays inside its joints'
 -- limits and never puts one part through another (tests/mannequin.spec.luau). Angles are degrees
 -- about the figure's own axes at rest (X its right, Y up, Z behind it): +X swings a hanging limb
@@ -36,19 +40,38 @@ local LIMITS: { [string]: { [string]: { number } } } = {
 	RightAnkle = { x = { -50, 25 }, y = { -20, 20 }, z = { -20, 20 } },
 }
 
--- The walk (feel): `Step` is how far one step carries it (studs; about its stride, so its feet
--- don't skate far), `Hold` how much of each step it stands still on a key before snapping to
--- the next. More hold, a jerkier and more mannequin-like walk; how fast it goes is the hunt's
--- (L-06b), never faster than a player.
+-- The walk (feel). How fast it goes is the hunt's (L-06b), never faster than a player; this is
+-- how each stride looks and sounds.
 Pose.Walk = {
 	Keys = { "StepRight", "PassRight", "StepLeft", "PassLeft" },
+	-- Studs one key carries it, on average: four keys make a stride of 10.8, about its legs' reach,
+	-- so its feet don't skate far.
 	Step = 2.7,
-	Hold = 0.55,
+	-- How far each key carries it, as shares of `Step` (one each, on average): a short plant on
+	-- its good right foot, a long drag of the stiff left one, a short stiff heel, then the good
+	-- leg swinging through. Its beats land unevenly, so you hear the limp: thud, scrape, tock.
+	Spans = { 0.8, 1.4, 0.7, 1.1 },
+	-- How much of each key's span it stands still on that key before snapping to the next. It
+	-- holds the plant long and then jerks; the drag starts almost at once and is slow, the one
+	-- smooth thing it does. More hold, a jerkier and more mannequin-like walk.
+	Holds = { 0.7, 0.15, 0.55, 0.5 },
+	-- Its head lands a beat late: it swings into each key's place over this much of the key's
+	-- span after the body lands (never past the hold), so it lolls after every step. At its
+	-- roaming pace that's 0.06 to 0.18 s, enough to see; at 0.35 it was about 0.1 s, too quick.
+	Lag = 0.5,
 	-- How many steps each screen shows a snap from one key to the next in (`Pose.frame`): at its
-	-- top speed a snap takes about 0.08 s, five frames of a 60 Hz screen, so 8 never shows a
-	-- stutter inside the snap. Fewer would read as a twitch, more costs nothing seen.
-	Snaps = 8,
+	-- top speed its quickest snap takes about 0.04 s and its drag about 0.22 s, so 10 never shows
+	-- a stutter inside one. Fewer would read as a twitch, more costs nothing seen.
+	Snaps = 10,
+	-- How many steps a screen shows its head settling in: it's a short loll, so few.
+	Settle = 3,
 }
+
+-- A stride, in `Step`s: the spans added up.
+local STRIDE = 0
+for _, span in Pose.Walk.Spans do
+	STRIDE += span
+end
 
 local function mirrorName(name: string): string
 	if string.sub(name, 1, 4) == "Left" then
@@ -97,44 +120,80 @@ local Poses: { [string]: Pose } = {
 		LeftHip = { z = -4 },
 		LeftAnkle = { z = 4 },
 	},
-	-- Mid-step, leaning in, its right foot down ahead and its left arm out level at you, palm
-	-- down, fingers drooping.
+	-- Its good right foot planted ahead, all its weight thrown onto it: leaning in, its head
+	-- dropped and lolled over, the stiff left leg trailing straight behind on its toe, its left
+	-- arm out level at you, palm down, fingers drooping.
 	StepRight = {
-		Root = { x = -6 },
-		Waist = { x = -6, y = -10 },
-		Neck = { x = 6, y = 8, z = -6 },
-		RightHip = { x = 30, z = 2 },
-		RightKnee = { x = -10 },
-		RightAnkle = { x = -12 },
-		LeftHip = { x = -20, z = -2 },
-		LeftKnee = { x = -24 },
-		LeftAnkle = { x = 18 },
+		Root = { x = -8, z = 3 },
+		Waist = { x = -8, y = -12, z = -3 },
+		Neck = { x = -22, y = 14, z = 30 },
+		RightHip = { x = 28, z = 2 },
+		RightKnee = { x = -6 },
+		RightAnkle = { x = -14 },
+		LeftHip = { x = -24, z = -4 },
+		LeftKnee = { x = -4 },
+		LeftAnkle = { x = -6 },
 		LeftShoulder = { x = 95, y = -75, z = -4 },
 		LeftElbow = { x = 8 },
 		LeftWrist = { z = 25 },
-		RightShoulder = { x = -25, z = 6 },
-		RightElbow = { x = 18 },
+		RightShoulder = { x = -20, z = 8 },
+		RightElbow = { x = 30 },
+		RightWrist = { z = -10 },
 	},
-	-- On its right foot, the left swinging through, the reaching arm still up.
+	-- On its right foot, its left hip hitched up to swing the stiff leg out and round, the foot
+	-- dragging on its toe, the reaching arm still up.
 	PassRight = {
-		Root = { x = -4 },
-		Waist = { x = -4, y = -3 },
-		Neck = { x = 4, y = 3, z = -3 },
-		RightHip = { x = 6 },
-		RightKnee = { x = -4 },
-		RightAnkle = { x = 2 },
-		LeftHip = { x = 24, z = -2 },
-		LeftKnee = { x = -48 },
-		LeftAnkle = { x = 8 },
-		LeftShoulder = { x = 70, y = -60, z = -4 },
-		LeftElbow = { x = 18 },
-		LeftWrist = { z = 15 },
-		RightShoulder = { x = 10, z = 6 },
-		RightElbow = { x = 24 },
+		Root = { x = -5, z = -6 },
+		Waist = { x = -6, y = -4, z = 5 },
+		Neck = { x = 6, y = 8, z = -6 },
+		RightHip = { x = 4, z = -2 },
+		RightKnee = { x = -6 },
+		RightAnkle = { x = 4 },
+		LeftHip = { x = -8, z = -10 },
+		LeftKnee = { x = -3 },
+		LeftAnkle = { x = -14 },
+		LeftShoulder = { x = 80, y = -68, z = -4 },
+		LeftElbow = { x = 14 },
+		LeftWrist = { z = 18 },
+		RightShoulder = { x = 6, z = 10 },
+		RightElbow = { x = 26 },
+	},
+	-- The stiff left leg landed ahead, straight as a post, a short stride; its head lolled the
+	-- other way.
+	StepLeft = {
+		Root = { x = -4, z = 4 },
+		Waist = { x = -5, y = 9, z = -2 },
+		Neck = { x = -14, y = -12, z = -30 },
+		LeftHip = { x = 22, z = -3 },
+		LeftKnee = { x = -2 },
+		LeftAnkle = { x = -6 },
+		RightHip = { x = -22, z = 2 },
+		RightKnee = { x = -12 },
+		RightAnkle = { x = -6 },
+		LeftShoulder = { x = 100, y = -72, z = -6 },
+		LeftElbow = { x = 6 },
+		LeftWrist = { z = 28 },
+		RightShoulder = { x = 18, z = 8 },
+		RightElbow = { x = 20 },
+	},
+	-- Rocked up over the stiff leg, its good leg swinging through bent, its head tipped back.
+	PassLeft = {
+		Root = { x = -6, z = 3 },
+		Waist = { x = -6, y = 3 },
+		Neck = { x = 10, y = -4, z = 6 },
+		LeftHip = { x = 2, z = -2 },
+		LeftKnee = { x = -2 },
+		LeftAnkle = { x = 0 },
+		RightHip = { x = 26, z = 2 },
+		RightKnee = { x = -52 },
+		RightAnkle = { x = 10 },
+		LeftShoulder = { x = 88, y = -70, z = -4 },
+		LeftElbow = { x = 10 },
+		LeftWrist = { z = 20 },
+		RightShoulder = { x = -16, z = 8 },
+		RightElbow = { x = 28 },
 	},
 }
-Poses.StepLeft = Pose.mirror(Poses.StepRight)
-Poses.PassLeft = Pose.mirror(Poses.PassRight)
 Pose.Poses = Poses
 Pose.Names = { "Still", "StepRight", "PassRight", "StepLeft", "PassLeft" }
 
@@ -175,30 +234,73 @@ function Pose.blend(a: Pose, b: Pose, t: number): Pose
 	return out
 end
 
-local function keyAt(travelled: number): (number, number)
-	local q = travelled / Pose.Walk.Step
-	local k = math.floor(q)
-	return k % #Pose.Walk.Keys + 1, q - k
+local function smooth(t: number): number
+	return t * t * (3 - 2 * t)
 end
 
--- Its walk once it has gone `travelled` studs: holding a key, or snapping to the next.
-function Pose.at(travelled: number): Pose
-	local keys, hold = Pose.Walk.Keys, Pose.Walk.Hold
-	local k, f = keyAt(travelled)
-	local a = Poses[keys[k]]
-	if f <= hold then
+-- The key it's on after `travelled` studs, counted from its first (0) and never going back, and
+-- how far through that key's span it is, from 0 up to (not including) 1.
+local function keyAt(travelled: number): (number, number)
+	local spans = Pose.Walk.Spans
+	local q = travelled / Pose.Walk.Step
+	local stride = math.floor(q / STRIDE)
+	local r = q - stride * STRIDE
+	for i, span in spans do
+		if r < span then
+			return stride * #spans + i - 1, r / span
+		end
+		r -= span
+	end
+	return (stride + 1) * #spans, 0 -- rounding at a stride's very end: the next one's first key
+end
+
+-- Which of the walk's keys (1 to 4) a key counted from its first is.
+local function keyIndex(k: number): number
+	return k % #Pose.Walk.Keys + 1
+end
+
+-- Key `i` posed with its body `t` of the way into the next key and its head `h` of the way from
+-- the last key's place to its own (each already eased): exactly the key's own pose when t is 0
+-- and h is 1.
+local function posed(i: number, t: number, h: number): Pose
+	local keys = Pose.Walk.Keys
+	local a = Poses[keys[i]]
+	if t == 0 and h == 1 then
 		return a
 	end
-	local t = (f - hold) / (1 - hold)
-	return Pose.blend(a, Poses[keys[k % #keys + 1]], t * t * (3 - 2 * t))
+	local out = Pose.blend(a, Poses[keys[i % #keys + 1]], t)
+	local was: Angles = Poses[keys[(i - 2) % #keys + 1]].Neck or {}
+	local to: Angles = a.Neck or {}
+	out.Neck = {
+		x = (was.x or 0) + ((to.x or 0) - (was.x or 0)) * h,
+		y = (was.y or 0) + ((to.y or 0) - (was.y or 0)) * h,
+		z = (was.z or 0) + ((to.z or 0) - (was.z or 0)) * h,
+	}
+	return out
+end
+
+-- How much of key `i`'s span its head takes to settle: `Walk.Lag`, never past its hold.
+local function lagOf(i: number): number
+	return math.min(Pose.Walk.Lag, Pose.Walk.Holds[i])
+end
+
+-- Its walk once it has gone `travelled` studs: landing on a key while its head catches up,
+-- holding it, or snapping to the next.
+function Pose.at(travelled: number): Pose
+	local k, f = keyAt(travelled)
+	local i = keyIndex(k)
+	local hold, lag = Pose.Walk.Holds[i], lagOf(i)
+	local t = if f <= hold then 0 else smooth((f - hold) / (1 - hold))
+	local h = if f >= lag then 1 else smooth(f / lag)
+	return posed(i, t, h)
 end
 
 -- The key a light freezes it on after `travelled` studs: the one it holds, or, caught mid-snap,
 -- the one it was snapping into, so it's always a step closer and never a blur.
 function Pose.freeze(travelled: number): string
-	local keys = Pose.Walk.Keys
 	local k, f = keyAt(travelled)
-	return if f <= Pose.Walk.Hold then keys[k] else keys[k % #keys + 1]
+	local i = keyIndex(k)
+	return Pose.Walk.Keys[if f <= Pose.Walk.Holds[i] then i else keyIndex(k + 1)]
 end
 
 -- How a screen poses a keeper: slack as it's found (Still), walking (Walk), or stopped mid-stride
@@ -207,44 +309,55 @@ export type How = "Still" | "Walk" | "Stop"
 
 -- Every pose a screen shows is one of these frames (L-06b4a), so each screen works each one out
 -- once and turns a body's joints only when its frame changes. Frame 1 is Still; then, for each of
--- the walk's keys, the key held and the `Walk.Snaps - 1` steps of the snap into the next.
-Pose.Frames = 1 + #Pose.Walk.Keys * Pose.Walk.Snaps
+-- the walk's keys, `Walk.Settle` frames of it landed with its head catching up, the key held,
+-- and the `Walk.Snaps - 1` steps of the snap into the next.
+local PER_KEY = Pose.Walk.Settle + Pose.Walk.Snaps
+Pose.Frames = 1 + #Pose.Walk.Keys * PER_KEY
 
 -- The key a walking or stopped body shows after `travelled` studs, counted from its first key
--- (0) and never going back, and how many steps of the snap into the next key it shows (0: it
--- holds the key). Stopped mid-snap, it shows the key it was snapping into, as `freeze` says.
+-- (0) and never going back, and which of that key's frames: under `Walk.Settle` its head is
+-- still settling, `Walk.Settle` holds the key, more is the snap into the next. Stopped, it shows
+-- a key held, its head settled: the one it holds, or mid-snap the one it was snapping into, as
+-- `freeze` says.
 local function shown(travelled: number, how: How): (number, number)
-	local snaps, hold = Pose.Walk.Snaps, Pose.Walk.Hold
-	local q = travelled / Pose.Walk.Step
-	local k = math.floor(q)
-	local f = q - k
-	local s = 0
+	local snaps, settle = Pose.Walk.Snaps, Pose.Walk.Settle
+	local k, f = keyAt(travelled)
+	local i = keyIndex(k)
+	local hold = Pose.Walk.Holds[i]
 	if f > hold then
-		s = if how == "Stop" then snaps else math.floor((f - hold) / (1 - hold) * snaps + 0.5)
+		if how == "Stop" then
+			return k + 1, settle
+		end
+		local s = math.floor((f - hold) / (1 - hold) * snaps + 0.5)
+		if s >= snaps then
+			return k + 1, 0
+		end
+		return k, settle + s
 	end
-	if s >= snaps then
-		k, s = k + 1, 0
+	local lag = lagOf(i)
+	if how == "Stop" or f >= lag then
+		return k, settle
 	end
-	return k, s
+	return k, math.min(math.floor(f / lag * settle + 0.5), settle)
 end
 
--- How far along its walk a walking or stopped body shows after `travelled` studs, in snap steps:
--- the key (counted from its first, 0) times `Walk.Snaps`, plus the step of the snap into the next.
--- A screen shows the furthest it has shown (L-06b4b3): stopped mid-snap, it showed the key it was
--- snapping into, so as it walks on it holds that key until its walk reaches it, never flicking
--- back into the snap.
+-- How far along its walk a walking or stopped body shows after `travelled` studs, in frames: the
+-- key (counted from its first, 0) times its frames per key, plus which of them. A screen shows
+-- the furthest it has shown (L-06b4b3): stopped mid-snap, it showed the key it was snapping into,
+-- so as it walks on it holds that key until its walk reaches it, never flicking back into the
+-- snap.
 function Pose.along(travelled: number, how: How): number
-	local k, s = shown(travelled, how)
-	return k * Pose.Walk.Snaps + s
+	local k, j = shown(travelled, how)
+	return k * PER_KEY + j
 end
 
 -- The frame for a walk shown `along` its keys (Pose.along).
 function Pose.frameAt(along: number): number
-	return 2 + along % (#Pose.Walk.Keys * Pose.Walk.Snaps)
+	return 2 + along % (#Pose.Walk.Keys * PER_KEY)
 end
 
--- The frame it shows after `travelled` studs: Still; its walk (the key it holds, or the nearest
--- step of the snap to the next); or stopped, on the key `freeze` says.
+-- The frame it shows after `travelled` studs: Still; its walk (landing, the key held, or the
+-- nearest step of the snap to the next); or stopped, on the key `freeze` says.
 function Pose.frame(travelled: number, how: How): number
 	if how == "Still" then
 		return 1
@@ -252,9 +365,13 @@ function Pose.frame(travelled: number, how: How): number
 	return Pose.frameAt(Pose.along(travelled, how))
 end
 
--- What its walk sounds like (L-06b4b2): a foot planting as a step key lands, its joints knocking
--- as a pass key lands (its legs crossing) or as it jerks out of its slack pose into a stride.
-export type Sound = "Footfall" | "Knock"
+-- What its walk sounds like (L-06b4b2, L-06c1), each key as it lands: its good foot planted (a
+-- footfall), its stiff foot starting its drag (a scrape), the stiff heel landing (a lighter,
+-- harder knock), and nothing as the good leg swings through; its body creaks as it jerks out of
+-- its slack pose into a stride.
+export type Sound = "Footfall" | "Drag" | "Heel" | "Creak"
+
+local LANDS: { [string]: Sound } = { StepRight = "Footfall", PassRight = "Drag", StepLeft = "Heel" }
 
 local SLACK = -1 -- what `tell` remembers of a body standing slack (Still)
 
@@ -271,12 +388,11 @@ function Pose.tell(last: number?, travelled: number, how: How): (Sound?, number)
 	if last == nil then
 		return nil, k
 	elseif last == SLACK then
-		return "Knock", k
+		return "Creak", k
 	elseif k <= last then
 		return nil, last
 	end
-	local key = Pose.Walk.Keys[k % #Pose.Walk.Keys + 1]
-	return if string.sub(key, 1, 4) == "Step" then "Footfall" else "Knock", k
+	return LANDS[Pose.Walk.Keys[keyIndex(k)]], k
 end
 
 -- The pose a frame shows.
@@ -284,15 +400,13 @@ function Pose.ofFrame(frame: number): Pose
 	if frame <= 1 then
 		return Poses.Still
 	end
-	local keys, snaps = Pose.Walk.Keys, Pose.Walk.Snaps
-	local i = frame - 2
-	local k, s = i // snaps + 1, i % snaps
-	local a = Poses[keys[k]]
-	if s == 0 then
-		return a
+	local settle = Pose.Walk.Settle
+	local n = frame - 2
+	local i, j = n // PER_KEY + 1, n % PER_KEY
+	if j < settle then
+		return posed(i, 0, smooth(j / settle))
 	end
-	local t = s / snaps
-	return Pose.blend(a, Poses[keys[k % #keys + 1]], t * t * (3 - 2 * t))
+	return posed(i, smooth((j - settle) / Pose.Walk.Snaps), 1)
 end
 
 -- A rotation from angles, applied about Z, then Y, then X (Roblox's CFrame.Angles), row by row.

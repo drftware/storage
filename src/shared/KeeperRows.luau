@@ -60,9 +60,9 @@ export type Row = {
 	bangEveryLast: number,
 	bangJitter: number,
 	breakOut: number,
-	-- How it gives itself away by sound (L-06b4b2; KeeperTell): a footfall each step its walk
-	-- lands and a knock of its joints each pass, from its body on every screen near, and one
-	-- knock as a door lifted on it standing in a unit first shows its feet.
+	-- How it gives itself away by sound (L-06b4b2, L-06c1; KeeperTell): the beats its walk lands,
+	-- its body creaking as it turns, and its answer as a door lifted on it standing in a unit first
+	-- shows its feet, from its body on every screen near.
 	tell: KeeperTell.Tell,
 }
 
@@ -114,51 +114,123 @@ local Mannequin: Row = {
 	-- buys time
 	breakOut = 90,
 	tell = {
-		-- a stiff, flat clack of fibreglass on concrete each step it lands: Pro Sound Effects'
-		-- "Wood Drop Light" 4 and 2 (a light board dropped flat on concrete), each cut to its first
-		-- hit, measured at about 860 Hz, where a phone's speaker plays it
-		footfall = {
-			takes = {
-				{ id = "rbxassetid://9120864768", start = 1.445, stop = 1.695 },
-				{ id = "rbxassetid://9120864539", start = 0.97, stop = 1.145 },
+		sounds = {
+			-- the hollow fibreglass foot hitting concrete, the beat that carries down the halls: Pro
+			-- Sound Effects' "Plastic Impacts Dish Shaped Planter" 5, 23, 27 and 22 (a big plastic
+			-- dish dropped on asphalt), each cut to its one hit, 320 to 680 Hz
+			Shell = {
+				takes = {
+					{ id = "rbxassetid://9117557254", start = 0.625, stop = 0.78 },
+					{ id = "rbxassetid://9117570260", start = 0.085, stop = 0.3 },
+					{ id = "rbxassetid://9117571208", start = 0.565, stop = 0.72 },
+					{ id = "rbxassetid://9117570079", start = 0.155, stop = 0.25 },
+				},
+				fade = 0.04,
+				-- under the weight up close; out past the weight's reach it's all you hear
+				volume = 0.55,
+				-- lower than the recording: a hollow body, not a toy
+				pitchMin = 0.74,
+				pitchMax = 0.86,
+				near = 6,
+				-- about three hall pieces: past the 48 it sees, so you hear it coming before it can
+				-- see you, and a hall further off it's a slow hollow knocking in the dark
+				reach = 70,
+				farGain = 1,
+				farPitch = 1,
 			},
-			fade = 0.05,
-			-- the beat of its walk: the loudest thing it does
-			volume = 0.75,
-			-- a little lower than the board: heavier, and never the same clack twice
-			pitchMin = 0.88,
-			pitchMax = 0.98,
-			near = 6,
-			-- about three hall pieces: past the 48 it sees, so you hear it coming before it can
-			-- see you, and a hall further off it's only a tapping in the dark
-			reach = 70,
-		},
-		-- a thin, hollow knock at its joints each pass of its legs: "Knock Slap Plastic" 9 and 7 (a
-		-- hand knocking a thin plastic shell), each a single knock, about 700 Hz
-		knock = {
-			takes = {
-				{ id = "rbxassetid://9116201805", start = 0.145, stop = 0.45 },
-				{ id = "rbxassetid://9116201611", start = 0.145, stop = 0.45 },
+			-- the body's weight landing on that foot: "Plastic Cooler 6" (a big hollow plastic box
+			-- hitting the floor, mostly 190 to 470 Hz, where a phone still plays), "Body Impact 2" (a
+			-- body's hard thump) and "Wood Drop Wood Log 2" (a railroad tie dropped on pavement)
+			Weight = {
+				takes = {
+					{ id = "rbxassetid://9117451558", start = 0.055, stop = 0.42 },
+					{ id = "rbxassetid://9113524237", start = 0.025, stop = 0.36 },
+					{ id = "rbxassetid://9120871246", start = 0.485, stop = 0.72 },
+				},
+				fade = 0.08,
+				-- the loudest thing it does, once it's on top of you
+				volume = 0.9,
+				pitchMin = 0.84,
+				pitchMax = 0.96,
+				near = 8,
+				reach = 50,
+				-- far off the weight is all but gone and a little higher: a tap down the hall that
+				-- turns into a thud in your own
+				farGain = 0.1,
+				farPitch = 1.15,
 			},
-			fade = 0.1,
-			-- under the footfalls (about 6 dB): the texture between the beats, not a second beat
-			volume = 0.55,
-			pitchMin = 0.95,
-			pitchMax = 1.08,
-			near = 4,
-			-- heard closer than its feet: the knocking means it's near
-			reach = 40,
+			-- its dragged foot grinding along the concrete: "Rock Scrape On Concrete Constant
+			-- Dragging Dry 2", three strokes cut from it, raised into what a phone plays
+			Scrape = {
+				takes = {
+					{ id = "rbxassetid://9125883658", start = 0.15, stop = 0.5 },
+					{ id = "rbxassetid://9125883658", start = 0.78, stop = 1.13 },
+					{ id = "rbxassetid://9125883658", start = 1.745, stop = 2.1 },
+				},
+				fade = 0.12,
+				volume = 0.8,
+				pitchMin = 1.1,
+				pitchMax = 1.3,
+				near = 6,
+				-- heard nearer than its steps: the scrape means it's in your hall
+				reach = 45,
+				farGain = 0.4,
+				farPitch = 1,
+			},
+			-- its stiff body straining as it turns: "Gas Pedal Cu Slow Pressing Movements
+			-- Squeezing 1" (a rubber pedal pressed, a ratcheting creak) and two stretches of "Tire
+			-- Squeak Cu Creak Rub Together Rubber 1", pitched down into a groan
+			Creak = {
+				takes = {
+					{ id = "rbxassetid://9125571873", start = 1.095, stop = 1.45 },
+					{ id = "rbxassetid://9120078794", start = 0.195, stop = 0.55 },
+					{ id = "rbxassetid://9120078794", start = 1.05, stop = 1.42 },
+				},
+				fade = 0.1,
+				volume = 0.7,
+				pitchMin = 0.68,
+				pitchMax = 0.8,
+				near = 4,
+				-- only close: a creak means it's turning right there in the dark
+				reach = 32,
+				farGain = 0.5,
+				farPitch = 1,
+			},
 		},
-		-- under a frame: a late record that jumps its pose makes one sound, not a burst
+		beats = {
+			-- its good foot planted: the hollow thunk, and the weight behind it
+			Footfall = {
+				{ sound = "Shell", gain = 1, pitch = 1 },
+				{ sound = "Weight", gain = 1, pitch = 1 },
+			},
+			-- its stiff foot dragged through
+			Drag = { { sound = "Scrape", gain = 1, pitch = 1 } },
+			-- the stiff leg's heel landing: harder and lighter than the plant, so the walk limps
+			Heel = {
+				{ sound = "Shell", gain = 0.9, pitch = 1.1 },
+				{ sound = "Weight", gain = 0.35, pitch = 1.05 },
+			},
+			Creak = { { sound = "Creak", gain = 1, pitch = 1 } },
+			-- a door lifted on it: one deep thunk as its weight shifts, and its body creaking, as
+			-- if it heard you
+			Reveal = {
+				{ sound = "Shell", gain = 1.6, pitch = 0.82 },
+				{ sound = "Creak", gain = 1.2, pitch = 0.9 },
+			},
+		},
+		-- full weight within about a unit's width; just a tap from about two hall pieces off
+		heavyNear = 10,
+		heavyFar = 40,
+		-- under a frame: a late record that jumps its pose makes one beat, not a burst
 		gap = 0.08,
-		-- the curtain's edge a few inches up, clearing its feet: the knock lands as a crouched
+		-- a corner, or turning to come at you, creaks; walking its line never does
+		turn = 40,
+		-- one creak to a turn, never a rattle of them
+		turnGap = 0.9,
+		-- the curtain's edge a few inches up, clearing its feet: the answer lands as a crouched
 		-- peek first sees them (a peek lifts 1.15)
 		revealRise = 0.4,
-		-- louder and deeper than its walking knock: one deliberate knock, its joints settling as
-		-- if it heard you
-		revealGain = 1.5,
-		revealPitch = 0.85,
-		-- a peek, a drop and a peek again in quick succession knocks once
+		-- a peek, a drop and a peek again in quick succession answers once
 		revealGap = 3,
 	},
 }

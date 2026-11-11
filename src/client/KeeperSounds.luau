@@ -1,21 +1,26 @@
 --!strict
 --[[
-	KeeperSounds: how each keeper gives itself away on this screen (L-06b4b2), heard by everyone
-	near it, as a door is.
+	KeeperSounds: how each keeper gives itself away on this screen (L-06b4b2, L-06c1), heard by
+	everyone near it, as a door is.
 
-	The moment: in the dark you hear it before you see it. Each step its walk lands is a stiff
-	clack of its foot on the concrete and each pass of its legs a hollow knock at its joints, as
-	Five Nights at Freddy's footsteps tell you an animatronic moved. And a door lifted on one
-	standing in a unit knocks once as the curtain's edge clears its feet: before your light finds
-	it, you know something stands in there.
+	The moment: you hear it before you see it, and it sounds heavy and wrong. Its walk limps: a
+	hollow fibreglass thunk as its good foot lands, its stiff foot scraping the concrete, the hard
+	tock of its heel, then nothing. Far off it's a slow hollow knocking; as it nears, the body's
+	weight comes in under each step until it thuds, as Five Nights at Freddy's footsteps swell as
+	an animatronic comes down the hall. Its body creaks as it turns a corner or turns to you. Held
+	in your light it makes no sound at all. And a door lifted on one standing in a unit answers
+	with a thunk and a creak as the curtain's edge clears its feet: before your light finds it,
+	you know something stands in there.
 
 	Nothing new crosses the network. Each screen's KeeperView poses the body from its records and
-	calls `heard` as each key of its walk lands (`Pose.tell`); a door's motion is already on every
-	screen (its `DoorMotion`), so the reveal is timed off the server's clock and lands as the door
-	is seen to clear its feet. The numbers are on the keeper's row (`KeeperRows`, `KeeperTell`).
+	calls `heard` as each key of its walk lands (`Pose.tell`) and as it turns; a door's motion is
+	already on every screen (its `DoorMotion`), so the reveal is timed off the server's clock and
+	lands as the door is seen to clear its feet. The numbers are on the keeper's row (`KeeperRows`,
+	`KeeperTell`).
 
-	Only bodies streamed to this screen are heard, each at most one sound per its `gap`, and none
-	from past its reach. A body's sounds are made the first time it makes each one, on its root.
+	Only bodies streamed to this screen are heard, each walk beat at most one per its `gap`, each
+	creak one per its `turnGap`, and no layer from past its reach. A body's sounds are made the
+	first time it plays each take, on its root.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -43,9 +48,10 @@ type Body = {
 	model: Model,
 	root: BasePart,
 	tell: KeeperTell.Tell,
-	voices: { [KeeperTell.Name]: { [number]: Voice } }, -- by take, made as each first plays
-	took: { [KeeperTell.Name]: number }, -- the take each sound last played
-	last: number?, -- os.clock() of its last sound
+	voices: { [string]: { [number]: Voice } }, -- by sound, then take, made as each first plays
+	took: { [string]: number }, -- the take each sound last played
+	last: number?, -- os.clock() of its walk's last beat
+	creaked: number?, -- os.clock() of its last creak
 	revealed: number?, -- os.clock() of its last reveal
 	unit: Model?, -- the unit it stands in, while it stands in one
 	lifts: number, -- counts that unit's door motions, so a newer one cancels a reveal to come
@@ -56,19 +62,23 @@ type Body = {
 
 local KeeperSounds = {}
 
--- The system, and `heard` (for KeeperView): a body's walk landed a key that makes `sound`.
-function KeeperSounds.new(): (Brix.System, (model: Model, sound: KeeperTell.Name) -> ())
+-- The system, and `heard` (for KeeperView): a body's walk landed a beat, or it turned.
+function KeeperSounds.new(): (Brix.System, (model: Model, beat: KeeperTell.Beat) -> ())
 	local bodies: { [Model]: Body } = {}
 	local connections: { RBXScriptConnection } = {}
 	local random = Random.new()
 
-	local function voiceFor(body: Body, name: KeeperTell.Name, i: number): Voice
+	local function voiceFor(body: Body, name: string, i: number): Voice
 		local byTake = body.voices[name]
+		if not byTake then
+			byTake = {}
+			body.voices[name] = byTake
+		end
 		local existing = byTake[i]
 		if existing then
 			return existing
 		end
-		local row = KeeperTell.sound(body.tell, name)
+		local row = body.tell.sounds[name]
 		local take = row.takes[i]
 		local s = Instance.new("Sound")
 		s.Name = `Keeper{name}`
@@ -79,17 +89,18 @@ function KeeperSounds.new(): (Brix.System, (model: Model, sound: KeeperTell.Name
 		s.PlaybackRegionsEnabled = true
 		s.PlaybackRegion = NumberRange.new(take.start, take.stop)
 		s.Parent = body.root
-		-- timed for its highest pitch, so even the quickest play is silent before it's cut
-		local length = (take.stop - take.start) / row.pitchMax
+		-- timed for its fastest play, so even the quickest is silent before it's cut
+		local fastest = KeeperTell.fastest(body.tell, name)
+		local length = (take.stop - take.start) / fastest
 		local fade = TweenService:Create(
 			s,
 			TweenInfo.new(
-				row.fade / row.pitchMax,
+				row.fade / fastest,
 				Enum.EasingStyle.Quad,
 				Enum.EasingDirection.In,
 				0,
 				false,
-				math.max(length - row.fade / row.pitchMax, 0)
+				math.max(length - row.fade / fastest, 0)
 			),
 			{ Volume = 0 }
 		)
@@ -98,35 +109,52 @@ function KeeperSounds.new(): (Brix.System, (model: Model, sound: KeeperTell.Name
 		return voice
 	end
 
-	-- Plays one of its sounds, `gain` and `pitch` times the row's, if it's due and near enough.
-	local function play(body: Body, name: KeeperTell.Name, gain: number, pitch: number)
-		local now = os.clock()
-		if not KeeperTell.due(body.last, now, body.tell.gap) then
-			return
-		end
-		local row = KeeperTell.sound(body.tell, name)
+	-- Plays a beat's layers at once, each weighed by how near it is, any within its reach.
+	local function play(body: Body, beat: KeeperTell.Beat)
 		local camera = Workspace.CurrentCamera -- where this screen hears from
-		if not camera or (camera.CFrame.Position - body.root.Position).Magnitude > row.reach then
+		if not camera then
 			return
 		end
-		body.last = now
-		local i = KeeperTell.take(#row.takes, body.took[name], random:NextNumber())
-		body.took[name] = i
-		local voice = voiceFor(body, name, i)
-		local s = voice.sound
-		voice.fade:Cancel()
-		s.PlaybackSpeed = random:NextNumber(row.pitchMin, row.pitchMax) * pitch
-		s.Volume = row.volume * gain
-		s.TimePosition = row.takes[i].start
-		s:Play()
-		voice.fade:Play()
+		local tell = body.tell
+		local distance = (camera.CFrame.Position - body.root.Position).Magnitude
+		local heft = KeeperTell.heft(tell, distance)
+		for _, layer in tell.beats[beat] do
+			local row = tell.sounds[layer.sound]
+			if distance > row.reach then
+				continue
+			end
+			local i = KeeperTell.take(#row.takes, body.took[layer.sound], random:NextNumber())
+			body.took[layer.sound] = i
+			local voice = voiceFor(body, layer.sound, i)
+			local s = voice.sound
+			local gain, pitch = KeeperTell.weigh(row, heft)
+			voice.fade:Cancel()
+			s.PlaybackSpeed = random:NextNumber(row.pitchMin, row.pitchMax) * layer.pitch * pitch
+			s.Volume = row.volume * layer.gain * gain
+			s.TimePosition = row.takes[i].start
+			s:Play()
+			voice.fade:Play()
+		end
 	end
 
-	local function heard(model: Model, sound: KeeperTell.Name)
+	local function heard(model: Model, beat: KeeperTell.Beat)
 		local body = bodies[model]
-		if body then
-			play(body, sound, 1, 1)
+		if not body then
+			return
 		end
+		local now = os.clock()
+		if beat == "Creak" then
+			if not KeeperTell.due(body.creaked, now, body.tell.turnGap) then
+				return
+			end
+			body.creaked = now
+		else
+			if not KeeperTell.due(body.last, now, body.tell.gap) then
+				return
+			end
+			body.last = now
+		end
+		play(body, beat)
 	end
 
 	-- Whether `body`'s feet stand inside `unit`.
@@ -143,7 +171,7 @@ function KeeperSounds.new(): (Brix.System, (model: Model, sound: KeeperTell.Name
 		return KeeperTell.inside(feet.X, feet.Z, spec.Width, spec.Depth)
 	end
 
-	-- Its unit's door started a motion: if it lifts the curtain past its feet, knock as it does.
+	-- Its unit's door started a motion: if it lifts the curtain past its feet, answer as it does.
 	local function lifted(body: Body, unit: Model)
 		body.lifts += 1
 		local mine = body.lifts
@@ -165,7 +193,7 @@ function KeeperSounds.new(): (Brix.System, (model: Model, sound: KeeperTell.Name
 			local now = os.clock()
 			if KeeperTell.due(body.revealed, now, body.tell.revealGap) then
 				body.revealed = now
-				play(body, "Knock", body.tell.revealGain, body.tell.revealPitch)
+				play(body, "Reveal")
 			end
 		end)
 	end
@@ -256,9 +284,10 @@ function KeeperSounds.new(): (Brix.System, (model: Model, sound: KeeperTell.Name
 			model = model,
 			root = root,
 			tell = row.tell,
-			voices = { Footfall = {}, Knock = {} },
+			voices = {},
 			took = {},
 			last = nil,
+			creaked = nil,
 			revealed = nil,
 			unit = nil,
 			lifts = 0,
@@ -286,9 +315,11 @@ function KeeperSounds.new(): (Brix.System, (model: Model, sound: KeeperTell.Name
 	local function ids(): { string }
 		local out = {}
 		for _, row in KeeperRows do
-			for _, sound in { row.tell.footfall, row.tell.knock } do
+			for _, sound in row.tell.sounds do
 				for _, take in sound.takes do
-					table.insert(out, take.id)
+					if not table.find(out, take.id) then
+						table.insert(out, take.id)
+					end
 				end
 			end
 		end

@@ -16,8 +16,9 @@
 	replicates.
 
 	Each key its walk lands as it's shown here is passed to `heard` (KeeperSounds), which plays
-	its footfall or the knock of its joints (`Pose.tell`, L-06b4b2): every screen hears the walk
-	it shows, and nothing more crosses the network.
+	that beat of its limp (`Pose.tell`, L-06b4b2, L-06c1), and so is each turn of its facing past
+	its row's `turn` (its body creaks): every screen hears the walk it shows, and nothing more
+	crosses the network.
 
 	Your own torch is the one thing this screen knows before the server (L-06b4b3): each frame
 	your torch is on, a body shown walking that freezes in light is tested against your beam (the
@@ -41,6 +42,7 @@ local Brix = require(ReplicatedStorage.Brix)
 local Keeper = require(ReplicatedStorage.Shared.Keeper)
 local KeeperMotion = require(ReplicatedStorage.Shared.KeeperMotion)
 local KeeperRows = require(ReplicatedStorage.Shared.KeeperRows)
+local KeeperTell = require(ReplicatedStorage.Shared.KeeperTell)
 local Mannequin = require(ReplicatedStorage.Shared.Mannequin)
 local Pose = require(ReplicatedStorage.Shared.Mannequin.Pose)
 local Torch = require(ReplicatedStorage.Shared.Flashlight.Torch)
@@ -84,6 +86,9 @@ type View = {
 	heldWhen: number, -- when your beam held it (os.clock), for Output
 	answered: boolean, -- the server's stop has answered that hold
 	told: number?, -- what its kit's `tell` last returned (nil: not posed yet)
+	turn: number, -- degrees its facing turns before its body creaks (its row's)
+	turnX: number?, -- the facing it measures its next turn from (nil: not shown yet)
+	turnZ: number,
 	conns: { RBXScriptConnection },
 }
 
@@ -96,8 +101,9 @@ type Beam = {
 
 local KeeperView = {}
 
--- `heard` plays a body's footfall or knock (KeeperSounds); `beam` is your torch (FlashlightView).
-function KeeperView.new(heard: (model: Model, sound: Pose.Sound) -> (), beam: Beam): Brix.System
+-- `heard` plays a beat of a body's walk, or its creak as it turns (KeeperSounds); `beam` is your
+-- torch (FlashlightView).
+function KeeperView.new(heard: (model: Model, beat: KeeperTell.Beat) -> (), beam: Beam): Brix.System
 	local views: { [Model]: View } = {}
 	local moving: { [Model]: View } = {} -- the ones to step
 	local connections: { RBXScriptConnection } = {}
@@ -169,6 +175,14 @@ function KeeperView.new(heard: (model: Model, sound: Pose.Sound) -> (), beam: Be
 			end
 		end
 		local at, facing = f.at, f.facing
+		-- its body creaks once it has turned far enough from where it last creaked
+		local turnX = view.turnX
+		if turnX == nil or (turnX == 0 and view.turnZ == 0) then
+			view.turnX, view.turnZ = facing.x, facing.z -- its first facing, or its first real one
+		elseif KeeperTell.turned(turnX, view.turnZ, facing.x, facing.z, view.turn) then
+			view.turnX, view.turnZ = facing.x, facing.z
+			heard(view.model, "Creak")
+		end
 		view.root.CFrame = CFrame.lookAt(
 			Vector3.new(at.x, at.y, at.z),
 			Vector3.new(at.x + facing.x, at.y, at.z + facing.z)
@@ -287,6 +301,9 @@ function KeeperView.new(heard: (model: Model, sound: Pose.Sound) -> (), beam: Be
 			heldWhen = 0,
 			answered = false,
 			told = nil,
+			turn = rowOf.tell.turn,
+			turnX = nil,
+			turnZ = 0,
 			conns = {},
 		}
 		views[model] = view

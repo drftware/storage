@@ -7,6 +7,39 @@ nowhere else.
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 
+## Now: judge L-06c1, the Mannequin's walk (built Nov 10)
+
+Verified in Studio on seed 7, floor 1: 157's guard stepped out and roamed while I watched from 12
+studs above the hall, and every sound it made was logged at its body with its distance. It
+limped (thump, then a scrape 0.27 s later, a tock 0.47 s after that, then 0.73 s of nothing);
+the body's weight under each step came in as it neared (0.09 at 46 studs, 0.36 at 29, 0.61 at
+22, 0.88 at 12.6) while the hollow thunk carried to 63 studs; it was silent through each 5 s look;
+it creaked on a corner; the door's lift on it answered with a deep thunk and a creak. The poses
+were captured on lit copies (`docs/art/L-06c1-gait-front.jpg`, `-side.jpg`). Nobody here can
+listen: every sound by ear, and on a phone's speaker, is untested.
+- [ ] **By ear, as it comes** (Play, headphones first). Open Unit 157 from (47, 3, -632) and run
+  back toward the lobby, then stop round a corner in the dark and listen as it roams. Far off you
+  should hear a slow, hollow knocking; as it nears, a heavy thud comes in under each step, its
+  dragged foot scrapes between steps, and the beat limps: thump, scrape, tock, pause. It creaks
+  at corners and as it turns to you. When it stops, or your torch holds it, nothing at all. Does
+  it still sound like a puppet anywhere?
+- [ ] **On a phone's speaker:** the same, judged on a real phone. The weight is mostly 190 to 470
+  Hz, which a phone only just plays; if the thud vanishes and only the knocking is left, say so.
+- [ ] **What you see:** it only walks while no light is on it, so watch it come through the dim
+  stretch between two hall lights, torch off, then switch the torch on it. Its left leg stays
+  stiff and swings round on its toe, it holds each heavy step and then jerks, and its head lolls
+  to one side and lands a beat after its body; caught in your torch it freezes on one of those
+  keys, head settled. Does it read as wrong in a frightening way, not as broken animation?
+- [ ] **The reveal:** peek Unit 154's sleeper from (47.5, 3, -624): a deep thunk and a creak as the
+  curtain clears its feet, before your light finds it.
+- [ ] **Decide, defaults in place** (D-101): (1) how near it gets before its steps are heavy (full
+  weight within 10 studs, a tenth of it by 40); (2) the levels: thunk 0.55, weight 0.9, scrape
+  0.8, creak 0.7 (`KeeperRows`, say "louder" or "quieter" for any); (3) the creak is a rubber
+  pedal and a tire's rub pitched down: if it reads as a squeak rather than a stiff plastic body,
+  say so; (4) the rush (ROADMAP polish): dead still in the light, then a fast jerky rush across
+  the gap when the light leaves it, as SCP-173 does. It means a moment faster than its walk,
+  against "nothing outruns you". Want it?
+
 ## Now: judge L-07e, the padlock (built Nov 10)
 
 Verified in Studio on seed 7, floor 1, alone, with a 30-second clock (Workspace's

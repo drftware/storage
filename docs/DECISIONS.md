@@ -2370,3 +2370,47 @@ the line naming the unit or marking it on the map (banging is how friends find y
 second padlock after one's cut; a remote event for the warning (a screen that joins or streams in
 late would miss it); the server playing the hand (one more thing to stream, and no say over a
 late screen); the chase's sting for the click ("Rising Fear Hit 1" is the chase's own).
+
+## D-101 A walk that frightens: it limps, its head lags, its steps get heavier as it nears (L-06c1, Nov 10)
+The moment: you hear it before you see it, and what you see moves wrong. The owner, Nov 10
+night: its steps "sound like fucking pinnoccio walking around". The light wooden clack each step
+and the plastic knocks between (D-083) were a puppet's sounds, so both went.
+
+The walk (`Mannequin/Pose`, every screen's own, the server's motion untouched): it limps on a
+stiff left leg, as Silent Hill's mannequins and Doors' Figure move like things that shouldn't
+walk. The left keys are no longer the right ones mirrored: the left knee stays all but straight,
+and on the pass the left hip hitches up to swing the stiff leg round on its toe. Each key carries
+it its own distance (`Walk.Spans`, shares of the 2.7-stud step: 0.8 for the plant, 1.4 for the
+drag, 0.7 for the stiff heel, 1.1 for the swing through) and holds its own share before snapping
+on (`Walk.Holds`: 0.7, 0.15, 0.55, 0.5): the plant held long and then a jerk, the drag starting
+at once and sliding slowly, the one smooth thing it does. Its head lolls hard to one side on the
+plant and the other on the heel, and lands a beat late: over the first half of each key's span
+(`Walk.Lag`, never past the hold) it swings from the last key's place into this one's, so it
+bobbles after every step. A light still freezes it on a key, head settled (a small snap of the
+head as the light lands). Each key's frames are now 3 of the head settling, the key held and 9
+of the snap (`Walk.Settle`, `Walk.Snaps` 10), still worked out once per screen and cached.
+
+Its sounds (`KeeperTell`, `KeeperRows`, `KeeperSounds`): each beat is layers, recordings played
+at once. The plant is a hollow fibreglass thunk (four Pro Sound Effects planter drops on
+asphalt, pitched to 0.74 to 0.86, heard to 70 studs, past the 48 it sees) with a body's weight
+under it (a plastic cooler's hit, a body's thump and a railroad tie on pavement, mostly 190 to
+470 Hz so a phone still plays it). Nearer is heavier, as Five Nights at Freddy's footsteps swell
+as an animatronic comes: `heft` eases from 1 within 10 studs to 0 at 40, and each sound's
+`farGain` and `farPitch` say what's left of it far off (the weight: a tenth, 15% higher), so a
+tap down the hall becomes a thud in yours. The drag is a rock scraping concrete (SCP-173's
+grind), raised to 1.1 to 1.3 for a phone, heard to 45. The heel is the thunk lighter and a
+little higher with a third of the weight; the swing through is silent, so you hear the limp:
+thump, scrape, tock, nothing. Its body creaks (a rubber pedal's ratchet and a tire's rub pitched
+down) as it jerks out of its shop pose and each time its facing turns 40 degrees (`turned`,
+tested on every screen as KeeperView moves it, no more than one a 0.9 s), so it creaks at
+corners and as it turns to you. A door lifted on one standing in a unit answers with a deep
+thunk and a creak. Standing or held in light: nothing, as before. Every take is cut to one hit
+and measured (docs/STUDIO.md, "Sounds measured for the keeper's walk"); three or four takes a
+sound, never the last again, each at a random pitch, so no two steps sound alike.
+
+Not chosen: the dead-still-then-rush (SCP-173, Doors' Seek), which needs the server to move it
+faster than its walk for a moment, against the GDD's "nothing outruns you" (ROADMAP polish, the
+owner's call); one heavier recording in place of the clack (one sound can't be both a far knock
+and a close thud); an equaliser for heaviness (layers do it with no effect per sound, and what
+a phone can't play an equaliser can't add); its head turning to follow you (it would say it had
+seen you when it hadn't); sounds at the feet (still ROADMAP polish).

@@ -516,8 +516,8 @@ verified: a doc page, Studio, or "untested".
   the Client with a `task.spawn`ed `RenderStepped` poll over each keeper body's root: a Sound
   named `Keeper*` that is playing with a `TimePosition` lower than last frame's (or newly
   playing) was just played; read `RightHip`'s and `LeftHip`'s `Transform` X angle then to see
-  the pose it landed (step right R30 L-20, pass right R6 L24, step left R-20 L30, pass left R24
-  L6, slack R8 L0), and keep the lines on a LocalPlayer attribute. Peek 157's guard from (48.5,
+  the pose it landed (since L-06c1's limp: step right R28 L-24, pass right R4 L-8, step left
+  R-22 L22, pass left R26 L2, slack R8 L0), and keep the lines on a LocalPlayer attribute. Peek 157's guard from (48.5,
   3, -632) and 154's sleeper from (47.5, 3, -624) as the kneel recipe does. **After a Peek pressed
   with `InputHoldBegin`, that door's other buttons stop answering** (shown, but no `Triggered`
   reaches the server, by `InputHoldBegin` or a key press): pivot the character out of reach
@@ -845,6 +845,31 @@ verified: a doc page, Studio, or "untested".
   4 dB under the boards. Also measured: "Plastic Impact Hard Dropping Hollow Hits" 1 to 4 (two
   or more hits each, mostly under 450 Hz), "Foot Stomp" 1 and 7 (a dull thud on carpet, -12
   dBFS), "Pole Drops 6" 9117734474 (a hollow wood hit at 0.025, a bounce at 0.5, about 850 Hz).
+- **Sounds measured for the keeper's walk** (L-06c1, 2026-11-10; Edit, AudioPlayer at half speed
+  to AudioAnalyzer with `SpectrumEnabled`, 50 then 25 ms bins and the share of the hit's energy
+  under 190 Hz / 190 to 470 / 470 to 2k / over 2k; then a quarter speed and 10 ms bins for the
+  cuts). Weight: "Plastic Cooler 6" 9117451558 hits at 0.06, -30 dB by 0.23, a second hit at 0.46,
+  20/62/12/4 (centroid 456 Hz); "Body Impact 2" 9113524237 at 0.03, gone by 0.33, 55/22/19/2;
+  "Wood Drop Wood Log 2" 9120871246 (a railroad tie on pavement) at 0.49, a second strike at
+  0.73, 9/53/35/0. Thunk: "Plastic Impacts Dish Shaped Planter" 5 9117557254 (0.63, 89% at 190 to
+  470), 23 9117570260 (0.09), 27 9117571208 (0.57), 22 9117570079 (0.16, a bounce at 0.26): one
+  hit each, -30 dB within 0.06 s. Drag: "Rock Scrape On Concrete Constant Dragging Dry 2"
+  9125883658, strokes at 0.16 to 0.48, 0.78 on, 1.75 to 2.13, centroid 200 to 380 Hz (pitched up
+  for phones). Creak: "Gas Pedal Cu Slow Pressing Movements Squeezing 1" 9125571873, a ratchet
+  of pulses every 75 ms from 1.10 (centroid 564); "Tire Squeak Cu Creak Rub Together Rubber 1"
+  9120078794, steady from 0.2, centroid 1 to 2.4 kHz. Passed over: "Body Impact 10", "Deep
+  Impacts 7" and "Body Falls 1" (87 to 90% under 190 Hz: a phone plays none of it); the "Body
+  Fall Concrete" set (long scuffles, several hits); "Wood Creak 1" (86% over 2 kHz, a squeal);
+  "Rope Stress 3" (-29 dB); "Metal Scrape Dragging Drain Pipe" (metal).
+- **A unit's `DoorButtons` is an Attachment** (L-06c1): aim the camera at its `WorldPosition`;
+  its `Position` is the offset in the door's frame, and a camera pointed there misses the prompt
+  (the press then does nothing).
+- **Watching a keeper roam, from the MCP** (L-06c1, seed 7, floor 1): from the Server, spawn a
+  thread that waits on Unit157's `DoorMotion` changing, then 0.5 s later anchors your root and
+  pivots you to (47, 15, -632); stand at (47, 3, -632) and tap 157's Open from the Client. The
+  guard steps out to look, never sees you 12 studs up, and roams the halls; a Client
+  `RenderStepped` logger over the body's `Keeper*` Sounds (a play is one newly playing or with a
+  `TimePosition` lower than last frame's) gives each beat, its volume, pitch and distance.
 - **Sounds measured for the ladder** (L-13b1; 50 ms bins at half speed): "Metal Ladder Bang
   Slams Against Body 1" 9116717868 (1.08 s) bangs at 0 s near 0 dB, rattles to 0.85 s; "Metal
   Ladder Drop 1" 9116718698 is only 0.66 s, a soft hit then a loud one at 0.25 s; "Metal Ladder

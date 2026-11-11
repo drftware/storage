@@ -1,14 +1,18 @@
 --!strict
 --[[
-	KeeperTell: how a keeper gives itself away by sound (L-06b4b2), the rules every screen plays
-	it by. Each keeper's numbers are on its row (`KeeperRows`, `tell`); the client's KeeperSounds
-	plays them from the body.
+	KeeperTell: how a keeper gives itself away by sound (L-06b4b2, L-06c1), the rules every screen
+	plays it by. Each keeper's numbers are on its row (`KeeperRows`, `tell`); the client's
+	KeeperSounds plays them from the body.
 
-	The moment: in the dark you hear it before you see it. Each step its walk lands is a stiff
-	clack of its foot on the concrete and each pass of its legs a hollow knock at its joints, as
-	Five Nights at Freddy's footsteps tell you an animatronic moved. And a door lifted on one
-	standing in a unit knocks once, as the curtain's edge clears its feet: the peek's answer
-	before your light finds it.
+	The moment: you hear it before you see it, and what you hear is heavy and wrong. Each beat of
+	its walk is a few recordings at once (its layers): a hollow fibreglass thunk on the concrete
+	that carries down the halls, and under it the body's weight, which only comes in as it nears,
+	so its steps get heavier the closer it is, as Five Nights at Freddy's footsteps swell as an
+	animatronic comes down the hall. Its dragged foot scrapes the concrete between steps, as
+	SCP-173 grinds across the floor whenever no one is looking; its body creaks as it turns. When
+	it stands still it is dead quiet. And a door lifted on one standing in a unit answers with a
+	thunk and a creak as the curtain's edge clears its feet: the peek's answer before your light
+	finds it.
 
 	Pure: no Roblox types, so Lune checks it (tests/tell.spec.luau).
 ]]
@@ -21,7 +25,7 @@ export type Take = {
 	stop: number, -- and where it's cut, before anything else in the recording
 }
 
--- One of its sounds, played from its body.
+-- One recording it plays from its body, in any number of beats.
 export type Sound = {
 	takes: { Take }, -- each play picks one other than the last, so a walk never repeats a clip
 	fade: number, -- seconds it fades out over before its stop, so the cut never clicks
@@ -30,23 +34,39 @@ export type Sound = {
 	pitchMax: number,
 	near: number, -- full volume within this many studs
 	reach: number, -- silent beyond this many studs, and not played at all
+	-- How much of it is left at the far end of its heft (`Tell.heavyFar` and beyond): its volume
+	-- and its pitch there, each as a share of its own. 1 and 1 sound the same at any distance;
+	-- the body's weight is 0.1 and a higher pitch, so it only lands heavy up close.
+	farGain: number,
+	farPitch: number,
 }
+
+-- The beats a keeper's body makes. Its walk's beats come from its pose (`Pose.tell`): a foot
+-- planted, its dragged foot scraping, its stiff heel landing, a creak as it jerks out of its slack
+-- pose. Creak is also its body turning (`turned`); Reveal is a lifted door showing its feet.
+export type Beat = "Footfall" | "Drag" | "Heel" | "Creak" | "Reveal"
+
+-- One recording in a beat, its volume and pitch as shares of the recording's own.
+export type Layer = { sound: string, gain: number, pitch: number }
 
 export type Tell = {
-	footfall: Sound, -- each step its walk lands (`Pose.tell`)
-	knock: Sound, -- each pass of its legs, a jerk out of its slack pose, and a door's reveal
-	gap: number, -- no two sounds from one body closer than this many seconds
+	sounds: { [string]: Sound }, -- by name
+	beats: { [Beat]: { Layer } }, -- what each beat plays, all at once
+	-- Nearer, heavier: within `heavyNear` studs every layer plays as itself; out at `heavyFar` and
+	-- beyond, at its `farGain` and `farPitch`; smoothly between (`heft`).
+	heavyNear: number,
+	heavyFar: number,
+	gap: number, -- no two beats of its walk from one body closer than this many seconds
+	turn: number, -- degrees its facing turns before its body creaks
+	turnGap: number, -- seconds before its body creaks again
 	revealRise: number, -- studs a door lifts before the feet of one standing behind it show
-	revealGain: number, -- the reveal's knock: its volume and pitch, times the knock's
-	revealPitch: number,
-	revealGap: number, -- seconds before a door lifted again on it knocks again
+	revealGap: number, -- seconds before a door lifted again on it answers again
 }
-
-export type Name = "Footfall" | "Knock"
 
 local KeeperTell = {}
 
-local NAMES: { Name } = { "Footfall", "Knock" }
+local BEATS: { Beat } = { "Footfall", "Drag", "Heel", "Creak", "Reveal" }
+KeeperTell.Beats = BEATS
 
 -- The keeper states a body stands in a unit in (Keeper): dealt asleep, or awake and watching.
 local STANDING = { Asleep = true, Watching = true }
@@ -57,11 +77,6 @@ local LIFTS = { Peek = true, Open = true, LiftInside = true }
 
 -- How sure `reveal` is of the moment, in seconds: far finer than a frame.
 local REVEAL_PRECISION = 0.001
-
--- One of its sounds by name.
-function KeeperTell.sound(tell: Tell, name: Name): Sound
-	return if name == "Footfall" then tell.footfall else tell.knock
-end
 
 -- Whether a body may make a sound at `now` (seconds), its last at `last` (nil: never).
 function KeeperTell.due(last: number?, now: number, gap: number): boolean
@@ -79,6 +94,44 @@ function KeeperTell.take(count: number, last: number?, r: number): number
 	end
 	local i = math.min(math.floor(r * (count - 1)) + 1, count - 1)
 	return if i >= last then i + 1 else i
+end
+
+-- How heavy it sounds `distance` studs from you: 1 within `heavyNear`, 0 at `heavyFar` and
+-- beyond, easing between so no step lands suddenly heavier than the last.
+function KeeperTell.heft(tell: Tell, distance: number): number
+	local t = (tell.heavyFar - distance) / (tell.heavyFar - tell.heavyNear)
+	t = math.clamp(t, 0, 1)
+	return t * t * (3 - 2 * t)
+end
+
+-- A sound's volume and pitch, as shares of its own, at a heft (`heft`).
+function KeeperTell.weigh(sound: Sound, heft: number): (number, number)
+	return sound.farGain + (1 - sound.farGain) * heft, sound.farPitch + (1 - sound.farPitch) * heft
+end
+
+-- The fastest a sound can ever play (its top pitch, its loudest layer's pitch, its far pitch),
+-- so the fade before its cut is timed for it and never clicks.
+function KeeperTell.fastest(tell: Tell, name: string): number
+	local sound = tell.sounds[name]
+	local layer = 0
+	for _, layers in tell.beats do
+		for _, l in layers do
+			if l.sound == name then
+				layer = math.max(layer, l.pitch)
+			end
+		end
+	end
+	return sound.pitchMax * layer * math.max(sound.farPitch, 1)
+end
+
+-- Whether a body facing (bx, bz) has turned more than `degrees` from facing (ax, az): its body
+-- creaks then, and (bx, bz) is what it measures the next turn from.
+function KeeperTell.turned(ax: number, az: number, bx: number, bz: number, degrees: number): boolean
+	local a, b = math.sqrt(ax * ax + az * az), math.sqrt(bx * bx + bz * bz)
+	if a < 1e-6 or b < 1e-6 then
+		return false
+	end
+	return (ax * bx + az * bz) / (a * b) < math.cos(math.rad(degrees))
 end
 
 -- Whether a keeper in state `state` stands in a unit, where a lifted door reveals it.
@@ -120,8 +173,7 @@ end
 -- What's wrong with a keeper's tell, if anything: the numbers a screen couldn't play right.
 function KeeperTell.check(tell: Tell): { string }
 	local out = {}
-	for _, name: Name in NAMES do
-		local s = KeeperTell.sound(tell, name)
+	for name, s in tell.sounds do
 		if #s.takes == 0 then
 			table.insert(out, `{name}: no takes`)
 		end
@@ -142,15 +194,44 @@ function KeeperTell.check(tell: Tell): { string }
 		if s.near <= 0 or s.near >= s.reach then
 			table.insert(out, `{name}: near {s.near} not inside reach {s.reach}`)
 		end
+		if s.farGain < 0 or s.farGain > 1 then
+			table.insert(out, `{name}: farGain {s.farGain} outside 0..1`)
+		end
+		if s.farPitch <= 0 then
+			table.insert(out, `{name}: farPitch must be over 0`)
+		end
+	end
+	for _, beat: Beat in BEATS do
+		local layers = tell.beats[beat]
+		if not layers or #layers == 0 then
+			table.insert(out, `{beat}: plays nothing`)
+			continue
+		end
+		for _, l in layers do
+			local s = tell.sounds[l.sound]
+			if not s then
+				table.insert(out, `{beat}: no sound {l.sound}`)
+			elseif l.gain <= 0 or s.volume * l.gain > 1 then
+				table.insert(out, `{beat}: {l.sound} at gain {l.gain} isn't 0..full volume`)
+			elseif l.pitch <= 0 then
+				table.insert(out, `{beat}: {l.sound} pitch must be over 0`)
+			end
+		end
+	end
+	if tell.heavyNear < 0 or tell.heavyNear >= tell.heavyFar then
+		table.insert(out, `heavyNear {tell.heavyNear} not inside heavyFar {tell.heavyFar}`)
 	end
 	if tell.gap <= 0 then
 		table.insert(out, "gap must be over 0")
 	end
+	if tell.turn <= 0 or tell.turn >= 180 then
+		table.insert(out, `turn {tell.turn} outside 0..180 degrees`)
+	end
+	if tell.turnGap <= tell.gap then
+		table.insert(out, "turnGap must be over gap")
+	end
 	if tell.revealRise <= 0 then
 		table.insert(out, "revealRise must be over 0")
-	end
-	if tell.knock.volume * tell.revealGain > 1 then
-		table.insert(out, "the reveal's knock is over full volume")
 	end
 	if tell.revealGap <= tell.gap then
 		table.insert(out, "revealGap must be over gap")
