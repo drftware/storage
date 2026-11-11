@@ -1,7 +1,8 @@
 --!strict
 --[[
 	Prompts: the ProximityPrompts the server puts in the world, made one way. The doors (Doors) and
-	the test hall's posts ("Go far", "Cut power", "Walk a floor") and a tool on a floor ("Pick up") use them.
+	the test hall's posts ("Go far", "Cut power", "Walk a floor"), a tool on a floor ("Pick up") and a
+	kept friend's "Cut free" (KeptPlayers) use them.
 
 	A refusal flashes on the prompt in place of its name for a moment ("Padlocked", "Still laying
 	it"), then the name comes back.

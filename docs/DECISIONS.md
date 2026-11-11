@@ -2265,3 +2265,57 @@ Not chosen: leaving the guard after the bag (seed 7, floor 1's guard went to Uni
 and every recipe naming 157 would have needed rewriting, and again at the next bag change); the
 specs dealing from the layout's Random too (they check rules over 200 seeds, which holds either
 way).
+
+## D-099 Cut free: a friend's one-second hold at your open door, a rip, the film slumping off you (L-07d, Nov 10)
+The moment: you're wrapped in the dark, the door goes up, a friend steps in and grabs the film;
+it strains round you for a second, then rips. Strips of film fly at them, the wrap drops down
+your body into a heap round your ankles, and you're on your feet. Dead by Daylight's unhook is
+the precedent (a teammate at your hook holds a button and you're down and running), as Flee the
+Facility's freeze pods are for a teammate letting you out. It replaces L-07a's stand-in: the door
+going all the way up no longer lets anyone out.
+
+As built: once you're inside, `KeptPlayers` puts a `CutFree` Attachment on your root, a little
+up and 1.2 studs out in front of the chest toward the door (`Kept.CutUp`, `CutAhead`), so the
+button sits on the film where hands would grab it and its line of sight clears the body. The
+prompt (`Prompts.make`): "Cut free" over your name, E or X (Open's keys, and Open never shows on
+a door that's all the way up), held `Kept.CutHold` (1 s), shown within `Kept.CutReach` (7 studs:
+from a big unit's doorway, a step out of a small one), enabled only while your door's state is
+Open (`Doors.changed`). Your own screen hides prompts, so you never see it, nor any of a
+friend's hold but its sound.
+
+The server judges each trigger with the pure `Kept.cut`, in the unit's frame: never yourself,
+never a friend who's kept or down; you must be inside and your door up; the hold must have
+begun on the server's clock (`PromptButtonHoldBegan`) at least `CutHold - CutSlack` (0.75 s)
+before the trigger, so a trigger with no hold does nothing; and the cutter must stand between the
+unit's side walls, from `CutOut` (3 studs) into the hall to the back wall, and within `CutReach`
+plus `CutReachSlack` (2) of the cut point. That refuses a cut through a side or back wall, from
+across the hall or from up on the tops. A refusal a friend can fix flashes on the button ("Get
+closer", "Hold to cut"); the rest can't come from a real button.
+
+The strain: each friend holding is counted onto the wrap (`Kept.PullAttribute`), and every
+screen plays the wrap's own peel there (`Kept.Pull`: the squeal's recording at 0.74 speed),
+swelling from a third to full over the hold (`Kept.pull`), so the rip lands on a peak.
+
+The rip: the wrap is unwelded and left anchored where you stood, parented to Workspace with when
+it tore (the server's clock), who it freed, who cut and which way it lists, then destroyed after
+`Kept.tearLength()` (2.1 s) and a half. Every screen that has it (`CutFreeView`, from the tag
+`Kept.WrapTag`) plays the rest itself: Pro Sound Effects' "Plastic Sheet Impacts Rips Paper
+Tears 9" from 0.31 s (a sheet torn hard, bursts to 1.1 s), 18 strips of film flung toward the
+door (a ParticleEmitter with the film's own colour map, squashed into strips), and the slump
+(`Kept.tearPose`): a bulge as it's torn, a fall down the body gathering speed, its foot held on
+the floor, listing toward the door, to a heap 0.16 of its height, 0.8 as wide and 1.6 as deep
+(round your ankles, not the shoulders), a squash as it lands with "Plastic Bag Handling Crunchy
+Cellophane 8", lying 0.75 s, fading 0.6 s. A screen that streams it in late joins the beat where
+it is, silent past 0.3 s. The freed player's view jolts (`Kept.FreedKick`, 0.5, softer than the
+catch) and widens 7 degrees and back over 0.8 s (`Kept.widen`); the film is drawn on their own
+screen again, so it drops away past their eyes; their Bang button fades over 0.3 s. The
+cutter's view jolts a little (`Kept.CutterKick`, 0.2).
+
+Not chosen: a remote event for the tear (a late screen would miss it, and the wrap already
+carries everything); the server playing the sounds (one more thing to stream, and no say over a
+late screen); the wrap vanishing, or tweened on the server (every screen's own steps are smoother
+and cost the server nothing); a torn-open wrap mesh (a squashed cocoon reads as film dropping off
+at the speed it moves; the torn mesh is polish in ROADMAP); hold progress on the kept player's
+screen (the ticket: they get only the sound); a grace after you're free and keepers hearing the
+rip (both `OWNER.md`); reading the colour map's `ColorMap` (game scripts can't; its
+`ColorMapContent` they can, docs/STUDIO.md).

@@ -873,29 +873,24 @@ L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
     heard a bang 54 studs off along the halls and came to the door; the line under the door lit
     with the hall light and went with it; let out, the mark cleared. Studio's captures draw no
     billboards, so the mark over the door is untested by eye.
-  - [ ] **L-07d Cut free.** A friend at your open door holds Cut free one second and you stand
-    up; it replaces L-07a's stand-in way out. Its spec, written for HANDOFF on Nov 10:
-    1. Pure rules in `Kept` (Lune-tested): the hold's length (1 s), who may cut (alive, not
-       kept, within reach of the kept player, the unit's door all the way up), what counts as
-       in reach.
-    2. Server (`KeptPlayers`): a "Cut free" prompt (`Prompts.make`, hold 1 s) on the kept
-       player, shown only while their door is all the way up; its trigger validated on the
-       server (the rules above) lets them go. Remove L-07a's stand-in: the door going up no
-       longer lets you out.
-    3. Feedback, same ticket: the film tears (a measured tape-rip sound, as `KeptSqueal`'s was
-       found, played at the body for everyone near), the wrap comes off over a beat (not a
-       vanish), the freed player's view kicks as they're let go, the cutter's a small kick too.
-    4. A friend's held Cut free shows nothing to the kept player beyond the sound; check the
-       prompt at phone size (the door's own buttons are near: no overlap).
-
-    Acceptance: checks green; in Studio on seed 7, floor 1, where the awake Mannequin is still
-    the guard in Unit 157 (rechecked by L-14e: stand at (47, 3, -632) facing its door, tap Open,
-    caught in 2.5 to 7 s; docs/STUDIO.md's "Testing getting kept from the MCP"): opening your
-    unit no longer lets you out; the Cut free
-    prompt shows only with the door up; a trigger from a kept player or from too far is refused
-    (Output); a valid one lets you out, the film gone with its sound; Output clean. Read first:
-    this ticket; D-095, D-097; `src/server/KeptPlayers.luau`; `src/server/Prompts.luau`;
-    `src/client/KeptSqueal.luau`; docs/STUDIO.md's "Testing getting kept from the MCP".
+  - [x] **L-07d Cut free.** A friend at your open door holds Cut free one second and you stand
+    up; it replaces L-07a's stand-in way out.
+    Done Nov 10 (D-099): pure `Kept.cut` (who may cut: not yourself, not kept, alive, you inside
+    with your door all the way up, a full hold on the server's clock, between the unit's walls
+    from a stride into the hall, within reach; Lune-tested), `Kept.tearPose` (the film's slump
+    over a beat) and `Kept.pull`, `Kept.widen`; `KeptPlayers`' Cut free button on the film in
+    front of the chest, shown only with the door up, its hold strained onto the wrap and its
+    trigger judged, a cut tearing the wrap off where you stood; `CutFreeView` (the strain, the
+    rip, strips of film flung at the cutter, the slump to a heap round the ankles, its crunch,
+    the kicks and the freed player's view widening); `CaughtView`'s Bang button fades out. The
+    door going up no longer lets you out. Verified in Studio on seed 7, floor 1, alone, with a
+    stand-in friend (`ServerStorage.CutFreeTest`, docs/STUDIO.md): kept four times; the button
+    off with the door down, on with it up; my own trigger refused (Self), the stand-in refused
+    too short, down, across the hall, through the side and back walls and from the tops; from
+    the doorway its cut tore the film off: rip, shreds, heap by 0.6 s, gone by 2.2 s, my view
+    widened to 77 degrees and back, Bang faded, walk back; Output clean. At Galaxy A16 size Cut
+    free and the door's Close and Slam never overlap (197 px apart at the closest). A real
+    friend's hold and the sounds by ear are the owner's (`OWNER.md`).
   - [ ] **L-07e The padlock.** Left a few minutes, the building padlocks your unit; only bolt
     cutters let you out. A warning comes first (the padlock's sound on your door, a short line
     for you and for friends) so everyone feels the clock run out.
@@ -1022,6 +1017,14 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
   show the real floor through the sheet's film and the roll's outer layer (one transparent part a
   sheet: check it on a low-end phone). The kept wrap (L-07b) shows how: wire the alpha in the
   export's material and give the part Transparency 0.02 (docs/STUDIO.md).
+
+- **A wrap that tears open (L-07d):** the film comes off as the whole cocoon slumping down the
+  body, which reads as film dropping off at the speed it moves but not as torn. A second mesh made
+  the art way, the cocoon split down the front with its flaps peeled back, swapped in at the rip
+  and then slumped, would show where the friend tore it.
+- **The rip, heard far (L-07d):** a friend down the hall hears the rip within 50 studs; past that
+  nothing tells the floor someone's free. A short far cue (the rip muffled through walls) would,
+  the way a far bang could (L-07c).
 
 - **The wrap going on (L-07b):** the film is welded on in the black, whole. A friend watching the
   catch sees you vanish with a squeal; a quick spin of film round you first belongs with the catch's

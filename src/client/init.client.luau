@@ -14,6 +14,7 @@ local CaughtView = require(script.CaughtView)
 local KeptSqueal = require(script.KeptSqueal)
 local ChaseMusic = require(script.ChaseMusic)
 local CrawlView = require(script.CrawlView)
+local CutFreeView = require(script.CutFreeView)
 local DoorSounds = require(script.DoorSounds)
 local DoorView = require(script.DoorView)
 local ElevatorView = require(script.ElevatorView)
@@ -64,6 +65,7 @@ local host = Brix.Host.new({
 		{ slot = "caughtView", system = CaughtView.new(kick) },
 		{ slot = "chaseMusic", system = ChaseMusic.new() },
 		{ slot = "keptSqueal", system = KeptSqueal.new() },
+		{ slot = "cutFreeView", system = CutFreeView.new(kick) },
 		{ slot = "bangMarks", system = BangMarks.new() },
 		{ slot = "underDoor", system = UnderDoor.new() },
 		{ slot = "noteView", system = NoteView.new() },

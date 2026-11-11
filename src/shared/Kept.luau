@@ -191,6 +191,233 @@ Kept.Squeal = {
 -- Studs the squeal carries from where you were caught: down your stretch of hall, not the floor.
 Kept.SquealReach = 45
 
+-- Cut free (L-07d): a friend at your open door holds Cut free and tears the film off you, as Dead
+-- by Daylight's teammate lifts you off the hook. While they hold, the film strains round you
+-- (`Pull`); when the hold lands it rips (`Rip`), shreds burst toward them, and the wrap slumps
+-- down your body to a heap at your ankles over a beat (`Tear`), then fades. You're on your feet
+-- the moment it rips.
+
+-- Seconds a friend holds Cut free: long enough to mean it, short enough with a keeper near.
+Kept.CutHold = 1
+-- Seconds of that hold the server forgives: the hold's start and its end reach it with the same
+-- lag, but either can arrive a little late on a jittery connection.
+Kept.CutSlack = 0.25
+-- Studs from the cut point a friend's Cut free shows: from the doorway of a big unit, or anywhere
+-- inside a small one. The server forgives `CutReachSlack` more (a friend stepping as the hold
+-- lands, a position a moment old).
+Kept.CutReach = 7
+Kept.CutReachSlack = 2
+-- The cut point, from the kept body's root: a little up and out in front of the chest, toward
+-- the door, so the button sits on the film where a friend's hands would grab it, clear of the
+-- body for the button's line of sight.
+Kept.CutUp = 0.6
+Kept.CutAhead = 1.2
+-- Studs into the hall in front of the unit a friend may stand and still cut: a stride.
+Kept.CutOut = 3
+-- The button's one word for what it does.
+Kept.CutText = "Cut free"
+
+-- What stops a cut, as the server judges a friend's Cut free when the hold lands: the cutter is
+-- the kept player (`Self`), kept too (`Kept`), down or bodiless (`Dead`); the kept player isn't
+-- in their unit yet (`Away`, still in the black on the way) or their door isn't all the way up
+-- (`Shut`); the hold was too short (`Short`); the cutter isn't in front of the unit or in it
+-- (`Outside`: through a wall, on the tops) or is too far from the cut point (`Far`).
+export type CutRefusal = "Self" | "Kept" | "Dead" | "Away" | "Shut" | "Short" | "Outside" | "Far"
+
+-- A friend's Cut free as the server sees it when the hold lands. Places are in the kept unit's
+-- frame: `x` across the door from its middle, `y` up from the floor, `z` in from the door's outer
+-- face (the hall is below 0).
+export type Cut = {
+	self: boolean, -- the cutter is the kept player
+	alive: boolean, -- the cutter's body stands, its health above 0
+	kept: boolean, -- the cutter is kept too
+	inside: boolean, -- the kept player stands in their unit
+	open: boolean, -- the kept player's door is all the way up
+	held: number?, -- seconds since the cutter's hold began, nil with none
+	at: { number }, -- the cutter's body (its root): x, y, z
+	cut: { number }, -- the cut point: x, y, z
+	width: number, -- the unit's, wall to wall
+	depth: number, -- the unit's, door to back wall
+}
+
+--- Whether cut `c` may go: nil when it may, else what stops it (`CutRefusal`).
+function Kept.cut(c: Cut): CutRefusal?
+	if c.self then
+		return "Self"
+	elseif c.kept then
+		return "Kept"
+	elseif not c.alive then
+		return "Dead"
+	elseif not c.inside then
+		return "Away"
+	elseif not c.open then
+		return "Shut"
+	elseif c.held == nil or c.held < Kept.CutHold - Kept.CutSlack then
+		return "Short"
+	end
+	local x, z = c.at[1], c.at[3]
+	if math.abs(x) > c.width / 2 or z < -Kept.CutOut or z > c.depth then
+		return "Outside"
+	end
+	local dx, dy, dz = x - c.cut[1], c.at[2] - c.cut[2], z - c.cut[3]
+	if math.sqrt(dx * dx + dy * dy + dz * dz) > Kept.CutReach + Kept.CutReachSlack then
+		return "Far"
+	end
+	return nil
+end
+
+-- The film's strain while a friend holds Cut free: the wrap's own peel (`Squeal`), slowed and
+-- deepened, heard round the body, swelling from a third to full over the hold so the rip lands
+-- on a peak. Heard by the kept player too: the one thing of the hold they get (they see none).
+Kept.Pull = {
+	id = Kept.Squeal.id,
+	from = 0.6,
+	length = 1.6,
+	volume = 1.3,
+	pitch = 0.74,
+}
+Kept.PullReach = 30
+-- The strain's volume, a share of `Pull.volume`, `t` seconds into a hold.
+function Kept.pull(t: number): number
+	return 0.35 + 0.65 * math.clamp(t / Kept.CutHold, 0, 1)
+end
+
+-- The rip as the hold lands: Pro Sound Effects' "Plastic Sheet Impacts Rips Paper Tears 9", a
+-- sheet torn hard from 0.31 s (a -5 dB peak at once) with bursts to 1.1 s (measured,
+-- docs/STUDIO.md): the film tearing open and coming down. Heard down the hall, as the squeal is.
+Kept.Rip = {
+	id = "rbxassetid://9117625280",
+	from = 0.31,
+	length = 0.85,
+	volume = 1.2,
+	pitch = 1,
+}
+Kept.RipReach = 50
+-- The heap landing round your ankles: "Plastic Bag Handling Crunchy Cellophane 8", its crunch
+-- from 0.36 s, quiet in the recording (-30 to -35 dB), so turned up. Plays as the slump lands.
+Kept.Heap = {
+	id = "rbxassetid://9117409739",
+	from = 0.36,
+	length = 0.6,
+	volume = 2.5,
+	pitch = 0.9,
+}
+Kept.HeapReach = 25
+
+-- How hard the rip jolts the freed player's view (the catch's own is 0.85), and the cutter's: a
+-- yank on the film they were pulling.
+Kept.FreedKick = 0.5
+Kept.CutterKick = 0.2
+-- Degrees the freed player's view widens as the film falls away (the world opening back up),
+-- seconds it takes to open, and to settle back.
+Kept.FreedWiden = 7
+Kept.WidenIn = 0.12
+Kept.WidenOut = 0.7
+
+--- How far open the freed player's view is `t` seconds after the rip, 0 to 1 of `FreedWiden`:
+--- snapping open, then easing back.
+function Kept.widen(t: number): number
+	if t <= 0 or t >= Kept.WidenIn + Kept.WidenOut then
+		return 0
+	elseif t < Kept.WidenIn then
+		return math.sin(math.pi / 2 * t / Kept.WidenIn)
+	end
+	local u = (t - Kept.WidenIn) / Kept.WidenOut
+	return 1 - u * u * (3 - 2 * u)
+end
+-- Film shreds burst from the tear toward the cutter: how many.
+Kept.Shreds = 18
+-- Seconds the Bang button takes to fade as you're let out.
+Kept.BangOut = 0.3
+
+-- The film coming off, the same on every screen: torn, it bulges (the yank), then slumps down the
+-- body under its own weight to a heap at the ankles, settles, lies a moment and fades. Never a
+-- vanish. Seconds and shares of the wrap's own size.
+Kept.Tear = {
+	yank = 0.08, -- the bulge as it's torn
+	bulge = 0.12, -- how much wider at the bulge's peak
+	fall = 0.48, -- the slump to the ankles, gathering speed as it goes
+	heap = 0.16, -- its height once down, a share of its own
+	-- the heap gathered round the ankles: narrower than the shoulders it hung from, its loops
+	-- lying out in front and behind, so it reads as film where someone stood, not a flat body
+	wide = 0.8,
+	deep = 1.6,
+	settle = 0.14, -- a squash as it lands
+	tilt = 11, -- degrees it lists toward the door as it goes
+	rest = 0.75, -- lying there
+	fade = 0.6, -- fading out
+	see = 0.35, -- its part Transparency once down, before it fades
+}
+
+-- The wrap `t` seconds after the tear: its height (`squash`), width (`wide`, across the door)
+-- and depth (`deep`) as shares of its own, its part Transparency (`see`), and how far it lists
+-- (`lean`, 0 upright to 1 the full `Tear.tilt`). Its foot stays on the floor throughout.
+export type TearPose = { squash: number, wide: number, deep: number, see: number, lean: number }
+
+--- Seconds from the tear until the wrap is gone.
+function Kept.tearLength(): number
+	local T = Kept.Tear
+	return T.yank + T.fall + T.settle + T.rest + T.fade
+end
+
+--- The wrap's pose `t` seconds after the tear (`TearPose`).
+function Kept.tearPose(t: number): TearPose
+	local T = Kept.Tear
+	if t <= 0 then
+		return { squash = 1, wide = 1, deep = 1, see = Kept.WrapBlend, lean = 0 }
+	elseif t >= Kept.tearLength() then
+		return { squash = T.heap, wide = T.wide, deep = T.deep, see = 1, lean = 1 }
+	end
+	if t < T.yank then
+		local u = t / T.yank
+		local b = 1 + T.bulge * math.sin(math.pi * u)
+		return { squash = 1 - 0.04 * u, wide = b, deep = b, see = Kept.WrapBlend, lean = 0 }
+	end
+	t -= T.yank
+	if t < T.fall then
+		local e = (t / T.fall) ^ 2 -- falling: slow off the body, fast at the bottom
+		return {
+			squash = 0.96 + (T.heap - 0.96) * e,
+			wide = 1 + (T.wide - 1) * e,
+			deep = 1 + (T.deep - 1) * e,
+			see = Kept.WrapBlend + (T.see - Kept.WrapBlend) * e,
+			lean = e,
+		}
+	end
+	t -= T.fall
+	if t < T.settle then
+		local s = math.sin(math.pi * t / T.settle)
+		return {
+			squash = T.heap * (1 - 0.3 * s),
+			wide = T.wide * (1 + 0.06 * s),
+			deep = T.deep * (1 + 0.06 * s),
+			see = T.see,
+			lean = 1,
+		}
+	end
+	t -= T.settle
+	local fade = if t <= T.rest then 0 else math.min((t - T.rest) / T.fade, 1)
+	return {
+		squash = T.heap,
+		wide = T.wide,
+		deep = T.deep,
+		see = T.see + (1 - T.see) * fade * fade,
+		lean = 1,
+	}
+end
+
+-- The wrap's tag (every one the server puts on, so screens find it however it streams in) and
+-- its attributes, set by the server: how many friends are holding Cut free on it now
+-- (`PullAttribute`), and once it's torn, when (`TornAttribute`, the server's clock), who it freed
+-- and who cut (`FreedAttribute`, `CutterAttribute`: UserIds, 0 for none) and which way round it
+-- lists (`LeanAttribute`, radians about the up axis from straight toward the door).
+Kept.WrapTag = "KeptWrap"
+Kept.PullAttribute = "KeptPull"
+Kept.TornAttribute = "KeptTorn"
+Kept.FreedAttribute = "KeptFreed"
+Kept.CutterAttribute = "KeptCutter"
+Kept.LeanAttribute = "KeptLean"
+
 --- Whether unit `u` can hold a kept player now.
 function Kept.free(u: Unit): boolean
 	return u.shut and not u.keeper and not u.holding

@@ -380,9 +380,10 @@ verified: a doc page, Studio, or "untested".
   `DoorOrigin.DoorButtons` (an Attachment: `WorldPosition`) and tap Open from the Client: caught in
   2.5 to 7 s (it freezes while the hall light is lit), Output names the unit you're kept in (at
   random). Look the floor's units up under `Workspace.DevCorridor.Floor1` (Two Unit109s, above).
-  To be let out alone, from a Server
+  To lift your door alone, from a Server
   `execute_luau`: `require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor).play(unit, "Open")`;
-  Doors hears the door's motion attribute change, so `changed` fires as from a press. The
+  Doors hears the door's motion attribute change, so `changed` fires as from a press. Since
+  L-07d that no longer lets you out: a cut does ("Testing Cut free from the MCP", below). The
   roaming Mannequin catches you again if you stand 6 studs in front of it (`Keeper` tag, its
   pivot's look). Dropped tools lie in `Workspace.Tools`; a tool's "Pick up" prompt sits on an
   Attachment outside its model (find the nearest prompt to the tool).
@@ -395,6 +396,27 @@ verified: a doc page, Studio, or "untested".
   (z -700); bang every 0.65 s from a Client loop while a Server sampler watches `KeeperState`
   for Going, and it comes (about 2.5 minutes in, from 54 studs). An anchored server Part tagged
   `TripsLights`, moved by CFrame in the hall, trips the motion light there.
+- **Testing Cut free from the MCP** (L-07d, 2026-11-10): get kept (above; `KeptIn.Value` is the
+  unit) and lift its door from the Server. One player can't cut themselves free, so a stand-in
+  friend: on the Server set your character's `Archivable` on, clone it, set it back off, strip
+  the clone's scripts, prompts, `KeptWrap` and `CutFree`, anchor its root, parent it to
+  Workspace, pivot it where a friend would stand, then
+  `ServerStorage.CutFreeTest:Invoke(player, clone, heldSeconds)`: it returns the refusal
+  (`Kept.CutRefusal`) or "Cut" and frees you as a real cut does (Studio only, server side).
+  Your own trigger goes through the real button: on the Client set
+  `ProximityPromptService.Enabled` true (your screen hides prompts while kept), point a
+  Scriptable camera at your root's `CutFree` attachment from 3 studs in front, wait a second,
+  `InputHoldBegin`, 1.15 s, `InputHoldEnd`: Output says it was refused (Self). A friend's hold
+  (the strain) needs two players; set the wrap's `KeptPull` to 1 from the Server to hear it.
+  Your own screen can't show your film before the tear (CaughtView hides it), so judge its
+  look on a client-side copy of `Props.KeptWrap` posed by `Kept.tearPose`. The Mannequin often
+  catches you again within seconds of the cut: re-read `KeptIn` before the next step.
+- **A game script can't read `SurfaceAppearance.ColorMap`** (L-07d, 2026-11-10, checked from a
+  LocalScript in Play): "The current thread cannot read 'ColorMap' (lacking capability
+  Plugin)". The command bar can, so a check from `execute_luau` passes and misleads. Its
+  `ColorMapContent` (a `Content`) reads fine: `.Uri` is "rbxassetid://...". A colour map's first
+  use as an image (a ParticleEmitter's `Texture`) printed "Asset content representation is being
+  generated" three times in one session, then loaded (`PreloadAsync` Success) and never again.
 - **`screen_capture` draws no BillboardGuis** (L-07c, 2026-11-10): not ours, nor a plain red
   80-point square on an Attachment in Terrain or on the head, `AlwaysOnTop`, while ScreenGuis
   draw. Check a billboard by its state (Enabled, Adornee, `WorldToViewportPoint` on screen) and
@@ -754,6 +776,15 @@ verified: a doc page, Studio, or "untested".
   -12 dB, centroid 1 to 2 kHz (the one used); "... 3" 9114200240 (2.25 s) is short bursts;
   Daily Sounds' "Tape Pull" 91534288572394 (1.16 s) one loud pull at 0.4 s; "Plastic Bag
   Handling Crunchy Cellophane 8" 9117409739 crunches 0.2 to 1.5 s, centroid near 1 kHz.
+- **Sounds measured for cutting free** (L-07d, 2026-11-10; Edit, AudioPlayer at half speed to
+  AudioAnalyzer, 50 ms bins, then a quarter speed and 20 ms for the chosen): Pro Sound Effects'
+  "Plastic Sheet Impacts Rips Paper Tears" 1 to 9 (9117624452, 4545, 4703, 4721, 4735, 4959,
+  4995, 4991, 9117625280): 2 is one snap at -4 dB gone by 0.15 s; 5 and 6 a steady 0.35 s tear
+  near 3 kHz at -15; 7 a long build with a hit at 1.75 s; 9 (the one used) silent to 0.31 s,
+  then a hard tear (peak -5 dB at 0.36 s) with bursts to 1.1 s at -10 to -25 dB RMS, centred 1
+  to 2 kHz. "Cloth Rip Zippy" 4 and 8 and "Cloth Rip Rapid 2" are nylon zips, 2 to 4 kHz.
+  "Plastic Bag Handling Crunchy Cellophane 8" 9117409739 crunches from 0.36 s at only -30 to -35
+  dB RMS (the heap's crunch, turned up).
 - **Bubble wrap's sounds, measured** (L-14b1, 2026-11-10; Edit, AudioPlayer at half speed to
   AudioAnalyzer, 50 ms bins): Pro Sound Effects' "Plastic Bubble Wrap Short Fluttering
   Movements" 12 9125745465 (2.2 s) starts at 0.2 s, crinkles at 0.25 and rustles to about 1 s; 11

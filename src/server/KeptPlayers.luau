@@ -21,15 +21,25 @@
 	and corner maps mark the unit however far off they are. They also get `Kept.InsideValue`, the
 	unit they're in, for their own screen's light under the door.
 
-	They're let out when their unit's door goes all the way up: the stand-in until L-07d's Cut
-	free; the film comes off and their unit's mark goes as they go. Leaving, dying or a new character lets them go too, as
-	does their floor going away. A
-	catch on a floor this doesn't know, or with no unit free, holds them through the wrap and lets
-	them go where they stand.
+	A friend lets them out (L-07d): with the unit's door all the way up, a Cut free button stands
+	on the film in front of the kept body (`Kept.CutUp`, `CutAhead`). While a friend holds it the
+	film strains (the wrap's `Kept.PullAttribute`, which every screen hears); when the hold lands
+	the server judges it (`Kept.cut`: not themselves, not kept, alive, in front of the unit or in
+	it and within reach, a full hold) and tears the film off: the wrap is unwelded, left anchored
+	where they stand with when it tore, who it freed and who cut (`Kept.TornAttribute` and the
+	rest), so every screen plays the rip and its slump to the ankles (CutFreeView), and is gone
+	once that's played. The door going up no longer lets anyone out. Leaving, dying or a new
+	character lets them go too, as does their floor going away. A catch on a floor this doesn't
+	know, or with no unit free, holds them through the wrap and lets them go where they stand.
+
+	In Studio only, `ServerStorage.CutFreeTest` (a BindableFunction, server-side, so no client
+	reaches it) judges a cut by any body, a stand-in friend for a one-player test:
+	`Invoke(keptPlayer, body, heldSeconds)` returns the refusal or "Cut" (docs/STUDIO.md).
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local ServerStorage = game:GetService("ServerStorage")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
@@ -41,6 +51,7 @@ local FloorBuilder = require(script.Parent.FloorBuilder)
 local Keepers = require(script.Parent.Keepers)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local KeptWrap = require(ReplicatedStorage.Shared.KeptWrap.Specs)
+local Prompts = require(script.Parent.Prompts)
 local Slots = require(script.Parent.Slots)
 local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
 
@@ -62,7 +73,9 @@ type Floor = {
 
 -- Someone kept: the character they were caught in, its root (anchored while kept), the unit
 -- they're stored in and its floor (nil when there was none), the film round them and the value
--- naming their unit once they're in it (`inside`), and when their last bang landed.
+-- naming their unit once they're in it (`inside`), and when their last bang landed. Once inside,
+-- their Cut free button (`prompt`, on `cutAt`), when each friend's hold on it began (the
+-- server's clock) and who is holding it now.
 type Held = {
 	character: Model,
 	root: BasePart,
@@ -72,7 +85,21 @@ type Held = {
 	value: ObjectValue?,
 	inside: boolean,
 	banged: number?,
+	cutAt: Attachment?,
+	prompt: ProximityPrompt?,
+	refuse: ((text: string) -> ())?,
+	began: { [Player]: number },
+	pulling: { [Player]: true },
 	gone: { RBXScriptConnection },
+}
+
+-- What a friend's Cut free shows when the server refuses one they could fix, in place of the kept
+-- friend's name for a moment. The rest (themselves, kept, down, the door shut) never offer the
+-- button at all.
+local CUT_FIX: { [string]: string } = {
+	Short = "Hold to cut",
+	Far = "Get closer",
+	Outside = "Get closer",
 }
 
 local function box(size: Vector3, centre: Vector3): Kept.Box
@@ -150,6 +177,7 @@ function KeptPlayers.new(): KeptPlayers
 	local random = Brix.Random.new({ seed = os.time() })
 	local warned = false
 	local bangRemote: RemoteEvent? = nil
+	local cutTest: BindableFunction? = nil
 
 	-- Puts `floor`'s marks on its model for every screen: the bangs still showing at `now`.
 	local function publishBangs(floor: Floor, now: number)
@@ -188,13 +216,42 @@ function KeptPlayers.new(): KeptPlayers
 		local weld = Instance.new("Weld")
 		weld.Part0, weld.Part1, weld.C0 = h.root, wrap, offset
 		weld.Parent = wrap
+		wrap:AddTag(Kept.WrapTag) -- so every screen finds it for the strain and the tear
 		wrap.Parent = h.character
 		h.wrap = wrap
 	end
 
+	-- Tears `h`'s film off `player`, cut free by `cutter` (a UserId, 0 for none): unwelded and left
+	-- standing where they stood, so every screen plays the rip and the slump (CutFreeView) from
+	-- when it tore; gone once that has played.
+	local function tear(h: Held, player: Player, cutter: number)
+		local wrap = h.wrap
+		if not wrap then
+			return
+		end
+		h.wrap = nil
+		wrap.Anchored = true
+		for _, j in wrap:GetChildren() do
+			if j:IsA("JointInstance") then
+				j:Destroy()
+			end
+		end
+		wrap:SetAttribute(Kept.PullAttribute, nil)
+		wrap:SetAttribute(Kept.FreedAttribute, player.UserId)
+		wrap:SetAttribute(Kept.CutterAttribute, cutter)
+		-- it lists toward the door, a little to one side or the other
+		wrap:SetAttribute(Kept.LeanAttribute, (random:nextNumber() - 0.5) * math.rad(70))
+		wrap:SetAttribute(Kept.TornAttribute, Workspace:GetServerTimeNow())
+		wrap.Parent = Workspace
+		task.delay(Kept.tearLength() + 0.5, function()
+			wrap:Destroy()
+		end)
+	end
+
 	-- Lets `player` go: their root free, the kept mark off (their screen opens up, keepers see
-	-- them again), their unit free for the next.
-	local function letGo(player: Player, why: string)
+	-- them again), their unit free for the next. Cut free (`cutter`, a UserId, 0 for none), the
+	-- film is torn off them; any other way it just goes.
+	local function letGo(player: Player, why: string, cutter: number?)
 		local h = held[player]
 		if not h then
 			return
@@ -206,8 +263,15 @@ function KeptPlayers.new(): KeptPlayers
 		if h.unit and holding[h.unit] == player then
 			holding[h.unit] = nil
 		end
+		if h.cutAt then
+			h.cutAt:Destroy() -- and its button
+		end
 		if h.wrap then
-			h.wrap:Destroy()
+			if cutter then
+				tear(h, player, cutter)
+			else
+				h.wrap:Destroy()
+			end
 		end
 		if h.value then
 			h.value:Destroy()
@@ -283,6 +347,142 @@ function KeptPlayers.new(): KeptPlayers
 		return FloorBuilder.face(unit) * CFrame.new(0, rootHeight, spec.Depth * Kept.Back)
 	end
 
+	-- Whether `h`'s door is all the way up: the only time their Cut free shows.
+	local function doorUp(h: Held): boolean
+		local d, unit = doors, h.unit
+		return d ~= nil and unit ~= nil and d:stateOf(unit) == "Open"
+	end
+
+	-- `h`'s film strains while friends hold Cut free on it: how many, for every screen to hear.
+	local function setPull(h: Held)
+		local wrap = h.wrap
+		if not wrap then
+			return
+		end
+		local n = 0
+		for _ in h.pulling do
+			n += 1
+		end
+		wrap:SetAttribute(Kept.PullAttribute, if n > 0 then n else nil)
+	end
+
+	-- What stops `body` (a friend's character; `cutter` its player, nil for Studio's stand-in)
+	-- cutting `kept` free now, after holding `heldFor` seconds: nil when nothing does
+	-- (`Kept.cut`). Places go into the kept unit's frame, its door's outer face at the floor.
+	local function judge(
+		kept: Player,
+		h: Held,
+		cutter: Player?,
+		body: Model?,
+		heldFor: number?
+	): Kept.CutRefusal?
+		local floor, unit, cutAt = h.floor, h.unit, h.cutAt
+		local found = body and body:FindFirstChild("HumanoidRootPart")
+		local root = if found and found:IsA("BasePart") then found else nil
+		local humanoid = body and body:FindFirstChildOfClass("Humanoid")
+		local at, cut, width, depth = { 0, 0, 0 }, { 0, 0, 0 }, 0, 0
+		if floor and unit and cutAt then
+			local spec = Specs[floor.deck.floor.slots[floor.slots[unit]].size]
+			local face = FloorBuilder.face(unit)
+			width, depth = spec.Width, spec.Depth
+			local c = face:PointToObjectSpace(cutAt.WorldPosition)
+			cut = { c.X, c.Y, c.Z }
+			if root then
+				local p = face:PointToObjectSpace(root.Position)
+				at = { p.X, p.Y, p.Z }
+			end
+		end
+		return Kept.cut({
+			self = cutter == kept or body == h.character,
+			alive = root ~= nil and humanoid ~= nil and humanoid.Health > 0,
+			kept = cutter ~= nil and Prompts.wrapped(cutter),
+			inside = h.inside and cutAt ~= nil,
+			open = doorUp(h),
+			held = heldFor,
+			at = at,
+			cut = cut,
+			width = width,
+			depth = depth,
+		})
+	end
+
+	-- Puts `player`'s Cut free button on the film in front of them, shown while their door is all
+	-- the way up. A friend's hold strains the film; when it lands the server judges it and, if
+	-- it stands, tears the film off and lets them go.
+	local function armCut(player: Player, h: Held)
+		local at = Instance.new("Attachment")
+		at.Name = "CutFree"
+		at.CFrame = CFrame.new(0, Kept.CutUp, -Kept.CutAhead)
+		at.Parent = h.root
+		local p = Prompts.make(at, {
+			objectText = player.DisplayName,
+			actionText = Kept.CutText,
+			key = Enum.KeyCode.E, -- Open's, which never shows on a door that's all the way up
+			pad = Enum.KeyCode.ButtonX,
+			reach = Kept.CutReach,
+			hold = Kept.CutHold,
+		})
+		p.Enabled = doorUp(h)
+		h.cutAt, h.prompt = at, p
+		h.refuse = Prompts.refuser(p, function()
+			return player.DisplayName
+		end)
+		table.insert(
+			h.gone,
+			p.PromptButtonHoldBegan:Connect(function(cutter: Player)
+				if held[player] ~= h or cutter == player or Prompts.wrapped(cutter) then
+					return
+				end
+				h.began[cutter] = Workspace:GetServerTimeNow()
+				h.pulling[cutter] = true
+				setPull(h)
+			end)
+		)
+		table.insert(
+			h.gone,
+			p.PromptButtonHoldEnded:Connect(function(cutter: Player)
+				local b = h.began[cutter]
+				-- a hold let go early never counts toward a later trigger
+				if b and Workspace:GetServerTimeNow() - b < Kept.CutHold - Kept.CutSlack then
+					h.began[cutter] = nil
+				end
+				if h.pulling[cutter] then
+					h.pulling[cutter] = nil
+					setPull(h)
+				end
+			end)
+		)
+		table.insert(
+			h.gone,
+			p.Triggered:Connect(function(cutter: Player)
+				if held[player] ~= h then
+					return
+				end
+				local b = h.began[cutter]
+				h.began[cutter] = nil
+				if h.pulling[cutter] then
+					h.pulling[cutter] = nil
+					setPull(h)
+				end
+				local heldFor = if b then Workspace:GetServerTimeNow() - b else nil
+				local why = judge(player, h, cutter, cutter.Character, heldFor)
+				if why then
+					local fix, refuse = CUT_FIX[why], h.refuse
+					if fix and refuse then
+						refuse(fix)
+					end
+					if RunService:IsStudio() then
+						print(
+							`KeptPlayers: {cutter.Name}'s Cut free on {player.Name} refused ({why})`
+						)
+					end
+					return
+				end
+				letGo(player, `{cutter.Name} cut them free`, cutter.UserId)
+			end)
+		)
+	end
+
 	local function onCaught(catch: Keepers.Catch)
 		local player = catch.player
 		if held[player] or not player.Parent then
@@ -308,6 +508,8 @@ function KeptPlayers.new(): KeptPlayers
 			unit = unit,
 			floor = if unit then floor else nil,
 			inside = false,
+			began = {},
+			pulling = {},
 			gone = {},
 		}
 		held[player] = h
@@ -360,6 +562,7 @@ function KeptPlayers.new(): KeptPlayers
 			character:PivotTo(to)
 			wrapUp(h)
 			h.inside = true
+			armCut(player, h)
 			local value = Instance.new("ObjectValue")
 			value.Name = Kept.InsideValue
 			value.Value = unit
@@ -401,13 +604,13 @@ function KeptPlayers.new(): KeptPlayers
 		end
 	end
 
+	-- A kept player's Cut free shows only while their door is all the way up.
 	local function onChanged(change: Doors.DoorChange)
-		if change.state ~= "Open" then
-			return
-		end
 		local player = holding[change.unit]
-		if player then
-			letGo(player, `{change.unit.Name}'s door went all the way up`)
+		local h = player and held[player]
+		local p = h and h.prompt
+		if p then
+			p.Enabled = change.state == "Open"
 		end
 	end
 
@@ -433,6 +636,14 @@ function KeptPlayers.new(): KeptPlayers
 			joins,
 			Players.PlayerRemoving:Connect(function(player: Player)
 				letGo(player, "left")
+				-- a friend who leaves mid-hold lets go of the film
+				for _, h in held do
+					h.began[player] = nil
+					if h.pulling[player] then
+						h.pulling[player] = nil
+						setPull(h)
+					end
+				end
 			end)
 		)
 		local folder = ReplicatedStorage:FindFirstChild(Caught.RemoteFolder)
@@ -446,6 +657,30 @@ function KeptPlayers.new(): KeptPlayers
 		remote.Parent = folder
 		bangRemote = remote
 		table.insert(joins, remote.OnServerEvent:Connect(onBang))
+		if RunService:IsStudio() then
+			-- a stand-in friend for a one-player test: judges a cut by any body
+			local test = Instance.new("BindableFunction")
+			test.Name = "CutFreeTest"
+			-- any: a BindableFunction's arguments, checked here
+			test.OnInvoke = function(kept: any, body: any, heldFor: any): string
+				local h = if typeof(kept) == "Instance" and kept:IsA("Player")
+					then held[kept]
+					else nil
+				if not h or typeof(body) ~= "Instance" or not body:IsA("Model") then
+					return "NotKept"
+				end
+				local why =
+					judge(kept, h, nil, body, if type(heldFor) == "number" then heldFor else nil)
+				if why then
+					print(`KeptPlayers: a stand-in's Cut free on {kept.Name} refused ({why})`)
+					return why
+				end
+				letGo(kept, `a stand-in, {body.Name}, cut them free`, 0)
+				return "Cut"
+			end
+			test.Parent = ServerStorage
+			cutTest = test
+		end
 	end
 
 	function system.stop(_: any)
@@ -464,6 +699,10 @@ function KeptPlayers.new(): KeptPlayers
 		if bangRemote then
 			bangRemote:Destroy()
 			bangRemote = nil
+		end
+		if cutTest then
+			cutTest:Destroy()
+			cutTest = nil
 		end
 	end
 

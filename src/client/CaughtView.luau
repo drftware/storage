@@ -11,8 +11,8 @@
 	door's thud and shake come back from the server. Presses faster than a bang can land wait for
 	the next (one held, as a fighting game buffers an input), so mashing hammers at the door's own
 	pace. They stay held, their body not turning with the camera, every prompt hidden, until the
-	server lets them out (`Kept.Attribute` cleared): then their walk, their turn and the prompts
-	come back. The film the server wraps
+	server lets them out (`Kept.Attribute` cleared, L-07d's Cut free): then their walk, their turn
+	and the prompts come back and the Bang button fades away. The film the server wraps
 	them in (L-07b) is for friends to see: on their own screen it's never drawn, so their view of
 	the dark inside stays clear.
 	Every number and the curves are `Caught`'s and `Kept`'s. The sting and its sounds are
@@ -278,6 +278,7 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 	local bound = false -- the Bang keys are bound
 	local lastBang: number? = nil -- os.clock of our last bang sent
 	local queued = false -- a press waiting for the next bang
+	local leaving = 0 -- seconds left of the Bang button fading as we're let out
 
 	-- Bangs now: the view jolts, the button springs, and the server is asked.
 	local function bang()
@@ -317,18 +318,25 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 		return Enum.ContextActionResult.Sink
 	end
 
-	-- Nothing of the catch left: the screen off, walk and turn back, prompts back.
+	-- Nothing of the catch left: the screen off, walk and turn back, prompts back. The Bang
+	-- button, if it was up, fades out over `Kept.BangOut` rather than snapping off.
 	local function finish()
 		since, awake = -1, -1
 		queued = false
+		local wasUp = bound
 		if bound then
 			bound = false
 			ContextActionService:UnbindAction(ACTION)
 		end
 		if screen then
 			screen.gui.Enabled = false
-			screen.bangGui.Enabled = false
-			showButton(screen, 0)
+			if wasUp and running then
+				leaving = Kept.BangOut
+			else
+				leaving = 0
+				screen.bangGui.Enabled = false
+				showButton(screen, 0)
+			end
 		end
 		if held then
 			letGo(held)
@@ -346,6 +354,11 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 		end
 		if screen then
 			screen.gui.Enabled = true
+			if leaving > 0 then
+				leaving = 0
+				screen.bangGui.Enabled = false
+				showButton(screen, 0)
+			end
 		end
 	end
 
@@ -411,6 +424,13 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 		end,
 		step = function(_: any, dt: number)
 			local s = screen
+			if leaving > 0 and s then
+				leaving = math.max(leaving - dt, 0)
+				showButton(s, leaving / Kept.BangOut)
+				if leaving == 0 then
+					s.bangGui.Enabled = false
+				end
+			end
 			if since >= 0 then
 				since += dt
 				local lifts = Caught.Dark + Caught.Hold

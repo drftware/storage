@@ -220,6 +220,153 @@ ok(#Kept.decodeBangs("") == 0, "no bangs reads as none")
 ok(#Kept.decodeBangs("x;3,1,2;0,1,2,3,4,5;2.5,1,1,1,1,1;4,1,nan,1,1,1") == 0, "junk reads as none")
 ok(#Kept.decodeBangs(Kept.encodeBangs({}, 0)) == 0, "an empty floor's text is empty")
 
+-- Cut free (L-07d): a friend at your open door, in reach, holding a full second, cuts you free;
+-- nobody else does. In a big unit (12 by 12) the kept body's root stands 62% of the way in, 3
+-- studs up; the cut point is a little up and out in front of it, toward the door.
+local M = { width = 12, depth = 12 }
+local S = { width = 8, depth = 8 }
+local function cutPoint(u: { width: number, depth: number }): { number }
+	return { 0, 3 + Kept.CutUp, u.depth * Kept.Back - Kept.CutAhead }
+end
+local function cut(
+	changes: { [string]: any }?,
+	u: { width: number, depth: number }?
+): Kept.Cut -- any: test overrides
+	local unitSize = u or M
+	local c: Kept.Cut = {
+		self = false,
+		alive = true,
+		kept = false,
+		inside = true,
+		open = true,
+		held = Kept.CutHold,
+		at = { 0, 3, 1 }, -- a stride inside the door, face on
+		cut = cutPoint(unitSize),
+		width = unitSize.width,
+		depth = unitSize.depth,
+	}
+	if changes then
+		for k, v in changes do
+			(c :: any)[k] = v -- any: a test's override of one field
+		end
+	end
+	return c
+end
+
+ok(Kept.cut(cut()) == nil, "a friend inside the open door who held a full second cuts you free")
+ok(Kept.cut(cut({ self = true })) == "Self", "never yourself")
+ok(Kept.cut(cut({ kept = true })) == "Kept", "never a friend who's kept too")
+ok(Kept.cut(cut({ alive = false })) == "Dead", "never a friend who's down")
+ok(Kept.cut(cut({ inside = false })) == "Away", "not while you're still in the black on the way")
+ok(Kept.cut(cut({ open = false })) == "Shut", "only with your door all the way up")
+local unheld = cut()
+unheld.held = nil
+ok(Kept.cut(unheld) == "Short", "a trigger with no hold is refused")
+ok(Kept.cut(cut({ held = 0.2 })) == "Short", "a quick tap is refused")
+ok(
+	Kept.cut(cut({ held = Kept.CutHold - Kept.CutSlack })) == nil,
+	"a hold whose start reached the server late still counts"
+)
+ok(
+	Kept.cut(cut({ held = Kept.CutHold - Kept.CutSlack - 0.01 })) == "Short",
+	"but not one cut any shorter"
+)
+-- where a friend may stand
+ok(Kept.cut(cut({ at = { 0, 3, 0 } })) == nil, "on the door's line, from a big unit's doorway")
+ok(Kept.cut(cut({ at = { 2.5, 3, -0.5 } })) == nil, "just out in the hall, off to one side")
+ok(Kept.cut(cut({ at = { 0, 3, 10 } })) == nil, "behind you, at the back wall")
+ok(Kept.cut(cut({ at = { 0, 3, -Kept.CutOut - 0.1 } })) == "Outside", "not from across the hall")
+ok(Kept.cut(cut({ at = { 6.5, 3, 7 } })) == "Outside", "not through the side wall, next door")
+ok(Kept.cut(cut({ at = { 0, 3, 12.5 } })) == "Outside", "not through the back wall")
+ok(Kept.cut(cut({ at = { 0, 13, 7 } })) == "Far", "not from up on the tops")
+ok(Kept.cut(cut({ at = { 0, 3, -2.9 } })) == "Far", "not from the far side of a stride out")
+-- the button shows within CutReach; the server takes a little more, never much more
+local c0 = cutPoint(M)
+local within = { 0, 3, c0[3] - math.sqrt(Kept.CutReach ^ 2 - Kept.CutUp ^ 2) }
+ok(Kept.cut(cut({ at = within })) == nil, "anywhere the button shows, the cut goes")
+local slack = Kept.CutReach + Kept.CutReachSlack
+local edge = { 0, 3, c0[3] - math.sqrt((slack - 0.01) ^ 2 - Kept.CutUp ^ 2) }
+ok(Kept.cut(cut({ at = edge })) == nil, "a friend who stepped back as it landed still cuts")
+ok(Kept.CutReachSlack <= 3, "the server's slack is a step, not a hall")
+-- the button reaches from the door's line into either size of unit, and from the hall into a small one
+local function dist(a: { number }, b: { number }): number
+	return math.sqrt((a[1] - b[1]) ^ 2 + (a[2] - b[2]) ^ 2 + (a[3] - b[3]) ^ 2)
+end
+ok(dist({ 0, 3, 0 }, cutPoint(M)) <= Kept.CutReach, "a big unit's button shows from its doorway")
+ok(dist({ 0, 3, -2 }, cutPoint(S)) <= Kept.CutReach, "a small one's from a step out in the hall")
+ok(
+	dist({ 0, 3, -Kept.CutOut }, cutPoint(M)) > Kept.CutReach,
+	"but not a big one's from across the hall"
+)
+ok(Kept.CutAhead < S.depth * Kept.Back, "the cut point is inside even a small unit")
+ok(Kept.CutHold >= 0.75 and Kept.CutHold <= 1.5, "about a second's hold")
+
+-- The strain under a friend's hold swells to full as the hold lands, and holds there.
+ok(near(Kept.pull(0), 0.35), "the strain starts quiet")
+ok(Kept.pull(Kept.CutHold / 2) > Kept.pull(0.1), "and swells")
+ok(Kept.pull(Kept.CutHold) == 1 and Kept.pull(5) == 1, "full as the hold lands")
+ok(
+	Kept.Pull.length / Kept.Pull.pitch >= Kept.CutHold + 0.5,
+	"the strain plays through a whole hold with time to spare"
+)
+ok(Kept.Rip.length >= 0.5, "the rip is a tear, not a click")
+ok(Kept.RipReach >= Kept.SquealReach, "heard down the hall, as far as the wrap going on")
+
+-- The freed player's view snaps open and eases back, ending exactly where it began.
+ok(Kept.widen(0) == 0 and Kept.widen(Kept.WidenIn + Kept.WidenOut) == 0, "it starts and ends shut")
+ok(near(Kept.widen(Kept.WidenIn), 1), "fully open almost at once")
+ok(Kept.widen(Kept.WidenIn / 2) > 0.6, "snapping open")
+ok(Kept.widen(Kept.WidenIn + Kept.WidenOut / 2) < 0.6, "easing back")
+ok(Kept.FreedKick > Kept.CutterKick, "the rip jolts the freed harder than the cutter")
+ok(Kept.FreedKick < 0.85, "but softer than the catch")
+
+-- The film comes off over a beat, never a vanish: it bulges, slumps down to the ankles, settles,
+-- lies there and fades out, every step joined to the last.
+local whole = Kept.tearPose(0)
+ok(
+	whole.squash == 1 and whole.wide == 1 and whole.deep == 1 and whole.see == Kept.WrapBlend,
+	"whole at the tear"
+)
+ok(Kept.tearPose(Kept.Tear.yank / 2).wide > 1.05, "it bulges as it's torn")
+local T = Kept.Tear
+local down = T.yank + T.fall
+ok(near(Kept.tearPose(down).squash, T.heap), "down at the ankles after the slump")
+ok(
+	Kept.tearPose(T.yank + T.fall / 4).squash > Kept.tearPose(T.yank + T.fall * 3 / 4).squash + 0.2,
+	"slumping"
+)
+local early = 0.96 - Kept.tearPose(T.yank + T.fall / 4).squash
+local late = Kept.tearPose(T.yank + T.fall * 3 / 4).squash - Kept.tearPose(down - 0.001).squash
+ok(late > early, "slow off the body, fast at the bottom, as a falling thing goes")
+ok(Kept.tearPose(down + T.settle / 2).squash < T.heap, "it squashes as it lands")
+ok(Kept.tearPose(down + T.settle + T.rest / 2).see < 0.5, "and lies there, still seen")
+ok(Kept.tearPose(Kept.tearLength()).see == 1, "then it's gone")
+ok(Kept.tearPose(100).see == 1, "and stays gone")
+local stepMax, seeDown, lowest, gap = 0, true, math.huge, 0
+local prev = Kept.tearPose(0)
+for i = 1, 400 do
+	local p = Kept.tearPose(Kept.tearLength() * i / 400)
+	stepMax = math.max(
+		stepMax,
+		math.abs(p.squash - prev.squash),
+		math.abs(p.wide - prev.wide),
+		math.abs(p.deep - prev.deep)
+	)
+	if p.see < prev.see - 1e-9 then
+		seeDown = false
+	end
+	lowest = math.min(lowest, p.squash)
+	gap = math.max(gap, math.abs(p.lean - prev.lean))
+	prev = p
+end
+ok(stepMax < 0.05, "no jump in its shape anywhere: a beat, not a vanish")
+ok(gap < 0.05, "nor in its lean")
+ok(seeDown, "it never comes back once it starts to clear")
+ok(lowest > 0.08, "it never squashes flat to nothing")
+local heap = Kept.tearPose(down + T.settle + T.rest / 2)
+ok(heap.wide < 1 and heap.deep > 1, "the heap gathers round the ankles, not the shoulders")
+ok(Kept.tearLength() >= 1.5 and Kept.tearLength() <= 3, "the whole beat is about two seconds")
+
 print(string.format("kept: %d checks, %d failures", checks, failures))
 if failures > 0 then
 	error("kept spec failed")

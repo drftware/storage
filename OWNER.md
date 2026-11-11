@@ -7,6 +7,38 @@ nowhere else.
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 
+## Now: judge L-07d, cut free (built Nov 10)
+
+Verified in Studio on seed 7, floor 1, alone (four catches by 157's Mannequin): lifting the kept
+unit's door no longer lets you out; a "Cut free" button with your name stands on the film in
+front of you only while the door is all the way up; your own trigger was refused, and so were a
+stand-in friend (a copy of my body, `docs/STUDIO.md`) holding too short, down, across the hall,
+next door through the wall, behind the back wall and up on the tops; from the doorway its cut
+went: the rip played, strips of film flew, the wrap slumped to a heap round the ankles by 0.6 s,
+crunched, faded by 2.2 s and was gone by 3 s; my view jolted and widened to 77 degrees and back;
+the Bang button faded off, buttons and walk came back. The strain under a hold played when the
+server marked a friend holding. Output clean. A real friend's hold (two players) and the sounds
+by ear are untested; the button's place at phone size is measured, not seen.
+- [ ] **The rescue** (Studio's Test > Clients and Servers, two players; get one kept by the
+  L-07a steps below). The other finds the unit, opens it all the way and steps into the doorway
+  facing the wrapped friend: "Cut free" with their name shows (E, X on a pad, a hold on a
+  phone). Hold it: for a second the film strains round them, louder as you hold; then it rips,
+  strips of film fly at you, the wrap drops down their body into a heap round their ankles,
+  crunches and fades. Their view jolts and opens up; yours jolts a little. Is it violent and a
+  relief? Is the rip loud enough, the strain right, one second right?
+- [ ] **The kept side.** As the one kept: you see nothing of your friend's hold, only hear the
+  strain; at the rip the film falls away past your eyes, the Bang button fades and you can walk.
+- [ ] **At phone size** (the Galaxy A16 view): with the door up, Close and Slam sit either side
+  of where Open was and Cut free shows in the middle, on your friend; nothing should overlap
+  (measured at 197 pixels apart at the closest).
+- [ ] **Decide, defaults in place** (D-099): (1) the hold is 1 s; (2) Cut free shows within 7
+  studs of the film in front of their chest: from the doorway of a big unit, a step out of a
+  small one; (3) no grace once you're free: in Studio the Mannequin saw me 48 studs off and
+  caught me again within seconds. Dead by Daylight gives an unhooked survivor a few seconds a
+  hit can't down them; say if you want a few seconds the keepers ignore you; (4) keepers don't
+  hear the rip (L-15 lists what they hear; a loud rescue that draws the keeper is the other
+  way). Numbers in `src/shared/Kept.luau`.
+
 ## Now: judge L-07c, banging (built Nov 10)
 
 Verified in Studio on seed 7, floor 1, alone: caught by 157's Mannequin and kept in 120, then 118,
@@ -78,12 +110,12 @@ phone, and getting out alone by Reset is untested.
   dark to tell you're in a unit until the light under the door comes (L-07c)?
 - [ ] **Your things drop.** Carry a tool when it catches you: it lies where you stood, and a
   friend can pick it up.
-- [ ] **Alone, Reset gets you out** (Esc, Reset Character): you come back at the spawn. Until
-  L-07d's Cut free, that's the only way out with nobody to open your door.
+- [ ] **Alone, Reset gets you out** (Esc, Reset Character): you come back at the spawn. With
+  nobody to cut you free (L-07d), that's the only way out.
 - [ ] **With a friend** (Studio's Test > Clients and Servers, two players): one gets caught; the
-  other reads the unit from Output, goes there and opens it. As the door reaches the top, the kept
-  one can walk out. The friend sees the kept one standing still inside (the wrap you see is
-  L-07b). Neither of you can hand the other a tool while one is kept.
+  other reads the unit from Output, goes there and opens it. The kept one stays held until the
+  friend cuts them free (L-07d, above). Neither of you can hand the other a tool while one is
+  kept.
 - [ ] **Untested bet: stored in a random unit, never the nearest.** It's the GDD's own twist on
   Dead by Daylight's hook, which hangs you close to where you fell. Is the search fun, or a chore
   until banging shows your unit (L-07c)?
@@ -91,8 +123,8 @@ phone, and getting out alone by Reset is untested.
   padlocked, no keeper in it, nobody kept in it, never the nearest, and one nobody has opened
   ahead of one that's been opened; (2) the unit you're kept in is never dealt, so a friend finds
   only you there (a note already in it stays); (3) you wake 62% of the way in, facing the door;
-  (4) a Bang button in the dark (L-07c, it replaced "Wait for a friend"); (5) the stand-in way out: your door all the
-  way up, by any friend's Open; (6) with no unit free (rare) you're held through the wrap and let
+  (4) a Bang button in the dark (L-07c, it replaced "Wait for a friend"); (5) the way out is a
+  friend's Cut free at your open door (L-07d; the door going up no longer does it); (6) with no unit free (rare) you're held through the wrap and let
   go where you stand. Numbers in `src/shared/Kept.luau`.
 
 ## Now: judge L-10, the minimap (built Nov 10)
