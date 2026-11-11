@@ -1,7 +1,9 @@
 --!strict
 --[[
-	DevCorridor: a Studio-only test hall of real storage units, for trying every door action with a
-	friend before the game's floors exist. The server's Host runs it only in Studio Play.
+	DevCorridor: a test hall of real storage units, for trying every door action with a friend
+	before the game's floors exist. The server's Host runs it on every server, Studio Play and live,
+	because its "Walk a floor" post is the only way into a climb until the lobby (L-08e) replaces
+	it (D-109).
 
 	Eight units face each other across an 8-stud hall that runs along X, numbered 101 to 108 (odd
 	numbers on one side) and painted in the four door colours; 105 and 108 start padlocked; no wall
@@ -721,8 +723,8 @@ local function build(lights: MotionLights.MotionLights): Folder?
 	spawn.CFrame = CFrame.new(SPAWN.Position.X, FLOOR_TOP + 0.1, SPAWN.Position.Z)
 	spawn.Parent = folder
 
-	-- This runs only in Play, on the Play copy of the place: the place itself keeps its baseplate
-	-- and spawn pad. The pad sits in the middle of the hall, so it goes too.
+	-- This runs only on a running server (Play, or live), on its copy of the place: the place itself
+	-- keeps its baseplate and spawn pad. The pad sits in the middle of the hall, so it goes too.
 	for _, d in Workspace:GetDescendants() do
 		if d:IsA("SpawnLocation") then
 			d:Destroy()

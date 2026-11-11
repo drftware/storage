@@ -6,6 +6,13 @@ nowhere else.
 ## Now
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
+- [ ] **Playing on your phone** (D-109): with Rojo connected, use File > Publish to Roblox (Save
+  alone doesn't change what live servers run), then play it from the Creator Hub on the phone.
+  You land in the test hall, as in Studio's Play; "Walk a floor" by the spawn starts the climb on
+  floor 3. Still the baseplate? Shut its servers down from the Creator Hub and join again, and
+  check its supported devices include Phone.
+- [ ] **Keep the experience private** until the lobby (L-08e) replaces the test hall: every
+  server builds the hall now, with its teleport posts, Mannequin post and the code in the log.
 
 ## Now: judge L-16a, in hand and caught (built Nov 11)
 

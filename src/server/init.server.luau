@@ -58,11 +58,11 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "climbs", system = Climbs.new() },
 	-- The climb's end: everyone kept or left, or the top; the results under it, and "Again".
 	{ slot = "climbEnds", system = ClimbEnds.new() },
+	-- The test hall and its "Walk a floor" post: the only way into a climb until the lobby
+	-- (L-08e) exists, so it runs on live servers too, for testing on phones (D-109). It must
+	-- give way to the lobby before the game goes public.
+	{ slot = "devCorridor", system = DevCorridor.new() },
 }
-if RunService:IsStudio() then
-	-- A test hall of real units to try the doors in. Never on a live server.
-	table.insert(systems, { slot = "devCorridor", system = DevCorridor.new() })
-end
 
 local host = Brix.Host.new({ systems = systems })
 host:start()

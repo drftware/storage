@@ -2,10 +2,13 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-11, session 96 (overnight run, 11 of up to 15) · **Checks:** green ·
+**Updated:** 2026-11-11, session 97 (a fix between tickets) · **Checks:** green ·
 **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
+- **Published places play now (D-109).** The test hall ran only in Studio, so a live server (or
+  Team Test) was just the baseplate. It runs on every server until the lobby (L-08e) replaces it.
+  Untested on a live server: the owner is publishing and playing on a phone (`OWNER.md`).
 - **L-16a done (D-108): in hand and caught.** One client `Joints` module finds and turns either
   kind of avatar joint (players' arms are `AnimationConstraint`s) for FlashlightView, HornView,
   CrawlView, LadderView and KneelView, so a friend's torch arm rises. A catch ends a climb or

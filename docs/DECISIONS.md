@@ -2790,3 +2790,20 @@ neither the place (about 18,000 instances searched, Roblox's own interface inclu
 nor Brix, and nothing the game does can silence it. 120448020095820 ("content representation is
 being generated") is the kept wrap's colour map in the place, still being processed after its
 upload; it didn't show in tonight's Plays.
+
+## D-109 The test hall runs on live servers until the lobby exists (Nov 11)
+
+The owner published the place to play it on a phone and got only the baseplate. Nothing was
+missing from the upload: the code and the imported art were all in the place. The test hall
+(`DevCorridor`) ran only when `RunService:IsStudio()`, and its "Walk a floor" post is the only
+thing that starts a climb (the "Again" after a climb's end restarts one, but only once one has
+run). So a live server, or a Team Test, built no hall, laid no floor and kept Roblox's baseplate
+and spawn pad. It now runs on every server, so a published place plays exactly as Studio's Play
+does: the hall, its test posts, "Walk a floor", the climb. The Studio-only test tools stay
+Studio-only (stand-ins, `CatchTest`, the ride hold, `DevFloorSeed` and `DevFloorNumber`, which
+no live player can set), so a live climb starts on seed 7, floor 3. Its posts (teleports, a
+Mannequin on demand) and the floor's code in the server log are fine for a private test place
+and wrong for a public game: the lobby (L-08e) replaces the hall as the way in on live servers,
+and the hall goes back to Studio only, before the game goes public. Not chosen: a bare live start
+that lays floor 1 and drops players in its lobby, which is the lobby's design (L-08e) built
+early, and would differ from what the owner tests in Studio.

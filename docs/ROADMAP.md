@@ -1033,6 +1033,8 @@ L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
     any of it before then). Friends gather and the climb starts on a short countdown once
     everyone's in, as DOORS' lobby elevators do: the smallest form of the GDD's lobby (your own
     lobby unit is Phase 2) and the stand-in `docs/FRAMEWORK.md` plans while ENG-13 is unbuilt.
+    Until it lands the test hall is the way in on live servers too (D-109); the lobby replaces
+    it there, and the test hall goes back to Studio only, before the game goes public.
 - [x] **L-15 Keepers hear the rest. Done Nov 11 (D-107).** The keypad, a dropped tool, the saw, a
   crawl, the ladder and a drop off or into a unit each reach a keeper as far as players hear them,
   as Lethal Company's Eyeless Dogs come to any noise. A sound on a unit's top carries out over its
