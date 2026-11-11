@@ -23,6 +23,43 @@ nowhere else.
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
 
+## Now: judge L-07c, banging (built Nov 10)
+
+Verified in Studio on seed 7, floor 1, alone: caught by 157's Mannequin and kept in 120, then 118,
+then 120; the Bang button came up in the dark; four quick Space presses gave three bangs 0.6 s
+apart (each jolted the door: `DoorMotion` read Bang), and the floor carried the mark; a script
+firing the remote every frame for 3 s (362 presses) landed 8 bangs, never closer than 0.40 s;
+the Mannequin, 54 studs off along the halls, heard a bang and came to stand at the door; a
+marker tripping the hall light outside lit a warm line under the door with a faint spill
+inside, dark again once it stopped; being let out cleared the mark. A friend's mark over the
+door can't be seen in Studio's captures (they draw no billboards), so its look is untested;
+the corner map's dot showed, held on the edge. Not heard by ear, not seen by a second player or
+on a phone.
+- [ ] **The moment, kept** (get caught: the L-07a steps below). In the dark a round Bang button
+  comes up low in the middle with "Click" under it (on a phone, big under your right thumb).
+  Click, tap Space or tap the button: your view jolts, then the door thuds and shakes. Mash it:
+  it hammers at two heavy thuds a second, never faster. Does hammering feel like hitting a steel
+  door? Is two a second right, or should it allow a faster frantic rattle?
+- [ ] **What friends see** (Team Test, two players): one gets kept and bangs. The other, anywhere
+  on the floor, should see a blue dot with the kept friend's name over that door, through the
+  walls, a ring going out from it at each bang; it fades about 8 s after the last bang, or at
+  once when they're let out. Near the door you hear the thud. On the corner map the unit gets a
+  bigger blue dot with a ring at each bang, held on the edge when it's off the window. Does it
+  read as "your friend is in there, go"? Too big, too small, wrong colour?
+- [ ] **A keeper hears it.** Bang while the Mannequin roams within about 70 studs of hall: Output
+  says it heard the door bang and it comes to stand outside. Is that the right risk (friends
+  coming to free you meet it there)?
+- [ ] **The light under the door.** Kept, wait in the dark while a friend walks past outside:
+  the hall's motion light trips and a thin warm line shows under the door, with a faint glow on
+  the floor; it goes as the light goes off. The Mannequin doesn't trip lights, so it passes in
+  the dark. Does the line read as someone out there? Too bright, too faint?
+- [ ] **Decide, defaults in place** (D-097): (1) a kept friend's own blue dot leaves the corner
+  map, so friends find them by their banging, not by the dot (the GDD's "friends have to look");
+  (2) your torch keeps working while you're wrapped and lights the unit (the ticket's question:
+  say if being wrapped should put it out, so the dark and the line under the door matter more);
+  (3) the mark lasts 8 s after the last bang; (4) a keeper hears a kept player's bang as far as a
+  trapped keeper's (70 studs along the halls). Numbers in `src/shared/Kept.luau`.
+
 ## Now: judge L-07b, the wrap you can see and hear (built Nov 10)
 
 Verified in Studio on seed 7, floor 1, alone: caught twice; the film went on in the black, fitted
@@ -70,7 +107,7 @@ phone, and getting out alone by Reset is untested.
   padlocked, no keeper in it, nobody kept in it, never the nearest, and one nobody has opened
   ahead of one that's been opened; (2) the unit you're kept in is never dealt, so a friend finds
   only you there (a note already in it stays); (3) you wake 62% of the way in, facing the door;
-  (4) "Wait for a friend" until L-07c's Bang button; (5) the stand-in way out: your door all the
+  (4) a Bang button in the dark (L-07c, it replaced "Wait for a friend"); (5) the stand-in way out: your door all the
   way up, by any friend's Open; (6) with no unit free (rare) you're held through the wrap and let
   go where you stand. Numbers in `src/shared/Kept.luau`.
 
@@ -93,6 +130,7 @@ window; the torch and jump buttons stayed clear. Not yet seen on a real phone or
   you opened yourself.
 - [ ] **Friends** (Team Test, two players): your friend is a blue dot where they stand, held on
   the window's edge (paler) when they're out of it; their walking fills in nothing on your map.
+  While they're kept their dot leaves the map (L-07c: they're found by banging).
 - [ ] **The player list is off** (a default): Roblox's list of players (Tab on a computer) would
   open over the map, so it's hidden. Say if you want it back somewhere.
 

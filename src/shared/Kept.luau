@@ -26,11 +26,101 @@ Kept.Attribute = "Kept"
 -- door fills your view and the dark sits between you and it, and off the back wall.
 Kept.Back = 0.62
 
--- The line on a kept player's screen once they wake inside, until they're let out: what to do
--- now, in few words (L-07c makes it the Bang button's).
-Kept.Hint = "Wait for a friend"
--- Seconds the line takes to come up once the screen has opened on the inside.
-Kept.HintIn = 1
+-- Banging (L-07c): alone in the dark, wrapped, you hammer on your door. Down the hall your
+-- friends hear it thud and see which door, and so might a keeper. Dead by Daylight's hook is the
+-- precedent: everyone sees where you hang, and a teammate comes.
+
+-- Where a kept player's press reaches the server: ReplicatedStorage.Remotes.Bang. It carries
+-- nothing; the server knows who's kept and where.
+Kept.BangRemote = "Bang"
+-- Seconds between bangs that land: the door's own jolt (0.5 s, `Motion`) plays out whole each
+-- time, so mashing the button gives two heavy thuds a second, never a rattle.
+Kept.BangEvery = 0.55
+-- Seconds of that gap the server forgives: presses sent a full gap apart can arrive closer on a
+-- jittery connection. Anything faster is a spam and is refused.
+Kept.BangSlack = 0.15
+-- Seconds each bang marks your unit on friends' screens and the corner map: long enough for a
+-- friend mid-hall to look up, find it and set off. The last `BangFade` of it fades out.
+Kept.BangMark = 8
+Kept.BangFade = 2
+-- How hard each press jolts your own view, at once; the door's own shake follows with its thud.
+Kept.BangKick = 0.14
+-- Seconds the Bang button takes to come up once the screen has opened on the inside.
+Kept.BangIn = 1
+-- A keeper hears a kept player's bang as far as it hears a trapped keeper's: the same door's
+-- thud (DoorSound's Bang, 70 studs along the halls, D-092's hearing).
+
+-- On a laid floor's model (the one the corner map reads, `Minimap.Tag`), from the server: its
+-- units' latest bangs (`encodeBangs`), so every screen marks them however far off they are.
+Kept.BangsAttribute = "KeptBangs"
+-- Under a kept player, from the server once they're inside their unit: an ObjectValue holding
+-- it, so their own screen can draw the hall's light under its door.
+Kept.InsideValue = "KeptIn"
+
+-- One unit's latest bang: its slot on the floor (what the corner map names it by), who banged
+-- (a UserId), when (the server's clock) and where its door's outer face meets the floor.
+export type Bang = { slot: number, user: number, at: number, x: number, y: number, z: number }
+
+--- Whether a bang may land at `now` after the last one at `last` (nil: none yet). `slack` (the
+--- server's `BangSlack`) forgives a little; a screen asks with none, so it never sends early.
+function Kept.ready(last: number?, now: number, slack: number?): boolean
+	return last == nil or now - last >= Kept.BangEvery - (slack or 0)
+end
+
+--- How strongly a unit is marked `since` seconds after its latest bang: 1, then fading to 0
+--- over the last `BangFade` of `BangMark`. A clock a little behind the server's reads as fresh.
+function Kept.mark(since: number): number
+	if since >= Kept.BangMark then
+		return 0
+	end
+	return math.clamp((Kept.BangMark - since) / Kept.BangFade, 0, 1)
+end
+
+--- The bangs still marking units at `now`, as text for the floor's attribute, in slot order:
+--- `slot,user,at,x,y,z` joined by `;`.
+function Kept.encodeBangs(bangs: { [number]: Bang }, now: number): string
+	local slots: { number } = {}
+	for slot, b in bangs do
+		if Kept.mark(now - b.at) > 0 then
+			table.insert(slots, slot)
+		end
+	end
+	table.sort(slots)
+	local parts: { string } = {}
+	for _, slot in slots do
+		local b = bangs[slot]
+		table.insert(
+			parts,
+			string.format("%d,%d,%.2f,%.1f,%.1f,%.1f", b.slot, b.user, b.at, b.x, b.y, b.z)
+		)
+	end
+	return table.concat(parts, ";")
+end
+
+--- The bangs in `text` (`encodeBangs`'), skipping any that don't read.
+function Kept.decodeBangs(text: string): { Bang }
+	local out: { Bang } = {}
+	for _, part in string.split(text, ";") do
+		local f = string.split(part, ",")
+		if #f == 6 then
+			local n: { number } = {}
+			for i = 1, 6 do
+				local v = tonumber(f[i])
+				if v == nil or v ~= v then
+					break
+				end
+				n[i] = v
+			end
+			if #n == 6 and n[1] >= 1 and n[1] % 1 == 0 then
+				table.insert(
+					out,
+					{ slot = n[1], user = n[2], at = n[3], x = n[4], y = n[5], z = n[6] }
+				)
+			end
+		end
+	end
+	return out
+end
 
 -- A unit as the choice sees it: where it stands on the floor (x, z: any one frame, the catch's
 -- too), whether its door is all the way down and not padlocked (`shut`), whether anyone has seen

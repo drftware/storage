@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Brix = require(ReplicatedStorage.Brix)
+local BangMarks = require(script.BangMarks)
 local BehindDoors = require(script.BehindDoors)
 local CameraShake = require(script.CameraShake)
 local CaughtView = require(script.CaughtView)
@@ -31,6 +32,7 @@ local LadderView = require(script.LadderView)
 local NoteView = require(script.NoteView)
 local SawView = require(script.SawView)
 local ToolView = require(script.ToolView)
+local UnderDoor = require(script.UnderDoor)
 local UnitLights = require(script.UnitLights)
 local Wrap = require(ReplicatedStorage.Shared.Tools.Wrap)
 local WrapView = require(script.WrapView)
@@ -62,6 +64,8 @@ local host = Brix.Host.new({
 		{ slot = "caughtView", system = CaughtView.new(kick) },
 		{ slot = "chaseMusic", system = ChaseMusic.new() },
 		{ slot = "keptSqueal", system = KeptSqueal.new() },
+		{ slot = "bangMarks", system = BangMarks.new() },
+		{ slot = "underDoor", system = UnderDoor.new() },
 		{ slot = "noteView", system = NoteView.new() },
 		{ slot = "flashlightView", system = flashlightView },
 		{ slot = "toolView", system = toolView },

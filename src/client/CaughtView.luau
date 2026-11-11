@@ -5,9 +5,14 @@
 	(CameraShake), the screen drops half dark at once and closes to black, "Caught" comes up in the
 	dark through the 2-second wrap, and they can't move. In the black the server stores them in a
 	unit (KeptPlayers), so the screen opens on its dark inside, facing the door (the game is
-	always first person), and "Wait for a friend" comes up. They stay held, their body not turning
-	with the camera, every prompt hidden, until the server lets them out (`Kept.Attribute`
-	cleared): then their walk, their turn and the prompts come back. The film the server wraps
+	always first person), and a big Bang button comes up (L-07c): on a phone under the right
+	thumb, elsewhere low in the middle with its key under it (a click, Space, a gamepad's A or R2).
+	Each press jolts the view at once and asks the server to bang the door (`Remotes.Bang`); the
+	door's thud and shake come back from the server. Presses faster than a bang can land wait for
+	the next (one held, as a fighting game buffers an input), so mashing hammers at the door's own
+	pace. They stay held, their body not turning with the camera, every prompt hidden, until the
+	server lets them out (`Kept.Attribute` cleared): then their walk, their turn and the prompts
+	come back. The film the server wraps
 	them in (L-07b) is for friends to see: on their own screen it's never drawn, so their view of
 	the dark inside stays clear.
 	Every number and the curves are `Caught`'s and `Kept`'s. The sting and its sounds are
@@ -15,9 +20,12 @@
 
 	It steps only while a catch is on the screen or they're kept.
 ]]
+local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
@@ -26,16 +34,33 @@ local Kept = require(ReplicatedStorage.Shared.Kept)
 
 -- The headline's size (pixels), as the gate's "Going up" (GateClock).
 local HEADLINE_SIZE = 34
--- The hint's size (pixels): read at a glance, smaller than a headline.
-local HINT_SIZE = 22
+
+-- The Bang button: the horn's round button, bigger, as the one thing to do in the dark.
+local ACTION = "KeptBang"
+local INK = Color3.fromRGB(232, 226, 214) -- the buttons' warm off-white
+local BUTTON_SEE = 0.45 -- its dark background's transparency, fully in
+local RING_SEE = 0.35 -- its ring's
+local PHONE_SIDE = 0.27 -- on a phone, its side as a share of the screen's height: a thumb's pad
+local PHONE_MIN, PHONE_MAX = 96, 140 -- points
+local PHONE_EDGE = 0.045 -- of the screen's width, in from the right and up from the bottom
+local DESK_SIDE = 0.14 -- elsewhere, a share of the height: a target to read, not to thumb
+local DESK_MIN, DESK_MAX = 76, 104
+local BUTTON_LOW = 0.76 -- elsewhere, its foot as a share of the screen's height: its key clear of the slots' bar
+local CAPTION_SIZE = 18
+local PRESS = TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+local PRESSED = 0.84 -- the button's scale at a press, springing back
 
 type Screen = {
 	gui: ScreenGui,
 	black: Frame,
 	headline: TextLabel,
 	stroke: UIStroke,
-	hint: TextLabel,
-	hintStroke: UIStroke,
+	bangGui: ScreenGui, -- its own, within the phone's safe area, over the black
+	holder: Frame, -- the button and its key under it, placed together
+	button: TextButton,
+	ring: UIStroke,
+	pop: UIScale,
+	caption: TextLabel,
 }
 
 local function makeScreen(parent: Instance): Screen
@@ -77,17 +102,105 @@ local function makeScreen(parent: Instance): Screen
 		return l, stroke
 	end
 	local headline, stroke = label("Headline", HEADLINE_SIZE, 0.45, "Caught")
-	-- low on the screen, clear of the thumbs' buttons' height, over the dark of the door
-	local hint, hintStroke = label("Hint", HINT_SIZE, 0.78, Kept.Hint)
 	gui.Parent = parent
+
+	local bangGui = Instance.new("ScreenGui")
+	bangGui.Name = "Bang"
+	bangGui.ResetOnSpawn = false
+	bangGui.DisplayOrder = 31
+	bangGui.Enabled = false
+	local holder = Instance.new("Frame")
+	holder.Name = "Bang"
+	holder.BackgroundTransparency = 1
+	holder.Parent = bangGui
+	local button = Instance.new("TextButton")
+	button.Name = "Button"
+	button.Size = UDim2.fromScale(1, 1)
+	button.AutoButtonColor = false
+	button.BackgroundColor3 = Color3.new(0, 0, 0)
+	button.Font = Enum.Font.GothamBold
+	button.Text = "Bang"
+	button.TextColor3 = INK
+	button.TextScaled = true
+	button.Parent = holder
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0.5, 0)
+	corner.Parent = button
+	local pad = Instance.new("UIPadding")
+	pad.PaddingLeft, pad.PaddingRight = UDim.new(0.2, 0), UDim.new(0.2, 0)
+	pad.PaddingTop, pad.PaddingBottom = UDim.new(0.33, 0), UDim.new(0.33, 0)
+	pad.Parent = button
+	local ring = Instance.new("UIStroke")
+	ring.Color = INK
+	ring.Thickness = 3
+	ring.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	ring.Parent = button
+	local pop = Instance.new("UIScale")
+	pop.Parent = button
+	-- the key, under the button where there's no thumb to press it (beside the button, not in
+	-- it: the button's padding would pull it inside)
+	local caption = Instance.new("TextLabel")
+	caption.Name = "Key"
+	caption.AnchorPoint = Vector2.new(0.5, 0)
+	caption.Position = UDim2.new(0.5, 0, 1, 6)
+	caption.Size = UDim2.fromOffset(160, CAPTION_SIZE + 6)
+	caption.BackgroundTransparency = 1
+	caption.FontFace = Font.fromEnum(Enum.Font.BuilderSansBold)
+	caption.TextSize = CAPTION_SIZE
+	caption.TextColor3 = INK
+	caption.Parent = holder
+	bangGui.Parent = parent
 	return {
 		gui = gui,
 		black = black,
 		headline = headline,
 		stroke = stroke,
-		hint = hint,
-		hintStroke = hintStroke,
+		bangGui = bangGui,
+		holder = holder,
+		button = button,
+		ring = ring,
+		pop = pop,
+		caption = caption,
 	}
+end
+
+-- The Bang button's place and size for this screen: under the right thumb on a phone, low in
+-- the middle elsewhere, with its key under it.
+local function placeButton(s: Screen, touch: boolean)
+	local camera = Workspace.CurrentCamera
+	local view = if camera then camera.ViewportSize else Vector2.new(1280, 720)
+	local b = s.holder
+	if touch then
+		local side = math.clamp(math.round(view.Y * PHONE_SIDE), PHONE_MIN, PHONE_MAX)
+		local edge = math.round(view.X * PHONE_EDGE)
+		b.AnchorPoint = Vector2.new(1, 1)
+		b.Position = UDim2.new(1, -edge, 1, -edge)
+		b.Size = UDim2.fromOffset(side, side)
+	else
+		local side = math.clamp(math.round(view.Y * DESK_SIDE), DESK_MIN, DESK_MAX)
+		b.AnchorPoint = Vector2.new(0.5, 1)
+		b.Position = UDim2.fromScale(0.5, BUTTON_LOW)
+		b.Size = UDim2.fromOffset(side, side)
+	end
+end
+
+-- The key under the button for the input in use: none for a thumb.
+local function keyFor(input: Enum.UserInputType): string
+	if input == Enum.UserInputType.Touch then
+		return ""
+	elseif string.find(input.Name, "Gamepad") then
+		return "A"
+	end
+	return "Click"
+end
+
+-- The button's look `level` of the way in (0 out, 1 in).
+local function showButton(s: Screen, level: number)
+	local out = 1 - level
+	s.button.BackgroundTransparency = BUTTON_SEE + (1 - BUTTON_SEE) * out
+	s.button.TextTransparency = out
+	s.ring.Transparency = RING_SEE + (1 - RING_SEE) * out
+	s.caption.TextTransparency = out
 end
 
 -- Who's held still, and their own walk, jump and turn to give back. Held by the Humanoid's own
@@ -160,13 +273,62 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 	local wrap: BasePart? = nil -- the film round us while we're kept, once it's on
 	local running = false
 	local connections: { RBXScriptConnection } = {}
+	local bangRemote: RemoteEvent? = nil
+	local touch = false
+	local bound = false -- the Bang keys are bound
+	local lastBang: number? = nil -- os.clock of our last bang sent
+	local queued = false -- a press waiting for the next bang
+
+	-- Bangs now: the view jolts, the button springs, and the server is asked.
+	local function bang()
+		lastBang, queued = os.clock(), false
+		local r = bangRemote
+		if r then
+			r:FireServer()
+		end
+		kick(Kept.BangKick)
+		local s = screen
+		if s then
+			s.pop.Scale = PRESSED
+			TweenService:Create(s.pop, PRESS, { Scale = 1 }):Play()
+		end
+	end
+
+	-- A press of the button or a key: it bangs if a bang can land now, else waits for the next.
+	local function press()
+		if not (kept and since < 0 and awake >= 0) then
+			return
+		end
+		if Kept.ready(lastBang, os.clock()) then
+			bang()
+		else
+			queued = true
+		end
+	end
+
+	local function onAction(
+		_: string,
+		state: Enum.UserInputState,
+		_input: InputObject
+	): Enum.ContextActionResult
+		if state == Enum.UserInputState.Begin then
+			press()
+		end
+		return Enum.ContextActionResult.Sink
+	end
 
 	-- Nothing of the catch left: the screen off, walk and turn back, prompts back.
 	local function finish()
 		since, awake = -1, -1
+		queued = false
+		if bound then
+			bound = false
+			ContextActionService:UnbindAction(ACTION)
+		end
 		if screen then
 			screen.gui.Enabled = false
-			screen.hint.TextTransparency, screen.hintStroke.Transparency = 1, 1
+			screen.bangGui.Enabled = false
+			showButton(screen, 0)
 		end
 		if held then
 			letGo(held)
@@ -208,7 +370,28 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 		name = "CaughtView",
 		start = function(_: any, _context: Brix.Context)
 			running = true
-			screen = makeScreen(player:WaitForChild("PlayerGui"))
+			local s = makeScreen(player:WaitForChild("PlayerGui"))
+			screen = s
+			touch = UserInputService.TouchEnabled
+			placeButton(s, touch)
+			showButton(s, 0)
+			s.caption.Text = keyFor(UserInputService:GetLastInputType())
+			table.insert(connections, s.button.Activated:Connect(press))
+			table.insert(
+				connections,
+				UserInputService.LastInputTypeChanged:Connect(function(input: Enum.UserInputType)
+					s.caption.Text = keyFor(input)
+				end)
+			)
+			local camera = Workspace.CurrentCamera
+			if camera then
+				table.insert(
+					connections,
+					camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+						placeButton(s, touch)
+					end)
+				)
+			end
 			table.insert(
 				connections,
 				player:GetAttributeChangedSignal(Kept.Attribute):Connect(onKept)
@@ -219,6 +402,10 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 				local remote = folder and folder:WaitForChild(Caught.Remote, 30)
 				if running and remote and remote:IsA("RemoteEvent") then
 					table.insert(connections, remote.OnClientEvent:Connect(onCaught))
+				end
+				local bangs = folder and folder:WaitForChild(Kept.BangRemote, 30)
+				if running and bangs and bangs:IsA("RemoteEvent") then
+					bangRemote = bangs
 				end
 			end)
 		end,
@@ -259,15 +446,33 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 				end
 			end
 			if since < 0 and kept and s then
-				-- awake inside: the black gone, "Wait for a friend" coming up
+				-- awake inside: the black gone, the Bang button coming up
 				if awake < 0 then
 					awake = 0
 				end
+				if not bound then
+					bound = true
+					s.bangGui.Enabled = true
+					ContextActionService:BindActionAtPriority(
+						ACTION,
+						onAction,
+						false,
+						Enum.ContextActionPriority.High.Value,
+						Enum.UserInputType.MouseButton1,
+						Enum.KeyCode.Space,
+						Enum.KeyCode.ButtonA,
+						Enum.KeyCode.ButtonR2
+					)
+				end
+				if awake <= Kept.BangIn then
+					s.black.BackgroundTransparency = 1
+					s.headline.TextTransparency, s.stroke.Transparency = 1, 1
+					showButton(s, math.min((awake + dt) / Kept.BangIn, 1))
+				end
 				awake += dt
-				s.black.BackgroundTransparency = 1
-				s.headline.TextTransparency, s.stroke.Transparency = 1, 1
-				local clear = 1 - math.min(awake / Kept.HintIn, 1)
-				s.hint.TextTransparency, s.hintStroke.Transparency = clear, clear
+				if queued and Kept.ready(lastBang, os.clock()) then
+					bang()
+				end
 			end
 		end,
 		stop = function(_: any)
@@ -279,6 +484,7 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 			finish()
 			if screen then
 				screen.gui:Destroy()
+				screen.bangGui:Destroy()
 				screen = nil
 			end
 		end,

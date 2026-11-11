@@ -10,6 +10,11 @@
 	as Lethal Company's ship radar shows the crew (`Minimap.Friends`, D-091). Never keepers or
 	lit lights: that's the office light board's job.
 
+	A friend kept in a unit drops off the map (L-07c): they're found by their banging. Each bang
+	(`Kept.BangsAttribute`, from KeptPlayers) puts a bigger blue dot on their unit with a ring
+	going out from it, held on the edge the way it lies while it's off the window, as the car's
+	mark is; it fades `Kept.BangMark` seconds after the last bang, as BangMarks' mark over the door.
+
 	Each floor's map comes from its model (`Minimap.Tag`, from `Minimaps` on the server) and is
 	drawn the first time you stand on it; what you walked stays drawn if you're caught or leave and
 	come back. Each frame it only reads where you stand, unless a map shows.
@@ -23,6 +28,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Kept = require(ReplicatedStorage.Shared.Kept)
 local Minimap = require(ReplicatedStorage.Shared.Minimap)
 local MinimapDrawing = require(script.Parent.MinimapDrawing)
 
@@ -38,6 +44,9 @@ local FRIEND = Color3.fromRGB(110, 186, 255)
 local FRIEND_SIZE = 8
 local FRIEND_HELD = 0.35 -- a friend held on the edge shows this see-through, a step back
 local CAR_MARK = Color3.fromRGB(236, 184, 62)
+local BANG_SIZE = 11 -- points: a kept friend's banging unit, a step bigger than a friend's dot
+local BANG_RING = 3 -- a bang's ring grows to this many dots across
+local BANG_RING_TIME = 0.75 -- seconds, as the mark over the door
 local CAR_SIZE = 10
 local EDGE = 7 -- points in from the window's edge a held marker sits
 local MOVED = 0.5 -- studs you move before the map checks which hall you're on again
@@ -53,6 +62,20 @@ type Area = {
 	carX: number, -- the car's middle, on the floor
 	carZ: number,
 	watch: RBXScriptConnection,
+	bangs: { Kept.Bang }, -- its units' latest bangs, from the server
+	bangWatch: RBXScriptConnection,
+	units: { [number]: Vector2 }, -- each unit's middle on the floor, by slot
+}
+
+-- A banging unit's dot on the window, with the ring each bang sends out.
+type BangDot = {
+	dot: Frame,
+	rim: UIStroke,
+	ring: Frame,
+	ringStroke: UIStroke,
+	at: number, -- the bang it last rang for (the server's clock)
+	rang: number, -- os.clock of its ring, or -1
+	seen: boolean, -- still on the list this frame
 }
 
 local MinimapView = {}
@@ -142,6 +165,45 @@ function MinimapView.new(): Brix.System
 	carMark.Parent = window
 	local carHeld = false
 
+	-- kept friends' banging units, by slot, on the floor shown
+	local bangDots: { [number]: BangDot } = {}
+
+	local function bangDot(): BangDot
+		local halo = dot(BANG_SIZE, CAR_MARK, 5)
+		halo.Name = "BangRing"
+		halo.BackgroundTransparency = 1
+		local haloStroke = Instance.new("UIStroke")
+		haloStroke.Color = FRIEND
+		haloStroke.Thickness = 2
+		haloStroke.Transparency = 1
+		haloStroke.Parent = halo
+		halo.Parent = window
+		local d = dot(BANG_SIZE, FRIEND, 5)
+		d.Name = "Banging"
+		local outline = Instance.new("UIStroke")
+		outline.Color = YOU
+		outline.Thickness = 1.5
+		outline.Parent = d
+		d.Parent = window
+		return {
+			dot = d,
+			rim = outline,
+			ring = halo,
+			ringStroke = haloStroke,
+			at = -math.huge,
+			rang = -1,
+			seen = false,
+		}
+	end
+
+	local function clearBangs()
+		for slot, b in bangDots do
+			b.dot:Destroy()
+			b.ring:Destroy()
+			bangDots[slot] = nil
+		end
+	end
+
 	local function fadeMark(on: boolean)
 		if on == carHeld then
 			return
@@ -200,6 +262,7 @@ function MinimapView.new(): Brix.System
 		if was and was.drawing then
 			was.drawing.canvas.Visible = false
 		end
+		clearBangs()
 		shown = a
 		lastX = math.huge
 		if not a then
@@ -235,6 +298,17 @@ function MinimapView.new(): Brix.System
 			return
 		end
 		local car = map.pieces[map.elevator].rects[1]
+		local units: { [number]: Vector2 } = {}
+		for _, u in map.units do
+			units[u.slot] = Vector2.new((u.rect.x0 + u.rect.x1) / 2, (u.rect.z0 + u.rect.z1) / 2)
+		end
+		local function readBangs()
+			local now = areas[model]
+			if now then
+				local said = model:GetAttribute(Kept.BangsAttribute)
+				now.bangs = if type(said) == "string" then Kept.decodeBangs(said) else {}
+			end
+		end
 		local a: Area = {
 			model = model,
 			map = map,
@@ -249,9 +323,13 @@ function MinimapView.new(): Brix.System
 					readOpened(now)
 				end
 			end),
+			bangs = {},
+			bangWatch = model:GetAttributeChangedSignal(Kept.BangsAttribute):Connect(readBangs),
+			units = units,
 		}
 		areas[model] = a
 		readOpened(a)
+		readBangs()
 	end
 
 	local function removed(model: Instance)
@@ -261,6 +339,7 @@ function MinimapView.new(): Brix.System
 		end
 		areas[model] = nil
 		a.watch:Disconnect()
+		a.bangWatch:Disconnect()
 		if shown == a then
 			show(nil)
 		end
@@ -399,9 +478,56 @@ function MinimapView.new(): Brix.System
 			carMark.Position = UDim2.fromOffset(half + cx, half + cy)
 		end
 
+		-- kept friends' units, as they bang
+		local now = Workspace:GetServerTimeNow()
+		local clock = os.clock()
+		for _, b in bangDots do
+			b.seen = false
+		end
+		for _, bang in a.bangs do
+			local level = Kept.mark(now - bang.at)
+			local at = a.units[bang.slot]
+			if bang.user == me.UserId or level <= 0 or not at then
+				continue
+			end
+			local b = bangDots[bang.slot]
+			if not b then
+				b = bangDot()
+				bangDots[bang.slot] = b
+			end
+			b.seen = true
+			if bang.at > b.at then
+				b.at, b.rang = bang.at, clock
+			end
+			local bx, by = Minimap.edge((at.X - x) * scale, (at.Y - z) * scale, half - EDGE)
+			local place = UDim2.fromOffset(half + bx, half + by)
+			b.dot.Position, b.ring.Position = place, place
+			b.dot.BackgroundTransparency = 1 - level
+			b.rim.Transparency = 1 - level
+			local p = if b.rang >= 0 then (clock - b.rang) / BANG_RING_TIME else 1
+			if p < 1 then
+				local across = BANG_SIZE * (1 + (BANG_RING - 1) * (1 - (1 - p) * (1 - p)))
+				b.ring.Size = UDim2.fromOffset(across, across)
+				b.ringStroke.Transparency = 1 - (1 - p) * level
+			elseif b.rang >= 0 then
+				b.rang = -1
+				b.ringStroke.Transparency = 1
+			end
+		end
+		for slot, b in bangDots do
+			if not b.seen then
+				b.dot:Destroy()
+				b.ring:Destroy()
+				bangDots[slot] = nil
+			end
+		end
+
 		for player, f in friends do
 			local r = rootOf(player)
-			local p = if r then a.origin:PointToObjectSpace(r.Position) else nil
+			-- a kept friend is found by their banging, not their dot
+			local p = if r and player:GetAttribute(Kept.Attribute) ~= true
+				then a.origin:PointToObjectSpace(r.Position)
+				else nil
 			if
 				p
 				and math.abs(p.Y) <= Minimap.Height
@@ -425,6 +551,7 @@ function MinimapView.new(): Brix.System
 		for model in areas do
 			removed(model)
 		end
+		clearBangs()
 		gui:Destroy()
 	end
 

@@ -15,8 +15,14 @@
 	body at rest (`Kept.fit`), welded on, so the friend who lifts the door finds them in it. Their
 	own screen never shows it (CaughtView), and every screen plays the film's squeal (KeptSqueal).
 
+	Inside, they can bang on their door (L-07c, `Remotes.Bang`, `Kept.ready`'s rate): the door
+	jolts and thuds as a trapped keeper's does (`Doors:move`, "Bang"), so keepers hear it as they
+	hear that, and the floor's model carries the bang (`Kept.BangsAttribute`) so friends' screens
+	and corner maps mark the unit however far off they are. They also get `Kept.InsideValue`, the
+	unit they're in, for their own screen's light under the door.
+
 	They're let out when their unit's door goes all the way up: the stand-in until L-07d's Cut
-	free; the film comes off as they go. Leaving, dying or a new character lets them go too, as
+	free; the film comes off and their unit's mark goes as they go. Leaving, dying or a new character lets them go too, as
 	does their floor going away. A
 	catch on a floor this doesn't know, or with no unit free, holds them through the wrap and lets
 	them go where they stand.
@@ -24,6 +30,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Caught = require(ReplicatedStorage.Shared.Caught)
@@ -43,15 +50,28 @@ export type KeptPlayers = Brix.System & {
 	add: (self: any, deck: Deal.Deck, units: { [Model]: number }, floor: Instance) -> (),
 }
 
-type Floor = { deck: Deal.Deck, units: { Model }, slots: { [Model]: number } }
+-- A laid floor: its deck, units and their slots, its model (where its bangs are marked for
+-- every screen) and each unit's latest bang, by slot.
+type Floor = {
+	deck: Deal.Deck,
+	units: { Model },
+	slots: { [Model]: number },
+	model: Instance,
+	bangs: { [number]: Kept.Bang },
+}
 
 -- Someone kept: the character they were caught in, its root (anchored while kept), the unit
--- they're stored in (nil when there was none) and the film round them once they're in it.
+-- they're stored in and its floor (nil when there was none), the film round them and the value
+-- naming their unit once they're in it (`inside`), and when their last bang landed.
 type Held = {
 	character: Model,
 	root: BasePart,
 	unit: Model?,
+	floor: Floor?,
 	wrap: BasePart?,
+	value: ObjectValue?,
+	inside: boolean,
+	banged: number?,
 	gone: { RBXScriptConnection },
 }
 
@@ -129,6 +149,17 @@ function KeptPlayers.new(): KeptPlayers
 	local keepers: Keepers.Keepers? = nil
 	local random = Brix.Random.new({ seed = os.time() })
 	local warned = false
+	local bangRemote: RemoteEvent? = nil
+
+	-- Puts `floor`'s marks on its model for every screen: the bangs still showing at `now`.
+	local function publishBangs(floor: Floor, now: number)
+		for slot, b in floor.bangs do
+			if Kept.mark(now - b.at) <= 0 then
+				floor.bangs[slot] = nil
+			end
+		end
+		floor.model:SetAttribute(Kept.BangsAttribute, Kept.encodeBangs(floor.bangs, now))
+	end
 
 	-- Wraps `h`'s body head to foot in film, fitted to it at rest and welded to its root: what a
 	-- friend finds when they lift the door. No collision, weight or shadow: it's only seen.
@@ -177,6 +208,16 @@ function KeptPlayers.new(): KeptPlayers
 		end
 		if h.wrap then
 			h.wrap:Destroy()
+		end
+		if h.value then
+			h.value:Destroy()
+		end
+		-- out: their unit stops marking for friends at once
+		local floor, unit = h.floor, h.unit
+		local slot = if floor and unit then floor.slots[unit] else nil
+		if floor and slot and floor.bangs[slot] and floor.model.Parent then
+			floor.bangs[slot] = nil
+			publishBangs(floor, Workspace:GetServerTimeNow())
 		end
 		if h.root.Parent then
 			h.root.Anchored = false
@@ -261,7 +302,14 @@ function KeptPlayers.new(): KeptPlayers
 		root.Anchored = true
 		local floor = floors[catch.floor]
 		local unit = if floor then pick(floor, root.Position) else nil
-		local h: Held = { character = character, root = root, unit = unit, gone = {} }
+		local h: Held = {
+			character = character,
+			root = root,
+			unit = unit,
+			floor = if unit then floor else nil,
+			inside = false,
+			gone = {},
+		}
 		held[player] = h
 		table.insert(
 			h.gone,
@@ -311,10 +359,46 @@ function KeptPlayers.new(): KeptPlayers
 			end
 			character:PivotTo(to)
 			wrapUp(h)
+			h.inside = true
+			local value = Instance.new("ObjectValue")
+			value.Name = Kept.InsideValue
+			value.Value = unit
+			value.Parent = player
+			h.value = value
 			if RunService:IsStudio() then
 				print(`KeptPlayers: {player.Name} is wrapped and kept in {unit.Name}`)
 			end
 		end)
+	end
+
+	-- Remotes.Bang: a kept player hits their door. Nothing to check for type (it takes nothing);
+	-- range: kept and inside their unit (not in the black on the way there); then the rate, one
+	-- bang a door's jolt with a little slack (`Kept.ready`). The door jolts and thuds on every
+	-- screen near, and keepers hear it, as a trapped keeper's blow (`Doors:move`); the floor marks
+	-- the unit for friends' screens and maps.
+	local function onBang(player: Player)
+		local h = held[player]
+		local floor, unit, d = h and h.floor, h and h.unit, doors
+		if not (h and h.inside and floor and unit and d) then
+			return
+		end
+		local now = Workspace:GetServerTimeNow()
+		if not Kept.ready(h.banged, now, Kept.BangSlack) then
+			return
+		end
+		local was = h.banged
+		h.banged = now
+		if not d:move(unit, "Bang") then
+			return -- its door is on its way up or down: nothing to hit
+		end
+		local slot = floor.slots[unit]
+		local at = FloorBuilder.face(unit).Position
+		floor.bangs[slot] =
+			{ slot = slot, user = player.UserId, at = now, x = at.X, y = at.Y, z = at.Z }
+		publishBangs(floor, now)
+		if RunService:IsStudio() and (was == nil or Kept.mark(now - was) <= 0) then
+			print(`KeptPlayers: {player.Name} bangs on {unit.Name}'s door`)
+		end
 	end
 
 	local function onChanged(change: Doors.DoorChange)
@@ -351,6 +435,17 @@ function KeptPlayers.new(): KeptPlayers
 				letGo(player, "left")
 			end)
 		)
+		local folder = ReplicatedStorage:FindFirstChild(Caught.RemoteFolder)
+		if not folder then
+			folder = Instance.new("Folder")
+			folder.Name = Caught.RemoteFolder
+			folder.Parent = ReplicatedStorage
+		end
+		local remote = Instance.new("RemoteEvent")
+		remote.Name = Kept.BangRemote
+		remote.Parent = folder
+		bangRemote = remote
+		table.insert(joins, remote.OnServerEvent:Connect(onBang))
 	end
 
 	function system.stop(_: any)
@@ -366,6 +461,10 @@ function KeptPlayers.new(): KeptPlayers
 			letGo(player, "the server stopped")
 		end
 		table.clear(floors)
+		if bangRemote then
+			bangRemote:Destroy()
+			bangRemote = nil
+		end
 	end
 
 	function system.add(_: any, deck: Deal.Deck, laid: { [Model]: number }, floor: Instance)
@@ -377,7 +476,7 @@ function KeptPlayers.new(): KeptPlayers
 		table.sort(units, function(a: Model, b: Model)
 			return laid[a] < laid[b]
 		end)
-		floors[floor] = { deck = deck, units = units, slots = laid }
+		floors[floor] = { deck = deck, units = units, slots = laid, model = floor, bangs = {} }
 		floor.Destroying:Once(function()
 			floors[floor] = nil
 			for player, h in held do

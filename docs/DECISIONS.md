@@ -2187,3 +2187,46 @@ and would tell friends where you're kept, which is L-07c's bang to tell); sizing
 `GetExtentsSize` (hats, wings and a walk's swing would size it); hiding hats and hair while
 wrapped (a roomy head holds most hair; a big hat pokes out).
 
+
+## D-097 Banging: the door's own thud, a mark friends see through walls, the hall's light under the door (L-07c, Nov 10)
+The moment: alone in the dark, wrapped, you hammer on your door; down the hall your friends hear
+it thud and see which door, and so might a keeper. Dead by Daylight's hook is the precedent:
+everyone sees where you hang, and a teammate comes.
+
+As built: once you're inside your unit a round Bang button comes up (`CaughtView`), under the
+right thumb on a phone and low in the middle elsewhere with its key under it (a click, Space, a
+gamepad's A or R2). Each press jolts your view at once (`Kept.BangKick`) and fires
+`Remotes.Bang`, which carries nothing. Presses come no faster than `Kept.BangEvery` (0.55 s, so
+the door's 0.5 s jolt plays out whole); one press made too soon is held for the next bang, as a
+fighting game buffers an input, so mashing hammers at the door's pace. The server
+(`KeptPlayers`) takes a bang only from someone kept and already inside, at most one per
+`BangEvery` less `BangSlack` (0.15 s for a jittery connection): a spam of 362 presses in 3 s
+landed 8. A bang is the building's own `Doors:move(unit, "Bang")`, the trapped keeper's blow, so
+the door's thud and shake play on every screen near it and keepers hear it as they hear that
+(DoorSound's Bang, 70 studs along the halls): no second call to `Keepers:hear`, which would
+double it. It never dents the door.
+
+The mark: each bang stamps the floor's model (`Kept.BangsAttribute`: slot, who, when, the door's
+foot), the model the corner map already reads, so every screen marks it however far off the unit
+is and whether or not it has streamed in. On friends' screens (`BangMarks`) a blue dot with the
+kept friend's name stands over the door, drawn through walls, a ring going out at each bang; on
+the corner map the unit gets a bigger blue dot with a ring, held on the window's edge when off it.
+Both fade `Kept.BangMark` (8 s) after the last bang, the last 2 s fading, and go at once when the
+friend is let out. Never on your own screen, nor while you're kept. A kept friend's own map dot
+is hidden (`MinimapView`): the GDD stores you at random so friends have to look, and a dot that
+shows where you're kept would make the banging pointless (`OWNER.md` asks).
+
+The light under the door (`UnderDoor`): while you're kept the server names your unit
+(`Kept.InsideValue`, an ObjectValue under you) and your screen alone draws a thin warm Neon strip
+against the inside of the door's bottom bar, with a SurfaceGui spill fading 1.6 studs across the
+floor, lit only while the nearest motion light outside is Lit, flickering on with the tube
+(`HallLight.Flicker`). Motion lights trip for players and keepers but never the Mannequin, so the
+line coming on means someone walked by. No real light (the GDD's cap).
+
+Your torch keeps working while you're wrapped (the default the ticket named; `OWNER.md` asks).
+
+Not chosen: a mark on the unit itself (a far unit isn't streamed to a friend's screen, D-094's
+reason); a remote event to friends for each bang (a screen that streams in or joins late would
+miss a mark still showing); a quieter or shorter-reaching kept bang (it's the same door's thud);
+a sound for a far friend as the mark appears (polish, ROADMAP); a real light under the door (a
+light instance per kept player, against the phone budget).

@@ -382,6 +382,25 @@ verified: a doc page, Studio, or "untested".
   roaming Mannequin catches you again if you stand 6 studs in front of it (`Keeper` tag, its
   pivot's look). Dropped tools lie in `Workspace.Tools`; a tool's "Pick up" prompt sits on an
   Attachment outside its model (find the nearest prompt to the tool).
+- **Testing banging from the MCP** (L-07c, 2026-11-10): get kept by the steps above (seed 7,
+  floor 1, 157's Mannequin). `user_keyboard_input` Space taps reach the Bang action (each tap a
+  press); a Client loop calling `Remotes.Bang:FireServer()` is the spam test. Read each bang off
+  the unit's `DoorMotion` ("Bang|...") and the floor's `KeptBangs` from a Server `GetAttribute
+  ChangedSignal` logging into `_G`. The Mannequin roams floor 1's upper halls (z -600 to -648)
+  for minutes at a time, out of the 70 studs a bang carries to units on the bottom hall
+  (z -700); bang every 0.65 s from a Client loop while a Server sampler watches `KeeperState`
+  for Going, and it comes (about 2.5 minutes in, from 54 studs). An anchored server Part tagged
+  `TripsLights`, moved by CFrame in the hall, trips the motion light there.
+- **`screen_capture` draws no BillboardGuis** (L-07c, 2026-11-10): not ours, nor a plain red
+  80-point square on an Attachment in Terrain or on the head, `AlwaysOnTop`, while ScreenGuis
+  draw. Check a billboard by its state (Enabled, Adornee, `WorldToViewportPoint` on screen) and
+  leave its look to the owner.
+- **A SurfaceGui on a part's Top face** (L-07c, 2026-11-10): the canvas's x runs along the part's
+  Z (its size across, at `PixelsPerStud`, gives it away: 32 by 160 for a 1.6-deep, 8-wide part),
+  starting at the part's +Z end; a UIGradient at Rotation 180 starts at its -Z end.
+- **A UIPadding pads every child** (L-07c): a label placed "under" a padded TextButton at
+  `UDim2.new(0.5, 0, 1, 6)` lands inside it. Put the button and its label side by side in a
+  plain holder Frame.
 - **A script's `Humanoid:Move` on the Client barely moves you** (2026-11-10): the PlayerModule
   sets the move from your (empty) input every frame, so `Move` from an `execute_luau` gets a
   frame or so (a stud a second). `character_navigation` walks for real. This was the "couldn't

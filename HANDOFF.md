@@ -2,45 +2,44 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-10, session 83 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-10, session 84 · **Checks:** green · **Git:** `main`, local only (no remote).
 
 ## State
-- **L-07b done (D-096): the wrap you can see and hear.** Kept, you stand in a cloudy cocoon of
-  stretch film (`art/keptwrap`, `Props.KeptWrap`), fitted by pure `Kept.fit` to your body at rest
-  and welded on by `KeptPlayers` at the move, off as you're let out; never drawn on your own
-  screen (`CaughtView`). `KeptSqueal` plays a tape's screeching peel on every screen as anyone's
-  `Kept` attribute turns on: close for you, from where you stood for friends.
-- Its alpha blends only above 0 part Transparency (`Kept.WrapBlend`); the template is unsaved.
+- **L-07c done (D-097): banging.** Kept, a Bang button comes up in the dark (`CaughtView`); each
+  press is `Remotes.Bang`, and `KeptPlayers` bangs your door through `Doors:move` (the trapped
+  keeper's thud, shake and hearing, 70 studs along the halls), at most one per 0.4 s. The floor's
+  model carries each bang (`Kept.BangsAttribute`): friends see a blue mark with your name over the
+  door through walls (`BangMarks`) and a ringing dot on the corner map; a kept friend's own map
+  dot is hidden. `UnderDoor` draws the hall light's warm line under your door while it's lit.
 - **Owner, Nov 10:** scarier keeper walk and catch (jump scare, no gore): **L-06c1**, **L-06c2**,
-  after L-07e. How does a kept player make noise? Today they can't: L-07c, next.
+  after L-07e.
 
-## Next task: L-07c Banging
-The moment: alone in the dark, wrapped, you hammer on the door; down the hall your friends hear
-it thud and see which door, and so might a keeper. Precedent: Dead by Daylight's hook (everyone
-sees where you hang, and a teammate comes).
+## Next task: L-07d Cut free
+The moment: you reach your friend's unit, lift the door, and there they stand wrapped; you hold
+Cut free for a second, the film tears and they stagger out with you. Precedent: Dead by
+Daylight's unhook (hold beside the hook) and its freeing a friend from a bear trap.
 1. Owner test results first, if pasted.
-2. Pure rules in `Kept` (Lune-tested): how often a bang lands (a cooldown), how long a bang marks
-   your unit on friends' screens and the corner map, how far a keeper hears it.
-3. Server: a `Remotes.Bang` from the kept player only (type, kept, rate-limited, D-095's held
-   player and unit), each one jolting their door (`RollUpDoor.play(unit, "Bang")`, the keepers'
-   own bang, so the door's thud and shake come with it), `Keepers:hear` at the door (D-092), and
-   a mark on the unit friends' screens read (an attribute with the time).
-4. Screen: a big Bang button for the kept player in place of "Wait for a friend" (phone first;
-   a key too), each press a kick of the view; friends see the banging door marked for a few
-   seconds and the corner map flashes it (`MinimapView`).
-5. The hall's light under the door: a thin warm strip where the door meets the floor, from
-   inside, only while the hall light outside is on.
-6. Torch: keep it working while wrapped (the default); ask in `OWNER.md`.
-**Acceptance:** checks green; in Studio on seed 7, floor 1, caught by 157's Mannequin: the Bang
-button shows, each press jolts your door (its `DoorMotion` reads Bang) no faster than the
-cooldown, a keeper hears it (Output), the unit carries the mark for friends; a spam of presses
-from the Client is refused past the rate; the strip under the door shows; Output clean.
-**Read first:** ROADMAP L-07c; D-095, D-096; `src/server/KeptPlayers.luau`; `src/client/CaughtView.luau`;
-`Keepers:hear` in `src/server/Keepers.luau` (D-092); Bang in `src/shared/StorageUnit/RollUpDoor.luau`.
+2. Pure rules in `Kept` (Lune-tested): the hold's length (1 s), who may cut (alive, not kept,
+   within reach of the kept player, the unit's door all the way up), what counts as in reach.
+3. Server (`KeptPlayers`): a "Cut free" prompt (`Prompts.make`, hold 1 s) on the kept player,
+   shown only while their door is all the way up; its trigger validated on the server (the rules
+   above) lets them go. Remove L-07a's stand-in: the door going up no longer lets you out.
+4. Feedback, same ticket: the film tears (a measured tape-rip sound, as `KeptSqueal`'s was
+   found, played at the body for everyone near), the wrap comes off over a beat (not a vanish),
+   the freed player's view kicks as they're let go, the cutter's view a small kick too.
+5. A friend's held Cut free shows nothing to the kept player beyond the sound; check the prompt
+   at phone size (the door's own buttons are near: no overlap).
+**Acceptance:** checks green; in Studio on seed 7, floor 1, caught by 157's Mannequin: opening
+your unit no longer lets you out; the Cut free prompt shows only with the door up; a trigger
+from a kept player or from too far is refused (Output); a valid one lets you out, the film gone
+with its sound; Output clean.
+**Read first:** ROADMAP L-07d; D-095, D-097; `src/server/KeptPlayers.luau`; `src/server/Prompts.luau`;
+`src/client/KeptSqueal.luau` (a measured sound played for everyone); docs/STUDIO.md's "Testing
+getting kept from the MCP".
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-07c, then L-07d (cut free), L-07e (the padlock), then L-06c1 (a walk that frightens) and
-   L-06c2 (the catch as a jump scare). L-14b2d if the owner asks. Then L-08, L-09.
+1. L-07d, then L-07e (the padlock), then L-06c1 (a walk that frightens) and L-06c2 (the catch as
+   a jump scare). L-14b2d if the owner asks. Then L-08, L-09.
 2. **Small, own session:** cut `MovingBlanket`, `GlowSticks` from `Deal.Tools`/`Deal.Bag` (D-091);
    it reshuffles every seed, so recheck the units `OWNER.md`'s steps name (seed 7, floors 1, 3).
 3. **Check, small:** caught crawling or on the ladder, `CrawlView`/`LadderView` may keep holding
@@ -62,6 +61,7 @@ from the Client is refused past the rate; the strip under the door shows; Output
 8. Keepers should hear the keypad, a dropped tool, the saw, a crawl, the ladder and a drop in
    (D-059, D-066) through `Keepers:hear` (D-092). **Small:** a trapped keeper's every blow prints;
    a crawler's feet as `Wraps` reads them must sit within `Wrap.Under` (3), or crawling won't pop.
+9. **Check, small:** a kept player's empty slots bar shows under the Bang button: hide it if cluttered.
 
 ## Kickoff for the next agent
 ```text

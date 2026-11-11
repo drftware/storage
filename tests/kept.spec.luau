@@ -167,6 +167,59 @@ ok(
 )
 ok(Kept.SquealReach >= 20 and Kept.SquealReach <= 80, "heard by friends near, not the floor")
 
+-- Banging (L-07c): a bang lands no faster than the door's jolt plays, the server forgives a
+-- little jitter but not a spam, and each one marks the unit for a while, then fades.
+ok(Kept.ready(nil, 0), "the first bang always lands")
+ok(not Kept.ready(10, 10 + Kept.BangEvery - 0.01), "a screen never sends a bang early")
+ok(Kept.ready(10, 10 + Kept.BangEvery), "a bang lands a full gap after the last")
+ok(
+	Kept.ready(10, 10 + Kept.BangEvery - Kept.BangSlack, Kept.BangSlack),
+	"the server forgives a jittery connection its slack"
+)
+ok(
+	not Kept.ready(10, 10 + Kept.BangEvery - Kept.BangSlack - 0.01, Kept.BangSlack),
+	"but refuses anything faster"
+)
+ok(Kept.BangEvery >= 0.5, "every bang's jolt (0.5 s) plays out whole")
+ok(Kept.BangEvery - Kept.BangSlack >= 0.3, "a spam can't land more than about three a second")
+-- a spam: a press every frame for two seconds lands only as fast as the gap allows
+local last: number? = nil
+local landed = 0
+for frame = 0, 119 do
+	local t = frame / 60
+	if Kept.ready(last, t, Kept.BangSlack) then
+		last, landed = t, landed + 1
+	end
+end
+ok(
+	landed <= math.ceil(2 / (Kept.BangEvery - Kept.BangSlack)),
+	"a press every frame is held to the rate"
+)
+ok(landed >= 3, "but mashing still bangs")
+
+ok(Kept.mark(0) == 1 and Kept.mark(-0.3) == 1, "a fresh bang marks fully, a clock behind too")
+ok(Kept.mark(Kept.BangMark - Kept.BangFade) == 1, "full until its fade")
+ok(near(Kept.mark(Kept.BangMark - Kept.BangFade / 2), 0.5), "fading out over the last stretch")
+ok(Kept.mark(Kept.BangMark) == 0 and Kept.mark(100) == 0, "then gone")
+
+local bangs: { [number]: Kept.Bang } = {
+	[12] = { slot = 12, user = 4096123456, at = 100.25, x = -35.5, y = 0, z = -120.25 },
+	[3] = { slot = 3, user = -1, at = 99, x = 12, y = 10, z = -40 },
+	[40] = { slot = 40, user = 7, at = 80, x = 1, y = 2, z = 3 }, -- long gone by 101
+}
+local text = Kept.encodeBangs(bangs, 101)
+local back = Kept.decodeBangs(text)
+ok(#back == 2, "a mark long gone isn't sent")
+ok(back[1].slot == 3 and back[2].slot == 12, "in slot order")
+ok(
+	back[2].user == 4096123456 and near(back[2].at, 100.25) and near(back[2].x, -35.5),
+	"each bang reads back: who, when, where"
+)
+ok(back[1].user == -1 and back[1].y == 10, "a Studio test player's id and a top's height too")
+ok(#Kept.decodeBangs("") == 0, "no bangs reads as none")
+ok(#Kept.decodeBangs("x;3,1,2;0,1,2,3,4,5;2.5,1,1,1,1,1;4,1,nan,1,1,1") == 0, "junk reads as none")
+ok(#Kept.decodeBangs(Kept.encodeBangs({}, 0)) == 0, "an empty floor's text is empty")
+
 print(string.format("kept: %d checks, %d failures", checks, failures))
 if failures > 0 then
 	error("kept spec failed")

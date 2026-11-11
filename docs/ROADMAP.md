@@ -829,10 +829,21 @@ on nothing in Brix.
     open door with the ambient raised shows a cloudy cocoon, the body blurred inside; your own
     view clear; the squeal on the catch's frame; opening 109 let me out in 2.04 s with the film
     gone. Output clean but for Roblox still processing the fresh upload.
-  - [ ] **L-07c Banging.** A Bang button inside: each bang thuds on your door for everyone near,
+  - [x] **L-07c Banging.** A Bang button inside: each bang thuds on your door for everyone near,
     shows your unit on friends' screens and the corner map, and keepers hear it
     (`Keepers:hear`). The hall light under the door. Decide whether being wrapped puts your
     torch out (it still works and lights the unit, L-07a).
+    Done Nov 10 (D-097): pure `Kept.ready`, `mark`, `encodeBangs`/`decodeBangs` (Lune-tested);
+    `Remotes.Bang` in `KeptPlayers` (kept and inside, then the rate) bangs through
+    `Doors:move`, so keepers hear it as a trapped keeper's blow, and marks the floor's model;
+    `CaughtView`'s Bang button in place of "Wait for a friend"; `BangMarks` (a blue mark with
+    the name over the door, through walls); `MinimapView` (a banging unit's dot, kept friends'
+    dots hidden); `UnderDoor` (the hall light's warm line under the door). The torch stays on
+    (`OWNER.md` asks). Verified in Studio on seed 7, floor 1: kept in 120 and 118; Space bangs
+    no faster than 0.6 s with one press held; 362 remote presses in 3 s landed 8; the Mannequin
+    heard a bang 54 studs off along the halls and came to the door; the line under the door lit
+    with the hall light and went with it; let out, the mark cleared. Studio's captures draw no
+    billboards, so the mark over the door is untested by eye.
   - [ ] **L-07d Cut free.** A friend at your open door holds Cut free one second and you stand
     up; it replaces L-07a's stand-in way out.
   - [ ] **L-07e The padlock.** Left a few minutes, the building padlocks your unit; only bolt
@@ -883,6 +894,12 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **The map's marks drawn as art (L-10):** your dot's nose, the gate's mark and the tick are plain
   Frames and a fallback-font "✓"; an arrow, a lift icon and a hand-drawn tick, made the art way,
   would read sharper on a phone.
+
+- **A far friend's bang, heard (L-07c):** beyond the door's 70 studs a friend only sees the mark
+  appear. A muffled distant thud as a friend's mark first shows (one per run of bangs, not each)
+  would turn heads the way DbD's hook sound does.
+- **The kept mark drawn as art (L-07c):** the mark over a banging door is a plain blue dot and a
+  name; a fist or a door icon, made the art way, would read faster at phone size.
 
 - **The unroll's own sound (L-14b2a):** the sheet's unroll plays the pick-up's crinkle slowed
   down; a real unrolling rustle (measured, Pro Sound Effects) would sell the roll going across.
