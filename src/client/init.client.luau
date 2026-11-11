@@ -18,6 +18,7 @@ local CutFreeView = require(script.CutFreeView)
 local DoorSounds = require(script.DoorSounds)
 local DoorView = require(script.DoorView)
 local ElevatorView = require(script.ElevatorView)
+local EndView = require(script.EndView)
 local FlashlightView = require(script.FlashlightView)
 local HornView = require(script.HornView)
 local FreeCursor = require(script.FreeCursor)
@@ -87,6 +88,8 @@ local host = Brix.Host.new({
 		{ slot = "hallHaze", system = HallHaze.new() },
 		-- left behind (L-08c): its camera runs between CameraShake's undo and apply
 		{ slot = "watchView", system = WatchView.new(kick, needCursor) },
+		-- the climb's end (L-08d): over everything, the results and "Again"
+		{ slot = "endView", system = EndView.new(needCursor) },
 		{ slot = "cameraShake", system = cameraShake },
 	},
 })

@@ -55,7 +55,7 @@ None of these is built. Each row says what stands in here until it is.
 | Player data: finds, cash, best floor | Saves: session-locked profiles, autosave, versions and migrations | ENG-10 | Nothing is saved yet; don't build saves here |
 | Tuning during playtests without a republish (L-09) | Live config and flags | ENG-11 | Feel numbers in shared Config modules, changed by a republish |
 | The GDD's retention and funnel gates | Telemetry | ENG-12 | Nothing is measured yet |
-| The climb as lobby, floors and results (L-08) | Round loop | ENG-13 | `src/server/Climbs.luau` (L-08b, D-104): floors only, dealt, laid and handed up; no lobby or results yet. Checked Nov 11: ENG-13 unbuilt |
+| The climb as lobby, floors and results (L-08) | Round loop | ENG-13 | `src/server/Climbs.luau` (L-08b, D-104): floors dealt, laid and handed up; `src/server/ClimbEnds.luau` (L-08d, D-106): the end, the results and "Again" into a fresh floor 1; no lobby yet. Checked Nov 11: ENG-13 unbuilt |
 | Juice: camera moves, slow motion, sound cues | Presentation kit | ENG-15 | Camera shake stands in as `src/shared/Shake.luau` and `src/client/CameraShake.luau` (P0-04) |
 | The HUD and menus | UI library and shared components | ENG-16 | The game's own screens, such as the keypad (`src/client/KeypadPad.luau`) |
 | A debug overlay, a gated cheat console, replaying a seed | Developer tooling | ENG-17 | Studio-only dev systems (`DevCorridor`) |

@@ -2631,3 +2631,68 @@ Not chosen: the default camera on the friend's humanoid (first person inside the
 the body under the floor (every system would need to skip it); fading to the friend at the move
 (6.1 s: their car would stand shut and still for 4 s); a free Cut Free in live games before the
 product and profiles exist.
+
+## D-106 The climb ends: a wipe, the top, one screen and "Again" (L-08d, Nov 11)
+
+The GDD's "Whole team kept": the climb ends. Gate 1 is friends asking for another run, so the end
+is one screen saying how far you got and one button, "Again", as DOORS' Play Again does.
+
+When it ends. **Kept** (a loss): nobody left climbing, every player kept in a unit or left behind
+watching (`ClimbEnd.over`; in Studio a stand-in friend counts as climbing, so the L-08c recipe
+still works). The server looks ten times a second and ends it `Caught.Dark` (0.96 s) after it
+first sees nobody climbing, so the end lands on the last catch's cut to black. A watcher's Cut
+Free can't save a wipe: with nobody left to watch, there's nothing to cut back into (`OWNER.md`).
+**Top** (an escape): the car leaving the top floor with friends aboard (`Climbs.topped`). The top
+is a stand-in, floor 3 (`Climb.Top`; `Climb.Building` stays 10), so a run is short enough to play
+again; Phase 2's top floor replaces it. Everyone left on the floor is left behind as at any floor
+and loses their character on the cable's second knock, as at a hand-off. The empty car still
+comes back; the "Alone" let-in of D-105 is gone (the end replaces it).
+
+On every screen, from one server time (`ClimbEnd` on Workspace, each player's `ClimbFate` written
+first): a wipe's black comes down over 1.2 s (no later than the caught friend's eyes would open in
+the unit); at 1.3 s the server clears the climb (`Climbs:finish`: threads, the tools lying on its
+floors, the floors; `Watching:release`; every character taken away, so nothing reaches anyone
+behind the screen) and every screen goes quiet: the listener is taken far away, as the catch
+silences the hall, and held there each frame (the catch's wake would put it back); a beat of
+nothing; two doors come down far off in the building (the roll-up door's bang and thump, pitched
+low, the top end cut, a long reverb tail); "Kept" slams down in the cold red of "Left behind" from
+1.28 times its size with the dread hit and a jolt; the photos drop in one by one, greyed and
+pinned askew, each with the floor it was lost on; "Floor 2 · 6:42"; then the warm "Again". An
+escape plays the ride untouched until the cable's second knock (where any other ride hands over),
+then light floods in, slow and then all at once, whole by 7.4 s, when the climb is cleared and the
+motor goes with it; the bell rings clear in the white; it settles into a warm dark and "Made it"
+rises in the lamp's light, the riders' photos in colour. The photos are the GDD's Missing board in
+small (avatar headshots, preloaded as the end starts); the board itself is the lobby's.
+
+"Again": a press beeps, squashes the button and reads "Waiting"; each friend who is in warms
+their photo back to colour with a tick on every screen; the first press starts "Going up in 10"
+everywhere, and the next climb starts when everyone's in or the count runs out, so one friend who
+wandered off never holds the rest (as DOORS' lobby elevators start counting down once the first
+player steps in).
+It goes with the elevator's chime and "Going up": a fresh seed, floor 1 laid at the last climb's
+spot, everyone's new character side by side at `Climbs.Arrival` (the middle first, then either
+side, 3 studs apart), then the end is cleared; each screen lifts the black off its new character
+with the bell and "Floor 1". Where it leads is one function (`ClimbEnds.go`), for the owner's
+lobby to replace. Enter, Space and a gamepad's A press it too.
+
+The screen is two ScreenGuis over everything (50 and 51): the backdrop with no insets, the words
+and button in the phone's safe area. It draws nothing (and sinks no touch) until the end shows
+something, so a rider's controls answer through the ride. The title is sized from the screen's
+height (never past 96 px), not scaled to its box: scaled text stops at 100 px, so the slam's
+UIScale couldn't grow it on a big screen.
+
+Verified in Studio (one player, seed 7): a real catch by 157's Mannequin ended the climb (Kept,
+floor 1, 0:26), the character went under the black, the screen held its frames on the Client's
+`DevRideHold`; "Again" by mouse and by Enter each laid a fresh floor 1 and lifted onto it with the
+character at the arrival spot; floor 3 punched and ridden alone ended in the white (6.1 to 7.4 s
+logged), "Made it", 1:30; left behind watching two stand-ins who were then removed ended as Kept
+with the team on floor 2 and your photo on floor 1, the watch let go under the black with no
+"Back in"; after each Again, prompts, camera, field of view, walk and sound all back; a saw
+carried into the lobby dropped at the end and went with the floor (the new floor 1 had none);
+Output clean but the known asset lines. Captures: `docs/art/L-08d-*.jpg`.
+
+Not chosen: ending the climb when the car leaves empty (nobody chose to leave anyone); a vote
+with no count (one absent friend holds everyone); keeping the floors until Again (keepers, the
+padlock's dread and the ride would sound behind the results); the results over the world (a
+character left standing there can still be caught); a fixed seed for Again (each climb a new
+building, as DOORS' rooms are).

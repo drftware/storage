@@ -15,7 +15,8 @@
 	  you get back in. A switch dips to black and lifts on the next friend once they've streamed
 	  in, with a tick. In Studio a Cut Free button lets you back in (the product isn't made yet).
 	- Back in: the black lifts on your new character in your friends' lobby, with the film's rip
-	  for Cut Free, and "Back in".
+	  for Cut Free, and "Back in". The climb's end lets you go without it: the results screen is
+	  where you're back (EndView).
 
 	Your character is gone while you watch (the server), so the play HUD is gone with it; this
 	frees the mouse for the buttons (FreeCursor) and turns the touch controls off.
@@ -29,6 +30,7 @@ local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local ClimbEnd = require(ReplicatedStorage.Shared.ClimbEnd)
 local Keypad = require(ReplicatedStorage.Shared.Elevator.Keypad)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Left = require(ReplicatedStorage.Shared.Left)
@@ -552,8 +554,17 @@ function WatchView.new(
 			table.clear(played)
 			watchBegan, subject, dipAt, landed, cancelAt, focus = nil, nil, nil, nil, nil, nil
 		elseif was and not at then
-			-- out of the watch: back in (Cut Free), or the car came back after all
-			if watchBegan then
+			-- out of the watch: the climb is over (the results are where you're back, EndView),
+			-- back in (Cut Free), or the car came back after all
+			local s = screen
+			if Workspace:GetAttribute(ClimbEnd.Attribute) ~= nil and s then
+				local camera = Workspace.CurrentCamera
+				if camera then
+					camera.CameraType = Enum.CameraType.Custom
+				end
+				watchBegan, subject, cancelAt, backAt = nil, nil, nil, nil
+				rest(s)
+			elseif watchBegan then
 				local camera = Workspace.CurrentCamera
 				if camera then
 					camera.CameraType = Enum.CameraType.Custom

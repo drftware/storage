@@ -1013,14 +1013,22 @@ L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
     clean but the known asset line (`docs/art/L-08c-*.jpg`). Two players and a phone:
     `OWNER.md`. Untested: left behind while kept in a unit (the same path), and watching a friend
     as they ride again.
-  - [ ] **L-08d The climb ends.** The whole team kept ends the run on the Missing board (GDD
-    "Whole team kept"); a results screen with one "Again" button, as DOORS' Play Again, since
-    Gate 1 is friends asking for another run. Until Phase 2's top floor the climb stops at a
-    stand-in top, floor 3 (a default; its `OWNER.md` line comes with the build). Hand-off notes:
-    `Climbs`' `comeBack` (the car left empty, or at `Climb.Top`) is the stand-in to replace, and
-    `Watching`'s "Alone" let-in (nobody left climbing to watch, D-105): the climb ending takes
-    the watchers with it. "Back in when they finish" is the watchers' promise: the results screen
-    is where they're back.
+  - [x] **L-08d The climb ends. Done Nov 11** (D-106). Nobody left climbing (all kept or
+    watching) ends it as a loss, the car leaving the top with friends aboard as an escape (the
+    top a stand-in, floor 3, `OWNER.md`); one screen on everyone's, then "Again", as DOORS' Play
+    Again (`ClimbEnd`, `ClimbEnds`, `EndView`). A wipe: the black over the last catch, the world
+    gone quiet, two doors far off in the building, "Kept" slamming down with a low hit and a
+    jolt, the photos dropping in greyed and askew with the floor each was lost on (the Missing
+    board in small), "Floor 2 · 6:42", the warm button. The top: the ride untouched to the
+    cable's second knock, then the light floods in, the motor gone, the bell clear in the white,
+    "Made it" in the lamp's light. The climb is cleared under the screen (floors, lying tools,
+    watchers, every character). "Again": "Waiting", each friend's photo warming with a tick,
+    "Going up in 10" from the first press, the chime, a fresh floor 1 with everyone side by side
+    in its lobby, the black lifting with the bell and "Floor 1" (`ClimbEnds.go`, for the owner's
+    lobby to replace). Watching's "Alone" let-in is gone. Verified in Studio on seed 7: a real
+    catch, the top ridden alone, left behind with stand-ins then removed; Again by mouse and
+    Enter; a clean new character each time; Output clean but the known asset lines
+    (`docs/art/L-08d-*.jpg`). Two players and a phone: `OWNER.md`.
   - [ ] **L-08e The start** (waits: the owner brings the full lobby plan Nov 11; don't build
     any of it before then). Friends gather and the climb starts on a short countdown once
     everyone's in, as DOORS' lobby elevators do: the smallest form of the GDD's lobby (your own
@@ -1080,6 +1088,15 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 
 ## Polish waiting for a slot
 
+- **The end's own sounds (L-08d):** the far doors are the roll-up door's slam, low and muffled,
+  and "Kept" lands on the padlock's dread hit; a recording of the building itself (a long
+  settling groan through the steel) and a sting for "Made it" (air, a door to the night) would
+  make both ends their own.
+- **The escape seen (L-08d):** the white is a flash over the car; light pouring down the shaft
+  through the gate's bars first (the shaft's walls brightening as the car rises into it) would
+  show the way out before it takes the screen.
+- **The results' paper (L-08d):** the lost friends' photos as Missing posters (a thin paper border,
+  a pin, the floor written in marker), ahead of the lobby's real board.
 - **Watching a friend ride (L-08c):** a watcher sees the friend's car lit as a rider does, but
   not the shaft sliding past the gate (RideView draws only your own ride) nor the sway; draw the
   watched friend's ride on the watcher's screen too, so the cut into the next car reads as theirs.

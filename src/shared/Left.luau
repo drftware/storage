@@ -3,7 +3,7 @@
 	Left behind (L-08c, the GDD's "Left behind"): when the elevator's gate shuts, anyone still kept
 	or still out on the floor is out of the climb. They watch their friends go on without them, as
 	Lethal Company's dead crew watch the living from behind their shoulders, until the climb ends
-	(L-08d) or they Cut Free back in (DOORS' revive), which puts them on their friends' floor.
+	(L-08d, ClimbEnd: the results screen) or they Cut Free back in (DOORS' revive), which puts them on their friends' floor.
 
 	The moment, on a left player's screen, timed from the gate hitting its post (the car leaving):
 	"Left behind" slams up in a cold red as the screen's top and bottom darken (`title`, `edges`);
@@ -218,7 +218,7 @@ function Left.cycle(keys: { string }, current: string?, step: number): string?
 	return sorted[(at - 1 + (if step < 0 then -1 else 1)) % n + 1]
 end
 
--- The back-in value: when, and why ("CutFree", or "Alone" when nobody was left to watch).
+-- The back-in value: when, and why ("CutFree").
 function Left.encodeBack(at: number, why: string): string
 	return string.format("%.3f|%s", at, why)
 end

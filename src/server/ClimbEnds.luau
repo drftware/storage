@@ -1,0 +1,360 @@
+--!strict
+--[[
+	ClimbEnds: the climb's end and "Again" on the server (L-08d, ClimbEnd, the GDD's "Whole team
+	kept"), a system. The smallest stand-in for Brix's round loop's results (ENG-13, unbuilt).
+
+	- Kept (a loss): nobody left climbing, everyone kept in a unit or left behind watching
+	  (`ClimbEnd.over`; in Studio a stand-in friend counts as climbing). It ends on the last
+	  friend's catch cutting to black (`ClimbEnd.AfterCatch` after they were kept).
+	- Top (an escape): the car leaves the top floor with friends aboard (Climbs' `topped`). It ends
+	  from the moment the gate hit its post, so the ride plays out first.
+	- Each player's fate goes on them (`ClimbEnd.FateAttribute`: out, kept or left, and the floor
+	  they were lost on, or reached), then the end on Workspace (`ClimbEnd.Attribute`), so every
+	  screen plays it from the same moment (EndView).
+	- At `ClimbEnd.cover`, when every screen is covered: whatever anyone carries drops, the climb
+	  stops and its floors go (Climbs' `finish`), the watchers are let go of (Watching's
+	  `release`), and every character goes, so nothing can reach anyone behind the results.
+	- "Again" (`Remotes.Again`, checked: the results are up, the player hasn't pressed, the rate):
+	  marks them in (`ClimbEnd.InAttribute`). The next climb starts once everyone's in, or
+	  `ClimbEnd.AgainWait` after the first press (`ClimbEnd.StartAttribute`, so every screen counts
+	  down): floor 1 of a fresh building, everyone given a character side by side in its lobby
+	  (`go`, the one place the owner's lobby changes), then the end is cleared and every screen
+	  lifts onto it.
+]]
+local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+local Brix = require(ReplicatedStorage.Brix)
+local ClimbEnd = require(ReplicatedStorage.Shared.ClimbEnd)
+local Keypad = require(ReplicatedStorage.Shared.Elevator.Keypad)
+local Kept = require(ReplicatedStorage.Shared.Kept)
+local Left = require(ReplicatedStorage.Shared.Left)
+local Climbs = require(script.Parent.Climbs)
+local Slots = require(script.Parent.Slots)
+local Watching = require(script.Parent.Watching)
+
+-- No climb; a climb on; its end showing, before the screens are covered; the results up; the
+-- next climb being laid.
+type Phase = "Idle" | "Climbing" | "Ending" | "Results" | "Starting"
+
+-- Someone out of the climb: how, and the floor they were lost on.
+type Lost = { fate: ClimbEnd.Fate, floor: number }
+
+local STUDIO = RunService:IsStudio()
+-- Seconds the next climb waits for every new character before it lifts the screens anyway.
+local LOAD_WAIT = 10
+
+local function now(): number
+	return Workspace:GetServerTimeNow()
+end
+
+-- Studio only: the living stand-in friends (Left.StandInTag), who count as friends climbing.
+local function standIns(): number
+	if not STUDIO then
+		return 0
+	end
+	local n = 0
+	for _, inst in CollectionService:GetTagged(Left.StandInTag) do
+		if inst:IsA("Model") and inst:IsDescendantOf(Workspace) then
+			local humanoid = inst:FindFirstChildOfClass("Humanoid")
+			if humanoid and humanoid.Health > 0 then
+				n += 1
+			end
+		end
+	end
+	return n
+end
+
+local ClimbEnds = {}
+
+function ClimbEnds.new(): Brix.System
+	local climbs: Climbs.Climbs? = nil
+	local watching: Watching.Watching? = nil
+	local slots: Slots.Slots? = nil
+	local remote: RemoteEvent? = nil
+	local connections: { RBXScriptConnection } = {}
+	local topping: Brix.SignalConnection? = nil
+	local phase: Phase = "Idle"
+	local lost: { [Player]: Lost } = {}
+	local overSince: number? = nil -- server time nobody was seen climbing
+	local startAt: number? = nil -- server time the next climb starts, once someone pressed Again
+	local asked: { [Player]: number } = {} -- os.clock() of each player's last press taken
+	local since = 0 -- seconds since the last look
+	local ends = 0 -- which end it is; a delayed cover from an earlier one stops when it sees another
+
+	-- Who is still climbing, kept or left behind; each one lost is noted with the floor it
+	-- happened on (the first: kept, then left behind as the car goes, is still that floor).
+	local function look(floor: number): { ClimbEnd.State }
+		local states: { ClimbEnd.State } = {}
+		for _, player in Players:GetPlayers() do
+			local kept = player:GetAttribute(Kept.Attribute) == true
+			local out = watching ~= nil and watching:isOut(player)
+			local state: ClimbEnd.State = if kept then "Kept" elseif out then "Left" else "Climbing"
+			if state == "Climbing" then
+				lost[player] = nil
+			else
+				local l = lost[player]
+				local fate: ClimbEnd.Fate = if state == "Kept" then "Kept" else "Left"
+				if l then
+					l.fate = fate
+				else
+					lost[player] = { fate = fate, floor = floor }
+				end
+			end
+			table.insert(states, state)
+		end
+		return states
+	end
+
+	-- Every screen is covered: the climb goes from under it, and everyone's character with it.
+	local function cover()
+		phase = "Results"
+		local s, c, w = slots, climbs, watching
+		for _, player in Players:GetPlayers() do
+			if s and player.Character then
+				s:dropAll(player) -- and they go with the floor
+			end
+		end
+		if c then
+			c:finish()
+		end
+		if w then
+			w:release()
+		end
+		for _, player in Players:GetPlayers() do
+			local character = player.Character
+			if character then
+				player.Character = nil
+				character:Destroy()
+			end
+		end
+	end
+
+	local function endClimb(how: ClimbEnd.How, floor: number, at: number)
+		if phase ~= "Climbing" then
+			return
+		end
+		phase = "Ending"
+		ends += 1
+		local mine = ends
+		overSince = nil
+		look(floor)
+		local c = climbs
+		local began = (c and c:startedAt()) or at
+		for _, player in Players:GetPlayers() do
+			local l = lost[player]
+			local fate: ClimbEnd.Fate = if l then l.fate elseif how == "Top" then "Out" else "Left"
+			player:SetAttribute(
+				ClimbEnd.FateAttribute,
+				ClimbEnd.encodeFate(fate, if l then l.floor else floor)
+			)
+			player:SetAttribute(ClimbEnd.InAttribute, nil)
+		end
+		startAt = nil
+		Workspace:SetAttribute(ClimbEnd.StartAttribute, nil)
+		Workspace:SetAttribute(ClimbEnd.Attribute, ClimbEnd.encode(at, how, floor, at - began))
+		if STUDIO then
+			print(
+				`ClimbEnds: the climb ended ({how}) on floor {floor} after {ClimbEnd.clock(
+					at - began
+				)}`
+			)
+		end
+		task.delay(math.max(at + ClimbEnd.cover(how) - now(), 0), function()
+			if ends == mine and (phase :: Phase) == "Ending" then
+				cover()
+			end
+		end)
+	end
+
+	-- The next climb: floor 1 of a fresh building, everyone in its lobby. Where "Again" leads; the
+	-- owner's lobby replaces this (L-08e).
+	local function go()
+		phase = "Starting"
+		Workspace:SetAttribute(ClimbEnd.StartAttribute, now())
+		task.spawn(function()
+			local c = climbs
+			local o = c and c:last()
+			local on = nil
+			local seed = Random.new():NextInteger(1, 2 ^ 31 - 1)
+			if c and o then
+				on = c:begin({ seed = seed, number = 1, origin = o.origin, parent = o.parent })
+			end
+			if not on then
+				warn("ClimbEnds: the next climb couldn't be laid; the results stay up")
+				phase = "Results"
+				startAt = nil
+				Workspace:SetAttribute(ClimbEnd.StartAttribute, nil)
+				for _, player in Players:GetPlayers() do
+					player:SetAttribute(ClimbEnd.InAttribute, nil)
+				end
+				return
+			end
+			local where = on.origin * Climbs.Arrival
+			local players = Players:GetPlayers()
+			table.sort(players, function(a: Player, b: Player)
+				return a.UserId < b.UserId
+			end)
+			local loading = #players
+			for i, player in players do
+				task.spawn(function()
+					local ok, err = pcall(function()
+						player:LoadCharacter()
+					end)
+					local character = player.Character
+					if ok and character and player.Parent then
+						local x, z = ClimbEnd.spot(i)
+						character:PivotTo(where * CFrame.new(x, 0, z))
+					elseif not ok and player.Parent then
+						warn(`ClimbEnds: couldn't give {player.Name} a character: {err}`)
+					end
+					loading -= 1
+				end)
+			end
+			local waited = 0
+			while loading > 0 and waited < LOAD_WAIT do
+				waited += task.wait()
+			end
+			for _, player in Players:GetPlayers() do
+				player:SetAttribute(ClimbEnd.FateAttribute, nil)
+				player:SetAttribute(ClimbEnd.InAttribute, nil)
+			end
+			table.clear(lost)
+			startAt, overSince = nil, nil
+			Workspace:SetAttribute(ClimbEnd.StartAttribute, nil)
+			Workspace:SetAttribute(ClimbEnd.Attribute, nil)
+			phase = "Climbing"
+			if STUDIO then
+				print(`ClimbEnds: again, from floor 1 (seed {seed})`)
+			end
+		end)
+	end
+
+	-- A screen's press of Again: checked (the results are up, they haven't pressed, its rate).
+	local function press(player: Player)
+		if phase ~= "Results" or player:GetAttribute(ClimbEnd.InAttribute) == true then
+			return
+		end
+		local t = os.clock()
+		if t - (asked[player] or -math.huge) < ClimbEnd.AskEvery then
+			return
+		end
+		asked[player] = t
+		player:SetAttribute(ClimbEnd.InAttribute, true)
+		if not startAt then
+			startAt = now() + ClimbEnd.AgainWait
+			Workspace:SetAttribute(ClimbEnd.StartAttribute, startAt)
+		end
+		if STUDIO then
+			print(`ClimbEnds: {player.Name} is in for another climb`)
+		end
+	end
+
+	local system = { name = "ClimbEnds" }
+
+	function system.start(_: any, context: Brix.Context)
+		local registry = context.registry
+		-- any: the registry hands back plain Systems; each slot is filled by its system (init.server)
+		local c = (registry:get("climbs") :: any) :: Climbs.Climbs
+		climbs = c
+		watching = (registry:get("watching") :: any) :: Watching.Watching -- any: as above
+		slots = (registry:get("slots") :: any) :: Slots.Slots -- any: as above
+		topping = c.topped:connect(function(t: Climbs.Topped)
+			endClimb("Top", t.from.number, t.at)
+		end)
+		local folder = ReplicatedStorage:FindFirstChild(Keypad.RemoteFolder)
+		if not folder then
+			folder = Instance.new("Folder")
+			folder.Name = Keypad.RemoteFolder
+			folder.Parent = ReplicatedStorage
+		end
+		local r = Instance.new("RemoteEvent")
+		r.Name = ClimbEnd.Remote
+		r.Parent = folder
+		remote = r
+		table.insert(connections, r.OnServerEvent:Connect(press))
+		table.insert(
+			connections,
+			Players.PlayerRemoving:Connect(function(player: Player)
+				lost[player] = nil
+				asked[player] = nil
+			end)
+		)
+	end
+
+	function system.step(_: any, dt: number)
+		since += dt
+		if since < ClimbEnd.CheckEvery then
+			return
+		end
+		since = 0
+		local c = climbs
+		if not c then
+			return
+		end
+		if phase == "Idle" then
+			if c:current() then
+				phase = "Climbing"
+				table.clear(lost)
+			end
+			return
+		elseif phase == "Results" then
+			local pressed, total = 0, 0
+			for _, player in Players:GetPlayers() do
+				total += 1
+				if player:GetAttribute(ClimbEnd.InAttribute) == true then
+					pressed += 1
+				end
+			end
+			if ClimbEnd.ready(pressed, total, now(), startAt) then
+				go()
+			end
+			return
+		elseif phase ~= "Climbing" then
+			return
+		end
+		local on = c:current()
+		if not on then
+			phase = "Idle"
+			return
+		end
+		if ClimbEnd.over(look(on.number), standIns()) then
+			-- the last friend was kept just now: the end lands as their catch cuts to black
+			local t = now()
+			local first = overSince or t
+			overSince = first
+			if t >= first + ClimbEnd.AfterCatch then
+				endClimb("Kept", on.number, t)
+			end
+		else
+			overSince = nil
+		end
+	end
+
+	function system.stop(_: any)
+		ends += 1
+		for _, conn in connections do
+			conn:Disconnect()
+		end
+		table.clear(connections)
+		if topping then
+			topping:disconnect()
+			topping = nil
+		end
+		if remote then
+			remote:Destroy()
+			remote = nil
+		end
+		Workspace:SetAttribute(ClimbEnd.Attribute, nil)
+		Workspace:SetAttribute(ClimbEnd.StartAttribute, nil)
+		table.clear(lost)
+		table.clear(asked)
+	end
+
+	return system
+end
+
+return ClimbEnds

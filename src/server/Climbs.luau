@@ -2,7 +2,8 @@
 --[[
 	Climbs: the climb, floor after floor (L-08b, D-104), as Dandy's World's elevator opens on a new
 	floor at every stop. The smallest stand-in for Brix's round loop (ENG-13, not built yet:
-	docs/FRAMEWORK.md): it deals and lays floors and hands the team up them; no lobby, no results.
+	docs/FRAMEWORK.md): it deals and lays floors and hands the team up them; the end and its
+	results are ClimbEnds' (L-08d); no lobby yet.
 
 	- `begin` starts a climb on a floor: deals it from its own seed (`Climb.seedOf`), lays it, puts
 	  it in every floor system (the deal, kept players, keepers, bubble wrap, the corner map) and
@@ -21,9 +22,14 @@
 	  moment; as the floor is cleared under them they lose their character and watch a friend. A
 	  ride that comes back after all leaves them in. Cut Free lets them back in on the floor the
 	  climb is on (`Climbs.Arrival`), once there's one to stand on.
-	- Nobody aboard, the top floor, or a next floor that isn't laid by `Climb.Latest`: the car
-	  arrives back at its own lobby and is armed again for the same floor (L-08d ends the climb);
-	  a next floor already laid waits for the next time it leaves.
+	- The top (`Climb.Top`): the car leaving it with friends aboard ends the climb, an escape
+	  (`topped`; ClimbEnds shows it). Whoever's left on the floor is left behind as at any floor,
+	  and loses their character at the cable's second knock, as at a hand-off.
+	- Nobody aboard, or a next floor that isn't laid by `Climb.Latest`: the car arrives back at
+	  its own lobby and is armed again for the same floor; a next floor already laid waits for the
+	  next time it leaves.
+	- `finish`, once the end covers every screen: the climb stops, its floors and the tools lying
+	  on them go. `begin` starts the next one (ClimbEnds' "Again").
 
 	Only the threads of a ride in progress run; nothing is stepped.
 ]]
@@ -69,6 +75,14 @@ export type Options = {
 	parent: Instance, -- what floors are laid into
 }
 
+-- The car leaving the top floor with friends aboard: the team made it.
+export type Topped = {
+	from: OnFloor,
+	at: number, -- server time the gate hit its post
+	riders: { Player },
+	stranded: { Player }, -- left on the floor
+}
+
 -- Riders moved into the next floor's car.
 export type HandOff = {
 	from: OnFloor,
@@ -83,11 +97,20 @@ export type Climbs = Brix.System & {
 	laid: Brix.Signal<OnFloor>,
 	-- Fires as riders are moved into the next floor's car.
 	handedOff: Brix.Signal<HandOff>,
+	-- Fires as the car leaves the top floor with friends aboard.
+	topped: Brix.Signal<Topped>,
 	-- Starts a climb on its first floor (yields while it's laid), clearing any before it; nil,
 	-- after a warning, when the place lacks a template.
 	begin: (self: any, options: Options) -> OnFloor?,
 	-- The floor the team plays now: its car is the one they board.
 	current: (self: any) -> OnFloor?,
+	-- The server time the climb began (its first floor armed); nil with no climb.
+	startedAt: (self: any) -> number?,
+	-- The options the latest climb began with (kept after it's finished, for the next).
+	last: (self: any) -> Options?,
+	-- Stops the climb: its threads end, the tools lying on its floors and the floors themselves go
+	-- (every floor system lets go of them; a kept player is let out).
+	finish: (self: any) -> (),
 }
 
 local function now(): number
@@ -139,6 +162,7 @@ end
 function Climbs.new(): Climbs
 	local laidSignal = Brix.Signal.new() :: Brix.Signal<OnFloor>
 	local handedOff = Brix.Signal.new() :: Brix.Signal<HandOff>
+	local toppedSignal = Brix.Signal.new() :: Brix.Signal<Topped>
 	local elevators: Elevators.Elevators? = nil
 	local deals: Deals.Deals? = nil
 	local keptPlayers: KeptPlayers.KeptPlayers? = nil
@@ -148,6 +172,8 @@ function Climbs.new(): Climbs
 	local slots: Slots.Slots? = nil
 	local watching: Watching.Watching? = nil
 	local options: Options? = nil
+	local lastOptions: Options? = nil
+	local started: number? = nil
 	local playing: OnFloor? = nil
 	local between = false -- a ride with riders is under way and hasn't handed them off yet
 	local floors: { OnFloor } = {} -- every floor laid now: the one played, and the next once it's laid
@@ -278,8 +304,8 @@ function Climbs.new(): Climbs
 		table.insert(waits, waiting)
 	end
 
-	-- The car left `on` with nobody aboard, at the top, or the next floor came too late: it
-	-- arrives back at this lobby and is armed again for it (L-08c and L-08d replace this).
+	-- The car left `on` with nobody aboard, or the next floor came too late: it arrives back at
+	-- this lobby and is armed again for it.
 	local function comeBack(on: OnFloor, mine: number)
 		local elevator = on.elevator
 		if elevator then
@@ -461,7 +487,7 @@ function Climbs.new(): Climbs
 		local mine = climb
 		local elevator = on.elevator
 		local standIns = if elevator then standInsIn(elevator) else {}
-		if (#leaving.aboard == 0 and #standIns == 0) or on.number >= Climb.Top then
+		if #leaving.aboard == 0 and #standIns == 0 then
 			comeBack(on, mine)
 			return
 		end
@@ -482,6 +508,34 @@ function Climbs.new(): Climbs
 		if watching then
 			watching:strand(stranded, leaving.at)
 		end
+		if on.number >= Climb.Top then
+			-- the top: the team made it (ClimbEnds ends the climb). Whoever's left on the floor
+			-- loses their character at the cable's second knock, as at a hand-off, so nothing
+			-- reaches them before the end covers every screen.
+			toppedSignal:fire({
+				from = on,
+				at = leaving.at,
+				riders = leaving.aboard,
+				stranded = stranded,
+			})
+			spawn(function()
+				while climb == mine and rideSince(leaving.at) < Climb.HandOff do
+					task.wait()
+				end
+				local w = watching
+				if climb ~= mine or not w then
+					return
+				end
+				local still: { Player } = {}
+				for _, player in stranded do
+					if player.Parent and w:isOut(player) then
+						table.insert(still, player)
+					end
+				end
+				w:watch(still, leaving.at)
+			end)
+			return
+		end
 		spawn(function()
 			ride(o, on, leaving, mine, stranded, standIns)
 		end)
@@ -500,20 +554,38 @@ function Climbs.new(): Climbs
 			c:disconnect()
 		end
 		table.clear(waits)
+		local gone = table.clone(floors)
 		for _, on in floors do
 			if on.model.Parent then
 				on.model:Destroy()
 			end
 		end
 		table.clear(floors)
+		-- the tools lying on its floors go with them (a new floor 1 is laid where the last one
+		-- was), once the units' removal has been handled: a ladder stood on a unit falls flat as
+		-- its unit goes (Ladders), and goes with the rest
+		local s = slots
+		if s and #gone > 0 then
+			task.defer(function()
+				s:clear(function(at: Vector3): boolean
+					for _, on in gone do
+						if onFloor(on, at) then
+							return true
+						end
+					end
+					return false
+				end)
+			end)
+		end
 		playing, ahead, layingAhead, between = nil, nil, false, false
-		options = nil
+		options, started = nil, nil
 	end
 
 	local system = {
 		name = "Climbs",
 		laid = laidSignal,
 		handedOff = handedOff,
+		topped = toppedSignal,
 	}
 
 	function system.start(_: any, context: Brix.Context)
@@ -550,6 +622,7 @@ function Climbs.new(): Climbs
 		departing, opening = nil, nil
 		laidSignal:disconnectAll()
 		handedOff:disconnectAll()
+		toppedSignal:disconnectAll()
 	end
 
 	function system.begin(_: any, o: Options): OnFloor?
@@ -561,7 +634,7 @@ function Climbs.new(): Climbs
 			)
 			return nil
 		end
-		options = o
+		options, lastOptions = o, o
 		local mine = climb
 		local on = lay(o, o.number)
 		if climb ~= mine then
@@ -569,11 +642,24 @@ function Climbs.new(): Climbs
 		end
 		playing = on
 		arm(on)
+		started = now()
 		return on
 	end
 
 	function system.current(_: any): OnFloor?
 		return playing
+	end
+
+	function system.startedAt(_: any): number?
+		return started
+	end
+
+	function system.last(_: any): Options?
+		return lastOptions
+	end
+
+	function system.finish(_: any)
+		reset()
 	end
 
 	return system

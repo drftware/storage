@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Brix = require(ReplicatedStorage.Brix)
+local ClimbEnds = require(script.ClimbEnds)
 local Climbs = require(script.Climbs)
 local Crawls = require(script.Crawls)
 local Deals = require(script.Deals)
@@ -55,6 +56,8 @@ local systems: { Brix.HostEntry } = {
 	-- The climb: each floor dealt and laid while the team rides up to it, the one below cleared.
 	{ slot = "watching", system = Watching.new() },
 	{ slot = "climbs", system = Climbs.new() },
+	-- The climb's end: everyone kept or left, or the top; the results under it, and "Again".
+	{ slot = "climbEnds", system = ClimbEnds.new() },
 }
 if RunService:IsStudio() then
 	-- A test hall of real units to try the doors in. Never on a live server.

@@ -866,6 +866,28 @@ verified: a doc page, Studio, or "untested".
   takes "Next", "Back" and "CutFree" from the Client. Set the Client's
   `settings().Rendering.QualityLevel` to Level12 first (the Edit setting doesn't carry into
   Play), or the car draws black after the 1000-stud move.
+- **Testing the end from the MCP** (L-08d, 2026-11-11): one player, no stand-ins. A wipe: the
+  catch recipe above (seed 7, floor 1, 157's guard) ends the climb about 1 s after you're kept
+  (Output: "ClimbEnds: the climb ended (Kept)"). The top: set Workspace's `DevFloorNumber` to 3 in
+  Edit, Play, punch floor 3's code (seed 7: 4275) and step aboard as in the climb recipe; the
+  gate shuts about 31 s later and the end is set as the car leaves (white from 6.1 s). Left
+  behind into a wipe: the left-behind recipe, then destroy the stand-ins on the Server once
+  you're watching. To look at one frame, set `DevRideHold` on the **Client** (only that screen
+  holds; EndView runs on `RideClock`): 3.64 the title slamming, 4.14 a photo landing, 12 all of
+  it. Press Again with `user_mouse_input` (moveTo `LocalPlayer.PlayerGui.ClimbEnd.Content.Again`,
+  then a left click) or `user_keyboard_input` Return. For phone size, set the Client's
+  `PlayerGui.ClimbEnd.Content.Size` to `UDim2.fromOffset(750, 360)` (a landscape iPhone's safe
+  area) and capture; set it back to `fromScale(1, 1)`.
+- **A locked Mac stops Studio drawing** (2026-11-11): with the screen locked, the Client's
+  `RenderStepped` fired 0 times a second, so the client Host (stepped on it) stood still and
+  `screen_capture` timed out, while Heartbeat ran on. `caffeinate -u` woke the display for 30 s
+  only; `caffeinate -d -u -t 2400` kept it on, and Studio drew at about 15 frames a second behind
+  the lock screen. Check with a one-second count of `RenderStepped` before trusting a log.
+- **Scaled text stops at 100 px** (L-08d): a `TextScaled` label never draws past 100 px, so a
+  `UIScale` over it grew its box but not its text on a big screen. A title that has to grow
+  (EndView's slam) takes a fixed `TextSize` from the screen's height instead.
+- **Quality set in Play stays after Stop** (L-08d): `settings().Rendering.QualityLevel` set to
+  Level12 on the Client in Play was still Level12 in Edit after Stop; set it back to Automatic.
 - **A character taken away stays away** (2026-11-11): `player.Character = nil` then
   `character:Destroy()` on the server left the player with no character for minutes with
   `CharacterAutoLoads` on (only a death respawns); `player:LoadCharacter()` brings one back.

@@ -19,8 +19,9 @@
 	- Back in: Cut Free (the GDD's revive, DOORS' model) puts them on their friends' floor, in its
 	  lobby, as soon as there's a floor to stand on (not between two floors mid-ride): a new
 	  character, `Left.BackAttribute` for their screen's moment. The developer product isn't made
-	  yet, so only Studio takes the ask (`OWNER.md`). With nobody left climbing to watch, everyone
-	  watching is let back in the same way (a stand-in until L-08d ends the climb).
+	  yet, so only Studio takes the ask (`OWNER.md`).
+	- The climb's end takes everyone watching with it (`release`, L-08d): the results screen is
+	  where they're back (ClimbEnds), and "Again" gives them a character in the next climb.
 
 	In Studio, a model tagged `Left.StandInTag` (a stand-in friend) can be watched, so one player
 	can be left behind (Climbs carries it up with the car).
@@ -45,6 +46,9 @@ export type Watching = Brix.System & {
 	watch: (self: any, players: { Player }, at: number) -> (),
 	-- Whether `player` is out of the climb (left, or watching).
 	isOut: (self: any, player: Player) -> boolean,
+	-- The climb is over: everyone out of it stops watching, with no character given back (the
+	-- results screen is where they are; ClimbEnds gives everyone one in the next climb).
+	release: (self: any) -> (),
 	-- Where someone let back in stands, on the floor the climb is on now; nil while there's no
 	-- floor to stand on (no climb, or a ride between two floors). Climbs sets it.
 	setArrival: (self: any, arrival: () -> CFrame?) -> (),
@@ -70,8 +74,6 @@ local STUDIO = RunService:IsStudio()
 -- Seconds between the server's looks at who each watcher follows (a friend gone, respawned or
 -- moved on): quick enough that the screen never holds a dead view for long.
 local CHECK_EVERY = 0.25
--- Seconds with nobody to watch before everyone watching is let back in (L-08d replaces this).
-local ALONE_AFTER = 3
 -- Seconds a let-in waits for a floor to stand on (a ride is between floors for at most about 10).
 local FLOOR_WAIT = 20
 -- Seconds the server waits for the friend's surroundings to stream in to a watcher.
@@ -103,7 +105,6 @@ function Watching.new(): Watching
 	local arrival: (() -> CFrame?)? = nil
 	local remote: RemoteEvent? = nil
 	local since = 0 -- seconds since the last look
-	local alone = 0 -- seconds with watchers and nobody to watch
 
 	-- Everyone who can be watched now, by key.
 	local function friends(): { [string]: Friend }
@@ -227,15 +228,14 @@ function Watching.new(): Watching
 	end
 
 	-- Each watcher still follows a living friend, on their current character: or the next one.
-	local function check(dt: number)
-		local watchers = 0
+	-- With nobody left to watch, the climb is over (ClimbEnds ends it).
+	local function check()
 		local list: { [string]: Friend }? = nil
 		for player, entry in left do
 			local value = entry.value
 			if not value or entry.rejoining then
 				continue
 			end
-			watchers += 1
 			local all = list or friends()
 			list = all
 			local friend = if entry.key then all[entry.key] else nil
@@ -251,17 +251,6 @@ function Watching.new(): Watching
 			elseif friend == nil and entry.key ~= nil then
 				point(player, entry, nil)
 			end
-		end
-		if watchers > 0 and list and next(list) == nil then
-			alone += dt
-			if alone >= ALONE_AFTER then
-				alone = 0
-				for player in left do
-					letIn(player, "Alone")
-				end
-			end
-		else
-			alone = 0
 		end
 	end
 
@@ -297,7 +286,7 @@ function Watching.new(): Watching
 		if since < CHECK_EVERY then
 			return
 		end
-		check(since)
+		check()
 		since = 0
 		-- a character that turns up while watching (not by a let-in): they're back at the spawn,
 		-- out of the watch
@@ -395,6 +384,20 @@ function Watching.new(): Watching
 
 	function system.isOut(_: any, player: Player): boolean
 		return left[player] ~= nil
+	end
+
+	function system.release(_: any)
+		for player, entry in left do
+			if entry.value then
+				entry.value:Destroy()
+			end
+			if player.Parent then
+				player.ReplicationFocus = nil
+				player:SetAttribute(Left.Attribute, nil)
+			end
+		end
+		-- a let-in waiting for a floor sees it's no longer theirs and stops
+		table.clear(left)
 	end
 
 	function system.setArrival(_: any, f: () -> CFrame?)

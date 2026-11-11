@@ -29,8 +29,13 @@ local Climb = {}
 -- floors' nearest halls stand over 700 apart, far past the 256-stud streaming radius.
 Climb.Spacing = 1000
 
--- The top of the building: the climb deals no floor past it (Floor's plans run 1 to 10).
-Climb.Top = 10
+-- The building's floors (Floor's plans run 1 to 10).
+Climb.Building = 10
+
+-- The top of the climb: the car leaving it with friends aboard ends the climb, an escape
+-- (ClimbEnd), and no floor is dealt past it. A stand-in at floor 3 until Phase 2 builds the top
+-- floor (`Building`, Unit 0's), so a run is short enough to play again and again (OWNER.md).
+Climb.Top = 3
 
 -- Seconds into the ride that riders are moved into the next floor's car: the cable's second knock,
 -- late in the cruise, with the hall you left long black and the next one's dark not yet lifting.

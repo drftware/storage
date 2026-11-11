@@ -7,6 +7,39 @@ nowhere else.
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 
+## Now: judge L-08d, the climb ends (built Nov 11)
+
+Verified in Studio on seed 7, one player: caught by 157's Mannequin, the climb ended ("Kept",
+floor 1); floor 3 punched and ridden alone ended in the light ("Made it"); left behind watching two
+stand-ins who were then removed ended as "Kept" with your photo on floor 1 and the team on floor
+2. "Again" by mouse and by Enter each laid a fresh floor 1 with you in its lobby, everything back
+to normal. Frames in `docs/art/L-08d-*.jpg`. What Studio can't tell: two players, a phone, the
+sounds, how it feels.
+- [ ] **Two players, a wipe.** Both get caught (or one left behind, then the other caught). On the
+  last catch the black should hold, the building go quiet, two doors slam far off, then "Kept"
+  slams down with a low hit and a jolt, both photos drop in greyed and tilted with the floor each
+  was lost on, "Floor N · time", then the warm "Again". Does it feel like a loss? Too long or
+  too short? Are the far doors right for "the building's sound"?
+- [ ] **Two players, Again.** One presses: on both screens their photo should warm up with a tick,
+  their button reads "Waiting", and "Going up in 10" counts down. The other presses: it goes at
+  once with the elevator's chime and "Going up", a moment of black, then you're side by side in a
+  new floor 1's lobby as the black lifts with the bell and "Floor 1". Is one press obvious? Is
+  10 s right?
+- [ ] **Two players, the top.** Ride up from floor 3 together, or one rides and one stays: at the
+  cable's second knock the light floods in, the motor's gone, the bell rings clear, then "Made
+  it" in warm light, riders' photos in colour and the left one's greyed. Does it feel like an
+  escape?
+- [ ] **On a phone**: the screen and the button at phone size; tap Again.
+- [ ] **Decide, defaults in place** (D-106): (1) **The top is floor 3** for now, so a run is short
+  enough to replay (Phase 2's top floor is 10, Unit 0's); say if it should be higher. (2)
+  **Where Again leads**: straight into a fresh building's floor 1 lobby, everyone side by side.
+  Your lobby plan replaces this (one function, `ClimbEnds.go`). (3) **Again waits** for
+  everyone, or 10 s after the first press. (4) **The Missing board** (GDD: your photo goes up in
+  the lobby with the floor you were kept on): the results show the same photos and floors; the
+  board waits for your lobby plan. (5) **A wipe ends it** even though a watcher could otherwise
+  Cut Free back in: with nobody left climbing there's no floor to cut back into. (6) The words:
+  "Kept", "Made it", "Floor 2 · 6:42", "Again", "Waiting", "Going up in 10", "Floor 1".
+
 ## Now: judge L-08c, left behind (built Nov 11)
 
 Verified in Studio on seed 7 with two stand-in friends (clones of you) riding while you stayed in
@@ -31,9 +64,8 @@ friend, a phone, and how it feels.
   Robux): make the developer product and say its price; until then only Studio shows the button
   (it's free there, so you can feel it). It puts you in your friends' lobby in front of the car,
   facing the hall, with the film's rip and "Back in"; mid-ride it waits for the next floor. (2)
-  What you carried when left behind drops and goes with the floor. (3) With nobody left climbing
-  to watch, everyone watching is let back in on the floor (until L-08d ends the climb). (4) The
-  line on the bar is "Back in when they finish".
+  What you carried when left behind drops and goes with the floor. (3) The line on the bar is
+  "Back in when they finish" (the results screen is where you're back, L-08d).
 
 ## Now: judge L-08b, the next floor (built Nov 11)
 
