@@ -16,7 +16,8 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   lobby. Nobody left to watch lets everyone back in (L-08d replaces that). GateClock no longer
   shows its own "Left behind".
 - Verified in Studio on seed 7 with stand-in friends (STUDIO.md, "Testing left behind from the
-  MCP"). Two players, a phone, kept-and-left: `OWNER.md`.
+  MCP"). Two players, a phone, kept-and-left: `OWNER.md`. After the Studio runs, the arrows'
+  press pop was rewritten to allocate nothing a frame: passes checks, untested in Studio.
 - Studio: nothing imported; left in Edit, seed 7, floor 1; `DevRideHold` unset; quality back on
   Automatic. A `caffeinate -u` timer (about 40 min) ends on its own.
 
