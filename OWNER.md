@@ -7,6 +7,38 @@ nowhere else.
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 
+## Now: judge L-06c2, the catch (built Nov 11)
+
+Verified in Studio on seed 7, floor 1, caught by 157's guard three times. Frames were held with
+Workspace's `DevCatchHold` and captured: the dread (it looms over you in the doorway, its face
+faintly lit, the HUD gone), the rush (its arms clawing in low from both sides, its cocked blank
+face growing), the landing (its face taller than the screen), the press, the black with "Caught",
+the eyes cracked open in the unit. The sting's layers were measured playing on the caught screen
+on the rush's first frame and the thunk as it lands; a real-time run logged it frame by frame
+(black at 1.0 s, awake by 4.8 s). A stand-in friend's film wind was captured mid-turn. Nobody
+here can listen or run two players: the sound by ear, a phone, and a friend's view are untested.
+- [ ] **Get caught, headphones on** (one player). Open Unit 157 from (47, 3, -632), stand still
+  and let the guard reach you. The chase music and the hall should cut dead the instant it has
+  you; your view is wrenched to its face and it holds still for half a second; then it lunges:
+  a scream, a huge hit and a rush of air, its face crashing into your eyes, a hollow thunk and a
+  hard knock; black. In the black, "Caught" and the film screeching round you; then your eyes
+  crack open, drop shut and open, blurred and grey, the hall's sound back. Did it make you
+  jump? Is any of it too long, too soft, or too loud?
+- [ ] **On a phone's speaker:** the same on a real phone. The scream and the whoosh are the parts
+  a phone plays; the big hit is mostly bass. If the moment goes thin, say so. Also judge the
+  landing frame on a wide phone: its face should fill the screen's height, cocked over.
+- [ ] **A friend watching** (two players): stand a few studs from a friend as they're caught. Its
+  face never rushes you; you hear the squeal and see the film climb them from the feet as they
+  turn once round, then they're gone. Does it read as being wrapped?
+- [ ] **Your maturity answers for fear:** the catch is now a jump scare (a face rushing the camera
+  with a scream, no blood). Check the experience's maturity questionnaire answer about fear and
+  startling content in Creator Hub before you publish, and update it if it says otherwise.
+- [ ] **Decide, defaults in place** (D-102, numbers in `Caught`): (1) the dread before the lunge,
+  0.48 s (longer is more dread, shorter more jump); (2) how close its face lands, 1.5 studs then
+  pressed to 0.85 (closer shows only its surface); (3) the wake, 2.2 s after 1.25 s of black, the
+  whole catch 4.4 s where the GDD said 2: keep the slow wake?; (4) the warm light that comes up on
+  its face as it lunges, so its face isn't a black shape: keep it?
+
 ## Now: judge L-06c1, the Mannequin's walk (built Nov 10)
 
 Verified in Studio on seed 7, floor 1: 157's guard stepped out and roamed while I watched from 12
@@ -169,7 +201,7 @@ an air horn I carried lay 1.9 studs from where I stood; opening the unit's door 
 let me out the moment it reached the top, and I walked out. Not yet seen with a friend or on a
 phone, and getting out alone by Reset is untested.
 - [ ] **The moment** (Play on a computer, then at phone size). Open Unit 157 from (47, 3, -632)
-  and stand still: the Mannequin catches you, the screen closes to black with "Caught", and opens
+  and stand still: the Mannequin catches you (its face rushes you, L-06c2 above), and you wake
   on the dark inside of a unit somewhere on the floor, the door's slats ahead and "Wait for a
   friend" low on the screen. You can look round but not walk, and no buttons show. Output names
   the unit ("(you) is wrapped and kept in Unit124"). Does waking in the dark land? Is it too
@@ -494,14 +526,8 @@ door is all the way up, before it walks out (you have about a second).
 
 ## Now: judge L-06b3c, the catch (built Nov 10)
 
-Seed 7, floor 1, as for L-06b3a2 below; Unit 126 holds the awake Mannequin.
-- [ ] **The moment** (Play on a computer, then at phone size). Stand in the dark outside 126
-  (walk away from the hall lights until they're out), open it and stand still. It comes out, and
-  as it reaches arm's length your view jerks, the screen drops half dark and closes to black,
-  "Caught" sits in the dark, and you can't move; then it opens inside a unit (L-07a, above).
-  Output says "the Mannequin catches (you)". Does it land as its
-  hand closing on you, or as a cut? Is 2 s in the dark right? (Verified in Studio Nov 10: caught
-  at about 3.4 studs; held still exactly the 2 s.)
+Seed 7, floor 1, as for L-06b3a2 below; Unit 126's Mannequin is dealt asleep now, so use
+157's guard. The catch itself is L-06c2's now (above).
 - [ ] **The torch saves you.** Again, torch on it as the door lifts: it hunts you frozen and never
   comes, however long you hold it. Torch off: it comes and catches you. (Verified in Studio: 12 s
   frozen, then caught 1 s after the torch went off.)

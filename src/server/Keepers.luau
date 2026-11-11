@@ -320,7 +320,8 @@ function Keepers.new(): Keepers
 		end
 		player:SetAttribute(Kept.Attribute, true)
 		if caughtRemote then
-			caughtRemote:FireClient(player)
+			-- its body, so their screen throws that face at them (CaughtView)
+			caughtRemote:FireClient(player, entry.body.model)
 		end
 		if TRACE then
 			print(`Keepers: the {entry.keeper.row.name} catches {player.Name}`)

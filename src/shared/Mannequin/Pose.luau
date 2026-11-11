@@ -193,9 +193,30 @@ local Poses: { [string]: Pose } = {
 		RightShoulder = { x = -16, z = 8 },
 		RightElbow = { x = 28 },
 	},
+	-- The catch (L-06c2): thrown forward at you off its good leg, both arms out wide and low,
+	-- elbows bent, hands clawing in from either side of you, its head cocked hard over. The arms
+	-- frame its face rather than cover it. Only the caught player sees it, for the half second its
+	-- face rushes their eyes (CaughtLunge).
+	Lunge = {
+		Root = { x = -12, z = 4 },
+		Waist = { x = -18, y = 6, z = -4 },
+		Neck = { x = 10, y = -10, z = 30 },
+		LeftShoulder = { x = 62, y = -40, z = -48 },
+		LeftElbow = { x = 40 },
+		LeftWrist = { z = 22 },
+		RightShoulder = { x = 56, y = 40, z = 44 },
+		RightElbow = { x = 46 },
+		RightWrist = { z = -18 },
+		RightHip = { x = 32, z = 3 },
+		RightKnee = { x = -28 },
+		RightAnkle = { x = -8 },
+		LeftHip = { x = -26, z = -4 },
+		LeftKnee = { x = -4 },
+		LeftAnkle = { x = -18 },
+	},
 }
 Pose.Poses = Poses
-Pose.Names = { "Still", "StepRight", "PassRight", "StepLeft", "PassLeft" }
+Pose.Names = { "Still", "StepRight", "PassRight", "StepLeft", "PassLeft", "Lunge" }
 
 -- What's wrong with a pose, if anything: joints it doesn't have, turns past a joint's limits.
 function Pose.check(pose: Pose): { string }

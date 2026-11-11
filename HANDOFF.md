@@ -2,49 +2,51 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-10, session 89 (overnight run, 4 of up to 15) · **Checks:** green ·
+**Updated:** 2026-11-11, session 90 (overnight run, 5 of up to 15) · **Checks:** green ·
 **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- **L-06c1 done (D-101): the Mannequin limps and sounds heavy.** A stiff left leg dragged round
-  on its toe, uneven steps and holds, its head lolling and landing a beat late (`Pose.Walk`).
-  Each beat is layered (`KeeperRows` tell, `KeeperTell`): a hollow fibreglass thunk heard to 70
-  studs, a body's weight that comes in as it nears (`heft`: full within 10, a tenth by 40), a
-  concrete scrape for the drag, a creak as it turns 40 degrees (`KeeperView` → `turned`, measured
-  from its first real facing). The clack and knocks are gone. Silent standing or lit. Verified in
-  Studio (log in ROADMAP).
-- **Testing:** docs/STUDIO.md, "Watching a keeper roam, from the MCP"; the measured takes are
-  under "Sounds measured for the keeper's walk". By ear and on a phone: the owner's (`OWNER.md`).
-- Studio: nothing imported this session; left in Edit, seed 7, floor 1.
+- **L-06c2 done (D-102): the catch is a jump scare.** The hall goes silent and the HUD goes;
+  your view is wrenched to its face and held (0.48 s); its head twitches back and rushes your eye
+  as the view crash-zooms, with a scream, "Razormorph K" and a whoosh, its own groan and scrape
+  (row beat Lunge); it lands taller than the screen with its thunk (Catch) and a hard knock,
+  presses in, then a cut to black at 0.96 s (`Caught.Dark`, when the server moves you). "Caught"
+  in the black over your own squeal; a slow wake (eyes crack, shut, open; blurred, grey; the
+  hall's sound back). Friends see the film climb you as you turn once round (`Kept.wind`,
+  KeptWrapOn, was KeptSqueal); the server wraps you at the catch now. Code: `CaughtLunge`, `Caught`,
+  `Pose.Poses.Lunge`, `Mannequin.head`. Verified in Studio (log in ROADMAP).
+- **Testing:** docs/STUDIO.md, "Testing the catch from the MCP" (157's guard; Workspace's
+  `DevCatchHold` stops the catch on a frame) and "Sounds measured for the catch". By ear, on a
+  phone and with a friend: the owner's (`OWNER.md`).
+- Studio: nothing imported this session; left in Edit, seed 7, floor 1; `DevCatchHold` unset.
 
-## Next task: L-06c2 The catch as a jump scare
-The moment: its blank face fills your screen with a hit of sound, then the black. The owner,
-Nov 10 night: getting caught "doesn't seem like a big deal" today; it has to land as the worst
-thing that can happen to you. No new keepers: this is the Mannequin's catch only.
+## Next task: L-08a The ride
+The moment: the gate shuts, the car shudders and climbs while a floor counter ticks, and its
+doors open on a new hall, as Dandy's World's elevator carries the team between floors.
 1. Owner test results first, if pasted.
-2. Read ROADMAP L-06c2 and D-077 (today's catch: a jerk of the view, the black, "Caught") and
-   `CaughtView`. Precedent: Piggy's and Five Nights at Freddy's catches (the face rushes the
-   camera with a scream, no blood). This overrides the GDD's "no screamer" line (owner, Nov 10).
-3. The lunge: on the caught player's screen only, the Mannequin's faceless head (a client copy,
-   posed by `Pose`, its head lolled as D-101's walk lolls it) rushes the camera over about half a
-   second, filling it, with a hard camera kick; then `CaughtView`'s black as now. Timing and
-   distances as Config feel numbers with comments, pure curves Lune-tested.
-4. The sound: a loud sting over the wrap's squeal, measured as docs/STUDIO.md does (APM's
-   stings are measured there: "Rising Fear Hit 1", "Brute Force Sting 3", "Shock (A)"); layer the
-   Mannequin's own creak and thunk (`KeeperRows` tell) so it's its sound, not a stock one.
-5. Friends who see it: the body spun once in film before it vanishes (the wrap, L-07b).
-6. Flag in `OWNER.md`: check the experience's maturity questionnaire answer for fear.
-**Acceptance:** checks green; in Studio on seed 7, floor 1 (docs/STUDIO.md, "Testing the catch
-from the MCP"): the head captured filling the camera mid-lunge, the sting measured playing on the
-caught screen only, the black and "Caught" after as before, a friend's view described from a
-second client or left to the owner; Output clean; no per-frame allocation in the lunge's step.
-**Read first:** ROADMAP L-06c2; D-077; `src/client/CaughtView.luau`; docs/STUDIO.md's "Testing
-the catch from the MCP" and "Sounds measured for the chase"; `src/shared/Mannequin/init.luau`
-(`clone`, `pose`).
+2. Read ROADMAP L-08 and L-08a, D-046 (the leaving and today's stand-in ride: 4 s to black, then
+   back to the spawn), `Departure` (the gate's clock, `AboardAttribute`: who rode) and the GDD's
+   elevator section only (docs tools, never WebFetch). Brix's round loop (ENG-13) hadn't landed on
+   Nov 10: check `docs/FRAMEWORK.md` and Brix's ROADMAP before building any of the loop here.
+3. The ride on the server's clock, as the gate's is (one replicated value every screen counts
+   from): everyone aboard rides, nobody else. Their screens: a lurch as it starts, a shudder and
+   rumble while it climbs, the car's readout counting up (`Readout`), a slowing and a ding as it
+   arrives, the doors opening. Feel numbers in shared Config with comments; pure timing curves
+   Lune-tested.
+4. Until L-08b lays the next floor, the car arrives at a stand-in (the same floor's lobby, the
+   counter one higher); replace DevCorridor's stand-in ride (`Departure.Ride`, line ~578).
+5. Sounds measured (docs/STUDIO.md's way), for a phone first: motor hum, cable clanks, the ding.
+6. Left behind stays as it is (L-08c's); the lobby stays out of scope (L-08e waits on the owner).
+**Acceptance:** checks green; in Studio on seed 7, floor 1: punch 1097, board, the gate shuts at 0,
+the ride logged frame by frame (lurch, shake, counter ticks, arrival), sounds measured playing on
+riders' screens only, a capture mid-ride and at the doors opening; Output clean; no per-frame
+allocation in the ride's step.
+**Read first:** ROADMAP L-08/L-08a; D-046; `src/shared/Elevator/Departure.luau`;
+`src/server/Elevators.luau`; `src/client/ElevatorView.luau`; the GDD's elevator section.
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-08a the ride, L-08b the next floor, L-08c left behind, L-08d the climb ends. L-08e (the
-   start, in the lobby) waits for the owner's lobby plan (Nov 11).
+1. L-08b the next floor, L-08c left behind, L-08d the climb ends. L-08e (the start, in the
+   lobby) waits for the owner's lobby plan (Nov 11).
 2. L-15 keepers hear the keypad, dropped tools, the saw, crawls, the ladder and drop-ins.
 3. L-16a and L-16b, the fix pass before friends play; L-16c the roof crawl made smooth.
 4. L-17 every button on a phone at once; L-18 the art saved with the code (optional).

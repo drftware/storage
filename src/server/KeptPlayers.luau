@@ -9,11 +9,13 @@
 	(their root anchored, so only the server moves them), and the building picks the unit it
 	stores them in (`Kept.choose`: a shut unit away from them with nobody and no keeper in it, an
 	unopened one first). That unit is never dealt now (`Deals:hold`), so the friend who opens it
-	finds only them. Once their screen is black (`Caught.Dark`) they're put inside it, past its
-	middle facing the door (`Kept.Back`), and their screen opens on the dark inside. There they
-	stand wrapped head to foot in clear film (L-07b): a copy of `Props.KeptWrap` fitted to their
-	body at rest (`Kept.fit`), welded on, so the friend who lifts the door finds them in it. Their
-	own screen never shows it (CaughtView), and every screen plays the film's squeal (KeptSqueal).
+	finds only them. There and then they're wrapped head to foot in clear film (L-07b): a copy of
+	`Props.KeptWrap` fitted to their body at rest (`Kept.fit`), welded on and stamped with when it
+	went on (`Kept.WoundAttribute`), so friends watching see it wind round them (KeptWrapOn,
+	L-06c2) and the friend who lifts the door finds them in it. Their own screen never shows it
+	(CaughtView), and every screen plays the film's squeal (KeptWrapOn). Once their screen is
+	black (`Caught.Dark`, after its face has rushed them) they're put inside the unit, past its
+	middle facing the door (`Kept.Back`), and their screen wakes on the dark inside.
 
 	Inside, they can bang on their door (L-07c, `Remotes.Bang`, `Kept.ready`'s rate): the door
 	jolts and thuds as a trapped keeper's does (`Doors:move`, "Bang"), so keepers hear it as they
@@ -236,6 +238,8 @@ function KeptPlayers.new(): KeptPlayers
 		weld.Part0, weld.Part1, weld.C0 = h.root, wrap, offset
 		weld.Parent = wrap
 		wrap:AddTag(Kept.WrapTag) -- so every screen finds it for the strain and the tear
+		-- when it went on, so screens that see it now wind it on (KeptWrapOn)
+		wrap:SetAttribute(Kept.WoundAttribute, Workspace:GetServerTimeNow())
 		wrap.Parent = h.character
 		h.wrap = wrap
 	end
@@ -571,6 +575,9 @@ function KeptPlayers.new(): KeptPlayers
 		if deals then
 			deals:hold(unit)
 		end
+		-- the film goes on where they stand, so friends watching see it wind round them before
+		-- they vanish (KeptWrapOn); their own screen never draws it (CaughtView)
+		wrapUp(h)
 		local to = inside(floor, unit, humanoid.HipHeight + root.Size.Y / 2)
 		-- the unit may be far off: start streaming it in around them while the screen goes black;
 		-- held anchored, they can't fall if it isn't in yet
@@ -587,7 +594,6 @@ function KeptPlayers.new(): KeptPlayers
 				return
 			end
 			character:PivotTo(to)
-			wrapUp(h)
 			h.inside = true
 			local dev = Workspace:GetAttribute(Kept.DevPadlock)
 			h.left, h.lead =

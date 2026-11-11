@@ -912,10 +912,10 @@ L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
     cut; the five handlings and two more while the door stayed up a crack past 0, padlocked 0.25 s
     after it closed; the padlock left on after dying; a cut before the warning ended the clock.
     Friends' lines with a real second player and the sounds by ear are the owner's (`OWNER.md`).
-- [ ] **L-06c Scarier keepers** (owner, Nov 10: make the walk and the catch scarier, "nothing
-  gorey but leaning more toward jump scare"; L-07e is done, so these are next).
-  Two sessions. The walk was smooth and steady with a clack each step and joint knocks
-  (L-06b4; L-06c1 made it limp); today's catch is a jerk of the view, the screen going black and "Caught" (L-06b3c).
+- [x] **L-06c Scarier keepers** (owner, Nov 10: make the walk and the catch scarier, "nothing
+  gorey but leaning more toward jump scare"). Done Nov 11 in two sessions: the walk limps and
+  sounds heavy (L-06c1); the catch is a jump scare (L-06c2), no longer a jerk of the view, the
+  screen going black and "Caught" (L-06b3c).
   - [x] **L-06c1 A walk that frightens. Done Nov 10 (D-101).** The light wooden clack and the
     plastic knocks are gone. It limps now: a stiff left leg it drags round on its toe, its steps
     uneven (a short heavy plant, a long slow drag, a short stiff heel, a silent swing through), the
@@ -933,14 +933,23 @@ L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
     captured on lit copies (`docs/art/L-06c1-gait-front.jpg`, `-side.jpg`). By ear and on a phone
     is the owner's (`OWNER.md`). Not built: the dead-still-then-rush (a change to the server's
     motion; polish list below).
-  - [ ] **L-06c2 The catch as a jump scare.** The moment: its blank face fills your screen with a
-    hit of sound, then the black. The Mannequin's faceless head lunges into your camera for
-    about half a second with a loud sting over the wrap's squeal (Piggy's and Five Nights at
-    Freddy's catches: the face rushes the camera with a scream, no blood), then `CaughtView`'s
-    blackout as now. Friends who see it: the body spun once in film before it vanishes. This
-    overrides the GDD's "no screamer" line (owner, Nov 10). Check the experience's maturity
-    questionnaire answer for fear once it's in. Owner, Nov 10 night: "getting caught doesn't
-    seem like a big deal" today; it has to land as the worst thing that can happen to you.
+  - [x] **L-06c2 The catch as a jump scare.** The moment: its blank face fills your screen with a
+    hit of sound, then the black (Piggy's and Five Nights at Freddy's catches: the face rushes
+    the camera with a scream, no blood; overrides the GDD's "no screamer" line, owner Nov 10).
+    Done Nov 11 (D-102): the hall goes silent and the HUD goes, your view is wrenched to its face
+    and holds there (0.48 s), its head twitches back and rushes your eye as the view crash-zooms,
+    a scream, "Razormorph K" and a whoosh on the rush's first frame with its own groan and scrape,
+    its hollow thunk and the hardest kick and a knock as it lands taller than your screen, pressed
+    in, cut to black at 0.96 s; "Caught" in the black over your own film's squeal; a slow wake
+    (eyes crack open, drop shut, open; blurred and grey; the hall's sound back). Friends see the
+    film wind up you as you turn once round (`Kept.wind`, KeptWrapOn; the server wraps you at the
+    catch now). `CaughtLunge`, `Caught`'s curves (712 Lune checks), `Pose.Poses.Lunge`, the row's
+    Lunge and Catch beats. Verified in Studio on seed 7, floor 1, caught by 157's guard three
+    times: frames held with `DevCatchHold` and captured (the dread, the rush, the landing, the
+    press, the black, the wake), the sting's layers measured playing on the caught screen as the
+    rush starts and the thunk as it lands, a real-time run logged frame by frame, a stand-in
+    friend's wind captured mid-turn and settling; Output clean. A second client's view and the
+    sound by ear on a phone wait on `OWNER.md`.
 - [ ] **L-08 The ride and the next floor.** The elevator ride and a second floor, so the climb is
   a loop and not a single room. Brix: its round loop (ENG-13) if it has landed (not yet, checked
   Nov 10). Takes the GDD's "Left behind" (the gate shuts with you still kept or outside: you
@@ -1059,10 +1068,10 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
   nothing tells the floor someone's free. A short far cue (the rip muffled through walls) would,
   the way a far bang could (L-07c).
 
-- **The wrap going on (L-07b):** the film is welded on in the black, whole. A friend watching the
-  catch sees you vanish with a squeal; a quick spin of film round you first belongs with the catch's
-  jump scare (L-06c2). The squeal is one recording; layering a crackle of film under the peel
-  would sell it more.
+- **The wrap going on (L-07b, L-06c2):** friends see the film climb you as you turn once round,
+  but the film is one mesh scaled up from the feet; a band spiralling up (the cocoon's own bands
+  revealed in turn, as a pallet wrapper lays them) would read as wrapping, not rising. The squeal
+  is one recording; layering a crackle of film under the peel would sell it more.
 
 - **The air horn, felt by friends (L-14a2):** a friend standing beside your blast gets a small
   kick to their view too, fading over a few studs; and a breath of air hissing out of the can as
@@ -1098,9 +1107,15 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **The dent's fist on the door (L-06b3d2):** the trapped keeper stands back from its door and
   its hand never touches the slats; a blow could lunge its arm to the pocket the dent shows.
 
-- **The catch turns you to its face** (L-06b3c): as the dark closes, your view snaps round to the
-  keeper's face, as a grab would spin you, so you see what had you. Needs the camera taken over
-  for half a second without fighting Roblox's (CameraShake's way, or Scriptable and back).
+- **The catch's scream, varied (L-06c2):** every catch plays the same screech; two or three
+  takes (the other pterodactyl screeches, pitched alike) picked never twice running, as its
+  walk's takes are, would keep the tenth catch as sharp as the first.
+- **Its face in the light it's in (L-06c2):** the light on its face as it lunges is hung before it
+  from nowhere, warm white; a light that takes the colour of the hall's tubes or the unit's bulb
+  it came out of would sit truer.
+- **Waking in the dark (L-06c2):** the wake's blur and grey are lost in a shut unit's dark; the
+  blinks carry it. A faint glow under the door brightening as your eyes open (UnderDoor's spill)
+  would give them something to soften.
 
 - **The torch's freeze, nearer still** (L-06b4b3): your screen holds a keeper where it showed it,
   about 1.5 studs short of where the server froze it at a hunt (its 0.1 s delay plus your aim's

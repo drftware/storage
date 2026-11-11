@@ -534,14 +534,27 @@ verified: a doc page, Studio, or "untested".
   from you isn't streamed to your client, so do that on the Server. A sampler spawned with
   `task.spawn` from a Client `execute_luau` keeps running after the call returns; a LocalPlayer
   attribute carries its log back to a later call.
-- **Testing the catch from the MCP** (L-06b3c, 2026-11-10): seed 7, floor 1. On the Server take
-  the `TripsLights` tag off your root and pivot the character to (90, 3, -694) facing -Z (4 studs
-  out from 126's door); on the Client point the camera at 126's Open prompt, wait a second, then
-  `InputHoldBegin`/`InputHoldEnd`. The Mannequin sees you through the doorway as it lifts, comes
-  and catches you at about 3.4 studs (pivot to root, flat), and you land in the lobby at
-  (0, 3, -594). Sample `PlayerGui.Caught` on the Client every 0.05 s to read the blackout. For
-  the torch half, right-click once (`user_mouse_input`, mid-viewport) before opening: the body's
-  `Flashlight` model's `On` attribute says it's lit; it then hunts frozen in the unit.
+- **Testing the catch from the MCP** (L-06b3c, 2026-11-10; L-06c2, 2026-11-11): seed 7, floor 1.
+  126's Mannequin is dealt asleep now (it won't come); 157's guard is awake. On the Server take
+  the `TripsLights` tag off your root and pivot the character to (47, 3, -632) facing +X (wait for
+  `Unit157` on the Client: it streams in late); on the Client point the camera at 157's
+  `DoorButtons` WorldPosition from a `BindToRenderStep`, wait 1.2 s, then `InputHoldBegin`/`End`
+  on its Open prompt. The guard steps out, sees you 11 studs off and catches you about 2.2 s
+  after the open; you're kept in a unit nearby (154, 145, 109). To look at one frame of the
+  catch set Workspace's `DevCatchHold` (seconds after the catch; set it on the Client and only
+  that screen holds) before the open: the lunge, the black and the wake all stop there; set it
+  to a later time to step on, clear it to run on. Frames judged: 0.3 the dread, 0.72 and 0.775
+  the rush, 0.8 the landing, 0.86 the press, 1.6 the black, 2.66 the eyes cracked open. A
+  `PreRender` logger into `_G`, armed from a call that returns at once (the open in a
+  `task.spawn`), reads the real-time run. For a friend's view from one client, build a stand-in:
+  a template Mannequin clone (tags removed) with a `Props.KeptWrap` clone welded to its root,
+  tagged `KeptWrap` and stamped `KeptWound` = `GetServerTimeNow()`, parented last; hold it with
+  `DevCatchHold`. For the torch half, right-click once before opening: the body's `Flashlight`
+  model's `On` attribute says it's lit; it then hunts frozen.
+- **execute_luau puts the camera back** (L-06c2): a call during which the camera's type changed
+  (the catch's lunge makes it Scriptable) ends with Studio's assistant setting it back to Custom
+  ("The execute_luau changed camera type. Resetting..."). Arm a real-time test from a call that
+  returns before the catch, as above.
 - **Testing the trap from the MCP** (L-06b3d1, 2026-11-10): seed 7, floor 1. The Mannequin in
   126 stands 9.6 studs inside and crosses the door line about 0.9 s after the door is all the way
   up, so the slam has to land in that window. Stand beside the door, out of its sight through the
@@ -781,6 +794,22 @@ verified: a doc page, Studio, or "untested".
 - **The command bar caches `require`** (L-11c): after Rojo syncs a module, requiring it from
   `execute_luau` in Edit can still return the old one. Require a clone instead
   (`require(ReplicatedStorage.Shared.Tools:Clone())`), then destroy the clone.
+- **Sounds measured for the catch** (L-06c2, 2026-11-11; Edit, AudioPlayer to AudioAnalyzer with
+  `SpectrumEnabled`, 50 ms bins and the share of the first 1.5 s under 190 Hz / 190 to 470 / 470
+  to 2k / 2 to 6k / over 6k; then a quarter speed and 20 ms bins for the attacks). Chosen: "Creature
+  Screech Pterodactyl Vocals Screams 1" 9125474229 (0.92 s) up within 60 ms, 0/4/48/47/1, centroid
+  2.2 kHz (6 9125474505 and 7 9125474511 are quieter, 1.7 to 2 kHz); APM "Razormorph K" 1846681042
+  (6.5 s) full in 20 ms at about -6 dB RMS, rings for seconds, 50/21/20/8/1; "Whoosh Fast Swish By
+  5" 9120714365 (1.1 s) rises from 0 to its peak at 0.36 to 0.5 s, 9/35/49/7. Passed over: Daily
+  Sounds' "Horror Stinger" 130018094603454 (builds to a peak at 0.65 s), APM "Shock Chord"
+  1845391028 (ramps over 0.3 s), "Rising Fear Hit 3" 1841353939 (sharp, but 67% under 190 Hz),
+  "Supernaturalizer Hit 2", "Beautiful Horror - Stinger" 1 to 3, "Ghosting The Machine Tonal
+  Stab", "Showdown At The Docks 18" (55 to 87% under 190 Hz), "Shock (A)" (silent to 0.4 s),
+  "Piano Strings Attack 3", "Whoosh Fast Swish By 4". In Play, the caught screen's
+  `PlaybackLoudness` peaks: Razormorph 748 at volume 1.1, the screech 286 at 1.6 (raised to 2.4
+  over Razormorph's 0.9 for phones), the whoosh 284, the Lunge beat's scrape 188 and creak 64, the
+  Catch beat's weight 488 and thunk 303. The library's search turns up mostly re-uploads of other
+  games' jump scares (FNaF, Doors, Spooky's): never those.
 - **The kept wrap's squeal, measured** (L-07b, 2026-11-10; Edit, AudioPlayer at half speed to
   AudioAnalyzer, 0.1 s bins, spectral centroid per bin): nothing in the library is titled
   stretch film; a tape screeching off a roll is the same sound. Pro Sound Effects' "Duct Tape

@@ -171,6 +171,15 @@ function Mannequin.transforms(frame: number): { CFrame }
 	return out
 end
 
+-- Where its head sits in a pose, from its HumanoidRootPart: the head's middle, turned as the
+-- head is (its blank face toward the frame's LookVector). The catch flies the body by its head.
+function Mannequin.head(pose: Pose.Pose): CFrame
+	local placed = Pose.solve(pose)
+	return CFrame.new(-vec(Specs.RootPart.Centre))
+		* cframe(placed.Head)
+		* CFrame.new(vec(Specs.Parts.Head.Centre))
+end
+
 -- A copy of the template standing at `pivot` (its feet on it, facing its LookVector), posed.
 function Mannequin.clone(pivot: CFrame, parent: Instance, pose: Pose.Pose?): Model?
 	local template = Mannequin.template()

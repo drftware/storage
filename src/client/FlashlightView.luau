@@ -41,6 +41,9 @@ local Specs = Flashlight.Specs
 local player = Players.LocalPlayer
 
 local RENDER = "FlashlightHold"
+-- On the camera while a catch's lunge has your view (CaughtLunge): your torch is put out of
+-- sight, so nothing sits between you and its face. Its light is left as it was.
+local SEIZED = "CaughtSeized"
 local ACTION = "Flashlight"
 -- The phone's button: about three quarters of the jump button, a thumb's width above it.
 local BUTTON_OF_JUMP = 0.74
@@ -389,7 +392,7 @@ function FlashlightView.new(): (Brix.System, Beam)
 			beamAt.WorldCFrame = full.Rotation + HandRoom.clear(from, full.Position)
 		end
 		local shown = alive()
-		local t = if shown then 0 else 1
+		local t = if shown and camera:GetAttribute(SEIZED) ~= true then 0 else 1
 		if r.body.LocalTransparencyModifier ~= t then
 			r.body.LocalTransparencyModifier = t
 			r.lens.LocalTransparencyModifier = t

@@ -11,7 +11,7 @@ local BangMarks = require(script.BangMarks)
 local BehindDoors = require(script.BehindDoors)
 local CameraShake = require(script.CameraShake)
 local CaughtView = require(script.CaughtView)
-local KeptSqueal = require(script.KeptSqueal)
+local KeptWrapOn = require(script.KeptWrapOn)
 local ChaseMusic = require(script.ChaseMusic)
 local CrawlView = require(script.CrawlView)
 local CutFreeView = require(script.CutFreeView)
@@ -65,7 +65,7 @@ local host = Brix.Host.new({
 		{ slot = "minimapView", system = MinimapView.new() },
 		{ slot = "caughtView", system = CaughtView.new(kick) },
 		{ slot = "chaseMusic", system = ChaseMusic.new() },
-		{ slot = "keptSqueal", system = KeptSqueal.new() },
+		{ slot = "keptWrapOn", system = KeptWrapOn.new() },
 		{ slot = "cutFreeView", system = CutFreeView.new(kick) },
 		{ slot = "bangMarks", system = BangMarks.new() },
 		{ slot = "padlockView", system = PadlockView.new(kick) },

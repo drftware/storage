@@ -3,7 +3,7 @@
 	Kept: getting kept (L-07a, the GDD's "Getting kept"), as pure rules the server's KeptPlayers
 	uses. Pure, so Lune tests it (tests/kept.spec.luau).
 
-	The moment: the keeper's hands close, the screen goes dark through the 2-second wrap (`Caught`),
+	The moment: the keeper's hands close, its face rushes you and the screen goes black (`Caught`),
 	and you wake wrapped in a unit somewhere on the floor, the door down in front of you, until a
 	friend lets you out. Dead by Daylight's hook and Flee the Facility's freeze pods are the
 	precedent: caught, stored, a teammate frees you. Stored in a random unit and never the nearest
@@ -190,6 +190,30 @@ Kept.Squeal = {
 }
 -- Studs the squeal carries from where you were caught: down your stretch of hall, not the floor.
 Kept.SquealReach = 45
+
+-- The film winding on (L-06c2), on every screen but the caught one's: as a pallet wrapper's
+-- turntable spins a load in film, the caught body turns once round while the film climbs it from
+-- the feet and clouds over it, in the time their own screen shows its face rushing them
+-- (`Caught.Dark`, passed in by the screen). The last a friend sees of them before they're gone.
+-- How many times round they turn.
+Kept.WindTurns = 1
+-- How much of the film's height is on at the start, from the feet: a band round the ankles.
+Kept.WindFrom = 0.12
+-- How much of the wind the film takes to cloud in from clear.
+Kept.WindCloud = 0.35
+
+--- The film winding on, `t` of the way through (0 to 1): how much of its height is on (from the
+--- feet, climbing fast and settling over the head), how far round the body has turned (radians,
+--- spinning up and slowing to a stop facing the way it began) and how clear the film still is
+--- (1 unseen, 0 as it's drawn).
+function Kept.wind(t: number): (number, number, number)
+	t = math.clamp(t, 0, 1)
+	local up = 1 - (1 - t) * (1 - t)
+	local rise = Kept.WindFrom + (1 - Kept.WindFrom) * up
+	local turn = 2 * math.pi * Kept.WindTurns * t * t * (3 - 2 * t)
+	local clear = 1 - math.min(t / Kept.WindCloud, 1)
+	return rise, turn, clear
+end
 
 -- Cut free (L-07d): a friend at your open door holds Cut free and tears the film off you, as Dead
 -- by Daylight's teammate lifts you off the hook. While they hold, the film strains round you
@@ -412,6 +436,8 @@ end
 -- and who cut (`FreedAttribute`, `CutterAttribute`: UserIds, 0 for none) and which way round it
 -- lists (`LeanAttribute`, radians about the up axis from straight toward the door).
 Kept.WrapTag = "KeptWrap"
+-- When the film went on (the server's clock): at the catch, where they stood (L-06c2).
+Kept.WoundAttribute = "KeptWound"
 Kept.PullAttribute = "KeptPull"
 Kept.TornAttribute = "KeptTorn"
 Kept.FreedAttribute = "KeptFreed"

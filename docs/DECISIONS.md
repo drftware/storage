@@ -2414,3 +2414,49 @@ owner's call); one heavier recording in place of the clack (one sound can't be b
 and a close thud); an equaliser for heaviness (layers do it with no effect per sound, and what
 a phone can't play an equaliser can't add); its head turning to follow you (it would say it had
 seen you when it hadn't); sounds at the feet (still ROADMAP polish).
+
+## D-102 The catch as a jump scare: silence, its face rushing your eye, the cut, a slow wake (L-06c2, Nov 11)
+The moment: the worst thing that can happen to you. The owner, Nov 10 night: getting caught
+"doesn't seem like a big deal"; it has to land. Five Nights at Freddy's and Piggy end a run with
+the face rushing the camera and a scream, no blood; this overrides the GDD's "no screamer" line
+(owner, Nov 10). D-077's jerk, half-dark and fade is replaced on the caught screen; the server's
+catch is unchanged but for the timing below.
+
+As built, on the caught player's screen only (CaughtLunge, run by CaughtView; every number in
+`Caught`): its hand closes and the hall goes silent (SoundService's listener moved a million studs
+off, so only your own sounds play; the chase music already cuts itself), every other screen is put
+away, and your view is taken (Scriptable) and wrenched round to its face in 0.12 s with a kick
+(0.55). The real body is hidden on your screen and a copy from the template stands in its place in
+the same stride (its joints' `Transform`s copied), lit faintly by a light hung before its face.
+It holds still for the dread (to 0.48 s) while your view tunnels in to 86% of its width. Then it
+snaps into a lunge pose (arms out wide and low, clawing in from either side, head cocked over) and
+its head flies at your eye, a twitch back and then ever faster (0.32 s, `reach`: u²((k+1)u − k),
+k 0.8), the body hanging off it (`Mannequin.head`), while the view crash-zooms to 48% of its width
+and the light on its face comes up. On that first frame of the rush: the scream (Pro Sound
+Effects' "Creature Screech Pterodactyl Vocals Screams 1" at 0.8 pitch, volume 2.4, the loudest
+thing on a phone), APM's "Razormorph K" (a huge hit, mostly for headphones, ringing into the black)
+and "Whoosh Fast Swish By 5" (rising to its peak as the face lands), with its own body's groan and
+scrape (the row's new Lunge beat). It lands 1.5 studs from your eye, taller than the screen, with
+its hollow thunk and weight (the Catch beat) and the hardest kick (1.0) plus a knock that yanks
+your view toward it, tips it and rolls it; it presses in to 0.85 studs for 0.16 s, your torch out
+of sight; then the screen is cut to black at 0.96 s (`Dark`, when the server moves you; was 0.4),
+the copy gone and the view yours again. "Caught" comes up a beat into the black while the film
+screeches round you (your own squeal now waits for the black, so the dread is silent), 1.25 s.
+You come to over 2.2 s: your eyes crack half open, drop shut, then open, the view blurred (22) and
+grey (−0.75) clearing evenly, the hall's sound back as they first open. The whole wrap is 4.4 s
+(was 2.1).
+
+Friends see the film go on: the server now wraps you at the catch where you stand (stamped
+`Kept.WoundAttribute`), not in the black, and every other screen hides the real film and winds a
+copy on from the feet, clouding in, while your body turns once round on that screen only, as a
+pallet wrapper's turntable spins a load (`Kept.wind`, KeptWrapOn); the moment the server moves you
+it stops and the real film shows.
+
+Not chosen: the stock chase sting (already "it sees you"; the catch has its own); "Shock Chord",
+"DS Horror Stinger" (their attacks ramp over 0.2 to 0.6 s, no startle), the other APM stings
+(mostly under 190 Hz, silent on a phone); the face at 0.7 studs (only its dark surface showed,
+read as the screen going black); raised arms (they covered its face mid-rush); a knock that shoves
+your view back (its face shrank just as it should press in); fading to black (a cut is the blow);
+the wake's haze clearing as a square (gone before the eyes opened). A Studio-only hold
+(`DevCatchHold`) stops the catch's clock on every screen to look at one frame; it's how the frames
+were judged (docs/STUDIO.md, "Testing the catch from the MCP").

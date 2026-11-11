@@ -501,6 +501,37 @@ do
 	ok(Kept.DreadFriends > 0 and Kept.DreadFriends < 1, "friends hear the click's hit, quieter")
 end
 
+-- the film winding on (L-06c2): from a band at the ankles to all of them, turning once round
+-- and stopping facing the way they began, clouding in early; never going back
+do
+	local rise0, turn0, clear0 = Kept.wind(0)
+	ok(
+		rise0 == Kept.WindFrom and turn0 == 0 and clear0 == 1,
+		"the wind starts at the ankles, clear"
+	)
+	local rise1, turn1, clear1 = Kept.wind(1)
+	ok(rise1 == 1 and clear1 == 0, "and ends over the head, drawn")
+	ok(
+		math.abs(turn1 - 2 * math.pi * Kept.WindTurns) < 1e-9 and Kept.WindTurns % 1 == 0,
+		"turned whole times round: facing the way they began"
+	)
+	local r, a, c = Kept.wind(-1)
+	ok(r == rise0 and a == 0 and c == 1, "nothing before it")
+	r, a, c = Kept.wind(2)
+	ok(r == 1 and a == turn1 and c == 0, "held after it")
+	local wasRise, wasTurn, wasClear = rise0, turn0, clear0
+	for i = 1, 60 do
+		local rise, turn, clear = Kept.wind(i / 60)
+		ok(
+			rise >= wasRise and turn >= wasTurn and clear <= wasClear,
+			`the wind only goes on at {i}`
+		)
+		ok(turn - wasTurn < 0.3, `no jump round at {i}`)
+		wasRise, wasTurn, wasClear = rise, turn, clear
+	end
+	ok(select(3, Kept.wind(Kept.WindCloud)) == 0, "clouded in by WindCloud")
+end
+
 print(string.format("kept: %d checks, %d failures", checks, failures))
 if failures > 0 then
 	error("kept spec failed")

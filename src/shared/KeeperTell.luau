@@ -44,7 +44,9 @@ export type Sound = {
 -- The beats a keeper's body makes. Its walk's beats come from its pose (`Pose.tell`): a foot
 -- planted, its dragged foot scraping, its stiff heel landing, a creak as it jerks out of its slack
 -- pose. Creak is also its body turning (`turned`); Reveal is a lifted door showing its feet.
-export type Beat = "Footfall" | "Drag" | "Heel" | "Creak" | "Reveal"
+-- Lunge and Catch are its catch (L-06c2), heard only by the one it caught, as their own sound
+-- (CaughtView): its body throwing itself at you, and its head hitting you.
+export type Beat = "Footfall" | "Drag" | "Heel" | "Creak" | "Reveal" | "Lunge" | "Catch"
 
 -- One recording in a beat, its volume and pitch as shares of the recording's own.
 export type Layer = { sound: string, gain: number, pitch: number }
@@ -65,7 +67,7 @@ export type Tell = {
 
 local KeeperTell = {}
 
-local BEATS: { Beat } = { "Footfall", "Drag", "Heel", "Creak", "Reveal" }
+local BEATS: { Beat } = { "Footfall", "Drag", "Heel", "Creak", "Reveal", "Lunge", "Catch" }
 KeeperTell.Beats = BEATS
 
 -- The keeper states a body stands in a unit in (Keeper): dealt asleep, or awake and watching.

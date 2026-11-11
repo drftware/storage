@@ -1,11 +1,13 @@
 --!strict
 --[[
 	CaughtView: a keeper's catch and getting kept, on the caught player's own screen (L-06b3c,
-	L-07a). The server tells only them (Remotes.Caught, from Keepers). Their view jerks
-	(CameraShake), the screen drops half dark at once and closes to black, "Caught" comes up in the
-	dark through the 2-second wrap, and they can't move. In the black the server stores them in a
-	unit (KeptPlayers), so the screen opens on its dark inside, facing the door (the game is
-	always first person), and a big Bang button comes up (L-07c): on a phone under the right
+	L-07a, L-06c2). The server tells only them (Remotes.Caught, from Keepers, with the keeper's
+	body). The hall goes silent, their view is seized round to its face and its face rushes their
+	eyes (CaughtLunge), then the screen cuts to black and "Caught" comes up in the dark while the
+	film screeches round them; they can't move. In the black the server stores them in a unit
+	(KeptPlayers), so they come to on its dark inside, facing the door (the game is always first
+	person): their eyes crack open, drop shut, then open, the view blurred and grey as it clears
+	and the hall's sounds back. Then a big Bang button comes up (L-07c): on a phone under the right
 	thumb, elsewhere low in the middle with its key under it (a click, Space, a gamepad's A or R2).
 	Each press jolts the view at once and asks the server to bang the door (`Remotes.Bang`); the
 	door's thud and shake come back from the server. Presses faster than a bang can land wait for
@@ -15,12 +17,12 @@
 	and the prompts come back and the Bang button fades away. The film the server wraps
 	them in (L-07b) is for friends to see: on their own screen it's never drawn, so their view of
 	the dark inside stays clear.
-	Every number and the curves are `Caught`'s and `Kept`'s. The sting and its sounds are
-	L-06b4b's.
+	Every number and the curves are `Caught`'s and `Kept`'s.
 
 	It steps only while a catch is on the screen or they're kept.
 ]]
 local ContextActionService = game:GetService("ContextActionService")
+local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -30,6 +32,7 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Caught = require(ReplicatedStorage.Shared.Caught)
+local CaughtLunge = require(script.Parent.CaughtLunge)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 
 -- The headline's size (pixels), as the gate's "Going up" (GateClock).
@@ -61,6 +64,8 @@ type Screen = {
 	ring: UIStroke,
 	pop: UIScale,
 	caption: TextLabel,
+	blur: BlurEffect, -- the wake's haze, on this screen only
+	grey: ColorCorrectionEffect,
 }
 
 local function makeScreen(parent: Instance): Screen
@@ -150,6 +155,15 @@ local function makeScreen(parent: Instance): Screen
 	caption.TextColor3 = INK
 	caption.Parent = holder
 	bangGui.Parent = parent
+	local blur = Instance.new("BlurEffect")
+	blur.Name = "CaughtBlur"
+	blur.Size = 0
+	blur.Enabled = false
+	blur.Parent = Lighting
+	local grey = Instance.new("ColorCorrectionEffect")
+	grey.Name = "CaughtGrey"
+	grey.Enabled = false
+	grey.Parent = Lighting
 	return {
 		gui = gui,
 		black = black,
@@ -161,6 +175,8 @@ local function makeScreen(parent: Instance): Screen
 		ring = ring,
 		pop = pop,
 		caption = caption,
+		blur = blur,
+		grey = grey,
 	}
 end
 
@@ -266,6 +282,7 @@ local CaughtView = {}
 function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 	local player = Players.LocalPlayer
 	local screen: Screen? = nil
+	local lunge = CaughtLunge.new(kick)
 	local since = -1 -- seconds since the catch on screen, or -1 with none
 	local kept = false -- the server has us kept (`Kept.Attribute`)
 	local awake = -1 -- seconds since the screen opened on the unit's inside, or -1
@@ -323,6 +340,7 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 	local function finish()
 		since, awake = -1, -1
 		queued = false
+		lunge.release()
 		local wasUp = bound
 		if bound then
 			bound = false
@@ -330,6 +348,7 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 		end
 		if screen then
 			screen.gui.Enabled = false
+			screen.blur.Enabled, screen.grey.Enabled = false, false
 			if wasUp and running then
 				leaving = Kept.BangOut
 			else
@@ -346,9 +365,10 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 		ProximityPromptService.Enabled = true
 	end
 
-	local function onCaught()
+	-- unknown: the remote's argument, the keeper's body, which CaughtLunge checks
+	local function onCaught(body: unknown)
 		since, awake = 0, -1
-		kick(Caught.Kick)
+		lunge.seize(body)
 		if not held then
 			held = hold()
 		end
@@ -432,13 +452,20 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 				end
 			end
 			if since >= 0 then
-				since += dt
+				-- the lunge's clock, so the black lands on the frame its face goes
+				since = lunge.since()
 				local lifts = Caught.Dark + Caught.Hold
+				if since >= lifts then
+					lunge.hear() -- the hall comes back as your eyes open
+				end
 				if kept and since >= Caught.Dark and since <= lifts then
 					faceTheDoor() -- in the black, where the server has put us by now
 				end
 				if not Caught.showing(since) then
 					since = -1
+					if s then
+						s.blur.Enabled, s.grey.Enabled = false, false
+					end
 					if not kept then
 						finish()
 						return
@@ -449,6 +476,10 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 					local clear = 1 - Caught.headline(since)
 					s.headline.TextTransparency = clear
 					s.stroke.Transparency = clear
+					local haze = Caught.haze(since)
+					s.blur.Enabled, s.grey.Enabled = haze > 0, haze > 0
+					s.blur.Size = Caught.Blur * haze
+					s.grey.Saturation = Caught.Grey * haze
 				end
 			end
 			if kept then
@@ -502,9 +533,12 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 			end
 			table.clear(connections)
 			finish()
+			lunge.destroy()
 			if screen then
 				screen.gui:Destroy()
 				screen.bangGui:Destroy()
+				screen.blur:Destroy()
+				screen.grey:Destroy()
 				screen = nil
 			end
 		end,

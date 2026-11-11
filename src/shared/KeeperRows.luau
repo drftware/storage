@@ -217,6 +217,17 @@ local Mannequin: Row = {
 				{ sound = "Shell", gain = 1.6, pitch = 0.82 },
 				{ sound = "Creak", gain = 1.2, pitch = 0.9 },
 			},
+			-- its catch, in your ears only (L-06c2): its stiff body wrenching into the lunge, a
+			-- groan of strained plastic, its foot tearing at the concrete as it pushes off
+			Lunge = {
+				{ sound = "Creak", gain = 1.4, pitch = 0.85 },
+				{ sound = "Scrape", gain = 1.2, pitch = 0.9 },
+			},
+			-- and its hollow head hitting your face: the deepest thunk it makes, its weight behind it
+			Catch = {
+				{ sound = "Shell", gain = 1.8, pitch = 0.72 },
+				{ sound = "Weight", gain = 1.1, pitch = 0.85 },
+			},
 		},
 		-- full weight within about a unit's width; just a tap from about two hall pieces off
 		heavyNear = 10,
