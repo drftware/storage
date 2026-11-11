@@ -32,9 +32,21 @@
 	character lets them go too, as does their floor going away. A catch on a floor this doesn't
 	know, or with no unit free, holds them through the wrap and lets them go where they stand.
 
+	Left too long (L-07e), the building padlocks their door. Each keep has a clock
+	(`Kept.clock`, `PadlockAfter`) that runs only while the door is down (`Kept.tick`); for its
+	last `PadlockWarn` seconds the player carries `Kept.WarnAttribute` (when it goes on), so every
+	screen hears a hand work a padlock at the door and counts it down (PadlockView). Run out with
+	the door down and still, `Doors:lock` puts the game's own padlock on: the bolt and the click
+	on every screen near (DoorSounds), "Padlocked" on its buttons, and `Kept.PadlockedAttribute`
+	on the player. From then Cut free waits for a friend's bolt cutters and the door going up.
+	One padlock a keep: once it's been on (the building's, or a friend's by hand), the clock is
+	done. Let out, the clock stops; a padlock still on stays on the empty unit.
+
 	In Studio only, `ServerStorage.CutFreeTest` (a BindableFunction, server-side, so no client
 	reaches it) judges a cut by any body, a stand-in friend for a one-player test:
 	`Invoke(keptPlayer, body, heldSeconds)` returns the refusal or "Cut" (docs/STUDIO.md).
+	Workspace's `DevPadlockSeconds` attribute (Studio only, `Kept.DevPadlock`) shortens the
+	padlock's clock for each keep that starts after it's set.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -91,6 +103,13 @@ type Held = {
 	began: { [Player]: number },
 	pulling: { [Player]: true },
 	gone: { RBXScriptConnection },
+	-- The padlock's clock once they're inside: seconds of counted time left (nil before, and
+	-- once a padlock has been on), its warning's lead, the warning's due time as published
+	-- (nil while it isn't showing), and whether their door has been padlocked.
+	left: number?,
+	lead: number,
+	due: number?,
+	padlocked: boolean,
 }
 
 -- What a friend's Cut free shows when the server refuses one they could fix, in place of the kept
@@ -275,6 +294,12 @@ function KeptPlayers.new(): KeptPlayers
 		end
 		if h.value then
 			h.value:Destroy()
+		end
+		-- out: the clock stops, and the lines about them go (a padlock on stays on the unit)
+		h.left, h.due = nil, nil
+		if player.Parent then
+			player:SetAttribute(Kept.WarnAttribute, nil)
+			player:SetAttribute(Kept.PadlockedAttribute, nil)
 		end
 		-- out: their unit stops marking for friends at once
 		local floor, unit = h.floor, h.unit
@@ -511,6 +536,8 @@ function KeptPlayers.new(): KeptPlayers
 			began = {},
 			pulling = {},
 			gone = {},
+			lead = 0,
+			padlocked = false,
 		}
 		held[player] = h
 		table.insert(
@@ -562,6 +589,9 @@ function KeptPlayers.new(): KeptPlayers
 			character:PivotTo(to)
 			wrapUp(h)
 			h.inside = true
+			local dev = Workspace:GetAttribute(Kept.DevPadlock)
+			h.left, h.lead =
+				Kept.clock(if RunService:IsStudio() and type(dev) == "number" then dev else nil)
 			armCut(player, h)
 			local value = Instance.new("ObjectValue")
 			value.Name = Kept.InsideValue
@@ -604,13 +634,77 @@ function KeptPlayers.new(): KeptPlayers
 		end
 	end
 
-	-- A kept player's Cut free shows only while their door is all the way up.
+	-- `h`'s door has been padlocked (`byBuilding`: the clock ran out; else by a friend's hand):
+	-- the clock is done, the countdown goes, and every screen knows it's on.
+	local function markPadlocked(player: Player, h: Held, byBuilding: boolean)
+		h.padlocked, h.left, h.due = true, nil, nil
+		player:SetAttribute(Kept.WarnAttribute, nil)
+		player:SetAttribute(Kept.PadlockedAttribute, true)
+		if RunService:IsStudio() then
+			local by = if byBuilding then "the building" else "hand"
+			print(`KeptPlayers: {player.Name}'s door is padlocked by {by}`)
+		end
+	end
+
+	-- A kept player's Cut free shows only while their door is all the way up; a padlock on their
+	-- door cut off clears their Padlocked.
 	local function onChanged(change: Doors.DoorChange)
 		local player = holding[change.unit]
 		local h = player and held[player]
-		local p = h and h.prompt
+		if not (player and h) then
+			return
+		end
+		local p = h.prompt
 		if p then
 			p.Enabled = change.state == "Open"
+		end
+		if change.state ~= "Locked" and player:GetAttribute(Kept.PadlockedAttribute) ~= nil then
+			player:SetAttribute(Kept.PadlockedAttribute, nil)
+			if RunService:IsStudio() then
+				print(`KeptPlayers: the padlock on {player.Name}'s door is off`)
+			end
+		end
+	end
+
+	-- Each kept player's padlock clock, on the server's (`Kept.tick`): it runs while their door is
+	-- down, warns for its last stretch (`Kept.WarnAttribute`, set as the warning starts or
+	-- comes back after the door's been up, cleared while it's up), and padlocks the door once
+	-- it's out with the door down and still. A door padlocked by hand first ends the clock too.
+	local function stepClocks(dt: number)
+		local d = doors
+		if not d then
+			return
+		end
+		for player, h in held do
+			local unit, left = h.unit, h.left
+			if not (h.inside and unit and left) then
+				continue
+			end
+			local state = d:stateOf(unit)
+			if state == "Locked" then
+				markPadlocked(player, h, false)
+				continue
+			end
+			local now = Workspace:GetServerTimeNow()
+			local warning, lock
+			left, warning, lock = Kept.tick(left, h.lead, dt, state)
+			h.left = left
+			if warning and not h.due then
+				h.due = now + left
+				player:SetAttribute(Kept.WarnAttribute, h.due)
+				if RunService:IsStudio() then
+					print(
+						`KeptPlayers: a padlock's coming for {player.Name} in {Kept.seconds(left)} s`
+					)
+				end
+			elseif not warning and h.due then
+				h.due = nil
+				player:SetAttribute(Kept.WarnAttribute, nil)
+			end
+			-- refused while the door still jolts from a bang: tried again next step
+			if lock and d:lock(unit, true) then
+				markPadlocked(player, h, true)
+			end
 		end
 	end
 
@@ -680,6 +774,12 @@ function KeptPlayers.new(): KeptPlayers
 			end
 			test.Parent = ServerStorage
 			cutTest = test
+		end
+	end
+
+	function system.step(_: any, dt: number)
+		if next(held) ~= nil then
+			stepClocks(dt)
 		end
 	end
 

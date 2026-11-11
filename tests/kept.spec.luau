@@ -367,6 +367,140 @@ local heap = Kept.tearPose(down + T.settle + T.rest / 2)
 ok(heap.wide < 1 and heap.deep > 1, "the heap gathers round the ankles, not the shoulders")
 ok(Kept.tearLength() >= 1.5 and Kept.tearLength() <= 3, "the whole beat is about two seconds")
 
+-- The padlock (L-07e): left kept too long, the building padlocks your door. The clock runs only
+-- while your door is down, warns for the last `PadlockWarn` with a hand working a padlock at the
+-- door, and the padlock goes on the moment it's out with the door down and still.
+do
+	local after, lead = Kept.clock(nil)
+	ok(after == Kept.PadlockAfter and lead == Kept.PadlockWarn, "the real clock, its whole warning")
+	local a2, l2 = Kept.clock(30)
+	ok(a2 == 30 and l2 == Kept.PadlockWarn, "Studio's short clock keeps the whole warning")
+	local a3, l3 = Kept.clock(8)
+	ok(a3 == 8 and l3 == 8, "a clock shorter than the warning warns from the start")
+	ok(Kept.clock(0) == Kept.PadlockAfter, "a zero short clock means the real one")
+	ok(Kept.clock(-5) == Kept.PadlockAfter, "so does a negative one")
+	ok(Kept.PadlockAfter >= 120 and Kept.PadlockAfter <= 240, "a few minutes, as the GDD says")
+	ok(Kept.PadlockWarn < Kept.PadlockAfter, "the warning is the clock's end, not all of it")
+
+	for _, state in { "Closed", "Peeking", "Closing", "Slamming" } do
+		ok(Kept.counts(state), `the clock runs while the door is {state}`)
+	end
+	for _, state in { "Opening", "Open", "Lifting", "Locked" } do
+		ok(not Kept.counts(state), `the clock stops while the door is {state}`)
+	end
+	ok(Kept.lockable("Closed"), "a door down and still takes the padlock")
+	for _, state in { "Peeking", "Closing", "Slamming", "Opening", "Open", "Lifting", "Locked" } do
+		ok(not Kept.lockable(state), `a door {state} doesn't`)
+	end
+
+	-- a whole clock with the door shut, stepped at 60 frames a second
+	local left, t = Kept.PadlockAfter, 0
+	local warnedAt, lockedAt = nil :: number?, nil :: number?
+	local dt = 1 / 60
+	while t < Kept.PadlockAfter + 2 and not lockedAt do
+		local warning, lock
+		left, warning, lock = Kept.tick(left, Kept.PadlockWarn, dt, "Closed")
+		t += dt
+		if warning and not warnedAt then
+			warnedAt = t
+		end
+		if lock then
+			lockedAt = t
+		end
+	end
+	ok(
+		warnedAt ~= nil and math.abs(warnedAt - (Kept.PadlockAfter - Kept.PadlockWarn)) < 2 * dt,
+		"the warning starts its lead before the end"
+	)
+	ok(
+		lockedAt ~= nil and math.abs(lockedAt - Kept.PadlockAfter) < 2 * dt,
+		"the padlock goes on as the clock runs out"
+	)
+
+	-- a friend at the door stops it
+	local l1, w1, k1 = Kept.tick(5, 20, 30, "Open")
+	ok(l1 == 5 and not w1 and not k1, "thirty seconds with the door up cost nothing, and hush")
+	local l4, w4 = Kept.tick(5, 20, 1, "Opening")
+	ok(l4 == 5 and not w4, "nor does a door going up")
+	local l5, w5, k5 = Kept.tick(25, 20, 1, "Closed")
+	ok(l5 == 24 and not w5 and not k5, "no warning before the lead")
+	local l6, w6, k6 = Kept.tick(20.5, 20, 1, "Closed")
+	ok(l6 == 19.5 and w6 and not k6, "the warning once inside it")
+
+	-- run out with the door not yet down: the padlock waits for it
+	local l7, w7, k7 = Kept.tick(0.5, 20, 1, "Peeking")
+	ok(l7 == 0 and w7 and not k7, "out with the door open a crack: warned, not yet locked")
+	local l8, w8, k8 = Kept.tick(0.05, 20, 0.1, "Closing")
+	ok(l8 == 0 and w8 and not k8, "out as it comes down: not yet")
+	local _, w9, k9 = Kept.tick(0, 20, 1 / 60, "Open")
+	ok(not w9 and not k9, "out, and a friend lifts it: hush, no padlock")
+	local l10, _, k10 = Kept.tick(0, 20, 1 / 60, "Closed")
+	ok(l10 == 0 and k10, "out, and the door's down again: padlocked")
+	local _, w11, k11 = Kept.tick(0, 20, 1, "Locked")
+	ok(not w11 and not k11, "a door already padlocked asks nothing more")
+
+	ok(Kept.seconds(19.2) == 20, "a countdown shows a fraction as the next second up")
+	ok(Kept.seconds(20) == 20, "and a whole one as itself")
+	ok(Kept.seconds(0.01) == 1, "1 to the last")
+	ok(Kept.seconds(0) == 0 and Kept.seconds(-3) == 0, "0 once out")
+
+	-- the hand at the door
+	local last = math.huge
+	for i, h in Kept.Handlings do
+		ok(h.left < last, `handling {i} comes after the one before`)
+		last = h.left
+		ok(h.left > 0 and h.left <= Kept.PadlockWarn, `handling {i} plays inside the warning`)
+		local take = Kept.Handle[h.take]
+		ok(take ~= nil, `handling {i}'s take exists`)
+		if take then
+			ok(take.volume * h.loud <= 10, `handling {i} within a Sound's loudest`)
+			ok(
+				h.left - take.length / take.pitch >= 1,
+				`handling {i} is over a breath before the bolt`
+			)
+		end
+	end
+	local heard: { Kept.Handling } = {}
+	local x = Kept.PadlockWarn
+	while x > -10 do
+		local nx = x - 1 / 60
+		for _, h in Kept.handlings(x, nx) do
+			table.insert(heard, h)
+		end
+		x = nx
+	end
+	ok(
+		#heard == #Kept.Handlings + 3,
+		"every handling once over the warning, then one each 3 s past it"
+	)
+	for i, h in Kept.Handlings do
+		ok(heard[i] == h, `handling {i} heard in its turn`)
+	end
+	local over = #Kept.Handlings
+	ok(
+		heard[over + 1] and heard[over + 1].left == -Kept.HandleAgain and heard[over + 1].take == 1,
+		"past the end, the hand waits and works again"
+	)
+	ok(
+		heard[over + 3] and heard[over + 3].take == 3 and heard[over + 3].loud == 1,
+		"taking turns, at full"
+	)
+	ok(#Kept.handlings(10, 12) == 0, "nothing as the clock goes back up")
+	ok(#Kept.handlings(10, 10) == 0, "nothing standing still")
+	ok(#Kept.handlings(14.5, 14) == 0, "a step that lands on a handling leaves it for the next")
+	local on = Kept.handlings(14, 13.5)
+	ok(#on == 1 and on[1].left == 14, "which plays it, once")
+	ok(#Kept.handlings(-2.9, -3) == 0, "past the end too")
+	local edge = Kept.handlings(-3, -3.1)
+	ok(#edge == 1 and edge[1].left == -3, "the next step plays it")
+	ok(
+		#Kept.handlings(25, 0) == #Kept.Handlings,
+		"a long step hears them all (the screen plays the last)"
+	)
+	ok(Kept.ClickKick > Kept.HandleKick, "the click jolts harder than the hand")
+	ok(Kept.DreadFriends > 0 and Kept.DreadFriends < 1, "friends hear the click's hit, quieter")
+end
+
 print(string.format("kept: %d checks, %d failures", checks, failures))
 if failures > 0 then
 	error("kept spec failed")

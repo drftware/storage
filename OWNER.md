@@ -7,6 +7,39 @@ nowhere else.
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 
+## Now: judge L-07e, the padlock (built Nov 10)
+
+Verified in Studio on seed 7, floor 1, alone, with a 30-second clock (Workspace's
+`DevPadlockSeconds`): kept in 123, the warning came with 20 s left and "Padlock in 20" counted
+down on my screen once a second; lifting the door hid it and stopped the clock (4.72 s left going
+up, 4.72 s left coming back down); the door padlocked on the second, its buttons read Padlocked
+with Open and Cut, and my line read Padlocked in red. With the padlock cut off (as bolt cutters
+do) Cut free stayed off until the door was up; then a stand-in friend's cut let me out. Kept again
+in 111: the hand worked keys in a padlock at the door five times, 5 studs from me, louder toward
+the end; with the door open a crack when time ran out, nothing locked for 8 s while the hand kept
+at it every 3 s, and the padlock went on 0.25 s after the door closed, with the hit. Dying while
+padlocked left the padlock on the empty unit. Kept in 119 and cut free before the warning:
+nothing followed. Output clean. Friends' lines (two players) and every sound by ear are
+untested; the friends' line was seen as a mock.
+- [ ] **The warning, as the one kept** (one player will do: in Play, set Workspace's
+  `DevPadlockSeconds` to 30 from the Server, then get kept by the L-07a steps below). Ten seconds
+  in, keys work a padlock at your door and "Padlock in 20" comes up high in the middle, beating
+  each second, red for the last five; the hand comes closer together and louder. At 0 the bolt
+  shoots, the shackle clicks, your view jolts, a low hit sounds and "Padlocked" slams in. Does
+  the clock feel like it's running out? Does the click land as dread? Is the hand loud enough
+  through the door, or too loud?
+- [ ] **The warning, as a friend** (Test > Clients and Servers, two players). While your friend's
+  padlock is coming, "Sam: padlock in 12" sits under the top bar; at the click it turns red,
+  "Sam: padlocked", and a quieter hit sounds wherever you are. Near their door you hear the hand
+  too. Then cut the padlock with bolt cutters (R, held), Open, and Cut free.
+- [ ] **Decide, defaults in place** (D-100): (1) the clock is 150 s (two and a half minutes) of
+  your door being down, the warning its last 20 s; (2) it stops while your door is going up or
+  up (a friend has come) and runs while it's down, open a crack or coming down; (3) one padlock a
+  keep: once one has been on and been cut off, it never comes back; (4) a padlock still on when
+  the kept player leaves or dies stays on the empty unit; (5) friends hear the hit at the click
+  wherever they are; (6) the line doesn't say where your friend is kept: banging still does that
+  (D-097). Numbers in `src/shared/Kept.luau`.
+
 ## Now: judge L-07d, cut free (built Nov 10)
 
 Verified in Studio on seed 7, floor 1, alone (four catches by 157's Mannequin): lifting the kept

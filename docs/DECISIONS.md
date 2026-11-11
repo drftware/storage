@@ -2319,3 +2319,54 @@ at the speed it moves; the torn mesh is polish in ROADMAP); hold progress on the
 screen (the ticket: they get only the sound); a grace after you're free and keepers hearing the
 rip (both `OWNER.md`); reading the colour map's `ColorMap` (game scripts can't; its
 `ColorMapContent` they can, docs/STUDIO.md).
+
+## D-100 The padlock: a clock on your door, a hand working keys at it, the click shut (L-07e, Nov 10)
+The moment: you've been kept a while. In the dark you hear keys worked in a padlock right outside
+your door, and a countdown comes up; down the hall your friends see your name counting down, and
+one of them sprints. Then the bolt shoots and the shackle clicks: now only bolt cutters get you
+out. Dead by Daylight's hook stages are the precedent (wait too long and it gets worse, and the
+whole team sees the clock); the GDD's "Left too long" is the rule ("after a few minutes the
+building padlocks your unit, so freeing you needs bolt cutters").
+
+As built: the clock is the server's (`KeptPlayers`), one a keep, started as you're put inside:
+`Kept.PadlockAfter` (150 s) of time that counts, the warning its last `Kept.PadlockWarn` (20 s).
+Time counts only while your door is down (`Kept.counts`: shut, open a crack, coming down); going
+up or up, a friend has come and Cut free is on offer, so it stops. Run out, the padlock goes on
+the moment the door is down and still (`Kept.lockable`, `Kept.tick`): with it held a crack open
+the hand keeps working every `HandleAgain` (3 s) until it drops. The padlock is the game's own
+(`Doors:lock(unit, true)`), so its bolt and click play on every screen near (DoorSounds), its
+buttons read Padlocked with Open and Cut, keepers hear it as any padlock, and Cut free can't show
+until a friend's bolt cutters take it off and the door goes all the way up (the door's own rules).
+A door padlocked by a friend's hand first counts the same. One padlock a keep: once it's been on,
+the clock is done, so a friend who spent bolt cutters never faces a second. Let out, dying or
+leaving stops the clock; a padlock still on stays on the empty unit (it's the building's, and
+taking it off unseen would be a silent change).
+
+The wire: two attributes on the kept player, which every screen has however far off: the server
+time the padlock goes on while the warning runs (`Kept.WarnAttribute`, set as it starts and as
+the door comes back down, cleared while it's up) and `Kept.PadlockedAttribute` while it's on.
+Every screen plays the rest itself (`PadlockView`). The hand: Pro Sound Effects' "Keys In
+Padlock" 4, 5 and 2 (`Kept.Handle`, slowed to 0.85, turned up: the takes sit at -24 to -36 dB),
+at the hall side of the door 1.5 studs up, heard to 40 studs, five times (`Kept.Handlings`: 19.5,
+14, 9.5, 6 and 3 s left), closer and louder to the end, the last over 1.4 s before the bolt; each
+trembles the kept player's view (`HandleKick`). Your line, high in the middle at the Caught
+headline's size: "Padlock in 20", beating each second, red for the last five. Friends' lines
+under the top bar: "Sam: padlock in 12", the name in the map's friend blue. The click (as
+DoorSound's PadlockShut lands, 0.32 s after the bolt): your view jolts (`ClickKick`), APM's "Evil
+Mind 9" hits (dark, most of it above 150 Hz so a phone plays it) and "Padlocked" slams in red and
+stays while it's on; friends get "Sam: padlocked" in red and the hit at `DreadFriends` (0.35)
+wherever they are, as DbD sounds a hook for everyone. Cut off or let out, the lines fade.
+
+Studio: Workspace's `DevPadlockSeconds` (read in Studio only, `Kept.DevPadlock`) shortens the
+clock for each keep that starts after it's set, the warning kept whole unless the clock is
+shorter.
+
+Not chosen: a clock that runs with the door up (a friend at your open door would race a padlock
+they can't stop); a peeked door stopping it (a crack is still a shut door, and a friend who peeks
+and walks off shouldn't freeze it); the building pulling a peeked door down to lock it (the ticket
+waits for it to come down; a door moving by itself in a friend's face is a new mechanic); a timer
+on screen the whole keep (the warning is the clock you feel; the dark before it stays yours);
+the line naming the unit or marking it on the map (banging is how friends find you, D-097); a
+second padlock after one's cut; a remote event for the warning (a screen that joins or streams in
+late would miss it); the server playing the hand (one more thing to stream, and no say over a
+late screen); the chase's sting for the click ("Rising Fear Hit 1" is the chase's own).

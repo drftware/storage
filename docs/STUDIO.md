@@ -411,6 +411,18 @@ verified: a doc page, Studio, or "untested".
   Your own screen can't show your film before the tear (CaughtView hides it), so judge its
   look on a client-side copy of `Props.KeptWrap` posed by `Kept.tearPose`. The Mannequin often
   catches you again within seconds of the cut: re-read `KeptIn` before the next step.
+- **Testing the padlock from the MCP** (L-07e, 2026-11-10): in Play, set Workspace's
+  `DevPadlockSeconds` (Studio only) from the Server before getting kept; 30 gives a 10 s wait,
+  then the 20 s warning. Get kept (above). Log the player's `KeptWarn` (subtract
+  `GetServerTimeNow()` for the seconds left), `KeptPadlocked` and the unit's `DoorLocked` from a
+  Server `GetAttributeChangedSignal` into `_G`; the kept screen's line is
+  `PlayerGui.Padlock[<your name>]`; each handling is a "PadlockHand" Attachment added to Terrain
+  (ChildAdded on the Client). The door from the Server: `RollUpDoor.play(unit, "Open")` stops the
+  clock, `"Close"` or `"Peek"` keep it running; `RollUpDoor.setLocked(unit, false)` is what a
+  Cut with bolt cutters does to it (Doors hears the attribute, so KeptPlayers clears
+  `KeptPadlocked`). Setting the Server's attribute in Play leaves Edit's untouched. Friends'
+  lines need two players; one can be mocked by adding a TextLabel to
+  `PlayerGui.PadlockLines.Lines`.
 - **A game script can't read `SurfaceAppearance.ColorMap`** (L-07d, 2026-11-10, checked from a
   LocalScript in Play): "The current thread cannot read 'ColorMap' (lacking capability
   Plugin)". The command bar can, so a check from `execute_luau` passes and misleads. Its
@@ -785,6 +797,18 @@ verified: a doc page, Studio, or "untested".
   to 2 kHz. "Cloth Rip Zippy" 4 and 8 and "Cloth Rip Rapid 2" are nylon zips, 2 to 4 kHz.
   "Plastic Bag Handling Crunchy Cellophane 8" 9117409739 crunches from 0.36 s at only -30 to -35
   dB RMS (the heap's crunch, turned up).
+- **Sounds measured for the padlock's warning** (L-07e, 2026-11-10; Edit, AudioPlayer at half
+  speed to AudioAnalyzer, 50 ms bins of 6 dB): Pro Sound Effects' "Keys In Padlock" (keys in a
+  padlock on a cage, clinking) 1 to 5: 1 9116175991 (0.68 s) one clink at 0.1 s near -27 dB;
+  2 9116176107 (4.13 s) a steady working from 0.25 to 2.45 s at -24 to -36 dB, more to 3.25;
+  3 9116176070 (2.23 s) quiet, 0.5 to 1.6 s; 4 9116176269 (3.35 s) a clank at 0.35 s (-12 to -18)
+  then a long jangle to 2.6 s; 5 9116176337 (2.44 s) a hard clank at 0.4 s (-6 to -12) then the
+  shackle worked to 1.6 s. "Chain Rattle Glassy Metal Rattle" 3 9113763590 and 4 9113763639 are
+  loud (-6 to -12) small-chain rattles, glassy. APM's stings, 0.1 s bins with the spectrum:
+  "Evil Mind 9" 1846887425 (5.12 s) -12 to -18 dB from 0.1 s to 0.8 s, dying by 3 s, 76% of its
+  energy above 150 Hz, centroid 0.4 to 1.1 kHz (the padlock's click); "Shock (A)" 1840489046
+  silent to 0.3 s then a long -18 to -30 dB bed, 85% above 150 Hz; "Brute Force Sting 3"
+  1837950656 loud 0 to 1 s, only 42% above 150 Hz (a phone loses most of it).
 - **Bubble wrap's sounds, measured** (L-14b1, 2026-11-10; Edit, AudioPlayer at half speed to
   AudioAnalyzer, 50 ms bins): Pro Sound Effects' "Plastic Bubble Wrap Short Fluttering
   Movements" 12 9125745465 (2.2 s) starts at 0.2 s, crinkles at 0.25 and rustles to about 1 s; 11

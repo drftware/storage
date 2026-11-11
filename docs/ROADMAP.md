@@ -891,11 +891,29 @@ L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
     widened to 77 degrees and back, Bang faded, walk back; Output clean. At Galaxy A16 size Cut
     free and the door's Close and Slam never overlap (197 px apart at the closest). A real
     friend's hold and the sounds by ear are the owner's (`OWNER.md`).
-  - [ ] **L-07e The padlock.** Left a few minutes, the building padlocks your unit; only bolt
+  - [x] **L-07e The padlock.** Left a few minutes, the building padlocks your unit; only bolt
     cutters let you out. A warning comes first (the padlock's sound on your door, a short line
     for you and for friends) so everyone feels the clock run out.
+    Done Nov 10 (D-100): pure `Kept.clock`, `counts`, `lockable`, `tick`, `seconds` and
+    `handlings` (Lune-tested): 150 s of your door being down (shut, open a crack or coming down;
+    never going up or up), the warning its last 20 s; run out, the padlock goes on once the door
+    is down and still. `KeptPlayers` steps each keep's clock, sets `Kept.WarnAttribute` (when it
+    goes on) on the kept player through the warning, then `Doors:lock(unit, true)` and
+    `Kept.PadlockedAttribute`, cleared as the padlock's cut off; one padlock a keep; a padlock on
+    stays on the empty unit; Workspace's `DevPadlockSeconds` gives Studio a short clock.
+    `PadlockView` (new): Pro Sound Effects' "Keys In Padlock" worked at the hall side of the
+    door five times, closer and louder to the end, then every 3 s while the door's held up a
+    crack; "Padlock in 20" high on the kept screen beating each second, red for the last five;
+    "Sam: padlock in 12" under the top bar on friends' screens; at the click a jolt, APM's "Evil
+    Mind 9" (quieter for friends, wherever they are) and "Padlocked" slamming in. Verified in
+    Studio on seed 7, floor 1, alone, with a 30 s clock (keeps in 123, 111 and 119): the
+    countdown, the pause with the door up (4.72 s left both ways), the padlock on the second and
+    the door's Padlocked, Cut free off until the padlock was cut and the door up, a stand-in's
+    cut; the five handlings and two more while the door stayed up a crack past 0, padlocked 0.25 s
+    after it closed; the padlock left on after dying; a cut before the warning ended the clock.
+    Friends' lines with a real second player and the sounds by ear are the owner's (`OWNER.md`).
 - [ ] **L-06c Scarier keepers** (owner, Nov 10: make the walk and the catch scarier, "nothing
-  gorey but leaning more toward jump scare"; tickets soon, so they run straight after L-07e).
+  gorey but leaning more toward jump scare"; L-07e is done, so these are next).
   Two sessions. Today's walk is smooth and steady with a clack each step and joint knocks
   (L-06b4); today's catch is a jerk of the view, the screen going black and "Caught" (L-06b3c).
   - [ ] **L-06c1 A walk that frightens.** The moment: you hear it before you see it, and what you
@@ -1003,6 +1021,12 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
   would turn heads the way DbD's hook sound does.
 - **The kept mark drawn as art (L-07c):** the mark over a banging door is a plain blue dot and a
   name; a fist or a door icon, made the art way, would read faster at phone size.
+- **Feet under the door (L-07e):** while the padlock's hand works at your door, two shadows
+  breaking the hall's light under it (`UnderDoor`) would say someone is standing right there.
+- **The Bang button urging you (L-07e):** through the warning, the Bang button's ring could pulse
+  with the countdown, so the kept player knows banging is the way to bring a friend in time.
+- **Padlocked on the map (L-07e):** a padlocked friend's bang mark and map dot could carry a
+  small padlock, made the art way, so a friend knows to grab bolt cutters before they set off.
 
 - **The unroll's own sound (L-14b2a):** the sheet's unroll plays the pick-up's crinkle slowed
   down; a real unrolling rustle (measured, Pro Sound Effects) would sell the roll going across.

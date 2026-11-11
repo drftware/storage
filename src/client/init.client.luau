@@ -31,6 +31,7 @@ local KneelView = require(script.KneelView)
 local MinimapView = require(script.MinimapView)
 local LadderView = require(script.LadderView)
 local NoteView = require(script.NoteView)
+local PadlockView = require(script.PadlockView)
 local SawView = require(script.SawView)
 local ToolView = require(script.ToolView)
 local UnderDoor = require(script.UnderDoor)
@@ -67,6 +68,7 @@ local host = Brix.Host.new({
 		{ slot = "keptSqueal", system = KeptSqueal.new() },
 		{ slot = "cutFreeView", system = CutFreeView.new(kick) },
 		{ slot = "bangMarks", system = BangMarks.new() },
+		{ slot = "padlockView", system = PadlockView.new(kick) },
 		{ slot = "underDoor", system = UnderDoor.new() },
 		{ slot = "noteView", system = NoteView.new() },
 		{ slot = "flashlightView", system = flashlightView },

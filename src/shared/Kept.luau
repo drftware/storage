@@ -418,6 +418,137 @@ Kept.FreedAttribute = "KeptFreed"
 Kept.CutterAttribute = "KeptCutter"
 Kept.LeanAttribute = "KeptLean"
 
+-- The padlock (L-07e, the GDD's "Left too long"): left kept too long, the building padlocks your
+-- door, and only a friend's bolt cutters get it open again. Dead by Daylight's hook stages are the
+-- precedent: wait too long and it gets worse, and everyone can feel the clock. A hand nobody sees
+-- works a padlock at your door first (`Handle`), a line counts it down for you and every friend,
+-- then the bolt shoots and the shackle clicks shut.
+
+-- Seconds of counted time (`counts`) before the building padlocks you: the GDD's "a few minutes".
+-- Long enough for a friend to finish the unit they're in and come; short enough that nobody can
+-- leave you for the whole floor.
+Kept.PadlockAfter = 150
+-- Seconds of warning before it: the hand at your door and the countdown. Enough for a friend a
+-- hall or two away to run there; short enough that it's a sprint.
+Kept.PadlockWarn = 20
+-- A Workspace attribute, read in Studio only: a short clock's whole length in seconds, so a test
+-- needn't wait minutes (as DevFloorSeed picks the floor).
+Kept.DevPadlock = "DevPadlockSeconds"
+
+-- On a kept player, from the server: the server time the padlock goes on, while its warning runs
+-- (nil before it, while the door is up, and once it's on); and true while their door is
+-- padlocked (`PadlockedAttribute`), by the building or by hand, until it's cut or they're out.
+Kept.WarnAttribute = "KeptWarn"
+Kept.PadlockedAttribute = "KeptPadlocked"
+
+--- The padlock's clock for one keep: its length (Studio's short clock when `dev` is a positive
+--- number, else `PadlockAfter`) and its warning's lead, never longer than the whole clock.
+function Kept.clock(dev: number?): (number, number)
+	local after = if dev and dev > 0 then dev else Kept.PadlockAfter
+	return after, math.min(Kept.PadlockWarn, after)
+end
+
+--- Whether the padlock's clock runs while your door is in `state` (a `Door.State`): only while
+--- it's down, shut or open a crack or coming down. Never while it's going up or up (a friend has
+--- come: Cut free is on offer), nor once it's padlocked.
+function Kept.counts(state: string): boolean
+	return state == "Closed" or state == "Peeking" or state == "Closing" or state == "Slamming"
+end
+
+--- Whether the building can padlock a door in `state` now: all the way down and still.
+function Kept.lockable(state: string): boolean
+	return state == "Closed"
+end
+
+--- One step of a keep's clock: `left` seconds before the padlock, its warning's `lead`, `dt`
+--- seconds on with the door in `state`. Returns the seconds left now, whether the warning shows
+--- (the clock counting and inside its lead, or run out with the door not yet down), and whether
+--- the padlock goes on now (run out, the door down and still).
+function Kept.tick(
+	left: number,
+	lead: number,
+	dt: number,
+	state: string
+): (number, boolean, boolean)
+	local counting = Kept.counts(state)
+	if counting then
+		left = math.max(left - dt, 0)
+	end
+	return left, counting and left <= lead, left <= 0 and Kept.lockable(state)
+end
+
+--- The whole seconds a countdown shows with `left` to go: up from any fraction (19.2 shows 20),
+--- 0 once it's out.
+function Kept.seconds(left: number): number
+	return math.max(math.ceil(left - 1e-6), 0)
+end
+
+-- The hand at your door: Pro Sound Effects' "Keys In Padlock" (keys worked in a padlock on a
+-- cage, metal clinking), three takes measured (docs/STUDIO.md): quiet recordings, -24 to -36 dB
+-- under clanks to -12, so turned up; a touch slow, so it's a heavy lock on a steel door.
+Kept.Handle = {
+	-- 4: a clank at 0.35 s, then a long jangle to 2.6 s
+	{ id = "rbxassetid://9116176269", from = 0.2, length = 2.4, volume = 2.6, pitch = 0.85 },
+	-- 5: a hard clank at once (-6 to -12 dB), then the shackle worked to 1.6 s
+	{ id = "rbxassetid://9116176337", from = 0.33, length = 1.35, volume = 2.6, pitch = 0.85 },
+	-- 2: a steady working of the keys, 0.25 to 2.45 s
+	{ id = "rbxassetid://9116176107", from = 0.25, length = 2.2, volume = 2.6, pitch = 0.85 },
+}
+-- Studs the hand is heard from the door: your own stretch of hall, so a friend passing knows.
+Kept.HandleReach = 40
+-- How hard each handling jolts the kept player's own view: the door trembling under the hand.
+Kept.HandleKick = 0.06
+
+-- One handling: when it starts (seconds left on the clock), which take, and how loud (a share
+-- of the take's volume).
+export type Handling = { left: number, take: number, loud: number }
+
+-- The warning's handlings: far apart and quieter at first, closer and louder near the end, as a
+-- hand that's found the right key; the last ends about 1.4 s before the bolt, a breath of
+-- silence before the click.
+Kept.Handlings = {
+	{ left = 19.5, take = 1, loud = 0.7 },
+	{ left = 14, take = 2, loud = 0.8 },
+	{ left = 9.5, take = 3, loud = 0.85 },
+	{ left = 6, take = 1, loud = 1 },
+	{ left = 3, take = 2, loud = 1 },
+} :: { Handling }
+-- Seconds between handlings once the time's out with the door not yet down: the hand waits.
+Kept.HandleAgain = 3
+
+--- The handlings that start as the clock goes from `before` to `after` seconds left (`after`
+--- below `before`), in order: the warning's own, then past 0 one every `HandleAgain`, taking
+--- turns at full loudness.
+function Kept.handlings(before: number, after: number): { Handling }
+	local out: { Handling } = {}
+	if after >= before then
+		return out
+	end
+	for _, h in Kept.Handlings do
+		if h.left <= before and h.left > after then
+			table.insert(out, h)
+		end
+	end
+	if after < 0 then
+		-- the marks at -k * HandleAgain (k from 1) with after < mark <= before
+		local first = math.max(math.ceil(-before / Kept.HandleAgain), 1)
+		local last = math.ceil(-after / Kept.HandleAgain) - 1
+		for k = first, last do
+			local take = (k - 1) % #Kept.Handle + 1
+			table.insert(out, { left = -k * Kept.HandleAgain, take = take, loud = 1 })
+		end
+	end
+	return out
+end
+
+-- The click shut, on the kept player's screen as the shackle snaps (DoorSound's PadlockShut,
+-- `DoorSound.lockCues`): their view jolts and a low hit sounds, APM's "Evil Mind 9" (dark, from
+-- 0.1 s, loud to 0.8 s and dying over 3 s; most of it over 150 Hz, so a phone plays it; measured,
+-- docs/STUDIO.md). Friends' screens hear it quieter (`DreadFriends`), wherever they are.
+Kept.ClickKick = 0.35
+Kept.Dread = { id = "rbxassetid://1846887425", from = 0, length = 3.4, volume = 0.9, pitch = 1 }
+Kept.DreadFriends = 0.35
+
 --- Whether unit `u` can hold a kept player now.
 function Kept.free(u: Unit): boolean
 	return u.shut and not u.keeper and not u.holding
