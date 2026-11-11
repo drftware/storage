@@ -6,22 +6,6 @@ nowhere else.
 ## Now
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
-- [ ] **Save the place** (File > Save to Roblox) after this session (Nov 9): the elevator's and
-  the flashlight's, the bolt cutters', the padlock's, the saw's, the crawl hole's, the ladder's and
-  the sawn top's templates live only in the open place, at `ReplicatedStorage.Props.Elevator`,
-  `Props.Note`, `Props.Flashlight`, `Props.Tools.BoltCutters`, `Props.Tools.Padlock`,
-  `Props.Tools.Saw`, `Props.Tools.Ladder`, (Nov 10) `Props.KeptWrap` (the film a kept player
-  stands in), `Props.Tools.AirHorn`, `Props.Tools.BubbleWrap`, `Props.BubbleSheet` (both
-  given the softer bubbles' look on Nov 10), `Props.CrawlHole`, `Props.TopHole` and (Nov 10) the
-  dent's `Props.DoorDent_M` and `Props.DoorDent_S` (without the dent's, doors never dent; without the others
-  nobody has a torch, no tool lies anywhere and no hole can be cut; Output warns). Unsaved, the next open loses them and every
-  floor's lobby has an empty hole in its back wall (Output warns). The units' own templates,
-  `ReplicatedStorage.Units.M` and `Units.S`, were swapped this session for ones with the steel
-  top: unsaved, the next open brings back the wire tops, and the junction lids and the units'
-  bulbs fail (Output warns).
-- [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
-  is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
-  you want a private GitHub repository created and `main` pushed to it.
 
 ## Now: judge L-07c, banging (built Nov 10)
 

@@ -2,7 +2,7 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-10, session 84 · **Checks:** green · **Git:** `main`, local only (no remote).
+**Updated:** 2026-11-10, session 84 · **Checks:** green · **Git:** `main`, pushed to `origin` (github.com/drftware/storage).
 
 ## State
 - **L-07c done (D-097): banging.** Kept, a Bang button comes up in the dark (`CaughtView`); each
@@ -41,7 +41,7 @@ getting kept from the MCP".
 1. L-07d, then L-07e (the padlock), then L-06c1 (a walk that frightens) and L-06c2 (the catch as
    a jump scare). L-14b2d if the owner asks. Then L-08, L-09.
 2. **Small, own session:** cut `MovingBlanket`, `GlowSticks` from `Deal.Tools`/`Deal.Bag` (D-091);
-   it reshuffles every seed, so recheck the units `OWNER.md`'s steps name (seed 7, floors 1, 3).
+   it reshuffles every seed; the owner said Nov 10 not to worry about old test steps naming units.
 3. **Check, small:** caught crawling or on the ladder, `CrawlView`/`LadderView` may keep holding
    PlatformStand after you're let out. A torch arm raised on a Motor6D rig may poke the film.
 4. **Check, small:** a press made the moment you arrive reaches the server while it still sees you
