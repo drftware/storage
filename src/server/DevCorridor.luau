@@ -116,7 +116,6 @@ local FAR_SPOT = CFrame.lookAt(Vector3.new(FAR_X + 6, 3, 0), Vector3.new(FAR_X, 
 local FLOOR_ORIGIN = CFrame.new(0, 0, -600)
 local FLOOR_SEED = 7
 local FLOOR_NUMBER = 3
-local FLOOR_ARRIVAL = CFrame.lookAt(Vector3.new(0, 3, 6), Vector3.new(0, 3, -12)) -- in the lobby, facing the hall
 -- The test hall's tools (L-11b, L-11c): bolt cutters on the hall floor by the spawn and a pair in
 -- the first unit on the right (open its door to find them); a padlock across the spawn from the
 -- first pair, to lock any shut door with; a saw between them, to cut a hole between any two
@@ -593,7 +592,7 @@ local function devFloor(folder: Folder, climbs: Climbs.Climbs, keepers: Keepers.
 		"Walk a floor",
 		function(): CFrame?
 			local on = climbs:current()
-			return if on then on.origin * FLOOR_ARRIVAL else nil
+			return if on then on.origin * Climbs.Arrival else nil
 		end,
 		folder
 	)
@@ -621,7 +620,6 @@ local function devFloor(folder: Folder, climbs: Climbs.Climbs, keepers: Keepers.
 		number = n,
 		origin = FLOOR_ORIGIN,
 		parent = folder,
-		away = SPAWN,
 	})
 	print(`DevCorridor: "Walk a floor" is by the spawn`)
 end

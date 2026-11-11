@@ -7,6 +7,34 @@ nowhere else.
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 
+## Now: judge L-08c, left behind (built Nov 11)
+
+Verified in Studio on seed 7 with two stand-in friends (clones of you) riding while you stayed in
+the lobby: three rides, the whole moment logged in real time and held frame by frame
+(`docs/art/L-08c-*.jpg`), switching between them, Cut Free into floor 2's lobby, a friend removed
+(followed to the other) and both removed (you're let back in). What Studio can't tell: a real
+friend, a phone, and how it feels.
+- [ ] **Two players, one left on floor 1** (in the lobby or out in the halls when the gate shuts).
+  The one left should get, in order: "Left behind" in red with the gate's clang, the screen's top
+  and bottom going dark, the car's light drawing away and its motor fading above, a low hit as
+  the light goes (you can't move from then), black, a faint bell, then the view lifting behind
+  the friend in the new car as its gate opens. Then watch them play a while: does the camera stay
+  smooth as they walk, run and turn, never shaking, never stuck in a wall? Drag to swing round
+  them. Does it sting? Is anything too long or too short?
+- [ ] **Watching on a phone** (Automatic graphics): the bar at the bottom (who, the arrows, "Back
+  in when they finish"), the arrows big enough for a thumb, nothing else of the HUD showing, the
+  view readable in the dark halls. Studio drew the friend's car black for a while after the
+  1000-stud jump under Automatic graphics (as it did for riders in L-08b): does a phone?
+- [ ] **Left behind while kept:** get caught on floor 1 and stay kept as the car leaves with your
+  friend. You should get the same moment from inside the unit, then watch them. Untested.
+- [ ] **Decide, defaults in place** (D-105): (1) **Cut Free** is the GDD's paid revive (40 to 55
+  Robux): make the developer product and say its price; until then only Studio shows the button
+  (it's free there, so you can feel it). It puts you in your friends' lobby in front of the car,
+  facing the hall, with the film's rip and "Back in"; mid-ride it waits for the next floor. (2)
+  What you carried when left behind drops and goes with the floor. (3) With nobody left climbing
+  to watch, everyone watching is let back in on the floor (until L-08d ends the climb). (4) The
+  line on the bar is "Back in when they finish".
+
 ## Now: judge L-08b, the next floor (built Nov 11)
 
 Verified in Studio on seeds 7 and 23: punched floor 1's code, rode, and the gate opened on floor 2's
@@ -23,9 +51,7 @@ move, two players, and how it feels.
   flicker or go out, or anything jump? Then walk floor 2: its map in the corner, its doors, its
   notes, its keepers.
 - [ ] **With a friend** (two players), both riding: does your friend stay beside you the whole
-  ride, or vanish or pop for a moment at the clank? Then once more with one left on floor 1 (kept
-  or just outside the car): at the clank they should land at the spawn in the test hall as floor 1
-  goes (L-08c makes them watch you instead).
+  ride, or vanish or pop for a moment at the clank? (Left on floor 1 is L-08c's test, below.)
 - [ ] **Know:** floors above 1 now have their own layouts and codes per seed (one seed laid floor
   2 as floor 1 again). `lune run scripts/floor-map 7 3` prints the new floor 3; older notes here
   naming seed 7's floor 3 units are out of date.

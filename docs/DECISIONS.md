@@ -2567,3 +2567,67 @@ one seed for every floor (the same layout); floors stacked up the Y axis (they'd
 together); the client moving its own character (no snap if walking, but a friend would vanish
 from your car for a round trip); clearing the floor below a second after the move (a second
 long frame, uncovered); a fade to hide the move (D-103's line: the ride never cuts).
+
+## D-105 Left behind: the sting, then a friend's shoulder until you're back in (L-08c, Nov 11)
+
+The GDD's "Left behind": when the gate shuts, anyone still kept or still on the floor is out of
+the climb, and watches the team until they finish, or Cut Free back in on the next floor (DOORS'
+rule: death ends your run unless you revive). Watching is Lethal Company's: the dead crew watch
+the living from behind them.
+
+Who's left. As the car leaves with someone aboard (a player, or in Studio a stand-in friend),
+everyone else whose feet are on that floor, in the halls or kept in a unit, however far from the
+car, is marked (`Left.Attribute`, the server time the car left). `Elevators.departed`'s `left`
+only names those within the clock's 240 studs, so Climbs checks the whole floor itself. A ride
+that comes back after all (the next floor late, the takeover refused) un-marks them. The car
+leaving empty, or from the top, leaves nobody behind: it comes back (L-08d's to end).
+
+The sting, on their screen, timed off the ride's clock: "Left behind" slams up in a cold red with
+the gate's clang (it was GateClock's headline; one place owns the moment now), the screen dims
+behind it and its top and bottom darken over the HUD like a cutscene's bars; the car's lamp draws
+away up the shaft (ElevatorView, unchanged) while its motor groans and fades above, muffled by
+the building; as the light goes (1.6 s) a low hit lands with a jolt and the controls go, the play
+HUD with them; the black comes down whole by 5.5 s, before the floor is cleared under you at 6.1
+s; the bell rings far above under the black at 9.75 s; the black lifts on a friend's shoulder as
+their car levels, and the gate folds open on the new floor without you (10.3 s).
+
+Watching. At the hand-off your character is taken away (`Player.Character = nil`, destroyed; no
+respawn follows) after what you carried drops with the floor, so nothing can hurt, see or prompt
+you and the play HUD has nothing to show. Not parking the body somewhere: every system would
+have to learn to skip it, and a parked body still streams, shows on maps and can be reached. The
+server streams the world around the friend you watch (`ReplicationFocus`), and names them in a
+`Watching` ObjectValue (nil on your screen until they stream in; the name rides as an attribute so
+it shows at once). The camera is the game's own: behind the friend's head and over their right
+shoulder, looking a little down, its spot and heading eased toward theirs at any frame rate (so
+steps and network jitter never shake it), pulled in short of any wall behind them at once and
+easing back out, a cut when they jump more than 25 studs (the move into the next car); drag, the
+right mouse button or the right stick swings it round them. Not Roblox's own camera on their
+humanoid: the place is locked to first person, and that would put you inside their head. While
+you watch, every car is drawn as its riders see it (the lamp the ride's, not drawing away), so
+the friend's car is lit as you arrive on it. The bar at the bottom (in the phone's safe area, big
+round arrows) says who, how you get back in ("Back in when they finish"), and switches with a
+tick, a dip to black, and a lift once the next friend has streamed in (0.08 s for the server's
+answer in Studio). The server checks each watcher four times a second: a friend gone, left or
+respawned is followed to the next.
+
+Back in. Cut Free is a developer product in the GDD (40 to 55 Robux, DOORS' revive). The product
+doesn't exist yet and there are no saved profiles to grant it after, so only Studio takes the ask
+(a "Cut Free" button over the bar); `OWNER.md` has the product and price to decide. A let-in
+waits for a floor to stand on (not between two floors mid-ride), loads a new character in the
+lobby in front of the car facing the hall (`Climbs.Arrival`, where "Walk a floor" put you), and
+the black lifts on it with the film's rip and "Back in" in the lamp's warm light. With nobody
+left climbing to watch for 3 s, everyone watching is let back in the same way: a stand-in until
+L-08d ends the climb.
+
+Verified in Studio (seed 7, two stand-in friends in the car, the player left in the lobby): three
+rides (1 to 2 twice, 2 to 3), held frames and real time; the sting's log matched its timeline (hit
+at 1.64 s, character gone on the move frame at 6.1 to 6.6 s, camera on the friend at 9.12, clear
+at 10.18, bell 9.79 to 12.59); the camera moved at most 0.003 studs a frame on a still friend;
+switching, Cut Free into floor 2's lobby, a friend removed (followed to the other) and both
+removed (let back in after 3 s) all worked; Output clean but the known asset line. Captures:
+`docs/art/L-08c-*.jpg`.
+
+Not chosen: the default camera on the friend's humanoid (first person inside their head); parking
+the body under the floor (every system would need to skip it); fading to the friend at the move
+(6.1 s: their car would stand shut and still for 4 s); a free Cut Free in live games before the
+product and profiles exist.

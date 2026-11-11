@@ -13,15 +13,21 @@
 	  aboard: their screens are asked to stream its lobby in. Mid-cruise, while the shaft hides
 	  everything through the gate, the new car takes the ride over (`Elevators:takeOver`, its
 	  screens laying the shaft outside it), and on the cable's second knock every rider is moved
-	  to the same spot in it, and the floor below is cleared in the same frame: whoever was left
-	  there goes to `away` (L-08c makes them watch). It levels and opens on the new floor. `Ride.Linger`
-	  after the gate opens it shuts behind the team, armed with the new floor's code.
+	  to the same spot in it, and the floor below is cleared in the same frame. It levels and opens
+	  on the new floor. `Ride.Linger` after the gate opens it shuts behind the team, armed with the
+	  new floor's code.
+	- Left behind (L-08c, Watching): as the car leaves with friends aboard, everyone else on the
+	  floor (out in the halls, or kept in a unit) is out of the climb, and their screens start the
+	  moment; as the floor is cleared under them they lose their character and watch a friend. A
+	  ride that comes back after all leaves them in. Cut Free lets them back in on the floor the
+	  climb is on (`Climbs.Arrival`), once there's one to stand on.
 	- Nobody aboard, the top floor, or a next floor that isn't laid by `Climb.Latest`: the car
 	  arrives back at its own lobby and is armed again for the same floor (L-08d ends the climb);
 	  a next floor already laid waits for the next time it leaves.
 
 	Only the threads of a ride in progress run; nothing is stepped.
 ]]
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -40,7 +46,9 @@ local Keepers = require(script.Parent.Keepers)
 local KeptPlayers = require(script.Parent.KeptPlayers)
 local Minimaps = require(script.Parent.Minimaps)
 local Slots = require(script.Parent.Slots)
+local Watching = require(script.Parent.Watching)
 local Wraps = require(script.Parent.Wraps)
+local Left = require(ReplicatedStorage.Shared.Left)
 
 -- A floor of the climb, laid and in every floor system.
 export type OnFloor = {
@@ -59,7 +67,6 @@ export type Options = {
 	number: number, -- the floor it starts on
 	origin: CFrame, -- where that floor's lobby stands; each next one Climb.Spacing on along its -Z
 	parent: Instance, -- what floors are laid into
-	away: CFrame, -- where whoever's left on a cleared floor goes for now (L-08c)
 }
 
 -- Riders moved into the next floor's car.
@@ -104,6 +111,31 @@ end
 
 local Climbs = {}
 
+-- Where someone let back into the climb stands, in a floor's lobby (its origin's frame): in front
+-- of the car, facing the hall, as if they'd just stepped out of it.
+Climbs.Arrival = CFrame.lookAt(Vector3.new(0, 3, 6), Vector3.new(0, 3, -12))
+
+-- Studio only: the stand-in friends (Left.StandInTag) standing in `elevator`'s car, who ride with
+-- it as a player would, so one player can be left behind (docs/STUDIO.md).
+local function standInsIn(elevator: Model): { Model }
+	local out: { Model } = {}
+	if not RunService:IsStudio() then
+		return out
+	end
+	local pivot = elevator:GetPivot()
+	for _, inst in CollectionService:GetTagged(Left.StandInTag) do
+		local root = inst:IsA("Model") and inst:FindFirstChild("HumanoidRootPart")
+		if root and root:IsA("BasePart") then
+			-- the car from the gate back (Elevator's car: 12.5 wide, 11 deep, 9.6 high)
+			local p = pivot:PointToObjectSpace(root.Position)
+			if math.abs(p.X) < 6 and p.Z > 0.8 and p.Z < 12 and p.Y > -1 and p.Y < 9.6 then
+				table.insert(out, inst :: Model)
+			end
+		end
+	end
+	return out
+end
+
 function Climbs.new(): Climbs
 	local laidSignal = Brix.Signal.new() :: Brix.Signal<OnFloor>
 	local handedOff = Brix.Signal.new() :: Brix.Signal<HandOff>
@@ -114,8 +146,10 @@ function Climbs.new(): Climbs
 	local wraps: Wraps.Wraps? = nil
 	local minimaps: Minimaps.Minimaps? = nil
 	local slots: Slots.Slots? = nil
+	local watching: Watching.Watching? = nil
 	local options: Options? = nil
 	local playing: OnFloor? = nil
+	local between = false -- a ride with riders is under way and hasn't handed them off yet
 	local floors: { OnFloor } = {} -- every floor laid now: the one played, and the next once it's laid
 	local ahead: OnFloor? = nil -- the floor above the one played, laid and waiting
 	local layingAhead = false -- it's being laid now
@@ -189,8 +223,8 @@ function Climbs.new(): Climbs
 	end
 
 	-- Clears floor `on` away: its model goes (every floor system lets go of it, a kept player is let
-	-- out), whoever stood on it goes to `away`, and the tools lying on it go.
-	local function clear(on: OnFloor, away: CFrame)
+	-- out) and the tools lying on it go. Returns whoever was still on it.
+	local function clear(on: OnFloor): { Player }
 		local i = table.find(floors, on)
 		if i then
 			table.remove(floors, i)
@@ -203,12 +237,6 @@ function Climbs.new(): Climbs
 			end
 		end
 		on.model:Destroy()
-		for _, player in stranded do
-			local character = player.Character
-			if character and character.Parent then
-				character:PivotTo(away)
-			end
-		end
 		-- its lying tools go once the units' removal has been handled: a ladder stood on a unit
 		-- falls flat as its unit goes (Ladders), and goes with the rest
 		local s = slots
@@ -219,6 +247,7 @@ function Climbs.new(): Climbs
 				end)
 			end)
 		end
+		return stranded
 	end
 
 	-- Once `elevator` arrives, arms `on` again `Ride.Linger` after its gate opens: the gate shuts
@@ -276,11 +305,31 @@ function Climbs.new(): Climbs
 		end)
 	end
 
-	-- The ride from `on` to the floor above, from the car leaving to its riders stepping out.
-	local function ride(o: Options, on: OnFloor, leaving: Elevators.Leaving, mine: number)
+	-- The ride from `on` to the floor above, from the car leaving to its riders stepping out;
+	-- `stranded` were left on the floor as it left, `standIns` (Studio) ride with it.
+	local function ride(
+		o: Options,
+		on: OnFloor,
+		leaving: Elevators.Leaving,
+		mine: number,
+		stranded: { Player },
+		standIns: { Model }
+	)
 		local e = elevators
 		local from = on.elevator
+		-- the car comes back after all: nobody was left behind
+		local function back()
+			between = false
+			if watching then
+				watching:unstrand(stranded)
+			end
+			comeBack(on, mine)
+		end
 		if not (e and from) then
+			between = false
+			if watching then
+				watching:unstrand(stranded)
+			end
 			return
 		end
 		prepare(o, on)
@@ -298,7 +347,7 @@ function Climbs.new(): Climbs
 			warn(
 				`Climbs: floor {on.number + 1} wasn't ready {string.format("%.1f", since)} s into the ride; the car comes back to floor {on.number}`
 			)
-			comeBack(on, mine)
+			back()
 			return
 		end
 		ahead = nil
@@ -347,7 +396,7 @@ function Climbs.new(): Climbs
 				`Climbs: floor {above.number}'s car couldn't take the ride over; the car comes back`
 			)
 			ahead = above
-			comeBack(on, mine)
+			back()
 			return
 		end
 		-- the move, on the cable's second knock (held with the ride in Studio)
@@ -370,7 +419,13 @@ function Climbs.new(): Climbs
 				table.insert(moved, player)
 			end
 		end
+		for _, model in standIns do
+			if model.Parent then
+				model:PivotTo(toPivot * fromPivot:ToObjectSpace(model:GetPivot()))
+			end
+		end
 		playing = above
+		between = false
 		local movedAt = now()
 		handedOff:fire({
 			from = on,
@@ -382,7 +437,11 @@ function Climbs.new(): Climbs
 		-- the floor below goes in the same frame: its riders are off it, and the frame the move
 		-- costs a screen (about 0.3 s in Studio) is spent once, under the cable's knock; every
 		-- rider's screen has the shaft laid outside the new car already (RideView)
-		clear(on, o.away)
+		local left = clear(on)
+		-- whoever's still on it is out of the climb, and watches a friend
+		if watching then
+			watching:watch(left, leaving.at)
+		end
 		armAfterArrival(above, to, mine)
 	end
 
@@ -400,12 +459,31 @@ function Climbs.new(): Climbs
 			return
 		end
 		local mine = climb
-		if #leaving.aboard == 0 or on.number >= Climb.Top then
+		local elevator = on.elevator
+		local standIns = if elevator then standInsIn(elevator) else {}
+		if (#leaving.aboard == 0 and #standIns == 0) or on.number >= Climb.Top then
 			comeBack(on, mine)
 			return
 		end
+		-- everyone else on the floor, in the halls or kept in a unit, is left behind
+		local stranded: { Player } = {}
+		for _, player in Players:GetPlayers() do
+			local root = rootOf(player)
+			if
+				root
+				and not table.find(leaving.aboard, player)
+				and not (watching and watching:isOut(player))
+				and onFloor(on, root.Position)
+			then
+				table.insert(stranded, player)
+			end
+		end
+		between = true
+		if watching then
+			watching:strand(stranded, leaving.at)
+		end
 		spawn(function()
-			ride(o, on, leaving, mine)
+			ride(o, on, leaving, mine, stranded, standIns)
 		end)
 	end
 
@@ -428,7 +506,7 @@ function Climbs.new(): Climbs
 			end
 		end
 		table.clear(floors)
-		playing, ahead, layingAhead = nil, nil, false
+		playing, ahead, layingAhead, between = nil, nil, false, false
 		options = nil
 	end
 
@@ -448,6 +526,15 @@ function Climbs.new(): Climbs
 		wraps = (registry:get("wraps") :: any) :: Wraps.Wraps -- any: as above
 		minimaps = (registry:get("minimaps") :: any) :: Minimaps.Minimaps -- any: as above
 		slots = (registry:get("slots") :: any) :: Slots.Slots -- any: as above
+		local w = (registry:get("watching") :: any) :: Watching.Watching -- any: as above
+		watching = w
+		w:setArrival(function(): CFrame?
+			local on = playing
+			if between or not (on and on.model.Parent) then
+				return nil
+			end
+			return on.origin * Climbs.Arrival
+		end)
 		local e = elevators :: Elevators.Elevators
 		departing = e.departed:connect(departed)
 		opening = e.acted:connect(acted)

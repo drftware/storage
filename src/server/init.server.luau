@@ -23,6 +23,7 @@ local Ladders = require(script.Ladders)
 local MotionLights = require(script.MotionLights)
 local Saws = require(script.Saws)
 local Slots = require(script.Slots)
+local Watching = require(script.Watching)
 local Wraps = require(script.Wraps)
 
 local systems: { Brix.HostEntry } = {
@@ -52,6 +53,7 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "wraps", system = Wraps.new() },
 	{ slot = "minimaps", system = Minimaps.new() },
 	-- The climb: each floor dealt and laid while the team rides up to it, the one below cleared.
+	{ slot = "watching", system = Watching.new() },
 	{ slot = "climbs", system = Climbs.new() },
 }
 if RunService:IsStudio() then

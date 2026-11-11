@@ -38,6 +38,7 @@ local SoundPrimer = require(script.Parent.SoundPrimer)
 local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
 local Gate = require(ReplicatedStorage.Shared.Elevator.Gate)
 local Keypad = require(ReplicatedStorage.Shared.Elevator.Keypad)
+local Left = require(ReplicatedStorage.Shared.Left)
 local Readout = require(ReplicatedStorage.Shared.Elevator.Readout)
 local Ride = require(ReplicatedStorage.Shared.Elevator.Ride)
 local RideClock = require(script.Parent.RideClock)
@@ -412,12 +413,25 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 		lampStep(view, now())
 	end
 
-	-- The car left (or, cleared, is back for the next floor): who rode decides the lamp.
+	-- The car left (or, cleared, is back for the next floor): who rode decides the lamp. Left
+	-- behind and watching a friend (L-08c), every car is seen as its riders see it: the lamp the
+	-- ride's, never drawing away (the car that left you drew away before you watched).
 	local function aboardChanged(view: View)
 		local at, ids = Departure.decodeAboard(view.model:GetAttribute(Departure.AboardAttribute))
+		local me = Players.LocalPlayer
 		view.leftAt = at
-		view.rode = at ~= nil and table.find(ids, Players.LocalPlayer.UserId) ~= nil
+		view.rode = at ~= nil
+			and (table.find(ids, me.UserId) ~= nil or me:FindFirstChild(Left.WatchValue) ~= nil)
 		lampStep(view, now())
+	end
+
+	-- Watching began or ended: every car's lamp is decided again.
+	local function watchChanged(child: Instance)
+		if child.Name == Left.WatchValue then
+			for _, view in views do
+				aboardChanged(view)
+			end
+		end
 	end
 
 	-- The car's floor readout at server time `t`: the floor it stands at, or the ride's; the
@@ -720,6 +734,14 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 			table.insert(
 				connections,
 				CollectionService:GetInstanceAddedSignal(Elevator.Tag):Connect(add)
+			)
+			local me = Players.LocalPlayer
+			table.insert(connections, me.ChildAdded:Connect(watchChanged))
+			table.insert(
+				connections,
+				me.ChildRemoved:Connect(function(child: Instance)
+					task.defer(watchChanged, child)
+				end)
 			)
 			table.insert(
 				connections,

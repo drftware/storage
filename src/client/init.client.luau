@@ -37,6 +37,7 @@ local ToolView = require(script.ToolView)
 local RideView = require(script.RideView)
 local UnderDoor = require(script.UnderDoor)
 local UnitLights = require(script.UnitLights)
+local WatchView = require(script.WatchView)
 local Wrap = require(ReplicatedStorage.Shared.Tools.Wrap)
 local WrapView = require(script.WrapView)
 
@@ -84,6 +85,8 @@ local host = Brix.Host.new({
 		{ slot = "kneelView", system = KneelView.new() },
 		{ slot = "freeCursor", system = freeCursor },
 		{ slot = "hallHaze", system = HallHaze.new() },
+		-- left behind (L-08c): its camera runs between CameraShake's undo and apply
+		{ slot = "watchView", system = WatchView.new(kick, needCursor) },
 		{ slot = "cameraShake", system = cameraShake },
 	},
 })

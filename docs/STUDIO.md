@@ -850,6 +850,33 @@ verified: a doc page, Studio, or "untested".
   Caught and kept with nobody to cut you free, `Player:LoadCharacter()` from the Server lets you
   out and "Walk a floor" (it names the climb's floor) takes you back. Seeds used: 7 (codes 1097,
   0566, 4275 from floor 1) and 23 (1631, 8468, 4050).
+- **Testing left behind from the MCP** (L-08c, 2026-11-11): one player can't ride and stay, so
+  stand-in friends ride: on the Server clone your character (as in the Cut free recipe), strip
+  its scripts, anchor its root, name it (the bar shows the name), tag it `StandInFriend`
+  (`Left.StandInTag`) and pivot it into floor 1's car facing the gate (`(±2.3, 3, -581.5)` for
+  the first floor at -600); two of them to test switching. Punch the code, step back into the
+  lobby (`(0.5, 3, -597)`), and when the gate shuts you're left: stand-ins in the car count as
+  riders (Climbs) and are carried into the next car at the move. `DevRideHold` holds the sting
+  with the ride (WatchView reads `RideClock`): 0.75 for the title, 2.6 for the bars and the HUD
+  gone. The move waits on the held clock for the takeover's moment plus `Climb.Lead`: held at 2.6
+  then raised to 12, the takeover lands at 12 and the move wants 12.5, so raise it to 13 to see
+  the watch. Clearing it fast-forwards the arrival, the open and the re-arm in one go, so see the
+  gate open on you in real time: a Server call that waits until 9.4 s after `LeftBehind` and
+  returns, then a capture, lands on the lift; another lands on the open gate. `Remotes.Watch`
+  takes "Next", "Back" and "CutFree" from the Client. Set the Client's
+  `settings().Rendering.QualityLevel` to Level12 first (the Edit setting doesn't carry into
+  Play), or the car draws black after the 1000-stud move.
+- **A character taken away stays away** (2026-11-11): `player.Character = nil` then
+  `character:Destroy()` on the server left the player with no character for minutes with
+  `CharacterAutoLoads` on (only a death respawns); `player:LoadCharacter()` brings one back.
+  `ReplicationFocus` set to another model's root streamed the world round it to that player with
+  no character of their own, and an ObjectValue pointing at that model read nil on their screen
+  until it streamed in, then the model.
+- **execute_luau's camera reset bites a watcher** (L-08c): a Client call made while watching
+  (camera Scriptable) that lets you back in ends with the assistant setting the camera back to
+  Scriptable after WatchView set Custom, so the next sting logged a still camera. Fire Cut Free
+  from a call that returns at once (WatchView turns the camera Custom after it ends), not one
+  that waits for your new character.
 - **`screen_capture` with a camera position leaves the camera Scriptable** (Play, 2026-11-11), and
   `execute_luau` puts back whatever camera type it found when the call began, so a later call
   setting Custom is undone ("Resetting from Custom back to Scriptable"). A ride then logs the

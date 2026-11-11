@@ -993,17 +993,34 @@ L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
     (`docs/art/L-08b-*.jpg`), the empty car re-armed and the waiting floor 3 used next time, a
     dealt saw cleared with floor 1; Output clean but the known asset line. A phone's frame at the
     move and two players: `OWNER.md`.
-  - [ ] **L-08c Left behind.** Whoever the gate shuts on, kept or still outside, watches their
-    friends on the floor above, as Lethal Company's crew watch once they're dead; the rest is
-    the GDD's "Left behind" (its "Cut Free to the next floor"). Hand-off notes: `Climbs`' `clear`
-    finds who's still on the floor below at the move (6.1 s into the ride) and sends them to
-    `away` (the spawn, from DevCorridor); replace that, and `Elevators.departed`'s `left` names
-    them as the car leaves. A kept player is let out by `KeptPlayers` as the floor goes.
+  - [x] **L-08c Left behind. Done Nov 11** (D-105). Whoever the gate shuts on, kept or still
+    outside, watches their friends go on, as Lethal Company's dead crew watch the living. As the
+    car leaves with someone aboard, everyone else on the floor is out of the climb (`Watching`,
+    `Left`): "Left behind" slams up in cold red with the gate's clang, the screen's top and
+    bottom darken over the HUD, the lamp draws away up the shaft while the motor groans and fades
+    above, muffled; as the light goes a low hit lands and your legs give up; the black comes down
+    before the floor is cleared under you; the bell rings far above in the dark, and the black
+    lifts on a friend's shoulder as their car levels and the gate opens without you. Your
+    character goes (nothing can hurt or see you) and the server streams the world round your
+    friend; the camera follows over their shoulder, smoothed, pulled in off walls, swung by a
+    drag; a bar says who, "Back in when they finish", and switches friend with a tick and a dip
+    (Q/E, the arrows, the bumpers). Cut Free (the GDD's revive) lets you back in on your friends'
+    floor in front of the car, with the rip and "Back in": Studio only until the product exists
+    (`OWNER.md`); nobody left to watch lets everyone back in (L-08d's to replace). GateClock's
+    "Left behind" headline moved here. Verified in Studio on seed 7 with two stand-in friends in
+    the car: three rides, the sting held and in real time (its log on its timeline), the camera
+    0.003 studs a frame at most, switching, Cut Free, a friend removed and both removed; Output
+    clean but the known asset line (`docs/art/L-08c-*.jpg`). Two players and a phone:
+    `OWNER.md`. Untested: left behind while kept in a unit (the same path), and watching a friend
+    as they ride again.
   - [ ] **L-08d The climb ends.** The whole team kept ends the run on the Missing board (GDD
     "Whole team kept"); a results screen with one "Again" button, as DOORS' Play Again, since
     Gate 1 is friends asking for another run. Until Phase 2's top floor the climb stops at a
     stand-in top, floor 3 (a default; its `OWNER.md` line comes with the build). Hand-off notes:
-    `Climbs`' `comeBack` (the car left empty, or at `Climb.Top`) is the stand-in to replace.
+    `Climbs`' `comeBack` (the car left empty, or at `Climb.Top`) is the stand-in to replace, and
+    `Watching`'s "Alone" let-in (nobody left climbing to watch, D-105): the climb ending takes
+    the watchers with it. "Back in when they finish" is the watchers' promise: the results screen
+    is where they're back.
   - [ ] **L-08e The start** (waits: the owner brings the full lobby plan Nov 11; don't build
     any of it before then). Friends gather and the climb starts on a short countdown once
     everyone's in, as DOORS' lobby elevators do: the smallest form of the GDD's lobby (your own
@@ -1063,6 +1080,14 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 
 ## Polish waiting for a slot
 
+- **Watching a friend ride (L-08c):** a watcher sees the friend's car lit as a rider does, but
+  not the shaft sliding past the gate (RideView draws only your own ride) nor the sway; draw the
+  watched friend's ride on the watcher's screen too, so the cut into the next car reads as theirs.
+- **The car leaving you, seen from the landing (L-08c):** today its lamp draws away and the car
+  sits dark behind the gate. Slide the car itself up out of the opening on the left player's
+  screen, its underside and the lamp's glow rising past the landing, an empty shaft behind.
+- **Left behind's own sting (L-08c):** the low hit is the padlock's ("Evil Mind 9"); a sting of
+  its own (a long downward groan, the cable singing away) would set it apart.
 - **The hand-off's long frame (L-08b):** if a phone stutters or the car goes dark at the
   second clank (`OWNER.md`), spread the cost: clear the floor below a hall piece a frame over the
   slowdown instead of at once, and warm the new car's lighting first (`Camera.Focus` there a

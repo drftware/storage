@@ -10,7 +10,7 @@
 	  elevator's bell on each of the last five seconds, a little higher each time.
 	- The car leaving: "Going up" for those aboard, and the plate turns from the clock to the
 	  floor counter in the car lamp's amber, ticking over to the next floor as the brakes bite
-	  (Ride, L-08a); "Left behind" for everyone else on the floor.
+	  (Ride, L-08a). Everyone else on the floor was left behind: that moment is WatchView's (L-08c).
 
 	The car's lamp, which answers the same clock, is ElevatorView's; the rest of the ride is
 	RideView's.
@@ -77,9 +77,8 @@ local HEADLINE_SIZE = 34
 local HEADLINE_IN = TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local HEADLINE_HOLD = 1.8
 local HEADLINE_OUT = TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
--- "Going up" in the car lamp's warm light; "Left behind" in a cold red.
+-- "Going up" in the car lamp's warm light ("Left behind", in a cold red, is WatchView's).
 local WARM = Elevator.Lamp.Colour
-local COLD = Color3.fromRGB(255, 96, 84)
 -- A leaving older than this (seconds) when it arrives is old news (an elevator streaming in).
 local STALE = 1.5
 
@@ -430,8 +429,6 @@ function GateClock.new(): Brix.System
 			ride, rideFrom, rideTo, floorShown = at, 0, 0, 0
 			rideFloors(clock)
 			headline("Going up", WARM)
-		elseif onFloor(clock.model) then
-			headline("Left behind", COLD)
 		end
 	end
 
