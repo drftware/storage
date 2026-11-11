@@ -10,7 +10,8 @@
 	an animatronic comes down the hall. Its body creaks as it turns a corner or turns to you. Held
 	in your light it makes no sound at all. And a door lifted on one standing in a unit answers
 	with a thunk and a creak as the curtain's edge clears its feet: before your light finds it,
-	you know something stands in there.
+	you know something stands in there. And when it hears something new (L-15), its limp breaks
+	off on one deep thunk and its body groans round toward the sound: you hear that it heard.
 
 	Nothing new crosses the network. Each screen's KeeperView poses the body from its records and
 	calls `heard` as each key of its walk lands (`Pose.tell`) and as it turns; a door's motion is
@@ -29,6 +30,7 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local DoorSound = require(ReplicatedStorage.Shared.StorageUnit.DoorSound)
+local KeeperMotion = require(ReplicatedStorage.Shared.KeeperMotion)
 local KeeperRows = require(ReplicatedStorage.Shared.KeeperRows)
 local KeeperTell = require(ReplicatedStorage.Shared.KeeperTell)
 local Motion = require(ReplicatedStorage.Shared.StorageUnit.Motion)
@@ -155,6 +157,27 @@ function KeeperSounds.new(): (Brix.System, (model: Model, beat: KeeperTell.Beat)
 			body.last = now
 		end
 		play(body, beat)
+	end
+
+	-- It heard a new sound at server time `at` (`KeeperTell.HeardAttribute`): its Heard beat, as
+	-- this screen shows it stop (KeeperView shows keepers `KeeperMotion.Delay` behind the server).
+	-- Its creak as it turns to the sound is in the beat, so the turn doesn't creak again.
+	local function startled(body: Body)
+		local at = body.model:GetAttribute(KeeperTell.HeardAttribute)
+		if type(at) ~= "number" then
+			return
+		end
+		local wait = at + KeeperMotion.Delay - Workspace:GetServerTimeNow()
+		if wait < -KeeperMotion.Delay then
+			return -- long past (it streamed in later): nothing to hear now
+		end
+		task.delay(math.max(wait, 0), function()
+			if body.alive and body.model:GetAttribute(KeeperTell.HeardAttribute) == at then
+				local now = os.clock()
+				body.last, body.creaked = now, now
+				play(body, "Heard")
+			end
+		end)
 	end
 
 	-- Whether `body`'s feet stand inside `unit`.
@@ -300,6 +323,12 @@ function KeeperSounds.new(): (Brix.System, (model: Model, beat: KeeperTell.Beat)
 			body.conns,
 			model:GetAttributeChangedSignal(STATE_ATTRIBUTE):Connect(function()
 				settle(body)
+			end)
+		)
+		table.insert(
+			body.conns,
+			model:GetAttributeChangedSignal(KeeperTell.HeardAttribute):Connect(function()
+				startled(body)
 			end)
 		)
 		table.insert(

@@ -2696,3 +2696,45 @@ with no count (one absent friend holds everyone); keeping the floors until Again
 padlock's dread and the ride would sound behind the results); the results over the world (a
 character left standing there can still be caught); a fixed seed for Again (each climb a new
 building, as DOORS' rooms are).
+
+## D-107 Keepers hear the rest: every loud thing, a shut door muffles, a new sound stops it (L-15, Nov 11)
+The moment: you punch the keypad, drop a tool, saw, crawl, put up the ladder or drop into a unit,
+and somewhere down the hall the limp you were hearing stops dead on one deep thunk, and then comes
+your way, as Lethal Company's Eyeless Dogs stop and turn to a noise before they come. Noise is a
+choice with a price.
+**What's heard, as far as players hear it** (one world, D-069): the keypad's beep and clear (30),
+its chime (60) and a wrong code's alarm (400, every hall on the floor) from `Elevators.acted`; a
+dropped tool's clank as it lands (`Carry.DropHeard` 40, the reach its sound already had; `Slots`
+now fires `landed`); the saw starting (200) and its panel falling (a wall's 110, a top's 200) from
+`Saws.sawing`; a crawl through a hole (35) from `Crawls.crawled`; and from `Ladders.climbed` the
+ladder going up (60), climbing it (30), a crawl along the tops (30, every other pull), a drop off
+a top or into a unit (45). `Keepers` listens to each signal, as it does `Doors.acted`, and calls
+its one hearing (`hearAt`, `Keeper.heardAt`). A wall's hole is heard from the side it's sawn or
+crawled from, a stud into that unit. Nothing is ever knocked flat yet, so that noise waits.
+**Where it's heard from** (`Keeper.heardFrom`, Lune-tested): a sound in a hall, in a unit whose
+door is all the way up, or in the unit the keeper stands in is where it is, as before. One up on
+a unit's top (more than `Keeper.OnTop`, 8.5, over its floor) carries out over its front: heard
+from that unit's door, its reach less the way to the door. One in a unit whose door is down gets
+out through the door the same way at half its reach (`Keeper.Muffled`), as Lethal Company halves
+noise made inside the shut ship; the keeper comes to stand outside the door and look at it, and
+can't get in. Before, no sound got through a shut door (D-069, D-087), which made the saw, the
+crawl and the drop-in silent wherever the door was pulled down: pulling a door down now buys
+quiet, not silence. A keeper inside a shut unit still hears nothing from outside (a sleeper stays
+asleep), and a horn blown on the tops is now heard from the hall, not the unit under you.
+**The reaction** (`Keeper.hear`): a sound new to a keeper (not within `Keeper.Same`, 12 studs, of
+the one it's already going to or looking at) stops it where it stands for its row's `startle`
+(the Mannequin's 0.8 s, about two missing steps of its limp), turned to face the sound, then it
+walks there at its looking pace. The same noise going on (a code's presses, a crawl's pulls, the
+blows on a door) turns it toward the newest spot without stopping it again. The server stamps the
+moment on the body (`KeeperTell.HeardAttribute`) and every screen plays its new Heard beat as it
+shows the stop (`KeeperMotion.Delay` behind): the hollow Shell thunk at 1.7 and pitch 0.78, its
+Weight, and its Creak at 1.4 groaning round. Far off only the thunk carries (to 70); within 32
+you hear the groan too. Verified in Studio: the full chord at 30 studs, the lone thunk at 67.
+**Output** says only news: "heard a wrong code's alarm 69 studs off along the halls; it wakes,
+turns to it and goes to look", never once a pull. A trapped keeper prints one line as it's shut
+in ("bangs on the door until it bursts out at 90 s") and none a blow; the padlock's last blow and
+the burst still print. A crawler's feet, as the pops read them, are on what they lie on
+(`Wrap.feetBelow`): from a tall avatar's hips they'd have read past `Wrap.Under`.
+Not chosen: a faster walk when going to a sound (it would shrink D-069's seven seconds to get
+behind a door; the stop says "it heard" without taking your time); silencing sounds behind shut
+doors (the ticket's crawl and drop-in would never be heard); a voice (a mannequin has none).

@@ -69,6 +69,19 @@ Wrap.Lift = 1.2
 Wrap.Under = 3
 Wrap.Stride = 8
 
+-- How far under a player's root their feet are (studs), as the pops read them. Standing, their
+-- hips' height and half their root. Lying in a crawl, their root sits `proneUp` over what they lie
+-- on, and their feet are there, whatever the avatar's size: from a tall avatar's hips they'd read
+-- past `Under`, and crawling over a sheet wouldn't pop it.
+function Wrap.feetBelow(
+	hipHeight: number,
+	rootHalf: number,
+	lying: boolean,
+	proneUp: number
+): number
+	return if lying then proneUp else hipHeight + rootHalf
+end
+
 -- How far along the halls keepers hear the pops (studs): a door's open (DoorSound's, D-069), so
 -- a sheet two halls off brings a keeper as an opened door there would.
 Wrap.Reach = 110

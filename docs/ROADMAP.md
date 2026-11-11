@@ -1033,11 +1033,15 @@ L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
     any of it before then). Friends gather and the climb starts on a short countdown once
     everyone's in, as DOORS' lobby elevators do: the smallest form of the GDD's lobby (your own
     lobby unit is Phase 2) and the stand-in `docs/FRAMEWORK.md` plans while ENG-13 is unbuilt.
-- [ ] **L-15 Keepers hear the rest.** The keypad, a dropped tool, the saw, a crawl, the ladder and
-  a drop into a unit each make a noise keepers come to (D-059, D-066), through `Keepers:hear`
-  (D-092), as Lethal Company's Eyeless Dogs come to any noise. Same ticket: a trapped keeper's
-  every blow stops printing, and a crawler's feet sit within `Wrap.Under` (3) so crawling over
-  bubble wrap pops it.
+- [x] **L-15 Keepers hear the rest. Done Nov 11 (D-107).** The keypad, a dropped tool, the saw, a
+  crawl, the ladder and a drop off or into a unit each reach a keeper as far as players hear them,
+  as Lethal Company's Eyeless Dogs come to any noise. A sound on a unit's top carries out over its
+  front; one behind a shut door gets out muffled (half), and the keeper comes to stand outside it.
+  A new sound stops it dead for 0.8 s, turned to it, with a Heard beat on every screen (a deep
+  thunk far off, the groan up close). Output says only news; a trapped keeper prints once; a
+  crawler's feet read on what they lie on. Verified in Studio: the keypad (a beep unheard at 60, the
+  alarm heard at 69), a tool dropped (unheard past 40, heard at 26), the ladder going up (heard at
+  29), the Heard beat on screen. The saw, a crawl and a drop-in passed Lune only (`OWNER.md`).
 - [ ] **L-16 The fix pass before friends play.** The bugs friends would meet first, in two
   sessions:
   - [ ] **L-16a In hand and caught.** A friend's torch arm never raises (`FlashlightView`'s
@@ -1049,8 +1053,7 @@ L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
     "KeeperView: can't move ... Mannequin") traced or silenced.
   - [ ] **L-16b The tops and arriving.** Climb or Drop down lying behind a sawn hole slides you
     across it; a friend's drop-in lands 0.2 under the floor; crawlers refused a door's buttons
-    and the ladder (`Ladders:crawling`); a horn blown on the tops heard from the unit under you.
-    A press made the moment you arrive reaches the server while it still sees you a few studs
+    and the ladder (`Ladders:crawling`). A press made the moment you arrive reaches the server while it still sees you a few studs
     back (D-085): allow for it where Saws, Ladders and a door's Cut and Lock check where you
     stand, as `Crawling.counts` does.
   - [ ] **L-16c Crawling the tops feels right** (owner, Nov 10 night: "super glitchy and the

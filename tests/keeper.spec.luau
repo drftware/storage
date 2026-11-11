@@ -224,6 +224,20 @@ local function checkFloor(seed: number, number: number)
 					math.abs(Keeper.left(k) - trip) < 1e-6,
 					`{where}: it says how far it walks before it stops`
 				)
+				-- a new sound stops it dead first, turned to face it (L-15)
+				ok(
+					k.startle == MANNEQUIN.startle and Keeper.pace(k, RUN) == 0,
+					`{where}: a new sound stops it where it stands`
+				)
+				local stood = 0
+				while k.startle > 0 and stood < 1000 do
+					Keeper.step(k, DT, RUN)
+					stood += 1
+				end
+				local startle = math.ceil(MANNEQUIN.startle / DT - 1e-6)
+				ok(math.abs(stood - startle) <= 1, `{where}: stopped {stood} steps, not {startle}`)
+				ok(flat(k.at, home) < 1e-9, `{where}: stopped, it doesn't move`)
+				ok(facingToward(k, door), `{where}: stopped, it faces the sound`)
 				ok(math.abs(Keeper.pace(k, RUN) - PACE) < 1e-9, `{where}: it says its walking pace`)
 				local steps, longest, strayed = walkOut(k, map, "Going", 100000)
 				ok(k.state == "Waiting", `{where}: it gets to the door ({k.state})`)
@@ -376,6 +390,9 @@ do
 	-- a door coming down across its way stops it where it is, facing the sound
 	local k2 = Keeper.new(MANNEQUIN, map, RANDOM, dealt, vector.create(0, 0, 1))
 	Keeper.hear(k2, door, SLAM, spot)
+	while k2.startle > 0 do
+		Keeper.step(k2, DT, RUN) -- it stops to turn to the slam first (L-15)
+	end
 	Keeper.step(k2, DT, RUN)
 	KeeperMap.setDoor(map, inside, false)
 	local at = k2.at

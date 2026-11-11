@@ -17,7 +17,8 @@
 	- Watching: awake and standing where it was put, never yet out. Dealt awake, it steps out to
 	  look the moment its own door is all the way up (`lookOut`). One shut in its unit with no way
 	  out (its door came down before it got out) stands watching too, until its door is up again.
-	- Going: walking to look at a sound, at its row's walking pace.
+	- Going: walking to look at a sound, at its row's walking pace. A new sound first stops it dead
+	  for its row's `startle`, turned to face it, so you hear its walk stop and know it heard.
 	- Waiting: standing still a while: at a sound, facing it, for its row's `linger`; on a roam,
 	  facing the way it came, for its `roamLinger`.
 	- Roaming: walking the halls between noises (L-06b3a1), at the same pace, to the middle of a
@@ -68,8 +69,11 @@
 
 	It hears a door's open, slam or lift from inside (`Keeper.Hears`, the GDD's loud ones) as far as
 	that sound carries for a player (DoorSound's reach, scaled by its row's `hearing`), measured
-	along the map (`KeeperMap`), so no sound reaches it through a wall or a shut door. A newer sound
-	it hears takes it there instead, as Granny turns to the latest noise, whatever it was doing.
+	along the map (`KeeperMap`), so no sound reaches it through a wall. Everything else players do
+	that's loud reaches it the same way (`heardAt`, L-15): a sound up on a unit's top carries out
+	over its front, and one behind a shut door gets out through it muffled (`Muffled`), so it comes
+	to stand outside that door. A newer sound it hears takes it there instead, as Granny turns to
+	the latest noise, whatever it was doing.
 
 	Coordinates are the floor's own (Floor: the lobby's middle at the origin, its floor at height 0),
 	and a keeper's position is its feet. A step allocates nothing once its route is warm, a roam's
@@ -151,6 +155,10 @@ export type Keeper = {
 	padlocked: boolean, -- its door is padlocked: it never bursts out
 	heardOut: boolean, -- it heard something while trapped: it goes there once out
 	heardSpot: vector, -- where it looks from at that sound (`heard` is the sound)
+	-- it's going to a sound it heard, or standing there looking: a newer one this near it (`Same`)
+	-- is the same noise going on, and it walks on without stopping again
+	listening: boolean,
+	startle: number, -- seconds left standing where it heard a new sound, facing it, before it goes
 }
 
 local Keeper = {}
@@ -340,6 +348,7 @@ local function look(k: Keeper, players: Players, still: boolean): boolean
 	if best > 0 then
 		local changed = k.state ~= "Hunting" or k.target ~= ids[best]
 		k.state, k.target, k.waited = "Hunting", ids[best], 0
+		k.listening, k.startle = false, 0
 		k.seen, k.goal = at[best], at[best]
 		if changed and not still then
 			faceToward(k, k.seen) -- the turn: it has seen you
@@ -389,6 +398,7 @@ end
 -- It sets off roaming, or, with nowhere it can reach, stands watching where it is; shut in where
 -- it was trapped (it hunted someone in there with it), it goes back to its door, trapped again.
 local function roam(k: Keeper)
+	k.listening, k.startle = false, 0
 	local goal = pick(k)
 	if goal then
 		k.state, k.goal = "Roaming", goal
@@ -449,39 +459,55 @@ function Keeper.new(
 		padlocked = false,
 		heardOut = false,
 		heardSpot = at,
+		listening = false,
+		startle = 0,
 	}
 end
+
+-- A newer sound this near the one it's already going to (or standing at, looking), in studs, is
+-- the same noise going on: a code's presses, a crawl's pulls, a door banged again. It walks on
+-- toward it without stopping to turn again, and Output and screens don't hear of it again.
+Keeper.Same = 12
 
 --- A sound at `from` carrying `reach` studs (DoorSound's), to be looked at from `spot`. If the
 --- keeper hears it (its trip to the sound is no longer than the reach, scaled by its row's
 --- hearing) it goes to look, whatever it was doing but hunting: returns how far off it heard it,
---- along the map. Else nil. Hunting, its eyes are on you and it hears nothing, so a slammed door
---- never calls it off a chase; searching, it goes. Trapped, it hears through its own door (its
---- trip to the sound from the door's front, plus its own way to the door) and goes nowhere: it
---- remembers the sound, to go after once out. Its own door's sounds it doesn't count.
-function Keeper.hear(k: Keeper, from: vector, reach: number, spot: vector): number?
+--- along the map, and whether it's news to it (a sound it wasn't already going to, `Same`). Else
+--- nil. Hunting, its eyes are on you and it hears nothing, so a slammed door never calls it off a
+--- chase; searching, it goes. News stops it where it stands for its row's `startle`, turning to
+--- face the sound, before it goes (Lethal Company's Eyeless Dogs stop and turn to a noise before
+--- they come): the walk you were hearing stops dead, and you know it heard. Trapped, it hears
+--- through its own door (its trip to the sound from the door's front, plus its own way to the
+--- door) and goes nowhere: it remembers the sound, to go after once out. Its own door's sounds it
+--- doesn't count.
+function Keeper.hear(k: Keeper, from: vector, reach: number, spot: vector): (number?, boolean)
 	local carries = reach * k.row.hearing
 	if not (carries > 0) or k.state == "Hunting" then
-		return nil
+		return nil, false
 	end
 	if k.state == "Trapped" then
 		if from == k.doorway then
-			return nil
+			return nil, false
 		end
 		local d = flatDistance(k.at, k.doorway) + k.pathing:length(k.outside, from)
 		if d > carries then
-			return nil
+			return nil, false
 		end
+		local news = not (k.heardOut and flatDistance(from, k.heard) <= Keeper.Same)
 		k.heardOut, k.heard, k.heardSpot = true, from, spot
-		return d
+		return d, news
 	end
 	local d = k.pathing:length(k.at, from)
 	if d > carries then
-		return nil
+		return nil, false
 	end
-	k.state = "Going"
+	local news = not (k.listening and flatDistance(from, k.heard) <= Keeper.Same)
+	if news then
+		k.startle = k.row.startle
+	end
+	k.state, k.listening = "Going", true
 	k.goal, k.heard, k.waited = spot, from, 0
-	return d
+	return d, news
 end
 
 -- A sound counts as on a floor within this far off its map (studs: the elevator car beside the
@@ -490,6 +516,13 @@ end
 Keeper.SoundOffMap = 8
 Keeper.SoundBelow = 4
 Keeper.SoundAbove = 20
+-- A sound more than this over the floor of the unit it's in is up on the unit's top (studs): the
+-- steel is 10 up and a body lying on it about 11; a jump inside a unit reaches about 7.
+Keeper.OnTop = 8.5
+-- How much of a sound's reach gets out through a shut door, from inside its unit: half, as
+-- Lethal Company halves how far a noise carries from inside the shut ship. Pulling the door down
+-- behind you buys quiet, not silence: saw in there and a keeper still comes to stand outside it.
+Keeper.Muffled = 0.5
 
 --- Whether a sound at `p` (the floor's coordinates) is on the floor whose map is `map`.
 function Keeper.onFloor(map: KeeperMap.Map, p: vector): boolean
@@ -506,12 +539,35 @@ function Keeper.soundAt(map: KeeperMap.Map, p: vector): (vector, vector)
 	return at, KeeperMap.offWalls(map, at, Keeper.Against)
 end
 
+--- Where keeper `k` hears a sound at `p` (the floor's coordinates) carrying `reach` studs from:
+--- the place on the map it comes from, the spot it looks from, and how far it carries from there.
+--- A sound in a hall, in a unit whose door is all the way up, or in the unit the keeper itself
+--- stands in is where it is (`soundAt`). One up on a unit's top carries out over its front into
+--- the hall: it comes from that unit's door, with what's left of its reach once it has got there.
+--- One in a unit whose door is down comes through the door the same way, `Muffled`. The keeper
+--- then comes to stand in front of the door, as it does for a door's own sounds.
+function Keeper.heardFrom(k: Keeper, p: vector, reach: number): (vector, vector, number)
+	local map = k.map
+	local i, slot = KeeperMap.placeAt(map, p)
+	local at = vector.create(p.x, map.y[i], p.z)
+	if slot ~= 0 and KeeperMap.placeAt(map, k.at) ~= i then
+		local up = p.y - map.y[i] > Keeper.OnTop
+		if up or not KeeperMap.doorOpen(map, slot) then
+			local door, front = KeeperMap.doorFront(map, slot, Keeper.Front)
+			local carries = if up then reach else reach * Keeper.Muffled
+			return door, front, math.max(carries - flatDistance(at, door), 0)
+		end
+	end
+	return at, KeeperMap.offWalls(map, at, Keeper.Against), reach
+end
+
 --- Keeper `k` hears a sound at `p` (the floor's coordinates) carrying `reach` studs along the
---- halls: it comes to look, waking if it slept, as for a door (`Keeper.hear`). How far off it
---- heard it along the map, or nil. The horn, the bubble wrap's pops, and later any loud thing.
-function Keeper.heardAt(k: Keeper, p: vector, reach: number): number?
-	local at, spot = Keeper.soundAt(k.map, p)
-	return Keeper.hear(k, at, reach, spot)
+--- halls (`heardFrom`): it comes to look, waking if it slept, as for a door (`Keeper.hear`). How
+--- far off it heard it along the map, or nil, and whether it's news to it. The horn, the bubble
+--- wrap's pops, the keypad, a dropped tool, the saw, a crawl, the ladder and a drop (L-15).
+function Keeper.heardAt(k: Keeper, p: vector, reach: number): (number?, boolean)
+	local from, spot, carries = Keeper.heardFrom(k, p, reach)
+	return Keeper.hear(k, from, carries, spot)
 end
 
 --- Whether it's awake: anything but dealt asleep and not yet woken.
@@ -546,6 +602,7 @@ function Keeper.trap(k: Keeper, slot: Floor.Slot, index: number): boolean
 	k.goal, k.waited = k.against, 0
 	k.trapped, k.nextBang = 0, k.row.bangFirst
 	k.burst, k.padlocked, k.heardOut = false, false, false
+	k.listening, k.startle = false, 0
 	return true
 end
 
@@ -571,6 +628,7 @@ function Keeper.lookOut(k: Keeper, slot: Floor.Slot, index: number): boolean
 			k.burst, k.padlocked = false, false
 			if k.heardOut then
 				k.state, k.goal, k.waited = "Going", k.heardSpot, 0
+				k.listening = true
 				return true
 			end
 			k.state = "Watching"
@@ -737,6 +795,11 @@ function Keeper.step(
 			return true
 		end
 		return looked
+	elseif state == "Going" and k.startle > 0 then
+		-- a new sound: it stands where it heard it, turned to face it, then goes (`hear`)
+		k.startle = math.max(k.startle - dt, 0)
+		faceToward(k, k.heard)
+		return true
 	end
 	-- moving along its route: hunting and searching at its top speed, else at its walk
 	local hunting = state == "Hunting"
@@ -781,11 +844,13 @@ end
 
 --- How fast it walks in its state (studs a second), `run` being a player's full run: hunting and
 --- searching at its top speed, going to look, roaming and going to its door trapped at its looking
---- pace; 0 standing.
+--- pace; 0 standing (startled by a sound included).
 function Keeper.pace(k: Keeper, run: number): number
 	local state = k.state
 	if state == "Hunting" or state == "Searching" then
 		return k.row.speed * run
+	elseif state == "Going" and k.startle > 0 then
+		return 0 -- standing where it heard a new sound, turned to it
 	elseif state == "Going" or state == "Roaming" then
 		return k.row.speed * run * k.row.looking
 	elseif state == "Trapped" and flatDistance(k.at, k.goal) > ARRIVE then

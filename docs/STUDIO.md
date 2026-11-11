@@ -1006,6 +1006,16 @@ verified: a doc page, Studio, or "untested".
   guard steps out to look, never sees you 12 studs up, and roams the halls; a Client
   `RenderStepped` logger over the body's `Keeper*` Sounds (a play is one newly playing or with a
   `TimePosition` lower than last frame's) gives each beat, its volume, pitch and distance.
+- **Testing what keepers hear, from the MCP** (L-15, Play): press the walked floor's "Stand one"
+  (`StandMannequin` in its lobby, -9, -591) for an asleep Mannequin 60 studs along the halls. A
+  Server `PivotTo` onto a spot the client hasn't streamed drops you through the floor (to -500 and
+  dead, which ends the climb): anchor the root, `RequestStreamAroundAsync`, wait 2.5 s, unanchor.
+  The lobby floor is round (0, -600); (-9, -586) is off it. Fire `Remotes.Keypad` with
+  (elevator, key) from 3 studs off the keypad; `ToolDrop` drops what's in hand. A woken keeper
+  comes to the noise and catches you if you're there: set your root's CFrame away on the Client
+  right after (the camera can stay, Scriptable, to hear it). A Client logger that errors every
+  frame (a floor gone at "Again") floods Output past what `get_console_output` returns: guard it
+  with `FindFirstChild`.
 - **Sounds measured for the ladder** (L-13b1; 50 ms bins at half speed): "Metal Ladder Bang
   Slams Against Body 1" 9116717868 (1.08 s) bangs at 0 s near 0 dB, rattles to 0.85 s; "Metal
   Ladder Drop 1" 9116718698 is only 0.66 s, a soft hit then a loud one at 0.25 s; "Metal Ladder

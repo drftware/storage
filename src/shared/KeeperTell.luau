@@ -45,8 +45,9 @@ export type Sound = {
 -- planted, its dragged foot scraping, its stiff heel landing, a creak as it jerks out of its slack
 -- pose. Creak is also its body turning (`turned`); Reveal is a lifted door showing its feet.
 -- Lunge and Catch are its catch (L-06c2), heard only by the one it caught, as their own sound
--- (CaughtView): its body throwing itself at you, and its head hitting you.
-export type Beat = "Footfall" | "Drag" | "Heel" | "Creak" | "Reveal" | "Lunge" | "Catch"
+-- (CaughtView): its body throwing itself at you, and its head hitting you. Heard is it stopping
+-- dead and wrenching round to a new sound (L-15, `HeardAttribute`).
+export type Beat = "Footfall" | "Drag" | "Heel" | "Creak" | "Reveal" | "Lunge" | "Catch" | "Heard"
 
 -- One recording in a beat, its volume and pitch as shares of the recording's own.
 export type Layer = { sound: string, gain: number, pitch: number }
@@ -67,8 +68,13 @@ export type Tell = {
 
 local KeeperTell = {}
 
-local BEATS: { Beat } = { "Footfall", "Drag", "Heel", "Creak", "Reveal", "Lunge", "Catch" }
+local BEATS: { Beat } = { "Footfall", "Drag", "Heel", "Creak", "Reveal", "Lunge", "Catch", "Heard" }
 KeeperTell.Beats = BEATS
+
+-- On a keeper's body (the server's Keepers): the server time it last heard a new sound and stopped
+-- to turn to it. Every screen plays its Heard beat as it shows that moment (`KeeperMotion.Delay`
+-- behind the server), so the thunk lands as its walk stops.
+KeeperTell.HeardAttribute = "KeeperHeard"
 
 -- The keeper states a body stands in a unit in (Keeper): dealt asleep, or awake and watching.
 local STANDING = { Asleep = true, Watching = true }

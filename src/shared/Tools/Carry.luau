@@ -15,6 +15,10 @@ local Carry = {}
 Carry.Slots = 2 -- tools you carry, besides the torch (GDD: "two tools plus whatever's in your hands")
 Carry.PickReach = 8 -- studs from your middle to a tool on the floor: about a door's reach
 Carry.GiveReach = 10 -- studs to a friend you hand a tool to: an arm's length each, and a step
+-- Studs a dropped tool's clank carries as it hits the floor, for friends and keepers alike (L-15):
+-- down the hall you're in and a little round its corner, so letting go of a tool near a keeper is
+-- a noise you chose, and setting it down two halls off isn't.
+Carry.DropHeard = 40
 -- The rate a hand moves at: a burst of quick presses (pick up, switch, switch back) goes through,
 -- then one per gap. Each gap earns one back.
 Carry.Gap = 0.12 -- seconds

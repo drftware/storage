@@ -100,6 +100,7 @@ export type Map = {
 	-- door's opening; anything else, its whole edge (math.huge)
 	opening: { number },
 	doorways: { [number]: number }, -- a unit's slot: its doorway's passage
+	outward: { [number]: vector }, -- a unit's slot: the way out its door into the hall (length 1)
 	-- the places a roaming keeper stops in, one per hall piece in the floor's cell order: each
 	-- straight, each junction's middle square and the lobby (never a junction's arm, a unit or a
 	-- place added later, such as the tops)
@@ -143,6 +144,7 @@ local function new(): Map
 		open = {},
 		opening = {},
 		doorways = {},
+		outward = {},
 		stops = {},
 		g = {},
 		came = {},
@@ -348,6 +350,7 @@ function KeeperMap.build(floor: Floor.Floor): Map
 			assert(hall, `unit {s.number}'s door opens onto no hall`)
 			local k = addPassage(map, hall, s.x, 0, s.z, u, s.x, 0, s.z, 0, 1, false)
 			map.doorways[i] = k
+			map.outward[i] = vector.create(fx, 0, fz)
 			map.opening[k] = Floor.Sizes[s.size].door / 2
 		end
 	end
@@ -423,6 +426,15 @@ end
 function KeeperMap.doorOpen(map: Map, slot: number): boolean
 	local k = map.doorways[slot]
 	return k ~= nil and map.open[k] == true
+end
+
+--- A unit's door, by its slot in the floor: its middle, on the floor in the doorway, and the spot
+--- `out` studs into the hall square in front of it (a keeper's `Keeper.front`). A sound behind a shut
+--- door, or up on the unit's top, is heard from the hall there (`Keeper.heardAt`).
+function KeeperMap.doorFront(map: Map, slot: number, out: number): (vector, vector)
+	local node = 2 * map.doorways[slot] - 1 -- its hall end
+	local door = vector.create(map.nodeX[node], map.nodeY[node], map.nodeZ[node])
+	return door, door + map.outward[slot] * out
 end
 
 --- Whether a keeper can walk through a door in this state: only when it's all the way up. A door

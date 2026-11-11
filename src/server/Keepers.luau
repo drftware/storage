@@ -41,7 +41,14 @@
 	- `awakeOn` tells the deal how many keepers are loose on a floor now, for its cap: a trapped
 	  one takes no place (`Keeper.loose`).
 	- `hear` is any loud thing off a door (the air horn, bubble wrap's pops): each keeper on that
-	  floor whose way there along the halls is inside its reach comes to look (`Keeper.heardAt`).
+	  floor whose way there along the halls is inside its reach comes to look (`Keeper.heardAt`:
+	  up on a unit's top it carries out over the front; behind a shut door, muffled through it).
+	  The rest of the loud things players do come the same way, each as far as players hear it
+	  (L-15): the keypad (`Elevators.acted`), a dropped tool landing (`Slots.landed`), the saw
+	  (`Saws.sawing`), a crawl through a hole (`Crawls.crawled`), and the ladder, a crawl along the
+	  tops and a drop off them or into a unit (`Ladders.climbed`). A keeper that hears a sound new to
+	  it stops and turns to it first (`Keeper.hear`), stamped on its body for screens to hear
+	  (`KeeperTell.HeardAttribute`); the same noise going on is heard without either.
 	  `feet` lets `Wraps` see where keepers tread, without reaching in.
 	- Each keeper's body is an anchored model moved by its HumanoidRootPart, with no Humanoid, its
 	  joints left at rest. The server tells screens how it moves (L-06b4a): a short record on the
@@ -64,12 +71,15 @@ local StarterPlayer = game:GetService("StarterPlayer")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Catalog = require(ReplicatedStorage.Shared.Tools.Catalog)
 local Caught = require(ReplicatedStorage.Shared.Caught)
 local Chase = require(ReplicatedStorage.Shared.Chase)
+local Crawls = require(script.Parent.Crawls)
 local Deals = require(script.Parent.Deals)
 local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
 local Dent = require(ReplicatedStorage.Shared.StorageUnit.Dent)
 local Doors = require(script.Parent.Doors)
+local Elevators = require(script.Parent.Elevators)
 local Flashlights = require(script.Parent.Flashlights)
 local Floor = require(ReplicatedStorage.Shared.Floor)
 local Horn = require(ReplicatedStorage.Shared.Tools.Horn)
@@ -79,9 +89,13 @@ local Torch = require(ReplicatedStorage.Shared.Flashlight.Torch)
 local KeeperMap = require(ReplicatedStorage.Shared.KeeperMap)
 local KeeperMotion = require(ReplicatedStorage.Shared.KeeperMotion)
 local KeeperRows = require(ReplicatedStorage.Shared.KeeperRows)
+local KeeperTell = require(ReplicatedStorage.Shared.KeeperTell)
+local Ladders = require(script.Parent.Ladders)
 local Mannequin = require(ReplicatedStorage.Shared.Mannequin)
 local MotionLights = require(script.Parent.MotionLights)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
+local Saws = require(script.Parent.Saws)
+local Slots = require(script.Parent.Slots)
 
 local TRACE = RunService:IsStudio() -- Output says what each keeper hears and does
 local STATE_ATTRIBUTE = "KeeperState"
@@ -132,6 +146,24 @@ local HEARD: { [string]: string } = {
 	Bang = "bang",
 	Burst = "burst open",
 }
+-- What Output calls each of the rest of the noises players make (L-15).
+local KEYPAD: { [Elevators.Action]: string } = {
+	Press = "a keypad beep",
+	Clear = "a keypad beep",
+	Wrong = "a wrong code's alarm",
+	Right = "the keypad's chime",
+}
+local CLIMB: { [string]: string } = {
+	Raise = "a ladder going up",
+	Up = "someone climbing a ladder",
+	Down = "someone climbing down a ladder",
+	Crawl = "a crawl along the tops",
+	Drop = "a drop off a top",
+	In = "a drop into a unit",
+}
+-- A wall's hole is heard from the side it's sawn or crawled from: this far into that unit (studs),
+-- off the wall's line between the two.
+local SIDE_IN = 1
 
 type Body = {
 	model: Model,
@@ -391,7 +423,7 @@ function Keepers.new(): Keepers
 				then "stands over where it caught them"
 				elseif
 					state == "Trapped" and k.trappedIn ~= 0
-				then `is trapped in Unit {entry.on.floor.slots[k.trappedIn].number}`
+				then `is trapped in Unit {entry.on.floor.slots[k.trappedIn].number}; it bangs on the door until it bursts out at {k.row.breakOut} s`
 				else DOING[state]
 			print(`Keepers: the {entry.keeper.row.name} {doing}`)
 		end
@@ -445,6 +477,33 @@ function Keepers.new(): Keepers
 		end
 	end
 
+	-- Keeper `entry` heard `what`, `off` studs away along the halls; `news` if it's a sound it
+	-- wasn't already going to (Keeper.hear). News is said in Output and stamped on its body, so
+	-- every screen plays it stopping and turning to the sound (KeeperSounds' Heard beat); the same
+	-- noise going on (a code's presses, a crawl's pulls) is neither.
+	local function heardIt(
+		entry: Entry,
+		was: Keeper.State,
+		what: string,
+		off: number,
+		news: boolean
+	)
+		local k = entry.keeper
+		if news and k.state ~= "Trapped" then
+			entry.body.model:SetAttribute(KeeperTell.HeardAttribute, Workspace:GetServerTimeNow())
+		end
+		if TRACE and news then
+			local doing = if k.state == "Trapped"
+				then "it'll go there once out"
+				elseif was == "Asleep" then "it wakes, turns to it and goes to look"
+				else "it stops, turns to it and goes to look"
+			print(
+				`Keepers: the {k.row.name} heard {what} {math.round(off)} studs off along the halls; {doing}`
+			)
+		end
+		changedState(entry, was)
+	end
+
 	-- A door made a sound: every keeper on its floor that hears it goes to look.
 	local function onActed(event: Doors.DoorEvent)
 		local motion = event.motion
@@ -457,28 +516,69 @@ function Keepers.new(): Keepers
 		end
 		local slot = on.floor.slots[on.slots[event.unit]]
 		local spot, door = Keeper.front(slot)
+		local what = `Unit {slot.number}'s door {HEARD[motion]}`
 		for _, entry in on.keepers do
-			local k = entry.keeper
-			local was: Keeper.State = k.state
-			local heard = Keeper.hear(k, door, event.reach, spot)
+			local was: Keeper.State = entry.keeper.state
+			local heard, news = Keeper.hear(entry.keeper, door, event.reach, spot)
 			if heard then
-				if TRACE and k.state == "Trapped" then
-					print(
-						`Keepers: the {k.row.name}, trapped, hears Unit {slot.number}'s door {HEARD[motion]}, {math.round(
-							heard
-						)} studs off; it'll go there once out`
-					)
-				elseif TRACE then
-					local wakes = if was == "Asleep" then "wakes and goes" else "goes"
-					print(
-						`Keepers: the {k.row.name} heard Unit {slot.number}'s door {HEARD[motion]}, {math.round(
-							heard
-						)} studs off along the halls; it {wakes} to look`
-					)
-				end
-				changedState(entry, was)
+				heardIt(entry, was, what, heard, news)
 			end
 		end
+	end
+
+	-- A loud thing at `at` (the world's), carrying `reach` studs: every keeper on the floor it's on
+	-- that hears it comes to look (Keeper.heardAt). How many heard it.
+	local function hearAt(at: Vector3, reach: number, what: string): number
+		local count = 0
+		for _, on in floors do
+			local p = on.origin:PointToObjectSpace(at)
+			local here = vector.create(p.X, p.Y, p.Z)
+			if not Keeper.onFloor(on.map, here) then
+				continue
+			end
+			for _, entry in on.keepers do
+				local was: Keeper.State = entry.keeper.state
+				local heard, news = Keeper.heardAt(entry.keeper, here, reach)
+				if heard then
+					count += 1
+					heardIt(entry, was, what, heard, news)
+				end
+			end
+		end
+		return count
+	end
+
+	-- `at` moved `SIDE_IN` studs toward `unit`'s middle, across the floor: a sound on the wall
+	-- between two units, heard from `unit`'s side.
+	local function sideOf(at: Vector3, unit: Model): Vector3
+		local toward = (unit:GetPivot().Position - at) * Vector3.new(1, 0, 1)
+		if toward.Magnitude < 1e-3 then
+			return at
+		end
+		return at + toward.Unit * SIDE_IN
+	end
+
+	-- The rest of the noises players make (L-15), each heard as far as players hear it.
+	local function onKeypad(event: Elevators.KeypadEvent)
+		hearAt(event.at, event.reach, KEYPAD[event.action])
+	end
+	local function onLanded(event: Slots.Landed)
+		local row = Catalog[event.key]
+		hearAt(event.at, event.reach, `{string.lower(if row then row.name else event.key)} dropped`)
+	end
+	local function onSawing(event: Saws.SawEvent)
+		local what = if not event.done
+			then "a saw starting"
+			elseif event.kind == "Top" then "a sawn top crashing in"
+			else "a sawn wall falling"
+		local at = if event.kind == "Top" then event.at else sideOf(event.at, event.from)
+		hearAt(at, event.reach, what)
+	end
+	local function onCrawled(event: Crawls.CrawlEvent)
+		hearAt(sideOf(event.at, event.from), event.reach, "a crawl through a hole")
+	end
+	local function onClimbed(event: Ladders.ClimbEvent)
+		hearAt(event.at, event.reach, CLIMB[event.kind] or "a ladder")
 	end
 
 	-- Unit `index`'s door on floor `on` is all the way up: an awake keeper standing in it steps out
@@ -539,12 +639,6 @@ function Keepers.new(): Keepers
 		end
 	end
 
-	-- The dent's step a unit's door shows now (for Output).
-	local function dentStep(unit: Model): number
-		local share = unit:GetAttribute(Dent.Attribute)
-		return Dent.step(if type(share) == "number" then share else 0, #RollUpDoor.spec(unit).Dent)
-	end
-
 	-- A trapped keeper hit its door from inside, burst it up, or gave its padlocked door one last
 	-- blow: the door answers on every screen, and keepers that hear it come to look.
 	local function onBlow(entry: Entry)
@@ -569,17 +663,13 @@ function Keepers.new(): Keepers
 				Keeper.padlock(k, true) -- padlocked as its time ran out: it holds
 			end
 		elseif doors:move(unit, "Bang") then
-			local before = dentStep(unit)
 			RollUpDoor.dent(unit, share)
-			if TRACE then
-				local after = dentStep(unit)
-				local tail = if blow == "Held"
-					then "; the padlock holds and it goes quiet"
-					else ` ({math.round(k.trapped)} s)`
-				local dented = if after > before
-					then `; the door bows out: {RollUpDoor.spec(unit).Dent[after].Name}`
-					else ""
-				print(`Keepers: the {k.row.name} bangs on Unit {number}'s door{tail}{dented}`)
+			-- one line a trap (its start, in `changedState`), not one a blow: only the padlock
+			-- stopping it is news
+			if TRACE and blow == "Held" then
+				print(
+					`Keepers: the {k.row.name} gives Unit {number}'s door one last blow; the padlock holds and it goes quiet`
+				)
 			end
 		end
 	end
@@ -715,6 +805,27 @@ function Keepers.new(): Keepers
 		local deals = (context.registry:get("deals") :: any) :: Deals.Deals?
 		if deals then
 			table.insert(connections, deals.dealt:connect(onDealt))
+		end
+		-- the rest of what players do that's loud (L-15); any: as above, each fills its slot
+		local elevators = (context.registry:get("elevators") :: any) :: Elevators.Elevators?
+		if elevators then
+			table.insert(connections, elevators.acted:connect(onKeypad))
+		end
+		local slots = (context.registry:get("slots") :: any) :: Slots.Slots?
+		if slots then
+			table.insert(connections, slots.landed:connect(onLanded))
+		end
+		local saws = (context.registry:get("saws") :: any) :: Saws.Saws?
+		if saws then
+			table.insert(connections, saws.sawing:connect(onSawing))
+		end
+		local crawls = (context.registry:get("crawls") :: any) :: Crawls.Crawls?
+		if crawls then
+			table.insert(connections, crawls.crawled:connect(onCrawled))
+		end
+		local ladders = (context.registry:get("ladders") :: any) :: Ladders.Ladders?
+		if ladders then
+			table.insert(connections, ladders.climbed:connect(onClimbed))
 		end
 	end
 
@@ -868,33 +979,7 @@ function Keepers.new(): Keepers
 	end
 
 	function system.hear(_: any, at: Vector3, reach: number, what: string): number
-		local count = 0
-		for _, on in floors do
-			local p = on.origin:PointToObjectSpace(at)
-			local here = vector.create(p.X, p.Y, p.Z)
-			if not Keeper.onFloor(on.map, here) then
-				continue
-			end
-			for _, entry in on.keepers do
-				local k = entry.keeper
-				local was: Keeper.State = k.state
-				local heard = Keeper.heardAt(k, here, reach)
-				if heard then
-					count += 1
-					if TRACE then
-						local doing = if k.state == "Trapped"
-							then "it'll go there once out"
-							elseif was == "Asleep" then "it wakes and goes to look"
-							else "it goes to look"
-						print(
-							`Keepers: the {k.row.name} heard {what} {math.round(heard)} studs off along the halls; {doing}`
-						)
-					end
-					changedState(entry, was)
-				end
-			end
-		end
-		return count
+		return hearAt(at, reach, what)
 	end
 
 	function system.hearHorn(self: any, at: Vector3): number

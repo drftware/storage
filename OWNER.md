@@ -7,6 +7,35 @@ nowhere else.
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 
+## Now: judge L-15, keepers hear the rest (built Nov 11)
+
+Verified in Studio (Play, one player, a Mannequin stood two halls off with the lobby's "Stand
+one"): a keypad beep 60 studs off didn't reach it; a wrong code did ("heard a wrong code's alarm
+69 studs off along the halls; it wakes, turns to it and goes to look"), and it came and caught me
+at the keypad. Bolt cutters dropped in the lobby (past 40) left it asleep; dropped 26 studs off
+they woke it, and the screen played its new stop: a deep hollow thunk, its weight and a groan as
+it wrenched round (alone at 67 studs, only the thunk). The ladder going up 29 studs off woke it
+too. Not driven in Studio (Lune only): the saw, a crawl through a hole, a crawl along the tops, a
+drop off a top or into a unit, and a sound behind a shut door.
+- [ ] **Hear it stop.** Stand a Mannequin, let it roam, then make a noise in its reach out of its
+  sight: its limp should break off on one deep thunk (a groan with it if you're close), stand a
+  beat, then come your way. Does the stop read as "it heard me"? Is 0.8 s right?
+- [ ] **Behind a shut door.** Pull a unit's door down behind you and saw its wall (or drop in
+  through its top): a keeper within about 100 studs should come and stand outside your door
+  facing it, never get in, then wander off. Lift the door while it's there for the scare. Is half
+  the reach right for a shut door?
+- [ ] **On the tops.** Crawl along a top near a keeper's hall: it should follow the boom of your
+  pulls from below, standing in front of the unit you're on, without stopping at every pull.
+- [ ] **With a friend**: one makes noise while the other watches the keeper turn.
+- [ ] **Decide, defaults in place** (D-107): (1) **A shut door muffles** a sound inside to half
+  its reach, as Lethal Company's shut ship does; before, nothing got through a shut door, so the
+  saw, crawl and drop-in were silent with the door down. Say if a shut door should be silence.
+  (2) **How far each carries** is what players hear: a beep 30, the chime 60, a wrong code 400
+  (the whole floor), a dropped tool 40, the saw 200, a crawl through a hole 35, the ladder going
+  up 60, climbing it 30, a crawl on the tops 30, a drop off or into a unit 45. (3) **Its stop**
+  on a new sound, 0.8 s; the same noise again within 12 studs doesn't stop it twice. (4) A
+  tool dropped as you're caught is heard too (one world).
+
 ## Now: judge L-08d, the climb ends (built Nov 11)
 
 Verified in Studio on seed 7, one player: caught by 157's Mannequin, the climb ended ("Kept",

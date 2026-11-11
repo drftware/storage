@@ -25,6 +25,9 @@ export type Row = {
 	-- Seconds it stands where it heard something, facing it, before it wanders off. Long enough to
 	-- make whoever made the noise hold their breath behind the door.
 	linger: number,
+	-- Seconds a new sound stops it dead where it stands, turned to face it, before it goes to look
+	-- (`Keeper.hear`): its walk breaks off, and whoever made the noise hears that it heard.
+	startle: number,
 	-- Once out, it roams the halls between noises and never goes home (D-071): it walks at its
 	-- looking pace to a hall piece's middle whose trip along the halls is from `roamNear` to
 	-- `roamFar` studs, stands there `roamLinger` seconds, and picks again, never one of the last
@@ -76,6 +79,9 @@ local Mannequin: Row = {
 	abilities = {}, -- it only walks: no ladders, no crawl holes (D-068)
 	hearing = 1,
 	linger = 5,
+	-- about two of its steps missing from the limp: long enough that the stop reads as listening,
+	-- short enough not to hand back the time the noise cost you
+	startle = 0.8,
 	-- at least about two hall pieces off, so it visibly moves on and you lose track of it, rather
 	-- than shuffling about the door it looked at
 	roamNear = 40,
@@ -222,6 +228,14 @@ local Mannequin: Row = {
 			Lunge = {
 				{ sound = "Creak", gain = 1.4, pitch = 0.85 },
 				{ sound = "Scrape", gain = 1.2, pitch = 0.9 },
+			},
+			-- it heard you (L-15): it stops dead on its good foot, a deep hollow thunk with its weight
+			-- behind it, and its stiff body wrenches round toward the sound with a groan. Far off only
+			-- the thunk carries, and the limp you were hearing stops.
+			Heard = {
+				{ sound = "Shell", gain = 1.7, pitch = 0.78 },
+				{ sound = "Weight", gain = 1, pitch = 0.9 },
+				{ sound = "Creak", gain = 1.4, pitch = 0.82 },
 			},
 			-- and its hollow head hitting your face: the deepest thunk it makes, its weight behind it
 			Catch = {

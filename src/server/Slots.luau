@@ -38,7 +38,6 @@ local Tools = require(ReplicatedStorage.Shared.Tools)
 local Carry = Tools.Carry
 local Catalog = Tools.Catalog
 
-local SOUND_REACH = 40 -- studs: a dropped tool's clank carries down a hall leg
 local HAND_SOUND_REACH = 24 -- a hand closing on a tool, heard close by
 local FALL = TweenInfo.new(0.32, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 local DROP_AHEAD = 2.2 -- studs in front of your middle where a dropped tool lands
@@ -51,10 +50,14 @@ export type Change = {
 
 -- A press of ToolUse that passed: who, the tool's catalog key, and its model in their hand.
 export type Use = { player: Player, key: string, model: Model }
+-- A dropped tool hitting the floor: its clank, heard `reach` studs off (Carry.DropHeard).
+export type Landed = { key: string, at: Vector3, reach: number }
 
 export type Slots = Brix.System & {
-	-- Fires as anyone's slots change, for whoever cares (keepers that hear a drop, later).
+	-- Fires as anyone's slots change, for whoever cares.
 	changed: Brix.Signal<Change>,
+	-- Fires as a dropped tool lands with its clank, wherever it fell: keepers hear it (L-15).
+	landed: Brix.Signal<Landed>,
 	-- Fires as someone uses the tool in their hand (its row's `verb`), checked and rate-limited.
 	used: Brix.Signal<Use>,
 	-- Lays a new tool of catalog key `key` on the floor at `at` (a floor point), turned `yaw`
@@ -148,6 +151,7 @@ function Slots.new(): Slots
 	local remotes: { Instance } = {}
 	local changed = Brix.Signal.new() :: Brix.Signal<Change>
 	local used = Brix.Signal.new() :: Brix.Signal<Use>
+	local landed = Brix.Signal.new() :: Brix.Signal<Landed>
 	local lying: Folder? = nil
 	local notice: RemoteEvent? = nil
 	local nextId = 0
@@ -323,7 +327,8 @@ function Slots.new(): Slots
 			local tween = TweenService:Create(t.body, FALL, { CFrame = goal })
 			tween.Completed:Once(function()
 				if t.owner == nil and t.model.Parent == lying then
-					Tools.play(Catalog[t.key].drop, t.body, SOUND_REACH)
+					Tools.play(Catalog[t.key].drop, t.body, Carry.DropHeard)
+					landed:fire({ key = t.key, at = t.body.Position, reach = Carry.DropHeard })
 				end
 			end)
 			tween:Play()
@@ -605,6 +610,7 @@ function Slots.new(): Slots
 		name = "Slots",
 		changed = changed,
 		used = used,
+		landed = landed,
 	}
 
 	function system.start(_: any, _context: Brix.Context)
@@ -657,6 +663,7 @@ function Slots.new(): Slots
 		table.clear(remotes)
 		changed:disconnectAll()
 		used:disconnectAll()
+		landed:disconnectAll()
 	end
 
 	function system.lay(_: any, key: string, at: Vector3, yaw: number): string?

@@ -23,6 +23,7 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Crawling = require(ReplicatedStorage.Shared.StorageUnit.CrawlHole.Crawling)
 local Keepers = require(script.Parent.Keepers)
 local Slots = require(script.Parent.Slots)
 local Tools = require(ReplicatedStorage.Shared.Tools)
@@ -293,7 +294,14 @@ function Wraps.new(): Wraps
 			local root = character and character:FindFirstChild("HumanoidRootPart")
 			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 			if root and root:IsA("BasePart") and humanoid and humanoid.Health > 0 then
-				local feet = root.Position - Vector3.yAxis * (humanoid.HipHeight + root.Size.Y / 2)
+				-- lying in a crawl (Crawls tags you), your feet are on what you lie on
+				local below = Wrap.feetBelow(
+					humanoid.HipHeight,
+					root.Size.Y / 2,
+					character ~= nil and character:HasTag(Crawling.Tag),
+					Crawling.ProneUp
+				)
+				local feet = root.Position - Vector3.yAxis * below
 				local was = lastPlayer[player]
 				lastPlayer[player] = feet
 				if was then
