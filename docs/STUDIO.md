@@ -810,6 +810,34 @@ verified: a doc page, Studio, or "untested".
   over Razormorph's 0.9 for phones), the whoosh 284, the Lunge beat's scrape 188 and creak 64, the
   Catch beat's weight 488 and thunk 303. The library's search turns up mostly re-uploads of other
   games' jump scares (FNaF, Doors, Spooky's): never those.
+- **Sounds measured for the ride** (L-08a, 2026-11-11; AudioPlayer to AudioAnalyzer with
+  `SpectrumEnabled`, 0.5 s bins and the share under 190 Hz / 190 to 470 / 470 to 2k / 2 to 6k /
+  over 6k; then 20 ms bins at a fifth or a tenth of speed for the hits). Pro Sound Effects'
+  "Freight Elevator" set is quiet and mostly bass: "Freight Elevator 3" 9114533164 (19.6 s) has a
+  brake-release clunk at 1.13 s (6/32/47/12/3) and a stop clunk at 15.15 s (8/17/53/15/8, the
+  loudest thing in it), its run between nine tenths under 190 Hz; "Freight Elevator 2"
+  9114533808 (45.9 s) runs steady from 15 to 24.5 s, three quarters under 190 Hz; "1" 9114533169
+  and 9114533605 are quiet start-stop clatter. A phone barely plays any of their runs, so the
+  motor is "Conveyor Belt 5" 9113910297 (13.7 s): a hard knock at 0.24 s, then a clanky motor
+  steady from 0.5 to 13 s at about -25 dB (at volume 0.3), 40 to 59% at 190 to 470 Hz and 30 to
+  40% at 470 Hz to 2 kHz, stopping at 13 s. "Conveyor Belt 2" 9113910179 is similar and rougher.
+  The library has no single elevator arrival ding from a licensed creator; the ride reuses the
+  right code's double-ding 9119642644. In Play the ride's sounds read in order on the rider's
+  screen (release, motor and rumble from 0.9 s, clanks, the tick at 7.2 s, the stop and brake
+  from 9 s, the bell at 9.75 s) and on no other screen.
+- **`PlaybackLoudness` reads the recording, not the Sound's `Volume`** (Play, L-08a): the ride's
+  motor faded to Volume 0 still read 30 to 50, so compare loudness at equal volumes or multiply.
+- **Testing the ride from the MCP** (L-08a, 2026-11-11): seed 7, floor 1, the elevator at (0, 0,
+  -588), the car toward +Z. From the Server pivot your character to (-7.8, 3, -591.5) facing the
+  keypad; from the Client fire `ReplicatedStorage.Remotes.Keypad:FireServer(elevator, digit)` for
+  1, 0, 9, 7, 0.45 s apart; then pivot to (0, 3, -581) facing -Z (aboard). The gate shuts about
+  31 s later. MCP calls and captures took 3 to 5 s each in Play, slower than the ride, so to look
+  at a frame set Workspace's `DevRideHold` (Studio only) to the seconds into the ride you want,
+  from the Server before the car leaves or while it rides: the car never arrives while it's set,
+  and every screen draws that moment (shaft, sway, lamp, readouts). Clearing it fast-forwards: the
+  car arrives, opens and is armed again at once. Turn the Client's camera to the gate
+  (`CFrame.lookAt(pos, pos + Vector3.new(0, 0.1, -1))`) before capturing. A real-time ride is best
+  logged from a `task.spawn`ed RenderStepped loop that the call leaves running (`_G` for results).
 - **The kept wrap's squeal, measured** (L-07b, 2026-11-10; Edit, AudioPlayer at half speed to
   AudioAnalyzer, 0.1 s bins, spectral centroid per bin): nothing in the library is titled
   stretch film; a tape screeching off a roll is the same sound. Pro Sound Effects' "Duct Tape

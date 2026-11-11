@@ -2460,3 +2460,64 @@ your view back (its face shrank just as it should press in); fading to black (a 
 the wake's haze clearing as a square (gone before the eyes opened). A Studio-only hold
 (`DevCatchHold`) stops the catch's clock on every screen to look at one frame; it's how the frames
 were judged (docs/STUDIO.md, "Testing the catch from the MCP").
+
+## D-103 The ride: a still car, a sliding shaft, the counter turning over (L-08a, Nov 11)
+The moment: the breath between floors, as Dandy's World's elevator carries the team between its
+floors. Relief as the car takes you, then dread as the readout turns over to the floor you're
+about to face and the next landing's dark mouth slides down level with you.
+
+It runs on the server's clock, as the gate's does (D-046). The instant the shut gate hits its post
+the server writes one replicated value on the elevator (`Ride.Attribute`: that moment, the floors
+from and to), just before who rode (`Aboard`); every rider's screen draws the whole ride from it,
+and the server folds the gate open on its own clock (`Ride.opens`), firing `arrived` as the car
+levels. Timeline (seconds after the gate hits its post; every number in `Ride`): the car sits 0.8
+s, its brakes let go, it gathers speed over 1.8 s on a cosine S-curve, climbs 4.6 s at full speed
+(2.4 studs a second), slows over 2.4 s and is level at 9.6 s; the gate starts to fold at 10.3 s
+(open at about 11.9 s). One floor is 16 studs.
+
+The car never moves. Moving a car with characters in it jitters on Roblox and the owner's line is
+that the ride never jitters the camera. Instead each rider's screen lays a thin sleeve of shaft in
+the 0.09-stud gap between the landing's frame and the car's front (`Ride.Shaft`, RideView) and
+slides it down past the gate: the hall you left goes black over 0.3 s as the brakes let go (under
+the lamp's dip, so you see the light fail, not a fade), its header beam, lamp-lit concrete with
+two formwork seams and the next floor's number painted on it, the next landing's apron and bright
+sill, then its black mouth, level with you; that black lifts off the real hall over the 0.7 s
+before the gate folds. The car's lamp prints the gate's lattice on the sliding wall.
+
+The motion is held on the camera (CameraShake's new `hold`, read each frame under any shake): the
+lurch (the car drops 0.08 studs on its cables and springs back at 1.8 Hz, eased out of rest over
+0.05 s so it's a shove, never a snap), your weight sinking as it pulls and floating as it slows
+(0.03 studs per stud/s²), two cable clanks (0.02 studs, a single damped knock each), a slow roll
+and nod at full speed (0.12° and 0.07°), the bob as it levels. No noise is ever added. Lune holds
+it to 0.15 studs and 0.6° at most, and no frame (at 60 a second) moves more than 0.012 studs or
+tips more than 0.05°.
+
+The counter: an amber LED readout over the gate inside the car (two digits and a stepped arrow,
+drawn on a card on the fascia like the keypad's), lit at rest with the floor the car stands at
+(`Ride.FloorAttribute`), the arrow lit while it climbs; and the gate clock's plate in the top bar,
+which turns from the clock's 0 to the floor in the same amber for riders. Both tick over to the
+next floor as the brakes start to bite (7.2 s), with a relay's click, so the new number is the
+first sign of what's coming.
+
+Sounds, on riders' screens only, flat (you're inside the box), from Pro Sound Effects and measured
+(docs/STUDIO.md): "Freight Elevator 3"'s brake release (its clunk at 1.13 s lands as the brakes
+let go) and stop clunk (15.15 s, lands as it levels); "Conveyor Belt 5"'s clanky motor, the part a
+phone plays (nine tenths of it 190 Hz to 2 kHz), its pitch 0.82 to 1 and volume following the
+speed, handing over to its own winding-down (its stop at 13 s lands as it levels); "Freight
+Elevator 2"'s deep run under it for headphones; the motor's start knock pitched down for the
+clanks; the unit lights' toggle for the relay; the elevator's own bell (the right code's
+double-ding) at 0.84 pitch as it levels. The car's lamp dips to 0.3 as the brakes let go with one
+more flicker, a little at each clank, to 0.6 as they bite at the top (ElevatorView, riders only).
+
+Until L-08b lays the next floor, the car arrives back at the same lobby, its number one higher;
+`Ride.Linger` (6 s) after the gate opens, DevCorridor arms it again with the same code, the gate
+shutting behind the team. The stand-in ride's fade to black and teleport (D-046) are gone. L-08b
+hands riders over mid-ride: it writes the same ride on the next floor's car and moves them; a
+rider's screen follows whichever riding car holds them.
+
+Not chosen: moving the car and its riders (physics jitter); a fade to black (the old stand-in, a
+cut, not a ride); a landing door that parts (no art for it, and the lobby has none); camera noise
+for the shudder (the owner's jitter line: the clanks and the sound carry it); counting through
+several floors (one floor per ride); a second plate for the counter (the clock's plate is where
+eyes already are). A Studio-only hold (`Ride.Hold`, Workspace's `DevRideHold`) stops every ride
+where it is, on the server and every screen, to look at one frame.

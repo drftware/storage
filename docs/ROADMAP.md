@@ -955,12 +955,34 @@ L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
   Nov 10). Takes the GDD's "Left behind" (the gate shuts with you still kept or outside: you
   spectate, or Cut Free to the next floor) and "Whole team kept" (the climb ends, the Missing
   board), moved from L-07. Split Nov 10 into five, each its own session:
-  - [ ] **L-08a The ride.** The gate shuts, the car shudders and climbs while a floor counter
-    ticks, and its doors open on a new hall, as Dandy's World's elevator carries the team
-    between floors. Everyone aboard rides; the ride's sound, shake and counter ship with it.
+  - [x] **L-08a The ride. Done Nov 11** (D-103). The gate shuts, the car climbs one floor and
+    its gate opens on the next hall, as Dandy's World's elevator carries the team between
+    floors: on the server's clock (`Ride.Attribute`, `arrived`), 9.6 s to level, the gate
+    folding at 10.3 s. The car never moves: riders' screens slide a sleeve of shaft down past the
+    gate (the hall going black as the brakes let go, a header, lamp-lit concrete with the next
+    floor's number painted on it, the next landing's sill, its black mouth lifting off the hall),
+    the sway held on the camera (lurch, weight, two clanks, the bob as it levels; Lune-held to
+    0.012 studs and 0.05° a frame), the lamp dipping, an amber floor readout over the gate inside
+    and the clock's plate both ticking over as the brakes bite, and the brakes, the clanky motor,
+    the clanks, a relay's click, the winding-down and the bell, measured. The stand-in fade and
+    teleport are gone: the car arrives back at the same lobby one floor higher and is armed again
+    6 s after its gate opens. Verified in Studio on seed 7, floor 1: punched 1097 and rode 1 to 2
+    and 2 to 3; a real-time ride logged frame by frame (the shaft sliding 16 studs, the lamp at
+    0.33 as the brakes let go, every sound on its cue, volumes following the speed); frames held
+    with `DevRideHold` and captured (`docs/art/L-08a-*.jpg`: the readout at rest, the hall gone
+    dark, the shaft mid-climb, the painted 2, the tick to 2, the dark lifting at the top, the
+    gate open on 3); left in the lobby, no shaft or ride sound played there; Output clean. By
+    ear, on a phone and with friends: `OWNER.md`.
   - [ ] **L-08b The next floor.** Dealt and laid while you ride, with its own code and the
     harder odds `Deal` already has for floors 1 to 10; the floor below is cleared away so a
-    phone never holds two.
+    phone never holds two. Laying floor 1 took 2.27 s in Studio, well inside the ride's 9.6 s.
+    The hand-off, mid-ride while the shaft hides everything (about `Ride.cruising()` +
+    `Ride.Cruise` / 2): lay the next floor's elevator, write the same `Ride.Attribute` on it,
+    move each rider to the same spot in the new car (rotated if it faces another way), and run
+    its arrival (`Elevators` needs a way to take over a ride mid-way on another car: today only
+    the car that left arrives); RideView already follows the ride onto a car the rider stands in.
+    Then arm the new car with the new floor's code and number (`arm(..., number)`), and replace
+    DevCorridor's stand-in (the `arrived` handler that re-arms the same floor).
   - [ ] **L-08c Left behind.** Whoever the gate shuts on, kept or still outside, watches their
     friends on the floor above, as Lethal Company's crew watch once they're dead; the rest is
     the GDD's "Left behind" (its "Cut Free to the next floor").
@@ -1221,10 +1243,6 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **The PA's voice** (L-05b2): the GDD has the PA count the 30 s down aloud. Today a chime starts
   the clock and the bell counts the last five; a voice ("Thirty seconds", "Ten", then the count)
   wants a recording or Roblox's text-to-speech (`AudioTextToSpeech`, verify it first).
-- **The ride's motor** (L-05b2, for L-08): the lurch after the gate slams is felt but not heard;
-  the car wants its motor's whine and the cables' creak as it starts up.
-- **The thumbstick over the ride's fade** (L-05b2): Roblox's touch controls stay drawn over the
-  black while the car rides; hide them for the fade, or let them show (most games do).
 - **The held-up note's shadow** (L-05b1d): a soft shadow under the card as it lifts, so it reads
   as paper held off the world rather than pasted on the screen.
 - **A note answers when it's found** (L-05b1b): the first time a note comes into your light, a
@@ -1241,8 +1259,15 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
   strips at 80 like the car's walls.
 - **Tally marks in the car** (L-05a1): scratched into the paint by a back corner, someone counting
   nights; a patch of its own, since the walls tile.
-- **The shaft** (L-05a1): rails, cables, the counterweight and the next landing passing during the
-  ride, and what's left when the car goes up without you (L-08).
+- **The shaft** (L-05a1, L-08a): the ride's sleeve is a wall, its seams, a painted number and
+  the landings; it wants guide rails either side, a cable or two, the counterweight passing the
+  other way, grease streaks, and what's left when the car goes up without you (L-08c).
+- **The ride's art** (L-08a): the shaft's walls are Roblox's Concrete and Metal, not baked from
+  Blender like the car; a shaft texture set (stained concrete, a landing's apron with hazard paint,
+  a stencilled number) would match the car. And the car's floor readout is a SurfaceGui plate:
+  a modelled indicator box over the gate would sit better.
+- **The arriving hall's mouth** (L-08a): it's flat black until the car levels; a thin line of the
+  hall's light at its sill as it comes down would say a floor is there before you see it.
 
 - **The Mannequin's head turned to you** (L-06a): each time it moves unseen, its Neck turns
   toward the nearest player, so the next look finds it watching you, as Five Nights at Freddy's

@@ -34,12 +34,13 @@ local NoteView = require(script.NoteView)
 local PadlockView = require(script.PadlockView)
 local SawView = require(script.SawView)
 local ToolView = require(script.ToolView)
+local RideView = require(script.RideView)
 local UnderDoor = require(script.UnderDoor)
 local UnitLights = require(script.UnitLights)
 local Wrap = require(ReplicatedStorage.Shared.Tools.Wrap)
 local WrapView = require(script.WrapView)
 
-local cameraShake, kick = CameraShake.new()
+local cameraShake, kick, holdView = CameraShake.new()
 local freeCursor, needCursor = FreeCursor.new()
 local elevatorView, pressKeypad = ElevatorView.new(kick)
 local keeperSounds, keeperHeard = KeeperSounds.new()
@@ -61,7 +62,8 @@ local host = Brix.Host.new({
 		{ slot = "behindDoors", system = BehindDoors.new() },
 		{ slot = "elevatorView", system = elevatorView },
 		{ slot = "keypadPad", system = KeypadPad.new(pressKeypad, needCursor) },
-		{ slot = "gateClock", system = GateClock.new(kick) },
+		{ slot = "gateClock", system = GateClock.new() },
+		{ slot = "rideView", system = RideView.new(holdView) },
 		{ slot = "minimapView", system = MinimapView.new() },
 		{ slot = "caughtView", system = CaughtView.new(kick) },
 		{ slot = "chaseMusic", system = ChaseMusic.new() },

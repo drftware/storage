@@ -17,7 +17,8 @@
 	  faster and faster), and a heartbeat starts under everything, quickening as it runs down, as
 	  Dandy's World plays a heartbeat over its elevator's timer.
 	- In the last `Final` seconds the elevator's bell rings once each second.
-	- At zero the gate folds shut with its own ratchet and slam (Sounds.gate); those inside ride.
+	- At zero the gate folds shut with its own ratchet and slam (Sounds.gate); those inside ride
+	  (Ride, L-08a).
 ]]
 local Gate = require("./Gate")
 local Specs = require("./Specs")
@@ -58,17 +59,6 @@ Departure.HeartFade = 1.2
 -- The car leaving, as those left in the lobby see it: its lamp draws away over `LampAway`
 -- seconds, slow and then fast, as a light rising up a shaft does, and the lobby is dark.
 Departure.LampAway = 1.6
-
--- The stand-in ride (until L-08's): seconds from the gate's slam until those aboard arrive, and
--- the fade to black that hides the move: out over `FadeOut` before they arrive, black for
--- `FadeHold` after, then back in over `FadeIn`. The car lurches `Lurch` seconds after the slam,
--- a jolt of `LurchKick` (Shake trauma; the gate's slam beside you is 0.5).
-Departure.Ride = 4
-Departure.FadeOut = 0.6
-Departure.FadeHold = 0.35
-Departure.FadeIn = 0.8
-Departure.Lurch = 0.7
-Departure.LurchKick = 0.3
 
 -- The PA's sounds, heard alike by everyone on the floor (from no one place): a chime as the
 -- clock starts, so a friend at the far end knows to run; the elevator's bell for each of the last
@@ -184,23 +174,6 @@ function Departure.away(since: number): number
 	end
 	local u = math.min(since / Departure.LampAway, 1)
 	return 1 - u * u
-end
-
--- How black the screen is `since` seconds after the car left with you aboard (0 clear, 1 black):
--- clear through the ride, fading out as it ends, black while you arrive, then fading back in.
-function Departure.blackout(since: number): number
-	local arrive = Departure.Ride
-	local out = arrive - Departure.FadeOut
-	if since <= out then
-		return 0
-	elseif since < arrive then
-		return (since - out) / Departure.FadeOut
-	end
-	local back = arrive + Departure.FadeHold
-	if since <= back then
-		return 1
-	end
-	return math.max(1 - (since - back) / Departure.FadeIn, 0)
 end
 
 -- The heartbeat with `left` seconds to go: its volume and its pace, or nil while it's silent.

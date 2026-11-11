@@ -1,7 +1,9 @@
 --!strict
 --[[
 	CameraShake: jolts this player's view when something heavy hits nearby (the slammed door
-	first). `kick(amount)` adds trauma; Shake turns it into a shiver that dies away.
+	first). `kick(amount)` adds trauma; Shake turns it into a shiver that dies away. `hold(pose)`
+	sets a steady motion of the view's own, read each frame (the ride's sway, L-08a), under any
+	shake; `hold(nil)` lets it go.
 
 	It sits on top of Roblox's own camera without fighting it: just before the camera updates each
 	frame it takes its last offset back off, and just after, it puts the new one on. The camera
@@ -19,11 +21,16 @@ local APPLY = "CameraShakeApply"
 
 local CameraShake = {}
 
--- The system, and the function that kicks the view (amount is Shake trauma, 0..1).
-function CameraShake.new(): (Brix.System, (amount: number) -> ())
+-- Where a held motion puts the view this frame, in the camera's own space (nil: as it is).
+export type Pose = () -> CFrame?
+
+-- The system, the function that kicks the view (amount is Shake trauma, 0..1), and the one that
+-- holds a motion of its own on it.
+function CameraShake.new(): (Brix.System, (amount: number) -> (), (pose: Pose?) -> ())
 	local trauma = 0
 	local clock = 0
 	local applied: CFrame? = nil -- the offset on the camera now, taken off before it updates
+	local held: Pose? = nil
 	local bound = false
 
 	local function undo()
@@ -35,19 +42,25 @@ function CameraShake.new(): (Brix.System, (amount: number) -> ())
 	end
 
 	local function apply(dt: number)
-		if trauma <= 0 then
+		if trauma <= 0 and not held then
 			return
 		end
 		local camera = Workspace.CurrentCamera
 		if not camera then
 			return
 		end
-		clock += dt
-		local pitch, yaw, roll, x, y = Shake.offset(trauma, clock)
-		local offset = CFrame.new(x, y, 0) * CFrame.fromOrientation(pitch, yaw, roll)
-		camera.CFrame *= offset
-		applied = offset
-		trauma = Shake.decay(trauma, dt)
+		local offset = if held then held() else nil
+		if trauma > 0 then
+			clock += dt
+			local pitch, yaw, roll, x, y = Shake.offset(trauma, clock)
+			local shake = CFrame.new(x, y, 0) * CFrame.fromOrientation(pitch, yaw, roll)
+			offset = if offset then offset * shake else shake
+			trauma = Shake.decay(trauma, dt)
+		end
+		if offset then
+			camera.CFrame *= offset
+			applied = offset
+		end
 	end
 
 	local system: Brix.System = {
@@ -72,7 +85,11 @@ function CameraShake.new(): (Brix.System, (amount: number) -> ())
 		trauma = Shake.add(trauma, amount)
 	end
 
-	return system, kick
+	local function hold(pose: Pose?)
+		held = pose
+	end
+
+	return system, kick, hold
 end
 
 return CameraShake

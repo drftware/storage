@@ -186,24 +186,6 @@ do
 		ok(v <= was, "it only ever dims")
 		was = v
 	end
-	ok(Departure.blackout(0) == 0, "clear as the gate shuts")
-	ok(Departure.blackout(Departure.Lurch) == 0, "clear as the car lurches")
-	ok(Departure.blackout(Departure.Ride - Departure.FadeOut) == 0, "clear until the fade")
-	near(Departure.blackout(Departure.Ride - Departure.FadeOut / 2), 0.5, "half black halfway out")
-	ok(Departure.blackout(Departure.Ride) == 1, "black as you arrive")
-	ok(Departure.blackout(Departure.Ride + Departure.FadeHold) == 1, "black a moment after")
-	near(
-		Departure.blackout(Departure.Ride + Departure.FadeHold + Departure.FadeIn / 2),
-		0.5,
-		"half back halfway in"
-	)
-	near(
-		Departure.blackout(Departure.Ride + Departure.FadeHold + Departure.FadeIn),
-		0,
-		"clear again"
-	)
-	ok(Departure.blackout(60) == 0, "and stays clear")
-	ok(Departure.Lurch < Departure.Ride - Departure.FadeOut, "the lurch is felt before the fade")
 end
 
 -- The leaving's value.

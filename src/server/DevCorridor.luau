@@ -30,7 +30,7 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local CorridorKit = require(ReplicatedStorage.Shared.CorridorKit)
 local Deal = require(ReplicatedStorage.Shared.Deal)
-local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
+local Ride = require(ReplicatedStorage.Shared.Elevator.Ride)
 local Deals = require(script.Parent.Deals)
 local Elevators = require(script.Parent.Elevators)
 local Prompts = require(script.Parent.Prompts)
@@ -574,23 +574,19 @@ local function devFloor(
 	mannequinPost(model, keepers)
 	local elevator = laid.elevator
 	if elevator then
-		elevators:arm(elevator, deck.code, model)
-		-- The stand-in ride (until L-08's): once the car leaves, those aboard arrive back by the
-		-- spawn as their screens fade in (GateClock), and the elevator is armed again, shut and
-		-- ready, so the floor can be run again without stopping Play.
-		local riding = elevators.departed:connect(function(leaving: Elevators.Leaving)
-			if leaving.elevator ~= elevator then
+		elevators:arm(elevator, deck.code, model, n)
+		-- Until L-08b lays the next floor, the car rides and arrives back at this same lobby, its
+		-- readout one higher (Elevators, Ride); once the team has had `Ride.Linger` seconds to walk
+		-- out, the gate shuts behind them and the elevator is armed again with the same code, so
+		-- the floor can be run again without stopping Play.
+		local riding = elevators.arrived:connect(function(arrival: Elevators.Arrival)
+			if arrival.elevator ~= elevator then
 				return
 			end
-			local wait = leaving.at + Departure.Ride - Workspace:GetServerTimeNow()
+			local wait = arrival.at + Ride.Open + Ride.Linger - Workspace:GetServerTimeNow()
 			task.delay(math.max(wait, 0), function()
-				for _, player in leaving.aboard do
-					if player.Parent then
-						send(player, SPAWN)
-					end
-				end
 				if elevator.Parent then
-					elevators:arm(elevator, deck.code, model)
+					elevators:arm(elevator, deck.code, model, arrival.to)
 				end
 			end)
 		end)

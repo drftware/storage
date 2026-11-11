@@ -7,6 +7,39 @@ nowhere else.
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 
+## Now: judge L-08a, the ride (built Nov 11)
+
+Verified in Studio on seed 7, floor 1: punched 1097, rode from 1 to 2 and again from 2 to 3. A
+real-time ride was logged frame by frame (the shaft slid its 16 studs, the lamp dipped as the
+brakes let go, every sound started on its moment and the motor followed the car's speed), and
+frames were held with Workspace's `DevRideHold` and captured (`docs/art/L-08a-*.jpg`). Standing in
+the lobby instead, nothing of the ride played. Nobody here can listen, feel it on a phone, or run
+two players: those are yours.
+- [ ] **Ride it, headphones on** (one player). Punch the code, step in, wait for the gate. A beat
+  after it slams: a heavy clunk, the light dips and flickers, the hall beyond the gate goes black,
+  the car sags a hair and pulls up, and a clanky motor winds up. Concrete slides down past the
+  gate, a big painted number goes by, two cable clanks knock the car, then the readout over the
+  gate (and the plate in the top bar) clicks over to the next floor as the brakes bite. It slows,
+  bobs once as it levels with a clunk, the bell rings, the dark lifts off the hall and the gate
+  folds open. Does it feel heavy and real? Is anything too slow, too loud, or too soft? Did the
+  view ever feel shaky or jittery?
+- [ ] **On a phone's speaker:** the same on a real phone. The clanky motor, the clunks and the bell
+  are the parts a phone plays; the deep rumble is for headphones. Can you read the floor readout
+  over the gate from the middle of the car, and the plate in the top bar?
+- [ ] **With a friend** (two players): one rides, one stays in the lobby. The one left should see
+  "Left behind" and the car's light draw away and go dark; for now the car comes back lit to the
+  same lobby when the ride ends (the next floor is the next session's). The rider should see and
+  hear the whole ride; the friend, none of it.
+- [ ] **Decide, defaults in place** (D-103, numbers in `Ride`): (1) the ride's length: 9.6 s to
+  level and about 12 s until the gate is open (longer is more breath and dread, shorter keeps the
+  climb moving across ten floors); (2) the gate shuts 6 s after it opens on the new floor
+  (`Ride.Linger`), with anyone still inside shut in until the next code opens it (it stops
+  anyone camping in the car); (3) the shaft is built from Roblox's own concrete and metal, not
+  baked in Blender like the car: keep it, or have it built the car's way (a session's work);
+  (4) the arrival bell is the keypad's double-ding, lower: keep it, or find a deeper elevator
+  gong; (5) the floor readout and the plate are amber, the lamp's colour (the clock stays red and
+  green).
+
 ## Now: judge L-06c2, the catch (built Nov 11)
 
 Verified in Studio on seed 7, floor 1, caught by 157's guard three times. Frames were held with
@@ -1013,8 +1046,8 @@ D-071 and D-072 answer it, and the tickets are in ROADMAP's L-06b3 to L-06b5.
   slams open, with the PA's chime; at 10 the clock going red, the car's lamp starting to blink
   (watch it from the lobby) and the heartbeat starting; a bell on each of the last five seconds.
   The far player runs back: one gets in, one stays in the lobby. At zero the gate slams shut;
-  the one inside reads "Going up", feels the lurch and fades out and back in at the spawn; the
-  one outside reads "Left behind" as the car's light draws away. Then swap, and try diving
+  the one inside reads "Going up" and rides (L-08a replaced the old fade back to the spawn; judge
+  the ride under L-08a); the one outside reads "Left behind" as the car's light draws away. Then swap, and try diving
   through the gap as it shuts. Shots: `docs/art/L-05b2-clock.jpg`, `-warning.jpg`,
   `-going-up.jpg`, `-left-behind.jpg`.
 - [ ] **Listen** with sound on: is the heartbeat too loud or too quiet under the rest

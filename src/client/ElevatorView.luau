@@ -15,7 +15,10 @@
 	  every player sees the gate hit.
 	- The car's lamp answers the gate's clock (Departure, L-05b2): steady while it counts, blinking
 	  ever faster through the warning, steady as the gate shuts; once the car leaves, its light
-	  draws away for everyone it left in the lobby, and they're in the dark.
+	  draws away for everyone it left in the lobby, and they're in the dark. For those aboard it
+	  dips and flickers with the ride (Ride, L-08a): the brakes letting go, the clanks, the stop.
+	- The car's floor readout, over the gate inside: two amber LED digits and an arrow, the floor
+	  it stands at, ticking over to the next as the brakes bite on the way up (Ride).
 
 	The screen keypad (KeypadPad) calls `press` to beep and sink a key the instant it's pressed;
 	the server's echo of that press names this player (`by`), so it's skipped here.
@@ -36,6 +39,8 @@ local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
 local Gate = require(ReplicatedStorage.Shared.Elevator.Gate)
 local Keypad = require(ReplicatedStorage.Shared.Elevator.Keypad)
 local Readout = require(ReplicatedStorage.Shared.Elevator.Readout)
+local Ride = require(ReplicatedStorage.Shared.Elevator.Ride)
+local RideClock = require(script.Parent.RideClock)
 local Sounds = require(ReplicatedStorage.Shared.Elevator.Sounds)
 local Specs = require(ReplicatedStorage.Shared.Elevator.Specs)
 
@@ -54,6 +59,20 @@ local WALL_LOOK: LedReadout.Look = {
 	rest = Elevator.ReadoutRest,
 	lit = Elevator.ReadoutLit,
 	right = Elevator.ReadoutRight,
+}
+-- The car's floor readout: a dark plate over the gate on the inside of the car's fascia, facing
+-- in, its size (studs) and its middle; lit amber like the lamp. `FLOOR_LOOK`'s rest tone is the
+-- arrow's while the car stands.
+local FLOOR_PLATE = Vector2.new(1.5, 0.56)
+local FLOOR_AT =
+	CFrame.new(0, 9.02, Specs.Parts.CarFront.Centre[3] + Specs.Parts.CarFront.Size[3] / 2 + 0.004)
+local FLOOR_PIXELS = 160
+local FLOOR_LOOK: LedReadout.Look = {
+	unlit = Elevator.FloorUnlit,
+	unlitTransparency = 0.6,
+	rest = Elevator.FloorUnlit,
+	lit = Elevator.FloorLit,
+	right = Elevator.FloorLit,
 }
 -- Where the gate's sounds come from: the middle of the opening, at chest height, in its plane.
 local GATE_SOUNDS = CFrame.new(0, 4.5, Specs.Gate.Plane)
@@ -88,6 +107,14 @@ type View = {
 	departs: number?, -- server time the clock runs out, while one is set
 	leftAt: number?, -- server time the car left, once it has
 	rode: boolean, -- this player was aboard when it left
+	-- the ride and the car's floor readout
+	rideAt: number?, -- server time the ride began, while one is set
+	rideFrom: number,
+	rideTo: number,
+	floorSet: LedReadout.Set?,
+	arrow: { Frame },
+	floorShown: number, -- the floor on the readout, -1 before it shows one
+	arrowLit: boolean?,
 	-- the sounds
 	emitters: { [Sounds.Source]: Attachment },
 	sounds: { [Sounds.SoundName]: Sound },
@@ -114,6 +141,7 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 	local moving: { [View]: true } = {}
 	local blinking: { [View]: true } = {}
 	local lamps: { [View]: true } = {} -- lamps blinking or drawing away
+	local riding: { [View]: true } = {} -- floor readouts counting a ride
 	local connections: { RBXScriptConnection } = {}
 
 	-- Where this player hears from: their character, or the camera without one.
@@ -349,6 +377,11 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 
 	-- The lamp at server time `t`, and whether it's still changing.
 	local function lampAt(view: View, t: number): (number, boolean)
+		local rideAt = view.rideAt
+		if rideAt and view.rode then
+			local since = RideClock(rideAt, t)
+			return Ride.lamp(since), since < Ride.opens()
+		end
 		local leftAt = view.leftAt
 		if leftAt and not view.rode then
 			local since = t - leftAt
@@ -385,6 +418,116 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 		view.leftAt = at
 		view.rode = at ~= nil and table.find(ids, Players.LocalPlayer.UserId) ~= nil
 		lampStep(view, now())
+	end
+
+	-- The car's floor readout at server time `t`: the floor it stands at, or the ride's; the
+	-- arrow lit while it climbs. Touches the gui only when what it shows changes.
+	local function floorStep(view: View, t: number)
+		local set = view.floorSet
+		if not set then
+			riding[view] = nil
+			return
+		end
+		local n, up = 0, false
+		local rideAt = view.rideAt
+		local since = if rideAt then RideClock(rideAt, t) else math.huge
+		if since < Ride.opens() then
+			n = Ride.shown(since, view.rideFrom, view.rideTo)
+			up = Ride.share(since) > 0.02
+			riding[view] = true
+		else
+			local floor = view.model:GetAttribute(Ride.FloorAttribute)
+			n = if type(floor) == "number" then floor else 0
+			riding[view] = nil
+		end
+		if n ~= view.floorShown then
+			view.floorShown = n
+			local text = if n > 0 then Ride.text(n) else "  "
+			for i = 1, 2 do
+				local char = string.sub(text, i, i)
+				set(i, char, if char == " " then "Off" else "Lit")
+			end
+		end
+		if up ~= view.arrowLit then
+			view.arrowLit = up
+			for _, f in view.arrow do
+				f.BackgroundColor3 = if up then Elevator.FloorLit else Elevator.FloorUnlit
+				f.BackgroundTransparency = if up then 0 else 0.6
+			end
+		end
+	end
+
+	-- The ride began (or, cleared, is over): its floors for the readout.
+	local function rideChanged(view: View)
+		local at, from, to = Ride.decode(view.model:GetAttribute(Ride.Attribute))
+		view.rideAt, view.rideFrom, view.rideTo = at, from, to
+		local t = now()
+		lampStep(view, t)
+		floorStep(view, t)
+	end
+
+	-- The car's floor readout: a dark plate on an invisible card on the inside of the fascia over
+	-- the gate, facing into the car, an arrow and two LED digits.
+	local function makeFloorReadout(view: View)
+		local card = Instance.new("Part")
+		card.Name = "FloorReadout"
+		card.Size = Vector3.new(FLOOR_PLATE.X, FLOOR_PLATE.Y, 0.002)
+		card.CFrame = view.model:GetPivot() * FLOOR_AT
+		card.Transparency = 1
+		card.Anchored = true
+		card.CanCollide = false
+		card.CanTouch = false
+		card.CanQuery = false
+		card.CastShadow = false
+		card.Massless = true
+		local gui = Instance.new("SurfaceGui")
+		gui.Name = "Floor"
+		gui.Face = Enum.NormalId.Back -- into the car
+		gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+		gui.PixelsPerStud = FLOOR_PIXELS
+		gui.LightInfluence = 0 -- the LEDs make their own light
+		gui.Brightness = CARD_BRIGHTNESS
+		gui.MaxDistance = CARD_REACH
+		local plate = Instance.new("Frame")
+		plate.Name = "Plate"
+		plate.Size = UDim2.fromScale(1, 1)
+		plate.BackgroundColor3 = Color3.fromRGB(14, 10, 8)
+		plate.BorderSizePixel = 0
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(0.14, 0)
+		corner.Parent = plate
+		local rim = Instance.new("UIStroke")
+		rim.Color = Color3.fromRGB(70, 62, 52)
+		rim.Thickness = 3
+		rim.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		rim.Parent = plate
+		-- the arrow: three LED rows stepped into a point, at the plate's left
+		local arrow: { Frame } = {}
+		for row = 1, 3 do
+			local f = Instance.new("Frame")
+			f.Name = `Arrow{row}`
+			f.AnchorPoint = Vector2.new(0.5, 0.5)
+			f.Position = UDim2.fromScale(0.2, 0.3 + 0.18 * (row - 1))
+			f.Size = UDim2.fromScale(0.05 + 0.065 * (row - 1), 0.13)
+			f.BorderSizePixel = 0
+			f.BackgroundColor3 = Elevator.FloorUnlit
+			f.BackgroundTransparency = 0.6
+			f.Parent = plate
+			table.insert(arrow, f)
+		end
+		local digits = Instance.new("Frame")
+		digits.Name = "Digits"
+		digits.BackgroundTransparency = 1
+		digits.AnchorPoint = Vector2.new(1, 0)
+		digits.Position = UDim2.fromScale(0.94, 0)
+		digits.Size = UDim2.fromScale(0.62, 1)
+		digits.Parent = plate
+		view.floorSet = LedReadout.row(digits, FLOOR_LOOK, 0.7, 0.08, 2)
+		view.arrow = arrow
+		plate.Parent = gui
+		gui.Parent = card
+		card.Parent = view.model
+		table.insert(view.made, card)
 	end
 
 	-- The readout's digits on an invisible card just off its glass, facing the lobby.
@@ -427,6 +570,7 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 		moving[view] = nil
 		blinking[view] = nil
 		lamps[view] = nil
+		riding[view] = nil
 		view.alive = false
 		for _, c in view.conns do
 			c:Disconnect()
@@ -488,6 +632,13 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 			departs = nil,
 			leftAt = nil,
 			rode = false,
+			rideAt = nil,
+			rideFrom = 0,
+			rideTo = 0,
+			floorSet = nil,
+			arrow = {},
+			floorShown = -1,
+			arrowLit = nil,
 			emitters = {},
 			sounds = {},
 			fades = {},
@@ -495,6 +646,9 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 		views[inst] = view
 		if find(inst, "KeypadReadout") then
 			makeReadout(view)
+		end
+		if find(inst, "CarFront") then
+			makeFloorReadout(view)
 		end
 		table.insert(
 			view.conns,
@@ -520,10 +674,23 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 				aboardChanged(view)
 			end)
 		)
+		table.insert(
+			view.conns,
+			inst:GetAttributeChangedSignal(Ride.Attribute):Connect(function()
+				rideChanged(view)
+			end)
+		)
+		table.insert(
+			view.conns,
+			inst:GetAttributeChangedSignal(Ride.FloorAttribute):Connect(function()
+				floorStep(view, now())
+			end)
+		)
 		gateChanged(view) -- mid-motion as it streams in: folding on, with only the sounds still to come
 		keypadChanged(view, false)
 		clockChanged(view)
 		aboardChanged(view)
+		rideChanged(view)
 	end
 
 	-- Readies every elevator sound up front, so the first slam isn't late (SoundPrimer).
@@ -592,6 +759,12 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 				local t = now()
 				for view in lamps do
 					lampStep(view, t)
+				end
+			end
+			if next(riding) ~= nil then
+				local t = now()
+				for view in riding do
+					floorStep(view, t)
 				end
 			end
 		end,

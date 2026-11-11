@@ -15,6 +15,10 @@
 	- Once it has slammed open the gate's clock runs (L-05b2, Departure): 30 s on every screen on
 	  the floor, then the gate folds shut on its own, and the instant it hits its post a Zone over
 	  the car says who rode (`Departure.AboardAttribute`, `departed`). Nobody can send it early.
+	- Then the ride (L-08a, Ride): the car climbs one floor on the server's clock, one value
+	  (`Ride.Attribute`) every rider's screen draws it from, and as it levels the gate folds open
+	  on the next hall (`arrived`). Until L-08b lays the next floor, the car arrives back at the
+	  same lobby, its floor number one higher. Whoever runs the climb arms it again (`arm`).
 	- The gate's motion is one replicated value (`Gate.Attribute`) that every screen folds the gate
 	  from (ElevatorView); here only its collider follows, so the gap you see is the gap there is.
 	- Every keypad sound fires `acted` with how far it's heard, as Doors does, so keepers (L-06b)
@@ -26,6 +30,7 @@
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
@@ -34,6 +39,7 @@ local Elevator = require(ReplicatedStorage.Shared.Elevator)
 local Gate = require(ReplicatedStorage.Shared.Elevator.Gate)
 local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
 local Keypad = require(ReplicatedStorage.Shared.Elevator.Keypad)
+local Ride = require(ReplicatedStorage.Shared.Elevator.Ride)
 local MotionLights = require(script.Parent.MotionLights)
 
 export type Action = "Press" | "Clear" | "Wrong" | "Right"
@@ -56,14 +62,27 @@ export type Leaving = {
 	at: number, -- server time the gate hit its post
 }
 
+-- The car levelling with the next floor: who rode, and the floors from and to. Its gate folds
+-- open `Ride.Open` seconds later.
+export type Arrival = {
+	elevator: Model,
+	riders: { Player },
+	from: number,
+	to: number,
+	at: number, -- server time it levelled
+}
+
 export type Elevators = Brix.System & {
 	-- Fires for every sound the keypad makes: each press, a clear, the alarm, the chime.
 	acted: Brix.Signal<KeypadEvent>,
 	-- Fires the instant a gate shut by its clock hits its post: the car leaves.
 	departed: Brix.Signal<Leaving>,
-	-- Gives `elevator` its floor's code and the floor whose lights its alarm flashes, clears its
-	-- keypad and stops its clock: shut, ready for the floor.
-	arm: (self: any, elevator: Model, code: { number }, floor: Instance) -> (),
+	-- Fires as the car levels with the next floor; its gate folds open a moment later.
+	arrived: Brix.Signal<Arrival>,
+	-- Gives `elevator` its floor's code, the floor whose lights its alarm flashes and that floor's
+	-- number (1 if not given), clears its keypad and stops its clock and any ride: shut, ready for
+	-- the floor.
+	arm: (self: any, elevator: Model, code: { number }, floor: Instance, number: number?) -> (),
 	-- Opens the gate as the right code does, chime and all (tests; the dev hall).
 	open: (self: any, elevator: Model) -> (),
 }
@@ -72,8 +91,10 @@ export type Elevators = Brix.System & {
 local FOLDER, REMOTE = Keypad.RemoteFolder, Keypad.RemoteName
 
 -- Shut: the keypad takes digits. Alarm: dead until the alarm stops. Open: the clock runs.
--- Leaving: the clock ran out and the gate is shutting. Gone: the car left; done for this floor.
-type Phase = "Shut" | "Alarm" | "Open" | "Leaving" | "Gone"
+-- Leaving: the clock ran out and the gate is shutting. Riding: the car is climbing. Arrived: it
+-- levelled and its gate is about to open. Gone: the gate's open on the next floor; done until the
+-- climb arms it again.
+type Phase = "Shut" | "Alarm" | "Open" | "Leaving" | "Riding" | "Arrived" | "Gone"
 
 type Entry = {
 	model: Model,
@@ -87,6 +108,9 @@ type Entry = {
 	gateStart: number,
 	departs: number, -- server time the clock runs out and the gate starts to shut
 	car: Brix.Zone, -- the car from the gate back: whoever's middle is in it rides
+	number: number, -- the floor it stands at
+	leftAt: number, -- server time the car left, while it rides
+	riders: { Player }, -- who rode, while it rides
 }
 
 local FREE = Brix.Pathing.free()
@@ -107,6 +131,13 @@ local function now(): number
 	return Workspace:GetServerTimeNow()
 end
 
+-- Studio only: whether Workspace's `Ride.Hold` holds every ride where it is (the car doesn't
+-- arrive while it's set), so a frame of the ride can be looked at.
+local STUDIO = RunService:IsStudio()
+local function held(): boolean
+	return STUDIO and type(Workspace:GetAttribute(Ride.Hold)) == "number"
+end
+
 local Elevators = {}
 
 function Elevators.new(): Elevators
@@ -118,6 +149,7 @@ function Elevators.new(): Elevators
 	local connections: { RBXScriptConnection } = {}
 	local acted = Brix.Signal.new() :: Brix.Signal<KeypadEvent>
 	local departed = Brix.Signal.new() :: Brix.Signal<Leaving>
+	local arrived = Brix.Signal.new() :: Brix.Signal<Arrival>
 	local lights: MotionLights.MotionLights? = nil
 	local remote: RemoteEvent? = nil
 
@@ -193,6 +225,9 @@ function Elevators.new(): Elevators
 				table.insert(left, player)
 			end
 		end
+		-- the ride first, so a rider's screen has its floors by the time it learns it rode
+		entry.leftAt, entry.riders = at, aboard
+		entry.model:SetAttribute(Ride.Attribute, Ride.encode(at, entry.number, entry.number + 1))
 		entry.model:SetAttribute(Departure.AboardAttribute, Departure.encodeAboard(at, ids))
 		departed:fire({
 			elevator = entry.model,
@@ -284,6 +319,9 @@ function Elevators.new(): Elevators
 			gateStart = start,
 			departs = math.huge,
 			car = carOf(inst:GetPivot()),
+			number = 1,
+			leftAt = 0,
+			riders = {},
 		}
 		entries[inst] = entry
 		if inst:GetAttribute(Keypad.Attribute) == nil then
@@ -306,6 +344,7 @@ function Elevators.new(): Elevators
 		name = "Elevators",
 		acted = acted,
 		departed = departed,
+		arrived = arrived,
 	}
 
 	function system.start(_: any, context: Brix.Context)
@@ -352,9 +391,33 @@ function Elevators.new(): Elevators
 				entry.phase = "Leaving"
 				moveGate(entry, 1, entry.departs)
 			elseif entry.phase == "Leaving" and t >= Departure.leaves(entry.departs) then
+				entry.phase = "Riding"
+				leave(entry, Departure.leaves(entry.departs))
+			elseif
+				entry.phase == "Riding"
+				and t >= entry.leftAt + Ride.arrives()
+				and not held()
+			then
+				-- level with the next floor: the bell, then the gate folds open on it
+				entry.phase = "Arrived"
+				local from = entry.number
+				entry.number = from + 1
+				entry.model:SetAttribute(Ride.FloorAttribute, entry.number)
+				moveGate(entry, 0, entry.leftAt + Ride.opens())
+				local riders = entry.riders
+				entry.riders = {}
+				arrived:fire({
+					elevator = entry.model,
+					riders = riders,
+					from = from,
+					to = entry.number,
+					at = entry.leftAt + Ride.arrives(),
+				})
+			elseif entry.phase == "Arrived" and t >= entry.leftAt + Ride.opens() then
+				-- the leaving's over: nobody's left behind by a car that's back at a floor
 				entry.phase = "Gone"
 				clocks[entry] = nil
-				leave(entry, Departure.leaves(entry.departs))
+				entry.model:SetAttribute(Departure.AboardAttribute, nil)
 			end
 		end
 		for entry in moving do
@@ -386,14 +449,19 @@ function Elevators.new(): Elevators
 		end
 		acted:disconnectAll()
 		departed:disconnectAll()
+		arrived:disconnectAll()
 	end
 
-	function system.arm(_: any, elevator: Model, code: { number }, floor: Instance)
+	function system.arm(_: any, elevator: Model, code: { number }, floor: Instance, number: number?)
 		assert(Keypad.isCode(code), "Elevators: a code is four digits, 0 to 9")
 		local entry = add(elevator)
 		assert(entry, `Elevators: {elevator:GetFullName()} isn't an elevator in the world`)
 		entry.code = table.clone(code)
 		entry.floor = floor
+		entry.number = math.max(math.floor(number or 1), 1)
+		entry.riders = {}
+		entry.model:SetAttribute(Ride.FloorAttribute, entry.number)
+		entry.model:SetAttribute(Ride.Attribute, nil)
 		alarms[entry] = nil
 		clocks[entry] = nil
 		entry.phase = "Shut"

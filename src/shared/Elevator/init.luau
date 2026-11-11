@@ -35,6 +35,10 @@ Elevator.ReadoutRight = Color3.fromRGB(70, 255, 110)
 -- A segment that isn't lit: faint under the glass, as a real LED's are, so the cells read as
 -- digits even before they show one.
 Elevator.ReadoutUnlit = Color3.fromRGB(84, 16, 12)
+-- The floor counter's digits (the car's readout over its gate, and the plate in the top bar while
+-- you ride): amber, the lamp's warm light, so the floor reads as the car's and not the keypad's.
+Elevator.FloorLit = Color3.fromRGB(255, 172, 64)
+Elevator.FloorUnlit = Color3.fromRGB(64, 38, 12)
 
 -- The car's lamp, the one light on a floor that's always on: the warm glow you arrive in and run
 -- back to. It throws shadows, so it reaches the lobby only through the opening, the gate's lattice

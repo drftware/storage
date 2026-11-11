@@ -8,10 +8,12 @@
 	  the PA's chime as the gate slams open, green; from the warning it's red and jumps each second.
 	- The heartbeat under the warning, swelling and quickening to zero (Dandy's World's), and the
 	  elevator's bell on each of the last five seconds, a little higher each time.
-	- The car leaving: "Going up" for those aboard, a lurch, and (the stand-in ride until L-08) a
-	  fade to black while the server moves them; "Left behind" for everyone else on the floor.
+	- The car leaving: "Going up" for those aboard, and the plate turns from the clock to the
+	  floor counter in the car lamp's amber, ticking over to the next floor as the brakes bite
+	  (Ride, L-08a); "Left behind" for everyone else on the floor.
 
-	The car's lamp, which answers the same clock, is ElevatorView's.
+	The car's lamp, which answers the same clock, is ElevatorView's; the rest of the ride is
+	RideView's.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local GuiService = game:GetService("GuiService")
@@ -26,6 +28,8 @@ local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
 local Elevator = require(ReplicatedStorage.Shared.Elevator)
 local LedReadout = require(script.Parent.LedReadout)
 local Readout = require(ReplicatedStorage.Shared.Elevator.Readout)
+local Ride = require(ReplicatedStorage.Shared.Elevator.Ride)
+local RideClock = require(script.Parent.RideClock)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 
 -- The clock's plate: as tall as this share of the top bar's row (or `PLATE_BARE` pixels where
@@ -44,6 +48,19 @@ local LOOK: LedReadout.Look = {
 	lit = Elevator.ReadoutLit,
 	right = Elevator.ReadoutRight,
 }
+-- The floor counter on the same plate while you ride: amber, the car lamp's light, as the car's
+-- own readout (ElevatorView). It takes over from the clock `FLOOR_AFTER` seconds after the gate
+-- hits its post (the 0 has been seen), and goes `FLOOR_HOLD` seconds after the gate starts to
+-- open on the next floor.
+local FLOOR_LOOK: LedReadout.Look = {
+	unlit = Elevator.FloorUnlit,
+	unlitTransparency = 0.7,
+	rest = Elevator.FloorLit,
+	lit = Elevator.FloorLit,
+	right = Elevator.FloorLit,
+}
+local FLOOR_AFTER = 0.45
+local FLOOR_HOLD = 1.4
 -- The clock pops in from this scale with an overshoot, and fades out when the car has gone.
 local POP_FROM = 0.55
 local POP = TweenInfo.new(0.32, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
@@ -77,10 +94,12 @@ type Ui = {
 	clock: CanvasGroup,
 	scale: UIScale,
 	set: LedReadout.Set,
+	seconds: Frame, -- the clock's digits
+	floors: Frame, -- the floor counter's, in their place while you ride
+	setFloor: LedReadout.Set,
 	headline: TextLabel,
 	headlineStroke: UIStroke,
 	headlineScale: UIScale,
-	black: Frame,
 }
 
 local function now(): number
@@ -167,28 +186,30 @@ local function build(): Ui
 	rim.Transparency = 0.35
 	rim.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	rim.Parent = plate
-	local set = LedReadout.row(plate, LOOK, 0.66, 0.07, 2)
+	local function holder(name: string): Frame
+		local f = Instance.new("Frame")
+		f.Name = name
+		f.BackgroundTransparency = 1
+		f.Size = UDim2.fromScale(1, 1)
+		f.Parent = plate
+		return f
+	end
+	local seconds = holder("Seconds")
+	local set = LedReadout.row(seconds, LOOK, 0.66, 0.07, 2)
+	local floors = holder("Floors")
+	floors.Visible = false
+	local setFloor = LedReadout.row(floors, FLOOR_LOOK, 0.66, 0.07, 2)
 	plate.Parent = clock
 	clock.Parent = bar
 	bar.Parent = parent
 
-	-- the headline and the ride's fade, over the whole screen
+	-- the headline, over the whole screen
 	local screen = Instance.new("ScreenGui")
 	screen.Name = "Departure"
 	screen.ResetOnSpawn = false
 	screen.IgnoreGuiInset = true
-	screen.DisplayOrder = 20 -- the fade covers every other screen
+	screen.DisplayOrder = 20
 	screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	local black = Instance.new("Frame")
-	black.Name = "Black"
-	black.Size = UDim2.fromScale(1, 1)
-	black.BackgroundColor3 = Color3.new(0, 0, 0)
-	black.BackgroundTransparency = 1
-	black.BorderSizePixel = 0
-	black.Active = false
-	black.Visible = false
-	black.ZIndex = 1
-	black.Parent = screen
 	local headline = Instance.new("TextLabel")
 	headline.Name = "Headline"
 	headline.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -215,17 +236,18 @@ local function build(): Ui
 		clock = clock,
 		scale = scale,
 		set = set,
+		seconds = seconds,
+		floors = floors,
+		setFloor = setFloor,
 		headline = headline,
 		headlineStroke = stroke,
 		headlineScale = headlineScale,
-		black = black,
 	}
 end
 
 local GateClock = {}
 
--- `kick` shakes this player's view (CameraShake's).
-function GateClock.new(kick: (amount: number) -> ()): Brix.System
+function GateClock.new(): Brix.System
 	local clocks: { [Model]: Clock } = {}
 	local running: { [Clock]: true } = {} -- clocks set, until their gate has shut
 	local connections: { RBXScriptConnection } = {}
@@ -238,7 +260,8 @@ function GateClock.new(kick: (amount: number) -> ()): Brix.System
 	local showing: Clock? = nil -- the clock on screen
 	local lastShown = -1 -- the seconds it showed last frame
 	local ride: number? = nil -- server time the car left with this player aboard
-	local lurched = false
+	local rideFrom, rideTo = 0, 0 -- its floors, once known (0: not yet)
+	local floorShown = 0 -- the floor on the plate, 0 while it shows the clock
 	local headlineToken = 0
 
 	local function tween(inst: Instance, info: TweenInfo, goal: { [string]: any }): Tween
@@ -324,6 +347,7 @@ function GateClock.new(kick: (amount: number) -> ()): Brix.System
 		showing = clock
 		lastShown = Departure.shown(left)
 		draw(left)
+		u.seconds.Visible, u.floors.Visible = true, false
 		u.clock.Visible = true
 		u.scale.Scale = POP_FROM
 		tween(u.clock, POP, { GroupTransparency = 0 })
@@ -383,6 +407,15 @@ function GateClock.new(kick: (amount: number) -> ()): Brix.System
 		end
 	end
 
+	-- The ride's floors, from its value on the elevator (written just before who rode).
+	local function rideFloors(clock: Clock)
+		local at, from, to = Ride.decode(clock.model:GetAttribute(Ride.Attribute))
+		local r = ride
+		if at and r and math.abs(at - r) < 1e-3 then
+			rideFrom, rideTo = from, to
+		end
+	end
+
 	-- The car left: aboard, the ride begins; on the floor and not aboard, you were left.
 	local function leaving(clock: Clock)
 		local at, ids = Departure.decodeAboard(clock.model:GetAttribute(Departure.AboardAttribute))
@@ -390,11 +423,51 @@ function GateClock.new(kick: (amount: number) -> ()): Brix.System
 			return
 		end
 		if table.find(ids, Players.LocalPlayer.UserId) then
-			ride, lurched = at, false
+			ride, rideFrom, rideTo, floorShown = at, 0, 0, 0
+			rideFloors(clock)
 			headline("Going up", WARM)
 		elseif onFloor(clock.model) then
 			headline("Left behind", COLD)
 		end
+	end
+
+	-- The plate while you ride, `since` seconds after the gate hit its post: the clock's 0 a
+	-- moment, then the floor you left in amber with a pop, the next with a jump as the brakes
+	-- bite, and gone once the gate is opening on it.
+	local function floorStep(since: number)
+		local u = ui
+		if not u then
+			return
+		end
+		if since > Ride.opens() + FLOOR_HOLD then
+			ride, floorShown = nil, 0
+			hide()
+			return
+		end
+		if since < FLOOR_AFTER or rideFrom <= 0 then
+			return
+		end
+		local n = Ride.shown(since, rideFrom, rideTo)
+		if n == floorShown then
+			return
+		end
+		local text = Ride.text(n)
+		for i = 1, 2 do
+			local char = string.sub(text, i, i)
+			u.setFloor(i, char, if char == " " then "Off" else "Lit")
+		end
+		if floorShown == 0 then
+			-- the clock's plate becomes the floor counter
+			u.seconds.Visible, u.floors.Visible = false, true
+			u.clock.Visible = true
+			u.scale.Scale = POP_FROM
+			tween(u.clock, POP, { GroupTransparency = 0 })
+			tween(u.scale, POP, { Scale = 1 })
+		else
+			u.scale.Scale = JUMP_FINAL
+			tween(u.scale, JUMP_BACK, { Scale = 1 })
+		end
+		floorShown = n
 	end
 
 	local function clockChanged(clock: Clock)
@@ -438,6 +511,12 @@ function GateClock.new(kick: (amount: number) -> ()): Brix.System
 			clock.conns,
 			inst:GetAttributeChangedSignal(Departure.AboardAttribute):Connect(function()
 				leaving(clock)
+			end)
+		)
+		table.insert(
+			clock.conns,
+			inst:GetAttributeChangedSignal(Ride.Attribute):Connect(function()
+				rideFloors(clock)
 			end)
 		)
 		clockChanged(clock)
@@ -485,6 +564,19 @@ function GateClock.new(kick: (amount: number) -> ()): Brix.System
 				return
 			end
 			local t = now()
+			local r = ride
+			if r then
+				-- riding: the clock is done, and the plate counts floors
+				for clock in running do
+					if Departure.phase((clock.departs :: number) - t) == "Gone" then
+						running[clock] = nil
+					end
+				end
+				showing, lastShown = nil, -1
+				setHeart(nil)
+				floorStep(RideClock(r, t))
+				return
+			end
 			-- the clock this player is under: a running one whose floor they're on
 			local under: Clock? = nil
 			local underLeft = 0
@@ -514,23 +606,6 @@ function GateClock.new(kick: (amount: number) -> ()): Brix.System
 				end
 			end
 			setHeart(if under then underLeft else nil)
-			-- the stand-in ride: the lurch, then the fade while the server moves you
-			local r = ride
-			local u = ui
-			if r and u then
-				local since = t - r
-				if not lurched and since >= Departure.Lurch then
-					lurched = true
-					kick(Departure.LurchKick)
-				end
-				local black = Departure.blackout(since)
-				u.black.Visible = black > 0
-				u.black.BackgroundTransparency = 1 - black
-				if since > Departure.Ride + Departure.FadeHold + Departure.FadeIn then
-					ride = nil
-					u.black.Visible = false
-				end
-			end
 		end,
 		stop = function(_: any)
 			for _, c in connections do
