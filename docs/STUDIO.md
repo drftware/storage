@@ -360,8 +360,10 @@ verified: a doc page, Studio, or "untested".
   deals asleep and the recipes below that open 126 for an awake one need 157 (or trap 157's guard
   first). 157's door face is (52, 0, -632) looking -X into the hall; its guard stands 6.1 in at
   (58.1, 0, -634.5). Stand at (47, 3, -632), point the camera at its `DoorButtons` and tap Open: it
-  sees you 11 studs off and catches you in about 3.5 s. A door's face from a Server
-  `execute_luau` in Play: `require(ServerScriptService.Server.FloorBuilder).face(unit)`.
+  sees you 11 studs off and catches you in about 3.5 s (6.6 s once, L-14e, when it froze in the
+  hall light on the way). It stays 157 through L-14e (D-098: the guard is drawn before the bag);
+  `lune run scripts/floor-deal <seed> <floor>` names any floor's guarded note. A door's face from
+  a Server `execute_luau` in Play: `require(ServerScriptService.Server.FloorBuilder).face(unit)`.
   `screen_capture` with `camera_position` in Play draws the Client's view from there: a camera
   at (45.5, 0.9, -632.3) shows the guard's feet under a peek, where a standing eye 4.5 up sees
   only a stud or two in (the peek's kneel, L-06b5b, now drops your eye to 1.0).
@@ -373,10 +375,12 @@ verified: a doc page, Studio, or "untested".
   its scripts, anchor its root, set every part's `LocalTransparencyModifier` to 0; set the door's
   `CurtainClosed`, `Slat_A`/`B`/`C`, `BottomBar`, `LatchBolt` and `Padlock` to 1 on that screen
   only; raise `Lighting.Ambient`; `screen_capture` from 4.5 studs outside the door face.
-- **Testing getting kept from the MCP** (L-07a, 2026-11-10): seed 7, floor 1. Pivot the
-  character to (47, 3, -632) looking +X from the Server, point the camera at Unit 157's
+- **Testing getting kept from the MCP** (L-07a, 2026-11-10; rechecked L-14e): seed 7, floor 1.
+  Pivot the character to (47, 3, -632) looking +X, point the camera at Unit 157's
   `DoorOrigin.DoorButtons` (an Attachment: `WorldPosition`) and tap Open from the Client: caught in
-  about 2.5 s, Output names the unit you're kept in. To be let out alone, from a Server
+  2.5 to 7 s (it freezes while the hall light is lit), Output names the unit you're kept in (at
+  random). Look the floor's units up under `Workspace.DevCorridor.Floor1` (Two Unit109s, above).
+  To be let out alone, from a Server
   `execute_luau`: `require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor).play(unit, "Open")`;
   Doors hears the door's motion attribute change, so `changed` fires as from a press. The
   roaming Mannequin catches you again if you stand 6 studs in front of it (`Keeper` tag, its
@@ -792,11 +796,23 @@ verified: a doc page, Studio, or "untested".
   Impact 1" 9116719494 is silent to 0.55 s, creaks, hits hard at 0.70 s, bounces to 1.45 s;
   "Metal Ladder Hits 1" 9116718918 is a bang at 0 s and a long decay. The store's durations
   run longer than `TimeLength`.
-- **The live deal isn't the map's** (L-13b1): `lune run scripts/floor-deal 7 1` deals the floor in
-  slot order, but in Play `Deals` deals each unit as its door first lifts (`Deal.open`, the
-  director's order), so a unit can hold something else (144: a ladder on the map, a saw in
-  Play). To judge a tool where the deal puts it, lay one with DealSpot's spot and Slots'
-  `resting` from the server (Tools, DealSpot, FloorBuilder.face), as Deals does.
+- **The script deals what Studio deals** (L-14e; L-13b1 found them apart): until L-14e
+  `scripts/floor-deal` drew the deal from its own Random (seed + 1000000) while `DevCorridor`
+  carries on the layout's, so the code, notes, guard and contents all differed. Now they match:
+  opening floor 1's 104 to 125, 101 to 103, then 157 on seed 7 dealt in Play exactly what the
+  script prints. Only which tool comes out depends on the order doors first lift, so open them in
+  another order and the tools move between the tool units; nothing else moves. To judge a tool
+  where the deal puts it, lay one with DealSpot's spot and Slots' `resting` from the server
+  (Tools, DealSpot, FloorBuilder.face), as Deals does.
+- **`Deals` hears a press, not a door** (L-14e): a Server `RollUpDoor.play(unit, "Open")` lifts the
+  door but deals nothing (`Deals` listens to `Doors.acted`, which only a press or `Doors:move`
+  fires; `KeptPlayers` listens to `changed`, so the let-out recipe still works). To deal a row of
+  units, press Open from one Client `execute_luau`: for each, pivot your character 3.5 studs out
+  from the door (the `DoorOrigin` part's look, flattened, points out to the hall; check it against
+  `DoorButtons`), wait for the unit to stream in, aim a Scriptable camera with `AutoRotate` off at
+  its `DoorButtons`, wait 1.3 s, then `InputHoldBegin`/`End` on the prompt whose `DoorAction` is
+  Open. 26 doors took about a minute. Once, the first three presses straight after Play started
+  didn't take (pressed again later they did); waiting 5 s after Play before the first, all did.
 - **Your own body's shadow falls on your view's tool** (L-13b1): your character is hidden in
   first person but still casts shadows, so a view model held close to the body (the ladder, 0.7
   ahead) reads black when the light is behind you; moved off the body it's lit. The saw and

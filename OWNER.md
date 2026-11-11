@@ -778,13 +778,10 @@ D-071 and D-072 answer it, and the tickets are in ROADMAP's L-06b3 to L-06b5.
 - [ ] **On the phone** (Galaxy A16, set in Edit first): from each doorway, can you tell what the
   thing is? The cutters read as a red-handled tool from the doorway, small; finds read plainly.
   Shots `docs/art/L-04e-*.jpg`.
-- [ ] **Decide, defaults in place** (D-050): (1) tools with no art yet (the ladder, bubble
-  wrap, air horn, moving blanket, glow sticks: about 5 in 11 dealt tools; the saw is built now;
-  the blanket and glow sticks are cut, Nov 10, and leave the deal soon)
-  are dealt but lie nowhere until L-13 and L-14 build them; or should the deal skip unbuilt tools for now? (2) a find
-  is a prop you can't carry yet (Phase 2); (3) a short thing (a tool, a find, under 3.5 studs) may
-  stand under a note, only a keeper keeps off the whole line to it; (4) tools lie in the bulb's
-  pool, never against the back wall, so they read on a phone.
+- [ ] **Decide, defaults in place** (D-050): (1) a find is a prop you can't carry yet (Phase 2);
+  (2) a short thing (a tool, a find, under 3.5 studs) may stand under a note, only a keeper keeps
+  off the whole line to it; (3) tools lie in the bulb's pool, never against the back wall, so
+  they read on a phone. (Every dealt tool is built since L-14e: a tool unit always holds one.)
 
 ## Now: judge L-11c, the padlock and the cutters at work (built Nov 8)
 

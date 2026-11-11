@@ -152,7 +152,7 @@ touches. This file is read on demand, never at session start; keep each row to o
 | `scripts/check.sh` | Format, lint, strict types, Rojo build, Lune tests |
 | `scripts/floor-map.luau` | `lune run scripts/floor-map [seed] [floor]`: prints a floor as a text map with its counts |
 | `scripts/floor-survey.luau` | `lune run scripts/floor-survey [seeds]`: crawl pairs, units cut off and top runs over many seeds (400 by default), each measure's spread |
-| `scripts/floor-deal.luau` | `lune run scripts/floor-deal [seed] [floor] [mood]`: a floor's code, notes, padlocks and what each door holds, dealt in number order |
+| `scripts/floor-deal.luau` | `lune run scripts/floor-deal [seed] [floor] [mood]`: a floor's code, notes (the guarded one named), padlocks and what each door holds, dealt in number order as Studio's floor deals it (L-14e) |
 | `scripts/upload_art.luau` | `lune run scripts/upload_art [dry] [Key...]`: uploads each changed FBX (the unit, the corridor kit's pieces, walls and fixture), or only the named ones, through Open Cloud, records IDs in its folder's `assets.json` (D-010) |
 | `scripts/lib/OpenCloud.luau` | Open Cloud upload and poll; reads the key from the git-ignored `.config/.env` |
 | `art/unit/assets.json` | Upload manifest: size → FBX hash and Model asset ID. Written only by the upload script |

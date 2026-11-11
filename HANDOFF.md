@@ -2,48 +2,56 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-10, session 85 · **Checks:** green · **Git:** `main`, pushed to `origin` (github.com/drftware/storage).
+**Updated:** 2026-11-10, session 86 (overnight run, 1 of up to 15) · **Checks:** green ·
+**Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- **L-07c done (D-097): banging.** Kept, a Bang button comes up in the dark (`CaughtView`); each
-  press is `Remotes.Bang`, and `KeptPlayers` bangs your door through `Doors:move` (the trapped
-  keeper's thud, shake and hearing, 70 studs along the halls), at most one per 0.4 s. The floor's
-  model carries each bang (`Kept.BangsAttribute`): friends see a blue mark with your name over the
-  door through walls (`BangMarks`) and a ringing dot on the corner map; a kept friend's own map
-  dot is hidden. `UnderDoor` draws the hall light's warm line under your door while it's lit.
-- **Session 85 was planning only:** the owner set the order of the next 15 tickets, through the
-  first run with friends (ROADMAP's "The order from here"). L-08 is split into five, and L-15 to
-  L-18 and L-09a are new. L-07d's full spec now lives in its ROADMAP entry.
-- **Owner, Nov 10:** the code is on GitHub (`origin`). The owner saves the place every session and
-  tests as they go, so don't add save reminders to `OWNER.md`.
+- **L-14e done (D-098): every tool unit holds a tool.** The cut blanket and glow sticks are out
+  of `Deal`; the bag is the six built tools, nine to a bag. `tests/carry.spec` fails if the deal
+  ever hands out a tool without its catalog row and Specs. The guarded note is now drawn before
+  the bag, so changing the bag never moves a seed's guard (`tests/guard.spec` checks): seed 7,
+  floor 1's awake Mannequin is still in **Unit 157**, and every recipe naming it still holds.
+- **`lune run scripts/floor-deal <seed> <floor>` now deals what Studio deals** (it seeded its
+  own Random before) and names the guarded note. Verified in Play on seed 7, floor 1: 26 units
+  dealt door for door as printed, every tool laid. Only which tool lands where depends on the
+  order doors first lift.
+- **Overnight run (owner, Nov 10 night):** ROADMAP's "The overnight run" paragraph. No lobby
+  (L-08e waits for the owner's plan on Nov 11), no new keepers; the Mannequin can get scarier.
+- Studio: nothing imported this session; left in Edit, seed 7, floor 1.
 
-## Next task: L-14e The blanket and glow sticks out of the deal
-The cut tools (D-091) still come out of the deal's bag, and `Deals` lays nothing for a tool
-that isn't built, so about one tool unit in five opens empty. Taking them out makes every
-tool deal a real tool.
+## Next task: L-07d Cut free
+The moment: you're wrapped in the dark, the door goes up, a friend kneels and tears the film off
+you, and you're back on your feet. Today opening the door lets you out (L-07a's stand-in).
 1. Owner test results first, if pasted.
-2. `src/shared/Deal.luau`: take `MovingBlanket` and `GlowSticks` out of the `Tool` type,
-   `Deal.Tools` and `Deal.Bag`. Floors 1 and 2 still deal the saw first.
-3. Fix what counted on them: `tests/deal.spec.luau`, `tests/carry.spec.luau` (reads the bag)
-   and `scripts/floor-deal.luau`.
-4. Leave `Deals`' "not built yet" path (`src/server/Deals.luau` near line 141) as a guard, but
-   it should no longer fire on any floor.
-5. Find a seed again with a Mannequin awake on floor 1 for L-07d's Studio check (seed 7's 157
-   moves with the reshuffle), and write it into L-07d's ROADMAP entry.
-**Acceptance:** checks green; `lune run scripts/floor-deal` over a few seeds and floors 1 to 10
-deals no blanket or glow sticks; in Studio, opening a dozen units on floor 1 prints no "not built
-yet"; Output clean.
-**Read first:** ROADMAP L-14e; D-091; `src/shared/Deal.luau`; `tests/deal.spec.luau`;
-`src/server/Deals.luau` (lines 120 to 150); `scripts/floor-deal.luau`.
+2. Pure rules in `Kept` (Lune-tested): the hold (1 s), who may cut (alive, not kept, within
+   reach of the kept player, the unit's door all the way up), what counts as in reach.
+3. Server (`KeptPlayers`): a "Cut free" prompt (`Prompts.make`, hold 1 s) on the kept player,
+   shown only while their door is all the way up; its trigger checked on the server against
+   those rules lets them go. Remove the stand-in: the door going up no longer lets you out.
+4. Feedback in the same ticket: the film tears (a measured tape-rip sound, found the way
+   `KeptSqueal`'s was, played at the body for everyone near), the wrap comes off over a beat,
+   not a vanish; the freed player's view kicks as they're let go, the cutter's a little too.
+5. The kept player sees nothing of a friend's hold beyond the sound. Check the prompt at phone
+   size beside the door's own buttons: no overlap.
+6. Heads-up: Studio's Play from the MCP is one player, who can't cut themselves free. Check
+   the refusals there and plan how to see a valid cut (the owner's Team Test goes in OWNER.md).
+**Acceptance:** checks green; in Studio on seed 7, floor 1 (get kept: stand at (47, 3, -632)
+facing 157, tap Open; docs/STUDIO.md's "Testing getting kept from the MCP"): opening your unit
+no longer lets you out; Cut free shows only with the door all the way up; a trigger from a kept
+player or from too far is refused (Output); a valid one lets you out, the film gone with its
+sound; Output clean.
+**Read first:** ROADMAP L-07d; D-095 and D-097; `src/server/KeptPlayers.luau`;
+`src/server/Prompts.luau`; `src/client/KeptSqueal.luau`; docs/STUDIO.md's "Testing getting
+kept from the MCP".
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-07d Cut free (its spec is in ROADMAP), then L-07e the padlock (a warning before it locks).
-2. L-06c1 a walk that frightens, L-06c2 the catch as a jump scare.
-3. L-08a the ride, L-08b the next floor, L-08c left behind, L-08d the climb ends (the Missing
-   board, "Again", a stand-in top at floor 3), L-08e the start (a countdown once all are in).
+1. L-07e the padlock (a warning before it locks).
+2. L-06c1 a walk that frightens (the owner: today's steps sound like Pinocchio), L-06c2 the
+   catch as a jump scare.
+3. L-08a the ride, L-08b the next floor, L-08c left behind, L-08d the climb ends. L-08e (the
+   start, in the lobby) waits for the owner.
 4. L-15 keepers hear the keypad, dropped tools, the saw, crawls, the ladder and drop-ins.
-5. L-16a and L-16b, the fix pass before friends play (the old Queue's bugs and checks, now
-   listed in ROADMAP).
+5. L-16a and L-16b, the fix pass before friends play; L-16c the roof crawl made smooth.
 6. L-17 every button on a phone at once; L-18 the art saved with the code (optional).
 7. L-09a the first run with friends, floors 1 to 3. L-14b2d only if the owner asks.
 

@@ -138,7 +138,9 @@ function Deals.new(): Deals
 		if kind == "Tool" then
 			local key: string? = contents.tool
 			if not (key and Tools.Catalog[key] and Tools.template(key) and slots) then
-				return nil -- not built yet (said in Output)
+				-- not built yet (said in Output). Never on a floor since L-14e: the deal hands out
+				-- only built tools (tests/carry.spec). Kept as a guard for a tool added half-built.
+				return nil
 			end
 			local body = Tools.bounds(key)
 			local spot = DealSpot.inUnit(

@@ -1,10 +1,14 @@
 --!strict
 -- Prints a floor's deal (L-04d): lune run scripts/floor-deal [seed] [floor] [mood]
 -- (seed 1, floor 1 and Build by default; mood is Build, Peak or Relief). The floor is the one
--- `scripts/floor-map` draws for the same seed and floor. Its code and the notes that carry it,
--- the padlocked doors, then what each door holds, dealt in number order (the way you'd meet them
--- walking out from the lobby) with the director in that mood. A keeper dealt awake counts toward
--- the floor's cap, so past it they're dealt asleep.
+-- `scripts/floor-map` draws for the same seed and floor, dealt as Studio's floor deals it (the
+-- "Walk a floor" floor, Workspace's DevFloorSeed and DevFloorNumber: `DevCorridor`). Its code
+-- and the notes that carry it, the padlocked doors, the guarded note (its keeper always awake:
+-- on floors 1 and 2, the floor's one awake keeper), then what each door holds, dealt in number
+-- order (the way you'd meet them walking out from the lobby) with the director in that mood. A
+-- keeper dealt awake counts toward the floor's cap, so past it they're dealt asleep. Only which
+-- tool a door holds depends on the order: open them in another order in Studio and the tools
+-- move between doors, nothing else does.
 local process = require("@lune/process")
 
 local Brix = require("../vendor/brix/src")
@@ -16,9 +20,11 @@ local number = tonumber(process.args[2]) or 1
 local mood = (process.args[3] or "Build") :: Deal.Mood
 assert(Deal.Odds[mood], "mood: Build, Peak or Relief")
 
--- The deal draws from its own Random, seeded apart from the layout's (as tests/deal.spec does).
-local floor = Floor.generate(number, Brix.Random.new({ seed = seed }))
-local deck = Deal.new(floor, Brix.Random.new({ seed = seed + 1000000 }))
+-- The deal carries on from the layout's Random, as `DevCorridor` lays it (tests/deal.spec seeds
+-- its own apart instead: either way a seed deals the same every time).
+local random = Brix.Random.new({ seed = seed })
+local floor = Floor.generate(number, random)
+local deck = Deal.new(floor, random)
 local units = Deal.units(floor)
 
 local function num(i: number): string
@@ -34,7 +40,11 @@ for _, note in deck.notes do
 	local zone = floor.cells[floor.slots[note.slot].cell].zone
 	local where = if zone == "Lobby" then "the lobby's hall" else `wing {zone}`
 	local lock = if deck.padlocked[note.slot] then ", padlocked" else ""
-	table.insert(notes, `{num(note.slot)} shows {Deal.noteText(deck, note)} ({where}{lock})`)
+	local guard = if deck.guarded == note.slot then ", guarded" else ""
+	table.insert(
+		notes,
+		`{num(note.slot)} shows {Deal.noteText(deck, note)} ({where}{lock}{guard})`
+	)
 	noteAt[note.slot] = true
 end
 print(`Notes: {table.concat(notes, " · ")}`)

@@ -23,15 +23,7 @@ type Random = Floor.Random
 
 export type Mood = "Build" | "Peak" | "Relief"
 export type Kind = "Nothing" | "Find" | "Tool" | "Asleep" | "Awake"
-export type Tool =
-	"Saw"
-	| "BoltCutters"
-	| "Padlock"
-	| "Ladder"
-	| "BubbleWrap"
-	| "AirHorn"
-	| "MovingBlanket"
-	| "GlowSticks"
+export type Tool = "Saw" | "BoltCutters" | "Padlock" | "Ladder" | "BubbleWrap" | "AirHorn"
 
 -- What the director knows when a door lifts: its mood, and how many keepers are awake now.
 export type Situation = { mood: Mood, awake: number }
@@ -101,7 +93,9 @@ Deal.Keepers = {
 	The tools behind doors come out of a shuffled bag, as Tetris deals its pieces: every tool in a
 	bag turns up before any comes round again, so a floor never starves you of bolt cutters or
 	buries you in ladders. These are the counts in one bag, in a fixed order so a seed always
-	shuffles the same. No flashlight: everyone carries one (GDD Tools).
+	shuffles the same. Only built tools: every one here has its row in `Tools.Catalog`, or its
+	door would open on an empty unit (tests/carry.spec checks). No flashlight: everyone carries
+	one (GDD Tools). The moving blanket and glow sticks were cut (D-091) and left the bag (L-14e).
 ]]
 local TOOLS: { Tool } = {
 	"Saw",
@@ -110,19 +104,15 @@ local TOOLS: { Tool } = {
 	"Ladder",
 	"BubbleWrap",
 	"AirHorn",
-	"MovingBlanket",
-	"GlowSticks",
 }
 Deal.Tools = TOOLS
 Deal.Bag = {
 	Saw = 2, -- the hole trap's tool, the loop's best move
 	BoltCutters = 2, -- a padlocked unit, or a friend padlocked in one
 	Padlock = 2, -- keeps a trapped keeper in for the floor
-	Ladder = 1,
-	BubbleWrap = 1,
-	AirHorn = 1,
-	MovingBlanket = 1,
-	GlowSticks = 1,
+	Ladder = 1, -- up onto the unit tops, out of a keeper's reach
+	BubbleWrap = 1, -- a tripwire you lay behind you
+	AirHorn = 1, -- one blast that draws the keepers in reach and wakes sleepers
 } :: { [string]: number }
 
 -- The finds a door can hold, each a name in `Finds.Names` (art/finds/): the GDD's 1980s bedroom
@@ -329,20 +319,13 @@ function Deal.new(floor: Floor, random: Random): Deck
 		bag = {},
 		random = random,
 	}
-	refill(deck)
-	if floor.number <= Deal.TeachingFloors then
-		-- The bag's next tool is its last: swap a saw there.
-		local bag = deck.bag
-		local saw = table.find(bag, "Saw") :: number
-		bag[saw], bag[#bag] = bag[#bag], bag[saw]
-	end
-
 	--[[
 		The guarded note (D-072): one note's unit always holds a keeper, awake, so no floor is
 		cleared without a chase, as DOORS puts the library's code hints in the room Figure walks.
 		The peek is how you find it (feet standing in the light), and a padlocked door can't be
 		peeked, so the guard takes a note behind an unlocked door wherever there is one. Drawn after
-		everything else, so the guard changes nothing else a seed lays or deals.
+		everything the floor lays and before the bag (D-098), so the guard changes nothing else a
+		seed lays, and changing the bag's tools or counts never moves a seed's guard.
 	]]
 	local open: { number } = {}
 	for _, note in notes do
@@ -356,6 +339,14 @@ function Deal.new(floor: Floor, random: Random): Deck
 		end
 	end
 	deck.guarded = open[random:nextInteger(1, #open)]
+
+	refill(deck)
+	if floor.number <= Deal.TeachingFloors then
+		-- The bag's next tool is its last: swap a saw there.
+		local bag = deck.bag
+		local saw = table.find(bag, "Saw") :: number
+		bag[saw], bag[#bag] = bag[#bag], bag[saw]
+	end
 	return deck
 end
 

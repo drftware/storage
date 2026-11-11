@@ -139,6 +139,18 @@ for key, row in Catalog do
 	end
 end
 
+-- and the other way round: every tool the deal hands out is built, with a catalog row and its
+-- generated Specs, so no door opens on an empty unit (L-14e: the cut blanket and glow sticks
+-- were still dealt, and about one tool unit in five opened on nothing)
+for _, key in Deal.Tools do
+	ok(Catalog[key] ~= nil, `{key}: dealt, so it has a catalog row`)
+	ok(fs.isFile(`src/shared/Tools/Specs/{key}.luau`), `{key}: dealt, so it has its Specs`)
+	ok((Deal.Bag[key] or 0) >= 1, `{key}: in the bag at least once`)
+end
+for key in Deal.Bag do
+	ok(table.find(Deal.Tools, key) ~= nil, `{key}: in the bag, so one of the deal's tools`)
+end
+
 print(`carry: {checks - failures}/{checks} checks passed`)
 if failures > 0 then
 	error(`{failures} failed`)

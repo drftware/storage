@@ -1692,7 +1692,8 @@ D-072 built as the deck's rule, pure in `Deal`: `Deal.new` marks one note's unit
   the guard. With every note locked (17 floors in 4,000 of the spec's) the guard takes a locked
   one. Notes already lie past the lobby's hall, so the guard never stands in the first doors.
 - **Drawn last.** The pick is the deck's last draw, so every seed lays and deals all else as
-  before: the code, notes, padlocks, each unit's roll and the bag.
+  before: the code, notes, padlocks, each unit's roll and the bag. (Since D-098 it's drawn just
+  before the bag instead, so a change to the bag never moves it.)
 - **Its place under the cap.** Until the guard's unit is dealt, every other door counts it among
   those awake (`awake + 1` against `Deal.awakeCap`); once dealt it's counted with the rest by
   `Keepers:awakeOn`, and trapped it takes no place (`Keeper.loose`), so the place frees as D-072
@@ -2230,3 +2231,37 @@ reason); a remote event to friends for each bang (a screen that streams in or jo
 miss a mark still showing); a quieter or shorter-reaching kept bang (it's the same door's thud);
 a sound for a far friend as the mark appears (polish, ROADMAP); a real light under the door (a
 light instance per kept player, against the phone budget).
+
+## D-098 The deal hands out only built tools; the guard drawn before the bag; the deal script deals what Studio deals (L-14e, Nov 10)
+The moment it fixes: a door rolled for a tool always has one behind it. With the moving blanket
+and glow sticks cut (D-091) but still in the bag, about one tool unit in five opened on nothing,
+a lie about what the deal promised.
+
+As built: `Deal.Tools` and `Deal.Bag` hold the six built tools (two saws, two bolt cutters, two
+padlocks, a ladder, bubble wrap, an air horn: nine to a bag, as Tetris's bag deals). The rule
+that keeps it true is a test, not a habit: `tests/carry.spec` fails if any tool the deal hands
+out lacks its `Tools.Catalog` row or its generated Specs, so a future tool joins the bag in the
+ticket that builds it. `Deals`' "no art yet" path stays as a guard and no longer fires.
+
+The guarded note (D-072) is now drawn before the bag is filled, still after everything the floor
+lays. Drawn after the bag, as it was, it moved with any change to the bag's tools or counts, and
+with it the floor's one awake keeper on floors 1 and 2, which the Studio recipes and the owner's
+test steps lean on (seed 7, floor 1: Unit 157). Every seed's bag order moved anyway in this
+change, so this was the free moment. What it moved: each seed keeps its layout, code, padlocks,
+notes and every unit's kind (all drawn earlier); the bag's order changed, and the guard on
+about half of floors (138 of 300 kept theirs over seeds 1 to 100, floors 1 to 3). Seed 7 keeps
+its guard on floors 1, 2 and 6 to 10 (157 on floor 1); floors 3 to 5 moved (377 to 367 on 3).
+`tests/guard.spec` holds it: a bigger bag moves no guard over 300 floors (it fails with the old
+order).
+
+`scripts/floor-deal` now carries on the layout's own Random into the deal, as `DevCorridor` lays
+the Studio floor, and names the guarded note. Before, it seeded the deal apart (seed + 1000000,
+as `tests/deal.spec` still does), so it never showed what Play deals (L-13b1 saw the gap and put
+it down to the order doors open). Verified: on seed 7, floor 1, 26 units opened in Play dealt
+door for door what the script prints. Only which tool lands where depends on the order doors
+first lift.
+
+Not chosen: leaving the guard after the bag (seed 7, floor 1's guard went to Unit 124 that way,
+and every recipe naming 157 would have needed rewriting, and again at the next bag change); the
+specs dealing from the layout's Random too (they check rules over 200 seeds, which holds either
+way).

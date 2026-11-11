@@ -2,7 +2,7 @@
 -- lune run tests/guard.spec
 -- The guarded note (L-06b5, D-072) over 400 seeds on every floor: exactly one guarded unit, always
 -- holding a note, behind an unlocked door wherever a note is, never in the lobby's hall, the same
--- for the same seed; its keeper is always dealt awake, whatever the mood or the cap, and is the
+-- for the same seed whatever the bag holds; its keeper is always dealt awake, whatever the mood or the cap, and is the
 -- same keeper whatever order the doors lift in. Played out with the doors lifted in a shuffled
 -- order and the deal told how many are loose (as `Keepers.awakeOn` tells it), the guard trapped
 -- partway: the cap is never passed with the guard's place counted from the floor's start, and on
@@ -124,6 +124,33 @@ for seed = 1, SEEDS do
 				loose -= 1 -- a trapped keeper takes no place (`Keeper.loose`)
 			end
 		end
+	end
+end
+
+-- The guard is drawn before the bag (D-098), so changing the bag's tools or counts never moves a
+-- seed's guard (the Studio recipes and the owner's steps lean on seed 7, floor 1's in Unit 157).
+do
+	local saved = table.clone(Deal.Bag)
+	local floors: { Floor.Floor } = {}
+	local before: { number } = {}
+	for seed = 1, 100 do
+		for number = 1, 3 do
+			local floor = Floor.generate(number, Brix.Random.new({ seed = seed }))
+			table.insert(floors, floor)
+			table.insert(before, deal(floor, seed).guarded :: number)
+		end
+	end
+	Deal.Bag.Saw += 3
+	Deal.Bag.Ladder += 1
+	for k, floor in floors do
+		local seed = (k - 1) // 3 + 1
+		ok(
+			deal(floor, seed).guarded == before[k],
+			`seed {seed} floor {floor.number}: a bigger bag moved the guard`
+		)
+	end
+	for key, count in saved do
+		Deal.Bag[key] = count
 	end
 end
 

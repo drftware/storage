@@ -794,12 +794,23 @@ L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
       spent look): a second texture set baked by `art/bubblewrap` (the same atlas, the sheet's
       strip painted as burst bubbles: flat, creased film), swapped onto the sheet's part at its
       third pop. Small; one session.
-  - [ ] **L-14e The blanket and glow sticks out of the deal** (D-091; owner, Nov 10: "can go").
+  - [x] **L-14e The blanket and glow sticks out of the deal** (D-091; owner, Nov 10: "can go").
     They're cut, but `Deal.Tools` and its bag still deal them, and `Deals` lays nothing for a
     tool not built yet, so a door dealt one opens on an empty unit. Take both out of `Deal`'s
     type, list and bag; fix the specs and `scripts/floor-deal` that count on them. It reshuffles
     every seed: the owner said not to worry about old test steps naming units, but L-07d's
     Studio check needs a seed with an awake Mannequin on floor 1 found again. Small; one session.
+    Done Nov 10 (D-098): the bag is six built tools, nine to a bag; `tests/carry.spec` now fails
+    if the deal ever hands out a tool without its catalog row and Specs. `scripts/floor-deal`
+    deals as Studio's floor does (it seeded its own Random before, so it never matched Play) and
+    names the guarded note. The guard is now drawn before the bag, so tuning the bag never moves
+    it. Seeds keep their layouts, codes, notes, padlocks and every unit's kind; the bag's order
+    moved, and the guard on some floors (seed 7: floors 3 to 5; floor 1's stays Unit 157, so
+    the owner's steps and the Studio recipes naming it still hold). Verified in Studio on seed
+    7, floor 1: 26 units opened (101 to 125, then 157) dealt door for door what the script
+    prints, eight tools all laid, no "no art yet"; 157's guard caught me; Output clean (Studio's
+    own 203785492 lines aside). Sixty floors (six seeds, floors 1 to 10) deal no blanket or glow
+    sticks.
 - [x] **L-10 The minimap** (owner, Nov 7: players shouldn't get lost and give up; Nov 10: a small
   corner map, always on, for now, which the owner may later make a map you stop to open, exposed
   while you read it). It fills in only the halls you've walked, as R.E.P.O.'s map fills in rooms
@@ -877,8 +888,10 @@ L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
     4. A friend's held Cut free shows nothing to the kept player beyond the sound; check the
        prompt at phone size (the door's own buttons are near: no overlap).
 
-    Acceptance: checks green; in Studio on a seed and floor where a Mannequin is awake on floor
-    1 (seed 7's 157 moved with L-14e): opening your unit no longer lets you out; the Cut free
+    Acceptance: checks green; in Studio on seed 7, floor 1, where the awake Mannequin is still
+    the guard in Unit 157 (rechecked by L-14e: stand at (47, 3, -632) facing its door, tap Open,
+    caught in 2.5 to 7 s; docs/STUDIO.md's "Testing getting kept from the MCP"): opening your
+    unit no longer lets you out; the Cut free
     prompt shows only with the door up; a trigger from a kept player or from too far is refused
     (Output); a valid one lets you out, the film gone with its sound; Output clean. Read first:
     this ticket; D-095, D-097; `src/server/KeptPlayers.luau`; `src/server/Prompts.luau`;

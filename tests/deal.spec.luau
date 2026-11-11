@@ -153,7 +153,7 @@ for seed = 1, SEEDS do
 		local want = math.max(1, math.round(#units * Deal.padlockShare(number)))
 		ok(locks == want, `{where}: {want} padlocks, got {locks}`)
 
-		-- The bag: a saw first on floors 1 and 2; then every tool in each bag of 11.
+		-- The bag: a saw first on floors 1 and 2; then every tool in each bag of 9.
 		local bagSize = 0
 		for _, tool in Deal.Tools do
 			bagSize += Deal.Bag[tool]
