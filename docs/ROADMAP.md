@@ -145,8 +145,16 @@ order puts a keeper on the floor as early as it can: L-06a built the Mannequin's
 on nothing in Brix.
 
 **The order from here** (owner, Nov 10), one session each: L-14e (the cut tools out of the
-deal), L-07d, L-07e, L-06c1, L-06c2, L-08a to L-08e (the climb), L-15, L-16a, L-16b, L-17, L-18,
+deal), L-07d, L-07e, L-06c1, L-06c2, L-08a to L-08d (the climb), L-15, L-16a, L-16b, L-16c, L-17,
 then L-09a, the first run with friends. L-14b2d only if the owner asks.
+**The overnight run (owner, Nov 10 night):** up to 15 sessions back to back, each capped at about
+300k tokens of context, still one ticket each. Hard limits: **no lobby** (L-08e waits: the owner
+brings the full lobby plan on Nov 11) and **no new keepers** (the owner approves each one); the
+Mannequin can get as much scarier as it likes. Progress first (floor 2 and the climb), polish
+throughout. Owner, verbatim on the Mannequin: "right now it sounds like fucking pinnoccio walking
+around and getting caught doesn't seem like a big deal" (L-06c1, L-06c2). The roof crawl is
+"super glitchy and the camera shakes a ton. It needs to be smooth, and feel perfect" (L-16c).
+L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
 
 - [x] **L-01 The floor generator**, in three sessions. **L-01a done Nov 7** (D-027): the floor
   as pure data from a seed (`src/shared/Floor.luau`): halls grown from the lobby on a grid of
@@ -888,13 +896,16 @@ then L-09a, the first run with friends. L-14b2d only if the owner asks.
     still, then a sudden fast, jerky rush across the gap (SCP-173, Doors' Seek); footfalls that
     get heavier the nearer it is, and a fibreglass creak as it turns. Poses, timing and sound on
     each screen (`KeeperView`, `Pose`, `KeeperSounds`); the server's motion stays as it is.
+    Owner, Nov 10 night: today's steps "sound like fucking pinnoccio walking around": the light
+    wooden clack has to go. Heavy, wrong, close-sounding steps, and silence that means danger.
   - [ ] **L-06c2 The catch as a jump scare.** The moment: its blank face fills your screen with a
     hit of sound, then the black. The Mannequin's faceless head lunges into your camera for
     about half a second with a loud sting over the wrap's squeal (Piggy's and Five Nights at
     Freddy's catches: the face rushes the camera with a scream, no blood), then `CaughtView`'s
     blackout as now. Friends who see it: the body spun once in film before it vanishes. This
     overrides the GDD's "no screamer" line (owner, Nov 10). Check the experience's maturity
-    questionnaire answer for fear once it's in.
+    questionnaire answer for fear once it's in. Owner, Nov 10 night: "getting caught doesn't
+    seem like a big deal" today; it has to land as the worst thing that can happen to you.
 - [ ] **L-08 The ride and the next floor.** The elevator ride and a second floor, so the climb is
   a loop and not a single room. Brix: its round loop (ENG-13) if it has landed (not yet, checked
   Nov 10). Takes the GDD's "Left behind" (the gate shuts with you still kept or outside: you
@@ -913,7 +924,8 @@ then L-09a, the first run with friends. L-14b2d only if the owner asks.
     "Whole team kept"); a results screen with one "Again" button, as DOORS' Play Again, since
     Gate 1 is friends asking for another run. Until Phase 2's top floor the climb stops at a
     stand-in top, floor 3 (a default; its `OWNER.md` line comes with the build).
-  - [ ] **L-08e The start.** Friends gather and the climb starts on a short countdown once
+  - [ ] **L-08e The start** (waits: the owner brings the full lobby plan Nov 11; don't build
+    any of it before then). Friends gather and the climb starts on a short countdown once
     everyone's in, as DOORS' lobby elevators do: the smallest form of the GDD's lobby (your own
     lobby unit is Phase 2) and the stand-in `docs/FRAMEWORK.md` plans while ENG-13 is unbuilt.
 - [ ] **L-15 Keepers hear the rest.** The keypad, a dropped tool, the saw, a crawl, the ladder and
@@ -936,6 +948,12 @@ then L-09a, the first run with friends. L-14b2d only if the owner asks.
     A press made the moment you arrive reaches the server while it still sees you a few studs
     back (D-085): allow for it where Saws, Ladders and a door's Cut and Lock check where you
     stand, as `Crawling.counts` does.
+  - [ ] **L-16c Crawling the tops feels right** (owner, Nov 10 night: "super glitchy and the
+    camera shakes a ton. It needs to be smooth, and feel perfect"). Find every source of the
+    shake and the glitches up on the units' tops (the crawl's camera, its height over the lids and
+    seams, the server's corrections fighting the client, the pose) and fix each at its cause, as
+    the crawl in R.E.P.O. or Lethal Company's crouch glides. Judge it in Studio on a long run of
+    tops, over lids, round corners and past holes, at walking and turning speed.
 - [ ] **L-17 Every button on a phone at once.** At Galaxy A16 size in Studio: kept with the Bang
   button up, holding a horn, the map, torch and jump buttons showing, a door's buttons near;
   nothing overlaps and everything reads. The kept player's empty slots bar goes from under the
