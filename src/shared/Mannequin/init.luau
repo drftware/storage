@@ -180,8 +180,9 @@ function Mannequin.head(pose: Pose.Pose): CFrame
 		* CFrame.new(vec(Specs.Parts.Head.Centre))
 end
 
--- A copy of the template standing at `pivot` (its feet on it, facing its LookVector), posed.
-function Mannequin.clone(pivot: CFrame, parent: Instance, pose: Pose.Pose?): Model?
+-- A copy of the template standing at `pivot` (its feet on it, facing its LookVector), posed, and
+-- put in `parent`; with none, left out of the world for the caller to finish and put in last.
+function Mannequin.clone(pivot: CFrame, parent: Instance?, pose: Pose.Pose?): Model?
 	local template = Mannequin.template()
 	if not template then
 		warn("Mannequin: no template at ReplicatedStorage.Keepers.Mannequin (save the place)")

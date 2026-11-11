@@ -2738,3 +2738,55 @@ the burst still print. A crawler's feet, as the pops read them, are on what they
 Not chosen: a faster walk when going to a sound (it would shrink D-069's seven seconds to get
 behind a door; the stop says "it heard" without taking your time); silencing sounds behind shut
 doors (the ticket's crawl and drop-in would never be heard); a voice (a mannequin has none).
+
+## D-108 In hand and caught: the fix pass before friends play (L-16a, Nov 11)
+
+The moment: the bugs a friend would hit in their first run with you. Each fixed at its cause.
+**A friend's torch arm now rises.** The players' shoulders, elbows and wrists here are Roblox's
+newer avatar joints (`AnimationConstraint`), not `Motor6D`s; FlashlightView looked only for
+`Motor6D`s, found nothing, and never raised a friend's arm. Five views had their own copy of the
+lookup, so one new client module, `Joints` (`find`, `get`, `set`, `bend`), now finds and turns
+either kind for all of them (FlashlightView, HornView, CrawlView, LadderView, KneelView). Checked
+in Studio on your own body: all three right-arm joints are AnimationConstraints, and the raise
+lifts the hand from 0.95 below the root to 0.86 above it. A friend's arm needs two players.
+**Caught mid-crawl or on the ladder, you're let go at once.** Before, nothing ended a crawl or a
+climb at a catch: the server's Ladders lifted a caught climber onto the tops when the climb's
+time ran out, then put them back there every check while KeptPlayers held them in their unit;
+Crawls put a caught crawler through the hole; and the caught screen kept PlatformStand and moved
+an anchored body the server no longer listened to. Now a kept player's climb or crawl ends on the
+server that step (`Prompts.wrapped`), and their screen lets go of their body the moment `Kept`
+goes on (LadderView, CrawlView: standing again, their own collision), never taking it over while
+kept. The crawl's scripted camera is left to the catch, which takes it that frame (CaughtLunge)
+and hands back your own camera at the black, not the crawl's. Verified in Studio both ways,
+through a new Studio-only `ServerStorage.CatchTest` (the standing keeper nearest you catches you
+through the real catch): caught 9.6 up the ladder and 1.3 s into a crawl, woken in a unit, then
+cut free by a stand-in and walking 7.2 studs in 0.6 s.
+**G at an open door is Slam.** G was both a door's Slam (a ProximityPrompt key) and the tool's
+Drop (ContextActionService), so at an open door it did both. The slam is the moment, so while a
+button in the world that takes the same key is up, ToolView's Drop passes the key to it and the
+tool stays in your hand; anywhere else G drops as before. Verified in Studio: G at 102's open
+door slammed it with the horn still held; G with the door shut dropped the horn. Not chosen:
+moving Drop to another key (G is where Lethal Company players reach for it, and the slots' bar
+says G).
+**A click on a button on screen is never a use.** HornView's use (every verb tool's) took any
+left click, so clicking a slot, Drop or its own button blew the horn or laid wrap (and its own
+button used it twice). It now asks what's under the click (`PlayerGui:GetGuiObjectsAtPosition`,
+which takes a click's `InputObject.Position` as is and skips hidden screens): on an active
+button, the click is the button's. Verified: a click on slot 1 with the horn held blew nothing,
+one out in the world blew it.
+**Every recording is primed.** DoorSounds preloaded its sounds but never gave them the silent
+first play (`SoundPrimer`, docs/STUDIO.md), so the first slam's bang could land a third of a
+second late; the motion lights' click, a unit light's click and hum, and a peek's rustle had the
+same gap. All four now prime at start. Tonight's Studio started even never-primed recordings on
+time, so the late start wasn't seen again; the owner's ear on the first slam is the check.
+**Output at Play.** KeeperView gave up for good on a keeper body it got before all of it had
+arrived ("can't move ... Mannequin": seen once as the guard in 157 stood), leaving that keeper
+frozen on that screen. It now waits for the rest (its row, its root, its joints) and binds then,
+warning only for a keeper it doesn't know; and the server finishes a body (streamed whole,
+its row, its first motion, its tag) before it goes into the world. The race didn't come back in
+Studio either way, so this is belt and braces. `ContentId 203785492 ... Asset type does not
+match` is Roblox's "Pop Close Sound", requested as something else by Studio or a plugin: it is in
+neither the place (about 18,000 instances searched, Roblox's own interface included), the repo
+nor Brix, and nothing the game does can silence it. 120448020095820 ("content representation is
+being generated") is the kept wrap's colour map in the place, still being processed after its
+upload; it didn't show in tonight's Plays.

@@ -30,6 +30,7 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local HallLight = require(ReplicatedStorage.Shared.HallLight)
 local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
+local SoundPrimer = require(script.Parent.SoundPrimer)
 
 local FREE = Brix.Pathing.free()
 
@@ -288,6 +289,8 @@ function HallLights.new(): Brix.System
 	return {
 		name = "HallLights",
 		start = function(_: any, _context: Brix.Context)
+			-- a motion light's first click on time, not a third of a second after it lights
+			task.spawn(SoundPrimer.prime, { HallLight.ClickSound })
 			table.insert(
 				connections,
 				CollectionService:GetInstanceAddedSignal(MotionLight.Tag):Connect(function(inst)

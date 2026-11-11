@@ -1044,13 +1044,16 @@ L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
   29), the Heard beat on screen. The saw, a crawl and a drop-in passed Lune only (`OWNER.md`).
 - [ ] **L-16 The fix pass before friends play.** The bugs friends would meet first, in two
   sessions:
-  - [ ] **L-16a In hand and caught.** A friend's torch arm never raises (`FlashlightView`'s
-    `motor()` takes only `Motor6D`; the shoulders are `AnimationConstraint`s). Caught crawling
-    or on the ladder may leave you stuck once let out (`CrawlView`/`LadderView` holding
-    PlatformStand). The first slam's bang lands up to 0.35 s late (`SoundPrimer.prime`). G is a
-    door's Slam and a tool's Drop: pick which wins at an open door. A left click on the slots'
-    bar blows a horn or lays wrap. Output's stray lines at Play ("Asset type does not match",
-    "KeeperView: can't move ... Mannequin") traced or silenced.
+  - [x] **L-16a In hand and caught. Done Nov 11 (D-108).** A friend's torch arm rises: one
+    client `Joints` module finds and turns either kind of avatar joint for every view that poses
+    a body. Caught crawling or on the ladder, the climb or crawl ends on the server and your
+    screen lets go of your body at once; the catch hands back your own camera. G at an open door
+    slams and keeps your tool; a click on a button on screen is never a use. Every recording is
+    primed (the doors, the lights, the peek). KeeperView waits for a body still arriving; the
+    server builds a keeper whole before it goes in. 203785492 traced to Studio (not the game).
+    Verified in Studio: your own arm raised through `Joints`; caught on the ladder and mid-crawl
+    (Studio-only `CatchTest`), kept, cut free, walking; Slam over Drop; a slot click blowing
+    nothing. A friend's arm and the first slam's timing go to `OWNER.md`.
   - [ ] **L-16b The tops and arriving.** Climb or Drop down lying behind a sawn hole slides you
     across it; a friend's drop-in lands 0.2 under the floor; crawlers refused a door's buttons
     and the ladder (`Ladders:crawling`). A press made the moment you arrive reaches the server while it still sees you a few studs

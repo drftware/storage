@@ -33,6 +33,7 @@ local Brix = require(ReplicatedStorage.Brix)
 local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
 local HandRoom = require(script.Parent.HandRoom)
 local Hands = require(ReplicatedStorage.Shared.Hands)
+local Joints = require(script.Parent.Joints)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 
 local Torch = Flashlight.Torch
@@ -77,9 +78,9 @@ type Friend = {
 	pitch: number, -- shown, following their aim
 	raise: number, -- how far their arm is up, 0 to 1
 	click: Click?,
-	shoulder: Motor6D?,
-	elbow: Motor6D?,
-	wrist: Motor6D?,
+	shoulder: Joints.Joint?,
+	elbow: Joints.Joint?,
+	wrist: Joints.Joint?,
 	head: BasePart?,
 	beamAt: Attachment?, -- the beam's mount, moved short of a surface
 	beamHome: CFrame, -- the mount's place on the torch
@@ -111,12 +112,6 @@ local function play(c: Click, on: boolean)
 	local which = if on then Torch.OnSound else Torch.OffSound
 	s.TimePosition = which.from
 	s:Play()
-end
-
-local function motor(character: Model, part: string, name: string): Motor6D?
-	local p = character:FindFirstChild(part)
-	local m = p and p:FindFirstChild(name)
-	return if m and m:IsA("Motor6D") then m else nil
 end
 
 -- The phone's button: a dark round button like the jump button, with a torch drawn on it that
@@ -425,9 +420,9 @@ function FlashlightView.new(): (Brix.System, Beam)
 			pitch = 0,
 			raise = 0,
 			click = nil,
-			shoulder = motor(character, "RightUpperArm", "RightShoulder"),
-			elbow = motor(character, "RightLowerArm", "RightElbow"),
-			wrist = motor(character, "RightHand", "RightWrist"),
+			shoulder = Joints.find(character, "RightUpperArm", "RightShoulder"),
+			elbow = Joints.find(character, "RightLowerArm", "RightElbow"),
+			wrist = Joints.find(character, "RightHand", "RightWrist"),
 			head = if head and head:IsA("BasePart") then head else nil,
 			beamAt = beamAt,
 			beamHome = if beamAt then beamAt.CFrame else CFrame.identity,
@@ -502,13 +497,13 @@ function FlashlightView.new(): (Brix.System, Beam)
 				local k = w * w * (3 - 2 * w)
 				local s, e, wr = f.shoulder, f.elbow, f.wrist
 				if s then
-					s.Transform = s.Transform:Lerp(CFrame.Angles(Torch.raise(f.pitch), 0, 0), k)
+					Joints.bend(s, CFrame.Angles(Torch.raise(f.pitch), 0, 0), k)
 				end
 				if e then
-					e.Transform = e.Transform:Lerp(CFrame.identity, k)
+					Joints.bend(e, CFrame.identity, k)
 				end
 				if wr then
-					wr.Transform = wr.Transform:Lerp(CFrame.identity, k)
+					Joints.bend(wr, CFrame.identity, k)
 				end
 			end
 		end

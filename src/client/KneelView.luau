@@ -21,15 +21,17 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Joints = require(script.Parent.Joints)
 local Kneel = require(ReplicatedStorage.Shared.StorageUnit.Kneel)
 local Motion = require(ReplicatedStorage.Shared.StorageUnit.Motion)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
+local SoundPrimer = require(script.Parent.SoundPrimer)
 
 local ATTR_MOTION = "DoorMotion" -- a door's move (RollUpDoor, Motion.encode)
 local ATTR_ACTION = "DoorAction" -- the door button's action (Doors.ActionAttribute)
 local POSE = Kneel.Pose
 
-type Joint = Motor6D | AnimationConstraint
+type Joint = Joints.Joint
 
 -- A friend's body kneeling, or standing back up, on this screen.
 type Body = {
@@ -57,22 +59,11 @@ type Lowered = {
 
 local KneelView = {}
 
-local function joint(character: Model, part: string, name: string): Joint?
-	local p = character:FindFirstChild(part)
-	local j = p and p:FindFirstChild(name)
-	if j and j:IsA("Motor6D") then
-		return j
-	elseif j and j:IsA("AnimationConstraint") then
-		return j
-	end
-	return nil
-end
-
 -- Each joint of an R15 body and its turn kneeling, for a body of hip height `hip`.
 local function kneeling(character: Model, hip: number): { [Joint]: CFrame }
 	local joints: { [Joint]: CFrame } = {}
 	local function add(part: string, name: string, to: CFrame)
-		local j = joint(character, part, name)
+		local j = Joints.find(character, part, name)
 		if j then
 			joints[j] = to
 		end
@@ -330,13 +321,11 @@ function KneelView.new(): Brix.System
 			b.level = Kneel.toward(b.level, b.down, dt)
 			local w = Kneel.weight(b.level)
 			for j, to in b.joints do
-				-- any: both classes have Transform, but Luau can't index a property through their union
-				local jj = j :: any
-				local now: CFrame = jj.Transform
+				local now = Joints.get(j)
 				-- a joint no animation drives still holds this screen's last turn: start from rest
 				local from = if now == b.written[j] then CFrame.identity else now
 				local set = from:Lerp(to, w)
-				jj.Transform = set
+				Joints.set(j, set)
 				b.written[j] = set
 			end
 			if b.level == 0 and not b.down then
@@ -348,6 +337,8 @@ function KneelView.new(): Brix.System
 	return {
 		name = "KneelView",
 		start = function(_: any, _context: Brix.Context)
+			-- the first peek's rustle on time
+			task.spawn(SoundPrimer.prime, { Kneel.Rustle.id })
 			table.insert(connections, ProximityPromptService.PromptTriggered:Connect(pressed))
 			table.insert(
 				connections,

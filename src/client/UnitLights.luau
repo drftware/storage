@@ -23,6 +23,7 @@ local Brix = require(ReplicatedStorage.Brix)
 local Motion = require(ReplicatedStorage.Shared.StorageUnit.Motion)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 local ShutIn = require(ReplicatedStorage.Shared.StorageUnit.ShutIn)
+local SoundPrimer = require(script.Parent.SoundPrimer)
 local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
 local UnitLight = require(ReplicatedStorage.Shared.UnitLight)
 
@@ -239,6 +240,8 @@ function UnitLights.new(): Brix.System
 	return {
 		name = "UnitLights",
 		start = function(_: any, _context: Brix.Context)
+			-- the first unit light's click and hum on time, not a third of a second late
+			task.spawn(SoundPrimer.prime, { UnitLight.ClickSound, UnitLight.HumSound })
 			table.insert(
 				connections,
 				CollectionService:GetInstanceAddedSignal(UnitKit.Tag):Connect(function(inst)

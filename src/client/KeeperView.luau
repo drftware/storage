@@ -260,7 +260,22 @@ function KeeperView.new(heard: (model: Model, beat: KeeperTell.Beat) -> (), beam
 		end
 	end
 
+	-- Bodies this screen has before all of them has arrived (its row, its root or a joint: a
+	-- streamed model can come in pieces), bound once the rest is here.
+	local pending: { [Model]: { RBXScriptConnection } } = {}
+
+	local function unpend(model: Model)
+		local conns = pending[model]
+		if conns then
+			pending[model] = nil
+			for _, c in conns do
+				c:Disconnect()
+			end
+		end
+	end
+
 	local function unbind(inst: Instance)
+		unpend(inst :: Model)
 		local view = views[inst :: Model]
 		if not view then
 			return
@@ -280,12 +295,27 @@ function KeeperView.new(heard: (model: Model, beat: KeeperTell.Beat) -> (), beam
 		local row = model:GetAttribute(ROW_ATTRIBUTE)
 		local kit = if type(row) == "string" then KITS[row] else nil
 		local rowOf = if type(row) == "string" then KeeperRows[row] else nil
+		if type(row) == "string" and not (kit and rowOf) then
+			warn(`KeeperView: can't move {model:GetFullName()}: no keeper called {row}`)
+			return
+		end
 		local root = model.PrimaryPart
 		local motors = kit and kit.motors(model)
 		if not (kit and rowOf and root and motors) then
-			warn(`KeeperView: can't move {model:GetFullName()}: no such keeper, root or joints`)
+			-- not all here yet: bound as the rest arrives, so it never stands frozen on this screen
+			if not pending[model] then
+				local function again()
+					bind(model)
+				end
+				pending[model] = {
+					model.DescendantAdded:Connect(again),
+					model:GetPropertyChangedSignal("PrimaryPart"):Connect(again),
+					model:GetAttributeChangedSignal(ROW_ATTRIBUTE):Connect(again),
+				}
+			end
 			return
 		end
+		unpend(model)
 		local view: View = {
 			model = model,
 			root = root,
@@ -353,6 +383,9 @@ function KeeperView.new(heard: (model: Model, beat: KeeperTell.Beat) -> (), beam
 			table.clear(connections)
 			for model in views do
 				unbind(model)
+			end
+			for model in pending do
+				unpend(model)
 			end
 		end,
 	}

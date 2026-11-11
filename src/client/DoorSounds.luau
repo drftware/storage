@@ -16,7 +16,6 @@
 	gets its sounds the first time it makes one, and only moving doors are stepped.
 ]]
 local CollectionService = game:GetService("CollectionService")
-local ContentProvider = game:GetService("ContentProvider")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -27,6 +26,7 @@ local DoorSound = require(ReplicatedStorage.Shared.StorageUnit.DoorSound)
 local Motion = require(ReplicatedStorage.Shared.StorageUnit.Motion)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 local Shake = require(ReplicatedStorage.Shared.Shake)
+local SoundPrimer = require(script.Parent.SoundPrimer)
 local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
 
 local ATTR_MOTION = "DoorMotion"
@@ -279,22 +279,14 @@ function DoorSounds.new(kick: (amount: number) -> ()): Brix.System
 		end
 	end
 
-	-- Loads every door sound up front, so the first slam isn't late waiting for its recording.
+	-- Every door sound loaded and played once silently up front (SoundPrimer), so the first slam
+	-- bangs on the instant it hits, not a third of a second after.
 	local function preload()
-		local list: { Instance } = {}
-		local seen: { [string]: true } = {}
+		local ids: { string } = {}
 		for _, row in DoorSound.Sounds do
-			if not seen[row.Id] then
-				seen[row.Id] = true
-				local s = Instance.new("Sound")
-				s.SoundId = row.Id
-				table.insert(list, s)
-			end
+			table.insert(ids, row.Id)
 		end
-		ContentProvider:PreloadAsync(list)
-		for _, s in list do
-			s:Destroy()
-		end
+		SoundPrimer.prime(ids)
 	end
 
 	return {

@@ -112,8 +112,9 @@ verified: a doc page, Studio, or "untested".
 - **Avatar joints are AnimationConstraints** (Play, L-12b3): a player's R15 shoulders here
   (`RightUpperArm.RightShoulder`) are `AnimationConstraint`s, not `Motor6D`s (Roblox's newer avatar
   joints). Both have `Transform`, and a write in `PreSimulation` holds through physics; code that
-  looks only for a `Motor6D` finds nothing (FlashlightView's `motor()` does). Luau can't index
-  `Transform` through the two classes' union, so CrawlView sets it through one `any`.
+  looks only for a `Motor6D` finds nothing (FlashlightView's old `motor()` did). The elbows and
+  wrists are AnimationConstraints too. Find and turn them with the client's `Joints` (L-16a);
+  Luau can't index `Transform` through the two classes' union, so it goes through one `any`.
 - **First person's camera spot** (Play, L-12b3, LockFirstPerson): 1.5 studs above the root and
   half a stud back along the look (the closest zoom). A Scriptable camera handed back to Custom at
   exactly that spot carries on with no jump and keeps its look.
@@ -396,6 +397,27 @@ verified: a doc page, Studio, or "untested".
   (z -700); bang every 0.65 s from a Client loop while a Server sampler watches `KeeperState`
   for Going, and it comes (about 2.5 minutes in, from 54 studs). An anchored server Part tagged
   `TripsLights`, moved by CFrame in the hall, trips the motion light there.
+- **Testing a catch anywhere from the MCP** (L-16a, 2026-11-11): `ServerStorage.CatchTest:
+  Invoke(player)` (Studio only) has the standing keeper nearest you catch you through the real
+  catch, wherever you are: on the ladder, mid-crawl. It needs a keeper standing: on floor 1 move
+  to (-6, 3.5, -591) on the Client so the "Stand one" post (`Floor1.StandMannequin`) streams in,
+  then aim and press its prompt. One player kept ends the climb (ClimbEnds' wipe) as soon as the
+  screen is black, so first put a stand-in friend in the world (the left-behind recipe's clone,
+  tagged `StandInFriend`, anywhere). Floor 1's units sit under its hall pieces
+  (`Floor1.Straight18.Unit155`); `CrawlHole.saw(Unit155, Unit153)` and `RollUpDoor.play(unit,
+  "Open")` from the Server make a crawl ready, and 155's `CrawlButton` prompt is pressed from
+  (55.8, 3, -621.8). The ladder at the spawn: pick it up, Lean at `Unit102`'s `LeanButton` from
+  2.5 studs out, then the Climb prompt under `Workspace.Ladders`. A Client sampler (PlatformStand,
+  root `Anchored`, `CameraType`, `Kept`, the move's tag) spawned from a call that returns at once
+  reads the run; invoke the catch from the Server 2.4 to 2.6 s after arming it. Then the kept
+  unit is the player's `KeptIn.Value`; Cut free as below, and `Humanoid:MoveTo` 8 studs ahead
+  checks you walk.
+- **A click on a button, from the MCP** (L-16a): `user_mouse_input` to an `instance_path` lands a
+  click whose `InputObject.Position` (below the top bar's inset) goes straight into
+  `PlayerGui:GetGuiObjectsAtPosition`, which skips buttons under a hidden frame (the keypad's).
+  Left Alt from `user_keyboard_input` frees the cursor first (FreeCursor). A ProximityPrompt's key
+  and a ContextActionService binding on the same key (G) both get it; with the binding passing,
+  the prompt still fired.
 - **Testing Cut free from the MCP** (L-07d, 2026-11-10): get kept (above; `KeptIn.Value` is the
   unit) and lift its door from the Server. One player can't cut themselves free, so a stand-in
   friend: on the Server set your character's `Archivable` on, clone it, set it back off, strip
@@ -1085,7 +1107,9 @@ verified: a doc page, Studio, or "untested".
 - **A recording's first play is late** (Play, L-05b1c, 2026-11-08): the first `Play` of a
   library recording in a session starts 0.26 to 0.35 s late (its `TimePosition` sits still),
   even after `ContentProvider:PreloadAsync`; every play after, even from a new `Sound`, starts
-  within a frame. Play it once at volume 0 first (`SoundPrimer`). The double-ding 9119642644 is
+  within a frame. Play it once at volume 0 first (`SoundPrimer`). On Nov 11 (L-16a) even
+  recordings the game never plays, preloaded only, were 0.15 s in after 0.15 s on their first
+  play: not seen again, maybe Studio's cache. Every system primes its recordings anyway. The double-ding 9119642644 is
   5.2 s long, loudest to 1 s, down 18 dB by 2.6 s.
 - **The gate clock's sounds, measured** (L-05b2, 2026-11-08; 50 ms bins, AudioAnalyzer in Edit, all
   at volume 0.3): APM's "Heartbeat 01" 9043365727 is a clean lub-dub about every 0.77 s (78 a
@@ -1136,8 +1160,14 @@ verified: a doc page, Studio, or "untested".
   Connect in Studio's Rojo plugin. Rojo keeps the place's own children (Baseplate,
   `ReplicatedStorage.Units`) because no node there has a `$path`.
 - `ContentId: rbxassetid://203785492 failed due to: Asset type does not match requested type`
-  shows six times at each Play; nothing in the game references it (searched the client), so it's
-  Studio's or the avatar's. Ignore it.
+  shows six times at each Play, three and three. It's Roblox's audio "Pop Close Sound" (by
+  Zyleak; `MarketplaceService:GetProductInfo`), asked for as some other type by something outside
+  the game: no instance names it in Edit, on the Server or on the Client (CoreGui included, about
+  18,000 searched, every content property and attribute, L-16a), nor the repo nor Brix. Studio's
+  or a plugin's; the game can't silence it. Ignore it.
+  120448020095820 ("content representation is being generated", seen Nov 11) is
+  `ReplicatedStorage.Props.KeptWrap`'s `SurfaceAppearance.ColorMap` in the place: Roblox still
+  processing it after its upload; it didn't show in L-16a's Plays.
   `rbxassetid://87642977759407 failed due to: Asset content representation is being generated`
   showed about thirty times once mid-Play (L-04e, Nov 9); no instance on either side names it
   (searched MeshId, TextureID, the four maps, SoundId, Image). Same verdict.

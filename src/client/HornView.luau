@@ -28,6 +28,7 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Horn = require(ReplicatedStorage.Shared.Tools.Horn)
+local Joints = require(script.Parent.Joints)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 local ToolView = require(script.Parent.ToolView)
 local Tools = require(ReplicatedStorage.Shared.Tools)
@@ -47,25 +48,12 @@ local BUTTON_MIN, BUTTON_MAX = 52, 92 -- pixels
 local BUTTON_GAP = 0.22 -- of the button, between it and the jump button
 local DIM = 0.75 -- the button's background and words while the horn isn't ready yet
 
--- A joint an animation turns: a Motor6D, or the AnimationConstraint newer rigs' shoulders are.
--- any: both have Transform, but Luau can't index a property through their union.
-type Joint = any
-
 -- A friend's arm raised, on this screen.
 type Arm = {
 	since: number, -- os.clock of their blast
-	shoulder: Joint?,
-	elbow: Joint?,
+	shoulder: Joints.Joint?,
+	elbow: Joints.Joint?,
 }
-
-local function joint(character: Model, part: string, name: string): Joint?
-	local p = character:FindFirstChild(part)
-	local j = p and p:FindFirstChild(name)
-	if j and (j:IsA("Motor6D") or j:IsA("AnimationConstraint")) then
-		return j
-	end
-	return nil
-end
 
 -- The round button, as the Drop button: dark, an off-white ring and one word.
 local function makeButton(): (ScreenGui, TextButton, UIScale, UIStroke)
@@ -238,12 +226,31 @@ function HornView.new(
 		end
 	end
 
+	-- Whether a click lands on a button on screen (a slot, Drop, this button): a click on a button
+	-- is that button's, never a use.
+	local function onButton(input: InputObject): boolean
+		if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+			return false
+		end
+		local pg = player:FindFirstChildOfClass("PlayerGui")
+		if not pg then
+			return false
+		end
+		local at = input.Position
+		for _, g in pg:GetGuiObjectsAtPosition(at.X, at.Y) do
+			if g:IsA("GuiButton") and g.Active then
+				return true
+			end
+		end
+		return false
+	end
+
 	local function onAction(
 		_: string,
 		state: Enum.UserInputState,
-		_input: InputObject
+		input: InputObject
 	): Enum.ContextActionResult
-		if state == Enum.UserInputState.Begin and holding ~= "" then
+		if state == Enum.UserInputState.Begin and holding ~= "" and not onButton(input) then
 			pressed()
 		end
 		return Enum.ContextActionResult.Pass
@@ -272,8 +279,8 @@ function HornView.new(
 		if character and character:IsA("Model") then
 			arms[character] = {
 				since = os.clock() - math.max(0, late),
-				shoulder = joint(character, "LeftUpperArm", "LeftShoulder"),
-				elbow = joint(character, "LeftLowerArm", "LeftElbow"),
+				shoulder = Joints.find(character, "LeftUpperArm", "LeftShoulder"),
+				elbow = Joints.find(character, "LeftLowerArm", "LeftElbow"),
 			}
 		end
 	end
@@ -323,12 +330,10 @@ function HornView.new(
 			local w = Horn.arm(since)
 			local s, e = a.shoulder, a.elbow
 			if s then
-				local from: CFrame = s.Transform
-				s.Transform = from:Lerp(CFrame.Angles(Horn.Arm, 0, 0), w)
+				Joints.bend(s, CFrame.Angles(Horn.Arm, 0, 0), w)
 			end
 			if e then
-				local from: CFrame = e.Transform
-				e.Transform = from:Lerp(CFrame.identity, w)
+				Joints.bend(e, CFrame.identity, w)
 			end
 		end
 	end

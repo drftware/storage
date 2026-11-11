@@ -999,7 +999,7 @@ function Ladders.new(): Ladders
 	end
 
 	-- Only climbers: a move over, the server's check that your screen moved you, a crawler's place,
-	-- or the climber dead or gone.
+	-- or the climber caught, dead or gone.
 	function system.step(_: any, _dt: number)
 		if next(climbs) == nil then
 			return
@@ -1007,7 +1007,9 @@ function Ladders.new(): Ladders
 		local t = os.clock()
 		for _, c in climbs do
 			local root = rootOf(c.player)
-			if c.player.Character ~= c.character or not root then
+			-- gone, or caught: a caught climber's climb ends where they are, and KeptPlayers holds
+			-- and moves them from now
+			if c.player.Character ~= c.character or not root or Prompts.wrapped(c.player) then
 				clear(c)
 			elseif c.move == "Up" and t >= c.ends then
 				-- up: off the ladder, your spot free for the next once you crawl from it

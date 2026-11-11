@@ -7,6 +7,29 @@ nowhere else.
 
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 
+## Now: judge L-16a, in hand and caught (built Nov 11)
+
+Verified in Studio (Play, one player, D-108): your own right arm raised through the new joint
+finder (the old one found none of a player's arm joints, so no friend's torch arm ever rose);
+caught 9.6 studs up the ladder and again a second into a crawl (Studio's new `CatchTest`): your
+body let go at once, the catch's face, kept in a unit, cut free by a stand-in, then walking 7.2
+studs in 0.6 s; G at 102's open door slammed it with the horn still in hand, G with the door shut
+dropped it; a click on slot 1 with the horn held blew nothing, one out in the world blew it.
+Output at Play is clean but Roblox's own 203785492 lines (not the game's; can't be silenced).
+- [ ] **A friend's torch arm** (Test > Clients and Servers, 2 players): one switches their torch
+  on and looks up and down. The other should see their right arm come up to point it and follow
+  their look, then drop when it goes off. Before tonight it never rose.
+- [ ] **The first slam** (Studio closed and opened fresh, then Play): open a door and slam it.
+  Does the bang land the instant the door hits, not a beat after? Tonight's Studio couldn't show
+  the old lateness either way.
+- [ ] **Caught with a friend** (2 players): one gets caught on the ladder, or crawling through a
+  hole; the other finds them and cuts them free. The freed one should walk, jump and turn at once,
+  and never be pulled back up onto the tops or through the hole.
+- [ ] **On the phone**: with a horn held, tap the slots and the round button. Each tap does only
+  its own thing (a slot switches, the button blows once).
+- [ ] **Decide, defaults in place** (D-108): G at an open door slams it and keeps your tool; G
+  anywhere else drops. Say if Drop should get its own key instead.
+
 ## Now: judge L-15, keepers hear the rest (built Nov 11)
 
 Verified in Studio (Play, one player, a Mannequin stood two halls off with the lobby's "Stand

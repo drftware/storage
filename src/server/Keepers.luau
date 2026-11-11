@@ -61,12 +61,16 @@
 
 	Each body is tagged `Keeper` and carries its row's name (`Keeper` attribute) for screens. In
 	Studio, Output says what each keeper hears, sees and does, and each body carries its state as
-	the attribute `KeeperState`. `stand` puts a keeper on a laid floor (the dev command's).
+	the attribute `KeeperState`. `stand` puts a keeper on a laid floor (the dev command's). In
+	Studio only, `ServerStorage.CatchTest` (a BindableFunction, server-side, so no client reaches
+	it) has the standing keeper nearest a player catch them wherever they are, through the real
+	catch: `Invoke(player)` returns "Caught", or why not (docs/STUDIO.md).
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local ServerStorage = game:GetService("ServerStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
 local Workspace = game:GetService("Workspace")
 
@@ -112,14 +116,15 @@ local STILL = 1e-6
 -- R15 head's middle, about where a first-person camera looks from).
 local EYE_OVER_ROOT = 1.5
 
--- What each keeper's body is: a copy of its template, its joints at rest for screens to turn.
+-- What each keeper's body is: a copy of its template, its joints at rest for screens to turn,
+-- not yet in the world.
 type Kit = {
-	clone: (pivot: CFrame, parent: Instance) -> Model?,
+	clone: (pivot: CFrame) -> Model?,
 }
 local KITS: { [string]: Kit } = {
 	Mannequin = {
-		clone = function(pivot: CFrame, parent: Instance): Model?
-			local body = Mannequin.clone(pivot, parent)
+		clone = function(pivot: CFrame): Model?
+			local body = Mannequin.clone(pivot, nil)
 			if body then
 				Mannequin.rest(body)
 			end
@@ -251,6 +256,7 @@ function Keepers.new(): Keepers
 	local caught = Brix.Signal.new() :: Brix.Signal<Catch>
 	local caughtRemote: RemoteEvent? = nil
 	local huntedRemote: RemoteEvent? = nil
+	local catchTest: BindableFunction? = nil
 	-- Whom keepers hunt: each player's screen is told how many keepers hunt them (Chase), once each
 	-- time that changes. `recount` says a keeper's quarry may have changed since the last telling.
 	local hunters: { [number]: number } = {} -- player id to keepers hunting them (reused)
@@ -692,13 +698,18 @@ function Keepers.new(): Keepers
 		local k = Keeper.new(row, on.map, on.random, at, facing, awake, Brix.Reach.cone)
 		-- any: as in `place`
 		local a, f = (k.at :: any) :: Vector3, (k.facing :: any) :: Vector3
-		local body = kit.clone(on.origin * CFrame.lookAt(a, a + f), on.folder)
+		local body = kit.clone(on.origin * CFrame.lookAt(a, a + f))
 		local root = body and body.PrimaryPart
 		if not (body and root) then
+			if body then
+				body:Destroy()
+			end
 			Keeper.release(k)
 			return nil
 		end
-		body.ModelStreamingMode = Enum.ModelStreamingMode.Atomic -- the whole body streams in at once
+		-- the whole body streams in at once, so no screen ever has the body without its parts (set
+		-- before it's in the world: a model already there streams its parts one by one)
+		body.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
 		body:SetAttribute(STATE_ATTRIBUTE, k.state)
 		body:SetAttribute(ROW_ATTRIBUTE, name)
 		local entry: Entry = {
@@ -716,6 +727,7 @@ function Keepers.new(): Keepers
 		table.insert(on.keepers, entry)
 		publish(entry, 0, false) -- its first record, before any screen sees it
 		CollectionService:AddTag(body, TAG)
+		body.Parent = on.folder -- last, whole, so every screen gets it as it is
 		return body
 	end
 
@@ -783,6 +795,42 @@ function Keepers.new(): Keepers
 		hunted.Name = Chase.Remote
 		hunted.Parent = folder
 		huntedRemote = hunted
+		if RunService:IsStudio() then
+			-- a catch wherever you are, for one-player tests of what a catch does to you
+			local test = Instance.new("BindableFunction")
+			test.Name = "CatchTest"
+			-- any: a BindableFunction's argument, checked here
+			test.OnInvoke = function(who: any): string
+				if typeof(who) ~= "Instance" or not who:IsA("Player") then
+					return "NotAPlayer"
+				end
+				local character = who.Character
+				local root = character and character:FindFirstChild("HumanoidRootPart")
+				if not (root and root:IsA("BasePart")) then
+					return "NoBody"
+				end
+				local nearest: Entry? = nil
+				local best = math.huge
+				for _, on in floors do
+					for _, entry in on.keepers do
+						local off = (entry.body.root.Position - root.Position).Magnitude
+						if off < best then
+							nearest, best = entry, off
+						end
+					end
+				end
+				if not nearest then
+					return "NoKeeper"
+				end
+				if who:GetAttribute(Kept.Attribute) == true then
+					return "AlreadyKept"
+				end
+				catch(nearest, who.UserId)
+				return "Caught"
+			end
+			test.Parent = ServerStorage
+			catchTest = test
+		end
 		table.insert(
 			joins,
 			Players.PlayerAdded:Connect(function(player: Player)
@@ -905,6 +953,10 @@ function Keepers.new(): Keepers
 		if huntedRemote then
 			huntedRemote:Destroy()
 			huntedRemote = nil
+		end
+		if catchTest then
+			catchTest:Destroy()
+			catchTest = nil
 		end
 		table.clear(told)
 		for _, on in floors do

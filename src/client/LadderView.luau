@@ -22,6 +22,9 @@
 	buttons; Drop down takes you over a front's edge and down into the hall with a thud and a jolt.
 	Lying at a sawn hole's edge with your head out over it you get Drop in instead: up, legs over
 	the hole, straight down through it with your arms up, a crouch on the unit's floor (L-13b2d3a).
+
+	Caught on the ladder (`Kept.Attribute`), your body is let go where it is at once, standing
+	again: the server holds it from then (KeptPlayers) and ends the climb (Ladders).
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -32,6 +35,8 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Crawling = require(ReplicatedStorage.Shared.StorageUnit.CrawlHole.Crawling)
+local Joints = require(script.Parent.Joints)
+local Kept = require(ReplicatedStorage.Shared.Kept)
 local Leaned = require(ReplicatedStorage.Shared.Tools.Leaned)
 local Leaning = require(ReplicatedStorage.Shared.Tools.Leaning)
 local SoundPrimer = require(script.Parent.SoundPrimer)
@@ -60,7 +65,6 @@ local IN_RECT: Tops.Rect = {
 	z1 = HOLE.back - IN_Z,
 }
 
-type Joint = Motor6D | AnimationConstraint
 type Move = "Up" | "Top" | "Down" | "Drop" | "In"
 
 -- A ladder going up.
@@ -102,8 +106,8 @@ type Climb = {
 	cues: { Leaning.Cue },
 	cue: number,
 	sounds: Attachment,
-	right: Joint?,
-	left: Joint?,
+	right: Joints.Joint?,
+	left: Joints.Joint?,
 	mine: Mine?,
 	dropX: number,
 	-- how far this crawler has crawled on this screen (their pulls' sounds and arms)
@@ -117,24 +121,6 @@ local LadderView = {}
 local function smooth(k: number): number
 	local c = math.clamp(k, 0, 1)
 	return c * c * (3 - 2 * c)
-end
-
-local function joint(character: Model, part: string, name: string): Joint?
-	local p = character:FindFirstChild(part)
-	local j = p and p:FindFirstChild(name)
-	if j and j:IsA("Motor6D") then
-		return j
-	elseif j and j:IsA("AnimationConstraint") then
-		return j
-	end
-	return nil
-end
-
--- Turns a shoulder `w` of the way from its animation to `to` (as CrawlView's).
-local function bend(j: Joint, to: CFrame, w: number)
-	-- any: both classes have Transform, but Luau can't index a property through their union
-	local shoulder = j :: any
-	shoulder.Transform = shoulder.Transform:Lerp(to, w)
 end
 
 -- One of the sounds at `spot`, its stretch played once, the end faded (as CrawlView's).
@@ -474,6 +460,9 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 		if not (root and root:IsA("BasePart") and humanoid and humanoid.Health > 0) then
 			return
 		end
+		if player:GetAttribute(Kept.Attribute) == true then
+			return -- caught: the server has your body now
+		end
 		local old = mine
 		if old and old ~= c then
 			release(old, false)
@@ -596,8 +585,8 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 			cues = cues,
 			cue = 1,
 			sounds = sounds,
-			right = joint(character, "RightUpperArm", "RightShoulder"),
-			left = joint(character, "LeftUpperArm", "LeftShoulder"),
+			right = Joints.find(character, "RightUpperArm", "RightShoulder"),
+			left = Joints.find(character, "LeftUpperArm", "LeftShoulder"),
 			mine = if c then c.mine else nil,
 			dropX = x,
 			travel = if c then c.travel else 0,
@@ -799,10 +788,10 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 					local tuck = Crawling.ArmTuck * (1 - lift)
 					local r, l = cl.right, cl.left
 					if r then
-						bend(r, CFrame.Angles(0, 0, tuck) * up, w)
+						Joints.bend(r, CFrame.Angles(0, 0, tuck) * up, w)
 					end
 					if l then
-						bend(l, CFrame.Angles(0, 0, -tuck) * up, w)
+						Joints.bend(l, CFrame.Angles(0, 0, -tuck) * up, w)
 					end
 				end
 				continue
@@ -818,11 +807,11 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 				local r, l = cl.right, cl.left
 				if r then
 					local reach = CFrame.Angles(Leaning.ArmRest + sr, 0, 0)
-					bend(r, CFrame.Angles(0, 0, Crawling.ArmTuck) * reach, w)
+					Joints.bend(r, CFrame.Angles(0, 0, Crawling.ArmTuck) * reach, w)
 				end
 				if l then
 					local reach = CFrame.Angles(Leaning.ArmRest + sl, 0, 0)
-					bend(l, CFrame.Angles(0, 0, -Crawling.ArmTuck) * reach, w)
+					Joints.bend(l, CFrame.Angles(0, 0, -Crawling.ArmTuck) * reach, w)
 				end
 			end
 		end
@@ -873,6 +862,15 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 		)
 		table.insert(connections, RunService.PreSimulation:Connect(bodyStep))
 		table.insert(connections, RunService.RenderStepped:Connect(raiseStep))
+		table.insert(
+			connections,
+			player:GetAttributeChangedSignal(Kept.Attribute):Connect(function()
+				local c = mine
+				if c and player:GetAttribute(Kept.Attribute) == true then
+					release(c, false)
+				end
+			end)
+		)
 		for _, inst in CollectionService:GetTagged(Leaned.Tag) do
 			raiseAdded(inst)
 		end

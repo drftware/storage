@@ -394,14 +394,20 @@ function Crawls.new(): Crawls
 		end
 	end
 
-	-- Only players crawling: the move over, or the crawler dead or gone.
+	-- Only players crawling: the move over, or the crawler caught, dead or gone.
 	function system.step(_: any, _dt: number)
 		if next(crawls) == nil then
 			return
 		end
 		local t = os.clock()
 		for _, c in crawls do
-			if c.player.Character ~= c.character or not rootOf(c.player) then
+			-- gone, or caught: a caught crawler's crawl ends where they are, never put through;
+			-- KeptPlayers has them now
+			if
+				c.player.Character ~= c.character
+				or not rootOf(c.player)
+				or Prompts.wrapped(c.player)
+			then
 				clear(c)
 			elseif t >= c.ends then
 				finish(c)

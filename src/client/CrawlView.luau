@@ -14,6 +14,10 @@
 
 	Everyone's crawl, on every screen: their arms reach up past their head and haul in turn, and
 	the drop, the two drags and the steel play at the hole, heard about a unit each way.
+
+	Caught mid-crawl (`Kept.Attribute`), your body is let go where it is at once: the server holds
+	it from then (KeptPlayers), and the view is the catch's (CaughtLunge), which gives you your own
+	camera back at the black.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -24,12 +28,17 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Crawling = require(ReplicatedStorage.Shared.StorageUnit.CrawlHole.Crawling)
+local Joints = require(script.Parent.Joints)
+local Kept = require(ReplicatedStorage.Shared.Kept)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 
 local CAMERA_STEP = "CrawlCamera"
 local SPOT_UP = 1 -- studs above the floor at the hole where its sounds play: a body's height
 local LINGER = 1.2 -- seconds the sounds' spot outlives the move: the last sound's tail
 local SIDE_EVERY = 0.1 -- seconds between checks of which side of each hole you're on
+
+-- How your own crawl ends: through to the far side, cut short (you died, or a new crawl), or caught.
+type Ending = "Through" | "Cut" | "Caught"
 
 -- Your own crawl: what the screen needs to move you and put you back.
 type Mine = {
@@ -46,34 +55,12 @@ type Crawl = {
 	start: number, -- os.clock() on this screen at which the move began
 	cue: number, -- the next of the move's cues to play
 	spot: Attachment,
-	right: Joint?,
-	left: Joint?,
+	right: Joints.Joint?,
+	left: Joints.Joint?,
 	mine: Mine?,
 }
 
 local CrawlView = {}
-
--- A shoulder: a Motor6D on older avatars, an AnimationConstraint on Roblox's newer avatar joints
--- (both turn by `Transform`).
-type Joint = Motor6D | AnimationConstraint
-
-local function joint(character: Model, part: string, name: string): Joint?
-	local p = character:FindFirstChild(part)
-	local j = p and p:FindFirstChild(name)
-	if j and j:IsA("Motor6D") then
-		return j
-	elseif j and j:IsA("AnimationConstraint") then
-		return j
-	end
-	return nil
-end
-
--- Turns a shoulder `w` of the way from its animation to `to`.
-local function bend(j: Joint, to: CFrame, w: number)
-	-- any: both classes have Transform, but Luau can't index a property through their union
-	local shoulder = j :: any
-	shoulder.Transform = shoulder.Transform:Lerp(to, w)
-end
 
 -- Your root `t` seconds in: along the path, coming from where you stood as you got down.
 local function rootAt(c: Crawl, m: Mine, t: number): CFrame
@@ -166,8 +153,9 @@ function CrawlView.new(kick: (amount: number) -> ()): Brix.System
 		camera.CFrame = CFrame.new(eye) * turn
 	end
 
-	-- Your crawl over (through, or cut short by dying): your body yours again, your view too.
-	local function release(c: Crawl, through: boolean)
+	-- Your crawl over: your body yours again, and your view too unless a keeper caught you (the
+	-- catch has it then, and turns it to the keeper's face from where it was).
+	local function release(c: Crawl, ending: Ending)
 		local m = c.mine
 		if not m then
 			return
@@ -180,6 +168,7 @@ function CrawlView.new(kick: (amount: number) -> ()): Brix.System
 			RunService:UnbindFromRenderStep(CAMERA_STEP)
 			bound = false
 		end
+		local through = ending == "Through"
 		local standing = c.frame * CFrame.new(0, m.standUp, -Crawling.StandAlong)
 		if through and m.humanoid.Health > 0 then
 			m.root.CFrame = standing
@@ -193,7 +182,7 @@ function CrawlView.new(kick: (amount: number) -> ()): Brix.System
 			end
 		end
 		local camera = Workspace.CurrentCamera
-		if camera then
+		if camera and ending ~= "Caught" then
 			if through then
 				local ahead = c.frame.LookVector
 				local eye = (standing * CFrame.new(0, Crawling.EyeUp, 0)).Position
@@ -213,9 +202,12 @@ function CrawlView.new(kick: (amount: number) -> ()): Brix.System
 		if not (root and root:IsA("BasePart") and humanoid and humanoid.Health > 0 and camera) then
 			return
 		end
+		if player:GetAttribute(Kept.Attribute) == true then
+			return -- caught: the server has your body now
+		end
 		local old = mine
 		if old then
-			release(old, false)
+			release(old, "Cut")
 		end
 		local groups: { [BasePart]: string } = {}
 		for _, d in character:GetDescendants() do
@@ -272,8 +264,8 @@ function CrawlView.new(kick: (amount: number) -> ()): Brix.System
 			start = os.clock() - late,
 			cue = 1,
 			spot = spot,
-			right = joint(character, "RightUpperArm", "RightShoulder"),
-			left = joint(character, "LeftUpperArm", "LeftShoulder"),
+			right = Joints.find(character, "RightUpperArm", "RightShoulder"),
+			left = Joints.find(character, "LeftUpperArm", "LeftShoulder"),
 			mine = nil,
 		}
 		while c.cue <= #cues and cues[c.cue].at < late do
@@ -301,9 +293,9 @@ function CrawlView.new(kick: (amount: number) -> ()): Brix.System
 		if c and m then
 			local t = os.clock() - c.start
 			if t >= Crawling.Seconds then
-				release(c, true)
+				release(c, "Through")
 			elseif m.humanoid.Health <= 0 or not c.character.Parent then
-				release(c, false)
+				release(c, "Cut")
 			else
 				m.root.CFrame = rootAt(c, m, t)
 				m.root.AssemblyLinearVelocity = Vector3.zero
@@ -316,10 +308,18 @@ function CrawlView.new(kick: (amount: number) -> ()): Brix.System
 			if w > 0 then
 				local r, l = cr.right, cr.left
 				if r then
-					bend(r, CFrame.Angles(0, 0, Crawling.ArmTuck) * CFrame.Angles(right, 0, 0), w)
+					Joints.bend(
+						r,
+						CFrame.Angles(0, 0, Crawling.ArmTuck) * CFrame.Angles(right, 0, 0),
+						w
+					)
 				end
 				if l then
-					bend(l, CFrame.Angles(0, 0, -Crawling.ArmTuck) * CFrame.Angles(left, 0, 0), w)
+					Joints.bend(
+						l,
+						CFrame.Angles(0, 0, -Crawling.ArmTuck) * CFrame.Angles(left, 0, 0),
+						w
+					)
 				end
 			end
 		end
@@ -353,6 +353,15 @@ function CrawlView.new(kick: (amount: number) -> ()): Brix.System
 				end)
 		)
 		table.insert(connections, RunService.PreSimulation:Connect(bodyStep))
+		table.insert(
+			connections,
+			player:GetAttributeChangedSignal(Kept.Attribute):Connect(function()
+				local c = mine
+				if c and player:GetAttribute(Kept.Attribute) == true then
+					release(c, "Caught")
+				end
+			end)
+		)
 		for _, inst in CollectionService:GetTagged(Crawling.ButtonTag) do
 			addButton(inst)
 		end
@@ -399,7 +408,7 @@ function CrawlView.new(kick: (amount: number) -> ()): Brix.System
 		table.clear(connections)
 		local c = mine
 		if c then
-			release(c, false)
+			release(c, "Cut")
 		end
 		for _, cr in crawls do
 			cr.spot:Destroy()

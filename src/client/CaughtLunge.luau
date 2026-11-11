@@ -409,7 +409,11 @@ function CaughtLunge.new(kick: (amount: number) -> ()): Lunge
 			eye = eye,
 			look = eye,
 			fov = camera.FieldOfView,
-			cameraType = camera.CameraType,
+			-- a scripted view at a catch was a crawl's, which the catch ends (CrawlView): you wake
+			-- with your own
+			cameraType = if camera.CameraType == Enum.CameraType.Scriptable
+				then Enum.CameraType.Custom
+				else camera.CameraType,
 			real = {},
 			guis = {},
 			headTo = eye,

@@ -5,7 +5,9 @@
 	The slots' bar sits at the bottom of the screen: two squares, each showing the tool in it as a
 	real 3D picture, the one in your hand lit and raised. A tap on a square (or 1 and 2, or the
 	gamepad's d-pad left and right) puts that slot in your hand; G, the d-pad's down or the round
-	Drop button beside the bar drops what you hold at your feet. A tool's name shows above the bar
+	Drop button beside the bar drops what you hold at your feet; but while a button in the world
+	that takes the same key is up (a door's Slam, G), the key is that button's and the tool stays
+	in your hand: at an open door the slam is the moment (D-108). A tool's name shows above the bar
 	for a moment as it comes into your hand, as Minecraft's hotbar names what you switch to; a
 	friend's handover reads "Bolt cutters from Sam".
 
@@ -667,10 +669,27 @@ function ToolView.new(): (Brix.System, Hand)
 		end
 	end
 
+	-- The buttons in the world on screen now (ProximityPromptService's shown prompts).
+	local shown: { [ProximityPrompt]: true } = {}
+
+	-- Whether a button on screen takes `key` (its keyboard or pad key): then the key is its.
+	local function keyTaken(key: Enum.KeyCode): boolean
+		for prompt in shown do
+			if not prompt.Parent then
+				shown[prompt] = nil -- gone without being hidden (its door's floor taken down)
+			elseif
+				prompt.Enabled and (prompt.KeyboardKeyCode == key or prompt.GamepadKeyCode == key)
+			then
+				return true
+			end
+		end
+		return false
+	end
+
 	local function onAction(
 		name: string,
 		state: Enum.UserInputState,
-		_input: InputObject
+		input: InputObject
 	): Enum.ContextActionResult
 		if state ~= Enum.UserInputState.Begin then
 			return Enum.ContextActionResult.Pass
@@ -680,6 +699,10 @@ function ToolView.new(): (Brix.System, Hand)
 		elseif name == "ToolSlot2" then
 			pick(2)
 		elseif name == "ToolDrop" then
+			if keyTaken(input.KeyCode) then
+				-- a door's Slam is up on the same key: the slam is the moment, the tool stays
+				return Enum.ContextActionResult.Pass
+			end
 			drop()
 		end
 		return Enum.ContextActionResult.Sink
@@ -749,6 +772,18 @@ function ToolView.new(): (Brix.System, Hand)
 				or prompt:GetAttribute(Tools.ActionAttribute)
 			return type(action) == "string" and WORKS[action] ~= nil and WORKS[action] == heldKey()
 		end
+		table.insert(
+			connections,
+			ProximityPromptService.PromptShown:Connect(function(prompt: ProximityPrompt)
+				shown[prompt] = true
+			end)
+		)
+		table.insert(
+			connections,
+			ProximityPromptService.PromptHidden:Connect(function(prompt: ProximityPrompt)
+				shown[prompt] = nil
+			end)
+		)
 		table.insert(
 			connections,
 			ProximityPromptService.PromptButtonHoldBegan:Connect(function(prompt: ProximityPrompt)
@@ -901,6 +936,7 @@ function ToolView.new(): (Brix.System, Hand)
 			c:Disconnect()
 		end
 		table.clear(connections)
+		table.clear(shown)
 		for _, g in gives do
 			g.prompt:Destroy()
 		end
