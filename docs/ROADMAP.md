@@ -144,6 +144,10 @@ order puts a keeper on the floor as early as it can: L-06a built the Mannequin's
 (Nov 8), and L-06b, the keepers' brain, is this game's own to build (D-064, Nov 9), so it waits
 on nothing in Brix.
 
+**The order from here** (owner, Nov 10), one session each: L-14e (the cut tools out of the
+deal), L-07d, L-07e, L-06c1, L-06c2, L-08a to L-08e (the climb), L-15, L-16a, L-16b, L-17, L-18,
+then L-09a, the first run with friends. L-14b2d only if the owner asks.
+
 - [x] **L-01 The floor generator**, in three sessions. **L-01a done Nov 7** (D-027): the floor
   as pure data from a seed (`src/shared/Floor.luau`): halls grown from the lobby on a grid of
   junction points 48 studs apart, so a straight always stands between two junctions; loops
@@ -782,6 +786,12 @@ on nothing in Brix.
       spent look): a second texture set baked by `art/bubblewrap` (the same atlas, the sheet's
       strip painted as burst bubbles: flat, creased film), swapped onto the sheet's part at its
       third pop. Small; one session.
+  - [ ] **L-14e The blanket and glow sticks out of the deal** (D-091; owner, Nov 10: "can go").
+    They're cut, but `Deal.Tools` and its bag still deal them, and `Deals` lays nothing for a
+    tool not built yet, so a door dealt one opens on an empty unit. Take both out of `Deal`'s
+    type, list and bag; fix the specs and `scripts/floor-deal` that count on them. It reshuffles
+    every seed: the owner said not to worry about old test steps naming units, but L-07d's
+    Studio check needs a seed with an awake Mannequin on floor 1 found again. Small; one session.
 - [x] **L-10 The minimap** (owner, Nov 7: players shouldn't get lost and give up; Nov 10: a small
   corner map, always on, for now, which the owner may later make a map you stop to open, exposed
   while you read it). It fills in only the halls you've walked, as R.E.P.O.'s map fills in rooms
@@ -845,9 +855,29 @@ on nothing in Brix.
     with the hall light and went with it; let out, the mark cleared. Studio's captures draw no
     billboards, so the mark over the door is untested by eye.
   - [ ] **L-07d Cut free.** A friend at your open door holds Cut free one second and you stand
-    up; it replaces L-07a's stand-in way out.
+    up; it replaces L-07a's stand-in way out. Its spec, written for HANDOFF on Nov 10:
+    1. Pure rules in `Kept` (Lune-tested): the hold's length (1 s), who may cut (alive, not
+       kept, within reach of the kept player, the unit's door all the way up), what counts as
+       in reach.
+    2. Server (`KeptPlayers`): a "Cut free" prompt (`Prompts.make`, hold 1 s) on the kept
+       player, shown only while their door is all the way up; its trigger validated on the
+       server (the rules above) lets them go. Remove L-07a's stand-in: the door going up no
+       longer lets you out.
+    3. Feedback, same ticket: the film tears (a measured tape-rip sound, as `KeptSqueal`'s was
+       found, played at the body for everyone near), the wrap comes off over a beat (not a
+       vanish), the freed player's view kicks as they're let go, the cutter's a small kick too.
+    4. A friend's held Cut free shows nothing to the kept player beyond the sound; check the
+       prompt at phone size (the door's own buttons are near: no overlap).
+
+    Acceptance: checks green; in Studio on a seed and floor where a Mannequin is awake on floor
+    1 (seed 7's 157 moved with L-14e): opening your unit no longer lets you out; the Cut free
+    prompt shows only with the door up; a trigger from a kept player or from too far is refused
+    (Output); a valid one lets you out, the film gone with its sound; Output clean. Read first:
+    this ticket; D-095, D-097; `src/server/KeptPlayers.luau`; `src/server/Prompts.luau`;
+    `src/client/KeptSqueal.luau`; docs/STUDIO.md's "Testing getting kept from the MCP".
   - [ ] **L-07e The padlock.** Left a few minutes, the building padlocks your unit; only bolt
-    cutters let you out.
+    cutters let you out. A warning comes first (the padlock's sound on your door, a short line
+    for you and for friends) so everyone feels the clock run out.
 - [ ] **L-06c Scarier keepers** (owner, Nov 10: make the walk and the catch scarier, "nothing
   gorey but leaning more toward jump scare"; tickets soon, so they run straight after L-07e).
   Two sessions. Today's walk is smooth and steady with a clack each step and joint knocks
@@ -866,12 +896,59 @@ on nothing in Brix.
     overrides the GDD's "no screamer" line (owner, Nov 10). Check the experience's maturity
     questionnaire answer for fear once it's in.
 - [ ] **L-08 The ride and the next floor.** The elevator ride and a second floor, so the climb is
-  a loop and not a single room. Brix: its round loop (ENG-13) if it has landed. Takes the GDD's
-  "Left behind" (the gate shuts with you still kept or outside: you spectate, or Cut Free to the
-  next floor) and "Whole team kept" (the climb ends, the Missing board), moved from L-07.
+  a loop and not a single room. Brix: its round loop (ENG-13) if it has landed (not yet, checked
+  Nov 10). Takes the GDD's "Left behind" (the gate shuts with you still kept or outside: you
+  spectate, or Cut Free to the next floor) and "Whole team kept" (the climb ends, the Missing
+  board), moved from L-07. Split Nov 10 into five, each its own session:
+  - [ ] **L-08a The ride.** The gate shuts, the car shudders and climbs while a floor counter
+    ticks, and its doors open on a new hall, as Dandy's World's elevator carries the team
+    between floors. Everyone aboard rides; the ride's sound, shake and counter ship with it.
+  - [ ] **L-08b The next floor.** Dealt and laid while you ride, with its own code and the
+    harder odds `Deal` already has for floors 1 to 10; the floor below is cleared away so a
+    phone never holds two.
+  - [ ] **L-08c Left behind.** Whoever the gate shuts on, kept or still outside, watches their
+    friends on the floor above, as Lethal Company's crew watch once they're dead; the rest is
+    the GDD's "Left behind" (its "Cut Free to the next floor").
+  - [ ] **L-08d The climb ends.** The whole team kept ends the run on the Missing board (GDD
+    "Whole team kept"); a results screen with one "Again" button, as DOORS' Play Again, since
+    Gate 1 is friends asking for another run. Until Phase 2's top floor the climb stops at a
+    stand-in top, floor 3 (a default; its `OWNER.md` line comes with the build).
+  - [ ] **L-08e The start.** Friends gather and the climb starts on a short countdown once
+    everyone's in, as DOORS' lobby elevators do: the smallest form of the GDD's lobby (your own
+    lobby unit is Phase 2) and the stand-in `docs/FRAMEWORK.md` plans while ENG-13 is unbuilt.
+- [ ] **L-15 Keepers hear the rest.** The keypad, a dropped tool, the saw, a crawl, the ladder and
+  a drop into a unit each make a noise keepers come to (D-059, D-066), through `Keepers:hear`
+  (D-092), as Lethal Company's Eyeless Dogs come to any noise. Same ticket: a trapped keeper's
+  every blow stops printing, and a crawler's feet sit within `Wrap.Under` (3) so crawling over
+  bubble wrap pops it.
+- [ ] **L-16 The fix pass before friends play.** The bugs friends would meet first, in two
+  sessions:
+  - [ ] **L-16a In hand and caught.** A friend's torch arm never raises (`FlashlightView`'s
+    `motor()` takes only `Motor6D`; the shoulders are `AnimationConstraint`s). Caught crawling
+    or on the ladder may leave you stuck once let out (`CrawlView`/`LadderView` holding
+    PlatformStand). The first slam's bang lands up to 0.35 s late (`SoundPrimer.prime`). G is a
+    door's Slam and a tool's Drop: pick which wins at an open door. A left click on the slots'
+    bar blows a horn or lays wrap. Output's stray lines at Play ("Asset type does not match",
+    "KeeperView: can't move ... Mannequin") traced or silenced.
+  - [ ] **L-16b The tops and arriving.** Climb or Drop down lying behind a sawn hole slides you
+    across it; a friend's drop-in lands 0.2 under the floor; crawlers refused a door's buttons
+    and the ladder (`Ladders:crawling`); a horn blown on the tops heard from the unit under you.
+    A press made the moment you arrive reaches the server while it still sees you a few studs
+    back (D-085): allow for it where Saws, Ladders and a door's Cut and Lock check where you
+    stand, as `Crawling.counts` does.
+- [ ] **L-17 Every button on a phone at once.** At Galaxy A16 size in Studio: kept with the Bang
+  button up, holding a horn, the map, torch and jump buttons showing, a door's buttons near;
+  nothing overlaps and everything reads. The kept player's empty slots bar goes from under the
+  Bang button if it clutters. `HornView`'s round button, which now carries every verb tool's,
+  renamed `UseButton`.
+- [ ] **L-18 The art saved with the code** (optional; the owner saves the place every session,
+  Nov 10). Each imported template under `ReplicatedStorage.Props` and `Units` kept as a model
+  file in the repository that Rojo puts in place, so a fresh place builds the whole game.
 - [ ] **L-09 Hone.** Playtest with friends, tune Config, add juice, repeat until Gate 1. May
   repeat as several sessions; each one names what it changed and why. Brix: live config (ENG-11)
   and the presentation kit (ENG-15) as they land.
+  - [ ] **L-09a The first run with friends.** A private published place; the owner and friends
+    climb floors 1 to 3; the next session tunes from what they report.
 
 ## Phase 2: The rest of the game (GDD build order step 2)
 
