@@ -98,6 +98,75 @@ ok(Kept.choose(nearUnopened, 0, 0, random) == 2, "never the nearest, even if it'
 ok(Kept.Back > 0.5 and Kept.Back < 0.85, `past the middle, off the back wall ({Kept.Back})`)
 ok(type(Kept.Attribute) == "string" and #Kept.Attribute > 0, "the player's kept flag has a name")
 
+-- The wrap you can see (L-07b): drawn round a default R15 body, scaled per axis to the kept one.
+-- The generated Specs build Vector3s, which Lune hasn't: read the numbers from the text.
+local fs = require("@lune/fs")
+local SPECS = fs.readFile("src/shared/KeptWrap/Specs.luau")
+local function box(key: string): Kept.Box
+	local line = string.match(SPECS, "\n%s*" .. key .. " = (%b{})")
+	assert(line, `{key} not in the wrap's Specs`)
+	local function v3(field: string): { number }
+		local a, b, c =
+			string.match(line, field .. " = Vector3%.new%(([%-%d%.]+), ([%-%d%.]+), ([%-%d%.]+)%)")
+		assert(a and b and c, `{key}.{field} not in the wrap's Specs`)
+		return { tonumber(a) :: number, tonumber(b) :: number, tonumber(c) :: number }
+	end
+	return { size = v3("Size"), centre = v3("Centre") }
+end
+local drawn, wrap = box("Body"), box("Wrap")
+
+local function near(a: number, b: number): boolean
+	return math.abs(a - b) < 1e-6
+end
+-- Whether box `outer` holds box `inner` whole.
+local function holds(outer: Kept.Box, inner: Kept.Box): boolean
+	for i = 1, 3 do
+		local o0, o1 = outer.centre[i] - outer.size[i] / 2, outer.centre[i] + outer.size[i] / 2
+		local i0, i1 = inner.centre[i] - inner.size[i] / 2, inner.centre[i] + inner.size[i] / 2
+		if i0 < o0 - 1e-6 or i1 > o1 + 1e-6 then
+			return false
+		end
+	end
+	return true
+end
+
+ok(holds(wrap, drawn), "drawn, the wrap holds the body it was drawn round")
+local same = Kept.fit(drawn, drawn, wrap)
+ok(
+	near(same.size[1], wrap.size[1])
+		and near(same.size[2], wrap.size[2])
+		and near(same.size[3], wrap.size[3])
+		and near(same.centre[2], wrap.centre[2]),
+	"the body it was drawn round wears it as drawn"
+)
+-- a taller, slimmer body (an Rthro-like one), standing higher on its root
+local tall: Kept.Box = { size = { 2.6, 6.4, 1.2 }, centre = { 0, -0.2, 0 } }
+local onTall = Kept.fit(tall, drawn, wrap)
+ok(holds(onTall, tall), "a taller, slimmer body is held whole")
+ok(onTall.size[2] > wrap.size[2] and onTall.size[1] < wrap.size[1], "taller and slimmer to fit it")
+ok(near(onTall.size[2] / wrap.size[2], tall.size[2] / drawn.size[2]), "scaled by the body's height")
+-- a small one (a child-sized avatar)
+local small: Kept.Box = { size = { 2.2, 3.4, 0.9 }, centre = { 0, -0.9, -0.05 } }
+ok(holds(Kept.fit(small, drawn, wrap), small), "a small body is held whole")
+-- something odd: a wing as wide as a hall stays a person's wrap, not a tent
+local odd: Kept.Box = { size = { 40, 5.19, 1.41 }, centre = { 0, -0.405, -0.105 } }
+local onOdd = Kept.fit(odd, drawn, wrap)
+ok(onOdd.size[1] <= wrap.size[1] * Kept.FitMax + 1e-6, "never stretched past FitMax")
+local flat: Kept.Box = { size = { 0, 0, 0 }, centre = { 0, 0, 0 } }
+local onFlat = Kept.fit(flat, drawn, wrap)
+ok(
+	onFlat.size[1] >= wrap.size[1] * Kept.FitMin - 1e-6 and onFlat.size[2] > 0,
+	"a body with no size still gets a wrap"
+)
+
+-- The squeal (L-07b): through the whole wrap, heard down the hall.
+ok(Kept.Squeal.from >= 0 and Kept.Squeal.length > 0, "the squeal is a stretch of its recording")
+ok(
+	Kept.Squeal.length / (Kept.Squeal.pitch or 1) >= 1.6,
+	"it squeals through most of the 2-second wrap"
+)
+ok(Kept.SquealReach >= 20 and Kept.SquealReach <= 80, "heard by friends near, not the floor")
+
 print(string.format("kept: %d checks, %d failures", checks, failures))
 if failures > 0 then
 	error("kept spec failed")

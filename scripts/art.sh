@@ -50,6 +50,10 @@
 #   scripts/art.sh tophole              the sawn top: its bake, FBX, Specs module, look sheets (it
 #                                       wears the unit's textures and reuses the hole kit's code)
 #   scripts/art.sh tophole export       just the sawn top's FBX and Specs module
+#   scripts/art.sh keptwrap             the wrap a kept player stands in: its bake (colour with
+#                                       alpha), FBX, Specs module, look sheets (the unit sheets
+#                                       need the boxes built; about 3 minutes)
+#   scripts/art.sh keptwrap export      just the wrap's FBX and Specs module
 set -euo pipefail
 cd "$(dirname "$0")/.."
 if [ "${1:-}" = "elevator" ]; then
@@ -59,6 +63,15 @@ if [ "${1:-}" = "elevator" ]; then
 		if [ "$st" = "renders" ]; then lune run scripts/mannequin-poses; fi
 		echo "== elevator $st"
 		blender -b --factory-startup -P art/elevator/build.py -- --stage "$st" 2>&1 \
+			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|atlas|DONE" || true
+	done
+	exit 0
+fi
+if [ "${1:-}" = "keptwrap" ]; then
+	shift
+	for st in ${*:-textures export renders}; do
+		echo "== keptwrap $st"
+		blender -b --factory-startup -P art/keptwrap/build.py -- --stage "$st" 2>&1 \
 			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|atlas|DONE" || true
 	done
 	exit 0

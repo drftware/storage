@@ -59,6 +59,15 @@ verified: a doc page, Studio, or "untested".
   property tints the ColorMap only, never the part's Color.
 - Writing AlphaMode and the map properties needs plugin security (docs): the command bar and
   plugins can, game scripts can't.
+- **AlphaMode Transparency cuts unless the part is a hair transparent** (L-07b, Play,
+  2026-11-10): the kept wrap's colour map carries alpha 0.4 to 1. On a MeshPart at Transparency
+  0 it drew as hard-edged white shreds with the body plain between (the alpha cut at about half);
+  at Transparency 0.02 the same map blended as cloudy film. Roblox also blends it lighter than
+  Cycles renders it: alpha 0.28 for one layer of film left a face plain to read; 0.46 reads as
+  cloudy. Judge alpha in Studio, not the Blender sheets.
+- **An FBX whose material wires the colour image's alpha into the BSDF's Alpha imports in
+  AlphaMode Transparency** (L-07b, Open Cloud upload, 2026-11-10); without that link it arrives in
+  Overlay, as every earlier import did.
 
 ## Camera and prompts
 
@@ -356,6 +365,14 @@ verified: a doc page, Studio, or "untested".
   `screen_capture` with `camera_position` in Play draws the Client's view from there: a camera
   at (45.5, 0.9, -632.3) shows the guard's feet under a peek, where a standing eye 4.5 up sees
   only a stud or two in (the peek's kneel, L-06b5b, now drops your eye to 1.0).
+- **Two Unit109s** (L-07b, 2026-11-10): the dev corridor's own short hall has units 109 to 114,
+  and so does a floor. `workspace:FindFirstChild("Unit109", true)` found the corridor's, so a
+  Server `RollUpDoor.play` opened the wrong door and the kept player stayed kept. Look the kept
+  unit up under `Workspace.DevCorridor.Floor1`. To see a kept body as a friend would (your own
+  screen never draws it): on the Client clone your character (`Archivable` on, then off), strip
+  its scripts, anchor its root, set every part's `LocalTransparencyModifier` to 0; set the door's
+  `CurtainClosed`, `Slat_A`/`B`/`C`, `BottomBar`, `LatchBolt` and `Padlock` to 1 on that screen
+  only; raise `Lighting.Ambient`; `screen_capture` from 4.5 studs outside the door face.
 - **Testing getting kept from the MCP** (L-07a, 2026-11-10): seed 7, floor 1. Pivot the
   character to (47, 3, -632) looking +X from the Server, point the camera at Unit 157's
   `DoorOrigin.DoorButtons` (an Attachment: `WorldPosition`) and tap Open from the Client: caught in
@@ -707,6 +724,13 @@ verified: a doc page, Studio, or "untested".
 - **The command bar caches `require`** (L-11c): after Rojo syncs a module, requiring it from
   `execute_luau` in Edit can still return the old one. Require a clone instead
   (`require(ReplicatedStorage.Shared.Tools:Clone())`), then destroy the clone.
+- **The kept wrap's squeal, measured** (L-07b, 2026-11-10; Edit, AudioPlayer at half speed to
+  AudioAnalyzer, 0.1 s bins, spectral centroid per bin): nothing in the library is titled
+  stretch film; a tape screeching off a roll is the same sound. Pro Sound Effects' "Duct Tape
+  Richard Epilates Himself 2" 9114200236 (3.0 s) holds a steady peel from 0.6 to 2.6 s at -24 to
+  -12 dB, centroid 1 to 2 kHz (the one used); "... 3" 9114200240 (2.25 s) is short bursts;
+  Daily Sounds' "Tape Pull" 91534288572394 (1.16 s) one loud pull at 0.4 s; "Plastic Bag
+  Handling Crunchy Cellophane 8" 9117409739 crunches 0.2 to 1.5 s, centroid near 1 kHz.
 - **Bubble wrap's sounds, measured** (L-14b1, 2026-11-10; Edit, AudioPlayer at half speed to
   AudioAnalyzer, 50 ms bins): Pro Sound Effects' "Plastic Bubble Wrap Short Fluttering
   Movements" 12 9125745465 (2.2 s) starts at 0.2 s, crinkles at 0.25 and rustles to about 1 s; 11
@@ -856,6 +880,9 @@ verified: a doc page, Studio, or "untested".
   `rbxassetid://87642977759407 failed due to: Asset content representation is being generated`
   showed about thirty times once mid-Play (L-04e, Nov 9); no instance on either side names it
   (searched MeshId, TextureID, the four maps, SoundId, Image). Same verdict.
+  It came back as the kept wrap first drew after each fresh upload (L-07b, Nov 10: 99219113961263,
+  then 122882625024859 after a re-upload, never the wrap's own IDs): Roblox still processing a
+  new upload. Check it's gone a while after.
 - **Lune can't require a generated Specs that builds Vector3s** (the unit's, the tools', the
   finds'): read the numbers from the file's text, as `tests/dealspot.spec.luau` and
   `tests/deal.spec.luau` do. The Mannequin's and the Elevator's Specs use plain lists and load.

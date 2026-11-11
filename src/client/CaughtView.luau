@@ -7,7 +7,9 @@
 	unit (KeptPlayers), so the screen opens on its dark inside, facing the door (the game is
 	always first person), and "Wait for a friend" comes up. They stay held, their body not turning
 	with the camera, every prompt hidden, until the server lets them out (`Kept.Attribute`
-	cleared): then their walk, their turn and the prompts come back.
+	cleared): then their walk, their turn and the prompts come back. The film the server wraps
+	them in (L-07b) is for friends to see: on their own screen it's never drawn, so their view of
+	the dark inside stays clear.
 	Every number and the curves are `Caught`'s and `Kept`'s. The sting and its sounds are
 	L-06b4b's.
 
@@ -155,6 +157,7 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 	local kept = false -- the server has us kept (`Kept.Attribute`)
 	local awake = -1 -- seconds since the screen opened on the unit's inside, or -1
 	local held: Held? = nil -- held still while the catch is on screen or we're kept
+	local wrap: BasePart? = nil -- the film round us while we're kept, once it's on
 	local running = false
 	local connections: { RBXScriptConnection } = {}
 
@@ -169,6 +172,7 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 			letGo(held)
 			held = nil
 		end
+		wrap = nil
 		ProximityPromptService.Enabled = true
 	end
 
@@ -238,6 +242,20 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 					local clear = 1 - Caught.headline(since)
 					s.headline.TextTransparency = clear
 					s.stroke.Transparency = clear
+				end
+			end
+			if kept then
+				-- the film the server wrapped us in: never drawn on our own screen. Every frame,
+				-- as the camera's own first-person fade writes this too
+				local w = wrap
+				if not (w and w.Parent) then
+					local character = player.Character
+					local found = character and character:FindFirstChild(Kept.Wrap)
+					w = if found and found:IsA("BasePart") then found else nil
+					wrap = w
+				end
+				if w and w.LocalTransparencyModifier ~= 1 then
+					w.LocalTransparencyModifier = 1
 				end
 			end
 			if since < 0 and kept and s then

@@ -2162,3 +2162,28 @@ them); dealing the unit as usual when it's opened (a keeper could be dealt in be
 building rolling an open door down on you (needs a door motion the building doesn't have, and a
 shut door is the GDD's picture); a dev command to get out (Reset already does, alone); waiting on
 the stream before the move (an anchored root can't fall, and the screen is black anyway).
+
+## D-096 The wrap you can see and hear: fitted film the server welds on, a squeal each screen plays (L-07b, Nov 10)
+The moment: a friend lifts the door and there you are in the dark, shrink-wrapped head to foot in
+cloudy film; as the keeper wraps you, the film screeches in the black. The film is real art
+(`art/keptwrap`, the unit's way): a cocoon lofted round Roblox's default blocky R15 body at rest,
+bands of film in a spiral, each over the last, a bright cord along every edge, the film twisted
+shut over the crown; its alpha in the colour map (AlphaMode Transparency).
+
+As built: at the move (`Caught.Dark`) `KeptPlayers` clones `Props.KeptWrap`, sizes it with the
+pure `Kept.fit` to the kept body's rest box (each body part placed by its joints' rest offsets,
+Motor6D or AnimationConstraint, so a mid-swing arm or a hat doesn't size it; clamped to 0.5-2.5x
+per axis), welds it to the root (massless, no collision, touch, query or shadow) and parents it
+in the character, so it streams and goes with the body; it's destroyed as they're let out. Its
+part Transparency is 0.02 (`Kept.WrapBlend`): at 0 Roblox cuts the alpha into shreds instead of
+blending it. `CaughtView` keeps it undrawn on the kept player's own screen. The squeal needs no
+network of its own: every screen watches each player's `Kept` attribute (only the server sets
+it) and plays Pro Sound Effects' duct tape peel 2, 0.6 to 2.5 s at 0.92 speed (about the whole
+2-second wrap): close for the caught player, from where they stood for everyone else (45 studs).
+
+Not chosen: the wrap at the catch rather than the move (seen for 0.4 s, then gone with the body;
+the catch's own look is L-06c2's); a server-played squeal (it moves with the body into the unit
+and would tell friends where you're kept, which is L-07c's bang to tell); sizing by
+`GetExtentsSize` (hats, wings and a walk's swing would size it); hiding hats and hair while
+wrapped (a roomy head holds most hair; a big hat pokes out).
+

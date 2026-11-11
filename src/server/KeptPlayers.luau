@@ -10,10 +10,14 @@
 	stores them in (`Kept.choose`: a shut unit away from them with nobody and no keeper in it, an
 	unopened one first). That unit is never dealt now (`Deals:hold`), so the friend who opens it
 	finds only them. Once their screen is black (`Caught.Dark`) they're put inside it, past its
-	middle facing the door (`Kept.Back`), and their screen opens on the dark inside.
+	middle facing the door (`Kept.Back`), and their screen opens on the dark inside. There they
+	stand wrapped head to foot in clear film (L-07b): a copy of `Props.KeptWrap` fitted to their
+	body at rest (`Kept.fit`), welded on, so the friend who lifts the door finds them in it. Their
+	own screen never shows it (CaughtView), and every screen plays the film's squeal (KeptSqueal).
 
 	They're let out when their unit's door goes all the way up: the stand-in until L-07d's Cut
-	free. Leaving, dying or a new character lets them go too, as does their floor going away. A
+	free; the film comes off as they go. Leaving, dying or a new character lets them go too, as
+	does their floor going away. A
 	catch on a floor this doesn't know, or with no unit free, holds them through the wrap and lets
 	them go where they stand.
 ]]
@@ -29,6 +33,7 @@ local Doors = require(script.Parent.Doors)
 local FloorBuilder = require(script.Parent.FloorBuilder)
 local Keepers = require(script.Parent.Keepers)
 local Kept = require(ReplicatedStorage.Shared.Kept)
+local KeptWrap = require(ReplicatedStorage.Shared.KeptWrap.Specs)
 local Slots = require(script.Parent.Slots)
 local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
 
@@ -40,9 +45,75 @@ export type KeptPlayers = Brix.System & {
 
 type Floor = { deck: Deal.Deck, units: { Model }, slots: { [Model]: number } }
 
--- Someone kept: the character they were caught in, its root (anchored while kept), and the unit
--- they're stored in (nil when there was none).
-type Held = { character: Model, root: BasePart, unit: Model?, gone: { RBXScriptConnection } }
+-- Someone kept: the character they were caught in, its root (anchored while kept), the unit
+-- they're stored in (nil when there was none) and the film round them once they're in it.
+type Held = {
+	character: Model,
+	root: BasePart,
+	unit: Model?,
+	wrap: BasePart?,
+	gone: { RBXScriptConnection },
+}
+
+local function box(size: Vector3, centre: Vector3): Kept.Box
+	return { size = { size.X, size.Y, size.Z }, centre = { centre.X, centre.Y, centre.Z } }
+end
+local DRAWN = box(KeptWrap.Body.Size, KeptWrap.Body.Centre)
+local WRAP = box(KeptWrap.Wrap.Size, KeptWrap.Wrap.Centre)
+
+-- The body's box standing at rest, from its root: each body part (the character's own parts, not
+-- its hats or hair) placed by its joints' rest offsets, Motor6D or AnimationConstraint, so an
+-- arm caught mid-swing doesn't size the wrap. Nil when no part hangs off the root.
+local function restBox(character: Model, root: BasePart): Kept.Box?
+	local links: { { a: BasePart, b: BasePart, offset: CFrame } } = {}
+	for _, j in character:GetDescendants() do
+		if j:IsA("Motor6D") then
+			local a, b = j.Part0, j.Part1
+			if a and b then
+				table.insert(links, { a = a, b = b, offset = j.C0 * j.C1:Inverse() })
+			end
+		elseif j:IsA("AnimationConstraint") then
+			local a0, a1 = j.Attachment0, j.Attachment1
+			local a, b = a0 and a0.Parent, a1 and a1.Parent
+			if a0 and a1 and a and b and a:IsA("BasePart") and b:IsA("BasePart") then
+				table.insert(links, { a = a, b = b, offset = a0.CFrame * a1.CFrame:Inverse() })
+			end
+		end
+	end
+	local at: { [BasePart]: CFrame } = { [root] = CFrame.identity }
+	local found = true
+	while found do
+		found = false
+		for _, l in links do
+			local from = at[l.a]
+			if from and not at[l.b] then
+				at[l.b] = from * l.offset
+				found = true
+			end
+		end
+	end
+	local lo, hi = Vector3.one * math.huge, -Vector3.one * math.huge
+	for part, cf in at do
+		if part ~= root and part.Parent == character then
+			local h = part.Size / 2
+			for _, c in
+				{
+					Vector3.new(1, 1, 1),
+					Vector3.new(1, 1, -1),
+					Vector3.new(1, -1, 1),
+					Vector3.new(1, -1, -1),
+				}
+			do
+				local p, q = cf * (h * c), cf * (-h * c)
+				lo, hi = lo:Min(p):Min(q), hi:Max(p):Max(q)
+			end
+		end
+	end
+	if lo.X > hi.X then
+		return nil
+	end
+	return box(hi - lo, (hi + lo) / 2)
+end
 
 local KeptPlayers = {}
 
@@ -57,6 +128,38 @@ function KeptPlayers.new(): KeptPlayers
 	local slots: Slots.Slots? = nil
 	local keepers: Keepers.Keepers? = nil
 	local random = Brix.Random.new({ seed = os.time() })
+	local warned = false
+
+	-- Wraps `h`'s body head to foot in film, fitted to it at rest and welded to its root: what a
+	-- friend finds when they lift the door. No collision, weight or shadow: it's only seen.
+	local function wrapUp(h: Held)
+		local props = ReplicatedStorage:FindFirstChild("Props")
+		local template = props and props:FindFirstChild(Kept.Wrap)
+		if not (template and template:IsA("BasePart")) then
+			if not warned then
+				warned = true
+				warn(
+					"KeptPlayers: no ReplicatedStorage.Props.KeptWrap, so the kept stand unwrapped (art/keptwrap/README.md)"
+				)
+			end
+			return
+		end
+		local fit = Kept.fit(restBox(h.character, h.root) or DRAWN, DRAWN, WRAP)
+		local offset = CFrame.new(fit.centre[1], fit.centre[2], fit.centre[3])
+		local wrap = template:Clone()
+		wrap.Size = Vector3.new(fit.size[1], fit.size[2], fit.size[3])
+		wrap.Anchored = false
+		wrap.CanCollide, wrap.CanTouch, wrap.CanQuery = false, false, false
+		wrap.Massless = true
+		wrap.CastShadow = false
+		wrap.Transparency = Kept.WrapBlend
+		wrap.CFrame = h.root.CFrame * offset
+		local weld = Instance.new("Weld")
+		weld.Part0, weld.Part1, weld.C0 = h.root, wrap, offset
+		weld.Parent = wrap
+		wrap.Parent = h.character
+		h.wrap = wrap
+	end
 
 	-- Lets `player` go: their root free, the kept mark off (their screen opens up, keepers see
 	-- them again), their unit free for the next.
@@ -71,6 +174,9 @@ function KeptPlayers.new(): KeptPlayers
 		end
 		if h.unit and holding[h.unit] == player then
 			holding[h.unit] = nil
+		end
+		if h.wrap then
+			h.wrap:Destroy()
 		end
 		if h.root.Parent then
 			h.root.Anchored = false
@@ -204,6 +310,7 @@ function KeptPlayers.new(): KeptPlayers
 				return
 			end
 			character:PivotTo(to)
+			wrapUp(h)
 			if RunService:IsStudio() then
 				print(`KeptPlayers: {player.Name} is wrapped and kept in {unit.Name}`)
 			end

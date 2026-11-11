@@ -162,6 +162,12 @@ local ART: { Art } = {
 		description = "A roll of clear bubble wrap on a cardboard core, taped shut, and a sheet of it laid flat",
 	},
 	{
+		key = "KeptWrap",
+		path = "art/keptwrap/out/KeptWrap.fbx",
+		manifest = "art/keptwrap/assets.json",
+		description = "Clear stretch film wound in overlapping bands round a standing body, gathered over the crown",
+	},
+	{
 		key = "Ladder",
 		path = "art/ladder/out/Ladder.fbx",
 		manifest = "art/ladder/assets.json",

@@ -51,6 +51,56 @@ export type Random = {
 	nextInteger: (self: any, min: number, max: number) -> number,
 }
 
+-- The wrap you can see (L-07b): clear stretch film in bands round you head to foot, drawn in
+-- Blender round Roblox's default R15 body (art/keptwrap, its numbers in `KeptWrap.Specs`) and
+-- scaled per axis to the kept one's box, so friends who open your unit find you wrapped.
+
+-- The film's part in a kept character, and its template's name under ReplicatedStorage.Props.
+Kept.Wrap = "KeptWrap"
+
+-- The film's part Transparency. Its see-through look is its colour map's alpha (AlphaMode
+-- Transparency), but Roblox only blends that alpha on a part above 0 Transparency; at 0 it cuts
+-- the film into hard white shreds (seen in Studio, docs/STUDIO.md). Just above 0, so it blends.
+Kept.WrapBlend = 0.02
+
+-- A box as the wrap's fit reads it: its size and its middle (x, y, z, studs), from the
+-- character's root, in the root's frame.
+export type Box = { size: { number }, centre: { number } }
+
+-- How far the wrap stretches or shrinks on any one axis to fit a body. Past these a body is
+-- something odd (a part as wide as a hall, or none at all), and the wrap keeps a person's shape.
+Kept.FitMin = 0.5
+Kept.FitMax = 2.5
+
+--- The wrap's box for a kept `body` at rest: the wrap as drawn (`wrap`) round the body it was
+--- drawn round (`drawn`), stretched on each axis by how much bigger `body` is, and moved with it.
+function Kept.fit(body: Box, drawn: Box, wrap: Box): Box
+	local size: { number }, centre: { number } = {}, {}
+	for i = 1, 3 do
+		local s = if body.size[i] > 0 and drawn.size[i] > 0
+			then math.clamp(body.size[i] / drawn.size[i], Kept.FitMin, Kept.FitMax)
+			else 1
+		size[i] = wrap.size[i] * s
+		centre[i] = (if body.size[i] > 0 then body.centre[i] else drawn.centre[i])
+			+ (wrap.centre[i] - drawn.centre[i]) * s
+	end
+	return { size = size, centre = centre }
+end
+
+-- The film's squeal as the keeper wraps you (L-07b), through the black: a tape screeching off
+-- its roll, heard by you in the dark and from where you stood by anyone near. Pro Sound
+-- Effects' "Duct Tape Richard Epilates Himself 2": a steady peel from 0.6 to 2.6 s at -24 to
+-- -12 dB, centred near 1.5 kHz (measured, docs/STUDIO.md); a touch slow, so it drags.
+Kept.Squeal = {
+	id = "rbxassetid://9114200236",
+	from = 0.6,
+	length = 1.9,
+	volume = 1.6,
+	pitch = 0.92,
+}
+-- Studs the squeal carries from where you were caught: down your stretch of hall, not the floor.
+Kept.SquealReach = 45
+
 --- Whether unit `u` can hold a kept player now.
 function Kept.free(u: Unit): boolean
 	return u.shut and not u.keeper and not u.holding

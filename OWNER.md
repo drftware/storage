@@ -10,7 +10,8 @@ nowhere else.
   the flashlight's, the bolt cutters', the padlock's, the saw's, the crawl hole's, the ladder's and
   the sawn top's templates live only in the open place, at `ReplicatedStorage.Props.Elevator`,
   `Props.Note`, `Props.Flashlight`, `Props.Tools.BoltCutters`, `Props.Tools.Padlock`,
-  `Props.Tools.Saw`, `Props.Tools.Ladder`, (Nov 10) `Props.Tools.AirHorn`, `Props.Tools.BubbleWrap`, `Props.BubbleSheet` (both
+  `Props.Tools.Saw`, `Props.Tools.Ladder`, (Nov 10) `Props.KeptWrap` (the film a kept player
+  stands in), `Props.Tools.AirHorn`, `Props.Tools.BubbleWrap`, `Props.BubbleSheet` (both
   given the softer bubbles' look on Nov 10), `Props.CrawlHole`, `Props.TopHole` and (Nov 10) the
   dent's `Props.DoorDent_M` and `Props.DoorDent_S` (without the dent's, doors never dent; without the others
   nobody has a torch, no tool lies anywhere and no hole can be cut; Output warns). Unsaved, the next open loses them and every
@@ -21,6 +22,25 @@ nowhere else.
 - [ ] **A home for the code:** the repository has no remote, so "push" had nowhere to go; the work
   is now on a local `main` (`storage-unit` renamed, `third-person-walls` deleted, Nov 6). Say if
   you want a private GitHub repository created and `main` pushed to it.
+
+## Now: judge L-07b, the wrap you can see and hear (built Nov 10)
+
+Verified in Studio on seed 7, floor 1, alone: caught twice; the film went on in the black, fitted
+to my body, never drawn on my own screen; seen from the open door (a copy of me, the ambient
+raised) it's a cloudy cocoon with the body blurred inside (`art/sheets/keptwrap-studio-door.jpg`);
+the squeal started on the catch's frame; opening the unit took the film off. Not heard by ear,
+not seen by a real second player, not seen on a phone.
+- [ ] **The squeal, by ear.** Get caught (the L-07a steps below): in the black you should hear
+  film screeching round you for about two seconds, a tape torn off its roll. Does it read as
+  being wrapped? Too loud or too quiet over the silence the catch leaves?
+- [ ] **What a friend finds** (Team Test with two players, or a friend in the published game):
+  one gets caught near the other, who should hear the squeal from where it happened (not from
+  the unit). Then find and open their unit: are they plainly wrapped? Is it too clear (the face
+  plain to read) or too cloudy (can't tell it's your friend)? On a phone, from the doorway, with
+  only your torch?
+- [ ] **Hats and big avatars.** If you have an avatar with a big hat, wings or an Rthro body,
+  get caught in it: the film is fitted to the body, so a hat may poke out of the top. Say if
+  that looks wrong.
 
 ## Now: judge L-07a, getting kept (built Nov 10)
 

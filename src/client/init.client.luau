@@ -10,6 +10,7 @@ local Brix = require(ReplicatedStorage.Brix)
 local BehindDoors = require(script.BehindDoors)
 local CameraShake = require(script.CameraShake)
 local CaughtView = require(script.CaughtView)
+local KeptSqueal = require(script.KeptSqueal)
 local ChaseMusic = require(script.ChaseMusic)
 local CrawlView = require(script.CrawlView)
 local DoorSounds = require(script.DoorSounds)
@@ -60,6 +61,7 @@ local host = Brix.Host.new({
 		{ slot = "minimapView", system = MinimapView.new() },
 		{ slot = "caughtView", system = CaughtView.new(kick) },
 		{ slot = "chaseMusic", system = ChaseMusic.new() },
+		{ slot = "keptSqueal", system = KeptSqueal.new() },
 		{ slot = "noteView", system = NoteView.new() },
 		{ slot = "flashlightView", system = flashlightView },
 		{ slot = "toolView", system = toolView },

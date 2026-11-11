@@ -815,11 +815,20 @@ on nothing in Brix.
     floor 1: three catches stored me in 153, 124 and 112 facing the door; a carried horn dropped
     where I stood; the door all the way up let me out and I walked out; one catch each, Output
     clean.
-  - [ ] **L-07b The wrap you can see and hear.** The shrink-wrapped body friends find when they
+  - [x] **L-07b The wrap you can see and hear.** The shrink-wrapped body friends find when they
     open your unit, built in Blender the unit's way (art first, owner Nov 10): clear stretch film
     in bands round a standing body, scaled to the kept character, hidden on its own screen. The
-    film's squeal as the wrap goes on, heard by you in the black and by anyone near. Takes
-    `KeptPlayers` (who's kept, where).
+    film's squeal as the wrap goes on, heard by you in the black and by anyone near.
+    Done Nov 10 (D-096): `art/keptwrap` (a cocoon round the default R15 body, a spiral of
+    overlapping bands, edge cords, the twist on top, alpha in its colour map; 4,440 triangles),
+    `Props.KeptWrap`, pure `Kept.fit` (Lune-tested: any body held whole, clamped), `KeptPlayers`
+    fits and welds it at the move and takes it off as you're let out, `CaughtView` never draws
+    your own, `KeptSqueal` (a tape's screeching peel on every screen from the `Kept` attribute).
+    Verified in Studio on seed 7, floor 1: caught by 157's Mannequin twice (kept in 145, then
+    109); the film on, 4.13 x 5.52 x 1.81, welded, no collision or shadow; a capture from 109's
+    open door with the ambient raised shows a cloudy cocoon, the body blurred inside; your own
+    view clear; the squeal on the catch's frame; opening 109 let me out in 2.04 s with the film
+    gone. Output clean but for Roblox still processing the fresh upload.
   - [ ] **L-07c Banging.** A Bang button inside: each bang thuds on your door for everyone near,
     shows your unit on friends' screens and the corner map, and keepers hear it
     (`Keepers:hear`). The hall light under the door. Decide whether being wrapped puts your
@@ -828,6 +837,23 @@ on nothing in Brix.
     up; it replaces L-07a's stand-in way out.
   - [ ] **L-07e The padlock.** Left a few minutes, the building padlocks your unit; only bolt
     cutters let you out.
+- [ ] **L-06c Scarier keepers** (owner, Nov 10: make the walk and the catch scarier, "nothing
+  gorey but leaning more toward jump scare"; tickets soon, so they run straight after L-07e).
+  Two sessions. Today's walk is smooth and steady with a clack each step and joint knocks
+  (L-06b4); today's catch is a jerk of the view, the screen going black and "Caught" (L-06b3c).
+  - [ ] **L-06c1 A walk that frightens.** The moment: you hear it before you see it, and what you
+    see moves wrong. Pick from (each with its precedent): a stiff, uneven gait, one foot dragged
+    and the head lagging a beat behind the body (Doors' Figure, Silent Hill's mannequins); dead
+    still, then a sudden fast, jerky rush across the gap (SCP-173, Doors' Seek); footfalls that
+    get heavier the nearer it is, and a fibreglass creak as it turns. Poses, timing and sound on
+    each screen (`KeeperView`, `Pose`, `KeeperSounds`); the server's motion stays as it is.
+  - [ ] **L-06c2 The catch as a jump scare.** The moment: its blank face fills your screen with a
+    hit of sound, then the black. The Mannequin's faceless head lunges into your camera for
+    about half a second with a loud sting over the wrap's squeal (Piggy's and Five Nights at
+    Freddy's catches: the face rushes the camera with a scream, no blood), then `CaughtView`'s
+    blackout as now. Friends who see it: the body spun once in film before it vanishes. This
+    overrides the GDD's "no screamer" line (owner, Nov 10). Check the experience's maturity
+    questionnaire answer for fear once it's in.
 - [ ] **L-08 The ride and the next floor.** The elevator ride and a second floor, so the climb is
   a loop and not a single room. Brix: its round loop (ENG-13) if it has landed. Takes the GDD's
   "Left behind" (the gate shuts with you still kept or outside: you spectate, or Cut Free to the
@@ -869,7 +895,13 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 - **Bubble wrap you can see through (L-14b1):** the wrap is opaque, painted as clear film over
   grey. A `SurfaceAppearance` with `AlphaMode` Transparency and an alpha in its colour map would
   show the real floor through the sheet's film and the roll's outer layer (one transparent part a
-  sheet: check it on a low-end phone).
+  sheet: check it on a low-end phone). The kept wrap (L-07b) shows how: wire the alpha in the
+  export's material and give the part Transparency 0.02 (docs/STUDIO.md).
+
+- **The wrap going on (L-07b):** the film is welded on in the black, whole. A friend watching the
+  catch sees you vanish with a squeal; a quick spin of film round you first belongs with the catch's
+  jump scare (L-06c2). The squeal is one recording; layering a crackle of film under the peel
+  would sell it more.
 
 - **The air horn, felt by friends (L-14a2):** a friend standing beside your blast gets a small
   kick to their view too, fading over a few studs; and a breath of air hissing out of the can as
