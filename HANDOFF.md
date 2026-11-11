@@ -10,8 +10,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   on its toe, uneven steps and holds, its head lolling and landing a beat late (`Pose.Walk`).
   Each beat is layered (`KeeperRows` tell, `KeeperTell`): a hollow fibreglass thunk heard to 70
   studs, a body's weight that comes in as it nears (`heft`: full within 10, a tenth by 40), a
-  concrete scrape for the drag, a creak as it turns 40 degrees (`KeeperView` → `turned`). The
-  clack and knocks are gone. Silent standing or lit. Verified in Studio (log in ROADMAP).
+  concrete scrape for the drag, a creak as it turns 40 degrees (`KeeperView` → `turned`, measured
+  from its first real facing). The clack and knocks are gone. Silent standing or lit. Verified in
+  Studio (log in ROADMAP).
 - **Testing:** docs/STUDIO.md, "Watching a keeper roam, from the MCP"; the measured takes are
   under "Sounds measured for the keeper's walk". By ear and on a phone: the owner's (`OWNER.md`).
 - Studio: nothing imported this session; left in Edit, seed 7, floor 1.
