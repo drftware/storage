@@ -166,12 +166,10 @@ ticket each, every session ending green and committed. Order: L-16b2 (done), L-1
 look for every button, the owner's "prompt updates"), L-19b (done: a door's buttons where the
 hand goes), L-20a (done: the inventory wheel, three slots), L-17 (done: every button on a
 phone at once), L-16d (done: your body placed each drawn frame), L-08e1a (done: the front
-office built), L-08e1b1 (done: step in and the count), L-08e1b2 (done: the host's panel), then
-the rest of the lobby, L-08e1c, L-08e2 to L-08e4 (GDD
-"The lobby", D-112), which no longer waits on L-09a
-(only the owner can run that): split L-08e1 and L-08e4 into sessions that each end green (the
-room's art script first, then the cars, the joining and the count, then the trip to a server of
-the group's own). With sessions left: HANDOFF's "Seen" fixes, L-18, then honing what was built
+office built), L-08e1b1 (done: step in and the count), L-08e1b2 (done: the host's panel),
+L-08e1c (done: a server of the group's own), then the rest of the lobby, L-08e2 to L-08e4 (GDD
+"The lobby", D-112), which no longer waits on L-09a (only the owner can run that): split L-08e4
+into sessions that each end green (the cart's art script first, then the ride). With sessions left: HANDOFF's "Seen" fixes, L-18, then honing what was built
 tonight (the polish list). Hard limits: no new keepers, no paid items or store (Phase 2 waits on
 Brix's purchases and profiles), proven mechanics only, never edit Brix.
 
@@ -1104,12 +1102,29 @@ Brix's purchases and profiles), proven mechanics only, never edit Brix.
         Lune: 83 checks. Verified in Studio on a computer, one player (`docs/art/L-08e1b2-*.jpg`);
         two players and a phone are the owner's. **For L-08e1c:** the difficulty goes with the
         group (`Boarding.Difficulties`, one today); a held count ends with servers of their own.
-      - [ ] **L-08e1c A server of the group's own.** At zero the car takes its group to a
-        reserved server of their own, the difficulty with them, and the climb starts there: Brix's
-        ENG-13 if it has landed at our pin, else the smallest stand-in `docs/FRAMEWORK.md` plans
-        (put the missing piece in Brix's ROADMAP in neutral terms). A failed trip puts everyone
-        back in the car with a short toast and the count again. A new player is in a car within
-        15 s. Studio can't teleport: the trip itself is the owner's to test on live servers.
+      - [x] **L-08e1c A server of the group's own. Done Nov 12 (D-122).** Brix has nothing for
+        it (ENG-13 unbuilt), so a stand-in, `Trips`: at the post the riders' screens fade to black
+        ("Going up") as the car gathers speed, and 2.2 s in they're sent in one `TeleportAsync`
+        to a new reserved server (`TeleportOptions.ReservedServerId`, a fresh GUID; the old
+        `ReserveServer` is deprecated), the group and difficulty as its data (`Trip`, checked on
+        arrival: it passes through each device). Failures worth it are tried again to the same
+        server (3 tries); a rider still here 15 s on has failed. A failed trip puts them back in
+        their car, host first, choices as they were, "Teleport failed" and the count again; two
+        failed trips in a row and that lobby rides its groups up on its own server (as before).
+        The group's server (`PrivateServerId` set, no owner) lays floor 1 at once, waits for the
+        group (or 10 s after the first), streams floor 1's car to them and stands them in it 3.4 s
+        into its ride (`Elevators:ride`, `Climbs:arrive`): the black lifts on the shaft sliding
+        past, the car levels and opens on floor 1. Late or respawned: stood in front of the car.
+        No lobby cars there. Studio rides on its own server as before; `DevTrip` on Workspace
+        tries the rest: "Arrive", "Send" (Studio's test teleports, which open the place as last
+        saved) and "Fail". Verified in Studio, one player: the ride here; the arrival; the whole
+        trip through a test teleport; two failed trips, then the ride here. Lune: 73 checks.
+        Live servers, friends and a phone are the owner's. A new player stands facing the cars a
+        few steps from them as they load in (L-08e1a), so in a car within 15 s; L-08e3 points a
+        lone player to the fullest. **For L-08e2:** the climb's end on a group's own server is
+        still ClimbEnds' "Again" into a fresh floor 1 there: "back in your car" happens on that
+        server (its front office is laid, its cars not opened: open the group's car, or send them
+        back to a lobby; the GDD says the same car with the same friends).
     - [ ] **L-08e2 Back in your car.** The moment: the climb ends and you're standing in the same
       car with the same friends, results on the wall, the count running for another go. Anyone
       can step out and back in. Replaces `ClimbEnds.go`'s fresh floor 1.

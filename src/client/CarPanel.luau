@@ -82,7 +82,9 @@ local TOLD_SIZE = 30
 local TOLD_IN = TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local TOLD_HOLD = 1.6
 local TOLD_OUT = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
-local TOLD: { [string]: string } = { Full = "Car full", Friends = "Friends only" }
+-- Trip: your trip to the group's own server failed and you're back in the car (L-08e1c).
+local TOLD: { [string]: string } =
+	{ Full = "Car full", Friends = "Friends only", Trip = "Teleport failed" }
 
 local STEEL = Color3.fromRGB(28, 28, 31)
 local RIM = Color3.fromRGB(78, 78, 84)

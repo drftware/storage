@@ -39,6 +39,7 @@ local NoteView = require(script.NoteView)
 local PadlockView = require(script.PadlockView)
 local SawView = require(script.SawView)
 local ToolView = require(script.ToolView)
+local TripView = require(script.TripView)
 local RideView = require(script.RideView)
 local UnderDoor = require(script.UnderDoor)
 local UnitLights = require(script.UnitLights)
@@ -103,6 +104,8 @@ local host = Brix.Host.new({
 		{ slot = "cameraShake", system = cameraShake },
 		-- arriving at the lobby's spawn: the camera turns to the six cars (L-08e1b1)
 		{ slot = "lobbyView", system = LobbyView.new() },
+		-- a lobby car's trip to the group's own server: the black, and the climb opening out of it
+		{ slot = "tripView", system = TripView.new() },
 	},
 })
 host:start()

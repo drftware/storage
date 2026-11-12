@@ -27,6 +27,7 @@ local Ladders = require(script.Ladders)
 local MotionLights = require(script.MotionLights)
 local Saws = require(script.Saws)
 local Slots = require(script.Slots)
+local Trips = require(script.Trips)
 local Watching = require(script.Watching)
 local Wraps = require(script.Wraps)
 
@@ -63,6 +64,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "climbEnds", system = ClimbEnds.new() },
 	-- Everkeep's front office, the lobby: where everyone loads in, facing its six cars.
 	{ slot = "frontOffice", system = FrontOffice.new() },
+	-- A lobby car's group to a server of its own; on that server, the group stood in floor 1's car.
+	{ slot = "trips", system = Trips.new() },
 	-- The lobby's cars: step in to join a group, the count, the gate's slam, the ride to floor 1.
 	{ slot = "lobbyCars", system = LobbyCars.new() },
 }

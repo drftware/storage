@@ -34,6 +34,9 @@
 	  starts, and `board` starts the climb on it as the car leaves: whatever climb ran goes, and
 	  mid-cruise floor 1's car takes the lobby car's ride over and its riders are moved into it,
 	  as at every floor's hand-off. It opens on floor 1 and shuts behind them, armed.
+	- On a group's own server (L-08e1c, Trips): `ready` lays floor 1 as the server starts, and
+	  `arrive` begins the climb on it with the group stood in its car mid-ride, as if they'd come
+	  up the shaft from the lobby. `arrival` is where anyone joining late stands.
 
 	Only the threads of a ride in progress run; nothing is stepped.
 ]]
@@ -49,6 +52,7 @@ local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
 local Deal = require(ReplicatedStorage.Shared.Deal)
 local Floor = require(ReplicatedStorage.Shared.Floor)
 local Ride = require(ReplicatedStorage.Shared.Elevator.Ride)
+local Trip = require(ReplicatedStorage.Shared.Lobby.Trip)
 local Wrap = require(ReplicatedStorage.Shared.Tools.Wrap)
 local Deals = require(script.Parent.Deals)
 local Elevators = require(script.Parent.Elevators)
@@ -123,6 +127,16 @@ export type Climbs = Brix.System & {
 	-- on the floor `ready` laid as the car's ride is handed to that floor's car mid-cruise. False
 	-- if no floor is laid or laying (the car comes back to the lobby). Doesn't yield.
 	board: (self: any, car: Model, leaving: Elevators.Leaving) -> boolean,
+	-- The car of the floor `ready` laid, once it's laid; nil before.
+	readied: (self: any) -> Model?,
+	-- A group come up from the lobby to a server of its own (L-08e1c): the climb begins on the
+	-- floor `ready` laid, its car riding up to it `since` seconds into the ride with `riders`
+	-- stood in it (Trip.spot, in their order). False if that floor isn't laid yet. Doesn't yield.
+	arrive: (self: any, riders: { Player }, since: number) -> boolean,
+	-- Where someone joining the climb stands (a late arrival, a friend cut free): in front of the
+	-- car on the floor the climb is on, as if they'd just stepped out; nil while there's no floor
+	-- to stand on (between floors, or no climb).
+	arrival: (self: any) -> CFrame?,
 }
 
 local function now(): number
@@ -633,6 +647,15 @@ function Climbs.new(): Climbs
 		options, started = nil, nil
 	end
 
+	-- Where someone joining the climb stands, or nil while there's no floor to stand on.
+	local function arrivalSpot(): CFrame?
+		local on = playing
+		if between or not (on and on.model.Parent) then
+			return nil
+		end
+		return on.origin * Climbs.Arrival
+	end
+
 	local system = {
 		name = "Climbs",
 		laid = laidSignal,
@@ -652,13 +675,7 @@ function Climbs.new(): Climbs
 		slots = (registry:get("slots") :: any) :: Slots.Slots -- any: as above
 		local w = (registry:get("watching") :: any) :: Watching.Watching -- any: as above
 		watching = w
-		w:setArrival(function(): CFrame?
-			local on = playing
-			if between or not (on and on.model.Parent) then
-				return nil
-			end
-			return on.origin * Climbs.Arrival
-		end)
+		w:setArrival(arrivalSpot)
 		local e = elevators :: Elevators.Elevators
 		departing = e.departed:connect(departed)
 		opening = e.acted:connect(acted)
@@ -781,6 +798,49 @@ function Climbs.new(): Climbs
 			end
 		end)
 		return true
+	end
+
+	function system.readied(_: any): Model?
+		local on = first
+		return if on and on.elevator and on.elevator.Parent then on.elevator else nil
+	end
+
+	function system.arrive(_: any, riders: { Player }, since: number): boolean
+		local e = elevators
+		local on, o = first, firstOptions
+		local car = on and on.elevator
+		if not (e and on and o and car and car.Parent) then
+			return false
+		end
+		reset()
+		local mine = climb
+		first, firstOptions = nil, nil
+		table.insert(floors, on)
+		options, lastOptions = o, o
+		-- everyone in the car at once, facing its gate, then the ride under them
+		local pivot = car:GetPivot()
+		for i, player in riders do
+			local character = player.Character
+			if player.Parent and character then
+				local x, z = Trip.spot(i)
+				local at = Vector3.new(x, 3, z)
+				character:PivotTo(pivot * CFrame.lookAt(at, at - Vector3.zAxis))
+			end
+		end
+		e:ride(car, riders, now() - since)
+		playing = on
+		started = now()
+		armAfterArrival(on, car, mine)
+		if STUDIO then
+			print(
+				`Climbs: {#riders} arrived from the lobby, riding up to floor {on.number} (seed {o.seed})`
+			)
+		end
+		return true
+	end
+
+	function system.arrival(_: any): CFrame?
+		return arrivalSpot()
 	end
 
 	function system.current(_: any): OnFloor?

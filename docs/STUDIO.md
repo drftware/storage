@@ -1557,3 +1557,32 @@ verified: a doc page, Studio, or "untested".
   `Group`, `FriendsOnly` and `Players` from a Client `execute_luau` (local only, never
   replicated; the server's next publish overwrites them). A headline that pops and fades within
   2 s: send it (a Server `FireClient`) and capture in the very next call, not after a wait.
+- **Teleports, read Nov 12 (L-08e1c, create.roblox.com's TeleportService, TeleportOptions,
+  TeleportAsyncResult and "Teleport between places")**: `TeleportService:TeleportAsync(placeId,
+  players, options)` is the one way, server only, up to 50 players, yields, can throw (wrap it in
+  `pcall`). A reserved server: `options.ReservedServerId = HttpService:GenerateGUID(false)`; the
+  first teleport with a new id makes it, the same id again lands on it. `ReserveServer`,
+  `ReserveServerAsync`, `ShouldReserveServer` and `ReservedServerAccessCode` are deprecated, and
+  only one routing field may be set. `options:SetTeleportData(t)` sends value types only; read it
+  with `Player:GetJoinData().TeleportData` (server) or `GetLocalPlayerTeleportData` (client). It
+  passes through the client: never trust it. `TeleportInitFailed(player, result, message,
+  placeId, options)` fires on server and client when a teleport that started can't go; retry
+  `Failure` and `Flooded` (the docs wait 1 s and 15 s), report the rest. A custom screen:
+  `SetTeleportGui(gui)` on the client before the teleport (once per teleport); on arrival
+  `GetArrivingTeleportGui()` from a ReplicatedFirst LocalScript, parented to PlayerGui, or Roblox
+  drops it once the place loads. On a reserved server `game.PrivateServerId ~= ""` and
+  `game.PrivateServerOwnerId == 0` (a VIP server has an owner).
+- **Studio can test teleports now** (Nov 12, verified with the MCP): a `TeleportAsync` in Play
+  opens the destination as a new test server and the Studio session switches to it (the
+  executing client call ends with "Target is closed"; Client and Server then mean the new
+  server). That server loads the place **as last saved to Roblox**, not this Edit session: save
+  first, and attributes set in Edit (`DevTrip`) aren't there. Its `PrivateServerId` and `JobId`
+  are empty even for a reserved server. `GetArrivingTeleportGui()` came back nil there.
+- **`rojo serve` reads its project's tree only at start** (Nov 12): a new top-level entry in
+  `default.project.json` (`ReplicatedFirst`, L-08e1c) didn't sync to a server already running;
+  files under existing entries do. Restart it (and Connect) after such a change.
+- **Testing the trip from the MCP** (L-08e1c): set Workspace's `DevTrip` in Edit ("Arrive",
+  "Send" or "Fail"), Play, pivot the character into a lobby car (`car:GetPivot() * CFrame.new(0,
+  3, 6)`), and from the Client `ReplicatedStorage.Remotes.CarPanel:FireServer(car, "Go", true)`
+  as its host. Clear `DevTrip` before saving. On "Arrive" the arrival is over about a second
+  after the client starts: probe from the server, not by waiting for the cover.

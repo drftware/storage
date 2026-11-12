@@ -9,8 +9,46 @@ nowhere else.
 - [ ] **Playing on your phone** (D-109): with Rojo connected, use File > Publish to Roblox (Save
   alone doesn't change what live servers run), then play it from the Creator Hub on the phone.
   You load in at the lobby, facing its six cars; step into one and its count takes you to floor 1
-  of a fresh climb. The test hall is Studio only now (L-08e1b1). Still the baseplate? Shut its
-  servers down from the Creator Hub and join again, and check its supported devices include Phone.
+  of a fresh climb, on a server of your group's own (L-08e1c). The test hall is Studio only now
+  (L-08e1b1). Still the baseplate? Shut its servers down from the Creator Hub and join again, and
+  check its supported devices include Phone.
+- [ ] **Once: restart `rojo serve`** (stop it, run it again, click Connect), then save: L-08e1c
+  added a top-level folder (ReplicatedFirst's `TripCover`, which keeps the black up as you
+  arrive on your group's server) and a running `rojo serve` only reads those at start. Without
+  it the trip works, but the front office may flash for a moment as you arrive.
+
+## Now: judge L-08e1c, a server of the group's own (built Nov 12, D-122)
+
+At zero the car's group goes to a server made for them, as DOORS' lobby elevators do: the gate
+slams, the car moves off, the screen sinks to black ("Going up"), and it opens on the same ride,
+the shaft sliding past, levelling on floor 1 of a building only yours. Verified in Studio, one
+player: the ride on Studio's own server as before; the arrival (Workspace `DevTrip` = "Arrive");
+the whole trip through Studio's test teleport ("Send"; the place was saved as version 34 for it,
+never published); two failed trips ("Fail"), each back in the car with "Teleport failed" and the
+count again, then the third ride on the lobby's own server. Live servers, friends and phones are
+yours: Publish first (Save alone doesn't change live servers).
+- [ ] **The trip, alone:** join, step into a car, Go. The gate slams, the car starts to climb,
+  black with "Going up" a beat later, Roblox loading, then you're in a car mid-ride facing the
+  gate, the shaft sliding past; the brakes, the bell, the gate opens on floor 1. No front office
+  flash as you arrive, no long black (it waits 10 s at most for friends).
+- [ ] **With friends (two accounts or a friend):** both in one car, Go. You arrive together in
+  the same car (host at the front middle), nobody else from the lobby with you. A second car's
+  group, sent at the same time, gets its own server (you never see them).
+- [ ] **Someone stays behind:** a third player in the lobby (not in the car) keeps the lobby and
+  its cars, and can take another car to a server of their own.
+- [ ] **The climb runs on it:** play floor 1 to the code and ride up; at the end, "Again" starts
+  a fresh floor 1 on the same server (back in your car is L-08e2).
+- [ ] **A failed trip** (rare live; Studio's `DevTrip` = "Fail" shows it): back in the car, the
+  black lifting, "Teleport failed" in red, the count running again with the same host.
+- [ ] **Your phone:** the black comes down evenly, "Going up" readable, the arrival not a long
+  stare at black on a phone that loads slowly.
+- [ ] **Decide (defaults in place):** (1) someone whose trip failed while friends went goes back
+  in the car and the next trip makes a new server: they don't follow their friends (they could:
+  reuse the same server for a minute); (2) the group's server waits for everyone or 10 s after
+  the first, then goes; a later one is stood on floor 1 in front of the car as it opens; (3) after
+  two failed trips in a row a lobby stops sending and rides its groups up on its own server, as
+  before; (4) "Going up" under the black (GateClock already says it as a car leaves).
+
 
 ## Now: judge L-08e1b2, the host's panel (built Nov 12, D-121)
 

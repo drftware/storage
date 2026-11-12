@@ -98,6 +98,10 @@ export type Elevators = Brix.System & {
 	-- written on it, so riders' screens follow it once they stand in it, and it arrives and opens
 	-- on the ride's clock; `from` is done and never arrives. False if `from` isn't riding.
 	takeOver: (self: any, from: Model, to: Model) -> boolean,
+	-- `elevator` rides up to the floor it stands at as if it had left the floor below at server
+	-- time `at` with `riders` aboard (a group come up from the lobby to a server of its own,
+	-- L-08e1c): shut, its keypad dead; it arrives and opens on the ride's clock.
+	ride: (self: any, elevator: Model, riders: { Player }, at: number) -> (),
 	-- Stands `elevator` in the lobby (L-08e1b1), or stands it there again after a trip: its gate
 	-- folds open, its keypad asleep, no clock, at the lobby's floor (`Ride.Lobby`). `pick` says who
 	-- rides of those inside as the shut gate hits its post (Boarding.riders).
@@ -535,6 +539,34 @@ function Elevators.new(): Elevators
 		a.riders = {}
 		clocks[a] = nil
 		return true
+	end
+
+	function system.ride(_: any, elevator: Model, riders: { Player }, at: number)
+		local entry = add(elevator)
+		assert(entry, `Elevators: {elevator:GetFullName()} isn't an elevator in the world`)
+		-- shut, its keypad dead, riding up from the floor below (the lobby, below floor 1)
+		local from = if entry.number <= 1 then Ride.Lobby else entry.number - 1
+		alarms[entry] = nil
+		entry.lobby = nil
+		entry.phase = "Riding"
+		entry.number = from
+		entry.leftAt = at
+		entry.riders = table.clone(riders)
+		entry.departs = math.huge
+		if entry.gateTo < 1 then
+			moveGate(entry, 1, now())
+		end
+		local ids: { number } = table.create(#riders)
+		for i, player in riders do
+			ids[i] = player.UserId
+		end
+		entry.model:SetAttribute(Ride.FloorAttribute, from)
+		entry.model:SetAttribute(Departure.Attribute, nil)
+		-- the ride first, then who rode, as `leave` writes them
+		entry.model:SetAttribute(Ride.Attribute, Ride.encode(at, from, from + 1))
+		entry.model:SetAttribute(Departure.AboardAttribute, Departure.encodeAboard(at, ids))
+		write(entry, "Rest", "")
+		clocks[entry] = true
 	end
 
 	function system.lobby(_: any, elevator: Model, pick: Pick)

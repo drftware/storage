@@ -14,6 +14,10 @@
       // ReplicatedStorage.Units holds the imported unit templates. It lives in the place, not
       // here: Rojo can't live-sync imported meshes (D-009).
     },
+    // What runs before the rest loads: the black you arrive under from a lobby car's trip (L-08e1c).
+    "ReplicatedFirst": {
+      "$path": "src/first"
+    },
     "ServerScriptService": {
       "Server": {
         "$path": "src/server"

@@ -3303,3 +3303,49 @@ friend is asked of Roblox once as they step in (`Player:IsFriendsWith` yields, s
 and kept both ways round; until it's answered they're neither in nor out; a failed ask counts as
 no for 5 s, then is asked again. A diver under the shutting gate rides only within the host's
 count and, while it's Friends only, only if known to be the host's friend.
+
+## D-122 A server of the group's own: the ride goes on through the black (L-08e1c, Nov 12)
+The moment: the gate slams on you and two friends, the car moves off, the screen sinks to black
+("Going up"), and it opens on the same ride, the shaft sliding past, the car levelling on floor 1
+of a building that's only yours.
+
+**As DOORS' lobby elevators send each group to its own server.** Brix has no matchmaking (its
+round loop, ENG-13, is unbuilt), so `Trips` is the smallest stand-in: one `TeleportAsync` for the
+whole car to a new reserved server. Roblox's current way is `TeleportOptions.ReservedServerId`
+set to a fresh GUID: the first teleport with it makes the server, and a retry with the same one
+lands on it, so a hiccup never splits a group (`ReserveServer` and `ShouldReserveServer` are
+deprecated; read on create.roblox.com Nov 12, docs/STUDIO.md). The data that goes along is who's in
+the group, host first, and the difficulty (`Trip.encode`). It passes through each player's device,
+so the group's server checks it (`Trip.decode`: our version, 1 to 6 distinct UserIds, a known
+difficulty) and takes it only as whom to wait for; nothing of value rides on it yet. Rejected:
+MemoryStore for the group (secure, but a second service that can fail, for data a cheat gains
+nothing from today; take it when difficulties pay out more).
+
+**The black hides the trip, the ride carries across it.** Riders' screens fade to black 1.6 s
+into the ride (the slam has rung and the car has started to move) and the server sends them at
+2.2 s, black by then; an opaque twin of the cover is Roblox's teleport screen, so the black
+carries across, and ReplicatedFirst keeps it up on arrival. The group's server lays floor 1 the
+moment it starts, waits for the whole group (or 10 s after the first: a slow phone isn't worth
+everyone staring at black), streams floor 1's car to them and stands them in it, host at the
+front, facing the gate, 3.4 s into the car's ride (`Elevators:ride`, `Climbs:arrive`): full speed,
+the second clank, the slowdown and the bell still ahead, so the ride they left in is the ride
+they arrive in. Someone later (a slow phone, a respawn at that server's front office) is stood in
+front of the car once it has opened, as if they'd just stepped out. A group's own server opens no
+lobby cars. Rejected: arriving on floor 1 standing outside the car (no ride, no reveal); holding
+everyone until the last phone loads (one bad connection stalls five friends).
+
+**A failed trip goes back to the car.** Failures Roblox thinks worth it (Failure, Flooded) are
+tried again, three tries in all; a rider still here 15 s after their last try has failed too.
+Those still here are back in their car, the car standing open again, in their old order (the host
+hosts) with the choices as they were, "Teleport failed" on their screen and the count running
+again; the next trip makes a new server (someone who did go isn't followed: OWNER.md). Two failed
+trips in a row and that lobby rides its groups up on its own server, as before (D-120), so the
+game stays playable if trips break; it warns once.
+
+**Studio.** Studio rides on its own server, as before, so play and the dev tools keep working.
+Workspace's `DevTrip` (set in Edit, never saved) tries the rest: "Arrive" makes the server a
+group's own for whoever joins; "Send" takes the real trip through Studio's test teleports, which
+open the group's server as a new test server from the place as last saved, with an empty
+`PrivateServerId` (there, the first player arriving on a trip makes it one); "Fail" makes every
+trip fail. Live, a group's own server is only one with a `PrivateServerId` and no owner, so
+teleport data can't turn a public server into one.

@@ -2,47 +2,45 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-12, session 108 (L-08e1b2), night run session 9 of 15 · **Checks:** green ·
+**Updated:** 2026-11-12, session 109 (L-08e1c), night run session 10 of 15 · **Checks:** green ·
 **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- **L-08e1b2 done (D-121).** The first one into a lobby car hosts. A "Host" button inside the
-  car on the keypad's side (others aboard: "View") opens `CarPanel`: Open / Friends, the player
-  count over six seats, Normal (the only difficulty), Go; greyed for all but the host. One remote
-  (`Remotes.CarPanel`: types, range, rate, then `Boarding`'s rules); the choices replicate on the
-  car (`FriendsOnly`, `Players`). Go runs the count out now. A stranger the choices close a car to
-  is set down outside with "Car full" or "Friends only" (`IsFriendsWith` asked once, kept).
-- Verified in Studio Play, one player on a computer: the panel opens on E, Friends and 2 land on
-  the car, the ride runs with them; Go shuts the gate at once and the ride reaches floor 1; a held
-  count greys Go; the greyed view and the headline on this screen alone. Output clean but the
-  known lines. Two players and a phone: `OWNER.md`.
-- Studio: left in Edit, play stopped, nothing imported, place not changed.
+- **L-08e1c done (D-122).** At the post a car's riders fade to black ("Going up") and are sent in
+  one `TeleportAsync` to a new reserved server (`ReservedServerId`, a GUID), group and difficulty
+  as checked data (`Trip`). That server (`Trips:own()`) lays floor 1, waits for the group (or
+  10 s), stands them in its car 3.4 s into its ride (`Elevators:ride`, `Climbs:arrive`); the
+  black lifts on the shaft. Failed trip: back in the car, "Teleport failed", the count again; two
+  in a row and the lobby rides groups up on its own server. Studio rides on its own server;
+  Workspace `DevTrip` "Arrive" / "Send" / "Fail" tries the rest (STUDIO.md).
+- Verified in Studio, one player: the ride here; the arrival; the whole trip through Studio's
+  test teleport; two failed trips then the ride here. Output clean but the known lines.
+- Studio: left in Edit, play stopped, `DevTrip` cleared, nothing imported. The place was saved
+  (version 34, never published) so the test teleport's server ran tonight's code.
+- `rojo serve` didn't pick up the new `ReplicatedFirst` entry (read at start only): `OWNER.md`.
 
-## Next task: L-08e1c A server of the group's own
-The moment: the gate slams on you and two friends, the shaft slides by, and you open on floor 1
-of a building that's only yours: nobody else's climb, nobody else's end.
+## Next task: L-08e2 Back in your car
+The moment: the climb ends and you're standing in the same car with the same friends, results on
+the wall, the count running for another go.
 1. Owner test results first, if pasted.
-2. Read ROADMAP L-08e1c, `docs/FRAMEWORK.md`'s ENG-13 row, D-120 and D-121. Check `../engine`
-   (read only, never edit it) for a teleport or match piece at our pin.
-3. Smallest stand-in if Brix has none: at the post, the server reserves a server
-   (`TeleportService:ReserveServer`, verify on create.roblox.com and note it in STUDIO.md) and
-   teleports the riders with TeleportData: who's in the group, the host, the difficulty
-   (`Boarding.Difficulties`). Write the missing piece for Brix in FRAMEWORK.md and OWNER.md in
-   neutral terms (tonight nobody edits Brix).
-4. The reserved server knows it's one (`game.PrivateServerId ~= ""` and no owner) and starts the
-   climb on floor 1 for those who arrive, no lobby cars there; a public server keeps the lobby.
-5. A failed trip (`TeleportInitFailed`): everyone back in the car, a short headline, the count
-   again. Studio can't teleport: there the ride stays on this server as now (D-120), so Studio
-   play keeps working.
-**Acceptance:** checks green; Studio Play still rides from a car to floor 1 on this server with
-Output clean but 203785492, 120448020095820 and the known rbxassethash lines; the live trip
-written into `OWNER.md` as exact steps (it's the owner's to run on live servers).
-**Read first:** ROADMAP L-08e1c; FRAMEWORK.md's ENG-13 row; DECISIONS D-120, D-121;
-`src/server/LobbyCars.luau` (`departed`); `src/server/Climbs.luau` (`ready`, `board`).
+2. Read ROADMAP L-08e2 and the GDD's "The lobby" (results on the wall); D-106 (the end), D-122.
+3. Default (OWNER.md if the GDD says otherwise): on a group's own server the front office's cars
+   open too (`LobbyCars` with `Trips:sends()` false there, so they ride up on that server, as in
+   Studio); the trip's data carries the bay (`Trip.Version` 2, `decode` still reads 1).
+4. At the end, instead of `ClimbEnds.go`'s fresh floor 1: everyone in the climb back in the car
+   they left from (its bay), stood at `Trip.spot`, joined in their old order (host first, the
+   choices kept), its count running; the results on the car's back wall (a SurfaceGui, phone
+   size), the end's screen out of the way. Anyone can step out and back in.
+5. Same on a lobby server where the climb rode up (Studio, or the fallback).
+**Acceptance:** checks green; Studio Play: ride up from a car, end the climb (a dev way, e.g.
+DevCorridor), stand in the same car with the count and the results, step out and in, ride again;
+Output clean but 203785492, 120448020095820 and the known rbxassethash lines.
+**Read first:** ROADMAP L-08e2; GDD "The lobby"; DECISIONS D-106, D-122;
+`src/server/ClimbEnds.luau` (`go`); `src/server/LobbyCars.luau`.
 
 ## Queue (tonight's run order, owner Nov 11 night; ROADMAP Phase 1's order paragraph)
-1. L-08e1c (next), then L-08e2 to L-08e4 (GDD "The lobby", D-112); split L-08e4 into
-   green-ending sessions too (the cart's art script first, then the ride).
+1. L-08e2 (next), then L-08e3 and L-08e4 (GDD "The lobby", D-112); split L-08e4 into
+   green-ending sessions (the cart's art script first, then the ride).
 2. With sessions left: the Seen fixes below, L-18, then honing tonight's work (ROADMAP polish).
    Never new keepers, no store or paid items, proven mechanics only, never edit Brix.
 3. Seen: the elevator's gate cache (`posings`, Elevator/init.luau) is a weak table keyed by the
@@ -57,10 +55,12 @@ written into `OWNER.md` as exact steps (it's the owner's to run on live servers)
    Asset" (cause unknown); turning right round at a run's end the crawl stops for about a third
    of a second (D-110's turn-first rule; judge with the owner's L-16d test first); the "Alt
    Cursor" chip showed on the Galaxy A16 view at the lobby's spawn; Workspace in Edit holds a
-   stray `DoorDent_M` model at the origin; everyone on the server counts in a climb's end, even
-   someone who stayed in the lobby (until L-08e1c and L-08e2); you hold the flashlight out in
-   the lobby (put it away there?); the panel's host line is blank if the host's Player isn't
-   found (left mid-update); the turned-away headline sits over the room's far wall, red on teal.
+   stray `DoorDent_M` model at the origin; in Studio (and a fallback lobby) everyone on the
+   server counts in a climb's end, even someone who stayed in the lobby (live trips fix it);
+   you hold the flashlight out in the lobby (put it away there?); the panel's host line is blank
+   if the host's Player isn't found; the turned-away headline sits over the room's far wall, red
+   on teal; on a Studio test server made a group's own, LobbyCars has already opened its cars
+   (harmless, Studio only).
 
 ## Kickoff for the next agent
 ```text
