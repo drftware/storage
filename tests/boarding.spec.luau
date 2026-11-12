@@ -3,7 +3,8 @@
 -- A lobby car's group and count (L-08e1b1): the first step in starts 20 s; the sixth cuts it to
 -- 5 unless less is left; it never climbs back up; the last one out stops it; nobody joins or
 -- leaves once the gate is shutting; a seventh is turned away; who rides puts the group first and
--- caps the car at six; the group's value round-trips; the car's readout shows dashes at rest, the
+-- caps the car at six; the first one in hosts and their choices (Friends only, the player count,
+-- Go) are theirs alone, within range, only before the gate shuts; the group's value round-trips; the car's readout shows dashes at rest, the
 -- count in its middle two cells, green then red from the warning, 0 once it's shutting.
 local Boarding = require("../src/shared/Lobby/Boarding")
 local Departure = require("../src/shared/Elevator/Departure")
@@ -102,18 +103,130 @@ end
 
 -- who rides
 do
-	local r = Boarding.riders({ 5, 3, 9 }, { 9, 3, 5 })
+	local function with(group: { number }): Boarding.Car
+		local car = Boarding.new()
+		for _, id in group do
+			table.insert(car.group, id)
+		end
+		return car
+	end
+	local function nobody(_: number): boolean?
+		return false
+	end
+	local r = Boarding.riders(with({ 5, 3, 9 }), { 9, 3, 5 }, nobody)
 	ok(#r == 3 and r[1] == 5 and r[2] == 3 and r[3] == 9, "the group, in the order they stepped in")
-	local stepped = Boarding.riders({ 5, 3 }, { 3 })
+	local stepped = Boarding.riders(with({ 5, 3 }), { 3 }, nobody)
 	ok(#stepped == 1 and stepped[1] == 3, "one who stepped out under the gate stays")
-	local dived = Boarding.riders({ 5 }, { 8, 5 })
+	local dived = Boarding.riders(with({ 5 }), { 8, 5 }, nobody)
 	ok(#dived == 2 and dived[1] == 5 and dived[2] == 8, "one who dived in under the gate rides too")
-	local crowd = Boarding.riders({ 1, 2, 3, 4, 5, 6 }, { 7, 1, 2, 3, 4, 5, 6 })
+	local crowd = Boarding.riders(with({ 1, 2, 3, 4, 5, 6 }), { 7, 1, 2, 3, 4, 5, 6 }, nobody)
 	ok(
 		#crowd == Boarding.Capacity and not table.find(crowd, 7),
 		"a full group rides; the seventh doesn't"
 	)
-	ok(#Boarding.riders({ 1 }, {}) == 0, "nobody inside, nobody rides")
+	ok(#Boarding.riders(with({ 1 }), {}, nobody) == 0, "nobody inside, nobody rides")
+	local two = with({ 1, 2 })
+	two.players = 2
+	local capped = Boarding.riders(two, { 1, 2, 3 }, nobody)
+	ok(#capped == 2 and not table.find(capped, 3), "a diver past the host's count stays behind")
+	local closed = with({ 1 })
+	closed.friends = true
+	local pals = Boarding.riders(closed, { 1, 4, 5, 6 }, function(id: number): boolean?
+		return if id == 4 then true elseif id == 5 then false else nil
+	end)
+	ok(
+		#pals == 2 and pals[2] == 4,
+		"Friends only: a friend who dived in rides; a stranger or one not known yet doesn't"
+	)
+end
+
+-- the host and their choices
+do
+	local car = Boarding.new()
+	ok(Boarding.host(car) == nil, "an empty car has no host")
+	Boarding.join(car, 1, 0)
+	Boarding.join(car, 2, 1)
+	ok(Boarding.host(car) == 1, "the first one in hosts")
+	ok(not Boarding.setFriends(car, 2, true, 2), "only the host chooses")
+	ok(Boarding.setFriends(car, 1, true, 2) and car.friends, "the host makes it Friends only")
+	ok(not Boarding.setFriends(car, 1, true, 2), "choosing it twice changes nothing")
+	ok(Boarding.refusal(car, 3, 3, nil) == "Asking", "Friends only: a stranger waits to be asked")
+	ok(Boarding.refusal(car, 3, 3, false) == "Friends", "Friends only: a stranger is turned away")
+	ok(not Boarding.join(car, 3, 3, false), "and isn't let in")
+	ok(Boarding.join(car, 4, 3, true), "the host's friend steps in")
+	ok(Boarding.refusal(car, 4, 3, nil) == "In", "aboard already")
+	local low, high = Boarding.playerRange(car)
+	ok(low == 3 and high == Boarding.Capacity, "never fewer players than are aboard")
+	ok(not Boarding.setPlayers(car, 1, 2, 4), "below those aboard: no")
+	ok(not Boarding.setPlayers(car, 1, 7, 4), "past six: no")
+	ok(not Boarding.setPlayers(car, 1, 3.5, 4), "half a player: no")
+	ok(not Boarding.setPlayers(car, 1, 0 / 0, 4), "not a number: no")
+	ok(not Boarding.setPlayers(car, 2, 4, 4), "only the host sets the count")
+	ok(Boarding.setPlayers(car, 1, 4, 4) and car.players == 4, "the host takes four")
+	ok(car.departs == Boarding.Seconds, "room left: the count runs on")
+	ok(Boarding.refusal(car, 5, 5, true) == nil, "a friend may still step in")
+	ok(
+		Boarding.join(car, 5, 5, true) and car.departs == 5 + Boarding.FullSeconds,
+		"the fourth fills it: 5"
+	)
+	ok(Boarding.refusal(car, 6, 6, true) == "Full", "a full car turns even a friend away")
+	ok(
+		Boarding.leave(car, 1, 7) and Boarding.host(car) == 2,
+		"the host steps out: the next one in hosts"
+	)
+	ok(car.friends and car.players == 4, "their choices stay with the car")
+	ok(not Boarding.setFriends(car, 1, false, 7), "the old host chooses nothing now")
+	ok(Boarding.setFriends(car, 2, false, 7) and Boarding.join(car, 9, 7), "Open: anyone steps in")
+	for _, id in { 2, 4, 5, 9 } do
+		Boarding.leave(car, id, 8)
+	end
+	ok(
+		car.departs == nil and not car.friends and car.players == Boarding.Capacity,
+		"the last one out: the next group starts Open and 6"
+	)
+	-- filling it by the count
+	local three = Boarding.new()
+	Boarding.join(three, 1, 0)
+	Boarding.join(three, 2, 0)
+	ok(
+		Boarding.setPlayers(three, 1, 2, 1) and three.departs == 1 + Boarding.FullSeconds,
+		"down to those aboard: full, 5"
+	)
+	ok(
+		Boarding.setPlayers(three, 1, 6, 2) and three.departs == 1 + Boarding.FullSeconds,
+		"back up: the count never climbs"
+	)
+end
+
+-- Go
+do
+	local car = Boarding.new()
+	ok(not Boarding.go(car, 1, 0), "nobody aboard: no Go")
+	Boarding.join(car, 1, 0)
+	Boarding.join(car, 2, 0)
+	ok(not Boarding.go(car, 2, 3), "only the host goes")
+	ok(Boarding.go(car, 1, 3) and car.departs == 3, "Go: the gate starts to shut now")
+	ok(Boarding.shutting(car, 3), "and it's shutting")
+	ok(not Boarding.go(car, 1, 4), "Go twice: nothing")
+	ok(not Boarding.setFriends(car, 1, true, 4), "no choosing once it's shutting")
+	local held = Boarding.new()
+	Boarding.join(held, 1, 0)
+	held.departs = nil -- held while another group climbs
+	ok(not Boarding.go(held, 1, 1), "a held count: no Go")
+end
+
+-- the choices' values
+do
+	local car = Boarding.new()
+	local friends, players = Boarding.encodeChoices(car)
+	ok(friends == nil and players == nil, "Open and 6: no values")
+	car.friends, car.players = true, 2
+	local f, n = Boarding.choices(Boarding.encodeChoices(car))
+	ok(f == true and n == 2, "the choices round-trip")
+	local f2, n2 = Boarding.choices("yes", 9)
+	ok(f2 == false and n2 == Boarding.Capacity, "broken values: Open and 6")
+	local _, n3 = Boarding.choices(nil, 0)
+	ok(n3 == Boarding.Capacity, "no zero players")
 end
 
 -- the group's value

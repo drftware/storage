@@ -3266,3 +3266,40 @@ is back open in its bay 12 s after it left.
 baseplate and pad; `LobbyView` turns the camera to the cars the frame you arrive (a new character
 keeps the camera's old look). The test hall is Studio only now (D-109 done), reached by the lobby's
 "Test hall" post.
+
+## D-121 The host's panel: a button inside the car, the choices on the car (L-08e1b2, Nov 12)
+The moment: first into car 3, you tap the panel, flip it to Friends and 2 players, and hit Go the
+second your friend is through the gate.
+
+**The first one in hosts, as DOORS' lobby elevators.** `Boarding.host` is the group's first; if
+they step out the next one hosts, the choices as they were (nobody loses what was picked mid-count),
+and an empty car starts again from Open and 6. The host picks Open or Friends only, 1 to 6
+players, the difficulty (one, "Normal", until the GDD's tiers are named: `OWNER.md`) and Go.
+Never fewer players than are aboard (nobody is put out by a choice); filling the host's count cuts
+the count to 5, as the sixth stepping in does; Go runs it out now (`Elevators:count(car, now)`).
+Nothing once the gate is shutting, and no Go while the count is held by another climb.
+
+**The button is inside the car, not on the keypad.** The keypad faces the room, beside the gate,
+so from inside the car it can't be reached or seen, and stepping out to it would end your hosting.
+The panel's button hangs on the car's wall on the keypad's side, just behind the gate (the gate
+stacks on the other side), at the keypad's height, and reaches the whole car without a clear line,
+so the host taps it from wherever they stand. Only those aboard see it: "Host" for the host, "View"
+for the rest, who get the same panel greyed. Rejected: the keypad's own prompt (out of reach), an
+on-screen button (a computer's locked mouse can't click it; a prompt has a key on every device),
+opening the panel on its own as you step in (it would cover a phone while friends run in).
+
+**The panel draws only what the car says.** One remote, `Remotes.CarPanel`, checked in order:
+types (a lobby car of ours, a choice the panel has, its value's type), range (this car's host),
+rate (half the panel's 0.12 s, for jitter), then Boarding's rules. The choices replicate as
+`FriendsOnly` and `Players` on the car, so every open panel answers the same change at once. A
+press answers at once on the presser's screen (the key dips, a click); one that can't go barely
+moves with a dull click and no words.
+
+**Turned away at the gate.** Someone stepping into a car its host's choices close to them (full,
+or Friends only and not the host's friend) is set down outside the gate facing the room, and their
+screen says why: "Car full" or "Friends only" in red, at most every 2 s if they keep at it. Words,
+because nothing on the car shows the choices yet (L-08e3's dial will). Whether they're the host's
+friend is asked of Roblox once as they step in (`Player:IsFriendsWith` yields, so off the step)
+and kept both ways round; until it's answered they're neither in nor out; a failed ask counts as
+no for 5 s, then is asked again. A diver under the shutting gate rides only within the host's
+count and, while it's Friends only, only if known to be the host's friend.

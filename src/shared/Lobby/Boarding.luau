@@ -7,10 +7,18 @@
 	rides up to floor 1. Pure, so Lune checks it; the server keeps the groups (LobbyCars), the
 	climb's gate and clock machinery does the rest (Elevators, Departure).
 
-	Two replicated values on a lobby car:
+	The first one in hosts (L-08e1b2), as DOORS' lobby elevators: on the car's panel they pick
+	Open or Friends only and 1 to 6 players, and can press Go at any time. If they step out, the
+	next one in hosts. A stranger the host's choices turn away (a full car, or Friends only) isn't
+	let in; the server sets them down at the gate and says why.
+
+	Replicated values on a lobby car:
 	- `CarAttribute`: its bay, 1 to 6. Marks it a lobby car: its keypad never wakes, and its clock
 	  shows only on the screens of those aboard.
 	- `GroupAttribute`: the UserIds aboard, in the order they stepped in. Absent when it's empty.
+	  The first is the host.
+	- `FriendsAttribute`: true while the host has it Friends only; absent while it's Open.
+	- `PlayersAttribute`: how many players the host takes, 1 to 5; absent at the full 6.
 ]]
 local Departure = require("../Elevator/Departure")
 
@@ -22,6 +30,8 @@ export type Tone = "Off" | "Rest" | "Lit" | "Right"
 
 Boarding.CarAttribute = "LobbyCar"
 Boarding.GroupAttribute = "Group"
+Boarding.FriendsAttribute = "FriendsOnly"
+Boarding.PlayersAttribute = "Players"
 
 -- Seconds the count runs from the first step in: the GDD's 20, DOORS' lobby wait. Long enough to
 -- wave a friend over from the door (under 3 s at a run) and let them pick the car; short enough
@@ -34,17 +44,42 @@ Boarding.Capacity = 6
 -- Seconds you must be out of the car before you've left it: a heel over the sill as you turn
 -- doesn't drop you from the group and chime you back in.
 Boarding.LeaveGrace = 0.35
+-- The host's panel's remote, ReplicatedStorage.Remotes.CarPanel: a choice to the server
+-- (car, "Friends" | "Players" | "Go", value), a refusal to a stranger turned away at the gate
+-- (car, "Full" | "Friends").
+Boarding.RemoteFolder = "Remotes"
+Boarding.RemoteName = "CarPanel"
+-- The fastest a host's choices are taken, seconds apart: a quick thumb on + or -.
+Boarding.ChoiceSeconds = 0.12
+
 -- Seconds after it left that a car stands open in its bay again, empty, for the next group: the
 -- ride up (Ride.opens, about 10 s) and a beat for those who rode to be on floor 1.
 Boarding.Back = 12
 
+-- The difficulties a host picks from. Only one until the climb has tiers (the GDD's auction-board
+-- tiers; their names wait on the owner, OWNER.md): the panel shows it, with nothing to change.
+Boarding.Difficulties = { "Normal" }
+
 export type Car = {
-	group: { number }, -- UserIds, in the order they stepped in
+	group: { number }, -- UserIds, in the order they stepped in; the first hosts
 	departs: number?, -- server time the gate starts to shut; nil while nobody's aboard
+	friends: boolean, -- the host's Friends only: only the host's friends may step in
+	players: number, -- the host's player count: the car is full at this many
 }
 
+-- Why someone may not step into a car (`refusal`). In: they're aboard already. Shutting: the
+-- gate's shutting. Full: the host's player count is reached. Friends: Friends only, and they
+-- aren't the host's friend. Asking: Friends only, and whether they're friends isn't known yet
+-- (the server is asking Roblox).
+export type Refusal = "In" | "Shutting" | "Full" | "Friends" | "Asking"
+
 function Boarding.new(): Car
-	return { group = {}, departs = nil }
+	return { group = {}, departs = nil, friends = false, players = Boarding.Capacity }
+end
+
+-- The host: the first one aboard, or nil for an empty car.
+function Boarding.host(car: Car): number?
+	return car.group[1]
 end
 
 -- Whether the count has run out at server time `t`: the gate is shutting or gone, and the group
@@ -54,28 +89,53 @@ function Boarding.shutting(car: Car, t: number): boolean
 	return departs ~= nil and t >= departs
 end
 
--- `id` steps in at `t`. False (nothing changes) if they're in already, the car is full, or its
--- gate is shutting. The first one in starts the count; the one who fills it cuts it to
--- `FullSeconds`, unless less is left already.
-function Boarding.join(car: Car, id: number, t: number): boolean
-	if
-		table.find(car.group, id)
-		or #car.group >= Boarding.Capacity
-		or Boarding.shutting(car, t)
-	then
+-- Why `id` may not step into `car` at `t`, or nil if they may. `friend`: whether they're the
+-- host's friend, nil if that isn't known (asked only while it's Friends only).
+function Boarding.refusal(car: Car, id: number, t: number, friend: boolean?): Refusal?
+	if table.find(car.group, id) then
+		return "In"
+	end
+	if Boarding.shutting(car, t) then
+		return "Shutting"
+	end
+	if #car.group >= car.players then
+		return "Full"
+	end
+	if car.friends and #car.group > 0 then
+		if friend == nil then
+			return "Asking"
+		elseif not friend then
+			return "Friends"
+		end
+	end
+	return nil
+end
+
+-- The car is full (`players` aboard) at `t`: the count drops to `FullSeconds`, unless less is
+-- left already or it's held.
+local function cut(car: Car, t: number)
+	local departs = car.departs
+	if departs and #car.group >= car.players then
+		car.departs = math.min(departs, t + Boarding.FullSeconds)
+	end
+end
+
+-- `id` steps in at `t`. False (nothing changes) if `refusal` says they may not. The first one
+-- in starts the count (and hosts); the one who fills it cuts it to `FullSeconds`, unless less is
+-- left already.
+function Boarding.join(car: Car, id: number, t: number, friend: boolean?): boolean
+	if Boarding.refusal(car, id, t, friend) then
 		return false
 	end
 	table.insert(car.group, id)
-	local departs = car.departs or t + Boarding.Seconds
-	if #car.group >= Boarding.Capacity then
-		departs = math.min(departs, t + Boarding.FullSeconds)
-	end
-	car.departs = departs
+	car.departs = car.departs or t + Boarding.Seconds
+	cut(car, t)
 	return true
 end
 
 -- `id` steps out at `t`. False if they weren't in or the gate is shutting. The count runs on
--- (it never climbs back up); the last one out stops it.
+-- (it never climbs back up); if the host left, the next one in hosts, the choices as they were;
+-- the last one out stops it, and the next group starts from Open and 6.
 function Boarding.leave(car: Car, id: number, t: number): boolean
 	local i = table.find(car.group, id)
 	if not i or Boarding.shutting(car, t) then
@@ -84,7 +144,56 @@ function Boarding.leave(car: Car, id: number, t: number): boolean
 	table.remove(car.group, i)
 	if #car.group == 0 then
 		car.departs = nil
+		car.friends = false
+		car.players = Boarding.Capacity
 	end
+	return true
+end
+
+-- The player counts the host may pick now: never fewer than are aboard, never more than six.
+function Boarding.playerRange(car: Car): (number, number)
+	return math.max(#car.group, 1), Boarding.Capacity
+end
+
+-- The host's choices. Each is the host's alone (`by` must be the host), only before the gate
+-- starts to shut, and true only if it changed something.
+
+-- Open (false) or Friends only (true). Those already aboard stay.
+function Boarding.setFriends(car: Car, by: number, on: boolean, t: number): boolean
+	if Boarding.host(car) ~= by or Boarding.shutting(car, t) or car.friends == on then
+		return false
+	end
+	car.friends = on
+	return true
+end
+
+-- How many players the car takes, within `playerRange`. Down to as many as are aboard fills it,
+-- which cuts the count as the last one stepping in does.
+function Boarding.setPlayers(car: Car, by: number, n: number, t: number): boolean
+	local low, high = Boarding.playerRange(car)
+	if
+		Boarding.host(car) ~= by
+		or Boarding.shutting(car, t)
+		or n % 1 ~= 0
+		or n < low
+		or n > high
+		or n == car.players
+	then
+		return false
+	end
+	car.players = n
+	cut(car, t)
+	return true
+end
+
+-- Go: the count runs out now, so the gate starts to shut at `t`. Nothing while the count is held
+-- (another group's climb on this server, until L-08e1c).
+function Boarding.go(car: Car, by: number, t: number): boolean
+	local departs = car.departs
+	if Boarding.host(car) ~= by or not departs or t >= departs then
+		return false
+	end
+	car.departs = t
 	return true
 end
 
@@ -95,25 +204,47 @@ function Boarding.resume(car: Car, t: number)
 	if car.departs or #car.group == 0 then
 		return
 	end
-	local full = #car.group >= Boarding.Capacity
+	local full = #car.group >= car.players
 	car.departs = t + (if full then Boarding.FullSeconds else Boarding.Seconds)
 end
 
 -- Who rides, of those `inside` (UserIds) as the gate hits its post: the group first, in the order
--- they stepped in, then anyone who dived in under the shutting gate, up to `Capacity`.
-function Boarding.riders(group: { number }, inside: { number }): { number }
+-- they stepped in, then anyone who dived in under the shutting gate, up to the host's player
+-- count. While it's Friends only a diver rides only if `friend(id)` says they're the host's friend.
+function Boarding.riders(car: Car, inside: { number }, friend: (id: number) -> boolean?): { number }
 	local out: { number } = {}
-	for _, id in group do
-		if #out < Boarding.Capacity and table.find(inside, id) then
+	for _, id in car.group do
+		if #out < car.players and table.find(inside, id) then
 			table.insert(out, id)
 		end
 	end
+	local strangers = car.friends and #car.group > 0
 	for _, id in inside do
-		if #out < Boarding.Capacity and not table.find(out, id) then
+		if
+			#out < car.players
+			and not table.find(out, id)
+			and not (strangers and friend(id) ~= true)
+		then
 			table.insert(out, id)
 		end
 	end
 	return out
+end
+
+-- The host's choices from their replicated values: Friends only, and the player count (a
+-- missing or broken value is Open and 6).
+function Boarding.choices(friends: unknown, players: unknown): (boolean, number)
+	local n = Boarding.Capacity
+	if type(players) == "number" and players % 1 == 0 and players >= 1 and players < n then
+		n = players
+	end
+	return friends == true, n
+end
+
+-- The choices as their replicated values (`FriendsAttribute`, `PlayersAttribute`).
+function Boarding.encodeChoices(car: Car): (boolean?, number?)
+	return if car.friends then true else nil,
+		if car.players < Boarding.Capacity then car.players else nil
 end
 
 -- The group as its replicated value, or nil for an empty one.

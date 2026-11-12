@@ -1548,3 +1548,12 @@ verified: a doc page, Studio, or "untested".
   over an optional function field (`{Player} | {Player}`, "Cannot call"). Annotating the caller's
   locals (`local char: string, tone: Boarding.Tone = ...`) or an if statement fixed both; the
   module now spells the four tones out itself.
+- **Testing a lobby car from the MCP** (L-08e1b2, Nov 12): the cars' tag is `Elevator.Tag`
+  ("FreightElevator"), not "Elevator". After a ride up from the lobby the client streams the
+  lobby out: teleport back first and loop on `GetTagged` until the car (and its `CarPanel`
+  attachment) are there, then step in. A choice on the panel: `user_mouse_input` with
+  `instance_path` "LocalPlayer.PlayerGui.CarPanel.Panel.Body.Go" (or `.Switch.Friends`,
+  `.Minus`, `.Plus`) clicks it on a computer. A second player's view on one screen: set the car's
+  `Group`, `FriendsOnly` and `Players` from a Client `execute_luau` (local only, never
+  replicated; the server's next publish overwrites them). A headline that pops and fades within
+  2 s: send it (a Server `FireClient`) and capture in the very next call, not after a wait.

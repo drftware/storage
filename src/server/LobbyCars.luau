@@ -20,6 +20,15 @@
 	- One climb at a time on a server until L-08e1c gives each group a server of its own: while
 	  one a car started is on, the other cars' counts are held (their groups stay) and start again
 	  from the full count once it's over.
+	- The host's panel (L-08e1b2): the first one aboard hosts; their choices come through the
+	  `CarPanel` remote, checked in order: the payload's types (a lobby car of ours, a choice the
+	  panel has, its value's type), then range (the car's host, so aboard), then the rate, then
+	  Boarding's own rules (within range, before the gate shuts). The choices go on the car for
+	  every screen. Go runs the count out now (Elevators' `count`).
+	- Turned away: someone stepping into a car its host's choices close to them (full, or Friends
+	  only and not the host's friend) is set down outside its gate, and their screen is told why.
+	  Whether they're the host's friend is asked of Roblox once, as they step in
+	  (`Player:IsFriendsWith` yields), and kept; until it's known they're neither in nor out.
 
 	Every step checks each player against the six cars: a few box tests, no allocation.
 ]]
@@ -48,6 +57,11 @@ type Car = {
 
 local FREE = Brix.Pathing.free()
 local STUDIO = RunService:IsStudio()
+-- Seconds between telling the same player why they were turned away: walking in again and again
+-- sets them down each time, but the words come at most this often.
+local TELL_AGAIN = 2
+-- Seconds before asking Roblox again whether two players are friends after the ask failed.
+local ASK_AGAIN = 5
 
 -- Where someone left in a car that leaves without them is set down: on the striped zone in
 -- front of its gate, facing the room (in the elevator's frame, +Z into the car).
@@ -76,10 +90,73 @@ function LobbyCars.new(): Brix.System
 	-- a climb a car started is on this server (until L-08e1c), and since when
 	local climbing = false
 	local boardedAt = 0
+	local remote: RemoteEvent? = nil
+	local lastChoice: { [Player]: number } = {} -- os.clock() of each host's last choice taken
+	local lastTold: { [number]: number } = {} -- UserId → server time they were last told why
+	-- Friends, as Roblox answered: UserId → UserId → whether they're friends (both ways round).
+	local friends: { [number]: { [number]: boolean } } = {}
+	local asking: { [number]: { [number]: true } } = {} -- the asks under way, the same way round
+
+	local function know(a: number, b: number, are: boolean?)
+		for _, pair in { { a, b }, { b, a } } do
+			local row: { [number]: boolean }? = friends[pair[1]]
+			if not row then
+				local fresh: { [number]: boolean } = {}
+				friends[pair[1]] = fresh
+				row = fresh
+			end
+			-- nil forgets it (an ask that failed, asked again later)
+			(row :: any)[pair[2]] = are -- any: a nil value clears the entry
+		end
+	end
+
+	-- Whether `id` is `host`'s friend: true, false, or nil while Roblox is being asked (asked once,
+	-- off the step, as IsFriendsWith yields).
+	local function friendOf(host: number, id: number): boolean?
+		local row = friends[host]
+		local known = row and row[id]
+		if known ~= nil then
+			return known
+		end
+		local pending: { [number]: true }? = asking[host]
+		if pending and pending[id] then
+			return nil
+		end
+		local asks: { [number]: true } = pending or {}
+		asking[host] = asks
+		asks[id] = true
+		task.spawn(function()
+			local player = Players:GetPlayerByUserId(id)
+			local ok, are = false, nil
+			if player then
+				ok, are = pcall(player.IsFriendsWith, player, host)
+			end
+			local p = asking[host]
+			if p then
+				p[id] = nil
+			end
+			if ok and type(are) == "boolean" then
+				know(host, id, are)
+			else
+				-- Roblox didn't answer: not a friend for now, asked again in a moment
+				know(host, id, false)
+				task.delay(ASK_AGAIN, function()
+					local r = friends[host]
+					if r and r[id] == false then
+						know(host, id, nil)
+					end
+				end)
+			end
+		end)
+		return nil
+	end
 
 	-- The car's group and count, as the server holds them now, out to every screen.
 	local function publish(car: Car)
 		car.model:SetAttribute(Boarding.GroupAttribute, Boarding.encode(car.state.group))
+		local on, players = Boarding.encodeChoices(car.state)
+		car.model:SetAttribute(Boarding.FriendsAttribute, on)
+		car.model:SetAttribute(Boarding.PlayersAttribute, players)
 		local e = elevators
 		if e then
 			e:count(car.model, car.state.departs)
@@ -99,25 +176,58 @@ function LobbyCars.new(): Brix.System
 		end
 	end
 
-	-- Stands `car` open in its bay again, empty.
-	local function back(car: Car)
-		car.away = false
+	-- The car's group and choices as nobody's aboard, on every screen (its count is Elevators').
+	local function empty(car: Car)
 		car.state = Boarding.new()
 		table.clear(car.out)
 		car.model:SetAttribute(Boarding.GroupAttribute, nil)
+		car.model:SetAttribute(Boarding.FriendsAttribute, nil)
+		car.model:SetAttribute(Boarding.PlayersAttribute, nil)
+	end
+
+	-- Stands `car` open in its bay again, empty.
+	local function back(car: Car)
+		car.away = false
+		empty(car)
 		local e = elevators
 		if e then
 			e:lobby(car.model, car.pick)
 		end
 	end
 
-	-- `player` is inside `car` (true) or not at server time `t`: joins it, or leaves it once out
-	-- for the grace. True if the group changed.
+	-- `player` stepped into `car`, whose host's choices close it to them (`why`): set down
+	-- outside its gate, told why (not every time, if they keep at it).
+	local function turnAway(car: Car, player: Player, why: Boarding.Refusal, t: number)
+		local character = player.Character
+		if character then
+			character:PivotTo(car.model:GetPivot() * SET_DOWN)
+		end
+		local id = player.UserId
+		local r = remote
+		if r and t - (lastTold[id] or -math.huge) >= TELL_AGAIN then
+			lastTold[id] = t
+			r:FireClient(player, car.model, why)
+		end
+	end
+
+	-- `player` is inside `car` (true) or not at server time `t`: joins it (or is turned away), or
+	-- leaves it once out for the grace. True if the group changed.
 	local function see(car: Car, player: Player, inside: boolean, t: number): boolean
 		local id = player.UserId
 		if inside then
 			car.out[id] = nil
-			return Boarding.join(car.state, id, t)
+			local state = car.state
+			local host = Boarding.host(state)
+			local friend: boolean? = nil
+			if state.friends and host and host ~= id and not table.find(state.group, id) then
+				friend = friendOf(host, id)
+			end
+			local why = Boarding.refusal(state, id, t, friend)
+			if why == "Full" or why == "Friends" then
+				turnAway(car, player, why, t)
+				return false
+			end
+			return Boarding.join(state, id, t, friend)
 		end
 		if not table.find(car.state.group, id) then
 			return false
@@ -147,9 +257,7 @@ function LobbyCars.new(): Brix.System
 			return
 		end
 		car.away = true
-		car.state = Boarding.new()
-		table.clear(car.out)
-		car.model:SetAttribute(Boarding.GroupAttribute, nil)
+		empty(car)
 		local pivot = car.model:GetPivot()
 		for _, player in Players:GetPlayers() do
 			local root = rootOf(player)
@@ -184,6 +292,61 @@ function LobbyCars.new(): Brix.System
 			end
 		end
 		table.insert(returns, task.delay(math.max(leaving.at + wait - now(), 0), back, car))
+	end
+
+	-- A host's choice on their car's panel: checked, then made.
+	local function chose(player: Player, model: unknown, choice: unknown, value: unknown)
+		-- the payload's types: a lobby car of ours, a choice the panel has, its value's type
+		if typeof(model) ~= "Instance" then
+			return
+		end
+		local car: Car? = nil
+		for _, c in cars do
+			if c.model == model then
+				car = c
+			end
+		end
+		if not car or car.away then
+			return
+		end
+		if choice == "Friends" then
+			if type(value) ~= "boolean" then
+				return
+			end
+		elseif choice == "Players" then
+			if type(value) ~= "number" then
+				return
+			end
+		elseif choice ~= "Go" then
+			return
+		end
+		-- range: this car's host (the first aboard, so in it)
+		local id = player.UserId
+		if Boarding.host(car.state) ~= id then
+			return
+		end
+		-- rate: no faster than a quick thumb (half the panel's own spacing, so two taps sent
+		-- `ChoiceSeconds` apart that arrive closer together are both taken)
+		local clock = os.clock()
+		local last = lastChoice[player]
+		if last and clock - last < Boarding.ChoiceSeconds * 0.5 then
+			return
+		end
+		lastChoice[player] = clock
+		-- Boarding's own rules: the value's range, and not once the gate is shutting
+		local t = now()
+		local changed = if choice == "Friends"
+			then Boarding.setFriends(car.state, id, value :: boolean, t)
+			elseif choice == "Players" then Boarding.setPlayers(
+				car.state,
+				id,
+				value :: number,
+				t
+			)
+			else Boarding.go(car.state, id, t)
+		if changed then
+			publish(car)
+		end
 	end
 
 	local system: Brix.System = {
@@ -221,7 +384,11 @@ function LobbyCars.new(): Brix.System
 							ids[i] = player.UserId
 						end
 						local out: { Player } = {}
-						for _, id in Boarding.riders(car.state.group, ids) do
+						local host = Boarding.host(car.state)
+						local function friend(id: number): boolean?
+							return if host then friendOf(host, id) else nil
+						end
+						for _, id in Boarding.riders(car.state, ids, friend) do
 							for _, player in inside do
 								if player.UserId == id then
 									table.insert(out, player)
@@ -235,10 +402,28 @@ function LobbyCars.new(): Brix.System
 				e:lobby(model, car.pick)
 			end
 			departing = e.departed:connect(departed)
+			local remotes = ReplicatedStorage:FindFirstChild(Boarding.RemoteFolder)
+			if not remotes then
+				remotes = Instance.new("Folder")
+				remotes.Name = Boarding.RemoteFolder
+				remotes.Parent = ReplicatedStorage
+			end
+			local r = Instance.new("RemoteEvent")
+			r.Name = Boarding.RemoteName
+			r.Parent = remotes
+			remote = r
+			table.insert(connections, r.OnServerEvent:Connect(chose))
 			table.insert(
 				connections,
 				Players.PlayerRemoving:Connect(function(player: Player)
 					local t = now()
+					local gone = player.UserId
+					lastChoice[player] = nil
+					lastTold[gone] = nil
+					friends[gone], asking[gone] = nil, nil
+					for _, row in friends do
+						row[gone] = nil
+					end
 					for _, car in cars do
 						car.out[player.UserId] = nil
 						if Boarding.leave(car.state, player.UserId, t) then
@@ -309,6 +494,10 @@ function LobbyCars.new(): Brix.System
 			end
 			table.clear(returns)
 			table.clear(cars)
+			if remote then
+				remote:Destroy()
+				remote = nil
+			end
 			if folder then
 				folder:Destroy()
 				folder = nil

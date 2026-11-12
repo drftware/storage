@@ -166,8 +166,8 @@ ticket each, every session ending green and committed. Order: L-16b2 (done), L-1
 look for every button, the owner's "prompt updates"), L-19b (done: a door's buttons where the
 hand goes), L-20a (done: the inventory wheel, three slots), L-17 (done: every button on a
 phone at once), L-16d (done: your body placed each drawn frame), L-08e1a (done: the front
-office built), L-08e1b1 (done: step in and the count), then the rest of the lobby, L-08e1b2,
-L-08e1c, L-08e2 to L-08e4 (GDD
+office built), L-08e1b1 (done: step in and the count), L-08e1b2 (done: the host's panel), then
+the rest of the lobby, L-08e1c, L-08e2 to L-08e4 (GDD
 "The lobby", D-112), which no longer waits on L-09a
 (only the owner can run that): split L-08e1 and L-08e4 into sessions that each end green (the
 room's art script first, then the cars, the joining and the count, then the trip to a server of
@@ -1090,12 +1090,20 @@ Brix's purchases and profiles), proven mechanics only, never edit Brix.
         owner's. **For L-08e1b2:** the keypad stays as the car's panel; its prompt is the place
         for the host's choices (KeypadPad skips lobby cars today). Go at any time can be
         `Elevators:count(car, now)`.
-      - [ ] **L-08e1b2 The host's panel.** The first one in hosts: on the car's panel (its keypad,
-        D-120), Open or Friends only, 1 to 6 players, the difficulty (only one until difficulties
-        exist; say so in `OWNER.md`), and Go at any time, as DOORS' lobby elevators do. Everyone
-        else in the car sees the choices but can't change them. A host's "1 player" or "Friends
-        only" turns a stranger away at the gate (the zone refuses the join; how they learn why is
-        part of the ticket).
+      - [x] **L-08e1b2 The host's panel. Done Nov 12** (D-121): the first one in hosts, as DOORS'
+        lobby elevators: a "Host" button inside the car on the keypad's side (the keypad faces the
+        room), reaching the whole car, opens `CarPanel`, right of centre: Open / Friends, the
+        player count between - and + over six seats (aboard, room, none), the difficulty (Normal,
+        the only one), Go. Others aboard get "View" and the same panel greyed. One remote
+        (`Remotes.CarPanel`), checked types, range (the host), rate, then `Boarding`'s rules
+        (never fewer players than aboard; not once shutting); the choices replicate on the car
+        (`FriendsOnly`, `Players`); Go runs the count out now; filling the host's count cuts it
+        to 5. A stranger the choices close the car to (full, or not the host's friend:
+        `IsFriendsWith` asked once as they step in, kept) is set down outside with "Car full" or
+        "Friends only". The host steps out: the next one hosts, choices kept; empty: Open and 6.
+        Lune: 83 checks. Verified in Studio on a computer, one player (`docs/art/L-08e1b2-*.jpg`);
+        two players and a phone are the owner's. **For L-08e1c:** the difficulty goes with the
+        group (`Boarding.Difficulties`, one today); a held count ends with servers of their own.
       - [ ] **L-08e1c A server of the group's own.** At zero the car takes its group to a
         reserved server of their own, the difficulty with them, and the climb starts there: Brix's
         ENG-13 if it has landed at our pin, else the smallest stand-in `docs/FRAMEWORK.md` plans

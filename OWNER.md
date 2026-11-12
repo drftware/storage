@@ -12,6 +12,39 @@ nowhere else.
   of a fresh climb. The test hall is Studio only now (L-08e1b1). Still the baseplate? Shut its
   servers down from the Creator Hub and join again, and check its supported devices include Phone.
 
+## Now: judge L-08e1b2, the host's panel (built Nov 12, D-121)
+
+The first one into a car hosts, as in DOORS' lobby: a "Host" button inside the car, beside the
+gate on the keypad's side, opens the panel: Open or Friends, the player count (1 to 6, its six
+seats filling as friends step in), the difficulty (Normal, the only one) and Go. Verified in
+Studio on a computer, one player: the panel opens on E, Friends and 2 players land on the car,
+the gate shuts and the ride runs to floor 1 with them; Go shuts the gate at once and the ride
+runs; a held count (another climb on) greys Go; the greyed view and the "Friends only" headline
+checked on this screen alone (shots `docs/art/L-08e1b2-*.jpg`). Two players and a phone are yours.
+- [ ] **Host:** step into a car; a "Host" button by the gate's left edge (E, or tap it). The panel
+  slides in on the right: "You host", Open / Friends, the count with its seats, Normal, Go. Each
+  tap dips its key with a click; the switch's light slides, the count pops. Below those aboard
+  the minus does nothing (a dull click); at 6 the plus does nothing. × (or E, or B) closes it.
+- [ ] **Go:** with the count running, Go: the panel slides away and the gate slams at once, the
+  ride, L to 1, floor 1.
+- [ ] **With a friend (Team Test, two players):** the second one in gets "View": the same panel,
+  greyed, "<your name> hosts", their taps dull. Change a choice as host: their open panel answers
+  at once. Step out as host: they host now (their button says "Host"), your choices kept.
+- [ ] **Friends only, a stranger:** host sets Friends; a player who isn't your Roblox friend walks
+  in and is set down outside the gate, facing the room, with "Friends only" in red. A real friend
+  walks in as normal (asking Roblox takes a moment: they may stand inside a beat first).
+- [ ] **Car full:** host sets 2; a third walks in and is set down with "Car full". With 2 aboard
+  the count drops to 5.
+- [ ] **Your phone:** the "Host" button reachable from anywhere in the car, the panel right of
+  the middle and clear of the jump button, every key an easy thumb.
+- [ ] **Decide (defaults in place):** (1) the difficulty tiers' names and how many (the GDD's
+  auction-board tiers aren't named; the panel shows "Normal" alone till then); (2) the button sits
+  inside the car on the keypad's side, as the keypad itself faces the room and can't be reached
+  from inside; (3) a stranger turned away is set down outside at once with a headline, as DOORS
+  puts you out of a full elevator (untested bet if you remember DOORS differently); (4) the
+  choices stay with the car when the host steps out, and go back to Open and 6 once it's empty;
+  (5) the host can't set fewer players than are aboard.
+
 ## Now: judge L-08e1b1, step in and the count (built Nov 12, D-120)
 
 The lobby's cars are the way into a climb now, as DOORS' lobby elevators are. Verified in Studio
@@ -33,14 +66,14 @@ climb (shots `docs/art/L-08e1b1-*.jpg`). Friends, a full car and a real phone ar
   steps out: the count runs on for the other. Both ride and arrive together. A friend in another
   car while you climb: their group forms but their count waits until your climb is over (one
   climb a server, until L-08e1c gives each group a server of its own).
-- [ ] **A full car (six players):** the count drops to 5; a seventh can't join, and is set down
-  outside the gate if still inside as it leaves.
+- [ ] **A full car (six players):** the count drops to 5; a seventh is set down outside the gate
+  with "Car full" (L-08e1b2).
 - [ ] **Your phone:** the count in the top bar and the keypad's readout from the room's middle.
 - [ ] **Known, until L-08e1c and L-08e2:** everyone on the server counts in the climb's end, even
   someone who stayed in the lobby (so a loss can't come while they're there), and "Again" puts
   everyone on floor 1, not back in the lobby.
-- [ ] **Decide (defaults in place):** the keypad beside each car stays as the car's panel, its
-  readout the count (L-08e1b2 makes it the host's panel); 20 s and 5 s (`Boarding`); the car back
+- [ ] **Decide (defaults in place):** the keypad beside each car stays, its readout the count
+  (the host's panel is a button inside, L-08e1b2); 20 s and 5 s (`Boarding`); the car back
   in its bay 12 s after it left; a held count starting again from 20 once a climb ends.
 
 ## Now: judge L-08e1a, the front office (built Nov 12, D-119)
