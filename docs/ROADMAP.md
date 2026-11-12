@@ -165,7 +165,7 @@ needs to be perfect." Up to 15 sessions back to back, about 300k tokens of conte
 ticket each, every session ending green and committed. Order: L-16b2 (done), L-19a (done: one
 look for every button, the owner's "prompt updates"), L-19b (done: a door's buttons where the
 hand goes), L-20a (done: the inventory wheel, three slots), L-17 (done: every button on a
-phone at once), L-16d,
+phone at once), L-16d (done: your body placed each drawn frame),
 then the lobby, L-08e1 to L-08e4 (GDD "The lobby", D-112), which no longer waits on L-09a
 (only the owner can run that): split L-08e1 and L-08e4 into sessions that each end green (the
 room's art script first, then the cars, the joining and the count, then the trip to a server of
@@ -1058,7 +1058,29 @@ Brix's purchases and profiles), proven mechanics only, never edit Brix.
       Friends only, 1 to 6, the difficulty); 20 s from the first step in, 5 s once full, Go at
       any time; at zero the climb's own gate slam. The car takes its group to a server of their
       own: ENG-13, or the stand-in `docs/FRAMEWORK.md` plans while it's unbuilt. A new player is
-      in a car within 15 s. Comes after L-09a in HANDOFF's queue.
+      in a car within 15 s. No longer waits on L-09a (owner, Nov 11 night). Three sessions, each
+      ending green:
+      - [ ] **L-08e1a The front office, built.** `art/lobby/` builds Everkeep's front office at
+        night as `art/unit/` builds the unit: one spec for the numbers, parts on shared texture
+        sets, baked PBR maps, an FBX, a generated `Specs` module and look sheets. The front door
+        and its glass, the counter (dressing), the cart rack (empty: carts are L-08e4) and six car
+        bays along one wall, each sized for the climb's own car and gate (`art/elevator/`) to
+        stand in. Imported, saved in the place and laid out by the server from `Specs`, reached
+        for now by a dev post in the test hall (the test hall stays the way in until L-08e1b).
+        Judged at phone size: you can read the room, the six bays and the way in at a glance.
+      - [ ] **L-08e1b Six cars and the count.** The climb's car and gate in each bay (the
+        Elevator's art and gate, reused). Step in to join; the first in hosts with the car's
+        panel (Open or Friends only, 1 to 6, the difficulty, Go); 20 s from the first step in,
+        5 s once full; at zero the climb's own gate slam, the ride's sway and the black. For now
+        the group's climb starts on this same server (as "Walk a floor" does), so the whole loop
+        plays before the server trip. Players spawn in the lobby facing the cars; the test hall
+        goes back to Studio only once this works (D-109).
+      - [ ] **L-08e1c A server of the group's own.** At zero the car takes its group to a
+        reserved server of their own, the difficulty with them, and the climb starts there: Brix's
+        ENG-13 if it has landed at our pin, else the smallest stand-in `docs/FRAMEWORK.md` plans
+        (put the missing piece in Brix's ROADMAP in neutral terms). A failed trip puts everyone
+        back in the car with a short toast and the count again. A new player is in a car within
+        15 s. Studio can't teleport: the trip itself is the owner's to test on live servers.
     - [ ] **L-08e2 Back in your car.** The moment: the climb ends and you're standing in the same
       car with the same friends, results on the wall, the count running for another go. Anyone
       can step out and back in. Replaces `ClimbEnds.go`'s fresh floor 1.
@@ -1132,13 +1154,17 @@ Brix's purchases and profiles), proven mechanics only, never edit Brix.
     server's put-backs (none in Studio). Verified in Studio: a quarter turn mid-crawl moved the
     eye 0.4 studs sideways in all (the sway), eye speed 4 to 5 studs a second. A live server and
     a phone go to `OWNER.md`.
-  - [ ] **L-16d The tops still jitter on a computer.** Owner, Nov 11 night, after L-16c: "still
-    janky on my computer... it still jitters a lot"; a phone was less the problem. Not now; fix
-    before friends play (L-09a). Leads: L-16c was measured with Studio in the background at 15
-    frames a second, so measure again with it focused at full frame rate (and at 120 or 144 if
-    the screen allows). The body is steered in PreSimulation while the camera draws in
-    PreRender: on a screen faster than physics, frames can repeat a place and then jump, which a
-    phone at 60 hides. Also check a live server for the crawl check's put-backs.
+  - [x] **L-16d The tops still jitter on a computer.** Done Nov 12 (D-118). Owner, Nov 11 night:
+    "still janky on my computer... it still jitters a lot". Measured: physics steps 60 times a
+    second whatever the screen draws, and your body moved only with it, so a screen at 120 or 144
+    held a place two or three frames, then jumped. Now LadderView places your body each drawn
+    frame just before the camera ("LadderViewPlace"), up the ladder, along the tops and down,
+    holding it still through physics; the crawl over a frame is `Tops.advance` (steps of at most
+    a sixtieth, a hitch capped at a quarter second; Lune-checked at 15 to 240 frames a second).
+    Verified in Studio at 15 frames a second (it can't be focused from a script): every frame
+    moves its share, the eye holds one height lying still, no server put-backs flat out with no
+    lag, simulated 4G or bad 3G; the Galaxy A16 the same. The full rate and a live server:
+    `OWNER.md`.
 - [x] **L-19 The buttons in the world, small and modern** (owner, Nov 11: "It takes up too much
   space on mobile... all prompts in the game need to be revamped to take up less space and look
   modern and world-class"). Every button in the world is Roblox's default prompt today (the dark

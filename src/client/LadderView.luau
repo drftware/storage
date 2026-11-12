@@ -9,14 +9,15 @@
 	A climber (the server tags their character `Leaned.ClimbTag`): your own climb, your screen moves
 	your body along `Leaning.up` (onto the ladder, up it rung over rung, over the edge onto your
 	belly on the steel top) and holds you there until you climb down (`Leaning.down`), your body
-	touching nothing while it goes (the crawl's collision group). Roblox's own climb animation plays
+	touching nothing while it goes (the crawl's collision group), placed afresh each drawn frame just
+	before the camera so the view glides at any frame rate (L-16d). Roblox's own climb animation plays
 	on your body while you're on the rungs, so friends see you climb. Your view stays yours to turn:
 	it rides with your head, low over the steel once you lie down. Everyone's climb, on every screen:
 	the rungs and the steel top's rattle, heard about a hall's length, and the arms of a friend lying
 	up there reaching ahead, hands on the steel.
 
 	Along the tops (L-13b2c): once you're up, the stick steers your lying body over the steel
-	(`Tops.step` on the tops' map, so you never slide off or clip a wall), your view low over it,
+	(`Tops.advance` on the tops' map, so you never slide off or clip a wall), your view low over it,
 	dipping and swaying with each pull. Every screen hears each crawler's pulls boom on the steel
 	and sees their arms reach and haul in turn. Up there only you see the Climb down and Drop down
 	buttons; Drop down takes you over a front's edge and down into the hall with a thud and a jolt.
@@ -57,6 +58,7 @@ local VIEW_DIP = 0.035
 local VIEW_SWAY = 0.03
 local TELEPORT = 3 -- studs a crawler moves in a frame past which it's a jump, not a crawl
 local MAP_EVERY = 0.4 -- seconds between looks for a newer tops' map (a top sawn through) as you crawl
+local PLACE_STEP = "LadderViewPlace" -- the render step that moves your own body each frame
 local GLIDE_MAX = 6 -- studs: a put-back nearer than this glides you there; further, you're moved
 local OFFER_EVERY = 0.2 -- seconds between looks for a hole your head is out over (its Drop in)
 -- A sawn hole about its own middle, where its Drop in button sits (the server's, turned as the
@@ -99,6 +101,9 @@ type Mine = {
 	mapAt: number, -- os.clock() of the last look for a newer map
 	glide: CFrame?, -- where the server's word found you, gliding from it to where it put you
 	glideAt: number,
+	-- where this drawn frame put your root, held there through each physics step until the next
+	-- frame's (else gravity sags it between frames and the server hears a sagging body)
+	placed: CFrame?,
 }
 -- One of a body's legs, for a landing's crouch: its joints and how long it is (from the avatar's
 -- own rig attachments, so a long-legged avatar's feet stay put too).
@@ -392,7 +397,7 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 		return push.X, push.Z, ahead.X, ahead.Z
 	end
 
-	-- Crawling the tops, a frame: the stick steers your lying body over the steel (`Tops.step`),
+	-- Crawling the tops, a frame: the stick steers your lying body over the steel (`Tops.advance`),
 	-- your view dipping and swaying with each pull. The server's word putting you back moves you.
 	local function steer(c: Climb, m: Mine, dt: number)
 		local track = m.track
@@ -451,7 +456,7 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 		local map = m.map
 		if map then
 			local mx, mz, lx, lz = input(m.origin, m.humanoid)
-			st = Tops.step(map, st, mx, mz, lx, lz, dt)
+			st = Tops.advance(map, st, mx, mz, lx, lz, dt)
 		end
 		m.steer = st
 		local at = m.origin
@@ -470,6 +475,7 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 		m.root.CFrame = at
 		m.root.AssemblyLinearVelocity = Vector3.zero
 		m.root.AssemblyAngularVelocity = Vector3.zero
+		m.placed = at
 		if now - offerAt >= OFFER_EVERY then
 			offerAt = now
 			offer(at)
@@ -810,8 +816,10 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 		end
 	end
 
-	-- Before physics: your body on its path; then the arms of everyone lying up top.
-	local function bodyStep(dt: number)
+	-- Each drawn frame, just before the camera reads your body: your body on its path, moved by
+	-- this frame's own time (L-16d). Steered with physics' steps instead, a screen drawing faster
+	-- than physics (120, 144) showed one place for two or three frames, then jumped.
+	local function placeStep(dt: number)
 		local c = mine
 		local m = c and c.mine
 		if c and m then
@@ -832,9 +840,11 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 			then
 				steer(c, m, dt)
 			else
-				m.root.CFrame = rootAt(c, m, t)
+				local at = rootAt(c, m, t)
+				m.root.CFrame = at
 				m.root.AssemblyLinearVelocity = Vector3.zero
 				m.root.AssemblyAngularVelocity = Vector3.zero
+				m.placed = at
 				local track = m.track
 				if track then
 					local rungs = onRungs(c, t)
@@ -851,6 +861,19 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 					end
 				end
 			end
+		end
+	end
+
+	-- Before each physics step: your body held still where the last frame put it; then the arms
+	-- of everyone lying up top.
+	local function bodyStep()
+		local c = mine
+		local m = c and c.mine
+		local placed = m and m.placed
+		if m and placed then
+			m.root.CFrame = placed
+			m.root.AssemblyLinearVelocity = Vector3.zero
+			m.root.AssemblyAngularVelocity = Vector3.zero
 		end
 		for _, cl in climbs do
 			if cl.move == "Drop" or cl.move == "In" then
@@ -951,6 +974,7 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 			CollectionService:GetInstanceRemovedSignal(Leaned.ClimbTag):Connect(ended)
 		)
 		table.insert(connections, RunService.PreSimulation:Connect(bodyStep))
+		RunService:BindToRenderStep(PLACE_STEP, Enum.RenderPriority.Camera.Value - 1, placeStep)
 		table.insert(connections, RunService.RenderStepped:Connect(raiseStep))
 		table.insert(
 			connections,
@@ -1020,6 +1044,7 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 	end
 
 	function system.stop(_: any)
+		RunService:UnbindFromRenderStep(PLACE_STEP)
 		for _, conn in connections do
 			conn:Disconnect()
 		end

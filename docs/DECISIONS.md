@@ -3151,3 +3151,41 @@ and their taps off, back on fold after 4 s; kept with only Bang, the map and the
 out by a stand-in's Cut free with the wheel back at y 212 and the torch's switch back. On a
 computer: Q at a shut door peeked with the wheel shut; at an open door Q opened it with Close and
 Slam aside.
+
+## D-118 The crawl is placed each drawn frame, not each physics step (L-16d, Nov 12)
+
+The owner, Nov 11 night, after L-16c: crawling the tops was "still janky on my computer... it
+still jitters a lot", less so on a phone. **The cause, measured:** your screen steered your lying
+body in `PreSimulation`, and physics steps on its own clock, 60 a second, whatever the screen
+draws. Recorded in Play: with Studio drawing 15 frames a second, `PreSimulation` still ran 60.1
+times a second, four steps to most drawn frames and two to one. So a screen drawing faster than
+physics (120, 144) gets a physics step on only some frames: the camera drew one place two or
+three frames running, then jumped, a stutter a phone at 60 mostly hides. Roblox is moving more
+of the engine onto this fixed clock (its BindToSimulation and UseFixedSimulation, announced Apr
+29, 2026), so it stays true. And between placing your body and drawing it, physics nudged it down
+a few hundredths of a stud on random frames: lying still, your eye dipped 0.017 studs now and
+then.
+
+**Now:** LadderView places your own body in a render step just before the camera
+(`RenderPriority.Camera - 1`, "LadderViewPlace"): up the ladder, along the tops, down and off
+alike, each drawn frame moving it by that frame's own time. The crawl over a frame is
+`Tops.advance`: `Tops.step` in even steps no longer than a sixtieth of a second (`StepMax`, the
+rate the crawl was tuned at), so turning and sliding along edges feel the same on any screen, and
+a hitch past a quarter of a second (`FrameMax`) loses the rest rather than throwing you across
+the steel. Before each physics step the body is held where the frame put it, still, so physics
+and the server see what you see. Friends' arms stay in `PreSimulation`, after Roblox's animation.
+
+**Measured, before and after** (Studio unfocused, 15 frames a second; it can't be brought to the
+front from a script here): crawling straight, a frame's pace was off its neighbours' by up to
+9.8% (3.8% on average), since every frame moved whole physics steps whatever its own length; now
+at most 4.0% (2.2%), which is the pulls' own surge. Lying still, your eye now holds one height.
+`tests/tops.spec.luau`: at 15, 30, 120, 144 and 240 frames a second every frame moves its share
+and ends where 60 takes you, within 0.05 studs and facing the same way. The server's crawl check
+put nobody back crawling flat out with weaving turns across three units' tops (about 25 studs
+each run), with no lag, under the
+network simulator's 4G and under its bad 3G (150 to 180 ms each way, jitter, loss). On the
+Galaxy A16 in the Device Simulator: no frame held, one steady height, climbing down as before.
+
+**Not measured here:** a computer drawing above 60. The fix doesn't depend on the rate (each
+frame moves its own time), but the feel at 120 and 144 is the owner's to judge, with a live
+server's lag (`OWNER.md`).

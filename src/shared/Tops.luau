@@ -42,6 +42,12 @@ Tops.Pull = 2.2 -- studs a pull (one arm hauls you on): each pull a soft boom on
 -- heard and seen in the arms, while your view glides as a walk does (it was 0.55, a lurch).
 Tops.Surge = 0.1
 Tops.ArmSwing = math.rad(24) -- a friend's arms reaching and hauling in turn, about their rest
+-- Each drawn frame's crawl is cut into steps no longer than one at 60 frames a second, the rate
+-- the crawl was tuned at, so turning and sliding along an edge feel the same on any screen.
+Tops.StepMax = 1 / 60
+-- The longest frame the crawl catches up (seconds): past it, a hitch costs you the rest of the
+-- way rather than throwing you across the steel in one frame.
+Tops.FrameMax = 0.25
 
 -- Your body lying on the steel, for the checks: points along your heading from your root (studs),
 -- each a square of `half` studs that must lie on the tops. The head's may reach out over a unit's
@@ -534,6 +540,33 @@ function Tops.step(
 	end
 	local moved = math.sqrt((nx - x) ^ 2 + (nz - z) ^ 2)
 	return { x = nx, z = nz, yaw = yaw, travel = s.travel + moved, spin = spin }, moved
+end
+
+-- The crawl over one drawn frame of `dt` seconds (L-16d): `Tops.step` in even steps of at most
+-- `StepMax`, so every frame moves your view its own share at any frame rate (a screen at 144 used
+-- to show a place twice, then jump, as the body moved only with physics' 60) and a slow frame
+-- moves you just as the fast ones it stands for would. A hitch past `FrameMax` loses the rest.
+function Tops.advance(
+	m: Map,
+	s: State,
+	mx: number,
+	mz: number,
+	lx: number,
+	lz: number,
+	dt: number
+): State
+	local t = math.min(dt, Tops.FrameMax)
+	if t <= 0 then
+		return s
+	end
+	-- (the nudge keeps four steps of a sixtieth from reading as five)
+	local n = math.max(1, math.ceil(t / Tops.StepMax - 1e-6))
+	local h = t / n
+	local st = s
+	for _ = 1, n do
+		st = Tops.step(m, st, mx, mz, lx, lz, h)
+	end
+	return st
 end
 
 -- Which pull you're in and how far through it (0 to 1), `travel` studs in.

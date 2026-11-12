@@ -500,6 +500,51 @@ do
 	ok(still < Tops.Speed * DT * 0.05, `facing right away, you turn before you crawl ({still})`)
 end
 
+-- Every drawn frame moves you its own share (L-16d; owner, Nov 11: "it still jitters a lot" on a
+-- computer): a screen drawing 144 frames a second crawls and turns as far each second as one
+-- drawing 60 or 15, each frame a step in proportion to its time, never a frame held then a jump;
+-- a long hitch is cut short rather than throwing you across the steel.
+do
+	local open = Tops.decode(Tops.encode({ { x0 = -40, x1 = 40, z0 = -40, z1 = 40 } }, {}))
+	assert(open, "an open square of steel reads back")
+	local slow, fast = Tops.Speed * (1 - Tops.Surge), Tops.Speed * (1 + Tops.Surge)
+	-- crawling ahead (-Z) for `seconds`, then pushing right (+X) for as long: where you end up,
+	-- and the frames that moved too little or too much for their time
+	local function crawl(fps: number, seconds: number): (Tops.State, number)
+		local st: Tops.State = { x = 0, z = 20, yaw = Tops.yawOf(0, -1), travel = 0 }
+		local dt = 1 / fps
+		local uneven = 0
+		for n = 1, math.round(seconds * fps) do
+			local nxt = Tops.advance(open, st, 0, -1, 0, -1, dt)
+			local pace = (st.z - nxt.z) / dt
+			if n > 1 and (pace < slow * 0.99 or pace > fast * 1.01) then
+				uneven += 1
+			end
+			st = nxt
+		end
+		for _ = 1, math.round(seconds * fps) do
+			st = Tops.advance(open, st, 1, 0, 1, 0, dt)
+		end
+		return st, uneven
+	end
+	local at60, uneven60 = crawl(60, 2)
+	ok(uneven60 == 0, `at 60 a second every frame moves its share ({uneven60} off)`)
+	for _, fps in { 15, 30, 120, 144, 240 } do
+		local at, uneven = crawl(fps, 2)
+		ok(uneven == 0, `at {fps} a second every frame moves its share ({uneven} off)`)
+		local off = math.sqrt((at.x - at60.x) ^ 2 + (at.z - at60.z) ^ 2)
+		ok(off < 0.05, `at {fps} a second you end where 60 takes you ({off} studs off)`)
+		ok(math.abs(at.yaw - at60.yaw) < 0.01, `and facing the same way ({at.yaw}, {at60.yaw})`)
+	end
+	-- a frame of no time, or a hitch of a second
+	local st: Tops.State = { x = 0, z = 20, yaw = Tops.yawOf(0, -1), travel = 0 }
+	local same = Tops.advance(open, st, 0, -1, 0, -1, 0)
+	ok(same.z == st.z, "a frame of no time moves you nowhere")
+	local hitch = Tops.advance(open, st, 0, -1, 0, -1, 1)
+	local went = st.z - hitch.z
+	ok(went > 0 and went <= fast * Tops.FrameMax + 1e-9, `a hitch is cut short ({went} studs)`)
+end
+
 -- The drop, on an M front: smooth, over the edge, a fall, standing in the hall.
 do
 	local fit = fits.M

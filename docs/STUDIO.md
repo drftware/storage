@@ -1407,7 +1407,8 @@ verified: a doc page, Studio, or "untested".
   character's `TopsFix` attribute to a lying CFrame on the Client (`origin * CFrame.new(x, y, z) *
   CFrame.Angles(0, yaw, 0) * CFrame.Angles(-math.pi / 2, 0, 0)`, the map's frame); LadderView
   takes it as the server's put-back and moves you there, and the server's check accepts it as a
-  crawl if it's a few studs off. To crawl a way, hold the view with a `BindToRenderStep` and hold
+  crawl if it's a few studs off; much further (23 studs, L-16d) and the server puts you back where
+  it last saw you, so crawl most of the way first. To crawl a way, hold the view with a `BindToRenderStep` and hold
   W with `user_keyboard_input`. The torch's R1 from `user_keyboard_input` doesn't reach its
   ContextActionService binding; for a shot, enable the beam's SpotLight on the Client.
 - **Measuring the crawl's view frame by frame** (Play, L-16c, 2026-11-11): record in a
@@ -1419,6 +1420,29 @@ verified: a doc page, Studio, or "untested".
   focused it draws about 15 frames a second while `PreSimulation` keeps stepping several times
   per drawn frame, so a render sampler sees several crawl steps at once (that looked like physics
   moving the body; it wasn't). Judge smoothness by eye only with Studio focused, or on a device.
+  To compare runs, take each frame's horizontal eye step over its own `dt` and compare it with its
+  neighbours' (L-16d): a frame that moved whole physics steps whatever its length stands out.
+- **Physics steps on its own clock, not per drawn frame** (L-16d, 2026-11-12): measured in Play,
+  `PreSimulation` and `PostSimulation` ran 60.1 times a second while Studio drew 14.9, four to a
+  frame and now and then two. So above 60 drawn frames a second some frames get no physics step at
+  all: anything the camera follows that's moved in `PreSimulation` shows one place for two or three
+  frames, then jumps. Move it in a `BindToRenderStep` just before `Camera` and hold it, velocity
+  zeroed, in `PreSimulation` (LadderView's "LadderViewPlace"); physics also sags an unanchored
+  body between the two, so the camera there sees exactly what you placed. Roblox's BindToSimulation
+  and UseFixedSimulation (DevForum, Apr 29, 2026) put more of the engine on that fixed clock; a
+  script can't read `workspace.UseFixedSimulation` ("not a valid member"), so where it's set is
+  unknown here.
+- **Studio can't be brought to the front from a script** (L-16d): `osascript ... activate`, `open
+  -a RobloxStudio` and System Events' `frontmost` all leave Claude in front (macOS refuses the
+  switch; System Events has no accessibility permission), so Studio draws at 15 frames a second
+  and anything about feel at a computer's full rate is the owner's to judge.
+- **The network simulator from the MCP** (L-16d): `settings().Network`'s six numbers,
+  `InboundNetworkMinDelayMs`, `InboundNetworkJitterMs`, `InboundNetworkLossPercent` and the three
+  `Outbound` ones, set from a Client `execute_luau`, shape Play's connection at once (loss is a
+  percent, at most 0.5). They persist across Studio restarts and places, so read them first and
+  put them back (they were all 0). Roblox's presets: 4G 45/20/0.4 in and 55/30/0.5 out; bad 3G
+  150/70/0.5 in and 180/90/0.5 out. The Roblox_Studio MCP's `rbx-network-simulator` skill has the
+  rest (its text is too long to load whole: grep the saved file).
 - **Two floors at one height flicker** (L-16c): a hall junction's concrete (`T.Floor`, top at 0)
   runs on under the front of the units round it, where the unit's own floor also sits at 0, so
   the two drew over each other as the view moved (only on real floors: the test hall has no

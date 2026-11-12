@@ -14,6 +14,23 @@ nowhere else.
 - [ ] **Keep the experience private** until the lobby (L-08e) replaces the test hall: every
   server builds the hall now, with its teleport posts, Mannequin post and the code in the log.
 
+## Now: judge L-16d, the tops at your computer's full frame rate (built Nov 12, D-118)
+
+The jitter's cause: your body moved only with physics, 60 times a second, while a fast screen
+draws 120 or 144, so the view held a place for two or three frames, then jumped. Now your body
+is placed every drawn frame just before the camera, by that frame's own time. Measured in Studio
+at 15 frames a second only (it can't be brought to the front from a script): every frame moves
+its share, your eye holds one height lying still, and the server put nobody back crawling flat
+out under simulated 4G and bad 3G. The full rate is yours to judge.
+- [ ] **On your computer, Studio in front** (or the live game), climb onto the tops and crawl:
+  straight, then turning with the mouse, then along a run and round a junction. It should glide
+  as walking the hall does, with no stutter. If your screen goes above 60 (Roblox's menu, Max
+  Frame Rate), try 120 or 144 too. Still a stutter? Say whether it's while crawling straight, while
+  turning, or only climbing the ladder.
+- [ ] **On a live server** (published), crawl flat out along a run and back: you should never be
+  snapped back a step. A snap means the server's crawl check (`Tops.Slack`, `Tops.LagStuds`)
+  needs more room for real lag.
+
 ## Now: judge L-17, every button on a phone at once (built Nov 12, D-117)
 
 On the Galaxy A16 in Studio: opening the wheel by a door now makes the door's buttons fade out
