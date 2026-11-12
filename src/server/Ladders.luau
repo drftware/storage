@@ -30,8 +30,9 @@
 	Take: the fly runs in and the ladder's back on your shoulder (`Slots:handBack`), refused while
 	anyone's on it ("Someone's on it"). Those up top drop down instead.
 
-	Every press is checked here: a living character within the button's reach (plus lag), not
-	pressing faster than a hand can, the ladder in hand to lean it, hands free of it to climb. If
+	Every press is checked here: a living character within the button's reach (plus lag), where the
+	server sees you or a moment on at the speed it sees you moving (`Arrival`: a press made the
+	moment you reach the ladder counts, L-16b2), not pressing faster than a hand can, the ladder in hand to lean it, hands free of it to climb. If
 	your screen never moved you, the server puts you where the move ends. Keepers never get these
 	buttons, so they can't climb. `climbed` fires as a ladder goes up and as anyone climbs, with how
 	far it's heard, for keepers (L-06b), and so do every other pull along the tops and a landing.
@@ -41,6 +42,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
+local Arrival = require(ReplicatedStorage.Shared.Arrival)
 local Brix = require(ReplicatedStorage.Brix)
 local Prompts = require(script.Parent.Prompts)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
@@ -86,6 +88,10 @@ export type Ladders = Brix.System & {
 	climbed: Brix.Signal<ClimbEvent>,
 	-- whether `player` is lying up on the tops, crawling (not on the rungs or dropping down)
 	crawling: (self: Ladders, player: Player) -> boolean,
+	-- the speed the server sees `player` moving at (`Arrival`): a crawler's as the crawl check
+	-- measures it (the crawl sets your body's place each frame, which carries no speed), anyone
+	-- else's their body's
+	moving: (self: Ladders, player: Player) -> Vector3,
 	-- `unit`'s top just sawn through: its hole off the tops' map, anyone lying on it slid off
 	holed: (self: Ladders, unit: Model) -> (),
 }
@@ -130,6 +136,7 @@ type Climb = {
 	lyingY: number,
 	last: CFrame?,
 	lastAt: number,
+	velocity: Vector3, -- studs a second, flat, between your last two checked places
 	nextCheck: number,
 	travel: number,
 	dropX: number,
@@ -188,8 +195,27 @@ function Ladders.new(): Ladders
 		return true
 	end
 
-	local function inReach(root: BasePart, at: Vector3, reach: number): boolean
-		return (root.Position - at).Magnitude <= reach + Leaning.RangeSlack
+	-- The speed the server sees `player`'s `root` moving at: see `moving` in the type.
+	local function movingOf(player: Player, root: BasePart): Vector3
+		local c = climbs[player]
+		if c and c.move == "Top" then
+			return c.velocity
+		end
+		return root.AssemblyLinearVelocity
+	end
+
+	-- Whether `player` is within `reach` (plus lag) of `at`, where the server sees them or a moment
+	-- on (Arrival): it sees a run late, and a press made as you reach the ladder must count.
+	local function inReach(player: Player, root: BasePart, at: Vector3, reach: number): boolean
+		local from = root.Position
+		local v = movingOf(player, root)
+		local within = reach + Leaning.RangeSlack
+		for i = 0, Arrival.Steps do
+			if (from + v * Arrival.ahead(i) - at).Magnitude <= within then
+				return true
+			end
+		end
+		return false
 	end
 
 	-- The row of what's in `player`'s hand, if anything.
@@ -286,6 +312,7 @@ function Ladders.new(): Ladders
 		c.character:SetAttribute(Leaned.FixAttribute, to)
 		c.last = to
 		c.lastAt = os.clock()
+		c.velocity = Vector3.zero
 		return true
 	end
 
@@ -293,16 +320,24 @@ function Ladders.new(): Ladders
 		Whether the slide from where `c` lies to `to`, where a move off the tops starts (Climb
 		down's spot by the ladder, Drop down's place at the edge), keeps their body off every sawn
 		hole. Lying behind a hole the slide would take them over it (L-16b1): the press is ignored.
+		Judged where the server sees you or a moment on (Arrival): crawl round a hole and press at
+		once, and it may still see you behind it (L-16b2).
 	]]
 	local function slideClear(c: Climb, root: BasePart, to: Vector3): boolean
 		local map = c.map
 		if not map or #map.holes == 0 then
 			return true
 		end
-		local a = c.origin:PointToObjectSpace(root.Position)
 		local b = c.origin:PointToObjectSpace(to)
 		local head = c.origin:VectorToObjectSpace(root.CFrame.UpVector)
-		return Tops.pathClear(map, a.X, a.Z, b.X, b.Z, Tops.yawOf(head.X, head.Z))
+		local yaw = Tops.yawOf(head.X, head.Z)
+		for i = 0, Arrival.Steps do
+			local a = c.origin:PointToObjectSpace(root.Position + c.velocity * Arrival.ahead(i))
+			if Tops.pathClear(map, a.X, a.Z, b.X, b.Z, yaw) then
+				return true
+			end
+		end
+		return false
 	end
 
 	-- A climber off the ladder for good: their spot free, the tag off their character.
@@ -377,7 +412,7 @@ function Ladders.new(): Ladders
 		if not (root and character and foot) then
 			return
 		end
-		if not inReach(root, foot.WorldPosition, Leaning.ClimbReach) or climbs[player] then
+		if not inReach(player, root, foot.WorldPosition, Leaning.ClimbReach) or climbs[player] then
 			return
 		end
 		local front = stand.front
@@ -435,6 +470,7 @@ function Ladders.new(): Ladders
 			lyingY = Leaned.pose(front.frame, x, y, z, p).Position.Y,
 			last = nil,
 			lastAt = 0,
+			velocity = Vector3.zero,
 			nextCheck = 0,
 			travel = 0,
 			dropX = 0,
@@ -472,7 +508,7 @@ function Ladders.new(): Ladders
 		end
 		local root = rootOf(player)
 		local top = stand.top
-		if not (root and top and inReach(root, top.WorldPosition, Leaning.DownReach)) then
+		if not (root and top and inReach(player, root, top.WorldPosition, Leaning.DownReach)) then
 			return
 		end
 		local t = os.clock()
@@ -508,7 +544,7 @@ function Ladders.new(): Ladders
 			return
 		end
 		local root = rootOf(player)
-		if not (root and inReach(root, front.drop.WorldPosition, Tops.DropReach)) then
+		if not (root and inReach(player, root, front.drop.WorldPosition, Tops.DropReach)) then
 			return
 		end
 		local fit = front.fit
@@ -561,7 +597,6 @@ function Ladders.new(): Ladders
 			return
 		end
 		local r = TopHole.Rect
-		local p = hole:PointToObjectSpace(root.Position)
 		-- lying, your root's up is the way your head points
 		local head = hole:VectorToObjectSpace(root.CFrame.UpVector)
 		local flat = math.sqrt(head.X * head.X + head.Z * head.Z)
@@ -569,7 +604,17 @@ function Ladders.new(): Ladders
 			return
 		end
 		local rect: Tops.Rect = { x0 = r.left, x1 = r.right, z0 = r.front, z1 = r.back }
-		if not Tops.atHole(rect, p.X, p.Z, head.X / flat, head.Z / flat, Tops.Slack) then
+		-- at the hole's edge where the server sees you or a moment on (Arrival): crawl up to it
+		-- and press at once, and it may still see you a stud short
+		local at = false
+		for i = 0, Arrival.Steps do
+			local p = hole:PointToObjectSpace(root.Position + c.velocity * Arrival.ahead(i))
+			if Tops.atHole(rect, p.X, p.Z, head.X / flat, head.Z / flat, Tops.Slack) then
+				at = true
+				break
+			end
+		end
+		if not at then
 			return
 		end
 		c.stand = nil
@@ -630,7 +675,9 @@ function Ladders.new(): Ladders
 		end
 		local root = rootOf(player)
 		local foot = stand.foot
-		if not (root and foot and inReach(root, foot.WorldPosition, Leaning.ClimbReach)) then
+		if
+			not (root and foot and inReach(player, root, foot.WorldPosition, Leaning.ClimbReach))
+		then
 			return
 		end
 		if climbs[player] then
@@ -750,7 +797,7 @@ function Ladders.new(): Ladders
 			return
 		end
 		local root = rootOf(player)
-		if not (root and inReach(root, front.at.WorldPosition, Leaning.LeanReach)) then
+		if not (root and inReach(player, root, front.at.WorldPosition, Leaning.LeanReach)) then
 			return
 		end
 		if climbs[player] then
@@ -907,6 +954,11 @@ function Ladders.new(): Ladders
 		return c ~= nil and c.move == "Top"
 	end
 
+	function system.moving(_: any, player: Player): Vector3
+		local root = rootOf(player)
+		return if root then movingOf(player, root) else Vector3.zero
+	end
+
 	function system.holed(_: any, unit: Model)
 		local hole = TopHole.frame(unit)
 		-- the floor (or test hall) whose tops' map this unit's top is on
@@ -1006,6 +1058,9 @@ function Ladders.new(): Ladders
 				* (t - c.lastAt)
 			+ Tops.LagStuds
 		if on and math.abs(p.Y - c.lyingY) <= Tops.HeightSlack and moved <= fastest then
+			c.velocity = if last and t > c.lastAt
+				then (p - last.Position) * Vector3.new(1, 0, 1) / (t - c.lastAt)
+				else Vector3.zero
 			c.last = root.CFrame
 			c.lastAt = t
 			c.travel += moved
@@ -1022,6 +1077,7 @@ function Ladders.new(): Ladders
 			end
 		elseif last then
 			c.lastAt = t
+			c.velocity = Vector3.zero
 			c.character:PivotTo(last)
 			c.character:SetAttribute(Leaned.FixAttribute, last)
 		end
@@ -1065,6 +1121,7 @@ function Ladders.new(): Ladders
 					c.character:PivotTo(lying)
 					c.character:SetAttribute(Leaned.FixAttribute, lying)
 					c.last = lying
+					c.velocity = Vector3.zero
 				else
 					c.last = root.CFrame
 				end

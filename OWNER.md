@@ -14,13 +14,26 @@ nowhere else.
 - [ ] **Keep the experience private** until the lobby (L-08e) replaces the test hall: every
   server builds the hall now, with its teleport posts, Mannequin post and the code in the log.
 
-## Now: judge L-16b1, landings and the tops (built Nov 11, D-111)
+## Now: judge L-16b, landings, the tops and presses on arrival (built Nov 11, D-111, D-113)
 
-Verified in Studio: on the default avatar, a 0.6-stud landing crouch with straight legs put the
-feet 0.63 into the floor; with the knees bent, the feet stayed exactly where they stood.
+Verified in Studio (Play, one player): on the default avatar, a 0.6-stud landing crouch with
+straight legs put the feet 0.63 into the floor; with the knees bent, the feet stayed where they
+stood. Lying on Unit 101's top, every door button was hidden (Lock too, with a padlock in hand)
+and all came back once down. Behind a sawn hole, Climb down and Drop down did nothing, and the
+same Drop down from a clear spot dropped you. Running in at full speed, Climb, Saw and Lean each
+worked on the first press made the moment the button showed: before, Climb and Saw were dropped
+without a word (the server still saw you a few studs back).
 - [ ] **A friend lands** (Test > Clients and Servers, 2 players): one drops down off a unit's
   front, then drops in through a sawn top. On the other screen their knees should bend as they
   land, feet on the floor, never sinking into it.
+- [ ] **Presses on arrival on your phone** (published, a live server): sprint at a leaned ladder
+  and tap Climb the moment it shows; sprint into an open unit and hold Saw at its side wall the
+  moment it shows; sprint out of a unit under its closing door and Lock it at once (padlock in
+  hand). Each should work first time, never a dead press you have to repeat. A live server sees
+  you later than Studio does, so this is the real test.
+- [ ] **Two players at once** (Test > Clients and Servers, 2 players): both sprint at the same
+  ladder; the first gets Climb, the second "Wait for them". Then both run into one unit and one
+  presses Saw: the cut runs its whole time for them.
 
 ## Now: judge your Nov 11 fixes: the tops, reaching through doors, the floor (D-110)
 

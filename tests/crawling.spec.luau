@@ -47,7 +47,6 @@ do
 	ok(not counts(vector.create(-3.8, 3, 0.5), still), "across the unit from the button: no")
 	ok(not counts(vector.create(6, 3, 5), still), "in the unit beside it: no")
 	ok(counts(vector.create(2, 3, 5), vector.create(0, 0, -16)), "inside, running out: counts")
-	ok(Crawling.Lag >= 0.25 and Crawling.Lag <= 0.5, "covers the server's late view of a run")
 end
 
 -- about a second, as the ticket's moment wants

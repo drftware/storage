@@ -9,40 +9,68 @@
 	different reasons: a door's Lock shows only with a padlock in your hand (ToolView) and never
 	while you lie up on the tops (LadderView). Each says its own reason here, so neither undoes the
 	other.
+
+	Only a hidden button is remembered, in plain tables, and forgotten the moment nothing hides it
+	or it leaves the world (streamed out or destroyed: its reach goes back, and a view that still
+	hides it does so again when it streams back in, as LadderView and ToolView already do). Never key these by the button in a weak table: Roblox lets go of a
+	weakly held Instance's entry while the Instance is still in the world (Studio, L-16b2: 163
+	buttons in, none left after a garbage pass), so the server's reach was lost and taken again
+	as 0, and every door button stayed hidden after climbing down off the tops.
 ]]
 
 local ButtonReach = {}
 
--- Each button's reach from the server, taken the first time any reason touches it. Weak keys: a
--- button gone from the world is forgotten with it (`:: any`: setmetatable's result doesn't carry
--- the table's key and value types).
-local base: { [ProximityPrompt]: number } = setmetatable({}, { __mode = "k" }) :: any
--- What hides each button now, if anything.
-local hiders: { [ProximityPrompt]: { [string]: boolean } } = setmetatable({}, { __mode = "k" }) :: any
+-- Each hidden button's reach from the server, taken when the first reason hides it.
+local base: { [ProximityPrompt]: number } = {}
+-- What hides each hidden button.
+local hiders: { [ProximityPrompt]: { [string]: true } } = {}
+-- A hidden button leaving the world forgets it.
+local gone: { [ProximityPrompt]: RBXScriptConnection } = {}
+
+local restore: (prompt: ProximityPrompt) -> ()
+
+local function forget(prompt: ProximityPrompt)
+	base[prompt] = nil
+	hiders[prompt] = nil
+	local c = gone[prompt]
+	if c then
+		c:Disconnect()
+		gone[prompt] = nil
+	end
+end
 
 --- Hide `prompt` on this screen for `reason` (`hidden` true), or stop hiding it for that reason.
 function ButtonReach.hide(prompt: ProximityPrompt, reason: string, hidden: boolean)
-	local reach = base[prompt]
-	if reach == nil then
-		reach = prompt.MaxActivationDistance
-		base[prompt] = reach
-	end
 	local set = hiders[prompt]
 	if hidden then
 		if not set then
 			set = {}
 			hiders[prompt] = set
+			base[prompt] = prompt.MaxActivationDistance
+			gone[prompt] = prompt.AncestryChanged:Connect(function()
+				if not prompt:IsDescendantOf(game) then
+					restore(prompt)
+				end
+			end)
 		end
 		set[reason] = true
-	elseif set then
+		if prompt.MaxActivationDistance ~= 0 then
+			prompt.MaxActivationDistance = 0
+		end
+	elseif set and set[reason] then
 		set[reason] = nil
 		if next(set) == nil then
-			hiders[prompt] = nil
+			restore(prompt)
 		end
 	end
-	local to = if hiders[prompt] then 0 else reach
-	if prompt.MaxActivationDistance ~= to then
-		prompt.MaxActivationDistance = to
+end
+
+-- Nothing hides `prompt` now: its reach back, and forgotten.
+function restore(prompt: ProximityPrompt)
+	local reach = base[prompt]
+	forget(prompt)
+	if reach and prompt.MaxActivationDistance ~= reach then
+		prompt.MaxActivationDistance = reach
 	end
 end
 

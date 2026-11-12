@@ -12,7 +12,9 @@
 	  (unless it's padlocked: then it rattles).
 
 	Every press is checked before the door moves: the player must be within reach of the button (a
-	little slack for lag), on the right side of the door (Lift only from inside), holding the tool it
+	little slack for lag), on the right side of the door (Lift only from inside), both judged where
+	the server sees them or a moment on, as it sees a run late (`Arrival`: sprint out under a
+	closing door and Lock it at once, and it may still see you inside, L-16b2), holding the tool it
 	needs in their hand (`Slots`: the cutters to Cut, a padlock to Lock, which then leaves their
 	slots for good), and not pressing faster than a hand can. A refusal the player can see answers at
 	the door: a padlocked door rattles against its bolt, loud, and the button says "Padlocked",
@@ -34,6 +36,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
+local Arrival = require(ReplicatedStorage.Shared.Arrival)
 local Brix = require(ReplicatedStorage.Brix)
 local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
 local DoorSound = require(ReplicatedStorage.Shared.StorageUnit.DoorSound)
@@ -247,6 +250,36 @@ function Doors.new(): Doors
 		return "Hall"
 	end
 
+	--[[
+		How `action` by someone whose body is `root`, carrying `tools`, is decided: where the server
+		sees them or a moment on (Arrival), the first moment that lets it happen, else the answer
+		where it sees them. With `reach`, only moments within it of `point` count, and nil if none
+		is. Only a body crossing the door line as it lands sees two sides here.
+	]]
+	local function judge(
+		entry: Entry,
+		action: Door.Action,
+		root: BasePart,
+		tools: Door.Tools,
+		point: Vector3?,
+		reach: number?
+	): Door.Verdict?
+		local from = root.Position
+		local v = root.AssemblyLinearVelocity
+		local first: Door.Verdict? = nil
+		for i = 0, Arrival.Steps do
+			local at = from + v * Arrival.ahead(i)
+			if not (point and reach) or (at - point).Magnitude <= reach then
+				local verdict = Door.decide(entry.state, action, sideOf(entry, at), tools)
+				if verdict.ok then
+					return verdict
+				end
+				first = first or verdict
+			end
+		end
+		return first
+	end
+
 	-- A press of `action`'s button on `entry` by `player`: checked, then decided, then done.
 	local function press(entry: Entry, action: Door.Action, player: Player)
 		local t = os.clock()
@@ -265,13 +298,19 @@ function Doors.new(): Doors
 		end
 		local point = if action == "Lift" then entry.inside else entry.hall
 		local reach = if action == "Lift" then INSIDE_REACH else HALL_REACH
-		if (root.Position - point.WorldPosition).Magnitude > reach + RANGE_SLACK then
+		refresh(entry)
+		local verdict = judge(
+			entry,
+			action,
+			root,
+			carries(slots, player),
+			point.WorldPosition,
+			reach + RANGE_SLACK
+		)
+		if not verdict then
 			return
 		end
 		lastPress[player] = t
-		refresh(entry)
-		local verdict =
-			Door.decide(entry.state, action, sideOf(entry, root.Position), carries(slots, player))
 		if verdict.motion then
 			RollUpDoor.play(entry.unit, verdict.motion)
 		end
@@ -373,13 +412,8 @@ function Doors.new(): Doors
 						if not (body and body:IsA("BasePart")) then
 							return
 						end
-						local verdict = Door.decide(
-							entry.state,
-							button.action,
-							sideOf(entry, body.Position),
-							carries(slots, player)
-						)
-						if verdict.refusal then
+						local verdict = judge(entry, button.action, body, carries(slots, player))
+						if verdict and verdict.refusal then
 							entry.refusers[p](verdict.refusal)
 						end
 					end)

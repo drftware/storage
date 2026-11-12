@@ -604,11 +604,16 @@ verified: a doc page, Studio, or "untested".
   -622.5) and press Slam on `PromptShown`: about 0.9 s from the crawl's end; it stands its 5 s.
   A `screen_capture` mid-run took 16 s, long enough for it to roam off: capture in a run of its
   own. Hook the prompts' `Triggered` on the Server to log where it saw you when each press came.
-- **A press made the moment you arrive** (L-12c, 2026-11-10): the server sees a run late, so a
-  prompt pressed as you reach it reaches the server while it still sees you a few studs back
-  (4 studs at a full run: the Crawl button 6.8 studs off, you still in the doorway). Any server
-  check of where you stand for a press must allow for it (`Crawling.counts`: where it sees you
-  or 0.4 s on at your speed, D-085). A door's Slam pressed the same way landed. After being
+- **A press made the moment you arrive** (L-12c, 2026-11-10; L-16b2, 2026-11-11): the server
+  sees a run late, so a prompt pressed as you reach it reaches the server while it still sees you
+  a few studs back (3.5 to 4.3 at a full run of 16, 0.22 to 0.27 s: Climb seen 9.2 off when
+  pressed at 5.8, Saw seen out in the hall when pressed just inside). Every server check of where
+  you stand for a press goes through `Arrival` (D-113). To measure one: on the Server connect
+  `ProximityPromptService.PromptButtonHoldBegan` and `PromptTriggered` and log the root's place,
+  velocity and distance to the prompt; on the Client pivot the character 15 to 20 studs off,
+  hold the camera on the prompt each frame (`BindToRenderStep`, Scriptable), `Humanoid:MoveTo`
+  the spot, and `InputHoldBegin()` on the first frame `PromptShown` has fired for it. A crawler's
+  `AssemblyLinearVelocity` reads 0 on the server (the crawl sets the body's place each frame). After being
   caught, setting your root's CFrame from the Client did nothing; pivot from the Server.
 - **Shots of a door in the hall** (L-06b3d2, 2026-11-10): the hall's motion light wakes only for a
   real walk (`character_navigation`; a pivot or `Humanoid:MoveTo` from the Server didn't) and goes
@@ -1315,6 +1320,13 @@ verified: a doc page, Studio, or "untested".
   are `AnimationConstraint`s, hip to knee 0.96, knee to ankle 0.57 by its rig attachments). Judge a
   knee's bend by the knee's rig attachment ahead of the hip's, not by part centres, which move
   forward together in a crouch.
+- **Picking up one tool from the MCP** (L-16b2): the test hall's tools lie close together, so
+  the nearest Pick up can be another one (the air horn beside the saw). Press the prompt inside
+  that tool's own model. The ladder starts in `Workspace.YourTool`, not `Workspace.Tools`.
+- **Testing a server's reach from further than the screen's** (L-16b2): set the prompt's
+  `MaxActivationDistance` higher on the Client for the press, then back. The client shows it
+  and fires it; the server still judges its own reach, so a press ignored there is the server's
+  check, not the screen's. Pair each "ignored" with the same press from a clear spot that goes.
 - **Getting a player up on the tops from the MCP** (Play, L-13b2d2b, 2026-11-09): every press is
   the prompt's own `InputHoldBegin()`/`InputHoldEnd()` on the Client, on the *nearest* prompt of
   that name (the test hall and the walked floor both have a Unit 101), with the camera aimed at it
@@ -1411,3 +1423,12 @@ verified: a doc page, Studio, or "untested".
   enabled, no line of sight needed) never showed (`PromptShown` silent, even after walking off
   and back) and neither E nor `InputHoldBegin` triggered it. Cause unknown. Next try: pick the
   roll up first, before any other tool, or carry it in from a unit on the walked floor.
+- **Never key a weak table by an Instance** (L-16b2): Roblox lets go of a weakly held Instance's
+  entry while the Instance is still in the world. 163 prompts put in a `__mode = "k"` table were
+  all gone after a garbage pass (20,000 small tables made a few times over 1.5 s), so
+  `ButtonReach` lost each button's reach and took it again as 0. Keep plain tables and clear an
+  entry on `AncestryChanged` (out of the world) or `Destroying`.
+- **A tool carried off the test hall's open end is lost** (Studio only, L-16b2): the hall's west
+  end (x about -34) has no floor; walking off it, the body and the welded ladder fall below the
+  world and Roblox destroys their parts before `Died` drops the tool, leaving an empty `Ladder`
+  model and no button to pick it up. Stop and start Play to get it back. Real floors are closed.

@@ -15,6 +15,8 @@
 	flat on your belly, head first).
 ]]
 
+local Arrival = require("../../Arrival")
+
 local Crawling = {}
 
 -- Studs from the button you can be to press it: crouched at the hole, not across the unit.
@@ -23,12 +25,6 @@ Crawling.Reach = 5
 Crawling.RangeSlack = 3
 -- A press closer than this to your last one is dropped: a double tap.
 Crawling.RepeatSeconds = 0.3
--- Seconds the server's view of a run may trail your own screen (D-084 measured it 0.06 to 0.13 s
--- late, eased in over another 0.15 to 0.4 s). Run in with a keeper behind you and press Crawl as
--- you reach the hole, and the server may still see you in the doorway (Studio, L-12c: 4 studs back
--- at a full run): so a press is judged where it sees you and where you'll be this much later, or
--- the escape is silently lost.
-Crawling.Lag = 0.4
 -- Studs past a unit's side and back walls that still count as inside it.
 Crawling.InsideSlack = 0.5
 
@@ -120,9 +116,10 @@ function Crawling.inside(p: vector, width: number, depth: number): boolean
 end
 
 --- Whether a press of the Crawl button counts: the presser's root at `at`, moving at `velocity`,
---- is inside the unit and within reach of the button at `button`, either where the server sees
---- it or where it will be `Lag` seconds on (the server sees a run late). All in the unit's door
---- frame (`inside`); `width` and `depth` are the unit's.
+--- is inside the unit and within reach of the button at `button`, where the server sees it or a
+--- moment on (`Arrival`: run in with a keeper behind you and press Crawl as you reach the hole,
+--- and the server may still see you in the doorway, L-12c). All in the unit's door frame
+--- (`inside`); `width` and `depth` are the unit's.
 function Crawling.counts(
 	at: vector,
 	velocity: vector,
@@ -131,11 +128,10 @@ function Crawling.counts(
 	depth: number
 ): boolean
 	local reach = Crawling.Reach + Crawling.RangeSlack
-	if Crawling.inside(at, width, depth) and vector.magnitude(at - button) <= reach then
-		return true
-	end
-	local ahead = at + velocity * Crawling.Lag
-	return Crawling.inside(ahead, width, depth) and vector.magnitude(ahead - button) <= reach
+	return Arrival.counts(function(seconds: number): boolean
+		local p = at + velocity * seconds
+		return Crawling.inside(p, width, depth) and vector.magnitude(p - button) <= reach
+	end)
 end
 
 local function smooth(k: number): number

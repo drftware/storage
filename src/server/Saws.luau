@@ -10,7 +10,8 @@
 	While someone saws, the wall carries the `Sawing.Tag` tag and the hold's start, so every screen
 	plays the motor and draws the line growing round the cut (SawView). Every check runs before the
 	motor starts, and again before the hole goes through: you're inside the unit you saw from,
-	within reach of the button, the saw in your hand, not pressing faster than a hand can, and the
+	within reach of the button (where the server sees you or a moment on, as it sees a run late:
+	`Arrival`), the saw in your hand, not pressing faster than a hand can, and the
 	hold ran its time (a faked press can't cut early). Walk off, drop the saw or die and the cut
 	stops.
 
@@ -28,6 +29,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
+local Arrival = require(ReplicatedStorage.Shared.Arrival)
 local Brix = require(ReplicatedStorage.Brix)
 local CrawlHole = require(ReplicatedStorage.Shared.StorageUnit.CrawlHole)
 local Ladders = require(script.Parent.Ladders)
@@ -174,22 +176,19 @@ function Saws.new(): Saws
 		return job.part:GetAttribute(CrawlHole.Attribute) ~= nil
 	end
 
-	--[[
-		Whether `player` may still be sawing from `side`: alive, in reach, the saw in hand. A wall:
-		standing inside the unit you saw from. A top: lying up on the tops (Ladders), over this
-		unit's top and above its steel, not on the hole (unless `onHoleOk`: the press, which
-		refuses it out loud).
-	]]
-	local function placed(player: Player, job: Job, side: Side, onHoleOk: boolean?): boolean
-		local root = rootOf(player)
-		if not root then
+	-- Whether a sawyer at `at` is placed to saw `job` from `side` (see `placed`); `crawler` is
+	-- whether they're lying up on the tops.
+	local function placedAt(
+		job: Job,
+		side: Side,
+		at: Vector3,
+		crawler: boolean,
+		onHoleOk: boolean?
+	): boolean
+		if (at - side.at.WorldPosition).Magnitude > Sawing.Reach + Sawing.RangeSlack then
 			return false
 		end
-		local reach = Sawing.Reach + Sawing.RangeSlack
-		if (root.Position - side.at.WorldPosition).Magnitude > reach then
-			return false
-		end
-		if not inside(side.from, root.Position) then
+		if not inside(side.from, at) then
 			return false
 		end
 		if job.kind == "Wall" then
@@ -197,10 +196,34 @@ function Saws.new(): Saws
 		end
 		local hole = TopHole.frame(job.holder)
 		return hole ~= nil
-			and ladders ~= nil
-			and ladders:crawling(player)
-			and hole:PointToObjectSpace(root.Position).Y > TopHole.Rect.top
-			and (onHoleOk == true or not onHole(hole, root.Position))
+			and crawler
+			and hole:PointToObjectSpace(at).Y > TopHole.Rect.top
+			and (onHoleOk == true or not onHole(hole, at))
+	end
+
+	--[[
+		Whether `player` may still be sawing from `side`: alive, in reach, the saw in hand. A wall:
+		standing inside the unit you saw from. A top: lying up on the tops (Ladders), over this
+		unit's top and above its steel, not on the hole (unless `onHoleOk`: the press, which
+		refuses it out loud). Where the server sees you or a moment on (Arrival): run into a unit
+		and press Saw at the wall at once, and it may still see you out in the hall (L-16b2). Run
+		every frame while a cut runs, so it makes nothing.
+	]]
+	local function placed(player: Player, job: Job, side: Side, onHoleOk: boolean?): boolean
+		local root = rootOf(player)
+		local l = ladders
+		if not root or (job.kind == "Top" and not l) then
+			return false
+		end
+		local crawler = l ~= nil and l:crawling(player)
+		local from = root.Position
+		local v = if l then l:moving(player) else root.AssemblyLinearVelocity
+		for i = 0, Arrival.Steps do
+			if placedAt(job, side, from + v * Arrival.ahead(i), crawler, onHoleOk) then
+				return true
+			end
+		end
+		return false
 	end
 
 	local function stopCut(job: Job)
@@ -241,10 +264,9 @@ function Saws.new(): Saws
 		if not placed(player, job, side, true) then
 			return
 		end
-		-- lying on the hole is refused out loud, not dropped: you're where you should be otherwise
-		local root = rootOf(player)
-		local hole = if job.kind == "Top" then TopHole.frame(job.holder) else nil
-		local lyingOn = hole ~= nil and root ~= nil and onHole(hole, root.Position)
+		-- lying on the hole is refused out loud, not dropped: you're where you should be otherwise,
+		-- and every moment the press would count you're on it
+		local lyingOn = job.kind == "Top" and not placed(player, job, side)
 		lastPress[player] = t
 		local verdict = Sawing.decide(holding(player), holed(job), job.cut ~= nil, lyingOn)
 		if not verdict.ok then

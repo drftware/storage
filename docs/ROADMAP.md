@@ -159,6 +159,17 @@ L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
 fixed"), then L-16b, then L-19 (the buttons in the world, small and modern) and L-20a (the
 inventory wheel) before L-17 judges every button on a phone at once, then L-09a. That night the
 tops still jittered on a computer: L-16d, "not now", but before friends play (L-09a).
+**The overnight run (owner, Nov 11 night):** "Run 15 sessions, capping each at 300k context...
+Make the fixes I recently described, the prompt updates, build the lobby, and beyond... this game
+needs to be perfect." Up to 15 sessions back to back, about 300k tokens of context each, still one
+ticket each, every session ending green and committed. Order: L-16b2 (done), L-19a (one look for
+every button: the owner's "prompt updates"; folds `ButtonReach` in), L-19b, L-20a, L-17, L-16d,
+then the lobby, L-08e1 to L-08e4 (GDD "The lobby", D-112), which no longer waits on L-09a
+(only the owner can run that): split L-08e1 and L-08e4 into sessions that each end green (the
+room's art script first, then the cars, the joining and the count, then the trip to a server of
+the group's own). With sessions left: HANDOFF's "Seen" fixes, L-18, then honing what was built
+tonight (the polish list). Hard limits: no new keepers, no paid items or store (Phase 2 waits on
+Brix's purchases and profiles), proven mechanics only, never edit Brix.
 
 - [x] **L-01 The floor generator**, in three sessions. **L-01a done Nov 7** (D-027): the floor
   as pure data from a seed (`src/shared/Floor.luau`): halls grown from the lobby on a grid of
@@ -1081,8 +1092,8 @@ tops still jittered on a computer: L-16d, "not now", but before friends play (L-
     Verified in Studio: your own arm raised through `Joints`; caught on the ladder and mid-crawl
     (Studio-only `CatchTest`), kept, cut free, walking; Slam over Drop; a slot click blowing
     nothing. A friend's arm and the first slam's timing go to `OWNER.md`.
-  - [ ] **L-16b The tops and arriving**, in two sessions (split Nov 11: each item needs its own
-    Studio check):
+  - [x] **L-16b The tops and arriving. Done Nov 11**, in two sessions (split Nov 11: each item
+    needs its own Studio check):
     - [x] **L-16b1 The tops. Done Nov 11 (D-111).** Lying behind a sawn hole, Climb down and
       Drop down are ignored: their slide to the edge would take your body over it (no words: the
       hole is in plain sight, owner). A landing's crouch bends your knees so your feet stay on the
@@ -1090,14 +1101,23 @@ tops still jittered on a computer: L-16d, "not now", but before friends play (L-
       front's edge you're 7 studs from the door's buttons below: they're hidden on your screen
       (`ButtonReach`) and the server ignores them. The ladder's foot is 12 studs off and the
       server already ignored a climber's Climb, Take and Lean. Verified in Studio: the crouch on
-      the default avatar. The door's buttons and the hole check pass checks, untested in Studio
-      (first in L-16b2). A friend's landing goes to `OWNER.md`.
-    - [ ] **L-16b2 A press on arrival counts.** A press made the moment you arrive reaches the
-      server while it still sees you a few studs back (D-085): allow for it where Saws, Ladders
-      (Lean, Climb, Climb down) and a door's Cut and Lock check where you stand, as
-      `Crawling.counts` does, through one pure helper with Lune first. Also L-16b1's hole check
-      (`Ladders` `slideClear`): crawl round a hole and press at once, and the server may still
-      see you behind it.
+      the default avatar; in L-16b2, the door's buttons hidden up top (a padlock in hand too) and
+      back once down, and Climb down and Drop down ignored behind a hole while the same press from
+      a clear spot went. A friend's landing goes to `OWNER.md`.
+    - [x] **L-16b2 A press on arrival counts. Done Nov 11 (D-113).** Sprint at the ladder and
+      press Climb, or into a unit and press Saw at its wall, and it works first time. Measured in
+      Studio first: the server saw a full run 3.5 to 4.3 studs late, so Climb (pressed 5.8 from the
+      foot, seen 9.2 off) and Saw (pressed just inside, seen out in the hall) were dropped without
+      a word; Lean only just landed on its slack. Now one pure helper, `Arrival` (Lune first),
+      judges a press where the server sees you and at moments out to 0.4 s on at the speed it
+      sees you moving, for every reach in `Ladders` (crawlers by the crawl check's own speed), the
+      hole check and Drop in, `Saws` (every frame of a cut too, so it isn't dropped as the server
+      catches up) and a door's reach and side (sprint out under a closing door and Lock it).
+      `Crawling.counts` uses it. Found and fixed on the way: `ButtonReach` kept its buttons in
+      weak tables, which Roblox empties while the buttons still exist, so every door button
+      stayed hidden after climbing down off the tops. Verified in Studio: Climb, Saw (the hole
+      went through, the server having seen you in the hall at the press) and Lean on arrival.
+      Live servers and two players go to `OWNER.md`.
   - [x] **L-16c Crawling the tops feels right. Done Nov 11 (D-110).** Owner, Nov 10 night: "super
     glitchy and the camera shakes a ton"; Nov 11: "the view jerks all around repeatedly... It
     should be just as smooth as moving on the normal floor." Causes found by recording every

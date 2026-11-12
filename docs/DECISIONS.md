@@ -2901,3 +2901,45 @@ finds was the loop. Riding an empty dolly in a level, fast but loud, would be an
 
 **Open, defaults in place (`OWNER.md`):** six slots for sale (four suggested), a clerk at the
 counter (default none), a double-cash pass (default not at launch).
+
+## D-113 A press on arrival counts everywhere; a hidden button stays remembered (L-16b2, Nov 11)
+The moment: you sprint at the ladder and press Climb, or into a unit and press Saw at its wall,
+and it works first time.
+
+**Measured first** (Studio, a full run of 16 studs a second, the press made the instant the
+button showed). The server saw the run 3.5 to 4.3 studs late (0.22 to 0.27 s), as D-085 found for
+Crawl. Climb, pressed 5.8 studs from the ladder's foot, reached a server that saw you 9.2 off
+(its reach 6 plus 3 slack): dropped, and you stood at the foot with nothing happening. Saw,
+pressed just inside Unit 101, reached a server that still saw you out in the hall: dropped. Lean
+(carrying the ladder at 12) landed, 2.3 to 2.8 studs late, on its 3 studs of slack: a live
+server's longer ease would tip it over. A door's reach has 4 studs of slack and held.
+
+**One pure helper, `Arrival`.** A press is judged where the server sees you, then at four moments
+out to 0.4 s on at the speed it sees you moving; the first that passes counts. Several moments,
+not only the last, so running past a button can't step over its reach. The check is given
+seconds, not places, so the server's Vector3s and the pure modules' vectors use it as they are;
+`ahead(i)` serves a check run every frame without making a closure. Used by `Crawling.counts`
+(D-085's two places become this), every reach in `Ladders` (Lean, Climb, Take, Climb down, Drop
+down), its hole check (`slideClear`) and Drop in, `Saws` (the press and every frame of the cut,
+or the cut stopped the next frame while the server still saw you in the hall) and `Doors` (reach,
+and the side for Lock and Cut: sprint out under a closing door and Lock it at once, and the
+server may still see you inside; the first moment whose side lets it happen counts, else the
+answer where it sees you). It gives a cheat nothing: your screen already moves your character.
+A crawler's body is moved by setting its place each frame, which carries no speed to the server,
+so `Ladders` measures it from the crawl check's last two places (`moving`). Rejected: more slack
+on each reach, which lets a standing player press from further away; judging from your screen's
+reported place, which a cheat writes.
+
+**Verified in Studio** (one player): Climb on arrival counted with the server seeing you 9.45
+off; Saw on arrival began with the server seeing you in the hall and the hole went through; Lean
+counted. Lying behind a sawn hole, Climb down and Drop down were still ignored, and the same
+Drop down from a clear spot at that depth dropped you (L-16b1's checks).
+
+**`ButtonReach` without weak tables.** L-16b1's door buttons stayed hidden after climbing down
+off the tops, on every door. `ButtonReach` kept each button's reach in a table with weak keys;
+Roblox lets go of a weakly held Instance's entry while the Instance is still in the world (163
+buttons in such a table, none left after a garbage pass), so the reach was lost and taken again
+as 0. It now remembers only hidden buttons, in plain tables, and forgets one once nothing hides
+it or it leaves the world (its reach put back, so a view still hiding it does so again as it
+streams in). The elevator's gate cache has the same kind of table: it only rebuilds itself, so
+it's listed, not fixed here.
