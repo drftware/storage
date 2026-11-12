@@ -7,7 +7,8 @@
 -- Go) are theirs alone, within range, only before the gate shuts; the group's value round-trips; the car's readout shows dashes at rest, the
 -- count in its middle two cells, green then red from the warning, 0 once it's shutting. Back in
 -- your car (L-08e2): the group in its old order with its choices, the count held until they're
--- stood in it, then the full count; anyone aboard meanwhile after them, up to six.
+-- stood in it, then the full count; anyone aboard meanwhile after them, up to six. A player in
+-- no car is pointed to the fullest that will take them, the inviter's first (L-08e3).
 local Boarding = require("../src/shared/Lobby/Boarding")
 local Departure = require("../src/shared/Elevator/Departure")
 
@@ -329,6 +330,79 @@ do
 	local x1, z1 = Boarding.backSpot(1)
 	local x4, z4 = Boarding.backSpot(4)
 	ok(x1 == 0 and z4 < z1 and x4 == 0, "the host in front, nearest the wall")
+end
+
+-- a player alone is pointed to the fullest car that will take them (L-08e3)
+do
+	local function car(group: { number }, departs: number?, friends: boolean?, players: number?)
+		local c = Boarding.new()
+		c.group = group
+		c.departs = departs
+		c.friends = friends == true
+		c.players = players or Boarding.Capacity
+		return c
+	end
+	local function nobody(_host: number): boolean?
+		return false
+	end
+	local function everyone(_host: number): boolean?
+		return true
+	end
+	local function unknown(_host: number): boolean?
+		return nil
+	end
+	local t = 100
+	ok(Boarding.fullest({}, 9, t, nobody) == nil, "no cars, no pointer")
+	ok(
+		Boarding.fullest({ car({}), car({}) }, 9, t, nobody) == nil,
+		"empty cars: no pointer (any car will do)"
+	)
+	ok(
+		Boarding.fullest({ car({ 1 }, t + 15), car({ 2, 3 }, t + 15), car({}) }, 9, t, nobody) == 2,
+		"the fullest car"
+	)
+	ok(
+		Boarding.fullest({ car({ 1, 2 }, t + 8), car({ 3, 4 }, t + 15) }, 9, t, nobody) == 2,
+		"a tie: the one with more time left"
+	)
+	ok(
+		Boarding.fullest({ car({ 1 }, t + 15), car({ 2, 3 }, t + 3) }, 9, t, nobody) == 1,
+		"not a car shutting before you'd reach it"
+	)
+	ok(
+		Boarding.fullest({ car({ 1 }, t + 15), car({ 2, 3 }, t - 1) }, 9, t, nobody) == 1,
+		"not a car whose gate is shutting"
+	)
+	ok(
+		Boarding.fullest({ car({ 1 }, t + 15), car({ 2, 3 }, t + 15, false, 2) }, 9, t, nobody) == 1,
+		"not a full car (the host's count)"
+	)
+	ok(
+		Boarding.fullest({ car({ 1 }, t + 15), car({ 2, 3 }, t + 15, true) }, 9, t, nobody) == 1,
+		"not Friends only, for a stranger"
+	)
+	ok(
+		Boarding.fullest({ car({ 1 }, t + 15), car({ 2, 3 }, t + 15, true) }, 9, t, everyone) == 2,
+		"Friends only, for the host's friend"
+	)
+	ok(
+		Boarding.fullest({ car({ 1 }, t + 15), car({ 2, 3 }, t + 15, true) }, 9, t, unknown) == 1,
+		"Friends only waits while it isn't known"
+	)
+	ok(
+		Boarding.fullest({ car({ 1, 2, 3 }, t + 15), car({ 4 }, t + 15) }, 9, t, nobody, 4) == 2,
+		"the inviter's car first"
+	)
+	ok(
+		Boarding.fullest({ car({ 1, 2, 3 }, t + 15), car({ 4 }, t + 15, true) }, 9, t, nobody, 4)
+			== 1,
+		"not the inviter's car if it won't take you"
+	)
+	local full = table.create(Boarding.Capacity, 0)
+	for i = 1, Boarding.Capacity do
+		full[i] = i
+	end
+	ok(Boarding.fullest({ car(full, t + 15) }, 9, t, nobody) == nil, "not a car of six")
 end
 
 print(`boarding: {checks - failures}/{checks} checks passed`)

@@ -2,46 +2,45 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-12, session 110 (L-08e2), night run session 11 of 15 · **Checks:** green ·
+**Updated:** 2026-11-12, session 111 (L-08e3), evening run session 1 · **Checks:** green ·
 **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- **L-08e2 done (D-123).** Again now leads back to the car the climb left from: the group in its
-  old order with the host's choices, facing the results board on the back wall (`CarResults`),
-  the full 20 s count running; anyone can step out and in; the board goes as the car leaves. On a
-  group's own server the trip's data (`Trip.Version` 2) names the car, its cars open once the
-  group is home (`Trips:home`, `LobbyCars:home`/`welcome`) and the next climb rides up there.
-  The black lifts with the count's chime, the camera turned to `ClimbEnd.StoodAttribute`.
-- Verified in Studio, one player: Studio's own server (car 3: ride, wipe, Again, back, out and
-  in, ride again) and a group's own ("Arrive": back in car 1, ride again there). Output clean but
-  the known lines. Studio: Edit, play stopped, `DevTrip` cleared, place saved as version 35 (for
-  Studio's test teleport), never published.
+- **L-08e3 done (D-124).** A dial over each lobby car's gate (`CarDial`, client): the bay's
+  number, three seats either side (photos in warm rings, sockets for room), one line ("Friends
+  only", "Full", "Going up", "Floor N" from LobbyCars' `ClimbFloor` while its group climbs here).
+  A player in the front office in no car is pointed to the fullest car that takes them
+  (`Boarding.fullest`): its rim and your seat breathe warm, a chevron bobs in its doorway.
+  Invite beside Go on the car's panel for anyone aboard (Roblox's sheet; launch data marks the
+  joiner `InvitedBy`, whose pointer prefers that car); hidden on a group's own server.
+- Split out: **L-08e3b Share and follow** (share link, invites from a group's own server, the
+  dial's floor from other servers). L-08e4 split into **e4a** (the cart's art) and **e4b** (ride).
+- Verified in Studio, one player, other cars faked; Output clean. Studio in Edit, play stopped.
 
-## Next task: L-08e3 Invite and the dials
-The moment: a friend's not here, so you tap Invite on the car's panel and they're on their way;
-from the door every car tells you who's in it, and a player alone is pointed to the fullest.
-1. Owner test results first, if pasted. Read ROADMAP L-08e3, the GDD's "The lobby", D-121, D-123.
-2. Verify on create.roblox.com, and note in STUDIO.md: `SocialService:PromptGameInvite` with
-   `ExperienceInviteOptions` (and `CanSendGameInviteAsync`), and Roblox's share links for an
-   experience (what Audience Expansion counts). Never invent an API.
-3. Invite on the host's panel (CarPanel; any of the group may invite: a sensible default, in
-   OWNER.md), one verb, with its feedback (press, Roblox's sheet, a toast if it can't).
-4. A dial over each car (a SurfaceGui above its gate, phone-readable from the door): the
-   group's photos or count while it's open; "Floor N" while a group it took climbs on this
-   server. Floors climbed on other servers need MessagingService: if that won't fit, the dial
-   says "Climbing" and the floor goes to ROADMAP as its own ticket.
-5. A player alone in the lobby (in no car) is pointed to the fullest open car that will take
-   them (a soft marker on it), gone once they step in. Too big? Split in ROADMAP first.
-**Acceptance:** checks green; Studio Play: the panel's Invite opens Roblox's invite (or says why
-not in Studio), the dials show who's in each car and update as you step in and out, a lone
-player's marker points at the fullest car; Output clean but 203785492, 120448020095820 and the
-known rbxassethash lines.
-**Read first:** ROADMAP L-08e3; GDD "The lobby"; DECISIONS D-121, D-123;
-`src/client/CarPanel.luau`; `src/server/LobbyCars.luau` (`publish`).
+## Next task: L-08e4a The cart, built the unit's way
+The moment (for e4b): you kick a platform cart across the lobby while the count runs. This
+session builds the cart itself, parked in the rack by the door, so it reads as a real storage
+office's platform cart from the spawn on a phone.
+1. Owner test results first, if pasted. Read ROADMAP L-08e4 and the GDD's "The lobby" (the
+   cart ride), then `art/unit/README.md` (the recipe) and a small script to copy (`art/ladder/`).
+2. `art/cart/`: `spec.py` (a 2.2 by 4.3 stud deck as the rack was sized for, `art/lobby/spec.py`
+   `RACK_*`; a push handle at the back; four casters, the front pair swivelling, wheels as
+   their own parts for e4b to spin), `build.py`, baked PBR maps on shared sets, the FBX, a
+   generated `src/shared/Cart/Specs.luau`, look sheets (hero, in the rack, phone-size from the
+   door). Build with `scripts/art.sh`.
+3. Import it as `ReplicatedStorage.Props.Cart` (STUDIO.md's FBX recipe and Blender traps); the
+   front office parks one nose-in at each `Lobby.Specs.CartSlots` (in `Lobby.lay`).
+4. Judge it in Studio Play at phone size from the spawn and up close; fix and rebuild.
+**Acceptance:** checks green; the art builds headless; Studio Play shows a cart in every rack
+slot, at the rack's scale, textured, nothing floating or clipping; Output clean but
+203785492, 120448020095820 and the known rbxassethash lines. Upload help needed? OWNER.md.
+**Read first:** ROADMAP L-08e4; GDD "The lobby"; `art/unit/README.md`; `art/ladder/build.py`
+(a small script to copy); `art/lobby/spec.py` (the rack); STUDIO.md "Getting assets into Roblox".
 
 ## Queue (the evening run, owner Nov 12: lobby sessions until 8pm; ROADMAP Phase 1's order paragraph)
-1. L-08e3 (next), then L-08e4 (GDD "The lobby", D-112) in green-ending sessions, art first.
-2. Time left before 8pm: hone the lobby (ROADMAP polish); Seen fixes wait. No new keepers.
+1. L-08e4a (next), then L-08e4b (the ride), in green-ending sessions. Then L-08e3b.
+2. Time left before 8pm: hone the lobby (ROADMAP polish, e.g. "The dials' finish"); Seen fixes
+   wait. No new keepers.
 3. Seen (owner, Nov 12, "fix them later"): lobby car floors go splotchy as the camera moves
    inside; a sawn side or top flashes see-through as its panel drops (the swap to the holed
    model? `TopHole.saw`, `CrawlHole.saw`), must be seamless. Older: a lobby car's lamp burns at 0.14 of 1.2 in its bay on the client (ElevatorView's
@@ -61,7 +60,8 @@ known rbxassethash lines.
    (and a fallback lobby) everyone on the server counts in a climb's end, even someone who stayed
    in the lobby (Again now sends them to the front door); you hold the flashlight out in the
    lobby, over the results (put it away there?); the panel's host line is blank if the host's
-   Player isn't found; the turned-away headline sits over the far wall, red on teal.
+   Player isn't found; the turned-away headline sits over the far wall, red on teal; screen
+   captures right after Play show the lobby nearly black for several seconds (lighting).
 
 ## Kickoff for the next agent
 ```text

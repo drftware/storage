@@ -21,6 +21,13 @@
 	- `PlayersAttribute`: how many players the host takes, 1 to 5; absent at the full 6.
 	- `ResultsAttribute`: how the last climb from this car went (ClimbEnd.encodeResults), on its
 	  back wall for everyone (CarResults) from the group's return until the car next leaves.
+	- `FloorAttribute`: the floor the group it last took up is on, while they climb on this server;
+	  absent otherwise. The dial over the car shows it (CarDial).
+
+	Invite and the dials (L-08e3): anyone aboard can Invite from the car's panel (Roblox's invite;
+	a friend who joins it is pointed to the car, `InvitedAttribute`). A dial over each car shows
+	who's aboard and the host's choices, or the floor its last group has reached; a player in no
+	car is pointed to the fullest car that will take them (`fullest`).
 
 	Back in your car (L-08e2): when the climb ends, its group comes back standing in the car they
 	left from, in their old order (the host first) with the host's choices as they were (`back`),
@@ -40,6 +47,10 @@ Boarding.GroupAttribute = "Group"
 Boarding.FriendsAttribute = "FriendsOnly"
 Boarding.PlayersAttribute = "Players"
 Boarding.ResultsAttribute = "Results"
+Boarding.FloorAttribute = "ClimbFloor"
+-- On a player, from the server: the UserId of the friend whose invite they joined by (Roblox's
+-- launch data, checked for type only: it only says which car to point them to).
+Boarding.InvitedAttribute = "InvitedBy"
 
 -- Seconds the count runs from the first step in: the GDD's 20, DOORS' lobby wait. Long enough to
 -- wave a friend over from the door (under 3 s at a run) and let them pick the car; short enough
@@ -63,6 +74,10 @@ Boarding.ChoiceSeconds = 0.12
 -- Seconds after it left that a car stands open in its bay again, empty, for the next group: the
 -- ride up (Ride.opens, about 10 s) and a beat for those who rode to be on floor 1.
 Boarding.Back = 12
+
+-- A car whose gate shuts in less than this many seconds isn't one a player alone is pointed to:
+-- from the door it's under 3 s at a run, and a beat to see the marker.
+Boarding.Reach = 4
 
 -- The difficulties a host picks from. Only one until the climb has tiers (the GDD's auction-board
 -- tiers; their names wait on the owner, OWNER.md): the panel shows it, with nothing to change.
@@ -287,6 +302,40 @@ function Boarding.riders(car: Car, inside: { number }, friend: (id: number) -> b
 		end
 	end
 	return out
+end
+
+-- Which of `cars` to point `id`, in none of them, to at server time `t` (`fullest`): the index of
+-- the fullest car with someone aboard that would take them (Friends only only if `friend` says
+-- they're the host's friend) and doesn't shut within `Reach`, the one with more time left on a
+-- tie; nil if none would. A car with `by` aboard (the friend whose invite they came by) comes
+-- first, if it would take them. `friend` answers nil while it isn't known: that car waits.
+function Boarding.fullest(
+	cars: { Car },
+	id: number,
+	t: number,
+	friend: (host: number) -> boolean?,
+	by: number?
+): number?
+	local best: number? = nil
+	local bestScore, bestLeft = -math.huge, -math.huge
+	for i, car in cars do
+		local host = Boarding.host(car)
+		local departs = car.departs
+		if host and departs and departs - t >= Boarding.Reach then
+			local mate: boolean? = if car.friends and host ~= id then friend(host) else true
+			if Boarding.refusal(car, id, t, mate) == nil then
+				local score = #car.group
+				if by and table.find(car.group, by) then
+					score += Boarding.Capacity
+				end
+				local left = departs - t
+				if score > bestScore or (score == bestScore and left > bestLeft) then
+					best, bestScore, bestLeft = i, score, left
+				end
+			end
+		end
+	end
+	return best
 end
 
 -- The host's choices from their replicated values: Friends only, and the player count (a

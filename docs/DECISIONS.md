@@ -3383,3 +3383,56 @@ photo, name and floor, lost ones greyed and askew; the photos drop on one by one
 lifts. From the car's `Results` (`ClimbEnd.encodeResults`, at most six rows); it stays while
 people step out and in and goes when the car next leaves. Sized for first person from the front
 row (5.5 studs off the wall): the whole board fits the view.
+
+## D-124 Invite and the dials: who's in each car, and where to go (L-08e3, Nov 12)
+The moment: a friend's not here, so you tap Invite on the car's panel and Roblox's sheet of your
+friends comes up; from the door every car tells you who's in it, and if you're in no car the
+fullest one that will take you glows, a chevron bobbing in its doorway (GDD "The lobby":
+"An Invite button on the car's panel", "Players alone are pointed to the fullest open car",
+"The dial over each car shows who's aboard, or which floor a climbing party has reached"; DOORS'
+lobby elevators show who's in each over its door).
+
+**Invite is Roblox's own sheet, beside Go, for anyone aboard.** `SocialService:PromptGameInvite`
+with an `ExperienceInviteOptions` (the line "Ride up with us", launch data `{ by = UserId }`);
+read on create.roblox.com Nov 12 (docs/STUDIO.md). Anyone aboard may invite, not just the host
+(a friend of anyone is welcome in an Open car; OWNER.md). It hides where
+`CanSendGameInviteAsync` says no (asked once, it yields) and on a group's own server: a friend
+can't follow you into a reserved server, so until L-08e3b sends them on, the key waits for a
+public lobby (the ticket's fallback). The sheet's closing tells nothing (`GameInvitePromptClosed`'s
+recipients are no longer filled in), so the press's answer is the key's dip, the click and the
+sheet itself. Rejected: a toast after the sheet ("Invite sent"), which we can't know.
+
+**A friend who comes by your invite is pointed to your car.** The server reads the launch data
+from `GetJoinData` (it can take seconds: asked ten times, a second apart), checks only its type,
+and marks the player `InvitedBy`; their pointer prefers a car with that friend aboard, if it
+would take them. It's a hint, so it's not checked further: a forged one only points a screen.
+
+**The share link is a separate thing and waits (L-08e3b).** Audience Expansion (Creator Rewards)
+pays on new or returning players who come by the experience's share link; an invite to a friend
+already on Roblox isn't that. A share link is `PromptLinkSharingAsync` (server only), a second
+button whose place is the owner's call (OWNER.md).
+
+**The dial covers the bay's number plate and keeps the number.** A client SurfaceGui plate (10.4
+by 3 studs, 50 px a stud) over each gate: three round seats either side of the number, a photo in
+a warm ring for each aboard (popping in), dark sockets for room, faint past the host's count;
+one line under it: "Friends only" (warm), "Full", "Going up" (a trip), or "Floor N" in the
+readout's green while the group it took climbs on this server. Rejected: words for the count
+(the keypad readout beside the gate already counts), a separate sign beside the number plate
+(two signs per car), photos alone (unreadable from the door: the seats read as lit and dark
+dots there, the faces as you walk up). Built in code for now; the unit's way (a real indicator
+box and needle) is in ROADMAP's polish.
+
+**The floor is the server's word.** While a climb a car started runs on this server, LobbyCars
+puts its floor on the car (`ClimbFloor`), cleared when the group is home or the climb is over.
+A climb on a group's own server says nothing to the lobby yet (MessagingService, L-08e3b), so
+those cars show "Going up" as they leave and then stand ready for the next group.
+
+**The pointer.** Pure (`Boarding.fullest`, Lune-checked): the fullest car with someone aboard
+that would take you (room, Friends only only if Roblox says you're the host's friend, asked once
+and kept) and won't shut in under 4 s (`Boarding.Reach`: from the door it's under 3 s at a run),
+more time left on a tie, the inviter's car first. Only for a player standing in the front office
+in no car's group; worked out four times a second. No pointer while every car is empty: any car
+will do and you spawn facing them. Its look is soft: the dial's rim warms and breathes, the seat
+you'd take glows with it, and a warm chevron bobs in the doorway at head height. Rejected: a
+screen arrow (it covers the phone), a light on the floor (a real light per car, against the
+light budget).

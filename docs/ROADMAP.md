@@ -1146,19 +1146,50 @@ fix them later." The overnight run's hard limits hold.
       player, on Studio's own server and a group's own ("Arrive"); place saved as version 35.
       Lune: trip 91, boarding 124, climbend 2944 checks. Friends, live servers and a phone are
       the owner's (`OWNER.md`).
-    - [ ] **L-08e3 Invite and the dials.** An Invite button on the car's panel (Roblox's invite,
-      with a share link: Audience Expansion pays on those). After a climb the group is on its own
-      server (D-123), which a friend's invite can't reach: verify what an invite from there does
-      (it should bring the friend to a public lobby, or the button waits for the next public one). A dial over each car: who's aboard,
-      or which floor a climbing party has reached (GDD). A player alone is pointed to the
-      fullest open car.
+    - [x] **L-08e3 Invite and the dials. Done Nov 12 (D-124).** The moment: a friend's not here,
+      so you tap Invite on the car's panel and Roblox's sheet of your friends comes up ("Ride up
+      with us"); from the door every car tells you who's in it, and a player in no car is pointed
+      to the fullest that will take them. Invite sits beside Go for anyone aboard (Roblox's
+      `PromptGameInvite`, its launch data naming you; hidden where Roblox says you can't invite
+      and on a group's own server, which a friend can't follow you to yet). A friend who joins by
+      it is marked with who invited them (LobbyCars) and pointed to that car first. A dial over
+      each gate (CarDial) keeps the bay's number with three round seats either side: photos in
+      warm rings as people step in (they pop in), dark sockets for room, faint past the host's
+      count; one line under the number: "Friends only", "Full", "Going up", or "Floor N" in the
+      readout's green while the group it took climbs on this server (`Boarding.FloorAttribute`).
+      The pointer (`Boarding.fullest`): the dial's rim glows warm and breathes, the seat you'd
+      take with it, and a chevron bobs in its doorway; gone once you step in. Verified in Studio,
+      one player (others faked on the cars from the client): the dials from the door and close,
+      a seat filling, "Floor 1" over car 3 while its climb ran, the pointer onto the fullest car
+      and off as you step in, the panel's Invite opening Roblox's invite sheet (none sent), the
+      key gone on a group's own server. Lune: boarding 137 checks. Live invites, friends and a
+      phone are the owner's (`OWNER.md`).
+    - [ ] **L-08e3b Share and follow.** Three pieces the invite still lacks. (1) A share link
+      (`SocialService:PromptLinkSharingAsync`, server only: an expiring link to the experience
+      with launch data, Roblox's share sheet or the clipboard): Audience Expansion pays 35% of
+      a new or returning player's first $100 when they come by the experience's share link, and
+      an invite to a friend already on Roblox isn't that; where it sits waits on the owner
+      (`OWNER.md`). (2) Invite from a group's own server: the launch data names that server
+      (`Trip` data carries its id), and the public lobby a friend lands in sends them on to it
+      (`TeleportAsync` with the same `ReservedServerId`), standing them at the front office
+      there. (3) The dial's floor for a climb on another server: the group's server tells its
+      lobby (MessagingService, the lobby's JobId in the trip's data) and the car's dial says
+      "Floor N" until they're back.
     - [ ] **L-08e4 The cart ride** (owner: "definitely"). The moment: you kick a platform cart
       across the lobby while the count runs and roll up to the gate as it shuts. Its own model,
       built the unit's way. Tap Ride; hold forward and your back leg kicks on its own in rhythm
       (no tapping); let go to coast; Jump to hop off. Carts bump and stop, never launch anyone;
       at a gate you hop off and the cart rolls back to its rack; one rider each; the rider's
       client moves it and the server caps its speed. As R.E.P.O.'s rideable vehicles and
-      Roblox's classic skateboard. Cart cosmetics wait for the store.
+      Roblox's classic skateboard. Cart cosmetics wait for the store. In two sessions (split Nov
+      12, each ends green):
+      - [ ] **L-08e4a The cart, built the unit's way.** `art/cart/`: a spec (a 2.2 by 4.3 stud
+        deck, as the rack's slots were sized for, a push handle, four casters that turn), the
+        Blender script, baked PBR maps, the FBX, a generated `Specs` module and look sheets;
+        imported to `ReplicatedStorage.Props.Cart`; one parked nose-in at every rack slot
+        (`Lobby.Specs.CartSlots`), judged at phone size from the door.
+      - [ ] **L-08e4b The ride.** Ride, the kick, coasting, hopping off, bumps, the roll back to
+        the rack, one rider, the speed cap: the GDD's cart ride on the carts L-08e4a parks.
 - [x] **L-15 Keepers hear the rest. Done Nov 11 (D-107).** The keypad, a dropped tool, the saw, a
   crawl, the ladder and a drop off or into a unit each reach a keeper as far as players hear them,
   as Lethal Company's Eyeless Dogs come to any noise. A sound on a unit's top carries out over its
@@ -1704,3 +1735,8 @@ Atmosphere effects wait until the loop is solid (owner, Nov 7); the haze stays a
 - **Stepping into a lobby car** (L-08e1b1): a soft clank of the car's steel floor under your
   first step in, heard by those near, so joining a group sounds as well as chimes; and an L lit
   over each car's gate on the lobby side (today the floor readout faces into the car).
+- **The dials' finish** (L-08e3): the dial is a SurfaceGui plate over the bay's art number
+  plate; built the unit's way it would be a steel indicator box with six round glass lenses and
+  a real needle sweeping L to 10 as a party climbs (the "floor dial over the landing" above).
+  A soft tick from the dial as its floor changes, for those nearby; the line's words could
+  stencil on rather than pop.

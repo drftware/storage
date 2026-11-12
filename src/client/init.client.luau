@@ -10,6 +10,7 @@ local Brix = require(ReplicatedStorage.Brix)
 local BangMarks = require(script.BangMarks)
 local BehindDoors = require(script.BehindDoors)
 local ButtonView = require(script.ButtonView)
+local CarDial = require(script.CarDial)
 local CarPanel = require(script.CarPanel)
 local CarResults = require(script.CarResults)
 local CameraShake = require(script.CameraShake)
@@ -109,6 +110,8 @@ local host = Brix.Host.new({
 		{ slot = "tripView", system = TripView.new() },
 		-- back in your car after the climb (L-08e2): the results on its back wall
 		{ slot = "carResults", system = CarResults.new() },
+		-- a dial over each lobby car, and the pointer to the fullest for a player in none (L-08e3)
+		{ slot = "carDial", system = CarDial.new() },
 	},
 })
 host:start()

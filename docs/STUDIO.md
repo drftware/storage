@@ -1572,6 +1572,34 @@ verified: a doc page, Studio, or "untested".
   `GetArrivingTeleportGui()` from a ReplicatedFirst LocalScript, parented to PlayerGui, or Roblox
   drops it once the place loads. On a reserved server `game.PrivateServerId ~= ""` and
   `game.PrivateServerOwnerId == 0` (a VIP server has an owner).
+- **Invites and share links, read Nov 12 (L-08e3, create.roblox.com's SocialService, "Player
+  invite prompts", Creator Rewards)**: `SocialService:CanSendGameInviteAsync(player, recipientId?)`
+  yields (wrap it in `pcall`) and says whether the player may invite at all; call it before
+  `PromptGameInvite(player, options?)`, which opens Roblox's friend sheet (client). Options are an
+  `ExperienceInviteOptions` instance: `PromptMessage` (dropped if too long to fit), `InviteUser`
+  (one friend), `InviteMessageId` (a Notification string from the Creator Dashboard), `LaunchData`
+  (at most 200 characters; the joiner's server reads it from `Player:GetJoinData().LaunchData`,
+  which can take a few seconds to arrive, so poll it). `GameInvitePromptClosed(player,
+  recipientIds)`: recipientIds is no longer filled in, so you can't tell whether anyone was
+  invited. The docs don't say what joining an invite from a reserved server does; a friend can't
+  follow into one. `PromptLinkSharingAsync(player, options)` is server only: an expiring share
+  link (`ExpirationSeconds`, default a day; `PreviewTitle`, `PreviewDescription`,
+  `PreviewAssetId`, `LaunchData`, `FallbackLinkId`) on Roblox's share sheet or the clipboard,
+  returning an `Enum.PromptLinkSharingResult`; `ShareSheetClosed` fires on the server.
+  Audience Expansion pays 35% of a new or returning user's first $100 of purchases (60 days) when
+  they come by the experience's share link (or a direct link) and play 10+ minutes that day, the
+  experience averaging 100+ DAU.
+- **Invites in Studio** (Nov 12, verified with the MCP): `CanSendGameInviteAsync` returns true in
+  Play and `PromptGameInvite` opens the real sheet with your real friends
+  (`CoreGui.GameInvite.GameInviteModal`; `screen_capture` doesn't show CoreGui, so read its
+  `TextLabel`s from a Client `execute_luau`). Never press a friend's Invite there: it sends a real
+  invite. Stop Play to close it. `game.PrivateServerId` can't be read on the client (it warns and
+  gives ""): read Workspace's `OwnServer` instead.
+- **Opening a lobby car's panel from the MCP** (Nov 12): its count is 20 s, so do it in quick
+  calls: Server pivot into the car (`car:GetPivot() * CFrame.new(1, 3, 5)`, facing the gate),
+  Client `CurrentCamera.CFrame = CFrame.lookAt(pos, car:GetPivot() * CFrame.new(-5.75, 4,
+  1.6))` (the button is off screen otherwise and E does nothing), keyboard E, capture.
+  `ProximityPrompt:InputHoldBegin()` from a script didn't trigger it.
 - **Studio can test teleports now** (Nov 12, verified with the MCP): a `TeleportAsync` in Play
   opens the destination as a new test server and the Studio session switches to it (the
   executing client call ends with "Target is closed"; Client and Server then mean the new

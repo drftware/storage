@@ -41,9 +41,14 @@
 	  only and not the host's friend) is set down outside its gate, and their screen is told why.
 	  Whether they're the host's friend is asked of Roblox once, as they step in
 	  (`Player:IsFriendsWith` yields), and kept; until it's known they're neither in nor out.
+	- The dials (L-08e3, CarDial): while a group a car took up climbs on this server, the car
+	  carries the floor they're on (`Boarding.FloorAttribute`). Someone who joins by a friend's
+	  invite (Roblox's launch data, CarPanel) is marked with who invited them
+	  (`Boarding.InvitedAttribute`), so their screen points them to that friend's car.
 
 	Every step checks each player against the six cars: a few box tests, no allocation.
 ]]
+local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -101,6 +106,10 @@ local ASK_AGAIN = 5
 -- Where someone left in a car that leaves without them is set down: on the striped zone in
 -- front of its gate, facing the room (in the elevator's frame, +Z into the car).
 local SET_DOWN = CFrame.new(0, 3, -4) * CFrame.Angles(0, math.pi, 0)
+
+-- An invite's launch data can take a few seconds to reach a joining player (create.roblox.com,
+-- "Player invite prompts"): asked this many times, this many seconds apart.
+local INVITE_TRIES, INVITE_EVERY = 10, 1
 
 local function now(): number
 	return Workspace:GetServerTimeNow()
@@ -231,6 +240,44 @@ function LobbyCars.new(): LobbyCars
 		car.model:SetAttribute(Boarding.FriendsAttribute, nil)
 		car.model:SetAttribute(Boarding.PlayersAttribute, nil)
 		car.model:SetAttribute(Boarding.ResultsAttribute, nil)
+	end
+
+	-- The floor the group `car` took up is on (nil: none climbing), on its dial.
+	local function showFloor(car: Car, floor: number?)
+		if car.model:GetAttribute(Boarding.FloorAttribute) ~= floor then
+			car.model:SetAttribute(Boarding.FloorAttribute, floor)
+		end
+	end
+
+	-- Who invited `player` (Roblox's launch data on an invite, CarPanel's `{ by = UserId }`): it
+	-- arrives a few seconds after they join, if at all. Only its type is checked: it just points
+	-- their screen to that friend's car.
+	local function invited(player: Player)
+		for _ = 1, INVITE_TRIES do
+			if not player.Parent then
+				return
+			end
+			local ok, join = pcall(function(): any
+				return player:GetJoinData()
+			end)
+			-- any: GetJoinData's dictionary, and LaunchData passed through the inviter's device
+			local launch = if ok and type(join) == "table" then (join :: any).LaunchData else nil
+			if type(launch) == "string" and launch ~= "" then
+				local decoded, data = pcall(HttpService.JSONDecode, HttpService, launch)
+				local by = if decoded and type(data) == "table" then (data :: any).by else nil
+				if
+					type(by) == "number"
+					and by % 1 == 0
+					and by > 0
+					and by ~= player.UserId
+					and player.Parent
+				then
+					player:SetAttribute(Boarding.InvitedAttribute, by)
+				end
+				return
+			end
+			task.wait(INVITE_EVERY)
+		end
 	end
 
 	-- Whether this is a group's own server whose group is still on the climb they arrived for:
@@ -520,6 +567,9 @@ function LobbyCars.new(): LobbyCars
 		else
 			return nil
 		end
+		if r then
+			showFloor(r.car, nil)
+		end
 		ridden = nil
 		if t and t:own() and not homed then
 			homed = true
@@ -669,6 +719,15 @@ function LobbyCars.new(): LobbyCars
 			table.insert(connections, r.OnServerEvent:Connect(chose))
 			table.insert(
 				connections,
+				Players.PlayerAdded:Connect(function(player: Player)
+					task.spawn(invited, player)
+				end)
+			)
+			for _, player in Players:GetPlayers() do
+				task.spawn(invited, player)
+			end
+			table.insert(
+				connections,
 				Players.PlayerRemoving:Connect(function(player: Player)
 					local t = now()
 					local gone = player.UserId
@@ -697,8 +756,16 @@ function LobbyCars.new(): LobbyCars
 			local t = now()
 			local c = climbs
 			-- the climb a car started is over (its end has cleared it): the held counts start again
+			local r = ridden
+			if climbing and r and c then
+				local on = c:current()
+				showFloor(r.car, if on then on.number else nil)
+			end
 			if climbing and c and not c:current() and t > boardedAt + Boarding.Back then
 				climbing = false
+				if r then
+					showFloor(r.car, nil)
+				end
 				for _, car in cars do
 					if not car.away and not car.state.departs and #car.state.group > 0 then
 						Boarding.resume(car.state, t)

@@ -18,6 +18,32 @@ nowhere else.
   arrive on your group's server) and a running `rojo serve` only reads those at start. Without
   it the trip works, but the front office may flash for a moment as you arrive.
 
+## Now: judge L-08e3, Invite and the dials (built Nov 12, D-124)
+
+Over each car's gate a dial now replaces the number plate: the bay's number with three round
+seats either side, a photo in a warm ring for each player aboard, empty sockets for room, and a
+line under the number ("Friends only", "Full", "Going up", or "Floor 3" in green while that car's
+group climbs on the same server). Standing in the lobby in no car, the fullest car that will take
+you glows: its dial's rim breathes warm, the seat you'd take with it, and a chevron bobs in its
+doorway. Inside a car the panel has Invite beside Go, for anyone aboard: Roblox's sheet of your
+friends, "Ride up with us". Verified in Studio, one player, the other cars' players faked: the
+dials from the door and up close, a seat filling, "Floor 1" over the car you rode, the pointer on
+and off, the invite sheet opening with your friends (no invite sent).
+- [ ] **Invite, live (Publish first):** in a car, tap Invite and invite a friend. Do they land
+  on your server (Roblox's invite follows you there on a public server; the docs don't promise
+  it)? Once in, the chevron should point them to your car. Tell me if they land elsewhere.
+- [ ] **The dials from the door, on your phone:** can you tell from the spawn which cars have
+  people and how many? Up close, are the photos big enough? The line under the number is small
+  from the door; it's meant to read from the room's middle.
+- [ ] **The pointer:** with a friend in one car and you in none, their car glows and the chevron
+  bobs in its doorway; it moves if another car gets fuller, and goes as you step in. Too much,
+  too little?
+- [ ] **Decide (defaults in place):** (1) anyone aboard can Invite, not only the host; (2) after
+  your group's first climb you're on its own server, where Invite is hidden for now (a friend
+  can't follow you there; L-08e3b sends them on); (3) where the share link goes (Roblox pays on
+  new or returning players who come by a share link, not on invites to friends already on
+  Roblox): a Share key on the panel beside Invite, or on the end screen after a climb, or both?
+
 ## Now: judge L-08e2, back in your car (built Nov 12, D-123)
 
 At the end of a climb, "Again" brings your group back standing in the car you left from, in your
@@ -45,8 +71,8 @@ its look. The place was saved as version 35 so Studio's test teleport ("Send") r
   car's own count; the other way is no button, everyone back in the car once the results have
   shown. (2) You come back facing the results, so you turn round to step out. (3) After the climb
   your group stays on its own server (its own lobby, the six cars, nobody else): strangers can't
-  join you there; friends who join later land in the public lobby. Sending the group back to a
-  public lobby instead is a choice for L-08e3's Invite.
+  join you there; friends who join later land in the public lobby. Invite is hidden there for
+  now; L-08e3b sends an invited friend on to your server (L-08e3, above).
 
 ## Now: judge L-08e1c, a server of the group's own (built Nov 12, D-122)
 
