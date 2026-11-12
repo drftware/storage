@@ -44,6 +44,9 @@ WorldButton.Height = 96
 -- Timings, in seconds.
 WorldButton.In = 0.12 -- swelling in as you come near: there the instant you are
 WorldButton.Out = 0.08 -- gone as you leave: no trail
+-- Seconds every button takes to fade aside while the inventory wheel is open over them, and to
+-- come back as it folds: quick enough that the wheel owns the screen the moment it fans out.
+WorldButton.Aside = 0.1
 WorldButton.InScale = 0.72 -- how small it starts as it swells in
 WorldButton.OutScale = 0.9 -- how small it ends as it goes
 WorldButton.Pop = 0.22 -- a press's pop, squashed and springing back

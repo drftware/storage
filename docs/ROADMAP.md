@@ -164,7 +164,8 @@ Make the fixes I recently described, the prompt updates, build the lobby, and be
 needs to be perfect." Up to 15 sessions back to back, about 300k tokens of context each, still one
 ticket each, every session ending green and committed. Order: L-16b2 (done), L-19a (done: one
 look for every button, the owner's "prompt updates"), L-19b (done: a door's buttons where the
-hand goes), L-20a (done: the inventory wheel, three slots), L-17, L-16d,
+hand goes), L-20a (done: the inventory wheel, three slots), L-17 (done: every button on a
+phone at once), L-16d,
 then the lobby, L-08e1 to L-08e4 (GDD "The lobby", D-112), which no longer waits on L-09a
 (only the owner can run that): split L-08e1 and L-08e4 into sessions that each end green (the
 room's art script first, then the cars, the joining and the count, then the trip to a server of
@@ -1181,11 +1182,15 @@ Brix's purchases and profiles), proven mechanics only, never edit Brix.
     computer and the Galaxy A16 (shots `docs/art/L-20a-*.jpg`).
   - [ ] **L-20b Six slots, bought** once the store and saved player data exist (Phase 2: Brix's
     purchases and profiles); granted only after the profile saves.
-- [ ] **L-17 Every button on a phone at once.** At Galaxy A16 size in Studio: kept with the Bang
-  button up, holding a horn, the map, torch and jump buttons showing, a door's buttons near, the
-  inventory wheel shut and open (L-20a); nothing overlaps and everything reads. The kept
-  player's wheel button goes from under the Bang button if it clutters. `HornView`'s round button, which now carries every verb tool's,
-  renamed `UseButton`.
+- [x] **L-17 Every button on a phone at once.** Done Nov 12 (D-117). Judged on the Galaxy A16:
+  kept with the Bang button up; the horn up at a shut and an open door with the torch, jump, map
+  and Blow; the wheel open by a door. The open wheel's slots landed on a door's chips, so every
+  button in the world now fades aside while the wheel is open (`ButtonView.aside`) and comes back
+  as it folds. Kept, the Bang button ran into the torch's switch and the wheel sat on empty, so
+  the wheel slides off the bottom while you're kept (its presses ignored) and the torch's switch
+  and the Use button go with the jump button and while kept. On a computer Q at a shut door now
+  peeks only (Peek's key; the wheel stays shut, as G is Slam's). The held torch behind Cut reads
+  and stays. `HornView`'s round button is `UseButton`. Shots `docs/art/L-17-*.jpg`.
 - [ ] **L-18 The art saved with the code** (optional; the owner saves the place every session,
   Nov 10). Each imported template under `ReplicatedStorage.Props` and `Units` kept as a model
   file in the repository that Rojo puts in place, so a fresh place builds the whole game.
@@ -1235,9 +1240,10 @@ is an escape, not a haul); nothing builds it until the owner says.
 - **A door's row as it changes (L-19b):** a button fading out (0.08 s) and the one arriving in
   its neighbour's place overlap for that moment (Open fading as Slam swells in beside it). A
   crossfade that waits for the leaver, or a shorter fade on a door's row, if it reads as a flicker.
-- **The held tool behind a door's low buttons (L-19b):** on a phone the torch in your right hand
-  sits behind Cut when it slides in from the latch; the chip draws over it, but L-17 should judge
-  whether the hand drops a little while a door's buttons show.
+- **The world under the wheel (L-17):** a door's buttons vanish while the wheel is open; dimming
+  the whole view a touch behind the fan (GTA V's wheel greys the world) would say "the wheel has
+  the screen" more plainly than the chips alone going. The kept player's wheel sliding off could
+  take a soft cloth rustle, as hands go empty.
 - **The buttons' finish (L-19a):** the hold ring is Roblox's own ring picture, thin round a
   48-point chip; a ring of our own (a bolder stroke, a soft glow as it closes) would read better
   at arm's length on a phone. A row's shared name ("Padlocked") jumps to the next button when the

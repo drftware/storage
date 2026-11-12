@@ -8,7 +8,9 @@
 	(KeptPlayers), so they come to on its dark inside, facing the door (the game is always first
 	person): their eyes crack open, drop shut, then open, the view blurred and grey as it clears
 	and the hall's sounds back. Then a big Bang button comes up (L-07c): on a phone under the right
-	thumb, elsewhere low in the middle with its key under it (a click, Space, a gamepad's A or R2).
+	thumb, elsewhere low in the middle with its key under it (a click, Space, a gamepad's A or R2),
+	the one button on the screen: your hands are empty, so the wheel has slid off the bottom
+	(ToolView) and the torch's switch has gone with the jump button (FlashlightView, L-17).
 	Each press jolts the view at once and asks the server to bang the door (`Remotes.Bang`); the
 	door's thud and shake come back from the server. Presses faster than a bang can land wait for
 	the next (one held, as a fighting game buffers an input), so mashing hammers at the door's own
@@ -48,7 +50,7 @@ local PHONE_MIN, PHONE_MAX = 96, 140 -- points
 local PHONE_EDGE = 0.045 -- of the screen's width, in from the right and up from the bottom
 local DESK_SIDE = 0.14 -- elsewhere, a share of the height: a target to read, not to thumb
 local DESK_MIN, DESK_MAX = 76, 104
-local BUTTON_LOW = 0.76 -- elsewhere, its foot as a share of the screen's height: its key clear of the slots' bar
+local BUTTON_LOW = 0.76 -- elsewhere, its foot as a share of the screen's height, its key under it
 local CAPTION_SIZE = 18
 local PRESS = TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local PRESSED = 0.84 -- the button's scale at a press, springing back

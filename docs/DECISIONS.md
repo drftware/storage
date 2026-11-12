@@ -3102,3 +3102,52 @@ button, a slot, the box and Drop; a padlock lifted showing all 14 Lock buttons a
 pocketed; Lock with the padlock, then Cut with the cutters (2) on the same door. On the Galaxy
 A16: the wheel by tap, a slot by tap, the box by tap, clear of the thumbstick, Blow, jump and
 torch buttons.
+
+## D-117 Every button on a phone at once (L-17, Nov 12)
+
+Judged on the Galaxy A16 in Studio, three crowds, with BillboardGuis mirrored into the shots:
+kept with the Bang button up; the horn in hand at a shut and an open door with the torch, jump,
+map and Blow showing; the wheel open by a door. Two things overlapped and one key collided.
+
+**The open wheel over a door's buttons.** On a phone the wheel fans up to y 190 and a shut
+door's Peek sits at 233, Open just above it, an open door's Close and Slam beside the top slot:
+slots landed on chips, and a tap could take the wrong one. Now every button in the world steps
+aside while the wheel is open: they fade out together in 0.1 s (`WorldButton.Aside`) and take
+no taps, and come back as it folds (ButtonView's `aside(reason, on)`, called by ToolView's open
+and fold). GTA V's weapon wheel takes the screen the same way, the world dimmed behind it. Their
+keys still press them: a keyboard press on E meant the door. Moving the wheel instead was
+ruled out: on a phone the low middle is the only place for it and a door's low row sits right
+above it by design (D-115).
+
+**The Bang button over the torch's switch.** Kept on a phone, the Bang button takes the jump
+button's corner (96 points) and its top ran into the torch's switch, which sits over the jump;
+mashing Bang could flick the torch. And the wheel sat on with three empty dots: a kept player has
+dropped everything (KeptPlayers' `dropAll`), so it was a dead button. Now, while you're kept, the
+wheel slides off the bottom of the screen (0.3 s in, Quad) and rises back with a small overshoot
+when you're let out (0.45 s, Back); its presses are ignored (ToolView's `alive` is false while
+kept). The torch's switch and the Use button go with the jump button and also while kept
+(FlashlightView, HornView), so the screen holds the Bang button, the map and the thumbstick.
+Hooked in Dead by Daylight, a player has one prompt; the same here. A torch left on stays on.
+
+**Q at a shut door.** On a computer Q opens the wheel (D-116) and is Peek's key: at a shut door
+one press peeked and the wheel's key fired too. Now while a shown button takes Q, Q is that
+button's and the wheel stays shut, as G is Slam's at an open door (D-108); 1, 2, 3 still pick.
+
+**Judged and left:** the held torch behind Cut at a padlocked door (L-19b's note): the chip and
+its word draw over the torch and read, so the hand doesn't drop. Horn up at a shut and an open
+door: Open/Peek and Close/Slam clear of the wheel, box and Drop by 7 points or more; Blow clear of
+the jump. The map clear of everything.
+
+**The round button is `UseButton`** (its ScreenGui and the button's Name): it carries every verb
+tool's press (Blow, Lay), not the horn's alone.
+
+**Seen, not chased:** at the first catch the torch's switch and the Use button's screen stayed
+on while the jump button was hidden, as if its Visible change never reached them; toggling the
+jump by hand after made both follow. The kept check now hides them whatever the cause.
+
+**Verified in Studio** (one player, Galaxy A16 and computer): the three crowds captured
+(`docs/art/L-17-*.jpg`, before and after); the wheel's slots over Open/Cut with the chips gone
+and their taps off, back on fold after 4 s; kept with only Bang, the map and the thumbstick; let
+out by a stand-in's Cut free with the wheel back at y 212 and the torch's switch back. On a
+computer: Q at a shut door peeked with the wheel shut; at an open door Q opened it with Close and
+Slam aside.

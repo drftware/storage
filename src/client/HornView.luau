@@ -2,9 +2,9 @@
 --[[
 	Client system: the air horn on this screen (L-14a2, D-087).
 
-	Yours: while it's in your hand, a click, a gamepad's L2 or the round Blow button (on a phone,
-	left of the jump button, under your right thumb; otherwise left of the wheel's button) blows
-	it. Your screen answers at once: the blast at your horn, the horn brought up in your view
+	Yours: while it's in your hand, a click, a gamepad's L2 or the round button that says Blow
+	(`UseButton`, L-17: on a phone left of the jump button, under your right thumb; otherwise left
+	of the wheel's button) blows it. Your screen answers at once: the blast at your horn, the horn brought up in your view
 	(ToolView's `use`) and a kick to your view (CameraShake). The server is told (ToolUse) and
 	decides for everyone else. Your screen keeps the server's gap between blows (`Horn.allow`): the
 	button dims until the horn is ready again.
@@ -29,6 +29,7 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local Horn = require(ReplicatedStorage.Shared.Tools.Horn)
 local Joints = require(script.Parent.Joints)
+local Kept = require(ReplicatedStorage.Shared.Kept)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 local ToolView = require(script.Parent.ToolView)
 local Tools = require(ReplicatedStorage.Shared.Tools)
@@ -55,14 +56,15 @@ type Arm = {
 	elbow: Joints.Joint?,
 }
 
--- The round button, as the Drop button: dark, an off-white ring and one word.
+-- The round button (`UseButton`), as the Drop button: dark, an off-white ring and one word, the
+-- verb of the tool in your hand.
 local function makeButton(): (ScreenGui, TextButton, UIScale, UIStroke)
 	local gui = Instance.new("ScreenGui")
-	gui.Name = "HornPress"
+	gui.Name = "UseButton"
 	gui.ResetOnSpawn = false
 	gui.Enabled = false
 	local b = Instance.new("TextButton")
-	b.Name = "Use"
+	b.Name = "UseButton"
 	b.AutoButtonColor = false
 	b.AnchorPoint = Vector2.new(1, 0.5)
 	b.BackgroundColor3 = Color3.new(0, 0, 0)
@@ -340,7 +342,8 @@ function HornView.new(
 		end
 	end
 
-	-- On a phone, the button sits left of the jump button, sized from it.
+	-- On a phone, the button sits left of the jump button, sized from it, and goes with it and
+	-- while you're kept in a unit (the Bang button's place, L-17).
 	local function placeButton()
 		local j, b, g = jump, button, gui
 		if not (touch and j and b and g) then
@@ -356,7 +359,7 @@ function HornView.new(
 		b.Size = UDim2.fromOffset(size, size)
 		local at = j.AbsolutePosition
 		b.Position = UDim2.fromOffset(at.X - size * BUTTON_GAP, at.Y + j.AbsoluteSize.Y / 2)
-		g.Enabled = j.Visible
+		g.Enabled = j.Visible and player:GetAttribute(Kept.Attribute) ~= true
 	end
 
 	local function findJump()
@@ -403,6 +406,10 @@ function HornView.new(
 		table.insert(
 			connections,
 			player:GetAttributeChangedSignal(Tools.PocketedAttribute):Connect(refresh)
+		)
+		table.insert(
+			connections,
+			player:GetAttributeChangedSignal(Kept.Attribute):Connect(placeButton)
 		)
 		refresh()
 		ContextActionService:BindAction(

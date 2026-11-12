@@ -17,6 +17,10 @@
 	G, the d-pad's down or the round Drop button beside the box drops what you hold at your feet;
 	but while a button in the world that takes the same key is up (a door's Slam, G), the key is
 	that button's and the tool stays in your hand: at an open door the slam is the moment (D-108).
+	Q is a shut door's Peek as well: while Peek is up, Q peeks and the wheel stays shut (L-17).
+	While the wheel is open, the buttons in the world step aside under it (ButtonView's `aside`).
+	Kept in a unit your hands are empty, so the wheel slides off the bottom of the screen and
+	leaves the Bang button alone until you're let out (L-17).
 	A tool's name shows over the button for a moment as it comes into your hand, as Minecraft's
 	hotbar names what you switch to; a friend's handover reads "Bolt cutters from Sam".
 
@@ -52,6 +56,7 @@ local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
 local FreeCursor = require(script.Parent.FreeCursor)
 local HandRoom = require(script.Parent.HandRoom)
 local Hands = require(ReplicatedStorage.Shared.Hands)
+local Kept = require(ReplicatedStorage.Shared.Kept)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 local Wheel = require(ReplicatedStorage.Shared.Tools.Wheel)
@@ -81,6 +86,11 @@ local POCKET_PITCH = 0.8
 local BUTTON_OF_HEIGHT = 0.12
 local BUTTON_MIN, BUTTON_MAX = 56, 88
 local LIFT = 1.06 -- the box with the tool up in your hand, raised
+-- Kept in a unit your hands are empty (everything dropped where you were caught), so the wheel
+-- slides down off the screen and leaves the Bang button alone; it rises back when you're let out.
+local STOWED = 2 -- of the button's size, below its place: off the bottom of the screen
+local STOW = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+local UNSTOW = TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 -- The dots on the button: the arc's radius and a dot's size, of the button's.
 local DOT_ARC = 0.26
 local DOT_SIZE = 0.12
@@ -466,10 +476,13 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 	local sawReach: { [ProximityPrompt]: boolean } = {} -- each wall's Saw
 	local leanReach: { [ProximityPrompt]: boolean } = {} -- each front's Lean
 
+	-- Your hands are your own: alive, and not kept in a unit.
 	local function alive(): boolean
 		local character = player.Character
 		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-		return humanoid ~= nil and humanoid.Health > 0
+		return humanoid ~= nil
+			and humanoid.Health > 0
+			and player:GetAttribute(Kept.Attribute) ~= true
 	end
 
 	-- The slot your hand is on and whether its tool is pocketed: your own press for a moment, then
@@ -554,6 +567,13 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 	end
 
 	-- Sizes everything for this screen: phone first.
+	-- Where the wheel's button sits: low in the middle, or off the bottom while you're kept.
+	local stowed = false
+	local function restAt(): UDim2
+		local y = if stowed then math.floor(size * STOWED) else -math.floor(size * 0.22)
+		return UDim2.new(0.5, 0, 1, y)
+	end
+
 	local function layout()
 		local h = ui
 		local camera = Workspace.CurrentCamera
@@ -565,7 +585,7 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 		local gap = math.floor(size * Wheel.Gap)
 		local mid = size / 2
 		h.hud.Size = UDim2.fromOffset(size, size)
-		h.hud.Position = UDim2.new(0.5, 0, 1, -math.floor(size * 0.22))
+		h.hud.Position = restAt()
 		local keys = keyboard()
 		-- the dots: a small arc, the same shape as the wheel, lifted over Q on a keyboard
 		local dot = math.max(5, math.floor(size * DOT_SIZE))
@@ -723,6 +743,7 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 		end
 		wheelOpen = false
 		wheelTurn += 1
+		ButtonView.aside(CURSOR, false)
 		local mine = wheelTurn
 		local mid = size / 2
 		local box = math.floor(size * Wheel.BoxOfButton)
@@ -768,6 +789,8 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 		end
 		wheelOpen = true
 		wheelTurn += 1
+		-- the door's buttons under the fan step aside until it folds (L-17)
+		ButtonView.aside(CURSOR, true)
 		local mine = wheelTurn
 		local mid = size / 2
 		h.fan.Visible = true
@@ -1092,6 +1115,10 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 		elseif name == "ToolPocket" then
 			toggle()
 		elseif name == "ToolWheel" then
+			if not wheelOpen and keyTaken(input.KeyCode) then
+				-- a door's Peek is up on Q: the peek is the moment (1, 2, 3 still pick), L-17
+				return Enum.ContextActionResult.Pass
+			end
 			if wheelOpen then
 				closeWheel(nil)
 			else
@@ -1196,6 +1223,23 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 			)
 		end
 		table.insert(connections, UserInputService.LastInputTypeChanged:Connect(layout))
+		-- kept in a unit: the wheel slides down off the screen, and back up when you're let out
+		local function keptChanged()
+			local now = player:GetAttribute(Kept.Attribute) == true
+			if now == stowed then
+				return
+			end
+			stowed = now
+			if now then
+				closeWheel(nil)
+			end
+			TweenService:Create(h.hud, if now then STOW else UNSTOW, { Position = restAt() }):Play()
+		end
+		table.insert(
+			connections,
+			player:GetAttributeChangedSignal(Kept.Attribute):Connect(keptChanged)
+		)
+		keptChanged()
 		for i = 1, Carry.Slots do
 			table.insert(
 				connections,
@@ -1378,8 +1422,11 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 		for _, name in ACTIONS do
 			ContextActionService:UnbindAction(name)
 		end
-		if wheelOpen and needCursor then
-			needCursor(CURSOR, false)
+		if wheelOpen then
+			ButtonView.aside(CURSOR, false)
+			if needCursor then
+				needCursor(CURSOR, false)
+			end
 		end
 		wheelOpen = false
 		wheelTurn += 1

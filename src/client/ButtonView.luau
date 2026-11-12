@@ -16,6 +16,9 @@
 	- A refusal (`refuse`, or the server's `Remotes.Refused` to this player alone) shakes it and
 	  turns the verb into the refusal's words in red for a beat, with a dull tick.
 	- Hidden: gone in a blink. Its drawing goes back in a small pool for the next button.
+	- Stepping aside (`aside(reason, on)`, L-17): every button on the screen fades out together
+	  and takes no taps while something opens over them (the inventory wheel fans up over a door's
+	  buttons on a phone), then fades back. Their keys still press them.
 
 	Only buttons in motion are stepped.
 
@@ -91,6 +94,7 @@ type Drawn = {
 	refusedAt: number, -- os.clock of the last refusal, or -1
 	refusal: string,
 	down: boolean, -- a tap or click of ours is holding the prompt
+	clickable: boolean, -- a tap (a phone) or a click (a clickable prompt) presses it
 	offset: Vector2, -- points from its point it's drawn at now (the prompt's UIOffset, or sliding there)
 	slideFrom: Vector2, -- where a slide along the row began
 	slideAt: number, -- os.clock its place on the row changed, or -1
@@ -107,6 +111,9 @@ local pool: { Look } = {}
 local owner: { [Look]: Drawn } = {}
 local holder: ScreenGui? = nil
 local refuseSound: Sound? = nil
+-- What has every button stepped aside now (`ButtonView.aside`), and how far: 0 shown to 1 gone.
+local asideFor: { [string]: true } = {}
+local asideLevel = 0
 
 local function edge(parent: Instance, thickness: number, color: Color3): UIStroke
 	local s = Instance.new("UIStroke")
@@ -290,6 +297,7 @@ local function makeLook(): Look
 				d
 				and d.coming
 				and not d.down
+				and asideLevel < 0.5
 				and isPress(input)
 				and input.UserInputState ~= Enum.UserInputState.Change
 			then
@@ -427,6 +435,7 @@ local function draw(d: Drawn, now: number, dt: number): boolean
 		moved = true
 	end
 	local alpha, scale = WorldButton.presence(d.level, d.coming)
+	alpha *= 1 - asideLevel
 	-- the hold ring
 	local fill = 0
 	if d.holdAt >= 0 then
@@ -504,6 +513,16 @@ local function holderGui(): ScreenGui?
 	return g
 end
 
+-- Whether a tap or click on `d`'s chip reaches it: only where it's clickable, and not while
+-- every button has stepped aside.
+local function tappable(d: Drawn)
+	local live = d.clickable and asideLevel < 0.5
+	local look = d.look
+	look.gui.Active = live
+	look.tap.Active = live
+	look.tap.Interactable = live
+end
+
 -- What the chip carries for `input`: the key, the pad's picture, or (a phone) a dot.
 local function dress(d: Drawn, input: Enum.ProximityPromptInputType)
 	local look, prompt = d.look, d.prompt
@@ -538,10 +557,8 @@ local function dress(d: Drawn, input: Enum.ProximityPromptInputType)
 		if touch then WorldButton.TouchChip else WorldButton.Chip,
 		if touch then WorldButton.Hit else 0
 	)
-	local clickable = touch or prompt.ClickablePrompt
-	look.gui.Active = clickable
-	look.tap.Active = clickable
-	look.tap.Interactable = clickable
+	d.clickable = touch or prompt.ClickablePrompt
+	tappable(d)
 end
 
 -- Puts `d` on its prompt's point, at its UIOffset at once.
@@ -614,6 +631,7 @@ local function show(prompt: ProximityPrompt, input: Enum.ProximityPromptInputTyp
 		refusedAt = -1,
 		refusal = "",
 		down = false,
+		clickable = false,
 		offset = Vector2.zero,
 		slideFrom = Vector2.zero,
 		slideAt = -1,
@@ -790,6 +808,19 @@ function restore(prompt: ProximityPrompt)
 	end
 end
 
+--- Every button on this screen steps aside for `reason` (`on` true): faded out together and
+--- deaf to taps, until nothing has them aside. Their keys still press them.
+function ButtonView.aside(reason: string, on: boolean)
+	if on then
+		asideFor[reason] = true
+	else
+		asideFor[reason] = nil
+	end
+	for _, d in drawn do
+		startMoving(d)
+	end
+end
+
 function ButtonView.new(): Brix.System
 	local connections: { RBXScriptConnection } = {}
 	local system = { name = "ButtonView" }
@@ -849,6 +880,21 @@ function ButtonView.new(): Brix.System
 	end
 
 	function system.step(_: any, dt: number)
+		-- stepping aside, or back: every drawn button fades along
+		local target = if next(asideFor) ~= nil then 1 else 0
+		if asideLevel ~= target then
+			local was = asideLevel < 0.5
+			local by = dt / WorldButton.Aside
+			asideLevel = if target > asideLevel
+				then math.min(target, asideLevel + by)
+				else math.max(target, asideLevel - by)
+			for _, d in drawn do
+				moving[d] = true
+				if was ~= (asideLevel < 0.5) then
+					tappable(d)
+				end
+			end
+		end
 		if next(moving) == nil then
 			return
 		end

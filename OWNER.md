@@ -14,6 +14,24 @@ nowhere else.
 - [ ] **Keep the experience private** until the lobby (L-08e) replaces the test hall: every
   server builds the hall now, with its teleport posts, Mannequin post and the code in the log.
 
+## Now: judge L-17, every button on a phone at once (built Nov 12, D-117)
+
+On the Galaxy A16 in Studio: opening the wheel by a door now makes the door's buttons fade out
+under it (they came back as it shut); kept in a unit, the screen holds only the Bang button, the
+map and the thumbstick (the empty wheel slides off the bottom, the torch switch goes with the jump
+button) and both come back when you're cut free; on a computer, Q at a shut door peeks and leaves
+the wheel shut. Shots before and after: `docs/art/L-17-*.jpg`.
+- [ ] **On your phone**, at a door, tap the wheel: do the door's buttons fading out read as "the
+  wheel has the screen", or would you rather see them dimmed behind it?
+- [ ] **Get kept on your phone** (a friend, or the catch in Studio): mash Bang with your thumb.
+  Nothing else is near it now; does the empty corner where the torch switch was feel right? Get
+  cut free: the wheel should rise back up from the bottom.
+- [ ] **On a computer**, at a shut door press Q: you should peek only. Step to an open door and
+  press Q: the wheel opens and Close and Slam fade out.
+- [ ] **Decide, defaults in place** (D-117): (1) **Kept, your torch can't be switched** on a phone
+  (its button goes so a mashed Bang never flicks it; a torch left on stays on). (2) **At a shut
+  door Q is Peek's**, not the wheel's; 1, 2, 3 still pick. Say if either should change.
+
 ## Now: judge L-20a, the inventory wheel and three slots (built Nov 12, D-116)
 
 Three slots. The round button at the bottom middle shows a dot per slot (lit where a tool is,

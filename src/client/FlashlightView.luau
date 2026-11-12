@@ -34,6 +34,7 @@ local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
 local HandRoom = require(script.Parent.HandRoom)
 local Hands = require(ReplicatedStorage.Shared.Hands)
 local Joints = require(script.Parent.Joints)
+local Kept = require(ReplicatedStorage.Shared.Kept)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 
 local Torch = Flashlight.Torch
@@ -301,6 +302,8 @@ function FlashlightView.new(): (Brix.System, Beam)
 	end
 
 	-- The phone's button sits over the jump button, sized from it, once the touch controls exist.
+	-- It goes with the jump button, and while you're kept in a unit (L-17): there the Bang button
+	-- takes the jump's place, and a torch switch over it would take the odd mashed press.
 	local function placeButton()
 		local j, b, g = jump, button, gui
 		if not (j and b and g) then
@@ -316,7 +319,9 @@ function FlashlightView.new(): (Brix.System, Beam)
 		b.Size = UDim2.fromOffset(size, size)
 		local at = j.AbsolutePosition
 		b.Position = UDim2.fromOffset(at.X + j.AbsoluteSize.X / 2, at.Y - size * BUTTON_GAP)
-		g.Enabled = j.Visible and UserInputService.TouchEnabled
+		g.Enabled = j.Visible
+			and UserInputService.TouchEnabled
+			and player:GetAttribute(Kept.Attribute) ~= true
 	end
 
 	local function findJump()
@@ -586,6 +591,10 @@ function FlashlightView.new(): (Brix.System, Beam)
 			Enum.KeyCode.ButtonR1
 		)
 		table.insert(connections, player.CharacterAdded:Connect(respawned))
+		table.insert(
+			connections,
+			player:GetAttributeChangedSignal(Kept.Attribute):Connect(placeButton)
+		)
 		RunService:BindToRenderStep(RENDER, Enum.RenderPriority.Camera.Value + 2, hold)
 		table.insert(connections, RunService.PreSimulation:Connect(poseArms))
 	end

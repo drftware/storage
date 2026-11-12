@@ -113,6 +113,22 @@ verified: a doc page, Studio, or "untested".
 - **The wheel on the A16** (L-20a): the button spans viewport y 270 to 326 (x 314 to 371), the
   box 273 to 323 lifted, Drop beside it; the open wheel's top slot reaches y 190. Peek's middle at
   a shut door sits at 233 to 235 from 1.5 to 4 studs.
+- **Every button at once on the A16** (L-17): the Bang button (kept) spans gui x 558 to 654,
+  y 153 to 249 (viewport y 211 to 307), the torch's switch gui x 599 to 651, y 128 to 180: they
+  overlapped, so the switch now goes while you're kept. An open door's Close and Slam sit at
+  viewport y about 158 to 216, a shut door's Open/Peek at about 158 and 204 to 233, the open
+  wheel's slots from 190 down: they overlapped, so the world's buttons step aside while the wheel
+  is open. A padlocked door's Cut chip sits on the held torch's head and reads.
+- **A keyboard press hides the Device Simulator's touch controls** (L-17): after a
+  `user_keyboard_input` (E to pick up, 2 to switch) Roblox takes the last input as a keyboard,
+  hides the thumbstick and jump button, and the screens that follow the jump (torch switch, Use
+  button) go with it; captures then miss them. One `user_mouse_input` click on an empty spot
+  (e.g. (420, 120)) brings them all back.
+- **A screen following the jump button can miss its hide** (L-17, seen once): at a catch the
+  jump hid but FlashlightView's and HornView's screens, which follow its `Visible` change, stayed
+  on; setting the jump's Visible by hand afterwards made both follow. Cause unknown; anything
+  that must go with the jump in a given state should also watch that state (they now watch
+  `Kept`).
 - **A Client `execute_luau` has its own module cache** (L-20a): `require` of a shared module there
   returns a different table from the one the game's LocalScripts hold, so setting a number on it
   (to stretch `Wheel.Linger` for a shot) changes nothing in the game. Batch the input and the
