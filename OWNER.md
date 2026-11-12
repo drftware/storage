@@ -41,6 +41,25 @@ yours to judge.
   and six paid; the GDD still says two tools ("two tools plus whatever's in your hands"). The
   ticket builds three. Edit the GDD's line, or say if two should stay.
 
+## Decide: the lobby and the store (your plan, Nov 11, D-112)
+
+Written into the GDD's "The lobby" and "Monetization", ROADMAP L-08e (four tickets) and Phase 2's
+store. Defaults are in place; nothing here blocks the tickets before L-08e.
+- [ ] **Tool slots for sale** (L-20b): your note sells six. Six ends the "which tools do I carry"
+  choice a climb is built on; one more (four) keeps it. Default: six, as you said, until you
+  say four.
+- [ ] **A clerk at the counter?** A character there could be the game's face, as DOORS' Jeff is,
+  but it needs a reason to be alive that fits the lore. Default: no clerk, a bell and a sign.
+- [ ] **A double-cash pass** (299 to 399 in other games), a small edge in co-op. Default: not at
+  launch; look again if cash feels scarce.
+- [ ] **The dolly in the levels** stays a maybe (your note: the climb is an escape, not a haul).
+  Nothing builds it until you say. If it comes back, riding an empty one fast but loud would be
+  a new, untested bet.
+- [ ] **Later, before the game goes public:** watch 5 to 10 kids in the age range play two climbs
+  each and note every "how do I get that?"; answer the maturity questionnaire as Mild fear (no
+  keeper ever bleeds); set avatars to R15 only; for Kids and Select, 250 plays from highly
+  engaged players within 60 days or the refundable 50,000 Robux expedited review.
+
 ## Now: judge L-16a, in hand and caught (built Nov 11)
 
 Verified in Studio (Play, one player, D-108): your own right arm raised through the new joint

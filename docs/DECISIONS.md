@@ -2871,3 +2871,33 @@ can't bring Lock back while you lie up top. Door buttons carry `Door.ButtonTag`.
 foot buttons are 12 studs from a crawler (reach 6), and the server already ignored Climb, Take
 and Lean from anyone on a climb.
 
+
+## D-112 The lobby: DOORS' elevators, a shop at the counter, a cart to ride (owner's plan, Nov 11)
+The moment: you spawn in Everkeep's front office facing six freight cars, step into one with your
+friends, kick a cart around while the count runs, and the gate slams on the zero.
+
+**The plan is the owner's** (Nov 11): a realistic storage entrance, elevators as the servers, the
+counter as the shop, ridable push carts. Written into the GDD ("The lobby", "Monetization") and
+split into L-08e1 to L-08e4 plus Phase 2's store. Research behind it: the October teardown and
+hit-game reports in the owner's other projects, the GDD's store table, Roblox's docs read Nov 11.
+
+**What earns, in order.** The rating first: Roblox's fear guide counts jump scares, creepy NPCs
+and suspense as mild and keeps moderate for realistic blood and wounds, so staying bloodless
+keeps the game Mild, which reaches Roblox Kids and players who never age-checked. Then days 8 to
+28, which the ranking now rewards over quick spending. Then friends (co-play days rank; Roblox
+pays 35% of a new or returning player's first $100 if they came on a share link), so Invite sits
+on the car's panel. Then the shelf, kept small: 99 Nights ranked #10 by earnings with 28 products.
+
+**Rules.** Robux never sit beside a timer: the car's Bring slot takes cash only, and Robux live at
+the counter and the kept view. Once cash packs exist nothing random is sold for cash either,
+since Roblox counts currency bought with Robux; the daily sealed lot stays free. The starter pack
+shows after your first climb. A purchase must survive a failed save and a server hop before
+launch, and every offer can be switched off without an update.
+
+**The cart is a lobby ride** (owner: "definitely"), not the dolly. The owner, Nov 11: the climb
+is an escape, not a haul, so the dolly in the levels is a maybe and nothing builds it until the
+owner says. Rejected: one cart shared by the lobby and the levels, which only paid if hauling
+finds was the loop. Riding an empty dolly in a level, fast but loud, would be an untested bet.
+
+**Open, defaults in place (`OWNER.md`):** six slots for sale (four suggested), a clerk at the
+counter (default none), a double-cash pass (default not at launch).

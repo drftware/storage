@@ -2,7 +2,7 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-11, session 99 (L-16b1) · **Checks:** green ·
+**Updated:** 2026-11-11, session 99 (L-16b1), then the owner's lobby plan (D-112) · **Checks:** green ·
 **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
@@ -47,7 +47,8 @@ docs/STUDIO.md "Getting a player up on the tops from the MCP".
 2. L-20a the inventory wheel and three slots (L-20b, six bought, waits on the store).
 3. L-17 every button on a phone at once; L-16d the tops still jitter on a computer (before
    friends); then L-09a the first run with friends, floors 1 to 3.
-4. L-08e (the start, in the lobby) waits for the owner's lobby plan. L-18 optional.
+4. L-08e1 to L-08e4, the lobby (the owner's plan is in: GDD "The lobby", D-112): the front
+   office and elevators, back in your car, Invite and the dials, the cart ride. L-18 optional.
 5. Seen: a ladder stood on a floor when it's cleared should go with it (untested); anyone still
    in the car 6 s after it opens is shut in (`OWNER.md`'s L-08a decision 2); watching a friend
    ride doesn't draw their shaft (ROADMAP polish); DevCorridor's "Walk a floor" sign keeps the

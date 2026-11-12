@@ -1033,12 +1033,33 @@ tops still jittered on a computer: L-16d, "not now", but before friends play (L-
     catch, the top ridden alone, left behind with stand-ins then removed; Again by mouse and
     Enter; a clean new character each time; Output clean but the known asset lines
     (`docs/art/L-08d-*.jpg`). Two players and a phone: `OWNER.md`.
-  - [ ] **L-08e The start** (waits: the owner brings the full lobby plan Nov 11; don't build
-    any of it before then). Friends gather and the climb starts on a short countdown once
-    everyone's in, as DOORS' lobby elevators do: the smallest form of the GDD's lobby (your own
-    lobby unit is Phase 2) and the stand-in `docs/FRAMEWORK.md` plans while ENG-13 is unbuilt.
-    Until it lands the test hall is the way in on live servers too (D-109); the lobby replaces
-    it there, and the test hall goes back to Studio only, before the game goes public.
+  - [ ] **L-08e The lobby** (the owner's plan, Nov 11, D-112; GDD "The lobby"). Everkeep's
+    front office at night, whose one job is getting friends into an elevator fast, as DOORS'
+    lobby elevators do. Until it lands the test hall is the way in on live servers too (D-109);
+    the lobby replaces it there, and the test hall goes back to Studio only, before the game goes
+    public. Your own lobby unit, the daily door and the store are Phase 2.
+    - [ ] **L-08e1 The front office and the elevators.** The moment: you spawn facing six
+      freight cars, step through a gate with your friends, and the gate slams on the count. The
+      room built the unit's way (`art/`): front door, cart rack, the counter (dressing for now),
+      six cars that reuse the climb's car and gate. Step in to join; the first in hosts (Open or
+      Friends only, 1 to 6, the difficulty); 20 s from the first step in, 5 s once full, Go at
+      any time; at zero the climb's own gate slam. The car takes its group to a server of their
+      own: ENG-13, or the stand-in `docs/FRAMEWORK.md` plans while it's unbuilt. A new player is
+      in a car within 15 s. Comes after L-09a in HANDOFF's queue.
+    - [ ] **L-08e2 Back in your car.** The moment: the climb ends and you're standing in the same
+      car with the same friends, results on the wall, the count running for another go. Anyone
+      can step out and back in. Replaces `ClimbEnds.go`'s fresh floor 1.
+    - [ ] **L-08e3 Invite and the dials.** An Invite button on the car's panel (Roblox's invite,
+      with a share link: Audience Expansion pays on those). A dial over each car: who's aboard,
+      or which floor a climbing party has reached (GDD). A player alone is pointed to the
+      fullest open car.
+    - [ ] **L-08e4 The cart ride** (owner: "definitely"). The moment: you kick a platform cart
+      across the lobby while the count runs and roll up to the gate as it shuts. Its own model,
+      built the unit's way. Tap Ride; hold forward and your back leg kicks on its own in rhythm
+      (no tapping); let go to coast; Jump to hop off. Carts bump and stop, never launch anyone;
+      at a gate you hop off and the cart rolls back to its rack; one rider each; the rider's
+      client moves it and the server caps its speed. As R.E.P.O.'s rideable vehicles and
+      Roblox's classic skateboard. Cart cosmetics wait for the store.
 - [x] **L-15 Keepers hear the rest. Done Nov 11 (D-107).** The keypad, a dropped tool, the saw, a
   crawl, the ladder and a drop off or into a unit each reach a keeper as far as players hear them,
   as Lethal Company's Eyeless Dogs come to any noise. A sound on a unit's top carries out over its
@@ -1136,9 +1157,22 @@ tops still jittered on a computer: L-16d, "not now", but before friends play (L-
 
 All ten floors with the ride, the stairwell set piece and both boss floors; the director; the
 other keepers (the roster waits on the owner's rework, `OWNER.md`; the Moth and its mothballs
-are out, Nov 10) and their own tools; the dolly; the light board; finds
+are out, Nov 10) and their own tools; the light board; finds
 with rarity; your lobby unit; the store; Captures. Player data, remotes, telemetry and UI from Brix
-(ENG-09 to ENG-16). Then soft launch.
+(ENG-09 to ENG-16). Then soft launch. The dolly in the levels is a maybe (owner, Nov 11: the climb
+is an escape, not a haul); nothing builds it until the owner says.
+
+- **The store** (GDD "Monetization", D-112), in this order. Purchases and saved profiles first
+  (Brix); then Cut Free goes live (built, L-07d). Then the counter's shop: walk up and it opens,
+  plus a Shop button in the lobby and Roblox's own Shop button. Its first shelf: the Bring slot
+  in the car (your starting tool, cash only), torch beam colours, wrap colours, the starter pack
+  (after your first climb), cash packs, gift versions, more tool slots (L-20b). Then friend
+  referral (a matching beam colour for both when a friend joins on your link), then cart
+  cosmetics. **Before the game goes public:** a real phone purchase survives a forced save
+  failure and a server hop; every purchase and shop view is logged (Roblox's economy and funnel
+  events); any offer can be switched off without an update; prices are read from Roblox.
+- **Your unit and the daily door:** a hall of units, one per player; the free daily sealed lot is
+  a roll-up door in the lobby you open once a day (GDD "The lobby").
 
 - **Finds in a run** (moved from L-04d, Nov 8): where a unit's boxes and its find stand for the
   unit's size, the find deeper than the bulb and facing the door within a small turn (D-036);
