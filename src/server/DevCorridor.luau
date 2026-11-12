@@ -464,13 +464,11 @@ local function travelPost(
 	a.Position = Vector3.new(0, 1, 0)
 	a.Parent = post
 	local p = Prompts.post(a, objectText, actionText)
-	local refuse = Prompts.refuser(p, function()
-		return objectText
-	end)
+	local refuse = Prompts.refuser(p)
 	p.Triggered:Connect(function(player: Player)
 		local where = to()
 		if not where then
-			refuse("Still laying it")
+			refuse("Still laying it", player)
 			return
 		end
 		send(player, where)
@@ -500,11 +498,9 @@ local function mannequinPost(model: Model, origin: CFrame, keepers: Keepers.Keep
 	a.Position = Vector3.new(0, 1, 0)
 	a.Parent = post
 	local p = Prompts.post(a, "Mannequin", "Stand one")
-	local refuse = Prompts.refuser(p, function()
-		return "Mannequin"
-	end)
+	local refuse = Prompts.refuser(p)
 	local stood: Model? = nil
-	p.Triggered:Connect(function()
+	p.Triggered:Connect(function(player: Player)
 		if stood then
 			keepers:remove(stood)
 			stood = nil
@@ -512,7 +508,7 @@ local function mannequinPost(model: Model, origin: CFrame, keepers: Keepers.Keep
 		local spot, facing = keepers:hallOff(model, MANNEQUIN_OFF)
 		stood = if spot and facing then keepers:stand("Mannequin", model, spot, facing) else nil
 		if not stood then
-			refuse("No Mannequin") -- Output says why
+			refuse("No Mannequin", player) -- Output says why
 			return
 		end
 		print(

@@ -2,49 +2,51 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-11, session 100 (L-16b2), night run session 1 of 15 · **Checks:** green ·
+**Updated:** 2026-11-11, session 101 (L-19a), night run session 2 of 15 · **Checks:** green ·
 **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- **L-16b done (D-111, D-113).** A press made the moment you arrive counts: new pure `Arrival`
-  (shared) judges a press where the server sees you and at moments out to 0.4 s on at the speed
-  it sees you moving. Used by `Crawling.counts`, every reach in `Ladders` (crawlers by the crawl
-  check's own speed, `Ladders:moving`), its hole check and Drop in, `Saws` (the press and every
-  frame of a cut) and `Doors` (reach, and the side for Lock and Cut).
-- **`ButtonReach` fixed:** its weak tables lost buttons, so every door button stayed hidden after
-  climbing down off the tops. Plain tables now (never key a weak table by an Instance:
-  docs/STUDIO.md).
-- Verified in Studio: Climb, Saw (hole through) and Lean on arrival at a full run, where Climb
-  and Saw were dropped before; L-16b1's door buttons hidden up top (padlock in hand too) and back
-  once down; Climb down and Drop down ignored behind a hole, a clear Drop down going.
-- Studio: left in Edit, nothing imported.
+- **L-19a done (D-114).** Every button in the world is `Style` Custom and drawn by the new client
+  system `ButtonView` in the pure `WorldButton` look: a round key chip (key, pad picture, or a
+  dot on a phone at 48 points), the verb beside it, the name only where it's news and once per
+  row; swells in, blinks out, a hold ring, a press pop. A refusal now goes to the presser alone
+  (`Prompts.refuser(p)` gives `(text, player)`, `Remotes.Refused`) and shakes the button red
+  with its words and a dull tick. `ButtonReach` is folded in as `ButtonView.hide`.
+- Names dropped where plain to see: doors (but "Padlocked" while locked), the ladder, Lean, Drop
+  down. Kept: Drop in, Crawl, Saw, Pick up, Cut free, Give, test posts.
+- Verified in Studio (computer and Galaxy A16): shots in `docs/art/L-19a-*.jpg`. Captures skip
+  BillboardGuis; docs/STUDIO.md has the mirror trick and the A16 click mapping.
+- Studio: left in Edit, Device Simulator off, nothing imported.
 
-## Next task: L-19a One look for every button
-The moment: a button in the world is a small, sharp key chip with one verb beside it, there the
-instant you're near, gone without a trace; on a phone it's a clean thumb target that never
-covers the hall. The owner's "prompt updates" ("takes up too much space on mobile... look modern
-and world-class").
+## Next task: L-19b A door's buttons where your hand would go
+The moment: at a shut door your thumb finds Open on the door's middle and Peek low by the
+ground, like reaching for the handle; at an open door Close and Slam sit side by side in the
+middle; the padlock's Lock and the cutters' Cut sit on the latch where the hand goes.
 1. Owner test results first, if pasted.
-2. Read ROADMAP L-19a and the prompt notes in docs/STUDIO.md ("Camera and prompts"). List every
-   prompt the game makes (`Prompts` on the server; KeypadPad, ToolView and NoteView make their
-   own on the client); each is one verb.
-3. One client system draws every prompt (`ProximityPrompt.Style` Custom, set where they're
-   made): the round key chip (keyboard key, gamepad button, or nothing but the chip on touch,
-   at least 44 px), the verb beside it, the object's name only where it's news; fades and
-   scales in and out; the ring fills over a hold; a refusal shakes it red with its few words
-   (today's refusal flashes in `ObjectText`, `Prompts`); a tap on the chip triggers it on touch.
-4. Fold `ButtonReach` in (hidden buttons draw nothing), keeping its plain tables.
-5. Use the roblox-ui skill. Judge at phone size (Galaxy A16) and on a computer in Studio, with
-   shots; nothing from our planning on screen.
-**Acceptance:** checks green; every prompt in the test hall draws the new chip; holds fill;
-a refusal (Open on Unit 112, padlocked) shakes red with "Padlocked"; touch taps work; Output clean
-but 203785492. Live phone and two players go to `OWNER.md`.
-**Read first:** ROADMAP L-19a; docs/STUDIO.md "Camera and prompts"; `src/server/Prompts.luau`;
-`src/client/ButtonReach.luau`; `src/client/ToolView.luau` (its `ButtonReach.hide` calls).
+2. Read ROADMAP L-19b and D-114. Doors today: three buttons on one `DoorButtons` attachment,
+   spaced by `UIOffset` (`Door.Slots` times `SLOT_PIXELS` 150, sized for Roblox's old box).
+3. Give each button its own point on the door (an Attachment per place: middle, low, latch,
+   inside), set in `Doors.add` from `RollUpDoor.frame` and the spec's latch; keep `Door.Slots`'
+   promise that a tapped spot is empty after the tap (no double tap firing another button).
+4. In first person a point more than 35° below your gaze is off screen and hides its button
+   (docs/STUDIO.md "Camera and prompts"): check Peek low still shows from where you stand to use
+   it, on a phone too; raise it as little as needed.
+5. KneelView brings the door's buttons down with your peek: move whichever points need it.
+   ToolView (`works()`) and LadderView read door buttons too; grep `DoorButtons`, `DoorAction`
+   and `ButtonTag` before moving anything.
+6. Judge on a computer and the Galaxy A16 (mirror shots); ButtonView's chip sits 30 points left
+   of each point (`WorldButton.Shift`).
+**Acceptance:** checks green; shut door: Open middle, Peek low; open: Close and Slam side by side;
+padlocked: Cut on the latch, Lock on the latch with a padlock in hand; a long refusal never runs
+over the next chip; Peek still crouches you; Output clean but 203785492 and the known
+rbxassethash lines. Live phone and two players go to `OWNER.md`.
+**Read first:** ROADMAP L-19b; `src/server/Doors.luau` (`HALL_BUTTONS`, `add`, `make`);
+`src/shared/StorageUnit/Door.luau` (`Slots`, `offers`); `src/client/KneelView.luau` (its
+`DoorButtons` move); `src/client/ButtonView.luau` (`place`); docs/STUDIO.md "Camera and prompts".
 
 ## Queue (tonight's run order, owner Nov 11 night; ROADMAP Phase 1's order paragraph)
-1. L-19a (next), L-19b a door's buttons where your hand goes, L-20a the inventory wheel and
-   three slots, L-17 every button on a phone at once, L-16d the tops still jitter on a computer.
+1. L-19b (next), L-20a the inventory wheel and three slots, L-17 every button on a phone at
+   once, L-16d the tops still jitter on a computer.
 2. The lobby, L-08e1 to L-08e4 (GDD "The lobby", D-112), no longer waiting on L-09a: split
    L-08e1 and L-08e4 into sessions that each end green (the room's art script first, then the
    cars, the joining and the count, then the trip to a server of the group's own).
@@ -55,9 +57,9 @@ but 203785492. Live phone and two players go to `OWNER.md`.
    when it's cleared should go with it (untested); anyone still in the car 6 s after it opens is
    shut in (`OWNER.md`'s L-08a decision 2); watching a friend ride doesn't draw their shaft;
    DevCorridor's "Walk a floor" sign keeps the old floor's number after "Again" (Studio only);
-   the ladder can't be knocked flat yet (D-107); new Output lines at Play, "rbxassethash://...
-   Requester does not have permission for Asset" (14 hashes, nothing visibly missing; no mesh or
-   texture in the game points at them).
+   the ladder can't be knocked flat yet (D-107); Output lines at Play, "rbxassethash://...
+   Requester does not have permission for Asset" (up to 21 hashes this session, nothing visibly
+   missing; no mesh or texture in the game points at them).
 
 ## Kickoff for the next agent
 ```text

@@ -437,6 +437,7 @@ function KeypadPad.new(press: ElevatorView.Press, need: FreeCursor.Need): Brix.S
 		at.WorldCFrame =
 			CFrame.new(Elevator.keypadPoint(inst) + inst:GetPivot().LookVector * PROMPT_OUT)
 		local p = Instance.new("ProximityPrompt")
+		p.Style = Enum.ProximityPromptStyle.Custom -- drawn by ButtonView
 		p.ObjectText = ""
 		p.ActionText = "Use"
 		p.KeyboardKeyCode = Enum.KeyCode.E

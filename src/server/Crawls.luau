@@ -56,7 +56,7 @@ type Side = {
 	into: Model,
 	frame: CFrame, -- the crawl's frame from this side (Crawling)
 	at: Attachment,
-	refuse: (string) -> (),
+	refuse: (string, Player) -> (), -- shown to the presser alone
 }
 type Hole = {
 	wall: BasePart,
@@ -191,14 +191,14 @@ function Crawls.new(): Crawls
 			local keys, hand = s:carried(player)
 			local row = Tools.Catalog[keys[hand] or ""]
 			if row and row.bothHands then
-				side.refuse(`Drop the {string.lower(row.name)} first`)
+				side.refuse(`Drop the {string.lower(row.name)} first`, player)
 				return
 			end
 		end
 		local verdict = Crawling.decide(crawls[player] ~= nil, t < hole.busyUntil)
 		if not verdict.ok then
 			if verdict.refusal then
-				side.refuse(verdict.refusal)
+				side.refuse(verdict.refusal, player)
 			end
 			return
 		end
@@ -265,9 +265,7 @@ function Crawls.new(): Crawls
 			into = into,
 			frame = frame,
 			at = at,
-			refuse = Prompts.refuser(p, function()
-				return name
-			end),
+			refuse = Prompts.refuser(p),
 		}
 		table.insert(hole.sides, side)
 		table.insert(

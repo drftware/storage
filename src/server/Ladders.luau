@@ -162,11 +162,6 @@ local function standUpOf(character: Model, root: BasePart): number
 	return (if humanoid then humanoid.HipHeight else 2) + root.Size.Y / 2
 end
 
--- A ladder's buttons' name, put back after a refusal.
-local function ladderName(): string
-	return "Ladder"
-end
-
 local function flyWeld(model: Model): Weld?
 	local fly = model:FindFirstChild(KEY .. "Fly")
 	local weld = fly and fly:FindFirstChild("FlyWeld")
@@ -402,7 +397,7 @@ function Ladders.new(): Ladders
 		end
 	end
 
-	local function climbUp(stand: Stand, player: Player, refuse: (string) -> ())
+	local function climbUp(stand: Stand, player: Player, refuse: (string, Player) -> ())
 		if not (stand.ready and pressOk(player)) then
 			return
 		end
@@ -418,12 +413,12 @@ function Ladders.new(): Ladders
 		local front = stand.front
 		local held = heldRow(player)
 		if held and held.bothHands then
-			refuse(`Drop the {string.lower(held.name)} first`)
+			refuse(`Drop the {string.lower(held.name)} first`, player)
 			return
 		end
 		local t = os.clock()
 		if t < stand.busyUntil then
-			refuse("Wait for them")
+			refuse("Wait for them", player)
 			return
 		end
 		-- the first spot nobody's climbing to, no crawler lies on and no sawn hole reaches
@@ -447,7 +442,7 @@ function Ladders.new(): Ladders
 			end
 		end
 		if not spot then
-			refuse("No room up there")
+			refuse("No room up there", player)
 			return
 		end
 		local standUp = standUpOf(character, root)
@@ -501,7 +496,7 @@ function Ladders.new(): Ladders
 	end
 
 	-- Climb down at a ladder's top, from wherever you crawled to by it.
-	local function climbDown(stand: Stand, player: Player, refuse: (string) -> ())
+	local function climbDown(stand: Stand, player: Player, refuse: (string, Player) -> ())
 		local c = climbs[player]
 		if not (c and c.move == "Top" and stand.ready and pressOk(player)) then
 			return
@@ -513,7 +508,7 @@ function Ladders.new(): Ladders
 		end
 		local t = os.clock()
 		if t < stand.busyUntil then
-			refuse("Wait for them")
+			refuse("Wait for them", player)
 			return
 		end
 		local lx, ly, lz, lp = Leaning.lying(stand.front.fit, 1)
@@ -668,7 +663,7 @@ function Ladders.new(): Ladders
 		end)
 	end
 
-	local function take(stand: Stand, player: Player, refuse: (string) -> ())
+	local function take(stand: Stand, player: Player, refuse: (string, Player) -> ())
 		local s = slots
 		if not (s and stand.ready and pressOk(player)) then
 			return
@@ -686,7 +681,7 @@ function Ladders.new(): Ladders
 		-- those up top can drop down or take another ladder, so only a climber on it waits
 		for _, c in climbs do
 			if c.stand == stand then
-				refuse("Someone's on it")
+				refuse("Someone's on it", player)
 				return
 			end
 		end
@@ -700,7 +695,7 @@ function Ladders.new(): Ladders
 				weld.C0 = Leaned.fly(1)
 			end
 			if refusal ~= "" then
-				refuse(refusal)
+				refuse(refusal, player)
 			end
 			return
 		end
@@ -734,13 +729,12 @@ function Ladders.new(): Ladders
 		table.insert(stand.parts, foot)
 		stand.foot = foot
 		local climb = Prompts.make(foot, {
-			objectText = "Ladder",
 			actionText = "Climb",
 			key = Enum.KeyCode.E,
 			pad = Enum.KeyCode.ButtonX,
 			reach = Leaning.ClimbReach,
 		})
-		local refuseClimb = Prompts.refuser(climb, ladderName)
+		local refuseClimb = Prompts.refuser(climb)
 		climb.Triggered:Connect(function(player: Player)
 			if Prompts.wrapped(player) then
 				return
@@ -748,14 +742,13 @@ function Ladders.new(): Ladders
 			climbUp(stand, player, refuseClimb)
 		end)
 		local takeIt = Prompts.make(foot, {
-			objectText = "Ladder",
 			actionText = "Take",
 			key = Enum.KeyCode.F,
 			pad = Enum.KeyCode.ButtonB,
 			reach = Leaning.ClimbReach,
 		})
 		takeIt.UIOffset = Vector2.new(-SIDE_PIXELS, 0)
-		local refuseTake = Prompts.refuser(takeIt, ladderName)
+		local refuseTake = Prompts.refuser(takeIt)
 		takeIt.Triggered:Connect(function(player: Player)
 			if Prompts.wrapped(player) then
 				return
@@ -771,7 +764,6 @@ function Ladders.new(): Ladders
 		table.insert(stand.parts, at)
 		stand.top = at
 		local down = Prompts.make(at, {
-			objectText = "Ladder",
 			actionText = "Climb down",
 			key = Enum.KeyCode.E,
 			pad = Enum.KeyCode.ButtonX,
@@ -780,7 +772,7 @@ function Ladders.new(): Ladders
 		-- lying up there your view is low over the steel, the button just past the edge's lip
 		down.RequiresLineOfSight = false
 		down:AddTag(Leaned.TopButtonTag)
-		local refuseDown = Prompts.refuser(down, ladderName)
+		local refuseDown = Prompts.refuser(down)
 		down.Triggered:Connect(function(player: Player)
 			if Prompts.wrapped(player) then
 				return
@@ -860,10 +852,7 @@ function Ladders.new(): Ladders
 		at.Parent = root
 		at.WorldPosition = frame
 			* Vector3.new(fit.leanX, fit.edgeY - BUTTON_DOWN, fit.faceZ - BUTTON_OUT)
-		local number = string.match(unit.Name, "^Unit(.+)$") or unit.Name
-		local name = `Unit {number}`
 		local p = Prompts.make(at, {
-			objectText = name,
 			actionText = "Lean",
 			key = Enum.KeyCode.R,
 			pad = Enum.KeyCode.ButtonR2, -- R1 is the torch's (D-047)
@@ -876,7 +865,6 @@ function Ladders.new(): Ladders
 		drop.Parent = root
 		drop.WorldPosition = frame * Vector3.new(0, fit.topY + EDGE_UP, fit.faceZ - EDGE_OUT)
 		local d = Prompts.make(drop, {
-			objectText = name,
 			actionText = "Drop down",
 			key = Enum.KeyCode.F,
 			pad = Enum.KeyCode.ButtonB,

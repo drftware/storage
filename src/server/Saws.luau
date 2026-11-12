@@ -72,7 +72,7 @@ type Side = {
 	into: Model,
 	at: Attachment,
 	prompt: ProximityPrompt,
-	refuse: (string) -> (),
+	refuse: (string, Player) -> (), -- shown to the presser alone
 }
 type Cut = {
 	player: Player,
@@ -271,7 +271,7 @@ function Saws.new(): Saws
 		local verdict = Sawing.decide(holding(player), holed(job), job.cut ~= nil, lyingOn)
 		if not verdict.ok then
 			if verdict.refusal then
-				side.refuse(verdict.refusal)
+				side.refuse(verdict.refusal, player)
 			end
 			return
 		end
@@ -386,9 +386,7 @@ function Saws.new(): Saws
 			into = into,
 			at = at,
 			prompt = p,
-			refuse = Prompts.refuser(p, function()
-				return name
-			end),
+			refuse = Prompts.refuser(p),
 		}
 		table.insert(job.sides, side)
 		table.insert(

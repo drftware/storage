@@ -9,6 +9,7 @@ local RunService = game:GetService("RunService")
 local Brix = require(ReplicatedStorage.Brix)
 local BangMarks = require(script.BangMarks)
 local BehindDoors = require(script.BehindDoors)
+local ButtonView = require(script.ButtonView)
 local CameraShake = require(script.CameraShake)
 local CaughtView = require(script.CaughtView)
 local KeptWrapOn = require(script.KeptWrapOn)
@@ -64,6 +65,8 @@ local host = Brix.Host.new({
 		{ slot = "behindDoors", system = BehindDoors.new() },
 		{ slot = "elevatorView", system = elevatorView },
 		{ slot = "keypadPad", system = KeypadPad.new(pressKeypad, needCursor) },
+		-- every button in the world, drawn one way (L-19a)
+		{ slot = "buttonView", system = ButtonView.new() },
 		{ slot = "gateClock", system = GateClock.new() },
 		{ slot = "rideView", system = RideView.new(holdView) },
 		{ slot = "minimapView", system = MinimapView.new() },

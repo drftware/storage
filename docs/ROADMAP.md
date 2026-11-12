@@ -162,8 +162,8 @@ tops still jittered on a computer: L-16d, "not now", but before friends play (L-
 **The overnight run (owner, Nov 11 night):** "Run 15 sessions, capping each at 300k context...
 Make the fixes I recently described, the prompt updates, build the lobby, and beyond... this game
 needs to be perfect." Up to 15 sessions back to back, about 300k tokens of context each, still one
-ticket each, every session ending green and committed. Order: L-16b2 (done), L-19a (one look for
-every button: the owner's "prompt updates"; folds `ButtonReach` in), L-19b, L-20a, L-17, L-16d,
+ticket each, every session ending green and committed. Order: L-16b2 (done), L-19a (done: one
+look for every button, the owner's "prompt updates"), L-19b, L-20a, L-17, L-16d,
 then the lobby, L-08e1 to L-08e4 (GDD "The lobby", D-112), which no longer waits on L-09a
 (only the owner can run that): split L-08e1 and L-08e4 into sessions that each end green (the
 room's art script first, then the cars, the joining and the count, then the trip to a server of
@@ -1141,14 +1141,19 @@ Brix's purchases and profiles), proven mechanics only, never edit Brix.
   space on mobile... all prompts in the game need to be revamped to take up less space and look
   modern and world-class"). Every button in the world is Roblox's default prompt today (the dark
   box with the key, the name over the verb). Two sessions:
-  - [ ] **L-19a One look for every button.** A custom prompt style (`ProximityPrompt.Style`
-    Custom) drawn by one client system for every prompt in the game: a small round key chip with
-    the verb beside it, no box, the unit's name only where it's news; it fades and scales in,
-    its key ring fills on a hold, and it shakes and reddens with the refusal's few words. Phone:
-    the chip is the tap target, at least 44 px, nothing else on it. Judge at Galaxy A16 size.
+  - [x] **L-19a One look for every button.** Done Nov 11 (D-114), verified in Studio on a
+    computer and the Galaxy A16 (`docs/art/L-19a-*.jpg`): every prompt is `Style` Custom and
+    drawn by the client's `ButtonView` in `WorldButton`'s look: a round key chip (the key, the
+    pad's picture, or a dot on a phone at 48 points with a wider target), the verb beside it, the
+    name only where it's news and once per row; it swells in and blinks out, a hold fills a ring,
+    a press pops it, and a refusal (now sent to the presser alone, `Remotes.Refused`) shakes it
+    red with its words and a dull tick. `ButtonReach` folded in as `ButtonView.hide`.
   - [ ] **L-19b A door's buttons where your hand would go** (owner's layout): shut, Open sits on
     the door's middle and Peek low by the ground; open, Close and Slam side by side in the
-    middle. The padlock's and the cutters' buttons on the latch. Each still one verb.
+    middle. The padlock's and the cutters' buttons on the latch. Each still one verb. Now each
+    button can have its own point (an Attachment per button, `UIOffset` only to nudge): today's
+    row spacing (`SLOT_PIXELS` 150, sized for Roblox's 138-wide box) is wider than the new chips
+    need, and a long red refusal ("Need bolt cutters") can run up to the next chip.
 - [ ] **L-20 The inventory wheel** (owner, Nov 11): one round button at the bottom middle in place
   of the slots' bar. Tap it and a wheel of your slots fans out from it; pick one and a small box
   beside the button shows it. Tap that box to lift the tool into your hand or lower it out of
@@ -1200,6 +1205,12 @@ is an escape, not a haul); nothing builds it until the owner says.
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **The buttons' finish (L-19a):** the hold ring is Roblox's own ring picture, thin round a
+  48-point chip; a ring of our own (a bolder stroke, a soft glow as it closes) would read better
+  at arm's length on a phone. A row's shared name ("Padlocked") jumps to the next button when the
+  leftmost goes; a quick cross-fade would hide the hop. A held key could sink the chip a touch
+  more on a keyboard (it sinks to 0.93 today).
 
 - **Behind a sawn hole, no dead buttons (L-16b1):** Climb down and Drop down are ignored there;
   hiding them on your screen while the slide would cross the hole (LadderView, `Tops.pathClear`

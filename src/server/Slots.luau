@@ -92,7 +92,7 @@ type Tool = {
 	model: Model,
 	body: BasePart,
 	prompt: ProximityPrompt?,
-	refuse: ((string) -> ())?,
+	refuse: ((string, Player) -> ())?,
 	owner: Player?,
 	weld: Weld?,
 	placed: boolean?, -- standing in the world (`place`), not in a hand or on a floor
@@ -297,9 +297,7 @@ function Slots.new(): Slots
 		})
 		p.RequiresLineOfSight = false -- a tool on the floor is low: boxes mustn't hide its prompt
 		t.prompt = p
-		t.refuse = Prompts.refuser(p, function()
-			return row.name
-		end)
+		t.refuse = Prompts.refuser(p)
 		p.Triggered:Connect(function(player: Player)
 			pickUp(t, player)
 		end)
@@ -425,13 +423,13 @@ function Slots.new(): Slots
 		local big = bothHands(h)
 		if big then
 			if t.refuse then
-				t.refuse(`Drop the {string.lower(big.name)} first`)
+				t.refuse(`Drop the {string.lower(big.name)} first`, player)
 			end
 			return
 		end
 		if Carry.room(h.carry) == nil then
 			if t.refuse then
-				t.refuse("Hands full")
+				t.refuse("Hands full", player)
 			end
 			return
 		end

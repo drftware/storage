@@ -90,6 +90,24 @@ verified: a doc page, Studio, or "untested".
 - **Prompts on one point stack** (Play, 2026-11-06): the default UI is a `Prompt` BillboardGui per
   prompt in PlayerGui, 138×72 on touch, with no offset, so prompts sharing an attachment draw on
   top of each other. Space them with `ProximityPrompt.UIOffset` or give each its own point.
+- **Custom prompts** (L-19a, verified in Play 2026-11-11): with `Style` Custom Roblox draws
+  nothing but still decides showing (reach, sight, one per key) and fires `ProximityPromptService`
+  `PromptShown(prompt, inputType)`, `PromptHidden`, `PromptButtonHoldBegan/Ended` and
+  `PromptTriggered` as before. A BillboardGui under a ScreenGui in PlayerGui draws in the world;
+  a tap on a button in it needs the BillboardGui's `Active` on. `UIOffset` is ours to honour:
+  `SizeOffset = UIOffset / Size` (in points). `UserInputService:GetStringForKeyCode(E)` gives
+  "E"; `GetImageForKeyCode(ButtonX)` gives
+  `rbxasset://textures/ui/Controls/DefaultController/ButtonX@2x.png` (loads); Roblox's ring
+  picture `rbxasset://textures/ui/Controls/RadialFill.png` loads. "UI Bright Click"
+  15675059323 (Roblox's) loads, 0.37 s.
+- **Seeing a BillboardGui in a capture** (L-19a): captures draw no BillboardGuis, so mirror
+  them: for each, clone its contents into a frame of its size in a temporary ScreenGui at
+  `Camera:WorldToViewportPoint` of its adornee plus `SizeOffset` times its size (y flipped),
+  capture, then destroy it. The clone shows exactly what the billboard draws at that moment.
+- **Clicking on the Galaxy A16 with `user_mouse_input`** (Device Simulator, L-19a): a click
+  arrives as a Touch at (x - 47, y) in input space, which starts below the 58-point top inset,
+  so a viewport point (X, Y) from `WorldToViewportPoint` is clicked at (X + 47, Y - 58).
+  Calibrate with a full-screen TextButton logging `InputBegan` positions if it seems off.
 - **Driving a ProximityPrompt from a Client `execute_luau`** (L-12b2): `prompt:InputHoldBegin()`
   then `InputHoldEnd()` presses it as the player would (a hold prompt runs its HoldDuration, the
   server gets HoldBegan, Triggered and HoldEnded), but only while the prompt is shown: in first

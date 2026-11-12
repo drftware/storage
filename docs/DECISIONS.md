@@ -2943,3 +2943,54 @@ as 0. It now remembers only hidden buttons, in plain tables, and forgets one onc
 it or it leaves the world (its reach put back, so a view still hiding it does so again as it
 streams in). The elevator's gate cache has the same kind of table: it only rebuilds itself, so
 it's listed, not fixed here.
+
+## D-114 One look for every button in the world (L-19a, Nov 11)
+The moment: a button in the world is a small, sharp key chip with its one verb beside it, there
+the instant you're near and gone without a trace; on a phone a clean thumb target that never
+covers the hall. The owner's "prompt updates" (Roblox's grey box "takes up too much space on
+mobile... look modern and world-class").
+
+**Roblox still decides, we only draw.** Every ProximityPrompt is made with `Style` Custom (the
+server's `Prompts.make`, and the client's own: the keypad's Use, a note's Read, a friend's Give),
+and one client system, `ButtonView`, draws each one Roblox shows (`PromptShown`, `PromptHidden`,
+its holds and presses). So reach, sight lines, one-per-key and every view that listens to
+`ProximityPromptService` (ToolView's G, HornView's click, KneelView's Peek) work as before. The
+look's numbers and motion are pure, in `WorldButton` (shared, Lune-checked).
+
+**The look.** A round chip (38 points on a computer with the key in it, from
+`GetStringForKeyCode`; the pad's own button picture from `GetImageForKeyCode`; 48 on a phone with
+only a dot, as Roblox's torch and jump buttons are, its target 8 points wider all round), the
+verb beside it in the game's ink (BuilderSans Bold 20, a dark edge so it reads on any wall), no
+box. The chip sits a fixed 30 points left of the button's point, so a chip and a short verb sit
+centred on it and longer words never move the chip; `UIOffset` keeps spacing a door's row. It
+swells in over 0.12 s with a spring and goes in 0.08 s; a hold fills a ring round the chip
+clockwise from twelve (Roblox's own ring picture, two clipped halves), as Fortnite's
+hold-to-interact ring does; a press pops it with a flash of light in the chip.
+
+**A name only where it's news.** Made without a name: a door's buttons (the number is painted
+on it), the ladder's, Lean and Drop down. Kept: Drop in (which unit, unseen from up top), Crawl
+and Saw (which unit lies behind the wall), Pick up (which tool), Cut free (who is under the film),
+Give (which friend), the test posts. A padlocked door's buttons are named "Padlocked": news
+inside, where the padlock can't be seen. Buttons on one point sharing a name show it once, over
+the leftmost.
+
+**A refusal reaches the presser alone.** It used to swap the button's name for everyone near.
+Now `Prompts.refuser(p)` gives `(text, player)` and fires `Remotes.Refused` to that player; their
+screen shakes the button (7 points, dying away over 0.38 s), turns the verb into the refusal's
+words and the chip's rim red for 1.2 s, eases back, and plays a quiet dull tick (Roblox's "UI
+Bright Click" at 0.55 speed). The door's rattle and other world sounds still answer in the world.
+The client checks what arrives (a ProximityPrompt, a string cut to 40 characters).
+
+**`ButtonReach` folded in.** `ButtonView.hide(prompt, reason, hidden)` is the same plain-table
+hiding by reach (D-111, D-113): a hidden button is never shown by Roblox, so it draws nothing
+and no key presses it.
+
+**Performance.** Only buttons in motion are stepped; a settled one costs nothing. Drawings are
+pooled (eight kept) so walking a hall doesn't build and throw away GUIs.
+
+**Verified in Studio** (one player, keyboard and the Galaxy A16): every prompt in the test hall
+and the laid floor is Custom; Unit 112's Open and Cut drawn with "Padlocked" once; Open refused
+red with "Padlocked" from the E key and from a real tap on the phone chip; Cut's ring filling
+mid-hold with bolt cutters, the padlock cut, the row turning to Peek and Open; Pick up named
+"Bolt cutters"; the keypad's Use on the phone. Rejected: a CanvasGroup per button for the fades
+(a render texture per button, soft on phones); moving the chip with the words.

@@ -140,14 +140,13 @@ local ATTR_LOCKED = "DoorLocked"
 
 type Entry = {
 	unit: Model,
-	name: string, -- "Unit 304"
 	frame: CFrame, -- the door's frame: +Z into the unit
 	halfWidth: number,
 	fullStroke: number,
 	hall: Attachment,
 	inside: Attachment,
 	buttons: { [Door.Action]: ProximityPrompt },
-	refusers: { [ProximityPrompt]: (string) -> () },
+	refusers: { [ProximityPrompt]: (string, Player) -> () },
 	state: Door.State,
 	settles: number, -- server time its motion ends
 	conns: { RBXScriptConnection },
@@ -185,8 +184,10 @@ function Doors.new(): Doors
 	local slots: Slots.Slots? = nil -- what's in each hand (Slots fills its slot in init.server)
 	local ladders: Ladders.Ladders? = nil -- who's lying up on the tops
 
+	-- A door's buttons carry a name only while it's padlocked: news inside, where the padlock
+	-- can't be seen. Its number is painted on the door.
 	local function nameOf(entry: Entry): string
-		return if entry.state == "Locked" then "Padlocked" else entry.name
+		return if entry.state == "Locked" then "Padlocked" else ""
 	end
 
 	-- Reads the door's state from its motion and padlock, and shows only the buttons it allows.
@@ -324,7 +325,7 @@ function Doors.new(): Doors
 			local p = entry.buttons[action]
 			local refuse = p and entry.refusers[p]
 			if refuse then
-				refuse(verdict.refusal)
+				refuse(verdict.refusal, player)
 			end
 		end
 		if verdict.motion or verdict.lock ~= nil then
@@ -345,7 +346,6 @@ function Doors.new(): Doors
 		end
 		local spec = RollUpDoor.spec(unit)
 		local frame = RollUpDoor.frame(unit)
-		local number = string.match(unit.Name, "^Unit(.+)$") or unit.Name
 		local hall = Instance.new("Attachment")
 		hall.Name = "DoorButtons"
 		hall.Parent = root
@@ -357,7 +357,6 @@ function Doors.new(): Doors
 
 		local entry: Entry = {
 			unit = unit,
-			name = `Unit {number}`,
 			frame = frame,
 			halfWidth = spec.DoorWidth / 2,
 			fullStroke = spec.Rise.Open,
@@ -371,7 +370,6 @@ function Doors.new(): Doors
 		}
 		local function make(button: Button, at: Attachment, reach: number)
 			local p = Prompts.make(at, {
-				objectText = entry.name,
 				actionText = button.text,
 				key = button.key,
 				pad = button.pad,
@@ -386,9 +384,7 @@ function Doors.new(): Doors
 				CollectionService:AddTag(p, Tools.LockTag)
 			end
 			entry.buttons[button.action] = p
-			entry.refusers[p] = Prompts.refuser(p, function()
-				return nameOf(entry)
-			end)
+			entry.refusers[p] = Prompts.refuser(p)
 			table.insert(
 				entry.conns,
 				p.Triggered:Connect(function(player: Player)
@@ -414,7 +410,7 @@ function Doors.new(): Doors
 						end
 						local verdict = judge(entry, button.action, body, carries(slots, player))
 						if verdict and verdict.refusal then
-							entry.refusers[p](verdict.refusal)
+							entry.refusers[p](verdict.refusal, player)
 						end
 					end)
 				)

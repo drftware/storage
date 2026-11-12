@@ -101,7 +101,7 @@ type Held = {
 	banged: number?,
 	cutAt: Attachment?,
 	prompt: ProximityPrompt?,
-	refuse: ((text: string) -> ())?,
+	refuse: ((text: string, player: Player) -> ())?,
 	began: { [Player]: number },
 	pulling: { [Player]: true },
 	gone: { RBXScriptConnection },
@@ -453,9 +453,7 @@ function KeptPlayers.new(): KeptPlayers
 		})
 		p.Enabled = doorUp(h)
 		h.cutAt, h.prompt = at, p
-		h.refuse = Prompts.refuser(p, function()
-			return player.DisplayName
-		end)
+		h.refuse = Prompts.refuser(p)
 		table.insert(
 			h.gone,
 			p.PromptButtonHoldBegan:Connect(function(cutter: Player)
@@ -498,7 +496,7 @@ function KeptPlayers.new(): KeptPlayers
 				if why then
 					local fix, refuse = CUT_FIX[why], h.refuse
 					if fix and refuse then
-						refuse(fix)
+						refuse(fix, cutter)
 					end
 					if RunService:IsStudio() then
 						print(

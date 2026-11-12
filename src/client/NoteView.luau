@@ -454,6 +454,7 @@ function NoteView.new(): Brix.System
 				- pivot.UpVector * (half + NoteCard.ButtonBelow)
 		)
 		local p = Instance.new("ProximityPrompt")
+		p.Style = Enum.ProximityPromptStyle.Custom -- drawn by ButtonView
 		p.ObjectText = ""
 		p.ActionText = "Read"
 		p.KeyboardKeyCode = Enum.KeyCode.E

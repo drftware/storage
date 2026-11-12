@@ -20,6 +20,7 @@ local Keepers = require(script.Keepers)
 local KeptPlayers = require(script.KeptPlayers)
 local Kneels = require(script.Kneels)
 local Minimaps = require(script.Minimaps)
+local Prompts = require(script.Prompts)
 local Ladders = require(script.Ladders)
 local MotionLights = require(script.MotionLights)
 local Saws = require(script.Saws)
@@ -63,6 +64,9 @@ local systems: { Brix.HostEntry } = {
 	-- give way to the lobby before the game goes public.
 	{ slot = "devCorridor", system = DevCorridor.new() },
 }
+
+-- a refused press's remote, there before any screen looks for it (L-19a)
+Prompts.ready()
 
 local host = Brix.Host.new({ systems = systems })
 host:start()

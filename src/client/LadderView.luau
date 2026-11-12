@@ -23,7 +23,7 @@
 	Lying at a sawn hole's edge with your head out over it you get Drop in instead: up, legs over
 	the hole, straight down through it with your arms up, a crouch on the unit's floor (L-13b2d3a).
 	The door below a front is in a button's reach from its edge, so while you lie up there its
-	buttons are hidden on your screen (ButtonReach, L-16b1) and the server ignores them.
+	buttons are hidden on your screen (ButtonView.hide, L-16b1) and the server ignores them.
 
 	Caught on the ladder (`Kept.Attribute`), your body is let go where it is at once, standing
 	again: the server holds it from then (KeptPlayers) and ends the climb (Ladders).
@@ -36,7 +36,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
-local ButtonReach = require(script.Parent.ButtonReach)
+local ButtonView = require(script.Parent.ButtonView)
 local Crawling = require(ReplicatedStorage.Shared.StorageUnit.CrawlHole.Crawling)
 local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
 local Joints = require(script.Parent.Joints)
@@ -329,7 +329,7 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 	-- front you lie at is 7 studs off, in its reach (L-16b1).
 	local function hideDoor(inst: Instance)
 		if inst:IsA("ProximityPrompt") then
-			ButtonReach.hide(inst, "Tops", buttonsOn)
+			ButtonView.hide(inst, "Tops", buttonsOn)
 		end
 	end
 	function setButtons(on: boolean)

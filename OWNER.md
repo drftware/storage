@@ -14,6 +14,32 @@ nowhere else.
 - [ ] **Keep the experience private** until the lobby (L-08e) replaces the test hall: every
   server builds the hall now, with its teleport posts, Mannequin post and the code in the log.
 
+## Now: judge L-19a, the new buttons in the world (built Nov 11, D-114)
+
+Every button in the world is now our own: a round key chip with its verb beside it, no grey box.
+Verified in Studio (one player, a computer and the Galaxy A16 in the Device Simulator): every
+prompt on the test hall and the laid floor uses it; Unit 112 shows E Open and R Cut with
+"Padlocked" once above; Open shakes red with "Padlocked" from E and from a real tap on the phone
+chip; holding Cut with bolt cutters fills a ring round the chip and cuts the padlock; Pick up
+reads "Bolt cutters"; the keypad's Use draws on the phone. Shots: `docs/art/L-19a-*.jpg`
+(Studio's captures skip world GUIs, so the shots copy each button onto the screen at its spot).
+- [ ] **Look at it on your phone** (published, a live server): walk the test hall and a floor.
+  Each button should swell in the moment you're near and vanish as you leave, never a box; the
+  chip a clean thumb target (a dot in it) that one tap presses; nothing covering the hall. Tap
+  Open on Unit 112: it shakes, goes red with "Padlocked" and a dull tick, then says Open again.
+- [ ] **On a computer**: the key in each chip (E, Q, F, G, R) matches the key that presses it; a
+  hold (Cut with bolt cutters, Saw with a saw) fills the ring as you hold and empties if you let
+  go early; a press pops the chip.
+- [ ] **With a controller** (if you have one): each chip shows the pad's button picture.
+- [ ] **Two players** (Test > Clients and Servers, 2 players): one presses Open on a padlocked
+  door. Only their screen shows "Padlocked"; the other player's button stays as it was (before,
+  everyone near saw the refusal).
+- [ ] **Decide, defaults in place** (D-114): (1) **Names only where they're news**: doors, the
+  ladder, Lean and Drop down show no name now (the number's on the door); Crawl, Saw and Drop in
+  still name the unit behind the wall; Pick up names the tool; a padlocked door says "Padlocked".
+  (2) **A dull tick on a refusal** (Roblox's UI click, pitched down): say if you'd rather it
+  silent or a different sound.
+
 ## Now: judge L-16b, landings, the tops and presses on arrival (built Nov 11, D-111, D-113)
 
 Verified in Studio (Play, one player): on the default avatar, a 0.6-stud landing crouch with
