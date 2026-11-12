@@ -2807,3 +2807,33 @@ and wrong for a public game: the lobby (L-08e) replaces the hall as the way in o
 and the hall goes back to Studio only, before the game goes public. Not chosen: a bare live start
 that lays floor 1 and drops players in its lobby, which is the lobby's design (L-08e) built
 early, and would differ from what the owner tests in Studio.
+
+## D-110 The crawl glides as a walk does; a hand doesn't reach past a shut door (L-16c, Nov 11)
+
+From the owner's Nov 11 play. **The tops:** "the view jerks all around repeatedly... It should be
+just as smooth as moving on the normal floor." Recording every frame in Studio found the causes
+in the steering itself, not in a check. First person's camera sits 1.5 studs up your lying body
+(Roblox's head offset over the root), and `Tops.step` turned the body about its root toward your
+push at 200° a second, so every turn of the mouse swung your view sideways at up to 5 studs a
+second; you all but stopped (`cos` of the angle left) until the body came round; and each pull
+surged your speed ±55%, a lurch twice a second. Now the body turns about your eye (`Tops.Eye`),
+falling back to its middle and then the old squirm only where that won't fit; you move where you
+push at once, slowed only with more than a quarter turn still to go; the surge is ±10% and the
+head's dip and sway half what they were. Your view moves exactly as walking's: where you push,
+turning in place. The server's crawl check allows for the hips swinging round the eye. Looked at
+and cleared: the map and hole lookups (hundredths of a millisecond), physics (one assembly, every
+joint kinematic), the server's put-backs (none in Studio; a live server is the owner's test).
+Kept: turning rate, crawl speed, the pulls' sounds and arms (they run on distance crawled, which
+counts the crawl alone, not the turn's swing).
+
+**Reaching through a door:** a tool's Pick up showed through a shut door (it ignores line of
+sight so boxes can't hide it), and a peek's crack was enough to take it. `ShutIn.reaches`: a hand
+gets past a door only with both on one side or the door up at least half its opening
+(`ReachShare`); `RollUpDoor.keepsApart` applies it to a unit, the server refuses such a pick-up
+(`Slots`) and your screen hides its prompt (`BehindDoors`, five times a second). Shut in with a
+tool, or crawled in through a hole, you still reach it.
+
+**The floor's flicker:** a hall junction's concrete runs on under the front of the units round it
+at exactly the unit floor's height, so the two drew over each other as the view turned. The
+unit's drawn floor now sits 0.03 studs up (`FloorBuilder.unit`); its collider stays, so feet and
+dealt things stand where they did.

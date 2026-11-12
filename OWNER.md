@@ -14,6 +14,29 @@ nowhere else.
 - [ ] **Keep the experience private** until the lobby (L-08e) replaces the test hall: every
   server builds the hall now, with its teleport posts, Mannequin post and the code in the log.
 
+## Now: judge your Nov 11 fixes: the tops, reaching through doors, the floor (D-110)
+
+Verified in Studio (Play, one player): on a unit top, a quarter turn of the view mid-crawl moved
+your eye only where you pushed (0.4 studs sideways over the whole run, the head's soft sway),
+4 to 5 studs a second; a tool behind Unit 101's shut door hid its Pick up and the server refused
+a forced press, still hidden under a peek, offered and taken once open; Unit 106's floor sits
+0.03 over the junction's. Studio was in the background (15 frames a second), so the feel is
+yours to judge.
+- [ ] **Crawl the tops on your computer, on a published server** (File > Publish to Roblox
+  first): climb, crawl a long run of tops while sweeping the mouse left and right, round a
+  corner, past a sawn hole. Your view should only turn as you look, and glide where you push.
+  Any snap back a step means the server put you back: say where and how often.
+- [ ] **The same on your phone**: does it still feel like crawling (the pull's boom, the arms
+  for a friend), or now too floaty? The head's dip and sway can come back up (`VIEW_DIP`,
+  `VIEW_SWAY` in LadderView) or the surge (`Tops.Surge`).
+- [ ] **Units on a real floor** (Walk a floor): open a unit at a hall junction and swing the
+  view; the floor near the door should no longer flicker.
+- [ ] **Reaching through doors**: a tool in a unit shows no Pick up until the door is half up;
+  shut in with one, you can still pick it up.
+- [ ] **Decide, defaults in place** (L-20): your inventory wheel note says three slots to start
+  and six paid; the GDD still says two tools ("two tools plus whatever's in your hands"). The
+  ticket builds three. Edit the GDD's line, or say if two should stay.
+
 ## Now: judge L-16a, in hand and caught (built Nov 11)
 
 Verified in Studio (Play, one player, D-108): your own right arm raised through the new joint

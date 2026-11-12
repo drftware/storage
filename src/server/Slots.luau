@@ -24,6 +24,7 @@
 	nothing, checked for a living character with such a tool in hand, then its own rate (so using
 	never spends the hand's), and fires `used` for that tool's system (`Horns`) to decide the rest.
 ]]
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
@@ -33,6 +34,7 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Prompts = require(script.Parent.Prompts)
+local StorageUnit = require(ReplicatedStorage.Shared.StorageUnit)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 
 local Carry = Tools.Carry
@@ -407,6 +409,17 @@ function Slots.new(): Slots
 		end
 		if (root.Position - t.body.Position).Magnitude > Carry.PickReach + REACH_SLACK + 2 then
 			return
+		end
+		-- a shut door between you and it: your screen hid its prompt (BehindDoors)
+		for _, unit in CollectionService:GetTagged(StorageUnit.UnitKit.Tag) do
+			if
+				unit:IsA("Model")
+				and unit:IsDescendantOf(Workspace)
+				and unit:FindFirstChild("DoorOrigin", true)
+				and StorageUnit.RollUpDoor.keepsApart(unit, root.Position, t.body.Position)
+			then
+				return
+			end
 		end
 		local h = handOfPlayer(player)
 		local big = bothHands(h)

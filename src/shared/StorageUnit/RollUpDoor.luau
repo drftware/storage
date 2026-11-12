@@ -37,6 +37,7 @@ local Workspace = game:GetService("Workspace")
 local Curtain = require(script.Parent.Curtain)
 local Dent = require(script.Parent.Dent)
 local Motion = require(script.Parent.Motion)
+local ShutIn = require(script.Parent.ShutIn)
 local Specs = require(script.Parent.Specs)
 
 type Spec = Specs.Spec
@@ -454,6 +455,18 @@ function RollUpDoor.rise(unit: Model, t: number?): number
 	local kind: Motion.Kind, from: number, to: number, start: number =
 		Motion.decode(unit:GetAttribute(ATTR_MOTION) :: string?)
 	return Motion.sample(kind, from, to, (t or now()) - start, spec.Rise.Open)
+end
+
+-- Whether `unit`'s door keeps a hand at `a` from a thing at `b` (world points): exactly one of
+-- them is in the unit and the door is too low to reach under (ShutIn.reaches). The server's
+-- pick-up check and the screen's hiding of its prompt (Slots, BehindDoors) both ask this.
+function RollUpDoor.keepsApart(unit: Model, a: Vector3, b: Vector3): boolean
+	local spec = specFor(unit)
+	local frame = RollUpDoor.frame(unit)
+	local pa, pb = frame:PointToObjectSpace(a), frame:PointToObjectSpace(b)
+	local aIn = ShutIn.inside(spec, pa.X, pa.Y, pa.Z)
+	local bIn = ShutIn.inside(spec, pb.X, pb.Y, pb.Z)
+	return aIn ~= bIn and not ShutIn.reaches(RollUpDoor.rise(unit), spec.Rise.Open, aIn, bIn)
 end
 
 type ServerMove = {

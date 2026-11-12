@@ -155,6 +155,9 @@ throughout. Owner, verbatim on the Mannequin: "right now it sounds like fucking 
 around and getting caught doesn't seem like a big deal" (L-06c1, L-06c2). The roof crawl is
 "super glitchy and the camera shakes a ton. It needs to be smooth, and feel perfect" (L-16c).
 L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
+**The owner's Nov 11 play** reordered the end: L-16c first (the tops, "really bad... it needs
+fixed"), then L-16b, then L-19 (the buttons in the world, small and modern) and L-20a (the
+inventory wheel) before L-17 judges every button on a phone at once, then L-09a.
 
 - [x] **L-01 The floor generator**, in three sessions. **L-01a done Nov 7** (D-027): the floor
   as pure data from a seed (`src/shared/Floor.luau`): halls grown from the lobby on a grid of
@@ -1061,12 +1064,40 @@ L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
     and the ladder (`Ladders:crawling`). A press made the moment you arrive reaches the server while it still sees you a few studs
     back (D-085): allow for it where Saws, Ladders and a door's Cut and Lock check where you
     stand, as `Crawling.counts` does.
-  - [ ] **L-16c Crawling the tops feels right** (owner, Nov 10 night: "super glitchy and the
-    camera shakes a ton. It needs to be smooth, and feel perfect"). Find every source of the
-    shake and the glitches up on the units' tops (the crawl's camera, its height over the lids and
-    seams, the server's corrections fighting the client, the pose) and fix each at its cause, as
-    the crawl in R.E.P.O. or Lethal Company's crouch glides. Judge it in Studio on a long run of
-    tops, over lids, round corners and past holes, at walking and turning speed.
+  - [x] **L-16c Crawling the tops feels right. Done Nov 11 (D-110).** Owner, Nov 10 night: "super
+    glitchy and the camera shakes a ton"; Nov 11: "the view jerks all around repeatedly... It
+    should be just as smooth as moving on the normal floor." Causes found by recording every
+    frame in Studio: your view sits 1.5 studs up your body, so the body turning after your mouse
+    (200° a second) swung it sideways at up to 5 studs a second; you all but stopped until the
+    body faced the way you pushed; each pull surged your speed ±55%. Now your body turns about
+    your eye (`Tops.Eye`), you move where you push at once as a walk does, the surge is ±10% and
+    the head's dip and sway halved; the server allows for the hips' swing. Not causes: the map
+    and hole checks (hundredths of a millisecond), physics (the body is one assembly), the
+    server's put-backs (none in Studio). Verified in Studio: a quarter turn mid-crawl moved the
+    eye 0.4 studs sideways in all (the sway), eye speed 4 to 5 studs a second. A live server and
+    a phone go to `OWNER.md`.
+- [ ] **L-19 The buttons in the world, small and modern** (owner, Nov 11: "It takes up too much
+  space on mobile... all prompts in the game need to be revamped to take up less space and look
+  modern and world-class"). Every button in the world is Roblox's default prompt today (the dark
+  box with the key, the name over the verb). Two sessions:
+  - [ ] **L-19a One look for every button.** A custom prompt style (`ProximityPrompt.Style`
+    Custom) drawn by one client system for every prompt in the game: a small round key chip with
+    the verb beside it, no box, the unit's name only where it's news; it fades and scales in,
+    its key ring fills on a hold, and it shakes and reddens with the refusal's few words. Phone:
+    the chip is the tap target, at least 44 px, nothing else on it. Judge at Galaxy A16 size.
+  - [ ] **L-19b A door's buttons where your hand would go** (owner's layout): shut, Open sits on
+    the door's middle and Peek low by the ground; open, Close and Slam side by side in the
+    middle. The padlock's and the cutters' buttons on the latch. Each still one verb.
+- [ ] **L-20 The inventory wheel** (owner, Nov 11): one round button at the bottom middle in place
+  of the slots' bar. Tap it and a wheel of your slots fans out from it; pick one and a small box
+  beside the button shows it. Tap that box to lift the tool into your hand or lower it out of
+  view (pocketed, still yours); to switch, open the wheel again. Stylish, out of the way, never
+  slow: the wheel opens in a beat, and a keyboard's number keys still pick a slot. As GTA V's and
+  Red Dead Redemption 2's weapon wheels. Three slots to start (the GDD's two plus one: `OWNER.md`),
+  six with a purchase.
+  - [ ] **L-20a The wheel and three slots**, with its sounds and motion; replaces `ToolView`'s bar.
+  - [ ] **L-20b Six slots, bought** once the store and saved player data exist (Phase 2: Brix's
+    purchases and profiles); granted only after the profile saves.
 - [ ] **L-17 Every button on a phone at once.** At Galaxy A16 size in Studio: kept with the Bang
   button up, holding a horn, the map, torch and jump buttons showing, a door's buttons near;
   nothing overlaps and everything reads. The kept player's empty slots bar goes from under the

@@ -447,6 +447,43 @@ do
 	ok(math.abs(sum / 100 - 1) < 1e-6, "the surge averages the crawl's speed")
 end
 
+-- Crawling glides as a walk does (owner, Nov 11: "the view jerks all around"): turning swings
+-- your body round your eye, never your view; you move where you push at once.
+do
+	local open = Tops.decode(Tops.encode({ { x0 = -20, x1 = 20, z0 = -20, z1 = 20 } }, {}))
+	assert(open, "an open square of steel reads back")
+	local function eye(st: Tops.State): (number, number)
+		local hx, hz = Tops.heading(st.yaw)
+		return st.x + hx * Tops.Eye, st.z + hz * Tops.Eye
+	end
+	-- facing -Z, pushed and looking +X: a quarter turn to make
+	local st: Tops.State = { x = 0, z = 0, yaw = Tops.yawOf(0, -1), travel = 0 }
+	local worst, firstStep = 0, 0
+	for n = 1, 30 do
+		local ex, ez = eye(st)
+		local nxt, moved = Tops.step(open, st, 1, 0, 1, 0, DT)
+		local fx, fz = eye(nxt)
+		-- your eye goes only where you push (+X), never sideways as your body swings round
+		worst = math.max(worst, math.abs(fz - ez))
+		ok(fx - ex >= -1e-9, "your eye never swings back against your push")
+		if n == 1 then
+			firstStep = moved
+		end
+		st = nxt
+	end
+	ok(worst < 1e-6, `turning, your view never swings sideways ({worst})`)
+	ok(
+		firstStep > Tops.Speed * (1 - Tops.Surge) * DT * 0.99,
+		`a push to the side moves you on the first step ({firstStep})`
+	)
+	local facing = Tops.heading(st.yaw)
+	ok(math.abs(facing - 1) < 1e-3, "and your body comes round to face it")
+	-- looking and pushing right behind you: you turn round first, barely moving
+	local back: Tops.State = { x = 0, z = 0, yaw = Tops.yawOf(0, -1), travel = 0 }
+	local _, still = Tops.step(open, back, 0, 1, 0, 1, DT)
+	ok(still < Tops.Speed * DT * 0.05, `facing right away, you turn before you crawl ({still})`)
+end
+
 -- The drop, on an M front: smooth, over the edge, a fall, standing in the hall.
 do
 	local fit = fits.M

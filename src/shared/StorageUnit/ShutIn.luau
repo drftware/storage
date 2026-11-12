@@ -39,6 +39,17 @@ function ShutIn.hides(rise: number, aInside: boolean, bInside: boolean): boolean
 	return aInside ~= bInside and rise <= ShutIn.MaxRise
 end
 
+-- How much of its opening a door must be up before a hand reaches past it. A peek's crack (1.15
+-- of 7.65 studs) is not enough: what lies in a unit is picked up once its door is open (owner,
+-- Nov 11: "some items can be retrieved without opening the door").
+ShutIn.ReachShare = 0.5
+
+-- Whether a hand on one side of this door reaches a thing on the other: both on the same side,
+-- or the door up at least ReachShare of its opening (`openRise`).
+function ShutIn.reaches(rise: number, openRise: number, aInside: boolean, bInside: boolean): boolean
+	return aInside == bInside or rise >= openRise * ShutIn.ReachShare
+end
+
 -- How much of the hall's light still reaches you shut in: enough that the door's slats faintly
 -- show, as in the look sheet (art/sheets/unit-inside.png), never enough to see the room by.
 ShutIn.Dark = 0.06

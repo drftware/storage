@@ -88,6 +88,16 @@ for i = 0, 60 do
 end
 ok(wentOut and not relit and not on, "a slam's bulb goes out on the bang and stays out")
 
+-- reaches: a hand past a door only once it's well up (picking up through a shut door, Nov 11)
+local OPEN, PEEK = 7.65, 1.15
+ok(ShutIn.reaches(0, OPEN, true, true), "shut in with a tool, you reach it")
+ok(ShutIn.reaches(0, OPEN, false, false), "a tool in the hall, from the hall")
+ok(not ShutIn.reaches(0, OPEN, false, true), "a shut door keeps the hall from what's inside")
+ok(not ShutIn.reaches(0, OPEN, true, false), "and the one shut in from the hall")
+ok(not ShutIn.reaches(PEEK, OPEN, false, true), "a peek's crack is no way in for a hand")
+ok(ShutIn.reaches(OPEN, OPEN, false, true), "an open door lets you reach in")
+ok(ShutIn.reaches(OPEN * ShutIn.ReachShare, OPEN, true, false), "half up, you duck under and reach")
+
 print(string.format("shutin: %d checks, %d failures", checks, failures))
 if failures > 0 then
 	error("shutin spec failed")

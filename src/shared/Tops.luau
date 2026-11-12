@@ -33,8 +33,14 @@ Tops.OriginAttribute = "TopsOrigin"
 Tops.Speed = 4.5 -- studs a second, crawling the way you look
 Tops.BackScale = 0.5 -- crawling backward: half that, your head still the way you look
 Tops.TurnRate = math.rad(200) -- radians a second your body turns toward where you crawl
+-- Studs from your root to your eye along your lying body: first person's camera spot (Roblox's
+-- 1.5 above an R15 root). Your body turns about it, so turning never swings your view sideways
+-- (owner, Nov 11: crawling "should be just as smooth as moving on the normal floor").
+Tops.Eye = 1.5
 Tops.Pull = 2.2 -- studs a pull (one arm hauls you on): each pull a soft boom on the steel
-Tops.Surge = 0.55 -- how much each pull surges (0 a steady slide, 1 stopping between pulls)
+-- How much each pull surges (0 a steady slide, 1 stopping between pulls). Barely: the pulls are
+-- heard and seen in the arms, while your view glides as a walk does (it was 0.55, a lurch).
+Tops.Surge = 0.1
 Tops.ArmSwing = math.rad(24) -- a friend's arms reaching and hauling in turn, about their rest
 
 -- Your body lying on the steel, for the checks: points along your heading from your root (studs),
@@ -426,9 +432,10 @@ end
 
 --[[
 	One step of the crawl, `dt` seconds: the stick's push (mx, mz, on the map, length up to 1) and
-	the way you look (lx, lz). Your body turns toward where you crawl (the look's way when pulling
-	back: you crawl backward, head first still) and moves, sliding along an edge it meets, never
-	off the tops. Returns the new state and studs moved.
+	the way you look (lx, lz). You move where you push at once, as you walk, and your body turns
+	about your eye (`Eye`) toward where you crawl (the look's way when pulling back: you crawl
+	backward, head first still), sliding along an edge it meets, never off the tops. Returns the
+	new state and studs moved (the crawl alone, not the turn's swing).
 ]]
 function Tops.step(
 	m: Map,
@@ -478,11 +485,20 @@ function Tops.step(
 		local ways: { number } = if math.abs(want) > math.pi / 2
 			then { first, -first }
 			else { first }
-		-- each way in turn: turn freely, or, wedged by an edge, shuffle away from what blocks your
-		-- head or feet as you turn, as a body squirms round
+		-- each way in turn: your body swinging round behind your eye, so your view only turns;
+		-- where that won't fit, round your middle; wedged by an edge, shuffling away from what
+		-- blocks your head or feet as you turn, as a body squirms round
 		local d = Tops.Speed * dt
+		local ohx, ohz = Tops.heading(yaw)
 		for _, w in ways do
 			local ny = yaw + w * rate
+			local nhx, nhz = Tops.heading(ny)
+			local ex, ez = x + Tops.Eye * (ohx - nhx), z + Tops.Eye * (ohz - nhz)
+			if not stuck and Tops.fits(m, ex, ez, ny) then
+				x, z, yaw = ex, ez, wrap(ny)
+				spin = if math.abs(want) > math.pi / 2 then w else 0
+				break
+			end
 			if stuck or Tops.fits(m, x, z, ny) then
 				yaw = wrap(ny)
 				spin = if math.abs(want) > math.pi / 2 then w else 0
@@ -497,12 +513,14 @@ function Tops.step(
 			end
 		end
 	end
-	-- you crawl the way your body faces: still turning round, you barely move
+	-- you crawl where you push at once, as you walk, your body catching up behind your eye; only
+	-- with more than a quarter turn still to go are you slowed, to a stop facing right away
 	local left = math.abs(wrap(Tops.yawOf(tx, tz) - yaw))
-	speed *= math.max(0, math.cos(left))
+	speed *= math.clamp(1 + math.cos(left), 0, 1)
 	-- move, sliding along an edge
 	local dx, dz = mx / push * speed * dt, mz / push * speed * dt
 	local nx, nz = x, z
+	-- (studs moved is the crawl alone, not your hips swinging round: it times the pulls)
 	if stuck then
 		if Tops.within(m, x + dx, z + dz) then
 			nx, nz = x + dx, z + dz

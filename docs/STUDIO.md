@@ -1324,6 +1324,20 @@ verified: a doc page, Studio, or "untested".
   crawl if it's a few studs off. To crawl a way, hold the view with a `BindToRenderStep` and hold
   W with `user_keyboard_input`. The torch's R1 from `user_keyboard_input` doesn't reach its
   ContextActionService binding; for a shot, enable the beam's SpotLight on the Client.
+- **Measuring the crawl's view frame by frame** (Play, L-16c, 2026-11-11): record in a
+  `BindToRenderStep` just after `Enum.RenderPriority.Camera` and read `CurrentCamera.Focus` (the
+  eye the camera follows: root plus 1.5 up the body plus `CameraOffset`), not
+  `CurrentCamera.CFrame.Position`, which sits half a stud behind the eye along the look and so
+  swings whenever the view turns. To turn the view mid-crawl, set the camera's rotation in a
+  binding just before `Camera` each frame and hold W with `user_keyboard_input`. With Studio not
+  focused it draws about 15 frames a second while `PreSimulation` keeps stepping several times
+  per drawn frame, so a render sampler sees several crawl steps at once (that looked like physics
+  moving the body; it wasn't). Judge smoothness by eye only with Studio focused, or on a device.
+- **Two floors at one height flicker** (L-16c): a hall junction's concrete (`T.Floor`, top at 0)
+  runs on under the front of the units round it, where the unit's own floor also sits at 0, so
+  the two drew over each other as the view moved (only on real floors: the test hall has no
+  junctions). Find such pairs from a Server `execute_luau` by testing every visible part's box
+  against a unit's floor; `GetPartBoundsInBox` misses them (the art's meshes aren't queryable).
 - **A unit's bulb and its top at Studio's Automatic graphics** (Play, L-13b2d2c): a lit bulb
   lit the whole steel top above it and the deck from below, through the steel; at Level21 only
   the sawn hole glowed and the deck above it caught a patch. Judge light through a top at a fixed

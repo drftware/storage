@@ -52,6 +52,10 @@ local BehindDoors = {}
 local LINE_DEPTH = 0.5
 local LINE_OUT = 0.3
 local LINE_THICK = 0.01
+-- How often (seconds) your screen looks for a shut door between you and the tools lying near
+-- you (studs, past any pick-up's reach), hiding their Pick up while one is (Slots refuses it too).
+local REACH_EVERY = 0.2
+local REACH_NEAR = 16
 
 local function fade(inst: Instance, amount: number)
 	-- Two classes share the property but no type, so each branch narrows on its own.
@@ -238,6 +242,40 @@ function BehindDoors.new(): Brix.System
 		end
 	end
 
+	-- Each lying tool near you shows its Pick up only while no shut door stands between you and
+	-- it: a peek's crack or a shut door is no way in for a hand (ShutIn.reaches).
+	local reachAt = 0
+	local function hidePickUps()
+		local lyingTools = Workspace:FindFirstChild("Tools")
+		local character = Players.LocalPlayer.Character
+		local root = character and character.PrimaryPart
+		if not (lyingTools and root) then
+			return
+		end
+		local from = root.Position
+		for _, tool in lyingTools:GetChildren() do
+			local at = tool:FindFirstChild("Prompt", true)
+			local prompt = at and at:FindFirstChildOfClass("ProximityPrompt")
+			if
+				at
+				and at:IsA("Attachment")
+				and prompt
+				and (at.WorldPosition - from).Magnitude <= REACH_NEAR
+			then
+				local reach = true
+				for _, r in rooms do
+					if RollUpDoor.keepsApart(r.unit, from, at.WorldPosition) then
+						reach = false
+						break
+					end
+				end
+				if prompt.Enabled ~= reach then
+					prompt.Enabled = reach
+				end
+			end
+		end
+	end
+
 	-- Whether a shut door stands between the camera and this point (rooms' viewerInside is fresh).
 	local function behindShutDoor(at: Vector3): boolean
 		for _, r in rooms do
@@ -336,6 +374,11 @@ function BehindDoors.new(): Brix.System
 						end
 					end
 				end
+			end
+			local t = os.clock()
+			if t - reachAt >= REACH_EVERY then
+				reachAt = t
+				hidePickUps()
 			end
 			-- Forget characters that are gone (respawned or left); their name went with them.
 			for character, was in hidden do

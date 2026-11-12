@@ -2,28 +2,25 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-11, session 97 (a fix between tickets) · **Checks:** green ·
+**Updated:** 2026-11-11, session 98 (the owner's Nov 11 play; L-16c) · **Checks:** green ·
 **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- **Published places play now (D-109).** The test hall ran only in Studio, so a live server (or
-  Team Test) was just the baseplate. It runs on every server until the lobby (L-08e) replaces it.
-  Untested on a live server: the owner is publishing and playing on a phone (`OWNER.md`).
-- **L-16a done (D-108): in hand and caught.** One client `Joints` module finds and turns either
-  kind of avatar joint (players' arms are `AnimationConstraint`s) for FlashlightView, HornView,
-  CrawlView, LadderView and KneelView, so a friend's torch arm rises. A catch ends a climb or
-  crawl on the server (`Prompts.wrapped` in Ladders' and Crawls' steps) and the caught screen
-  lets go of the body at once (LadderView, CrawlView on `Kept.Attribute`); CaughtLunge hands
-  back Custom, never a crawl's Scriptable camera. G at an open door is Slam (ToolView passes the
-  key to a shown prompt on it); a click on an active GUI button is never a use (HornView,
-  `GetGuiObjectsAtPosition`). DoorSounds, HallLights, UnitLights and KneelView prime their
-  recordings. KeeperView binds a body that arrives in pieces once whole; Keepers finishes a body
-  before parenting it. Studio-only `ServerStorage.CatchTest` catches you anywhere (docs/STUDIO.md).
-- Verified in Studio: your own arm raised via `Joints`; caught on the ladder and mid-crawl, kept,
-  cut free by a stand-in, walking; Slam over Drop; a slot click blowing nothing; Output clean but
-  Roblox's 203785492 (traced: not the game's). Not reproduced either way: the late first play,
-  the KeeperView race. A friend's arm, two players, the phone: `OWNER.md`.
-- Studio: nothing imported; left in Edit.
+- **L-16c done (D-110): the tops glide.** Your view sits 1.5 studs up your lying body, and the
+  body turning after your mouse swung it sideways; you nearly stopped while turning; each pull
+  surged ±55%. Now `Tops.step` turns the body about your eye (`Tops.Eye`), you move where you push
+  at once, the surge is ±10%, LadderView's head dip and sway are halved, and the server's crawl
+  check (`Ladders` `checkCrawl`) allows for the hips' swing. Lune covers it (`tests/tops.spec`).
+- **Reaching through doors (D-110):** `ShutIn.reaches` and `RollUpDoor.keepsApart`; `Slots`
+  refuses a pick-up through a shut or peeked door, `BehindDoors` hides that Pick up on screen.
+- **The floor's flicker (D-110):** a junction's floor ran under units' fronts at the same height;
+  `FloorBuilder.unit` lifts the unit's drawn floor 0.03.
+- Verified in Studio: a quarter turn mid-crawl moved the eye 0.4 studs sideways in all, 4 to 5
+  studs a second, no put-backs; the tool behind 101's door hidden, refused when forced, hidden
+  under a peek, taken once open; 106's floor at 0.03. Feel on a live server and phone: `OWNER.md`.
+- New tickets from the owner's notes: L-19 (every button in the world small and modern, a door's
+  laid out where your hand goes) and L-20 (the inventory wheel; three slots, six bought).
+- Studio: left in Edit, nothing imported.
 
 ## Next task: L-16b The tops and arriving
 The moment: coming down off the tops, dropping in, and pressing a button the instant you arrive
@@ -49,10 +46,10 @@ Two players go to `OWNER.md`.
 on the tops from the MCP".
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-08e (the start, in the lobby) waits for the owner's lobby plan (Nov 11).
-2. L-16c the roof crawl, smooth (owner's words in ROADMAP).
-3. L-17 every button on a phone at once; L-18 the art saved with the code (optional).
-4. L-09a the first run with friends, floors 1 to 3. L-14b2d only if the owner asks.
+1. L-19a one look for every button in the world; L-19b a door's buttons where your hand goes.
+2. L-20a the inventory wheel and three slots (L-20b, six bought, waits on the store).
+3. L-17 every button on a phone at once; then L-09a the first run with friends, floors 1 to 3.
+4. L-08e (the start, in the lobby) waits for the owner's lobby plan. L-18 optional.
 5. Seen: a ladder stood on a floor when it's cleared should go with it (untested); anyone still
    in the car 6 s after it opens is shut in (`OWNER.md`'s L-08a decision 2); watching a friend
    ride doesn't draw their shaft (ROADMAP polish); DevCorridor's "Walk a floor" sign keeps the

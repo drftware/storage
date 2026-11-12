@@ -974,7 +974,10 @@ function Ladders.new(): Ladders
 			on = Tops.near(map, q.X, q.Z, Tops.Slack)
 		end
 		local moved = if last then ((p - last.Position) * Vector3.new(1, 0, 1)).Magnitude else 0
-		local fastest = Tops.Speed * (1 + Tops.Surge) * Tops.FastSlack * (t - c.lastAt)
+		-- the crawl at its surge's peak, plus your hips swinging round your eye as you turn
+		local fastest = (Tops.Speed * (1 + Tops.Surge) + Tops.Eye * Tops.TurnRate)
+				* Tops.FastSlack
+				* (t - c.lastAt)
 			+ Tops.LagStuds
 		if on and math.abs(p.Y - c.lyingY) <= Tops.HeightSlack and moved <= fastest then
 			c.last = root.CFrame

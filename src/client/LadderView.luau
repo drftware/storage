@@ -47,9 +47,10 @@ local LINGER = 1.6 -- seconds a sounds' spot outlives its move: the last sound's
 local SPOT_UP = 4 -- studs up the ladder from the floor where a climb's sounds play
 local CLIMB_ANIM_RATE = 5 -- Roblox's Animate plays its climb at the climb's speed over this
 -- Your view crawling the tops (Humanoid.CameraOffset, in your lying root's frame: X across your
--- back, Z up off the steel): each pull dips your head and sways it toward the hauling arm.
-local VIEW_DIP = 0.07
-local VIEW_SWAY = 0.06
+-- back, Z up off the steel): each pull dips your head and sways it toward the hauling arm. A
+-- hint only, so the view glides as a walk's does (halved Nov 11; owner: "the view jerks").
+local VIEW_DIP = 0.035
+local VIEW_SWAY = 0.03
 local TELEPORT = 3 -- studs a crawler moves in a frame past which it's a jump, not a crawl
 local MAP_EVERY = 0.4 -- seconds between looks for a newer tops' map (a top sawn through) as you crawl
 local GLIDE_MAX = 6 -- studs: a put-back nearer than this glides you there; further, you're moved

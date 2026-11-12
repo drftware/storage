@@ -125,6 +125,9 @@ local function bulbPoint(unit: Model): CFrame?
 end
 
 local warnedBulb = false
+-- Studs a unit's drawn floor sits above the hall floor it may overlap (its collider stays at 0,
+-- so feet and dealt things stand where they did; the lip at the door is too thin to see).
+local FLOOR_LIFT = 0.03
 
 -- A unit's door face: the middle of its doorway's outer face on the floor, looking into the hall
 -- (NoteSpot's and DealSpot's frame: +Z into the unit).
@@ -140,6 +143,12 @@ function FloorBuilder.unit(template: Model, face: CFrame, number: string, colour
 	local unit = template:Clone()
 	local outer = FloorBuilder.face(unit)
 	unit:PivotTo(face * outer:ToObjectSpace(unit:GetPivot()))
+	-- its floor drawn a hair over the hall's: a junction's concrete runs on under the front of the
+	-- units round it at the same height, and two surfaces at one height flicker as the view turns
+	local drawn = unit:FindFirstChild("Floor")
+	if drawn and drawn:IsA("BasePart") then
+		drawn.CFrame += Vector3.yAxis * FLOOR_LIFT
+	end
 	unit.Name = `Unit{number}`
 	UnitKit.paint(unit, colour, UnitKit.Colours.Wall)
 	UnitKit.number(unit, number)
