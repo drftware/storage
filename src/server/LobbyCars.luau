@@ -22,7 +22,14 @@
 	  group and difficulty with them. A trip that fails puts those still here back in the car,
 	  the host first and the choices as they were, with "Teleport failed" and the count again.
 	  Where trips don't go (Studio, or a lobby whose trips keep failing) the climb carries them up
-	  to floor 1 on this server, as below. A group's own server opens no cars.
+	  to floor 1 on this server, as below.
+	- Back in your car (L-08e2, GDD "The lobby"): when the climb ends, its group comes back
+	  standing in the car they left from (`home`, called by ClimbEnds' `go` under the black), in
+	  their old order with the host's choices as they were, facing the results on its back wall
+	  (`Boarding.ResultsAttribute`); once they're all stood in it the full count runs for another
+	  go (`welcome`). On a group's own server that's the car the trip's data names; the cars there
+	  open only then (until then the group's climb is starting in floor 1's car, Trips), and their
+	  next climb rides up on that server. The results stay on the wall until the car next leaves.
 	- One climb at a time on a server riding here: while one a car started is on, the other cars'
 	  counts are held (their groups stay) and start again from the full count once it's over.
 	- The host's panel (L-08e1b2): the first one aboard hosts; their choices come through the
@@ -59,8 +66,28 @@ type Car = {
 	state: Boarding.Car,
 	out: { [number]: number }, -- UserId → server time they were first seen out of the car
 	away: boolean, -- it left and isn't back in its bay yet
+	holding: boolean, -- a group is being stood back in it after their climb: not stepped
 	leg: number, -- how many times it has left: a return meant for an earlier trip is dropped
 	pick: (inside: { Player }) -> { Player },
+}
+
+-- The group a car took up into a climb on this server, as it left: who rode, in order, and the
+-- host's choices.
+type Ridden = { car: Car, group: { number }, friends: boolean, players: number }
+
+-- One of a climb's group back in the lobby: where they're stood (in their car, facing its back
+-- wall).
+export type Back = { player: Player, at: CFrame }
+
+export type LobbyCars = Brix.System & {
+	-- The climb is over (ClimbEnds' `go`, under the black): its group goes back into the car they
+	-- left from, held there (no count) for `welcome`. Returns where each of them is to be stood,
+	-- in their order: empty if their car can't take them (they come back at the front office),
+	-- nil if this climb didn't start from a car of this lobby (the test hall's, in Studio).
+	home: (self: any) -> { Back }?,
+	-- Everyone's stood back in: the results go on the held car's back wall (ClimbEnd's
+	-- `encodeResults`) and its full count runs. Nothing if no car is held.
+	welcome: (self: any, results: string) -> (),
 }
 
 local FREE = Brix.Pathing.free()
@@ -87,7 +114,7 @@ end
 
 local LobbyCars = {}
 
-function LobbyCars.new(): Brix.System
+function LobbyCars.new(): LobbyCars
 	local cars: { Car } = {}
 	local elevators: Elevators.Elevators? = nil
 	local climbs: Climbs.Climbs? = nil
@@ -99,6 +126,9 @@ function LobbyCars.new(): Brix.System
 	-- a climb a car started is on this server (until L-08e1c), and since when
 	local climbing = false
 	local boardedAt = 0
+	local ridden: Ridden? = nil -- the group the latest climb from a car took up, until it's home
+	local holding: Car? = nil -- the car a climb's group is being stood back in
+	local homed = false -- a group's own server: its group is back in the lobby (its cars open)
 	local remote: RemoteEvent? = nil
 	local lastChoice: { [Player]: number } = {} -- os.clock() of each host's last choice taken
 	local lastTold: { [number]: number } = {} -- UserId → server time they were last told why
@@ -192,13 +222,22 @@ function LobbyCars.new(): Brix.System
 		end
 	end
 
-	-- The car's group and choices as nobody's aboard, on every screen (its count is Elevators').
+	-- The car's group and choices as nobody's aboard, on every screen (its count is Elevators'),
+	-- and the last climb's results off its wall: it's leaving, or back in its bay for the next.
 	local function empty(car: Car)
 		car.state = Boarding.new()
 		table.clear(car.out)
 		car.model:SetAttribute(Boarding.GroupAttribute, nil)
 		car.model:SetAttribute(Boarding.FriendsAttribute, nil)
 		car.model:SetAttribute(Boarding.PlayersAttribute, nil)
+		car.model:SetAttribute(Boarding.ResultsAttribute, nil)
+	end
+
+	-- Whether this is a group's own server whose group is still on the climb they arrived for:
+	-- its cars wait for them to come home.
+	local function waitingForHome(): boolean
+		local t = trips
+		return t ~= nil and t:own() and not homed
 	end
 
 	-- Stands `car` open in its bay again, empty.
@@ -307,7 +346,11 @@ function LobbyCars.new(): Brix.System
 		for i, player in leaving.aboard do
 			ids[i] = player.UserId
 		end
-		local data = Trip.encode(ids, Boarding.Difficulties[1]) :: Trips.Data
+		local data = Trip.encode(ids, Boarding.Difficulties[1], {
+			bay = (car.model:GetAttribute(Boarding.CarAttribute) :: number?) or 1,
+			friends = was.friends,
+			players = was.players,
+		}) :: Trips.Data
 		table.insert(
 			returns,
 			task.delay(math.max(leaving.at + Trip.Send - now(), 0), function()
@@ -355,6 +398,11 @@ function LobbyCars.new(): Brix.System
 			trip(car, leaving, was, leg)
 		elseif c and c:board(leaving.elevator, leaving) then
 			climbing, boardedAt = true, now()
+			local ids: { number } = table.create(#leaving.aboard)
+			for i, player in leaving.aboard do
+				ids[i] = player.UserId
+			end
+			ridden = { car = car, group = ids, friends = was.friends, players = was.players }
 			-- every other car's count waits for this climb to end
 			for _, other in cars do
 				if other ~= car and other.state.departs then
@@ -435,7 +483,121 @@ function LobbyCars.new(): Brix.System
 		end
 	end
 
-	local system: Brix.System = {
+	-- The climb is over: its group back into the car they left from, held for `welcome`.
+	local function home(): { Back }?
+		local c, t = climbs, trips
+		if #cars == 0 or not c then
+			return nil
+		end
+		local car: Car? = nil
+		local ids: { number } = {}
+		local onlyFriends, players = false, Boarding.Capacity
+		local r = ridden
+		local last = c:last()
+		if r and last and folder and last.parent == folder then
+			-- a climb a car of this lobby took up, on this server
+			car, ids, onlyFriends, players = r.car, r.group, r.friends, r.players
+		elseif t and t:own() and not homed then
+			-- the climb this group's own server started for them: the car their data names
+			local d = t:data()
+			if not d then
+				return nil
+			end
+			for _, each in cars do
+				if each.model:GetAttribute(Boarding.CarAttribute) == d.bay then
+					car = each
+				end
+			end
+			car = car or cars[1]
+			ids = table.clone(d.group)
+			onlyFriends, players = d.friends, d.players
+			-- anyone else here climbed with them (Studio's "Arrive" lets them in)
+			for _, player in Players:GetPlayers() do
+				if not table.find(ids, player.UserId) then
+					table.insert(ids, player.UserId)
+				end
+			end
+		else
+			return nil
+		end
+		ridden = nil
+		if t and t:own() and not homed then
+			homed = true
+			t:home()
+		end
+		local present: { number } = {}
+		for _, id in ids do
+			if Players:GetPlayerByUserId(id) then
+				table.insert(present, id)
+			end
+		end
+		local into = car :: Car
+		if into.away then
+			-- someone else's group has taken it up meanwhile (a lobby riding here): the first
+			-- empty car in its bay instead, or the front office
+			local free: Car? = nil
+			for _, each in cars do
+				if not free and not each.away and not each.holding and #each.state.group == 0 then
+					free = each
+				end
+			end
+			if not free then
+				return {}
+			end
+			into = free :: Car
+		end
+		local t0 = now()
+		local over = Boarding.back(into.state, present, onlyFriends, players)
+		into.holding = true
+		holding = into
+		table.clear(into.out)
+		for _, id in over do
+			local player = Players:GetPlayerByUserId(id)
+			if player then
+				turnAway(into, player, "Full", t0)
+			end
+		end
+		publish(into)
+		local pivot = into.model:GetPivot()
+		local out: { Back } = {}
+		for i, id in into.state.group do
+			local player = Players:GetPlayerByUserId(id)
+			if player and table.find(present, id) then
+				local x, z = Boarding.backSpot(i)
+				local at = Vector3.new(x, 3, z)
+				table.insert(
+					out,
+					{ player = player, at = pivot * CFrame.lookAt(at, at + Vector3.zAxis) }
+				)
+			end
+		end
+		if STUDIO then
+			print(
+				`LobbyCars: {#out} back in car {into.model:GetAttribute(Boarding.CarAttribute)} after their climb`
+			)
+		end
+		return out
+	end
+
+	-- Everyone's stood back in the held car: the results on its wall, its full count.
+	local function welcome(results: string)
+		local car = holding
+		if not car then
+			return
+		end
+		holding = nil
+		car.holding = false
+		car.model:SetAttribute(Boarding.ResultsAttribute, results)
+		if not climbing then
+			Boarding.welcome(car.state, now())
+			if car.state.departs then
+				ready()
+			end
+		end
+		publish(car)
+	end
+
+	local system: LobbyCars = {
 		name = "LobbyCars",
 		start = function(_: any, context: Brix.Context)
 			local registry = context.registry
@@ -448,8 +610,9 @@ function LobbyCars.new(): Brix.System
 			trips = tripSystem
 			local office = (registry:get("frontOffice") :: any) :: FrontOffice.FrontOffice -- any: as above
 			local laid = office:laid()
-			-- a group's own server opens no cars: its climb starts in floor 1's car (Trips)
-			if not laid or tripSystem:own() then
+			-- on a group's own server the cars wait for the group to come home (`home`): its first
+			-- climb starts in floor 1's car (Trips)
+			if not laid then
 				return
 			end
 			local f = Instance.new("Folder")
@@ -467,6 +630,7 @@ function LobbyCars.new(): Brix.System
 					state = Boarding.new(),
 					out = {},
 					away = false,
+					holding = false,
 					leg = 0,
 					pick = function(inside: { Player }): { Player }
 						local ids = table.create(#inside)
@@ -522,12 +686,12 @@ function LobbyCars.new(): Brix.System
 					end
 				end)
 			)
-			if STUDIO then
+			if STUDIO and not tripSystem:own() then
 				print(`LobbyCars: {#cars} cars open; step into one to start its count`)
 			end
 		end,
 		step = function(_: any, _dt: number)
-			if #cars == 0 then
+			if #cars == 0 or waitingForHome() then
 				return
 			end
 			local t = now()
@@ -545,7 +709,7 @@ function LobbyCars.new(): Brix.System
 			end
 			local players = Players:GetPlayers() -- one list a step, for all six cars
 			for _, car in cars do
-				if car.away then
+				if car.away or car.holding then
 					continue
 				end
 				local counting = car.state.departs ~= nil
@@ -584,6 +748,7 @@ function LobbyCars.new(): Brix.System
 			end
 			table.clear(returns)
 			table.clear(cars)
+			ridden, holding = nil, nil
 			if remote then
 				remote:Destroy()
 				remote = nil
@@ -592,6 +757,12 @@ function LobbyCars.new(): Brix.System
 				folder:Destroy()
 				folder = nil
 			end
+		end,
+		home = function(_: any): { Back }?
+			return home()
+		end,
+		welcome = function(_: any, results: string)
+			welcome(results)
 		end,
 	}
 	return system

@@ -22,8 +22,10 @@
 
 	"Again": each press puts that friend in (their photo lights); the next climb starts as soon as
 	everyone's in, or `AgainWait` after the first press, as DOORS' lobby elevators count down once
-	the first player steps in, so one friend who has wandered off never holds the rest. It starts from floor 1 with a fresh building, everyone in its lobby (the
-	owner's lobby replaces where it leads: `ClimbEnds.go`).
+	the first player steps in, so one friend who has wandered off never holds the rest. It leads
+	back to the lobby (L-08e2): the group standing in the car they left from, the results on its
+	back wall (`encodeResults`), the car's count running for another go. Where no car waits (the
+	test hall's climb in Studio) it starts floor 1 of a fresh building, everyone in its lobby.
 
 	Pure numbers and words, so Lune checks them; the server ends the climb (ClimbEnds), each screen
 	draws it (EndView).
@@ -44,6 +46,13 @@ ClimbEnd.FateAttribute = "ClimbFate"
 ClimbEnd.InAttribute = "AgainIn"
 -- On Workspace once someone has pressed Again: the server time the next climb starts.
 ClimbEnd.StartAttribute = "AgainAt"
+-- On Workspace once Again leads back to the lobby (L-08e2), until the next end: the screens lift
+-- onto your car (or the front office) with no floor number.
+ClimbEnd.LobbyAttribute = "EndsInLobby"
+-- On a player from Again until the next end: where the server stood their new character (a
+-- CFrame). As the black lifts their camera turns that way (in first person the body turns to the
+-- camera, so the body's own facing can't be trusted by then).
+ClimbEnd.StoodAttribute = "StoodAt"
 -- ReplicatedStorage.Remotes.Again: a screen's press of Again (no arguments).
 ClimbEnd.Remote = "Again"
 
@@ -134,8 +143,8 @@ ClimbEnd.Copy = {
 	Floor = "Floor %d",
 	Again = "Again",
 	Waiting = "Waiting",
-	Soon = "Going up in %d",
-	Going = "Going up",
+	Soon = "Back in %d",
+	Going = "Going back",
 }
 
 local function smooth(u: number): number
@@ -286,7 +295,7 @@ function ClimbEnd.clock(seconds: number): string
 	return string.format("%d:%02d", m, s % 60)
 end
 
--- The seconds left to show on "Going up in" (whole, never 0 while time's left).
+-- The seconds left to show on "Back in" (whole, never 0 while time's left).
 function ClimbEnd.countdown(left: number): number
 	return math.max(math.ceil(left - 1e-6), 0)
 end
@@ -342,6 +351,63 @@ function ClimbEnd.decodeFate(value: unknown): (Fate?, number)
 		return nil, 0
 	end
 	return fate :: Fate, tonumber(floor) or 0
+end
+
+-- One friend on a car's results board: who, how it went, and the floor it was lost on (or reached).
+export type Result = { userId: number, fate: Fate, floor: number }
+-- How a climb went, on the back wall of the car its group came back to (L-08e2).
+export type Results = { how: How, floor: number, seconds: number, rows: { Result } }
+
+-- The most friends a board shows: a car's capacity (Boarding.Capacity).
+ClimbEnd.BoardMost = 6
+
+-- A car's results board value: "<how>|<floor>|<seconds>|<id>:<fate>:<floor>,..." (the rows in the
+-- group's order, at most `BoardMost`).
+function ClimbEnd.encodeResults(how: How, floor: number, seconds: number, rows: { Result }): string
+	local cells: { string } = {}
+	for i, row in rows do
+		if i > ClimbEnd.BoardMost then
+			break
+		end
+		cells[i] = string.format("%d:%s:%d", row.userId, row.fate, row.floor)
+	end
+	return string.format(
+		"%s|%d|%d|%s",
+		how,
+		floor,
+		math.max(math.floor(seconds), 0),
+		table.concat(cells, ",")
+	)
+end
+
+-- A car's results board value read back; nil if it isn't one. A row that doesn't read is skipped.
+function ClimbEnd.decodeResults(value: unknown): Results?
+	if type(value) ~= "string" then
+		return nil
+	end
+	local how, floor, seconds, cells = string.match(value, "^(%a+)|(%d+)|(%d+)|(.*)$")
+	if how ~= "Kept" and how ~= "Top" then
+		return nil
+	end
+	local rows: { Result } = {}
+	for cell in string.gmatch(cells :: string, "[^,]+") do
+		local id, fate, at = string.match(cell, "^(%d+):(%a+):(%d+)$")
+		local userId = if id then tonumber(id) else nil
+		if userId and (fate == "Out" or fate == "Kept" or fate == "Left") then
+			if #rows < ClimbEnd.BoardMost then
+				table.insert(
+					rows,
+					{ userId = userId, fate = fate :: Fate, floor = tonumber(at) or 0 }
+				)
+			end
+		end
+	end
+	return {
+		how = how :: How,
+		floor = tonumber(floor) or 0,
+		seconds = tonumber(seconds) or 0,
+		rows = rows,
+	}
 end
 
 -- The catch's black, when a wipe ends: the screen the last friend was caught on is black then.

@@ -15,10 +15,12 @@
 	  photos of those who rode out in full colour.
 	- Again: a press squashes the button with the keypad's beep and reads "Waiting"; each friend
 	  who is in lights up warm (their photo's colour back) with a tick; the first press starts
-	  "Going up in 10" on every screen, and the elevator's chime sounds as it goes. Enter, Space
-	  or the gamepad's A press it too.
-	- Back in: once your new character stands in floor 1's lobby, the black lifts off it with the
-	  bell, "Floor 1" in the lamp's light.
+	  "Back in 10" on every screen, and the elevator's chime sounds as it goes. Enter, Space or the
+	  gamepad's A press it too.
+	- Back in: once your new character stands in your lobby car (L-08e2: the results on its back
+	  wall, CarResults, and its count popping in with the chime, GateClock), the black lifts off it,
+	  the camera turned the way you face. Where Again leads to a fresh floor 1 instead (the test
+	  hall's climb, in Studio), it lifts with the bell and "Floor 1" in the lamp's light.
 
 	The screen is over everything (the left-behind sting, the catch); it only covers the world
 	from the moment it draws something, so the ride's controls answer until then. The mouse is
@@ -27,6 +29,7 @@
 local ContentProvider = game:GetService("ContentProvider")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local SoundService = game:GetService("SoundService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
@@ -75,6 +78,13 @@ local CARD_ASPECT = 0.66
 local CARD_GAP = 14
 -- A moment learned this late (seconds) is skipped, not played out of time (a late join).
 local LATE = 0.4
+-- As the black lifts, the camera is turned the way the server stood your new character
+-- (`ClimbEnd.StoodAttribute`) on this many frames in a row, after the camera's own update: a
+-- camera keeps its old look across a new character (out through the gate you rode in facing), and
+-- in first person the body turns to the camera, so without this you'd come back facing away from
+-- the results; one that resets a frame late still ends up turned.
+local TURN_FRAMES = 4
+local TURN_BIND = "EndViewTurn"
 
 type Screen = {
 	backGui: ScreenGui,
@@ -343,9 +353,11 @@ function EndView.new(need: (who: string, on: boolean) -> ()): Brix.System
 	local pressedAt: number? = nil -- os.clock() we pressed Again
 	local going = false -- the next climb is being laid
 	local interactive = false -- the button takes a press
-	local counted = -1 -- the "Going up in" number on screen
+	local counted = -1 -- the "Back in" number on screen
 	local clearedAt: number? = nil -- os.clock() the end was cleared (the next climb is ready)
 	local liftAt: number? = nil -- os.clock() the black began lifting off our new character
+	local turning = 0 -- frames of the camera's turn still to make
+	local turnTo: Vector3? = nil -- the way it turns, flat
 
 	local plays: { [Sound]: number } = {}
 	local function play(s: Sound?, from: number, length: number, volume: number, pitch: number)
@@ -724,9 +736,26 @@ function EndView.new(need: (who: string, on: boolean) -> ()): Brix.System
 				liftAt = clock
 				setQuiet(false)
 				setCursor(false)
-				local r = Ride.Sounds.Bell
-				play(bell, r.Start, r.Stop - r.Start, r.Volume * 0.7, 1)
-				s.title.Text = string.format(ClimbEnd.Copy.Floor, 1)
+				-- the way the server stood us (else the way the body faces, if it stood us nowhere)
+				local stood = player:GetAttribute(ClimbEnd.StoodAttribute)
+				local root = player.Character
+					and player.Character:FindFirstChild("HumanoidRootPart")
+				local look = if typeof(stood) == "CFrame"
+					then stood.LookVector
+					elseif root and root:IsA("BasePart") then root.CFrame.LookVector
+					else nil
+				local flat = if look then look * Vector3.new(1, 0, 1) else nil
+				if flat and flat.Magnitude > 0.01 then
+					turnTo = flat.Unit
+					turning = TURN_FRAMES
+				end
+				-- back in your lobby car, its count's chime is the sound; on a fresh floor 1, the bell
+				local inLobby = Workspace:GetAttribute(ClimbEnd.LobbyAttribute) == true
+				if not inLobby then
+					local r = Ride.Sounds.Bell
+					play(bell, r.Start, r.Stop - r.Start, r.Volume * 0.7, 1)
+				end
+				s.title.Text = if inLobby then "" else string.format(ClimbEnd.Copy.Floor, 1)
 				s.title.TextColor3 = WARM
 				s.titleScale.Scale = 1
 				s.button.Visible = false
@@ -826,6 +855,19 @@ function EndView.new(need: (who: string, on: boolean) -> ()): Brix.System
 				Workspace:GetAttributeChangedSignal(ClimbEnd.Attribute):Connect(onEnd)
 			)
 			onEnd()
+			-- after the camera's own update, so the frame shows the turn
+			RunService:BindToRenderStep(TURN_BIND, Enum.RenderPriority.Camera.Value + 1, function()
+				if turning <= 0 then
+					return
+				end
+				turning -= 1
+				local camera = Workspace.CurrentCamera
+				local look = turnTo
+				if camera and look then
+					local eye = camera.CFrame.Position
+					camera.CFrame = CFrame.lookAt(eye, eye + look)
+				end
+			end)
 			task.spawn(function()
 				local folder = ReplicatedStorage:WaitForChild(Keypad.RemoteFolder, 30)
 				local r = folder and folder:WaitForChild(ClimbEnd.Remote, 30)
@@ -836,6 +878,7 @@ function EndView.new(need: (who: string, on: boolean) -> ()): Brix.System
 		end,
 		step = step,
 		stop = function(_: any)
+			RunService:UnbindFromRenderStep(TURN_BIND)
 			for _, c in connections do
 				c:Disconnect()
 			end

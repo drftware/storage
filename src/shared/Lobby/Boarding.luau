@@ -19,6 +19,13 @@
 	  The first is the host.
 	- `FriendsAttribute`: true while the host has it Friends only; absent while it's Open.
 	- `PlayersAttribute`: how many players the host takes, 1 to 5; absent at the full 6.
+	- `ResultsAttribute`: how the last climb from this car went (ClimbEnd.encodeResults), on its
+	  back wall for everyone (CarResults) from the group's return until the car next leaves.
+
+	Back in your car (L-08e2): when the climb ends, its group comes back standing in the car they
+	left from, in their old order (the host first) with the host's choices as they were (`back`),
+	facing the results on its back wall (`backSpot`), and the full count runs for another go
+	(`welcome`). Anyone can step out and back in, as at any car.
 ]]
 local Departure = require("../Elevator/Departure")
 
@@ -32,6 +39,7 @@ Boarding.CarAttribute = "LobbyCar"
 Boarding.GroupAttribute = "Group"
 Boarding.FriendsAttribute = "FriendsOnly"
 Boarding.PlayersAttribute = "Players"
+Boarding.ResultsAttribute = "Results"
 
 -- Seconds the count runs from the first step in: the GDD's 20, DOORS' lobby wait. Long enough to
 -- wave a friend over from the door (under 3 s at a run) and let them pick the car; short enough
@@ -206,6 +214,56 @@ function Boarding.resume(car: Car, t: number)
 	end
 	local full = #car.group >= car.players
 	car.departs = t + (if full then Boarding.FullSeconds else Boarding.Seconds)
+end
+
+-- The group a climb took up is back in its car (L-08e2): `ids` in their old order, the first
+-- hosting, with the host's choices as they left (`friends`, `players`, the count raised to as
+-- many as come back). Anyone who stepped in meanwhile keeps their place after them, up to the
+-- car's capacity. The count waits (`departs` nil) until they're stood in it (`welcome`). Returns
+-- the UserIds that didn't fit (set down outside the gate), in order.
+function Boarding.back(car: Car, ids: { number }, friends: boolean, players: number): { number }
+	local group: { number } = {}
+	for _, id in ids do
+		if #group < Boarding.Capacity and not table.find(group, id) then
+			table.insert(group, id)
+		end
+	end
+	local over: { number } = {}
+	for _, id in car.group do
+		if table.find(group, id) then
+			continue
+		elseif #group < Boarding.Capacity then
+			table.insert(group, id)
+		else
+			table.insert(over, id)
+		end
+	end
+	car.group = group
+	car.departs = nil
+	car.friends = friends and #group > 0
+	local n = if players % 1 == 0 then players else Boarding.Capacity
+	car.players = math.clamp(n, math.max(#group, 1), Boarding.Capacity)
+	return over
+end
+
+-- The group's back, stood in the car at `t`: the full count, whether or not it's full, so there's
+-- time to take in the results on the wall and step out or stay. Nothing for an empty car or one
+-- already counting.
+function Boarding.welcome(car: Car, t: number)
+	if car.departs or #car.group == 0 then
+		return
+	end
+	car.departs = t + Boarding.Seconds
+end
+
+-- Where the `i`th of a group stands back in its car, in the elevator's frame (+Z into the car from
+-- its gate), facing the results on its back wall: the host in the middle of the row nearer the
+-- wall, then either side, then the row behind them, nearer the gate. The front row stands 5.5
+-- studs off the wall, so in first person the whole board fits the view with a little round it.
+local BACK_SPOTS = { { 0, 6.5 }, { -3.5, 6.5 }, { 3.5, 6.5 }, { 0, 3 }, { -3.5, 3 }, { 3.5, 3 } }
+function Boarding.backSpot(i: number): (number, number)
+	local s = BACK_SPOTS[(i - 1) % #BACK_SPOTS + 1]
+	return s[1], s[2]
 end
 
 -- Who rides, of those `inside` (UserIds) as the gate hits its post: the group first, in the order

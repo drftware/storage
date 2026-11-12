@@ -3349,3 +3349,37 @@ open the group's server as a new test server from the place as last saved, with 
 `PrivateServerId` (there, the first player arriving on a trip makes it one); "Fail" makes every
 trip fail. Live, a group's own server is only one with a `PrivateServerId` and no owner, so
 teleport data can't turn a public server into one.
+
+## D-123 Back in your car: the same car, the same friends, the results on its wall (L-08e2, Nov 12)
+The moment: the climb ends, you press Again, and the black lifts on the car you left from, your
+friends beside you in the order you stepped in, the results on its back wall, the count running
+for another go (GDD "The lobby": "they come back standing in the same car ... results on the
+wall, with a countdown to go again"; DOORS' lobby elevators).
+
+**Again stays the one button and leads to the car** (`ClimbEnds.go`, the one place D-106 left for
+it). The end screen is unchanged but its words ("Back in 10", "Going back"); then the climb's
+group gets characters standing in their car (LobbyCars' `home`), facing its back wall, the rest
+of the server at the front office; once all are loaded and the car is streamed to them, the
+results go on the wall and the car's full 20 s count runs (`welcome`, `Boarding.welcome`: full
+even when the car is, so there's time to read the wall). Then the black lifts with the count's
+chime instead of the bell, no floor number, and the camera turned the way the server stood you
+(`ClimbEnd.StoodAttribute`: in first person the body turns to the camera, so the body's facing
+isn't to be trusted). A climb no lobby car started (the test hall's) still goes to a fresh floor
+1. Rejected: no button and everyone back once the results have shown (one fewer press, but it
+changes D-106's moment the owner hasn't judged yet: OWNER.md); facing the gate (the results
+behind you).
+
+**Which car, which order.** On a lobby server the car that left, its riders in their order and
+the host's choices as it left (`Boarding.back`: anyone who stepped in meanwhile keeps a place
+after them, up to six; if the car has taken another group up, the first empty car). On a group's
+own server, the car the trip's data names: `Trip.Version` 2 carries the bay and the host's
+choices; version 1 still reads, as the first bay, Open and six. Its cars are laid and set up from
+the start but take nobody until the group comes home (`Trips:home`: from then a respawn stays at
+the front office), and their next climb rides up on that server, so the group keeps its server.
+
+**The board** (CarResults, client): a plain part on the back wall above its upper wooden rail
+with a SurfaceGui, the end screen's colours, "Kept"/"Made it", "Floor N · m:ss", each friend's
+photo, name and floor, lost ones greyed and askew; the photos drop on one by one as the black
+lifts. From the car's `Results` (`ClimbEnd.encodeResults`, at most six rows); it stays while
+people step out and in and goes when the car next leaves. Sized for first person from the front
+row (5.5 studs off the wall): the whole board fits the view.

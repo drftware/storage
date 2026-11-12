@@ -5,7 +5,9 @@
 -- leaves once the gate is shutting; a seventh is turned away; who rides puts the group first and
 -- caps the car at six; the first one in hosts and their choices (Friends only, the player count,
 -- Go) are theirs alone, within range, only before the gate shuts; the group's value round-trips; the car's readout shows dashes at rest, the
--- count in its middle two cells, green then red from the warning, 0 once it's shutting.
+-- count in its middle two cells, green then red from the warning, 0 once it's shutting. Back in
+-- your car (L-08e2): the group in its old order with its choices, the count held until they're
+-- stood in it, then the full count; anyone aboard meanwhile after them, up to six.
 local Boarding = require("../src/shared/Lobby/Boarding")
 local Departure = require("../src/shared/Elevator/Departure")
 
@@ -265,6 +267,68 @@ do
 	)
 	local zero = shows(-0.8)
 	ok(zero == "  0 ", "shutting: 0")
+end
+
+-- back in your car (L-08e2)
+do
+	local car = Boarding.new()
+	local over = Boarding.back(car, { 30, 10, 20 }, true, 4)
+	ok(#over == 0, "a group of three fits")
+	ok(car.group[1] == 30 and car.group[2] == 10 and car.group[3] == 20, "their old order")
+	ok(Boarding.host(car) == 30, "the old host hosts")
+	ok(car.friends == true and car.players == 4, "the host's choices as they left")
+	ok(car.departs == nil, "the count waits until they're stood in it")
+	Boarding.welcome(car, 100)
+	ok(car.departs == 100 + Boarding.Seconds, "then the full count")
+	Boarding.welcome(car, 105)
+	ok(car.departs == 100 + Boarding.Seconds, "welcomed twice: the count runs on")
+
+	local full = Boarding.new()
+	Boarding.back(full, { 1, 2 }, false, 2)
+	Boarding.welcome(full, 50)
+	ok(full.departs == 50 + Boarding.Seconds, "a full car back still gets the full count")
+	ok(Boarding.leave(full, 2, 52), "anyone can step out")
+	ok(full.departs == 50 + Boarding.Seconds, "the count runs on")
+	ok(Boarding.join(full, 2, 53), "and back in")
+	ok(full.departs == 53 + Boarding.FullSeconds, "full again: down to five")
+
+	local busy = Boarding.new()
+	Boarding.join(busy, 7, 10)
+	Boarding.join(busy, 8, 11)
+	local o = Boarding.back(busy, { 1, 2, 3, 4, 5 }, false, 6)
+	ok(#busy.group == 6, "the car takes six")
+	ok(busy.group[1] == 1 and busy.group[5] == 5, "the group back first")
+	ok(busy.group[6] == 7, "someone who stepped in meanwhile keeps a place after them")
+	ok(#o == 1 and o[1] == 8, "the one who doesn't fit is named")
+	ok(busy.departs == nil, "their count waits too")
+
+	local raised = Boarding.new()
+	Boarding.back(raised, { 1, 2, 3 }, false, 2)
+	ok(raised.players == 3, "the count is raised to as many as came back")
+	local odd = Boarding.new()
+	Boarding.back(odd, { 1 }, false, 2.5)
+	ok(odd.players == Boarding.Capacity, "a broken count is six")
+	local twice = Boarding.new()
+	Boarding.back(twice, { 4, 4, 5 }, false, 6)
+	ok(#twice.group == 2, "nobody twice")
+	local none = Boarding.new()
+	Boarding.back(none, {}, true, 3)
+	ok(#none.group == 0 and none.friends == false, "nobody back: an empty car is Open")
+	Boarding.welcome(none, 10)
+	ok(none.departs == nil, "an empty car doesn't count")
+
+	local seen: { [string]: boolean } = {}
+	for i = 1, Boarding.Capacity do
+		local x, z = Boarding.backSpot(i)
+		local key = `{x},{z}`
+		ok(not seen[key], `back spot {i} is its own`)
+		seen[key] = true
+		ok(math.abs(x) <= 4.5, `back spot {i} is inside the car's sides`)
+		ok(z >= 3 and z <= 9, `back spot {i} is inside the car, clear of the wall`)
+	end
+	local x1, z1 = Boarding.backSpot(1)
+	local x4, z4 = Boarding.backSpot(4)
+	ok(x1 == 0 and z4 < z1 and x4 == 0, "the host in front, nearest the wall")
 end
 
 print(`boarding: {checks - failures}/{checks} checks passed`)

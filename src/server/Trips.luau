@@ -23,6 +23,9 @@
 	  `Trip.Since` into its ride (Climbs' `arrive`); their screens open on the shaft sliding past.
 	- Anyone after that (a slow phone; someone who respawned at the front office) is stood on the
 	  floor the climb is on, in front of its car (Climbs' `arrival`), once there's one to stand on.
+	- Once that climb is over the group is back in its lobby car (`home`, L-08e2, LobbyCars) and
+	  this server is a lobby of their own: nobody is stood in a climb any more, and their next
+	  climb rides up from the car on this server.
 
 	Stepped every frame, but only the lobby's waits on riders and the group's wait cost anything.
 ]]
@@ -44,7 +47,14 @@ local FrontOffice = require(script.Parent.FrontOffice)
 
 -- The trip's data (Trip.Data), spelled out here as a cross-folder require's types don't reach
 -- every caller's checker.
-export type Data = { v: number, group: { number }, difficulty: string }
+export type Data = {
+	v: number,
+	group: { number },
+	difficulty: string,
+	bay: number,
+	friends: boolean,
+	players: number,
+}
 
 export type Trips = Brix.System & {
 	-- Whether this is a group's own server: its climb starts in floor 1's car, no lobby cars.
@@ -56,6 +66,12 @@ export type Trips = Brix.System & {
 	send: (self: any, players: { Player }, data: Data, failed: (player: Player) -> ()) -> (),
 	-- The difficulty the group brought, on a group's own server; nil elsewhere.
 	difficulty: (self: any) -> string?,
+	-- The data the group came with (its order, the car it left in), on a group's own server; nil
+	-- elsewhere.
+	data: (self: any) -> Data?,
+	-- The group's first climb is over and they're back in the lobby (L-08e2): nobody is stood in
+	-- that climb any more (a respawn stays at the front office, as on any lobby).
+	home: (self: any) -> (),
 }
 
 -- One send: its riders and how they came out.
@@ -129,6 +145,7 @@ function Trips.new(): Trips
 	local placing: { [Player]: true } = {} -- being stood on the climb's floor now
 	local spawnAt: Vector3? = nil -- the front office's spawn
 	local folder: Folder? = nil
+	local homed = false -- the first climb is over: the group is in the lobby
 
 	local function spawn(f: () -> ())
 		local thread = task.spawn(f)
@@ -225,7 +242,7 @@ function Trips.new(): Trips
 			local c = climbs :: Climbs.Climbs
 			local spot: CFrame? = nil
 			local giveUp = os.clock() + Trip.CoverMost
-			while player.Parent and os.clock() < giveUp do
+			while player.Parent and os.clock() < giveUp and not homed do
 				local opened = rodeAt ~= nil
 					and now() >= (rodeAt :: number) + Ride.opens() - Trip.Since
 				spot = if opened then c:arrival() else nil
@@ -234,7 +251,7 @@ function Trips.new(): Trips
 				end
 				task.wait(0.25)
 			end
-			if not (player.Parent and spot) then
+			if not (player.Parent and spot) or homed then
 				placing[player] = nil
 				return
 			end
@@ -258,7 +275,7 @@ function Trips.new(): Trips
 	-- climb loads itself (the end's Again, a friend cut free) is moved off the spawn in the same
 	-- frame, so a frame later it isn't there.
 	local function newCharacter(player: Player)
-		if not placed[player] then
+		if not placed[player] or homed then
 			return
 		end
 		task.defer(function()
@@ -297,7 +314,7 @@ function Trips.new(): Trips
 				newCharacter(player)
 			end)
 		)
-		if rodeAt then
+		if rodeAt and not homed then
 			standLate(player)
 		end
 	end
@@ -560,6 +577,13 @@ function Trips.new(): Trips
 		difficulty = function(_: any): string?
 			local d = data
 			return if isOwn and d then d.difficulty else nil
+		end,
+		data = function(_: any): Data?
+			return if isOwn then data else nil
+		end,
+		home = function(_: any)
+			homed = true
+			table.clear(placed)
 		end,
 	}
 	return system

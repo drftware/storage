@@ -8,9 +8,10 @@
 	  black ("Going up"). At `Send` seconds into the ride the server sends them, all in one
 	  teleport, to a reserved server made for this group.
 	- What goes with them (`Data`, the teleport's data): who's in the group in the order they
-	  stepped in (the first hosted) and the difficulty. A teleport's data passes through each
-	  player's device, so the group's server checks it (`decode`) and trusts nothing in it that
-	  matters: it only says whom to wait for.
+	  stepped in (the first hosted), the difficulty, and the car they left in (its bay and the
+	  host's choices), so that after the climb they're back in the same car (L-08e2). A teleport's
+	  data passes through each player's device, so the group's server checks it (`decode`) and
+	  trusts nothing in it that matters: it only says whom to wait for and where they stand.
 	- The group's server lays floor 1 the moment it starts. It waits for the whole group, or
 	  `Wait` seconds after the first one arrives (`ready`), then stands them in floor 1's car
 	  `Since` seconds into its ride, the shaft still sliding past, and their screens open on it.
@@ -42,7 +43,11 @@ Trip.ArrivedAttribute = "TripArrived"
 Trip.DevAttribute = "DevTrip"
 
 -- The data's shape version: a server reading data it doesn't know takes nobody's word for a group.
-Trip.Version = 1
+-- 2 added the car (L-08e2); 1 still reads, as the first bay with Open and six (a lobby server
+-- still running the old version sends it while an update rolls out).
+Trip.Version = 2
+-- The lobby's bays, numbered 1 to this from left to right (Lobby.Specs.Bays has one per car).
+Trip.Bays = 6
 
 -- Seconds into the ride that the screens start to fade to black: the slam has rung out and the
 -- car has started to move (Ride.Wait), so the trip feels like the ride going on.
@@ -78,11 +83,25 @@ export type Data = {
 	v: number,
 	group: { number }, -- UserIds in the order they stepped in; the first hosted
 	difficulty: string,
+	bay: number, -- the lobby car they left in, 1 to `Bays`
+	friends: boolean, -- the host's Friends only, as it left
+	players: number, -- the host's player count, as it left
 }
 
--- The data a car's riders take: `group` (UserIds, the host first) and the host's difficulty.
-function Trip.encode(group: { number }, difficulty: string): Data
-	return { v = Trip.Version, group = table.clone(group), difficulty = difficulty }
+-- The car a group left in, as the data carries it: its bay and the host's choices.
+export type Car = { bay: number, friends: boolean, players: number }
+
+-- The data a car's riders take: `group` (UserIds, the host first), the host's difficulty and the
+-- car they left in (nil: the first bay, Open and six).
+function Trip.encode(group: { number }, difficulty: string, car: Car?): Data
+	return {
+		v = Trip.Version,
+		group = table.clone(group),
+		difficulty = difficulty,
+		bay = if car then car.bay else 1,
+		friends = if car then car.friends else false,
+		players = if car then car.players else Boarding.Capacity,
+	}
 end
 
 -- Whether `n` is a UserId: a whole number above zero.
@@ -90,15 +109,21 @@ local function isId(n: unknown): boolean
 	return type(n) == "number" and n == n and n >= 1 and n < 2 ^ 53 and n % 1 == 0
 end
 
--- The data a player arrived with, checked: nil unless it's ours, at our version, with a group of
--- 1 to `Boarding.Capacity` distinct UserIds. An unknown difficulty reads as the first one.
+-- Whether `n` is a whole number from `low` to `high`.
+local function whole(n: unknown, low: number, high: number): boolean
+	return type(n) == "number" and n == n and n % 1 == 0 and n >= low and n <= high
+end
+
+-- The data a player arrived with, checked: nil unless it's ours, at our version (or 1), with a
+-- group of 1 to `Boarding.Capacity` distinct UserIds. An unknown difficulty reads as the first
+-- one; a car that doesn't read (or version 1's, which has none) as the first bay, Open and six.
 -- `data`: Player:GetJoinData().TeleportData, which passed through the player's device.
 function Trip.decode(data: unknown): Data?
 	if type(data) ~= "table" then
 		return nil
 	end
 	local t = data :: { [unknown]: unknown }
-	if t.v ~= Trip.Version or type(t.group) ~= "table" then
+	if (t.v ~= Trip.Version and t.v ~= 1) or type(t.group) ~= "table" then
 		return nil
 	end
 	local raw = t.group :: { [unknown]: unknown }
@@ -125,7 +150,16 @@ function Trip.decode(data: unknown): Data?
 	if type(t.difficulty) == "string" and table.find(Boarding.Difficulties, t.difficulty) then
 		difficulty = t.difficulty :: string
 	end
-	return { v = Trip.Version, group = group, difficulty = difficulty }
+	local car: Car = { bay = 1, friends = false, players = Boarding.Capacity }
+	if
+		whole(t.bay, 1, Trip.Bays)
+		and type(t.friends) == "boolean"
+		and whole(t.players, 1, Boarding.Capacity)
+	then
+		car =
+			{ bay = t.bay :: number, friends = t.friends :: boolean, players = t.players :: number }
+	end
+	return Trip.encode(group, difficulty, car)
 end
 
 -- Whether the group's car goes at server time `t`: everyone in `group` is in `arrived` (UserIds),

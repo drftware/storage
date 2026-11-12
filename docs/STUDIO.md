@@ -1586,3 +1586,22 @@ verified: a doc page, Studio, or "untested".
   3, 6)`), and from the Client `ReplicatedStorage.Remotes.CarPanel:FireServer(car, "Go", true)`
   as its host. Clear `DevTrip` before saving. On "Arrive" the arrival is over about a second
   after the client starts: probe from the server, not by waiting for the cover.
+- **The game is first person, and the body turns to the camera** (L-08e2, Nov 12): Studio's
+  `CameraMode` is `LockFirstPerson`. A new character keeps the camera's old look, and within a
+  frame or two the client turns the body to face it, so "turn the camera the way the body faces"
+  turns it the way the camera already looked. Turn it to where the server stood you (a value the
+  server writes, `ClimbEnd.StoodAttribute`), after the camera's own update.
+- **The lobby streams out during a climb** (L-08e2): back in a lobby car, a screen lifted at once
+  opens on a dark, half-there car for a few seconds. `RequestStreamAroundAsync` at each player's
+  new spot before the screens lift fixes it (ClimbEnds' `load`).
+- **Testing back in your car from the MCP** (L-08e2): end a climb as a wipe by setting the
+  player's `Kept` attribute on the Server (nobody climbing ends it about a second later), then
+  clear it by hand after the end (KeptPlayers lets out only those it kept); press Again with
+  `Remotes.Again:FireServer()` from the Client. Each MCP call takes several seconds, so a 20 s
+  count runs out between a few of them: press Again and probe the camera and car in one Client
+  call, and capture straight after it. A lobby car's results board can be faked on any car by
+  setting its `Results` attribute on the Server (`"Top|3|402|<id>:Out:3,1:Kept:2"`).
+- **A lobby car's lamp is dim in its bay** (seen L-08e2, cause not found): car 3's lamp
+  `PointLight` read Brightness 0.14 of `Elevator.Lamp`'s 1.2 on the client while its count ran,
+  so in first person its walls read black. ElevatorView's `lampAt`/`showLamp` set it; the riding
+  car in a climb is lit.

@@ -167,8 +167,8 @@ look for every button, the owner's "prompt updates"), L-19b (done: a door's butt
 hand goes), L-20a (done: the inventory wheel, three slots), L-17 (done: every button on a
 phone at once), L-16d (done: your body placed each drawn frame), L-08e1a (done: the front
 office built), L-08e1b1 (done: step in and the count), L-08e1b2 (done: the host's panel),
-L-08e1c (done: a server of the group's own), then the rest of the lobby, L-08e2 to L-08e4 (GDD
-"The lobby", D-112), which no longer waits on L-09a (only the owner can run that): split L-08e4
+L-08e1c (done: a server of the group's own), L-08e2 (done: back in your car), then the rest of
+the lobby, L-08e3 and L-08e4 (GDD "The lobby", D-112), which no longer waits on L-09a (only the owner can run that): split L-08e4
 into sessions that each end green (the cart's art script first, then the ride). With sessions left: HANDOFF's "Seen" fixes, L-18, then honing what was built
 tonight (the polish list). Hard limits: no new keepers, no paid items or store (Phase 2 waits on
 Brix's purchases and profiles), proven mechanics only, never edit Brix.
@@ -1125,11 +1125,24 @@ Brix's purchases and profiles), proven mechanics only, never edit Brix.
         still ClimbEnds' "Again" into a fresh floor 1 there: "back in your car" happens on that
         server (its front office is laid, its cars not opened: open the group's car, or send them
         back to a lobby; the GDD says the same car with the same friends).
-    - [ ] **L-08e2 Back in your car.** The moment: the climb ends and you're standing in the same
-      car with the same friends, results on the wall, the count running for another go. Anyone
-      can step out and back in. Replaces `ClimbEnds.go`'s fresh floor 1.
+    - [x] **L-08e2 Back in your car. Done Nov 12 (D-123).** The moment: the climb ends and you're
+      standing in the same car with the same friends, results on the wall, the count running for
+      another go. Again (the end's one button, D-106) now leads there: the climb's group gets
+      characters in the car they left from, in their old order with the host's choices, facing
+      its back wall (`Boarding.back`, `backSpot`), the car streamed in first; the results board
+      goes up (CarResults: "Kept"/"Made it", floor and time, each friend's photo and floor) and
+      the full 20 s count runs; the black lifts with the count's chime, the camera turned to
+      where the server stood you. Anyone can step out and back in; the board goes as the car
+      leaves. On a group's own server the trip's data (`Trip.Version` 2) names the car, its cars
+      open only once the group is home (`Trips:home`), and their next climb rides up on that
+      server. The test hall's climb still goes to a fresh floor 1. Verified in Studio, one
+      player, on Studio's own server and a group's own ("Arrive"); place saved as version 35.
+      Lune: trip 91, boarding 124, climbend 2944 checks. Friends, live servers and a phone are
+      the owner's (`OWNER.md`).
     - [ ] **L-08e3 Invite and the dials.** An Invite button on the car's panel (Roblox's invite,
-      with a share link: Audience Expansion pays on those). A dial over each car: who's aboard,
+      with a share link: Audience Expansion pays on those). After a climb the group is on its own
+      server (D-123), which a friend's invite can't reach: verify what an invite from there does
+      (it should bring the friend to a public lobby, or the button waits for the next public one). A dial over each car: who's aboard,
       or which floor a climbing party has reached (GDD). A player alone is pointed to the
       fullest open car.
     - [ ] **L-08e4 The cart ride** (owner: "definitely"). The moment: you kick a platform cart
@@ -1678,6 +1691,9 @@ Atmosphere effects wait until the loop is solid (owner, Nov 7); the haze stays a
   a lifted door a second's grace before it can be shut from the hall (L-02; nobody can shut it
   while it rises).
 
+- **The results board** (L-08e2): a soft pin tap as each photo lands on it, the board's paper
+  look (a cork or a painted steel board with the Everkeep mark), your own card lit warm a beat
+  after the rest, and the car's lamp (dim in its bay: HANDOFF's Seen) once it lights the walls.
 - **Stepping into a lobby car** (L-08e1b1): a soft clank of the car's steel floor under your
   first step in, heard by those near, so joining a group sounds as well as chimes; and an L lit
   over each car's gate on the lobby side (today the floor readout faces into the car).

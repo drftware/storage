@@ -5,7 +5,7 @@
 -- would open; an escape's ride plays out untouched until the cable's second knock and is cleared
 -- before the car could open on the floor again; the screen's parts come in order and settle; the
 -- next climb starts when everyone's in or the wait runs out; friends stand apart in its lobby; the
--- values the server writes read back.
+-- values the server writes read back, the results on a car's back wall too (L-08e2).
 local Caught = require("../src/shared/Caught")
 local Climb = require("../src/shared/Climb")
 local ClimbEnd = require("../src/shared/ClimbEnd")
@@ -183,6 +183,37 @@ local fate, lostOn = ClimbEnd.decodeFate(ClimbEnd.encodeFate("Left", 2))
 ok(fate == "Left" and lostOn == 2, "a fate reads back")
 ok(ClimbEnd.decodeFate("Gone|2") == nil, "a fate of no known kind")
 ok(ClimbEnd.decodeFate(7) == nil, "a fate that isn't one")
+
+-- the results on a car's back wall (L-08e2)
+do
+	local value = ClimbEnd.encodeResults("Kept", 2, 402.9, {
+		{ userId = 30, fate = "Kept", floor = 2 },
+		{ userId = 10, fate = "Left", floor = 1 },
+		{ userId = 20, fate = "Out", floor = 2 },
+	})
+	local r = ClimbEnd.decodeResults(value)
+	ok(r ~= nil, "a board reads back")
+	if r then
+		ok(r.how == "Kept" and r.floor == 2 and r.seconds == 402, "how, the floor and the time")
+		ok(#r.rows == 3, "every friend")
+		ok(r.rows[1].userId == 30 and r.rows[2].userId == 10, "in the group's order")
+		ok(r.rows[2].fate == "Left" and r.rows[2].floor == 1, "a friend's fate and floor")
+	end
+	local none = ClimbEnd.decodeResults(ClimbEnd.encodeResults("Top", 3, 90, {}))
+	ok(none ~= nil and none.how == "Top" and #none.rows == 0, "a board with nobody on it")
+	ok(ClimbEnd.decodeResults(nil) == nil, "no board")
+	ok(ClimbEnd.decodeResults("Won|3|4|") == nil, "a board of no known kind")
+	local odd = ClimbEnd.decodeResults("Top|3|90|5:Out:3,x:Out:3,6:Gone:2,7:Kept:1")
+	ok(odd ~= nil and #odd.rows == 2, "rows that don't read are skipped")
+	local many: { ClimbEnd.Result } = {}
+	for i = 1, 9 do
+		table.insert(many, { userId = i, fate = "Out", floor = 3 })
+	end
+	local capped = ClimbEnd.decodeResults(ClimbEnd.encodeResults("Top", 3, 90, many))
+	ok(capped ~= nil and #capped.rows == ClimbEnd.BoardMost, "at most a car's worth")
+	local forged = ClimbEnd.decodeResults("Top|3|90|" .. string.rep("1:Out:3,", 20))
+	ok(forged ~= nil and #forged.rows == ClimbEnd.BoardMost, "a long value is capped too")
+end
 
 -- the words stay few
 for key, text in ClimbEnd.Copy do

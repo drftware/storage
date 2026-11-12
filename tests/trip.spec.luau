@@ -5,6 +5,8 @@
 -- for a group; an unknown difficulty reads as the first; the group's car waits for everyone or
 -- `Wait` after the first; only a busy server or a blip is tried again, and only `Tries` times;
 -- the screens are black before the send and open mid-ride; six spots in the car, all different.
+-- The car they left in (L-08e2) goes along; version 1 and a car that doesn't read come back as
+-- the first bay, Open and six.
 local Boarding = require("../src/shared/Lobby/Boarding")
 local Ride = require("../src/shared/Elevator/Ride")
 local Trip = require("../src/shared/Lobby/Trip")
@@ -101,6 +103,56 @@ do
 	)
 	local none = Trip.decode({ v = Trip.Version, group = { 1 } })
 	ok(none ~= nil and none.difficulty == Boarding.Difficulties[1], "no difficulty is the first")
+end
+
+-- the car they left in (L-08e2): its bay and the host's choices go along and come back
+do
+	local car =
+		Trip.decode(Trip.encode({ 4, 9 }, "Normal", { bay = 5, friends = true, players = 3 }))
+	ok(car ~= nil, "data with a car reads back")
+	if car then
+		ok(car.bay == 5, "the bay")
+		ok(car.friends == true, "Friends only")
+		ok(car.players == 3, "the player count")
+	end
+	local plain = Trip.encode({ 4 }, "Normal")
+	ok(
+		plain.bay == 1 and plain.friends == false and plain.players == Boarding.Capacity,
+		"no car given: the first bay, Open and six"
+	)
+	local old = Trip.decode({ v = 1, group = { 4, 9 }, difficulty = "Normal" })
+	ok(old ~= nil, "version 1 still reads")
+	if old then
+		ok(old.group[1] == 4 and old.group[2] == 9, "version 1's group")
+		ok(
+			old.bay == 1 and old.friends == false and old.players == Boarding.Capacity,
+			"version 1: the first bay, Open and six"
+		)
+		ok(old.v == Trip.Version, "read as today's version")
+	end
+	local function carOf(bay: unknown, friends: unknown, players: unknown): Trip.Data?
+		return Trip.decode({
+			v = Trip.Version,
+			group = { 4 },
+			difficulty = "Normal",
+			bay = bay,
+			friends = friends,
+			players = players,
+		})
+	end
+	for _, bad in { { 0, false, 6 }, { 7, false, 6 }, { 2.5, false, 6 }, { "2", false, 6 } } do
+		local d = carOf(bad[1], bad[2], bad[3])
+		ok(d ~= nil and d.bay == 1, `a bay that doesn't read ({bad[1]}) is the first`)
+	end
+	for _, bad in { { 3, "yes", 6 }, { 3, false, 0 }, { 3, false, 7 }, { 3, false, 0 / 0 } } do
+		local d = carOf(bad[1], bad[2], bad[3])
+		ok(
+			d ~= nil and d.bay == 1 and d.friends == false and d.players == Boarding.Capacity,
+			`choices that don't read ({bad[2]}, {bad[3]}): the first bay, Open and six`
+		)
+	end
+	local edge = carOf(Trip.Bays, false, 1)
+	ok(edge ~= nil and edge.bay == Trip.Bays and edge.players == 1, "the last bay, one player")
 end
 
 -- the group's car goes once everyone's here, or `Wait` after the first

@@ -11,6 +11,7 @@ local BangMarks = require(script.BangMarks)
 local BehindDoors = require(script.BehindDoors)
 local ButtonView = require(script.ButtonView)
 local CarPanel = require(script.CarPanel)
+local CarResults = require(script.CarResults)
 local CameraShake = require(script.CameraShake)
 local CaughtView = require(script.CaughtView)
 local KeptWrapOn = require(script.KeptWrapOn)
@@ -106,6 +107,8 @@ local host = Brix.Host.new({
 		{ slot = "lobbyView", system = LobbyView.new() },
 		-- a lobby car's trip to the group's own server: the black, and the climb opening out of it
 		{ slot = "tripView", system = TripView.new() },
+		-- back in your car after the climb (L-08e2): the results on its back wall
+		{ slot = "carResults", system = CarResults.new() },
 	},
 })
 host:start()

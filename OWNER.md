@@ -9,13 +9,44 @@ nowhere else.
 - [ ] **Playing on your phone** (D-109): with Rojo connected, use File > Publish to Roblox (Save
   alone doesn't change what live servers run), then play it from the Creator Hub on the phone.
   You load in at the lobby, facing its six cars; step into one and its count takes you to floor 1
-  of a fresh climb, on a server of your group's own (L-08e1c). The test hall is Studio only now
+  of a fresh climb, on a server of your group's own (L-08e1c); Again brings you back to your car
+  there (L-08e2). The test hall is Studio only now
   (L-08e1b1). Still the baseplate? Shut its servers down from the Creator Hub and join again, and
   check its supported devices include Phone.
 - [ ] **Once: restart `rojo serve`** (stop it, run it again, click Connect), then save: L-08e1c
   added a top-level folder (ReplicatedFirst's `TripCover`, which keeps the black up as you
   arrive on your group's server) and a running `rojo serve` only reads those at start. Without
   it the trip works, but the front office may flash for a moment as you arrive.
+
+## Now: judge L-08e2, back in your car (built Nov 12, D-123)
+
+At the end of a climb, "Again" brings your group back standing in the car you left from, in your
+old order with the host's choices kept, facing the results on its back wall ("Kept" or "Made it",
+the floor and time, everyone's photo with the floor they were lost on), and the count runs 20 s
+for another go. Anyone can step out and back in; the results stay on the wall until the car next
+leaves. On your group's own server its six cars open at that moment, and your next climb rides
+up from there. Verified in Studio, one player: on Studio's own server (ride up from car 3, a wipe,
+Again, back in car 3, out and in, ride again) and on a group's own server (`DevTrip` "Arrive":
+back in car 1, ride again on that server); a four-friend "Made it" board faked on a car to judge
+its look. The place was saved as version 35 so Studio's test teleport ("Send") runs this code.
+- [ ] **Alone, live:** join, ride up, lose (or reach floor 3), press Again. The black lifts on the
+  car's back wall: your photo, the floor, the time; the count pops in with the chime. Step out,
+  back in, let it go: it rides up to a new floor 1 on the same server.
+- [ ] **With friends:** two or three in one car, ride up, end it, Again. You're all back in the same
+  car, the host in front, nobody else from the lobby with you, the same Friends only and player
+  count on the panel. Is 20 s the right time to take in the wall?
+- [ ] **Your phone:** the board from the front row and from the back row (two rows of three: the
+  host's row nearer the wall) reads at phone size; the photos and names aren't too small.
+- [ ] **Known:** the lobby car's lamp burns very dim in its bay (about a tenth of its brightness,
+  cause not found yet), so the car's walls read black round the lit board. It was so before
+  L-08e2 too; it's in HANDOFF's Seen list.
+- [ ] **Decide (defaults in place):** (1) Again stays as the one button and now leads back to your
+  car ("Back in 10" counts down for a friend who hasn't pressed), so there's one press, then the
+  car's own count; the other way is no button, everyone back in the car once the results have
+  shown. (2) You come back facing the results, so you turn round to step out. (3) After the climb
+  your group stays on its own server (its own lobby, the six cars, nobody else): strangers can't
+  join you there; friends who join later land in the public lobby. Sending the group back to a
+  public lobby instead is a choice for L-08e3's Invite.
 
 ## Now: judge L-08e1c, a server of the group's own (built Nov 12, D-122)
 
@@ -36,8 +67,8 @@ yours: Publish first (Save alone doesn't change live servers).
   group, sent at the same time, gets its own server (you never see them).
 - [ ] **Someone stays behind:** a third player in the lobby (not in the car) keeps the lobby and
   its cars, and can take another car to a server of their own.
-- [ ] **The climb runs on it:** play floor 1 to the code and ride up; at the end, "Again" starts
-  a fresh floor 1 on the same server (back in your car is L-08e2).
+- [ ] **The climb runs on it:** play floor 1 to the code and ride up; at the end, "Again" puts you
+  back in your car on the same server (L-08e2, above).
 - [ ] **A failed trip** (rare live; Studio's `DevTrip` = "Fail" shows it): back in the car, the
   black lifting, "Teleport failed" in red, the count running again with the same host.
 - [ ] **Your phone:** the black comes down evenly, "Going up" readable, the arrival not a long
@@ -107,9 +138,9 @@ climb (shots `docs/art/L-08e1b1-*.jpg`). Friends, a full car and a real phone ar
 - [ ] **A full car (six players):** the count drops to 5; a seventh is set down outside the gate
   with "Car full" (L-08e1b2).
 - [ ] **Your phone:** the count in the top bar and the keypad's readout from the room's middle.
-- [ ] **Known, until L-08e1c and L-08e2:** everyone on the server counts in the climb's end, even
-  someone who stayed in the lobby (so a loss can't come while they're there), and "Again" puts
-  everyone on floor 1, not back in the lobby.
+- [ ] **Known, where a climb rides up on the lobby's own server (Studio, or after failed trips):**
+  everyone on the server counts in the climb's end, even someone who stayed in the lobby. Since
+  L-08e2 "Again" puts the climb's group back in their car and anyone else at the front door.
 - [ ] **Decide (defaults in place):** the keypad beside each car stays, its readout the count
   (the host's panel is a button inside, L-08e1b2); 20 s and 5 s (`Boarding`); the car back
   in its bay 12 s after it left; a held count starting again from 20 once a climb ends.
@@ -373,10 +404,9 @@ sounds, how it feels.
   was lost on, "Floor N · time", then the warm "Again". Does it feel like a loss? Too long or
   too short? Are the far doors right for "the building's sound"?
 - [ ] **Two players, Again.** One presses: on both screens their photo should warm up with a tick,
-  their button reads "Waiting", and "Going up in 10" counts down. The other presses: it goes at
-  once with the elevator's chime and "Going up", a moment of black, then you're side by side in a
-  new floor 1's lobby as the black lifts with the bell and "Floor 1". Is one press obvious? Is
-  10 s right?
+  their button reads "Waiting", and "Back in 10" counts down. The other presses: it goes at
+  once with the elevator's chime and "Going back", a moment of black, then you're back in your
+  lobby car as the black lifts (L-08e2). Is one press obvious? Is 10 s right?
 - [ ] **Two players, the top.** Ride up from floor 3 together, or one rides and one stays: at the
   cable's second knock the light floods in, the motor's gone, the bell rings clear, then "Made
   it" in warm light, riders' photos in colour and the left one's greyed. Does it feel like an
@@ -384,13 +414,13 @@ sounds, how it feels.
 - [ ] **On a phone**: the screen and the button at phone size; tap Again.
 - [ ] **Decide, defaults in place** (D-106): (1) **The top is floor 3** for now, so a run is short
   enough to replay (Phase 2's top floor is 10, Unit 0's); say if it should be higher. (2)
-  **Where Again leads**: straight into a fresh building's floor 1 lobby, everyone side by side.
-  Your lobby plan replaces this (one function, `ClimbEnds.go`). (3) **Again waits** for
+  **Where Again leads**: back in your lobby car (L-08e2; the test hall's climb in Studio still
+  goes to a fresh floor 1). (3) **Again waits** for
   everyone, or 10 s after the first press. (4) **The Missing board** (GDD: your photo goes up in
   the lobby with the floor you were kept on): the results show the same photos and floors; the
   board waits for your lobby plan. (5) **A wipe ends it** even though a watcher could otherwise
   Cut Free back in: with nobody left climbing there's no floor to cut back into. (6) The words:
-  "Kept", "Made it", "Floor 2 · 6:42", "Again", "Waiting", "Going up in 10", "Floor 1".
+  "Kept", "Made it", "Floor 2 · 6:42", "Again", "Waiting", "Back in 10", "Going back".
 
 ## Now: judge L-08c, left behind (built Nov 11)
 

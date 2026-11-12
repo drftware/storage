@@ -15,11 +15,13 @@
 	  stops and its floors go (Climbs' `finish`), the watchers are let go of (Watching's
 	  `release`), and every character goes, so nothing can reach anyone behind the results.
 	- "Again" (`Remotes.Again`, checked: the results are up, the player hasn't pressed, the rate):
-	  marks them in (`ClimbEnd.InAttribute`). The next climb starts once everyone's in, or
-	  `ClimbEnd.AgainWait` after the first press (`ClimbEnd.StartAttribute`, so every screen counts
-	  down): floor 1 of a fresh building, everyone given a character side by side in its lobby
-	  (`go`, the one place the owner's lobby changes), then the end is cleared and every screen
-	  lifts onto it.
+	  marks them in (`ClimbEnd.InAttribute`). Once everyone's in, or `ClimbEnd.AgainWait` after the
+	  first press (`ClimbEnd.StartAttribute`, so every screen counts down), `go`: back in the lobby
+	  (L-08e2), the climb's group given characters standing in the car they left from, facing its
+	  back wall, the rest at the front office (LobbyCars' `home`); then the results go on the car's
+	  wall and its count runs (`welcome`), the end is cleared and every screen lifts onto the car.
+	  A climb no lobby car started (the test hall's, in Studio) goes on to floor 1 of a fresh
+	  building instead, everyone side by side in its lobby.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -28,11 +30,13 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Climb = require(ReplicatedStorage.Shared.Climb)
 local ClimbEnd = require(ReplicatedStorage.Shared.ClimbEnd)
 local Keypad = require(ReplicatedStorage.Shared.Elevator.Keypad)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Left = require(ReplicatedStorage.Shared.Left)
 local Climbs = require(script.Parent.Climbs)
+local LobbyCars = require(script.Parent.LobbyCars)
 local Slots = require(script.Parent.Slots)
 local Watching = require(script.Parent.Watching)
 
@@ -74,6 +78,7 @@ function ClimbEnds.new(): Brix.System
 	local climbs: Climbs.Climbs? = nil
 	local watching: Watching.Watching? = nil
 	local slots: Slots.Slots? = nil
+	local lobbyCars: LobbyCars.LobbyCars? = nil
 	local remote: RemoteEvent? = nil
 	local connections: { RBXScriptConnection } = {}
 	local topping: Brix.SignalConnection? = nil
@@ -152,9 +157,11 @@ function ClimbEnds.new(): Brix.System
 				ClimbEnd.encodeFate(fate, if l then l.floor else floor)
 			)
 			player:SetAttribute(ClimbEnd.InAttribute, nil)
+			player:SetAttribute(ClimbEnd.StoodAttribute, nil)
 		end
 		startAt = nil
 		Workspace:SetAttribute(ClimbEnd.StartAttribute, nil)
+		Workspace:SetAttribute(ClimbEnd.LobbyAttribute, nil)
 		Workspace:SetAttribute(ClimbEnd.Attribute, ClimbEnd.encode(at, how, floor, at - began))
 		if STUDIO then
 			print(
@@ -170,65 +177,135 @@ function ClimbEnds.new(): Brix.System
 		end)
 	end
 
-	-- The next climb: floor 1 of a fresh building, everyone in its lobby. Where "Again" leads; the
-	-- owner's lobby replaces this (L-08e).
+	-- Gives every player a character at once, `at[player]` where they're stood (else wherever
+	-- they spawn), the `i`th of the rest given `fallback(i)`, and streams the world round them to
+	-- their screen (the lobby streams out during a climb: lifted at once, its car would open dark
+	-- and half there); returns once they're all in or `LOAD_WAIT` has passed. Yields.
+	local function load(at: { [Player]: CFrame }, fallback: ((i: number) -> CFrame)?)
+		local players = Players:GetPlayers()
+		table.sort(players, function(a: Player, b: Player)
+			return a.UserId < b.UserId
+		end)
+		local loading = #players
+		local rest = 0
+		for _, player in players do
+			local where = at[player]
+			if not where and fallback then
+				rest += 1
+				where = fallback(rest)
+			end
+			task.spawn(function()
+				local ok, err = pcall(function()
+					player:LoadCharacter()
+				end)
+				local character = player.Character
+				if ok and character and player.Parent then
+					if where then
+						character:PivotTo(where)
+						player:SetAttribute(ClimbEnd.StoodAttribute, where)
+					end
+					local around = character:GetPivot().Position
+					local streamed, why = pcall(function()
+						player:RequestStreamAroundAsync(around, Climb.StreamWait)
+					end)
+					if not streamed and player.Parent then
+						warn(`ClimbEnds: couldn't stream {player.Name}'s spot to them: {why}`)
+					end
+				elseif not ok and player.Parent then
+					warn(`ClimbEnds: couldn't give {player.Name} a character: {err}`)
+				end
+				loading -= 1
+			end)
+		end
+		local waited = 0
+		while loading > 0 and waited < LOAD_WAIT do
+			waited += task.wait()
+		end
+	end
+
+	-- The end is over: the next climb (or the lobby) is under everyone, so every screen lifts.
+	local function cleared(after: Phase)
+		for _, player in Players:GetPlayers() do
+			player:SetAttribute(ClimbEnd.FateAttribute, nil)
+			player:SetAttribute(ClimbEnd.InAttribute, nil)
+		end
+		table.clear(lost)
+		startAt, overSince = nil, nil
+		Workspace:SetAttribute(ClimbEnd.StartAttribute, nil)
+		Workspace:SetAttribute(ClimbEnd.Attribute, nil)
+		phase = after
+	end
+
+	-- Back in the lobby (L-08e2): the climb's group stood in the car they left from (`group`,
+	-- LobbyCars' `home`), everyone else at the front office; then the results on the car's wall
+	-- and its count running.
+	local function backInLobby(group: { LobbyCars.Back })
+		local _, how, floor, seconds = ClimbEnd.decode(Workspace:GetAttribute(ClimbEnd.Attribute))
+		local rows: { ClimbEnd.Result } = {}
+		local at: { [Player]: CFrame } = {}
+		for _, back in group do
+			at[back.player] = back.at
+			local fate, on = ClimbEnd.decodeFate(back.player:GetAttribute(ClimbEnd.FateAttribute))
+			if fate then
+				local row: ClimbEnd.Result =
+					{ userId = back.player.UserId, fate = fate :: ClimbEnd.Fate, floor = on }
+				table.insert(rows, row)
+			end
+		end
+		Workspace:SetAttribute(ClimbEnd.LobbyAttribute, true)
+		load(at, nil)
+		local l = lobbyCars
+		if l then
+			l:welcome(ClimbEnd.encodeResults(how :: ClimbEnd.How, floor, seconds, rows))
+		end
+		cleared("Idle")
+		if STUDIO then
+			print(`ClimbEnds: back in the lobby, {#group} in their car`)
+		end
+	end
+
+	-- Floor 1 of a fresh building, everyone side by side in its lobby: where Again leads from a
+	-- climb no lobby car started (the test hall's, in Studio).
+	local function freshFloor()
+		local c = climbs
+		local o = c and c:last()
+		local on = nil
+		local seed = Random.new():NextInteger(1, 2 ^ 31 - 1)
+		if c and o then
+			on = c:begin({ seed = seed, number = 1, origin = o.origin, parent = o.parent })
+		end
+		if not on then
+			warn("ClimbEnds: the next climb couldn't be laid; the results stay up")
+			phase = "Results"
+			startAt = nil
+			Workspace:SetAttribute(ClimbEnd.StartAttribute, nil)
+			for _, player in Players:GetPlayers() do
+				player:SetAttribute(ClimbEnd.InAttribute, nil)
+			end
+			return
+		end
+		local where = on.origin * Climbs.Arrival
+		load({}, function(i: number): CFrame
+			local x, z = ClimbEnd.spot(i)
+			return where * CFrame.new(x, 0, z)
+		end)
+		cleared("Climbing")
+		if STUDIO then
+			print(`ClimbEnds: again, from floor 1 (seed {seed})`)
+		end
+	end
+
+	-- Where "Again" leads: back in the lobby's car the climb started from, else a fresh floor 1.
 	local function go()
 		phase = "Starting"
 		Workspace:SetAttribute(ClimbEnd.StartAttribute, now())
 		task.spawn(function()
-			local c = climbs
-			local o = c and c:last()
-			local on = nil
-			local seed = Random.new():NextInteger(1, 2 ^ 31 - 1)
-			if c and o then
-				on = c:begin({ seed = seed, number = 1, origin = o.origin, parent = o.parent })
-			end
-			if not on then
-				warn("ClimbEnds: the next climb couldn't be laid; the results stay up")
-				phase = "Results"
-				startAt = nil
-				Workspace:SetAttribute(ClimbEnd.StartAttribute, nil)
-				for _, player in Players:GetPlayers() do
-					player:SetAttribute(ClimbEnd.InAttribute, nil)
-				end
-				return
-			end
-			local where = on.origin * Climbs.Arrival
-			local players = Players:GetPlayers()
-			table.sort(players, function(a: Player, b: Player)
-				return a.UserId < b.UserId
-			end)
-			local loading = #players
-			for i, player in players do
-				task.spawn(function()
-					local ok, err = pcall(function()
-						player:LoadCharacter()
-					end)
-					local character = player.Character
-					if ok and character and player.Parent then
-						local x, z = ClimbEnd.spot(i)
-						character:PivotTo(where * CFrame.new(x, 0, z))
-					elseif not ok and player.Parent then
-						warn(`ClimbEnds: couldn't give {player.Name} a character: {err}`)
-					end
-					loading -= 1
-				end)
-			end
-			local waited = 0
-			while loading > 0 and waited < LOAD_WAIT do
-				waited += task.wait()
-			end
-			for _, player in Players:GetPlayers() do
-				player:SetAttribute(ClimbEnd.FateAttribute, nil)
-				player:SetAttribute(ClimbEnd.InAttribute, nil)
-			end
-			table.clear(lost)
-			startAt, overSince = nil, nil
-			Workspace:SetAttribute(ClimbEnd.StartAttribute, nil)
-			Workspace:SetAttribute(ClimbEnd.Attribute, nil)
-			phase = "Climbing"
-			if STUDIO then
-				print(`ClimbEnds: again, from floor 1 (seed {seed})`)
+			local l = lobbyCars
+			local group = l and l:home()
+			if group then
+				backInLobby(group)
+			else
+				freshFloor()
 			end
 		end)
 	end
@@ -262,6 +339,8 @@ function ClimbEnds.new(): Brix.System
 		climbs = c
 		watching = (registry:get("watching") :: any) :: Watching.Watching -- any: as above
 		slots = (registry:get("slots") :: any) :: Slots.Slots -- any: as above
+		-- any: as above; LobbyCars starts after this, but every slot is filled before any starts
+		lobbyCars = (registry:get("lobbyCars") :: any) :: LobbyCars.LobbyCars
 		topping = c.topped:connect(function(t: Climbs.Topped)
 			endClimb("Top", t.from.number, t.at)
 		end)
