@@ -172,6 +172,13 @@ the lobby, L-08e3 and L-08e4 (GDD "The lobby", D-112), which no longer waits on 
 into sessions that each end green (the cart's art script first, then the ride). With sessions left: HANDOFF's "Seen" fixes, L-18, then honing what was built
 tonight (the polish list). Hard limits: no new keepers, no paid items or store (Phase 2 waits on
 Brix's purchases and profiles), proven mechanics only, never edit Brix.
+**The evening run (owner, Nov 12):** "keep working on the lobby. Run 300k max context sessions
+until 8pm... it needs to be absolutely world-class if we want to monetize this properly."
+Sessions back to back until 8pm, about 300k tokens of context each, still one ticket each, every
+session ending green and committed: L-08e3, then L-08e4 in green-ending pieces, then honing the
+lobby (the polish list). The owner looks at the lobby at 8pm. The two things the owner saw that
+day (the car floors' splotches, the flash through a sawn panel; HANDOFF's Seen) wait: "we can
+fix them later." The overnight run's hard limits hold.
 
 - [x] **L-01 The floor generator**, in three sessions. **L-01a done Nov 7** (D-027): the floor
   as pure data from a seed (`src/shared/Floor.luau`): halls grown from the lobby on a grid of

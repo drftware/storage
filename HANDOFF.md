@@ -39,12 +39,12 @@ known rbxassethash lines.
 **Read first:** ROADMAP L-08e3; GDD "The lobby"; DECISIONS D-121, D-123;
 `src/client/CarPanel.luau`; `src/server/LobbyCars.luau` (`publish`).
 
-## Queue (tonight's run order, owner Nov 11 night; ROADMAP Phase 1's order paragraph)
-1. L-08e3 (next), then L-08e4 (GDD "The lobby", D-112) split into green-ending sessions (the
-   cart's art script first, then the ride).
-2. With sessions left: the Seen fixes below, L-18, then honing tonight's work (ROADMAP polish).
-   Never new keepers, no store or paid items, proven mechanics only, never edit Brix.
-3. Seen: a lobby car's lamp burns at 0.14 of 1.2 in its bay on the client (ElevatorView's
+## Queue (the evening run, owner Nov 12: lobby sessions until 8pm; ROADMAP Phase 1's order paragraph)
+1. L-08e3 (next), then L-08e4 (GDD "The lobby", D-112) in green-ending sessions, art first.
+2. Time left before 8pm: hone the lobby (ROADMAP polish); Seen fixes wait. No new keepers.
+3. Seen (owner, Nov 12, "fix them later"): lobby car floors go splotchy as the camera moves
+   inside; a sawn side or top flashes see-through as its panel drops (the swap to the holed
+   model? `TopHole.saw`, `CrawlHole.saw`), must be seamless. Older: a lobby car's lamp burns at 0.14 of 1.2 in its bay on the client (ElevatorView's
    `lampAt`/`showLamp`; cause not found), so inside a car its walls read black round the results
    board; the elevator's gate cache (`posings`, Elevator/init.luau) is a weak table keyed by the
    car, so it rebuilds after each garbage pass; a ladder stood on a floor when it's cleared
