@@ -48,7 +48,8 @@ on the tops from the MCP".
 ## Queue (the next run's order, from ROADMAP)
 1. L-19a one look for every button in the world; L-19b a door's buttons where your hand goes.
 2. L-20a the inventory wheel and three slots (L-20b, six bought, waits on the store).
-3. L-17 every button on a phone at once; then L-09a the first run with friends, floors 1 to 3.
+3. L-17 every button on a phone at once; L-16d the tops still jitter on a computer (owner, Nov 11
+   night: not now, but before friends); then L-09a the first run with friends, floors 1 to 3.
 4. L-08e (the start, in the lobby) waits for the owner's lobby plan. L-18 optional.
 5. Seen: a ladder stood on a floor when it's cleared should go with it (untested); anyone still
    in the car 6 s after it opens is shut in (`OWNER.md`'s L-08a decision 2); watching a friend

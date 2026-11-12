@@ -22,11 +22,7 @@ your eye only where you pushed (0.4 studs sideways over the whole run, the head'
 a forced press, still hidden under a peek, offered and taken once open; Unit 106's floor sits
 0.03 over the junction's. Studio was in the background (15 frames a second), so the feel is
 yours to judge.
-- [ ] **Crawl the tops on your computer, on a published server** (File > Publish to Roblox
-  first): climb, crawl a long run of tops while sweeping the mouse left and right, round a
-  corner, past a sawn hole. Your view should only turn as you look, and glide where you push.
-  Any snap back a step means the server put you back: say where and how often.
-- [ ] **The same on your phone**: does it still feel like crawling (the pull's boom, the arms
+- [ ] **Crawl the tops on your phone**: does it still feel like crawling (the pull's boom, the arms
   for a friend), or now too floaty? The head's dip and sway can come back up (`VIEW_DIP`,
   `VIEW_SWAY` in LadderView) or the surge (`Tops.Surge`).
 - [ ] **Units on a real floor** (Walk a floor): open a unit at a hall junction and swing the

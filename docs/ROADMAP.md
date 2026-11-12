@@ -157,7 +157,8 @@ around and getting caught doesn't seem like a big deal" (L-06c1, L-06c2). The ro
 L-18 moves after L-16c, optional. A spare session at the end hones floor 2.
 **The owner's Nov 11 play** reordered the end: L-16c first (the tops, "really bad... it needs
 fixed"), then L-16b, then L-19 (the buttons in the world, small and modern) and L-20a (the
-inventory wheel) before L-17 judges every button on a phone at once, then L-09a.
+inventory wheel) before L-17 judges every button on a phone at once, then L-09a. That night the
+tops still jittered on a computer: L-16d, "not now", but before friends play (L-09a).
 
 - [x] **L-01 The floor generator**, in three sessions. **L-01a done Nov 7** (D-027): the floor
   as pure data from a seed (`src/shared/Floor.luau`): halls grown from the lobby on a grid of
@@ -1076,6 +1077,13 @@ inventory wheel) before L-17 judges every button on a phone at once, then L-09a.
     server's put-backs (none in Studio). Verified in Studio: a quarter turn mid-crawl moved the
     eye 0.4 studs sideways in all (the sway), eye speed 4 to 5 studs a second. A live server and
     a phone go to `OWNER.md`.
+  - [ ] **L-16d The tops still jitter on a computer.** Owner, Nov 11 night, after L-16c: "still
+    janky on my computer... it still jitters a lot"; a phone was less the problem. Not now; fix
+    before friends play (L-09a). Leads: L-16c was measured with Studio in the background at 15
+    frames a second, so measure again with it focused at full frame rate (and at 120 or 144 if
+    the screen allows). The body is steered in PreSimulation while the camera draws in
+    PreRender: on a screen faster than physics, frames can repeat a place and then jump, which a
+    phone at 60 hides. Also check a live server for the crawl check's put-backs.
 - [ ] **L-19 The buttons in the world, small and modern** (owner, Nov 11: "It takes up too much
   space on mobile... all prompts in the game need to be revamped to take up less space and look
   modern and world-class"). Every button in the world is Roblox's default prompt today (the dark
