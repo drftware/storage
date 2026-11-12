@@ -165,8 +165,9 @@ needs to be perfect." Up to 15 sessions back to back, about 300k tokens of conte
 ticket each, every session ending green and committed. Order: L-16b2 (done), L-19a (done: one
 look for every button, the owner's "prompt updates"), L-19b (done: a door's buttons where the
 hand goes), L-20a (done: the inventory wheel, three slots), L-17 (done: every button on a
-phone at once), L-16d (done: your body placed each drawn frame),
-then the lobby, L-08e1 to L-08e4 (GDD "The lobby", D-112), which no longer waits on L-09a
+phone at once), L-16d (done: your body placed each drawn frame), L-08e1a (done: the front
+office built), then the rest of the lobby, L-08e1b1, L-08e1b2, L-08e1c, L-08e2 to L-08e4 (GDD
+"The lobby", D-112), which no longer waits on L-09a
 (only the owner can run that): split L-08e1 and L-08e4 into sessions that each end green (the
 room's art script first, then the cars, the joining and the count, then the trip to a server of
 the group's own). With sessions left: HANDOFF's "Seen" fixes, L-18, then honing what was built
@@ -1060,21 +1061,31 @@ Brix's purchases and profiles), proven mechanics only, never edit Brix.
       own: ENG-13, or the stand-in `docs/FRAMEWORK.md` plans while it's unbuilt. A new player is
       in a car within 15 s. No longer waits on L-09a (owner, Nov 11 night). Three sessions, each
       ending green:
-      - [ ] **L-08e1a The front office, built.** `art/lobby/` builds Everkeep's front office at
-        night as `art/unit/` builds the unit: one spec for the numbers, parts on shared texture
-        sets, baked PBR maps, an FBX, a generated `Specs` module and look sheets. The front door
-        and its glass, the counter (dressing), the cart rack (empty: carts are L-08e4) and six car
-        bays along one wall, each sized for the climb's own car and gate (`art/elevator/`) to
-        stand in. Imported, saved in the place and laid out by the server from `Specs`, reached
-        for now by a dev post in the test hall (the test hall stays the way in until L-08e1b).
-        Judged at phone size: you can read the room, the six bays and the way in at a glance.
-      - [ ] **L-08e1b Six cars and the count.** The climb's car and gate in each bay (the
-        Elevator's art and gate, reused). Step in to join; the first in hosts with the car's
-        panel (Open or Friends only, 1 to 6, the difficulty, Go); 20 s from the first step in,
-        5 s once full; at zero the climb's own gate slam, the ride's sway and the black. For now
-        the group's climb starts on this same server (as "Walk a floor" does), so the whole loop
-        plays before the server trip. Players spawn in the lobby facing the cars; the test hall
-        goes back to Studio only once this works (D-109).
+      - [x] **L-08e1a The front office, built. Done Nov 12** (D-119): `art/lobby/` (spec, build,
+        README, six look sheets) builds the room wearing the unit's baked sets and the corridor's
+        deck, joists and walls: 120 by 48, six bays for the climb's own landing along the back
+        wall, the glass front and double door, the counter and shelves, the empty cart rack, a
+        striped zone before each car. Asset 80376262399856, template `Props.Lobby` (saved);
+        `src/shared/Lobby` lays it (paint, numbers, boxes on the shelves, glowing hall lights,
+        two fills, a porch light, the climb's car in each bay, untagged) and the server's
+        `FrontOffice` lays it at `Lobby.Origin` (0, 0, 600). The test hall's "Go to the lobby"
+        post (R) and "Come back" by the lobby's door. Verified in Studio on a computer and the
+        Galaxy A16 (`docs/art/L-08e1a-*.jpg`); a real phone's lights are the owner's.
+        **For L-08e1b1:** the cars' keypads still stand beside them (use or hide them); a teleport
+        keeps the camera's old look, so on load turn the camera to the cars.
+      - [ ] **L-08e1b1 Step in and the count.** The moment: you and a friend run into car 3, the
+        count starts, the last one sprints in at 2 and the gate slams behind them. Each lobby car
+        (already standing in its bay, L-08e1a) is a group: step in to join, step out to leave (a
+        Brix zone over the car, as the climb's `Departure.carBox`). 20 s from the first step in,
+        5 s once six are aboard; the count on the car (its readout and the climb's gate clock,
+        reused). At zero the climb's own gate slam, the ride's sway and the black, and the group's
+        climb starts on this same server (as "Walk a floor" does). Players load in at the lobby's
+        spawn facing the cars (turn the camera too); the test hall goes back to Studio only
+        (D-109) once this works. Decide what the keypad beside each car becomes.
+      - [ ] **L-08e1b2 The host's panel.** The first one in hosts: on the car's panel, Open or
+        Friends only, 1 to 6 players, the difficulty (only one until difficulties exist; say so in
+        `OWNER.md`), and Go at any time, as DOORS' lobby elevators do. Everyone else in the car
+        sees the choices but can't change them.
       - [ ] **L-08e1c A server of the group's own.** At zero the car takes its group to a
         reserved server of their own, the difficulty with them, and the climb starts there: Brix's
         ENG-13 if it has landed at our pin, else the smallest stand-in `docs/FRAMEWORK.md` plans
@@ -1253,6 +1264,13 @@ is an escape, not a haul); nothing builds it until the owner says.
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **The front office's finish (L-08e1a):** the room's middle is bare concrete (the ride needs
+  it, but a floor plan board by the door, a bench, a wet-floor sign or a mop bucket would say
+  "office" before the counter does); padlocks and tape on the shelves and a pegboard of locks
+  (the GDD's shop stock: only boxes now); Everkeep's name in vinyl on the door glass; a lit
+  pylon sign or a lamp post out on the concrete so the night outside has a shape; the bay
+  numbers as backlit sign boxes. All of it after the loop works (owner, Nov 7).
 
 - **The wheel's finish (L-20a):** the button's three dots are plain round Frames; a small drawn
   icon (a fan of three tools' outlines) made the art way would read as "your tools" at a glance.

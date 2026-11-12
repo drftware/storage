@@ -54,6 +54,10 @@
 #                                       alpha), FBX, Specs module, look sheets (the unit sheets
 #                                       need the boxes built; about 3 minutes)
 #   scripts/art.sh keptwrap export      just the wrap's FBX and Specs module
+#   scripts/art.sh lobby                the front office: FBX, Specs module, look sheets (it wears the
+#                                       unit's textures and stands the elevator in its bays: build
+#                                       both first; about 3 minutes)
+#   scripts/art.sh lobby export         just the front office's FBX and Specs module
 set -euo pipefail
 cd "$(dirname "$0")/.."
 if [ "${1:-}" = "elevator" ]; then
@@ -64,6 +68,15 @@ if [ "${1:-}" = "elevator" ]; then
 		echo "== elevator $st"
 		blender -b --factory-startup -P art/elevator/build.py -- --stage "$st" 2>&1 \
 			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|atlas|DONE" || true
+	done
+	exit 0
+fi
+if [ "${1:-}" = "lobby" ]; then
+	shift
+	for st in ${*:-export renders}; do
+		echo "== lobby $st"
+		blender -b --factory-startup -P art/lobby/build.py -- --stage "$st" 2>&1 \
+			| grep -E -i "error|traceback|RENDERED|FBX|SPEC|DONE|assert" || true
 	done
 	exit 0
 fi

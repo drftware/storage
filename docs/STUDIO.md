@@ -263,6 +263,13 @@ verified: a doc page, Studio, or "untested".
   simulated there. One cloned into the corner of a door, its wall and the floor is wedged in all
   three and never moves: start it clear (DoorView's cut padlock starts out and up, colliding after
   0.08 s). It lands in a tenth of a second: sample it as it's made, or it looks frozen.
+- **Same-key prompts close together** (L-08e1a, Play): with "Walk a floor" and "Go far" 3 studs
+  either side of a new post, all on E, an E press went to "Walk a floor". Roblox gives a key to
+  the prompt nearest the middle of the view, so a dev post that stands among others gets its own
+  key (`travelPost`'s `key`, `pad`). Before pressing a key from the MCP, turn the camera to the
+  prompt: in Play the camera is first person and a `PivotTo` keeps its old look, so it may face
+  away. A Client camera `CFrame` set in Play keeps only its look (the position stays at the
+  head): to shoot a view, move the character there.
 
 ## Lighting and captures
 
@@ -412,6 +419,10 @@ verified: a doc page, Studio, or "untested".
   are lit only by the world. Walk a few studs (`character_navigation`) to trip it, point the
   camera, and capture at once. A Scriptable camera set from `execute_luau` is put back to Custom
   by the Assistant after the call; Custom keeps the `CFrame` you set in first person.
+- **Roblox's Glass from a lit room shows black** (L-08e1a, Galaxy A16 and computer): the front
+  office's panes at Glass 0.6 (and 0.8, lighter) showed nothing of the lit concrete outside;
+  SmoothPlastic at 0.82 shows the night sky and the porch light's pool. From outside, Glass showed
+  the room fine.
 
 ## The hall's render cost
 
@@ -800,6 +811,11 @@ verified: a doc page, Studio, or "untested".
 - **A bulb lights through a hole** (L-12b1, Galaxy A16): with a crawl hole between them, a lit
   unit's bulb lights the shut neighbour's floor by the hole, as it should; nothing else of a
   shut unit lights.
+- **An asset updated in place inserts as its new version at once** (L-08e1a): after
+  `upload_art` PATCHed the lobby's FBX (same ID), `insert_asset` brought the new size. And an
+  **Edit** `execute_luau` keeps the first copy of a module it required, as a Client one does: a
+  `prepare` after Rojo synced a change ran the old code. Check the template's values after, or
+  set the changed ones by hand.
 
 ## Tools
 

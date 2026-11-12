@@ -14,6 +14,30 @@ nowhere else.
 - [ ] **Keep the experience private** until the lobby (L-08e) replaces the test hall: every
   server builds the hall now, with its teleport posts, Mannequin post and the code in the log.
 
+## Now: judge L-08e1a, the front office (built Nov 12, D-119)
+
+The lobby's room, built and laid on every server 600 studs from the test hall: Everkeep's front
+office at night, six lit freight cars along the back wall, numbered 1 to 6, their gates folded
+open; the counter and shelves to the left of the door, the cart rack to the right. The cars are
+dressing for now: stepping in does nothing until L-08e1b1. Verified in Studio on a computer and
+the Galaxy A16 view (shots `docs/art/L-08e1a-*.jpg`); a real phone is yours.
+- [ ] **Get there:** at the test hall's spawn, the post right behind you, "Go to the lobby", is
+  on **R** (Y on a pad; the two posts beside it are on E). You land just inside the glass door;
+  turn round to face the cars if the camera looks elsewhere (a teleport keeps its old look). From
+  where you land, on your phone too: do the six cars read as "go there" at a glance? Can you read
+  the numbers?
+- [ ] **Walk it:** the counter and its shelves (boxes on them), the empty cart rack, the striped
+  zone before each car, into a car and out. Run into the walls, counter, shelves and rack: nothing
+  to fall through or snag on. "Come back" by the door (E) returns you to the test hall.
+- [ ] **A real low-end phone:** the frame rate standing at the door looking at all six cars (the
+  dev console's Performance tab). The room's real lights: two fills, a porch light outside, the
+  six cars' lamps.
+- [ ] **Decide (defaults in place):** Everkeep's colours (teal wall panels, the counter's front
+  cream; `Lobby.Paint`); the room's size (120 by 48: room for the cart ride, but bare for now; a
+  floor plan board, a bench and the like are on the polish list); the hall lights' eyes in the
+  office shut (no keeper watches it); the keypad beside each lobby car (L-08e1b1: hide it, or make
+  it the host's panel).
+
 ## Now: judge L-16d, the tops at your computer's full frame rate (built Nov 12, D-118)
 
 The jitter's cause: your body moved only with physics, 60 times a second, while a fast screen

@@ -3189,3 +3189,44 @@ Galaxy A16 in the Device Simulator: no frame held, one steady height, climbing d
 **Not measured here:** a computer drawing above 60. The fix doesn't depend on the rate (each
 frame moves its own time), but the feel at 120 and 144 is the owner's to judge, with a live
 server's lag (`OWNER.md`).
+
+## D-119 The front office: one wide room of the building's own parts (L-08e1a, Nov 12)
+The moment: you load in just inside the glass front door and six lit cars face you across the
+room, numbered 1 to 6, their gates folded open. You know where to go before you've moved.
+
+**One room, 120 by 48, the cars along the back wall.** Six cars need 108 studs of wall at the
+climb's own landing (12.4 hole, 13.8 with its frame) with a post and the car's keypad between
+each; the room's depth (44 from where you land to the cars, under 3 s at a run) leaves the floor
+the cart ride needs (L-08e4) and keeps the GDD's 15-second rule easy. The counter and its shelves
+stand to the left of the door, the cart rack to the right, as the GDD lays them out. The room
+is plainly the same building: the corridor's deck at 14 on joists spanning front to back, its
+walls (painted panels to the cap, R-panel above), the unit's concrete. Joists fall every 6 from
+the middle, so every car's middle and every hall light sits between two.
+
+**It bakes nothing.** Every part wears one of the unit's baked sets, as the corridor kit does:
+the counter, shelves, rack, storefront and plates are steel, so the trim sheet's strips (painted,
+galvanized, diamond, rubber) cover them, and the two painted surfaces (the walls, the counter's
+front) are the Facade set, tinted in game. A new texture set would have cost a bake and a second
+look for what is the same steel. The glass and the floor's stripes are plain parts the game
+colours.
+
+**Everkeep's colours** (default; `OWNER.md`): the walls' panels are the units' teal door colour,
+the counter's front their cream. Teal was chosen over the halls' cream because the cars' insides
+are cream: against teal they stand out from the door on a phone (Studio, A16); against cream
+walls they would melt into them (not tried). The striped zone before each car is the climb's sill yellow,
+so the lobby rehearses the line you have to be over when the gate shuts.
+
+**Light: the cars brightest, few real lights.** The hall lights glow but throw nothing; two wide
+fill lights (no shadows) light the room, each car's own lamp lights the car, and a porch light
+outside lays a sodium pool on the concrete so the glass reads as the way out. Real lights: two
+fills, the porch, six lamps (and each keypad's tiny glow). Rejected: lighting the hall lights for
+real, which costs two lights each (HallLight's tube and fill) for 14 fixtures. The fixtures' eyes
+are shut: no keeper watches the office.
+
+**Plain glass, not Roblox's Glass.** Glass at 0.6 seen from the lit room showed only black in
+Studio's A16 view; faint SmoothPlastic (0.82) shows the night sky and the porch light's pool.
+
+**The cars are dressing until L-08e1b1:** the climb's elevator template, cloned untagged, gate
+folded open, so the climb's keypad, gate clock and ride leave them alone. The test hall's post
+to the lobby takes R, since two E posts stand 3 studs either side and a press goes to whichever
+prompt is nearest the middle of the view.

@@ -114,6 +114,12 @@ local ART: { Art } = {
 		description = "A freight elevator: its car, folding lattice gate, landing frame, keypad and a sticky note",
 	},
 	{
+		key = "Lobby",
+		path = "art/lobby/out/Lobby.fbx",
+		manifest = "art/lobby/assets.json",
+		description = "A self-storage building's front office at night: six freight elevator bays, a glass front door, a counter, shelves and a cart rack",
+	},
+	{
 		key = "Boxes",
 		path = "art/boxes/out/Boxes.fbx",
 		manifest = "art/boxes/assets.json",

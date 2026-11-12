@@ -15,6 +15,7 @@ local DevCorridor = require(script.DevCorridor)
 local Doors = require(script.Doors)
 local Elevators = require(script.Elevators)
 local Flashlights = require(script.Flashlights)
+local FrontOffice = require(script.FrontOffice)
 local Horns = require(script.Horns)
 local Keepers = require(script.Keepers)
 local KeptPlayers = require(script.KeptPlayers)
@@ -59,6 +60,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "climbs", system = Climbs.new() },
 	-- The climb's end: everyone kept or left, or the top; the results under it, and "Again".
 	{ slot = "climbEnds", system = ClimbEnds.new() },
+	-- Everkeep's front office, the lobby: laid away from the test hall, reached by its post for now.
+	{ slot = "frontOffice", system = FrontOffice.new() },
 	-- The test hall and its "Walk a floor" post: the only way into a climb until the lobby
 	-- (L-08e) exists, so it runs on live servers too, for testing on phones (D-109). It must
 	-- give way to the lobby before the game goes public.

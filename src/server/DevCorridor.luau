@@ -36,8 +36,10 @@ local Deal = require(ReplicatedStorage.Shared.Deal)
 local Prompts = require(script.Parent.Prompts)
 local Floor = require(ReplicatedStorage.Shared.Floor)
 local FloorBuilder = require(script.Parent.FloorBuilder)
+local FrontOffice = require(script.Parent.FrontOffice)
 local HallLight = require(ReplicatedStorage.Shared.HallLight)
 local Keepers = require(script.Parent.Keepers)
+local Lobby = require(ReplicatedStorage.Shared.Lobby)
 local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
 local MotionLights = require(script.Parent.MotionLights)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
@@ -149,6 +151,10 @@ local FLOOR_POST = CFrame.new(9, 0, 9) -- "Come back", in the lobby's corner by 
 -- far from the lobby along the halls, about two hall pieces past it, so a slam at a door by the
 -- lobby is well within its hearing and you watch it come the whole way.
 local MANNEQUIN_POST = CFrame.new(-9, 0, 9)
+-- The way to the front office and back (L-08e1a), until L-08e1b1 makes it where you load in: a post
+-- behind the spawn between the other two, and one in the lobby a stride right of where you land.
+local LOBBY_POST = Vector3.new(-34, 0, 0)
+local LOBBY_BACK = CFrame.new(-6, 0, -45) -- in the lobby's frame (Lobby.Specs)
 local MANNEQUIN_OFF = 60
 
 local DOOR_COLOURS = {
@@ -444,14 +450,16 @@ local function turn(parent: Instance, lights: MotionLights.MotionLights, smallUn
 end
 
 -- A post at `at` whose prompt sends you where `to` says; while it says nowhere, the prompt says
--- so instead.
+-- so instead. `key` and `pad` give it its own button when another post stands close by.
 local function travelPost(
 	name: string,
 	at: Vector3,
 	objectText: string,
 	actionText: string,
 	to: () -> CFrame?,
-	parent: Instance
+	parent: Instance,
+	key: Enum.KeyCode?,
+	pad: Enum.KeyCode?
 ): ProximityPrompt
 	local post = block(
 		name,
@@ -463,7 +471,7 @@ local function travelPost(
 	local a = Instance.new("Attachment")
 	a.Position = Vector3.new(0, 1, 0)
 	a.Parent = post
-	local p = Prompts.post(a, objectText, actionText)
+	local p = Prompts.post(a, objectText, actionText, key, pad)
 	local refuse = Prompts.refuser(p)
 	p.Triggered:Connect(function(player: Player)
 		local where = to()
@@ -768,6 +776,33 @@ function DevCorridor.new(): Brix.System
 				end
 				wraps:add(TEST_HALLS, folder, CFrame.identity)
 				laying = task.spawn(devFloor, folder, climbs, keepers)
+				-- any: as above; FrontOffice fills this slot, and starts before this system
+				local office = (
+					context.registry:get("frontOffice") :: any
+				) :: FrontOffice.FrontOffice
+				local lobby = office:laid()
+				if lobby then
+					local pivot = lobby.pivot
+					travelPost(
+						"GoLobby",
+						LOBBY_POST,
+						"Lobby",
+						"Go to the lobby",
+						fixed(Lobby.spawn(pivot)),
+						folder,
+						-- its own button: "Walk a floor" and "Go far" stand 3 studs either side on E
+						Enum.KeyCode.R,
+						Enum.KeyCode.ButtonY
+					)
+					travelPost(
+						"LobbyBack",
+						(pivot * LOBBY_BACK).Position,
+						"Test hall",
+						"Come back",
+						fixed(SPAWN),
+						folder
+					)
+				end
 			end
 		end,
 		stop = function(_: any)
