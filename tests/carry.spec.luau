@@ -1,8 +1,9 @@
 --!strict
 -- lune run tests/carry.spec
--- Your two slots (L-11b): a tool you take lands in your hand, in the empty slot you're on or else
--- the other one; full hands refuse; a switch picks a slot; dropping or handing over takes what's
--- in your hand and leaves that hand empty; a slot from the wire must be a whole 1 or 2; clearing
+-- Your three slots (L-11b, L-20a): a tool you take lands in your hand, in the empty slot you're on
+-- or else a free one; full hands refuse; a switch picks a slot; dropping or handing over takes
+-- what's in your hand and leaves that hand empty; a pocketed tool stays yours but out of your hand
+-- until a switch or a lift brings it up; a slot from the wire must be a whole 1 to 3; clearing
 -- gives every tool back; and a hand moves no faster than a quick thumb. Plus the catalog's rows
 -- are whole, each a dealt tool with its built art's sizes.
 local fs = require("@lune/fs")
@@ -30,17 +31,22 @@ do
 	ok(Carry.room(c) == 1, "room is your hand's slot")
 end
 
--- the first tool goes in your hand; the second goes in the other slot and into your hand
+-- three slots, as the owner's wheel note says (L-20)
+ok(Carry.Slots == 3, "three slots")
+
+-- the first tool goes in your hand; each next one goes in a free slot and into your hand
 do
 	local c = Carry.new()
 	ok(Carry.take(c, "a") == 1, "first tool into slot 1")
 	ok(Carry.held(c) == "a", "and it's in your hand")
 	ok(Carry.take(c, "b") == 2, "second tool into slot 2")
 	ok(Carry.held(c) == "b" and c.active == 2, "the second is now in your hand")
-	ok(Carry.count(c) == 2, "two carried")
-	ok(Carry.room(c) == nil, "no room with both full")
-	ok(Carry.take(c, "c") == nil, "a third is refused")
-	ok(Carry.held(c) == "b" and Carry.find(c, "c") == nil, "the refusal changed nothing")
+	ok(Carry.take(c, "c") == 3, "third tool into slot 3")
+	ok(Carry.held(c) == "c" and c.active == 3, "the third is now in your hand")
+	ok(Carry.count(c) == 3, "three carried")
+	ok(Carry.room(c) == nil, "no room with every slot full")
+	ok(Carry.take(c, "d") == nil, "a fourth is refused")
+	ok(Carry.held(c) == "c" and Carry.find(c, "d") == nil, "the refusal changed nothing")
 	ok(Carry.take(c, "a") == nil, "a tool you carry can't be taken twice")
 end
 
@@ -73,6 +79,35 @@ do
 	ok(Carry.held(c) == nil, "an empty slot is an empty hand")
 end
 
+-- pocketing: the tool stays on your slot, your hand is empty, a lift or a switch brings it up
+do
+	local c = Carry.new()
+	ok(not Carry.pocket(c, true), "an empty slot has nothing to pocket")
+	ok(not c.pocketed and Carry.hand(c) == 1, "and your hand stays on it")
+	Carry.take(c, "a")
+	ok(Carry.pocket(c, true), "pocket the tool in your hand")
+	ok(Carry.held(c) == nil and Carry.find(c, "a") == 1, "pocketed: an empty hand, still yours")
+	ok(Carry.hand(c) == 0 and c.active == 1, "no slot in your hand, still on slot 1")
+	ok(not Carry.pocket(c, true), "pocketing twice changes nothing")
+	ok(Carry.release(c) == nil and Carry.find(c, "a") == 1, "a pocketed tool can't be dropped")
+	ok(Carry.pocket(c, false), "bring it back up")
+	ok(Carry.held(c) == "a" and Carry.hand(c) == 1, "it's in your hand again")
+	ok(not Carry.pocket(c, false), "lifting a lifted tool changes nothing")
+	Carry.pocket(c, true)
+	ok(Carry.select(c, 1), "picking your own slot brings its pocketed tool up")
+	ok(Carry.held(c) == "a", "up in your hand")
+	Carry.pocket(c, true)
+	ok(Carry.select(c, 2) and not c.pocketed, "switching away lifts: an empty hand on slot 2")
+	Carry.select(c, 1)
+	Carry.pocket(c, true)
+	ok(Carry.take(c, "b") == 2, "a pick-up while pocketed goes in a free slot")
+	ok(Carry.held(c) == "b" and not c.pocketed, "and comes up into your hand")
+	ok(Carry.find(c, "a") == 1, "the pocketed one stays yours")
+	Carry.pocket(c, true)
+	Carry.clear(c)
+	ok(not c.pocketed and Carry.count(c) == 0, "clearing leaves nothing pocketed")
+end
+
 -- releasing
 do
 	local c = Carry.new()
@@ -90,14 +125,14 @@ do
 	Carry.take(c, "a")
 	Carry.take(c, "b")
 	local all = Carry.clear(c)
-	ok(#all == 2 and all[1] == "a" and all[2] == "b", "clear gives both, slot order")
+	ok(#all == 2 and all[1] == "a" and all[2] == "b", "clear gives them all, slot order")
 	ok(Carry.count(c) == 0 and c.active == 1, "and empties the carry")
 end
 
 -- a slot from the wire
 do
-	ok(Carry.slot(1) == 1 and Carry.slot(2) == 2, "1 and 2 are slots")
-	for _, bad in { 0, 3, -1, 1.5, 0 / 0, math.huge, "1", true, nil, {} } :: { any } do
+	ok(Carry.slot(1) == 1 and Carry.slot(2) == 2 and Carry.slot(3) == 3, "1 to 3 are slots")
+	for _, bad in { 0, 4, -1, 1.5, 0 / 0, math.huge, "1", true, nil, {} } :: { any } do
 		ok(Carry.slot(bad) == nil, `not a slot: {tostring(bad)}`)
 	end
 end

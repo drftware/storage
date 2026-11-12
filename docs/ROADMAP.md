@@ -164,7 +164,7 @@ Make the fixes I recently described, the prompt updates, build the lobby, and be
 needs to be perfect." Up to 15 sessions back to back, about 300k tokens of context each, still one
 ticket each, every session ending green and committed. Order: L-16b2 (done), L-19a (done: one
 look for every button, the owner's "prompt updates"), L-19b (done: a door's buttons where the
-hand goes), L-20a, L-17, L-16d,
+hand goes), L-20a (done: the inventory wheel, three slots), L-17, L-16d,
 then the lobby, L-08e1 to L-08e4 (GDD "The lobby", D-112), which no longer waits on L-09a
 (only the owner can run that): split L-08e1 and L-08e4 into sessions that each end green (the
 room's art script first, then the cars, the joining and the count, then the trip to a server of
@@ -1166,13 +1166,25 @@ Brix's purchases and profiles), proven mechanics only, never edit Brix.
   slow: the wheel opens in a beat, and a keyboard's number keys still pick a slot. As GTA V's and
   Red Dead Redemption 2's weapon wheels. Three slots to start (the GDD's two plus one: `OWNER.md`),
   six with a purchase.
-  - [ ] **L-20a The wheel and three slots**, with its sounds and motion; replaces `ToolView`'s bar.
+  - [x] **L-20a The wheel and three slots** (done Nov 12, D-116). Three slots (`Carry.Slots`,
+    the one number every screen and the server read). The round button at the bottom middle
+    carries three dots (lit where a tool is, grown for the one in your hand); a tap fans the
+    slots out over it on an arc in a beat, each a 3D picture with a soft tick, slot 1 on the
+    left; a tap on one brings it up, folds the wheel and flies the slot into the box beside the
+    button. The box shows the slot your hand is on: a tap pockets its tool (out of your hand and
+    view, still yours: Lock, Cut, Lean and Give see an empty hand) or brings it back up, as Rust's
+    holster. A computer's Q opens the wheel and frees the mouse; 1, 2, 3 pick, a second press
+    pockets; the pad's d-pad steps left and right and up pockets; G, d-pad down and Drop drop.
+    A tap in the world or 4 s untouched folds it. The pure shape and rules are `Tools.Wheel`
+    (Lune-checked); the server keeps `ToolPocketed` and a `ToolPocket` remote. The button's top
+    stayed where the slots' was, so a door's Peek needed no retune. Verified in Studio on a
+    computer and the Galaxy A16 (shots `docs/art/L-20a-*.jpg`).
   - [ ] **L-20b Six slots, bought** once the store and saved player data exist (Phase 2: Brix's
     purchases and profiles); granted only after the profile saves.
 - [ ] **L-17 Every button on a phone at once.** At Galaxy A16 size in Studio: kept with the Bang
-  button up, holding a horn, the map, torch and jump buttons showing, a door's buttons near;
-  nothing overlaps and everything reads. The kept player's empty slots bar goes from under the
-  Bang button if it clutters. `HornView`'s round button, which now carries every verb tool's,
+  button up, holding a horn, the map, torch and jump buttons showing, a door's buttons near, the
+  inventory wheel shut and open (L-20a); nothing overlaps and everything reads. The kept
+  player's wheel button goes from under the Bang button if it clutters. `HornView`'s round button, which now carries every verb tool's,
   renamed `UseButton`.
 - [ ] **L-18 The art saved with the code** (optional; the owner saves the place every session,
   Nov 10). Each imported template under `ReplicatedStorage.Props` and `Units` kept as a model
@@ -1210,6 +1222,15 @@ is an escape, not a haul); nothing builds it until the owner says.
 - **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
 
 ## Polish waiting for a slot
+
+- **The wheel's finish (L-20a):** the button's three dots are plain round Frames; a small drawn
+  icon (a fan of three tools' outlines) made the art way would read as "your tools" at a glance.
+  On a computer a hovered slot could grow and tick as GTA V's does, with the tool's name over the
+  wheel. A phone's haptic tick per slot (`HapticService`, where the phone has it) would make the
+  fan felt as well as heard. The pocketed box is the picture dimmed and sunk; a short slide of the
+  picture down into a pocket edge would say "put away" more plainly.
+- **The pad's wheel (L-20a):** a pad steps slots with the d-pad; holding L1 to open the wheel and
+  the right stick to pick (GTA V's pad wheel) would match the touch and mouse wheel.
 
 - **A door's row as it changes (L-19b):** a button fading out (0.08 s) and the one arriving in
   its neighbour's place overlap for that moment (Open fading as Slam swells in beside it). A

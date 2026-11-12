@@ -69,8 +69,8 @@ export type Kind = "Wall" | "Top"
 
 --[[
 	Whether a player may start sawing a wall or a top: the saw in their hand, not holed yet, nobody
-	else sawing it, and (a top) not lying on the hole. A saw in their other slot gets "Hold the
-	saw"; none at all, "Need a saw" (the button shows only to someone carrying one, so that's a
+	else sawing it, and (a top) not lying on the hole. A saw in another slot (or pocketed) gets
+	"Hold the saw"; none at all, "Need a saw" (the button shows only to someone carrying one, so that's a
 	stale press); lying across the hole, "Move off it". A holed one or one being sawn is refused
 	silently: its button is going.
 ]]

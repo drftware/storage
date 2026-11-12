@@ -1,18 +1,24 @@
 --!strict
 --[[
-	What one player carries (L-11b, GDD "Tools"): two slots for tools, and which of them is in your
-	hand, as Lethal Company's slots are (one slot active; what's in it is in your hand, an empty slot
-	is an empty hand). The flashlight is outside the slots: everyone has one in the other hand.
+	What one player carries (L-11b, GDD "Tools"; three slots since L-20a): slots for tools, and
+	which of them is in your hand, as Lethal Company's slots are (one slot active; what's in it is in
+	your hand, an empty slot is an empty hand). The flashlight is outside the slots: everyone has
+	one in the other hand.
 
 	Rules only, on ids the server gives each tool: picking up and being handed a tool both put it in
-	your hand if your hand is empty, otherwise in your other slot and into your hand (you see what
-	you just took); both refuse when both slots are full. Dropping and handing over take the tool in
-	your hand. A switch picks a slot. Pure (Lune specs: tests/carry.spec.luau); `Slots` (server) does
-	the instances, the checks on the wire and the sounds.
+	your hand if your hand is empty, otherwise in a free slot and into your hand (you see what you
+	just took); both refuse when every slot is full. Dropping and handing over take the tool in your
+	hand. A switch picks a slot and brings its tool up. The tool on your slot can be pocketed (L-20a,
+	as Rust's and Red Dead Redemption 2's holstering): still yours and still on that slot, but out of
+	your hand, so your hand is empty until you bring it back up. Pure (Lune specs:
+	tests/carry.spec.luau); `Slots` (server) does the instances, the checks on the wire and the
+	sounds.
 ]]
 local Carry = {}
 
-Carry.Slots = 2 -- tools you carry, besides the torch (GDD: "two tools plus whatever's in your hands")
+-- Tools you carry, besides the torch: the GDD's two plus one (owner, Nov 11, L-20; `OWNER.md`), so
+-- a climb still asks which three to take. Every screen and the server read this one number.
+Carry.Slots = 3
 Carry.PickReach = 8 -- studs from your middle to a tool on the floor: about a door's reach
 Carry.GiveReach = 10 -- studs to a friend you hand a tool to: an arm's length each, and a step
 -- Studs a dropped tool's clank carries as it hits the floor, for friends and keepers alike (L-15):
@@ -25,17 +31,27 @@ Carry.Gap = 0.12 -- seconds
 Carry.Burst = 4
 
 export type Carry = {
-	slots: { [number]: string }, -- slot (1 or 2) to the id of the tool in it
-	active: number, -- the slot in your hand
+	slots: { [number]: string }, -- slot (1 to `Slots`) to the id of the tool in it
+	active: number, -- the slot your hand is on
+	pocketed: boolean, -- its tool put away: your hand is empty (never true on an empty slot)
 }
 
 function Carry.new(): Carry
-	return { slots = {}, active = 1 }
+	return { slots = {}, active = 1, pocketed = false }
 end
 
--- The id of the tool in your hand, if any.
+-- The id of the tool in your hand, if any (none while it's pocketed).
 function Carry.held(c: Carry): string?
+	if c.pocketed then
+		return nil
+	end
 	return c.slots[c.active]
+end
+
+-- The slot in your hand for the systems that ask what you hold: your slot, or 0 while its tool is
+-- pocketed (no slot is in your hand).
+function Carry.hand(c: Carry): number
+	return if c.pocketed then 0 else c.active
 end
 
 -- How many tools you carry.
@@ -50,7 +66,7 @@ function Carry.count(c: Carry): number
 end
 
 -- The slot a new tool would go into: your hand's if it's empty, else the first free one. Nil when
--- both are full.
+-- every slot is full.
 function Carry.room(c: Carry): number?
 	if c.slots[c.active] == nil then
 		return c.active
@@ -85,6 +101,7 @@ function Carry.take(c: Carry, id: string): number?
 	end
 	c.slots[slot] = id
 	c.active = slot
+	c.pocketed = false
 	return slot
 end
 
@@ -99,20 +116,34 @@ function Carry.slot(value: unknown): number?
 	return value
 end
 
--- Puts slot `slot`'s tool in your hand (or empties your hand, if that slot is empty). Returns
--- whether anything changed.
+-- Puts slot `slot`'s tool in your hand (or empties your hand, if that slot is empty), brought up
+-- if it was pocketed. Returns whether anything changed.
 function Carry.select(c: Carry, slot: number): boolean
-	if slot == c.active then
+	if slot == c.active and not c.pocketed then
 		return false
 	end
 	c.active = slot
+	c.pocketed = false
+	return true
+end
+
+-- Pockets the tool on your slot (`down`) or brings it back up into your hand. Returns whether
+-- anything changed: an empty slot has nothing to pocket.
+function Carry.pocket(c: Carry, down: boolean): boolean
+	if down == c.pocketed then
+		return false
+	end
+	if down and c.slots[c.active] == nil then
+		return false
+	end
+	c.pocketed = down
 	return true
 end
 
 -- Takes the tool in your hand out of the slots (to drop it or hand it over). Returns its id, or
 -- nil if your hand is empty. Your hand stays on that slot, now empty, as Lethal Company's does.
 function Carry.release(c: Carry): string?
-	local id = c.slots[c.active]
+	local id = Carry.held(c)
 	if id == nil then
 		return nil
 	end
@@ -120,7 +151,7 @@ function Carry.release(c: Carry): string?
 	return id
 end
 
--- Empties both slots (you died or left): every id, slot order.
+-- Empties every slot (you died or left): every id, slot order.
 function Carry.clear(c: Carry): { string }
 	local out = {}
 	for i = 1, Carry.Slots do
@@ -131,6 +162,7 @@ function Carry.clear(c: Carry): { string }
 		end
 	end
 	c.active = 1
+	c.pocketed = false
 	return out
 end
 

@@ -110,6 +110,21 @@ verified: a doc page, Studio, or "untested".
   10 points under the middle of the reported viewport. The tool slots span y 267 to 328 (x 280
   to 402), the jump button x 590 to 660, y 248 to 318, the torch's switch x 599 to 651, y 186 to
   238, the thumbstick the bottom left.
+- **The wheel on the A16** (L-20a): the button spans viewport y 270 to 326 (x 314 to 371), the
+  box 273 to 323 lifted, Drop beside it; the open wheel's top slot reaches y 190. Peek's middle at
+  a shut door sits at 233 to 235 from 1.5 to 4 studs.
+- **A Client `execute_luau` has its own module cache** (L-20a): `require` of a shared module there
+  returns a different table from the one the game's LocalScripts hold, so setting a number on it
+  (to stretch `Wheel.Linger` for a shot) changes nothing in the game. Batch the input and the
+  capture instead, or change the source.
+- **`user_mouse_input` with `instance_path` clicks a ScreenGui button on a computer** (L-20a,
+  Play) even while first person pins the mouse to the middle: the wheel's button, a slot, the box
+  and Drop all fired `Activated`. Each MCP call takes a few seconds, so open the wheel and pick in
+  one batch (it folds itself after 4 s).
+- **Don't teleport past the corridor's walls** (L-20a): the DevCorridor's floor is narrow; a test
+  teleport to z 5 by the tools fell through to the void and respawned the player, dropping the
+  tools at the world's middle with no Pick up (HANDOFF's Seen). Stand at z 0 to 0.6 and aim at a
+  tool by the wall.
 - **A scripted Pick up can miss** (L-19b, Play): `InputHoldBegin`/`End` on a shown "Pick up"
   twice did nothing on the server (its slots stayed empty, no error) where `user_keyboard_input`
   E took it at once. Check the player's `ToolSlot1` after a scripted pick-up; use the key if
@@ -804,9 +819,10 @@ verified: a doc page, Studio, or "untested".
 - **Measuring the bulb's click** (L-04b): Pro Sound Effects' "Moviola Toggle Switch Single Clicks
   Sharp 8" (9117028600, 0.74 s) is a sharp tick in its first 0.1 s and a faint release at 0.25 s;
   "Light Bulb Buzz 2" (9112823813) is a 49 s loop. Both preload in Edit.
-- **The MCP's clicks don't reach a ScreenGui button in the Device Simulator** (L-11a): neither
-  `instance_path` nor coordinates fired the torch button's InputBegan, MouseButton1Down or
-  Activated. A gamepad key from `user_keyboard_input` (ButtonR1) does reach ContextActionService;
+- **The MCP's clicks on a ScreenGui button in the Device Simulator** (L-11a; corrected L-20a):
+  `instance_path` doesn't fire it, but coordinates do with the A16 mapping below: click at
+  (AbsolutePosition X + 47, AbsolutePosition Y) of the button's middle (a ScreenGui's Y is the
+  viewport's minus the 58-point inset). The wheel's button, a slot and the box all took taps so. A gamepad key from `user_keyboard_input` (ButtonR1) does reach ContextActionService;
   it also hides Roblox's touch controls, as a real gamepad does.
 - **The flashlight's clicks, measured** (L-11a; 10 ms bins at PlaybackSpeed 0.25, AudioAnalyzer in
   Edit): Pro Sound Effects' "Flashlight On Off Clicks 13" 9114480271 is one click at 0.40 s, about

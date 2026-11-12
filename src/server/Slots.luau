@@ -1,17 +1,19 @@
 --!strict
 --[[
-	Everyone's two tool slots (L-11b, D-048), as Lethal Company's: the server owns every tool, where
-	it is and who carries it. A tool lies on a floor with a "Pick up" prompt until someone takes it;
-	carried, it's in one of their two slots (`Tools.Carry`), and the one in their hand is welded in
-	their left hand for everyone to see (the torch has the right). They switch slots, drop what's in
+	Everyone's tool slots (L-11b, D-048; three since L-20a), as Lethal Company's: the server owns
+	every tool, where it is and who carries it. A tool lies on a floor with a "Pick up" prompt until
+	someone takes it; carried, it's in one of their slots (`Tools.Carry`), and the one in their hand
+	is welded in their left hand for everyone to see (the torch has the right). They switch slots,
+	pocket the tool on their slot or bring it back up (out of sight, still theirs), drop what's in
 	their hand at their feet, or hand it to a friend within reach who has room. Dying or leaving
 	drops everything where you stood.
 
-	Every screen reads the slots from attributes on each Player (`ToolSlot1`, `ToolSlot2`: the
-	catalog key or ""; `ToolHand`: the slot in hand). Three remotes in (a stand-in for Brix ENG-09),
-	each checked for type, then range (a living character, reach, room), then rate (`Carry.allow`):
-	ToolSwitch takes a slot, ToolDrop nothing, ToolGive a Player. ToolNotice tells one screen a short
-	line ("Bolt cutters from Sam").
+	Every screen reads the slots from attributes on each Player (`ToolSlot1` to `ToolSlot3`: the
+	catalog key or ""; `ToolHand`: the slot your hand is on; `ToolPocketed`: its tool put away).
+	Four remotes in (a stand-in for Brix ENG-09), each checked for type, then range (a living
+	character, reach, room), then rate (`Carry.allow`): ToolSwitch takes a slot, ToolPocket a
+	boolean, ToolDrop nothing, ToolGive a Player. ToolNotice tells one screen a short line ("Bolt
+	cutters from Sam").
 
 	A big tool (the ladder) rides on your left shoulder for everyone to see, takes both hands (no
 	switching slots or picking up while it's in your hand, as Lethal Company's two-handed items) and
@@ -47,7 +49,7 @@ local REACH_SLACK = 2 -- studs the server allows past a prompt's reach (lag, a l
 
 export type Change = {
 	player: Player,
-	kind: "PickUp" | "Drop" | "Give" | "Switch" | "Spend" | "Place",
+	kind: "PickUp" | "Drop" | "Give" | "Switch" | "Pocket" | "Spend" | "Place",
 }
 
 -- A press of ToolUse that passed: who, the tool's catalog key, and its model in their hand.
@@ -68,7 +70,8 @@ export type Slots = Brix.System & {
 	-- Takes away every tool lying on a floor where `inside` says (a floor being cleared, L-08b);
 	-- carried and placed ones stay. Returns how many went.
 	clear: (self: any, inside: (at: Vector3) -> boolean) -> number,
-	-- The catalog keys `player` carries, slot by slot ("" for empty), and the slot in hand.
+	-- The catalog keys `player` carries, slot by slot ("" for empty), and the slot in hand (0 while
+	-- its tool is pocketed).
 	carried: (self: any, player: Player) -> ({ string }, number),
 	-- Uses up what's in `player`'s hand if it's catalog key `key` (a padlock hung on a door): out
 	-- of their slots and gone. Whether it was.
@@ -213,6 +216,9 @@ function Slots.new(): Slots
 		end
 		if player:GetAttribute(Tools.HandAttribute) ~= h.carry.active then
 			player:SetAttribute(Tools.HandAttribute, h.carry.active)
+		end
+		if player:GetAttribute(Tools.PocketedAttribute) ~= h.carry.pocketed then
+			player:SetAttribute(Tools.PocketedAttribute, h.carry.pocketed)
 		end
 	end
 
@@ -478,6 +484,35 @@ function Slots.new(): Slots
 		publish(player)
 	end
 
+	-- ToolPocket: `down` true puts the tool on your slot away, false brings it back up.
+	local function onPocket(player: Player, down: unknown)
+		-- type: a boolean
+		if type(down) ~= "boolean" then
+			return
+		end
+		-- range: a living character
+		if not rootOf(player) then
+			return
+		end
+		local h = handOfPlayer(player)
+		-- rate
+		if not allowed(h) then
+			publish(player)
+			return
+		end
+		-- both hands on a big tool: it rides on your shoulder, it can't be put away (your screen
+		-- answers this press itself)
+		if down and bothHands(h) then
+			publish(player)
+			return
+		end
+		if Carry.pocket(h.carry, down) then
+			dress(player)
+			changed:fire({ player = player, kind = "Pocket" })
+		end
+		publish(player)
+	end
+
 	-- ToolUse: nothing to check for type (it takes nothing); range: a living character with a
 	-- tool in hand that has a verb; then its own rate.
 	local function onUse(player: Player)
@@ -646,6 +681,7 @@ function Slots.new(): Slots
 			return r
 		end
 		table.insert(connections, remote(Tools.SwitchRemote).OnServerEvent:Connect(onSwitch))
+		table.insert(connections, remote(Tools.PocketRemote).OnServerEvent:Connect(onPocket))
 		table.insert(connections, remote(Tools.DropRemote).OnServerEvent:Connect(onDrop))
 		table.insert(connections, remote(Tools.GiveRemote).OnServerEvent:Connect(onGive))
 		table.insert(connections, remote(Tools.UseRemote).OnServerEvent:Connect(onUse))
@@ -717,7 +753,9 @@ function Slots.new(): Slots
 			local t = if id then tools[id] else nil
 			out[i] = if t then t.key else ""
 		end
-		return out, h.carry.active
+		-- a pocketed tool isn't in your hand: no slot is (0), so Lock, Cut, Saw and Lean see a
+		-- tool carried but not held
+		return out, Carry.hand(h.carry)
 	end
 
 	function system.dropAll(_: any, player: Player)

@@ -1,12 +1,12 @@
 --!strict
 --[[
-	The tools in the place (L-11b, D-048): what you carry in your two slots. Each tool's template is
-	a MeshPart in a Model at ReplicatedStorage.Props.Tools.<template>, imported once (Rojo can't
-	sync imported meshes, D-009) and prepared by `prepare`: its grip (where a hand closes) at the
-	model's pivot, its business end towards the LookVector. A tool may have a second part that
-	moves on it later (the ladder's fly, `<template>Fly`), welded to the first. `Catalog` holds the
-	rows, `Carry` the slots' rules, `Specs/<key>` each tool's generated sizes, `Leaning` and `Leaned`
-	the ladder leaned on a front and climbed.
+	The tools in the place (L-11b, D-048): what you carry in your slots (`Carry.Slots`). Each
+	tool's template is a MeshPart in a Model at ReplicatedStorage.Props.Tools.<template>, imported
+	once (Rojo can't sync imported meshes, D-009) and prepared by `prepare`: its grip (where a hand
+	closes) at the model's pivot, its business end towards the LookVector. A tool may have a second
+	part that moves on it later (the ladder's fly, `<template>Fly`), welded to the first. `Catalog`
+	holds the rows, `Carry` the slots' rules, `Specs/<key>` each tool's generated sizes, `Leaning`
+	and `Leaned` the ladder leaned on a front and climbed.
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -26,13 +26,17 @@ export type Piece = { Size: Vector3, Centre: Vector3, Triangles: number }
 export type Specs = { Body: Piece, Fly: Piece?, Bounds: Piece? }
 
 -- The attributes the server keeps on each Player for every screen: what's in each slot (the
--- catalog key, or "" for empty) and which slot is in your hand.
-Tools.SlotAttribute = "ToolSlot" -- ToolSlot1, ToolSlot2
+-- catalog key, or "" for empty), which slot your hand is on, and whether its tool is pocketed
+-- (put away, still yours: an empty hand).
+Tools.SlotAttribute = "ToolSlot" -- ToolSlot1 to ToolSlot3 (`Carry.Slots`)
 Tools.HandAttribute = "ToolHand"
+Tools.PocketedAttribute = "ToolPocketed"
 -- On a tool's model: its catalog key (so a screen knows a model's row).
 Tools.KindAttribute = "Tool"
 Tools.RemoteFolder = "Remotes"
 Tools.SwitchRemote = "ToolSwitch" -- client → server: the slot you want in your hand
+-- client → server: true puts the tool on your slot away (pocketed, still yours), false lifts it
+Tools.PocketRemote = "ToolPocket"
 Tools.DropRemote = "ToolDrop" -- client → server: drop what's in your hand
 Tools.GiveRemote = "ToolGive" -- client → server: hand what's in your hand to a friend
 Tools.NoticeRemote = "ToolNotice" -- server → client: a short line for your screen

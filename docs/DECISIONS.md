@@ -3047,3 +3047,58 @@ once, Cut slid in with its refusal short of the torch button; Cut held with bolt
 taking the padlock off, again after the server's reach check moved to the spot's range (Peek,
 Close, Open by press; R held). Rejected: spacing the buttons by world distance (they'd crowd far off
 and fly apart close up); following your gaze's pitch both ways (buttons crawling up the door).
+
+## D-116 The inventory wheel and three slots (L-20a, Nov 12)
+The moment: one round button at the bottom middle; tap it and your slots fan out over it like
+GTA V's and Red Dead Redemption 2's weapon wheels, pick one and it's in your hand; a small box
+beside the button shows the slot your hand is on, and a tap on it puts the tool away or brings it
+back up. Never slow. The owner's design (ROADMAP L-20).
+
+**Three slots, one number.** `Carry.Slots` is 3 (the GDD's two plus one, the owner's note;
+`OWNER.md` asks for the GDD's line). The server's checks, the attributes (`ToolSlot1` to
+`ToolSlot3`), the wheel and HornView all read it, so six (L-20b) is a change of that number and
+the wheel's spread (`Wheel.Spread`, already Lune-checked at six).
+
+**Pocketed is the server's.** A pocketed tool stays on your slot but leaves your hand: `Carry`
+keeps `pocketed` (never on an empty slot); `held` is nil while it's set, so the weld, the walk
+speed, Use, Drop and Give all see an empty hand without changes. `Slots.carried` gives the hand
+as 0 while pocketed, so Doors, Saws, Ladders and Crawls read a carried-but-not-held tool
+("Hold the cutters", "Hold the saw") with no edits of their own. A new remote, `ToolPocket`
+(a boolean: type, a living character, the hand's rate), and the attribute `ToolPocketed`. A
+switch, a pick-up, a handover and clearing all bring the hand up. A big tool (the ladder) can't
+be pocketed: it rides your shoulder and pocketing it would carry it through a crawl hole. Rejected:
+a hand of 0 with no slot (the box would forget which slot it shows).
+
+**How a press reads** (`Wheel.press`, pure): another slot switches and lifts; your own pocketed
+slot lifts; your own slot's key a second time pockets (Rust's hotbar holsters on the second
+press); a pick on the wheel of the slot you already hold just folds the wheel. The box and the
+pad's d-pad up toggle. The d-pad's left and right step round the slots (`Wheel.step`), since
+three slots no longer fit left and right.
+
+**On a computer** first person pins the mouse, so the wheel has a key: Q opens it (GTA V's Tab;
+Tab is Roblox's player list) and asks FreeCursor for the mouse while it's open, so a click picks
+a slot; 1, 2, 3 still pick at once without it. The button shows "Q", each slot and the box their
+number, on a keyboard only.
+
+**The shape** (`Tools.Wheel`): slots 0.86 of the button, on an arc 1.5 buttons out, 45 degrees
+apart (closing up to fit 150 degrees for six), each at least 1.3 slots from the next and clear of
+the button and the box, on screen under the A16's top bar; Lune-checked at three and six, at 56 to
+88 pixels. The button keeps the old slots' size (12% of the screen's height, 56 to 88) and bottom
+gap, so its top on the A16 (270) is no higher than the slots' was (267) and `DoorSpot.Below` holds:
+Peek's middle measured at 233 to 235 from 1.5 to 4 studs.
+
+**Motion and sound:** each slot fans out from the button's middle in 0.12 s (Back), 0.02 s
+apart, with Roblox's "UI Bright Click" soft and rising slot by slot; the others fold back in
+0.08 s and the picked one flies into the box (0.1 s), which pops. Lifting plays the tool's own
+pick-up clank at 0.45 (as switching did); pocketing the same clank softer and lower (0.25, pitch
+0.8). A refused press (the ladder) shakes the box with a dull click; a switch away from the ladder
+keeps its words ("Drop the ladder first"). A tap in the world or 4 s untouched folds the wheel, as
+does losing your hands (caught).
+
+**Verified in Studio** (one player): on a computer, Q opening and folding the wheel (the mouse
+freed while open), 1 picking from it with the fly into the box and the name, 1 again pocketing
+and lifting (the server's held model gone and back), d-pad right, up and left, clicks on the
+button, a slot, the box and Drop; a padlock lifted showing all 14 Lock buttons and none
+pocketed; Lock with the padlock, then Cut with the cutters (2) on the same door. On the Galaxy
+A16: the wheel by tap, a slot by tap, the box by tap, clear of the thumbstick, Blow, jump and
+torch buttons.

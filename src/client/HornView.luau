@@ -3,11 +3,11 @@
 	Client system: the air horn on this screen (L-14a2, D-087).
 
 	Yours: while it's in your hand, a click, a gamepad's L2 or the round Blow button (on a phone,
-	left of the jump button, under your right thumb; otherwise beside the slots' bar) blows it. Your
-	screen answers at once: the blast at your horn, the horn brought up in your view (ToolView's
-	`use`) and a kick to your view (CameraShake). The server is told (ToolUse) and decides for
-	everyone else. Your screen keeps the server's gap between blows (`Horn.allow`): the button dims
-	until the horn is ready again.
+	left of the jump button, under your right thumb; otherwise left of the wheel's button) blows
+	it. Your screen answers at once: the blast at your horn, the horn brought up in your view
+	(ToolView's `use`) and a kick to your view (CameraShake). The server is told (ToolUse) and
+	decides for everyone else. Your screen keeps the server's gap between blows (`Horn.allow`): the
+	button dims until the horn is ready again.
 
 	The button is every tool's with a verb (D-087): a press with another such tool in hand goes to
 	its own view's handler (`presses`: the bubble wrap's Lay, WrapView), which answers on your
@@ -162,10 +162,12 @@ function HornView.new(
 		TweenService:Create(st, READY, { Transparency = if r then 0.55 else 0.85 }):Play()
 	end
 
-	-- What's in your hand, as the server last said: the button shows only for a tool with a verb.
+	-- What's in your hand, as the server last said: the button shows only for a tool with a verb
+	-- (none while it's pocketed: your hand is empty).
 	local function refresh()
 		local slot = player:GetAttribute(Tools.HandAttribute)
-		local key = if type(slot) == "number"
+		local pocketed = player:GetAttribute(Tools.PocketedAttribute) == true
+		local key = if type(slot) == "number" and not pocketed
 			then player:GetAttribute(Tools.slotAttribute(math.clamp(slot, 1, Carry.Slots)))
 			else nil
 		local row = if type(key) == "string" then Catalog[key] else nil
@@ -382,7 +384,7 @@ function HornView.new(
 		if touch then
 			g.Parent = player:WaitForChild("PlayerGui")
 		else
-			-- beside the slots' bar, as the Drop button is on its other side
+			-- left of the wheel's button, as the box and Drop are on its right
 			hand.beside(b)
 			g:Destroy()
 			gui = nil
@@ -397,6 +399,10 @@ function HornView.new(
 		table.insert(
 			connections,
 			player:GetAttributeChangedSignal(Tools.HandAttribute):Connect(refresh)
+		)
+		table.insert(
+			connections,
+			player:GetAttributeChangedSignal(Tools.PocketedAttribute):Connect(refresh)
 		)
 		refresh()
 		ContextActionService:BindAction(

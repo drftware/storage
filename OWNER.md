@@ -14,19 +14,44 @@ nowhere else.
 - [ ] **Keep the experience private** until the lobby (L-08e) replaces the test hall: every
   server builds the hall now, with its teleport posts, Mannequin post and the code in the log.
 
+## Now: judge L-20a, the inventory wheel and three slots (built Nov 12, D-116)
+
+Three slots. The round button at the bottom middle shows a dot per slot (lit where a tool is,
+bigger for the one in your hand). Tap it and your slots fan out over it with a soft tick each;
+tap one and it comes into your hand, the wheel folds and the slot flies into the box beside the
+button. Tap the box to put the tool away (out of your hand and view, still yours) or bring it
+back up. On a computer: Q opens the wheel and frees the mouse to click; 1, 2, 3 pick straight away,
+and pressing your slot's number again puts it away. On a pad: d-pad left and right step round the
+slots, up puts away or lifts, down drops. Verified in Studio (one player, a computer and the
+Galaxy A16): all of that, the padlock showing Lock only while it's up, Lock then Cut on one door.
+Shots: `docs/art/L-20a-*.jpg`.
+- [ ] **On your phone** (published, a live server): pick up three tools, tap the button, pick
+  each in turn. Does the wheel open fast enough to use with a keeper near, and do the ticks and
+  clanks feel right? Tap the box: the tool drops out of view and the box dims; tap again and it
+  comes back up. With a horn up, the Blow button (by the jump button) does only its own thing.
+- [ ] **On a computer**: Q, then click a slot; and 1, 2, 3, pressing your slot's number twice.
+- [ ] **Two players**: put a tool away. Your friend should see it leave your hand, and their Give
+  button for you shouldn't change; you can't Give or Drop a tool that's put away.
+- [ ] **Decide, defaults in place** (D-116): (1) **Q opens the wheel** on a computer (GTA V uses
+  Tab, which is Roblox's player list here). (2) **Your slot's number twice puts the tool away**
+  (Rust's hotbar does this); the wheel never does, picking your own slot just shuts it. (3) **The
+  ladder can't be put away** (it rides your shoulder; put away it could go through a crawl hole
+  with you): the box shakes with a dull click. (4) **A tap anywhere in the world, or 4 seconds
+  untouched, shuts the wheel.** Say if any should change.
+
 ## Now: judge L-19b, a door's buttons where your hand would go (built Nov 11, D-115)
 
 A shut door: Open on its middle, Peek low by the lift handle. Open: Close and Slam side by side
 in the middle. Padlocked: "Padlocked" once over Open, Cut on the latch; Lock on the latch with a
 padlock in hand. Each screen keeps the low buttons in view: walk up to a door looking level and
-Peek rides up the door to sit just above your slots (on your eye line, Open sits at your eye);
-look down at the door and Peek comes down onto the handle. Verified in Studio (one player, a
+Peek rides up the door to sit just above the wheel's button (on your eye line, Open sits at your
+eye); look down at the door and Peek comes down onto the handle. Verified in Studio (one player, a
 computer and the Galaxy A16): every state above, Peek (Q) crouching you with Close, Open and Slam
 brought down in a row over the gap, Close (F) from the crouch, Cut held with bolt cutters taking
 the padlock off, and Slam sliding along the row as the door changes. Shots:
 `docs/art/L-19b-*.jpg`.
 - [ ] **On your phone** (published, a live server): walk up to a shut door. Peek should never sit
-  on your slots, the jump button or the torch button, and never touch Open; look down and it
+  on the wheel's button, the jump button or the torch button, and never touch Open; look down and it
   settles on the handle. Tap Peek: you crouch and Close, Open and Slam come down above the gap.
   Open a door and tap Close twice fast: the second tap must do nothing (no Open, no Slam).
 - [ ] **At a padlocked door on your phone**: Cut sits low right of your gaze, its red "Need bolt
@@ -104,8 +129,8 @@ yours to judge.
 - [ ] **Reaching through doors**: a tool in a unit shows no Pick up until the door is half up;
   shut in with one, you can still pick it up.
 - [ ] **Decide, defaults in place** (L-20): your inventory wheel note says three slots to start
-  and six paid; the GDD still says two tools ("two tools plus whatever's in your hands"). The
-  ticket builds three. Edit the GDD's line, or say if two should stay.
+  and six paid; the GDD still says two tools ("two tools plus whatever's in your hands"). Three
+  are built (L-20a, `Carry.Slots`). Edit the GDD's line, or say if two should stay.
 
 ## Decide: the lobby and the store (your plan, Nov 11, D-112)
 
@@ -144,8 +169,8 @@ Output at Play is clean but Roblox's own 203785492 lines (not the game's; can't 
 - [ ] **Caught with a friend** (2 players): one gets caught on the ladder, or crawling through a
   hole; the other finds them and cuts them free. The freed one should walk, jump and turn at once,
   and never be pulled back up onto the tops or through the hole.
-- [ ] **On the phone**: with a horn held, tap the slots and the round button. Each tap does only
-  its own thing (a slot switches, the button blows once).
+- [ ] **On the phone**: with a horn held, tap the wheel's button and a slot, then the Blow button.
+  Each tap does only its own thing (the wheel opens, a slot switches, Blow blows once).
 - [ ] **Decide, defaults in place** (D-108): G at an open door slams it and keeps your tool; G
   anywhere else drops. Say if Drop should get its own key instead.
 
