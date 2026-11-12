@@ -8,7 +8,8 @@
 	Roblox still decides when a button shows (near enough, in sight, one per key), so this only
 	answers its shown and hidden signals, its holds and its presses.
 
-	- Shown: it swells in on its point (with the prompt's `UIOffset`, which spaces a door's buttons).
+	- Shown: it swells in on its point (with the prompt's `UIOffset`, which spaces a door's buttons;
+	  if that changes while it shows, it slides there).
 	  The chip carries the key on a keyboard, the button's picture on a pad, and nothing on a phone,
 	  where a tap on it (or a click, for a clickable prompt) presses the prompt.
 	- A hold fills a ring round the chip; letting go empties it. A press pops the chip with a flash.
@@ -90,6 +91,9 @@ type Drawn = {
 	refusedAt: number, -- os.clock of the last refusal, or -1
 	refusal: string,
 	down: boolean, -- a tap or click of ours is holding the prompt
+	offset: Vector2, -- points from its point it's drawn at now (the prompt's UIOffset, or sliding there)
+	slideFrom: Vector2, -- where a slide along the row began
+	slideAt: number, -- os.clock its place on the row changed, or -1
 	watch: { RBXScriptConnection },
 }
 
@@ -403,6 +407,12 @@ local function wording(d: Drawn, now: number)
 	d.look.name.Visible = not refusing and named(d)
 end
 
+-- Draws `d` at `offset` points from its point, in screen points whatever the canvas.
+local function shift(d: Drawn, offset: Vector2)
+	d.offset = offset
+	d.look.gui.SizeOffset = Vector2.new(offset.X / WorldButton.Width, offset.Y / WorldButton.Height)
+end
+
 -- Draws `d` for this moment; whether it's still in motion.
 local function draw(d: Drawn, now: number, dt: number): boolean
 	local look = d.look
@@ -453,6 +463,16 @@ local function draw(d: Drawn, now: number, dt: number): boolean
 			moved = true
 		else
 			d.refusedAt = -1
+		end
+	end
+	-- along its row, to its new place (a door's buttons re-spacing as the door moves)
+	if d.slideAt >= 0 then
+		local p = WorldButton.slide(now - d.slideAt)
+		shift(d, d.slideFrom:Lerp(d.prompt.UIOffset, p))
+		if p < 1 then
+			moved = true
+		else
+			d.slideAt = -1
 		end
 	end
 	look.shove.Position = UDim2.fromOffset(shove, 0)
@@ -524,11 +544,11 @@ local function dress(d: Drawn, input: Enum.ProximityPromptInputType)
 	look.tap.Interactable = clickable
 end
 
--- Puts `look` on `prompt`'s point, its UIOffset kept in screen points.
-local function place(look: Look, prompt: ProximityPrompt)
-	local o = prompt.UIOffset
-	look.gui.SizeOffset = Vector2.new(o.X / WorldButton.Width, o.Y / WorldButton.Height)
-	look.gui.Adornee = prompt.Parent :: any -- any: an Attachment or a BasePart, both adorn
+-- Puts `d` on its prompt's point, at its UIOffset at once.
+local function place(d: Drawn)
+	d.slideAt = -1
+	shift(d, d.prompt.UIOffset)
+	d.look.gui.Adornee = d.prompt.Parent :: any -- any: an Attachment or a BasePart, both adorn
 end
 
 local function release(d: Drawn)
@@ -572,7 +592,7 @@ local function show(prompt: ProximityPrompt, input: Enum.ProximityPromptInputTyp
 		-- shown again (the input changed, or back before it had gone): carry on from where it is
 		d.coming = true
 		dress(d, input)
-		place(d.look, prompt)
+		place(d)
 		startMoving(d)
 		neighbours(prompt)
 		return
@@ -594,28 +614,40 @@ local function show(prompt: ProximityPrompt, input: Enum.ProximityPromptInputTyp
 		refusedAt = -1,
 		refusal = "",
 		down = false,
+		offset = Vector2.zero,
+		slideFrom = Vector2.zero,
+		slideAt = -1,
 		watch = {},
 	}
 	owner[look] = fresh
 	drawn[prompt] = fresh
 	dress(fresh, input)
-	place(look, prompt)
+	place(fresh)
 	look.shove.Position = UDim2.fromOffset(0, 0)
 	look.verb.Text = ""
 	look.name.Text = ""
 	wording(fresh, os.clock())
 	paint(fresh, 0, 0, 0, 0)
-	-- the words or the spacing changed while it shows (a door's Restore power, a padlock's name)
+	-- the words changed while it shows (a door's Restore power, a padlock's name)
 	local function changed()
 		local now = drawn[prompt]
 		if now then
-			place(now.look, prompt)
+			startMoving(now)
+		end
+	end
+	-- its place on the row changed while it shows (a door's Close and Slam re-spacing): it slides
+	local function moved()
+		local now = drawn[prompt]
+		-- one fading out stays put: only buttons still there move along the row
+		if now and now.coming and now.offset ~= prompt.UIOffset then
+			now.slideFrom = now.offset
+			now.slideAt = os.clock()
 			startMoving(now)
 		end
 	end
 	table.insert(fresh.watch, prompt:GetPropertyChangedSignal("ActionText"):Connect(changed))
 	table.insert(fresh.watch, prompt:GetPropertyChangedSignal("ObjectText"):Connect(changed))
-	table.insert(fresh.watch, prompt:GetPropertyChangedSignal("UIOffset"):Connect(changed))
+	table.insert(fresh.watch, prompt:GetPropertyChangedSignal("UIOffset"):Connect(moved))
 	-- destroyed or streamed out while it shows: the next step lets its drawing go
 	table.insert(
 		fresh.watch,

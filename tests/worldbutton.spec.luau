@@ -109,6 +109,20 @@ do
 	)
 end
 
+-- A slide along the row: starts at the old place, lands on the new, never overshoots.
+do
+	ok(WorldButton.slide(0) == 0 and WorldButton.slide(WorldButton.Slide) == 1, "old place to new")
+	ok(WorldButton.slide(-1) == 0 and WorldButton.slide(5) == 1, "held at each end")
+	local last = 0
+	for i = 1, 10 do
+		local v = WorldButton.slide(WorldButton.Slide * i / 10)
+		ok(v >= last and v <= 1, `step {i}: forward, never past`)
+		last = v
+	end
+	ok(WorldButton.slide(WorldButton.Slide / 2) > 0.5, "eased out: most of the way by halfway")
+	ok(WorldButton.Slide <= 0.2, "quick: a glance, not a wait")
+end
+
 -- words from the wire
 do
 	ok(WorldButton.words("Padlocked") == "Padlocked", "a refusal draws as sent")

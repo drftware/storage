@@ -100,29 +100,9 @@ do
 	)
 end
 
--- The buttons while you're down: in view above a level gaze, never over the gap.
-do
-	local standing = 4
-	for _, d in { 0, 0.5, 1, 1.5, 2, 3, 4, 6, 8, 12 } do
-		local h = Kneel.buttonHeight(d, standing)
-		ok(h >= Kneel.ButtonLowest - 1e-9 and h <= standing, `{d} studs out: between the gap and 4`)
-		if h > Kneel.ButtonLowest + 1e-9 and h < standing - 1e-9 then
-			local angle = math.atan((h - Kneel.Eye) / d)
-			ok(near(angle, Kneel.ButtonAngle), `{d} studs out: ButtonAngle over a level gaze`)
-		end
-		-- in view: Roblox's 70-degree view is 35 degrees each way; keep within 30
-		if d >= 2 then
-			ok(math.atan((h - Kneel.Eye) / d) <= math.rad(30), `{d} studs out: on screen`)
-		end
-	end
-	ok(
-		Kneel.buttonHeight(0, standing) == Kneel.ButtonLowest,
-		"pressed to the door: just over the gap"
-	)
-	ok(Kneel.buttonHeight(100, standing) == standing, "far back: no lower than standing")
-	ok(Kneel.buttonHeight(3, 1) == 1, "never above where they stand")
-	ok(Kneel.ButtonLowest > 1.15 + 0.5, "the lowest still clears the peek's gap")
-end
+-- The standing eye: Roblox's first-person camera over a standard avatar's feet.
+ok(near(Kneel.standingEye(2, 2), 4.5), "a standard avatar's eye rides 4.5 off the floor")
+ok(near(Kneel.drop(2, 2), Kneel.standingEye(2, 2) - Kneel.Eye), "the drop is from there to Eye")
 
 print(`kneel: {checks - failures}/{checks} checks passed`)
 if failures > 0 then

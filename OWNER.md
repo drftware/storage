@@ -14,6 +14,33 @@ nowhere else.
 - [ ] **Keep the experience private** until the lobby (L-08e) replaces the test hall: every
   server builds the hall now, with its teleport posts, Mannequin post and the code in the log.
 
+## Now: judge L-19b, a door's buttons where your hand would go (built Nov 11, D-115)
+
+A shut door: Open on its middle, Peek low by the lift handle. Open: Close and Slam side by side
+in the middle. Padlocked: "Padlocked" once over Open, Cut on the latch; Lock on the latch with a
+padlock in hand. Each screen keeps the low buttons in view: walk up to a door looking level and
+Peek rides up the door to sit just above your slots (on your eye line, Open sits at your eye);
+look down at the door and Peek comes down onto the handle. Verified in Studio (one player, a
+computer and the Galaxy A16): every state above, Peek (Q) crouching you with Close, Open and Slam
+brought down in a row over the gap, Close (F) from the crouch, Cut held with bolt cutters taking
+the padlock off, and Slam sliding along the row as the door changes. Shots:
+`docs/art/L-19b-*.jpg`.
+- [ ] **On your phone** (published, a live server): walk up to a shut door. Peek should never sit
+  on your slots, the jump button or the torch button, and never touch Open; look down and it
+  settles on the handle. Tap Peek: you crouch and Close, Open and Slam come down above the gap.
+  Open a door and tap Close twice fast: the second tap must do nothing (no Open, no Slam).
+- [ ] **At a padlocked door on your phone**: Cut sits low right of your gaze, its red "Need bolt
+  cutters" stopping short of the torch and jump buttons; turn to face the padlock and Cut slides
+  out onto it.
+- [ ] **Two players**: both at one door; each screen moves its own buttons, so a friend kneeling
+  doesn't bring your row down.
+- [ ] **Decide, defaults in place** (D-115): (1) **No more Peek-then-Close on one spot**: Close
+  now sits in the row with Open and Slam while you peek, so tapping Peek's spot again does
+  nothing. Say if you want the old toggle back (it would put Close down by the handle while you
+  kneel, over the view under the door). (2) **The latch's button slides in on a phone**: facing
+  the door, Cut and Lock sit between your gaze and the padlock rather than on it, so they stay
+  off the torch and jump buttons; they sit on the padlock only when you face it.
+
 ## Now: judge L-19a, the new buttons in the world (built Nov 11, D-114)
 
 Every button in the world is now our own: a round key chip with its verb beside it, no grey box.

@@ -30,12 +30,7 @@ Kneel.RiseOff = 1.5 -- studs up or down from where you knelt that stand you up: 
 Kneel.Confirm = 1 -- seconds your screen waits for the door to start lifting after you tap Peek: no
 -- lift (the server refused the press) and you stand back up
 
--- The door's buttons while you're down (only on your screen): a button shows only while its spot is
--- in view, and at the door's standing height (4) it's above a low gaze. So they come down with you
--- to sit this far above your level gaze, and never lower than just over the gap, so they never
--- hide what's under it.
-Kneel.ButtonAngle = math.rad(16)
-Kneel.ButtonLowest = 1.8 -- studs off the floor
+-- The door's buttons come down with your eye while you're down: DoorSpot's `Above` and `Lowest`.
 
 -- How every screen kneels a body (R15 joints, radians about each joint's own across axis, as
 -- CFrame.Angles' X turns it: a leg or arm hanging down swings forward for positive, the body over
@@ -131,18 +126,13 @@ end
 -- Studs your view drops, for an avatar of hip height `hipHeight` and root height `rootHeight`:
 -- from Roblox's first-person eye down to `Eye`.
 function Kneel.drop(hipHeight: number, rootHeight: number): number
-	local eye = hipHeight
-		+ rootHeight / 2
-		+ Kneel.CameraOverRoot
-		+ (rootHeight - Kneel.StandardRoot) / 2
-	return math.max(0, eye - Kneel.Eye)
+	return math.max(0, Kneel.standingEye(hipHeight, rootHeight) - Kneel.Eye)
 end
 
--- How high the door's buttons sit off the floor while you're all the way down, `distance` studs
--- out from the door: `ButtonAngle` over your level gaze, between `ButtonLowest` and `standing`.
-function Kneel.buttonHeight(distance: number, standing: number): number
-	local h = Kneel.Eye + math.max(distance, 0) * math.tan(Kneel.ButtonAngle)
-	return math.clamp(h, math.min(Kneel.ButtonLowest, standing), standing)
+-- Studs off the floor Roblox's first-person eye rides for an avatar standing, of hip height
+-- `hipHeight` and root height `rootHeight` (4.5 for the standard 2 and 2).
+function Kneel.standingEye(hipHeight: number, rootHeight: number): number
+	return hipHeight + rootHeight / 2 + Kneel.CameraOverRoot + (rootHeight - Kneel.StandardRoot) / 2
 end
 
 return Kneel

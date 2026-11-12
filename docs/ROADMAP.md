@@ -163,7 +163,8 @@ tops still jittered on a computer: L-16d, "not now", but before friends play (L-
 Make the fixes I recently described, the prompt updates, build the lobby, and beyond... this game
 needs to be perfect." Up to 15 sessions back to back, about 300k tokens of context each, still one
 ticket each, every session ending green and committed. Order: L-16b2 (done), L-19a (done: one
-look for every button, the owner's "prompt updates"), L-19b, L-20a, L-17, L-16d,
+look for every button, the owner's "prompt updates"), L-19b (done: a door's buttons where the
+hand goes), L-20a, L-17, L-16d,
 then the lobby, L-08e1 to L-08e4 (GDD "The lobby", D-112), which no longer waits on L-09a
 (only the owner can run that): split L-08e1 and L-08e4 into sessions that each end green (the
 room's art script first, then the cars, the joining and the count, then the trip to a server of
@@ -1137,7 +1138,7 @@ Brix's purchases and profiles), proven mechanics only, never edit Brix.
     the screen allows). The body is steered in PreSimulation while the camera draws in
     PreRender: on a screen faster than physics, frames can repeat a place and then jump, which a
     phone at 60 hides. Also check a live server for the crawl check's put-backs.
-- [ ] **L-19 The buttons in the world, small and modern** (owner, Nov 11: "It takes up too much
+- [x] **L-19 The buttons in the world, small and modern** (owner, Nov 11: "It takes up too much
   space on mobile... all prompts in the game need to be revamped to take up less space and look
   modern and world-class"). Every button in the world is Roblox's default prompt today (the dark
   box with the key, the name over the verb). Two sessions:
@@ -1148,12 +1149,16 @@ Brix's purchases and profiles), proven mechanics only, never edit Brix.
     name only where it's news and once per row; it swells in and blinks out, a hold fills a ring,
     a press pops it, and a refusal (now sent to the presser alone, `Remotes.Refused`) shakes it
     red with its words and a dull tick. `ButtonReach` folded in as `ButtonView.hide`.
-  - [ ] **L-19b A door's buttons where your hand would go** (owner's layout): shut, Open sits on
-    the door's middle and Peek low by the ground; open, Close and Slam side by side in the
-    middle. The padlock's and the cutters' buttons on the latch. Each still one verb. Now each
-    button can have its own point (an Attachment per button, `UIOffset` only to nudge): today's
-    row spacing (`SLOT_PIXELS` 150, sized for Roblox's 138-wide box) is wider than the new chips
-    need, and a long red refusal ("Need bolt cutters") can run up to the next chip.
+  - [x] **L-19b A door's buttons where your hand would go.** Done Nov 11 (D-115), verified in
+    Studio on a computer and the Galaxy A16 (`docs/art/L-19b-*.jpg`): each door has four spots
+    (`DoorMiddle`, `DoorLow`, `DoorLatch` on the padlock's side, `DoorInside`); a shut door shows
+    Open on the middle and Peek low, an open one Close and Slam side by side, a padlocked one
+    "Padlocked" once over Open and Cut on the latch. The middle row is laid out per state by the
+    pure `Door.place` (130-point steps, double-tap safe, Lune-checked) and slides when it
+    re-spaces. Each screen keeps the spots in view (`DoorSpotView`, the rule in `DoorSpot`):
+    Peek rides up the door just above the slots and comes down onto the handle as you look down;
+    the row comes down with your eye as you kneel (KneelView's own lowering is gone); the latch's
+    spot slides in toward your gaze so a phone's torch and jump buttons stay clear.
 - [ ] **L-20 The inventory wheel** (owner, Nov 11): one round button at the bottom middle in place
   of the slots' bar. Tap it and a wheel of your slots fans out from it; pick one and a small box
   beside the button shows it. Tap that box to lift the tool into your hand or lower it out of
@@ -1206,6 +1211,12 @@ is an escape, not a haul); nothing builds it until the owner says.
 
 ## Polish waiting for a slot
 
+- **A door's row as it changes (L-19b):** a button fading out (0.08 s) and the one arriving in
+  its neighbour's place overlap for that moment (Open fading as Slam swells in beside it). A
+  crossfade that waits for the leaver, or a shorter fade on a door's row, if it reads as a flicker.
+- **The held tool behind a door's low buttons (L-19b):** on a phone the torch in your right hand
+  sits behind Cut when it slides in from the latch; the chip draws over it, but L-17 should judge
+  whether the hand drops a little while a door's buttons show.
 - **The buttons' finish (L-19a):** the hold ring is Roblox's own ring picture, thin round a
   48-point chip; a ring of our own (a bolder stroke, a soft glow as it closes) would read better
   at arm's length on a phone. A row's shared name ("Padlocked") jumps to the next button when the

@@ -3,11 +3,12 @@
 	Doors: every storage unit's roll-up door as the GDD's state machine (the pure `Door`), a system
 	on the server's Host clock. It finds each unit in the world by its tag and gives it buttons:
 
-	- On the door's hall side at eye height, the buttons its state allows and nothing else: Peek,
-	  Open and Lock on a shut door, Close and Slam on an open one, Open and Cut on a padlocked one.
-	  Lock shows only on the screen of someone with a padlock in hand (ToolView hides it). Each
-	  action keeps one place on screen (`Door.Slots`), side by side, so a phone thumb can pick one
-	  and a double tap can't fire something else.
+	- On the door's hall side, the buttons its state allows and nothing else, each where your hand
+	  would go (`Door.place`, L-19b): Open on the door's middle and Peek low by the lift handle on
+	  a shut door, Close and Slam side by side in the middle of an open one, Lock and Cut on the
+	  latch. Lock shows only on the screen of someone with a padlock in hand (ToolView hides it).
+	  The middle row is laid out so a double tap can't fire something else. Each spot is an
+	  Attachment tagged `DoorSpot.Tag`; each screen moves its own copy into view (DoorSpotView).
 	- Just inside the door, Lift, only while the door is down: someone shut in can always get out
 	  (unless it's padlocked: then it rattles).
 
@@ -40,6 +41,7 @@ local Arrival = require(ReplicatedStorage.Shared.Arrival)
 local Brix = require(ReplicatedStorage.Brix)
 local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
 local DoorSound = require(ReplicatedStorage.Shared.StorageUnit.DoorSound)
+local DoorSpot = require(ReplicatedStorage.Shared.StorageUnit.DoorSpot)
 local Ladders = require(script.Parent.Ladders)
 local Motion = require(ReplicatedStorage.Shared.StorageUnit.Motion)
 local Prompts = require(script.Parent.Prompts)
@@ -80,16 +82,15 @@ export type Doors = Brix.System & {
 	move: (self: any, unit: Model, kind: Motion.Kind) -> boolean,
 }
 
--- Where the buttons sit. In first person a button shows only while its point is on screen, so the
--- points sit on the door at about eye height: pressed against the door with a level gaze, they
--- still show. A point inside the door's invisible collider loses its sight line and hides, so both
--- sit just outside it.
+-- Where the buttons sit: each spot at its height (DoorSpot.Height). A point inside the door's
+-- invisible collider loses its sight line and hides, so each sits just outside it.
 local HALL_OUT = RollUpDoor.ColliderDepth / 2 + 0.1 -- the hall side's buttons, just off the door
 local INSIDE_IN = RollUpDoor.ColliderDepth / 2 + 0.1 -- Lift, just behind it: a shut door hides it
-local HEIGHT = 4 -- just under a standing player's eyes (about 4.4)
+local LATCH_PART = "Padlock" -- the unit's padlock on its latch (art/unit): the latch spot's side
+local LATCH_EDGE = 0.25 -- studs in from the door's edge the latch sits if a unit has no padlock
+local SPOT_TOP = 6 -- studs off the floor a screen may raise a spot to: a tall avatar's eye
 local HALL_REACH = 8 -- close enough to touch the door, not the neighbour's
 local INSIDE_REACH = 5 -- only someone shut inside should see Lift
-local SLOT_PIXELS = 150 -- between neighbouring buttons' centres: a button is 138 wide
 
 -- The checks on a press.
 local RANGE_SLACK = 4 -- studs past a button's reach still accepted: a moving player's lag
@@ -143,8 +144,7 @@ type Entry = {
 	frame: CFrame, -- the door's frame: +Z into the unit
 	halfWidth: number,
 	fullStroke: number,
-	hall: Attachment,
-	inside: Attachment,
+	spots: { [Door.Spot]: Attachment },
 	buttons: { [Door.Action]: ProximityPrompt },
 	refusers: { [ProximityPrompt]: (string, Player) -> () },
 	state: Door.State,
@@ -185,9 +185,13 @@ function Doors.new(): Doors
 	local ladders: Ladders.Ladders? = nil -- who's lying up on the tops
 
 	-- A door's buttons carry a name only while it's padlocked: news inside, where the padlock
-	-- can't be seen. Its number is painted on the door.
-	local function nameOf(entry: Entry): string
-		return if entry.state == "Locked" then "Padlocked" else ""
+	-- can't be seen. Its number is painted on the door. Only Open and Lift carry it, the head of
+	-- each side, so it shows once.
+	local function nameOf(entry: Entry, action: Door.Action): string
+		if entry.state == "Locked" and (action == "Open" or action == "Lift") then
+			return "Padlocked"
+		end
+		return ""
 	end
 
 	-- Reads the door's state from its motion and padlock, and shows only the buttons it allows.
@@ -220,9 +224,13 @@ function Doors.new(): Doors
 				end
 			end
 		end
-		local name = nameOf(entry)
-		for _, p in entry.buttons do
-			p.ObjectText = name
+		for action: Door.Action, p in entry.buttons do
+			p.ObjectText = nameOf(entry, action)
+			-- a button going away keeps its place as it fades: only those offered move along the row
+			if p.Enabled then
+				local _, at = Door.place(state, action)
+				p.UIOffset = Vector2.new(at * Door.Step, 0)
+			end
 		end
 		changed:fire({ unit = unit, state = state })
 	end
@@ -252,25 +260,44 @@ function Doors.new(): Doors
 	end
 
 	--[[
+		The nearest place to `at` that a screen may have moved `spot` to (DoorSpotView): anywhere up
+		the door from where it belongs to a tall eye, or down to the row's lowest while kneeling,
+		and the latch's anywhere in along the bar to the door's middle. Reach is judged from there,
+		so a button a player sees within reach is within reach here too.
+	]]
+	local function nearest(entry: Entry, spot: Door.Spot, at: Vector3): Vector3
+		local a = entry.spots[spot]
+		if not DoorSpot.Moves[spot] then
+			return a.WorldPosition
+		end
+		local frame = entry.frame
+		local home = frame:PointToObjectSpace(a.WorldPosition)
+		local p = frame:PointToObjectSpace(at)
+		local x = math.clamp(p.X, math.min(home.X, 0), math.max(home.X, 0))
+		local y = math.clamp(p.Y, math.min(home.Y, DoorSpot.Lowest), math.max(home.Y, SPOT_TOP))
+		return frame:PointToWorldSpace(Vector3.new(x, y, home.Z))
+	end
+
+	--[[
 		How `action` by someone whose body is `root`, carrying `tools`, is decided: where the server
 		sees them or a moment on (Arrival), the first moment that lets it happen, else the answer
-		where it sees them. With `reach`, only moments within it of `point` count, and nil if none
-		is. Only a body crossing the door line as it lands sees two sides here.
+		where it sees them. With `reach`, only moments within it of the button's spot count, and nil
+		if none is. Only a body crossing the door line as it lands sees two sides here.
 	]]
 	local function judge(
 		entry: Entry,
 		action: Door.Action,
 		root: BasePart,
 		tools: Door.Tools,
-		point: Vector3?,
 		reach: number?
 	): Door.Verdict?
 		local from = root.Position
 		local v = root.AssemblyLinearVelocity
 		local first: Door.Verdict? = nil
+		local spot: Door.Spot = Door.place(entry.state, action)
 		for i = 0, Arrival.Steps do
 			local at = from + v * Arrival.ahead(i)
-			if not (point and reach) or (at - point).Magnitude <= reach then
+			if not reach or (at - nearest(entry, spot, at)).Magnitude <= reach then
 				local verdict = Door.decide(entry.state, action, sideOf(entry, at), tools)
 				if verdict.ok then
 					return verdict
@@ -297,17 +324,9 @@ function Doors.new(): Doors
 		if not (root and root:IsA("BasePart")) then
 			return
 		end
-		local point = if action == "Lift" then entry.inside else entry.hall
 		local reach = if action == "Lift" then INSIDE_REACH else HALL_REACH
 		refresh(entry)
-		local verdict = judge(
-			entry,
-			action,
-			root,
-			carries(slots, player),
-			point.WorldPosition,
-			reach + RANGE_SLACK
-		)
+		local verdict = judge(entry, action, root, carries(slots, player), reach + RANGE_SLACK)
 		if not verdict then
 			return
 		end
@@ -346,37 +365,53 @@ function Doors.new(): Doors
 		end
 		local spec = RollUpDoor.spec(unit)
 		local frame = RollUpDoor.frame(unit)
-		local hall = Instance.new("Attachment")
-		hall.Name = "DoorButtons"
-		hall.Parent = root
-		hall.WorldCFrame = frame * CFrame.new(0, HEIGHT, -HALL_OUT)
-		local inside = Instance.new("Attachment")
-		inside.Name = "LiftButton"
-		inside.Parent = root
-		inside.WorldCFrame = frame * CFrame.new(0, HEIGHT, INSIDE_IN)
+		local halfWidth = spec.DoorWidth / 2
+		-- the latch's side: wherever the art hangs the padlock (the hall's right, on today's units)
+		local latchX = -(halfWidth - LATCH_EDGE)
+		local lock = unit:FindFirstChild(LATCH_PART, true)
+		if lock and lock:IsA("BasePart") then
+			latchX = math.clamp(frame:PointToObjectSpace(lock.Position).X, -halfWidth, halfWidth)
+		end
+		local across: { [Door.Spot]: number } = { Middle = 0, Low = 0, Latch = latchX, Inside = 0 }
+		local spots: { [Door.Spot]: Attachment } = {}
+		for _, spot: Door.Spot in Door.Spots do
+			local a = Instance.new("Attachment")
+			a.Name = `Door{spot}`
+			a:SetAttribute(DoorSpot.Attribute, spot)
+			if across[spot] ~= 0 then
+				a:SetAttribute(DoorSpot.Across, across[spot])
+			end
+			if DoorSpot.Moves[spot] then
+				a:AddTag(DoorSpot.Tag)
+			end
+			a.Parent = root -- first: WorldCFrame is kept relative to the parent it has
+			local out = if spot == "Inside" then INSIDE_IN else -HALL_OUT
+			-- facing the hall, as the door does: a screen moving it reads the way out from it
+			a.WorldCFrame = frame * CFrame.new(across[spot], DoorSpot.Height[spot], out)
+			spots[spot] = a
+		end
 
 		local entry: Entry = {
 			unit = unit,
 			frame = frame,
-			halfWidth = spec.DoorWidth / 2,
+			halfWidth = halfWidth,
 			fullStroke = spec.Rise.Open,
-			hall = hall,
-			inside = inside,
+			spots = spots,
 			buttons = {},
 			refusers = {},
 			state = "Closed",
 			settles = 0,
 			conns = {},
 		}
-		local function make(button: Button, at: Attachment, reach: number)
-			local p = Prompts.make(at, {
+		local function make(button: Button, reach: number)
+			local spot: Door.Spot = Door.place("Closed", button.action)
+			local p = Prompts.make(spots[spot], {
 				actionText = button.text,
 				key = button.key,
 				pad = button.pad,
 				reach = reach,
 				hold = button.hold,
 			})
-			p.UIOffset = Vector2.new(Door.Slots[button.action] * SLOT_PIXELS, 0)
 			p.Enabled = false
 			p:SetAttribute(Doors.ActionAttribute, button.action)
 			p:AddTag(Door.ButtonTag)
@@ -417,9 +452,9 @@ function Doors.new(): Doors
 			end
 		end
 		for _, button in HALL_BUTTONS do
-			make(button, hall, HALL_REACH)
+			make(button, HALL_REACH)
 		end
-		make(LIFT_BUTTON, inside, INSIDE_REACH)
+		make(LIFT_BUTTON, INSIDE_REACH)
 
 		local function moved()
 			refresh(entry)
@@ -443,8 +478,9 @@ function Doors.new(): Doors
 		for _, c in entry.conns do
 			c:Disconnect()
 		end
-		entry.hall:Destroy()
-		entry.inside:Destroy()
+		for _, a in entry.spots do
+			a:Destroy()
+		end
 	end
 
 	local system = {

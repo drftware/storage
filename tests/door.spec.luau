@@ -2,6 +2,7 @@
 -- lune run tests/door.spec
 local Door = require("../src/shared/StorageUnit/Door")
 local Motion = require("../src/shared/StorageUnit/Motion")
+local WorldButton = require("../src/shared/WorldButton")
 
 local FULL, PEEK = 7.65, 1.15
 local failures, checks = 0, 0
@@ -48,7 +49,6 @@ ok(Door.stateOf("Rattle", 0, 0, 0.2, FULL, true) == "Locked", "a padlocked door 
 for _, state in Door.States do
 	for _, side in Door.Sides do
 		local offered = Door.offers(state, side)
-		local slots: { [number]: Door.Action } = {}
 		for _, action in offered do
 			-- an offered button always answers: it acts, or says why not
 			for _, tools in { NONE, BOTH } do
@@ -62,10 +62,17 @@ for _, state in Door.States do
 					`{state}: {action} ok but does nothing`
 				)
 			end
-			-- no two buttons share a place on screen
-			local slot = Door.Slots[action]
-			ok(slots[slot] == nil, `{state}, {side}: {action} and {slots[slot]} on one spot`)
-			slots[slot] = action
+			-- no two buttons crowd each other: on one spot, at least a step apart across the row
+			local spot, at = Door.place(state, action)
+			for _, other in offered do
+				local otherSpot, otherAt = Door.place(state, other)
+				if other ~= action and otherSpot == spot then
+					ok(
+						math.abs(at - otherAt) >= 1 - 1e-9,
+						`{state}, {side}: {action} and {other} crowd one spot`
+					)
+				end
+			end
 		end
 		for _, action in Door.Actions do
 			local v = Door.decide(state, action, side, BOTH)
@@ -84,29 +91,45 @@ for _, state in Door.States do
 	end
 end
 
--- the thumb: after a tap, the spot it hit holds nothing else, so a double tap can't misfire
--- (Peek and Close share the left spot as a toggle: tap to peek, tap again to drop it)
+-- the thumb: after a tap, the place it hit holds nothing else, so a double tap can't misfire. A
+-- phone's chip takes taps within its target (`TouchChip` and `Hit` all round), so another chip on
+-- the same spot must sit at least that far across.
+local TARGET = (WorldButton.TouchChip + 2 * WorldButton.Hit) / Door.Step -- in steps
 for _, state in Door.States do
 	for _, action in Door.offers(state, "Hall") do
 		local v = Door.decide(state, action, "Hall", BOTH)
 		if v.ok then
+			local spot, at = Door.place(state, action)
 			local next = Door.after(action)
 			for _, other in Door.offers(next, "Hall") do
+				local otherSpot, otherAt = Door.place(next, other)
 				-- a held button can't be fired by a second tap
-				if
-					Door.Slots[other] == Door.Slots[action]
-					and other ~= action
-					and not Door.Holds[other]
-				then
+				if otherSpot == spot and not Door.Holds[other] then
 					ok(
-						action == "Peek" and other == "Close",
-						`{state}: {action} then {other} on the same spot`
+						math.abs(otherAt - at) >= TARGET - 1e-9,
+						`{state}: {action} then {other} under the same thumb`
 					)
 				end
 			end
 		end
 	end
 end
+
+-- the owner's layout: Open in the middle and Peek low on a shut door, Close and Slam side by side
+-- in the middle of an open one, the padlock's and the cutters' buttons on the latch
+local function placed(state: Door.State, action: Door.Action): string
+	local spot, at = Door.place(state, action)
+	return `{spot} {at}`
+end
+ok(placed("Closed", "Open") == "Middle 0", "a shut door: Open in the middle")
+ok(placed("Closed", "Peek") == "Low 0", "and Peek low")
+ok(placed("Open", "Close") == "Middle -0.5", "an open door: Close left of the middle")
+ok(placed("Open", "Slam") == "Middle 0.5", "and Slam beside it")
+ok(placed("Closed", "Lock") == "Latch 0", "Lock on the latch")
+ok(placed("Locked", "Cut") == "Latch 0", "Cut on the latch")
+ok(placed("Closed", "Lift") == "Inside 0", "Lift inside")
+-- side by side: Close's verb ends before Slam's chip starts, on a phone
+ok(Door.Step >= WorldButton.TouchChip + WorldButton.Gap + 50 + 8, "a step fits a chip and a verb")
 
 -- --- the GDD's rules ------------------------------------------------------------------------
 

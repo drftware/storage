@@ -55,6 +55,7 @@ WorldButton.Calm = 0.2 -- the red easing back to the verb's colour after that
 WorldButton.Shake = 0.38 -- a refusal's shake, side to side, dying away
 WorldButton.ShakePoints = 7 -- how far its first swing goes
 WorldButton.ShakeSwings = 3.5 -- whole swings over the shake
+WorldButton.Slide = 0.14 -- a button moving along its row as its neighbours change (a door's Slam)
 
 local function clamp01(x: number): number
 	return if x < 0 then 0 elseif x > 1 then 1 else x
@@ -87,6 +88,14 @@ function WorldButton.pop(seconds: number): (number, number)
 	local p = seconds / WorldButton.Pop
 	local flash = (1 - p) * (1 - p)
 	return WorldButton.PopScale + (1 - WorldButton.PopScale) * WorldButton.spring(p), flash
+end
+
+--- How far along its slide a button is `seconds` after its place on the row changed: 0 at the
+--- old place, 1 at the new, eased out so it lands softly.
+function WorldButton.slide(seconds: number): number
+	local p = clamp01(seconds / WorldButton.Slide)
+	local t = 1 - p
+	return 1 - t * t * t
 end
 
 --- A refusal's sideways shove `seconds` after it, in points: a swing that dies away.

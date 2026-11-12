@@ -17,6 +17,7 @@ local ChaseMusic = require(script.ChaseMusic)
 local CrawlView = require(script.CrawlView)
 local CutFreeView = require(script.CutFreeView)
 local DoorSounds = require(script.DoorSounds)
+local DoorSpotView = require(script.DoorSpotView)
 local DoorView = require(script.DoorView)
 local ElevatorView = require(script.ElevatorView)
 local EndView = require(script.EndView)
@@ -87,6 +88,8 @@ local host = Brix.Host.new({
 		{ slot = "crawlView", system = CrawlView.new(kick) },
 		{ slot = "ladderView", system = LadderView.new(kick) },
 		{ slot = "kneelView", system = KneelView.new() },
+		-- a door's buttons kept in view where your hand would go (L-19b), after the view drops
+		{ slot = "doorSpotView", system = DoorSpotView.new() },
 		{ slot = "freeCursor", system = freeCursor },
 		{ slot = "hallHaze", system = HallHaze.new() },
 		-- left behind (L-08c): its camera runs between CameraShake's undo and apply

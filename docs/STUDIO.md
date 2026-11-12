@@ -100,6 +100,23 @@ verified: a doc page, Studio, or "untested".
   `rbxasset://textures/ui/Controls/DefaultController/ButtonX@2x.png` (loads); Roblox's ring
   picture `rbxasset://textures/ui/Controls/RadialFill.png` loads. "UI Bright Click"
   15675059323 (Roblox's) loads, 0.37 s.
+- **A spot moved on one screen** (L-19b, Play): a client writing its copy of a server Attachment's
+  `WorldPosition` moves that screen's ProximityPrompt (its on-screen check and reach) and the
+  BillboardGui adorned to it; the server's copy and every other screen keep theirs, until the
+  server writes the Attachment again. An Attachment's `WorldCFrame` set before it has a parent is
+  kept relative to the parent it gets later: parent it first.
+- **The Galaxy A16's screen, measured** (Device Simulator, L-19b): `ViewportSize` says 685x338
+  but `WorldToViewportPoint` of a point dead ahead is (342.5, 179.5): the 3D view's middle sits
+  10 points under the middle of the reported viewport. The tool slots span y 267 to 328 (x 280
+  to 402), the jump button x 590 to 660, y 248 to 318, the torch's switch x 599 to 651, y 186 to
+  238, the thumbstick the bottom left.
+- **A scripted Pick up can miss** (L-19b, Play): `InputHoldBegin`/`End` on a shown "Pick up"
+  twice did nothing on the server (its slots stayed empty, no error) where `user_keyboard_input`
+  E took it at once. Check the player's `ToolSlot1` after a scripted pick-up; use the key if
+  it's empty.
+- **Aiming the first-person camera from a Client `execute_luau`** (L-19b): with `CameraType`
+  Custom, set `Camera.CFrame` once and the camera module carries on from that look; Scriptable
+  holds any view but ignores `Humanoid.CameraOffset` (so KneelView's crouch only shows in Custom).
 - **Seeing a BillboardGui in a capture** (L-19a): captures draw no BillboardGuis, so mirror
   them: for each, clone its contents into a frame of its size in a temporary ScreenGui at
   `Camera:WorldToViewportPoint` of its adornee plus `SizeOffset` times its size (y flipped),

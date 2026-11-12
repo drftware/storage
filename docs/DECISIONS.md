@@ -2994,3 +2994,56 @@ red with "Padlocked" from the E key and from a real tap on the phone chip; Cut's
 mid-hold with bolt cutters, the padlock cut, the row turning to Peek and Open; Pick up named
 "Bolt cutters"; the keypad's Use on the phone. Rejected: a CanvasGroup per button for the fades
 (a render texture per button, soft on phones); moving the chip with the words.
+
+## D-115 A door's buttons where your hand would go (L-19b, Nov 11)
+The moment: at a shut door your thumb finds Open on the door's middle and Peek low by the handle,
+as if reaching to lift it a foot; at an open door Close and Slam sit side by side in the middle;
+the padlock's Lock and the cutters' Cut sit on the latch. The owner's layout (ROADMAP L-19b).
+
+**Each spot its own point.** `Doors.add` makes four Attachments on the unit's root, all facing
+the hall as the door does: `DoorMiddle` (Open, Close, Slam), `DoorLow` (Peek), `DoorLatch` (Cut,
+Lock; across the door wherever the art hangs its `Padlock`, the hall's right on today's M and S),
+and `DoorInside` (Lift). Heights live in the pure `DoorSpot.Height` (4, 1, 0.5, 4); `Door.place
+(state, action)` gives each button its spot and its place across the middle row.
+
+**The middle row, per state, a double tap safe.** One alone in the middle; Close and Slam half a
+step either side; three in a row (while you peek) a step apart; a step is 130 points (a chip and
+a short verb, then air). Laid out so the place a tap hit is empty after it, by a phone chip's
+whole target: tap Open and the middle is empty while it rises; tap Close and its place is empty
+while it falls (Open comes back in the middle, Slam a step right). Lune checks every tap of every
+state. Changing state moves a still-shown button along the row over 0.14 s (`WorldButton.slide`)
+instead of jumping; one fading out keeps its place. Close no longer shares Peek's spot as a
+toggle: while you kneel it sits in the row, so the low spot is empty after Peek (`OWNER.md`).
+
+**Each screen keeps the spots in view** (`DoorSpotView`, the rule in `DoorSpot`). In first person
+a button shows only while its spot is on screen, and the bottom of a phone's screen is the
+hand's: on the Galaxy A16 the tool slots' top sits 87 points under the view's middle. So each
+screen moves its own copy of the spots near it (within 14 studs, looked for five times a second,
+moved only when they need to):
+- Up into view: a spot sits no lower than `Below` under your gaze (Open at your eye, Peek and the
+  latch 12 degrees under it, clear of the slots and a chip under Open). Looking down at the door
+  lets them come down with your gaze onto the handle and the padlock; looking up counts as level,
+  so nothing chases your gaze up the door. Your eye is your standing eye at most
+  (`Kneel.standingEye`), so a jump never lifts them.
+- Down with your eye as you kneel: no higher than 16 degrees over a level gaze and never under
+  1.8, clear of the peek's gap. This replaces KneelView's own lowering of the door's buttons: the
+  camera's drop does it.
+- In along the bar: the latch's spot slides toward the door's middle just far enough to sit
+  within 24 degrees of your gaze (`DoorSpot.slide`), so on a phone Cut stays off the torch and
+  jump buttons and its red "Need bolt cutters" ends short of them; face the padlock and it's on
+  it. Looking away from the door leaves it be.
+The server judges a press's reach from the nearest place a screen may have put the spot (up the
+door to a tall eye, down to the row's lowest, the latch's in to the door's middle), so a button a
+player sees within reach is within reach on the server too.
+
+**Names.** Only Open and Lift carry "Padlocked" (the head of each side), so it shows once now that
+Open and Cut no longer share a point.
+
+**Verified in Studio** (one player, a computer and the Galaxy A16 in the Device Simulator): the
+spots on the laid floor's M and S units; a shut door from three studs, level and looking down;
+Peek by key and press crouching you with the row brought down over the gap; Open, then Close,
+with Slam sliding 65 to 130 and the tapped Close fading in place; a padlocked door's "Padlocked"
+once, Cut slid in with its refusal short of the torch button; Cut held with bolt cutters (R)
+taking the padlock off, again after the server's reach check moved to the spot's range (Peek,
+Close, Open by press; R held). Rejected: spacing the buttons by world distance (they'd crowd far off
+and fly apart close up); following your gaze's pitch both ways (buttons crawling up the door).

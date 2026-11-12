@@ -8,6 +8,7 @@ return {
 	Curtain = require(script.Curtain),
 	Door = require(script.Door),
 	DoorSound = require(script.DoorSound),
+	DoorSpot = require(script.DoorSpot),
 	Kneel = require(script.Kneel),
 	Motion = require(script.Motion),
 	RollUpDoor = require(script.RollUpDoor),

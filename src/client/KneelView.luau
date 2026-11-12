@@ -4,8 +4,8 @@
 
 	Your own: the moment you tap Peek your view drops to the foot of gap the door lifts (over
 	`Kneel.Down`, eased), so you see the floor under the door first: a keeper's feet, a sleeper's
-	slack legs, boxes. The door's buttons come down with you to sit just above your gaze, so Open,
-	Close and Slam stay on screen. Step off, jump, press another of the door's buttons, or have the
+	slack legs, boxes. The door's buttons come down with your eye (DoorSpotView), so Open, Close
+	and Slam stay on screen. Step off, jump, press another of the door's buttons, or have the
 	door move under someone else's hand, and you stand back up with the same ease. Your body
 	isn't posed on your own screen: in first person you never see it, and a torso leant into the
 	door would shove you off your knees.
@@ -24,7 +24,6 @@ local Brix = require(ReplicatedStorage.Brix)
 local Joints = require(script.Parent.Joints)
 local Kneel = require(ReplicatedStorage.Shared.StorageUnit.Kneel)
 local Motion = require(ReplicatedStorage.Shared.StorageUnit.Motion)
-local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 
 local ATTR_MOTION = "DoorMotion" -- a door's move (RollUpDoor, Motion.encode)
@@ -47,14 +46,6 @@ type Mine = {
 	unit: Model,
 	hold: Kneel.Hold,
 	moves: RBXScriptConnection, -- the door's moves while you're down
-}
-
--- The door's buttons brought down to your gaze, until you're all the way back up.
-type Lowered = {
-	spot: Attachment,
-	home: Vector3, -- its position in its part, standing
-	world: Vector3, -- and in the world
-	by: number, -- studs it comes down with you all the way down
 }
 
 local KneelView = {}
@@ -130,7 +121,6 @@ function KneelView.new(): Brix.System
 	local level = 0 -- how far down your own view is (Kneel.toward)
 	local drop = 0 -- studs your view drops all the way down
 	local viewing: Humanoid? = nil -- the humanoid whose CameraOffset this screen is writing
-	local lowered: Lowered? = nil
 
 	local function stand()
 		local m = mine
@@ -144,18 +134,8 @@ function KneelView.new(): Brix.System
 		end
 	end
 
-	local function restore()
-		local l = lowered
-		if l then
-			lowered = nil
-			if l.spot.Parent then
-				l.spot.Position = l.home
-			end
-		end
-	end
-
-	-- You tapped Peek on `unit`'s buttons at `spot`.
-	local function kneel(unit: Model, spot: Attachment)
+	-- You tapped Peek on `unit`'s buttons.
+	local function kneel(unit: Model)
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart")
 		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
@@ -184,22 +164,6 @@ function KneelView.new(): Brix.System
 		}
 		drop = Kneel.drop(humanoid.HipHeight, root.Size.Y)
 		viewing = humanoid
-		local l = lowered
-		if l and l.spot ~= spot then
-			restore()
-		end
-		if not lowered then
-			local frame = RollUpDoor.frame(unit)
-			local world = spot.WorldPosition
-			local standing = world.Y - frame.Position.Y
-			local out = math.abs(frame:PointToObjectSpace(p).Z)
-			lowered = {
-				spot = spot,
-				home = spot.Position,
-				world = world,
-				by = standing - Kneel.buttonHeight(out, standing),
-			}
-		end
 	end
 
 	local function pressed(prompt: ProximityPrompt)
@@ -214,7 +178,7 @@ function KneelView.new(): Brix.System
 			return
 		end
 		if action == "Peek" then
-			kneel(unit, spot)
+			kneel(unit)
 		else
 			-- Open, Close, Slam: you stand as you reach for the door, not when the server answers
 			stand()
@@ -259,7 +223,7 @@ function KneelView.new(): Brix.System
 		end
 	end
 
-	-- Your view, eased down or up; your hold checked; the buttons with you.
+	-- Your view, eased down or up; your hold checked.
 	local function viewStep(dt: number)
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart")
@@ -291,16 +255,6 @@ function KneelView.new(): Brix.System
 		local v = viewing
 		if v and v.Parent then
 			v.CameraOffset = Vector3.new(0, -drop * w, 0)
-		end
-		local l = lowered
-		if l then
-			if not l.spot.Parent then
-				lowered = nil
-			elseif level == 0 then
-				restore()
-			else
-				l.spot.WorldPosition = l.world - Vector3.new(0, l.by * w, 0)
-			end
 		end
 		if level == 0 then
 			viewing = nil
@@ -359,7 +313,6 @@ function KneelView.new(): Brix.System
 			end
 			table.clear(connections)
 			stand()
-			restore()
 			local v = viewing
 			if v and v.Parent then
 				v.CameraOffset = Vector3.zero

@@ -72,24 +72,53 @@ Door.Actions = { "Peek", "Open", "Close", "Slam", "Lift", "Cut", "Lock" } :: { A
 Door.Sides = { "Hall", "Inside" } :: { Side }
 
 --[[
-	Each button's place on screen, in prompt widths from the middle (-1 left, 0 middle, 1 right).
-	Fixed per action, so a thumb learns them, and laid out so the spot a tap hit is empty after it
-	(Open's middle spot is gone while it opens; Slam's right spot while it falls) and a double tap
-	can't fire something else. Peek and Close share the left spot as a toggle: tap to peek, tap
-	again to drop it.
+	Where on the door each button sits, where your hand would go (the owner's layout, L-19b):
+	- Middle, at the door's middle: Open, and Close and Slam side by side.
+	- Low, by the ground at the lift handle: Peek, as you'd crouch and lift it a foot.
+	- Latch, on the padlock at the door's bottom corner: the padlock's Lock and the cutters' Cut.
+	- Inside, just behind a shut door: Lift, for someone shut in.
 ]]
-Door.Slots = {
-	Peek = -1,
-	Open = 0,
-	Close = -1,
-	Slam = 1,
-	Lift = 0,
-	Cut = 1,
-	Lock = 1,
-} :: { [Action]: number }
+export type Spot = "Middle" | "Low" | "Latch" | "Inside"
+Door.Spots = { "Middle", "Low", "Latch", "Inside" } :: { Spot }
+
+local SPOT: { [Action]: Spot } = {
+	Peek = "Low",
+	Open = "Middle",
+	Close = "Middle",
+	Slam = "Middle",
+	Cut = "Latch",
+	Lock = "Latch",
+	Lift = "Inside",
+}
+
+-- Screen points between neighbours' centres in the middle row (the server's `UIOffset`): a chip
+-- and a short verb, with a little air before the next chip.
+Door.Step = 130
+
+--[[
+	The middle row in each state, in steps from the door's middle (-1 left, 1 right): one button
+	alone sits in the middle; Close and Slam side by side, half a step each way; three in a row a
+	whole step apart. Laid out so the place a tap hit is empty after it (Open's middle is empty
+	while the door rises, Close's left while it falls), so a double tap can't fire something else.
+]]
+local ROW: { [State]: { [Action]: number } } = {
+	Closed = { Open = 0 },
+	Peeking = { Close = -1, Open = 0, Slam = 1 },
+	Opening = { Close = -0.5, Slam = 0.5 },
+	Open = { Close = -0.5, Slam = 0.5 },
+	Closing = { Open = 0, Slam = 1 },
+	Locked = { Open = 0 },
+}
+
+-- Where `action`'s button sits while the door is in `state`: its spot on the door, and its place
+-- across the middle row in steps (0 anywhere else).
+function Door.place(state: State, action: Action): (Spot, number)
+	local row = ROW[state]
+	return SPOT[action], row and row[action] or 0
+end
 
 -- The buttons you hold rather than tap (a tool at work takes a moment), so a double tap on the
--- spot can't fire them: Lock and then Cut share the right spot.
+-- spot can't fire them: Lock and then Cut share the latch.
 Door.Holds = { Cut = true, Lock = true } :: { [Action]: true }
 
 -- What each action plays.
