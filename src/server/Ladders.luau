@@ -289,6 +289,22 @@ function Ladders.new(): Ladders
 		return true
 	end
 
+	--[[
+		Whether the slide from where `c` lies to `to`, where a move off the tops starts (Climb
+		down's spot by the ladder, Drop down's place at the edge), keeps their body off every sawn
+		hole. Lying behind a hole the slide would take them over it (L-16b1): the press is ignored.
+	]]
+	local function slideClear(c: Climb, root: BasePart, to: Vector3): boolean
+		local map = c.map
+		if not map or #map.holes == 0 then
+			return true
+		end
+		local a = c.origin:PointToObjectSpace(root.Position)
+		local b = c.origin:PointToObjectSpace(to)
+		local head = c.origin:VectorToObjectSpace(root.CFrame.UpVector)
+		return Tops.pathClear(map, a.X, a.Z, b.X, b.Z, Tops.yawOf(head.X, head.Z))
+	end
+
 	-- A climber off the ladder for good: their spot free, the tag off their character.
 	local function clear(c: Climb)
 		if climbs[c.player] == c then
@@ -464,6 +480,10 @@ function Ladders.new(): Ladders
 			refuse("Wait for them")
 			return
 		end
+		local lx, ly, lz, lp = Leaning.lying(stand.front.fit, 1)
+		if not slideClear(c, root, Leaned.pose(stand.front.frame, lx, ly, lz, lp).Position) then
+			return
+		end
 		local down = Leaning.downSeconds(stand.front.fit, c.standUp)
 		stand.busyUntil = t + down
 		c.stand = stand
@@ -502,9 +522,15 @@ function Ladders.new(): Ladders
 		then
 			return
 		end
+		local dropX = Tops.dropX(p.X, width)
+		local start = front.frame
+			* Vector3.new(dropX, fit.topY + Leaning.ProneUp, fit.faceZ + Tops.EdgeIn)
+		if not slideClear(c, root, start) then
+			return
+		end
 		local t = os.clock()
 		c.stand = nil
-		c.dropX = Tops.dropX(p.X, width)
+		c.dropX = dropX
 		c.ends = t + Tops.DropSeconds
 		c.check = nil
 		c.character:SetAttribute(Leaned.DropAttribute, c.dropX)

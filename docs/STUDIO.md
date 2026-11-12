@@ -1308,6 +1308,13 @@ verified: a doc page, Studio, or "untested".
   `Range` alone. `execute_luau` (the MCP) sets the camera back to its own type after each call, so
   a test view must be held by a `BindToRenderStep` at `Camera.Value + 1` (unbind it after).
 
+- **Measuring a held body's legs from the MCP** (Play, L-16b1, 2026-11-11): to hold your
+  character in a pose, set `PlatformStand`, then in a `PreSimulation` binding set the root's
+  CFrame *and zero its velocities* every frame, or gravity drags it a stud lower between frames
+  and every measurement is off. Joint `Transform`s written there hold (the default avatar's legs
+  are `AnimationConstraint`s, hip to knee 0.96, knee to ankle 0.57 by its rig attachments). Judge a
+  knee's bend by the knee's rig attachment ahead of the hip's, not by part centres, which move
+  forward together in a crouch.
 - **Getting a player up on the tops from the MCP** (Play, L-13b2d2b, 2026-11-09): every press is
   the prompt's own `InputHoldBegin()`/`InputHoldEnd()` on the Client, on the *nearest* prompt of
   that name (the test hall and the walked floor both have a Unit 101), with the camera aimed at it

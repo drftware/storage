@@ -387,6 +387,22 @@ for seed = 1, 6 do
 				end
 			end
 			ok(stayed, `{what}: pushing at the hole, you can't crawl over it`)
+			-- Drop down and Climb down from there (L-16b1): each slides you from where you lie to
+			-- where the move starts, which would take your body over the hole, so they're refused;
+			-- from the spot by the ladder they never are
+			local ex, ez = onFloor(s, 0, fit.faceZ + Tops.EdgeIn)
+			local l1x, _, l1z = Leaning.lying(fit, 1)
+			local sx1, sz1 = onFloor(s, l1x, l1z)
+			ok(
+				not Tops.pathClear(hmap, p.x, p.z, ex, ez, p.yaw),
+				`{what}: Drop down from behind the hole is refused`
+			)
+			ok(
+				not Tops.pathClear(hmap, p.x, p.z, sx1, sz1, p.yaw),
+				`{what}: Climb down from behind the hole is refused`
+			)
+			local e1x, e1z = onFloor(s, l1x, fit.faceZ + Tops.EdgeIn)
+			ok(Tops.pathClear(hmap, sx1, sz1, e1x, e1z, inYaw), `{what}: Drop down by the ladder`)
 			local hx, hz = Tops.heading(p.yaw)
 			local vx, vz = p.x + hx * 1.5, p.z + hz * 1.5
 			peeks += 1
@@ -605,6 +621,54 @@ do
 		#cues == 2 and cues[2].at > Tops.InOver and cues[2].at <= Tops.InOver + Tops.InFall,
 		"the landing's thud comes at the end of the fall"
 	)
+	-- the landing's crouch (L-16b1): your root dips, and your legs bend so your feet stay flat on
+	-- the floor (they sank 0.6 under it with your legs straight)
+	local deepest, deepAt = 0, 0
+	for i = 0, 200 do
+		local t = Tops.InSeconds * i / 200
+		local _, y = Tops.dropIn(t, cx, cz, top, lieY, standUp)
+		local dip = Tops.landDip("In", t)
+		if t >= Tops.InOver + Tops.InFall then
+			ok(math.abs(standUp - dip - y) < 1e-9, `the drop in's crouch is landDip's ({t})`)
+		else
+			ok(dip == 0, `no crouch before you land ({t})`)
+		end
+		if dip > deepest then
+			deepest, deepAt = dip, t
+		end
+	end
+	ok(deepest > 0.5 and deepAt > Tops.InOver + Tops.InFall, "your knees take the landing")
+	ok(Tops.landDip("In", Tops.InSeconds) == 0, "and you're standing again at the end")
+	for i = 0, 100 do
+		local t = Tops.DropSeconds * i / 100
+		local _, y = Tops.drop(t, 1, fits.M.faceZ, fits.M.topY, Leaning.ProneUp, standUp)
+		if t >= Tops.Over + Tops.Fall then
+			ok(
+				math.abs(standUp - Tops.landDip("Drop", t) - y) < 1e-9,
+				`the drop off a front's crouch is landDip's ({t})`
+			)
+		end
+	end
+	-- the default avatar's legs (Studio: hip to knee 1.2, knee to ankle 1.1), and a long-legged one
+	for _, leg in { { 1.2, 1.1 }, { 1, 1 }, { 1.6, 1.3 } } do
+		local thigh, shin = leg[1], leg[2]
+		local h0, k0, a0 = Tops.crouch(0, thigh, shin)
+		ok(
+			math.abs(h0) < 1e-6 and math.abs(k0) < 1e-6 and math.abs(a0) < 1e-6,
+			"standing, straight"
+		)
+		for dip = 0.05, Tops.Squat, 0.05 do
+			local hip, knee, ankle = Tops.crouch(dip, thigh, shin)
+			-- the thigh forward by `hip` from straight down, the shin then turned by `knee`
+			local kx, ky = thigh * math.sin(hip), -thigh * math.cos(hip)
+			local shinAngle = hip + knee
+			local ax, ay = kx + shin * math.sin(shinAngle), ky - shin * math.cos(shinAngle)
+			ok(math.abs(ax) < 1e-6, `your ankle stays under your hip ({dip})`)
+			ok(math.abs(ay + (thigh + shin - dip)) < 1e-6, `and on the floor ({dip})`)
+			ok(math.abs(shinAngle + ankle) < 1e-9, `your foot flat ({dip})`)
+			ok(hip > 0 and knee < 0, `the knee bends forward, the shin back ({dip})`)
+		end
+	end
 	-- Drop in is offered lying at the hole's edge with your head out over it, from any side
 	local r: Tops.Rect = { x0 = hole.left, x1 = hole.right, z0 = hole.front, z1 = hole.back }
 	ok(Tops.atHole(r, hole.right + 1.2, cz, -1, 0), "offered lying beside it, head over it")

@@ -24,7 +24,10 @@
 	when the motion ends. The building moves a door itself with `move`: a keeper trapped behind it
 	bangs on it or bursts it up (L-06b3d).
 
-	Each button carries its action as the attribute `DoorAction`, so a screen can find Lock and Cut.
+	Each button carries its action as the attribute `DoorAction`, so a screen can find Lock and Cut,
+	and the tag `Door.ButtonTag`, so a screen can hide them all from someone lying up on the tops.
+	Lying at a unit's front edge your head is over it, 7 studs from the door's buttons below (L-16b1,
+	D-111): a crawler's press is ignored, as their screen never shows those buttons.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -34,6 +37,7 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
 local DoorSound = require(ReplicatedStorage.Shared.StorageUnit.DoorSound)
+local Ladders = require(script.Parent.Ladders)
 local Motion = require(ReplicatedStorage.Shared.StorageUnit.Motion)
 local Prompts = require(script.Parent.Prompts)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
@@ -176,6 +180,7 @@ function Doors.new(): Doors
 	local acted = Brix.Signal.new() :: Brix.Signal<DoorEvent>
 	local changed = Brix.Signal.new() :: Brix.Signal<DoorChange>
 	local slots: Slots.Slots? = nil -- what's in each hand (Slots fills its slot in init.server)
+	local ladders: Ladders.Ladders? = nil -- who's lying up on the tops
 
 	local function nameOf(entry: Entry): string
 		return if entry.state == "Locked" then "Padlocked" else entry.name
@@ -248,6 +253,10 @@ function Doors.new(): Doors
 		local last = lastPress[player]
 		if last and t - last < REPEAT_SECONDS then
 			return
+		end
+		local l = ladders
+		if l and l:crawling(player) then
+			return -- up on the tops: these buttons are off your screen there
 		end
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart")
@@ -333,6 +342,7 @@ function Doors.new(): Doors
 			p.UIOffset = Vector2.new(Door.Slots[button.action] * SLOT_PIXELS, 0)
 			p.Enabled = false
 			p:SetAttribute(Doors.ActionAttribute, button.action)
+			p:AddTag(Door.ButtonTag)
 			if button.action == "Lock" then
 				CollectionService:AddTag(p, Tools.LockTag)
 			end
@@ -354,6 +364,10 @@ function Doors.new(): Doors
 				table.insert(
 					entry.conns,
 					p.PromptButtonHoldBegan:Connect(function(player: Player)
+						local l = ladders
+						if l and l:crawling(player) then
+							return
+						end
 						local character = player.Character
 						local body = character and character:FindFirstChild("HumanoidRootPart")
 						if not (body and body:IsA("BasePart")) then
@@ -412,6 +426,7 @@ function Doors.new(): Doors
 	function system.start(_: any, context: Brix.Context)
 		-- any: the registry hands back a plain System; Slots fills this slot (init.server)
 		slots = (context.registry:get("slots") :: any) :: Slots.Slots?
+		ladders = (context.registry:get("ladders") :: any) :: Ladders.Ladders?
 		table.insert(
 			connections,
 			CollectionService:GetInstanceAddedSignal(UnitKit.Tag):Connect(add)

@@ -2837,3 +2837,37 @@ tool, or crawled in through a hole, you still reach it.
 at exactly the unit floor's height, so the two drew over each other as the view turned. The
 unit's drawn floor now sits 0.03 studs up (`FloorBuilder.unit`); its collider stays, so feet and
 dealt things stand where they did.
+
+## D-111 Landings bend the knees; nothing slides you over a hole; the door below is off the tops (L-16b1, Nov 11)
+The moment: up on the tops with a friend watching, you drop off a front or in through a sawn
+hole and land in a crouch, feet on the floor, and nothing up there takes you across a hole or
+opens the door under you.
+
+**The landing.** Both drops end in a crouch (`Tops.Squat`, 0.7 studs). Your body is PlatformStand
+through the move, so Roblox's Animate stops every track and the legs hang straight: the whole
+body went down and the feet into the floor, 0.63 studs at the deepest (Studio, default avatar),
+on every screen. Now `Tops.landDip` says how deep the crouch is at each moment of either drop,
+and `Tops.crouch` turns the hips, knees and ankles so each ankle stays under its hip on the
+floor and the foot flat. LadderView bends every lander's legs (yours and friends'), each leg's
+length read from the avatar's own rig attachments. Verified in Studio: with the knees bent the
+feet stayed where they stood at 0.4 and 0.6 down. Rejected: dropping the body's dip and keeping
+the crouch in your own view only, since friends would then see a stiff landing.
+
+**Behind a hole.** Climb down and Drop down each start by sliding you from where you lie to the
+move's start (the spot by the ladder, the front's edge). Lying behind a sawn hole, in reach of
+either, that slide went straight over it. The server now ignores the press when the straight
+slide would take your body over a hole (`slideClear`, `Tops.pathClear`). No refusal words (owner:
+"it's common sense"); hiding the buttons there is in ROADMAP's polish. Rejected: a slide round the
+hole, a long detour for a half-second move.
+
+**The door below.** Lying at a front's edge your head is over it and the door's buttons are 7
+studs off (their reach is 8), with nothing between: a crawler saw Open, Slam and Peek. The server
+ignores a crawler's door press (`Doors`, `Ladders:crawling`), and your screen hides every door
+button while you lie up there. Buttons were already hidden two ways, each fighting the other:
+the server switches `Enabled` as a door moves, and ToolView zeroes a button's reach unless the
+right tool is in hand. `ButtonReach` (client) now hides a button by its reach for any number of
+reasons at once; ToolView ("Hand") and LadderView ("Tops") each say theirs, so a padlock in hand
+can't bring Lock back while you lie up top. Door buttons carry `Door.ButtonTag`. The ladder's
+foot buttons are 12 studs from a crawler (reach 6), and the server already ignored Climb, Take
+and Lean from anyone on a climb.
+

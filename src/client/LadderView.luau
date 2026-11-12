@@ -22,6 +22,8 @@
 	buttons; Drop down takes you over a front's edge and down into the hall with a thud and a jolt.
 	Lying at a sawn hole's edge with your head out over it you get Drop in instead: up, legs over
 	the hole, straight down through it with your arms up, a crouch on the unit's floor (L-13b2d3a).
+	The door below a front is in a button's reach from its edge, so while you lie up there its
+	buttons are hidden on your screen (ButtonReach, L-16b1) and the server ignores them.
 
 	Caught on the ladder (`Kept.Attribute`), your body is let go where it is at once, standing
 	again: the server holds it from then (KeptPlayers) and ends the climb (Ladders).
@@ -34,7 +36,9 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local ButtonReach = require(script.Parent.ButtonReach)
 local Crawling = require(ReplicatedStorage.Shared.StorageUnit.CrawlHole.Crawling)
+local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
 local Joints = require(script.Parent.Joints)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Leaned = require(ReplicatedStorage.Shared.Tools.Leaned)
@@ -96,6 +100,15 @@ type Mine = {
 	glide: CFrame?, -- where the server's word found you, gliding from it to where it put you
 	glideAt: number,
 }
+-- One of a body's legs, for a landing's crouch: its joints and how long it is (from the avatar's
+-- own rig attachments, so a long-legged avatar's feet stay put too).
+type Leg = {
+	hip: Joints.Joint,
+	knee: Joints.Joint,
+	ankle: Joints.Joint?,
+	thigh: number, -- hip to knee
+	shin: number, -- knee to ankle
+}
 type Climb = {
 	character: Model,
 	move: Move,
@@ -109,6 +122,7 @@ type Climb = {
 	sounds: Attachment,
 	right: Joints.Joint?,
 	left: Joints.Joint?,
+	legs: { Leg },
 	mine: Mine?,
 	dropX: number,
 	-- how far this crawler has crawled on this screen (their pulls' sounds and arms)
@@ -176,6 +190,54 @@ end
 local function inPose(hole: CFrame, t: number, lieY: number, standUp: number): (CFrame, number)
 	local x, y, z, p, blend = Tops.dropIn(t, IN_X, IN_Z, HOLE.top, lieY, standUp)
 	return Leaned.outward(hole, x, y, z, p), blend
+end
+
+-- Studs between two of a part's attachments, if it has both.
+local function span(part: Instance?, a: string, b: string): number?
+	local x = part and part:FindFirstChild(a)
+	local y = part and part:FindFirstChild(b)
+	if x and x:IsA("Attachment") and y and y:IsA("Attachment") then
+		return (x.Position - y.Position).Magnitude
+	end
+	return nil
+end
+
+-- `character`'s legs that can take a crouch (an R15 body's; none on another kind).
+local function legsOf(character: Model): { Leg }
+	local legs: { Leg } = {}
+	for _, side in { "Left", "Right" } do
+		local upper = character:FindFirstChild(side .. "UpperLeg")
+		local lower = character:FindFirstChild(side .. "LowerLeg")
+		local hip = Joints.find(character, side .. "UpperLeg", side .. "Hip")
+		local knee = Joints.find(character, side .. "LowerLeg", side .. "Knee")
+		local thigh = span(upper, side .. "HipRigAttachment", side .. "KneeRigAttachment")
+		local shin = span(lower, side .. "KneeRigAttachment", side .. "AnkleRigAttachment")
+		if hip and knee and thigh and shin then
+			table.insert(legs, {
+				hip = hip,
+				knee = knee,
+				ankle = Joints.find(character, side .. "Foot", side .. "Ankle"),
+				thigh = thigh,
+				shin = shin,
+			})
+		end
+	end
+	return legs
+end
+
+-- A lander's knees taking the crouch (`dip` studs under standing), their feet kept flat on the
+-- floor: the body's held stiff (PlatformStand stops its animation), so without this its feet
+-- sank into the floor on every screen.
+local function crouch(legs: { Leg }, dip: number)
+	for _, leg in legs do
+		local hip, knee, ankle = Tops.crouch(dip, leg.thigh, leg.shin)
+		Joints.set(leg.hip, CFrame.Angles(hip, 0, 0))
+		Joints.set(leg.knee, CFrame.Angles(knee, 0, 0))
+		local a = leg.ankle
+		if a then
+			Joints.set(a, CFrame.Angles(ankle, 0, 0))
+		end
+	end
 end
 
 -- The climb animation Roblox's Animate script plays on this character, if it has one.
@@ -263,6 +325,13 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 			showButton(inst)
 		end
 	end
+	-- A door's button: off your screen while you lie up on the tops, where the door below the
+	-- front you lie at is 7 studs off, in its reach (L-16b1).
+	local function hideDoor(inst: Instance)
+		if inst:IsA("ProximityPrompt") then
+			ButtonReach.hide(inst, "Tops", buttonsOn)
+		end
+	end
 	function setButtons(on: boolean)
 		if on == buttonsOn then
 			return
@@ -272,6 +341,9 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 			offered = nil
 		end
 		showButtons()
+		for _, inst in CollectionService:GetTagged(Door.ButtonTag) do
+			hideDoor(inst)
+		end
 	end
 
 	-- Lying at `at`: which hole's Drop in is yours to press, the one your head is out over.
@@ -588,6 +660,7 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 			sounds = sounds,
 			right = Joints.find(character, "RightUpperArm", "RightShoulder"),
 			left = Joints.find(character, "LeftUpperArm", "LeftShoulder"),
+			legs = if kind == "Drop" or kind == "In" then legsOf(character) else {},
 			mine = if c then c.mine else nil,
 			dropX = x,
 			travel = if c then c.travel else 0,
@@ -780,6 +853,12 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 			end
 		end
 		for _, cl in climbs do
+			if cl.move == "Drop" or cl.move == "In" then
+				local dip = Tops.landDip(cl.move, elapsed(cl))
+				if dip > 0 then
+					crouch(cl.legs, dip)
+				end
+			end
 			if cl.move == "In" then
 				-- dropping in: your arms from the crawl's reach to up over your head as you fall
 				local lift, w = Tops.inArms(elapsed(cl))
@@ -842,6 +921,16 @@ function LadderView.new(kick: (amount: number) -> ()): Brix.System
 		table.insert(
 			connections,
 			CollectionService:GetInstanceAddedSignal(Leaned.DropButtonTag):Connect(showButton)
+		)
+		table.insert(
+			connections,
+			-- a door streamed in while you lie up there
+			CollectionService:GetInstanceAddedSignal(Door.ButtonTag)
+				:Connect(function(inst: Instance)
+					if buttonsOn then
+						hideDoor(inst)
+					end
+				end)
 		)
 		table.insert(
 			connections,

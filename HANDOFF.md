@@ -2,54 +2,51 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-11, session 98 (the owner's Nov 11 play; L-16c) · **Checks:** green ·
+**Updated:** 2026-11-11, session 99 (L-16b1) · **Checks:** green ·
 **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- **L-16c done (D-110): the tops glide.** Your view sits 1.5 studs up your lying body, and the
-  body turning after your mouse swung it sideways; you nearly stopped while turning; each pull
-  surged ±55%. Now `Tops.step` turns the body about your eye (`Tops.Eye`), you move where you push
-  at once, the surge is ±10%, LadderView's head dip and sway are halved, and the server's crawl
-  check (`Ladders` `checkCrawl`) allows for the hips' swing. Lune covers it (`tests/tops.spec`).
-- **Reaching through doors (D-110):** `ShutIn.reaches` and `RollUpDoor.keepsApart`; `Slots`
-  refuses a pick-up through a shut or peeked door, `BehindDoors` hides that Pick up on screen.
-- **The floor's flicker (D-110):** a junction's floor ran under units' fronts at the same height;
-  `FloorBuilder.unit` lifts the unit's drawn floor 0.03.
-- Verified in Studio: a quarter turn mid-crawl moved the eye 0.4 studs sideways in all, 4 to 5
-  studs a second, no put-backs; the tool behind 101's door hidden, refused when forced, hidden
-  under a peek, taken once open; 106's floor at 0.03. Feel on a live server and phone: `OWNER.md`.
-- New tickets from the owner's notes: L-19 (every button in the world small and modern, a door's
-  laid out where your hand goes) and L-20 (the inventory wheel; three slots, six bought).
+- **L-16b split in two** (each item needs its own Studio check): L-16b1 the tops (done), L-16b2 a
+  press on arrival counts (next).
+- **L-16b1 done (D-111).** A landing's crouch, off a front or in through a hole, bends the knees
+  so the feet stay on the floor (`Tops.landDip`, `Tops.crouch`, LadderView's `crouch` on every
+  lander); straight legs had sunk them 0.63. Climb down and Drop down are ignored while their
+  slide would take you over a sawn hole (`Ladders` `slideClear`), no words (owner: "it's common
+  sense... no overly verbose"). Door buttons are hidden on a crawler's screen and ignored by the
+  server (`Door.ButtonTag`, `Ladders:crawling` in `Doors`).
+- **New `ButtonReach`** (client): hides a button by its reach for several reasons at once.
+  ToolView's Lock/Saw/Lean gates now go through it ("Hand"); LadderView adds "Tops".
+- Verified in Studio: the crouch on the default avatar (feet stay put at 0.4 and 0.6 down, knee
+  bends forward). **Not yet in Studio:** the door buttons hidden up top, and the hole check.
 - Studio: left in Edit, nothing imported.
 
-## Next task: L-16b The tops and arriving
-The moment: coming down off the tops, dropping in, and pressing a button the instant you arrive
-all just work, first time, with a friend watching.
+## Next task: L-16b2 A press on arrival counts
+The moment: you sprint into a unit and press Saw at the wall, or reach the ladder and press
+Climb, and it just works, first time, though the server still sees you a few studs back.
 1. Owner test results first, if pasted.
-2. Read ROADMAP L-16b. Then each item, smallest first:
-   - Climb down or Drop down while lying behind a sawn hole slides you across it: the move's
-     slide from where you lie (`LadderView.rootAt`, `m.from:Lerp`, `Leaning.Slide`) must go round
-     the hole, or the button refuse there ("Hole in the way").
-   - A friend's drop-in lands 0.2 under the floor on other screens (`inPose`, the "In" move's
-     stand height for a friend vs your own).
-   - Crawlers refused a door's buttons and the ladder (`Ladders:crawling` and its callers).
-   - A press made as you arrive is judged where the server saw you a moment ago (D-085): Saws,
-     Ladders (Lean, Climb, Climb down) and a door's Cut and Lock allow for it as `Crawling.counts`
-     does (where it sees you, or 0.4 s on at your speed). A pure helper gets Lune first.
-3. Each fix ships with its feedback; nothing new on screen without a sound and motion.
-**Acceptance:** checks green; Lune for each pure change; in Studio each item checked on floor 1
-(the tops recipe and "Testing a catch anywhere" in docs/STUDIO.md), Output clean but 203785492.
-Two players go to `OWNER.md`.
-**Read first:** ROADMAP L-16b; DECISIONS D-085; `src/server/Ladders.luau` (`climbDown`,
-`dropDown`, `crawling`); `src/client/LadderView.luau` (`rootAt`, `inPose`);
-`src/shared/StorageUnit/CrawlHole/Crawling.luau` (`counts`); docs/STUDIO.md "Getting a player up
-on the tops from the MCP".
+2. **L-16b1's Studio checks first** (the tops recipe, docs/STUDIO.md): lying at Unit 101's front
+   edge, no door button shows (Open/Slam/Peek; with a padlock in hand, no Lock either), and they
+   come back once you're down; lying behind a sawn hole, Climb down and Drop down do nothing.
+   Fix anything that fails before going on.
+3. Read ROADMAP L-16b2 and D-085. One pure helper (Lune first): judged where the server sees you
+   or `Crawling.Lag` (0.4 s) on at the speed it sees you moving, as `Crawling.counts` does, which
+   then uses it. Apply it where a press checks where you stand: `Saws` (reach and `inside`),
+   `Ladders` (Lean, Climb, Climb down's reach, `slideClear`), `Doors` (reach; `sideOf` for Cut and
+   Lock). Only where a press can be lost: measure first (Studio, a run in at full speed).
+4. Each fix keeps its feedback; nothing new on screen.
+**Acceptance:** checks green; Lune for the helper; in Studio, a press made the moment you arrive
+counts for Saw, Climb and Lean, Output clean but 203785492. Two players go to `OWNER.md`.
+**Read first:** ROADMAP L-16b2; DECISIONS D-085; `src/shared/StorageUnit/CrawlHole/Crawling.luau`
+(`counts`); `src/server/Saws.luau` (the press checks near `ladders:crawling`);
+`src/server/Ladders.luau` (`inReach`, `climbUp`, `climbDown`, `lean`, `slideClear`);
+docs/STUDIO.md "Getting a player up on the tops from the MCP".
 
 ## Queue (the next run's order, from ROADMAP)
-1. L-19a one look for every button in the world; L-19b a door's buttons where your hand goes.
+1. L-19a one look for every button in the world (fold `ButtonReach` into it); L-19b a door's
+   buttons where your hand goes.
 2. L-20a the inventory wheel and three slots (L-20b, six bought, waits on the store).
-3. L-17 every button on a phone at once; L-16d the tops still jitter on a computer (owner, Nov 11
-   night: not now, but before friends); then L-09a the first run with friends, floors 1 to 3.
+3. L-17 every button on a phone at once; L-16d the tops still jitter on a computer (before
+   friends); then L-09a the first run with friends, floors 1 to 3.
 4. L-08e (the start, in the lobby) waits for the owner's lobby plan. L-18 optional.
 5. Seen: a ladder stood on a floor when it's cleared should go with it (untested); anyone still
    in the car 6 s after it opens is shut in (`OWNER.md`'s L-08a decision 2); watching a friend

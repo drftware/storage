@@ -38,6 +38,7 @@ local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local ButtonReach = require(script.Parent.ButtonReach)
 local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
 local HandRoom = require(script.Parent.HandRoom)
 local Hands = require(ReplicatedStorage.Shared.Hands)
@@ -301,9 +302,10 @@ function ToolView.new(): (Brix.System, Hand)
 	local workUntil = 0
 	local work = 0
 	local kick = 0
-	local lockReach: { [ProximityPrompt]: number } = {} -- each Lock button's reach from the server
-	local sawReach: { [ProximityPrompt]: number } = {} -- and each wall's Saw button's
-	local leanReach: { [ProximityPrompt]: number } = {} -- and each front's Lean button's
+	-- the buttons shown only with the right tool (ButtonReach hides the rest for "Hand")
+	local lockReach: { [ProximityPrompt]: boolean } = {} -- each door's Lock
+	local sawReach: { [ProximityPrompt]: boolean } = {} -- each wall's Saw
+	local leanReach: { [ProximityPrompt]: boolean } = {} -- each front's Lean
 
 	local function alive(): boolean
 		local character = player.Character
@@ -414,19 +416,19 @@ function ToolView.new(): (Brix.System, Hand)
 		-- a door's Lock button only while a padlock's in your hand (on this screen only: the
 		-- server never changes a button's reach, so this stays)
 		local padlock = keys[hand] == "Padlock"
-		for p, reach in lockReach do
-			p.MaxActivationDistance = if padlock then reach else 0
+		for p in lockReach do
+			ButtonReach.hide(p, "Hand", not padlock)
 		end
 		-- a wall's Saw button while you carry a saw in either slot: in the other one, the button
 		-- says "Hold the saw"
 		local saw = table.find(keys, "Saw") ~= nil
-		for p, reach in sawReach do
-			p.MaxActivationDistance = if saw then reach else 0
+		for p in sawReach do
+			ButtonReach.hide(p, "Hand", not saw)
 		end
 		-- a front's Lean button only while the ladder's in your hand
 		local ladder = keys[hand] == "Ladder"
-		for p, reach in leanReach do
-			p.MaxActivationDistance = if ladder then reach else 0
+		for p in leanReach do
+			ButtonReach.hide(p, "Hand", not ladder)
 		end
 		-- a slot newly filled: name it as it comes into your hand
 		for i = 1, Carry.Slots do
@@ -809,10 +811,8 @@ function ToolView.new(): (Brix.System, Hand)
 		)
 		local function addLock(inst: Instance)
 			if inst:IsA("ProximityPrompt") and lockReach[inst] == nil then
-				lockReach[inst] = inst.MaxActivationDistance
-				if heldKey() ~= "Padlock" then
-					inst.MaxActivationDistance = 0
-				end
+				lockReach[inst] = true
+				ButtonReach.hide(inst, "Hand", heldKey() ~= "Padlock")
 			end
 		end
 		table.insert(
@@ -831,10 +831,8 @@ function ToolView.new(): (Brix.System, Hand)
 		end
 		local function addSaw(inst: Instance)
 			if inst:IsA("ProximityPrompt") and sawReach[inst] == nil then
-				sawReach[inst] = inst.MaxActivationDistance
-				if table.find(serverSlots(), "Saw") == nil then
-					inst.MaxActivationDistance = 0
-				end
+				sawReach[inst] = true
+				ButtonReach.hide(inst, "Hand", table.find(serverSlots(), "Saw") == nil)
 			end
 		end
 		table.insert(
@@ -853,10 +851,8 @@ function ToolView.new(): (Brix.System, Hand)
 		end
 		local function addLean(inst: Instance)
 			if inst:IsA("ProximityPrompt") and leanReach[inst] == nil then
-				leanReach[inst] = inst.MaxActivationDistance
-				if heldKey() ~= "Ladder" then
-					inst.MaxActivationDistance = 0
-				end
+				leanReach[inst] = true
+				ButtonReach.hide(inst, "Hand", heldKey() ~= "Ladder")
 			end
 		end
 		table.insert(

@@ -104,6 +104,10 @@ local MOTIONS: { [Action]: Motion.Kind } = {
 -- A door counts as shut below this rise (studs), and as open within it of the top.
 local SHUT = 0.05
 
+-- Every door button carries this tag, so a screen can hide them all at once: lying up on the
+-- tops, the door below is in a button's reach but never yours to use (L-16b1).
+Door.ButtonTag = "DoorButton"
+
 -- What a padlocked door says to someone trying to lift it from inside.
 Door.ShutIn = "Saw a wall"
 

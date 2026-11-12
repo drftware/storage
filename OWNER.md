@@ -14,6 +14,14 @@ nowhere else.
 - [ ] **Keep the experience private** until the lobby (L-08e) replaces the test hall: every
   server builds the hall now, with its teleport posts, Mannequin post and the code in the log.
 
+## Now: judge L-16b1, landings and the tops (built Nov 11, D-111)
+
+Verified in Studio: on the default avatar, a 0.6-stud landing crouch with straight legs put the
+feet 0.63 into the floor; with the knees bent, the feet stayed exactly where they stood.
+- [ ] **A friend lands** (Test > Clients and Servers, 2 players): one drops down off a unit's
+  front, then drops in through a sawn top. On the other screen their knees should bend as they
+  land, feet on the floor, never sinking into it.
+
 ## Now: judge your Nov 11 fixes: the tops, reaching through doors, the floor (D-110)
 
 Verified in Studio (Play, one player): on a unit top, a quarter turn of the view mid-crawl moved

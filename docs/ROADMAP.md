@@ -1060,11 +1060,23 @@ tops still jittered on a computer: L-16d, "not now", but before friends play (L-
     Verified in Studio: your own arm raised through `Joints`; caught on the ladder and mid-crawl
     (Studio-only `CatchTest`), kept, cut free, walking; Slam over Drop; a slot click blowing
     nothing. A friend's arm and the first slam's timing go to `OWNER.md`.
-  - [ ] **L-16b The tops and arriving.** Climb or Drop down lying behind a sawn hole slides you
-    across it; a friend's drop-in lands 0.2 under the floor; crawlers refused a door's buttons
-    and the ladder (`Ladders:crawling`). A press made the moment you arrive reaches the server while it still sees you a few studs
-    back (D-085): allow for it where Saws, Ladders and a door's Cut and Lock check where you
-    stand, as `Crawling.counts` does.
+  - [ ] **L-16b The tops and arriving**, in two sessions (split Nov 11: each item needs its own
+    Studio check):
+    - [x] **L-16b1 The tops. Done Nov 11 (D-111).** Lying behind a sawn hole, Climb down and
+      Drop down are ignored: their slide to the edge would take your body over it (no words: the
+      hole is in plain sight, owner). A landing's crouch bends your knees so your feet stay on the
+      floor (`Tops.crouch`), off a front and in through a hole; they sank 0.63 into it. Lying at a
+      front's edge you're 7 studs from the door's buttons below: they're hidden on your screen
+      (`ButtonReach`) and the server ignores them. The ladder's foot is 12 studs off and the
+      server already ignored a climber's Climb, Take and Lean. Verified in Studio: the crouch on
+      the default avatar. The door's buttons and the hole check pass checks, untested in Studio
+      (first in L-16b2). A friend's landing goes to `OWNER.md`.
+    - [ ] **L-16b2 A press on arrival counts.** A press made the moment you arrive reaches the
+      server while it still sees you a few studs back (D-085): allow for it where Saws, Ladders
+      (Lean, Climb, Climb down) and a door's Cut and Lock check where you stand, as
+      `Crawling.counts` does, through one pure helper with Lune first. Also L-16b1's hole check
+      (`Ladders` `slideClear`): crawl round a hole and press at once, and the server may still
+      see you behind it.
   - [x] **L-16c Crawling the tops feels right. Done Nov 11 (D-110).** Owner, Nov 10 night: "super
     glitchy and the camera shakes a ton"; Nov 11: "the view jerks all around repeatedly... It
     should be just as smooth as moving on the normal floor." Causes found by recording every
@@ -1135,6 +1147,12 @@ with rarity; your lobby unit; the store; Captures. Player data, remotes, telemet
 
 ## Polish waiting for a slot
 
+- **Behind a sawn hole, no dead buttons (L-16b1):** Climb down and Drop down are ignored there;
+  hiding them on your screen while the slide would cross the hole (LadderView, `Tops.pathClear`
+  from where you lie) would leave nothing to press that does nothing.
+- **A friend's landing in step (L-16b1):** their knees bend on your screen's clock of their move,
+  their body dips on theirs, about a tenth of a second apart; delaying their crouch by the
+  replication lag would make it exact.
 - **The end's own sounds (L-08d):** the far doors are the roll-up door's slam, low and muffled,
   and "Kept" lands on the padlock's dread hit; a recording of the building itself (a long
   settling groan through the steel) and a sting for "Made it" (air, a door to the night) would

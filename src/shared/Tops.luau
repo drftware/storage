@@ -558,6 +558,39 @@ local function lerp(a: number, b: number, k: number): number
 	return a + (b - a) * k
 end
 
+-- How far under standing a landing's crouch has your root, `t` seconds into a drop off a front
+-- ("Drop") or in through a hole ("In"): down fast as your knees take it, back up a little slower; 0
+-- before you land and once you're standing.
+function Tops.landDip(move: "Drop" | "In", t: number): number
+	local landed = if move == "Drop" then Tops.Over + Tops.Fall else Tops.InOver + Tops.InFall
+	local k = (t - landed) / Tops.Land
+	if k <= 0 or k >= 1 then
+		return 0
+	end
+	return Tops.Squat * math.sin(math.pi * k) * (1 - k * 0.3)
+end
+
+--[[
+	Your legs taking a landing's crouch with your feet flat where they landed (L-16b1): your root
+	`dip` studs under standing, a thigh `thigh` long (hip to knee) and a shin `shin` long (knee to
+	ankle). Gives the hip's, knee's and ankle's turns (radians about each joint's X, positive
+	swinging the leg forward): the thigh forward, the shin back so the ankle stays under the hip,
+	the foot turned back flat. Your body was stiff as it landed, so the crouch pushed your feet
+	0.6 studs into the floor on every screen (L-13b2d3a's note).
+]]
+function Tops.crouch(dip: number, thigh: number, shin: number): (number, number, number)
+	if dip <= 0 then
+		return 0, 0, 0
+	end
+	-- hip to ankle, straight down; never shorter than the folded leg allows
+	local reach = math.max(thigh + shin - dip, math.abs(thigh - shin) + 1e-3)
+	local hip = math.acos(
+		math.clamp((thigh * thigh + reach * reach - shin * shin) / (2 * thigh * reach), -1, 1)
+	)
+	local back = math.asin(math.clamp(thigh * math.sin(hip) / shin, -1, 1))
+	return hip, -(hip + back), back
+end
+
 --[[
 	The drop off a front, `t` seconds in, in the front's frame (`Leaning`'s: x along it, +Z into the
 	unit, the steel top at `topY`): your root's place and pitch (0 standing, -pi/2 on your belly),
@@ -587,8 +620,7 @@ function Tops.drop(
 		local y = lerp(lyingY, standUp, k * k)
 		return x, y, z, lerp(Tops.OverPitch, 0, smooth(k * 1.6)), 1
 	end
-	local k = math.clamp((s - Tops.Fall) / Tops.Land, 0, 1)
-	return x, standUp - Tops.Squat * math.sin(math.pi * k) * (1 - k * 0.3), faceZ - Tops.Out, 0, 1
+	return x, standUp - Tops.landDip("Drop", t), faceZ - Tops.Out, 0, 1
 end
 
 -- Where along a front of inside width `width` you go over, from where your root lies (x along it).
@@ -640,8 +672,7 @@ function Tops.dropIn(
 		-- falling from rest: the drop grows with the square of the time
 		return cx, lerp(hang, standUp, k * k), cz, 0, 1
 	end
-	local k = math.clamp((f - Tops.InFall) / Tops.Land, 0, 1)
-	return cx, standUp - Tops.Squat * math.sin(math.pi * k) * (1 - k * 0.3), cz, 0, 1
+	return cx, standUp - Tops.landDip("In", t), cz, 0, 1
 end
 
 -- A body dropping in's arms, `t` seconds in: how far they've gone from the crawl's reach to up
