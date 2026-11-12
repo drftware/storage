@@ -166,7 +166,8 @@ ticket each, every session ending green and committed. Order: L-16b2 (done), L-1
 look for every button, the owner's "prompt updates"), L-19b (done: a door's buttons where the
 hand goes), L-20a (done: the inventory wheel, three slots), L-17 (done: every button on a
 phone at once), L-16d (done: your body placed each drawn frame), L-08e1a (done: the front
-office built), then the rest of the lobby, L-08e1b1, L-08e1b2, L-08e1c, L-08e2 to L-08e4 (GDD
+office built), L-08e1b1 (done: step in and the count), then the rest of the lobby, L-08e1b2,
+L-08e1c, L-08e2 to L-08e4 (GDD
 "The lobby", D-112), which no longer waits on L-09a
 (only the owner can run that): split L-08e1 and L-08e4 into sessions that each end green (the
 room's art script first, then the cars, the joining and the count, then the trip to a server of
@@ -1073,19 +1074,28 @@ Brix's purchases and profiles), proven mechanics only, never edit Brix.
         Galaxy A16 (`docs/art/L-08e1a-*.jpg`); a real phone's lights are the owner's.
         **For L-08e1b1:** the cars' keypads still stand beside them (use or hide them); a teleport
         keeps the camera's old look, so on load turn the camera to the cars.
-      - [ ] **L-08e1b1 Step in and the count.** The moment: you and a friend run into car 3, the
-        count starts, the last one sprints in at 2 and the gate slams behind them. Each lobby car
-        (already standing in its bay, L-08e1a) is a group: step in to join, step out to leave (a
-        Brix zone over the car, as the climb's `Departure.carBox`). 20 s from the first step in,
-        5 s once six are aboard; the count on the car (its readout and the climb's gate clock,
-        reused). At zero the climb's own gate slam, the ride's sway and the black, and the group's
-        climb starts on this same server (as "Walk a floor" does). Players load in at the lobby's
-        spawn facing the cars (turn the camera too); the test hall goes back to Studio only
-        (D-109) once this works. Decide what the keypad beside each car becomes.
-      - [ ] **L-08e1b2 The host's panel.** The first one in hosts: on the car's panel, Open or
-        Friends only, 1 to 6 players, the difficulty (only one until difficulties exist; say so in
-        `OWNER.md`), and Go at any time, as DOORS' lobby elevators do. Everyone else in the car
-        sees the choices but can't change them.
+      - [x] **L-08e1b1 Step in and the count. Done Nov 12** (D-120): the lobby's cars are the
+        climb's elevators, tagged and marked with their bay; `LobbyCars` gives each a Brix zone
+        (step in to join, out for 0.35 s to leave), runs the count on the climb's gate clock (20 s,
+        5 once six are aboard, never back up; `Boarding`, 42 Lune checks), lays floor 1 out of
+        play as a count starts (`Climbs:ready`), and at zero the climb's slam and ride carry the
+        group up: floor 1's car takes the ride mid-cruise (`Climbs:board`, the hand-off shared
+        with every floor) and opens on a fresh building. The count shows on screen only to the
+        group (chime as you step in) and on the car's keypad readout for the room (dashes at rest,
+        green, red from the warning); the keypad's prompt is gone; the car's floor readout and
+        the ride's counter say L. The car is back in its bay 12 s after it left. One climb a
+        server: other cars' counts wait while it runs. You load in at `LobbySpawn` facing the
+        cars and the camera turns to them (`LobbyView`); the test hall is Studio only. Verified in
+        Studio on a computer, one player (`docs/art/L-08e1b1-*.jpg`); friends and a phone are the
+        owner's. **For L-08e1b2:** the keypad stays as the car's panel; its prompt is the place
+        for the host's choices (KeypadPad skips lobby cars today). Go at any time can be
+        `Elevators:count(car, now)`.
+      - [ ] **L-08e1b2 The host's panel.** The first one in hosts: on the car's panel (its keypad,
+        D-120), Open or Friends only, 1 to 6 players, the difficulty (only one until difficulties
+        exist; say so in `OWNER.md`), and Go at any time, as DOORS' lobby elevators do. Everyone
+        else in the car sees the choices but can't change them. A host's "1 player" or "Friends
+        only" turns a stranger away at the gate (the zone refuses the join; how they learn why is
+        part of the ticket).
       - [ ] **L-08e1c A server of the group's own.** At zero the car takes its group to a
         reserved server of their own, the difficulty with them, and the climb starts there: Brix's
         ENG-13 if it has landed at our pin, else the smallest stand-in `docs/FRAMEWORK.md` plans
@@ -1645,3 +1655,6 @@ Atmosphere effects wait until the loop is solid (owner, Nov 7); the haze stays a
   a lifted door a second's grace before it can be shut from the hall (L-02; nobody can shut it
   while it rises).
 
+- **Stepping into a lobby car** (L-08e1b1): a soft clank of the car's steel floor under your
+  first step in, heard by those near, so joining a group sounds as well as chimes; and an L lit
+  over each car's gate on the lobby side (today the floor readout faces into the car).

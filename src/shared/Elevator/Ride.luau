@@ -268,9 +268,18 @@ function Ride.shown(since: number, from: number, to: number): number
 	return if since < Ride.tick() then from else to
 end
 
--- The readout's two characters for floor `n`: a lone digit right-aligned, as the clock's are.
+-- The front office's floor (L-08e1b1): a lobby car stands at it, and its ride goes from it to
+-- floor 1. Its readout shows L, as a lift's ground floor does.
+Ride.Lobby = 0
+
+-- The readout's two characters for floor `n`: a lone digit right-aligned, as the clock's are; L
+-- for the lobby.
 function Ride.text(n: number): string
-	return string.format("%2d", math.clamp(math.floor(n), 0, 99))
+	local floor = math.clamp(math.floor(n), 0, 99)
+	if floor == Ride.Lobby then
+		return " L"
+	end
+	return string.format("%2d", floor)
 end
 
 -- The ride as its replicated value: when the gate hit its post, and the floors from and to.

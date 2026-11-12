@@ -12,6 +12,10 @@
 	  floor counter in the car lamp's amber, ticking over to the next floor as the brakes bite
 	  (Ride, L-08a). Everyone else on the floor was left behind: that moment is WatchView's (L-08c).
 
+	A lobby car's count (L-08e1b1, Boarding) is the same clock, shown only to those in its group:
+	it pops in with the chime as you step in and goes as you step out. Its ride's counter starts
+	at L, the lobby.
+
 	The car's lamp, which answers the same clock, is ElevatorView's; the rest of the ride is
 	RideView's.
 ]]
@@ -23,6 +27,7 @@ local SoundService = game:GetService("SoundService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
+local Boarding = require(ReplicatedStorage.Shared.Lobby.Boarding)
 local Brix = require(ReplicatedStorage.Brix)
 local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
 local Elevator = require(ReplicatedStorage.Shared.Elevator)
@@ -86,6 +91,8 @@ type Clock = {
 	model: Model,
 	departs: number?,
 	conns: { RBXScriptConnection },
+	lobby: boolean, -- a lobby car: shown only to its group
+	aboard: boolean, -- this player is in its group
 }
 
 type Ui = {
@@ -259,8 +266,8 @@ function GateClock.new(): Brix.System
 	local showing: Clock? = nil -- the clock on screen
 	local lastShown = -1 -- the seconds it showed last frame
 	local ride: number? = nil -- server time the car left with this player aboard
-	local rideFrom, rideTo = 0, 0 -- its floors, once known (0: not yet)
-	local floorShown = 0 -- the floor on the plate, 0 while it shows the clock
+	local rideFrom, rideTo = 0, 0 -- its floors, once known (to 0: not yet)
+	local floorShown = -1 -- the floor on the plate, -1 while it shows the clock
 	local headlineToken = 0
 
 	local function tween(inst: Instance, info: TweenInfo, goal: { [string]: any }): Tween
@@ -351,7 +358,8 @@ function GateClock.new(): Brix.System
 		u.scale.Scale = POP_FROM
 		tween(u.clock, POP, { GroupTransparency = 0 })
 		tween(u.scale, POP, { Scale = 1 })
-		if Departure.Seconds - left <= CHIME_LATE then
+		-- the PA's chime as the gate slams open; in a lobby car, as you step in
+		if clock.lobby or Departure.Seconds - left <= CHIME_LATE then
 			play(chime, Departure.Chime, 1)
 		end
 	end
@@ -426,7 +434,7 @@ function GateClock.new(): Brix.System
 			return -- the same ride, taken over by the next floor's car (L-08b): nothing new
 		end
 		if table.find(ids, Players.LocalPlayer.UserId) then
-			ride, rideFrom, rideTo, floorShown = at, 0, 0, 0
+			ride, rideFrom, rideTo, floorShown = at, 0, 0, -1
 			rideFloors(clock)
 			headline("Going up", WARM)
 		end
@@ -441,11 +449,11 @@ function GateClock.new(): Brix.System
 			return
 		end
 		if since > Ride.opens() + FLOOR_HOLD then
-			ride, floorShown = nil, 0
+			ride, floorShown = nil, -1
 			hide()
 			return
 		end
-		if since < FLOOR_AFTER or rideFrom <= 0 then
+		if since < FLOOR_AFTER or rideTo <= 0 then
 			return
 		end
 		local n = Ride.shown(since, rideFrom, rideTo)
@@ -457,7 +465,7 @@ function GateClock.new(): Brix.System
 			local char = string.sub(text, i, i)
 			u.setFloor(i, char, if char == " " then "Off" else "Lit")
 		end
-		if floorShown == 0 then
+		if floorShown == -1 then
 			-- the clock's plate becomes the floor counter
 			u.seconds.Visible, u.floors.Visible = false, true
 			u.clock.Visible = true
@@ -500,8 +508,23 @@ function GateClock.new(): Brix.System
 		if not inst:IsA("Model") or clocks[inst] or not inst:IsDescendantOf(Workspace) then
 			return
 		end
-		local clock: Clock = { model = inst, departs = nil, conns = {} }
+		local clock: Clock = {
+			model = inst,
+			departs = nil,
+			conns = {},
+			lobby = inst:GetAttribute(Boarding.CarAttribute) ~= nil,
+			aboard = false,
+		}
 		clocks[inst] = clock
+		local function groupChanged()
+			local group = Boarding.decode(inst:GetAttribute(Boarding.GroupAttribute))
+			clock.aboard = table.find(group, Players.LocalPlayer.UserId) ~= nil
+		end
+		table.insert(
+			clock.conns,
+			inst:GetAttributeChangedSignal(Boarding.GroupAttribute):Connect(groupChanged)
+		)
+		groupChanged()
 		table.insert(
 			clock.conns,
 			inst:GetAttributeChangedSignal(Departure.Attribute):Connect(function()
@@ -586,7 +609,10 @@ function GateClock.new(): Brix.System
 				local phase = Departure.phase(left)
 				if phase == "Gone" then
 					running[clock] = nil
-				elseif phase ~= "Folding" and onFloor(clock.model) then
+				elseif
+					phase ~= "Folding"
+					and (if clock.lobby then clock.aboard else onFloor(clock.model))
+				then
 					under, underLeft = clock, left
 				end
 			end

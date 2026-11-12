@@ -134,6 +134,7 @@ do
 	ok(Ride.shown(Ride.tick() - 0.01, 3, 4) == 3, "until the brakes bite")
 	ok(Ride.shown(Ride.tick(), 3, 4) == 4, "then the next")
 	ok(Ride.text(2) == " 2" and Ride.text(10) == "10", "a lone digit right-aligned")
+	ok(Ride.text(Ride.Lobby) == " L", "the lobby reads L")
 end
 
 -- The sounds land on their moments and fit their recordings.

@@ -1539,3 +1539,12 @@ verified: a doc page, Studio, or "untested".
   end (x about -34) has no floor; walking off it, the body and the welded ladder fall below the
   world and Roblox destroys their parts before `Died` drops the tool, leaving an empty `Ladder`
   model and no button to pick it up. Stop and start Play to get it back. Real floors are closed.
+- **The lobby is black for a few seconds after Play starts** (L-08e1b1, Nov 12): a screen capture
+  taken at once shows only the signs and the hall lights' tubes; three seconds later the room,
+  its textures and the cars' lamps are all there. Wait before judging a first frame.
+- **A cross-folder string require's types can fail to reach a caller** (luau-lsp, L-08e1b1): a
+  client calling `Boarding.readout`, whose return type names `Readout.Tone` through
+  `require("../Elevator/Readout")`, saw the tone as `string`; so did `if pick then pick(x) else x`
+  over an optional function field (`{Player} | {Player}`, "Cannot call"). Annotating the caller's
+  locals (`local char: string, tone: Boarding.Tone = ...`) or an if statement fixed both; the
+  module now spells the four tones out itself.

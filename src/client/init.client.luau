@@ -33,6 +33,7 @@ local KeypadPad = require(script.KeypadPad)
 local KneelView = require(script.KneelView)
 local MinimapView = require(script.MinimapView)
 local LadderView = require(script.LadderView)
+local LobbyView = require(script.LobbyView)
 local NoteView = require(script.NoteView)
 local PadlockView = require(script.PadlockView)
 local SawView = require(script.SawView)
@@ -97,6 +98,8 @@ local host = Brix.Host.new({
 		-- the climb's end (L-08d): over everything, the results and "Again"
 		{ slot = "endView", system = EndView.new(needCursor) },
 		{ slot = "cameraShake", system = cameraShake },
+		-- arriving at the lobby's spawn: the camera turns to the six cars (L-08e1b1)
+		{ slot = "lobbyView", system = LobbyView.new() },
 	},
 })
 host:start()

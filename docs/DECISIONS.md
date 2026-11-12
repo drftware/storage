@@ -3230,3 +3230,39 @@ Studio's A16 view; faint SmoothPlastic (0.82) shows the night sky and the porch 
 folded open, so the climb's keypad, gate clock and ride leave them alone. The test hall's post
 to the lobby takes R, since two E posts stand 3 studs either side and a press goes to whichever
 prompt is nearest the middle of the view.
+
+## D-120 The lobby's cars are the climb's own elevators, counting (L-08e1b1, Nov 12)
+The moment: you and a friend run into car 3, the chime, the count pops in green, the last one
+sprints in at 2 and the gate slams behind them; the shaft slides by and the car opens on floor 1.
+
+**The same elevator, not a lookalike.** Each lobby car is the climb's elevator, tagged like any
+other and marked with its bay (`Boarding.CarAttribute`), so the gate's fold and slam, the clock,
+the lamp's blink, the heartbeat and bells, the ride and the hand-off are the code friends already
+hear on every floor: the lobby rehearses the last sprint (GDD). `Elevators` gained a lobby mode
+(`lobby`, `count`): no code, keypad asleep, the group's pick of who rides, nobody left behind.
+
+**Groups by a zone, as DOORS' lobby elevators.** A Brix zone over the car (the box that decides
+who rode) joins you as you step in; you leave once out for 0.35 s, so a heel over the sill doesn't
+chime you out and back. 20 s from the first step in, 5 once six are aboard, never climbing back
+up; the last one out stops it. Once it's shutting, whoever is inside at the post rides (the group
+first, then anyone who dived in, six at most); a seventh left inside is set down outside.
+
+**Who sees the count.** On screen only for the group (GateClock's plate, the chime as you step
+in), so six counts never crowd one screen; for the room, the car's keypad readout counts (dashes
+at rest, green, then red from the warning) and its lamp blinks. The keypad stays as the car's
+panel, its prompt gone: L-08e1b2's host's panel goes there. Rejected: hiding the keypad (the
+panel is where DOORS' host choices live), a world sign over each car (L-08e3's dial).
+
+**Up to floor 1 on this server** (until L-08e1c): floor 1 starts laying out of play the moment a
+count starts (`Climbs:ready`, 2 to 4 s in Studio), so it's ready long before zero; at the post
+`Climbs:board` ends whatever climb ran (the test hall's, in Studio) and floor 1's car takes the
+lobby car's ride mid-cruise, the same `carry` every floor's hand-off uses. The ride's counter reads
+L (`Ride.Lobby`, a new "L" on the readout's segments) then 1. Lobby climbs are laid at
+`Lobby.ClimbOrigin`, clear of the test hall's climb. One climb a server: while a lobby climb runs
+the other cars' groups form but their counts wait, starting again from 20 once it's over. The car
+is back open in its bay 12 s after it left.
+
+**You load in at the lobby.** FrontOffice owns the spawn (facing the cars) and clears the place's
+baseplate and pad; `LobbyView` turns the camera to the cars the frame you arrive (a new character
+keeps the camera's old look). The test hall is Studio only now (D-109 done), reached by the lobby's
+"Test hall" post.

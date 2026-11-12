@@ -37,6 +37,7 @@ local LIT: { [string]: string } = {
 	["8"] = "abcdefg",
 	["9"] = "abcdfg",
 	["-"] = "g",
+	["L"] = "def", -- the lobby, on a car's floor readout (Ride.Lobby)
 	[" "] = "",
 }
 
@@ -50,7 +51,7 @@ for char, lit in LIT do
 	PATTERNS[char] = table.freeze(p)
 end
 
--- Which of the seven segments `char` lights (a digit, "-" or " "; anything else is blank). The
+-- Which of the seven segments `char` lights (a digit, "-", "L" or " "; anything else is blank). The
 -- table is shared and frozen: read it, never keep or change it.
 function Readout.pattern(char: string): { boolean }
 	return PATTERNS[char] or PATTERNS[" "]

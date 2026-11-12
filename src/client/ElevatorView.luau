@@ -19,6 +19,9 @@
 	  dips and flickers with the ride (Ride, L-08a): the brakes letting go, the clanks, the stop.
 	- The car's floor readout, over the gate inside: two amber LED digits and an arrow, the floor
 	  it stands at, ticking over to the next as the brakes bite on the way up (Ride).
+	- A lobby car (L-08e1b1, Boarding): its keypad's readout is its count, for everyone in the
+	  room: dim dashes while nobody's aboard, the seconds green, then red from the warning; its
+	  floor readout says L.
 
 	The screen keypad (KeypadPad) calls `press` to beep and sink a key the instant it's pressed;
 	the server's echo of that press names this player (`by`), so it's skipped here.
@@ -29,6 +32,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
+local Boarding = require(ReplicatedStorage.Shared.Lobby.Boarding)
 local Brix = require(ReplicatedStorage.Brix)
 local Elevator = require(ReplicatedStorage.Shared.Elevator)
 local LedReadout = require(script.Parent.LedReadout)
@@ -83,6 +87,8 @@ type Key = { part: BasePart, rest: CFrame, tween: Tween? }
 type View = {
 	model: Model,
 	alive: boolean,
+	lobby: boolean, -- a lobby car: its readout counts (Boarding)
+	countSet: LedReadout.Set?, -- its readout's cells, for the count
 	conns: { RBXScriptConnection },
 	made: { Instance }, -- what this screen added to the elevator, removed with it
 	-- the gate
@@ -396,7 +402,24 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 		return 1, false
 	end
 
+	-- A lobby car's readout at server time `t`: its count, or dashes while nobody's aboard.
+	local function countStep(view: View, t: number)
+		local set = view.countSet
+		if not set then
+			return
+		end
+		local departs = view.departs
+		local left = if departs then departs - t else nil
+		for i = 1, Keypad.Length do
+			local char: string, tone: Boarding.Tone = Boarding.readout(left, i)
+			set(i, char, tone)
+		end
+	end
+
 	local function lampStep(view: View, t: number)
+		if view.lobby then
+			countStep(view, t) -- stepped with the lamp, which changes all through the count
+		end
 		local share, changing = lampAt(view, t)
 		showLamp(view, share)
 		if changing then
@@ -456,7 +479,7 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 		end
 		if n ~= view.floorShown then
 			view.floorShown = n
-			local text = if n > 0 then Ride.text(n) else "  "
+			local text = if n > 0 or (view.lobby and n == Ride.Lobby) then Ride.text(n) else "  "
 			for i = 1, 2 do
 				local char = string.sub(text, i, i)
 				set(i, char, if char == " " then "Off" else "Lit")
@@ -570,7 +593,11 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 		gui.Brightness = CARD_BRIGHTNESS
 		gui.MaxDistance = CARD_REACH
 		gui.Parent = card
-		view.draw = LedReadout.new(gui, WALL_LOOK, 0.78, 0.06)
+		if view.lobby then
+			view.countSet = LedReadout.row(gui, WALL_LOOK, 0.78, 0.06, Keypad.Length)
+		else
+			view.draw = LedReadout.new(gui, WALL_LOOK, 0.78, 0.06)
+		end
 		card.Parent = view.model
 		table.insert(view.made, card)
 	end
@@ -624,6 +651,8 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 		local view: View = {
 			model = inst,
 			alive = true,
+			lobby = inst:GetAttribute(Boarding.CarAttribute) ~= nil,
+			countSet = nil,
 			conns = {},
 			made = {},
 			from = 1,

@@ -30,6 +30,10 @@
 	  next time it leaves.
 	- `finish`, once the end covers every screen: the climb stops, its floors and the tools lying
 	  on them go. `begin` starts the next one (ClimbEnds' "Again").
+	- From the lobby (L-08e1b1, LobbyCars): `ready` lays floor 1 out of play as a car's count
+	  starts, and `board` starts the climb on it as the car leaves: whatever climb ran goes, and
+	  mid-cruise floor 1's car takes the lobby car's ride over and its riders are moved into it,
+	  as at every floor's hand-off. It opens on floor 1 and shuts behind them, armed.
 
 	Only the threads of a ride in progress run; nothing is stepped.
 ]]
@@ -41,6 +45,7 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Climb = require(ReplicatedStorage.Shared.Climb)
+local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
 local Deal = require(ReplicatedStorage.Shared.Deal)
 local Floor = require(ReplicatedStorage.Shared.Floor)
 local Ride = require(ReplicatedStorage.Shared.Elevator.Ride)
@@ -111,6 +116,13 @@ export type Climbs = Brix.System & {
 	-- Stops the climb: its threads end, the tools lying on its floors and the floors themselves go
 	-- (every floor system lets go of them; a kept player is let out).
 	finish: (self: any) -> (),
+	-- Lays floor `options.number` of a new climb out of play, for a lobby car to carry its group
+	-- to (L-08e1b1); nothing if one is laid or laying already. Doesn't yield.
+	ready: (self: any, options: Options) -> (),
+	-- The lobby's `car` left with `leaving.aboard`: whatever climb ran stops, and the climb begins
+	-- on the floor `ready` laid as the car's ride is handed to that floor's car mid-cruise. False
+	-- if no floor is laid or laying (the car comes back to the lobby). Doesn't yield.
+	board: (self: any, car: Model, leaving: Elevators.Leaving) -> boolean,
 }
 
 local function now(): number
@@ -133,6 +145,16 @@ local function rootOf(player: Player): BasePart?
 end
 
 local Climbs = {}
+
+-- Whether `at` (in the world) is inside the car of the elevator standing at `pivot`: the car's
+-- box from its gate back (Departure.car), with a stud's slack all round.
+local function inCar(pivot: CFrame, at: Vector3): boolean
+	local centre, size = Departure.car()
+	local p = pivot:PointToObjectSpace(at) - Vector3.new(centre[1], centre[2], centre[3])
+	return math.abs(p.X) <= size[1] / 2 + 1
+		and math.abs(p.Y) <= size[2] / 2 + 1
+		and math.abs(p.Z) <= size[3] / 2 + 1
+end
 
 -- Where someone let back into the climb stands, in a floor's lobby (its origin's frame): in front
 -- of the car, facing the hall, as if they'd just stepped out of it.
@@ -184,6 +206,9 @@ function Climbs.new(): Climbs
 	local departing: Brix.SignalConnection? = nil
 	local opening: Brix.SignalConnection? = nil
 	local waits: { Brix.SignalConnection } = {} -- cars waited on to arrive
+	local first: OnFloor? = nil -- floor 1 laid out of play for the lobby's next car (`ready`)
+	local firstOptions: Options? = nil
+	local layingFirst: thread? = nil
 
 	local function spawn(f: () -> ())
 		local thread = task.spawn(f)
@@ -331,6 +356,96 @@ function Climbs.new(): Climbs
 		end)
 	end
 
+	-- Carries `leaving`'s riders from car `from` up into floor `above`'s car mid-cruise (L-08b):
+	-- streams its lobby to their screens, has its car take the ride over, and on the cable's second
+	-- knock moves each rider still where `still` says (on the floor they left, or in the lobby's
+	-- car) and `standIns` to the same spot in it, in one frame. Returns the riders moved; nil and
+	-- false if a new climb began meanwhile, nil and true if the new car couldn't take the ride over
+	-- (the old one comes back). Yields.
+	local function carry(
+		leaving: Elevators.Leaving,
+		from: Model,
+		above: OnFloor,
+		mine: number,
+		still: (at: Vector3) -> boolean,
+		standIns: { Model }
+	): ({ Player }?, boolean)
+		local e = elevators :: Elevators.Elevators
+		local to = above.elevator :: Model
+		-- ask each rider's screen for the new lobby: now, so it's there when they are, and again
+		-- as the new car takes the ride over (a long hold, or a phone short of memory, may have let
+		-- it go), so its car is on their screen with the shaft laid outside it before they're moved
+		local target = to:GetPivot().Position
+		local streaming = 0
+		local function stream()
+			for _, player in leaving.aboard do
+				streaming += 1
+				task.spawn(function()
+					local ok, err = pcall(function()
+						player:RequestStreamAroundAsync(target, Climb.StreamWait)
+					end)
+					if not ok and player.Parent then
+						warn(`Climbs: couldn't stream floor {above.number} to {player.Name}: {err}`)
+					end
+					streaming -= 1
+				end)
+			end
+		end
+		-- waits until the streams are in, or the latest the takeover may come
+		local function streamed()
+			while climb == mine and streaming > 0 do
+				if rideSince(leaving.at) >= Climb.Latest - Climb.Lead then
+					return
+				end
+				task.wait()
+			end
+		end
+		stream()
+		local takeAt = Climb.HandOff - Climb.Lead
+		while climb == mine and rideSince(leaving.at) < takeAt do
+			task.wait()
+		end
+		streamed()
+		stream()
+		streamed()
+		local since = rideSince(leaving.at)
+		if climb ~= mine then
+			return nil, false
+		end
+		if not e:takeOver(from, to) then
+			warn(
+				`Climbs: floor {above.number}'s car couldn't take the ride over; the car comes back`
+			)
+			return nil, true
+		end
+		-- the move, on the cable's second knock (held with the ride in Studio)
+		local moveAt = math.max(since + Climb.Lead, Climb.HandOff)
+		repeat
+			task.wait()
+		until climb ~= mine or rideSince(leaving.at) >= moveAt
+		if climb ~= mine then
+			return nil, false
+		end
+		-- the move: each rider to the same spot in the new car (turned with it if it faces
+		-- another way), in one frame so friends arrive together
+		local fromPivot, toPivot = from:GetPivot(), to:GetPivot()
+		local moved: { Player } = {}
+		for _, player in leaving.aboard do
+			local character = player.Character
+			local root = rootOf(player)
+			if player.Parent and character and root and still(root.Position) then
+				character:PivotTo(toPivot * fromPivot:ToObjectSpace(character:GetPivot()))
+				table.insert(moved, player)
+			end
+		end
+		for _, model in standIns do
+			if model.Parent then
+				model:PivotTo(toPivot * fromPivot:ToObjectSpace(model:GetPivot()))
+			end
+		end
+		return moved, false
+	end
+
 	-- The ride from `on` to the floor above, from the car leaving to its riders stepping out;
 	-- `stranded` were left on the floor as it left, `standIns` (Studio) ride with it.
 	local function ride(
@@ -377,78 +492,15 @@ function Climbs.new(): Climbs
 			return
 		end
 		ahead = nil
-		-- ask each rider's screen for the new lobby: now, so it's there when they are, and again
-		-- as the new car takes the ride over (a long hold, or a phone short of memory, may have let
-		-- it go), so its car is on their screen with the shaft laid outside it before they're moved
-		local target = to:GetPivot().Position
-		local streaming = 0
-		local function stream()
-			for _, player in leaving.aboard do
-				streaming += 1
-				task.spawn(function()
-					local ok, err = pcall(function()
-						player:RequestStreamAroundAsync(target, Climb.StreamWait)
-					end)
-					if not ok and player.Parent then
-						warn(`Climbs: couldn't stream floor {above.number} to {player.Name}: {err}`)
-					end
-					streaming -= 1
-				end)
-			end
-		end
-		-- waits until the streams are in, or the latest the takeover may come
-		local function streamed()
-			while climb == mine and streaming > 0 do
-				if rideSince(leaving.at) >= Climb.Latest - Climb.Lead then
-					return
-				end
-				task.wait()
-			end
-		end
-		stream()
-		local takeAt = Climb.HandOff - Climb.Lead
-		while climb == mine and rideSince(leaving.at) < takeAt do
-			task.wait()
-		end
-		streamed()
-		stream()
-		streamed()
-		since = rideSince(leaving.at)
-		if climb ~= mine then
-			return
-		end
-		if not e:takeOver(from, to) then
-			warn(
-				`Climbs: floor {above.number}'s car couldn't take the ride over; the car comes back`
-			)
+		local moved, refused = carry(leaving, from, above, mine, function(at: Vector3): boolean
+			return onFloor(on, at)
+		end, standIns)
+		if refused then
 			ahead = above
 			back()
 			return
-		end
-		-- the move, on the cable's second knock (held with the ride in Studio)
-		local moveAt = math.max(since + Climb.Lead, Climb.HandOff)
-		repeat
-			task.wait()
-		until climb ~= mine or rideSince(leaving.at) >= moveAt
-		if climb ~= mine then
-			return
-		end
-		-- the move: each rider to the same spot in the new car (turned with it if it faces
-		-- another way), in one frame so friends arrive together
-		local fromPivot, toPivot = from:GetPivot(), to:GetPivot()
-		local moved: { Player } = {}
-		for _, player in leaving.aboard do
-			local character = player.Character
-			local root = rootOf(player)
-			if player.Parent and character and root and onFloor(on, root.Position) then
-				character:PivotTo(toPivot * fromPivot:ToObjectSpace(character:GetPivot()))
-				table.insert(moved, player)
-			end
-		end
-		for _, model in standIns do
-			if model.Parent then
-				model:PivotTo(toPivot * fromPivot:ToObjectSpace(model:GetPivot()))
-			end
+		elseif not moved then
+			return -- a new climb cleared it
 		end
 		playing = above
 		between = false
@@ -614,6 +666,14 @@ function Climbs.new(): Climbs
 
 	function system.stop(_: any)
 		reset()
+		if layingFirst and coroutine.status(layingFirst) ~= "dead" then
+			task.cancel(layingFirst)
+		end
+		layingFirst = nil
+		if first then
+			first.model:Destroy()
+			first, firstOptions = nil, nil
+		end
 		for _, c in { departing, opening } do
 			if c then
 				c:disconnect()
@@ -644,6 +704,83 @@ function Climbs.new(): Climbs
 		arm(on)
 		started = now()
 		return on
+	end
+
+	function system.ready(_: any, o: Options)
+		if first or layingFirst or not FloorBuilder.units() then
+			return
+		end
+		layingFirst = task.spawn(function()
+			local on = lay(o, o.number)
+			layingFirst = nil
+			-- out of play: no climb's reset clears it from under the group riding to it
+			local i = table.find(floors, on)
+			if i then
+				table.remove(floors, i)
+			end
+			first, firstOptions = on, o
+		end)
+	end
+
+	function system.board(_: any, car: Model, leaving: Elevators.Leaving): boolean
+		if not (elevators and (first or layingFirst)) then
+			return false
+		end
+		reset() -- whatever ran: the test hall's climb in Studio, or one that's over
+		local mine = climb
+		between = true
+		local standIns = standInsIn(car)
+		local here = car:GetPivot()
+		spawn(function()
+			while
+				climb == mine
+				and not first
+				and rideSince(leaving.at) < Climb.Latest - Climb.Lead
+			do
+				task.wait()
+			end
+			local on, o = first, firstOptions
+			if climb ~= mine then
+				return
+			end
+			if not (on and o and on.elevator) then
+				warn(
+					`Climbs: floor 1 wasn't ready {string.format("%.1f", rideSince(leaving.at))} s into the lobby's ride; the car comes back`
+				)
+				between = false
+				return
+			end
+			first, firstOptions = nil, nil
+			table.insert(floors, on)
+			options, lastOptions = o, o
+			local moved = carry(leaving, car, on, mine, function(at: Vector3): boolean
+				return inCar(here, at)
+			end, standIns)
+			if climb ~= mine then
+				return
+			end
+			between = false
+			if not moved then
+				-- floor 1's car couldn't take the ride: the lobby car comes back, and the floor
+				-- waits out of play for the next one
+				local i = table.find(floors, on)
+				if i then
+					table.remove(floors, i)
+				end
+				first, firstOptions = on, o
+				options = nil
+				return
+			end
+			playing = on
+			started = now()
+			armAfterArrival(on, on.elevator :: Model, mine)
+			if STUDIO then
+				print(
+					`Climbs: {#moved} rode up from the lobby to floor {on.number} (seed {o.seed})`
+				)
+			end
+		end)
+		return true
 	end
 
 	function system.current(_: any): OnFloor?

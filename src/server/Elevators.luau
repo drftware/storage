@@ -25,6 +25,10 @@
 	  from (ElevatorView); here only its collider follows, so the gap you see is the gap there is.
 	- Every keypad sound fires `acted` with how far it's heard, as Doors does, so keepers (L-06b)
 	  hear each beep and come running at the alarm.
+	- The lobby's cars (L-08e1b1, LobbyCars) are the same elevators with no code: `lobby` stands one
+	  open in its bay, its keypad asleep, and `count` runs its clock from the first step in. At
+	  zero its gate shuts and it leaves exactly as a floor's car does; who rides is the group's
+	  pick of those inside, and nobody is left behind by it.
 
 	The code never leaves the server. Only gates in motion, dead keypads and running clocks are
 	stepped.
@@ -74,6 +78,9 @@ export type Arrival = {
 	at: number, -- server time it levelled
 }
 
+-- Who of those inside a lobby car rides as its gate hits its post (LobbyCars, Boarding.riders).
+export type Pick = (inside: { Player }) -> { Player }
+
 export type Elevators = Brix.System & {
 	-- Fires for every sound the keypad makes: each press, a clear, the alarm, the chime.
 	acted: Brix.Signal<KeypadEvent>,
@@ -91,6 +98,13 @@ export type Elevators = Brix.System & {
 	-- written on it, so riders' screens follow it once they stand in it, and it arrives and opens
 	-- on the ride's clock; `from` is done and never arrives. False if `from` isn't riding.
 	takeOver: (self: any, from: Model, to: Model) -> boolean,
+	-- Stands `elevator` in the lobby (L-08e1b1), or stands it there again after a trip: its gate
+	-- folds open, its keypad asleep, no clock, at the lobby's floor (`Ride.Lobby`). `pick` says who
+	-- rides of those inside as the shut gate hits its post (Boarding.riders).
+	lobby: (self: any, elevator: Model, pick: Pick) -> (),
+	-- A lobby car's count: its gate starts to shut at server time `departs`; nil stops it. Ignored
+	-- once the gate is shutting, or for a car that isn't in the lobby.
+	count: (self: any, elevator: Model, departs: number?) -> (),
 }
 
 -- Where the remote lives, for the clients: ReplicatedStorage.Remotes.Keypad.
@@ -117,6 +131,7 @@ type Entry = {
 	number: number, -- the floor it stands at
 	leftAt: number, -- server time the car left, while it rides
 	riders: { Player }, -- who rode, while it rides
+	lobby: Pick?, -- a lobby car: who of those inside rides
 }
 
 local FREE = Brix.Pathing.free()
@@ -214,10 +229,10 @@ function Elevators.new(): Elevators
 	-- The shut gate hit its post: whoever is inside the car rode; whoever else is on the floor
 	-- (within the clock's reach) was left to the building.
 	local function leave(entry: Entry, at: number)
-		local aboard: { Player } = {}
+		local inside: { Player } = {}
 		local left: { Player } = {}
-		local ids: { number } = {}
 		local here = entry.model:GetPivot().Position
+		local pick = entry.lobby
 		for _, player in Players:GetPlayers() do
 			local root = rootOf(player)
 			if not root then
@@ -225,11 +240,19 @@ function Elevators.new(): Elevators
 			end
 			local p = root.Position
 			if entry.car:contains((p :: any) :: vector) then
-				table.insert(aboard, player)
-				table.insert(ids, player.UserId)
-			elseif (p - here).Magnitude <= Departure.Heard then
+				table.insert(inside, player)
+			elseif not pick and (p - here).Magnitude <= Departure.Heard then
+				-- a lobby car leaves nobody behind: the lobby isn't a floor of the climb
 				table.insert(left, player)
 			end
+		end
+		local aboard: { Player } = inside
+		if pick then
+			aboard = pick(inside)
+		end
+		local ids: { number } = table.create(#aboard)
+		for i, player in aboard do
+			ids[i] = player.UserId
 		end
 		-- the ride first, so a rider's screen has its floors by the time it learns it rode
 		entry.leftAt, entry.riders = at, aboard
@@ -251,8 +274,8 @@ function Elevators.new(): Elevators
 			return
 		end
 		local entry = entries[elevator :: Instance]
-		if not entry then
-			return
+		if not entry or entry.lobby then
+			return -- a lobby car's keypad is asleep (L-08e1b1)
 		end
 		-- range: the player stands at the keypad
 		local character = player.Character
@@ -328,6 +351,7 @@ function Elevators.new(): Elevators
 			number = 1,
 			leftAt = 0,
 			riders = {},
+			lobby = nil,
 		}
 		entries[inst] = entry
 		if inst:GetAttribute(Keypad.Attribute) == nil then
@@ -511,6 +535,46 @@ function Elevators.new(): Elevators
 		a.riders = {}
 		clocks[a] = nil
 		return true
+	end
+
+	function system.lobby(_: any, elevator: Model, pick: Pick)
+		local entry = add(elevator)
+		assert(entry, `Elevators: {elevator:GetFullName()} isn't an elevator in the world`)
+		entry.lobby = pick
+		entry.code = nil
+		entry.floor = nil
+		entry.number = Ride.Lobby
+		entry.riders = {}
+		alarms[entry] = nil
+		clocks[entry] = nil
+		entry.phase = "Open"
+		entry.departs = math.huge
+		entry.model:SetAttribute(Ride.FloorAttribute, Ride.Lobby)
+		entry.model:SetAttribute(Ride.Attribute, nil)
+		entry.model:SetAttribute(Departure.Attribute, nil)
+		entry.model:SetAttribute(Departure.AboardAttribute, nil)
+		if entry.gateTo > 0 then
+			moveGate(entry, 0, now())
+		end
+		write(entry, "Rest", "")
+	end
+
+	function system.count(_: any, elevator: Model, departs: number?)
+		local entry = entries[elevator]
+		if not (entry and entry.lobby and entry.phase == "Open") then
+			return
+		end
+		if departs then
+			if departs ~= entry.departs then
+				entry.departs = departs
+				entry.model:SetAttribute(Departure.Attribute, departs)
+			end
+			clocks[entry] = true
+		elseif entry.departs ~= math.huge then
+			entry.departs = math.huge
+			entry.model:SetAttribute(Departure.Attribute, nil)
+			clocks[entry] = nil
+		end
 	end
 
 	function system.open(_: any, elevator: Model)

@@ -18,6 +18,7 @@ local Flashlights = require(script.Flashlights)
 local FrontOffice = require(script.FrontOffice)
 local Horns = require(script.Horns)
 local Keepers = require(script.Keepers)
+local LobbyCars = require(script.LobbyCars)
 local KeptPlayers = require(script.KeptPlayers)
 local Kneels = require(script.Kneels)
 local Minimaps = require(script.Minimaps)
@@ -60,13 +61,15 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "climbs", system = Climbs.new() },
 	-- The climb's end: everyone kept or left, or the top; the results under it, and "Again".
 	{ slot = "climbEnds", system = ClimbEnds.new() },
-	-- Everkeep's front office, the lobby: laid away from the test hall, reached by its post for now.
+	-- Everkeep's front office, the lobby: where everyone loads in, facing its six cars.
 	{ slot = "frontOffice", system = FrontOffice.new() },
-	-- The test hall and its "Walk a floor" post: the only way into a climb until the lobby
-	-- (L-08e) exists, so it runs on live servers too, for testing on phones (D-109). It must
-	-- give way to the lobby before the game goes public.
-	{ slot = "devCorridor", system = DevCorridor.new() },
+	-- The lobby's cars: step in to join a group, the count, the gate's slam, the ride to floor 1.
+	{ slot = "lobbyCars", system = LobbyCars.new() },
 }
+-- The test hall and its "Walk a floor" post: Studio only now the lobby is the way in (D-109).
+if RunService:IsStudio() then
+	table.insert(systems, { slot = "devCorridor", system = DevCorridor.new() })
+end
 
 -- a refused press's remote, there before any screen looks for it (L-19a)
 Prompts.ready()

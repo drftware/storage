@@ -1,9 +1,9 @@
 --!strict
 --[[
 	DevCorridor: a test hall of real storage units, for trying every door action with a friend
-	before the game's floors exist. The server's Host runs it on every server, Studio Play and live,
-	because its "Walk a floor" post is the only way into a climb until the lobby (L-08e) replaces
-	it (D-109).
+	before the game's floors exist. The server's Host runs it in Studio only, now the lobby's cars
+	are the way into a climb (L-08e1b1, D-109): you load in at the lobby, and its "Test hall" post
+	brings you here.
 
 	Eight units face each other across an 8-stud hall that runs along X, numbered 101 to 108 (odd
 	numbers on one side) and painted in the four door colours; 105 and 108 start padlocked; no wall
@@ -25,7 +25,6 @@
 	bare lit tubes, and a dead end where the T would be.
 	The prompts call RollUpDoor directly; the GDD's door state machine replaces them (L-02).
 ]]
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
@@ -151,8 +150,8 @@ local FLOOR_POST = CFrame.new(9, 0, 9) -- "Come back", in the lobby's corner by 
 -- far from the lobby along the halls, about two hall pieces past it, so a slam at a door by the
 -- lobby is well within its hearing and you watch it come the whole way.
 local MANNEQUIN_POST = CFrame.new(-9, 0, 9)
--- The way to the front office and back (L-08e1a), until L-08e1b1 makes it where you load in: a post
--- behind the spawn between the other two, and one in the lobby a stride right of where you land.
+-- The way between the front office, where you load in (L-08e1b1), and this hall: a post behind the
+-- hall's spawn point between the other two, and one in the lobby a stride right of where you land.
 local LOBBY_POST = Vector3.new(-34, 0, 0)
 local LOBBY_BACK = CFrame.new(-6, 0, -45) -- in the lobby's frame (Lobby.Specs)
 local MANNEQUIN_OFF = 60
@@ -716,35 +715,8 @@ local function build(lights: MotionLights.MotionLights): Folder?
 		folder
 	)
 
-	local spawn = Instance.new("SpawnLocation")
-	spawn.Name = "DevSpawn"
-	spawn.Anchored = true
-	spawn.CanCollide = false
-	spawn.Transparency = 1
-	spawn.Neutral = true
-	spawn.Duration = 0
-	spawn.Size = Vector3.new(4, 0.2, 4)
-	spawn.CFrame = CFrame.new(SPAWN.Position.X, FLOOR_TOP + 0.1, SPAWN.Position.Z)
-	spawn.Parent = folder
-
-	-- This runs only on a running server (Play, or live), on its copy of the place: the place itself
-	-- keeps its baseplate and spawn pad. The pad sits in the middle of the hall, so it goes too.
-	for _, d in Workspace:GetDescendants() do
-		if d:IsA("SpawnLocation") then
-			d:Destroy()
-		end
-	end
-	local baseplate = Workspace:FindFirstChild("Baseplate")
-	if baseplate then
-		baseplate:Destroy()
-	end
-
+	-- everyone loads in at the lobby (FrontOffice), whose post brings you here
 	folder.Parent = Workspace
-	for _, player in Players:GetPlayers() do
-		if player.Character then
-			player.Character:PivotTo(SPAWN)
-		end
-	end
 	print(`DevCorridor: {count + 1} units ready; "Go far" is by the spawn`)
 	return folder
 end

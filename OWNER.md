@@ -8,24 +8,51 @@ nowhere else.
 - [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
 - [ ] **Playing on your phone** (D-109): with Rojo connected, use File > Publish to Roblox (Save
   alone doesn't change what live servers run), then play it from the Creator Hub on the phone.
-  You land in the test hall, as in Studio's Play; "Walk a floor" by the spawn starts the climb on
-  floor 3. Still the baseplate? Shut its servers down from the Creator Hub and join again, and
-  check its supported devices include Phone.
-- [ ] **Keep the experience private** until the lobby (L-08e) replaces the test hall: every
-  server builds the hall now, with its teleport posts, Mannequin post and the code in the log.
+  You load in at the lobby, facing its six cars; step into one and its count takes you to floor 1
+  of a fresh climb. The test hall is Studio only now (L-08e1b1). Still the baseplate? Shut its
+  servers down from the Creator Hub and join again, and check its supported devices include Phone.
+
+## Now: judge L-08e1b1, step in and the count (built Nov 12, D-120)
+
+The lobby's cars are the way into a climb now, as DOORS' lobby elevators are. Verified in Studio
+on a computer, one player: you load in facing the cars, stepping into car 3 starts its count,
+stepping out stops it, at zero the gate slams, the ride runs and you're on floor 1 of a fresh
+climb (shots `docs/art/L-08e1b1-*.jpg`). Friends, a full car and a real phone are yours.
+- [ ] **Load in:** Play. You stand just inside the glass door with the six cars ahead and the
+  camera looking at them. In Studio the test hall's climb is laid too; its "Test hall" post is by
+  the door (E).
+- [ ] **Step in:** walk into any car. The chime, and the count pops into the top bar, green, from
+  20. The readout on the car's keypad counts with it (the keypad itself doesn't open any more).
+  Step out: the count leaves your screen and, with nobody left aboard, the readout goes back to
+  dashes. Step in again: 20 again.
+- [ ] **The last sprint:** from 10 it's red, the car's lamp blinks and the heartbeat starts; the
+  bell on each of the last five. At zero the gate shuts with the climb's slam; the ride, the
+  counter going L to 1, and the car opens on floor 1 of a fresh building. Step out within 6 s or
+  the gate shuts you in, as on every floor.
+- [ ] **With a friend (Team Test, two players):** both into car 3: one count, both clocks. One
+  steps out: the count runs on for the other. Both ride and arrive together. A friend in another
+  car while you climb: their group forms but their count waits until your climb is over (one
+  climb a server, until L-08e1c gives each group a server of its own).
+- [ ] **A full car (six players):** the count drops to 5; a seventh can't join, and is set down
+  outside the gate if still inside as it leaves.
+- [ ] **Your phone:** the count in the top bar and the keypad's readout from the room's middle.
+- [ ] **Known, until L-08e1c and L-08e2:** everyone on the server counts in the climb's end, even
+  someone who stayed in the lobby (so a loss can't come while they're there), and "Again" puts
+  everyone on floor 1, not back in the lobby.
+- [ ] **Decide (defaults in place):** the keypad beside each car stays as the car's panel, its
+  readout the count (L-08e1b2 makes it the host's panel); 20 s and 5 s (`Boarding`); the car back
+  in its bay 12 s after it left; a held count starting again from 20 once a climb ends.
 
 ## Now: judge L-08e1a, the front office (built Nov 12, D-119)
 
 The lobby's room, built and laid on every server 600 studs from the test hall: Everkeep's front
 office at night, six lit freight cars along the back wall, numbered 1 to 6, their gates folded
-open; the counter and shelves to the left of the door, the cart rack to the right. The cars are
-dressing for now: stepping in does nothing until L-08e1b1. Verified in Studio on a computer and
+open; the counter and shelves to the left of the door, the cart rack to the right (the cars are
+the way into a climb since L-08e1b1). Verified in Studio on a computer and
 the Galaxy A16 view (shots `docs/art/L-08e1a-*.jpg`); a real phone is yours.
-- [ ] **Get there:** at the test hall's spawn, the post right behind you, "Go to the lobby", is
-  on **R** (Y on a pad; the two posts beside it are on E). You land just inside the glass door;
-  turn round to face the cars if the camera looks elsewhere (a teleport keeps its old look). From
-  where you land, on your phone too: do the six cars read as "go there" at a glance? Can you read
-  the numbers?
+- [ ] **Get there:** you load in there now (L-08e1b1), just inside the glass door. From where
+  you land, on your phone too: do the six cars read as "go there" at a glance? Can you read the
+  numbers?
 - [ ] **Walk it:** the counter and its shelves (boxes on them), the empty cart rack, the striped
   zone before each car, into a car and out. Run into the walls, counter, shelves and rack: nothing
   to fall through or snag on. "Come back" by the door (E) returns you to the test hall.
@@ -35,8 +62,7 @@ the Galaxy A16 view (shots `docs/art/L-08e1a-*.jpg`); a real phone is yours.
 - [ ] **Decide (defaults in place):** Everkeep's colours (teal wall panels, the counter's front
   cream; `Lobby.Paint`); the room's size (120 by 48: room for the cart ride, but bare for now; a
   floor plan board, a bench and the like are on the polish list); the hall lights' eyes in the
-  office shut (no keeper watches it); the keypad beside each lobby car (L-08e1b1: hide it, or make
-  it the host's panel).
+  office shut (no keeper watches it).
 
 ## Now: judge L-16d, the tops at your computer's full frame rate (built Nov 12, D-118)
 

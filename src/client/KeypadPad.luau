@@ -23,6 +23,7 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
+local Boarding = require(ReplicatedStorage.Shared.Lobby.Boarding)
 local Brix = require(ReplicatedStorage.Brix)
 local Elevator = require(ReplicatedStorage.Shared.Elevator)
 local ElevatorView = require(script.Parent.ElevatorView)
@@ -426,6 +427,9 @@ function KeypadPad.new(press: ElevatorView.Press, need: FreeCursor.Need): Brix.S
 	local function add(inst: Instance)
 		if not inst:IsA("Model") or entries[inst] or not inst:IsDescendantOf(Workspace) then
 			return
+		end
+		if inst:GetAttribute(Boarding.CarAttribute) ~= nil then
+			return -- a lobby car's keypad sleeps: its readout is the count (L-08e1b1)
 		end
 		local keypad = inst:FindFirstChild("Keypad")
 		if not (keypad and keypad:IsA("BasePart")) then
