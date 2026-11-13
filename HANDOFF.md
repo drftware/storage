@@ -2,7 +2,7 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-12, session 113 (L-08e4b1), evening run session 3 · **Checks:** green ·
+**Updated:** 2026-11-13, session 114 (the owner's audit and proposal: docs only) · **Checks:** green ·
 **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
@@ -14,6 +14,7 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   parks where it stopped (not home yet). Verified in Studio Play (one player, a computer): out of
   the rack, kicks to 21 a second, a clank at a wall, a turn off it, Jump, the coast and park, the
   stripes. Output clean but 203785492. Studio left in Edit.
+- **A proposal waits on the owner** (`docs/PROPOSAL.md`, Nov 13; nothing in it decided or built).
 
 ## Next task: L-08e4b2 Home again
 The moment: you hop off at a car's stripes as the gate's about to shut, and behind you the cart
@@ -60,8 +61,7 @@ STUDIO.md "Testing a cart ride from the MCP".
    and while riding a cart (put it away there?); the panel's host line is blank if the host's
    Player isn't found; the turned-away headline sits over the far wall, red on teal; screen
    captures right after Play show the lobby nearly black for several seconds (lighting); the
-   rack sits behind you at the spawn (you face the cars), so the carts are seen only once you
-   turn round.
+   rack is behind you at the spawn (you face the cars), so you see the carts only on turning round.
 
 ## Kickoff for the next agent
 ```text
