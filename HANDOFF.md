@@ -14,7 +14,7 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   parks where it stopped (not home yet). Verified in Studio Play (one player, a computer): out of
   the rack, kicks to 21 a second, a clank at a wall, a turn off it, Jump, the coast and park, the
   stripes. Output clean but 203785492. Studio left in Edit.
-- **A proposal waits on the owner** (`docs/PROPOSAL.md`, Nov 13; nothing in it decided or built).
+- **A proposal waits on the owner** (`docs/PROPOSAL.md`, Nov 13: 36 numbered ideas, none decided).
 
 ## Next task: L-08e4b2 Home again
 The moment: you hop off at a car's stripes as the gate's about to shut, and behind you the cart

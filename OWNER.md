@@ -20,18 +20,25 @@ nowhere else.
 
 ## Decide: the proposal for the loop and the store (Nov 13)
 
-- [ ] **Read `docs/PROPOSAL.md`** and say yes, no or change to each part. It is a proposal from
-  the audit you asked for: nothing in it is decided, built or ticketed, and the GDD is unchanged.
-  The four calls the rest hangs on:
-  1. **The lights:** a timed inspection (freeze, or get inside a unit) in place of lights that
-     always call a monster. This changes your own first premise.
-  2. **Left behind:** a kept friend turns up wrapped on the next floor, free. You cut this on
-     Nov 2 for having no precedent; R.E.P.O.'s head revive may be one.
-  3. **The first roof on floor 5** (about 20 to 25 minutes), with floors 6 to 10 as chapters.
-  4. **Every door pays:** quarters in every unit, about half as many units, tagged doors.
+- [ ] **Read `docs/PROPOSAL.md`** and answer by number: keep, change or cut. It holds 36 numbered
+  ideas from the audit you asked for, each written out in full, with a list at the end for
+  marking up. Nothing in it is decided, built or ticketed, and the design doc is unchanged.
 
-  It also lists five bets with no precedent (the quiet lift and four more). None is built unless
-  you take it up.
+  Four of the ideas are big enough that most of the others depend on them:
+  1. **The lights (idea 7).** Today the plan is that every light you walk under calls a monster.
+     The proposal changes that to a five-second "don't move" warning about once a minute, with
+     the lights harmless the rest of the time. This changes your first idea for the game.
+  2. **Being left behind (idea 18).** Today a player the elevator leaves without is out of the
+     climb. The proposal has them turn up wrapped in a unit on the next floor, for friends to
+     free. You cut this on Nov 2 because no hit game did it; R.E.P.O. may now be one.
+  3. **The roof on floor 5 (idea 20).** A full climb at launch would be five floors and about
+     20 to 25 minutes, with floors 6 to 10 added later as updates.
+  4. **Doors that always pay (ideas 1 to 4).** A few coins in every unit, about half as many
+     units on a floor, and a tagged door that always holds a find but is likelier to hold a
+     monster.
+
+  The proposal also lists five ideas that no hit game has done (the first is a timing tap that
+  opens a door quietly). None of them gets built unless you say so.
 
 ## Now: judge L-08e3, Invite and the dials (built Nov 12, D-124)
 
