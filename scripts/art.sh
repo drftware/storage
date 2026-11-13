@@ -44,6 +44,9 @@
 #                                       Specs module, look sheets (the floor and view sheets need the
 #                                       boxes built; about 3 minutes)
 #   scripts/art.sh ladder export        just the ladder's FBX and Specs module
+#   scripts/art.sh cart                 the platform cart: its bake, FBX (body, forks, wheels), Specs
+#                                       module, look sheets (about two minutes)
+#   scripts/art.sh cart export          just the cart's FBX and Specs module
 #   scripts/art.sh hole                 the crawl hole: its bake, FBX, Specs module, look sheets (it
 #                                       wears the unit's Partition set: build the unit first)
 #   scripts/art.sh hole export          just the crawl hole's FBX and Specs module
@@ -121,6 +124,15 @@ if [ "${1:-}" = "ladder" ]; then
 	for st in ${*:-textures export renders}; do
 		echo "== ladder $st"
 		blender -b --factory-startup -P art/ladder/build.py -- --stage "$st" 2>&1 \
+			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|atlas|DONE" || true
+	done
+	exit 0
+fi
+if [ "${1:-}" = "cart" ]; then
+	shift
+	for st in ${*:-textures export renders}; do
+		echo "== cart $st"
+		blender -b --factory-startup -P art/cart/build.py -- --stage "$st" 2>&1 \
 			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|atlas|DONE" || true
 	done
 	exit 0

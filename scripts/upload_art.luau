@@ -180,6 +180,12 @@ local ART: { Art } = {
 		description = "An aluminium extension ladder, collapsed: base and fly sections, rope and pulley",
 	},
 	{
+		key = "Cart",
+		path = "art/cart/out/Cart.fbx",
+		manifest = "art/cart/assets.json",
+		description = "A platform cart: orange steel deck, rubber mat, push handle, four casters",
+	},
+	{
 		key = "CrawlHole",
 		path = "art/hole/out/CrawlHole.fbx",
 		manifest = "art/hole/assets.json",

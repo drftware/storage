@@ -1183,11 +1183,14 @@ fix them later." The overnight run's hard limits hold.
       client moves it and the server caps its speed. As R.E.P.O.'s rideable vehicles and
       Roblox's classic skateboard. Cart cosmetics wait for the store. In two sessions (split Nov
       12, each ends green):
-      - [ ] **L-08e4a The cart, built the unit's way.** `art/cart/`: a spec (a 2.2 by 4.3 stud
-        deck, as the rack's slots were sized for, a push handle, four casters that turn), the
-        Blender script, baked PBR maps, the FBX, a generated `Specs` module and look sheets;
-        imported to `ReplicatedStorage.Props.Cart`; one parked nose-in at every rack slot
-        (`Lobby.Specs.CartSlots`), judged at phone size from the door.
+      - [x] **L-08e4a The cart, built the unit's way. Done Nov 12 (D-125).** `art/cart/`: a
+        safety-orange steel platform cart (a 2.2 by 4.3 deck, a ribbed rubber mat, a U handle
+        with a foam grip, rubber bumpers, 6-inch casters), seven parts so the ride can move them
+        (the body, two swivel forks, four wheels), baked on one 1024 set, the FBX, `Cart.Specs`,
+        five look sheets. In the place at `ReplicatedStorage.Props.Cart`; `Lobby.lay` parks one
+        nose-in at each of the six slots, each a little off square, its front casters turned
+        every which way. Verified in Studio Play from the spawn and up close
+        (`docs/art/L-08e4a-*.jpg`); Output clean.
       - [ ] **L-08e4b The ride.** Ride, the kick, coasting, hopping off, bumps, the roll back to
         the rack, one rider, the speed cap: the GDD's cart ride on the carts L-08e4a parks.
 - [x] **L-15 Keepers hear the rest. Done Nov 11 (D-107).** The keypad, a dropped tool, the saw, a

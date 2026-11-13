@@ -17,6 +17,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Boarding = require(script.Boarding)
 local Boxes = require(script.Parent.Boxes)
+local Cart = require(script.Parent.Cart)
 local CorridorKit = require(script.Parent.CorridorKit)
 local Elevator = require(script.Parent.Elevator)
 local Gate = require(script.Parent.Elevator.Gate)
@@ -73,6 +74,19 @@ Lobby.Porch = {
 	Angle = 100,
 	At = Vector3.new(0, 10.5, -49.5), -- in the lobby's frame: over the door, just outside the glass
 	Aim = Vector3.new(0, -1, -0.6), -- down, and out across the apron
+}
+
+-- The carts in the rack by the door, slot by slot (Specs.CartSlots): each a degree or two off
+-- square and its front casters turned every which way, as carts left standing are, so the rack
+-- reads as used, not placed. Turn: degrees about Y; Casters: the left and right front casters'
+-- turns about their kingpins (0 trails behind, as when pushed nose first).
+Lobby.Parked = {
+	{ Turn = -1.2, Casters = { 20, -35 } },
+	{ Turn = 0.8, Casters = { 180, 160 } },
+	{ Turn = 1.6, Casters = { -15, 90 } },
+	{ Turn = -0.5, Casters = { 200, 25 } },
+	{ Turn = 1.0, Casters = { -80, -100 } },
+	{ Turn = -1.5, Casters = { 10, 170 } },
 }
 
 local function vec(v: { number }): Vector3
@@ -309,6 +323,19 @@ function Lobby.lay(pivot: CFrame, parent: Instance): Laid?
 	spot.Shadows = true
 	spot.Parent = porch
 	porch.Parent = dressing
+	-- a cart parked nose-in at every slot of the rack (Cart, L-08e4a)
+	if Cart.template() then
+		for i, s in Specs.CartSlots do
+			local look = Lobby.Parked[(i - 1) % #Lobby.Parked + 1]
+			local slot = pivot * CFrame.new(vec(s)) * CFrame.Angles(0, math.rad(look.Turn), 0)
+			local cart = Cart.park(slot, look.Casters, dressing)
+			if cart then
+				cart.Name = `Cart{i}`
+			end
+		end
+	else
+		warn("Lobby: no cart template at ReplicatedStorage.Props.Cart, so the rack stands empty")
+	end
 	dressing.Parent = folder
 
 	-- the climb's own car in each bay, its gate folded open and its lamp lit, marked a lobby car

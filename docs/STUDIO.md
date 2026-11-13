@@ -21,6 +21,10 @@ verified: a doc page, Studio, or "untested".
   clear Studio's cache. Clone `ReplicatedStorage.Shared` into a scratch folder, require from the
   clone, then destroy it. After preparing a template, check its `Colliders` match the spec.
 
+- **With a PrimaryPart set, a write to `Model.WorldPivot` doesn't move the pivot** (L-08e4a,
+  Studio Edit, 2026-11-12): `model.PrimaryPart = body; model.WorldPivot = CFrame.identity` left
+  the model's pivot at the body's middle, so `PivotTo` a floor point sank every cart 1.69 studs.
+  Set the PrimaryPart's own `PivotOffset` instead (`Cart.prepare`).
 - **The FBX recipe** (create.roblox.com/docs/art/blender, read 2026-11-05): Blender Unit System
   None; FBX export "FBX Unit Scale", Forward Z, Up Y, Path Mode Copy, Embed Textures. In Studio's
   3D Importer: Import as model, Scale Unit Stud, World Forward Front, World Up Top. With Forward Z,

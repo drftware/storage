@@ -3436,3 +3436,28 @@ will do and you spawn facing them. Its look is soft: the dial's rim warms and br
 you'd take glows with it, and a warm chevron bobs in the doorway at head height. Rejected: a
 screen arrow (it covers the phone), a light on the floor (a real light per car, against the
 light budget).
+
+## D-125 The platform cart: orange steel, swivel casters, parked every which way (L-08e4a, Nov 12)
+The moment it serves (the ride is L-08e4b): from the spawn you see a rack of real carts by the
+door, the thing you grab while the count runs, as R.E.P.O.'s carts and Roblox's classic
+skateboard are there to be ridden.
+
+**A real storage office's platform cart, built the unit's way** (`art/cart/`, the ladder's
+recipe on the finds' kit): a welded steel deck 2.2 by 4.3 (the rack's slots were sized for it),
+a ribbed rubber mat, a U handle with a cross bar and a foam grip, rubber bumpers on the nose,
+6-inch casters. **Safety orange** on the steel: it reads against the teal walls from the spawn on
+a phone, and it's the colour of the thing you grab and go with (a default; OWNER.md). Rejected:
+Everkeep's teal (lost against its own walls), a plywood deck (reads as a pallet at phone size),
+a cage cart (hides the rider).
+
+**Seven parts so the ride can move them:** the body, the two front swivel forks (each turning
+about its kingpin) and the four wheels (each spinning about its own middle, the axle). The
+casters' kingpins and axles come from the generated `Cart.Specs`, left and right as you push it.
+Zinc on the forks is half metal, as the ladder's aluminium is mostly diffuse: fully metal it
+took on the dark studio and read black.
+
+**Parked to look used, not placed:** `Lobby.lay` parks one nose-in at each rack slot
+(`Cart.park`), each a degree or two off square and its front casters turned every which way
+(`Lobby.Parked`), as carts left standing have them. Parked carts are anchored; an invisible
+`Deck` box from the floor to the mat's top is what you bump and step on; the handle doesn't
+collide yet (the ride decides what it needs).

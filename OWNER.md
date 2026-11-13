@@ -44,6 +44,19 @@ and off, the invite sheet opening with your friends (no invite sent).
   new or returning players who come by a share link, not on invites to friends already on
   Roblox): a Share key on the panel beside Invite, or on the end screen after a climb, or both?
 
+
+## Now: judge L-08e4a, the carts in the rack (built Nov 12, D-125)
+
+Six orange platform carts now stand nose-in in the rack by the front door, handles to the room,
+each a little off square with its front casters turned every which way. Verified in Studio Play
+from the spawn and up close (`docs/art/L-08e4a-*.jpg`); a phone is yours. They don't move yet
+(the ride is L-08e4b).
+- [ ] **Look:** from where you load in, turn to the rack on your phone: do they read as real
+  carts you'd want to grab? Walk up: the mat, the grip, the casters.
+- [ ] **Bump them:** walk into a cart and step onto its deck: nothing to snag on (the handle
+  doesn't block you yet).
+- [ ] **Decide (default in place):** the carts' colour, worn safety orange (`art/cart/spec.py`
+  `ORANGE`; a rebuild and upload changes it).
 ## Now: judge L-08e2, back in your car (built Nov 12, D-123)
 
 At the end of a climb, "Again" brings your group back standing in the car you left from, in your
