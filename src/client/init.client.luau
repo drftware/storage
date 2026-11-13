@@ -13,6 +13,8 @@ local ButtonView = require(script.ButtonView)
 local CarDial = require(script.CarDial)
 local CarPanel = require(script.CarPanel)
 local CarResults = require(script.CarResults)
+local CartRide = require(script.CartRide)
+local CartView = require(script.CartView)
 local CameraShake = require(script.CameraShake)
 local CaughtView = require(script.CaughtView)
 local KeptWrapOn = require(script.KeptWrapOn)
@@ -56,6 +58,7 @@ local keeperSounds, keeperHeard = KeeperSounds.new()
 local flashlightView, myBeam = FlashlightView.new()
 local toolView, myHand = ToolView.new(needCursor)
 local wrapView, lay = WrapView.new(myHand, kick)
+local cartView, ownCart, cartTold = CartView.new()
 
 local host = Brix.Host.new({
 	systems = {
@@ -112,6 +115,9 @@ local host = Brix.Host.new({
 		{ slot = "carResults", system = CarResults.new() },
 		-- a dial over each lobby car, and the pointer to the fullest for a player in none (L-08e3)
 		{ slot = "carDial", system = CarDial.new() },
+		-- the lobby's platform carts: every cart rolling, and riding one yourself (L-08e4b1)
+		{ slot = "cartView", system = cartView },
+		{ slot = "cartRide", system = CartRide.new(ownCart, cartTold, kick, holdView) },
 	},
 })
 host:start()

@@ -1637,3 +1637,40 @@ verified: a doc page, Studio, or "untested".
   `PointLight` read Brightness 0.14 of `Elevator.Lamp`'s 1.2 on the client while its count ran,
   so in first person its walls read black. ElevatorView's `lampAt`/`showLamp` set it; the riding
   car in a climb is lit.
+- **There's no PlayerModule in PlayerScripts here** (Play, L-08e4b1, Nov 12): PlayerScripts held
+  only `Client` and `RbxCharacterSounds`, so `require(PlayerScripts.PlayerModule)` fails ("not a
+  valid member") and its `GetControls():GetMoveVector()` can't be read (WatchView's lookup of it
+  fails quietly too). `Humanoid.MoveDirection` (the stick or keys turned by your view, on the
+  floor) still updates while you stand on a plain Seat: read that.
+- **`Seat:Sit` from the server moved the cart to the player** (Play, L-08e4b1): with the cart
+  freed first, the character's root was the pair's root and the cart jumped and turned round
+  them. Now the cart's body has `RootPriority` 1 and the character is stood on the seat's spot
+  (`PivotTo`) before `Sit`, then the SeatWeld's C0/C1 set to hold it there. A Seat with
+  `CanTouch` off still seats by `Sit`, and never by someone walking into it. Jump while seated
+  hops you off as usual; a client setting its own `Humanoid.Sit = false` does too.
+- **`Workspace:Blockcast` can't see what it starts inside** (Play, L-08e4b1): a cart turned at a
+  wall left a corner a hair in it, the next kick's sweep found nothing and carried cart and rider
+  out through the wall (the server's room check took the cart back). Sweep from a pose known to
+  be clear and check turns with a box a hair bigger than the swept one.
+- **The torch poses your arms after any other pose** (Play, L-08e4b1): a cart rider's shoulders
+  set in `PreSimulation` read back as set, yet the arms held the torch out level (FlashlightView
+  holds it, after). Pose a body's arms only with FlashlightView's say.
+- **Seeing your own body in first person for a capture** (L-08e4b1): bind a render step at
+  `Camera + 5` that sets every part's `LocalTransparencyModifier` to 0 and the camera's CFrame to
+  the shot (following the subject if it moves), capture, then unbind. A plain `execute_luau`
+  camera change is undone when the call ends.
+- **Sounds measured for the cart** (L-08e4b1; AudioPlayer to AudioAnalyzer in Edit): Pro Sound
+  Effects' "Gurney Rolling 1" 9114736569 (19.5 s) a steady metal-wheel rattle about -24 dB from
+  1 to 15 s, 85% in 470 Hz to 2 kHz (a phone plays it; "Skateboard Start Constant Rolling"
+  9125955680 is 92% hiss over 2 kHz); "Shopping Cart 5" 9119083245 (7.8 s) rolls up from 1.6 s
+  and hits a curb at 4.0 s (-13 dB), rattling to 4.5; "Paint Canvas 21" 9117188688 (0.37 s) one
+  dry-brush stroke peaking at 0.2 s, a sole's scuff pitched down; "Paint Canvas 5" 9117187117
+  steady from 0.75 to 1.0 s; "Skateboard Tail Grinds Scrapes 1" 9125957009 (1.2 s) about -33 dB
+  throughout; "Rubber Mat Hits Drops Impacts 9" 9118733086 one thud in its first 0.2 s. The
+  library's skateboard push takes (9125954198) bury the pushes under rolling: no clean kick.
+- **Testing a cart ride from the MCP** (L-08e4b1): Cart1's slot is (-19.5, 0, 554.85), its Ride
+  button over the handle at about (-19.5, 3.5, 557); walk to (-19.5, 3, 561), turn the camera to
+  the handle, press E, then turn the camera the way to go and hold W (`user_keyboard_input`
+  keyDown, wait, keyUp; Space to hop off). Log from a client Heartbeat connection that writes a
+  Workspace attribute when done, read it from a later call. The lobby's left wall is at x -60;
+  the cars' band edge at z 596.8.

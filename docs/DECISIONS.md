@@ -3461,3 +3461,56 @@ took on the dark studio and read black.
 (`Lobby.Parked`), as carts left standing have them. Parked carts are anchored; an invisible
 `Deck` box from the floor to the mat's top is what you bump and step on; the handle doesn't
 collide yet (the ride decides what it needs).
+
+## D-126 Riding a cart: your screen rolls it, the server watches (L-08e4b1, Nov 12)
+The moment: you tap Ride on a cart in the rack, kick it across the lobby while the count runs and
+roll up to the gate, as Roblox's classic skateboard kick-pushes and R.E.P.O.'s carts are ridden.
+
+**You stand on the deck facing the handle and it rolls handle first**, like a kick scooter. The
+carts park nose-in with their handles to the room, so this rolls you straight out of the rack;
+ridden nose first you'd face the wall with no reverse. Stepping on, your view swings round to the
+way it rolls (`Ride.View.Turn`), with a thud on the rubber mat.
+
+**It heads where you look.** Roblox's controls already turn the stick or keys by your view into
+the Humanoid's `MoveDirection`, which still updates while you stand on the seat; the cart turns
+toward that way and you kick while it's within 100 degrees, so a cart that can't swing yet (in
+the rack, against a wall) rolls out straight and then curves. Push away from it (past 125) and
+you drag your foot: it slows in a straight line, then swivels round. Rejected: tank steering
+(A and D turn), which fights a first-person view on a phone. Tuned in Lune and Play: one kick
+adds 10.5 a second from a standstill and less near the cap (28), one every 0.55 s while held,
+cruising about 22 (a walk is 16); let go and it coasts about 45 studs in 4 s. It turns about its
+fixed casters at the handle end (they can't slide sideways), so you turn nearly on the spot while
+its tail swings, and a turn that would scrape shuffles it back off the wall a little each frame:
+without that a cart stopped nose to a wall could never leave it (seen in Play).
+
+**Your screen rolls it.** The server stands you on the cart's hidden Seat, frees the cart and
+gives it to your screen (`SetNetworkOwner`); your screen places it each drawn frame just before
+the camera follows, in even steps (`Ride.advance`, as the crawl, D-118), and holds it there
+before each physics step with a force against gravity. Nothing about it collides in the world's
+physics while it rolls (`Cart.anchor`): a moving cart that shoved friends would launch them.
+Instead a box swept ahead each frame finds what it would meet: head on, a clank, a jolt and a
+dead stop (`Ride.hit`, never any speed added); met flatter than 30 degrees, a scrape and a slide
+along. The sweep starts from where the cart last stood clear, and a turn is checked with a box a
+hair bigger than the swept one: a sweep can't see what it starts inside, and in Play a turn at a
+wall left a corner in it and the next kick carried cart and rider out through the wall.
+
+**The server watches.** Every half second the cart must not have gone further than a cart can
+roll (`Ride.tooFast`: the cap's pace times 1.3 plus 4 studs) and must be inside the front office,
+short of the cars' striped band; one that fails is taken back where it last passed and its rider
+put off (it caught the cart through the wall above). One rider a cart; a press while it's ridden
+or rolling isn't shown at all (the button hides). Jump hops you off keeping at most 8 studs a
+second of its speed; the cart rolls on to a stop on your screen and the server parks it where it
+stood still, anchored, its trailing casters swung round behind. Leaving or dying parks it at
+once.
+
+**The cars' band is where you hop off.** Ride onto the yellow stripes before a car and you're put
+off onto them, the cart stopped at their edge; until L-08e4b2 sends it home, it stands there.
+
+**Feedback:** the casters' rattle (Pro Sound Effects' "Gurney Rolling 1", looped) rises in volume
+and pitch with speed on every screen; each kick's plant a scuff and a dip of your view; at speed
+the casters shiver under you, your view widens up to 7 degrees and leans into turns; a clank
+jolts it; a hint once a session ("Hold forward to roll", "Jump to hop off"). Every screen spins
+the wheels by how far the cart rolls and swings the front casters to trail their kingpins; a
+friend's kicks, drags and bumps are read from how their cart moves (a surge, a hard slowing, a
+sudden stop). The rider's body stands, leans and kicks (`Ride.leg`); their arms stay the torch's,
+which FlashlightView holds out after any other pose.

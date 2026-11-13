@@ -1,8 +1,9 @@
 --!strict
 --[[
 	Cart: the front office's platform cart (art/cart/README.md, L-08e4). An orange steel deck on
-	four casters with a push handle at the back; the front pair of casters swivel. Today the carts
-	stand parked in the rack by the front door; the ride (L-08e4b) moves them.
+	four casters with a push handle at the back; the front pair of casters swivel. The carts stand
+	parked in the rack by the front door until someone rides one (Ride, L-08e4b1): standing on the
+	deck facing the handle, the cart rolls handle first.
 
 	The art is one imported model (art/cart/out/Cart.fbx): the body and six moving parts (two
 	swivel forks, four wheels), kept in the place at ReplicatedStorage.Props.Cart (D-009) and made
@@ -12,11 +13,22 @@
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Ride = require(script.Ride)
 local Specs = require(script.Specs)
 
 local Cart = {}
 Cart.Specs = Specs
+Cart.Ride = Ride
 Cart.Body = "Cart" -- the body's MeshPart, the model's PrimaryPart
+Cart.Tag = "Cart" -- every rideable cart in the world (the server's Carts tags them)
+Cart.Seat = "RideSeat" -- the hidden Seat a rider stands on (`rig`)
+Cart.Deck = "Deck" -- the box you bump and step on
+Cart.RiderAttribute = "Rider" -- the rider's UserId, while someone rides it
+Cart.CoastAttribute = "Coast" -- the last rider's UserId, while it rolls on after they hop off
+Cart.Swivel = "Swivel" -- a front caster's joint to the body: it turns about the kingpin (Y)
+Cart.Spin = "Spin" -- a wheel's joint: it spins about its axle (X)
+-- Where a rider stands: on the mat, a stud short of the handle, facing it (the cart's frame).
+Cart.Stand = CFrame.new(0, Specs.Deck.Y, Specs.Handle.Z - 1) * CFrame.Angles(0, math.pi, 0)
 
 function Cart.template(): Model?
 	local props = ReplicatedStorage:FindFirstChild("Props")
@@ -77,6 +89,28 @@ function Cart.prepare(model: Model): Model
 	return model
 end
 
+-- Turns a standing cart's front casters to `swivel[i]` degrees about their kingpins (0 trails
+-- behind as when pushed nose first, 180 as when ridden handle first), from the template's pose.
+-- The parts must be anchored: a rolling cart's casters turn by their joints.
+function Cart.swivel(model: Model, swivel: { number })
+	local template = Cart.template()
+	if not template then
+		return
+	end
+	local frame = model:GetPivot()
+	local k = 0
+	for _, c in Specs.Casters do
+		local forkName = c.Fork
+		if forkName then
+			k += 1
+			local pin = CFrame.new(c.Kingpin)
+			local turn = frame * pin * CFrame.Angles(0, math.rad(swivel[k] or 0), 0) * pin:Inverse()
+			part(model, forkName).CFrame = turn * part(template, forkName).CFrame
+			part(model, c.Wheel).CFrame = turn * part(template, c.Wheel).CFrame
+		end
+	end
+end
+
 -- A copy of the template parked at `at` (its pivot on the floor, its nose toward at's
 -- LookVector) under `parent`, each front caster turned `swivel[i]` degrees about its kingpin as a
 -- cart left standing has them. Nil if the place has no template.
@@ -86,22 +120,93 @@ function Cart.park(at: CFrame, swivel: { number }, parent: Instance): Model?
 		return nil
 	end
 	local model = template:Clone()
-	local k = 0
-	for _, c in Specs.Casters do
-		local forkName = c.Fork
-		if forkName then
-			k += 1
-			local pin = CFrame.new(c.Kingpin)
-			local turn = pin * CFrame.Angles(0, math.rad(swivel[k] or 0), 0) * pin:Inverse()
-			local fork = part(model, forkName)
-			local wheel = part(model, c.Wheel)
-			fork.CFrame = turn * fork.CFrame
-			wheel.CFrame = turn * wheel.CFrame
-		end
-	end
 	model:PivotTo(at)
+	Cart.swivel(model, swivel)
 	model.Parent = parent
 	return model
+end
+
+local function motor(name: string, p0: BasePart, p1: BasePart, c0: CFrame, c1: CFrame): Motor6D
+	local m = Instance.new("Motor6D")
+	m.Name = name
+	m.Part0 = p0
+	m.Part1 = p1
+	m.C0 = c0
+	m.C1 = c1
+	m.Parent = p1
+	return m
+end
+
+--[[
+	Readies a parked cart (from `park`) to be ridden, once, on the server: a joint for each moving
+	part, so a rolling cart holds together and every screen can turn its casters and spin its
+	wheels (`Swivel` about each front kingpin, `Spin` about each axle; at rest, the template's
+	pose), the deck welded on, and a hidden Seat where the rider stands (`Stand`). Everything stays
+	anchored until a ride.
+]]
+function Cart.rig(model: Model)
+	local template = Cart.template()
+	assert(template, "Cart.rig: no template")
+	local body = part(model, Cart.Body)
+	local tb = part(template, Cart.Body).CFrame
+	for _, c in Specs.Casters do
+		local wheel = part(model, c.Wheel)
+		local tw = part(template, c.Wheel).CFrame
+		local axle = CFrame.new(c.Axle)
+		local forkName = c.Fork
+		if forkName then
+			local fork = part(model, forkName)
+			local tf = part(template, forkName).CFrame
+			local pin = CFrame.new(c.Kingpin)
+			motor(Cart.Swivel, body, fork, tb:Inverse() * pin, tf:Inverse() * pin)
+			motor(Cart.Spin, fork, wheel, tf:Inverse() * axle, tw:Inverse() * axle)
+		else
+			motor(Cart.Spin, body, wheel, tb:Inverse() * axle, tw:Inverse() * axle)
+		end
+	end
+	for _, p in model:GetChildren() do
+		if p:IsA("BasePart") and p ~= body then
+			p.Massless = true
+		end
+	end
+	-- the cart, not its rider, is what a ride's joints hold still: welding a rider on moves them
+	body.RootPriority = 1
+	local deck = part(model, Cart.Deck)
+	local weld = Instance.new("WeldConstraint")
+	weld.Part0 = body
+	weld.Part1 = deck
+	weld.Parent = deck
+	local seat = Instance.new("Seat")
+	seat.Name = Cart.Seat
+	seat.Size = Vector3.new(1, 0.1, 1)
+	seat.CFrame = model:GetPivot() * Cart.Stand
+	seat.Transparency = 1
+	seat.CanCollide = false
+	seat.CanTouch = false -- never sat on by walking into it: only by Ride
+	seat.CanQuery = false
+	seat.CastShadow = false
+	seat.Massless = true
+	seat.Anchored = true
+	local held = Instance.new("WeldConstraint")
+	held.Part0 = body
+	held.Part1 = seat
+	held.Parent = seat
+	seat.Parent = model
+end
+
+-- Every part of a cart: anchored (parked) or free to roll (ridden).
+function Cart.anchor(model: Model, anchored: boolean)
+	for _, p in model:GetChildren() do
+		if p:IsA("BasePart") then
+			p.Anchored = anchored
+		end
+	end
+	local deck = model:FindFirstChild(Cart.Deck)
+	if deck and deck:IsA("BasePart") then
+		-- a rolling cart's own screen does its bumping (Ride.hit): in the world's physics it
+		-- would shove, or launch, whoever it met
+		deck.CanCollide = anchored
+	end
 end
 
 return Cart

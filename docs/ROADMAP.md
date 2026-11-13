@@ -1181,7 +1181,7 @@ fix them later." The overnight run's hard limits hold.
       (no tapping); let go to coast; Jump to hop off. Carts bump and stop, never launch anyone;
       at a gate you hop off and the cart rolls back to its rack; one rider each; the rider's
       client moves it and the server caps its speed. As R.E.P.O.'s rideable vehicles and
-      Roblox's classic skateboard. Cart cosmetics wait for the store. In two sessions (split Nov
+      Roblox's classic skateboard. Cart cosmetics wait for the store. In three sessions (split Nov
       12, each ends green):
       - [x] **L-08e4a The cart, built the unit's way. Done Nov 12 (D-125).** `art/cart/`: a
         safety-orange steel platform cart (a 2.2 by 4.3 deck, a ribbed rubber mat, a U handle
@@ -1191,8 +1191,23 @@ fix them later." The overnight run's hard limits hold.
         nose-in at each of the six slots, each a little off square, its front casters turned
         every which way. Verified in Studio Play from the spawn and up close
         (`docs/art/L-08e4a-*.jpg`); Output clean.
-      - [ ] **L-08e4b The ride.** Ride, the kick, coasting, hopping off, bumps, the roll back to
-        the rack, one rider, the speed cap: the GDD's cart ride on the carts L-08e4a parks.
+      - [ ] **L-08e4b The ride**, the GDD's cart ride on the carts L-08e4a parks, in two
+        sessions (split Nov 12):
+        - [x] **L-08e4b1 Ride, kick and coast. Done Nov 12 (D-126).** Tap Ride and you stand on
+          the deck facing the handle, your view swinging round; push and it heads where you
+          look, your back leg kicking in rhythm (`Cart.Ride`, Lune specs); let go to coast, push
+          back to drag your foot; it turns about its fixed casters. Head on into a wall, a cart
+          or a friend: a clank and a dead stop, at a slant a scrape and slide, never a launch.
+          Jump hops you off (the cart rolls on, then the server parks it where it stopped); ride
+          onto a car's stripes and you hop off there. Your screen rolls it (`CartRide`), the
+          server watches its pace and keeps it in the room (`Carts`); every screen spins the
+          wheels, swings the casters, rattles with speed and stands the rider (`CartView`).
+          Verified in Studio Play: out of the rack, a curve, five kicks to 21 a second, a clank
+          at the wall, a turn off it, Jump, the coast and the park, the band's hop-off.
+        - [ ] **L-08e4b2 Home again.** A cart you hop off at a car's stripes rolls home to its
+          slot by itself on every screen, round anyone in the way; a cart left standing anywhere
+          rolls home after a while; the rack's carts stand parked as before. Two riders at once
+          (`OWNER.md`).
 - [x] **L-15 Keepers hear the rest. Done Nov 11 (D-107).** The keypad, a dropped tool, the saw, a
   crawl, the ladder and a drop off or into a unit each reach a keeper as far as players hear them,
   as Lethal Company's Eyeless Dogs come to any noise. A sound on a unit's top carries out over its
@@ -1743,3 +1758,9 @@ Atmosphere effects wait until the loop is solid (owner, Nov 7); the haze stays a
   a real needle sweeping L to 10 as a party climbs (the "floor dial over the landing" above).
   A soft tick from the dial as its floor changes, for those nearby; the line's words could
   stencil on rather than pop.
+- **The ride's finish** (L-08e4b1): your hands on the handle's grip instead of the torch held
+  out (FlashlightView poses the arms after the cart; with the lobby's torch question); a hop as
+  you step on (your view rising onto the deck, not a snap); a kick pushed against a wall that
+  only strains (no scuff, a grunt of steel); the scrape looped while you slide along a wall; a
+  caster squeal in a tight turn at speed; the casters' rattle louder over the floor's seams; a
+  friend's kick in step with their screen (today read from how their cart moves).

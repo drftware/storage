@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Carts = require(script.Carts)
 local ClimbEnds = require(script.ClimbEnds)
 local Climbs = require(script.Climbs)
 local Crawls = require(script.Crawls)
@@ -64,6 +65,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "climbEnds", system = ClimbEnds.new() },
 	-- Everkeep's front office, the lobby: where everyone loads in, facing its six cars.
 	{ slot = "frontOffice", system = FrontOffice.new() },
+	-- The lobby's platform carts: Ride, handed to the rider's screen, its pace watched, parked again.
+	{ slot = "carts", system = Carts.new() },
 	-- A lobby car's group to a server of its own; on that server, the group stood in floor 1's car.
 	{ slot = "trips", system = Trips.new() },
 	-- The lobby's cars: step in to join a group, the count, the gate's slam, the ride to floor 1.

@@ -57,6 +57,32 @@ from the spawn and up close (`docs/art/L-08e4a-*.jpg`); a phone is yours. They d
   doesn't block you yet).
 - [ ] **Decide (default in place):** the carts' colour, worn safety orange (`art/cart/spec.py`
   `ORANGE`; a rebuild and upload changes it).
+## Now: judge L-08e4b1, riding a cart (built Nov 12, D-126)
+
+Walk up to a cart in the rack and tap Ride: you're stood on its deck facing the handle, your view
+swinging round to the room. Push forward and it heads where you look, your back leg kicking in
+rhythm (a scuff and a dip of your view each kick); let go and it coasts; push back to drag your
+foot. A wall or a cart head on: a clank, a jolt and a dead stop; along a wall at a slant, a
+scrape. Jump hops you off and the cart rolls on a moment; ride onto a car's yellow stripes and
+you're put off there. Verified in Studio Play on a computer: out of the rack and round a curve,
+five kicks to 21 studs a second, the rattle rising, a clank at the wall, a turn off it, Jump, the
+coast and the park, the stripes. A phone and two players are yours.
+- [ ] **The feel, on your phone (Publish first):** the kick's rhythm (one every 0.55 s while you
+  hold), the top speed (cruising about 22; a walk is 16), the coast (about 45 studs), and "it
+  goes where you look" with the thumbstick in one thumb and turning the view with the other.
+  Too slow, too twitchy, too floaty? Name it and I'll tune the numbers (`Cart.Ride`).
+- [ ] **Hopping off on a phone:** does the jump button still show while you ride, and hop you
+  off? Is the hint ("Hold forward to roll", "Jump to hop off", once a session) readable over the
+  tool bar and gone in time?
+- [ ] **Two riders:** with a friend, each ride a cart. Do you see their back leg kick, their
+  wheels spin and casters swing, and hear their rattle and scuffs? Ride into each other and into
+  a friend standing: a clank and a stop, nobody launched.
+- [ ] **Decide (defaults in place):** (1) you stand facing the handle and it rolls handle first,
+  like a kick scooter (the carts park handles out); (2) it heads where you look, no A and D
+  steering; (3) a car's stripes put you off, and until L-08e4b2 the cart waits there; (4) while
+  riding your hands hold the torch out, not the handle (goes with whether the torch is out in
+  the lobby at all).
+
 ## Now: judge L-08e2, back in your car (built Nov 12, D-123)
 
 At the end of a climb, "Again" brings your group back standing in the car you left from, in your
