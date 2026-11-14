@@ -127,6 +127,45 @@ STACKS = {
 STACK_ORDER = ["Tower", "Wall", "Heap", "Column"]
 
 
+def box_reach():
+    """How far each box reaches from its pivot (the middle of its bottom) in Roblox's frame, as
+    (left, right, front, back) past the middle: half its size and its sides' bulge each way (the
+    templates measure so in Studio, a large box 1.857 across), but the open box's flaps lean out
+    past its walls, each by its length (half the box's depth) times the sine of how far
+    past upright it stands. Seen in Studio (S1-04b2): the open box's template reaches 1.454 to -X,
+    1.010 to +X, 1.322 to the front (-Z) and 1.118 to the back, its flaps' angles taken as (front,
+    back, -X end, +X end) in the boxes' Blender frame land at Roblox's (front, back, +X, -X)."""
+    path = os.path.join(ROOT, "art", "boxes", "spec.py")
+    s = importlib.util.spec_from_file_location("boxes_spec_for_reach", path)
+    mod = importlib.util.module_from_spec(s)
+    s.loader.exec_module(mod)
+    out = {}
+    for n, b in mod.BOXES.items():
+        hx, hz = b["w"] / 2 + b["bulge"], b["d"] / 2 + b["bulge"]
+        left = right = hx
+        front = back = hz
+        angles = b.get("open")
+        if angles:
+            length = b["d"] / 2  # a regular slotted box: every flap is half its depth
+            past = [length * max(0.0, math.sin(math.radians(a - 90.0))) for a in angles]
+            hx, hz = b["w"] / 2, b["d"] / 2  # its walls' bulge is under its flaps' lean
+            front, back = hz + past[0], hz + past[1]
+            right, left = hx + past[2], hx + past[3]
+        out[n] = (left, right, front, back)
+    return out
+
+
+def _reach_corners(x, z, reach, turn):
+    """The corners of the floor a box covers, flaps and all, standing at (x, z) turned `turn`."""
+    left, right, front, back = reach
+    a = math.radians(turn)
+    c, s = math.cos(a), math.sin(a)
+    out = []
+    for px, pz in ((-left, -front), (right, -front), (right, back), (-left, back)):
+        out.append((x + px * c + pz * s, z - px * s + pz * c))
+    return out
+
+
 def _corners(x, z, sx, sz, turn):
     a = math.radians(turn)
     c, s = math.cos(a), math.sin(a)
@@ -171,6 +210,7 @@ def stacks():
     its middle over that box's top and its own footprint mostly on it, and that no two boxes
     at the same height overlap."""
     sizes = box_sizes()
+    reach = box_reach()
     out = {}
     for name in STACK_ORDER:
         rows = STACKS[name]
@@ -194,8 +234,10 @@ def stacks():
                 if abs(other["y"] - y) < 1e-6:
                     assert not _overlap(foot, other["foot"]), f"{name}: boxes {j} and {i} overlap"
             placed.append(dict(box=box, x=x, y=y, z=z, turn=turn, foot=foot))
-        xs = [c[0] for p in placed for c in p["foot"]]
-        zs = [c[1] for p in placed for c in p["foot"]]
+        # the stack's size is the floor it really covers: the open box's flaps and all
+        reached = [_reach_corners(p["x"], p["z"], reach[p["box"]], p["turn"]) for p in placed]
+        xs = [c[0] for r in reached for c in r]
+        zs = [c[1] for r in reached for c in r]
         cx, cz = (min(xs) + max(xs)) / 2, (min(zs) + max(zs)) / 2
         tall = max(p["y"] + sizes[p["box"]][1] for p in placed)
         boxes = [(p["box"], (p["x"] - cx, p["y"], p["z"] - cz), p["turn"]) for p in placed]

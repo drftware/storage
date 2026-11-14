@@ -29,8 +29,16 @@ export type Tool = "Saw" | "BoltCutters" | "Padlock" | "Ladder" | "BubbleWrap" |
 export type Situation = { mood: Mood, awake: number }
 
 -- What a unit holds once dealt: a tool says which, a find which, a keeper which and whether it's
--- awake; `coins`, how many coins lie on its floor besides (0 to 3, S1-04a).
-export type Contents = { kind: Kind, tool: Tool?, find: string?, keeper: string?, coins: number }
+-- awake; `coins`, how many coins lie on its floor besides (0 to 3, S1-04a); `stuff`, somebody's
+-- stuff standing in a unit with nothing to take (S1-04b2), a name in `Deal.Stuff`.
+export type Contents = {
+	kind: Kind,
+	tool: Tool?,
+	find: string?,
+	keeper: string?,
+	coins: number,
+	stuff: string?,
+}
 
 -- A note: the unit it lies in (an index into the floor's slots) and the places of the code it
 -- shows, 1 to 4, in order. The note itself shows them in their slots, "_ 7 _ _" (`Deal.noteText`).
@@ -156,6 +164,31 @@ function Deal.coinsFrom(share: number, spread: number): number
 		at -= weight
 	end
 	return #Deal.CoinSpread
+end
+
+--[[
+	Somebody's stuff (S1-04b2, GDD "Doors"): of the units with nothing to take (no coins, no tool,
+	find or keeper, no note), some are bare and some are full of things only there to look at, so
+	even a door with nothing behind it shows you somebody's life: a stained mattress leaning on the
+	back wall, boxes stacked nearly to the bulb. Lethal Company's rooms and DOORS' drawers are full
+	of junk around the few things worth taking the same way; a bare one still stings.
+
+	The stuff takes no draw of its own: it's read from the unit's pick, the roll that says which
+	find or keeper a unit holds, which a unit with nothing in it never uses. So adding it moved
+	nothing a seed lays or deals (tests/stuffdeal.spec checks every seed's deal against before).
+]]
+Deal.StuffShare = 0.5 -- of the units with nothing to take, the share with somebody's stuff
+-- The things, each a name in `Stuff.Pieces` or `Stuff.Stacks` (tests/stuffdeal.spec checks), as
+-- likely as each other. Deals stands the first that fits the unit from the one drawn on (a small
+-- unit's crawl hole spots leave room for the rolled rug alone).
+Deal.Stuff = { "Mattress", "Carpet", "Tower", "Wall", "Heap", "Column" } :: { string }
+
+-- The stuff a unit with nothing to take holds from its pick (0 to 1), or nil for a bare unit.
+function Deal.stuffFrom(pick: number): string?
+	if pick >= Deal.StuffShare then
+		return nil
+	end
+	return Deal.Stuff[math.floor(pick / Deal.StuffShare * #Deal.Stuff) + 1]
 end
 
 -- The share of a floor's units that start padlocked: a few on floors 1 and 2, where you learn the
@@ -478,6 +511,15 @@ function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 			contents.kind = "Nothing"
 		else
 			contents.keeper = joined[math.floor(deck.picks[index] * #joined) + 1]
+		end
+	end
+	if contents.kind == "Nothing" and contents.coins == 0 then
+		local note = false
+		for _, n in deck.notes do
+			note = note or n.slot == index
+		end
+		if not note then
+			contents.stuff = Deal.stuffFrom(deck.picks[index])
 		end
 	end
 	deck.dealt[index] = contents

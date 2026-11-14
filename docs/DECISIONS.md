@@ -3818,3 +3818,37 @@ copy of the S and M unit templates in the Edit view, door hidden, a bulb at `Uni
 settings: the quilting first showed each diamond as a pyramid (a crease along its diagonals) and
 was rebuilt as a smooth dome.
 
+
+## D-136 Somebody's stuff dealt into units: half the empty ones, back to a wall (S1-04b2, Nov 14)
+
+**What players get.** Of the units with nothing to take (no coins, no tool, find or keeper, no
+note), about half show somebody's stuff when the door goes up, pushed into a back corner: an old
+mattress, a rolled rug, or a tower, wall, heap or column of boxes. The rest stay bare, so an
+empty door still stings (GDD "Doors": some bare, some full of things to look at). With today's
+deal that is about 2 units a floor with stuff and 2 bare; the share is the owner's (`OWNER.md`).
+
+**No draw of its own.** A unit's pick says which find or keeper it holds, and a unit with
+nothing in it never uses it, so the stuff is read from the pick. Nothing a seed lays or deals
+moves, not even the bag's later shuffles (which a new draw at the end of `Deal.new` would have
+moved). `tests/stuffdeal.spec` holds every seed's deal to a fingerprint taken before.
+
+**Note units stay clean.** A unit with a note holds the note, so it gets no stuff; the yellow
+square on the back wall is all you see.
+
+**Wholly clear of the floor players need.** Stuff is solid and stays, so unlike a tool or keeper
+it never gives up the crawl hole spots, the landing under the top's hole or where its panel
+falls. That rules out the side walls for anything long: the crawl hole stretch runs 4.1 to 7.75
+studs in from the door on both sides. So the mattress leans on the back wall, its face square to
+the doorway, which reads better than a side wall would have. In a small unit the crawl hole
+spots leave a 1.4-stud strip at the back's middle, room for the rolled rug alone: a small unit
+drawn anything else stands the rug (the next in the list that fits). A narrower thing for small
+units is in ROADMAP's polish list.
+
+**Pushed into a corner.** The back wall first, into the corner the unit's number picks (odd to
+one side, even the other, so a row alternates), 0.4 from each wall's middle line, too close for
+anyone to squeeze behind; else a side wall, as near the back as it goes.
+
+**Measured from the real boxes.** The stacks' sizes now count the open box's flaps and each box's
+bulge (`box_reach` in `art/stuff/spec.py`): the heap grew from 4.40 x 4.02 to 4.62 x 4.44 and
+its boxes re-centred. Seen in Play: every thing's parts end at the back wall's 11.60 and the side
+wall's 5.60.

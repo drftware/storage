@@ -1419,18 +1419,17 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
     swell and a spin of its coin. The count slides in as a climb begins.
   - [ ] **Polish: the coins' gold.** Under the warm bulb a pile reads coppery; a warmer gold in
     the coin's texture or a brighter glint if the owner finds piles hard to spot on a phone.
-  - [ ] **S1-04b Things to look at.** Stacked boxes, a mattress, a rolled carpet, built the
+  - [x] **S1-04b Things to look at.** Stacked boxes, a mattress, a rolled carpet, built the
     unit's way, in some of the units without coins, so an open door is never just a bare box.
     Likely two sessions, as S1-04a was (split Nov 14; the session that starts it confirms):
     - [x] **S1-04b1 The things' art** (Nov 14, D-135). A mattress and a rolled carpet, each stood
       against a wall, and four stacks of the existing boxes (`art/stuff/`, `Props.Stuff`,
       `Stuff.lay`); judged in an S and an M unit in Studio under the real bulb.
-    - [ ] **S1-04b2 Dealt into units.** `Deal` gives some coinless units one thing (a piece or a
-      stack, `Stuff.Pieces`/`Stuff.Stacks`), drawn after the coins so no seed's other draws move;
-      `DealSpot` stands it with its back to a wall (the mattress best against a side wall, where
-      the doorway sees its face; the stacks and the carpet against the back), clear of the door's
-      line, the crawl hole spots and the landing; `Deals` lays it with `Stuff.lay` when the unit
-      is first opened (or at the floor's laying, if that reads better in Play).
+    - [x] **S1-04b2 Dealt into units** (Nov 14, D-136). Half the units with nothing to take (no
+      coins, tool, find, keeper or note) hold one thing, read from the unit's unused pick so no
+      seed's other draws move; it stands back to a wall in a corner, clear of the door's line,
+      both crawl hole spots, the landing and the fallen panel (`DealSpot.stuff`); `Deals` stands
+      it as the door first lifts. A small unit fits only the rolled rug. Seen in Studio Play.
 - [ ] **S1-05 Finds you carry.** One tap puts a find in one of your three slots, beside your
   tools. Slots full: drop something or leave it. Caught: your finds drop with your tools.
   Takes in the old "Finds in a run" (where a unit's find stands, D-036).
@@ -1570,6 +1569,10 @@ that moves walls, and the dolly.
   four stacks, units repeat soon. Candidates the unit's way: a dust sheet over a chair, a bike on
   its side, a standing lamp with no shade, a stack of plastic tubs; the stacks' boxes all wear
   the same few marker words (a few more words in `art/boxes/spec.py`'s `CELLS`).
+- **Stuff for a small unit (S1-04b2):** a small unit's crawl hole spots leave only a 1.4-stud
+  strip at the back wall's middle and a pocket by the right of the door, so every small unit with
+  stuff shows the rolled rug. A narrow thing for that strip (two small boxes turned end on, a
+  folded lawn chair) would vary them.
 
 - **Blank wall that reads as built (S1-03):** fewer units leave stretches of the corridor kit's
   plain wall up to four hall pieces long. Judge them in Studio on a phone first; if they read as

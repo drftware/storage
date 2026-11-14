@@ -40,7 +40,7 @@ doorway, then close), `stuff-carpet` and `-near` (stood in the back corner), `st
 |---|---|---|
 | Mattress | 5.4 x 7.5 x 1.88 | 568 |
 | Carpet | 1.06 x 6.02 x 1.95 | 774 |
-| Tower / Wall / Heap / Column | 2.5 x 7.6 x 2.5 / 4.0 x 5.6 x 2.1 / 4.4 x 4.0 x 4.0 / 2.0 x 4.4 x 2.0 | the boxes' |
+| Tower / Wall / Heap / Column | 2.6 x 7.6 x 2.6 / 4.0 x 5.6 x 2.2 / 4.6 x 4.0 x 4.4 / 2.0 x 4.4 x 2.0 (flaps and bulge counted, D-136) | the boxes' |
 
 Each piece is one MeshPart, its pivot the middle of its bottom, its front its LookVector, its back
 meant for a wall. One texture set, Stuff (1024², colour, normal, roughness, metalness), at 76

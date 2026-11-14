@@ -1761,3 +1761,19 @@ verified: a doc page, Studio, or "untested".
   Output; the next Play claims it within a second. Empty maps come back from the DataStore as
   JSON `[]`, which load as empty tables.
 
+
+## Stuff in units (S1-04b2, Nov 14)
+
+- **The open box is bigger than its Specs say.** `Boxes/Specs.luau` gives every box its body
+  (the open one 1.8 x 1.6 x 1.8), but the open box's flaps lean out past its walls: its template
+  is 2.464 x 2.497 x 2.440 with its pivot 0.222 to +X and 0.102 to +Z of its middle, so it reaches
+  1.454 to -X, 1.010 to +X, 1.322 to the front and 1.118 to the back. Closed boxes bow out by about
+  their `bulge` each side (a large one is 1.857 across). `art/stuff/spec.py`'s `box_reach` measures
+  stacks with both; a stack laid with the body sizes put the heap's flap into the back wall.
+- **Seeing the stuff in Play:** Workspace `DevFloorSeed` 104 lays floor 3 (seed 2000110, 38 units,
+  code 4687) with a heap in 309, the mattress in 311, a wall of boxes in 315, a tower in 329 and
+  the rolled rug in small unit 332 (drawn a column, which doesn't fit). Open them from one Client
+  `execute_luau` as "`Deals` hears a press" says (the Open prompt is on `DoorOrigin.DoorMiddle`);
+  `Deals:` lines in Output name what stood. Measure each thing from its parts' boxes, their
+  corners put into `FloorBuilder.face(unit)`'s frame (the back wall's middle line is the unit's
+  depth, the side walls' half its width). Put `DevFloorSeed` back to 7 after.

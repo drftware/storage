@@ -19,8 +19,9 @@
 	(a small unit's keeper). Nor where someone dropping in through the unit's sawn top lands
 	(L-13b2d3b): under the hole's middle and on to the door, so you come down on bare concrete with
 	your way out clear, never onto a keeper; nor where the top's cut-out panel falls. The same unit
-	always gets the same spot (picked by its number), so a seed's floor looks the same twice. When
-	boxes arrive (Phase 2) they join the note's sight line as places to keep clear of.
+	always gets the same spot (picked by its number), so a seed's floor looks the same twice.
+	Somebody's stuff (S1-04b2, `DealSpot.stuff`) stands only in a unit that holds nothing else, so
+	it never shares a unit with any of these.
 
 	A spot is in the unit's door face frame (FloorBuilder's `face`, NoteSpot's): origin the middle
 	of the doorway's outer face on the floor, -Z out into the hall, +Z into the unit. What's laid
@@ -368,6 +369,146 @@ end
 function DealSpot.around(spot: Spot, size: Size): { number }
 	local gap = 2 * DealSpot.Apart
 	return DealSpot.footprint(spot.x, spot.z, spot.yaw, size.across + gap, size.along + gap)
+end
+
+-- The walls stuff stands against: the back, then the sides. A thing's back goes to the wall, so
+-- against the right wall (+X) it's turned 90 degrees, its front to the left wall.
+type Wall = "Back" | "Right" | "Left"
+local SIDE_YAW = { Right = 90, Left = -90 } :: { [string]: number }
+
+-- Every spot along `wall` where a thing of `size` stands with its back to it, in the floor's
+-- bounds past the door, clear of `keep` and of `sight` (nil for none), from one end to the other.
+local function alongWall(
+	unit: Unit,
+	size: Size,
+	wall: Wall,
+	keep: { { number } },
+	sight: { number }?
+): { Spot }
+	local found: { Spot } = {}
+	local side = unit.width / 2 - DealSpot.Wall
+	local back = unit.depth - DealSpot.Wall
+	local front = DealSpot.Door
+	local half, deep = size.across / 2, size.along
+	local lo: number, hi: number
+	if wall == "Back" then
+		lo, hi = -side + half, side - half
+	else
+		lo, hi = front + half, back - half
+	end
+	if hi < lo then
+		return found
+	end
+	local at: { number } = {}
+	local t = lo
+	while t < hi do
+		table.insert(at, t)
+		t += DealSpot.Step
+	end
+	table.insert(at, hi) -- both ends exact: the corners
+	for _, a in at do
+		local x: number, z: number, yaw: number
+		if wall == "Back" then
+			x, z, yaw = a, back - deep / 2, 0
+		else
+			local way = if wall == "Right" then 1 else -1
+			x, z, yaw = way * (side - deep / 2), a, SIDE_YAW[wall]
+		end
+		local poly = DealSpot.footprint(x, z, yaw, size.across, deep)
+		local fits = true
+		for i = 1, #poly, 2 do
+			local px, pz = poly[i], poly[i + 1]
+			if math.abs(px) > side + 1e-6 or pz > back + 1e-6 or pz < front - 1e-6 then
+				fits = false
+				break
+			end
+		end
+		if fits and sight and DealSpot.near(poly, sight, DealSpot.Sight) then
+			fits = false
+		end
+		for _, zone in keep do
+			if fits and DealSpot.near(poly, zone, 0) then
+				fits = false
+			end
+		end
+		if fits then
+			table.insert(found, { x = x, z = z, yaw = yaw })
+		end
+	end
+	return found
+end
+
+--[[
+	Where unit `number` stands somebody's stuff (S1-04b2) of `size`: with its back to a wall and
+	its front to the room, pushed as far into a corner as it goes, as people leave things in
+	storage. The back wall first, where the doorway sees its face, toward the corner the unit's
+	number picks (so a row of units alternates); else a side wall, the same way round, as near the
+	back as it goes. It's solid and it stays, so it keeps wholly clear of everything a player needs
+	the floor for, never giving any of it up as a tool or keeper may: the door's line, both crawl
+	hole spots (a crawl comes out onto the floor there), the landing under the top's hole and where
+	its panel falls, and the note's sight line if it's tall enough to block it (`note` as inUnit's).
+	Nil if no wall has room clear of all that: a small unit's crawl hole spots leave only the
+	middle of its back wall and the front of one side, room for the rolled rug alone.
+]]
+function DealSpot.stuff(unit: Unit, size: Size, note: number?, number: string): Spot?
+	local n = math.floor(math.abs(tonumber(number) or 0))
+	local way = if n % 2 == 0 then 1 else -1
+	local keep = DealSpot.holes(unit)
+	for _, zone in DealSpot.landing(unit) do
+		table.insert(keep, zone)
+	end
+	if unit.fallen then
+		table.insert(keep, unit.fallen)
+	end
+	local sight = if note and size.tall >= DealSpot.Under
+		then DealSpot.sightLine(unit, note)
+		else nil
+	local found = alongWall(unit, size, "Back", keep, sight)
+	if #found > 0 then
+		local best = found[1]
+		for _, spot in found do
+			if way * spot.x > way * best.x then
+				best = spot
+			end
+		end
+		return best
+	end
+	for k = 1, 2 do
+		local wall: Wall = if (k == 1) == (way > 0) then "Right" else "Left"
+		found = alongWall(unit, size, wall, keep, sight)
+		if #found > 0 then
+			local best = found[1]
+			for _, spot in found do
+				if spot.z > best.z then
+					best = spot
+				end
+			end
+			return best
+		end
+	end
+	return nil
+end
+
+-- The stuff unit `number` stands, and where: `drawn` if it fits (`DealSpot.stuff`), else the next
+-- in `order` that does, round from it; `sizes` each one's size. Nil if none fits.
+function DealSpot.stuffIn(
+	unit: Unit,
+	order: { string },
+	drawn: string,
+	sizes: { [string]: Size },
+	note: number?,
+	number: string
+): (string?, Spot?)
+	local start = table.find(order, drawn) or 1
+	for k = 0, #order - 1 do
+		local name = order[(start - 1 + k) % #order + 1]
+		local size = sizes[name]
+		local spot = if size then DealSpot.stuff(unit, size, note, number) else nil
+		if spot then
+			return name, spot
+		end
+	end
+	return nil, nil
 end
 
 return DealSpot

@@ -17,7 +17,7 @@ local Pieces: { [string]: Piece } = {
 
 local Stacks: { [string]: Stack } = {
 	Tower = {
-		Size = Vector3.new(2.522, 7.600, 2.522),
+		Size = Vector3.new(2.575, 7.600, 2.575),
 		Boxes = {
 			{ Box = "Wardrobe", Position = Vector3.new(0.000, 0.000, 0.000), Turn = 3.0 },
 			{ Box = "Large", Position = Vector3.new(0.080, 4.000, -0.060), Turn = -7.0 },
@@ -25,31 +25,31 @@ local Stacks: { [string]: Stack } = {
 		},
 	},
 	Wall = {
-		Size = Vector3.new(3.980, 5.600, 2.096),
+		Size = Vector3.new(4.025, 5.600, 2.150),
 		Boxes = {
-			{ Box = "Large", Position = Vector3.new(-0.970, 0.000, -0.042), Turn = 2.0 },
-			{ Box = "Large", Position = Vector3.new(0.950, 0.000, -0.102), Turn = -3.0 },
-			{ Box = "Medium", Position = Vector3.new(-1.000, 2.400, -0.022), Turn = -5.0 },
-			{ Box = "Medium", Position = Vector3.new(1.030, 2.400, -0.082), Turn = 4.0 },
-			{ Box = "Medium", Position = Vector3.new(-0.960, 4.000, 0.018), Turn = 9.0 },
-			{ Box = "Small", Position = Vector3.new(1.090, 4.000, 0.058), Turn = -11.0 },
+			{ Box = "Large", Position = Vector3.new(-0.970, 0.000, -0.038), Turn = 2.0 },
+			{ Box = "Large", Position = Vector3.new(0.950, 0.000, -0.098), Turn = -3.0 },
+			{ Box = "Medium", Position = Vector3.new(-1.000, 2.400, -0.018), Turn = -5.0 },
+			{ Box = "Medium", Position = Vector3.new(1.030, 2.400, -0.078), Turn = 4.0 },
+			{ Box = "Medium", Position = Vector3.new(-0.960, 4.000, 0.022), Turn = 9.0 },
+			{ Box = "Small", Position = Vector3.new(1.090, 4.000, 0.062), Turn = -11.0 },
 		},
 	},
 	Heap = {
-		Size = Vector3.new(4.402, 4.000, 4.018),
+		Size = Vector3.new(4.615, 4.000, 4.436),
 		Boxes = {
-			{ Box = "Large", Position = Vector3.new(-1.212, 0.000, 0.996), Turn = -6.0 },
-			{ Box = "Medium", Position = Vector3.new(-1.182, 2.400, 0.986), Turn = 7.0 },
-			{ Box = "Open", Position = Vector3.new(1.038, 0.000, 0.846), Turn = 21.0 },
-			{ Box = "Small", Position = Vector3.new(-0.262, 0.000, -1.104), Turn = -28.0 },
+			{ Box = "Large", Position = Vector3.new(-1.286, 0.000, 0.803), Turn = -6.0 },
+			{ Box = "Medium", Position = Vector3.new(-1.256, 2.400, 0.793), Turn = 7.0 },
+			{ Box = "Open", Position = Vector3.new(0.964, 0.000, 0.653), Turn = 21.0 },
+			{ Box = "Small", Position = Vector3.new(-0.336, 0.000, -1.297), Turn = -28.0 },
 		},
 	},
 	Column = {
-		Size = Vector3.new(2.007, 4.400, 1.990),
+		Size = Vector3.new(2.044, 4.400, 2.033),
 		Boxes = {
-			{ Box = "Medium", Position = Vector3.new(-0.036, 0.000, -0.034), Turn = -4.0 },
-			{ Box = "Medium", Position = Vector3.new(0.014, 1.600, 0.006), Turn = 6.0 },
-			{ Box = "Small", Position = Vector3.new(-0.076, 3.200, 0.026), Turn = -15.0 },
+			{ Box = "Medium", Position = Vector3.new(-0.039, 0.000, -0.035), Turn = -4.0 },
+			{ Box = "Medium", Position = Vector3.new(0.011, 1.600, 0.005), Turn = 6.0 },
+			{ Box = "Small", Position = Vector3.new(-0.079, 3.200, 0.025), Turn = -15.0 },
 		},
 	},
 }

@@ -6,7 +6,8 @@
 	lifting (a peek or an open) or a saw's hole going through its wall or top (D-067),
 	and lays what it holds before anyone sees in, so even a peek shows it on the floor: a tool to
 	pick up (Slots), a find standing behind the bulb, or the place a keeper stands, which `dealt`
-	hands on (Keepers stands the keeper there). Left 4 Dead's director deals its items the same way,
+	hands on (Keepers stands the keeper there); in a unit with nothing to take, sometimes
+	somebody's stuff against a wall (S1-04b2). Left 4 Dead's director deals its items the same way,
 	as the team moves rather than up front. Where in the unit is DealSpot's pure rule.
 
 	A tool whose art isn't built yet (the saw, the ladder...) is dealt but lies nowhere; in Studio
@@ -33,6 +34,7 @@ local NoteSpot = require(ReplicatedStorage.Shared.Elevator.NoteSpot)
 local Saws = require(script.Parent.Saws)
 local Slots = require(script.Parent.Slots)
 local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
+local Stuff = require(ReplicatedStorage.Shared.Stuff)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 local TopHoleSpecs = require(ReplicatedStorage.Shared.StorageUnit.TopHole.Specs)
 
@@ -48,6 +50,13 @@ local HOLE_TO = math.max(CrawlHoleSpecs.To, PANEL.Centre.Z + PANEL.Size.Z / 2) +
 local LAND_X = (TopHoleSpecs.Left + TopHoleSpecs.Right) / 2
 local LAND_Z = (TopHoleSpecs.Front + TopHoleSpecs.Back) / 2
 local FELL = TopHoleSpecs.Parts.PanelEdge
+
+-- Each thing of somebody's stuff's size as DealSpot measures it (S1-04b2).
+local STUFF_SIZES: { [string]: DealSpot.Size } = {}
+for _, name in Deal.Stuff do
+	local v = Stuff.size(name :: Stuff.Name) -- Deal.Stuff holds only Names (tests/stuffdeal.spec)
+	STUFF_SIZES[name] = { across = v.X, along = v.Z, tall = v.Y }
+end
 
 export type Dealt = {
 	unit: Model,
@@ -77,6 +86,16 @@ type Awake = { awakeOn: (self: any, unit: Model) -> number }
 -- The door motions that first show a unit's inside: a peek, an open, a lift from inside.
 local LIFTS = { Peek = true, Open = true, LiftInside = true } :: { [string]: boolean }
 
+-- Somebody's stuff as a tester would say it, for Output in Studio.
+local STUFF_SAID = {
+	Mattress = "an old mattress",
+	Carpet = "a rolled rug",
+	Tower = "a tower of boxes",
+	Wall = "a wall of boxes",
+	Heap = "a heap of boxes",
+	Column = "a column of boxes",
+} :: { [string]: string }
+
 -- How a unit holds things, said for Output in Studio.
 local function said(contents: Deal.Contents): string
 	local kind = contents.kind
@@ -86,6 +105,9 @@ local function said(contents: Deal.Contents): string
 		return `a find, the {contents.find}`
 	elseif kind == "Asleep" or kind == "Awake" then
 		return `the {contents.keeper}, {string.lower(kind)}`
+	end
+	if contents.stuff then
+		return `nothing to take, only {STUFF_SAID[contents.stuff] or contents.stuff}`
 	end
 	return "nothing"
 end
@@ -100,14 +122,9 @@ function Deals.new(): Deals
 	local coins: Coins.CoinsSystem? = nil
 	local keepers: Awake? = nil
 
-	-- Lays what unit `unit` (slot `index` of `deck`'s floor) was dealt; returns where, or nil, and
-	-- the floor it takes with room round it (DealSpot.around), which its coins keep clear of.
-	local function lay(
-		unit: Model,
-		deck: Deal.Deck,
-		index: number,
-		contents: Deal.Contents
-	): (CFrame?, { number }?)
+	-- Unit `index` of `deck`'s floor as DealSpot measures it, its number, and its note's place
+	-- across the back wall if it holds one.
+	local function shape(deck: Deal.Deck, index: number): (DealSpot.Unit, string, number?)
 		local slot = deck.floor.slots[index]
 		local spec = Specs[slot.size]
 		local channel = if slot.size == "S" then TopHoleSpecs.Channel.S else TopHoleSpecs.Channel.M
@@ -133,9 +150,27 @@ function Deals.new(): Deals
 				note = NoteSpot.inUnit(spec.Depth, number).x
 			end
 		end
-		local face = FloorBuilder.face(unit)
+		return size, number, note
+	end
+
+	-- Where a spot in unit `unit` is in the world, standing as DealSpot turns it.
+	local function placed(unit: Model, spot: DealSpot.Spot): CFrame
+		return FloorBuilder.face(unit)
+			* CFrame.new(spot.x, 0, spot.z)
+			* CFrame.Angles(0, math.rad(spot.yaw), 0)
+	end
+
+	-- Lays what unit `unit` (slot `index` of `deck`'s floor) was dealt; returns where, or nil, and
+	-- the floor it takes with room round it (DealSpot.around), which its coins keep clear of.
+	local function lay(
+		unit: Model,
+		deck: Deal.Deck,
+		index: number,
+		contents: Deal.Contents
+	): (CFrame?, { number }?)
+		local size, number, note = shape(deck, index)
 		local function at(spot: DealSpot.Spot): CFrame
-			return face * CFrame.new(spot.x, 0, spot.z) * CFrame.Angles(0, math.rad(spot.yaw), 0)
+			return placed(unit, spot)
 		end
 
 		local kind = contents.kind
@@ -216,30 +251,7 @@ function Deals.new(): Deals
 		if not (pile and coins) then
 			return false
 		end
-		local slot = deck.floor.slots[index]
-		local spec = Specs[slot.size]
-		local channel = if slot.size == "S" then TopHoleSpecs.Channel.S else TopHoleSpecs.Channel.M
-		local size: DealSpot.Unit = {
-			width = spec.Width,
-			depth = spec.Depth,
-			doorWidth = spec.DoorWidth,
-			hole = { from = HOLE_FROM + spec.CurtainPlane, to = HOLE_TO + spec.CurtainPlane },
-			landing = { x = LAND_X, z = LAND_Z + channel },
-			fallen = DealSpot.footprint(
-				FELL.Centre.X,
-				FELL.Centre.Z + channel,
-				0,
-				FELL.Size.X + 2 * HOLE_MARGIN,
-				FELL.Size.Z + 2 * HOLE_MARGIN
-			),
-		}
-		local number = slot.number :: string
-		local note: number? = nil
-		for _, n in deck.notes do
-			if n.slot == index then
-				note = NoteSpot.inUnit(spec.Depth, number).x
-			end
-		end
+		local size, number, note = shape(deck, index)
 		local spot = DealSpot.inUnit(
 			size,
 			"Coins",
@@ -251,10 +263,20 @@ function Deals.new(): Deals
 		if not spot then
 			return false
 		end
-		local place = FloorBuilder.face(unit)
-			* CFrame.new(spot.x, 0, spot.z)
-			* CFrame.Angles(0, math.rad(spot.yaw), 0)
-		return coins:lay(unit, count, place)
+		return coins:lay(unit, count, placed(unit, spot))
+	end
+
+	-- Stands somebody's stuff (S1-04b2) in unit `unit` with its back to a wall: the thing dealt,
+	-- or the next in `Deal.Stuff` that fits (DealSpot.stuffIn), in the unit's hall piece as finds
+	-- are, so it goes with the floor. The name stood, or nil if nothing fits or its art is missing.
+	local function layStuff(unit: Model, deck: Deal.Deck, index: number, drawn: string): string?
+		local size, number, note = shape(deck, index)
+		local name, spot = DealSpot.stuffIn(size, Deal.Stuff, drawn, STUFF_SIZES, note, number)
+		if not (name and spot) then
+			return nil
+		end
+		local laid = Stuff.lay(name :: Stuff.Name, placed(unit, spot), unit.Parent or unit)
+		return if laid then name else nil
 	end
 
 	-- Deals `unit` the first time anyone can see into it; after that it holds what it held.
@@ -269,10 +291,20 @@ function Deals.new(): Deals
 		local contents = Deal.open(deck, index, { mood = "Build", awake = awake })
 		local place, taken = lay(unit, deck, index, contents)
 		local paid = contents.coins > 0 and layCoins(unit, deck, index, contents.coins, taken)
+		local drawn = contents.stuff
+		if drawn then
+			-- what stands is what the unit holds: the next that fits, or nothing (said in Output)
+			contents.stuff = layStuff(unit, deck, index, drawn)
+		end
 		if RunService:IsStudio() then
 			local laid = if place or contents.kind == "Nothing"
 				then ""
 				else " (no art yet, so nothing laid)"
+			if drawn and not contents.stuff then
+				laid ..= ` (its {drawn} fits against no wall, so it's bare)`
+			elseif drawn and contents.stuff ~= drawn then
+				laid ..= ` (drawn the {drawn}, which doesn't fit)`
+			end
 			local guard = if index == deck.guarded then ", guarding its note" else ""
 			local coinsSaid = if contents.coins == 0
 				then ""

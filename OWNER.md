@@ -97,11 +97,18 @@ and off, the invite sheet opening with your friends (no invite sent).
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
 
-## Now: look at S1-04b1, the stuff in units (built Nov 14, D-135; seen in Studio, not dealt yet)
+## Now: look at the stuff in units (S1-04b1 and b2, built Nov 14, D-135, D-136; seen in Play)
 
-- [ ] Look at the sheets in `art/stuff/README.md` (or `docs/art/S1-04b1-stuff-unit.jpg` and
-  `-stacks-unit.jpg`, from Studio): an old mattress leaning on a unit's wall, a rolled rug stood
-  in the corner, boxes stacked nearly to the bulb. Nothing in the game shows them until S1-04b2.
+Some units with nothing to take now show somebody's stuff when the door goes up: an old stained
+mattress, a rolled rug, or boxes stacked as a tower, a wall, a heap or a column, pushed into a
+back corner.
+- [ ] In Studio set Workspace's `DevFloorSeed` to 104 (put it back to 7 after), Play, and open
+  units 309 (a heap of boxes), 311 (the mattress), 315 (a wall of boxes), 329 (a tower) and 332
+  (a small unit: the rolled rug). Look from the doorway on a phone: does each read at once? Walk
+  in and try to squeeze behind the mattress (you shouldn't fit).
+- [ ] **Decide (default in place):** half the units with nothing to take hold stuff, half stay
+  bare. With today's deal that's about 2 units a floor with stuff and 2 bare. More stuff, fewer
+  bare ones? (`Deal.StuffShare`)
 - [ ] **Decide (default in place):** the rolled carpet stands on its end against a wall, because
   lying on the floor it read as a thin line from the doorway. Say if you want it lying down.
 
