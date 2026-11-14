@@ -8,14 +8,17 @@
 
 	`clone` gives a rigged torch: the two parts, the beam (a SpotLight on an attachment at the
 	lens), the spill on your own (a faint PointLight), all off. `light` switches what a screen
-	draws. The feel numbers are `Torch`'s.
+	draws, and `glow` how much light a lit one gives as it runs down (`Charge`). The feel numbers
+	are `Torch`'s and `Charge`'s.
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Charge = require(script.Charge)
 local Specs = require(script.Specs)
 local Torch = require(script.Torch)
 
 local Flashlight = {}
+Flashlight.Charge = Charge
 Flashlight.Specs = Specs
 Flashlight.Torch = Torch
 
@@ -25,11 +28,21 @@ export type Rig = {
 	lens: MeshPart,
 	beam: SpotLight,
 	spill: PointLight?,
+	level: number, -- the light last drawn (`glow`), of full
+	brown: number, -- and how far it had browned
 }
 
 local function rgb(c: { number }): Color3
 	return Color3.fromRGB(c[1], c[2], c[3])
 end
+
+local BEAM = rgb(Torch.BeamColor)
+local BROWN = rgb(Charge.Brown)
+local LENS_ON = rgb(Torch.LensOn)
+local LENS_OFF = rgb(Torch.LensOff)
+-- `glow` writes only when the light moves by one of these steps
+local LEVEL_STEPS = 48
+local BROWN_STEPS = 16
 
 -- Where the template lives: in the place, since Rojo can't sync imported meshes (D-009).
 local function template(): Model?
@@ -116,7 +129,15 @@ local function rig(model: Model, own: boolean): Rig
 		p.Parent = sat
 		spill = p
 	end
-	return { model = model, body = body, lens = lens, beam = beam, spill = spill }
+	return {
+		model = model,
+		body = body,
+		lens = lens,
+		beam = beam,
+		spill = spill,
+		level = 1,
+		brown = 0,
+	}
 end
 
 --[[
@@ -151,7 +172,15 @@ function Flashlight.rigOf(model: Model): Rig?
 	local at = body:FindFirstChild("Beam")
 	local beam = if at then at:FindFirstChildOfClass("SpotLight") else nil
 	if beam then
-		return { model = model, body = body, lens = lens, beam = beam, spill = nil }
+		return {
+			model = model,
+			body = body,
+			lens = lens,
+			beam = beam,
+			spill = nil,
+			level = 1,
+			brown = 0,
+		}
 	end
 	return rig(model, false)
 end
@@ -166,6 +195,7 @@ function Flashlight.light(r: Rig, on: boolean, real: boolean)
 		r.lens.Material = material
 		r.lens.Color = rgb(if on then Torch.LensOn else Torch.LensOff)
 		r.lens.Transparency = if on then 0 else Torch.LensOffTransparency
+		r.level = -1 -- the lens was redrawn: the next `glow` draws its light again
 	end
 	local beam = on and real
 	if r.beam.Enabled ~= beam then
@@ -174,6 +204,37 @@ function Flashlight.light(r: Rig, on: boolean, real: boolean)
 	local spill = r.spill
 	if spill and spill.Enabled ~= on then
 		spill.Enabled = on
+	end
+end
+
+--[[
+	How much light a lit torch gives as it runs down: `level` of its full light (0 to 1, the
+	flicker's) and `brown`, how far its warm white has browned (0 to 1). The beam, the spill and the
+	lit lens follow it. Writes only when it moves by a visible step, so a steady torch costs nothing.
+	Call it only while the torch is lit (`light` puts the lens out).
+]]
+function Flashlight.glow(r: Rig, level: number, brown: number)
+	local k = math.round(math.clamp(level, 0, 1) * LEVEL_STEPS) / LEVEL_STEPS
+	local b = math.round(math.clamp(brown, 0, 1) * BROWN_STEPS) / BROWN_STEPS
+	if k == r.level and b == r.brown then
+		return
+	end
+	local browned = r.brown ~= b
+	r.level, r.brown = k, b
+	local colour = if browned or b > 0 then BEAM:Lerp(BROWN, b) else BEAM
+	r.beam.Brightness = Torch.BeamBrightness * k
+	if browned then
+		r.beam.Color = colour
+	end
+	local spill = r.spill
+	if spill then
+		spill.Brightness = Torch.SpillBrightness * k
+		if browned then
+			spill.Color = colour
+		end
+	end
+	if r.lens.Material == Enum.Material.Neon then
+		r.lens.Color = LENS_OFF:Lerp(LENS_ON:Lerp(BROWN, b * 0.6), k)
 	end
 end
 

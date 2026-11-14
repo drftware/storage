@@ -1467,9 +1467,16 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
   Seen in Play: the notches built and the ToolBroke remote up; a break itself unseen (OWNER.md).
   Polish: broken-piece art (the cutters in two halves, the saw's snapped blade) instead of the
   whole tool tumbling; a strained creak on the use that leaves one.
-- [ ] **S1-09 The flashlight runs down.** Only while it's on; a meter on its button, a flicker
+- [x] **S1-09 The flashlight runs down.** Only while it's on; a meter on its button, a flicker
   for the last half minute, then out; a battery fills it at once and takes no slot (GDD "The
-  flashlight runs down"; the numbers are defaults in `OWNER.md`).
+  flashlight runs down"; the numbers are defaults in `OWNER.md`). Built Nov 14 (D-142): five
+  minutes of light, full as each climb begins; a ring of 12 ticks round the button (bottom right
+  on a keyboard), red for the last half minute; the flicker (a long stutter, then closer, darker
+  ones, the light sagging and browning, a bulb's buzz in each stutter), out with a dull click by
+  itself; a dead button clicks softly and wobbles. Seen in Play with a 40-second torch: the
+  flicker, the ring, going out and the refusal. Battery pickup is S1-07b (`Flashlights:fill`).
+  Polish: a friend's dying torch seen from their side (untested with two players); shaking the
+  torch to wake it (Outlast-style) if the owner wants a use for the dead button.
 - [ ] **S1-10 The machine on the ride.** The ride grows to about 20 seconds. From the second
   ride on, the vending machine in the car sells three or four tools for coins, stock changing
   each ride, batteries always (GDD "The ride"). Record each buy: add `machine` to `Record`'s

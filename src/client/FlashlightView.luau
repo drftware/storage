@@ -20,6 +20,15 @@
 	near them. Only the nearest few cast real light (`Torch.budget`): the rest show their lit lens.
 	A friend's beam never starts past a surface either: lying on the steel or pressed to a door,
 	their torch doesn't light the unit behind it.
+
+	It runs down (S1-09, D-142): the server says what's left in whole seconds on each Player
+	(`Charge.Attribute`); this screen follows it smoothly between ticks. A ring of ticks round the
+	button shows yours, going out one by one, red for the last half minute. Then the beam
+	flickers (`Charge.glow`): a long stutter first, then quick ones far apart, closing in and going
+	darker as the light sags and browns, the filament buzzing in your hand while it stutters, until
+	it browns out to nothing and clicks off by itself. A friend's dying torch flickers and buzzes on
+	your screen the same way. Pressed while it's dead, the button only clicks dully, the torch dips
+	in your hand and the button shakes: nothing explains it.
 ]]
 local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
@@ -30,6 +39,7 @@ local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Charge = require(ReplicatedStorage.Shared.Flashlight.Charge)
 local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
 local HandRoom = require(script.Parent.HandRoom)
 local Hands = require(ReplicatedStorage.Shared.Hands)
@@ -53,6 +63,24 @@ local BUTTON_MIN, BUTTON_MAX = 52, 92 -- pixels
 local BUTTON_GAP = 0.18 -- of the button, between it and the jump button
 local INK = Color3.fromRGB(232, 226, 214) -- the hints' warm off-white
 local WARM = Color3.fromRGB(255, 214, 140) -- the glyph lit
+local COLD = Color3.fromRGB(255, 96, 84) -- the ring's last ticks, dying (the tools' warning red)
+-- On a keyboard or a gamepad, where there's no jump button: the button in the screen's bottom
+-- right corner, the ring on it showing what's left (a click on it switches it too).
+local DESK_OF_HEIGHT = 0.1 -- of the screen's height
+local DESK_MIN, DESK_MAX = 48, 80 -- pixels
+local DESK_MARGIN = 0.35 -- of the button, from the screen's edges
+-- The ring: ticks round the button's inside edge, like a clock face.
+local RING = 0.41 -- the ticks' middles, from the button's middle (of its size)
+local TICK_WIDE, TICK_LONG = 0.055, 0.12 -- of the button's size
+local TICK_LIT = 0.08 -- a lit tick's transparency
+local TICK_DARK = 0.8 -- a spent tick: a faint ghost, so the ring's whole shape still shows
+local TICK_FADE = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local TICK_SWEEP = 0.035 -- seconds between ticks lighting as it's filled: the ring sweeps round
+local WARN_PULSE = 5 -- the red ticks' breath (radians a second)
+local WARN_FADE = 0.55 -- how far they fade at the bottom of each breath
+local GLOW_MOST = 0.28 -- the glow behind the glyph at full light (1 - its transparency)
+local DULL = 0.6 -- the glyph's transparency while it's dead
+local SHAKE = { -10, 8, -6, 4, -2, 0 } -- degrees the button wobbles, a frame or two each
 local PRESS = TweenInfo.new(0.16, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local GLOW = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local BUDGET_EVERY = 0.25 -- seconds between choosing which friends' beams are real
@@ -86,6 +114,10 @@ type Friend = {
 	beamAt: Attachment?, -- the beam's mount, moved short of a surface
 	beamHome: CFrame, -- the mount's place on the torch
 	skip: RaycastParams, -- their own body, for the beam's check
+	owner: Player,
+	left: number, -- their charge as this screen follows it
+	flicker: Charge.Flicker,
+	buzz: Sound?, -- made the first time their torch flickers here
 }
 
 local function clickSound(
@@ -115,9 +147,18 @@ local function play(c: Click, on: boolean)
 	s:Play()
 end
 
+type Ui = {
+	gui: ScreenGui,
+	button: GuiButton,
+	glyph: { GuiObject },
+	glow: Frame,
+	press: UIScale,
+	ticks: { Frame },
+}
+
 -- The phone's button: a dark round button like the jump button, with a torch drawn on it that
--- lights warm while yours is on.
-local function makeButton(): (ScreenGui, GuiButton, { GuiObject }, Frame, UIScale)
+-- lights warm while yours is on, and the ring of ticks round its inside edge.
+local function makeButton(): Ui
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "Flashlight"
 	gui.ResetOnSpawn = false
@@ -182,7 +223,80 @@ local function makeButton(): (ScreenGui, GuiButton, { GuiObject }, Frame, UIScal
 	lens.BackgroundColor3 = Color3.new(0, 0, 0)
 	lens.BackgroundTransparency = 0.3
 	table.remove(parts) -- the lens keeps its own colour
-	return gui, button, parts, glow, scale
+	-- the ring: clockwise from the top, each tick along the line from the middle
+	local ticks: { Frame } = {}
+	for i = 1, Charge.Ticks do
+		local a = (i - 0.5) / Charge.Ticks * 2 * math.pi
+		local t = Instance.new("Frame")
+		t.Name = `Tick{i}`
+		t.AnchorPoint = Vector2.new(0.5, 0.5)
+		t.Position = UDim2.fromScale(0.5 + RING * math.sin(a), 0.5 - RING * math.cos(a))
+		t.Size = UDim2.fromScale(TICK_WIDE, TICK_LONG)
+		t.Rotation = math.deg(a)
+		t.BackgroundColor3 = INK
+		t.BackgroundTransparency = TICK_DARK -- the ring sweeps on as it's first shown
+		t.BorderSizePixel = 0
+		t.Parent = button
+		local c = Instance.new("UICorner")
+		c.CornerRadius = UDim.new(0.5, 0)
+		c.Parent = t
+		table.insert(ticks, t)
+	end
+	return {
+		gui = gui,
+		button = button,
+		glyph = parts,
+		glow = glow,
+		press = scale,
+		ticks = ticks,
+	}
+end
+
+-- The filament fighting, looped quietly on a torch; heard only while it stutters (`drive`).
+local function buzzSound(parent: Instance): Sound
+	local s = Instance.new("Sound")
+	s.Name = "FlashlightBuzz"
+	s.SoundId = Charge.Buzz.id
+	s.PlaybackRegionsEnabled = true
+	s.PlaybackRegion = NumberRange.new(Charge.Buzz.from, Charge.Buzz.from + Charge.Buzz.length)
+	s.LoopRegion = s.PlaybackRegion
+	s.Looped = true
+	s.Volume = 0
+	s.RollOffMode = Enum.RollOffMode.InverseTapered
+	s.RollOffMinDistance = Charge.BuzzNear
+	s.RollOffMaxDistance = Charge.BuzzReach
+	s.Parent = parent
+	return s
+end
+
+-- A torch's buzz this frame: running through its last half minute while it's lit, heard while it
+-- stutters, loudest in the dips, retuned at each blink so it crackles.
+local function drive(s: Sound, lit: boolean, stuttering: boolean, level: number, f: Charge.Flicker)
+	if not lit then
+		if s.IsPlaying then
+			s:Stop()
+		end
+		return
+	end
+	if not s.IsPlaying then
+		s.TimePosition = Charge.Buzz.from
+		s:Play()
+	end
+	local v = if stuttering then Charge.BuzzVolume * (1 - 0.5 * level) else 0
+	if math.abs(s.Volume - v) > 0.02 then
+		s.Volume = v
+	end
+	if stuttering then
+		local pitch = Charge.buzzPitch(f)
+		if s.PlaybackSpeed ~= pitch then
+			s.PlaybackSpeed = pitch
+		end
+	end
+end
+
+-- Seconds of light in a full torch on this screen: five minutes, or Studio's dev number.
+local function fullCharge(): number
+	return Charge.full(if RunService:IsStudio() then Workspace:GetAttribute(Charge.Dev) else nil)
 end
 
 local FlashlightView = {}
@@ -218,13 +332,22 @@ function FlashlightView.new(): (Brix.System, Beam)
 	local budgetIn = 0
 	local switchRemote: RemoteEvent? = nil
 	local aimRemote: UnreliableRemoteEvent? = nil
-	local gui: ScreenGui? = nil
-	local button: GuiButton? = nil
-	local glyph: { GuiObject } = {}
-	local glow: Frame? = nil
-	local press: UIScale? = nil
+	local ui: Ui? = nil
 	local jump: GuiObject? = nil
 	local findJumpIn = 0
+	-- your torch's charge: what the server last wrote, and this screen's reckoning between ticks
+	local written = Charge.Full
+	local left = Charge.Full
+	local flicker = Charge.flicker(player.UserId % 100000 + 17)
+	local level = 1 -- the light your torch gave last frame (the button's glow follows it)
+	local buzz: Sound? = nil
+	local deadClick: Sound? = nil
+	local refuseClick: Sound? = nil
+	local litShown = -1 -- the ring as drawn: lit ticks, and whether they're the red ones
+	local warnShown = false
+	local deadShown = false
+	local clock = 0
+	local shaking = 0
 
 	local function alive(): boolean
 		local character = player.Character
@@ -233,13 +356,74 @@ function FlashlightView.new(): (Brix.System, Beam)
 	end
 
 	local function showButton()
-		local g = glow
-		if not g then
+		local u = ui
+		if not u then
 			return
 		end
-		TweenService:Create(g, GLOW, { BackgroundTransparency = if mine then 0.72 else 1 }):Play()
-		for _, p in glyph do
-			TweenService:Create(p, GLOW, { BackgroundColor3 = if mine then WARM else INK }):Play()
+		TweenService
+			:Create(u.glow, GLOW, { BackgroundTransparency = if mine then 1 - GLOW_MOST else 1 })
+			:Play()
+		local dead = left <= 0
+		for _, p in u.glyph do
+			TweenService:Create(p, GLOW, {
+				BackgroundColor3 = if mine then WARM else INK,
+				BackgroundTransparency = if dead then DULL else 0,
+			}):Play()
+		end
+		deadShown = dead
+	end
+
+	-- The ring: what's left lit, the rest a faint ghost; red and breathing for the last half
+	-- minute. A fill sweeps round lighting them; a drain lets each go softly.
+	local function drawRing(dt: number)
+		local u = ui
+		if not u then
+			return
+		end
+		clock += dt
+		local lit = Charge.lit(left, fullCharge())
+		local warn = Charge.flickering(left)
+		if lit ~= litShown or warn ~= warnShown then
+			-- only the ticks that change: a red one's breath is written below, never tweened
+			local from = math.max(litShown, 0)
+			for i, t in u.ticks do
+				local was, on = i <= litShown, i <= lit
+				local wasRed, red = was and warnShown, on and warn
+				if red and not wasRed then
+					t.BackgroundColor3 = COLD
+				elseif on and not red and (not was or wasRed) then
+					local delay = if was then 0 else (i - from) * TICK_SWEEP
+					TweenService:Create(
+						t,
+						TweenInfo.new(
+							0.25,
+							Enum.EasingStyle.Quad,
+							Enum.EasingDirection.Out,
+							0,
+							false,
+							delay
+						),
+						{ BackgroundColor3 = INK, BackgroundTransparency = TICK_LIT }
+					):Play()
+				elseif was and not on then
+					TweenService:Create(
+						t,
+						TICK_FADE,
+						{ BackgroundColor3 = INK, BackgroundTransparency = TICK_DARK }
+					):Play()
+				end
+			end
+			litShown, warnShown = lit, warn
+		end
+		if warn and lit > 0 then
+			-- the red ones breathe, the last the deepest
+			local breath = 0.5 - 0.5 * math.cos(clock * WARN_PULSE)
+			for i = 1, lit do
+				u.ticks[i].BackgroundTransparency = TICK_LIT + WARN_FADE * breath * (i / lit)
+			end
+		end
+		if (left <= 0) ~= deadShown then
+			showButton()
 		end
 	end
 
@@ -251,33 +435,112 @@ function FlashlightView.new(): (Brix.System, Beam)
 		end
 	end
 
+	-- A press on a dead torch: the button only clicks dully, the torch dips in your hand under
+	-- your thumb, and the button wobbles. Nothing lights.
+	local function refuse()
+		Torch.click(sway)
+		local c = refuseClick
+		if c then
+			c.TimePosition = Torch.OffSound.from
+			c:Play()
+		end
+		local u = ui
+		if not u then
+			return
+		end
+		shaking += 1
+		local me = shaking
+		local b = u.button
+		task.spawn(function()
+			for _, deg in SHAKE do
+				if shaking ~= me then
+					return
+				end
+				b.Rotation = deg
+				task.wait(0.03)
+			end
+		end)
+	end
+
 	-- Your thumb on the button.
 	local function switch()
 		if not alive() then
 			return
 		end
+		if not mine and left <= 0 then
+			refuse()
+			return
+		end
 		local t = os.clock()
-		local may, left = Torch.allow(lastSwitch, burst, t)
+		local may, spare = Torch.allow(lastSwitch, burst, t)
 		if not may then
 			return
 		end
-		lastSwitch, burst = t, left
+		lastSwitch, burst = t, spare
 		mine = not mine
 		Torch.click(sway)
+		if mine then
+			Charge.rewind(flicker) -- a dying torch sputters as it catches
+		end
 		if own then
 			Flashlight.light(own, mine, true)
 		end
 		if ownClick then
 			play(ownClick, mine)
 		end
-		local s = press
-		if s then
-			s.Scale = 0.86
-			TweenService:Create(s, PRESS, { Scale = 1 }):Play()
+		local u = ui
+		if u then
+			u.press.Scale = 0.86
+			TweenService:Create(u.press, PRESS, { Scale = 1 }):Play()
 		end
 		showButton()
 		aimSent = nil
 		send()
+	end
+
+	-- Your torch dies in your hand: it has already browned out to nothing, so it only clicks off
+	-- by itself, duller than your thumb's click.
+	local function dies()
+		mine = false
+		level = 0
+		if own then
+			Flashlight.light(own, false, true)
+		end
+		local c = deadClick
+		if c then
+			c.TimePosition = Torch.OffSound.from
+			c:Play()
+		end
+		local b = buzz
+		if b and b.IsPlaying then
+			b:Stop()
+		end
+		showButton()
+		send()
+	end
+
+	-- Each frame your torch is lit: the light it gives as it runs down, and its buzz. Dead, it
+	-- goes out.
+	local function runDown(dt: number)
+		left = Charge.follow(left, written, dt, mine)
+		if mine and left <= 0 and alive() then
+			dies()
+			return
+		end
+		local r = own
+		local stuttering = false
+		if mine and r then
+			level, stuttering = Charge.glow(flicker, left, dt)
+			Flashlight.glow(r, level, Charge.urgency(left))
+			local u = ui
+			if u and Charge.flickering(left) then
+				u.glow.BackgroundTransparency = 1 - GLOW_MOST * level
+			end
+		end
+		local b = buzz
+		if b then
+			drive(b, mine and Charge.flickering(left), stuttering, level, flicker)
+		end
 	end
 
 	local function onAction(
@@ -294,6 +557,10 @@ function FlashlightView.new(): (Brix.System, Beam)
 	-- Off and back in your hand whenever you get a new character.
 	local function respawned()
 		mine = false
+		local b = buzz
+		if b and b.IsPlaying then
+			b:Stop()
+		end
 		lastSwitch, burst = nil, Torch.Burst
 		if own then
 			Flashlight.light(own, false, true)
@@ -305,8 +572,28 @@ function FlashlightView.new(): (Brix.System, Beam)
 	-- It goes with the jump button, and while you're kept in a unit (L-17): there the Bang button
 	-- takes the jump's place, and a torch switch over it would take the odd mashed press.
 	local function placeButton()
-		local j, b, g = jump, button, gui
-		if not (j and b and g) then
+		local u = ui
+		if not u then
+			return
+		end
+		local b, g = u.button, u.gui
+		local kept = player:GetAttribute(Kept.Attribute) == true
+		if not UserInputService.TouchEnabled then
+			-- a keyboard or gamepad: in the bottom right corner, for its ring
+			local camera = Workspace.CurrentCamera
+			if not camera then
+				return
+			end
+			local size =
+				math.clamp(math.round(camera.ViewportSize.Y * DESK_OF_HEIGHT), DESK_MIN, DESK_MAX)
+			local margin = math.round(size * DESK_MARGIN)
+			b.Size = UDim2.fromOffset(size, size)
+			b.Position = UDim2.new(1, -(margin + math.round(size / 2)), 1, -margin)
+			g.Enabled = alive() and not kept
+			return
+		end
+		local j = jump
+		if not j then
 			return
 		end
 		local touch = j:FindFirstAncestorOfClass("ScreenGui")
@@ -319,9 +606,7 @@ function FlashlightView.new(): (Brix.System, Beam)
 		b.Size = UDim2.fromOffset(size, size)
 		local at = j.AbsolutePosition
 		b.Position = UDim2.fromOffset(at.X + j.AbsoluteSize.X / 2, at.Y - size * BUTTON_GAP)
-		g.Enabled = j.Visible
-			and UserInputService.TouchEnabled
-			and player:GetAttribute(Kept.Attribute) ~= true
+		g.Enabled = j.Visible and not kept
 	end
 
 	local function findJump()
@@ -341,6 +626,7 @@ function FlashlightView.new(): (Brix.System, Beam)
 
 	-- Each frame, after the camera (and its shake): your torch where your hand holds it.
 	local function hold(dt: number)
+		runDown(dt)
 		local r = own
 		local camera = Workspace.CurrentCamera
 		if not (r and camera) then
@@ -403,7 +689,7 @@ function FlashlightView.new(): (Brix.System, Beam)
 	end
 
 	-- A friend's torch, found in their character the first time it's there.
-	local function friendOf(character: Model): Friend?
+	local function friendOf(other: Player, character: Model): Friend?
 		local model = character:FindFirstChild(Torch.ModelName)
 		if not (model and model:IsA("Model")) then
 			return nil
@@ -419,7 +705,7 @@ function FlashlightView.new(): (Brix.System, Beam)
 		local mount = rig.beam.Parent
 		local beamAt = if mount and mount:IsA("Attachment") then mount else nil
 		local head = character:FindFirstChild("Head")
-		f = {
+		local made: Friend = {
 			rig = rig,
 			on = model:GetAttribute(Torch.OnAttribute) == true,
 			pitch = 0,
@@ -432,9 +718,17 @@ function FlashlightView.new(): (Brix.System, Beam)
 			beamAt = beamAt,
 			beamHome = if beamAt then beamAt.CFrame else CFrame.identity,
 			skip = HandRoom.skipping(character),
+			owner = other,
+			left = Charge.Full,
+			flicker = Charge.flicker(other.UserId % 100000 + 29),
+			buzz = nil,
 		}
-		friends[model] = f
-		return f
+		local w = other:GetAttribute(Charge.Attribute)
+		if type(w) == "number" then
+			made.left = w
+		end
+		friends[model] = made
+		return made
 	end
 
 	-- Friends' torches: lit from their state, the nearest few with real light.
@@ -443,7 +737,7 @@ function FlashlightView.new(): (Brix.System, Beam)
 		for _, other in Players:GetPlayers() do
 			local character = other.Character
 			if other ~= player and character then
-				local f = friendOf(character)
+				local f = friendOf(other, character)
 				if f then
 					table.insert(order, f)
 				end
@@ -476,9 +770,26 @@ function FlashlightView.new(): (Brix.System, Beam)
 				play(f.click :: Click, on)
 				if on then
 					budgetIn = 0 -- find it a real beam now, not in a quarter second
+					Charge.rewind(f.flicker)
 				end
 			end
 			Flashlight.light(f.rig, on, real[i] == true)
+			-- their torch running down: it flickers and buzzes here as it does on their screen
+			local w = f.owner:GetAttribute(Charge.Attribute)
+			f.left = Charge.follow(f.left, if type(w) == "number" then w else Charge.Full, dt, on)
+			local dying = on and Charge.flickering(f.left)
+			local k, stuttering = 1, false
+			if on then
+				k, stuttering = Charge.glow(f.flicker, f.left, dt)
+				Flashlight.glow(f.rig, k, Charge.urgency(f.left))
+			end
+			if dying and not f.buzz then
+				f.buzz = buzzSound(f.rig.body)
+			end
+			local fb = f.buzz
+			if fb then
+				drive(fb, dying, stuttering, k, f.flicker)
+			end
 			-- a real beam never starts past a surface (their lens through the steel or a door)
 			local beamAt, head = f.beamAt, f.head
 			if beamAt and head and on and real[i] == true then
@@ -546,7 +857,7 @@ function FlashlightView.new(): (Brix.System, Beam)
 	local system = { name = "FlashlightView" }
 
 	function system.start(_: any, _context: Brix.Context)
-		SoundPrimer.prime({ Torch.OnSound.id, Torch.OffSound.id })
+		SoundPrimer.prime({ Torch.OnSound.id, Torch.OffSound.id, Charge.Buzz.id })
 		-- your torch in a folder of this screen's own: a light under the camera draws nothing
 		local folder = Instance.new("Folder")
 		folder.Name = "YourFlashlight"
@@ -559,7 +870,28 @@ function FlashlightView.new(): (Brix.System, Beam)
 			ownBeam = if mount and mount:IsA("Attachment") then mount else nil
 			own = r
 			ownClick = clicks(r.body)
+			buzz = buzzSound(r.body)
+			local dc = clickSound(r.body, Torch.OffSound)
+			dc.PlaybackSpeed = Charge.DeadSpeed
+			deadClick = dc
+			local no = clickSound(r.body, Torch.OffSound)
+			no.PlaybackSpeed = Charge.RefuseSpeed
+			no.Volume = Torch.ClickVolume * Charge.RefuseVolume
+			refuseClick = no
 		end
+		-- what's left, as the server ticks it
+		local function charged()
+			local w = player:GetAttribute(Charge.Attribute)
+			if type(w) == "number" then
+				written = w
+				left = Charge.follow(left, written, 0, false)
+			end
+		end
+		charged()
+		table.insert(
+			connections,
+			player:GetAttributeChangedSignal(Charge.Attribute):Connect(charged)
+		)
 		task.spawn(function()
 			local remotes = ReplicatedStorage:WaitForChild(Torch.RemoteFolder, 30)
 			local s = remotes and remotes:WaitForChild(Torch.SwitchRemote, 30)
@@ -571,18 +903,19 @@ function FlashlightView.new(): (Brix.System, Beam)
 				aimRemote = a
 			end
 		end)
-		local g, b, parts, gl, sc = makeButton()
-		gui, button, glyph, glow, press = g, b, parts, gl, sc
+		local u = makeButton()
+		ui = u
 		table.insert(
 			connections,
-			b.InputBegan:Connect(function(input: InputObject)
+			u.button.InputBegan:Connect(function(input: InputObject)
 				local t = input.UserInputType
 				if t == Enum.UserInputType.Touch or t == Enum.UserInputType.MouseButton1 then
 					switch()
 				end
 			end)
 		)
-		g.Parent = player:WaitForChild("PlayerGui")
+		u.gui.Parent = player:WaitForChild("PlayerGui")
+		placeButton()
 		ContextActionService:BindAction(
 			ACTION,
 			onAction,
@@ -604,7 +937,11 @@ function FlashlightView.new(): (Brix.System, Beam)
 		if findJumpIn <= 0 then
 			findJumpIn = 1
 			findJump()
+			if not UserInputService.TouchEnabled then
+				placeButton()
+			end
 		end
+		drawRing(dt)
 		drawFriends(dt)
 		report()
 	end
@@ -624,9 +961,10 @@ function FlashlightView.new(): (Brix.System, Beam)
 			end
 			own = nil
 		end
-		if gui then
-			gui:Destroy()
-			gui = nil
+		local u = ui
+		if u then
+			u.gui:Destroy()
+			ui = nil
 		end
 		table.clear(friends)
 		table.clear(order)

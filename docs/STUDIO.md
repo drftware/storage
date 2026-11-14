@@ -465,6 +465,17 @@ verified: a doc page, Studio, or "untested".
   studs above it didn't take it (untried: standing beside it, or waiting longer for the server to
   see you there). Pro Sound Effects' "Spray Paint 3" 9119523840 (1.47 s): hits at 0.12 and
   0.21 s near -5 dB, a rattle to 0.7 s, quiet after (AudioAnalyzer, 50 ms bins, half speed).
+- **Pressing a screen button from the MCP** (S1-09, 2026-11-14): `ContextActionService:
+  CallFunction` is refused from the MCP's Client code (it needs RobloxScript), but
+  `user_mouse_input` with `instance_path` "LocalPlayer.PlayerGui.Flashlight.Switch", a moveTo then
+  a left click, fires the button's `InputBegan` as a real click. A `task.spawn`ed sampler writing
+  into a `StringValue` under the player keeps logging between calls; read it back after a
+  `task.wait`. `Workspace`'s `DevTorchSeconds` (set in Edit before Play) makes a full torch 40 s,
+  so its flicker starts 10 s after you switch it on.
+- **The bulb's buzz, measured** (S1-09, 2026-11-14; Edit, AudioPlayer at half speed to
+  AudioAnalyzer, 0.2 s bins): Pro Sound Effects' "Light Bulb Buzz 2" 9116267264 (2.66 s, a 60 W
+  bulb) has an onset to 0.2 s, holds steady near -39 dB peak from 0.25 to 1.55 s (the loop), then
+  fades out. At an `AudioPlayer.Volume` of 0.001 the analyzer reads silence: measure at 1.
 - **Opening a unit so it deals, from the MCP** (S1-07a, 2026-11-14): `RollUpDoor.play(unit,
   "Open")` from the Server moves the door but never deals it (`Deals` hears only the Doors
   system's own acts), so press the door's Open prompt from the Client. `setLocked(unit, false)`

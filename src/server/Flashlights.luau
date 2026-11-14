@@ -13,14 +13,26 @@
 	friends' screens) and its heading. Keepers test your beam along that heading, not along the
 	way your character faces here: the server sees a character's turn late and eased in (up to
 	0.4 s in Studio, docs/STUDIO.md), and a hunter walked on into you under your torch (L-06b4b3).
+
+	It runs down (S1-09, D-142): each player's charge is the server's, in seconds (`Charge`), kept
+	on the player rather than the torch so it carries from floor to floor and through a new
+	character. It drains only while the torch is on, everyone's is full again as a climb begins
+	(`Climbs.began`), and a battery fills it (`fill`, S1-07b). The Player carries what's left in
+	whole seconds (`Charge.Attribute`), written only as it ticks. Dead, it goes out (`switched`
+	fires, so a Mannequin is no longer held), and a switch on is refused until it's filled.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
 
 local Torch = Flashlight.Torch
+local Charge = Flashlight.Charge
+
+local STUDIO = RunService:IsStudio()
 
 export type Switch = { player: Player, on: boolean }
 
@@ -34,6 +46,11 @@ export type Flashlights = Brix.System & {
 	-- And its heading (Torch.heading's degrees), nil until they've sent one since switching it on:
 	-- then their character's facing gives it.
 	heading: (self: any, player: Player) -> number?,
+	-- Seconds of light left in `player`'s torch.
+	charge: (self: any, player: Player) -> number,
+	-- A battery: `player`'s torch full at once (S1-07b). False if it was full already, so the
+	-- battery stays where it is for a friend.
+	fill: (self: any, player: Player) -> boolean,
 }
 
 type Held = {
@@ -68,10 +85,18 @@ local function handOf(character: Model): (BasePart?, CFrame)
 	return hand, CFrame.new(at)
 end
 
+-- Seconds of light in a full torch: five minutes, or in Studio Workspace's dev number.
+local function fullCharge(): number
+	return Charge.full(if STUDIO then Workspace:GetAttribute(Charge.Dev) else nil)
+end
+
 local Flashlights = {}
 
 function Flashlights.new(): Flashlights
 	local held: { [Player]: Held } = {}
+	-- each player's charge in seconds, and the whole seconds last written on them
+	local charges: { [Player]: number } = {}
+	local written: { [Player]: number } = {}
 	local connections: { RBXScriptConnection } = {}
 	local switched = Brix.Signal.new() :: Brix.Signal<Switch>
 	local remotes: { Instance } = {}
@@ -114,10 +139,29 @@ function Flashlights.new(): Flashlights
 		}
 	end
 
+	-- What's left on the Player, written only as its whole seconds change.
+	local function write(player: Player)
+		local w = Charge.written(charges[player] or 0)
+		if written[player] ~= w then
+			written[player] = w
+			player:SetAttribute(Charge.Attribute, w)
+		end
+	end
+
+	local function fill(player: Player)
+		charges[player] = fullCharge()
+		write(player)
+	end
+
 	local function set(player: Player, h: Held, on: boolean)
 		h.on = on
 		h.heading = nil -- an old heading never aims it as it comes back on
 		h.model:SetAttribute(Torch.OnAttribute, on)
+		if not on then
+			-- switched off while it's dying, it's dead
+			charges[player] = Charge.off(charges[player] or 0)
+			write(player)
+		end
 		switched:fire({ player = player, on = on })
 	end
 
@@ -127,9 +171,12 @@ function Flashlights.new(): Flashlights
 		if type(on) ~= "boolean" then
 			return
 		end
-		-- range: a torch of theirs, in a living hand
+		-- range: a torch of theirs, in a living hand, with light left in it to switch on
 		local h = held[player]
 		if not (h and h.model.Parent) then
+			return
+		end
+		if on and (charges[player] or 0) <= 0 then
 			return
 		end
 		local character = player.Character
@@ -175,6 +222,9 @@ function Flashlights.new(): Flashlights
 	end
 
 	local function addPlayer(player: Player)
+		if charges[player] == nil then
+			fill(player)
+		end
 		table.insert(
 			connections,
 			player.CharacterAdded:Connect(function(character: Model)
@@ -194,8 +244,9 @@ function Flashlights.new(): Flashlights
 		name = "Flashlights",
 		switched = switched,
 	}
+	local began: Brix.SignalConnection? = nil
 
-	function system.start(_: any, _context: Brix.Context)
+	function system.start(_: any, context: Brix.Context)
 		local f = ReplicatedStorage:FindFirstChild(Torch.RemoteFolder)
 		if not f then
 			f = Instance.new("Folder")
@@ -216,10 +267,38 @@ function Flashlights.new(): Flashlights
 			connections,
 			Players.PlayerRemoving:Connect(function(player: Player)
 				held[player] = nil
+				charges[player] = nil
+				written[player] = nil
 			end)
 		)
 		for _, player in Players:GetPlayers() do
 			addPlayer(player)
+		end
+		-- everyone's torch full as a climb begins (any: the registry hands back plain Systems;
+		-- Climbs fills this, init.server)
+		local climbs = (context.registry:get("climbs") :: any) :: { began: Brix.Signal<any> }?
+		if climbs and climbs.began then
+			began = climbs.began:connect(function()
+				for _, player in Players:GetPlayers() do
+					fill(player)
+				end
+			end)
+		end
+	end
+
+	-- The lit torches run down; a dead one goes out.
+	function system.step(_: any, dt: number)
+		for player, h in held do
+			-- a torch whose character has gone (watching, leaving) is in no hand: it keeps
+			if h.on and h.model.Parent then
+				local left = Charge.drain(charges[player] or 0, dt)
+				charges[player] = left
+				if left <= 0 then
+					set(player, h, false)
+				else
+					write(player)
+				end
+			end
 		end
 	end
 
@@ -228,6 +307,10 @@ function Flashlights.new(): Flashlights
 			c:Disconnect()
 		end
 		table.clear(connections)
+		if began then
+			began:disconnect()
+			began = nil
+		end
 		for _, r in remotes do
 			r:Destroy()
 		end
@@ -248,6 +331,18 @@ function Flashlights.new(): Flashlights
 	function system.heading(_: any, player: Player): number?
 		local h = held[player]
 		return if h then h.heading else nil
+	end
+
+	function system.charge(_: any, player: Player): number
+		return charges[player] or 0
+	end
+
+	function system.fill(_: any, player: Player): boolean
+		if (charges[player] or 0) >= fullCharge() then
+			return false
+		end
+		fill(player)
+		return true
 	end
 
 	return system :: any -- any: the table is the Flashlights shape built field by field above

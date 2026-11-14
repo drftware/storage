@@ -2,66 +2,62 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-14, session 129 (S1-08 Tools wear out) ·
+**Updated:** 2026-11-14, session 130 (S1-09 The flashlight runs down) ·
 **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- **S1-08 built (D-141), as Minecraft's tools wear:** cutters 3 padlocks, saw 2 holes, horn 3
-  blasts (`Catalog` rows' `wear`; pure `Tools.Wear`, `tests/wear.spec.luau`). Uses live on the
-  server with each tool (`Slots`, `ToolUses1..3`); `Slots:wear` is called by Doors' Cut, Saws'
-  finish and Horns. The last use breaks it `late` seconds on (`Slots` `shatter`): thrown from the
-  hand with its snap and bits, clank, fade; ToolBroke tells your screen (ToolView: the view model
-  shakes and falls away, CameraShake kick, the box bursts red and shrinks). Notches along the
-  foot of the box and wheel slots, the last red and breathing. The horn's last blast sags and
-  dies (`Horn.Dry`, HornView). Padlock and bubble wrap carry no wear (used up whole as placed).
-- **Seen in Studio Play:** the four notch rows (12 notches) built, the ToolBroke remote up, no
-  errors on load. **Not seen:** a cut or a break; my MCP pick-up of the cutters didn't take
-  (recipe and gotchas in `docs/STUDIO.md` "Driving a tool from the MCP"). Owner steps in OWNER.md.
-- Studio left in Edit, `DevFloorSeed` 7, Unit 323 opened in that Play only (not saved).
+- **S1-09 built (D-142):** the charge is the server's, per player, in seconds (`Flashlights`,
+  pure `Charge`, `tests/charge.spec.luau`): five minutes, drains only while lit in a hand, full at
+  `Climbs.began`, whole seconds on the Player (`Charge` attribute). Dead, it goes out (a
+  Mannequin is let go) and a switch on is refused. `Flashlights:fill(player)` is ready for
+  batteries (false when full, so the battery stays for a friend).
+- **On screen (`FlashlightView`):** a ring of 12 ticks inside the button (bottom right on a
+  keyboard or gamepad), red and breathing for the last half minute. The flicker (`Charge.glow`):
+  a long first stutter, then closer, darker ones with a bulb's buzz; the light sags and browns,
+  dies to nothing, clicks off by itself. A dead press: soft click, dip, wobble, dull glyph.
+  Friends' dying torches flicker and buzz the same way (untested with two players).
+- **Seen in Studio Play** (a 40 s torch via `DevTorchSeconds`): the flicker from 30 s with the
+  buzz in each stutter, the light 2.4 down to about 1.4, out at 0 with the server's `On` false,
+  the ring red and dropping a tick at a time, the dead press (0.55 click, -10° wobble, stays off).
+  Not seen: the climb-start fill, two players. Owner steps in OWNER.md.
+- S1-08's break still unseen (needs three padlock cuts with cutters the MCP can't pick up).
+- Studio left in Edit, `DevFloorSeed` 7, `DevTorchSeconds` removed.
 
-## Next task: S1-09 The flashlight runs down
-The moment: deep in a dark hall your beam starts to flicker, and you know you've got half a
-minute to find a battery or a friend before you're in the dark.
-0. First (cheap, 2 to 4 calls): see S1-08's break once in Play if the STUDIO.md recipe gets the
-   cutters into your hand (stand beside them, wait 1 s); else leave it to the owner.
-1. Read ROADMAP S1-09, the GDD (docs tools, search "runs down") and OWNER.md's "The flashlight's
-   details" (defaults: about 5 minutes of light, drains only while on, full at each climb's start,
-   carries over between floors, flicker for the last 30 s, then out).
-2. Charge as a pure module (drain while on, the flicker window, empty) with feel numbers in
-   shared config and a Lune spec; the server owns the charge (`Flashlights`), every screen reads
-   it from an attribute, never trusted from a client.
-3. A meter on the flashlight's button (`FlashlightView`), readable at phone size, no words; the
-   beam flickers for the last half minute (motion and sound), then goes out with a click; the
-   button refuses while empty (a dull click, no text).
-4. Batteries are S1-07b, next after this: leave a `fill` on the server for them.
-5. Studio Play: drain it fast with a Studio-only dev number and say what's seen.
-**Acceptance:** checks green; drain and flicker proven in a spec; the flicker and going out seen
-in Play.
-**Read first:** ROADMAP S1-09; GDD (search "runs down"); OWNER.md "The flashlight's details";
-`src/shared/Flashlight/init.luau`; `src/server/Flashlights.luau`; `src/client/FlashlightView.luau`.
+## Next task: S1-07b Batteries in units
+The moment: your beam is stuttering, you lift a door, and there's a battery on the floor; one
+tap and your light snaps back full with the ring sweeping round. If yours is full, it stays there
+for the friend whose torch is dying.
+1. Read ROADMAP S1-07b, the GDD (docs tools, search "battery"), OWNER.md "The flashlight's
+   details" (about one unit in ten; takes no slot; full torch leaves it).
+2. The battery is art first, the unit's way (`art/unit/README.md`; copy the smallest prop
+   script, e.g. `art/coin/` or `art/padlock/`): a chunky D-cell, readable at phone size. If the
+   art alone fills the session, split S1-07b in ROADMAP (art, then dealing and pickup) first.
+3. Deal it into about one unit in ten (`Deal.luau`, alongside coins and finds; the server lays
+   it as the door first lifts, as `Coins` lays a pile). One tap takes it: the server checks reach
+   and rate, calls `Flashlights:fill`; refused when full (the battery stays, no text).
+4. Every action answers: a snap-in sound and the ring sweeping full on your screen (it already
+   sweeps on a fill); a friend hears it. Record the pickup (`Record`, S1-02) if it fits.
+5. Studio Play: open units until one holds a battery, take it with a dying torch.
+**Acceptance:** checks green; dealing proven in a spec; a battery taken and the torch full in Play.
+**Read first:** ROADMAP S1-07b; GDD (search "battery"); `art/unit/README.md`;
+`src/shared/Deal.luau`; `src/server/Coins.luau` (a laid pickup); `src/server/Flashlights.luau`.
 
 ## Queue (the overnight run, owner Nov 13: sessions until 8:30am, the updated plan)
-1. S1-09 (next), then S1-07b batteries, then ROADMAP Phase 2 in order. S2-06 and L-08e3c wait
-   on `OWNER.md`. Lobby polish waits.
-2. Found S1-08: broken-piece art (the cutters in two halves) and a strained creak on the use
-   that leaves one are in ROADMAP's S1-08 polish line.
-3. Found S1-07a: the GDD says the three in ten units without coins hold nothing to take; today a
-   unit's kind is drawn apart from its coins, so about 16 in 100 hold nothing at all. Owner's
-   call if it matters; not changed.
-4. Found S1-02: in Studio the test hall begins a climb on floor 3 as the server starts, so Studio
-   records "climb floor 3 started" before any lobby car (Studio only).
-5. Found S1-06: a kept find's save write and the friends' spark are unseen in Play; a "New" mark
-   on a find kept the first time is polish (ROADMAP).
-6. Found S1-05: the finds' places in your view are unseen in Play; a find standing in a unit can
-   be walked through (inert, as a lying tool; polish list).
-7. Found S1-04b2: keepers move on their own map and don't know about stuff, so one could walk
-   through it; the heap's front reaches 7.2 into an M unit. A player can likely jump onto it.
-8. Found S1-01: arriving on another server, the save claim may wait up to 5 s if the lobby's
-   let-go lands after you. If too slow, a Brix ticket in neutral terms.
-9. Found L-08e3b: a lobby car's `far` isn't cleared when its trip fails (it ages out); L-08e4b1:
-   no PlayerModule in PlayerScripts, so WatchView's `controls` lookup fails quietly (untested).
-10. Seen (owner, Nov 12, "fix them later"): lobby car floors splotchy inside; a sawn side or top
-   flashes see-through as its panel drops; the lobby car's lamp very dim.
+1. S1-07b (next), then ROADMAP Phase 2 in order (S1-10 machine, S1-11, S1-12, then Step 2).
+   S2-06 and L-08e3c wait on `OWNER.md`. Lobby polish waits.
+2. Found S1-09: a kept (caught) player's torch keeps draining if they left it on; probably right.
+   The first-person torch looks large on a wide desktop view (pre-existing; judge on a phone).
+3. Found S1-08: broken-piece art and a strained creak on the use that leaves one (ROADMAP).
+4. Found S1-07a: about 16 in 100 units hold nothing at all (the GDD says 3 in 10 without coins
+   hold nothing to take). Owner's call; not changed.
+5. Found S1-02: in Studio the test hall begins a climb on floor 3 as the server starts.
+6. Found S1-06: a kept find's save write and the friends' spark are unseen in Play.
+7. Found S1-05: a find standing in a unit can be walked through (polish list).
+8. Found S1-04b2: keepers don't know about stuff, so one could walk through it.
+9. Found S1-01: arriving on another server, the save claim may wait up to 5 s.
+10. Found L-08e3b/L-08e4b1: a failed lobby car trip's `far` ages out; WatchView's `controls`
+   lookup fails quietly. Owner Nov 12 "fix them later": lobby car floors splotchy, a sawn panel
+   flashes see-through, the lobby car's lamp very dim.
 
 ## Kickoff for the next agent
 ```text

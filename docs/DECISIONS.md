@@ -3995,3 +3995,32 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
   than a draining bar. The last one turns red and breathes; a spent one flares and pops out.
 - The horn's last blast sags in pitch and dies (`Horn.Dry`), which is what a canned horn does
   when it runs dry, so the horn warns by sound as well as by its notch.
+
+## D-142 The flashlight runs down: the server's seconds, each screen's flicker (S1-09, Nov 14)
+
+- The charge is seconds of light, owned by the server per player (not per torch), so it carries
+  through floors and a new character. It drains only while on and only while the torch is in a
+  hand; everyone is full as a climb begins (`Climbs.began`); a battery calls `Flashlights:fill`
+  (S1-07b), which says false when you're full so the battery stays for a friend.
+- The Player carries whole seconds, rounded up (`Charge.Attribute`), written only as they tick:
+  one small write a second while it's on, which also lets friends' screens see you dying. Each
+  screen follows it smoothly between ticks (`Charge.follow`, kept inside the written second).
+- The flicker is drawn by each screen from what's left (`Charge.glow`), not sent: a long first
+  stutter as the half minute opens (and again when you switch a dying torch back on), then
+  short ones far apart that close in on an ease and go darker, with whole moments of black at the
+  end. The light sags to about half and browns; over its last 1.2 s it dies to nothing, so it's
+  already dark when it clicks off. While it flickers the server still counts it as on: a
+  Mannequin stays held until it's dead.
+- Your screen puts it out on its own as its reckoning hits zero, a beat before the server's
+  tick; so a torch switched off with under 1.5 s left is dead (`Charge.Spent`), and the two never
+  disagree about a sliver.
+- The meter is a ring of 12 ticks inside the button's edge (a clock face: a full turn is a full
+  torch), lit warm, red and breathing for the last half minute, a faint ghost when spent. On a
+  keyboard or gamepad the same button sits in the bottom right corner, as there's no jump button
+  to sit over. No numbers, no words.
+- Dead, a press only clicks softly (the off click at 0.55 speed), dips the torch in your hand and
+  wobbles the button; the torch picture on it goes dull. Nothing explains it.
+- The buzz is Pro Sound Effects' "Light Bulb Buzz 2" looped over its steady stretch, heard only
+  in a stutter and loudest in the dips, retuned each blink so it crackles. No new lights: the
+  flicker only changes the beam's and spill's brightness and colour, written when they move by a
+  visible step.

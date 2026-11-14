@@ -37,7 +37,8 @@ Nothing in it is built yet. What still waits on you, in the order it holds work 
   on its button shows what's left, and the beam flickers for the last half minute before it
   goes out; picking up a battery fills it at once and takes no slot (if yours is full you leave
   it for a friend); what's left carries over from floor to floor; a battery costs 3 coins in the
-  machine; about one unit in ten has one. Say if any is wrong.
+  machine; about one unit in ten has one. Say if any is wrong. (The running down is built this
+  way, Nov 14: judge it under "Now: the flashlight runs down".)
 - [ ] **A trapped monster still counts toward the floor's limit** on how many can be awake.
   The old design doc said the opposite, which made trapping pointless. You gave the reason
   (trapping makes it easier to search) but didn't answer this directly: say if you disagree.
@@ -96,6 +97,25 @@ and off, the invite sheet opening with your friends (no invite sent).
   the share link goes (Roblox pays on new or returning players who come by a share link, not on
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
+
+## Now: the flashlight runs down (S1-09, built Nov 14, D-142; seen in Studio Play)
+
+Your flashlight now runs down while it's on: about five minutes from full, full again at the
+start of each climb. A ring of 12 small ticks round its button (bottom right of the screen on a
+computer, over the jump button on a phone) goes out one tick at a time; the last ones turn red and
+breathe. For its last half minute the beam flickers: one long stutter as it starts, then short
+ones far apart that come closer and go darker, with a bulb's buzz in your hand each time, while
+the light dims and browns. Then it fades to nothing and clicks off by itself. Pressing it while
+it's dead only gives a soft dull click, the torch dips in your hand and the button wobbles. I saw
+all of that in Play with a 40-second torch; nobody has heard it yet.
+- [ ] **Run it down** (fast): in Edit, select Workspace and add a number attribute
+  `DevTorchSeconds` = 40, then Play and switch your torch on (right click). After 10 seconds it
+  starts to flicker. Does the first stutter make you look? Does the buzz sound like a dying bulb
+  or like noise? Does the end feel like losing your light? Remove the attribute after.
+- [ ] **On your phone:** can you read the ring at a glance, and tell red ticks from white ones?
+- [ ] **With a friend:** does their beam flicker and buzz when theirs is dying?
+- [ ] **The numbers (my defaults, in `Charge.luau`):** five minutes full, half a minute of
+  flicker. Say if the flicker should start sooner or later.
 
 ## Now: wear a tool out (S1-08, built Nov 14, D-141; passes checks, the break untested in Play)
 
