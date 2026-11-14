@@ -1617,7 +1617,22 @@ Done when a team that has lost its lights goes looking for the breaker without b
 - [ ] **S2-03 Sleeping monsters wake.** After four minutes on floors 1 and 2 (six above), three
   sleepers wake and pound on their doors, heard across the floor; three more every two minutes;
   sooner and more higher up. One pounding breaks out after 90 seconds unless its door is
-  padlocked. No clock, no announcement.
+  padlocked. No clock, no announcement. Split (the last overnight session), one per session:
+  - [x] **S2-03a When they wake and which.** (Nov 14, D-156) Pure rules (`Waking`): the first
+    wave at four minutes on floors 1 and 2, 15 seconds sooner a floor above, never under two and
+    a half minutes; three at a time on floors 1 to 3, one more every three floors up to five;
+    two minutes between waves on floors 1 and 2, 10 seconds closer a floor, never under 75; a
+    step wakes what's owed, no more than are left asleep, never past six keepers stepping on the
+    floor at once (loose or pounding), the held-back ones waking once there's room; which doors
+    is a fair random pick. `tests/waking.spec.luau`. Nothing in the game calls it yet.
+  - [ ] **S2-03b They stand and pound.** The keepers' brain keeps each floor's seconds since the
+    team arrived and asks `Waking.now` each step; `Waking.pick` chooses among
+    `Keepers.sleepers`. A picked sleeper's body stands in its unit then (the deal's place and
+    facing, as a door lifting stands it), awake and shut in, and goes straight into the trapped
+    keeper's clock (`Keeper.trap`, `bangGap`, `blow`: Mannequin `breakOut` 90 s), its blows heard
+    across the floor by players and keepers (`Keepers:hear`), a padlock holding it. Its unit
+    leaves `sleepers`. A Studio dev path that skips the minutes; verify in Play on the dev floor
+    that one wakes, pounds and bursts an unpadlocked door after its time, Output clean.
 - [ ] **S2-04 A wrong code lets monsters out.** One unit with a monster in it rolls up by
   itself on the first wrong code, three on the second, five after; the hall lights go out for
   the alarm; every loose monster heads for the keypad; the keypad locks 3.5, 7, then 14 seconds.

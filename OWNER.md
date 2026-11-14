@@ -116,6 +116,17 @@ climb only a Mannequin throws it (S2-02c, below), so test the box itself with th
    lights do; coming back dark would show nothing from the box); the lamp as glowing Neon, red
    off and green on; one second to hold, as cutting a friend free.
 
+## Decide: when sleeping monsters wake (S2-03a, built Nov 14, D-156; rules only, not in the game yet)
+
+The schedule is written and tested but nothing calls it until S2-03b, so there is nothing to see.
+1. Decide (starting guesses, D-156): the first pounding after four minutes on floors 1 and 2,
+   15 seconds sooner each floor above, never under two and a half minutes; three doors at a time
+   on floors 1 to 3, one more every three floors, up to five; two minutes between waves on
+   floors 1 and 2, closing to 75 seconds higher up; at most six monsters moving on a floor at
+   once, for phones.
+2. Settle one line: the roadmap said "four minutes on floors 1 and 2 (six above)", but the GDD
+   says it starts sooner higher up. It was built sooner. Did "six" mean something else?
+
 ## Now: the Mannequin cuts the power (S2-02c, built Nov 14, D-155; seen in Play, not heard)
 
 In a real climb a wandering Mannequin now and then walks to the breaker and throws it; nothing

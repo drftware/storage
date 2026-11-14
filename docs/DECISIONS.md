@@ -4332,3 +4332,28 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
   toward them, without the whole floor converging. The thrower hears its own clunk and stands.
 - No text: nothing tells players it's going; the clunk and the dark are the tell.
 
+
+## D-156 When sleeping monsters wake: waves on a hidden schedule, sooner and bigger higher up (S2-03a, Nov 14)
+
+- The precedent: Left 4 Dead's director sends a horde at a team that lingers (from memory), and
+  Dead by Daylight's endgame collapse turns a stall into a race. Here it's sleepers behind shut
+  doors starting to pound: no clock on screen and no words (GDD "Sleeping monsters wake"; AGENTS
+  "Monsters, not the building"). The pounding is the warning and a padlock is the answer.
+- The schedule (`Waking`), starting guesses in OWNER.md: the first wave at 240 s on floors 1 and
+  2, 15 s sooner each floor above, never under 150 s; three at a time on floors 1 to 3, one more
+  every three floors, never over five; 120 s between waves on floors 1 and 2, 10 s closer each
+  floor above, never under 75 s.
+- A conflict, settled by the GDD: ROADMAP's S2-03 line said "four minutes on floors 1 and 2 (six
+  above)", which would make higher floors start later, but the same line and the GDD both say it
+  starts sooner higher up. Built as sooner; the "six" is in OWNER.md for the owner to settle.
+- Phones: `Waking.AwakeMost` is six keepers stepping on a floor at once, loose or pounding (twice
+  `Deal.awakeCap`'s highest loose cap, since a pounding one stands still). A wave that would pass
+  it waits, and the wakes it owes come as room opens. The director's own cap on loose keepers is
+  unchanged, so a floor can now hold more loose keepers than the director deals: that's the
+  pressure the GDD asks for, and it's capped.
+- Which doors: a fair random pick among `Keepers.sleepers` (the units whose sleeper is still
+  behind a door nobody lifted), so the team never learns which door goes first. Padlocked ones
+  can be picked: they pound and never break out, a scare with no danger.
+- How a woken sleeper stands and pounds is S2-03b's: stand its body when it wakes (not every
+  sleeper up front, which costs instances nobody sees) and hand it straight to the trapped
+  keeper's clock (`Keeper.trap`), whose break-out at 90 s is the GDD's number already.
