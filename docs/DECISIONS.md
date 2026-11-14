@@ -3559,3 +3559,37 @@ listed for now, which sells double cash from the day the store opens.
 
 **Still the owner's to answer** (`OWNER.md`): tools rarer and wearing out, the second monster,
 how the ride's choice looks, a monster you hide from, and a monster that takes your head.
+
+## D-128 The proposal written into the design doc and the roadmap (Nov 13)
+
+The owner said go ("update the design docs based on the latest revision of the proposal") and
+answered four questions on the five ideas D-127 left open. The GDD is rewritten to match, and
+ROADMAP's Phase 2 is now the proposal's build order as tickets (Steps 1 to 6, S1-01 on). From
+here the GDD is the newer word again; `docs/PROPOSAL.md` is kept as the record of the answers.
+
+**The four answers.**
+- **Tools (idea 2): yes to both, and more.** Tools turn up in about one unit in twelve and wear
+  out after a set number of uses. The owner added: the flashlight runs down too, with batteries
+  sold in the machine on every ride and found in units. This overrides the proposal's "the
+  flashlight doesn't change". How long it lasts, the meter, a battery filling it at once and
+  taking no slot, and the prices are my defaults (`OWNER.md`).
+- **The second monster (idea 12): build it next.** Silent, moves only while it stands in
+  light, and a hall light it walks under sticks on until the breaker is switched off and on.
+  It needs a look, a name and a reason to be alive from the owner before it's built.
+- **The choice on the ride (idea 21): the elevator's own buttons.** Three buttons, each a
+  version of the next floor and what it pays; harder pays more; it lasts one floor.
+- **The two later monsters (ideas 8 and 39): both kept as ideas,** in no build step.
+
+**Calls I made writing it in** (each is in `OWNER.md` to overrule):
+- The GDD says "monsters" (the owner never agreed to "keepers"); the code keeps its names.
+- The story section says the story isn't settled. The Nov 2 lore (Everkeep's name, Unit 0, the
+  $1 auction, the three families) and the unbuilt monsters of the old roster are kept under
+  "Nov 2 drafts, none agreed" rather than deleted. Dale, the Moth and the clock are listed as
+  out.
+- The director stays, described as pacing nobody sees ("it is not the building"). It no longer
+  deals monsters as a door opens: sleepers are placed when the floor is made, which waking
+  behind a shut door and the wrong code both need.
+- Two products the proposal's store list left out stay in the GDD's store, marked: cart
+  cosmetics (the owner's Nov 11 plan, D-112) and the streamers' admin pass (a Nov 2 draft).
+- The GDD's rating section still says "no screamers", which the built catch isn't (D-102). Not
+  part of this change; it's in HANDOFF's Queue.

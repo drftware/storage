@@ -18,38 +18,54 @@ nowhere else.
   arrive on your group's server) and a running `rojo serve` only reads those at start. Without
   it the trip works, but the front office may flash for a moment as you arrive.
 
-## Decide: what's still open in the proposal (Nov 13)
+## Decide: the design doc after your answers (Nov 13, D-128)
 
-Your answers are written into `docs/PROPOSAL.md`, idea by idea (D-127). Nothing in it is built
-or ticketed, and the design doc and the roadmap haven't been changed to match yet. Five things
-in it still need your answer. Each is written out in full under its number; answer by number.
-- [ ] **Idea 2, tools.** You asked whether tools should be rarer in units and whether they
-  should break. My suggestion: a tool in about one unit in twelve (one in five today), and each
-  tool works a set number of times (bolt cutters cut three padlocks, the saw cuts two holes).
-  The flashlight doesn't change. Yes, no, or different numbers?
-- [ ] **Idea 12, the second monster.** Your sketch (silent, doesn't move in the dark) with my
-  fix for the ceiling lights: it can only move in light, so it follows the lights you set off
-  as you walk, and it makes lights stick on until someone flips the breaker off and on. Is
-  this the monster to build next? It needs a look, a name and a reason to be alive from you.
-- [ ] **Idea 21, the choice on the ride.** You asked for it not to feel like Dandy's World. My
-  suggestion: three buttons on the elevator's panel, each a version of the next floor (power
-  out, twice the monsters), harder ones paying more coins, lasting one floor. Or three cards on
-  the wall?
-- [ ] **Idea 8, a monster you hide from.** My rethink, with no timer: noise wakes it, it runs
-  the halls, you get inside a unit, and it pulls down every open door it passes. Keep it on the
-  list for a later monster, change it, or drop it?
-- [ ] **Idea 39, the monster that takes your head** (yours): take it up now, later, or not?
-  Three things would need settling first; they're listed under the idea.
-- [ ] **The small things I picked** so each idea was complete (the list under "Still open" in
-  the proposal: how many units have coins, when sleeping monsters start to wake, what ends a
-  climb, and so on). They stand unless you say one is wrong.
-- [ ] **Untested bets.** The proposal's "Ideas with no hit game behind them" lists eight. Four
-  are yours (the big find shown only once the code is in, a monster that only moves in light,
-  seeing through a monster's eyes, more pay for trapped monsters) and four are mine. None of
-  mine gets built unless you say so.
-- [ ] **Say when** the agreed ideas should be written into the design doc and turned into
-  roadmap tickets. Until then the design doc still describes ten floors, Dale and lights that
-  call monsters.
+Your answers, the four from tonight included, are written into the design doc (the GDD) and the
+roadmap (Phase 2: Steps 1 to 6, tickets S1-01 on). `docs/PROPOSAL.md` is kept as the record.
+Nothing in it is built yet. What still waits on you, in the order it holds work up:
+- [ ] **The second monster needs a look, a name and a reason to be alive.** You said to build
+  it next: the silent one that can only move while it's in light. Its ticket (S2-06) can't
+  start without those three. Everything before it in Steps 1 and 2 can.
+- [ ] **The flashlight's details.** You said it runs down, and that batteries are in the
+  machine on every ride and in units. I picked the rest: it's full at the start of each climb;
+  a full one gives about five minutes of light, and only runs down while it's on; a small meter
+  on its button shows what's left, and the beam flickers for the last half minute before it
+  goes out; picking up a battery fills it at once and takes no slot (if yours is full you leave
+  it for a friend); what's left carries over from floor to floor; a battery costs 3 coins in the
+  machine; about one unit in ten has one. Say if any is wrong.
+- [ ] **A trapped monster still counts toward the floor's limit** on how many can be awake.
+  The old design doc said the opposite, which made trapping pointless. You gave the reason
+  (trapping makes it easier to search) but didn't answer this directly: say if you disagree.
+- [ ] **The small things I picked** so each idea was complete. They're marked "starting guess"
+  or "my default" where they appear in the design doc: seven units in ten have coins; a tool in
+  one unit in twelve; not tapping counts as a miss; a pounding monster breaks out after 90
+  seconds unless padlocked; the breaker takes a one-second hold and the elevator keeps its own
+  light; sleepers start to wake after four minutes on floors 1 and 2 and six above, three at a
+  time, three more every two minutes; the third wrong code and every one after opens five
+  units; the big find's unit opens by itself, shows on the corner map, and is no more than a
+  20-second carry away; pay goes up a little each floor and by a quarter for each trapped
+  monster; a climb ends when everyone is wrapped at the same moment; the machine's stock
+  changes each ride; perks unlock by reaching a floor or finishing a set; badges at floors 10,
+  25, 50 and 100; the marker costs 4 coins, makes five marks and shows on the corner map. They
+  stand unless you say one is wrong.
+- [ ] **The old story and the old monsters are kept, marked "Nov 2 drafts, none agreed".** The
+  Everkeep name, Unit 0, the $1 auction and the three families are in the story section; the
+  rug, the box stack, the tenant, the mover and the inflatable are at the end of the monsters
+  section. Nobody builds from them. Say if you'd rather they were deleted.
+- [ ] **Two products the proposal's store list left out are still in the design doc's store:**
+  cart wraps, wheel lights and a horn (your Nov 11 lobby plan) and an admin pass for streamers'
+  private servers (from the first draft). Keep or drop each?
+- [ ] **Untested bets.** The design doc's "Ideas with no hit game behind them" lists eight. Of
+  my four, you chose the elevator buttons tonight and agreed two earlier (valuing finds one at
+  a time, the "still sealed" look). The last is each monster going after the thing that stops
+  it: lights that stick on come with the second monster you approved, and a monster that pulls
+  open doors down is only the idea for later. So none of mine is waiting on a yes; say if any
+  should stop.
+- [ ] **Open at the end of the design doc:** a name for the monsters (the code says keepers);
+  the story; where the top grade of find comes from now there are no boss floors; where you
+  pick your two perks (the counter or the elevator's panel).
+- [ ] **Later, when you take them up:** the monster you hide from, and the monster that takes
+  your head. The second has three things to settle first, listed under it in the design doc.
 
 ## Now: judge L-08e3, Invite and the dials (built Nov 12, D-124)
 
@@ -413,9 +429,6 @@ yours to judge.
   view; the floor near the door should no longer flicker.
 - [ ] **Reaching through doors**: a tool in a unit shows no Pick up until the door is half up;
   shut in with one, you can still pick it up.
-- [ ] **Decide, defaults in place** (L-20): your inventory wheel note says three slots to start
-  and six paid; the GDD still says two tools ("two tools plus whatever's in your hands"). Three
-  are built (L-20a, `Carry.Slots`). Edit the GDD's line, or say if two should stay.
 
 ## Decide: the lobby and the store (your plan, Nov 11, D-112)
 
@@ -506,7 +519,8 @@ sounds, how it feels.
   escape?
 - [ ] **On a phone**: the screen and the button at phone size; tap Again.
 - [ ] **Decide, defaults in place** (D-106): (1) **The top is floor 3** for now, so a run is short
-  enough to replay (Phase 2's top floor is 10, Unit 0's); say if it should be higher. (2)
+  enough to replay. You've since said there's no top at all (D-128); the built climb still ends
+  at floor 3 until S4-01 makes floors by rules. (2)
   **Where Again leads**: back in your lobby car (L-08e2; the test hall's climb in Studio still
   goes to a fresh floor 1). (3) **Again waits** for
   everyone, or 10 s after the first press. (4) **The Missing board** (GDD: your photo goes up in

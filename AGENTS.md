@@ -5,10 +5,11 @@ stays under 150 lines. Current state lives in HANDOFF.md; history lives in `git 
 
 ## The project
 
-- A co-op Roblox horror game: friends climb ten floors of a living self-storage building after
-  hours. On each floor they open units to find that floor's code, punch it into the freight
-  elevator and get everyone aboard before the gate shuts, while the building's keepers hunt them.
-  Rojo + strict Luau. No title is picked yet.
+- A co-op Roblox horror game: friends climb a self-storage building after hours, one floor after
+  another with no top floor. On each floor they open units to find that floor's code, punch it
+  into the freight elevator and get everyone aboard before the gate shuts, while monsters hunt
+  them (the code calls them keepers; the owner hasn't picked a name, so say monsters to the
+  owner). Rojo + strict Luau. No title is picked yet.
 - **Design source of truth:** the GDD, https://claude.ai/artifact/UtmFtWGEMRQkNmWmCEhFWN (a Claude
   Doc; read it with the docs tools, never WebFetch). Pull only the section your ticket names.
 - **Build state:** HANDOFF.md (now) · `docs/ROADMAP.md` (tickets) · `docs/DECISIONS.md` (why) ·
@@ -32,6 +33,11 @@ another across a desk: plain words, full sentences, things named the way a playe
   not from what a storage building would literally contain. Anything without a precedent is
   flagged as an untested bet and goes to OWNER.md, never built quietly.
 - Every keeper has a reason to be alive that fits the lore (owner, 2026-11-02).
+- **Monsters, not the building** (owner, 2026-11-13). The building isn't a character, and no
+  danger runs on a clock players can see. Each monster has something that stops it, a way it
+  messes with the floor, and something players go and do to put it right.
+- **No text that explains a rule** (owner, 2026-11-13). Players learn by playing: teach with
+  sound, motion and the thing itself.
 - New design is the owner's: build what the GDD says. Gaps get a sensible default and an OWNER.md
   line.
 

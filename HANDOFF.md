@@ -2,17 +2,17 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-13, session 115 (the owner's answers to the proposal: docs only) · **Checks:** green ·
-**Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-13, session 116 (the proposal written into the design doc: docs only) ·
+**Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- **L-08e4b1 done (D-126).** Tap Ride: you stand on a cart's deck and it heads where you look
-  (pure `Cart.Ride`, Lune specs; server `Carts`, client `CartRide` and `CartView`). Jump hops
-  off; the cart coasts and parks where it stopped (not home yet). Verified in Studio Play, one
-  player, a computer. Output clean but 203785492. Studio left in Edit.
-- **The owner answered the proposal (D-127).** `docs/PROPOSAL.md` holds each answer under its
-  number; five things are still open (`OWNER.md`). The GDD and ROADMAP are NOT changed yet (ten
-  floors, Dale, lights that call monsters): on the loop the proposal is the newer word. Unbuilt.
+- **L-08e4b1 done (D-126).** Tap Ride: you stand on a cart's deck and it heads where you look;
+  Jump hops off and the cart parks where it stopped (not home yet). Verified in Studio Play.
+- **The GDD is rewritten from the owner's answers (D-127, D-128)** and is the newer word again:
+  no top floor, monsters not the building, you keep what you carry, caught until freed. Also
+  answered: tools wear out, the flashlight runs down, the second monster is next, the ride's
+  choice is the elevator's buttons. ROADMAP's Phase 2 is that build order as tickets (S1-01
+  on). None of it is built. The GDD says "monsters"; the code says keepers.
 
 ## Next task: L-08e4b2 Home again
 The moment: you hop off at a car's stripes as the gate's about to shut, and behind you the cart
@@ -37,8 +37,8 @@ STUDIO.md "Testing a cart ride from the MCP".
 ## Queue (the evening run, owner Nov 12: lobby sessions until 8pm; ROADMAP Phase 1's order paragraph)
 1. L-08e4b2 (next), in green-ending sessions. Then L-08e3b Share and follow.
 2. Time left: hone the lobby (ROADMAP polish: "The ride's finish", "The dials' finish"). No keepers.
-   When the owner says go (Waits on `OWNER.md`): write the agreed ideas into the GDD and cut
-   ROADMAP tickets in the proposal's build order. Not started.
+   After the lobby: ROADMAP Phase 2 from S1-01 Saving (Brix's profiles first). S2-06 Waits on
+   `OWNER.md`. The GDD's rating section says "no screamers"; the built catch is one (D-102).
 3. Found L-08e4b1: no PlayerModule in PlayerScripts in Play (STUDIO.md), so WatchView's
    `controls` lookup fails quietly (controls may stay on while you watch; untested).
 4. Seen (owner, Nov 12, "fix them later"): lobby car floors go splotchy as the camera moves

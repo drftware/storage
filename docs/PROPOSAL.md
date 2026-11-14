@@ -2,8 +2,20 @@
 
 _Second version, Nov 13. The first version held 36 ideas. You answered every one, added a note
 on the shop, and then answered four follow-up questions. This version is those answers written
-in. Nothing here is built, and the design doc and the roadmap haven't been changed to match
-yet._
+in. Nothing here is built._
+
+_**Written into the design doc and the roadmap later on Nov 13 (D-128).** The design doc is the
+newer word from here, and this file is kept as the record of your answers. That evening you
+also answered the five ideas this version marks Open, so read those labels as settled:_
+
+- _**Idea 2, tools:** yes to both (rarer in units, and they wear out). You added that the
+  flashlight runs down too, with batteries in the machine on every ride and in units. That
+  replaces "The flashlight doesn't change" below._
+- _**Idea 12, the second monster:** yes, build it next. It still needs a look, a name and a
+  reason to be alive from you._
+- _**Idea 21, the choice on the ride:** the elevator's own buttons._
+- _**Ideas 8 and 39, the two later monsters:** both kept in the design doc as ideas for later,
+  in no build step._
 
 ## How to read this
 

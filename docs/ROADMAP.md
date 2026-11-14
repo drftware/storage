@@ -6,7 +6,8 @@ one-liners; each gets its full spec when it becomes HANDOFF's Next task.
 
 The order follows the owner's plan (2026-11-05): set up the project and bring the real assets in,
 build the gameplay loop with those real assets and hone it until it's awesome, then flesh out
-the rest of the floors and the game. It matches the GDD's build order (its "Build order" section).
+the rest of the floors and the game. Phase 2 follows the GDD's "Build order" section, Steps 1 to 6
+(the owner's answers to the proposal, Nov 13, D-128).
 Every system checks Brix first (`docs/FRAMEWORK.md`, D-008); each ticket below names its Brix piece.
 The keepers' brain is the one exception: it is built in this game (D-064).
 
@@ -1319,8 +1320,8 @@ fix them later." The overnight run's hard limits hold.
     (Lune-checked); the server keeps `ToolPocketed` and a `ToolPocket` remote. The button's top
     stayed where the slots' was, so a door's Peek needed no retune. Verified in Studio on a
     computer and the Galaxy A16 (shots `docs/art/L-20a-*.jpg`).
-  - [ ] **L-20b Six slots, bought** once the store and saved player data exist (Phase 2: Brix's
-    purchases and profiles); granted only after the profile saves.
+  - [ ] **L-20b Six slots, bought** once the store and saved player data exist (Phase 2's S4-07:
+    Brix's purchases and profiles); granted only after the profile saves.
 - [x] **L-17 Every button on a phone at once.** Done Nov 12 (D-117). Judged on the Galaxy A16:
   kept with the Bang button up; the horn up at a shut and an open door with the torch, jump, map
   and Blow; the wheel open by a door. The open wheel's slots landed on a door's chips, so every
@@ -1339,31 +1340,164 @@ fix them later." The overnight run's hard limits hold.
   - [ ] **L-09a The first run with friends.** A private published place; the owner and friends
     climb floors 1 to 3; the next session tunes from what they report.
 
-## Phase 2: The rest of the game (GDD build order step 2)
+## Phase 2: The loop that pays (GDD "Build order", Steps 1 to 6; D-128)
 
-All ten floors with the ride, the stairwell set piece and both boss floors; the director; the
-other keepers (the roster waits on the owner's rework, `OWNER.md`; the Moth and its mothballs
-are out, Nov 10) and their own tools; the light board; finds
-with rarity; your lobby unit; the store; Captures. Player data, remotes, telemetry and UI from Brix
-(ENG-09 to ENG-16). Then soft launch. The dolly in the levels is a maybe (owner, Nov 11: the climb
-is an escape, not a haul); nothing builds it until the owner says.
+The owner's answers to the proposal (Nov 13, D-127 and D-128) replaced the old Phase 2 (ten
+floors, two boss floors, a roster of nine keepers, the light board). The GDD holds the design;
+each ticket names its GDD section. These are one-liners: a ticket gets its full spec, and is
+split to fit a session, when it becomes HANDOFF's Next task. The order inside a step is the
+build order. Saved player data, purchases, remotes, recording and UI come from Brix (ENG-09 to
+ENG-16); a ticket that needs a Brix piece that isn't there yet puts it in Brix's ROADMAP and
+waits. The GDD says monsters; the code and the tickets above this line say keepers.
 
-- **The store** (GDD "Monetization", D-112), in this order. Purchases and saved profiles first
-  (Brix); then Cut Free goes live (built, L-07d). Then the counter's shop: walk up and it opens,
-  plus a Shop button in the lobby and Roblox's own Shop button. Its first shelf: the Bring slot
-  in the car (your starting tool, cash only), torch beam colours, wrap colours, the starter pack
-  (after your first climb), cash packs, gift versions, more tool slots (L-20b). Then friend
-  referral (a matching beam colour for both when a friend joins on your link), then cart
-  cosmetics. **Before the game goes public:** a real phone purchase survives a forced save
-  failure and a server hop; every purchase and shop view is logged (Roblox's economy and funnel
-  events); any offer can be switched off without an update; prices are read from Roblox.
-- **Your unit and the daily door:** a hall of units, one per player; the free daily sealed lot is
-  a roll-up door in the lobby you open once a day (GDD "The lobby").
+**Step 0** is L-09a, the first run with friends (Waits on `OWNER.md`). It doesn't hold Step 1.
 
-- **Finds in a run** (moved from L-04d, Nov 8): where a unit's boxes and its find stand for the
-  unit's size, the find deeper than the bulb and facing the door within a small turn (D-036);
-  carrying finds out to the elevator; padlocked units' finds the best (rarity).
-- **Fake notes** from floor 6, in the building's slightly different hand (GDD "Codes").
+### Step 1: Doors that pay, and things to carry (nothing sold)
+
+- [ ] **S1-01 Saving.** Nothing is saved today. Brix's profiles: cash, the finds you own, the
+  collection book's stamps and your best floor, held by one server at a time, saved on a timer
+  and at shutdown, with a version number. Nothing on screen yet. First, because every ticket
+  after it saves something (GDD "Saving").
+- [ ] **S1-02 Recording.** What every player earns and spends, and the list in the GDD's "What
+  the game needs to record", so things have a known worth before anything is priced.
+- [ ] **S1-03 Half the units.** About 30 on floors 1 and 2 and about 40 above, with blank wall
+  where units were and the halls as long as they are (GDD "Doors": "Fewer units").
+- [ ] **S1-04 Coins in most units.** About seven units in ten have one to three coins on the
+  floor; tap to pick them up and a small count goes up. Yours alone, for this climb only. The
+  other units are bare or hold things to look at (stacked boxes, a mattress, a rolled carpet:
+  art first, the unit's way).
+- [ ] **S1-05 Finds you carry.** One tap puts a find in one of your three slots, beside your
+  tools. Slots full: drop something or leave it. Caught: your finds drop with your tools.
+  Takes in the old "Finds in a run" (where a unit's find stands, D-036).
+- [ ] **S1-06 Pay and keeping at the gate.** As the gate shuts everyone aboard is paid the same
+  coins, a little more each floor; the finds in your slots become yours and the slots empty; a
+  wrapped player gets nothing (GDD "When the gate shuts").
+- [ ] **S1-07 What a door holds.** A padlocked door always has something good, with the best
+  chance of something great and of a monster. A tool in about one unit in twelve (one in five
+  today). A battery in about one unit in ten.
+- [ ] **S1-08 Tools wear out.** Bolt cutters 3 padlocks, the saw 2 holes, the air horn 3
+  blasts, the padlock 1 door; a mark on the slot shows the uses left (GDD "Tools wear out").
+- [ ] **S1-09 The flashlight runs down.** Only while it's on; a meter on its button, a flicker
+  for the last half minute, then out; a battery fills it at once and takes no slot (GDD "The
+  flashlight runs down"; the numbers are defaults in `OWNER.md`).
+- [ ] **S1-10 The machine on the ride.** The ride grows to about 20 seconds. From the second
+  ride on, the vending machine in the car sells three or four tools for coins, stock changing
+  each ride, batteries always (GDD "The ride").
+- [ ] **S1-11 The one faint mark.** At most one note's door frame on a floor carries a faint
+  mark, seen from a few steps with your flashlight on it; nothing about notes on the corner map.
+- [ ] **S1-12 Cash on the results.** Unspent coins turn into cash at the climb's end; the
+  results on the car's wall show the cash you earned; it's saved.
+
+### Step 2: Monsters that mess with the floor (nothing sold)
+
+Done when a team that has lost its lights goes looking for the breaker without being told to.
+
+- [ ] **S2-01 Sleeping monsters are placed when the floor is made.** Today `Deal.open` decides
+  a unit's monster as its door first lifts. The floor's deal places the sleepers up front, so
+  one can wake, or be let out, behind a shut door. S2-03 and S2-04 need it.
+- [ ] **S2-02 The breaker.** A breaker box on every floor, somewhere different each climb.
+  Thrown: one heavy clunk and every hall light out, and moving under them does nothing. A
+  one-second hold switches it back on. The elevator keeps its own light. A loose Mannequin with
+  no light on it sometimes heads for the breaker and throws it, more often on higher floors
+  (GDD "The breaker", "The Mannequin cuts the power"). The breaker box is art first.
+- [ ] **S2-03 Sleeping monsters wake.** After four minutes on floors 1 and 2 (six above), three
+  sleepers wake and pound on their doors, heard across the floor; three more every two minutes;
+  sooner and more higher up. One pounding breaks out after 90 seconds unless its door is
+  padlocked. No clock, no announcement.
+- [ ] **S2-04 A wrong code lets monsters out.** One unit with a monster in it rolls up by
+  itself on the first wrong code, three on the second, five after; the hall lights go out for
+  the alarm; every loose monster heads for the keypad; the keypad locks 3.5, 7, then 14 seconds.
+- [ ] **S2-05 The tap when you shut a door on a sleeper.** Pull the door down on a monster
+  that is asleep or hasn't seen you and a bar with a moving marker comes up by itself. Hit it:
+  the door settles quietly. Miss, or don't tap: it bangs, and the monster wakes and pounds.
+- [ ] **S2-06 The second monster.** Waits on `OWNER.md` (its look, name and reason to be
+  alive). Silent; moves only while it stands in light; a hall light it walks under sticks on
+  until someone switches the breaker off and on. Its art first, then its row on the keepers'
+  brain (GDD "The second monster").
+
+### Step 3: Getting caught (the first products)
+
+Done when nobody quits a climb because they were caught.
+
+- [ ] **S3-01 Stay wrapped, carried up.** Nobody is out of the climb any more. Wrapped or late
+  when the gate shuts, you watch the ride and turn up wrapped in a unit on the next floor, with
+  empty hands, floor after floor until a friend cuts you free. Wrapped, you can bang on the
+  door or watch a friend, and nothing else. The climb ends only when everyone is wrapped at the
+  same moment (GDD "Getting caught"; changes L-08c's and L-08d's rules).
+- [ ] **S3-02 Purchases that are never lost.** Brix's purchases on the saved profile: granted
+  only after the profile saves. Before anything is sold live: a real phone purchase survives a
+  forced save failure and a server hop; every purchase and shop view is recorded; any offer can
+  be switched off without an update; prices are read from Roblox.
+- [ ] **S3-03 Cut Free, Free a Friend, Free Everyone.** Offered only on the screen you see
+  while caught, and Free Everyone before the results when the whole team is wrapped. Cut Free
+  while you're being carried up stands you in the car at the next floor. (Cut Free is built and
+  free in Studio, L-07d and L-08c.)
+- [ ] **S3-04 The counter's shop, and wrap colours.** Walk up to the counter and the shop
+  opens; a Shop button in the lobby and Roblox's own. Its first shelf: wrap colours, with gift
+  versions (GDD "Monetization", D-112).
+
+### Step 4: The climb with no top
+
+Done when two climbs in a row feel different and players talk about their best floor.
+
+- [ ] **S4-01 Floors made by rules, to floor 100.** One table says for any floor number what
+  it holds and how hard it is (GDD "Floor rules"); the climb no longer ends at floor 3 (D-106).
+  Room left for floors that play differently.
+- [ ] **S4-02 Monsters by lowest floor.** Each monster's row carries the lowest floor it can
+  appear on; above it the game mixes it in at random.
+- [ ] **S4-03 The choice on the elevator's buttons.** Three buttons light up on the car's
+  panel, each a version of the next floor and what it pays; most presses wins, a tie at random;
+  it lasts that one floor (GDD "The team's choice").
+- [ ] **S4-04 Trapping pays.** Each monster shut in a unit as the gate shuts adds a quarter to
+  everyone's pay. A trapped monster now counts toward the floor's limit on awake monsters
+  (today `Keepers.awakeOn` leaves it out).
+- [ ] **S4-05 The big find.** From floor 2, one a floor, shown only once the code is in: a unit
+  rolls up by itself and its place shows on the corner map. Carried in both hands, slower than
+  any monster, no tools; it counts only if it's in the car as the gate shuts. Its art first.
+- [ ] **S4-06 The marker.** Sold in the machine. Face a door and tap Mark: a bright mark the
+  team sees down the hall and on the corner map. Five marks. Its art first.
+- [ ] **S4-07 On sale.** A starting tool for cash during the car's countdown, flashlight beam
+  colours, and a fourth, fifth and sixth slot (this is L-20b).
+
+### Step 5: After the climb
+
+Done when players watch the results to the end and change their perks between climbs.
+
+- [ ] **S5-01 Finds valued one at a time** on the results: picture, name, how rare, what it's
+  worth, the cash counting up; then a line for each player.
+- [ ] **S5-02 Rarity, and finds still sealed.** Rarer finds on higher floors; about one in
+  twenty still in its packaging, worth three times as much.
+- [ ] **S5-03 Selling and keeping without a menu.** Copies and common finds sell on the spot;
+  a rare one you don't own is kept.
+- [ ] **S5-04 The collection book.** A page for every kind of find, stamped "New" the first
+  time; each kind of monster trapped; sets.
+- [ ] **S5-05 The shelf in the elevator.** The host's three best finds, shown in the car.
+- [ ] **S5-06 Perks.** Unlocked by a first floor reached or a set finished, bought with cash,
+  two picked before a climb.
+- [ ] **S5-07 On sale.** Double cash, cash packs, the starter pack (after your first climb) and
+  decor. Then the friend's matching beam colour for joining on your link, and cart cosmetics
+  (D-112).
+
+### Step 6: Coming back
+
+Done when players come back the next day without a friend asking them to.
+
+- [ ] **S6-01 Best floor.** On a plaque and on the dial over your car; badges at floors 10, 25,
+  50 and 100, for each kind of monster trapped and each set finished.
+- [ ] **S6-02 The Missing board.** A wiped team's photos and the floor they were caught on.
+- [ ] **S6-03 The free door once a day** in the lobby, a better find on the seventh day running.
+- [ ] **S6-04 Private servers and clips.** Private servers free or nearly; Roblox saves a short
+  clip at the GDD's ten moments.
+- [ ] **S6-05 The weekly shelf.** Three cosmetics at the counter, changed each week.
+
+Then the soft launch (GDD "Build order").
+
+### In no step
+
+Each waits on the owner (`OWNER.md`) or comes after launch: the monster you hide from; the
+monster that takes your head; the stair chase and other floors that play differently; the hall
+of units; trading; a season pass; fake notes, finds that are monsters in disguise, the monster
+that moves walls, and the dolly.
 
 ## Polish waiting for a slot
 
