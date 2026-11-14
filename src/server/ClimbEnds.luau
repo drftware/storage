@@ -74,7 +74,22 @@ end
 
 local ClimbEnds = {}
 
-function ClimbEnds.new(): Brix.System
+-- How the climb ended for one player: their fate and the floor it happened on.
+export type Ending = { player: Player, fate: ClimbEnd.Fate, floor: number }
+
+-- The climb's end: how (everyone kept or left, or the top), on which floor, and for each player.
+export type Ended = { how: ClimbEnd.How, floor: number, endings: { Ending } }
+
+export type ClimbEndsSystem = Brix.System & {
+	-- Fires as a climb ends, after each player's fate is on them (Recording, S1-02).
+	ended: Brix.Signal<Ended>,
+	-- Fires as a player's press of Again is taken.
+	again: Brix.Signal<Player>,
+}
+
+function ClimbEnds.new(): ClimbEndsSystem
+	local endedSignal = Brix.Signal.new() :: Brix.Signal<Ended>
+	local againSignal = Brix.Signal.new() :: Brix.Signal<Player>
 	local climbs: Climbs.Climbs? = nil
 	local watching: Watching.Watching? = nil
 	local slots: Slots.Slots? = nil
@@ -149,13 +164,13 @@ function ClimbEnds.new(): Brix.System
 		look(floor)
 		local c = climbs
 		local began = (c and c:startedAt()) or at
+		local endings: { Ending } = {}
 		for _, player in Players:GetPlayers() do
 			local l = lost[player]
 			local fate: ClimbEnd.Fate = if l then l.fate elseif how == "Top" then "Out" else "Left"
-			player:SetAttribute(
-				ClimbEnd.FateAttribute,
-				ClimbEnd.encodeFate(fate, if l then l.floor else floor)
-			)
+			local on = if l then l.floor else floor
+			table.insert(endings, { player = player, fate = fate, floor = on })
+			player:SetAttribute(ClimbEnd.FateAttribute, ClimbEnd.encodeFate(fate, on))
 			player:SetAttribute(ClimbEnd.InAttribute, nil)
 			player:SetAttribute(ClimbEnd.StoodAttribute, nil)
 		end
@@ -163,6 +178,7 @@ function ClimbEnds.new(): Brix.System
 		Workspace:SetAttribute(ClimbEnd.StartAttribute, nil)
 		Workspace:SetAttribute(ClimbEnd.LobbyAttribute, nil)
 		Workspace:SetAttribute(ClimbEnd.Attribute, ClimbEnd.encode(at, how, floor, at - began))
+		endedSignal:fire({ how = how, floor = floor, endings = endings })
 		if STUDIO then
 			print(
 				`ClimbEnds: the climb ended ({how}) on floor {floor} after {ClimbEnd.clock(
@@ -328,9 +344,10 @@ function ClimbEnds.new(): Brix.System
 		if STUDIO then
 			print(`ClimbEnds: {player.Name} is in for another climb`)
 		end
+		againSignal:fire(player)
 	end
 
-	local system = { name = "ClimbEnds" }
+	local system = { name = "ClimbEnds", ended = endedSignal, again = againSignal }
 
 	function system.start(_: any, context: Brix.Context)
 		local registry = context.registry

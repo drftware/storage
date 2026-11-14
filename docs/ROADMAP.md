@@ -1386,8 +1386,17 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
   at shutdown; `data(player)`, `loaded`, `save(player)` for later tickets; nothing writes yet.
   Studio prints a line per write. Lune: save.spec (round trip, refusals, version 1's sample,
   two servers over Brix's loopback, Brix's SaveFormat suite). A live server hop: `OWNER.md`.
-- [ ] **S1-02 Recording.** What every player earns and spends, and the list in the GDD's "What
-  the game needs to record", so things have a known worth before anything is priced.
+- [x] **S1-02 Recording. Done Nov 14 (D-139); verified in Studio Play.** Brix moved to
+  `6717740` for its Analytics. `Record` (shared, pure) is the plan and a book of the game's
+  moments; `Recording` (server) sends them to Roblox's AnalyticsService: coins earned (pile,
+  gate) with the floor and the count after; each unit opened and what it gave; the wait to the
+  first door and to a lobby car leaving; catches, cut free (floors carried up), finds kept; each
+  player's climb end (floor, fate, team) and Again; the `climb` path (floors started, completed,
+  failed) and a `climb` funnel once a climb (began, door, coins, rode, kept). Lune: record.spec.
+  Seen in Play: a lobby car, a unit, a pile, a ride, the end and Again. Not yet: purchases
+  (none exist; S1-10's machine adds `spent`), an onboarding funnel (needs a "first visit" mark
+  in the save; dedupe of Roblox's onboarding steps is unclear), and the trip carrying the lobby
+  join time so the join-to-first-door wait is one number.
 - [x] **S1-03 Half the units. Done Nov 13 (D-131); passes checks, untested in Studio.** About
   30 on floors 1 and 2 and about 40 above, with blank wall where units were and the halls as long
   as they are (GDD "Doors": "Fewer units"). `Floor`'s step 5b walls whole hall sides (a piece's
@@ -1434,7 +1443,8 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
   tools. Slots full: drop something or leave it. Caught: your finds drop with your tools.
   Takes in the old "Finds in a run" (where a unit's find stands, D-036).
 - [x] **S1-06 Pay and keeping at the gate.** (Built Nov 14, D-138; passes checks; the screen's
-  pour and the finds rising seen in Play, fired from the server; a real ride untested.) As the
+  pour and the finds rising seen in Play, fired from the server; a real ride's pay seen in Play
+  in S1-02, with no find kept.) As the
   gate shuts everyone aboard is paid the same coins, a little more each floor (10, then 2 more a
   floor); the finds in your slots become yours and the slots empty, into your save; a wrapped
   player gets nothing (GDD "When the gate shuts"). Polish left: a "New" mark on a find kept for
@@ -1450,7 +1460,8 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
   flashlight runs down"; the numbers are defaults in `OWNER.md`).
 - [ ] **S1-10 The machine on the ride.** The ride grows to about 20 seconds. From the second
   ride on, the vending machine in the car sells three or four tools for coins, stock changing
-  each ride, batteries always (GDD "The ride").
+  each ride, batteries always (GDD "The ride"). Record each buy: add `machine` to `Record`'s
+  reasons and call `spent` with the item (S1-02).
 - [ ] **S1-11 The one faint mark.** At most one note's door frame on a floor carries a faint
   mark, seen from a few steps with your flashlight on it; nothing about notes on the corner map.
 - [ ] **S1-12 Cash on the results.** Unspent coins turn into cash at the climb's end; the

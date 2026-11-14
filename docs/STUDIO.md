@@ -1805,3 +1805,15 @@ verified: a doc page, Studio, or "untested".
   `Count.Number`, `Plus`) and `PlayerGui.KeptFinds` (skip its Sounds) in one call. Seen: 12
   coins for 22, the count up by 22 as they land, "+22" in at 0.6 s and gone by 3.6 s; the teddy
   from the box (70 points) to 147 at (498, 412) and the boombox beside it, gone by 2.4 s.
+- **AnalyticsService in Studio Play** (S1-02, Nov 14): every call it takes prints
+  `AnalyticsService: LogCustomEvent event fired.` (or LogEconomyEvent, LogFunnelStepEvent,
+  LogProgressionStartEvent...) in Output, and nothing reaches the dashboard. `Recording` prints its
+  own line after each, naming the record.
+- **A full climb from the MCP, quickly** (S1-02, Nov 14): Play; from the Server pivot into
+  `workspace.FrontOffice.Car3` (`car:GetPivot() * CFrame.new(0, 3, 6)`); from the Client
+  `Remotes.CarPanel:FireServer(car, "Go", true)`. About 17 s later the car leaves and the climb's
+  floor 1 is `workspace.LobbyClimb.Floor1`, its lobby at x = -1600 (elevator (-1600, 0, -588)),
+  units 101 and 102 facing each other across the hall at z = -616. Doors open by their Open
+  prompt from the Client; a pile's `Take` prompt is found by `ActionText` within 14 studs.
+  To end the climb without a keeper, set the player's `Kept.Attribute` true from the Server for
+  about 10 s: ClimbEnds ends it (Kept) its usual way; then `Remotes.Again:FireServer()`.

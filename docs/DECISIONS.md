@@ -3903,3 +3903,37 @@ the middle into a ring and pour into the count, at most 12 drawn (`Pay.split`), 
 worth its share, ticks climbing, a gold "+10" by the count. Each kept find rises from the slot
 box on a gold-rimmed disc with a ring and sparks, its own pick-up sound and a bright chink,
 hangs, and flies up off the screen. No words.
+
+## D-139 What the game records, and where from (S1-02, Nov 14)
+
+**Through Brix.** Brix's Analytics checks every record against one plan (`Record.plan`) and
+sends it to Roblox's AnalyticsService (`Brix.Roblox.AnalyticsSink.analyticsService`), so a
+misspelt name or a label past 50 bytes is dropped with its problem instead of making a stray row
+on the dashboard. The pin moved to Brix `6717740`.
+
+**Pure book, listening server.** `Record` (shared) holds the plan and a book with one method per
+game moment, generic over the player so the spec drives it with names and Brix's recorder.
+`Recording` (server) only listens to signals the systems fire where things happen (Coins'
+`earned`, Deals' `dealt` now naming who opened it, GatePay's `kept`, KeptPlayers' `freed`,
+ClimbEnds' `ended` and `again`, LobbyCars' `departed`, and Climbs' and Keepers' own), so no system
+knows about analytics, and Brix's later ENG-12c can take its place.
+
+**What, against the GDD's list.** Join to first door: `firstDoor` (seconds from joining this
+server) plus `carLeft` (seconds from joining the lobby to the car leaving); live, the two plus the
+trip's load make the GDD's number, since the trip doesn't carry the join time. Doors a minute and
+how many gave something: `doorOpened` with `gave`. Caught on each floor: `caught`. Floors carried
+wrapped: `freed`'s value (0 while kept friends stay on their floor). The floor each climb ends
+on: `climbEnded` and the `climb` path's `failed`. Again: `again`. Who buys what and where: nothing
+is sold yet. Every coin earned: economy records (`pile`, `gate`) with the count after; the count
+is the climb's.
+
+**Labels.** Floors 0 to 40 each their own label and "41+" past it (0 is Studio's test hall); team
+sizes 1 to 8 and "9+"; finds by `Deal.Finds`. Roblox folds labels past 8,000 into "Other".
+
+**No onboarding funnel yet.** Roblox's docs don't say whether its onboarding steps count only a
+player's first time, so the game would need its own "first visit" mark in the save (a version 2).
+The `climb` funnel repeats instead, once a climb, its run a GUID.
+
+**Problems.** The first 8 different problems are warned in full, then a count once a minute, so
+a server over Roblox's 120 a minute plus 20 a player never floods its output. Studio prints each
+record sent as one line beside AnalyticsService's own "event fired" line.

@@ -69,7 +69,12 @@ local Prompts = require(script.Parent.Prompts)
 local Slots = require(script.Parent.Slots)
 local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
 
+-- A kept player cut free by a friend (`cutter`, their UserId; 0 for Studio's stand-in friends).
+export type Freed = { player: Player, cutter: number }
+
 export type KeptPlayers = Brix.System & {
+	-- Fires as a friend cuts a kept player free, once they're out (Recording, S1-02).
+	freed: Brix.Signal<Freed>,
 	-- A laid floor's deck and its units, each by its slot's index (FloorBuilder's `Laid.slots`):
 	-- players caught on it are stored in its units, until `floor` (the floor's model) is destroyed.
 	add: (self: any, deck: Deal.Deck, units: { [Model]: number }, floor: Instance) -> (),
@@ -189,6 +194,7 @@ function KeptPlayers.new(): KeptPlayers
 	local floors: { [Instance]: Floor } = {}
 	local held: { [Player]: Held } = {}
 	local holding: { [Model]: Player } = {} -- each unit's kept player
+	local freed = Brix.Signal.new() :: Brix.Signal<Freed>
 	local connections: { Brix.SignalConnection } = {}
 	local joins: { RBXScriptConnection } = {}
 	local doors: Doors.Doors? = nil
@@ -320,6 +326,9 @@ function KeptPlayers.new(): KeptPlayers
 		end
 		if RunService:IsStudio() then
 			print(`KeptPlayers: {player.Name} is let out ({why})`)
+		end
+		if cutter ~= nil and player.Parent then
+			freed:fire({ player = player, cutter = cutter })
 		end
 	end
 
@@ -712,7 +721,7 @@ function KeptPlayers.new(): KeptPlayers
 		end
 	end
 
-	local system = { name = "KeptPlayers" }
+	local system = { name = "KeptPlayers", freed = freed }
 
 	function system.start(_: any, context: Brix.Context)
 		-- any: the registry hands back plain Systems; Doors, Deals, Slots and Keepers fill these

@@ -26,6 +26,7 @@ local KeptPlayers = require(script.KeptPlayers)
 local Kneels = require(script.Kneels)
 local Minimaps = require(script.Minimaps)
 local Prompts = require(script.Prompts)
+local Recording = require(script.Recording)
 local Ladders = require(script.Ladders)
 local MotionLights = require(script.MotionLights)
 local Saving = require(script.Saving)
@@ -80,6 +81,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "trips", system = Trips.new() },
 	-- The lobby's cars: step in to join a group, the count, the gate's slam, the ride to floor 1.
 	{ slot = "lobbyCars", system = LobbyCars.new() },
+	-- What every player earns and does, sent to Roblox's analytics (last: it only listens).
+	{ slot = "recording", system = Recording.new() },
 }
 -- The test hall and its "Walk a floor" post: Studio only now the lobby is the way in (D-109).
 if RunService:IsStudio() then

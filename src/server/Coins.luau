@@ -38,7 +38,18 @@ local REACH_SLACK = 2 -- studs the server allows past the button's reach (lag, a
 local GLINT_TEXTURE = "rbxasset://textures/particles/sparkles_main.dds"
 local GLINT_RATE = 0.9 -- sparks a second: a twinkle, never a fountain
 
+-- Coins coming into a player's count: how many, the count after, and why: a pile they took
+-- ("pile") or the floor's pay at the gate ("gate"). Recording records each (S1-02).
+export type Earned = {
+	player: Player,
+	amount: number,
+	balance: number,
+	reason: "pile" | "gate",
+}
+
 export type CoinsSystem = Brix.System & {
+	-- Fires as coins come into a player's count, after it has changed.
+	earned: Brix.Signal<Earned>,
 	-- Lays a pile of `count` coins (1 to 3) at `place` (on the floor, facing as it lies) for unit
 	-- `unit`, into the unit's hall piece. False when the place lacks the coin's template.
 	lay: (self: any, unit: Model, count: number, place: CFrame) -> boolean,
@@ -68,6 +79,7 @@ function CoinsSystem.new(): CoinsSystem
 	local signals: { Brix.SignalConnection } = {}
 	local climbing = false
 	local warned = false
+	local earned = Brix.Signal.new() :: Brix.Signal<Earned>
 
 	local function template(): BasePart?
 		local props = ReplicatedStorage:FindFirstChild("Props")
@@ -134,6 +146,12 @@ function CoinsSystem.new(): CoinsSystem
 		end
 		pile.model:SetAttribute(Coins.TakenAttribute, player.UserId)
 		setCount(player, (counts[player] or 0) + pile.count)
+		earned:fire({
+			player = player,
+			amount = pile.count,
+			balance = counts[player] or 0,
+			reason = "pile",
+		})
 		if RunService:IsStudio() then
 			print(
 				`Coins: {player.Name} took {pile.count} in {pile.unit.Name}, now {counts[player]}`
@@ -167,7 +185,7 @@ function CoinsSystem.new(): CoinsSystem
 		p.Parent = coin
 	end
 
-	local system = { name = "Coins" }
+	local system = { name = "Coins", earned = earned }
 
 	function system.lay(_: any, unit: Model, count: number, place: CFrame): boolean
 		local spec = CoinSpecs.Piles[count]
@@ -240,7 +258,16 @@ function CoinsSystem.new(): CoinsSystem
 		if count == nil or coins <= 0 then
 			return
 		end
-		setCount(player, count + math.floor(coins))
+		local amount = math.floor(coins)
+		setCount(player, count + amount)
+		if amount > 0 then
+			earned:fire({
+				player = player,
+				amount = amount,
+				balance = count + amount,
+				reason = "gate",
+			})
+		end
 	end
 
 	function system.reset(_: any)

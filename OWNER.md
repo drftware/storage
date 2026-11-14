@@ -20,7 +20,7 @@ nowhere else.
   it the trip works, but the front office may flash for a moment as you arrive.
 
 - [ ] **Before you push this game, push Brix** (`../engine`): the game's `vendor/brix` now points
-  at Brix `e8397ff` (S1-01), which is only on this Mac until Brix is pushed; a fresh clone of
+  at Brix `6717740` (S1-02), which is only on this Mac until Brix is pushed; a fresh clone of
   the game can't fetch it until then.
 
 ## Decide: the design doc after your answers (Nov 13, D-128)
@@ -103,8 +103,8 @@ As the gate slams with you aboard, a handful of coins clatters, coins burst out 
 of your screen and pour into your count, and a gold "+10" shows by it. Any find in your slots
 rises out of them on a dark gold-rimmed disc, glints, and flies up off the screen: it's yours,
 saved, and the slot is free. Friends see the find in your hand go in a spark. A wrapped friend
-gets nothing. I saw the screen's side in Play by sending the message by hand; a real ride wasn't
-run.
+gets nothing. I saw the screen's side in Play by sending the message by hand, and a real ride
+paying 10 in S1-02 (with no find in a slot).
 - [ ] **Ride with a find:** take the teddy from Unit 301 (dev floor), punch the code, board, and
   watch the slam: coins, "+10" (floor 3 pays 14), the teddy rising out of your slot. Then leave
   and rejoin: Output's `[Saving]` line, and `GatePay:` says what you kept.
@@ -158,6 +158,18 @@ both coins flew, the count read 2 and the pile was gone. Not heard by ear: the s
   Roblox's buttons and the corner map? Is the take quick and satisfying, or too fast to see?
 - [ ] **Listen:** the chink at the pile (a friend up to 30 studs away hears it too), the jingle
   under it for two or three coins, and the ticks rising as each coin lands in your count.
+
+## Now: see the records on the dashboard (S1-02, built Nov 14, D-139; verified in Studio Play)
+
+Nothing shows in the game. Studio sends no records on, so they reach the Creator Dashboard only
+from the published game, and Roblox's charts can take a day to fill.
+- [ ] Publish, play a climb (open a few units, take coins, ride once), then on the Creator
+  Dashboard look under Analytics: Economy shows Coins earned from `pile` and `gate`; Custom
+  Events show `doorOpened` (split by `gave`), `firstDoor`, `carLeft`; Funnels show `climb`;
+  Progression shows the `climb` path's floors. Say if any is missing.
+- [ ] **Decide (default in place):** the wait from joining to the first door is recorded in two
+  halves (lobby to car leaving, arriving to first door); carrying the lobby time through the trip
+  would make it one number. Say if you want that.
 
 ## Now: judge S1-01, saving (built Nov 14, D-134; verified in Studio Play)
 

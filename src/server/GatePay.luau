@@ -31,13 +31,22 @@ local Slots = require(script.Parent.Slots)
 
 local GatePay = {}
 
+-- Finds a rider kept at a floor's gate, by name, and the floor (Recording, S1-02).
+export type Kept = { player: Player, finds: { string }, floor: number }
+
+export type GatePaySystem = Brix.System & {
+	-- Fires for each rider who kept finds as a gate shut, after they're out of the slots.
+	kept: Brix.Signal<Kept>,
+}
+
 local function alive(player: Player): boolean
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	return humanoid ~= nil and humanoid.Health > 0
 end
 
-function GatePay.new(): Brix.System
+function GatePay.new(): GatePaySystem
+	local keptSignal = Brix.Signal.new() :: Brix.Signal<Kept>
 	local paid: { [Player]: { [number]: boolean } } = {} -- the floors each player was paid for
 	local waiting: { [Player]: { string } } = {} -- kept finds for a save not loaded yet
 	local signals: { Brix.SignalConnection } = {}
@@ -85,6 +94,7 @@ function GatePay.new(): Brix.System
 			c:pay(player, owed)
 			if #kept > 0 then
 				store(player, kept)
+				keptSignal:fire({ player = player, finds = kept, floor = event.from.number })
 			end
 			if RunService:IsStudio() then
 				local list = if #kept > 0 then table.concat(kept, ", ") else "no finds"
@@ -95,7 +105,7 @@ function GatePay.new(): Brix.System
 		end
 	end
 
-	local system = { name = "GatePay" }
+	local system = { name = "GatePay", kept = keptSignal }
 
 	function system.start(_: any, context: Brix.Context)
 		local registry = context.registry

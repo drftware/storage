@@ -63,6 +63,8 @@ export type Dealt = {
 	-- where it was laid, on the floor, facing as it stands (a tool's middle, a find's or keeper's
 	-- feet); nil when nothing was laid (nothing behind the door, or a tool not built yet)
 	place: CFrame?,
+	-- who opened it: the player whose door lift or saw first showed it; nil when the game did
+	player: Player?,
 }
 
 export type Deals = Brix.System & {
@@ -268,7 +270,7 @@ function Deals.new(): Deals
 	end
 
 	-- Deals `unit` the first time anyone can see into it; after that it holds what it held.
-	local function open(unit: Model)
+	local function open(unit: Model, player: Player?)
 		local entry = units[unit]
 		if not entry then
 			return
@@ -300,13 +302,13 @@ function Deals.new(): Deals
 				else ` and {contents.coins} coins (not laid)`
 			print(`Deals: {unit.Name} held {said(contents)}{coinsSaid}{guard}{laid}`)
 		end
-		dealt:fire({ unit = unit, contents = contents, place = place })
+		dealt:fire({ unit = unit, contents = contents, place = place, player = player })
 	end
 
 	local function onActed(event: Doors.DoorEvent)
 		local motion = event.motion
 		if motion and LIFTS[motion] then
-			open(event.unit)
+			open(event.unit, event.player)
 		end
 	end
 
@@ -314,7 +316,7 @@ function Deals.new(): Deals
 	-- it holds is there as the panel falls, before anyone crawls or drops in.
 	local function onSawn(event: Saws.SawEvent)
 		if event.done then
-			open(event.into)
+			open(event.into, event.player)
 		end
 	end
 

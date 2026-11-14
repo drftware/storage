@@ -100,6 +100,9 @@ type Ridden = { car: Car, group: { number }, friends: boolean, players: number }
 export type Back = { player: Player, at: CFrame }
 
 export type LobbyCars = Brix.System & {
+	-- Fires as a car leaves the lobby with players aboard, to their own server or up the climb
+	-- here, with them in the order they stepped in (Recording, S1-02).
+	departed: Brix.Signal<{ Player }>,
 	-- The climb is over (ClimbEnds' `go`, under the black): its group goes back into the car they
 	-- left from, held there (no count) for `welcome`. Returns where each of them is to be stood,
 	-- in their order: empty if their car can't take them (they come back at the front office),
@@ -147,6 +150,7 @@ function LobbyCars.new(): LobbyCars
 	local departing: Brix.SignalConnection? = nil
 	local connections: { RBXScriptConnection } = {}
 	local returns: { thread } = {}
+	local departedSignal = Brix.Signal.new() :: Brix.Signal<{ Player }>
 	-- a climb a car started is on this server (until L-08e1c), and since when
 	local climbing = false
 	local boardedAt = 0
@@ -507,6 +511,9 @@ function LobbyCars.new(): LobbyCars
 		end
 		local c = climbs
 		local wait = Boarding.Back
+		if #leaving.aboard > 0 then
+			departedSignal:fire(table.clone(leaving.aboard))
+		end
 		if #leaving.aboard == 0 then
 			wait = 0 -- nobody rode: it's back at once
 		elseif sending() then
@@ -733,6 +740,7 @@ function LobbyCars.new(): LobbyCars
 
 	local system: LobbyCars = {
 		name = "LobbyCars",
+		departed = departedSignal,
 		start = function(_: any, context: Brix.Context)
 			local registry = context.registry
 			-- any: the registry hands back plain Systems; each slot is filled by its system
