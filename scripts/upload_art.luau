@@ -162,6 +162,12 @@ local ART: { Art } = {
 		description = "A chunky D-cell battery: a black wrap with an amber band, a plus and a lightning bolt",
 	},
 	{
+		key = "Machine",
+		path = "art/machine/out/Machine.fbx",
+		manifest = "art/machine/assets.json",
+		description = "A self-storage supply vending machine: an oxblood cabinet, a glass front over coiled bays, push buttons and a coin plate",
+	},
+	{
 		key = "Stuff",
 		path = "art/stuff/out/Stuff.fbx",
 		manifest = "art/stuff/assets.json",

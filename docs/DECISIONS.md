@@ -4071,3 +4071,20 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
   stands frozen in the dark lobby hearing the car grind away until 3 s before it, rather than
   sitting in black for 13 s.
 
+## D-145 The machine in the car: one cabinet, three rows behind one pane (S1-10b1, Nov 14)
+
+- Built as ROADMAP's plan has it: a storage building's supply machine in oxblood enamel, two
+  battery bays under four tool bays, one steel rail across the glass per row with a price window
+  and a push button per bay, the coin plate and the bin's flap under the glass, a lit sign on top.
+  It stands in the car's back-right corner facing the gate, eyes level with the top row.
+- The rails stand on the front of the glass, not behind it, so the buttons are something you
+  could press (as an old cigarette machine's knobs are); the glass is one pane behind them.
+- The tubes sit just behind the glass at the top of each row, under the next rail: you see them
+  catch, one row at a time, rather than only their light. The liner is an aged off-white, not
+  bright white: lit by cold tubes in a dark car a clean white liner glared in the look sheets.
+- One texture set for everything textured; the liner and shelves get 0.55 of the cabinet's
+  texels a stud (seen only through glass), which lifts the cabinet's face. Geometric bevels were
+  dropped for the bake's rounded normals: the thin bevel strips fell between texels.
+- The six price windows are one coplanar part so a single SurfaceGui draws them all; the coil and
+  the button are one part each, cloned per bay, so a coil can turn and a button sink alone.
+

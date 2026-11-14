@@ -1497,7 +1497,8 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
     is back in its bay 2 s after the ride opens; a left-behind player stands in the dark lobby
     until 3 s before the hand-off, then the black. Unseen: a whole ride to a next floor (the dev
     floor's ride ends the climb).
-  - [ ] **S1-10b The machine: art, in every car, waking on the ride.** Art first, the unit's
+  - [ ] **S1-10b The machine: art, in every car, waking on the ride.** Split Nov 14 in two
+    (b1 the art, b2 the machine in the car). Art first, the unit's
     way (`art/machine/`, built like `art/battery/` on the finds' kit, several MeshParts sharing
     one Machine set at 1024²). The plan (Nov 14): a self-storage supply machine, the kind real
     storage buildings sell padlocks from: oxblood enamel cabinet, chipped to primer and steel,
@@ -1518,6 +1519,21 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
     it wakes as the gate slams (the tubes' starter flicker, the sign buzzing on, a hum, one
     SurfaceLight into the bays and one spilling into the car) and dies as the gate folds open.
     Sounds to find and measure: a fluorescent starter tink and a hum.
+    - [x] **S1-10b1 The machine's art. Done Nov 14 (D-145).** `art/machine/` (README), built as
+      planned: eight MeshParts, the Machine set at 1024 (about 49 texels a stud), look sheets in
+      the elevator's own car (`machine-car`, `-dark`, `-near`, `-studio`); the tubes sit just
+      behind the glass under each rail. `src/shared/Machine/Specs.luau` generated. Not yet in the
+      place.
+    - [ ] **S1-10b2 The machine in every car, waking on the ride.** Upload (`upload_art`: a
+      Machine entry), insert, prepare into `Props.Machine` (parts squared by `Specs.Parts`
+      centres as `Elevator.prepare` does; a coil and a button cloned into every bay; the glass
+      Glass, the tubes and sign Neon when lit; the prices' SurfaceGui with dim red dashes; two
+      SurfaceLights, off). FloorBuilder places one in each floor's car (not the lobby's). A
+      client MachineView lights it from the car's `Ride` attribute for those aboard (the
+      `rode` rule ElevatorView uses): dark when `from` is `Ride.Lobby`; else the starter tinks
+      and the tubes catch one row at a time just after 0, the sign buzzes on, a hum loops, the
+      light dips with the lamp (`Ride.lamp`), and it all dies as the gate starts to fold
+      (`Ride.opens()`). The wake curve is pure (a Lune spec). Sounds found and measured.
   - [ ] **S1-10c Buying.** Stock (three or four tools, changing each ride, batteries always,
     3 coins; the GDD's guesses: a padlock 6, bolt cutters 10), shown in the coils (tools scaled
     to about 1.8 studs), prices in the windows. Each bay's button is a prompt; the server owns

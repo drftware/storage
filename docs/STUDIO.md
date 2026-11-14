@@ -848,6 +848,11 @@ verified: a doc page, Studio, or "untested".
   `Padlock`, `LatchBolt`, `DoorCollider`), hang an invisible part with a PointLight at
   `UnitLight`'s colour, brightness, range and shadows 0.7 under the top's middle, and capture from
   the doorway at eye height (4.6). Destroy it all after.
+- **Blender: small geometric bevels starve the atlas** (S1-10b1, `art/machine/`): 0.02-0.03
+  bevels with two segments made strips under a texel wide at 45 texels a stud, so their middles
+  missed the bake (397 faces) and their islands' margins ate the pack (35% used). Dropping them
+  for the bake's Bevel node, a 4-texel margin, and shrinking the UVs of what's only seen through
+  glass (`thin`) before `pack_islands(shape_method="CONCAVE")` gave 43% and 54 faces.
 - **Blender: one atlas for unlike pieces** (S1-04b1): smart-project both meshes together in
   multi-object edit mode, then `uv.pack_islands(rotate=True, margin_method="FRACTION",
   shape_method="CONCAVE")`: 70% of the atlas used, against about 35% for a square per piece.
