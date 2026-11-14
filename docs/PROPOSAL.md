@@ -1,52 +1,66 @@
-# Proposal: what I'd change in the game, and what we'd sell at each point
+# Proposal: the loop and the store, with your answers
 
-_Written Nov 13 after going through the design doc and the code, then rewritten the same day in
-plain language. Nothing in here is decided and nothing is built. The design doc stays the plan
-until you say yes to something here._
+_Second version, Nov 13. The first version held 36 ideas. You answered every one, added a note
+on the shop, and then answered four follow-up questions. This version is those answers written
+in. Nothing here is built, and the design doc and the roadmap haven't been changed to match
+yet._
 
 ## How to read this
 
-There are 36 ideas, numbered, in seven parts. The parts follow a climb in order: opening doors,
-the lights, getting to the elevator, getting caught, the climb as a whole, what happens after
-it, and reasons to come back the next day.
+Every idea keeps the number it had, so you can still answer by number. Under each heading there
+is a line saying what you answered, and then how the idea stands now, written out in full.
 
-Each part starts by saying how that piece of the game works today, so you can see what I'm
-reacting to. Each idea then says what I'd change, what a player would see and do, why I think
-it's better, and which hit game it's taken from. Each part ends with what we would sell at that
-point in the game, or says we'd sell nothing there and why.
+Each idea carries one of these labels:
 
-You can answer by number: "keep 1, cut 6, change 9 so that…". There's a list at the very end for
-marking up.
+- **Agreed.** You said yes. It stands as it was, apart from anything noted.
+- **Changed.** Your version replaces mine.
+- **Cut.** It's out. The heading stays so the numbers don't move.
+- **Open.** You asked me for ideas, or part of it still needs your answer. My suggestion is
+  written out, and nothing in it is fixed until you say.
+- **New.** It came out of your answers. There are three: 37, 38 and 39.
+
+Where I had to pick a number or a small rule to make an idea complete, it says "my starting
+guess" or "my default". They are all gathered in one list near the end, with the five things
+that are still open.
 
 Words I use:
 
 - **Monsters.** The docs and the code call them keepers. You haven't picked a name, so I say
   monsters.
 - **Caught.** When a monster gets you. On screen the game says "Kept".
+- **Wrapped.** What you are after you're caught: in shrink-wrap, in a unit, until someone frees
+  you.
 - **Finds.** The items sitting in units: a lamp, a box of records.
-- **Quarters.** Coins you would pick up during a climb. They are new in this proposal (ideas 1
-  and 2).
+- **Coins.** What you pick up and get paid during a climb. The first version called them
+  quarters. You call them coins, so I do now.
 - **Cash.** The money you keep between climbs. The design doc has it; the game doesn't yet.
 - **Robux.** Real money.
+- **Slots.** The places that hold what you carry. The game has three today and they hold tools.
+  The first version said two; that was wrong.
+- **The machine.** The vending machine in the elevator.
 - **The corner map.** The small map of the floor in the corner of the screen.
 - **The counter.** The shop desk in the lobby.
 
-## The short version
+## What your answers changed most
 
-What's built is very well made. The gaps I see are all about what the player gets out of it.
-
-1. **Most doors give you nothing.** Four units in ten are empty, and the items in the others
-   can't be picked up. Opening a door is the thing you do most, and it usually ends with nothing
-   in your hands.
-2. **The building doesn't come for you.** The lights turn on when you move, but no monster is
-   sent because of it, and the one monster in the game stops whenever light is on it. A player
-   who keeps moving is safe.
-3. **Nothing lasts.** When a climb ends you see your floor and your time. There's no cash, no
-   items and nothing saved, so your second climb is your first one again.
-
-The ideas go at those three, in that order. The things we'd sell sit inside them, each at the
-moment a player would want it, so the store gets built alongside the game and not added on at
-the end.
+1. **The building isn't a character.** It doesn't watch you, send monsters or come for you. The
+   monsters do things to the floor, each in its own way, and the players have to go and deal
+   with it before they can get back to searching. The first of these is yours: a Mannequin can
+   switch off the floor's breaker (idea 7).
+2. **The climb has no top.** No roof, no last floor, no Dale. Floors are made by rules up to
+   about floor 100 for launch, each harder than the last, and the number to beat is your best
+   floor (idea 20).
+3. **You keep what you carry.** A find goes in one of your own slots, beside your tools. When
+   the gate shuts it becomes yours for good and the slot is free again. Everyone aboard is paid
+   coins for the floor. Nobody gets a copy of anyone else's find (ideas 13 to 15).
+4. **Caught means caught.** You stay wrapped until a friend frees you or you pay. You are
+   carried up floor after floor in the meantime, earning nothing (ideas 17 and 18).
+5. **Not every unit pays, and doors don't give themselves away.** Most units have coins and
+   some have nothing to take. A padlocked door is the one promise of something good. Every
+   other door is "no idea", because having to open them, and what that lets out, is the game
+   (ideas 1, 4 and 5).
+6. **Players learn by playing.** No text that explains a rule (idea 16). I've applied that to
+   everything else in here too.
 
 ---
 
@@ -57,295 +71,362 @@ the floors above. Opening a door takes two seconds and makes a loud rattle that 
 hear. The game decides what's inside at the moment the door opens. Out of every 100 doors, 40
 have nothing in them, 25 have a find, 20 have a tool, 10 have a sleeping monster and 5 have a
 monster that's awake. The notes with the code's digits are different: they are put in
-particular units when the floor is built.
+particular units when the floor is built. Finds can't be picked up.
 
-Two things about that bother me. The finds can't be picked up or taken out of the building, so
-65 doors in every 100 give you nothing you can use. And apart from the padlocked ones, every
-door looks the same from the hall, so there's no choosing between them. The only way to find
-the notes is to open every door in turn.
+### 1. Coins in most units, not all of them (Changed)
 
-### 1. Put a few quarters in every unit, so no door is a waste
+**Your answer.** Most, not every one. A couple of units with no coins is fine, or with props you
+can't pick up. If every unit has coins they lose their value. DOORS has gold in most drawers,
+not all of them.
 
-**What I'd change.** Every unit would have one to three quarters lying on its floor. You tap
-them to pick them up, and a small count on your screen goes up. The unit can still hold a find,
-a tool, a note or a monster as well, exactly as now. The only thing that goes away is the
-completely empty unit.
+**How it stands now.**
 
-**Why.** A door that might hold nothing at all teaches players to stop caring about doors. A
-door that always pays a little, and sometimes pays a lot or goes badly wrong, is one people
-keep opening.
+1. About seven units in every ten have one to three coins lying on the floor. Seven in ten is
+   my starting guess.
+2. You tap the coins to pick them up, and a small count on your screen goes up.
+3. A unit with coins can still hold a find, a tool, a note or a monster as well, as now.
+4. The other three in ten have nothing to take. Some are bare. Some are full of things that
+   are only there to look at: stacked boxes, a mattress, a rolled-up carpet.
+5. You said those units could get "other crazy ideas" later. Nothing is planned for them yet.
 
-**Where the idea comes from.** DOORS. Most drawers in its rooms have a few gold coins in them,
-and players open every drawer because of it.
+**Where the idea comes from.** DOORS, where gold sits in drawers. That is from memory; I
+couldn't find a page that says how many drawers have it.
 
-### 2. Quarters are spent during the climb, and whatever is left becomes cash
+### 2. Coins are spent during the climb, and what's left becomes cash (Agreed; tools are Open)
 
-**What I'd change.** Quarters only exist inside one climb. You spend them at a vending machine
-in the elevator between floors (idea 22), which sells tools. Each player has their own
-quarters. Any you still have when the climb ends are turned into cash, which is the money you
-keep (Part 6). Quarters are never sold for Robux. The design doc already says so.
+**Your answer.** Good. But do tools still go in units, or less often? If tools are everywhere
+they stop being something you're glad to get. Stocking back up should feel good. Maybe tools
+should break, since right now they don't.
 
-**Why.** It gives the coins from idea 1 a use within minutes of picking them up. It also gives
-the player a small decision while the climb is still going: spend them now on bolt cutters, or
-hold on to them for cash afterwards.
+**How it stands now.**
 
-**Where the idea comes from.** Dandy's World. You pick up tapes on each floor and spend them at
-a shop in the elevator. The design doc already takes its vending machine from there.
+1. Coins only exist inside one climb. Each player has their own.
+2. You spend them at the machine in the elevator, which sells tools (idea 22).
+3. Any coins you still have when the climb ends are turned into cash, which is the money you
+   keep (Part 6).
+4. Coins are never sold for Robux. The design doc already says this of its quarters.
 
-### 3. About half as many units on each floor
+**My suggestion on tools (Open).** You asked, so here is what I would do. Say yes, no, or
+change the numbers.
 
-**What I'd change.** About 30 units on floors 1 and 2 instead of 60, and about 40 on the floors
-above instead of 80. The halls would stay as long as they are now, with stretches of blank wall
-where the removed units were, so there is still room to be chased.
+1. **Tools turn up in units less often.** Today one unit in five has a tool. I'd make it about
+   one in twelve. Finding one becomes a good moment, and the machine becomes the place you can
+   count on.
+2. **Tools wear out.** Each tool works a set number of times and then it's gone. My starting
+   guesses:
+   - Bolt cutters cut three padlocks.
+   - The saw cuts two holes.
+   - The air horn has three blasts.
+   - The bubble wrap already works this way: it pops three times and is spent.
+   - A padlock is used up when you lock a door with it, as now.
+   - The ladder stays as it is for now.
+3. **You can see how much is left.** A small mark on the tool's slot shows the uses it has
+   left, so running out is never a surprise.
+4. **The flashlight doesn't change.** Everyone has one and it never runs out. It is the only
+   thing that stops a Mannequin, and a flashlight that dies is a bigger change than you asked
+   for.
 
-**Why.** Three reasons. Once every door pays something (idea 1), fewer doors makes each payment
-feel like more. Once doors look different from each other (idea 4), there have to be few enough
-of them that picking one is a real choice. And fewer units is less for a phone to draw: the
-roadmap already notes how heavy a floor is to draw from its elevator lobby.
+**Where the idea comes from.** DOORS: its flashlight runs down, and you find batteries in
+drawers to keep it going. Lethal Company: a can of spray paint runs dry and can't be refilled.
+Both checked.
 
-**Where the idea comes from.** No particular game. It is a number to tune, and 30 and 40 are my
-starting guesses.
+### 3. About half as many units on each floor (Agreed)
 
-### 4. Three kinds of door you can tell apart from the hall
+**Your answer.** Fine. But remember not every unit should pay. A unit doesn't have to be empty:
+it can have props, or other ideas later.
 
-**What I'd change.**
+**How it stands now.** About 30 units on floors 1 and 2 instead of 60, and about 40 on the
+floors above instead of 80. The halls stay as long as they are, with stretches of blank wall
+where the removed units were, so there is still room to be chased. Fewer units is also less for
+a phone to draw. 30 and 40 are my starting guesses.
 
-- **A plain door** looks as it does now. The unit has quarters, and the usual chances of
-  something more.
-- **A tagged door** has a bright paper auction tag hanging on it. The players are in the
-  building because they won an auction, so a tag fits the story. A tagged unit always has a
-  find in it. It is also twice as likely as a plain unit to have a monster in it.
-- **A padlocked door** is already in the game. It needs bolt cutters, and it has the best finds
-  and the highest chance of a monster. It stays as it is.
+### 4. Two kinds of door (Changed)
 
-About one door in five would be tagged, to start with.
+**Your answer.** No tags. There's no story in place that says you won an auction, and the story
+isn't worked out yet. The padlocks are the difference between doors. Two kinds, not three: a
+padlocked door is "definitely something good in here, but you need cutters", with the best odds
+of something great and of monsters; every other door is "no idea what's in here". No common,
+medium and rare doors.
 
-**What the player sees.** Walking down a hall, you spot a tag two doors along. You know there
-is something worth having behind it, and you know it is the most likely door in the hall to
-have a monster. So the team has a small decision to make at that door, instead of just working
-down the row.
+**How it stands now.**
 
-**Why.** Opening a door is a bet. A bet is more fun when you can see the odds before you make
-it.
+- **A padlocked door** needs bolt cutters. It always has something good behind it. It also has
+  the best chance of something great, and the highest chance of a monster.
+- **Every other door** looks the same as the next one. It might have coins, a find, a tool, a
+  note, a monster, or nothing to take.
 
-**Where the idea comes from.** Fortnite's treasure chests glow and hum, so you know one is
-close and go looking for it. Escape from Tarkov has locked "marked rooms" that every player
-knows hold its best loot, which is already the reason the padlocked units work the way they do.
+The tagged door from the first version is gone.
 
-### 5. Clues to where the notes are
+**Where the idea comes from.** Escape from Tarkov has locked "marked rooms" that every player
+knows hold its best loot. From memory.
 
-**How it works today.** A floor has two notes (floors 1 and 2) or four (the floors above), each
-in a different section of the floor. Nothing tells you where. You find them by opening
-everything.
+### 5. At most one faint mark, and nothing on the map (Changed)
 
-**What I'd change.** Two clues, one from far away and one from close up.
+**Your answer.** Meh. At most one door gets a faint mark, not the others, and no map. Having to
+open every door is the point: every door you open may let a monster out, and the floor gets
+harder the more doors are open. Hints work against that.
 
-- **On the corner map,** each section of the floor that still has an unfound note in it is
-  marked. When someone finds that note, the mark goes away. This tells the team which part of
-  the floor to search. It doesn't tell them which door.
-- **On the door itself,** a unit with a note inside has a small pencil mark on its door frame.
-  In the story Dale hid the notes, so it is his mark. You can only see it from a few steps
-  away, with your flashlight on it.
+**How it stands now.**
 
-**What the player sees.** The map shows there is still a note in the east section. You walk
-its halls with your flashlight on the door frames, find the pencil mark, and open that door.
+1. On a floor, at most one of the notes has a faint mark on its door frame. You can only see it
+   from a few steps away, with your flashlight on it.
+2. The other notes have no mark. Some floors have no mark at all.
+3. The corner map shows nothing about notes.
 
-**Why.** It makes searching something you can be good at. Today a careful player and a careless
-one both end up opening every door.
+The first version called it Dale's pencil mark. It is just a mark now (idea 20).
 
-**Where the idea comes from.** The library in DOORS, at door 50. The books that hold the code
-stick out from the shelves a little, and a sheet of paper tells you what order the digits go
-in. You search by looking, not by trying everything.
+Your other thought, a marker players can use to tag doors themselves, is idea 38.
 
-**The risk.** It could make floors too quick. If it does, the pencil mark gets fainter on
-higher floors, or isn't there at all up there.
+### 6. A timing tap when you shut the door on a sleeping monster (Changed)
 
-### 6. A timing tap that opens a door quietly (untested)
+**Your answer.** Skip it on every door; that would be annoying. Use it only when you've opened
+a door on a monster that is asleep or hasn't noticed you. When you close that door the tap
+comes up by itself. Do it perfectly and the monster is more likely to stay asleep. Miss and it
+wakes up and starts pounding on the door.
 
-**What I'd change.** As a door rises, a small bar shows on screen with a marker moving across
-it. If you tap while the marker is inside the highlighted part of the bar, the door finishes
-opening without its rattle, so monsters nearby don't hear it. If you miss, or don't bother, the
-door opens loudly, the same as it does today. You can never do worse than you do now.
+**How it stands now, in order.**
 
-**Why.** Opening a door is the thing a player does most, and right now there is no skill in it.
+1. You open a door. There is a monster inside, asleep, or awake but not looking your way.
+2. You pull the door back down. As it comes down, a small bar appears on screen with a marker
+   moving across it. You don't press anything to ask for it.
+3. If you tap while the marker is inside the highlighted part of the bar, the door settles
+   quietly, and the monster is much more likely to stay as it was.
+4. If you miss, the door bangs. The monster wakes and starts pounding on the door from inside.
+5. My default: not tapping at all counts as a miss.
+6. My default: a monster pounding on a door breaks out after 90 seconds unless someone
+   padlocks that door. That is what a trapped monster already does today.
 
-**Where the idea comes from.** Dead by Daylight has a timing tap while you repair a generator,
-and Dandy's World has one while you work a machine.
-
-**Why I'm unsure.** Neither game puts it on something you do as often as you open doors here,
-and it could get tiring. The game also already lets you peek under a door quietly to check for
-a monster, so this might be one thing too many. I'd build it last in this part, or not at all.
+**Where the idea comes from.** Dead by Daylight: a timing tap comes up on its own while you
+repair a generator, and missing it makes a bang the killer hears. From memory. Dandy's World
+has timing taps on its machines; checked.
 
 ### What we'd sell in Part 1
 
-Nothing. This part is what gives cash a reason to exist, and everything we sell later depends
-on players wanting cash and finds.
+Nothing. This part is what gives coins and cash a reason to exist, and everything sold later
+depends on players wanting them.
 
-One thing has to be built alongside it that players won't see: saving (idea 31). Quarters that
+One thing has to be built alongside it that players won't see: saving (idea 31). Coins that
 turn into cash need somewhere to be kept.
 
 ---
 
-## Part 2: The lights, and the building coming for you
+## Part 2: Monsters that mess with the floor
 
 **How it works today.** The hall lights are motion lights. They come on when you move under
-them and go out a few seconds after you stop. The design doc says that each light that comes on
-tells the building where something is, and the building sends a monster to look. That second
-half isn't built. The lights come on, and nothing is sent.
+them and go out a few seconds after you stop. The only monster in the game is the Mannequin,
+which can only move while no light is on it. Your flashlight never runs out. Put those together
+and a player who keeps moving, or keeps a flashlight on the Mannequin, is safe.
 
-The only monster in the game is the Mannequin, which can only move while no light is on it.
-Your flashlight never runs out. Put those together and light is only ever good for you: a
-player who keeps moving, or keeps a flashlight on the Mannequin, is safe. The line planned for
-the thumbnail is "Don't move. The lights are watching." Right now the game plays the opposite
-way.
+The design doc says each light that comes on tells the building where you are, and the building
+sends a monster to look. That isn't built.
 
-The design doc also has four ways to move (standing still, crouch-walking, walking and
-sprinting), each one setting off a different number of lights. The game has one walking speed
-and none of the others.
+**What you said about this whole part.** You don't want the building to be a character. "The
+building is coming for you" makes no sense, and the building wouldn't send monsters. The
+monsters are all different and respond to different things. What's needed is mechanics and
+situations that show off what each one is good at, and force players to deal with it so they
+can get back to searching. Your example: a breaker on each floor that a monster can switch off.
 
-**My worry about building it the way the design doc says.** If every light you walk under calls
-a monster, then walking is what gets punished, and walking is most of what you do on a floor. I
-think players would end up crouch-walking everywhere at half speed, which is slow. I also think
-a danger that never switches off stops feeling like danger after ten minutes.
+**What I've taken from that.** Two things.
 
-I could be wrong. The design doc's version sets up a real squeeze: move and the building sees
-you, stand still and the Mannequin closes in. Nobody has played it yet, because it isn't built.
-So ideas 7 to 9 are my alternative, and at the end of this part I say how you could try the
-design doc's version first.
+First, the lights are just lights. Nothing is ever "sent" because a light came on. The design
+doc's rule comes out.
 
-### 7. A "don't move" moment about once a minute
+Second, a pattern for every monster, which your breaker already follows. Each monster has:
 
-I've been calling this the inspection.
+1. **Something that stops it.** For the Mannequin, light.
+2. **A way of going after that thing.** The Mannequin cuts the power.
+3. **Something players have to go and do to put it right.** Find the breaker and switch it
+   back on.
 
-**What the player sees, in order.**
+Ideas 8 and 12 use the same pattern for two more monsters. The pattern is my reading of your
+answer, so say if it's wrong.
 
-1. The PA speakers click and a voice says "Inspection." The small sensor domes on the ceiling
-   turn red (they are already in the game, one beside each light), and the hall lights go out.
-2. For the next five seconds, if you move while you are in a hall, the dome above you catches
-   it, and the nearest monster heads for that spot.
-3. If you stand still, nothing happens. If you are inside a unit you can move as you like,
-   because there are no sensors inside units. That is already the design doc's rule.
-4. After five seconds the lights come back and the domes go back to normal.
+### 7. The Mannequin cuts the power (Changed)
 
-This would happen about every 75 seconds. Outside of those five seconds the lights never call a
-monster, so the rest of the time you can walk around freely.
+**Your answer.** The "don't move" moment is okay, but a power cut, with every Mannequin free to
+roam, is a lot more tense. Put a breaker somewhere on each floor. A monster can shut it off.
+You have to find it and turn it back on, or the lights stay off. And you never know when it's
+going to happen.
 
-**What it does with the Mannequin.** The Mannequin moves when it is dark, and an inspection
-makes it dark. So for those five seconds the Mannequin can walk and you can't. Your flashlight
-still stops it, and turning on the spot wouldn't count as moving. So if the Mannequin is close,
-you stand where you are and turn to keep your beam on it until the lights come back. I think
-those would be the scariest five seconds in the game. But putting those two rules together is
-my own idea and I don't know a game that does it, so it is on the untested list at the end.
+**How it stands now, in order.**
 
-**Why.** Everyone on the floor gets the same warning at the same moment and has to react.
-Somebody shouts "don't move". It is short enough to stay tense every time it happens. And it
-makes the thumbnail line true inside the first two minutes of play.
+1. Every floor has a breaker box somewhere on it, in a different place each climb.
+2. A Mannequin that is loose, with no light on it, doesn't always come for a player. Some of
+   the time it heads for the breaker. Nothing tells the players when.
+3. If it gets there, it throws the breaker. There is one heavy clunk that everyone on the
+   floor hears, and every hall light goes out.
+4. The lights stay out. Moving under them does nothing.
+5. Every Mannequin that is loose can now walk anywhere a flashlight isn't pointing at it.
+6. To get the lights back, somebody has to find the breaker and switch it on. Until someone
+   does, the floor stays dark.
+7. It can happen again on the same floor.
 
-**Where the idea comes from.** Red Light, Green Light, one of the best-known rules on Roblox:
-freeze when you're told to, and moving gets you caught. And Rush in DOORS: the lights flicker
-as a warning, and you have a few seconds to react before it arrives.
+**What a player can do about it.** A Mannequin that is walking somewhere other than toward a
+player is probably going for the breaker, and a flashlight on it stops it. So knowing where the
+breaker is, and noticing where a Mannequin is heading, are things a good team gets better at.
 
-**What this changes.** Your first idea for this game was that the lights are always watching.
-This makes them watch for five seconds at a time. That is why it is the first of the four big
-decisions in `OWNER.md`.
+**My defaults.**
 
-### 8. A "get inside" moment, from floor 3 up
+- How keen a Mannequin is to go for the breaker is a number to tune, and it goes up with the
+  floor number.
+- Switching the breaker back on takes a one-second hold, the same as cutting a friend free.
+- The elevator keeps its own light, so the team can always find its way back to the keypad.
 
-I've been calling this the clock striking.
+**What this replaces.** The five-second "don't move" moment from the first version is gone.
 
-**What the player sees, in order.**
+**Where the idea comes from.** Phasmophobia: the ghost can switch off the house's breaker, and
+the team has to go and switch it back on. Lethal Company: pulling the apparatus out of the wall
+cuts every light in the building, and you're left with your flashlights. Both checked.
 
-1. Somewhere on the floor a clock starts to wind up. The sound gets louder over four seconds.
-2. The clock strikes, and every light on the floor flashes on at once.
-3. Anyone standing in a hall at that moment has been seen. Every monster that is loose on the
-   floor heads for them.
-4. Anyone inside a unit with the door pulled down is fine.
+### 8. A monster you hide from (Open)
 
-It would happen once or twice on each floor, starting on floor 3.
+**Your answer.** Rethink it in the same vein as 7. There are good ideas to be found here, but
+doing it on a timer is dumb. Like the power cut, you shouldn't know when it's coming, and
+whatever it becomes has to be great and add suspense.
 
-**Why.** It asks for the opposite reaction to idea 7. In an inspection you freeze where you
-are. When the clock winds up, you run for the nearest open unit and pull the door down. Two
-different warnings with two different answers keep either one from getting stale. This one also
-makes players pay attention to which units near them are open.
+**What's gone.** The clock that winds up and strikes once or twice a floor.
 
-**Where the idea comes from.** The design doc's own list of monsters has one called
-Grandfather: a clock whose chime flashes every light, with the rule "be inside a unit when it
-chimes". Your note of Nov 10 says the list of monsters is being rethought, and names Rush in
-DOORS as the hit-game version of that rule. I'm suggesting we keep the rule and make it
-something the building does, so no monster has to be built for it.
+**My suggestion.** Keep the rule from the first version, "be inside a unit with the door down",
+and give it to a monster. This would be a third monster, after the one in idea 12.
 
-### 9. A floor gets more dangerous if the team stays too long
+1. It sleeps in a unit, like the others.
+2. Noise wakes it: a door rattling up near its unit, the alarm from a wrong code, a wrapped
+   friend banging on a door. There is no clock. The team's own noise decides when.
+3. Once it's awake it doesn't pick a player to hunt. It runs the halls from one end to the
+   other, faster than anyone can run.
+4. You get a few seconds of warning. You hear it coming, and you see the hall lights come on
+   one after another toward you with nobody under them.
+5. It can't reach anyone who is inside a unit with the door pulled down. So you get into the
+   nearest open unit, pull the door down, and listen to it go past.
+6. **How it messes with the floor.** A shut door is what stops it, so it goes after the open
+   ones. It pulls down every open door it runs past. After a run there are fewer places to
+   duck into. Opening one again takes two loud seconds, and noise is what woke it.
+7. **What players do about it.** Keep a unit open near wherever they're searching, and open
+   another when it has been shut. It can be trapped like any other monster.
 
-I've been calling this closing time.
+**Where the idea comes from.** Rush in DOORS: the lights flicker, you hide in a closet, and it
+tears through the rooms. DOORS doesn't show a timer for it. From memory.
 
-**What I'd change.** Each floor allows a fair amount of time: four minutes on floors 1 and 2,
-six minutes on the floors above. If the team is still on the floor when that runs out, the PA
-announces closing time. From then on, inspections (idea 7) come twice as often, and once a
-minute one of the sleeping monsters on the floor wakes up and starts walking the halls. It
-keeps getting worse until the team leaves.
+**Why it's open.** It's a sketch for a monster that would come third at the earliest. Say
+whether it's worth keeping on the list, and what you'd change.
 
-**Why.** If every door pays (idea 1), the smart thing to do is open all of them, slowly and
-safely. Something has to push the other way, so that "one more unit" is a risk the team argues
-about. A team that moves at a good pace would never hear the announcement.
+### 9. Stay too long and the sleeping monsters start to wake (Changed)
 
-**Where the idea comes from.** Lethal Company. More monsters come out the later in the day it
-gets, and the ship leaves at midnight whether you are on it or not.
+**Your answer.** Some version of this makes sense, but "closing time" is lame. Have monsters
+wake up in their units after a certain amount of time: maybe three after so long, more after a
+while longer, and more of them the higher the floor. The feeling of strolling around
+disappears, because you start hearing pounding all over the level.
 
-**You cut something like this before.** On Nov 2 you cut a clock that ran across the whole
-climb, because no hit game had one. This clock runs for one floor and starts again on the next,
-which is how Lethal Company's day works. If what you disliked was any clock that punishes slow
-play, cut this one too.
+**How it stands now, in order.**
 
-### 10. A wrong code should cost the team something
+1. There is no announcement, no clock on screen and no name for it.
+2. After the team has been on a floor for a while, three of the monsters still asleep in their
+   units wake up. They pound on their doors from inside, and you hear it across the floor.
+3. A while after that, more wake up.
+4. On higher floors it starts sooner and wakes more at a time.
+5. My default, the same as in idea 6: a monster pounding on a door breaks out after 90 seconds
+   unless someone padlocks that door. So the pounding is a warning, and a padlock is the
+   answer to it. That makes padlocks worth buying at the machine.
 
-**How it works today.** If you type a wrong code, an alarm sounds for three and a half seconds
-and every light on the floor comes on. Because the Mannequin can't move in light, that freezes
-it for about seven seconds. So a wrong code makes the team safer.
+**My starting guesses for the numbers.** On floors 1 and 2 the first three wake after four
+minutes. On the floors above, after six minutes, because those floors are bigger. Three more
+wake every two minutes after that. Higher floors shorten those times.
 
-That opens a trick. The design puts one note on every floor in a unit with an awake monster in
-it, so that no floor is finished without a chase. But once the team has three of the four
-digits, the last one can only be one of ten numbers. They can stand at the keypad and try all
-ten. Each wrong try costs three and a half seconds and freezes the Mannequin. They never have
-to go near the guarded note.
+**One thing this changes underneath.** Today the game decides what's in a unit at the moment
+its door opens. For a monster to wake behind a closed door, the sleeping monsters have to be
+put in their units when the floor is made. Idea 10 needs the same.
 
-**What I'd change.**
+**Where the idea comes from.** Lethal Company: more monsters come out the later in the day it
+gets. Checked.
 
-- On a wrong code the hall lights go out for the length of the alarm, instead of coming on.
-- Every loose monster heads for the keypad. The design doc already says this.
-- The keypad stays locked for longer each time on the same floor: 3.5 seconds after the first
-  wrong code, 7 after the second, 14 after the third.
+### 10. A wrong code lets monsters out (Agreed, with your penalty added)
 
-Guessing the last digit is still allowed. It becomes a gamble.
+**Your answer.** Agreed. A wrong code should open some number of units with monsters in them:
+maybe one the first time and three the next, so guessing is a penalty.
 
-**Where the idea comes from.** The library in DOORS again. Players are allowed to guess the
-last digit of the code there, but they do it with a monster walking the room.
+**How it works today.** A wrong code sounds an alarm for three and a half seconds and turns on
+every light on the floor. Because the Mannequin can't move in light, that freezes it. So a
+wrong code makes the team safer, and a team with three of the four digits can stand at the
+keypad and try all ten numbers for the last one.
 
-### 11. Keep one walking speed
+**How it stands now.**
 
-**What I'd change.** Nothing in the game. I'd take the four ways to move out of the design doc.
-The game has one walking speed and plays well with it. With ideas 7 and 8 in place,
-crouch-walking and sprinting aren't needed for the lights any more, and that is two fewer
-buttons on a phone.
+1. The first wrong code on a floor: one closed unit with a monster in it rolls its door up by
+   itself. That monster is awake and loose.
+2. The second wrong code: three more units open the same way.
+3. My default for the third and after: five each time.
+4. The hall lights go out for the length of the alarm, instead of coming on.
+5. Every loose monster heads for the keypad. The design doc already says this.
+6. The keypad stays locked for longer each time on the same floor: 3.5 seconds after the first
+   wrong code, 7 after the second, 14 after the third.
 
-### 12. The next monster should be one that light doesn't stop
+Guessing the last digit is still allowed. It is now a gamble.
 
-**What I'd change.** Today the only monster stops whenever light is on it, so there is never
-anything a player has to run away from. Whichever monster gets built next, I'd make it one that
-ignores light, and I'd make it the one that comes when an inspection catches somebody moving.
-Which monster that is belongs to your Nov 10 note about rethinking the list. I am only saying
-what gap the second one should fill.
+**Where the idea comes from.** The library in DOORS: players are allowed to guess the last
+digit of the code there, but they do it with a monster walking the room. From memory.
+
+### 11. Keep one walking speed (Agreed)
+
+**How it stands now.** Nothing changes in the game. The four ways to move (standing still,
+crouch-walking, walking and sprinting) come out of the design doc. That is two fewer buttons
+on a phone.
+
+### 12. The second monster: silent, and it only moves in the light (Open)
+
+**Your answer.** We definitely need another monster. The Mannequin freezes in light and tries
+to cut the power. The next one doesn't have to be the opposite, just different. Maybe it makes
+no sound when it moves but doesn't move in the dark, so you constantly have to look for it and
+can avoid it by keeping your light off. But the ceiling lights kind of ruin that. You asked me
+for ideas, or to improve on it.
+
+**My suggestion: let the ceiling lights be how it gets around.** The lights come on when you
+move, so you are the one lighting its way.
+
+1. It makes no sound at all. No footsteps and no warning.
+2. It can only move while it is standing in light: under a hall light that is on, or in a
+   flashlight beam. In the dark it stops where it is.
+3. The hall lights come on when you move under them and stay on for a few seconds behind you.
+   So when you walk down a hall, you leave a lit stretch behind you, and it can walk along
+   that stretch after you.
+4. If you stand still, the lights above you go out after a few seconds. Switch your flashlight
+   off as well, and it is standing in the dark and can't move.
+5. It walks no faster than you do. So if you spot it while it is still some way behind you,
+   stopping and going dark works. If it is already close, the lights won't go out in time, and
+   the answer is a door: get into a unit and pull it down.
+6. Because it's silent, the only way to know it's there is to look behind you.
+
+**What it does with a Mannequin on the same floor.** Light stops the Mannequin and lets this
+one walk. Dark stops this one and lets the Mannequin walk. With both loose, the team has to
+keep choosing which one to give ground to.
+
+**What it does in a power cut (idea 7).** Every hall light is dead, so this monster can only
+move in a flashlight beam. You swing your flashlight down a hall to stop a Mannequin, and
+something at the far end of the beam starts walking toward you. It only walks while your light
+is on it.
+
+**How it messes with the floor.** The dark is what stops it, so it goes after the dark. Any
+hall light it walks under gets stuck on and stops going out by itself. The longer it's loose,
+the more lit hall it has to move through without anyone moving.
+
+**What players do about it.** Go to the breaker and switch it off and on again. That sets
+every stuck light back to normal. For the moment the breaker is off, the floor is dark and the
+Mannequins can walk. So this time it's the team choosing when to cut the power.
+
+**The line planned for the thumbnail** is "Don't move. The lights are watching." With this
+monster in the game, not moving is the thing that saves you, so the line would be true.
+
+**Where the idea comes from.** Lethal Company has two monsters with opposite rules: one stops
+while you look at it, and one comes for you if you look at it too long. Having both around is
+harder than either alone. From memory. A monster that moves only in light is your idea, and I
+don't know a hit game that has one, so it is on the untested list at the end.
+
+**Why it's open.** You asked for ideas and this is one. It also needs a look, a name and a
+reason to be alive, and those are yours.
 
 ### What we'd sell in Part 2
 
 Nothing, now or later. These are the rules that decide whether you get caught. If Robux could
 soften them, anyone who didn't pay would feel the game was rigged against them.
-
-### If you would rather keep the lights always watching
-
-Build it the way the design doc says, with a monster sent to every light that comes on, and
-judge it in the first run with friends before you decide on ideas 7 to 9. The lights already
-report every time one comes on. Nothing listens to that report yet, so it could be tried
-without much work.
 
 ---
 
@@ -357,147 +438,187 @@ is left behind. The moment that is meant to make this game is the last friend sp
 gate.
 
 In practice the keypad is right beside the elevator, so a careful team gathers there first and
-then types the code. Nobody is far away when the countdown starts, so the 30 seconds rarely
-catch anyone. And there is nothing to carry, because finds can't be taken.
+then types the code. Nobody is far away when the countdown starts. And there is nothing to
+carry out, because finds can't be taken. You have three slots, and they hold tools.
 
-### 13. Small finds are picked up with a tap and shared by the team
+### 13. A find goes in one of your own slots (Changed)
 
-**What I'd change.** Small finds (a lamp, a box of records, a toaster) are picked up with one
-tap. They go into one pile for the whole team, shown as a count on screen. They don't use up
-either of your two tool slots and they don't slow you down.
+**Your question.** Why does it go to the team? Is gold shared with the team in DOORS, as I
+referenced?
 
-**Why.** It is quick, it works on a phone, there is no inventory screen to manage, and friends
-aren't racing each other for items.
+**The answer.** No. In a normal DOORS run, gold belongs to whoever picks it up. Its shop has a
+plate for handing your gold to another player, which would be pointless if gold were shared,
+and its wiki names Daily Runs as the one mode where gold is shared. I named DOORS for picking
+things up with one tap. The team pile was my own addition, and I shouldn't have put DOORS
+beside it.
 
-**Where the idea comes from.** DOORS, where gold is picked up with one tap.
+**How it stands now, from your answers to 13 and 14.**
 
-### 14. One big find on each floor, carried in both hands
+1. You pick up a find with one tap, and it goes into one of your slots.
+2. Tools and finds use the same slots. You have three today. Carrying three tools means you
+   have no room for a find.
+3. When your slots are full, you drop something or leave the find where it is. Idea 38, the
+   marker, is for coming back to it.
+4. More slots can be bought, up to six (the store in Part 5).
 
-**What I'd change.** From floor 2 up, each floor has one big find somewhere on it: a jukebox,
-say, or an arcade machine. It is worth several times what a small find is. To take it you pick
-it up in both hands. While you carry it you walk slower than any monster and you can't use a
-tool. You can put it down whenever you like. It only counts if it is set down inside the
-elevator before the gate shuts.
+**Where the idea comes from.** Lethal Company: you have four slots, and the scrap you collect
+and the tools you bring share them. From memory.
 
-**What the player sees.** The team finds a jukebox at the far end of the floor. Somebody has to
-carry it back, slowly, while a friend walks beside them keeping a flashlight on the Mannequin.
-If the code has already gone in, they have 30 seconds to get a jukebox to the elevator.
+### 14. One big find on each floor, shown only once the code is in (Changed)
 
-**Why.** This is what puts people out on the floor when the countdown starts, and the 30
-seconds only work if someone is out there. It is one per floor and no more, so the game stays
-an escape. Your note of Nov 11 says the climb is "an escape, not a haul".
+**Your answer to my question.** Keep it, but it's only shown after the code is entered, so
+going for it is a risk.
+
+**How it stands now, in order.**
+
+1. From floor 2 up, each floor has one big find: a jukebox, say, or an arcade machine. It is
+   worth several times what a small find is.
+2. While the team is searching, nobody can see it or get to it.
+3. When the right code goes in, the gate opens and the 30 seconds start. At that moment the
+   big find is shown. My default: one unit somewhere on the floor rolls its door up by itself
+   with a loud rattle, the big find is inside, and its place shows on the corner map so the
+   team can see how far away it is.
+4. To take it you pick it up in both hands. It doesn't use a slot. While you carry it you walk
+   slower than any monster and you can't use a tool. You can put it down whenever you like.
+5. It only counts if it is inside the elevator when the gate shuts. Whoever carried it in
+   keeps it.
+
+**What the player sees.** The code goes in and the countdown starts. Somewhere down a hall a
+door rattles up, and a mark appears on the corner map. Somebody has to decide, right now,
+whether to run for it. If they go, a friend goes with them to keep a flashlight on the
+Mannequin.
+
+**Why.** This is what puts a player out on the floor during the 30 seconds, which is the
+moment the game is built around.
+
+**A number that needs care.** It has to be far enough away to be a real risk, and close enough
+that getting it back is just possible at carrying speed. My starting guess: no further than a
+player carrying it can cover in about 20 seconds.
 
 **Where the idea comes from.** Lethal Company: the big items take both hands and slow you
-down, and only what gets back to the ship counts. The design doc also already has the rule
-that carrying a big find is the one thing that makes you slower than a monster.
+down, and only what gets back to the ship counts. From memory. Showing it only once the code is
+in is your idea, and I don't know a hit game that does it, so it is on the untested list.
 
-### 15. Everyone in the elevator gets their own copy of what's in it
+### 15. Everyone aboard is paid coins, and your finds become yours (Changed)
 
-**What I'd change.** When the gate shuts, the game looks at what is inside the elevator: the
-team's pile of small finds, and the big find if it made it. Every player in the elevator gets
-their own copy of each one. If four players get a jukebox aboard, all four of them now own a
-jukebox. A player who isn't in the elevator gets nothing from that floor.
+**Your answer.** Everyone gets paid coins for surviving. You keep what you found and carried.
+No copies: one lamp doesn't turn into four.
 
-**Why.** Nobody argues about who keeps the jukebox, and nobody runs ahead to grab things before
-their friends do. It also means being left behind costs you something, even with a way back
-into the climb (idea 18).
+**How it stands now, in order.**
 
-**Where the idea comes from.** Dandy's World pays every player for each floor the team clears,
-whoever did the work. Lethal Company counts everything on the ship for the whole crew.
+1. When the gate shuts, every player standing in the elevator is paid coins for the floor.
+   Each player gets the same amount.
+2. My default: the amount goes up a little with each floor. It also goes up for each monster
+   the team has trapped (idea 23).
+3. At the same moment, the finds in your slots become yours for good. They leave your slots
+   and can't be lost after that. Your slots are free for the next floor. This is your answer
+   to my question.
+4. A player who is wrapped when the gate shuts is paid nothing and keeps nothing from that
+   floor (idea 17).
+5. If you are caught, everything you're carrying drops where you stood: tools, as happens
+   today, and finds too. A friend can pick them up.
+
+**A correction.** The first version said Dandy's World pays every player for each floor the
+team clears. I checked, and it doesn't work that way: it pays each player for the things they
+do, such as filling a machine. Paying everyone who gets out is how round games on Roblox
+usually pay (Piggy and Flee the Facility both pay the players who escape), but that is from
+memory.
 
 ### What we'd sell in Part 3
 
 Nothing. The design doc has a rule that Robux never sit beside a timer. Selling extra seconds
-on the gate would be selling the game's best moment.
+on the gate would be selling the game's best moment. Extra slots are sold at the counter and
+listed in Part 5.
 
 ---
 
 ## Part 4: When a monster catches you
 
 **How it works today.** A monster that catches you wraps you in shrink-wrap and puts you in a
-unit somewhere on the floor. It is dark in there. You can bang on the door so your friends can
-find you, which also draws monsters. A friend who opens your unit holds a button for one second
-and you are free. If nobody comes within two and a half minutes, the building padlocks your
-unit, and then a friend needs bolt cutters to get you out.
+unit somewhere on the floor. Everything you were carrying drops where you stood. It is dark in
+the unit. You can bang on the door so your friends can find you, which also draws monsters. A
+friend who opens your unit holds a button for one second and you are free. If nobody comes
+within two and a half minutes, your unit is padlocked, and then a friend needs bolt cutters to
+get you out.
 
 When the elevator leaves without you, whether you were caught or just late, you are out for
-the rest of the climb. You watch your friends play. The design doc's plan is to sell the way
-back in (Cut Free). If you are playing alone, one catch ends the climb, because nobody is there
-to free you.
+the rest of the climb, and you watch your friends play. If you are playing alone, one catch
+ends the climb, because nobody is there to free you.
 
-**The problem.** In a ten-floor climb of about 50 minutes, a player left behind on floor 2
-could be watching for 40 minutes. Most people won't. They'll leave, and their friends often
-leave with them. The best moments in this game need the group together.
+### 16. Tell the player what got them (Cut)
 
-### 16. Tell the player what got them
+**Your answer.** No. Players learn the rules from playing.
 
-**What I'd change.** One line on the screen you see when you're caught, saying what caused it:
-"You moved during an inspection", or "It heard the door".
+**How it stands now.** Nothing is added to the screen you see when you're caught. I've taken
+this as a rule for the rest of the proposal: no text whose job is to explain a rule.
 
-**Why.** A player who knows why they were caught learns the rule. A player who doesn't thinks
-the game cheated.
+### 17. No free way out (Changed)
 
-**Where the idea comes from.** DOORS shows a short explanation after each death: what killed
-you, and how to survive it next time.
+**Your answer.** You're stuck and you stay stuck, and you're carried up the floors until
+someone frees you. You're not out, but you don't get coins in the elevator and you can't grab
+any new items. If your friends leave you, you need better friends. A paid "cut yourself free"
+should show when you're caught. Freeing yourself for nothing by holding a button is dumb.
 
-### 17. A slow, loud way to free yourself
+**How it stands now.**
 
-**What I'd change.** While you're wrapped, you can hold a button to strain against the wrap.
-The first time in a climb it takes 25 seconds of holding. Each time after that it takes 15
-seconds longer: 40, then 55. It is loud the whole time, so monsters nearby hear it. It stops
-working once your unit has been padlocked. After that you need a friend with bolt cutters, as
-now. A friend cutting you free still takes one second, so being rescued is always much better.
+1. Once you're wrapped, you stay wrapped until a friend frees you or you pay.
+2. There is no hold-the-button way out.
+3. You are not out of the climb. When the elevator leaves, you go up with it (idea 18).
+4. While you're wrapped you are paid no coins when the gate shuts, and you can't pick
+   anything up.
+5. The screen you see while you're caught offers Cut Free, for Robux. Your answer to my
+   question: Robux only, with no coin item that does the same.
+6. Playing alone, there is nobody to free you. So a catch ends the climb unless you buy Cut
+   Free. That is how playing alone works today.
 
-**Why.** It makes playing alone possible. And it gives a caught player something to do other
-than wait.
+### 18. Left behind or still wrapped, you turn up on the next floor (Agreed)
 
-**Where the idea comes from.** Dead by Daylight lets a player on a hook try to get themselves
-off it, slowly and with risk. That is a loose fit: theirs is a gamble and this is a wait.
+**Your answer.** Agreed.
 
-### 18. A friend who is left behind turns up on the next floor
+**How it stands now, in order.** Your answer to 17 stretches this to cover anyone who is
+wrapped when the elevator leaves, not only someone who was late.
 
-**What I'd change.** If the elevator leaves without you, you watch your friends during the
-ride, as now. When they arrive at the next floor, you are on it too: wrapped, inside one of
-that floor's units. You bang on the door, they find you and cut you free, the same as any other
-rescue. If they don't find you before that floor's gate shuts, you are carried up again to the
-floor after it. You come back with empty hands, and you got none of the finds from the floor
-you missed.
+1. The elevator leaves without you, because you were wrapped or because you didn't make the
+   gate.
+2. You watch your friends during the ride, as now.
+3. When they arrive at the next floor, you are on it too: wrapped, inside one of that floor's
+   units.
+4. You bang on the door. They find you and cut you free, the same as any other rescue.
+5. If they don't find you before that floor's gate shuts, you are carried up again to the
+   floor after it. This goes on for as many floors as it takes.
+6. You come back with empty hands.
 
-**Why.** Nobody sits out the rest of a climb. It turns a friend who was lost into a rescue on
-the next floor, which is a better moment than watching. And it fits a line the design doc
-already has about the building: "Everything it keeps goes up."
+**My default for when a climb ends.** A climb ends when every player is wrapped at the same
+moment, because nobody is left to free anyone. The team is offered Free Everyone first (the
+store, below).
 
-**Where the idea comes from.** R.E.P.O. When a player dies, their head is left where they
-fell. A teammate carries it to the extraction point and the player is back. Lethal Company
-brings dead players back when the ship takes off.
+**Where the idea comes from.** R.E.P.O.: when a player dies, their head is left where they
+fell, and a teammate carries it to the extraction point to bring them back. Checked.
 
-**You cut this before.** On Nov 2 you cut this exact rule because no hit game did it. I think
-R.E.P.O. now counts as one. It is your call, and it is the second of the four big decisions in
-`OWNER.md`.
+### 19. While you wait: bang on the door, or watch your friends (Changed)
 
-### 19. Something to do while you wait to be rescued
+**Your answer.** No map and no marking spots for friends. If a caught player can help the rest
+of the team, someone could get caught, help, wait to be freed, and it would be easy. They can
+bang on the door. You were also considering spectating.
 
-**What I'd change.** While you're wrapped in a unit, you can bring up a map of the floor that
-shows every hall light and which ones are on right now. You can't tell what turned a light on,
-only that something did. You tap a spot on that map and a mark shows up there on your friends'
-corner maps, as a way of saying "something is moving over here".
+**How it stands now.**
 
-The design doc already has this map. It calls it the office light board, and puts it in an
-office on the floor for one player to stand at. I doubt anyone would choose to stand in an
-office while their friends open doors. Someone who is stuck waiting would use it.
+1. A wrapped player can bang on the door, as today.
+2. A wrapped player can also switch to watching a friend. The game already has this view for a
+   player the elevator has left behind.
+3. Nothing else. A wrapped player has no way of helping the team.
 
-**Where the idea comes from.** Among Us lets players who are out keep doing tasks that help
-their team. Marking spots for friends is my own addition, so it is on the untested list.
+The light board from the design doc isn't given to the caught player. Your bigger idea, a
+monster that takes your head so that you see through its eyes, is idea 39.
 
 ### What we'd sell in Part 4
 
-This is where the first real money is. All of it is offered only on the screen you see while
-you're caught. Nothing ever pops up over play.
+You said the shop is good for now (idea 37), so this list is the first version's. All of it is
+offered only on the screen you see while you're caught. Nothing ever pops up over play.
 
 - **Cut Free** (45 Robux, then 75 if you buy it again in the same climb). It frees you right
-  now, without the noise, on the floor you're on, with your tools. If you were left behind, it
-  puts you standing in the elevator when it reaches the next floor, tools in hand, instead of
-  wrapped in a unit waiting to be found.
+  now. If you are being carried up, it puts you standing in the elevator when it reaches the
+  next floor, instead of wrapped in a unit waiting to be found.
 - **Free a Friend** (49 Robux). You pay to free a friend who is caught, from wherever you are
   standing.
 - **Free Everyone** (149 Robux). It frees every caught player at once. If the whole team has
@@ -505,145 +626,161 @@ you're caught. Nothing ever pops up over play.
   floor.
 - **Wrap colours** (99 to 499 Robux). The colour or pattern of the shrink-wrap you get wrapped
   in. It is what your friends see when they find you.
-- **Gift versions** of each, so one player can buy for another. DOORS and 99 Nights in the
-  Forest both sell these.
+- **Gift versions** of each, so one player can buy for another.
 
 The prices are the design doc's drafts, taken from what other games charged on Nov 2.
 
-**What this does to the money, honestly.** With ideas 17 and 18, nobody has to pay to keep
-playing. What Robux buys is time (skipping 25 noisy seconds, or skipping the wait to be found),
-keeping your tools, and not missing a floor's finds. Fewer people will buy that than would buy
-"pay or sit out for half an hour". My bet is that a game where friends stay together to the end
-keeps more players for more days, and that those players buy more cosmetics and passes. I can't
-prove that. It is a real trade and it's yours to make.
+**What your answer to 17 does to the money.** The first version gave players a free, slow way
+out, and I said fewer people would buy Cut Free because of it. With your answer there are two
+ways out: a friend, which is free, or Cut Free. Nobody is put out of the climb, and Cut Free is
+worth more than it was.
 
 ---
 
 ## Part 5: The shape of a whole climb
 
-**How it works today.** The plan is ten floors in about 50 minutes. Three floors are built. The
-elevator ride between floors takes just under ten seconds, and there is nothing to do during
-it. There is one difficulty.
+**How it works today.** The plan in the design doc is ten floors, with the roof on top. Three
+floors are built. The elevator ride between floors takes just under ten seconds, and there is
+nothing to do during it.
 
-### 20. Put the roof on floor 5 for launch
+### 20. No top floor (Changed)
 
-**What I'd change.** A full climb at launch is five floors and takes about 20 to 25 minutes.
+**Your answer.** Completely rethink it. Dandy's World has no limit. The point is to see how far
+you can get, and it gets harder as you go. Kids play more and spend more because they want to
+beat their best. You don't know who Dale is or why we'd want him. Every five floors or so
+something different can happen, such as the stair chase, but that can come later. Build floors
+so they're generated up to about 100 for launch. As monsters are added, each gets a lowest
+floor it can appear on, and the system adds them in at random.
 
-- **Floors 1 and 2** are short, with two notes each. They teach doors, quarters and the "don't
-  move" moment (idea 7).
-- **Floors 3 and 4** are full size, with four notes each. They add the "get inside" moment
-  (idea 8), a note behind a padlock, and the second monster (idea 12). The design doc starts
-  padlocked notes on floor 6; I'd bring them down.
-- **Floor 5** is Dale's floor, as the design doc has it, if Dale survives your rethink of the
-  monsters. The last digit of the code is pinned to him. To read it the team has to trap him,
-  using the trap that is already in the game: saw a hole between two units, lead him into one,
-  crawl through the hole and slam the door on him. After that, the roof.
+**How it stands now.**
 
-Floors 6 to 10, the stairwell chase and the ending where you cut the power all come later, as
-updates. The design doc already plans for the building to get taller over time.
+1. A climb has no roof and no last floor. You climb until the whole team is caught. Your best
+   floor is the number you're trying to beat.
+2. Floors are made by the game from a set of rules, not laid out one at a time by hand. For
+   launch the rules cover floors up to about 100.
+3. Each floor is harder than the one before it.
+4. Every monster has a lowest floor it can appear on. From that floor up, the game mixes it in
+   at random. Adding a monster later means adding it to the list with its lowest floor. This
+   fits how the game is built: every monster is a row of numbers on one shared system.
+5. About every five floors there can be a floor that plays differently, such as the stair
+   chase. Those come later. The rules that make floors leave room for them.
+6. The roof, Dale's floor and the ending where you cut the power are all out. Dale is out of
+   this proposal altogether.
 
-**Why.** With ten floors, most players wouldn't see the roof for weeks. With five, a good team
-reaches it in one sitting and wants to do it again the same evening. It is also about half the
-building work before launch. The design doc already asks this as an open question ("Roof at
-floor 10, or lower?").
+**What you keep when a climb ends.** Everything that became yours at a gate (idea 15), and
+your unspent coins as cash.
 
-**Where the idea comes from.** DOORS puts its first big set piece at door 50, halfway: a hunt
-for a code with one monster hunting you. Floor 5 here is the same thing.
+**Where the idea comes from.** Dandy's World: its floors have no known top, and the record
+runs are around floor 400. Checked.
 
-**This is the third of the four big decisions in `OWNER.md`.**
+### 21. A team choice during the elevator ride (Agreed; how it looks is Open)
 
-### 21. A team vote during the elevator ride
+**Your answers.** To 21: fine, as long as it isn't too similar to Dandy's World. It should feel
+like a new concept. To 24: cards in the elevator that the team votes on, and maybe all three
+can be bad: the power is out, double the monsters, getting caught sends you back to the lobby.
+More get added over time.
 
-**What I'd change.** The ride would take about 20 seconds. The design doc says 40, which I
-think is a long time to stand in a box. The game has just under 10, which is too short to do
-anything.
+**One thing to notice.** On Nov 2 you cut cards with downsides. Your answer to 24 brings them
+back, so they're back.
 
-On the rides after floor 1 and after floor 3, three cards appear on the elevator wall. Each
-card names one advantage. Every player taps the card they want, and the card with the most
-votes wins. The whole team then has that advantage until the climb ends.
+**What's agreed.** The ride takes about 20 seconds. During it the team is shown three choices,
+everyone picks one, and the most picks wins. Choices can be bad. The list of choices grows over
+time (idea 24). There is no paying to see three different ones, because Roblox treats paying
+for a random result as a paid random item.
 
-Every card is an advantage and nothing else. No card makes anything worse. You cut the version
-with downsides on Nov 2.
+**My suggestion for making it its own thing (Open): the choice is the elevator's own
+buttons.**
 
-Cards to start with (the first two are the design doc's own examples):
+1. During the ride, three buttons light up on the elevator's panel. Each one is a version of
+   the next floor.
+2. Each button shows what that floor is like: the power is out, or there are twice the
+   monsters, or anyone caught there goes back to the lobby, or twice as many doors are
+   padlocked.
+3. Each button also shows what that floor pays. A harder floor pays more coins at the gate.
+4. Everyone presses one. The button with the most presses wins. A tie is settled at random.
+5. The elevator stops at that floor. What the team chose lasts for that one floor, so a bad
+   choice is over when the gate shuts.
+6. Some rides, all three are bad, and the team picks the one it can live with.
 
-- The gate stays open five seconds longer: 35 seconds instead of 30.
-- Everyone's flashlight beam is wider.
-- The first door each player opens on every floor opens silently.
-- Freeing yourself from the wrap takes half as long (idea 17).
-- Tagged doors show on the corner map (idea 4).
+**Why I think this is different enough.** In Dandy's World the team votes on a card. Here the
+team is choosing where the elevator stops next, on the elevator's own panel, and what they
+chose is a place they then have to get through.
 
-**Why.** Two climbs with different cards play differently. It is also a decision the whole team
-makes together during a calm moment, which is when friends talk.
+**Where the idea comes from.** Lethal Company: the crew chooses which moon to land on. Each
+moon has a risk level, and weather such as an eclipse that brings out more monsters. Dandy's
+World: the vote itself, with the most votes winning and ties settled at random. Both checked.
 
-**Where the idea comes from.** Dandy's World has a card vote in its elevator between floors.
-The design doc already names it.
+**Why it's open.** You asked for it to feel new, and this is my attempt. If you would rather
+have three cards on the wall, or a choice that lasts the rest of the climb, say so.
 
-### 22. A vending machine in the elevator
+### 22. A vending machine in the elevator (Agreed, on every ride)
 
-**What I'd change.** On the rides after floor 2 and after floor 4, a vending machine in the
-elevator wall lights up. It shows three or four tools, each with a price in quarters: a padlock
-for 6, say, or bolt cutters for 10. Those prices are guesses to start from. You tap one to buy
-it with your own quarters.
+**Your answer.** Yes, but obviously not just after floors 2 and 4, since there will be many
+more floors.
 
-The ride from the lobby up to floor 1 has neither the vote nor the machine. A new player should
-get to their first door fast, and nobody has any quarters yet.
+**How it stands now.**
 
-**Why.** It is what the quarters from idea 1 are for. It lets a team that is short of a tool
-fix that before the next floor.
+1. The machine lights up on every ride after floor 1.
+2. It shows three or four tools, each with a price in coins: a padlock for 6, say, or bolt
+   cutters for 10. Those prices are guesses to start from.
+3. You tap one to buy it with your own coins.
+4. My default: what it stocks changes from ride to ride, so you can't count on bolt cutters
+   being there.
+5. The ride from the lobby up to floor 1 has neither the machine nor the choice. A new player
+   should get to their first door fast, and nobody has any coins yet.
 
-**Where the idea comes from.** Dandy's World has a shop in its elevator on the rides that don't
-have the card vote. The design doc already names this too.
+With tools rarer in units and wearing out (idea 2), the machine is where a team stocks back
+up. The marker (idea 38) is sold here too.
 
-### 23. Make trapping a monster worth doing
+**Where the idea comes from.** Dandy's World has a shop in its elevator. From memory.
 
-**How it works today.** You can trap a monster in a unit by slamming the door on it. It bangs
-on the door and breaks out after 90 seconds, unless you padlock the door. The design doc says
-two things about trapping. The first time you trap each kind of monster is recorded in your
-collection book, with no other reward. And a trapped monster doesn't count toward the floor's
-limit on how many monsters can be awake at once, so "the next door can hold a fresh one".
+### 23. Trapping a monster pays more at the gate (Changed)
 
-**What I'd change.** Two things.
+**Your answer.** Trapping is worth doing because it makes it easier to search without being
+hunted. What more is really needed? Maybe more coins in the elevator based on how many
+monsters you trapped, like a multiplier.
 
-- **A trapped monster still counts toward the floor's limit.** As the design doc has it,
-  trapping one monster makes room for another to wake up, so the trap gains the team nothing.
-  With this change, trapping buys 90 quieter seconds, or a quieter rest of the floor if the
-  door is padlocked. The limit itself isn't built yet, so this is a change to the plan.
-- **The first time you trap each kind of monster unlocks one perk** that you can then buy with
-  cash. Perks are in idea 30. For example, trapping the Mannequin might unlock a flashlight
-  that reaches further.
+**How it stands now.**
+
+1. A trapped monster is out of the halls: for 90 seconds, or for the rest of the floor if you
+   padlock the door. That is the reason to trap one.
+2. A trapped monster still counts toward the floor's limit on how many monsters can be awake
+   at once. The design doc says the opposite: a trapped monster frees up room, so "the next
+   door can hold a fresh one". That would mean trapping gains the team nothing. This follows
+   from the reason you gave, but you didn't answer it directly, so say if you disagree.
+3. Your "maybe": when the gate shuts, each monster shut in a unit at that moment raises
+   everyone's pay for the floor. My starting guess is a quarter more for each one. One trapped
+   monster pays one and a quarter times the floor's coins, two pay one and a half times.
+4. The perk for trapping, from the first version, is dropped.
+5. The first time you trap each kind of monster is still stamped in your collection book, as
+   the design doc has it.
 
 **You dropped something like this before.** On Nov 9 you dropped a cash bonus for trapping.
-This isn't cash, but it is still a reward for trapping. Say if that's still too much.
+This one is coins at the gate, and it's your own suggestion today. I'm noting it so it doesn't
+come back without you noticing.
 
-**Where the idea comes from.** In Dandy's World some trinkets (its version of perks) can't be
-bought until you have done a particular thing to unlock them.
+### 24. New monsters and new choices over time, on no fixed schedule (Changed)
 
-### 24. A new rule each week, instead of a new monster each week
+**Your answer.** Don't make it a cadence. Some weeks, new choices for the elevator vote get
+added. Monsters will definitely be added as the game goes on. But not necessarily one or both
+every week.
 
-**What I'd change.** The design doc plans a new monster every Saturday. Every monster needs a
-model, animations, sounds and testing. I don't think that can be done well every week. Instead,
-a board in the lobby would announce one rule that changes every climb for that week: "The power
-is out, so every floor is dark", or "Inspections come twice as often". A new monster would
-arrive with each batch of new floors.
-
-**Where the idea comes from.** DOORS has modifiers, which are rules a player can switch on to
-change a run. The design doc's own weekly plan already has a smaller rule change on Tuesdays.
+**How it stands now.** There is no rule of the week and no board in the lobby announcing one.
+Two lists grow over time: the monsters, each with its lowest floor (idea 20), and the choices
+on the ride (idea 21). Neither is promised weekly.
 
 ### What we'd sell in Part 5
 
 - **A starting tool, for cash, not Robux.** This is already in the design doc. In the lobby,
   during the countdown before a climb, you can spend cash to start with one tool of your
-  choice. It is the main thing cash is for (Part 6), and it costs cash every climb.
-- **A third tool slot** (199 to 299 Robux, bought once and kept forever). You carry three tools
-  instead of two. Your note says to sell slots up to six. I would sell one. Choosing which
-  tools to bring is part of the game, and with six slots you carry everything. That question is
-  already in `OWNER.md`.
+  choice. It costs cash every climb.
+- **Extra slots, up to six** (199 to 299 Robux each as a first draft, bought once and kept
+  forever). Everyone has three. A fourth, fifth and sixth can be bought. The first version
+  argued for selling only one, because with six slots you could carry every tool. Now that
+  finds share your slots, a bigger inventory fills with finds, and six makes sense.
 - **Flashlight beam colours** (49 to 299 Robux). In a dark hall the beams are what everybody
   sees, so this is the cosmetic that shows the most.
-- **Nothing on the cards.** There would be no paying to draw three new cards. Roblox treats
-  paying for a random result as a paid random item, and those come with rules about showing the
-  odds and about young players.
+- **Nothing on the ride's choices.** No paying to see three different ones.
 
 ---
 
@@ -653,81 +790,75 @@ change a run. The design doc's own weekly plan already has a smaller rule change
 results on its wall: whether you made it or were caught, the floor you reached, your time, and
 an "Again" button. Nothing is saved. There is no cash, and finds can't leave the building.
 
-### 25. The results screen values your finds one at a time
+You answered "sure" to every idea in this part. They are as they were, changed only where an
+answer elsewhere touches them.
 
-**What I'd change.** Each find the team got out comes up on the results one at a time: its
-picture, its name, how rare it is, and what it is worth. The cash total counts up with each
-one. Any quarters you didn't spend are added at the end. After that there is one line for each
-player, such as who freed the most friends, who opened the most doors, and who shut a friend
-in a unit.
+### 25. The results screen values your finds one at a time (Agreed)
+
+**How it stands now.** Each find that became yours during the climb comes up on the results
+one at a time: its picture, its name, how rare it is, and what it is worth. The cash total
+counts up with each one. Any coins you didn't spend are added at the end. After that there is
+one line for each player, such as who freed the most friends, who opened the most doors, and
+who shut a friend in a unit.
 
 **Why.** It makes each find exciting twice: once when you open the door and see it, and once
-when you learn what it was worth. It also happens at the moment players are happiest, which is
-the moment they decide whether to press "Again".
+when you learn what it was worth. It also happens at the moment a player decides whether to
+press "Again".
 
-**Where the idea comes from.** The storage-auction TV shows this game's setting comes from,
-where the unit is opened first and valued afterwards. That is television and not a hit game, so
-it is on the untested list. Lethal Company does end each day with a report on how each player
-did.
+**Where the idea comes from.** The storage-auction TV shows this setting comes from, where the
+unit is opened first and valued afterwards. That is television, not a hit game. Lethal Company
+does end each day with a report on how each player did; from memory.
 
-### 26. A collection book with a page for every find
+### 26. A collection book with a page for every find (Agreed)
 
-**What I'd change.** The design doc already has a book called the Catalog. It records the
-monsters you have trapped, Dale's notes, and sets. I'd add a page for every kind of find. The
-first time you bring one out of the building, its page is stamped "New" on the results screen.
+**How it stands now.** The design doc already has a book called the Catalog, which records the
+monsters you have trapped and the sets you've finished. I'd add a page for every kind of find.
+The first time one becomes yours, its page is stamped "New" on the results screen. Sets stay as
+the design doc has them: groups of finds that belong together, such as a 1980s bedroom.
+Finishing a set gives you a display piece for your unit. The design doc also puts Dale's notes
+in the book; those go with Dale.
 
-Sets stay as the design doc has them: groups of finds that belong together, such as a 1980s
-bedroom or a diner. Finishing a set gives you a display piece for your unit.
+**Where the idea comes from.** Fisch: every fish you catch fills in its own entry in a book,
+and finishing a section pays a reward. Checked.
 
-**Why.** It gives a player a reason to want one particular find, and a reason to climb again
-when they didn't get it.
+### 27. Rare versions of ordinary finds (Agreed)
 
-**Where the idea comes from.** Fisch. Every fish you catch fills in its own entry in a book,
-and finishing a section of the book pays a reward.
+**How it stands now.** About one find in twenty turns up still sealed in its original
+packaging. It is the same item, worth three times as much, shown in its packaging, with its own
+stamp in the collection book.
 
-### 27. Rare versions of ordinary finds
+**Where the idea comes from.** Fisch and Grow a Garden both have rare versions of ordinary
+things that multiply what they're worth. Checked. The "still sealed" look is my own choice.
 
-**What I'd change.** About one find in twenty turns up still sealed in its original packaging.
-It is the same item, worth three times as much, shown in its packaging, with its own stamp in
-the collection book.
+### 28. Selling and keeping without a menu (Agreed)
 
-**Why.** Any ordinary find might turn out to be the special one, so common finds stay worth
-looking at.
+**How it stands now.** After the valuing in idea 25, the game sorts your finds for you.
+Anything you already own a copy of, and anything common, is sold for cash on the spot. Anything
+rare that you don't already own goes to your unit in the lobby, and you can sell it from there
+later. Every kind of find gets its page stamped either way.
 
-**Where the idea comes from.** Fisch and Grow a Garden. Both have rare versions of ordinary
-things that multiply what they're worth. The "still sealed" look is my own choice, so that part
-is on the untested list.
+### 29. Your unit, and a shelf in the elevator to show finds off (Agreed)
 
-### 28. Selling and keeping without a menu
+**Your answer.** Sure, we can add it and see what happens.
 
-**What I'd change.** After the valuing in idea 25, the game sorts your finds for you. Anything
-you already own a copy of, and anything common, is sold for cash on the spot. Anything rare
-that you don't already own goes to your unit in the lobby, and you can sell it from there
-later if you want. Every kind of find gets its page stamped in the collection book either way.
+**How it stands now.** The design doc plans a hall of units in the lobby, one for each player,
+where your finds are on show and friends can walk in. You would spend cash to move up from a
+small unit to a medium and a large one. That hall is a lot to build, so it comes after launch.
+Until then, a shelf inside the elevator shows the three best finds of whoever is hosting that
+elevator, which is the first player to step into it in the lobby.
 
-**Why.** Nobody wants to manage an inventory screen on a phone between climbs.
+**Where the idea comes from.** Lethal Company: things the crew buys are set out on the ship,
+where everyone sees them between trips. From memory.
 
-### 29. Your unit, and a shelf in the elevator to show finds off
+### 30. Perks: small advantages you own and pick before a climb (Agreed)
 
-**What I'd change.** The design doc plans a hall of units in the lobby, one for each player,
-where your finds are on show and friends can walk in. The unit is already modelled in three
-sizes. You would spend cash to move up from small to medium to large, so you can show more.
+**How it stands now.** A perk is a small advantage that you own for good. Before a climb you
+pick two of the perks you own, and you can't change them once the climb starts. Each perk
+first has to be unlocked by doing something, and then you buy it with cash.
 
-That hall is a lot to build, so I would do it after launch. Until then, a shelf inside the
-elevator would show the three best finds of whoever is hosting that elevator, which is the
-first player to step into it in the lobby. Everyone who rides with them sees it on every climb.
-
-**Why.** A find nobody else ever sees isn't worth much to the player who owns it.
-
-**Where the idea comes from.** Lethal Company. Things the crew buys are set out on the ship,
-where everyone sees them between trips.
-
-### 30. Perks: small advantages you own and pick before a climb
-
-**What I'd change.** A perk is a small advantage that you own for good. Before a climb you
-pick two of the perks you own to use, and you can't change them once the climb starts. Each
-perk first has to be unlocked by doing something, such as trapping the Mannequin or finishing a
-set. Then you buy it with cash.
+One change, because of your answer to 23: trapping a monster no longer unlocks a perk. Perks
+are unlocked by reaching a floor for the first time (floor 10, floor 25) or by finishing a
+set.
 
 Perks to start with:
 
@@ -736,15 +867,11 @@ Perks to start with:
 - You carry the big find a little faster.
 - The rattle of a door you open carries half as far.
 
-They are small on purpose. A new player with no perks can still reach the roof.
+They are small on purpose. A new player with no perks can still climb.
 
-**Why.** Cash needs things to be spent on, or selling finds means nothing. Perks also make
-what you've collected change how your next climb plays, and they give players goals between
-climbs ("I need to trap the Mannequin to unlock that one").
-
-**Where the idea comes from.** Trinkets in Dandy's World. You use two at a time, you choose
-them before the run starts, you buy them with the money you earn from runs, and some have to
-be unlocked first.
+**Where the idea comes from.** Trinkets in Dandy's World: you use two at a time, you choose
+them before the run starts, you buy them with what you earn from runs, and some have to be
+unlocked first. Checked.
 
 **So cash would buy four things:** a starting tool for each climb, perks, a bigger unit, and
 cosmetics.
@@ -752,14 +879,11 @@ cosmetics.
 ### What we'd sell in Part 6
 
 - **Double cash** (299 to 399 Robux, bought once and kept forever). All the cash you earn is
-  doubled. The default in `OWNER.md` is not to sell this at launch. I would sell it from the
-  day the store opens. In a co-op game it doesn't hurt anyone else, and it is the easiest thing
-  to want after watching your cash count up on the results. It would be offered at the counter
-  and as a small button on the results screen.
+  doubled. It would be offered at the counter and as a small button on the results screen.
 - **Cash packs** (49 to 1,499 Robux). You buy cash with Robux. I would only sell these once
   perks and the starting tool exist, so that cash is for something. Once cash can be bought,
-  nothing random can ever be sold for cash either. The design doc already says this, because
-  Roblox counts bought currency the same as Robux.
+  nothing random can ever be sold for cash, because Roblox counts bought currency the same as
+  Robux.
 - **A starter pack** (99 Robux). It is shown once, after your first climb and never before:
   one beam colour, one wrap colour and some cash.
 - **Decor for the elevator and for your unit** (99 to 499 Robux).
@@ -768,80 +892,145 @@ cosmetics.
 
 ## Part 7: Reasons to come back tomorrow
 
-### 31. Save the player's progress
+### 31. Save the player's progress (Agreed)
 
-**What I'd change.** Nothing is saved today. Cash, finds, the collection book, your best floor
-and anything you have bought all need to be saved. Everything in Part 6 depends on it and so
-does every product. Players never see this, but it has to be built first. Under the project's
-rules it comes from Brix, the shared framework.
+**How it stands now.** Nothing is saved today. Cash, finds, the collection book, your best
+floor and anything you have bought all need to be saved. Everything in Part 6 depends on it and
+so does every product. Players never see this, but it has to be built first. Under the
+project's rules it comes from Brix, the shared framework.
 
-### 32. Your best floor, the Missing board and badges
+### 32. Your best floor, the Missing board and badges (Agreed)
 
-**What I'd change.** All three are in the design doc, and none has a ticket in the roadmap.
+**How it stands now.**
 
 - **Best floor.** The highest floor you have reached, shown on a plaque and on the dial above
-  your elevator. It is the number friends compare.
+  your elevator. With no top floor (idea 20), this is the number the whole game points at.
 - **The Missing board.** A board in the lobby. When a whole team is caught, their photos go up
   on it with the floor they were caught on, until their next climb.
-- **Roblox badges** for reaching the roof the first time, for each kind of monster trapped, and
-  for each set finished.
+- **Roblox badges.** The first version gave one for reaching the roof. There is no roof now.
+  My default: badges for reaching floors 10, 25, 50 and 100, for each kind of monster trapped,
+  and for each set finished.
 
-### 33. A free door to open once a day
+### 33. A free door to open once a day (Agreed)
 
-**What I'd change.** The design doc has this as the "free daily sealed lot". Once a day, in the
-lobby, you open one roll-up door, slow and loud, the same as in a climb. Inside is a free find.
-I'd add a streak: on the seventh day in a row, the find is a better one.
+**How it stands now.** Once a day, in the lobby, you open one roll-up door, slow and loud, the
+same as in a climb. Inside is a free find. On the seventh day in a row, the find is a better
+one. It is never sold, and you can't buy more openings, because that would be paying for a
+random result.
 
-It is never sold, and you can't buy more openings. That would be paying for a random result.
+### 34. A small shelf of cosmetics that changes every week (Agreed)
 
-**Where the idea comes from.** Daily rewards with streaks are in most of the big Roblox games.
+**How it stands now.** Three cosmetics at the counter that are swapped for three different
+ones each week. It gives a player a reason to look at the shop again.
 
-### 34. A small shelf of cosmetics that changes every week
+### 35. A season pass, after launch (Maybe)
 
-**What I'd change.** Three cosmetics at the counter that are swapped for three different ones
-each week. It gives a player a reason to look at the shop again.
+**Your answer.** Okay, maybe.
 
-**Where the idea comes from.** Fortnite's item shop, which changes what it sells on a schedule.
+**How it stands now.** Not planned. If it happens, it is some time after launch: two rows of
+rewards, one free and one paid, earned by climbing floors, with every reward shown up front so
+nothing in it is random.
 
-### 35. A season pass, after launch
+### 36. Private servers free, or nearly free (Agreed)
 
-**What I'd change.** Some time after launch: two rows of rewards, one free and one paid. You
-earn your way along them by climbing floors. Every reward is shown up front, so nothing in it
-is random. I haven't put a price on it.
-
-### 36. Private servers free, or nearly free
-
-**What I'd change.** A private server lets a group of friends play in a server of their own.
-This game spreads by friends bringing friends, so I'd make that cost nothing or close to it.
-The design doc also notes that Roblox pays the developer a share of what a new player spends
-when they arrive through your share link.
+**How it stands now.** A private server lets a group of friends play in a server of their own.
+This game spreads by friends bringing friends, so it would cost nothing or close to it.
 
 ### What we'd sell in Part 7
 
-The weekly shelf (idea 34), and later the season pass (idea 35). Everything else in this part
-is free on purpose.
+The weekly shelf (idea 34), and maybe later the season pass (idea 35). Everything else in this
+part is free on purpose.
+
+---
+
+## New, from your answers
+
+### 37. The shop as listed (Agreed for now)
+
+**Your answer.** Good with the shop for now. We can always tweak.
+
+**How it stands now.** The products and draft prices are the first version's. Two things have
+changed because of other answers: extra slots go up to six, where the first version sold one
+(Part 5), and the marker is sold for coins in the machine (idea 38). The whole list is in the
+table below.
+
+### 38. A marker for tagging doors (New, yours)
+
+**Your idea.** A marker you can use to tag units on a floor. Say your inventory is full and you
+find a padlock. Instead of dropping something, you tag the unit, so you know where to come back
+to if you need it later.
+
+**Your answer to my question.** It is bought with coins, in the machine.
+
+**How it stands now, in order.**
+
+1. The marker is a tool in the elevator's machine. My starting guess at a price is 4 coins.
+2. It takes a slot, like any other tool.
+3. With it in your hand, you face a unit's door and tap Mark. A bright mark goes on the door,
+   and the whole team can see it from down the hall.
+4. It runs out after a number of marks, like the other tools in idea 2. My starting guess is
+   five.
+5. My default: the mark also shows on the corner map. A hall is easy to lose in this
+   building, and this is the team's own mark, not a hint from the game. Say if you'd rather it
+   was on the door only.
+
+**What players would use it for.** A unit with something in it they had no room for. A unit
+with a sleeping monster that nobody should open. The unit a wrapped friend is in.
+
+**Where the idea comes from.** Lethal Company: spray paint is bought in its store, players use
+it to mark the way back, and a can runs dry. Checked.
+
+### 39. A monster that takes your head (New, yours, Open)
+
+**Your idea.** Some monsters take your head, wrap you up and throw you in a unit. While you're
+caught, you see what the monster sees as it moves around the floor. You're stuck like that,
+even going up floors, until your friends free you or you pay to free yourself.
+
+**How it would go, as I understand it.**
+
+1. One kind of monster, when it catches you, takes your head. Your body is wrapped and put in
+   a unit, as with any other catch.
+2. While you're caught, your screen shows the floor through that monster's eyes as it walks.
+3. You stay like that, floor after floor, until a friend frees you or you buy Cut Free.
+
+**What would need settling before it's built.**
+
+- What a friend has to do to free you. Open your unit, as now? Or get your head back from the
+  monster first?
+- What you see is useful. A caught player who can say over voice chat where the monster is
+  walking is helping the team, and your answer to 19 was that a caught player shouldn't be
+  able to.
+- Which monster does this.
+
+**Where the idea comes from.** R.E.P.O.: a dead player's head is what's left of them, and a
+teammate carries it back to bring them into the game again. Checked. Seeing through the
+monster's eyes is yours, and I don't know a hit game that does it, so it is on the untested
+list.
+
+**Why it's open.** You called it a crazier idea. It isn't in the build order until you take it
+up.
 
 ---
 
 ## The whole store on one page
 
-| What it is | Robux | Where the player sees it | Built in |
+| What it is | Price | Where the player sees it | Built in |
 | --- | --- | --- | --- |
-| Cut Free: free yourself now | 45, then 75 | The screen you see while caught | Step 3 |
-| Free a Friend | 49 | The screen you see while caught | Step 3 |
-| Free Everyone | 149 | When the whole team is caught, before the results | Step 3 |
-| Wrap colours | 99 to 499 | The counter | Step 3 |
-| A third tool slot | 199 to 299 | The counter | Step 4 |
-| Flashlight beam colours | 49 to 299 | The counter | Step 4 |
-| Double cash | 299 to 399 | The counter, and the results screen | Step 5 |
-| Cash packs | 49 to 1,499 | The counter | Step 5 |
-| Starter pack | 99 | Once, after your first climb | Step 5 |
-| Decor for the elevator and your unit | 99 to 499 | The counter, and the weekly shelf | Step 5 |
-| Season pass | not priced | The lobby | After launch |
+| Cut Free: free yourself now | 45 Robux, then 75 | The screen you see while caught | Step 3 |
+| Free a Friend | 49 Robux | The screen you see while caught | Step 3 |
+| Free Everyone | 149 Robux | When the whole team is caught, before the results | Step 3 |
+| Wrap colours | 99 to 499 Robux | The counter | Step 3 |
+| Extra slots: a fourth, fifth and sixth | 199 to 299 Robux each | The counter | Step 4 |
+| Flashlight beam colours | 49 to 299 Robux | The counter | Step 4 |
+| Double cash | 299 to 399 Robux | The counter, and the results screen | Step 5 |
+| Cash packs | 49 to 1,499 Robux | The counter | Step 5 |
+| Starter pack | 99 Robux | Once, after your first climb | Step 5 |
+| Decor for the elevator and your unit | 99 to 499 Robux | The counter, and the weekly shelf | Step 5 |
+| Season pass (maybe) | not priced | The lobby | After launch |
 | Gift versions | the same | Beside each product | With each one |
 
 The prices are the design doc's draft ranges. A starting tool, perks and a bigger unit cost
-cash, not Robux.
+cash, not Robux. Tools in the machine, the marker among them, cost coins.
 
 **The rules these follow.** All of them are already in the design doc or in your lobby and
 store plan of Nov 11.
@@ -849,74 +1038,90 @@ store plan of Nov 11.
 - Nothing random is ever sold, for Robux or for cash.
 - Robux never sit beside a timer.
 - Nothing a player buys makes the game worse for another player.
-- Quarters, the daily door and the cards on the ride are never sold.
+- Coins, the daily door and the choices on the ride are never sold.
 - Nobody can pay to skip a floor.
 - The shop never interrupts play.
 - A purchase is never lost, even if saving fails or the player moves to another server.
 - Any offer can be switched off without updating the game.
 - Prices are read from Roblox and never typed into the game.
 
-## What I'd drop or put off
+## What's out
 
-- **Crouch-walking and sprinting.** Drop them from the design doc (idea 11).
-- **Trading finds between players.** Put it off until well after launch. It brings scams, people
-  selling items for real money, and extra care around young players. The design doc already
-  lists "trading at launch, or later?" as an open question.
+**Cut by your answers:**
+
+- The building as a character that watches, sends monsters or "comes for you".
+- The five-second "don't move" moment, the clock that strikes, and the "closing time"
+  announcement (the first version's 7, 8 and 9).
+- Tagged doors, and three grades of door (4).
+- Marks on the corner map for where the notes are (5).
+- The timing tap on every door (6).
+- A line telling the player what got them (16).
+- Freeing yourself for nothing by holding a button (17).
+- The map of the floor's lights for a caught player (19).
+- The roof on floor 5, Dale's floor, and Dale (20).
+- A copy of every find for everyone in the elevator, and the team's pile of finds (13, 15).
+- A perk for trapping a monster (23).
+- A rule of the week, and a monster every week (24).
+
+**Dropped or put off, as in the first version. You didn't comment on these:**
+
+- **Crouch-walking and sprinting.** Dropped (idea 11, which you agreed).
+- **Trading finds between players.** Put off until well after launch. It brings scams, people
+  selling items for real money, and extra care around young players.
 - **Finds that are monsters in disguise, fake notes, the monster that moves walls, and the
-  dolly.** Each one adds a rule on top of a game whose basic rules haven't been played by
-  anyone yet. They can come with the later floors.
-- **Floors 6 to 10, the stairwell chase and the ending where you cut the power.** After launch,
-  as updates (idea 20).
-- **A new monster every week.** A new rule every week instead (idea 24).
-- **The light board as a post for a player who is still free.** It becomes something a caught
-  player uses (idea 19).
+  dolly.** Each adds a rule on top of a game whose basic rules nobody has played yet. Later.
+- **The light board.** The design doc has one player standing at a board of the floor's
+  lights in an office. I doubt anyone would stand there while friends open doors, and you
+  turned down giving it to a caught player. I'd drop it.
 - **The hall of units in the lobby.** After launch. The shelf in the elevator comes first
   (idea 29).
+- **The stair chase.** Later, as one of the floors that play differently (idea 20).
 
 ## The order I'd build it in
 
 Each step builds a piece of the game and the things sold with that piece together.
 
 **Step 0. Play what's built with friends.** Before any of this, play the three floors that
-exist with real people. Only you can run that. If they ask for another go, the base is fun and
-these ideas are improvements to it. If they don't, what they say will tell us more than this
-document does. Nothing is sold.
+exist with real people. Only you can run that. Nothing is sold.
 
-**Step 1. Doors that pay.** Quarters in every unit, small finds you can take, tagged doors,
-about half the units, clues to the notes, everyone in the elevator getting a copy, saving, and
-a results screen that shows the cash you earned (ideas 1 to 5, 13, 15, 31, and a plain first
-version of 25). Nothing is sold yet. But from here the game records what every player earns and
-spends, so we know what things are worth before we put a price on anything. It has worked when
-players open more doors a minute than they do now and go for the tagged doors first.
+**Step 1. Doors that pay, and things to carry.** Coins in most units, finds that go in your
+slots, pay and keeping at the gate, the machine on the ride, tools that are rarer and wear out
+if you say yes, about half the units, padlocked doors that always hold something good, the one
+faint mark, saving, and a plain results screen that shows the cash you earned (ideas 1 to 5,
+13, 15, 22, 31, and a first version of 25). Nothing is sold yet. But from here the game records
+what every player earns and spends, so we know what things are worth before we put a price on
+anything.
 
-**Step 2. The building's warnings.** The "don't move" moment, the wrong code that costs
-something, and closing time. Then the "get inside" moment and the second monster (ideas 7, 9,
-10, then 8 and 12). Nothing is sold. It has worked when somebody shouts "don't move" without
-having been told the rule.
+**Step 2. Monsters that mess with the floor.** The breaker, sleeping monsters that wake, the
+wrong code that lets monsters out, and the tap when you shut a door on a sleeper (ideas 7, 9,
+10 and 6). Then the second monster, once you've settled it (idea 12). Nothing is sold. It has
+worked when a team that has lost its lights goes looking for the breaker without being told
+to.
 
-**Step 3. Getting caught.** What got you, freeing yourself, turning up on the next floor, and
-the map for a caught player (ideas 16 to 19). This is where the first products go on sale: Cut
-Free, Free a Friend, Free Everyone and wrap colours. So this step also builds buying properly,
-so that a purchase is never lost. It has worked when nobody quits a climb because they were
-caught.
+**Step 3. Getting caught.** Staying wrapped, being carried up floor after floor, and watching
+while you wait (ideas 17 to 19). This is where the first products go on sale: Cut Free, Free a
+Friend, Free Everyone and wrap colours. So this step also builds buying properly, so that a
+purchase is never lost. It has worked when nobody quits a climb because they were caught.
 
-**Step 4. The shape of the climb.** The roof on floor 5, the vote and the vending machine on
-the ride, trapping, and the big find (ideas 20 to 23, and 14). On sale: a starting tool for
-cash, beam colours and the third tool slot. It has worked when two climbs in a row feel
-different.
+**Step 4. The climb with no top.** Floors made by rules up to floor 100, monsters added by
+lowest floor, the choice on the ride, more pay for trapping, the big find and the marker
+(ideas 20, 21, 23, 14 and 38). On sale: a starting tool for cash, beam colours and extra
+slots. It has worked when two climbs in a row feel different, and players talk about their
+best floor.
 
 **Step 5. After the climb.** Finds valued one at a time, the collection book, rare versions,
 selling and keeping, the shelf in the elevator, and perks (ideas 25 to 30). On sale: double
 cash, cash packs, the starter pack and decor. It has worked when players watch the results to
 the end and change their perks between climbs.
 
-**Step 6. Coming back.** Best floor, the Missing board, badges, the daily door, the weekly rule
-and private servers (ideas 24, 32, 33 and 36). The design doc's plan to have Roblox save a
-short clip at the big moments goes here too. On sale: the weekly shelf, and later the season
-pass (ideas 34 and 35). It has worked when players come back the next day without a friend
-asking them to.
+**Step 6. Coming back.** Best floor, the Missing board, badges, the daily door and private
+servers (ideas 32, 33 and 36). The design doc's plan to have Roblox save a short clip at the
+big moments goes here too. On sale: the weekly shelf (idea 34), and maybe later the season
+pass (idea 35). It has worked when players come back the next day without a friend asking
+them to.
 
-The timing tap (idea 6) isn't in any step. It only gets built if you want it.
+The monster you hide from (idea 8) and the monster that takes your head (idea 39) aren't in
+any step. They wait for you.
 
 ## What we'd need to measure
 
@@ -925,147 +1130,246 @@ The game records nothing today, so none of this can be seen yet.
 - How many seconds pass between a player joining and opening their first door. The design doc
   wants 30 or fewer.
 - How many doors a player opens in a minute, and how many of those gave them something.
-- How often players are caught on each floor, and what caused it each time.
-- How many players get left behind, and how many minutes they spend waiting.
+- How often players are caught on each floor.
+- How many floors a wrapped player is carried up before someone frees them.
+- The floor each climb ends on.
 - How often "Again" is pressed after a climb.
 - Who buys each product, and where in the game they were when they bought it.
 
-## What would change in the design doc if you say yes
+## What would change in the design doc
 
-By the design doc's own section names:
+By the design doc's own section names. None of this has been written into it yet.
 
-- **Lights.** "Every lit light always calls a monster" becomes the five-second inspection. The
-  four ways to move come out.
-- **Doors.** Empty units go. Quarters and tagged doors come in. About half as many units.
-- **Getting kept.** Being left behind no longer puts you out of the climb. Freeing yourself is
-  new. The light board moves to the caught player.
-- **Codes, the elevator and the roof.** A wrong code darkens the floor and locks the keypad for
-  longer each time. The ride is about 20 seconds, not 40.
-- **The building.** The roof is on floor 5 at launch, and the building grows from there.
-- **Tools and traps.** A trapped monster still counts toward the floor's limit. Trapping
-  unlocks a perk. I don't know whether the design doc's limit rule was ever your own choice.
-- **Meta.** Everyone in the elevator gets a copy of each find. Finds are valued on the results
-  screen. Perks are new. The shelf in the elevator is new. Trading is put off.
-- **Live ops.** A weekly rule replaces the weekly monster.
-- **Monetization.** Double cash and a season pass are added. Everything else is the same list,
-  placed where it gets used.
+- **Lights.** "Every lit light tells the building where you are" comes out. So do the four
+  ways to move. The lights are just lights. The breaker goes in.
+- **Doors.** About half as many units. Coins in most of them. A padlocked door always holds
+  something good. At most one faint mark for a note. A timing tap when you shut a door on a
+  sleeping monster.
+- **Getting kept.** A wrapped player is carried up floor after floor until freed, earns
+  nothing and picks nothing up. Being left behind no longer puts you out of the climb.
+- **Codes, the elevator and the roof.** A wrong code lets monsters out, one unit and then
+  three, darkens the floor and locks the keypad for longer each time. The ride is about 20
+  seconds, not 40. There is no roof.
+- **The building.** No top floor. Floors are made by rules up to about floor 100 for launch.
+  Each monster has a lowest floor. The building isn't a character. Dale and his floor come
+  out.
+- **Tools and traps.** Tools are rarer in units and wear out, if you say yes. A trapped
+  monster still counts toward the floor's limit. Trapping raises the pay at the gate. The
+  marker is new.
+- **Meta.** Finds go in your own slots and become yours when the gate shuts. Everyone aboard
+  is paid coins. Finds are valued on the results screen. Perks and the shelf in the elevator
+  are new. Trading is put off.
+- **Live ops.** No weekly monster and no weekly rule. Monsters and choices for the ride are
+  added over time.
+- **Monetization.** Extra slots up to six. Double cash from the day the store opens. A season
+  pass is a maybe.
 
-## Three things you cut before that this brings back
+## Things you cut before that are back
 
-I'm listing these so that none of them slips back in without you noticing.
+So that none of them returns without you noticing.
 
-- **A friend who is left behind turns up on the next floor (idea 18).** You cut it on Nov 2
-  because no hit game did it. I think R.E.P.O. does now.
-- **A clock that makes things worse (idea 9).** You cut one that ran across the whole climb on
-  Nov 2. This one runs for a single floor, as Lethal Company's day does.
-- **A reward for trapping (idea 23).** You dropped a cash bonus on Nov 9. This is the stamp in
-  the collection book that the design doc already has, plus the right to buy one perk.
+- **A friend who is left behind turns up on the next floor (idea 18).** You cut it on Nov 2.
+  You agreed it today.
+- **Something that makes a floor worse the longer you stay (idea 9).** You cut a clock that
+  ran across the whole climb on Nov 2. Today's version is yours: sleeping monsters wake after
+  a while, with no clock shown.
+- **A reward for trapping (idea 23).** You dropped a cash bonus on Nov 9. Today's version is
+  your "maybe": more coins at the gate.
+- **Choices on the ride that are bad for the team (ideas 21 and 24).** You cut cards with
+  downsides on Nov 2. Your answer to 24 brings them back.
 
 ## Ideas with no hit game behind them
 
-Your rule is that every mechanic names the hit game it comes from. These five don't fully meet
-it. None of them gets built unless you take it up.
+Your rule is that every mechanic names the hit game it comes from. These don't fully meet it.
 
-- **The timing tap on doors (idea 6).** Timing taps are proven. Putting one on something you do
-  this often isn't.
-- **The Mannequin walking during an inspection (idea 7).** Each half is proven. Putting them
-  together is mine.
+Yours:
+
+- **The big find shown only once the code is in (idea 14).** Carrying a heavy thing in both
+  hands is proven. Showing it only when the countdown starts is new.
+- **A monster that only moves in the light (idea 12).** Monsters with a rule that stops them
+  are proven. This rule is new.
+- **Seeing through the eyes of the monster that caught you (idea 39).**
+- **More pay at the gate for trapped monsters (idea 23).**
+
+Mine:
+
+- **Each monster going after the thing that stops it (ideas 8 and 12).** The breaker has
+  Phasmophobia behind it. Lights that get stuck on, and a monster that pulls open doors down,
+  are my own.
+- **Choosing the next floor on the elevator's buttons, with harder floors paying more (idea
+  21).** Choosing where to go next by its risk is Lethal Company's. Putting it on an elevator
+  between floors is mine.
 - **Valuing finds one at a time on the results screen (idea 25).** It comes from television.
-- **The "still sealed" look for rare finds (idea 27).** Rare versions that are worth more are
-  proven. This look for them is mine.
-- **A caught player marking spots for friends (idea 19).** Giving players who are out
-  something to do is proven. Marking a map is mine.
+  You agreed it.
+- **The "still sealed" look for rare finds (idea 27).** You agreed it.
 
 ## How sure I am about the games I've named
 
-**Checked on the web on Nov 13:**
+**Checked on the web on Nov 13, for the first version:**
 
 - R.E.P.O.: a dead player's head is carried to the extraction point and they come back.
 - Dandy's World: two trinkets at a time, chosen before the run, bought with its currency, some
   unlocked first; and timing taps on its machines.
-- DOORS: gold turns into its lasting currency at the end of a run; a 30-second shop before a
-  run; the library's books and its hint paper.
-- Lethal Company: more monsters as the day goes on, and the ship leaves at midnight.
+- DOORS: gold turns into its lasting currency at the end of a run; the library's books and its
+  hint paper.
+- Lethal Company: more monsters as the day goes on.
 - Fisch: rewards for filling in its book of fish.
 - Fisch and Grow a Garden: rare versions that multiply what a thing is worth.
 
+**Checked on the web on Nov 13, for this version:**
+
+- DOORS: gold isn't shared in a normal run. Its wiki describes a plate in the shop for giving
+  your gold to another player, and names Daily Runs as the mode where gold is shared. No page
+  says it in one plain sentence, so call this very likely, not certain.
+- DOORS: the flashlight runs down, and batteries are found in drawers.
+- Dandy's World: the card vote happens on odd-numbered floors, the most votes win, and a tie
+  is settled at random. Its floors have no known top, with record runs around floor 400. Its
+  lasting currency is paid for things each player does (filling a machine, picking up a
+  capsule).
+- Phasmophobia: the ghost can switch off the breaker and the team has to switch it back on.
+- Lethal Company: spray paint is bought in the store, used to mark the way, and runs dry.
+  Pulling the apparatus cuts every light. Moons have risk levels and weather, and an eclipse
+  brings out more monsters.
+
+**Wrong in the first version, and fixed here:**
+
+- It said Dandy's World pays every player for each floor the team clears. It doesn't.
+- It put DOORS beside a shared pile of finds. DOORS doesn't share gold.
+- It said the game has two slots. It has three.
+
 **From memory, not checked. Check each one before leaning on it:**
 
-- DOORS: gold in drawers and picking it up with a tap; Rush and its flickering lights; the
-  explanation after each death; guessing the last digit in the library; modifiers.
-- Dandy's World: tapes spent at a shop in the elevator; every player paid for each floor.
-- Lethal Company: two-handed items that slow you down; dead players coming back when the ship
-  takes off; the end-of-day report on each player; purchases set out on the ship.
-- Dead by Daylight: timing taps on generators; getting yourself off a hook.
-- Fortnite: chests that glow and hum; an item shop that changes on a schedule.
+- DOORS: gold in drawers and picking it up with a tap; Rush and its flickering lights;
+  guessing the last digit in the library.
+- Dandy's World: tapes spent at a shop in the elevator.
+- Lethal Company: four slots shared by tools and scrap; two-handed items that slow you down;
+  one monster that stops while you look at it and one that comes if you look too long; the
+  end-of-day report on each player; purchases set out on the ship.
+- Dead by Daylight: timing taps that come up on their own, and a missed one makes a noise the
+  killer hears.
 - Escape from Tarkov: marked rooms.
-- Among Us: players who are out still doing tasks.
-- Red Light, Green Light being one of the best-known rules on Roblox.
+- Piggy and Flee the Facility: paying the players who escape.
+- Fortnite: an item shop that changes on a schedule.
 - Daily rewards with streaks being in most big Roblox games.
 
 **Sources for the checked ones.**
 [R.E.P.O. revive, PC Gamer](https://www.pcgamer.com/games/horror/repo-how-to-heal-and-revive/) ·
 [R.E.P.O. revive, GamesRadar](https://www.gamesradar.com/games/horror/repo-revive) ·
 [Dandy's World trinkets, wiki](https://dandys-world-robloxhorror.fandom.com/wiki/Trinkets) ·
-[Dandy's World trinkets, Pro Game Guides](https://progameguides.com/roblox/all-trinkets-in-dandys-world-and-how-to-get-them/) ·
+[Dandy's World cards, wiki](https://dandys-world-robloxhorror.fandom.com/wiki/Cards) ·
+[Dandy's World floors, wiki](https://dandys-world-robloxhorror.fandom.com/wiki/Floors) ·
+[Dandy's World beginner's guide, Item Level](https://itemlevel.net/dandys-world-complete-beginners-guide/) ·
 [DOORS Knobs, wiki](https://doors-game.fandom.com/wiki/Knobs) ·
+[DOORS Gold, wiki](https://doors-game.fandom.com/wiki/Gold) ·
+[DOORS Jeff Shop, wiki](https://doors-game.fandom.com/wiki/Jeff_Shop) ·
+[DOORS Daily Runs, wiki](https://doors-game.fandom.com/wiki/Daily_Runs) ·
+[DOORS items, Bloxodes](https://bloxodes.com/wiki/doors/items) ·
+[Phasmophobia lights, wiki](https://phasmophobia.fandom.com/wiki/Light) ·
+[Phasmophobia flashlight guide, Screen Rant](https://screenrant.com/phasmophobia-keep-flashlight-on-unequipped-guide/) ·
 [Lethal Company spawn times, Steam](https://steamcommunity.com/app/1966720/discussions/0/3958162152971622445) ·
+[Lethal Company spray paint, Prima Games](https://primagames.com/gaming/what-are-the-spray-cans-for-in-lethal-company-explained) ·
+[Lethal Company weather, Prima Games](https://primagames.com/tips/lethal-company-all-weather-conditions-explained) ·
+[Lethal Company moons, Pro Game Guides](https://progameguides.com/lethal-company/all-moons-weather-status-effects-in-lethal-company/) ·
+[Lethal Company apparatus, Gamer Tweak](https://gamertweak.com/apparatus-easter-egg-lethal-company) ·
 [Fisch mutations, Roblox Den](https://robloxden.com/game-codes/fisch/guides/fisch-mutations-guide-types-multipliers-and-how-to-get-them) ·
 [Grow a Garden mutations, Sportskeeda](https://www.sportskeeda.com/roblox-news/all-mutations-grow-garden)
 
-## The list, for marking up
+## Still open
 
-Write keep, change or cut beside each.
+Five things need your answer. Each is written out in full under its number.
+
+1. **Idea 2: tools.** Rarer in units (about one in twelve, down from one in five) and wearing
+   out after a set number of uses. Yes, no, or different numbers?
+2. **Idea 12: the second monster.** Silent, only moves in light, follows the lights you set
+   off, and makes lights stick on until someone flips the breaker off and on. Is this the
+   monster to build next?
+3. **Idea 21: the choice on the ride.** Three buttons for three versions of the next floor,
+   harder ones paying more, lasting one floor. Or three cards on the wall?
+4. **Idea 8: a monster you hide from.** Woken by noise, runs the halls, pulls open doors
+   down. Keep it on the list for later, change it, or drop it?
+5. **Idea 39: the monster that takes your head.** Yours. Take it up now, later, or not?
+
+**Small things I picked so each idea was complete.** Say so if any is wrong; otherwise they
+stand.
+
+- Seven units in ten have coins (1).
+- Not tapping counts as a miss when you shut a door on a sleeping monster (6).
+- A monster pounding on a door breaks out after 90 seconds unless the door is padlocked (6
+  and 9).
+- A Mannequin gets keener on the breaker as floors go up, the breaker takes a one-second hold
+  to switch on, and the elevator keeps its own light (7).
+- Sleeping monsters start to wake after four minutes on floors 1 and 2 and six minutes above,
+  three at a time, with three more every two minutes (9).
+- The third wrong code and every one after opens five units (10).
+- When the code goes in, the big find's unit opens by itself and shows on the corner map, no
+  further than a 20-second carry from the elevator (14).
+- Pay at the gate goes up a little each floor (15).
+- When you're caught, the finds you carry drop where you stood, as tools do (15).
+- A climb ends when every player is wrapped at the same moment (18).
+- A trapped monster still counts toward the floor's limit (23).
+- Each trapped monster adds a quarter to the floor's pay (23).
+- The machine's stock changes from ride to ride (22).
+- Perks are unlocked by reaching a floor for the first time or finishing a set (30).
+- Badges at floors 10, 25, 50 and 100 (32).
+- A player's mark on a door also shows on the corner map, the marker costs 4 coins and makes
+  five marks (38).
+
+## The list, with your answers
 
 **Part 1: Opening doors**
-1. A few quarters in every unit, so no door is a waste.
-2. Quarters are spent during the climb, and whatever is left becomes cash.
-3. About half as many units on each floor.
-4. Three kinds of door you can tell apart: plain, tagged and padlocked.
-5. Clues to where the notes are: a mark on the map, and a pencil mark on the door frame.
-6. A timing tap that opens a door quietly (untested).
+1. Coins in most units, not all. **Changed.**
+2. Coins are spent in the climb, and what's left becomes cash. **Agreed.** Tools rarer and
+   wearing out: **Open.**
+3. About half as many units on each floor. **Agreed.**
+4. Two kinds of door: padlocked, and everything else. **Changed.**
+5. At most one faint mark for a note, and nothing on the map. **Changed.**
+6. A timing tap when you shut the door on a sleeping monster. **Changed.**
 
-**Part 2: The lights**
-7. A "don't move" moment about once a minute.
-8. A "get inside" moment, from floor 3 up.
-9. A floor gets more dangerous if the team stays too long.
-10. A wrong code costs the team something.
-11. Keep one walking speed.
-12. The next monster is one that light doesn't stop.
+**Part 2: Monsters that mess with the floor**
+7. The Mannequin cuts the power, and someone has to find the breaker. **Changed.**
+8. A monster you hide from. **Open.**
+9. Stay too long and the sleeping monsters start to wake. **Changed.**
+10. A wrong code lets monsters out: one unit, then three. **Agreed, with your penalty.**
+11. Keep one walking speed. **Agreed.**
+12. The second monster: silent, and it only moves in the light. **Open.**
 
 **Part 3: Getting to the elevator**
-13. Small finds are picked up with a tap and shared by the team.
-14. One big find on each floor, carried in both hands.
-15. Everyone in the elevator gets their own copy of what's in it.
+13. A find goes in one of your own slots. **Changed.**
+14. One big find on each floor, shown only once the code is in. **Changed.**
+15. Everyone aboard is paid coins, and your finds become yours when the gate shuts.
+    **Changed.**
 
 **Part 4: Getting caught**
-16. Tell the player what got them.
-17. A slow, loud way to free yourself.
-18. A friend who is left behind turns up on the next floor.
-19. A map of the floor's lights for a caught player, who can mark spots for friends.
-- Sold here: Cut Free, Free a Friend, Free Everyone, wrap colours.
+16. Tell the player what got them. **Cut.**
+17. No free way out: a friend, or Cut Free. **Changed.**
+18. Left behind or still wrapped, you turn up on the next floor. **Agreed.**
+19. While you wait: bang on the door, or watch your friends. **Changed.**
 
 **Part 5: The whole climb**
-20. The roof on floor 5 for launch.
-21. A team vote on three cards during the ride.
-22. A vending machine in the elevator.
-23. Trapping a monster: it still counts toward the floor's limit, and it unlocks a perk.
-24. A new rule each week, instead of a new monster each week.
-- Sold here: a starting tool (for cash), a third tool slot, flashlight beam colours.
+20. No top floor: floors made by rules up to about 100, monsters by lowest floor. **Changed.**
+21. A team choice on the ride, which can be bad. **Agreed.** Its look: **Open.**
+22. A vending machine in the elevator, on every ride. **Agreed.**
+23. Trapping a monster pays more at the gate. **Changed.**
+24. New monsters and new choices over time, on no fixed schedule. **Changed.**
 
 **Part 6: After the climb**
-25. The results screen values your finds one at a time.
-26. A collection book with a page for every find.
-27. Rare versions of ordinary finds, worth three times as much.
-28. Selling and keeping without a menu.
+25. The results screen values your finds one at a time. **Agreed.**
+26. A collection book with a page for every find. **Agreed.**
+27. Rare versions of ordinary finds, worth three times as much. **Agreed.**
+28. Selling and keeping without a menu. **Agreed.**
 29. Your unit grows, and a shelf in the elevator shows the host's best three finds.
-30. Perks: small advantages you own, two picked before each climb.
-- Sold here: double cash, cash packs, a starter pack, decor.
+    **Agreed.**
+30. Perks: small advantages you own, two picked before each climb. **Agreed.**
 
 **Part 7: Coming back**
-31. Save the player's progress.
-32. Best floor, the Missing board and badges.
-33. A free door to open once a day, with a seven-day streak.
-34. A small shelf of cosmetics that changes every week.
-35. A season pass, after launch.
-36. Private servers free, or nearly free.
+31. Save the player's progress. **Agreed.**
+32. Best floor, the Missing board and badges. **Agreed.**
+33. A free door to open once a day, with a seven-day streak. **Agreed.**
+34. A small shelf of cosmetics that changes every week. **Agreed.**
+35. A season pass, after launch. **Maybe.**
+36. Private servers free, or nearly free. **Agreed.**
+
+**New**
+37. The shop as listed. **Agreed for now.**
+38. A marker for tagging doors, bought with coins in the machine. **New, yours.**
+39. A monster that takes your head, so you see through its eyes. **New, yours, Open.**

@@ -18,27 +18,38 @@ nowhere else.
   arrive on your group's server) and a running `rojo serve` only reads those at start. Without
   it the trip works, but the front office may flash for a moment as you arrive.
 
-## Decide: the proposal for the loop and the store (Nov 13)
+## Decide: what's still open in the proposal (Nov 13)
 
-- [ ] **Read `docs/PROPOSAL.md`** and answer by number: keep, change or cut. It holds 36 numbered
-  ideas from the audit you asked for, each written out in full, with a list at the end for
-  marking up. Nothing in it is decided, built or ticketed, and the design doc is unchanged.
-
-  Four of the ideas are big enough that most of the others depend on them:
-  1. **The lights (idea 7).** Today the plan is that every light you walk under calls a monster.
-     The proposal changes that to a five-second "don't move" warning about once a minute, with
-     the lights harmless the rest of the time. This changes your first idea for the game.
-  2. **Being left behind (idea 18).** Today a player the elevator leaves without is out of the
-     climb. The proposal has them turn up wrapped in a unit on the next floor, for friends to
-     free. You cut this on Nov 2 because no hit game did it; R.E.P.O. may now be one.
-  3. **The roof on floor 5 (idea 20).** A full climb at launch would be five floors and about
-     20 to 25 minutes, with floors 6 to 10 added later as updates.
-  4. **Doors that always pay (ideas 1 to 4).** A few coins in every unit, about half as many
-     units on a floor, and a tagged door that always holds a find but is likelier to hold a
-     monster.
-
-  The proposal also lists five ideas that no hit game has done (the first is a timing tap that
-  opens a door quietly). None of them gets built unless you say so.
+Your answers are written into `docs/PROPOSAL.md`, idea by idea (D-127). Nothing in it is built
+or ticketed, and the design doc and the roadmap haven't been changed to match yet. Five things
+in it still need your answer. Each is written out in full under its number; answer by number.
+- [ ] **Idea 2, tools.** You asked whether tools should be rarer in units and whether they
+  should break. My suggestion: a tool in about one unit in twelve (one in five today), and each
+  tool works a set number of times (bolt cutters cut three padlocks, the saw cuts two holes).
+  The flashlight doesn't change. Yes, no, or different numbers?
+- [ ] **Idea 12, the second monster.** Your sketch (silent, doesn't move in the dark) with my
+  fix for the ceiling lights: it can only move in light, so it follows the lights you set off
+  as you walk, and it makes lights stick on until someone flips the breaker off and on. Is
+  this the monster to build next? It needs a look, a name and a reason to be alive from you.
+- [ ] **Idea 21, the choice on the ride.** You asked for it not to feel like Dandy's World. My
+  suggestion: three buttons on the elevator's panel, each a version of the next floor (power
+  out, twice the monsters), harder ones paying more coins, lasting one floor. Or three cards on
+  the wall?
+- [ ] **Idea 8, a monster you hide from.** My rethink, with no timer: noise wakes it, it runs
+  the halls, you get inside a unit, and it pulls down every open door it passes. Keep it on the
+  list for a later monster, change it, or drop it?
+- [ ] **Idea 39, the monster that takes your head** (yours): take it up now, later, or not?
+  Three things would need settling first; they're listed under the idea.
+- [ ] **The small things I picked** so each idea was complete (the list under "Still open" in
+  the proposal: how many units have coins, when sleeping monsters start to wake, what ends a
+  climb, and so on). They stand unless you say one is wrong.
+- [ ] **Untested bets.** The proposal's "Ideas with no hit game behind them" lists eight. Four
+  are yours (the big find shown only once the code is in, a monster that only moves in light,
+  seeing through a monster's eyes, more pay for trapped monsters) and four are mine. None of
+  mine gets built unless you say so.
+- [ ] **Say when** the agreed ideas should be written into the design doc and turned into
+  roadmap tickets. Until then the design doc still describes ten floors, Dale and lights that
+  call monsters.
 
 ## Now: judge L-08e3, Invite and the dials (built Nov 12, D-124)
 
@@ -410,13 +421,8 @@ yours to judge.
 
 Written into the GDD's "The lobby" and "Monetization", ROADMAP L-08e (four tickets) and Phase 2's
 store. Defaults are in place; nothing here blocks the tickets before L-08e.
-- [ ] **Tool slots for sale** (L-20b): your note sells six. Six ends the "which tools do I carry"
-  choice a climb is built on; one more (four) keeps it. Default: six, as you said, until you
-  say four.
 - [ ] **A clerk at the counter?** A character there could be the game's face, as DOORS' Jeff is,
   but it needs a reason to be alive that fits the lore. Default: no clerk, a bell and a sign.
-- [ ] **A double-cash pass** (299 to 399 in other games), a small edge in co-op. Default: not at
-  launch; look again if cash feels scarce.
 - [ ] **The dolly in the levels** stays a maybe (your note: the climb is an escape, not a haul).
   Nothing builds it until you say. If it comes back, riding an empty one fast but loud would be
   a new, untested bet.

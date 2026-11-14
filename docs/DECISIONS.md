@@ -3514,3 +3514,48 @@ the wheels by how far the cart rolls and swings the front casters to trail their
 friend's kicks, drags and bumps are read from how their cart moves (a surge, a hard slowing, a
 sudden stop). The rider's body stands, leans and kicks (`Ride.leg`); their arms stay the torch's,
 which FlashlightView holds out after any other pose.
+
+## D-127 The owner's answers to the proposal (Nov 13)
+
+The owner answered all 36 ideas in `docs/PROPOSAL.md`, added a note on the shop, and answered
+four follow-up questions. The proposal now holds each answer under its number, written out in
+full. This entry is the short list of what those answers settle. Nothing is built or ticketed,
+and the design doc is not changed yet, so where the two disagree on the loop, the proposal is
+the newer word.
+
+**The building isn't a character.** It doesn't watch, send monsters or "come for you" (the
+owner: that makes no sense). The lights are just lights. Each monster messes with the floor in
+its own way and players go and put it right: a Mannequin can switch off the floor's breaker,
+every hall light stays out, and someone has to find the breaker. Nothing runs on a timer the
+players can see; not knowing when is the suspense.
+
+**The climb has no top.** No roof, no Dale (the owner never chose him), no ten floors. Floors
+are made by rules up to about floor 100 for launch; each monster has a lowest floor and is
+mixed in at random above it; a floor that plays differently (the stair chase) about every five,
+later. Best floor is the number to beat.
+
+**You keep what you carry.** A find goes in one of your own three slots beside your tools; it
+becomes yours when the gate shuts and the slot frees up. Everyone aboard is paid coins for the
+floor, more for trapped monsters. No copies and no team pile. One big find a floor, carried in
+both hands, is shown only once the code is in. Slots are sold up to six.
+
+**Caught means caught.** Wrapped until a friend frees you or you buy Cut Free (Robux only; no
+free hold-the-button). You are carried up floor after floor meanwhile, paid nothing, picking
+nothing up; you can bang on the door or watch a friend, and can't help the team.
+
+**Doors.** Coins in most units, not all. Two kinds of door: padlocked (always something good,
+most monsters) and everything else (no idea). At most one faint mark for a note and nothing on
+the map, because having to open doors, and what that lets out, is the game. About half as many
+units. A timing tap only when you shut a door on a sleeping monster.
+
+**Pressure.** A wrong code opens units with monsters in them, one and then three. Stay long
+enough and sleeping monsters wake and pound on their doors, more of them on higher floors.
+
+**Also settled:** one walking speed; the ride's choices can be bad for the team (this undoes
+the Nov 2 cut) and grow over time with the monsters, on no weekly schedule; the machine on
+every ride; a marker for tagging doors, bought with coins; no text that explains a rule to the
+player; Part 6 and Part 7 of the proposal as written (a season pass is a maybe); the shop as
+listed for now, which sells double cash from the day the store opens.
+
+**Still the owner's to answer** (`OWNER.md`): tools rarer and wearing out, the second monster,
+how the ride's choice looks, a monster you hide from, and a monster that takes your head.
