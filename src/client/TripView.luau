@@ -12,6 +12,10 @@
 	  (ReplicatedFirst's TripCover kept it from the trip, or it's laid at once). When the server
 	  stands you in the climb (`Trip.ArrivedAttribute`: where it stood you), your camera turns the
 	  way you were stood and the cover fades off on the shaft sliding past the gate.
+	- Sent on to a friend (L-08e3b): you joined a lobby by an invite from a friend on their group's
+	  own server, and the server is sending you on (`Trip.FollowAttribute` on you, their name).
+	  The black comes down at once, "Joining Sam" under it, and carries across the teleport, so
+	  you open beside them. If it fails for good, "Teleport failed" under the black, then it lifts.
 	- It never covers a screen for more than `Trip.CoverMost`.
 
 	Nothing runs per frame but the three-frame camera turn as the cover lifts.
@@ -110,6 +114,7 @@ function TripView.new(): Brix.System
 	local token = 0 -- the latest fade; an older one's wait stops when it sees another
 	local own = false
 	local lifting = false
+	local followed = false -- being sent on to a friend's group
 
 	local function fade(to: number, seconds: number)
 		local c = cover
@@ -137,8 +142,12 @@ function TripView.new(): Brix.System
 		local mine = leftAt ~= nil and table.find(ids, player.UserId) ~= nil
 		if trip and mine and going ~= model and leftAt then
 			going = model
-			local t = twin
+			local c, t = cover, twin
+			if c then
+				c.text.Text = Trip.CoverText
+			end
 			if t then
+				t.text.Text = Trip.CoverText
 				-- set again for each trip: Roblox keeps it for one teleport
 				pcall(function()
 					TeleportService:SetTeleportGui(t.gui)
@@ -191,6 +200,48 @@ function TripView.new(): Brix.System
 				c:Disconnect()
 			end
 			cars[inst :: Model] = nil
+		end
+	end
+
+	-- You're being sent on to a friend's group (their name on you), or that failed (it's gone).
+	local function following()
+		local name = player:GetAttribute(Trip.FollowAttribute)
+		local c = cover
+		if not c then
+			return
+		end
+		if type(name) == "string" then
+			if followed then
+				return
+			end
+			followed = true
+			local line = Trip.followText(name)
+			c.text.Text = line
+			local t = twin
+			if t then
+				t.text.Text = line
+				pcall(function()
+					TeleportService:SetTeleportGui(t.gui)
+				end)
+			end
+			fade(1, Trip.Fade)
+			-- still here long after every try, with no word: lift it
+			task.delay(Trip.Fade + (Trip.GiveUp + 3) * Trip.Tries, function()
+				if followed then
+					followed = false
+					lift(Trip.Reveal)
+				end
+			end)
+		elseif followed then
+			followed = false
+			c.text.Text = Trip.FailedText
+			token += 1
+			local mine = token
+			task.delay(Trip.FailedHold, function()
+				if token == mine then
+					lift(Trip.Reveal)
+				end
+			end)
 		end
 	end
 
@@ -291,6 +342,11 @@ function TripView.new(): Brix.System
 			c.gui.Parent = playerGui
 			cover = c
 			twin = makeCover(true)
+			table.insert(
+				connections,
+				player:GetAttributeChangedSignal(Trip.FollowAttribute):Connect(following)
+			)
+			following()
 			for _, inst in CollectionService:GetTagged(Elevator.Tag) do
 				addCar(inst)
 			end

@@ -25,15 +25,27 @@
 	  floor the climb is on, in front of its car (Climbs' `arrival`), once there's one to stand on.
 	- Once that climb is over the group is back in its lobby car (`home`, L-08e2, LobbyCars) and
 	  this server is a lobby of their own: nobody is stood in a climb any more, and their next
-	  climb rides up from the car on this server.
+	  climb rides up from the car on this server. Anyone arriving then is in the lobby with them.
+	- Share and follow (L-08e3b): the group's reserved id goes on Workspace (`Trip.ServerAttribute`)
+	  so an invite from here carries it (CarPanel). Until their first climb is over, the floor
+	  they're on goes back to the lobby they left (MessagingService on its `Trip.topic`), as it
+	  changes and every `Trip.WordEvery`; 0 once it's over, or as this server shuts.
+
+	A friend's invite from a group's own server, on a lobby (`follow`, called by LobbyCars as
+	their launch data arrives): their screen goes black ("Joining Sam") and they're sent on, alone,
+	to that server (the same reserved id), with whom they came for; there they're stood beside the
+	group (Climbs' `arrival`, as a late arrival) or in the lobby with them. A failure there is
+	tried again as a group's is; failing for good, the black lifts in the lobby they landed in.
 
 	Stepped every frame, but only the lobby's waits on riders and the group's wait cost anything.
 ]]
 local HttpService = game:GetService("HttpService")
+local MessagingService = game:GetService("MessagingService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TeleportService = game:GetService("TeleportService")
+local UserService = game:GetService("UserService")
 local Workspace = game:GetService("Workspace")
 
 local Boarding = require(ReplicatedStorage.Shared.Lobby.Boarding)
@@ -54,6 +66,9 @@ export type Data = {
 	bay: number,
 	friends: boolean,
 	players: number,
+	server: string,
+	lobby: string,
+	by: number,
 }
 
 export type Trips = Brix.System & {
@@ -64,6 +79,11 @@ export type Trips = Brix.System & {
 	-- Sends `players` to a new server of their own with `data`. `failed` is called once for each
 	-- of them still here whose trip failed for good. Doesn't yield.
 	send: (self: any, players: { Player }, data: Data, failed: (player: Player) -> ()) -> (),
+	-- Sends `player`, who came by `by`'s invite, on to that friend's group's own server (`to`, its
+	-- reserved id). Their screen goes black first; a failure for good lifts it. Yields.
+	follow: (self: any, player: Player, to: string, by: number) -> (),
+	-- The group's own server's reserved id, where it's known; nil elsewhere.
+	server: (self: any) -> string?,
 	-- The difficulty the group brought, on a group's own server; nil elsewhere.
 	difficulty: (self: any) -> string?,
 	-- The data the group came with (its order, the car it left in), on a group's own server; nil
@@ -80,6 +100,7 @@ type Sent = {
 	failed: (player: Player) -> (),
 	open: number, -- riders not yet gone or failed
 	gone: number, -- riders who left for the group's server
+	counts: boolean, -- a group's trip, which counts toward the lobby's fallback (a friend's doesn't)
 }
 type Sending = { sent: Sent, tries: number, deadline: number }
 
@@ -146,6 +167,8 @@ function Trips.new(): Trips
 	local spawnAt: Vector3? = nil -- the front office's spawn
 	local folder: Folder? = nil
 	local homed = false -- the first climb is over: the group is in the lobby
+	local toldFloor: number? = nil -- the floor last sent to the lobby they left
+	local toldAt = 0 -- os.clock() it was sent
 
 	local function spawn(f: () -> ())
 		local thread = task.spawn(f)
@@ -167,7 +190,7 @@ function Trips.new(): Trips
 			sent.gone += 1
 		end
 		-- the send's count first, so a failure handed back sees whether this lobby still sends
-		if sent.open == 0 then
+		if sent.open == 0 and sent.counts then
 			if sent.gone > 0 then
 				failedInRow = 0
 			else
@@ -288,6 +311,39 @@ function Trips.new(): Trips
 		end)
 	end
 
+	-- The floor the group is on (0: their climb is over) to the lobby they left, if it's named.
+	local function tell(floor: number)
+		local d = data
+		if not (d and d.lobby ~= "" and d.server ~= "") then
+			return
+		end
+		toldFloor, toldAt = floor, os.clock()
+		local topic, word = Trip.topic(d.lobby), Trip.word(d.server, floor)
+		task.spawn(function()
+			local ok, err = pcall(function()
+				MessagingService:PublishAsync(topic, word)
+			end)
+			if not ok then
+				warn(`Trips: couldn't tell the lobby floor {floor}: {err}`)
+			end
+		end)
+	end
+
+	-- `player` arrived after the group's first climb: they're in the lobby with them, wherever
+	-- they spawned, and their screen's black lifts there.
+	local function inLobby(player: Player)
+		spawn(function()
+			local giveUp = os.clock() + Trip.CoverMost
+			while player.Parent and not player.Character and os.clock() < giveUp do
+				task.wait(0.25)
+			end
+			local character = player.Character
+			if player.Parent and character then
+				player:SetAttribute(Trip.ArrivedAttribute, character:GetPivot())
+			end
+		end)
+	end
+
 	-- `player` arrived on a group's own server.
 	local function arrived(player: Player)
 		if table.find(here, player) then
@@ -304,7 +360,16 @@ function Trips.new(): Trips
 		end
 		if not data then
 			-- the first one's word says whom to wait for; Studio's "Arrive" waits for nobody else
-			data = d or Trip.encode({ player.UserId }, Boarding.Difficulties[1]) :: Data
+			local first: Data = d
+				or Trip.encode({ player.UserId }, Boarding.Difficulties[1]) :: Data
+			data = first
+			if first.server ~= "" then
+				Workspace:SetAttribute(Trip.ServerAttribute, first.server)
+			end
+		end
+		-- a friend sent on by an invite: pointed to whoever invited them, once the group's home
+		if d and d.by ~= 0 then
+			player:SetAttribute(Boarding.InvitedAttribute, d.by)
 		end
 		firstAt = firstAt or now()
 		table.insert(here, player)
@@ -314,7 +379,9 @@ function Trips.new(): Trips
 				newCharacter(player)
 			end)
 		)
-		if rodeAt and not homed then
+		if homed then
+			inLobby(player)
+		elseif rodeAt then
 			standLate(player)
 		end
 	end
@@ -368,6 +435,64 @@ function Trips.new(): Trips
 				`Trips: the group's car is riding up to floor 1 ({#still} aboard, {d.difficulty})`
 			)
 		end
+	end
+
+	-- Sends `players` (those not already going) on one teleport with `d`, to the server it names
+	-- (else a new one). `counts`: a group's trip, toward the fallback. Doesn't yield.
+	local function sendNow(
+		players: { Player },
+		d: Data,
+		counts: boolean,
+		failed: (player: Player) -> ()
+	)
+		local going: { Player } = {}
+		for _, player in players do
+			if player.Parent and not sending[player] then
+				table.insert(going, player)
+			end
+		end
+		if #going == 0 then
+			return
+		end
+		local options = Instance.new("TeleportOptions")
+		-- the group's own server: the first teleport with a new id makes it, the same id again
+		-- lands on it
+		options.ReservedServerId = if d.server ~= ""
+			then d.server
+			else HttpService:GenerateGUID(false)
+		options:SetTeleportData(d)
+		local sent: Sent =
+			{ options = options, failed = failed, open = #going, gone = 0, counts = counts }
+		local deadline = os.clock() + Trip.GiveUp
+		for _, player in going do
+			sending[player] = { sent = sent, tries = 1, deadline = deadline }
+		end
+		spawn(function()
+			local tries = 1
+			while true do
+				local ok, err = teleport(going, options)
+				if ok then
+					return
+				end
+				local wait = Trip.retry("Failure", tries)
+				if not wait then
+					warn(`Trips: the trip failed: {err}`)
+					for _, player in going do
+						resolve(player, false)
+					end
+					return
+				end
+				tries += 1
+				for _, player in going do
+					local entry = sending[player]
+					if entry then
+						entry.tries = tries
+						entry.deadline = os.clock() + wait + Trip.GiveUp
+					end
+				end
+				task.wait(wait)
+			end
+		end)
 	end
 
 	-- This server becomes a group's own: floor 1 laid now, arrivals waited for.
@@ -424,6 +549,18 @@ function Trips.new(): Trips
 			local reserved = game.PrivateServerId ~= "" and game.PrivateServerOwnerId == 0
 			if reserved or dev == "Arrive" then
 				becomeOwn()
+				-- shutting mid-climb (the group left): the lobby's dial forgets them now
+				game:BindToClose(function()
+					local d = data
+					if isOwn and not homed and toldFloor and d and d.lobby ~= "" then
+						pcall(function()
+							MessagingService:PublishAsync(
+								Trip.topic(d.lobby),
+								Trip.word(d.server, 0)
+							)
+						end)
+					end
+				end)
 				return
 			end
 			table.insert(
@@ -471,6 +608,13 @@ function Trips.new(): Trips
 						)
 						resolve(player, false)
 					end
+				end
+			end
+			if isOwn and rodeAt and not homed then
+				local c = climbs
+				local on = c and c:current()
+				if on and (on.number ~= toldFloor or os.clock() >= toldAt + Trip.WordEvery) then
+					tell(on.number)
 				end
 			end
 			if not isOwn or rodeAt or boarding then
@@ -529,50 +673,42 @@ function Trips.new(): Trips
 			return game.PlaceId ~= 0 and failedInRow < Trip.FallbackAfter
 		end,
 		send = function(_: any, players: { Player }, d: Data, failed: (player: Player) -> ())
-			local going: { Player } = {}
-			for _, player in players do
-				if player.Parent and not sending[player] then
-					table.insert(going, player)
-				end
-			end
-			if #going == 0 then
+			sendNow(players, d, true, failed)
+		end,
+		follow = function(_: any, player: Player, to: string, by: number)
+			if isOwn or sending[player] or not Trip.isServer(to) then
 				return
 			end
-			local options = Instance.new("TeleportOptions")
-			-- a new reserved server for this group: the first teleport with a new id makes it
-			options.ReservedServerId = HttpService:GenerateGUID(false)
-			options:SetTeleportData(d)
-			local sent: Sent = { options = options, failed = failed, open = #going, gone = 0 }
-			local deadline = os.clock() + Trip.GiveUp
-			for _, player in going do
-				sending[player] = { sent = sent, tries = 1, deadline = deadline }
-			end
-			spawn(function()
-				local tries = 1
-				while true do
-					local ok, err = teleport(going, options)
-					if ok then
-						return
-					end
-					local wait = Trip.retry("Failure", tries)
-					if not wait then
-						warn(`Trips: the trip failed: {err}`)
-						for _, player in going do
-							resolve(player, false)
-						end
-						return
-					end
-					tries += 1
-					for _, player in going do
-						local entry = sending[player]
-						if entry then
-							entry.tries = tries
-							entry.deadline = os.clock() + wait + Trip.GiveUp
-						end
-					end
-					task.wait(wait)
-				end
+			-- their friend's name for the black ("Joining Sam"), if Roblox gives it
+			local name = ""
+			local ok, infos = pcall(function()
+				return UserService:GetUserInfosByUserIdsAsync({ by })
 			end)
+			local info = if ok and type(infos) == "table" then infos[1] else nil
+			if info and type(info.DisplayName) == "string" then
+				name = info.DisplayName
+			end
+			if not player.Parent then
+				return
+			end
+			player:SetAttribute(Trip.FollowAttribute, name)
+			task.wait(Trip.Fade + 0.1) -- their screen is black
+			if not player.Parent then
+				return
+			end
+			local d = Trip.encode(
+				{ player.UserId },
+				Boarding.Difficulties[1],
+				nil,
+				{ server = to, lobby = "", by = by }
+			) :: Data
+			sendNow({ player }, d, false, function(p: Player)
+				p:SetAttribute(Trip.FollowAttribute, nil)
+			end)
+		end,
+		server = function(_: any): string?
+			local d = data
+			return if isOwn and d and d.server ~= "" then d.server else nil
 		end,
 		difficulty = function(_: any): string?
 			local d = data
@@ -582,6 +718,9 @@ function Trips.new(): Trips
 			return if isOwn then data else nil
 		end,
 		home = function(_: any)
+			if not homed and toldFloor then
+				tell(0)
+			end
 			homed = true
 			table.clear(placed)
 		end,

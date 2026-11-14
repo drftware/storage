@@ -1165,7 +1165,8 @@ fix them later." The overnight run's hard limits hold.
       and off as you step in, the panel's Invite opening Roblox's invite sheet (none sent), the
       key gone on a group's own server. Lune: boarding 137 checks. Live invites, friends and a
       phone are the owner's (`OWNER.md`).
-    - [ ] **L-08e3b Share and follow.** Three pieces the invite still lacks. (1) A share link
+    - [x] **L-08e3b Share and follow. Built Nov 13 (D-130); passes checks, untested in Studio**
+      (Rojo's sync wasn't reaching Studio). Three pieces the invite still lacked. (1) A share link
       (`SocialService:PromptLinkSharingAsync`, server only: an expiring link to the experience
       with launch data, Roblox's share sheet or the clipboard): Audience Expansion pays 35% of
       a new or returning player's first $100 when they come by the experience's share link, and
@@ -1176,6 +1177,13 @@ fix them later." The overnight run's hard limits hold.
       there. (3) The dial's floor for a climb on another server: the group's server tells its
       lobby (MessagingService, the lobby's JobId in the trip's data) and the car's dial says
       "Floor N" until they're back.
+    - [ ] **L-08e3c Invite before you leave, and joining mid-climb** (found building L-08e3b;
+      waits on `OWNER.md`). Invite is on the car's panel, so a friend can only be sent on to a
+      group's own server once the group's home. (1) An invite from a car on a public lobby names
+      the server that car will send its group to (made as the group forms); a friend who lands
+      where their inviter isn't is sent on to it. (2) Arriving mid-climb, they're stood beside
+      the group on its floor (Trips' late-arrival path, built). Whether a friend may join a climb
+      under way is the owner's call: DOORS doesn't let you join a run under way.
     - [ ] **L-08e4 The cart ride** (owner: "definitely"). The moment: you kick a platform cart
       across the lobby while the count runs and roll up to the gate as it shuts. Its own model,
       built the unit's way. Tap Ride; hold forward and your back leg kicks on its own in rhythm

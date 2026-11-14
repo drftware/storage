@@ -1598,6 +1598,18 @@ verified: a doc page, Studio, or "untested".
   Audience Expansion pays 35% of a new or returning user's first $100 of purchases (60 days) when
   they come by the experience's share link (or a direct link) and play 10+ minutes that day, the
   experience averaging 100+ DAU.
+- **Share links, messaging and names, read Nov 13 (L-08e3b, create.roblox.com's SocialService,
+  MessagingService)**: `SocialService:PromptLinkSharingAsync(player, options?)` is server only and
+  yields; `options` is a plain dictionary (luau-lsp's `LinkSharingOptions`: `FallbackLinkId`,
+  `ExpirationSeconds`, `PreviewTitle`, `PreviewDescription`, `PreviewAssetId`, `LaunchData`); it
+  returns an `Enum.PromptLinkSharingResult` (`Success`, `PlayerLeft`, `InvalidLaunchData`); an
+  expired link goes to `FallbackLinkId` (default the game's join link). MessagingService: topics
+  1 to 80 characters, messages 1 kB, best effort (usually 1 to 2 s, not guaranteed); per server
+  600 + 240 per player sends a minute and 20 + 8 per player subscriptions; per topic 40 + 80 per
+  server received a minute. `SubscribeAsync(topic, fn)` yields and gives a connection; the
+  message is a table with `Data` and `Sent`. `UserService:GetUserInfosByUserIdsAsync({ ids })`
+  (server) gives `{ Id, Username, DisplayName }` rows. Unverified: what `game.JobId` is in Studio
+  (LobbyCars subscribes only when it reads as a GUID).
 - **Invites in Studio** (Nov 12, verified with the MCP): `CanSendGameInviteAsync` returns true in
   Play and `PromptGameInvite` opens the real sheet with your real friends
   (`CoreGui.GameInvite.GameInviteModal`; `screen_capture` doesn't show CoreGui, so read its

@@ -45,13 +45,23 @@
 	  carries the floor they're on (`Boarding.FloorAttribute`). Someone who joins by a friend's
 	  invite (Roblox's launch data, CarPanel) is marked with who invited them
 	  (`Boarding.InvitedAttribute`), so their screen points them to that friend's car.
+	- Share and follow (L-08e3b): an invite from a friend on a group's own server names that
+	  server, and the friend who joins by it is sent on to it (Trips' `follow`) while it's fresh
+	  (`Trip.readInvite`). A group a car sends away names its own server and this lobby; their
+	  server sends back the floor they're on (MessagingService on this lobby's `Trip.topic`), and
+	  the car they left from shows it on its dial until their climb is over, or until nothing's
+	  been heard for `Trip.WordStale`. Share on the panel, for anyone aboard: Roblox's share sheet
+	  with a link to the game (`SocialService:PromptLinkSharingAsync`, server only), naming the
+	  group's own server if this is one.
 
 	Every step checks each player against the six cars: a few box tests, no allocation.
 ]]
 local HttpService = game:GetService("HttpService")
+local MessagingService = game:GetService("MessagingService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local SocialService = game:GetService("SocialService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
@@ -74,7 +84,12 @@ type Car = {
 	holding: boolean, -- a group is being stood back in it after their climb: not stepped
 	leg: number, -- how many times it has left: a return meant for an earlier trip is dropped
 	pick: (inside: { Player }) -> { Player },
+	far: Far?, -- the group it last sent to a server of their own, while word of them may come
 }
+
+-- A group a car sent to a server of their own (L-08e3b): that server's reserved id, the floor
+-- they last said they're on, and the server time they were last heard from (or were sent).
+type Far = { server: string, floor: number?, heard: number }
 
 -- The group a car took up into a climb on this server, as it left: who rode, in order, and the
 -- host's choices.
@@ -141,6 +156,8 @@ function LobbyCars.new(): LobbyCars
 	local remote: RemoteEvent? = nil
 	local lastChoice: { [Player]: number } = {} -- os.clock() of each host's last choice taken
 	local lastTold: { [number]: number } = {} -- UserId → server time they were last told why
+	local lastShare: { [Player]: number } = {} -- os.clock() of each player's last share taken
+	local hearing: RBXScriptConnection? = nil -- word of the floors this lobby's groups are on
 	-- Friends, as Roblox answered: UserId → UserId → whether they're friends (both ways round).
 	local friends: { [number]: { [number]: boolean } } = {}
 	local asking: { [number]: { [number]: true } } = {} -- the asks under way, the same way round
@@ -264,15 +281,14 @@ function LobbyCars.new(): LobbyCars
 			local launch = if ok and type(join) == "table" then (join :: any).LaunchData else nil
 			if type(launch) == "string" and launch ~= "" then
 				local decoded, data = pcall(HttpService.JSONDecode, HttpService, launch)
-				local by = if decoded and type(data) == "table" then (data :: any).by else nil
-				if
-					type(by) == "number"
-					and by % 1 == 0
-					and by > 0
-					and by ~= player.UserId
-					and player.Parent
-				then
-					player:SetAttribute(Boarding.InvitedAttribute, by)
+				local invite = if decoded then Trip.readInvite(data, player.UserId, now()) else nil
+				if invite and player.Parent then
+					player:SetAttribute(Boarding.InvitedAttribute, invite.by)
+					-- from a friend on their group's own server: sent on to it
+					local t = trips
+					if invite.to and t and not t:own() then
+						t:follow(player, invite.to, invite.by)
+					end
 				end
 				return
 			end
@@ -347,6 +363,54 @@ function LobbyCars.new(): LobbyCars
 		return Boarding.leave(car.state, id, t)
 	end
 
+	-- Word from a group's own server of the floor they're on (MessagingService's `Data`): on the
+	-- dial of the car that sent them, if it's still the group that car last sent.
+	local function heard(data: unknown)
+		local word = Trip.readWord(data)
+		if not word then
+			return
+		end
+		for _, car in cars do
+			local far = car.far
+			if far and far.server == word.server then
+				if word.floor == 0 then
+					car.far = nil
+					showFloor(car, nil)
+				else
+					far.floor, far.heard = word.floor, now()
+					showFloor(car, word.floor)
+				end
+			end
+		end
+	end
+
+	-- Share: Roblox's share sheet for `player`, with a link to the game naming them (and this
+	-- group's own server, while it's fresh). Told if it couldn't open. Yields.
+	local function share(player: Player, car: Car)
+		local t = trips
+		local to = if t then t:server() else nil
+		local launch = HttpService:JSONEncode(Trip.invite(player.UserId, to, now()))
+		local ok, result = pcall(function(): any
+			return SocialService:PromptLinkSharingAsync(player, {
+				ExpirationSeconds = if to then Trip.FollowFor else nil,
+				PreviewDescription = Trip.InviteLine,
+				LaunchData = launch,
+			})
+		end)
+		local fine = ok
+			and (
+				result == Enum.PromptLinkSharingResult.Success
+				or result == Enum.PromptLinkSharingResult.PlayerLeft
+			)
+		if not fine then
+			warn(`LobbyCars: {player.Name}'s share sheet didn't open: {result}`)
+			local r = remote
+			if r and player.Parent then
+				r:FireClient(player, car.model, "Share")
+			end
+		end
+	end
+
 	-- `player`'s trip from `car` (its `leg`th) failed for good: back in the car (stood open in its
 	-- bay again if it isn't yet, the choices as they were), in their place in the group as it
 	-- left (the host first), told why; the count runs again.
@@ -393,11 +457,15 @@ function LobbyCars.new(): LobbyCars
 		for i, player in leaving.aboard do
 			ids[i] = player.UserId
 		end
+		-- the group's own server, named here so word of their floor finds this car
+		local server = HttpService:GenerateGUID(false)
 		local data = Trip.encode(ids, Boarding.Difficulties[1], {
 			bay = (car.model:GetAttribute(Boarding.CarAttribute) :: number?) or 1,
 			friends = was.friends,
 			players = was.players,
-		}) :: Trips.Data
+		}, { server = server, lobby = game.JobId }) :: Trips.Data
+		car.far = { server = server, floor = nil, heard = now() }
+		showFloor(car, nil)
 		table.insert(
 			returns,
 			task.delay(math.max(leaving.at + Trip.Send - now(), 0), function()
@@ -498,6 +566,22 @@ function LobbyCars.new(): LobbyCars
 			if type(value) ~= "number" then
 				return
 			end
+		elseif choice == "Share" then
+			if value ~= nil then
+				return
+			end
+			-- range: anyone aboard; rate: one sheet at a time, with a breath between
+			if not table.find(car.state.group, player.UserId) then
+				return
+			end
+			local clock = os.clock()
+			local last = lastShare[player]
+			if last and clock - last < Trip.ShareEvery then
+				return
+			end
+			lastShare[player] = clock
+			task.spawn(share, player, car)
+			return
 		elseif choice ~= "Go" then
 			return
 		end
@@ -682,6 +766,7 @@ function LobbyCars.new(): LobbyCars
 					away = false,
 					holding = false,
 					leg = 0,
+					far = nil,
 					pick = function(inside: { Player }): { Player }
 						local ids = table.create(#inside)
 						for i, player in inside do
@@ -726,12 +811,31 @@ function LobbyCars.new(): LobbyCars
 			for _, player in Players:GetPlayers() do
 				task.spawn(invited, player)
 			end
+			-- word of the floors this lobby's groups are on, from their own servers (a live lobby:
+			-- Studio's JobId names no server)
+			if not tripSystem:own() and Trip.isServer(game.JobId) then
+				task.spawn(function()
+					local ok, conn = pcall(function()
+						return MessagingService:SubscribeAsync(
+							Trip.topic(game.JobId),
+							function(message: any) -- any: MessagingService's message table
+								heard(if type(message) == "table" then message.Data else nil)
+							end
+						)
+					end)
+					if ok and conn then
+						hearing = conn
+					else
+						warn(`LobbyCars: no word of the groups' floors: {conn}`)
+					end
+				end)
+			end
 			table.insert(
 				connections,
 				Players.PlayerRemoving:Connect(function(player: Player)
 					local t = now()
 					local gone = player.UserId
-					lastChoice[player] = nil
+					lastChoice[player], lastShare[player] = nil, nil
 					lastTold[gone] = nil
 					friends[gone], asking[gone] = nil, nil
 					for _, row in friends do
@@ -774,6 +878,16 @@ function LobbyCars.new(): LobbyCars
 					end
 				end
 			end
+			-- a group sent away that's said nothing for a while is gone: its dial forgets it
+			for _, car in cars do
+				local far = car.far
+				if far and t - far.heard > Trip.WordStale then
+					car.far = nil
+					if far.floor then
+						showFloor(car, nil)
+					end
+				end
+			end
 			local players = Players:GetPlayers() -- one list a step, for all six cars
 			for _, car in cars do
 				if car.away or car.holding then
@@ -804,6 +918,10 @@ function LobbyCars.new(): LobbyCars
 				conn:Disconnect()
 			end
 			table.clear(connections)
+			if hearing then
+				hearing:Disconnect()
+				hearing = nil
+			end
 			if departing then
 				departing:disconnect()
 				departing = nil

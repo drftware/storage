@@ -17,8 +17,12 @@
 	- Invite (L-08e3), for anyone aboard: Roblox's invite sheet, your friends with an Invite beside
 	  each, as DOORS' and every co-op hit's invite button. A friend who joins by it is pointed to
 	  your car (the invite's launch data names you; LobbyCars, CarDial). It shows only where
-	  Roblox lets you invite (`CanSendGameInviteAsync`, asked once) and not on a group's own
-	  server, which a friend can't follow you to yet (ROADMAP L-08e3b).
+	  Roblox lets you invite (`CanSendGameInviteAsync`, asked once). On a group's own server the
+	  invite names it (`Trip.ServerAttribute`), so the public lobby your friend lands in sends them
+	  on to you (L-08e3b); it hides there only if the server doesn't know its own id.
+	- Share (L-08e3b), for anyone aboard, beside Invite: Roblox's share sheet (or the clipboard)
+	  with a link to the game naming you, made by the server (LobbyCars). A link from a group's
+	  own server sends whoever opens it on to you too, for `Trip.FollowFor`.
 	- Go: the count runs out now, the gate shuts with the climb's slam, and the panel slides away.
 	  It also goes when you step out, the gate starts to shut, you die, or E or B (a pad); the ×
 	  closes it on a phone.
@@ -59,10 +63,10 @@ local INNER = WIDTH - EDGE * 2
 local HEAD_H, SWITCH_H, COUNT_H, LEVEL_H, GO_H = 22, 40, 48, 28, 48
 local HEIGHT = EDGE * 2 + HEAD_H + SWITCH_H + COUNT_H + LEVEL_H + GO_H + GAP * 4
 local STEP_W = 54 -- the - and + keys
--- The bottom row: Invite on the left, this wide, Go filling the rest (all of it with no Invite).
-local INVITE_W, ROW_GAP = 84, 6
--- The line on Roblox's invite sheet, over your friends (it's dropped if it's too long to fit).
-local INVITE_LINE = "Ride up with us"
+-- The bottom row: Invite and Share on the left, this wide, Go filling the rest (Share and Go
+-- with no Invite).
+local INVITE_W, SHARE_W, ROW_GAP = 66, 62, 6
+local ROW_TEXT = 18 -- Invite's and Share's words
 -- It fills at most this share of the screen's height (below the top bar), scaled no smaller or
 -- larger than these, and never wider than the room right of `ACROSS` less the jump button's.
 local FILL = 0.92
@@ -95,12 +99,13 @@ local TOLD_IN = TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.
 local TOLD_HOLD = 1.6
 local TOLD_OUT = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 -- Trip: your trip to the group's own server failed and you're back in the car (L-08e1c).
--- Invite: Roblox's sheet wouldn't open.
+-- Invite, Share: Roblox's sheet wouldn't open.
 local TOLD: { [string]: string } = {
 	Full = "Car full",
 	Friends = "Friends only",
-	Trip = "Teleport failed",
+	Trip = Trip.FailedText,
 	Invite = "Invite failed",
+	Share = "Share failed",
 }
 
 local STEEL = Color3.fromRGB(28, 28, 31)
@@ -162,6 +167,7 @@ type Ui = {
 	seats: { Frame },
 	level: TextLabel,
 	invite: Key,
+	share: Key,
 	go: Key,
 	told: TextLabel,
 	toldStroke: UIStroke,
@@ -366,12 +372,17 @@ function CarPanel.new(need: FreeCursor.Need): Brix.System
 		live(u.plus, mine and seen.players < high)
 		live(u.go, mine and seen.departs ~= nil)
 		live(u.invite, not shutting(seen))
+		live(u.share, not shutting(seen))
 	end
 
-	-- Invite shows where Roblox lets this player invite and a friend can follow them here (not a
-	-- group's own server yet); Go fills the row without it.
+	-- Invite shows where Roblox lets this player invite and a friend can follow them here (a
+	-- group's own server only if it knows its id); Share and Go take the row without it.
 	local function inviteShown(): boolean
-		return canInvite ~= false and Workspace:GetAttribute(Trip.OwnAttribute) ~= true
+		return canInvite ~= false
+			and (
+				Workspace:GetAttribute(Trip.OwnAttribute) ~= true
+				or Trip.isServer(Workspace:GetAttribute(Trip.ServerAttribute))
+			)
 	end
 
 	local function layoutRow()
@@ -381,10 +392,13 @@ function CarPanel.new(need: FreeCursor.Need): Brix.System
 		end
 		local with = inviteShown()
 		u.invite.button.Visible = with
-		local goX = if with then INVITE_W + ROW_GAP else 0
 		local x0 = u.invite.button.Position.X.Offset
-		u.go.button.Position = UDim2.fromOffset(x0 + goX, u.go.button.Position.Y.Offset)
-		u.go.button.Size = UDim2.fromOffset(INNER - goX, GO_H)
+		local y = u.go.button.Position.Y.Offset
+		local x = x0 + (if with then INVITE_W + ROW_GAP else 0)
+		u.share.button.Position = UDim2.fromOffset(x, y)
+		x += SHARE_W + ROW_GAP
+		u.go.button.Position = UDim2.fromOffset(x, y)
+		u.go.button.Size = UDim2.fromOffset(INNER - (x - x0), GO_H)
 	end
 
 	local function showPrompt(entry: Entry)
@@ -536,12 +550,39 @@ function CarPanel.new(need: FreeCursor.Need): Brix.System
 		dip(u.invite, KEY_DIP)
 		sound(CLICK_PITCH, CLICK_VOLUME)
 		local options = Instance.new("ExperienceInviteOptions")
-		options.PromptMessage = INVITE_LINE
-		options.LaunchData = HttpService:JSONEncode({ by = me.UserId })
+		options.PromptMessage = Trip.InviteLine
+		-- naming this group's own server, if this is one, so your friend is sent on to you
+		local to = Workspace:GetAttribute(Trip.ServerAttribute)
+		options.LaunchData = HttpService:JSONEncode(
+			Trip.invite(me.UserId, if type(to) == "string" then to else nil, now())
+		)
 		local ok = pcall(SocialService.PromptGameInvite, SocialService, me, options)
 		if not ok then
 			told(entry.model, "Invite")
 		end
+	end
+
+	-- Share: the server opens Roblox's share sheet with a link naming you (it's server only); it
+	-- says if it couldn't. A second press while it opens barely moves.
+	local lastShare = -math.huge
+	local function share()
+		local u, entry, seen = ui, openOn, shown
+		local r = remote
+		if
+			not (u and entry and seen and r)
+			or shutting(seen)
+			or os.clock() - lastShare < Trip.ShareEvery
+		then
+			if u then
+				dip(u.share, DEAD_DIP)
+			end
+			sound(DULL_PITCH, DULL_VOLUME)
+			return
+		end
+		lastShare = os.clock()
+		dip(u.share, KEY_DIP)
+		sound(CLICK_PITCH, CLICK_VOLUME)
+		r:FireServer(entry.model, "Share")
 	end
 
 	-- The car's group, choices or count changed: its button, and the panel if it's open on it.
@@ -783,13 +824,23 @@ function CarPanel.new(need: FreeCursor.Need): Brix.System
 
 		local inviteKey =
 			key(body, "Invite", "Invite", UDim2.fromOffset(x, y), UDim2.fromOffset(INVITE_W, GO_H))
-		inviteKey.button.TextSize = 20
+		inviteKey.button.TextSize = ROW_TEXT
+		local shareX = x + INVITE_W + ROW_GAP
+		local shareKey = key(
+			body,
+			"Share",
+			"Share",
+			UDim2.fromOffset(shareX, y),
+			UDim2.fromOffset(SHARE_W, GO_H)
+		)
+		shareKey.button.TextSize = ROW_TEXT
+		local goX = shareX + SHARE_W + ROW_GAP
 		local go = key(
 			body,
 			"Go",
 			"Go",
-			UDim2.fromOffset(x + INVITE_W + ROW_GAP, y),
-			UDim2.fromOffset(INNER - INVITE_W - ROW_GAP, GO_H),
+			UDim2.fromOffset(goX, y),
+			UDim2.fromOffset(INNER - (goX - x), GO_H),
 			GO
 		)
 		go.button.TextSize = 26
@@ -839,6 +890,7 @@ function CarPanel.new(need: FreeCursor.Need): Brix.System
 			seats = seats,
 			level = level,
 			invite = inviteKey,
+			share = shareKey,
 			go = go,
 			told = toldLabel,
 			toldStroke = toldStroke,
@@ -883,6 +935,7 @@ function CarPanel.new(need: FreeCursor.Need): Brix.System
 			choose(u.go, "Go", nil, seen ~= nil and seen.departs ~= nil)
 		end)
 		on(u.invite, invite)
+		on(u.share, share)
 	end
 
 	return {
@@ -923,6 +976,10 @@ function CarPanel.new(need: FreeCursor.Need): Brix.System
 			table.insert(
 				connections,
 				Workspace:GetAttributeChangedSignal(Trip.OwnAttribute):Connect(layoutRow)
+			)
+			table.insert(
+				connections,
+				Workspace:GetAttributeChangedSignal(Trip.ServerAttribute):Connect(layoutRow)
 			)
 			-- the server's remote is made as it starts; it may not be there yet
 			task.spawn(function()

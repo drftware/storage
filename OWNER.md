@@ -87,11 +87,27 @@ and off, the invite sheet opening with your friends (no invite sent).
 - [ ] **The pointer:** with a friend in one car and you in none, their car glows and the chevron
   bobs in its doorway; it moves if another car gets fuller, and goes as you step in. Too much,
   too little?
-- [ ] **Decide (defaults in place):** (1) anyone aboard can Invite, not only the host; (2) after
-  your group's first climb you're on its own server, where Invite is hidden for now (a friend
-  can't follow you there; L-08e3b sends them on); (3) where the share link goes (Roblox pays on
-  new or returning players who come by a share link, not on invites to friends already on
-  Roblox): a Share key on the panel beside Invite, or on the end screen after a climb, or both?
+- [ ] **Decide (defaults in place):** (1) anyone aboard can Invite, not only the host; (3) where
+  the share link goes (Roblox pays on new or returning players who come by a share link, not on
+  invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
+  (L-08e3b); move it to the end screen after a climb, or have both?
+
+## Now: judge L-08e3b, Share and follow (built Nov 13, D-130; untested in Studio)
+
+Needs Rojo connected, then File > Publish, and two accounts that are friends (A plays, B waits).
+- [ ] **Sent on to your friend:** A rides a car up (their own server), finishes the climb, and is
+  back in the car. A taps Invite (it shows there now) and invites B. B taps the invite: B lands
+  in a public lobby, then within a few seconds the screen goes black with "Joining" and A's
+  name, and opens in A's front office, A's car glowing for B. Tell me how long B saw the public
+  lobby before the black, and anything odd in between.
+- [ ] **The floor back home:** A and a third account C stand in the same public lobby. A rides
+  up alone. C watches the car A left from: "Going up", then once it's back in its bay, "Floor 1",
+  "Floor 2" as A climbs (a second or two late), gone when A's climb ends. Does it read?
+- [ ] **Share:** in a car, tap Share: Roblox's share sheet (phone) or a "copied" note (computer).
+  Open the link on B: B lands in the game (and, from A's own server, is sent on to A).
+- [ ] **Decide:** should a friend be able to join a climb under way, stood beside you on your
+  floor (ROADMAP L-08e3c)? Hits like DOORS don't allow it. My default: no, they wait in your
+  lobby; and an invite sent from a public lobby car before you leave doesn't follow you up yet.
 
 
 ## Now: judge L-08e4a, the carts in the rack (built Nov 12, D-125)
@@ -184,8 +200,7 @@ its look. The place was saved as version 35 so Studio's test teleport ("Send") r
   car's own count; the other way is no button, everyone back in the car once the results have
   shown. (2) You come back facing the results, so you turn round to step out. (3) After the climb
   your group stays on its own server (its own lobby, the six cars, nobody else): strangers can't
-  join you there; friends who join later land in the public lobby. Invite is hidden there for
-  now; L-08e3b sends an invited friend on to your server (L-08e3, above).
+  join you there; a friend you invite from there is sent on to you (L-08e3b, above).
 
 ## Now: judge L-08e1c, a server of the group's own (built Nov 12, D-122)
 

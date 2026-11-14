@@ -20,6 +20,11 @@
 	  here back in their car, the host first, with "Teleport failed" and the count again. A failure
 	  worth trying again (`retry`) is tried again first, to the same server, so a group never
 	  splits over a hiccup.
+	- Share and follow (L-08e3b): the data names the group's own server (`server`, its reserved
+	  id) and the lobby they left (`lobby`, its JobId). An invite or share link from a group's own
+	  server carries that id (`invite`), so the public lobby a friend lands in sends them on to it
+	  (`readInvite`), and the group's server sends the floor they're on back to its lobby (`word`,
+	  MessagingService on the lobby's `topic`), where the car they left from shows it.
 ]]
 local Boarding = require("./Boarding")
 local Ride = require("../Elevator/Ride")
@@ -42,10 +47,20 @@ Trip.ArrivedAttribute = "TripArrived"
 -- server.
 Trip.DevAttribute = "DevTrip"
 
+-- On Workspace on a group's own server, for every screen: its reserved id, which an invite or
+-- share link from there carries so a friend's lobby can send them on (absent where it's unknown).
+Trip.ServerAttribute = "TripServer"
+-- On a player on a lobby, for their screen: they came by an invite from a friend on a group's own
+-- server and are being sent on to it; the friend's name ("" if Roblox didn't say). Cleared if the
+-- trip failed for good (their screen says so).
+Trip.FollowAttribute = "Following"
+
 -- The data's shape version: a server reading data it doesn't know takes nobody's word for a group.
--- 2 added the car (L-08e2); 1 still reads, as the first bay with Open and six (a lobby server
--- still running the old version sends it while an update rolls out).
-Trip.Version = 2
+-- 3 added the group's own server, the lobby they left and who invited a friend sent on (L-08e3b);
+-- 2 added the car (L-08e2); 2 and 1 still read (a lobby server still running an old version sends
+-- them while an update rolls out): 1 as the first bay with Open and six, both with no server or
+-- lobby named.
+Trip.Version = 3
 -- The lobby's bays, numbered 1 to this from left to right (Lobby.Specs.Bays has one per car).
 Trip.Bays = 6
 
@@ -78,6 +93,29 @@ Trip.Reveal = 0.6
 Trip.CoverMost = 45
 -- Under the black, small: what's happening.
 Trip.CoverText = "Going up"
+-- Under the black when a trip didn't go and you're still here (a friend's invite you were being
+-- sent on by).
+Trip.FailedText = "Teleport failed"
+-- Seconds the failure stays under the black before it lifts.
+Trip.FailedHold = 1.4
+
+-- Seconds an invite or share link from a group's own server sends a friend on to it: past this
+-- the group has most likely moved on, and the friend stays in the lobby they land in. A share
+-- link from there expires then too (a link from a lobby keeps Roblox's day).
+Trip.FollowFor = 2 * 60 * 60
+-- Seconds a share key press waits before another is taken (the sheet takes a moment to open).
+Trip.ShareEvery = 4
+-- The line on Roblox's invite sheet over your friends (dropped if it's too long to fit), and under
+-- a share link's preview.
+Trip.InviteLine = "Ride up with us"
+
+-- Word of a group's floor to the lobby they left: sent as the floor changes and every this many
+-- seconds while it doesn't, so a lobby that hears nothing for `WordStale` knows they're gone (the
+-- group's server shut, or the word was lost) and its dial forgets them.
+Trip.WordEvery = 60
+Trip.WordStale = 150
+-- The highest floor a word may name (the climb has no top; this is past any real one).
+Trip.MostFloor = 9999
 
 export type Data = {
 	v: number,
@@ -86,22 +124,32 @@ export type Data = {
 	bay: number, -- the lobby car they left in, 1 to `Bays`
 	friends: boolean, -- the host's Friends only, as it left
 	players: number, -- the host's player count, as it left
+	server: string, -- the group's own server's reserved id ("": not named)
+	lobby: string, -- the JobId of the lobby they left, for word of their floor ("": none)
+	by: number, -- a friend sent on by an invite: who invited them (0: nobody)
 }
 
 -- The car a group left in, as the data carries it: its bay and the host's choices.
 export type Car = { bay: number, friends: boolean, players: number }
+-- Where the group goes and whom it reports to: its own server's reserved id, the lobby's JobId,
+-- and who invited a friend sent on alone.
+export type Route = { server: string, lobby: string, by: number? }
 
--- The data a car's riders take: `group` (UserIds, the host first), the host's difficulty and the
--- car they left in (nil: the first bay, Open and six).
-function Trip.encode(group: { number }, difficulty: string, car: Car?): Data
-	return {
-		v = Trip.Version,
-		group = table.clone(group),
-		difficulty = difficulty,
-		bay = if car then car.bay else 1,
-		friends = if car then car.friends else false,
-		players = if car then car.players else Boarding.Capacity,
-	}
+-- Whether `s` reads as a GUID (HttpService:GenerateGUID(false), a JobId): eight, four, four,
+-- four and twelve hex digits, with dashes.
+local GUID = "^"
+	.. string.rep("%x", 8)
+	.. "%-"
+	.. string.rep("%x", 4)
+	.. "%-"
+	.. string.rep("%x", 4)
+	.. "%-"
+	.. string.rep("%x", 4)
+	.. "%-"
+	.. string.rep("%x", 12)
+	.. "$"
+function Trip.isServer(s: unknown): boolean
+	return type(s) == "string" and string.match(s, GUID) ~= nil
 end
 
 -- Whether `n` is a UserId: a whole number above zero.
@@ -109,21 +157,40 @@ local function isId(n: unknown): boolean
 	return type(n) == "number" and n == n and n >= 1 and n < 2 ^ 53 and n % 1 == 0
 end
 
+-- The data a car's riders take: `group` (UserIds, the host first), the host's difficulty, the
+-- car they left in (nil: the first bay, Open and six) and where they go (nil: nothing named).
+function Trip.encode(group: { number }, difficulty: string, car: Car?, route: Route?): Data
+	local by = if route and route.by and isId(route.by) then route.by else 0
+	return {
+		v = Trip.Version,
+		group = table.clone(group),
+		difficulty = difficulty,
+		bay = if car then car.bay else 1,
+		friends = if car then car.friends else false,
+		players = if car then car.players else Boarding.Capacity,
+		server = if route and Trip.isServer(route.server) then route.server else "",
+		lobby = if route and Trip.isServer(route.lobby) then route.lobby else "",
+		by = by,
+	}
+end
+
 -- Whether `n` is a whole number from `low` to `high`.
 local function whole(n: unknown, low: number, high: number): boolean
 	return type(n) == "number" and n == n and n % 1 == 0 and n >= low and n <= high
 end
 
--- The data a player arrived with, checked: nil unless it's ours, at our version (or 1), with a
--- group of 1 to `Boarding.Capacity` distinct UserIds. An unknown difficulty reads as the first
--- one; a car that doesn't read (or version 1's, which has none) as the first bay, Open and six.
+-- The data a player arrived with, checked: nil unless it's ours, at our version (or 2 or 1), with
+-- a group of 1 to `Boarding.Capacity` distinct UserIds. An unknown difficulty reads as the first
+-- one; a car that doesn't read (or version 1's, which has none) as the first bay, Open and six; a
+-- server or lobby that isn't a GUID (or before version 3) as none, and an inviter that isn't a
+-- UserId (or is the first of the group) as nobody.
 -- `data`: Player:GetJoinData().TeleportData, which passed through the player's device.
 function Trip.decode(data: unknown): Data?
 	if type(data) ~= "table" then
 		return nil
 	end
 	local t = data :: { [unknown]: unknown }
-	if (t.v ~= Trip.Version and t.v ~= 1) or type(t.group) ~= "table" then
+	if (t.v ~= Trip.Version and t.v ~= 2 and t.v ~= 1) or type(t.group) ~= "table" then
 		return nil
 	end
 	local raw = t.group :: { [unknown]: unknown }
@@ -159,7 +226,92 @@ function Trip.decode(data: unknown): Data?
 		car =
 			{ bay = t.bay :: number, friends = t.friends :: boolean, players = t.players :: number }
 	end
-	return Trip.encode(group, difficulty, car)
+	local route: Route? = nil
+	if t.v == Trip.Version then
+		local by = if isId(t.by) and t.by ~= group[1] then t.by :: number else nil
+		route = {
+			server = if Trip.isServer(t.server) then t.server :: string else "",
+			lobby = if Trip.isServer(t.lobby) then t.lobby :: string else "",
+			by = by,
+		}
+	end
+	return Trip.encode(group, difficulty, car, route)
+end
+
+-- An invite's or share link's launch data (JSON-encoded, at most 200 characters): who sent it,
+-- and if they're on a group's own server, its reserved id and the server time it was sent at
+-- (`Workspace:GetServerTimeNow`), so a friend's lobby can send them on while it's fresh.
+export type Invite = { by: number, to: string?, at: number? }
+function Trip.invite(by: number, to: string?, at: number): Invite
+	if to and Trip.isServer(to) then
+		return { by = by, to = to, at = math.floor(at) }
+	end
+	return { by = by }
+end
+
+-- The launch data a player `me` joined with (decoded from its JSON), checked at server time `t`:
+-- nil unless `by` is someone else's UserId; `to` is kept only if it's a GUID sent within
+-- `FollowFor` (and not from the future, beyond a minute's clock drift). It passed through the
+-- sender's device: a forged one only points a screen, or sends its own joiner somewhere.
+function Trip.readInvite(data: unknown, me: number, t: number): Invite?
+	if type(data) ~= "table" then
+		return nil
+	end
+	local d = data :: { [unknown]: unknown }
+	if not isId(d.by) or d.by == me then
+		return nil
+	end
+	local by = d.by :: number
+	local at = d.at
+	if
+		Trip.isServer(d.to)
+		and type(at) == "number"
+		and at == at
+		and at >= t - Trip.FollowFor
+		and at <= t + 60
+	then
+		return { by = by, to = d.to :: string, at = at }
+	end
+	return { by = by }
+end
+
+-- The line under the black as you're sent on to a friend: "Joining Sam", or the trip's own line
+-- if Roblox didn't give their name.
+function Trip.followText(name: string): string
+	return if name ~= "" then `Joining {name}` else Trip.CoverText
+end
+
+-- The MessagingService topic a lobby (`lobby`, its JobId) hears its groups' floors on.
+function Trip.topic(lobby: string): string
+	return "Floor" .. lobby
+end
+
+-- Word of a group's floor: their own server's reserved id (the lobby knows which car sent it)
+-- and the floor they're on, 0 once their climb is over.
+export type Word = { server: string, floor: number }
+function Trip.word(server: string, floor: number): Word
+	return { server = server, floor = floor }
+end
+
+-- A word as it arrives (MessagingService's `Data`), checked: nil unless the server is a GUID and
+-- the floor a whole number from 0 to `MostFloor`.
+function Trip.readWord(data: unknown): Word?
+	if type(data) ~= "table" then
+		return nil
+	end
+	local d = data :: { [unknown]: unknown }
+	local floor = d.floor
+	if
+		not Trip.isServer(d.server)
+		or type(floor) ~= "number"
+		or floor ~= floor
+		or floor % 1 ~= 0
+		or floor < 0
+		or floor > Trip.MostFloor
+	then
+		return nil
+	end
+	return { server = d.server :: string, floor = floor :: number }
 end
 
 -- Whether the group's car goes at server time `t`: everyone in `group` is in `arrived` (UserIds),

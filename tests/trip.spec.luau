@@ -6,7 +6,9 @@
 -- `Wait` after the first; only a busy server or a blip is tried again, and only `Tries` times;
 -- the screens are black before the send and open mid-ride; six spots in the car, all different.
 -- The car they left in (L-08e2) goes along; version 1 and a car that doesn't read come back as
--- the first bay, Open and six.
+-- the first bay, Open and six. Share and follow (L-08e3b): the group's server and lobby go along;
+-- an invite sends a friend on only while it's fresh and names a real server; word of a floor
+-- reads back only if it names a server and a whole floor.
 local Boarding = require("../src/shared/Lobby/Boarding")
 local Ride = require("../src/shared/Elevator/Ride")
 local Trip = require("../src/shared/Lobby/Trip")
@@ -215,6 +217,130 @@ do
 	ok(x1 == 0 and z1 == 4, "the host at the front middle")
 	local x7, z7 = Trip.spot(Boarding.Capacity + 1)
 	ok(x7 == x1 and z7 == z1, "past six it starts again")
+end
+
+-- share and follow (L-08e3b): the group's server and lobby go along and read back; an old
+-- lobby's data still reads, naming none; anything that isn't a GUID names none
+do
+	local server = "0A1B2C3D-4E5F-6789-ABCD-EF0123456789"
+	local lobby = "8f14e45f-ceea-467e-a2b1-0123456789ab"
+	ok(Trip.isServer(server) and Trip.isServer(lobby), "a GUID, either case, is a server")
+	ok(not Trip.isServer(""), "nothing isn't a server")
+	ok(not Trip.isServer("{" .. server .. "}"), "a GUID in braces isn't one")
+	ok(not Trip.isServer(server .. "0"), "too long isn't one")
+	ok(not Trip.isServer(string.gsub(server, "%-", "")), "no dashes isn't one")
+	ok(not Trip.isServer("0A1B2C3D-4E5F-6789-ABCD-EF012345678G"), "a non-hex digit isn't one")
+	ok(not Trip.isServer(12), "a number isn't one")
+
+	local car = { bay = 4, friends = true, players = 3 }
+	local back =
+		Trip.decode(Trip.encode({ 9, 8 }, "Normal", car, { server = server, lobby = lobby }))
+	ok(back ~= nil, "data naming the server and lobby reads back")
+	if back then
+		ok(back.server == server, "the group's server")
+		ok(back.lobby == lobby, "the lobby they left")
+		ok(back.by == 0, "nobody invited a group")
+		ok(back.bay == 4 and back.players == 3, "the car still")
+	end
+	local none = Trip.encode({ 9 }, "Normal")
+	ok(none.server == "" and none.lobby == "" and none.by == 0, "no route names nothing")
+	local bad = Trip.decode({
+		v = Trip.Version,
+		group = { 9 },
+		difficulty = "Normal",
+		server = "my server",
+		lobby = 5,
+		by = -1,
+	})
+	ok(
+		bad ~= nil and bad.server == "" and bad.lobby == "" and bad.by == 0,
+		"a server, lobby or inviter that doesn't read names nobody, and the group still goes"
+	)
+	local old = Trip.decode({
+		v = 2,
+		group = { 9, 8 },
+		difficulty = "Normal",
+		bay = 2,
+		friends = false,
+		players = 6,
+		server = server,
+	})
+	ok(old ~= nil, "an old lobby's data still reads")
+	if old then
+		ok(old.server == "" and old.lobby == "", "an old lobby's data names no server")
+		ok(old.bay == 2, "and keeps its car")
+	end
+
+	-- a friend sent on alone: who invited them goes along; nobody invites themselves
+	local follow =
+		Trip.decode(Trip.encode({ 77 }, "Normal", nil, { server = server, lobby = "", by = 9 }))
+	ok(follow ~= nil and follow.by == 9, "a friend sent on keeps who invited them")
+	ok(follow ~= nil and follow.server == server, "and the server they were sent to")
+	local selfish =
+		Trip.decode({ v = Trip.Version, group = { 77 }, difficulty = "Normal", by = 77 })
+	ok(selfish ~= nil and selfish.by == 0, "inviting yourself names nobody")
+end
+
+-- the invite's launch data
+do
+	local server = "0A1B2C3D-4E5F-6789-ABCD-EF0123456789"
+	local t = 1_800_000_000
+	local from = Trip.invite(9, server, t + 0.7)
+	ok(from.by == 9 and from.to == server and from.at == t, "an invite from a group's server")
+	local lobby = Trip.invite(9, nil, t)
+	ok(
+		lobby.by == 9 and lobby.to == nil and lobby.at == nil,
+		"an invite from a lobby names no server"
+	)
+	ok(Trip.invite(9, "nope", t).to == nil, "a server that isn't one isn't carried")
+
+	-- what JSON gives back is a plain table
+	local read = Trip.readInvite({ by = 9, to = server, at = t }, 77, t + 30)
+	ok(read ~= nil and read.by == 9 and read.to == server, "a fresh invite sends the friend on")
+	local stale = Trip.readInvite({ by = 9, to = server, at = t }, 77, t + Trip.FollowFor + 1)
+	ok(stale ~= nil and stale.by == 9 and stale.to == nil, "a stale one only points them")
+	local early = Trip.readInvite({ by = 9, to = server, at = t + 600 }, 77, t)
+	ok(early ~= nil and early.to == nil, "one from the future only points them")
+	local undated = Trip.readInvite({ by = 9, to = server }, 77, t)
+	ok(undated ~= nil and undated.to == nil, "one with no time only points them")
+	local nan = Trip.readInvite({ by = 9, to = server, at = 0 / 0 }, 77, t)
+	ok(nan ~= nil and nan.to == nil, "a time that isn't a number only points them")
+	ok(Trip.readInvite({ by = 77 }, 77, t) == nil, "your own invite is nothing")
+	ok(Trip.readInvite({ by = 1.5 }, 77, t) == nil, "a sender that isn't a UserId is nothing")
+	ok(Trip.readInvite({ to = server, at = t }, 77, t) == nil, "no sender is nothing")
+	ok(Trip.readInvite("by=9", 77, t) == nil, "not a table is nothing")
+	local forged = Trip.readInvite({ by = 9, to = "../x", at = t }, 77, t)
+	ok(forged ~= nil and forged.to == nil, "a forged server only points them")
+
+	-- Roblox's limit on launch data is 200 characters; the longest we send, spelled out as JSON
+	local json = `\{"by":{2 ^ 53 - 1},"to":"{server}","at":{t}\}`
+	ok(#json <= 200, "the longest invite fits Roblox's launch data")
+	ok(Trip.followText("Sam") == "Joining Sam", "you're told whose group you're joining")
+	ok(Trip.followText("") == Trip.CoverText, "or just that you're going up")
+	ok(Trip.FailedHold > 0.5 and Trip.FailedHold < 3, "a failure is readable, then gone")
+end
+
+-- word of the floor
+do
+	local server = "0A1B2C3D-4E5F-6789-ABCD-EF0123456789"
+	local lobby = "8f14e45f-ceea-467e-a2b1-0123456789ab"
+	local topic = Trip.topic(lobby)
+	ok(#topic >= 1 and #topic <= 80, "a lobby's topic fits MessagingService's 80 characters")
+	ok(Trip.topic(lobby) ~= Trip.topic(server), "each lobby hears its own")
+	local w = Trip.readWord(Trip.word(server, 7))
+	ok(w ~= nil and w.server == server and w.floor == 7, "a floor reads back")
+	local over = Trip.readWord(Trip.word(server, 0))
+	ok(over ~= nil and over.floor == 0, "the climb's end reads back")
+	ok(Trip.readWord({ server = server, floor = -1 }) == nil, "no floor below nothing")
+	ok(Trip.readWord({ server = server, floor = 2.5 }) == nil, "no half floors")
+	ok(Trip.readWord({ server = server, floor = 0 / 0 }) == nil, "no floor that isn't a number")
+	ok(
+		Trip.readWord({ server = server, floor = Trip.MostFloor + 1 }) == nil,
+		"no floor past any real one"
+	)
+	ok(Trip.readWord({ server = "x", floor = 3 }) == nil, "no word from a server that isn't one")
+	ok(Trip.readWord(nil) == nil, "no word from nothing")
+	ok(Trip.WordStale > Trip.WordEvery * 2, "a lobby forgets only after two words are missed")
 end
 
 print(`trip: {checks - failures}/{checks} passed`)

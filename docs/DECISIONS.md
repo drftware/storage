@@ -3633,3 +3633,44 @@ studs and 12 degrees of it. No Ride on the way home; arrived, its casters trail 
 
 Defaults on the owner's list (`OWNER.md`): nose first, the 20 s wait, the pace, the 12 s give-up,
 no Ride on the way.
+
+## D-130 Share and follow: a friend lands beside you, the lobby keeps your floor (L-08e3b, Nov 13)
+The moment: back in your car on your group's own server, you tap Invite; your friend taps it,
+lands in a public lobby, the screen drops to black ("Joining Sam") and opens in your front office,
+pointed to your car (if you've gone up again, its dial says your floor). Meanwhile the car you
+first left from in the public lobby shows "Floor 4" over its gate as you climb. Invite is on the
+car's panel, so on your own server it's only there once you're home; joining mid-climb, beside
+you, waits on the owner (ROADMAP L-08e3c, OWNER.md) (GDD "The lobby": "The
+dial over each car shows who's aboard, or which floor a climbing party has reached").
+
+**The trip names the group's server and the lobby it left (Trip version 3).** The lobby now
+makes the reserved id itself (a fresh GUID) and puts it in the trip's data with its JobId; 2
+and 1 still read, naming neither. The group's server puts its id on Workspace (`TripServer`), so
+Invite there shows again and its launch data carries it, with the server time (`Trip.invite`).
+
+**A friend's lobby sends them on (`Trips:follow`).** LobbyCars reads the launch data
+(`Trip.readInvite`): a GUID sent within two hours (`Trip.FollowFor`) and the friend is sent on
+alone (TeleportAsync, the same `ReservedServerId`), their data naming who invited them (the
+pointer there prefers that friend's car once the group's home). Their screen goes black first
+with the inviter's display name (`UserService:GetUserInfosByUserIdsAsync`, else "Going up"); the
+twin carries across the teleport. There they arrive as a late arrival does: stood on the floor
+the climb is on in front of its car (Climbs' `arrival`), or, after the first climb, in the lobby
+where they spawned, the black lifting (that last path is new; before, a late joiner after home
+stared at black for 45 s). Retries as a group's trip; failing for good, "Teleport failed" under
+the black, then it lifts. A friend's failure doesn't count toward the lobby's fallback. A stale
+invite whose server has shut makes a new reserved server and climbs alone: rejected sending them
+back to a public lobby (a second teleport, 10 s more black, for a rare case).
+
+**Word of the floor (MessagingService).** The group's server publishes `{ server, floor }` to
+`"Floor" .. lobbyJobId` as the floor changes and every 60 s, 0 once the first climb is over (or
+as it shuts, BindToClose). The lobby subscribes once (live only: Studio's JobId names no server),
+takes a word only for the server its car last sent, and forgets after 150 s of silence. A lobby
+of thousands of groups stays far inside the limits (600 + 240 per player sends a minute a
+server). Rejected: MemoryStore polling (more calls, more to fail, same answer).
+
+**Share beside Invite (the default; where it goes is the owner's call, OWNER.md).** A Share key
+between Invite and Go for anyone aboard; the server opens the sheet
+(`PromptLinkSharingAsync`, server only), launch data as an invite's; from a group's own server
+the link expires with `FollowFor` and then falls back to the plain game link. Rate: one per 4 s.
+The press dips and clicks; "Share failed" if the sheet won't open.
+
