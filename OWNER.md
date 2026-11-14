@@ -150,13 +150,15 @@ bubble wrap, a battery and the saw each dropped into the bin and flew to the han
 3. Decide: a quarter is enough, or shallower still. Shallower means one battery per bottom coil
    (two a ride instead of four), or batteries shown smaller in the machine than in your hand.
 
-## Now: pick from the machine's menu (S1-10d1, built Nov 14, D-161; only the server's side seen)
+## Now: pick from the machine's menu (S1-10d1, built Nov 14, D-161; seen in Play, not on a phone)
 
 The six Buy buttons on the machine are gone: one "Buy" on the middle of its glass opens the
 machine's front on your screen, and you pick there. This replaces pressing the bays in "buy at
 the machine" below; the coins, the drop and the flight to your hand there are unchanged. Seen in
-Studio Play only from the server: picks sold and refused as they should, and the buyer's screen
-was told. Studio drew no frames this session, so nobody has seen the panel itself yet.
+Studio Play in a desktop-sized window: the panel draws right (sign, three lit rows, pictures,
+labels, LED prices, dashes for a sold-out coil, dim bays you can't pay); a real buy dropped it
+away and it rose again; walking off closed it. Not seen: phone size, the rows lighting as the
+machine wakes, the real button sinking, a refused pick's buzz and shake.
 1. **On your phone, ride from floor 1 to 2 and walk to the machine.** Look for: a "Buy" on its
    glass once the bottom row lights. Press it: the machine's front rises from the bottom of the
    screen with a heavy clunk, its tubes stutter on with two tinks, the prices show 88 then the
