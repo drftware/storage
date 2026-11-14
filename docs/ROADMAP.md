@@ -1800,14 +1800,22 @@ Done when a team that has lost its lights goes looking for the breaker without b
     it helps. `TapView` and the cues in `DoorSound` ("Settle", "Drop") are where it lives.
 - [ ] **S2-07 The fix pass before Step 3** (added Nov 14 from HANDOFF's Queue, so Step 2 ends
   clean before anyone is carried up wrapped). Built before S2-06. In
-  two sessions:
-  - [ ] **S2-07a Monsters and the camera.** Other monsters in the camera's view move in it, not
-    stand as statues copied once (S2-02d1); a second feed on a floor waits for the first to
-    finish instead of cutting it off (S2-02d1); a Mannequin on its way to the breaker is called
-    off by sounds less often, so the throw usually happens (S2-02d2: four came to one clunk);
-    monsters called to one spot spread round it instead of all standing on one point (S2-04b);
-    a wave of sleepers waking never passes the floor's limit on awake monsters (S2-03a,
-    `Deal.awakeCap`).
+  three sessions (S2-07a split in its session, Nov 14: five fixes with Play checks didn't fit):
+  - [ ] **S2-07a Monsters and the camera.**
+    - [x] **S2-07a1 The camera's two.** (Nov 14, D-171.) Every monster on the floor is followed
+      in the picture, not only the one the feed is for, and only parts that moved are stepped;
+      one streaming in during a feed joins it, one streaming out leaves no statue. A second
+      feed never cuts off the first (`Feed.arrive`): from the same camera it joins the picture
+      (its time renewed); from another it waits and cuts in after, skipped if its moment came
+      while it waited (`Feed.kept`). In Play: a wandering Mannequin the server never named
+      walked in two staged feeds (moved in 46 of 57 samples, seen in a capture); a join kept
+      one picture and ran it 2 s longer; a third camera waited 7.5 s and cut in; a Cut ended
+      it; the real errand feed followed as before.
+    - [ ] **S2-07a2 The monsters' three.** A Mannequin on its way to the breaker is called off
+      by sounds less often, so the throw usually happens (S2-02d2: four came to one clunk);
+      monsters called to one spot spread round it instead of all standing on one point
+      (S2-04b); a wave of sleepers waking never passes the floor's limit on awake monsters
+      (S2-03a, `Deal.awakeCap`). Pure rules first, each with a failing Lune spec.
   - [ ] **S2-07b Screens and things.** A player standing still at the keypad lights up again
     when the lights come back (S2-04c); Take doesn't show through a shut door (S1-07b); a
     torch left on as you're wrapped switches off instead of draining (S1-09); a friend's beam

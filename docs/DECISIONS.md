@@ -4698,3 +4698,21 @@ crowds it). The ticket read "a bit" as about a third.
 - The answer is the server's alone ("Done"); the screen only freezes the marker at your tap with a
   flick, so you see where it stopped before the verdict comes about a ping later.
 
+
+## D-171 Every monster moves in the camera's picture; a second feed never cuts off the first (S2-07a1, Nov 14)
+
+- The picture follows every monster's body on the feed's floor (the "Keeper" tag under the
+  floor), not only what the server names, so one wandering through the shot walks in it as the
+  errand Mannequin does, choppy at `Feed.Fps`. All of them, not only those in the lens's view at
+  the start: a monster can walk into the shot during the feed's 8 s. Only parts that moved are
+  stepped (a compare per part, a sleeper costs that and nothing more). A body streaming in on the
+  floor during a feed joins the picture; one streaming out goes invisible in it, never a statue.
+- A second feed arriving while one shows (`Feed.arrive`): the same camera (within 0.5 studs,
+  looks within about 8 degrees) and the first's moment still to come, it joins: one picture, no
+  second snow, its id answers Close and Cut, and its time runs a full `Feed.Most` from then.
+  Every feed today is a Mannequin at the floor's one box, always from the same camera, so two
+  Mannequins making for it share one picture. Any other case waits: the newest waiting feed cuts
+  in once the picture up has cut out, unless its moment came while it waited or it waited longer
+  than a feed lasts (`Feed.kept`): the walk-up it was for is over, and the lights going out say
+  the rest. Kept on each screen (not the server): every screen gets the same feeds in the same
+  order, and the server's bookkeeping (who watches, Cut) is unchanged.

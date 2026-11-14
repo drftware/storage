@@ -13,9 +13,10 @@
 	How: the picture is a ViewportFrame grown out of the map's own square (`Feed.Grow`, 4:3),
 	which draws only what's put inside it. As a feed starts, the halls in front of the camera
 	(`Feed.Reach`) are copied into it once, each part with only what draws it; what the server
-	names to watch (the monster's body, the box) is copied too and, `Feed.Fps` times a second, each
-	of its parts takes its real part's place and colour, so the walk and the lever move in it in
-	an old camera's choppy frames. Its light is its own, flat and cold (`Feed.Ambient`, tinted
+	names to watch (the monster's body, the box) and every other monster on the floor (S2-07a) are
+	copied too and, `Feed.Fps` times a second, each of their parts that moved takes its real part's
+	place and colour, so the walk and the lever move in it in an old camera's choppy frames, and a
+	monster wandering through the shot walks in it instead of standing as a statue. Its light is its own, flat and cold (`Feed.Ambient`, tinted
 	`Feed.Tint`): a security camera sees whether the halls are lit or not, until the moment says the
 	lights went (`dim`): then the picture drops darker and its copied tubes go out.
 
@@ -24,8 +25,12 @@
 	it as it cuts in and out. Sounds are flat in your ears: a burst in, quiet static under it, the
 	moment's own sound through a thin speaker, a burst out.
 
+	A second feed never cuts off the one showing (S2-07a, `Feed.arrive`): from the same camera it
+	joins the picture already up; from another it waits for that one to cut out.
+
 	Only a showing feed is stepped; nothing allocates per frame.
 ]]
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
@@ -37,6 +42,7 @@ local Feed = require(ReplicatedStorage.Shared.Feed)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 
 local MAP_GUI, MAP_WINDOW = "Minimap", "Window" -- MinimapView's corner map, which it covers
+local KEEPER_TAG = "Keeper" -- on each monster's body (the server's Keepers)
 local RIM = Color3.fromRGB(230, 226, 214) -- the map's rim, so the window reads as the same one
 local RIM_SEE = 0.65
 local BLACK = Color3.fromRGB(6, 8, 9)
@@ -65,7 +71,9 @@ end
 type Pair = { from: BasePart, to: BasePart }
 
 type Showing = {
-	id: number,
+	ids: { number }, -- its feed's, and any that joined it from the same camera (S2-07a)
+	camera: CFrame,
+	within: Instance?, -- the floor it's on: monsters that stream in there join the picture
 	own: ScreenGui?, -- its own screen, only when the map's isn't up
 	screen: Frame,
 	view: ViewportFrame,
@@ -74,6 +82,8 @@ type Showing = {
 	roll: Frame,
 	dot: Frame,
 	pairs: { Pair },
+	followed: { [Instance]: boolean }, -- what's in `pairs` already, so nothing's copied twice
+	still: { [BasePart]: BasePart }, -- each hall part copied once, by its real part
 	lit: { BasePart }, -- the copied halls' glowing parts: out when the moment puts the lights out
 	small: UDim2, -- the map's square, what it grows from and shrinks back to
 	began: number, -- os.clock as it cut in
@@ -83,6 +93,18 @@ type Showing = {
 	bed: Sound,
 	out: boolean, -- cutting out: the snow is up and the out burst played
 	follow: RBXScriptConnection?, -- keeps it on the map's window while that slides (S2-02d4)
+	added: RBXScriptConnection?, -- a monster streaming in on its floor joins the picture
+}
+
+-- A feed that arrived while another camera's picture was up: it waits its turn (S2-07a).
+type Waiting = {
+	id: number,
+	camera: CFrame,
+	number: number,
+	watch: { Instance },
+	within: Instance?,
+	arrived: number, -- os.clock
+	moment: number, -- os.clock its moment came while it waited, -1 if it hasn't
 }
 
 local FeedView = {}
@@ -91,6 +113,7 @@ function FeedView.new(): Brix.System
 	local me = Players.LocalPlayer
 	local connections: { RBXScriptConnection } = {}
 	local showing: Showing? = nil
+	local waiting: Waiting? = nil -- the newest only: an older one waiting is dropped for it
 	local random = Random.new()
 
 	local function sound(id: string, volume: number, looped: boolean): Sound
@@ -212,7 +235,56 @@ function FeedView.new(): Brix.System
 		end
 	end
 
-	-- Copies what the camera sees into `s.view`: the halls once, the watched things to follow.
+	-- Follows `inst` in the picture: a copy with only what draws it, each part paired with its real
+	-- one so `picture` moves it. Once a thing; a hall part copied still is swapped for it.
+	local function follow(s: Showing, inst: Instance)
+		if s.followed[inst] or not (inst.Parent and inst.Archivable) then
+			return
+		end
+		s.followed[inst] = true
+		local copy = inst:Clone()
+		pair(inst, copy, s.pairs)
+		if inst:IsA("BasePart") and copy:IsA("BasePart") then
+			table.insert(s.pairs, { from = inst, to = copy })
+		end
+		for _, d in copy:GetDescendants() do
+			if
+				d.Parent
+				and not (d:IsA("BasePart") or d:IsA("Model") or d:IsA("Folder"))
+				and not DRAWS[d.ClassName]
+			then
+				d:Destroy()
+			end
+		end
+		local function unstill(d: Instance)
+			local still = if d:IsA("BasePart") then s.still[d] else nil
+			if still and d:IsA("BasePart") then
+				still:Destroy()
+				s.still[d] = nil
+			end
+		end
+		unstill(inst)
+		for _, d in inst:GetDescendants() do
+			unstill(d)
+		end
+		copy.Parent = s.view
+	end
+
+	-- What moves in the picture: what the server named, and every monster on the floor (S2-07a), so
+	-- one walking through the camera's view walks in it instead of standing as a statue.
+	local function moving(watch: { Instance }, within: Instance?): { Instance }
+		local found = table.clone(watch)
+		if within then
+			for _, body in CollectionService:GetTagged(KEEPER_TAG) do
+				if body:IsDescendantOf(within) and not table.find(found, body) then
+					table.insert(found, body)
+				end
+			end
+		end
+		return found
+	end
+
+	-- Copies what the camera sees into `s.view`: the halls once, what moves to follow.
 	-- (The halls' pieces don't answer spatial queries, CanQuery off, so `within`'s parts are each
 	-- tested against the lens's view: once a feed, a floor's few thousand parts in a millisecond
 	-- or two.)
@@ -222,9 +294,17 @@ function FeedView.new(): Brix.System
 		local up = math.tan(math.rad(Feed.Fov / 2))
 		local across = up / Feed.Aspect
 		local copied = 0
+		local followed = moving(watch, within)
+		local skip: { [Instance]: boolean } = {}
+		for _, inst in followed do
+			skip[inst] = true
+			for _, d in inst:GetDescendants() do
+				skip[d] = true
+			end
+		end
 		local all: { Instance } = if within then within:GetDescendants() else {}
 		for _, part in all do
-			if not part:IsA("BasePart") or part.Transparency >= 0.98 then
+			if skip[part] or not part:IsA("BasePart") or part.Transparency >= 0.98 then
 				continue
 			end
 			local p = camera:PointToObjectSpace(part.Position)
@@ -237,15 +317,8 @@ function FeedView.new(): Brix.System
 			then
 				continue -- out of the lens's view
 			end
-			local watched = false
-			for _, inst in watch do
-				if part == inst or part:IsDescendantOf(inst) then
-					watched = true
-					break
-				end
-			end
-			if watched or copied >= MOST_PARTS then
-				continue
+			if copied >= MOST_PARTS then
+				break
 			end
 			copied += 1
 			local copy = drawn(part)
@@ -253,29 +326,13 @@ function FeedView.new(): Brix.System
 				if copy.Material == Enum.Material.Neon then
 					table.insert(s.lit, copy)
 				end
+				s.still[part] = copy
 				copy.Parent = world
 			end
 		end
 		world.Parent = s.view
-		for _, inst in watch do
-			if not inst.Archivable then
-				continue
-			end
-			local copy = inst:Clone()
-			pair(inst, copy, s.pairs)
-			if inst:IsA("BasePart") and copy:IsA("BasePart") then
-				table.insert(s.pairs, { from = inst, to = copy })
-			end
-			for _, d in copy:GetDescendants() do
-				if
-					d.Parent
-					and not (d:IsA("BasePart") or d:IsA("Model") or d:IsA("Folder"))
-					and not DRAWS[d.ClassName]
-				then
-					d:Destroy()
-				end
-			end
-			copy.Parent = s.view
+		for _, inst in followed do
+			follow(s, inst)
 		end
 	end
 
@@ -284,13 +341,18 @@ function FeedView.new(): Brix.System
 		for _, p in s.pairs do
 			local from, to = p.from, p.to
 			if from.Parent then
-				to.CFrame = from.CFrame
+				local at = from.CFrame
+				if at ~= to.CFrame then -- only what moved: a sleeper or the box costs a look
+					to.CFrame = at
+				end
 				if to.Color ~= from.Color then
 					to.Color = from.Color
 				end
 				if to.Transparency ~= from.Transparency then
 					to.Transparency = from.Transparency
 				end
+			elseif to.Transparency < 1 then
+				to.Transparency = 1 -- gone from this screen (streamed out): no statue left behind
 			end
 		end
 		-- the grain jumps by whole pixels, even rows down: it crawls, the scanlines hold
@@ -300,6 +362,10 @@ function FeedView.new(): Brix.System
 		)
 	end
 
+	local show: (number, CFrame, number, { Instance }, Instance?) -> ()
+
+	-- The picture is gone and the map back; a feed that waited its turn cuts in now, if the
+	-- walk-up it was for is still to come (`Feed.kept`).
 	local function finish()
 		local s = showing
 		if not s then
@@ -309,21 +375,28 @@ function FeedView.new(): Brix.System
 		if s.follow then
 			s.follow:Disconnect()
 		end
+		if s.added then
+			s.added:Disconnect()
+		end
 		s.bed:Stop()
 		s.screen:Destroy()
 		if s.own then
 			s.own:Destroy()
 		end
+		local w = waiting
+		waiting = nil
+		if w and Feed.kept(w.arrived, w.moment, os.clock()) then
+			show(w.id, w.camera, w.number, w.watch, w.within)
+		end
 	end
 
-	local function show(
+	function show(
 		id: number,
 		camera: CFrame,
 		number: number,
 		watch: { Instance },
 		within: Instance?
 	)
-		finish() -- a new feed takes the window at once
 		local map, corner, square, window = mapWindow()
 		local small = UDim2.fromOffset(square.X, square.Y)
 		local width = math.floor(square.X * Feed.Grow)
@@ -451,7 +524,9 @@ function FeedView.new(): Brix.System
 
 		local now = os.clock()
 		local s: Showing = {
-			id = id,
+			ids = { id },
+			camera = camera,
+			within = within,
 			own = own,
 			screen = screen,
 			view = view,
@@ -460,6 +535,8 @@ function FeedView.new(): Brix.System
 			roll = roll,
 			dot = dot,
 			pairs = {},
+			followed = {},
+			still = {},
 			lit = {},
 			small = small,
 			began = now,
@@ -469,6 +546,7 @@ function FeedView.new(): Brix.System
 			bed = bed :: Sound, -- made in `start`, before any feed
 			out = false,
 			follow = nil,
+			added = nil,
 		}
 		if window then
 			-- the map still sliding in as the feed cuts in (a floor's first seconds): the feed
@@ -480,6 +558,14 @@ function FeedView.new(): Brix.System
 		build(s, camera, watch, within)
 		picture(s)
 		showing = s
+		if within then
+			-- a monster streaming in on the floor while it shows walks in the picture too
+			s.added = CollectionService:GetInstanceAddedSignal(KEEPER_TAG):Connect(function(body)
+				if showing == s and body:IsDescendantOf(within) then
+					follow(s, body)
+				end
+			end)
+		end
 		if own then
 			screen.Parent = own
 			own.Parent = me:WaitForChild("PlayerGui")
@@ -495,9 +581,54 @@ function FeedView.new(): Brix.System
 		hiss(inHiss, Feed.InVolume, Feed.InFrom, Feed.SnowIn, Feed.InTail)
 	end
 
-	local function close(id: number, momentSound: string, dim: boolean)
+	-- A feed arrives (S2-07a, `Feed.arrive`): it cuts in on a free screen, joins the picture up
+	-- from the same camera (two Mannequins making for the one box), or waits for another camera's
+	-- picture to cut out. A feed is never cut off by another.
+	local function arrive(
+		id: number,
+		camera: CFrame,
+		number: number,
+		watch: { Instance },
+		within: Instance?
+	)
 		local s = showing
-		if not s or s.id ~= id or s.moment >= 0 then
+		local now = os.clock()
+		local state: Feed.Showing = if not s
+			then "none"
+			elseif s.moment >= 0 or s.out or now >= s.ends then "done"
+			else "live"
+		local apart = if s then (s.camera.Position - camera.Position).Magnitude else math.huge
+		local facing = if s then s.camera.LookVector:Dot(camera.LookVector) else -1
+		local what = Feed.arrive(state, apart, facing)
+		if what == "show" then
+			show(id, camera, number, watch, within)
+		elseif what == "join" and s then
+			table.insert(s.ids, id)
+			s.ends = math.max(s.ends, now + Feed.Most)
+			for _, inst in watch do
+				follow(s, inst)
+			end
+		else
+			waiting = {
+				id = id,
+				camera = camera,
+				number = number,
+				watch = watch,
+				within = within,
+				arrived = now,
+				moment = -1,
+			}
+		end
+	end
+
+	local function close(id: number, momentSound: string, dim: boolean)
+		local w = waiting
+		if w and w.id == id then
+			w.moment = os.clock() -- its moment came while it waited: it won't cut in for nothing
+			return
+		end
+		local s = showing
+		if not s or not table.find(s.ids, id) or s.moment >= 0 then
 			return
 		end
 		local now = os.clock()
@@ -521,8 +652,12 @@ function FeedView.new(): Brix.System
 	-- This player left the floor the feed is on (their gate shut with them aboard, S2-02d4): it
 	-- cuts out now, the static and the map back, whatever was about to happen on it.
 	local function cut(id: number)
+		local w = waiting
+		if w and w.id == id then
+			waiting = nil
+		end
 		local s = showing
-		if s and s.id == id then
+		if s and table.find(s.ids, id) then
 			s.ends = math.min(s.ends, os.clock())
 		end
 	end
@@ -572,7 +707,7 @@ function FeedView.new(): Brix.System
 									table.insert(watch, inst)
 								end
 							end
-							show(id, a, b, watch, if typeof(d) == "Instance" then d else nil)
+							arrive(id, a, b, watch, if typeof(d) == "Instance" then d else nil)
 						elseif kind == "Close" and type(a) == "string" and type(b) == "boolean" then
 							close(id, a, b)
 						elseif kind == "Cut" then
@@ -647,6 +782,7 @@ function FeedView.new(): Brix.System
 			c:Disconnect()
 		end
 		table.clear(connections)
+		waiting = nil -- nothing cuts in as it all comes down
 		finish()
 		for _, fade in fades do
 			fade:Cancel()

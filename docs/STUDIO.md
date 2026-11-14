@@ -2136,6 +2136,14 @@ verified: a doc page, Studio, or "untested".
   throw). A staged feed: from the Server, `ReplicatedStorage.Feed:FireClient(player, "Show", id,
   cameraCFrame, 7, { box, body }, floor)` shows for 8 s; capture 0.6 s later, once the map has
   finished sliding in and the floor has streamed.
+- **Staging feeds at a walking monster** (S2-07a1): stand one from the "Stand one" post (put a
+  Scriptable camera 4 studs off the post and wait for `PromptShown` first, or the hold does
+  nothing), park, set `SendToBreaker`, and from the same Server call `task.spawn` a schedule of
+  `Show`/`Cut` fires (the watch list can be `{}`: the floor's monsters are followed anyway) so the
+  Client call that samples `Picture.Mannequin`'s pivot every 0.25 s runs while they land. A
+  camera 5 back and 4.5 up along the body's `LookVector`, aimed 3 ahead of it, keeps it in shot;
+  one aimed back at it from ahead loses it in a second. A capture can take seconds: fire the
+  feed, read the picture and capture in one parallel batch.
 
 ## Testing the tap (S2-05a, Nov 14)
 

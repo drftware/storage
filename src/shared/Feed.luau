@@ -72,6 +72,12 @@ Feed.UpMost = 4.5 -- and at the most
 Feed.AimOut = 1.3 -- studs out from the wall it aims at: between the thing and whoever stands there
 Feed.AimUp = -0.4 -- studs above the spot it aims at (below: the hand and the body's middle)
 
+-- A second feed on a floor (S2-07a): two cameras this close, looking within this of the same way,
+-- are one camera, so the second feed joins the picture already up instead of cutting it off with
+-- fresh snow (two Mannequins making for the one box: the second walks into the same picture).
+Feed.SameStuds = 0.5
+Feed.SameFacing = 0.99 -- the dot of their looks: about 8 degrees
+
 --- Where a camera hangs to watch a spot on a wall, from how much room there is from just off that
 --- wall: `outFree` studs out across the hall, `sideFree` along the wall the way it hangs, and
 --- `upFree` up to the ceiling (math.huge for none found). Returns the camera's place from the spot
@@ -124,6 +130,31 @@ function Feed.due(left: number, pace: number): boolean
 		return left <= 0.5
 	end
 	return left <= pace * Feed.Lead
+end
+
+export type Showing = "none" | "live" | "done"
+
+--- What a feed arriving on a screen does (S2-07a): "show" cuts in now, "join" carries on in the
+--- picture already up (its id and what it watches added, its time renewed), "wait" holds it until
+--- that picture has cut out. `showing` is the feed up now: "none", "live" (its moment still to
+--- come) or "done" (the moment came, or it's cutting out); `apart` is studs between the two
+--- cameras and `facing` the dot of their looks. Only a live picture from the same camera is
+--- joined: a feed is never cut off by another.
+function Feed.arrive(showing: Showing, apart: number, facing: number): "show" | "join" | "wait"
+	if showing == "none" then
+		return "show"
+	end
+	if showing == "live" and apart <= Feed.SameStuds and facing >= Feed.SameFacing then
+		return "join"
+	end
+	return "wait"
+end
+
+--- Whether a feed that waited still cuts in when the screen is free: it arrived at `arrived`,
+--- its moment came at `moment` (negative: not yet), and it's `now`. Its moment come and gone
+--- while it waited, or a wait longer than a feed lasts, and the walk-up it was for is over.
+function Feed.kept(arrived: number, moment: number, now: number): boolean
+	return moment < 0 and now - arrived <= Feed.Most
 end
 
 return Feed

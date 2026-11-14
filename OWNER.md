@@ -57,6 +57,21 @@ Hub. Studio Play is fine for the first go.
    can't be pressed, so no thumb lands on Slam by mistake; the marker runs in silence (no sound
    of its own) so the wait is a held breath.
 
+## Now: two camera feed fixes (S2-07a1, built Nov 14, D-171; seen in Studio Play, not on a phone)
+
+1. **Watch a feed with another monster about.** Play a floor for a few minutes, opening doors
+   until two or more Mannequins are loose in the halls, and keep going until one walks to the
+   breaker and the corner map turns into the camera picture.
+   Look for: any other monster that crosses the picture walks in it, stiff and choppy like the
+   one going to the box. None stands frozen in the hall.
+2. **Two Mannequins at the box.** If two head for the breaker close together, look for: the
+   picture stays up the whole time (no second burst of snow), and the second one walks into the
+   same picture.
+3. **Decide my default:** a feed from another camera never cuts off the one showing; it waits
+   and cuts in after, unless its moment (the clunk) came while it waited, then it's skipped.
+   Today every feed is the breaker's, so you'll only see this once a second monster uses the
+   camera.
+
 ## Now: check your five fixes (built Nov 14, D-158; seen in Studio Play, not on a phone)
 
 Publish first (File > Publish to Roblox) so live servers run them.

@@ -88,6 +88,26 @@ do
 	ok(#all == 2 and #watching == 0, "everyone leaving: nobody's left watching")
 end
 
+-- a second feed on a screen (S2-07a): the same camera joins the one showing, another waits
+do
+	ok(Feed.arrive("none", 40, 0) == "show", "nothing showing: it cuts in")
+	ok(Feed.arrive("live", 0, 1) == "join", "the same camera, its moment still to come: it joins")
+	ok(
+		Feed.arrive("live", Feed.SameStuds * 0.5, 0.999) == "join",
+		"a hair off the same spot is still the same camera"
+	)
+	ok(Feed.arrive("live", 12, 1) == "wait", "another camera waits for the one showing")
+	ok(
+		Feed.arrive("live", 0, -1) == "wait",
+		"the same spot looking the other way is another camera"
+	)
+	ok(Feed.arrive("done", 0, 1) == "wait", "its moment came: even the same camera waits its turn")
+	ok(Feed.arrive("live", 0 / 0, 1) == "wait", "a camera nowhere waits, never joins")
+	ok(Feed.kept(0, -1, 3), "waited 3 s with its moment still to come: it shows")
+	ok(not Feed.kept(0, 2, 3), "its moment came while it waited: dropped, the moment's gone")
+	ok(not Feed.kept(0, -1, Feed.Most + 0.1), "waited past a feed's longest: dropped")
+end
+
 -- the look's numbers stay sensible
 ok(Feed.SnowIn > 0 and Feed.SnowOut > 0 and Feed.After > Feed.SnowOut, "the snow is brief")
 ok(Feed.Most > Feed.Lead + Feed.After, "a feed's longest outlasts a full walk-up and the moment")
