@@ -125,6 +125,7 @@ local PLAN = S.shape({
 	keepOn = chance,
 	smallRows = chance,
 	plainWalls = chance,
+	units = S.number({ min = 1, max = Floor.MaxUnits, integer = true }),
 	teachHoles = S.boolean(),
 })
 for name, plan in Floor.Plans do
@@ -202,6 +203,12 @@ local mostCutOff, fewestLinks, fewestFirst, shortestRun, longestRun =
 local SAME_SEED_ALIKE = 0
 local seen: { [string]: boolean } = {}
 local distinct, floors, atCap, maxUnits = 0, 0, 0, 0
+-- the units each floor band keeps (S1-03), and its floors with a long bare stretch
+type Band = { n: number, sum: number, lo: number, hi: number, bare: number, longestBare: number }
+local function band(): Band
+	return { n = 0, sum = 0, lo = math.huge, hi = 0, bare = 0, longestBare = 0 }
+end
+local counts = { short = band(), full = band() }
 local overlapsFound = 0
 local mostPanels, mostLids = 0, 0
 
@@ -578,18 +585,28 @@ local function checkFloor(seed: number, number: number)
 	-- holes only between side-by-side neighbours (OWNER.md's default): no unit backs onto another
 	ok(backLinks == 0, `{where}: {backLinks} units back onto another`)
 	local short = number <= 2
-	ok(links >= (if short then 30 else 40), `{where}: only {links} crawl links`)
+	-- fewer units (S1-03) leave about half the crawl links there were
+	ok(links >= (if short then 14 else 18), `{where}: only {links} crawl links`)
 	ok(cutOff <= (if short then 0 else 2), `{where}: {cutOff} units with no neighbour to crawl to`)
 	mostCutOff = math.max(mostCutOff, cutOff)
 	fewestLinks = math.min(fewestLinks, links)
 	if f.plan.teachHoles then
-		-- floors 1 and 2 teach the hole trap on the way out of the lobby
+		-- floors 1 and 2 teach the hole trap on the way out of the lobby: its first doors all
+		-- stand (the hall's whole length when it holds fewer)
+		local lobbyUnits, lobbyWalls = 0, 0
 		for _, s in f.slots do
-			ok(
-				f.cells[s.cell].zone ~= "Lobby" or s.kind == "Unit",
-				`{where}: a plain wall between the lobby and the first fork`
-			)
+			if f.cells[s.cell].zone == "Lobby" then
+				if s.kind == "Unit" then
+					lobbyUnits += 1
+				else
+					lobbyWalls += 1
+				end
+			end
 		end
+		ok(
+			lobbyUnits >= Floor.TeachDoors or lobbyWalls == 0,
+			`{where}: a plain wall among the first doors past the lobby`
+		)
 		ok(firstLinks >= 4, `{where}: {firstLinks} crawl links before the first fork`)
 		fewestFirst = math.min(fewestFirst, firstLinks)
 	end
@@ -851,6 +868,62 @@ local function checkFloor(seed: number, number: number)
 		end
 		ok(#q == #list, `{where}: zone {name} in two pieces`)
 	end
+
+	-- fewer units (S1-03, GDD "Doors"): about the plan's count, a door in every wing, and no long
+	-- stretch of hall with no door on either side
+	local band = if number <= 2 then counts.short else counts.full
+	band.n += 1
+	band.sum += #units
+	band.lo = math.min(band.lo, #units)
+	band.hi = math.max(band.hi, #units)
+	ok(
+		math.abs(#units - f.plan.units) <= f.plan.units // 4 + 3,
+		`{where}: {#units} units where the plan keeps about {f.plan.units}`
+	)
+	local doorsIn: { [string]: number } = {}
+	for _, c in f.cells do
+		doorsIn[c.zone] = doorsIn[c.zone] or 0
+	end
+	local hasDoor: { [Floor.Cell]: boolean } = {}
+	for _, s in f.slots do
+		if s.kind == "Unit" then
+			local c = f.cells[s.cell]
+			doorsIn[c.zone] += 1
+			hasDoor[c] = true
+		end
+	end
+	for zone, n in doorsIn do
+		ok(zone == "Lobby" or n > 0, `{where}: wing {zone} has no door`)
+	end
+	local bareSeen: { [Floor.Cell]: boolean } = {}
+	local longestBare = 0
+	for _, c in f.cells do
+		if c.kind ~= "Lobby" and not hasDoor[c] and not bareSeen[c] then
+			bareSeen[c] = true
+			local q, h = { c }, 1
+			while h <= #q do
+				local here = q[h]
+				h += 1
+				for d = 0, 3 do
+					local other = if here.arms[d + 1] then neighbour(here, d) else nil
+					if
+						other
+						and other.kind ~= "Lobby"
+						and not hasDoor[other]
+						and not bareSeen[other]
+					then
+						bareSeen[other] = true
+						table.insert(q, other)
+					end
+				end
+			end
+			longestBare = math.max(longestBare, #q)
+		end
+	end
+	if longestBare > Floor.BareMost then
+		band.bare += 1
+	end
+	band.longestBare = math.max(band.longestBare, longestBare)
 end
 
 for seed = 1, 200 do
@@ -861,6 +934,20 @@ ok(SAME_SEED_ALIKE == floors, "every seed lays its floor the same way twice")
 ok(distinct >= floors * 0.95, `seeds lay different floors ({distinct} of {floors})`)
 ok(overlapsFound > 0, "the back-corner deck overlaps were checked (some exist)")
 ok(atCap <= floors * 0.02, `floors rarely reach the unit cap ({atCap} of {floors})`)
+for name, band in counts do
+	local plan = if name == "short" then Floor.Plans.Short else Floor.Plans.Full
+	local mean = band.sum / band.n
+	ok(
+		math.abs(mean - plan.units) <= 1.5,
+		`{name} floors keep {mean} units on average, not about {plan.units}`
+	)
+	-- a long bare stretch only where the halls stood bare before any were walled (rare)
+	ok(
+		band.bare <= band.n * 0.02,
+		`{name} floors: {band.bare} of {band.n} with a long bare stretch`
+	)
+end
+ok(counts.short.bare == 0, "floors 1 and 2: never a long bare stretch")
 
 -- the side names: a door looking -Z, you face +Z to see it, so its left wall is toward +X
 ok(Floor.sideDir({ facing = 3 } :: any, "left") == 0, "a slot's left is your left facing its door") -- any: only facing is read
@@ -870,7 +957,9 @@ if failures > 0 then
 	error(`{failures} of {checks} floor checks failed`)
 end
 print(
-	`floor: {checks} checks passed over {floors} floors (at most {maxUnits} units; crawl links `
+	`floor: {checks} checks passed over {floors} floors ({counts.short.lo} to {counts.short.hi} units `
+		.. `on floors 1 and 2, {counts.full.lo} to {counts.full.hi} above; at most {counts.full.longestBare} `
+		.. `bare hall pieces in a row; crawl links `
 		.. `at least {fewestLinks}, {fewestFirst} before the first fork on floors 1 and 2; at most `
 		.. `{mostCutOff} units cut off; top runs {shortestRun} to {longestRun} studs, closed by at most `
 		.. `{mostPanels} panels and {mostLids} lids)`

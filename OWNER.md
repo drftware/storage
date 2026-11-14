@@ -5,7 +5,8 @@ nowhere else.
 
 ## Now
 
-- [ ] **Each session: click Connect** in Studio's Rojo plugin when it says `rojo serve` is running.
+- [ ] **If Studio stops getting changes, click Connect** in Studio's Rojo plugin (connected Nov 13
+  at 23:30; each session checks it first and says so in HANDOFF.md).
 - [ ] **Playing on your phone** (D-109): with Rojo connected, use File > Publish to Roblox (Save
   alone doesn't change what live servers run), then play it from the Creator Hub on the phone.
   You load in at the lobby, facing its six cars; step into one and its count takes you to floor 1
@@ -92,7 +93,30 @@ and off, the invite sheet opening with your friends (no invite sent).
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
 
-## Now: judge L-08e3b, Share and follow (built Nov 13, D-130; untested in Studio)
+## Now: judge S1-03, fewer units (built Nov 13, D-131; untested in Studio)
+
+Each floor now keeps about half its doors: about 30 on floors 1 and 2, about 40 above, with
+stretches of plain wall where the rest stood. A hall side's doors go together, so you see blank
+wall and then doors side by side. Every wing keeps some doors, the first 8 doors past the lobby
+on floors 1 and 2 all stay (the row that teaches sawing between neighbours), and no more than 4
+hall pieces in a row go by with no door on either side. It passes checks; nobody has looked at
+it in Studio yet.
+- [ ] **Count them:** press Play. Output prints the test floor's map and "floor 1 laid, N units":
+  N should be about 30 (26 to 37). For an upper floor set Workspace's `DevFloorNumber` to 3
+  before Play: about 40 (36 to 48).
+- [ ] **Walk a floor on a phone-size view:** does a long stretch of blank wall read as built that
+  way, or as doors gone missing? Is a wing with only two or three doors still worth the walk?
+  If the walls read as missing, ROADMAP's polish list has dressing for them.
+- [ ] **Decide (defaults in place):** (1) about 30 and 40 (`Floor.Plans`, `units`); (2) the
+  first 8 doors past the lobby always stay on floors 1 and 2 (`Floor.TeachDoors`); (3) at most 4
+  hall pieces in a row with no door (`Floor.BareMost`); (4) a side's doors go together (all
+  doors or all wall), never one door alone in a stretch of wall.
+
+## Now: judge L-08e3b, Share and follow (built Nov 13, D-130; the panel seen in Studio)
+
+In Studio Play (Nov 13) the car's panel shows Invite, Share and Go across its bottom, and Share
+reaches the server, which asks Roblox for the link; Studio refuses it (HTTP 403), as it does
+everywhere but a live server. Everything below needs the published game.
 
 Needs Rojo connected, then File > Publish, and two accounts that are friends (A plays, B waits).
 - [ ] **Sent on to your friend:** A rides a car up (their own server), finishes the climb, and is
@@ -148,14 +172,18 @@ coast and the park, the stripes. A phone and two players are yours.
   riding your hands hold the torch out, not the handle (goes with whether the torch is out in
   the lobby at all).
 
-## Now: judge L-08e4b2, the cart rolling home (built Nov 13, D-129; untested in Studio)
+## Now: judge L-08e4b2, the cart rolling home (built Nov 13, D-129; verified in Studio Play)
 
 Hop off a cart at a car's yellow stripes and, a moment later, it rolls back to the rack by
 itself, casters rattling, curving round to line up and easing nose first into a free slot with
 a soft clunk. Facing away from home, it first swings round on the spot. Leave a cart anywhere
 else and it goes home after 20 seconds. Stand in its way and it stops short and waits, then
-rolls on once you step aside. It passes checks but nobody has seen it in Studio: Rojo had
-stopped syncing (the Connect click above), so Studio still ran the old code.
+rolls on once you step aside. Verified in Studio Play (Nov 13, one player, from the logs): four
+rides to the stripes, each cart off about 1.2 s after you're put off and in its slot about 7 s
+later; one left mid-room went home 20 s after it parked; stood in its way, it stopped about 2.4
+studs short and rolled on 0.75 s after you stepped aside. A bug found there is fixed: standing
+still where you got off held your own cart for 12 s, then it popped into the rack. Left for you:
+how it looks and sounds, the swing on the spot, and two riders.
 - [ ] **Watch it in Studio Play (Rojo connected):** ride a cart onto a car's stripes. About a
   second and a half after you're put off, the cart sets off. Does it curve smoothly and nose
   into a slot between the hoops without clipping them, and stop with a clunk? Its front casters

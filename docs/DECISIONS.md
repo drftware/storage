@@ -3674,3 +3674,41 @@ between Invite and Go for anyone aboard; the server opens the sheet
 the link expires with `FollowFor` and then falls back to the plain game link. Rate: one per 4 s.
 The press dips and clicks; "Share failed" if the sheet won't open.
 
+
+## D-131 Half the units: whole hall sides go, every wing keeps doors (S1-03, Nov 13)
+
+**What.** Each floor's plan says about how many units it keeps (`Plan.units`: 30 on floors 1 and
+2, 40 above, of about 60 and 80 its halls have room for; GDD "Doors": "Fewer units"). The halls
+are laid as before; then step 5b (`thin` in `Floor`) turns whole hall sides into plain wall, a
+hall piece's two M or three S units facing one way (or a junction corner's one) at once, so a
+player sees a stretch of blank wall and then doors side by side, not a gap here and there, and
+the doors that stay keep their neighbours to saw between.
+
+**How the sides are picked.** In the order you meet them walking out from the lobby, each side
+adds its share (the units to keep over the units there are) to a credit and stays when the
+credit covers it, give or take half a side: kept doors come at an even pace with chance in it.
+Rejected: a plain coin toss per side (the count swings more from floor to floor, and runs of
+doors and of wall bunch up) and walling single units (a hall of gap-toothed doors, and units left
+with no neighbour to crawl to).
+
+**What always stays.** (1) One side in every wing, picked at random, so each wing has somewhere
+for its note (Deal spreads the notes a wing each) and none is a dead walk. Without it 52 of 400
+floors 1 and 2 left a wing bare. (2) On floors 1 and 2, the first `Floor.TeachDoors` (8) doors past the
+lobby: the row of neighbours that teaches the hole trap. Protecting the whole lobby hall instead
+kept up to 50 units on floors whose first fork is far. (3) A side whose loss would leave a unit
+beside it with nothing to crawl to.
+
+**No long bare stretch.** More than `Floor.BareMost` (4) hall pieces in a row with no door on
+either side (about 96 studs, six seconds' walk) get a walled side back at their middle, the one
+with the most units. Without it stretches ran to 7 pieces (170 studs past nothing). It adds a
+unit or two on some floors (36 to 48 above, mean 39.7). A full floor whose halls stood bare
+before any walling keeps that (about 1 in 200).
+
+**Numbers.** Units are numbered again after the walling, still in the order you meet them, so
+floor 1 runs 101 to about 130 with no gaps. Over 400 seeds: 26 to 37 units on floors 1 and 2
+(mean 29.7), 36 to 48 above; crawl links at least 16 (were 30 and 40).
+
+**Also (L-08e4b2, verified in Studio Play this session).** A cart going home looked for people
+in boxes the size of the whole cart a little ahead of it, which covered most of its own deck: a
+rider put off at the stripes who stood still held their own cart for 12 s, then it popped into
+its slot. Now each look covers only the strip its nose rolls into (`Carts`, `inWay`).

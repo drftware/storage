@@ -1165,8 +1165,9 @@ fix them later." The overnight run's hard limits hold.
       and off as you step in, the panel's Invite opening Roblox's invite sheet (none sent), the
       key gone on a group's own server. Lune: boarding 137 checks. Live invites, friends and a
       phone are the owner's (`OWNER.md`).
-    - [x] **L-08e3b Share and follow. Built Nov 13 (D-130); passes checks, untested in Studio**
-      (Rojo's sync wasn't reaching Studio). Three pieces the invite still lacked. (1) A share link
+    - [x] **L-08e3b Share and follow. Built Nov 13 (D-130); the panel verified in Studio Play**
+      (Invite, Share and Go across its bottom; Share reaches the server, which asks Roblox for the
+      link and Studio answers HTTP 403, as it does off a live server; the rest is `OWNER.md`'s). Three pieces the invite still lacked. (1) A share link
       (`SocialService:PromptLinkSharingAsync`, server only: an expiring link to the experience
       with launch data, Roblox's share sheet or the clipboard): Audience Expansion pays 35% of
       a new or returning player's first $100 when they come by the experience's share link, and
@@ -1213,8 +1214,8 @@ fix them later." The overnight run's hard limits hold.
           wheels, swings the casters, rattles with speed and stands the rider (`CartView`).
           Verified in Studio Play: out of the rack, a curve, five kicks to 21 a second, a clank
           at the wall, a turn off it, Jump, the coast and the park, the band's hop-off.
-        - [x] **L-08e4b2 Home again. Built Nov 13 (D-129); passes checks, untested in Studio**
-          (Rojo had stopped syncing; `OWNER.md`). A cart you hop off at a car's stripes rolls
+        - [x] **L-08e4b2 Home again. Done Nov 13 (D-129); verified in Studio Play Nov 13**
+          (session 119, one player; below). A cart you hop off at a car's stripes rolls
           home by itself 1.2 s after it parks, one left anywhere else after 20 s: nose first to
           the nearest free slot, a curve to line up and the last 6 studs straight in between the
           hoops, swinging round on the spot first if it faces away (`Cart.Home`, Lune specs). The
@@ -1222,7 +1223,15 @@ fix them later." The overnight run's hard limits hold.
           cart (CartView), rattling, its casters flipping to trail, a soft clunk into the rack.
           Anyone or any cart just ahead: it brakes, waits, rolls on; held 12 s, or no way clear
           of walls and parked carts, it's put in its slot. No Ride on the way home. Two riders
-          at once (`OWNER.md`).
+          at once (`OWNER.md`). Verified in Studio Play from the server's and the screen's logs:
+          four rides onto the stripes, each cart off about 1.2 s after its rider was put off and
+          nosed into its slot about 7 s later, easing in; one left mid-room went home 20 s after
+          it parked (a 57-stud way); stood 7 studs ahead of it, it braked to a stop about 2.4
+          studs short and rolled on 0.75 s after you stepped aside; no "no way home" line. Fixed
+          there: the look ahead for anyone in the way covered the cart's own deck, so a rider
+          put off at the stripes who stood still held it 12 s, then it popped into its slot
+          (`Carts`: only the strip its nose rolls into counts now). Not seen: the swing on the
+          spot (no cart was left facing away), its sounds, two riders (`OWNER.md`).
 - [x] **L-15 Keepers hear the rest. Done Nov 11 (D-107).** The keypad, a dropped tool, the saw, a
   crawl, the ladder and a drop off or into a unit each reach a keeper as far as players hear them,
   as Lethal Company's Eyeless Dogs come to any noise. A sound on a unit's top carries out over its
@@ -1374,12 +1383,27 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
   after it saves something (GDD "Saving").
 - [ ] **S1-02 Recording.** What every player earns and spends, and the list in the GDD's "What
   the game needs to record", so things have a known worth before anything is priced.
-- [ ] **S1-03 Half the units.** About 30 on floors 1 and 2 and about 40 above, with blank wall
-  where units were and the halls as long as they are (GDD "Doors": "Fewer units").
+- [x] **S1-03 Half the units. Done Nov 13 (D-131); passes checks, untested in Studio.** About
+  30 on floors 1 and 2 and about 40 above, with blank wall where units were and the halls as long
+  as they are (GDD "Doors": "Fewer units"). `Floor`'s step 5b walls whole hall sides (a piece's
+  two M or three S facing one way) in the order you meet them, at an even pace with chance in
+  it (`Plan.units`, 30 and 40); every wing keeps a side picked at random; on floors 1 and 2 the
+  first 8 doors past the lobby stay (`Floor.TeachDoors`); a side never goes if it leaves a
+  neighbour with nothing to crawl to; more than 4 hall pieces in a row with no door get a side
+  back in their middle (`Floor.BareMost`); the units left are numbered again. Over 400 seeds:
+  26 to 37 units on floors 1 and 2, 36 to 48 above; crawl links at least 16. Lune: floor.spec
+  (counts per band, a door in every wing, the teaching doors, bare stretches). Studio and a
+  phone: `OWNER.md`.
 - [ ] **S1-04 Coins in most units.** About seven units in ten have one to three coins on the
   floor; tap to pick them up and a small count goes up. Yours alone, for this climb only. The
   other units are bare or hold things to look at (stacked boxes, a mattress, a rolled carpet:
-  art first, the unit's way).
+  art first, the unit's way). In two sessions (split Nov 13):
+  - [ ] **S1-04a Coins.** The coin, built the unit's way (art first: `art/coin/`, a spec, baked
+    maps, the FBX, look sheets); the deal lays one to three on the floor of about seven units in
+    ten; a tap picks one up with a chink and your count ticks up, the count small and out of the
+    way. Yours alone, for this climb (the GDD's lines on coins: read them first).
+  - [ ] **S1-04b Things to look at.** Stacked boxes, a mattress, a rolled carpet, built the
+    unit's way, in some of the units without coins, so an open door is never just a bare box.
 - [ ] **S1-05 Finds you carry.** One tap puts a find in one of your three slots, beside your
   tools. Slots full: drop something or leave it. Caught: your finds drop with your tools.
   Takes in the old "Finds in a run" (where a unit's find stands, D-036).
@@ -1514,6 +1538,11 @@ of units; trading; a season pass; fake notes, finds that are monsters in disguis
 that moves walls, and the dolly.
 
 ## Polish waiting for a slot
+
+- **Blank wall that reads as built (S1-03):** fewer units leave stretches of the corridor kit's
+  plain wall up to four hall pieces long. Judge them in Studio on a phone first; if they read as
+  missing doors, dress the odd one with a fire-hose cabinet, a pillar with a painted bay number,
+  a strip of hazard tape or a wall-mounted extinguisher, the corridor kit's way.
 
 - **The front office's finish (L-08e1a):** the room's middle is bare concrete (the ride needs
   it, but a floor plan board by the door, a bench, a wet-floor sign or a mop bucket would say

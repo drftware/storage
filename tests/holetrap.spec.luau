@@ -28,6 +28,8 @@ local DT = 1 / 60
 local ROW = KeeperRows.Mannequin
 local TOL = 1e-3
 
+-- the layout as it was played in Studio, every unit standing (before S1-03 walled half of them)
+Floor.Plans.Short.units = Floor.MaxUnits
 local f = Floor.generate(1, Brix.Random.new({ seed = 7 }))
 local map = KeeperMap.build(f)
 local function slotOf(number: string): number

@@ -1691,3 +1691,19 @@ verified: a doc page, Studio, or "untested".
   keyDown, wait, keyUp; Space to hop off). Log from a client Heartbeat connection that writes a
   Workspace attribute when done, read it from a later call. The lobby's left wall is at x -60;
   the cars' band edge at z 596.8.
+- **Watching a cart go home from the MCP** (L-08e4b2, Nov 13): the server never moves a homing
+  cart; it writes `HomeRun` (from, speed, to) and `HomeAt` and puts it in its slot at the end,
+  so a Server log of its pivot jumps. Every screen rolls it: log the pivot from a Client
+  Heartbeat into a Workspace attribute. A run of `0/0/length` is a start, not a halt; a halt's
+  `to` is short of the way's length. Riding to the stripes with W held 3 s from the rack puts you
+  off in the car (the car's count then takes you up within about 20 s); W 1.8 s leaves you
+  standing on the cart's handle end. To stand in a homing cart's way, `require` the shared
+  `Cart.Home` on the Server, rebuild the way from `HomeFrom`, `HomeTo`, `HomeShape` and the run,
+  and `PivotTo` the character a few studs ahead of `Home.at`.
+- **Opening a lobby car's panel from the MCP** (Nov 13): E from `user_keyboard_input` and
+  `InputHoldBegin` both do nothing until the panel's button is shown, and a prompt shows only
+  while on screen: in one Client call, `PivotTo` into the car, wait for the `CarPanel`
+  attachment's prompt to be `Enabled`, point the camera at the attachment for a few frames, then
+  `InputHoldBegin`/`End`. One player alone, the car's count leaves in about 20 s, so open it
+  in the same call that steps in. Share then reaches the server, and Studio refuses the link:
+  "share sheet didn't open: HTTP 403 (Forbidden)". Share links work only on a live server.

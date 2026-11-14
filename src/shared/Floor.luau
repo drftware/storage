@@ -74,9 +74,13 @@ export type Plan = {
 	keepOn: number, -- 0 to 1: how often a hall carries on straight rather than turning (long aisles)
 	smallRows: number, -- 0 to 1: how often a straight's side is three S units, not two M
 	plainWalls: number, -- 0 to 1: how often a slot is a plain wall: the rhythm of doors down a hall
+	-- About how many doors the floor keeps of the ones its halls have room for (GDD "Doors": fewer
+	-- units). Fewer makes each door a choice and leaves stretches of blank wall to be chased down.
+	units: number,
 	-- The hall from the lobby to the first fork teaches the hole trap (GDD: floors 1 and 2): no
 	-- plain walls there but the ones a back corner needs, and a back-cornered side three small
-	-- units, so the first doors you meet stand side by side, neighbours to saw between.
+	-- units, so the first doors you meet stand side by side, neighbours to saw between. Its first
+	-- `Floor.TeachDoors` doors all stay when the floor has fewer units.
 	teachHoles: boolean,
 }
 
@@ -90,10 +94,11 @@ Floor.Plans = {
 		keepOn = 0.6,
 		smallRows = 0.25,
 		plainWalls = 0.08,
+		units = 30, -- of about 60 its halls have room for: half the doors, each one a pick
 		teachHoles = true,
 	} :: Plan,
 	-- Floors 3 and up: half as many halls again and a second loop, so four notes take searching
-	-- for and a chase has room. About 80 units (60 to 99); the short plan about 60.
+	-- for and a chase has room. Its halls have room for about 80 units (60 to 99).
 	Full = {
 		columns = 5,
 		rows = 4,
@@ -102,6 +107,7 @@ Floor.Plans = {
 		keepOn = 0.6,
 		smallRows = 0.25,
 		plainWalls = 0.08,
+		units = 40, -- of about 80: half, as on floors 1 and 2, over halls half as long again
 		teachHoles = false,
 	} :: Plan,
 }
@@ -118,6 +124,16 @@ local BACK_CORNER_SMALL = 0.5
 -- A unit's number is its floor's followed by two digits (floor 2: 201 to 299), so a floor holds
 -- at most this many units.
 Floor.MaxUnits = 99
+
+-- On a floor that teaches the hole trap, the first this many doors you meet all stay when the
+-- floor keeps fewer units: a row of neighbours just past the lobby to saw between, then the halls
+-- thin out like any other (S1-03).
+Floor.TeachDoors = 8
+
+-- With fewer units, at most this many hall pieces in a row go by with no door on either side
+-- (about 96 studs, six seconds' walk): room to be chased down, never a hall that leads past nothing.
+local BARE_MOST = 4
+Floor.BareMost = BARE_MOST
 
 -- Each floor's doors wear one of the four colours (UnitKit.Colours.Door), in turn from floor 1, so
 -- the floor you're on has a colour you can name ("the teal floor").
@@ -433,6 +449,241 @@ local function findRuns(slots: { Slot }): { Run }
 		end
 	end
 	return runs
+end
+
+--[[
+	Fewer units (S1-03, GDD "Doors"). A floor's halls have room for about twice the units its plan
+	keeps, so the rest become plain walls and each door left is a pick. A hall side's units go
+	together (its two M or three S, or a junction corner's one), leaving a stretch of blank wall
+	rather than a gap here and there, and the sides that stay keep their units side by side,
+	neighbours to saw between. Walking out from the lobby the kept doors come at an even pace with
+	a little chance in it, and every wing keeps one side at least, so a note has somewhere to be in
+	each and none is bare. A side never goes if a unit beside it would be left with nothing to
+	crawl to, and on a floor that teaches the hole trap its first `Floor.TeachDoors` doors stay. The
+	units left are numbered again in the order you meet them.
+]]
+local function thin(
+	slots: { Slot },
+	cells: { Cell },
+	at: { [number]: number },
+	plan: Plan,
+	firstStretch: { [number]: boolean },
+	number: number,
+	random: Random
+)
+	-- the units in the order you meet them walking out from the lobby (their numbers)
+	local units: { number } = {}
+	for i, s in slots do
+		if s.kind == "Unit" then
+			table.insert(units, i)
+		end
+	end
+	if #units <= plan.units then
+		return
+	end
+	table.sort(units, function(a: number, b: number): boolean
+		return (tonumber(slots[a].number) :: number) < (tonumber(slots[b].number) :: number)
+	end)
+	-- the hall sides in that order: a hall piece's units facing one way
+	local sides: { { number } } = {}
+	local sideAt: { [number]: { number } } = {}
+	for _, i in units do
+		local k = slots[i].cell * 4 + slots[i].facing
+		local side = sideAt[k]
+		if not side then
+			local new: { number } = {}
+			sideAt[k] = new
+			table.insert(sides, new)
+			side = new
+		end
+		table.insert(side :: { number }, i)
+	end
+	-- The sides that stay whatever: the teaching hall's first doors, and one side in each wing (at
+	-- random, so the wing's door isn't always the first you'd reach).
+	local stays: { [{ number }]: boolean } = {}
+	local fixed = 0
+	if plan.teachHoles then
+		for _, side in sides do
+			if fixed >= Floor.TeachDoors or not firstStretch[slots[side[1]].cell] then
+				break
+			end
+			stays[side] = true
+			fixed += #side
+		end
+	end
+	local wings: { [string]: { { number } } } = {}
+	local wingNames: { string } = {}
+	for _, side in sides do
+		local zone = cells[slots[side[1]].cell].zone
+		if zone ~= "Lobby" then
+			if not wings[zone] then
+				wings[zone] = {}
+				table.insert(wingNames, zone)
+			end
+			table.insert(wings[zone], side)
+		end
+	end
+	table.sort(wingNames)
+	local held: { [{ number }]: boolean } = {}
+	for _, name in wingNames do
+		local list = wings[name]
+		held[list[random:nextInteger(1, #list)]] = true
+	end
+	local free = #units - fixed
+	if free <= 0 then
+		return
+	end
+	-- the share of a door each unit outside the teaching doors keeps
+	local share = math.clamp((plan.units - fixed) / free, 0, 1)
+
+	local function isUnit(j: number?): boolean
+		return j ~= nil and slots[j].kind == "Unit"
+	end
+	local function stranded(j: number): boolean
+		local s = slots[j]
+		return not (isUnit(s.left) or isUnit(s.right) or isUnit(s.back))
+	end
+	local cutIn: { [number]: { { number } } } = {} -- a hall piece's sides walled
+	-- walls the side, unless that leaves a unit beside it with no neighbour to crawl to
+	local function cut(side: { number }): boolean
+		for _, i in side do
+			slots[i].kind = "Wall"
+		end
+		for _, i in side do
+			local s = slots[i]
+			for _, j in { s.left, s.right, s.back } do
+				if j ~= nil and isUnit(j) and stranded(j) then
+					for _, k in side do
+						slots[k].kind = "Unit"
+					end
+					return false
+				end
+			end
+		end
+		local cell = slots[side[1]].cell
+		cutIn[cell] = cutIn[cell] or {}
+		table.insert(cutIn[cell], side)
+		return true
+	end
+	-- stands a walled side's units again, unless one would have nothing to crawl to
+	local function restore(side: { number }): boolean
+		for _, i in side do
+			slots[i].kind = "Unit"
+		end
+		for _, i in side do
+			if stranded(i) then
+				for _, k in side do
+					slots[k].kind = "Wall"
+				end
+				return false
+			end
+		end
+		local list = cutIn[slots[side[1]].cell]
+		table.remove(list, table.find(list, side) :: number)
+		return true
+	end
+	-- Each side adds its share to a credit and stays when the credit covers it, give or take half
+	-- a side, so kept doors come at an even pace with chance in it. A side held for its wing, or
+	-- one that can't go, stays and is paid for the same.
+	local credit = random:nextNumber() - 0.5
+	for _, side in sides do
+		if stays[side] then
+			continue
+		end
+		credit += share * #side
+		local keep = held[side] or credit >= #side * (0.5 + random:nextNumber())
+		if keep or not cut(side) then
+			credit -= #side
+		end
+	end
+
+	-- No long bare stretch: more than `BARE_MOST` hall pieces in a row with no door get a side back
+	-- in their middle (the one with the most units), so no hall runs on past nothing.
+	local bare: { [number]: boolean } = {}
+	local function walkBare(from: number): ({ number }, { [number]: number })
+		local depth: { [number]: number } = { [from] = 0 }
+		local order = { from }
+		local h = 1
+		while h <= #order do
+			local ci = order[h]
+			h += 1
+			local c = cells[ci]
+			for d = 0, 3 do
+				if c.arms[d + 1] then
+					local dx, dz = dir(d)
+					local j = at[key(c.gx + dx, c.gz + dz)]
+					if j and bare[j] and depth[j] == nil then
+						depth[j] = depth[ci] + 1
+						table.insert(order, j)
+					end
+				end
+			end
+		end
+		return order, depth
+	end
+	for _ = 1, #cells do
+		table.clear(bare)
+		for ci, c in cells do
+			bare[ci] = c.kind ~= "Lobby"
+		end
+		for _, s in slots do
+			if s.kind == "Unit" then
+				bare[s.cell] = false
+			end
+		end
+		local mended = false
+		local seen: { [number]: boolean } = {}
+		for ci in cells do
+			if bare[ci] and not seen[ci] then
+				local stretch = walkBare(ci)
+				for _, j in stretch do
+					seen[j] = true
+				end
+				if #stretch > BARE_MOST then
+					-- its middle: halfway along its longest way through, out from one far end
+					local far = walkBare(stretch[#stretch])
+					local _, depth = walkBare(far[#far])
+					local half = depth[far[#far]] // 2
+					table.sort(stretch, function(a: number, b: number): boolean
+						return math.abs(depth[a] - half) < math.abs(depth[b] - half)
+					end)
+					for _, j in stretch do
+						local list = cutIn[j]
+						if list and #list > 0 then
+							table.sort(list, function(a: { number }, b: { number }): boolean
+								return #a > #b
+							end)
+							for _, side in table.clone(list) do
+								if restore(side) then
+									mended = true
+									break
+								end
+							end
+						end
+						if mended then
+							break
+						end
+					end
+				end
+			end
+			if mended then
+				break
+			end
+		end
+		if not mended then
+			break
+		end
+	end
+
+	local n = 0
+	for _, i in units do
+		if slots[i].kind == "Unit" then
+			n += 1
+			slots[i].number = string.format("%d%02d", number, n)
+		else
+			slots[i].number = nil
+		end
+	end
 end
 
 local JUNCTIONS: { [Kind]: boolean } = { Corner = true, T = true, Cross = true }
@@ -1096,6 +1347,9 @@ function Floor.generate(number: number, random: Random): Floor
 	for _, f in fixtures do
 		f.zone = cells[f.cell].zone
 	end
+
+	-- 5b. Fewer units: about the plan's count stay, the rest become blank wall.
+	thin(slots, cells, at, plan, firstStretch, number, random)
 
 	-- 6. Shared walls: of two units side by side in one row, the shallower (or the later) leaves out
 	-- the wall between them, so the two never stand one in the same place.

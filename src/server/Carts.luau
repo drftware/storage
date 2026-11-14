@@ -82,7 +82,13 @@ local floorY = Lobby.Origin.Position.Y
 local bounds = Cart.Specs.Parts.Bounds.Size
 local halfW, halfL = bounds.X / 2, bounds.Z / 2
 local snug = Vector3.new(bounds.X - 0.1, HIGH, bounds.Z - 0.1) -- a way clear of things
-local roomy = Vector3.new(bounds.X + 0.3, HIGH, bounds.Z + 0.3) -- anyone in the way
+local roomy = Vector3.new(bounds.X + 0.3, HIGH, bounds.Z + 0.3) -- anyone in a slot
+-- Anyone in a homing cart's way: for each look ahead, the strip its nose rolls into, never its
+-- own deck (the rider just put off at the stripes stands on its handle end).
+local ahead: { Vector3 } = {}
+for i, a in Home.Look do
+	ahead[i] = Vector3.new(bounds.X + 0.3, HIGH, a + 0.3)
+end
 
 -- A pose on the floor (Cart.Home) from a cart's pivot, and back.
 local function poseOf(at: CFrame): Home.Pose
@@ -376,9 +382,18 @@ function Carts.new(): Brix.System
 	local function inWay(r: Run, h: Homing, s: number): boolean
 		people.FilterDescendantsInstances = characters()
 		local length = h.way.length
-		for _, ahead in Home.Look do
-			local x, z, hh = Home.pose(h.way, math.min(s + ahead, length))
-			if #Workspace:GetPartBoundsInBox(boxAt(x, z, hh), roomy, people) > 0 then
+		for i, a in Home.Look do
+			local x, z, hh = Home.pose(h.way, math.min(s + a, length))
+			-- the front `a` studs of its footprint there: the floor its nose rolls into
+			local wx, wz = Ride.way(hh)
+			local mid = halfL - a / 2
+			if
+				#Workspace:GetPartBoundsInBox(
+					boxAt(x + wx * mid, z + wz * mid, hh),
+					ahead[i],
+					people
+				) > 0
+			then
 				return true
 			end
 			local p = { x = x, z = z, h = hh }
