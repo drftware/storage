@@ -58,6 +58,14 @@ ShutTap.MinRise = 3
 -- flood of them from a broken or cheating screen.
 ShutTap.Gap = 0.2
 
+-- The warning tick as the bar rises, heard by the puller alone (Dead by Daylight's tick before its
+-- needle moves): one sharp metal click with a short ring, Pro Sound Effects' "Toggle Switches
+-- Moviola Editing Machine 17" (0.36 s, the click right at its start). Pitched up a touch so it
+-- cuts through the door's roll; loud enough to make you look, never a jump scare.
+ShutTap.TickSound = "rbxassetid://9120089728"
+ShutTap.TickVolume = 0.6
+ShutTap.TickPitch = 1.15
+
 --- Whether pulling a door down from `rise` studs up earns the tap: a monster stands in its unit
 --- (`asleep` nil when none does) that is asleep, or awake but hasn't seen the puller (`sawPuller`:
 --- it hunts them).

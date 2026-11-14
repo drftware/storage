@@ -221,6 +221,9 @@ DoorSound.Actions = {
 -- The roll is at full volume once the door moves at this fraction of its action's average speed;
 -- slower than that (easing in and out, a lift from inside between heaves) it fades with the speed.
 DoorSound.RollKnee = 1
+-- Seconds after a settled door touches down (the tap's hit) that its latch catches: a beat apart,
+-- so the touch and the click read as two quiet things, the door down and then locked.
+DoorSound.SettleLatch = 0.12
 -- The roll's pitch runs from Slow (barely moving) to Fast (at 2.5 times the average speed, a
 -- curve's quickest point): a door speeding up sounds it.
 DoorSound.RollPitchSlow = 0.9
@@ -294,8 +297,10 @@ function DoorSound.cues(kind: Motion.Kind, from: number, to: number, fullStroke:
 		elseif strike.what == "Bounce" then
 			table.insert(cues, cue(strike.at, "Clatter", 0.75 * s, 1, DoorSound.BounceShake * s))
 		elseif strike.what == "Floor" and kind == "Settle" then
-			-- the tap hit (S2-05a): set down on the concrete, a touch you hear only standing there
+			-- the tap hit (S2-05a): set down on the concrete, a touch you hear only standing there,
+			-- and the latch catching softly a beat after (S2-05b): the door is shut, and he slept on
 			table.insert(cues, cue(strike.at, "Thump", 0.12, 0.85))
+			table.insert(cues, cue(strike.at + DoorSound.SettleLatch, "Latch", 0.22, 1.1))
 		elseif strike.what == "Floor" then
 			-- pulled down by hand: it settles with a rattle, no bang
 			table.insert(cues, cue(strike.at, "Clatter", 0.8, 0.9))

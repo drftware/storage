@@ -23,28 +23,39 @@ nowhere else.
   at Brix `6717740` (S1-02), which is only on this Mac until Brix is pushed; a fresh clone of
   the game can't fetch it until then.
 
-## Now: shut a door on a sleeping monster (S2-05a, built Nov 14, D-169; seen in Play, plain bar)
+## Now: shut a door on a sleeping monster (S2-05, built Nov 14, D-169 and D-170; seen in Studio Play, not on a phone)
 
-The bar is plain on purpose: S2-05b (next) gives it its look and sounds. Judge the timing and
-whether it's fun. Studio Play is fine for this.
-1. **Find a sleeping monster.** Walk the dev floor and open doors (E) until one has a Mannequin
-   standing slack inside, asleep. (Output lists the sleepers' units as the floor is laid.)
-2. **Pull the door down with Close (F).** Look for: the door comes down most of the way, then
-   slows to a creep and hangs about a foot off the floor, the Mannequin's feet showing under it.
-   A bar comes up below the middle of the screen with a pale block (the zone) on it, and a white
-   marker starts across it a moment later.
-3. **Tap while the marker is in the pale block** (click, tap the screen, or press F again).
-   Look for: the block turns green, the door eases the last foot down with almost no sound, and
-   the Mannequin stays asleep (open the door again later: still slack).
-4. **Do it again on another sleeper, and don't tap.** Look for: the block turns red as the marker
-   reaches the end, the door bangs down hard (a slam's boom and shake), and about a second later
-   the Mannequin starts pounding on the door from inside.
-5. **Once more, tapping early (before the block).** Look for: the bang comes at once.
-6. **Decide my defaults** (say which to change): a hit always keeps the monster asleep (the
+Try it on your phone too: Publish first (File > Publish to Roblox), then play from the Creator
+Hub. Studio Play is fine for the first go.
+1. **Find a sleeping monster.** Walk the dev floor and open doors (E, or tap the door's Open dot
+   on a phone) until one has a Mannequin standing slack inside, asleep. (Output lists the
+   sleepers' units as the floor is laid.)
+2. **Pull the door down with Close (F, or tap its dot).** Look for: a sharp metal tick, and at
+   the same moment a dark bar rising up into place just under where the Close button was, with
+   a bright block (the zone) somewhere on it. The door's buttons vanish while the bar is up. The
+   door comes down most of the way and hangs about a foot off the floor, the Mannequin's feet
+   showing under it.
+3. **Watch the white marker.** It waits at the left end for a breath, then runs across once,
+   dragging a short glow behind it.
+4. **Tap while the marker is in the bright block** (on a phone, tap anywhere on the right half
+   of the screen; on a computer, click or press F). Look for: the marker stops dead with a little
+   flick, then the block, the bar's rim and the marker go pale green, the bar pops and sinks
+   away. The door eases the last foot down and lands with a quiet touch and a soft latch click.
+   The Mannequin sleeps on (open the door again later: still slack).
+5. **Do it again on another sleeper, and don't tap.** Look for: the bar goes red and shakes,
+   then drops away as the door bangs down (a slam's boom and shake), and about a second later
+   the Mannequin pounds on the door from inside.
+6. **Once more, tapping early (before the block).** Look for: red and the bang at once.
+7. **On the phone, say:** whether the bar is easy to read at a glance, whether its spot (just
+   under the Close button) suits your thumb or should sit dead centre every time, as Dead by
+   Daylight's does, and whether the tick is loud enough over the door.
+8. **Decide my defaults** (say which to change): a hit always keeps the monster asleep (the
    design doc says "much more likely"); a monster awake inside that hasn't seen you is shut in and
    pounds either way, so the tap only spares the floor the bang; a peeked door's short drop never
    brings the bar up; the zone is about a sixth of a second wide, somewhere in the bar's middle
-   to late part; pressing Slam while the bar is up counts as a miss.
+   to late part; while the bar is up every button on the screen fades and the doors close by
+   can't be pressed, so no thumb lands on Slam by mistake; the marker runs in silence (no sound
+   of its own) so the wait is a held breath.
 
 ## Now: check your five fixes (built Nov 14, D-158; seen in Studio Play, not on a phone)
 

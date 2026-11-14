@@ -1766,7 +1766,7 @@ Done when a team that has lost its lights goes looking for the breaker without b
     in Play: every Mannequin let out froze in the light). The GDD: the hall lights go out for
     the length of the alarm instead (the elevator keeps its own light). Its own sound and the
     lights' flicker as they cut and come back.
-- [ ] **S2-05 The tap when you shut a door on a sleeper.** Pull the door down on a monster
+- [x] **S2-05 The tap when you shut a door on a sleeper.** Pull the door down on a monster
   that is asleep or hasn't seen you and a bar with a moving marker comes up by itself. Hit it:
   the door settles quietly. Miss, or don't tap: it bangs, and the monster wakes and pounds. As
   Dead by Daylight's skill checks: a bar comes up unasked, one tap in the zone. The moment: your
@@ -1784,7 +1784,13 @@ Done when a team that has lost its lights goes looking for the breaker without b
     last stretch slows and lands soft, nothing heard. A miss or no tap: the door bangs (heard
     as a slam is), the monster wakes behind it and pounds (`Keeper.trap`, S2-03b's path). A
     plain bar on screen to test with; verify in Play both ways.
-  - [ ] **S2-05b The bar's feel.** The bar at phone size, where a thumb already is, rising in
+  - [x] **S2-05b The bar's feel.** Built Nov 14 (D-170): the bar rises in under the Close button
+    with a metal warning tick, the door buttons near it hidden and the rest aside; a glow trails
+    the marker; a tap freezes it with a flick; a hit goes green, pops and sinks, the door
+    latching softly as it lands; a miss goes red, shakes and drops as the door bangs. In Play:
+    327's hit (green 50 ms after the tap, buttons back after), 335's miss (the tick loaded and
+    played, the shake 5 px and gone), no new Output lines. Untested by script: the screen's own
+    tap path (Studio won't let a test press keys). Originally: The bar at phone size, where a thumb already is, rising in
     with motion, the marker's sweep, the zone; a soft latch on a hit and the bang on a miss,
     the door's soft landing against its slam; no words. Verify in Play, phone steps in
     `OWNER.md`. From S2-05a: hide the door's Open and Slam buttons on the puller's screen while
@@ -1931,6 +1937,10 @@ that moves walls, and the dolly.
 
 ## Polish waiting for a slot
 
+- **The tap's bar (S2-05b, D-170):** a faint sound on the marker's sweep (left out so the wait
+  is silent over the door's creak; try it if the owner finds the sweep flat); a phone's buzz on a
+  miss (`HapticService`, check it works on phones first); the zone could breathe once as the
+  marker sets off.
 - **The alarm's lights out (S2-04c, D-163):** the dark could roll out from the car down the
   halls (each fixture's start by its distance from the keypad) rather than drop raggedly at
   once; the exit signs could stutter with it; the bell could echo differently in the dark.

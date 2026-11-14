@@ -4675,3 +4675,26 @@ crowds it). The ticket read "a bit" as about a third.
   price of being fair to a phone's lag.
 - Doors asks `Taps` (registry slot "taps", typed in Doors since Taps requires Doors) before a
   Close; `move` lands the door ("Settle", "Drop") only while it's still easing.
+
+## D-170 The tap's bar comes up where your thumb just was, and nothing else on screen answers (S2-05b, Nov 14)
+
+- The bar rises in just under the pulled door's Close button on screen (40 px below its spot,
+  held to the middle half of the screen's width and between 42% and 78% of its height; dead
+  centre lower down when the button is off screen). That is where the thumb that pressed Close
+  is and where the eye is, watching the door. Dead by Daylight always puts its check in the
+  centre; whether ours should too is the owner's (`OWNER.md`).
+- While it's up, the door buttons of the pulled door and of any door within 20 studs are hidden
+  (`ButtonView.hide`, reason "Tap": no key presses them, so F taps the bar and can't open the next
+  door along), and every other button steps aside (`ButtonView.aside`). Not
+  `ProximityPromptService.Enabled`: CaughtView and CartRide switch that, and a bar shut while
+  either had it off would switch it back on under them. So Slam can no longer be pressed by
+  mistake during the bar; S2-05a's "Slam counts as a miss" still stands on the server.
+- Sounds: the warning tick (Pro Sound Effects' "Toggle Switches Moviola Editing Machine 17",
+  pitched 1.15) plays on the puller's screen alone as the bar rises; a hit is answered in the
+  world by the settled door's quiet thump and, 0.12 s later, its latch catching (`DoorSound`
+  "Settle", gain 0.22: far quieter than a close, as the spec holds); a miss by the slam's bang it
+  already had. The marker's sweep has no sound: the silence over the door's creak is the held
+  breath (the owner can ask for one).
+- The answer is the server's alone ("Done"); the screen only freezes the marker at your tap with a
+  flick, so you see where it stopped before the verdict comes about a ping later.
+

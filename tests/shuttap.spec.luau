@@ -149,6 +149,11 @@ do
 		closeLoud = math.max(closeLoud, c.gain)
 	end
 	ok(#soft >= 1 and loud < closeLoud / 3, `a soft touch, far quieter than a close ({loud})`)
+	local latched = false
+	for _, c in soft do
+		latched = latched or (c.sound == "Latch" and c.at > 0)
+	end
+	ok(latched, "and its latch catches as it lands")
 	ok(not Keeper.Hears.Settle and not Keeper.Hears.Ease, "keepers hear neither")
 	ok(DoorSound.Actions.Settle.Reach < DoorSound.Actions.Close.Reach, "it carries less")
 

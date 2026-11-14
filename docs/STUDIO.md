@@ -2149,3 +2149,19 @@ verified: a doc page, Studio, or "untested".
   on `GetServerTimeNow`, then `FireServer(unit, GetServerTimeNow())`. Dev floor (seed of Nov 14
   evening): sleepers in 305, 307, 327, 335, 338; 307's hit settled from 1.05 studs, 327 with no
   tap answered at 1.78 s and its door read `Drop` then `Bang` 1.22 s later.
+- **A test can't press keys** (S2-05b): `VirtualInputManager:SendKeyEvent` from a Client
+  `execute_luau` fails ("lacking capability RobloxScript"), so a screen's own `InputBegan` path
+  (TapView's tap) can't be driven; send the remote instead and say the input path is untested.
+  A failed call stops the script mid-run: an open bar then runs out as a miss.
+- **A door button shows only with a clear sight line from the camera** (S2-05b): a Scriptable
+  camera straight behind the character, looking at the door's middle, ran its line through the
+  head and Open never showed, so `InputHoldBegin` did nothing. Put the camera off to the side,
+  `frame * CFrame.new(3.5, 7, -9)` looking at `frame * CFrame.new(0, 3, 0)`, and wait for
+  `ProximityPromptService.PromptShown` on the button before pressing it.
+- **A staged bar** (S2-05b): from the Server, `Remotes.ShutTap:FireClient(player, "Open", unit,
+  GetServerTimeNow() - 0.3, 0.6)` puts the bar up on that screen with no window on the server
+  (its taps are ignored); `FireClient(player, "Done", unit, false)` a second later shows the
+  miss. A `screen_capture` right after the Open caught the bar still in its lead.
+- **The warning tick, measured** (Edit, AudioPlayer at a quarter speed to an AudioAnalyzer):
+  9120089728 is 0.36 s, its click at 0.015 s (-10 dB peak), down 30 dB by 0.07 s, a faint ring to
+  the end. 9117028600 ("Moviola ... Sharp 8") is two clicks, 0.03 and 0.28 s.
