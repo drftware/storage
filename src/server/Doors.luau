@@ -335,9 +335,14 @@ function Doors.new(): Doors
 			RollUpDoor.play(entry.unit, verdict.motion)
 		end
 		if verdict.lock ~= nil then
-			-- the padlock leaves your hand for the door (decide just saw it there, nothing yields)
-			if RollUpDoor.setLocked(entry.unit, verdict.lock) and verdict.lock and slots then
-				slots:spend(player, "Padlock")
+			-- the padlock leaves your hand for the door (decide just saw it there, nothing yields);
+			-- or the cutters in your hand took one off, and wear (S1-08)
+			if RollUpDoor.setLocked(entry.unit, verdict.lock) and slots then
+				if verdict.lock then
+					slots:spend(player, "Padlock")
+				else
+					slots:wear(player, "BoltCutters")
+				end
 			end
 		end
 		if verdict.refusal then
@@ -580,8 +585,12 @@ function Doors.new(): Doors
 				carries(slots, player)
 			)
 			took = verdict.ok and RollUpDoor.setLocked(unit, locked)
-			if took and locked and slots then
-				slots:spend(player, "Padlock")
+			if took and slots then
+				if locked then
+					slots:spend(player, "Padlock")
+				else
+					slots:wear(player, "BoltCutters") -- cut off: the cutters wear (S1-08)
+				end
 			end
 		else
 			took = (entry.state == "Locked") ~= locked and RollUpDoor.setLocked(unit, locked)

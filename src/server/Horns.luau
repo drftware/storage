@@ -27,6 +27,7 @@ function Horns.new(): Brix.System
 	local leaving: RBXScriptConnection? = nil
 	local last: { [Player]: number } = {} -- each player's last blow, os.clock
 	local keepers: Keepers.Keepers? = nil
+	local slots: Slots.Slots? = nil
 
 	local function onUsed(use: Slots.Use)
 		if use.key ~= Horn.Key then
@@ -38,6 +39,10 @@ function Horns.new(): Brix.System
 			return
 		end
 		last[player] = t
+		-- a blast spent (S1-08), before the stamp: every screen hearing it knows if it was the last
+		if slots then
+			slots:wear(player, Horn.Key)
+		end
 		-- the bell's mouth in the world, from the grip (the body's pivot)
 		local body = Tools.body(use.model)
 		local mouth = if body
@@ -53,10 +58,11 @@ function Horns.new(): Brix.System
 	local system = { name = "Horns" }
 
 	function system.start(_: any, context: Brix.Context)
-		local slots = (context.registry:get("slots") :: any) :: Slots.Slots? -- any: the registry's
+		local s = (context.registry:get("slots") :: any) :: Slots.Slots? -- any: the registry's
+		slots = s
 		keepers = (context.registry:get("keepers") :: any) :: Keepers.Keepers?
-		if slots then
-			table.insert(connections, slots.used:connect(onUsed))
+		if s then
+			table.insert(connections, s.used:connect(onUsed))
 		else
 			warn("Horns: no Slots system, so nobody can blow a horn")
 		end

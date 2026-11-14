@@ -3973,3 +3973,25 @@ happen to bunch); over 3000 seeds, laid the server's way, the share is 30%.
 
 **Batteries** (S1-07b) wait for the flashlight to run down (S1-09); no battery art exists yet.
 
+
+## D-141 Tools wear out with a mark on the slot and a break you feel (S1-08, Nov 14)
+
+As Minecraft's tools do (the precedent): each wearing tool has a `wear` row in `Tools.Catalog`
+(uses, a short `late`, its snap sound, the colours of its bits). Bolt cutters 3, the saw 2, the
+air horn 3, from the GDD's table. The padlock and the bubble wrap have no wear: each is used up
+whole as it's placed (`Slots:spend`), so a one-notch mark would only ever be red. The ladder and
+finds never wear. Uses live on the server with the tool itself, so a dropped or handed-over tool
+keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
+
+- The use that spends the last breaks the tool `late` seconds after (0.3 to 0.85 s), so the
+  job's own sound lands first (the padlock's snap, the panel's clang, the horn's last blast) and
+  the tool's break is a second, separate sound. Until it goes, the hand can't move and the tool
+  can't be used.
+- The break is in the world, not only on your screen: the whole tool jumps out of the hand,
+  ten small bits in its colours fly (real parts, server-owned), it clanks on landing (keepers
+  hear it as a dropped tool), lies 2.5 s and fades. No new art: each tool is one mesh, so it
+  can't split; broken-piece art is on the polish list.
+- The mark is notches, not a bar: with 2 or 3 uses, countable notches read better at phone size
+  than a draining bar. The last one turns red and breathes; a spent one flares and pops out.
+- The horn's last blast sags in pitch and dies (`Horn.Dry`), which is what a canned horn does
+  when it runs dry, so the horn warns by sound as well as by its notch.

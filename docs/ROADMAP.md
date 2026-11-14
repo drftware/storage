@@ -1460,8 +1460,13 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
     unit in twelve (6 in 100 behind an ordinary door). No seed lays anything differently.
   - [ ] **S1-07b Batteries in units.** The battery's art (the unit's way, `art/`), dealt into
     about one unit in ten; built with S1-09, right after it.
-- [ ] **S1-08 Tools wear out.** Bolt cutters 3 padlocks, the saw 2 holes, the air horn 3
+- [x] **S1-08 Tools wear out.** Bolt cutters 3 padlocks, the saw 2 holes, the air horn 3
   blasts, the padlock 1 door; a mark on the slot shows the uses left (GDD "Tools wear out").
+  Built Nov 14 (D-141): notches on the box and the wheel's slots, the last one red; the break
+  (snap, bits, tumble, clank, fade; your view kicks, the box cracks); the horn's last blast dies.
+  Seen in Play: the notches built and the ToolBroke remote up; a break itself unseen (OWNER.md).
+  Polish: broken-piece art (the cutters in two halves, the saw's snapped blade) instead of the
+  whole tool tumbling; a strained creak on the use that leaves one.
 - [ ] **S1-09 The flashlight runs down.** Only while it's on; a meter on its button, a flicker
   for the last half minute, then out; a battery fills it at once and takes no slot (GDD "The
   flashlight runs down"; the numbers are defaults in `OWNER.md`).

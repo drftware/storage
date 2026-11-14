@@ -97,6 +97,30 @@ and off, the invite sheet opening with your friends (no invite sent).
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
 
+## Now: wear a tool out (S1-08, built Nov 14, D-141; passes checks, the break untested in Play)
+
+Tools now wear out, as Minecraft's do: bolt cutters cut 3 padlocks, the saw cuts 2 holes, the air
+horn gives 3 blasts. A row of small notches along the foot of the tool's box (and its slot on the
+wheel) shows the uses left; the last one turns red and breathes. On the last use the tool breaks
+a beat after the job is done: the cutters' jaw cracks just after the padlock snaps off, the
+saw's blade snaps just after the panel drops, and the horn's last blast sags and dies, then you
+shake the empty can and toss it. The tool jumps out of your hand, bits fly, it clanks on the
+floor, lies there a moment and fades. In my Play check the notches and the break's plumbing
+were built, but I couldn't get a cut done from the MCP before my session ran out, so you're the
+first to see a break.
+- [ ] **Break the cutters** (dev floor; bolt cutters lie in Unit 323): cut the padlocks on 305,
+  320 and 329. Watch the notches on the box under your thumb go 3, 2, then one red one. On the
+  third cut: the padlock snaps off, then the cutters crack, jump out of your hand and clatter on
+  the floor with bits flying; your view kicks and the box bursts red and shrinks away. Does it
+  feel like losing something, and did the red notch warn you?
+- [ ] **Blow a horn dry**: three blasts. Does the last one sag and die like a can running out,
+  then the can rattle and get tossed?
+- [ ] **Saw two holes** with one saw: the blade snaps a beat after the second panel drops.
+- [ ] **With a friend:** do they see your tool break in your hand, its bits, and hear it?
+- [ ] **The numbers (the design doc's starting guesses):** cutters 3, saw 2, horn 3. The
+  padlock and the bubble wrap are used up whole as they're placed, so they show no notches; the
+  ladder never wears.
+
 ## Now: cut a padlock (S1-07a, built Nov 14, D-140; seen in Studio Play)
 
 A padlocked unit now always holds a find or a tool, never nothing. About 3 in 10 also have a

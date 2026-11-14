@@ -151,6 +151,20 @@ function Carry.release(c: Carry): string?
 	return id
 end
 
+-- Takes `id` out of whichever slot it's in (a worn-out tool breaking, S1-08). Your hand stays on
+-- its slot, as `release` leaves it. Whether it was there.
+function Carry.remove(c: Carry, id: string): boolean
+	local slot = Carry.find(c, id)
+	if slot == nil then
+		return false
+	end
+	c.slots[slot] = nil
+	if c.pocketed and c.slots[c.active] == nil then
+		c.pocketed = false -- nothing left on your slot to have pocketed
+	end
+	return true
+end
+
 -- Empties every slot (you died or left): every id, slot order.
 function Carry.clear(c: Carry): { string }
 	local out = {}

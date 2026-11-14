@@ -18,6 +18,19 @@ export type Sound = {
 	pitch: number?, -- its playback speed (1 when nil): above 1 a smaller, lighter thing
 }
 
+-- How a tool wears out (S1-08, GDD "Tools wear out"), as Minecraft's tools do: it works `uses`
+-- times, and the use that spends the last breaks it in your hand (`Wear`, `Slots:wear`).
+export type Wear = {
+	uses: number, -- the times a new one works
+	-- seconds after its last use that it breaks, so the use's own moment lands first (the
+	-- padlock's snap as it comes off, the horn's last blast dying away), then the tool's
+	late: number,
+	snap: Sound, -- it breaking at your hand: heard by you, and near you by friends
+	-- the colours (0 to 255 red, green, blue) of the bits that fly off it as it breaks; none: it
+	-- doesn't shatter, it's tossed away spent (the empty air horn)
+	bits: { { number } },
+}
+
 export type Row = {
 	name: string, -- on screen: the prompt's object, the slot's label ("Bolt cutters")
 	template: string, -- the template's name under ReplicatedStorage.Props.Tools
@@ -61,6 +74,9 @@ export type Row = {
 	-- view slower, sags as its weight lands in your hand, and sways lazier as you walk. Felt only:
 	-- your walk is the same.
 	heft: number?,
+	-- It wears out (S1-08). None: it never does (the ladder, a find), or it's used up whole as it's
+	-- placed (the padlock hung on a door, the roll laid across a hall: `Slots:spend`).
+	wear: Wear?,
 }
 
 local Catalog: { [string]: Row } = {
@@ -85,6 +101,21 @@ local Catalog: { [string]: Row } = {
 		pickUp = { id = "rbxassetid://9116460746", from = 0, length = 0.42, volume = 0.9 },
 		-- Pro Sound Effects' "Crowbar Impact Dropping To Concrete 1": the hit and its bounces
 		drop = { id = "rbxassetid://9114008989", from = 0, length = 1.4, volume = 0.8 },
+		-- 3 padlocks (GDD). The jaw cracks a beat after the third padlock's snap, so the lock going
+		-- and the cutters going are two sounds: "Scissors Snap 28" (the padlock cut's own snap,
+		-- DoorSound) played lower still, a heavier bar giving way. Bits of its red handles and steel.
+		wear = {
+			uses = 3,
+			late = 0.35,
+			snap = {
+				id = "rbxassetid://9118829487",
+				from = 0,
+				length = 0.3,
+				volume = 2.5,
+				pitch = 0.36,
+			},
+			bits = { { 176, 36, 32 }, { 132, 134, 138 }, { 54, 54, 58 } },
+		},
 	},
 	-- Locks a door so a trapped keeper stays trapped; one per door (GDD). The doors' laminated
 	-- padlock, open, twice their size so it reads on a phone (art/padlock).
@@ -142,6 +173,20 @@ local Catalog: { [string]: Row } = {
 			volume = 0.8,
 			pitch = 1.12,
 		},
+		-- 2 holes (GDD). Its blade snaps a beat after the second hole's panel drops: the padlock
+		-- cut's snap played higher, a thin blade going. Bits of its green body, black grip and blade.
+		wear = {
+			uses = 2,
+			late = 0.3,
+			snap = {
+				id = "rbxassetid://9118829487",
+				from = 0,
+				length = 0.3,
+				volume = 2.2,
+				pitch = 0.72,
+			},
+			bits = { { 70, 142, 64 }, { 36, 36, 38 }, { 172, 174, 178 } },
+		},
 	},
 	-- Lures keepers to a spot; wakes dormant things nearby (GDD). A marine air horn: a white steel
 	-- can with a black band, an orange trumpet standing up out of its collar (art/airhorn).
@@ -178,6 +223,21 @@ local Catalog: { [string]: Row } = {
 			length = 0.9,
 			volume = 0.75,
 			pitch = 1.3,
+		},
+		-- 3 blasts (GDD). The last one sags and dies as the can runs dry (`HornView`); then you
+		-- shake it, empty (Pro Sound Effects' "Spray Paint 3": a can shaken, its rattle from 0.1 s
+		-- to 0.7 s, measured), and it's tossed away whole.
+		wear = {
+			uses = 3,
+			late = 0.85,
+			snap = {
+				id = "rbxassetid://9119523840",
+				from = 0.1,
+				length = 0.6,
+				volume = 1,
+				pitch = 0.85,
+			},
+			bits = {},
 		},
 	},
 	-- Laid across a hall, it pops when anything crosses, heard floor-wide; friends pop it too (GDD):

@@ -31,6 +31,14 @@
 	dropped, handed over and dropped where you're caught as a tool is. A tool's or a find's own
 	sound answers each take and drop. As the gate shuts with you aboard, your finds are kept for
 	good (`keep`, S1-06): out of your slots, the one in your hand gone in a glint.
+
+	Tools wear out (S1-08, GDD "Tools wear out", as Minecraft's do): each tool keeps its own uses
+	left (`Wear`), so a dropped or handed-over one keeps its wear, and every screen reads them from
+	`ToolUses1` to `ToolUses3`. The system that uses one (`Doors`' Cut, `Saws`, `Horns`) `wear`s it;
+	the use that spends the last breaks it a beat later (its row's `wear.late`): out of your slots,
+	it jolts out of your hand with its own snap and a burst of its bits, tumbles to the floor with
+	its clank, lies there a moment and fades. Your screen is told (ToolBroke) to break it in your
+	view; until it goes, your hand can't move and the tool can't be used.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -47,6 +55,7 @@ local Tools = require(ReplicatedStorage.Shared.Tools)
 
 local Carry = Tools.Carry
 local Catalog = Tools.Catalog
+local Wear = Tools.Wear
 
 local HAND_SOUND_REACH = 24 -- a hand closing on a tool, heard close by
 local FALL = TweenInfo.new(0.32, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
@@ -55,10 +64,22 @@ local REACH_SLACK = 2 -- studs the server allows past a prompt's reach (lag, a l
 -- A kept find's glint as it goes from your hand, for everyone near: the coins' sparkle, warm gold.
 local GLINT_TEXTURE = "rbxasset://textures/particles/sparkles_main.dds"
 local GLINT_BURST = 0.18 -- seconds the glint throws sparks: a short burst, then gone
+-- A tool breaking (S1-08): it jumps out of your hand (studs a second up, and ahead of you) with a
+-- tumble (radians a second at most), its bits flying (how many, how big in studs, how fast), heard
+-- as far as a cut padlock's snap; it lies on the floor for `BROKEN_LIES` seconds, then fades.
+local BREAK_JUMP = 8
+local BREAK_AHEAD = 4
+local BREAK_SPIN = 14
+local BITS = 10
+local BIT_SIZE = { 0.1, 0.26 }
+local BIT_SPEED = { 7, 15 }
+local BREAK_REACH = 40
+local BROKEN_LIES = 2.5
+local BROKEN_FADE = TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 
 export type Change = {
 	player: Player,
-	kind: "PickUp" | "Drop" | "Give" | "Switch" | "Pocket" | "Spend" | "Place" | "Keep",
+	kind: "PickUp" | "Drop" | "Give" | "Switch" | "Pocket" | "Spend" | "Place" | "Keep" | "Break",
 }
 
 -- A press of ToolUse that passed: who, the tool's catalog key, and its model in their hand.
@@ -85,6 +106,11 @@ export type Slots = Brix.System & {
 	-- Uses up what's in `player`'s hand if it's catalog key `key` (a padlock hung on a door): out
 	-- of their slots and gone. Whether it was.
 	spend: (self: any, player: Player, key: string) -> boolean,
+	-- Spends one use of what's in `player`'s hand if it's catalog key `key` and wears out (S1-08:
+	-- a padlock cut, a hole sawn, a blast). The use that spends its last breaks it a beat later
+	-- (its row's `wear.late`). The uses left (0: it's breaking), or nil if their hand had no such
+	-- tool or it never wears out.
+	wear: (self: any, player: Player, key: string) -> number?,
 	-- Takes what's in `player`'s hand out of their slots if it's catalog key `key`, to stand in the
 	-- world (the ladder leaned on a front): Slots keeps it, carried by nobody and lying nowhere, its
 	-- body anchored where it was, for the caller to place. Its id and model, or nil.
@@ -112,6 +138,7 @@ type Tool = {
 	owner: Player?,
 	weld: Weld?,
 	placed: boolean?, -- standing in the world (`place`), not in a hand or on a floor
+	uses: number?, -- uses left before it breaks (S1-08); nil: it never wears out
 }
 
 type Hand = {
@@ -206,6 +233,7 @@ function Slots.new(): Slots
 	local landed = Brix.Signal.new() :: Brix.Signal<Landed>
 	local lying: Folder? = nil
 	local notice: RemoteEvent? = nil
+	local broke: RemoteEvent? = nil
 	local nextId = 0
 
 	local function handOfPlayer(player: Player): Hand
@@ -259,6 +287,10 @@ function Slots.new(): Slots
 			local key = if t then t.key else ""
 			if player:GetAttribute(Tools.slotAttribute(i)) ~= key then
 				player:SetAttribute(Tools.slotAttribute(i), key)
+			end
+			local uses = if t and t.uses then t.uses else 0
+			if player:GetAttribute(Wear.slotAttribute(i)) ~= uses then
+				player:SetAttribute(Wear.slotAttribute(i), uses)
 			end
 		end
 		if player:GetAttribute(Tools.HandAttribute) ~= h.carry.active then
@@ -442,8 +474,142 @@ function Slots.new(): Slots
 		end
 	end
 
+	-- A worn-out tool breaking (S1-08), wherever it is now: out of its owner's slots, it jumps out
+	-- of the hand with its own snap and a burst of its bits, tumbles to the floor and clanks as it
+	-- lands (keepers hear it, as a dropped tool), lies there a moment, then fades. Never silent,
+	-- never just gone.
+	local function shatter(t: Tool)
+		if tools[t.id] ~= t then
+			return -- gone already: kept, or the floor it lay on cleared
+		end
+		tools[t.id] = nil
+		local row = Catalog[t.key]
+		local w = row.wear
+		local owner = t.owner
+		local inHand = t.weld ~= nil
+		local character = if owner then owner.Character else nil
+		local root = if owner then rootOf(owner) else nil
+		-- where it breaks: in the hand it's welded to, at its owner's hand if it was put away, or
+		-- where it lies
+		local pose = t.body.CFrame
+		if owner and not inHand and t.model.Parent == nil then
+			local hand = if character then handOf(character) else nil
+			pose = if hand then hand.CFrame else if root then root.CFrame else pose
+		end
+		if owner then
+			local h = hands[owner]
+			if h then
+				Carry.remove(h.carry, t.id)
+			end
+		end
+		unoffer(t)
+		stow(t)
+		t.owner = nil
+		local model, body = t.model, t.body
+		model.Name = "Broken"
+		body.CFrame = pose
+		body.CanCollide = true
+		body.CanQuery = false
+		body.CanTouch = false
+		model.Parent = Workspace
+		body.Anchored = false
+		local ahead = if root then root.CFrame.LookVector else Vector3.zero
+		local function spin(): number
+			return (math.random() * 2 - 1) * BREAK_SPIN
+		end
+		body.AssemblyLinearVelocity = ahead * BREAK_AHEAD + Vector3.new(0, BREAK_JUMP, 0)
+		body.AssemblyAngularVelocity = Vector3.new(spin(), spin(), spin())
+		-- the server's to move, so every screen sees the same tumble
+		pcall(function() -- pcall: refused if the engine has it anchored to something still
+			body:SetNetworkOwner(nil)
+		end)
+		local at = body.Position
+		if w then
+			Tools.play(w.snap, body, BREAK_REACH)
+			for i = 1, if #w.bits > 0 then BITS else 0 do
+				local c = w.bits[(i - 1) % #w.bits + 1]
+				local function between(r: { number }): number
+					return r[1] + math.random() * (r[2] - r[1])
+				end
+				local bit = Instance.new("Part")
+				bit.Name = "Bit"
+				bit.Size =
+					Vector3.new(between(BIT_SIZE), between(BIT_SIZE) * 0.5, between(BIT_SIZE))
+				bit.Color = Color3.fromRGB(c[1], c[2], c[3])
+				bit.Material = Enum.Material.Metal
+				bit.CastShadow = false
+				bit.CanQuery = false
+				bit.CanTouch = false
+				bit.CFrame = CFrame.new(at)
+					* CFrame.Angles(
+						math.random() * 6.28,
+						math.random() * 6.28,
+						math.random() * 6.28
+					)
+				local dir = Vector3.new(
+					math.random() * 2 - 1,
+					math.random() * 0.8 + 0.2,
+					math.random() * 2 - 1
+				)
+				bit.AssemblyLinearVelocity = dir.Unit * between(BIT_SPEED)
+				bit.AssemblyAngularVelocity = Vector3.new(spin(), spin(), spin()) * 2
+				bit.Parent = model
+				pcall(function() -- pcall: as the tool's own
+					bit:SetNetworkOwner(nil)
+				end)
+			end
+		end
+		-- its clank as it lands: the fall from here to the floor under it, at this place's gravity
+		local params = RaycastParams.new()
+		params.FilterType = Enum.RaycastFilterType.Exclude
+		local skip: { Instance } = { model }
+		for _, p in Players:GetPlayers() do
+			if p.Character then
+				table.insert(skip, p.Character)
+			end
+		end
+		params.FilterDescendantsInstances = skip
+		local floor = Workspace:Raycast(at, Vector3.new(0, -20, 0), params)
+		local drop = if floor then math.max(0, at.Y - floor.Position.Y) else 3
+		local g = math.max(1, Workspace.Gravity)
+		local fall = (BREAK_JUMP + math.sqrt(BREAK_JUMP * BREAK_JUMP + 2 * g * drop)) / g
+		task.delay(fall, function()
+			if model.Parent then
+				Tools.play(row.drop, body, Carry.DropHeard)
+				landed:fire({ key = t.key, at = body.Position, reach = Carry.DropHeard })
+			end
+		end)
+		task.delay(BROKEN_LIES, function()
+			if not model.Parent then
+				return
+			end
+			for _, part in model:GetDescendants() do
+				if part:IsA("BasePart") then
+					TweenService:Create(part, BROKEN_FADE, { Transparency = 1 }):Play()
+				end
+			end
+			task.delay(BROKEN_FADE.Time + 0.1, function()
+				model:Destroy()
+			end)
+		end)
+		if owner and owner.Parent then
+			if inHand and broke then
+				broke:FireClient(owner, t.key)
+			end
+			dress(owner)
+			publish(owner)
+			changed:fire({ player = owner, kind = "Break" })
+		end
+	end
+
 	-- Whether `player`'s hand may move now (the rate check); spends one if so.
 	local function allowed(h: Hand): boolean
+		-- a tool breaking in your hand (its last use spent): the hand holds it till it goes
+		local held = Carry.held(h.carry)
+		local tool = if held then tools[held] else nil
+		if tool and not Wear.usable(tool.uses) then
+			return false
+		end
 		local t = now()
 		local may, left = Carry.allow(h.last, h.burst, t)
 		if not may then
@@ -574,7 +740,7 @@ function Slots.new(): Slots
 		local id = Carry.held(h.carry)
 		local t = if id then tools[id] else nil
 		local row = if t then Catalog[t.key] else nil
-		if not (t and row and row.verb) then
+		if not (t and row and row.verb and Wear.usable(t.uses)) then
 			return
 		end
 		local at = now()
@@ -737,6 +903,7 @@ function Slots.new(): Slots
 		table.insert(connections, remote(Tools.GiveRemote).OnServerEvent:Connect(onGive))
 		table.insert(connections, remote(Tools.UseRemote).OnServerEvent:Connect(onUse))
 		notice = remote(Tools.NoticeRemote)
+		broke = remote(Tools.BrokeRemote)
 		table.insert(connections, Players.PlayerAdded:Connect(addPlayer))
 		table.insert(
 			connections,
@@ -777,7 +944,8 @@ function Slots.new(): Slots
 		end
 		nextId += 1
 		local id = `{key}{nextId}`
-		local t: Tool = { id = id, key = key, model = model, body = body, owner = nil }
+		local t: Tool =
+			{ id = id, key = key, model = model, body = body, owner = nil, uses = Wear.full(key) }
 		tools[id] = t
 		layDown(t, pose, nil)
 		return id
@@ -858,6 +1026,25 @@ function Slots.new(): Slots
 		publish(player)
 		changed:fire({ player = player, kind = "Spend" })
 		return true
+	end
+
+	function system.wear(_: any, player: Player, key: string): number?
+		local h = handOfPlayer(player)
+		local id = Carry.held(h.carry)
+		local t = if id then tools[id] else nil
+		if not (t and t.key == key and t.uses) then
+			return nil
+		end
+		local left, gone = Wear.spend(t.uses)
+		t.uses = left
+		-- on the model first: a screen learning of a blast already knows it was the last
+		t.model:SetAttribute(Wear.ModelAttribute, left)
+		publish(player)
+		local w = Catalog[key].wear
+		if gone and w then
+			task.delay(w.late, shatter, t)
+		end
+		return left
 	end
 
 	function system.place(_: any, player: Player, key: string): (string?, Model?)

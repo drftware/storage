@@ -16,11 +16,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Carry = require(script.Carry)
 local Catalog = require(script.Catalog)
+local Wear = require(script.Wear)
 local FindSpecs = require(script.Parent.Finds.Specs)
 
 local Tools = {}
 Tools.Carry = Carry
 Tools.Catalog = Catalog
+Tools.Wear = Wear
 
 export type Row = Catalog.Row
 export type SoundSpec = Catalog.Sound
@@ -46,6 +48,7 @@ Tools.DropRemote = "ToolDrop" -- client → server: drop what's in your hand
 Tools.GiveRemote = "ToolGive" -- client → server: hand what's in your hand to a friend
 Tools.NoticeRemote = "ToolNotice" -- server → client: a short line for your screen
 Tools.UseRemote = "ToolUse" -- client → server: use what's in your hand (its row's `verb`: Blow)
+Tools.BrokeRemote = "ToolBroke" -- server → client: the tool in your hand just broke (its key)
 Tools.HeldName = "HeldTool" -- the model's name in a character's hand
 -- A door's Lock button (Doors): every screen hides it unless a padlock is in that player's hand.
 Tools.LockTag = "PadlockButton"
@@ -261,6 +264,9 @@ function Tools.soundIds(): { string }
 	for _, row in Catalog do
 		table.insert(ids, row.pickUp.id)
 		table.insert(ids, row.drop.id)
+		if row.wear then
+			table.insert(ids, row.wear.snap.id)
+		end
 	end
 	return ids
 end

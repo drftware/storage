@@ -35,6 +35,12 @@
 	Friends: a "Give" prompt on each friend while you hold a tool. If their hands are full it says
 	so on the prompt.
 
+	Tools wear out (S1-08, as Minecraft's do): a row of notches along the foot of the box and of
+	each slot on the wheel shows the uses left (`Wear.mark`), the last one red and breathing; a use
+	spent pops its notch out. When the server says the tool in your hand broke (ToolBroke), it
+	shakes in your grip and tumbles down out of your view, your view kicks, and the box bursts red
+	and shrinks away; its snap and its bits are the server's, heard and seen by everyone near.
+
 	`new()` also returns your `Hand` for the systems that use a tool where you stand (HornView): the
 	tool brought up into its row's `use` pose for a moment with a jerk, and a place beside the wheel's
 	button for that tool's button. The wheel's shape and rules are the pure `Tools.Wheel`.
@@ -66,6 +72,7 @@ local Wheel = require(ReplicatedStorage.Shared.Tools.Wheel)
 local Torch = Flashlight.Torch
 local Carry = Tools.Carry
 local Catalog = Tools.Catalog
+local Wear = Tools.Wear
 
 local player = Players.LocalPlayer
 
@@ -123,11 +130,49 @@ local WORKS: { [string]: string } = { Cut = "BoltCutters", Lock = "Padlock", Saw
 -- While a running saw is out at the wall it shakes in your hand: studs, and how fast it changes.
 local SAW_SHAKE = 0.018
 local SAW_SHAKE_TURN = 0.6 -- degrees
+-- Tools wear out (S1-08): the notches along a slot's foot, one a use (sizes of the slot), the last
+-- one red and breathing; a spent one flares and pops out as it goes.
+local NOTCH_ROW = UDim2.fromScale(0.78, 0.13)
+local NOTCH_FOOT = 0.95 -- the row's bottom edge, of the slot's height
+local NOTCH_WIDE = 0.29 -- each notch, of the row's width
+local NOTCH_GAP = 0.06
+local WARN = Color3.fromRGB(236, 74, 54) -- the last use's red
+local SPENT = Color3.fromRGB(16, 16, 16)
+local SPENT_ALPHA = 0.45
+local WARN_PULSE = 5.5 -- radians a second: its breath, a little under once a second
+local WARN_FADE = 0.45 -- of its colour, at the bottom of a breath
+local NOTCH_POP = 1.9 -- a spent notch's size as it pops, of its own
+local POP = TweenInfo.new(0.32, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local MOST_USES = 0 -- the most notches any slot shows: the most uses a tool has
+for _, row in Catalog do
+	if row.wear then
+		MOST_USES = math.max(MOST_USES, row.wear.uses)
+	end
+end
+-- A tool breaking in your hand: your view's kick (CameraShake's trauma, 0 to 1: more than a
+-- horn's blast), then the tool shakes in your grip for `BREAK_JOLT` seconds, is thrown up out of
+-- it (studs a second at full size) and falls away spinning, gone after `BREAK_GONE`; the box
+-- bursts to `CRACK_POP` and shrinks away.
+local BREAK_KICK = 0.5
+local BREAK_JOLT = 0.07
+local BREAK_SHAKE = 0.05 -- studs at full size
+local BREAK_THROW = Vector3.new(0.7, 1.8, -0.3)
+local BREAK_FALL = 18 -- studs a second, each second
+local BREAK_SPIN = Vector3.new(7, -4, 10) -- radians a second
+local BREAK_GONE = 0.6
+local GONE_TRUST = 0.4 -- seconds your screen takes the break's word before the slots catch up
+local CRACK_SECONDS = 0.5 -- after a break, an emptied box bursts and shrinks rather than vanishing
+local CRACK_POP = 1.2
+local CRACK = TweenInfo.new(0.24, Enum.EasingStyle.Back, Enum.EasingDirection.In)
 local CURSOR = "ToolWheel" -- the name this screen asks FreeCursor for the mouse by
 local ACTIONS =
 	{ "ToolSlot1", "ToolSlot2", "ToolSlot3", "ToolStep", "ToolPocket", "ToolWheel", "ToolDrop" }
 -- The number keys' actions, and the slot each picks.
 local KEYS: { [string]: number } = { ToolSlot1 = 1, ToolSlot2 = 2, ToolSlot3 = 3 }
+
+-- A slot's wear mark (S1-08): notches along its foot, and what they last showed.
+type Notch = { frame: Frame, scale: UIScale }
+type Marks = { row: Frame, notches: { Notch }, key: string, lit: number, last: boolean }
 
 -- A slot on the wheel.
 type SlotView = {
@@ -136,6 +181,7 @@ type SlotView = {
 	scale: UIScale,
 	frame: ViewportFrame,
 	hint: TextLabel,
+	marks: Marks,
 	key: string, -- what's drawn in it ("" for empty)
 	x: number, -- its place on the open wheel, in the button's own pixels
 	y: number,
@@ -160,6 +206,7 @@ type Hud = {
 	boxScale: UIScale,
 	boxFrame: ViewportFrame,
 	boxHint: TextLabel,
+	boxMarks: Marks,
 	drop: TextButton,
 	name: TextLabel,
 }
@@ -259,6 +306,89 @@ local function hint(text: string, parent: Instance): TextLabel
 	return h
 end
 
+-- The uses left of the tool in slot `i`, as the server last said (0: none, or it never wears).
+local function usesOf(i: number): number
+	local u = player:GetAttribute(Wear.slotAttribute(i))
+	return if type(u) == "number" then u else 0
+end
+
+-- A slot's wear mark (S1-08): a row of notches along its foot, as Minecraft's bar under a worn
+-- tool, over its picture; hidden for a tool that never wears out.
+local function notches(parent: Instance): Marks
+	local row = Instance.new("Frame")
+	row.Name = "Wear"
+	row.AnchorPoint = Vector2.new(0.5, 1)
+	row.Position = UDim2.fromScale(0.5, NOTCH_FOOT)
+	row.Size = NOTCH_ROW
+	row.BackgroundTransparency = 1
+	row.Visible = false
+	row.ZIndex = 4
+	row.Parent = parent
+	local out: { Notch } = {}
+	for i = 1, MOST_USES do
+		local f = Instance.new("Frame")
+		f.Name = `Notch{i}`
+		f.AnchorPoint = Vector2.new(0.5, 0.5)
+		f.Size = UDim2.fromScale(NOTCH_WIDE, 1)
+		f.BackgroundColor3 = INK
+		f.BorderSizePixel = 0
+		f.ZIndex = 4
+		f.Parent = row
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(0.5, 0)
+		corner.Parent = f
+		-- a dark edge so a notch reads over any picture
+		local edge = Instance.new("UIStroke")
+		edge.Color = Color3.new(0, 0, 0)
+		edge.Transparency = 0.35
+		edge.Thickness = 1
+		edge.Parent = f
+		local scale = Instance.new("UIScale")
+		scale.Parent = f
+		table.insert(out, { frame = f, scale = scale })
+	end
+	return { row = row, notches = out, key = "", lit = 0, last = false }
+end
+
+-- Draws `m` for catalog key `key` with `left` uses: lit from the left, the last one red, the
+-- spent ones dark. The same tool with one fewer: the notch just spent flares and pops out.
+local function mark(m: Marks, key: string, left: number)
+	local n, lit, last = Wear.mark(key, left)
+	m.row.Visible = n > 0
+	local spent = m.key == key and lit < m.lit
+	for i, notch in m.notches do
+		local f = notch.frame
+		f.Visible = i <= n
+		if i <= n then
+			f.Position = UDim2.fromScale(0.5 + (i - (n + 1) / 2) * (NOTCH_WIDE + NOTCH_GAP), 0.5)
+			local on = i <= lit
+			local color = if not on then SPENT elseif last then WARN else INK
+			local alpha = if on then 0 else SPENT_ALPHA
+			if spent and i > lit and i <= m.lit then
+				f.BackgroundColor3 = if lit == 0 then WARN else INK
+				f.BackgroundTransparency = 0
+				notch.scale.Scale = NOTCH_POP
+				TweenService:Create(notch.scale, POP, { Scale = 1 }):Play()
+				TweenService
+					:Create(f, POP, { BackgroundColor3 = color, BackgroundTransparency = alpha })
+					:Play()
+			else
+				f.BackgroundColor3 = color
+				f.BackgroundTransparency = alpha
+			end
+		end
+	end
+	m.key, m.lit, m.last = key, lit, last
+end
+
+-- The last use's notch breathing (each frame, `t` the clock).
+local function breathe(m: Marks, t: number)
+	if m.last and m.row.Visible then
+		local f = m.notches[1].frame
+		f.BackgroundTransparency = WARN_FADE * (0.5 - 0.5 * math.cos(t * WARN_PULSE))
+	end
+end
+
 local function makeHud(): Hud
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "Slots" -- WatchView hides the play HUD by name
@@ -315,6 +445,7 @@ local function makeHud(): Hud
 			scale = scale,
 			frame = vf,
 			hint = hint(tostring(i), b),
+			marks = notches(b),
 			key = "",
 			x = 0,
 			y = 0,
@@ -328,6 +459,7 @@ local function makeHud(): Hud
 	boxHint.AnchorPoint = Vector2.new(0, 0)
 	boxHint.Position = UDim2.fromScale(0.07, 0.04)
 	boxHint.TextXAlignment = Enum.TextXAlignment.Left
+	local boxMarks = notches(box)
 	-- Drop: a round button beside the box, shown while you hold a tool
 	local drop = Instance.new("TextButton")
 	drop.Name = "Drop"
@@ -384,6 +516,7 @@ local function makeHud(): Hud
 		boxScale = boxScale,
 		boxFrame = boxFrame,
 		boxHint = boxHint,
+		boxMarks = boxMarks,
 		drop = drop,
 		name = name,
 	}
@@ -401,8 +534,12 @@ export type Hand = {
 	beside: (button: GuiButton) -> (),
 }
 
--- `needCursor` frees a computer's mouse while the wheel is open, to click a slot.
-function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
+-- `needCursor` frees a computer's mouse while the wheel is open, to click a slot; `jolt` kicks
+-- your view (CameraShake) as a tool breaks in your hand.
+function ToolView.new(
+	needCursor: FreeCursor.Need?,
+	jolt: ((amount: number) -> ())?
+): (Brix.System, Hand)
 	local connections: { RBXScriptConnection } = {}
 	local ui: Hud? = nil
 	local besideButton: GuiButton? = nil
@@ -451,6 +588,14 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 	local lockReach: { [ProximityPrompt]: boolean } = {} -- each door's Lock
 	local sawReach: { [ProximityPrompt]: boolean } = {} -- each wall's Saw
 	local leanReach: { [ProximityPrompt]: boolean } = {} -- each front's Lean
+	-- a tool breaking in your hand (S1-08): out of your view, its key not drawn again till the
+	-- slots catch up, and the box cracking rather than vanishing
+	local breaking: Model? = nil
+	local breakFrom = CFrame.identity -- its pose from your eye as it went
+	local breakAt = 0
+	local gone = ""
+	local goneUntil = 0
+	local cracking = 0
 
 	-- Your hands are your own: alive, and not kept in a unit.
 	local function alive(): boolean
@@ -642,6 +787,7 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 				v.key = key
 				picture(v.frame, key)
 			end
+			mark(v.marks, key, usesOf(i))
 			local on = i == slot
 			v.stroke.Transparency = if on then (if pocketed then 0.45 else 0.05) else 0.7
 			v.stroke.Thickness = if on then 2.5 else 1.5
@@ -650,17 +796,40 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 		-- the box: the slot your hand is on, raised and lit while its tool's up, dim and sunk while
 		-- it's pocketed, gone for an empty slot
 		local key = keys[slot] or ""
+		-- broken in your hand: the box keeps its picture and its spent notches as it cracks
+		local cracked = key == "" and os.clock() < cracking
 		if key ~= boxKey then
 			boxKey = key
-			picture(h.boxFrame, key)
+			if not cracked then
+				picture(h.boxFrame, key)
+			end
+		end
+		if not cracked then
+			mark(h.boxMarks, key, usesOf(slot))
 		end
 		h.boxHint.Text = tostring(slot)
 		local show = key ~= ""
 		if show ~= boxShown then
 			boxShown = show
-			h.box.Visible = show
 			if show then
+				h.box.Visible = true
 				h.boxScale.Scale = 0.6
+				h.boxStroke.Color = INK
+			elseif cracked then
+				-- it bursts red, then shrinks away
+				h.boxStroke.Color = WARN
+				h.boxStroke.Transparency = 0
+				h.boxScale.Scale = CRACK_POP
+				local shrink = TweenService:Create(h.boxScale, CRACK, { Scale = 0 })
+				shrink.Completed:Once(function()
+					if not boxShown then
+						h.box.Visible = false
+						h.boxStroke.Color = INK
+					end
+				end)
+				shrink:Play()
+			else
+				h.box.Visible = false
 			end
 		end
 		if show then
@@ -952,6 +1121,30 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 		shownModel, shownBody = model, body
 	end
 
+	-- The server's word that the tool in your hand (`key`) just broke (S1-08): your view kicks, the
+	-- tool you see goes from your grip to shake and fall away (`hold`), and the box cracks.
+	local function broke(key: string)
+		local clock = os.clock()
+		gone, goneUntil = key, clock + GONE_TRUST
+		cracking = clock + CRACK_SECONDS
+		if jolt then
+			jolt(BREAK_KICK)
+		end
+		local camera = Workspace.CurrentCamera
+		local model = shownModel
+		if model and shownKey == key and camera then
+			if breaking then
+				breaking:Destroy()
+			end
+			breaking = model
+			breakFrom = camera.CFrame:ToObjectSpace(model:GetPivot())
+			breakAt = clock
+			shownModel, shownBody, shownKey = nil, nil, ""
+			swing = 0
+		end
+		refresh()
+	end
+
 	-- Each frame, after the camera: the tool in your hand where your left hand holds it, swinging
 	-- in and out as it changes.
 	local function hold(dt: number)
@@ -963,7 +1156,42 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 		if wheelOpen and not living then
 			closeWheel(nil) -- caught or fallen: the wheel goes with your hands
 		end
+		local clock = os.clock()
+		local hud = ui
+		if hud then
+			breathe(hud.boxMarks, clock)
+			if wheelOpen then
+				for _, v in hud.slots do
+					breathe(v.marks, clock)
+				end
+			end
+		end
+		-- a broken tool: a shake in your grip, then thrown up out of it, falling away and spinning
+		local broken = breaking
+		if broken then
+			local t = clock - breakAt
+			if t >= BREAK_GONE then
+				broken:Destroy()
+				breaking = nil
+			else
+				local shake = if t < BREAK_JOLT
+					then Vector3.new(math.random() * 2 - 1, math.random() * 2 - 1, 0) * BREAK_SHAKE
+					else Vector3.zero
+				local f = math.max(0, t - BREAK_JOLT)
+				local move = shake + BREAK_THROW * f + Vector3.new(0, -0.5 * BREAK_FALL * f * f, 0)
+				local turn = BREAK_SPIN * f
+				broken:PivotTo(
+					camera.CFrame
+						* CFrame.new(move * Hands.Scale)
+						* breakFrom
+						* CFrame.Angles(turn.X, turn.Y, turn.Z)
+				)
+			end
+		end
 		local want = if living then heldKey() else ""
+		if want == gone and clock < goneUntil then
+			want = "" -- it broke: the slots haven't caught up yet
+		end
 		if want ~= shownKey then
 			-- the old one drops out of view, then the new one comes up
 			rising = false
@@ -1231,6 +1459,10 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 				connections,
 				player:GetAttributeChangedSignal(Tools.slotAttribute(i)):Connect(refresh)
 			)
+			table.insert(
+				connections,
+				player:GetAttributeChangedSignal(Wear.slotAttribute(i)):Connect(refresh)
+			)
 		end
 		-- the server agreed (or overruled): its word from here
 		local function settled()
@@ -1389,6 +1621,17 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 			pocketRemote = get(Tools.PocketRemote)
 			dropRemote = get(Tools.DropRemote)
 			giveRemote = get(Tools.GiveRemote)
+			local brokeRemote = get(Tools.BrokeRemote)
+			if brokeRemote then
+				table.insert(
+					connections,
+					brokeRemote.OnClientEvent:Connect(function(key: unknown)
+						if type(key) == "string" then
+							broke(key)
+						end
+					end)
+				)
+			end
 			local notice = get(Tools.NoticeRemote)
 			if notice then
 				table.insert(

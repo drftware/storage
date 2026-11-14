@@ -42,6 +42,12 @@ Horn.Blast = {
 	pitch = 1,
 }
 
+-- The last blast as the can runs dry (S1-08, the catalog's `wear`): its pitch sags to `DryPitch`
+-- of its own and its volume dies away over `Dry` seconds, as a canned horn's does when it's
+-- empty; then the empty can is shaken and tossed (`Slots`).
+Horn.Dry = 0.75
+Horn.DryPitch = 0.6
+
 -- Your view: the horn comes up to blow as you press, stays up through the blast, then goes back
 -- down (ToolView's `use` pose, from the catalog row). Seconds held up.
 Horn.Up = 1.1

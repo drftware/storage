@@ -7,7 +7,8 @@
 	of the wheel's button) blows it. Your screen answers at once: the blast at your horn, the horn brought up in your view
 	(ToolView's `use`) and a kick to your view (CameraShake). The server is told (ToolUse) and
 	decides for everyone else. Your screen keeps the server's gap between blows (`Horn.allow`): the
-	button dims until the horn is ready again.
+	button dims until the horn is ready again. The can's last blast (S1-08: its slot's uses, or for
+	a friend's its model's) sags in pitch and dies away as it runs dry (`Horn.Dry`).
 
 	The button is every tool's with a verb (D-087): a press with another such tool in hand goes to
 	its own view's handler (`presses`: the bubble wrap's Lay, WrapView), which answers on your
@@ -36,6 +37,7 @@ local Tools = require(ReplicatedStorage.Shared.Tools)
 
 local Carry = Tools.Carry
 local Catalog = Tools.Catalog
+local Wear = Tools.Wear
 
 local player = Players.LocalPlayer
 
@@ -136,8 +138,9 @@ function HornView.new(
 		return nil
 	end
 
-	-- The blast, once, at `model`'s bell (its body), `late` seconds into it.
-	local function blast(model: Model, late: number)
+	-- The blast, once, at `model`'s bell (its body), `late` seconds into it; the `last` the can had
+	-- in it sags and dies away (S1-08).
+	local function blast(model: Model, late: number, last: boolean)
 		local body = Tools.body(model)
 		local at: Instance = body or Workspace
 		local s = Horn.Blast
@@ -145,6 +148,13 @@ function HornView.new(
 		snd.RollOffMinDistance = Horn.Near
 		snd.TimePosition = s.from + math.max(0, late)
 		snd:Play()
+		if last then
+			local dry = TweenInfo.new(Horn.Dry, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+			TweenService:Create(snd, dry, {
+				PlaybackSpeed = Horn.DryPitch * (s.pitch or 1),
+				Volume = 0,
+			}):Play()
+		end
 		task.delay(s.length / (s.pitch or 1) + 0.5, function()
 			snd:Destroy()
 		end)
@@ -197,7 +207,12 @@ function HornView.new(
 		end
 		local model = hornIn(player.Character)
 		if model then
-			blast(model, 0)
+			-- the horn in your hand down to its last blast (S1-08: its slot's uses, as you pressed)
+			local slot = player:GetAttribute(Tools.HandAttribute)
+			local uses = if type(slot) == "number"
+				then player:GetAttribute(Wear.slotAttribute(math.clamp(slot, 1, Carry.Slots)))
+				else nil
+			blast(model, 0, uses == 1)
 		end
 		hand.use(Horn.Up)
 		kick(Horn.Kick)
@@ -276,10 +291,10 @@ function HornView.new(
 			if lastBlow and os.clock() - lastBlow < Horn.Gap then
 				return
 			end
-			blast(model, late)
+			blast(model, late, model:GetAttribute(Wear.ModelAttribute) == 0)
 			return
 		end
-		blast(model, late)
+		blast(model, late, model:GetAttribute(Wear.ModelAttribute) == 0)
 		if character and character:IsA("Model") then
 			arms[character] = {
 				since = os.clock() - math.max(0, late),

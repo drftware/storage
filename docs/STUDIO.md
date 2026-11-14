@@ -457,6 +457,14 @@ verified: a doc page, Studio, or "untested".
   and read what happened off attributes (`KeeperState`, `DoorMotion`) and Output. A Server
   `execute_luau` can sample a keeper's pivot every 0.1 s for a path; the pure modules
   (`Floor.generate` with the dev floor's seed, `KeeperMap`) rebuild the same map to check against.
+- **Driving a tool from the MCP** (S1-08, 2026-11-14): the dev floor (`Workspace.DevCorridor.
+  Floor3`) is about 1300 studs from where you spawn, so on the Client its units don't exist until
+  you pivot your character near them and call `RequestStreamAroundAsync`; units on another
+  straight need the same before each. A lying tool's Pick up prompt isn't inside the tool's
+  model: find it by its `ObjectText` ("Bolt cutters"). A Client `InputHoldBegin` on it placed 3
+  studs above it didn't take it (untried: standing beside it, or waiting longer for the server to
+  see you there). Pro Sound Effects' "Spray Paint 3" 9119523840 (1.47 s): hits at 0.12 and
+  0.21 s near -5 dB, a rattle to 0.7 s, quiet after (AudioAnalyzer, 50 ms bins, half speed).
 - **Opening a unit so it deals, from the MCP** (S1-07a, 2026-11-14): `RollUpDoor.play(unit,
   "Open")` from the Server moves the door but never deals it (`Deals` hears only the Doors
   system's own acts), so press the door's Open prompt from the Client. `setLocked(unit, false)`

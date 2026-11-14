@@ -342,6 +342,9 @@ function Saws.new(): Saws
 				at = at,
 				reach = if job.kind == "Top" then Sawing.DropHeard else Sawing.ClangHeard,
 			})
+			if slots then
+				slots:wear(player, "Saw") -- through: the saw wears (S1-08)
+			end
 		end
 	end
 

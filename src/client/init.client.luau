@@ -58,7 +58,7 @@ local freeCursor, needCursor = FreeCursor.new()
 local elevatorView, pressKeypad = ElevatorView.new(kick)
 local keeperSounds, keeperHeard = KeeperSounds.new()
 local flashlightView, myBeam = FlashlightView.new()
-local toolView, myHand = ToolView.new(needCursor)
+local toolView, myHand = ToolView.new(needCursor, kick)
 local wrapView, lay = WrapView.new(myHand, kick)
 local cartView, ownCart, cartTold = CartView.new()
 
