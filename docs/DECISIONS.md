@@ -4847,3 +4847,32 @@ crowds it). The ticket read "a bit" as about a third.
   in: in Edit by `pose`, on a screen by its joints' Transforms. On the server its joints stay at
   rest, so S2-06b decides where the server keeps a carried find. Deeper finds (a television)
   will still meet the forearms: S2-06b seats each by its own depth or accepts it.
+
+## D-177 The Packrat's take: one long arm out, a smooth walk in numbered frames (S2-06a3, Nov 14)
+
+- **The reach is one arm, not two.** Reaching, its right arm goes straight out ahead and a little
+  wide, nearly level, the find (or a player's chest) at its fingertips 4.2 studs ahead of its
+  chest, the hood craned after it and the other arm trailing low and back. Two arms out read as
+  a zombie; one arm, from across a hall, is a single long pale line out of a dark lump, which is
+  the moment the take is built on (`art/sheets/packrat-reach-hall.png`). Its hand sits at about
+  4 studs, a player's chest, so it reads as coming for what you hold rather than for the floor.
+- **Taking is halfway home.** Both hands close on the find 2.5 studs ahead of its chest at chest
+  height, elbows bending back to its sides, so a screen showing reach, then take, then the full
+  walk's hug reads as the find being pulled in. Putting down is a deep crouch, folded over, the
+  find low between its hands, feet flat. The find's place in each comes from `Pose.grip` (one
+  hand's fingertips, or between two palms), as `carry` gives it in the hug.
+- **The walks glide; the Mannequin's jerk.** Each walk's four keys are blended by a Catmull-Rom
+  curve through them by distance travelled, so every joint keeps moving through each key. The
+  Mannequin's stop-motion jerk is its own character; the Packrat is a thing that moves fluidly
+  and quietly. A key carries it half the spread of its feet in a step (1.6 studs empty, 1.15
+  full), so a planted foot doesn't skate, and the full walk's stride is 72% of the empty one.
+- **The hug isn't mirrored.** The left-foot keys of the full walk are the right ones mirrored,
+  but with the same hug, the right forearm over the left: mirrored, the forearms swapped which
+  was on top and passed through each other mid-step (the spec caught it in the in-between
+  frames). The left forearm came 3 degrees forward to stay across the find's front throughout.
+- **Frames, not names.** `Packrat.transforms(frame)` takes the KeeperView Kit's frame numbers:
+  1 to 4 the held poses (Still, Reach, Take, PutDown, by `Pose.held(name)`), then 32 frames of
+  the empty walk (8 a key), then 32 of the full. `Pose.along`, `frameAt` and `frame` take the
+  walk first (`"Empty"` or `"Full"`), since which walk it shows is the Packrat's own state; the
+  Kit's `along(travelled, how)` and `frameAt(along)` don't carry that, so S2-06b2 decides how a
+  screen learns it carries (a How of its own, and resetting `along` when the walk changes).

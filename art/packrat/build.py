@@ -344,7 +344,8 @@ def mat4(t):
 
 def figure(objs, pose, at, turn, carry=None):
     """One whole Packrat posed, stood at `at` turned `turn` degrees about Z; with `carry`, that
-    find (a Blender object, its middle at its origin) held at the pose's Carry point."""
+    find (a Blender object, its middle at its origin) held where the pose holds one: between its
+    hands (`Grip`) in a pose that has them on it, else at its chest (`Carry`)."""
     place = Matrix.Translation(Vector(at)) @ Matrix.Rotation(math.radians(turn), 4, "Z")
     made = []
     for name, ob in objs.items():
@@ -356,7 +357,7 @@ def figure(objs, pose, at, turn, carry=None):
     if carry is not None:
         o = carry.copy()
         bpy.context.scene.collection.objects.link(o)
-        o.matrix_world = place @ FLIP @ mat4(pose["Carry"]) @ FLIP
+        o.matrix_world = place @ FLIP @ mat4(pose.get("Grip", pose["Carry"])) @ FLIP
         o.hide_render = False
         made.append(o)
     return made
@@ -427,21 +428,38 @@ def stage_renders():
     render.shoot(cam, os.path.join(SHEETS, "packrat-lineup.png"), exposure=-0.2)
     cam = render.camera((0.6, -6.2, 5.6), (2.0, 0.0, 5.0), lens=40)
     render.shoot(cam, os.path.join(SHEETS, "packrat-close.png"), exposure=-0.2)
+    for o in shown:
+        o.hide_render = True
+
+    # 2. the take in the studio, three-quarters from the side so the arm's length shows:
+    # reaching, taking, putting down, the find in its hands
+    shown = []
+    for pose, x, turn in (("Reach", -2.4, -70), ("Take", 2.6, -35), ("PutDown", 7.0, -50)):
+        shown += figure(objs, P[pose], (x, 0.0, 0.0), turn, teddy)
+    cam = render.camera((0.0, -19.0, 4.0), (0.4, 0.0, 3.4), lens=36)
+    render.shoot(cam, os.path.join(SHEETS, "packrat-take.png"), exposure=-0.2)
     for o in studio + shown:
         o.hide_render = True
 
-    # 2. from a hall's end at a phone's size: arms empty on the left, full on the right, 30 studs
+    # 3. from a hall's end at a phone's size: arms empty on the left, full on the right, 30 studs
     # off under the hall's strip lights (Roblox's camera: 70 degrees tall)
     sc = bpy.context.scene
     sc.render.resolution_x, sc.render.resolution_y = 844, 390
     render.world((0.004, 0.005, 0.007), 1.0)
     hall(sc.collection)
-    figure(objs, P["EmptyStepRight"], (-1.6, 30.0, 0.0), 180 + 180, None)
-    figure(objs, P["FullStepRight"], (1.6, 30.0, 0.0), 180 + 180, teddy)
+    shown = figure(objs, P["EmptyStepRight"], (-1.6, 30.0, 0.0), 180 + 180, None)
+    shown += figure(objs, P["FullStepRight"], (1.6, 30.0, 0.0), 180 + 180, teddy)
     cam = render.camera((0.0, 0.0, 4.6), (0.0, 30.0, 3.6), lens=24)
     cam.data.sensor_fit = "VERTICAL"
     cam.data.angle_y = math.radians(70)
     render.shoot(cam, os.path.join(SHEETS, "packrat-hall.png"), exposure=0.0)
+    for o in shown:
+        o.hide_render = True
+
+    # 4. the reach from a hall's end, as a friend watching sees it: side on across the hall, the
+    # long arm out at a player's chest with the find at its fingertips, 30 studs off
+    figure(objs, P["Reach"], (2.2, 30.0, 0.0), -90, teddy)
+    render.shoot(cam, os.path.join(SHEETS, "packrat-reach-hall.png"), exposure=0.0)
 
 
 STAGES = {"textures": stage_textures, "export": stage_export, "renders": stage_renders}

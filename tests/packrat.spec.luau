@@ -1,9 +1,13 @@
 --!strict
 -- lune run tests/packrat.spec
--- The Packrat's poses (S2-06a1): at rest it stands on the floor untouched; every pose keeps its
--- joints inside their limits and never puts one part through another; and its two walks read
--- as opposites: arms full, both hands are up at its chest within reach of the find it carries,
--- the find clear of its chest; arms empty, both hands hang below its hips and out past its sides.
+-- The Packrat's poses (S2-06a1, S2-06a3): at rest it stands on the floor untouched; every pose,
+-- and every frame of both walks, keeps its joints inside their limits and never puts one part
+-- through another; its two walks read as opposites: arms full, both hands are up at its chest
+-- within reach of the find it carries, the find clear of its chest; arms empty, both hands hang
+-- below its hips and out past its sides. Reaching, one hand is far out ahead of its chest at a
+-- player's chest height; taking, both hands close on the find between there and its chest;
+-- putting down, both hands are low ahead, below its hips. Frames number every pose a screen
+-- shows, and the walks' steps match their feet.
 local Specs = require("../src/shared/Packrat/Specs")
 local Pose = require("../src/shared/Packrat/Pose")
 local Rig = require("../src/shared/Rig")
@@ -117,8 +121,8 @@ for _, name in Pose.Names do
 end
 
 local hipY = Specs.Joints[7].At[2] -- the LeftHip's height
-for _, name in Pose.Walks.Full do
-	local pose = Pose.Poses[name]
+
+local function fullReads(name: string, pose: Rig.Pose)
 	local placed = Pose.solve(pose)
 	local find = Pose.carry(pose)
 	local at = { find[10], find[11], find[12] }
@@ -140,8 +144,9 @@ for _, name in Pose.Walks.Full do
 		ok(h[2] > 4.2, `{name}: its {side} hand up at its chest ({string.format("%.2f", h[2])})`)
 	end
 end
-for _, name in Pose.Walks.Empty do
-	local placed = Pose.solve(Pose.Poses[name])
+
+local function emptyReads(name: string, pose: Rig.Pose)
+	local placed = Pose.solve(pose)
 	for _, side in { "Left", "Right" } do
 		local h = hand(placed, side)
 		ok(
@@ -153,6 +158,176 @@ for _, name in Pose.Walks.Empty do
 			`{name}: its {side} hand out past its sides ({string.format("%.2f", h[1])})`
 		)
 	end
+end
+
+for _, name in Pose.Walk.Keys.Full do
+	fullReads(name, Pose.Poses[name])
+end
+for _, name in Pose.Walk.Keys.Empty do
+	emptyReads(name, Pose.Poses[name])
+end
+
+-- Reach, take and put down (S2-06a3). The find's place in each is `Pose.grip`.
+local function gripOf(name: string): { number }
+	local t = Pose.grip(Pose.Poses[name], Pose.InHands[name])
+	return { t[10], t[11], t[12] }
+end
+local function chestOf(name: string): { number }
+	return Rig.apply(Pose.solve(Pose.Poses[name]).UpperTorso, { 0, 5.4, 0 })
+end
+local function ahead(name: string, p: { number }): number
+	return chestOf(name)[3] - p[3]
+end
+local function f2(v: number): string
+	return string.format("%.2f", v)
+end
+
+-- Reaching: one long arm far out ahead, nearly level, at a player's chest; the other well back.
+do
+	local placed = Pose.solve(Pose.Poses.Reach)
+	local right, left = hand(placed, "Right"), hand(placed, "Left")
+	ok(
+		ahead("Reach", right) > 3.0,
+		`Reach: its right hand well ahead of its chest ({f2(ahead("Reach", right))})`
+	)
+	ok(
+		right[2] > 3.2 and right[2] < 4.6,
+		`Reach: its right hand at a player's chest ({f2(right[2])})`
+	)
+	ok(
+		ahead("Reach", left) < 0,
+		`Reach: its left hand trailing behind ({f2(ahead("Reach", left))})`
+	)
+	local shoulder = Rig.apply(placed.RightUpperArm, Specs.Joints[11].At)
+	local drop = shoulder[2] - right[2]
+	local out = shoulder[3] - right[3]
+	ok(
+		drop < out * 0.6,
+		`Reach: the arm nearly level, not hanging ({f2(drop)} down over {f2(out)} out)`
+	)
+	local g = gripOf("Reach")
+	ok(
+		ahead("Reach", g) > 3.3,
+		`Reach: the find at its fingertips, further out ({f2(ahead("Reach", g))})`
+	)
+	local head = middle(placed, "Head")
+	ok(
+		ahead("Reach", head) > 0.6,
+		`Reach: the hood craned after the arm ({f2(ahead("Reach", head))})`
+	)
+end
+
+-- Taking: both hands on the find, nearer its chest than the reach, further than the hug.
+do
+	local placed = Pose.solve(Pose.Poses.Take)
+	local g = gripOf("Take")
+	for _, side in { "Left", "Right" } do
+		local h = hand(placed, side)
+		local d = math.sqrt(dot(sub(h, g), sub(h, g)))
+		ok(d < 0.6, `Take: its {side} hand on the find ({f2(d)} off)`)
+	end
+	local carried = Pose.carry(Pose.Poses.FullStepRight)
+	local hug = Rig.apply(Pose.solve(Pose.Poses.FullStepRight).UpperTorso, { 0, 5.4, 0 })[3]
+		- carried[12]
+	local reach = ahead("Reach", gripOf("Reach"))
+	local take = ahead("Take", g)
+	ok(
+		take > hug + 0.6 and take < reach - 0.8,
+		`Take: the find on its way in ({f2(hug)} < {f2(take)} < {f2(reach)})`
+	)
+	ok(g[2] > 4.2, `Take: the find up at its chest ({f2(g[2])})`)
+	ok(
+		math.abs(hand(placed, "Left")[1] - hand(placed, "Right")[1]) > 0.6,
+		"Take: its hands either side of the find"
+	)
+end
+
+-- Putting down: folded over, both hands low ahead, below its hips.
+do
+	local placed = Pose.solve(Pose.Poses.PutDown)
+	local hips = Rig.apply(placed.LowerTorso, Specs.Joints[13].At)
+	for _, side in { "Left", "Right" } do
+		local h = hand(placed, side)
+		ok(
+			h[2] < hips[2] - 1.0,
+			`PutDown: its {side} hand below its hips ({f2(h[2])} under {f2(hips[2])})`
+		)
+		ok(ahead("PutDown", h) > 1.0, `PutDown: its {side} hand ahead ({f2(ahead("PutDown", h))})`)
+	end
+	ok(gripOf("PutDown")[2] < 2.0, `PutDown: the find low ({f2(gripOf("PutDown")[2])})`)
+	ok(
+		chestOf("PutDown")[2] < chestOf("Still")[2] - 0.6,
+		"PutDown: folded over it, lower than standing"
+	)
+end
+
+-- Frames: every one is a pose that stands, the held poses and the walks' keys are exactly their
+-- own pose, and a walk's frames read as that walk.
+ok(Pose.Frames == 4 + 2 * 4 * Pose.Walk.Frames, `{Pose.Frames} frames`)
+for _, name in { "Still", "Reach", "Take", "PutDown" } do
+	local frame = Pose.held(name)
+	ok(frame ~= nil and Pose.ofFrame(frame) == Pose.Poses[name], `{name} has its own frame`)
+end
+ok(Pose.held("FullStepRight") == nil, "a walk's key isn't held")
+local seen: { [number]: boolean } = {}
+for _, walk in { "Empty", "Full" } :: { Pose.Walk } do
+	local step = Pose.Walk.Step[walk]
+	local keys = Pose.Walk.Keys[walk]
+	for k = 0, 7 do
+		local frame = Pose.frame(walk, k * step)
+		ok(
+			Pose.ofFrame(frame) == Pose.Poses[keys[k % 4 + 1]],
+			`{walk}: key {k} lands on {keys[k % 4 + 1]}`
+		)
+	end
+	local last = -1
+	for i = 0, 400 do
+		local travelled = i * step / 10
+		local along = Pose.along(walk, travelled)
+		ok(along >= last, `{walk}: along never goes back at {travelled}`)
+		last = along
+		local frame = Pose.frameAt(walk, along)
+		seen[frame] = true
+		ok(frame >= 5 and frame <= Pose.Frames, `{walk}: frame {frame} in range`)
+	end
+	-- A planted foot stays put: one key carries it half the spread of its feet in a step.
+	local placed = Pose.solve(Pose.Poses[keys[1]])
+	local spread = middle(placed, "LeftFoot")[3] - middle(placed, "RightFoot")[3]
+	ok(
+		math.abs(step - spread / 2) < 0.12 * step,
+		`{walk}: a key carries it half its feet's spread ({f2(step)} against {f2(spread / 2)})`
+	)
+end
+ok(Pose.Walk.Step.Full < Pose.Walk.Step.Empty * 0.8, "full steps are shorter than empty")
+local first = 5
+for frame = first, Pose.Frames do
+	ok(seen[frame] == true, `frame {frame} is shown on a walk`)
+	local pose = Pose.ofFrame(frame)
+	stands(`frame {frame}`, pose)
+	if frame < first + 4 * Pose.Walk.Frames then
+		emptyReads(`frame {frame}`, pose)
+	else
+		fullReads(`frame {frame}`, pose)
+	end
+end
+
+-- Smooth: no joint turns more than a few degrees from one frame to the next, round the cycle.
+for _, base in { first, first + 4 * Pose.Walk.Frames } do
+	local worst = 0
+	for i = 0, 4 * Pose.Walk.Frames - 1 do
+		local a = Pose.ofFrame(base + i)
+		local b = Pose.ofFrame(base + (i + 1) % (4 * Pose.Walk.Frames))
+		for joint in Pose.Limits do
+			local p, q = a[joint] or {}, b[joint] or {}
+			worst = math.max(
+				worst,
+				math.abs((p.x or 0) - (q.x or 0)),
+				math.abs((p.y or 0) - (q.y or 0)),
+				math.abs((p.z or 0) - (q.z or 0))
+			)
+		end
+	end
+	ok(worst < 12, `the walk from frame {base} turns at most {f2(worst)} degrees a frame`)
 end
 
 print(`packrat: {checks - failures}/{checks} checks passed`)

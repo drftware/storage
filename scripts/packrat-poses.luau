@@ -2,7 +2,8 @@
 -- lune run scripts/packrat-poses
 -- Writes art/packrat/out/poses.json: every named pose of the Packrat as each part's place (4x4,
 -- row by row, Roblox's frame) from src/shared/Packrat/Pose.luau, and where a carried find sits
--- (`Carry`), so Blender's look sheets wear the game's own poses (art/packrat/build.py renders).
+-- (`Carry`) or, in a pose that holds it in its hands, where it sits between them (`Grip`), so
+-- Blender's look sheets wear the game's own poses (art/packrat/build.py renders).
 local fs = require("@lune/fs")
 local serde = require("@lune/serde")
 local Pose = require("../src/shared/Packrat/Pose")
@@ -20,6 +21,10 @@ for _, name in Pose.Names do
 		end
 	end
 	placed.Carry = rows(Pose.carry(Pose.Poses[name]))
+	local hands = Pose.InHands[name]
+	if hands then
+		placed.Grip = rows(Pose.grip(Pose.Poses[name], hands))
+	end
 	out[name] = placed
 end
 fs.writeFile("art/packrat/out/poses.json", serde.encode("json", out))

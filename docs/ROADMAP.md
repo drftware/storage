@@ -1861,7 +1861,7 @@ Done when a team that has lost its lights goes looking for the breaker without b
   empty. Its unit holds the pile, there to take back. One on a floor, none below floor 3. As
   Lethal Company's Hoarding Bug carries scrap to its nest, and as Sonic's rings take the hit.
   One session each, in this order:
-  - [ ] **S2-06a The Packrat's art.** Built the unit's way in `art/packrat/`, as the Mannequin
+  - [x] **S2-06a The Packrat's art.** Built the unit's way in `art/packrat/`, as the Mannequin
     was (L-06a): a tall, faceless bundle of grey moving blankets and packing tape with long bare
     arms. Poses for walking with its arms full (the find held against its chest), walking with
     them empty, reaching, taking and putting down. Judge the look sheets and Studio at phone
@@ -1880,16 +1880,31 @@ Done when a team that has lost its lights goes looking for the breaker without b
       boombox at the carry point: full and empty read apart (`docs/art/S2-06a2-packrat-hall.jpg`,
       `-close.jpg`). The judge moved the carry point back behind the forearms, which the find
       had swallowed.
-    - [ ] **S2-06a3 Reach, take and put down.** Those three poses, the walks as a cycle a screen
-      steps through (`at(travelled)`, frames for KeeperView, as the Mannequin's; `Packrat.transforms`
-      moves from pose names to frames), and their sheets.
+    - [x] **S2-06a3 Reach, take and put down** (Nov 14, D-177). Reaching, one long pale arm
+      straight out at a player's chest, the find at its fingertips 4.2 studs ahead, the hood
+      craned after it; taking, both hands closed on it halfway in; putting down, crouched and
+      folded over it, the find low between its hands (`Pose.grip`). The walks glide: a smooth
+      curve through each walk's four keys by distance, a key carrying it half its feet's spread
+      (1.6 studs empty, 1.15 full). 68 numbered frames (`Pose.held`, `frame(walk, travelled)`,
+      `ofFrame`), and `Packrat.transforms(frame)`. The Lune spec checks every frame stands and
+      reads; checked in Studio that all 68 build on the real rig, hands where the spec says.
+      Sheets `packrat-take` and `-reach-hall` (side on from 30 studs at a phone's size).
   - [ ] **S2-06b It carries finds home.** Its row on the keepers' brain (`KeeperRows`), with a
     unit of its own and one new ability: it picks up a find lying in an open unit or a hall,
     carries it home, lays it on the pile and comes out for more, ignoring players while it
     carries. The server owns where every find is. The pure rules first with Lune specs (which
     find it goes for next, the trip home). It sets hall lights off as it walks (a default in
     `OWNER.md`). The deal puts one on floors 3 and up, asleep in a unit that already holds
-    finds of its own.
+    finds of its own. Split in two (Nov 14, context: the brain alone is a session):
+    - [ ] **S2-06b1 The trip home, on the brain.** Its row in `KeeperRows` and the new errand
+      on `Keeper.luau` (the Mannequin's breaker errand is the nearest shape): which find it goes
+      for next, walking to it, the reach and take, the trip home with its arms full and players
+      ignored, putting down, out for more. Pure, with Lune specs first.
+    - [ ] **S2-06b2 Into the game.** The server moves each find (lifted, carried at its chest,
+      laid on the pile) and owns where it is; screens show the Packrat's walk full or empty and
+      its reach, take and put down (its Kit row in KeeperView, and how a screen learns it
+      carries, D-177); hall lights off as it walks (a default in `OWNER.md`); the deal puts one
+      on floors 3 and up, asleep in a unit holding finds. Verified in Play.
   - [ ] **S2-06c It takes from you, or wraps you.** With empty arms it comes for a player it
     sees at just under walking speed, and light doesn't stop it. Reaching one, it takes their
     most valuable find and carries it home: a tool only if they carry no find, never the

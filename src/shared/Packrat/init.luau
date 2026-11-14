@@ -169,23 +169,26 @@ function Packrat.motors(model: Model): { Motor6D }?
 	return out
 end
 
--- Each joint's `Transform` for one of Pose's poses by name (`Pose.Names`), in `Specs.Joints`'
--- order, over a body at rest (`rest`): worked out the first time a screen shows that pose, then
--- kept, so posing a body never builds anything. S2-06a3 adds the walks as frames.
-local posed: { [string]: { CFrame } } = {}
-function Packrat.transforms(name: string): { CFrame }
-	local kept = posed[name]
+-- Each joint's `Transform` for one of Pose's frames (`Pose.frame`, or `Pose.held` for a pose it
+-- holds still in), in `Specs.Joints`' order, over a body at rest (`rest`): worked out the first
+-- time a screen shows that frame, then kept, so posing a body never builds anything (the
+-- KeeperView `Kit` shape, as the Mannequin's).
+local posed: { { CFrame } } = table.create(Pose.Frames)
+function Packrat.transforms(frame: number): { CFrame }
+	local kept = posed[frame]
 	if kept then
 		return kept
 	end
-	local pose = Pose.Poses[name]
-	assert(pose, `the Packrat has no pose {name}`)
-	local turns = Pose.turns(pose)
+	assert(
+		frame >= 1 and frame <= Pose.Frames and frame // 1 == frame,
+		`the Packrat has no frame {frame}`
+	)
+	local turns = Pose.turns(Pose.ofFrame(frame))
 	local out: { CFrame } = table.create(#Specs.Joints)
 	for i, j in Specs.Joints do
 		out[i] = cframe(turns[j.Name])
 	end
-	posed[name] = out
+	posed[frame] = out
 	return out
 end
 

@@ -72,11 +72,11 @@ Hub. Studio Play is fine for the first go.
    Today every feed is the breaker's, so you'll only see this once a second monster uses the
    camera.
 
-## Now: judge the Packrat's look (S2-06a1 and a2, built Nov 14, D-175, D-176; pictures, and a model in the place that no floor uses yet)
+## Now: judge the Packrat's look (S2-06a1 to a3, built Nov 14, D-175 to D-177; pictures, and a model in the place that no floor uses yet)
 
-What's new: the second monster's model and its two walks, as pictures, and now the model itself
-in the place (`ReplicatedStorage.Keepers.Packrat`). No floor puts one out yet, so you won't meet
-it in a climb.
+What's new: the second monster's model, its two walks and how it grabs a find, as pictures, and
+the model itself in the place (`ReplicatedStorage.Keepers.Packrat`). No floor puts one out yet,
+so you won't meet it in a climb.
 
 1. Open `art/sheets/packrat-lineup.png`. From left to right: asleep as it's found, walking with
    its arms empty, walking with a find (the teddy) hugged to its chest, and that from the side.
@@ -95,8 +95,18 @@ it in a climb.
 5. Open `docs/art/S2-06a2-packrat-close.jpg`: the full one close up. Look for: its pale forearms
    crossing in front of the boombox, holding it against its chest. (At first the boombox hid
    the forearms completely, so I moved where a carried find sits back toward its chest.)
-6. My defaults, change any you like: the find it carries in the pictures is the teddy; the
-   tape is a dull tan, not shiny orange; it's 7.3 studs tall (a player is about 5.2).
+6. Open `art/sheets/packrat-take.png`. From left to right, the three moves it makes with a find:
+   reaching for it with one long arm, the teddy at its fingertips; taking it, both hands closed
+   on it and pulling it in toward its chest; putting it down, crouched and folded over it.
+   Look for: is the reach the thing you'd scream at, a long pale arm coming out of the dark
+   bundle? Does the take look like it's pulling the teddy in, not just holding it out?
+7. Open `art/sheets/packrat-reach-hall.png`. It's a phone-sized picture of a hall with the
+   Packrat 30 studs away, side on, reaching across the hall. Look for: can you see the long arm
+   and the teddy at the end of it without zooming in?
+8. My defaults, change any you like: the find it carries in the pictures is the teddy; the
+   tape is a dull tan, not shiny orange; it's 7.3 studs tall (a player is about 5.2). It reaches
+   with one arm, not both (two arms out would read as a zombie). Its walks are smooth, not jerky
+   like the Mannequin's, so the two monsters move differently.
 
 ## Now: the screen's three fixes (S2-07b2, built Nov 14, D-174; checked in Studio Play with a stand-in friend)
 

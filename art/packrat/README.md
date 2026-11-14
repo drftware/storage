@@ -10,7 +10,9 @@ from the far end of a hall on a phone. The arms are the only pale thing on it.
 | ![lineup](../sheets/packrat-lineup.png) | ![hall](../sheets/packrat-hall.png) |
 
 Sheets in `art/sheets/`: `packrat-lineup` (asleep, walking empty, walking full, full from the
-side), `-close` (the hug), `-hall` (empty and full 30 studs off, at a phone's size).
+side), `-close` (the hug), `-hall` (empty and full 30 studs off, at a phone's size), `-take`
+(reaching, taking and putting down, the find in its hands; S2-06a3), `-reach-hall` (the reach
+side on from a hall's end, 30 studs off, at a phone's size).
 
 ## Numbers
 
