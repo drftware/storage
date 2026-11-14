@@ -25,6 +25,7 @@ local Keepers = require(script.Keepers)
 local LobbyCars = require(script.LobbyCars)
 local KeptPlayers = require(script.KeptPlayers)
 local Kneels = require(script.Kneels)
+local Machines = require(script.Machines)
 local Minimaps = require(script.Minimaps)
 local Prompts = require(script.Prompts)
 local Recording = require(script.Recording)
@@ -56,6 +57,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "coins", system = Coins.new() },
 	-- The batteries on the floors: one laid as a door first lifts, a tap fills a torch that needs it.
 	{ slot = "batteries", system = Batteries.new() },
+	-- The machine in each floor's car: every waking ride's stock dealt once, shown in its coils.
+	{ slot = "machines", system = Machines.new() },
 	{ slot = "saws", system = Saws.new() },
 	-- Crawling through a sawn hole: its Crawl buttons, the checks on a press, the move's start.
 	{ slot = "crawls", system = Crawls.new() },

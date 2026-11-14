@@ -99,12 +99,28 @@ and off, the invite sheet opening with your friends (no invite sent).
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
 
+## Now: see the machine's stock (S1-10c1, built Nov 14, D-147; seen staged in Play)
+
+On every ride after the first, the machine is now full: as each row's tube first flashes, its
+coils are suddenly holding things (two batteries in each bottom coil; above them three or four
+tools, a different lot each ride, one coil empty when there are three), and as the tube catches
+its price windows flash 88 and settle on the prices. All of it goes as the gate opens. You can't
+buy yet (that's next).
+- [ ] **The prices are my guesses; say if any is wrong.** Battery 3, bubble wrap 5, padlock 6,
+  air horn 7, saw 8, bolt cutters 10 (the padlock and bolt cutters are the design doc's). A
+  player boards the second ride with about 15 to 25 coins. (`Machine.Stock.Prices`)
+- [ ] **How much it holds is my guess too:** two batteries in each of the two battery coils (4 a
+  ride, one each for a team of four), one of each tool, three or four tools half the time each.
+  The ladder isn't sold (it doesn't fit a bay). (`Stock.Batteries`, `Stock.FourShare`)
+- [ ] **On a phone, ride from floor 1 to 2:** can you tell the tools apart through the glass
+  from the gate? Does the light finding them row by row land, or read as a glitch?
+
 ## Now: watch the machine wake (S1-10b2, built Nov 14, D-146; seen lit and dark in Play)
 
 Every floor's car now has the vending machine in its back-right corner. It sleeps on the first
 ride (up from the lobby) and wakes on every later one: the tubes tink and flicker on a row at a
-time from the bottom, the sign buzzes on, red dashes show in the price windows, a hum fills the
-car and a cold light spills across it. It dies as the gate opens. Nothing is for sale yet.
+time from the bottom, the sign buzzes on, the price windows light (now the prices, S1-10c1), a
+hum fills the car and a cold light spills across it. It dies as the gate opens.
 - [ ] **Ride from floor 1 to 2** (Workspace's `DevFloorNumber` = 1 before Play): does the wake
   land as a moment after the lurch? Are the tink, the sign's buzz and the hum loud enough over
   the motor, or too loud? (`Machine.Tink`, `Buzz`, `Hum` volumes are first guesses.)

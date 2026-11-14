@@ -59,6 +59,7 @@ COIL_R = 0.26               # its radius to the wire's middle: a battery sits in
 COIL_WIRE = 0.022
 COIL_TURNS = 4.5
 COIL_Y = (-0.47, 0.8)       # its front end to where it meets the motor's hub
+COIL_TAIL = 0.14            # the helix stops this short of the hub; its tail bends in to it
 COIL_STEPS = 12             # points a turn
 COIL_SEGS = 6               # round the wire
 
@@ -167,6 +168,11 @@ def write_luau(path, parts):
     sx0, sx1, sz0, sz1 = SIGN
     L += [
         "\t} :: { Bay },",
+        "\t-- The coil's helix: where its wire starts, at the bottom of the loop, from the coil's",
+        "\t-- middle along Z (toward the glass), and how far it runs a turn. The wire is at the bottom",
+        "\t-- of its loop every `CoilPitch` back from there: what stands in the coil rests on it.",
+        f"\tCoilFront = {COIL_Y[0] - coil_mid:.3f},",
+        f"\tCoilPitch = {(COIL_Y[1] - COIL_TAIL - COIL_Y[0]) / COIL_TURNS:.4f},",
         f"\tButtonTravel = {BUTTON_TRAVEL},",
         f"\tPriceSize = {{ {PRICE[1]}, {PRICE[2]} }}, -- a price window's width and height",
         "\t-- The flap's hinge (its top edge's middle): it swings in, about its X.",

@@ -4108,3 +4108,25 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
   tink (higher each row up), "Light Bulb Buzz 3" gated by the sign's flicker, "Transformer Hum 1"
   for the hum (36 s, longer than a ride). Volumes are a first guess against the motor.
 
+## D-147 The machine's stock: dealt per ride, kept by the ride, shown as the light finds it (S1-10c1, Nov 14)
+
+- The server deals the stock once per ride that wakes the machine, the moment the ride's value
+  appears on a car, and keeps it by that value. The next floor's car takes the ride over
+  mid-way with the same value, so it shows the same stock without Elevators knowing about the
+  machine; c2's buy changes the one copy and both cars follow. A ride no car carries is
+  forgotten. Lobby rides deal nothing.
+- Batteries every ride in the two bottom coils, two to a coil (they're wider than one loop);
+  three or four of the five tools that fit a bay (not the ladder), each once, each in a tool bay
+  picked at random so the same tool moves about. Prices are starting guesses, the GDD's for the
+  padlock (6) and bolt cutters (10); the others between (OWNER.md).
+- One attribute, `key:price:count` per bay split by "/". The screen draws the prices from it;
+  the buy will charge the server's own copy. Decoding refuses anything malformed.
+- On screen the stock exists only while the machine is awake: each row appears at its tube's
+  first flash (the sudden light hides the pop and reads as the light finding it) and goes at the
+  cut. A dark machine at a floor stands empty, so nobody window-shops a stock that will change.
+- Each thing stands where the coil's wire runs along the bottom of its loop, one pitch back from
+  the tip, so the front loop curls in front of it as on a real machine. The coil's front and
+  pitch are now in the generated Specs (art/machine/spec.py), not copied by hand.
+- Long tools lie across the bay face to the glass at about 1.7 studs, a little leaned; the
+  padlock grows to 1.35 so it reads from the gate. The LEDs test 88 for 0.18 s as each row
+  catches, then settle on the price, an old machine's power-up.

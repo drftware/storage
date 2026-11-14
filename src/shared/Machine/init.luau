@@ -15,14 +15,17 @@
 	- `Sign`, the lit panel under the cap, its keyhole-coin emblem printed on (no words).
 	- `Prices`, the six red price windows, a `Window{i}` frame for each in its `Digits` SurfaceGui.
 	- On the glass, one SurfaceLight, off: `CarLight`, the cold spill into the car.
+	On a ride that wakes it the server writes its stock on it (`Stock.Attribute`, S1-10c).
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Specs = require(script.Specs)
+local Stock = require(script.Stock)
 local Wake = require(script.Wake)
 
 local Machine = {}
 Machine.Specs = Specs
+Machine.Stock = Stock
 Machine.Wake = Wake
 
 -- Tagged on every machine standing in a car, so each screen lights it (MachineView). The

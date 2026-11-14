@@ -1531,14 +1531,30 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
       flash and catch bottom up from 1.2 s, the sign buzzes on at 3.75 s, LED dashes, a hum,
       dips with the lamp, dead 0.35 s after the gate starts to fold; dark from the lobby. One
       SurfaceLight (into the car); a second into the bays blacked out the car. Seen in Play.
-  - [ ] **S1-10c Buying.** Stock (three or four tools, changing each ride, batteries always,
-    3 coins; the GDD's guesses: a padlock 6, bolt cutters 10), shown in the coils (tools scaled
-    to about 1.8 studs), prices in the windows. Each bay's button is a prompt; the server owns
-    the price and the buy (`Coins`), validates, rate-limits; a battery calls
-    `Flashlights:fill` (refused while the ring is full, no text), a tool goes in a slot
-    (`Slots`). Every buy answers: the coins fly into the slot and count off, the coil turns, the
-    item drops with a clunk, the flap swings, it flies to you. Record each buy (`machine` in
-    `Record`'s reasons, `spent` with the item) and a battery taken from a unit (S1-07b).
+  - [ ] **S1-10c Buying.** Split Nov 14 in two (c1 the stock shown, c2 the buy).
+    - [x] **S1-10c1 The stock shown. Done Nov 14 (D-147); seen staged in Play.** `Machine.Stock`
+      (pure, `tests/stock.spec.luau`) deals each waking ride two batteries in each bottom coil
+      and three or four of the five bay-sized tools in random tool bays (prices: battery 3,
+      bubble wrap 5, padlock 6, air horn 7, saw 8, bolt cutters 10); the server's `Machines`
+      keeps it by the ride's value and writes it on every machine whose car carries that ride
+      (`Stock` attribute), so the taking-over car matches. `MachineStock` stands each thing in
+      the front loop of its coil, face to the glass (`Specs.CoilFront`, `CoilPitch`, now
+      exported); `MachineView` shows a row at its tube's first flash, its LEDs test 88 as it
+      catches, then the prices (dashes for an empty coil); gone at the cut. Unseen: a real
+      keypad ride and the takeover in Play (checked with a stand-in car).
+    - [ ] **S1-10c2 The buy.** Each bay's button is a prompt while the machine is awake; the
+      server owns the price and the buy (`Coins`), validates (type, range, aboard that car, the
+      machine awake, the bay stocked), rate-limits; a battery calls `Flashlights:fill` (refused
+      while the ring is full, no text), a tool goes in a slot (`Slots`). Every buy answers: the
+      coins fly into the slot and count off, the button sinks, the coil turns, the item drops
+      with a clunk, the flap swings, it flies to you; the bay's count drops on every screen.
+      Record each buy (`machine` in `Record`'s reasons, `spent` with the item) and a battery
+      taken from a unit (S1-07b). The server already holds each ride's stock
+      (`Machines:stockOf`, shared by both cars of a ride); a buy lowers the bay's count there
+      and rewrites the attribute on every machine carrying the ride. Today `MachineView` refills
+      every coil when the attribute changes: c2 must change only the bought bay (the coil
+      turns its one thing out). Polish found in c1: the stock vanishes at the cut rather than
+      standing dark in the coils; a battery's label may face away (unchecked).
 - [ ] **S1-11 The one faint mark.** At most one note's door frame on a floor carries a faint
   mark, seen from a few steps with your flashlight on it; nothing about notes on the corner map.
 - [ ] **S1-12 Cash on the results.** Unspent coins turn into cash at the climb's end; the

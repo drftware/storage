@@ -864,6 +864,17 @@ verified: a doc page, Studio, or "untested".
   `Padlock`, `LatchBolt`, `DoorCollider`), hang an invisible part with a PointLight at
   `UnitLight`'s colour, brightness, range and shadows 0.7 under the top's middle, and capture from
   the doorway at eye height (4.6). Destroy it all after.
+- **Staging the machine's stock** (S1-10c1, Play, the test hall's floor 3 car): from the Server
+  set Workspace's `DevRideHold` to 8, then the car's `Ride` to `Ride.encode(now, 3, 4)` and its
+  `Aboard` to `Departure.encodeAboard(now, { userId })`: Machines deals the stock at once. Step
+  the reveal on the Client alone by setting its own Workspace `DevRideHold` (1.3 the bottom row
+  there, 1.75 its 88, 2.0 its price, 19.7 all gone). A chosen stock: set the machine's `Stock`
+  attribute from the Server (Machines rewrites it only when the car's ride changes). The
+  first-person torch is the Client's `Workspace.YourFlashlight`; move it out before a capture.
+  A capture right after a camera jump came out black until the Client's QualityLevel was Level12.
+- **`scripts/art.sh machine export` rewrites `Machine.fbx` with new bytes** (same size, same
+  geometry: a timestamp). When only the Specs needed regenerating, restore the FBX from git so
+  it still matches the uploaded asset.
 - **Blender: small geometric bevels starve the atlas** (S1-10b1, `art/machine/`): 0.02-0.03
   bevels with two segments made strips under a texel wide at 45 texels a stud, so their middles
   missed the bake (397 faces) and their islands' margins ate the pack (35% used). Dropping them

@@ -247,7 +247,7 @@ def coil_geo():
     F = kit.Find("MachineCoil")
     y0, y1 = K.COIL_Y
     mid = (y0 + y1) / 2
-    yh = y1 - 0.14
+    yh = y1 - K.COIL_TAIL
     n = int(K.COIL_TURNS * K.COIL_STEPS)
     path = []
     for k in range(n + 1):

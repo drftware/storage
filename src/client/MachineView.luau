@@ -4,8 +4,14 @@
 	car's ride. For those aboard (and anyone watching a friend, ElevatorView's `rode` rule), a ride
 	from floor 1 up wakes it as `Machine.Wake` says, second for second alike on every rider's
 	screen: each row's tube tinks, flashes and catches, bottom row first, the sign buzzes on, the
-	price windows' LEDs show their dashes, the hum swells, the cold light spills across the car; it dips with the car's lamp and cuts out as the gate starts to fold. The first
-	ride (up from the lobby), the car standing at a floor, or a car that left you: dark.
+	hum swells, the cold light spills across the car; it dips with the car's lamp and cuts out as
+	the gate starts to fold. The first ride (up from the lobby), the car standing at a floor, or a
+	car that left you: dark.
+
+	The stock (S1-10c1): what the server dealt this ride (`Stock.Attribute`) stands in the coils
+	(MachineStock), each row's things there from its tube's first flash, so the light seems to
+	find them; as a row's tube catches its price windows run their LEDs' test (88) and settle on
+	the prices, dashes for an empty coil. All gone as the power cuts.
 
 	Only a waking, lit or dying machine is stepped, and a light is written only when what it shows
 	changes. Its one SurfaceLight stays off unless it's lit, so a screen only ever has one on.
@@ -20,7 +26,9 @@ local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
 local Left = require(ReplicatedStorage.Shared.Left)
 local Machine = require(ReplicatedStorage.Shared.Machine)
 local Ride = require(ReplicatedStorage.Shared.Elevator.Ride)
+local Stock = require(ReplicatedStorage.Shared.Machine.Stock)
 local LedReadout = require(script.Parent.LedReadout)
+local MachineStock = require(script.Parent.MachineStock)
 local RideClock = require(script.Parent.RideClock)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 
@@ -30,7 +38,11 @@ local Wake = Machine.Wake
 local STEPS = 64
 -- A tink this late (a screen that joined mid-ride, or a hitch) is skipped, not played late.
 local LATE = 0.25
--- The price windows' LEDs: the keypad's red, its dashes at rest; unlit segments faint.
+-- Seconds a row's price windows show their test (every segment lit, "88") as its tube catches,
+-- before the prices: an old machine's LEDs checking themselves as the power comes up.
+local LED_TEST = 0.18
+-- The price windows' LEDs: the keypad's red, prices bright, dashes for an empty coil at rest;
+-- unlit segments faint.
 local LED: LedReadout.Look = {
 	unlit = Color3.fromRGB(60, 10, 8),
 	unlitTransparency = 0.55,
@@ -46,9 +58,11 @@ type View = {
 	sign: BasePart,
 	glass: BasePart,
 	carLight: SurfaceLight?,
-	windows: { Instance },
-	digits: { LedReadout.Set }?, -- drawn the first time it wakes
-	ledsOn: boolean,
+	windows: { [number]: Instance }, -- each bay's price window, by bay
+	digits: { [number]: LedReadout.Set }?, -- drawn the first time it wakes
+	stockText: string?, -- the stock as last read off the machine
+	stock: Stock.Stock?,
+	goods: MachineStock.Shown?, -- the stock standing in the coils on this screen
 	rideAt: number?,
 	from: number,
 	rode: boolean,
@@ -101,25 +115,56 @@ function MachineView.new(): Brix.System
 	local stepping: { [View]: true } = {}
 	local connections: { RBXScriptConnection } = {}
 
-	local function setLeds(view: View, on: boolean)
-		if view.ledsOn == on then
+	-- Every price window `since` seconds into a ride from `from`: dark until its row's tube
+	-- catches, then its test, then its price (dashes for an empty coil); dark again at the cut.
+	local function drawPrices(view: View, since: number, from: number)
+		local live = Wake.wakes(from) and since < Ride.opens() + Wake.Fade
+		local digits: { [number]: LedReadout.Set }
+		local had = view.digits
+		if had then
+			digits = had
+		elseif live and since >= Wake.catches(1) then
+			digits = {}
+			for i, window in view.windows do
+				digits[i] = LedReadout.row(window, LED, 0.8, 0.12, 2)
+			end
+			view.digits = digits
+		else
+			return -- never lit yet: nothing to draw
+		end
+		local stock = view.stock
+		for i, set in digits do
+			local bay = Machine.Specs.Bays[i]
+			local caught = Wake.catches(bay.Row)
+			if not live or since < caught then
+				set(1, " ", "Off")
+				set(2, " ", "Off")
+			elseif since < caught + LED_TEST then
+				set(1, "8", "Lit")
+				set(2, "8", "Lit")
+			else
+				local s = stock and stock[i]
+				if s and s.count > 0 then
+					local tens, ones = Stock.digits(s.price)
+					set(1, tens, "Lit")
+					set(2, ones, "Lit")
+				else
+					set(1, "-", "Rest")
+					set(2, "-", "Rest")
+				end
+			end
+		end
+	end
+
+	-- Each row's stock in its coils from its tube's first flash until the power cuts.
+	local function drawGoods(view: View, since: number, from: number)
+		local shown = view.goods
+		if not shown then
 			return
 		end
-		view.ledsOn = on
-		local digits = view.digits
-		if not digits and on then
-			local made: { LedReadout.Set } = {}
-			for i, window in view.windows do
-				made[i] = LedReadout.row(window, LED, 0.8, 0.12, 2)
-			end
-			view.digits = made
-			digits = made
-		end
-		if digits then
-			for _, set in digits do
-				set(1, "-", if on then "Rest" else "Off")
-				set(2, "-", if on then "Rest" else "Off")
-			end
+		local live = Wake.wakes(from) and since < Ride.opens() + Wake.Fade
+		for row, start in Wake.Tubes do
+			MachineStock.show(shown, view.model, row, live and since >= start.At)
 		end
 	end
 
@@ -176,8 +221,8 @@ function MachineView.new(): Brix.System
 				view.hum:Stop()
 			end
 		end
-		-- the coin mech's LEDs come on with the power that catches the bottom tube
-		setLeds(view, (view.shown[1] or 0) > 0.5)
+		drawGoods(view, since, from)
+		drawPrices(view, since, from)
 
 		-- the sign's buzz, on and off with its stutters until it holds, then gone under the hum
 		local buzzing = Wake.wakes(from)
@@ -249,6 +294,27 @@ function MachineView.new(): Brix.System
 		refresh(view)
 	end
 
+	-- The server dealt this ride's stock (or it changed, or the car stands at a floor again):
+	-- the coils filled anew, each row shown or not as the ride's clock says.
+	local function stockChanged(view: View)
+		local text = view.model:GetAttribute(Stock.Attribute)
+		local value = if type(text) == "string" then text else nil
+		if value == view.stockText then
+			return
+		end
+		view.stockText = value
+		view.stock = Stock.decode(value)
+		if view.goods then
+			MachineStock.clear(view.goods)
+			view.goods = nil
+		end
+		local stock = view.stock
+		if stock then
+			view.goods = MachineStock.fill(view.model, stock)
+		end
+		refresh(view)
+	end
+
 	local function aboardChanged(view: View)
 		local at, ids = Departure.decodeAboard(view.car:GetAttribute(Departure.AboardAttribute))
 		view.rode = at ~= nil
@@ -276,11 +342,11 @@ function MachineView.new(): Brix.System
 				tubes[row] = t
 			end
 		end
-		local windows: { Instance } = {}
+		local windows: { [number]: Instance } = {}
 		for i in Machine.Specs.Bays do
 			local w = gui:FindFirstChild(`Window{i}`)
 			if w then
-				table.insert(windows, w)
+				windows[i] = w
 			end
 		end
 		local spill = glass:FindFirstChild("CarLight")
@@ -292,7 +358,6 @@ function MachineView.new(): Brix.System
 			glass = glass,
 			carLight = if spill and spill:IsA("SurfaceLight") then spill else nil,
 			windows = windows,
-			ledsOn = false,
 			from = Ride.Lobby,
 			rode = false,
 			shown = table.create(#tubes + 1, 0),
@@ -312,6 +377,13 @@ function MachineView.new(): Brix.System
 				aboardChanged(view)
 			end)
 		)
+		table.insert(
+			view.conns,
+			inst:GetAttributeChangedSignal(Stock.Attribute):Connect(function()
+				stockChanged(view)
+			end)
+		)
+		stockChanged(view)
 		local at, ids = Departure.decodeAboard(car:GetAttribute(Departure.AboardAttribute))
 		view.rode = at ~= nil
 			and (table.find(ids, me.UserId) ~= nil or me:FindFirstChild(Left.WatchValue) ~= nil)
@@ -325,6 +397,10 @@ function MachineView.new(): Brix.System
 		end
 		views[inst :: Model] = nil
 		stepping[view] = nil
+		if view.goods then
+			MachineStock.clear(view.goods)
+			view.goods = nil
+		end
 		for _, c in view.conns do
 			c:Disconnect()
 		end

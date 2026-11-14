@@ -65,6 +65,11 @@ local Specs = {
 			Price = { -0.660, 4.260, -1.345 },
 		},
 	} :: { Bay },
+	-- The coil's helix: where its wire starts, at the bottom of the loop, from the coil's
+	-- middle along Z (toward the glass), and how far it runs a turn. The wire is at the bottom
+	-- of its loop every `CoilPitch` back from there: what stands in the coil rests on it.
+	CoilFront = -0.635,
+	CoilPitch = 0.2511,
 	ButtonTravel = 0.07,
 	PriceSize = { 0.5, 0.2 }, -- a price window's width and height
 	-- The flap's hinge (its top edge's middle): it swings in, about its X.
