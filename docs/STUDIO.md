@@ -2095,6 +2095,18 @@ verified: a doc page, Studio, or "untested".
   wait 90 s for the unpadlocked ones to burst out, then "SendToBreaker" (sounds call them off
   often: send again). The body's state is in its `KeeperMotion` attribute's first word
   (Reaching, Pulling at the box).
+- **Getting frames back when Studio draws none** (Nov 14, afternoon): with the owner away the
+  display idles and RenderStepped drops to 0. `caffeinate -u -t 1` (declares the user active)
+  brought it to 7-15 a second at once; it fell back to 0 within minutes, so pulse it in a
+  background loop (`caffeinate -u -t 1; sleep 4`, repeated). Bringing the app forward
+  (`osascript ... activate`) alone did nothing. `screen_capture` with no frames hangs for minutes
+  before it times out: count RenderStepped right before every capture.
+- **`WakeSleepers` does nothing until someone has stood on the floor** (Nov 14): the floor's
+  sleeper clock starts only when a player is on it, and a root parked under the lobby at
+  (-6, -12, -591) from the start doesn't count. Stand the root at (-6, 3.5, -591) for 2 s (Output:
+  "its sleepers' clock starts"), set `WakeSleepers`, then park. The bursts come 90 s later.
+  `SendToBreaker` then had a Mannequin throw the box within a minute, before a watch loop on
+  `KeeperMotion` started: start that loop in the same call that sends it.
 - **Testing the camera feed in Play** (S2-02d1): the "Sending the Mannequin to the box" recipe,
   but park your root anchored under the lobby at (-6, -12, -591), not up at 400: the feed goes
   only to players on the floor (40 studs up or down). The feed is `PlayerGui.Minimap.Feed`;

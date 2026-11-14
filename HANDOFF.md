@@ -2,20 +2,19 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-14, session 155 (afternoon run 3: S2-02d2) ·
-**Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-14, session 156 (afternoon run 4, the last: the breaker moment) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- **The Mannequin pulls the lever** (S2-02d2, D-166): at the breaker box its right hand goes up
-  on the grip (its arm creaks), it holds 0.6 s (`Breaker.Grip`; a light holds it there, a sound
-  or sight calls it off), then drags the lever down and stands 5 s holding it, head dropped.
-  Two stop-motion keys (`Pose` Reach and Pull), each hand within 0.2 of the grip in the tests.
-  Screens are told "Reaching"/"Pulling" (`Keeper.shown`), so the hall and the camera feed both
-  show it. The thrower no longer hears its own clunk (it used to walk off at once).
-- Run in Studio Play (floor 3): the feed showed the hand up for the beat before the throw; the
-  server went Reaching, then Pulling 0.6 s later, the thrower stayed while the others came to
-  the clunk. Studio drew no frames in the second run (STUDIO.md), so the pull moving on a
-  screen and the phone-size look are unseen. Studio left in Edit.
+- No game code changed: the session tried to watch the Mannequin's breaker pull on the camera
+  feed in Studio Play (floor 3) and fixed nothing.
+- **Seen:** Studio drew frames only with the display kept awake by a `caffeinate -u` pulse
+  (STUDIO.md "Getting frames back"). A Mannequin threw the breaker ("threw the breaker on floor
+  3") before the watch loop started, with the player parked under the lobby, so no real feed
+  was captured. A staged feed (camera placed by my rough geometry, not the game's hang) showed
+  top right at desktop size: "CAM 07", the red dot, heavy grain, a pale grey-blue wall. The
+  framing is mine; the picture did look bright for a dark hall: judge that on the real one.
+- **Unseen:** the hand on the grip, the lever coming down, the static out, the phone-size look
+  (S2-02d1/d2, D-165/D-166: server timing verified, the picture on a screen not).
 
 ## Next task: S2-05 The tap when you shut a door on a sleeper
 ROADMAP S2-05. Pull a door down on a monster that's asleep, or hasn't seen you, and a bar with
@@ -44,8 +43,9 @@ the bar is readable at phone size; every outcome has its motion and sound.
 
 ## Queue (next sessions per ROADMAP Phase 2)
 1. S2-05 (next). S2-02d3 (judge the feed at phone size: framing, darkness, grain; a feed that
-   starts mid-slide lands with the map) needs Studio drawing frames: do it when it is, or the
-   owner judges it (`OWNER.md`). S2-06 and L-08e3c wait on `OWNER.md`. R-01 is for later.
+   starts mid-slide lands with the map): frames now come with a `caffeinate -u` pulse; stand
+   on the floor before `WakeSleepers`, watch `KeeperMotion` in the call that sends, and capture
+   with the player on floor 3 (STUDIO.md). Or the owner judges it (`OWNER.md`). S2-06 and L-08e3c wait on `OWNER.md`. R-01 is for later.
 2. Found S2-02d2: sounds call errand Mannequins off often; four came to the clunk.
 3. Found S2-02d1: other monsters in the camera's view are copied once as statues (only the
    watched body moves); a second feed on the same floor replaces the first at once.

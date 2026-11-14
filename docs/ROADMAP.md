@@ -1683,7 +1683,9 @@ Done when a team that has lost its lights goes looking for the breaker without b
       (Device Simulator) with the Mannequin in it: framing (`Feed.Fov`, `Feed.AimUp`, the hang),
       darkness, grain strength, until the hand going up and the lever coming down read in a
       160-point window. A feed that starts while the map is still sliding in takes the map's
-      place as it lands (FeedView `mapWindow`).
+      place as it lands (FeedView `mapWindow`). Tried Nov 14 (last afternoon session): frames
+      came back (STUDIO.md "Getting frames back"), but the Mannequin threw the box before the
+      capture, so only a staged feed from a hand-placed camera was seen; reach and pull unseen.
 - [x] **S2-03 Sleeping monsters wake.** After four minutes on floors 1 and 2 (six above), three
   sleepers wake and pound on their doors, heard across the floor; three more every two minutes;
   sooner and more higher up. One pounding breaks out after 90 seconds unless its door is
