@@ -4507,3 +4507,34 @@ crowds it). The ticket read "a bit" as about a third.
   longer than the bin is deep). Measured in Play: the bubble wrap and the saw land in the bin,
   the saw's box corner at most 0.05 past the glass as it tips (a box estimate, likely unseen).
 
+## D-163 A wrong code puts the floor's hall lights out for the alarm (S2-04c, Nov 14)
+
+- **What.** A wrong code blinds every hall fixture on its floor for the keypad's dead span
+  (`Keypad.dead`: 3.5, 7, 14 s), instead of lighting them all (the GDD's alarm list; the old
+  flash froze every Mannequin, so guessing made a team safer). The car's lamp isn't a motion
+  light, so it stays: the car is the one lit thing on the floor. The precedent: Lethal Company's
+  facility goes dark when the apparatus is pulled, waking what's inside.
+- **How.** `MotionLights:out(floor, seconds)` keeps the floor's end time (`MotionLight.outEnds`,
+  the later of two); a fixture has power only when neither its zone is cut by the breaker nor
+  its floor out (`MotionLight.powered`). One blind only for the alarm shows "Out" on its model
+  (`MotionLight.look`) so screens play the alarm's cut and return, not the breaker's silent snap;
+  the breaker's cut wins when both apply. `flash` stays for the breaker's power coming back.
+- **My default (in `OWNER.md`): the lights come back dark.** Each fixture returns watching, and
+  only where something moves does it light. Coming back all lit, as the breaker's do, would
+  freeze every Mannequin the alarm called and make the guess safe again.
+- **Feedback.** Each lit tube stutters out (`HallLight.CutFlicker`), each dark one's red eye with
+  it, up to 0.12 s apart, under one falling power-down whine heard across the floor ("light power
+  off" 106554188841955, at 0.85 speed); short, so the dark you see is the dark the Mannequins move
+  in. Back: each eye stutters red again with a faint surge of its tube (`BackFlicker`, up to 0.3 s
+  apart) under a fluorescent flicker (116266785932124). One sound per floor (`OutGap`).
+- **Seen in Play** (seed 7, floor 3): all 23 fixtures Out for 3.7 s on the server's ticks and
+  back; a lit tube's light went 1.2, 0.4, 0.2, 0.7, off and its eye grey; both sounds played;
+  the freed Mannequin walked through the dark and caught the player standing at the keypad.
+
+## D-164 The machine's menu stays down after a buy (S1-10d3, Nov 14)
+
+- The owner, Nov 14: "I don't think the vending machine needs to pop back up after you purchase.
+  You'd click it again to buy another item." A sale coming back closes the menu (the drop, the
+  tool wheel back); the Buy on the glass stays hidden until that vend is over (`Buy.ends()` plus
+  0.3 s), the moment the panel used to rise, so you never open it over your own vend or buy
+  twice in one. A refused pick keeps it up, as before. Passes checks, untested in Studio.

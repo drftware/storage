@@ -7,7 +7,9 @@
 	clicks on, and the building sees that spot. It stays lit while something keeps moving in its
 	area and falls dark `HoldSeconds` after the last movement it saw, so walking on leaves it
 	behind you and holding still under it puts you in the dark ("hold still and you go dark to
-	it"). A fixture whose power the breaker room cut is blind: dark, and seeing nothing.
+	it"). A fixture whose power the breaker room cut is blind: dark, and seeing nothing. A wrong
+	code's alarm blinds every fixture on its floor for as long as the keypad is dead (S2-04c): out,
+	which players see die and come back with its own flicker and sound (`look`, `outEnds`).
 
 	`MotionLight.watch()` makes the server's record of every fixture (the MotionLights system owns
 	one). Each tick the server hands it where every body that trips lights is; it judges who moved,
@@ -20,6 +22,11 @@ local MotionLight = {}
 -- What a fixture is doing, as players see it: dark with its eye open, lit (it saw something
 -- move), or blind (its zone's power is cut).
 export type State = "Dark" | "Lit" | "Blind"
+
+-- What a fixture's model shows players (its `StateAttribute`): its State, except that one blind
+-- only because the alarm has its floor's lights out is "Out", so screens play the alarm's cut and
+-- return instead of the breaker's silent snap.
+export type Look = State | "Out"
 
 -- A fixture's watch area: the Zone contract's `contains` (Brix's Zone.box makes them).
 export type Area = { contains: (self: any, position: vector) -> boolean }
@@ -60,6 +67,27 @@ MotionLight.PowerAttribute = "PowerZone"
 -- Tagged on each part that trips lights when it moves: players' root parts, and keepers' except
 -- the Mannequin's (GDD "Lights").
 MotionLight.BodyTag = "TripsLights"
+
+-- What a fixture in State `state` shows, its zone's power cut by the breaker (`zoneCut`) or not,
+-- its floor's lights out for the alarm (`out`) or not. The breaker's cut wins: it outlasts the
+-- alarm, and its own clunk already told everyone why it went dark.
+function MotionLight.look(state: State, zoneCut: boolean, out: boolean): Look
+	if state == "Blind" and out and not zoneCut then
+		return "Out"
+	end
+	return state
+end
+
+-- Whether a fixture has power: neither its zone cut nor its floor out for the alarm.
+function MotionLight.powered(zoneCut: boolean, out: boolean): boolean
+	return not zoneCut and not out
+end
+
+-- When a floor's lights come back after an alarm of `seconds` starting at `now`, already out
+-- until `current` (nil if on): whichever is later, so a second alarm never cuts the first short.
+function MotionLight.outEnds(current: number?, now: number, seconds: number): number
+	return math.max(current or -math.huge, now + math.max(seconds, 0))
+end
 
 -- Which way a fixture's hall runs, from its frame's X direction (dx, dz) along the floor: the turn
 -- Brix's Zone.box takes, which swings a box's x side towards -z for a positive turn, as a

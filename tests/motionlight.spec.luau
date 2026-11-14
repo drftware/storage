@@ -322,6 +322,35 @@ do
 	ok(gaps == 0, `two lit fixtures 24 apart light the hall between them end to end ({gaps} dark)`)
 end
 
+-- The alarm's lights out (S2-04c): what a fixture shows, whether it has power, when it's back.
+do
+	local look = MotionLight.look
+	ok(look("Blind", false, true) == "Out", "a fixture blind only for the alarm shows Out")
+	ok(look("Blind", true, true) == "Blind", "the breaker's cut wins over the alarm's")
+	ok(look("Blind", true, false) == "Blind", "the breaker's cut alone shows Blind")
+	ok(look("Dark", false, false) == "Dark", "a powered dark fixture shows Dark")
+	ok(look("Lit", false, false) == "Lit", "a powered lit fixture shows Lit")
+	ok(look("Lit", false, true) == "Lit", "the look follows the watch: only a blind one is Out")
+	ok(MotionLight.powered(false, false), "no cut and no alarm: powered")
+	ok(not MotionLight.powered(false, true), "the alarm alone takes the power")
+	ok(not MotionLight.powered(true, false), "the breaker alone takes the power")
+	ok(MotionLight.outEnds(nil, 10, 3.5) == 13.5, "an alarm puts the lights out for its length")
+	ok(MotionLight.outEnds(20, 10, 3.5) == 20, "a shorter alarm never cuts a longer one short")
+	ok(MotionLight.outEnds(12, 10, 7) == 17, "a longer alarm keeps them out longer")
+	ok(MotionLight.outEnds(nil, 10, -1) == 10, "a negative length puts nothing out")
+
+	-- In a watch: out, its light goes and it sees nothing; back, it comes back dark and wakes.
+	local watch, ids = hall({ 0 })
+	local id = ids[1]
+	ok(watch:wake(id, 0), "the alarm's floor had a light lit")
+	ok(watch:setPowered(id, MotionLight.powered(false, true)), "the alarm takes its power")
+	ok(watch:state(id) == "Blind", "out, it is blind")
+	ok(not watch:wake(id, 1), "out, nothing wakes it")
+	ok(watch:setPowered(id, MotionLight.powered(false, false)), "the power comes back")
+	ok(watch:state(id) == "Dark", "back, it is dark: nothing lights the halls for free")
+	ok(watch:wake(id, 2), "back, it wakes again")
+end
+
 if failures > 0 then
 	error(`{failures} of {checks} motion light checks failed`)
 end

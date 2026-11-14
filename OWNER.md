@@ -152,6 +152,11 @@ bubble wrap, a battery and the saw each dropped into the bin and flew to the han
 
 ## Now: pick from the machine's menu (S1-10d1, built Nov 14, D-161; seen in Play, not on a phone)
 
+**New (S1-10d3, D-164; passes checks, untested in Studio):** as you asked, after a buy the menu
+drops away and stays down; the Buy on the glass comes back once the thing is in your hand
+(about 2 s), and pressing it opens the menu again. A pick you can't pay for keeps it up. Step 3
+below is the one to watch.
+
 The six Buy buttons on the machine are gone: one "Buy" on the middle of its glass opens the
 machine's front on your screen, and you pick there. This replaces pressing the bays in "buy at
 the machine" below; the coins, the drop and the flight to your hand there are unchanged. Seen in
@@ -167,7 +172,9 @@ machine wakes, the real button sinking, a refused pick's buzz and shake.
    real tubes, and the panel dips with the car's lamp.
 3. **Buy something you can pay for.** Look for: the bay presses in, the real button clicks, then
    the panel drops away so you see the coins fly, the coil turn, the thing drop and fly to your
-   hand; then the panel rises again. Is the rise welcome, or should it stay closed after a buy?
+   hand; the panel stays down and the tool wheel comes back. The Buy on the glass shows again
+   once the thing is in your hand: press it and the menu rises for another buy. Is that wait
+   for the Buy to come back right, or should it be there at once?
 4. **Pick something you can't pay for.** The machine buzzes, the price blinks on the panel and
    the machine, the bay shakes. With a full torch the battery bays are dim and don't press;
    with all three tool slots full, the tool bays are dim the same way (batteries still sell).
@@ -177,6 +184,25 @@ machine wakes, the real button sinking, a refused pick's buzz and shake.
    that walking away, the knob at its bottom right, E, or B on a pad closes it.
 6. Decide (my defaults): its sounds (the flap's knock pitched down for the clunk, the tubes'
    tink) and its place (right of centre on a phone, clear of the jump button).
+
+## Now: the halls go dark for a wrong code (S2-04c, built Nov 14, D-163; seen in Play, not heard)
+
+A wrong code now puts every hall light on its floor out for as long as the keypad is dead (3.5,
+7, 14 s), instead of turning them all on; the car keeps its own lamp. Seen in Studio Play: all
+23 hall lights on floor 3 went out for the alarm and came back; a lit tube stuttered out and its
+red eye went grey; the freed Mannequin walked through the dark and caught me standing at the
+keypad. Nobody has heard the two new sounds or watched it on a screen.
+1. In Studio Play on floor 3 (code 2274 on seed 7), walk down a hall so a few lights are on,
+   go back to the keypad and punch 1111. Look for: the bell, then the halls drop to black in a
+   ragged stutter under a falling power-down whine, while the car stays lit. When the keypad
+   clears, the sensors' red eyes stutter back with a faint flash of each tube and a fluorescent
+   flicker's sound. Does the floor going black around the car land as the price of a guess?
+2. Listen (my picks from the sound library): the cut is "light power off" played a touch slow;
+   the return is "Fluorescent light flickering 1". Too much, too little, or wrong?
+3. Decide (my default): the lights come back dark, so only where someone moves do they come on;
+   a Mannequin the alarm called keeps walking until a light finds it. The alternative is the
+   breaker's way, every light on at once when the power returns, which freezes every Mannequin
+   on the floor and makes a guess safe again.
 
 ## Now: watch every monster come to a wrong code (S2-04b, built Nov 14, D-160; seen in Play)
 
@@ -200,8 +226,8 @@ screen or heard. Do it with the S2-04a test just below, in the same Play.
 
 A wrong code now rolls up doors with monsters behind them, by themselves, and the keypad stays
 dead longer each time on a floor. Seen in Studio Play from Output and the keypad's state;
-nobody has listened to it. The lights still all come ON for the alarm (that changes in S2-04c),
-so for now the freed Mannequins freeze for the alarm's length before they come.
+nobody has listened to it. The halls now go dark for the alarm (S2-04c, above), so the freed
+Mannequins come straight on through the dark.
 1. In Studio Play on floor 3 (code 2274 on seed 7), punch 1111 at the keypad. Look for: buzz,
    bell, then about a second later a door somewhere rolls up on its own (Unit 338 on seed 7) and
    its Mannequin comes for the keypad. Is the gap between the alarm and the door right?

@@ -9,10 +9,11 @@
 	  makes them: the payload's types (an elevator of ours, a key the keypad has), then its range
 	  (the player within reach of the keypad), then the rate (no faster than a thumb), and only
 	  then the keypad's own state (dead while the alarm rings, done once the gate is open).
-	- The fourth digit is checked, as a real keypad does. Wrong: the alarm rings, every light on the
-	  floor comes on (MotionLights.flash), and the keypad is dead a while, its readout blinking
-	  the wrong digits, then it clears: 3.5, 7, then 14 s, longer each wrong code on the floor
-	  (`Keypad.dead`, S2-04). `acted` says which wrong code it was; the keepers' brain rolls up
+	- The fourth digit is checked, as a real keypad does. Wrong: the alarm rings, every hall light
+	  on the floor goes out (MotionLights.out, S2-04c) while the car keeps its own lamp, and the
+	  keypad is dead a while, its readout blinking the wrong digits, then it clears and the halls'
+	  power comes back: 3.5, 7, then 14 s, longer each wrong code on the floor (`Keypad.dead`,
+	  S2-04). `acted` says which wrong code it was; the keepers' brain rolls up
 	  that many monsters' doors (`WrongCode`). Right: the chime, the latch, and the gate folds open.
 	- Once it has slammed open the gate's clock runs (L-05b2, Departure): 30 s on every screen on
 	  the floor, then the gate folds shut on its own, and the instant it hits its post a Zone over
@@ -94,7 +95,7 @@ export type Elevators = Brix.System & {
 	departed: Brix.Signal<Leaving>,
 	-- Fires as the car levels with the next floor; its gate folds open a moment later.
 	arrived: Brix.Signal<Arrival>,
-	-- Gives `elevator` its floor's code, the floor whose lights its alarm flashes and that floor's
+	-- Gives `elevator` its floor's code, the floor whose lights its alarm puts out and that floor's
 	-- number (1 if not given), clears its keypad and stops its clock and any ride: shut, ready for
 	-- the floor.
 	arm: (self: any, elevator: Model, code: { number }, floor: Instance, number: number?) -> (),
@@ -351,11 +352,12 @@ function Elevators.new(): Elevators
 		if verdict == "Wrong" then
 			entry.phase = "Alarm"
 			entry.wrongs += 1
-			entry.alarmEnds = now() + Keypad.dead(entry.wrongs)
+			local dead = Keypad.dead(entry.wrongs)
+			entry.alarmEnds = now() + dead
 			alarms[entry] = true
 			event(entry, "Wrong", player)
 			if lights and entry.floor then
-				lights:flash(entry.floor)
+				lights:out(entry.floor, dead)
 			end
 		elseif verdict == "Right" then
 			open(entry, player)

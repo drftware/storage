@@ -70,6 +70,32 @@ HallLight.Flicker = table.freeze({
 	{ at = 0.1, level = 1 },
 })
 
+-- The alarm's lights out (S2-04c): a wrong code kills every hall light on the floor at once. Each
+-- tube dies in a stutter as the power sags (each step's level, at seconds after the cut); a dark
+-- fixture's red eye stutters out the same way. Each fixture starts up to `CutStagger` late, so
+-- the halls drop to black raggedly around you, not like a switch. Short, so the dark you see is
+-- the dark the Mannequins move in.
+HallLight.CutFlicker = table.freeze({
+	{ at = 0, level = 0.35 },
+	{ at = 0.05, level = 0.9 },
+	{ at = 0.1, level = 0.15 },
+	{ at = 0.16, level = 0.6 },
+	{ at = 0.22, level = 0 },
+})
+HallLight.CutStagger = 0.12
+-- Its power coming back when the keypad clears: each eye stutters back to red and its tube gives
+-- a faint surge (`BackSurge` of full) on each step, then settles to dark, or clicks on if someone
+-- is under it. Raggeder than the cut (`BackStagger`), a building's power finding its way back.
+HallLight.BackFlicker = table.freeze({
+	{ at = 0, level = 0.7 },
+	{ at = 0.05, level = 0 },
+	{ at = 0.13, level = 1 },
+	{ at = 0.18, level = 0.2 },
+	{ at = 0.26, level = 1 },
+})
+HallLight.BackStagger = 0.3
+HallLight.BackSurge = 0.4
+
 -- The fill: a soft light at door height under each fixture, standing in for the light the pool
 -- bounces off the floor. It casts no shadow, so at full quality it reaches into an open unit and
 -- its walls read dimly, as they do at low graphics (the owner's pick, Nov 6). It sits low
@@ -165,6 +191,18 @@ HallLight.ClickOffPitch = 0.82
 -- Full volume within this many studs; it fades out by ClickReach (about two halls over).
 HallLight.ClickNear = 10
 HallLight.ClickReach = 90
+
+-- The alarm's lights out, heard by everyone on the floor (not placed: the whole floor's power).
+-- The cut: a light's power dying, a falling whine from 4 kHz to 500 Hz in 1.6 s then a fade
+-- ("light power off", 4.05 s, loud from its first moment). The return: a fluorescent tube's
+-- flicker (2.26 s, quiet, so it plays louder). `OutGap` seconds keeps one floor's many fixtures to
+-- one sound.
+HallLight.CutSound = "rbxassetid://106554188841955"
+HallLight.CutVolume = 0.8
+HallLight.CutSpeed = 0.85 -- a touch slow: a building's mains, not a lamp
+HallLight.BackSound = "rbxassetid://116266785932124"
+HallLight.BackVolume = 1.6
+HallLight.OutGap = 1
 
 -- Every light the hall throws carries this tag, and its lit brightness in the attribute
 -- `HallLight.LitAttribute`, so a client can scale it on its own screen and put it back exactly

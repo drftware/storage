@@ -20,9 +20,11 @@
 	  slot taken), dashes for an empty coil, all dark for a row not lit yet.
 	- A pick presses the bay in and the real machine's button with its click (MachineView's
 	  `Press`). One you can pay goes to the server (`Buy.Pick`); when the sale comes back
-	  (`Buy.Remote`) the panel drops out of the way so you watch the coins fly, the coil turn and
-	  the thing drop and fly to your hand, then it rises again. One you can't pay buzzes on the
-	  machine and blinks its price on both, and the bay shakes. A dead bay barely moves.
+	  (`Buy.Remote`) the panel drops away and stays down (S1-10d3; owner, Nov 14: "You'd click
+	  it again to buy another item") so you watch the coins fly, the coil turn and the thing drop
+	  and fly to your hand; the Buy on the glass comes back once that's over. One you can't pay
+	  buzzes on the machine and blinks its price on both, the bay shakes, and the panel stays up.
+	  A dead bay barely moves.
 	- It closes when you walk off, the buying ends, you leave the car, you're caught or you die;
 	  or by its chrome knob, E, or B on a gamepad. The mouse goes free while it shows (FreeCursor).
 
@@ -99,7 +101,8 @@ local LED_TEST = 0.18
 local SHAKE, SHAKE_PX = 0.3, 5
 -- Seconds a pick waits for its sale before another may go, so a double tap never buys two.
 local WAIT_SALE = 1
--- Seconds after the vend is over (the thing in your hand) before the panel rises again.
+-- Seconds after your vend is over (the thing in your hand) before the Buy on the glass comes
+-- back for another, so you never open the panel over your own vend or buy twice in one.
 local BACK_AFTER = 0.3
 -- Shares are drawn in steps this fine, so a frame writes only what visibly changed.
 local STEPS = 48
@@ -149,6 +152,7 @@ type Entry = {
 	from: number,
 	aboard: boolean, -- you're aboard its car
 	window: boolean, -- the buying is open on it now
+	restUntil: number, -- os.clock your own vend on it is over, its button hidden till then
 	conns: { RBXScriptConnection },
 }
 
@@ -260,8 +264,6 @@ function MachineMenu.new(press: MachineView.Pick, need: FreeCursor.Need): Brix.S
 	local entries: { [Model]: Entry } = {}
 	local connections: { RBXScriptConnection } = {}
 	local openOn: Entry? = nil
-	local away = false -- dropped out of the way of a vend
-	local backAt: number? = nil -- when it rises again
 	local shownAt = 0 -- os.clock it last arrived, for its flicker
 	local waiting = -math.huge -- os.clock a pick was last sent
 	local stockText: unknown = nil
@@ -322,7 +324,7 @@ function MachineMenu.new(press: MachineView.Pick, need: FreeCursor.Need): Brix.S
 		hidden = UDim2.new(0, x, 1.5, 0)
 		local p = panel
 		if p and not slide then
-			p.Position = if openOn and not away then shown else hidden
+			p.Position = if openOn then shown else hidden
 		end
 	end
 
@@ -347,25 +349,23 @@ function MachineMenu.new(press: MachineView.Pick, need: FreeCursor.Need): Brix.S
 			if slide == tween then
 				slide = nil
 			end
-			if status == Enum.PlaybackState.Completed and not (openOn and not away) then
+			if status == Enum.PlaybackState.Completed and not openOn then
 				p.Visible = false
 			end
 		end)
 		tween:Play()
 	end
 
-	-- It arrives: up from below with its latch's clunk (`clunk`), its tubes stuttering on.
-	local function arrive(clunk: boolean)
+	-- It arrives: up from below with its latch's clunk, its tubes stuttering on.
+	local function arrive()
 		shownAt = os.clock()
 		for _, b in bays do
 			b.testUntil = shownAt + FLICKER[#FLICKER][1] + LED_TEST
 		end
-		if clunk then
-			blip(CLUNK)
-		end
+		blip(CLUNK)
 		for _, t in TINKS do
 			task.delay(t, function()
-				if openOn and not away then
+				if openOn then
 					blip(TINK)
 				end
 			end)
@@ -399,7 +399,7 @@ function MachineMenu.new(press: MachineView.Pick, need: FreeCursor.Need): Brix.S
 	-- A bay picked on the panel.
 	local function pick(i: number)
 		local entry, b = openOn, bays[i]
-		if not (entry and b) or away then
+		if not (entry and b) then
 			return
 		end
 		local clock = os.clock()
@@ -434,7 +434,6 @@ function MachineMenu.new(press: MachineView.Pick, need: FreeCursor.Need): Brix.S
 			return
 		end
 		openOn = nil
-		away, backAt = false, nil
 		me:SetAttribute(Tools.StowAttribute, nil) -- the wheel comes back up
 		ContextActionService:UnbindAction(CLOSE_ACTION)
 		need("MachineMenu", false)
@@ -463,24 +462,23 @@ function MachineMenu.new(press: MachineView.Pick, need: FreeCursor.Need): Brix.S
 			Enum.KeyCode.E,
 			Enum.KeyCode.ButtonB
 		)
-		arrive(true)
+		arrive()
 		if UserInputService:GetLastInputType().Name:find("Gamepad") then
 			local first = bays[5] or bays[1]
 			GuiService.SelectedObject = if first then first.button else nil
 		end
 	end
 
-	-- The sale of your pick reached this screen: out of the way of its vend, back once it's over.
+	-- The sale of your pick reached this screen: the panel drops away for its vend and stays
+	-- down; the Buy on the glass comes back once the vend is over.
 	local function sold(machine: unknown)
 		local entry = openOn
 		if not entry or typeof(machine) ~= "Instance" or machine ~= entry.model then
 			return
 		end
 		waiting = -math.huge
-		away = true
-		backAt = os.clock() + Buy.ends() + BACK_AFTER
-		need("MachineMenu", false)
-		move(false)
+		entry.restUntil = os.clock() + Buy.ends() + BACK_AFTER
+		close()
 	end
 
 	local function rideChanged(e: Entry)
@@ -548,6 +546,7 @@ function MachineMenu.new(press: MachineView.Pick, need: FreeCursor.Need): Brix.S
 			from = Ride.Lobby,
 			aboard = false,
 			window = false,
+			restUntil = -math.huge,
 			conns = {},
 		}
 		entries[inst] = e
@@ -946,13 +945,14 @@ function MachineMenu.new(press: MachineView.Pick, need: FreeCursor.Need): Brix.S
 		step = function(_: any, _dt: number)
 			-- each machine's button: there while you ride aboard and the buying is open
 			local kept = me:GetAttribute(Kept.Attribute) == true
+			local clock = os.clock()
 			for _, e in entries do
 				local at = e.rideAt
 				e.window = at ~= nil
 					and e.aboard
 					and not kept
 					and Buy.open(1, RideClock(at), e.from)
-				local show = e.window and openOn ~= e
+				local show = e.window and openOn ~= e and clock >= e.restUntil
 				if e.prompt.Enabled ~= show then
 					e.prompt.Enabled = show
 				end
@@ -976,16 +976,6 @@ function MachineMenu.new(press: MachineView.Pick, need: FreeCursor.Need): Brix.S
 			then
 				close()
 				return
-			end
-			local clock = os.clock()
-			if away then
-				local back = backAt
-				if back and clock >= back then
-					away, backAt = false, nil
-					arrive(false)
-				else
-					return
-				end
 			end
 			draw(e, at, clock)
 		end,

@@ -1591,7 +1591,9 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
       stops riding off the tip before its corner would reach the glass (MachineVend).
       Originally: `art/machine/` spec made shallower (about a third less deep: the owner's "a
       bit"), rebuilt, re-uploaded and prepared; the coil, bin, flap and the vend still read.
-    - [ ] **S1-10d3 The menu stays shut after a buy** (the owner, Nov 14: "I don't think the
+    - [x] **S1-10d3 The menu stays shut after a buy. Done Nov 14 (D-164); passes checks,
+      untested in Studio.** A sale closes the menu; its Buy comes back once the vend is over.
+      Originally (the owner, Nov 14: "I don't think the
       vending machine needs to pop back up after you purchase. You'd click it again to buy
       another item."). Today the panel drops away for the vend and rises after; instead it stays
       down once you've bought, and the Buy on the glass opens it again. A refused pick (too few
@@ -1709,7 +1711,12 @@ Done when a team that has lost its lights goes looking for the breaker without b
     on you. Freed ones stand quiet behind their rolling doors (`Keeper.hush`) and the doors'
     opens don't pull anyone off the alarm. In Play on seed 7: one 142 studs off and three just
     freed all walked to the keypad and looked round there.
-  - [ ] **S2-04c The hall lights go out for the alarm.** Today a wrong code turns every light
+  - [x] **S2-04c The hall lights go out for the alarm. Done Nov 14 (D-163); seen in Play.**
+    Every hall light on the floor goes out for the keypad's dead span (`MotionLights:out`, shown
+    "Out"), the car's lamp stays, and they come back dark (my default, `OWNER.md`); lit tubes
+    and dark eyes stutter out under a power-down whine and stutter back under a fluorescent
+    flicker. In Play: 23 fixtures out 3.5 s and back, the freed Mannequin walked in the dark.
+    Originally: today a wrong code turns every light
     on (`MotionLights.flash`), freezing the Mannequins, so a team is safer for guessing (seen
     in Play: every Mannequin let out froze in the light). The GDD: the hall lights go out for
     the length of the alarm instead (the elevator keeps its own light). Its own sound and the
@@ -1809,6 +1816,10 @@ that moves walls, and the dolly.
 
 ## Polish waiting for a slot
 
+- **The alarm's lights out (S2-04c, D-163):** the dark could roll out from the car down the
+  halls (each fixture's start by its distance from the keypad) rather than drop raggedly at
+  once; the exit signs could stutter with it; the bell could echo differently in the dark.
+- **The menu (S1-10d3):** the Buy on the glass could pulse once as it comes back after a vend.
 - **The coin picture (D-158):** the flying coins (the pour, a buy) are still 3D in
   ViewportFrames, fine in motion; if they read soft beside the count's new picture, give them
   the picture too (a 2D flip as they fly).

@@ -2060,3 +2060,18 @@ verified: a doc page, Studio, or "untested".
   PrimaryPart and its first BasePart was a coil, which turns as it vends; the button hangs on
   `Glass`.
 
+
+## The alarm's lights out (S2-04c, Nov 14)
+
+- **Other creators' free Creator Store audio loaded here.** Eight sounds from `search_asset`
+  (users' uploads, not Pro Sound Effects or APM) all preloaded with status Success and a
+  `TimeLength` in Play. To judge one unheard, wire an `AudioPlayer` to an `AudioAnalyzer` with
+  `SpectrumEnabled` and log `RmsLevel` (dB) and the spectrum's centroid every 0.2 s: "light power
+  off" 106554188841955 reads -5 dB at once and a centroid falling 4.4 kHz to 500 Hz in 1.6 s, a
+  power-down sweep.
+- **luau-lsp narrowed a singleton wrongly across `elseif`s.** After `elseif state == "Out" and
+  was ~= "Blind" then`, a later `elseif was == "Out"` failed with `Type "Blind" cannot be
+  compared with "Out"`. Take the comparisons into locals first (`local wasOut = was == "Out"`).
+- **Testing it from the MCP:** the S2-04a recipe above; a Client RenderStepped loop logging a
+  lit fixture's `Diffuser` material, its SurfaceLight's brightness and its `Eye` colour shows
+  the stutter; the dev floor has 23 fixtures and none inside a car.

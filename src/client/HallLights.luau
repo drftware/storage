@@ -9,6 +9,10 @@
 	- It falls dark: the tube cuts out, the relay lets go with a softer click, and the eye sinks
 	  back to a dim red, watching.
 	- Its power is cut: tube and eye die together, with no click (the relay has no power either).
+	- The alarm puts the floor out (S2-04c, "Out"): every lit tube stutters out as the power sags,
+	  every dark one's red eye with it, each a moment apart, under one falling power-down whine
+	  heard across the floor. When the keypad clears the power finds its way back: each eye
+	  stutters red again, its tube giving a faint surge, under a fluorescent flicker's sound.
 
 	Your own lights follow you with no wait: this screen runs the same rules on your own character
 	(a MotionLight watch of its own) and shows a fixture lit as soon as either it or the server
@@ -25,6 +29,7 @@
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SoundService = game:GetService("SoundService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
@@ -34,27 +39,40 @@ local SoundPrimer = require(script.Parent.SoundPrimer)
 
 local FREE = Brix.Pathing.free()
 
+type Look = MotionLight.Look
+type Step = { at: number, level: number }
+-- What a fixture's steps drive: its tube tripping on, its lit tube or its dark eye dying in the
+-- alarm's cut, or its eye (and a faint surge of its tube) coming back.
+type Mode = "Trip" | "CutTube" | "CutEye" | "Back"
+
 -- One fixture on this screen.
 type Shown = {
 	model: Model,
 	tube: BasePart,
 	eye: BasePart,
 	click: Sound,
-	state: MotionLight.State, -- what it shows
-	server: MotionLight.State, -- what the server says
+	state: Look, -- what it shows
+	server: Look, -- what the server says
 	predicted: number, -- its id in this screen's own watch
 	real: boolean, -- throws real light (one of the nearest lit fixtures)
-	since: number, -- seconds since its state last changed
-	flicker: number?, -- the next step of its tube flickering on, nil once steady
+	since: number, -- seconds since its state last changed (below 0 while a ragged start waits)
+	steps: { Step }, -- the flicker it is stepping through
+	mode: Mode,
+	flicker: number?, -- the next of its `steps`, nil once steady
 	eyeFrom: Color3?, -- its eye easing from this colour to `eyeTo`, nil once settled
 	eyeTo: Color3,
 	eyeSeconds: number,
 	changed: RBXScriptConnection,
 }
 
-local function stateOf(model: Model): MotionLight.State
+local function stateOf(model: Model): Look
 	local state = model:GetAttribute(MotionLight.StateAttribute)
-	return if state == "Lit" or state == "Blind" then state else "Dark"
+	return if state == "Lit" or state == "Blind" or state == "Out" then state else "Dark"
+end
+
+-- Blind or out: no power, so it sees nothing.
+local function unpowered(look: Look): boolean
+	return look == "Blind" or look == "Out"
 end
 
 local function partIn(model: Model, name: string): BasePart?
@@ -77,6 +95,9 @@ function HallLights.new(): Brix.System
 	local connections: { RBXScriptConnection } = {}
 	local random = Random.new()
 	local untilPick = 0
+	local cutSound: Sound? = nil
+	local backSound: Sound? = nil
+	local heardAt: { [Sound]: number } = {}
 	local predicted = MotionLight.watch() -- the lights your own movement wakes, on this screen
 	local byPredicted: { [number]: Shown } = {}
 	local mine: { [unknown]: vector } = {} -- your character's place, the one body predicted
@@ -93,11 +114,11 @@ function HallLights.new(): Brix.System
 		return root
 	end
 
-	-- What a fixture shows: blind or dark as the server says, lit if the server or your own
+	-- What a fixture shows: blind, out or dark as the server says, lit if the server or your own
 	-- movement says so.
-	local function shownState(s: Shown): MotionLight.State
-		if s.server == "Blind" then
-			return "Blind"
+	local function shownState(s: Shown): Look
+		if unpowered(s.server) then
+			return s.server
 		elseif s.server == "Lit" or predicted:state(s.predicted) == "Lit" then
 			return "Lit"
 		end
@@ -153,6 +174,29 @@ function HallLights.new(): Brix.System
 		s.click:Play()
 	end
 
+	-- The alarm's cut or return, heard once for the whole floor however many fixtures change.
+	local function hear(sound: Sound?)
+		if not sound or clock - (heardAt[sound] or -math.huge) < HallLight.OutGap then
+			return
+		end
+		heardAt[sound] = clock
+		sound.TimePosition = 0
+		sound:Play()
+	end
+
+	-- A fixture's eye glowing at `level` of its watching red (0: dead grey).
+	local function eyeLevel(s: Shown, level: number)
+		s.eye.Material = if level > 0 then Enum.Material.Neon else Enum.Material.SmoothPlastic
+		s.eye.Color = HallLight.EyeBlind:Lerp(HallLight.EyeWatching, level)
+	end
+
+	-- Starts `s` stepping through `steps` in `mode`, up to `ragged` seconds late.
+	local function begin(s: Shown, steps: { Step }, mode: Mode, ragged: number)
+		s.steps, s.mode, s.flicker, s.eyeFrom = steps, mode, 1, nil
+		s.since = if ragged > 0 then -random:NextNumber(0, ragged) else 0
+		moving[s] = true
+	end
+
 	-- Shows `s` steady in its state, with no click or animation (a fixture streaming in).
 	local function settle(s: Shown)
 		s.flicker, s.eyeFrom = nil, nil
@@ -162,22 +206,26 @@ function HallLights.new(): Brix.System
 			HallLight.eye(s.eye, "Seen")
 		else
 			HallLight.light(s.tube, 0)
-			HallLight.eye(s.eye, if s.state == "Blind" then "Blind" else "Watching")
+			HallLight.eye(s.eye, if unpowered(s.state) then "Blind" else "Watching")
 		end
 	end
 
 	-- The server changed a fixture's state: show the change as it happens.
-	local function change(s: Shown, state: MotionLight.State)
+	local function change(s: Shown, state: Look)
 		local was = s.state
 		if state == was then
 			return
 		end
 		s.state, s.since = state, 0
+		local wasOut, wasBlind = was == "Out", was == "Blind"
 		if state == "Lit" then
+			if wasOut then
+				hear(backSound)
+			end
 			local pitch = HallLight.ClickPitch
 			playClick(s, HallLight.ClickVolume, random:NextNumber(pitch.Min, pitch.Max))
 			easeEye(s, HallLight.EyeFlare, HallLight.EyeSeen, HallLight.EyeFlareSeconds)
-			s.flicker = 1
+			s.steps, s.mode, s.flicker = HallLight.Flicker, "Trip", 1
 			-- pick now, so a light waking beside you throws real light from its first flash
 			untilPick = 0
 		elseif state == "Dark" and was == "Lit" then
@@ -185,6 +233,20 @@ function HallLights.new(): Brix.System
 			HallLight.light(s.tube, 0)
 			playClick(s, HallLight.ClickOffVolume, HallLight.ClickOffPitch)
 			easeEye(s, HallLight.EyeSeen, HallLight.EyeWatching, HallLight.EyeRelaxSeconds)
+		elseif state == "Out" and not wasBlind then
+			-- the alarm: a lit tube dies in a stutter, a dark one's eye with it
+			begin(
+				s,
+				HallLight.CutFlicker,
+				if was == "Lit" then "CutTube" else "CutEye",
+				HallLight.CutStagger
+			)
+			hear(cutSound)
+		elseif wasOut and state == "Dark" then
+			-- the alarm is over: the power finds its way back
+			s.real = false
+			begin(s, HallLight.BackFlicker, "Back", HallLight.BackStagger)
+			hear(backSound)
 		else
 			-- power cut, or back on: the eye and tube snap to it, silently
 			s.real = false
@@ -211,11 +273,11 @@ function HallLights.new(): Brix.System
 		click.Parent = eye
 		local frame = inst:GetPivot()
 		local at, along = frame.Position, frame.XVector
-		local server: MotionLight.State = stateOf(inst)
+		local server: Look = stateOf(inst)
 		local area = Brix.Zone.box(
 			MotionLight.watchBox(FREE, at.X, at.Y, at.Z, MotionLight.turnOf(along.X, along.Z))
 		)
-		local id = predicted:add(area, at.X, at.Z, MotionLight.Reach, server ~= "Blind")
+		local id = predicted:add(area, at.X, at.Z, MotionLight.Reach, not unpowered(server))
 		local s: Shown
 		s = {
 			model = inst,
@@ -227,13 +289,15 @@ function HallLights.new(): Brix.System
 			predicted = id,
 			real = false,
 			since = 0,
+			steps = HallLight.Flicker,
+			mode = "Trip",
 			flicker = nil,
 			eyeFrom = nil,
 			eyeTo = HallLight.EyeWatching,
 			eyeSeconds = 0,
 			changed = inst:GetAttributeChangedSignal(MotionLight.StateAttribute):Connect(function()
 				s.server = stateOf(inst)
-				predicted:setPowered(s.predicted, s.server ~= "Blind")
+				predicted:setPowered(s.predicted, not unpowered(s.server))
 				change(s, shownState(s))
 			end),
 		}
@@ -255,18 +319,37 @@ function HallLights.new(): Brix.System
 		end
 	end
 
+	-- One step of a fixture's flicker, at `level`.
+	local function apply(s: Shown, level: number)
+		local mode = s.mode
+		if mode == "Trip" or mode == "CutTube" then
+			HallLight.glow(s.tube, level, s.real)
+		elseif mode == "CutEye" then
+			eyeLevel(s, level)
+		else
+			eyeLevel(s, level)
+			HallLight.glow(s.tube, level * HallLight.BackSurge, false)
+		end
+	end
+
 	-- Moves one fixture's flicker and eye on by `dt`.
 	local function animate(s: Shown, dt: number)
 		s.since += dt
 		local step = s.flicker
 		while step do
-			local flash = HallLight.Flicker[step]
+			local flash = s.steps[step]
 			if not flash then
-				-- caught: the tube holds, and the dust starts drifting under it
-				HallLight.light(s.tube, 1, s.real)
+				if s.mode == "Trip" then
+					-- caught: the tube holds, and the dust starts drifting under it
+					HallLight.light(s.tube, 1, s.real)
+				else
+					-- out, or back: it rests in its state, dust and all
+					s.real = false
+					settle(s)
+				end
 				step = nil
 			elseif s.since >= flash.at then
-				HallLight.glow(s.tube, flash.level, s.real)
+				apply(s, flash.level)
 				step += 1
 			else
 				break
@@ -290,7 +373,24 @@ function HallLights.new(): Brix.System
 		name = "HallLights",
 		start = function(_: any, _context: Brix.Context)
 			-- a motion light's first click on time, not a third of a second after it lights
-			task.spawn(SoundPrimer.prime, { HallLight.ClickSound })
+			task.spawn(
+				SoundPrimer.prime,
+				{ HallLight.ClickSound, HallLight.CutSound, HallLight.BackSound }
+			)
+			-- the alarm's cut and return, heard across the floor (not placed)
+			local cut = Instance.new("Sound")
+			cut.Name = "HallLightsCut"
+			cut.SoundId = HallLight.CutSound
+			cut.Volume = HallLight.CutVolume
+			cut.PlaybackSpeed = HallLight.CutSpeed
+			cut.Parent = SoundService
+			cutSound = cut
+			local back = Instance.new("Sound")
+			back.Name = "HallLightsBack"
+			back.SoundId = HallLight.BackSound
+			back.Volume = HallLight.BackVolume
+			back.Parent = SoundService
+			backSound = back
 			table.insert(
 				connections,
 				CollectionService:GetInstanceAddedSignal(MotionLight.Tag):Connect(function(inst)
@@ -340,6 +440,13 @@ function HallLights.new(): Brix.System
 			for model in shown do
 				remove(model)
 			end
+			for _, sound in { cutSound, backSound } do
+				if sound then
+					sound:Destroy()
+				end
+			end
+			cutSound, backSound = nil, nil
+			table.clear(heardAt)
 		end,
 	}
 end

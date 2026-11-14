@@ -12,9 +12,14 @@
 	under it, turned with it down its hall.
 
 	`cut(zone, isCut)` is the breaker room's: every fixture whose `MotionLight.PowerAttribute` is
-	`zone` goes blind, or comes back dark. `flash(floor)` is the elevator's alarm (a wrong code):
-	every powered fixture on that floor comes on at once and holds like any other, lighting up
-	whoever is out in the halls. `woke` fires with each fixture's model as it wakes: the
+	`zone` goes blind, or comes back dark. `flash(floor)` is the breaker's power coming back:
+	every powered fixture on that floor comes on at once and holds like any other. `out(floor,
+	seconds)` is the elevator's alarm (a wrong code, S2-04c): every fixture on that floor goes
+	blind for `seconds`, the keypad's dead span, and comes back dark (shown "Out", so screens play
+	the alarm's cut, `MotionLight.look`); the car's own lamp isn't a fixture, so it stays. In the
+	dark nothing freezes a Mannequin, so the monsters the alarm calls come on through the black,
+	as Lethal Company's facility goes dark when the apparatus is pulled and wakes what's inside.
+	A fixture comes back powered only when neither its zone is cut nor its floor out. `woke` fires with each fixture's model as it wakes: the
 	building sees that spot, and later sends a keeper to look (L-04, L-06). `lightOn(at)` says
 	whether a lit fixture's pool is on a spot (`MotionLight.inPool`): the Mannequin standing there
 	is frozen in its light (L-06b3b).
@@ -31,8 +36,11 @@ local Pace = require(ReplicatedStorage.Shared.Pace)
 export type MotionLights = Brix.System & {
 	-- Cuts (true) or restores (false) the power to every fixture in power zone `zone`.
 	cut: (self: any, zone: string, isCut: boolean) -> (),
-	-- Lights every powered fixture under `within` (a floor) at once, as the alarm does.
+	-- Lights every powered fixture under `within` (a floor) at once, as the breaker's power
+	-- coming back does.
 	flash: (self: any, within: Instance) -> (),
+	-- Puts every fixture under `within` (a floor) out for `seconds`, as the alarm does.
+	out: (self: any, within: Instance, seconds: number) -> (),
 	-- Fires with each fixture's model as it wakes.
 	woke: Brix.Signal<Model>,
 	-- Whether a lit fixture's pool is on `at` (feet on a floor, the world's).
@@ -60,12 +68,39 @@ function MotionLights.new(): MotionLights
 	local bodies: { BasePart } = {}
 	local positions: { [BasePart]: vector } = {} -- refilled every tick, never reallocated
 	local cutZones: { [string]: true } = {}
+	local outUntil: { [Instance]: number } = {} -- floors out for the alarm, till this `now`
 	local connections: { RBXScriptConnection } = {}
 	local woke = Brix.Signal.new() :: Brix.Signal<Model>
 	local now, carry = 0, 0
 
-	-- Writes a fixture's state for clients to draw. `quiet` (the alarm's flash) wakes it without
-	-- `woke`: the building didn't see anything there, so it sends nothing to look.
+	local function powerOf(model: Model): string?
+		local zone = model:GetAttribute(MotionLight.PowerAttribute)
+		return if type(zone) == "string" then zone else nil
+	end
+
+	local function zoneCut(model: Model): boolean
+		local zone = powerOf(model)
+		return zone ~= nil and cutZones[zone] == true
+	end
+
+	-- Whether the alarm has the floor `model` hangs on out.
+	local function isOut(model: Model): boolean
+		for floor in outUntil do
+			if model:IsDescendantOf(floor) then
+				return true
+			end
+		end
+		return false
+	end
+
+	-- What a fixture shows players now (`MotionLight.look`).
+	local function lookOf(id: number): MotionLight.Look
+		local model = models[id]
+		return MotionLight.look(watch:state(id), zoneCut(model), isOut(model))
+	end
+
+	-- Writes a fixture's state for clients to draw. `quiet` (the breaker's flash) wakes it
+	-- without `woke`: the building didn't see anything there, so it sends nothing to look.
 	local function show(id: number, quiet: boolean?)
 		local model = models[id]
 		local state = watch:state(id)
@@ -74,15 +109,18 @@ function MotionLights.new(): MotionLights
 		else
 			lit[id] = nil
 		end
-		model:SetAttribute(MotionLight.StateAttribute, state)
+		model:SetAttribute(MotionLight.StateAttribute, lookOf(id))
 		if state == "Lit" and not quiet then
 			woke:fire(model)
 		end
 	end
 
-	local function powerOf(model: Model): string?
-		local zone = model:GetAttribute(MotionLight.PowerAttribute)
-		return if type(zone) == "string" then zone else nil
+	-- Gives a fixture power or takes it, and writes what it shows if that changed.
+	local function repower(model: Model, id: number)
+		local changed = watch:setPowered(id, MotionLight.powered(zoneCut(model), isOut(model)))
+		if changed or model:GetAttribute(MotionLight.StateAttribute) ~= lookOf(id) then
+			show(id)
+		end
 	end
 
 	local function addFixture(inst: Instance)
@@ -91,13 +129,12 @@ function MotionLights.new(): MotionLights
 			return
 		end
 		local frame = inst:GetPivot()
-		local zone = powerOf(inst)
 		local id = watch:add(
 			areaOf(frame),
 			frame.Position.X,
 			frame.Position.Z,
 			MotionLight.Reach,
-			not (zone and cutZones[zone])
+			MotionLight.powered(zoneCut(inst), isOut(inst))
 		)
 		ids[inst] = id
 		models[id] = inst
@@ -174,6 +211,17 @@ function MotionLights.new(): MotionLights
 		if not look then
 			return
 		end
+		-- a floor's alarm is over: its lights come back dark, those under someone lit next tick
+		for floor, ends in outUntil do
+			if now >= ends or not floor.Parent then
+				outUntil[floor] = nil
+				for model, id in ids do
+					if model:IsDescendantOf(floor) then
+						repower(model, id)
+					end
+				end
+			end
+		end
 		table.clear(positions)
 		for _, body in bodies do
 			if body.Parent then
@@ -219,8 +267,17 @@ function MotionLights.new(): MotionLights
 			cutZones[zone] = nil
 		end
 		for model, id in ids do
-			if powerOf(model) == zone and watch:setPowered(id, not isCut) then
-				show(id)
+			if powerOf(model) == zone then
+				repower(model, id)
+			end
+		end
+	end
+
+	function system.out(_: any, within: Instance, seconds: number)
+		outUntil[within] = MotionLight.outEnds(outUntil[within], now, seconds)
+		for model, id in ids do
+			if model:IsDescendantOf(within) then
+				repower(model, id)
 			end
 		end
 	end
