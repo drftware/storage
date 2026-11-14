@@ -48,9 +48,6 @@ Publish first (File > Publish to Roblox) so live servers run them.
 Your answers, the four from tonight included, are written into the design doc (the GDD) and the
 roadmap (Phase 2: Steps 1 to 6, tickets S1-01 on). `docs/PROPOSAL.md` is kept as the record.
 Nothing in it is built yet. What still waits on you, in the order it holds work up:
-- [ ] **The second monster needs a look, a name and a reason to be alive.** You said to build
-  it next: the silent one that can only move while it's in light. Its ticket (S2-06) can't
-  start without those three. Everything before it in Steps 1 and 2 can.
 - [ ] **The flashlight's details.** You said it runs down, and that batteries are in the
   machine on every ride and in units. I picked the rest: it's full at the start of each climb;
   a full one gives about five minutes of light, and only runs down while it's on; a small meter
@@ -83,14 +80,22 @@ Nothing in it is built yet. What still waits on you, in the order it holds work 
   cart wraps, wheel lights and a horn (your Nov 11 lobby plan) and an admin pass for streamers'
   private servers (from the first draft). Keep or drop each?
 - [ ] **Untested bets.** The design doc's "Ideas with no hit game behind them" lists eight. Of
-  my four, you chose the elevator buttons tonight and agreed two earlier (valuing finds one at
-  a time, the "still sealed" look). The last is each monster going after the thing that stops
-  it: lights that stick on come with the second monster you approved, and a monster that pulls
-  open doors down is only the idea for later. So none of mine is waiting on a yes; say if any
-  should stop.
+  my five, you chose the elevator buttons on Nov 13, agreed two earlier (valuing finds one at
+  a time, the "still sealed" look), and agreed one on Nov 14 with the Packrat: it leaves you
+  alone because you dropped it something. The last is each monster going after the thing that
+  stops it: the Packrat carrying finds off has Lethal Company's Hoarding Bug behind it, and a
+  monster that pulls open doors down is only the idea for later. So none of mine is waiting on
+  a yes; say if any should stop.
+- [ ] **The Packrat: two small things, and neither holds work up.** You chose it on Nov 14 as
+  the second monster and agreed my six defaults (D-167), so its ticket (S2-06) no longer waits
+  on you. Packrat is a working name: say if you want another. One default I haven't put to
+  you: it sets the hall lights off as it walks, the way a player does, so you see it coming
+  and a Mannequin near it freezes. Say if it should walk in the dark instead.
 - [ ] **Open at the end of the design doc:** a name for the monsters (the code says keepers);
   the story; where the top grade of find comes from now there are no boss floors; where you
-  pick your two perks (the counter or the elevator's panel).
+  pick your two perks (the counter or the elevator's panel); and the thumbnail line. "Don't
+  move. The lights are watching." fitted the monster you dropped on Nov 14, and nothing in the
+  game now rewards standing still.
 - [ ] **Later, when you take them up:** the monster you hide from, and the monster that takes
   your head. The second has three things to settle first, listed under it in the design doc.
 

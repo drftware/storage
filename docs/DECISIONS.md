@@ -4593,3 +4593,36 @@ crowds it). The ticket read "a bit" as about a third.
 - The one that threw the box no longer hears its own clunk (`hearAt`'s `maker`): before, it
   turned to "look" at the box it was standing at, so the pull never showed.
 
+
+## D-167 The second monster is the Packrat, which collects things, not people (planning, Nov 14)
+
+- The owner dropped the silent monster that moved only in the light: "I realized there isn't a
+  way to stop it." The only thing that stopped it was standing still in the dark. That is not
+  playing, a friend moving anywhere on the floor undid it, and it is when a Mannequin walks.
+  Nothing had been built for it (S2-06 never started), so no code changes.
+- Two were pitched in its place. The owner chose "the one that collects", and of its six
+  defaults said "Yes I'm good with the suggestions."
+- What it does (GDD "The Packrat collects things, not people"): it carries the floor's finds to
+  its own unit one at a time and ignores everyone while its arms are full. With empty arms it
+  comes for a player and takes their most valuable find, or wraps them if their slots are
+  empty. A find dropped in its path sends it home instead. Its unit holds the pile, with finds
+  of its own, there to take back. A find at the back of an empty unit baits it into a trap.
+- Agreed defaults: anything in a slot counts (a find first, a tool only with no find, never the
+  flashlight); before anyone has a find only a door stops it, and coins could count if that
+  feels bad in play; one on a floor, none below floor 3; it isn't silent (one sound carrying,
+  another with empty arms); its look (a tall, faceless bundle of grey moving blankets and tape
+  with long bare arms, full arms told from empty ones down a hall on a phone); its reason (it
+  can't stand anything being left out); Packrat as a working name.
+- Mine and not yet put to the owner (`OWNER.md`): it sets hall lights off as it walks.
+- It breaks "once out, never home" on purpose: it goes back to its unit every time its arms
+  are full, and that is how a team finds the pile.
+- Left out of the first build: it going after the big find, and a wrapped player being put on
+  its pile.
+- Where it comes from: Lethal Company's Hoarding Bug carries scrap to its nest; Sonic's rings
+  take the hit (both from memory). Leaving you alone for a dropped find is the untested part.
+- Not chosen: a silent monster that follows from behind, backs off when lit and comes for you
+  if the light is held on it (Lethal Company's Bracken). It asks for the flashlight again, so
+  the team does nothing new, and it lives behind you, where phone players look least. It and
+  the dropped monster are in the GDD's "What's out".
+- S2-06 is split into five sessions (art, carrying home, taking from you, the pile and the
+  trap, its sounds) and no longer waits on the owner.

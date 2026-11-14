@@ -1767,7 +1767,7 @@ Done when a team that has lost its lights goes looking for the breaker without b
   that is asleep or hasn't seen you and a bar with a moving marker comes up by itself. Hit it:
   the door settles quietly. Miss, or don't tap: it bangs, and the monster wakes and pounds.
 - [ ] **S2-07 The fix pass before Step 3** (added Nov 14 from HANDOFF's Queue, so Step 2 ends
-  clean before anyone is carried up wrapped). Built before S2-06, which waits on the owner. In
+  clean before anyone is carried up wrapped). Built before S2-06. In
   two sessions:
   - [ ] **S2-07a Monsters and the camera.** Other monsters in the camera's view move in it, not
     stand as statues copied once (S2-02d1); a second feed on a floor waits for the first to
@@ -1782,10 +1782,41 @@ Done when a team that has lost its lights goes looking for the breaker without b
     shows the faint mark as yours does (S1-11); a saw no longer pokes past the machine's glass
     (S1-10d2); the permission and wrong-type asset lines in Output at Play start are traced
     and fixed (HANDOFF's Queue). (S1-12's saved cash total waits for S4-07, when cash buys.)
-- [ ] **S2-06 The second monster.** Waits on `OWNER.md` (its look, name and reason to be
-  alive). Silent; moves only while it stands in light; a hall light it walks under sticks on
-  until someone switches the breaker off and on. Its art first, then its row on the keepers'
-  brain (GDD "The second monster").
+- [ ] **S2-06 The second monster: the Packrat, which collects things, not people** (the owner
+  chose it Nov 14, D-167, in place of the silent one that moved only in light; GDD "The Packrat
+  collects things, not people"; Packrat is a working name). The moment: a friend drops their
+  lamp so the monster behind them picks it up and walks off. It carries the floor's finds to
+  its own unit one at a time and ignores everyone while its arms are full. With empty arms it
+  comes for a player and takes their most valuable find, or wraps them if their slots are
+  empty. Its unit holds the pile, there to take back. One on a floor, none below floor 3. As
+  Lethal Company's Hoarding Bug carries scrap to its nest, and as Sonic's rings take the hit.
+  One session each, in this order:
+  - [ ] **S2-06a The Packrat's art.** Built the unit's way in `art/packrat/`, as the Mannequin
+    was (L-06a): a tall, faceless bundle of grey moving blankets and packing tape with long bare
+    arms. Poses for walking with its arms full (the find held against its chest), walking with
+    them empty, reaching, taking and putting down. Judge the look sheets and Studio at phone
+    size for one thing first: full arms read apart from empty arms from the far end of a hall.
+  - [ ] **S2-06b It carries finds home.** Its row on the keepers' brain (`KeeperRows`), with a
+    unit of its own and one new ability: it picks up a find lying in an open unit or a hall,
+    carries it home, lays it on the pile and comes out for more, ignoring players while it
+    carries. The server owns where every find is. The pure rules first with Lune specs (which
+    find it goes for next, the trip home). It sets hall lights off as it walks (a default in
+    `OWNER.md`). The deal puts one on floors 3 and up, asleep in a unit that already holds
+    finds of its own.
+  - [ ] **S2-06c It takes from you, or wraps you.** With empty arms it comes for a player it
+    sees at just under walking speed, and light doesn't stop it. Reaching one, it takes their
+    most valuable find and carries it home: a tool only if they carry no find, never the
+    flashlight, and the big find doesn't count. Empty slots mean an ordinary catch. A find
+    dropped in its path (the drop that exists, `Slots`) is picked up instead of the player.
+    The take answers: its reach, the thing leaving your slot on the wheel, a sound, a kick of
+    the view.
+  - [ ] **S2-06d Its pile, and trapping it.** The pile shows in its unit as the finds
+    themselves, each with "Take", and taking one back works as any find does. Bait works: it
+    walks into a unit for a find at the back and the door comes down on it. Shut in, it pounds
+    and breaks out as any monster does. Shut in its own unit, the pile is shut in with it.
+  - [ ] **S2-06e How it sounds.** One sound while it carries and another while its arms are
+    empty, each heard before it's seen, made the way the Mannequin's were (L-06c). Real
+    recordings, primed.
 
 ### Step 3: Getting caught (the first products)
 
