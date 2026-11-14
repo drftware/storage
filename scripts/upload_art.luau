@@ -156,6 +156,12 @@ local ART: { Art } = {
 		description = "A worn old gold coin: a beaded rim, a keyhole stamped through its middle, a reeded edge",
 	},
 	{
+		key = "Stuff",
+		path = "art/stuff/out/Stuff.fbx",
+		manifest = "art/stuff/assets.json",
+		description = "An old quilted mattress stood on its end and a rolled-up patterned rug tied with rope",
+	},
+	{
 		key = "Saw",
 		path = "art/saw/out/Saw.fbx",
 		manifest = "art/saw/assets.json",

@@ -806,6 +806,25 @@ verified: a doc page, Studio, or "untested".
   shadows until `prepare` says otherwise.
 - **Blender: an emission-only mesh blocks the light inside it** (L-04b): a point light inside the
   bulb's glowing glass lit nothing until the glass's `visible_shadow` was off.
+- **A re-upload with new textures gets new texture IDs** (Studio, S1-04b1, Nov 14): the rebuilt
+  Stuff FBX (only its bake changed) inserted with a new ColorMap `rbxassetid`, so replace every
+  template from the new insert; the note above (IDs kept) holds when the textures didn't change.
+- **A unit template's pivot is turned -90° about X** (Edit, S1-04b1): `Units.S:PivotTo(CFrame.new(p))`
+  laid the unit on its back. Keep its turn: `PivotTo(CFrame.new(p) * template:GetPivot().Rotation)`;
+  then its door is at local z 0 facing -Z, the inside runs to +Z. Part `.Position`s of imported
+  MeshParts are their Blender origins, so read a part's box from its CFrame and Size instead.
+- **Judging a prop in a lit unit without Play** (S1-04b1): clone `Units.S` or `.M` into the Edit
+  workspace as above, destroy its door's parts (`CurtainClosed`, the slats, `BottomBar`,
+  `Padlock`, `LatchBolt`, `DoorCollider`), hang an invisible part with a PointLight at
+  `UnitLight`'s colour, brightness, range and shadows 0.7 under the top's middle, and capture from
+  the doorway at eye height (4.6). Destroy it all after.
+- **Blender: one atlas for unlike pieces** (S1-04b1): smart-project both meshes together in
+  multi-object edit mode, then `uv.pack_islands(rotate=True, margin_method="FRACTION",
+  shape_method="CONCAVE")`: 70% of the atlas used, against about 35% for a square per piece.
+- **Lune: loading a generated Specs module** (S1-04b1): Specs that build `Vector3`, `Vector2` or
+  `CFrame` fail under `require` in Lune. Load them with
+  `luau.load(fs.readFile(path), { environment = { Vector3 = roblox.Vector3, ... } })()`
+  (`tests/stuff.spec.luau`).
 - **A full FBX of props arrives as one Model of MeshParts** (Studio, L-04a): `Boxes.fbx` gave five
   MeshParts at their real sizes, each pivot at its Blender origin (the bottom's middle), each
   turned 135° about Y with the model, each with a SurfaceAppearance in Overlay and no MetalnessMap.

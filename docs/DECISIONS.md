@@ -3790,3 +3790,31 @@ keeps saves in memory with one warning rather than kicking the tester after 30 s
 **Can't hold it, kicked.** A save this server can't hold is Brix's default: a kick saying to
 rejoin. Playing on unsaved would lose a climb's earnings without a word.
 
+## D-135 The stuff in a unit: a mattress, a carpet, four stacks (S1-04b1, Nov 14)
+
+**What players get.** Some units with nothing to take (S1-04b2 deals them) show somebody's stuff
+when the door goes up: an old stained mattress leaning on a wall, a rolled rug tied with rope
+stood in a corner, or boxes stacked nearly to the bulb (GDD "Doors").
+
+**Built, not bought.** Both pieces are scripts in `art/stuff/` the unit's way. The stacks reuse
+the moving boxes (`art/boxes`, already in the place) as data: each box's spot and turn in
+`Stuff/Specs.luau`, checked by the spec to stand square on the floor or a closed box.
+
+**Both stood against a wall.** A rolled rug lying on the floor read as a thin line from the
+doorway in the sheets; stood on its end in a corner it reads as a rug at once. The mattress is
+stood on its foot end, leaning back, as people leave one in storage. So every thing has a back
+for a wall, and S1-04b2 only has to find it a wall.
+
+**One atlas, packed together.** Smart project over both pieces at once, then Blender's island
+packer (turning islands), gave 76 texels a stud with 70% of the 1024² atlas used; the finds' way
+(a square per piece) gave 56, most of the mattress's square empty.
+
+**Built straight, posed at export.** The mattress bakes upright and the roll lying, so the
+quilting and the rug's pattern are worked out in their own flat frames; the lean, the sag and the
+standing-up are applied to the vertices afterwards, keeping the UVs.
+
+**Judged in Edit.** Doors open only through players' prompts, so the pieces were judged in a
+copy of the S and M unit templates in the Edit view, door hidden, a bulb at `UnitLight`'s
+settings: the quilting first showed each diamond as a pyramid (a crease along its diagonals) and
+was rebuilt as a smooth dome.
+

@@ -33,6 +33,10 @@
 #   scripts/art.sh coin                 the coin: its bake, FBX, Specs module (the coin and its
 #                                       piles), look sheets (the floor sheet needs the boxes built)
 #   scripts/art.sh coin export          just the coin's FBX and Specs module
+#   scripts/art.sh stuff                the mattress and the rolled carpet: their Stuff bake, FBX,
+#                                       Specs module (with the box stacks), look sheets (the sheets
+#                                       need the boxes built; about 4 minutes)
+#   scripts/art.sh stuff export         just their FBX and Specs module
 #   scripts/art.sh saw                  the saw: its bake, FBX, Specs module, look sheets (the floor
 #                                       and view sheets need the boxes built; about 3 minutes)
 #   scripts/art.sh saw export           just the saw's FBX and Specs module
@@ -163,6 +167,15 @@ if [ "${1:-}" = "airhorn" ]; then
 	for st in ${*:-textures export renders}; do
 		echo "== airhorn $st"
 		blender -b --factory-startup -P art/airhorn/build.py -- --stage "$st" 2>&1 \
+			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|atlas|DONE" || true
+	done
+	exit 0
+fi
+if [ "${1:-}" = "stuff" ]; then
+	shift
+	for st in ${*:-textures export renders}; do
+		echo "== stuff $st"
+		blender -b --factory-startup -P art/stuff/build.py -- --stage "$st" 2>&1 \
 			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|atlas|DONE" || true
 	done
 	exit 0

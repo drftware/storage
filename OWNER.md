@@ -97,6 +97,14 @@ and off, the invite sheet opening with your friends (no invite sent).
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
 
+## Now: look at S1-04b1, the stuff in units (built Nov 14, D-135; seen in Studio, not dealt yet)
+
+- [ ] Look at the sheets in `art/stuff/README.md` (or `docs/art/S1-04b1-stuff-unit.jpg` and
+  `-stacks-unit.jpg`, from Studio): an old mattress leaning on a unit's wall, a rolled rug stood
+  in the corner, boxes stacked nearly to the bulb. Nothing in the game shows them until S1-04b2.
+- [ ] **Decide (default in place):** the rolled carpet stands on its end against a wall, because
+  lying on the floor it read as a thin line from the doorway. Say if you want it lying down.
+
 ## Now: judge S1-04a, coins (built Nov 13 and 14, D-132, D-133; the take verified in Studio Play)
 
 Most doors now pay one to three coins lying in the bulb's light with a twinkle on them. Tap
