@@ -2075,3 +2075,21 @@ verified: a doc page, Studio, or "untested".
 - **Testing it from the MCP:** the S2-04a recipe above; a Client RenderStepped loop logging a
   lit fixture's `Diffuser` material, its SurfaceLight's brightness and its `Eye` colour shows
   the stutter; the dev floor has 23 fixtures and none inside a car.
+- **The halls' pieces don't answer queries** (S2-02d1, Nov 14): the corridor kit's meshes have
+  CanQuery off, so `GetPartBoundsInBox` found none of them and a ray passes through them; a ray
+  stops only at their invisible collision boxes (Transparency 1), so never skip a hit for being
+  see-through when measuring a hall. To copy what's in view, walk the floor's parts once and test
+  each against the lens (FeedView: a floor in a millisecond or two, 46 parts in view).
+- **AbsolutePosition ignores IgnoreGuiInset** (S2-02d1): the corner map, placed at the top bar's
+  bottom plus 10 (68 in Studio) in a ScreenGui with IgnoreGuiInset, reports AbsolutePosition Y
+  10. To line something up with another gui, parent it into that gui and copy its UDim2 Position
+  instead of converting. The map's screen layers its children by one ZIndex for all: a child
+  added there needs ZIndex above the map's (FeedView uses 10 and up) or its background hides
+  its own children.
+- **Testing the camera feed in Play** (S2-02d1): the "Sending the Mannequin to the box" recipe,
+  but park your root anchored under the lobby at (-6, -12, -591), not up at 400: the feed goes
+  only to players on the floor (40 studs up or down). The feed is `PlayerGui.Minimap.Feed`;
+  sample its `Picture` (children: Camera, Halls, the copies) and `Picture.Ambient` (drops at the
+  throw). A staged feed: from the Server, `ReplicatedStorage.Feed:FireClient(player, "Show", id,
+  cameraCFrame, 7, { box, body }, floor)` shows for 8 s; capture 0.6 s later, once the map has
+  finished sliding in and the floor has streamed.

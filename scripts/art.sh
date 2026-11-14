@@ -76,6 +76,7 @@
 #                                       alpha), FBX, Specs module, look sheets (the unit sheets
 #                                       need the boxes built; about 3 minutes)
 #   scripts/art.sh keptwrap export      just the wrap's FBX and Specs module
+#   scripts/art.sh feed                 the security camera feed's grain and snow pictures (seconds)
 #   scripts/art.sh mark                 the faint mark on a note's door frame: its chalk texture
 #                                       (drawn with numpy, no bake), FBX, look sheet (seconds)
 #   scripts/art.sh lobby                the front office: FBX, Specs module, look sheets (it wears the
@@ -102,6 +103,10 @@ if [ "${1:-}" = "lobby" ]; then
 		blender -b --factory-startup -P art/lobby/build.py -- --stage "$st" 2>&1 \
 			| grep -E -i "error|traceback|RENDERED|FBX|SPEC|DONE|assert" || true
 	done
+	exit 0
+fi
+if [ "${1:-}" = "feed" ]; then
+	blender -b --factory-startup -P art/feed/build.py 2>&1 | grep -E -i "error|traceback|DONE" || true
 	exit 0
 fi
 if [ "${1:-}" = "mark" ]; then

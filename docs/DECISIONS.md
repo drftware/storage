@@ -4538,3 +4538,32 @@ crowds it). The ticket read "a bit" as about a third.
   tool wheel back); the Buy on the glass stays hidden until that vend is over (`Buy.ends()` plus
   0.3 s), the moment the panel used to rise, so you never open it over your own vend or buy
   twice in one. A refused pick keeps it up, as before. Passes checks, untested in Studio.
+
+## D-165 A security camera feed shows a monster's moment: first, the Mannequin throwing the breaker (S2-02d1, Nov 14)
+
+- The owner's idea (ROADMAP S2-02d, their words there): when the Mannequin is about to cut the
+  power, the corner map becomes a CCTV view of it pulling the lever, so players see what
+  happened instead of guessing, and first-timers get a "WTF moment". Precedent: Five Nights at
+  Freddy's cameras show the animatronic where it wasn't.
+- Who sees it: every player standing on that floor (`Climb.on` from the floor's origin, within
+  40 studs up or down), kept players too. Nobody else.
+- When: with `Feed.Lead` (2.4 s) of its walk left (straight-line distance over its pace), so it
+  walks into the picture; the throw closes it (`Feeds:close`), the feed stays `Feed.After`
+  (1.7 s) and cuts out. A walk called off still shows until `Feed.Most` (8 s): it turning away on
+  camera is fine. The box's hall is streamed in on those screens as the errand starts
+  (`RequestStreamAroundAsync`), since the picture is copied from what the screen has.
+- Where the camera hangs (`Feeds:hang`, `Feed.hang`): from just off the box's wall, measured
+  with rays (out across the hall, along the wall on the grip's side, up), 4 to 9 out, up to 6
+  along, 1.5 to 4.5 up, `WallGap` off every surface; pulled in front of any corner between it and
+  the box. It aims just below the grip and 1.3 out: the hand and the body's middle.
+- The picture: a ViewportFrame in the map's own screen, on the map's corner, grown to 1.55 times
+  its side at 4:3. The halls in the lens's view (up to 30 studs, 700 parts) copied once; what's
+  watched (the body, the box) followed part by part at 12 frames a second, colour included, so
+  the walk is choppy and the lever and the red lamp show. Its own flat cold light (cameras see in
+  the dark); at a moment that puts the lights out, its light drops to 42% and its copied tubes go
+  dark. Grain and snow are generated pictures (art/feed). "CAM nn" (from where it hangs) and a
+  blinking red dot are the only marks: no words.
+- Sounds, flat in your ears: a static burst in, thin static under it, the clunk through a thin
+  distorted speaker, a burst out (Pro Sound Effects).
+- Reusable: any monster's system calls `Feeds:show` (who, camera, number, what to watch, the
+  floor) and `Feeds:close` (its sound, whether the lights went). The dev throw shows no feed.

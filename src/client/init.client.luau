@@ -19,6 +19,7 @@ local CameraShake = require(script.CameraShake)
 local CaughtView = require(script.CaughtView)
 local BatteryView = require(script.BatteryView)
 local BreakerView = require(script.BreakerView)
+local FeedView = require(script.FeedView)
 local CoinView = require(script.CoinView)
 local KeptWrapOn = require(script.KeptWrapOn)
 local ChaseMusic = require(script.ChaseMusic)
@@ -99,6 +100,9 @@ local host = Brix.Host.new({
 		{ slot = "batteryView", system = BatteryView.new() },
 		-- each floor's breaker box: the clunk and red lamp thrown, the lever under the hand, the hum
 		{ slot = "breakerView", system = BreakerView.new(kick) },
+		-- a security camera's feed over the corner map: a monster doing something, seen (S2-02d);
+		-- after the keepers' bodies and the box are posed, so its picture shows this frame's
+		{ slot = "feedView", system = FeedView.new() },
 		{ slot = "caughtView", system = CaughtView.new(kick) },
 		{ slot = "chaseMusic", system = ChaseMusic.new() },
 		{ slot = "keptWrapOn", system = KeptWrapOn.new() },

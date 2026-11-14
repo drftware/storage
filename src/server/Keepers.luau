@@ -89,6 +89,8 @@ local Climb = require(ReplicatedStorage.Shared.Climb)
 local Deal = require(ReplicatedStorage.Shared.Deal)
 local Crawls = require(script.Parent.Crawls)
 local Deals = require(script.Parent.Deals)
+local Feed = require(ReplicatedStorage.Shared.Feed)
+local Feeds = require(script.Parent.Feeds)
 local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
 local Dent = require(ReplicatedStorage.Shared.StorageUnit.Dent)
 local Doors = require(script.Parent.Doors)
@@ -223,7 +225,8 @@ type OnFloor = {
 	waking: { [number]: boolean }, -- slots dealt early to wake: stand awake and shut in
 }
 -- `quarry`: whom it hunted as last counted for screens (`tellHunted`), 0 for no one.
-type Entry = { keeper: Keeper.Keeper, body: Body, on: OnFloor, quarry: number }
+-- `feed`: the security camera feed showing it walk up to throw the breaker (S2-02d), 0 for none.
+type Entry = { keeper: Keeper.Keeper, body: Body, on: OnFloor, quarry: number, feed: number }
 
 -- A keeper caught a player: its body, whom it caught, and the floor's model (FloorBuilder's).
 export type Catch = { body: Model, player: Player, floor: Model }
@@ -293,6 +296,7 @@ function Keepers.new(): Keepers
 	local motionLights: MotionLights.MotionLights? = nil
 	local flashlights: Flashlights.Flashlights? = nil
 	local breakers: Breakers.Breakers? = nil
+	local feeds: Feeds.Feeds? = nil
 	local deals: Deals.Deals? = nil
 	local devErrand = false -- the dev command: every loose Mannequin goes for the box now
 	local run = 16 -- a player's full run, studs a second (StarterPlayer's, read at start)
@@ -868,6 +872,57 @@ function Keepers.new(): Keepers
 		Keeper.offer(k, on.boxStand, on.boxAt, chance)
 	end
 
+	-- The players standing on floor `on` (S2-02d): who sees its security camera feeds. Kept players
+	-- too: they're on it, shut in.
+	local function watchers(on: OnFloor): { Player }
+		local found: { Player } = {}
+		for _, player in everyone do
+			local character = player.Character
+			local root = character and character:FindFirstChild("HumanoidRootPart")
+			if root and root:IsA("BasePart") then
+				local p = on.origin:PointToObjectSpace(root.Position)
+				if math.abs(p.Y) < 40 and Climb.on(on.floor, p.X, p.Z) then
+					table.insert(found, player)
+				end
+			end
+		end
+		return found
+	end
+
+	-- A Mannequin on its errand (S2-02d): as it sets off, the box's hall streams in on the floor's
+	-- screens; with `Feed.Lead` seconds of its walk left, their corner maps cut to a security
+	-- camera high in a corner of the box's hall, on the grip's side, showing it walk up and throw
+	-- it (closed in `threw`).
+	local function errandFeed(entry: Entry, set: boolean)
+		local f, on, k = feeds, entry.on, entry.keeper
+		local box = on.box
+		if not (f and box and box.Parent) then
+			return
+		end
+		if set then
+			f:ready(watchers(on), box:GetPivot().Position)
+			return
+		end
+		if entry.feed ~= 0 then
+			return
+		end
+		local dx, dz = on.boxStand.x - k.at.x, on.boxStand.z - k.at.z
+		if not Feed.due(math.sqrt(dx * dx + dz * dz), Keeper.pace(k, run)) then
+			return
+		end
+		local grip = Breaker.Specs.GripDown
+		local spot = box:GetPivot() * CFrame.new(grip[1], grip[2], grip[3])
+		local camera = f:hang(spot, if grip[1] < 0 then -1 else 1, on.model, { on.folder, box })
+		local p = on.origin:PointToObjectSpace(camera.Position)
+		entry.feed = f:show({
+			players = watchers(on),
+			camera = camera,
+			number = Feed.number(p.X, p.Z),
+			watch = { entry.body.model, box },
+			within = on.model,
+		})
+	end
+
 	-- A Mannequin's hand is on the grip (S2-02c): the box is thrown (its slam and clunk are the
 	-- box's own, BreakerView), and the keepers near it hear the clunk as they hear a slam, so
 	-- whoever goes back to switch it on walks toward whatever came to look. Nothing if the power
@@ -880,6 +935,12 @@ function Keepers.new(): Keepers
 		end
 		on.cut = true
 		devErrand = false
+		local f = feeds
+		if f and entry.feed ~= 0 then
+			-- the clunk through the camera, the picture dimming as the halls go dark
+			f:close(entry.feed, Breaker.ClunkSound, true)
+		end
+		entry.feed = 0
 		if TRACE then
 			print(
 				`Keepers: the {entry.keeper.row.name} threw the breaker on floor {on.floor.number}`
@@ -969,6 +1030,7 @@ function Keepers.new(): Keepers
 			},
 			on = on,
 			quarry = 0,
+			feed = 0,
 		}
 		table.insert(on.keepers, entry)
 		publish(entry, 0, false) -- its first record, before any screen sees it
@@ -1118,6 +1180,8 @@ function Keepers.new(): Keepers
 		flashlights = (context.registry:get("flashlights") :: any) :: Flashlights.Flashlights?
 		-- any: as above; Breakers fills this slot (init.server)
 		breakers = (context.registry:get("breakers") :: any) :: Breakers.Breakers?
+		-- any: as above; Feeds fills this slot (init.server)
+		feeds = (context.registry:get("feeds") :: any) :: Feeds.Feeds?
 		run = StarterPlayer.CharacterWalkSpeed
 		everyone = Players:GetPlayers()
 		local folder = ReplicatedStorage:FindFirstChild(Caught.RemoteFolder)
@@ -1327,6 +1391,11 @@ function Keepers.new(): Keepers
 				end
 				if k.blow ~= "None" then
 					onBlow(entry)
+				end
+				if k.errand then
+					errandFeed(entry, not wasErrand)
+				elseif not k.threw then
+					entry.feed = 0 -- called off: an open feed shows it turn away, then cuts out
 				end
 				if k.threw then
 					threw(entry)

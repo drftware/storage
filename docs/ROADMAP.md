@@ -1666,6 +1666,18 @@ Done when a team that has lost its lights goes looking for the breaker without b
     watches, for how long), not wired to the breaker alone. Its own sounds (the feed's hiss
     cutting in, the static out). Defaults the session picks (how long, the angle, whether it
     plays when the box is thrown by the dev command) go in `OWNER.md`.
+    Split (S2-02d1's session), one per session:
+    - [x] **S2-02d1 The feed with its look and sound.** (Nov 14, D-165; run in Studio Play: cut
+      in 2.5 s before the throw, dimmed on it, gone 2.2 s after) `Feed` (rules, tested),
+      `Feeds` (server: who watches, where the camera hangs, show and close), `FeedView` (the
+      picture grown out of the map's square, the halls copied in once, the body and box followed
+      at 12 frames a second, grain, snow, number, dot, sounds), art/feed (grain and snow).
+    - [ ] **S2-02d2 The hand on the lever, judged at phone size.** The Mannequin reaches up and
+      pulls the lever down as two stop-motion keys (a new `Pose` pair, checked in
+      `tests/mannequin.spec.luau`), held a beat on the grip before the throw so the feed shows
+      it, seen in the hall too. Then judge the feed at phone size in Play (Device Simulator) with
+      the Mannequin in it: framing (`Feed.Fov`, the hang), darkness, grain strength. A feed that
+      starts while the map is still sliding in takes the map's place as it lands.
 - [x] **S2-03 Sleeping monsters wake.** After four minutes on floors 1 and 2 (six above), three
   sleepers wake and pound on their doors, heard across the floor; three more every two minutes;
   sooner and more higher up. One pounding breaks out after 90 seconds unless its door is

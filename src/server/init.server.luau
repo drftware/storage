@@ -8,6 +8,7 @@ local RunService = game:GetService("RunService")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Breakers = require(script.Breakers)
+local Feeds = require(script.Feeds)
 local Carts = require(script.Carts)
 local CashOut = require(script.CashOut)
 local ClimbEnds = require(script.ClimbEnds)
@@ -47,6 +48,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "motionLights", system = MotionLights.new() },
 	-- Each floor's breaker box: thrown, its hall lights out; a held lever switches them back on.
 	{ slot = "breakers", system = Breakers.new() },
+	-- Security camera feeds: a floor's corner maps cut to a camera watching a monster do something.
+	{ slot = "feeds", system = Feeds.new() },
 	-- Every unit's roll-up door: its buttons, the checks on a press, its events.
 	{ slot = "doors", system = Doors.new() },
 	{ slot = "kneels", system = Kneels.new() },
