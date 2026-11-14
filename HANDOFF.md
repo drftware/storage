@@ -17,6 +17,8 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   (Edit's `Carts` has no `goHome`; no `Cart.Home`). Studio's MCP can't sync around it (it
   refuses HTTP to localhost). A ride to the stripes in Play worked on the old code. The owner's
   Connect click is `OWNER.md`'s first line; until then nothing new can be checked in Studio.
+- A Brix session may run in `../engine` with a second Studio open on its own place: target
+  only the Studio named "Storage (placeId: 113250085204323)" by its `studio_id`.
 - The GDD (D-127, D-128) is the newer word; ROADMAP Phase 2 is its build order. The GDD says
   "monsters"; the code says keepers.
 
