@@ -136,6 +136,23 @@ climb only a Mannequin throws it (S2-02c, below), so test the box itself with th
    lights do; coming back dark would show nothing from the box); the lamp as glowing Neon, red
    off and green on; one second to hold, as cutting a friend free.
 
+## Now: punch a wrong code (S2-04a, built Nov 14, D-159; seen in Play, not heard)
+
+A wrong code now rolls up doors with monsters behind them, by themselves, and the keypad stays
+dead longer each time on a floor. Seen in Studio Play from Output and the keypad's state;
+nobody has listened to it. The lights still all come ON for the alarm (that changes in S2-04c),
+so for now the freed Mannequins freeze for the alarm's length before they come.
+1. In Studio Play on floor 3 (code 2274 on seed 7), punch 1111 at the keypad. Look for: buzz,
+   bell, then about a second later a door somewhere rolls up on its own (Unit 338 on seed 7) and
+   its Mannequin comes for the keypad. Is the gap between the alarm and the door right?
+2. Punch another wrong code once the keypad clears: three doors roll one after another (307, 327,
+   335) and the keypad stays dead 7 seconds, the bell striking twice. A third: 14 seconds, four
+   strikes. Does the bell striking again sound like an alarm, or like a mistake? Is 14 seconds
+   stuck at the keypad fun-scary or just annoying?
+3. Decide (my default): a padlocked door holds against a wrong code, as it holds a pounding
+   monster, so the third wrong code on seed 7 opened nothing (only padlocked 305 was left). The
+   alternative: a wrong code pops padlocks too, which makes guessing far worse.
+
 ## Now: hear the sleepers wake (S2-03, built Nov 14, D-156, D-157; seen in Play, not heard)
 
 Four minutes into a floor (less higher up) doors start pounding: no clock, no words. Seen in

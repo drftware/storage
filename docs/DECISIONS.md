@@ -4405,3 +4405,25 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
 - **The lobby's floor slab sat 7 studs into the cars** in the place's template (every other part
   matched its spec), so it ran under each car's floor at the same height and the two flickered
   as the camera moved ("the car floors' splotches"). Moved back onto its spec in Edit.
+
+## D-159 A wrong code rolls up monsters' doors, and the keypad locks longer (S2-04a, Nov 14)
+
+- **Which doors.** Each wrong code on a floor rolls up 1, then 3, then 5 units holding a monster
+  (`WrongCode`, the owner's D-127; five is my default in the GDD). Sleepers first, since a door
+  nobody has lifted going up by itself is the scare; then monsters already awake behind a shut
+  door. A padlocked door is never picked: it holds against a wrong code as it holds a pounding
+  monster (D-157), so padlocks stay the one answer to monsters behind doors (`OWNER.md`).
+  Sleepers count against the floor's six on their feet (`Waking.AwakeMost`); one awake behind a
+  door is already counted. Wrong-code wakes don't count toward the waves' tally (`woken`): the
+  waves keep their own clock with whoever is left asleep.
+- **How.** The keepers' brain handles it on the alarm, before the alarm is heard: a picked
+  sleeper is dealt shut and stood awake (as a waking one is), so it hears the alarm and goes for
+  the keypad once its door is up. The doors roll by `Doors:move(unit, "Open")`, the slow, loud
+  open players know, from 1.2 s after the code (the buzz and bell first), 0.7 s apart.
+- **The lock.** The keypad counts wrong codes since it was armed on its floor; it is dead
+  `Keypad.dead` (3.5, 7, 14 s, the GDD). The bell recording is one clang that dies away in about
+  2.5 s, so it can't loop: it strikes again every 3.5 s while the keypad is dead (one, two or
+  four strikes), and a screen hushes any strike still ringing as the keypad clears.
+- **Waking clock fix.** A floor's waking clock starts only for feet inside its reach as well as
+  at its level (`Climb.stands`): every floor of a climb stands at one height, so height alone
+  started the floor above's clock as it was laid.

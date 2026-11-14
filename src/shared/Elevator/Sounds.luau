@@ -90,13 +90,14 @@ Sounds.Sounds = {
 		Reach = 60,
 		Timed = false,
 	},
-	-- The elevator's alarm bell, heard across the floor. It rings for as long as the keypad is
-	-- dead, fading out as it clears.
+	-- The elevator's alarm bell, heard across the floor: one clang that dies away, struck again
+	-- every `Keypad.Dead[1]` seconds for as long as the keypad is dead (`Sounds.keypad`), the
+	-- last fading out as it clears.
 	Bell = {
 		Id = "rbxassetid://9125544264",
 		Source = "Keypad",
 		Start = Sounds.BellFrom,
-		Stop = Sounds.BellFrom + Keypad.AlarmSeconds - Sounds.BellAfter,
+		Stop = Sounds.BellFrom + Keypad.Dead[1] - Sounds.BellAfter,
 		Fade = 1,
 		Volume = 1,
 		Near = 24,
@@ -163,7 +164,12 @@ function Sounds.keypad(event: Keypad.Event, pressed: boolean): { Cue }
 	end
 	if event == "Wrong" then
 		table.insert(cues, cue(Sounds.VerdictAfter, "Buzzer"))
-		table.insert(cues, cue(Sounds.BellAfter, "Bell"))
+		-- a strike for each ring of the longest lock: a screen plays each only while the keypad
+		-- is still dead (the server clears it after 3.5, 7 or 14 s: one, two or four strikes)
+		local ring = Keypad.Dead[1]
+		for k = 0, math.ceil(Keypad.Dead[#Keypad.Dead] / ring) - 1 do
+			table.insert(cues, cue(Sounds.BellAfter + k * ring, "Bell"))
+		end
 	elseif event == "Right" then
 		table.insert(cues, cue(Sounds.VerdictAfter, "Ding"))
 	end

@@ -10,8 +10,10 @@
 	  (the player within reach of the keypad), then the rate (no faster than a thumb), and only
 	  then the keypad's own state (dead while the alarm rings, done once the gate is open).
 	- The fourth digit is checked, as a real keypad does. Wrong: the alarm rings, every light on the
-	  floor comes on (MotionLights.flash), and the keypad is dead for a moment, its readout blinking
-	  the wrong digits, then it clears. Right: the chime, the latch, and the gate folds open.
+	  floor comes on (MotionLights.flash), and the keypad is dead a while, its readout blinking
+	  the wrong digits, then it clears: 3.5, 7, then 14 s, longer each wrong code on the floor
+	  (`Keypad.dead`, S2-04). `acted` says which wrong code it was; the keepers' brain rolls up
+	  that many monsters' doors (`WrongCode`). Right: the chime, the latch, and the gate folds open.
 	- Once it has slammed open the gate's clock runs (L-05b2, Departure): 30 s on every screen on
 	  the floor, then the gate folds shut on its own, and the instant it hits its post a Zone over
 	  the car says who rode (`Departure.AboardAttribute`, `departed`). Nobody can send it early.
@@ -56,6 +58,10 @@ export type KeypadEvent = {
 	player: Player?, -- nil when the game itself did it
 	at: Vector3, -- the keypad's face
 	reach: number, -- studs it's heard to (Keypad.Heard): a keeper within it hears it
+	floor: Instance?, -- the floor the elevator stands at (its `arm`), nil for none
+	-- for a "Wrong": which wrong code this is on that floor (1 for the first), what lets out how
+	-- many monsters (`WrongCode`, S2-04); 0 otherwise
+	wrongs: number,
 }
 
 -- The car leaving a floor: who rode, and who was on the floor (within the clock's reach) and
@@ -127,6 +133,7 @@ type Entry = {
 	phase: Phase,
 	state: Keypad.State,
 	alarmEnds: number, -- server time the alarm stops
+	wrongs: number, -- wrong codes on the floor it stands at, since it was armed there (S2-04)
 	gateFrom: number,
 	gateTo: number,
 	gateStart: number,
@@ -185,6 +192,8 @@ function Elevators.new(): Elevators
 			player = player,
 			at = Elevator.keypadPoint(entry.model),
 			reach = Keypad.Heard[action],
+			floor = entry.floor,
+			wrongs = if action == "Wrong" then entry.wrongs else 0,
 		})
 	end
 
@@ -341,7 +350,8 @@ function Elevators.new(): Elevators
 		event(entry, "Press", player)
 		if verdict == "Wrong" then
 			entry.phase = "Alarm"
-			entry.alarmEnds = now() + Keypad.AlarmSeconds
+			entry.wrongs += 1
+			entry.alarmEnds = now() + Keypad.dead(entry.wrongs)
 			alarms[entry] = true
 			event(entry, "Wrong", player)
 			if lights and entry.floor then
@@ -372,6 +382,7 @@ function Elevators.new(): Elevators
 			phase = phase,
 			state = Keypad.decode(inst:GetAttribute(Keypad.Attribute)),
 			alarmEnds = 0,
+			wrongs = 0,
 			gateFrom = from,
 			gateTo = to,
 			gateStart = start,
@@ -519,6 +530,7 @@ function Elevators.new(): Elevators
 		entry.floor = floor
 		entry.number = math.max(math.floor(number or 1), 1)
 		entry.riders = {}
+		entry.wrongs = 0 -- a new floor's keypad: its first wrong code is a first again
 		entry.model:SetAttribute(Ride.FloorAttribute, entry.number)
 		entry.model:SetAttribute(Ride.Attribute, nil)
 		alarms[entry] = nil

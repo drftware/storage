@@ -89,6 +89,17 @@ function Climb.on(floor: Floor.Floor, x: number, z: number): boolean
 	return x >= lowX - 4 and x <= highX + 4 and z >= lowZ - 4 and z <= highZ + 4
 end
 
+-- Studs above or below a floor's own level that a player's feet still count as standing on it.
+Climb.FeetSlack = 4
+
+-- Whether feet at (x, feet, z) in floor `floor`'s own frame stand on it: at its level (within
+-- `FeetSlack`) and inside its `reach`. A climb's floors all stand at one height, `Spacing` apart,
+-- so height alone would count a player on the floor below as on the one above (D-157's clock
+-- starts on the first step onto a floor, not as it's laid).
+function Climb.stands(floor: Floor.Floor, x: number, feet: number, z: number): boolean
+	return math.abs(feet) <= Climb.FeetSlack and Climb.on(floor, x, z)
+end
+
 -- Whether a hand-off may start `since` seconds into the ride: from `HandOff` to `Latest`.
 function Climb.mayHandOff(since: number): boolean
 	return since >= Climb.HandOff and since <= Climb.Latest

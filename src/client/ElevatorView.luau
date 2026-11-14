@@ -51,6 +51,9 @@ local Specs = require(ReplicatedStorage.Shared.Elevator.Specs)
 
 -- A pressed key snaps in at once, holds a beat, then springs back out over this.
 local KEY_BACK = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0.05)
+-- How quickly a bell strike still ringing is hushed once the keypad clears: a strike a laggy
+-- screen began just past the clear dies at once instead of ringing over the live keypad.
+local HUSH = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 -- The wall readout's LEDs: each digit 78% of the glass's height, 6% of its width apart. The card's
 -- pixels a stud (sharp at arm's length) and how far off it still draws (it's lit, so the dashes
 -- read from across the lobby).
@@ -303,11 +306,30 @@ function ElevatorView.new(kick: (amount: number) -> ()): (Brix.System, Press)
 		showLight(view, Readout.light(view.state, since))
 	end
 
+	-- Fades the bell out at once if it's still ringing (the keypad cleared: no more strikes).
+	local function hushBell(view: View)
+		local bell: Sounds.SoundName = "Bell"
+		local s = view.sounds[bell]
+		if not (s and s.IsPlaying) then
+			return
+		end
+		local fading = view.fades[s]
+		if fading then
+			fading:Cancel()
+		end
+		local tween = TweenService:Create(s, HUSH, { Volume = 0 })
+		tween:Play()
+		view.fades[s] = tween
+	end
+
 	-- The server wrote the keypad's state: draw it and, when it's news, sound it.
 	local function keypadChanged(view: View, live: boolean)
 		local state = Keypad.decode(view.model:GetAttribute(Keypad.Attribute))
 		if live and state.count == view.state.count then
 			return
+		end
+		if state.event ~= "Wrong" then
+			hushBell(view)
 		end
 		view.state, view.since = state, os.clock()
 		draw(view)

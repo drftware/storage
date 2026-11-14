@@ -1663,6 +1663,26 @@ Done when a team that has lost its lights goes looking for the breaker without b
 - [ ] **S2-04 A wrong code lets monsters out.** One unit with a monster in it rolls up by
   itself on the first wrong code, three on the second, five after; the hall lights go out for
   the alarm; every loose monster heads for the keypad; the keypad locks 3.5, 7, then 14 seconds.
+  Split (Nov 14), one per session:
+  - [x] **S2-04a Doors roll up by themselves, and the keypad locks longer.** (Nov 14, D-159;
+    seen in Studio Play: one door, then three, the third wrong code holding at a padlock, the
+    keypad dead 3.49, 7.01, 14.02 s) Pure rules (`WrongCode`): 1, 3, then 5 units per wrong
+    code on a floor, sleepers first, then monsters awake behind shut doors, never a padlocked
+    door, sleepers only while the floor has room on its feet (`Waking.AwakeMost`); the doors
+    roll one after another from 1.2 s, 0.7 s apart, each the slow, loud open. The keypad counts
+    wrong codes per floor and stays dead `Keypad.dead` (3.5, 7, 14 s); the bell strikes again
+    every 3.5 s while it's dead. A picked sleeper stands awake behind its door first, so it
+    hears the alarm and comes for the keypad once out. `tests/wrongcode.spec.luau`.
+  - [ ] **S2-04b Every loose monster heads for the keypad.** On a wrong code every keeper loose
+    on the floor goes for the keypad wherever it is, not only those within the alarm's 400
+    studs of hall; the ones it let out too (today they go there because they heard it). Then
+    each looks around the lobby before roaming again. Verify in Play: a far keeper turns for
+    the keypad on the alarm.
+  - [ ] **S2-04c The hall lights go out for the alarm.** Today a wrong code turns every light
+    on (`MotionLights.flash`), freezing the Mannequins, so a team is safer for guessing (seen
+    in Play: every Mannequin let out froze in the light). The GDD: the hall lights go out for
+    the length of the alarm instead (the elevator keeps its own light). Its own sound and the
+    lights' flicker as they cut and come back.
 - [ ] **S2-05 The tap when you shut a door on a sleeper.** Pull the door down on a monster
   that is asleep or hasn't seen you and a bar with a moving marker comes up by itself. Hit it:
   the door settles quietly. Miss, or don't tap: it bangs, and the monster wakes and pounds.

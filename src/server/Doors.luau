@@ -76,9 +76,10 @@ export type Doors = Brix.System & {
 	-- The door's state now.
 	stateOf: (self: any, unit: Model) -> Door.State,
 	-- Moves a door as the building does, no player's hand on it (L-06b3d): a trapped keeper's
-	-- blow from inside ("Bang"), only on a door at rest, shut, peeked or padlocked; or its burst up
-	-- ("Burst"), on any door that's down or coming down and not padlocked. Fires `acted` with its
-	-- sound's reach, so keepers hear it as they hear a player's. Whether it moved.
+	-- blow from inside ("Bang"), only on a door at rest, shut, peeked or padlocked; its burst up
+	-- ("Burst"), on any door that's down or coming down and not padlocked; or a door rolling all
+	-- the way up by itself ("Open", a wrong code's, S2-04), only from shut or peeked. Fires `acted`
+	-- with its sound's reach, so keepers hear it as they hear a player's. Whether it moved.
 	move: (self: any, unit: Model, kind: Motion.Kind) -> boolean,
 }
 
@@ -548,6 +549,7 @@ function Doors.new(): Doors
 	local BANGS: { [Door.State]: true } = { Closed = true, Peeking = true, Locked = true }
 	local BURSTS: { [Door.State]: true } =
 		{ Closed = true, Peeking = true, Closing = true, Slamming = true }
+	local OPENS: { [Door.State]: true } = { Closed = true, Peeking = true }
 
 	function system.move(_: any, unit: Model, kind: Motion.Kind): boolean
 		local entry = entries[unit]
@@ -555,7 +557,11 @@ function Doors.new(): Doors
 			return false
 		end
 		refresh(entry)
-		local from = if kind == "Bang" then BANGS elseif kind == "Burst" then BURSTS else nil
+		local from = if kind == "Bang"
+			then BANGS
+			elseif kind == "Burst" then BURSTS
+			elseif kind == "Open" then OPENS
+			else nil
 		if not (from and from[entry.state]) or RollUpDoor.play(unit, kind) <= 0 then
 			return false
 		end

@@ -37,10 +37,18 @@ Keypad.Reach = 9
 Keypad.PromptReach = 6
 -- The fastest a thumb presses, in seconds: twelve presses a second. Anything faster is a script.
 Keypad.PressSeconds = 0.08
--- After a wrong code the keypad is dead this long, its readout blinking the wrong digits while
--- the alarm rings, then it clears for another try: long enough to sting, short enough to retry
--- before whatever heard the alarm arrives.
-Keypad.AlarmSeconds = 3.5
+-- After a wrong code the keypad is dead a while, its readout blinking the wrong digits while
+-- the alarm rings, then it clears for another try. Seconds, for the first wrong code on a floor,
+-- the second, and the third and every one after (S2-04): the first is long enough to sting and
+-- short enough to retry before whatever heard the alarm arrives; by the third you're stuck at
+-- the keypad while what it let out comes for you. Each is a whole number of the bell's rings
+-- (`Sounds.keypad`: it strikes every `Dead[1]` seconds while the keypad is dead).
+Keypad.Dead = { 3.5, 7, 14 }
+
+-- Seconds the keypad is dead after the `nth` wrong code on its floor (1 for the first).
+function Keypad.dead(nth: number): number
+	return Keypad.Dead[math.clamp(math.floor(nth), 1, #Keypad.Dead)]
+end
 -- How far each sound carries, in studs: the radius a keeper hears it from (L-06b), as Doors'
 -- `acted` reach does. Every beep is noise (GDD); the alarm reaches the whole floor.
 Keypad.Heard = {

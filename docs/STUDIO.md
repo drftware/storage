@@ -2008,3 +2008,22 @@ verified: a doc page, Studio, or "untested".
   each unpadlocked one burst at 90 s, 305 gave "one last blow" and held. Read the bangs off the
   unit's `DoorMotion` ("Bang|...") and `DoorDent` attributes; a `LogService.MessageOut` filter in
   a Server `execute_luau` keeps the Output you read small.
+
+## Testing a wrong code (S2-04a, Nov 14)
+
+- **A far floor isn't on the client.** With StreamingEnabled, a client script at spawn can't
+  reach `DevCorridor.Floor3` (WaitForChild just waits). Pivot the character to the keypad first
+  (`CFrame.new(-7.8, 3, -593.2)` on the dev floor), WaitForChild the elevator, fire
+  `Remotes.Keypad` four times 0.15 s apart, and pivot back to spawn so a freed Mannequin doesn't
+  end the climb. A keypad press counts within `Keypad.Reach` (9 studs) of its face.
+- **A timed-out `execute_luau` keeps running.** The tool gave up ("Request timeout") but the
+  script went on waiting and pressed later, so the keypad saw an extra wrong code. Keep each call
+  short (one wrong code a call) and time long things with a server-side watcher that writes a
+  Workspace attribute.
+- **The keypad's bell recording** (`rbxassetid://9125544264`) is 7.9 s long but is one clang:
+  loud at 0.6 to 1 s, about 20 times quieter by 2.5 s. Measured with an `AudioPlayer` wired to
+  an `AudioAnalyzer` in Edit (`RmsLevel` every 0.2 s). Don't loop it; strike it again.
+- **Unchecked Output line:** `ContentId: rbxassetid://89260803894903 failed due to: No asset
+  content representation found` (27 times) as the first wrong code's unit was dealt and rolled
+  up. The ID isn't in the repo or in any MeshId, Texture or Image in Workspace or
+  ReplicatedStorage on either side.

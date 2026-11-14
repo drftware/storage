@@ -84,6 +84,7 @@ local Brix = require(ReplicatedStorage.Brix)
 local Catalog = require(ReplicatedStorage.Shared.Tools.Catalog)
 local Caught = require(ReplicatedStorage.Shared.Caught)
 local Chase = require(ReplicatedStorage.Shared.Chase)
+local Climb = require(ReplicatedStorage.Shared.Climb)
 local Deal = require(ReplicatedStorage.Shared.Deal)
 local Crawls = require(script.Parent.Crawls)
 local Deals = require(script.Parent.Deals)
@@ -94,6 +95,7 @@ local Elevators = require(script.Parent.Elevators)
 local Flashlights = require(script.Parent.Flashlights)
 local Floor = require(ReplicatedStorage.Shared.Floor)
 local Horn = require(ReplicatedStorage.Shared.Tools.Horn)
+local Keypad = require(ReplicatedStorage.Shared.Elevator.Keypad)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Keeper = require(ReplicatedStorage.Shared.Keeper)
 local Torch = require(ReplicatedStorage.Shared.Flashlight.Torch)
@@ -108,6 +110,7 @@ local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 local Saws = require(script.Parent.Saws)
 local Slots = require(script.Parent.Slots)
 local Waking = require(ReplicatedStorage.Shared.Waking)
+local WrongCode = require(ReplicatedStorage.Shared.WrongCode)
 
 local TRACE = RunService:IsStudio() -- Output says what each keeper hears and does
 -- Workspace's attribute the dev command sets (Studio only): every loose Mannequin heads for its
@@ -116,9 +119,6 @@ local DEV_ERRAND = "SendToBreaker"
 -- Studio only: set this Workspace attribute true and every floor with someone on it skips ahead to
 -- its first wave of sleepers waking (S2-03b), so a test needn't wait four minutes.
 local DEV_WAKE = "WakeSleepers"
--- Studs above or below a floor's own level that a player's feet count as on it: the first one
--- there starts the floor's waking clock (the floor above is laid while the team is still below).
-local ON_FLOOR = 4
 -- Seconds between looks for a floor's breaker box until it's found (it hangs as the floor lays)
 local BOX_LOOK = 1
 local STATE_ATTRIBUTE = "KeeperState"
@@ -604,8 +604,94 @@ function Keepers.new(): Keepers
 		return at + toward.Unit * SIDE_IN
 	end
 
-	-- The rest of the noises players make (L-15), each heard as far as players hear it.
+	--[[
+		The `nth` wrong code on floor `on` (S2-04): it rolls up that many units with a monster in
+		them by themselves (`WrongCode`), sleepers first, then ones holding one awake behind a shut
+		door; never a padlocked one. A picked sleeper is stood awake and shut in at once, as a
+		waking one is (`dealShut`, `onDealt`), so it hears the alarm with the rest and comes for
+		the keypad as its door goes up. The doors start rolling one after another once the alarm
+		has sounded (`WrongCode.rollAt`), each the slow, loud open players know. One Output line.
+	]]
+	local function letOut(on: OnFloor, nth: number)
+		local d, dl = doors, deals
+		if not (d and dl) then
+			return
+		end
+		local asleep: { number } = {}
+		for slot in on.asleep do
+			local unit = on.units[slot]
+			if unit and d:stateOf(unit) ~= "Locked" then
+				table.insert(asleep, slot)
+			end
+		end
+		local held: { number } = {}
+		local awake = 0
+		for _, entry in on.keepers do
+			local k = entry.keeper
+			if Keeper.awake(k) then
+				awake += 1
+			end
+			local index = k.trappedIn
+			local unit = on.units[index]
+			if index ~= 0 and not k.padlocked and unit and not table.find(held, index) then
+				if d:stateOf(unit) ~= "Locked" then
+					table.insert(held, index)
+				end
+			end
+		end
+		table.sort(asleep) -- fixed orders, so the floor's Random alone decides the pick
+		table.sort(held)
+		local random = on.random
+		local picked = WrongCode.pick(
+			asleep,
+			held,
+			nth,
+			Waking.AwakeMost - awake,
+			function(k: number): number
+				return random:nextInteger(1, k)
+			end
+		)
+		local said: { string } = {}
+		for i, slot in picked do
+			local unit = on.units[slot]
+			if on.asleep[slot] then
+				on.asleep[slot] = nil
+				on.waking[slot] = true
+				if not dl:dealShut(unit) then
+					on.waking[slot] = nil
+				end
+			end
+			task.delay(WrongCode.rollAt(i), function()
+				local dd = doors
+				if dd and unit.Parent then
+					dd:move(unit, "Open")
+				end
+			end)
+			table.insert(said, tostring(on.floor.slots[slot].number))
+		end
+		if TRACE then
+			local what = if #said > 0
+				then `Units {table.concat(said, ", ")} roll up`
+				else "nothing shut in to let out"
+			print(
+				`Keepers: wrong code {nth} on floor {on.floor.number}: {what}; the keypad is dead {Keypad.dead(
+					nth
+				)} s`
+			)
+		end
+	end
+
+	-- The rest of the noises players make (L-15), each heard as far as players hear it. A wrong
+	-- code lets monsters out first, so the ones it stands up hear its alarm too.
 	local function onKeypad(event: Elevators.KeypadEvent)
+		if event.action == "Wrong" and event.floor then
+			for _, on in floors do
+				if on.model == event.floor then
+					letOut(on, event.wrongs)
+					break
+				end
+			end
+		end
 		hearAt(event.at, event.reach, KEYPAD[event.action])
 	end
 	local function onLanded(event: Slots.Landed)
@@ -897,8 +983,9 @@ function Keepers.new(): Keepers
 		end
 	end
 
-	-- Whether a living player who isn't kept has their feet on floor `on`'s own level: the first
-	-- one starts its waking clock. Allocates nothing.
+	-- Whether a living player who isn't kept stands on floor `on` (`Climb.stands`: its level and
+	-- inside its reach, since the floor above is laid level with this one while the team is still
+	-- here): the first one starts its waking clock. Allocates nothing.
 	local function anyoneOn(on: OnFloor): boolean
 		for _, player in everyone do
 			if player:GetAttribute(Kept.Attribute) == true then
@@ -908,8 +995,8 @@ function Keepers.new(): Keepers
 			local root = character and character:FindFirstChild("HumanoidRootPart")
 			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 			if root and root:IsA("BasePart") and humanoid and humanoid.Health > 0 then
-				local y = on.origin:PointToObjectSpace(root.Position).Y
-				if math.abs(y - humanoid.HipHeight - root.Size.Y / 2) <= ON_FLOOR then
+				local p = on.origin:PointToObjectSpace(root.Position)
+				if Climb.stands(on.floor, p.X, p.Y - humanoid.HipHeight - root.Size.Y / 2, p.Z) then
 					return true
 				end
 			end

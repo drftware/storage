@@ -63,15 +63,31 @@ do
 
 	local wrong = Sounds.keypad("Wrong", true)
 	ok(
-		names(wrong) == "Beep,Buzzer,Bell" and inOrder(wrong),
-		`wrong: beep, buzz, bell ({names(wrong)})`
+		names(wrong) == "Beep,Buzzer,Bell,Bell,Bell,Bell" and inOrder(wrong),
+		`wrong: beep, buzz, then the bell struck for the longest lock ({names(wrong)})`
 	)
-	ok(names(Sounds.keypad("Wrong", false)) == "Buzzer,Bell", "your wrong code: buzz, bell")
-	local bell = Sounds.Sounds.Bell
 	ok(
-		near(Sounds.BellAfter + bell.Stop - bell.Start, Keypad.AlarmSeconds),
-		"the bell rings exactly as long as the keypad is dead"
+		names(Sounds.keypad("Wrong", false)) == "Buzzer,Bell,Bell,Bell,Bell",
+		"your wrong code: buzz, bell"
 	)
+	local bell = Sounds.Sounds.Bell
+	local ring = bell.Stop - bell.Start
+	-- every lock is whole rings, and a strike's clang ends just as the keypad clears
+	for nth = 1, 4 do
+		local dead = Keypad.dead(nth)
+		local strikes = 0
+		local last = 0
+		for _, c in wrong do
+			if c.sound == "Bell" and c.at < dead then
+				strikes += 1
+				last = math.max(last, c.at + ring)
+			end
+		end
+		ok(near(last, dead), `wrong code {nth}: the last strike rings out as the keypad clears`)
+		ok(strikes == math.round(dead / Keypad.Dead[1]), `wrong code {nth}: {strikes} strikes`)
+	end
+	ok(Keypad.dead(1) < Keypad.dead(2) and Keypad.dead(2) < Keypad.dead(3), "each lock is longer")
+	ok(Keypad.dead(9) == Keypad.dead(3), "the third lock holds for every one after")
 	ok(Sounds.BellAfter > Sounds.VerdictAfter, "the buzz comes before the bell")
 
 	local right = Sounds.keypad("Right", true)

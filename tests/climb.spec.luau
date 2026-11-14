@@ -78,6 +78,15 @@ do
 	ok(not Climb.on(floor, 0, lowZ - 10), "past its far end isn't")
 	ok(not Climb.on(floor, 0, highZ + 10), "behind the car isn't")
 	ok(not Climb.on(floor, 0, -Climb.Spacing), "the next floor up isn't")
+	-- feet: the floor's own level, inside its reach (a floor laid above is level with this one)
+	ok(Climb.stands(floor, 0, 0, 0), "feet in its lobby stand on it")
+	ok(Climb.stands(floor, 0, Climb.FeetSlack, 0), "a little above its level still does")
+	ok(not Climb.stands(floor, 0, Climb.FeetSlack + 1, 0), "a jump's height above doesn't")
+	ok(
+		not Climb.stands(floor, 0, 0, Climb.Spacing),
+		"feet on the floor below, level with it, don't"
+	)
+	ok(not Climb.stands(floor, 0, 0, -Climb.Spacing), "nor on the floor above")
 end
 ok(Climb.offset(3, 3) == 0, "the climb's first floor stands where it starts")
 ok(Climb.offset(1, 4) == 3 * Climb.Spacing, "each floor stands Spacing on from the last")
