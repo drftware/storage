@@ -3593,3 +3593,43 @@ here the GDD is the newer word again; `docs/PROPOSAL.md` is kept as the record o
   cosmetics (the owner's Nov 11 plan, D-112) and the streamers' admin pass (a Nov 2 draft).
 - The GDD's rating section still says "no screamers", which the built catch isn't (D-102). Not
   part of this change; it's in HANDOFF's Queue.
+
+## D-129 A cart rolls itself home (L-08e4b2, Nov 13)
+The moment: you hop off at a car's stripes as the gate's about to shut, and behind you the cart
+rolls itself back to the rack. One left anywhere else goes home after a while, so the rack is
+tidy for the next round.
+
+**Nose first, turning as a real cart does.** It rolls nose first, as a cart is pushed home: a
+cart ridden out of the rack (handle first) already faces home, so the usual way is one smooth
+curve with no turn round. (The handoff had said handle first; that would need a U-turn in
+front of the rack every time.) The middle of its fixed casters (the hub, `Ride.Pivot` toward the
+handle) follows the way and the cart points along it, so it never slides sideways; facing more
+than 80 degrees from where it heads, it first swings round on the spot about the hub, as a
+ridden cart turns. The way: a cubic curve from the hub into the slot's line, then the last 6
+studs straight in so the nose clears the rack's hoops. A cart already lined up in front of its
+slot squares up on the spot and rolls straight in (`Cart.Home.plan`, Lune specs).
+
+**The server sends a run once; every screen rolls it.** The run is where along the way it was,
+its speed, where it stops and when, by the server's clock (`GetServerTimeNow`), starting 0.15 s
+ahead so every screen hears first. It sets off at 6 studs a second each second up to 7 (slower
+than a walk), eases off at 3 down to 1.2 for the last stretch and stops dead against the rack.
+On the server the cart stays anchored where it set off, its deck colliding as parked; each
+screen places every part by hand each frame (`BulkMoveTo`: joints don't move anchored parts),
+so its deck is solid where you see it, a ride clanks off it, and nothing is replicated per
+frame. Rejected: the server moving it (per-frame replication) or unanchoring it (physics).
+
+**Who it waits for.** Every tenth of a second the server looks 0.75, 1.75 and 3 studs ahead for
+a character or another cart (`Home.meet`): something there, a new run brakes it to a stop (at
+10, about 2.5 studs from its pace); clear for 0.6 s, a new run sets it off again. A run stamped
+with the server's clock means a screen that hears late is off by a few hundredths of a stud,
+never a jump. Held up 12 s all told, it's put in its slot if nobody stands there, else it parks
+where it stopped and tries again later.
+
+**Where it goes.** The nearest free slot (no cart in it, bound for it or over it), trying the
+three nearest and three curve shapes each for a way clear of the walls, the rack and parked
+carts (people and moving carts are waited for, not planned round). No way clear: straight
+into the nearest free slot, with a line in Output. A cart counts as in a slot within 0.6
+studs and 12 degrees of it. No Ride on the way home; arrived, its casters trail as pushed in.
+
+Defaults on the owner's list (`OWNER.md`): nose first, the 20 s wait, the pace, the 12 s give-up,
+no Ride on the way.

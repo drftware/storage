@@ -132,6 +132,31 @@ coast and the park, the stripes. A phone and two players are yours.
   riding your hands hold the torch out, not the handle (goes with whether the torch is out in
   the lobby at all).
 
+## Now: judge L-08e4b2, the cart rolling home (built Nov 13, D-129; untested in Studio)
+
+Hop off a cart at a car's yellow stripes and, a moment later, it rolls back to the rack by
+itself, casters rattling, curving round to line up and easing nose first into a free slot with
+a soft clunk. Facing away from home, it first swings round on the spot. Leave a cart anywhere
+else and it goes home after 20 seconds. Stand in its way and it stops short and waits, then
+rolls on once you step aside. It passes checks but nobody has seen it in Studio: Rojo had
+stopped syncing (the Connect click above), so Studio still ran the old code.
+- [ ] **Watch it in Studio Play (Rojo connected):** ride a cart onto a car's stripes. About a
+  second and a half after you're put off, the cart sets off. Does it curve smoothly and nose
+  into a slot between the hoops without clipping them, and stop with a clunk? Its front casters
+  should flip round as it starts. Output should show no "has no way home" line.
+- [ ] **Leave one mid-room:** Jump off halfway across. After 20 seconds it rolls home. Leave
+  one facing the cars: it swings round on the spot first.
+- [ ] **Stand in its way:** it stops a stud or two short of you, waits while you stand there,
+  and rolls on about half a second after you step aside. Stand there 12 seconds and it gives up
+  and appears in its slot (a jump, but rare).
+- [ ] **Two riders at once (with a friend):** both hop off at the stripes. Do both carts get
+  home, each to its own slot, without stopping for each other forever?
+- [ ] **Decide (defaults in place):** (1) it goes home nose first, the way it already faces
+  after a ride out of the rack (the last handoff said handle first; nose first needs no turn
+  round in the usual case); (2) 20 seconds before a cart left out goes home (`Home.Wait`);
+  (3) it rolls at 7 studs a second, slower than a walk (`Home.Pace`); (4) held up 12 seconds,
+  it's put straight in its slot (`Home.GiveUp`); (5) nobody can ride it on the way home.
+
 ## Now: judge L-08e2, back in your car (built Nov 12, D-123)
 
 At the end of a climb, "Again" brings your group back standing in the car you left from, in your

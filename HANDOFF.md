@@ -2,66 +2,59 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-13, session 116 (the proposal written into the design doc: docs only) ·
-**Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-13, session 117 (L-08e4b2 Home again) · **Checks:** green ·
+**Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- **L-08e4b1 done (D-126).** Tap Ride: you stand on a cart's deck and it heads where you look;
-  Jump hops off and the cart parks where it stopped (not home yet). Verified in Studio Play.
-- **The GDD is rewritten from the owner's answers (D-127, D-128)** and is the newer word again:
-  no top floor, monsters not the building, you keep what you carry, caught until freed. Also
-  answered: tools wear out, the flashlight runs down, the second monster is next, the ride's
-  choice is the elevator's buttons. ROADMAP's Phase 2 is that build order as tickets (S1-01
-  on). None of it is built. The GDD says "monsters"; the code says keepers.
+- **L-08e4b2 built (D-129), passes checks, untested in Studio.** A cart parked at a car's
+  stripes rolls itself home 1.2 s later, one left elsewhere after 20 s: nose first to the
+  nearest free slot, curving to line up and easing straight in between the hoops, swinging round
+  on the spot first if it faces away (`Cart.Home`, 58 Lune checks). The server sends the way and
+  a run stamped with its clock once (`Home*` attributes, `Carts`); every screen places the cart
+  each frame (`CartView`), rattling, with a soft clunk into the rack. It brakes and waits for
+  anyone ahead; held 12 s, or boxed in, it's put in its slot.
+- **Studio isn't getting Rojo's syncs.** The place still runs the code from before this session
+  (Edit's `Carts` has no `goHome`; no `Cart.Home`). Studio's MCP can't sync around it (it
+  refuses HTTP to localhost). A ride to the stripes in Play worked on the old code. The owner's
+  Connect click is `OWNER.md`'s first line; until then nothing new can be checked in Studio.
+- The GDD (D-127, D-128) is the newer word; ROADMAP Phase 2 is its build order. The GDD says
+  "monsters"; the code says keepers.
 
-## Next task: L-08e4b2 Home again
-The moment: you hop off at a car's stripes as the gate's about to shut, and behind you the cart
-rolls itself back to the rack. If it won't fit one session, split it in ROADMAP first.
-1. Owner test results first, if pasted. Read the Read-first list.
-2. A pure core with Lune specs (in `Cart.Ride` or a new `Cart.Home`): the way home from where a
-   cart stands to a free slot (`Lobby.Specs.CartSlots`), rolling handle first then easing in nose
-   first as parked (`Lobby.Parked`); its pace (slower than a ride), a pause while anyone stands
-   in its way, a give-up (put it in its slot) if it can't get there.
-3. Server: a cart left at the stripes, or standing unridden a while anywhere (a sensible wait;
-   OWNER.md), starts home: the server publishes the way and its start time on the cart, every
-   screen draws it along that (CartView, no per-frame replication); the server anchors it in its
-   slot at the end, its button back. No Ride while it's going home (a default).
-4. Feedback: the rattle along the way, a soft clunk as it noses into the rack.
-**Acceptance:** checks green; Lune specs for the way home; Studio Play: hop off at a car's
-stripes and watch the cart roll home and park; one left mid-room goes home after the wait; stand
-in its way and it waits; Output clean but 203785492 and the known rbxassethash lines.
-**Read first:** ROADMAP L-08e4b2; DECISIONS D-126; `src/server/Carts.luau`;
-`src/client/CartView.luau`; `src/shared/Lobby/init.luau` (`Parked`, the carts in `lay`);
-STUDIO.md "Testing a cart ride from the MCP".
+## Next task: L-08e3b Share and follow
+The moment: a friend taps your invite while your group is already climbing on its own server,
+and lands beside you instead of alone in the public lobby. If it won't fit one session, split it
+in ROADMAP first (the three pieces are separable; do (2) first).
+1. First, in Edit, check Studio has the code (`Carts.Source` contains `goHome`). If it does, run
+   L-08e4b2's checks before anything else: ride a cart onto a car's stripes (STUDIO.md "Testing
+   a cart ride from the MCP"; hold W about 5 s from the slot) and log Cart1's pivot and
+   `HomeAt` from a client Heartbeat; it should set off about 1.5 s after the hop-off and park in
+   slot 1 (x -19.5, z 554.85) about 10 s later; Output clean. Fix what fails first.
+2. (2) Invite from a group's own server: the launch data names that server (`Trip` data
+   carries its id); the public lobby a friend lands in sends them on (`TeleportAsync`, the same
+   `ReservedServerId`), standing them at the front office there.
+3. (3) The dial's floor for a climb on another server: the group's server tells its lobby
+   (MessagingService, the lobby's JobId in the trip's data); the car's dial says "Floor N"
+   until they're back.
+4. (1) The share link (`SocialService:PromptLinkSharingAsync`, server only): where it sits waits
+   on `OWNER.md` (Decide, L-08e3 item 3); default a Share key beside Invite, and say so there.
+**Acceptance:** checks green; Lune specs for any pure piece (the launch data, who's sent where);
+what Studio can show verified (one player: the panel, the data round trip); real invites,
+reserved servers and MessagingService go to `OWNER.md` as exact steps.
+**Read first:** ROADMAP L-08e3b; DECISIONS D-122 and D-124; `src/shared/Lobby/Trip.luau`;
+`src/server/Trips.luau`; `src/server/LobbyCars.luau`; `src/client/CarPanel.luau`.
 
-## Queue (the evening run, owner Nov 12: lobby sessions until 8pm; ROADMAP Phase 1's order paragraph)
-1. L-08e4b2 (next), in green-ending sessions. Then L-08e3b Share and follow.
-2. Time left: hone the lobby (ROADMAP polish: "The ride's finish", "The dials' finish"). No keepers.
-   After the lobby: ROADMAP Phase 2 from S1-01 Saving (Brix's profiles first). S2-06 Waits on
-   `OWNER.md`. The GDD's rating section says "no screamers"; the built catch is one (D-102).
+## Queue (the overnight run, owner Nov 13: sessions until 8:30am, the updated plan)
+1. L-08e3b (next). Then ROADMAP Phase 2 in order from S1-01. S1-01 Saving waits on Brix's
+   ENG-10 save data (unticked in `../engine/docs/ROADMAP.md`): skip it, make sure Brix's
+   ROADMAP names the missing piece in neutral terms, and promote the next buildable ticket.
+   S2-06 waits on `OWNER.md`. Lobby polish ("The ride's finish", "The dials' finish") waits.
+2. Untested in Studio until Rojo syncs: L-08e4b2 (above), and anything built after it.
 3. Found L-08e4b1: no PlayerModule in PlayerScripts in Play (STUDIO.md), so WatchView's
    `controls` lookup fails quietly (controls may stay on while you watch; untested).
-4. Seen (owner, Nov 12, "fix them later"): lobby car floors go splotchy as the camera moves
-   inside; a sawn side or top flashes see-through as its panel drops (the swap to the holed
-   model? `TopHole.saw`, `CrawlHole.saw`), must be seamless. Older: a lobby car's lamp burns at
-   0.14 of 1.2 in its bay on the client (ElevatorView's `lampAt`/`showLamp`; cause not found), so
-   inside a car its walls read black round the results board; the elevator's gate cache
-   (`posings`, Elevator/init.luau) is a weak table keyed by the car, so it rebuilds after each
-   garbage pass; a ladder stood on a floor when it's cleared should go with it (untested); anyone
-   still in the car 6 s after it opens is shut in (`OWNER.md`'s L-08a decision 2); watching a
-   friend ride doesn't draw their shaft; DevCorridor's "Walk a floor" sign keeps the old number
-   after "Again"; the ladder can't be knocked flat (D-107); tools of a player lost below the
-   world land at the world's middle with no Pick up (`Slots.dropAll` with no root drops at
-   `Vector3.zero`); FlashlightView's and HornView's screens once stayed on with the jump hidden;
-   Output lines at Play, "rbxassethash://... Requester does not have permission for Asset" (cause
-   unknown); turning round at a run's end the crawl stops a third of a second (D-110); the "Alt
-   Cursor" chip shows at the lobby's spawn; a stray `DoorDent_M` model sits at the origin in
-   Edit; in Studio (and a fallback lobby) everyone on the server counts in a climb's end, even
-   someone who stayed in the lobby; you hold the flashlight out in the lobby, over the results
-   and while riding a cart (put it away there?); the panel's host line is blank if the host's
-   Player isn't found; the turned-away headline sits over the far wall, red on teal; screen
-   captures right after Play show the lobby nearly black for several seconds (lighting); the
-   rack is behind you at the spawn (you face the cars), so you see the carts only on turning round.
+4. Seen (owner, Nov 12, "fix them later"): lobby car floors go splotchy inside; a sawn side or
+   top flashes see-through as its panel drops (`TopHole.saw`, `CrawlHole.saw`). Older, see git
+   log of HANDOFF (session 116): a lobby car's dim lamp, the gate cache, ladder and tool edge
+   cases, the rbxassethash lines at Play, the flashlight out in the lobby and while riding.
 
 ## Kickoff for the next agent
 ```text

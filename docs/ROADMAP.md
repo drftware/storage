@@ -1205,10 +1205,16 @@ fix them later." The overnight run's hard limits hold.
           wheels, swings the casters, rattles with speed and stands the rider (`CartView`).
           Verified in Studio Play: out of the rack, a curve, five kicks to 21 a second, a clank
           at the wall, a turn off it, Jump, the coast and the park, the band's hop-off.
-        - [ ] **L-08e4b2 Home again.** A cart you hop off at a car's stripes rolls home to its
-          slot by itself on every screen, round anyone in the way; a cart left standing anywhere
-          rolls home after a while; the rack's carts stand parked as before. Two riders at once
-          (`OWNER.md`).
+        - [x] **L-08e4b2 Home again. Built Nov 13 (D-129); passes checks, untested in Studio**
+          (Rojo had stopped syncing; `OWNER.md`). A cart you hop off at a car's stripes rolls
+          home by itself 1.2 s after it parks, one left anywhere else after 20 s: nose first to
+          the nearest free slot, a curve to line up and the last 6 studs straight in between the
+          hoops, swinging round on the spot first if it faces away (`Cart.Home`, Lune specs). The
+          server sends the way and a run stamped with its clock once; every screen rolls the
+          cart (CartView), rattling, its casters flipping to trail, a soft clunk into the rack.
+          Anyone or any cart just ahead: it brakes, waits, rolls on; held 12 s, or no way clear
+          of walls and parked carts, it's put in its slot. No Ride on the way home. Two riders
+          at once (`OWNER.md`).
 - [x] **L-15 Keepers hear the rest. Done Nov 11 (D-107).** The keypad, a dropped tool, the saw, a
   crawl, the ladder and a drop off or into a unit each reach a keeper as far as players hear them,
   as Lethal Company's Eyeless Dogs come to any noise. A sound on a unit's top carries out over its

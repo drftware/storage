@@ -123,6 +123,14 @@ Ride.Sounds = (
 			volume = 0.6,
 			pitch = 0.9,
 		} :: Sound,
+		-- rolled home by itself, its nose meeting the rack: the bump, soft and low
+		Dock = {
+			id = "rbxassetid://9119083245",
+			from = 3.9,
+			length = 1.3,
+			volume = 0.4,
+			pitch = 0.8,
+		} :: Sound,
 		-- stepping on or off: "Rubber Mat Hits Drops Impacts 9", one thud on the mat
 		Step = { id = "rbxassetid://9118733086", from = 0, length = 0.4, volume = 1, pitch = 1 } :: Sound,
 	} :: any

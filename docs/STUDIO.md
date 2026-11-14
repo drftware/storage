@@ -356,6 +356,11 @@ verified: a doc page, Studio, or "untested".
   lens is horizontal on a 36 mm sensor; Roblox's FOV is vertical: 20 mm → 53.7°, 17 mm → 61.5°,
   22 mm → 49.4° at 16:9. Studio's view is wider than 16:9 (1430×515 here), so crop its middle.
   ffmpeg composes the side by side (no PIL or ImageMagick on this Mac).
+- **Check Studio has your code before a Play test** (L-08e4b2, 2026-11-13): if the Rojo plugin
+  isn't connected (`rojo serve` restarted, or nobody clicked Connect), Studio silently runs the
+  old scripts. In Edit, `execute_luau` a find in a changed script's `Source` first. The MCP
+  can't sync around it: Studio's Assistant refuses HTTP to localhost or 127.0.0.1 ("not in the
+  Assistant HTTP allowlist"), so only the owner's Connect click fixes it.
 - **Rojo may not push a project-file change to Studio** (2026-11-06): a new Lighting child in
   `default.project.json` built fine with `rojo build` but never showed in Studio over a running
   `rojo serve`. Reconnect, or restart `rojo serve`, after editing the project file.

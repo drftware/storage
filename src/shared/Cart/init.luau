@@ -13,18 +13,28 @@
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Home = require(script.Home)
 local Ride = require(script.Ride)
 local Specs = require(script.Specs)
 
 local Cart = {}
 Cart.Specs = Specs
 Cart.Ride = Ride
+Cart.Home = Home
 Cart.Body = "Cart" -- the body's MeshPart, the model's PrimaryPart
 Cart.Tag = "Cart" -- every rideable cart in the world (the server's Carts tags them)
 Cart.Seat = "RideSeat" -- the hidden Seat a rider stands on (`rig`)
 Cart.Deck = "Deck" -- the box you bump and step on
 Cart.RiderAttribute = "Rider" -- the rider's UserId, while someone rides it
 Cart.CoastAttribute = "Coast" -- the last rider's UserId, while it rolls on after they hop off
+-- Going home by itself (Home, set by the server's Carts, drawn by every screen's CartView): the
+-- pose it set off from and the slot's (Vector3s of x, heading, z), the way's shape, and the run
+-- (a Vector3 of from, speed, to; and its start on the server's clock). Present while it's out.
+Cart.HomeFrom = "HomeFrom"
+Cart.HomeTo = "HomeTo"
+Cart.HomeShape = "HomeShape"
+Cart.HomeRun = "HomeRun"
+Cart.HomeAt = "HomeAt"
 Cart.Swivel = "Swivel" -- a front caster's joint to the body: it turns about the kingpin (Y)
 Cart.Spin = "Spin" -- a wheel's joint: it spins about its axle (X)
 -- Where a rider stands: on the mat, a stud short of the handle, facing it (the cart's frame).
