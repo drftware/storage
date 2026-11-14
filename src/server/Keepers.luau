@@ -48,7 +48,8 @@
 	  floor whose way there along the halls is inside its reach comes to look (`Keeper.heardAt`:
 	  up on a unit's top it carries out over the front; behind a shut door, muffled through it).
 	  The rest of the loud things players do come the same way, each as far as players hear it
-	  (L-15): the keypad (`Elevators.acted`), a dropped tool landing (`Slots.landed`), the saw
+	  (L-15): the keypad (`Elevators.acted`; a wrong code's alarm calls every keeper awake on its
+	  floor however far, `Keeper.alarm`, S2-04b), a dropped tool landing (`Slots.landed`), the saw
 	  (`Saws.sawing`), a crawl through a hole (`Crawls.crawled`), and the ladder, a crawl along the
 	  tops and a drop off them or into a unit (`Ladders.climbed`). A keeper that hears a sound new to
 	  it stops and turns to it first (`Keeper.hear`), stamped on its body for screens to hear
@@ -284,6 +285,9 @@ local Keepers = {}
 function Keepers.new(): Keepers
 	local floors: { [Model]: OnFloor } = {}
 	local floorOf: { [Model]: OnFloor } = {} -- each unit's floor
+	-- doors a wrong code is rolling up (S2-04b): their open is the alarm's, and keepers it already
+	-- turned for the keypad don't turn again for it; each leaves once all the way up
+	local rolling: { [Model]: boolean } = {}
 	local connections: { Brix.SignalConnection } = {}
 	local doors: Doors.Doors? = nil
 	local motionLights: MotionLights.MotionLights? = nil
@@ -490,6 +494,7 @@ function Keepers.new(): Keepers
 			if floorOf[unit] == on then
 				floorOf[unit] = nil
 			end
+			rolling[unit] = nil
 		end
 		for _, entry in on.keepers do
 			release(entry)
@@ -526,11 +531,12 @@ function Keepers.new(): Keepers
 	-- Keeper `entry` heard `what`, `off` studs away along the halls; `news` if it's a sound it
 	-- wasn't already going to (Keeper.hear). News is said in Output and stamped on its body, so
 	-- every screen plays it stopping and turning to the sound (KeeperSounds' Heard beat); the same
-	-- noise going on (a code's presses, a crawl's pulls) is neither.
+	-- noise going on (a code's presses, a crawl's pulls) is neither. No `what`: the caller says it
+	-- in one line for all of them (a wrong code's alarm).
 	local function heardIt(
 		entry: Entry,
 		was: Keeper.State,
-		what: string,
+		what: string?,
 		off: number,
 		news: boolean
 	)
@@ -538,7 +544,7 @@ function Keepers.new(): Keepers
 		if news and k.state ~= "Trapped" then
 			entry.body.model:SetAttribute(KeeperTell.HeardAttribute, Workspace:GetServerTimeNow())
 		end
-		if TRACE and news then
+		if TRACE and news and what then
 			local doing = if k.state == "Trapped"
 				then "it'll go there once out"
 				elseif was == "Asleep" then "it wakes, turns to it and goes to look"
@@ -550,10 +556,11 @@ function Keepers.new(): Keepers
 		changedState(entry, was)
 	end
 
-	-- A door made a sound: every keeper on its floor that hears it goes to look.
+	-- A door made a sound: every keeper on its floor that hears it goes to look; not at the open
+	-- of a door a wrong code rolls up (`rolling`), which is the alarm's.
 	local function onActed(event: Doors.DoorEvent)
 		local motion = event.motion
-		if not (motion and Keeper.Hears[motion]) then
+		if not (motion and Keeper.Hears[motion]) or (motion == "Open" and rolling[event.unit]) then
 			return
 		end
 		local on = floorOf[event.unit]
@@ -609,13 +616,18 @@ function Keepers.new(): Keepers
 		them by themselves (`WrongCode`), sleepers first, then ones holding one awake behind a shut
 		door; never a padlocked one. A picked sleeper is stood awake and shut in at once, as a
 		waking one is (`dealShut`, `onDealt`), so it hears the alarm with the rest and comes for
-		the keypad as its door goes up. The doors start rolling one after another once the alarm
-		has sounded (`WrongCode.rollAt`), each the slow, loud open players know. One Output line.
+		the keypad as its door goes up. Every picked one stands quiet behind its door (`Keeper.hush`),
+		and keepers don't go to look at the doors' opens (`rolling`): either would pull the floor
+		off the alarm. The doors start rolling one after another
+		once the alarm has sounded (`WrongCode.rollAt`), each the slow, loud open players know. The
+		numbers of
+		the units it rolls up, for Output.
 	]]
-	local function letOut(on: OnFloor, nth: number)
+	local function letOut(on: OnFloor, nth: number): { string }
+		local said: { string } = {}
 		local d, dl = doors, deals
 		if not (d and dl) then
-			return
+			return said
 		end
 		local asleep: { number } = {}
 		for slot in on.asleep do
@@ -651,7 +663,6 @@ function Keepers.new(): Keepers
 				return random:nextInteger(1, k)
 			end
 		)
-		local said: { string } = {}
 		for i, slot in picked do
 			local unit = on.units[slot]
 			if on.asleep[slot] then
@@ -661,34 +672,70 @@ function Keepers.new(): Keepers
 					on.waking[slot] = nil
 				end
 			end
+			for _, entry in on.keepers do
+				if entry.keeper.trappedIn == slot then
+					Keeper.hush(entry.keeper) -- its door goes up by itself: no blow on it first
+				end
+			end
 			task.delay(WrongCode.rollAt(i), function()
 				local dd = doors
 				if dd and unit.Parent then
-					dd:move(unit, "Open")
+					rolling[unit] = true
+					if not dd:move(unit, "Open") then
+						rolling[unit] = nil
+					end
 				end
 			end)
 			table.insert(said, tostring(on.floor.slots[slot].number))
 		end
-		if TRACE then
-			local what = if #said > 0
-				then `Units {table.concat(said, ", ")} roll up`
-				else "nothing shut in to let out"
-			print(
-				`Keepers: wrong code {nth} on floor {on.floor.number}: {what}; the keypad is dead {Keypad.dead(
-					nth
-				)} s`
-			)
+		return said
+	end
+
+	-- A wrong code's alarm at `at` (the world's) on floor `on`, carrying `reach` (S2-04b): every
+	-- keeper awake on that floor turns for the keypad, however far off (`Keeper.alarm`); a sleeper
+	-- wakes to it only within `reach`. How many come now, and how many once out of the unit
+	-- they're shut in.
+	local function alarm(on: OnFloor, at: Vector3, reach: number): (number, number)
+		local p = on.origin:PointToObjectSpace(at)
+		local here = vector.create(p.X, p.Y, p.Z)
+		local now, later = 0, 0
+		for _, entry in on.keepers do
+			local k = entry.keeper
+			local was: Keeper.State = k.state
+			local heard, news = Keeper.alarm(k, here, reach)
+			if heard then
+				if k.state == "Trapped" then
+					later += 1
+				else
+					now += 1
+				end
+				heardIt(entry, was, nil, heard, news)
+			end
 		end
+		return now, later
 	end
 
 	-- The rest of the noises players make (L-15), each heard as far as players hear it. A wrong
-	-- code lets monsters out first, so the ones it stands up hear its alarm too.
+	-- code lets monsters out first, so the ones it stands up hear its alarm too; then the alarm
+	-- calls every monster awake on its floor. One Output line a wrong code.
 	local function onKeypad(event: Elevators.KeypadEvent)
 		if event.action == "Wrong" and event.floor then
 			for _, on in floors do
 				if on.model == event.floor then
-					letOut(on, event.wrongs)
-					break
+					local nth = event.wrongs
+					local said = letOut(on, nth)
+					local now, later = alarm(on, event.at, event.reach)
+					if TRACE then
+						local rolled = if #said > 0
+							then `Units {table.concat(said, ", ")} roll up`
+							else "nothing shut in to let out"
+						print(
+							`Keepers: wrong code {nth} on floor {on.floor.number}: {rolled}; {now} monsters turn for the keypad, {later} more once out; the keypad is dead {Keypad.dead(
+								nth
+							)} s`
+						)
+					end
+					return
 				end
 			end
 		end
@@ -722,9 +769,10 @@ function Keepers.new(): Keepers
 			local was: Keeper.State = k.state
 			if Keeper.lookOut(k, slot, index) then
 				if TRACE then
-					print(
-						`Keepers: Unit {slot.number}'s door is up; the {k.row.name} steps out to look`
-					)
+					local doing = if was == "Trapped" and k.listening
+						then "goes after what it heard shut in"
+						else "steps out to look"
+					print(`Keepers: Unit {slot.number}'s door is up; the {k.row.name} {doing}`)
 				end
 				changedState(entry, was)
 			end
@@ -754,6 +802,7 @@ function Keepers.new(): Keepers
 			local wasOpen = KeeperMap.doorOpen(on.map, index)
 			KeeperMap.setDoor(on.map, index, through)
 			if through then
+				rolling[change.unit] = nil
 				lookOut(on, index)
 			elseif wasOpen then
 				trap(on, index)

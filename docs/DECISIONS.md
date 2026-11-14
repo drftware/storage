@@ -4427,3 +4427,27 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
 - **Waking clock fix.** A floor's waking clock starts only for feet inside its reach as well as
   at its level (`Climb.stands`): every floor of a climb stands at one height, so height alone
   started the floor above's clock as it was laid.
+
+## D-160 A wrong code's alarm calls every monster on the floor (S2-04b, Nov 14)
+
+- **Who comes.** Every keeper awake on the alarm's floor hears it however far off
+  (`Keeper.alarm`, reach `Keeper.Anywhere`), as Left 4 Dead's car alarm brings the horde from
+  all over the map. Loose, it stops, turns and walks for the keypad at its usual "going to look"
+  pace (about 7 studs a second), looks round there for its linger, then roams. Shut in a unit,
+  it remembers the alarm and goes for the keypad once its door is up. Every hall on every floor
+  was already inside the alarm's 400 studs from the lobby (the farthest is 377), so the change
+  is that nothing awake is ever out of reach, whatever the floor's shape.
+- **My defaults (in `OWNER.md`).** A monster chasing a player it can see keeps chasing: no sound
+  pulls it off a hunt, the alarm included. A sleeper isn't called from afar: it wakes only
+  within the alarm's 400 studs, as for any sound (the shut door stops it anyway), so the wrong
+  code's own pick (D-159) says which sleepers come. It walks rather than runs, so a wrong code
+  fills the lobby over the next minute instead of ending the climb on the spot.
+- **Nothing pulls them off it.** Found in Play: a freed sleeper is shut in with its first blow
+  due 1.2 s later, just as its door starts to roll, and the doors' own opens are loud door
+  sounds; either one was newer than the alarm, so the loose and freed monsters went to those
+  doors instead (one walked away from the keypad). Now a keeper behind a door the alarm picked
+  stands quiet (`Keeper.hush`), and keepers don't go to look at the open of a door a wrong code
+  rolls up (`rolling` in `Keepers`). D-159's scare stays: the door goes up by itself, unannounced.
+- **Output.** One line a wrong code: the units it rolls up, how many monsters turn for the keypad
+  now and how many more once out, and how long the keypad is dead. A freed keeper's door going up
+  says it "goes after what it heard shut in" rather than "steps out to look".

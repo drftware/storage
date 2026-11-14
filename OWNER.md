@@ -136,6 +136,24 @@ climb only a Mannequin throws it (S2-02c, below), so test the box itself with th
    lights do; coming back dark would show nothing from the box); the lamp as glowing Neon, red
    off and green on; one second to hold, as cutting a friend free.
 
+## Now: watch every monster come to a wrong code (S2-04b, built Nov 14, D-160; seen in Play)
+
+A wrong code's alarm now calls every monster awake on the floor, however far, and the ones it
+lets out stay quiet behind their doors as they roll up. Seen in Studio Play from where each
+monster went (one 142 studs off and three just freed all walked to the keypad); not watched on
+screen or heard. Do it with the S2-04a test just below, in the same Play.
+1. Punch 1111 once and let the Mannequin from Unit 338 come to the keypad and wander off. When
+   it's far away down the halls, punch 1111 again. Look for: it turns and walks back to the
+   lobby, and the three new ones come straight there too, not to each other's doors. Does a
+   lobby filling up over the next half minute feel like the price of a wrong guess?
+2. Look at the keypad once they've arrived: they go to one spot and nothing keeps them apart,
+   so they likely stand inside each other (each was 4 to 5 studs from the keypad; I didn't see
+   it on screen). Tell me if it reads as wrong; spreading them is on my list.
+3. Decide (my defaults): a monster chasing someone it can see keeps chasing when the alarm goes;
+   a sleeping monster wakes to the alarm only within its 400 studs (its shut door stops it
+   anyway); they walk to the keypad at their "going to look" pace, not a run. The alternatives:
+   the alarm pulls a chaser off you (a wrong code as a way out), or they run to it.
+
 ## Now: punch a wrong code (S2-04a, built Nov 14, D-159; seen in Play, not heard)
 
 A wrong code now rolls up doors with monsters behind them, by themselves, and the keypad stays

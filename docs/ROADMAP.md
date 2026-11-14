@@ -1673,11 +1673,12 @@ Done when a team that has lost its lights goes looking for the breaker without b
     wrong codes per floor and stays dead `Keypad.dead` (3.5, 7, 14 s); the bell strikes again
     every 3.5 s while it's dead. A picked sleeper stands awake behind its door first, so it
     hears the alarm and comes for the keypad once out. `tests/wrongcode.spec.luau`.
-  - [ ] **S2-04b Every loose monster heads for the keypad.** On a wrong code every keeper loose
-    on the floor goes for the keypad wherever it is, not only those within the alarm's 400
-    studs of hall; the ones it let out too (today they go there because they heard it). Then
-    each looks around the lobby before roaming again. Verify in Play: a far keeper turns for
-    the keypad on the alarm.
+  - [x] **S2-04b Every loose monster heads for the keypad. Done Nov 14 (D-160); seen in Play.**
+    A wrong code's alarm calls every monster awake on its floor however far (`Keeper.alarm`), as
+    Left 4 Dead's car alarm calls the horde; one shut in comes once out; one chasing you keeps
+    on you. Freed ones stand quiet behind their rolling doors (`Keeper.hush`) and the doors'
+    opens don't pull anyone off the alarm. In Play on seed 7: one 142 studs off and three just
+    freed all walked to the keypad and looked round there.
   - [ ] **S2-04c The hall lights go out for the alarm.** Today a wrong code turns every light
     on (`MotionLights.flash`), freezing the Mannequins, so a team is safer for guessing (seen
     in Play: every Mannequin let out froze in the light). The GDD: the hall lights go out for

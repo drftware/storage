@@ -4,8 +4,11 @@
 -- hear it, along the halls. A sound up on a unit's top carries out over its front; one behind a
 -- shut door gets out through it, muffled; a keeper in the same unit hears it where it is. A sound
 -- new to a keeper stops it dead, turned to face it, before it goes; the same noise going on (a
--- code's presses, a crawl's pulls) doesn't stop it again. And the numbers that say how far each
--- noise carries keep their order.
+-- code's presses, a crawl's pulls) doesn't stop it again. A wrong code's alarm (S2-04b) calls
+-- every keeper awake on the floor however far, to look round the keypad and roam on; shut in, it
+-- comes once out, quiet behind a door that will roll up (`hush`); hunting, it stays on you;
+-- asleep, only within the alarm's reach. And the numbers that say how far each noise carries
+-- keep their order.
 local Brix = require("../vendor/brix/src")
 local Carry = require("../src/shared/Tools/Carry")
 local Crawling = require("../src/shared/StorageUnit/CrawlHole/Crawling")
@@ -122,9 +125,12 @@ for _, case in { { 1, 7 }, { 2, 1 }, { 3, 2 } } do
 	end
 
 	-- a wrong code's alarm reaches every hall on the floor
-	local farthest = 0
+	local farthest, farAt = 0, lobby
 	for _, i in map.stops do
-		farthest = math.max(farthest, walker:length(lobby, middleOf(map, i)))
+		local d = walker:length(lobby, middleOf(map, i))
+		if d > farthest then
+			farthest, farAt = d, middleOf(map, i)
+		end
 	end
 	ok(
 		farthest < Keypad.Heard.Wrong,
@@ -298,6 +304,102 @@ for _, case in { { 1, 7 }, { 2, 1 }, { 3, 2 } } do
 			`{where}: shut in asleep, the alarm doesn't reach it`
 		)
 		ok(sleeper.state == "Asleep", `{where}: it sleeps on`)
+	end
+
+	-- A wrong code's alarm (S2-04b) calls every keeper awake on the floor, past any reach. Each
+	-- check gives it a reach of one stud, so only the call reaches them.
+	local keypad = vector.create(0, 3, 0)
+	local _, atKeypad = Keeper.soundAt(map, keypad)
+	do
+		local k = Keeper.new(MANNEQUIN, map, random, farAt, vector.create(0, 0, -1), true)
+		k.state = "Roaming"
+		ok(
+			Keeper.heardAt(k, keypad, 1) == nil,
+			`{where}: a stud of reach doesn't reach the far hall`
+		)
+		local heard, news = Keeper.alarm(k, keypad, 1)
+		ok(
+			heard ~= nil and news and k.state == "Going",
+			`{where}: the alarm turns the farthest keeper ({math.round(farthest)} off)`
+		)
+		ok(flat(k.goal, atKeypad) < TOL, `{where}: for the keypad`)
+		local pace = MANNEQUIN.speed * MANNEQUIN.looking * RUN
+		for _ = 1, math.ceil((farthest / pace + MANNEQUIN.startle + 2) / DT) do
+			Keeper.step(k, DT, RUN)
+			if k.state ~= "Going" then
+				break
+			end
+		end
+		ok(
+			k.state == "Waiting" and flat(k.at, atKeypad) < TOL,
+			`{where}: it walks all the way to the keypad ({k.state})`
+		)
+		ok(facingToward(k, keypad), `{where}: and looks at it`)
+		for _ = 1, math.ceil((MANNEQUIN.linger + 1) / DT) do
+			Keeper.step(k, DT, RUN)
+			if k.state ~= "Waiting" then
+				break
+			end
+		end
+		ok(k.state == "Roaming", `{where}: then roams again ({k.state})`)
+	end
+	-- shut in a unit, it remembers it and heads for the keypad once its door is up
+	do
+		KeeperMap.setDoor(map, slot, true)
+		local k = Keeper.new(MANNEQUIN, map, random, inside, vector.create(0, 0, 1), true)
+		KeeperMap.setDoor(map, slot, false)
+		ok(Keeper.trap(k, f.slots[slot], slot), `{where}: a keeper shut in its unit`)
+		local heard = Keeper.alarm(k, keypad, 1)
+		ok(
+			heard ~= nil and k.state == "Trapped" and k.heardOut,
+			`{where}: shut in, it hears the alarm and waits`
+		)
+		-- its door picked to roll up, it stands quiet: no blow until its break-out
+		Keeper.hush(k)
+		local blows = 0
+		for _ = 1, math.ceil((MANNEQUIN.breakOut - 1) / DT) do
+			Keeper.step(k, DT, RUN)
+			if k.blow ~= "None" then
+				blows += 1
+			end
+		end
+		ok(blows == 0 and k.state == "Trapped", `{where}: hushed, it never bangs ({blows})`)
+		KeeperMap.setDoor(map, slot, true)
+		ok(
+			Keeper.lookOut(k, f.slots[slot], slot)
+				and k.state == "Going"
+				and flat(k.goal, atKeypad) < TOL,
+			`{where}: out, it heads for the keypad`
+		)
+		KeeperMap.setDoor(map, slot, false)
+	end
+	-- hunting a player, it stays on them
+	do
+		local k = Keeper.new(MANNEQUIN, map, random, farAt, vector.create(0, 0, -1), true)
+		k.state = "Hunting"
+		ok(
+			Keeper.alarm(k, keypad, Keypad.Heard.Wrong) == nil and k.state == "Hunting",
+			`{where}: hunting, the alarm doesn't turn it`
+		)
+	end
+	-- asleep, it wakes only as near as the alarm carries; a deaf row never hears it
+	do
+		KeeperMap.setDoor(map, slot, true)
+		local sleeper = Keeper.new(MANNEQUIN, map, random, inside, vector.create(0, 0, 1))
+		ok(
+			Keeper.alarm(sleeper, keypad, 1) == nil and sleeper.state == "Asleep",
+			`{where}: asleep past the alarm's reach, it sleeps on`
+		)
+		ok(
+			Keeper.alarm(sleeper, keypad, Keypad.Heard.Wrong) ~= nil and sleeper.state == "Going",
+			`{where}: asleep within it, it wakes and comes`
+		)
+		KeeperMap.setDoor(map, slot, false)
+		local deafRow = table.clone(MANNEQUIN)
+		deafRow.hearing = 0
+		local deaf = Keeper.new(deafRow, map, random, farAt, vector.create(0, 0, -1), true)
+		deaf.state = "Roaming"
+		ok(Keeper.alarm(deaf, keypad, 1) == nil, `{where}: a keeper that hears nothing stays put`)
 	end
 end
 

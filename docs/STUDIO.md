@@ -2016,6 +2016,14 @@ verified: a doc page, Studio, or "untested".
   (`CFrame.new(-7.8, 3, -593.2)` on the dev floor), WaitForChild the elevator, fire
   `Remotes.Keypad` four times 0.15 s apart, and pivot back to spawn so a freed Mannequin doesn't
   end the climb. A keypad press counts within `Keypad.Reach` (9 studs) of its face.
+- **Wait for the pivot before pressing** (S2-04b). Pressing in the same moment as the pivot
+  can reach the server before the character's new place does, and the press is out of reach and
+  ignored. `task.wait(0.6)` after `PivotTo` made every wrong code count.
+- **Read Output small.** `get_console_output` returns the whole log, with about 50 texture
+  permission lines at every Play start. Instead, at Play start run a server script that hooks
+  `LogService.MessageOut`, keeps lines starting `Keepers:` plus warnings and errors in a
+  `ServerStorage` StringValue, and read that; a second loop writing each keeper body's distance
+  from the keypad every 2 s shows who turned.
 - **A timed-out `execute_luau` keeps running.** The tool gave up ("Request timeout") but the
   script went on waiting and pressed later, so the keypad saw an extra wrong code. Keep each call
   short (one wrong code a call) and time long things with a server-side watcher that writes a

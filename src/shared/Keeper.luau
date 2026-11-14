@@ -80,7 +80,8 @@
 	that's loud reaches it the same way (`heardAt`, L-15): a sound up on a unit's top carries out
 	over its front, and one behind a shut door gets out through it muffled (`Muffled`), so it comes
 	to stand outside that door. A newer sound it hears takes it there instead, as Granny turns to
-	the latest noise, whatever it was doing.
+	the latest noise, whatever it was doing. A wrong code's alarm reaches it awake anywhere on its
+	floor (`alarm`, S2-04b), as Left 4 Dead's car alarm calls the whole horde.
 
 	Coordinates are the floor's own (Floor: the lobby's middle at the origin, its floor at height 0),
 	and a keeper's position is its feet. A step allocates nothing once its route is warm, a roam's
@@ -612,6 +613,25 @@ function Keeper.heardAt(k: Keeper, p: vector, reach: number): (number?, boolean)
 	return Keeper.hear(k, from, carries, spot)
 end
 
+-- How far a wrong code's alarm carries for a keeper awake on its floor (studs): further than any
+-- floor's halls (the farthest is under 400), so it reaches all of them (S2-04b).
+Keeper.Anywhere = 1e6
+
+--- A wrong code's alarm at `p` (the floor's coordinates), carrying `reach` studs as players hear
+--- it (S2-04b, D-160). It calls every keeper awake on the floor, however far off, as Left 4 Dead's
+--- car alarm brings the horde from all over the map: loose, it stops, turns and comes to look at
+--- the keypad, then looks round there and roams (`hear`); shut in a unit, it remembers it and
+--- comes once out; hunting a player it sees, it stays on them, as for any sound. Asleep, it wakes
+--- only as near as the alarm carries (`heardAt`): the wrong code's own pick (`WrongCode`) says
+--- which sleepers it lets out. One with no way there, or a row that hears nothing, stays put. As
+--- `heardAt`: how far off it heard it along the map, or nil, and whether it's news to it.
+function Keeper.alarm(k: Keeper, p: vector, reach: number): (number?, boolean)
+	if k.state == "Asleep" then
+		return Keeper.heardAt(k, p, reach)
+	end
+	return Keeper.heardAt(k, p, Keeper.Anywhere)
+end
+
 --- Whether it's awake: anything but dealt asleep and not yet woken.
 function Keeper.awake(k: Keeper): boolean
 	return k.state ~= "Asleep"
@@ -656,6 +676,16 @@ function Keeper.padlock(k: Keeper, locked: boolean)
 		if locked then
 			k.burst = false
 		end
+	end
+end
+
+--- The door it's trapped behind is about to roll up by itself (a wrong code let it out, S2-04b):
+--- it stops banging and stands quiet against it, so the door's own slow open is the scare and no
+--- blow pulls the floor's keepers off the alarm. It still bursts at its break-out time, should the
+--- door somehow not get up.
+function Keeper.hush(k: Keeper)
+	if k.state == "Trapped" then
+		k.nextBang = math.huge
 	end
 end
 
