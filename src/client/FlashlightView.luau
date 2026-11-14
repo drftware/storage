@@ -42,6 +42,7 @@ local Brix = require(ReplicatedStorage.Brix)
 local Charge = require(ReplicatedStorage.Shared.Flashlight.Charge)
 local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
 local HandRoom = require(script.Parent.HandRoom)
+local InFlight = require(script.Parent.InFlight)
 local Hands = require(ReplicatedStorage.Shared.Hands)
 local Joints = require(script.Parent.Joints)
 local Kept = require(ReplicatedStorage.Shared.Kept)
@@ -522,7 +523,9 @@ function FlashlightView.new(): (Brix.System, Beam)
 	-- Each frame your torch is lit: the light it gives as it runs down, and its buzz. Dead, it
 	-- goes out.
 	local function runDown(dt: number)
-		left = Charge.follow(left, written, dt, mine)
+		-- a battery bought at the car's machine fills it only once it has flown in (MachineVend)
+		local goal = if InFlight.held(player, "torch") then math.min(written, left) else written
+		left = Charge.follow(left, goal, dt, mine)
 		if mine and left <= 0 and alive() then
 			dies()
 			return
@@ -776,7 +779,11 @@ function FlashlightView.new(): (Brix.System, Beam)
 			Flashlight.light(f.rig, on, real[i] == true)
 			-- their torch running down: it flickers and buzzes here as it does on their screen
 			local w = f.owner:GetAttribute(Charge.Attribute)
-			f.left = Charge.follow(f.left, if type(w) == "number" then w else Charge.Full, dt, on)
+			local goal = if type(w) == "number" then w else Charge.Full
+			if InFlight.held(f.owner, "torch") then
+				goal = math.min(goal, f.left) -- their bought battery is still on its way
+			end
+			f.left = Charge.follow(f.left, goal, dt, on)
 			local dying = on and Charge.flickering(f.left)
 			local k, stuttering = 1, false
 			if on then
@@ -879,12 +886,13 @@ function FlashlightView.new(): (Brix.System, Beam)
 			no.Volume = Torch.ClickVolume * Charge.RefuseVolume
 			refuseClick = no
 		end
-		-- what's left, as the server ticks it
+		-- what's left, as the server ticks it; your torch follows it each frame (`runDown`), after
+		-- every change that came with it has landed: a battery bought at the car's machine is
+		-- written with its sale, and the sale holds the fill until the battery flies in
 		local function charged()
 			local w = player:GetAttribute(Charge.Attribute)
 			if type(w) == "number" then
 				written = w
-				left = Charge.follow(left, written, 0, false)
 			end
 		end
 		charged()

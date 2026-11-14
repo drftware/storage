@@ -2,53 +2,47 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-14, session 136 (S1-10c2a The buy and the machine's answer) ·
+**Updated:** 2026-11-14, session 137 (S1-10c2b The buy's flights) ·
 **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- **S1-10c2 split** (context): c2a built, c2b next (ROADMAP).
-- **S1-10c2a built (D-148):** `Machine.Buy` (pure, `tests/buy.spec.luau`): `open`, `check`,
-  `allow`, `encode`/`decode` of `Bought`, `sold`, `Vend` timings and sounds. `Machines` puts a
-  "Buy" prompt (named for the thing) on each `Button{i}`, armed each frame on a ride; a press is
-  validated, gives the thing (`Slots:give`, new; or `Flashlights:fill`), then `Coins:spend`
-  (new, with `spent` and `countOf`), lowers the count, stamps `Bought` (bay|serial|userId) and
-  rewrites the stock. `src/client/MachineVend.luau` plays a sale on every screen (button sink
-  and click, coil's one loop and whine, the thing off the tip into the bin with its clunk, the
-  flap's knock, gone 0.15 s after); `MachineView` reads a sale off the stock (`Buy.sold`) instead
-  of refilling, and a local press sinks the button, too few coins buzz and blink the price.
-  Record: `spent` (reason `machine`, item) and `batteryTaken`; Recording wires both.
-- **Verified in Studio Play** (STUDIO.md "Staging a buy"): bolt cutters (10) and a battery (3)
-  bought by E presses; coins, slot, torch charge and stock all changed; both records printed; a
-  press with too few coins sold nothing; the vend's motion sampled frame by frame (button 0.07
-  in and back, one coil turn 0.1-0.7 s, the battery in the bin at about 1.07 s, the flap 12° and
-  settled by 1.6 s, the next battery moved up). Not seen by eye, not heard. Studio in Edit; its
-  id this run: 4694c6c7-b56c-4a68-ac46-72f07b63568c.
+- **S1-10 is done** (the ride, its machine, its stock, the buy and its flights).
+- **S1-10c2b built (D-149):** the server tells the buyer's screen first (`Buy.Remote`
+  "MachineBuy": machine, bay, price) and gives quietly (`Slots:give(..., quiet)`). CoinView
+  flies up to 8 coins (`Buy.coins`) from the count into the slot (`Specs.Slot`), each ticking
+  it down and clinking there. MachineVend, a beat after the thing lands in the bin, arcs it
+  (`Buy.arc`) to the buyer's left hand or torch (`HandAt`) with its pick-up or clack-click.
+  `InFlight` (new) holds the change back until it lands: ToolView keeps your hand empty then
+  shows the tool where it flew to; a friend's held tool is hidden; FlashlightView keeps the
+  charge (your torch now follows the charge once a frame, not in its signal). A battery's Buy
+  is hidden (ButtonView "Full") while your torch is full. BatteryView uses `HandAt.torch`.
+- **Verified in Studio Play**, sampled frame by frame (STUDIO.md "Sampling a buy"): bolt
+  cutters: count 40 to 30 a coin at a time, no jump, coins reached the slot, the cutters
+  dropped then flew to the hand, the drawn tool appeared only on arrival; a battery: the ring
+  held at 6 ticks until the battery reached the torch (~1.6 s after the press), then swept to
+  12; the battery Buy hid once full. Not seen by eye, not heard, no second player. Studio in
+  Edit; its id this run: 4694c6c7-b56c-4a68-ac46-72f07b63568c.
 
-## Next task: S1-10c2b The buy's flights
-The moment: you press, your coins leave the count in the corner one at a time and fly into the
-machine's coin slot with a clink each, the count ticking down; the thing drops, the flap swings,
-and it flies out of the bin into your hand (a battery into your torch, which snaps full).
-1. Server: tell the buyer's screen of the spend before the count drops (a `MachineBuy` remote,
-   as `Pay.Remote` tells the pay): the machine, the bay, the price.
-2. CoinView: on it, `price` coins fly from the count to the slot's screen point
-   (`Specs.Slot` in the machine's frame), a beat apart, each ticking the count down with the
-   chink; the count doesn't jump down meanwhile (today a drop shows at once).
-3. MachineVend: once the flap knocks, the thing flies from the bin to the buyer's left hand
-   (`Bought`'s userId; a battery to their torch, the right) on every screen; hide the buyer's
-   real held tool (`Tools.HeldName` in their character) on screens until it lands, then show it.
-4. Hide a battery's Buy from a player whose torch is full (BatteryView's rule) on their screen.
-**Acceptance:** checks green; in Play a staged buy (STUDIO.md "Staging a buy") shows coins
-leaving the count and the thing reaching the hand (sample positions, or one small capture).
-**Read first:** ROADMAP S1-10c2b; `src/client/MachineVend.luau`; `src/client/CoinView.luau`
-(grep `paid`, `flyers`, `stepFlyer`); `src/shared/Pay.luau` (its remote); `src/server/Machines.luau`
-(grep `press`); `src/client/BatteryView.luau` (grep `wants`).
+## Next task: S1-11 The one faint mark
+The moment: sweeping your torch along a hall, one door frame shows a faint mark a few steps
+off, and behind that door is one of the floor's notes. Nothing on the corner map says so.
+1. Read ROADMAP S1-11 and the GDD's section on notes and the mark (docs tools, never WebFetch);
+   name the hit game the mark comes from (AGENTS.md's proven-mechanics rule) or flag it.
+2. Server: when the floor is dealt (`Deal`, `Deals`), pick at most one note's unit for the mark
+   (a pure rule in `Deal`, Lune-tested) and stamp it where every screen can read it.
+3. Art first if the mark needs a texture or decal (art is code); keep it faint and small.
+4. Client: the mark shows only from a few steps, and only with your torch's beam on it.
+**Acceptance:** checks green; the rule tested; in Play the mark is found on the stamped frame
+and shows only within the beam at close range (sample the frame's visibility).
+**Read first:** ROADMAP S1-11; GDD note and mark sections; `src/shared/Deal.luau` (grep
+`notes`); `src/server/Deals.luau` (grep `note`); `src/client/NoteView.luau`;
+`src/client/FlashlightView.luau` (grep the beam's aim).
 
 ## Queue (the overnight run, owner Nov 13: sessions until 8:30am, the updated plan)
-1. S1-10c2b (next), then ROADMAP Phase 2 in order (S1-11, S1-12, then Step 2). S2-06 and
-   L-08e3c wait on `OWNER.md`. Lobby polish waits.
-2. Found S1-10c2a: Output in Play lists `rbxassetid://98721236013567` (no content) and
-   `203785492` (wrong type) failures; with S1-10c1's pale cabinet and texture permission errors,
-   unchecked whether they're the machine's.
+1. S1-11 (next), then S1-12, then ROADMAP Phase 2 Step 2. S2-06 and L-08e3c wait on
+   `OWNER.md`. Lobby polish waits.
+2. Found S1-10c2a: Output in Play lists `rbxassetid://203785492` (wrong type) failures and
+   texture permission errors; unchecked whether any are the machine's.
 3. Found S1-10a: watch a whole ride arrive on a next floor in Play (start on floor 1).
 4. Found S1-07b: coin piles and batteries show their Take button through a shut door (the server
    refuses the press); tools hide theirs (BehindDoors). Worth matching.

@@ -15,6 +15,7 @@
 
 	Pure, so Lune checks it (tests/buy.spec.luau).
 ]]
+local Pay = require("../Pay")
 local Ride = require("../Elevator/Ride")
 local Specs = require("./Specs")
 local Stock = require("./Stock")
@@ -49,8 +50,55 @@ Buy.Vend = {
 	Turning = 0.6, -- one loop, a geared motor's steady grind
 	Fall = 0.32, -- from the coil's tip to the bin's floor
 	Flap = 0.45, -- the flap's swing out and back
-	Gone = 0.15, -- after the flap swings, the thing is gone from the bin
+	Gone = 0.15, -- after the flap swings, the thing is gone from the bin (nobody to fly to)
 }
+
+-- The one remote (S1-10c2b): server to the buyer's screen, just before the coins leave their
+-- count, with the machine, the bay and the price. Nothing is ever sent the other way.
+Buy.RemoteFolder = "Remotes"
+Buy.Remote = "MachineBuy"
+
+-- The coins paid, on the buyer's screen (CoinView): one after another they leave the little
+-- count in the corner, ticking it down, and fly into the machine's coin slot, each with a clink.
+-- All in before the thing has dropped, so paying reads first.
+Buy.Coins = 8 -- the most coins drawn: a dearer thing makes each worth more, never a longer wait
+Buy.CoinGap = 0.06 -- between one coin leaving the count and the next: a quick feed
+Buy.CoinFly = 0.3 -- from the count to the slot, shrinking and turning edge-on to go in
+Buy.CoinDown = 0.4 -- each coin leaving ticks lower, first to last: counting down
+
+-- The thing, out of the bin into the buyer's hand on every screen (MachineVend): a beat after it
+-- lands, as the flap swings widest, it lifts out through the flap and arcs to their left hand
+-- (a tool, which then shows there) or into their torch (a battery: the clack-click, and the torch
+-- snaps full). Until it lands there, every screen holds the change back (InFlight).
+Buy.TakeAfter = 0.08 -- after it lands in the bin
+Buy.Take = 0.42 -- from the bin to the hand: quick, a little slow off the start
+Buy.TakeLift = 0.9 -- studs its arc bows up over the straight line, turning into how it's held
+
+-- Seconds from a sale reaching a screen to the thing landing in the bin.
+function Buy.lands(): number
+	local v = Buy.Vend
+	return v.Turn + v.Turning + v.Fall
+end
+
+-- Seconds from a sale reaching a screen to its vend being over: the flap settled and the thing
+-- in the buyer's hand (or gone from the bin, with nobody to fly to).
+function Buy.ends(): number
+	local v = Buy.Vend
+	return Buy.lands() + math.max(v.Flap + v.Gone, Buy.TakeAfter + Buy.Take)
+end
+
+-- The coins drawn for a price: at most `Buy.Coins`, adding up to it (Pay's split).
+function Buy.coins(price: number): { number }
+	return Pay.split(price, Buy.Coins)
+end
+
+-- A point `p` (0 to 1) along the arc from `from` to `to`, bowed `up` (studs, a vector) at its
+-- middle.
+function Buy.arc(from: Vector3, to: Vector3, up: Vector3, p: number): Vector3
+	local mid = (from + to) * 0.5 + up * 2
+	local q = 1 - p
+	return from * (q * q) + mid * (2 * q * p) + to * (p * p)
+end
 
 -- The vend's sounds, all heard round the car (`Heard` studs), each from the game's own measured
 -- recordings (docs/STUDIO.md): the button's click (UnitLight's switch, pitched up to a small

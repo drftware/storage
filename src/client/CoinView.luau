@@ -26,6 +26,11 @@
 	your view, overshooting and settling in a ring, glinting; then one after another they fly to
 	your count, each landing worth its share of the pay (`Pay.split`), ticking higher and higher.
 	A gold "+10" by the count says what came in, and fades once the last coin lands.
+
+	A buy at the car's machine (S1-10c2b, `Buy`): the server tells your screen of the spend before
+	your count drops. One after another the coins leave the count, each ticking it down, a little
+	lower each time, the count dipping; each drops out of the corner and curves into the machine's
+	coin slot, shrinking and turning edge-on to go in, and clinks there (heard round the slot).
 ]]
 local CollectionService = game:GetService("CollectionService")
 local GuiService = game:GetService("GuiService")
@@ -36,6 +41,7 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Coins = require(ReplicatedStorage.Shared.Coins)
+local Machine = require(ReplicatedStorage.Shared.Machine)
 local CoinSpecs = require(ReplicatedStorage.Shared.Coins.Specs)
 local Minimap = require(ReplicatedStorage.Shared.Minimap)
 local Pay = require(ReplicatedStorage.Shared.Pay)
@@ -56,6 +62,11 @@ local TAU = 2 * math.pi
 local EDGE = CFrame.Angles(math.pi / 2, 0, 0) -- a coin on its edge, face to the front (+Z)
 local ICON_TURN = CFrame.Angles(0, math.rad(-22), 0) * CFrame.Angles(math.rad(8), 0, 0)
 local SETTLE = TweenInfo.new(0.26, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+-- A coin paid at the machine: it shrinks to this (against the count's coin) going into the slot,
+-- turning once and on to its edge (the count's coin is turned -22°: 112° more shows its edge).
+local INTO_SIZE = 0.35
+local INTO_TURN = TAU + math.rad(112)
+local DIP = 0.88 -- the count squeezes to this as a coin leaves it, and springs back
 local RIM_BACK = TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local PAY_CLIMB = 0.45 -- the pour's landing ticks climb this much in pitch, first to last
 local PLUS_GAP = 8 -- points between the "+10" and the count
@@ -85,6 +96,10 @@ type Flyer = {
 	born: number?,
 	origin: Vector2?,
 	spot: Vector2?,
+	-- a coin paid at the machine (S1-10c2b): at `launch` it leaves the count, ticking it down,
+	-- and flies into the slot at `into` (world), where `clink` sounds
+	into: Vector3?,
+	clink: Sound?,
 }
 
 local CoinView = {}
@@ -452,8 +467,67 @@ function CoinView.new(): Brix.System
 		return frame
 	end
 
+	-- A coin paid at the machine for this frame: off the count, into the slot; true once it's in.
+	local function stepInto(f: Flyer, now: number, into: Vector3): boolean
+		if now < f.launch then
+			return false
+		end
+		local size = icon.AbsoluteSize.X
+		local camera = Workspace.CurrentCamera
+		local view = if camera then camera.ViewportSize else Vector2.new(1280, 720)
+		if not f.view then
+			-- it leaves the count: down a tick, lower each coin, the count dipping
+			f.start = icon.AbsolutePosition + icon.AbsoluteSize / 2 - gui.AbsolutePosition
+			frameFor(f)
+			tickTurn = tickTurn % TICKS + 1
+			local tick = ticks[tickTurn]
+			tick.PlaybackSpeed = (Coins.Tick.pitch or 1) * f.rise
+			tick.TimePosition = Coins.Tick.from
+			tick:Play()
+			show(math.max(0, shown - f.worth), false)
+			pop.Scale = DIP
+			TweenService:Create(pop, SETTLE, { Scale = 1 }):Play()
+		end
+		local frame = f.view :: ViewportFrame
+		local p = math.clamp((now - f.launch) / Machine.Buy.CoinFly, 0, 1)
+		local t = ease(p)
+		local s = f.start :: Vector2
+		-- the slot where it is on your screen now; behind you, low in the middle
+		local e = Vector2.new(view.X / 2, view.Y * 0.8)
+		if camera then
+			local point = camera:WorldToViewportPoint(into)
+			if point.Z > 0 then
+				e = Vector2.new(point.X, point.Y)
+			end
+		end
+		local d = e - s
+		local c = s:Lerp(e, 0.5) + Vector2.new(d.Y, -d.X) * 0.22 -- drops out of the corner first
+		local point = s:Lerp(c, t):Lerp(c:Lerp(e, t), t)
+		local across = size * (FLYER + (INTO_SIZE - FLYER) * t)
+		frame.Position = UDim2.fromOffset(point.X, point.Y)
+		frame.Size = UDim2.fromOffset(across, across)
+		local coin = f.coin
+		if coin then
+			coin.CFrame = CFrame.Angles(0, INTO_TURN * t, 0) * ICON_TURN * EDGE
+		end
+		if p < 1 then
+			return false
+		end
+		frame:Destroy()
+		f.view = nil
+		local clink = f.clink
+		if clink then
+			clink:Play()
+		end
+		return true
+	end
+
 	-- Moves a flying coin on your screen for this frame; true once it has landed.
 	local function stepFlyer(f: Flyer, now: number): boolean
+		local into = f.into
+		if into then
+			return stepInto(f, now, into)
+		end
 		local born = f.born
 		local size = icon.AbsoluteSize.X
 		if born then
@@ -575,6 +649,50 @@ function CoinView.new(): Brix.System
 		pourAt = born
 	end
 
+	-- Paid at the car's machine (S1-10c2b): `price` coins leave the count for `machine`'s slot.
+	local function spent(machine: unknown, bay: unknown, price: unknown)
+		if
+			typeof(machine) ~= "Instance"
+			or not (machine :: Instance):IsA("Model")
+			or type(bay) ~= "number"
+			or type(price) ~= "number"
+			or price ~= price
+			or price < 1
+		then
+			return
+		end
+		local model = machine :: Model
+		local spec = Machine.Specs.Slot
+		local into = model:GetPivot():PointToWorldSpace(Vector3.new(spec[1], spec[2], spec[3]))
+		local slot = Instance.new("Attachment")
+		slot.Name = "CoinSlot"
+		slot.WorldPosition = into
+		slot.Parent = Workspace.Terrain
+		local shares = Machine.Buy.coins(price)
+		local n = #shares
+		local now = os.clock()
+		for i, worth in shares do
+			local clink = sound(Coins.Chink, slot, Coins.Heard)
+			clink.PlaybackSpeed = (Coins.Chink.pitch or 1) * rng:NextNumber(0.95, 1.15)
+			table.insert(flyers, {
+				launch = now + (i - 1) * Machine.Buy.CoinGap,
+				from = nil,
+				at = into,
+				rise = 1 - Machine.Buy.CoinDown * (i - 1) / math.max(1, n - 1),
+				worth = worth,
+				view = nil,
+				coin = nil,
+				start = nil,
+				into = into,
+				clink = clink,
+			})
+		end
+		local over = (n - 1) * Machine.Buy.CoinGap + Machine.Buy.CoinFly + Coins.Chink.length + 0.5
+		task.delay(over, function()
+			slot:Destroy()
+		end)
+	end
+
 	local function added(model: Instance)
 		if not model:IsA("Model") or piles[model] or not model:IsDescendantOf(Workspace) then
 			return
@@ -668,6 +786,14 @@ function CoinView.new(): Brix.System
 			local remote = folder:WaitForChild(Pay.Remote)
 			if remote:IsA("RemoteEvent") then
 				table.insert(connections, remote.OnClientEvent:Connect(paid))
+			end
+		end)
+		-- a buy at the car's machine: the coins into its slot
+		task.spawn(function()
+			local folder = ReplicatedStorage:WaitForChild(Machine.Buy.RemoteFolder)
+			local remote = folder:WaitForChild(Machine.Buy.Remote)
+			if remote:IsA("RemoteEvent") then
+				table.insert(connections, remote.OnClientEvent:Connect(spent))
 			end
 		end)
 	end

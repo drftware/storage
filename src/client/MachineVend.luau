@@ -4,17 +4,26 @@
 	MachineView, timed by `Machine.Buy.Vend`. The bay's button sinks with a click and comes back
 	up; its coil turns one loop with a geared whine, creeping its things forward; the front thing
 	rides off the coil's tip, tips over and drops into the bin with its own clunk; the flap knocks
-	out and swings back; then the thing is gone from the bin (taken). The others in the coil each
-	move up into the place of the one ahead.
+	out and swings back. As it swings widest, the thing lifts out through the flap and arcs to the
+	buyer (`Buy.Attribute` names them): a tool into their left hand, where it then shows, with its
+	pick-up sound; a battery into their torch, shrinking as it slides in, with the clack-click,
+	and the torch snaps full. Until it lands, every screen holds the change back (InFlight): a
+	friend's new tool is hidden in their hand here, your own stays out of your view (ToolView),
+	the torch stays as dim as it was (FlashlightView). With nobody to fly to, the thing is just
+	gone from the bin. The others in the coil each move up into the place of the one ahead.
 
 	Moving the machine's parts here stays on this screen: the server never moves them. Everything
 	ends where it began but the sold thing, which is destroyed.
 ]]
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
 local Battery = require(ReplicatedStorage.Shared.Battery)
 local Machine = require(ReplicatedStorage.Shared.Machine)
 local Tools = require(ReplicatedStorage.Shared.Tools)
+local HandAt = require(script.Parent.HandAt)
+local InFlight = require(script.Parent.InFlight)
 
 local Buy = Machine.Buy
 local Specs = Machine.Specs
@@ -31,6 +40,9 @@ local TUMBLE = 100
 -- Degrees the flap knocks out as the thing lands, and how many swings it dies over.
 local KNOCK = 18
 local SWINGS = 1.5
+-- The arc out of the bin to the hand bows up this much at its middle (half of it at the top).
+local UP = Vector3.new(0, Buy.TakeLift, 0)
+local me = Players.LocalPlayer
 
 export type Vend = {
 	start: number,
@@ -51,6 +63,13 @@ export type Vend = {
 	flapAt: CFrame,
 	sink: boolean, -- this screen still sinks the button (not already sunk by a press here)
 	stage: number, -- the sounds played so far: 1 the motor, 2 the clunk
+	buyer: Player?, -- who it flies to
+	hand: InFlight.Hand, -- which of their hands: a battery the torch's, a tool the left
+	holding: boolean, -- InFlight holds the buyer's hand until it lands
+	binAt: CFrame?, -- its pose in the bin as it lifted out
+	size: Vector3, -- a battery's size, shrinking into the torch
+	hidden: Model?, -- the friend's new tool in their hand, hidden here until it lands
+	hiddenParts: { BasePart },
 }
 
 local MachineVend = {}
@@ -71,10 +90,16 @@ local function ease(u: number): number
 	return u * u * (3 - 2 * u)
 end
 
+-- Slow off the bin, then quicker into the hand (as a battery flies to a torch, BatteryView).
+local function flyCurve(p: number): number
+	return p * p * (3 - 2 * p) * 0.4 + p * p * 0.6
+end
+
 --[[
 	Starts the sale of bay `bay` (its catalog key `key`) at `machine`, `things` its things on this
 	screen front first (MachineStock's), at `now` (os.clock). Takes the front thing out of
-	`things`. `sunk`: this screen pressed the button a moment ago, so it's already down.
+	`things`. `sunk`: this screen pressed the button a moment ago, so it's already down. `buyer`:
+	who it flies to (nil: nobody, it's just gone from the bin).
 ]]
 function MachineVend.start(
 	machine: Model,
@@ -82,7 +107,8 @@ function MachineVend.start(
 	key: string,
 	things: { Instance },
 	now: number,
-	sunk: boolean
+	sunk: boolean,
+	buyer: Player?
 ): Vend
 	local frame = machine:GetPivot()
 	local front = table.remove(things, 1)
@@ -113,6 +139,11 @@ function MachineVend.start(
 	if button and not sunk then
 		Tools.play(Buy.Click, button, Buy.Heard)
 	end
+	local hand: InFlight.Hand = if key == Machine.Stock.Battery then "torch" else "tool"
+	local holding = buyer ~= nil and thing ~= nil
+	if holding then
+		InFlight.hold(buyer :: Player, hand)
+	end
 	return {
 		start = now,
 		frame = frame,
@@ -132,6 +163,13 @@ function MachineVend.start(
 		flapAt = if flap then flap:GetPivot() else CFrame.identity,
 		sink = not sunk,
 		stage = 0,
+		buyer = if thing then buyer else nil,
+		hand = hand,
+		holding = holding,
+		binAt = nil,
+		size = if thing and thing:IsA("BasePart") then thing.Size else Vector3.one,
+		hidden = nil,
+		hiddenParts = {},
 	}
 end
 
@@ -191,6 +229,101 @@ local function path(v: Vend, t: number): (CFrame, boolean)
 		false
 end
 
+-- The friend's tool shown again in their hand.
+local function unhide(v: Vend)
+	for _, part in v.hiddenParts do
+		part.LocalTransparencyModifier = 0
+	end
+	table.clear(v.hiddenParts)
+	v.hidden = nil
+end
+
+-- While it's on its way, the friend's new tool stays out of their hand on this screen (the
+-- server put it there at once). Yours is ToolView's to hold back.
+local function hideHeld(v: Vend)
+	local buyer = v.buyer
+	if not (buyer and v.holding and v.hand == "tool" and buyer ~= me) then
+		return
+	end
+	local character = buyer.Character
+	local found = character and character:FindFirstChild(Tools.HeldName)
+	local held = if found and found:IsA("Model") then found else nil
+	if held == v.hidden then
+		return
+	end
+	unhide(v)
+	if held then
+		v.hidden = held
+		for _, d in held:GetDescendants() do
+			if d:IsA("BasePart") then
+				d.LocalTransparencyModifier = 1
+				table.insert(v.hiddenParts, d)
+			end
+		end
+	end
+end
+
+-- The buyer's hand is free to show what the server gave it.
+local function release(v: Vend)
+	if v.holding then
+		v.holding = false
+		InFlight.land(v.buyer :: Player, v.hand)
+	end
+	unhide(v)
+end
+
+-- It reached the buyer's hand `at`: gone, with its sound there (a tool's pick-up; a battery's
+-- clack-click into the torch), and the hand shows what it holds.
+local function arrive(v: Vend, at: CFrame)
+	local thing = v.thing
+	if thing then
+		thing:Destroy()
+		v.thing = nil
+	end
+	release(v)
+	local holder = Instance.new("Attachment")
+	holder.Name = "Bought"
+	holder.WorldPosition = at.Position
+	holder.Parent = Workspace.Terrain
+	if v.hand == "torch" then
+		Tools.play(Battery.Clack, holder, Battery.Heard)
+		task.delay(Battery.SnapAfter, function()
+			if holder.Parent then
+				Tools.play(Battery.Snap, holder, Battery.Heard)
+			end
+		end)
+	else
+		local row = (Tools.Catalog :: any)[v.key] -- any: the catalog is keyed by text
+		if row then
+			Tools.play(row.pickUp, holder, Buy.Heard)
+		end
+	end
+	task.delay(2, function()
+		holder:Destroy()
+	end)
+end
+
+-- The thing `p` of the way from the bin to the buyer's hand.
+local function fly(v: Vend, thing: PVInstance, p: number)
+	local buyer = v.buyer :: Player
+	local from = v.binAt
+	if not from then
+		from = thing:GetPivot()
+		v.binAt = from
+	end
+	local target = if v.hand == "torch" then HandAt.torch(buyer) else HandAt.tool(buyer, v.key)
+	if p >= 1 or not target then
+		arrive(v, target or from :: CFrame)
+		return
+	end
+	local e = flyCurve(p)
+	local at = Buy.arc((from :: CFrame).Position, target.Position, UP, e)
+	thing:PivotTo(CFrame.new(at) * (from :: CFrame).Rotation:Lerp(target.Rotation, ease(p)))
+	if v.hand == "torch" and thing:IsA("BasePart") then
+		thing.Size = v.size * (1 + (Battery.Shrink - 1) * e)
+	end
+end
+
 -- Steps `v` to `now`. True once it's over (everything back, the thing gone).
 function MachineVend.step(v: Vend, now: number): boolean
 	local t = now - v.start
@@ -218,9 +351,13 @@ function MachineVend.step(v: Vend, now: number): boolean
 			Tools.play(Buy.Motor, coil, Buy.Heard)
 		end
 	end
-	-- the thing: off the tip, down into the bin
+	hideHeld(v)
+	-- the thing: off the tip, down into the bin, then out to the buyer's hand
 	local thing = v.thing
-	if thing and thing.Parent then
+	local takeAt = landed + Buy.TakeAfter
+	if thing and thing.Parent and v.buyer and t >= takeAt then
+		fly(v, thing, (t - takeAt) / Buy.Take)
+	elseif thing and thing.Parent then
 		local pose, down = path(v, math.min(t, landed))
 		-- turned about its middle: its pivot follows
 		local rel = (CFrame.new(v.centre) * v.frame.Rotation):ToObjectSpace(v.pivot)
@@ -244,7 +381,7 @@ function MachineVend.step(v: Vend, now: number): boolean
 		local swing = KNOCK * math.sin(2 * math.pi * SWINGS * s) * (1 - s) ^ 2
 		flap:PivotTo(v.flapAt * CFrame.Angles(math.rad(swing), 0, 0))
 	end
-	if t >= landed + V.Flap + V.Gone then
+	if t >= Buy.ends() then
 		MachineVend.finish(v)
 		return true
 	end
@@ -272,6 +409,7 @@ function MachineVend.finish(v: Vend)
 		thing:Destroy()
 		v.thing = nil
 	end
+	release(v)
 end
 
 return MachineVend

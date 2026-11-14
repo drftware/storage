@@ -1552,13 +1552,13 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
       button sinks with a click, the coil turns one loop with a whine, the thing tips off into
       the bin with its clunk, the flap knocks out and back; a press without the coins clicks,
       buzzes and blinks the price. Records `spent` (machine, item) and `batteryTaken`.
-    - [ ] **S1-10c2b The buy's flights.** The coins fly from the HUD count into the coin slot
-      (`Specs.Slot`) one by one and count off (CoinView's jingle and tick, a spend told to the
-      buyer's screen before the count drops, as `Pay` is); the thing flies from the flap to the
-      buyer's hand (the battery into their torch) on every screen, the buyer's held tool hidden
-      on screens until it lands (`Buy.Attribute` names the buyer). Hide a battery's Buy from a
-      full torch (BatteryView's rule). Polish found in c1: the stock vanishes at the cut rather
-      than standing dark in the coils; a battery's label may face away (unchecked).
+    - [x] **S1-10c2b The buy's flights** (D-149). The server tells the buyer's screen first
+      (`Buy.Remote`); up to eight coins leave the count one by one, ticking it down, and curve
+      into the coin slot, each clinking there; a beat after the thing lands in the bin it arcs
+      out through the flap to the buyer's left hand or into their torch on every screen, with
+      its pick-up sound (the battery's clack-click). Until it lands, screens hold the change
+      back (`InFlight`): your drawn tool, a friend's tool in their hand, the torch's fill. A
+      battery's Buy is hidden from a full torch. Seen in Play, both buys.
 - [ ] **S1-11 The one faint mark.** At most one note's door frame on a floor carries a faint
   mark, seen from a few steps with your flashlight on it; nothing about notes on the corner map.
 - [ ] **S1-12 Cash on the results.** Unspent coins turn into cash at the climb's end; the
@@ -1678,6 +1678,11 @@ that moves walls, and the dolly.
 
 ## Polish waiting for a slot
 
+- **The buy (S1-10c1, S1-10c2b):** the stock vanishes at the cut rather than standing dark in
+  the coils; a battery's label may face away (unchecked); the flap could knock a second time as
+  the thing pushes out through it; the tool's name over the slots shows as the server gives it,
+  a second before it reaches your hand; a friend sees no coins go into the slot (only the
+  buyer's screen flies them).
 - **The machine (S1-10b2):** a dark machine in the lobby cars too, so the car you board matches
   the one you arrive in (the results board on their back wall must move first); the bays' own
   light (a second SurfaceLight shone into the cabinet blacked out the car: try a small

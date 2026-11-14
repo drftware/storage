@@ -4,6 +4,8 @@
 -- never on the lobby ride or as the power cuts; a press sells only from a stocked coil to someone
 -- who can pay; mashing is rate-limited; the buyer's attribute round-trips; and a screen tells a
 -- sale (counts lowered) from a new stock (refill).
+local roblox = require("@lune/roblox")
+
 local Buy = require("../src/shared/Machine/Buy")
 local Ride = require("../src/shared/Elevator/Ride")
 local Stock = require("../src/shared/Machine/Stock")
@@ -95,6 +97,29 @@ now[1].count = 2
 was = stock()
 was[1].count = 1
 ok(Buy.sold(was, now) == nil, "a count that rises is a new stock")
+
+-- the buy's flights (S1-10c2b): the coins drawn add up to the price, never more than the most;
+-- paying is done before the thing drops; the thing reaches the hand before the vend ends
+for _, price in { 1, 3, 7, 8, 10, 25 } do
+	local sum, n = 0, 0
+	for _, worth in Buy.coins(price) do
+		sum += worth
+		n += 1
+	end
+	ok(sum == price, `the coins for {price} add up`)
+	ok(n == math.min(price, Buy.Coins), `{price} draws {math.min(price, Buy.Coins)} coins`)
+end
+ok(
+	(Buy.Coins - 1) * Buy.CoinGap + Buy.CoinFly < Buy.lands(),
+	"the last coin is in the slot before the thing lands"
+)
+ok(Buy.ends() >= Buy.lands() + Buy.TakeAfter + Buy.Take, "the vend lasts until it's in the hand")
+ok(Buy.ends() >= Buy.lands() + Buy.Vend.Flap, "and until the flap has settled")
+local V3 = roblox.Vector3
+local a, b, up = V3.new(0, 1, 0), V3.new(4, 1, 2), V3.new(0, 1, 0)
+ok((Buy.arc(a, b, up, 0) - a).Magnitude < 1e-6, "the arc starts in the bin")
+ok((Buy.arc(a, b, up, 1) - b).Magnitude < 1e-6, "and ends in the hand")
+ok(math.abs(Buy.arc(a, b, up, 0.5).Y - 2) < 1e-6, "bowed its lift up at its middle")
 
 print(`buy: {checks - failures}/{checks} passed`)
 if failures > 0 then

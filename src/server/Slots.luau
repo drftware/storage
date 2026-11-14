@@ -121,7 +121,7 @@ export type Slots = Brix.System & {
 	-- A new tool of catalog key `key` straight into a free slot of `player`'s and their hand (bought
 	-- at the car's machine, S1-10c2), with its pick-up sound. False, and nothing made, if they have
 	-- no room, a big tool in their hands, no living character, or the place lacks its art.
-	give: (self: any, player: Player, key: string) -> boolean,
+	give: (self: any, player: Player, key: string, quiet: boolean?) -> boolean,
 	-- Lays placed tool `id` on the floor at `at`, turned `yaw` degrees (its front gone from under it).
 	lower: (self: any, id: string, at: Vector3, yaw: number) -> (),
 	-- Drops everything `player` carries where they stand, as dying does (caught by a keeper, L-07a).
@@ -1100,7 +1100,9 @@ function Slots.new(): Slots
 		return nil
 	end
 
-	function system.give(_: any, player: Player, key: string): boolean
+	-- `quiet`: no pick-up sound here, as the screens play it when the thing reaches the hand
+	-- (a buy at the car's machine, MachineVend).
+	function system.give(_: any, player: Player, key: string, quiet: boolean?): boolean
 		local root = rootOf(player)
 		local h = handOfPlayer(player)
 		if not root or Catalog[key] == nil or bothHands(h) or Carry.room(h.carry) == nil then
@@ -1127,9 +1129,11 @@ function Slots.new(): Slots
 		Carry.take(h.carry, t.id)
 		dress(player)
 		publish(player)
-		local character = player.Character
-		local hand = if character then handOf(character) else nil
-		Tools.play(Catalog[key].pickUp, hand or root, HAND_SOUND_REACH)
+		if not quiet then
+			local character = player.Character
+			local hand = if character then handOf(character) else nil
+			Tools.play(Catalog[key].pickUp, hand or root, HAND_SOUND_REACH)
+		end
 		changed:fire({ player = player, kind = "PickUp" })
 		return true
 	end

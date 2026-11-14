@@ -864,6 +864,14 @@ verified: a doc page, Studio, or "untested".
   `Padlock`, `LatchBolt`, `DoorCollider`), hang an invisible part with a PointLight at
   `UnitLight`'s colour, brightness, range and shadows 0.7 under the top's middle, and capture from
   the doorway at eye height (4.6). Destroy it all after.
+- **Sampling a buy on the Client** (S1-10c2b, Play): an execute can `task.spawn` a loop on
+  `RenderStepped` that keeps the camera aimed (Scriptable, set every frame, so the MCP's reset
+  doesn't matter) and writes a line a frame into `shared.someTable`; press E with
+  `user_keyboard_input`, then read the table in a later execute. A ring tick reads lit when its
+  `BackgroundTransparency` is under 0.2.
+- **Attribute signals in one batch fire before the next frame, in the server's order** (S1-10c2b,
+  Play): the Player's charge (written first) fired before the machine's `Stock`. A screen that
+  must react to two changes together reads them in its frame step, not in either signal.
 - **Staging a buy** (S1-10c2a, Play): stage the ride as below, then from the Server set
   Workspace `DevCoins` (every count in a climb) and stand the player's root about 2.4 studs in
   front of a button. On the Client set the camera Scriptable and `CFrame.lookAt(head, button)`,

@@ -18,7 +18,9 @@
 	is open (ownership), the coil holds something and they can pay (state), then the rate. The
 	price is the server's own. Then, with nothing in between that could yield: the thing first (a
 	battery fills their torch, refused while its ring is full; a tool goes in a free slot, refused
-	with no room), and only if it went, the coins (`Coins:spend`); the bay's count drops, the buy
+	with no room; quietly, as the screens play its pick-up when it reaches the hand), and only if
+	it went, the buyer's screen is told (`Buy.Remote`: its coins fly to the slot) and the coins
+	taken (`Coins:spend`); the bay's count drops, the buy
 	is stamped on the machine (`Buy.Attribute`) and the stock rewritten on every machine carrying
 	the ride. A refused press costs nothing and says nothing: the price is in its window, the
 	torch's ring and the slots on screen.
@@ -46,7 +48,7 @@ type Wallet = {
 	spend: (self: any, player: Player, coins: number, item: string) -> boolean,
 }
 type Filler = { fill: (self: any, player: Player) -> boolean }
-type Giver = { give: (self: any, player: Player, key: string) -> boolean }
+type Giver = { give: (self: any, player: Player, key: string, quiet: boolean?) -> boolean }
 type Rate = { last: number?, burst: number }
 
 export type Machines = Brix.System & {
@@ -101,6 +103,7 @@ function Machines.new(): Machines
 	local coins: Wallet? = nil
 	local flashlights: Filler? = nil
 	local slots: Giver? = nil
+	local remote: RemoteEvent? = nil -- tells the buyer's screen of the spend (`Buy.Remote`)
 	-- a fresh shuffle each server; any: Brix's Random fills the pure contract Stock types
 	local random = (
 		Brix.Random.new({ seed = Random.new():NextInteger(1, 2 ^ 30) }) :: any
@@ -207,8 +210,12 @@ function Machines.new(): Machines
 			if not (flashlights and flashlights:fill(player)) then
 				return -- the torch is full: the battery stays in its coil
 			end
-		elseif not (slots and slots:give(player, key)) then
+		elseif not (slots and slots:give(player, key, true)) then
 			return -- no room: it stays in its coil
+		end
+		-- the buyer's screen first, so their coins fly into the slot before their count drops
+		if remote then
+			remote:FireClient(player, e.model, i, bay.price)
 		end
 		local paid = wallet:spend(player, bay.price, key)
 		if not paid then
@@ -298,6 +305,16 @@ function Machines.new(): Machines
 	local system = { name = "Machines" }
 
 	function system.start(_: any, context: Brix.Context)
+		local folder = ReplicatedStorage:FindFirstChild(Buy.RemoteFolder)
+		if not folder then
+			folder = Instance.new("Folder")
+			folder.Name = Buy.RemoteFolder
+			folder.Parent = ReplicatedStorage
+		end
+		local r = Instance.new("RemoteEvent")
+		r.Name = Buy.Remote
+		r.Parent = folder
+		remote = r
 		-- any: the registry hands back plain Systems; each slot is filled by its system (init.server)
 		coins = (context.registry:get("coins") :: any) :: Wallet?
 		flashlights = (context.registry:get("flashlights") :: any) :: Filler? -- any: as above
@@ -348,6 +365,10 @@ function Machines.new(): Machines
 		table.clear(entries)
 		table.clear(rides)
 		table.clear(rates)
+		if remote then
+			remote:Destroy()
+			remote = nil
+		end
 	end
 
 	return system :: any -- any: the table is the Machines shape built field by field above

@@ -61,6 +61,7 @@ local ButtonView = require(script.Parent.ButtonView)
 local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
 local FreeCursor = require(script.Parent.FreeCursor)
 local HandRoom = require(script.Parent.HandRoom)
+local InFlight = require(script.Parent.InFlight)
 local Hands = require(ReplicatedStorage.Shared.Hands)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local SoundPrimer = require(script.Parent.SoundPrimer)
@@ -578,6 +579,7 @@ function ToolView.new(
 	local swing = 0
 	local rising = true
 	local landed = 0 -- when the shown thing finished coming up: a find's weight lands then (`Heft`)
+	local flying = false -- a bought tool is still flying to your hand (InFlight, MachineVend)
 	local switchSound: Sound? = nil
 	-- at a door
 	local working = false
@@ -1191,6 +1193,18 @@ function ToolView.new(
 		local want = if living then heldKey() else ""
 		if want == gone and clock < goneUntil then
 			want = "" -- it broke: the slots haven't caught up yet
+		end
+		-- a tool bought at the car's machine is yours already but still on its way: your hand
+		-- stays empty until it arrives, then it's simply there, where it flew to, with its weight
+		local wasFlying = flying
+		flying = InFlight.held(player, "tool")
+		if flying then
+			want = ""
+		elseif wasFlying and want ~= "" and want ~= shownKey then
+			show(want)
+			swing = 1
+			rising = true
+			landed = os.clock()
 		end
 		if want ~= shownKey then
 			-- the old one drops out of view, then the new one comes up

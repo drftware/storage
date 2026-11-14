@@ -99,21 +99,25 @@ and off, the invite sheet opening with your friends (no invite sent).
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
 
-## Now: buy at the machine (S1-10c2a, built Nov 14, D-148; two real buys seen in Play)
+## Now: buy at the machine (S1-10c2a-b, built Nov 14, D-148, D-149; real buys seen in Play)
 
-A buy, staged in Studio Play: bolt cutters and a battery bought by pressing E at the buttons;
-the coins came off, the cutters went in a slot, the torch filled, and the vend's motion was
-measured (button, coil, drop, flap). Not yet seen by eye or heard. To test: start a climb, earn
-some coins on floor 1, ride up from floor 1 with a friend.
-1. As the prices light, walk to the machine and look at a button: its Buy shows the thing's
-   name. Press it. Look for: the button sinks with a click, the coil turns with a whine, the
-   thing tips off the coil and drops behind the flap with its clunk, the flap knocks and
-   settles, your coins drop, the tool is in your hand (or your torch is full).
-2. Your friend watches: they see the same coil, drop and flap.
-3. Press something you can't afford: one dull buzz and its price blinks. Nothing else.
-4. Judge the sounds (all pitched from the game's own recordings) and whether the 1.2 s before the
-   gate opens, when the buttons stop, feels right. The coins flying into the slot and the thing
-   flying to your hand come next (S1-10c2b).
+Bolt cutters and a battery bought in Studio Play by pressing E, sampled frame by frame: the coins
+left the count one at a time (40 down to 30, never jumping) and reached the slot; the thing
+dropped, then flew to the hand; the tool appeared in view only as it arrived; the torch's ring
+stayed where it was until the battery reached it, then swept full. Not seen by eye or heard,
+and never with a friend. To test: start a climb, earn coins on floor 1, ride up with a friend.
+1. As the prices light, look at a button: its Buy names the thing. Press it. Look for: the
+   button sinks with a click; your coins leave the count in the corner one by one, the number
+   ticking down, and drop into the machine's coin slot with a clink each; the coil turns with a
+   whine; the thing drops behind the flap with its clunk; the flap knocks; the thing lifts out
+   and flies into your left hand (it's simply there, no swing up), or a battery into your torch,
+   which then fills.
+2. Your friend watches: same coil, drop and flap, and the thing flies to your hand on their
+   screen; your new tool isn't in your hand on their screen until it gets there.
+3. With a full torch, the battery buttons show no Buy. Press something you can't afford: one
+   dull buzz and its price blinks. Nothing else.
+4. Judge the sounds and the pace: does paying read before the drop, and does the flight to your
+   hand feel quick enough (about half a second)?
 
 ## Now: see the machine's stock (S1-10c1, built Nov 14, D-147; seen staged in Play)
 

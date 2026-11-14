@@ -22,12 +22,9 @@ local Workspace = game:GetService("Workspace")
 local Battery = require(ReplicatedStorage.Shared.Battery)
 local Brix = require(ReplicatedStorage.Brix)
 local Charge = require(ReplicatedStorage.Shared.Flashlight.Charge)
+local HandAt = require(script.Parent.HandAt)
 local SoundPrimer = require(script.Parent.SoundPrimer)
-local Torch = require(ReplicatedStorage.Shared.Flashlight.Torch)
 
--- Where your own torch sits on your screen when its drawn copy can't be found: low and to the
--- right of your view, as you hold it (studs from the camera).
-local OWN_TORCH = CFrame.new(0.55, -0.45, -1.4)
 local SPARKS = 4 -- sparks thrown off its button as it's taken
 
 type Lying = {
@@ -100,29 +97,6 @@ function BatteryView.new(): Brix.System
 	local connections: { RBXScriptConnection } = {}
 	local perBattery: { [BasePart]: { RBXScriptConnection } } = {}
 	local wants = false -- whether your torch would take a battery now
-
-	-- Where `player`'s torch is on this screen: yours as drawn in your hand, a friend's in theirs.
-	local function torchAt(player: Player): CFrame?
-		if player == me then
-			local folder = Workspace:FindFirstChild("YourFlashlight") -- FlashlightView's own torch
-			local model = folder and folder:FindFirstChildWhichIsA("Model")
-			if model then
-				return model:GetPivot()
-			end
-			local camera = Workspace.CurrentCamera
-			return if camera then camera.CFrame * OWN_TORCH else nil
-		end
-		local character = player.Character
-		if not character then
-			return nil
-		end
-		local model = character:FindFirstChild(Torch.ModelName)
-		if model and model:IsA("Model") then
-			return model:GetPivot()
-		end
-		local hand = character:FindFirstChild("RightHand") or character.PrimaryPart
-		return if hand and hand:IsA("BasePart") then hand.CFrame else nil
-	end
 
 	-- Every battery's button for you: there while your torch would take one.
 	local function showButtons()
@@ -244,7 +218,7 @@ function BatteryView.new(): Brix.System
 			return false
 		end
 		local top = f.from.Position + Vector3.new(0, Battery.Hop, 0)
-		local target = torchAt(f.taker)
+		local target = HandAt.torch(f.taker)
 		if t >= done or not target then
 			part.LocalTransparencyModifier = 1
 			if not f.sounded then

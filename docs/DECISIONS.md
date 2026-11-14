@@ -4151,3 +4151,27 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
   to a motor whine, the starter's tink pitched down to the flap's knock, the thing's own drop
   sound in the bin); starting guesses for the owner to judge.
 - Studio only: Workspace `DevCoins` sets every count in a climb, to stage a buy.
+
+## D-149 The buy's flights: the server settles at once, screens hold the change until it lands (S1-10c2b, Nov 14)
+
+- The server still settles the buy in one step (D-148). The flights are only what screens show:
+  the buyer's screen is told first (`Buy.Remote`, fired just before `Coins:spend`, as GatePay
+  tells the pay), so its coins can leave the count one at a time instead of it dropping.
+- The coins reuse CoinView's own flyers (the same pictures, tick pool and count), run backwards:
+  each leaving ticks the count down, lower each time, and the coin curves into `Specs.Slot`.
+  At most `Buy.Coins` (8) are drawn, each worth its share (`Pay.split`), all in the slot before
+  the thing has dropped.
+- `InFlight` is a small client registry of things still flying to a player's hand, counted per
+  player and per hand. The vend holds it from the moment the sale reaches the screen (the server
+  has already given the thing) until it lands or the vend is cut short. ToolView keeps your hand
+  empty meanwhile and then shows the tool where it flew to, with its weight, no swing; a
+  friend's held tool is hidden here (`LocalTransparencyModifier`); FlashlightView keeps the
+  torch's charge where it was.
+- Your own torch now follows the server's charge only once a frame, never inside the attribute's
+  signal: the charge arrives a moment before the sale's stock in the same batch, so lifting it in
+  the signal filled the torch before the hold began (seen in Play, fixed).
+- The give is quiet on the server (`Slots:give(..., quiet)`): every screen plays the tool's
+  pick-up sound where it lands, so it isn't heard a second early.
+- `HandAt` is where a player's hands are on this screen, shared by BatteryView and MachineVend:
+  your tool at full size where ToolView draws it (it draws it small near your eye, which looks
+  the same), a friend's at their real held tool.
