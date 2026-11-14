@@ -1591,6 +1591,11 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
       stops riding off the tip before its corner would reach the glass (MachineVend).
       Originally: `art/machine/` spec made shallower (about a third less deep: the owner's "a
       bit"), rebuilt, re-uploaded and prepared; the coil, bin, flap and the vend still read.
+    - [ ] **S1-10d3 The menu stays shut after a buy** (the owner, Nov 14: "I don't think the
+      vending machine needs to pop back up after you purchase. You'd click it again to buy
+      another item."). Today the panel drops away for the vend and rises after; instead it stays
+      down once you've bought, and the Buy on the glass opens it again. A refused pick (too few
+      coins) still keeps it up.
 - [x] **S1-11 The one faint mark. Done Nov 14 (D-150); sampled in Play.** A hasty chalk ring
   with a dot (art/mark/, made from code) on the left jamb of one note's door: `Deal.markFrom`
   (pure, `tests/mark.spec.luau`) marks a note that isn't the guarded one on every floor 1 and 2
@@ -1646,6 +1651,19 @@ Done when a team that has lost its lights goes looking for the breaker without b
     on), walks there held by any light as ever, and throws it; keepers within a slam's reach of
     the box hear the clunk and come to look (`Keeper.offer`, `Keepers`). Seen in Studio Play: a
     Mannequin walked 110 studs to the box in 21 seconds and threw it, all 23 lights blind.
+  - [ ] **S2-02d The camera shows the Mannequin cut the power** (the owner, Nov 14: "when the
+    mannequin is just about to kill the power, I want the minimap to be replaced with a CCTV
+    style view showing the mannequin pulling the power, so it's clear what happened rather than
+    players having to guess. It will also be a good WTF moment for first time players, and we
+    can make use of that CCTV mechanic with other monsters as well later on."). As Five Nights
+    at Freddy's security cameras show the animatronic standing where it wasn't. As a Mannequin
+    on its errand reaches the box, every player on that floor sees the corner map cut to a
+    security camera's view of the breaker: grainy, a cold tint, a camera number and a blinking
+    red dot, the Mannequin's hand on the lever pulling it down, the clunk, then static and the
+    map back. Built as a camera feed any monster can use later (where the camera hangs, what it
+    watches, for how long), not wired to the breaker alone. Its own sounds (the feed's hiss
+    cutting in, the static out). Defaults the session picks (how long, the angle, whether it
+    plays when the box is thrown by the dev command) go in `OWNER.md`.
 - [x] **S2-03 Sleeping monsters wake.** After four minutes on floors 1 and 2 (six above), three
   sleepers wake and pound on their doors, heard across the floor; three more every two minutes;
   sooner and more higher up. One pounding breaks out after 90 seconds unless its door is
