@@ -99,6 +99,14 @@ and off, the invite sheet opening with your friends (no invite sent).
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
 
+## Now: sleepers are placed with the floor (S2-01, built Nov 14, D-152; seen in Play)
+
+Nothing new to see yet: it's what lets a monster wake, or be let out, behind a door nobody
+opened (the next tickets). About one door in ten still opens on a Mannequin asleep.
+1. Decide (starting guesses, D-152): 10 in 100 units hold a sleeper whatever the director's
+   mood, 20 in 100 behind a padlock; after a chase (Relief) the extra sleepers replace empty
+   units, not finds.
+
 ## Now: cash on the results (S1-12, built Nov 14, D-151; the save and the board seen in Play)
 
 The coins you haven't spent when a climb ends become cash, saved at once. Back in your car, the

@@ -4225,3 +4225,35 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
   count silently; $0 is dim. The board grew 0.4 studs at its foot (still above the rail).
 - Recorded: coins out (`cashOut`, item "Cash", count 0 after) and cash in (`climb`, the saved
   total after), a second currency "Cash" in the plan.
+
+## D-152 Sleepers are placed with the floor; the director deals only what's awake (S2-01, Nov 14)
+
+- The precedent: Left 4 Dead's Witch is already sitting in her spot, asleep, before the team
+  turns the corner (from memory), while its director still places items and infected as the
+  team moves. The GDD ("What changed here", "Doors") asks for exactly this split: sleeping
+  monsters are put in their units when the floor is made, so one can wake behind a shut door
+  (S2-03) or be let out by a wrong code (S2-04); coins, finds, tools and awake keepers are still
+  dealt as a door first lifts.
+- How many: 10 in 100 units hold a sleeper (`Deal.Asleep`), Build's old asleep odds, now whatever
+  the mood: a mood no longer deals sleepers. Behind a padlock twice that (20 in 100, standing with
+  its find or tool). Never in the guarded note's unit (its keeper is awake) nor in the lobby's
+  hall on floors 1 and 2. Each is a keeper that has joined by that floor (the Mannequin).
+- The other odds are now out of the 90 in 100 the sleepers leave, so every kind lands as often as
+  before in Build (54 nothing, 25 finds, 6 tools, 5 awake; a padlock's 10 awake out of the 80 its
+  sleepers leave). Peak loses nothing (its old 10 asleep). Relief's sleepers went from 5 to 10, the
+  5 taken from its empty units (49), keeping its finds.
+- The awake cap is unchanged: past it an awake keeper is dealt asleep as its door lifts, as
+  before. Those aren't placed sleepers (they appear only once their door is up); S2-03 can find
+  them as sleeping bodies standing in their units.
+- Seeds: the sleepers are drawn last in `Deal.new` (two numbers for every unit, whether it can
+  hold one or not), so the code, notes, padlocks, guard, bag, coins, batteries and the mark lay
+  as before (deal.spec's fingerprint unchanged). What doors deal did move (stuffdeal.spec's
+  fingerprint retaken), so older Studio recipes naming what a unit holds may be stale.
+- Who knows: the deck (`deck.sleepers`, slot to keeper name) and the keepers' brain, which gets a
+  floor's sleepers as it's laid (`Keepers.add`) and hands out those still behind a door nobody
+  has lifted (`Keepers.sleepers(floor)`); each leaves as its door first lifts and its body stands
+  where the deal laid it, as before. In Studio, Output lists a floor's sleepers as it's laid.
+  The body is still stood only when its door first lifts: standing every sleeper up front would
+  cost instances for no one to see, and a body woken by a noise behind a door never lifted has no
+  behaviour yet (S2-03 decides it). A caught friend is never stored in a sleeper's unit.
+

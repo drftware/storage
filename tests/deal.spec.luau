@@ -6,7 +6,10 @@
 -- odds land where they say; a padlock always holds a find or a tool, with the best chance of a
 -- keeper standing with it (S1-07a); about one unit in twelve holds a tool; never more keepers awake than the cap, none
 -- woken in a chase or after one (the guarded note's keeper aside: guard.spec), none in the lobby's hall on floors 1 and 2; the bag deals every tool before any comes round again, a saw
--- first on floors 1 and 2; a door lifted again holds what it held.
+-- first on floors 1 and 2; a door lifted again holds what it held. The sleepers (S2-01) are placed
+-- as the floor is laid, the same for the same seed, about `Deal.Asleep` in 100 units (twice that
+-- behind a padlock), never the guard's unit nor the lobby's hall on floors 1 and 2, and each door
+-- hands its sleeper back asleep whatever the mood or the cap.
 local Brix = require("../vendor/brix/src")
 local Floor = require("../src/shared/Floor")
 local Deal = require("../src/shared/Deal")
@@ -63,6 +66,8 @@ local capped, peak, relief = tally(), tally(), tally()
 -- the cap and in a chase; and every unit's tools, padlocked or not, on floors 1 to 3 and on 6.
 local beside, besideCapped, besidePeak = tally(), tally(), tally()
 local toolsLow, toolsHigh = tally(), tally()
+-- The units that could hold a sleeper and how many do, ordinary and padlocked (S2-01).
+local sleepOpen, sleepLocked = { could = 0, did = 0 }, { could = 0, did = 0 }
 local closest = math.huge
 
 -- What every seed lays before a door lifts (code, notes, padlocks, guard, each unit's rolls and
@@ -183,6 +188,32 @@ for seed = 1, SEEDS do
 		local want = math.max(1, math.round(#units * Deal.padlockShare(number)))
 		ok(locks == want, `{where}: {want} padlocks, got {locks}`)
 
+		-- The sleepers, placed before a door lifts (S2-01).
+		for i, name in deck.sleepers do
+			ok(
+				floor.slots[i] ~= nil and floor.slots[i].kind == "Unit",
+				`{where}: a sleeper in a unit`
+			)
+			ok(i ~= deck.guarded, `{where}: no sleeper in the guard's unit`)
+			ok(
+				number > Deal.TeachingFloors or not inLobbyHall(floor, units, wingCount, i),
+				`{where}: no sleeper in the first hall`
+			)
+			local joined = false
+			for _, keeper in Deal.Keepers do
+				joined = joined or (keeper.name == name and keeper.from <= number)
+			end
+			ok(joined, `{where}: a sleeper that has joined`)
+		end
+		for _, i in units do
+			ok(deck.sleepers[i] == twin.sleepers[i], `{where}: the same sleepers`)
+			if Deal.sleeperShare(deck, i) > 0 then
+				local t = if deck.padlocked[i] then sleepLocked else sleepOpen
+				t.could += 1
+				t.did += if deck.sleepers[i] then 1 else 0
+			end
+		end
+
 		-- The bag: a saw first on floors 1 and 2; then every tool in each bag of 9.
 		local bagSize = 0
 		for _, tool in Deal.Tools do
@@ -217,6 +248,16 @@ for seed = 1, SEEDS do
 		for _, i in units do
 			local before = #deck.bag
 			local got = Deal.open(deck, i, BUILD)
+			if deck.sleepers[i] then
+				ok(
+					Deal.keeperIn(got) == "Asleep" and got.keeper == deck.sleepers[i],
+					`{where}: a door hands back its sleeper`
+				)
+				ok(
+					(got.beside ~= nil) == (deck.padlocked[i] == true),
+					`{where}: a padlock's sleeper stands with its find or tool`
+				)
+			end
 			if i ~= guard then
 				add(if deck.padlocked[i] then locked else open, got.kind)
 				if deck.padlocked[i] then
@@ -284,6 +325,12 @@ for seed = 1, SEEDS do
 				local cap = { mood = "Build", awake = Deal.awakeCap(number) } :: Deal.Situation
 				local c = Deal.open(atCap, i, cap)
 				local p = Deal.open(inPeak, i, { mood = "Peak", awake = 0 })
+				if deck.sleepers[i] then
+					ok(
+						Deal.keeperIn(c) == "Asleep" and Deal.keeperIn(p) == "Asleep",
+						`{where}: a sleeper is asleep at the cap and in a chase`
+					)
+				end
 				add(capped, c.kind)
 				add(peak, p.kind)
 				if deck.padlocked[i] then
@@ -306,8 +353,9 @@ end
 ok(laid == LAID, `every seed lays what it did before S1-07a ({laid}, was {LAID})`)
 
 -- The odds, over every unlocked door in Build: each kind within 3 in 100 of its odds.
+-- The sleepers count with the rest: the others' odds are out of the 90 in 100 they leave.
 for _, kind in Deal.Kinds do
-	local want = Deal.Odds.Build[kind] / 100
+	local want = (if kind == "Asleep" then Deal.Asleep else Deal.Odds.Build[kind]) / 100
 	ok(
 		math.abs(share(open, kind) - want) < 0.03,
 		`Build deals {kind} about {want}: {share(open, kind)}`
@@ -324,7 +372,9 @@ for kind, odds in Deal.PadlockedHolds do
 	)
 end
 for _, kind in { "Asleep", "Awake" } do
-	local want = Deal.Odds.Build[kind] * Deal.PadlockedKeeper / 100
+	local want = (if kind == "Asleep" then Deal.Asleep else Deal.Odds.Build[kind])
+		* Deal.PadlockedKeeper
+		/ 100
 	ok(
 		math.abs(share(beside, kind) - want) < 0.03,
 		`a keeper {kind} beside a padlock's find about {want}: {share(beside, kind)}`
@@ -356,6 +406,17 @@ ok(
 	"at the cap a keeper is dealt asleep instead"
 )
 ok(peak.Awake == 0 and relief.Awake == 0, "nothing wakes in a chase or after one")
+-- The sleepers: about `Deal.Asleep` in 100 of the units that can hold one, twice behind a padlock.
+local sleptOpen = sleepOpen.did / math.max(1, sleepOpen.could)
+local sleptLocked = sleepLocked.did / math.max(1, sleepLocked.could)
+ok(
+	math.abs(sleptOpen - Deal.Asleep / 100) < 0.02,
+	`about {Deal.Asleep} in 100 units hold a sleeper: {sleptOpen}`
+)
+ok(
+	math.abs(sleptLocked - Deal.Asleep * Deal.PadlockedKeeper / 100) < 0.03,
+	`twice as many behind a padlock: {sleptLocked}`
+)
 -- Notes stand apart: the nearest two on any floor (the rule bends only with room nowhere).
 ok(closest >= Deal.NoteSpacing, `two notes at least {Deal.NoteSpacing} studs apart: {closest}`)
 

@@ -1584,14 +1584,29 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
 
 Done when a team that has lost its lights goes looking for the breaker without being told to.
 
-- [ ] **S2-01 Sleeping monsters are placed when the floor is made.** Today `Deal.open` decides
-  a unit's monster as its door first lifts. The floor's deal places the sleepers up front, so
-  one can wake, or be let out, behind a shut door. S2-03 and S2-04 need it.
+- [x] **S2-01 Sleeping monsters are placed when the floor is made. Done Nov 14 (D-152); seen in
+  Play.** The floor's deal places its sleepers last (`Deal.new`, `deck.sleepers`: 10 in 100
+  units, 20 behind a padlock, none in the guard's unit or the first hall on floors 1 and 2), and
+  a door hands its sleeper back as it lifts; the director now deals only finds, tools, nothing
+  and awake keepers. The keepers' brain knows each floor's sleepers behind doors never lifted
+  (`Keepers.sleepers`), listed in Output as a floor is laid. As Left 4 Dead's Witch sits waiting
+  before the team arrives (from memory). The bodies still stand only as a door first lifts:
+  S2-03 decides how one woken behind a door never lifted stands and pounds.
 - [ ] **S2-02 The breaker.** A breaker box on every floor, somewhere different each climb.
   Thrown: one heavy clunk and every hall light out, and moving under them does nothing. A
   one-second hold switches it back on. The elevator keeps its own light. A loose Mannequin with
   no light on it sometimes heads for the breaker and throws it, more often on higher floors
-  (GDD "The breaker", "The Mannequin cuts the power"). The breaker box is art first.
+  (GDD "The breaker", "The Mannequin cuts the power"). Split (S2-01's session), one per session:
+  - [ ] **S2-02a The breaker box's art.** Made the unit's way in Blender (a grey steel box on a
+    hall wall, its lever and door, a lamp), its Specs and look sheets; into the place by the
+    Open Cloud upload. Judged at phone size.
+  - [ ] **S2-02b Throw it and switch it back.** The floor places one breaker per climb (drawn
+    last in the floor's deal, so seeds keep their floors). Thrown: the clunk, every hall light
+    out and deaf to motion; a one-second hold brings them back with a hum; the elevator keeps
+    its light. Pure rules first (Lune).
+  - [ ] **S2-02c The Mannequin throws it.** A loose Mannequin with no light on it sometimes
+    heads for the breaker and throws it, more often higher up; the keepers' brain gains the
+    errand (D-064).
 - [ ] **S2-03 Sleeping monsters wake.** After four minutes on floors 1 and 2 (six above), three
   sleepers wake and pound on their doors, heard across the floor; three more every two minutes;
   sooner and more higher up. One pounding breaks out after 90 seconds unless its door is

@@ -278,7 +278,14 @@ function Climbs.new(): Climbs
 		-- the keepers' roams draw from a fresh Random from the floor's seed, not the deal's, so
 		-- where they wander never changes what a unit holds
 		if keepers then
-			keepers:add(floor, laid.slots, model, origin, Brix.Random.new({ seed = seed }))
+			keepers:add(
+				floor,
+				laid.slots,
+				model,
+				origin,
+				Brix.Random.new({ seed = seed }),
+				deck.sleepers
+			)
 		end
 		if wraps then
 			wraps:add(Wrap.halls(floor), model, origin)

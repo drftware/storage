@@ -486,7 +486,11 @@ verified: a doc page, Studio, or "untested".
   studs out along the DoorOrigin's LookVector, on the side with a clear ray to the attachment,
   works; the prompt's reach is 8. The Client can pivot its own character between presses, so a
   single Client `execute_luau` opens several units. The dev floor's units today: floor 3, seed 7
-  (2000013): bolt cutters in 323, the teddy in 326, padlocks on 305, 320, 329, 330 and 336.
+  (2000013): padlocks on 305, 320, 329, 330 and 336; since S2-01 (D-152) sleepers in 305 (with
+  its find), 307, 327, 335 and 338, and what other doors deal moved (323's bolt cutters and 326's
+  teddy unchecked since). Streaming: a unit far off isn't on the Client, so pivot the character
+  to its door from the Server first (4.5 studs along `DoorOrigin`'s LookVector is the hall side
+  for 307), then press from the Client with the camera pointed at `DoorMiddle`.
 - **The awake Mannequin moved to Unit 157** (L-06b5a, 2026-11-10): on seed 7, floor 1 the guard
   of the note in 157 holds the floor's one awake place, so 126's (and 112's, 154's) Mannequin
   deals asleep and the recipes below that open 126 for an awake one need 157 (or trap 157's guard

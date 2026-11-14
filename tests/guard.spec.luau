@@ -1,7 +1,8 @@
 --!strict
 -- lune run tests/guard.spec
 -- The guarded note (L-06b5, D-072) over 400 seeds on every floor: exactly one guarded unit, always
--- holding a note, behind an unlocked door wherever a note is, never in the lobby's hall, the same
+-- holding a note, behind an unlocked door wherever a note is, never in the lobby's hall, never a
+-- sleeper's unit (S2-01), the same
 -- for the same seed whatever the bag holds; its keeper is always dealt awake, whatever the mood or the cap, and is the
 -- same keeper whatever order the doors lift in. Played out with the doors lifted in a shuffled
 -- order and the deal told how many are loose (as `Keepers.awakeOn` tells it), the guard trapped
@@ -73,6 +74,7 @@ for seed = 1, SEEDS do
 		ok(not deck.firstHall[guard], `{where}: no guard in the lobby's hall`)
 		local twin = deal(floor, seed)
 		ok(twin.guarded == guard, `{where}: the same seed guards the same unit`)
+		ok(deck.sleepers[guard :: number] == nil, `{where}: no sleeper in the guard's unit (S2-01)`)
 
 		-- Its keeper is always awake, in every mood, at the cap and past it.
 		for _, situation in SITUATIONS do

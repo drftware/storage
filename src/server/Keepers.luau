@@ -8,6 +8,10 @@
 	  each door's state fed in as it changes (`Doors.changed` through `KeeperMap.letsThrough`), so a
 	  doorway lets keepers through only while its door is all the way up. It brings a seeded Random
 	  of its own, which its keepers share to pick where they roam. Its keepers go with it.
+	- A floor's sleepers come with it (S2-01): the units its deal placed a keeper asleep in as it
+	  was laid (`Deal.Deck.sleepers`), known before any door lifts (`sleepers`), so one can wake
+	  or be let out behind a door nobody opened (S2-03, S2-04). Each leaves that list as its door
+	  first lifts, when its keeper stands where the deal laid it, as below.
 	- A unit dealt a keeper (`Deals.dealt`, L-06b2b) has it stood where the deal laid it as its door
 	  first lifts. Asleep, it stands slack, facing as laid, until a sound wakes it. Awake, it stands
 	  mid-stride, square to the doorway, and steps out to look the moment its door is all the way
@@ -188,6 +192,8 @@ type OnFloor = {
 	model: Model,
 	folder: Folder, -- its keepers' bodies
 	keepers: { Entry },
+	-- the keepers asleep behind doors never lifted (S2-01): each unit's slot, its keeper's name
+	asleep: { [number]: string },
 	players: Keeper.Players, -- where each living player's feet are this step, reused
 	gone: RBXScriptConnection,
 }
@@ -204,15 +210,21 @@ export type Keepers = Brix.System & {
 	-- Lays a floor's map for keepers to walk as FloorBuilder lays it: `slots` maps each unit to its
 	-- slot (`laid.slots`), `origin` is where it was laid, and `random` (a fresh Brix Random from the
 	-- floor's seed, not the deal's, so roams never change what the units hold) picks where its
-	-- keepers roam. Its keepers go when `model` is destroyed.
+	-- keepers roam. `asleep` is its deal's sleepers (`Deal.Deck.sleepers`: each unit's slot, its
+	-- keeper's name), behind doors nobody has lifted yet. Its keepers go when `model` is destroyed.
 	add: (
 		self: any,
 		floor: Floor.Floor,
 		slots: { [Model]: number },
 		model: Model,
 		origin: CFrame,
-		random: Floor.Random
+		random: Floor.Random,
+		asleep: { [number]: string }
 	) -> (),
+	-- The units on laid floor `model` whose keeper has slept behind its shut door since the floor
+	-- was laid (S2-01), each with its keeper's name: what S2-03 wakes and S2-04's wrong code lets
+	-- out. Empty off any keepers' floor. A new table each call.
+	sleepers: (self: any, model: Model) -> { [Model]: string },
 	-- Stands a keeper (its row's name) on a laid floor, feet at `at`, facing `facing` (the world's),
 	-- asleep unless `awake`. Returns its body, or nil (an unknown floor or keeper, or no template:
 	-- Output says).
@@ -736,16 +748,17 @@ function Keepers.new(): Keepers
 	-- the deal laid it, before anyone sees in. Asleep, it faces as laid; awake, it faces square to
 	-- the doorway's middle, and if the door is already all the way up it steps out at once.
 	local function onDealt(d: Deals.Dealt)
-		local contents, laid = d.contents, d.keeper
-		local kind, name = Deal.keeperIn(contents), contents.keeper
-		if not (kind and name and laid) then
-			return
-		end
 		local on = floorOf[d.unit]
 		if not on then
 			return -- a unit on no keepers' floor (the test hall's)
 		end
 		local index = on.slots[d.unit]
+		on.asleep[index] = nil -- its door has lifted: its sleeper, if any, stands below
+		local contents, laid = d.contents, d.keeper
+		local kind, name = Deal.keeperIn(contents), contents.keeper
+		if not (kind and name and laid) then
+			return
+		end
 		local slot = on.floor.slots[index]
 		local p = on.origin:PointToObjectSpace(laid.Position)
 		local at = vector.create(p.X, p.Y, p.Z)
@@ -971,7 +984,8 @@ function Keepers.new(): Keepers
 		slots: { [Model]: number },
 		model: Model,
 		origin: CFrame,
-		random: Floor.Random
+		random: Floor.Random,
+		asleep: { [number]: string }
 	)
 		if floors[model] then
 			return
@@ -994,6 +1008,7 @@ function Keepers.new(): Keepers
 			model = model,
 			folder = folder,
 			keepers = {},
+			asleep = table.clone(asleep),
 			players = Keeper.players(),
 			gone = model.Destroying:Once(function()
 				drop(on)
@@ -1005,6 +1020,35 @@ function Keepers.new(): Keepers
 			local state: Door.State = if doors then doors:stateOf(unit) else "Closed"
 			KeeperMap.setDoor(on.map, slot, KeeperMap.letsThrough(state))
 		end
+		if TRACE then
+			local said: { string } = {}
+			for slot, name in on.asleep do
+				table.insert(said, `{floor.slots[slot].number} ({name})`)
+			end
+			table.sort(said)
+			print(
+				if #said == 0
+					then `Keepers: nobody asleep on floor {floor.number}`
+					else `Keepers: asleep behind shut doors on floor {floor.number}: Units {table.concat(
+						said,
+						", "
+					)}`
+			)
+		end
+	end
+
+	function system.sleepers(_: any, model: Model): { [Model]: string }
+		local out: { [Model]: string } = {}
+		local on = floors[model]
+		if on then
+			for slot, name in on.asleep do
+				local unit = on.units[slot]
+				if unit then
+					out[unit] = name
+				end
+			end
+		end
+		return out
 	end
 
 	function system.stand(

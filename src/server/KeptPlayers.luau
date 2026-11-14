@@ -367,9 +367,12 @@ function KeptPlayers.new(): KeptPlayers
 				z = face.Position.Z,
 				shut = d:stateOf(unit) == "Closed",
 				dealt = contents ~= nil,
-				keeper = (if contents
-					then Deal.keeperIn(contents) ~= nil
-					else index == deck.guarded) or keeperIn(face, spec.Width, spec.Depth),
+				-- a door not yet lifted: its guard, or a sleeper placed with the floor (S2-01)
+				keeper = (
+					if contents
+						then Deal.keeperIn(contents) ~= nil
+						else index == deck.guarded or deck.sleepers[index] ~= nil
+				) or keeperIn(face, spec.Width, spec.Depth),
 				holding = if holding[unit] then true else false,
 			}
 		end

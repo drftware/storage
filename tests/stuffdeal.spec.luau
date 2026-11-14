@@ -4,8 +4,8 @@
 -- `Deal.StuffShare` of the units with nothing to take hold one thing, each thing about as often;
 -- never a unit with coins, a battery, a tool, a find, a keeper or a note; the same seed the same stuff; and
 -- every other thing a seed lays and deals is what it was before the stuff (a fingerprint of the
--- deal, taken last as S1-07a changed what doors hold: it changes only when a ticket means to
--- change the deal).
+-- deal, taken last as S2-01 placed the sleepers with the floor: it changes only when a ticket means
+-- to change the deal).
 -- Where it stands, in both unit sizes over 300 unit numbers: back to a wall, inside the floor past
 -- the door's line, wholly clear of both crawl hole spots, the landing under the top's hole and
 -- where its panel falls, and of a note's sight line; too close to the wall for anyone to squeeze
@@ -71,7 +71,7 @@ ok(Deal.stuffFrom(Deal.StuffShare - 1e-9) == Deal.Stuff[#Deal.Stuff], "the highe
 local SEEDS = 200
 local FLOORS = { 1, 3, 6 }
 local BUILD: Deal.Situation = { mood = "Build", awake = 0 }
-local FINGERPRINT = 1267978987 -- the deal of seeds 1 to 60 since S1-07a (padlocked units, rarer tools)
+local FINGERPRINT = 3999933310 -- the deal of seeds 1 to 60 since S2-01 (sleepers placed with the floor)
 local SEEDS_PRINTED = 60
 
 local print_ = 7
