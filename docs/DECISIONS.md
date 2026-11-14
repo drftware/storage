@@ -3937,3 +3937,39 @@ The `climb` funnel repeats instead, once a climb, its run a GUID.
 **Problems.** The first 8 different problems are warned in full, then a count once a minute, so
 a server over Roblox's 120 a minute plus 20 a player never floods its output. Studio prints each
 record sent as one line beside AnalyticsService's own "event fired" line.
+
+## D-140 Behind a padlock: always a find or a tool, sometimes a monster with it (S1-07a, Nov 14)
+
+**The moment.** You cut a padlock and the door rolls up on a TV in the bulb's light, and behind it
+a Mannequin standing in the dark. The GDD ("Doors") says a padlocked door "always has something
+good behind it" and "the highest chance of a monster". Read as both at once: the good thing is
+always there, and a monster sometimes stands with it, as Escape from Tarkov's locked rooms hold
+its best loot and Lethal Company's best scrap lies where its monsters are. The other reading (a
+monster instead of the good thing) breaks "always", so it went to `OWNER.md` as a question.
+
+**The deal.** A padlocked unit deals from `Deal.PadlockedHolds` (a find 70, a tool 30, never
+nothing, whatever the mood). Then `Deal.besideOdds`: the mood's keeper odds times
+`PadlockedKeeper` (2), so in Build 20 asleep and 10 awake in 100, under the same awake cap and
+the guard's kept place as any door (`limit`). The keeper rides in `Contents.beside` with its
+name in `keeper`; `Deal.keeperIn` reads a unit's keeper either way, for `Keepers` and
+`KeptPlayers`. Replaced: the old multipliers (`Deal.Padlocked`), which could deal a padlock
+nothing (9 in 100) or only a keeper (27).
+
+**No new draw.** The second choice comes from where the unit's roll landed within its find or
+tool's share (`landOn`): as random as a fresh roll and free of which it was. So nothing a seed
+lays moved: deal.spec pins a fingerprint of every seed's code, notes, padlocks, guard, rolls,
+coins and bag from before. What doors deal did change (stuffdeal.spec's fingerprint retaken).
+
+**Tools rarer.** GDD: about one unit in twelve (a starting guess). Build's tool odds 20 to 6, the
+rest onto nothing (Peak 30 to 15, Relief 20 to 6); with the padlocks' tools a floor comes to 1
+in 11.8 on floors 1 and 3, 1 in 10.9 on floor 6 (deal.spec measures it).
+
+**Laying both.** `Deals` lays the find or tool first, then the keeper behind the bulb clear of
+the find's floor (`DealSpot.inUnit`'s `taken`), coins clear of both. `Dealt.keeper` is where the
+keeper stands (its own spot here, `place` for a keeper-only unit); with no room it stands
+nowhere, said in Output. Seen in Play: Unit 305 laid the TV at 2 studs in front of the
+Mannequin. On the dev floor all five padlocked units drew a Mannequin: chance (their rolls
+happen to bunch); over 3000 seeds, laid the server's way, the share is 30%.
+
+**Batteries** (S1-07b) wait for the flashlight to run down (S1-09); no battery art exists yet.
+

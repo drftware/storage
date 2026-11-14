@@ -1452,7 +1452,14 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
   burst, unseen in Play.
 - [ ] **S1-07 What a door holds.** A padlocked door always has something good, with the best
   chance of something great and of a monster. A tool in about one unit in twelve (one in five
-  today). A battery in about one unit in ten.
+  today). A battery in about one unit in ten. Split Nov 14: no battery art exists, and a battery
+  means nothing until the flashlight runs down.
+  - [x] **S1-07a Padlocked doors and rarer tools.** (Built Nov 14, D-140; a padlock cut and its
+    unit opened in Studio Play.) A padlocked unit always holds a find (7 in 10) or a tool, and
+    about 3 in 10 have a monster standing in there with it, asleep or awake; tools in about one
+    unit in twelve (6 in 100 behind an ordinary door). No seed lays anything differently.
+  - [ ] **S1-07b Batteries in units.** The battery's art (the unit's way, `art/`), dealt into
+    about one unit in ten; built with S1-09, right after it.
 - [ ] **S1-08 Tools wear out.** Bolt cutters 3 padlocks, the saw 2 holes, the air horn 3
   blasts, the padlock 1 door; a mark on the slot shows the uses left (GDD "Tools wear out").
 - [ ] **S1-09 The flashlight runs down.** Only while it's on; a meter on its button, a flicker
@@ -1545,7 +1552,8 @@ Done when players watch the results to the end and change their perks between cl
 - [ ] **S5-01 Finds valued one at a time** on the results: picture, name, how rare, what it's
   worth, the cash counting up; then a line for each player.
 - [ ] **S5-02 Rarity, and finds still sealed.** Rarer finds on higher floors; about one in
-  twenty still in its packaging, worth three times as much.
+  twenty still in its packaging, worth three times as much. A padlocked unit's find draws a
+  grade better (GDD: "the best chance of something great"; S1-07a left it a plain find).
 - [ ] **S5-03 Selling and keeping without a menu.** Copies and common finds sell on the spot;
   a rare one you don't own is kept.
 - [ ] **S5-04 The collection book.** A page for every kind of find, stamped "New" the first

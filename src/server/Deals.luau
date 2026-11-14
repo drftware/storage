@@ -63,6 +63,10 @@ export type Dealt = {
 	-- where it was laid, on the floor, facing as it stands (a tool's middle, a find's or keeper's
 	-- feet); nil when nothing was laid (nothing behind the door, or a tool not built yet)
 	place: CFrame?,
+	-- where the unit's keeper stands, feet on the floor, facing as laid: `place` for a unit that
+	-- holds only a keeper, its own spot for one standing with a padlocked unit's find or tool
+	-- (S1-07a); nil for none, or none with room to stand
+	keeper: CFrame?,
 	-- who opened it: the player whose door lift or saw first showed it; nil when the game did
 	player: Player?,
 }
@@ -100,10 +104,13 @@ local STUFF_SAID = {
 -- How a unit holds things, said for Output in Studio.
 local function said(contents: Deal.Contents): string
 	local kind = contents.kind
+	local with = if contents.beside
+		then `, the {contents.keeper} standing with it, {string.lower(contents.beside)}`
+		else ""
 	if kind == "Tool" then
-		return `a tool, {contents.tool}`
+		return `a tool, {contents.tool}{with}`
 	elseif kind == "Find" then
-		return `a find, the {contents.find}`
+		return `a find, the {contents.find}{with}`
 	elseif kind == "Asleep" or kind == "Awake" then
 		return `the {contents.keeper}, {string.lower(kind)}`
 	end
@@ -161,9 +168,10 @@ function Deals.new(): Deals
 			* CFrame.Angles(0, math.rad(spot.yaw), 0)
 	end
 
-	-- Lays what unit `unit` (slot `index` of `deck`'s floor) was dealt; returns where, or nil, and
-	-- the floor it takes with room round it (DealSpot.around), which its coins keep clear of.
-	local function lay(
+	-- Lays what unit `unit` (slot `index` of `deck`'s floor) was dealt, its tool, find or keeper;
+	-- returns where, or nil, and the floor it takes with room round it (DealSpot.around), which a
+	-- keeper standing with it and the unit's coins keep clear of.
+	local function layOne(
 		unit: Model,
 		deck: Deal.Deck,
 		index: number,
@@ -228,14 +236,40 @@ function Deals.new(): Deals
 		return nil
 	end
 
+	-- Lays all a unit was dealt but its coins and stuff: what it holds (`layOne`), then a keeper
+	-- standing with a padlocked unit's find or tool (S1-07a), behind the bulb where it fits, clear
+	-- of the find. Returns where the find, tool or keeper lies, where the keeper stands, and the
+	-- floor they take, which the coins keep clear of.
+	local function lay(
+		unit: Model,
+		deck: Deal.Deck,
+		index: number,
+		contents: Deal.Contents
+	): (CFrame?, CFrame?, { { number } })
+		local place, area = layOne(unit, deck, index, contents)
+		local taken: { { number } } = if area then { area } else {}
+		if Deal.keeperIn(contents) == nil then
+			return place, nil, taken
+		elseif not contents.beside then
+			return place, place, taken
+		end
+		local size, number, note = shape(deck, index)
+		local spot = DealSpot.inUnit(size, "Keeper", DealSpot.Keeper, note, number, taken)
+		if not spot then
+			return place, nil, taken
+		end
+		table.insert(taken, DealSpot.around(spot, DealSpot.Keeper))
+		return place, placed(unit, spot), taken
+	end
+
 	-- Lays unit `unit`'s coins (S1-04a) in the bulb's pool, clear of `taken` (the floor its tool,
-	-- find or keeper takes). Whether they were laid.
+	-- find and keeper take). Whether they were laid.
 	local function layCoins(
 		unit: Model,
 		deck: Deal.Deck,
 		index: number,
 		count: number,
-		taken: { number }?
+		taken: { { number } }
 	): boolean
 		local pile = CoinSpecs.Piles[count]
 		if not (pile and coins) then
@@ -248,7 +282,7 @@ function Deals.new(): Deals
 			{ across = pile.Size.X, along = pile.Size.Z, tall = pile.Size.Y },
 			note,
 			number,
-			if taken then { taken } else nil
+			taken
 		)
 		if not spot then
 			return false
@@ -279,7 +313,7 @@ function Deals.new(): Deals
 		local deck, index = entry.deck, entry.index
 		local awake = if keepers then keepers:awakeOn(unit) else 0
 		local contents = Deal.open(deck, index, { mood = "Build", awake = awake })
-		local place, taken = lay(unit, deck, index, contents)
+		local place, keeper, taken = lay(unit, deck, index, contents)
 		local paid = contents.coins > 0 and layCoins(unit, deck, index, contents.coins, taken)
 		local drawn = contents.stuff
 		if drawn then
@@ -290,6 +324,9 @@ function Deals.new(): Deals
 			local laid = if place or contents.kind == "Nothing"
 				then ""
 				else " (no art yet, so nothing laid)"
+			if contents.beside and not keeper then
+				laid ..= " (no room for its keeper, so it stands nowhere)"
+			end
 			if drawn and not contents.stuff then
 				laid ..= ` (its {drawn} fits against no wall, so it's bare)`
 			elseif drawn and contents.stuff ~= drawn then
@@ -302,7 +339,13 @@ function Deals.new(): Deals
 				else ` and {contents.coins} coins (not laid)`
 			print(`Deals: {unit.Name} held {said(contents)}{coinsSaid}{guard}{laid}`)
 		end
-		dealt:fire({ unit = unit, contents = contents, place = place, player = player })
+		dealt:fire({
+			unit = unit,
+			contents = contents,
+			place = place,
+			keeper = keeper,
+			player = player,
+		})
 	end
 
 	local function onActed(event: Doors.DoorEvent)

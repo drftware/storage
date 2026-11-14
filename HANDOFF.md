@@ -2,64 +2,65 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-14, session 127 (S1-02 Recording) ·
+**Updated:** 2026-11-14, session 128 (S1-07a Padlocked doors) ·
 **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- **S1-02 is built** (D-139); Brix moved to `6717740` (Analytics). `Record` (shared, pure) is the
-  plan and a book with one method per moment; `Recording` (server, last in the Host's list)
-  sends each through Brix's Analytics to AnalyticsService, listening to new signals: Coins'
-  `earned` (pile, gate), Deals' `dealt` now naming who opened the unit, GatePay's `kept`,
-  KeptPlayers' `freed`, ClimbEnds' `ended` and `again`, LobbyCars' `departed`. Spec:
-  `tests/record.spec` (168 checks: every record in order, the funnel once a climb, labels, refusals).
-- **Seen in Studio Play** (lobby Car3, Go, floor 1 of `LobbyClimb`): `carLeft 16.6 (team 1)`, floor
-  1 started, funnel began; Unit102 `doorOpened (gave nothing)`, `firstDoor 71`; Unit101 `gave
-  coins`, `earned 2 Coins (pile), now 2`; code 9463, aboard: `earned 10 Coins (gate), now 12`,
-  floor 1 completed, funnel rode, floor 2 started; kept set by hand: `climbEnded 2 (fate kept,
-  team 1)`, floor 2 failed; Again: `again 1`. Each with AnalyticsService's "event fired" line; no
-  record dropped. **Not seen in Play:** `caught`, `freed`, `findKept` (the spec covers them).
-- Studio left in Edit, `DevFloorSeed` untouched (7); the place isn't saved by me.
-- The GDD (D-127, D-128) is the newer word; ROADMAP Phase 2 is its build order.
+- **S1-07 is split** (no battery art; a battery means nothing until the flashlight runs down):
+  S1-07a built (D-140), S1-07b batteries waits for S1-09 and is built right after it.
+- **S1-07a:** a padlocked unit always holds a find (7 in 10) or a tool, and about 3 in 10 have a
+  monster standing in there with it (`Contents.beside`, `Deal.keeperIn`); tools are about one
+  unit in twelve (Build's tool odds 20 to 6). No new draw: nothing a seed lays moved (deal.spec
+  pins a fingerprint); what doors deal did (stuffdeal.spec's fingerprint retaken). `Deals` lays
+  the keeper behind the bulb clear of the find, `Dealt.keeper` its spot; `Keepers` stands it.
+- **Seen in Studio Play** (dev floor, floor 3, seed 7): cut and opened all five padlocked units by
+  their Open prompts. Output: `Deals: Unit305 held a find, the Television, the Mannequin standing
+  with it, asleep and 1 coins`, `Keepers: the Mannequin stands in Unit 305, asleep`, `Recording:
+  doorOpened 1 (floor 3, gave find)`; 320's Boombox with an awake one that chased. Seen in 305:
+  the TV in the bulb's light, the Mannequin right behind it. All five drew one by chance (30%).
+- Studio left in Edit, `DevFloorSeed` 7, place not saved by me. The GDD (D-127, D-128) is the
+  newer word; ROADMAP Phase 2 is its build order.
 
-## Next task: S1-07 What a door holds
-The moment: you cut a padlock and the unit behind it is always worth it, sometimes great, and
-sometimes a monster wakes in it. Tools rarer (about one unit in twelve, from one in five).
-1. Read ROADMAP S1-07 and the GDD on padlocked doors and what units hold (docs tools, search
-   "padlock" and "battery"). Note Queue 6: Deal's padlock count is a share of the units today.
-2. A battery in about one unit in ten needs the battery's art (the unit's way, `art/`) and the
-   flashlight running down (S1-09). If no battery art exists, split S1-07 in ROADMAP first:
-   S1-07a padlocked doors and the tool odds now; S1-07b batteries with S1-09.
-3. In `Deal` (pure): a padlocked unit never deals Nothing; it draws from a better table (a find
-   or a tool, the best chance of a great find and of a keeper). Tools at about 1 in 12. Keep
-   every seed's other draws where they are if you can (coins were drawn last for that, D-132).
-4. Lune: deal.spec over many seeds (padlocked always hold something; the shares within bounds).
-5. Studio Play: cut a padlock (dev floor, seed 7) and say what Output's `Deals:` line shows;
-   `Recording` prints `doorOpened (gave ...)` for it.
-**Acceptance:** checks green; the spec proves the odds; what's seen in Play said.
-**Read first:** ROADMAP S1-07; GDD (search "padlock"); `src/shared/Deal.luau`;
-`tests/deal.spec.luau`; `src/server/Deals.luau` (how a padlocked unit is set); D-131 and D-132 in
-`docs/DECISIONS.md`.
+## Next task: S1-08 Tools wear out
+The moment: your bolt cutters bite through a third padlock and snap, and you feel the loss;
+a glance at your slot always told you it was coming.
+1. Read ROADMAP S1-08 and the GDD's "Tools wear out" (docs tools, search "wear").
+2. Uses per tool as data in `Tools.Catalog` (bolt cutters 3 padlocks, the saw 2 holes, the air
+   horn 3 blasts, the padlock 1 door; the ladder, bubble wrap and flashlight as the GDD says).
+   Uses left live on the server with the held tool (Slots), never trusted from a client.
+3. Each use spends one where it happens today (`Slots:spend` in Doors' Cut and Lock, Saws, the
+   horn, Wraps). At none left the tool breaks in hand with its own sound and motion, and the
+   slot empties; it never just vanishes.
+4. A mark on the slot in the inventory wheel (`ToolView`, `Tools.Wheel`) shows the uses left,
+   readable at phone size, no words (AGENTS: no rule-explaining text).
+5. Lune: the pure part (uses, spending, breaking) in a spec. Studio Play: cut padlocks with one
+   pair of cutters (bolt cutters lie in Unit 323 on the dev floor; padlocks on 305, 320, 329,
+   330, 336; recipe in `docs/STUDIO.md` "Opening a unit so it deals") and say what's seen.
+**Acceptance:** checks green; uses proven in a spec; a tool breaking seen in Play.
+**Read first:** ROADMAP S1-08; GDD (search "wear"); `src/shared/Tools/Catalog.luau`;
+`src/server/Slots.luau` (`spend`, `lay`); `src/client/ToolView.luau`; `src/shared/Tools/Wheel.luau`.
 
 ## Queue (the overnight run, owner Nov 13: sessions until 8:30am, the updated plan)
-1. S1-07 (next), then ROADMAP Phase 2 in order (S1-08 Tools wear out). S2-06 and L-08e3c wait
-   on `OWNER.md`. Lobby polish waits.
-2. Found S1-02: in Studio the test hall begins a climb on floor 3 as the server starts, so Studio
+1. S1-08 (next), then S1-09 The flashlight runs down, then S1-07b batteries, then ROADMAP Phase 2
+   in order. S2-06 and L-08e3c wait on `OWNER.md`. Lobby polish waits.
+2. Found S1-07a: the GDD says the three in ten units without coins hold nothing to take; today a
+   unit's kind is drawn apart from its coins, so about 16 in 100 hold nothing at all. Owner's
+   call if it matters; not changed.
+3. Found S1-02: in Studio the test hall begins a climb on floor 3 as the server starts, so Studio
    records "climb floor 3 started" before any lobby car (Studio only). An onboarding funnel and
    the trip carrying the lobby join time are listed under S1-02 in ROADMAP.
-3. Found S1-06: a kept find's save write and the friends' spark are unseen in Play (a real
-   ride's pay is now seen); a "New" mark on a find kept the first time is polish (ROADMAP).
-4. Found S1-05: the finds' places in your view (moved after one look) are unseen in Play; a find
+4. Found S1-06: a kept find's save write and the friends' spark are unseen in Play; a "New" mark
+   on a find kept the first time is polish (ROADMAP).
+5. Found S1-05: the finds' places in your view (moved after one look) are unseen in Play; a find
    standing in a unit can be walked through (inert, as a lying tool; polish list).
-5. Found S1-04b2: keepers move on their own map and don't know about stuff, so one could walk
+6. Found S1-04b2: keepers move on their own map and don't know about stuff, so one could walk
    through it; the heap's front reaches 7.2 into an M unit. A player can likely jump onto it.
-6. Found S1-03: Deal's padlock count is a share of the units; S1-07 sets padlocks afresh.
 7. Found S1-04b1: the stacks' boxes all wear the same few marker words (polish list).
 8. Found S1-01: arriving on another server, the save claim may wait up to 5 s if the lobby's
    let-go lands after you. If too slow, a Brix ticket in neutral terms.
-9. Found L-08e3b: a lobby car's `far` isn't cleared when its group's trip fails; it ages out.
-10. Found L-08e4b1: no PlayerModule in PlayerScripts in Play, so WatchView's `controls` lookup
-   fails quietly (untested).
-11. Seen (owner, Nov 12, "fix them later"): lobby car floors splotchy inside; a sawn side or top
+9. Found L-08e3b: a lobby car's `far` isn't cleared when its trip fails (it ages out); L-08e4b1:
+   no PlayerModule in PlayerScripts, so WatchView's `controls` lookup fails quietly (untested).
+10. Seen (owner, Nov 12, "fix them later"): lobby car floors splotchy inside; a sawn side or top
    flashes see-through as its panel drops; the lobby car's lamp very dim.
 
 ## Kickoff for the next agent

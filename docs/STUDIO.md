@@ -457,6 +457,17 @@ verified: a doc page, Studio, or "untested".
   and read what happened off attributes (`KeeperState`, `DoorMotion`) and Output. A Server
   `execute_luau` can sample a keeper's pivot every 0.1 s for a path; the pure modules
   (`Floor.generate` with the dev floor's seed, `KeeperMap`) rebuild the same map to check against.
+- **Opening a unit so it deals, from the MCP** (S1-07a, 2026-11-14): `RollUpDoor.play(unit,
+  "Open")` from the Server moves the door but never deals it (`Deals` hears only the Doors
+  system's own acts), so press the door's Open prompt from the Client. `setLocked(unit, false)`
+  from the Server is a cut, and closing it again (`"Close"`) leaves it undealt. Stand on the
+  hall side: `FloorBuilder.face(unit)` is a CFrame, and `unit:GetPivot()` doesn't say which way
+  the hall is; the Open prompt's Attachment (`DoorOrigin.DoorMiddle`) sits on the hall side of
+  the `DoorCollider`. From inside, a raycast to it hits the collider and no prompt shows. 4.5
+  studs out along the DoorOrigin's LookVector, on the side with a clear ray to the attachment,
+  works; the prompt's reach is 8. The Client can pivot its own character between presses, so a
+  single Client `execute_luau` opens several units. The dev floor's units today: floor 3, seed 7
+  (2000013): bolt cutters in 323, the teddy in 326, padlocks on 305, 320, 329, 330 and 336.
 - **The awake Mannequin moved to Unit 157** (L-06b5a, 2026-11-10): on seed 7, floor 1 the guard
   of the note in 157 holds the floor's one awake place, so 126's (and 112's, 154's) Mannequin
   deals asleep and the recipes below that open 126 for an awake one need 157 (or trap 157's guard

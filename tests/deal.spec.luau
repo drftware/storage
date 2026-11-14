@@ -3,7 +3,8 @@
 -- The deal (L-04d) over 200 seeds on floors 1, 3 and 6: the same seed deals the same; the code's
 -- notes show every digit once, lie past the lobby's hall, one to a wing, spread out, and from
 -- floor 6 one sits behind a padlock; padlocks are the right few, never in the lobby's hall; the
--- odds land where they say, worse behind a padlock; never more keepers awake than the cap, none
+-- odds land where they say; a padlock always holds a find or a tool, with the best chance of a
+-- keeper standing with it (S1-07a); about one unit in twelve holds a tool; never more keepers awake than the cap, none
 -- woken in a chase or after one (the guarded note's keeper aside: guard.spec), none in the lobby's hall on floors 1 and 2; the bag deals every tool before any comes round again, a saw
 -- first on floors 1 and 2; a door lifted again holds what it held.
 local Brix = require("../vendor/brix/src")
@@ -58,7 +59,24 @@ end
 
 local open, locked = tally(), tally()
 local capped, peak, relief = tally(), tally(), tally()
+-- The keepers standing with a padlocked unit's find or tool ("Nothing" for none), in Build, at
+-- the cap and in a chase; and every unit's tools, padlocked or not, on floors 1 to 3 and on 6.
+local beside, besideCapped, besidePeak = tally(), tally(), tally()
+local toolsLow, toolsHigh = tally(), tally()
 local closest = math.huge
+
+-- What every seed lays before a door lifts (code, notes, padlocks, guard, each unit's rolls and
+-- coins, the bag), folded into one number for seeds 1 to 60: S1-07a changed what a door deals,
+-- not what a floor lays, so this is what it was before S1-07a. It changes only when a ticket
+-- means to move what a seed lays.
+local LAID = 730595903
+local LAID_SEEDS = 60
+local laid = 7
+local function feed(s: string)
+	for i = 1, #s do
+		laid = (laid * 131 + string.byte(s, i)) % 4294967291
+	end
+end
 
 for seed = 1, SEEDS do
 	for _, number in FLOORS do
@@ -66,6 +84,18 @@ for seed = 1, SEEDS do
 		local _, twin = lay(seed, number)
 		local units = unitsOf(floor)
 		local where = `seed {seed} floor {number}`
+		if seed <= LAID_SEEDS then
+			feed(table.concat(deck.code, ","))
+			for _, note in deck.notes do
+				feed(`n{note.slot}:{table.concat(note.places, ",")}`)
+			end
+			feed(`g{deck.guarded}b{table.concat(deck.bag, ",")}`)
+			for _, i in units do
+				local lock = if deck.padlocked[i] then "L" else ""
+				feed(`{i}:{math.floor(deck.rolls[i] * 1e6)},{math.floor(deck.picks[i] * 1e6)}`)
+				feed(`{deck.coins[i]}{lock}`)
+			end
+		end
 
 		-- The same seed lays the same.
 		ok(table.concat(deck.code, "") == table.concat(twin.code, ""), `{where}: the same code`)
@@ -189,10 +219,24 @@ for seed = 1, SEEDS do
 			local got = Deal.open(deck, i, BUILD)
 			if i ~= guard then
 				add(if deck.padlocked[i] then locked else open, got.kind)
+				if deck.padlocked[i] then
+					add(beside, got.beside or "Nothing")
+				end
+				add(if number < 6 then toolsLow else toolsHigh, got.kind)
+			end
+			ok(
+				got.beside == nil or deck.padlocked[i] == true,
+				`{where}: a keeper stands with a find only behind a padlock`
+			)
+			if got.beside then
+				ok(
+					(got.kind == "Find" or got.kind == "Tool") and got.keeper ~= nil,
+					`{where}: a keeper beside a find or tool, named`
+				)
 			end
 			ok(Deal.open(twin, i, BUILD).kind == got.kind, `{where}: the same seed deals the same`)
 			ok(
-				reverse.dealt[i].kind == got.kind,
+				reverse.dealt[i].kind == got.kind and reverse.dealt[i].beside == got.beside,
 				`{where}: the order of doors doesn't change the kind`
 			)
 			ok(
@@ -238,8 +282,14 @@ for seed = 1, SEEDS do
 		for _, i in units do
 			if i ~= guard then
 				local cap = { mood = "Build", awake = Deal.awakeCap(number) } :: Deal.Situation
-				add(capped, Deal.open(atCap, i, cap).kind)
-				add(peak, Deal.open(inPeak, i, { mood = "Peak", awake = 0 }).kind)
+				local c = Deal.open(atCap, i, cap)
+				local p = Deal.open(inPeak, i, { mood = "Peak", awake = 0 })
+				add(capped, c.kind)
+				add(peak, p.kind)
+				if deck.padlocked[i] then
+					add(besideCapped, c.beside or "Nothing")
+					add(besidePeak, p.beside or "Nothing")
+				end
 				add(relief, Deal.open(inRelief, i, { mood = "Relief", awake = 0 }).kind)
 			end
 		end
@@ -253,6 +303,8 @@ for _, name in Deal.Finds do
 	ok(string.find(findSpecs, "\n\t" .. name .. " = {", 1, true) ~= nil, `{name} is a built find`)
 end
 
+ok(laid == LAID, `every seed lays what it did before S1-07a ({laid}, was {LAID})`)
+
 -- The odds, over every unlocked door in Build: each kind within 3 in 100 of its odds.
 for _, kind in Deal.Kinds do
 	local want = Deal.Odds.Build[kind] / 100
@@ -261,15 +313,42 @@ for _, kind in Deal.Kinds do
 		`Build deals {kind} about {want}: {share(open, kind)}`
 	)
 end
--- Behind a padlock: more finds, more keepers, less nothing.
-ok(share(locked, "Find") > share(open, "Find") + 0.1, "a padlock holds more finds")
+-- Behind a padlock (S1-07a): always a find or a tool, each within 3 in 100 of its odds; a keeper
+-- with it about twice as often as behind an ordinary door, asleep and awake each within 3 in 100.
+ok(locked.Nothing + locked.Asleep + locked.Awake == 0, "a padlock always holds a find or a tool")
+for kind, odds in Deal.PadlockedHolds do
+	local want = odds / 100
+	ok(
+		math.abs(share(locked, kind) - want) < 0.03,
+		`a padlock holds {kind} about {want}: {share(locked, kind)}`
+	)
+end
+for _, kind in { "Asleep", "Awake" } do
+	local want = Deal.Odds.Build[kind] * Deal.PadlockedKeeper / 100
+	ok(
+		math.abs(share(beside, kind) - want) < 0.03,
+		`a keeper {kind} beside a padlock's find about {want}: {share(beside, kind)}`
+	)
+end
 ok(
-	share(locked, "Asleep") + share(locked, "Awake")
-		> share(open, "Asleep") + share(open, "Awake") + 0.05,
-	"a padlock holds more keepers"
+	share(beside, "Asleep") + share(beside, "Awake")
+		> share(open, "Asleep") + share(open, "Awake") + 0.1,
+	"a padlock has the highest chance of a keeper"
 )
-ok(share(locked, "Nothing") < share(open, "Nothing") - 0.2, "a padlock is rarely empty")
 ok(locked.total > 1000, `enough padlocked doors to judge: {locked.total}`)
+-- At the cap a padlock's keeper is asleep; in a chase none wakes there either.
+ok(besideCapped.Awake == 0, "at the cap a padlock's keeper is asleep")
+ok(
+	share(besideCapped, "Asleep") > share(beside, "Asleep") + 0.05,
+	"at the cap a padlock's keeper is dealt asleep instead"
+)
+ok(besidePeak.Awake == 0, "in a chase no padlock's keeper is awake")
+-- Tools (GDD "Doors": about one unit in twelve): over every unit but the guard's, between one in
+-- fifteen and one in ten on floors 1 and 3, and on floor 6, with more padlocks.
+for _, t in { toolsLow, toolsHigh } do
+	local got = share(t, "Tool")
+	ok(got > 1 / 15 and got < 1 / 10, `about one unit in twelve holds a tool: 1 in {1 / got}`)
+end
 -- The cap turns a keeper asleep, not away.
 ok(capped.Awake == 0, "at the cap nothing wakes")
 ok(
@@ -284,4 +363,10 @@ if failures > 0 then
 	print(`deal: {failures} of {checks} checks failed`)
 	error("deal spec failed")
 end
-print(`deal: {checks} checks passed (nearest two notes {math.floor(closest)} studs)`)
+print(
+	`deal: {checks} checks passed (nearest two notes {math.floor(closest)} studs; a tool 1 in {math.round(
+		1 / share(toolsLow, "Tool") * 10
+	) / 10} on floors 1 and 3, 1 in {math.round(1 / share(toolsHigh, "Tool") * 10) / 10} on 6; a keeper with a padlock find {math.round(
+		(share(beside, "Asleep") + share(beside, "Awake")) * 100
+	)} in 100)`
+)

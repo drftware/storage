@@ -3,8 +3,9 @@
 -- Somebody's stuff dealt into units (S1-04b2), over 200 seeds on floors 1, 3 and 6: about
 -- `Deal.StuffShare` of the units with nothing to take hold one thing, each thing about as often;
 -- never a unit with coins, a tool, a find, a keeper or a note; the same seed the same stuff; and
--- every other thing a seed lays and deals is what it was before the stuff (a fingerprint taken
--- from the deal before S1-04b2: it changes only when a ticket means to change the deal).
+-- every other thing a seed lays and deals is what it was before the stuff (a fingerprint of the
+-- deal, taken last as S1-07a changed what doors hold: it changes only when a ticket means to
+-- change the deal).
 -- Where it stands, in both unit sizes over 300 unit numbers: back to a wall, inside the floor past
 -- the door's line, wholly clear of both crawl hole spots, the landing under the top's hole and
 -- where its panel falls, and of a note's sight line; too close to the wall for anyone to squeeze
@@ -70,7 +71,7 @@ ok(Deal.stuffFrom(Deal.StuffShare - 1e-9) == Deal.Stuff[#Deal.Stuff], "the highe
 local SEEDS = 200
 local FLOORS = { 1, 3, 6 }
 local BUILD: Deal.Situation = { mood = "Build", awake = 0 }
-local FINGERPRINT = 207909408 -- the deal of seeds 1 to 60 before S1-04b2
+local FINGERPRINT = 1267978987 -- the deal of seeds 1 to 60 since S1-07a (padlocked units, rarer tools)
 local SEEDS_PRINTED = 60
 
 local print_ = 7
@@ -105,7 +106,8 @@ for seed = 1, SEEDS do
 			ok(c.stuff == twin.stuff, `seed {seed} floor {number}: the same seed, the same stuff`)
 			if printed then
 				local lock = if deck.padlocked[i] then "L" else ""
-				feed(`{i}{c.kind}{c.tool or ""}{c.find or ""}{c.keeper or ""}{c.coins}{lock}`)
+				feed(`{i}{c.kind}{c.tool or ""}{c.find or ""}{c.keeper or ""}{c.beside or ""}`)
+				feed(`{c.coins}{lock}`)
 			end
 			local nothing = c.kind == "Nothing" and c.coins == 0 and not noted[i]
 			if nothing then

@@ -30,12 +30,15 @@ export type Situation = { mood: Mood, awake: number }
 
 -- What a unit holds once dealt: a tool says which, a find which, a keeper which and whether it's
 -- awake; `coins`, how many coins lie on its floor besides (0 to 3, S1-04a); `stuff`, somebody's
--- stuff standing in a unit with nothing to take (S1-04b2), a name in `Deal.Stuff`.
+-- stuff standing in a unit with nothing to take (S1-04b2), a name in `Deal.Stuff`. `beside`, a
+-- keeper standing in a padlocked unit with its find or tool (S1-07a): "Asleep" or "Awake", its
+-- name in `keeper`. `Deal.keeperIn` reads a unit's keeper either way.
 export type Contents = {
 	kind: Kind,
 	tool: Tool?,
 	find: string?,
 	keeper: string?,
+	beside: Kind?,
 	coins: number,
 	stuff: string?,
 }
@@ -71,18 +74,30 @@ Deal.Kinds = KINDS
 	search, deals riskier doors: now and then something wakes. Peak, during a chase, wakes nothing
 	new and leans on tools to get away with. Relief, after one, deals finds and lets you breathe.
 	Until the director exists (Phase 2) the floor deals in Build.
+
+	Tools are rare (S1-07a, GDD "Doors": about one unit in twelve, a starting guess), so finding
+	one is a good moment and the machine on the ride is where a team stocks up: 6 in 100 behind an
+	ordinary door, and the padlocked doors' tools (below) bring a floor to about one in twelve.
 ]]
 Deal.Odds = {
-	Build = { Nothing = 40, Find = 25, Tool = 20, Asleep = 10, Awake = 5 },
-	Peak = { Nothing = 45, Find = 15, Tool = 30, Asleep = 10, Awake = 0 },
-	Relief = { Nothing = 40, Find = 35, Tool = 20, Asleep = 5, Awake = 0 },
+	Build = { Nothing = 54, Find = 25, Tool = 6, Asleep = 10, Awake = 5 },
+	Peak = { Nothing = 60, Find = 15, Tool = 15, Asleep = 10, Awake = 0 },
+	Relief = { Nothing = 54, Find = 35, Tool = 6, Asleep = 5, Awake = 0 },
 } :: { [Mood]: { [string]: number } } -- string keys: Luau won't index by a union of words
 
--- Behind a padlock, the best finds and the worst odds (GDD), as Escape from Tarkov's locked rooms
--- hold its best loot: each kind's odds times this. Build's become about 9 nothing, 45 a find,
--- 18 a tool, 18 a keeper asleep and 9 awake in every 100.
-Deal.Padlocked =
-	{ Nothing = 0.25, Find = 2, Tool = 1, Asleep = 2, Awake = 2 } :: { [string]: number }
+--[[
+	Behind a padlock (S1-07a, GDD "Doors"): always something good, the best chance of something
+	great and the highest chance of a monster. Escape from Tarkov's locked rooms hold its best loot
+	the same way, and Lethal Company's best scrap lies where its monsters are. So a padlocked unit
+	never deals nothing: it holds a find or a tool, out of 100, whatever the mood (a find most
+	often: the great ones, once finds have grades, ROADMAP "rarity ladder"). And a keeper may
+	stand in there with it, the mood's own keeper odds times `PadlockedKeeper`: in Build about 20
+	in 100 asleep and 10 awake, twice an ordinary door's, the cap and the guard's place as anywhere.
+	You cut the lock, the door rolls up on a boombox in the bulb's light, and behind it something
+	stands in the dark.
+]]
+Deal.PadlockedHolds = { Find = 70, Tool = 30 } :: { [string]: number }
+Deal.PadlockedKeeper = 2
 
 -- How many keepers the deal will have awake at once, by floor (GDD "The director": each band caps
 -- them; the tech plan caps them for low-end phones). Past it a keeper is dealt asleep instead, so
@@ -435,6 +450,19 @@ local function move(odds: { [string]: number }, from: Kind, to: Kind)
 	odds[from] = 0
 end
 
+-- The director's two limits on keepers, on any odds (`Deal.Kinds` keys): none in the lobby's hall
+-- on floors 1 and 2, and none awake past the floor's cap (the guard's place counted, below).
+local function limit(odds: { [string]: number }, deck: Deck, index: number, situation: Situation)
+	local guard = deck.guarded
+	local awake = situation.awake + (if guard and not deck.dealt[guard] then 1 else 0)
+	if deck.floor.number <= Deal.TeachingFloors and deck.firstHall[index] then
+		move(odds, "Asleep", "Nothing")
+		move(odds, "Awake", "Nothing")
+	elseif awake >= Deal.awakeCap(deck.floor.number) then
+		move(odds, "Awake", "Asleep")
+	end
+end
+
 --[[
 	The odds behind unit `index` in `situation`, out of their total, in `Deal.Kinds` order.
 	The guarded note's unit is always a keeper awake, whatever the mood and however many are
@@ -452,20 +480,69 @@ function Deal.odds(deck: Deck, index: number, situation: Situation): { [string]:
 		odds.Awake = 1
 		return odds
 	end
-	local base = Deal.Odds[situation.mood]
-	local locked = deck.padlocked[index] == true
+	local base = if deck.padlocked[index] then Deal.PadlockedHolds else Deal.Odds[situation.mood]
 	for _, kind in KINDS do
-		odds[kind] = base[kind] * (if locked then Deal.Padlocked[kind] else 1)
+		odds[kind] = base[kind] or 0
 	end
-	local guard = deck.guarded
-	local awake = situation.awake + (if guard and not deck.dealt[guard] then 1 else 0)
-	if deck.floor.number <= Deal.TeachingFloors and deck.firstHall[index] then
-		move(odds, "Asleep", "Nothing")
-		move(odds, "Awake", "Nothing")
-	elseif awake >= Deal.awakeCap(deck.floor.number) then
-		move(odds, "Awake", "Asleep")
-	end
+	limit(odds, deck, index, situation)
 	return odds
+end
+
+--[[
+	The odds of a keeper standing in padlocked unit `index` with its find or tool, in `situation`,
+	out of their total, keyed as `Deal.Kinds`: "Nothing" for none, "Asleep", "Awake". All on
+	"Nothing" for any other unit.
+]]
+function Deal.besideOdds(deck: Deck, index: number, situation: Situation): { [string]: number }
+	local odds: { [string]: number } = { Nothing = 1, Find = 0, Tool = 0, Asleep = 0, Awake = 0 }
+	if not deck.padlocked[index] or index == deck.guarded then
+		return odds
+	end
+	local base = Deal.Odds[situation.mood]
+	odds.Asleep = base.Asleep * Deal.PadlockedKeeper
+	odds.Awake = base.Awake * Deal.PadlockedKeeper
+	odds.Nothing = math.max(0, 100 - odds.Asleep - odds.Awake)
+	limit(odds, deck, index, situation)
+	return odds
+end
+
+-- The kind `roll` (0 to 1) lands on across `odds`, and where in that kind's share it landed, 0
+-- to 1: as random as a fresh roll and free of which kind it was, so one roll can make a second
+-- choice without a draw of its own (and without moving any seed's other draws).
+local function landOn(odds: { [string]: number }, roll: number): (Kind, number)
+	local total = 0
+	for _, kind in KINDS do
+		total += odds[kind]
+	end
+	local at = roll * total
+	for _, k in KINDS do
+		if at < odds[k] then
+			return k :: Kind, at / odds[k] -- the loop widens KINDS' words to string
+		end
+		at -= odds[k]
+	end
+	return "Nothing", 0
+end
+
+-- The name of a keeper that has joined by `deck`'s floor, from `pick` (0 to 1), or nil if none.
+local function keeperFrom(deck: Deck, pick: number): string?
+	local joined = {}
+	for _, keeper in Deal.Keepers do
+		if keeper.from <= deck.floor.number then
+			table.insert(joined, keeper.name)
+		end
+	end
+	return if #joined == 0 then nil else joined[math.floor(pick * #joined) + 1]
+end
+
+-- The keeper in a dealt unit, "Asleep" or "Awake", whether it's all the unit holds or stands
+-- with a padlocked unit's find or tool; nil for none.
+function Deal.keeperIn(contents: Contents): Kind?
+	local kind = contents.kind
+	if kind == "Asleep" or kind == "Awake" then
+		return kind
+	end
+	return contents.beside
 end
 
 --[[
@@ -480,20 +557,7 @@ function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 	local roll = deck.rolls[index]
 	assert(roll, "Deal.open: not a unit")
 
-	local odds = Deal.odds(deck, index, situation)
-	local total = 0
-	for _, kind in KINDS do
-		total += odds[kind]
-	end
-	local kind: Kind = "Nothing"
-	local at = roll * total
-	for _, k in KINDS do
-		if at < odds[k] then
-			kind = k :: Kind -- the loop widens KINDS' words to string
-			break
-		end
-		at -= odds[k]
-	end
+	local kind: Kind, within: number = landOn(Deal.odds(deck, index, situation), roll)
 
 	local contents: Contents = { kind = kind, coins = deck.coins[index] or 0 }
 	if kind == "Tool" then
@@ -501,16 +565,17 @@ function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 	elseif kind == "Find" then
 		contents.find = Deal.Finds[math.floor(deck.picks[index] * #Deal.Finds) + 1]
 	elseif kind == "Asleep" or kind == "Awake" then
-		local joined = {}
-		for _, keeper in Deal.Keepers do
-			if keeper.from <= deck.floor.number then
-				table.insert(joined, keeper.name)
-			end
-		end
-		if #joined == 0 then
+		contents.keeper = keeperFrom(deck, deck.picks[index])
+		if not contents.keeper then
 			contents.kind = "Nothing"
-		else
-			contents.keeper = joined[math.floor(deck.picks[index] * #joined) + 1]
+		end
+	end
+	if deck.padlocked[index] and (kind == "Find" or kind == "Tool") then
+		-- the keeper standing with it, from where the unit's roll fell within its find or tool
+		local beside, which = landOn(Deal.besideOdds(deck, index, situation), within)
+		if beside == "Asleep" or beside == "Awake" then
+			contents.keeper = keeperFrom(deck, which)
+			contents.beside = if contents.keeper then beside else nil
 		end
 	end
 	if contents.kind == "Nothing" and contents.coins == 0 then

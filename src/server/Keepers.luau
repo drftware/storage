@@ -78,6 +78,7 @@ local Brix = require(ReplicatedStorage.Brix)
 local Catalog = require(ReplicatedStorage.Shared.Tools.Catalog)
 local Caught = require(ReplicatedStorage.Shared.Caught)
 local Chase = require(ReplicatedStorage.Shared.Chase)
+local Deal = require(ReplicatedStorage.Shared.Deal)
 local Crawls = require(script.Parent.Crawls)
 local Deals = require(script.Parent.Deals)
 local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
@@ -731,13 +732,13 @@ function Keepers.new(): Keepers
 		return body
 	end
 
-	-- A unit was dealt a keeper: it stands where the deal laid it, before anyone sees in. Asleep, it
-	-- faces as laid; awake, it faces square to the doorway's middle, and if the door is already all
-	-- the way up it steps out at once.
+	-- A unit was dealt a keeper, alone or with a padlocked unit's find (S1-07a): it stands where
+	-- the deal laid it, before anyone sees in. Asleep, it faces as laid; awake, it faces square to
+	-- the doorway's middle, and if the door is already all the way up it steps out at once.
 	local function onDealt(d: Deals.Dealt)
-		local contents, laid = d.contents, d.place
-		local kind, name = contents.kind, contents.keeper
-		if not ((kind == "Asleep" or kind == "Awake") and name and laid) then
+		local contents, laid = d.contents, d.keeper
+		local kind, name = Deal.keeperIn(contents), contents.keeper
+		if not (kind and name and laid) then
 			return
 		end
 		local on = floorOf[d.unit]

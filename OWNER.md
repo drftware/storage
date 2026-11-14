@@ -97,6 +97,28 @@ and off, the invite sheet opening with your friends (no invite sent).
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
 
+## Now: cut a padlock (S1-07a, built Nov 14, D-140; seen in Studio Play)
+
+A padlocked unit now always holds a find or a tool, never nothing. About 3 in 10 also have a
+Mannequin standing in there with it, asleep (or, now and then, awake and facing the door). Tools
+are rarer everywhere: about one unit in twelve, down from one in five. On the dev floor (floor 3,
+seed 7) all five padlocked units happen to have a Mannequin; I cut 305 in Play and saw the TV in
+the bulb's light with the Mannequin standing right behind it, and a coin.
+- [ ] **Cut a padlock** (bolt cutters lie in Unit 323 on the dev floor): cut Unit 305 and open
+  it. Is it worth the cutters, and does the Mannequin behind the TV make you stop in the doorway?
+  Take the TV past it. Then 320: its Mannequin is awake and comes out at you.
+- [ ] **Judge the rarer tools** over a few floors: does a tool now feel like a good find, and do
+  you still find bolt cutters often enough to open padlocks? (The machine on the ride, S1-10,
+  will sell them.)
+- [ ] **Decide (default in place):** the design doc says a padlocked door "always has something
+  good" and "the highest chance of a monster". I read that as both at once: the find or tool is
+  always there, and a monster sometimes stands with it. The other reading is that the monster is
+  instead of the good thing. Say if you meant that.
+- [ ] **The numbers (my defaults):** in a padlocked unit a find 7 in 10, a tool 3 in 10; a
+  Mannequin with it twice as often as behind an ordinary door (about 3 in 10). Ordinary doors:
+  a tool 6 in 100. Finds have no grades yet, so "something great" is just a find for now; it
+  gets the better grade when finds have grades.
+
 ## Now: judge the gate's pay and keeping (S1-06, built Nov 14, D-138; the screen seen in Play)
 
 As the gate slams with you aboard, a handful of coins clatters, coins burst out over the middle
@@ -105,7 +127,7 @@ rises out of them on a dark gold-rimmed disc, glints, and flies up off the scree
 saved, and the slot is free. Friends see the find in your hand go in a spark. A wrapped friend
 gets nothing. I saw the screen's side in Play by sending the message by hand, and a real ride
 paying 10 in S1-02 (with no find in a slot).
-- [ ] **Ride with a find:** take the teddy from Unit 301 (dev floor), punch the code, board, and
+- [ ] **Ride with a find:** take the teddy from Unit 326 (dev floor), punch the code, board, and
   watch the slam: coins, "+10" (floor 3 pays 14), the teddy rising out of your slot. Then leave
   and rejoin: Output's `[Saving]` line, and `GatePay:` says what you kept.
 - [ ] **Judge on your phone:** do the coins and the rising find read over the car's gate, and is
@@ -119,7 +141,8 @@ paying 10 in S1-02 (with no find in a slot).
 A unit's find (the teddy, the TV, the boombox, the skates) now has a Take prompt. One tap puts it
 in a slot and in your hand, and it feels heavy: it comes up slower, sags as it lands and sways
 as you walk, the TV most.
-- [ ] Play floor 3 (seed 7): open Unit 301 (the teddy) and 327 (the TV). Take each on a phone.
+- [ ] Play floor 3 (seed 7): open Unit 326 (the teddy) and cut Unit 305's padlock (the TV, a
+  Mannequin asleep behind it; bolt cutters in 323). Take each on a phone.
   Does the weight read: the TV hauled up and sagging, the teddy light? Is it in the way of the
   hall? Its place in your view was moved lower and further left after one look, and that new
   place hasn't been seen yet.

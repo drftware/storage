@@ -368,7 +368,7 @@ function KeptPlayers.new(): KeptPlayers
 				shut = d:stateOf(unit) == "Closed",
 				dealt = contents ~= nil,
 				keeper = (if contents
-					then contents.kind == "Asleep" or contents.kind == "Awake"
+					then Deal.keeperIn(contents) ~= nil
 					else index == deck.guarded) or keeperIn(face, spec.Width, spec.Depth),
 				holding = if holding[unit] then true else false,
 			}
