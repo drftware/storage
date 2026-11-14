@@ -19,11 +19,13 @@
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Buy = require(script.Buy)
 local Specs = require(script.Specs)
 local Stock = require(script.Stock)
 local Wake = require(script.Wake)
 
 local Machine = {}
+Machine.Buy = Buy
 Machine.Specs = Specs
 Machine.Stock = Stock
 Machine.Wake = Wake

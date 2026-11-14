@@ -864,6 +864,16 @@ verified: a doc page, Studio, or "untested".
   `Padlock`, `LatchBolt`, `DoorCollider`), hang an invisible part with a PointLight at
   `UnitLight`'s colour, brightness, range and shadows 0.7 under the top's middle, and capture from
   the doorway at eye height (4.6). Destroy it all after.
+- **Staging a buy** (S1-10c2a, Play): stage the ride as below, then from the Server set
+  Workspace `DevCoins` (every count in a climb) and stand the player's root about 2.4 studs in
+  front of a button. On the Client set the camera Scriptable and `CFrame.lookAt(head, button)`,
+  then press E with `user_keyboard_input`: that's a real buy. The MCP resets the camera to Custom
+  after each execute, so aim and press close together; `ProximityPromptService.PromptShown` on
+  the Client says which bay is up. A battery needs a torch that isn't full: Workspace
+  `DevTorchSeconds` 600 makes the 300 s in it read as half a torch.
+- **ProximityPrompt choice among close buttons** (Play, S1-10c2a): with six prompts 1-2 studs
+  apart, Roblox showed the one the camera aimed at each time it was asked, but once showed a
+  neighbour; name each prompt for its thing so the player sees what they'd press.
 - **Staging the machine's stock** (S1-10c1, Play, the test hall's floor 3 car): from the Server
   set Workspace's `DevRideHold` to 8, then the car's `Ride` to `Ride.encode(now, 3, 4)` and its
   `Aboard` to `Departure.encodeAboard(now, { userId })`: Machines deals the stock at once. Step

@@ -99,6 +99,22 @@ and off, the invite sheet opening with your friends (no invite sent).
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
 
+## Now: buy at the machine (S1-10c2a, built Nov 14, D-148; two real buys seen in Play)
+
+A buy, staged in Studio Play: bolt cutters and a battery bought by pressing E at the buttons;
+the coins came off, the cutters went in a slot, the torch filled, and the vend's motion was
+measured (button, coil, drop, flap). Not yet seen by eye or heard. To test: start a climb, earn
+some coins on floor 1, ride up from floor 1 with a friend.
+1. As the prices light, walk to the machine and look at a button: its Buy shows the thing's
+   name. Press it. Look for: the button sinks with a click, the coil turns with a whine, the
+   thing tips off the coil and drops behind the flap with its clunk, the flap knocks and
+   settles, your coins drop, the tool is in your hand (or your torch is full).
+2. Your friend watches: they see the same coil, drop and flap.
+3. Press something you can't afford: one dull buzz and its price blinks. Nothing else.
+4. Judge the sounds (all pitched from the game's own recordings) and whether the 1.2 s before the
+   gate opens, when the buttons stop, feels right. The coins flying into the slot and the thing
+   flying to your hand come next (S1-10c2b).
+
 ## Now: see the machine's stock (S1-10c1, built Nov 14, D-147; seen staged in Play)
 
 On every ride after the first, the machine is now full: as each row's tube first flashes, its

@@ -118,6 +118,10 @@ export type Slots = Brix.System & {
 	-- Puts placed tool `id` back in `player`'s hand, as a pick-up (their hands must be free of a
 	-- big tool and have room). Nil if it did, else the refusal to show ("" to refuse silently).
 	handBack: (self: any, player: Player, id: string) -> string?,
+	-- A new tool of catalog key `key` straight into a free slot of `player`'s and their hand (bought
+	-- at the car's machine, S1-10c2), with its pick-up sound. False, and nothing made, if they have
+	-- no room, a big tool in their hands, no living character, or the place lacks its art.
+	give: (self: any, player: Player, key: string) -> boolean,
 	-- Lays placed tool `id` on the floor at `at`, turned `yaw` degrees (its front gone from under it).
 	lower: (self: any, id: string, at: Vector3, yaw: number) -> (),
 	-- Drops everything `player` carries where they stand, as dying does (caught by a keeper, L-07a).
@@ -1094,6 +1098,40 @@ function Slots.new(): Slots
 		Tools.play(Catalog[t.key].pickUp, hand or t.body, HAND_SOUND_REACH)
 		changed:fire({ player = player, kind = "PickUp" })
 		return nil
+	end
+
+	function system.give(_: any, player: Player, key: string): boolean
+		local root = rootOf(player)
+		local h = handOfPlayer(player)
+		if not root or Catalog[key] == nil or bothHands(h) or Carry.room(h.carry) == nil then
+			return false
+		end
+		local model = Tools.clone(key, root.CFrame)
+		local body = if model then Tools.body(model) else nil
+		if not (model and body) then
+			if model then
+				model:Destroy()
+			end
+			return false
+		end
+		nextId += 1
+		local t: Tool = {
+			id = `{key}{nextId}`,
+			key = key,
+			model = model,
+			body = body,
+			owner = player,
+			uses = Wear.full(key),
+		}
+		tools[t.id] = t
+		Carry.take(h.carry, t.id)
+		dress(player)
+		publish(player)
+		local character = player.Character
+		local hand = if character then handOf(character) else nil
+		Tools.play(Catalog[key].pickUp, hand or root, HAND_SOUND_REACH)
+		changed:fire({ player = player, kind = "PickUp" })
+		return true
 	end
 
 	function system.lower(_: any, id: string, at: Vector3, yaw: number)

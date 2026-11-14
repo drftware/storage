@@ -4130,3 +4130,24 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
 - Long tools lie across the bay face to the glass at about 1.7 studs, a little leaned; the
   padlock grows to 1.35 so it reads from the gate. The LEDs test 88 for 0.18 s as each row
   catches, then settle on the price, an old machine's power-up.
+
+## D-148 The buy: the server settles it in one step, every screen reads the sale off the stock (S1-10c2a, Nov 14)
+
+- A bay's "Buy" button is live only while its row is lit and the price has settled (0.2 s after
+  the tube catches) and until 1.2 s before the power cuts, so you never buy blind and the thing
+  has dropped while the machine is still lit. Its name is the thing in the coil, since the
+  button Roblox shows depends on where you stand and look (measured in Play: aiming the camera
+  at a button shows that one, but not always), so you always see what you're about to buy.
+- One server step, nothing yielding: the thing first (a torch refuses a battery while its ring is
+  full, the slots refuse a tool with no room or a big tool in your hands), and the coins only if
+  it went. A refused press costs nothing and says nothing (the price, the ring and the slots are
+  on screen); a press with too few coins clicks, buzzes and blinks its price on your screen.
+- The tool is in your hand on the server at once. The flights (coins into the slot, the thing to
+  your hand) are c2b; until then the thing is gone from the bin as the flap settles.
+- No remote for the sale: the stock attribute changing with only a count lowered is a sale
+  (`Buy.sold`), so friends see it the same way, and a new stock still refills. `Bought` (bay,
+  serial, buyer) is stamped on the machine just before, for c2b's flight to the right hand.
+- Sounds reuse the game's measured recordings (a switch click pitched up, the ballast hum pitched
+  to a motor whine, the starter's tink pitched down to the flap's knock, the thing's own drop
+  sound in the bin); starting guesses for the owner to judge.
+- Studio only: Workspace `DevCoins` sets every count in a climb, to stage a buy.

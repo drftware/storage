@@ -1542,19 +1542,23 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
       exported); `MachineView` shows a row at its tube's first flash, its LEDs test 88 as it
       catches, then the prices (dashes for an empty coil); gone at the cut. Unseen: a real
       keypad ride and the takeover in Play (checked with a stand-in car).
-    - [ ] **S1-10c2 The buy.** Each bay's button is a prompt while the machine is awake; the
-      server owns the price and the buy (`Coins`), validates (type, range, aboard that car, the
-      machine awake, the bay stocked), rate-limits; a battery calls `Flashlights:fill` (refused
-      while the ring is full, no text), a tool goes in a slot (`Slots`). Every buy answers: the
-      coins fly into the slot and count off, the button sinks, the coil turns, the item drops
-      with a clunk, the flap swings, it flies to you; the bay's count drops on every screen.
-      Record each buy (`machine` in `Record`'s reasons, `spent` with the item) and a battery
-      taken from a unit (S1-07b). The server already holds each ride's stock
-      (`Machines:stockOf`, shared by both cars of a ride); a buy lowers the bay's count there
-      and rewrites the attribute on every machine carrying the ride. Today `MachineView` refills
-      every coil when the attribute changes: c2 must change only the bought bay (the coil
-      turns its one thing out). Polish found in c1: the stock vanishes at the cut rather than
-      standing dark in the coils; a battery's label may face away (unchecked).
+    - [x] **S1-10c2a The buy and the machine's answer** (D-148). Each bay's button is a "Buy"
+      named for its thing, live while its row is lit and stocked (`Machine.Buy.open`); the
+      server validates (bay, reach, aboard that car on that ride, row open, stocked, can pay,
+      rate) and in one step gives the thing (a tool in a free slot via `Slots:give`, or a
+      battery via `Flashlights:fill`, refused silently when full or no room), then takes the
+      coins (`Coins:spend`), lowers the count, stamps `Bought` and rewrites the stock. Every
+      screen reads the sale off the stock (`Buy.sold`) and plays the vend (MachineVend): the
+      button sinks with a click, the coil turns one loop with a whine, the thing tips off into
+      the bin with its clunk, the flap knocks out and back; a press without the coins clicks,
+      buzzes and blinks the price. Records `spent` (machine, item) and `batteryTaken`.
+    - [ ] **S1-10c2b The buy's flights.** The coins fly from the HUD count into the coin slot
+      (`Specs.Slot`) one by one and count off (CoinView's jingle and tick, a spend told to the
+      buyer's screen before the count drops, as `Pay` is); the thing flies from the flap to the
+      buyer's hand (the battery into their torch) on every screen, the buyer's held tool hidden
+      on screens until it lands (`Buy.Attribute` names the buyer). Hide a battery's Buy from a
+      full torch (BatteryView's rule). Polish found in c1: the stock vanishes at the cut rather
+      than standing dark in the coils; a battery's label may face away (unchecked).
 - [ ] **S1-11 The one faint mark.** At most one note's door frame on a floor carries a faint
   mark, seen from a few steps with your flashlight on it; nothing about notes on the corner map.
 - [ ] **S1-12 Cash on the results.** Unspent coins turn into cash at the climb's end; the

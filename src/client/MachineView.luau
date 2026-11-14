@@ -13,15 +13,23 @@
 	find them; as a row's tube catches its price windows run their LEDs' test (88) and settle on
 	the prices, dashes for an empty coil. All gone as the power cuts.
 
+	The buy (S1-10c2): a sale reads off the stock (`Buy.sold`: the same stock with a count
+	lowered), never a refill: that bay's vend plays (MachineVend: the button, the coil's turn, the
+	drop, the flap) and its window shows dashes once it's empty. A press of a bay's Buy on this
+	screen sinks its button at once with its click; with too few coins for its price the machine
+	gives one dull buzz and the price blinks, and nothing else happens (the server refuses it too).
+
 	Only a waking, lit or dying machine is stepped, and a light is written only when what it shows
 	changes. Its one SurfaceLight stays off unless it's lit, so a screen only ever has one on.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
+local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Coins = require(ReplicatedStorage.Shared.Coins)
 local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
 local Left = require(ReplicatedStorage.Shared.Left)
 local Machine = require(ReplicatedStorage.Shared.Machine)
@@ -29,10 +37,13 @@ local Ride = require(ReplicatedStorage.Shared.Elevator.Ride)
 local Stock = require(ReplicatedStorage.Shared.Machine.Stock)
 local LedReadout = require(script.Parent.LedReadout)
 local MachineStock = require(script.Parent.MachineStock)
+local MachineVend = require(script.Parent.MachineVend)
 local RideClock = require(script.Parent.RideClock)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 
 local Wake = Machine.Wake
+local Buy = Machine.Buy
+local Tools = require(ReplicatedStorage.Shared.Tools)
 
 -- Shares are drawn in steps this fine, so a light is written only when it visibly changes.
 local STEPS = 64
@@ -72,7 +83,13 @@ type View = {
 	buzz: Sound?,
 	hum: Sound?,
 	conns: { RBXScriptConnection },
+	vends: { MachineVend.Vend }, -- sales playing at it
+	pressed: { [number]: number }, -- os.clock each bay's button was last pressed on this screen
 }
+
+-- A button pressed on this screen, sunk and back up; and its price blinking for someone who
+-- can't pay.
+type Press = { view: View, bay: number, button: BasePart, rest: CFrame, at: number, blink: boolean }
 
 local MachineView = {}
 
@@ -113,6 +130,8 @@ function MachineView.new(): Brix.System
 	local me = Players.LocalPlayer
 	local views: { [Model]: View } = {}
 	local stepping: { [View]: true } = {}
+	local vending: { [View]: true } = {} -- machines with a sale playing
+	local presses: { Press } = {}
 	local connections: { RBXScriptConnection } = {}
 
 	-- Every price window `since` seconds into a ride from `from`: dark until its row's tube
@@ -303,7 +322,32 @@ function MachineView.new(): Brix.System
 			return
 		end
 		view.stockText = value
-		view.stock = Stock.decode(value)
+		local was, now = view.stock, Stock.decode(value)
+		view.stock = now
+		local sold = Buy.sold(was, now)
+		local goods = view.goods
+		if sold and was and goods then
+			local clock = os.clock()
+			for bay, n in sold do
+				local things = goods.bays[bay]
+				for _ = 1, n do
+					if things and #things > 0 then
+						local sunk = clock - (view.pressed[bay] or -math.huge) < Buy.Vend.Up + 0.6
+						local vend =
+							MachineVend.start(view.model, bay, was[bay].key, things, clock, sunk)
+						table.insert(view.vends, vend)
+						vending[view] = true
+					end
+				end
+			end
+			refresh(view) -- an empty coil's window to dashes
+			return
+		end
+		for _, vend in view.vends do
+			MachineVend.finish(vend)
+		end
+		table.clear(view.vends)
+		vending[view] = nil
 		if view.goods then
 			MachineStock.clear(view.goods)
 			view.goods = nil
@@ -363,6 +407,8 @@ function MachineView.new(): Brix.System
 			shown = table.create(#tubes + 1, 0),
 			nextClick = #Wake.Clicks + 1,
 			conns = {},
+			vends = {},
+			pressed = {},
 		}
 		views[inst] = view
 		table.insert(
@@ -397,6 +443,11 @@ function MachineView.new(): Brix.System
 		end
 		views[inst :: Model] = nil
 		stepping[view] = nil
+		vending[view] = nil
+		for _, vend in view.vends do
+			MachineVend.finish(vend)
+		end
+		table.clear(view.vends)
 		if view.goods then
 			MachineStock.clear(view.goods)
 			view.goods = nil
@@ -420,6 +471,58 @@ function MachineView.new(): Brix.System
 		end
 	end
 
+	-- This screen pressed a machine's Buy: the button down at once; too few coins, the dull buzz
+	-- and the price blinking (the server refuses it as well).
+	local function pressed(prompt: ProximityPrompt)
+		local spot = prompt.Parent
+		local button = spot and spot.Parent
+		local model = button and button.Parent
+		local view = if model and model:IsA("Model") then views[model] else nil
+		if not (view and button and button:IsA("BasePart")) then
+			return
+		end
+		local bay = tonumber(string.match(button.Name, "^Button(%d)$"))
+		local s = bay and view.stock and view.stock[bay]
+		if not (bay and s) then
+			return
+		end
+		local clock = os.clock()
+		view.pressed[bay] = clock
+		local _, rest = MachineVend.press(view.model, bay)
+		local coins = me:GetAttribute(Coins.Attribute)
+		local poor = Buy.check(s, if type(coins) == "number" then coins else nil) == "poor"
+		if poor then
+			Tools.play(Buy.Nope, button, Buy.Heard)
+		end
+		for i = #presses, 1, -1 do
+			if presses[i].button == button then
+				rest = presses[i].rest -- pressed again mid-sink: its true rest
+				table.remove(presses, i)
+			end
+		end
+		table.insert(
+			presses,
+			{ view = view, bay = bay, button = button, rest = rest, at = clock, blink = poor }
+		)
+	end
+
+	-- A press's button and blink `now`; true once both are over.
+	local function stepPress(p: Press, now: number): boolean
+		local t = now - p.at
+		local done = t >= math.max(Buy.Vend.Up + Buy.Vend.Sink, if p.blink then Buy.Blink else 0)
+		p.button:PivotTo(if done then p.rest else MachineVend.sinkAt(p.rest, t))
+		local digits = p.view.digits
+		local set = digits and digits[p.bay]
+		local s = p.view.stock and p.view.stock[p.bay]
+		if p.blink and set and s then
+			local on = done or math.floor(t * Buy.BlinkHz * 2) % 2 == 0
+			local tens, ones = Stock.digits(s.price)
+			set(1, if on then tens else " ", if on then "Lit" else "Off")
+			set(2, if on then ones else " ", if on then "Lit" else "Off")
+		end
+		return done
+	end
+
 	local system = { name = "MachineView" }
 
 	function system.start(_: any, _context: Brix.Context)
@@ -436,24 +539,50 @@ function MachineView.new(): Brix.System
 		)
 		table.insert(connections, me.ChildAdded:Connect(watchChanged))
 		table.insert(connections, me.ChildRemoved:Connect(watchChanged))
-		task.spawn(SoundPrimer.prime, { Machine.Tink.id, Machine.Buzz.id, Machine.Hum.id })
+		table.insert(connections, ProximityPromptService.PromptTriggered:Connect(pressed))
+		task.spawn(
+			SoundPrimer.prime,
+			{ Machine.Tink.id, Machine.Buzz.id, Machine.Hum.id, Buy.Click.id, Buy.Motor.id }
+		)
+	end
+
+	-- The presses and sales playing: after the ride's own draw, so a blink shows over it.
+	local function stepSales()
+		local clock = os.clock()
+		for i = #presses, 1, -1 do
+			if stepPress(presses[i], clock) then
+				table.remove(presses, i)
+			end
+		end
+		for view in vending do
+			for i = #view.vends, 1, -1 do
+				if MachineVend.step(view.vends[i], clock) then
+					table.remove(view.vends, i)
+				end
+			end
+			if #view.vends == 0 then
+				vending[view] = nil
+			end
+		end
 	end
 
 	function system.step(_: any, _dt: number)
-		if next(stepping) == nil then
-			return
-		end
-		local now = Workspace:GetServerTimeNow()
-		for view in stepping do
-			local since = RideClock(view.rideAt :: number, now)
-			if waking(view, since) then
-				draw(view, since, view.from)
-				tinks(view, since)
-			else
-				stepping[view] = nil
-				draw(view, since, Ride.Lobby)
-				stopSounds(view)
+		if next(stepping) ~= nil then
+			local now = Workspace:GetServerTimeNow()
+			for view in stepping do
+				local since = RideClock(view.rideAt :: number, now)
+				if waking(view, since) then
+					draw(view, since, view.from)
+					tinks(view, since)
+				else
+					stepping[view] = nil
+					draw(view, since, Ride.Lobby)
+					stopSounds(view)
+				end
 			end
+		end
+		if #presses > 0 or next(vending) ~= nil then
+			stepSales()
 		end
 	end
 

@@ -9,7 +9,8 @@
 	What's recorded and the plan it's checked against are `Record`'s (shared, pure, with a spec);
 	this only listens where things happen and hands each moment to Record's book: a player joining
 	or leaving, a climb beginning and each floor reached (Climbs), a unit opened and what it held
-	(Deals' `dealt`, with who opened it), coins into a count (Coins' `earned`), a gate shutting with
+	(Deals' `dealt`, with who opened it), coins into a count (Coins' `earned`) and out of it at the
+	car's machine (`spent`), a battery taken from a unit (Batteries' `taken`), a gate shutting with
 	riders aboard (Climbs' `shut`), finds kept there (GatePay's `kept`), a catch (Keepers' `caught`),
 	a friend cutting someone free (KeptPlayers' `freed`), the climb's end and each Again
 	(ClimbEnds), and a lobby car leaving (LobbyCars' `departed`). A floor is the climb's floor now,
@@ -27,6 +28,7 @@ local RunService = game:GetService("RunService")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Record = require(ReplicatedStorage.Shared.Record)
+local Batteries = require(script.Parent.Batteries)
 local ClimbEnds = require(script.Parent.ClimbEnds)
 local Climbs = require(script.Parent.Climbs)
 local Coins = require(script.Parent.Coins)
@@ -139,6 +141,7 @@ function Recording.new(): RecordingSystem
 		climbs = c
 		local coins = (registry:get("coins") :: any) :: Coins.CoinsSystem? -- any: as above
 		local deals = (registry:get("deals") :: any) :: Deals.Deals? -- any: as above
+		local batteries = (registry:get("batteries") :: any) :: Batteries.Batteries? -- any: as above
 		local gatePay = (registry:get("gatePay") :: any) :: GatePay.GatePaySystem? -- any: as above
 		local keepers = (registry:get("keepers") :: any) :: Keepers.Keepers? -- any: as above
 		local kept = (registry:get("keptPlayers") :: any) :: KeptPlayers.KeptPlayers? -- any: as above
@@ -180,6 +183,12 @@ function Recording.new(): RecordingSystem
 		end)
 		on(coins and coins.earned, function(e: Coins.Earned)
 			b:earned(e.player, e.amount, e.balance, e.reason, floorNow())
+		end)
+		on(coins and coins.spent, function(e: Coins.Spent)
+			b:spent(e.player, e.amount, e.balance, e.item, "machine", floorNow())
+		end)
+		on(batteries and batteries.taken, function(t: Batteries.Taken)
+			b:battery(t.player, floorNow())
 		end)
 		on(gatePay and gatePay.kept, function(k: GatePay.Kept)
 			b:kept(k.player, k.finds, k.floor)

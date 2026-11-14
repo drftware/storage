@@ -1,0 +1,102 @@
+--!strict
+-- lune run tests/buy.spec
+-- The buy at the car's machine (S1-10c2): a row's buttons work only once its prices are lit and
+-- never on the lobby ride or as the power cuts; a press sells only from a stocked coil to someone
+-- who can pay; mashing is rate-limited; the buyer's attribute round-trips; and a screen tells a
+-- sale (counts lowered) from a new stock (refill).
+local Buy = require("../src/shared/Machine/Buy")
+local Ride = require("../src/shared/Elevator/Ride")
+local Stock = require("../src/shared/Machine/Stock")
+local Wake = require("../src/shared/Machine/Wake")
+
+local failures, checks = 0, 0
+local function ok(cond: boolean, what: string)
+	checks += 1
+	if not cond then
+		failures += 1
+		if failures <= 30 then
+			print("FAIL " .. what)
+		end
+	end
+end
+
+-- open: from a row's prices settling to a beat before the cut
+local FROM = 2
+for row = 1, 3 do
+	local lit = Wake.catches(row) + Buy.Settle
+	ok(not Buy.open(row, lit - 0.01, FROM), `row {row} shut before its prices settle`)
+	ok(Buy.open(row, lit + 0.01, FROM), `row {row} open once its prices show`)
+	ok(
+		Buy.open(row, Ride.opens() - Buy.Last - 0.01, FROM),
+		`row {row} open just before the last call`
+	)
+	ok(not Buy.open(row, Ride.opens() - Buy.Last, FROM), `row {row} shut at the last call`)
+	ok(not Buy.open(row, Ride.opens() + 1, FROM), `row {row} shut after the cut`)
+	ok(not Buy.open(row, 8, Ride.Lobby), `row {row} shut on the lobby ride`)
+end
+ok(not Buy.open(4, 8, FROM), "no fourth row")
+ok(not Buy.open(0, 8, FROM), "no row 0")
+-- the window is long enough to shop: most of the ride
+ok(Ride.opens() - Buy.Last - (Wake.catches(3) + Buy.Settle) > 12, "over 12 s to shop")
+
+-- check
+local saw = { key = "Saw", price = 8, count = 1 }
+ok(Buy.check(saw, 8) == "ok", "exactly enough buys")
+ok(Buy.check(saw, 20) == "ok", "more than enough buys")
+ok(Buy.check(saw, 7) == "poor", "a coin short doesn't")
+ok(Buy.check(saw, nil) == "poor", "no count (off a climb) doesn't")
+ok(Buy.check(nil, 50) == "empty", "an empty coil sells nothing")
+ok(Buy.check({ key = "Saw", price = 8, count = 0 }, 50) == "empty", "a sold-out coil neither")
+
+-- allow: a burst of two, then one a gap
+local may, left = Buy.allow(nil, 0, 0)
+ok(may and left == Buy.Burst - 1, "the first press goes")
+may, left = Buy.allow(0, left, 0.05)
+ok(may and left == 0, "a second at once goes")
+may = Buy.allow(0.05, 0, 0.1)
+ok(not may, "a third at once doesn't")
+may = Buy.allow(0.05, 0, 0.05 + Buy.Gap)
+ok(may, "one goes after a gap")
+
+-- the attribute
+local b, s, u = Buy.decode(Buy.encode(3, 12, 4567))
+ok(b == 3 and s == 12 and u == 4567, "the buy round-trips")
+ok(Buy.decode("7|1|1") == nil, "a seventh bay is refused")
+ok(Buy.decode("0|1|1") == nil, "bay 0 is refused")
+ok(Buy.decode("x|1|1") == nil, "nonsense is refused")
+ok(Buy.decode(nil) == nil, "nothing is refused")
+ok(Buy.decode(string.rep("1", 80)) == nil, "something long is refused")
+
+-- sold
+local function stock(): Stock.Stock
+	return {
+		[1] = { key = "Battery", price = 3, count = 2 },
+		[2] = { key = "Battery", price = 3, count = 2 },
+		[3] = { key = "Saw", price = 8, count = 1 },
+		[5] = { key = "Padlock", price = 6, count = 1 },
+	}
+end
+local was, now = stock(), stock()
+now[1].count = 1
+now[3].count = 0
+local sold = Buy.sold(was, now)
+ok(sold ~= nil and sold[1] == 1 and sold[3] == 1 and sold[2] == nil, "a sale reads off the counts")
+ok(next(Buy.sold(stock(), stock()) :: any) == nil, "the same stock sold nothing")
+ok(Buy.sold(nil, stock()) == nil, "the first stock is a fill")
+ok(Buy.sold(stock(), nil) == nil, "no stock is no sale")
+now = stock()
+now[3] = { key = "BoltCutters", price = 10, count = 1 }
+ok(Buy.sold(stock(), now) == nil, "a different tool is a new stock")
+now = stock()
+now[4] = { key = "AirHorn", price = 7, count = 1 }
+ok(Buy.sold(stock(), now) == nil, "a coil filled is a new stock")
+now = stock()
+now[1].count = 2
+was = stock()
+was[1].count = 1
+ok(Buy.sold(was, now) == nil, "a count that rises is a new stock")
+
+print(`buy: {checks - failures}/{checks} passed`)
+if failures > 0 then
+	error(`{failures} failed`)
+end

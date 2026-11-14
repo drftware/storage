@@ -33,6 +33,7 @@ local Prompts = require(script.Parent.Prompts)
 local StorageUnit = require(ReplicatedStorage.Shared.StorageUnit)
 
 local REACH_SLACK = 2 -- studs the server allows past the button's reach (lag, a long arm)
+local DEV_COINS = "DevCoins" -- Studio only: a Workspace attribute that sets every count
 
 -- The glint: now and then a spark on the top coin, so a pile reads from the doorway on a phone.
 local GLINT_TEXTURE = "rbxasset://textures/particles/sparkles_main.dds"
@@ -47,9 +48,25 @@ export type Earned = {
 	reason: "pile" | "gate",
 }
 
+-- Coins going out of a player's count: how many, the count after, and what they bought (a key
+-- of the car's machine's stock, S1-10c2). Recording records each.
+export type Spent = {
+	player: Player,
+	amount: number,
+	balance: number,
+	item: string,
+}
+
 export type CoinsSystem = Brix.System & {
 	-- Fires as coins come into a player's count, after it has changed.
 	earned: Brix.Signal<Earned>,
+	-- Fires as coins go out of a player's count, after it has changed.
+	spent: Brix.Signal<Spent>,
+	-- How many coins `player` has: nil outside a climb.
+	countOf: (self: any, player: Player) -> number?,
+	-- Takes `coins` from `player`'s count for `item` (the car's machine, S1-10c2). False, and
+	-- nothing taken, if they're not in a climb or have too few.
+	spend: (self: any, player: Player, coins: number, item: string) -> boolean,
 	-- Lays a pile of `count` coins (1 to 3) at `place` (on the floor, facing as it lies) for unit
 	-- `unit`, into the unit's hall piece. False when the place lacks the coin's template.
 	lay: (self: any, unit: Model, count: number, place: CFrame) -> boolean,
@@ -80,6 +97,7 @@ function CoinsSystem.new(): CoinsSystem
 	local climbing = false
 	local warned = false
 	local earned = Brix.Signal.new() :: Brix.Signal<Earned>
+	local spent = Brix.Signal.new() :: Brix.Signal<Spent>
 
 	local function template(): BasePart?
 		local props = ReplicatedStorage:FindFirstChild("Props")
@@ -185,7 +203,7 @@ function CoinsSystem.new(): CoinsSystem
 		p.Parent = coin
 	end
 
-	local system = { name = "Coins", earned = earned }
+	local system = { name = "Coins", earned = earned, spent = spent }
 
 	function system.lay(_: any, unit: Model, count: number, place: CFrame): boolean
 		local spec = CoinSpecs.Piles[count]
@@ -270,6 +288,21 @@ function CoinsSystem.new(): CoinsSystem
 		end
 	end
 
+	function system.countOf(_: any, player: Player): number?
+		return counts[player]
+	end
+
+	function system.spend(_: any, player: Player, coins: number, item: string): boolean
+		local count = counts[player]
+		local amount = math.floor(coins)
+		if count == nil or amount <= 0 or count < amount then
+			return false
+		end
+		setCount(player, count - amount)
+		spent:fire({ player = player, amount = amount, balance = count - amount, item = item })
+		return true
+	end
+
 	function system.reset(_: any)
 		climbing = true
 		for _, player in Players:GetPlayers() do
@@ -285,6 +318,21 @@ function CoinsSystem.new(): CoinsSystem
 				signals,
 				climbs.began:connect(function()
 					system.reset(system)
+				end)
+			)
+		end
+		-- Studio only: Workspace's `DevCoins` (a number) sets everyone's count in a climb, to test
+		-- the car's machine (docs/STUDIO.md, "Staging a buy").
+		if RunService:IsStudio() then
+			table.insert(
+				connections,
+				game:GetService("Workspace"):GetAttributeChangedSignal(DEV_COINS):Connect(function()
+					local value = game:GetService("Workspace"):GetAttribute(DEV_COINS)
+					if type(value) == "number" then
+						for _, player in Players:GetPlayers() do
+							setCount(player, math.clamp(math.floor(value), 0, 999))
+						end
+					end
 				end)
 			)
 		end
