@@ -28,6 +28,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CorridorKit = require(ReplicatedStorage.Shared.CorridorKit)
 local Deal = require(ReplicatedStorage.Shared.Deal)
 local Elevator = require(ReplicatedStorage.Shared.Elevator)
+local FaintMark = require(ReplicatedStorage.Shared.FaintMark)
 local NoteSpot = require(ReplicatedStorage.Shared.Elevator.NoteSpot)
 local Floor = require(ReplicatedStorage.Shared.Floor)
 local Machine = require(ReplicatedStorage.Shared.Machine)
@@ -357,6 +358,7 @@ type Laying = {
 	fixtures: { [number]: Floor.Fixture },
 	notes: { [Floor.Slot]: string }, -- what the code's note in a unit says, by its slot
 	padlocked: { [Floor.Slot]: boolean }, -- the doors the deal padlocked
+	marked: Floor.Slot?, -- the unit whose jamb carries the floor's faint mark (S1-11)
 	indexOf: { [Floor.Slot]: number }, -- each slot's index in the floor's `slots`
 	laid: { [Model]: number }, -- each unit laid so far, and its slot's index
 	breathe: () -> (), -- waits for the next frame once this one's share is spent
@@ -371,6 +373,37 @@ local function stickNote(unit: Model, face: CFrame, slot: Floor.Slot, text: stri
 	if note then
 		note:ScaleTo(NoteSpot.Scale) -- about its pivot, so its back stays on the wall
 	end
+end
+
+local warnedMark = false
+-- The floor's faint mark (S1-11) on the left jamb of the unit at `face` (FaintMark), hidden until a
+-- screen's beam finds it (FaintMarkView). In the hall piece's folder, not the unit, so nothing that
+-- dresses or fades a unit's parts ever meets it. Without the place's template it warns once.
+local function stampMark(face: CFrame, size: Floor.Size, parent: Instance)
+	local props = ReplicatedStorage:FindFirstChild("Props")
+	local template = props and props:FindFirstChild("FaintMark")
+	if not (template and template:IsA("BasePart")) then
+		if not warnedMark then
+			warnedMark = true
+			warn(
+				"FloorBuilder: no faint mark at ReplicatedStorage.Props.FaintMark (art/mark/README.md)"
+			)
+		end
+		return
+	end
+	local x = FaintMark.Side * (Specs[size].DoorWidth / 2 + FaintMark.Trim / 2)
+	local mark = template:Clone()
+	mark.Name = "FaintMark"
+	-- its drawn face is its front (-Z), out into the hall like the face's
+	mark.CFrame = face * CFrame.new(x, FaintMark.Height, -FaintMark.Proud)
+	mark.Transparency = 1
+	mark.Anchored = true
+	mark.CanCollide = false
+	mark.CanQuery = false
+	mark.CanTouch = false
+	mark.CastShadow = false
+	mark:AddTag(FaintMark.Tag)
+	mark.Parent = parent
 end
 
 -- One hall piece and everything on it: its floor and deck (a junction with its walls), the units
@@ -418,6 +451,9 @@ local function piece(laying: Laying, index: number, parent: Instance): (Folder, 
 			end
 			if laying.padlocked[s] then
 				RollUpDoor.setLocked(unit, true)
+			end
+			if laying.marked == s then
+				stampMark(face, s.size, folder)
 			end
 			laying.laid[unit] = laying.indexOf[s]
 			unit.Parent = folder
@@ -564,6 +600,7 @@ function FloorBuilder.lay(
 		fixtures = {},
 		notes = {},
 		padlocked = {},
+		marked = nil,
 		indexOf = {},
 		laid = laid.slots,
 		breathe = breathe,
@@ -619,6 +656,7 @@ function FloorBuilder.lay(
 		for i in deck.padlocked do
 			laying.padlocked[floor.slots[i]] = true
 		end
+		laying.marked = if deck.marked then floor.slots[deck.marked] else nil
 	end
 
 	-- out from the lobby, nearest first, so the floor fills in around the players arriving

@@ -70,6 +70,8 @@
 #                                       alpha), FBX, Specs module, look sheets (the unit sheets
 #                                       need the boxes built; about 3 minutes)
 #   scripts/art.sh keptwrap export      just the wrap's FBX and Specs module
+#   scripts/art.sh mark                 the faint mark on a note's door frame: its chalk texture
+#                                       (drawn with numpy, no bake), FBX, look sheet (seconds)
 #   scripts/art.sh lobby                the front office: FBX, Specs module, look sheets (it wears the
 #                                       unit's textures and stands the elevator in its bays: build
 #                                       both first; about 3 minutes)
@@ -93,6 +95,15 @@ if [ "${1:-}" = "lobby" ]; then
 		echo "== lobby $st"
 		blender -b --factory-startup -P art/lobby/build.py -- --stage "$st" 2>&1 \
 			| grep -E -i "error|traceback|RENDERED|FBX|SPEC|DONE|assert" || true
+	done
+	exit 0
+fi
+if [ "${1:-}" = "mark" ]; then
+	shift
+	for st in ${*:-textures export renders}; do
+		echo "== mark $st"
+		blender -b --factory-startup -P art/mark/build.py -- --stage "$st" 2>&1 \
+			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|DONE" || true
 	done
 	exit 0
 fi

@@ -1912,3 +1912,17 @@ verified: a doc page, Studio, or "untested".
   prompt from the Client; a pile's `Take` prompt is found by `ActionText` within 14 studs.
   To end the climb without a keeper, set the player's `Kept.Attribute` true from the Server for
   about 10 s: ClimbEnds ends it (Kept) its usual way; then `Remotes.Again:FireServer()`.
+
+## The faint mark (S1-11, Nov 14)
+
+- **A one-plane FBX imports as a MeshPart 0.001 thick, DoubleSided true** (`InsertService:LoadAsset`
+  in Edit): a Model wrapping a Model named for the asset, wrapping the MeshPart of the same name,
+  so `FindFirstChild(name, true)` finds the inner Model first. Its alpha wired into the BSDF's
+  gave AlphaMode Transparency, as the kept wrap's did. Its front (-Z) is the Blender plane's -Y face.
+- **Sampling what your beam sees: move the character, aim the camera from its head each frame.**
+  Moving only a Scriptable camera was unreliable in Play (once the eye stayed at the character,
+  once at the camera). Put the character more than about 8 studs out from a door and it landed
+  past the hall's far side, fell out of the world and respawned with its torch off; the mark
+  streamed out with it. `DevFloorNumber` 1 on Workspace (Edit) lays floor 1, which always has a
+  mark; clear it after.
+

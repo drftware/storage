@@ -4175,3 +4175,27 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
 - `HandAt` is where a player's hands are on this screen, shared by BatteryView and MachineVend:
   your tool at full size where ToolView draws it (it draws it small near your eye, which looks
   the same), a friend's at their real held tool.
+
+## D-150 The faint mark: a chalk ring on one note's jamb, shown only in your own beam (S1-11, Nov 14)
+
+- The precedent: Phasmophobia's fingerprints show on a door only under the light you hold (from
+  memory). The mark rewards sweeping your beam along the frames; it never makes a trail.
+- Which floors and which note (`Deal.markFrom`, drawn last in `Deal.new` so it moves nothing else
+  a seed lays): floors 1 and 2 always have one, so a team meets it early; above, 6 floors in 10
+  (`MarkShare`, a starting guess in OWNER.md). Never the guarded note's unit: that one already
+  shows itself to a peek, so the mark always points somewhere new.
+- Where: the middle of the left jamb's face as you face the door, at 4.4 studs (about eye
+  height, so a beam aimed at the door crosses it). The jamb is 0.45 wide on both sizes, so the
+  ring is about 0.33 across. Always the same jamb, so a player who has seen one knows where to
+  look, as the crawl hole is always in the same place.
+- The art is a plane with a chalk texture drawn by numpy (no bake: it's flat), its alpha into
+  the BSDF's, so it imports in AlphaMode Transparency. It lives in the hall piece's folder, not
+  the unit, so nothing that dresses or fades a unit's parts meets it.
+- The server places it hidden (Transparency 1) and tags it; each screen sets its own
+  transparency. `FaintMark.seen` takes your eye and aim from the camera (first person: the torch
+  is at your eye) and gives 0 to 1: nothing past 9.5 studs or 25 degrees off the beam's middle
+  or from behind; fullest within 5.5 studs and 14 degrees. It eases in fast and out slower, and
+  is scaled by your torch's light this frame (`Beam.light`, new), so a dying torch takes it with
+  it. Fullest is 70% solid: faint chalk, never paint.
+- No sound and no word when it shows: a sound would find it for you. Friends' beams don't show
+  it yet (their aim is sent a few times a second); ROADMAP polish.

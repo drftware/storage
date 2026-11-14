@@ -198,6 +198,12 @@ local ART: { Art } = {
 		description = "Clear stretch film wound in overlapping bands round a standing body, gathered over the crown",
 	},
 	{
+		key = "FaintMark",
+		path = "art/mark/out/FaintMark.fbx",
+		manifest = "art/mark/assets.json",
+		description = "A small hasty chalk ring with a dot in it, scrawled on a steel door frame",
+	},
+	{
 		key = "Ladder",
 		path = "art/ladder/out/Ladder.fbx",
 		manifest = "art/ladder/assets.json",

@@ -63,6 +63,9 @@ export type Deck = {
 	-- the unit of the guarded note (D-072), by slot index: it's always dealt a keeper, awake, and
 	-- holds one of the floor's awake places from the floor's start (`Deal.odds`)
 	guarded: number?,
+	-- the note's unit whose door frame carries the floor's faint mark (S1-11), by slot index, or
+	-- nil on a floor without one (`Deal.markFrom`)
+	marked: number?,
 	bag: { Tool }, -- the tools left in the bag, the next one last
 	random: Random,
 }
@@ -192,6 +195,42 @@ end
 	stuff (it has something to take).
 ]]
 Deal.BatteryShare = 0.1 -- the share of units with a battery on the floor
+
+--[[
+	The faint mark (S1-11, GDD "At most one faint mark on a floor"): one note's door frame may
+	carry a small chalk mark that only shows from a few steps away with your torch on it
+	(FaintMark), as Phasmophobia's fingerprints show on a door only under the light you hold. The
+	other notes have none and some floors have none at all, so it's a reward for sweeping your beam
+	along the frames, never a trail to follow. Never on the guarded note's unit: that one already
+	shows itself to a peek (the feet in the light), so the mark always points somewhere new. Floors 1
+	and 2 always have one, so the first floors a team plays are where it meets the mark.
+]]
+Deal.MarkShare = 0.6 -- above floors 1 and 2, the share of floors with a mark (a starting guess)
+
+-- The unit (slot index) whose door frame carries the floor's faint mark, or nil for none: on a
+-- floor `number` with these `notes` and its `guarded` unit, from two draws, each 0 to 1: `share`
+-- against MarkShare (floors 1 and 2 always have one), `pick` across the notes not guarded.
+function Deal.markFrom(
+	number: number,
+	notes: { Note },
+	guarded: number?,
+	share: number,
+	pick: number
+): number?
+	if number > Deal.TeachingFloors and share >= Deal.MarkShare then
+		return nil
+	end
+	local pool: { number } = {}
+	for _, note in notes do
+		if note.slot ~= guarded then
+			table.insert(pool, note.slot)
+		end
+	end
+	if #pool == 0 then
+		return nil
+	end
+	return pool[math.min(#pool, math.floor(pick * #pool) + 1)]
+end
 
 --[[
 	Somebody's stuff (S1-04b2, GDD "Doors"): of the units with nothing to take (no coins, battery,
@@ -452,6 +491,9 @@ function Deal.new(floor: Floor, random: Random): Deck
 			deck.batteries[i] = true
 		end
 	end
+	-- The faint mark, drawn last, so adding it moved nothing else a seed lays.
+	local share = random:nextNumber()
+	deck.marked = Deal.markFrom(floor.number, notes, deck.guarded, share, random:nextNumber())
 	return deck
 end
 

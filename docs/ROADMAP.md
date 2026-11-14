@@ -1559,8 +1559,14 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
       its pick-up sound (the battery's clack-click). Until it lands, screens hold the change
       back (`InFlight`): your drawn tool, a friend's tool in their hand, the torch's fill. A
       battery's Buy is hidden from a full torch. Seen in Play, both buys.
-- [ ] **S1-11 The one faint mark.** At most one note's door frame on a floor carries a faint
-  mark, seen from a few steps with your flashlight on it; nothing about notes on the corner map.
+- [x] **S1-11 The one faint mark. Done Nov 14 (D-150); sampled in Play.** A hasty chalk ring
+  with a dot (art/mark/, made from code) on the left jamb of one note's door: `Deal.markFrom`
+  (pure, `tests/mark.spec.luau`) marks a note that isn't the guarded one on every floor 1 and 2
+  and 6 floors in 10 above; FloorBuilder sticks it there hidden and tagged; FaintMarkView shows
+  it only in your own beam's middle from within about three steps (`FaintMark.seen`), blooming
+  in, lingering out, flickering with a dying torch. As Phasmophobia's fingerprints show only
+  under the light you hold. The corner map shows nothing of notes. Polish later: a friend's
+  beam showing it too (their aim is coarse).
 - [ ] **S1-12 Cash on the results.** Unspent coins turn into cash at the climb's end; the
   results on the car's wall show the cash you earned; it's saved.
 

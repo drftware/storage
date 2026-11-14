@@ -306,9 +306,10 @@ local FlashlightView = {}
 export type Beam = {
 	on: () -> boolean, -- whether it's on, on your screen
 	landed: () -> (), -- your screen saw your beam land on a keeper: send where you look at once
+	light: () -> number, -- the light it gives this frame, 0 to 1 (it flickers and sags dying)
 }
 
--- The system, and your torch for KeeperView.
+-- The system, and your torch for KeeperView and FaintMarkView.
 function FlashlightView.new(): (Brix.System, Beam)
 	local connections: { RBXScriptConnection } = {}
 	local own: Flashlight.Rig? = nil
@@ -984,6 +985,9 @@ function FlashlightView.new(): (Brix.System, Beam)
 		end,
 		landed = function()
 			soon = mine
+		end,
+		light = function(): number
+			return if mine then level else 0
 		end,
 	}
 

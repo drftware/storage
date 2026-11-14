@@ -99,6 +99,22 @@ and off, the invite sheet opening with your friends (no invite sent).
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
 
+## Now: find the faint mark (S1-11, built Nov 14, D-150; sampled in Play, never seen with a friend)
+
+On one note's door, a small chalk ring with a dot sits on the left side of the door frame,
+shown only when your own torch is on it from about three steps. Sampled in Studio Play on
+floor 1: hidden with the torch off; fullest (70% solid) from 4 studs straight on and from 4
+studs down the hall; part-shown at 7.4; gone with the beam 37 degrees off. Seen on screen once.
+To test: start a climb (floor 1 and 2 always have one).
+1. Walk the halls with your torch on, sweeping the door frames. Look for: one frame shows a
+   faint ring as your beam crosses it close up, and nothing from across the hall or with the
+   torch off; it fades in rather than popping. Open that door: a note is inside.
+2. On a phone: is it findable when your beam crosses it, and easy to miss otherwise? Does it
+   read as that door's (it sits on the jamb beside the neighbour's)? Too faint or too plain?
+3. Decide (starting guesses, D-150): floors 1 and 2 always marked, 6 floors in 10 above
+   (`Deal.MarkShare`); the mark is a chalk ring with a dot; never on the guarded note. The
+   precedent is Phasmophobia's fingerprints under the light you hold (from memory).
+
 ## Now: buy at the machine (S1-10c2a-b, built Nov 14, D-148, D-149; real buys seen in Play)
 
 Bolt cutters and a battery bought in Studio Play by pressing E, sampled frame by frame: the coins

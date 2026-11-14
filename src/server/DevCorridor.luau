@@ -553,9 +553,10 @@ local function dressFloor(on: Climbs.OnFloor, keepers: Keepers.Keepers)
 	local where = {}
 	for _, note in deck.notes do
 		local guarded = if note.slot == deck.guarded then ", guarded" else ""
+		local marked = if note.slot == deck.marked then ", marked" else ""
 		table.insert(
 			where,
-			`Unit{floor.slots[note.slot].number} ({Deal.noteText(deck, note)}{guarded})`
+			`Unit{floor.slots[note.slot].number} ({Deal.noteText(deck, note)}{guarded}{marked})`
 		)
 	end
 	print(

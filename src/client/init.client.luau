@@ -43,6 +43,7 @@ local LadderView = require(script.LadderView)
 local LobbyView = require(script.LobbyView)
 local MachineView = require(script.MachineView)
 local NoteView = require(script.NoteView)
+local FaintMarkView = require(script.FaintMarkView)
 local PadlockView = require(script.PadlockView)
 local SawView = require(script.SawView)
 local ToolView = require(script.ToolView)
@@ -99,6 +100,8 @@ local host = Brix.Host.new({
 		{ slot = "padlockView", system = PadlockView.new(kick) },
 		{ slot = "underDoor", system = UnderDoor.new() },
 		{ slot = "noteView", system = NoteView.new() },
+		-- the faint mark on one note's door frame, shown only in your beam (S1-11)
+		{ slot = "faintMarkView", system = FaintMarkView.new(myBeam) },
 		{ slot = "flashlightView", system = flashlightView },
 		{ slot = "toolView", system = toolView },
 		-- after ToolView: your finds kept at the gate rise out of its slots (S1-06)
