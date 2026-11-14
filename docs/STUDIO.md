@@ -1777,3 +1777,22 @@ verified: a doc page, Studio, or "untested".
   `Deals:` lines in Output name what stood. Measure each thing from its parts' boxes, their
   corners put into `FloorBuilder.face(unit)`'s frame (the back wall's middle line is the unit's
   depth, the side walls' half its width). Put `DevFloorSeed` back to 7 after.
+- **Sounds measured for the finds** (S1-05, Nov 14; Edit, eight AudioPlayers to AudioAnalyzers at
+  once, `PeakLevel` in about 50 ms bins): Pro Sound Effects' "Switch Portable Plastic Radio Tape
+  Player 9" 9119728830 (1.46 s) one clack at 0.2 s (peak 0.35); "Shield Impacts 15" 9119075637
+  (1.31 s) hits at once (0.39) and again at 0.3 s; "Shield Impacts 19" 9119075967 (2.07 s) a big
+  hit at 0.2 s (0.87); "Pillow Blanket 1" 9117373366 (1.87 s) one grab at 0.45 s (0.73), the
+  "2" 9117373365 loud and violent from 0.15 s; "Roller Skate 10" 9118697756 (1.75 s) wheels and
+  impacts from 0.35 to 1.1 s (about 0.6); "Rubber Mat Hits Drops Impacts 9" too quiet (0.03);
+  "Plastic Ice Chest 25" 9117544893 quiet (0.12 at 0.15 s).
+- **The finds' art** (S1-05): each find's MeshPart in `Props.Finds` has its pivot at the middle of
+  its bottom with its box centred over it (PivotOffset straight down by half its height), so a
+  find's box middle from its grip is `(0, Size.Y / 2, 0) - grip` (`Tools.bounds`). Their collision
+  boxes (Box, Hull) hide the shapes from rays: the skates' standing collar is near (-0.1, 0.9,
+  0.42) from the pivot, the teddy's head top 1.42 at z 0.05.
+- **Testing a find in Play** (S1-05): on the default dev floor (seed 7, floor 3) Unit 301 holds the
+  teddy, 317 and 330 skates, 327 the TV (`lune` on `Deal.open` for `Climb.seedOf(7, 3)`). Pivot to
+  (0, 3, -618) facing +X, aim the Client camera at 301's Open (`ActionText`), press it; the teddy
+  stands at about (14.2, 0.66, -615.9) in `Workspace.Tools`. Stand at (9.5, 3, -616), aim at its
+  Take and press: `ToolSlot1` reads Teddy. `Remotes.ToolDrop:FireServer()` from the Client drops it.
+

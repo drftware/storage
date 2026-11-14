@@ -1430,7 +1430,7 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
       seed's other draws move; it stands back to a wall in a corner, clear of the door's line,
       both crawl hole spots, the landing and the fallen panel (`DealSpot.stuff`); `Deals` stands
       it as the door first lifts. A small unit fits only the rolled rug. Seen in Studio Play.
-- [ ] **S1-05 Finds you carry.** One tap puts a find in one of your three slots, beside your
+- [x] **S1-05 Finds you carry.** (Built Nov 14, D-137; take, drop and catch seen in Play.) One tap puts a find in one of your three slots, beside your
   tools. Slots full: drop something or leave it. Caught: your finds drop with your tools.
   Takes in the old "Finds in a run" (where a unit's find stands, D-036).
 - [ ] **S1-06 Pay and keeping at the gate.** As the gate shuts everyone aboard is paid the same
@@ -1564,6 +1564,11 @@ of units; trading; a season pass; fake notes, finds that are monsters in disguis
 that moves walls, and the dolly.
 
 ## Polish waiting for a slot
+
+- **Finds (S1-05):** a find you take flies from where it stood into its slot box, as coins fly to
+  their count; a friend's arm sags under a heavy find (only your own view feels its weight now);
+  a find standing in a unit can be walked through (it's inert, as a lying tool is); a glass
+  rattle in the TV's drop.
 
 - **More stuff in units (S1-04b1):** the GDD names three things; with a mattress, a carpet and
   four stacks, units repeat soon. Candidates the unit's way: a dust sheet over a chair, a bike on

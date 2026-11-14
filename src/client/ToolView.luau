@@ -59,6 +59,7 @@ local Hands = require(ReplicatedStorage.Shared.Hands)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 local Tools = require(ReplicatedStorage.Shared.Tools)
+local Heft = require(ReplicatedStorage.Shared.Tools.Heft)
 local Wheel = require(ReplicatedStorage.Shared.Tools.Wheel)
 
 local Torch = Flashlight.Torch
@@ -163,12 +164,6 @@ type Hud = {
 }
 
 type Give = { prompt: ProximityPrompt, friend: Player }
-
-local function backOut(t: number): number
-	local c1 = 1.70158
-	local c3 = c1 + 1
-	return 1 + c3 * (t - 1) ^ 3 + c1 * (t - 1) ^ 2
-end
 
 local function vec(t: { number }): Vector3
 	return Vector3.new(t[1], t[2], t[3])
@@ -465,6 +460,7 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 	local pull = 0 -- how far it's pulled back from a wall, studs
 	local swing = 0
 	local rising = true
+	local landed = 0 -- when the shown thing finished coming up: a find's weight lands then (`Heft`)
 	local switchSound: Sound? = nil
 	-- at a door
 	local working = false
@@ -999,7 +995,12 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 			end
 		elseif swing < 1 then
 			rising = true
-			swing = math.min(1, swing + dt / SWING_IN)
+			local r = Catalog[shownKey]
+			swing =
+				math.min(1, swing + dt / Heft.rise(SWING_IN, if r and r.heft then r.heft else 0))
+			if swing >= 1 then
+				landed = os.clock()
+			end
 		end
 		local body = shownBody
 		if not body then
@@ -1028,7 +1029,11 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 		end
 		local p = Torch.step(sway, dt, speed, turnYaw, turnPitch, pose)
 		local row = Catalog[shownKey]
-		local e = if rising then backOut(swing) else swing * swing
+		-- a find's weight: no spring as it comes up, a sag as it lands, a heavier sway (`Heft`)
+		local heft = row.heft or 0
+		local e = if rising then Heft.ease(swing, heft) else swing * swing
+		local sag = if rising and swing >= 1 then Heft.sag(os.clock() - landed, heft) else 0
+		local heavy = Heft.swayScale(heft)
 		local away = 1 - e
 		-- down to the door's latch while you hold its button, and the jerk as it works
 		local target = if working or os.clock() < workUntil then 1 else 0
@@ -1048,7 +1053,7 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 			)
 			buzzTurn = (math.random() * 2 - 1) * SAW_SHAKE_TURN
 		end
-		local pitchT = t0[2] + (t1[2] - t0[2]) * w + KICK_PITCH * kick + buzzTurn
+		local pitchT = t0[2] + (t1[2] - t0[2]) * w + KICK_PITCH * kick + buzzTurn - Heft.Tip * sag
 		local rollT = t0[3] + (t1[3] - t0[3]) * w
 		-- where your hand holds it at full size, from your eye; mirrored: the left hand's sway leans
 		-- the other way
@@ -1056,13 +1061,14 @@ function ToolView.new(needCursor: FreeCursor.Need?): (Brix.System, Hand)
 			+ SWING_FROM * away
 			+ Vector3.new(0, 0, -KICK_PUSH * kick)
 			+ buzz
-			+ Vector3.new(-p.x, p.y, p.z)
+			+ Vector3.new(0, -Heft.Depth * sag, 0)
+			+ Vector3.new(-p.x, p.y, p.z) * heavy
 		-- drawn small and near, it looks the same; nose to a wall it pulls back and ducks
 		local small = CFrame.new(at * Hands.Scale)
 			* CFrame.fromEulerAnglesYXZ(
-				(pitchT + SWING_TILT * away) * RAD + p.pitch,
-				yawT * RAD - p.yaw,
-				rollT * RAD - p.roll
+				(pitchT + SWING_TILT * away) * RAD + p.pitch * heavy,
+				yawT * RAD - p.yaw * heavy,
+				rollT * RAD - p.roll * heavy
 			)
 		local reach = HandRoom.reach(small * boxOff, boxHalf)
 		pull = Hands.follow(pull, Hands.pull(HandRoom.room(cam, reach), reach), dt)

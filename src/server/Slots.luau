@@ -25,6 +25,11 @@
 	A tool whose row has a `verb` (the air horn's Blow) is used where you stand: ToolUse takes
 	nothing, checked for a living character with such a tool in hand, then its own rate (so using
 	never spends the hand's), and fires `used` for that tool's system (`Horns`) to decide the rest.
+
+	A find (S1-05, GDD "Finds": a catalog row with `find`) is carried the same way: `Deals` lays it
+	standing in its unit with a "Take" prompt, one tap puts it in a slot and in your hand, and it's
+	dropped, handed over and dropped where you're caught as a tool is. A tool's or a find's own
+	sound answers each take and drop.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -296,12 +301,16 @@ function Slots.new(): Slots
 		at.Parent = t.body
 		local p = Prompts.make(at, {
 			objectText = row.name,
-			actionText = "Pick up",
+			actionText = if row.find then "Take" else "Pick up",
 			key = Enum.KeyCode.E,
 			pad = Enum.KeyCode.ButtonX,
 			reach = Carry.PickReach,
 		})
 		p.RequiresLineOfSight = false -- a tool on the floor is low: boxes mustn't hide its prompt
+		if row.find then
+			-- a find stands taller than a tool lies: the prompt by its top, where your eye is drawn
+			at.Position = Vector3.new(0, t.body.Size.Y * 0.3, 0)
+		end
 		t.prompt = p
 		t.refuse = Prompts.refuser(p)
 		p.Triggered:Connect(function(player: Player)

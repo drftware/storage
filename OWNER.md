@@ -97,6 +97,23 @@ and off, the invite sheet opening with your friends (no invite sent).
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
 
+## Now: carry a find (S1-05, built Nov 14, D-137; take, drop and catch seen in Play)
+
+A unit's find (the teddy, the TV, the boombox, the skates) now has a Take prompt. One tap puts it
+in a slot and in your hand, and it feels heavy: it comes up slower, sags as it lands and sways
+as you walk, the TV most.
+- [ ] Play floor 3 (seed 7): open Unit 301 (the teddy) and 327 (the TV). Take each on a phone.
+  Does the weight read: the TV hauled up and sagging, the teddy light? Is it in the way of the
+  hall? Its place in your view was moved lower and further left after one look, and that new
+  place hasn't been seen yet.
+- [ ] Drop it (Drop button), take it again, and have a friend look at you holding it: it hangs
+  from your left hand by its handle or top. Get caught carrying one: it should drop where you
+  fell, standing, for a friend to take.
+- [ ] Listen to each find's take and drop sound (plastic clack, heavy thud, soft cloth, wheels).
+- [ ] **Decide (default in place):** a find doesn't slow you; its weight is only felt in your
+  hands. Lethal Company slows you by what you carry. Want carrying the TV to slow you a little?
+- [ ] **Decide (default in place):** the TV's name on screen is "TV".
+
 ## Now: look at the stuff in units (S1-04b1 and b2, built Nov 14, D-135, D-136; seen in Play)
 
 Some units with nothing to take now show somebody's stuff when the door goes up: an old stained

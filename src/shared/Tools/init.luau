@@ -7,11 +7,16 @@
 	part that moves on it later (the ladder's fly, `<template>Fly`), welded to the first. `Catalog`
 	holds the rows, `Carry` the slots' rules, `Specs/<key>` each tool's generated sizes, `Leaning`
 	and `Leaned` the ladder leaned on a front and climbed.
+
+	A find (S1-05) is a row too, carried in a slot like a tool: its template is built here, on first
+	use on each side, from the find's art (`Finds`, ReplicatedStorage.Props.Finds) with its grip
+	(the row's `grip`) at the model's pivot, so everything that carries a tool carries a find.
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Carry = require(script.Carry)
 local Catalog = require(script.Catalog)
+local FindSpecs = require(script.Parent.Finds.Specs)
 
 local Tools = {}
 Tools.Carry = Carry
@@ -58,6 +63,19 @@ function Tools.slotAttribute(i: number): string
 	return Tools.SlotAttribute .. i
 end
 
+-- A find's box from its grip: its middle (a find's pivot is the middle of its bottom, its box
+-- centred over it), less where the hand closes.
+local function findPiece(row: Catalog.Row): Piece
+	local spec = FindSpecs.Finds[row.template]
+	assert(spec, `Tools: no find {row.template} in Finds.Specs`)
+	local g = row.grip or { 0, 0, 0 }
+	return {
+		Size = spec.Size,
+		Centre = Vector3.new(-g[1], spec.Size.Y / 2 - g[2], -g[3]),
+		Triangles = spec.Triangles,
+	}
+end
+
 -- A tool's generated sizes (art/<tool>/spec.py's export), by catalog key.
 function Tools.specs(key: string): Specs
 	local m = script.Specs:FindFirstChild(key)
@@ -67,6 +85,10 @@ end
 
 -- The whole tool's box, every part together (what lies on a floor and what a unit must fit).
 function Tools.bounds(key: string): Piece
+	local row = Catalog[key]
+	if row and row.find then
+		return findPiece(row)
+	end
 	local specs = Tools.specs(key)
 	return specs.Bounds or specs.Body
 end
@@ -76,9 +98,45 @@ local function folder(): Instance?
 	return if props then props:FindFirstChild("Tools") else nil
 end
 
+-- Each find's template, built from its art on first use (`findTemplate`), on this side only.
+local findTemplates: { [string]: Model } = {}
+
+local inert: (BasePart) -> ()
+
+-- Find `key`'s template: its art's MeshPart, inert, in a Model whose pivot is its grip, as a
+-- prepared tool's is. Nil if the place hasn't the art (art/finds/README.md says how to import it).
+local function findTemplate(key: string, row: Catalog.Row): Model?
+	local built = findTemplates[key]
+	if built then
+		return built
+	end
+	local props = ReplicatedStorage:FindFirstChild("Props")
+	local finds = if props then props:FindFirstChild("Finds") else nil
+	local art = if finds then finds:FindFirstChild(row.template) else nil
+	if not (art and art:IsA("MeshPart")) then
+		return nil
+	end
+	local piece = findPiece(row)
+	local body = art:Clone()
+	inert(body)
+	body.CastShadow = true
+	body.CFrame = CFrame.new(piece.Centre)
+	body.PivotOffset = CFrame.new(-piece.Centre)
+	local model = Instance.new("Model")
+	model.Name = key
+	body.Parent = model
+	model.PrimaryPart = body
+	model.WorldPivot = CFrame.identity
+	findTemplates[key] = model
+	return model
+end
+
 -- The template for catalog key `key`, if the place has it.
 function Tools.template(key: string): Model?
 	local row = Catalog[key]
+	if row and row.find then
+		return findTemplate(key, row)
+	end
 	local f = folder()
 	local t = if row and f then f:FindFirstChild(row.template) else nil
 	return if t and t:IsA("Model") then t else nil
@@ -86,7 +144,7 @@ end
 
 -- Scenery that never touches anything: welded in a hand, held to a camera or lying on a floor,
 -- it must not push, trip a zone or block a ray (a prompt's line of sight included).
-local function inert(part: BasePart)
+function inert(part: BasePart)
 	part.Anchored = true
 	part.CanCollide = false
 	part.CanTouch = false

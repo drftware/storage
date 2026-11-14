@@ -1,12 +1,13 @@
 --!strict
 --[[
-	The tools you carry in your two slots (L-11b, GDD "Tools"): one row each, as keepers are rows.
-	A row says what the tool is called on screen, which template in the place it is, how it sits in
-	your first-person view and in a friend's hand, and what it sounds like. The flashlight isn't
-	here: everyone has one in hand, outside the slots (GDD; `Flashlight`).
+	What you carry in your three slots (L-11b, GDD "Tools"; finds since S1-05, GDD "Finds"): one row
+	each, as keepers are rows. A row says what it's called on screen, which template in the place it
+	is, how it sits in your first-person view and in a friend's hand, and what it sounds like. The
+	flashlight isn't here: everyone has one in hand, outside the slots (GDD; `Flashlight`).
 
-	The keys are `Deal.Tool`'s names, so a unit dealt "BoltCutters" lays this row's tool. Pure data
-	(Lune reads it in the specs); `Tools` (init) does the instances.
+	A tool's key is one of `Deal.Tools`' names, so a unit dealt "BoltCutters" lays this row's tool;
+	a find's (`find`) is one of `Deal.Finds`'. Pure data (Lune reads it in the specs); `Tools`
+	(init) does the instances.
 ]]
 
 export type Sound = {
@@ -49,6 +50,17 @@ export type Row = {
 	-- What you do with it in your hand, one word on the press (Blow): a tool with one has a press
 	-- of its own (`Tools.UseRemote`), wherever you stand.
 	verb: string?,
+	-- A find (S1-05, GDD "Finds"): something worth taking out, not a tool. It takes a slot like a
+	-- tool, as Lethal Company's scrap shares its slots with your gear; its prompt says Take; its
+	-- template is the find's art at ReplicatedStorage.Props.Finds.<template> (`Finds`).
+	find: boolean?,
+	-- A find's grip: where your hand closes on it, in studs from the middle of its bottom
+	-- (across its front, up, front to back, its front towards -Z). A tool's grip is its pivot.
+	grip: { number }?,
+	-- How heavy it feels in your hand, 0 to 1 (a find's; none for a tool): it comes up into your
+	-- view slower, sags as its weight lands in your hand, and sways lazier as you walk. Felt only:
+	-- your walk is the same.
+	heft: number?,
 }
 
 local Catalog: { [string]: Row } = {
@@ -228,6 +240,119 @@ local Catalog: { [string]: Row } = {
 		bothHands = true,
 		-- slow: three quarters of a walk, so the one carrying it is the one the team waits for
 		walkSpeed = 12,
+	},
+
+	-- The finds (S1-05): the 1980s bedroom set (art/finds), each `Deal.Finds`' name. Each hangs
+	-- from your left hand by where a hand would take it, drawn low on the left of your view with
+	-- its front turned to you, so what you're carrying is never in doubt.
+
+	-- A big black boombox, carried by its chrome handle.
+	Boombox = {
+		name = "Boombox",
+		template = "Boombox",
+		find = true,
+		grip = { 0, 1.33, 0 }, -- the handle's bar, over the middle of the case
+		heft = 0.6,
+		-- hanging low on your left by the handle, its speakers turned to you and its length running
+		-- away from you, so it reads without covering the hall (S1-05, seen in Play)
+		hold = { -1.55, -0.8, -2.4 },
+		holdTurn = { 232, 4, 0 },
+		use = { -1.55, -0.8, -2.4 },
+		useTurn = { 232, 4, 0 },
+		-- the case hanging below your fist, its length along your walk, as a boombox is carried
+		inHand = { 0, 90, 0 },
+		-- its front, a little from above, a little turned
+		icon = { 0.62, 12, 200, 0 },
+		-- Pro Sound Effects' "Switch Portable Plastic Radio Tape Player 9": its clack at 0.2 s,
+		-- the handle snapping up and the keys rattling in the case
+		pickUp = { id = "rbxassetid://9119728830", from = 0.15, length = 0.35, volume = 0.9 },
+		-- Pro Sound Effects' "Shield Impacts 15": a plastic case hitting the floor, crunchy
+		drop = {
+			id = "rbxassetid://9119075637",
+			from = 0,
+			length = 0.7,
+			volume = 0.8,
+			pitch = 0.92,
+		},
+	},
+	-- A portable TV in a woodgrain cabinet, rabbit ears up, carried by the cabinet's top.
+	Television = {
+		name = "TV",
+		template = "Television",
+		find = true,
+		grip = { 0, 1.24, 0 }, -- the cabinet's top, between the ears
+		heft = 1,
+		-- low on your left by its top, the screen turned to you, the ears up by your cheek: the
+		-- biggest thing in your view, never more than its lower left corner (seen in Play)
+		hold = { -1.6, -0.78, -2.6 },
+		holdTurn = { 215, 4, 0 },
+		use = { -1.6, -0.78, -2.6 },
+		useTurn = { 215, 4, 0 },
+		-- the cabinet hanging from your fist, the screen to the side
+		inHand = { 0, 90, 0 },
+		icon = { 0.62, 10, 200, 0 },
+		-- the hollow plastic knocks of the saw's pick-up, played slow: a big heavy cabinet
+		pickUp = {
+			id = "rbxassetid://9117544893",
+			from = 0,
+			length = 0.55,
+			volume = 1,
+			pitch = 0.72,
+		},
+		-- Pro Sound Effects' "Shield Impacts 19": from just before its big crunching hit at
+		-- 0.2 s, played lower, the heaviest thing you carry landing
+		drop = {
+			id = "rbxassetid://9119075967",
+			from = 0.17,
+			length = 0.9,
+			volume = 0.85,
+			pitch = 0.78,
+		},
+	},
+	-- A mended teddy, one button eye, carried by its arm.
+	Teddy = {
+		name = "Teddy",
+		template = "Teddy",
+		find = true,
+		grip = { 0.4, 0.66, 0 }, -- one arm, at the shoulder
+		heft = 0.12,
+		-- by its arm low on your left, its face to you
+		hold = { -1.2, -0.72, -2.0 },
+		holdTurn = { 200, 0, -8 },
+		use = { -1.2, -0.72, -2.0 },
+		useTurn = { 200, 0, -8 },
+		-- dangling from your fist by its arm, facing out ahead of you
+		inHand = { 0, 0, 0 },
+		icon = { 0.62, 8, 195, 0 },
+		-- Pro Sound Effects' "Pillow Blanket 1": its grab on the cloth at 0.45 s
+		pickUp = { id = "rbxassetid://9117373366", from = 0.4, length = 0.4, volume = 0.75 },
+		-- the same grab, slower and softer: plush flopping on concrete
+		drop = {
+			id = "rbxassetid://9117373366",
+			from = 0.4,
+			length = 0.45,
+			volume = 0.6,
+			pitch = 0.7,
+		},
+	},
+	-- A pair of white high-top roller skates, pink wheels, carried by the standing one's collar.
+	Skates = {
+		name = "Skates",
+		template = "Skates",
+		find = true,
+		grip = { -0.1, 0.88, 0.42 }, -- the standing skate's collar
+		heft = 0.4,
+		-- low on your left, the wheels turned to you
+		hold = { -1.4, -0.75, -2.1 },
+		holdTurn = { 215, 6, 0 },
+		use = { -1.4, -0.75, -2.1 },
+		useTurn = { 215, 6, 0 },
+		inHand = { 0, 90, 0 },
+		icon = { 0.62, 14, 200, 0 },
+		-- Pro Sound Effects' "Roller Skate 10": the wheels' first rattle at 0.35 s
+		pickUp = { id = "rbxassetid://9118697756", from = 0.33, length = 0.35, volume = 0.8 },
+		-- its wheel and ground impacts from 0.72 s: the skates clattering down, wheels spinning
+		drop = { id = "rbxassetid://9118697756", from = 0.72, length = 0.45, volume = 0.8 },
 	},
 }
 

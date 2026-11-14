@@ -5,8 +5,12 @@
 -- what's in your hand and leaves that hand empty; a pocketed tool stays yours but out of your hand
 -- until a switch or a lift brings it up; a slot from the wire must be a whole 1 to 3; clearing
 -- gives every tool back; and a hand moves no faster than a quick thumb. Plus the catalog's rows
--- are whole, each a dealt tool with its built art's sizes.
+-- are whole, each a dealt tool with its built art's sizes, or a dealt find (S1-05) with its grip,
+-- inside its art's box, and its heft. A find rides the same slots: it takes one, full slots
+-- refuse it, and a catch drops it with your tools (GDD "Finds").
 local fs = require("@lune/fs")
+local luau = require("@lune/luau")
+local roblox = require("@lune/roblox")
 
 local Carry = require("../src/shared/Tools/Carry")
 local Catalog = require("../src/shared/Tools/Catalog")
@@ -159,12 +163,83 @@ do
 	ok(left == Carry.Burst - 1, "a long rest refills the burst, no more")
 end
 
--- the catalog: every row whole, a tool the deal hands out (so a dealt one is laid), with the
--- sizes its art build writes (Tools.specs reads them by key)
+-- a find takes a slot as a tool does (S1-05): one tap, into your hand, beside your tools
+do
+	local c = Carry.new()
+	Carry.take(c, "BoltCutters1")
+	Carry.take(c, "Saw2")
+	ok(Carry.take(c, "Boombox3") == 3, "a find takes the free slot beside two tools")
+	ok(Carry.held(c) == "Boombox3", "and comes into your hand")
+	ok(Carry.count(c) == 3, "a find counts as one of your three")
+	ok(Carry.room(c) == nil, "two tools and a find: no room")
+	ok(Carry.take(c, "Teddy4") == nil, "full slots refuse a find")
+	ok(Carry.take(c, "Padlock5") == nil, "and a tool")
+	ok(Carry.find(c, "Teddy4") == nil, "the refused find isn't carried")
+	-- drop the find and the slot is free for the other
+	ok(Carry.release(c) == "Boombox3", "dropping lets go of the find in your hand")
+	ok(Carry.take(c, "Teddy4") == 3, "the freed slot takes the next find")
+end
+
+-- three finds and no tools: the GDD's trade, carry finds and have nothing to open doors with
+do
+	local c = Carry.new()
+	for i, id in { "Boombox1", "Television2", "Skates3" } do
+		ok(Carry.take(c, id) == i, `find {i} into slot {i}`)
+	end
+	ok(Carry.take(c, "BoltCutters4") == nil, "three finds leave no room for a tool")
+end
+
+-- caught: your finds drop with your tools, every one, and your hands are empty
+do
+	local c = Carry.new()
+	Carry.take(c, "Padlock1")
+	Carry.take(c, "Teddy2")
+	Carry.take(c, "AirHorn3")
+	Carry.select(c, 2)
+	Carry.pocket(c, true)
+	local dropped = Carry.clear(c)
+	ok(#dropped == 3, "a catch drops all three")
+	ok(table.find(dropped, "Teddy2") ~= nil, "the pocketed find drops too")
+	ok(
+		table.find(dropped, "Padlock1") ~= nil and table.find(dropped, "AirHorn3") ~= nil,
+		"and the tools"
+	)
+	ok(Carry.count(c) == 0 and Carry.held(c) == nil, "nothing carried after")
+	ok(Carry.take(c, "Teddy2") == 1, "a friend's or your own next take starts over")
+end
+
+-- the catalog: every row whole. A tool is one the deal hands out (so a dealt one is laid), with
+-- the sizes its art build writes (Tools.specs reads them by key); a find is one of the deal's
+-- finds, with a grip inside its art's box and a heft
+-- (the generated Specs build Vector3s, which Lune lacks as a global: load it with Lune's own)
+local FindSpecs = luau.load(fs.readFile("src/shared/Finds/Specs.luau"), {
+	environment = { Vector3 = roblox.Vector3 },
+})() :: any -- any: a generated table, read field by field below
 for key, row in Catalog do
 	ok(type(row.name) == "string" and #row.name > 0, `{key}: a name`)
-	ok(table.find(Deal.Tools, key) ~= nil, `{key}: one of the deal's tools`)
-	ok(fs.isFile(`src/shared/Tools/Specs/{key}.luau`), `{key}: its generated Specs`)
+	if row.find then
+		ok(table.find(Deal.Finds, key) ~= nil, `{key}: one of the deal's finds`)
+		ok(table.find(Deal.Tools, key) == nil, `{key}: a find, not a tool`)
+		local spec = FindSpecs.Finds[row.template]
+		ok(spec ~= nil, `{key}: its art's sizes`)
+		local g = row.grip
+		ok(g ~= nil and #g == 3, `{key}: a grip`)
+		if spec and g then
+			local half = spec.Size / 2
+			ok(
+				math.abs(g[1]) <= half.X
+					and g[2] >= 0
+					and g[2] <= spec.Size.Y
+					and math.abs(g[3]) <= half.Z,
+				`{key}: its grip is on it`
+			)
+		end
+		ok(type(row.heft) == "number" and row.heft >= 0 and row.heft <= 1, `{key}: a heft, 0 to 1`)
+		ok(not row.bothHands and not row.verb, `{key}: a find takes one hand and does nothing`)
+	else
+		ok(table.find(Deal.Tools, key) ~= nil, `{key}: one of the deal's tools`)
+		ok(fs.isFile(`src/shared/Tools/Specs/{key}.luau`), `{key}: its generated Specs`)
+	end
 	ok(#row.hold == 3 and #row.holdTurn == 3 and #row.inHand == 3, `{key}: hold, turn, hand`)
 	ok(#row.use == 3 and #row.useTurn == 3, `{key}: its use pose`)
 	ok(#row.icon == 4, `{key}: icon`)
@@ -172,6 +247,12 @@ for key, row in Catalog do
 		ok(string.find(s.id, "^rbxassetid://%d+$") ~= nil, `{key}: a sound id`)
 		ok(s.length > 0 and s.from >= 0 and s.volume > 0, `{key}: a sound's stretch`)
 	end
+end
+
+-- every find the deal hands out has its row, so a find unit never opens on nothing
+for _, key in Deal.Finds do
+	local row = Catalog[key]
+	ok(row ~= nil and row.find == true, `{key}: dealt, so it has a find's row`)
 end
 
 -- and the other way round: every tool the deal hands out is built, with a catalog row and its

@@ -3852,3 +3852,31 @@ anyone to squeeze behind; else a side wall, as near the back as it goes.
 bulge (`box_reach` in `art/stuff/spec.py`): the heap grew from 4.40 x 4.02 to 4.62 x 4.44 and
 its boxes re-centred. Seen in Play: every thing's parts end at the back wall's 11.60 and the side
 wall's 5.60.
+
+## D-137 Finds ride the tools' slots, each a catalog row with a grip and a heft (S1-05, Nov 14)
+
+**What players get.** The door goes up on a teddy, a TV, a boombox or a pair of skates standing
+in the bulb's light. One tap on Take and it's in a slot and in your hand: it comes up into your
+view from below, sags as its weight lands and sways heavier as you walk, the heavier the find
+the slower it comes up (the TV most, the teddy hardly). Its slot shows its picture and its name
+shows over the slot button. Friends see it hanging from your left hand. Drop it and it falls
+ahead of you with its own sound and stands there with its Take prompt; get caught and it drops
+where you fell for a friend to take, as the GDD says. Full slots refuse it ("Hands full", as for
+a tool): drop something or leave it.
+
+**One slot system, not two.** A find is a row in the tools' catalog (`find = true`) and lies,
+is held, dropped, handed over and caught by `Slots` exactly as a tool is (Lethal Company's scrap
+shares its slots with your gear). Its template is built at run time on each side from the find's
+art in `ReplicatedStorage.Props.Finds`, with its `grip` (where a hand closes, measured on the
+art in Studio) at the model's pivot, as a prepared tool's grip is, so nothing needs importing
+again. `Deals` lays a dealt find with `Slots:lay`, standing and facing the doorway as before.
+
+**Weight is felt, not a rule.** `heft` (0 to 1) changes only the first-person motion
+(`Tools.Heft`): a find comes up with no spring, sags 0.16 studs at the most and rebounds once,
+and sways up to 1.8 times a tool's. Your walk is the same with any find: slowing a carrier (as
+Lethal Company's weight does) would be new design, so it's an `OWNER.md` question.
+
+**Sounds.** Each find has its own take and drop from Pro Sound Effects (measured in Studio,
+docs/STUDIO.md): the boombox's plastic radio clack, the TV's slow hollow knocks and a big
+crunching thud, the teddy's soft cloth grab, the skates' wheels rattling.
+

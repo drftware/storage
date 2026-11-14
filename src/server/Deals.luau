@@ -5,7 +5,7 @@
 	from the floor's deck); this deals each unit the first time anyone can see into it, its door
 	lifting (a peek or an open) or a saw's hole going through its wall or top (D-067),
 	and lays what it holds before anyone sees in, so even a peek shows it on the floor: a tool to
-	pick up (Slots), a find standing behind the bulb, or the place a keeper stands, which `dealt`
+	pick up (Slots), a find standing behind the bulb (Slots too, since S1-05), or the place a keeper stands, which `dealt`
 	hands on (Keepers stands the keeper there); in a unit with nothing to take, sometimes
 	somebody's stuff against a wall (S1-04b2). Left 4 Dead's director deals its items the same way,
 	as the team moves rather than up front. Where in the unit is DealSpot's pure rule.
@@ -28,7 +28,6 @@ local CrawlHoleSpecs = require(ReplicatedStorage.Shared.StorageUnit.CrawlHole.Sp
 local Deal = require(ReplicatedStorage.Shared.Deal)
 local DealSpot = require(ReplicatedStorage.Shared.DealSpot)
 local Doors = require(script.Parent.Doors)
-local Finds = require(ReplicatedStorage.Shared.Finds)
 local FloorBuilder = require(script.Parent.FloorBuilder)
 local NoteSpot = require(ReplicatedStorage.Shared.Elevator.NoteSpot)
 local Saws = require(script.Parent.Saws)
@@ -201,33 +200,22 @@ function Deals.new(): Deals
 					{ across = body.Size.X, along = body.Size.Z, tall = body.Size.Y }
 				)
 		elseif kind == "Find" then
-			local name: Finds.Name? = nil
-			for _, n in Finds.Names do
-				if n == contents.find then
-					name = n :: Finds.Name -- Names holds only Names; Luau widens them to string
-				end
+			-- a find is carried in a slot (S1-05): Slots lays it, standing, with its Take prompt
+			local key: string? = contents.find
+			local row = if key then Tools.Catalog[key] else nil
+			if not (key and row and row.find and Tools.template(key) and slots) then
+				return nil -- its art isn't in the place (art/finds/README.md says how to import it)
 			end
-			if not name then
-				return nil
-			end
-			local find = Finds.Specs.Finds[name]
-			local spot = DealSpot.inUnit(
-				size,
-				"Find",
-				{ across = find.Size.X, along = find.Size.Z, tall = find.Size.Y },
-				note,
-				number
-			)
+			local find = Tools.bounds(key)
+			local box = { across = find.Size.X, along = find.Size.Z, tall = find.Size.Y }
+			local spot = DealSpot.inUnit(size, "Find", box, note, number)
 			if not spot then
 				return nil
 			end
 			local place = at(spot)
-			Finds.clone(name, place, unit.Parent or unit)
-			return place,
-				DealSpot.around(
-					spot,
-					{ across = find.Size.X, along = find.Size.Z, tall = find.Size.Y }
-				)
+			local _, yaw = place:ToOrientation()
+			slots:lay(key, place.Position, math.deg(yaw))
+			return place, DealSpot.around(spot, box)
 		elseif kind == "Asleep" or kind == "Awake" then
 			local spot = DealSpot.inUnit(size, "Keeper", DealSpot.Keeper, note, number)
 			if spot then
