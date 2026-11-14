@@ -17,6 +17,7 @@ local CartRide = require(script.CartRide)
 local CartView = require(script.CartView)
 local CameraShake = require(script.CameraShake)
 local CaughtView = require(script.CaughtView)
+local CoinView = require(script.CoinView)
 local KeptWrapOn = require(script.KeptWrapOn)
 local ChaseMusic = require(script.ChaseMusic)
 local CrawlView = require(script.CrawlView)
@@ -81,6 +82,8 @@ local host = Brix.Host.new({
 		{ slot = "gateClock", system = GateClock.new() },
 		{ slot = "rideView", system = RideView.new(holdView) },
 		{ slot = "minimapView", system = MinimapView.new() },
+		-- the coins: a pile's take on every screen, and your count by the top bar (S1-04a2)
+		{ slot = "coinView", system = CoinView.new() },
 		{ slot = "caughtView", system = CaughtView.new(kick) },
 		{ slot = "chaseMusic", system = ChaseMusic.new() },
 		{ slot = "keptWrapOn", system = KeptWrapOn.new() },

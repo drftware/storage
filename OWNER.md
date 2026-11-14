@@ -93,6 +93,19 @@ and off, the invite sheet opening with your friends (no invite sent).
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
 
+## Now: judge S1-04a, coins (built Nov 13 and 14, D-132, D-133; the take verified in Studio Play)
+
+Most doors now pay one to three coins lying in the bulb's light with a twinkle on them. Tap
+Take: the coins jump, stand up on their edges spinning and are gone with a chink; on your
+screen each one flies up to the little count at the right end of the top bar, which ticks up
+one at a time and swells. Verified in Studio Play (Nov 14): a pile of two laid in a unit, taken,
+both coins flew, the count read 2 and the pile was gone. Not heard by ear: the sounds.
+- [ ] **Judge on your phone:** does a pile read from the doorway (the coins look coppery under
+  the warm bulb; gold enough)? Is the count's place, right end of the top bar, clear of
+  Roblox's buttons and the corner map? Is the take quick and satisfying, or too fast to see?
+- [ ] **Listen:** the chink at the pile (a friend up to 30 studs away hears it too), the jingle
+  under it for two or three coins, and the ticks rising as each coin lands in your count.
+
 ## Decide: coins, whoever taps first (S1-04a, D-132; default in place)
 
 Each unit with coins has one small pile of one to three, and one "Take" button. Whoever taps it

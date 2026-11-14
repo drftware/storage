@@ -3745,3 +3745,27 @@ twinkles on the top coin so a pile catches the eye; it's the coin's own read, no
 **Split.** The screen side (the count, the take's motion and sounds) and the import into the
 place are S1-04a2: this session reached its context cap at the green point after the server.
 Without `Props.Coin` the server lays nothing (one warning), so no take goes unanswered meanwhile.
+
+## D-133 Coins on screen: the take hands each coin to the count (S1-04a2, Nov 14)
+
+**The moment.** The door goes up, a glint on the concrete; a tap, the coins jump and spin and
+are gone with a chink, and each one flies to the little count, which swells and ticks up.
+
+**One coin, two lives.** On every screen each coin of a taken pile jumps `Lift` while it stands
+up on its edge and spins (`Spin` turns), then shrinks away, a `Stagger` after the coin before:
+a coin on its edge spinning is the pickup every platformer taught players to read. On the
+taker's screen, the moment each coin starts to shrink a 2D coin appears at the same screen
+point and flies on to the count, so the world coin becomes the one in your corner instead of
+two separate effects. The flying coin and the count's coin are the real coin mesh in a
+ViewportFrame, not a drawn icon (the art rule: real assets).
+
+**Where the count sits.** At the right end of Roblox's top bar row (`GuiService.TopbarInset`),
+the place most Roblox games keep their money: clear of the gate clock in the middle of the row
+and above the corner map, which owns the corner under the bar. With no top bar it sits left of
+the map. It shows only while the Player has a count (in a climb) and slides in like the map.
+
+**Each landing is a step up.** One tick per coin, each `Climb` higher than the last, so a pile
+of three sounds like a run up, as coin pickups in a row do in platformers. The count's number
+moves only as coins land; a rise that arrives with no flight on this screen (a pile taken off
+it) shows after `Grace`, a drop (a new climb) at once.
+

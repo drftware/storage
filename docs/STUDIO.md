@@ -75,6 +75,21 @@ verified: a doc page, Studio, or "untested".
 
 ## Camera and prompts
 
+- **A door's middle point holds three buttons** (S1-04a2, Play, 2026-11-14): `DoorMiddle` has
+  Open, Close and Slam, each a child named `ProximityPrompt`, so `DoorMiddle.ProximityPrompt`
+  returns whichever comes first, usually a switched-off one, and presses on it do nothing. Pick
+  the button by `ActionText` (or `DoorAction`).
+- **Testing a coin take** (S1-04a2, Play): floor 3 in the DevCorridor (seed 2000013). From the
+  Server pivot the character to (0, 3, -618) facing +X; from the Client set the camera to
+  Scriptable, point it at Unit301's Open, wait 1.2 s, `InputHoldBegin`/`End` on it: the server
+  lays a pile of 2 (`Floor3.Straight2.Coins`). Pivot to (6.5, 3, -617.1) and press the pile's
+  Take the same way. Sample the coins' Y and `PlayerGui.CoinCount` children (`Flying`) every
+  0.08 s to see the jump, the vanish and the flights; the number read 2 at 0.75 s.
+- **The real coin in a ViewportFrame reads gold** (S1-04a2): with Ambient (190, 175, 150),
+  LightColor (255, 244, 222) and the light from the front, top left, the PBR coin showed its
+  keyhole and rim in a 40-point square at the top bar. On the unit's floor under the bulb the
+  same coin reads coppery, the bulb's warm light on gold.
+
 - **What stops Roblox's camera** (the PlayerModule's `Popper`, read in Studio, 2026-11-05): its
   ray uses `RespectCanCollide` and the Default collision group, and it stops only at a part that is
   CanCollide with total transparency under 0.25. Invisible colliders and non-colliding meshes let

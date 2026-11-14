@@ -1404,12 +1404,16 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
     seed's other draws moved; `DealSpot` lays a pile in the bulb's pool, clear of the unit's
     tool, find or keeper; the server's `Coins` lays each pile with a glint and a "Take" button,
     checks every take and keeps each player's count for the climb (`Climbs.began` zeroes it).
-    Passes checks; the coin isn't in the place yet, so no coins show in Play.
-  - [ ] **S1-04a2 Coins: on screen.** Upload and import the coin into `ReplicatedStorage.Props`;
-    the client's `CoinView`: the take's motion (the coins jump, spin and shrink away, a ripple
-    across the pile), the chink at the pile for everyone near, and on the taker's screen a coin
-    flying to the count per coin with a tick and a pop; the count small in a top corner, sliding
-    in as a climb begins. Verify in Studio Play: coins in an opened unit, a take, the count.
+    Passes checks; the take verified in Studio Play with S1-04a2.
+  - [x] **S1-04a2 Coins: on screen. Done Nov 14 (D-133); the take verified in Studio Play.**
+    The coin in the place (`Props.Coin`, asset 88101556754832); the client's `CoinView`: each
+    coin of a taken pile jumps, stands on its edge spinning and shrinks away, a beat after the
+    one before, the glint throws off sparks and goes out, the chink (and a jingle for two or
+    three) at the pile; on the taker's screen each coin flies on from the top of its jump to the
+    count at the right end of Roblox's top bar, which ticks up one, higher each time, with a
+    swell and a spin of its coin. The count slides in as a climb begins.
+  - [ ] **Polish: the coins' gold.** Under the warm bulb a pile reads coppery; a warmer gold in
+    the coin's texture or a brighter glint if the owner finds piles hard to spot on a phone.
   - [ ] **S1-04b Things to look at.** Stacked boxes, a mattress, a rolled carpet, built the
     unit's way, in some of the units without coins, so an open door is never just a bare box.
 - [ ] **S1-05 Finds you carry.** One tap puts a find in one of your three slots, beside your

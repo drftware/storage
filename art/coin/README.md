@@ -32,7 +32,9 @@ and a turn from the pile's middle on the floor) from `src/shared/Coins/Specs.lua
 `ReplicatedStorage.Props.Coin`, the MeshPart (Rojo can't sync imported meshes, D-009): uploaded
 by `lune run scripts/upload_art Coin` (asset in `assets.json`), inserted with the MCP, its
 PackageLink and `Assistant:` tag removed, the MeshPart taken out of its model, named `Coin`,
-anchored. Not done yet: S1-04a2.
+anchored (asset 88101556754832, imported Nov 14, S1-04a2). Its size came in exact (0.8 x 0.12 x
+0.8), its SurfaceAppearance in AlphaMode Overlay; the server sets each clone's collision, query
+and shadow off, and the client's count and flying coins show it in a ViewportFrame.
 
 ## Rebuild
 

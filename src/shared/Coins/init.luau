@@ -54,6 +54,11 @@ Coins.Lift = 1.1 -- studs each coin jumps as it's taken
 Coins.LiftTime = 0.18 -- seconds to the top of the jump, spinning
 Coins.Vanish = 0.2 -- seconds it shrinks away from the top of its jump
 Coins.Stagger = 0.06 -- seconds between one coin of a pile and the next: a little ripple
+Coins.Spin = 1.5 -- turns each coin spins in its jump and vanish, standing up on its edge: a flash
+Coins.Sparks = 5 -- sparkles thrown off the pile as it's taken, from its glint
+-- Seconds the count waits for a take's coins to fly in before it simply shows a rise that came
+-- without one (a pile taken while it was off your screen): longer than a rise takes to arrive.
+Coins.Grace = 0.3
 -- On the taker's own screen: a coin flies from where the pile was to your count, one per coin.
 Coins.Fly = 0.42 -- seconds a coin takes to reach your count
 Coins.Pop = 1.35 -- how big the count swells as a coin lands in it, then settles
@@ -74,6 +79,7 @@ Coins.Tick = {
 	pitch = 1.7,
 } :: Sound
 Coins.Heard = 30 -- studs a take's chink carries: friends in the same stretch of hall hear it
+Coins.Climb = 0.07 -- each landing coin of a take ticks this much higher than the last: a run up
 
 -- What the count says: just the number, as most Roblox games show their coins.
 function Coins.text(count: number): string
