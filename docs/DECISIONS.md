@@ -4357,3 +4357,20 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
 - How a woken sleeper stands and pounds is S2-03b's: stand its body when it wakes (not every
   sleeper up front, which costs instances nobody sees) and hand it straight to the trapped
   keeper's clock (`Keeper.trap`), whose break-out at 90 s is the GDD's number already.
+
+## D-157 Sleepers wake for real: the clock starts with the first player on the floor (S2-03b, Nov 14)
+
+- A floor's waking clock starts the first step a living, unkept player's feet are within 4 studs
+  of its own level (`Keepers` `ON_FLOOR`), not when it's laid: the floor above is laid as the gate
+  opens, while the team is still below, so counting from the lay would cost them the ride.
+- A woken sleeper's unit is dealt then, door still shut (`Deals:dealShut`), so it stands exactly
+  where a door lifting would have stood it, with the unit's find and coins laid around it as
+  usual. Only woken sleepers get bodies; the rest stay a name on the floor until then (D-156).
+- It stands awake facing its doorway and goes straight to the trapped keeper's clock
+  (`Keeper.trap`): it bangs, dents the door, is heard by keepers, and bursts at its row's
+  `breakOut` (90 s). A door already padlocked holds it from the start (`Keeper.padlock`), so a
+  padlocked sleeper is a scare with no danger, as D-156 said.
+- Output says one line a wave (how many, which units, how far in) and the trap's line for each;
+  Deals' own Studio line for the unit's contents also prints. Nothing on screen: the pounding is
+  the only warning (AGENTS "No text that explains a rule").
+- Studio's Workspace `WakeSleepers` skips every floor with the team on it to its first wave.

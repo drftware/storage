@@ -107,11 +107,18 @@ local MotionLights = require(script.Parent.MotionLights)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 local Saws = require(script.Parent.Saws)
 local Slots = require(script.Parent.Slots)
+local Waking = require(ReplicatedStorage.Shared.Waking)
 
 local TRACE = RunService:IsStudio() -- Output says what each keeper hears and does
 -- Workspace's attribute the dev command sets (Studio only): every loose Mannequin heads for its
 -- floor's breaker box now, the power's gap ignored (S2-02c)
 local DEV_ERRAND = "SendToBreaker"
+-- Studio only: set this Workspace attribute true and every floor with someone on it skips ahead to
+-- its first wave of sleepers waking (S2-03b), so a test needn't wait four minutes.
+local DEV_WAKE = "WakeSleepers"
+-- Studs above or below a floor's own level that a player's feet count as on it: the first one
+-- there starts the floor's waking clock (the floor above is laid while the team is still below).
+local ON_FLOOR = 4
 -- Seconds between looks for a floor's breaker box until it's found (it hangs as the floor lays)
 local BOX_LOOK = 1
 local STATE_ATTRIBUTE = "KeeperState"
@@ -207,6 +214,11 @@ type OnFloor = {
 	boxAt: vector, -- the box on the wall, the floor's coordinates: a Mannequin faces it there
 	boxStand: vector, -- where a Mannequin stands to throw it (`Breaker.stand`)
 	boxLooked: number, -- when it last looked for the box, the server's clock
+	-- seconds since the first player stood on the floor (S2-03b), -1 until anyone has: what
+	-- `Waking` counts its waves from
+	here: number,
+	woken: number, -- how many of its sleepers have woken
+	waking: { [number]: boolean }, -- slots dealt early to wake: stand awake and shut in
 }
 -- `quarry`: whom it hunted as last counted for screens (`tellHunted`), 0 for no one.
 type Entry = { keeper: Keeper.Keeper, body: Body, on: OnFloor, quarry: number }
@@ -276,6 +288,7 @@ function Keepers.new(): Keepers
 	local motionLights: MotionLights.MotionLights? = nil
 	local flashlights: Flashlights.Flashlights? = nil
 	local breakers: Breakers.Breakers? = nil
+	local deals: Deals.Deals? = nil
 	local devErrand = false -- the dev command: every loose Mannequin goes for the box now
 	local run = 16 -- a player's full run, studs a second (StarterPlayer's, read at start)
 	local everyone: { Player } = {} -- kept as players come and go: no list made each step
@@ -837,6 +850,9 @@ function Keepers.new(): Keepers
 		end
 		local index = on.slots[d.unit]
 		on.asleep[index] = nil -- its door has lifted: its sleeper, if any, stands below
+		-- or it's still shut and its sleeper woke (S2-03b): it stands awake, shut in
+		local waking = on.waking[index] == true
+		on.waking[index] = nil
 		local contents, laid = d.contents, d.keeper
 		local kind, name = Deal.keeperIn(contents), contents.keeper
 		if not (kind and name and laid) then
@@ -845,7 +861,7 @@ function Keepers.new(): Keepers
 		local slot = on.floor.slots[index]
 		local p = on.origin:PointToObjectSpace(laid.Position)
 		local at = vector.create(p.X, p.Y, p.Z)
-		local awake = kind == "Awake"
+		local awake = kind == "Awake" or waking
 		local facing: vector
 		if awake then
 			local _, door = Keeper.front(slot)
@@ -857,12 +873,99 @@ function Keepers.new(): Keepers
 		if not standOn(on, name, at, facing, awake) then
 			return
 		end
+		if waking then
+			-- shut in from the start: it pounds on the trapped keeper's clock (`Keeper.trap`) and
+			-- bursts out at its row's `breakOut` unless the door is padlocked
+			trap(on, index)
+			if doors and doors:stateOf(d.unit) == "Locked" then
+				for _, entry in on.keepers do
+					if entry.keeper.trappedIn == index then
+						Keeper.padlock(entry.keeper, true)
+					end
+				end
+			end
+			return
+		end
 		if TRACE then
 			local how = if awake then "awake, facing its doorway" else "asleep"
 			print(`Keepers: the {name} stands in Unit {slot.number}, {how}`)
 		end
 		if awake and doors and KeeperMap.letsThrough(doors:stateOf(d.unit)) then
 			lookOut(on, index)
+		end
+	end
+
+	-- Whether a living player who isn't kept has their feet on floor `on`'s own level: the first
+	-- one starts its waking clock. Allocates nothing.
+	local function anyoneOn(on: OnFloor): boolean
+		for _, player in everyone do
+			if player:GetAttribute(Kept.Attribute) == true then
+				continue
+			end
+			local character = player.Character
+			local root = character and character:FindFirstChild("HumanoidRootPart")
+			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+			if root and root:IsA("BasePart") and humanoid and humanoid.Health > 0 then
+				local y = on.origin:PointToObjectSpace(root.Position).Y
+				if math.abs(y - humanoid.HipHeight - root.Size.Y / 2) <= ON_FLOOR then
+					return true
+				end
+			end
+		end
+		return false
+	end
+
+	-- Wakes what floor `on` owes now (S2-03b; `Waking`, D-156): each picked sleeper's unit is dealt
+	-- with its door still shut, so its keeper stands where the deal lays it, awake and shut in
+	-- (`onDealt`), and starts pounding. Its unit leaves `asleep`. One Output line a wave.
+	local function wakeDue(on: OnFloor)
+		local number = on.floor.number
+		local dl = deals
+		if not dl or next(on.asleep) == nil or Waking.owed(number, on.here) <= on.woken then
+			return
+		end
+		local awake, left = 0, 0
+		for _, entry in on.keepers do
+			if Keeper.awake(entry.keeper) then
+				awake += 1
+			end
+		end
+		for _ in on.asleep do
+			left += 1
+		end
+		local n = Waking.now(number, on.here, on.woken, awake, left)
+		if n <= 0 then
+			return
+		end
+		local slots: { number } = {}
+		for slot in on.asleep do
+			table.insert(slots, slot)
+		end
+		table.sort(slots) -- a fixed order, so the floor's Random alone decides the pick
+		local random = on.random
+		local picked = Waking.pick(slots, n, function(k: number): number
+			return random:nextInteger(1, k)
+		end)
+		local said: { string } = {}
+		for _, slot in picked do
+			on.woken += 1
+			on.asleep[slot] = nil
+			local unit = on.units[slot]
+			if unit then
+				on.waking[slot] = true
+				if not dl:dealShut(unit) then
+					on.waking[slot] = nil
+				end
+				table.insert(said, tostring(on.floor.slots[slot].number))
+			end
+		end
+		if TRACE then
+			print(
+				`Keepers: {#picked} wake behind shut doors on floor {number}, {math.floor(on.here)} s in: Units {table.concat(
+					said,
+					", "
+				)}`
+			)
 		end
 	end
 
@@ -925,6 +1028,21 @@ function Keepers.new(): Keepers
 					end
 				end)
 			)
+			-- every floor with the team on it skips to its first wave of sleepers waking (S2-03b)
+			table.insert(
+				joins,
+				Workspace:GetAttributeChangedSignal(DEV_WAKE):Connect(function()
+					if Workspace:GetAttribute(DEV_WAKE) ~= true then
+						return
+					end
+					Workspace:SetAttribute(DEV_WAKE, false)
+					for _, on in floors do
+						if on.here >= 0 then
+							on.here = math.max(on.here, Waking.first(on.floor.number))
+						end
+					end
+				end)
+			)
 			-- a catch wherever you are, for one-player tests of what a catch does to you
 			local test = Instance.new("BindableFunction")
 			test.Name = "CatchTest"
@@ -979,9 +1097,10 @@ function Keepers.new(): Keepers
 		table.insert(connections, d.acted:connect(onActed))
 		table.insert(connections, d.changed:connect(onChanged))
 		-- any: as above; Deals fills this slot (init.server)
-		local deals = (context.registry:get("deals") :: any) :: Deals.Deals?
-		if deals then
-			table.insert(connections, deals.dealt:connect(onDealt))
+		local dl = (context.registry:get("deals") :: any) :: Deals.Deals?
+		deals = dl
+		if dl then
+			table.insert(connections, dl.dealt:connect(onDealt))
 		end
 		-- the rest of what players do that's loud (L-15); any: as above, each fills its slot
 		local elevators = (context.registry:get("elevators") :: any) :: Elevators.Elevators?
@@ -1011,6 +1130,19 @@ function Keepers.new(): Keepers
 	function system.step(_: any, dt: number)
 		local now = os.clock()
 		for _, on in floors do
+			if on.here < 0 then
+				if anyoneOn(on) then
+					on.here = 0
+					if TRACE then
+						print(
+							`Keepers: the team is on floor {on.floor.number}; its sleepers' clock starts`
+						)
+					end
+				end
+			else
+				on.here += dt
+				wakeDue(on)
+			end
 			local list = on.players
 			list.count = 0
 			for _, entry in on.keepers do
@@ -1141,6 +1273,9 @@ function Keepers.new(): Keepers
 			boxAt = vector.zero,
 			boxStand = vector.zero,
 			boxLooked = -math.huge,
+			here = -1,
+			woken = 0,
+			waking = {},
 		}
 		floors[model] = on
 		for unit, slot in slots do

@@ -1614,7 +1614,7 @@ Done when a team that has lost its lights goes looking for the breaker without b
     on), walks there held by any light as ever, and throws it; keepers within a slam's reach of
     the box hear the clunk and come to look (`Keeper.offer`, `Keepers`). Seen in Studio Play: a
     Mannequin walked 110 studs to the box in 21 seconds and threw it, all 23 lights blind.
-- [ ] **S2-03 Sleeping monsters wake.** After four minutes on floors 1 and 2 (six above), three
+- [x] **S2-03 Sleeping monsters wake.** After four minutes on floors 1 and 2 (six above), three
   sleepers wake and pound on their doors, heard across the floor; three more every two minutes;
   sooner and more higher up. One pounding breaks out after 90 seconds unless its door is
   padlocked. No clock, no announcement. Split (the last overnight session), one per session:
@@ -1625,7 +1625,8 @@ Done when a team that has lost its lights goes looking for the breaker without b
     step wakes what's owed, no more than are left asleep, never past six keepers stepping on the
     floor at once (loose or pounding), the held-back ones waking once there's room; which doors
     is a fair random pick. `tests/waking.spec.luau`. Nothing in the game calls it yet.
-  - [ ] **S2-03b They stand and pound.** The keepers' brain keeps each floor's seconds since the
+  - [x] **S2-03b They stand and pound.** (Nov 14, D-157; seen in Studio Play: two waves, three
+    bursts at 90 s, a padlocked door holding) The keepers' brain keeps each floor's seconds since the
     team arrived and asks `Waking.now` each step; `Waking.pick` chooses among
     `Keepers.sleepers`. A picked sleeper's body stands in its unit then (the deal's place and
     facing, as a door lifting stands it), awake and shut in, and goes straight into the trapped

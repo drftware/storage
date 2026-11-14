@@ -1987,3 +1987,10 @@ verified: a doc page, Studio, or "untested".
 - **`screen_capture` in Play shows your character's view**, not the camera you pass: with the
   root parked high over the lobby it showed sky. Capture the floor in Edit, or move the
   character and its Scriptable camera there first.
+- **Testing sleepers waking** (S2-03b, 2026-11-14): on the dev floor the waking clock starts at
+  spawn (the spawn is on floor 3's level, so "the team is on floor 3" prints at once). In Play,
+  a Server `workspace:SetAttribute("WakeSleepers", true)` skips to the first wave (225 s on floor
+  3). Seed 7: the first wave woke 307, 327 and 338, the second (335 s) 335 and padlocked 305;
+  each unpadlocked one burst at 90 s, 305 gave "one last blow" and held. Read the bangs off the
+  unit's `DoorMotion` ("Bang|...") and `DoorDent` attributes; a `LogService.MessageOut` filter in
+  a Server `execute_luau` keeps the Output you read small.

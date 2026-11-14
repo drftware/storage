@@ -116,15 +116,24 @@ climb only a Mannequin throws it (S2-02c, below), so test the box itself with th
    lights do; coming back dark would show nothing from the box); the lamp as glowing Neon, red
    off and green on; one second to hold, as cutting a friend free.
 
-## Decide: when sleeping monsters wake (S2-03a, built Nov 14, D-156; rules only, not in the game yet)
+## Now: hear the sleepers wake (S2-03, built Nov 14, D-156, D-157; seen in Play, not heard)
 
-The schedule is written and tested but nothing calls it until S2-03b, so there is nothing to see.
-1. Decide (starting guesses, D-156): the first pounding after four minutes on floors 1 and 2,
+Four minutes into a floor (less higher up) doors start pounding: no clock, no words. Seen in
+Studio Play from Output and the doors' state; nobody has listened to it yet.
+1. In Studio Play, walk floor 3 for a bit, then in the Server's command bar run
+   `workspace:SetAttribute("WakeSleepers", true)`. Look for: three doors start banging somewhere
+   (on seed 7: 307, 327, 338), each blow denting its door a little more. Can you hear them from
+   across the floor, and can you tell roughly where? Is it scary or just noise?
+2. Wait 90 seconds: each bursts its door up and comes out looking. About two minutes after the
+   first wave, more pound (335, and padlocked 305). 305's padlock holds: one last blow, then
+   quiet. Does a padlocked one pounding feel like a scare worth having?
+3. Then on a phone, a real climb: does the floor stay smooth with six monsters about?
+4. Decide (starting guesses, D-156): the first pounding after four minutes on floors 1 and 2,
    15 seconds sooner each floor above, never under two and a half minutes; three doors at a time
    on floors 1 to 3, one more every three floors, up to five; two minutes between waves on
    floors 1 and 2, closing to 75 seconds higher up; at most six monsters moving on a floor at
-   once, for phones.
-2. Settle one line: the roadmap said "four minutes on floors 1 and 2 (six above)", but the GDD
+   once, for phones. The clock starts when the first of you steps onto the floor.
+5. Settle one line: the roadmap said "four minutes on floors 1 and 2 (six above)", but the GDD
    says it starts sooner higher up. It was built sooner. Did "six" mean something else?
 
 ## Now: the Mannequin cuts the power (S2-02c, built Nov 14, D-155; seen in Play, not heard)
