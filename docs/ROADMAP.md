@@ -1450,7 +1450,7 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
   player gets nothing (GDD "When the gate shuts"). Polish left: a "New" mark on a find kept for
   the first time (S5-04's book stamps it already); a kept find's glint for friends is a server
   burst, unseen in Play.
-- [ ] **S1-07 What a door holds.** A padlocked door always has something good, with the best
+- [x] **S1-07 What a door holds.** A padlocked door always has something good, with the best
   chance of something great and of a monster. A tool in about one unit in twelve (one in five
   today). A battery in about one unit in ten. Split Nov 14: no battery art exists, and a battery
   means nothing until the flashlight runs down.
@@ -1485,7 +1485,7 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
   flicker, the ring, going out and the refusal. Battery pickup is S1-07b (`Flashlights:fill`).
   Polish: a friend's dying torch seen from their side (untested with two players); shaking the
   torch to wake it (Outlast-style) if the owner wants a use for the dead button.
-- [ ] **S1-10 The machine on the ride.** The ride grows to about 20 seconds. From the second
+- [x] **S1-10 The machine on the ride.** The ride grows to about 20 seconds. From the second
   ride on, the vending machine in the car sells three or four tools for coins, stock changing
   each ride, batteries always (GDD "The ride"). Split Nov 14 into three sessions:
   - [x] **S1-10a The ride grows to about 20 seconds. Done Nov 14 (D-144); the loops seen in
@@ -1497,7 +1497,7 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
     is back in its bay 2 s after the ride opens; a left-behind player stands in the dark lobby
     until 3 s before the hand-off, then the black. Unseen: a whole ride to a next floor (the dev
     floor's ride ends the climb).
-  - [ ] **S1-10b The machine: art, in every car, waking on the ride.** Split Nov 14 in two
+  - [x] **S1-10b The machine: art, in every car, waking on the ride.** Split Nov 14 in two
     (b1 the art, b2 the machine in the car). Art first, the unit's
     way (`art/machine/`, built like `art/battery/` on the finds' kit, several MeshParts sharing
     one Machine set at 1024²). The plan (Nov 14): a self-storage supply machine, the kind real
@@ -1531,7 +1531,7 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
       flash and catch bottom up from 1.2 s, the sign buzzes on at 3.75 s, LED dashes, a hum,
       dips with the lamp, dead 0.35 s after the gate starts to fold; dark from the lobby. One
       SurfaceLight (into the car); a second into the bays blacked out the car. Seen in Play.
-  - [ ] **S1-10c Buying.** Split Nov 14 in two (c1 the stock shown, c2 the buy).
+  - [x] **S1-10c Buying.** Split Nov 14 in two (c1 the stock shown, c2 the buy).
     - [x] **S1-10c1 The stock shown. Done Nov 14 (D-147); seen staged in Play.** `Machine.Stock`
       (pure, `tests/stock.spec.luau`) deals each waking ride two batteries in each bottom coil
       and three or four of the five bay-sized tools in random tool bays (prices: battery 3,
@@ -1679,13 +1679,35 @@ Done when a team that has lost its lights goes looking for the breaker without b
       (`Breaker.Grip`, 0.6 s; a light holds it there, a sound or sight calls it off), then
       throws, and it lingers holding the lever down; it no longer hears its own clunk. Screens
       are told "Reaching"/"Pulling" (`Keeper.shown`), so the hall and the feed both show it.
-    - [ ] **S2-02d3 The feed judged at phone size.** Judge the feed at phone size in Play
-      (Device Simulator) with the Mannequin in it: framing (`Feed.Fov`, `Feed.AimUp`, the hang),
-      darkness, grain strength, until the hand going up and the lever coming down read in a
-      160-point window. A feed that starts while the map is still sliding in takes the map's
-      place as it lands (FeedView `mapWindow`). Tried Nov 14 (last afternoon session): frames
-      came back (STUDIO.md "Getting frames back"), but the Mannequin threw the box before the
-      capture, so only a staged feed from a hand-placed camera was seen; reach and pull unseen.
+    - [x] **S2-02d3 The feed judged. Judged by the owner in play, Nov 14: "This looks great! ...
+      the static look is great."** No agent session needed. Its one code item (a feed that
+      starts while the map is still sliding in takes the map's place as it lands) moves to d4.
+    - [ ] **S2-02d4 The owner's two feed fixes** (owner, Nov 14, after playing it). One session.
+      1. **No feed once you've left the floor.** Owner: "after finishing a level, when I was in
+         the elevator and moving up, the mannequin had cut the power on the previous floor and
+         it still showed me. We should probably have a flag that stops that from happening."
+         Why: the brain picks who watches by where they stand (`watchers` in `Keepers.luau`:
+         within 40 studs up or down and over the floor's plan), and a rider in a car still
+         climbing out of that floor passes. The fix: a floor keeps a flag for each player who
+         has left it, set the instant its gate shuts with them aboard (`Climbs.shut`, which
+         names the riders and the floor); `watchers` skips them, and any feed already showing
+         to them cuts to static and the map that moment (`Feeds` keeps who watches each open
+         feed). Also: a Mannequin stops starting errands on a floor nobody is on any more.
+      2. **Plain static in and out.** Owner: "I think we want more of just a static sound when
+         it first opens the view, the static look is great, then a static sound when it
+         disappears showing the minimap again." Today it cuts in and out on bursts of
+         interference (`Feed.InSound`, `Feed.OutSound`). Swap both for plain TV static, the hiss
+         of a set between channels: a short hard-edged hiss as the snow comes up, the same as it
+         goes. Each its own clip so they don't sound pasted, timed to the snow (`Feed.SnowIn`
+         0.22 s, `Feed.SnowOut` 0.4 s) with a short tail. The quiet static under the picture
+         and the clunk through the camera's speaker stay (my default, `OWNER.md`). Search the
+         Creator Store for free static (Pro Sound Effects first, as now) and check each id
+         loads in Play without the permission errors in HANDOFF's Queue.
+      3. A feed that starts while the map is still sliding in takes the map's place as it lands
+         (FeedView `mapWindow`), from d3.
+      **Verify in Play:** throw the box by a Mannequin while you stand on the floor (feed, static
+      in and out heard in Output's sound list), then again just after your car's gate shuts
+      (nothing shows); count `RenderStepped` first (STUDIO.md "draws no frames").
 - [x] **S2-03 Sleeping monsters wake.** After four minutes on floors 1 and 2 (six above), three
   sleepers wake and pound on their doors, heard across the floor; three more every two minutes;
   sooner and more higher up. One pounding breaks out after 90 seconds unless its door is
@@ -1712,7 +1734,7 @@ Done when a team that has lost its lights goes looking for the breaker without b
   power cut comes soon once a Mannequin is loose; the coin count's coin is a sharp picture; the
   lobby's floor slab no longer runs under the cars. Verified in Studio Play with DevTrip
   "Arrive"; the phone trip is the owner's (`OWNER.md`).
-- [ ] **S2-04 A wrong code lets monsters out.** One unit with a monster in it rolls up by
+- [x] **S2-04 A wrong code lets monsters out.** One unit with a monster in it rolls up by
   itself on the first wrong code, three on the second, five after; the hall lights go out for
   the alarm; every loose monster heads for the keypad; the keypad locks 3.5, 7, then 14 seconds.
   Split (Nov 14), one per session:
@@ -1744,6 +1766,22 @@ Done when a team that has lost its lights goes looking for the breaker without b
 - [ ] **S2-05 The tap when you shut a door on a sleeper.** Pull the door down on a monster
   that is asleep or hasn't seen you and a bar with a moving marker comes up by itself. Hit it:
   the door settles quietly. Miss, or don't tap: it bangs, and the monster wakes and pounds.
+- [ ] **S2-07 The fix pass before Step 3** (added Nov 14 from HANDOFF's Queue, so Step 2 ends
+  clean before anyone is carried up wrapped). Built before S2-06, which waits on the owner. In
+  two sessions:
+  - [ ] **S2-07a Monsters and the camera.** Other monsters in the camera's view move in it, not
+    stand as statues copied once (S2-02d1); a second feed on a floor waits for the first to
+    finish instead of cutting it off (S2-02d1); a Mannequin on its way to the breaker is called
+    off by sounds less often, so the throw usually happens (S2-02d2: four came to one clunk);
+    monsters called to one spot spread round it instead of all standing on one point (S2-04b);
+    a wave of sleepers waking never passes the floor's limit on awake monsters (S2-03a,
+    `Deal.awakeCap`).
+  - [ ] **S2-07b Screens and things.** A player standing still at the keypad lights up again
+    when the lights come back (S2-04c); Take doesn't show through a shut door (S1-07b); a
+    torch left on as you're wrapped switches off instead of draining (S1-09); a friend's beam
+    shows the faint mark as yours does (S1-11); a saw no longer pokes past the machine's glass
+    (S1-10d2); the permission and wrong-type asset lines in Output at Play start are traced
+    and fixed (HANDOFF's Queue). (S1-12's saved cash total waits for S4-07, when cash buys.)
 - [ ] **S2-06 The second monster.** Waits on `OWNER.md` (its look, name and reason to be
   alive). Silent; moves only while it stands in light; a hall light it walks under sticks on
   until someone switches the breaker off and on. Its art first, then its row on the keepers'

@@ -2,66 +2,56 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-14, session 156 (afternoon run 4, the last: the breaker moment) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-14, session 157 (planning only: the owner's feed notes and the road ahead) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- No game code changed: the session tried to watch the Mannequin's breaker pull on the camera
-  feed in Studio Play (floor 3) and fixed nothing.
-- **Seen:** Studio drew frames only with the display kept awake by a `caffeinate -u` pulse
-  (STUDIO.md "Getting frames back"). A Mannequin threw the breaker ("threw the breaker on floor
-  3") before the watch loop started, with the player parked under the lobby, so no real feed
-  was captured. A staged feed (camera placed by my rough geometry, not the game's hang) showed
-  top right at desktop size: "CAM 07", the red dot, heavy grain, a pale grey-blue wall. The
-  framing is mine; the picture did look bright for a dark hall: judge that on the real one.
-- **Unseen:** the hand on the grip, the lever coming down, the static out, the phone-size look
-  (S2-02d1/d2, D-165/D-166: server timing verified, the picture on a screen not).
+- No game code changed. The owner played the camera feed and judged it: "This looks great! ...
+  the static look is great." S2-02d3 is ticked; its one code item moved to S2-02d4.
+- The owner's two fixes from that play are S2-02d4 (next). A fix pass, S2-07, now gathers the
+  Queue's found bugs before Step 3. Finished parents ticked (S1-07, S1-10, S2-04).
+- The order ahead (ROADMAP): S2-02d4, S2-05, S2-07a, S2-07b, S2-06 (waits on `OWNER.md`), then
+  Step 3 (S3-01 to S3-04) and Step 4 (S4-01 on).
 
-## Next task: S2-05 The tap when you shut a door on a sleeper
-ROADMAP S2-05. Pull a door down on a monster that's asleep, or hasn't seen you, and a bar with
-a moving marker comes up by itself; hit it and the door settles quietly; miss or don't tap and
-it bangs, and the monster wakes and pounds (OWNER.md's "small things": not tapping is a miss).
-1. Read the GDD's section on shutting a door on a sleeper (docs tools, not WebFetch) and its
-   precedent (the hit game it names); check `docs/FRAMEWORK.md` for anything Brix has for a
-   timing bar or a hold-to-act; this game supplies the policy and the look.
-2. Pure rules first (a new shared module, Lune spec first): when the bar shows (the door
-   coming down on a unit whose keeper is asleep or hasn't seen the one pulling), how the marker
-   moves, the hit window, what a miss or no tap does. Numbers in Config-style fields, each
-   saying what it does to the player.
-3. Server: the door's close (grep `Doors.luau` for "Close") asks the rules; a hit settles the
-   door quietly; a miss bangs it and wakes the sleeper into the trapped keeper's pounding
-   (`Keeper.trap`, as a waking sleeper does in S2-03b). Validate the tap remote (type, range,
-   ownership, rate).
-4. Client: the bar rises by itself as the door comes down (phone first: big, one tap anywhere),
-   the marker sweeps, the hit's soft settle, the miss's bang and shake. No words on it.
-5. Verify in Play: count `RenderStepped` first (STUDIO.md); shut a door on a sleeper, hit and
-   miss, Output clean.
-**Acceptance:** checks green; in Play a hit shuts the door quietly and a miss wakes it pounding;
-the bar is readable at phone size; every outcome has its motion and sound.
-**Read first:** ROADMAP S2-05; the GDD's sleeper-door section; `docs/FRAMEWORK.md` (grep
-"timing\|bar\|hold"); `src/server/Doors.luau` (grep "Close"); `src/server/Keepers.luau` (grep
-"sleepers", "trap"); `docs/STUDIO.md` (grep "draws no frames").
+## Next task: S2-02d4 The owner's two feed fixes
+ROADMAP S2-02d4 (the owner's words are there). The moment: the camera only ever shows a floor
+you're still on, and it cuts in and out on plain TV static.
+1. **No feed once you've left.** A floor keeps a flag for each player who has left it, set the
+   instant its gate shuts with them aboard (`Climbs.shut` names the riders and the floor; grep
+   `shut:` in `src/server/Climbs.luau`). `watchers` in `src/server/Keepers.luau` skips them
+   (today it picks by position: within 40 studs up or down and over the plan, so a rider
+   climbing out passes). A feed already showing to them closes for them that moment: add a
+   per-player close to `Feeds` (it keeps who watches each open feed in `open`), static and the
+   map back. A Mannequin stops starting errands on a floor nobody is on (`Breaker.errand`'s
+   caller in Keepers). Lune spec first if any of it is pure.
+2. **Plain static in and out.** Swap `Feed.InSound` and `Feed.OutSound` (`src/shared/Feed.luau`)
+   for plain TV static, two different clips, short and hard-edged, timed to `Feed.SnowIn`
+   (0.22 s) and `Feed.SnowOut` (0.4 s) with a short tail. Free on the Creator Store (Pro Sound
+   Effects first). The quiet bed and the clunk stay (default in `OWNER.md`). Each id must load
+   in Play with no permission line in Output; prime them as now (`SoundPrimer`).
+3. A feed that starts while the map is still sliding in takes the map's place as it lands
+   (`mapWindow` in `src/client/FeedView.luau`).
+4. Verify in Play: count `RenderStepped` first and keep the display awake (STUDIO.md "Getting
+   frames back"); send a Mannequin to the box with you on floor 3 (`SendToBreaker`), then
+   again just after your car's gate shuts. Output clean.
+**Acceptance:** checks green; in Play the feed shows on the floor and not to a rider whose gate
+has shut; one already up when the gate shuts cuts out; the new static plays in and out.
+**Read first:** ROADMAP S2-02d4; `src/server/Keepers.luau` (grep "watchers", "errandFeed");
+`src/server/Feeds.luau`; `src/server/Climbs.luau` (grep "shut"); `src/shared/Feed.luau`;
+`docs/STUDIO.md` (grep "Getting frames back").
 
 ## Queue (next sessions per ROADMAP Phase 2)
-1. S2-05 (next). S2-02d3 (judge the feed at phone size: framing, darkness, grain; a feed that
-   starts mid-slide lands with the map): frames now come with a `caffeinate -u` pulse; stand
-   on the floor before `WakeSleepers`, watch `KeeperMotion` in the call that sends, and capture
-   with the player on floor 3 (STUDIO.md). Or the owner judges it (`OWNER.md`). S2-06 and L-08e3c wait on `OWNER.md`. R-01 is for later.
-2. Found S2-02d2: sounds call errand Mannequins off often; four came to the clunk.
-3. Found S2-02d1: other monsters in the camera's view are copied once as statues (only the
-   watched body moves); a second feed on the same floor replaces the first at once.
-4. The machine's menu (S1-10d1 to d3): unseen with the menu really open are the wheel's slide,
-   the dim tool bays with full slots, and the menu staying down after a buy (`OWNER.md`).
-5. Found S2-04c: a player standing still at the keypad stays dark once the lights come back;
-   S2-04b: monsters called to one spot all go to the same point (inferred).
-6. Output at Play start: about 46 `rbxassethash ... Requester does not have permission` lines;
-   S2-04a's `rbxassetid://89260803894903` ×27 as a dealt unit rolled up; `203785492` (wrong
-   type). Causes unfound.
-7. Found S2-03b: loose keepers go to look at a pounding door (a feature; watch it). S2-03a:
-   waves can pass `Deal.awakeCap`. S2-02c: only a wandering Mannequin takes the errand; S2-02b:
-   nobody can throw the breaker by hand (S2-06 may need it).
-8. Small: S1-12 no saved cash total shows; S1-11 a friend's beam doesn't show the mark; S1-07b
-   Take shows through a shut door; S1-09 a kept torch drains if left on; S1-07a 16 in 100
-   units hold nothing; S1-10d2 a saw may poke 0.05 past the glass; unseen: S1-06, S1-05.
+1. S2-02d4 (next), S2-05 (the tap when you shut a door on a sleeper; likely two sessions),
+   S2-07a, S2-07b. S2-06, L-08e3c and L-14b2d wait on `OWNER.md`. R-01 is for later.
+2. Brix has no purchases piece in its ROADMAP yet. S3-02 needs one: before Step 3, file it in
+   Brix's ROADMAP in neutral terms (receipts granted after the profile saves, prices read from
+   Roblox, offers switched off live) so Brix can build it in its own sessions.
+3. S4-04 "Trapping pays" (a quarter more pay per trapped monster) was never agreed by the
+   owner (`OWNER.md` asks); don't build it until they say yes.
+4. Left in the Queue, not in S2-07: S1-07a 16 in 100 units hold nothing (may be right);
+   S2-02c only a wandering Mannequin takes the errand; S2-02b nobody can throw the breaker by
+   hand (S2-06 may need it); S2-03b loose keepers go to look at a pounding door (a feature).
+5. Unseen with the menu really open: the wheel's slide, the dim bays with full slots, the menu
+   staying down after a buy (S1-10d1 to d3, `OWNER.md`). Unseen: S1-06, S1-05.
 
 ## Kickoff for the next agent
 ```text
