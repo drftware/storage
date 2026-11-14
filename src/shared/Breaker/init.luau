@@ -59,6 +59,9 @@ Breaker.ClunkSound = "rbxassetid://9119716652"
 Breaker.ClunkVolume = 1.4
 Breaker.ClunkSpeed = 0.72
 Breaker.ClunkReach = 320 -- studs it carries: a whole floor
+-- Studs along the halls keepers hear it from (`Keepers`), a slam's: the ones near the box come
+-- to look, so going back to switch it on means walking toward them, not the whole floor.
+Breaker.ClunkHeard = 110
 Breaker.CatchSound = "rbxassetid://9119717286"
 Breaker.CatchVolume = 0.9
 Breaker.CatchSpeed = 0.85
@@ -166,6 +169,52 @@ function Breaker.strained(t: number): number
 	local a = math.clamp(t / Breaker.HoldSeconds, 0, 1)
 	local eased = 1 - (1 - a) * (1 - a)
 	return Specs.Down + (Specs.Up - Specs.Down) * Breaker.Strain * eased
+end
+
+--[[
+	The Mannequin's errand (S2-02c, GDD "The Mannequin cuts the power"). A loose Mannequin with no
+	light on it, picking where to wander next, sometimes heads for the box instead and throws it,
+	as Phasmophobia's ghost switches off the fuse box (D-153). Nothing tells the players: the clunk
+	comes from somewhere behind you and the halls die. More keen the higher the floor.
+]]
+-- Floor 1's chance, each time a Mannequin picks where to wander next (about every 14 seconds of
+-- wandering, measured in Lune), that it heads for the box: one loose Mannequin left alone cuts
+-- the power about every three minutes on floor 1.
+Breaker.ErrandChance = 0.08
+-- Added for each floor above the first: higher up, the dark comes more often (about every
+-- minute and a half by floor 5).
+Breaker.ErrandPerFloor = 0.02
+-- The most it ever gets (floor 12 up, about every 48 seconds): most of its wanders are still
+-- about you.
+Breaker.ErrandMost = 0.3
+-- Seconds after the power comes on (the floor laid, or switched back) before any Mannequin may
+-- head for the box: the floor gets a lit start, and a switch back on buys a real breather.
+Breaker.ErrandGap = 45
+-- Studs out from the wall, in front of the lever, where a Mannequin stands to throw it: its
+-- held-out hand (about 2.7 ahead of its feet) is on the grip.
+Breaker.ErrandStand = 2.6
+
+--- The chance a Mannequin on floor `floor` heads for its box as it picks where to wander next:
+--- 0 while the box is thrown (`on` false) or within `ErrandGap` seconds (`sinceOn`) of the power
+--- coming on, else `ErrandChance` and `ErrandPerFloor` a floor up to `ErrandMost`.
+function Breaker.errand(floor: number, on: boolean, sinceOn: number): number
+	if not on or sinceOn < Breaker.ErrandGap then
+		return 0
+	end
+	local keen = Breaker.ErrandChance + Breaker.ErrandPerFloor * math.max(floor - 1, 0)
+	return math.min(keen, Breaker.ErrandMost)
+end
+
+--- Where a Mannequin stands to throw a box hung at (`x`, `z`) on its floor, looking into the hall
+--- along (`fx`, `fz`), length 1 (a spot's `Floor.dir(facing)`, or the box's LookVector): on the
+--- floor, `ErrandStand` out from the wall, square in front of the lever's grip.
+function Breaker.stand(x: number, z: number, fx: number, fz: number): vector
+	local side = Specs.GripDown[1] -- the grip's way along the wall, the box's right being (-fz, fx)
+	return vector.create(
+		x + fx * Breaker.ErrandStand - fz * side,
+		0,
+		z + fz * Breaker.ErrandStand + fx * side
+	)
 end
 
 return Breaker

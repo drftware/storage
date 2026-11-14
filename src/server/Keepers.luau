@@ -78,6 +78,8 @@ local ServerStorage = game:GetService("ServerStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
 local Workspace = game:GetService("Workspace")
 
+local Breaker = require(ReplicatedStorage.Shared.Breaker)
+local Breakers = require(script.Parent.Breakers)
 local Brix = require(ReplicatedStorage.Brix)
 local Catalog = require(ReplicatedStorage.Shared.Tools.Catalog)
 local Caught = require(ReplicatedStorage.Shared.Caught)
@@ -107,6 +109,11 @@ local Saws = require(script.Parent.Saws)
 local Slots = require(script.Parent.Slots)
 
 local TRACE = RunService:IsStudio() -- Output says what each keeper hears and does
+-- Workspace's attribute the dev command sets (Studio only): every loose Mannequin heads for its
+-- floor's breaker box now, the power's gap ignored (S2-02c)
+local DEV_ERRAND = "SendToBreaker"
+-- Seconds between looks for a floor's breaker box until it's found (it hangs as the floor lays)
+local BOX_LOOK = 1
 local STATE_ATTRIBUTE = "KeeperState"
 local MOTION_ATTRIBUTE = "KeeperMotion" -- its motion, for screens (KeeperMotion.encode)
 local ROW_ATTRIBUTE = "Keeper" -- its row's name: how screens pose it
@@ -196,6 +203,10 @@ type OnFloor = {
 	asleep: { [number]: string },
 	players: Keeper.Players, -- where each living player's feet are this step, reused
 	gone: RBXScriptConnection,
+	box: Model?, -- its breaker box (S2-02c), once found
+	boxAt: vector, -- the box on the wall, the floor's coordinates: a Mannequin faces it there
+	boxStand: vector, -- where a Mannequin stands to throw it (`Breaker.stand`)
+	boxLooked: number, -- when it last looked for the box, the server's clock
 }
 -- `quarry`: whom it hunted as last counted for screens (`tellHunted`), 0 for no one.
 type Entry = { keeper: Keeper.Keeper, body: Body, on: OnFloor, quarry: number }
@@ -264,6 +275,8 @@ function Keepers.new(): Keepers
 	local doors: Doors.Doors? = nil
 	local motionLights: MotionLights.MotionLights? = nil
 	local flashlights: Flashlights.Flashlights? = nil
+	local breakers: Breakers.Breakers? = nil
+	local devErrand = false -- the dev command: every loose Mannequin goes for the box now
 	local run = 16 -- a player's full run, studs a second (StarterPlayer's, read at start)
 	local everyone: { Player } = {} -- kept as players come and go: no list made each step
 	local caught = Brix.Signal.new() :: Brix.Signal<Catch>
@@ -660,6 +673,76 @@ function Keepers.new(): Keepers
 
 	-- A trapped keeper hit its door from inside, burst it up, or gave its padlocked door one last
 	-- blow: the door answers on every screen, and keepers that hear it come to look.
+	-- The floor's breaker box (S2-02c), found once it hangs (it's hung as the floor lays): where
+	-- it is and where a Mannequin stands to throw it, in the floor's coordinates.
+	local function findBox(on: OnFloor, now: number): Model?
+		local box = on.box
+		if box and box.Parent then
+			return box
+		end
+		local b = breakers
+		if not b or now - on.boxLooked < BOX_LOOK then
+			return nil
+		end
+		on.boxLooked = now
+		on.box = nil
+		local found = b:within(on.model)[1]
+		if not found then
+			return nil
+		end
+		local frame = on.origin:ToObjectSpace(found:GetPivot())
+		local p, look = frame.Position, frame.LookVector -- it looks into the hall
+		local out = Vector3.new(look.X, 0, look.Z)
+		if out.Magnitude < 1e-3 then
+			return nil
+		end
+		out = out.Unit
+		on.box = found
+		on.boxAt = vector.create(p.X, 0, p.Z)
+		on.boxStand = Breaker.stand(p.X, p.Z, out.X, out.Z)
+		return found
+	end
+
+	-- Offers loose Mannequin `k` its floor's box: the chance it heads there at its next pick of
+	-- where to wander (`Breaker.errand`: none while thrown or just after the power came back),
+	-- sure while the dev command stands.
+	local function offer(on: OnFloor, k: Keeper.Keeper, now: number)
+		local box = findBox(on, now)
+		local b = breakers
+		if not (box and b) then
+			return
+		end
+		local powered, since = b:power(box)
+		local chance = if devErrand and powered
+			then 1
+			else Breaker.errand(on.floor.number, powered, since)
+		Keeper.offer(k, on.boxStand, on.boxAt, chance)
+	end
+
+	-- A Mannequin's hand is on the grip (S2-02c): the box is thrown (its slam and clunk are the
+	-- box's own, BreakerView), and the keepers near it hear the clunk as they hear a slam, so
+	-- whoever goes back to switch it on walks toward whatever came to look. Nothing if the power
+	-- was already off.
+	local function threw(entry: Entry)
+		local on = entry.on
+		local box, b = on.box, breakers
+		if not (box and b) or not b:throw(box) then
+			return
+		end
+		devErrand = false
+		if TRACE then
+			print(
+				`Keepers: the {entry.keeper.row.name} threw the breaker on floor {on.floor.number}`
+			)
+		end
+		local p = on.boxStand
+		hearAt(
+			on.origin:PointToWorldSpace(Vector3.new(p.x, 1, p.z)),
+			Breaker.ClunkHeard,
+			"the breaker"
+		)
+	end
+
 	local function onBlow(entry: Entry)
 		local k = entry.keeper
 		local blow = k.blow
@@ -792,6 +875,8 @@ function Keepers.new(): Keepers
 		-- any: as above; the lights fill these slots (init.server)
 		motionLights = (context.registry:get("motionLights") :: any) :: MotionLights.MotionLights?
 		flashlights = (context.registry:get("flashlights") :: any) :: Flashlights.Flashlights?
+		-- any: as above; Breakers fills this slot (init.server)
+		breakers = (context.registry:get("breakers") :: any) :: Breakers.Breakers?
 		run = StarterPlayer.CharacterWalkSpeed
 		everyone = Players:GetPlayers()
 		local folder = ReplicatedStorage:FindFirstChild(Caught.RemoteFolder)
@@ -810,6 +895,36 @@ function Keepers.new(): Keepers
 		hunted.Parent = folder
 		huntedRemote = hunted
 		if RunService:IsStudio() then
+			-- every loose Mannequin heads for its floor's box now (S2-02c): it picks where to go
+			-- next at once, and the box is sure to be its pick while the power is on. One stood
+			-- asleep in a hall (DevCorridor's "Stand one") wakes for it; sleepers behind doors don't.
+			table.insert(
+				joins,
+				Workspace:GetAttributeChangedSignal(DEV_ERRAND):Connect(function()
+					if Workspace:GetAttribute(DEV_ERRAND) ~= true then
+						return
+					end
+					Workspace:SetAttribute(DEV_ERRAND, false)
+					devErrand = true
+					for _, on in floors do
+						for _, entry in on.keepers do
+							local k = entry.keeper
+							local s = k.state
+							local _, unit = KeeperMap.placeAt(on.map, k.at)
+							if s == "Asleep" and unit == 0 and k.trappedIn == 0 then
+								s = "Watching"
+							end
+							if
+								k.row.freezesInLight
+								and k.trappedIn == 0
+								and (s == "Roaming" or s == "Waiting" or s == "Watching")
+							then
+								k.state, k.wait, k.waited = "Waiting", 0, 0 -- it picks now
+							end
+						end
+					end
+				end)
+			)
 			-- a catch wherever you are, for one-player tests of what a catch does to you
 			local test = Instance.new("BindableFunction")
 			test.Name = "CatchTest"
@@ -910,6 +1025,10 @@ function Keepers.new(): Keepers
 				local target = k.target
 				local before = k.at
 				local wasLit = k.lit ~= 0
+				local wasErrand = k.errand
+				if k.row.freezesInLight and Keeper.loose(k) then
+					offer(on, k, now)
+				end
 				local hallLit = false
 				if motionLights and k.row.freezesInLight and Keeper.awake(k) then
 					-- any: as in `putRoot`
@@ -938,6 +1057,11 @@ function Keepers.new(): Keepers
 				end
 				if k.blow ~= "None" then
 					onBlow(entry)
+				end
+				if k.threw then
+					threw(entry)
+				elseif TRACE and k.errand and not wasErrand then
+					print(`Keepers: the {k.row.name} heads for the breaker`)
 				end
 				if k.target ~= entry.quarry then -- it saw, lost or caught someone, or was trapped
 					entry.quarry = k.target
@@ -1013,6 +1137,10 @@ function Keepers.new(): Keepers
 			gone = model.Destroying:Once(function()
 				drop(on)
 			end),
+			box = nil,
+			boxAt = vector.zero,
+			boxStand = vector.zero,
+			boxLooked = -math.huge,
 		}
 		floors[model] = on
 		for unit, slot in slots do

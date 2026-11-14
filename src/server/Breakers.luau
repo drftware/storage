@@ -38,6 +38,7 @@ type Box = {
 	grip: Vector3, -- the grip's middle with the lever down, the world's: where the hand goes
 	prompt: ProximityPrompt,
 	began: { [Player]: number }, -- each holder's hold start, the server's clock
+	since: number, -- when the power last came on (or the box was hung), the server's clock
 	conns: { RBXScriptConnection },
 }
 
@@ -46,6 +47,9 @@ export type Breakers = Brix.System & {
 	throw: (self: any, box: Model) -> boolean,
 	-- Every placed box on a floor under `within`, power on or not.
 	within: (self: any, within: Instance) -> { Model },
+	-- Whether `box`'s power is on, and seconds since it came on (or the box was hung): what the
+	-- Mannequin's errand asks (`Breaker.errand`). False and 0 for an unknown box.
+	power: (self: any, box: Model) -> (boolean, number),
 }
 
 local Breakers = {}
@@ -62,6 +66,9 @@ function Breakers.new(): Breakers
 
 	local function setPower(b: Box, on: boolean)
 		b.on = on
+		if on then
+			b.since = os.clock()
+		end
 		b.model:SetAttribute(Breaker.OnAttribute, on)
 		b.prompt.Enabled = not on
 		local l = lights
@@ -144,6 +151,7 @@ function Breakers.new(): Breakers
 			grip = at.WorldPosition,
 			prompt = prompt,
 			began = {},
+			since = os.clock(),
 			conns = {},
 		}
 		prompt.Enabled = not b.on
@@ -266,6 +274,14 @@ function Breakers.new(): Breakers
 		setStrain(b)
 		setPower(b, false)
 		return true
+	end
+
+	function system.power(_: any, box: Model): (boolean, number)
+		local b = boxes[box]
+		if not b then
+			return false, 0
+		end
+		return b.on, if b.on then os.clock() - b.since else 0
 	end
 
 	function system.within(_: any, within: Instance): { Model }

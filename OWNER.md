@@ -101,8 +101,8 @@ and off, the invite sheet opening with your friends (no invite sent).
 
 ## Now: throw the breaker and switch it back (S2-02a-b, built Nov 14, D-153, D-154; seen in Play)
 
-The box hangs on every floor now, somewhere new each climb, never in the lobby's hall. Nothing
-throws it in a real climb until S2-02c's Mannequin, so test it in Studio.
+The box hangs on every floor now, somewhere new each climb, never in the lobby's hall. In a real
+climb only a Mannequin throws it (S2-02c, below), so test the box itself with the dev command.
 1. In Studio Play, walk the test floor, then in the Server's command bar run
    `workspace:SetAttribute("ThrowBreakers", true)`. Look for: one heavy clunk wherever you
    stand, every hall light dead, and moving under them does nothing.
@@ -115,6 +115,22 @@ throws it in a real climb until S2-02c's Mannequin, so test it in Studio.
 4. Decide (starting guesses, D-154): the lights all coming back on (an untested bet: real motion
    lights do; coming back dark would show nothing from the box); the lamp as glowing Neon, red
    off and green on; one second to hold, as cutting a friend free.
+
+## Now: the Mannequin cuts the power (S2-02c, built Nov 14, D-155; seen in Play, not heard)
+
+In a real climb a wandering Mannequin now and then walks to the breaker and throws it; nothing
+says it's going. Test the feel with the dev command first, then in a real climb.
+1. In Studio Play, stand a Mannequin on the test floor (its "Stand one" post), walk away out of
+   its sight, then in the Server's command bar run `workspace:SetAttribute("SendToBreaker",
+   true)` (STUDIO.md "The breaker" has the steps). Look for: it walks off somewhere that isn't
+   you, then the clunk from behind you and the halls die. Shine your torch on it on its way:
+   it should stop dead.
+2. Go back and switch it on. Look for: is going back through the dark, toward whatever came to
+   look at the clunk, the scary trip the GDD wants?
+3. Play a few real floors with a friend. Decide (starting numbers, D-155): how often it happens
+   (about every three minutes per loose Mannequin on floor 1, every minute and a half by floor
+   5, every 48 seconds from floor 12); the 45 seconds of light after the power comes on; the
+   clunk calling keepers within 110 studs (a slam's reach) rather than the whole floor.
 
 ## Now: sleepers are placed with the floor (S2-01, built Nov 14, D-152; seen in Play)
 

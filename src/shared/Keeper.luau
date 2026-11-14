@@ -60,6 +60,13 @@
 	but it still sees and hears, so it may start hunting you while frozen and comes the moment the
 	light leaves it. Screens hold it on the key its stride was on (`Pose.freeze`).
 
+	It cuts the power (S2-02c), if its row freezes in light (the GDD's Mannequin, which wants the
+	dark): offered the floor's breaker box (`offer`, the server's, while the box is on), each time
+	it picks where to wander next it may head for the box instead, by the offer's chance from the
+	floor's Random, as Phasmophobia's ghost goes to the fuse box. It walks there as it wanders,
+	at its walk, held by any light as ever; there, it stands facing the box with `threw` set for
+	that step (the server throws it), then lingers. Anything it hears or sees calls it off.
+
 	It catches the one it hunts (L-06b3c), as Granny's grab or Piggy's swing ends the chase the
 	moment she reaches you: their feet within its row's `reach` along the halls and its
 	`reachAngle` either side of the way it faces (Brix's cone reach, `Reach.cone`, measured along
@@ -159,6 +166,11 @@ export type Keeper = {
 	-- is the same noise going on, and it walks on without stopping again
 	listening: boolean,
 	startle: number, -- seconds left standing where it heard a new sound, facing it, before it goes
+	errandAt: vector, -- where it stands to throw the floor's breaker (`offer`, the floor's coords)
+	errandBox: vector, -- the box itself: it faces it there
+	errandChance: number, -- the chance it heads there each time it picks a wander; 0: never
+	errand: boolean, -- it's wandering to the box
+	threw: boolean, -- it reached the box this step: the server throws it
 }
 
 local Keeper = {}
@@ -398,7 +410,17 @@ end
 -- It sets off roaming, or, with nowhere it can reach, stands watching where it is; shut in where
 -- it was trapped (it hunted someone in there with it), it goes back to its door, trapped again.
 local function roam(k: Keeper)
-	k.listening, k.startle = false, 0
+	k.listening, k.startle, k.errand = false, 0, false
+	-- the floor's Random is drawn only while an errand is offered, so floors without one roam
+	-- exactly as they did
+	if
+		k.errandChance > 0
+		and k.random:nextNumber() < k.errandChance
+		and k.pathing:length(k.at, k.errandAt) < math.huge
+	then
+		k.state, k.goal, k.errand = "Roaming", k.errandAt, true
+		return
+	end
 	local goal = pick(k)
 	if goal then
 		k.state, k.goal = "Roaming", goal
@@ -461,7 +483,27 @@ function Keeper.new(
 		heardSpot = at,
 		listening = false,
 		startle = 0,
+		errandAt = at,
+		errandBox = at,
+		errandChance = 0,
+		errand = false,
+		threw = false,
 	}
+end
+
+--- Offers it the floor's breaker box (S2-02c): it stands at `at` to throw it, facing `box` (the
+--- floor's coordinates), and heads there with `chance` each time it picks where to wander next
+--- (`Breaker.errand`: 0 while the box is thrown or the power just came back). Only a row that
+--- freezes in light takes it; the server offers it every step, so a chance of 0 calls off a
+--- walk already on its way.
+function Keeper.offer(k: Keeper, at: vector, box: vector, chance: number)
+	if not k.row.freezesInLight then
+		return
+	end
+	k.errandAt, k.errandBox, k.errandChance = at, box, chance
+	if chance <= 0 and k.errand then
+		k.errand = false -- the power went off another way, or just came back: it wanders on
+	end
 end
 
 -- A newer sound this near the one it's already going to (or standing at, looking), in studs, is
@@ -774,6 +816,7 @@ function Keeper.step(
 	local lit = lightOn(k, players, hallLit == true)
 	k.lit = lit
 	k.caught = 0
+	k.threw = false
 	k.blow = "None"
 	local looked = false
 	if players and k.state ~= "Asleep" then
@@ -834,6 +877,11 @@ function Keeper.step(
 		-- stopped short of a unit's wall: then at the wall, or the hole they went through)
 		stand(k, k.row.linger)
 		faceToward(k, if state == "Going" then k.heard else k.seen)
+	elseif there and k.errand then
+		-- at the box: its hand on the grip, the server throws it; it stands there a while
+		k.errand, k.threw = false, true
+		stand(k, k.row.linger)
+		faceToward(k, k.errandBox)
 	elseif there then
 		stand(k, k.row.roamLinger)
 	elseif stuck then

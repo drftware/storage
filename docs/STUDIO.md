@@ -1973,3 +1973,17 @@ verified: a doc page, Studio, or "untested".
   8 seconds, and keep a light meant to stay local short-ranged (range 6 washed a whole hall red
   once adapted; range 4 kept it on the box). A PointLight right on a surface only grazes it:
   hang it a stud or two out in front.
+- **Sending the Mannequin to the box in Play** (S2-02c): move your character to (-6, 3.5, -591)
+  from the Server, press the "Stand one" post's prompt from the Client (`InputHoldBegin`, then
+  `InputHoldEnd`), then park your root anchored at (0, 400, 0) so you trip no light and are seen
+  by nobody, and wait about 9 s for the lights to time out. Then from the Server
+  `workspace:SetAttribute("SendToBreaker", true)` (Studio only, resets itself): every loose
+  Mannequin picks the box now, a hall-stood sleeper woken for it. Sample the body's pivot,
+  `KeeperState` and the box's `PowerOn` every 0.5 s; Output says "heads for the breaker", then
+  "threw the breaker". It walked 110 studs in 21 s.
+- **A door moved by `RollUpDoor.play` from a Server `execute_luau` isn't heard by keepers**
+  (S2-02c): the door's motion attribute changed and the door moved, but no keeper heard it (no
+  `Keepers:` line). Wake one with a real press from the Client, or the dev command above.
+- **`screen_capture` in Play shows your character's view**, not the camera you pass: with the
+  root parked high over the lobby it showed sky. Capture the floor in Edit, or move the
+  character and its Scriptable camera there first.

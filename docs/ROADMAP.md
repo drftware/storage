@@ -1608,10 +1608,12 @@ Done when a team that has lost its lights goes looking for the breaker without b
     red lamp pulsing with a short red glow; a one-second hold judged on the server brings the
     lights back on all at once, the lever snapping up, a click, the hum, the lamp green. Seen
     in Studio Play on the dev floor with the dev command (`ThrowBreakers`).
-  - [ ] **S2-02c The Mannequin throws it.** A loose Mannequin with no light on it sometimes
-    heads for the breaker and throws it, more often higher up; the keepers' brain gains the
-    errand (D-064). `Breakers:throw(box)` and `Breakers:within(floor)` are its handles; the
-    clunk should be heard by the keepers too (`Keepers:hear`).
+  - [x] **S2-02c The Mannequin throws it.** (S2-02c, Nov 14, D-155) A loose Mannequin picking
+    where to wander next sometimes heads for the box instead (`Breaker.errand`: 8 in 100 picks
+    on floor 1, 2 more a floor up to 30; none while thrown or for 45 seconds after the power comes
+    on), walks there held by any light as ever, and throws it; keepers within a slam's reach of
+    the box hear the clunk and come to look (`Keeper.offer`, `Keepers`). Seen in Studio Play: a
+    Mannequin walked 110 studs to the box in 21 seconds and threw it, all 23 lights blind.
 - [ ] **S2-03 Sleeping monsters wake.** After four minutes on floors 1 and 2 (six above), three
   sleepers wake and pound on their doors, heard across the floor; three more every two minutes;
   sooner and more higher up. One pounding breaks out after 90 seconds unless its door is

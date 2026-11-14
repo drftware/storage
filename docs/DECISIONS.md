@@ -4308,3 +4308,27 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
   brighter on screen over a few seconds. At range 6 the hall went red end to end; at range 4,
   brightness 1.5 only the box and its patch of wall do. It's on only while the box is thrown,
   when every hall light on the floor is out, so the floor's light count only drops.
+
+## D-155 The Mannequin throws the breaker: a wander now and then, keener higher up (S2-02c, Nov 14)
+
+- When: a loose Mannequin, picking where to wander next, heads for the box instead by a chance
+  from the floor's Random (`Breaker.errand`), as Phasmophobia's ghost switches off the fuse box
+  (D-153). It never decides mid-hunt or mid-look: hearing or seeing anyone calls the walk off, as
+  the GDD's "doesn't always come for a player" reads. Only a row that freezes in light takes it
+  (`Keeper.offer`): the one that wants the dark. The floor's Random is drawn only while an errand
+  is offered, so floors without a box or Mannequin roam exactly as they did.
+- How often (starting numbers, in OWNER.md): 8 in 100 picks on floor 1, 2 more each floor up, at
+  most 30. A Mannequin picks about every 14 seconds of wandering (measured in Lune), so one left
+  alone cuts the power about every three minutes on floor 1, every minute and a half by floor 5,
+  every 48 seconds from floor 12. None while the box is thrown, and none for 45 seconds after the
+  power comes on (the floor laid, or switched back), so a floor starts lit and a switch back on
+  buys a real breather. The server offers it every step, so a box switched back while one walks
+  there calls that walk off.
+- Its walk: at its wandering pace, by the halls, held by any light on it as ever: the GDD's "a
+  flashlight on it stops it". It stands 2.6 studs out from the wall square in front of the lever
+  (`Breaker.stand`), its held-out hand on the grip, throws it, faces the box and stands its linger.
+- The clunk carries to keepers as a slam does (110 studs along the halls, `Breaker.ClunkHeard`),
+  not the 320 a player hears it: the ones near the box come to look, so whoever goes back walks
+  toward them, without the whole floor converging. The thrower hears its own clunk and stands.
+- No text: nothing tells players it's going; the clunk and the dark are the tell.
+
