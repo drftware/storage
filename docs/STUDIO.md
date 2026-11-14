@@ -57,6 +57,15 @@ verified: a doc page, Studio, or "untested".
   **`LightingStyle`** (Realistic or Soft) and **`PrioritizeLightingQuality`** (keep shadows and
   shaders or view distance when quality drops); both are ordinary settings that Rojo live-syncs.
 
+- **A 2D picture from the Studio MCP** (Nov 14, D-158): `upload_image` takes http URLs only.
+  Serve the folder with `python3 -m http.server 8765 --bind 127.0.0.1` and pass
+  `http://localhost:8765/<file>.png` (the `127.0.0.1` spelling answered "Unable to read file");
+  it returns an `rbxassetid` that an ImageLabel loads at once in Play (`IsLoaded` true). Stop the
+  server after. Record the ID in the art's `assets.json`.
+- **A ViewportFrame draws soft** (Nov 14): the coin count's 3D coin looked fuzzy beside its
+  number on every screen. For a small, still icon use a rendered picture; keep viewports for
+  things that move.
+
 ## SurfaceAppearance
 
 - **Overlay** (docs): the part's Color shows wherever the ColorMap's alpha is 0. Its `Color`
@@ -1617,6 +1626,11 @@ verified: a doc page, Studio, or "untested".
   put them back (they were all 0). Roblox's presets: 4G 45/20/0.4 in and 55/30/0.5 out; bad 3G
   150/70/0.5 in and 180/90/0.5 out. The Roblox_Studio MCP's `rbx-network-simulator` skill has the
   rest (its text is too long to load whole: grep the saved file).
+- **The lobby's floor slab was 7 studs into the cars** (Nov 14, D-158): in `Props.Lobby` the
+  `Floor` MeshPart sat at z -29 from the model's pivot where its spec says -36 (every other part
+  matched), so it ran under each car's floor at height 0 and flickered. Check a template against
+  its Specs from the Edit command bar: `WorldPivot:ToObjectSpace(part.CFrame)` against
+  `Specs.Parts[name].Centre`.
 - **Two floors at one height flicker** (L-16c): a hall junction's concrete (`T.Floor`, top at 0)
   runs on under the front of the units round it, where the unit's own floor also sits at 0, so
   the two drew over each other as the view moved (only on real floors: the test hall has no

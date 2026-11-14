@@ -236,6 +236,23 @@ function Departure.carBox<P>(
 	}
 end
 
+-- Stepping out (owner, Nov 14): the gate shuts behind the team `Ride.Linger` after it opens on a
+-- floor, and anyone still in the car as it starts to fold is stood on the landing in front of it,
+-- facing the hall, so nobody is ever shut in a car that's going nowhere. Studs out from the gate's
+-- line (the elevator's -Z), a root's height above the floor, and apart side by side.
+Departure.OutFront = 4
+Departure.OutUp = 3
+Departure.OutApart = 2.2
+-- The farthest to either side of the opening's middle anyone is stood (the opening is 12.4 wide).
+Departure.OutMost = 4.4
+
+-- Where the `i`th of `n` stepped out of the car stands, across the opening from its middle (in the
+-- elevator's +X): side by side about the middle, never past `OutMost`.
+function Departure.outAcross(i: number, n: number): number
+	local across = (i - (n + 1) / 2) * Departure.OutApart
+	return math.clamp(across, -Departure.OutMost, Departure.OutMost)
+end
+
 -- The car's leaving as its replicated value: when the gate hit its post, and who was aboard.
 function Departure.encodeAboard(at: number, ids: { number }): string
 	local parts = table.create(#ids)

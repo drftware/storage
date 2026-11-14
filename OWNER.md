@@ -23,6 +23,26 @@ nowhere else.
   at Brix `6717740` (S1-02), which is only on this Mac until Brix is pushed; a fresh clone of
   the game can't fetch it until then.
 
+## Now: check your five fixes (built Nov 14, D-158; seen in Studio Play, not on a phone)
+
+Publish first (File > Publish to Roblox) so live servers run them.
+1. **On your phone, step into a lobby car and let it go.** Look for: the gate slams, the car
+   lurches, the lobby goes dark beyond the gate and the shaft wall slides down past it, a cable
+   clank, and only then the black with "Going up". Then the black lifts while the car is still
+   climbing (about six seconds of ride, the slowdown, the bell, the gate opening). If it still
+   opens on a car already standing open, say so.
+2. **Stay in the car after it opens on a floor.** About six seconds after the gate opens it
+   shuts, and you're stood just outside it, facing the hall, as it folds shut behind you. Say if
+   being moved feels too sudden.
+3. **In the lobby, swing the camera round inside and in front of a car.** The car floors
+   shouldn't flicker any more.
+4. **Look at the coin count, top right.** The coin should be as sharp as the number, and give a
+   quick flip each time a coin lands in it.
+5. **Let a Mannequin loose and keep away from it** (a trapped one bursts out after 90 seconds).
+   After a floor's first 45 seconds, a wandering Mannequin now cuts the power within about half
+   a minute, once per floor; after that it's back to the old odds. Say if the first cut comes
+   too soon or too often.
+
 ## Decide: the design doc after your answers (Nov 13, D-128)
 
 Your answers, the four from tonight included, are written into the design doc (the GDD) and the
@@ -147,8 +167,9 @@ says it's going. Test the feel with the dev command first, then in a real climb.
    it should stop dead.
 2. Go back and switch it on. Look for: is going back through the dark, toward whatever came to
    look at the clunk, the scary trip the GDD wants?
-3. Play a few real floors with a friend. Decide (starting numbers, D-155): how often it happens
-   (about every three minutes per loose Mannequin on floor 1, every minute and a half by floor
+3. Play a few real floors with a friend. Decide (starting numbers, D-155, D-158): how often it
+   happens (the first cut on a floor soon, on half a loose Mannequin's wander picks; after that
+   about every three minutes per loose Mannequin on floor 1, every minute and a half by floor
    5, every 48 seconds from floor 12); the 45 seconds of light after the power comes on; the
    clunk calling keepers within 110 studs (a slam's reach) rather than the whole floor.
 

@@ -2,23 +2,27 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-14, session 145 (S2-03b sleepers stand and pound) ·
+**Updated:** 2026-11-14, session 146 (the owner's five fixes, D-158) ·
 **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- **S2-03 is done (D-156, D-157).** A floor's waking clock starts the first step a player's feet
-  are on its level (the floor above is laid early, so not at the lay). Each step `Keepers` asks
-  `Waking.now`; picked units are dealt with the door still shut (`Deals:dealShut`), so the
-  sleeper stands where a lift would have stood it, awake, and goes straight onto the trapped
-  clock: it bangs, dents the door, keepers hear it, it bursts at 90 s; a padlocked door holds it.
-  Studio's Workspace `WakeSleepers` skips to the first wave.
-- **Verified in Studio Play** (dev floor 3, seed 7): the clock started; the first wave at 225 s
-  woke 307, 327, 338, which banged (DoorMotion and DoorDent changing) and burst at 90 s; the
-  second at 335 s woke 335 and padlocked 305; 335 burst, 305 gave one last blow and held.
-  Output clean but the known asset lines. Not heard: whether players hear the bangs across the
-  floor is the owner's (`OWNER.md`). Studio left in Edit.
+- **The owner's Nov 14 fixes are in (D-158).** Anyone still in a car as its gate shuts on a
+  floor is stood on the landing, facing the hall (`Elevators` `stepOut`). A lobby trip's black
+  now comes 4.8 s into the ride (`Trip.FadeAt`), and the group's server waits for each screen's
+  `Remotes.TripReady` (at most `Trip.LoadMost`) before standing them in the ride. Until a
+  floor's first power cut, a loose Mannequin heads for the box on half its picks
+  (`Breaker.ErrandFirst`). The coin count's coin is a rendered picture (`Coins.Icon`,
+  `art/coin/build.py --stage icon`). The lobby template's floor slab was 7 studs into the cars
+  (the flicker): moved back onto its spec in Edit.
+- **Verified in Studio Play** with Workspace `DevTrip` "Arrive": stood in floor 1's car mid-ride,
+  the gate opened, and 6 s later "Elevators: 1 stepped out as the gate shut on floor 1", the
+  player moved from 4 studs in the car to 4 studs out. The coin picture loaded and showed in the
+  top bar. The laid lobby's floor runs -72 to 0 (the bay wall's face). Output clean but the
+  known asset lines. `DevTrip` cleared after; Studio left in Edit. Not seen: the real teleport
+  on a phone, and the first power cut in a real climb (both in `OWNER.md`).
 
 ## Next task: S2-04 A wrong code lets monsters out
+First fix the bug at Queue 1 if the owner says so (it's small). Then:
 The moment: you punch a wrong code, the alarm screams, the hall goes dark, and somewhere a door
 rolls up by itself; every monster out there turns for the keypad you're standing at.
 1. Read ROADMAP S2-04 and the GDD's "Codes" / wrong-code lines (docs tools, that section only).
@@ -28,36 +32,33 @@ rolls up by itself; every monster out there turns for the keypad you're standing
    light on: check `MotionLights.flash` and the GDD; a conflict goes in `OWNER.md`).
 2. Which units: ones with a monster in them, sleepers first (`Keepers:sleepers`), then dealt
    units holding one; 1 on the first wrong code, 3 on the second, 5 after (count per floor).
-   A sleeper's unit rolling up can use `Deals:dealShut` then lift the door, so it stands asleep
-   or awake as the deal says, and `lookOut` sends an awake one out.
+   A sleeper's unit rolling up can use `Deals:dealShut` then lift the door.
 3. Pure rules in a shared module with a Lune spec; feel numbers in Config with comments.
-4. Verify in Studio Play on the dev floor: a wrong code (keypad code is 2274 on seed 7) rolls
-   up one monster's door; the keypad stays dead longer each time; Output one line a wrong code.
+4. Verify in Studio Play on the dev floor (keypad code 2274 on seed 7): a wrong code rolls up
+   one monster's door; the keypad stays dead longer each time; Output one line a wrong code.
 **Acceptance:** checks green; a spec for the pure part; in Play the first piece works; Output
 clean; Studio left in Edit.
 **Read first:** ROADMAP S2-04; DECISIONS D-157; `src/server/Elevators.luau` (grep `wrong`,
-`alarm`, `dead`, `acted`); `src/server/Keepers.luau` (grep `onKeypad`, `wakeDue`, `onDealt`);
+`alarm`, `dead`); `src/server/Keepers.luau` (grep `onKeypad`, `wakeDue`, `anyoneOn`);
 `src/server/Deals.luau` (grep `dealShut`); `src/server/Doors.luau` (grep `function system.move`).
 
 ## Queue (next sessions per ROADMAP Phase 2)
-1. S2-04 (next), then S2-05. S2-06 and L-08e3c wait on `OWNER.md`. R-01 (Remotes from Brix)
-   is for later. Lobby polish waits.
-2. Found S2-03b: loose keepers hear a pounding door and go to look, so a wave draws the floor's
-   monsters toward the banging units (felt as a feature; watch it). Deals' Studio line for a
-   woken unit says "asleep" (the deal's kind) though it stands awake: Output only.
-3. Found S2-03a: with waves on, a floor can hold more loose keepers than the director's own cap
-   (`Deal.awakeCap`); `Waking.AwakeMost` (six) bounds it. Watch it on a phone.
-4. Found S2-02c: only a wandering Mannequin takes the errand; one standing awake that has never
-   been out (Watching) doesn't. The dev command sets keepers' states directly (Studio only).
-5. Found S2-02b: nobody can throw the breaker by hand; S2-06's light-sticking monster needs "off
-   and on again", so its button can grow an Off then. S2-02a: from the box's left its lever
-   hides but the grip.
-6. Found S1-12: nothing shows a player's saved cash total yet (ROADMAP polish); a climb left
-   mid-way makes no cash (D-151, owner's call in OWNER.md).
-7. Found S1-11: a friend's beam doesn't show the mark (ROADMAP polish).
-8. Found S1-10c2a: Output in Play lists `rbxassetid://203785492` (wrong type) failures and
-   texture permission errors; unchecked whether any are the machine's.
-9. Small: S1-07b coin piles and batteries show Take through a shut door; S1-09 a kept player's
+1. **Bug, found this session:** `Keepers` `anyoneOn` counts a player on a floor by height alone,
+   but a climb's floors all stand at one height, `Climb.Spacing` apart along -Z, so the floor
+   above starts its waking clock the moment it's laid (D-157 meant the first step on it). Fix:
+   also require `Climb.on(on.floor, p.X, p.Z)` on the floor-local point, as `Climbs`' `onFloor`
+   does; a Lune check if it can be pure. In Studio the dev floor 3's clock also starts at spawn.
+2. S2-04 (next), then S2-05. S2-06 and L-08e3c wait on `OWNER.md`. R-01 is for later.
+3. Found S2-03b: loose keepers hear a pounding door and go to look (felt as a feature; watch
+   it). Deals' Studio line for a woken unit says "asleep" though it stands awake: Output only.
+4. Found S2-03a: with waves on, a floor can hold more loose keepers than `Deal.awakeCap`;
+   `Waking.AwakeMost` (six) bounds it. Watch it on a phone.
+5. Found S2-02c: only a wandering Mannequin takes the errand; one standing awake that has never
+   been out (Watching) doesn't. S2-02b: nobody can throw the breaker by hand (S2-06 may need it).
+6. Found S1-12: no saved cash total shows yet; a climb left mid-way makes no cash (D-151).
+   S1-11: a friend's beam doesn't show the mark. S1-10c2a: Output's `203785492` (wrong type) and
+   texture permission errors, unchecked whether any are the machine's.
+7. Small: S1-07b coin piles and batteries show Take through a shut door; S1-09 a kept player's
    torch drains if left on; S1-07a 16 in 100 units hold nothing (owner's call); unseen: S1-06 a
    kept find's save, S1-05 a find can be walked through, S1-04b2 keepers don't know about stuff.
 

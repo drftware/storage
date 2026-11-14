@@ -4374,3 +4374,34 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
   Deals' own Studio line for the unit's contents also prints. Nothing on screen: the pounding is
   the only warning (AGENTS "No text that explains a rule").
 - Studio's Workspace `WakeSleepers` skips every floor with the team on it to its first wave.
+
+## D-158 The owner's Nov 14 fixes: stepping out, the ride on a phone, the first cut, the coin icon
+
+- **Nobody is shut in a car** (owner: "if anything it should force everyone out if it's going
+  to shut"). As a floor's gate starts to shut behind the team (`Elevators:arm`, `Ride.Linger`
+  after it opened), anyone still in the car is stood on the landing in front of it, side by
+  side (`Departure.outAcross`), facing the hall, and the gate folds shut behind them. Chosen
+  over holding the gate open while anyone's inside: the car would become a safe room. A lobby
+  car already set down anyone the departure leaves (LobbyCars).
+- **The ride is seen before the trip's black.** On a live lobby a car's group teleports to its
+  own server; the black used to come 1.6 s into the ride, before the car had visibly moved. It
+  now comes at 4.8 s (`Trip.FadeAt`): the lurch, the lobby going dark, the shaft sliding past at
+  full speed and the first cable clank first. On the group's server, each screen fires
+  `Remotes.TripReady` once loaded, and the group is stood in floor 1's car mid-ride only when
+  every arrived screen has (at most `Trip.LoadMost`, 25 s, after the first arrives), so a phone
+  still loading no longer misses the last six seconds of the ride. The remote carries nothing;
+  a player can only mark their own screen ready.
+- **The Mannequin's first cut comes soon.** At the old odds (8 in 100 wander picks on floor 1)
+  the owner never saw it, and on floors 1 and 2 few Mannequins are loose at all. Until the power
+  has been cut once on a floor, a loose Mannequin's chance is at least `Breaker.ErrandFirst`
+  (half its picks), so the first cut comes within about half a minute of wandering after the
+  floor's 45 s of light; after that the floor's own odds (D-155) hold. Its signature move is met
+  on every floor that has a loose Mannequin.
+- **The coin count's coin is a picture.** A ViewportFrame draws at reduced resolution, so the 3D
+  coin looked fuzzy beside the sharp number. `art/coin/build.py --stage icon` renders the real
+  coin face on, a little turned, at 256 px on a clear background (`CoinIcon.png`), uploaded as an
+  image (`Coins.Icon`, ID in `art/coin/assets.json`); its spin as a coin lands is a flip (its
+  width by the turn's cosine). The flying coins stay 3D: they move and spin, and are small.
+- **The lobby's floor slab sat 7 studs into the cars** in the place's template (every other part
+  matched its spec), so it ran under each car's floor at the same height and the two flickered
+  as the camera moved ("the car floors' splotches"). Moved back onto its spec in Edit.

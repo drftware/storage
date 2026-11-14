@@ -330,7 +330,40 @@ def stage_renders():
     render.shoot(cam, os.path.join(SHEETS, "coin-near.png"), exposure=0.2)
 
 
-STAGES = {"textures": stage_textures, "export": stage_export, "renders": stage_renders}
+ICON = os.path.join(OUT, "CoinIcon.png")
+ICON_PX = 256  # the count's coin is at most about 120 px tall on a phone: this stays sharp
+# The coin as the count shows it: face on, turned a little so the rim and the reeded edge read
+# (degrees about the screen's up, then its across), as CoinView's ICON_TURN has it.
+ICON_YAW, ICON_TILT = -22.0, 8.0
+
+
+def stage_icon():
+    """The coin count's icon (CoinView): the coin face on, a little turned, lit as in the studio
+    sheet, on a clear background, square. A picture, not a 3D view, so it's as sharp as the text
+    beside it on every screen."""
+    kit.reset()
+    render.setup(128, (ICON_PX, ICON_PX))
+    sc = bpy.context.scene
+    sc.render.film_transparent = True
+    sc.render.image_settings.color_mode = "RGBA"
+    sc.cycles.use_adaptive_sampling = False
+    objs = build_all(baking=False)
+    ob = objs[K.SET]
+    ob.data.materials.append(kit.material())
+    studio = render.studio_rig()
+    for o in studio[1:]:  # the lights, not the sweep: nothing behind the coin
+        o.hide_render = False
+    # the coin lies face up; the camera looks straight down at it, the screen's up along +Y
+    ob.matrix_world = (Matrix.Rotation(math.radians(ICON_TILT), 4, "X")
+                       @ Matrix.Rotation(math.radians(ICON_YAW), 4, "Y"))
+    cam = render.camera((0.0, 0.0, 6.0), (0.0, 0.0, 0.0))
+    cam.data.type = "ORTHO"
+    cam.data.ortho_scale = 2 * K.R / 0.92  # the coin fills 92% of the square, a hair to spare
+    render.shoot(cam, ICON, exposure=-0.45)
+
+
+STAGES = {"textures": stage_textures, "export": stage_export, "renders": stage_renders,
+          "icon": stage_icon}
 
 if __name__ == "__main__":
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []

@@ -62,6 +62,21 @@ for number = 1, 200 do
 	last = c
 end
 ok(Breaker.errand(10, true, 1e6) > Breaker.errand(1, true, 1e6), "keener higher up")
+-- before the floor's first cut
+ok(Breaker.errand(1, true, 1e6, false) == Breaker.ErrandFirst, "floor 1's first cut comes soon")
+ok(Breaker.errand(1, true, 1e6, true) == Breaker.ErrandChance, "after it, floor 1's own chance")
+ok(Breaker.errand(1, false, 1e6, false) == 0, "never while thrown, first cut or not")
+ok(
+	Breaker.errand(1, true, Breaker.ErrandGap - 0.01, false) == 0,
+	"a floor still gets its lit start before the first cut"
+)
+ok(Breaker.ErrandFirst > Breaker.ErrandChance and Breaker.ErrandFirst <= 1, "the first is keener")
+for number = 1, 40 do
+	ok(
+		Breaker.errand(number, true, 1e6, false) >= Breaker.errand(number, true, 1e6, true),
+		`floor {number}: never less keen before the first cut`
+	)
+end
 
 local floors, walks, throws = 0, 0, 0
 local function checkFloor(seed: number, number: number)

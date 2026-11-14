@@ -57,6 +57,8 @@ local CHIP = 0.72 -- the count's height as a share of the top bar's row
 local CHIP_BARE = 34 -- points tall when there's no top bar
 local FLYER = 1.5 -- a flying coin's size as it sets off, against the count's coin
 local SPIN_BACK = 0.4 -- seconds the count's coin spins once as a coin lands in it
+local ICON_FILL = 0.86 -- of the count's height the coin's picture fills
+local ICON_EDGE = 0.08 -- the narrowest the picture gets as it flips: the coin's edge, never gone
 local TICKS = 3 -- tick sounds taken in turn, so a quick run of landings never cuts one short
 local TAU = 2 * math.pi
 local EDGE = CFrame.Angles(math.pi / 2, 0, 0) -- a coin on its edge, face to the front (+Z)
@@ -202,11 +204,22 @@ function CoinView.new(): Brix.System
 	local pop = Instance.new("UIScale")
 	pop.Parent = chip
 
-	local icon = Instance.new("ViewportFrame")
+	-- the coin: a picture (Coins.Icon), not a 3D view, so it's as sharp as the number; it sits
+	-- in a square of its own so its flip as a coin lands never moves the number
+	local icon = Instance.new("Frame")
 	icon.Name = "Coin"
 	icon.LayoutOrder = 1
+	icon.BackgroundTransparency = 1
 	icon.Parent = chip
-	local iconCoin: BasePart? = nil
+	local iconImage = Instance.new("ImageLabel")
+	iconImage.Name = "Face"
+	iconImage.AnchorPoint = Vector2.new(0.5, 0.5)
+	iconImage.Position = UDim2.fromScale(0.5, 0.5)
+	iconImage.Size = UDim2.fromScale(ICON_FILL, ICON_FILL)
+	iconImage.BackgroundTransparency = 1
+	iconImage.Image = Coins.Icon
+	iconImage.ScaleType = Enum.ScaleType.Fit
+	iconImage.Parent = icon
 
 	local number = Instance.new("TextLabel")
 	number.Name = "Number"
@@ -739,10 +752,6 @@ function CoinView.new(): Brix.System
 	function system.start(_: any, _context: Brix.Context)
 		gui.Parent = me:WaitForChild("PlayerGui")
 		layout()
-		local coin = template()
-		if coin then
-			iconCoin = picture(icon, coin, 0.86)
-		end
 		local camera = Workspace.CurrentCamera
 		if camera then
 			table.insert(
@@ -846,11 +855,12 @@ function CoinView.new(): Brix.System
 			end
 		end
 		local spun = now - spinAt
-		local c = iconCoin
-		if c and spun < SPIN_BACK + 0.05 then
+		if spun < SPIN_BACK + 0.05 then
+			-- the picture flips once round, as a coin spun on a table: narrowed by the turn
 			local p = math.min(spun / SPIN_BACK, 1)
 			local e = 1 - (1 - p) ^ 3
-			c.CFrame = CFrame.Angles(0, e * TAU, 0) * ICON_TURN * EDGE
+			local across = math.max(math.abs(math.cos(e * TAU)), ICON_EDGE)
+			iconImage.Size = UDim2.fromScale(ICON_FILL * across, ICON_FILL)
 		end
 		-- the count catches up with the server's when nothing is flying to it
 		local goal = target

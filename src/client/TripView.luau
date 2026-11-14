@@ -45,6 +45,9 @@ local TEXT_SHOWN = 0.35
 -- this screen; seconds to wait for that at most before lifting the cover anyway.
 local THERE = 8
 local THERE_MOST = 2
+-- Seconds to wait at most for the server's ready remote on a group's own server (it's made as
+-- the server becomes one, before it says so).
+local READY_WAIT = 20
 -- Frames the camera is turned on as the cover lifts, so a camera that resets a frame late still
 -- ends up facing the way you were stood (as LobbyView's turn).
 local TURN_FRAMES = 3
@@ -296,6 +299,18 @@ function TripView.new(): Brix.System
 		c.text.TextTransparency = TEXT_SHOWN
 		c.gui.Parent = playerGui
 		cover = c
+		-- tell the server once this screen has loaded, so it stands the group in the car only
+		-- when this screen can show the last of the ride
+		task.spawn(function()
+			if not game:IsLoaded() then
+				game.Loaded:Wait()
+			end
+			local remotes = ReplicatedStorage:WaitForChild(Trip.RemoteFolder, READY_WAIT)
+			local r = remotes and remotes:WaitForChild(Trip.ReadyRemote, READY_WAIT)
+			if r and r:IsA("RemoteEvent") then
+				r:FireServer()
+			end
+		end)
 		local function seen()
 			local at = player:GetAttribute(Trip.ArrivedAttribute)
 			if typeof(at) == "CFrame" then

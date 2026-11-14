@@ -2,5 +2,9 @@
   "Coin": {
     "assetId": 88101556754832,
     "sha256": "0d2754d8c5f42a1d35df747cb5083a9da8581172c53a1dbbe555df9c85619210"
+  },
+  "Icon": {
+    "assetId": 76801781393109,
+    "sha256": "edb0f9134e35043da22ead76848fca33281e92c65846f41ecc05710e4df8f3e2"
   }
 }

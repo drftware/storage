@@ -19,8 +19,10 @@
 	test server whose first player came on a trip):
 	- Floor 1 is laid the moment it starts (Climbs' `ready`). Players arrive with black screens
 	  (TripView). The first one's data says whom to wait for; once they're all here, or
-	  `Trip.Wait` after the first, each is streamed floor 1's car and they're stood in it
-	  `Trip.Since` into its ride (Climbs' `arrive`); their screens open on the shaft sliding past.
+	  `Trip.Wait` after the first, and every screen here has said it's loaded
+	  (`Trip.ReadyRemote`, at most `Trip.LoadMost`), each is streamed floor 1's car and they're
+	  stood in it `Trip.Since` into its ride (Climbs' `arrive`); their screens open on the shaft
+	  sliding past.
 	- Anyone after that (a slow phone; someone who respawned at the front office) is stood on the
 	  floor the climb is on, in front of its car (Climbs' `arrival`), once there's one to stand on.
 	- Once that climb is over the group is back in its lobby car (`home`, L-08e2, LobbyCars) and
@@ -163,6 +165,8 @@ function Trips.new(): Trips
 	local boarding = false -- the group is being stood in its car
 	local rodeAt: number? = nil -- server time they were
 	local placed: { [Player]: true } = {} -- stood in the climb at least once
+	local loaded: { [Player]: true } = {} -- their screen said it has loaded (Trip.ReadyRemote)
+	local ready: RemoteEvent? = nil
 	local placing: { [Player]: true } = {} -- being stood on the climb's floor now
 	local spawnAt: Vector3? = nil -- the front office's spawn
 	local folder: Folder? = nil
@@ -501,6 +505,24 @@ function Trips.new(): Trips
 			return
 		end
 		isOwn = true
+		-- a screen that has loaded says so (it carries nothing to check): the group waits for
+		-- it, so a slow phone opens on the ride rather than on a car already open
+		local remotes = ReplicatedStorage:FindFirstChild(Trip.RemoteFolder)
+		if not remotes then
+			remotes = Instance.new("Folder")
+			remotes.Name = Trip.RemoteFolder
+			remotes.Parent = ReplicatedStorage
+		end
+		local r = Instance.new("RemoteEvent")
+		r.Name = Trip.ReadyRemote
+		r.Parent = remotes
+		ready = r
+		table.insert(
+			connections,
+			r.OnServerEvent:Connect(function(player: Player)
+				loaded[player] = true
+			end)
+		)
 		Workspace:SetAttribute(Trip.OwnAttribute, true)
 		local f = Instance.new("Folder")
 		f.Name = "GroupClimb"
@@ -539,7 +561,7 @@ function Trips.new(): Trips
 				connections,
 				Players.PlayerRemoving:Connect(function(player: Player)
 					resolve(player, true) -- a rider leaving the lobby went on their trip
-					placed[player], placing[player] = nil, nil
+					placed[player], placing[player], loaded[player] = nil, nil, nil
 					local i = table.find(here, player)
 					if i then
 						table.remove(here, i)
@@ -633,9 +655,13 @@ function Trips.new(): Trips
 			if not Trip.ready(d.group, ids, firstAt, now()) then
 				return
 			end
+			local waited = now() - (firstAt :: number)
 			for _, player in here do
-				if not rootOf(player) and now() < (firstAt :: number) + Trip.Wait then
+				if not rootOf(player) and waited < Trip.Wait then
 					return -- a character still loading, while there's time to wait for it
+				end
+				if not loaded[player] and waited < Trip.LoadMost then
+					return -- a screen still loading, which would miss the ride
 				end
 			end
 			boarding = true
@@ -655,6 +681,11 @@ function Trips.new(): Trips
 			end
 			table.clear(threads)
 			table.clear(sending)
+			if ready then
+				ready:Destroy()
+				ready = nil
+			end
+			table.clear(loaded)
 			if folder then
 				folder:Destroy()
 				folder = nil

@@ -271,6 +271,31 @@ function Elevators.new(): Elevators
 		})
 	end
 
+	-- The gate starts to shut on a floor with someone still in the car: they're stood on the
+	-- landing in front of it, facing the hall, side by side (Departure.outAcross), and the gate
+	-- folds shut behind them. A car that shuts here goes nowhere until the next code, so nobody is
+	-- ever shut in it.
+	local function stepOut(entry: Entry)
+		local inside: { Player } = {}
+		for _, player in Players:GetPlayers() do
+			local root = rootOf(player)
+			if root and entry.car:contains((root.Position :: any) :: vector) then
+				table.insert(inside, player)
+			end
+		end
+		local pivot = entry.model:GetPivot()
+		for i, player in inside do
+			local character = player.Character
+			if character then
+				local across = Departure.outAcross(i, #inside)
+				character:PivotTo(pivot * CFrame.new(across, Departure.OutUp, -Departure.OutFront))
+			end
+		end
+		if STUDIO and #inside > 0 then
+			print(`Elevators: {#inside} stepped out as the gate shut on floor {entry.number}`)
+		end
+	end
+
 	-- A press of `key` on `elevator`'s keypad by `player`: checked, then done.
 	local function press(player: Player, elevator: unknown, key: unknown)
 		-- the payload's types: an elevator of ours, a key the keypad has
@@ -503,6 +528,7 @@ function Elevators.new(): Elevators
 		entry.model:SetAttribute(Departure.Attribute, nil)
 		entry.model:SetAttribute(Departure.AboardAttribute, nil)
 		if entry.gateTo < 1 then
+			stepOut(entry)
 			moveGate(entry, 1, now())
 		end
 		write(entry, "Rest", "")

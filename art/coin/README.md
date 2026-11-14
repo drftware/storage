@@ -36,6 +36,15 @@ anchored (asset 88101556754832, imported Nov 14, S1-04a2). Its size came in exac
 0.8), its SurfaceAppearance in AlphaMode Overlay; the server sets each clone's collision, query
 and shadow off, and the client's count and flying coins show it in a ViewportFrame.
 
+## The count's icon
+
+`--stage icon` renders the coin face on, turned 22 degrees and tilted 8 (as the count showed the
+3D coin), lit by the studio rig's lights with no sweep, on a clear background, 256 px square:
+`out/CoinIcon.png`. A picture rather than a ViewportFrame so it's as sharp as the number beside
+it (D-158). Uploaded through the Studio MCP's `upload_image` (docs/STUDIO.md, "A 2D picture from
+the Studio MCP"); the ID is `Icon` in `assets.json` and `Coins.Icon` in the game. A changed
+render needs a new upload and both IDs changed.
+
 ## Rebuild
 
 ```

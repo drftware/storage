@@ -33,6 +33,8 @@
 #   scripts/art.sh coin                 the coin: its bake, FBX, Specs module (the coin and its
 #                                       piles), look sheets (the floor sheet needs the boxes built)
 #   scripts/art.sh coin export          just the coin's FBX and Specs module
+#   scripts/art.sh coin icon            the coin count's icon, art/coin/out/CoinIcon.png (upload it
+#                                       by hand: art/coin/README.md, "The count's icon")
 #   scripts/art.sh battery              the battery: its bake, FBX, Specs module, look sheets (the
 #                                       floor sheets need the boxes built; about a minute)
 #   scripts/art.sh battery export       just the battery's FBX and Specs module

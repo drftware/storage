@@ -187,6 +187,11 @@ Breaker.ErrandPerFloor = 0.02
 -- The most it ever gets (floor 12 up, about every 48 seconds): most of its wanders are still
 -- about you.
 Breaker.ErrandMost = 0.3
+-- Until the power has been cut once on a floor, the chance at each pick is at least this: the
+-- first loose Mannequin cuts it within half a minute or so of wandering (owner, Nov 14: at the
+-- old odds it seldom happened at all on the first floors, where few Mannequins are loose). After
+-- the first cut, the floor's own chance above.
+Breaker.ErrandFirst = 0.5
 -- Seconds after the power comes on (the floor laid, or switched back) before any Mannequin may
 -- head for the box: the floor gets a lit start, and a switch back on buys a real breather.
 Breaker.ErrandGap = 45
@@ -196,13 +201,18 @@ Breaker.ErrandStand = 2.6
 
 --- The chance a Mannequin on floor `floor` heads for its box as it picks where to wander next:
 --- 0 while the box is thrown (`on` false) or within `ErrandGap` seconds (`sinceOn`) of the power
---- coming on, else `ErrandChance` and `ErrandPerFloor` a floor up to `ErrandMost`.
-function Breaker.errand(floor: number, on: boolean, sinceOn: number): number
+--- coming on, else `ErrandChance` and `ErrandPerFloor` a floor up to `ErrandMost`; at least
+--- `ErrandFirst` until the power has been cut once on the floor (`cut` false).
+function Breaker.errand(floor: number, on: boolean, sinceOn: number, cut: boolean?): number
 	if not on or sinceOn < Breaker.ErrandGap then
 		return 0
 	end
 	local keen = Breaker.ErrandChance + Breaker.ErrandPerFloor * math.max(floor - 1, 0)
-	return math.min(keen, Breaker.ErrandMost)
+	keen = math.min(keen, Breaker.ErrandMost)
+	if cut == false then
+		return math.max(keen, Breaker.ErrandFirst)
+	end
+	return keen
 end
 
 --- Where a Mannequin stands to throw a box hung at (`x`, `z`) on its floor, looking into the hall

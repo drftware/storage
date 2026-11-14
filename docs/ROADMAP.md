@@ -1634,6 +1634,12 @@ Done when a team that has lost its lights goes looking for the breaker without b
     across the floor by players and keepers (`Keepers:hear`), a padlock holding it. Its unit
     leaves `sleepers`. A Studio dev path that skips the minutes; verify in Play on the dev floor
     that one wakes, pounds and bursts an unpadlocked door after its time, Output clean.
+- [x] **Owner's fixes, Nov 14 (D-158).** Players still in a car as its gate shuts on a floor are
+  stood out on the landing; the trip's black waits until the car is seen climbing, and the
+  group's server waits for each screen to load before standing them in the ride; a floor's first
+  power cut comes soon once a Mannequin is loose; the coin count's coin is a sharp picture; the
+  lobby's floor slab no longer runs under the cars. Verified in Studio Play with DevTrip
+  "Arrive"; the phone trip is the owner's (`OWNER.md`).
 - [ ] **S2-04 A wrong code lets monsters out.** One unit with a monster in it rolls up by
   itself on the first wrong code, three on the second, five after; the hall lights go out for
   the alarm; every loose monster heads for the keypad; the keypad locks 3.5, 7, then 14 seconds.
@@ -1732,6 +1738,9 @@ that moves walls, and the dolly.
 
 ## Polish waiting for a slot
 
+- **The coin picture (D-158):** the flying coins (the pour, a buy) are still 3D in
+  ViewportFrames, fine in motion; if they read soft beside the count's new picture, give them
+  the picture too (a 2D flip as they fly).
 - **The buy (S1-10c1, S1-10c2b):** the stock vanishes at the cut rather than standing dark in
   the coils; a battery's label may face away (unchecked); the flap could knock a second time as
   the thing pushes out through it; the tool's name over the slots shows as the server gives it,

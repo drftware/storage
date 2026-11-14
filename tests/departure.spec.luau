@@ -201,6 +201,22 @@ do
 	ok(at4 == nil, "a broken value: no leaving")
 end
 
+-- stepping out of a car whose gate shuts on a floor
+do
+	ok(Departure.outAcross(1, 1) == 0, "one alone stands in the middle")
+	ok(Departure.outAcross(1, 2) == -Departure.outAcross(2, 2), "two stand either side")
+	for n = 1, 8 do
+		for i = 1, n do
+			local a = Departure.outAcross(i, n)
+			ok(math.abs(a) <= Departure.OutMost, `{i} of {n}: inside the opening`)
+			if i > 1 then
+				ok(a >= Departure.outAcross(i - 1, n), `{i} of {n}: in order`)
+			end
+		end
+	end
+	ok(Departure.OutFront > 0 and Departure.OutUp > 0, "out in front of the gate, on the floor")
+end
+
 print(`departure: {checks - failures}/{checks} checks passed`)
 if failures > 0 then
 	error(`{failures} failed`)

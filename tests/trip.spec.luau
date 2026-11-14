@@ -198,6 +198,9 @@ do
 	ok(Trip.Since >= Ride.Wait + Ride.Speedup, "they open at full speed")
 	ok(Ride.arrives() - Trip.Since >= 4, "with a few seconds of ride still to feel")
 	ok(Trip.GiveUp > Trip.Send, "the give-up is after the send")
+	ok(Trip.FadeAt >= Ride.cruising(), "the car is seen at full speed before the black")
+	ok(Trip.LoadMost >= Trip.Wait, "a loading screen is waited for at least as long as a body")
+	ok(Trip.LoadMost + 5 < Trip.CoverMost, "the cover never lifts on its own before the ride")
 	ok(Trip.CoverMost > Trip.Wait + 10, "the cover's limit outlasts the wait for friends")
 	ok(#Trip.CoverText > 0 and #Trip.CoverText <= 12, "a few words under the black")
 end

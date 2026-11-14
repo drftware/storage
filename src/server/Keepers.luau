@@ -214,6 +214,7 @@ type OnFloor = {
 	boxAt: vector, -- the box on the wall, the floor's coordinates: a Mannequin faces it there
 	boxStand: vector, -- where a Mannequin stands to throw it (`Breaker.stand`)
 	boxLooked: number, -- when it last looked for the box, the server's clock
+	cut: boolean, -- a Mannequin has thrown the box on this floor (Breaker.ErrandFirst until then)
 	-- seconds since the first player stood on the floor (S2-03b), -1 until anyone has: what
 	-- `Waking` counts its waves from
 	here: number,
@@ -728,7 +729,7 @@ function Keepers.new(): Keepers
 		local powered, since = b:power(box)
 		local chance = if devErrand and powered
 			then 1
-			else Breaker.errand(on.floor.number, powered, since)
+			else Breaker.errand(on.floor.number, powered, since, on.cut)
 		Keeper.offer(k, on.boxStand, on.boxAt, chance)
 	end
 
@@ -742,6 +743,7 @@ function Keepers.new(): Keepers
 		if not (box and b) or not b:throw(box) then
 			return
 		end
+		on.cut = true
 		devErrand = false
 		if TRACE then
 			print(
@@ -1273,6 +1275,7 @@ function Keepers.new(): Keepers
 			boxAt = vector.zero,
 			boxStand = vector.zero,
 			boxLooked = -math.huge,
+			cut = false,
 			here = -1,
 			woken = 0,
 			waking = {},

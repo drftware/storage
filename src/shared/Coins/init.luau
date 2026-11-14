@@ -19,6 +19,10 @@ local Coins = {}
 
 Coins.Tag = "CoinPile" -- a pile of coins lying on a unit's floor
 Coins.Template = "Coin" -- the coin's MeshPart in ReplicatedStorage.Props
+-- The coin count's icon (CoinView): the coin rendered face on by art/coin/build.py's icon stage
+-- (CoinIcon.png, uploaded through Studio; its ID in art/coin/assets.json). A picture rather than a
+-- 3D view, so it stays as sharp as the number beside it.
+Coins.Icon = "rbxassetid://76801781393109"
 -- On each Player: their count this climb. Nil outside a climb, so the count shows only in one.
 Coins.Attribute = "Coins"
 Coins.CountAttribute = "CoinCount" -- on a pile: how many coins are in it

@@ -64,9 +64,11 @@ Trip.Version = 3
 -- The lobby's bays, numbered 1 to this from left to right (Lobby.Specs.Bays has one per car).
 Trip.Bays = 6
 
--- Seconds into the ride that the screens start to fade to black: the slam has rung out and the
--- car has started to move (Ride.Wait), so the trip feels like the ride going on.
-Trip.FadeAt = 1.6
+-- Seconds into the ride that the screens start to fade to black: the lurch, the lobby going dark
+-- beyond the gate, the shaft wall sliding down past it at full speed and the first cable clank
+-- (Ride.Clanks[1]) are all seen first, so you feel the car carry you up before the black (owner,
+-- Nov 14: on a phone, the black came before the car had visibly moved).
+Trip.FadeAt = 4.8
 -- Seconds the fade to black takes.
 Trip.Fade = 0.6
 -- Seconds into the ride that the server sends the riders: their screens are black by then.
@@ -79,6 +81,14 @@ Trip.Since = Ride.arrives() - 6.2
 -- Seconds the group's server waits for the rest of the group after the first arrives. A phone
 -- that loads slower than this is stood on floor 1 as the car opens, as if it had just stepped out.
 Trip.Wait = 10
+-- Seconds after the first arrives that the group's server waits at most for every arrived
+-- screen to say it's loaded (`ReadyRemote`) before standing them in the car: a phone still on
+-- its loading screen would miss the last of the ride. Past this they're stood in it anyway.
+Trip.LoadMost = 25
+-- The remote a screen on a group's own server fires once it has loaded (it carries nothing),
+-- in ReplicatedStorage's `RemoteFolder`.
+Trip.RemoteFolder = "Remotes"
+Trip.ReadyRemote = "TripReady"
 -- Seconds the lobby waits for a rider to leave before it calls their trip failed. A teleport
 -- Roblox takes leaves within a few seconds; one it drops can say nothing.
 Trip.GiveUp = 15
