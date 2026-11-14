@@ -4277,3 +4277,34 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
   "electrical" without a word.
 - The game turns the lever with `CFrame.Angles(math.rad(a), 0, 0)` about `Specs.Pivot`; S2-02b's
   one-second hold drives `a` from `Specs.Down` to `Specs.Up`.
+
+## D-154 Throw the breaker and switch it back: the server owns it, the lights come back on (S2-02b, Nov 14)
+
+- Where it hangs (`Breaker.spots`): a plain wall along a straight hall, or a dead end's face,
+  never in the lobby's hall (from the lobby to the first fork), so switching it back means going
+  out into the dark floor. A junction's walls are the junction piece's own, so they're left out.
+  The deal draws the spot last (`deck.breaker`), so every seed keeps the floor it had. Over 480
+  floors in the spec, none lacked a spot.
+- Thrown (`Breakers:throw`): every power zone on its floor cut, so every hall light goes blind
+  (`MotionLights:cut`); the elevator has its own light and keeps it. Until S2-02c's Mannequin,
+  only the Studio dev command throws it (Workspace's `ThrowBreakers`).
+- Switching it back is the same one-second hold as cutting a friend free, judged on the server
+  (`Breaker.judge`: the hold's length seen by the server, reach to the grip, the presser up and
+  not wrapped, one press per half second). A refused hold shows no words: the lever falls back
+  under your hand, which says it (no obvious refusal text). Nobody can throw it by hand yet;
+  S2-06's light-sticking monster will need "off and on again", so the button can grow an Off.
+- The lights come back on (an untested bet, in OWNER.md): the moment the power catches, every
+  fixture on the floor lights at once, as real motion lights do when their power returns, then
+  goes dark on its own 7.5 seconds (`MotionLights:flash`, the alarm's quiet flash: keepers aren't
+  sent to look). Coming back dark would make the payoff invisible from the box. A side effect:
+  a Mannequin standing under a light is frozen for those seconds.
+- The feel: the lever slams down with a heavy clunk heard across the floor (a Pro Sound Effects
+  circuit breaker, slowed), the camera kicking for whoever is near; the pilot lamp red Neon,
+  pulsing slowly, with one short red light 1.6 studs out in front washing the box and the wall
+  around it. Held, the lever creeps up just past half way under the hand (every friend sees it:
+  the server marks the box `Straining`); caught, it snaps up with a click, the lamp turns a calm
+  green and a low mains hum swells and dies over three seconds.
+- The glow's numbers: Studio's eye adapts to the dark, so a lone light in a black hall gets
+  brighter on screen over a few seconds. At range 6 the hall went red end to end; at range 4,
+  brightness 1.5 only the box and its patch of wall do. It's on only while the box is thrown,
+  when every hall light on the floor is out, so the floor's light count only drops.

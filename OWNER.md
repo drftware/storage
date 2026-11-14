@@ -99,13 +99,22 @@ and off, the invite sheet opening with your friends (no invite sent).
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
 
-## Now: look at the breaker box (S2-02a, built Nov 14, D-153; judged in Studio Edit on a hall wall)
+## Now: throw the breaker and switch it back (S2-02a-b, built Nov 14, D-153, D-154; seen in Play)
 
-Nothing works yet: it's the box the next ticket wires up. Its sheets are in `art/sheets/`
-(`breaker-studio.png`, `breaker-dark.png`).
-1. Look at the sheets, or `ReplicatedStorage.Props.Breaker` in Studio. Look for: does it read as
-   "the building's power" from across a hall, and does the red grip read clearly up or down?
-2. Decide (starting guess, D-153): the lamp green when the power's on, red when it's off.
+The box hangs on every floor now, somewhere new each climb, never in the lobby's hall. Nothing
+throws it in a real climb until S2-02c's Mannequin, so test it in Studio.
+1. In Studio Play, walk the test floor, then in the Server's command bar run
+   `workspace:SetAttribute("ThrowBreakers", true)`. Look for: one heavy clunk wherever you
+   stand, every hall light dead, and moving under them does nothing.
+2. Find the box by its red lamp (STUDIO.md "The breaker" says where it is on the test floor).
+   Look for: does the pulsing red lamp and its faint red wash pull you to it from down a dark
+   hall, on a phone-sized window too?
+3. Hold the lever's button. Look for: the lever creeping up under your hand, then a snap, a
+   click, the lamp green, a low hum swelling and dying, and every light on the floor coming on at
+   once before each goes dark on its own.
+4. Decide (starting guesses, D-154): the lights all coming back on (an untested bet: real motion
+   lights do; coming back dark would show nothing from the box); the lamp as glowing Neon, red
+   off and green on; one second to hold, as cutting a friend free.
 
 ## Now: sleepers are placed with the floor (S2-01, built Nov 14, D-152; seen in Play)
 

@@ -1602,13 +1602,16 @@ Done when a team that has lost its lights goes looking for the breaker without b
     safety-red grip; a pilot lamp the game lights; a lightning-bolt sticker; a conduit to the
     cap. `ReplicatedStorage.Props.Breaker`, `Breaker/Specs.luau`; judged on a hall wall in
     Studio Edit under a stand-in torch, from across and down the hall.
-  - [ ] **S2-02b Throw it and switch it back.** The floor places one breaker per climb (drawn
-    last in the floor's deal, so seeds keep their floors). Thrown: the clunk, every hall light
-    out and deaf to motion; a one-second hold brings them back with a hum; the elevator keeps
-    its light. Pure rules first (Lune).
+  - [x] **S2-02b Throw it and switch it back.** (S2-02b, Nov 14, D-154) One box per floor on a
+    plain wall or a dead end, never in the lobby's hall, drawn last in the deal (`Breaker`,
+    `Breakers`, `BreakerView`). Thrown: the clunk across the floor, every hall light blind, the
+    red lamp pulsing with a short red glow; a one-second hold judged on the server brings the
+    lights back on all at once, the lever snapping up, a click, the hum, the lamp green. Seen
+    in Studio Play on the dev floor with the dev command (`ThrowBreakers`).
   - [ ] **S2-02c The Mannequin throws it.** A loose Mannequin with no light on it sometimes
     heads for the breaker and throws it, more often higher up; the keepers' brain gains the
-    errand (D-064).
+    errand (D-064). `Breakers:throw(box)` and `Breakers:within(floor)` are its handles; the
+    clunk should be heard by the keepers too (`Keepers:hear`).
 - [ ] **S2-03 Sleeping monsters wake.** After four minutes on floors 1 and 2 (six above), three
   sleepers wake and pound on their doors, heard across the floor; three more every two minutes;
   sooner and more higher up. One pounding breaks out after 90 seconds unless its door is

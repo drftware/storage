@@ -20,6 +20,7 @@
 	out of the bag depends on the order. Odds are out of 100 and live here with what they do.
 ]]
 
+local Breaker = require("./Breaker")
 local Floor = require("./Floor")
 
 type Floor = Floor.Floor
@@ -74,6 +75,9 @@ export type Deck = {
 	-- slot index: all an ordinary unit holds, or standing with a padlocked unit's find or tool.
 	-- `Deal.open` hands each back as its door first lifts.
 	sleepers: { [number]: string },
+	-- where the floor's one breaker box hangs (S2-02b), or nil on a floor with nowhere outside
+	-- the lobby's hall to hang it (`Breaker.spots`)
+	breaker: Breaker.Spot?,
 	bag: { Tool }, -- the tools left in the bag, the next one last
 	random: Random,
 }
@@ -534,6 +538,8 @@ function Deal.new(floor: Floor, random: Random): Deck
 			deck.sleepers[i] = keeper
 		end
 	end
+	-- The breaker box (S2-02b), drawn last, so placing it moved nothing else a seed lays.
+	deck.breaker = Breaker.pick(Breaker.spots(floor), random:nextNumber())
 	return deck
 end
 

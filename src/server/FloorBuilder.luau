@@ -25,6 +25,7 @@
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Breaker = require(ReplicatedStorage.Shared.Breaker)
 local CorridorKit = require(ReplicatedStorage.Shared.CorridorKit)
 local Deal = require(ReplicatedStorage.Shared.Deal)
 local Elevator = require(ReplicatedStorage.Shared.Elevator)
@@ -503,6 +504,30 @@ local function piece(laying: Laying, index: number, parent: Instance): (Folder, 
 	return folder, count
 end
 
+--[[
+	The floor's breaker box (S2-02b) at `face` (a wall's face, looking into the hall): a copy of
+	`ReplicatedStorage.Props.Breaker`, the power on, tagged for the server's Breakers with the
+	floor's power zones to cut. Warns and hangs none if the place lacks the template.
+]]
+local function hangBreaker(floor: Floor.Floor, face: CFrame, parent: Instance)
+	local props = ReplicatedStorage:FindFirstChild("Props")
+	local template = props and props:FindFirstChild("Breaker")
+	if not (template and template:IsA("Model")) then
+		warn("FloorBuilder: no ReplicatedStorage.Props.Breaker, so this floor has no breaker")
+		return
+	end
+	local box = template:Clone()
+	box:PivotTo(face)
+	local zones: { string } = {}
+	for _, zone in Breaker.zones(floor) do
+		table.insert(zones, FloorBuilder.powerZone(floor.number, zone))
+	end
+	box:SetAttribute(Breaker.ZonesAttribute, table.concat(zones, ","))
+	box:SetAttribute(Breaker.OnAttribute, true)
+	box:AddTag(Breaker.Tag)
+	box.Parent = parent
+end
+
 -- The tops' map (L-13b2c) on `container`, for the crawl along them: every screen and the server
 -- find it by its tag and read where the steel is (`Tops`).
 local function publishTops(
@@ -691,6 +716,10 @@ function FloorBuilder.lay(
 		local _, count = piece(laying, index, model)
 		laid.units += count
 		laying.breathe()
+	end
+	local spot = deck and deck.breaker
+	if spot then
+		hangBreaker(floor, origin * faceOf(spot.x, spot.z, spot.facing), model)
 	end
 	endSlice()
 	laid.seconds = os.clock() - started

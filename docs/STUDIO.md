@@ -1958,3 +1958,18 @@ verified: a doc page, Studio, or "untested".
   attribute (`"Top|3|402|<id>:Out:3:42,1:Kept:2:12,2:Left:1:0"`). The board rebuilds and counts.
   The first-person camera takes the view back each frame; a capture through the character's own
   eyes from the front row frames the whole board.
+
+## The breaker (S2-02b, Nov 14)
+
+- **Throwing it in Play:** the dev floor (`Workspace.DevCorridor.Floor3`) has its box at
+  (-100, 0, -702), facing +X. From the Server's command bar, `workspace:SetAttribute(
+  "ThrowBreakers", true)` throws every box (Studio only; it resets itself). Read the hall lights'
+  `Light` attribute under the floor: all `Blind` once thrown. Stand the character 3.5 studs in
+  front of the grip from the Server, then from the Client point a Scriptable camera at
+  `Breaker.PrimaryPart.BreakerGrip` and `InputHoldBegin`, wait 1.2 s, `InputHoldEnd` (the
+  prompt recipe above). The box's `PowerOn` turns true and every light reads `Lit`.
+- **Studio's eye adapts to the dark** (S2-02b): a lone light in a black hall looks brighter in
+  each capture for several seconds after it comes on, so judge a light's look only after about
+  8 seconds, and keep a light meant to stay local short-ranged (range 6 washed a whole hall red
+  once adapted; range 4 kept it on the box). A PointLight right on a surface only grazes it:
+  hang it a stud or two out in front.
