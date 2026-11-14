@@ -4822,3 +4822,28 @@ crowds it). The ticket read "a bit" as about a third.
   shares; the Mannequin's Pose keeps its own older copy for now (HANDOFF Queue).
 - **Default (OWNER.md):** the carried find in the sheets is the teddy; the hall shot is a plain
   grey hall in Blender. The real hall at phone size is S2-06a2's.
+
+## D-176 The Packrat in the place: a rig like the Mannequin's, the find behind its forearms (S2-06a2, Nov 14)
+
+- **Into the place the Mannequin's way.** The FBX (asset 79124901483193) arrived as fifteen
+  MeshParts turned 94 degrees about Y, every pivot on the floor between its feet, each with its
+  SurfaceAppearance. `Packrat.prepare` adds the anchored HumanoidRootPart, R15's RigAttachments
+  and Motor6Ds, makes the parts massless, collision-free and queryable, and paints each part's
+  fallback colour by what it's made of (blanket grey, skin pale), so even with no maps the arms
+  stay the only pale thing on it. The template stands `Still` at `ReplicatedStorage.Keepers.Packrat`.
+- **Its own module, not a shared keeper body.** `Packrat/init.luau` repeats the Mannequin's
+  prepare, pose and rest on the shared `Rig.luau` math rather than folding both into one module:
+  the Mannequin's code is live and tested in Play, and a shared body module is a refactor for
+  when a third jointed monster arrives. `transforms` is keyed by pose name until S2-06a3 adds the
+  walks as frames for a screen to step through.
+- **The find sits behind the forearms, not in them.** Judged in Studio with a real boombox at the
+  carry point, the find's middle sat right where the forearms cross, so the find swallowed both
+  pale forearms; a dark find would have hidden the very knot that tells full from empty. Measured
+  by rays in Studio, the chest's front is 0.58 ahead of the torso's middle and the forearms' backs
+  about 1.35, so `CARRY` moved from 1.22 to 0.95 ahead: a find up to about 0.7 deep now sits
+  between chest and forearms, and the pale forearms cross its front. The Lune spec now checks
+  each forearm passes at least 0.25 ahead of the find's middle (it failed on the old point).
+- **`carry(model)` reads the UpperTorso's CFrame**, so the find follows whatever pose the body is
+  in: in Edit by `pose`, on a screen by its joints' Transforms. On the server its joints stay at
+  rest, so S2-06b decides where the server keeps a carried find. Deeper finds (a television)
+  will still meet the forearms: S2-06b seats each by its own depth or accepts it.

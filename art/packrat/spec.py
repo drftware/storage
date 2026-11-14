@@ -132,9 +132,11 @@ JOINTS = [
 # HumanoidRootPart, R15's invisible root: its centre and size (x, y, z Blender).
 ROOT_PART = ((0.0, 0.0, 3.90), (2.0, 1.0, 2.0))
 
-# Where a carried find's middle sits, on the UpperTorso at rest: between its chest and its hugging
-# forearms (S2-06b welds the find here; the sheets stand one there).
-CARRY = (0.0, -1.22, 4.95)
+# Where a carried find's middle sits, on the UpperTorso at rest: in the gap between its chest's
+# front (0.58 ahead of the torso's middle) and its hugging forearms' backs (about 1.35 ahead),
+# measured in Studio (S2-06a2), so a find up to about 0.7 deep sits behind the pale forearms and
+# never hides them (S2-06b welds the find here; the sheets stand one there).
+CARRY = (0.0, -0.95, 4.95)
 
 # The shapes the poses are checked against (tests/packrat.spec.luau): capsules a little inside
 # each part's skin, (a, b, radius), left side.

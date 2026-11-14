@@ -96,10 +96,15 @@ local function stands(name: string, pose: Rig.Pose)
 	end
 end
 
-local function hand(placed: { [string]: Rig.Transform }, side: string): { number }
-	local c = Specs.Capsules[side .. "Hand"][1]
-	local a, b = Rig.apply(placed[side .. "Hand"], c.A), Rig.apply(placed[side .. "Hand"], c.B)
+-- The middle of a part's first capsule, posed.
+local function middle(placed: { [string]: Rig.Transform }, name: string): { number }
+	local c = Specs.Capsules[name][1]
+	local a, b = Rig.apply(placed[name], c.A), Rig.apply(placed[name], c.B)
 	return { (a[1] + b[1]) / 2, (a[2] + b[2]) / 2, (a[3] + b[3]) / 2 }
+end
+
+local function hand(placed: { [string]: Rig.Transform }, side: string): { number }
+	return middle(placed, side .. "Hand")
 end
 
 -- At rest: on the floor, nothing moved.
@@ -118,8 +123,17 @@ for _, name in Pose.Walks.Full do
 	local find = Pose.carry(pose)
 	local at = { find[10], find[11], find[12] }
 	local chest = Rig.apply(placed.UpperTorso, { 0, 5.4, 0 })
-	ok(chest[3] - at[3] > 0.85, `{name}: the find held out ahead of its chest`)
+	ok(chest[3] - at[3] > 0.6, `{name}: the find held ahead of its chest`)
 	for _, side in { "Left", "Right" } do
+		-- The pale forearms cross in front of the find, never through it: they're the read.
+		local fore = middle(placed, side .. "LowerArm")
+		ok(
+			at[3] - fore[3] > 0.25,
+			`{name}: its {side} forearm across the find's front ({string.format(
+				"%.2f",
+				at[3] - fore[3]
+			)})`
+		)
 		local h = hand(placed, side)
 		local d = math.sqrt(dot(sub(h, at), sub(h, at)))
 		ok(d < 1.1, `{name}: its {side} hand on the find ({string.format("%.2f", d)} off)`)

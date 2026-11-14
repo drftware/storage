@@ -72,9 +72,11 @@ Hub. Studio Play is fine for the first go.
    Today every feed is the breaker's, so you'll only see this once a second monster uses the
    camera.
 
-## Now: judge the Packrat's look (S2-06a1, built Nov 14, D-175; pictures only, not in the game yet)
+## Now: judge the Packrat's look (S2-06a1 and a2, built Nov 14, D-175, D-176; pictures, and a model in the place that no floor uses yet)
 
-What's new: the second monster's model and its two walks, as pictures. It isn't in the game yet.
+What's new: the second monster's model and its two walks, as pictures, and now the model itself
+in the place (`ReplicatedStorage.Keepers.Packrat`). No floor puts one out yet, so you won't meet
+it in a climb.
 
 1. Open `art/sheets/packrat-lineup.png`. From left to right: asleep as it's found, walking with
    its arms empty, walking with a find (the teddy) hugged to its chest, and that from the side.
@@ -86,7 +88,14 @@ What's new: the second monster's model and its two walks, as pictures. It isn't 
    studs away: arms empty on the left, arms full on the right. Look for: can you tell which is
    carrying something without zooming in? The full one should show a pale knot at its chest;
    the empty one two pale lines out from its sides.
-4. My defaults, change any you like: the find it carries in the pictures is the teddy; the
+4. Open `docs/art/S2-06a2-packrat-hall.jpg`. This one is from Studio itself: a real hall of the
+   game, one ceiling light on, two Packrats 30 studs down it, arms empty on the left, arms full
+   on the right with a boombox. Look for: the same thing as step 3. Can you tell which one is
+   carrying something at a glance?
+5. Open `docs/art/S2-06a2-packrat-close.jpg`: the full one close up. Look for: its pale forearms
+   crossing in front of the boombox, holding it against its chest. (At first the boombox hid
+   the forearms completely, so I moved where a carried find sits back toward its chest.)
+6. My defaults, change any you like: the find it carries in the pictures is the teddy; the
    tape is a dull tan, not shiny orange; it's 7.3 studs tall (a player is about 5.2).
 
 ## Now: the screen's three fixes (S2-07b2, built Nov 14, D-174; checked in Studio Play with a stand-in friend)

@@ -2,68 +2,66 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-14, session 166 (evening run, session 8: S2-06a1) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-14, session 167 (evening run, session 9: S2-06a2) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- S2-06a was split in three (context): a1 the model and its two walks (done), a2 into the place,
-  a3 reach, take and put down. D-175.
-- Built in `art/packrat/` (`scripts/art.sh packrat`, about a minute): 7.3 studs, 15 R15 parts,
-  7,020 triangles, one 1024 set; quilted grey blankets creased and pinched under tan tape, an X
-  over the chest, a dark hollow in the hood, long pale arms. FBX in `art/packrat/out/`, not yet
-  uploaded (`upload_art` has its `Packrat` entry; `art/packrat/assets.json` doesn't exist yet).
-- Poses: `src/shared/Packrat/Pose.luau` on the new shared `src/shared/Rig.luau` (the pose math);
-  `Still` and both walks' four keys, `carry(pose)`. `tests/packrat.spec.luau` checks limits,
-  floor, no part through another, and the read: full hands at the find above the waist, empty
-  hands below the hips past its sides.
-- Judged in Blender only: `art/sheets/packrat-hall.png` (844x390, 30 studs, Roblox's 70 degree
-  camera) shows the full one as a pale knot at the chest, the empty one as two pale lines wide
-  of its sides. Not in Studio yet. Studio untouched this session (still in Edit).
+- The Packrat is in the place: uploaded (79124901483193, `art/packrat/assets.json`), prepared by
+  the new `src/shared/Packrat/init.luau` (prepare, pose, rest, motors, `transforms(name)` by
+  pose name, `carry(model)`, clone), template standing `Still` at
+  `ReplicatedStorage.Keepers.Packrat`. Nothing deals it on a floor yet.
+- Judged in Studio from 30 studs down a lit hall: empty reads as two pale lines wide of its
+  sides, full as a pale box at its chest (`docs/art/S2-06a2-packrat-hall.jpg`, `-close.jpg`).
+  The carry point moved back behind the forearms, which the find had swallowed (D-176); the
+  spec checks it. Sheets rebuilt, FBX restored from git. Studio in Edit, judging hall gone.
 
-## Next task: S2-06a2 The Packrat into the place
-ROADMAP S2-06a2: the model in the place, rigged and posed, judged from a real hall's end.
-1. `lune run scripts/upload_art Packrat` (writes `art/packrat/assets.json`), then insert it
-   (`insert_asset`, or `InsertService:LoadAsset` in Edit if that fails: STUDIO.md "Importing kit
-   pieces"); remove its `Assistant:` tag and PackageLink.
-2. Write `src/shared/Packrat/init.luau` as `Mannequin/init.luau` is (prepare: root, RigAttachments,
-   Motor6Ds, parts massless and queryable, CollisionFidelity Box, each part's fallback colour by
-   `Specs.Parts[n].Stuff`; pose; rest; motors; transforms; clone; a `carry(model)` CFrame for
-   S2-06b), on `Rig.luau` and `Pose.luau`. Don't touch the Mannequin's.
-3. In Edit: `prepare`, pose it `Still`, move it to `ReplicatedStorage.Keepers.Packrat`.
-4. Judge in Studio at phone size: clone two into a real hall (STUDIO.md "Judging a wall piece
-   in Edit" builds one), one `EmptyStepRight`, one `FullStepRight` with a real find at its carry
-   point, 30 studs from the camera under a lit fixture; capture both; save to `docs/art/`.
-5. Add an OWNER.md step to judge the Studio capture next to the existing look item.
-**Acceptance:** checks green; `Keepers.Packrat` in the place with its Motor6Ds; a Studio capture
-at phone size where full and empty read apart; nothing deals it on a floor yet.
-**Read first:** ROADMAP S2-06a2; `art/packrat/README.md`; `src/shared/Mannequin/init.luau`;
-`src/shared/Packrat/Pose.luau`; STUDIO.md "Importing kit pieces"; `docs/CODEMAP.md` lines for
-Rig and Packrat.
+## Next task: S2-06a3 Reach, take and put down
+ROADMAP S2-06a3: the last poses, and the walks as a cycle a screen steps through.
+1. In `Packrat/Pose.luau`, add `Reach` (one long arm out ahead at a find's height, hood leaning
+   after it), `Take` (both hands closing on it, pulling it in toward the chest) and `PutDown`
+   (bent over, the find low ahead in both hands). Each passes `check`, stands, no part through
+   another; add their read to `tests/packrat.spec.luau` (reach: a hand well ahead of the chest;
+   put down: hands below the hips and ahead).
+2. The walks as a cycle, as the Mannequin's `Pose.at`/`Frames`/`frame`/`ofFrame`/`frameAt`/
+   `along`/`held` do (read only that part of `Mannequin/Pose.luau`): blend the four keys of each
+   walk over a stride by distance travelled; full steps shorter than empty. Frames numbered so a
+   screen keeps a cache.
+3. `Packrat.transforms` moves from pose names to frame numbers (the KeeperView `Kit` shape);
+   keep a name-to-frame for the still poses.
+4. Add the three poses to `scripts/packrat-poses.luau` and a sheet (`packrat-hands` or the
+   lineup), `scripts/art.sh packrat renders`; then `git checkout art/packrat/out/Packrat.fbx`
+   if anything rewrote it. Judge the sheet.
+**Acceptance:** checks green; the three poses and both walks' frames pass the spec; a sheet of
+reach, take and put down; nothing deals it on a floor yet (that's S2-06b).
+**Read first:** ROADMAP S2-06a3; `src/shared/Packrat/Pose.luau`; `src/shared/Mannequin/Pose.luau`
+lines 340 to 500; `src/client/KeeperView.luau` lines 55 to 80 (the Kit); `tests/packrat.spec.luau`;
+`art/packrat/README.md`.
 
 ## Queue (next sessions per ROADMAP Phase 2)
-1. S2-06a2 (next), S2-06a3, then S2-06b to S2-06e, then S3-01. L-08e3c and L-14b2d wait on
-   `OWNER.md`. R-01 is for later.
-2. Brix has no purchases piece in its ROADMAP yet. S3-02 needs one: before Step 3, file it in
+1. S2-06a3 (next), then S2-06b to S2-06e, then S3-01. L-08e3c and L-14b2d wait on `OWNER.md`.
+   R-01 is for later.
+2. From S2-06a2: deeper finds (the television) will still meet the forearms at the carry point;
+   S2-06b seats each by its depth or accepts it. On the server the body stays at rest, so S2-06b
+   decides where the server keeps a carried find.
+3. Brix has no purchases piece in its ROADMAP yet. S3-02 needs one: before Step 3, file it in
    Brix's ROADMAP in neutral terms (receipts granted after the profile saves, prices read from
    Roblox, offers switched off live) so Brix can build it in its own sessions.
-3. S4-04 "Trapping pays" was never agreed by the owner (`OWNER.md` asks); don't build it.
-4. From S2-06a1: the Mannequin's `Pose.luau` keeps its own copy of the pose math that `Rig.luau`
-   now holds; move it onto Rig when it's next touched (its spec proves the move).
-5. From S2-06a1: the Packrat's look could go further after the owner judges it: a lumpier
+4. S4-04 "Trapping pays" was never agreed by the owner (`OWNER.md` asks); don't build it.
+5. From S2-06a1: the Mannequin's `Pose.luau` keeps its own copy of the pose math that `Rig.luau`
+   now holds; move it onto Rig when it's next touched (its spec proves the move). The Packrat's
+   `init.luau` repeats the Mannequin's prepare and pose; fold both into one body module when a
+   third jointed monster comes (D-176).
+6. From S2-06a1: the Packrat's look could go further after the owner judges it: a lumpier
    bundle, the head lower between the shoulders, longer fingers that open when empty.
-6. Left in the Queue: S1-07a 16 in 100 units hold nothing (may be right); S2-02c only a
+7. Left in the Queue: S1-07a 16 in 100 units hold nothing (may be right); S2-02c only a
    wandering Mannequin takes the errand; S2-02b nobody can throw the breaker by hand; S2-03b
    loose keepers go to look at a pounding door (a feature).
-7. From S2-07a2: a pounding door's blows are one noise going on, so a loose monster looking at
+8. From S2-07a2: a pounding door's blows are one noise going on, so a loose monster looking at
    it keeps looking until the pounding stops; a monster let out by a wrong code or a missed tap
    isn't held by the floor's limit; one trapped by players and bursting out can still pass it.
-8. S2-02d4: the first clunk through the camera may come 0.3 s late. S2-05a: a sleeper woken by
+9. S2-02d4: the first clunk through the camera may come 0.3 s late. S2-05a: a sleeper woken by
    a missed tap isn't counted in `woken`. S2-07a1: a feed copies every monster at the start.
-   S2-07b1: a light coming back over a still player fires `woke` like any sighting.
-9. From S2-07b2: 89260803894903 (the coin import's TexturePack) wasn't brought back; if it
-    shows again, find what was on screen (`OWNER.md` asks). A friend budgeted out of real light
-    shows no mark: by design.
-10. Unseen with the menu really open: the wheel's slide, the dim bays with full slots, the menu
-    staying down after a buy (S1-10d1 to d3, `OWNER.md`). Unseen: S1-06, S1-05.
+   S2-07b1: a light coming back over a still player fires `woke`. S2-07b2: 89260803894903 (the
+   coin's TexturePack) wasn't brought back (`OWNER.md` asks). Unseen: S1-10d1 to d3, S1-06, S1-05.
 
 ## Kickoff for the next agent
 ```text

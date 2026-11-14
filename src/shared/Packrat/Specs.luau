@@ -257,7 +257,7 @@ local RootPart = { Centre = { 0.0000, 3.9000, 0.0000 }, Size = { 2.0, 2.0, 1.0 }
 
 -- Where a carried find's middle sits, in the figure's frame at rest (it rides the
 -- UpperTorso).
-local Carry = { 0.0000, 4.9500, -1.2200 }
+local Carry = { 0.0000, 4.9500, -0.9500 }
 
 return {
 	Height = Height,

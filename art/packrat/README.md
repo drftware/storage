@@ -20,7 +20,7 @@ side), `-close` (the hug), `-hall` (empty and full 30 studs off, at a phone's si
 | Triangles | 7,020 |
 | Texture set | Packrat, 1024² (colour, normal, roughness, metalness), 103 texels a stud |
 | Parts | 15 MeshParts named as R15's body parts; `prepare` adds the root (S2-06a2) |
-| Carry | where a find's middle sits on the UpperTorso: `spec.CARRY`, `Specs.Carry` |
+| Carry | where a find's middle sits on the UpperTorso, 0.95 ahead, between chest and forearms: `spec.CARRY`, `Specs.Carry` (D-176) |
 
 ## How it's made
 
@@ -41,5 +41,9 @@ grimed at the fingertips.
 
 ## Into Studio
 
-Not yet (ROADMAP S2-06a2): `lune run scripts/upload_art Packrat`, insert, prepare, and the
-template at `ReplicatedStorage.Keepers.Packrat`.
+Uploaded with `lune run scripts/upload_art Packrat` (asset 79124901483193, `assets.json`),
+inserted, and prepared in Edit by `Packrat.prepare` (`src/shared/Packrat/init.luau`): the
+template stands `Still` at `ReplicatedStorage.Keepers.Packrat`. Judged from 30 studs down a lit
+hall in Studio, a boombox at the carry point: `docs/art/S2-06a2-packrat-hall.jpg` and
+`-close.jpg` (D-176). After a rebuild that changed only the Specs or the sheets, restore
+`out/Packrat.fbx` from git: the export rewrites its bytes and it must match the upload.

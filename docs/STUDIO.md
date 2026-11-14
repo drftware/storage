@@ -958,6 +958,14 @@ verified: a doc page, Studio, or "untested".
 - **A bulb lights through a hole** (L-12b1, Galaxy A16): with a crawl hole between them, a lit
   unit's bulb lights the shut neighbour's floor by the hole, as it should; nothing else of a
   shut unit lights.
+- **The Packrat arrived like the Mannequin** (Edit, S2-06a2, Nov 14): `insert_asset` worked
+  first time and gave a Model of fifteen MeshParts turned -94.2 degrees about Y, local Y up,
+  every pivot on the floor between its feet, one SurfaceAppearance (Overlay) on each, a
+  PackageLink and an `Assistant:` tag on the model (`Packrat.prepare` removes both).
+- **Measuring a gap on a posed body with rays** (Edit, S2-06a2): parts are `CanQuery`, so a
+  `workspace:Raycast` with an Include filter of one part (the UpperTorso from in front, then the
+  forearms out from the chest) gives each surface; read the hits in the chest's own frame
+  (`UpperTorso.CFrame:PointToObjectSpace`). That's how the carry point was put between them.
 - **An asset updated in place inserts as its new version at once** (L-08e1a): after
   `upload_art` PATCHed the lobby's FBX (same ID), `insert_asset` brought the new size. And an
   **Edit** `execute_luau` keeps the first copy of a module it required, as a Client one does: a

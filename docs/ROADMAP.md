@@ -1873,13 +1873,16 @@ Done when a team that has lost its lights goes looking for the breaker without b
       `Rig.luau`), the `Carry` point, Lune checks, look sheets `packrat-lineup`, `-close` and
       `-hall` (both walks from 30 studs at a phone's size: the full one a pale knot at its chest,
       the empty one two pale lines wide of its sides). Not yet in the place.
-    - [ ] **S2-06a2 Into the place.** Upload the FBX (`lune run scripts/upload_art Packrat`),
-      insert it, write the `Packrat` module (prepare, pose, rest, motors, transforms, clone, as
-      the Mannequin's, on `Rig.luau`), put the template at `ReplicatedStorage.Keepers.Packrat`
-      in a pose, and capture it in Studio at phone size from a real hall's end, full and empty.
+    - [x] **S2-06a2 Into the place** (Nov 14, D-176). Uploaded (79124901483193), prepared by
+      the new `Packrat` module (prepare, pose, rest, motors, transforms by pose name, clone,
+      `carry(model)`, on `Rig.luau`), the template standing `Still` at
+      `ReplicatedStorage.Keepers.Packrat`. Judged in Studio from 30 studs down a lit hall with a
+      boombox at the carry point: full and empty read apart (`docs/art/S2-06a2-packrat-hall.jpg`,
+      `-close.jpg`). The judge moved the carry point back behind the forearms, which the find
+      had swallowed.
     - [ ] **S2-06a3 Reach, take and put down.** Those three poses, the walks as a cycle a screen
-      steps through (`at(travelled)`, frames for KeeperView, as the Mannequin's), and their
-      sheets.
+      steps through (`at(travelled)`, frames for KeeperView, as the Mannequin's; `Packrat.transforms`
+      moves from pose names to frames), and their sheets.
   - [ ] **S2-06b It carries finds home.** Its row on the keepers' brain (`KeeperRows`), with a
     unit of its own and one new ability: it picks up a find lying in an open unit or a hall,
     carries it home, lays it on the pile and comes out for more, ignoring players while it
