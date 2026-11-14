@@ -101,8 +101,9 @@ export type Record = {
 	state: string, -- its state (Keeper.State)
 }
 
---- How a screen poses it (as Pose.How): slack, walking, or stopped mid-stride.
-export type How = "Still" | "Walk" | "Stop"
+--- How a screen poses it (as Pose.How): slack, walking, stopped mid-stride, or at a breaker box
+--- with its hand up on the grip or dragging the lever down (S2-02d2).
+export type How = "Still" | "Walk" | "Stop" | "Reach" | "Pull"
 
 --- One screen's view of one keeper: the last few records, and where it's shown.
 export type Follow = {
@@ -248,6 +249,10 @@ end
 function KeeperMotion.how(state: string, speed: number): How
 	if state == "Asleep" then
 		return "Still"
+	elseif state == "Reaching" then
+		return "Reach" -- `Keeper.shown`: its hand on a breaker's lever
+	elseif state == "Pulling" then
+		return "Pull"
 	end
 	return if speed > 0 then "Walk" else "Stop"
 end

@@ -58,6 +58,7 @@ type Kit = {
 	motors: (model: Model) -> { Motor6D }?,
 	along: (travelled: number, how: KeeperMotion.How) -> number, -- how far along its walk
 	frameAt: (along: number) -> number, -- the frame for that
+	held: (how: KeeperMotion.How) -> number?, -- the frame standing slack or at a lever, not walking
 	transforms: (frame: number) -> { CFrame },
 	tell: (last: number?, travelled: number, how: KeeperMotion.How) -> (Pose.Sound?, number),
 }
@@ -66,6 +67,7 @@ local KITS: { [string]: Kit } = {
 		motors = Mannequin.motors,
 		along = Pose.along,
 		frameAt = Pose.frameAt,
+		held = Pose.held,
 		transforms = Mannequin.transforms,
 		tell = Pose.tell,
 	},
@@ -122,8 +124,11 @@ function KeeperView.new(heard: (model: Model, beat: KeeperTell.Beat) -> (), beam
 	local function pose(view: View)
 		local f = view.follow
 		local how: KeeperMotion.How = KeeperMotion.how(f.state, f.speed)
-		local frame = 1
-		if how ~= "Still" then
+		local held = view.kit.held(how)
+		local frame: number
+		if held then
+			frame = held
+		else
 			view.along = math.max(view.along, view.kit.along(f.travelled, how))
 			frame = view.kit.frameAt(view.along)
 		end

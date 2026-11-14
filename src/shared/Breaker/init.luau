@@ -195,9 +195,13 @@ Breaker.ErrandFirst = 0.5
 -- Seconds after the power comes on (the floor laid, or switched back) before any Mannequin may
 -- head for the box: the floor gets a lit start, and a switch back on buys a real breather.
 Breaker.ErrandGap = 45
--- Studs out from the wall, in front of the lever, where a Mannequin stands to throw it: its
--- held-out hand (about 2.7 ahead of its feet) is on the grip.
+-- Studs out from the wall, in front of the lever, where a Mannequin stands to throw it: its hand
+-- up on the grip (its Reach pose) is 1.3 ahead of its feet.
 Breaker.ErrandStand = 2.6
+-- Seconds a Mannequin stands with its hand up on the grip before it drags the lever down
+-- (S2-02d2): long enough for the security camera to show the hand go up and the players watching
+-- to see what it's about to do, short enough that nobody can run there and stop it.
+Breaker.Grip = 0.6
 
 --- The chance a Mannequin on floor `floor` heads for its box as it picks where to wander next:
 --- 0 while the box is thrown (`on` false) or within `ErrandGap` seconds (`sinceOn`) of the power

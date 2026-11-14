@@ -9,6 +9,7 @@
 -- light always freezes it on a key.
 local Specs = require("../src/shared/Mannequin/Specs")
 local Pose = require("../src/shared/Mannequin/Pose")
+local Breaker = require("../src/shared/Breaker")
 
 local failures, checks = 0, 0
 local function ok(cond: boolean, what: string)
@@ -298,7 +299,10 @@ do
 			`frames: stopped at {d}, it's on the key it freezes on`
 		)
 		local walk = Pose.frame(d, "Walk")
-		ok(walk >= 2 and walk <= Pose.Frames, `frames: walking at {d}, a frame of the walk`)
+		ok(
+			walk >= 2 and walk < (Pose.held("Reach") :: number),
+			`frames: walking at {d}, a frame of the walk`
+		)
 		-- how far along: never behind the walk it had shown, the stop never behind the walk; a
 		-- screen that keeps the furthest shows the stop's key until its walk gets there
 		local alongStop, alongWalk = Pose.along(d, "Stop"), Pose.along(d, "Walk")
@@ -347,6 +351,39 @@ do
 	local headBound = 1.5 * neck / (2 * Pose.Walk.Settle) + 1e-6
 	ok(worst <= bound, `frames: walking, every joint within {bound} degrees of its walk ({worst})`)
 	ok(worstHead <= headBound, `frames: its head within {headBound} degrees ({worstHead})`)
+end
+
+-- Cutting the power (S2-02d2): Reach and Pull are frames of their own; standing where the brain
+-- stands it at a box (`Breaker.stand`: `ErrandStand` out from the wall, square in front of the
+-- grip, facing it), its right hand is on the grip with the lever up, then down; its arm creaks
+-- up to it once, and the pull is silent (the slam is the box's).
+do
+	local reach, pull = Pose.held("Reach") :: number, Pose.held("Pull") :: number
+	ok(reach ~= pull and reach > 1 and pull <= Pose.Frames, "Reach and Pull have frames")
+	ok(
+		Pose.ofFrame(reach) == Pose.Poses.Reach and Pose.ofFrame(pull) == Pose.Poses.Pull,
+		"their poses"
+	)
+	ok(Pose.frame(3.1, "Reach") == reach and Pose.frame(3.1, "Pull") == pull, "frame for them")
+	local G = Breaker.Specs
+	local palm = { 0.825, 2.7, 0 } -- the right hand's middle, at rest
+	for _, case in { { "Reach", G.GripUp }, { "Pull", G.GripDown } } do
+		local parts = Pose.solve(Pose.Poses[case[1]])
+		local h = Pose.apply(parts.RightHand, palm)
+		-- the grip in its frame: square in front (x 0), ahead along -Z, up as the box's
+		local gx, gy, gz = 0, case[2][2], -(Breaker.ErrandStand + case[2][3])
+		local d = math.sqrt((h[1] - gx) ^ 2 + (h[2] - gy) ^ 2 + (h[3] - gz) ^ 2)
+		ok(d < 0.2, `{case[1]}: its hand on the grip ({d} off)`)
+	end
+	local s, l = Pose.tell(4, 3.1, "Reach")
+	ok(s == "Creak", "its arm creaks up to the grip")
+	local s2, l2 = Pose.tell(l, 3.1, "Reach")
+	ok(s2 == nil and l2 == l, "once")
+	local s3, l3 = Pose.tell(l2, 3.1, "Pull")
+	ok(s3 == nil, "the pull is the box's slam")
+	local s4 = Pose.tell(l3, 5.0, "Walk")
+	ok(s4 == "Creak", "it creaks as it jerks off into a stride")
+	ok(Pose.tell(nil, 3.1, "Reach") == nil, "streamed in reaching: silent")
 end
 
 print(`mannequin: {checks - failures}/{checks} checks passed`)

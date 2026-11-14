@@ -4567,3 +4567,29 @@ crowds it). The ticket read "a bit" as about a third.
   distorted speaker, a burst out (Pro Sound Effects).
 - Reusable: any monster's system calls `Feeds:show` (who, camera, number, what to watch, the
   floor) and `Feeds:close` (its sound, whether the lights went). The dev throw shows no feed.
+
+## D-166 The Mannequin's hand on the lever: a beat on the grip, then the pull (S2-02d2, Nov 14)
+
+- The camera feed (D-165) has to show the Mannequin cutting the power, not standing by a box
+  whose lever falls by itself. Two stop-motion keys, as its walk is (L-06b): `Reach`, its right
+  hand up on the grip with the lever up, its head tipped back and lolled; `Pull`, the lever
+  dragged down to its low end, the elbow tucked at its side, its weight thrown onto that side and
+  its head dropped over the box. It snaps into each, never easing, as the walk's keys land.
+- Measured, not eyeballed: standing where `Breaker.stand` puts it (2.6 out from the wall, square
+  in front of the grip), each key's palm is within 0.2 studs of the grip (`GripUp`, `GripDown`),
+  checked in `tests/mannequin.spec.luau` with the rest (feet down, inside limits, nothing
+  through anything). Right hand, because the camera hangs on the grip's side, the figure's right.
+- The beat: arriving, it stands `Breaker.Grip` (0.6 s) with its hand on the grip, still on its
+  errand (the feed stays open), then throws and lingers its usual 5 s holding the lever down.
+  A light on it in the beat holds it there (its clocks stop, as ever); anything it hears or sees
+  calls it off, and so does the offer going to 0 (the power cut another way). Long enough to see
+  on a 12-frames-a-second feed; short enough that nobody can run there and stop it.
+- Screens learn it through the state in its motion record: `Keeper.shown` says "Reaching" or
+  "Pulling" while it stands with its hand on the lever, so the record goes out at once and every
+  screen poses it (`KeeperMotion.how` gives Reach or Pull; `Pose.held` the frame). The brain's
+  own states don't grow: the hand is a field (`lever`), only meaningful while it waits.
+- Its arm creaks once as it goes up (the body's Creak, heard in the hall); the pull itself is
+  silent on the body, since the slam and clunk are the box's.
+- The one that threw the box no longer hears its own clunk (`hearAt`'s `maker`): before, it
+  turned to "look" at the box it was standing at, so the pull never showed.
+

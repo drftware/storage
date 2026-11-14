@@ -214,9 +214,45 @@ local Poses: { [string]: Pose } = {
 		LeftKnee = { x = -4 },
 		LeftAnkle = { x = -18 },
 	},
+	-- Cutting the power (S2-02d2), as the security camera shows it: at the breaker box, square in
+	-- front of the lever (`Breaker.stand`), its right hand up on the grip, elbow out and bent, its
+	-- head tipped back and lolled over as if looking up at it; the other arm hangs slack. Its
+	-- hand sits on the grip's middle with the lever up (`Breaker.Specs.GripUp`, 2.6 out from the
+	-- wall: 1.3 ahead of its feet, 6 up).
+	Reach = {
+		Root = { z = -2 },
+		Waist = { y = 10, z = 3 },
+		Neck = { x = 18, y = -12, z = 16 },
+		RightShoulder = { x = 70, z = -30 },
+		RightElbow = { x = 90 },
+		LeftShoulder = { x = -4, z = -6 },
+		LeftElbow = { x = 20 },
+		LeftWrist = { z = 10 },
+		RightHip = { x = 4, z = 3 },
+		RightKnee = { x = -6 },
+		LeftHip = { x = -6, z = -3 },
+		LeftAnkle = { x = 4 },
+	},
+	-- The lever down: the hand dragged it down with it to the grip's low end (`GripDown`), the
+	-- elbow tucked at its side, its weight thrown onto that side, its body turned into the pull
+	-- and its head dropped hard over the box.
+	Pull = {
+		Root = { x = -4, z = -2 },
+		Waist = { x = -2, y = 35, z = -10 },
+		Neck = { x = -35, y = -24, z = 20 },
+		RightShoulder = { x = 0, z = -20 },
+		RightElbow = { x = 120 },
+		LeftShoulder = { x = -4, z = -6 },
+		LeftElbow = { x = 20 },
+		LeftWrist = { z = 10 },
+		RightHip = { x = 4, z = 3 },
+		RightKnee = { x = -6 },
+		LeftHip = { x = -6, z = -3 },
+		LeftAnkle = { x = 4 },
+	},
 }
 Pose.Poses = Poses
-Pose.Names = { "Still", "StepRight", "PassRight", "StepLeft", "PassLeft", "Lunge" }
+Pose.Names = { "Still", "StepRight", "PassRight", "StepLeft", "PassLeft", "Lunge", "Reach", "Pull" }
 
 -- What's wrong with a pose, if anything: joints it doesn't have, turns past a joint's limits.
 function Pose.check(pose: Pose): { string }
@@ -324,16 +360,33 @@ function Pose.freeze(travelled: number): string
 	return Pose.Walk.Keys[if f <= Pose.Walk.Holds[i] then i else keyIndex(k + 1)]
 end
 
--- How a screen poses a keeper: slack as it's found (Still), walking (Walk), or stopped mid-stride
--- (Stop: frozen on a key, as `freeze` says).
-export type How = "Still" | "Walk" | "Stop"
+-- How a screen poses a keeper: slack as it's found (Still), walking (Walk), stopped mid-stride
+-- (Stop: frozen on a key, as `freeze` says), or at a breaker box with its hand up on the grip
+-- (Reach) or dragging the lever down (Pull), S2-02d2.
+export type How = "Still" | "Walk" | "Stop" | "Reach" | "Pull"
 
 -- Every pose a screen shows is one of these frames (L-06b4a), so each screen works each one out
 -- once and turns a body's joints only when its frame changes. Frame 1 is Still; then, for each of
 -- the walk's keys, `Walk.Settle` frames of it landed with its head catching up, the key held,
--- and the `Walk.Snaps - 1` steps of the snap into the next.
+-- and the `Walk.Snaps - 1` steps of the snap into the next; last, Reach and Pull. It snaps
+-- straight into those two, stop-motion, never easing.
 local PER_KEY = Pose.Walk.Settle + Pose.Walk.Snaps
-Pose.Frames = 1 + #Pose.Walk.Keys * PER_KEY
+local REACH = 2 + #Pose.Walk.Keys * PER_KEY
+local PULL = REACH + 1
+Pose.Frames = PULL
+
+-- The frame a body shows standing in one place, not on its walk: Still, Reach or Pull (nil for
+-- Walk and Stop, which `frame` works out from how far it has walked).
+function Pose.held(how: How): number?
+	if how == "Still" then
+		return 1
+	elseif how == "Reach" then
+		return REACH
+	elseif how == "Pull" then
+		return PULL
+	end
+	return nil
+end
 
 -- The key a walking or stopped body shows after `travelled` studs, counted from its first key
 -- (0) and never going back, and which of that key's frames: under `Walk.Settle` its head is
@@ -380,8 +433,9 @@ end
 -- The frame it shows after `travelled` studs: Still; its walk (landing, the key held, or the
 -- nearest step of the snap to the next); or stopped, on the key `freeze` says.
 function Pose.frame(travelled: number, how: How): number
-	if how == "Still" then
-		return 1
+	local held = Pose.held(how)
+	if held then
+		return held
 	end
 	return Pose.frameAt(Pose.along(travelled, how))
 end
@@ -395,6 +449,8 @@ export type Sound = "Footfall" | "Drag" | "Heel" | "Creak"
 local LANDS: { [string]: Sound } = { StepRight = "Footfall", PassRight = "Drag", StepLeft = "Heel" }
 
 local SLACK = -1 -- what `tell` remembers of a body standing slack (Still)
+local REACHED = -2 -- or with its hand up on a breaker's grip (Reach)
+local PULLED = -3 -- or dragging its lever down (Pull)
 
 -- The sound a body makes as a screen poses it after `travelled` studs, if any, and what to pass
 -- as `last` next time. `last` is what this returned the last time, nil before the body's first
@@ -404,12 +460,19 @@ local SLACK = -1 -- what `tell` remembers of a body standing slack (Still)
 function Pose.tell(last: number?, travelled: number, how: How): (Sound?, number)
 	if how == "Still" then
 		return nil, SLACK
+	elseif how == "Reach" or how == "Pull" then
+		-- its arm creaks up to the grip; the lever's slam is the box's own (BreakerView)
+		local now = if how == "Reach" then REACHED else PULLED
+		if last == nil or last == now or how == "Pull" then
+			return nil, now
+		end
+		return "Creak", now
 	end
 	local k = shown(travelled, how)
 	if last == nil then
 		return nil, k
-	elseif last == SLACK then
-		return "Creak", k
+	elseif last < 0 then
+		return "Creak", k -- it jerks out of a slack or held pose into a stride
 	elseif k <= last then
 		return nil, last
 	end
@@ -420,6 +483,10 @@ end
 function Pose.ofFrame(frame: number): Pose
 	if frame <= 1 then
 		return Poses.Still
+	elseif frame == REACH then
+		return Poses.Reach
+	elseif frame == PULL then
+		return Poses.Pull
 	end
 	local settle = Pose.Walk.Settle
 	local n = frame - 2

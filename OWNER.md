@@ -185,7 +185,7 @@ machine wakes, the real button sinking, a refused pick's buzz and shake.
 6. Decide (my defaults): its sounds (the flap's knock pitched down for the clunk, the tubes'
    tink) and its place (right of centre on a phone, clear of the jump button).
 
-## Now: the camera shows the Mannequin cut the power (S2-02d1, built Nov 14, D-165; run in Play)
+## Now: the camera shows the Mannequin cut the power (S2-02d1-d2, built Nov 14, D-165, D-166; run in Play)
 
 Your idea, first half: as a Mannequin walks its last steps to the breaker, the corner map on
 every screen on that floor bursts into snow with a crackle and grows into a grainy, cold,
@@ -194,15 +194,23 @@ the lever slams down, the clunk comes thin through the camera's speaker, the pic
 goes darker, it stands there; static, and the map is back. Run in Studio Play: the feed cut in
 2.5 s before the throw, went dark on it and was gone 2.2 s later; the box and the Mannequin
 were copied into it. I saw the grain, the number and a hall's panels in it, but never a clean
-shot of the Mannequin at the box (my context ran out), and nobody has heard it. Its hand
-doesn't reach for the lever yet: that's the next session (S2-02d2).
+shot of the Mannequin at the box (my context ran out), and nobody has heard it.
+Now (S2-02d2) it reaches: at the box its right hand goes up on the grip (its arm creaks), it
+holds there 0.6 s, then drags the lever down and stands 5 s holding it, head dropped over the
+box, while the others on the floor come to the clunk. Run in Play: the brain's reach, the pull
+0.6 s later and the thrower staying put; the feed showed the hand up before the throw. Studio
+wasn't drawing frames for the second run, so nobody has watched the pull itself move.
 1. In Studio Play on floor 3 (seed 7), stand by the lobby, press "Stand one", walk away into a
    far hall and wait. From the Server's command bar `workspace:SetAttribute("SendToBreaker",
-   true)` sends it now. Look for: the burst, the picture, the Mannequin stepping up to the box,
-   the lever going down, the picture dimming, the static out. Does it make you go "wait, what"?
+   true)` sends it now (if "Stand one" won't press, `workspace:SetAttribute("WakeSleepers",
+   true)` and wait the 90 s for three to break out). Look for: the burst, the picture, the
+   Mannequin stepping up to the box, its hand going up on the grip, the beat, the lever coming
+   down with its arm, the picture dimming, the static out. Does it make you go "wait, what"?
+   Walk to the box too: in the hall, it should stand there holding the lever down.
 2. Judge it at phone size (Device Simulator): can you tell it's the breaker and the Mannequin
    in a window about 160 points wide? Too grainy, too dark, too small?
-3. Decide (my defaults): it cuts in 2.4 s of walk before the throw and stays 1.7 s after; the
+3. Decide (my defaults): its hand rests on the grip 0.6 s before the pull (`Breaker.Grip`);
+   it cuts in 2.4 s of walk before the throw and stays 1.7 s after; the
    window grows to about one and a half times the map; the dev command `ThrowBreakers` shows
    no feed (only a Mannequin's own throw does); a Mannequin turned away by a light or a sound
    still shows on camera until the feed runs out (8 s at most).

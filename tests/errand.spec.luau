@@ -4,10 +4,11 @@
 -- up with the floor, capped, and is nothing while the box is thrown or the power just came back.
 -- Where it stands to throw it is in the hall in front of the box on every spot. Offered the box at
 -- a sure chance, a Mannequin picking where to wander heads there, walks the halls at its walk,
--- throws it exactly once on arrival facing the box, then lingers; held by a light it doesn't move
--- or throw; an offer withdrawn calls the walk off; a sound calls it off; a keeper that doesn't
--- freeze in light never takes the errand; with no offer it never goes. And a warm errand
--- allocates nothing.
+-- stands a beat facing the box with its hand on the grip, throws it exactly once, then lingers
+-- holding the lever down (a light or a sound in the beat holds it or calls it off); held by a
+-- light it doesn't move or throw; an offer withdrawn calls the walk off; a sound calls it off;
+-- a keeper that doesn't freeze in light never takes the errand; with no offer it never goes.
+-- And a warm errand allocates nothing.
 local Brix = require("../vendor/brix/src")
 local Breaker = require("../src/shared/Breaker")
 local Floor = require("../src/shared/Floor")
@@ -122,7 +123,7 @@ local function checkFloor(seed: number, number: number)
 
 	-- offered at a sure chance: it heads for the box, walks the halls, throws it once, lingers
 	local k = fresh()
-	Keeper.offer(k, at, box, 1)
+	Keeper.offer(k, at, box, 1, Breaker.Grip)
 	Keeper.step(k, DT, RUN)
 	ok(k.state == "Roaming" and k.errand and k.goal == at, `{where}: it heads for the box`)
 	local pace = Keeper.pace(k, RUN)
@@ -143,20 +144,98 @@ local function checkFloor(seed: number, number: number)
 	walks += 1
 	ok(not strayed, `{where}: it keeps to the halls on its way`)
 	ok(longest <= pace * DT + 1e-3, `{where}: never faster than its walk`)
-	ok(thrown == 1, `{where}: it throws the box once on arrival ({thrown})`)
+	ok(thrown == 0, `{where}: it doesn't throw the box as it arrives ({thrown})`)
 	ok(flat(k.at, at) < 1e-2, `{where}: it's at the stand`)
-	ok(k.state == "Waiting" and not k.errand, `{where}: it stands there after`)
+	ok(k.state == "Waiting" and k.errand and k.lever == "Reach", `{where}: its hand up on the grip`)
+	ok(Keeper.shown(k) == "Reaching", `{where}: screens show it reaching`)
 	local toBox = vector.normalize(vector.create(box.x - k.at.x, 0, box.z - k.at.z))
 	ok(vector.dot(k.facing, toBox) > 0.99, `{where}: facing the box`)
-	throws += thrown
+	-- it stands a beat with its hand on the grip (S2-02d2), then drags the lever down, once
+	local beat = 0
+	while not k.threw and beat < 60 * 10 do
+		Keeper.step(k, DT, RUN)
+		beat += 1
+	end
+	ok(math.abs(beat * DT - Breaker.Grip) <= 2 * DT, `{where}: a beat on the grip ({beat * DT} s)`)
+	ok(flat(k.at, at) < 1e-2 and vector.dot(k.facing, toBox) > 0.99, `{where}: where it stood`)
+	ok(k.state == "Waiting" and not k.errand, `{where}: it stands there after`)
+	ok(k.lever == "Pull" and Keeper.shown(k) == "Pulling", `{where}: holding the lever down`)
+	throws += 1
 	for _ = 1, 30 do
 		Keeper.step(k, DT, RUN)
 		ok(not k.threw, `{where}: one throw, not one a step`)
 	end
+	-- after its linger it wanders off, its hand off the lever
+	for _ = 1, 60 * 30 do
+		Keeper.step(k, DT, RUN)
+		if k.state ~= "Waiting" then
+			break
+		end
+	end
+	ok(k.state ~= "Waiting" and Keeper.shown(k) == k.state, `{where}: it lets go and moves on`)
+
+	-- a light on it while its hand is on the grip holds it there, still reaching; let go, it throws
+	-- once the rest of the beat is up
+	local gripped = fresh()
+	Keeper.offer(gripped, at, box, 1, Breaker.Grip)
+	for _ = 1, 60 * 300 do
+		Keeper.step(gripped, DT, RUN)
+		if gripped.lever == "Reach" then
+			break
+		end
+	end
+	Keeper.step(gripped, Breaker.Grip / 2, RUN)
+	for _ = 1, 600 do
+		Keeper.step(gripped, DT, RUN, nil, true)
+		ok(not gripped.threw, `{where}: lit on the grip, it doesn't throw`)
+	end
+	ok(Keeper.shown(gripped) == "Reaching", `{where}: lit, its hand stays up on the grip`)
+	local rest = 0
+	while not gripped.threw and rest < 600 do
+		Keeper.step(gripped, DT, RUN)
+		rest += 1
+	end
+	ok(
+		math.abs(rest * DT - Breaker.Grip / 2) <= 2 * DT,
+		`{where}: the rest of the beat, then the throw`
+	)
+
+	-- a sound while its hand is on the grip calls it off: it goes to look, and never throws
+	local startled = fresh()
+	Keeper.offer(startled, at, box, 1, Breaker.Grip)
+	for _ = 1, 60 * 300 do
+		Keeper.step(startled, DT, RUN)
+		if startled.lever == "Reach" then
+			break
+		end
+	end
+	Keeper.heardAt(startled, startled.at + vector.create(0.5, 0, 0), 50)
+	ok(Keeper.shown(startled) == "Going", `{where}: startled off the grip, it goes to look`)
+	Keeper.offer(startled, at, box, 0, Breaker.Grip)
+	for _ = 1, 60 * 30 do
+		Keeper.step(startled, DT, RUN)
+		ok(not startled.threw, `{where}: startled off the grip, it never throws`)
+	end
+
+	-- the offer withdrawn while its hand is on the grip (the power went off another way)
+	local beaten = fresh()
+	Keeper.offer(beaten, at, box, 1, Breaker.Grip)
+	for _ = 1, 60 * 300 do
+		Keeper.step(beaten, DT, RUN)
+		if beaten.lever == "Reach" then
+			break
+		end
+	end
+	Keeper.offer(beaten, at, box, 0, Breaker.Grip)
+	ok(Keeper.shown(beaten) ~= "Reaching", `{where}: withdrawn, its hand comes off the grip`)
+	for _ = 1, 60 * 30 do
+		Keeper.step(beaten, DT, RUN)
+		ok(not beaten.threw, `{where}: withdrawn on the grip, it never throws`)
+	end
 
 	-- held by a light, it neither moves nor throws
 	local lit = fresh()
-	Keeper.offer(lit, at, box, 1)
+	Keeper.offer(lit, at, box, 1, Breaker.Grip)
 	Keeper.step(lit, DT, RUN)
 	local stood = lit.at
 	for _ = 1, 600 do
@@ -167,9 +246,9 @@ local function checkFloor(seed: number, number: number)
 
 	-- the offer withdrawn on its way (the power went off or just came back): it never throws
 	local off = fresh()
-	Keeper.offer(off, at, box, 1)
+	Keeper.offer(off, at, box, 1, Breaker.Grip)
 	Keeper.step(off, DT, RUN)
-	Keeper.offer(off, at, box, 0)
+	Keeper.offer(off, at, box, 0, Breaker.Grip)
 	ok(not off.errand, `{where}: withdrawn, the walk is off`)
 	for _ = 1, 60 * 120 do
 		Keeper.step(off, DT, RUN)
@@ -178,11 +257,11 @@ local function checkFloor(seed: number, number: number)
 
 	-- a sound calls it off: it goes to look instead, and doesn't throw on the way
 	local called = fresh()
-	Keeper.offer(called, at, box, 1)
+	Keeper.offer(called, at, box, 1, Breaker.Grip)
 	Keeper.step(called, DT, RUN)
 	local heard = Keeper.heardAt(called, called.at + vector.create(0.5, 0, 0), 50)
 	ok(heard ~= nil and called.state == "Going", `{where}: a sound calls it off`)
-	Keeper.offer(called, at, box, 0) -- so the next pick isn't the box again
+	Keeper.offer(called, at, box, 0, Breaker.Grip) -- so the next pick isn't the box again
 	for _ = 1, 60 * 30 do
 		Keeper.step(called, DT, RUN)
 		ok(not called.threw, `{where}: called off, it never throws`)
@@ -192,7 +271,7 @@ local function checkFloor(seed: number, number: number)
 	local row = table.clone(MANNEQUIN)
 	row.freezesInLight = false
 	local other = fresh(row)
-	Keeper.offer(other, at, box, 1)
+	Keeper.offer(other, at, box, 1, Breaker.Grip)
 	ok(other.errandChance == 0, `{where}: a keeper that moves in light isn't offered it`)
 	local none = fresh()
 	for _ = 1, 60 * 60 do
@@ -204,13 +283,13 @@ local function checkFloor(seed: number, number: number)
 
 	-- a warm errand allocates nothing
 	local warm = fresh()
-	Keeper.offer(warm, at, box, 1)
+	Keeper.offer(warm, at, box, 1, Breaker.Grip)
 	for _ = 1, 120 do
 		Keeper.step(warm, DT, RUN)
 	end
 	local before = gcinfo()
 	for _ = 1, 600 do
-		Keeper.offer(warm, at, box, 1)
+		Keeper.offer(warm, at, box, 1, Breaker.Grip)
 		Keeper.step(warm, DT, RUN)
 	end
 	ok(gcinfo() - before <= 1, `{where}: a warm errand allocates nothing`)

@@ -2086,6 +2086,15 @@ verified: a doc page, Studio, or "untested".
   instead of converting. The map's screen layers its children by one ZIndex for all: a child
   added there needs ZIndex above the map's (FeedView uses 10 and up) or its background hides
   its own children.
+- **Studio in the background draws no frames** (S2-02d2, Nov 14): `RunService.RenderStepped`
+  fired 0 times a second (Heartbeat 60), so every client system stepped on it (`init.client`'s
+  frames: KeeperView, FeedView's follow) stood still. A body then shows each standing record only
+  when the next one arrives (one late), walking bodies glide unposed, and scripted
+  `InputHoldBegin` on a prompt does nothing (it's never shown). Count RenderStepped first; to
+  get a loose Mannequin without the prompt, `workspace:SetAttribute("WakeSleepers", true)` and
+  wait 90 s for the unpadlocked ones to burst out, then "SendToBreaker" (sounds call them off
+  often: send again). The body's state is in its `KeeperMotion` attribute's first word
+  (Reaching, Pulling at the box).
 - **Testing the camera feed in Play** (S2-02d1): the "Sending the Mannequin to the box" recipe,
   but park your root anchored under the lobby at (-6, -12, -591), not up at 400: the feed goes
   only to players on the floor (40 studs up or down). The feed is `PlayerGui.Minimap.Feed`;

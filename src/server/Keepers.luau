@@ -437,9 +437,10 @@ function Keepers.new(): Keepers
 		local d = origin:VectorToWorldSpace((k.facing :: any) :: Vector3)
 		local at, facing = vector.create(p.X, p.Y, p.Z), vector.create(d.X, 0, d.Z)
 		local t = Workspace:GetServerTimeNow()
-		if now or KeeperMotion.due(body.motion, t, at, facing, speed, k.state) then
+		local state = Keeper.shown(k) -- its hand on a breaker's lever shows (S2-02d2)
+		if now or KeeperMotion.due(body.motion, t, at, facing, speed, state) then
 			local left = if speed > 0 then Keeper.left(k) else 0
-			local encoded = KeeperMotion.encode(t, at, facing, speed, left, k.travelled, k.state)
+			local encoded = KeeperMotion.encode(t, at, facing, speed, left, k.travelled, state)
 			local motion = body.motion or KeeperMotion.record()
 			-- kept as screens read it, rounding and all, so `due` foresees exactly what they show
 			KeeperMotion.decode(encoded, motion)
@@ -584,8 +585,9 @@ function Keepers.new(): Keepers
 	end
 
 	-- A loud thing at `at` (the world's), carrying `reach` studs: every keeper on the floor it's on
-	-- that hears it comes to look (Keeper.heardAt). How many heard it.
-	local function hearAt(at: Vector3, reach: number, what: string): number
+	-- that hears it comes to look (Keeper.heardAt), but `maker`, the one that made it. How many
+	-- heard it.
+	local function hearAt(at: Vector3, reach: number, what: string, maker: Entry?): number
 		local count = 0
 		for _, on in floors do
 			local p = on.origin:PointToObjectSpace(at)
@@ -594,6 +596,9 @@ function Keepers.new(): Keepers
 				continue
 			end
 			for _, entry in on.keepers do
+				if entry == maker then
+					continue
+				end
 				local was: Keeper.State = entry.keeper.state
 				local heard, news = Keeper.heardAt(entry.keeper, here, reach)
 				if heard then
@@ -869,7 +874,7 @@ function Keepers.new(): Keepers
 		local chance = if devErrand and powered
 			then 1
 			else Breaker.errand(on.floor.number, powered, since, on.cut)
-		Keeper.offer(k, on.boxStand, on.boxAt, chance)
+		Keeper.offer(k, on.boxStand, on.boxAt, chance, Breaker.Grip)
 	end
 
 	-- The players standing on floor `on` (S2-02d): who sees its security camera feeds. Kept players
@@ -946,11 +951,13 @@ function Keepers.new(): Keepers
 				`Keepers: the {entry.keeper.row.name} threw the breaker on floor {on.floor.number}`
 			)
 		end
+		-- the others; the one that threw it stands holding the lever down (S2-02d2)
 		local p = on.boxStand
 		hearAt(
 			on.origin:PointToWorldSpace(Vector3.new(p.x, 1, p.z)),
 			Breaker.ClunkHeard,
-			"the breaker"
+			"the breaker",
+			entry
 		)
 	end
 

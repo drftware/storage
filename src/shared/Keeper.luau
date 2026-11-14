@@ -64,8 +64,11 @@
 	dark): offered the floor's breaker box (`offer`, the server's, while the box is on), each time
 	it picks where to wander next it may head for the box instead, by the offer's chance from the
 	floor's Random, as Phasmophobia's ghost goes to the fuse box. It walks there as it wanders,
-	at its walk, held by any light as ever; there, it stands facing the box with `threw` set for
-	that step (the server throws it), then lingers. Anything it hears or sees calls it off.
+	at its walk, held by any light as ever; there, it stands facing the box with its hand up on the
+	grip a beat (`offer`'s grip; S2-02d2, so the security camera shows it), then drags the lever
+	down with `threw` set for that step (the server throws it), and lingers holding it down
+	(`lever`, which screens are shown as `Keeper.shown`). A light on it holds it in the beat;
+	anything it hears or sees calls it off.
 
 	It catches the one it hunts (L-06b3c), as Granny's grab or Piggy's swing ends the chase the
 	moment she reaches you: their feet within its row's `reach` along the halls and its
@@ -170,9 +173,15 @@ export type Keeper = {
 	errandAt: vector, -- where it stands to throw the floor's breaker (`offer`, the floor's coords)
 	errandBox: vector, -- the box itself: it faces it there
 	errandChance: number, -- the chance it heads there each time it picks a wander; 0: never
-	errand: boolean, -- it's wandering to the box
-	threw: boolean, -- it reached the box this step: the server throws it
+	errandGrip: number, -- seconds it stands with its hand up on the grip before it throws (`offer`)
+	errand: boolean, -- it's wandering to the box, or standing at it with its hand on the grip
+	-- its hand on the box's lever while it stands there (S2-02d2): up on the grip the beat before
+	-- it throws (Reach), then holding it down as it lingers (Pull); "None" anywhere else
+	lever: Lever,
+	threw: boolean, -- it dragged the lever down this step: the server throws the box
 }
+
+export type Lever = "None" | "Reach" | "Pull"
 
 local Keeper = {}
 
@@ -256,7 +265,7 @@ end
 
 -- It stands still where it is for `seconds`, and remembers the place, so it roams on elsewhere.
 local function stand(k: Keeper, seconds: number)
-	k.state, k.waited, k.wait = "Waiting", 0, seconds
+	k.state, k.waited, k.wait, k.lever = "Waiting", 0, seconds, "None"
 	local n = #k.recent
 	if n > 0 then
 		k.recentAt = k.recentAt % n + 1
@@ -487,7 +496,9 @@ function Keeper.new(
 		errandAt = at,
 		errandBox = at,
 		errandChance = 0,
+		errandGrip = 0,
 		errand = false,
+		lever = "None",
 		threw = false,
 	}
 end
@@ -497,14 +508,28 @@ end
 --- (`Breaker.errand`: 0 while the box is thrown or the power just came back). Only a row that
 --- freezes in light takes it; the server offers it every step, so a chance of 0 calls off a
 --- walk already on its way.
-function Keeper.offer(k: Keeper, at: vector, box: vector, chance: number)
+function Keeper.offer(k: Keeper, at: vector, box: vector, chance: number, grip: number)
 	if not k.row.freezesInLight then
 		return
 	end
-	k.errandAt, k.errandBox, k.errandChance = at, box, chance
+	k.errandAt, k.errandBox, k.errandChance, k.errandGrip = at, box, chance, grip
 	if chance <= 0 and k.errand then
-		k.errand = false -- the power went off another way, or just came back: it wanders on
+		-- the power went off another way, or just came back: it wanders on, its hand off the grip
+		k.errand = false
+		if k.lever == "Reach" then
+			k.lever = "None"
+		end
 	end
+end
+
+--- The state screens are told it's in (KeeperMotion): its own, but standing at a breaker box with
+--- its hand on the lever, "Reaching" (up on the grip) or "Pulling" (holding it down), S2-02d2.
+function Keeper.shown(k: Keeper): string
+	local lever = k.lever
+	if k.state ~= "Waiting" or lever == "None" then
+		return k.state
+	end
+	return if lever == "Reach" then "Reaching" else "Pulling"
 end
 
 -- A newer sound this near the one it's already going to (or standing at, looking), in studs, is
@@ -864,7 +889,14 @@ function Keeper.step(
 	elseif state == "Waiting" then
 		k.waited += dt
 		if k.waited >= k.wait then
-			roam(k)
+			if k.lever == "Reach" then
+				-- its hand has been on the grip a beat: it drags the lever down (the server throws
+				-- the box) and stands there a while holding it
+				k.errand, k.threw = false, true
+				k.waited, k.wait, k.lever = 0, k.row.linger, "Pull"
+			else
+				roam(k)
+			end
 			return true
 		end
 		return looked
@@ -908,9 +940,10 @@ function Keeper.step(
 		stand(k, k.row.linger)
 		faceToward(k, if state == "Going" then k.heard else k.seen)
 	elseif there and k.errand then
-		-- at the box: its hand on the grip, the server throws it; it stands there a while
-		k.errand, k.threw = false, true
-		stand(k, k.row.linger)
+		-- at the box: its hand goes up on the grip and it stands a beat, so a camera watching shows
+		-- it (S2-02d2), still on its errand; then it throws (Waiting, above)
+		stand(k, k.errandGrip)
+		k.lever = "Reach"
 		faceToward(k, k.errandBox)
 	elseif there then
 		stand(k, k.row.roamLinger)

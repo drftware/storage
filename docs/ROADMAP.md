@@ -1672,12 +1672,18 @@ Done when a team that has lost its lights goes looking for the breaker without b
       `Feeds` (server: who watches, where the camera hangs, show and close), `FeedView` (the
       picture grown out of the map's square, the halls copied in once, the body and box followed
       at 12 frames a second, grain, snow, number, dot, sounds), art/feed (grain and snow).
-    - [ ] **S2-02d2 The hand on the lever, judged at phone size.** The Mannequin reaches up and
-      pulls the lever down as two stop-motion keys (a new `Pose` pair, checked in
-      `tests/mannequin.spec.luau`), held a beat on the grip before the throw so the feed shows
-      it, seen in the hall too. Then judge the feed at phone size in Play (Device Simulator) with
-      the Mannequin in it: framing (`Feed.Fov`, the hang), darkness, grain strength. A feed that
-      starts while the map is still sliding in takes the map's place as it lands.
+    - [x] **S2-02d2 The hand on the lever.** (Nov 14, D-166) Two stop-motion keys, `Reach`
+      (right hand up on the grip, head tipped back) and `Pull` (the lever dragged down, elbow
+      tucked, weight thrown onto it, head dropped), each with its hand within 0.2 of the grip in
+      `tests/mannequin.spec.luau`. The brain stands it a beat with its hand on the grip
+      (`Breaker.Grip`, 0.6 s; a light holds it there, a sound or sight calls it off), then
+      throws, and it lingers holding the lever down; it no longer hears its own clunk. Screens
+      are told "Reaching"/"Pulling" (`Keeper.shown`), so the hall and the feed both show it.
+    - [ ] **S2-02d3 The feed judged at phone size.** Judge the feed at phone size in Play
+      (Device Simulator) with the Mannequin in it: framing (`Feed.Fov`, `Feed.AimUp`, the hang),
+      darkness, grain strength, until the hand going up and the lever coming down read in a
+      160-point window. A feed that starts while the map is still sliding in takes the map's
+      place as it lands (FeedView `mapWindow`).
 - [x] **S2-03 Sleeping monsters wake.** After four minutes on floors 1 and 2 (six above), three
   sleepers wake and pound on their doors, heard across the floor; three more every two minutes;
   sooner and more higher up. One pounding breaks out after 90 seconds unless its door is

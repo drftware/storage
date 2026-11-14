@@ -2,66 +2,66 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-14, session 154 (afternoon run 2: S2-02d1) ·
+**Updated:** 2026-11-14, session 155 (afternoon run 3: S2-02d2) ·
 **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- **A security camera shows the Mannequin cut the power** (S2-02d1, D-165), run in Studio Play
-  on seed 7, floor 3: as a Mannequin walks its last steps to the breaker, every screen on that
-  floor turns its corner map to snow and grows it into a grainy, cold, choppy camera picture of
-  the box's hall ("CAM 07", a blinking dot); the clunk comes through it thin, it dims, static,
-  map back. Run: in 2.5 s before the throw, 46 hall parts and the body and box copied in, dimmed
-  at the throw, gone 2.2 s after; the window on the map's own corner. Seen: the grain, number
-  and a hall's panels; never a clean shot of the Mannequin at the box. Not heard. Studio in Edit.
-- Reusable: `Feeds:show/close/hang/ready` (server), `FeedView` (client), `Feed` (rules, tested).
+- **The Mannequin pulls the lever** (S2-02d2, D-166): at the breaker box its right hand goes up
+  on the grip (its arm creaks), it holds 0.6 s (`Breaker.Grip`; a light holds it there, a sound
+  or sight calls it off), then drags the lever down and stands 5 s holding it, head dropped.
+  Two stop-motion keys (`Pose` Reach and Pull), each hand within 0.2 of the grip in the tests.
+  Screens are told "Reaching"/"Pulling" (`Keeper.shown`), so the hall and the camera feed both
+  show it. The thrower no longer hears its own clunk (it used to walk off at once).
+- Run in Studio Play (floor 3): the feed showed the hand up for the beat before the throw; the
+  server went Reaching, then Pulling 0.6 s later, the thrower stayed while the others came to
+  the clunk. Studio drew no frames in the second run (STUDIO.md), so the pull moving on a
+  screen and the phone-size look are unseen. Studio left in Edit.
 
-## Next task: S2-02d2 The hand on the lever, judged at phone size
-ROADMAP S2-02d2 (the owner's idea in S2-02d above it). The feed works; what it shows doesn't
-yet land: the Mannequin stands at the box in its still pose as the lever slams down by itself.
-1. Read ROADMAP S2-02d2 and D-165. Read `Mannequin/Pose.luau`'s header and its `Poses` table
-   (grep "Lunge = {" for a reach), and how KeeperView picks a pose (grep "Pose.frame", "Still").
-2. Two stop-motion keys: "Reach" (the arm nearest the grip up on it) and "Pull" (the arm down,
-   the body leaning into it), inside `LIMITS`, checked in `tests/mannequin.spec.luau` as the
-   other poses are (feet on the floor, nothing through anything).
-3. The brain: at the box it stands a beat with its hand on the grip (a `Keeper` hold, about 0.6
-   s, a number in `Breaker`), then throws: `threw` set after the beat, not on arrival; a light
-   on it in the beat holds it there; tests in `tests/errand.spec.luau` first.
-4. Screens: KeeperView shows Reach for the beat and Pull as the box goes (the state or a body
-   attribute the server sets), on every screen, so the hall shows it too and the feed copies it.
-5. Judge in Play with Device Simulator at phone size: run the STUDIO.md "Testing the camera
-   feed in Play" recipe and capture as the hand reaches. Tune `Feed.Fov`, `Feed.AimUp`, the
-   light, `Feed.GrainSee` until the Mannequin and the lever read in a 160-point window.
-6. A feed starting while the map slides in should land where the map lands (FeedView
-   `mapWindow`); and a far player's picture needs the hall streamed (it is, at errand start).
-**Acceptance:** checks green; in Play the feed shows the hand go up and pull the lever down,
-the clunk on the pull; seen at phone size; Output clean.
-**Read first:** ROADMAP S2-02d2; DECISIONS D-165; `src/shared/Mannequin/Pose.luau` (header,
-`Poses`); `src/shared/Keeper.luau` (grep "errand"); `src/client/KeeperView.luau` (grep "Pose.");
-`docs/STUDIO.md` (grep "camera feed").
+## Next task: S2-05 The tap when you shut a door on a sleeper
+ROADMAP S2-05. Pull a door down on a monster that's asleep, or hasn't seen you, and a bar with
+a moving marker comes up by itself; hit it and the door settles quietly; miss or don't tap and
+it bangs, and the monster wakes and pounds (OWNER.md's "small things": not tapping is a miss).
+1. Read the GDD's section on shutting a door on a sleeper (docs tools, not WebFetch) and its
+   precedent (the hit game it names); check `docs/FRAMEWORK.md` for anything Brix has for a
+   timing bar or a hold-to-act; this game supplies the policy and the look.
+2. Pure rules first (a new shared module, Lune spec first): when the bar shows (the door
+   coming down on a unit whose keeper is asleep or hasn't seen the one pulling), how the marker
+   moves, the hit window, what a miss or no tap does. Numbers in Config-style fields, each
+   saying what it does to the player.
+3. Server: the door's close (grep `Doors.luau` for "Close") asks the rules; a hit settles the
+   door quietly; a miss bangs it and wakes the sleeper into the trapped keeper's pounding
+   (`Keeper.trap`, as a waking sleeper does in S2-03b). Validate the tap remote (type, range,
+   ownership, rate).
+4. Client: the bar rises by itself as the door comes down (phone first: big, one tap anywhere),
+   the marker sweeps, the hit's soft settle, the miss's bang and shake. No words on it.
+5. Verify in Play: count `RenderStepped` first (STUDIO.md); shut a door on a sleeper, hit and
+   miss, Output clean.
+**Acceptance:** checks green; in Play a hit shuts the door quietly and a miss wakes it pounding;
+the bar is readable at phone size; every outcome has its motion and sound.
+**Read first:** ROADMAP S2-05; the GDD's sleeper-door section; `docs/FRAMEWORK.md` (grep
+"timing\|bar\|hold"); `src/server/Doors.luau` (grep "Close"); `src/server/Keepers.luau` (grep
+"sleepers", "trap"); `docs/STUDIO.md` (grep "draws no frames").
 
 ## Queue (next sessions per ROADMAP Phase 2)
-1. S2-02d2 (next), then S2-05 (the tap when you shut a door on a sleeper). S2-06 and L-08e3c
-   wait on `OWNER.md`. R-01 is for later.
-2. Found S2-02d1: other monsters in the camera's view are copied once as statues (only the
+1. S2-05 (next). S2-02d3 (judge the feed at phone size: framing, darkness, grain; a feed that
+   starts mid-slide lands with the map) needs Studio drawing frames: do it when it is, or the
+   owner judges it (`OWNER.md`). S2-06 and L-08e3c wait on `OWNER.md`. R-01 is for later.
+2. Found S2-02d2: sounds call errand Mannequins off often; four came to the clunk.
+3. Found S2-02d1: other monsters in the camera's view are copied once as statues (only the
    watched body moves); a second feed on the same floor replaces the first at once.
-3. The machine's menu (S1-10d1 to d3): unseen with the menu really open are the wheel's slide,
+4. The machine's menu (S1-10d1 to d3): unseen with the menu really open are the wheel's slide,
    the dim tool bays with full slots, and the menu staying down after a buy (`OWNER.md`).
-4. Found S2-04c: a player standing still at the keypad stays dark once the lights come back
-   (the motion lights' rule). Watch it in the playtest.
-5. Found S1-10d2: a tumbling saw's box corner may poke 0.05 past the glass (likely unseen).
-6. Found S2-04b: monsters called to one spot all go to the same point; four may stand inside
-   each other at the keypad (inferred, not seen). Spreading them is a small brain change.
-7. Found S2-04a: Output's `ContentId: rbxassetid://89260803894903 ... No asset content
-   representation found` ×27 as a dealt unit rolled up; cause unfound. Also seen this session:
-   about 46 `rbxassethash ... Requester does not have permission` lines at Play start.
-8. Found S2-03b: loose keepers hear a pounding door and go to look (a feature; watch it); a
-   woken unit's Studio line says "asleep". S2-03a: waves can pass `Deal.awakeCap`.
-9. Found S2-02c: only a wandering Mannequin takes the errand. S2-02b: nobody can throw the
-   breaker by hand (S2-06 may need it).
-10. Found S1-12: no saved cash total shows yet; a climb left mid-way makes no cash (D-151).
-   S1-11: a friend's beam doesn't show the mark. Output's `203785492` (wrong type), unchecked.
-11. Small: S1-07b coin piles and batteries show Take through a shut door; S1-09 a kept torch
-   drains if left on; S1-07a 16 in 100 units hold nothing; unseen: S1-06, S1-05, S1-04b2.
+5. Found S2-04c: a player standing still at the keypad stays dark once the lights come back;
+   S2-04b: monsters called to one spot all go to the same point (inferred).
+6. Output at Play start: about 46 `rbxassethash ... Requester does not have permission` lines;
+   S2-04a's `rbxassetid://89260803894903` ×27 as a dealt unit rolled up; `203785492` (wrong
+   type). Causes unfound.
+7. Found S2-03b: loose keepers go to look at a pounding door (a feature; watch it). S2-03a:
+   waves can pass `Deal.awakeCap`. S2-02c: only a wandering Mannequin takes the errand; S2-02b:
+   nobody can throw the breaker by hand (S2-06 may need it).
+8. Small: S1-12 no saved cash total shows; S1-11 a friend's beam doesn't show the mark; S1-07b
+   Take shows through a shut door; S1-09 a kept torch drains if left on; S1-07a 16 in 100
+   units hold nothing; S1-10d2 a saw may poke 0.05 past the glass; unseen: S1-06, S1-05.
 
 ## Kickoff for the next agent
 ```text
