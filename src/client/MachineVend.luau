@@ -39,7 +39,8 @@ local REST_Y = 0.85
 local BIN_DEEP = 0.8
 local BIN_CLEAR = 0.02
 local BIN_X = { -0.45, 1.8 }
--- Degrees it tips forward riding off the tip, and has tumbled by the time it lands.
+-- Degrees it tips forward riding off the tip, and has tumbled by the time it lands: a long thing
+-- less, so no part of it crosses the glass (`Buy.tumble`; S2-07b2, the saw's corner did).
 local TIP = 55
 local TUMBLE = 100
 -- Degrees the flap knocks out as the thing lands, and how many swings it dies over.
@@ -58,6 +59,9 @@ export type Vend = {
 	centre: Vector3, -- its middle then, world
 	push: number, -- studs it rides forward to leave the tip
 	fallZ: number, -- where its middle lands in the bin, machine frame (`landing`)
+	tip: number, -- degrees it tips riding off the tip (TIP, or less if it's long)
+	tumble: number, -- and has tumbled to as it lands
+	restY: number, -- its middle's height in the bin, raised as much as it stands taller leaning
 	rest: { PVInstance }, -- the others in the coil, front first
 	from: { CFrame },
 	to: { CFrame },
@@ -164,6 +168,16 @@ function MachineVend.start(
 		math.min(Specs.Glass.Centre[3] + reach + BIN_CLEAR, coilFront - 0.02)
 	)
 	local push = math.max(local0.Z - stop, 0)
+	-- tipping and tumbling no further than its reach fits behind the glass, at the nearest its
+	-- middle comes to the glass on the way (where it leaves the tip, or where it lands)
+	local fallZ = if thing then landing(hy, hz) else FALL_Z
+	local room = math.min(local0.Z - push, fallZ) - Specs.Glass.Centre[3] - BIN_CLEAR
+	local tumble = if thing then Buy.tumble(hy, hz, room, TUMBLE) else TUMBLE
+	local function tall(deg: number): number
+		local a = math.rad(deg)
+		return math.abs(math.sin(a)) * hz + math.abs(math.cos(a)) * hy
+	end
+	local restY = REST_Y + math.max(tall(tumble) - tall(TUMBLE), 0)
 	local rest: { PVInstance } = {}
 	local from: { CFrame } = {}
 	local to: { CFrame } = {}
@@ -197,7 +211,10 @@ function MachineVend.start(
 		pivot = pivot,
 		centre = centre,
 		push = push,
-		fallZ = if thing then landing(hy, hz) else FALL_Z,
+		fallZ = fallZ,
+		tip = math.min(TIP, tumble),
+		tumble = tumble,
+		restY = restY,
 		rest = rest,
 		from = from,
 		to = to,
@@ -251,17 +268,17 @@ local function path(v: Vend, t: number): (CFrame, boolean)
 	elseif t < turnEnd then
 		local u = (t - V.Turn) / V.Turning
 		at = c0 + Vector3.new(0, 0, -v.push * u)
-		tip = if u > 0.7 then TIP * ease((u - 0.7) / 0.3) else 0
+		tip = if u > 0.7 then v.tip * ease((u - 0.7) / 0.3) else 0
 	else
 		local u = math.min((t - turnEnd) / V.Fall, 1)
 		local top = c0 + Vector3.new(0, 0, -v.push)
 		local x = math.clamp(top.X, BIN_X[1], BIN_X[2])
 		at = Vector3.new(
 			top.X + (x - top.X) * u,
-			top.Y + (REST_Y - top.Y) * u * u,
+			top.Y + (v.restY - top.Y) * u * u,
 			top.Z + (v.fallZ - top.Z) * u
 		)
-		tip = TIP + (TUMBLE - TIP) * u
+		tip = v.tip + (v.tumble - v.tip) * u
 		if u >= 1 then
 			return CFrame.new(f:PointToWorldSpace(at)) * f.Rotation * CFrame.Angles(
 				math.rad(-tip),

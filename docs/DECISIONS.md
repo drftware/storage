@@ -4771,3 +4771,32 @@ crowds it). The ticket read "a bit" as about a third.
   unit's dark the whole time you were kept, and you came out with a dead torch. Let out, your
   thumb switches it on again with the charge it had.
 
+
+## D-174 The screen's three: a friend's beam shows the mark, a saw that leans, the Output lines traced (S2-07b2, Nov 14)
+
+- **A friend's beam shows the faint mark.** Why it didn't: FaintMarkView was only ever given
+  your own beam (D-150 left friends' as polish). Now FlashlightView hands it the friends' beams
+  it draws with real light (`Beam.friends`, a list reused frame to frame): each leaves the drawn
+  lens, short of any surface as the light does, along the torch's look as their arm is raised to
+  their `Aim`. `FaintMark.under` takes every lit beam: the mark shows as much as the best beam on
+  it, in the brightest light on it (a friend's steady beam holds it while yours stutters), and
+  lingers in the brightest torch lit anywhere, going at once when every torch is out. Not
+  chosen: their head along their root's heading (the server's keeper test): the mark should
+  show where this screen draws light, and a budgeted-out friend (lens only, no light) shows none.
+  Phasmophobia shows prints under anyone's light (from memory).
+- **A long thing leans in the bin.** The saw's corner crossed the glass by 0.056 as it tumbled
+  (measured with the real saw's box, D-162 had 0.05). `Buy.tumble` gives the most it may tip
+  so its reach (|cos| half-depth + |sin| half-height, a bound over its box) never passes the
+  glass at the nearest its middle comes; it rides off at that angle and lands leaning, its middle
+  raised by however much taller it stands, so its foot stays where a lying one's would. The saw
+  now leans 41 degrees and stays 0.022 behind the glass; batteries, the wrap and short tools
+  still tumble the full 100. No art changed (the path is code); a can leaning in a real bin is
+  the look.
+- **The Output lines aren't the game's.** The 23 `rbxassethash ... Requester does not have
+  permission` lines come on the server and the client as the place loads, before any of the
+  game's client code, and still with `LoadCharacterAppearance` off; no content id the place
+  names failed on the client (`ContentProvider:GetAssetFetchStatus`: 77 loaded, 331 not yet
+  asked for). Studio's own, so not silenced. 203785492: Studio's or a plugin's, as L-16a found.
+  89260803894903 is a TexturePack (asset type 63) of the owner's, made 18 s after the coin's mesh
+  on Nov 14: the coin's import made it. No property in the place names it and cloning the coin
+  on either side didn't bring the line, so it stays watched (`OWNER.md`), not fixed blind.

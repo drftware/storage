@@ -104,6 +104,29 @@ function Buy.ends(): number
 	return Buy.lands() + math.max(v.Flap + v.Gone, Buy.TakeAfter + Buy.Take)
 end
 
+--[[
+	How far a thing may tip, degrees, as it rides off its coil and tumbles to the bin, so no part of
+	it crosses the glass (S2-07b2): the most of `most` that a box `hy` half tall and `hz` half deep
+	(along the machine's Y and Z, as it stood) reaches no further forward than `room` studs from
+	its middle at every angle on the way. Tipping about the machine's X, its forward reach at an
+	angle is at most |cos| * hz + |sin| * hy, so a flat or short thing tumbles all the way and a
+	long one (the saw) settles at the steepest lean that fits, as a tall can leans in a real bin.
+]]
+function Buy.tumble(hy: number, hz: number, room: number, most: number): number
+	local fits = 0
+	for deg = 1, math.floor(most) do
+		local a = math.rad(deg)
+		if math.abs(math.cos(a)) * hz + math.abs(math.sin(a)) * hy > room then
+			break
+		end
+		fits = deg
+	end
+	if fits == math.floor(most) then
+		return most
+	end
+	return fits
+end
+
 -- The coins drawn for a price: at most `Buy.Coins`, adding up to it (Pay's split).
 function Buy.coins(price: number): { number }
 	return Pay.split(price, Buy.Coins)

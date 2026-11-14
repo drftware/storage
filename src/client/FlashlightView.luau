@@ -49,7 +49,7 @@ local Joints = require(script.Parent.Joints)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 
-local Torch = Flashlight.Torch
+local Torch = require(ReplicatedStorage.Shared.Flashlight.Torch)
 local Specs = Flashlight.Specs
 
 local player = Players.LocalPlayer
@@ -308,6 +308,9 @@ export type Beam = {
 	on: () -> boolean, -- whether it's on, on your screen
 	landed: () -> (), -- your screen saw your beam land on a keeper: send where you look at once
 	light: () -> number, -- the light it gives this frame, 0 to 1 (it flickers and sags dying)
+	-- friends' lit beams as this screen draws them this frame (the real ones: each lights the hall
+	-- here), for FaintMarkView; the list and its tables are reused frame to frame, so read, don't keep
+	friends: () -> { Torch.Sight },
 }
 
 -- The system, and your torch for KeeperView and FaintMarkView.
@@ -333,6 +336,8 @@ function FlashlightView.new(): (Brix.System, Beam)
 	local distances: { number } = {}
 	local real: { boolean } = {}
 	local budgetIn = 0
+	local sights: { Torch.Sight } = {} -- friends' real beams this frame (`Beam.friends`)
+	local sightPool: { Torch.Sight } = {} -- their tables, kept so a frame makes none
 	local switchRemote: RemoteEvent? = nil
 	local aimRemote: UnreliableRemoteEvent? = nil
 	local ui: Ui? = nil
@@ -782,6 +787,7 @@ function FlashlightView.new(): (Brix.System, Beam)
 				friends[model] = nil
 			end
 		end
+		table.clear(sights)
 		budgetIn -= dt
 		local camera = Workspace.CurrentCamera
 		if budgetIn <= 0 and camera then
@@ -832,8 +838,21 @@ function FlashlightView.new(): (Brix.System, Beam)
 			local beamAt, head = f.beamAt, f.head
 			if beamAt and head and on and real[i] == true then
 				local want = f.rig.body.CFrame * f.beamHome
-				beamAt.WorldCFrame = want.Rotation
-					+ HandRoom.clear(head.Position, want.Position, f.skip)
+				local from = HandRoom.clear(head.Position, want.Position, f.skip)
+				beamAt.WorldCFrame = want.Rotation + from
+				-- and the beam as other things on this screen see it (the faint mark shows in it)
+				local n = #sights + 1
+				local sight = sightPool[n]
+				local look = want.LookVector
+				local eye, aim =
+					vector.create(from.X, from.Y, from.Z), vector.create(look.X, look.Y, look.Z)
+				if sight then
+					sight.eye, sight.aim, sight.light = eye, aim, k
+				else
+					sight = { eye = eye, aim = aim, light = k }
+					sightPool[n] = sight
+				end
+				sights[n] = sight
 			end
 			local aim = model:GetAttribute(Torch.AimAttribute)
 			local target = if type(aim) == "number" then aim else 0
@@ -1010,6 +1029,7 @@ function FlashlightView.new(): (Brix.System, Beam)
 		end
 		table.clear(friends)
 		table.clear(order)
+		table.clear(sights)
 	end
 
 	local beam: Beam = {
@@ -1021,6 +1041,9 @@ function FlashlightView.new(): (Brix.System, Beam)
 		end,
 		light = function(): number
 			return if mine then level else 0
+		end,
+		friends = function(): { Torch.Sight }
+			return sights
 		end,
 	}
 

@@ -1,15 +1,17 @@
 --!strict
 --[[
 	FaintMark: the small chalk ring on one note's door frame (S1-11, GDD "At most one faint mark on
-	a floor"; which unit is `Deal.markFrom`). It shows only from a few steps away with your own
-	torch on it, as Phasmophobia's fingerprints show on a door only under the light you hold: walk a
-	hall sweeping your beam along the frames and now and then one has something scrawled on it.
+	a floor"; which unit is `Deal.markFrom`). It shows only from a few steps away with a torch on
+	it, yours or a friend's, as Phasmophobia's fingerprints show on a door only under a light: walk
+	a hall sweeping your beam along the frames and now and then one has something scrawled on it.
 	Nothing else says so, and the corner map knows nothing of notes.
 
 	The server sticks it on the unit's jamb as the floor is laid, hidden, and tags it (FloorBuilder);
-	each screen shows it in its own beam (FaintMarkView). The art is `art/mark/` (the generated
-	`Specs`). Numbers only here, so Lune tests the seeing.
+	each screen shows it in the lit beams it draws, yours and friends' (FaintMarkView). The art is
+	`art/mark/` (the generated `Specs`). Numbers only here, so Lune tests the seeing.
 ]]
+local Torch = require("./Flashlight/Torch")
+
 local FaintMark = {}
 
 -- The tag on the mark's part (CollectionService), so a screen finds it as it streams in.
@@ -62,6 +64,24 @@ function FaintMark.seen(eye: vector, aim: vector, point: vector, facing: vector)
 	local beam = smooth((cos - EDGE_COS) / (CORE_COS - EDGE_COS))
 	local near = smooth((FaintMark.Far - dist) / (FaintMark.Far - FaintMark.Near))
 	return beam * near
+end
+
+-- What every lit beam on a screen shows of the mark at `point` (yours and friends', as Phasmophobia
+-- shows prints under anyone's light): how much (the most any beam shows) and the light on it (the
+-- brightest beam that shows it, so a friend's steady beam holds it while your dying one stutters).
+-- On no beam, the brightest beam lit anywhere, so it lingers a moment as a beam moves off and goes
+-- at once when every torch is out.
+function FaintMark.under(sights: { Torch.Sight }, point: vector, facing: vector): (number, number)
+	local most, light, anyLight = 0, 0, 0
+	for _, s in sights do
+		local seen = FaintMark.seen(s.eye, s.aim, point, facing)
+		if seen > 0 then
+			most = math.max(most, seen)
+			light = math.max(light, s.light)
+		end
+		anyLight = math.max(anyLight, s.light)
+	end
+	return most, if most > 0 then light else anyLight
 end
 
 -- The mark as a screen shows it this frame: `shown` last frame, easing toward `target` (both 0

@@ -148,6 +148,18 @@ ok((Buy.arc(a, b, up, 0) - a).Magnitude < 1e-6, "the arc starts in the bin")
 ok((Buy.arc(a, b, up, 1) - b).Magnitude < 1e-6, "and ends in the hand")
 ok(math.abs(Buy.arc(a, b, up, 0.5).Y - 2) < 1e-6, "bowed its lift up at its middle")
 
+-- How far a thing tumbles (S2-07b2): all the way if it fits behind the glass, a long one only as
+-- far as its reach fits, and never a reach past the room at any angle on the way.
+ok(Buy.tumble(0.2, 0.2, 0.4, 100) == 100, "a short thing tumbles all the way")
+local saw = Buy.tumble(0.4, 0.1, 0.37, 100)
+ok(saw > 30 and saw < 100, `a long one leans part way ({saw})`)
+local worst = 0
+for deg = 0, saw do
+	local a = math.rad(deg)
+	worst = math.max(worst, math.abs(math.cos(a)) * 0.1 + math.abs(math.sin(a)) * 0.4)
+end
+ok(worst <= 0.37, `and its reach never passes the room on the way ({worst})`)
+ok(Buy.tumble(0.4, 0.5, 0.37, 100) == 0, "too deep to tip at all: it doesn't")
 print(`buy: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

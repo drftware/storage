@@ -2,16 +2,19 @@
 --[[
 	FaintMarkView: the faint mark on this screen (S1-11). A floor may carry a small chalk ring on
 	one note's door frame (FaintMark; which one, `Deal.markFrom`), stuck on the jamb by the server
-	and invisible. This screen shows it only in your own torch's beam and only from a few steps
-	away (`FaintMark.seen`), as Phasmophobia's fingerprints show on a door only under the light you
-	hold: sweep your beam along the frames as you walk a hall and, close up, one has something
-	scrawled on it. It blooms as the beam lands and lingers a moment as the beam moves off; it
-	flickers with a dying torch and goes with it. Nothing else says so: no sound, no word, nothing
+	and invisible. This screen shows it only in a torch's beam and only from a few steps away
+	(`FaintMark.seen`), as Phasmophobia's fingerprints show on a door only under a light: sweep
+	your beam along the frames as you walk a hall and, close up, one has something scrawled on it.
+	It blooms as the beam lands and lingers a moment as the beam moves off; it flickers with a
+	dying torch and goes with it. A friend's beam shows it too (S2-07b2), so a friend sweeping the
+	frames ahead of you lights it for you both. Nothing else says so: no sound, no word, nothing
 	on the corner map.
 
 	Your beam is taken from your view (first person: the torch is in your hand at your eye and
-	points where you look), as KeeperView takes it. The mark's own face hides it behind walls.
-	It does nothing while every mark it knows is out of sight and unlit.
+	points where you look), as KeeperView takes it; a friend's is the beam this screen draws from
+	their lens along their raised arm, the real ones only (`Beam.friends`), so the mark shows only
+	where the hall is lit here (`FaintMark.under`). The mark's own face hides it behind walls. It
+	does nothing while every mark it knows is out of sight and unlit.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -19,12 +22,14 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local FaintMark = require(ReplicatedStorage.Shared.FaintMark)
+local Torch = require(ReplicatedStorage.Shared.Flashlight.Torch)
 
--- Your torch, as FlashlightView tells it: whether it's on on your screen, and the light it gives
--- this frame (0 to 1: a dying torch flickers and sags).
+-- Your torch, as FlashlightView tells it: whether it's on on your screen, the light it gives
+-- this frame (0 to 1: a dying torch flickers and sags), and friends' lit beams drawn here.
 type Beam = {
 	on: () -> boolean,
 	light: () -> number,
+	friends: () -> { Torch.Sight },
 }
 
 -- A mark this screen knows: where it is and which way its face looks (out into the hall), and
@@ -36,6 +41,8 @@ local FaintMarkView = {}
 function FaintMarkView.new(beam: Beam): Brix.System
 	local marks: { [BasePart]: Mark } = {}
 	local connections: { RBXScriptConnection } = {}
+	local sights: { Torch.Sight } = {} -- every lit beam this frame, yours first
+	local yours: Torch.Sight = { eye = vector.zero, aim = vector.zero, light = 0 }
 
 	local function add(i: Instance)
 		if not i:IsA("BasePart") or marks[i] then
@@ -77,17 +84,20 @@ function FaintMarkView.new(beam: Beam): Brix.System
 		if next(marks) == nil then
 			return
 		end
-		local on = beam.on()
+		table.clear(sights)
 		local camera = Workspace.CurrentCamera
-		local light = if on then beam.light() else 0
-		local eye: vector?, aim: vector? = nil, nil
-		if on and camera then
+		if beam.on() and camera then
 			local cf = camera.CFrame
 			local e, l = cf.Position, cf.LookVector
-			eye, aim = vector.create(e.X, e.Y, e.Z), vector.create(l.X, l.Y, l.Z)
+			yours.eye, yours.aim = vector.create(e.X, e.Y, e.Z), vector.create(l.X, l.Y, l.Z)
+			yours.light = beam.light()
+			table.insert(sights, yours)
+		end
+		for _, s in beam.friends() do
+			table.insert(sights, s)
 		end
 		for part, m in marks do
-			local target = if eye and aim then FaintMark.seen(eye, aim, m.point, m.facing) else 0
+			local target, light = FaintMark.under(sights, m.point, m.facing)
 			if target == 0 and m.shown == 0 then
 				continue
 			end
@@ -106,6 +116,7 @@ function FaintMarkView.new(beam: Beam): Brix.System
 		end
 		table.clear(connections)
 		table.clear(marks)
+		table.clear(sights)
 	end
 
 	return system :: any -- any: a plain Brix system built field by field

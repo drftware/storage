@@ -130,6 +130,29 @@ ok(FaintMark.seen(behind, toward(behind, point), point, facing) == 0, "from behi
 local along = at(4, -2) -- down the hall beside the door frame, looking back at it
 ok(FaintMark.seen(along, toward(along, point), point, facing) > 0.9, "from the side, close: shown")
 
+-- Every lit beam on a screen (S2-07b2): a friend's shows it as yours does.
+local friendEye = at(1, -3)
+local friend = { eye = friendEye, aim = toward(friendEye, point), light = 1 }
+local yoursAway = { eye = close, aim = aimOff(close, 180), light = 1 }
+local most, lit = FaintMark.under({ yoursAway, friend }, point, facing)
+ok(
+	most > 0.99 and lit == 1,
+	`your beam away, a friend's on it: fullest in their light ({most}, {lit})`
+)
+most, lit = FaintMark.under({}, point, facing)
+ok(most == 0 and lit == 0, "no torch lit: nothing, and no light to linger in")
+local dying = { eye = close, aim = toward(close, point), light = 0.2 }
+most, lit = FaintMark.under({ dying, friend }, point, facing)
+ok(most > 0.99 and lit == 1, "your dying beam and a friend's steady one: held in theirs")
+local friendAway = { eye = friendEye, aim = aimOff(friendEye, 180), light = 0.6 }
+most, lit = FaintMark.under({ dying, friendAway }, point, facing)
+ok(lit == 0.2, `only your dying beam on it: its light, not the friend's elsewhere ({lit})`)
+most, lit = FaintMark.under({ yoursAway, friendAway }, point, facing)
+ok(most == 0 and lit == 1, "every beam off it: none, lingering in the brightest lit")
+local friendBehind = { eye = at(0, 3), aim = vector.create(0, 0, -1), light = 1 }
+most = FaintMark.under({ friendBehind }, point, facing)
+ok(most == 0, "a friend's beam from behind the wall: none")
+
 -- Fading.
 local shown = 0
 for _ = 1, 6 do

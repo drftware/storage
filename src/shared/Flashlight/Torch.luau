@@ -116,6 +116,15 @@ export type Sway = {
 	click: number, -- seconds since the last click
 }
 
+-- A lit beam as a screen draws it this frame: where it leaves, which way its middle points (a
+-- unit vector), and the light it gives (0 to 1: a dying torch flickers and sags). Yours leaves
+-- your eye along your view; a friend's leaves their drawn lens along their raised arm.
+export type Sight = {
+	eye: vector,
+	aim: vector,
+	light: number,
+}
+
 -- Where the torch is this frame, on top of the hold: studs right, up, back; radians yaw, pitch,
 -- roll.
 export type Pose = {

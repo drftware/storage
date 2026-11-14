@@ -72,6 +72,31 @@ Hub. Studio Play is fine for the first go.
    Today every feed is the breaker's, so you'll only see this once a second monster uses the
    camera.
 
+## Now: the screen's three fixes (S2-07b2, built Nov 14, D-174; checked in Studio Play with a stand-in friend)
+
+What changed: a friend's torch now shows the chalk mark on a door frame, as your own does; a
+saw bought from the car's machine leans into the bin instead of tumbling through the glass;
+and the odd lines in Output were traced (none of them is the game's to fix).
+
+- [ ] **A friend's beam shows the mark** (Test > Clients and Servers, 2 players; set Workspace's
+  `DevFloorNumber` to 1 first, so the floor has a mark, and clear it after).
+  1. Both players walk to the same hall. Player 1 switches their torch off.
+  2. Player 2 switches their torch on and sweeps it along the door frames, close up (about
+     three steps away), the way you'd look for the mark yourself.
+  3. On player 1's screen, look for: the faint chalk ring appears on one frame where player 2's
+     beam lands, fades in, and fades away a moment after their beam moves off. Player 1 never
+     switched their own torch on.
+  4. Player 2 switches their torch off while it's on the mark. Look for: it's gone at once.
+- [ ] **The saw leans in the bin.** Ride the car with coins, buy the saw from the machine and
+  watch it come off its coil. Look for: it tips forward and drops into the bin leaning, and no
+  part of it shows in front of the glass at any moment. Buy a battery too: it still tumbles
+  and lies down as before. Does the lean look natural?
+- [ ] **One Output line to watch for.** If you ever see `rbxassetid://89260803894903 ... No
+  asset content representation found` in Output, write down what you'd just done (it came once
+  when a unit rolled up after a wrong code). It's a texture pack the coin's import made; it
+  couldn't be brought back tonight. The other lines at Play start (`rbxassethash ... permission`
+  and 203785492) are Studio's own, not the game's.
+
 ## Now: the player's three fixes (S2-07b1, built Nov 14, D-173; seen in Studio Play, not on a phone)
 
 What changed: a hall light you stand still under through a wrong code's alarm comes back lit;

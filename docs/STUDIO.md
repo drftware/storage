@@ -2042,7 +2042,8 @@ verified: a doc page, Studio, or "untested".
 - **Unchecked Output line:** `ContentId: rbxassetid://89260803894903 failed due to: No asset
   content representation found` (27 times) as the first wrong code's unit was dealt and rolled
   up. The ID isn't in the repo or in any MeshId, Texture or Image in Workspace or
-  ReplicatedStorage on either side.
+  ReplicatedStorage on either side. Traced in S2-07b2 (D-174): the owner's TexturePack from the coin's
+  import, named by no property; three coins cloned in Play didn't bring it.
 
 ## The machine's menu (S1-10d1, Nov 14)
 
@@ -2197,3 +2198,18 @@ verified: a doc page, Studio, or "untested".
 - **Testing a screen's battery rule without opening a unit:** a client-made Part tagged
   `Battery` with a `Take` attachment, a ProximityPrompt and a `Unit` ObjectValue, and the
   Player's `Charge` set low on the client, is picked up by BatteryView like a real one.
+
+## The screen's three (S2-07b2, Nov 14)
+
+- **Which asset a load line means:** `ContentProvider:GetAssetFetchStatus(id)` on the Client
+  gives each content id's state without loading it (Success, None for never asked, Failure).
+  The server answers None for everything (it renders nothing). `PreloadAsync` with id strings
+  answered Failure for nearly all 458, loaded or not: useless for this.
+- **What an id is:** `MarketplaceService:GetProductInfo(id)` on the Server gives its name, type
+  (`AssetTypeId`; 63 is a TexturePack, which the 3D Importer makes beside a mesh) and creation
+  time; match the time against other imports' meshes to find which import made it.
+- **A load failure is printed once a session:** reloading the character or cloning the thing
+  again brings no new line, so a test of "does X cause it" needs a fresh Play.
+- **Standing in a friend's beam for a client view:** require the view's module from
+  `PlayerScripts.Client`, make a second instance with a fake `Beam` whose `friends()` returns your
+  own sight table, and call its `step` by hand; the real instance leaves an unlit mark alone.

@@ -1798,7 +1798,7 @@ Done when a team that has lost its lights goes looking for the breaker without b
     tap today is a click, a touch anywhere not on a button, F, or a gamepad's A or B; a warning
     tick as the bar rises (Dead by Daylight's); the bar's own sound on the marker's sweep, if
     it helps. `TapView` and the cues in `DoorSound` ("Settle", "Drop") are where it lives.
-- [ ] **S2-07 The fix pass before Step 3** (added Nov 14 from HANDOFF's Queue, so Step 2 ends
+- [x] **S2-07 The fix pass before Step 3** (added Nov 14 from HANDOFF's Queue, so Step 2 ends
   clean before anyone is carried up wrapped). Built before S2-06. In
   three sessions (S2-07a split in its session, Nov 14: five fixes with Play checks didn't fit):
   - [x] **S2-07a Monsters and the camera.**
@@ -1823,7 +1823,7 @@ Done when a team that has lost its lights goes looking for the breaker without b
       loose ones at its door for good in Play). In Play: floor 3 (limit two) woke three, the
       third held at once, two loose 110 s in; two wrong codes brought three to the keypad at once,
       the closest two 4.3 studs apart. Specs: `errand`, `spread` (new), `waking`, `trapped`.
-  - [ ] **S2-07b Screens and things.** Split Nov 14 in its session (six fixes with Play checks
+  - [x] **S2-07b Screens and things.** Split Nov 14 in its session (six fixes with Play checks
     didn't fit one), one session each. (S1-12's saved cash total waits for S4-07, when cash
     buys.)
     - [x] **S2-07b1 The player's three.** (Nov 14, D-173.) A hall light coming back from a
@@ -1838,10 +1838,20 @@ Done when a team that has lost its lights goes looking for the breaker without b
       still on 0.5 s into a catch, off at 0.97 s, charge 299 of 300, your own torch's lights
       off; a dying torch's Take hidden outside shut Unit301, shown shut inside it, hidden
       outside again.
-    - [ ] **S2-07b2 The screen's three.** A friend's beam shows the faint mark as yours does
-      (S1-11, `FaintMarkView`); a saw no longer pokes past the machine's glass (S1-10d2; art is
-      code); the permission and wrong-type asset lines in Output at Play start are traced to
-      their asset ids and the scripts that load them, and fixed (HANDOFF's Queue).
+    - [x] **S2-07b2 The screen's three.** (Nov 14, D-174.) A friend's beam shows the faint mark
+      as yours does: FaintMarkView takes every lit beam this screen draws (`Beam.friends`, the
+      real ones, from their lens along their raised arm) and `FaintMark.under` shows it as much
+      as the best beam on it, in the brightest light on it. A long thing in the machine tumbles
+      only as far as its reach fits behind the glass (`Buy.tumble`): the saw leans 41 degrees
+      into the bin instead of tumbling to 100 (no art change: the vend's path). The Output
+      lines traced, not the game's: the 23 `rbxassethash` permission lines come on both sides
+      as the place loads, with the avatar off too, and no content id the place names fails
+      (77 loaded, 331 not yet asked for, none failed); 203785492 as before. 89260803894903 is
+      the owner's own TexturePack (type 63) made 18 s after the coin's mesh, named by no
+      property; three coins cloned on each side in Play didn't bring it. In Play: a stand-in
+      friend's beam took the mark from hidden to 70% in 0.5 s, 0.3 light sagged it to 20%, it
+      lingered 0.1 s after the beam swung off and was gone by 1.5 s; the real saw's box run
+      through the vend's path came 0.056 past the glass before, and stays 0.022 behind it now.
 - [ ] **S2-06 The second monster: the Packrat, which collects things, not people** (the owner
   chose it Nov 14, D-167, in place of the silent one that moved only in light; GDD "The Packrat
   collects things, not people"; Packrat is a working name). The moment: a friend drops their
