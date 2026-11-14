@@ -10,12 +10,12 @@
 	same when the riders move across. As the car stands at a floor again (its ride cleared) the
 	machine's stock goes with it, and a ride no car carries any more is forgotten.
 
-	The buy (S1-10c2, `Machine.Buy`): each bay's button carries a "Buy" button, named for what
-	stands in its coil, live while its row is lit on a ride that wakes the machine and its coil
-	holds something (stepped here; only machines on a ride are). A press is checked in order: the
-	bay is one we know on a machine we know (type), a living rider who isn't wrapped stands within
-	reach of that button (range), they're aboard that car (its `Aboard`) on that ride and the row
-	is open (ownership), the coil holds something and they can pay (state), then the rate. The
+	The buy (S1-10c2, `Machine.Buy`): a screen picks a bay on the machine's menu (S1-10d1: the
+	machine's one button, drawn and opened on each screen by MachineMenu) and sends the pick
+	(`Buy.Pick`). It's checked in order: a machine we know and a whole bay number (type), a living
+	rider who isn't wrapped stands within reach of the machine's button (`Buy.point`, range),
+	they're aboard that car (its `Aboard`) on that ride and the bay's row is open (ownership), the
+	coil holds something and they can pay (state), then the rate. The
 	price is the server's own. Then, with nothing in between that could yield: the thing first (a
 	battery fills their torch, refused while its ring is full; a tool goes in a free slot, refused
 	with no room; quietly, as the screens play its pick-up when it reaches the hand), and only if
@@ -37,7 +37,6 @@ local Machine = require(ReplicatedStorage.Shared.Machine)
 local Prompts = require(script.Parent.Prompts)
 local Ride = require(ReplicatedStorage.Shared.Elevator.Ride)
 local Stock = require(ReplicatedStorage.Shared.Machine.Stock)
-local Tools = require(ReplicatedStorage.Shared.Tools)
 
 local Buy = Machine.Buy
 local STUDIO = RunService:IsStudio()
@@ -63,7 +62,6 @@ type Entry = {
 	at: number, -- when that ride left (server time)
 	from: number, -- and the floor it left
 	conn: RBXScriptConnection,
-	prompts: { [number]: ProximityPrompt }, -- each bay's Buy, by bay
 	serial: number, -- buys at this machine, for `Buy.Attribute`
 }
 
@@ -87,12 +85,6 @@ local function rootOf(player: Player): BasePart?
 	return nil
 end
 
--- What a bay's button is named for: the thing in its coil.
-local function nameOf(key: string): string
-	local row = (Tools.Catalog :: any)[key] -- any: the catalog is keyed by text
-	return if row then row.name else key
-end
-
 local Machines = {}
 
 function Machines.new(): Machines
@@ -104,6 +96,7 @@ function Machines.new(): Machines
 	local flashlights: Filler? = nil
 	local slots: Giver? = nil
 	local remote: RemoteEvent? = nil -- tells the buyer's screen of the spend (`Buy.Remote`)
+	local picks: RemoteEvent? = nil -- a screen's pick on the menu (`Buy.Pick`)
 	-- a fresh shuffle each server; any: Brix's Random fills the pure contract Stock types
 	local random = (
 		Brix.Random.new({ seed = Random.new():NextInteger(1, 2 ^ 30) }) :: any
@@ -124,25 +117,6 @@ function Machines.new(): Machines
 		end
 	end
 
-	-- Each bay's button live or not, as its row is lit and its coil holds something; names it
-	-- for what stands there. Written only when it changes.
-	local function arm(e: Entry)
-		local stock = if e.ride then rides[e.ride] else nil
-		local since = if stock then rideClock(e.at) else math.huge
-		for i, prompt in e.prompts do
-			local bay = stock and stock[i]
-			local live = bay ~= nil
-				and bay.count > 0
-				and Buy.open(Machine.Specs.Bays[i].Row, since, e.from)
-			if bay and prompt.ObjectText ~= nameOf(bay.key) then
-				prompt.ObjectText = nameOf(bay.key)
-			end
-			if prompt.Enabled ~= live then
-				prompt.Enabled = live
-			end
-		end
-	end
-
 	-- The stock of ride `value` on every machine carrying it.
 	local function publish(value: string)
 		local stock = rides[value]
@@ -153,28 +127,25 @@ function Machines.new(): Machines
 		for _, e in entries do
 			if e.ride == value then
 				e.model:SetAttribute(Stock.Attribute, text)
-				arm(e)
 			end
 		end
 	end
 
 	local function press(e: Entry, i: number, player: Player)
-		-- type: Triggered hands us a Player; bay `i` is the button's own. A machine we still know
-		-- on a ride that wakes it.
+		-- type: checked by the remote's handler. A machine we still know on a ride that wakes it.
 		local value = e.ride
 		if entries[e.model] ~= e or not value then
 			return
 		end
-		-- range: a living rider, not wrapped, at that button
+		-- range: a living rider, not wrapped, within reach of the machine's button
 		if Prompts.wrapped(player) then
 			return
 		end
 		local root = rootOf(player)
-		local button = e.model:FindFirstChild(`Button{i}`)
-		if not (root and button and button:IsA("BasePart")) then
+		if not root then
 			return
 		end
-		if (root.Position - button.Position).Magnitude > Buy.Reach + Buy.Slack then
+		if (root.Position - Buy.point(e.model:GetPivot())).Magnitude > Buy.Reach + Buy.Slack then
 			return
 		end
 		-- ownership: aboard this car on this ride, its row lit and the power not about to cut
@@ -249,7 +220,6 @@ function Machines.new(): Machines
 			e.model:SetAttribute(Stock.Attribute, nil)
 		end
 		prune()
-		arm(e)
 	end
 
 	local function added(inst: Instance)
@@ -266,29 +236,8 @@ function Machines.new(): Machines
 			end),
 			at = 0,
 			from = 0,
-			prompts = {},
 			serial = 0,
 		}
-		for i in Machine.Specs.Bays do
-			local button = inst:FindFirstChild(`Button{i}`)
-			if button and button:IsA("BasePart") then
-				local spot = Instance.new("Attachment")
-				spot.Name = "Buy"
-				spot.Parent = button
-				local prompt = Prompts.make(spot, {
-					actionText = "Buy",
-					key = Enum.KeyCode.E,
-					pad = Enum.KeyCode.ButtonX,
-					reach = Buy.Reach,
-				})
-				prompt.RequiresLineOfSight = false -- on the machine's face: nothing stands between
-				prompt.Enabled = false
-				prompt.Triggered:Connect(function(player: Player)
-					press(e, i, player)
-				end)
-				e.prompts[i] = prompt
-			end
-		end
 		entries[inst] = e
 		rideChanged(e)
 	end
@@ -315,21 +264,28 @@ function Machines.new(): Machines
 		r.Name = Buy.Remote
 		r.Parent = folder
 		remote = r
+		local pick = Instance.new("RemoteEvent")
+		pick.Name = Buy.Pick
+		pick.Parent = folder
+		picks = pick
+		table.insert(
+			connections,
+			-- type first: a machine we know, a whole bay it has (unknown: whatever a screen sends)
+			pick.OnServerEvent:Connect(function(player: Player, machine: unknown, bay: unknown)
+				if typeof(machine) ~= "Instance" or type(bay) ~= "number" then
+					return
+				end
+				local e = entries[machine :: Model]
+				if not e or bay ~= math.floor(bay) or not Machine.Specs.Bays[bay] then
+					return
+				end
+				press(e, bay, player)
+			end)
+		)
 		-- any: the registry hands back plain Systems; each slot is filled by its system (init.server)
 		coins = (context.registry:get("coins") :: any) :: Wallet?
 		flashlights = (context.registry:get("flashlights") :: any) :: Filler? -- any: as above
 		slots = (context.registry:get("slots") :: any) :: Giver? -- any: as above
-		-- only machines on a ride: their buttons live as each row lights and dead at the cut
-		table.insert(
-			connections,
-			RunService.Heartbeat:Connect(function()
-				for _, e in entries do
-					if e.ride then
-						arm(e)
-					end
-				end
-			end)
-		)
 		table.insert(
 			connections,
 			Players.PlayerRemoving:Connect(function(player: Player)
@@ -368,6 +324,10 @@ function Machines.new(): Machines
 		if remote then
 			remote:Destroy()
 			remote = nil
+		end
+		if picks then
+			picks:Destroy()
+			picks = nil
 		end
 	end
 

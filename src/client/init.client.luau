@@ -42,6 +42,7 @@ local KneelView = require(script.KneelView)
 local MinimapView = require(script.MinimapView)
 local LadderView = require(script.LadderView)
 local LobbyView = require(script.LobbyView)
+local MachineMenu = require(script.MachineMenu)
 local MachineView = require(script.MachineView)
 local NoteView = require(script.NoteView)
 local FaintMarkView = require(script.FaintMarkView)
@@ -65,6 +66,7 @@ local flashlightView, myBeam = FlashlightView.new()
 local toolView, myHand = ToolView.new(needCursor, kick)
 local wrapView, lay = WrapView.new(myHand, kick)
 local cartView, ownCart, cartTold = CartView.new()
+local machineView, pressMachine = MachineView.new()
 
 local host = Brix.Host.new({
 	systems = {
@@ -87,7 +89,9 @@ local host = Brix.Host.new({
 		{ slot = "gateClock", system = GateClock.new() },
 		{ slot = "rideView", system = RideView.new(holdView) },
 		-- the machine in the car, waking on the ride (S1-10b2)
-		{ slot = "machineView", system = MachineView.new() },
+		{ slot = "machineView", system = machineView },
+		-- the machine's menu: its one button opens its front on your screen (S1-10d1)
+		{ slot = "machineMenu", system = MachineMenu.new(pressMachine, needCursor) },
 		{ slot = "minimapView", system = MinimapView.new() },
 		-- the coins: a pile's take on every screen, and your count by the top bar (S1-04a2)
 		{ slot = "coinView", system = CoinView.new() },

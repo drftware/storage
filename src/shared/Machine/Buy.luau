@@ -27,8 +27,12 @@ local Buy = {}
 -- UserId), so every screen sends the thing to the right hand. Written just before the stock.
 Buy.Attribute = "Bought"
 
--- Studs from a button the press reaches: standing at the machine, not across the car.
-Buy.Reach = 5
+-- Studs from the machine's one button (`point`, the middle of its glass) that it reaches: from
+-- anywhere in the car's back half, so a friend standing in front of it never blocks you (S1-10d1).
+-- Its menu closes a stud short of this, so a pick made at the edge still counts.
+Buy.Reach = 8
+-- Studs the button hangs out from the glass, so it shows on the glass's face.
+Buy.Out = 0.4
 -- Studs the server allows past it (lag, a long arm).
 Buy.Slack = 2
 
@@ -53,10 +57,23 @@ Buy.Vend = {
 	Gone = 0.15, -- after the flap swings, the thing is gone from the bin (nobody to fly to)
 }
 
--- The one remote (S1-10c2b): server to the buyer's screen, just before the coins leave their
--- count, with the machine, the bay and the price. Nothing is ever sent the other way.
+-- The remotes. `Remote` (S1-10c2b): server to the buyer's screen, just before the coins leave
+-- their count, with the machine, the bay and the price. `Pick` (S1-10d1): a screen's pick on the
+-- machine's menu, with the machine and the bay; the server checks it all (Machines).
 Buy.RemoteFolder = "Remotes"
 Buy.Remote = "MachineBuy"
+Buy.Pick = "MachinePick"
+
+-- Where the machine's one button is, in the world, for a machine whose pivot is `frame`: the middle
+-- of its glass, `Out` in front of it. The server measures a pick's reach from here.
+function Buy.point(frame: CFrame): Vector3
+	local g = Specs.Glass.Centre
+	-- its own axes, not a new Vector3, so Lune checks it too (the frame's back is -LookVector)
+	return frame.Position
+		+ frame.RightVector * g[1]
+		+ frame.UpVector * g[2]
+		- frame.LookVector * (g[3] - Buy.Out)
+end
 
 -- The coins paid, on the buyer's screen (CoinView): one after another they leave the little
 -- count in the corner, ticking it down, and fly into the machine's coin slot, each with a clink.
@@ -126,6 +143,27 @@ Buy.Gap = 0.5
 Buy.Burst = 2
 
 export type Check = "ok" | "empty" | "poor"
+
+--[[
+	How a bay shows on the menu (S1-10d1) and what a pick on it does: "dark" its row isn't lit yet
+	or the power is about to cut (a dead press); "empty" its coil is empty (dashes, a dead press);
+	"full" a battery for a torch whose ring is full (`wants` false: dim, a dead press, left for a
+	friend); "poor" too few coins (its price dim; a pick clicks, buzzes and blinks it); "ok".
+]]
+export type Tile = "dark" | "empty" | "full" | "poor" | "ok"
+function Buy.tile(bay: Stock.Bay?, lit: boolean, coins: number?, wants: boolean): Tile
+	local tile: Tile = "ok"
+	if not lit then
+		tile = "dark"
+	elseif bay == nil or bay.count <= 0 then
+		tile = "empty"
+	elseif bay.key == Stock.Battery and not wants then
+		tile = "full"
+	elseif Buy.check(bay, coins) == "poor" then
+		tile = "poor"
+	end
+	return tile
+end
 
 -- Whether bay row `row`'s buttons work `since` seconds into a ride from floor `from`: the ride
 -- wakes the machine, the row's prices are lit, and the power isn't about to cut.

@@ -2,64 +2,64 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-14, session 148 (S2-04b, D-160) ·
+**Updated:** 2026-11-14, session 149 (S1-10d1, D-161) ·
 **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- **A wrong code calls every monster on the floor (S2-04b, D-160).** `Keeper.alarm`: every
-  keeper awake on the alarm's floor hears it however far, as Left 4 Dead's car alarm calls the
-  horde; loose, it walks to the keypad, looks round, roams; shut in, it comes once out; one
-  chasing a player it sees keeps chasing; a sleeper wakes only within 400 studs.
-- **Nothing pulls them off it.** Found in Play: a freed sleeper's first blow (1.2 s) and the
-  rolling doors' opens drew monsters to those doors instead. Now a keeper behind a door the alarm
-  picked stands quiet (`Keeper.hush`) and the opens of doors it rolls up aren't heard (`rolling`
-  in `Keepers`). Output: one line a wrong code, with how many turn now and how many once out.
-- **Verified in Studio Play** on the dev floor (seed 7): wrong code 1 freed 338's Mannequin; it
-  came, looked, roamed off; at 127 studs off, wrong code 2 freed 307, 335, 327. Output said "1
-  monsters turn for the keypad, 3 more once out"; no bangs, no door opens heard; all four walked
-  to the keypad (the far one 142 to 12 studs). No warnings or errors besides the known texture
-  lines. Studio left in Edit. Not watched on screen or heard (in `OWNER.md`).
+- **The machine has a menu (S1-10d1, D-161).** One "Buy" on the middle of its glass (8 studs,
+  no line of sight, for riders while the bottom row is lit) opens MachineMenu: the machine's own
+  front rising from the screen's foot, its rows lit in step with the real tubes, each bay's
+  picture, paper label, LED price and chrome button, states from the pure `Buy.tile`. A pick
+  sinks the real button (MachineView's `Pick`) and goes up the new `Buy.Pick` remote; the panel
+  drops away for the vend and rises after. The six per-bay prompts and the server's per-frame
+  arming are gone.
+- **Verified in Studio Play, server side only:** six malformed picks sold nothing; a real pick
+  sold the saw (12 coins to 4), rewrote the stock, stamped `Bought`, told the buyer's screen; a
+  pick short of coins was refused. **The panel itself is unseen:** Studio drew no frames
+  (RenderStepped 0 a second, screen capture timed out), so no client system stepped. Its look,
+  motion and sounds are in `OWNER.md`. Studio left in Edit.
 
-## Next task: S1-10d1 The vending machine's menu
-The owner's words are verbatim in ROADMAP S1-10d ("it's difficult to see what's available ...
-you click a prompt that opens an overlay where you can make your selection. Then you can still
-see it animate and drop out of the vending machine as-is."), and "make me fucking proud".
-The moment: you walk up in a crowded car, press one button, and every bay is there on your
-screen with its picture and price; you tap one and watch it drop from the real machine.
-1. Read ROADMAP S1-10d and S1-10d1. Today each bay has its own Buy prompt (`Machines`, grep
-   `prompts`, `"Buy"`); the server's buy checks (`Machine.Buy`, D-148) stay as they are.
-2. Replace the per-bay prompts with one prompt on the machine (one verb). Pressing it opens a
-   phone-first panel: every bay in the machine's order, each with its thing's picture (rendered
-   like the coin count's coin, `CoinView`/`ToolPicture`), name, price, and lit / sold out / too
-   few coins shown, never explained.
-3. Tapping a bay fires the same `MachineBuy` remote as today; the panel gets out of the way so
-   the coins, coil and drop play as now (`MachineVend`). It closes when you walk off, the ride
-   ends or you're caught; each friend opens their own. Every press answers with motion and sound.
-4. Verify in Studio Play: ride a car, open the panel, buy; judge it at phone size.
-**Acceptance:** checks green; one prompt per machine; the panel shows every bay correctly and
-buys through the unchanged server path; closes on its own; Output clean but the known lines.
-**Read first:** ROADMAP S1-10d and S1-10d1; DECISIONS D-148, D-149; `src/server/Machines.luau`
-(grep `prompts`, `Buy`); `src/client/MachineVend.luau`; `src/client/ToolPicture.luau`;
-the roblox-dev:roblox-ui skill.
+## Next task: S1-10d2 A shallower machine
+The owner's words (ROADMAP S1-10d): "I think we shrink the depth of the vending machine a bit".
+The moment: a full car of friends fits round it, and the vend still reads: the coil turns, the
+thing drops behind the flap and flies out.
+1. Read ROADMAP S1-10d2 and `art/unit/README.md` (how art is made). In `art/machine/spec.py`
+   make it about a third less deep (the owner's "a bit"): the cabinet's depth, the bays' and
+   coils' depth (a coil holds fewer loops, so check `Stock.MaxCount` and how many things stand
+   in a coil, `MachineStock`), keeping the face (glass, rails, flap, slot) where it is so the
+   menu's button point (`Buy.point`, on the glass) still sits on it.
+2. Rebuild with `scripts/art.sh machine`; check the look sheets; re-upload and prepare it
+   (STUDIO.md "Importing kit pieces"); the generated `Specs` updates itself.
+3. Check what reads the depth: `MachineVend` (`FALL_Z`, `REST_Y`, `BIN_X`), `MachineStock`
+   (`stand`), `Specs.InCar` (it stands against the back wall: its front moves back toward it).
+4. Verify in Studio Play: stage a ride (STUDIO.md "Staging the machine's stock") and a buy; first
+   check the Client's RenderStepped fires (STUDIO.md "The machine's menu"); judge at phone size.
+**Acceptance:** checks green; the machine about a third shallower; stock, vend and flight still
+land right; the menu still opens from its glass; Output clean but the known lines.
+**Read first:** ROADMAP S1-10d2; `art/unit/README.md`; `art/machine/spec.py`; STUDIO.md
+"Importing kit pieces"; `src/client/MachineVend.luau` (top constants); `src/client/MachineStock.luau`.
 
 ## Queue (next sessions per ROADMAP Phase 2)
-1. S1-10d1 (next), S1-10d2 (a shallower machine, art the unit's way), then S2-04c (the hall
-   lights go out for the alarm; today they all come on and freed Mannequins freeze about 4 s),
-   then S2-05. S2-06 and L-08e3c wait on `OWNER.md`. R-01 is for later.
-2. Found S2-04b: monsters called to one spot (the keypad, a door) all go to the same point and
+1. S1-10d2 (next), then S2-04c (the hall lights go out for the alarm; today they all come on and
+   freed Mannequins freeze about 4 s), then S2-05. S2-06 and L-08e3c wait on `OWNER.md`. R-01 is
+   for later.
+2. Found S1-10d1: a tool pick with every slot full presses and clicks, then nothing (the server
+   refuses quietly, the menu stays up). Show it on the bay instead (dim, like a full torch's
+   battery) once the client knows the slots are full.
+3. Found S2-04b: monsters called to one spot (the keypad, a door) all go to the same point and
    nothing keeps them apart, so four may stand inside each other at the keypad (inferred from
    distances, not seen). Spreading them round the spot is a small brain change worth a ticket.
-3. Found S2-04a: Output's `ContentId: rbxassetid://89260803894903 ... No asset content
+4. Found S2-04a: Output's `ContentId: rbxassetid://89260803894903 ... No asset content
    representation found` ×27 as a dealt unit rolled up; not in the repo, cause unfound.
-4. Found S2-03b: loose keepers hear a pounding door and go to look (felt as a feature; watch
+5. Found S2-03b: loose keepers hear a pounding door and go to look (felt as a feature; watch
    it). Deals' Studio line for a woken unit says "asleep" though it stands awake: Output only.
-5. Found S2-03a: waves can exceed `Deal.awakeCap`; `Waking.AwakeMost` (six) bounds it.
-6. Found S2-02c: only a wandering Mannequin takes the errand; one standing awake that has never
+6. Found S2-03a: waves can exceed `Deal.awakeCap`; `Waking.AwakeMost` (six) bounds it.
+7. Found S2-02c: only a wandering Mannequin takes the errand; one standing awake that has never
    been out (Watching) doesn't. S2-02b: nobody can throw the breaker by hand (S2-06 may need it).
-7. Found S1-12: no saved cash total shows yet; a climb left mid-way makes no cash (D-151).
+8. Found S1-12: no saved cash total shows yet; a climb left mid-way makes no cash (D-151).
    S1-11: a friend's beam doesn't show the mark. S1-10c2a: Output's `203785492` (wrong type) and
    texture permission errors, unchecked whether any are the machine's.
-8. Small: S1-07b coin piles and batteries show Take through a shut door; S1-09 a kept player's
+9. Small: S1-07b coin piles and batteries show Take through a shut door; S1-09 a kept player's
    torch drains if left on; S1-07a 16 in 100 units hold nothing (owner's call); unseen: S1-06 a
    kept find's save, S1-05 a find can be walked through, S1-04b2 keepers don't know about stuff.
 

@@ -50,6 +50,21 @@ ok(Buy.check(saw, nil) == "poor", "no count (off a climb) doesn't")
 ok(Buy.check(nil, 50) == "empty", "an empty coil sells nothing")
 ok(Buy.check({ key = "Saw", price = 8, count = 0 }, 50) == "empty", "a sold-out coil neither")
 
+-- tile: how a bay shows on the menu, and what a pick on it does
+local cell = { key = "Battery", price = 3, count = 2 }
+ok(Buy.tile(saw, false, 50, true) == "dark", "a row not lit yet is dark")
+ok(Buy.tile(nil, true, 50, true) == "empty", "an empty coil shows empty")
+ok(Buy.tile({ key = "Saw", price = 8, count = 0 }, true, 50, true) == "empty", "a sold-out one too")
+ok(Buy.tile(cell, true, 50, false) == "full", "a battery for a full torch is left for a friend")
+ok(Buy.tile(cell, true, 50, true) == "ok", "and sells to a dying one")
+ok(Buy.tile(saw, true, 7, false) == "poor", "a coin short is poor, whatever the torch")
+ok(Buy.tile(saw, true, 8, false) == "ok", "exactly enough buys a tool with a full torch")
+ok(Buy.tile(cell, true, 1, false) == "full", "a full torch outranks too few coins")
+-- the menu reaches from the car's back half, past the friends in front of the machine
+ok(Buy.Reach >= 7, "reach covers a crowd")
+local spot = Buy.point(roblox.CFrame.new(0, 0, 0))
+ok(spot.Z < -1.09 and spot.Y > 3, "the button hangs on the glass's face")
+
 -- allow: a burst of two, then one a gap
 local may, left = Buy.allow(nil, 0, 0)
 ok(may and left == Buy.Burst - 1, "the first press goes")

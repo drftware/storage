@@ -2035,3 +2035,20 @@ verified: a doc page, Studio, or "untested".
   content representation found` (27 times) as the first wrong code's unit was dealt and rolled
   up. The ID isn't in the repo or in any MeshId, Texture or Image in Workspace or
   ReplicatedStorage on either side.
+
+## The machine's menu (S1-10d1, Nov 14)
+
+- **Studio drew no frames at all** with its window hidden (S1-10d1): the Client's
+  `RenderStepped` fired 0 times in half a second while Heartbeat fired 30, so the client Host
+  (stepped from RenderStepped) never stepped and no client system moved; `screen_capture` timed
+  out. Check that count first (a `task.wait(0.5)` with both connected) before trusting any
+  client-side Play result. Server paths and remotes still work: a Client `FireServer` is sent.
+- **A pick staged from the Client** (S1-10d1): `Remotes.MachinePick:FireServer(machine, bay)`
+  after staging the ride as above; `Remotes.MachineBuy.OnClientEvent` says the sale came back.
+- **luau-lsp widened a string-singleton alias returned by a frozen module** (S1-10d1): `Buy.tile`
+  is typed `: Tile`, yet a client field typed `Buy.Tile` got "string" from it. Store it as
+  `string` with a comment rather than casting.
+- **A prompt made on a client needs an anchor that never moves**: the machine has no
+  PrimaryPart and its first BasePart was a coil, which turns as it vends; the button hangs on
+  `Glass`.
+

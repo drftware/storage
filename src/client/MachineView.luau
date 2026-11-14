@@ -15,33 +15,27 @@
 
 	The buy (S1-10c2): a sale reads off the stock (`Buy.sold`: the same stock with a count
 	lowered), never a refill: that bay's vend plays (MachineVend: the button, the coil's turn, the
-	drop, the flap) and its window shows dashes once it's empty. A press of a bay's Buy on this
-	screen sinks its button at once with its click; with too few coins for its price the machine
-	gives one dull buzz and the price blinks, and nothing else happens (the server refuses it too).
-	The sale's thing flies to its buyer (`Buy.Attribute`). A battery's Buy is hidden from you
-	while your torch's ring is full (BatteryView's rule), so it's left for a friend whose torch is
-	dying; nothing on screen says why.
+	drop, the flap) and its window shows dashes once it's empty. A pick on this screen's menu
+	(MachineMenu, S1-10d1, through the `Press` this hands back) sinks that bay's real button at
+	once with its click; with too few coins for its price the machine gives one dull buzz and the
+	price blinks, and nothing else happens (the server refuses it too). The sale's thing flies to
+	its buyer (`Buy.Attribute`).
 
 	Only a waking, lit or dying machine is stepped, and a light is written only when what it shows
 	changes. Its one SurfaceLight stays off unless it's lit, so a screen only ever has one on.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
-local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
-local Battery = require(ReplicatedStorage.Shared.Battery)
 local Brix = require(ReplicatedStorage.Brix)
-local Charge = require(ReplicatedStorage.Shared.Flashlight.Charge)
 local Coins = require(ReplicatedStorage.Shared.Coins)
 local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
 local Left = require(ReplicatedStorage.Shared.Left)
 local Machine = require(ReplicatedStorage.Shared.Machine)
 local Ride = require(ReplicatedStorage.Shared.Elevator.Ride)
 local Stock = require(ReplicatedStorage.Shared.Machine.Stock)
-local ButtonView = require(script.Parent.ButtonView)
 local LedReadout = require(script.Parent.LedReadout)
 local MachineStock = require(script.Parent.MachineStock)
 local MachineVend = require(script.Parent.MachineVend)
@@ -133,14 +127,17 @@ local function glow(p: BasePart, share: number, lit: Color3, dark: Color3)
 	end
 end
 
-function MachineView.new(): Brix.System
+-- A pick on the menu, pressed on the real machine: bay `bay`'s button at `machine` sinks with its
+-- click, and too few coins buzz and blink its price.
+export type Pick = (machine: Model, bay: number) -> ()
+
+function MachineView.new(): (Brix.System, Pick)
 	local me = Players.LocalPlayer
 	local views: { [Model]: View } = {}
 	local stepping: { [View]: true } = {}
 	local vending: { [View]: true } = {} -- machines with a sale playing
 	local presses: { Press } = {}
 	local connections: { RBXScriptConnection } = {}
-	local wants = false -- your torch would take a battery now
 
 	-- Every price window `since` seconds into a ride from `from`: dark until its row's tube
 	-- catches, then its test, then its price (dashes for an empty coil); dark again at the cut.
@@ -303,30 +300,6 @@ function MachineView.new(): Brix.System
 		end
 	end
 
-	-- Each battery bay's Buy on this screen: there only while your torch would take one.
-	local function batteryButtons(view: View)
-		for i in Machine.Specs.Bays do
-			local button = view.model:FindFirstChild(`Button{i}`)
-			local prompt = button and button:FindFirstChildWhichIsA("ProximityPrompt", true)
-			if prompt then
-				local s = view.stock and view.stock[i]
-				ButtonView.hide(prompt, "Full", s ~= nil and s.key == Stock.Battery and not wants)
-			end
-		end
-	end
-
-	local function charged()
-		local left = me:GetAttribute(Charge.Attribute)
-		local dev = if RunService:IsStudio() then Workspace:GetAttribute(Charge.Dev) else nil
-		local now = type(left) == "number" and Battery.wants(left, Charge.full(dev))
-		if now ~= wants then
-			wants = now
-			for _, view in views do
-				batteryButtons(view)
-			end
-		end
-	end
-
 	-- The car rode (or a new ride began): when, and from which floor. Cleared as it stands at a
 	-- floor again, the ride is kept until it has died out (`Wake.over`).
 	local function rideChanged(view: View)
@@ -385,7 +358,6 @@ function MachineView.new(): Brix.System
 				end
 			end
 			refresh(view) -- an empty coil's window to dashes
-			batteryButtons(view)
 			return
 		end
 		for _, vend in view.vends do
@@ -402,7 +374,6 @@ function MachineView.new(): Brix.System
 			view.goods = MachineStock.fill(view.model, stock)
 		end
 		refresh(view)
-		batteryButtons(view)
 	end
 
 	local function aboardChanged(view: View)
@@ -517,19 +488,16 @@ function MachineView.new(): Brix.System
 		end
 	end
 
-	-- This screen pressed a machine's Buy: the button down at once; too few coins, the dull buzz
-	-- and the price blinking (the server refuses it as well).
-	local function pressed(prompt: ProximityPrompt)
-		local spot = prompt.Parent
-		local button = spot and spot.Parent
-		local model = button and button.Parent
-		local view = if model and model:IsA("Model") then views[model] else nil
+	-- This screen picked bay `bay` on a machine's menu: its button down at once; too few coins,
+	-- the dull buzz and the price blinking (the server refuses it as well).
+	local function pressed(model: Model, bay: number)
+		local view = views[model]
+		local button = view and view.model:FindFirstChild(`Button{bay}`)
 		if not (view and button and button:IsA("BasePart")) then
 			return
 		end
-		local bay = tonumber(string.match(button.Name, "^Button(%d)$"))
-		local s = bay and view.stock and view.stock[bay]
-		if not (bay and s) then
+		local s = view.stock and view.stock[bay]
+		if not s then
 			return
 		end
 		local clock = os.clock()
@@ -585,10 +553,6 @@ function MachineView.new(): Brix.System
 		)
 		table.insert(connections, me.ChildAdded:Connect(watchChanged))
 		table.insert(connections, me.ChildRemoved:Connect(watchChanged))
-		table.insert(connections, ProximityPromptService.PromptTriggered:Connect(pressed))
-		table.insert(connections, me:GetAttributeChangedSignal(Charge.Attribute):Connect(charged))
-		table.insert(connections, Workspace:GetAttributeChangedSignal(Charge.Dev):Connect(charged))
-		charged()
 		task.spawn(
 			SoundPrimer.prime,
 			{ Machine.Tink.id, Machine.Buzz.id, Machine.Hum.id, Buy.Click.id, Buy.Motor.id }
@@ -650,7 +614,7 @@ function MachineView.new(): Brix.System
 		table.clear(stepping)
 	end
 
-	return system
+	return system, pressed
 end
 
 return MachineView

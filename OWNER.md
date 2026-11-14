@@ -136,6 +136,29 @@ climb only a Mannequin throws it (S2-02c, below), so test the box itself with th
    lights do; coming back dark would show nothing from the box); the lamp as glowing Neon, red
    off and green on; one second to hold, as cutting a friend free.
 
+## Now: pick from the machine's menu (S1-10d1, built Nov 14, D-161; only the server's side seen)
+
+The six Buy buttons on the machine are gone: one "Buy" on the middle of its glass opens the
+machine's front on your screen, and you pick there. This replaces pressing the bays in "buy at
+the machine" below; the coins, the drop and the flight to your hand there are unchanged. Seen in
+Studio Play only from the server: picks sold and refused as they should, and the buyer's screen
+was told. Studio drew no frames this session, so nobody has seen the panel itself yet.
+1. **On your phone, ride from floor 1 to 2 and walk to the machine.** Look for: a "Buy" on its
+   glass once the bottom row lights. Press it: the machine's front rises from the bottom of the
+   screen with a heavy clunk, its tubes stutter on with two tinks, the prices show 88 then the
+   prices. Is every bay easy to read and hit with a thumb? Does it feel like the machine?
+2. **Open it as the machine wakes.** Rows not lit yet are dark on the panel and light with the
+   real tubes, and the panel dips with the car's lamp.
+3. **Buy something you can pay for.** Look for: the bay presses in, the real button clicks, then
+   the panel drops away so you see the coins fly, the coil turn, the thing drop and fly to your
+   hand; then the panel rises again. Is the rise welcome, or should it stay closed after a buy?
+4. **Pick something you can't pay for.** The machine buzzes, the price blinks on the panel and
+   the machine, the bay shakes. With a full torch the battery bays are dim and don't press.
+5. **With friends crowding the machine,** check you can still open it from behind them, and
+   that walking away, the knob at its bottom right, E, or B on a pad closes it.
+6. Decide (my defaults): its sounds (the flap's knock pitched down for the clunk, the tubes'
+   tink) and its place (right of centre on a phone, clear of the jump button).
+
 ## Now: watch every monster come to a wrong code (S2-04b, built Nov 14, D-160; seen in Play)
 
 A wrong code's alarm now calls every monster awake on the floor, however far, and the ones it

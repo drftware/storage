@@ -4451,3 +4451,31 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
 - **Output.** One line a wrong code: the units it rolls up, how many monsters turn for the keypad
   now and how many more once out, and how long the keypad is dead. A freed keeper's door going up
   says it "goes after what it heard shut in" rather than "steps out to look".
+
+## D-161 The machine's menu: one button, the machine's own front on screen, the server unchanged (S1-10d1, Nov 14)
+
+- The precedent: Dandy's World's elevator shop opens a panel between floors (from memory). The
+  owner asked for it in words: the bays were hard to read and a full car hard to use.
+- One button per machine, made on each screen (MachineMenu, as KeypadPad's), on the middle of the
+  glass (`Buy.point`), reaching 8 studs (`Buy.Reach`, was 5 from each bay's button) with no line
+  of sight, so friends standing in front never hide it; shown only to a rider aboard while the
+  bottom row is open (`Buy.open(1)`, so from its catch to 1.2 s before the cut). The server now
+  measures a pick's reach from that point (+2 slack) and has no prompts, no per-frame arming.
+- A pick is a client-to-server remote (`Buy.Pick`: machine, bay), typed first (an Instance we
+  know, a whole bay number), then every check D-148 made, in its order. `Buy.Remote` still tells
+  the buyer's screen; the menu drops away when it arrives, so it only moves for a real sale, and
+  rises `Buy.ends()` + 0.3 s later. A second paid pick waits a second for the first's sale, so a
+  double tap never buys two.
+- A bay's state is the pure `Buy.tile` (tested): dark (row not lit), empty, full (a battery your
+  full torch won't take: dim, a dead press, left for a friend, as BatteryView's rule hid it),
+  poor (dim price; the pick clicks, buzzes and blinks on the machine as before, and shakes), ok.
+  No words explain any of it.
+- It looks like the machine, not a shop window: its enamel, sign and emblem, liner lit by each
+  row's tube share from `Wake.tube` (so unlit rows light with the real ones and the panel dips
+  with the lamp), steel rails, paper labels (the only words: the things' names), LED prices from
+  LedReadout, chrome buttons; it rises from the screen's foot like a drawer. A plain Frame, not a
+  CanvasGroup, so the six ViewportFrame pictures surely draw. Under CoinView (DisplayOrder 3 to
+  5), so the paid coins fly over it. Its sounds (a latch's clunk, two tinks) are starting guesses.
+- A chrome knob with an engraved cross shuts it (a close button, but the machine's own), besides
+  walking off, E and B, since it rises again after each buy.
+

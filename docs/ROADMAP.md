@@ -1566,7 +1566,16 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
     prompt that opens an overlay where you can make your selection. Then you can still see it
     animate and drop out of the vending machine as-is."). As Dandy's World's shop opens a panel
     in its elevator between floors. Two sessions:
-    - [ ] **S1-10d1 The menu.** The per-bay Buy buttons give way to one button on the machine
+    - [x] **S1-10d1 The menu. Done Nov 14 (D-161); the server's path verified in Play, the panel
+      unseen (Studio drew no frames).** One "Buy" on the middle of the glass, reaching from the
+      car's back half through friends (no line of sight), opens MachineMenu: the machine's front
+      rising from the screen's foot with a latch's clunk, its oxblood cabinet, sign and keyhole
+      coin, three rows of two bays in its order (picture, paper label, LED price, chrome button),
+      its tubes stuttering on with tinks, LEDs testing 88, every row lit in step with the real
+      tube. A pick sinks the real button; one you can pay goes up `Buy.Pick`, and the panel drops
+      away for the vend and rises after; too few coins buzz, blink and shake. Closes on walking
+      off, the buying's end, leaving, being caught, dying, its chrome knob, E or B.
+      Originally: the per-bay Buy buttons give way to one button on the machine
       (one verb). Pressing it opens a panel over the screen, built phone first: every bay at
       once in the machine's own order, each with its thing's picture (rendered, like the coin
       count's coin), name, price, and whether its row is lit yet, it's sold out, or you're short
