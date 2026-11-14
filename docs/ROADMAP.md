@@ -1458,8 +1458,15 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
     unit opened in Studio Play.) A padlocked unit always holds a find (7 in 10) or a tool, and
     about 3 in 10 have a monster standing in there with it, asleep or awake; tools in about one
     unit in twelve (6 in 100 behind an ordinary door). No seed lays anything differently.
-  - [ ] **S1-07b Batteries in units.** The battery's art (the unit's way, `art/`), dealt into
-    about one unit in ten; built with S1-09, right after it.
+  - [x] **S1-07b Batteries in units.** The battery's art (the unit's way, `art/`), dealt into
+    about one unit in ten; built with S1-09, right after it. Built Nov 14 (D-143): a chunky
+    D-cell (`art/battery/`, black and amber, a plus and a bolt) lying on its side in the bulb's
+    pool clear of the coins, a glint on its button; a Take button only once your ring has lost a
+    tick; the take hops it end over end into the taker's torch with a clack-click, the ring
+    sweeping full. Passes checks and loads in Studio; a take untested in Play (OWNER.md).
+    Polish: record the pickup (`Record`, a `batteryTaken` event) with S1-10's machine buys; a
+    brief flare of the beam as the battery snaps in; its own snap recording if the clicks feel
+    thin.
 - [x] **S1-08 Tools wear out.** Bolt cutters 3 padlocks, the saw 2 holes, the air horn 3
   blasts, the padlock 1 door; a mark on the slot shows the uses left (GDD "Tools wear out").
   Built Nov 14 (D-141): notches on the box and the wheel's slots, the last one red; the break

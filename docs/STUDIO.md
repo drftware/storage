@@ -921,6 +921,10 @@ verified: a doc page, Studio, or "untested".
   key like `` `{x},{z}` `` misses its match. Write `0 - j * 2` (Floor's grid, L-01a).
 - **`require` in Edit is cached:** after Rojo syncs a change, `execute_luau`'s `require` still
   returns the module from the first call. Require a `:Clone()` of the module tree for fresh code.
+- **A folder module requiring by string** (S1-07b, Nov 14): in `src/shared/Battery/init.luau`,
+  `require("./Flashlight/Charge")` finds `Shared.Flashlight.Charge` in both Lune and Studio: an
+  `init.luau`'s `./` is the folder's own siblings (the ModuleScript's parent's children), not its
+  children. `../` would go one level too far. Checked in Edit by requiring a clone of `Shared`.
 - **Measuring the bulb's click** (L-04b): Pro Sound Effects' "Moviola Toggle Switch Single Clicks
   Sharp 8" (9117028600, 0.74 s) is a sharp tick in its first 0.1 s and a faint release at 0.25 s;
   "Light Bulb Buzz 2" (9112823813) is a 49 s loop. Both preload in Edit.

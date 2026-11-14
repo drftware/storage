@@ -2,7 +2,7 @@
 -- lune run tests/stuffdeal.spec
 -- Somebody's stuff dealt into units (S1-04b2), over 200 seeds on floors 1, 3 and 6: about
 -- `Deal.StuffShare` of the units with nothing to take hold one thing, each thing about as often;
--- never a unit with coins, a tool, a find, a keeper or a note; the same seed the same stuff; and
+-- never a unit with coins, a battery, a tool, a find, a keeper or a note; the same seed the same stuff; and
 -- every other thing a seed lays and deals is what it was before the stuff (a fingerprint of the
 -- deal, taken last as S1-07a changed what doors hold: it changes only when a ticket means to
 -- change the deal).
@@ -109,7 +109,7 @@ for seed = 1, SEEDS do
 				feed(`{i}{c.kind}{c.tool or ""}{c.find or ""}{c.keeper or ""}{c.beside or ""}`)
 				feed(`{c.coins}{lock}`)
 			end
-			local nothing = c.kind == "Nothing" and c.coins == 0 and not noted[i]
+			local nothing = c.kind == "Nothing" and c.coins == 0 and not c.battery and not noted[i]
 			if nothing then
 				empty += 1
 				if c.stuff then

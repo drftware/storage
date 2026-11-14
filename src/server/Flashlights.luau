@@ -26,6 +26,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
+local Battery = require(ReplicatedStorage.Shared.Battery)
 local Brix = require(ReplicatedStorage.Brix)
 local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
 
@@ -48,8 +49,8 @@ export type Flashlights = Brix.System & {
 	heading: (self: any, player: Player) -> number?,
 	-- Seconds of light left in `player`'s torch.
 	charge: (self: any, player: Player) -> number,
-	-- A battery: `player`'s torch full at once (S1-07b). False if it was full already, so the
-	-- battery stays where it is for a friend.
+	-- A battery: `player`'s torch full at once (S1-07b). False while its ring is still full
+	-- (`Battery.wants`), so the battery stays where it is for a friend.
 	fill: (self: any, player: Player) -> boolean,
 }
 
@@ -338,7 +339,7 @@ function Flashlights.new(): Flashlights
 	end
 
 	function system.fill(_: any, player: Player): boolean
-		if (charges[player] or 0) >= fullCharge() then
+		if not Battery.wants(charges[player] or 0, fullCharge()) then
 			return false
 		end
 		fill(player)

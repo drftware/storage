@@ -17,6 +17,7 @@ local CartRide = require(script.CartRide)
 local CartView = require(script.CartView)
 local CameraShake = require(script.CameraShake)
 local CaughtView = require(script.CaughtView)
+local BatteryView = require(script.BatteryView)
 local CoinView = require(script.CoinView)
 local KeptWrapOn = require(script.KeptWrapOn)
 local ChaseMusic = require(script.ChaseMusic)
@@ -85,6 +86,8 @@ local host = Brix.Host.new({
 		{ slot = "minimapView", system = MinimapView.new() },
 		-- the coins: a pile's take on every screen, and your count by the top bar (S1-04a2)
 		{ slot = "coinView", system = CoinView.new() },
+		-- the batteries: a button only while your torch needs one, a take thrown into its torch
+		{ slot = "batteryView", system = BatteryView.new() },
 		{ slot = "caughtView", system = CaughtView.new(kick) },
 		{ slot = "chaseMusic", system = ChaseMusic.new() },
 		{ slot = "keptWrapOn", system = KeptWrapOn.new() },

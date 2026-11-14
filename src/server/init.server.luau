@@ -9,6 +9,7 @@ local RunService = game:GetService("RunService")
 local Brix = require(ReplicatedStorage.Brix)
 local Carts = require(script.Carts)
 local ClimbEnds = require(script.ClimbEnds)
+local Batteries = require(script.Batteries)
 local Coins = require(script.Coins)
 local Climbs = require(script.Climbs)
 local Crawls = require(script.Crawls)
@@ -53,6 +54,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "deals", system = Deals.new() },
 	-- The coins on the floors and everyone's count: a pile laid as a door first lifts, a tap takes it.
 	{ slot = "coins", system = Coins.new() },
+	-- The batteries on the floors: one laid as a door first lifts, a tap fills a torch that needs it.
+	{ slot = "batteries", system = Batteries.new() },
 	{ slot = "saws", system = Saws.new() },
 	-- Crawling through a sawn hole: its Crawl buttons, the checks on a press, the move's start.
 	{ slot = "crawls", system = Crawls.new() },

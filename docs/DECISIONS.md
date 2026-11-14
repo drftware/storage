@@ -4024,3 +4024,29 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
   in a stutter and loudest in the dips, retuned each blink so it crackles. No new lights: the
   flicker only changes the beam's and spill's brightness and colour, written when they move by a
   visible step.
+
+## D-143 Batteries lie in units, and only a torch that's lost a tick takes one (S1-07b, Nov 14)
+
+- About one unit in ten has a battery (`Deal.BatteryShare`, the owner's default in OWNER.md). It's
+  the unit's own draw, taken after the coins in `Deal.new`, so nothing else a seed lays moved
+  (deal.spec's fingerprint, every unit's coins included, is unchanged). A unit with a battery has
+  something to take, so it holds no stuff; stuff stays at half of the units with nothing to take.
+- It lies on its side in the bulb's pool, as coins do, at its own turn and spread
+  (`DealSpot.inUnit(..., "Battery", ...)`), clear of the unit's tool, find, keeper and coins:
+  Deals lays the coins first and passes their floor on. Rolled up to 28 degrees either way, so the
+  plus on its amber band shows from the doorway; a faint cold glint on its steel button.
+- "If yours is full you leave it" is read as the ring: a torch takes a battery only once its ring
+  has lost a tick (`Battery.wants`, 25 seconds of a five-minute torch). A battery is never spent on
+  a few seconds of light, and the rule is one the player can see. While your ring is full the
+  battery shows you no button (BatteryView hides it on your screen); the server refuses the press
+  anyway (`Flashlights:fill`). No text says why, as the owner asked.
+- Taking one doesn't switch a dead torch on: your screen owns the switch (D-142) and would undo a
+  server-side switch. The light snaps back for a flickering torch at once; a dead one is pressed
+  on, now with a full ring.
+- The take on every screen: a few sparks off its button, a hop end over end, a flight into the
+  taker's torch (yours as drawn in your hand) shrinking as it slides in, then a clack-click. The
+  sound is the torch's own two measured clicks: the off click slow and low (the cell seating),
+  then the on click (the cap home) 75 ms later; friends within 24 studs hear it. No new sound asset
+  was measured for it.
+- Art: `art/battery/`, a chunky D-cell four times life size (0.9 by 0.46 studs) in the coin's
+  way: one MeshPart, 896 triangles, the Battery set at 512².

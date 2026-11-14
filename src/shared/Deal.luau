@@ -32,7 +32,8 @@ export type Situation = { mood: Mood, awake: number }
 -- awake; `coins`, how many coins lie on its floor besides (0 to 3, S1-04a); `stuff`, somebody's
 -- stuff standing in a unit with nothing to take (S1-04b2), a name in `Deal.Stuff`. `beside`, a
 -- keeper standing in a padlocked unit with its find or tool (S1-07a): "Asleep" or "Awake", its
--- name in `keeper`. `Deal.keeperIn` reads a unit's keeper either way.
+-- name in `keeper`. `Deal.keeperIn` reads a unit's keeper either way. `battery`, a battery lying
+-- on its floor besides (S1-07b).
 export type Contents = {
 	kind: Kind,
 	tool: Tool?,
@@ -41,6 +42,7 @@ export type Contents = {
 	beside: Kind?,
 	coins: number,
 	stuff: string?,
+	battery: boolean?,
 }
 
 -- A note: the unit it lies in (an index into the floor's slots) and the places of the code it
@@ -57,6 +59,7 @@ export type Deck = {
 	picks: { [number]: number }, -- each unit's roll for which find or keeper, 0 to 1
 	dealt: { [number]: Contents }, -- what each unit got, once its door has lifted
 	coins: { [number]: number }, -- the coins on each unit's floor, 0 to 3, by slot index
+	batteries: { [number]: boolean }, -- the units with a battery on their floor, by slot index
 	-- the unit of the guarded note (D-072), by slot index: it's always dealt a keeper, awake, and
 	-- holds one of the floor's awake places from the floor's start (`Deal.odds`)
 	guarded: number?,
@@ -182,8 +185,17 @@ function Deal.coinsFrom(share: number, spread: number): number
 end
 
 --[[
-	Somebody's stuff (S1-04b2, GDD "Doors"): of the units with nothing to take (no coins, no tool,
-	find or keeper, no note), some are bare and some are full of things only there to look at, so
+	Batteries (S1-07b): about one unit in ten has a battery lying on its floor (GDD "Your
+	flashlight", the owner's default), as DOORS hides batteries in its drawers: often enough that a
+	dying torch sends you opening doors, rare enough that finding one is a moment. A unit's battery
+	is its own draw, beside whatever else it holds, as its coins are; a unit with one holds no
+	stuff (it has something to take).
+]]
+Deal.BatteryShare = 0.1 -- the share of units with a battery on the floor
+
+--[[
+	Somebody's stuff (S1-04b2, GDD "Doors"): of the units with nothing to take (no coins, battery,
+	tool, find or keeper, no note), some are bare and some are full of things only there to look at, so
 	even a door with nothing behind it shows you somebody's life: a stained mattress leaning on the
 	back wall, boxes stacked nearly to the bulb. Lethal Company's rooms and DOORS' drawers are full
 	of junk around the few things worth taking the same way; a bare one still stings.
@@ -398,6 +410,7 @@ function Deal.new(floor: Floor, random: Random): Deck
 		picks = picks,
 		dealt = {},
 		coins = {},
+		batteries = {},
 		bag = {},
 		random = random,
 	}
@@ -432,6 +445,12 @@ function Deal.new(floor: Floor, random: Random): Deck
 	-- The coins, drawn last, so adding them moved nothing else a seed lays (its guard, its bag).
 	for _, i in units do
 		deck.coins[i] = Deal.coinsFrom(random:nextNumber(), random:nextNumber())
+	end
+	-- The batteries, drawn after the coins, so adding them moved nothing else a seed lays.
+	for _, i in units do
+		if random:nextNumber() < Deal.BatteryShare then
+			deck.batteries[i] = true
+		end
 	end
 	return deck
 end
@@ -559,7 +578,11 @@ function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 
 	local kind: Kind, within: number = landOn(Deal.odds(deck, index, situation), roll)
 
-	local contents: Contents = { kind = kind, coins = deck.coins[index] or 0 }
+	local contents: Contents = {
+		kind = kind,
+		coins = deck.coins[index] or 0,
+		battery = if deck.batteries[index] then true else nil,
+	}
 	if kind == "Tool" then
 		contents.tool = Deal.drawTool(deck)
 	elseif kind == "Find" then
@@ -578,7 +601,7 @@ function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 			contents.beside = if contents.keeper then beside else nil
 		end
 	end
-	if contents.kind == "Nothing" and contents.coins == 0 then
+	if contents.kind == "Nothing" and contents.coins == 0 and not contents.battery then
 		local note = false
 		for _, n in deck.notes do
 			note = note or n.slot == index

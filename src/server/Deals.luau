@@ -21,6 +21,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
+local Batteries = require(script.Parent.Batteries)
+local BatterySpecs = require(ReplicatedStorage.Shared.Battery.Specs)
 local Brix = require(ReplicatedStorage.Brix)
 local CoinSpecs = require(ReplicatedStorage.Shared.Coins.Specs)
 local Coins = require(script.Parent.Coins)
@@ -128,6 +130,7 @@ function Deals.new(): Deals
 	local dealt = Brix.Signal.new() :: Brix.Signal<Dealt>
 	local slots: Slots.Slots? = nil
 	local coins: Coins.CoinsSystem? = nil
+	local batteries: Batteries.Batteries? = nil
 	local keepers: Awake? = nil
 
 	-- Unit `index` of `deck`'s floor as DealSpot measures it, its number, and its note's place
@@ -263,31 +266,47 @@ function Deals.new(): Deals
 	end
 
 	-- Lays unit `unit`'s coins (S1-04a) in the bulb's pool, clear of `taken` (the floor its tool,
-	-- find and keeper take). Whether they were laid.
+	-- find and keeper take). Whether they were laid, and the floor they take.
 	local function layCoins(
 		unit: Model,
 		deck: Deal.Deck,
 		index: number,
 		count: number,
 		taken: { { number } }
-	): boolean
+	): (boolean, { number }?)
 		local pile = CoinSpecs.Piles[count]
 		if not (pile and coins) then
+			return false, nil
+		end
+		local size, number, note = shape(deck, index)
+		local footprint = { across = pile.Size.X, along = pile.Size.Z, tall = pile.Size.Y }
+		local spot = DealSpot.inUnit(size, "Coins", footprint, note, number, taken)
+		if not spot then
+			return false, nil
+		end
+		return coins:lay(unit, count, placed(unit, spot)), DealSpot.around(spot, footprint)
+	end
+
+	-- Lays unit `unit`'s battery (S1-07b) on its side in the bulb's pool, clear of `taken` (the
+	-- floor its tool, find, keeper and coins take). Whether it was laid.
+	local function layBattery(
+		unit: Model,
+		deck: Deal.Deck,
+		index: number,
+		taken: { { number } }
+	): boolean
+		if not batteries then
 			return false
 		end
 		local size, number, note = shape(deck, index)
-		local spot = DealSpot.inUnit(
-			size,
-			"Coins",
-			{ across = pile.Size.X, along = pile.Size.Z, tall = pile.Size.Y },
-			note,
-			number,
-			taken
-		)
+		local cell = BatterySpecs.Battery.Size
+		-- lying along the spot's X: its length across, its width along and up
+		local footprint = { across = cell.Y, along = cell.X, tall = cell.X }
+		local spot = DealSpot.inUnit(size, "Battery", footprint, note, number, taken)
 		if not spot then
 			return false
 		end
-		return coins:lay(unit, count, placed(unit, spot))
+		return batteries:lay(unit, placed(unit, spot))
 	end
 
 	-- Stands somebody's stuff (S1-04b2) in unit `unit` with its back to a wall: the thing dealt,
@@ -314,7 +333,14 @@ function Deals.new(): Deals
 		local awake = if keepers then keepers:awakeOn(unit) else 0
 		local contents = Deal.open(deck, index, { mood = "Build", awake = awake })
 		local place, keeper, taken = lay(unit, deck, index, contents)
-		local paid = contents.coins > 0 and layCoins(unit, deck, index, contents.coins, taken)
+		local paid, pile = false, nil
+		if contents.coins > 0 then
+			paid, pile = layCoins(unit, deck, index, contents.coins, taken)
+		end
+		if pile then
+			table.insert(taken, pile)
+		end
+		local charged = contents.battery == true and layBattery(unit, deck, index, taken)
 		local drawn = contents.stuff
 		if drawn then
 			-- what stands is what the unit holds: the next that fits, or nothing (said in Output)
@@ -337,7 +363,11 @@ function Deals.new(): Deals
 				then ""
 				elseif paid then ` and {contents.coins} coins`
 				else ` and {contents.coins} coins (not laid)`
-			print(`Deals: {unit.Name} held {said(contents)}{coinsSaid}{guard}{laid}`)
+			local batterySaid = if not contents.battery
+				then ""
+				elseif charged then " and a battery"
+				else " and a battery (not laid)"
+			print(`Deals: {unit.Name} held {said(contents)}{coinsSaid}{batterySaid}{guard}{laid}`)
 		end
 		dealt:fire({
 			unit = unit,
@@ -373,6 +403,7 @@ function Deals.new(): Deals
 		local doors = (context.registry:get("doors") :: any) :: Doors.Doors
 		slots = (context.registry:get("slots") :: any) :: Slots.Slots?
 		coins = (context.registry:get("coins") :: any) :: Coins.CoinsSystem?
+		batteries = (context.registry:get("batteries") :: any) :: Batteries.Batteries?
 		keepers = (context.registry:get("keepers") :: any) :: Awake?
 		table.insert(connections, doors.acted:connect(onActed))
 		local saws = (context.registry:get("saws") :: any) :: Saws.Saws?

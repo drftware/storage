@@ -38,7 +38,8 @@ Nothing in it is built yet. What still waits on you, in the order it holds work 
   goes out; picking up a battery fills it at once and takes no slot (if yours is full you leave
   it for a friend); what's left carries over from floor to floor; a battery costs 3 coins in the
   machine; about one unit in ten has one. Say if any is wrong. (The running down is built this
-  way, Nov 14: judge it under "Now: the flashlight runs down".)
+  way, Nov 14: judge it under "Now: the flashlight runs down"; the batteries in units under
+  "Now: take a battery".)
 - [ ] **A trapped monster still counts toward the floor's limit** on how many can be awake.
   The old design doc said the opposite, which made trapping pointless. You gave the reason
   (trapping makes it easier to search) but didn't answer this directly: say if you disagree.
@@ -97,6 +98,25 @@ and off, the invite sheet opening with your friends (no invite sent).
   the share link goes (Roblox pays on new or returning players who come by a share link, not on
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
+
+## Now: take a battery (S1-07b, built Nov 14, D-143; passes checks, untested in Studio Play)
+
+About one unit in ten now has a battery lying on its side in the bulb's light: a chunky D-cell,
+black with an amber band, a plus and a lightning bolt on it, a faint glint on its steel end. Once
+your torch's ring has lost a tick, it shows a Take button; tap it and the battery hops up end over
+end and flies into your torch with a clack and a click, and the ring sweeps round full. While your
+ring is still full there's no button for you: it stays for a friend. A dead torch isn't switched
+on by it; you press the button and it lights, full. I checked the rules load in Studio and the
+art is in the place, but haven't taken one in Play yet. Look sheets: `art/sheets/battery-*.png`.
+- [ ] **Take one:** add `DevTorchSeconds` = 60 on Workspace (as below), Play, switch your torch on
+  for 10 seconds, then open units until one holds a battery. Does it read as a battery from the
+  doorway on a phone-sized window? Does the Take button show? Tap it: does the flight into your
+  hand and the clack-click feel like a fresh battery going in? Is the ring full again?
+- [ ] **Leave one:** with a full ring (torch never switched on), the same battery shows no button.
+  Does that feel natural, or like it's broken?
+- [ ] **With a friend:** do you see theirs fly into their hand and hear it from close by?
+- [ ] **The rule (my default):** a battery is taken only once your ring has lost a tick (about
+  25 seconds of light used). Say if a torch should take one whenever it isn't exactly full.
 
 ## Now: the flashlight runs down (S1-09, built Nov 14, D-142; seen in Studio Play)
 

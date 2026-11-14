@@ -44,7 +44,7 @@ export type Unit = {
 	landing: { x: number, z: number }?,
 	fallen: { number }?,
 }
-export type Thing = "Tool" | "Find" | "Keeper" | "Coins"
+export type Thing = "Tool" | "Find" | "Keeper" | "Coins" | "Battery"
 -- A thing's size as it stands at yaw 0: X across, Z along (front to back), Y tall.
 export type Size = { across: number, along: number, tall: number }
 export type Spot = { x: number, z: number, yaw: number } -- yaw in degrees about +Y
@@ -59,9 +59,14 @@ DealSpot.Door = 2.5
 -- unit's depth. The bulb hangs at the middle, so a find or a keeper stands wholly behind it
 -- (D-036). A tool lies in the bulb's pool, near enough to read on a phone from the doorway: at
 -- the back wall of a big unit the bolt cutters were a red smear (L-04e, Galaxy A16).
--- Coins (S1-04a) lie in the bulb's pool as a tool does, where they catch its light from the doorway.
-DealSpot.From = { Tool = 0.25, Find = 0.5, Keeper = 0.5, Coins = 0.25 } :: { [string]: number }
-DealSpot.To = { Tool = 0.7, Find = 1, Keeper = 1, Coins = 0.7 } :: { [string]: number }
+-- Coins (S1-04a) lie in the bulb's pool as a tool does, where they catch its light from the doorway;
+-- a battery (S1-07b) too, clear of the coins.
+DealSpot.From = { Tool = 0.25, Find = 0.5, Keeper = 0.5, Coins = 0.25, Battery = 0.25 } :: {
+	[string]: number,
+}
+DealSpot.To = { Tool = 0.7, Find = 1, Keeper = 1, Coins = 0.7, Battery = 0.7 } :: {
+	[string]: number,
+}
 -- Studs kept between a unit's coins and the other thing it holds, all round, so a pile never lies
 -- on a tool or against a keeper's feet, and each reads on its own.
 DealSpot.Apart = 0.5
@@ -265,12 +270,12 @@ local function search(
 ): { Spot }
 	local across, along = size.across, size.along
 	local found: { Spot } = {}
-	if thing == "Tool" or thing == "Coins" then
+	if thing == "Tool" or thing == "Coins" or thing == "Battery" then
 		-- in the bulb's pool at its unit's own turn, else at another; else anywhere past the door,
 		-- the same way (a small unit's pool is mostly landing and hole spots, D-067). Coins take
-		-- another turn than a tool in the same unit would.
+		-- another turn than a tool in the same unit would, and a battery another again.
 		local count = #DealSpot.ToolYaws
-		local own = if thing == "Coins" then n + 2 else n
+		local own = if thing == "Coins" then n + 2 elseif thing == "Battery" then n + 4 else n
 		for _, deep in { { DealSpot.From[thing], DealSpot.To[thing] }, { 0, 1 } } do
 			for k = 0, count - 1 do
 				local yaw = DealSpot.ToolYaws[(own + k) % count + 1]
@@ -358,9 +363,12 @@ function DealSpot.inUnit(
 	if #found == 0 then
 		return nil
 	end
-	-- Knuth's multiplier spreads neighbouring numbers across the list; coins use another, so they
-	-- don't land where the unit's tool would
-	local spread = if thing == "Coins" then 2246822519 else 2654435761
+	-- Knuth's multiplier spreads neighbouring numbers across the list; coins and batteries use
+	-- others, so they don't land where the unit's tool would
+	local spread = if thing == "Coins"
+		then 2246822519
+		elseif thing == "Battery" then 3266489917
+		else 2654435761
 	return found[(n * spread) % #found + 1]
 end
 

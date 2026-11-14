@@ -156,6 +156,12 @@ local ART: { Art } = {
 		description = "A worn old gold coin: a beaded rim, a keyhole stamped through its middle, a reeded edge",
 	},
 	{
+		key = "Battery",
+		path = "art/battery/out/Battery.fbx",
+		manifest = "art/battery/assets.json",
+		description = "A chunky D-cell battery: a black wrap with an amber band, a plus and a lightning bolt",
+	},
+	{
 		key = "Stuff",
 		path = "art/stuff/out/Stuff.fbx",
 		manifest = "art/stuff/assets.json",
