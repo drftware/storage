@@ -38,6 +38,9 @@ export type Specs = { Body: Piece, Fly: Piece?, Bounds: Piece? }
 Tools.SlotAttribute = "ToolSlot" -- ToolSlot1 to ToolSlot3 (`Carry.Slots`)
 Tools.HandAttribute = "ToolHand"
 Tools.PocketedAttribute = "ToolPocketed"
+-- Set on your own Player by one of your screens (the machine's menu, S1-10d1) while it fills the
+-- screen: the wheel and its Lay and Drop buttons slide off the bottom, as when you're kept.
+Tools.StowAttribute = "ToolStow"
 -- On a tool's model: its catalog key (so a screen knows a model's row).
 Tools.KindAttribute = "Tool"
 Tools.RemoteFolder = "Remotes"

@@ -4479,6 +4479,12 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
 - A chrome knob with an engraved cross shuts it (a close button, but the machine's own), besides
   walking off, E and B, since it rises again after each buy.
 
+Later the same day: while the menu is up, the tool wheel and its Lay and Drop buttons slide off
+the bottom of the screen the way they do when you're kept (`Tools.StowAttribute`, set by the
+menu on your own Player), rather than shrinking or lifting the panel, which on a phone would cost
+its readable size. And a tool bay goes dim like a full torch's battery when all your slots are
+full (`Buy.tile`'s `room`, read from your slot attributes), since the server refuses that buy.
+
 ## D-162 The machine a quarter shallower, not a third (S1-10d2, Nov 14)
 
 The owner: "I think we shrink the depth of the vending machine a bit" (a car full of friends

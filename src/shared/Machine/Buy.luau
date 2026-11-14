@@ -147,17 +147,24 @@ export type Check = "ok" | "empty" | "poor"
 --[[
 	How a bay shows on the menu (S1-10d1) and what a pick on it does: "dark" its row isn't lit yet
 	or the power is about to cut (a dead press); "empty" its coil is empty (dashes, a dead press);
-	"full" a battery for a torch whose ring is full (`wants` false: dim, a dead press, left for a
-	friend); "poor" too few coins (its price dim; a pick clicks, buzzes and blinks it); "ok".
+	"full" a battery for a torch whose ring is full (`wants` false), or a tool with every slot of
+	yours taken (`room` false): dim, a dead press, left for a friend; "poor" too few coins (its
+	price dim; a pick clicks, buzzes and blinks it); "ok".
 ]]
 export type Tile = "dark" | "empty" | "full" | "poor" | "ok"
-function Buy.tile(bay: Stock.Bay?, lit: boolean, coins: number?, wants: boolean): Tile
+function Buy.tile(
+	bay: Stock.Bay?,
+	lit: boolean,
+	coins: number?,
+	wants: boolean,
+	room: boolean
+): Tile
 	local tile: Tile = "ok"
 	if not lit then
 		tile = "dark"
 	elseif bay == nil or bay.count <= 0 then
 		tile = "empty"
-	elseif bay.key == Stock.Battery and not wants then
+	elseif if bay.key == Stock.Battery then not wants else not room then
 		tile = "full"
 	elseif Buy.check(bay, coins) == "poor" then
 		tile = "poor"

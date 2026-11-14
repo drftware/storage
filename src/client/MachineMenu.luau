@@ -16,8 +16,8 @@
 	and the panel dips with the car's lamp.
 
 	- A bay shows its state (`Buy.tile`), never in words: a bright price for one you can buy, a dim
-	  one for one you can't pay (or a battery your full torch won't take), dashes for an empty
-	  coil, all dark for a row not lit yet.
+	  one for one you can't pay (or a battery your full torch won't take, or a tool with every
+	  slot taken), dashes for an empty coil, all dark for a row not lit yet.
 	- A pick presses the bay in and the real machine's button with its click (MachineView's
 	  `Press`). One you can pay goes to the server (`Buy.Pick`); when the sale comes back
 	  (`Buy.Remote`) the panel drops out of the way so you watch the coins fly, the coil turn and
@@ -435,6 +435,7 @@ function MachineMenu.new(press: MachineView.Pick, need: FreeCursor.Need): Brix.S
 		end
 		openOn = nil
 		away, backAt = false, nil
+		me:SetAttribute(Tools.StowAttribute, nil) -- the wheel comes back up
 		ContextActionService:UnbindAction(CLOSE_ACTION)
 		need("MachineMenu", false)
 		local selected = GuiService.SelectedObject
@@ -450,6 +451,7 @@ function MachineMenu.new(press: MachineView.Pick, need: FreeCursor.Need): Brix.S
 		end
 		openOn = entry
 		entry.prompt.Enabled = false
+		me:SetAttribute(Tools.StowAttribute, true) -- the wheel slides away, clear of the panel
 		stockText, stock = nil, nil
 		waiting = -math.huge
 		fit()
@@ -814,6 +816,14 @@ function MachineMenu.new(press: MachineView.Pick, need: FreeCursor.Need): Brix.S
 		local left = me:GetAttribute(Charge.Attribute)
 		local dev = if RunService:IsStudio() then Workspace:GetAttribute(Charge.Dev) else nil
 		local wants = type(left) == "number" and Battery.wants(left, Charge.full(dev))
+		local room = false -- a free tool slot, as the server last said (`Slots`): no room dims tools
+		for n = 1, Tools.Carry.Slots do
+			local k = me:GetAttribute(Tools.slotAttribute(n))
+			if not (type(k) == "string" and k ~= "") then
+				room = true
+				break
+			end
+		end
 
 		local sg = sign
 		local signShare = quantize(Wake.sign(since, e.from) * f)
@@ -839,7 +849,8 @@ function MachineMenu.new(press: MachineView.Pick, need: FreeCursor.Need): Brix.S
 			end
 			b.lit = lit
 			local s = stock and stock[i]
-			local tile = Buy.tile(s, lit, if type(coins) == "number" then coins else nil, wants)
+			local tile =
+				Buy.tile(s, lit, if type(coins) == "number" then coins else nil, wants, room)
 			b.tile = tile
 			local key = if s and s.count > 0 then s.key else nil
 			if key ~= b.key then

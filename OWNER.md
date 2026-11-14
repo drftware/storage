@@ -169,7 +169,10 @@ machine wakes, the real button sinking, a refused pick's buzz and shake.
    the panel drops away so you see the coins fly, the coil turn, the thing drop and fly to your
    hand; then the panel rises again. Is the rise welcome, or should it stay closed after a buy?
 4. **Pick something you can't pay for.** The machine buzzes, the price blinks on the panel and
-   the machine, the bay shakes. With a full torch the battery bays are dim and don't press.
+   the machine, the bay shakes. With a full torch the battery bays are dim and don't press;
+   with all three tool slots full, the tool bays are dim the same way (batteries still sell).
+   As the menu rises, the round tool button with Lay and Drop slides off the bottom of the
+   screen, and comes back up when you close it. Is losing it while you shop fine?
 5. **With friends crowding the machine,** check you can still open it from behind them, and
    that walking away, the knob at its bottom right, E, or B on a pad closes it.
 6. Decide (my defaults): its sounds (the flap's knock pitched down for the clunk, the tubes'
