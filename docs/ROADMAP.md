@@ -1559,7 +1559,7 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
       its pick-up sound (the battery's clack-click). Until it lands, screens hold the change
       back (`InFlight`): your drawn tool, a friend's tool in their hand, the torch's fill. A
       battery's Buy is hidden from a full torch. Seen in Play, both buys.
-  - [ ] **S1-10d Pick from a menu, at a shallower machine** (owner, Nov 14 morning, verbatim:
+  - [x] **S1-10d Pick from a menu, at a shallower machine. Done Nov 14.** (owner, Nov 14 morning, verbatim:
     "it's difficult to see what's available because you have to literally look at the buttons,
     so stuff below is hard to tell. Plus an elevator full of people will make it hard to use. I
     think we shrink the depth of the vending machine a bit, and when you walk up you click a
@@ -1584,10 +1584,13 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
       the coil turn and the thing drop and fly to your hand, as now. It closes itself when you
       walk off, the ride ends or you're caught; friends each open their own. Every press answers
       (motion and sound); a buy you can't afford answers the way the machine does today.
-    - [ ] **S1-10d2 A shallower machine.** `art/machine/` spec made shallower (about a third
-      less deep: the owner's "a bit"), rebuilt with `scripts/art.sh`, re-uploaded and prepared;
-      the coil, bin, flap and the vend still read; a full car of friends fits round it. Judged
-      at phone size in the car.
+    - [x] **S1-10d2 A shallower machine. Done Nov 14 (D-162); three buys seen in Play.** 2.4 deep
+      to 1.8, a quarter (a third left no room for a bottom coil's second battery): the face where
+      it was, the drop between the coils and the glass 0.4, coils of 3.5 turns, a slimmer motor;
+      it stands 0.3 further from the gate. Each thing now lands in the bin by its own size and
+      stops riding off the tip before its corner would reach the glass (MachineVend).
+      Originally: `art/machine/` spec made shallower (about a third less deep: the owner's "a
+      bit"), rebuilt, re-uploaded and prepared; the coil, bin, flap and the vend still read.
 - [x] **S1-11 The one faint mark. Done Nov 14 (D-150); sampled in Play.** A hasty chalk ring
   with a dot (art/mark/, made from code) on the left jamb of one note's door: `Deal.markFrom`
   (pure, `tests/mark.spec.luau`) marks a note that isn't the guarded one on every floor 1 and 2

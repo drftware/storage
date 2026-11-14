@@ -29,7 +29,9 @@ DUST = 0.25        # it rides in a car people sweep with their feet: a little on
 SEED = 83.0
 
 # --- the cabinet ------------------------------------------------------------------------------
-W, D, H = 4.6, 2.4, 6.6     # eyes are at 4.6: the top row of bays is at your eyes
+# D was 2.4 until S1-10d2 made it a quarter shallower so a full car fits round it; 1.8 is as
+# shallow as it goes with two batteries still standing one behind the other in a bottom coil.
+W, D, H = 4.6, 1.8, 6.6     # eyes are at 4.6: the top row of bays is at your eyes
 FRONT = -D / 2              # the door's face
 SHELL = 0.14                # the side walls' and the top's thickness
 PLINTH = (0.3, 0.1)         # the black plinth's height, and how far it's set back from the door
@@ -42,23 +44,23 @@ WINDOW = (-2.0, 2.0)        # its x range; the door's stiles either side of it
 ROWS = ((1.85, 1.0), (2.85, 1.25), (4.1, 1.25))
 WINDOW_TOP = 5.4
 RAIL = 0.32                 # a rail's height
-RAIL_Y = (-1.32, -1.08)     # its depth: from 0.12 proud of the door back to the glass
+RAIL_Y = (FRONT - 0.12, FRONT + 0.12)   # its depth: from 0.12 proud of the door back to the glass
 SINK = 0.06
-GLASS_Y = -1.09             # the glass's face, set into the door
-LINER = (-2.12, -1.02, 1.06, 1.72, 5.46)   # the white liner inside: x half, y front, y back, z
-SHELF = (-0.5, 0.05, 0.06)  # a shelf's front edge (y), thickness, the lip turned up at its front
+GLASS_Y = FRONT + 0.11      # the glass's face, set into the door
+LINER = (-2.12, FRONT + DOOR, D / 2 - SHELL, 1.72, 5.46)   # the white liner: x half, y front, y back, z
+SHELF = (GLASS_Y + 0.4, 0.05, 0.06)  # a shelf's front edge (y), thickness, the lip at its front
 CHUTE = SHELF[0] - GLASS_Y  # the gap between the shelves and the glass, the drop to the bin
 
 # The bays, in each row: (middle x, width). Two to a row; a divider down the middle.
 BAYS = ((-1.0, 1.9), (1.0, 1.9))
 DIVIDER = 0.05
-MOTOR = (0.64, 0.24, 0.5)   # the motor box at the back of each bay: width, depth, height
+MOTOR = (0.64, 0.14, 0.5)   # the motor box at the back of each bay: width, depth, height
 
 # --- the coils (one MeshPart, cloned per bay so each can turn) --------------------------------
 COIL_R = 0.26               # its radius to the wire's middle: a battery sits in its loops
 COIL_WIRE = 0.022
-COIL_TURNS = 4.5
-COIL_Y = (-0.47, 0.8)       # its front end to where it meets the motor's hub
+COIL_TURNS = 3.5           # a pitch of about 0.23: two batteries stand two loops apart
+COIL_Y = (SHELF[0] + 0.03, LINER[2] - MOTOR[1] - 0.02)   # its front end to the motor's hub
 COIL_TAIL = 0.14            # the helix stops this short of the hub; its tail bends in to it
 COIL_STEPS = 12             # points a turn
 COIL_SEGS = 6               # round the wire
@@ -74,7 +76,7 @@ BUTTON_BEZEL = (0.17, 0.03)  # the black collar it sits in: radius, depth
 # --- the bin and the coin plate, under the glass -------------------------------------------
 FLAP = (-1.95, 0.6, 0.62, 1.4)   # the push flap's opening: x from, x to, z from, z to
 FLAP_T = 0.04
-BIN_BACK = -0.3             # the bin's back wall, behind the flap
+BIN_BACK = FRONT + 0.9      # the bin's back wall, behind the flap
 PLATE = (0.9, 1.98, 0.48, 1.72)  # the coin plate: x, z
 PLATE_T = 0.04
 SLOT = (1.44, 1.42, 0.17)   # the coin slot's boss: x, z, radius (the slot is cut in it)
@@ -82,10 +84,10 @@ CUP = (1.44, 0.78, 0.46, 0.3)    # the return cup: middle x, z, width, height
 
 # --- the sign and the tubes (untextured) -----------------------------------------------------
 SIGN = (-1.98, 1.98, 5.56, 6.34)   # x, z: the lit panel under the cabinet's cap
-SIGN_Y = (-1.12, -1.06)
+SIGN_Y = (FRONT + 0.08, FRONT + 0.14)
 TUBE_R = 0.045
 TUBE_X = 1.9                # its half-length
-TUBE_Y = -0.955             # just behind the glass at the top of each row, under the next rail
+TUBE_Y = FRONT + 0.245      # just behind the glass at the top of each row, under the next rail
 TUBE_DROP = 0.08            # its axis under the row's top
 
 # --- where it stands in the car -------------------------------------------------------------

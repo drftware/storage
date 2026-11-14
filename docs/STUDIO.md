@@ -2038,6 +2038,14 @@ verified: a doc page, Studio, or "untested".
 
 ## The machine's menu (S1-10d1, Nov 14)
 
+- **An Edit `require` keeps the module it first loaded** (S1-10d2): after Rojo synced the new
+  `Machine.Specs` (its Source read 1.8 deep), `require(RS.Shared.Machine.Specs)` in an Edit
+  `execute_luau` still gave 2.4. Clone the module (`RS.Shared.Machine:Clone()`, parented beside
+  it so its own `script.X` requires resolve), require the clone, use it, destroy it. Play
+  starts fresh, so this is only for Edit work such as `Machine.prepare`.
+- **Studio drew frames again** (S1-10d2): the Client's RenderStepped fired 30 times in half a
+  second, so client-side Play checks worked; the frameless session below is the exception.
+
 - **Studio drew no frames at all** with its window hidden (S1-10d1): the Client's
   `RenderStepped` fired 0 times in half a second while Heartbeat fired 30, so the client Host
   (stepped from RenderStepped) never stepped and no client system moved; `screen_capture` timed

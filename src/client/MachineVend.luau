@@ -30,9 +30,14 @@ local Specs = Machine.Specs
 local V = Buy.Vend
 
 -- The thing's way down, in the machine's frame: it falls in the gap between the coils and the
--- glass, to rest on the bin's floor behind the flap, inside the flap's width.
-local FALL_Z = -0.8
+-- glass (halfway between the glass and the coils' tips), to rest on the bin's floor behind the
+-- flap, inside the flap's width.
+local FALL_Z = (Specs.Glass.Centre[3] + Specs.Bays[1].Coil[3] + Specs.CoilFront) / 2
 local REST_Y = 0.85
+-- The bin behind the flap runs this deep (art/machine/spec.py's BIN_BACK less the flap's face):
+-- a deep thing, lying down once it has tumbled, lands further back so it stays inside it.
+local BIN_DEEP = 0.8
+local BIN_CLEAR = 0.02
 local BIN_X = { -0.45, 1.8 }
 -- Degrees it tips forward riding off the tip, and has tumbled by the time it lands.
 local TIP = 55
@@ -52,6 +57,7 @@ export type Vend = {
 	pivot: CFrame, -- the thing's pivot as it stood
 	centre: Vector3, -- its middle then, world
 	push: number, -- studs it rides forward to leave the tip
+	fallZ: number, -- where its middle lands in the bin, machine frame (`landing`)
 	rest: { PVInstance }, -- the others in the coil, front first
 	from: { CFrame },
 	to: { CFrame },
@@ -86,6 +92,33 @@ local function middle(thing: PVInstance): Vector3
 	return thing:GetPivot().Position
 end
 
+-- Half a thing's height and depth as it stands, along the machine's Y and Z.
+local function halves(thing: PVInstance, frame: CFrame): (number, number)
+	local box, size
+	if thing:IsA("Model") then
+		box, size = thing:GetBoundingBox()
+	elseif thing:IsA("BasePart") then
+		box, size = thing.CFrame, thing.Size
+	else
+		return 0, 0
+	end
+	local turn = frame.Rotation:ToObjectSpace(box.Rotation)
+	local x, y, z = turn.XVector, turn.YVector, turn.ZVector
+	return 0.5 * (math.abs(x.Y) * size.X + math.abs(y.Y) * size.Y + math.abs(z.Y) * size.Z),
+		0.5 * (math.abs(x.Z) * size.X + math.abs(y.Z) * size.Y + math.abs(z.Z) * size.Z)
+end
+
+-- Where a thing's middle lands in the bin along the machine's Z: as near the glass as FALL_Z, but
+-- with its front behind the flap once it has tumbled (its height swings toward the glass), and
+-- its middle in the bin's middle if it's longer than the bin is deep.
+local function landing(hy: number, hz: number): number
+	local a = math.rad(TUMBLE)
+	local h = math.abs(math.cos(a)) * hz + math.abs(math.sin(a)) * hy
+	local flap = Specs.FlapHinge[3]
+	local lo, hi = flap + h + BIN_CLEAR, flap + BIN_DEEP - h
+	return if lo <= hi then math.clamp(FALL_Z, lo, hi) else flap + BIN_DEEP / 2
+end
+
 local function ease(u: number): number
 	return u * u * (3 - 2 * u)
 end
@@ -118,7 +151,19 @@ function MachineVend.start(
 	-- how far its middle is behind the coil's front, in the machine's frame, and a little past
 	local coilFront = Specs.Bays[bay].Coil[3] + Specs.CoilFront
 	local local0 = frame:PointToObjectSpace(centre)
-	local push = math.max(local0.Z - coilFront, 0) + 0.12
+	local hy, hz = 0, 0
+	if thing then
+		hy, hz = halves(thing, frame)
+	end
+	-- a little past the tip, but a big thing stops short of where its corner would reach through
+	-- the glass as it tips and tumbles (its reach is about its box's half diagonal), never short
+	-- of leaving the tip
+	local reach = math.sqrt(hy * hy + hz * hz)
+	local stop = math.max(
+		coilFront - 0.12,
+		math.min(Specs.Glass.Centre[3] + reach + BIN_CLEAR, coilFront - 0.02)
+	)
+	local push = math.max(local0.Z - stop, 0)
 	local rest: { PVInstance } = {}
 	local from: { CFrame } = {}
 	local to: { CFrame } = {}
@@ -152,6 +197,7 @@ function MachineVend.start(
 		pivot = pivot,
 		centre = centre,
 		push = push,
+		fallZ = if thing then landing(hy, hz) else FALL_Z,
 		rest = rest,
 		from = from,
 		to = to,
@@ -213,7 +259,7 @@ local function path(v: Vend, t: number): (CFrame, boolean)
 		at = Vector3.new(
 			top.X + (x - top.X) * u,
 			top.Y + (REST_Y - top.Y) * u * u,
-			top.Z + (FALL_Z - top.Z) * u
+			top.Z + (v.fallZ - top.Z) * u
 		)
 		tip = TIP + (TUMBLE - TIP) * u
 		if u >= 1 then

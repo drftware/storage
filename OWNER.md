@@ -136,6 +136,20 @@ climb only a Mannequin throws it (S2-02c, below), so test the box itself with th
    lights do; coming back dark would show nothing from the box); the lamp as glowing Neon, red
    off and green on; one second to hold, as cutting a friend free.
 
+## Now: the shallower machine (S1-10d2, built Nov 14, D-162; three buys seen in Play)
+
+The machine is a quarter less deep (1.8 studs, was 2.4), so the car has more room in front of
+it. You asked for "a bit"; I stopped at a quarter because a third leaves no room for the second
+battery standing in each bottom coil. Seen in Play: the stock stands in its coils, and the
+bubble wrap, a battery and the saw each dropped into the bin and flew to the hand.
+1. **Ride with friends and crowd round the machine.** Look for: does the car feel roomier, and
+   does the machine still look solid from the side, not like a cabinet stuck to the wall?
+2. **Buy something big (the bubble wrap, the saw) and watch from close up.** Look for: the
+   thing rolls off its coil, drops in the gap behind the glass and lands behind the flap. Does
+   anything poke through the glass or the flap?
+3. Decide: a quarter is enough, or shallower still. Shallower means one battery per bottom coil
+   (two a ride instead of four), or batteries shown smaller in the machine than in your hand.
+
 ## Now: pick from the machine's menu (S1-10d1, built Nov 14, D-161; only the server's side seen)
 
 The six Buy buttons on the machine are gone: one "Buy" on the middle of its glass opens the

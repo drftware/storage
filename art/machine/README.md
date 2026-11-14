@@ -24,9 +24,9 @@ car's back-right corner, from beside the gate at eye height, a phone's 70-degree
 
 ## Numbers
 
-4.6 wide, 2.4 deep (2.56 with its rails and bezels), 6.6 tall: the top row of bays is at your
+4.6 wide, 1.8 deep (1.96 with its rails and bezels; 2.4 until S1-10d2), 6.6 tall: the top row of bays is at your
 eyes (4.6). Rows bottom up: batteries 1.0 tall, tools 1.25 and 1.25; each bay 1.9 wide. In the
-car (`art/elevator/spec.py`'s frame) it stands at x 3.7, y 10.58: its back 0.02 off the back
+car (`art/elevator/spec.py`'s frame) it stands at x 3.7, y 10.88: its back 0.02 off the back
 wall's bumper boards, its right side 0.05 off the right wall's.
 
 Eight MeshParts. Textured, sharing the Machine set at 1024 (about 49 texels a stud; the liner and

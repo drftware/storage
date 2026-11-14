@@ -8,6 +8,7 @@ local roblox = require("@lune/roblox")
 
 local Buy = require("../src/shared/Machine/Buy")
 local Ride = require("../src/shared/Elevator/Ride")
+local Specs = require("../src/shared/Machine/Specs")
 local Stock = require("../src/shared/Machine/Stock")
 local Wake = require("../src/shared/Machine/Wake")
 
@@ -63,7 +64,7 @@ ok(Buy.tile(cell, true, 1, false) == "full", "a full torch outranks too few coin
 -- the menu reaches from the car's back half, past the friends in front of the machine
 ok(Buy.Reach >= 7, "reach covers a crowd")
 local spot = Buy.point(roblox.CFrame.new(0, 0, 0))
-ok(spot.Z < -1.09 and spot.Y > 3, "the button hangs on the glass's face")
+ok(spot.Z < Specs.Glass.Centre[3] and spot.Y > 3, "the button hangs on the glass's face")
 
 -- allow: a burst of two, then one a gap
 local may, left = Buy.allow(nil, 0, 0)

@@ -9,82 +9,82 @@ export type Bay = { Row: number, Middle: Vec, Width: number, Coil: Vec, Button: 
 export type Part = { Size: Vec, Centre: Vec, Triangles: number }
 
 local Specs = {
-	Size = { 4.600, 6.600, 2.400 },
+	Size = { 4.600, 6.600, 1.800 },
 	-- Where it stands in a floor's car, in the elevator's frame (Elevator.Specs).
-	InCar = { -3.700, 0.000, 10.580 },
+	InCar = { -3.700, 0.000, 10.880 },
 	-- Each bay, bottom row first, left to right as you face the machine: its middle (on the
 	-- shelf, halfway back), its width, its coil's middle (the coil turns about its own Z),
 	-- its button's back (the button sinks +Z by `ButtonTravel`), its price window's face.
 	Bays = {
 		{
 			Row = 1,
-			Middle = { 1.000, 2.110, 0.280 },
+			Middle = { 1.000, 2.110, 0.185 },
 			Width = 1.9,
-			Coil = { 1.000, 2.392, 0.165 },
-			Button = { 0.640, 2.010, -1.350 },
-			Price = { 1.340, 2.010, -1.345 },
+			Coil = { 1.000, 2.392, 0.120 },
+			Button = { 0.640, 2.010, -1.050 },
+			Price = { 1.340, 2.010, -1.045 },
 		},
 		{
 			Row = 1,
-			Middle = { -1.000, 2.110, 0.280 },
+			Middle = { -1.000, 2.110, 0.185 },
 			Width = 1.9,
-			Coil = { -1.000, 2.392, 0.165 },
-			Button = { -1.360, 2.010, -1.350 },
-			Price = { -0.660, 2.010, -1.345 },
+			Coil = { -1.000, 2.392, 0.120 },
+			Button = { -1.360, 2.010, -1.050 },
+			Price = { -0.660, 2.010, -1.045 },
 		},
 		{
 			Row = 2,
-			Middle = { 1.000, 3.110, 0.280 },
+			Middle = { 1.000, 3.110, 0.185 },
 			Width = 1.9,
-			Coil = { 1.000, 3.392, 0.165 },
-			Button = { 0.640, 3.010, -1.350 },
-			Price = { 1.340, 3.010, -1.345 },
+			Coil = { 1.000, 3.392, 0.120 },
+			Button = { 0.640, 3.010, -1.050 },
+			Price = { 1.340, 3.010, -1.045 },
 		},
 		{
 			Row = 2,
-			Middle = { -1.000, 3.110, 0.280 },
+			Middle = { -1.000, 3.110, 0.185 },
 			Width = 1.9,
-			Coil = { -1.000, 3.392, 0.165 },
-			Button = { -1.360, 3.010, -1.350 },
-			Price = { -0.660, 3.010, -1.345 },
+			Coil = { -1.000, 3.392, 0.120 },
+			Button = { -1.360, 3.010, -1.050 },
+			Price = { -0.660, 3.010, -1.045 },
 		},
 		{
 			Row = 3,
-			Middle = { 1.000, 4.360, 0.280 },
+			Middle = { 1.000, 4.360, 0.185 },
 			Width = 1.9,
-			Coil = { 1.000, 4.642, 0.165 },
-			Button = { 0.640, 4.260, -1.350 },
-			Price = { 1.340, 4.260, -1.345 },
+			Coil = { 1.000, 4.642, 0.120 },
+			Button = { 0.640, 4.260, -1.050 },
+			Price = { 1.340, 4.260, -1.045 },
 		},
 		{
 			Row = 3,
-			Middle = { -1.000, 4.360, 0.280 },
+			Middle = { -1.000, 4.360, 0.185 },
 			Width = 1.9,
-			Coil = { -1.000, 4.642, 0.165 },
-			Button = { -1.360, 4.260, -1.350 },
-			Price = { -0.660, 4.260, -1.345 },
+			Coil = { -1.000, 4.642, 0.120 },
+			Button = { -1.360, 4.260, -1.050 },
+			Price = { -0.660, 4.260, -1.045 },
 		},
 	} :: { Bay },
 	-- The coil's helix: where its wire starts, at the bottom of the loop, from the coil's
 	-- middle along Z (toward the glass), and how far it runs a turn. The wire is at the bottom
 	-- of its loop every `CoilPitch` back from there: what stands in the coil rests on it.
-	CoilFront = -0.635,
-	CoilPitch = 0.2511,
+	CoilFront = -0.480,
+	CoilPitch = 0.2343,
 	ButtonTravel = 0.07,
 	PriceSize = { 0.5, 0.2 }, -- a price window's width and height
 	-- The flap's hinge (its top edge's middle): it swings in, about its X.
-	FlapHinge = { 0.675, 1.400, -1.100 },
+	FlapHinge = { 0.675, 1.400, -0.800 },
 	FlapSize = { 2.550, 0.780 },
 	-- The coin slot's boss, on the plate, and the return cup's middle.
-	Slot = { -1.440, 1.420, -1.290 },
-	Cup = { -1.440, 0.780, -1.240 },
+	Slot = { -1.440, 1.420, -0.990 },
+	Cup = { -1.440, 0.780, -0.940 },
 	-- The sign's lit face (its middle) and its size: the emblem's SurfaceGui goes on it.
-	Sign = { Centre = { -0.000, 5.950, -1.120 }, Size = { 3.960, 0.780 } },
+	Sign = { Centre = { -0.000, 5.950, -0.820 }, Size = { 3.960, 0.780 } },
 	-- The glass's face, its middle and size: the light that spills into the car leaves it.
-	Glass = { Centre = { -0.000, 3.625, -1.090 }, Size = { 4.000, 3.550 } },
+	Glass = { Centre = { -0.000, 3.625, -0.790 }, Size = { 4.000, 3.550 } },
 	-- Each row's tube, bottom row first (its axis's middle; it runs along X), its radius and
 	-- length: the game draws each as its own cylinder, so the rows catch one at a time.
-	Tubes = { { -0.000, 2.770, -0.955 }, { -0.000, 4.020, -0.955 }, { -0.000, 5.270, -0.955 } },
+	Tubes = { { -0.000, 2.770, -0.655 }, { -0.000, 4.020, -0.655 }, { -0.000, 5.270, -0.655 } },
 	TubeRadius = 0.045,
 	TubeLength = 3.8,
 	-- Each MeshPart's box as imported (its centre is its CFrame). The cabinet, glass, tubes,
@@ -92,14 +92,14 @@ local Specs = {
 	-- each on its own origin (the coil's axis at its middle, the button's back, the hinge).
 	Parts = {
 		Machine = {
-			Size = { 4.600, 6.600, 2.560 },
+			Size = { 4.600, 6.600, 1.960 },
 			Centre = { -0.000, 3.300, -0.080 },
 			Triangles = 1852,
 		},
 		MachineCoil = {
-			Size = { 0.558, 0.558, 1.292 },
+			Size = { 0.558, 0.558, 0.982 },
 			Centre = { -0.000, 0.000, -0.011 },
-			Triangles = 692,
+			Triangles = 548,
 		},
 		MachineButton = {
 			Size = { 0.250, 0.250, 0.120 },
@@ -113,22 +113,22 @@ local Specs = {
 		},
 		MachineGlass = {
 			Size = { 4.000, 3.550, 0.010 },
-			Centre = { -0.000, 3.625, -1.085 },
+			Centre = { -0.000, 3.625, -0.785 },
 			Triangles = 12,
 		},
 		MachineTubes = {
 			Size = { 3.800, 2.586, 0.090 },
-			Centre = { -0.000, 4.020, -0.955 },
+			Centre = { -0.000, 4.020, -0.655 },
 			Triangles = 108,
 		},
 		MachinePrices = {
 			Size = { 2.500, 2.450, 0.010 },
-			Centre = { 0.340, 3.135, -1.340 },
+			Centre = { 0.340, 3.135, -1.040 },
 			Triangles = 72,
 		},
 		MachineSign = {
 			Size = { 3.960, 0.780, 0.060 },
-			Centre = { -0.000, 5.950, -1.090 },
+			Centre = { -0.000, 5.950, -0.790 },
 			Triangles = 12,
 		},
 	} :: { [string]: Part },

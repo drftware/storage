@@ -4479,3 +4479,25 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
 - A chrome knob with an engraved cross shuts it (a close button, but the machine's own), besides
   walking off, E and B, since it rises again after each buy.
 
+## D-162 The machine a quarter shallower, not a third (S1-10d2, Nov 14)
+
+The owner: "I think we shrink the depth of the vending machine a bit" (a car full of friends
+crowds it). The ticket read "a bit" as about a third.
+- **1.8 deep, from 2.4: a quarter.** Each bottom coil stands two batteries one behind the other
+  (`Stock.Batteries`, enough for a team of four from two coils), and a battery is 0.46 across, so
+  the coil needs about 0.95 from its tip to the motor. At 1.6 (a third) that space is 0.68: the
+  second battery would stand in the motor. 1.8 is the shallowest that keeps the stock as it is.
+  Shallower would mean one battery a coil (two a ride) or smaller batteries in the machine than
+  in your hand; both change the game, so they wait on the owner (`OWNER.md`).
+- **Where the depth came from:** the face stays as it was (door, rails, glass, flap, plate, sign,
+  all now measured from the front in the spec), the drop between the coils' tips and the glass
+  0.59 to 0.4, the motor box 0.24 to 0.14 deep, the coils 4.5 turns to 3.5 (a pitch of about
+  0.23, so two batteries still stand two loops apart). The machine's back stays on the car's
+  back wall, so its front sits 0.3 further from the gate.
+- **A narrower drop needs each thing sized:** the bubble wrap (0.72 across) and a tumbling
+  battery or saw no longer fit the drop at any angle. MachineVend now stops a thing's ride off
+  the tip once its tumbling reach (its box's half diagonal) would touch the glass, never short
+  of leaving the tip, and lands it inside the bin by its size once tumbled (centred if it's
+  longer than the bin is deep). Measured in Play: the bubble wrap and the saw land in the bin,
+  the saw's box corner at most 0.05 past the glass as it tips (a box estimate, likely unseen).
+
