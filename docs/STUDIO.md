@@ -894,6 +894,11 @@ verified: a doc page, Studio, or "untested".
   camera facing it; then `prompt:InputHoldBegin()` and `InputHoldEnd()` in the Client view trigger
   it. `settings().Rendering.QualityLevel` can be set from the Client view mid-Play (Level01 for a
   low-graphics phone); put it back to Automatic.
+- **Coin sounds measured** (S1-04a1, Nov 13; Edit, AudioPlayer to AudioAnalyzer at a quarter
+  speed, `PeakLevel` in 50 ms bins): Pro Sound Effects' "Coins In Pocket 2" 9113849162 (1.49 s) is
+  quiet but for one bright chink at 1.13 to 1.35 s (peak 0.17); "Coins In Pocket 1" 9113849100
+  (1.22 s) is a low jingle from 0.25 to 1.0 s. User uploads ("coin clink" and the like) were
+  skipped: only the licensed library is sure to load in any game.
 - **Sounds from the audio library** (L-03): `search_asset` with `assetType = "Audio"` finds them;
   Pro Sound Effects' and APM's uploads are Roblox's licensed library and load in any game. Check
   one in Edit with `ContentProvider:PreloadAsync` (status Success, `TimeLength` above 0) before

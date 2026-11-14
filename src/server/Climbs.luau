@@ -104,6 +104,9 @@ export type HandOff = {
 export type Climbs = Brix.System & {
 	-- Fires as each floor is laid and in every floor system, before riders reach it.
 	laid: Brix.Signal<OnFloor>,
+	-- Fires as a climb begins, on the floor it begins on (`begin`, `board`, `arrive`): everyone's
+	-- coins start from zero (Coins, S1-04a).
+	began: Brix.Signal<OnFloor>,
 	-- Fires as riders are moved into the next floor's car.
 	handedOff: Brix.Signal<HandOff>,
 	-- Fires as the car leaves the top floor with friends aboard.
@@ -198,6 +201,7 @@ end
 function Climbs.new(): Climbs
 	local laidSignal = Brix.Signal.new() :: Brix.Signal<OnFloor>
 	local handedOff = Brix.Signal.new() :: Brix.Signal<HandOff>
+	local began = Brix.Signal.new() :: Brix.Signal<OnFloor>
 	local toppedSignal = Brix.Signal.new() :: Brix.Signal<Topped>
 	local elevators: Elevators.Elevators? = nil
 	local deals: Deals.Deals? = nil
@@ -660,6 +664,7 @@ function Climbs.new(): Climbs
 		name = "Climbs",
 		laid = laidSignal,
 		handedOff = handedOff,
+		began = began,
 		topped = toppedSignal,
 	}
 
@@ -700,6 +705,7 @@ function Climbs.new(): Climbs
 		laidSignal:disconnectAll()
 		handedOff:disconnectAll()
 		toppedSignal:disconnectAll()
+		began:disconnectAll()
 	end
 
 	function system.begin(_: any, o: Options): OnFloor?
@@ -720,6 +726,7 @@ function Climbs.new(): Climbs
 		playing = on
 		arm(on)
 		started = now()
+		began:fire(on)
 		return on
 	end
 
@@ -790,6 +797,7 @@ function Climbs.new(): Climbs
 			end
 			playing = on
 			started = now()
+			began:fire(on)
 			armAfterArrival(on, on.elevator :: Model, mine)
 			if STUDIO then
 				print(
@@ -830,6 +838,7 @@ function Climbs.new(): Climbs
 		e:ride(car, riders, now() - since)
 		playing = on
 		started = now()
+		began:fire(on)
 		armAfterArrival(on, car, mine)
 		if STUDIO then
 			print(

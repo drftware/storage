@@ -29,8 +29,8 @@ export type Tool = "Saw" | "BoltCutters" | "Padlock" | "Ladder" | "BubbleWrap" |
 export type Situation = { mood: Mood, awake: number }
 
 -- What a unit holds once dealt: a tool says which, a find which, a keeper which and whether it's
--- awake.
-export type Contents = { kind: Kind, tool: Tool?, find: string?, keeper: string? }
+-- awake; `coins`, how many coins lie on its floor besides (0 to 3, S1-04a).
+export type Contents = { kind: Kind, tool: Tool?, find: string?, keeper: string?, coins: number }
 
 -- A note: the unit it lies in (an index into the floor's slots) and the places of the code it
 -- shows, 1 to 4, in order. The note itself shows them in their slots, "_ 7 _ _" (`Deal.noteText`).
@@ -45,6 +45,7 @@ export type Deck = {
 	rolls: { [number]: number }, -- each unit's roll for what kind of thing it holds, 0 to 1
 	picks: { [number]: number }, -- each unit's roll for which find or keeper, 0 to 1
 	dealt: { [number]: Contents }, -- what each unit got, once its door has lifted
+	coins: { [number]: number }, -- the coins on each unit's floor, 0 to 3, by slot index
 	-- the unit of the guarded note (D-072), by slot index: it's always dealt a keeper, awake, and
 	-- holds one of the floor's awake places from the floor's start (`Deal.odds`)
 	guarded: number?,
@@ -124,6 +125,38 @@ Deal.Finds = { "Boombox", "Television", "Teddy", "Skates" } :: { string }
 -- the first tool out of the bag is a saw, and the lobby's hall deals no keepers: your first doors
 -- teach you to open them before one bites (the director's breathing room, GDD).
 Deal.TeachingFloors = 2
+
+--[[
+	Coins (S1-04a): about seven units in ten have one to three coins lying on the floor (GDD
+	"Doors", a starting guess), as DOORS has gold in most of its drawers but not all: most doors
+	pay something, so every door is worth the noise of opening it, and an empty one stings. A
+	unit's coins are its own draw, beside whatever else it holds (a tool, a find, a note, a
+	keeper). Whoever taps them first takes them.
+]]
+Deal.CoinShare = 0.7 -- the share of units with coins on the floor
+-- Of the units with coins, how many lie there, out of 100: one most often, three a little treat.
+-- About 1.75 a paying unit, so about 37 on a floor 1 of 30 units if every door is opened.
+Deal.CoinSpread = { 45, 35, 20 } :: { number }
+
+-- How many coins a unit holds from its two draws, each 0 to 1: `share` against CoinShare, then
+-- `spread` across CoinSpread.
+function Deal.coinsFrom(share: number, spread: number): number
+	if share >= Deal.CoinShare then
+		return 0
+	end
+	local total = 0
+	for _, weight in Deal.CoinSpread do
+		total += weight
+	end
+	local at = spread * total
+	for count, weight in Deal.CoinSpread do
+		if at < weight then
+			return count
+		end
+		at -= weight
+	end
+	return #Deal.CoinSpread
+end
 
 -- The share of a floor's units that start padlocked: a few on floors 1 and 2, where you learn the
 -- doors (about 4 of 60), more above (about 10 of 80). None in the lobby's own hall: the first
@@ -316,6 +349,7 @@ function Deal.new(floor: Floor, random: Random): Deck
 		rolls = rolls,
 		picks = picks,
 		dealt = {},
+		coins = {},
 		bag = {},
 		random = random,
 	}
@@ -346,6 +380,10 @@ function Deal.new(floor: Floor, random: Random): Deck
 		local bag = deck.bag
 		local saw = table.find(bag, "Saw") :: number
 		bag[saw], bag[#bag] = bag[#bag], bag[saw]
+	end
+	-- The coins, drawn last, so adding them moved nothing else a seed lays (its guard, its bag).
+	for _, i in units do
+		deck.coins[i] = Deal.coinsFrom(random:nextNumber(), random:nextNumber())
 	end
 	return deck
 end
@@ -424,7 +462,7 @@ function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 		at -= odds[k]
 	end
 
-	local contents: Contents = { kind = kind }
+	local contents: Contents = { kind = kind, coins = deck.coins[index] or 0 }
 	if kind == "Tool" then
 		contents.tool = Deal.drawTool(deck)
 	elseif kind == "Find" then

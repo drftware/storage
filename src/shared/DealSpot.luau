@@ -43,7 +43,7 @@ export type Unit = {
 	landing: { x: number, z: number }?,
 	fallen: { number }?,
 }
-export type Thing = "Tool" | "Find" | "Keeper"
+export type Thing = "Tool" | "Find" | "Keeper" | "Coins"
 -- A thing's size as it stands at yaw 0: X across, Z along (front to back), Y tall.
 export type Size = { across: number, along: number, tall: number }
 export type Spot = { x: number, z: number, yaw: number } -- yaw in degrees about +Y
@@ -58,8 +58,12 @@ DealSpot.Door = 2.5
 -- unit's depth. The bulb hangs at the middle, so a find or a keeper stands wholly behind it
 -- (D-036). A tool lies in the bulb's pool, near enough to read on a phone from the doorway: at
 -- the back wall of a big unit the bolt cutters were a red smear (L-04e, Galaxy A16).
-DealSpot.From = { Tool = 0.25, Find = 0.5, Keeper = 0.5 } :: { [string]: number }
-DealSpot.To = { Tool = 0.7, Find = 1, Keeper = 1 } :: { [string]: number }
+-- Coins (S1-04a) lie in the bulb's pool as a tool does, where they catch its light from the doorway.
+DealSpot.From = { Tool = 0.25, Find = 0.5, Keeper = 0.5, Coins = 0.25 } :: { [string]: number }
+DealSpot.To = { Tool = 0.7, Find = 1, Keeper = 1, Coins = 0.7 } :: { [string]: number }
+-- Studs kept between a unit's coins and the other thing it holds, all round, so a pile never lies
+-- on a tool or against a keeper's feet, and each reads on its own.
+DealSpot.Apart = 0.5
 -- Half the note's width as drawn (the art's 0.7-stud note at NoteSpot.Scale 1.6).
 DealSpot.NoteHalf = 0.56
 -- Studs kept clear around the sight line from the doorway to the note, so nothing even brushes it.
@@ -260,13 +264,15 @@ local function search(
 ): { Spot }
 	local across, along = size.across, size.along
 	local found: { Spot } = {}
-	if thing == "Tool" then
+	if thing == "Tool" or thing == "Coins" then
 		-- in the bulb's pool at its unit's own turn, else at another; else anywhere past the door,
-		-- the same way (a small unit's pool is mostly landing and hole spots, D-067)
+		-- the same way (a small unit's pool is mostly landing and hole spots, D-067). Coins take
+		-- another turn than a tool in the same unit would.
 		local count = #DealSpot.ToolYaws
-		for _, deep in { { DealSpot.From.Tool, DealSpot.To.Tool }, { 0, 1 } } do
+		local own = if thing == "Coins" then n + 2 else n
+		for _, deep in { { DealSpot.From[thing], DealSpot.To[thing] }, { 0, 1 } } do
 			for k = 0, count - 1 do
-				local yaw = DealSpot.ToolYaws[(n + k) % count + 1]
+				local yaw = DealSpot.ToolYaws[(own + k) % count + 1]
 				found = spots(unit, across, along, sight, holes, deep[1], deep[2], yaw, 0, false)
 				if #found > 0 then
 					return found
@@ -297,7 +303,8 @@ end
 --[[
 	Where unit `number` ("214") lays a `thing` of `size`, its note `note` studs across the back wall
 	(NoteSpot's x) or nil if it holds none. A tool tries its unit's own turn first, then the others,
-	then anywhere.
+	then anywhere; coins too, at their own turn. `taken` is floor something else is laid on (the
+	unit's tool, find or keeper, `DealSpot.Apart` all round: `DealSpot.around`), never given up.
 	A find or keeper faces the doorway, or straight out where it can't turn, and stands wholly
 	behind the bulb unless it fits nowhere there. All of it off the crawl hole spots, the landing
 	under the top's hole and where the top's panel falls. Where that fits nowhere it gives them up
@@ -305,13 +312,24 @@ end
 	on a crawl hole spot behind the bulb than in front of it, and nothing lies where you'd land
 	while it fits anywhere else. Nil only if it fits nowhere past the door.
 ]]
-function DealSpot.inUnit(unit: Unit, thing: Thing, size: Size, note: number?, number: string): Spot?
+function DealSpot.inUnit(
+	unit: Unit,
+	thing: Thing,
+	size: Size,
+	note: number?,
+	number: string,
+	taken: { { number } }?
+): Spot?
 	local n = math.floor(math.abs(tonumber(number) or 0))
 	local turn = DealSpot.Turns[(n * 3) % #DealSpot.Turns + 1]
 	local sight = if note and size.tall >= DealSpot.Under
 		then DealSpot.sightLine(unit, note)
 		else nil
 	local land = DealSpot.landing(unit)
+	local kept: { { number } } = taken or {}
+	for _, zone in kept do
+		table.insert(land, zone)
+	end
 	local top = table.clone(land)
 	if unit.fallen then
 		table.insert(top, unit.fallen)
@@ -320,7 +338,7 @@ function DealSpot.inUnit(unit: Unit, thing: Thing, size: Size, note: number?, nu
 	for _, zone in DealSpot.holes(unit) do
 		table.insert(all, zone)
 	end
-	local behind = thing ~= "Tool"
+	local behind = thing == "Find" or thing == "Keeper"
 	local found: { Spot } = {}
 	for _, try in
 		{
@@ -328,7 +346,7 @@ function DealSpot.inUnit(unit: Unit, thing: Thing, size: Size, note: number?, nu
 			{ keep = top, behind = behind },
 			{ keep = land, behind = behind },
 			{ keep = land, behind = false },
-			{ keep = {}, behind = false },
+			{ keep = kept, behind = false },
 		}
 	do
 		found = search(unit, thing, size, sight, try.keep, n, turn, try.behind)
@@ -339,8 +357,17 @@ function DealSpot.inUnit(unit: Unit, thing: Thing, size: Size, note: number?, nu
 	if #found == 0 then
 		return nil
 	end
-	-- Knuth's multiplier spreads neighbouring numbers across the list
-	return found[(n * 2654435761) % #found + 1]
+	-- Knuth's multiplier spreads neighbouring numbers across the list; coins use another, so they
+	-- don't land where the unit's tool would
+	local spread = if thing == "Coins" then 2246822519 else 2654435761
+	return found[(n * spread) % #found + 1]
+end
+
+-- The floor a thing laid at `spot` takes, `DealSpot.Apart` all round: what `inUnit`'s `taken`
+-- keeps clear of.
+function DealSpot.around(spot: Spot, size: Size): { number }
+	local gap = 2 * DealSpot.Apart
+	return DealSpot.footprint(spot.x, spot.z, spot.yaw, size.across + gap, size.along + gap)
 end
 
 return DealSpot

@@ -1398,10 +1398,18 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
   floor; tap to pick them up and a small count goes up. Yours alone, for this climb only. The
   other units are bare or hold things to look at (stacked boxes, a mattress, a rolled carpet:
   art first, the unit's way). In two sessions (split Nov 13):
-  - [ ] **S1-04a Coins.** The coin, built the unit's way (art first: `art/coin/`, a spec, baked
-    maps, the FBX, look sheets); the deal lays one to three on the floor of about seven units in
-    ten; a tap picks one up with a chink and your count ticks up, the count small and out of the
-    way. Yours alone, for this climb (the GDD's lines on coins: read them first).
+  - [x] **S1-04a1 Coins: the coin, the deal and the server** (D-132). `art/coin/` builds the coin
+    the unit's way (a worn gold coin, a keyhole stamped through it; piles of one to three laid
+    out by the spec); `Deal` gives about seven units in ten one to three coins, drawn last so no
+    seed's other draws moved; `DealSpot` lays a pile in the bulb's pool, clear of the unit's
+    tool, find or keeper; the server's `Coins` lays each pile with a glint and a "Take" button,
+    checks every take and keeps each player's count for the climb (`Climbs.began` zeroes it).
+    Passes checks; the coin isn't in the place yet, so no coins show in Play.
+  - [ ] **S1-04a2 Coins: on screen.** Upload and import the coin into `ReplicatedStorage.Props`;
+    the client's `CoinView`: the take's motion (the coins jump, spin and shrink away, a ripple
+    across the pile), the chink at the pile for everyone near, and on the taker's screen a coin
+    flying to the count per coin with a tick and a pop; the count small in a top corner, sliding
+    in as a climb begins. Verify in Studio Play: coins in an opened unit, a take, the count.
   - [ ] **S1-04b Things to look at.** Stacked boxes, a mattress, a rolled carpet, built the
     unit's way, in some of the units without coins, so an open door is never just a bare box.
 - [ ] **S1-05 Finds you carry.** One tap puts a find in one of your three slots, beside your

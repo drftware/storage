@@ -150,6 +150,12 @@ local ART: { Art } = {
 		description = "An open laminated steel padlock: six riveted plates, a hardened shackle, a brass keyway",
 	},
 	{
+		key = "Coin",
+		path = "art/coin/out/Coin.fbx",
+		manifest = "art/coin/assets.json",
+		description = "A worn old gold coin: a beaded rim, a keyhole stamped through its middle, a reeded edge",
+	},
+	{
 		key = "Saw",
 		path = "art/saw/out/Saw.fbx",
 		manifest = "art/saw/assets.json",

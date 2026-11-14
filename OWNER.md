@@ -93,17 +93,21 @@ and off, the invite sheet opening with your friends (no invite sent).
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
 
-## Now: judge S1-03, fewer units (built Nov 13, D-131; untested in Studio)
+## Decide: coins, whoever taps first (S1-04a, D-132; default in place)
+
+Each unit with coins has one small pile of one to three, and one "Take" button. Whoever taps it
+first gets the whole pile, as DOORS' gold goes to whoever grabs it; each player's count is their
+own. The other way: everyone who's near when it's taken gets the same coins (no racing friends).
+- [ ] **Decide:** first come, first served (the default), or shared?
+
+## Now: judge S1-03, fewer units (built Nov 13, D-131; counts verified in Studio Play)
 
 Each floor now keeps about half its doors: about 30 on floors 1 and 2, about 40 above, with
 stretches of plain wall where the rest stood. A hall side's doors go together, so you see blank
 wall and then doors side by side. Every wing keeps some doors, the first 8 doors past the lobby
 on floors 1 and 2 all stay (the row that teaches sawing between neighbours), and no more than 4
-hall pieces in a row go by with no door on either side. It passes checks; nobody has looked at
-it in Studio yet.
-- [ ] **Count them:** press Play. Output prints the test floor's map and "floor 1 laid, N units":
-  N should be about 30 (26 to 37). For an upper floor set Workspace's `DevFloorNumber` to 3
-  before Play: about 40 (36 to 48).
+hall pieces in a row go by with no door on either side. Counted in Studio Play (Nov 13): floor 1
+laid 29 units, floor 3 laid 40.
 - [ ] **Walk a floor on a phone-size view:** does a long stretch of blank wall read as built that
   way, or as doors gone missing? Is a wing with only two or three doors still worth the walk?
   If the walls read as missing, ROADMAP's polish list has dressing for them.

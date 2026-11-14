@@ -3712,3 +3712,36 @@ floor 1 runs 101 to about 130 with no gaps. Over 400 seeds: 26 to 37 units on fl
 in boxes the size of the whole cart a little ahead of it, which covered most of its own deck: a
 rider put off at the stripes who stood still held their own cart for 12 s, then it popped into
 its slot. Now each look covers only the strip its nose rolls into (`Carts`, `inWay`).
+
+## D-132 Coins: drawn last, one pile a unit, first tap takes it (S1-04a1, Nov 13)
+
+**The moment.** A door goes up and there's a glint of gold on the concrete in the bulb's light;
+you step in, tap, and it's yours with a chink while your count ticks up (GDD "Doors": about
+seven units in ten have one to three coins; DOORS has gold in most of its drawers).
+
+**The deal.** Each unit draws its coins when the floor is laid (`Deal.coinsFrom`: `CoinShare`
+0.7, then `CoinSpread` 45/35/20 for one, two, three), after every other draw, so no seed's code,
+notes, padlocks, guard or bag moved (holetrap.spec's replayed seed still passes). They're shown
+as the door first lifts, beside whatever else the unit holds. Drawn at the start rather than as
+the door opens (the GDD allows either) so a unit holds the same coins whatever order doors open.
+Padlocks get no extra coins yet: S1-07 sets what a padlocked door holds.
+
+**Where they lie.** In the bulb's pool as a tool does, at another turn, kept `DealSpot.Apart`
+(0.5) from the floor the unit's tool, find or keeper takes, and that is never given up. Over 300
+unit numbers in both sizes beside each thing, every pile found room.
+
+**One pile, one tap, the whole pile.** One "Take" button a unit, not one per coin: fewer taps on
+a phone, and the pile reads as one thing. Whoever's take reaches the server first gets it all
+(DOORS' gold); a decision for the owner, default in place (`OWNER.md`). The count is a Player
+attribute, zeroed on `Climbs.began` (new, fired by `begin`, `board`, `arrive`), nil outside a
+climb so the count only shows in one. Nothing is saved (S1-01).
+
+**The art.** A worn gold coin 0.8 across, 0.12 thick (about three times life, so a pile reads
+from the doorway on a phone), a beaded rim and a keyhole stamped through both faces: the
+building's own coin, for the machine on the ride. 512 triangles; piles laid out in the spec so
+coins touch and never sink into each other. A faint sparkle (Roblox's built-in sparkle texture)
+twinkles on the top coin so a pile catches the eye; it's the coin's own read, not atmosphere.
+
+**Split.** The screen side (the count, the take's motion and sounds) and the import into the
+place are S1-04a2: this session reached its context cap at the green point after the server.
+Without `Props.Coin` the server lays nothing (one warning), so no take goes unanswered meanwhile.

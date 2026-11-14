@@ -21,6 +21,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Brix = require(ReplicatedStorage.Brix)
+local CoinSpecs = require(ReplicatedStorage.Shared.Coins.Specs)
+local Coins = require(script.Parent.Coins)
 local CrawlHoleSpecs = require(ReplicatedStorage.Shared.StorageUnit.CrawlHole.Specs)
 local Deal = require(ReplicatedStorage.Shared.Deal)
 local DealSpot = require(ReplicatedStorage.Shared.DealSpot)
@@ -95,15 +97,17 @@ function Deals.new(): Deals
 	local connections: { Brix.SignalConnection } = {}
 	local dealt = Brix.Signal.new() :: Brix.Signal<Dealt>
 	local slots: Slots.Slots? = nil
+	local coins: Coins.CoinsSystem? = nil
 	local keepers: Awake? = nil
 
-	-- Lays what unit `unit` (slot `index` of `deck`'s floor) was dealt; returns where, or nil.
+	-- Lays what unit `unit` (slot `index` of `deck`'s floor) was dealt; returns where, or nil, and
+	-- the floor it takes with room round it (DealSpot.around), which its coins keep clear of.
 	local function lay(
 		unit: Model,
 		deck: Deal.Deck,
 		index: number,
 		contents: Deal.Contents
-	): CFrame?
+	): (CFrame?, { number }?)
 		local slot = deck.floor.slots[index]
 		local spec = Specs[slot.size]
 		local channel = if slot.size == "S" then TopHoleSpecs.Channel.S else TopHoleSpecs.Channel.M
@@ -156,7 +160,11 @@ function Deals.new(): Deals
 			local place = at(spot)
 			local _, yaw = place:ToOrientation()
 			slots:lay(key, place.Position, math.deg(yaw))
-			return place
+			return place,
+				DealSpot.around(
+					spot,
+					{ across = body.Size.X, along = body.Size.Z, tall = body.Size.Y }
+				)
 		elseif kind == "Find" then
 			local name: Finds.Name? = nil
 			for _, n in Finds.Names do
@@ -180,12 +188,73 @@ function Deals.new(): Deals
 			end
 			local place = at(spot)
 			Finds.clone(name, place, unit.Parent or unit)
-			return place
+			return place,
+				DealSpot.around(
+					spot,
+					{ across = find.Size.X, along = find.Size.Z, tall = find.Size.Y }
+				)
 		elseif kind == "Asleep" or kind == "Awake" then
 			local spot = DealSpot.inUnit(size, "Keeper", DealSpot.Keeper, note, number)
-			return if spot then at(spot) else nil
+			if spot then
+				return at(spot), DealSpot.around(spot, DealSpot.Keeper)
+			end
+			return nil
 		end
 		return nil
+	end
+
+	-- Lays unit `unit`'s coins (S1-04a) in the bulb's pool, clear of `taken` (the floor its tool,
+	-- find or keeper takes). Whether they were laid.
+	local function layCoins(
+		unit: Model,
+		deck: Deal.Deck,
+		index: number,
+		count: number,
+		taken: { number }?
+	): boolean
+		local pile = CoinSpecs.Piles[count]
+		if not (pile and coins) then
+			return false
+		end
+		local slot = deck.floor.slots[index]
+		local spec = Specs[slot.size]
+		local channel = if slot.size == "S" then TopHoleSpecs.Channel.S else TopHoleSpecs.Channel.M
+		local size: DealSpot.Unit = {
+			width = spec.Width,
+			depth = spec.Depth,
+			doorWidth = spec.DoorWidth,
+			hole = { from = HOLE_FROM + spec.CurtainPlane, to = HOLE_TO + spec.CurtainPlane },
+			landing = { x = LAND_X, z = LAND_Z + channel },
+			fallen = DealSpot.footprint(
+				FELL.Centre.X,
+				FELL.Centre.Z + channel,
+				0,
+				FELL.Size.X + 2 * HOLE_MARGIN,
+				FELL.Size.Z + 2 * HOLE_MARGIN
+			),
+		}
+		local number = slot.number :: string
+		local note: number? = nil
+		for _, n in deck.notes do
+			if n.slot == index then
+				note = NoteSpot.inUnit(spec.Depth, number).x
+			end
+		end
+		local spot = DealSpot.inUnit(
+			size,
+			"Coins",
+			{ across = pile.Size.X, along = pile.Size.Z, tall = pile.Size.Y },
+			note,
+			number,
+			if taken then { taken } else nil
+		)
+		if not spot then
+			return false
+		end
+		local place = FloorBuilder.face(unit)
+			* CFrame.new(spot.x, 0, spot.z)
+			* CFrame.Angles(0, math.rad(spot.yaw), 0)
+		return coins:lay(unit, count, place)
 	end
 
 	-- Deals `unit` the first time anyone can see into it; after that it holds what it held.
@@ -198,13 +267,18 @@ function Deals.new(): Deals
 		local deck, index = entry.deck, entry.index
 		local awake = if keepers then keepers:awakeOn(unit) else 0
 		local contents = Deal.open(deck, index, { mood = "Build", awake = awake })
-		local place = lay(unit, deck, index, contents)
+		local place, taken = lay(unit, deck, index, contents)
+		local paid = contents.coins > 0 and layCoins(unit, deck, index, contents.coins, taken)
 		if RunService:IsStudio() then
 			local laid = if place or contents.kind == "Nothing"
 				then ""
 				else " (no art yet, so nothing laid)"
 			local guard = if index == deck.guarded then ", guarding its note" else ""
-			print(`Deals: {unit.Name} held {said(contents)}{guard}{laid}`)
+			local coinsSaid = if contents.coins == 0
+				then ""
+				elseif paid then ` and {contents.coins} coins`
+				else ` and {contents.coins} coins (not laid)`
+			print(`Deals: {unit.Name} held {said(contents)}{coinsSaid}{guard}{laid}`)
 		end
 		dealt:fire({ unit = unit, contents = contents, place = place })
 	end
@@ -233,6 +307,7 @@ function Deals.new(): Deals
 		-- any: the registry hands back plain Systems; Doors, Slots and Keepers fill these (init.server)
 		local doors = (context.registry:get("doors") :: any) :: Doors.Doors
 		slots = (context.registry:get("slots") :: any) :: Slots.Slots?
+		coins = (context.registry:get("coins") :: any) :: Coins.CoinsSystem?
 		keepers = (context.registry:get("keepers") :: any) :: Awake?
 		table.insert(connections, doors.acted:connect(onActed))
 		local saws = (context.registry:get("saws") :: any) :: Saws.Saws?
