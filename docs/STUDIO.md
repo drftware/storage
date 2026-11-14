@@ -847,6 +847,17 @@ verified: a doc page, Studio, or "untested".
   laid the unit on its back. Keep its turn: `PivotTo(CFrame.new(p) * template:GetPivot().Rotation)`;
   then its door is at local z 0 facing -Z, the inside runs to +Z. Part `.Position`s of imported
   MeshParts are their Blender origins, so read a part's box from its CFrame and Size instead.
+- **The breaker arrived unturned, but its box's pivot was turned** (Edit, S2-02a, Nov 14):
+  `InsertService:LoadAsset` gave three MeshParts at their spec centres with no turn, yet the
+  box's `PivotOffset` carried a 90-degree turn about X (the unit's), so `Model:PivotTo` through it
+  as PrimaryPart laid the box on its back. Set each part's `PivotOffset` to `CFrame.new(-centre)`.
+  CollisionFidelity written to a part of the unparented `LoadAsset` result didn't take; written
+  again once the template was in ReplicatedStorage, it read Box in the next call.
+- **Judging a wall piece in Edit** (S2-02a): `CorridorKit.place("Straight", CFrame.new(p), f)`
+  and `CorridorKit.wall("Wall", CFrame.lookAt(face, face - n), paint, f)` at ±4 across build a
+  hall from the templates; the place's Edit lighting is dark (ambient 0.03), so an anchored
+  invisible part with a SpotLight (Angle 50, Range 40, Brightness 3) beside the capture's camera
+  stands in for a torch. Destroy it all after.
 - **When the MCP's `insert_asset` fails, InsertService doesn't** (S1-10b2, Nov 14): right after
   the upload, `insert_asset` of the machine answered "Failed to load package asset: Request
   Failed" three times over half an hour; `InsertService:LoadAsset(id)` from an Edit

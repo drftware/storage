@@ -1597,9 +1597,11 @@ Done when a team that has lost its lights goes looking for the breaker without b
   one-second hold switches it back on. The elevator keeps its own light. A loose Mannequin with
   no light on it sometimes heads for the breaker and throws it, more often on higher floors
   (GDD "The breaker", "The Mannequin cuts the power"). Split (S2-01's session), one per session:
-  - [ ] **S2-02a The breaker box's art.** Made the unit's way in Blender (a grey steel box on a
-    hall wall, its lever and door, a lamp), its Specs and look sheets; into the place by the
-    Open Cloud upload. Judged at phone size.
+  - [x] **S2-02a The breaker box's art.** (S2-02a, Nov 14, D-153) A heavy-duty safety switch on
+    a plywood board (`art/breaker/`): the lever on its right side, up for on, down for off, a
+    safety-red grip; a pilot lamp the game lights; a lightning-bolt sticker; a conduit to the
+    cap. `ReplicatedStorage.Props.Breaker`, `Breaker/Specs.luau`; judged on a hall wall in
+    Studio Edit under a stand-in torch, from across and down the hall.
   - [ ] **S2-02b Throw it and switch it back.** The floor places one breaker per climb (drawn
     last in the floor's deal, so seeds keep their floors). Thrown: the clunk, every hall light
     out and deaf to motion; a one-second hold brings them back with a hum; the elevator keeps

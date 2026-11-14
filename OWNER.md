@@ -99,6 +99,14 @@ and off, the invite sheet opening with your friends (no invite sent).
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
 
+## Now: look at the breaker box (S2-02a, built Nov 14, D-153; judged in Studio Edit on a hall wall)
+
+Nothing works yet: it's the box the next ticket wires up. Its sheets are in `art/sheets/`
+(`breaker-studio.png`, `breaker-dark.png`).
+1. Look at the sheets, or `ReplicatedStorage.Props.Breaker` in Studio. Look for: does it read as
+   "the building's power" from across a hall, and does the red grip read clearly up or down?
+2. Decide (starting guess, D-153): the lamp green when the power's on, red when it's off.
+
 ## Now: sleepers are placed with the floor (S2-01, built Nov 14, D-152; seen in Play)
 
 Nothing new to see yet: it's what lets a monster wake, or be let out, behind a door nobody

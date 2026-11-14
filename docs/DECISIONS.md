@@ -4257,3 +4257,23 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
   cost instances for no one to see, and a body woken by a noise behind a door never lifted has no
   behaviour yet (S2-03 decides it). A caught friend is never stored in a sleeper's unit.
 
+
+## D-153 The breaker box: a safety switch with its lever on the side, lamp in the door (S2-02a, Nov 14)
+
+- The precedent: Phasmophobia's fuse box, a box on a wall that the ghost switches off and the team
+  goes to find and switch back on, its light green when on and red when off (GDD "The breaker",
+  checked Nov 13). The look is the heavy-duty safety switch every building's back hall has.
+- The lever is on the box's right side and swings in a plane square to the wall, pointing at the
+  hall: up 42 degrees is on, down 42 is off. Halls are seen along their walls, so a lever that
+  moves toward and away from you reads in profile from down the hall (judged in Studio from 11
+  studs along), and from across the hall its red grip sits clearly high or low (1.6 studs apart).
+  A lever on the door's face, swinging flat to the wall, would read only head-on.
+- One pilot lamp, untextured, so the game picks its colour and brightness (S2-02b): green with the
+  power on and red with it off is the starting guess, Phasmophobia's; a red lamp is also the only
+  thing that gives the box away in the dark.
+- Sized to be found: about one and a half times a real switch, the box's middle 4.45 up (just
+  under eye height), a plywood board behind it and a conduit to the wall's cap so it reads as
+  the building's power from across a hall. A yellow sticker with a lightning bolt says
+  "electrical" without a word.
+- The game turns the lever with `CFrame.Angles(math.rad(a), 0, 0)` about `Specs.Pivot`; S2-02b's
+  one-second hold drives `a` from `Specs.Down` to `Specs.Up`.

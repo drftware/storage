@@ -168,6 +168,12 @@ local ART: { Art } = {
 		description = "A self-storage supply vending machine: an oxblood cabinet, a glass front over coiled bays, push buttons and a coin plate",
 	},
 	{
+		key = "Breaker",
+		path = "art/breaker/out/Breaker.fbx",
+		manifest = "art/breaker/assets.json",
+		description = "A grey steel safety switch box on a plywood board: a side lever with a red grip, a pilot lamp, a conduit up the wall",
+	},
+	{
 		key = "Stuff",
 		path = "art/stuff/out/Stuff.fbx",
 		manifest = "art/stuff/assets.json",

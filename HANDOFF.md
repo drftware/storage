@@ -2,64 +2,67 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-14, session 140 (S2-01 Sleepers placed with the floor) ·
+**Updated:** 2026-11-14, session 141 (S2-02a the breaker box's art) ·
 **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- **S2-01 is done (D-152).** The floor's deal places its sleepers last (`Deal.new`,
-  `deck.sleepers`, slot to keeper name): 10 in 100 units (`Deal.Asleep`), 20 behind a padlock
-  (with its find or tool), none in the guard's unit or the first hall on floors 1 and 2. A door
-  hands its sleeper back as it lifts; the director's mood odds no longer hold "Asleep" (out of
-  the 90 the sleepers leave), the cap still turns an awake keeper asleep. The keepers' brain gets
-  a floor's sleepers as it's laid (`Keepers.add`'s new `asleep`) and hands out those behind
-  doors never lifted (`Keepers.sleepers(model)`); a caught friend is never kept in a sleeper's
-  unit (KeptPlayers). Bodies still stand only as a door first lifts (D-152 says why).
-- **Verified in Studio Play** (dev floor 3, seed 7): Output listed "asleep behind shut doors on
-  floor 3: Units 305, 307, 327, 335, 338" before any door lifted; opening 307 from the Client
-  printed "Unit307 held the Mannequin, asleep and 1 coins" and its body stood asleep in the unit.
-  Studio is in Edit; its id this run: 4694c6c7-b56c-4a68-ac46-72f07b63568c.
+- **S2-02a is done (D-153).** The breaker box, made the unit's way (`art/breaker/`, `scripts/art.sh
+  breaker`): a grey safety switch on a plywood board, a conduit to the wall's cap, a yellow
+  lightning-bolt sticker, a pilot lamp (`BreakerLamp`, untextured: the game lights it) and the
+  lever on its right side (`BreakerLever`), up 42 degrees for on, down 42 for off, its pivot and
+  grips in `src/shared/Breaker/Specs.luau`. Template `ReplicatedStorage.Props.Breaker` (asset
+  101677099640631): every part's pivot the breaker's origin (the lever's its pivot), lever up.
+  Place its origin on a wall's face line looking into the hall.
+- **Verified in Studio Edit** on a hall wall built from the corridor templates, under a stand-in
+  torch: from across the hall the box, red lamp and grip read; from 11 studs down the hall the
+  lever reads down in profile; the ϟ sticker reads. Not seen in Play or on a real phone. Studio is
+  in Edit; its id this run: 4694c6c7-b56c-4a68-ac46-72f07b63568c.
 
-## Next task: S2-02a The breaker box's art
-The moment: the lights die with one heavy clunk, and someone has to find the grey box on a hall
-wall and hold its lever up. This ticket makes that box, the unit's way, so S2-02b can wire it.
-1. Read ROADMAP S2-02 (split into a, b, c) and the GDD's "The breaker" and "The Mannequin cuts
-   the power" (docs tools: `search` payload, never the whole doc); name the precedent.
-2. Look at what exists: `breaker` is already a word in `MotionLight`, `MotionLights`,
-   `HallLight`, `Floor` and the test hall (a breaker post in the T): reuse its rules, don't fork.
-3. Build the box in Blender 5.2 as `art/unit/` builds the unit: one spec for the numbers, parts
-   UV-mapped to shared texture sets, baked PBR maps, FBX, a generated `Specs` module, look sheets.
-   The lever reads up or down from across a hall at phone size; a small lamp shows power.
-4. Into the place by the Open Cloud upload and `insert_asset` (STUDIO.md "Importing kit
-   pieces"); judge it on a hall wall in Studio at phone size.
-**Acceptance:** checks green; `scripts/art.sh` rebuilds it; the box sits on a hall wall in Studio,
-its lever readable at phone size; look sheets in its art folder.
-**Read first:** ROADMAP S2-02; GDD "breaker" (docs search); `art/unit/README.md`; STUDIO.md
-"Importing kit pieces"; `src/shared/MotionLight.luau` (grep `breaker`); an art script the size of
-a box (`art/battery/` or `art/padlock/`).
+## Next task: S2-02b Throw it and switch it back
+The moment: one heavy clunk, every hall light dies, motion does nothing; someone finds the box by
+its red lamp and holds the lever up for a second: a hum, the lamp goes green, the lights come back.
+1. Read ROADMAP S2-02b and the GDD's "The breaker" (docs tools, `search` payload). Precedent:
+   Phasmophobia's fuse box (D-153).
+2. Pure rules first (Lune): where the floor's one breaker goes (drawn last in the floor's deal so
+   seeds keep their floors, like the sleepers in `Deal.new`), on a plain wall or dead end's face,
+   never in the lobby's hall; thrown/on state; the hold's length and rate.
+3. Server: place a copy of `Props.Breaker`, cut every hall light's zone with
+   `MotionLights:cut` (the dev hall's breaker post shows how), keep the elevator's light; a
+   one-second hold prompt on the grip (the same hold as cutting a friend free) switches it on.
+   Add a dev command to throw it.
+4. Client feel: the lever swings (`Specs.Down` to `Specs.Up` over the hold, a snap at the end),
+   the clunk heard floor-wide, the hum back, the lamp red/green (Neon, owner's call in OWNER.md).
+5. Verify in Studio Play on the dev floor: throw it, see the halls dark and blind, switch it back.
+**Acceptance:** checks green with new Lune specs; in Play the throw kills every hall light and
+the hold restores them, lever and lamp answering; Output clean.
+**Read first:** ROADMAP S2-02; `art/breaker/README.md` "In the place"; `src/shared/Breaker/Specs.luau`;
+`src/server/MotionLights.luau` (`cut`); `src/server/DevCorridor.luau` (grep `breakerPost`); the
+floor deal's sleepers in `Deal.new` (grep `sleepers`).
 
 ## Queue (the overnight run, owner Nov 13: sessions until 8:30am, the updated plan)
-1. S2-02a (next), then S2-02b, S2-02c, S2-03 to S2-05 in order. S2-06 and L-08e3c wait on
+1. S2-02b (next), then S2-02c, S2-03 to S2-05 in order. S2-06 and L-08e3c wait on
    `OWNER.md`. R-01 (Remotes from Brix) is for later, not tonight. Lobby polish waits.
-2. Found S2-01: S2-03 must decide how a sleeper woken behind a door never lifted stands (deal the
+2. Found S2-02a: from the box's left side its lever hides behind the box but for the grip's end;
+   the lamp is small at a grazing angle (S2-02b may brighten it or add a faint glow).
+3. Found S2-01: S2-03 must decide how a sleeper woken behind a door never lifted stands (deal the
    unit then, or stand its body earlier) and pounds; `Keepers.sleepers` is where it picks.
    Older Studio recipes naming what a unit holds may be stale (the deal moved; STUDIO.md notes).
-3. Found S1-12: nothing shows a player's saved cash total yet (ROADMAP polish, when cash buys
+4. Found S1-12: nothing shows a player's saved cash total yet (ROADMAP polish, when cash buys
    something); a climb left mid-way makes no cash (D-151, owner's call in OWNER.md).
-4. Found S1-11: a friend's beam doesn't show the mark (ROADMAP polish); the mark sits on the
+5. Found S1-11: a friend's beam doesn't show the mark (ROADMAP polish); the mark sits on the
    jamb beside the neighbour's door (owner to judge whose it reads as).
-5. Found S1-10c2a: Output in Play lists `rbxassetid://203785492` (wrong type) failures and
+6. Found S1-10c2a: Output in Play lists `rbxassetid://203785492` (wrong type) failures and
    texture permission errors; unchecked whether any are the machine's.
-6. Found S1-10a: watch a whole ride arrive on a next floor in Play (start on floor 1).
-7. Found S1-07b: coin piles and batteries show their Take button through a shut door (the server
+7. Found S1-10a: watch a whole ride arrive on a next floor in Play (start on floor 1).
+8. Found S1-07b: coin piles and batteries show their Take button through a shut door (the server
    refuses the press); tools hide theirs (BehindDoors). Worth matching.
-8. Found S1-09: a kept player's torch keeps draining if left on (probably right); the
+9. Found S1-09: a kept player's torch keeps draining if left on (probably right); the
    first-person torch looks large on a wide desktop view. S1-08's polish is in ROADMAP.
-9. Found S1-07a: about 16 in 100 units hold nothing at all (the GDD says 3 in 10 without coins
-   hold nothing to take). Owner's call; batteries take a few of them.
-10. Found S1-02: in Studio the test hall begins a climb on floor 3 as the server starts.
+10. Found S1-07a: about 16 in 100 units hold nothing at all (the GDD says 3 in 10 without coins
+    hold nothing to take). Owner's call; batteries take a few of them.
 11. Unseen or small: S1-06 a kept find's save write and the friends' spark in Play; S1-05 a
-    find in a unit can be walked through; S1-04b2 keepers don't know about stuff; S1-01 arriving
-    on another server, the save claim may wait up to 5 s. Lobby fixes are "later" (owner Nov 12).
+    find in a unit can be walked through; S1-04b2 keepers don't know about stuff; S1-02 the test
+    hall begins a climb on floor 3; S1-01 arriving on another server, the save claim may wait.
 
 ## Kickoff for the next agent
 ```text
