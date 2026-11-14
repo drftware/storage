@@ -72,6 +72,23 @@ Hub. Studio Play is fine for the first go.
    Today every feed is the breaker's, so you'll only see this once a second monster uses the
    camera.
 
+## Now: judge the Packrat's look (S2-06a1, built Nov 14, D-175; pictures only, not in the game yet)
+
+What's new: the second monster's model and its two walks, as pictures. It isn't in the game yet.
+
+1. Open `art/sheets/packrat-lineup.png`. From left to right: asleep as it's found, walking with
+   its arms empty, walking with a find (the teddy) hugged to its chest, and that from the side.
+   Look for: does it look like a bundle of moving blankets and tape with long bare arms? Is it
+   scary, or does it look like a costume?
+2. Open `art/sheets/packrat-close.png`: the hug up close. Look for: the arms wrapped round the
+   find, the hood bowed over it with nothing in its opening.
+3. Open `art/sheets/packrat-hall.png`. It's a phone-sized picture of a hall with two Packrats 30
+   studs away: arms empty on the left, arms full on the right. Look for: can you tell which is
+   carrying something without zooming in? The full one should show a pale knot at its chest;
+   the empty one two pale lines out from its sides.
+4. My defaults, change any you like: the find it carries in the pictures is the teddy; the
+   tape is a dull tan, not shiny orange; it's 7.3 studs tall (a player is about 5.2).
+
 ## Now: the screen's three fixes (S2-07b2, built Nov 14, D-174; checked in Studio Play with a stand-in friend)
 
 What changed: a friend's torch now shows the chalk mark on a door frame, as your own does; a

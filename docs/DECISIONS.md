@@ -4800,3 +4800,25 @@ crowds it). The ticket read "a bit" as about a third.
   89260803894903 is a TexturePack (asset type 63) of the owner's, made 18 s after the coin's mesh
   on Nov 14: the coin's import made it. No property in the place names it and cloning the coin
   on either side didn't bring the line, so it stays watched (`OWNER.md`), not fixed blind.
+
+## D-175 The Packrat's look: pale arms on a dark bundle, two walks built as opposites (S2-06a1, Nov 14)
+
+- **What it is.** 7.3 studs tall at rest (8 clears a door), fifteen rigid R15 parts like the
+  Mannequin's: grey quilted moving blankets in three or four shades, creased in the loft and
+  pulled in under eight bands of tan packing tape (an X binds the chest), a hood with a dark
+  hollow where a face would be, blanket-sacked feet, and two long bare arms, pale and mottled,
+  fingertips grimed. 7,020 triangles, one 1024 texture set.
+- **Readability comes from the arms.** The only pale thing on it is skin, so the arms are the
+  read: full, both forearms cross its chest round the find (a pale knot at chest height, the
+  hood bowed over it); empty, both hang wide of the bundle, never swung behind it (from ahead,
+  an arm swung back sat in its own shadow and only one pale line showed at 30 studs). The Lune
+  spec holds that as numbers: full hands within reach of the find and above the waist, empty
+  hands below the hips and past its sides.
+- **The hug was solved, not guessed.** Shoulder and elbow angles came from a search for elbows at
+  its sides and wrists meeting ahead of the chest, the right arm higher so the forearms pass;
+  the hunch was eased (waist -13) and the hood bowed more, because a deeper hunch dropped the
+  find to its belly, and the GDD holds it against its chest.
+- **`Rig.luau`** is the pose math (solve, turns, mirror, limits, blend) any jointed monster
+  shares; the Mannequin's Pose keeps its own older copy for now (HANDOFF Queue).
+- **Default (OWNER.md):** the carried find in the sheets is the teddy; the hall shot is a plain
+  grey hall in Blender. The real hall at phone size is S2-06a2's.

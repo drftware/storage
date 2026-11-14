@@ -108,6 +108,12 @@ local ART: { Art } = {
 		description = "A faceless fibreglass shop mannequin, jointed and chipped, left too long in storage",
 	},
 	{
+		key = "Packrat",
+		path = "art/packrat/out/Packrat.fbx",
+		manifest = "art/packrat/assets.json",
+		description = "A tall faceless bundle of grey moving blankets bound in packing tape, with long bare arms",
+	},
+	{
 		key = "Elevator",
 		path = "art/elevator/out/Elevator.fbx",
 		manifest = "art/elevator/assets.json",

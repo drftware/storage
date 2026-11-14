@@ -1866,6 +1866,20 @@ Done when a team that has lost its lights goes looking for the breaker without b
     arms. Poses for walking with its arms full (the find held against its chest), walking with
     them empty, reaching, taking and putting down. Judge the look sheets and Studio at phone
     size for one thing first: full arms read apart from empty arms from the far end of a hall.
+    Split in two (Nov 14, context):
+    - [x] **S2-06a1 The model and its two walks** (Nov 14, D-175). Built in `art/packrat/`:
+      quilted grey blankets, an X of tape over the chest, a dark hollow in the hood, long pale
+      arms; its still pose and the key poses of both walks (`Packrat/Pose.luau` on the shared
+      `Rig.luau`), the `Carry` point, Lune checks, look sheets `packrat-lineup`, `-close` and
+      `-hall` (both walks from 30 studs at a phone's size: the full one a pale knot at its chest,
+      the empty one two pale lines wide of its sides). Not yet in the place.
+    - [ ] **S2-06a2 Into the place.** Upload the FBX (`lune run scripts/upload_art Packrat`),
+      insert it, write the `Packrat` module (prepare, pose, rest, motors, transforms, clone, as
+      the Mannequin's, on `Rig.luau`), put the template at `ReplicatedStorage.Keepers.Packrat`
+      in a pose, and capture it in Studio at phone size from a real hall's end, full and empty.
+    - [ ] **S2-06a3 Reach, take and put down.** Those three poses, the walks as a cycle a screen
+      steps through (`at(travelled)`, frames for KeeperView, as the Mannequin's), and their
+      sheets.
   - [ ] **S2-06b It carries finds home.** Its row on the keepers' brain (`KeeperRows`), with a
     unit of its own and one new ability: it picks up a find lying in an open unit or a hall,
     carries it home, lays it on the pile and comes out for more, ignoring players while it

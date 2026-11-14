@@ -18,6 +18,8 @@
 #   scripts/art.sh mannequin            the Mannequin: its bake, FBX, Specs module, then its look
 #                                       sheets in the game's own poses (about 3 minutes)
 #   scripts/art.sh mannequin export     just the Mannequin's FBX and Specs module
+#   scripts/art.sh packrat              the Packrat: its bake, FBX, Specs module, then its look
+#                                       sheets in the game's poses (about 3 minutes)
 #   scripts/art.sh elevator             the freight elevator: key labels, its Car, Elevator and Keypad
 #                                       bakes, FBX, Specs module, look sheets (about 6 minutes)
 #   scripts/art.sh elevator export      just the elevator's FBX and Specs module
@@ -270,6 +272,17 @@ if [ "${1:-}" = "mannequin" ]; then
 		echo "== mannequin $st"
 		blender -b --factory-startup -P art/mannequin/build.py -- --stage "$st" 2>&1 \
 			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|atlas|DONE" || true
+	done
+	exit 0
+fi
+if [ "${1:-}" = "packrat" ]; then
+	shift
+	for st in ${*:-textures export renders}; do
+		# the sheets wear the poses from src/shared/Packrat/Pose.luau, written out by Lune
+		if [ "$st" = "renders" ]; then lune run scripts/packrat-poses; fi
+		echo "== packrat $st"
+		blender -b --factory-startup -P art/packrat/build.py -- --stage "$st" 2>&1 \
+			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|FIND|atlas|DONE" || true
 	done
 	exit 0
 fi
