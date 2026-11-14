@@ -2009,6 +2009,14 @@ verified: a doc page, Studio, or "untested".
   unit's `DoorMotion` ("Bang|...") and `DoorDent` attributes; a `LogService.MessageOut` filter in
   a Server `execute_luau` keeps the Output you read small.
 
+- **`WakeSleepers` needs someone on the floor first** (S2-07a2): set at Play start it does nothing
+  (the floor's clock hasn't started). Pivot the character to the keypad, wait 2 s ("the team is
+  on floor 3" prints), then set it. Floor 3 allows two loose: the first wave's third prints "is
+  held in" at once.
+- **Spread at the keypad without pounding** (S2-07a2): from a fresh Play, two wrong codes 4.2 s
+  apart (one Client call) free four monsters, hushed, with no pounding door to pull them off the
+  alarm. Park the root anchored high, then sample bodies within 25 studs of the pad every 0.5 s.
+
 ## Testing a wrong code (S2-04a, Nov 14)
 
 - **A far floor isn't on the client.** With StreamingEnabled, a client script at spawn can't

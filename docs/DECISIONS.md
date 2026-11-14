@@ -4716,3 +4716,28 @@ crowds it). The ticket read "a bit" as about a third.
   than a feed lasts (`Feed.kept`): the walk-up it was for is over, and the lights going out say
   the rest. Kept on each screen (not the server): every screen gets the same feeds in the same
   order, and the server's bookkeeping (who watches, Cut) is unchanged.
+
+## D-172 The monsters' three: a busy Mannequin, a crowd that spreads, a wave held to the limit (S2-07a2, Nov 14)
+
+- **The errand.** On its way to the breaker box, or with its hand on the grip, a Mannequin hears
+  a third as far (`Keeper.ErrandHearing`), so four errands no longer come to one clunk. A busy
+  guard turns only for a noise close by, as a coin thrown in Hitman draws only the guards it lands
+  near (from memory). A door slammed in its own hall still turns it; the wrong code's alarm always
+  does (S2-04b). A sound that does call it off takes it off the errand at once, so the camera feed
+  lets it go as it turns away. The third is a default in `OWNER.md`.
+- **The spread.** Monsters called to one spot each take their own place round it
+  (`KeeperMap.spread`: rings 4 studs apart, each place 1.5 studs off the walls, on the floor and in
+  plain sight of the spot), as Left 4 Dead's horde crowds round a car alarm instead of piling onto
+  one point (from memory). The nearest along its way takes the spot itself; one already standing
+  keeps its place as the noise goes on; one shut in is kept a place for once it's out. In a hall
+  they line up along it; in the lobby they ring the keypad. The server spreads after every sound.
+- **The wave and the limit.** A woken one breaks out only while the floor's loose monsters and the
+  woken ones ahead of it leave room under `Deal.awakeCap` (`Waking.free`), the longest shut in
+  first, as Left 4 Dead's director holds a special back until a place is free (from memory).
+  Waking itself stays capped by `Waking.AwakeMost` (pounding ones stand still). Only a wave's are
+  held: one let out by a wrong code or a missed tap is the players' doing and comes out anyway.
+- **Held means quiet.** First built as pounding on past its time; in Play the loose monsters went
+  to look at each blow and stood at the held door for good (each blow is the same noise going on,
+  which keeps them looking), so the floor emptied and nothing ever freed a place. Held, it now
+  gives one last blow at its time and stands quiet, as a padlocked one does, and bursts out the
+  moment a place opens: the quiet door was never safe.

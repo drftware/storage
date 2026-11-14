@@ -200,6 +200,8 @@ type Body = {
 	motion: KeeperMotion.Record?, -- the last record screens were sent, as they read it
 	placed: vector, -- where the server last put its root (the floor's coordinates)
 }
+-- What stood a sleeper up awake behind its shut door early.
+type Woken = "Wave" | "Code"
 type OnFloor = {
 	floor: Floor.Floor,
 	map: KeeperMap.Map,
@@ -223,14 +225,25 @@ type OnFloor = {
 	-- `Waking` counts its waves from
 	here: number,
 	woken: number, -- how many of its sleepers have woken
-	waking: { [number]: boolean }, -- slots dealt early to wake: stand awake and shut in
+	-- slots dealt early to wake, standing awake and shut in: woken by a wave (S2-03b) or let out
+	-- by a wrong code (S2-04a)
+	waking: { [number]: Woken },
 	-- the players who rode out of it as its gate shut (S2-02d4): off it for its cameras, though
 	-- their car climbs level with it for a while
 	left: { [Player]: boolean },
 }
 -- `quarry`: whom it hunted as last counted for screens (`tellHunted`), 0 for no one.
 -- `feed`: the security camera feed showing it walk up to throw the breaker (S2-02d), 0 for none.
-type Entry = { keeper: Keeper.Keeper, body: Body, on: OnFloor, quarry: number, feed: number }
+-- `woke`: a wave woke it behind its shut door and it's still shut in there (S2-03b): the floor's
+-- limit on loose keepers holds it in past its time (`holdWoken`, S2-07a2).
+type Entry = {
+	keeper: Keeper.Keeper,
+	body: Body,
+	on: OnFloor,
+	quarry: number,
+	feed: number,
+	woke: boolean,
+}
 
 -- A keeper caught a player: its body, whom it caught, and the floor's model (FloorBuilder's).
 export type Catch = { body: Model, player: Player, floor: Model }
@@ -576,6 +589,28 @@ function Keepers.new(): Keepers
 		changedState(entry, was)
 	end
 
+	-- Keepers on floor `on` called to one spot spread round it, each to its own place
+	-- (`Keeper.spread`, S2-07a2): once for each of `spots` (where those that heard a sound look
+	-- from), spots within `Keeper.Same` of one already done skipped. For a sound, never a step.
+	local function spreadRound(on: OnFloor, spots: { vector })
+		local ks: { Keeper.Keeper } = table.create(#on.keepers)
+		for _, entry in on.keepers do
+			table.insert(ks, entry.keeper)
+		end
+		local done: { vector } = {}
+		for _, spot in spots do
+			local again = false
+			for _, d in done do
+				local dx, dz = spot.x - d.x, spot.z - d.z
+				again = again or dx * dx + dz * dz <= Keeper.Same * Keeper.Same
+			end
+			if not again then
+				table.insert(done, spot)
+				Keeper.spread(ks, spot)
+			end
+		end
+	end
+
 	-- A door made a sound: every keeper on its floor that hears it goes to look; not at the open
 	-- of a door a wrong code rolls up (`rolling`), which is the alarm's.
 	local function onActed(event: Doors.DoorEvent)
@@ -590,12 +625,17 @@ function Keepers.new(): Keepers
 		local slot = on.floor.slots[on.slots[event.unit]]
 		local spot, door = Keeper.front(slot)
 		local what = `Unit {slot.number}'s door {HEARD[motion]}`
+		local any = false
 		for _, entry in on.keepers do
 			local was: Keeper.State = entry.keeper.state
 			local heard, news = Keeper.hear(entry.keeper, door, event.reach, spot)
 			if heard then
+				any = true
 				heardIt(entry, was, what, heard, news)
 			end
+		end
+		if any then
+			spreadRound(on, { spot })
 		end
 	end
 
@@ -610,6 +650,7 @@ function Keepers.new(): Keepers
 			if not Keeper.onFloor(on.map, here) then
 				continue
 			end
+			local spots: { vector }? = nil
 			for _, entry in on.keepers do
 				if entry == maker then
 					continue
@@ -619,7 +660,12 @@ function Keepers.new(): Keepers
 				if heard then
 					count += 1
 					heardIt(entry, was, what, heard, news)
+					spots = spots or {}
+					table.insert(spots :: { vector }, entry.keeper.heardSpot)
 				end
+			end
+			if spots then
+				spreadRound(on, spots)
 			end
 		end
 		return count
@@ -691,7 +737,7 @@ function Keepers.new(): Keepers
 			local unit = on.units[slot]
 			if on.asleep[slot] then
 				on.asleep[slot] = nil
-				on.waking[slot] = true
+				on.waking[slot] = "Code"
 				if not dl:dealShut(unit) then
 					on.waking[slot] = nil
 				end
@@ -723,6 +769,7 @@ function Keepers.new(): Keepers
 		local p = on.origin:PointToObjectSpace(at)
 		local here = vector.create(p.X, p.Y, p.Z)
 		local now, later = 0, 0
+		local spots: { vector } = {}
 		for _, entry in on.keepers do
 			local k = entry.keeper
 			local was: Keeper.State = k.state
@@ -734,8 +781,10 @@ function Keepers.new(): Keepers
 					now += 1
 				end
 				heardIt(entry, was, nil, heard, news)
+				table.insert(spots, k.heardSpot)
 			end
 		end
+		spreadRound(on, spots) -- they come to stand round the keypad, each in its own place
 		return now, later
 	end
 
@@ -1077,6 +1126,7 @@ function Keepers.new(): Keepers
 			on = on,
 			quarry = 0,
 			feed = 0,
+			woke = false,
 		}
 		table.insert(on.keepers, entry)
 		publish(entry, 0, false) -- its first record, before any screen sees it
@@ -1096,7 +1146,8 @@ function Keepers.new(): Keepers
 		local index = on.slots[d.unit]
 		on.asleep[index] = nil -- its door has lifted: its sleeper, if any, stands below
 		-- or it's still shut and its sleeper woke (S2-03b): it stands awake, shut in
-		local waking = on.waking[index] == true
+		local woken = on.waking[index]
+		local waking = woken ~= nil
 		on.waking[index] = nil
 		local contents, laid = d.contents, d.keeper
 		local kind, name = Deal.keeperIn(contents), contents.keeper
@@ -1122,11 +1173,13 @@ function Keepers.new(): Keepers
 			-- shut in from the start: it pounds on the trapped keeper's clock (`Keeper.trap`) and
 			-- bursts out at its row's `breakOut` unless the door is padlocked
 			trap(on, index)
-			if doors and doors:stateOf(d.unit) == "Locked" then
-				for _, entry in on.keepers do
-					if entry.keeper.trappedIn == index then
+			local locked = doors ~= nil and doors:stateOf(d.unit) == "Locked"
+			for _, entry in on.keepers do
+				if entry.keeper.trappedIn == index then
+					if locked then
 						Keeper.padlock(entry.keeper, true)
 					end
+					entry.woke = woken == "Wave" -- a wave's: held in while the floor is full
 				end
 			end
 			return
@@ -1159,6 +1212,63 @@ function Keepers.new(): Keepers
 			end
 		end
 		return false
+	end
+
+	-- The floor's limit on loose keepers holds in the ones a wave woke (S2-07a2, `Waking.free`):
+	-- each still shut in is held past its time (`Keeper.hold`), pounding on, while the loose ones
+	-- and the woken ones ahead of it (shut in longer, or bursting) fill the floor's cap; the longest
+	-- shut in goes first when a place opens. Out, it counts as any loose one does. Allocates
+	-- nothing.
+	local function holdWoken(on: OnFloor)
+		local loose, bursting, any = 0, 0, false
+		for _, entry in on.keepers do
+			local k = entry.keeper
+			if entry.woke and k.trappedIn == 0 then
+				entry.woke = false
+			end
+			if Keeper.loose(k) then
+				loose += 1
+			elseif k.burst then
+				bursting += 1
+			end
+			any = any or entry.woke
+		end
+		if not any then
+			return
+		end
+		local number = on.floor.number
+		for i, entry in on.keepers do
+			local k = entry.keeper
+			if not entry.woke or k.burst or k.padlocked then
+				continue
+			end
+			local ahead = bursting
+			for j, other in on.keepers do
+				local o = other.keeper
+				if
+					j ~= i
+					and other.woke
+					and not (o.burst or o.padlocked)
+					and (o.trapped > k.trapped or (o.trapped == k.trapped and j < i))
+				then
+					ahead += 1
+				end
+			end
+			local held = not Waking.free(number, loose, ahead)
+			if held ~= k.held then
+				Keeper.hold(k, held)
+				if TRACE then
+					local unit = on.floor.slots[k.trappedIn].number
+					print(
+						if held
+							then `Keepers: the {k.row.name} in Unit {unit} is held in: floor {number} has its {Deal.awakeCap(
+								number
+							)} loose`
+							else `Keepers: the {k.row.name} in Unit {unit} may break out now`
+					)
+				end
+			end
+		end
 	end
 
 	-- Wakes what floor `on` owes now (S2-03b; `Waking`, D-156): each picked sleeper's unit is dealt
@@ -1198,7 +1308,7 @@ function Keepers.new(): Keepers
 			on.asleep[slot] = nil
 			local unit = on.units[slot]
 			if unit then
-				on.waking[slot] = true
+				on.waking[slot] = "Wave"
 				if not dl:dealShut(unit) then
 					on.waking[slot] = nil
 				end
@@ -1391,6 +1501,7 @@ function Keepers.new(): Keepers
 				on.here += dt
 				wakeDue(on)
 			end
+			holdWoken(on)
 			local list = on.players
 			list.count = 0
 			for _, entry in on.keepers do

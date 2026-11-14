@@ -1801,7 +1801,7 @@ Done when a team that has lost its lights goes looking for the breaker without b
 - [ ] **S2-07 The fix pass before Step 3** (added Nov 14 from HANDOFF's Queue, so Step 2 ends
   clean before anyone is carried up wrapped). Built before S2-06. In
   three sessions (S2-07a split in its session, Nov 14: five fixes with Play checks didn't fit):
-  - [ ] **S2-07a Monsters and the camera.**
+  - [x] **S2-07a Monsters and the camera.**
     - [x] **S2-07a1 The camera's two.** (Nov 14, D-171.) Every monster on the floor is followed
       in the picture, not only the one the feed is for, and only parts that moved are stepped;
       one streaming in during a feed joins it, one streaming out leaves no statue. A second
@@ -1811,11 +1811,18 @@ Done when a team that has lost its lights goes looking for the breaker without b
       walked in two staged feeds (moved in 46 of 57 samples, seen in a capture); a join kept
       one picture and ran it 2 s longer; a third camera waited 7.5 s and cut in; a Cut ended
       it; the real errand feed followed as before.
-    - [ ] **S2-07a2 The monsters' three.** A Mannequin on its way to the breaker is called off
-      by sounds less often, so the throw usually happens (S2-02d2: four came to one clunk);
-      monsters called to one spot spread round it instead of all standing on one point
-      (S2-04b); a wave of sleepers waking never passes the floor's limit on awake monsters
-      (S2-03a, `Deal.awakeCap`). Pure rules first, each with a failing Lune spec.
+    - [x] **S2-07a2 The monsters' three.** (Nov 14, D-172.) On its way to the breaker a
+      Mannequin hears a third as far (`Keeper.ErrandHearing`), so a slam in its own hall still
+      turns it but one two halls off doesn't, and the alarm always does; a sound that calls it
+      off takes it off the errand at once. Monsters called to one spot each take their own place
+      round it, 4 studs apart, on the floor and in sight of it (`KeeperMap.spread`,
+      `Keeper.spread`): one standing keeps its place, the nearest takes the spot, one shut in is
+      kept a place for once it's out. One a wave woke breaks out only while the floor has room
+      under `Deal.awakeCap` (`Waking.free`), the longest shut in first; held, it gives one last
+      blow at its time and falls quiet until a place opens (`Keeper.hold`; pounding on kept the
+      loose ones at its door for good in Play). In Play: floor 3 (limit two) woke three, the
+      third held at once, two loose 110 s in; two wrong codes brought three to the keypad at once,
+      the closest two 4.3 studs apart. Specs: `errand`, `spread` (new), `waking`, `trapped`.
   - [ ] **S2-07b Screens and things.** A player standing still at the keypad lights up again
     when the lights come back (S2-04c); Take doesn't show through a shut door (S1-07b); a
     torch left on as you're wrapped switches off instead of draining (S1-09); a friend's beam

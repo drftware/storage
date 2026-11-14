@@ -276,6 +276,66 @@ do
 	ok(k.blow == "Burst", "the padlock cut, it bursts out at once")
 end
 
+-- Held in for the floor (S2-07a2, `Keeper.hold`): at its time one last blow and quiet, as a
+-- padlock holds it; let go, it bursts out at once. A door about to roll up (`hush`) still hushes it.
+do
+	local k = trapped(8)
+	Keeper.hold(k, true)
+	local bangs = blows(k, ROW.breakOut - DT / 2, "Bang")
+	ok(#bangs > 5, "held, it bangs on till its time")
+	local held, bursts, more = 0, 0, 0
+	for _ = 1, math.round(60 / DT) do
+		Keeper.step(k, DT, RUN)
+		if k.blow == "Held" then
+			held += 1
+		elseif k.blow == "Burst" then
+			bursts += 1
+		elseif k.blow == "Bang" then
+			more += 1
+		end
+	end
+	ok(
+		held == 1 and bursts == 0 and more == 0,
+		`held, one last blow and quiet ({held}, {bursts}, {more})`
+	)
+	ok(k.state == "Trapped" and not Keeper.loose(k), "held, it takes no place in the cap")
+	Keeper.hold(k, false)
+	Keeper.step(k, DT, RUN)
+	ok(k.blow == "Burst", "let go past its time, it bursts out at once")
+
+	local early = trapped(10)
+	Keeper.hold(early, true)
+	blows(early, 10, "Bang")
+	Keeper.hold(early, false)
+	local first = blows(early, ROW.breakOut, "Burst")
+	ok(#first == 1, "let go before its time, it bursts on its own clock")
+
+	local locked = trapped(11)
+	Keeper.hold(locked, true)
+	Keeper.padlock(locked, true)
+	Keeper.hold(locked, false)
+	ok(#blows(locked, ROW.breakOut + 30, "Burst") == 0, "let go but padlocked, it never bursts")
+
+	local hushed = trapped(12)
+	Keeper.hold(hushed, true)
+	Keeper.hush(hushed)
+	ok(#blows(hushed, ROW.breakOut + 30, "Bang") == 0, "held and hushed, it stands quiet")
+	ok(
+		not Keeper.hold(
+			Keeper.new(
+				ROW,
+				map,
+				Brix.Random.new({ seed = 3 }),
+				middle,
+				vector.create(0, 0, 1),
+				true
+			),
+			true
+		),
+		"loose, there's nothing to hold"
+	)
+end
+
 -- Lift it yourself and it's just out: no burst after.
 do
 	local k = trapped(9)

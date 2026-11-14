@@ -557,6 +557,63 @@ function KeeperMap.clear(map: Map, from: vector, to: vector): boolean
 	return false
 end
 
+-- How many rings round a spot `spread` tries before it gives up on finding more places: four at
+-- the Mannequin's gap reach 16 studs out, two hall pieces either way.
+local SPREAD_RINGS = 4
+
+--[[
+	Up to `n` places round `spot` for keepers called to it to stand in (S2-07a2): the spot itself
+	first, then places on rings `gap` studs apart going out (six on the first ring, twelve on the
+	second, and so on, every other ring turned half a step), each kept at least `margin` studs
+	inside the place it falls in, on the floor at the spot's height, in plain sight of the spot
+	along open passages (`clear`: never through a wall or a shut door), and at least `gap` from
+	every place before it. In a hall they line up along it; in the lobby they ring it. Fewer than
+	`n` where the floor has no more room. The same places every time. Allocates: for a sound,
+	never a step.
+]]
+function KeeperMap.spread(
+	map: Map,
+	spot: vector,
+	n: number,
+	gap: number,
+	margin: number
+): { vector }
+	local places = { spot }
+	for ring = 1, SPREAD_RINGS do
+		local count = 6 * ring
+		local turn = if ring % 2 == 0 then math.pi / count else 0
+		for a = 0, count - 1 do
+			if #places >= n then
+				return places
+			end
+			local angle = turn + 2 * math.pi * a / count
+			local cx = spot.x + math.cos(angle) * gap * ring
+			local cz = spot.z + math.sin(angle) * gap * ring
+			local i, _, _, off = locate(map, vector.create(cx, spot.y, cz))
+			if off > 0 then
+				continue
+			end
+			local p = vector.create(
+				keepWithin(cx, map.minX[i], map.maxX[i], margin),
+				spot.y,
+				keepWithin(cz, map.minZ[i], map.maxZ[i], margin)
+			)
+			local apart = true
+			for _, q in places do
+				local dx, dz = p.x - q.x, p.z - q.z
+				if dx * dx + dz * dz < gap * gap then
+					apart = false
+					break
+				end
+			end
+			if apart and KeeperMap.clear(map, spot, p) then
+				table.insert(places, p)
+			end
+		end
+	end
+	return places
+end
+
 -- The search -------------------------------------------------------------------------------------
 
 local function usable(map: Map, n: number, mask: number): boolean

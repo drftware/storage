@@ -72,6 +72,35 @@ Hub. Studio Play is fine for the first go.
    Today every feed is the breaker's, so you'll only see this once a second monster uses the
    camera.
 
+## Now: three monster fixes (S2-07a2, built Nov 14, D-172; seen in Studio Play, not on a phone)
+
+What changed: a Mannequin walking to the breaker box is harder to distract; monsters called to
+one spot stand round it instead of inside each other; and sleepers that wake in a wave never let
+out more monsters than the floor allows.
+
+- [ ] **The keypad crowd.** Play floor 3. Punch in a wrong code (any four digits), wait for the
+  bell to stop, then punch in a second wrong code. Hide somewhere you can see the keypad.
+  1. Look for: several monsters walk up to the keypad and stand round it, each in its own spot,
+     a body's width apart, all facing the keypad. None stand inside another.
+  2. Look for: in a hall they line up along it; in the lobby they make a loose ring.
+- [ ] **The busy Mannequin.** Play a floor until a Mannequin walks off toward the breaker box
+  (the camera feed on your map shows it). While it walks, slam a door two halls away from it.
+  1. Look for: it keeps walking and throws the breaker; the lights go out.
+  2. Next time, slam a door in the same hall as it. Look for: it stops, turns to the slam and
+     comes to look, and the camera feed lets it go.
+  3. Judge: is it now too hard to pull it off the box? The default is it hears a third as far
+     while it's on the way (`Keeper.ErrandHearing`). Tell me "more" or "less" if it feels off.
+- [ ] **A wave held to the floor's limit.** Play floor 3 and stay about four minutes without
+  opening doors, until doors start pounding.
+  1. Look for: on floor 3 at most two monsters ever get out of their doors at once (floors 1 and
+     2 allow one, floors 3 and 4 two, higher up three).
+  2. Look for: a door that pounded for a minute and a half goes quiet with one last heavy blow
+     when the floor is full. Then trap or lose one of the loose monsters behind a door.
+  3. Look for: the quiet door bursts open soon after, and its monster comes out.
+  4. Judge: is the quiet door scary (you know something is still in there), or does it feel
+     like it gave up? Tell me if you'd rather it kept pounding (then loose monsters tend to stand
+     guard at it).
+
 ## Now: check your five fixes (built Nov 14, D-158; seen in Studio Play, not on a phone)
 
 Publish first (File > Publish to Roblox) so live servers run them.

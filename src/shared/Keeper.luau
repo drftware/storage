@@ -164,8 +164,13 @@ export type Keeper = {
 	blow: Blow, -- what it did to its door this step
 	burst: boolean, -- it burst its door and waits for it to be all the way up
 	padlocked: boolean, -- its door is padlocked: it never bursts out
+	-- the floor has as many loose as it allows (S2-07a2, `hold`): past its time it pounds on
+	held: boolean,
 	heardOut: boolean, -- it heard something while trapped: it goes there once out
-	heardSpot: vector, -- where it looks from at that sound (`heard` is the sound)
+	heardSpot: vector, -- the spot a keeper looks from at that sound (`heard` is the sound)
+	-- its own place round `heardSpot`, where it stands to look (`Keeper.spread`): the spot itself
+	-- unless others came to look too
+	place: vector,
 	-- it's going to a sound it heard, or standing there looking: a newer one this near it (`Same`)
 	-- is the same noise going on, and it walks on without stopping again
 	listening: boolean,
@@ -491,8 +496,10 @@ function Keeper.new(
 		blow = "None",
 		burst = false,
 		padlocked = false,
+		held = false,
 		heardOut = false,
 		heardSpot = at,
+		place = at,
 		listening = false,
 		startle = 0,
 		errandAt = at,
@@ -539,6 +546,13 @@ end
 -- toward it without stopping to turn again, and Output and screens don't hear of it again.
 Keeper.Same = 12
 
+-- How far it hears, as a share, while it's on its way to the breaker box or has its hand on the
+-- grip (S2-07a2): a third. A door slammed in its own hall still turns it; one two halls off, or a
+-- beep across the floor, doesn't, so the throw usually happens (four errands came to one clunk
+-- before). A busy guard turns only for a noise close by, as a coin thrown in Hitman draws only the
+-- guards it lands near (from memory). A wrong code's alarm carries past any of this.
+Keeper.ErrandHearing = 1 / 3
+
 --- A sound at `from` carrying `reach` studs (DoorSound's), to be looked at from `spot`. If the
 --- keeper hears it (its trip to the sound is no longer than the reach, scaled by its row's
 --- hearing) it goes to look, whatever it was doing but hunting: returns how far off it heard it,
@@ -549,9 +563,10 @@ Keeper.Same = 12
 --- they come): the walk you were hearing stops dead, and you know it heard. Trapped, it hears
 --- through its own door (its trip to the sound from the door's front, plus its own way to the
 --- door) and goes nowhere: it remembers the sound, to go after once out. Its own door's sounds it
---- doesn't count.
+--- doesn't count. On its way to the breaker it hears only `ErrandHearing` as far; a sound that
+--- does reach it calls it off its errand there and then.
 function Keeper.hear(k: Keeper, from: vector, reach: number, spot: vector): (number?, boolean)
-	local carries = reach * k.row.hearing
+	local carries = reach * k.row.hearing * (if k.errand then Keeper.ErrandHearing else 1)
 	if not (carries > 0) or k.state == "Hunting" then
 		return nil, false
 	end
@@ -564,7 +579,7 @@ function Keeper.hear(k: Keeper, from: vector, reach: number, spot: vector): (num
 			return nil, false
 		end
 		local news = not (k.heardOut and flatDistance(from, k.heard) <= Keeper.Same)
-		k.heardOut, k.heard, k.heardSpot = true, from, spot
+		k.heardOut, k.heard, k.heardSpot, k.place = true, from, spot, spot
 		return d, news
 	end
 	local d = k.pathing:length(k.at, from)
@@ -577,6 +592,9 @@ function Keeper.hear(k: Keeper, from: vector, reach: number, spot: vector): (num
 	end
 	k.state, k.listening = "Going", true
 	k.goal, k.heard, k.waited = spot, from, 0
+	k.heardSpot, k.place = spot, spot
+	-- called off the breaker: its hand comes off the grip, and screens' cameras let it go
+	k.errand, k.lever = false, "None"
 	return d, news
 end
 
@@ -659,6 +677,82 @@ function Keeper.alarm(k: Keeper, p: vector, reach: number): (number?, boolean)
 	return Keeper.heardAt(k, p, Keeper.Anywhere)
 end
 
+-- How far apart keepers called to one spot stand round it, feet to feet (studs, S2-07a2): the
+-- Mannequin is about 2 across, so a crowd at 4 has a body's width between each and never one
+-- body in another. And how far inside a place's edges each stands, its back clear of the wall.
+Keeper.Spread = 4
+Keeper.SpreadWall = 1.5
+-- One standing this near a place round the spot is on it, and keeps it as the noise goes on.
+local ON_PLACE = 0.5
+-- Shut in, it takes a place after every loose one: it comes later.
+local SHUT_LAST = 1e9
+
+--[[
+	Keepers called to one spot spread round it (S2-07a2), as Left 4 Dead's horde crowds round a
+	car alarm instead of piling onto one point (from memory). Among `ks` (one floor's), every one
+	going to the spot `spot` or standing looking from round it (`listening`), and every one shut
+	in that will go there once out (`heardOut`), its `heardSpot` within `Same` of `spot`, takes its
+	own place (`place`) from `KeeperMap.spread`: one already standing on a place keeps it; the rest
+	take the places left, the nearest along its way first (the nearest of all gets the spot
+	itself), those shut in last. A loose one walks to its place; one shut in goes there once out
+	(`lookOut`). Alone, it looks from the spot itself, as it always did. Call it after a sound is
+	heard. Allocates: for a sound, never a step.
+]]
+function Keeper.spread(ks: { Keeper }, spot: vector)
+	local group: { Keeper } = {}
+	for _, k in ks do
+		local called = if k.state == "Trapped" then k.heardOut else k.listening
+		if called and flatDistance(k.heardSpot, spot) <= Keeper.Same then
+			table.insert(group, k)
+		end
+	end
+	if #group < 2 then
+		return
+	end
+	local places = KeeperMap.spread(group[1].map, spot, #group, Keeper.Spread, Keeper.SpreadWall)
+	local taken: { boolean } = table.create(#places, false)
+	local rest: { Keeper } = {}
+	local far: { [Keeper]: number } = {}
+	for _, k in group do
+		local kept = false
+		if k.state ~= "Trapped" then
+			for j, p in places do
+				if not taken[j] and flatDistance(k.at, p) <= ON_PLACE then
+					taken[j], kept = true, true
+					k.place, k.goal = p, p
+					break
+				end
+			end
+		end
+		if not kept then
+			table.insert(rest, k)
+			far[k] = if k.state == "Trapped"
+				then SHUT_LAST + flatDistance(k.at, k.doorway) + k.pathing:length(k.outside, spot)
+				else k.pathing:length(k.at, spot)
+		end
+	end
+	table.sort(rest, function(a: Keeper, b: Keeper): boolean
+		return far[a] < far[b]
+	end)
+	local j, over = 1, 0
+	for _, k in rest do
+		while j <= #places and taken[j] do
+			j += 1
+		end
+		local p: vector
+		if j <= #places then
+			p, taken[j] = places[j], true
+		else
+			-- the floor has no more room round it: the rest share the places, in turn
+			p, over = places[1 + over % #places], over + 1
+		end
+		k.place = p
+		if k.state ~= "Trapped" then
+			k.goal = p
+		end
+	end
+end
+
 --- Whether it's awake: anything but dealt asleep and not yet woken.
 function Keeper.awake(k: Keeper): boolean
 	return k.state ~= "Asleep"
@@ -690,7 +784,7 @@ function Keeper.trap(k: Keeper, slot: Floor.Slot, index: number): boolean
 	k.against = vector.create(doorway.x - fx * Keeper.Against, 0, doorway.z - fz * Keeper.Against)
 	k.goal, k.waited = k.against, 0
 	k.trapped, k.nextBang = 0, k.row.bangFirst
-	k.burst, k.padlocked, k.heardOut = false, false, false
+	k.burst, k.padlocked, k.heardOut, k.held = false, false, false, false
 	k.listening, k.startle = false, 0
 	return true
 end
@@ -727,6 +821,20 @@ function Keeper.padlock(k: Keeper, locked: boolean)
 	end
 end
 
+--- The floor already has as many loose as it allows (true), or room again (false), S2-07a2. Held,
+--- a keeper shut in gives its door one last blow at its break-out time and stands quiet, as a
+--- padlocked one does (pounding on, it kept the loose ones looking at its door for good, seen in
+--- Play); let go, it bursts out at once if its time is up: the quiet door was never safe. The server holds only the ones
+--- a wave woke (`Waking.free`), so a wave never sets more loose than the floor's limit, as Left 4
+--- Dead's director holds a special back until one of its places is free. Whether it's shut in.
+function Keeper.hold(k: Keeper, held: boolean): boolean
+	if k.trappedIn == 0 then
+		return false
+	end
+	k.held = held
+	return true
+end
+
 --- The door it's trapped behind is about to roll up by itself (a wrong code let it out, S2-04b):
 --- it stops banging and stands quiet against it, so the door's own slow open is the scare and no
 --- blow pulls the floor's keepers off the alarm. It still bursts at its break-out time, should the
@@ -747,7 +855,7 @@ function Keeper.lookOut(k: Keeper, slot: Floor.Slot, index: number): boolean
 		if k.state == "Trapped" then
 			k.burst, k.padlocked = false, false
 			if k.heardOut then
-				k.state, k.goal, k.waited = "Going", k.heardSpot, 0
+				k.state, k.goal, k.waited = "Going", k.place, 0
 				k.listening = true
 				return true
 			end
@@ -831,7 +939,8 @@ end
 
 -- Trapped: it walks to stand against its door, facing it, and bangs on it on its clock, from the
 -- moment it's there; at its break-out time it bursts it up (`blow`), or, padlocked, gives it one
--- last blow and stands quiet. Burst, it waits for the door to be all the way up (`lookOut`).
+-- last blow and stands quiet, as it does held for the floor (`hold`) until let go. Burst,
+-- it waits for the door to be all the way up (`lookOut`).
 -- Whether anything a body shows changed.
 local function trappedStep(k: Keeper, dt: number, run: number): boolean
 	local changed = false
@@ -859,7 +968,7 @@ local function trappedStep(k: Keeper, dt: number, run: number): boolean
 	local was = k.trapped
 	k.trapped += dt
 	if k.trapped >= row.breakOut then
-		if not k.padlocked then
+		if not (k.padlocked or k.held) then
 			k.blow, k.burst = "Burst", true
 		elseif was < row.breakOut then
 			k.blow = "Held"

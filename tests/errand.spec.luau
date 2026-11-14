@@ -6,8 +6,10 @@
 -- a sure chance, a Mannequin picking where to wander heads there, walks the halls at its walk,
 -- stands a beat facing the box with its hand on the grip, throws it exactly once, then lingers
 -- holding the lever down (a light or a sound in the beat holds it or calls it off); held by a
--- light it doesn't move or throw; an offer withdrawn calls the walk off; a sound calls it off;
--- a keeper that doesn't freeze in light never takes the errand; with no offer it never goes.
+-- light it doesn't move or throw; an offer withdrawn calls the walk off; a sound calls it off,
+-- but on its way it hears a third as far (S2-07a2), so a far sound leaves it walking and throwing
+-- while the alarm still calls it; a keeper that doesn't freeze in light never takes the errand;
+-- with no offer it never goes.
 -- And a warm errand allocates nothing.
 local Brix = require("../vendor/brix/src")
 local Breaker = require("../src/shared/Breaker")
@@ -79,7 +81,7 @@ for number = 1, 40 do
 	)
 end
 
-local floors, walks, throws = 0, 0, 0
+local floors, walks, throws, farOff = 0, 0, 0, 0
 local function checkFloor(seed: number, number: number)
 	local f = Floor.generate(number, Brix.Random.new({ seed = seed }))
 	local where = `floor {number} seed {seed}`
@@ -261,11 +263,79 @@ local function checkFloor(seed: number, number: number)
 	Keeper.step(called, DT, RUN)
 	local heard = Keeper.heardAt(called, called.at + vector.create(0.5, 0, 0), 50)
 	ok(heard ~= nil and called.state == "Going", `{where}: a sound calls it off`)
+	ok(not called.errand, `{where}: called off, it's off its errand at once (the camera cuts)`)
 	Keeper.offer(called, at, box, 0, Breaker.Grip) -- so the next pick isn't the box again
 	for _ = 1, 60 * 30 do
 		Keeper.step(called, DT, RUN)
 		ok(not called.threw, `{where}: called off, it never throws`)
 	end
+
+	-- S2-07a2: on its way it hears less (`Keeper.ErrandHearing`), so the throw usually happens. A
+	-- hall stop well off along the halls: a sound there carrying half again as far as the walk
+	-- reaches a wandering Mannequin, but not one on its errand, which walks on and throws.
+	local busy = fresh()
+	Keeper.offer(busy, at, box, 1, Breaker.Grip)
+	Keeper.step(busy, DT, RUN)
+	local far, off = nil :: vector?, 0
+	for _, i in map.stops do
+		local p = vector.create(
+			(map.minX[i] + map.maxX[i]) / 2,
+			map.y[i],
+			(map.minZ[i] + map.maxZ[i]) / 2
+		)
+		local d = walker:length(busy.at, p)
+		if d >= 40 and d <= 160 then
+			far, off = p, d
+			break
+		end
+	end
+	if far then
+		farOff += 1
+		local reach = off * 1.5
+		local idle = fresh()
+		Keeper.step(idle, DT, RUN)
+		ok(not idle.errand, `{where}: the other wanders, no errand`)
+		ok(Keeper.heardAt(idle, far, reach) ~= nil, `{where}: wandering, it hears the far sound`)
+		ok(
+			Keeper.heardAt(busy, far, reach) == nil and busy.errand and busy.state == "Roaming",
+			`{where}: on its errand, a sound {math.round(off)} off doesn't call it off`
+		)
+		local threw = false
+		for _ = 1, 60 * 300 do
+			Keeper.step(busy, DT, RUN)
+			if busy.threw then
+				threw = true
+				break
+			end
+		end
+		ok(threw, `{where}: it walks on and throws`)
+		-- its hand on the grip, the same far sound leaves it there: it throws on the beat
+		local steady = fresh()
+		Keeper.offer(steady, at, box, 1, Breaker.Grip)
+		for _ = 1, 60 * 300 do
+			Keeper.step(steady, DT, RUN)
+			if steady.lever == "Reach" then
+				break
+			end
+		end
+		local d = walker:length(steady.at, far)
+		ok(Keeper.heardAt(steady, far, d * 1.5) == nil, `{where}: on the grip, the far sound fades`)
+		local thrown2 = false
+		for _ = 1, math.ceil(Breaker.Grip / DT) + 2 do
+			Keeper.step(steady, DT, RUN)
+			thrown2 = thrown2 or steady.threw
+		end
+		ok(thrown2, `{where}: on the grip, it throws on the beat`)
+	end
+	-- a wrong code's alarm still calls it off however far (S2-04b): every monster comes
+	local alarmed = fresh()
+	Keeper.offer(alarmed, at, box, 1, Breaker.Grip)
+	Keeper.step(alarmed, DT, RUN)
+	local heardAlarm = Keeper.alarm(alarmed, far or vector.create(0, 3, 0), 1)
+	ok(
+		heardAlarm ~= nil and alarmed.state == "Going" and not alarmed.errand,
+		`{where}: the alarm calls it off its errand`
+	)
 
 	-- a keeper that doesn't freeze in light never takes it, and with no offer none goes
 	local row = table.clone(MANNEQUIN)
@@ -300,6 +370,8 @@ for seed = 1, 12 do
 		checkFloor(seed, number)
 	end
 end
+
+ok(farOff >= floors * 0.9, `a far sound tried on nearly every floor ({farOff} of {floors})`)
 
 if failures > 0 then
 	error(`errand: {failures} of {checks} checks failed`)

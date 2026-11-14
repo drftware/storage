@@ -4,7 +4,10 @@
 -- minutes on floors 1 and 2; then three, three more every two minutes; higher up it starts sooner
 -- and wakes more at once, within its floors' limits. A step never wakes more than are owed, more
 -- than are left asleep, or past the phone cap, and what the cap held back wakes once there's room.
--- Picks are distinct sleepers, every door as likely as any other.
+-- Picks are distinct sleepers, every door as likely as any other. One a wave woke breaks out only
+-- while the floor has room under its limit on loose monsters (S2-07a2, `Deal.awakeCap`), the
+-- longest shut in first.
+local Deal = require("../src/shared/Deal")
 local Waking = require("../src/shared/Waking")
 
 local failures, checks = 0, 0
@@ -133,6 +136,34 @@ local fair = TRIALS * 3 / #slots
 for _, slot in slots do
 	local c = counts[slot] or 0
 	ok(math.abs(c - fair) < fair * 0.1, `slot {slot} picked about as often as any ({c} of ~{fair})`)
+end
+
+-- S2-07a2: a woken one bursts out only while the floor's loose ones, and the woken ones ahead of
+-- it (longer shut in, or already bursting), leave room under the deal's cap.
+ok(Waking.free(1, 0, 0), "floor 1, nobody loose: it may burst")
+ok(not Waking.free(1, 1, 0), "floor 1, one loose already: it pounds on")
+ok(not Waking.free(1, 0, 1), "floor 1, one ahead of it: it pounds on")
+ok(Waking.free(3, 1, 0), "floor 3 allows two: one loose, it may burst")
+ok(not Waking.free(3, 1, 1), "floor 3, one loose and one ahead: it pounds on")
+ok(not Waking.free(9, 3, 0), "floor 9 allows three: three loose, it pounds on")
+for floor = 1, 40 do
+	local cap = Deal.awakeCap(floor)
+	for loose = 0, 6 do
+		for ahead = 0, 6 do
+			ok(
+				Waking.free(floor, loose, ahead) == (loose + ahead < cap),
+				`floor {floor}, {loose} loose, {ahead} ahead: free only under the cap`
+			)
+		end
+	end
+	-- a wave of six on a floor with nobody loose: only the cap's worth get out, the rest pound
+	local out = 0
+	for ahead = 0, 5 do
+		if Waking.free(floor, 0, ahead) then
+			out += 1
+		end
+	end
+	ok(out == math.min(cap, 6), `floor {floor}: a wave lets out {cap}, never more ({out})`)
 end
 
 if failures > 0 then
