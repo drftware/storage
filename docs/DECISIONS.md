@@ -4741,3 +4741,33 @@ crowds it). The ticket read "a bit" as about a third.
   which keeps them looking), so the floor emptied and nothing ever freed a place. Held, it now
   gives one last blow at its time and stands quiet, as a padlocked one does, and bursts out the
   moment a place opens: the quiet door was never safe.
+
+## D-173 The player's three: a light that sees you as it comes back, no Take through a door, a torch that goes out as you're caught (S2-07b1, Nov 14)
+
+- **A light coming back from the alarm sees who's under it.** The motion lights only see
+  movement, so a player standing still through a wrong code's alarm came back to a dark hall
+  (the code's own comment meant "those under someone lit next tick"). Now each fixture whose
+  power returns as the alarm ends looks once for anyone in its area, moving or not
+  (`MotionLight` `watch:look`), and comes back lit over them, holding `HoldSeconds` like any
+  other: standing on, they go dark to it again. A real motion light re-arming sees what's in
+  front of it; the rest of the floor still comes back dark (D-163). It fires `woke` as any
+  sighting does.
+- **The keypad isn't under any light.** The lobby is lit only by the car's lamp (FloorBuilder,
+  until L-05 dresses it), and no hall fixture's area reaches it (the nearest is 36 studs off on
+  the dev floor). So a player at the keypad is dark to the monsters before, during and after
+  the alarm; that is how S2-04c's tester was caught there. My default: leave it, since the
+  alarm calling monsters to the keypad in the dark is its threat; `OWNER.md` asks whether the
+  lobby should get its own motion light.
+- **No Take through a shut door.** The server already refused a battery taken through its
+  unit's shut door (D-143), but the button showed. Each battery now carries an ObjectValue
+  naming its unit (`Battery.UnitValue`), since it lies in the floor's folder, not the unit; your
+  screen checks the batteries within 16 studs five times a second with the server's own rule
+  (`RollUpDoor.keepsApart`), and shows the Take only when your torch wants one and no shut door
+  keeps you apart. A battery whose unit hasn't streamed in shows as before.
+- **Caught, the torch goes out as the black lands.** It stays lit through the catch's lunge (the
+  face rushing you in your own light) and goes out at `Caught.Dark`, on the server (`step`
+  counts how long its holder has been kept) and on your screen (FlashlightView: your own click,
+  no buzz); while wrapped the button is refused on both. Before, a torch left on drained in the
+  unit's dark the whole time you were kept, and you came out with a dead torch. Let out, your
+  thumb switches it on again with the charge it had.
+

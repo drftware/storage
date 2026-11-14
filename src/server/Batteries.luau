@@ -197,6 +197,11 @@ function Batteries.new(): Batteries
 			reach = Battery.Reach,
 		})
 		prompt.RequiresLineOfSight = false -- low on the floor: a box mustn't hide it
+		-- which unit's door decides your reach, for screens to hide the Take as this refuses it
+		local inUnit = Instance.new("ObjectValue")
+		inUnit.Name = Battery.UnitValue
+		inUnit.Value = unit
+		inUnit.Parent = part
 		CollectionService:AddTag(part, Battery.Tag)
 
 		local battery: Lying = { part = part, unit = unit, at = place.Position, prompt = prompt }

@@ -23,6 +23,9 @@ local Battery = {}
 Battery.Tag = "Battery" -- a battery lying on a unit's floor
 Battery.Template = "Battery" -- its MeshPart in ReplicatedStorage.Props
 Battery.TakenAttribute = "TakenBy" -- on a battery: the UserId of whoever took it, once taken
+-- On a battery: an ObjectValue naming the unit it lies in, so each screen hides its Take while
+-- that unit's shut door stands between you and it, as the server refuses it (S2-07b1).
+Battery.UnitValue = "Unit"
 
 -- Studs from your middle to a battery's button: a coin pile's reach (`Coins.Reach`), so you step
 -- into the unit to take it.

@@ -349,6 +349,30 @@ do
 	ok(watch:setPowered(id, MotionLight.powered(false, false)), "the power comes back")
 	ok(watch:state(id) == "Dark", "back, it is dark: nothing lights the halls for free")
 	ok(watch:wake(id, 2), "back, it wakes again")
+
+	-- Back from the alarm, a light sees who stands under it, still or not (S2-07b1): the player
+	-- waiting at the keypad lights up again, holds like any light, then goes dark if they keep
+	-- still. Nobody under it, or still blind, it stays as it is.
+	local w2, ids2 = hall({ 0, 48 })
+	local under, far = ids2[1], ids2[2]
+	w2:step(0, { me = at(2) })
+	w2:step(TICK, { me = at(2) })
+	ok(w2:state(under) == "Dark", "standing still from the start, the light stays dark")
+	w2:setPowered(under, false)
+	w2:setPowered(far, false)
+	ok(not w2:look(under, 1, { me = at(2) }), "still blind, it sees nobody")
+	w2:setPowered(under, true)
+	w2:setPowered(far, true)
+	ok(w2:look(under, 5, { me = at(2) }), "back, it lights for the player standing still under it")
+	ok(w2:state(under) == "Lit", "lit")
+	ok(not w2:look(far, 5, { me = at(2) }), "a light with nobody under it stays dark")
+	ok(w2:state(far) == "Dark", "dark")
+	ok(not w2:look(under, 5.5, { me = at(2) }), "a lit light looking again changes nothing")
+	local changed = w2:step(5 + HOLD - TICK, { me = at(2) })
+	ok(not has(changed, under) and w2:state(under) == "Lit", "it holds like any light")
+	changed = w2:step(5 + HOLD, { me = at(2) })
+	ok(has(changed, under) and w2:state(under) == "Dark", "kept still, they go dark to it again")
+	ok(not w2:look(under, 20, {}), "with no bodies at all, it stays dark")
 end
 
 if failures > 0 then

@@ -72,6 +72,39 @@ Hub. Studio Play is fine for the first go.
    Today every feed is the breaker's, so you'll only see this once a second monster uses the
    camera.
 
+## Now: the player's three fixes (S2-07b1, built Nov 14, D-173; seen in Studio Play, not on a phone)
+
+What changed: a hall light you stand still under through a wrong code's alarm comes back lit;
+a battery's Take no longer shows through a shut door; and your torch goes out when you're
+caught, so it isn't empty by the time a friend cuts you free.
+
+- [ ] **The light comes back on you.** Play floor 3. Walk to the first hall light outside the
+  lobby, step back to the lobby and punch in a wrong code (any four digits), then run back and
+  stand still under that light before the lights come back.
+  1. Look for: the halls go dark with the whine. While it's dark, stand completely still.
+  2. Look for: as the power comes back, the light over you flickers back on with its click
+     (the others come back dark). Keep standing still: about seven seconds later it goes dark.
+- [ ] **Decide: should the keypad have a light?** The keypad sits in the lobby, and no hall
+  light reaches the lobby: only the car's lamp lights it, and that lamp never stops a
+  Mannequin. So a player waiting at the keypad is in the dark to the monsters before, during
+  and after the alarm, and that's how the earlier test got caught there. My default: leave it,
+  because the alarm calling monsters to the keypad in the dark is its whole threat. If you'd
+  rather the lobby had a motion light over the keypad (so standing at it lights you up and
+  holds a Mannequin in its light), say "light the lobby" and it goes in with the lobby's dressing
+  (L-05).
+- [ ] **No Take through a shut door.** Play until a unit you open has a battery on its floor
+  (about one unit in ten), with your torch down at least one tick on its ring.
+  1. Look for: standing in the open doorway, the Take button shows. Pull the door shut and
+     stand outside it: the Take button is gone.
+  2. Lift the door again: the Take comes back. A peek (the door barely lifted) is not enough.
+- [ ] **Your torch when you're caught.** Play with a friend. Switch your torch on and let a
+  Mannequin catch you.
+  1. Look for: your torch lights the face rushing at you, then clicks off as the screen goes
+     black. You wake wrapped with it off; pressing the torch button does nothing.
+  2. Your friend looks for: your torch goes out as you're wrapped.
+  3. Once your friend cuts you out, press the torch button: it comes on, with the charge it had
+     when you were caught (the ring hasn't run down).
+
 ## Now: three monster fixes (S2-07a2, built Nov 14, D-172; seen in Studio Play, not on a phone)
 
 What changed: a Mannequin walking to the breaker box is harder to distract; monsters called to

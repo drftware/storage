@@ -39,6 +39,7 @@ local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Caught = require(ReplicatedStorage.Shared.Caught)
 local Charge = require(ReplicatedStorage.Shared.Flashlight.Charge)
 local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
 local HandRoom = require(script.Parent.HandRoom)
@@ -466,7 +467,8 @@ function FlashlightView.new(): (Brix.System, Beam)
 
 	-- Your thumb on the button.
 	local function switch()
-		if not alive() then
+		-- wrapped, your hands are taped (the server refuses it too)
+		if not alive() or player:GetAttribute(Kept.Attribute) == true then
 			return
 		end
 		if not mine and left <= 0 then
@@ -519,6 +521,34 @@ function FlashlightView.new(): (Brix.System, Beam)
 		end
 		showButton()
 		send()
+	end
+
+	-- Caught (S2-07b1): your torch lights the face rushing you, then clicks off as the black
+	-- comes down, so it never drains in the dark of the unit; the server switches it off at the
+	-- same moment (Flashlights). Your thumb switches it back on once a friend cuts you out.
+	local function wrapped()
+		if player:GetAttribute(Kept.Attribute) ~= true then
+			return
+		end
+		task.delay(Caught.Dark, function()
+			if player:GetAttribute(Kept.Attribute) ~= true or not mine then
+				return
+			end
+			mine = false
+			level = 0
+			if own then
+				Flashlight.light(own, false, true)
+			end
+			if ownClick then
+				play(ownClick, false)
+			end
+			local b = buzz
+			if b and b.IsPlaying then
+				b:Stop()
+			end
+			showButton()
+			send()
+		end)
 	end
 
 	-- Each frame your torch is lit: the light it gives as it runs down, and its buzz. Dead, it
@@ -935,7 +965,10 @@ function FlashlightView.new(): (Brix.System, Beam)
 		table.insert(connections, player.CharacterAdded:Connect(respawned))
 		table.insert(
 			connections,
-			player:GetAttributeChangedSignal(Kept.Attribute):Connect(placeButton)
+			player:GetAttributeChangedSignal(Kept.Attribute):Connect(function()
+				placeButton()
+				wrapped()
+			end)
 		)
 		RunService:BindToRenderStep(RENDER, Enum.RenderPriority.Camera.Value + 2, hold)
 		table.insert(connections, RunService.PreSimulation:Connect(poseArms))

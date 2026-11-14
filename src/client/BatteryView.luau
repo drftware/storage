@@ -7,7 +7,9 @@
 
 	Its button: shown only while your torch's ring has lost a tick (`Battery.wants`, read from the
 	charge the server writes on you). With a full ring the battery lies there with no button for
-	you, so it stays for the friend whose torch is dying; nothing on screen says why.
+	you, so it stays for the friend whose torch is dying; nothing on screen says why. Nor while
+	its unit's shut door stands between you and it (S2-07b1, `RollUpDoor.keepsApart`, the
+	server's own rule): a peek's crack is no way in for a hand.
 
 	A take, on every screen: the server stamps its taker (`Battery.TakenAttribute`); the battery
 	throws off a few sparks, hops, and flies into the taker's torch, shrinking as it slides in, and
@@ -24,14 +26,20 @@ local Brix = require(ReplicatedStorage.Brix)
 local Charge = require(ReplicatedStorage.Shared.Flashlight.Charge)
 local HandAt = require(script.Parent.HandAt)
 local SoundPrimer = require(script.Parent.SoundPrimer)
+local StorageUnit = require(ReplicatedStorage.Shared.StorageUnit)
 
 local SPARKS = 4 -- sparks thrown off its button as it's taken
+-- How often (seconds) your screen looks for a shut door between you and the batteries near you
+-- (studs, past the Take's reach), hiding the Take while one is (S2-07b1; the server refuses it).
+local REACH_EVERY = 0.2
+local REACH_NEAR = 16
 
 type Lying = {
 	part: BasePart,
 	prompt: ProximityPrompt?,
 	size: Vector3, -- its size as laid
 	glint: ParticleEmitter?,
+	reach: boolean, -- no shut door between you and it, as last looked
 }
 
 type Flight = {
@@ -103,8 +111,9 @@ function BatteryView.new(): Brix.System
 		for _, b in lying do
 			local prompt = b.prompt
 			if prompt and b.part:GetAttribute(Battery.TakenAttribute) == nil then
-				if prompt.Enabled ~= wants then
-					prompt.Enabled = wants
+				local show = wants and b.reach
+				if prompt.Enabled ~= show then
+					prompt.Enabled = show
 				end
 			end
 		end
@@ -168,7 +177,8 @@ function BatteryView.new(): Brix.System
 		local prompt = at and at:FindFirstChildOfClass("ProximityPrompt")
 		local glintAt = inst:FindFirstChild("Glint")
 		local glint = glintAt and glintAt:FindFirstChildOfClass("ParticleEmitter")
-		local b: Lying = { part = inst, prompt = prompt, size = inst.Size, glint = glint }
+		local b: Lying =
+			{ part = inst, prompt = prompt, size = inst.Size, glint = glint, reach = true }
 		lying[inst] = b
 		if inst:GetAttribute(Battery.TakenAttribute) ~= nil then
 			-- taken before it reached this screen: gone at once
@@ -265,7 +275,43 @@ function BatteryView.new(): Brix.System
 		task.spawn(SoundPrimer.prime, { Battery.Clack.id, Battery.Snap.id })
 	end
 
+	-- Whether a shut door keeps you from each battery near you, its Take shown only while none
+	-- does. One whose unit hasn't streamed in yet is reachable, as before.
+	local reachAt = 0
+	local function lookReach()
+		local character = me.Character
+		local root = character and character.PrimaryPart
+		local changed = false
+		for _, b in lying do
+			local reach = true
+			if root and (b.part.Position - root.Position).Magnitude <= REACH_NEAR then
+				local v = b.part:FindFirstChild(Battery.UnitValue)
+				local unit = if v and v:IsA("ObjectValue") then v.Value else nil
+				if
+					unit
+					and unit:IsA("Model")
+					and unit:FindFirstChild("DoorOrigin", true)
+					and StorageUnit.RollUpDoor.keepsApart(unit, root.Position, b.part.Position)
+				then
+					reach = false
+				end
+			end
+			if reach ~= b.reach then
+				b.reach = reach
+				changed = true
+			end
+		end
+		if changed then
+			showButtons()
+		end
+	end
+
 	function system.step(_: any, _dt: number)
+		local t = os.clock()
+		if t - reachAt >= REACH_EVERY then
+			reachAt = t
+			lookReach()
+		end
 		if #flights == 0 then
 			return
 		end

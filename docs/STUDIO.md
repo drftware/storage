@@ -2181,3 +2181,19 @@ verified: a doc page, Studio, or "untested".
 - **The warning tick, measured** (Edit, AudioPlayer at a quarter speed to an AudioAnalyzer):
   9120089728 is 0.36 s, its click at 0.015 s (-10 dB peak), down 30 dB by 0.07 s, a faint ring to
   the end. 9117028600 ("Moviola ... Sharp 8") is two clicks, 0.03 and 0.28 s.
+
+## The player's three (S2-07b1, Nov 14)
+
+- **The dev floor's keypad is under no hall light.** It sits in `Floor3.Lobby` at about
+  (-7.8, 4, -588); the nearest fixture (`Straight2.Fixture`, at (0, 0, -624), its hall along Z)
+  is 36 studs off. To watch a light come back over a still player: punch the wrong code at the
+  keypad, then pivot to (0, 3, -624) within the dead span and stand; a server watcher on the
+  fixture's `MotionLightState` shows Out, then Lit as the alarm ends.
+- **Setting `Kept` by hand ends a one-player climb.** With nobody left free, the climb is lost
+  and the character goes (the end screen); restart Play after. Clear it in the same call.
+- **The torch button from the MCP:** `ContextActionService:CallFunction` is refused ("lacking
+  capability RobloxScript"); `user_mouse_input` with a right click in the viewport presses it.
+  Your own torch is `Workspace.YourFlashlight` on the client (its SpotLight and PointLight).
+- **Testing a screen's battery rule without opening a unit:** a client-made Part tagged
+  `Battery` with a `Take` attachment, a ProximityPrompt and a `Unit` ObjectValue, and the
+  Player's `Charge` set low on the client, is picked up by BatteryView like a real one.

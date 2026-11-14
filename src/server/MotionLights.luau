@@ -16,7 +16,8 @@
 	every powered fixture on that floor comes on at once and holds like any other. `out(floor,
 	seconds)` is the elevator's alarm (a wrong code, S2-04c): every fixture on that floor goes
 	blind for `seconds`, the keypad's dead span, and comes back dark (shown "Out", so screens play
-	the alarm's cut, `MotionLight.look`); the car's own lamp isn't a fixture, so it stays. In the
+	the alarm's cut, `MotionLight.look`) except where someone already stands under it, still or
+	not (`watch:look`, S2-07b1); the car's own lamp isn't a fixture, so it stays. In the
 	dark nothing freezes a Mannequin, so the monsters the alarm calls come on through the black,
 	as Lethal Company's facility goes dark when the apparatus is pulled and wakes what's inside.
 	A fixture comes back powered only when neither its zone is cut nor its floor out. `woke` fires with each fixture's model as it wakes: the
@@ -211,22 +212,31 @@ function MotionLights.new(): MotionLights
 		if not look then
 			return
 		end
-		-- a floor's alarm is over: its lights come back dark, those under someone lit next tick
-		for floor, ends in outUntil do
-			if now >= ends or not floor.Parent then
-				outUntil[floor] = nil
-				for model, id in ids do
-					if model:IsDescendantOf(floor) then
-						repower(model, id)
-					end
-				end
-			end
-		end
 		table.clear(positions)
 		for _, body in bodies do
 			if body.Parent then
 				-- any: a Vector3 is the native vector Brix measures, which the checker won't cast
 				positions[body] = (body.Position :: any) :: vector
+			end
+		end
+		-- a floor's alarm is over: its lights come back dark, but each sees who already stands
+		-- under it, still or not, so the player waiting at the keypad lights up again (S2-07b1)
+		for floor, ends in outUntil do
+			if now >= ends or not floor.Parent then
+				outUntil[floor] = nil
+				for model, id in ids do
+					if model:IsDescendantOf(floor) then
+						local changed =
+							watch:setPowered(id, MotionLight.powered(zoneCut(model), isOut(model)))
+						changed = watch:look(id, now, positions) or changed
+						if
+							changed
+							or model:GetAttribute(MotionLight.StateAttribute) ~= lookOf(id)
+						then
+							show(id)
+						end
+					end
+				end
 			end
 		end
 		for _, id in watch:step(now, positions) do

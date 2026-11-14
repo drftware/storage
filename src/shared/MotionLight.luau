@@ -177,6 +177,11 @@ export type Watch = {
 	-- Lights a fixture at `now` as if something moved under it (the alarm), unless it's blind.
 	-- It holds for HoldSeconds like any other. Returns whether its state changed.
 	wake: (self: Watch, id: number, now: number) -> boolean,
+	-- Power just came back to a dark fixture: it sees whoever already stands in its area, moving
+	-- or not, and lights at `now` (holding for HoldSeconds like any other), so a player waiting
+	-- still at the keypad through the alarm lights up again as it ends (S2-07b1). `bodies` maps
+	-- each body to where it is. Returns whether its state changed.
+	look: (self: Watch, id: number, now: number, bodies: { [unknown]: vector }) -> boolean,
 	-- Looks once, at `now` seconds: `bodies` maps each body to where it is. Returns the ids of the
 	-- fixtures whose state changed, in a list the watch reuses on its next step.
 	step: (self: Watch, now: number, bodies: { [unknown]: vector }) -> { number },
@@ -283,6 +288,28 @@ function MotionLight.watch(): Watch
 		f.state = "Lit"
 		table.insert(lit, id)
 		return true
+	end
+
+	function watch.look(
+		_: Watch,
+		id: number,
+		now: number,
+		positions: { [unknown]: vector }
+	): boolean
+		local f = fixtures[id]
+		assert(f, `MotionLight: no fixture {id}`)
+		if f.state ~= "Dark" then
+			return false
+		end
+		for _, at in positions do
+			if f.area:contains(at) then
+				f.seen = now
+				f.state = "Lit"
+				table.insert(lit, id)
+				return true
+			end
+		end
+		return false
 	end
 
 	function watch.step(_: Watch, now: number, positions: { [unknown]: vector }): { number }

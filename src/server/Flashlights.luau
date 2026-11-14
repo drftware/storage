@@ -19,7 +19,8 @@
 	character. It drains only while the torch is on, everyone's is full again as a climb begins
 	(`Climbs.began`), and a battery fills it (`fill`, S1-07b). The Player carries what's left in
 	whole seconds (`Charge.Attribute`), written only as it ticks. Dead, it goes out (`switched`
-	fires, so a Mannequin is no longer held), and a switch on is refused until it's filled.
+	fires, so a Mannequin is no longer held), and a switch on is refused until it's filled. Wrapped
+	(`Kept.Attribute`), it goes out and stays out until you're let go, so it keeps its charge.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -28,7 +29,9 @@ local Workspace = game:GetService("Workspace")
 
 local Battery = require(ReplicatedStorage.Shared.Battery)
 local Brix = require(ReplicatedStorage.Brix)
+local Caught = require(ReplicatedStorage.Shared.Caught)
 local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
+local Kept = require(ReplicatedStorage.Shared.Kept)
 
 local Torch = Flashlight.Torch
 local Charge = Flashlight.Charge
@@ -62,6 +65,7 @@ type Held = {
 	last: number?, -- when the last switch went through
 	burst: number, -- switches left in hand
 	aimAt: number, -- when the last aim was taken
+	wrapped: number?, -- seconds its holder has been kept with it on, nil while they're free
 }
 
 -- How the torch sits in a hand, from the hand's grip attachment: its beam down the forearm (the
@@ -180,6 +184,10 @@ function Flashlights.new(): Flashlights
 		if on and (charges[player] or 0) <= 0 then
 			return
 		end
+		-- wrapped in a unit, your hands are taped: no switching it on (S2-07b1)
+		if on and player:GetAttribute(Kept.Attribute) == true then
+			return
+		end
 		local character = player.Character
 		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 		if not (humanoid and humanoid.Health > 0) then
@@ -287,9 +295,22 @@ function Flashlights.new(): Flashlights
 		end
 	end
 
-	-- The lit torches run down; a dead one goes out.
+	-- The lit torches run down; a dead one goes out, and so does one whose holder is wrapped
+	-- (S2-07b1), as the catch's black comes down on their screen (`Caught.Dark`; FlashlightView
+	-- switches it off there at the same moment): it never drains in the dark of the unit.
 	function system.step(_: any, dt: number)
 		for player, h in held do
+			-- caught: it lights the face rushing them and goes out as their screen goes black
+			if h.on and player:GetAttribute(Kept.Attribute) == true then
+				h.wrapped = (h.wrapped or 0) + dt
+				if h.wrapped >= Caught.Dark then
+					h.wrapped = nil
+					set(player, h, false)
+					continue
+				end
+			else
+				h.wrapped = nil
+			end
 			-- a torch whose character has gone (watching, leaving) is in no hand: it keeps
 			if h.on and h.model.Parent then
 				local left = Charge.drain(charges[player] or 0, dt)

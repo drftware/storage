@@ -1823,12 +1823,25 @@ Done when a team that has lost its lights goes looking for the breaker without b
       loose ones at its door for good in Play). In Play: floor 3 (limit two) woke three, the
       third held at once, two loose 110 s in; two wrong codes brought three to the keypad at once,
       the closest two 4.3 studs apart. Specs: `errand`, `spread` (new), `waking`, `trapped`.
-  - [ ] **S2-07b Screens and things.** A player standing still at the keypad lights up again
-    when the lights come back (S2-04c); Take doesn't show through a shut door (S1-07b); a
-    torch left on as you're wrapped switches off instead of draining (S1-09); a friend's beam
-    shows the faint mark as yours does (S1-11); a saw no longer pokes past the machine's glass
-    (S1-10d2); the permission and wrong-type asset lines in Output at Play start are traced
-    and fixed (HANDOFF's Queue). (S1-12's saved cash total waits for S4-07, when cash buys.)
+  - [ ] **S2-07b Screens and things.** Split Nov 14 in its session (six fixes with Play checks
+    didn't fit one), one session each. (S1-12's saved cash total waits for S4-07, when cash
+    buys.)
+    - [x] **S2-07b1 The player's three.** (Nov 14, D-173.) A hall light coming back from a
+      wrong code's alarm sees whoever already stands under it, still or not (`watch:look`), so
+      it comes back lit over them and holds like any other; the keypad itself is in the lobby,
+      which no hall light reaches (the car's lamp only), so whether it gets one is the owner's
+      (`OWNER.md`, with L-05). A battery's Take hides on your screen while its unit's shut door
+      keeps you apart (`Battery.UnitValue`, `RollUpDoor.keepsApart`), as the server refuses
+      it. Caught, your torch lights the face rushing you and goes out as the black comes down
+      (`Caught.Dark`), on the server and your screen; wrapped, it can't be switched on. In
+      Play: a still player under Straight2's light, Out at 6.96 s, Lit at 10.48 s; a lit torch
+      still on 0.5 s into a catch, off at 0.97 s, charge 299 of 300, your own torch's lights
+      off; a dying torch's Take hidden outside shut Unit301, shown shut inside it, hidden
+      outside again.
+    - [ ] **S2-07b2 The screen's three.** A friend's beam shows the faint mark as yours does
+      (S1-11, `FaintMarkView`); a saw no longer pokes past the machine's glass (S1-10d2; art is
+      code); the permission and wrong-type asset lines in Output at Play start are traced to
+      their asset ids and the scripts that load them, and fixed (HANDOFF's Queue).
 - [ ] **S2-06 The second monster: the Packrat, which collects things, not people** (the owner
   chose it Nov 14, D-167, in place of the silent one that moved only in light; GDD "The Packrat
   collects things, not people"; Packrat is a working name). The moment: a friend drops their
