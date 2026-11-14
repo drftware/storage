@@ -19,6 +19,13 @@
 	each time (`Coins.Climb`), with a swell (`Coins.Pop`) and a spin of the count's coin. A rise
 	with no flight (a pile taken off your screen) shows after `Coins.Grace`; a drop (a new climb)
 	shows at once. Only what's moving is stepped.
+
+	The pay at the gate (S1-06, `Pay`): as the gate slams with you aboard, the server tells your
+	screen what you were paid, before your count changes. A beat after the slam (`Pay.Delay`) a
+	handful of coins thrown on concrete sounds and coins burst out from a little above the middle of
+	your view, overshooting and settling in a ring, glinting; then one after another they fly to
+	your count, each landing worth its share of the pay (`Pay.split`), ticking higher and higher.
+	A gold "+10" by the count says what came in, and fades once the last coin lands.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local GuiService = game:GetService("GuiService")
@@ -31,6 +38,7 @@ local Brix = require(ReplicatedStorage.Brix)
 local Coins = require(ReplicatedStorage.Shared.Coins)
 local CoinSpecs = require(ReplicatedStorage.Shared.Coins.Specs)
 local Minimap = require(ReplicatedStorage.Shared.Minimap)
+local Pay = require(ReplicatedStorage.Shared.Pay)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 
 local me = Players.LocalPlayer
@@ -49,6 +57,9 @@ local EDGE = CFrame.Angles(math.pi / 2, 0, 0) -- a coin on its edge, face to the
 local ICON_TURN = CFrame.Angles(0, math.rad(-22), 0) * CFrame.Angles(math.rad(8), 0, 0)
 local SETTLE = TweenInfo.new(0.26, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local RIM_BACK = TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local PAY_CLIMB = 0.45 -- the pour's landing ticks climb this much in pitch, first to last
+local PLUS_GAP = 8 -- points between the "+10" and the count
+local PLUS_FADE = TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 
 type Pile = {
 	model: Model,
@@ -61,19 +72,32 @@ type Pile = {
 }
 
 type Flyer = {
-	launch: number, -- when it sets off
+	launch: number, -- when it sets off for the count
 	from: BasePart?, -- the coin it flies on from (nil: from the pile's middle)
 	at: Vector3, -- the pile's middle, if the coin's gone
 	rise: number, -- its landing tick's pitch, against `Coins.Tick.pitch`
+	worth: number, -- what its landing adds to the count
 	view: ViewportFrame?,
 	coin: BasePart?,
 	start: Vector2?,
+	-- a coin of the pay (S1-06): from `born` it bursts out from `origin` to `spot` on the screen
+	-- and hangs there until it sets off
+	born: number?,
+	origin: Vector2?,
+	spot: Vector2?,
 }
 
 local CoinView = {}
 
 local function ease(p: number): number
 	return p * p * (3 - 2 * p)
+end
+
+-- Out past the end and back: a burst that overshoots and settles.
+local function backOut(p: number): number
+	local k = 1.9
+	local q = p - 1
+	return 1 + (k + 1) * q * q * q + k * q * q
 end
 
 local function sound(spec: Coins.Sound, parent: Instance, heard: number?): Sound
@@ -125,6 +149,9 @@ function CoinView.new(): Brix.System
 	local sliding = false
 	local spinAt = -math.huge
 	local tickTurn = 0
+	local rng = Random.new()
+	local plusUntil = -math.huge -- the "+10" shows until then (nil while no pour has landed)
+	local pouring = 0 -- pay coins still to land
 
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "CoinCount"
@@ -177,6 +204,26 @@ function CoinView.new(): Brix.System
 	number.Text = Coins.text(0)
 	number.Parent = chip
 
+	-- The pay's "+10", gold, just left of the count while the pour lands (S1-06).
+	local plus = Instance.new("TextLabel")
+	plus.Name = "Plus"
+	plus.AnchorPoint = Vector2.new(1, 0.5)
+	plus.AutomaticSize = Enum.AutomaticSize.X
+	plus.BackgroundTransparency = 1
+	plus.FontFace = BOLD
+	plus.TextColor3 = GOLD
+	plus.TextStrokeColor3 = Color3.new(0, 0, 0)
+	plus.TextStrokeTransparency = 0.45
+	plus.TextXAlignment = Enum.TextXAlignment.Right
+	plus.Visible = false
+	plus.Parent = gui
+	local plusPop = Instance.new("UIScale")
+	plusPop.Parent = plus
+	local plusAt: number? = nil -- when the "+10" pops in
+	local plusText = ""
+	local pour = sound(Pay.Pour, gui)
+	local pourAt: number? = nil -- when the pour sounds
+
 	local ticks: { Sound } = {}
 	for i = 1, TICKS do
 		ticks[i] = sound(Coins.Tick, gui)
@@ -211,6 +258,8 @@ function CoinView.new(): Brix.System
 		icon.Size = UDim2.fromOffset(height, height)
 		number.Size = UDim2.fromOffset(0, height)
 		number.TextSize = math.floor(height * 0.66)
+		plus.Size = UDim2.fromOffset(0, height)
+		plus.TextSize = math.floor(height * 0.66)
 		pad.PaddingRight = UDim.new(0, math.floor(height * 0.42))
 		pad.PaddingLeft = UDim.new(0, 2)
 		list.Padding = UDim.new(0, math.floor(height * 0.08))
@@ -341,6 +390,7 @@ function CoinView.new(): Brix.System
 				from = pile.coins[i],
 				at = at,
 				rise = 1 + (i - 1) * Coins.Climb,
+				worth = 1,
 				view = nil,
 				coin = nil,
 				start = nil,
@@ -387,15 +437,53 @@ function CoinView.new(): Brix.System
 		return done
 	end
 
+	-- A flying coin's picture, on the screen.
+	local function frameFor(f: Flyer): ViewportFrame
+		local frame = Instance.new("ViewportFrame")
+		frame.Name = "Flying"
+		frame.AnchorPoint = Vector2.new(0.5, 0.5)
+		frame.ZIndex = 2
+		local coin = template()
+		if coin then
+			f.coin = picture(frame, coin, 0.8)
+		end
+		frame.Parent = gui
+		f.view = frame
+		return frame
+	end
+
 	-- Moves a flying coin on your screen for this frame; true once it has landed.
 	local function stepFlyer(f: Flyer, now: number): boolean
-		if now < f.launch then
+		local born = f.born
+		local size = icon.AbsoluteSize.X
+		if born then
+			if now < born then
+				return false
+			end
+			if now < f.launch then
+				-- the pay's burst: out from the middle, overshooting, then hanging, turning
+				local frame = f.view or frameFor(f)
+				local p = math.clamp((now - born) / Pay.Scatter, 0, 1)
+				local point = (f.origin :: Vector2):Lerp(f.spot :: Vector2, backOut(p))
+				local across = size * FLYER * math.min(1, 0.3 + p * 1.4)
+				frame.Position = UDim2.fromOffset(point.X, point.Y)
+				frame.Size = UDim2.fromOffset(across, across)
+				local coin = f.coin
+				if coin then
+					coin.CFrame = CFrame.Angles(0, (now - born) * TAU * 1.1, 0) * ICON_TURN * EDGE
+				end
+				return false
+			end
+			if not f.start then
+				f.start = f.spot
+				f.view = f.view or frameFor(f)
+			end
+		elseif now < f.launch then
 			return false
 		end
-		local camera = Workspace.CurrentCamera
-		local view = if camera then camera.ViewportSize else Vector2.new(1280, 720)
-		local size = icon.AbsoluteSize.X
 		if not f.view then
+			local camera = Workspace.CurrentCamera
+			local view = if camera then camera.ViewportSize else Vector2.new(1280, 720)
 			local from = if f.from and f.from.Parent then f.from.Position else f.at
 			local point, onScreen = Vector3.new(view.X / 2, view.Y * 0.7, 1), true
 			if camera then
@@ -404,16 +492,7 @@ function CoinView.new(): Brix.System
 			f.start = if onScreen and point.Z > 0
 				then Vector2.new(point.X, point.Y)
 				else Vector2.new(view.X / 2, view.Y * 0.7)
-			local frame = Instance.new("ViewportFrame")
-			frame.Name = "Flying"
-			frame.AnchorPoint = Vector2.new(0.5, 0.5)
-			frame.ZIndex = 2
-			local coin = template()
-			if coin then
-				f.coin = picture(frame, coin, 0.8)
-			end
-			frame.Parent = gui
-			f.view = frame
+			frameFor(f)
 		end
 		local frame = f.view :: ViewportFrame
 		local p = math.clamp((now - f.launch) / Coins.Fly, 0, 1)
@@ -425,13 +504,17 @@ function CoinView.new(): Brix.System
 		local a = s:Lerp(c, t)
 		local b = c:Lerp(e, t)
 		local point = a:Lerp(b, t)
-		local grow = math.min(1, p / 0.15)
+		local grow = if born then 1 else math.min(1, p / 0.15)
 		local across = size * (FLYER + (1 - FLYER) * t) * grow
 		frame.Position = UDim2.fromOffset(point.X, point.Y)
 		frame.Size = UDim2.fromOffset(across, across)
 		local coin = f.coin
 		if coin then
-			coin.CFrame = CFrame.Angles(0, -p * TAU * 1.5, 0) * ICON_TURN * EDGE
+			-- a pay coin keeps turning the way it turned while it hung
+			local turn = if born
+				then (f.launch - born) * TAU * 1.1 + p * TAU * 1.5
+				else -p * TAU * 1.5
+			coin.CFrame = CFrame.Angles(0, turn, 0) * ICON_TURN * EDGE
 		end
 		if p < 1 then
 			return false
@@ -443,8 +526,53 @@ function CoinView.new(): Brix.System
 		tick.PlaybackSpeed = (Coins.Tick.pitch or 1) * f.rise
 		tick.TimePosition = Coins.Tick.from
 		tick:Play()
-		show(shown + 1, true)
+		show(shown + f.worth, true)
+		if born then
+			pouring -= 1
+			if pouring <= 0 then
+				plusUntil = now + Pay.Plus
+			end
+		end
 		return true
+	end
+
+	-- Paid at the gate (S1-06): `coins` burst out a beat after the slam and pour into the count.
+	local function paid(coins: unknown)
+		if typeof(coins) ~= "number" or coins ~= coins or coins < 1 then
+			return
+		end
+		local shares = Pay.split(coins, Pay.Flyers)
+		local n = #shares
+		local now = os.clock()
+		local camera = Workspace.CurrentCamera
+		local view = if camera then camera.ViewportSize else Vector2.new(1280, 720)
+		local origin = Vector2.new(view.X * Pay.From[1], view.Y * Pay.From[2])
+		local reach = view.Y * Pay.Spread
+		local born = now + Pay.Delay
+		local twist = rng:NextNumber(0, TAU)
+		for i, worth in shares do
+			-- round a ring, a little ragged, flatter than tall so it reads as a spill
+			local angle = twist + (i - 1) / n * TAU + rng:NextNumber(-0.3, 0.3)
+			local r = reach * rng:NextNumber(0.55, 1)
+			table.insert(flyers, {
+				launch = born + Pay.Scatter + Pay.Hang + (i - 1) * Pay.Gap,
+				from = nil,
+				at = Vector3.zero,
+				rise = 1 + PAY_CLIMB * (i - 1) / math.max(1, n - 1),
+				worth = worth,
+				view = nil,
+				coin = nil,
+				start = nil,
+				born = born + rng:NextNumber(0, 0.05),
+				origin = origin,
+				spot = origin + Vector2.new(math.cos(angle) * r, math.sin(angle) * r * 0.7),
+			})
+		end
+		pouring += n
+		plusText = `+{Coins.text(coins)}`
+		plusAt = born + Pay.Scatter + Pay.Hang
+		plusUntil = math.huge
+		pourAt = born
 	end
 
 	local function added(model: Instance)
@@ -533,7 +661,15 @@ function CoinView.new(): Brix.System
 			connections,
 			CollectionService:GetInstanceRemovedSignal(Coins.Tag):Connect(removed)
 		)
-		task.spawn(SoundPrimer.prime, { Coins.Chink.id, Coins.Jingle.id })
+		task.spawn(SoundPrimer.prime, { Coins.Chink.id, Coins.Jingle.id, Pay.Pour.id })
+		-- the pay at the gate: coins, then the finds kept (KeepView's)
+		task.spawn(function()
+			local folder = ReplicatedStorage:WaitForChild(Pay.RemoteFolder)
+			local remote = folder:WaitForChild(Pay.Remote)
+			if remote:IsA("RemoteEvent") then
+				table.insert(connections, remote.OnClientEvent:Connect(paid))
+			end
+		end)
 	end
 
 	function system.step(_: any, _dt: number)
@@ -550,6 +686,38 @@ function CoinView.new(): Brix.System
 		end
 		if sliding then
 			sliding = place(now)
+		end
+		if pourAt and now >= pourAt then
+			pourAt = nil
+			pour.TimePosition = Pay.Pour.from
+			pour:Play()
+		end
+		if plusAt and now >= plusAt then
+			plusAt = nil
+			plus.Text = plusText
+			plus.TextTransparency = 0
+			plus.TextStrokeTransparency = 0.45
+			plus.Visible = true
+			plusPop.Scale = 1.5
+			TweenService:Create(plusPop, SETTLE, { Scale = 1 }):Play()
+		end
+		if plus.Visible then
+			local at = chip.AbsolutePosition - gui.AbsolutePosition
+			plus.Position = UDim2.fromOffset(at.X - PLUS_GAP, at.Y + chip.AbsoluteSize.Y / 2)
+			if now >= plusUntil then
+				plusUntil = math.huge
+				local fade = TweenService:Create(
+					plus,
+					PLUS_FADE,
+					{ TextTransparency = 1, TextStrokeTransparency = 1 }
+				)
+				fade.Completed:Once(function()
+					if plusUntil == math.huge and not plusAt then
+						plus.Visible = false
+					end
+				end)
+				fade:Play()
+			end
 		end
 		local spun = now - spinAt
 		local c = iconCoin

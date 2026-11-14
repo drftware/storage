@@ -29,7 +29,8 @@
 	A find (S1-05, GDD "Finds": a catalog row with `find`) is carried the same way: `Deals` lays it
 	standing in its unit with a "Take" prompt, one tap puts it in a slot and in your hand, and it's
 	dropped, handed over and dropped where you're caught as a tool is. A tool's or a find's own
-	sound answers each take and drop.
+	sound answers each take and drop. As the gate shuts with you aboard, your finds are kept for
+	good (`keep`, S1-06): out of your slots, the one in your hand gone in a glint.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -51,10 +52,13 @@ local HAND_SOUND_REACH = 24 -- a hand closing on a tool, heard close by
 local FALL = TweenInfo.new(0.32, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 local DROP_AHEAD = 2.2 -- studs in front of your middle where a dropped tool lands
 local REACH_SLACK = 2 -- studs the server allows past a prompt's reach (lag, a long arm)
+-- A kept find's glint as it goes from your hand, for everyone near: the coins' sparkle, warm gold.
+local GLINT_TEXTURE = "rbxasset://textures/particles/sparkles_main.dds"
+local GLINT_BURST = 0.18 -- seconds the glint throws sparks: a short burst, then gone
 
 export type Change = {
 	player: Player,
-	kind: "PickUp" | "Drop" | "Give" | "Switch" | "Pocket" | "Spend" | "Place",
+	kind: "PickUp" | "Drop" | "Give" | "Switch" | "Pocket" | "Spend" | "Place" | "Keep",
 }
 
 -- A press of ToolUse that passed: who, the tool's catalog key, and its model in their hand.
@@ -92,6 +96,10 @@ export type Slots = Brix.System & {
 	lower: (self: any, id: string, at: Vector3, yaw: number) -> (),
 	-- Drops everything `player` carries where they stand, as dying does (caught by a keeper, L-07a).
 	dropAll: (self: any, player: Player) -> (),
+	-- Takes every find out of `player`'s slots for good (the gate shut with them aboard, S1-06):
+	-- each goes from their hand with a glint everyone near sees, and their tools stay. The kept
+	-- finds' catalog keys, slot order.
+	keep: (self: any, player: Player) -> { string },
 }
 
 type Tool = {
@@ -150,6 +158,40 @@ end
 
 local function now(): number
 	return os.clock()
+end
+
+-- A burst of gold sparks at `at`, gone in a second: a kept find leaving a hand. An emitter switched
+-- on and off rather than `Emit`, so every screen sees it.
+local function glint(at: Vector3)
+	local spot = Instance.new("Attachment")
+	spot.Name = "KeptGlint"
+	spot.WorldPosition = at
+	local p = Instance.new("ParticleEmitter")
+	p.Texture = GLINT_TEXTURE
+	p.Rate = 70
+	p.Lifetime = NumberRange.new(0.35, 0.6)
+	p.Speed = NumberRange.new(2, 5)
+	p.SpreadAngle = Vector2.new(180, 180)
+	p.Drag = 4
+	p.Size = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.35),
+		NumberSequenceKeypoint.new(0.4, 0.5),
+		NumberSequenceKeypoint.new(1, 0),
+	})
+	p.Rotation = NumberRange.new(0, 90)
+	p.RotSpeed = NumberRange.new(-120, 120)
+	p.Color = ColorSequence.new(Color3.fromRGB(255, 226, 150))
+	p.LightEmission = 1
+	p.LightInfluence = 0.3
+	p.Brightness = 2.5
+	p.Parent = spot
+	spot.Parent = Workspace.Terrain
+	task.delay(GLINT_BURST, function()
+		p.Enabled = false
+	end)
+	task.delay(1.2, function()
+		spot:Destroy()
+	end)
 end
 
 local Slots = {}
@@ -769,6 +811,37 @@ function Slots.new(): Slots
 
 	function system.dropAll(_: any, player: Player)
 		dropAll(player, rootOf(player))
+	end
+
+	function system.keep(_: any, player: Player): { string }
+		local h = hands[player]
+		if not h then
+			return {}
+		end
+		local ids = Carry.keep(h.carry, function(id: string): boolean
+			local t = tools[id]
+			local row = if t then Catalog[t.key] else nil
+			return row ~= nil and row.find == true
+		end)
+		local keys: { string } = {}
+		for _, id in ids do
+			local t = tools[id]
+			if t then
+				tools[id] = nil
+				table.insert(keys, t.key)
+				if t.model.Parent then
+					glint(t.body.Position) -- the one in your hand, as everyone near saw it
+				end
+				stow(t)
+				t.model:Destroy()
+			end
+		end
+		if #keys > 0 then
+			dress(player)
+			publish(player)
+			changed:fire({ player = player, kind = "Keep" })
+		end
+		return keys
 	end
 
 	function system.spend(_: any, player: Player, key: string): boolean

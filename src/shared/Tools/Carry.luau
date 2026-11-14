@@ -166,6 +166,24 @@ function Carry.clear(c: Carry): { string }
 	return out
 end
 
+-- Takes every find out of the slots (S1-06: the gate shut with you aboard, so they're yours for
+-- good), leaving the tools where they are. Returns the finds' ids, slot order. Your hand stays on
+-- its slot, as `release` leaves it: empty, if a find was in it.
+function Carry.keep(c: Carry, isFind: (id: string) -> boolean): { string }
+	local out = {}
+	for i = 1, Carry.Slots do
+		local id = c.slots[i]
+		if id and isFind(id) then
+			table.insert(out, id)
+			c.slots[i] = nil
+		end
+	end
+	if c.pocketed and c.slots[c.active] == nil then
+		c.pocketed = false -- nothing left on your slot to have pocketed
+	end
+	return out
+end
+
 -- May a hand's move at `now` go through after the last ones? `burst` is how many are left in
 -- hand; returns whether it may and what's left.
 function Carry.allow(last: number?, burst: number, now: number): (boolean, number)

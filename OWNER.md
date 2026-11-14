@@ -97,6 +97,23 @@ and off, the invite sheet opening with your friends (no invite sent).
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
 
+## Now: judge the gate's pay and keeping (S1-06, built Nov 14, D-138; the screen seen in Play)
+
+As the gate slams with you aboard, a handful of coins clatters, coins burst out over the middle
+of your screen and pour into your count, and a gold "+10" shows by it. Any find in your slots
+rises out of them on a dark gold-rimmed disc, glints, and flies up off the screen: it's yours,
+saved, and the slot is free. Friends see the find in your hand go in a spark. A wrapped friend
+gets nothing. I saw the screen's side in Play by sending the message by hand; a real ride wasn't
+run.
+- [ ] **Ride with a find:** take the teddy from Unit 301 (dev floor), punch the code, board, and
+  watch the slam: coins, "+10" (floor 3 pays 14), the teddy rising out of your slot. Then leave
+  and rejoin: Output's `[Saving]` line, and `GatePay:` says what you kept.
+- [ ] **Judge on your phone:** do the coins and the rising find read over the car's gate, and is
+  it too busy with the slam and the ride's sounds?
+- [ ] **The numbers (my defaults):** 10 coins on floor 1 and 2 more each floor. The design doc's
+  "a quarter more for each trapped monster" and "a harder floor pays more" are not built: say if
+  you want either.
+
 ## Now: carry a find (S1-05, built Nov 14, D-137; take, drop and catch seen in Play)
 
 A unit's find (the teddy, the TV, the boombox, the skates) now has a Take prompt. One tap puts it

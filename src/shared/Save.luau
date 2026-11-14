@@ -12,7 +12,8 @@
 	  `keepers` for each kind of monster you've trapped (the code calls monsters keepers).
 	- `bestFloor`: the highest floor you've reached, 0 before your first climb.
 
-	Nothing writes these yet; the tickets that earn them do (GDD "Saving", "The collection book").
+	The tickets that earn each write it (GDD "Saving", "The collection book"). So far: `finds` and
+	the book's `finds` page, as finds are kept at the gate (S1-06, `keep`).
 
 	The save keeps every version it has had, oldest first, through Brix's versioned SaveFormat: a save
 	written at an older version is brought up to the newest as it loads. To change the shape, add a
@@ -71,6 +72,21 @@ function Save.fresh(): Data
 		stamps = { finds = {}, sealed = {}, keepers = {} },
 		bestFloor = 0,
 	}
+end
+
+-- Finds kept at the gate (S1-06): one more of each name in `names` in `data.finds`, and the
+-- book's finds page stamped `now` for any name never stamped before. Returns the names stamped
+-- for the first time, in order, each once.
+function Save.keep(data: Data, names: { string }, now: number): { string }
+	local fresh: { string } = {}
+	for _, name in names do
+		data.finds[name] = (data.finds[name] or 0) + 1
+		if data.stamps.finds[name] == nil then
+			data.stamps.finds[name] = math.max(0, math.floor(now))
+			table.insert(fresh, name)
+		end
+	end
+	return fresh
 end
 
 -- The save's format, every version it has had, built on the Brix package handed in.

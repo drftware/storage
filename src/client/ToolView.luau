@@ -58,6 +58,7 @@ local HandRoom = require(script.Parent.HandRoom)
 local Hands = require(ReplicatedStorage.Shared.Hands)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local SoundPrimer = require(script.Parent.SoundPrimer)
+local ToolPicture = require(script.Parent.ToolPicture)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 local Heft = require(ReplicatedStorage.Shared.Tools.Heft)
 local Wheel = require(ReplicatedStorage.Shared.Tools.Wheel)
@@ -195,28 +196,7 @@ end
 
 -- A 3D picture of `key`'s tool in `frame` (empty for "").
 local function picture(frame: ViewportFrame, key: string)
-	frame:ClearAllChildren()
-	local row = Catalog[key]
-	if not row then
-		return
-	end
-	local model = Tools.clone(key, CFrame.identity)
-	if not model then
-		return
-	end
-	local body = Tools.body(model)
-	local length = if body then body.Size.Magnitude else 2
-	local centre = if body then body.Position else Vector3.zero
-	local i = row.icon
-	-- the tool tipped towards the camera (its top to the front), then laid across the square
-	model:PivotTo(CFrame.Angles(0, 0, i[4] * RAD) * CFrame.Angles(i[2] * RAD, i[3] * RAD, 0))
-	centre = if body then body.Position else centre
-	model.Parent = frame
-	local cam = Instance.new("Camera")
-	cam.FieldOfView = 40
-	cam.CFrame = CFrame.lookAt(centre + Vector3.new(0, 0, length * i[1] * 2.2), centre)
-	cam.Parent = frame
-	frame.CurrentCamera = cam
+	ToolPicture.draw(frame, key)
 end
 
 -- A dark button with a thin warm rim, as every button of ours: `round` of 0.5 is a circle.

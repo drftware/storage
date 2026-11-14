@@ -1795,4 +1795,13 @@ verified: a doc page, Studio, or "untested".
   (0, 3, -618) facing +X, aim the Client camera at 301's Open (`ActionText`), press it; the teddy
   stands at about (14.2, 0.66, -615.9) in `Workspace.Tools`. Stand at (9.5, 3, -616), aim at its
   Take and press: `ToolSlot1` reads Teddy. `Remotes.ToolDrop:FireServer()` from the Client drops it.
-
+- **Coin pour sounds measured** (S1-06, Nov 14; Edit, AudioPlayer at half speed to AudioAnalyzer,
+  0.1 s bins of the recording): Pro Sound Effects' "Coin Throws 3" 9113849651 (1.38 s) one dense
+  burst 0 to 0.6 s (0.66 peak) and a tail to 0.9 s, the pay's pour; "Coin Throws 2" 9113849583
+  (2.21 s) two throws, 0 to 0.5 s and 0.9 to 1.3 s.
+- **Testing the pay on screen from the MCP** (S1-06): in Play, from the Server
+  `Remotes.GatePay:FireClient(player, 22, { "Teddy", "Boombox" })` inside a `task.delay`, then
+  raise the `Coins` attribute; from the Client sample `PlayerGui.CoinCount` (`Flying` frames,
+  `Count.Number`, `Plus`) and `PlayerGui.KeptFinds` (skip its Sounds) in one call. Seen: 12
+  coins for 22, the count up by 22 as they land, "+22" in at 0.6 s and gone by 3.6 s; the teddy
+  from the box (70 points) to 147 at (498, 412) and the boombox beside it, gone by 2.4 s.

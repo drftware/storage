@@ -17,6 +17,8 @@
 	  to the same spot in it, and the floor below is cleared in the same frame. It levels and opens
 	  on the new floor. `Ride.Linger` after the gate opens it shuts behind the team, armed with the
 	  new floor's code.
+	- The instant a gate hits its post with friends aboard, `shut` fires (any floor, the top too):
+	  they're paid and keep their finds (GatePay, S1-06).
 	- Left behind (L-08c, Watching): as the car leaves with friends aboard, everyone else on the
 	  floor (out in the halls, or kept in a unit) is out of the climb, and their screens start the
 	  moment; as the floor is cleared under them they lose their character and watch a friend. A
@@ -92,6 +94,13 @@ export type Topped = {
 	stranded: { Player }, -- left on the floor
 }
 
+-- The gate shutting on a floor of the climb with friends aboard: who rode, from which floor.
+export type Shut = {
+	from: OnFloor,
+	riders: { Player },
+	at: number, -- server time the gate hit its post
+}
+
 -- Riders moved into the next floor's car.
 export type HandOff = {
 	from: OnFloor,
@@ -111,6 +120,9 @@ export type Climbs = Brix.System & {
 	handedOff: Brix.Signal<HandOff>,
 	-- Fires as the car leaves the top floor with friends aboard.
 	topped: Brix.Signal<Topped>,
+	-- Fires the instant a floor's gate hits its post with friends aboard, any floor, the top too,
+	-- before the ride: they're paid and keep their finds (GatePay, S1-06).
+	shut: Brix.Signal<Shut>,
 	-- Starts a climb on its first floor (yields while it's laid), clearing any before it; nil,
 	-- after a warning, when the place lacks a template.
 	begin: (self: any, options: Options) -> OnFloor?,
@@ -203,6 +215,7 @@ function Climbs.new(): Climbs
 	local handedOff = Brix.Signal.new() :: Brix.Signal<HandOff>
 	local began = Brix.Signal.new() :: Brix.Signal<OnFloor>
 	local toppedSignal = Brix.Signal.new() :: Brix.Signal<Topped>
+	local shut = Brix.Signal.new() :: Brix.Signal<Shut>
 	local elevators: Elevators.Elevators? = nil
 	local deals: Deals.Deals? = nil
 	local keptPlayers: KeptPlayers.KeptPlayers? = nil
@@ -561,6 +574,9 @@ function Climbs.new(): Climbs
 			comeBack(on, mine)
 			return
 		end
+		if #leaving.aboard > 0 then
+			shut:fire({ from = on, riders = leaving.aboard, at = leaving.at })
+		end
 		-- everyone else on the floor, in the halls or kept in a unit, is left behind
 		local stranded: { Player } = {}
 		for _, player in Players:GetPlayers() do
@@ -666,6 +682,7 @@ function Climbs.new(): Climbs
 		handedOff = handedOff,
 		began = began,
 		topped = toppedSignal,
+		shut = shut,
 	}
 
 	function system.start(_: any, context: Brix.Context)
@@ -705,6 +722,7 @@ function Climbs.new(): Climbs
 		laidSignal:disconnectAll()
 		handedOff:disconnectAll()
 		toppedSignal:disconnectAll()
+		shut:disconnectAll()
 		began:disconnectAll()
 	end
 

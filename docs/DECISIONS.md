@@ -3880,3 +3880,26 @@ Lethal Company's weight does) would be new design, so it's an `OWNER.md` questio
 docs/STUDIO.md): the boombox's plastic radio clack, the TV's slow hollow knocks and a big
 crunching thud, the teddy's soft cloth grab, the skates' wheels rattling.
 
+## D-138 Pay and keeping happen the instant the gate hits its post (S1-06, Nov 14)
+
+**When.** Climbs fires `shut` the instant a floor's gate hits its post with friends aboard (the
+top floor too), before the ride or the end. `GatePay` pays and keeps then, so the reward lands
+on the slam, the climb's payoff, as Dandy's World pays at its elevator.
+
+**Who.** Everyone in the car who is alive and not wrapped (GDD "Earning nothing"). A floor pays
+a player once a climb (`Pay.owed`), so a ride that comes back to the same floor never pays twice.
+
+**How much.** 10 coins on floor 1 and 2 more each floor (`Pay.Base`, `Pay.Rise`): about three
+batteries, against the ~37 lying behind every door of floor 1. The GDD's trap bonus and a harder
+floor paying more are untested bets and left out (`OWNER.md`).
+
+**Keeping.** `Carry.keep` takes the finds out of the slots and leaves the tools; `Save.keep`
+adds one of each to the save's `finds` and stamps the book's finds page the first time; the save
+is written at once. A save not loaded yet holds the finds in GatePay until it loads.
+
+**On screen.** The server tells the rider's screen first (`GatePay` remote: coins, kept keys),
+then changes the count, so the coins are already flying when it rises. Coins burst from above
+the middle into a ring and pour into the count, at most 12 drawn (`Pay.split`), each landing
+worth its share, ticks climbing, a gold "+10" by the count. Each kept find rises from the slot
+box on a gold-rimmed disc with a ring and sparks, its own pick-up sound and a bright chink,
+hangs, and flies up off the screen. No words.

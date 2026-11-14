@@ -1433,9 +1433,13 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
 - [x] **S1-05 Finds you carry.** (Built Nov 14, D-137; take, drop and catch seen in Play.) One tap puts a find in one of your three slots, beside your
   tools. Slots full: drop something or leave it. Caught: your finds drop with your tools.
   Takes in the old "Finds in a run" (where a unit's find stands, D-036).
-- [ ] **S1-06 Pay and keeping at the gate.** As the gate shuts everyone aboard is paid the same
-  coins, a little more each floor; the finds in your slots become yours and the slots empty; a
-  wrapped player gets nothing (GDD "When the gate shuts").
+- [x] **S1-06 Pay and keeping at the gate.** (Built Nov 14, D-138; passes checks; the screen's
+  pour and the finds rising seen in Play, fired from the server; a real ride untested.) As the
+  gate shuts everyone aboard is paid the same coins, a little more each floor (10, then 2 more a
+  floor); the finds in your slots become yours and the slots empty, into your save; a wrapped
+  player gets nothing (GDD "When the gate shuts"). Polish left: a "New" mark on a find kept for
+  the first time (S5-04's book stamps it already); a kept find's glint for friends is a server
+  burst, unseen in Play.
 - [ ] **S1-07 What a door holds.** A padlocked door always has something good, with the best
   chance of something great and of a monster. A tool in about one unit in twelve (one in five
   today). A battery in about one unit in ten.

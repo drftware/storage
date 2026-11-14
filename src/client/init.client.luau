@@ -44,6 +44,7 @@ local NoteView = require(script.NoteView)
 local PadlockView = require(script.PadlockView)
 local SawView = require(script.SawView)
 local ToolView = require(script.ToolView)
+local KeepView = require(script.KeepView)
 local TripView = require(script.TripView)
 local RideView = require(script.RideView)
 local UnderDoor = require(script.UnderDoor)
@@ -94,6 +95,8 @@ local host = Brix.Host.new({
 		{ slot = "noteView", system = NoteView.new() },
 		{ slot = "flashlightView", system = flashlightView },
 		{ slot = "toolView", system = toolView },
+		-- after ToolView: your finds kept at the gate rise out of its slots (S1-06)
+		{ slot = "keepView", system = KeepView.new() },
 		-- after ToolView, so its button lands beside a bar that's there
 		{ slot = "hornView", system = HornView.new(myHand, kick, { [Wrap.Key] = lay }) },
 		{ slot = "wrapView", system = wrapView },

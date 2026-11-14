@@ -18,6 +18,7 @@ local Doors = require(script.Doors)
 local Elevators = require(script.Elevators)
 local Flashlights = require(script.Flashlights)
 local FrontOffice = require(script.FrontOffice)
+local GatePay = require(script.GatePay)
 local Horns = require(script.Horns)
 local Keepers = require(script.Keepers)
 local LobbyCars = require(script.LobbyCars)
@@ -67,6 +68,8 @@ local systems: { Brix.HostEntry } = {
 	-- The climb: each floor dealt and laid while the team rides up to it, the one below cleared.
 	{ slot = "watching", system = Watching.new() },
 	{ slot = "climbs", system = Climbs.new() },
+	-- Pay and keeping as a floor's gate shuts: coins to everyone aboard, their finds theirs for good.
+	{ slot = "gatePay", system = GatePay.new() },
 	-- The climb's end: everyone kept or left, or the top; the results under it, and "Again".
 	{ slot = "climbEnds", system = ClimbEnds.new() },
 	-- Everkeep's front office, the lobby: where everyone loads in, facing its six cars.

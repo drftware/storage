@@ -17,7 +17,9 @@
 	A taken pile is stamped with the taker (`Coins.TakenAttribute`) and stays `Coins.Linger` seconds
 	so every screen throws its coins up and away (CoinView), then it goes. Each player's count is
 	their own, on their Player as `Coins.Attribute`: zero as a climb begins (`Climbs.began`), for
-	someone joining one already under way, and nil outside a climb. Nothing is saved yet (S1-01).
+	someone joining one already under way, and nil outside a climb. Coins are never saved: they
+	last the climb (S1-12 turns what's left into cash). The gate adds each floor's pay (`pay`,
+	GatePay, S1-06).
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -42,6 +44,8 @@ export type CoinsSystem = Brix.System & {
 	lay: (self: any, unit: Model, count: number, place: CFrame) -> boolean,
 	-- Everyone's count back to zero: a climb begins.
 	reset: (self: any) -> (),
+	-- Adds `coins` to `player`'s count (paid at the gate, S1-06). Nothing outside a climb.
+	pay: (self: any, player: Player, coins: number) -> (),
 }
 
 type Pile = {
@@ -229,6 +233,14 @@ function CoinsSystem.new(): CoinsSystem
 		end)
 		model.Parent = unit.Parent or unit
 		return true
+	end
+
+	function system.pay(_: any, player: Player, coins: number)
+		local count = counts[player]
+		if count == nil or coins <= 0 then
+			return
+		end
+		setCount(player, count + math.floor(coins))
 	end
 
 	function system.reset(_: any)
