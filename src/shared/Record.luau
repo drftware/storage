@@ -11,6 +11,9 @@
 	- Coins, earned from a pile on a unit's floor (`pile`) or paid at the gate (`gate`), and spent
 	  at the car's machine (`machine`, with the item bought: "Battery" or a tool's key, S1-10c2),
 	  each with the floor and the player's count after.
+	- Cash (S1-12): as a climb ends, the coins a player has left go out (`cashOut`, the item
+	  "Cash", their count after 0) and the cash they made comes in (`climb`, their saved total
+	  after), each with the floor it ended on.
 	- `batteryTaken`: each battery taken from a unit's floor (S1-07b), with the floor; a bought
 	  one is a `machine` spend.
 	- `doorOpened`: each unit a player first shows, by lifting its door or sawing into it, with
@@ -43,8 +46,9 @@ local Record = {}
 Record.FloorMost = 40
 -- Team sizes with a label of their own; bigger ones share "9+".
 Record.TeamMost = 8
--- The currency, as the dashboard names it.
+-- The currencies, as the dashboard names them: coins in a climb, cash kept between climbs.
 Record.Currency = "Coins"
+Record.Cash = "Cash"
 
 export type Reason = "pile" | "gate"
 -- Why coins went out: the car's machine.
@@ -142,6 +146,16 @@ export type Book<P> = {
 		reason: SpendReason,
 		floor: number
 	) -> (),
+	-- As a climb ended on floor `floor`, `player`'s `coins` left turned into `cash`; `total` is
+	-- their saved cash after (S1-12).
+	cashed: (
+		self: any,
+		player: P,
+		coins: number,
+		cash: number,
+		total: number,
+		floor: number
+	) -> (),
 	-- `player` took a battery from a unit's floor on floor `floor`.
 	battery: (self: any, player: P, floor: number) -> (),
 	-- The gate of floor `floor` shut with `players` aboard.
@@ -217,8 +231,8 @@ function Record.plan(brix: any): any
 			again = {},
 		},
 		economy = {
-			currencies = { Record.Currency },
-			reasons = { "pile", "gate", "machine" },
+			currencies = { Record.Currency, Record.Cash },
+			reasons = { "pile", "gate", "machine", "cashOut", "climb" },
 			fields = { "floor" },
 		},
 		funnels = {
@@ -337,6 +351,35 @@ function Record.new<P>(analytics: Analytics<P>): Book<P>
 			item = item,
 			fields = { floor = floor },
 		})
+	end
+
+	function book.cashed(
+		_: any,
+		player: P,
+		coins: number,
+		cash: number,
+		total: number,
+		floor: number
+	)
+		if coins > 0 then
+			analytics:spent(player, {
+				currency = Record.Currency,
+				amount = coins,
+				balance = 0,
+				reason = "cashOut",
+				item = Record.Cash,
+				fields = { floor = floor },
+			})
+		end
+		if cash > 0 then
+			analytics:earned(player, {
+				currency = Record.Cash,
+				amount = cash,
+				balance = total,
+				reason = "climb",
+				fields = { floor = floor },
+			})
+		end
 	end
 
 	function book.battery(_: any, player: P, floor: number)

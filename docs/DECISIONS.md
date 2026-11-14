@@ -4199,3 +4199,29 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
   it. Fullest is 70% solid: faint chalk, never paint.
 - No sound and no word when it shows: a sound would find it for you. Friends' beams don't show
   it yet (their aim is sent a few times a second); ROADMAP polish.
+
+## D-151 Cash: the coins left at a climb's end, one for one, saved the moment it ends (S1-12, Nov 14)
+
+- The precedent: Dandy's World's Ichor is one money for its in-run shop and for keeping, so what
+  you don't spend is yours (from memory); the tally counting up on the results is DOORS'
+  end-of-run Knobs (from memory). The GDD says only "turned into cash", no rate.
+- One coin is one dollar (`Cash.PerCoin`, a default in OWNER.md): the number your coin count showed
+  is the cash on the board, so the swap teaches itself with no words. Cash shows as dollars
+  ("+$42", `Cash.text`), so it never reads as more coins; no new icon was needed.
+- When: the moment ClimbEnds ends the climb (`ended`, once an end), not at the cover or the
+  results. The last gate's pay lands first (Climbs fires `shut` before `topped`, both at once),
+  every count freezes there (Coins' `close`: no take, pay or buy after; a second call hands back
+  nothing, so a double end can't pay twice), and the cash goes straight into the save and is
+  written. Leaving afterwards, mid-count or in the black, or a shutdown, can't lose it: the save
+  is let go with it (Saving). The counts stay on screen through the end and go at the cover
+  (Coins' `clear` on ClimbEnds' new `covered`), so the lobby no longer shows a stale count.
+- A climb that never ends for you (you leave mid-climb, the server shuts down under it) makes no
+  cash: coins only count inside a climb. A save not loaded yet holds the cash until it loads.
+- The board: each friend's cash under their photo (the results value gained a fourth field per
+  row, `id:fate:floor:cash`, read back as 0 when missing). Every figure counts up together once
+  the photos are pinned (`Cash.CountAt`), Cubic-eased so the last dollars land one by one; yours
+  is bigger and bright, ticks from the board higher as it rises (Coins' `Tick`, two taking turns,
+  at most one each `TickGap`) and lands with a swell (`Pop`), the chink and the jingle. Friends'
+  count silently; $0 is dim. The board grew 0.4 studs at its foot (still above the rail).
+- Recorded: coins out (`cashOut`, item "Cash", count 0 after) and cash in (`climb`, the saved
+  total after), a second currency "Cash" in the plan.

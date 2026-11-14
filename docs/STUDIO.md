@@ -1926,3 +1926,20 @@ verified: a doc page, Studio, or "untested".
   streamed out with it. `DevFloorNumber` 1 on Workspace (Edit) lays floor 1, which always has a
   mark; clear it after.
 
+
+## Cash at the climb's end (S1-12, Nov 14)
+
+- **Testing the cash-out from the MCP** (Play, one player): from the Server, wait for the
+  player's `Coins` attribute, set Workspace's `DevCoins` (say 42), then set the player's `Kept`
+  attribute true. About a second later Output shows `CashOut: <name>'s 42 coins made $42, now
+  $<total>` and `[Saving] saved player_<id> (... cash <total> ...)`; the player's `CashEarned`
+  reads 42. Clear `Kept` by hand. The Studio store reads back with
+  `DataStoreService:GetDataStore("Saves.studio"):GetAsync("player_<id>")` (the cash is inside
+  Brix's record). The coin count leaves the player at the cover (about 6 s).
+- **Seeing a lobby car's board in Play:** the test hall's climb has no lobby car, so fake one:
+  move the character into a car from the Server (car 6's pivot is (-45, 0, 600), the board at
+  (-45, 5.6, 611.9)) so it streams in (StreamingEnabled follows the character, not the camera;
+  `RequestStreamAroundAsync` alone lets it go again), then clear and set that car's `Results`
+  attribute (`"Top|3|402|<id>:Out:3:42,1:Kept:2:12,2:Left:1:0"`). The board rebuilds and counts.
+  The first-person camera takes the view back each frame; a capture through the character's own
+  eyes from the front row frames the whole board.

@@ -13,7 +13,8 @@
 	- `bestFloor`: the highest floor you've reached, 0 before your first climb.
 
 	The tickets that earn each write it (GDD "Saving", "The collection book"). So far: `finds` and
-	the book's `finds` page, as finds are kept at the gate (S1-06, `keep`).
+	the book's `finds` page, as finds are kept at the gate (S1-06, `keep`), and `cash`, as the coins
+	left at a climb's end turn into it (S1-12, `earn`).
 
 	The save keeps every version it has had, oldest first, through Brix's versioned SaveFormat: a save
 	written at an older version is brought up to the newest as it loads. To change the shape, add a
@@ -87,6 +88,15 @@ function Save.keep(data: Data, names: { string }, now: number): { string }
 		end
 	end
 	return fresh
+end
+
+-- Cash earned (S1-12, the coins left at a climb's end): `cash` more in `data.cash`, whole and never
+-- below what it was. Returns the total after.
+function Save.earn(data: Data, cash: number): number
+	if cash == cash and cash > 0 then
+		data.cash = math.floor(data.cash) + math.floor(cash)
+	end
+	return data.cash
 end
 
 -- The save's format, every version it has had, built on the Brix package handed in.

@@ -353,23 +353,25 @@ function ClimbEnd.decodeFate(value: unknown): (Fate?, number)
 	return fate :: Fate, tonumber(floor) or 0
 end
 
--- One friend on a car's results board: who, how it went, and the floor it was lost on (or reached).
-export type Result = { userId: number, fate: Fate, floor: number }
+-- One friend on a car's results board: who, how it went, the floor it was lost on (or reached), and
+-- the cash their coins turned into as it ended (S1-12; nil for none).
+export type Result = { userId: number, fate: Fate, floor: number, cash: number? }
 -- How a climb went, on the back wall of the car its group came back to (L-08e2).
 export type Results = { how: How, floor: number, seconds: number, rows: { Result } }
 
 -- The most friends a board shows: a car's capacity (Boarding.Capacity).
 ClimbEnd.BoardMost = 6
 
--- A car's results board value: "<how>|<floor>|<seconds>|<id>:<fate>:<floor>,..." (the rows in the
--- group's order, at most `BoardMost`).
+-- A car's results board value: "<how>|<floor>|<seconds>|<id>:<fate>:<floor>:<cash>,..." (the rows
+-- in the group's order, at most `BoardMost`).
 function ClimbEnd.encodeResults(how: How, floor: number, seconds: number, rows: { Result }): string
 	local cells: { string } = {}
 	for i, row in rows do
 		if i > ClimbEnd.BoardMost then
 			break
 		end
-		cells[i] = string.format("%d:%s:%d", row.userId, row.fate, row.floor)
+		local cash = math.max(math.floor(row.cash or 0), 0)
+		cells[i] = string.format("%d:%s:%d:%d", row.userId, row.fate, row.floor, cash)
 	end
 	return string.format(
 		"%s|%d|%d|%s",
@@ -391,14 +393,16 @@ function ClimbEnd.decodeResults(value: unknown): Results?
 	end
 	local rows: { Result } = {}
 	for cell in string.gmatch(cells :: string, "[^,]+") do
-		local id, fate, at = string.match(cell, "^(%d+):(%a+):(%d+)$")
+		local id, fate, at, cash = string.match(cell, "^(%d+):(%a+):(%d+):?(%d*)$")
 		local userId = if id then tonumber(id) else nil
 		if userId and (fate == "Out" or fate == "Kept" or fate == "Left") then
 			if #rows < ClimbEnd.BoardMost then
-				table.insert(
-					rows,
-					{ userId = userId, fate = fate :: Fate, floor = tonumber(at) or 0 }
-				)
+				table.insert(rows, {
+					userId = userId,
+					fate = fate :: Fate,
+					floor = tonumber(at) or 0,
+					cash = tonumber(cash) or 0,
+				})
 			end
 		end
 	end

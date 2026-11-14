@@ -8,6 +8,7 @@ local RunService = game:GetService("RunService")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Carts = require(script.Carts)
+local CashOut = require(script.CashOut)
 local ClimbEnds = require(script.ClimbEnds)
 local Batteries = require(script.Batteries)
 local Coins = require(script.Coins)
@@ -79,6 +80,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "gatePay", system = GatePay.new() },
 	-- The climb's end: everyone kept or left, or the top; the results under it, and "Again".
 	{ slot = "climbEnds", system = ClimbEnds.new() },
+	-- The coins left as a climb ends turned into cash, into each player's save at once.
+	{ slot = "cashOut", system = CashOut.new() },
 	-- Everkeep's front office, the lobby: where everyone loads in, facing its six cars.
 	{ slot = "frontOffice", system = FrontOffice.new() },
 	-- The lobby's platform carts: Ride, handed to the rider's screen, its pace watched, parked again.

@@ -3,7 +3,8 @@
 -- Recording (S1-02, the GDD's "What the game needs to record"): the plan passes Brix's checks, and
 -- each moment the game records arrives once, as the plan says, through Brix's Analytics: a unit
 -- opened and what it gave, the first one's wait, coins from a pile and at the gate, a ride, finds
--- kept, a catch and a freeing, a climb's end for each player, Again, a lobby car leaving. The
+-- kept, a catch and a freeing, a climb's end for each player, coins turned into cash, Again, a
+-- lobby car leaving. The
 -- climb funnel steps once a climb; floors past 40 and teams past 8 share a label; every name and
 -- label fits Roblox's 50 bytes. Anything the plan doesn't declare is refused.
 local Brix = require("../vendor/brix/src")
@@ -265,6 +266,36 @@ do
 	-- a rider this server never saw join isn't timed
 	book:carLeft({ "stranger" }, 30)
 	ok(#recorder:records() == 10, "a stranger isn't timed")
+end
+
+-- The coins left at a climb's end turned into cash (S1-12): coins out, cash in, nothing for none.
+do
+	local book, recorder, problems = fresh()
+	book:cashed("ana", 38, 38, 1250, 3)
+	book:cashed("ben", 0, 0, 40, 3)
+	ok(#problems == 0, `no problems ({problems[1]})`)
+	local records = recorder:records()
+	ok(#records == 2, "two records for ana, none for ben")
+	local out, into = records[1], records[2]
+	ok(
+		out.kind == "economy"
+			and out.flow == "spent"
+			and out.currency == "Coins"
+			and out.amount == 38
+			and out.balance == 0
+			and out.reason == "cashOut",
+		"ana's coins go out"
+	)
+	ok(
+		into.kind == "economy"
+			and into.flow == "earned"
+			and into.currency == "Cash"
+			and into.amount == 38
+			and into.balance == 1250
+			and into.reason == "climb",
+		"ana's cash comes in, with their saved total"
+	)
+	ok(labels(into) == "floor=3", `on the floor it ended ({labels(into)})`)
 end
 
 -- What the plan doesn't declare is refused: a find no unit holds, a reason not listed.

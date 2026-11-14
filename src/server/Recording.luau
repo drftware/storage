@@ -13,7 +13,8 @@
 	car's machine (`spent`), a battery taken from a unit (Batteries' `taken`), a gate shutting with
 	riders aboard (Climbs' `shut`), finds kept there (GatePay's `kept`), a catch (Keepers' `caught`),
 	a friend cutting someone free (KeptPlayers' `freed`), the climb's end and each Again
-	(ClimbEnds), and a lobby car leaving (LobbyCars' `departed`). A floor is the climb's floor now,
+	(ClimbEnds), the coins left at the end turned into cash (CashOut's `cashed`), and a lobby car
+	leaving (LobbyCars' `departed`). A floor is the climb's floor now,
 	0 off a climb (Studio's test hall).
 
 	A record Brix refuses (one the plan doesn't declare, or past Roblox's 120 a minute plus 20 a
@@ -29,6 +30,7 @@ local RunService = game:GetService("RunService")
 local Brix = require(ReplicatedStorage.Brix)
 local Record = require(ReplicatedStorage.Shared.Record)
 local Batteries = require(script.Parent.Batteries)
+local CashOut = require(script.Parent.CashOut)
 local ClimbEnds = require(script.Parent.ClimbEnds)
 local Climbs = require(script.Parent.Climbs)
 local Coins = require(script.Parent.Coins)
@@ -147,6 +149,7 @@ function Recording.new(): RecordingSystem
 		local kept = (registry:get("keptPlayers") :: any) :: KeptPlayers.KeptPlayers? -- any: as above
 		local ends = (registry:get("climbEnds") :: any) :: ClimbEnds.ClimbEndsSystem? -- any: as above
 		local cars = (registry:get("lobbyCars") :: any) :: LobbyCars.LobbyCars? -- any: as above
+		local cashOut = (registry:get("cashOut") :: any) :: CashOut.CashOutSystem? -- any: as above
 
 		for _, player in Players:GetPlayers() do
 			b:joined(player, os.clock())
@@ -201,6 +204,9 @@ function Recording.new(): RecordingSystem
 		end)
 		on(ends and ends.ended, function(e: ClimbEnds.Ended)
 			b:ended(e.endings)
+		end)
+		on(cashOut and cashOut.cashed, function(e: CashOut.Cashed)
+			b:cashed(e.player, e.coins, e.cash, e.total or e.cash, e.floor)
 		end)
 		on(ends and ends.again, function(player: Player)
 			b:again(player)

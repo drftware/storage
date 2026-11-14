@@ -187,9 +187,9 @@ ok(ClimbEnd.decodeFate(7) == nil, "a fate that isn't one")
 -- the results on a car's back wall (L-08e2)
 do
 	local value = ClimbEnd.encodeResults("Kept", 2, 402.9, {
-		{ userId = 30, fate = "Kept", floor = 2 },
+		{ userId = 30, fate = "Kept", floor = 2, cash = 38 },
 		{ userId = 10, fate = "Left", floor = 1 },
-		{ userId = 20, fate = "Out", floor = 2 },
+		{ userId = 20, fate = "Out", floor = 2, cash = 1204.7 },
 	})
 	local r = ClimbEnd.decodeResults(value)
 	ok(r ~= nil, "a board reads back")
@@ -198,7 +198,14 @@ do
 		ok(#r.rows == 3, "every friend")
 		ok(r.rows[1].userId == 30 and r.rows[2].userId == 10, "in the group's order")
 		ok(r.rows[2].fate == "Left" and r.rows[2].floor == 1, "a friend's fate and floor")
+		ok(r.rows[1].cash == 38 and r.rows[3].cash == 1204, "each friend's cash, whole (S1-12)")
+		ok(r.rows[2].cash == 0, "a friend with no cash reads as none")
 	end
+	local older = ClimbEnd.decodeResults("Top|3|90|5:Out:3,6:Kept:2:12")
+	ok(
+		older ~= nil and #older.rows == 2 and older.rows[1].cash == 0 and older.rows[2].cash == 12,
+		"a row from before cash (S1-12) reads with none"
+	)
 	local none = ClimbEnd.decodeResults(ClimbEnd.encodeResults("Top", 3, 90, {}))
 	ok(none ~= nil and none.how == "Top" and #none.rows == 0, "a board with nobody on it")
 	ok(ClimbEnd.decodeResults(nil) == nil, "no board")

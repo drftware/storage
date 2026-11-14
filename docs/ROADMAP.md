@@ -1567,8 +1567,18 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
   in, lingering out, flickering with a dying torch. As Phasmophobia's fingerprints show only
   under the light you hold. The corner map shows nothing of notes. Polish later: a friend's
   beam showing it too (their aim is coarse).
-- [ ] **S1-12 Cash on the results.** Unspent coins turn into cash at the climb's end; the
-  results on the car's wall show the cash you earned; it's saved.
+- [x] **S1-12 Cash on the results. Done Nov 14 (D-151); verified in Play.** As the climb ends,
+  each player's coins freeze and turn into cash one for one (`Cash.from`, `tests/cash.spec.luau`),
+  straight into their save and written (CashOut); the car's results board shows each friend's
+  cash under their photo, yours counting up with rising ticks and landing with a swell and a
+  jingle. As Dandy's World's Ichor (from memory). Polish later: your saved total shown somewhere
+  in the lobby once cash buys something (Step 4's starting tool); a coin flying off your count
+  into the figure as it counts.
+
+- [ ] **R-01 Remotes from Brix (later, not during the overnight run).** Move the game's
+  hand-declared remotes (`Remotes.*`, each system's own RemoteEvent) onto Brix's typed Remotes
+  (ENG-09a-d, Brix `5df692e`), pinning `vendor/brix` there; every check (type, range, owner,
+  rate) kept as it is.
 
 ### Step 2: Monsters that mess with the floor (nothing sold)
 

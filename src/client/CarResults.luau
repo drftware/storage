@@ -7,11 +7,17 @@
 	with the floor it was lost on, a lost friend's greyed and askew, as the end's screen showed
 	them (EndView) and the Missing board will.
 
+	Under each photo, the cash that friend's leftover coins made (S1-12, `Cash`): every figure runs
+	up from nothing together once the photos are pinned, fast and then slowing; yours is the bright
+	one, ticking higher with each dollar from the board and landing with a swell and a jingle. A
+	friend who spent every coin shows a dim $0.
+
 	From the car's `Boarding.ResultsAttribute` (ClimbEnd.encodeResults), which the server sets as
 	the group is stood back in and clears as the car next leaves. Anyone in the lobby can see it.
 	Each board is a plain client part on the car's back wall with a SurfaceGui, sized to read on a
 	phone from the back of the car; the photos drop onto it one after another as the black lifts.
-	Nothing runs per frame: a board is built when its value changes, its tweens play once.
+	Nothing runs per frame: a board is built when its value changes, its tweens play once (a figure
+	counting up is a tween too, its text set as its value moves).
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -21,7 +27,9 @@ local Workspace = game:GetService("Workspace")
 
 local Boarding = require(ReplicatedStorage.Shared.Lobby.Boarding)
 local Brix = require(ReplicatedStorage.Brix)
+local Cash = require(ReplicatedStorage.Shared.Cash)
 local ClimbEnd = require(ReplicatedStorage.Shared.ClimbEnd)
+local Coins = require(ReplicatedStorage.Shared.Coins)
 local Elevator = require(ReplicatedStorage.Shared.Elevator)
 
 local HEAVY = Font.new("rbxasset://fonts/families/BuilderSans.json", Enum.FontWeight.ExtraBold)
@@ -33,23 +41,29 @@ local WARM = Color3.fromRGB(255, 206, 150)
 local INK = Color3.fromRGB(236, 228, 218)
 local LOST_PHOTO = Color3.fromRGB(118, 112, 108)
 local LOST_FLOOR = Color3.fromRGB(214, 104, 92)
+-- Cash: your own figure in the coin count's gold (CoinView), a friend's a softer gold, none dim.
+local GOLD = Color3.fromRGB(255, 214, 120)
+local FRIEND_GOLD = Color3.fromRGB(214, 184, 122)
+local NONE = Color3.fromRGB(128, 120, 112)
 local KEPT_TOP, KEPT_BOTTOM = Color3.fromRGB(34, 18, 16), Color3.fromRGB(10, 8, 8)
 local TOP_TOP, TOP_BOTTOM = Color3.fromRGB(62, 46, 30), Color3.fromRGB(14, 11, 8)
 
--- The board on the car's back wall, in the elevator's frame (+Z into the car from its gate): above
--- the wall's upper wooden rail (it stands proud of the wall to about 2.9 studs up and would cut
--- the board's foot), its face just proud of the wall (the inside face is at Z 12, Elevator Specs'
--- CarBack). The game is first person: from the front row (Boarding.backSpot, 5.5 studs off the
--- wall) the whole board fits the view, a little room round it.
-local SIZE = Vector3.new(9.6, 4.8, 0.05)
+-- The board on the car's back wall, in the elevator's frame (+Z into the car from its gate): just
+-- above the wall's upper wooden rail (it stands proud of the wall to about 2.9 studs up and would
+-- cut the board's foot), its face just proud of the wall (the inside face is at Z 12, Elevator
+-- Specs' CarBack). The game is first person: from the front row (Boarding.backSpot, 5.5 studs off
+-- the wall) the whole board fits the view, a little room round it.
+local SIZE = Vector3.new(9.6, 5.2, 0.05)
 local AT = CFrame.new(0, 5.6, 11.9)
--- Pixels a stud: the canvas is SIZE times this (538 by 269). The title's 76 px is 1.4 studs.
+-- Pixels a stud: the canvas is SIZE times this (538 by 291). The title's 76 px is 1.4 studs.
 local PER_STUD = 56
 -- How much the car lamp's light shades the board: a little, so it sits in the car rather than
 -- glowing like a screen, but always reads.
 local LIGHT = 0.25
--- A photo card: the square, then the name and the floor under it (px), and the gap between cards.
+-- A photo card: the square, then the name, the floor and the cash under it (px), and the gap
+-- between cards.
 local PHOTO = 70
+local UNDER = 84
 local CARD_GAP = 12
 -- The photos drop onto the board as the black lifts: from this far above (px), the first after
 -- `DROP_AT` seconds and each `DROP_EVERY` after, each over `DROP_IN`.
@@ -59,6 +73,21 @@ local DROP_EVERY = 0.12
 local DROP_IN = 0.32
 
 type Board = { value: string, part: Part, tweens: { Tween } }
+
+-- A sound on the board from one of the coins' recordings (Coins' sounds), heard from the wall.
+local function sound(spec: Coins.Sound, parent: Instance): Sound
+	local s = Instance.new("Sound")
+	s.SoundId = spec.id
+	s.Volume = spec.volume
+	s.PlaybackSpeed = spec.pitch or 1
+	s.PlaybackRegionsEnabled = true
+	s.PlaybackRegion = NumberRange.new(spec.from, spec.from + spec.length)
+	s.RollOffMode = Enum.RollOffMode.InverseTapered
+	s.RollOffMinDistance = 8
+	s.RollOffMaxDistance = 40
+	s.Parent = parent
+	return s
+end
 
 local function headshot(userId: number): string
 	return `rbxthumb://type=AvatarHeadShot&id={userId}&w=150&h=150`
@@ -92,6 +121,7 @@ function CarResults.new(): Brix.System
 	local watched: { [Model]: RBXScriptConnection } = {}
 	local connections: { RBXScriptConnection } = {}
 	local names: { [number]: string } = {} -- UserId → display name, once known
+	local me = Players.LocalPlayer.UserId
 
 	local function remove(model: Model)
 		local b = boards[model]
@@ -126,6 +156,77 @@ function CarResults.new(): Brix.System
 				end
 			end
 		end)
+	end
+
+	-- A figure counting up from $0 to `amount` once the photos are pinned (Cash), fast and then
+	-- slowing. Yours ticks from the board as it rises, higher and higher, and lands with a swell, a
+	-- chink and a jingle; a friend's counts in silence.
+	local function count(
+		part: Part,
+		figure: TextLabel,
+		amount: number,
+		mine: boolean,
+		tweens: { Tween }
+	)
+		local value = Instance.new("NumberValue")
+		value.Name = "Counted"
+		value.Parent = figure
+		local swell = Instance.new("UIScale")
+		swell.Parent = figure
+		-- two ticks taking turns, so a fast run isn't cut short each time one starts again
+		local ticks: { Sound } = if mine
+			then { sound(Coins.Tick, part), sound(Coins.Tick, part) }
+			else {}
+		local shown, turn, last = 0, 0, -math.huge
+		value.Changed:Connect(function(v: number)
+			local n = math.min(math.floor(v + 0.5), amount) -- rounded: the last dollar doesn't stall
+			if n == shown then
+				return
+			end
+			shown = n
+			figure.Text = `+{Cash.text(n)}`
+			local now = os.clock()
+			if #ticks > 0 and now - last >= Cash.TickGap then
+				last = now
+				turn = turn % #ticks + 1
+				local tick = ticks[turn]
+				tick.PlaybackSpeed = (Coins.Tick.pitch or 1) + Cash.TickRise * (n / amount)
+				tick:Play()
+			end
+		end)
+		local run = TweenService:Create(
+			value,
+			TweenInfo.new(
+				Cash.countFor(amount),
+				Enum.EasingStyle.Cubic,
+				Enum.EasingDirection.Out,
+				0,
+				false,
+				Cash.CountAt
+			),
+			{ Value = amount }
+		)
+		table.insert(tweens, run)
+		run.Completed:Connect(function(state: Enum.PlaybackState)
+			if state ~= Enum.PlaybackState.Completed or not figure.Parent then
+				return
+			end
+			figure.Text = `+{Cash.text(amount)}`
+			if not mine then
+				return
+			end
+			swell.Scale = Cash.Pop
+			local settle = TweenService:Create(
+				swell,
+				TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+				{ Scale = 1 }
+			)
+			table.insert(tweens, settle)
+			settle:Play()
+			sound(Coins.Chink, part):Play()
+			sound(Coins.Jingle, part):Play()
+		end)
+		run:Play()
 	end
 
 	local function build(model: Model, results: ClimbEnd.Results, value: string)
@@ -191,8 +292,10 @@ function CarResults.new(): Brix.System
 		row.BackgroundTransparency = 1
 		row.AnchorPoint = Vector2.new(0.5, 0)
 		row.Position = UDim2.new(0.5, 0, 0, 124)
-		row.Size =
-			UDim2.fromOffset(math.max(#results.rows, 1) * (PHOTO + CARD_GAP) - CARD_GAP, PHOTO + 56)
+		row.Size = UDim2.fromOffset(
+			math.max(#results.rows, 1) * (PHOTO + CARD_GAP) - CARD_GAP,
+			PHOTO + UNDER
+		)
 		row.Parent = back
 		local layout = Instance.new("UIListLayout")
 		layout.FillDirection = Enum.FillDirection.Horizontal
@@ -208,7 +311,7 @@ function CarResults.new(): Brix.System
 			holder.Name = `Card{i}`
 			holder.LayoutOrder = i
 			holder.BackgroundTransparency = 1
-			holder.Size = UDim2.fromOffset(PHOTO, PHOTO + 56)
+			holder.Size = UDim2.fromOffset(PHOTO, PHOTO + UNDER)
 			holder.Parent = row
 			local inner = Instance.new("Frame")
 			inner.Name = "Inner"
@@ -246,6 +349,23 @@ function CarResults.new(): Brix.System
 			floor.Size = UDim2.new(1, 0, 0, 24)
 			floor.TextTransparency = 1
 			floor.Text = string.format(ClimbEnd.Copy.Floor, r.floor)
+			-- the cash their coins made: yours bright and counted aloud, a friend's softer, none dim
+			local mine = r.userId == me
+			local cash = math.max(math.floor(r.cash or 0), 0)
+			local figure = label(
+				inner,
+				"Cash",
+				if mine then HEAVY else BOLD,
+				if cash == 0 then NONE elseif mine then GOLD else FRIEND_GOLD,
+				if mine then 28 else 24
+			)
+			figure.Position = UDim2.new(-0.15, 0, 0, PHOTO + 54)
+			figure.Size = UDim2.new(1.3, 0, 0, 28)
+			figure.TextTransparency = 1
+			figure.Text = if cash > 0 then `+{Cash.text(0)}` else Cash.text(0)
+			if cash > 0 then
+				count(part, figure, cash, mine, tweens)
+			end
 			-- dropped on one after another, pinned with a little give
 			local info = TweenInfo.new(
 				DROP_IN,
@@ -274,6 +394,7 @@ function CarResults.new(): Brix.System
 					TweenService:Create(ring, fade, { Transparency = 0.15 }),
 					TweenService:Create(name, fade, { TextTransparency = 0 }),
 					TweenService:Create(floor, fade, { TextTransparency = 0 }),
+					TweenService:Create(figure, fade, { TextTransparency = 0 }),
 				}
 			do
 				table.insert(tweens, t)

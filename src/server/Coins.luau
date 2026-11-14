@@ -18,8 +18,10 @@
 	so every screen throws its coins up and away (CoinView), then it goes. Each player's count is
 	their own, on their Player as `Coins.Attribute`: zero as a climb begins (`Climbs.began`), for
 	someone joining one already under way, and nil outside a climb. Coins are never saved: they
-	last the climb (S1-12 turns what's left into cash). The gate adds each floor's pay (`pay`,
-	GatePay, S1-06).
+	last the climb. The gate adds each floor's pay (`pay`, GatePay, S1-06). As the climb ends,
+	every count stops where it is and is handed over once (`close`), to be turned into cash
+	(CashOut, S1-12); the counts stay on screen through the end and go as it covers every screen
+	(`clear`).
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -72,6 +74,12 @@ export type CoinsSystem = Brix.System & {
 	lay: (self: any, unit: Model, count: number, place: CFrame) -> boolean,
 	-- Everyone's count back to zero: a climb begins.
 	reset: (self: any) -> (),
+	-- The climb is over: every count stops where it is (nothing more is taken, paid or spent until
+	-- the next climb begins) and is handed back, by player. Once a climb: called again before the
+	-- next begins, it hands back nothing, so a count is never handed over twice.
+	close: (self: any) -> { [Player]: number },
+	-- Every count gone from its player (and their screen): the climb's end has covered everything.
+	clear: (self: any) -> (),
 	-- Adds `coins` to `player`'s count (paid at the gate, S1-06). Nothing outside a climb.
 	pay: (self: any, player: Player, coins: number) -> (),
 }
@@ -133,7 +141,7 @@ function CoinsSystem.new(): CoinsSystem
 	local function take(pile: Pile, player: Player)
 		-- type: Triggered hands us a Player. Range: a pile still lying there, a living player who
 		-- isn't wrapped, near it, on its side of the door.
-		if piles[pile.model] ~= pile or not pile.model.Parent then
+		if piles[pile.model] ~= pile or not pile.model.Parent or not climbing then
 			return
 		end
 		if Prompts.wrapped(player) then
@@ -273,7 +281,7 @@ function CoinsSystem.new(): CoinsSystem
 
 	function system.pay(_: any, player: Player, coins: number)
 		local count = counts[player]
-		if count == nil or coins <= 0 then
+		if count == nil or coins <= 0 or not climbing then
 			return
 		end
 		local amount = math.floor(coins)
@@ -295,7 +303,7 @@ function CoinsSystem.new(): CoinsSystem
 	function system.spend(_: any, player: Player, coins: number, item: string): boolean
 		local count = counts[player]
 		local amount = math.floor(coins)
-		if count == nil or amount <= 0 or count < amount then
+		if count == nil or amount <= 0 or count < amount or not climbing then
 			return false
 		end
 		setCount(player, count - amount)
@@ -308,6 +316,28 @@ function CoinsSystem.new(): CoinsSystem
 		for _, player in Players:GetPlayers() do
 			setCount(player, 0)
 		end
+	end
+
+	function system.close(_: any): { [Player]: number }
+		local handed: { [Player]: number } = {}
+		if not climbing then
+			return handed
+		end
+		climbing = false
+		for player, count in counts do
+			if count and player.Parent then
+				handed[player] = count
+			end
+		end
+		return handed
+	end
+
+	function system.clear(_: any)
+		climbing = false
+		for _, player in Players:GetPlayers() do
+			setCount(player, nil)
+		end
+		table.clear(counts)
 	end
 
 	function system.start(_: any, context: Brix.Context)

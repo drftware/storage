@@ -99,6 +99,21 @@ and off, the invite sheet opening with your friends (no invite sent).
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
 
+## Now: cash on the results (S1-12, built Nov 14, D-151; the save and the board seen in Play)
+
+The coins you haven't spent when a climb ends become cash, saved at once. Back in your car, the
+board shows each friend's cash under their photo; yours counts up from $0 with rising ticks and
+lands with a jingle. Seen in Studio Play: 42 coins made $42, the save went from cash 0 to 42 and
+read back from the DataStore; the board counted +$0 to +$42 in about 2 s. Not with a friend,
+not on a phone, and never after a real lobby climb (the test hall has no car of its own).
+1. Climb from a lobby car with a friend, keep some coins, and end it (top or kept). Look for:
+   your figure counts up under your photo with ticks and lands with a jingle; your friend's
+   counts in silence; the numbers match what your coin counts showed.
+2. Rejoin later: nothing shows your total yet (it's in the save; the lobby will show it once cash
+   buys something). On a phone: does the board's cash line read from the front of the car?
+3. Decide (starting guesses, D-151): one coin is one dollar (`Cash.PerCoin`); leaving a climb
+   before it ends makes no cash; cash is shown as dollars ("+$42").
+
 ## Now: find the faint mark (S1-11, built Nov 14, D-150; sampled in Play, never seen with a friend)
 
 On one note's door, a small chalk ring with a dot sits on the left side of the door frame,

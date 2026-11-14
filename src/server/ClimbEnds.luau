@@ -13,7 +13,10 @@
 	  screen plays it from the same moment (EndView).
 	- At `ClimbEnd.cover`, when every screen is covered: whatever anyone carries drops, the climb
 	  stops and its floors go (Climbs' `finish`), the watchers are let go of (Watching's
-	  `release`), and every character goes, so nothing can reach anyone behind the results.
+	  `release`), and every character goes, so nothing can reach anyone behind the results
+	  (`covered` fires: CashOut takes the coin counts off screen).
+	- The results board carries each friend's cash from the climb (`Cash.EarnedAttribute`, set by
+	  CashOut as it ended, S1-12), cleared with the end.
 	- "Again" (`Remotes.Again`, checked: the results are up, the player hasn't pressed, the rate):
 	  marks them in (`ClimbEnd.InAttribute`). Once everyone's in, or `ClimbEnd.AgainWait` after the
 	  first press (`ClimbEnd.StartAttribute`, so every screen counts down), `go`: back in the lobby
@@ -30,6 +33,7 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Cash = require(ReplicatedStorage.Shared.Cash)
 local Climb = require(ReplicatedStorage.Shared.Climb)
 local ClimbEnd = require(ReplicatedStorage.Shared.ClimbEnd)
 local Keypad = require(ReplicatedStorage.Shared.Elevator.Keypad)
@@ -85,11 +89,14 @@ export type ClimbEndsSystem = Brix.System & {
 	ended: Brix.Signal<Ended>,
 	-- Fires as a player's press of Again is taken.
 	again: Brix.Signal<Player>,
+	-- Fires as every screen is covered and the climb is taken from under them.
+	covered: Brix.Signal<nil>,
 }
 
 function ClimbEnds.new(): ClimbEndsSystem
 	local endedSignal = Brix.Signal.new() :: Brix.Signal<Ended>
 	local againSignal = Brix.Signal.new() :: Brix.Signal<Player>
+	local coveredSignal = Brix.Signal.new() :: Brix.Signal<nil>
 	local climbs: Climbs.Climbs? = nil
 	local watching: Watching.Watching? = nil
 	local slots: Slots.Slots? = nil
@@ -151,6 +158,7 @@ function ClimbEnds.new(): ClimbEndsSystem
 				character:Destroy()
 			end
 		end
+		coveredSignal:fire(nil)
 	end
 
 	local function endClimb(how: ClimbEnd.How, floor: number, at: number)
@@ -244,6 +252,7 @@ function ClimbEnds.new(): ClimbEndsSystem
 		for _, player in Players:GetPlayers() do
 			player:SetAttribute(ClimbEnd.FateAttribute, nil)
 			player:SetAttribute(ClimbEnd.InAttribute, nil)
+			player:SetAttribute(Cash.EarnedAttribute, nil)
 		end
 		table.clear(lost)
 		startAt, overSince = nil, nil
@@ -263,8 +272,13 @@ function ClimbEnds.new(): ClimbEndsSystem
 			at[back.player] = back.at
 			local fate, on = ClimbEnd.decodeFate(back.player:GetAttribute(ClimbEnd.FateAttribute))
 			if fate then
-				local row: ClimbEnd.Result =
-					{ userId = back.player.UserId, fate = fate :: ClimbEnd.Fate, floor = on }
+				local cash = back.player:GetAttribute(Cash.EarnedAttribute)
+				local row: ClimbEnd.Result = {
+					userId = back.player.UserId,
+					fate = fate :: ClimbEnd.Fate,
+					floor = on,
+					cash = if type(cash) == "number" then cash else 0,
+				}
 				table.insert(rows, row)
 			end
 		end
@@ -347,7 +361,8 @@ function ClimbEnds.new(): ClimbEndsSystem
 		againSignal:fire(player)
 	end
 
-	local system = { name = "ClimbEnds", ended = endedSignal, again = againSignal }
+	local system =
+		{ name = "ClimbEnds", ended = endedSignal, again = againSignal, covered = coveredSignal }
 
 	function system.start(_: any, context: Brix.Context)
 		local registry = context.registry
