@@ -23,6 +23,29 @@ nowhere else.
   at Brix `6717740` (S1-02), which is only on this Mac until Brix is pushed; a fresh clone of
   the game can't fetch it until then.
 
+## Now: shut a door on a sleeping monster (S2-05a, built Nov 14, D-169; seen in Play, plain bar)
+
+The bar is plain on purpose: S2-05b (next) gives it its look and sounds. Judge the timing and
+whether it's fun. Studio Play is fine for this.
+1. **Find a sleeping monster.** Walk the dev floor and open doors (E) until one has a Mannequin
+   standing slack inside, asleep. (Output lists the sleepers' units as the floor is laid.)
+2. **Pull the door down with Close (F).** Look for: the door comes down most of the way, then
+   slows to a creep and hangs about a foot off the floor, the Mannequin's feet showing under it.
+   A bar comes up below the middle of the screen with a pale block (the zone) on it, and a white
+   marker starts across it a moment later.
+3. **Tap while the marker is in the pale block** (click, tap the screen, or press F again).
+   Look for: the block turns green, the door eases the last foot down with almost no sound, and
+   the Mannequin stays asleep (open the door again later: still slack).
+4. **Do it again on another sleeper, and don't tap.** Look for: the block turns red as the marker
+   reaches the end, the door bangs down hard (a slam's boom and shake), and about a second later
+   the Mannequin starts pounding on the door from inside.
+5. **Once more, tapping early (before the block).** Look for: the bang comes at once.
+6. **Decide my defaults** (say which to change): a hit always keeps the monster asleep (the
+   design doc says "much more likely"); a monster awake inside that hasn't seen you is shut in and
+   pounds either way, so the tap only spares the floor the bang; a peeked door's short drop never
+   brings the bar up; the zone is about a sixth of a second wide, somewhere in the bar's middle
+   to late part; pressing Slam while the bar is up counts as a miss.
+
 ## Now: check your five fixes (built Nov 14, D-158; seen in Studio Play, not on a phone)
 
 Publish first (File > Publish to Roblox) so live servers run them.

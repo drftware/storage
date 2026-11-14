@@ -195,6 +195,8 @@ Keeper.Hears = table.freeze({
 	LiftInside = true,
 	Bang = true,
 	Burst = true,
+	-- a missed tap's door banging down over a sleeper (S2-05a): heard as a slam is
+	Drop = true,
 }) :: { [string]: boolean }
 
 -- How far out in the hall from a door's face a keeper stands to look at it (studs): a stride
@@ -691,6 +693,27 @@ function Keeper.trap(k: Keeper, slot: Floor.Slot, index: number): boolean
 	k.burst, k.padlocked, k.heardOut = false, false, false
 	k.listening, k.startle = false, 0
 	return true
+end
+
+--- Unit `index`'s door (its slot `slot`) banged down on it as a tap missed (S2-05a; the door was
+--- already down to a foot as the bar ran, so it hears that bang as nobody else does). Asleep in
+--- that unit, it wakes there, shut in, and pounds on the trapped clock (`trap`), as a sleeper
+--- woken behind a shut door does (S2-03b). Awake in there and somehow not yet trapped, it's
+--- trapped now. Whether it was.
+function Keeper.wakeShut(k: Keeper, slot: Floor.Slot, index: number): boolean
+	local _, unit = KeeperMap.placeAt(k.map, k.at)
+	if unit ~= index then
+		return false
+	end
+	local was: State = k.state
+	if was == "Asleep" then
+		k.state = "Watching"
+	end
+	if Keeper.trap(k, slot, index) then
+		return true
+	end
+	k.state = was
+	return false
 end
 
 --- The door it's trapped behind was padlocked (true) or the padlock cut off (false). Padlocked, it

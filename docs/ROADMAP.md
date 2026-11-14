@@ -1772,7 +1772,10 @@ Done when a team that has lost its lights goes looking for the breaker without b
   Dead by Daylight's skill checks: a bar comes up unasked, one tap in the zone. The moment: your
   thumb hovering while the door comes down a foot from something that might open its eyes.
   Split (S2-02d4's session, for the evening run), one per session:
-  - [ ] **S2-05a The rules and the server.** Pure rules first with a Lune spec (`ShutTap` or
+  - [x] **S2-05a The rules and the server.** Built Nov 14 (D-169): `ShutTap`, `Taps`, the door's
+    "Ease", "Settle" and "Drop", `Keeper.wakeShut`, a plain bar (`TapView`). In Play a hit settled
+    307 with its Mannequin asleep; no tap on 327 dropped it and the Mannequin pounded; taps for
+    a door with no window, nonsense and a late tap were all ignored. Originally: Pure rules first with a Lune spec (`ShutTap` or
     the like: when a shut earns a tap, the marker's sweep, the zone's width and place, how
     long the bar waits, hit or miss from the tap's time; feel numbers in shared Config). The
     server: a door pulled down on a unit whose monster sleeps (or is awake but hasn't seen the
@@ -1784,7 +1787,11 @@ Done when a team that has lost its lights goes looking for the breaker without b
   - [ ] **S2-05b The bar's feel.** The bar at phone size, where a thumb already is, rising in
     with motion, the marker's sweep, the zone; a soft latch on a hit and the bang on a miss,
     the door's soft landing against its slam; no words. Verify in Play, phone steps in
-    `OWNER.md`.
+    `OWNER.md`. From S2-05a: hide the door's Open and Slam buttons on the puller's screen while
+    the bar is up (a thumb going for the bar can land on Slam, which counts as the miss); the
+    tap today is a click, a touch anywhere not on a button, F, or a gamepad's A or B; a warning
+    tick as the bar rises (Dead by Daylight's); the bar's own sound on the marker's sweep, if
+    it helps. `TapView` and the cues in `DoorSound` ("Settle", "Drop") are where it lives.
 - [ ] **S2-07 The fix pass before Step 3** (added Nov 14 from HANDOFF's Queue, so Step 2 ends
   clean before anyone is carried up wrapped). Built before S2-06. In
   two sessions:

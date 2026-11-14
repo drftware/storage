@@ -192,7 +192,7 @@ function Door.stateOf(
 		return "Locked"
 	end
 	if elapsed < Motion.duration(kind, from, to, fullStroke) then
-		if kind == "Slam" then
+		if kind == "Slam" or kind == "Drop" then
 			return "Slamming"
 		elseif kind == "LiftInside" or kind == "Burst" then
 			return "Lifting" -- a trapped keeper's burst too: nobody outside can pull it back down

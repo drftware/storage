@@ -27,6 +27,11 @@
 	when the motion ends. The building moves a door itself with `move`: a keeper trapped behind it
 	bangs on it or bursts it up (L-06b3d).
 
+	The tap (S2-05a): a Close pressed over a monster that's asleep or hasn't seen the presser
+	(`Taps`, asked through the registry's "taps" slot) eases the door down to hang a foot up instead
+	(Motion's "Ease") and opens that player's tap window. The tap's answer moves it the rest of the
+	way with `move`: "Settle" on a hit, "Drop" on a miss.
+
 	Each button carries its action as the attribute `DoorAction`, so a screen can find Lock and Cut,
 	and the tag `Door.ButtonTag`, so a screen can hide them all from someone lying up on the tops.
 	Lying at a unit's front edge your head is over it, 7 studs from the door's buttons below (L-16b1,
@@ -59,6 +64,14 @@ export type DoorEvent = {
 	reach: number, -- studs it's heard to (DoorSound): a keeper within it hears the door
 }
 
+-- The tap (S2-05a), as Doors sees it: whether `player` pulling `unit`'s door down earns the tap,
+-- and that its door has started easing down for them. `Taps` fills the "taps" slot; typed here, not
+-- required, as Taps requires Doors.
+type Careful = {
+	earns: (self: any, unit: Model, player: Player) -> boolean,
+	begin: (self: any, unit: Model, player: Player) -> (),
+}
+
 export type DoorChange = {
 	unit: Model,
 	state: Door.State, -- what it is now
@@ -79,7 +92,9 @@ export type Doors = Brix.System & {
 	-- blow from inside ("Bang"), only on a door at rest, shut, peeked or padlocked; its burst up
 	-- ("Burst"), on any door that's down or coming down and not padlocked; or a door rolling all
 	-- the way up by itself ("Open", a wrong code's, S2-04), only from shut or peeked. Fires `acted`
-	-- with its sound's reach, so keepers hear it as they hear a player's. Whether it moved.
+	-- with its sound's reach, so keepers hear it as they hear a player's. Or the tap's answer on a
+	-- door still easing down over its sleeper (S2-05a): set down soft ("Settle") or dropped with a
+	-- bang ("Drop"). Whether it moved.
 	move: (self: any, unit: Model, kind: Motion.Kind) -> boolean,
 }
 
@@ -184,6 +199,7 @@ function Doors.new(): Doors
 	local changed = Brix.Signal.new() :: Brix.Signal<DoorChange>
 	local slots: Slots.Slots? = nil -- what's in each hand (Slots fills its slot in init.server)
 	local ladders: Ladders.Ladders? = nil -- who's lying up on the tops
+	local taps: Careful? = nil -- the tap over a sleeper (Taps fills its slot in init.server)
 
 	-- A door's buttons carry a name only while it's padlocked: news inside, where the padlock
 	-- can't be seen. Its number is painted on the door. Only Open and Lift carry it, the head of
@@ -332,8 +348,14 @@ function Doors.new(): Doors
 			return
 		end
 		lastPress[player] = t
-		if verdict.motion then
-			RollUpDoor.play(entry.unit, verdict.motion)
+		local motion: Motion.Kind? = verdict.motion
+		local tap = taps
+		local easing = motion == "Close" and tap ~= nil and tap:earns(entry.unit, player)
+		if easing then
+			motion = "Ease" -- over a sleeper: it hangs a foot up while the tap's bar runs
+		end
+		if motion then
+			RollUpDoor.play(entry.unit, motion)
 		end
 		if verdict.lock ~= nil then
 			-- the padlock leaves your hand for the door (decide just saw it there, nothing yields);
@@ -353,10 +375,13 @@ function Doors.new(): Doors
 				refuse(verdict.refusal, player)
 			end
 		end
-		if verdict.motion or verdict.lock ~= nil then
-			event(entry, action, verdict.motion, player)
+		if motion or verdict.lock ~= nil then
+			event(entry, action, motion, player)
 		end
 		refresh(entry)
+		if easing and tap then
+			tap:begin(entry.unit, player)
+		end
 	end
 
 	local function add(inst: Instance)
@@ -499,6 +524,7 @@ function Doors.new(): Doors
 		-- any: the registry hands back a plain System; Slots fills this slot (init.server)
 		slots = (context.registry:get("slots") :: any) :: Slots.Slots?
 		ladders = (context.registry:get("ladders") :: any) :: Ladders.Ladders?
+		taps = (context.registry:get("taps") :: any) :: Careful? -- any: as above
 		table.insert(
 			connections,
 			CollectionService:GetInstanceAddedSignal(UnitKit.Tag):Connect(add)
@@ -550,6 +576,8 @@ function Doors.new(): Doors
 	local BURSTS: { [Door.State]: true } =
 		{ Closed = true, Peeking = true, Closing = true, Slamming = true }
 	local OPENS: { [Door.State]: true } = { Closed = true, Peeking = true }
+	-- the tap's answer (S2-05a) lands only a door still easing down over its sleeper
+	local LANDS: { [Door.State]: true } = { Closing = true, Peeking = true }
 
 	function system.move(_: any, unit: Model, kind: Motion.Kind): boolean
 		local entry = entries[unit]
@@ -561,7 +589,12 @@ function Doors.new(): Doors
 			then BANGS
 			elseif kind == "Burst" then BURSTS
 			elseif kind == "Open" then OPENS
+			elseif kind == "Settle" or kind == "Drop" then LANDS
 			else nil
+		local easing = Motion.decode(unit:GetAttribute(ATTR_MOTION) :: string?) == "Ease"
+		if (kind == "Settle" or kind == "Drop") and not easing then
+			return false
+		end
 		if not (from and from[entry.state]) or RollUpDoor.play(unit, kind) <= 0 then
 			return false
 		end

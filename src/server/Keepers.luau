@@ -172,6 +172,7 @@ local HEARD: { [string]: string } = {
 	LiftInside = "lift from inside",
 	Bang = "bang",
 	Burst = "burst open",
+	Drop = "bang down as a tap missed",
 }
 -- What Output calls each of the rest of the noises players make (L-15).
 local KEYPAD: { [Elevators.Action]: string } = {
@@ -284,6 +285,12 @@ export type Keepers = Brix.System & {
 	-- How many keepers are loose now on the floor `unit` is on (0 off any keepers' floor): awake
 	-- and not trapped behind a door. The deal's cap counts these (`Deal.awakeCap`).
 	awakeOn: (self: any, unit: Model) -> number,
+	-- The keeper standing loose in `unit` (S2-05a, the tap): whether it's asleep, nil when none
+	-- stands there, and whether it has seen `player` (it hunts them).
+	inside: (self: any, unit: Model, player: Player) -> (boolean?, boolean),
+	-- `unit`'s door banged down as its tap missed (S2-05a): its sleeper wakes shut in and pounds
+	-- (`Keeper.wakeShut`). Whether one did.
+	wakeShut: (self: any, unit: Model) -> boolean,
 	-- Takes a keeper off its floor and destroys its body.
 	remove: (self: any, body: Model) -> (),
 	-- A spot in a hall about `studs` from a laid floor's lobby along the halls, and the way back
@@ -1546,6 +1553,45 @@ function Keepers.new(): Keepers
 					)}`
 			)
 		end
+	end
+
+	function system.inside(_: any, unit: Model, player: Player): (boolean?, boolean)
+		local on = floorOf[unit]
+		if not on then
+			return nil, false
+		end
+		local index = on.slots[unit]
+		for _, entry in on.keepers do
+			local k = entry.keeper
+			local _, at = KeeperMap.placeAt(on.map, k.at)
+			if at == index and k.trappedIn == 0 then
+				return k.state == "Asleep", k.target == player.UserId
+			end
+		end
+		return nil, false
+	end
+
+	function system.wakeShut(_: any, unit: Model): boolean
+		local on = floorOf[unit]
+		if not on then
+			return false
+		end
+		local index = on.slots[unit]
+		local slot = on.floor.slots[index]
+		local woke = false
+		for _, entry in on.keepers do
+			local was: Keeper.State = entry.keeper.state
+			if Keeper.wakeShut(entry.keeper, slot, index) then
+				woke = true
+				if TRACE then
+					print(
+						`Keepers: Unit {slot.number}'s door banged down as its tap missed; the {entry.keeper.row.name} wakes shut in and pounds`
+					)
+				end
+				changedState(entry, was)
+			end
+		end
+		return woke
 	end
 
 	function system.left(_: any, model: Model, riders: { Player })

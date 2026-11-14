@@ -4649,3 +4649,29 @@ crowds it). The ticket read "a bit" as about a third.
 - FeedView makes its in, out and bed sounds once at start and replays them, and keeps each
   moment's sound after its first play: in Studio Play a Sound made and played at once started
   0.28 s late even primed, which put the hiss after the snow; a ready one starts within a frame.
+
+## D-169 The tap over a sleeper: the door hangs a foot up while the bar runs (S2-05a, Nov 14)
+
+- Pulling a door down from at least 3 studs up, over a monster standing loose in its unit that's
+  asleep or awake but not hunting you, eases it down instead of closing it (Motion's "Ease"):
+  pulled down as a close is for 0.6 s, caught, then crept down to hang 0.9 studs up (about a
+  foot, under a peek) over 1.85 s. That is longer than the bar (0.45 s lead, 1.1 s sweep) plus a
+  late tap's 0.25 s, so the door is still moving, never resting a foot up, when the tap lands.
+- A hit settles it from wherever it is ("Settle", 0.9 s, slow at both ends, a 0.12 thump nobody
+  else hears; keepers don't hear it). A miss, a tap outside the zone (at once) or no tap (0.25 s
+  after the bar's end), drops it ("Drop": a slam's fall from where it is, banging as hard as a
+  slam from all the way up), heard as a slam, and its monster wakes shut in and pounds
+  (`Keeper.wakeShut`, the trapped clock: its first blow 1.2 s on). Woken before the drop, so its
+  own door's bang isn't news to it. As Dead by Daylight's skill check: a fail ends it at once.
+- My defaults (`OWNER.md`): a hit always keeps the monster as it was (the GDD says "much more
+  likely"); an awake monster that hasn't seen you is shut in and pounds either way, so its tap
+  only spares the floor the bang; a peek's short drop never earns a tap; the zone is 15% of the
+  bar, anywhere from 40% to 80%; a slam pressed while the bar is up is the miss; the puller
+  leaving lets the door settle.
+- One remote both ways (`Remotes.ShutTap`): the bar to the puller alone, their tap back with its
+  moment on the server's clock. The server checks its type, holds its time to the window and
+  0.25 s of lag (`ShutTap.heard`), checks the window is theirs and open, and drops taps closer
+  than 0.2 s. A screen could still claim a time in the zone if it sends within 0.25 s of it: the
+  price of being fair to a phone's lag.
+- Doors asks `Taps` (registry slot "taps", typed in Doors since Taps requires Doors) before a
+  Close; `move` lands the door ("Settle", "Drop") only while it's still easing.

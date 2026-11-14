@@ -210,6 +210,12 @@ DoorSound.Actions = {
 	-- Its burst: the loudest lift there is, flung up fast, so the roll runs high and carries past
 	-- the next hall.
 	Burst = { Gain = 1, Pitch = 1.18, Reach = 130 },
+	-- The tap's door (S2-05a). Pulled down over a sleeper it rolls as a close does, softer as it
+	-- slows to its creep; its settle onto the concrete is barely there; a miss's drop rolls and
+	-- carries as a slam (keepers hear it as far).
+	Ease = { Gain = 0.6, Pitch = 1, Reach = 60 },
+	Settle = { Gain = 0.2, Pitch = 0.92, Reach = 20 },
+	Drop = { Gain = 0.9, Pitch = 1.22, Reach = 110 },
 } :: { [Motion.Kind]: { Gain: number, Pitch: number, Reach: number } }
 
 -- The roll is at full volume once the door moves at this fraction of its action's average speed;
@@ -282,11 +288,14 @@ function DoorSound.cues(kind: Motion.Kind, from: number, to: number, fullStroke:
 	end
 	for _, strike in Motion.strikes(kind, from, to, fullStroke) do
 		local s = strike.strength
-		if strike.what == "Floor" and kind == "Slam" then
+		if strike.what == "Floor" and (kind == "Slam" or kind == "Drop") then
 			table.insert(cues, cue(strike.at, "Bang", s, 1, DoorSound.SlamShake * s))
 			table.insert(cues, cue(strike.at, "Thump", s, 0.74))
 		elseif strike.what == "Bounce" then
 			table.insert(cues, cue(strike.at, "Clatter", 0.75 * s, 1, DoorSound.BounceShake * s))
+		elseif strike.what == "Floor" and kind == "Settle" then
+			-- the tap hit (S2-05a): set down on the concrete, a touch you hear only standing there
+			table.insert(cues, cue(strike.at, "Thump", 0.12, 0.85))
 		elseif strike.what == "Floor" then
 			-- pulled down by hand: it settles with a rattle, no bang
 			table.insert(cues, cue(strike.at, "Clatter", 0.8, 0.9))

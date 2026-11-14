@@ -2136,3 +2136,16 @@ verified: a doc page, Studio, or "untested".
   throw). A staged feed: from the Server, `ReplicatedStorage.Feed:FireClient(player, "Show", id,
   cameraCFrame, 7, { box, body }, floor)` shows for 8 s; capture 0.6 s later, once the map has
   finished sliding in and the floor has streamed.
+
+## Testing the tap (S2-05a, Nov 14)
+
+- **Press a door's button from the Client with the camera in the hall.** The door's frame has +Z
+  into the unit, so the hall is `at - RollUpDoor.frame(unit).ZVector * 6`; a camera put on the
+  other side (`LookVector * -6`) sits inside the unit and `InputHoldBegin` does nothing at all.
+  Pivot the character to `frame * CFrame.new(0, 3, -3)` first; a far unit needs a pivot near it
+  before `WaitForChild` finds it (streaming).
+- **Drive the tap from the same Client call:** connect to `Remotes.ShutTap.OnClientEvent` before
+  pressing Close to catch "Open" (start, zone), wait for `start + Lead + (zone + width/2) * Sweep`
+  on `GetServerTimeNow`, then `FireServer(unit, GetServerTimeNow())`. Dev floor (seed of Nov 14
+  evening): sleepers in 305, 307, 327, 335, 338; 307's hit settled from 1.05 studs, 327 with no
+  tap answered at 1.78 s and its door read `Drop` then `Bang` 1.22 s later.

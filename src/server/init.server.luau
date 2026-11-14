@@ -37,6 +37,7 @@ local MotionLights = require(script.MotionLights)
 local Saving = require(script.Saving)
 local Saws = require(script.Saws)
 local Slots = require(script.Slots)
+local Taps = require(script.Taps)
 local Trips = require(script.Trips)
 local Watching = require(script.Watching)
 local Wraps = require(script.Wraps)
@@ -72,6 +73,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "ladders", system = Ladders.new() },
 	-- The keepers' brain: each floor's map kept in step with its doors, what each keeper hears, its walk.
 	{ slot = "keepers", system = Keepers.new() },
+	-- The tap as a door comes down on a sleeping monster: its window, its remote, a soft or a bang.
+	{ slot = "taps", system = Taps.new() },
 	-- Getting kept: a caught player's things dropped, them stored in a unit, let out as its door lifts.
 	{ slot = "keptPlayers", system = KeptPlayers.new() },
 	-- Blowing the air horn: its gap between blows, the blast on every screen, keepers coming to it.

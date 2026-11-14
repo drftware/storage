@@ -11,12 +11,28 @@
 		Rattle      0.7 s  a padlocked door tried: it jerks against the bolt and drops back
 		Bang        0.5 s  a keeper trapped inside hits it: it jumps on its rail and drops back
 		Burst       0.6 s  a trapped keeper bursts it up from inside: torn free, flung to the top
+		Ease        1.85 s pulled down over a sleeping monster (S2-05a): most of the way as a close
+		                   is, caught, then a creep to hang a foot up while the tap's bar runs
+		                   (`ShutTap`)
+		Settle      0.9 s  the tap hit: eased the last foot onto the concrete, landing soft
+		Drop        drop   the tap missed: it slips from the hand and bangs down, as hard as a slam
 
 	Pure functions of (kind, from, to, elapsed), so the server and every client agree on where
 	a door is without streaming positions: the server sends one Motion, everyone samples it.
 ]]
 
-export type Kind = "Peek" | "Open" | "Close" | "Slam" | "LiftInside" | "Rattle" | "Bang" | "Burst"
+export type Kind =
+	"Peek"
+	| "Open"
+	| "Close"
+	| "Slam"
+	| "LiftInside"
+	| "Rattle"
+	| "Bang"
+	| "Burst"
+	| "Ease"
+	| "Settle"
+	| "Drop"
 
 local Motion = {}
 
@@ -29,6 +45,9 @@ local KINDS: { [string]: Kind } = {
 	Rattle = "Rattle",
 	Bang = "Bang",
 	Burst = "Burst",
+	Ease = "Ease",
+	Settle = "Settle",
+	Drop = "Drop",
 }
 
 local FULL = {
@@ -39,6 +58,20 @@ local FULL = {
 	-- a full stroke in 0.6 s, fastest at the start: something heavy threw it up from inside (L-06b3d)
 	Burst = 0.6,
 }
+-- The tap's door (S2-05a). It eases down over EASE_T whatever height it started from, longer than
+-- the tap's whole window and a late tap's trip to the server (ShutTap: 1.55 + 0.25 s), so it is
+-- still creeping, never at rest a foot up, whenever the tap lands. Its settle takes SETTLE_T for
+-- the last foot, slow at both ends, so it touches the concrete with almost no speed.
+local EASE_T = 1.85
+local SETTLE_T = 0.9
+-- The ease is pulled down as a close is for EASE_CATCH_T, caught EASE_CREEP studs above where it
+-- hangs, then crept down the rest, slowing all the way: by the time the marker crosses the bar
+-- it hangs about a foot up, still moving a little.
+local EASE_CATCH_T = 0.6
+local EASE_CREEP = 0.45
+-- Where it hangs while the bar runs (studs): about a foot, under a peek's 1.15. The light under
+-- the door shows the monster's feet; the door is a foot from shutting on it.
+Motion.Hover = 0.9
 local SLAM_G = 200 -- studs/s^2: gravity plus a hard pull (a full stroke lands in 0.28 s)
 local BOUNCE_T = 0.26 -- s
 local MIN_T = 0.12
@@ -83,7 +116,7 @@ function Motion.duration(kind: Kind, from: number, to: number, fullStroke: numbe
 		return BANG_T
 	end
 	local h = math.abs(to - from)
-	if kind == "Slam" then
+	if kind == "Slam" or kind == "Drop" then
 		if h < 1e-4 then
 			return 0
 		end
@@ -91,6 +124,10 @@ function Motion.duration(kind: Kind, from: number, to: number, fullStroke: numbe
 	end
 	if h < 1e-4 then
 		return 0
+	elseif kind == "Ease" then
+		return EASE_T
+	elseif kind == "Settle" then
+		return SETTLE_T
 	end
 	local base = FULL[kind] or FULL.Open
 	local frac = if kind == "Peek" then 1 else math.min(1, h / math.max(fullStroke, 1e-3))
@@ -121,7 +158,7 @@ function Motion.sample(
 		local t = elapsed / dur
 		return from + BANG_LIFT * math.abs(math.sin(math.pi * 2 * t)) * (1 - t) ^ 3
 	end
-	if kind == "Slam" then
+	if kind == "Slam" or kind == "Drop" then
 		local fall = math.sqrt(2 * math.abs(h) / SLAM_G)
 		if elapsed < fall then
 			return from + h * (elapsed / fall) ^ 2
@@ -133,8 +170,16 @@ function Motion.sample(
 	local t = clamp01(elapsed / dur)
 	if kind == "Peek" then
 		return from + h * outQuart(t)
-	elseif kind == "Close" then
+	elseif kind == "Close" or kind == "Settle" then
 		return from + h * inOutCubic(t)
+	elseif kind == "Ease" then
+		-- pulled down as a close is, caught just above its foot, then let down slower and slower
+		local catch = if from > to then math.min(from, to + EASE_CREEP) else to
+		if elapsed < EASE_CATCH_T then
+			return from + (catch - from) * inOutCubic(elapsed / EASE_CATCH_T)
+		end
+		local u = 1 - clamp01((elapsed - EASE_CATCH_T) / math.max(dur - EASE_CATCH_T, 1e-3))
+		return catch + (to - catch) * (1 - u * u)
 	elseif kind == "Burst" then
 		-- torn free at its fastest, then slowing only as it nears the stop bolts
 		local u = 1 - t
@@ -184,9 +229,12 @@ function Motion.strikes(kind: Kind, from: number, to: number, fullStroke: number
 	if h < 1e-4 then
 		return {}
 	end
-	if kind == "Slam" then
+	if kind == "Slam" or kind == "Drop" then
 		local fall = math.sqrt(2 * h / SLAM_G)
-		local strength = math.min(1, math.sqrt(h / math.max(fullStroke, 1e-3)))
+		-- a drop lands as hard as a slam from all the way up: the bang is the point (S2-05a)
+		local strength = if kind == "Drop"
+			then 1
+			else math.min(1, math.sqrt(h / math.max(fullStroke, 1e-3)))
 		return {
 			{ at = fall, what = "Floor", strength = strength },
 			{ at = fall + BOUNCE_T, what = "Bounce", strength = strength },
@@ -201,7 +249,7 @@ function Motion.strikes(kind: Kind, from: number, to: number, fullStroke: number
 	return {}
 end
 
--- True for the eight door motions (guards anything a remote might pass in).
+-- True for the eleven door motions (guards anything a remote might pass in).
 function Motion.isKind(kind: any): boolean
 	return type(kind) == "string" and KINDS[kind] ~= nil
 end
@@ -210,6 +258,8 @@ end
 function Motion.target(kind: Kind, rise: { Peek: number, Open: number }): number
 	if kind == "Peek" then
 		return rise.Peek
+	elseif kind == "Ease" then
+		return math.min(Motion.Hover, rise.Peek)
 	elseif kind == "Open" or kind == "LiftInside" or kind == "Burst" then
 		return rise.Open
 	end

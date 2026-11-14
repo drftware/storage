@@ -53,6 +53,7 @@ local ToolView = require(script.ToolView)
 local KeepView = require(script.KeepView)
 local TripView = require(script.TripView)
 local RideView = require(script.RideView)
+local TapView = require(script.TapView)
 local UnderDoor = require(script.UnderDoor)
 local UnitLights = require(script.UnitLights)
 local WatchView = require(script.WatchView)
@@ -110,6 +111,8 @@ local host = Brix.Host.new({
 		{ slot = "bangMarks", system = BangMarks.new() },
 		{ slot = "padlockView", system = PadlockView.new(kick) },
 		{ slot = "underDoor", system = UnderDoor.new() },
+		-- the tap's bar as your door comes down on a sleeping monster (S2-05a)
+		{ slot = "tapView", system = TapView.new() },
 		{ slot = "noteView", system = NoteView.new() },
 		-- the faint mark on one note's door frame, shown only in your beam (S1-11)
 		{ slot = "faintMarkView", system = FaintMarkView.new(myBeam) },
