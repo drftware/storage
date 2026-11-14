@@ -22,7 +22,7 @@ The keepers' brain is the exception: it is built in this game (owner, 2026-11-09
 
 ## What this game uses from Brix today
 
-At the pinned commit, `4c21b5f` (2026-11-05). Checked against `src/` on 2026-11-09.
+At the pinned commit, `e8397ff` (2026-11-14, moved from `4c21b5f` for S1-01). Checked against `src/` on 2026-11-14.
 
 | Brix piece | What the game does with it | Where |
 | --- | --- | --- |
@@ -31,14 +31,15 @@ At the pinned commit, `4c21b5f` (2026-11-05). Checked against `src/` on 2026-11-
 | Random (seeded) | A floor laid from a seed, and its deals | `src/shared/Floor.luau`, `src/server/DevCorridor.luau` |
 | Zone (`box`) measured along Pathing (`free`) | A motion light's watch area; who is aboard the elevator | `MotionLights`, `Elevators`, `src/client/HallLights.luau` |
 | Reach (`cone`) measured along the keepers' map (their own Pathing) | A keeper's grasp: whom its hand closes on (L-06b3c, D-077) | `src/server/Keepers.luau` hands it to `src/shared/Keeper.luau` |
+| Saves, SaveFormat (`versioned`), Schema, `Roblox.SaveStore.dataStore`, `Roblox.PlayerSaves`, `Roblox.serverId`, `SaveStore.loopback` | Each player's save held by one server, autosaved, let go on leave and shutdown (S1-01, D-134) | `src/server/Saving.luau`, `src/shared/Save.luau` |
 
 Exported at the pin but not used here yet: Schema (data shapes for keeper rows and Config), Pool,
 the other zones (sphere, polygon, any-of, grown), the floor pathing and the sphere reach.
 
 ## What Brix has built since the pin
 
-Brix is at `3aee79e` (2026-11-08; 0.1.0 not tagged). Moving the pin is its own small step, taken
-when a ticket first needs something newer; what the game already uses barely changed in between.
+These are in the pin since S1-01 moved it to `e8397ff` (Brix's 0.1.0 is dated Nov 13), still not used here.
+Moving the pin is its own small step, taken when a ticket first needs something newer.
 
 | Brix piece | State in Brix | This game's use |
 | --- | --- | --- |
@@ -52,7 +53,6 @@ None of these is built. Each row says what stands in here until it is.
 | This game's need | Brix piece | Brix ticket | Until then |
 | --- | --- | --- | --- |
 | Every client→server ask (the keypad, the torch, tools) declared once, checked and rate-limited | Typed remotes | ENG-09 | The game's own remotes under `ReplicatedStorage.Remotes`, each checked by its server system (`Elevators`, `Flashlights`, `Slots`) |
-| Player data: finds, cash, best floor | Saves: session-locked profiles, autosave, versions and migrations | ENG-10 | Nothing is saved yet; don't build saves here |
 | Tuning during playtests without a republish (L-09) | Live config and flags | ENG-11 | Feel numbers in shared Config modules, changed by a republish |
 | The GDD's retention and funnel gates | Telemetry | ENG-12 | Nothing is measured yet |
 | The climb as lobby, floors and results (L-08) | Round loop | ENG-13 | `src/server/Climbs.luau` (L-08b, D-104): floors dealt, laid and handed up; `src/server/ClimbEnds.luau` (L-08d, D-106): the end, the results and "Again" into a fresh floor 1; the lobby's cars `src/server/LobbyCars.luau` (L-08e1b, D-120, D-121). Checked Nov 12: ENG-13 unbuilt |

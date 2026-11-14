@@ -1377,10 +1377,15 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
 
 ### Step 1: Doors that pay, and things to carry (nothing sold)
 
-- [ ] **S1-01 Saving.** Nothing is saved today. Brix's profiles: cash, the finds you own, the
-  collection book's stamps and your best floor, held by one server at a time, saved on a timer
-  and at shutdown, with a version number. Nothing on screen yet. First, because every ticket
-  after it saves something (GDD "Saving").
+- [x] **S1-01 Saving. Done Nov 14 (D-134); verified in Studio Play.** Brix moved to `e8397ff`.
+  `Save` (shared) is the save's shape, version 1: cash, the finds you keep plain and sealed, the
+  collection book's stamps (finds, sealed finds, keepers trapped, each with when) and your best
+  floor; a new player starts at nothing. `Saving` (server) holds each player's save through
+  Brix's Saves and PlayerSaves in the DataStore `Saves` (Studio: `Saves.studio`, or in memory
+  when Studio can't reach DataStores): claimed on join, written every 30 s, let go on leave and
+  at shutdown; `data(player)`, `loaded`, `save(player)` for later tickets; nothing writes yet.
+  Studio prints a line per write. Lune: save.spec (round trip, refusals, version 1's sample,
+  two servers over Brix's loopback, Brix's SaveFormat suite). A live server hop: `OWNER.md`.
 - [ ] **S1-02 Recording.** What every player earns and spends, and the list in the GDD's "What
   the game needs to record", so things have a known worth before anything is priced.
 - [x] **S1-03 Half the units. Done Nov 13 (D-131); passes checks, untested in Studio.** About
@@ -1416,6 +1421,12 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
     the coin's texture or a brighter glint if the owner finds piles hard to spot on a phone.
   - [ ] **S1-04b Things to look at.** Stacked boxes, a mattress, a rolled carpet, built the
     unit's way, in some of the units without coins, so an open door is never just a bare box.
+    Likely two sessions, as S1-04a was (split Nov 14; the session that starts it confirms):
+    - [ ] **S1-04b1 The things' art.** Each built the unit's way in Blender (one spec, shared
+      texture sets, baked PBR, FBX, a generated `Specs`), imported into the place; check what
+      `art/boxes/` and `src/shared/Boxes` already hold first.
+    - [ ] **S1-04b2 Dealt into units.** `Deal` gives some coinless units one, drawn after the
+      coins so no seed's other draws move; `DealSpot` keeps it clear; `Deals` lays it.
 - [ ] **S1-05 Finds you carry.** One tap puts a find in one of your three slots, beside your
   tools. Slots full: drop something or leave it. Caught: your finds drop with your tools.
   Takes in the old "Finds in a run" (where a unit's find stands, D-036).

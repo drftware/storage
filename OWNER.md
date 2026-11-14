@@ -19,6 +19,10 @@ nowhere else.
   arrive on your group's server) and a running `rojo serve` only reads those at start. Without
   it the trip works, but the front office may flash for a moment as you arrive.
 
+- [ ] **Before you push this game, push Brix** (`../engine`): the game's `vendor/brix` now points
+  at Brix `e8397ff` (S1-01), which is only on this Mac until Brix is pushed; a fresh clone of
+  the game can't fetch it until then.
+
 ## Decide: the design doc after your answers (Nov 13, D-128)
 
 Your answers, the four from tonight included, are written into the design doc (the GDD) and the
@@ -105,6 +109,16 @@ both coins flew, the count read 2 and the pile was gone. Not heard by ear: the s
   Roblox's buttons and the corner map? Is the take quick and satisfying, or too fast to see?
 - [ ] **Listen:** the chink at the pile (a friend up to 30 studs away hears it too), the jingle
   under it for two or three coins, and the ticks rising as each coin lands in your count.
+
+## Now: judge S1-01, saving (built Nov 14, D-134; verified in Studio Play)
+
+Nothing shows on screen; you check it in the server's log. Studio's saves are kept apart, in
+`Saves.studio`; live servers use `Saves`.
+- [ ] Publish (File > Publish to Roblox), join, press F9 and pick Server: one line,
+  `[Saving] made a new save for player_<your id>` the first time, `claimed` after that.
+- [ ] Step into a lobby car and ride to floor 1. On your group's server, F9 > Server shows
+  `claimed player_<your id>` within about 5 seconds of arriving (the lobby lets go first). Leave;
+  join again: `claimed` again, never a kick.
 
 ## Decide: coins, whoever taps first (S1-04a, D-132; default in place)
 

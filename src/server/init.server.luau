@@ -27,6 +27,7 @@ local Minimaps = require(script.Minimaps)
 local Prompts = require(script.Prompts)
 local Ladders = require(script.Ladders)
 local MotionLights = require(script.MotionLights)
+local Saving = require(script.Saving)
 local Saws = require(script.Saws)
 local Slots = require(script.Slots)
 local Trips = require(script.Trips)
@@ -34,6 +35,8 @@ local Watching = require(script.Watching)
 local Wraps = require(script.Wraps)
 
 local systems: { Brix.HostEntry } = {
+	-- Each player's save, held by this server while they play (first, so it stops last).
+	{ slot = "saving", system = Saving.new() },
 	-- The building's motion lights: which fixtures are lit, for every player.
 	{ slot = "motionLights", system = MotionLights.new() },
 	-- Every unit's roll-up door: its buttons, the checks on a press, its events.

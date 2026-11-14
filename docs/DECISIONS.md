@@ -3769,3 +3769,24 @@ of three sounds like a run up, as coin pickups in a row do in platformers. The c
 moves only as coins land; a rise that arrives with no flight on this screen (a pile taken off
 it) shows after `Grace`, a drop (a new climb) at once.
 
+## D-134 Saving: Brix's saves, one shape, Studio apart (S1-01, Nov 14)
+
+**What players get.** Nothing on screen; what a climb earns from here on is still yours when you
+come back, on any server. Brix's Saves holds each save on one server at a time with a lease in
+the same atomic write as the data (`UpdateAsync`), so a lobby-to-group-server hop never has two
+servers writing it; a save from a newer game, or one the shape refuses, is never written over.
+
+**The shape, version 1** (`src/shared/Save.luau`): `cash`, `finds` and `sealed` (name to how
+many kept), `stamps` (`finds`, `sealed`, `keepers`: name to when first stamped) and `bestFloor`.
+Purchases aren't in it: nothing is sold until Step 5, and a version with a migration adds them.
+A shape change is a new version with a `migrate` and a sample in save.spec; never edit a
+shipped version. Brix is handed to `Save.format(Brix)` since Lune and Roblox reach it by
+different paths.
+
+**Studio apart.** Studio keeps saves in `Saves.studio`, never the live `Saves`, so a test (or a
+later dev command that grants cash) can't touch a player's save. Studio without DataStore access
+keeps saves in memory with one warning rather than kicking the tester after 30 s.
+
+**Can't hold it, kicked.** A save this server can't hold is Brix's default: a kick saying to
+rejoin. Playing on unsaved would lose a climb's earnings without a word.
+

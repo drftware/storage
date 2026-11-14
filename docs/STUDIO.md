@@ -1727,3 +1727,18 @@ verified: a doc page, Studio, or "untested".
   `InputHoldBegin`/`End`. One player alone, the car's count leaves in about 20 s, so open it
   in the same call that steps in. Share then reaches the server, and Studio refuses the link:
   "share sheet didn't open: HTTP 403 (Forbidden)". Share links work only on a live server.
+
+## DataStores (S1-01, Nov 14)
+
+- The Storage place reaches DataStores in Play (Studio API access is on), but a DataStore call
+  from the Edit datamodel (the command bar, the MCP's `execute_luau` in Edit) fails with
+  `502: API Services rejected request with error. Error code: 0 Reason: Access forbidden.` Check
+  saves from the Server datamodel during Play: `GetAsync` of `player_<UserId>` in `Saves.studio`
+  shows the record (`version`, `data`, `lease`) and `KeyInfo:GetUserIds()` the UserId.
+- Brix's Saves may change the record its store hands `change` in place (a claim rewrites the
+  lease on it), so a store wrapper that compares before and after must read what it needs from
+  the old record before calling `change`.
+- Play's Stop lets go of each save in BindToClose, and its `[Saving] let go of` line reaches
+  Output; the next Play claims it within a second. Empty maps come back from the DataStore as
+  JSON `[]`, which load as empty tables.
+
