@@ -37,11 +37,11 @@ Climb.Building = 10
 -- floor (`Building`, Unit 0's), so a run is short enough to play again and again (OWNER.md).
 Climb.Top = 3
 
--- Seconds into the ride that riders are moved into the next floor's car: the cable's second knock,
+-- Seconds into the ride that riders are moved into the next floor's car: the cable's last knock,
 -- late in the cruise, with the hall you left long black and the next one's dark not yet lifting.
 -- The move costs a screen a long frame (0.2 to 0.4 s in Studio at 15 frames a second), and the
 -- floor below is cleared in the same frame; the knock and its clank cover it.
-Climb.HandOff = Ride.Clanks[2]
+Climb.HandOff = Ride.Clanks[#Ride.Clanks]
 
 -- The last moment a hand-off may start when laying runs late: 2 s before the car levels, so the
 -- move has landed on every screen well before the next hall's dark lifts.

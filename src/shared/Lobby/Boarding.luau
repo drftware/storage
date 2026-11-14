@@ -35,6 +35,7 @@
 	(`welcome`). Anyone can step out and back in, as at any car.
 ]]
 local Departure = require("../Elevator/Departure")
+local Ride = require("../Elevator/Ride")
 
 local Boarding = {}
 
@@ -72,8 +73,8 @@ Boarding.RemoteName = "CarPanel"
 Boarding.ChoiceSeconds = 0.12
 
 -- Seconds after it left that a car stands open in its bay again, empty, for the next group: the
--- ride up (Ride.opens, about 10 s) and a beat for those who rode to be on floor 1.
-Boarding.Back = 12
+-- ride up (Ride.opens, about 20 s) and a beat for those who rode to be on floor 1.
+Boarding.Back = Ride.opens() + 2
 
 -- A car whose gate shuts in less than this many seconds isn't one a player alone is pointed to:
 -- from the door it's under 3 s at a run, and a beat to see the marker.

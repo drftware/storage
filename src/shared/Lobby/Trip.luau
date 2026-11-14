@@ -72,9 +72,10 @@ Trip.Fade = 0.6
 -- Seconds into the ride that the server sends the riders: their screens are black by then.
 Trip.Send = Trip.FadeAt + Trip.Fade
 -- Seconds into the ride the group's car is as their screens open on the group's server: at full
--- speed, the shaft sliding past, with the second clank, the slowdown, the bell and the gate
--- still to come (about 6 s), so the ride they left in reads as the ride they arrive in.
-Trip.Since = Ride.Wait + Ride.Speedup + 0.8
+-- speed, the shaft sliding past, with the last clank, the slowdown, the bell and the gate still
+-- to come (about 6 s), so the ride they left in reads as the ride they arrive in. The first ride
+-- has no machine to spend at (GDD "The ride"), so its middle is the black of the trip.
+Trip.Since = Ride.arrives() - 6.2
 -- Seconds the group's server waits for the rest of the group after the first arrives. A phone
 -- that loads slower than this is stood on floor 1 as the car opens, as if it had just stepped out.
 Trip.Wait = 10

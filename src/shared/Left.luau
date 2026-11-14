@@ -9,8 +9,8 @@
 	"Left behind" slams up in a cold red as the screen's top and bottom darken (`title`, `edges`);
 	the lamp draws away up the shaft (ElevatorView) and the motor groans and fades as the car climbs
 	out of earshot, muffled by the building (`away`); as the light goes a low hit lands and your
-	legs give up; the screen goes black (`black`) before the floor below is cleared under you, 6.1 s
-	in (Climb.HandOff); under the black the bell rings far above; and the black lifts on a friend's
+	legs give up; you stand frozen in the dark lobby as the motor fades far above; the screen goes
+	black (`black`) before the floor below is cleared under you, 13.4 s in (Climb.HandOff); under the black the bell rings far above; and the black lifts on a friend's
 	shoulder as their car levels on the new floor and its gate folds open without you.
 
 	From then the camera follows a friend from behind and over their shoulder, smoothed so their
@@ -63,11 +63,12 @@ Left.Edges = 0.92
 -- controls go and the play HUD with them.
 Left.HitAt = Departure.LampAway
 Left.Freeze = Departure.LampAway
--- The black comes down over `DarkIn`, whole well before the floor is cleared at the hand-off.
-Left.DarkAt = 4.3
+-- The black comes down over `DarkIn`, whole well before the floor is cleared at the hand-off (the
+-- ride's last cable knock); until then you stand in the dark lobby hearing the car grind away.
+Left.DarkAt = Ride.Clanks[#Ride.Clanks] - 3
 Left.DarkIn = 1.2
 -- The black lifts on your friend over `LiftIn`, starting as their car brakes to level, so the bell
--- rings in the dark and you see the gate fold open on the new floor (Ride.opens, 10.3 s).
+-- rings in the dark and you see the gate fold open on the new floor (Ride.opens, 19.5 s).
 Left.LiftAt = Ride.arrives() - 0.5
 Left.LiftIn = 1.1
 -- Seconds the watching bar takes to come up once the black has lifted.

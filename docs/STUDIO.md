@@ -1030,6 +1030,17 @@ verified: a doc page, Studio, or "untested".
   car arrives, opens and is armed again at once. Turn the Client's camera to the gate
   (`CFrame.lookAt(pos, pos + Vector3.new(0, 0.1, -1))`) before capturing. A real-time ride is best
   logged from a `task.spawn`ed RenderStepped loop that the call leaves running (`_G` for results).
+- **A Sound's LoopRegion inside its PlaybackRegion works** (S1-10a, 2026-11-14, Play): with
+  `PlaybackRegionsEnabled`, `PlaybackRegion` 0.45 to 12.4 and `Looped` with `LoopRegion` 2 to
+  12.4, the ride's motor played straight from 0.45, then went round 2 to 12.4 (TimePosition
+  12.0 then 2.7 a second later), no stop between. The rumble (15 to 24.5, loop from 16) alike.
+- **The dev floor's ride ends the climb** (S1-10a, 2026-11-14): on seed 7, floor 3, code 2274,
+  the climb's top is floor 3, so its ride goes to the results (`ClimbEnds: ... (Top)`) and your
+  character is gone after it. To watch a ride arrive on a next floor, start lower (Workspace's
+  `DevFloorNumber`). The S1-07b recipe also worked: `Floor.generate` and `Deal.new` with
+  `Climb.seedOf(7, 3)` from an Edit `execute_luau` name the units with batteries (309, 314);
+  open 309 from 4.5 studs out on its +LookVector side and take the battery
+  (`Straight18.Battery.Take.ProximityPrompt`) standing beside it.
 - **Testing the climb from the MCP** (L-08b, 2026-11-11): a climb starting on floor f lays floor n
   with its lobby's middle at (0, 0, -600 - 1000 (n - f)), its elevator 12 studs behind it (the
   first at (0, 0, -588)); added to that pivot, the keypad spot is (-7.8, 3, -3.5) and aboard

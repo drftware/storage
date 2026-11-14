@@ -671,7 +671,8 @@ function WatchView.new(
 			if m then
 				if away > 0.001 and since < Ride.arrives() then
 					if not m.IsPlaying then
-						m.TimePosition = Ride.Motor.Start + math.max(since - Ride.Wait, 0)
+						m.TimePosition = Ride.position(Ride.Motor, since - Ride.Wait)
+							or Ride.Motor.Start
 						m:Play()
 					end
 					m.Volume = Ride.Motor.Volume * Left.MotorVolume * away
@@ -804,7 +805,13 @@ function WatchView.new(
 			local gui = player:WaitForChild("PlayerGui")
 			local s = makeScreen(gui)
 			screen = s
-			motor = sound("LeftMotor", Ride.Motor.Id)
+			local m = sound("LeftMotor", Ride.Motor.Id)
+			-- the ride outlasts the recording's steady stretch: go round it, as RideView does
+			m.PlaybackRegionsEnabled = true
+			m.PlaybackRegion = NumberRange.new(Ride.Motor.Start, Ride.Motor.Stop)
+			m.Looped = true
+			m.LoopRegion = NumberRange.new(Ride.Motor.Loop or Ride.Motor.Start, Ride.Motor.Stop)
+			motor = m
 			local eq = Instance.new("EqualizerSoundEffect")
 			eq.HighGain = Left.Muffle
 			eq.MidGain = -4

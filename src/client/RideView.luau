@@ -301,8 +301,8 @@ function RideView.new(hold: (pose: CameraShake.Pose?) -> ()): Brix.System
 		if not s then
 			return
 		end
-		local from = row.Start + late * cue.pitch
-		if from >= row.Stop then
+		local from = Ride.position(row, late * cue.pitch)
+		if not from then
 			return
 		end
 		local fading = fades[s]
@@ -536,6 +536,11 @@ function RideView.new(hold: (pose: CameraShake.Pose?) -> ()): Brix.System
 				s.SoundId = row.Id
 				s.PlaybackRegionsEnabled = true
 				s.PlaybackRegion = NumberRange.new(row.Start, row.Stop)
+				local loop = row.Loop
+				if loop then
+					s.Looped = true
+					s.LoopRegion = NumberRange.new(loop, row.Stop)
+				end
 				s.Volume = row.Volume
 				s.Parent = SoundService -- flat: you're inside the box the sound comes from
 				sounds[name] = s

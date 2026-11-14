@@ -31,8 +31,13 @@ do
 	ok(Ride.moves() < Ride.cruising(), "it gathers speed before it cruises")
 	ok(Ride.cruising() < Ride.tick() and Ride.tick() < arrive, "the tick comes as it slows")
 	ok(arrive < Ride.opens(), "the gate opens after it levels")
-	ok(arrive >= 8 and arrive <= 12, `a breath, not a wait: {arrive} s to level`)
-	ok(Ride.opens() + Gate.Delay + Gate.duration(1, 0) < 15, "the gate's open inside 15 s")
+	-- about 20 seconds (GDD "The ride"): time to spend coins at the car's machine
+	ok(arrive >= 17 and arrive <= 21, `the breath between floors: {arrive} s to level`)
+	ok(Ride.opens() + Gate.Delay + Gate.duration(1, 0) < 24, "the gate's open inside 24 s")
+	ok(
+		Ride.Speed >= 0.9 and Ride.Speed <= 1.4,
+		`a slow old freight car: {Ride.Speed} studs a second`
+	)
 	for _, at in Ride.Clanks do
 		ok(at > Ride.cruising() + 0.5 and at < Ride.tick() - 0.5, `clank at {at} is in the cruise`)
 	end
@@ -169,18 +174,22 @@ do
 	for _, name in Ride.Names do
 		ok(seen[name] == true, `{name} is played`)
 	end
-	-- the motor never runs off the end of its stretch, even at its highest pitch
-	local motor = Ride.Motor
-	local top = Ride.motor(5)
-	ok(
-		motor.Start + (Ride.motorStops() + Ride.MotorHandOver - Ride.Wait) * top < motor.Stop,
-		"the motor's stretch lasts the ride"
-	)
-	local rumble = Ride.Rumble
-	ok(
-		rumble.Start + (Ride.arrives() - Ride.Wait) * 1.0 < rumble.Stop,
-		"the rumble's stretch lasts the ride"
-	)
+	-- the motor and the rumble go round a loop on their steady stretches, so they last any ride;
+	-- a sound that doesn't loop runs out
+	for _, row in { Ride.Motor, Ride.Rumble } do
+		local loop = row.Loop
+		ok(
+			loop ~= nil and loop > row.Start and row.Stop - loop >= 5,
+			`{row.Id} loops on 5 s or more`
+		)
+		local far = Ride.position(row, Ride.opens() * 1.2)
+		ok(
+			far ~= nil and far >= (loop or 0) and far < row.Stop,
+			`{row.Id} is inside its loop late on`
+		)
+		ok(Ride.position(row, 0.5) == row.Start + 0.5, "and plays straight through at first")
+	end
+	ok(Ride.position(Ride.Sounds.Bell, 10) == nil, "the bell doesn't loop")
 	local pitch, volume = Ride.motor(Ride.Wait)
 	ok(pitch < 1 and volume < 0.5, "the motor starts low and quiet")
 	pitch, volume = Ride.motor(5)

@@ -43,12 +43,14 @@ Ride.Hold = "DevRideHold"
 -- the car sits still for `Wait` (the gate's slam rings out, everyone's aboard and sealed in) ...
 Ride.Wait = 0.8
 -- ... then the brakes let go and it gathers speed over `Speedup`, smooth, as a heavy car does ...
-Ride.Speedup = 1.8
--- ... climbs at full speed for `Cruise` (the shaft sliding past, two cable clanks) ...
-Ride.Cruise = 4.6
+Ride.Speedup = 2.4
+-- ... climbs at full speed for `Cruise` (the shaft creeping past, three cable clanks): an old
+-- freight car's slow grind, about a stud a second. The ride is the breath between floors, about
+-- 20 seconds in all (GDD "The ride"), long enough to spend coins at the car's machine (S1-10) ...
+Ride.Cruise = 12.6
 -- ... and slows over `Slowdown` to level with the next floor. Long enough to feel the brakes bite
 -- and read the new number before the car stops.
-Ride.Slowdown = 2.4
+Ride.Slowdown = 3.0
 -- Studs from floor to floor: how far the shaft slides past the gate. The car is 9.6 tall inside
 -- and the landing's mouth 9.2, so this leaves a band of bare shaft wall to watch go by.
 Ride.Rise = 16
@@ -62,7 +64,7 @@ Ride.Linger = 6
 
 -- The lurch as the brakes let go: the car drops `LurchDrop` studs on its cables and springs back
 -- at `LurchHz`, dying away over about `LurchFade` seconds; the view nods down with it.
-Ride.LurchDrop = 0.08
+Ride.LurchDrop = 0.09
 Ride.LurchNod = math.rad(0.35)
 Ride.LurchHz = 1.8
 Ride.LurchFade = 0.28
@@ -76,7 +78,7 @@ Ride.SettleHz = 2.4
 Ride.SettleFade = 0.3
 -- The cable clanks (seconds after the gate hit its post, inside the cruise): each a single knock,
 -- `ClankLift` studs and `ClankNod` down at `ClankHz`, gone in about `ClankFade` seconds.
-Ride.Clanks = { 3.9, 6.1 }
+Ride.Clanks = { 4.6, 8.9, 13.4 }
 Ride.ClankLift = 0.02
 Ride.ClankNod = math.rad(0.1)
 Ride.ClankHz = 6
@@ -342,6 +344,9 @@ export type Recording = {
 	Stop: number, -- and ends
 	Fade: number, -- seconds it fades out over before Stop
 	Volume: number,
+	-- Where it loops back to after Stop, for the two that run the whole ride (longer than their
+	-- recordings' steady stretches): a seam inside the steady part, never the start's swell.
+	Loop: number?,
 }
 export type SoundName =
 	"Release"
@@ -358,13 +363,26 @@ export type SoundName =
 local Release: Recording =
 	{ Id = "rbxassetid://9114533164", Start = 0.7, Stop = 2.4, Fade = 0.6, Volume = 1.6 }
 -- "Conveyor Belt 5": a clanky motor, steady from 0.5 to 13 s, nine tenths of it 190 Hz to
--- 2 kHz: the motor a phone can play. Swells with the car's speed, its pitch with it.
-local Motor: Recording =
-	{ Id = "rbxassetid://9113910297", Start = 0.45, Stop = 12.4, Fade = 0, Volume = 0.6 }
+-- 2 kHz: the motor a phone can play. Swells with the car's speed, its pitch with it; loops on its
+-- steady stretch from 2 s, as the ride outlasts the recording.
+local Motor: Recording = {
+	Id = "rbxassetid://9113910297",
+	Start = 0.45,
+	Stop = 12.4,
+	Fade = 0,
+	Volume = 0.6,
+	Loop = 2,
+}
 -- "Freight Elevator 2": the run's deep hum, 15 to 24.5 s, three quarters under 190 Hz: weight
--- in headphones, under the motor.
-local Rumble: Recording =
-	{ Id = "rbxassetid://9114533808", Start = 15, Stop = 24.5, Fade = 0, Volume = 1.2 }
+-- in headphones, under the motor. Loops from 16 s.
+local Rumble: Recording = {
+	Id = "rbxassetid://9114533808",
+	Start = 15,
+	Stop = 24.5,
+	Fade = 0,
+	Volume = 1.2,
+	Loop = 16,
+}
 -- The motor's own start knock, hard and bright, its hit at 0.24 s: a cable clank, pitched down.
 local Clank: Recording =
 	{ Id = "rbxassetid://9113910297", Start = 0.2, Stop = 0.65, Fade = 0.25, Volume = 0.25 }
@@ -386,6 +404,20 @@ local Brake: Recording =
 -- out rings you in.
 local Bell: Recording =
 	{ Id = "rbxassetid://9119642644", Start = 0, Stop = 2.4, Fade = 1.2, Volume = 6 }
+
+-- Where in its recording `row` is `t` seconds after it started playing at its own pitch: past
+-- Stop, a looping one has gone round its loop; nil when one that doesn't loop has run out.
+function Ride.position(row: Recording, t: number): number?
+	local at = row.Start + math.max(t, 0)
+	if at < row.Stop then
+		return at
+	end
+	local loop = row.Loop
+	if not loop then
+		return nil
+	end
+	return loop + (at - loop) % (row.Stop - loop)
+end
 
 -- Every sound by name, and their names in the order they're laid out.
 Ride.Sounds = {
@@ -422,7 +454,8 @@ end
 -- winding-down as the car levels. The rumble's volume follows the speed alone.
 function Ride.motor(since: number): (number, number)
 	local share = Ride.share(since)
-	local hand = math.clamp(1 - (since - Ride.motorStops()) / Ride.MotorHandOver, 0, 1)
+	local hand =
+		math.clamp((Ride.motorStops() + Ride.MotorHandOver - since) / Ride.MotorHandOver, 0, 1)
 	return 0.82 + 0.18 * share, (0.35 + 0.65 * share) * hand
 end
 

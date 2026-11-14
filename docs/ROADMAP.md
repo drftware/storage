@@ -1463,7 +1463,8 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
     D-cell (`art/battery/`, black and amber, a plus and a bolt) lying on its side in the bulb's
     pool clear of the coins, a glint on its button; a Take button only once your ring has lost a
     tick; the take hops it end over end into the taker's torch with a clack-click, the ring
-    sweeping full. Passes checks and loads in Studio; a take untested in Play (OWNER.md).
+    sweeping full. Seen in Play Nov 14 (S1-10a's session): laid in seed 7's unit 309, taken
+    with a 27 s torch, the ring full again; the flight itself not watched (OWNER.md).
     Polish: record the pickup (`Record`, a `batteryTaken` event) with S1-10's machine buys; a
     brief flare of the beam as the battery snaps in; its own snap recording if the clicks feel
     thin.
@@ -1486,8 +1487,45 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
   torch to wake it (Outlast-style) if the owner wants a use for the dead button.
 - [ ] **S1-10 The machine on the ride.** The ride grows to about 20 seconds. From the second
   ride on, the vending machine in the car sells three or four tools for coins, stock changing
-  each ride, batteries always (GDD "The ride"). Record each buy: add `machine` to `Record`'s
-  reasons and call `spent` with the item (S1-02).
+  each ride, batteries always (GDD "The ride"). Split Nov 14 into three sessions:
+  - [x] **S1-10a The ride grows to about 20 seconds. Done Nov 14 (D-144); the loops seen in
+    Play.** The car grinds up at about a stud a second: the brakes let go at 0.8 s, full speed
+    by 3.2, three cable clanks (4.6, 8.9, 13.4), level at 18.8, the gate folding at 19.5. The
+    motor and the rumble loop on their steady stretches (`Recording.Loop`, `Ride.position`).
+    Riders move to the next car on the last clank; a lobby trip's riders arrive 6.2 s before
+    the car levels, as before, so the first ride's extra length is the trip's black; a lobby car
+    is back in its bay 2 s after the ride opens; a left-behind player stands in the dark lobby
+    until 3 s before the hand-off, then the black. Unseen: a whole ride to a next floor (the dev
+    floor's ride ends the climb).
+  - [ ] **S1-10b The machine: art, in every car, waking on the ride.** Art first, the unit's
+    way (`art/machine/`, built like `art/battery/` on the finds' kit, several MeshParts sharing
+    one Machine set at 1024²). The plan (Nov 14): a self-storage supply machine, the kind real
+    storage buildings sell padlocks from: oxblood enamel cabinet, chipped to primer and steel,
+    4.6 wide, 2.4 deep, 6.6 tall (eyes are at 4.6), in the car's back-right corner against the
+    back wall, facing the gate, clear of the bumper boards (its middle about Blender x 3.5,
+    y 10.6 in `art/elevator/spec.py`'s frame). Front, bottom up: plinth; a bin behind a push
+    flap with the coin plate at its right (a keyhole slot for the building's coin, a return
+    cup); then three rows behind one glass pane, each with a steel rail under it carrying, per
+    bay, a lit price window and a chunky push button (old cigarette machines' one-knob-a-column
+    look): two battery bays (row 1.0 tall), then two rows of two tool bays (1.25 tall, about
+    1.9 wide); a lit sign at the top. Inside: white liner, steel shelves stopping short of the
+    glass (the drop chute), a divider per row, a motor box at the back of each bay. Parts:
+    `Machine` (the body), `MachineCoil` (one chrome helix along the depth, cloned per bay so it
+    can turn), `MachineButton` (cloned per bay, sinks when pressed), `MachineFlap`, and
+    untextured `MachineGlass`, `MachineTubes` (a fluorescent tube at the top of each row),
+    `MachinePrices` (the six windows, one SurfaceGui for b's digits) and `MachineSign` (Neon,
+    a keyhole-coin emblem drawn by a SurfaceGui). Dark on the first ride (GDD); on later rides
+    it wakes as the gate slams (the tubes' starter flicker, the sign buzzing on, a hum, one
+    SurfaceLight into the bays and one spilling into the car) and dies as the gate folds open.
+    Sounds to find and measure: a fluorescent starter tink and a hum.
+  - [ ] **S1-10c Buying.** Stock (three or four tools, changing each ride, batteries always,
+    3 coins; the GDD's guesses: a padlock 6, bolt cutters 10), shown in the coils (tools scaled
+    to about 1.8 studs), prices in the windows. Each bay's button is a prompt; the server owns
+    the price and the buy (`Coins`), validates, rate-limits; a battery calls
+    `Flashlights:fill` (refused while the ring is full, no text), a tool goes in a slot
+    (`Slots`). Every buy answers: the coins fly into the slot and count off, the coil turns, the
+    item drops with a clunk, the flap swings, it flies to you. Record each buy (`machine` in
+    `Record`'s reasons, `spent` with the item) and a battery taken from a unit (S1-07b).
 - [ ] **S1-11 The one faint mark.** At most one note's door frame on a floor carries a faint
   mark, seen from a few steps with your flashlight on it; nothing about notes on the corner map.
 - [ ] **S1-12 Cash on the results.** Unspent coins turn into cash at the climb's end; the

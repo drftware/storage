@@ -7,7 +7,7 @@
 	- `strand`, as the car leaves: they're marked (`Left.Attribute`, when it left them), and their
 	  screens play the moment (WatchView). A ride that doesn't go on after all (the next floor
 	  wasn't ready, the car comes back) un-marks them (`unstrand`).
-	- `watch`, as their floor is cleared under them (the hand-off, 6.1 s in): whatever they carried
+	- `watch`, as their floor is cleared under them (the hand-off, 13.4 s in): whatever they carried
 	  drops where they stood (it goes with the floor), and their character goes, so nothing can hurt
 	  them, nothing can see them and no prompt answers them. They get `Left.WatchValue`: the friend
 	  they watch, by character and name. The server streams the world around that friend to them

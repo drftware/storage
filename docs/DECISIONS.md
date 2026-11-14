@@ -4050,3 +4050,24 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
   was measured for it.
 - Art: `art/battery/`, a chunky D-cell four times life size (0.9 by 0.46 studs) in the coin's
   way: one MeshPart, 896 triangles, the Battery set at 512².
+
+## D-144 The ride takes about 20 seconds, a slow freight grind (S1-10a, Nov 14)
+
+- The GDD's ride is about 20 seconds, filled by the car's machine (S1-10b, c) and later the
+  team's choice. It stays one floor's climb (16 studs), so the car crawls at about a stud a
+  second: brakes off at 0.8 s, full speed by 3.2, a 12.6 s cruise with three cable clanks, a 3 s
+  slowdown, level at 18.8, the gate folding at 19.5. An old freight car's speed, and the shaft
+  creeping past the gate keeps the dread of the next floor in view.
+- One timeline for every ride, the first one (lobby to floor 1) too. Its riders were already
+  sent through the trip's black at 2.2 s and land on the climb's server 6.2 s before the car
+  levels, as before (`Trip.Since = Ride.arrives() - 6.2`), so the first ride looks as it did:
+  the longer middle is the teleport's black, which gives a slow phone more time. A lobby car is
+  back in its bay 2 s after its ride opens (`Boarding.Back`).
+- The motor and the rumble recordings are shorter than the ride, so each loops on its steady
+  stretch (`Recording.Loop`: Sound.LoopRegion inside the PlaybackRegion; `Ride.position` puts a
+  late joiner on the loop). Seen in Play: both wrap cleanly and run until the winding-down.
+- The lurch grew (0.08 to 0.09 studs) because the gentler speed-up no longer adds a sink; the
+  hand-off to the next car moved to the last clank (`Climb.HandOff`), and a left-behind player
+  stands frozen in the dark lobby hearing the car grind away until 3 s before it, rather than
+  sitting in black for 13 s.
+

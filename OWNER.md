@@ -99,7 +99,19 @@ and off, the invite sheet opening with your friends (no invite sent).
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
 
-## Now: take a battery (S1-07b, built Nov 14, D-143; passes checks, untested in Studio Play)
+## Now: ride for 20 seconds (S1-10a, built Nov 14, D-144; the sound loops seen in Play)
+
+The ride between floors now takes about 20 seconds, as the design doc says, so there's time to
+use the vending machine coming to the car next. The car grinds up slowly (about a stud a second)
+with three cable clanks; the first ride from the lobby looks as before, since its middle is the
+teleport's black.
+- [ ] **Ride from floor 1 to 2** (Workspace's `DevFloorNumber` = 1 before Play, or a real
+  climb): does 20 seconds feel like a tense breath, or dead time before the machine exists? Does
+  the shaft creeping past the gate read as a slow old freight car? Is the motor's loop seamless?
+- [ ] **Left behind:** you now stand in the dark lobby, frozen, hearing the car grind away for
+  about 9 seconds before the black comes down (it used to go black at 4 s). Does it land, or drag?
+
+## Now: take a battery (S1-07b, built Nov 14, D-143; a take seen in Studio Play)
 
 About one unit in ten now has a battery lying on its side in the bulb's light: a chunky D-cell,
 black with an amber band, a plus and a lightning bolt on it, a faint glint on its steel end. Once
@@ -107,7 +119,8 @@ your torch's ring has lost a tick, it shows a Take button; tap it and the batter
 end and flies into your torch with a clack and a click, and the ring sweeps round full. While your
 ring is still full there's no button for you: it stays for a friend. A dead torch isn't switched
 on by it; you press the button and it lights, full. I checked the rules load in Studio and the
-art is in the place, but haven't taken one in Play yet. Look sheets: `art/sheets/battery-*.png`.
+art is in the place. In Play I took one (the server logged it, the ring went from 27 seconds
+left back to full) but didn't watch its flight. Look sheets: `art/sheets/battery-*.png`.
 - [ ] **Take one:** add `DevTorchSeconds` = 60 on Workspace (as below), Play, switch your torch on
   for 10 seconds, then open units until one holds a battery. Does it read as a battery from the
   doorway on a phone-sized window? Does the Take button show? Tap it: does the flight into your
