@@ -2,55 +2,51 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-14, session 133 (S1-10b1 The machine's art) ·
+**Updated:** 2026-11-14, session 134 (S1-10b2 The machine in every car, waking on the ride) ·
 **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- **S1-10b split in two** (ROADMAP): b1, the machine's art (done); b2, the machine in every
-  car, waking on the ride (next). The session hit its context cap after the art.
-- **S1-10b1 built (D-145):** `art/machine/` (README; `scripts/art.sh machine`). Eight MeshParts:
-  textured `Machine`, `MachineCoil`, `MachineButton`, `MachineFlap` (one Machine set, 1024);
-  untextured `MachineGlass`, `MachineTubes`, `MachinePrices`, `MachineSign`. Built in the
-  machine's frame (origin on the floor under its middle, front toward -Z), the coil, button and
-  flap on their own origins. `src/shared/Machine/Specs.luau` is generated: bays, coils,
-  buttons, price windows, flap hinge, sign, glass, `InCar` (its place in the elevator's frame)
-  and each part's `Centre` and `Size`. Look sheets `art/sheets/machine-*.png` show it in the
-  elevator's own car, awake and dark. `scripts/upload_art.luau` has its Machine entry; not
-  uploaded yet. Nothing in the game uses it yet.
-- Studio in Edit, `DevFloorSeed` 7. Studio's id this run: 4694c6c7-b56c-4a68-ac46-72f07b63568c.
+- **S1-10b2 built (D-146):** the machine (asset 106768616385874) is prepared in the place at
+  `ReplicatedStorage.Props.Machine` (`Machine.prepare`): `Cabinet` (the one collider),
+  `Glass` with one SurfaceLight `CarLight`, `Coil1`-`6`, `Button1`-`6`, `Flap`, `Tube1`-`3`
+  (cylinders), `Sign` (keyhole-coin emblem), `Prices` (a `Window{i}` frame per bay in its
+  `Digits` SurfaceGui). `FloorBuilder` stands one in each floor's car (`Machine.place`), tagged
+  `VendingMachine`; not in lobby cars (their back wall holds the results; ROADMAP polish).
+- `Machine.Wake` (pure, `tests/machine.spec.luau`) and `src/client/MachineView.luau`: on a ride
+  from floor 1 up, for those aboard, the tubes tink and catch bottom row first, the sign buzzes
+  on, LED dashes, a hum, dips with the lamp, dark as the gate folds. Dark from the lobby.
+- **Verified in Studio Play** (test hall, floor 3's car, rides staged by setting the car's
+  `Ride` and `Aboard` attributes with `DevRideHold` 8): lit with every light, sound and LED
+  state as designed; dark on a ride from the lobby; the car lamp unaffected. A second light into
+  the bays blacked out the car, so it was dropped (docs/STUDIO.md). A real keypad ride and the
+  sound levels against the motor are untested (OWNER.md).
+- Studio in Edit. Studio's id this run: 4694c6c7-b56c-4a68-ac46-72f07b63568c.
 
-## Next task: S1-10b2 The machine in every car, waking on the ride
-The moment: the gate slams, the car shudders, and in the back corner the dark machine blinks
-awake: its tubes tink, tink and catch one row at a time, the sign buzzes on, cold light spills
-over your friends.
-1. Upload: `lune run scripts/upload_art Machine`; insert the asset with the MCP; write
-   `src/shared/Machine/init.luau` with `prepare(model)` modelled on `Elevator.prepare`
-   (`src/shared/Elevator/init.luau` 152-215): square each part by `Specs.Parts[name].Centre`;
-   clone `MachineCoil` and `MachineButton` into each bay (`Specs.Bays`: a coil's middle, a
-   button's back), hang the flap at `FlapHinge`; glass Material Glass; tubes, sign and prices
-   plain until lit; one SurfaceGui on the prices' front with a dim red "--" per window; a
-   SurfaceGui on the sign's front drawing a keyhole-coin emblem (no words); two SurfaceLights
-   off (the tubes' Back face into the bays, the glass's Front face into the car, cold white,
-   no shadows); collisions: the cabinet Box, the rest off. Save it as `Props.Machine` (a Model,
-   tagged by place, not by template). `Machine.place(car)` clones it to `car pivot *
-   CFrame.new(InCar)`, called in `FloorBuilder` after `Elevator.clone` (line ~338).
-2. Pure wake curve in `src/shared/Machine/Wake.luau` + `tests/machine.spec.luau`: per tube and
-   for the sign, the share lit `since` seconds into a ride (starter flickers then catch, rows
-   staggered; times Ride.lamp's dips; 0 from `Ride.opens()`); dark if `from == Ride.Lobby`.
-3. `src/client/MachineView.luau` (a Brix system in `init.client.luau`): for each tagged machine,
-   follow its car's `Ride` attribute (`Ride.decode`, `RideClock`) and the `rode` rule from
-   `ElevatorView` (`aboardChanged`, line ~441); step only while waking or dying.
-4. Sounds: find a fluorescent starter tink and a hum (Pro Sound Effects via `search_asset`),
-   measure them (STUDIO.md line ~475 shows how), hum looped on its steady stretch.
-5. Verify in Play: Workspace `DevFloorNumber` 1, code from Output, ride; `DevRideHold` (a
-   number of seconds) freezes a ride's frame on screen for a capture. Judge at phone size.
-**Acceptance:** checks green; the machine seen in the car in Play, lit on a ride from floor 1
-and dark on the first ride.
-**Read first:** ROADMAP S1-10b2; `art/machine/README.md`; `src/shared/Machine/Specs.luau`;
-`src/shared/Elevator/init.luau` 152-215 and 405-428; `src/client/ElevatorView.luau` 385-450.
+## Next task: S1-10c Buying (split it first)
+The moment: mid-ride, the machine just awake, you press a lit button; your coins clink into the
+slot, the coil turns, a padlock clunks down behind the flap and flies into your hand.
+Split in ROADMAP before starting (it won't fit one session): **c1 the stock shown** (steps 1-2)
+and **c2 the buy** (steps 3-5).
+1. Server: per ride that wakes the machine (`Machine.Wake.wakes`), deal its stock: three or four
+   tools changing each ride, batteries always in the bottom bays, prices in coins (GDD guesses:
+   padlock 6, bolt cutters 10, battery 3); replicate it on the machine (one attribute).
+2. Client (MachineView): the tools stand in their coils (the finds' or tools' art scaled to
+   about 1.8 studs), the prices drawn in the windows' LEDs (`LedReadout.row`, now dashes) once
+   the bottom tube catches.
+3. Each `Button{i}` a prompt (ButtonView's world buttons) only while awake; the server owns the
+   price and the buy (`Coins`), validates (type, range, aboard that car, awake), rate-limits.
+4. A battery calls `Flashlights:fill` (refused while the ring is full: ignore the press, no
+   text); a tool goes in a slot (`Slots`).
+5. Every buy answers: coins fly into the slot and count off, the button sinks
+   (`Specs.ButtonTravel`), the coil turns, the item drops with a clunk, the flap swings, it
+   flies to you. Record each buy (`machine` in `Record`'s reasons, `spent` with the item).
+**Acceptance:** checks green; in Play, a staged ride (see State) shows the stock and prices.
+**Read first:** ROADMAP S1-10c; `src/shared/Machine/init.luau` (the template);
+`src/client/MachineView.luau`; `src/server/Batteries.luau` (a validated take, `Flashlights:fill`);
+`src/server/Coins.luau` (grep `spend`); GDD "The ride" (the machine's stock).
 
 ## Queue (the overnight run, owner Nov 13: sessions until 8:30am, the updated plan)
-1. S1-10b2 (next), S1-10c, then ROADMAP Phase 2 in order (S1-11, S1-12, then Step 2). S2-06 and
+1. S1-10c (next, split), then ROADMAP Phase 2 in order (S1-11, S1-12, then Step 2). S2-06 and
    L-08e3c wait on `OWNER.md`. Lobby polish waits.
 2. Found S1-10a: watch a whole ride arrive on a next floor in Play (start on floor 1).
 3. Found S1-07b: coin piles and batteries show their Take button through a shut door (the server

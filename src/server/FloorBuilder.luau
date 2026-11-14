@@ -30,6 +30,7 @@ local Deal = require(ReplicatedStorage.Shared.Deal)
 local Elevator = require(ReplicatedStorage.Shared.Elevator)
 local NoteSpot = require(ReplicatedStorage.Shared.Elevator.NoteSpot)
 local Floor = require(ReplicatedStorage.Shared.Floor)
+local Machine = require(ReplicatedStorage.Shared.Machine)
 local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
@@ -336,6 +337,9 @@ local function lobby(origin: CFrame): (Folder, Model?)
 	)
 	-- its threshold on the back wall's face, the lobby before it, its gate shut until the code
 	local elevator = Elevator.clone(origin * CFrame.new(0, 0, half), folder, 1)
+	if elevator then
+		Machine.place(elevator) -- the machine in its back corner, waking on the ride (S1-10b)
+	end
 	return folder, elevator
 end
 

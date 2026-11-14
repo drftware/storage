@@ -77,6 +77,11 @@ local Specs = {
 	Sign = { Centre = { -0.000, 5.950, -1.120 }, Size = { 3.960, 0.780 } },
 	-- The glass's face, its middle and size: the light that spills into the car leaves it.
 	Glass = { Centre = { -0.000, 3.625, -1.090 }, Size = { 4.000, 3.550 } },
+	-- Each row's tube, bottom row first (its axis's middle; it runs along X), its radius and
+	-- length: the game draws each as its own cylinder, so the rows catch one at a time.
+	Tubes = { { -0.000, 2.770, -0.955 }, { -0.000, 4.020, -0.955 }, { -0.000, 5.270, -0.955 } },
+	TubeRadius = 0.045,
+	TubeLength = 3.8,
 	-- Each MeshPart's box as imported (its centre is its CFrame). The cabinet, glass, tubes,
 	-- prices and sign are built in the machine's frame; the coil, the button and the flap
 	-- each on its own origin (the coil's axis at its middle, the button's back, the hinge).

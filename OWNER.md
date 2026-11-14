@@ -99,6 +99,18 @@ and off, the invite sheet opening with your friends (no invite sent).
   invites to friends already on Roblox): it's now a Share key on the panel between Invite and Go
   (L-08e3b); move it to the end screen after a climb, or have both?
 
+## Now: watch the machine wake (S1-10b2, built Nov 14, D-146; seen lit and dark in Play)
+
+Every floor's car now has the vending machine in its back-right corner. It sleeps on the first
+ride (up from the lobby) and wakes on every later one: the tubes tink and flicker on a row at a
+time from the bottom, the sign buzzes on, red dashes show in the price windows, a hum fills the
+car and a cold light spills across it. It dies as the gate opens. Nothing is for sale yet.
+- [ ] **Ride from floor 1 to 2** (Workspace's `DevFloorNumber` = 1 before Play): does the wake
+  land as a moment after the lurch? Are the tink, the sign's buzz and the hum loud enough over
+  the motor, or too loud? (`Machine.Tink`, `Buzz`, `Hum` volumes are first guesses.)
+- [ ] **On a phone:** does the lit sign bloom into a blob, and can you read the bays through the
+  glass? The bays have no light of their own (a second light blacked out the car).
+
 ## Now: ride for 20 seconds (S1-10a, built Nov 14, D-144; the sound loops seen in Play)
 
 The ride between floors now takes about 20 seconds, as the design doc says, so there's time to

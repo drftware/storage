@@ -4088,3 +4088,23 @@ keeps its wear; screens read them from `ToolUses1` to `ToolUses3`.
 - The six price windows are one coplanar part so a single SurfaceGui draws them all; the coil and
   the button are one part each, cloned per bay, so a coil can turn and a button sink alone.
 
+## D-146 The machine wakes on the ride, a row at a time (S1-10b2, Nov 14)
+
+- Every floor's car has the machine in its back-right corner, dark while it stands at a floor.
+  On a ride from floor 1 up it wakes for those aboard (and anyone watching a friend), the same
+  on every rider's screen from the ride's one clock: after the slam and the lurch, each row's
+  tube tinks and flashes (two, one, three tries) and catches, bottom row first from 1.2 s; the
+  sign stutters on with a buzz at 3.75 s, before the first clank; the price windows' LEDs show
+  dashes; a ballast hum swells with what's lit. It dips with the car's lamp (0.7 of its dip) and
+  cuts out as the gate starts to fold, the sign a beat after the tubes. The first ride, up from
+  the lobby, never wakes it (nobody has coins yet). Old fluorescent starters, as players know them.
+- Not in the lobby cars: their back wall carries the climb's results, which the machine would
+  hide. So a lobby car has no machine and floor 1's car has a dark one (ROADMAP polish).
+- The tubes are three plain cylinders from `Specs.Tubes` (the export now writes them), not the
+  one tubes mesh, so each row catches alone. One real light, into the car; a second shone back
+  into the cabinet blacked out every other light on screen in Play, so the bays read by their
+  Neon tubes.
+- Sounds, Pro Sound Effects': "Toggle Switches Moviola Editing Machine 17" pitched up for the
+  tink (higher each row up), "Light Bulb Buzz 3" gated by the sign's flicker, "Transformer Hum 1"
+  for the hum (36 s, longer than a ride). Volumes are a first guess against the motor.
+

@@ -60,7 +60,11 @@ end
 function OpenCloud.session(): Session
 	local env = readEnv()
 	local key = env.ROBLOX_API_KEY or fail("ROBLOX_API_KEY is not set in .config/.env")
-	local creator = env.ROBLOX_CREATOR_ID or fail("ROBLOX_CREATOR_ID is not set in .config/.env")
+	-- The shell's ROBLOX_CREATOR_ID (a numeric user ID) wins over the file's: when Roblox's username
+	-- lookup is down (a 503, Nov 14), the ID from Studio's `game.CreatorId` still uploads.
+	local creator = process.env.ROBLOX_CREATOR_ID
+		or env.ROBLOX_CREATOR_ID
+		or fail("ROBLOX_CREATOR_ID is not set in .config/.env")
 	return { key = key, creator = creatorId(creator) }
 end
 

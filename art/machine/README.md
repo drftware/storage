@@ -45,8 +45,12 @@ box as imported.
 
 ## In the place
 
-Not yet imported (S1-10b2): upload with `lune run scripts/upload_art Machine`, insert with the
-MCP, prepare into `ReplicatedStorage.Props.Machine`.
+Uploaded (`assets.json`), loaded in Edit with `InsertService:LoadAsset` and prepared by
+`Machine.prepare` into `ReplicatedStorage.Props.Machine` (S1-10b2): the cabinet renamed
+`Cabinet`, a coil and a button cloned into every bay, the flap on its hinge, the tubes drawn as
+three cylinders at `Specs.Tubes` (the `MachineTubes` mesh is dropped, so each row lights alone),
+the sign's emblem and the price windows' frames added. `src/shared/Machine/init.luau` says what
+the template holds.
 
 ## Rebuild
 

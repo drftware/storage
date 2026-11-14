@@ -292,7 +292,7 @@ def plain_geo(name):
         geo.box(m, (K.WINDOW[0], K.GLASS_Y, K.ROWS[0][0]), (K.WINDOW[1], K.GLASS_Y + 0.01, K.WINDOW_TOP))
     elif name == "MachineTubes":
         for row in K.rows():
-            geo.cylinder(m, "x", (0.0, K.TUBE_Y, row["top"] - 0.08), K.TUBE_R, 2 * K.TUBE_X, 10)
+            geo.cylinder(m, "x", (0.0, K.TUBE_Y, row["top"] - K.TUBE_DROP), K.TUBE_R, 2 * K.TUBE_X, 10)
     elif name == "MachinePrices":
         pdx, pw, ph = K.PRICE
         for b in K.bays():

@@ -41,6 +41,7 @@ local KneelView = require(script.KneelView)
 local MinimapView = require(script.MinimapView)
 local LadderView = require(script.LadderView)
 local LobbyView = require(script.LobbyView)
+local MachineView = require(script.MachineView)
 local NoteView = require(script.NoteView)
 local PadlockView = require(script.PadlockView)
 local SawView = require(script.SawView)
@@ -83,6 +84,8 @@ local host = Brix.Host.new({
 		{ slot = "buttonView", system = ButtonView.new() },
 		{ slot = "gateClock", system = GateClock.new() },
 		{ slot = "rideView", system = RideView.new(holdView) },
+		-- the machine in the car, waking on the ride (S1-10b2)
+		{ slot = "machineView", system = MachineView.new() },
 		{ slot = "minimapView", system = MinimapView.new() },
 		-- the coins: a pile's take on every screen, and your count by the top bar (S1-04a2)
 		{ slot = "coinView", system = CoinView.new() },

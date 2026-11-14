@@ -1524,16 +1524,13 @@ waits. The GDD says monsters; the code and the tickets above this line say keepe
       the elevator's own car (`machine-car`, `-dark`, `-near`, `-studio`); the tubes sit just
       behind the glass under each rail. `src/shared/Machine/Specs.luau` generated. Not yet in the
       place.
-    - [ ] **S1-10b2 The machine in every car, waking on the ride.** Upload (`upload_art`: a
-      Machine entry), insert, prepare into `Props.Machine` (parts squared by `Specs.Parts`
-      centres as `Elevator.prepare` does; a coil and a button cloned into every bay; the glass
-      Glass, the tubes and sign Neon when lit; the prices' SurfaceGui with dim red dashes; two
-      SurfaceLights, off). FloorBuilder places one in each floor's car (not the lobby's). A
-      client MachineView lights it from the car's `Ride` attribute for those aboard (the
-      `rode` rule ElevatorView uses): dark when `from` is `Ride.Lobby`; else the starter tinks
-      and the tubes catch one row at a time just after 0, the sign buzzes on, a hum loops, the
-      light dips with the lamp (`Ride.lamp`), and it all dies as the gate starts to fold
-      (`Ride.opens()`). The wake curve is pure (a Lune spec). Sounds found and measured.
+    - [x] **S1-10b2 The machine in every car, waking on the ride. Done Nov 14 (D-146).**
+      Uploaded and prepared into `Props.Machine` (`Machine.prepare`); FloorBuilder stands one in
+      each floor's car (`Machine.place`), not the lobby cars (their back wall holds the results).
+      `Machine.Wake` (pure, `tests/machine.spec.luau`) and `MachineView`: the rows' tubes tink,
+      flash and catch bottom up from 1.2 s, the sign buzzes on at 3.75 s, LED dashes, a hum,
+      dips with the lamp, dead 0.35 s after the gate starts to fold; dark from the lobby. One
+      SurfaceLight (into the car); a second into the bays blacked out the car. Seen in Play.
   - [ ] **S1-10c Buying.** Stock (three or four tools, changing each ride, batteries always,
     3 coins; the GDD's guesses: a padlock 6, bolt cutters 10), shown in the coils (tools scaled
     to about 1.8 studs), prices in the windows. Each bay's button is a prompt; the server owns
@@ -1661,6 +1658,10 @@ that moves walls, and the dolly.
 
 ## Polish waiting for a slot
 
+- **The machine (S1-10b2):** a dark machine in the lobby cars too, so the car you board matches
+  the one you arrive in (the results board on their back wall must move first); the bays' own
+  light (a second SurfaceLight shone into the cabinet blacked out the car: try a small
+  PointLight inside each row instead); the tube ends' orange glow while a starter tries.
 - **Finds (S1-05):** a find you take flies from where it stood into its slot box, as coins fly to
   their count; a friend's arm sags under a heavy find (only your own view feels its weight now);
   a find standing in a unit can be walked through (it's inert, as a lying tool is); a glass

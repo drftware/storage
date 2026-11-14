@@ -843,6 +843,22 @@ verified: a doc page, Studio, or "untested".
   laid the unit on its back. Keep its turn: `PivotTo(CFrame.new(p) * template:GetPivot().Rotation)`;
   then its door is at local z 0 facing -Z, the inside runs to +Z. Part `.Position`s of imported
   MeshParts are their Blender origins, so read a part's box from its CFrame and Size instead.
+- **When the MCP's `insert_asset` fails, InsertService doesn't** (S1-10b2, Nov 14): right after
+  the upload, `insert_asset` of the machine answered "Failed to load package asset: Request
+  Failed" three times over half an hour; `InsertService:LoadAsset(id)` from an Edit
+  `execute_luau` loaded it at once, a Model wrapping the asset's Model, every part unturned with
+  its pivot on the FBX origin. Prepare the inner Model.
+- **Roblox's username lookup can be down** (Nov 14): `users.roblox.com` and the Open Cloud
+  assets API both answered 503 for about 20 minutes. `upload_art` takes a numeric
+  `ROBLOX_CREATOR_ID` from the shell over the file's (`game.CreatorId` in Studio).
+- **A SurfaceLight shone into a closed cabinet blacks out the frame** (Play, S1-10b2): on the
+  machine's glass, a SurfaceLight on its Back face (into the bays, Range 3) turned every other
+  lit thing in view black (the car's walls under its lamp), leaving only Neon and GUI. The one
+  on its Front face (into the car) alone was fine. Not understood; avoid it.
+- **The machine's sounds, measured** (Edit, AudioAnalyzer): "Toggle Switches Moviola Editing
+  Machine 17" 9120089728 is 0.36 s, a snap at -11 dB gone by 0.1 s; "Light Bulb Buzz 3"
+  9116270244 holds near -22 dB from 0.23 s; "Transformer Hum 1" 9112889082 holds near -29 dB
+  for all of its 36 s.
 - **Judging a prop in a lit unit without Play** (S1-04b1): clone `Units.S` or `.M` into the Edit
   workspace as above, destroy its door's parts (`CurtainClosed`, the slats, `BottomBar`,
   `Padlock`, `LatchBolt`, `DoorCollider`), hang an invisible part with a PointLight at

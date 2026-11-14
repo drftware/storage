@@ -85,6 +85,7 @@ SIGN_Y = (-1.12, -1.06)
 TUBE_R = 0.045
 TUBE_X = 1.9                # its half-length
 TUBE_Y = -0.955             # just behind the glass at the top of each row, under the next rail
+TUBE_DROP = 0.08            # its axis under the row's top
 
 # --- where it stands in the car -------------------------------------------------------------
 # In art/elevator/spec.py's frame: the car's back-right corner as you face it from the lobby,
@@ -180,6 +181,11 @@ def write_luau(path, parts):
         "\t-- The glass's face, its middle and size: the light that spills into the car leaves it.",
         f"\tGlass = {{ Centre = {lua_vec(to_roblox((0.0, GLASS_Y, (ROWS[0][0] + WINDOW_TOP) / 2)))}, "
         f"Size = {{ {WINDOW[1] - WINDOW[0]:.3f}, {WINDOW_TOP - ROWS[0][0]:.3f} }} }},",
+        "\t-- Each row's tube, bottom row first (its axis's middle; it runs along X), its radius and",
+        "\t-- length: the game draws each as its own cylinder, so the rows catch one at a time.",
+        "\tTubes = { " + ", ".join(lua_vec(to_roblox((0.0, TUBE_Y, r["top"] - TUBE_DROP))) for r in rows()) + " },",
+        f"\tTubeRadius = {TUBE_R},",
+        f"\tTubeLength = {2 * TUBE_X},",
         "\t-- Each MeshPart's box as imported (its centre is its CFrame). The cabinet, glass, tubes,",
         "\t-- prices and sign are built in the machine's frame; the coil, the button and the flap",
         "\t-- each on its own origin (the coil's axis at its middle, the button's back, the hinge).",
