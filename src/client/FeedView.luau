@@ -52,6 +52,8 @@ local DIM_TIME = 0.25 -- seconds the picture takes to drop darker after the mome
 -- feed and everything on it sit above the map's own.
 local Z = 10
 local SHRINK = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+local FADE_SLACK = 0.1 -- seconds a hiss's slice runs on past its fade, silent
+local OUT_TAIL = 0.1 -- seconds of the set's own switch-off kept after the cut: it dies in 60 ms
 -- What a copied part keeps: only what draws it.
 local DRAWS: { [string]: boolean } =
 	{ SurfaceAppearance = true, Decal = true, Texture = true, SpecialMesh = true }
@@ -80,6 +82,7 @@ type Showing = {
 	frame: number, -- os.clock of the picture's last frame
 	bed: Sound,
 	out: boolean, -- cutting out: the snow is up and the out burst played
+	follow: RBXScriptConnection?, -- keeps it on the map's window while that slides (S2-02d4)
 }
 
 local FeedView = {}
@@ -99,27 +102,65 @@ function FeedView.new(): Brix.System
 		return s
 	end
 
-	local function once(id: string, volume: number, thin: boolean)
-		local s = sound(id, volume, false)
-		if thin then
-			-- through a camera's little speaker: no body, a rasp on top
+	-- The feed's sounds are made once and replayed: a new Sound starts about 0.3 s late while it
+	-- loads, even a recording heard before, and these have to land on the snow (S2-02d4,
+	-- docs/STUDIO.md "A new Sound starts late"). Made in `start`.
+	local inHiss: Sound? = nil
+	local outHiss: Sound? = nil
+	local bed: Sound? = nil
+	local fades: { [Sound]: Tween } = {}
+	local moments: { [string]: Sound } = {} -- each moment's sound, kept after its first play
+
+	-- The moment's own sound through the camera's little speaker: no body, a rasp on top.
+	local function moment(id: string, volume: number)
+		local s = moments[id]
+		if not s then
+			local made = sound(id, volume, false)
 			local eq = Instance.new("EqualizerSoundEffect")
 			eq.LowGain, eq.MidGain, eq.HighGain = -30, 3, -12
-			eq.Parent = s
+			eq.Parent = made
 			local grit = Instance.new("DistortionSoundEffect")
 			grit.Level = 0.35
-			grit.Parent = s
+			grit.Parent = made
+			moments[id] = made
+			s = made
 		end
-		s.Ended:Once(function()
-			s:Destroy()
-		end)
+		s.Volume = volume
+		s.TimePosition = 0
 		s:Play()
 	end
 
+	-- A stretch of TV hiss (S2-02d4) on ready sound `s`: from `from` seconds in, full for `full`
+	-- seconds, then fading out over `tail`. Its start is the slice's own hard edge.
+	local function hiss(s: Sound?, volume: number, from: number, full: number, tail: number)
+		if not s then
+			return
+		end
+		local was = fades[s]
+		if was then
+			was:Cancel()
+		end
+		local start = math.max(0, from)
+		s.Volume = volume
+		-- past the fade by a little: a tween can start a frame or two late, and the slice's end
+		-- would clip the hiss mid-fade
+		s.PlaybackRegion = NumberRange.new(start, start + full + tail + FADE_SLACK)
+		s.TimePosition = start
+		s:Play()
+		local fade = TweenService:Create(
+			s,
+			TweenInfo.new(tail, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, full),
+			{ Volume = 0 }
+		)
+		fades[s] = fade
+		fade:Play()
+	end
+
 	-- The map's window on this screen: the feed goes in the map's own screen, its top-right
-	-- corner on the window's, so the two always line up; and the window's square. No map up (it
-	-- shouldn't happen on a floor): nil, and a place like the map's.
-	local function mapWindow(): (ScreenGui?, UDim2, Vector2)
+	-- corner on the window's, so the two always line up; the window's square; and the window, to
+	-- follow while it slides. No map up (it shouldn't happen on a floor): nil, a place like the
+	-- map's, and nil.
+	local function mapWindow(): (ScreenGui?, UDim2, Vector2, GuiObject?)
 		local gui = me:FindFirstChildOfClass("PlayerGui")
 		local map = gui and gui:FindFirstChild(MAP_GUI)
 		local window = map and map:FindFirstChild(MAP_WINDOW)
@@ -131,12 +172,12 @@ function FeedView.new(): Brix.System
 			and window.Visible
 			and window.AbsoluteSize.X > 0
 		then
-			return map, window.Position, window.AbsoluteSize
+			return map, window.Position, window.AbsoluteSize, window
 		end
 		local camera = Workspace.CurrentCamera
 		local view = if camera then camera.ViewportSize else Vector2.new(1280, 720)
 		local side = math.clamp(view.Y * 0.3, 104, 176) -- as the map's own
-		return nil, UDim2.fromOffset(view.X - 10, 68), Vector2.new(side, side)
+		return nil, UDim2.fromOffset(view.X - 10, 68), Vector2.new(side, side), nil
 	end
 
 	-- A copy of `part` with only what draws it, or nil if it can't be copied.
@@ -265,7 +306,10 @@ function FeedView.new(): Brix.System
 			return
 		end
 		showing = nil
-		s.bed:Destroy()
+		if s.follow then
+			s.follow:Disconnect()
+		end
+		s.bed:Stop()
 		s.screen:Destroy()
 		if s.own then
 			s.own:Destroy()
@@ -280,7 +324,7 @@ function FeedView.new(): Brix.System
 		within: Instance?
 	)
 		finish() -- a new feed takes the window at once
-		local map, corner, square = mapWindow()
+		local map, corner, square, window = mapWindow()
 		local small = UDim2.fromOffset(square.X, square.Y)
 		local width = math.floor(square.X * Feed.Grow)
 		local big = UDim2.fromOffset(width, math.floor(width * Feed.Aspect))
@@ -422,12 +466,17 @@ function FeedView.new(): Brix.System
 			moment = -1,
 			ends = now + Feed.Most,
 			frame = 0,
-			bed = sound(Feed.BedSound, Feed.BedVolume, true),
+			bed = bed :: Sound, -- made in `start`, before any feed
 			out = false,
+			follow = nil,
 		}
-		local thin = Instance.new("EqualizerSoundEffect")
-		thin.LowGain, thin.MidGain, thin.HighGain = -40, -6, 0
-		thin.Parent = s.bed
+		if window then
+			-- the map still sliding in as the feed cuts in (a floor's first seconds): the feed
+			-- rides along with its window and lands in its place, never stuck partway
+			s.follow = window:GetPropertyChangedSignal("Position"):Connect(function()
+				screen.Position = window.Position
+			end)
+		end
 		build(s, camera, watch, within)
 		picture(s)
 		showing = s
@@ -442,7 +491,8 @@ function FeedView.new(): Brix.System
 			TweenInfo.new(Feed.Pop, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
 			{ Size = big }
 		):Play()
-		once(Feed.InSound, Feed.InVolume, false)
+		-- the set's hiss, hard as the snow comes up, settling into the quiet static as it clears
+		hiss(inHiss, Feed.InVolume, Feed.InFrom, Feed.SnowIn, Feed.InTail)
 	end
 
 	local function close(id: number, momentSound: string, dim: boolean)
@@ -454,7 +504,7 @@ function FeedView.new(): Brix.System
 		s.moment = now
 		s.ends = math.min(s.ends, now + Feed.After)
 		if momentSound ~= "" then
-			once(momentSound, Feed.MomentVolume, true)
+			moment(momentSound, Feed.MomentVolume)
 		end
 		if dim then
 			local into = TweenInfo.new(DIM_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -468,10 +518,30 @@ function FeedView.new(): Brix.System
 		end
 	end
 
+	-- This player left the floor the feed is on (their gate shut with them aboard, S2-02d4): it
+	-- cuts out now, the static and the map back, whatever was about to happen on it.
+	local function cut(id: number)
+		local s = showing
+		if s and s.id == id then
+			s.ends = math.min(s.ends, os.clock())
+		end
+	end
+
 	local system = { name = "FeedView" }
 
 	function system.start(_: any, _context: Brix.Context)
 		task.spawn(SoundPrimer.prime, { Feed.InSound, Feed.BedSound, Feed.OutSound })
+		local i = sound(Feed.InSound, Feed.InVolume, false)
+		i.PlaybackRegionsEnabled = true
+		inHiss = i
+		local o = sound(Feed.OutSound, Feed.OutVolume, false)
+		o.PlaybackRegionsEnabled = true
+		outHiss = o
+		local under = sound(Feed.BedSound, Feed.BedVolume, true)
+		local thin = Instance.new("EqualizerSoundEffect") -- the bed thin, under the picture
+		thin.LowGain, thin.MidGain, thin.HighGain = -40, -6, 0
+		thin.Parent = under
+		bed = under
 		task.spawn(function()
 			local remote = ReplicatedStorage:WaitForChild(Feed.Remote)
 			if not remote:IsA("RemoteEvent") then
@@ -479,7 +549,8 @@ function FeedView.new(): Brix.System
 			end
 			table.insert(
 				connections,
-				-- only ever the server's: a Show's camera, number and what to watch; a Close's id
+				-- only ever the server's: a Show's camera, number and what to watch; a Close's or a
+				-- Cut's id
 				remote.OnClientEvent:Connect(
 					function(
 						kind: string,
@@ -504,6 +575,8 @@ function FeedView.new(): Brix.System
 							show(id, a, b, watch, if typeof(d) == "Instance" then d else nil)
 						elseif kind == "Close" and type(a) == "string" and type(b) == "boolean" then
 							close(id, a, b)
+						elseif kind == "Cut" then
+							cut(id)
 						end
 					end
 				)
@@ -541,7 +614,9 @@ function FeedView.new(): Brix.System
 			if not s.out then
 				s.out = true
 				s.bed:Stop()
-				once(Feed.OutSound, Feed.OutVolume, false)
+				-- hiss up hard with the snow, and the set switched off as the map comes back
+				local onFor = Feed.SnowOut + SHRINK.Time
+				hiss(outHiss, Feed.OutVolume, Feed.OutCut - onFor, onFor, OUT_TAIL)
 				task.delay(Feed.SnowOut, function()
 					if showing == s then
 						TweenService:Create(s.screen, SHRINK, { Size = s.small }):Play()
@@ -573,6 +648,20 @@ function FeedView.new(): Brix.System
 		end
 		table.clear(connections)
 		finish()
+		for _, fade in fades do
+			fade:Cancel()
+		end
+		table.clear(fades)
+		for _, s in { inHiss, outHiss, bed } do
+			if s then
+				s:Destroy()
+			end
+		end
+		inHiss, outHiss, bed = nil, nil, nil
+		for _, s in moments do
+			s:Destroy()
+		end
+		table.clear(moments)
 	end
 
 	return system

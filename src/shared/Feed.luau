@@ -46,12 +46,18 @@ Feed.Dot = { 232, 38, 38 } -- the recording dot, blinking
 Feed.Blink = 1 -- seconds per blink, on half of it
 
 -- Its sounds (Pro Sound Effects, free on the Creator Store), flat in your ears, not in the hall.
-Feed.InSound = "rbxassetid://9125999159" -- a burst of interference as it cuts in
-Feed.InVolume = 0.55
+-- In and out are a TV set's plain hiss between channels (the owner, Nov 14), two different
+-- recordings so they never sound pasted, each sliced to land on the snow (S2-02d4, measured in
+-- STUDIO.md "The feed's static").
+Feed.InSound = "rbxassetid://9126097386" -- "Television Static On Change Stations Constant 1"
+Feed.InFrom = 0.74 -- seconds into it the hiss bursts in: silent before, full within 5 ms
+Feed.InTail = 0.12 -- seconds it fades into the quiet static once the snow clears off the picture
+Feed.InVolume = 0.5
 Feed.BedSound = "rbxassetid://9126000057" -- static under the picture, quiet and thin, looped
 Feed.BedVolume = 0.14
-Feed.OutSound = "rbxassetid://9126000747" -- the burst as it cuts out
-Feed.OutVolume = 0.6
+Feed.OutSound = "rbxassetid://9126097099" -- "Television Static Change Stations Constant Off 2"
+Feed.OutCut = 5.565 -- seconds into it the set switches off: the hiss dies in about 60 ms, a tail
+Feed.OutVolume = 0.5
 Feed.MomentVolume = 0.9 -- the moment's own sound through the camera's tinny speaker
 
 -- Where a camera hangs (`hang`): high in a corner of the hall the thing it watches faces, off to
@@ -92,6 +98,19 @@ function Feed.number(x: number, z: number): number
 		return 1
 	end
 	return 1 + (math.floor(math.abs(x * 7 + z * 13)) % 16)
+end
+
+--- Takes everyone in `gone` off a feed's `watching` (in place, the rest kept in order) and returns
+--- who was taken off: the players whose gate shut with them aboard (S2-02d4), whose screens cut it
+--- out at once while the friends still on the floor keep watching.
+function Feed.leave<T>(watching: { T }, gone: { T }): { T }
+	local cut: { T } = {}
+	for i = #watching, 1, -1 do
+		if table.find(gone, watching[i]) then
+			table.insert(cut, 1, table.remove(watching, i) :: T)
+		end
+	end
+	return cut
 end
 
 --- Whether to cut in now: a walker `left` studs from where it does the thing, at `pace` studs a

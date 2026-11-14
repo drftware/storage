@@ -77,9 +77,24 @@ do
 	ok(not Feed.due(0 / 0, 2), "a distance gone wrong: never")
 end
 
+-- riders whose gate shut leave a feed of the floor they left (S2-02d4); the rest keep it
+do
+	local watching = { "ana", "ben", "cal" }
+	local cut = Feed.leave(watching, { "ben", "dee" })
+	ok(#cut == 1 and cut[1] == "ben", "only a watcher who left is cut")
+	ok(#watching == 2 and watching[1] == "ana" and watching[2] == "cal", "the rest keep watching")
+	ok(#Feed.leave(watching, {}) == 0 and #watching == 2, "nobody leaving cuts nobody")
+	local all = Feed.leave(watching, { "cal", "ana" })
+	ok(#all == 2 and #watching == 0, "everyone leaving: nobody's left watching")
+end
+
 -- the look's numbers stay sensible
 ok(Feed.SnowIn > 0 and Feed.SnowOut > 0 and Feed.After > Feed.SnowOut, "the snow is brief")
 ok(Feed.Most > Feed.Lead + Feed.After, "a feed's longest outlasts a full walk-up and the moment")
+ok(
+	Feed.InFrom >= 0 and Feed.InTail > 0 and Feed.OutCut > Feed.SnowOut + 0.5,
+	"the hiss slices sit inside their recordings"
+)
 ok(Feed.OutLeast < Feed.OutMost and Feed.UpLeast < Feed.UpMost, "least under most")
 
 print(`feed: {checks - failures}/{checks} passed`)

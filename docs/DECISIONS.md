@@ -4626,3 +4626,26 @@ crowds it). The ticket read "a bit" as about a third.
   the dropped monster are in the GDD's "What's out".
 - S2-06 is split into five sessions (art, carrying home, taking from you, the pile and the
   trap, its sounds) and no longer waits on the owner.
+
+## D-168 No camera feed once you've left a floor; plain TV static in and out (S2-02d4, Nov 14)
+
+- The owner, after playing: riding up, they still saw the Mannequin cut the power on the floor
+  below. Who watches a floor's cameras was picked by where you stand (40 studs up or down, over
+  its plan), and a car still climbing out of the floor passes. Now the instant a gate hits its
+  post, Climbs tells Keepers who rode (`left`): they're off that floor for its cameras for good,
+  and any of its feeds still on their screens cuts to static and the map that moment (`Feeds.cut`,
+  a "Cut" to each). Friends still on the floor keep watching. A feed stays tracked for its
+  aftermath (`Feed.After`) after the moment, so a gate shutting then still cuts it.
+- A floor nobody's on any more offers its Mannequins no breaker errand (one already walking is
+  called off): nobody would see it, and the power cut means nothing to an empty floor.
+- In and out are a TV set's plain hiss, as the owner asked: two different Pro Sound Effects
+  recordings so the two never sound pasted. In: "Television Static On Change Stations
+  Constant 1" from 0.74 s (silence to full in 5 ms), full for the snow's 0.22 s, fading over
+  0.12 s into the quiet bed. Out: "Television Static Change Stations Constant Off 2", full for
+  the snow's 0.4 s and the window's shrink, then the set's own switch-off (it dies in 60 ms) as
+  the map comes back. The quiet bed and the clunk through the camera stay (default, `OWNER.md`).
+- A feed that starts while the corner map is still sliding in follows the map's window and lands
+  in its place (it was left where the window was when it cut in).
+- FeedView makes its in, out and bed sounds once at start and replays them, and keeps each
+  moment's sound after its first play: in Studio Play a Sound made and played at once started
+  0.28 s late even primed, which put the hiss after the snow; a ready one starts within a frame.

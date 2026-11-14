@@ -1682,7 +1682,10 @@ Done when a team that has lost its lights goes looking for the breaker without b
     - [x] **S2-02d3 The feed judged. Judged by the owner in play, Nov 14: "This looks great! ...
       the static look is great."** No agent session needed. Its one code item (a feed that
       starts while the map is still sliding in takes the map's place as it lands) moves to d4.
-    - [ ] **S2-02d4 The owner's two feed fixes** (owner, Nov 14, after playing it). One session.
+    - [x] **S2-02d4 The owner's two feed fixes** (owner, Nov 14, after playing it). (Nov 14,
+      D-168; seen in Studio Play: the shut cut a feed up on the rider's screen, a Mannequin at
+      the box turned away once nobody was on the floor, both hisses on time, a feed started
+      during the map's slide landed in its place.) One session.
       1. **No feed once you've left the floor.** Owner: "after finishing a level, when I was in
          the elevator and moving up, the mannequin had cut the power on the previous floor and
          it still showed me. We should probably have a flag that stops that from happening."
@@ -1765,7 +1768,23 @@ Done when a team that has lost its lights goes looking for the breaker without b
     lights' flicker as they cut and come back.
 - [ ] **S2-05 The tap when you shut a door on a sleeper.** Pull the door down on a monster
   that is asleep or hasn't seen you and a bar with a moving marker comes up by itself. Hit it:
-  the door settles quietly. Miss, or don't tap: it bangs, and the monster wakes and pounds.
+  the door settles quietly. Miss, or don't tap: it bangs, and the monster wakes and pounds. As
+  Dead by Daylight's skill checks: a bar comes up unasked, one tap in the zone. The moment: your
+  thumb hovering while the door comes down a foot from something that might open its eyes.
+  Split (S2-02d4's session, for the evening run), one per session:
+  - [ ] **S2-05a The rules and the server.** Pure rules first with a Lune spec (`ShutTap` or
+    the like: when a shut earns a tap, the marker's sweep, the zone's width and place, how
+    long the bar waits, hit or miss from the tap's time; feel numbers in shared Config). The
+    server: a door pulled down on a unit whose monster sleeps (or is awake but hasn't seen the
+    puller) opens a tap window for that player only; one remote for the tap, checked (type,
+    then range, then that it's theirs and in its window) and rate-limited. A hit: the door's
+    last stretch slows and lands soft, nothing heard. A miss or no tap: the door bangs (heard
+    as a slam is), the monster wakes behind it and pounds (`Keeper.trap`, S2-03b's path). A
+    plain bar on screen to test with; verify in Play both ways.
+  - [ ] **S2-05b The bar's feel.** The bar at phone size, where a thumb already is, rising in
+    with motion, the marker's sweep, the zone; a soft latch on a hit and the bang on a miss,
+    the door's soft landing against its slam; no words. Verify in Play, phone steps in
+    `OWNER.md`.
 - [ ] **S2-07 The fix pass before Step 3** (added Nov 14 from HANDOFF's Queue, so Step 2 ends
   clean before anyone is carried up wrapped). Built before S2-06. In
   two sessions:

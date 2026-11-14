@@ -223,6 +223,9 @@ type OnFloor = {
 	here: number,
 	woken: number, -- how many of its sleepers have woken
 	waking: { [number]: boolean }, -- slots dealt early to wake: stand awake and shut in
+	-- the players who rode out of it as its gate shut (S2-02d4): off it for its cameras, though
+	-- their car climbs level with it for a while
+	left: { [Player]: boolean },
 }
 -- `quarry`: whom it hunted as last counted for screens (`tellHunted`), 0 for no one.
 -- `feed`: the security camera feed showing it walk up to throw the breaker (S2-02d), 0 for none.
@@ -249,6 +252,11 @@ export type Keepers = Brix.System & {
 		random: Floor.Random,
 		asleep: { [number]: string }
 	) -> (),
+	-- `riders` rode out of laid floor `model` as its gate shut (Climbs' `shut`, S2-02d4): from now
+	-- on they aren't on it for its security cameras though their car climbs level with it for a
+	-- while, any of its feeds showing to them cuts out on their screens at once, and once nobody's
+	-- on it its Mannequins stop setting off for its breaker.
+	left: (self: any, model: Model, riders: { Player }) -> (),
 	-- The units on laid floor `model` whose keeper has slept behind its shut door since the floor
 	-- was laid (S2-01), each with its keeper's name: what S2-03 wakes and S2-04's wrong code lets
 	-- out. Empty off any keepers' floor. A new table each call.
@@ -861,6 +869,33 @@ function Keepers.new(): Keepers
 		return found
 	end
 
+	-- Whether `player` is on floor `on` for its security cameras (S2-02d): within 40 studs of its
+	-- level and over its plan, and not one who rode out of it as its gate shut (S2-02d4: their car
+	-- climbs level with it for a while, and would pass). Kept players count: they're on it, shut
+	-- in. Allocates nothing.
+	local function watches(on: OnFloor, player: Player): boolean
+		if on.left[player] then
+			return false
+		end
+		local character = player.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		if not (root and root:IsA("BasePart")) then
+			return false
+		end
+		local p = on.origin:PointToObjectSpace(root.Position)
+		return math.abs(p.Y) < 40 and Climb.on(on.floor, p.X, p.Z)
+	end
+
+	-- Whether nobody is on floor `on` for its cameras (`watches`). Allocates nothing.
+	local function deserted(on: OnFloor): boolean
+		for _, player in everyone do
+			if watches(on, player) then
+				return false
+			end
+		end
+		return true
+	end
+
 	-- Offers loose Mannequin `k` its floor's box: the chance it heads there at its next pick of
 	-- where to wander (`Breaker.errand`: none while thrown or just after the power came back),
 	-- sure while the dev command stands.
@@ -871,8 +906,10 @@ function Keepers.new(): Keepers
 			return
 		end
 		local powered, since = b:power(box)
-		local chance = if devErrand and powered
-			then 1
+		-- nobody on the floor any more (they all rode up, S2-02d4): no errand, nobody would see it
+		local chance = if deserted(on)
+			then 0
+			elseif devErrand and powered then 1
 			else Breaker.errand(on.floor.number, powered, since, on.cut)
 		Keeper.offer(k, on.boxStand, on.boxAt, chance, Breaker.Grip)
 	end
@@ -882,13 +919,8 @@ function Keepers.new(): Keepers
 	local function watchers(on: OnFloor): { Player }
 		local found: { Player } = {}
 		for _, player in everyone do
-			local character = player.Character
-			local root = character and character:FindFirstChild("HumanoidRootPart")
-			if root and root:IsA("BasePart") then
-				local p = on.origin:PointToObjectSpace(root.Position)
-				if math.abs(p.Y) < 40 and Climb.on(on.floor, p.X, p.Z) then
-					table.insert(found, player)
-				end
+			if watches(on, player) then
+				table.insert(found, player)
 			end
 		end
 		return found
@@ -1491,6 +1523,7 @@ function Keepers.new(): Keepers
 			here = -1,
 			woken = 0,
 			waking = {},
+			left = {},
 		}
 		floors[model] = on
 		for unit, slot in slots do
@@ -1511,6 +1544,25 @@ function Keepers.new(): Keepers
 						said,
 						", "
 					)}`
+			)
+		end
+	end
+
+	function system.left(_: any, model: Model, riders: { Player })
+		local on = floors[model]
+		if not on or #riders == 0 then
+			return
+		end
+		for _, player in riders do
+			on.left[player] = true
+		end
+		local f = feeds
+		if f then
+			f:cut(riders, model)
+		end
+		if TRACE then
+			print(
+				`Keepers: {#riders} rode out of floor {on.floor.number}; its cameras are done with them`
 			)
 		end
 	end

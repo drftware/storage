@@ -9,6 +9,10 @@
 	sound through the camera, dim the picture if the moment put the lights out, and cut back to
 	the map `Feed.After` seconds later. A feed nobody closes cuts out on its own after `Feed.Most`.
 
+	`cut` is for players who have left the floor (their gate shut with them aboard, S2-02d4): any
+	feed of it still showing to them cuts out on their screens that moment, static and the map
+	back, while friends still on the floor keep watching.
+
 	`hang` finds where a camera goes to watch a spot on a wall: it measures the hall from just off
 	the wall (out, along the wall the way it hangs, up) with rays against the floor and leaves the
 	numbers to `Feed.hang`. `ready` streams the spot in on those screens ahead of time (the feed
@@ -40,6 +44,9 @@ export type Feeds = Brix.System & {
 	-- The moment happened on feed `id`: play `sound` through the camera, dim the picture if
 	-- `dim`, and cut back to the map after `Feed.After`. Nothing for a feed long gone.
 	close: (self: any, id: number, sound: string?, dim: boolean) -> (),
+	-- `players` have left floor `within` (S2-02d4): every feed of it still showing to them cuts
+	-- out on their screens now (static, the map back). Its other watchers keep it.
+	cut: (self: any, players: { Player }, within: Instance) -> (),
 	-- Streams the area around `at` in on each of `players`' screens, in the background.
 	ready: (self: any, players: { Player }, at: Vector3) -> (),
 	-- Where a camera hangs to watch `spot` (its look out into the hall, its right along the wall),
@@ -51,7 +58,9 @@ local Feeds = {}
 
 function Feeds.new(): Feeds
 	local remote: RemoteEvent? = nil
-	local open: { [number]: { Player } } = {} -- each feed still showing, who watches it
+	-- each feed still on a screen: who watches it, the floor it's on, and whether it was closed
+	-- (its screens show the moment's aftermath for `Feed.After` more, so `cut` still reaches them)
+	local open: { [number]: { watching: { Player }, within: Instance, closed: boolean } } = {}
 	local count = 0
 
 	local system = { name = "Feeds" } :: any
@@ -86,7 +95,7 @@ function Feeds.new(): Feeds
 				r:FireClient(player, "Show", id, shot.camera, shot.number, shot.watch, shot.within)
 			end
 		end
-		open[id] = watching
+		open[id] = { watching = watching, within = shot.within, closed = false }
 		task.delay(Feed.Most + 1, function()
 			open[id] = nil -- every screen has cut it out on its own by now
 		end)
@@ -94,15 +103,34 @@ function Feeds.new(): Feeds
 	end
 
 	function system.close(_: any, id: number, sound: string?, dim: boolean)
-		local watching = open[id]
+		local feed = open[id]
 		local r = remote
-		if not (watching and r) then
+		if not (feed and r) or feed.closed then
 			return
 		end
-		open[id] = nil
-		for _, player in watching do
+		feed.closed = true
+		task.delay(Feed.After + 1, function()
+			open[id] = nil -- every screen has cut it out by now
+		end)
+		for _, player in feed.watching do
 			if player.Parent == Players then
 				r:FireClient(player, "Close", id, sound or "", dim)
+			end
+		end
+	end
+
+	function system.cut(_: any, players: { Player }, within: Instance)
+		local r = remote
+		if not r then
+			return
+		end
+		for id, feed in open do
+			if feed.within == within then
+				for _, player in Feed.leave(feed.watching, players) do
+					if player.Parent == Players then
+						r:FireClient(player, "Cut", id)
+					end
+				end
 			end
 		end
 	end

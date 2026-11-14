@@ -196,12 +196,19 @@ Your idea, first half: as a Mannequin walks up to the breaker, the corner map on
 on that floor bursts into snow and grows into a grainy security camera picture of the box's hall
 ("CAM 07", a blinking red dot); its hand goes up on the grip, the lever comes down, the clunk
 comes thin through the camera's speaker, static, and the map is back.
-Judged by you in play, Nov 14: "This looks great!" and "the static look is great." Two fixes
-from that play are the next ticket, S2-02d4:
-1. **The feed only shows to players on that floor.** You saw it from your car riding up after
-   the floor was done. Once your car's gate shuts on a floor, nothing on that floor shows on
-   your screen any more, and a feed already up cuts to static and the map that moment.
-2. **Plain TV static in and out,** in place of today's bursts of interference.
+Judged by you in play, Nov 14: "This looks great!" and "the static look is great."
+**Check your two fixes** (S2-02d4, built Nov 14, D-168; seen in Studio Play, not on a phone):
+1. Stay on a floor until a loose Mannequin walks to the breaker. Look for: the corner map
+   snows over with a short, sharp hiss, like a TV between channels, and the hiss sinks into the
+   quiet static under the picture as the picture comes up.
+2. Watch it pull the lever. Look for: after the clunk, the picture snows over again with a
+   second hiss, a little different from the first, ending in a click-off like a TV switched off
+   just as the map comes back.
+3. Punch the code and get in the car while a Mannequin is still walking to the breaker. Look
+   for: the moment the gate shuts, a feed that's up snows over and the map comes back, and
+   nothing from that floor shows on your screen for the rest of the ride. If a friend stays
+   behind on the floor, their feed carries on.
+4. On a phone, check both hisses are loud enough to notice and not harsh.
 Still to decide (my defaults, in place now unless you say otherwise):
 1. Its hand rests on the grip 0.6 s before the pull (`Breaker.Grip`); the feed cuts in 2.4 s of
    walk before the throw and stays 1.7 s after; the window grows to about one and a half times
@@ -212,7 +219,7 @@ Still to decide (my defaults, in place now unless you say otherwise):
    clunk coming thin through the camera's speaker. Say if you want the picture silent between
    the two bursts instead.
 3. A Mannequin stops heading for the breaker on a floor everyone has left (it would cut the
-   power for nobody).
+   power for nobody), and one already walking there turns away (seen in Studio Play).
 
 ## Now: the halls go dark for a wrong code (S2-04c, built Nov 14, D-163; seen in Play, not heard)
 

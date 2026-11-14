@@ -582,6 +582,10 @@ function Climbs.new(): Climbs
 			return
 		end
 		if #leaving.aboard > 0 then
+			-- the riders are off this floor for its cameras now, before their car climbs past it
+			if keepers then
+				keepers:left(on.model, leaving.aboard)
+			end
 			shut:fire({ from = on, riders = leaving.aboard, at = leaving.at })
 		end
 		-- everyone else on the floor, in the halls or kept in a unit, is left behind

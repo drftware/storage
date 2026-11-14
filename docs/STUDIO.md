@@ -2107,6 +2107,28 @@ verified: a doc page, Studio, or "untested".
   "its sleepers' clock starts"), set `WakeSleepers`, then park. The bursts come 90 s later.
   `SendToBreaker` then had a Mannequin throw the box within a minute, before a watch loop on
   `KeeperMotion` started: start that loop in the same call that sends it.
+- **A new Sound starts late, primed or not** (S2-02d4, Nov 14, Play at 15 frames a second): a
+  `Sound` made and played at once reads `IsLoaded` false and its `TimePosition` sits still for
+  about 0.28 s, even for a recording `SoundPrimer` played and the game played before. One made
+  ahead (wait for `IsLoaded`) and replayed starts within a frame, and with
+  `PlaybackRegionsEnabled` it stops by itself at its region's end. Sounds that must land on a
+  beat are made once at start and replayed (FeedView). A tween with a delay may start a frame or
+  two late: end a region a little past a fade.
+- **The feed's static, measured** (S2-02d4; Edit, AudioPlayer at a quarter speed to an
+  AudioAnalyzer): Pro Sound Effects' "Television Static On Change Stations Constant 1"
+  9126097386 (2.87 s) is silent with a click at 0.3 s, then from 0.745 s full hiss (about -22 dB
+  RMS, -16 at the edge) within 5 ms, to a hard stop at 2.15 s. "...Constant Off 2" 9126097099
+  (6.84 s): a click at 0.6 s, steady hiss 1.0 to 5.56 s, then the set switched off (down 30 dB in
+  60 ms). "Off 4" 9126097283 and "Off 3" 9126097291 are the same, longer; "On 3" 9126097362
+  changes channel at 5.2 s and hums quietly after 8.9 s.
+- **A feed up as your gate shuts, in Play** (S2-02d4): punch the code (2274 on the dev floor,
+  seed 7) at (-7.8, 3, -593.2), then from the Client hold the "Stand one" post's prompt
+  (`StandMannequin`, Scriptable camera on it), park anchored under the car at (0, -12, -581),
+  and from the Server set `SendToBreaker` when the elevator's `Departs` is 20.5 s off and pivot
+  aboard at (0, 3, -581) 1.5 s before it. The stood Mannequin walked 110 studs and reached the
+  box just after the gate hit its post (about 1.1 s after `Departs`); the feed cut in 2.6 s
+  before. On the dev floor the shut ends the climb (Top). `WakeSleepers` is worse for this:
+  later waves pound and call the errands off.
 - **Testing the camera feed in Play** (S2-02d1): the "Sending the Mannequin to the box" recipe,
   but park your root anchored under the lobby at (-6, -12, -591), not up at 400: the feed goes
   only to players on the floor (40 studs up or down). The feed is `PlayerGui.Minimap.Feed`;
