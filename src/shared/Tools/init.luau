@@ -52,6 +52,8 @@ Tools.GiveRemote = "ToolGive" -- client → server: hand what's in your hand to 
 Tools.NoticeRemote = "ToolNotice" -- server → client: a short line for your screen
 Tools.UseRemote = "ToolUse" -- client → server: use what's in your hand (its row's `verb`: Blow)
 Tools.BrokeRemote = "ToolBroke" -- server → client: the tool in your hand just broke (its key)
+-- server → client: the Packrat took something out of your slots (S2-06c): its key, its slot
+Tools.SnatchedRemote = "ToolSnatched"
 Tools.HeldName = "HeldTool" -- the model's name in a character's hand
 Tools.CarriedName = "Carried" -- the weld holding a find in a monster's arms (S2-06b2)
 -- A door's Lock button (Doors): every screen hides it unless a padlock is in that player's hand.

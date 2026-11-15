@@ -475,4 +475,7 @@ function CaughtLunge.new(kick: (amount: number) -> ()): Lunge
 	}
 end
 
+-- One of a keeper row's beats in your ears only (the Packrat's take, S2-06c, plays its Lunge).
+CaughtLunge.beat = beat
+
 return CaughtLunge

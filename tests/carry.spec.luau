@@ -267,6 +267,30 @@ for key in Deal.Bag do
 	ok(table.find(Deal.Tools, key) ~= nil, `{key}: in the bag, so one of the deal's tools`)
 end
 
+-- What the Packrat takes when it reaches you (S2-06c): the most valuable find, else a tool (the
+-- one in your hand first), never the ladder, and nothing from empty slots
+local function worth(key: string): number?
+	return Carry.worth(Catalog[key])
+end
+ok(Carry.prize({ "", "", "" }, 1, worth) == 0, "empty slots: nothing to take")
+ok(Carry.prize({ "Teddy", "Television", "Skates" }, 1, worth) == 2, "it takes the television")
+ok(Carry.prize({ "Boombox", "Skates", "" }, 2, worth) == 1, "the boombox over the skates")
+ok(Carry.prize({ "Teddy", "", "" }, 1, worth) == 1, "even a teddy")
+local tools: { string } = {}
+for key, row in Catalog do
+	if not row.find and not row.bothHands then
+		table.insert(tools, key)
+	elseif row.bothHands then
+		ok(Carry.worth(row) == nil, `it never takes the {key}`)
+	end
+end
+table.sort(tools)
+ok(#tools >= 2, "two tools to check with")
+ok(Carry.prize({ tools[1], "Teddy", tools[2] }, 1, worth) == 2, "a find before a tool")
+ok(Carry.prize({ tools[1], "", tools[2] }, 3, worth) == 3, "no find: the tool in your hand")
+ok(Carry.prize({ tools[1], tools[2], "" }, 3, worth) == 1, "else the first tool")
+ok(Carry.worth(nil) == nil, "nothing for no row")
+
 print(`carry: {checks - failures}/{checks} checks passed`)
 if failures > 0 then
 	error(`{failures} failed`)

@@ -88,6 +88,10 @@
 	its map), along a line the map clears (never through a wall or a shut door, never from up on
 	the tops), and no higher than its head. Never while a light holds it, never asleep, and never
 	anyone but the one it hunts. A step's catch is `caught`; what follows is the server's (L-07).
+	A keeper that collects (S2-06c, the GDD's Packrat) takes rather than catches when they carry
+	something it takes (`players.loot`, the server's pick from their slots): its hands close on it
+	(`took`, with `robbed` the player) and pull it in, and it walks home with it as after a fetch,
+	the player let go. With empty slots they're caught as by any keeper.
 
 	It hears a door's open, slam or lift from inside (`Keeper.Hears`, the GDD's loud ones) as far as
 	that sound carries for a player (DoorSound's reach, scaled by its row's `hearing`), measured
@@ -124,12 +128,15 @@ export type Blow = "None" | "Bang" | "Burst" | "Held"
 --- The players a keeper may see this step, as parallel arrays `count` long, which the caller fills
 --- and reuses: each one's id (any number but 0; the server's are UserIds), where their feet are,
 --- in the floor's coordinates, and their torch: where its beam leaves from (their eyes) and the
---- way it points (length 1), or a zero `aim` (or none) while it's off.
+--- way it points (length 1), or a zero `aim` (or none) while it's off. `loot` is what a keeper
+--- that collects takes from each when it reaches them (S2-06c): the number of the thing in their
+--- slots it would carry off (any number but 0), or 0 (or none) for nothing it takes.
 export type Players = {
 	ids: { number },
 	at: { vector },
 	eye: { vector },
 	aim: { vector },
+	loot: { number }?,
 	count: number,
 }
 
@@ -220,6 +227,9 @@ export type Keeper = {
 	homing: boolean, -- it's walking home with it
 	hands: Hands, -- what its hands are doing as it stands
 	took: number, -- the id of the find its hands closed on this step (the server lifts it), or 0
+	-- the id of the player whose thing (`took`) its hands closed on this step (S2-06c: the server
+	-- takes it out of their slots), or 0 for a find lying loose
+	robbed: number,
 	laid: number, -- the id of the find it laid on its pile this step (the server puts it there), or 0
 }
 
@@ -468,6 +478,20 @@ function Keeper.catches(k: Keeper, players: Players): number
 	return 0
 end
 
+-- What a keeper that collects would take from player `id` (S2-06c): `players.loot`'s, or 0.
+local function lootOf(players: Players, id: number): number
+	local loot = players.loot
+	if not loot then
+		return 0
+	end
+	for i = 1, players.count do
+		if players.ids[i] == id then
+			return loot[i] or 0
+		end
+	end
+	return 0
+end
+
 -- The find it goes for next (S2-06b1): the nearest along the halls it can walk to, never one in
 -- its own unit (its pile). Its index in `finds`, or nil. Allocates nothing.
 local function nearestFind(k: Keeper, finds: Finds): number?
@@ -610,6 +634,7 @@ function Keeper.new(
 		hands = "None",
 		took = 0,
 		laid = 0,
+		robbed = 0,
 	}
 end
 
@@ -1163,7 +1188,7 @@ function Keeper.step(
 	k.caught = 0
 	k.threw = false
 	k.blow = "None"
-	k.took, k.laid = 0, 0
+	k.took, k.laid, k.robbed = 0, 0, 0
 	local looked = false
 	-- with a find in its arms it sees no one (S2-06b1)
 	if players and k.state ~= "Asleep" and k.holding == 0 then
@@ -1240,7 +1265,15 @@ function Keeper.step(
 			faceToward(k, k.goal) -- at arm's length: it stands facing them
 		end
 		local id = if players then Keeper.catches(k, players) else 0
-		if id ~= 0 then
+		local loot = if id ~= 0 and collect and players then lootOf(players, id) else 0
+		if loot ~= 0 and collect then
+			-- it takes rather than catches (S2-06c): its hands close on the best thing they
+			-- carry (the server takes it out of their slots) and pull it in, and it goes home
+			-- with it as after a fetch (Waiting, above); they're let go, not wrapped
+			k.robbed, k.took, k.holding, k.target = id, loot, loot, 0
+			stand(k, collect.take)
+			k.hands = "Take"
+		elseif id ~= 0 then
 			-- its hand closes on them: it stands over the spot, then roams
 			k.caught, k.target = id, 0
 			stand(k, k.row.linger)
@@ -1316,7 +1349,7 @@ end
 
 --- A new, empty list of players for `step`, to fill and reuse.
 function Keeper.players(): Players
-	return { ids = {}, at = {}, eye = {}, aim = {}, count = 0 }
+	return { ids = {}, at = {}, eye = {}, aim = {}, loot = {}, count = 0 }
 end
 
 --- The find in its arms is gone (S2-06b2): the server couldn't lift it, or took it from it. It

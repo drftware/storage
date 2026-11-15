@@ -198,6 +198,36 @@ function Carry.keep(c: Carry, isFind: (id: string) -> boolean): { string }
 	return out
 end
 
+-- What a thing in your slots is worth to the Packrat (S2-06c), from its catalog row: a find's
+-- heft, the heavier the better (the television first, the teddy last) until finds carry a worth
+-- of their own (`OWNER.md`); a tool 0, worth taking only with no find; nil for what it leaves
+-- (both hands' things: the ladder on your shoulder, the big find), or no row.
+function Carry.worth(row: { find: boolean?, heft: number?, bothHands: boolean? }?): number?
+	if not row or row.bothHands then
+		return nil
+	end
+	return if row.find then math.max(row.heft or 0, 0.01) else 0
+end
+
+-- The slot the Packrat takes from when it reaches you (S2-06c, GDD "What counts as something to
+-- carry"): `keys` are your slots' catalog keys ("" or nil empty), `hand` the slot you're on, and
+-- `worth` says each one's (`Carry.worth`'s rule). The most valuable find, else a tool, the one in
+-- your hand when it's a tie; never what `worth` leaves. Your flashlight isn't in a slot. 0: nothing
+-- it takes, so it catches you.
+function Carry.prize(keys: { string }, hand: number, worth: (key: string) -> number?): number
+	local best, most = 0, -1
+	for i = 1, Carry.Slots do
+		local key = keys[i]
+		if key and key ~= "" then
+			local w = worth(key)
+			if w and (w > most or (w == most and i == hand)) then
+				best, most = i, w
+			end
+		end
+	end
+	return best
+end
+
 -- May a hand's move at `now` go through after the last ones? `burst` is how many are left in
 -- hand; returns whether it may and what's left.
 function Carry.allow(last: number?, burst: number, now: number): (boolean, number)

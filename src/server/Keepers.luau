@@ -424,6 +424,11 @@ function Keepers.new(): Keepers
 					end
 				end
 				list.aim[n] = aim
+				-- what the Packrat would take from them if it reached them (S2-06c)
+				local loot = list.loot
+				if loot then
+					loot[n] = if toolSlots then toolSlots:prize(player) else 0
+				end
 			end
 		end
 		list.count = n
@@ -537,6 +542,11 @@ function Keepers.new(): Keepers
 			local k = entry.keeper
 			local doing = if state == "Waiting" and was == "Searching"
 				then "stands where it lost them, looking about"
+				elseif
+					state == "Waiting"
+					and was == "Hunting"
+					and k.hands == "Take"
+				then "pulls in what it took" -- S2-06c: robbed, not caught
 				elseif
 					state == "Waiting" and was == "Hunting"
 				then "stands over where it caught them"
@@ -1171,6 +1181,29 @@ function Keepers.new(): Keepers
 		end
 	end
 
+	-- Its hands closed on thing `n` in player `id`'s slots (S2-06c): Slots takes it out of their
+	-- hands into its arms, from where they held it, and every screen eases it into its hands as a
+	-- find lifted off a floor (`Packrat.FromAttribute`). Their screen answers (ToolView's
+	-- `snatched`); they're let go, not wrapped. Gone first, it sets off empty-handed.
+	local function robbed(entry: Entry, id: number, n: number)
+		local s, body = toolSlots, entry.body.model
+		local player = Players:GetPlayerByUserId(id)
+		local chest = body:FindFirstChild("UpperTorso")
+		local weld: Weld?, from: CFrame? = nil, nil
+		if s and player and chest and chest:IsA("BasePart") then
+			weld, from = s:snatch(player, n, chest, body)
+		end
+		if not (weld and from and player) then
+			Keeper.dropped(entry.keeper)
+			return
+		end
+		weld:SetAttribute(Packrat.FromAttribute, from)
+		weld.C0 = Packrat.Chest
+		if TRACE then
+			print(`Keepers: the {entry.keeper.row.name} takes from {player.Name} and heads home`)
+		end
+	end
+
 	-- It laid find `n` on its pile (S2-06b2): Slots sets it down there, takeable again, easing
 	-- it from between its hands as every screen shows them, crouched (`Packrat.Held`). The spot
 	-- is the first round the pile, from the next, with no find lying within `PILE_CLEAR` (S2-06b2b:
@@ -1717,7 +1750,7 @@ function Keepers.new(): Keepers
 					if TRACE and froze then
 						traceLight(entry)
 					end
-					if TRACE and k.caught == 0 and k.target ~= target then
+					if TRACE and k.caught == 0 and k.robbed == 0 and k.target ~= target then
 						traceSight(entry, target)
 					end
 				end
@@ -1729,7 +1762,9 @@ function Keepers.new(): Keepers
 				elseif not k.threw then
 					entry.feed = 0 -- called off: an open feed shows it turn away, then cuts out
 				end
-				if k.took ~= 0 then
+				if k.took ~= 0 and k.robbed ~= 0 then
+					robbed(entry, k.robbed, k.took)
+				elseif k.took ~= 0 then
 					tookFind(entry, k.took)
 				elseif k.laid ~= 0 then
 					laidFind(entry, k.laid)

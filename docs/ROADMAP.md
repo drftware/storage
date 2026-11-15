@@ -1934,6 +1934,19 @@ Done when a team that has lost its lights goes looking for the breaker without b
     dropped in its path (the drop that exists, `Slots`) is picked up instead of the player.
     The take answers: its reach, the thing leaving your slot on the wheel, a sound, a kick of
     the view.
+    Split in two (Nov 14, context):
+    - [x] **S2-06c1 The take** (Nov 14, D-181). The brain takes rather than catches when the
+      server says the player carries something it takes (`Players.loot`, `robbed`), pulls it in
+      and goes home with it; empty slots, an ordinary catch. Which slot is `Carry.prize`
+      (heaviest find, else a tool, the one in hand first; never the ladder or the flashlight);
+      Slots `prize` and `snatch` move it from the hand into its arms, eased from where you held
+      it. The robbed screen: a view kick, its creak and the thing's own sound, the thing torn
+      from your grip toward it and its picture pulled off the wheel. Seen in Play: it took the
+      TV, took it home, laid it, took the teddy, then with empty slots wrapped the player.
+    - [ ] **S2-06c2 A find dropped in its path, and its own catch.** Hunting with empty arms, a
+      find it sees nearer than the one it hunts (a drop, `Slots`) is fetched instead of them,
+      never one on its own pile. Its catch of a player with empty slots throws its own body at
+      them, not the Mannequin's (`CaughtLunge` clones the Mannequin). Spec'd in Lune.
   - [ ] **S2-06d Its pile, and trapping it.** The pile shows in its unit as the finds
     themselves, each with "Take", and taking one back works as any find does. Bait works: it
     walks into a unit for a find at the back and the door comes down on it. Shut in, it pounds

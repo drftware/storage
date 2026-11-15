@@ -7,7 +7,8 @@
 -- walks home with its arms full, slower, seeing and hearing no one; crouches over its pile
 -- (PuttingDown), lays it down once (`laid`) and comes out for the next. A find taken before it
 -- gets there sends it to another; none left, it roams the halls. With empty arms it still hunts
--- a player it sees. The Mannequin never collects.
+-- a player it sees, and reaching one it takes the best thing they carry (`loot`, S2-06c) and goes
+-- home with it, or with nothing to take catches them. The Mannequin never collects.
 local Brix = require("../vendor/brix/src")
 local Floor = require("../src/shared/Floor")
 local Keeper = require("../src/shared/Keeper")
@@ -47,7 +48,8 @@ ok(COLLECT.grab > Keeper.Close and COLLECT.grab < 6, "it reaches for a find from
 ok(COLLECT.reach > 0 and COLLECT.take > 0 and COLLECT.putDown > 0, "each part takes a moment")
 ok(COLLECT.laden > 0 and COLLECT.laden < 1, "its arms full, it walks slower")
 
-local floors, trips, swaps, roams = 0, 0, 0, 0
+local CONE = Brix.Reach.cone
+local floors, trips, swaps, roams, robs = 0, 0, 0, 0, 0
 local function checkFloor(seed: number, number: number)
 	local f = Floor.generate(number, Brix.Random.new({ seed = seed }))
 	local where = `floor {number} seed {seed}`
@@ -173,6 +175,56 @@ local function checkFloor(seed: number, number: number)
 		ok(k.state == "Hunting" and k.fetch == 0, `{where}: empty arms, it comes for you`)
 	end
 
+	-- reaching you with empty arms, it takes the best thing you carry rather than catching you
+	-- (S2-06c): its hands close on it once, it pulls it in and walks home with it
+	local huntAt, huntFace = Keeper.hallAbout(map, walker, home, 40)
+	local you = huntAt + huntFace * 2
+	if KeeperMap.clear(map, huntAt, you) then
+		local function hunter(): Keeper.Keeper
+			local h = Keeper.new(
+				PACKRAT,
+				map,
+				Brix.Random.new({ seed = seed }),
+				huntAt,
+				huntFace,
+				true,
+				CONE
+			)
+			h.state, h.target, h.goal, h.seen = "Hunting", 7, you, you
+			Keeper.nest(h, home, home) -- its own unit is where the trip home began
+			return h
+		end
+		local robber = hunter()
+		local carrying = Keeper.players()
+		carrying.ids[1], carrying.at[1], carrying.count = 7, you, 1
+		carrying.eye[1], carrying.aim[1] = vector.zero, vector.zero
+		local loot = assert(carrying.loot)
+		loot[1] = 9
+		Keeper.step(robber, DT, RUN, carrying)
+		ok(robber.robbed == 7 and robber.took == 9, `{where}: it takes your best thing`)
+		ok(robber.caught == 0 and robber.target == 0, `{where}: robbed, you're let go, not caught`)
+		ok(robber.holding == 9 and Keeper.shown(robber) == "Taking", `{where}: it pulls it in`)
+		local again = 0
+		steps = 0
+		while robber.hands == "Take" and steps < 60 * 5 do
+			Keeper.step(robber, DT, RUN, carrying)
+			steps += 1
+			if robber.took ~= 0 or robber.robbed ~= 0 then
+				again += 1
+			end
+		end
+		ok(again == 0, `{where}: it takes it once`)
+		ok(robber.homing and robber.goal == home, `{where}: home with what it took`)
+		ok(Keeper.shown(robber) == "Carrying", `{where}: it carries it off`)
+		-- with nothing in your slots it catches you, as any monster
+		local catcher = hunter()
+		loot[1] = 0
+		Keeper.step(catcher, DT, RUN, carrying)
+		ok(catcher.caught == 7 and catcher.robbed == 0, `{where}: empty slots, it catches you`)
+		ok(catcher.holding == 0 and catcher.took == 0, `{where}: and takes nothing`)
+		robs += 1
+	end
+
 	-- a find taken before it gets there: it goes for another
 	local swap = fresh()
 	local both: Keeper.Finds = { ids = { 11, 22 }, at = { nearAt, farAt }, count = 2 }
@@ -223,6 +275,7 @@ for seed = 1, 6 do
 end
 ok(floors >= 12, `enough floors had a trip to walk ({floors})`)
 ok(trips == floors and swaps == floors and roams == floors, "every floor's checks ran")
+ok(robs >= floors // 2, `enough floors had a take ({robs})`)
 
 print(`collect: {checks - failures}/{checks} checks pass ({floors} floors, {trips} trips home)`)
 if failures > 0 then

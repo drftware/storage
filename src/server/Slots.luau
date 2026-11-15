@@ -81,7 +81,16 @@ local BROKEN_FADE = TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirecti
 
 export type Change = {
 	player: Player,
-	kind: "PickUp" | "Drop" | "Give" | "Switch" | "Pocket" | "Spend" | "Place" | "Keep" | "Break",
+	kind: "PickUp"
+		| "Drop"
+		| "Give"
+		| "Switch"
+		| "Pocket"
+		| "Spend"
+		| "Place"
+		| "Keep"
+		| "Break"
+		| "Taken",
 }
 
 -- A press of ToolUse that passed: who, the tool's catalog key, and its model in their hand.
@@ -146,6 +155,20 @@ export type Slots = Brix.System & {
 	-- each goes from their hand with a glint everyone near sees, and their tools stay. The kept
 	-- finds' catalog keys, slot order.
 	keep: (self: any, player: Player) -> { string },
+	-- What the Packrat would take from `player` if it reached them now (S2-06c, `Carry.prize`):
+	-- that thing's number, or 0 for nothing it takes. Allocates nothing.
+	prize: (self: any, player: Player) -> number,
+	-- The Packrat's hands close on thing `n` in `player`'s slots (S2-06c): out of their slots and
+	-- hand, welded to `part` in `holder` (the monster's body) as `lift` welds a find, and their
+	-- screen told (ToolSnatched). The weld and where the thing was (in their hand as everyone saw
+	-- it, else their middle), or nil if they no longer carry it.
+	snatch: (
+		self: any,
+		player: Player,
+		n: number,
+		part: BasePart,
+		holder: Instance
+	) -> (Weld?, CFrame?),
 }
 
 type Tool = {
@@ -258,6 +281,9 @@ function Slots.new(): Slots
 	local grounds: { [string]: Vector3 } = {}
 	local notice: RemoteEvent? = nil
 	local broke: RemoteEvent? = nil
+	local snatched: RemoteEvent? = nil
+	-- scratch for `prize`: a player's slots' catalog keys
+	local prizeKeys: { string } = { "", "", "" }
 	local nextId = 0
 
 	local function handOfPlayer(player: Player): Hand
@@ -942,6 +968,7 @@ function Slots.new(): Slots
 		table.insert(connections, remote(Tools.UseRemote).OnServerEvent:Connect(onUse))
 		notice = remote(Tools.NoticeRemote)
 		broke = remote(Tools.BrokeRemote)
+		snatched = remote(Tools.SnatchedRemote)
 		table.insert(connections, Players.PlayerAdded:Connect(addPlayer))
 		table.insert(
 			connections,
@@ -1075,6 +1102,84 @@ function Slots.new(): Slots
 		t.model:PivotTo(from)
 		TweenService:Create(t.body, PUT_DOWN, { CFrame = pose * t.body.PivotOffset:Inverse() })
 			:Play()
+	end
+
+	local function worth(key: string): number?
+		return Carry.worth(Catalog[key])
+	end
+
+	function system.prize(_: any, player: Player): number
+		local h = hands[player]
+		if not h then
+			return 0
+		end
+		for i = 1, Carry.Slots do
+			local id = h.carry.slots[i]
+			local t = if id then tools[id] else nil
+			prizeKeys[i] = if t then t.key else ""
+		end
+		local slot = Carry.prize(prizeKeys, h.carry.active, worth)
+		local id = if slot ~= 0 then h.carry.slots[slot] else nil
+		local t = if id then tools[id] else nil
+		return if t then t.n else 0
+	end
+
+	function system.snatch(
+		_: any,
+		player: Player,
+		n: number,
+		part: BasePart,
+		holder: Instance
+	): (Weld?, CFrame?)
+		local h = hands[player]
+		if not h then
+			return nil, nil
+		end
+		local slot, t = 0, nil :: Tool?
+		for i = 1, Carry.Slots do
+			local id = h.carry.slots[i]
+			local c = if id then tools[id] else nil
+			if c and c.n == n then
+				slot, t = i, c
+				break
+			end
+		end
+		if not t then
+			return nil, nil
+		end
+		local box = Tools.bounds(t.key)
+		local middle = t.body.PivotOffset * CFrame.new(box.Centre)
+		-- where it was: in their hand (or on their shoulder) as everyone saw it, else their middle
+		local root = rootOf(player)
+		local from = if t.weld and t.model.Parent
+			then t.body.CFrame * middle
+			elseif root then root.CFrame
+			else part.CFrame
+		Carry.remove(h.carry, t.id)
+		if t.weld then
+			t.weld:Destroy()
+			t.weld = nil
+		end
+		t.owner = nil
+		t.model:PivotTo(from * middle:Inverse() * t.body.PivotOffset)
+		local weld = Instance.new("Weld")
+		weld.Name = Tools.CarriedName
+		weld.Part0 = part
+		weld.Part1 = t.body
+		weld.C0 = part.CFrame:ToObjectSpace(from)
+		weld.C1 = middle
+		weld.Parent = t.body
+		t.weld = weld
+		t.body.Anchored = false
+		t.model.Name = t.key
+		t.model.Parent = holder
+		dress(player)
+		publish(player)
+		if snatched then
+			snatched:FireClient(player, t.key, slot, holder)
+		end
+		changed:fire({ player = player, kind = "Taken" })
+		return weld, from
 	end
 
 	function system.carried(_: any, player: Player): ({ string }, number)

@@ -23,6 +23,39 @@ nowhere else.
   at Brix `6717740` (S1-02), which is only on this Mac until Brix is pushed; a fresh clone of
   the game can't fetch it until then.
 
+## Now: let the Packrat rob you (S2-06c1, built Nov 14, D-181; seen in Studio Play, the robbed screen not watched)
+
+When the Packrat's arms are empty and it reaches you, it takes the best thing you carry instead of
+wrapping you, and walks home with it. With nothing in your slots, it wraps you like any monster.
+
+1. In Studio, set Workspace's `DevFloorNumber` to 3 and press Play. Walk to the floor's lobby.
+2. Press R at the "Packrat" post. A Packrat stands up in the nearest unit.
+3. Pick up two finds (the boombox it lays in the hall, or any from an open unit), or switch the
+   Test tab's view to Server and in the Command Bar set `workspace:SetAttribute("GiveFind", "Television")`, then again with
+   `"Teddy"`. Hold the teddy in your hand.
+4. Stand in front of the Packrat before it walks off, and keep still.
+5. Look for: it walks at you, its long arm comes out and closes, and the television (the more
+   valuable find, even though it's not in your hand) is torn away: your view jolts, you hear a
+   creak and the television's own clunk, and the television's picture flies off your wheel's
+   button toward the Packrat. You are not wrapped.
+6. Look for: the television sits in its arms against its chest, and it walks back to its unit and
+   lays it on its pile. Follow it: you can take it back off the pile.
+7. Stand in front of it again: this time it takes the teddy from your hand. The teddy should
+   jerk out of your hand toward it, not fall.
+8. With empty slots, let it reach you a third time: it wraps you, as the Mannequin does (for now
+   it still throws the Mannequin's face at you; that's the next piece's to fix).
+
+Defaults I picked, tell me if any is wrong:
+- **"Most valuable" is the heaviest find** until finds carry a worth of their own: the television,
+  then the boombox, the skates, the teddy. A tool only if you carry no find (the one in your hand
+  first). Never the flashlight, and never the ladder (it rides your shoulder, like the big find
+  will).
+- **The take is instant once it reaches you.** Its arm closing on you is the same moment a
+  Mannequin's catch would be; there's no beat to pull away in, so it can't be dodged at arm's
+  length, only kept away from.
+- **The sound is a stand-in:** the Mannequin's lunge creak and the find's own pick-up sound,
+  until the Packrat gets its own sounds (S2-06e).
+
 ## Now: find the Packrat asleep among its pile on floor 3 (S2-06b2b, built Nov 14, D-180; its deal checked in Studio Play, the opened door not yet looked at)
 
 From floor 3 up, every floor has one Packrat, asleep at the back of a big unit with two or three

@@ -25,6 +25,7 @@
 	bare lit tubes, and a dead end where the T would be.
 	The prompts call RollUpDoor directly; the GDD's door state machine replaces them (L-02).
 ]]
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -160,6 +161,7 @@ local PACKRAT_POST = CFrame.new(-9, 0, 3)
 local PACKRAT_FIND = 70
 local PACKRAT_IN = 4 -- studs into its unit from the door's line
 local DEV_PACKRAT = "StandPackrat" -- Workspace's attribute a test sets to press the post
+local DEV_GIVE = "GiveFind" -- Workspace's attribute a test sets to a find's key: in your hands
 -- the systems the Packrat's post works (set at start)
 local devSlots: Slots.Slots? = nil
 local devDoors: Doors.Doors? = nil
@@ -606,8 +608,20 @@ local function packratPost(on: Climbs.OnFloor, keepers: Keepers.Keepers)
 				standOne(nil)
 			end
 		end)
+		-- and puts a find in the first player's hands, for the Packrat to take (S2-06c): set
+		-- `GiveFind` to its catalog key (Studio only)
+		local giving = Workspace:GetAttributeChangedSignal(DEV_GIVE):Connect(function()
+			local key = Workspace:GetAttribute(DEV_GIVE)
+			local slots = devSlots
+			local player = Players:GetPlayers()[1]
+			if type(key) == "string" and key ~= "" and slots and player then
+				Workspace:SetAttribute(DEV_GIVE, "")
+				slots:give(player, key)
+			end
+		end)
 		model.Destroying:Connect(function()
 			watching:Disconnect()
+			giving:Disconnect()
 		end)
 	end
 end

@@ -58,6 +58,8 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local ButtonView = require(script.Parent.ButtonView)
+local CaughtLunge = require(script.Parent.CaughtLunge)
+local KeeperRows = require(ReplicatedStorage.Shared.KeeperRows)
 local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
 local FreeCursor = require(script.Parent.FreeCursor)
 local HandRoom = require(script.Parent.HandRoom)
@@ -161,6 +163,16 @@ local BREAK_THROW = Vector3.new(0.7, 1.8, -0.3)
 local BREAK_FALL = 18 -- studs a second, each second
 local BREAK_SPIN = Vector3.new(7, -4, 10) -- radians a second
 local BREAK_GONE = 0.6
+-- The Packrat taking something from you (S2-06c): your view kicks harder than a break; the thing
+-- in your hand is torn from your grip toward it (studs a second at full size, with a twist),
+-- gone after `SNATCH_GONE`; its picture leaves the wheel's button for where the Packrat is on your
+-- screen (or off the top, if it's behind you), shrinking, over `SNATCH_FLY` seconds.
+local SNATCH_KICK = 0.65
+local SNATCH_JOLT = 0.04
+local SNATCH_SPEED = 22
+local SNATCH_SPIN = Vector3.new(-5, 9, 3)
+local SNATCH_GONE = 0.3
+local SNATCH_FLY = TweenInfo.new(0.42, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
 local GONE_TRUST = 0.4 -- seconds your screen takes the break's word before the slots catch up
 local CRACK_SECONDS = 0.5 -- after a break, an emptied box bursts and shrinks rather than vanishing
 local CRACK_POP = 1.2
@@ -595,6 +607,10 @@ function ToolView.new(
 	local breaking: Model? = nil
 	local breakFrom = CFrame.identity -- its pose from your eye as it went
 	local breakAt = 0
+	-- how it goes: thrown up and falling (a break), or torn away along `breakYank` (the Packrat's
+	-- take, in your eye's frame), and gone after `breakGone`
+	local breakYank: Vector3? = nil
+	local breakGone = BREAK_GONE
 	local gone = ""
 	local goneUntil = 0
 	local cracking = 0
@@ -1141,8 +1157,79 @@ function ToolView.new(
 			breaking = model
 			breakFrom = camera.CFrame:ToObjectSpace(model:GetPivot())
 			breakAt = clock
+			breakYank, breakGone = nil, BREAK_GONE
 			shownModel, shownBody, shownKey = nil, nil, ""
 			swing = 0
+		end
+		refresh()
+	end
+
+	-- The Packrat's hands closed on `key` in your slots (S2-06c), its body at `toward`:
+	-- your view kicks, its creak and the thing's own sound as it's torn away, the thing you see in
+	-- your hand torn from your grip toward it, and its picture pulled off the wheel after it.
+	local function snatched(key: string, toward: Vector3?)
+		local clock = os.clock()
+		gone, goneUntil = key, clock + GONE_TRUST
+		cracking = clock + CRACK_SECONDS
+		if jolt then
+			jolt(SNATCH_KICK)
+		end
+		clank(key, true)
+		CaughtLunge.beat(KeeperRows.Packrat, "Lunge")
+		local camera = Workspace.CurrentCamera
+		if not camera then
+			refresh()
+			return
+		end
+		-- the way to it in your eye's frame, level; straight ahead if it's nowhere
+		local way = Vector3.new(0, 0, -1)
+		if toward then
+			local d = camera.CFrame:VectorToObjectSpace(toward - camera.CFrame.Position)
+			local flat = Vector3.new(d.X, 0, d.Z)
+			if flat.Magnitude > 1e-3 then
+				way = flat.Unit
+			end
+		end
+		local model = shownModel
+		if model and shownKey == key then
+			if breaking then
+				breaking:Destroy()
+			end
+			breaking = model
+			breakFrom = camera.CFrame:ToObjectSpace(model:GetPivot())
+			breakAt = clock
+			breakYank, breakGone = way * SNATCH_SPEED, SNATCH_GONE
+			shownModel, shownBody, shownKey = nil, nil, ""
+			swing = 0
+		end
+		-- its picture leaves the wheel's button for it: where it is on your screen, else off the top
+		local h = ui
+		if h then
+			local across = h.hud.AbsoluteSize.X
+			local start = h.wheel.AbsolutePosition + h.wheel.AbsoluteSize / 2
+			local view = camera.ViewportSize
+			local goal = Vector2.new(view.X / 2 + way.X * view.X * 0.35, -across)
+			if toward then
+				local p, ahead = camera:WorldToViewportPoint(toward)
+				if ahead and p.Z > 0 then
+					goal = Vector2.new(p.X, p.Y)
+				end
+			end
+			local flyer = viewport(1, h.gui)
+			flyer.Name = "Snatched"
+			flyer.Size = UDim2.fromOffset(across * 0.9, across * 0.9)
+			flyer.Position = UDim2.fromOffset(start.X, start.Y)
+			flyer.ZIndex = 10
+			picture(flyer, key)
+			local tween = TweenService:Create(flyer, SNATCH_FLY, {
+				Position = UDim2.fromOffset(goal.X, goal.Y),
+				Size = UDim2.fromOffset(across * 0.25, across * 0.25),
+				ImageTransparency = 0.6,
+			})
+			tween:Play()
+			tween.Completed:Once(function()
+				flyer:Destroy()
+			end)
 		end
 		refresh()
 	end
@@ -1172,9 +1259,20 @@ function ToolView.new(
 		local broken = breaking
 		if broken then
 			local t = clock - breakAt
-			if t >= BREAK_GONE then
+			local yank = breakYank
+			if t >= breakGone then
 				broken:Destroy()
 				breaking = nil
+			elseif yank then
+				-- torn from your grip toward the Packrat, twisting as it goes
+				local f = math.max(0, t - SNATCH_JOLT)
+				local turn = SNATCH_SPIN * f
+				broken:PivotTo(
+					camera.CFrame
+						* CFrame.new(yank * f * Hands.Scale)
+						* breakFrom
+						* CFrame.Angles(turn.X, turn.Y, turn.Z)
+				)
 			else
 				local shake = if t < BREAK_JOLT
 					then Vector3.new(math.random() * 2 - 1, math.random() * 2 - 1, 0) * BREAK_SHAKE
@@ -1650,6 +1748,25 @@ function ToolView.new(
 							broke(key)
 						end
 					end)
+				)
+			end
+			local snatchedRemote = get(Tools.SnatchedRemote)
+			if snatchedRemote then
+				table.insert(
+					connections,
+					snatchedRemote.OnClientEvent:Connect(
+						-- any: the server's word, checked here (its key, slot and the Packrat)
+						function(key: unknown, slot: unknown, body: unknown)
+							if type(key) ~= "string" or type(slot) ~= "number" then
+								return
+							end
+							local at = if typeof(body) == "Instance"
+									and (body :: Instance):IsA("Model")
+								then (body :: Model):GetPivot().Position
+								else nil
+							snatched(key, at)
+						end
+					)
 				)
 			end
 			local notice = get(Tools.NoticeRemote)

@@ -4965,3 +4965,31 @@ crowds it). The ticket read "a bit" as about a third.
   crouch (0.4 s) in the chest's frame. Only a body whose find is moving is stepped for it.
 - **It lights the halls as it walks** (`KeeperRows.tripsLights`, the default in `OWNER.md`): its
   root trips motion lights as a player's does, so you see it coming and a Mannequin by it freezes.
+
+## D-181 The Packrat robs whoever it reaches: the best thing they carry, torn from their grip (S2-06c1, Nov 14)
+
+- **Split for context.** S2-06c became c1 (the take, the robbed screen) and c2 (a find dropped in
+  its path fetched instead of you, and its own catch rather than the Mannequin's lunge).
+- **The server says what it would take; the brain decides take or catch.** Each step's player
+  list carries `loot` (the number of the thing it would take, or 0), filled by Slots' `prize`,
+  so the rule "carrying something, you're robbed; empty, you're caught" lives in the brain and
+  its Lune spec. A take is a catch's moment (its reach and cone): it sets `took` and `robbed`,
+  holds the thing, stands `take` seconds pulling it in and goes home as after a fetch. The one it
+  hunted is let go, not kept.
+- **Which thing: `Carry.prize`.** Finds have no worth yet, so a find's heft stands in for it (the
+  television, boombox, skates, teddy), a tool only with no find, the one in your hand on a tie,
+  never a both-hands thing (the ladder now, the big find later) and never the flashlight, which
+  is in no slot (`OWNER.md`).
+- **No beat to pull away in.** Its hands close the moment it reaches you, as a catch does, so the
+  take can't be dodged at arm's length. The fun is in keeping it off you, or handing a cheap find
+  to whoever has nothing (GDD "With a Mannequin on the same floor").
+- **Out of your hand into its arms, eased.** Slots' `snatch` takes it out of your slots, welds it
+  at its chest with `From` where you held it (or your middle, if it was put away), and every
+  screen eases it into its hands as a lifted find. On the pile it's a find (or tool) like any.
+- **The robbed screen answers in one beat** (ToolSnatched, ToolView's `snatched`): a view kick
+  harder than a break, the Packrat's Lunge beat (the Mannequin's creak and scrape until S2-06e)
+  with the thing's own pick-up sound, the thing in your hand torn from your grip toward it, and
+  its picture pulled off the wheel's button toward where it stands on your screen (off the top if
+  it's behind you). No words: the empty slot says it.
+- **A dev hook to test it:** the dev floor's `GiveFind` Workspace attribute (Studio only) puts a
+  find of that key in the first player's hands.
