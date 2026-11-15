@@ -274,6 +274,237 @@ local Set: { [string]: Art.Find } = {
 			},
 		},
 	},
+	TeaLight = {
+		Size = Vector3.new(0.363, 0.504, 0.334),
+		Centre = Vector3.new(-0.000, 0.252, 0.016),
+		Triangles = 4058,
+		Texture = 512,
+		Parts = {
+			{
+				Name = "TeaLight_Jar",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Clear = true,
+				Size = Vector3.new(0.302, 0.504, 0.302),
+				Triangles = 1728,
+			},
+			{
+				Name = "TeaLight_Candle",
+				Parent = "TeaLight_Jar",
+				Pivot = Vector3.new(-0.022, 0.029, -0.016),
+				Size = Vector3.new(0.151, 0.063, 0.151),
+				Triangles = 574,
+			},
+			{
+				Name = "TeaLight_Wire",
+				Parent = "TeaLight_Jar",
+				Pivot = Vector3.new(-0.000, 0.438, 0.000),
+				Size = Vector3.new(0.334, 0.037, 0.325),
+				Triangles = 1064,
+			},
+			{
+				Name = "TeaLight_Bail",
+				Parent = "TeaLight_Jar",
+				Pivot = Vector3.new(-0.000, 0.438, 0.000),
+				Axis = Vector3.new(-1.000, 0.000, 0.000),
+				Size = Vector3.new(0.363, 0.275, 0.164),
+				Triangles = 440,
+			},
+			{
+				Name = "TeaLight_Flame",
+				Parent = "TeaLight_Candle",
+				Pivot = Vector3.new(-0.022, 0.070, -0.016),
+				Axis = Vector3.new(-0.000, 0.000, 1.000),
+				Clear = true,
+				Size = Vector3.new(0.029, 0.088, 0.028),
+				Triangles = 252,
+			},
+		},
+		Glow = { Part = "TeaLight_Flame", Strength = 3.0, Tint = Color3.fromRGB(255, 178, 98) },
+		Lights = {
+			{
+				Kind = "Point",
+				Part = "TeaLight_Flame",
+				At = Vector3.new(-0.022, 0.101, -0.016),
+				Face = Vector3.new(-0.000, -1.000, 0.000),
+				Color = Color3.fromRGB(255, 129, 0),
+				Brightness = 0.9,
+				Range = 9,
+				Shadows = false,
+			},
+		},
+		Motions = {
+			Light = {
+				Duration = 1.3,
+				Tracks = {
+					{
+						Part = "TeaLight_Flame",
+						Channel = "scale",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.06, 0.32, "Quad", "Out" },
+							{ 0.18, 0.24, "Sine", "InOut" },
+							{ 0.5, 1, "Quad", "Out" },
+						},
+					},
+					{
+						Part = "TeaLight_Flame",
+						Channel = "stretch",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.18, 0.8, "Sine", "InOut" },
+							{ 0.52, 1.32, "Quad", "Out" },
+							{ 0.76, 0.9, "Sine", "InOut" },
+							{ 0.98, 1.07, "Sine", "InOut" },
+							{ 1.2, 1, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "TeaLight_Flame",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.4, 0, "Sine", "InOut" },
+							{ 0.6, 3.5, "Sine", "InOut" },
+							{ 0.84, -2.4, "Sine", "InOut" },
+							{ 1.06, 1.1, "Sine", "InOut" },
+							{ 1.3, 0, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "TeaLight_Flame",
+						Channel = "glow",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.06, 0.45, "Quad", "Out" },
+							{ 0.18, 0.32, "Sine", "InOut" },
+							{ 0.5, 1, "Quad", "Out" },
+							{ 1.3, 1, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+			Flicker = {
+				Duration = 2.0,
+				Tracks = {
+					{
+						Part = "TeaLight_Flame",
+						Channel = "scale",
+						Keys = { { 0, 1, "Sine", "InOut" }, { 2, 1, "Sine", "InOut" } },
+					},
+					{
+						Part = "TeaLight_Flame",
+						Channel = "stretch",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.18, 1.07, "Sine", "InOut" },
+							{ 0.33, 0.95, "Sine", "InOut" },
+							{ 0.6, 1.04, "Sine", "InOut" },
+							{ 0.82, 0.97, "Sine", "InOut" },
+							{ 1.1, 1.09, "Sine", "InOut" },
+							{ 1.3, 0.94, "Sine", "InOut" },
+							{ 1.6, 1.03, "Sine", "InOut" },
+							{ 2, 1, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "TeaLight_Flame",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.25, 2.2, "Sine", "InOut" },
+							{ 0.55, -1.4, "Sine", "InOut" },
+							{ 0.9, 1.6, "Sine", "InOut" },
+							{ 1.25, -2.4, "Sine", "InOut" },
+							{ 1.6, 0.8, "Sine", "InOut" },
+							{ 2, 0, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "TeaLight_Flame",
+						Channel = "glow",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.2, 0.93, "Sine", "InOut" },
+							{ 0.35, 1, "Sine", "InOut" },
+							{ 0.62, 0.9, "Sine", "InOut" },
+							{ 0.85, 1, "Sine", "InOut" },
+							{ 1.12, 0.88, "Sine", "InOut" },
+							{ 1.32, 0.97, "Sine", "InOut" },
+							{ 1.6, 0.92, "Sine", "InOut" },
+							{ 2, 1, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+			GoOut = {
+				Duration = 1.6,
+				Tracks = {
+					{
+						Part = "TeaLight_Flame",
+						Channel = "scale",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.9, 0.85, "Sine", "InOut" },
+							{ 1.35, 0, "Quad", "In" },
+						},
+					},
+					{
+						Part = "TeaLight_Flame",
+						Channel = "stretch",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.3, 0.68, "Sine", "InOut" },
+							{ 0.5, 1.04, "Sine", "InOut" },
+							{ 0.75, 0.55, "Sine", "InOut" },
+							{ 0.9, 0.82, "Sine", "InOut" },
+							{ 1.35, 0.5, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "TeaLight_Flame",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.3, -3, "Sine", "InOut" },
+							{ 0.55, 2, "Sine", "InOut" },
+							{ 0.8, -4, "Sine", "InOut" },
+							{ 1.1, 1, "Sine", "InOut" },
+							{ 1.35, 0, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "TeaLight_Flame",
+						Channel = "glow",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.3, 0.68, "Sine", "InOut" },
+							{ 0.5, 0.95, "Sine", "InOut" },
+							{ 0.75, 0.52, "Sine", "InOut" },
+							{ 0.9, 0.72, "Sine", "InOut" },
+							{ 1.35, 0, "Quad", "In" },
+							{ 1.6, 0, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+			Lift = {
+				Duration = 0.9,
+				Tracks = {
+					{
+						Part = "TeaLight_Bail",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.32, 156, "Quad", "InOut" },
+							{ 0.46, 147, "Sine", "InOut" },
+							{ 0.62, 151.2, "Sine", "InOut" },
+							{ 0.78, 150, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+		},
+	},
 }
 
 return Set

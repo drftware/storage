@@ -41,15 +41,24 @@ AO_IN_COLOUR = 0.45   # how much of the baked occlusion darkens the colour (Robl
 CAGE = 0.008      # studs: how far outside the game mesh the bake's rays start
 REACH = 0.02      # studs: how far they look for the detailed mesh
 GOLD = (1.0, 0.766, 0.336)   # gold's own colour (linear), the Gold variant's base
+# the held sheet: where a find sits in your hands from your eye, as the torch does in play
+# (src/shared/Flashlight/Torch.luau, Hold: 0.62 right, 0.58 down, 1.25 ahead), nearer the middle
+# and your eye as you'd hold up a find to look at it; and how far it's turned to show its front
+# three quarters
+HOLD = (0.3, -0.34, 1.05)
+HOLD_TURN = -28.0
 
 
 class Part:
     """One piece of a find. `build(hi)` returns a shapes.Shape in the find's frame at rest; the
-    part turns or slides about `pivot` along `axis` (Blender frame), under `parent`."""
+    part turns or slides about `pivot` along `axis` (Blender frame), under `parent`. A `clear`
+    part is see-through where its look's alpha says (glass, a flame): its material carries the
+    colour map's alpha, so it imports in AlphaMode Transparency (docs/STUDIO.md)."""
 
-    def __init__(self, name, build, pivot=(0.0, 0.0, 0.0), parent=None, axis=None):
+    def __init__(self, name, build, pivot=(0.0, 0.0, 0.0), parent=None, axis=None, clear=False):
         self.name, self.build, self.pivot, self.parent = name, build, Vector(pivot), parent
         self.axis = Vector(axis).normalized() if axis else None
+        self.clear = clear
 
 
 class Find:
@@ -57,15 +66,19 @@ class Find:
     its motions. `glow` says which parts carry the emissive mask and how they light."""
 
     def __init__(self, name, parts, look, lights=(), motions=None, glow=None, big=False,
-                 dust=0.6, seed=0.0, notes="", texels=None):
+                 dust=0.6, seed=0.0, notes="", texels=None, lit=None):
         self.name, self.parts, self.look, self.lights = name, parts, look, list(lights)
         self.motions = motions or {}
         self.glow = glow or {}
+        # how it stands when it's on, beyond its glow part lit: {(part, channel): value} (the
+        # tea light's flame, scaled to nothing as it's found, at full size)
+        self.lit = lit or {}
         self.big, self.dust, self.seed, self.notes = big, dust, seed, notes
         # texels a stud wanted, when a small find's fine detail (the night-light's ribs) needs
         # more than TARGET to stay sharp held up close
         self.texels = texels
         self.by = {p.name: p for p in parts}
+        self.clear = any(p.clear for p in parts)
 
     def out(self, set_dir, *rest):
         return os.path.join(set_dir, "out", *rest)
@@ -225,6 +238,7 @@ class Rig:
         val = lambda v: v if isinstance(v, bpy.types.NodeSocket) else nb.val(float(v))  # noqa
         self.sock = {"col": s.col if isinstance(s.col, bpy.types.NodeSocket) else nb.rgb(s.col),
                      "rough": val(s.rough), "metal": val(s.metal), "glow": val(s.glow),
+                     "alpha": val(s.alpha),
                      "ao": nb.ao(0.12, local=False), "cover": nb.val(1.0)}
         self.bsdf = nb.node("ShaderNodeBsdfPrincipled")
         nb.put(self.bsdf.inputs["Base Color"], self.sock["col"])
@@ -286,7 +300,8 @@ def stage_textures(find, set_dir):
                   "visible_volume_scatter", "visible_shadow"):
             setattr(o, v, False)
     res = {}
-    for k in ("col", "rough", "metal", "glow", "ao", "normal", "cover"):
+    chans = ("col", "rough", "metal", "glow", "ao", "normal", "cover") + (("alpha",) if find.clear else ())
+    for k in chans:
         img = bpy.data.images.new(f"{find.name}_{k}", size, size, alpha=True, float_buffer=True)
         img.colorspace_settings.name = "Non-Color"
         img.generated_color = (0.5, 0.5, 1.0, 1.0) if k == "normal" else (0, 0, 0, 1)
@@ -294,6 +309,11 @@ def stage_textures(find, set_dir):
         rig.channel(k)
         sc.cycles.samples = 64 if k == "ao" else 8
         for p in find.parts:
+            if k == "ao" and find.clear:
+                # light goes through glass: a solid part's occlusion leaves the clear parts out
+                # (the candle in its jar isn't in a cave), a clear part's counts only itself
+                for q in find.parts:
+                    hi[q.name].hide_render = (q.name != p.name) if p.clear else q.clear
             bpy.ops.object.select_all(action="DESELECT")
             hi[p.name].select_set(True)
             lo[p.name].select_set(True)
@@ -302,13 +322,19 @@ def stage_textures(find, set_dir):
                                 margin=0, use_clear=False, use_selected_to_active=True,
                                 cage_extrusion=CAGE, max_ray_distance=REACH)
         res[k] = ub.pixels(img)
+    for o in hi.values():
+        o.hide_render = False
     covered = res.pop("cover")[..., 0] > 0.5
     for k in res:
         res[k] = dilate(res[k], covered, PAD + 2)
     col = res["col"][..., :3] * (1.0 - AO_IN_COLOUR * (1.0 - res["ao"][..., :1]))
     rough, metal, glow = res["rough"][..., 0], res["metal"][..., 0], res["glow"][..., 0]
     os.makedirs(os.path.dirname(tex(find, set_dir, "x")), exist_ok=True)
-    ub.write_png(tex(find, set_dir, "Color"), ub.q8(ub.to_srgb(np.clip(col, 0, 1))))
+    # a clear part's alpha rides in the colour map (what AlphaMode Transparency reads); every
+    # other texel is solid
+    alpha = np.clip(res["alpha"][..., :1], 0, 1) if find.clear else None
+    rgba = lambda c: c if alpha is None else np.concatenate([c, alpha], axis=2)  # noqa: E731
+    ub.write_png(tex(find, set_dir, "Color"), ub.q8(rgba(ub.to_srgb(np.clip(col, 0, 1)))))
     ub.write_png(tex(find, set_dir, "Normal"), ub.q8(res["normal"][..., :3]))
     ub.write_png(tex(find, set_dir, "Roughness"), ub.q8(np.clip(rough, 0, 1)))
     ub.write_png(tex(find, set_dir, "Metalness"), ub.q8(np.clip(metal, 0, 1)))
@@ -323,10 +349,13 @@ def stage_textures(find, set_dir):
     # anything that glows at all stays itself (the bulb's glass, the night-light's whole shade),
     # not just its brightest middle, or a dim edge turns half gold in blotches
     lit = np.clip(glow * 20.0, 0, 1)[..., None]
+    if alpha is not None:
+        # and glass stays glass: a gold jar you can't see the candle through isn't a jar
+        lit = np.maximum(lit, np.clip((1.0 - alpha) * 20.0, 0, 1))
     gcol = np.array(GOLD, dtype=np.float32) * shade * (1 - lit) + col * lit
     grough = (0.14 + 0.4 * rough) * (1 - lit[..., 0]) + rough * lit[..., 0]
     gmetal = 1.0 - lit[..., 0] * (1 - metal)
-    ub.write_png(tex(find, set_dir, "GoldColor"), ub.q8(ub.to_srgb(np.clip(gcol, 0, 1))))
+    ub.write_png(tex(find, set_dir, "GoldColor"), ub.q8(rgba(ub.to_srgb(np.clip(gcol, 0, 1)))))
     ub.write_png(tex(find, set_dir, "GoldRoughness"), ub.q8(np.clip(grough, 0, 1)))
     ub.write_png(tex(find, set_dir, "GoldMetalness"), ub.q8(np.clip(gmetal, 0, 1)))
     print(f"BAKED {find.name}: {size}x{size}, {dens:.0f} texels a stud, "
@@ -335,10 +364,12 @@ def stage_textures(find, set_dir):
 
 # --- materials for export and previews ----------------------------------------------------
 
-def material(find, set_dir, preview=False, gold=False):
+def material(find, set_dir, preview=False, gold=False, clear=False):
     """The baked maps on a Principled BSDF (what Roblox's importer reads). A preview material
-    also glows: the emissive map, times the part's `glow` (0 to 1), times the find's light."""
-    key = f"{find.name}{'_gold' if gold else ''}{'_pv' if preview else ''}"
+    also glows: the emissive map, times the part's `glow` (0 to 1), times the find's light. A
+    clear one takes its alpha from the colour map's (Roblox then imports AlphaMode
+    Transparency)."""
+    key = f"{find.name}{'_gold' if gold else ''}{'_pv' if preview else ''}{'_clear' if clear else ''}"
     if key in bpy.data.materials:
         return bpy.data.materials[key]
     mat = bpy.data.materials.new(key)
@@ -355,6 +386,8 @@ def material(find, set_dir, preview=False, gold=False):
     nb.put(bsdf.inputs["Roughness"], rough.outputs["Color"])
     nb.put(bsdf.inputs["Metallic"], metal.outputs["Color"])
     nb.put(bsdf.inputs["Normal"], nm.outputs["Normal"])
+    if clear:
+        nb.links.new(col.outputs["Alpha"], bsdf.inputs["Alpha"])
     if preview and os.path.exists(tex(find, set_dir, "Emissive")):
         em = img("Emissive", True)
         tint = find.glow.get("tint", (255, 200, 140))
@@ -385,14 +418,20 @@ def bounds(obs):
     return lo, hi
 
 
+def wear(find, set_dir, objs, **kw):
+    """Each part in the find's material, its clear parts in the clear one."""
+    for p in find.parts:
+        ob = objs[p.name]
+        ob.data.materials.clear()
+        ob.data.materials.append(material(find, set_dir, clear=p.clear, **kw))
+
+
 def stage_export(find, set_dir):
     reset()
     objs = load_low(find, set_dir, bpy.context.scene.collection)
-    mat = material(find, set_dir)
+    wear(find, set_dir, objs)
     bpy.ops.object.select_all(action="DESELECT")
     for ob in objs.values():
-        ob.data.materials.clear()
-        ob.data.materials.append(mat)
         ob.select_set(True)
     bpy.context.view_layer.objects.active = objs[find.parts[0].name]
     path = find.out(set_dir, f"{find.name}.fbx")
@@ -413,7 +452,7 @@ def row(find, objs, size):
     for p in find.parts:
         plo, phi = bounds([objs[p.name]])
         parts.append(dict(name=p.name, parent=p.parent, pivot=to_roblox(p.pivot - root),
-                          axis=to_roblox(p.axis) if p.axis else None,
+                          axis=to_roblox(p.axis) if p.axis else None, clear=p.clear,
                           size=extent(phi - plo), tris=tris(objs[p.name])))
     return dict(size=extent(hi - lo), centre=to_roblox((lo + hi) / 2 - root),
                 tris=sum(tris(o) for o in objs.values()), tex=size, parts=parts)
@@ -428,15 +467,20 @@ def tracks(find, action):
 
 def pose(find, objs, values, lights=None):
     """Stand every part where `values` {(part, channel): v} put it: a turn (degrees) or a move
-    (studs) about the part's own pivot and axis, carried by its parent's motion."""
+    (studs) about the part's own pivot and axis, a `scale` (times its size) and a `stretch`
+    (times as tall along the find's up, 1/sqrt as wide: squash and stretch keeping its volume)
+    about its pivot, all carried by its parent's motion."""
     delta = {}
     for p in find.parts:
         D = delta[p.parent] if p.parent else Matrix()
-        L = Matrix()
+        sc = max(values.get((p.name, "scale"), 1.0), 1e-4)
+        st = max(values.get((p.name, "stretch"), 1.0), 1e-4)
+        S = Matrix.Diagonal((sc / math.sqrt(st), sc / math.sqrt(st), sc * st, 1.0))
+        L = Matrix.Translation(p.pivot) @ S @ Matrix.Translation(-p.pivot)
         if p.axis is not None:
             turn = values.get((p.name, "turn"), 0.0)
             move = values.get((p.name, "move"), 0.0)
-            L = (Matrix.Translation(p.pivot) @ Matrix.Rotation(math.radians(turn), 4, p.axis)
+            L = (Matrix.Translation(p.pivot) @ Matrix.Rotation(math.radians(turn), 4, p.axis) @ S
                  @ Matrix.Translation(-p.pivot) @ Matrix.Translation(p.axis * move))
         delta[p.name] = D @ L
         objs[p.name].matrix_world = delta[p.name] @ Matrix.Translation(p.pivot)
@@ -548,10 +592,14 @@ def stage_renders(find, set_dir, quick=False):
         render.setup(S, (1600, 900))
         coll = bpy.context.scene.collection
         objs = load_low(find, set_dir, coll)
-        for ob in objs.values():
-            ob.data.materials.clear()
-            ob.data.materials.append(material(find, set_dir, preview=True))
+        wear(find, set_dir, objs, preview=True)
         return coll, objs
+
+    def lit(vals):
+        """The values for it switched on: its glow part lit, and whatever else `lit` says."""
+        vals[(find.glow.get("part"), "glow")] = 1.0
+        vals.update(find.lit)
+        return vals
 
     rest = {}
     for part, ch, ks in [t for a in find.motions for t in tracks(find, a)[1]]:
@@ -576,12 +624,26 @@ def stage_renders(find, set_dir, quick=False):
     shoot(cam, sheet("front"), (1600, 900), S)
     cam = render.camera(c + Vector((1.1, 1.7, 0.75)) * d * 1.25, c, lens=45)
     shoot(cam, sheet("back"), (1600, 900), S)
-    # held: on a phone (844 x 390, about a 70 degree view up and down), 1.6 studs off
-    cam = render.camera(c + Vector((-0.5, -1.5, 0.5)).normalized() * 2.6, c, lens=12)
-    shoot(cam, sheet("held"), (844, 390), S)
-    gm = material(find, set_dir, preview=True, gold=True)
+    # held: first person on a phone (844 x 390, Roblox's 70 degree view up and down), the find
+    # in your hands where the torch is held (Torch.Hold: right, down, ahead of your eye), turned
+    # three quarters to you, lifted to chest height so the floor is far below as it is in play;
+    # a bigger find is held further out, at the end of your arms
+    eye = Vector((0.0, 0.0, 4.6))
+    fwd = Vector((0.0, math.cos(math.radians(10)), -math.sin(math.radians(10))))
+    right, up = Vector((1.0, 0.0, 0.0)), fwd.cross(Vector((1.0, 0.0, 0.0))) * -1.0
+    reach = max(HOLD[2], 0.6 + 0.9 * d)
+    at = eye + right * HOLD[0] + up * HOLD[1] + fwd * reach
+    M = (Matrix.Translation(at) @ Matrix.Rotation(math.radians(HOLD_TURN), 4, "Z")
+         @ Matrix.Translation(-c))
     for ob in objs.values():
-        ob.data.materials[0] = gm
+        ob.matrix_world = M @ ob.matrix_world
+    cam = render.camera(eye, eye + fwd, lens=12)
+    shoot(cam, sheet("held"), (844, 390), S)
+    for ob in objs.values():
+        ob.matrix_world = M.inverted() @ ob.matrix_world
+    for p in find.parts:
+        objs[p.name].data.materials[0] = material(find, set_dir, preview=True, gold=True,
+                                                  clear=p.clear)
     cam = render.camera(c + Vector((-0.9, -1.9, 0.55)) * d * 1.25, c, lens=45)
     shoot(cam, sheet("gold"), (1600, 900), S)
 
@@ -591,9 +653,7 @@ def stage_renders(find, set_dir, quick=False):
         render.world((0.01, 0.011, 0.014), 1.0)
         fl = render.simple("floor", hexc("#4A4743"), 0.8)
         render.box_obj("floor", (-20, -20, -0.1), (20, 20, 0.0), fl, coll)
-        vals = dict(rest)
-        if state == "on":
-            vals[(find.glow.get("part"), "glow")] = 1.0
+        vals = lit(dict(rest)) if state == "on" else dict(rest)
         place(find, objs, Matrix(), coll, vals)
         key = bpy.data.lights.new("moon", "AREA")
         key.energy, key.size, key.color = 320.0, 6.0, (0.75, 0.82, 1.0)
@@ -611,9 +671,7 @@ def stage_renders(find, set_dir, quick=False):
     for state in ("off", "on"):
         coll, objs = scene()
         unit_room(coll)
-        vals = dict(rest)
-        if state == "on":
-            vals[(find.glow.get("part"), "glow")] = 1.0
+        vals = lit(dict(rest)) if state == "on" else dict(rest)
         place(find, objs, Matrix.Translation((0.8, 7.0, 0.0)) @ Matrix.Rotation(math.radians(-15), 4, "Z"),
               coll, vals)
         cam = render.camera((0.0, -1.0, 4.6), (0.3, 7.0, 0.9), lens=12)
@@ -634,7 +692,8 @@ def stage_renders(find, set_dir, quick=False):
         coll.objects.link(ao_)
         ao_.location = (-5, -6, 7)
         ao_.rotation_euler = (Vector((0, 0, 0)) - ao_.location).to_track_quat("-Z", "Y").to_euler()
-        lts = place(find, objs, Matrix(), coll, values_at(trs, 0.0))
+        # parts the action doesn't move stay as they're found (the tea light's flame, unlit)
+        lts = place(find, objs, Matrix(), coll, {**rest, **values_at(trs, 0.0)})
         # the camera looks at the focus part's pivot, or a point (find frame) for a small find
         # whose action should show whole; `distance` scales how far back it stands
         focus = find.motions[action].get("focus", find.parts[-1].name)
@@ -647,7 +706,7 @@ def stage_renders(find, set_dir, quick=False):
         n = int(math.ceil(dur * 24)) + 6
         frames = []
         for i in range(n):
-            pose(find, objs, values_at(trs, i / 24.0), lts)
+            pose(find, objs, {**rest, **values_at(trs, i / 24.0)}, lts)
             f = os.path.join(tmp, f"{action}-{i:03d}.png")
             shoot(cam, f, (480, 360), 24 if quick else 48)
             frames.append(f)
@@ -693,6 +752,7 @@ def write_luau(set_name, finds, rows, path):
         for p in r["parts"]:
             ax = f"Axis = {_v3(p['axis'])}, " if p["axis"] else ""
             par = f"Parent = \"{f.name}_{p['parent']}\", " if p["parent"] else ""
+            ax += "Clear = true, " if p["clear"] else ""
             L.append(f"\t\t\t{{ Name = \"{f.name}_{p['name']}\", {par}Pivot = {_v3(p['pivot'])}, {ax}"
                      f"Size = {_v3(p['size'])}, Triangles = {p['tris']} }},")
         L.append("\t\t},")

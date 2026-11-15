@@ -11,6 +11,8 @@ export type Part = {
 	Parent: string?, -- the part it rides on; nil for the root (the find's pivot)
 	Pivot: Vector3, -- its hinge, from the find's pivot
 	Axis: Vector3?, -- what it turns about or slides along (right-handed); nil if it never moves
+	Clear: boolean?, -- see-through (glass, a flame): its SurfaceAppearance is in AlphaMode
+	-- Transparency, and the part wants Transparency 0.02 or the alpha cuts (docs/STUDIO.md)
 	Size: Vector3,
 	Triangles: number,
 }
@@ -32,7 +34,10 @@ export type Light = {
 export type Key = { any } -- { number, number, string, string }; a tuple Luau can't type
 export type Track = {
 	Part: string,
-	Channel: "turn" | "move" | "glow", -- degrees about its Axis, studs along it, 0 to 1 lit
+	-- turn: degrees about its Axis; move: studs along it; glow: 0 to 1 lit; scale: times its size
+	-- about its pivot (near 0: hide it, a MeshPart can't be size 0); stretch: times as tall up
+	-- the find's Y and 1/sqrt as wide about its pivot, squash and stretch keeping its volume
+	Channel: "turn" | "move" | "glow" | "scale" | "stretch",
 	Keys: { Key },
 }
 

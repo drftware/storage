@@ -94,6 +94,14 @@ set's `build.py` as an example; you shouldn't need the kit's code.
   `paint(mask, ...)` layers, `enamel_wear` (chips that bite edges, never a band), `lights(mask)`
   (where it glows), `finish(dust, grime)` (creases darkened, dust on whatever faced up as it was
   found). Masks can be written in studs in the find's frame (`L.x/y/z`, `L.P`).
+- **Glass** (F-02b, the tea light's jar). `kit.Part(..., clear=True)` makes a see-through
+  part; the look says how solid each face is with `paint(mask, alpha=)` (1 solid; clear glass
+  0.1 to 0.15 a wall, thick glass 0.4) and dust raises it. The bake writes the alpha into the
+  colour PNG's alpha; a clear part's material links it, so the FBX imports in AlphaMode
+  Transparency, while the solid parts keep their own material (Overlay). Give glass a dark,
+  glossy colour (the jar's `#9FB5AA`, roughness 0.04): a pale one glows like plastic when a
+  light inside it shines on it. Occlusion leaves clear parts out (the candle isn't in a cave).
+  Gold keeps glass as glass. In Studio a clear part wants Transparency 0.02 and CastShadow off.
 - **Dust and a clean twin.** `dust=` on the Find; a mimic's clean look is the same bake with
   `dust=0` (not built yet).
 - **Gold.** Every bake also writes `<Find>_GoldColor|GoldRoughness|GoldMetalness.png`: gold
@@ -109,16 +117,20 @@ set's `build.py` as an example; you shouldn't need the kit's code.
   graphics. A light with `shadows=False` shines through the find in the previews too, as in
   Roblox (the night-light's bulb inside its shade).
 - **Motion data.** `motions={"SwitchOn": dict(duration, focus, tracks=[(part, channel, keys)])}`;
-  channel `turn` (degrees about the axis), `move` (studs along it) or `glow` (0 to 1, which also
-  scales the lights); keys `(t, value[, style, direction])`, each saying how it is reached
+  channel `turn` (degrees about the axis), `move` (studs along it), `glow` (0 to 1, which also
+  scales the lights), `scale` (times its size about its pivot) or `stretch` (times as tall up
+  the find's Z, 1/sqrt as wide: squash and stretch keeping its volume); keys `(t, value[, style, direction])`, each saying how it is reached
   (Linear, Sine, Quad, Cubic, Quart, Back; In, Out, InOut; default Sine InOut). Write the
-  wind-up, overshoot and settle as keys. Python (`ease.py`) and Luau (`Finds/Art.luau`) share
+  wind-up, overshoot and settle as keys. A part's rest value is its first key in the first
+  motion that moves it (the tea light's flame: `scale` 0, found unlit); `lit={(part, channel):
+  value}` on the Find says how it stands when on, beyond its glow (the flame at `scale` 1). Python (`ease.py`) and Luau (`Finds/Art.luau`) share
   the same sums.
 - **Filmstrip camera.** A motion's `focus` is the part the camera looks at, or a point in the
   find's frame for a small find that should show whole, and `distance` (0.6) how far back it
   stands, times the find's size.
-- **Previews.** Renders: `-lineup` (beside a 5.4-stud person), `-front`, `-back`, `-held` (a
-  phone's view, 2.6 studs off), `-gold`, `-offon` (in the dark, up close), `-unit` (a medium
+- **Previews.** Renders: `-lineup` (beside a 5.4-stud person), `-front`, `-back`, `-held` (first
+  person on a phone: in your hands 0.3 right, 0.34 down and 1.05 ahead of your eye, further for
+  a big find, turned three quarters, the floor far below), `-gold`, `-offon` (in the dark, up close), `-unit` (a medium
   unit's doorway on a phone, off above on, deeper than the bulb), and per action a ten-frame
   filmstrip `-<action>.png` plus `out/<find>-<action>.mp4` at 24 frames a second.
 - **The generated Luau.** Export writes `src/shared/Finds/Sets/<Set>.luau`, typed by
@@ -143,8 +155,9 @@ set's `build.py` as an example; you shouldn't need the kit's code.
   the generated Luau, so the game plays what was judged. Animate like a pro: a wind-up before a
   big move, overshoot and settle, follow-through on loose parts, weight (heavy things start and
   stop slowly, light ones snap), and timing taken from video of the real thing where there is one.
-- **Squish and squeeze.** Squishies and plush squash and stretch keeping their volume; the kit
-  says whether that is a scale on the part or bones.
+- **Squish and squeeze.** Squishies and plush squash and stretch keeping their volume: the
+  kit's `stretch` channel does it to a whole part (the tea light's flame proves it); a find that
+  bends in places needs bones, which the kit doesn't have yet.
 - **Vehicles and rollers.** Wheels are parts on their axles, steered wheels turn on their real
   kingpins, and the spec gives wheel radius, wheelbase, steering lock and suspension travel, so
   driving the RC car later is wiring, not modelling.

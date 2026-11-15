@@ -521,7 +521,271 @@ NIGHT_LIGHT = kit.Find(
     texels=500,
 )
 
-FINDS = [DESK_LAMP, NIGHT_LIGHT]
+
+# --- the tea light in a jar ---------------------------------------------------------------------
+
+(JAR, JAR_IN, CUP, WAX, WICK, FLAME, WIRE) = range(18, 25)
+TJ, TL, TW = K.TEA_JAR, K.TEA_LIGHT, K.TEA_WIRE
+TL_AT = Vector(TL["at"])
+FLAME_FOOT = TL_AT + Vector((0.0, 0.0, TL["wax"] + TL["flame"]["at"]))
+BAIL_PIVOT = Vector((0.0, 0.0, TW["z"]))
+
+
+def tj_jar(hi):
+    """The jar: one glass shell, out round the base, up the body, over the rim and back down the
+    inside to its floor; the detailed one has its screw thread."""
+    s = Shape()
+    out, ins = TJ["outside"], TJ["inside"]
+    (r0, z0), (r1, _) = out[-1], ins[0]
+    nl = 6 if hi else 3
+    lip = fillet((r0 + r1) / 2, z0, (r0 - r1) / 2, (0, 180), nl)
+    prof = out[:-1] + lip + ins[1:]
+    n_out = len(out) - 1 + nl  # the spans up the outside and over the rim
+    kinds = [JAR] * n_out + [JAR_IN] * (len(prof) - 1 - n_out)
+    s.lathe(prof, JAR, segs(hi, 32), kinds=kinds)
+    if hi:
+        t = TJ["thread"]
+        n = int(t["turns"] * 48)
+        pts, radii = [], []
+        for i in range(n + 1):
+            u = i / n
+            a = 2 * math.pi * t["turns"] * u + 0.6
+            pts.append((t["out"] * math.cos(a), t["out"] * math.sin(a), t["z0"] + (t["z1"] - t["z0"]) * u))
+            # the thread runs out to nothing at both ends, as a moulded thread does
+            radii.append(t["r"] * max(0.25, min(1.0, u / 0.1, (1.0 - u) / 0.1)))
+        s.tube(pts, t["r"], JAR, 10, radii=radii)
+    return s
+
+
+def tj_candle(hi):
+    """The tea light: a pressed aluminium cup with a rolled lip, its wax half burned down, the
+    wick standing out of it, leaning and charred."""
+    s = Shape()
+    r, h, wx = TL["r"], TL["h"], TL["wax"]
+    n = 3 if hi else 1
+    cup = ([(0.0, 0.0), (r - 0.003, 0.0)] + fillet(r - 0.003, 0.003, 0.003, (-90, 0), n)[1:]
+           + [(r + 0.0006, h - 0.004)] + fillet(r - 0.0004, h - 0.0012, 0.0012, (0, 180), 2 * n)[1:]
+           + [(r - 0.0022, h - 0.004), (r - 0.0022, wx + 0.0025)])
+    # the wax: it creeps up the wall a little, then lies flat, with a dip round the wick
+    wax = [(r - 0.0035, wx + 0.0006), (r - 0.007, wx), (0.012, wx), (0.007, wx - 0.0012),
+           (0.0, wx - 0.0016)]
+    prof = cup + wax
+    kinds = [CUP] * (len(cup) - 1) + [WAX] * len(wax)
+    s.lathe(prof, CUP, segs(hi, 24), Matrix.Translation(TL_AT), kinds=kinds[:len(prof) - 1])
+    w = TL["wick"]
+    lean = math.radians(w["lean"])
+    pts = []
+    m = 8 if hi else 4
+    for i in range(m + 1):
+        u = i / m
+        # it leans more towards its tip, where it has burned and curled
+        a = lean * u ** 1.6
+        pts.append(TL_AT + Vector((math.sin(a) * w["up"] * u * 0.7, 0.0, wx - 0.004 + (w["up"] + 0.004) * u)))
+    s.tube(pts, w["r"], WICK, 8 if hi else 5)
+    return s
+
+
+def tj_flame(hi):
+    """The flame: a teardrop round at its foot and drawn to a point, widest a third of the way up."""
+    s = Shape()
+    f = TL["flame"]
+    n = 24 if hi else 10
+    shape = lambda u: u ** 0.42 * (1.0 - u) ** 1.15  # noqa: E731
+    peak = max(shape(i / 200) for i in range(201))
+    prof = [(0.0, 0.0)] + [(f["r"] * shape(i / n) / peak, f["h"] * i / n) for i in range(1, n)]
+    prof.append((0.0, f["h"]))
+    s.lathe(prof, FLAME, segs(hi, 14), Matrix.Translation(FLAME_FOOT))
+    return s
+
+
+def tj_eye(sign, n):
+    """One ear: the wire coiled one and a half times round the bail's hook (the X axis), as it's
+    made, wound round a nail. sign 1 the right ear (arriving from the front), -1 the left."""
+    e, z = TW["eye"], TW["z"]
+    pts = []
+    for i in range(n + 1):
+        a = math.radians(180 + 540 * i / n)
+        p = (e["x0"] + 2 * TW["r"] * e["turns"] * i / n, e["r"] * math.cos(a), z + e["r"] * math.sin(a))
+        pts.append((p[0] * sign, p[1] * sign, p[2]))
+    return pts
+
+
+def tj_neck(a0, a1, n):
+    R, z = TW["neck"] + TW["r"], TW["z"]
+    return [(R * math.cos(math.radians(a0 + (a1 - a0) * i / n)),
+             R * math.sin(math.radians(a0 + (a1 - a0) * i / n)), z) for i in range(n + 1)]
+
+
+def tj_wire(hi):
+    """The wire round the neck: one turn, an ear coiled out each side, its two ends twisted
+    together at the back into a short tail."""
+    s = Shape()
+    R, z, r = TW["neck"] + TW["r"], TW["z"], TW["r"]
+    # the tail: two strands twisted round each other, out from the back and a little down
+    p0, p1 = Vector((0.0, R + 0.006, z)), Vector((0.0, R + 0.04, z - 0.007))
+    ax = (p1 - p0).normalized()
+    e1 = Vector((1.0, 0.0, 0.0))
+    e2 = ax.cross(e1)
+    strand = []
+    m = 24 if hi else 12
+    for k in range(2):
+        pts = []
+        for i in range(m + 1):
+            u = i / m
+            a = 2 * math.pi * 2.25 * u + k * math.pi
+            pts.append(tuple(p0.lerp(p1, u) + (e1 * math.cos(a) + e2 * math.sin(a)) * r * 0.95))
+        strand.append(pts)
+    k = 3 if hi else 1
+    e = 30 if hi else 16
+    path = (list(reversed(strand[1])) + tj_neck(100, 158, 6 * k) + tj_eye(-1, e)
+            + tj_neck(202, 338, 14 * k) + tj_eye(1, e) + tj_neck(382, 440, 6 * k) + strand[0])
+    s.tube(path, r, WIRE, 10 if hi else 6)
+    return s
+
+
+def tj_bail(hi):
+    """The bail: hooked through both ears, straight up the arms and round over the top; built
+    upright and laid back to where it fell against the jar."""
+    s = Shape()
+    b, z = TW["bail"], TW["z"]
+    x, bend, arms = b["x"], b["bend"], b["arms"]
+    side = [(b["inner"], 0.0, z), (x - bend, 0.0, z)]
+    side += [(x - bend + bend * math.sin(math.radians(a)), 0.0, z + bend - bend * math.cos(math.radians(a)))
+             for a in range(15, 91, 15)]
+    side += [(x, 0.0, z + arms)]
+    top = [(x * math.cos(math.radians(a)), 0.0, z + arms + x * math.sin(math.radians(a)))
+           for a in range(0, 181, 5 if hi else 9)][1:-1]
+    left = [(-p[0], p[1], p[2]) for p in reversed(side)]
+    M = (Matrix.Translation(BAIL_PIVOT) @ Matrix.Rotation(math.radians(TW["bail_rest"]), 4, "X")
+         @ Matrix.Translation(-BAIL_PIVOT))
+    s.tube(side + top + left, TW["r"], WIRE, 10 if hi else 6, M)
+    return s
+
+
+def tj_look(L, f):
+    nb = L.nb
+    glass = L.k(JAR, JAR_IN)
+    # soda-lime glass: a faint sea green, glossy, seen through
+    # (glass reflects, it hardly scatters: a dark colour keeps it from glowing like plastic when
+    # the candle lights it from inside, and lets its highlights carry it)
+    C = Coat(L, hexc("#9FB5AA"), 0.04, 0.0)
+    C.paint(glass, alpha=0.12)
+    # thicker glass reads greener and less clear: the base, the bead and thread, the rim
+    base = nb.ss(L.z, 0.034, 0.012)
+    neck = nb.ss(L.z, 0.405, 0.43)
+    rim = nb.ss(L.z, 0.493, 0.4985)
+    thick = nb.mx(nb.mx(base, nb.mul(neck, 0.55)), rim)
+    C.paint(nb.mul(glass, thick), hexc("#86A796"), alpha=0.4)
+    # handled: smudges and fingermarks on the outside, dull and a little grey
+    smudge = nb.mul(L.k(JAR), nb.ss(L.noise(7.0, 11, detail=4, rough=0.6), 0.55, 0.7))
+    C.paint(nb.mul(smudge, 0.8), hexc("#CFD3CF"), 0.32, alpha=0.24)
+    # soot: the candle has burned in it before; a brown-black film inside the shoulder and neck,
+    # heaviest above the flame, in drifts
+    soot_h = nb.mul(nb.ss(L.z, 0.24, 0.4), nb.inv(nb.mul(nb.ss(L.z, 0.44, 0.49), 0.6)))
+    drift = nb.mr(L.noise(4.0, 12, detail=5, rough=0.65, distortion=0.4), 0.3, 0.7, 0.15, 1.0)
+    soot = nb.mul(nb.mul(L.k(JAR_IN), soot_h), drift)
+    C.paint(soot, hexc("#241F1B"), 0.6, alpha=0.62)
+    # the cup: pressed aluminium, brushed by the press, gone straw-coloured where it got hot and
+    # sooty on the wall the wax has burned down from
+    cup = L.k(CUP)
+    alu = nb.tint(hexc("#C9CCCE"), nb.mr(L.noise(60.0, 13, stretch=(1.0, 1.0, 0.08), detail=3), 0.3, 0.7, 0.88, 1.03))
+    C.paint(cup, alu, nb.mr(L.noise(80.0, 14, stretch=(1.0, 1.0, 0.1), detail=3), 0.3, 0.7, 0.22, 0.36), 1.0)
+    cz = TL_AT.z
+    burnt = nb.mul(cup, nb.mul(nb.ss(L.z, cz + TL["wax"] + 0.012, cz + TL["wax"] + 0.002),
+                               nb.ss(L.z, cz + TL["wax"], cz + TL["wax"] + 0.002)))
+    C.paint(nb.mul(burnt, 0.85), hexc("#4A4038"), 0.55, 0.4)
+    C.paint(nb.mul(cup, nb.mul(nb.ss(L.z, cz + 0.045, cz + 0.062), 0.35)), hexc("#C9B48A"))
+    # the wax: white paraffin, waxy, the melt pool set glossy round the wick, specks of soot
+    wax = L.k(WAX)
+    dx, dy = nb.sub(L.x, TL_AT.x), nb.sub(L.y, TL_AT.y)
+    rad = nb.pw(nb.add(nb.mul(dx, dx), nb.mul(dy, dy)), 0.5)
+    C.paint(wax, nb.tint(hexc("#EEEAE1"), nb.mr(L.noise(9.0, 15, detail=3), 0.3, 0.7, 0.95, 1.02)), 0.55, 0.0)
+    C.paint(nb.mul(wax, nb.ss(rad, TL["pool"], TL["pool"] * 0.6)), hexc("#E9E2D2"), 0.2)
+    specks = nb.mul(nb.mul(wax, nb.ss(rad, 0.03, 0.006)), nb.ss(L.noise(90.0, 16, detail=2), 0.62, 0.7))
+    C.paint(specks, hexc("#3A322C"), 0.6)
+    # the wick: wax-stiffened cotton low down, charred black above, a grey ash bead at its tip
+    wick = L.k(WICK)
+    wz = cz + TL["wax"]
+    C.paint(wick, hexc("#D8CFBE"), 0.7, 0.0)
+    C.paint(nb.mul(wick, nb.ss(L.z, wz + 0.004, wz + 0.009)), hexc("#16130F"), 0.85)
+    C.paint(nb.mul(wick, nb.ss(L.z, wz + TL["wick"]["up"] - 0.004, wz + TL["wick"]["up"])), hexc("#6E6A66"), 0.95)
+    # the flame: blue and faint at its foot, a hot white-yellow body, orange drawn up to the tip
+    fl = L.k(FLAME)
+    u = nb.mul(nb.sub(L.z, FLAME_FOOT.z), 1.0 / TL["flame"]["h"])
+    fcol = nb.mixc(nb.ss(u, 0.14, 0.24), hexc("#5470F0"), hexc("#FFF2CF"))
+    fcol = nb.mixc(nb.ss(u, 0.45, 0.85), fcol, hexc("#FFA94A"))
+    C.paint(fl, fcol, 0.5, 0.0)
+    C.paint(fl, alpha=nb.mr(u, 0.0, 0.2, 0.3, 0.92))
+    C.paint(nb.mul(fl, nb.ss(u, 0.75, 1.0)), alpha=0.5)
+    C.lights(nb.mul(fl, nb.mr(u, 0.08, 0.22, 0.35, 1.0)))
+    # the wire: galvanised steel, its zinc dulled, rusting where it was bent and in spots
+    wire = L.k(WIRE)
+    zinc = nb.tint(hexc("#A2A7A9"), nb.mr(L.noise(40.0, 17, detail=4), 0.3, 0.7, 0.8, 1.05))
+    C.paint(wire, zinc, nb.mr(L.noise(25.0, 18, detail=3), 0.3, 0.7, 0.35, 0.55), 1.0)
+    rust = nb.mul(wire, nb.ss(L.noise(18.0, 19, detail=5, rough=0.7), 0.6, 0.7))
+    C.paint(rust, hexc("#7B4B2C"), 0.85, 0.0, 0.2)
+    C.finish(f.dust, grime=0.35)
+    return C.surface(bump_dist=0.0006, bump=0.4)
+
+
+FLAME_MID = tuple(FLAME_FOOT + Vector((0.0, 0.0, TL["flame"]["h"] * 0.35)))
+TEA_LIGHT = kit.Find(
+    "TeaLight",
+    [kit.Part("Jar", tj_jar, clear=True),
+     kit.Part("Candle", tj_candle, tuple(TL_AT), "Jar"),
+     kit.Part("Wire", tj_wire, tuple(BAIL_PIVOT), "Jar"),
+     kit.Part("Bail", tj_bail, tuple(BAIL_PIVOT), "Jar", (1, 0, 0)),
+     kit.Part("Flame", tj_flame, tuple(FLAME_FOOT), "Candle", (0, 1, 0), clear=True)],
+    tj_look,
+    lights=[
+        # a candle's light: warm, low, all round; no shadows, so it shines out through the glass
+        dict(kind="Point", part="Flame", at=FLAME_MID, kelvin=TL["kelvin"], brightness=0.9,
+             range=9, shadows=False, preview_kind="POINT", preview_watts=2.6, preview_size=0.012),
+    ],
+    glow=dict(part="Flame", strength=3.0, tint=(255, 178, 98), preview=14.0),
+    # found cold: the flame is scaled to nothing until it's lit
+    lit={("Flame", "scale"): 1.0},
+    motions={
+        # struck: the wick catches small, sinks as it melts its wax, then the flame climbs too
+        # tall, wavers and settles
+        "Light": dict(duration=1.3, focus=FLAME_MID, distance=0.5, tracks=[
+            ("Flame", "scale", [(0.0, 0.0), (0.06, 0.32, "Quad", "Out"), (0.18, 0.24),
+                                (0.5, 1.0, "Quad", "Out")]),
+            ("Flame", "stretch", [(0.0, 1.0), (0.18, 0.8), (0.52, 1.32, "Quad", "Out"),
+                                  (0.76, 0.9), (0.98, 1.07), (1.2, 1.0)]),
+            ("Flame", "turn", [(0.0, 0.0), (0.4, 0.0), (0.6, 3.5), (0.84, -2.4), (1.06, 1.1),
+                               (1.3, 0.0)]),
+            ("Flame", "glow", [(0.0, 0.0), (0.06, 0.45, "Quad", "Out"), (0.18, 0.32),
+                               (0.5, 1.0, "Quad", "Out"), (1.3, 1.0)])]),
+        # burning: played on a loop, the flame stretches and leans, and its light breathes
+        "Flicker": dict(duration=2.0, focus=FLAME_MID, distance=0.5, tracks=[
+            ("Flame", "scale", [(0.0, 1.0), (2.0, 1.0)]),
+            ("Flame", "stretch", [(0.0, 1.0), (0.18, 1.07), (0.33, 0.95), (0.6, 1.04), (0.82, 0.97),
+                                  (1.1, 1.09), (1.3, 0.94), (1.6, 1.03), (2.0, 1.0)]),
+            ("Flame", "turn", [(0.0, 0.0), (0.25, 2.2), (0.55, -1.4), (0.9, 1.6), (1.25, -2.4),
+                               (1.6, 0.8), (2.0, 0.0)]),
+            ("Flame", "glow", [(0.0, 1.0), (0.2, 0.93), (0.35, 1.0), (0.62, 0.9), (0.85, 1.0),
+                               (1.12, 0.88), (1.32, 0.97), (1.6, 0.92), (2.0, 1.0)])]),
+        # run down: it gutters twice, shrinks and goes out
+        "GoOut": dict(duration=1.6, focus=FLAME_MID, distance=0.5, tracks=[
+            ("Flame", "scale", [(0.0, 1.0), (0.9, 0.85), (1.35, 0.0, "Quad", "In")]),
+            ("Flame", "stretch", [(0.0, 1.0), (0.3, 0.68), (0.5, 1.04), (0.75, 0.55), (0.9, 0.82),
+                                  (1.35, 0.5)]),
+            ("Flame", "turn", [(0.0, 0.0), (0.3, -3.0), (0.55, 2.0), (0.8, -4.0), (1.1, 1.0),
+                               (1.35, 0.0)]),
+            ("Flame", "glow", [(0.0, 1.0), (0.3, 0.68), (0.5, 0.95), (0.75, 0.52), (0.9, 0.72),
+                               (1.35, 0.0, "Quad", "In"), (1.6, 0.0)])]),
+        # picked up by its handle: the bail swings up from where it lay, past upright a touch,
+        # and settles
+        "Lift": dict(duration=0.9, focus=(0.0, 0.0, 0.52), distance=1.0, tracks=[
+            ("Bail", "turn", [(0.0, 0.0), (0.32, -TW["bail_rest"] + 6.0, "Quad", "InOut"),
+                              (0.46, -TW["bail_rest"] - 3.0), (0.62, -TW["bail_rest"] + 1.2),
+                              (0.78, -TW["bail_rest"])])]),
+    },
+    dust=TJ["dust"], seed=TJ["seed"],
+)
+
+FINDS = [DESK_LAMP, NIGHT_LIGHT, TEA_LIGHT]
 
 if __name__ == "__main__":
     kit.main("Lights", HERE, FINDS)

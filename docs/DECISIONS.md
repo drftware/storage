@@ -5255,3 +5255,16 @@ in the build, eased by the same sums in Python and in `Finds/Art.luau`, so the g
 the previews showed. The cost: a texture set per find is more memory than a shared atlas; F-S1
 judges it on a phone in Studio.
 
+
+## D-192 Glass and flames are see-through parts of their own; a part can scale (F-02b, Nov 15)
+
+A find's glass (jars, bottles, lenses) and its flame are each their own MeshPart, imported in
+AlphaMode Transparency: the alpha rides in the find's colour map and only those parts' material
+links it, so the solid parts stay in Overlay and never sort as see-through. In Studio a clear
+part wants Transparency 0.02 (or the alpha cuts, docs/STUDIO.md) and CastShadow off. Roblox has
+no refraction, so glass reads by a dark glossy colour, thick edges, smudges, dust and soot. Motions
+gained `scale` and `stretch` (squash and stretch keeping volume) about a part's pivot, which the
+game plays by sizing the MeshPart; a flame is found at scale 0 and the game hides it until it's
+lit. The held sheet is now a first-person view with the find in your hands (CRAFT.md), not a
+camera 2.6 studs off. The cost: each clear part is another see-through draw; F-S1 judges glass on
+a phone.

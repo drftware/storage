@@ -91,3 +91,42 @@ NIGHT_LIGHT = dict(
     # its light: a 4 W candelabra bulb, about 2,600 K, glowing through frosted plastic
     kelvin=2600,
 )
+
+
+# --- The tea light in a jar: a jam-jar lantern -------------------------------------------------
+# References (README): a pint screw-top jar (about 5 inches tall, 3 across, a 70 mm regular-mouth
+# thread) with a wire wrapped twice under its thread, an ear each side, and a wire bail hooked
+# through the ears; a tea light (38 mm across, 16 mm deep, in a pressed aluminium cup) on its
+# floor, burned about half down. Its frame: the jar's bottom middle on the floor, its front to -Y.
+TEA_JAR = dict(
+    # the jar's outside, bottom to top (radius, height): a raised middle under a resting ring,
+    # the straight body, the shoulder, a bead the wire sits on, the threaded neck to the rim
+    outside=[(0.0, 0.006), (0.118, 0.002), (0.133, 0.0), (0.143, 0.004), (0.149, 0.013),
+             (0.15, 0.03), (0.151, 0.2), (0.15, 0.37), (0.147, 0.392), (0.139, 0.408),
+             (0.131, 0.418), (0.1345, 0.424), (0.1345, 0.43), (0.132, 0.433), (0.132, 0.492),
+             (0.13, 0.4985)],
+    # and its inside, from the rim down to the floor: walls 3 mm, the base 7 mm thick
+    inside=[(0.1175, 0.4985), (0.117, 0.48), (0.1175, 0.435), (0.121, 0.424), (0.127, 0.413),
+            (0.135, 0.398), (0.1393, 0.372), (0.1395, 0.05), (0.137, 0.036), (0.128, 0.03),
+            (0.0, 0.029)],
+    thread=dict(z0=0.449, z1=0.486, turns=1.6, r=0.0026, out=0.1335),  # the screw thread
+    seed=47.0,
+    dust=0.42,
+)
+TEA_LIGHT = dict(
+    at=(0.022, -0.016, 0.029),     # where it stands on the jar's floor (slid a little off middle)
+    r=0.0748, h=0.063,             # the cup: 38 mm across, 16 mm deep
+    wax=0.036,                     # burned about half down: the wax's top in the cup
+    pool=0.042,                    # the old melt pool round the wick, set glossy
+    wick=dict(r=0.0032, up=0.024, lean=12.0),  # its wick standing out of the wax, leaning
+    flame=dict(h=0.088, r=0.0145, at=0.005),   # 22 mm tall, 7 mm across, its foot above the wax
+    kelvin=1850,                   # a candle flame
+)
+TEA_WIRE = dict(
+    r=0.0055,                      # heavy galvanised wire, a touch bolder than life (2.8 mm)
+    z=0.4385,                      # the wrap's height: on the neck's bead, under the thread
+    neck=0.132,
+    eye=dict(x0=0.1465, r=0.013, turns=1.5),  # each ear: an eye coiled round the bail's hook
+    bail=dict(inner=0.145, x=0.176, bend=0.008, arms=0.13),  # hook end, arms' x, the arms
+    bail_rest=-150.0,              # degrees it's fallen back from upright, its top on the jar
+)

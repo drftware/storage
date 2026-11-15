@@ -3,16 +3,18 @@
 A look is a function `look(L) -> Surface`: L hands out the find's coordinates (its own frame, at
 rest), which kind of face it is, normals, noise and masks; a Coat stacks paint layers; the
 Surface it returns is what the kit bakes (colour, roughness, metalness, a height for the fine
-bump, and glow: where it lights up).
+bump, glow: where it lights up, and alpha: how solid it is, 1 everywhere but a clear part's glass
+or flame).
 """
 
 from nodes import hexc  # noqa: F401  (re-exported for looks)
 
 
 class Surface:
-    def __init__(self, col, rough, metal, height=0.0, glow=0.0, bump_dist=0.002, bump=0.6):
+    def __init__(self, col, rough, metal, height=0.0, glow=0.0, bump_dist=0.002, bump=0.6,
+                 alpha=1.0):
         self.col, self.rough, self.metal, self.height, self.glow = col, rough, metal, height, glow
-        self.bump_dist, self.bump = bump_dist, bump
+        self.bump_dist, self.bump, self.alpha = bump_dist, bump, alpha
 
 
 class Look:
@@ -59,9 +61,14 @@ class Coat:
         self.L, self.nb = L, L.nb
         self.col, self.rough, self.metal, self.height = col, rough, metal, height
         self.glow = 0.0
+        self.alpha = 1.0
 
-    def paint(self, mask, col=None, rough=None, metal=None, height=None):
+    def paint(self, mask, col=None, rough=None, metal=None, height=None, alpha=None):
+        """`alpha` is how solid it is there (glass about 0.1 to 0.3, 1 solid); only a clear
+        part (kit.Part(clear=True)) shows it."""
         nb = self.nb
+        if alpha is not None:
+            self.alpha = nb.mixf(mask, self.alpha, alpha)
         if col is not None:
             self.col = nb.mixc(mask, self.col, col)
         if rough is not None:
@@ -101,6 +108,10 @@ class Coat:
         d = nb.add(d, speck, clamp=True)
         self.paint(nb.mul(d, 0.6), hexc("#A39A8C"))
         self.paint(d, rough=0.95, metal=0.0, height=0.04)
+        if not isinstance(self.alpha, float):
+            # dust on glass is a grey film you can't see through
+            self.alpha = nb.add(self.alpha, nb.mul(d, 0.75), clamp=True)
 
     def surface(self, bump_dist=0.002, bump=0.6):
-        return Surface(self.col, self.rough, self.metal, self.height, self.glow, bump_dist, bump)
+        return Surface(self.col, self.rough, self.metal, self.height, self.glow, bump_dist, bump,
+                       self.alpha)

@@ -2094,8 +2094,9 @@ actions themselves and dealing the new finds on floors are later game tickets.
 - [ ] **F-02 The Lights** (the other 15), a few finds a session:
   - [x] **F-02a** The plug-in night-light (Nov 15); the kit gained lofts for shells that
     aren't round.
-  - [ ] **F-02b** The tea light in a jar, which brings see-through glass to the kit; then on
-    down WAVES.md's list.
+  - [x] **F-02b** The tea light in a jar (Nov 15); the kit gained see-through glass, the
+    `scale` and `stretch` channels and a first-person held sheet (D-192).
+  - [ ] **F-02c** The bundle of glow sticks, then on down WAVES.md's list.
 - [ ] **F-03 The remote-control car and the die-cast car** (pulled forward from wave 4).
 - [ ] **F-S1 Into Studio:** the Lights and the cars uploaded, inserted and judged at phone size.
 - [ ] **F-04 Wind-ups and noisemakers.**

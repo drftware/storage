@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-02b, the tea light in a jar, then on down the Lights, with the kit (notes below:
-the jar needs see-through glass first).
+**Next:** F-02c, the bundle of glow sticks, then on down the Lights (string fairy lights,
+camping lantern), with the kit (notes below).
 
 ## Order
 
@@ -33,6 +33,23 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 15, F-02b (the tea light in a jar).** Built and judged twice (the glass was milky and
+  the candle lit the whole jar yellow like a plastic tub: glass wants a dark, glossy colour;
+  the bail's arc was faceted; the wire had too many triangles). One find again: this session
+  reached 225k context before its first full render (reading the kit's bake, export and render
+  code to add glass cost most of it), so start lean and read the kit only by grep. Kit
+  changes, all in CRAFT.md's kit list: **glass** (`Part(clear=True)`, `paint(alpha=)`, the
+  alpha in the colour PNG, a clear part's own material, occlusion that ignores glass, Gold
+  keeping glass), the `scale` and `stretch` channels (stretch is squash and stretch keeping
+  volume: F-05's squishies can use it), `lit=` on a Find (how it stands when on), filmstrips
+  that keep unmoved parts at rest, and a **first-person held sheet** (the find in your hands
+  1.05 studs ahead, the night-light's and the desk lamp's re-rendered with it). A spec for
+  `Finds/Art.luau` now exists (`tests/findsart.spec.luau`). Quick sheets for a find with four
+  motions take about 5 minutes, full ones about 10: render one find's sheets in the background
+  and write notes meanwhile. The tea light is 4,058 triangles; its wire (1,064) could lose its
+  eyes' detail on the game mesh if a budget bites. Glass glows dimly from its inside light in
+  Cycles; in Roblox it's alpha-blended lighter (docs/STUDIO.md): F-S1 judges the jar there.
 
 - **Nov 15, F-02a (the plug-in night-light).** Built and judged three times (the dome was
   faceted, the lit shade blew out flat white with no hot spot, the shade and base were one
@@ -70,7 +87,7 @@ A light set down switched on lights the space round it until it runs down. Wheth
 | Find | Grade | What it does | Notes | Built |
 |---|---|---|---|---|
 | Plug-in night-light | Common | Switch on (at home): a soft glow by the floor | Frosted ribbed shade | Nov 15, F-02a |
-| Tea light in a jar | Common | Light: a small glow for about a minute |  | |
+| Tea light in a jar | Common | Light: a small glow for about a minute |  | Nov 15, F-02b |
 | Desk lamp | Common | Switch on (at home): a warm pool of light | Needs a socket, so only at home | Nov 15, F-01 |
 | Bundle of glow sticks | Common | Crack: one stick lights a small spot for the rest of the floor; three to a bundle | The glow sticks from the Nov 2 draft | |
 | String fairy lights | Uncommon | Switch on: lay them along a hall for a dim line of light |  | |

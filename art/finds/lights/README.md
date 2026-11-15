@@ -70,3 +70,56 @@ clips in `out/`.
 - **Not in the place yet:** upload and insert in F-S1. From a unit's doorway it's a pale speck
   when off and a small warm point when on: judge in Studio whether small finds need help to be
   seen (WAVES.md).
+
+## Tea light in a jar (Nov 15, F-02b)
+
+- **What it is:** a jam-jar lantern, the kind people make for a garden party: a pint screw-top
+  jar with no lid, a heavy galvanised wire wrapped once round its neck under the thread, an
+  ear coiled out each side, the wire's two ends twisted together at the back, and a wire bail
+  hooked through the ears. A tea light stands on the jar's floor, slid a little off the middle,
+  burned about half down. Found: the bail has fallen back against the jar, the glass is
+  smudged, dusty on its shoulder and sooted inside above where the flame burns, the wire is
+  rusting in spots.
+- **References** (looked at Nov 15): HGTV's "Create Glass Lanterns for the Backyard"
+  (hgtv.com/decorating/diy/create-glass-lanterns-for-the-backyard: clear screw-top jars, the
+  wire wrapped under the thread, a coiled ear each side, a tall bail; how thick the base glass
+  looks); Instructables' "How to Make a Homemade Hanging Lantern"
+  (instructables.com/How-to-Make-a-Homemade-Hanging-Lantern: a jar lantern lit at night, the
+  bail's proportions); guides on cutoutandkeep.net and kippiathome.com (wrap the rim, twist the
+  ends with pliers, hook the bail's loops through); IKEA's GLIMMA tea light page and tealight
+  cup listings (kerzenkiste.de: 39 x 18 mm; voyageursoapandcandle.com: 37.5 x 20 mm). Sizes:
+  a tea light is 38 mm across and 15 to 18 mm deep; a regular-mouth jar's thread is 70 mm
+  across and its opening about 60 mm (masonjarlifestyle.com's size chart); a pint jar is
+  about 5 inches tall and 3 across.
+- **Choices:** a pint jar rather than a half-pint (4 inches), so it reads beside the
+  night-light; wire of 2.8 mm, a touch bolder than the 1.3 to 1.6 mm the guides use, so the
+  bail shows on a phone; no lid band, so the thread shows; the tea light used before, so the
+  cup's wall shows above the wax and the jar has soot.
+- **Size:** 5 inches tall, 3 across (0.5 studs tall, 0.3 across; 0.37 deep with the bail hung
+  at the back).
+- **Tells:** a clear jar with a candle in the bottom and a wire handle; lit, a warm flame
+  low in a glowing jar.
+- **Parts:** `TeaLight_Jar` (root: the jar's bottom middle on the floor; see-through),
+  `_Candle` (the cup, wax and wick, at its spot on the floor), `_Wire` (the wrap, ears and
+  twisted tail), `_Bail` (turns about X through both ears; built where it fell, 150 degrees
+  back from upright), `_Flame` (on the candle; see-through and glowing; its pivot at the
+  flame's foot, turning about Y so it sways side to side). 4,058 triangles (the jar 1,728,
+  the wire 1,064); one 512 texture set at 375 texels a stud.
+- **Glass:** the first see-through find (CRAFT.md, "Glass"). The jar and the flame are clear
+  parts: their alpha rides in the colour map and their material links it, so they import in
+  AlphaMode Transparency; in Studio set each to Transparency 0.02 and CastShadow off (or the
+  glass blocks the candle's light where shadows are on). The walls are alpha 0.12 (two walls
+  seen through), the base, bead, thread and rim up to 0.4 and greener, smudges 0.24, soot
+  inside up to 0.62. Roblox draws alpha lighter than Cycles (docs/STUDIO.md): judge in Studio.
+- **Light:** a Point in the flame (1,850 K, Brightness 0.9, Range 9, no shadows, so it shines
+  out through the glass); the flame's emissive mask is faint in its blue foot and full above,
+  strength 3, tint (255, 178, 98).
+- **Motions:** found cold, the flame scaled to nothing (`scale` 0; the game hides it, a
+  MeshPart can't be size 0). `Light` (1.3 s): the wick catches small, sinks as it melts its
+  wax, the flame climbs too tall, wavers and settles. `Flicker` (2 s, played on a loop while it
+  burns): the flame stretches, leans and its light breathes. `GoOut` (1.6 s): it gutters twice,
+  shrinks and goes out. `Lift` (0.9 s): picked up by the bail, which swings up from where it
+  lay, a touch past upright, and settles.
+- **Not in the place yet:** upload and insert in F-S1. Unlit from a unit's doorway it's
+  nearly invisible (clear glass, 5 inches, in a dim unit); lit it's a warm point. Judge with the
+  night-light whether small finds need help to be seen.
