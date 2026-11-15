@@ -100,6 +100,82 @@ function NoteCard.pocket(notes: { string }): string
 	return table.concat(notes, NoteCard.Join, 1, math.min(#notes, NoteCard.Pocket))
 end
 
+--[[
+	Carrying a note to the car (B-04b, D-214). Walk up to the elevator's keypad holding notes and
+	they leave your pocket and fly onto the wall beside it, each slapped up with a tack's tap, so
+	the team's clues gather where the code goes in and anyone at the keypad reads them there. As a
+	Roblox simulator's sell pad takes your bag the moment you step on it: no button to find.
+	Caught or gone holding notes, they tumble out where you were, to lie flat on the floor until a
+	friend taps Take.
+
+	A placed note carries `Placed` ("Pinned" or "Dropped"), `PlacedAt` (server time) and
+	`PlacedFrom` (where it left the hand, a Vector3), so every screen near flies it there or
+	tumbles it down once (NotePlaces); a note that streams in later just lies where it is.
+]]
+NoteCard.Placed = "Placed"
+NoteCard.PlacedAt = "PlacedAt"
+NoteCard.PlacedFrom = "PlacedFrom"
+
+-- Within this many studs of the keypad's face your notes go up: standing at it, or a step off.
+NoteCard.PinReach = 5
+-- The pinned notes' row on the lobby wall, in the elevator's frame (studs): the first one's
+-- middle beside the keypad (just past its edge, away from the opening), then each next one a
+-- note's width and a sliver further along; a fifth starts a row below. Eye level, a touch over
+-- the keypad's middle, so the camera at the keypad has them in view beside it. Four fit before
+-- the lobby's side wall (x -12, seen in Studio).
+NoteCard.PinFirst = -8.85
+NoteCard.PinStep = -0.8
+NoteCard.PinHeight = 4.25
+NoteCard.PinRowDrop = 0.95
+NoteCard.PinPerRow = 4
+-- Each slapped up crooked by up to this many degrees, as a hand in a hurry pins it.
+NoteCard.PinTilt = 7
+-- Off the wall's face (studs), clear of it at any distance.
+NoteCard.PinOut = 0.006
+
+-- Dropped notes land within this many studs of where you stood, spread so each shows.
+NoteCard.DropSpread = 1.2
+-- The Take button: within this many studs (a step off the paper), at most one press this often.
+NoteCard.TakeReach = 6
+NoteCard.TakeSeconds = 0.3
+-- The Take button floats this far over the paper lying on the floor.
+NoteCard.TakeUp = 0.5
+
+-- The flight to the wall: this long, rising this far over the straight line, a quarter turn
+-- spun off as it lands; then the tack's tap.
+NoteCard.PinFly = 0.34
+NoteCard.PinArc = 0.6
+-- The tumble to the floor: this long, rocking side to side this many times and this far
+-- (studs), as a loose sheet does; the flap as it leaves the hand.
+NoteCard.DropFall = 0.75
+NoteCard.DropRocks = 2.5
+NoteCard.DropSway = 0.35
+-- A placed note older than this when a screen first sees it just lies there (streamed in late).
+NoteCard.PlacedFresh = 1.5
+
+-- Where the `i`th note pinned beside a keypad goes, in the elevator's frame: its middle's x and
+-- y on the lobby wall, and its crook in degrees (a fixed spread, so every server agrees).
+function NoteCard.pinAt(i: number): (number, number, number)
+	local k = math.max(1, math.floor(i)) - 1
+	local col = k % NoteCard.PinPerRow
+	local row = k // NoteCard.PinPerRow
+	local crook = ({ -0.6, 0.85, -0.25, 0.5 })[col + 1] * NoteCard.PinTilt
+	return NoteCard.PinFirst + col * NoteCard.PinStep,
+		NoteCard.PinHeight - row * NoteCard.PinRowDrop,
+		if row % 2 == 1 then -crook else crook
+end
+
+-- Where the `i`th of `count` dropped notes lands, from where its holder stood (studs, across
+-- the floor's x and z): one in the middle, more spread round a circle so none hides another.
+function NoteCard.scatter(i: number, count: number): (number, number)
+	if count <= 1 then
+		return 0, 0
+	end
+	local turn = (i - 1) / count * 2 * math.pi + 0.4
+	local r = NoteCard.DropSpread * (0.55 + 0.45 * ((i * 7) % 5) / 4)
+	return math.cos(turn) * r, math.sin(turn) * r
+end
+
 -- The slots a note's writing shows, left to right: "_ 7 _ _" is { "_", "7", "_", "_" }.
 function NoteCard.slots(text: string): { string }
 	local out = {}

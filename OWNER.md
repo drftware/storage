@@ -172,6 +172,27 @@ nowhere else.
   2. Notes go in a pocket of their own, not one of your three hands, so taking the code never
      costs a find; each shows as a paper at your screen's left edge.
   3. A note you just took lifts onto your screen at once, so you read it before anything else.
+- [ ] **Carry a note to the car** (B-04b, D-214; the pin, its flight and tap, a drop and Take
+  seen in Studio Play by me with one player, the notes given by a test script; never two
+  players, never a real catch, never on a phone). Do this right after "A note comes out of a box".
+  1. Local Server, 2 players, both to floor 3. Player 1 opens Unit317's box (note "_ _ _ 4").
+  2. Player 1 walks to the elevator's keypad (right of the shut gate, as you face it). Within a
+     step of it, the paper at their screen's left edge goes, and on both screens a yellow note
+     flies from player 1's hand onto the wall just right of the keypad, crooked, with a small
+     tack's tap. Player 2, standing by: you see it fly and hear the tap.
+  3. Either player walks up to the pinned note: it has its Read button; tap it and it lifts big.
+  4. Player 2 opens Unit313's box and brings that note too: it goes up beside the first, in a row.
+  5. A catch: player 1 opens another note's box (Unit304, past its monster) and lets a monster
+     catch them. As the hands close, the note tumbles out of their hand with a paper flap,
+     rocking, and lies flat on the floor where they stood (more than one: spread apart).
+  6. Player 2 walks to it: a Take button over the paper; tap it, and the note lifts on player 2's
+     screen and sits in their pocket. Player 1 (caught) never sees a Take answer them.
+  7. Leaving: player 2 holds a note and closes their window. On player 1's screen the note lies on
+     the floor where player 2 stood, with Take.
+- [ ] **Decide (default in, B-04b, D-214):** notes go up by the keypad on their own as you walk up
+  to it, as a Roblox simulator's sell pad takes your bag the moment you step on it: no button to
+  find, and the last runner's note is up before they stop. The other way is a "Pin" button by the
+  keypad you press (as Lethal Company has you drop scrap in the ship by hand); say if you want it.
 - [ ] **Answer Brix's gift and receipt choices** (its DECISIONS E-075 to E-078, listed in Brix's
   HANDOFF) before S3-04 sells gift versions of the wrap colours.
 

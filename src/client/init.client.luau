@@ -46,6 +46,7 @@ local LobbyView = require(script.LobbyView)
 local MachineMenu = require(script.MachineMenu)
 local MachineView = require(script.MachineView)
 local MarkedBoxView = require(script.MarkedBoxView)
+local NotePlaces = require(script.NotePlaces)
 local NoteView = require(script.NoteView)
 local FaintMarkView = require(script.FaintMarkView)
 local PadlockView = require(script.PadlockView)
@@ -117,6 +118,7 @@ local host = Brix.Host.new({
 		-- the tap's bar as your door comes down on a sleeping monster (S2-05a)
 		{ slot = "tapView", system = TapView.new() },
 		{ slot = "noteView", system = NoteView.new() },
+		{ slot = "notePlaces", system = NotePlaces.new() },
 		-- the faint mark on one note's door frame, shown only in your beam (S1-11)
 		{ slot = "faintMarkView", system = FaintMarkView.new(myBeam) },
 		{ slot = "flashlightView", system = flashlightView },

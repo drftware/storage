@@ -2110,9 +2110,11 @@ it is, coins go to your bank, a tool goes to your hands, or it's a piece of the 
     than a find's (a paper flap, a warm glimmer), the paper rises, turns and flies to the opener,
     and lifts onto their screen as D-045's card. They keep it in a pocket of its own, not a
     hand: a paper tucked at their screen's edge that holds it up again on a tap.
-  - [ ] **B-04b Carry it to the car.** Drop a held note in the car and it stays by the keypad for
-    anyone to read; caught or gone holding one, it drops where you were. Until then a caught
-    player keeps their notes, and a player who leaves puts theirs back on its unit's back wall.
+  - [x] **B-04b Carry it to the car.** Done Nov 15 (D-214): the pockets are a server system of
+    their own (`Pockets`); walk up to the keypad holding notes and they fly onto the wall beside
+    it in a row with a tack's tap, each with its Read button; caught or leaving, they tumble out
+    flat on the floor where you were, and a friend's Take pockets them. Polish later: the pocket
+    paper slides off the screen's edge toward the keypad as it goes (today it just goes).
 - [ ] **B-05 Packed units.** Some medium and large units (about one in three, more on higher
   floors) are boxes stacked to the ceiling with a path through to the back, where the marked box
   or a sleeping monster waits, never nothing. Art first (each stack a few models, for low-end

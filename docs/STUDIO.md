@@ -2401,6 +2401,15 @@ verified: a doc page, Studio, or "untested".
 
 - **Since B-03a** real units deal boxes; `DevBox` takes only a catalog key (a find or tool),
   dealing the next unit that, boxed whatever its size; `true` does nothing now.
+- **Testing notes without a box** (B-04b): in Play, from the Server, `require(ServerScriptService
+  .Server.Pockets).new()`, `start` it with `{ registry = { get = function() return nil end } }`
+  and keep it in `_G` for later calls; `give` it notes (any unit, e.g. floor 3's Unit317), then
+  `drop(player, rootPosition)`, or pivot the character to (-6.2, 3, -591.5) facing +Z (floor 3's
+  keypad, DevCorridor) and call `step(0.2)` to pin. The client's NotePlaces plays either. A
+  Client call that waits for a fresh note must be listening before the Server places it: delay
+  the Server's place by ~6 s (one MCP call takes seconds). Floor 3's lobby is dark: frame the
+  camera within 3 studs to see a note. The lobby's back wall face is the elevator's pivot plane
+  (z -588 there); its side wall stands at x -12 from the opening's middle.
 - **Opening many doors fast** (B-03a): from the Server read each unit's `DoorMiddle` WorldCFrame
   (the unit isn't streamed to the Client until you're near), then on the Client PivotTo the
   character 4.5 studs out along its LookVector and press the `Open` prompt under `DoorMiddle`.

@@ -205,6 +205,50 @@ do -- the pocket (B-04a): what's held reads back in order, at most four, nothing
 	ok(not string.find("_ 7 _ _", NoteCard.Join, 1, true), "a note's writing never holds the join")
 end
 
+-- Notes pinned beside the keypad (B-04b): each clear of the keypad and of the one before, the
+-- row on the side away from the opening, never over the car's mouth.
+do
+	local keypad = ElevatorSpecs.Parts.Keypad
+	local outer = keypad.Centre[1] - keypad.Size[1] / 2
+	local side = ElevatorSpecs.Note.Side
+	local lastX, lastY = math.huge, 0
+	for i = 1, NoteCard.Pocket do
+		local x, y, crook = NoteCard.pinAt(i)
+		ok(x + side / 2 * 1.2 < outer, `pin {i} clears the keypad's edge`)
+		ok(x < -ElevatorSpecs.Opening.Width / 2, `pin {i} is off the car's mouth`)
+		ok(math.abs(crook) <= NoteCard.PinTilt, `pin {i} crooked within the tilt`)
+		if i > 1 then
+			ok(math.abs(lastX - x) >= side * 1.1 or y ~= lastY, `pin {i} clear of pin {i - 1}`)
+		end
+		lastX, lastY = x, y
+	end
+	-- the lobby's side wall stands 12 studs off the opening's middle (seen in Studio, B-04b)
+	local xLast = NoteCard.pinAt(NoteCard.Pocket)
+	ok(xLast - side / 2 * 1.2 > -12 + 0.2, "the last pin clears the lobby's side wall")
+	local x5, y5 = NoteCard.pinAt(NoteCard.PinPerRow + 1)
+	local x1, y1 = NoteCard.pinAt(1)
+	ok(x5 == x1 and y5 < y1 - side, "a fifth pin starts a row below")
+	-- dropped notes: none on top of another, all within the spread
+	for count = 1, NoteCard.Pocket do
+		local spots: { { number } } = {}
+		for i = 1, count do
+			local dx, dz = NoteCard.scatter(i, count)
+			ok(
+				math.sqrt(dx * dx + dz * dz) <= NoteCard.DropSpread + 1e-6,
+				`drop {i}/{count} within the spread`
+			)
+			for _, other in spots do
+				local d = math.sqrt((other[1] - dx) ^ 2 + (other[2] - dz) ^ 2)
+				ok(
+					d >= side * 0.9,
+					`drop {i}/{count} clear of another ({string.format("%.2f", d)})`
+				)
+			end
+			table.insert(spots, { dx, dz })
+		end
+	end
+end
+
 print(
 	`notecard: {checks - failures}/{checks} checks passed (A16: the digit {string.format(
 		"%.1f",

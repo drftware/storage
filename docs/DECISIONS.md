@@ -5680,3 +5680,29 @@ on the back wall as before, and Studio's Output says so, so the code is never lo
 - Verified in Studio Play on seed 2000013's floor 3: Unit317's box held "_ _ _ 4"; the paper came
   out, the card lifted with it, the pocket paper showed. No errors.
 
+## D-214 Notes go up by the keypad, and drop where you're caught (B-04b, Nov 15)
+
+The code's notes now ride in a server system of their own (`Pockets`: `give`, `pin`, `drop`), out
+of MarkedBoxes, which hands each box's note to it.
+
+- **Up by the keypad, on their own** (default, `OWNER.md`). The gate is shut until the code is in,
+  so "the car" is its keypad on the lobby wall. Walk within `NoteCard.PinReach` (5 studs) of its
+  face, on the lobby's side, holding notes, and every one goes up on the wall beside it, in a row
+  away from the opening (`NoteCard.pinAt`: four fit before the lobby's side wall at x -12), as a
+  simulator's sell pad takes your bag as you step on it. Each is a wall note like any other, with
+  its Read button. They go with their floor. Never from inside the car, so a ride can't pin.
+- **Dropped where you were.** Caught (`Keepers.caught`) or leaving, your notes tumble out flat on
+  the floor under you (`NoteCard.scatter` spreads more than one, short of walls), each with a Take
+  button checked on the server (not caught, alive, within reach, one press a `TakeSeconds`); Take
+  pockets it and lifts it on your screen, so a dropped note needs no Read button. Dying another way
+  keeps them. A note whose holder left before it reached them still goes back on its wall.
+- **Every screen sees it go** (`NotePlaces`): stamped `Placed`, `PlacedAt`, `PlacedFrom`, a pinned
+  note flies from the hand in a short arc, a quarter turn spun off, and presses into the wall with
+  a tack's tap (the unit light's click, its first click pitched up); a dropped one leaves the hand
+  with a flap, rocks down as a loose sheet does, and settles with a softer flap.
+- Verified in Studio Play on seed 2000013's floor 3 with a test instance of Pockets: notes pinned
+  flush on the lobby wall beside the keypad (wall face hit at the note's back), the flight sampled
+  landing at 0.39 s with its tap; two notes dropped flat 2 studs apart, Take pocketed one, its
+  paper showed, no Read on dropped notes. A real box's note and a real catch through the running
+  system are untested in Studio.
+

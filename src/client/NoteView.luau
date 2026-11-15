@@ -21,6 +21,10 @@
 	take it; a tap holds it up again on the card. Tap, Read, B or a click drops it as before;
 	walking doesn't (it's in your hand, not on a wall), dying does.
 
+	Carried to the car (B-04b). Notes pinned beside the keypad (Pockets) are notes on a wall like
+	any other, each with its Read button. A note dropped on the floor has none: its Take (the
+	server's) puts it in your pocket, and the card lifts with it as with a box's.
+
 	The card's paper is the note's own mesh drawn in a ViewportFrame. A SurfaceGui draws nothing
 	there (seen in Studio, L-05b1d), so the slots are written over the paper on the screen.
 ]]
@@ -534,6 +538,10 @@ function NoteView.new(): Brix.System
 
 	local function add(inst: Instance)
 		if not inst:IsA("Model") or entries[inst] or not inst:IsDescendantOf(Workspace) then
+			return
+		end
+		-- a note dropped on the floor (B-04b) has the server's Take, which reads it as you take it
+		if inst:GetAttribute(NoteCard.Placed) == "Dropped" then
 			return
 		end
 		local paper = inst:FindFirstChild("Paper")
