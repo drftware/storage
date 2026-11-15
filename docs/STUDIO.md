@@ -2335,3 +2335,16 @@ verified: a doc page, Studio, or "untested".
   step with it. Two calls (Server sets, Client samples) land seconds apart, past a short moment.
   The carried wake: set `BroughtAt` to `workspace:GetServerTimeNow()` and `Kept` to true, sample
   the `Caught` ScreenGui's full-screen frame, then clear both.
+
+## The new finds in a unit (F-G1a, Nov 15)
+
+- **Testing a dealt find from the MCP** (Play): Workspace's `DevFloorNumber` 1 (Edit; clear it
+  after), seed 7: unit 109 (`DevCorridor.Floor1.Corner6.Unit109`, slot 19) deals the disco ball
+  in Build. Predict a floor's finds from an Edit `execute_luau` on a clone of `Shared` (Edit
+  keeps old modules cached): `Floor.generate` and `Deal.new` with `Brix.Random.new({ seed =
+  Climb.seedOf(7, 1) })`, then `Deal.open` each slot in Build. Its pivot faces up, so stand by
+  its Open button (the prompt's attachment, 3 studs out from the unit's middle); a keyboard E
+  from the MCP didn't open it, a Client `InputHoldBegin`/`End` with the camera Scriptable and
+  pointed at `DoorMiddle` did. Take the find the same way; drop with `Remotes.ToolDrop`.
+- **A kit-built find's joints hold its pose in C0** (D-203): `Finds.pose` writes each Motor6D's
+  C0 (C1 plain) because Transform doesn't replicate; the view model's `ScaleTo` scales them.

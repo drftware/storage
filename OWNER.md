@@ -19,6 +19,18 @@ nowhere else.
   arrive on your group's server) and a running `rojo serve` only reads those at start. Without
   it the trip works, but the front office may flash for a moment as you arrive.
 
+- [ ] **Find the new finds** (F-G1a, D-203; seen in Studio Play by me on floor 1, not on a
+  phone): play a climb and open doors. Floor 1 now deals the Nov 15 finds beside the bedroom
+  four: glow sticks, night-lights, tea lights and toy cars often, a disco ball or lantern now
+  and then, the glass lamp about 1 find in 200. Take one: does it sit right in your view and
+  in your hand at phone size? (Each uses its size's hold for now, and borrowed sounds; ROADMAP
+  polish.) The jack-in-the-box should be shut, the tea light unlit. Using one does nothing yet
+  (F-G1b next).
+- [ ] **Decide (defaults in, F-G1a):** the Secret lamp's name on screen is "Old lamp" (the
+  catalog calls it "A lamp that's on when you find it"); the RC car carries with its
+  transmitter beside it as one find; the theatre spotlight isn't dealt until floors have big
+  finds. Say if any should change.
+
 - [ ] **Before you push this game, push Brix** (`../engine`): the game's `vendor/brix` now points
   at Brix `6717740` (S1-02), which is only on this Mac until Brix is pushed; a fresh clone of
   the game can't fetch it until then.

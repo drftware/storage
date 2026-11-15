@@ -2112,6 +2112,30 @@ actions themselves and dealing the new finds on floors are later game tickets.
   - [x] F-03a The remote-control car and its transmitter (Nov 15, `art/finds/figures/`).
   - [x] F-03b The die-cast car (Nov 15, D-200; uploaded and in the place).
 - [x] **F-S1 Into Studio:** the Lights and the cars uploaded, inserted and judged at phone size (Nov 15: `Finds/Kit.luau`, D-194; the die-cast car waits on F-03b).
+- [ ] **F-G1 The new finds in the game.** The finds built overnight show up in units and work in
+  your hands; until now a floor dealt only the bedroom four. The moment: a door rolls up on
+  something you've never seen, and the rare ones are rare. Split Nov 15:
+  - [x] **F-G1a Dealt, taken, carried and banked** (Nov 15, D-203; seen in Studio Play on floor 1:
+    unit 109 dealt the disco ball, taken, held, dropped). 19 of the 20 join the deal with the
+    item catalog's grade and worth (`Grades`, `Tools.Catalog` rows); a unit rolls a grade by
+    its floor, then a find of that grade (`Deal.findFrom`), the Packrat's pile too; each is
+    stood as it's found (`Finds.pose`, `Finds/Pose.luau`: the jack shut, flames out, the
+    Secret lamp lit); the Packrat takes your most valuable find first. The theatre spotlight
+    waits for big finds (both hands, the floor's big find behind the code door).
+  - [ ] **F-G1b Using a find plays what it does** (next; Read first: `Finds/Pose.luau`'s `at`,
+    `Finds/init.luau`'s `pose`, `Tools/Catalog.luau`'s `verb`, `src/server/Slots.luau`'s use,
+    `art/finds/WAVES.md` for each find's one line). Its own press while it's in your hand, as
+    the air horn's Blow: a lamp switches on and lights the unit (and runs down where the
+    catalog says), the RC car drives, the cymbal monkey clashes (a loud lure: noisy finds
+    draw monsters only when used, D-188), the jack-in-the-box cranks and pops. Each use needs
+    its own sound and its motion played on every screen (write each joint's C0 from
+    `Pose.at` on the clients; the server says which motion and when). Lights in a unit count
+    against the cap on real lights. (The finds kit could write each find's motion order or rest
+    into its set, so `Finds/Order.luau` goes: an art session's call.)
+  - [ ] **F-G1c The grade shows** (the catalog's "How you can tell"): a Rare's blue glow seen
+    from the door and a chime, an Epic's purple light spilling as the door rolls up, a
+    Legendary's gold light under the door before it opens, heard by the team. Needs the owner's
+    look; the copy of what each grade is stays off screen (no text that explains a rule).
 - [ ] **F-04 Wind-ups and noisemakers.**
 - [ ] **F-05 Squishies.**
 - [ ] **F-06 Plush.**
@@ -2123,6 +2147,14 @@ actions themselves and dealing the new finds on floors are later game tickets.
 - [ ] **F-12 The eight wave 1 big finds.**
 
 ## Polish waiting for a slot
+
+- **Finds' own sounds (F-G1a):** the Nov 15 finds borrow the tools' and the bedroom set's pick-up
+  and drop sounds, pitched (`Tools/Catalog.luau`'s CLINK, TIN and the rest). Glass wants a glass
+  clink (the tea light, the firefly jar, the glass lamp), tin a hollow tin knock (the wind-ups),
+  the disco ball its mirrors rattling.
+- **Each find's own hold (F-G1a):** the Nov 15 finds sit in your view by size (small, medium,
+  large) with grips picked from their boxes; judge each at phone size and give the odd ones
+  (the desk lamp's long arm, the RC car with its transmitter, the neon sign) their own.
 
 - **The tap's bar (S2-05b, D-170):** a faint sound on the marker's sweep (left out so the wait
   is silent over the door's creak; try it if the owner finds the sweep flat); a phone's buzz on a

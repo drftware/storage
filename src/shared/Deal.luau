@@ -21,7 +21,9 @@
 ]]
 
 local Breaker = require("./Breaker")
+local Catalog = require("./Tools/Catalog")
 local Floor = require("./Floor")
+local Grades = require("./Grades")
 
 type Floor = Floor.Floor
 type Random = Floor.Random
@@ -187,10 +189,87 @@ Deal.Bag = {
 	AirHorn = 1, -- one blast that draws the keepers in reach and wakes sleepers
 } :: { [string]: number }
 
--- The finds a door can hold, each a name in `Finds.Names` (art/finds/): the GDD's 1980s bedroom
--- set first (D-035). Each is as likely until Phase 2 deals finds by rarity, the best behind
--- padlocks (ROADMAP "Finds in a run").
-Deal.Finds = { "Boombox", "Television", "Teddy", "Skates" } :: { string }
+--[[
+	The finds a door can hold (S1-05, F-G1a), each a catalog row with its grade, worth and the floor
+	it's dealt from (`Tools.Catalog`). The 1980s bedroom set (D-035) and the finds built overnight
+	on Nov 15 (art/finds/WAVES.md): the Lights, the cars and the first wind-ups. Which one a unit
+	holds is `Deal.findFrom`'s roll: a grade by the floor, then a find of that grade.
+
+	The theatre spotlight is built but not dealt: six studs tall, it's one of the catalog's big
+	finds (both hands, the floor's big find behind the code door), which no floor has yet.
+]]
+Deal.Finds = {
+	"Boombox",
+	"Television",
+	"Teddy",
+	"Skates",
+	"NightLight",
+	"TeaLight",
+	"DeskLamp",
+	"GlowSticks",
+	"FairyLights",
+	"CampLantern",
+	"MoonLamp",
+	"BlobLamp",
+	"OilLamp",
+	"DiscoBall",
+	"NeonSign",
+	"HardHat",
+	"FireflyJar",
+	"StainedGlassLamp",
+	"UnpluggedLamp",
+	"DiecastCar",
+	"RCCar",
+	"CymbalMonkey",
+	"JackInTheBox",
+} :: { string }
+
+--[[
+	Which find a unit on floor `number` holds, from its roll `pick` (0 to 1): first a grade, by the
+	floor's odds (`Grades.odds`) among the grades with a find that floor can deal, then one find
+	of that grade, each as likely. `taken` (the finds already in the Packrat's pile) are left out.
+	Nil only if nothing is left to deal.
+]]
+function Deal.findFrom(number: number, pick: number, taken: { string }?): string?
+	local byGrade: { [string]: { string } } = {}
+	for _, name in Deal.Finds do
+		local row = Catalog[name]
+		if
+			row
+			and row.grade
+			and (row.from or 1) <= number
+			and not (taken and table.find(taken, name))
+		then
+			local list = byGrade[row.grade] or {}
+			byGrade[row.grade] = list
+			table.insert(list, name)
+		end
+	end
+	local odds = Grades.odds(number)
+	local total = 0
+	for _, grade in Grades.Names do
+		if byGrade[grade] then
+			total += odds[grade]
+		end
+	end
+	if total <= 0 then
+		return nil
+	end
+	local at = math.clamp(pick, 0, 1) * total
+	local last: { string }? = nil
+	for _, grade in Grades.Names do
+		local list = byGrade[grade]
+		local chance = odds[grade]
+		if list and chance > 0 then
+			last = list
+			if at < chance then
+				return list[math.min(#list, math.floor(at / chance * #list) + 1)]
+			end
+			at -= chance
+		end
+	end
+	return if last then last[#last] else nil -- a pick of exactly 1
+end
 
 -- Floors 1 and 2 teach the lights, the doors and the hole trap (GDD "The building"), so on them
 -- the first tool out of the bag is a saw, and the lobby's hall deals no keepers: your first doors
@@ -598,11 +677,14 @@ function Deal.packratIn(deck: Deck, where: number, count: number, picks: { numbe
 		return nil
 	end
 	local index = units[math.floor(where * #units) + 1]
-	local left = table.clone(Deal.Finds)
 	local pile: { string } = {}
 	local size = Deal.PileMin + math.floor(count * (Deal.PileMax - Deal.PileMin + 1))
-	for n = 1, math.min(size, #left) do
-		table.insert(pile, table.remove(left, math.floor(picks[n] * #left) + 1) :: string)
+	-- each by the floor's grades, as a unit's find is: a hoard of junk, now and then a gem
+	for n = 1, size do
+		local find = Deal.findFrom(deck.floor.number, picks[n], pile)
+		if find then
+			table.insert(pile, find)
+		end
 	end
 	deck.sleepers[index] = Deal.Packrat.name
 	deck.piles[index] = pile
@@ -753,7 +835,10 @@ function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 	if kind == "Tool" then
 		contents.tool = Deal.drawTool(deck)
 	elseif kind == "Find" then
-		contents.find = Deal.Finds[math.floor(deck.picks[index] * #Deal.Finds) + 1]
+		contents.find = Deal.findFrom(deck.floor.number, deck.picks[index])
+		if not contents.find then
+			contents.kind = "Nothing" -- never: the floor-1 commons are always left to deal
+		end
 	elseif kind == "Asleep" or kind == "Awake" then
 		contents.keeper = deck.sleepers[index] or keeperFrom(deck.floor, deck.picks[index])
 		if not contents.keeper then

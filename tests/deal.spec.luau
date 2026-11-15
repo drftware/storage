@@ -15,7 +15,6 @@
 local Brix = require("../vendor/brix/src")
 local Floor = require("../src/shared/Floor")
 local Deal = require("../src/shared/Deal")
-local fs = require("@lune/fs")
 
 local failures, checks = 0, 0
 local function ok(cond: boolean, what: string)
@@ -385,11 +384,11 @@ for seed = 1, SEEDS do
 	end
 end
 
--- Every find the deal hands out has its art (art/finds/), read from its generated Specs (they
--- build Vector3s, which Lune lacks).
-local findSpecs = fs.readFile("src/shared/Finds/Specs.luau")
+-- Every find the deal hands out has its art (art/finds/): the bedroom set's generated Specs or
+-- a kit-built set's (the fixture loads them, since they build Vector3s, which Lune lacks).
+local FindBoxes = require("./fixtures/finds").boxes
 for _, name in Deal.Finds do
-	ok(string.find(findSpecs, "\n\t" .. name .. " = {", 1, true) ~= nil, `{name} is a built find`)
+	ok(FindBoxes[name] ~= nil, `{name} is a built find`)
 end
 
 ok(laid == LAID, `every seed lays what it did before S1-07a ({laid}, was {LAID})`)

@@ -199,14 +199,18 @@ function Carry.keep(c: Carry, isFind: (id: string) -> boolean): { string }
 end
 
 -- What a thing in your slots is worth to the Packrat (S2-06c), from its catalog row: a find's
--- heft, the heavier the better (the television first, the teddy last) until finds carry a worth
--- of their own (`OWNER.md`); a tool 0, worth taking only with no find; nil for what it leaves
--- (both hands' things: the ladder on your shoulder, the big find), or no row.
-function Carry.worth(row: { find: boolean?, heft: number?, bothHands: boolean? }?): number?
+-- worth in cash (F-G1a, the item catalog's), the glass lamp before the teddy; a find without one
+-- by its heft; a tool 0, worth taking only with no find; nil for what it leaves (both hands'
+-- things: the ladder on your shoulder, the big find), or no row.
+function Carry.worth(
+	row: { find: boolean?, heft: number?, bothHands: boolean?, worth: number? }?
+): number?
 	if not row or row.bothHands then
 		return nil
+	elseif not row.find then
+		return 0
 	end
-	return if row.find then math.max(row.heft or 0, 0.01) else 0
+	return math.max(row.worth or row.heft or 0, 0.01)
 end
 
 -- The slot the Packrat takes from when it reaches you (S2-06c, GDD "What counts as something to

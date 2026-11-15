@@ -9,12 +9,11 @@
 -- inside its art's box, and its heft. A find rides the same slots: it takes one, full slots
 -- refuse it, and a catch drops it with your tools (GDD "Finds").
 local fs = require("@lune/fs")
-local luau = require("@lune/luau")
-local roblox = require("@lune/roblox")
 
 local Carry = require("../src/shared/Tools/Carry")
 local Catalog = require("../src/shared/Tools/Catalog")
 local Deal = require("../src/shared/Deal")
+local Grades = require("../src/shared/Grades")
 
 local failures, checks = 0, 0
 local function ok(cond: boolean, what: string)
@@ -211,29 +210,36 @@ end
 -- the catalog: every row whole. A tool is one the deal hands out (so a dealt one is laid), with
 -- the sizes its art build writes (Tools.specs reads them by key); a find is one of the deal's
 -- finds, with a grip inside its art's box and a heft
--- (the generated Specs build Vector3s, which Lune lacks as a global: load it with Lune's own)
-local FindSpecs = luau.load(fs.readFile("src/shared/Finds/Specs.luau"), {
-	environment = { Vector3 = roblox.Vector3 },
-})() :: any -- any: a generated table, read field by field below
+-- (the generated Specs and sets build Vector3s, which Lune lacks: the fixture loads them)
+local FindBoxes = require("./fixtures/finds").boxes
 for key, row in Catalog do
 	ok(type(row.name) == "string" and #row.name > 0, `{key}: a name`)
 	if row.find then
 		ok(table.find(Deal.Finds, key) ~= nil, `{key}: one of the deal's finds`)
 		ok(table.find(Deal.Tools, key) == nil, `{key}: a find, not a tool`)
-		local spec = FindSpecs.Finds[row.template]
-		ok(spec ~= nil, `{key}: its art's sizes`)
+		local box = FindBoxes[row.template]
+		ok(box ~= nil, `{key}: its art's sizes`)
 		local g = row.grip
 		ok(g ~= nil and #g == 3, `{key}: a grip`)
-		if spec and g then
-			local half = spec.Size / 2
+		if box and g then
+			local half, c = box.Size / 2, box.Centre
 			ok(
-				math.abs(g[1]) <= half.X
+				math.abs(g[1] - c.X) <= half.X
 					and g[2] >= 0
-					and g[2] <= spec.Size.Y
-					and math.abs(g[3]) <= half.Z,
+					and g[2] <= box.Size.Y
+					and math.abs(g[3] - c.Z) <= half.Z,
 				`{key}: its grip is on it`
 			)
 		end
+		ok(Grades.Worth[row.grade] ~= nil, `{key}: a grade`)
+		local range = Grades.Worth[row.grade]
+		ok(
+			range ~= nil
+				and type(row.worth) == "number"
+				and row.worth >= range[1]
+				and row.worth <= range[2],
+			`{key}: a worth within its grade's`
+		)
 		ok(type(row.heft) == "number" and row.heft >= 0 and row.heft <= 1, `{key}: a heft, 0 to 1`)
 		ok(not row.bothHands and not row.verb, `{key}: a find takes one hand and does nothing`)
 	else

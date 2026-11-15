@@ -31,6 +31,11 @@ function ToolPicture.draw(frame: ViewportFrame, key: string): Model?
 	-- the tool tipped towards the camera (its top to the front), then laid across the square
 	model:PivotTo(CFrame.Angles(0, 0, i[4] * RAD) * CFrame.Angles(i[2] * RAD, i[3] * RAD, 0))
 	centre = if body then body.Position else centre
+	if row.find and #model:GetChildren() > 1 then
+		-- a find of many parts (the RC car and its transmitter): framed whole, not by its root
+		local box, size = model:GetBoundingBox()
+		centre, length = box.Position, size.Magnitude
+	end
 	model.Parent = frame
 	local cam = Instance.new("Camera")
 	cam.FieldOfView = 40

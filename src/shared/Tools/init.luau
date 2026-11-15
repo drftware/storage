@@ -10,14 +10,16 @@
 
 	A find (S1-05) is a row too, carried in a slot like a tool: its template is built here, on first
 	use on each side, from the find's art (`Finds`, ReplicatedStorage.Props.Finds) with its grip
-	(the row's `grip`) at the model's pivot, so everything that carries a tool carries a find.
+	(the row's `grip`) at the model's pivot, so everything that carries a tool carries a find. A
+	kit-built find (F-G1a) keeps its jointed parts, stood as it's found (`Finds.pose`): its root is
+	the body a hand or a floor holds, and the rest ride their joints.
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Carry = require(script.Carry)
 local Catalog = require(script.Catalog)
 local Wear = require(script.Wear)
-local FindSpecs = require(script.Parent.Finds.Specs)
+local Finds = require(script.Parent.Finds)
 
 local Tools = {}
 Tools.Carry = Carry
@@ -75,13 +77,13 @@ end
 -- A find's box from its grip: its middle (a find's pivot is the middle of its bottom, its box
 -- centred over it), less where the hand closes.
 local function findPiece(row: Catalog.Row): Piece
-	local spec = FindSpecs.Finds[row.template]
-	assert(spec, `Tools: no find {row.template} in Finds.Specs`)
+	local box = Finds.box(row.template)
+	assert(box, `Tools: no find {row.template} in Finds.Specs or Finds.Sets`)
 	local g = row.grip or { 0, 0, 0 }
 	return {
-		Size = spec.Size,
-		Centre = Vector3.new(-g[1], spec.Size.Y / 2 - g[2], -g[3]),
-		Triangles = spec.Triangles,
+		Size = box.Size,
+		Centre = box.Centre - Vector3.new(g[1], g[2], g[3]),
+		Triangles = 0, -- not counted for finds
 	}
 end
 
@@ -112,6 +114,31 @@ local findTemplates: { [string]: Model } = {}
 
 local inert: (BasePart) -> ()
 
+-- A kit-built find's template (F-G1a): a copy of its art stood as it's found, nothing touching
+-- anything, its root the only anchored part (a hand's weld or a floor holds it; the rest ride
+-- their joints), moved so its grip is at the model's pivot.
+local function kitTemplate(art: Model, row: Catalog.Row): Model
+	local model = art:Clone()
+	local root = model.PrimaryPart :: BasePart
+	Finds.pose(model, row.template, Finds.rest(row.template))
+	for _, part in model:GetDescendants() do
+		if part:IsA("BasePart") then
+			inert(part)
+			part.Anchored = part == root
+		end
+	end
+	-- the model's pivot onto the find's (its root's place in the find is on the root), then the
+	-- grip onto the origin
+	local posed = root:GetAttribute(Finds.PosedAttribute)
+	if typeof(posed) == "CFrame" then
+		root.PivotOffset = posed:Inverse()
+	end
+	local g = row.grip or { 0, 0, 0 }
+	model:PivotTo(CFrame.new(-g[1], -g[2], -g[3]))
+	root.PivotOffset = root.CFrame:ToObjectSpace(CFrame.identity)
+	return model
+end
+
 -- Find `key`'s template: its art's MeshPart, inert, in a Model whose pivot is its grip, as a
 -- prepared tool's is. Nil if the place hasn't the art (art/finds/README.md says how to import it).
 local function findTemplate(key: string, row: Catalog.Row): Model?
@@ -122,6 +149,12 @@ local function findTemplate(key: string, row: Catalog.Row): Model?
 	local props = ReplicatedStorage:FindFirstChild("Props")
 	local finds = if props then props:FindFirstChild("Finds") else nil
 	local art = if finds then finds:FindFirstChild(row.template) else nil
+	if art and art:IsA("Model") and art.PrimaryPart then
+		local model = kitTemplate(art, row)
+		model.Name = key
+		findTemplates[key] = model
+		return model
+	end
 	if not (art and art:IsA("MeshPart")) then
 		return nil
 	end

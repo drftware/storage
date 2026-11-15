@@ -5396,3 +5396,30 @@ the tune and the silence, with the crank turning by itself (the catalog's "the b
 seconds after you let go"); `Pop` is the bang; `Shut` puts it back so it can be wound again,
 which the catalog doesn't ask for but a reused toy needs. Once popped, the jack is left with its
 head cocked at the player. Its parts and numbers are in `art/finds/windups/README.md`.
+
+## D-203 The Nov 15 finds are dealt by grade, rolled by floor (F-G1a, Nov 15)
+
+The finds built overnight join the floors' deal with the item catalog's numbers (D-188), taken
+as written: six grades and their chance on floors 1 to 9, 10 to 24 and 25 up (Common 62, 50,
+40 in 100; Legendary 0.5, 1.8, 4; Secret none, 0.2, 1, doubled from floor 50), and each find's
+own grade and worth. A unit dealt a find rolls a grade, then one find of that grade, each as
+likely, as Pet Simulator's eggs roll a rarity and then a pet. Grades with no find a floor can
+deal drop out and the rest share their chance, so on floor 1 the glass lamp (the one Legendary
+built) is 1 find in 200 and the firefly jar (the one Epic) 1 in 40. The Packrat's pile rolls the
+same way. The bedroom four got the catalog's rows too: the teddy Common 4 ("Small teddy bear"),
+the skates Uncommon 18, the boombox Uncommon 25, the TV Uncommon 22 ("Small box TV").
+
+- **Left out:** the theatre spotlight, a catalog big find six studs tall: no floor has a big
+  find yet. The Secret lamp is dealt from floor 25 only ("Loose only, floor 25 up").
+- **The Packrat takes your most valuable find first** by the catalog's worth now, not by
+  heft (S2-06c's stand-in): the TV over the skates over the teddy is unchanged.
+- **Not yet:** a find's worth isn't rolled within a quarter either side (the catalog) or paid in
+  cash; kept finds are counted by name as before. The grade doesn't show yet (F-G1c).
+- **Found as the sheets show:** a kit-built find's template stands at its rest, the art kit's
+  rule (each part at the first key of the first motion that moves it), worked out in the game
+  (`Finds/Pose.luau`, the kit's own sums) and written into its joints, since Motor6D's
+  Transform doesn't replicate. The motions' order is kept in `Finds/Order.luau`, checked
+  against the generated sets, since a Luau table forgets it.
+
+Not chosen: dealing every find as likely (a Legendary as common as a teddy kills the hunt);
+putting the rest pose into the art (the sets are the art sessions' and the template is shared).

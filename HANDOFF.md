@@ -2,17 +2,14 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-14, session 179 (the owner's answers on finds, D-188 and D-189) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-15, session 180 (F-G1a: the new finds dealt, D-203) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- S3-01 is done. S3-01b (D-187): a friend being carried up counts as wrapped on the floor they're
-  carried to, so "Caught" lands as the last free friend's catch cuts to black; carries then stop.
-- D-188: the owner answered the catalog's 14 questions (Secret on top, a luck boost on sale,
-  trapping pays 5 coins, boss floors possible). D-189: the end screen says "Caught", never "Kept". Four follow-ups wait in `OWNER.md`.
-- Seen in Studio Play (one player, two stand-ins): the wipe landed 1.1 s after the car reached
-  floor 3, nobody carried after it, Again clean. Two players wait on `OWNER.md`.
-- **Find art** (D-190 to D-202): the Lights, both cars, the cymbal monkey and the jack-in-the-box
-  built, uploaded and in the place (F-04b); next F-04c the chattering teeth and walking robot.
+- S3-01, S3-01b done (D-187); D-188, D-189 answered; follow-ups wait in `OWNER.md`. Find art
+  (D-190 to D-202): 20 finds in the place; F-04c (chattering teeth, walking robot) next.
+- **F-G1a** (D-203): 19 of them dealt by grade (`Grades`, `Deal.findFrom`), stood as found
+  (`Finds/Pose.luau`), carried and banked like the teddy; seen in Studio Play (floor 1, unit
+  109's disco ball taken, held, dropped). Using one does nothing yet; no spotlight (big find).
 
 ## Next task: S4-01 Floors made by rules (the climb with no top)
 ROADMAP S4-01. The owner said there's no top floor (D-128); the built climb still ends at floor 3
@@ -32,6 +29,8 @@ punch the code, ride on); the rules spec'd; `OWNER.md` lines for what the owner 
 `src/shared/Deal.luau` (grep what a floor deals); STUDIO.md grep "The dev floor's ride".
 
 ## Queue (next sessions per ROADMAP Phase 2)
+0. **F-G1b Using a find plays what it does** (ROADMAP F-G1 has its plan and Read-first list):
+   lamps light the unit, the RC car drives, the monkey clashes, the jack pops; `Pose.at` drives.
 1. S3-02 waits on Brix: no purchases piece is built or on Brix's ROADMAP (checked Nov 14). A
    session allowed to edit Brix files it there in neutral terms; S3-03 and S3-04 sell things and
    wait with it. L-08e3c, L-14b2d wait on `OWNER.md`; R-01 later.

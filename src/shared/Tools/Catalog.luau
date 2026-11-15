@@ -10,6 +10,8 @@
 	(init) does the instances.
 ]]
 
+local Grades = require("../Grades")
+
 export type Sound = {
 	id: string,
 	from: number, -- seconds into the recording where the sound starts
@@ -74,6 +76,13 @@ export type Row = {
 	-- view slower, sags as its weight lands in your hand, and sways lazier as you walk. Felt only:
 	-- your walk is the same.
 	heft: number?,
+	-- A find's grade (D-188, `Grades`): how rare it is, so how often a unit holds it.
+	grade: Grades.Grade?,
+	-- A find's worth in cash, the item catalog's value (within its grade's `Grades.Worth`): the
+	-- Packrat takes your most valuable find first (`Carry.worth`).
+	worth: number?,
+	-- The lowest floor a find is dealt on; none: from floor 1.
+	from: number?,
 	-- It wears out (S1-08). None: it never does (the ladder, a find), or it's used up whole as it's
 	-- placed (the padlock hung on a door, the roll laid across a hall: `Slots:spend`).
 	wear: Wear?,
@@ -311,6 +320,8 @@ local Catalog: { [string]: Row } = {
 		name = "Boombox",
 		template = "Boombox",
 		find = true,
+		grade = "Uncommon",
+		worth = 25,
 		grip = { 0, 1.33, 0 }, -- the handle's bar, over the middle of the case
 		heft = 0.6,
 		-- hanging low on your left by the handle, its speakers turned to you and its length running
@@ -340,6 +351,8 @@ local Catalog: { [string]: Row } = {
 		name = "TV",
 		template = "Television",
 		find = true,
+		grade = "Uncommon",
+		worth = 22,
 		grip = { 0, 1.24, 0 }, -- the cabinet's top, between the ears
 		heft = 1,
 		-- low on your left by its top, the screen turned to you, the ears up by your cheek: the
@@ -374,6 +387,8 @@ local Catalog: { [string]: Row } = {
 		name = "Teddy",
 		template = "Teddy",
 		find = true,
+		grade = "Common",
+		worth = 4,
 		grip = { 0.4, 0.66, 0 }, -- one arm, at the shoulder
 		heft = 0.12,
 		-- by its arm low on your left, its face to you
@@ -400,6 +415,8 @@ local Catalog: { [string]: Row } = {
 		name = "Skates",
 		template = "Skates",
 		find = true,
+		grade = "Uncommon",
+		worth = 18,
 		grip = { -0.1, 0.88, 0.42 }, -- the standing skate's collar
 		heft = 0.4,
 		-- low on your left, the wheels turned to you
@@ -415,5 +432,288 @@ local Catalog: { [string]: Row } = {
 		drop = { id = "rbxassetid://9118697756", from = 0.72, length = 0.45, volume = 0.8 },
 	},
 }
+
+--[[
+	The finds built overnight on Nov 15 (F-G1a, art/finds/WAVES.md): the Lights, the cars and the
+	first wind-ups, each with the item catalog's grade and worth. Each is the kit's jointed model
+	(`Finds`, posed as it's found), so `template` is its name in ReplicatedStorage.Props.Finds. The
+	sizes below say where it sits in your view, by how big it is, as the bedroom set was judged in
+	Play: a palm-sized one near and low (a glow stick, the die-cast car), a medium one where the
+	teddy hangs, a big one where the boombox does.
+]]
+local HOLD = {
+	Small = { at = { -0.95, -0.62, -1.7 }, turn = { 200, 6, 0 } },
+	Medium = { at = { -1.2, -0.72, -2.0 }, turn = { 200, 0, -8 } },
+	Large = { at = { -1.55, -0.8, -2.4 }, turn = { 215, 4, 0 } },
+}
+
+--[[
+	Their sounds, until each find has its own recorded (ROADMAP polish "Finds' own sounds"): the
+	stretches the tools and the bedroom set already play, pitched for each find's size and stuff.
+	A higher pitch is a smaller, lighter thing.
+]]
+-- Pro Sound Effects' "Keys In Padlock 1": a clink, metal or glass taken in a hand
+local CLINK: Sound = { id = "rbxassetid://9116175991", from = 0, length = 0.5, volume = 0.7 }
+-- "Metal Hit Steel Plate Hit Slapped 2": one slap, a hand closing on a tin or steel body
+local SLAP: Sound = { id = "rbxassetid://9116657808", from = 0, length = 0.3, volume = 0.7 }
+-- "Plastic Ice Chest 25": hollow plastic knocks
+local HOLLOW: Sound = { id = "rbxassetid://9117544893", from = 0, length = 0.42, volume = 0.8 }
+-- "Switch Portable Plastic Radio Tape Player 9": a hard plastic clack
+local CLACK: Sound = { id = "rbxassetid://9119728830", from = 0.15, length = 0.35, volume = 0.85 }
+-- "Plastic Bubble Wrap Short Fluttering Movements 12": a plastic sleeve rustling
+local RUSTLE: Sound = { id = "rbxassetid://9125745465", from = 0.2, length = 0.45, volume = 0.7 }
+-- "Manacles Metal Clangs 4": its first clang, the monkey's cymbals touching as it's lifted
+local CLANG: Sound = { id = "rbxassetid://9116460746", from = 0, length = 0.42, volume = 0.6 }
+-- "Metal Container 2": from just before its hit, a tin landing and bouncing
+local TIN: Sound = { id = "rbxassetid://9116546109", from = 0.36, length = 0.9, volume = 0.75 }
+-- "Crowbar Impact Dropping To Concrete 1": steel hitting concrete and bouncing
+local STEEL: Sound = { id = "rbxassetid://9114008989", from = 0, length = 1.4, volume = 0.65 }
+-- "Chair Drop 3": from its first hard hit, plastic slamming down and rattling
+local PLASTIC: Sound = { id = "rbxassetid://9113768847", from = 0.22, length = 0.9, volume = 0.8 }
+-- "Shield Impacts 15": a plastic case hitting the floor, crunchy
+local CRUNCH: Sound = { id = "rbxassetid://9119075637", from = 0, length = 0.7, volume = 0.8 }
+
+local function pitched(s: Sound, pitch: number, volume: number?): Sound
+	return {
+		id = s.id,
+		from = s.from,
+		length = s.length,
+		volume = volume or s.volume,
+		pitch = pitch,
+	}
+end
+
+type Built = {
+	name: string,
+	grade: Grades.Grade,
+	worth: number,
+	from: number?,
+	grip: { number },
+	heft: number,
+	size: "Small" | "Medium" | "Large",
+	pickUp: Sound,
+	drop: Sound,
+}
+
+-- A row for a find built with the kit: it hangs from your left hand by its grip, low on the left
+-- of your view with its front turned to you, as the bedroom set does.
+local function built(key: string, b: Built)
+	local hold = HOLD[b.size]
+	Catalog[key] = {
+		name = b.name,
+		template = key,
+		find = true,
+		grade = b.grade,
+		worth = b.worth,
+		from = b.from,
+		grip = b.grip,
+		heft = b.heft,
+		hold = hold.at,
+		holdTurn = hold.turn,
+		use = hold.at,
+		useTurn = hold.turn,
+		inHand = { 0, 90, 0 },
+		icon = { 0.62, 14, 200, 0 },
+		pickUp = b.pickUp,
+		drop = b.drop,
+	}
+end
+
+-- The Lights. A grip is where a hand closes (studs from the middle of its bottom: across, up,
+-- front to back), heft how heavy it feels (0 to 1).
+built("NightLight", {
+	name = "Night-light",
+	grade = "Common",
+	worth = 2,
+	grip = { 0, 0.3, 0 }, -- round its plug body
+	heft = 0.04,
+	size = "Small",
+	pickUp = pitched(CLACK, 1.5),
+	drop = pitched(PLASTIC, 1.7, 0.55),
+})
+built("TeaLight", {
+	name = "Tea light",
+	grade = "Common",
+	worth = 3,
+	grip = { 0, 0.4, 0 }, -- the jar's rim
+	heft = 0.12,
+	size = "Small",
+	pickUp = pitched(CLINK, 1.6),
+	drop = pitched(TIN, 1.7, 0.6),
+})
+built("DeskLamp", {
+	name = "Desk lamp",
+	grade = "Common",
+	worth = 4,
+	grip = { 0, 0.7, 0.4 }, -- its arm, above the base
+	heft = 0.45,
+	size = "Large",
+	pickUp = pitched(SLAP, 1.0),
+	drop = pitched(STEEL, 1.3),
+})
+built("GlowSticks", {
+	name = "Glow sticks",
+	grade = "Common",
+	worth = 5,
+	grip = { 0, 0.06, 0 }, -- round the band
+	heft = 0.03,
+	size = "Small",
+	pickUp = RUSTLE,
+	drop = pitched(PLASTIC, 1.9, 0.45),
+})
+built("FairyLights", {
+	name = "Fairy lights",
+	grade = "Uncommon",
+	worth = 12,
+	grip = { 0, 0.06, 0.03 }, -- the box with the string coiled on it
+	heft = 0.08,
+	size = "Small",
+	pickUp = RUSTLE,
+	drop = pitched(PLASTIC, 1.6, 0.55),
+})
+built("CampLantern", {
+	name = "Lantern",
+	grade = "Uncommon",
+	worth = 15,
+	grip = { 0, 0.66, 0.05 }, -- its handle on top
+	heft = 0.35,
+	size = "Medium",
+	pickUp = pitched(HOLLOW, 1.15),
+	drop = pitched(PLASTIC, 1.15),
+})
+built("MoonLamp", {
+	name = "Moon lamp",
+	grade = "Uncommon",
+	worth = 16,
+	grip = { 0, 0.3, 0 }, -- the moon in its cradle
+	heft = 0.25,
+	size = "Medium",
+	pickUp = pitched(HOLLOW, 1.3),
+	drop = pitched(CRUNCH, 1.1),
+})
+built("BlobLamp", {
+	name = "Blob lamp",
+	grade = "Uncommon",
+	worth = 18,
+	grip = { -0.09, 0.75, 0.23 }, -- round the bottle's waist
+	heft = 0.5,
+	size = "Medium",
+	pickUp = pitched(SLAP, 0.9),
+	drop = pitched(STEEL, 1.2),
+})
+built("OilLamp", {
+	name = "Oil lamp",
+	grade = "Rare",
+	worth = 40,
+	grip = { 0, 0.45, 0 }, -- the brass fount
+	heft = 0.4,
+	size = "Medium",
+	pickUp = pitched(CLINK, 1.2),
+	drop = pitched(TIN, 1.1),
+})
+built("DiscoBall", {
+	name = "Disco ball",
+	grade = "Rare",
+	worth = 45,
+	grip = { 0, 0.25, 0 }, -- its stand
+	heft = 0.45,
+	size = "Medium",
+	pickUp = CLINK,
+	drop = TIN,
+})
+built("NeonSign", {
+	name = "Neon sign",
+	grade = "Rare",
+	worth = 60,
+	grip = { 0, 0.98, 0.05 }, -- its top edge
+	heft = 0.55,
+	size = "Large",
+	pickUp = pitched(HOLLOW, 0.9),
+	drop = pitched(CRUNCH, 0.85),
+})
+built("HardHat", {
+	name = "Hard hat",
+	grade = "Rare",
+	worth = 70,
+	grip = { 0, 0.75, 0 }, -- the crown of its shell
+	heft = 0.3,
+	size = "Medium",
+	pickUp = HOLLOW,
+	drop = pitched(PLASTIC, 0.95),
+})
+built("FireflyJar", {
+	name = "Firefly jar",
+	grade = "Epic",
+	worth = 110,
+	grip = { 0, 0.6, 0 }, -- the lid
+	heft = 0.2,
+	size = "Small",
+	pickUp = pitched(CLINK, 1.45),
+	drop = pitched(TIN, 1.5, 0.65),
+})
+built("StainedGlassLamp", {
+	name = "Glass lamp",
+	grade = "Legendary",
+	worth = 480,
+	grip = { 0, 0.8, 0 }, -- its stem, under the shade
+	heft = 0.8,
+	size = "Large",
+	pickUp = pitched(CLINK, 0.9),
+	drop = STEEL,
+})
+-- Found lit, the catalog's Secret: loose only, from floor 25.
+built("UnpluggedLamp", {
+	name = "Old lamp",
+	grade = "Secret",
+	worth = 7000,
+	from = 25,
+	grip = { 0, 0.9, 0 }, -- its stem
+	heft = 0.6,
+	size = "Large",
+	pickUp = pitched(CLINK, 0.85),
+	drop = pitched(STEEL, 0.95),
+})
+
+-- The cars and the wind-ups.
+built("DiecastCar", {
+	name = "Toy car",
+	grade = "Common",
+	worth = 4,
+	grip = { 0, 0.06, 0 }, -- pinched by its roof
+	heft = 0.02,
+	size = "Small",
+	pickUp = pitched(CLINK, 1.8, 0.55),
+	drop = pitched(STEEL, 2.2, 0.45),
+})
+built("RCCar", {
+	name = "RC car",
+	grade = "Rare",
+	worth = 60,
+	grip = { 0, 0.45, 0 }, -- the car's roof, its transmitter riding beside it
+	heft = 0.45,
+	size = "Large",
+	pickUp = CLACK,
+	drop = pitched(CRUNCH, 1.15),
+})
+built("CymbalMonkey", {
+	name = "Cymbal monkey",
+	grade = "Rare",
+	worth = 40,
+	grip = { 0, 0.55, 0 }, -- round its middle
+	heft = 0.3,
+	size = "Medium",
+	pickUp = pitched(CLANG, 1.5),
+	drop = pitched(TIN, 1.15),
+})
+built("JackInTheBox", {
+	name = "Jack-in-the-box",
+	grade = "Uncommon",
+	worth = 18,
+	grip = { 0, 0.45, 0 }, -- the tin box, shut
+	heft = 0.3,
+	size = "Medium",
+	pickUp = pitched(SLAP, 1.1),
+	drop = TIN,
+})
 
 return Catalog
