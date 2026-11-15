@@ -50,7 +50,8 @@ grep `Packrat`; `src/shared/Packrat/Pose.luau` grep `grip`.
 6. For S2-06c: a few frames easing reach into take into the hug would make the snatch land.
 7. Brix has no purchases piece in its ROADMAP yet. S3-02 needs one: before Step 3, file it in
    Brix's ROADMAP in neutral terms so Brix can build it in its own sessions.
-8. S4-04 "Trapping pays" was never agreed by the owner (`OWNER.md` asks); don't build it.
+8. S4-04 "Trapping pays" was never agreed by the owner (`OWNER.md` asks); don't build it. Any
+   ticket that adds finds starts from the catalog doc the GDD's finds section links (not agreed).
 9. Move the Mannequin's pose math onto `Rig.luau` when next touched; fold its and the Packrat's
    prepare and pose into one body module when a third jointed monster comes (D-176).
 10. Left from earlier: S1-07a 16 in 100 units hold nothing; S2-02c only a wandering Mannequin
