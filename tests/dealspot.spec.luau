@@ -314,6 +314,56 @@ for _, size in { "S", "M" } do
 			else 12
 		ok(distinct >= least, `{size} {item.name}: varied unit to unit ({distinct} spots)`)
 	end
+
+	-- The Packrat's unit (S2-06b2b): it stands at the back, nearer its middle than wherever the
+	-- unit's own spot would be, and a pile of the three biggest finds lies round its feet, clear
+	-- of it and of each other, every one inside the unit. A small unit has room at the back for
+	-- it and one big find, so the deal puts it in a medium one (Deal.packratUnits).
+	local finds: { Item } = {}
+	for _, item in items do
+		if item.thing == "Find" and item.name ~= "Teddy" then
+			table.insert(finds, item)
+		end
+	end
+	local backMiddle = { 0, unit.depth }
+	for n = 100, 399 do
+		local label = tostring(n)
+		local note = nil -- never a note's unit (Deal.packratUnits)
+		local where = `{size} Packrat unit {label}`
+		local spot = DealSpot.inUnit(unit, "Keeper", DealSpot.Packrat, note, label, nil, backMiddle)
+		local own = DealSpot.inUnit(unit, "Keeper", DealSpot.Packrat, note, label)
+		ok(spot ~= nil and own ~= nil, `{where}: it stands somewhere`)
+		if not (spot and own) then
+			continue
+		end
+		local function far(s: DealSpot.Spot): number
+			return (s.x - backMiddle[1]) ^ 2 + (s.z - backMiddle[2]) ^ 2
+		end
+		ok(far(spot) <= far(own) + 1e-9, `{where}: at the back`)
+		local ahead = { x = spot.x, z = spot.z - DealSpot.PackratAhead, yaw = spot.yaw }
+		local taken = { DealSpot.around(ahead, DealSpot.Packrat) }
+		local feet = { spot.x, spot.z - DealSpot.PackratAhead - DealSpot.Packrat.along }
+		local body = DealSpot.footprint(ahead.x, ahead.z, ahead.yaw, 2.72, 2.48) -- as measured
+		local piled = 0
+		for _, find in finds do
+			local at = DealSpot.inUnit(unit, "Find", find.size, note, label, taken, feet)
+			if at then
+				piled += 1
+				local poly =
+					DealSpot.footprint(at.x, at.z, at.yaw, find.size.across, find.size.along)
+				ok(not DealSpot.near(poly, body, 0.3), `{where}: its {find.name} clear of it`)
+				for i = 1, #poly, 2 do
+					ok(
+						math.abs(poly[i]) <= side + 1e-9 and poly[i + 1] <= back + 1e-9,
+						`{where}: its {find.name} inside the unit`
+					)
+				end
+				table.insert(taken, DealSpot.around(at, find.size))
+			end
+		end
+		local least = if size == "S" then 1 else 3
+		ok(piled >= least, `{where}: {least} of its pile laid, got {piled}`)
+	end
 end
 
 -- a small unit is tight: say how often its finds and keepers stand on a hole spot

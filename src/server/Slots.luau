@@ -107,8 +107,9 @@ export type Slots = Brix.System & {
 	-- The weld, or nil if it no longer lies loose.
 	lift: (self: any, n: number, part: BasePart, holder: Instance) -> Weld?,
 	-- Lays lifted find `n` on the floor at `at`, turned `yaw` degrees, quietly (the Packrat's
-	-- pile): "Take" again, as any find.
-	putDown: (self: any, n: number, at: Vector3, yaw: number) -> (),
+	-- pile): "Take" again, as any find. It eases there from `from` (its middle in the world, where
+	-- screens show it in the hands, S2-06b2b), or from where the server holds it.
+	putDown: (self: any, n: number, at: Vector3, yaw: number, from: CFrame?) -> (),
 	-- Lays a new tool of catalog key `key` on the floor at `at` (a floor point), turned `yaw`
 	-- degrees. Returns its id, or nil if the place has no template.
 	lay: (self: any, key: string, at: Vector3, yaw: number) -> string?,
@@ -1056,12 +1057,15 @@ function Slots.new(): Slots
 		return weld
 	end
 
-	function system.putDown(_: any, n: number, at: Vector3, yaw: number)
+	function system.putDown(_: any, n: number, at: Vector3, yaw: number, held: CFrame?)
 		local t = numbered(n, true)
 		if not (t and t.weld) then
 			return
 		end
-		local from = t.body.CFrame * t.body.PivotOffset
+		-- the pivot, from where its middle is held (as `lift` measures the middle)
+		local from = if held
+			then held * CFrame.new(Tools.bounds(t.key).Centre):Inverse()
+			else t.body.CFrame * t.body.PivotOffset
 		local pose = resting(t.key, at, yaw)
 		t.weld:Destroy()
 		t.weld = nil

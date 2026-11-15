@@ -46,6 +46,7 @@ local KeeperTell = require(ReplicatedStorage.Shared.KeeperTell)
 local Mannequin = require(ReplicatedStorage.Shared.Mannequin)
 local Packrat = require(ReplicatedStorage.Shared.Packrat)
 local Pose = require(ReplicatedStorage.Shared.Mannequin.Pose)
+local Tools = require(ReplicatedStorage.Shared.Tools)
 local Torch = require(ReplicatedStorage.Shared.Flashlight.Torch)
 
 local TRACE = RunService:IsStudio() -- Output says when your beam holds one, and how it ends
@@ -67,6 +68,10 @@ type Kit = {
 	transforms: (frame: number) -> { CFrame },
 	tell: (last: number?, travelled: number, how: How) -> (Pose.Sound?, number),
 	quiet: boolean, -- no beats and no creak as it turns (the Packrat's sounds come in S2-06e)
+	-- where a find it holds sits in a How, in its UpperTorso's frame (a carried find's weld C0),
+	-- and how long that find takes to ease there; nil: where the find lay, its hands not yet
+	-- closed on it on this screen (the Packrat's, S2-06b2b; the Mannequin never holds one)
+	hands: (how: How) -> (CFrame?, number),
 }
 
 -- The Mannequin's own poses for a How only the Packrat shows (it never is told those).
@@ -93,6 +98,20 @@ local PACKRAT_HELD: { [string]: number } = {
 local function packratWalk(how: How): "Empty" | "Full"
 	return if how == "Carry" or how == "Hold" then "Full" else "Empty"
 end
+-- Where the Packrat holds a find by How (S2-06b2b): between its palms as they close on it and as
+-- it crouches to set it down, against its chest walking or standing full.
+local PACKRAT_HANDS: { [string]: CFrame } = {
+	Take = Packrat.Grip.Take,
+	PutDown = Packrat.Grip.PutDown,
+	Carry = Packrat.Chest,
+	Hold = Packrat.Chest,
+}
+local PACKRAT_EASE: { [string]: number } = {
+	Take = Packrat.Ease.Take,
+	PutDown = Packrat.Ease.PutDown,
+	Carry = Packrat.Ease.Chest,
+	Hold = Packrat.Ease.Chest,
+}
 
 local KITS: { [string]: Kit } = {
 	Mannequin = {
@@ -114,6 +133,9 @@ local KITS: { [string]: Kit } = {
 			return Pose.tell(last, travelled, plain(how))
 		end,
 		quiet = false,
+		hands = function(_: How): (CFrame?, number)
+			return nil, 0
+		end,
 	},
 	-- glides on its full walk or its empty one by whether its arms are full (D-177); no beats yet
 	Packrat = {
@@ -135,8 +157,16 @@ local KITS: { [string]: Kit } = {
 			return nil, 0
 		end,
 		quiet = true,
+		hands = function(how: How): (CFrame?, number)
+			return PACKRAT_HANDS[how], PACKRAT_EASE[how] or 0
+		end,
 	},
 }
+
+-- An ease out and in (smoothstep): a find leaves where it was gently and settles gently.
+local function smooth(t: number): number
+	return t * t * (3 - 2 * t)
+end
 
 type View = {
 	model: Model,
@@ -157,6 +187,18 @@ type View = {
 	turn: number, -- degrees its facing turns before its body creaks (its row's)
 	turnX: number?, -- the facing it measures its next turn from (nil: not shown yet)
 	turnZ: number,
+	-- a find in its arms (S2-06b2b): the weld holding it to its chest (Slots' `lift`), nil for
+	-- none; the chest it rides; where the find is easing to (its kit's `hands`; nil while it's
+	-- still held where it lay), from where and since when (os.clock), over how long; whether
+	-- it has arrived
+	carried: Weld?,
+	chest: BasePart?,
+	gripTo: CFrame?,
+	gripFrom: CFrame,
+	fromWorld: CFrame?, -- easing up from where it lay: that, in the world
+	gripAt: number,
+	gripFor: number,
+	gripped: boolean,
 	conns: { RBXScriptConnection },
 }
 
@@ -174,6 +216,7 @@ local KeeperView = {}
 function KeeperView.new(heard: (model: Model, beat: KeeperTell.Beat) -> (), beam: Beam): Brix.System
 	local views: { [Model]: View } = {}
 	local moving: { [Model]: View } = {} -- the ones to step
+	local holding: { [Model]: View } = {} -- the ones whose find is still moving in its arms
 	local connections: { RBXScriptConnection } = {}
 	local player = Players.LocalPlayer
 	local rays = RaycastParams.new()
@@ -184,6 +227,76 @@ function KeeperView.new(heard: (model: Model, beat: KeeperTell.Beat) -> (), beam
 	-- The time this screen shows keepers at: the server's, `Delay` behind.
 	local function showing(): number
 		return Workspace:GetServerTimeNow() - KeeperMotion.Delay
+	end
+
+	-- The find in its arms on this screen (S2-06b2b): held where it lay until this screen shows
+	-- the hands close on it (the server's weld arrives `Delay` ahead of the pose), then eased up
+	-- into them; from them to its chest as it walks off; down into its hands as it crouches over
+	-- its pile. Stepped every frame (`holding`) until it settles; the weld's C0 is written only
+	-- while the find moves.
+	local function hold(view: View)
+		local weld, chest = view.carried, view.chest
+		if not (weld and weld.Parent and chest) then
+			view.carried = nil
+			holding[view.model] = nil
+			return
+		end
+		local f = view.follow
+		local to, ease = view.kit.hands(KeeperMotion.how(f.state, f.speed))
+		local from = weld:GetAttribute(Packrat.FromAttribute)
+		if to == nil then
+			-- not yet in its hands here: where it lay, if the server said (else where it put it)
+			view.gripTo, view.gripped = nil, false
+			if typeof(from) == "CFrame" then
+				weld.C0 = chest.CFrame:ToObjectSpace(from)
+				holding[view.model] = view
+			else
+				holding[view.model] = nil
+			end
+			return
+		end
+		if to ~= view.gripTo then
+			-- up from the floor in the world, so the hands' snap from reach to take can't jolt it;
+			-- between holds in the chest's own frame, so it rides the body as it turns
+			local lay = view.gripTo == nil and typeof(from) == "CFrame"
+			view.fromWorld = if lay then from :: CFrame else nil
+			view.gripTo, view.gripFrom, view.gripAt, view.gripFor = to, weld.C0, os.clock(), ease
+			view.gripped = false
+		end
+		if view.gripped then
+			holding[view.model] = nil
+			return
+		end
+		local t = if view.gripFor > 0 then (os.clock() - view.gripAt) / view.gripFor else 1
+		if t >= 1 then
+			weld.C0 = to
+			view.gripped = true
+			holding[view.model] = nil
+			return
+		end
+		local e = smooth(t)
+		local world = view.fromWorld
+		if world then
+			local c = chest.CFrame
+			weld.C0 = c:ToObjectSpace(world:Lerp(c * to, e))
+		else
+			weld.C0 = view.gripFrom:Lerp(to, e)
+		end
+		holding[view.model] = view
+	end
+
+	-- A weld holding a find in its arms came or went (Slots' `lift`, `putDown`).
+	local function carry(view: View, inst: Instance, came: boolean)
+		if not (inst:IsA("Weld") and inst.Name == Tools.CarriedName) then
+			return
+		end
+		if came then
+			view.carried, view.gripTo, view.gripped = inst, nil, false
+			hold(view) -- this frame, before it's drawn at its chest
+		elseif view.carried == inst then
+			view.carried = nil
+			holding[view.model] = nil
+		end
 	end
 
 	-- Poses it as its follower shows it now, and plays what its walk lands.
@@ -213,6 +326,9 @@ function KeeperView.new(heard: (model: Model, beat: KeeperTell.Beat) -> (), beam
 			for i, motor in view.motors do
 				motor.Transform = turns[i]
 			end
+		end
+		if view.carried then
+			hold(view)
 		end
 	end
 
@@ -355,7 +471,7 @@ function KeeperView.new(heard: (model: Model, beat: KeeperTell.Beat) -> (), beam
 		if not view then
 			return
 		end
-		views[view.model], moving[view.model] = nil, nil
+		views[view.model], moving[view.model], holding[view.model] = nil, nil, nil
 		for _, c in view.conns do
 			c:Disconnect()
 		end
@@ -410,9 +526,21 @@ function KeeperView.new(heard: (model: Model, beat: KeeperTell.Beat) -> (), beam
 			turn = if kit.quiet then math.huge else rowOf.tell.turn,
 			turnX = nil,
 			turnZ = 0,
+			carried = nil,
+			chest = nil,
+			gripTo = nil,
+			gripFrom = CFrame.identity,
+			fromWorld = nil,
+			gripAt = 0,
+			gripFor = 0,
+			gripped = false,
 			conns = {},
 		}
 		views[model] = view
+		local chest = model:FindFirstChild("UpperTorso")
+		if chest and chest:IsA("BasePart") then
+			view.chest = chest
+		end
 		table.insert(
 			view.conns,
 			model:GetAttributeChangedSignal(MOTION_ATTRIBUTE):Connect(function()
@@ -425,7 +553,27 @@ function KeeperView.new(heard: (model: Model, beat: KeeperTell.Beat) -> (), beam
 				unbind(model)
 			end)
 		)
+		if view.chest then
+			-- a find lifted into its arms, and set down again (S2-06b2b)
+			table.insert(
+				view.conns,
+				model.DescendantAdded:Connect(function(added: Instance)
+					carry(view, added, true)
+				end)
+			)
+			table.insert(
+				view.conns,
+				model.DescendantRemoving:Connect(function(going: Instance)
+					carry(view, going, false)
+				end)
+			)
+		end
 		receive(view)
+		if view.chest then
+			for _, part in model:GetDescendants() do
+				carry(view, part, true) -- one already in its arms as it streams in
+			end
+		end
 	end
 
 	return {
@@ -441,6 +589,11 @@ function KeeperView.new(heard: (model: Model, beat: KeeperTell.Beat) -> (), beam
 			end
 		end,
 		step = function(_: any, dt: number)
+			for model, view in holding do
+				if not moving[model] then
+					hold(view) -- standing still, a find still easing in its arms
+				end
+			end
 			if next(moving) == nil then
 				return
 			end

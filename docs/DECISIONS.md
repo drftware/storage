@@ -4936,3 +4936,32 @@ crowds it). The ticket read "a bit" as about a third.
   Studio's `StandPackrat` Workspace attribute presses the post for a test, since a script
   can't press a ProximityPrompt (docs/STUDIO.md).
 
+
+## D-180 The Packrat dealt among its pile; finds eased into its hands on screens; it lights the halls (S2-06b2b, Nov 14)
+
+- **One a floor from 3, placed with the floor, drawn last.** `Deal.packratIn` picks its unit
+  after everything else a seed lays (its five draws on every floor), so no other unit, note,
+  padlock or sleeper moved: with it switched off the stuff spec's fingerprint is S2-01's. It is
+  a sleeper (`sleepers`), so waking waves, the air horn, a wrong code and the kept-friend unit
+  all treat it as one, and it isn't in `Deal.Keepers`' draw, so never two.
+- **A medium unit, never a note's.** A small unit with a note has no room for its 2.7-stud body
+  beside the note's line from the doorway, and a small one without a note fits it and one big
+  find, not a pile (tests/dealspot). Every floor has at least one medium unit open to it (13 on
+  average), so it always gets one; a note's unit is out so its tall body never hides the code.
+- **It stands at the back, its pile at its feet.** `DealSpot.inUnit` gained `near` (the fitting
+  spot nearest a point): the Packrat near the back wall's middle, its two or three different
+  finds near the floor just ahead of its hanging hands, each clear of the floor it takes (its
+  middle 0.55 ahead of its feet) and turned a few degrees off square, so the door lifts on a
+  heap in the bulb's light and a tall shape behind it. `Keeper.nest` faces it at the pile's
+  middle; it still stands facing the doorway asleep.
+- **Laid finds go beside the pile, not into it.** `laidFind` takes the first of ten ring spots
+  round the pile with no loose find within 1.6 studs, wholly inside its own unit, else the
+  least crowded, and eases the find down from where screens show it in its crouched hands
+  (`Packrat.Held.PutDown`), not from the server's resting chest.
+- **Screens move the find; the server only says where it lay.** The server's weld arrives
+  `KeeperMotion.Delay` before a screen shows the hands close, so the weld carries `From` (where
+  it lay) and each screen holds it there until it shows Take, then eases it up in world space
+  (0.22 s, so the snap from reach to take can't jolt it), to the chest (0.3 s) and down into the
+  crouch (0.4 s) in the chest's frame. Only a body whose find is moving is stepped for it.
+- **It lights the halls as it walks** (`KeeperRows.tripsLights`, the default in `OWNER.md`): its
+  root trips motion lights as a player's does, so you see it coming and a Mannequin by it freezes.

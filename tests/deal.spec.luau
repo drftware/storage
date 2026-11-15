@@ -9,7 +9,9 @@
 -- first on floors 1 and 2; a door lifted again holds what it held. The sleepers (S2-01) are placed
 -- as the floor is laid, the same for the same seed, about `Deal.Asleep` in 100 units (twice that
 -- behind a padlock), never the guard's unit nor the lobby's hall on floors 1 and 2, and each door
--- hands its sleeper back asleep whatever the mood or the cap.
+-- hands its sleeper back asleep whatever the mood or the cap. From floor 3 one Packrat sleeps
+-- among a pile of two or three different finds of its own (S2-06b2b), never in a note's, a
+-- padlocked or another sleeper's unit, and its door hands the pile back.
 local Brix = require("../vendor/brix/src")
 local Floor = require("../src/shared/Floor")
 local Deal = require("../src/shared/Deal")
@@ -199,15 +201,53 @@ for seed = 1, SEEDS do
 				number > Deal.TeachingFloors or not inLobbyHall(floor, units, wingCount, i),
 				`{where}: no sleeper in the first hall`
 			)
-			local joined = false
+			local joined = name == Deal.Packrat.name and number >= Deal.Packrat.from
 			for _, keeper in Deal.Keepers do
 				joined = joined or (keeper.name == name and keeper.from <= number)
 			end
 			ok(joined, `{where}: a sleeper that has joined`)
 		end
+
+		-- The Packrat (S2-06b2b): one on every floor from 3, asleep among two or three finds of
+		-- its own, in a medium unit, never a note's, a padlocked or another sleeper's.
+		local packrats, piles = 0, 0
+		for i, name in deck.sleepers do
+			if name == Deal.Packrat.name then
+				packrats += 1
+				local noted = false
+				for _, note in deck.notes do
+					noted = noted or note.slot == i
+				end
+				ok(not noted and not deck.padlocked[i], `{where}: the Packrat's unit`)
+				ok(floor.slots[i].size == "M", `{where}: the Packrat in a medium unit`)
+				local pile = deck.piles[i]
+				ok(pile ~= nil, `{where}: the Packrat sleeps among a pile`)
+				if pile then
+					ok(
+						#pile >= Deal.PileMin and #pile <= Deal.PileMax,
+						`{where}: a pile of {Deal.PileMin} to {Deal.PileMax}, got {#pile}`
+					)
+					for n, find in pile do
+						ok(table.find(Deal.Finds, find) ~= nil, `{where}: a pile of finds`)
+						ok(table.find(pile, find) == n, `{where}: no find twice in a pile`)
+					end
+					ok(
+						table.concat(pile, ",") == table.concat(twin.piles[i] or {}, ","),
+						`{where}: the same pile`
+					)
+				end
+			end
+		end
+		for i in deck.piles do
+			piles += 1
+			ok(deck.sleepers[i] == Deal.Packrat.name, `{where}: a pile only round the Packrat`)
+		end
+		local want = if number >= Deal.Packrat.from then 1 else 0
+		ok(packrats == want and piles == want, `{where}: {want} Packrat, got {packrats}`)
+
 		for _, i in units do
 			ok(deck.sleepers[i] == twin.sleepers[i], `{where}: the same sleepers`)
-			if Deal.sleeperShare(deck, i) > 0 then
+			if Deal.sleeperShare(deck, i) > 0 and deck.sleepers[i] ~= Deal.Packrat.name then
 				local t = if deck.padlocked[i] then sleepLocked else sleepOpen
 				t.could += 1
 				t.did += if deck.sleepers[i] then 1 else 0
@@ -258,7 +298,9 @@ for seed = 1, SEEDS do
 					`{where}: a padlock's sleeper stands with its find or tool`
 				)
 			end
-			if i ~= guard then
+			ok(got.pile == deck.piles[i], `{where}: a door hands back its pile`)
+			local packrat = deck.sleepers[i] == Deal.Packrat.name
+			if i ~= guard and not packrat then
 				add(if deck.padlocked[i] then locked else open, got.kind)
 				if deck.padlocked[i] then
 					add(beside, got.beside or "Nothing")
@@ -308,7 +350,7 @@ for seed = 1, SEEDS do
 					`{where}: a find from the deal's list`
 				)
 			elseif got.kind == "Asleep" or got.kind == "Awake" then
-				local joined = false
+				local joined = packrat and got.kind == "Asleep"
 				for _, keeper in Deal.Keepers do
 					joined = joined or (keeper.name == got.keeper and keeper.from <= number)
 				end
@@ -321,7 +363,7 @@ for seed = 1, SEEDS do
 		local _, inPeak = lay(seed, number)
 		local _, inRelief = lay(seed, number)
 		for _, i in units do
-			if i ~= guard then
+			if i ~= guard and deck.sleepers[i] ~= Deal.Packrat.name then
 				local cap = { mood = "Build", awake = Deal.awakeCap(number) } :: Deal.Situation
 				local c = Deal.open(atCap, i, cap)
 				local p = Deal.open(inPeak, i, { mood = "Peak", awake = 0 })

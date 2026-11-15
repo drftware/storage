@@ -48,6 +48,9 @@ export type Contents = {
 	coins: number,
 	stuff: string?,
 	battery: boolean?,
+	-- the finds of its own the Packrat sleeps among (S2-06b2b), names in `Deal.Finds`, laid round
+	-- it; nil in any other unit
+	pile: { string }?,
 }
 
 -- A note: the unit it lies in (an index into the floor's slots) and the places of the code it
@@ -75,6 +78,9 @@ export type Deck = {
 	-- slot index: all an ordinary unit holds, or standing with a padlocked unit's find or tool.
 	-- `Deal.open` hands each back as its door first lifts.
 	sleepers: { [number]: string },
+	-- the Packrat's pile (S2-06b2b): the finds of its own it sleeps among, by its unit's slot
+	-- index (one unit at most, from floor `Deal.Packrat.from`); its name is in `sleepers` too
+	piles: { [number]: { string } },
 	-- where the floor's one breaker box hangs (S2-02b), or nil on a floor with nowhere outside
 	-- the lobby's hall to hang it (`Breaker.spots`)
 	breaker: Breaker.Spot?,
@@ -140,6 +146,20 @@ end
 Deal.Keepers = {
 	{ name = "Mannequin", from = 1 },
 } :: { { name: string, from: number } }
+
+--[[
+	The Packrat (S2-06b2b, GDD "The monsters"): one on every floor from 3, never more, so it's not
+	in `Keepers`' draw. It's placed with the floor, asleep in a unit of its own among a pile of
+	two or three finds it has already carried home, as Lethal Company's Hoarding Bug sits on its
+	nest of scrap: you lift a door on something tall standing among stuff that isn't yours. Never
+	a note's unit (its tall body would hide the note from the doorway), a padlocked one (a lock
+	shuts its way home) or another sleeper's, and always a medium unit while the floor has one: a
+	small one has room at the back for it and one big find, not its pile (tests/dealspot). Its
+	finds are all different, from `Deal.Finds`.
+]]
+Deal.Packrat = { name = "Packrat", from = 3 }
+Deal.PileMin = 2
+Deal.PileMax = 3
 
 --[[
 	The tools behind doors come out of a shuffled bag, as Tetris deals its pieces: every tool in a
@@ -485,6 +505,7 @@ function Deal.new(floor: Floor, random: Random): Deck
 		batteries = {},
 		bag = {},
 		sleepers = {},
+		piles = {},
 		random = random,
 	}
 	--[[
@@ -540,7 +561,52 @@ function Deal.new(floor: Floor, random: Random): Deck
 	end
 	-- The breaker box (S2-02b), drawn last, so placing it moved nothing else a seed lays.
 	deck.breaker = Breaker.pick(Breaker.spots(floor), random:nextNumber())
+	-- The Packrat (S2-06b2b), drawn last, so placing it moved nothing else a seed lays. It draws
+	-- its five on every floor, so a floor without one draws as many as a floor with one.
+	local where, size = random:nextNumber(), random:nextNumber()
+	local finds = { random:nextNumber(), random:nextNumber(), random:nextNumber() }
+	Deal.packratIn(deck, where, size, finds)
 	return deck
+end
+
+-- The units the Packrat may sleep in on `deck`'s floor, in number order: none below its floor,
+-- never a note's unit, a padlocked one or another sleeper's, and only medium units if any are.
+function Deal.packratUnits(deck: Deck): { number }
+	local out: { number } = {}
+	if deck.floor.number < Deal.Packrat.from then
+		return out
+	end
+	local noted: { [number]: boolean } = {}
+	for _, note in deck.notes do
+		noted[note.slot] = true
+	end
+	local small: { number } = {}
+	for _, i in Deal.units(deck.floor) do
+		if not (noted[i] or deck.padlocked[i] or deck.sleepers[i]) then
+			table.insert(if deck.floor.slots[i].size == "M" then out else small, i)
+		end
+	end
+	return if #out > 0 then out else small
+end
+
+-- Places the Packrat asleep in a unit of `deck`'s floor among its pile, from three rolls (0 to
+-- 1): `where` its unit, `count` two finds or three, `picks` each find, none twice. Its unit, or
+-- nil on a floor without one.
+function Deal.packratIn(deck: Deck, where: number, count: number, picks: { number }): number?
+	local units = Deal.packratUnits(deck)
+	if #units == 0 then
+		return nil
+	end
+	local index = units[math.floor(where * #units) + 1]
+	local left = table.clone(Deal.Finds)
+	local pile: { string } = {}
+	local size = Deal.PileMin + math.floor(count * (Deal.PileMax - Deal.PileMin + 1))
+	for n = 1, math.min(size, #left) do
+		table.insert(pile, table.remove(left, math.floor(picks[n] * #left) + 1) :: string)
+	end
+	deck.sleepers[index] = Deal.Packrat.name
+	deck.piles[index] = pile
+	return index
 end
 
 -- The chance, 0 to 1, that unit `index` holds a sleeper from the floor's start (`Deal.Asleep`):
@@ -682,6 +748,7 @@ function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 		kind = kind,
 		coins = deck.coins[index] or 0,
 		battery = if deck.batteries[index] then true else nil,
+		pile = deck.piles[index],
 	}
 	if kind == "Tool" then
 		contents.tool = Deal.drawTool(deck)

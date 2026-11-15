@@ -71,7 +71,9 @@ ok(Deal.stuffFrom(Deal.StuffShare - 1e-9) == Deal.Stuff[#Deal.Stuff], "the highe
 local SEEDS = 200
 local FLOORS = { 1, 3, 6 }
 local BUILD: Deal.Situation = { mood = "Build", awake = 0 }
-local FINGERPRINT = 3999933310 -- the deal of seeds 1 to 60 since S2-01 (sleepers placed with the floor)
+-- the deal of seeds 1 to 60 since S2-06b2b (the Packrat placed with the floor, among its pile;
+-- with it switched off the deal is S2-01's, 3999933310)
+local FINGERPRINT = 2130601506
 local SEEDS_PRINTED = 60
 
 local print_ = 7

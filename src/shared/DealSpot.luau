@@ -95,6 +95,13 @@ DealSpot.LandBack = 0.9
 -- A keeper's size until each keeper brings its own (L-06b): the Mannequin standing at rest, arms
 -- at its sides (1.89 across, its feet 1.34 heel to toe, 6.3 tall), with a little room round it.
 DealSpot.Keeper = { across = 2.1, along = 1.5, tall = 6.3 } :: Size
+-- The Packrat standing slack (S2-06b2b): 2.7 across its hanging arms, 7.3 tall, its long hands
+-- hanging ahead of its feet, so the floor it takes is 2.5 deep with its middle `PackratAhead`
+-- studs in front of where it stands (both measured from its Still pose, with a little room).
+-- It stands at the back of its unit (`inUnit`'s `near`), its pile at its feet (`around` with
+-- its middle moved ahead).
+DealSpot.Packrat = { across = 2.75, along = 2.5, tall = 7.3 } :: Size
+DealSpot.PackratAhead = 0.55
 
 -- A convex polygon on the floor: x1, z1, x2, z2, ...
 type Poly = { number }
@@ -316,7 +323,9 @@ end
 	under the top's hole and where the top's panel falls. Where that fits nowhere it gives them up
 	in that order, the crawl hole spots first and the landing last: a find or keeper rather stands
 	on a crawl hole spot behind the bulb than in front of it, and nothing lies where you'd land
-	while it fits anywhere else. Nil only if it fits nowhere past the door.
+	while it fits anywhere else. Nil only if it fits nowhere past the door. `near` (x, z), if
+	given, takes the spot that fits nearest it rather than the unit's own: the Packrat at the back
+	of its unit and its pile at its feet (S2-06b2b).
 ]]
 function DealSpot.inUnit(
 	unit: Unit,
@@ -324,7 +333,8 @@ function DealSpot.inUnit(
 	size: Size,
 	note: number?,
 	number: string,
-	taken: { { number } }?
+	taken: { { number } }?,
+	near: { number }?
 ): Spot?
 	local n = math.floor(math.abs(tonumber(number) or 0))
 	local turn = DealSpot.Turns[(n * 3) % #DealSpot.Turns + 1]
@@ -362,6 +372,17 @@ function DealSpot.inUnit(
 	end
 	if #found == 0 then
 		return nil
+	end
+	if near then
+		local best, bestD = found[1], math.huge
+		for _, spot in found do
+			local dx, dz = spot.x - near[1], spot.z - near[2]
+			local d = dx * dx + dz * dz
+			if d < bestD then
+				best, bestD = spot, d
+			end
+		end
+		return best
 	end
 	-- Knuth's multiplier spreads neighbouring numbers across the list; coins and batteries use
 	-- others, so they don't land where the unit's tool would

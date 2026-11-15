@@ -108,6 +108,7 @@ local KeeperRows = require(ReplicatedStorage.Shared.KeeperRows)
 local KeeperTell = require(ReplicatedStorage.Shared.KeeperTell)
 local Ladders = require(script.Parent.Ladders)
 local Mannequin = require(ReplicatedStorage.Shared.Mannequin)
+local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
 local MotionLights = require(script.Parent.MotionLights)
 local Packrat = require(ReplicatedStorage.Shared.Packrat)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
@@ -165,8 +166,26 @@ local KITS: { [string]: Kit } = {
 	},
 }
 -- Where the Packrat lays each find on its pile (S2-06b2), studs across and back from the pile's
--- middle as it faces it, one after another round again: a small heap, not one spot.
-local PILE: { { number } } = { { 0, 0 }, { -1.3, 0.4 }, { 1.3, 0.4 }, { -0.6, 1.4 }, { 0.7, 1.5 } }
+-- middle as it faces it, tried in turn from the next: a small heap, not one spot. A dealt pile
+-- (S2-06b2b) already lies round its middle, so the ring goes on round it.
+local PILE: { { number } } = {
+	{ 0, 0 },
+	{ -1.3, 0.4 },
+	{ 1.3, 0.4 },
+	{ -0.6, 1.4 },
+	{ 0.7, 1.5 },
+	{ -2.2, -0.4 },
+	{ 2.2, -0.4 },
+	{ -1.9, 1.5 },
+	{ 1.9, 1.6 },
+	{ 0, -1.2 },
+}
+-- A spot on the pile with no find lying within this (studs, middle to middle) is free: about a
+-- boombox's width, so a laid find sits beside what's there rather than in it.
+local PILE_CLEAR = 1.6
+-- How far round a pile spot's middle must still be in its own unit (studs, across and along as it
+-- faces): about half the widest find, so none is laid through a wall.
+local PILE_SIDE, PILE_DEEP = 1, 0.6
 
 -- Output's words for what it does next.
 local DOING: { [Keeper.State]: string } = {
@@ -1141,27 +1160,72 @@ function Keepers.new(): Keepers
 			Keeper.dropped(entry.keeper) -- gone from under its hands
 			return
 		end
+		-- where it lay (`lift` keeps it there): screens ease it from there into the hands
+		local held = weld.Part0
+		if held then
+			weld:SetAttribute(Packrat.FromAttribute, held.CFrame * weld.C0)
+		end
 		weld.C0 = Packrat.Chest
 		if TRACE then
 			print(`Keepers: the {entry.keeper.row.name} takes a find and heads home with it`)
 		end
 	end
 
-	-- It laid find `n` on its pile (S2-06b2): Slots sets it down there, takeable again.
+	-- It laid find `n` on its pile (S2-06b2): Slots sets it down there, takeable again, easing
+	-- it from between its hands as every screen shows them, crouched (`Packrat.Held`). The spot
+	-- is the first round the pile, from the next, with no find lying within `PILE_CLEAR` (S2-06b2b:
+	-- a dealt pile lies there already), else the least crowded; always wholly in its own unit.
 	local function laidFind(entry: Entry, n: number)
 		local s, k, on = toolSlots, entry.keeper, entry.on
 		if not s then
 			return
 		end
-		local spot = PILE[entry.piled % #PILE + 1]
-		entry.piled += 1
 		local ahead = k.pile - k.homeAt
 		local m = vector.magnitude(ahead)
 		local face = if m > 1e-3 then ahead / m else k.facing
 		local side = vector.create(-face.z, 0, face.x)
-		local at = k.pile + side * spot[1] + face * spot[2]
+		local finds = on.finds
+		local function home(p: vector): boolean
+			local _, unit = KeeperMap.placeAt(on.map, p)
+			return unit == k.home
+		end
+		local best, room = k.pile, -1
+		for i = 0, #PILE - 1 do
+			local spot = PILE[(entry.piled + i) % #PILE + 1]
+			local at = k.pile + side * spot[1] + face * spot[2]
+			local across, along = side * PILE_SIDE, face * PILE_DEEP
+			if
+				not (
+					home(at + across)
+					and home(at - across)
+					and home(at + along)
+					and home(at - along)
+				)
+			then
+				continue
+			end
+			local clear = math.huge
+			for j = 1, finds.count do
+				local d = finds.at[j] - at
+				clear = math.min(clear, math.sqrt(d.x * d.x + d.z * d.z))
+			end
+			if clear > room then
+				best, room = at, clear
+			end
+			if clear >= PILE_CLEAR then
+				break
+			end
+		end
+		entry.piled += 1
 		-- any: as in `putRoot`
-		s:putDown(n, on.origin:PointToWorldSpace((at :: any) :: Vector3), math.random(0, 359))
+		local feet = on.origin
+			* CFrame.lookAt((k.at :: any) :: Vector3, ((k.at + k.facing) :: any) :: Vector3)
+		s:putDown(
+			n,
+			on.origin:PointToWorldSpace((best :: any) :: Vector3),
+			math.random(0, 359),
+			feet * Packrat.Held.PutDown
+		)
 		if TRACE then
 			print(`Keepers: the {k.row.name} lays a find on its pile and goes out for the next`)
 		end
@@ -1174,7 +1238,8 @@ function Keepers.new(): Keepers
 		name: string,
 		at: vector,
 		facing: vector,
-		awake: boolean
+		awake: boolean,
+		pile: vector?
 	): Model?
 		local row = KeeperRows[name]
 		local kit = KITS[name]
@@ -1183,6 +1248,9 @@ function Keepers.new(): Keepers
 			return nil
 		end
 		local k = Keeper.new(row, on.map, on.random, at, facing, awake, Brix.Reach.cone)
+		if pile and row.collects then
+			Keeper.nest(k, k.at, pile) -- dealt among its pile (S2-06b2b): it lays more there
+		end
 		-- any: as in `place`
 		local a, f = (k.at :: any) :: Vector3, (k.facing :: any) :: Vector3
 		local body = kit.clone(on.origin * CFrame.lookAt(a, a + f))
@@ -1197,6 +1265,9 @@ function Keepers.new(): Keepers
 		-- the whole body streams in at once, so no screen ever has the body without its parts (set
 		-- before it's in the world: a model already there streams its parts one by one)
 		body.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
+		if row.tripsLights then
+			root:AddTag(MotionLight.BodyTag) -- the halls light as it walks (S2-06b2b)
+		end
 		body:SetAttribute(STATE_ATTRIBUTE, k.state)
 		body:SetAttribute(ROW_ATTRIBUTE, name)
 		local entry: Entry = {
@@ -1255,7 +1326,12 @@ function Keepers.new(): Keepers
 			local l = on.origin:VectorToObjectSpace(laid.LookVector)
 			facing = vector.create(l.X, 0, l.Z)
 		end
-		if not standOn(on, name, at, facing, awake) then
+		local pile: vector? = nil
+		if d.pile then
+			local q = on.origin:PointToObjectSpace(d.pile)
+			pile = vector.create(q.X, at.y, q.Z)
+		end
+		if not standOn(on, name, at, facing, awake, pile) then
 			return
 		end
 		if waking then

@@ -44,6 +44,30 @@ end
 local CHEST = CFrame.new(vec(Specs.Carry) - vec(Specs.Parts.UpperTorso.Centre))
 Packrat.Chest = CHEST
 
+-- Where a find held in its hands sits in each pose that holds one there (S2-06b2b,
+-- `Pose.InHands`): reaching, at the right hand's fingertips; taking and putting down, between
+-- both palms. `Grip` is its middle in the UpperTorso's own frame, as `Chest` is (a carried find's
+-- weld `C0` on screens, KeeperView); `Held` is from the floor between its feet, facing as it does
+-- (where the server sets a find down from).
+-- The attribute on a carried find's weld saying where it lay as the hands closed, a CFrame in
+-- the world (the server's Keepers sets it): a screen holds the find there until it shows the
+-- hands close on it.
+Packrat.FromAttribute = "From"
+-- Seconds a screen takes to ease a find it holds (KeeperView): up from where it lay into its
+-- closing hands, quick, a snatch; from its hands to its chest as it turns for home; from its
+-- chest down into its hands as it crouches over its pile, unhurried.
+Packrat.Ease = { Take = 0.22, Chest = 0.3, PutDown = 0.4 } :: { [string]: number }
+Packrat.Grip = {} :: { [string]: CFrame }
+Packrat.Held = {} :: { [string]: CFrame }
+for name, hands in Pose.InHands do
+	local pose = Pose.Poses[name]
+	local chest = cframe(Pose.solve(pose).UpperTorso)
+		* CFrame.new(vec(Specs.Parts.UpperTorso.Centre))
+	local held = cframe(Pose.grip(pose, hands))
+	Packrat.Grip[name] = CFrame.new(chest:PointToObjectSpace(held.Position))
+	Packrat.Held[name] = held
+end
+
 function Packrat.template(): Model?
 	local keepers = ReplicatedStorage:FindFirstChild("Keepers")
 	local m = keepers and keepers:FindFirstChild("Packrat")

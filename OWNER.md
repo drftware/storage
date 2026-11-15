@@ -23,10 +23,30 @@ nowhere else.
   at Brix `6717740` (S1-02), which is only on this Mac until Brix is pushed; a fresh clone of
   the game can't fetch it until then.
 
+## Now: find the Packrat asleep among its pile on floor 3 (S2-06b2b, built Nov 14, D-180; its deal checked in Studio Play, the opened door not yet looked at)
+
+From floor 3 up, every floor has one Packrat, asleep at the back of a big unit with two or three
+finds of its own lying at its feet.
+
+1. In Studio, select Workspace and add a number attribute called DevFloorNumber set to 3.
+   Press Play. (Remove the attribute afterwards to go back to the usual floor.)
+2. Output lists the sleepers as the floor is laid: look for a line starting "Keepers: asleep
+   behind shut doors on floor 3" and the unit marked "(Packrat)", for example "314 (Packrat)".
+3. Take "Walk a floor" by the spawn to the floor's lobby, find that unit and lift its door.
+4. Look for: as the door rolls up, a little heap of stuff in the bulb's light (a boombox, a
+   television, a teddy, skates: two or three of them, all different, each turned a little,
+   like something dumped there), and behind the heap, at the back of the unit, the tall grey
+   Packrat standing slack, facing you, its long pale hands hanging. Output says "held the
+   Packrat, asleep, among its pile: ...". Say if the heap or the Packrat looks wrong (things
+   inside each other, inside a wall, or the Packrat squeezed into a corner).
+5. Take one of its finds ("Take"). Its pile is yours to raid; the Packrat taking it back is a
+   later piece (S2-06c and S2-06d).
+6. Look for, on the way: halls lighting up as a Packrat walks them, if one is out (step 8 of
+   the next section shows one walking).
+
 ## Now: watch the Packrat fetch a find home (S2-06b2a, built Nov 14, D-179; seen in Studio Play, not on a phone)
 
-This is the first time it moves. No climb puts one on a floor yet (that's next); a post in the
-test floor's lobby stands one for you.
+A post in the test floor's lobby stands one for you.
 
 1. Press Play. Walk to the spawn's "Walk a floor" button and take it to the floor's lobby.
 2. In the lobby's back corner, beside the Mannequin's "Stand one" post, is a second post called
@@ -39,15 +59,16 @@ test floor's lobby stands one for you.
    gliding, not jerking like the Mannequin.
 5. Look for: it stops a little short of the boombox and puts one long pale arm straight out
    over it, holds it there for a moment (you could snatch the boombox now), then both hands
-   close and the boombox is in its arms. Right now the boombox jumps straight to its chest as
-   the hands close; easing it up from the floor into its hands is the next piece's job, so
-   say if the jump spoils it.
+   close and the boombox rises off the floor into them, quick, like a snatch (about a fifth
+   of a second), then slides in against its chest as it turns for home. Say if the rise looks
+   too slow or too fast, or if the boombox ever shows up at its chest before the hands close.
 6. Look for: it walks home hunched with the boombox hugged to its chest behind its crossed
    pale forearms, in shorter, quicker steps. Stand right in front of it now: it ignores you.
-7. Look for: back in its unit it crouches over its pile, sets the boombox down at the back,
-   and comes out again with empty arms. The boombox now says "Take": you can take it back.
-8. Press the post again any time for a fresh Packrat in a fresh unit. It makes no sound yet
-   (S2-06e) and doesn't light the halls as it walks yet (the next piece).
+7. Look for: back in its unit it crouches over its pile; the boombox comes down from its chest
+   into its hands as it bends, and it sets it on the floor from there (no jump). It comes out
+   again with empty arms. The boombox now says "Take": you can take it back.
+8. Look for: the hall lights come on round it as it walks, the way they do for you. Press the
+   post again any time for a fresh Packrat in a fresh unit. It makes no sound yet (S2-06e).
 
 ## Now: shut a door on a sleeping monster (S2-05, built Nov 14, D-169 and D-170; seen in Studio Play, not on a phone)
 
@@ -288,7 +309,10 @@ Nothing in it is built yet. What still waits on you, in the order it holds work 
   the second monster and agreed my six defaults (D-167), so its ticket (S2-06) no longer waits
   on you. Packrat is a working name: say if you want another. Defaults I haven't put to you:
   1. It sets the hall lights off as it walks, the way a player does, so you see it coming and
-     a Mannequin near it freezes. Say if it should walk in the dark instead.
+     a Mannequin near it freezes (built Nov 14). Say if it should walk in the dark instead.
+  6. Where it sleeps (S2-06b2b): always in a big unit, never one holding a note (its tall body
+     would hide the note from the doorway), never a padlocked one. Say if it should ever sleep
+     in a small unit, with a pile of one.
   2. Which find it goes for next (S2-06b1, D-178): always the nearest one it can walk to. It
      knows where every loose find on the floor is, even ones it can't see, so it works the
      floor steadily outward from wherever it is. The other way would be: only finds it sees.

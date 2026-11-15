@@ -1889,7 +1889,7 @@ Done when a team that has lost its lights goes looking for the breaker without b
       `ofFrame`), and `Packrat.transforms(frame)`. The Lune spec checks every frame stands and
       reads; checked in Studio that all 68 build on the real rig, hands where the spec says.
       Sheets `packrat-take` and `-reach-hall` (side on from 30 studs at a phone's size).
-  - [ ] **S2-06b It carries finds home.** Its row on the keepers' brain (`KeeperRows`), with a
+  - [x] **S2-06b It carries finds home.** Its row on the keepers' brain (`KeeperRows`), with a
     unit of its own and one new ability: it picks up a find lying in an open unit or a hall,
     carries it home, lays it on the pile and comes out for more, ignoring players while it
     carries. The server owns where every find is. The pure rules first with Lune specs (which
@@ -1911,11 +1911,14 @@ Done when a team that has lost its lights goes looking for the breaker without b
       it on its pile on `laid`, takeable again; its body on the server (`KITS`) and on screens
       (KeeperView's Kit: full and empty walks, reach, take and put down held). The dev floor's
       lobby has a Packrat post. Seen in Play: out, reach, take, home full, put down, out again.
-    - [ ] **S2-06b2b The deal, the hall lights and the find in its hands.** The deal puts one on
-      floors 3 and up, asleep in a unit holding finds of its own (`Keeper.nest` facing them);
-      hall lights come on as it walks (a default in `OWNER.md`); the find eases from the floor
-      into its hands as they close and sits between them in Take and PutDown, at its chest
-      walking (`Pose.grip`, `Pose.carry`, set per frame on screens). Verified in Play.
+    - [x] **S2-06b2b The deal, the hall lights and the find in its hands** (Nov 14, D-180). One
+      on every floor from 3, asleep at the back of a medium unit (never a note's, a padlocked or
+      another sleeper's) among two or three different finds of its own laid at its feet; laid
+      finds go beside the pile; the halls light as it walks; screens hold a taken find where it
+      lay until the hands close, then ease it into them, to its chest and down into the crouch.
+      Seen in Play: floor 3 dealt it asleep in medium Unit 314; the dev post's fetch took, carried
+      and laid with no errors, the weld carrying where the find lay, four hall lights lit as it
+      walked. Not watched on a screen: the lifted door on its pile and the ease (`OWNER.md`).
     - [ ] ~~**S2-06b2 Into the game.**~~ Split into b2a and b2b above. The server moves each find (lifted, carried at its chest,
       laid on the pile) and owns where it is; screens show the Packrat's walk full or empty and
       its reach, take and put down (its Kit row in KeeperView, and how a screen learns it

@@ -63,6 +63,10 @@ export type Row = {
 	-- Whether it moves only while no light is on it (the GDD's Mannequin): a lit hall light over
 	-- it or a torch's beam on it holds it where it stands, mid-stride, until no light is.
 	freezesInLight: boolean,
+	-- Whether a hall light over it wakes as it walks, as one over a player does (S2-06b2b, the
+	-- Packrat: you see it coming, and a Mannequin near it freezes; `OWNER.md` asks). None: it
+	-- walks the dark (the Mannequin, which would freeze in its own light).
+	tripsLights: boolean?,
 	-- How tall it stands (studs): a torch's beam on it anywhere from its feet to its head counts.
 	height: number,
 	-- Its grasp (L-06b3c): hunting, it catches the one it hunts once their feet are within `reach`
@@ -304,6 +308,8 @@ local Packrat: Row = {
 	sightAngle = 60,
 	-- the GDD: light does nothing to it, so a torch held on a Mannequin won't save your find
 	freezesInLight = false,
+	-- the halls light up round it as it walks, as for a player (a default in `OWNER.md`)
+	tripsLights = true,
 	height = PackratSpecs.Height,
 	-- one long arm out (D-177) reaches a little further than the Mannequin's two, in a narrower
 	-- cone: it has to be facing you

@@ -69,6 +69,9 @@ export type Dealt = {
 	-- holds only a keeper, its own spot for one standing with a padlocked unit's find or tool
 	-- (S1-07a); nil for none, or none with room to stand
 	keeper: CFrame?,
+	-- the middle of the Packrat's pile on the floor (S2-06b2b), the finds of its own laid round
+	-- its feet; nil in any other unit, or with none laid
+	pile: Vector3?,
 	-- who opened it: the player whose door lift or saw first showed it; nil when the game did
 	player: Player?,
 }
@@ -97,6 +100,12 @@ type Awake = { awakeOn: (self: any, unit: Model) -> number }
 local LIFTS = { Peek = true, Open = true, LiftInside = true } :: { [string]: boolean }
 
 -- Somebody's stuff as a tester would say it, for Output in Studio.
+-- Degrees each find of the Packrat's pile turns off how DealSpot stands it (S2-06b2b), in turn:
+-- a heap dumped at its feet, each still facing about the doorway so you know it from there. Small
+-- enough that the widest find (the boombox, 2.3 across) turned so reaches no more than 0.25 studs
+-- further: inside the room `DealSpot.around` keeps round it, and short of a wall's ribs.
+local PILE_TILT = { -10, 8, 13 }
+
 local STUFF_SAID = {
 	Mattress = "an old mattress",
 	Carpet = "a rolled rug",
@@ -117,7 +126,9 @@ local function said(contents: Deal.Contents): string
 	elseif kind == "Find" then
 		return `a find, the {contents.find}{with}`
 	elseif kind == "Asleep" or kind == "Awake" then
-		return `the {contents.keeper}, {string.lower(kind)}`
+		local pile = contents.pile
+		local among = if pile then `, among its pile: {table.concat(pile, ", ")}` else ""
+		return `the {contents.keeper}, {string.lower(kind)}{among}`
 	end
 	if contents.stuff then
 		return `nothing to take, only {STUFF_SAID[contents.stuff] or contents.stuff}`
@@ -176,13 +187,13 @@ function Deals.new(): Deals
 
 	-- Lays what unit `unit` (slot `index` of `deck`'s floor) was dealt, its tool, find or keeper;
 	-- returns where, or nil, and the floor it takes with room round it (DealSpot.around), which a
-	-- keeper standing with it and the unit's coins keep clear of.
+	-- keeper standing with it and the unit's coins keep clear of; and for a keeper, its spot.
 	local function layOne(
 		unit: Model,
 		deck: Deal.Deck,
 		index: number,
 		contents: Deal.Contents
-	): (CFrame?, { number }?)
+	): (CFrame?, { number }?, DealSpot.Spot?)
 		local size, number, note = shape(deck, index)
 		local function at(spot: DealSpot.Spot): CFrame
 			return placed(unit, spot)
@@ -233,13 +244,71 @@ function Deals.new(): Deals
 			slots:lay(key, place.Position, math.deg(yaw))
 			return place, DealSpot.around(spot, box)
 		elseif kind == "Asleep" or kind == "Awake" then
+			if contents.pile then
+				-- the Packrat (S2-06b2b): at the back, the floor it takes reaching ahead of its feet
+				-- where its long hands hang, so its pile lies clear of them
+				local spot = DealSpot.inUnit(
+					size,
+					"Keeper",
+					DealSpot.Packrat,
+					note,
+					number,
+					nil,
+					{ 0, size.depth }
+				)
+				if spot then
+					local ahead = DealSpot.PackratAhead
+					local middle = { x = spot.x, z = spot.z - ahead, yaw = spot.yaw }
+					return at(spot), DealSpot.around(middle, DealSpot.Packrat), spot
+				end
+				return nil
+			end
 			local spot = DealSpot.inUnit(size, "Keeper", DealSpot.Keeper, note, number)
 			if spot then
-				return at(spot), DealSpot.around(spot, DealSpot.Keeper)
+				return at(spot), DealSpot.around(spot, DealSpot.Keeper), spot
 			end
 			return nil
 		end
 		return nil
+	end
+
+	-- Lays the Packrat's pile (S2-06b2b) at its feet, standing at `spot` in unit `unit`, each find
+	-- as near the floor just ahead of its hands as fits, clear of `taken` (which each joins), and
+	-- turned a little off square, so it reads as dumped there, not shelved. The pile's middle, or
+	-- nil if none fits.
+	local function layPile(
+		unit: Model,
+		deck: Deal.Deck,
+		index: number,
+		pile: { string },
+		spot: DealSpot.Spot,
+		taken: { { number } }
+	): Vector3?
+		local s = slots
+		if not s then
+			return nil
+		end
+		local size, number, note = shape(deck, index)
+		local feet = { spot.x, spot.z - DealSpot.PackratAhead - DealSpot.Packrat.along }
+		local sum, laid = Vector3.zero, 0
+		for n, key in pile do
+			local row = Tools.Catalog[key]
+			if not (row and row.find and Tools.template(key)) then
+				continue -- its art isn't in the place
+			end
+			local find = Tools.bounds(key)
+			local box = { across = find.Size.X, along = find.Size.Z, tall = find.Size.Y }
+			local at = DealSpot.inUnit(size, "Find", box, note, number, taken, feet)
+			if at then
+				table.insert(taken, DealSpot.around(at, box))
+				local place = placed(unit, at)
+				local _, yaw = place:ToOrientation()
+				s:lay(key, place.Position, math.deg(yaw) + PILE_TILT[(n - 1) % #PILE_TILT + 1])
+				sum += place.Position
+				laid += 1
+			end
+		end
+		return if laid > 0 then sum / laid else nil
 	end
 
 	-- Lays all a unit was dealt but its coins and stuff: what it holds (`layOne`), then a keeper
@@ -251,21 +320,25 @@ function Deals.new(): Deals
 		deck: Deal.Deck,
 		index: number,
 		contents: Deal.Contents
-	): (CFrame?, CFrame?, { { number } })
-		local place, area = layOne(unit, deck, index, contents)
+	): (CFrame?, CFrame?, { { number } }, Vector3?)
+		local place, area, spot = layOne(unit, deck, index, contents)
 		local taken: { { number } } = if area then { area } else {}
 		if Deal.keeperIn(contents) == nil then
 			return place, nil, taken
 		elseif not contents.beside then
-			return place, place, taken
+			local pile = contents.pile
+			local middle = if pile and spot
+				then layPile(unit, deck, index, pile, spot, taken)
+				else nil
+			return place, place, taken, middle
 		end
 		local size, number, note = shape(deck, index)
-		local spot = DealSpot.inUnit(size, "Keeper", DealSpot.Keeper, note, number, taken)
-		if not spot then
+		local beside = DealSpot.inUnit(size, "Keeper", DealSpot.Keeper, note, number, taken)
+		if not beside then
 			return place, nil, taken
 		end
-		table.insert(taken, DealSpot.around(spot, DealSpot.Keeper))
-		return place, placed(unit, spot), taken
+		table.insert(taken, DealSpot.around(beside, DealSpot.Keeper))
+		return place, placed(unit, beside), taken
 	end
 
 	-- Lays unit `unit`'s coins (S1-04a) in the bulb's pool, clear of `taken` (the floor its tool,
@@ -335,7 +408,7 @@ function Deals.new(): Deals
 		local deck, index = entry.deck, entry.index
 		local awake = if keepers then keepers:awakeOn(unit) else 0
 		local contents = Deal.open(deck, index, { mood = "Build", awake = awake })
-		local place, keeper, taken = lay(unit, deck, index, contents)
+		local place, keeper, taken, pileAt = lay(unit, deck, index, contents)
 		local paid, pile = false, nil
 		if contents.coins > 0 then
 			paid, pile = layCoins(unit, deck, index, contents.coins, taken)
@@ -377,6 +450,7 @@ function Deals.new(): Deals
 			contents = contents,
 			place = place,
 			keeper = keeper,
+			pile = pileAt,
 			player = player,
 		})
 	end
