@@ -523,6 +523,11 @@ filled. Each default stands unless you say otherwise.
   slams, bangs and drops today, not footsteps, so quiet slippers and loud skates would change
   nothing. They need monsters that hear running feet, as Lethal Company's eyeless dogs do. That
   changes every climb, so it's yours to decide when the first worn find is built.
+- [ ] **The lamp that's on when you find it (the Secret Light) looks like an ordinary 1940s brass
+  table lamp,** lit warm, its parchment shade glowing, its cord running across the floor to a plug
+  lying loose: it's on with nothing to power it. The catalog didn't say how it looks, so this is my
+  default. Pictures: `art/sheets/unpluggedlamp-front.png`, and `-unit.png` from a unit's doorway.
+  The other way: something stranger, but then it stops being the quiet "that shouldn't be on".
 
 ## Now: judge L-08e3, Invite and the dials (built Nov 12, D-124)
 

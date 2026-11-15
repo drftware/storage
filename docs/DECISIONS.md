@@ -5346,3 +5346,13 @@ the band (ruby, green, cobalt) beside the bulbs' warm pool, since Roblox lights 
 an image; they read on a unit's walls in Studio. It's found with one hairline crack in an apron
 piece, as old shades often are, so Fragile has a place to show.
 
+
+## D-199 The Secret Light is an ordinary 1940s lamp, lit, its plug lying loose (F-02n, Nov 15)
+
+The catalog's Secret Light ("A lamp that's on when you find it": it never runs down, loose only
+from floor 25, in a power cut the only light on the floor) says nothing about its look. It's
+built as the most ordinary lamp there is, a 1940s brass table lamp with a parchment bell shade,
+found lit with its cord running across the floor to a plug lying loose, so a player sees at once
+it shouldn't be on; its light is a touch warmer than any bulb in the building and never wavers.
+Its one action, `Switch`, turns the key twice and nothing answers. It's found lit by the kit's
+own rule (its glow track's first key is 1). The look is a default; `OWNER.md` asks the owner.

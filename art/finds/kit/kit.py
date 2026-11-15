@@ -752,8 +752,11 @@ def stage_renders(find, set_dir, quick=False):
         back = find.motions[action].get("distance", 0.6)
         # aimed a little under the focus part, in proportion (the lamp: 0.2 studs; a night-light
         # would otherwise look at the floor under it)
-        cam = render.camera(fc + Vector((-1.1, -2.0, 0.15)) * d * back,
-                            fc - Vector((0, 0, 0.14 * d)), lens=40)
+        # a motion may say where the camera stands (`view`, times d and `distance`) and how far
+        # under the focus it aims (`drop`, times d): the lamp's key, seen from under its shade
+        view = Vector(find.motions[action].get("view", (-1.1, -2.0, 0.15)))
+        drop = find.motions[action].get("drop", 0.14)
+        cam = render.camera(fc + view * d * back, fc - Vector((0, 0, drop * d)), lens=40)
         # a long slow loop (the blob lamp's Flow) may preview at fewer frames a second (`fps`)
         rate = find.motions[action].get("fps", 24)
         n = int(math.ceil(dur * rate)) + (6 if rate == 24 else 1)

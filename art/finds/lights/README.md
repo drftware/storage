@@ -616,3 +616,41 @@ uploaded FBX (CRAFT.md, "Into Studio"); the place keeps them once the owner save
   on the apron's bottom rim.
 - **Bake:** 2048 at about 501 texels a stud, 10,148 triangles. In Studio as
   `ReplicatedStorage.Props.Finds.StainedGlassLamp` (the owner saves).
+
+## The lamp that's on when you find it (Nov 15, F-02n)
+
+- **What it is:** the Secret Light, `UnpluggedLamp` in code. An ordinary 1940s brass table lamp,
+  found lit: a spun brass foot stepped up to an ogee dome, a bead, an urn and a collar, a reeded
+  column, a cup at its top; a harp from a saddle under the socket, a brass socket with a knurled
+  cap and a turn key; a frosted A19 bulb; a yellowed parchment bell shade, each rim rolled over a
+  wire and whip-stitched with brown cord, the seam's overlap at the back; a spider and a pointed
+  urn finial. Its gold rayon twisted-pair cord leaves the foot at the back, loops round the right
+  and ends in a round ivory plug lying loose on the floor in front, prongs pointing left: it's on
+  with nothing to power it. Its light is 2,400 K, warmer than any bulb in the building.
+- **References:** a 1930s brass Corinthian column lamp with a pleated shade, 18.5 in tall, 9.8 in
+  shade (chairish.com/product/37239771); a brass candlestick lamp with an ivory parchment empire
+  shade, 22 in, 15 in shade, 7 in base (chairish.com/product/36728544); a 1940s Italian brass lamp
+  with a lit parchment shade (Chairish search "1940s brass table lamp harp"), for how lit
+  parchment glows amber and mottled; 1940s listing sizes from a search: 25 in to the finial, 17 in
+  to the socket's top, 9 in harps, 5 to 8 in bases, E26 turn-key sockets.
+- **Size:** 25.5 in to the finial, a 6.5 in foot, a 14.4 in shade 9 in tall (2.55 by 1.44 studs).
+  The plug is 1.3 in across, a touch bolder than life.
+- **Tells:** from a doorway, a lit lamp in a dark unit, which nothing else is; up close, the cord
+  running off to a plug in nothing.
+- **Parts:** `Base` (root, with the harp, the cord and the plug); `Shade` (the paper, spider,
+  finial and bulb; the glow part; it never moves); `Key` on the socket's side, turning about its
+  stem (axis 45 degrees right of front).
+- **Found lit:** its one motion's glow track holds 1 from the first key, so its rest (the first
+  key, the kit's rule) is lit, and every sheet shows it on. The off sheets are lit too, rightly.
+- **Light:** a warm Spot down out of the shade (0.6, range 11, 120 degrees, shadows), a Point
+  through the paper (0.35, range 10) and a Spot up out of the open top for the ring on the ceiling
+  (0.35, range 8, 64 degrees). The paper glows brightest level with the bulb, dimmer down the
+  flare, its fibres and foxing showing, the seam's overlap darker (strength 1.4).
+- **Motion:** `Switch`: fingers take up the slack, the key resists, snaps a quarter turn and
+  settles; a beat; again; nothing. The light never wavers. Filmed from under the shade (the
+  kit's `view` and `drop`). It turns 180 in all, so it ends looking as it began.
+- **Bake:** 2048 at 453 texels a stud, 13,672 triangles. In Studio as
+  `ReplicatedStorage.Props.Finds.UnpluggedLamp` (the owner saves). **Seen in Studio:** lit in a
+  dark 10-stud room with nothing else on, from its doorway: the shade glows amber and mottled,
+  a warm pool on the floor, a faint ring on the ceiling, the cord curling off through the light
+  to its plug; the walls stay dimmer than under a unit's bulb.

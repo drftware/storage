@@ -118,5 +118,13 @@
   "TeaLightEmissive": {
     "assetId": 73546862884548,
     "sha256": "70454b1b07ac4ba239efa4b1034426181b3a71deb00d5495ecd68368df4e00b4"
+  },
+  "UnpluggedLamp": {
+    "assetId": 86157780275524,
+    "sha256": "8846d1fe49dfa709049e0b3299a19ed790382dc2925486c677655e8bec0df448"
+  },
+  "UnpluggedLampEmissive": {
+    "assetId": 71456218738890,
+    "sha256": "4213e051621f7f6a0f370ede330479682580680009dbae67c22b62d3c74e6c17"
   }
 }

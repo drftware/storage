@@ -2091,7 +2091,7 @@ built are in `art/finds/WAVES.md`. These tickets make the art and the motion dat
 actions themselves and dealing the new finds on floors are later game tickets.
 
 - [x] **F-01 The finds kit**, proven on the desk lamp (Nov 15).
-- [ ] **F-02 The Lights** (the other 15), a few finds a session:
+- [x] **F-02 The Lights** (the other 15), a few finds a session:
   - [x] **F-02a** The plug-in night-light (Nov 15); the kit gained lofts for shells that
     aren't round.
   - [x] **F-02b** The tea light in a jar (Nov 15); the kit gained see-through glass, the
@@ -2106,7 +2106,8 @@ actions themselves and dealing the new finds on floors are later game tickets.
   - [x] **F-02h to F-02l** The disco ball, the neon OPEN sign, the miner's hard hat, the jar
     of fireflies and the theatre spotlight (Nov 15).
   - [x] **F-02m** The stained-glass lamp (Nov 15, D-198).
-  - [ ] **F-02n** The lamp that's on when you find it (Secret), the last Light.
+  - [x] **F-02n** The lamp that's on when you find it (Secret), the last Light (Nov 15,
+    D-199); a motion may set its filmstrip camera (`view`, `drop`).
 - [ ] **F-03 The remote-control car and the die-cast car** (pulled forward from wave 4).
   - [x] F-03a The remote-control car and its transmitter (Nov 15, `art/finds/figures/`).
   - [ ] F-03b The die-cast car.

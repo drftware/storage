@@ -132,7 +132,9 @@ set's `build.py` as an example; you shouldn't need the kit's code.
   the same sums.
 - **Filmstrip camera.** A motion's `focus` is the part the camera looks at, or a point in the
   find's frame for a small find that should show whole, and `distance` (0.6) how far back it
-  stands, times the find's size.
+  stands, times the find's size. `view` (a direction, default `(-1.1, -2.0, 0.15)`) and `drop`
+  (0.14, how far under the focus it aims) move it: the Secret lamp's key is filmed from under its
+  shade.
 - **Previews.** Renders: `-lineup` (beside a 5.4-stud person), `-front`, `-back`, `-held` (first
   person on a phone: in your hands 0.3 right, 0.34 down and 1.05 ahead of your eye, further for
   a big find, turned three quarters, the floor far below), `-gold`, `-offon` (in the dark, up close), `-unit` (a medium

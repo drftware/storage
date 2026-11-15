@@ -612,3 +612,32 @@ STAINED_GLASS = dict(
     kelvin=2700,
     dust=0.5, seed=8.3,
 )
+
+# The lamp that's on when you find it (Secret): an ordinary 1940s brass table lamp, lit, its
+# cord running off the base to a plug lying loose on the floor. Sizes from 1940s listings: 25 in
+# to the finial, a 6.5 in base, 17 in to the socket's top, a 9 to 10 in harp, a 14 to 15 in shade
+# (Chairish, README). Studs, 10 inches a stud.
+UNPLUGGED = dict(
+    foot_r=0.325,               # the round foot, 6.5 in across
+    shaft=(0.436, 1.096, 0.044, 0.036, 22, 0.0032),  # the reeded column: z0, z1, r0, r1, reeds, depth
+    saddle=dict(z=1.316, t=0.01, x=0.066, w=0.026, sleeve_r=0.011, sleeve=(1.298, 1.372)),
+    socket=dict(z0=1.326, cap_top=1.402, shell_top=1.655, r_cap=0.082, r=0.074, mouth=0.052),
+    # the turn key: out of the shell to the front right, a flat knurled paddle you pinch and
+    # twist; a quarter turn a click, and the light never answers
+    key=dict(z=1.448, yaw=45.0, stem_r=0.0062, out=0.04, len=0.056, w=0.082, t=0.012),
+    bulb=dict(base=1.60, neck=1.66, r=0.119),   # an A19 household bulb, frosted
+    harp=dict(top=2.395, wire=0.0072, stud=0.07),
+    # the parchment bell: 9 in tall, 14.4 in across its foot, 6 in across its top, the sides
+    # bowed in as a bell's are; each rim rolled over a wire ring and whip-stitched with cord
+    shade=dict(z0=1.50, z1=2.40, r0=0.72, r1=0.30, flare=1.7, wall=0.0045, bead=0.0095,
+               stitches=(128, 54), cord=0.0027, hole=0.024, seam=90.0, overlap=0.05),
+    finial=2.405,
+    # a twisted pair, cloth over each strand, a twist every 1.1 in, out of the foot at the back
+    cord=dict(strand=0.0064, pitch=0.12),
+    # a round ivory plug (1.3 in, a touch bold) lying loose on the floor in front, its two
+    # flat prongs pointing left
+    plug=dict(at=(0.66, -0.80), yaw=192.0, roll=38.0, r=0.066, l=0.082, ribs=12,
+              prong=(0.0625, 0.025, 0.0042), gap=0.05),
+    kelvin=2400,                # a touch warmer than any bulb in the building (2,700 K)
+    dust=0.75, seed=9.4,
+)

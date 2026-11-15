@@ -119,6 +119,11 @@ verified: a doc page, Studio, or "untested".
   draw (F-02m, Nov 15): the stained-glass lamp's three coloured SpotLights (Angle 70,
   Brightness 0.5, Range 9, facing out and a little down) each put a clear patch of colour on a
   unit's walls in an Edit capture, and its Angle 110 Spot down lit the floor.
+- **A freshly uploaded glow mask draws black for about a minute** (F-02n, Nov 15): the Secret
+  lamp's shade, imported three minutes after its upload, showed black in an Edit capture with
+  `EmissiveStrength` 1.4 and the mask set; a minute later (strength toggled 0 and back) it glowed.
+  `ContentProvider:PreloadAsync` answers Failure for every glow mask in Edit, working ones too,
+  so it can't tell you; wait and capture again.
 
 ## Camera and prompts
 

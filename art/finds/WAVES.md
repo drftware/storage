@@ -6,10 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-02n, the lamp that's on when you find it (Secret: it never runs down; loose only
-from floor 25; in a power cut it's the only light on the floor), the last Light; its plan is in
-the newest note. Then F-03b, the die-cast car, then F-04 Wind-ups and noisemakers. The oil
-lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next
+**Next:** F-03b, the die-cast car (Common; Push: it rolls off down the hall), in the figures
+set beside the RC car; its plan is in the newest note. Then F-04 Wind-ups and noisemakers. The
+oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next
 touched.
 
 ## Order
@@ -36,6 +35,31 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 15, F-02n (the Secret lamp built; the Lights done).** `ul_*` in `lights/build.py`,
+  spec `UNPLUGGED`, README, D-199: an ordinary 1940s brass table lamp found lit, its cord to a
+  plug lying loose on the floor (`UnpluggedLamp`). **Kit change:** a motion may say where the
+  filmstrip camera stands, `view` (a direction) and `drop` (how far under the focus it aims):
+  the default always looks down from above, which can't see under a lampshade. **Found lit by
+  data:** its `Switch` glow track holds 1 from its first key, so its rest is lit (the kit's
+  rule), every sheet shows it on and the game's rest pose is lit; no kit flag needed. **Traps:**
+  a lathe's `kinds` needs one per span (points minus one) across joined profiles; a shell's
+  laced rim (`ul_lacing`) keeps the cord within 0.0054 of the game mesh by riding the wall and
+  the rolled bead, not floating off it. Pale cord and an ivory plug read on the dark floor where
+  brown vanished; from the doorway the plug is a speck (the lit lamp is the tell there).
+  **In Studio** (uploaded, `import("Lights", {"UnpluggedLamp"})`): seen lit in a dark room from
+  its doorway, the only light, glowing amber with its pool and ceiling ring (README). Its new
+  glow mask drew black for a minute after upload, then glowed (STUDIO.md).
+  **The die-cast car, not started** (this session wrapped at 255k context, after the lamp's
+  research and sheets). Plan: a small metal toy car about 3 in long (0.3 studs), our own
+  late-1960s style: a die-cast zinc body in bright metallic paint, a tinted window insert, a
+  black plastic or chrome base riveted on, thin axles with four wheels (no real maker's badge or
+  real car's design). Look at three real die-cast toys first (Wikimedia Commons "Die-cast toys"
+  and collector listings for size). Parts `Body` (root on the floor between the axles),
+  `WheelFL`, `WheelFR`, `WheelRL`, `WheelRR` (each turning on its axle). Its `Push` motion
+  from `drive()` in `figures/build.py` (the RC car's simulation reduced to keys): a shove, a
+  roll that slows over two or three studs, a little wobble. Big enough at 0.3 studs only up
+  close: give it `texels=` for its small size.
 
 - **Nov 15, F-02m (the stained-glass lamp built and in Studio).** `sg_*` in `lights/build.py`,
   spec `STAINED_GLASS`, README, D-198. A leaded cone shade on a cast bronze base with two
@@ -411,7 +435,7 @@ A light set down switched on lights the space round it until it runs down. Wheth
 | Jar of fireflies | Epic | Open: fireflies drift out and light the unit for a minute, then they're gone |  | Nov 15, F-02k |
 | Theatre spotlight | Epic | At home: point it at your best find | Big find | Nov 15, F-02l |
 | Stained-glass lamp | Legendary | At home: it throws coloured patterns on your walls | Fragile | Nov 15, F-02m |
-| A lamp that's on when you find it | Secret | It never runs down | Loose only, floor 25 up. In a power cut it's the only light on the floor | |
+| A lamp that's on when you find it | Secret | It never runs down | Loose only, floor 25 up. In a power cut it's the only light on the floor || Nov 15, F-02n |
 
 ## Cars from Figures and models (2 of 14) · F-03
 

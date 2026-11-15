@@ -22,5 +22,6 @@ return {
 		Spotlight = { Model = 88245217696112, Emissive = 103700720195388 },
 		StainedGlassLamp = { Model = 124251337930074, Emissive = 74797031191448 },
 		TeaLight = { Model = 111143504211306, Emissive = 73546862884548 },
+		UnpluggedLamp = { Model = 86157780275524, Emissive = 71456218738890 },
 	},
 }

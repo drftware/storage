@@ -5432,8 +5432,482 @@ STAINED_GLASS_LAMP = kit.Find(
     big=True, dust=SGK["dust"], seed=SGK["seed"],
 )
 
+# --- the lamp that's on when you find it (Secret) ----------------------------------------------
+
+(UL_BRASS, UL_BRASS_IN, UL_FELT, UL_SOCKET, UL_KNURL, UL_KEY, UL_HARP, UL_PARCH, UL_PARCH_IN,
+ UL_BEAD, UL_LACE, UL_SEAM, UL_BULB, UL_CORD, UL_PLUG, UL_PRONG, UL_FIBRE) = range(180, 197)
+UL = K.UNPLUGGED
+ULS = UL["shade"]
+ULK = UL["key"]
+ULSO = UL["socket"]
+UL_KDIR = Vector((math.sin(math.radians(ULK["yaw"])), -math.cos(math.radians(ULK["yaw"])), 0.0))
+UL_KEY_AT = Vector((0.0, 0.0, ULK["z"])) + UL_KDIR * ULSO["r"]
+UL_BULB_C = Vector((0.0, 0.0, 1.87))   # the middle of the bulb's glass, where the light comes from
+
+# the base's turned profile, foot to the top of the column, around the reeded shaft
+UL_FOOT = [(0.0, 0.004), (0.29, 0.004), (0.296, 0.0), (0.316, 0.0), (0.322, 0.003), (0.325, 0.009),
+           (0.325, 0.026), (0.322, 0.033), (0.313, 0.037), (0.3, 0.038), (0.295, 0.041),
+           (0.293, 0.05), (0.288, 0.055), (0.274, 0.058), (0.262, 0.062), (0.245, 0.072),
+           (0.222, 0.086), (0.195, 0.1), (0.165, 0.112), (0.136, 0.122), (0.112, 0.132),
+           (0.095, 0.143), (0.084, 0.156), (0.079, 0.168), (0.084, 0.172), (0.089, 0.179),
+           (0.087, 0.186), (0.079, 0.191), (0.066, 0.194), (0.064, 0.2), (0.072, 0.214),
+           (0.083, 0.233), (0.091, 0.255), (0.094, 0.278), (0.091, 0.3), (0.082, 0.322),
+           (0.068, 0.343), (0.055, 0.362), (0.048, 0.378), (0.046, 0.39), (0.052, 0.394),
+           (0.06, 0.4), (0.062, 0.409), (0.06, 0.418), (0.052, 0.424), (0.046, 0.428),
+           (0.044, 0.436)]
+UL_TOP = [(0.036, 1.096), (0.044, 1.1), (0.05, 1.106), (0.051, 1.115), (0.046, 1.122),
+          (0.04, 1.126), (0.04, 1.14), (0.046, 1.165), (0.054, 1.2), (0.059, 1.235), (0.06, 1.262),
+          (0.057, 1.282), (0.049, 1.296), (0.05, 1.3), (0.05, 1.31), (0.04, 1.314), (0.012, 1.314),
+          (0.012, 1.334), (0.0, 1.334)]
+
+
+def ul_harp_path():
+    """The harp's wire, left sleeve up round the bulb to the top and down to the right."""
+    top = UL["harp"]["top"] - 0.005
+    right = [(0.066, 1.362), (0.068, 1.40), (0.084, 1.46), (0.112, 1.53), (0.138, 1.62),
+             (0.154, 1.72), (0.161, 1.82), (0.16, 1.92), (0.153, 2.02), (0.138, 2.12),
+             (0.117, 2.21), (0.09, 2.29), (0.06, 2.345), (0.03, top - 0.008), (0.0, top)]
+    left = [(-x, z) for x, z in right[:-1]]
+    path = left + [right[-1]] + list(reversed(right[:-1]))
+    return [(x, 0.0, z) for x, z in spline(path, 2)]
+
+
+def ul_base(hi):
+    """The spun brass foot stepped up to an ogee dome, a bead, an urn, a collar, the reeded
+    column, a cup at its top; the harp's saddle and sleeves; the socket's knurled cap and
+    shell; the harp; the cord out of the foot at the back, across the floor to its plug."""
+    s = Shape()
+    n = segs(hi, 40)
+    fk = [UL_FELT, UL_BRASS_IN] + [UL_BRASS] * (len(UL_FOOT) - 3)
+    z0, z1, r0, r1, reeds, depth = UL["shaft"]
+    if hi:
+        s.lathe(UL_FOOT, UL_BRASS, n, kinds=fk)
+        # the reeds: rounded ridges up the column, dying into the rings at each end
+        m = reeds * 8
+        rings = []
+        nz = 40
+        for i in range(nz + 1):
+            z = z0 + (z1 - z0) * i / nz
+            r = r0 + (r1 - r0) * i / nz
+            end = min(z - z0, z1 - z) / 0.018
+            dz = depth * (min(1.0, end) ** 0.5 if end > 0 else 0.0)
+            ring = []
+            for j in range(m):
+                a = TAU * j / m
+                u = (reeds * a / TAU) % 1.0
+                rr = r - dz + dz * math.sqrt(max(0.0, 1.0 - (2 * u - 1) ** 2))
+                ring.append((rr * math.cos(a), rr * math.sin(a), z))
+            rings.append(ring)
+        s.loft(rings, UL_BRASS)
+        s.lathe(UL_TOP, UL_BRASS, n)
+    else:
+        s.lathe(UL_FOOT + UL_TOP, UL_BRASS, n, kinds=fk + [UL_BRASS] * len(UL_TOP))
+    # the harp's saddle under the socket, its two sleeves
+    sd = UL["saddle"]
+    s.box((-sd["x"] - 0.012, -sd["w"] / 2, sd["z"]), (sd["x"] + 0.012, sd["w"] / 2, sd["z"] + sd["t"]),
+          UL_HARP, 0.002 if hi else 0.0, 2 if hi else 1)
+    for sx in (-1, 1):
+        s.cylinder(Vector((sx * sd["x"], 0.0, sd["sleeve"][0])), Vector((sx * sd["x"], 0.0, sd["sleeve"][1])),
+                   sd["sleeve_r"], UL_HARP, segs(hi, 12))
+    # the socket: a knurled cap, the brass shell, its mouth rolled over the fibre liner
+    S = ULSO
+    a, b = S["z0"], S["cap_top"]
+    cap = [(0.0, a), (0.07, a), (0.077, a + 0.004), (0.081, a + 0.011)]
+    knurl = [(S["r_cap"], a + 0.016), (S["r_cap"], b - 0.016)]
+    shell = [(0.079, b - 0.01), (0.076, b - 0.004), (0.073, b), (S["r"], b + 0.004),
+             (S["r"], S["shell_top"] - 0.032), (0.072, S["shell_top"] - 0.016),
+             (0.066, S["shell_top"] - 0.005), (0.059, S["shell_top"]), (S["mouth"] + 0.002, S["shell_top"] + 0.001),
+             (S["mouth"], S["shell_top"] - 0.004), (S["mouth"], S["shell_top"] - 0.03), (0.0, S["shell_top"] - 0.03)]
+    prof = cap + knurl + shell
+    kinds = [UL_SOCKET] * 4 + [UL_KNURL] + [UL_SOCKET] * 9 + [UL_FIBRE] * 3
+    if hi:
+        s.lathe(cap + knurl[:1], UL_SOCKET, 64)
+        rings = []
+        for i in range(9):
+            z = knurl[0][1] + (knurl[1][1] - knurl[0][1]) * i / 8
+            ring = []
+            for j in range(240):
+                aj = TAU * j / 240
+                rr = S["r_cap"] - 0.0016 * (0.5 + 0.5 * math.cos(aj * 60))
+                ring.append((rr * math.cos(aj), rr * math.sin(aj), z))
+            rings.append(ring)
+        s.loft(rings, UL_KNURL)
+        s.lathe(knurl[1:] + shell, UL_SOCKET, 64,
+                kinds=[UL_SOCKET] * 9 + [UL_FIBRE] * 3)
+    else:
+        s.lathe(prof, UL_SOCKET, 24, kinds=kinds)
+    # the key's stem goes in through a little boss on the shell
+    s.cylinder(UL_KEY_AT - UL_KDIR * 0.006, UL_KEY_AT + UL_KDIR * 0.008, 0.012, UL_SOCKET, segs(hi, 12))
+    # the harp: plated wire from sleeve to sleeve over the bulb, a domed cap where it joins
+    s.tube(ul_harp_path(), UL["harp"]["wire"], UL_HARP, 12 if hi else 6)
+    ht = UL["harp"]["top"]
+    s.lathe([(0.0, ht - 0.011), (0.014, ht - 0.011), (0.018, ht - 0.006), (0.016, ht + 0.0),
+             (0.0, ht + 0.003)], UL_HARP, segs(hi, 16))
+    s.cylinder(Vector((0.0, 0.0, ht)), Vector((0.0, 0.0, ht + 0.06)), 0.0052, UL_HARP, segs(hi, 8))
+    # the cord: out through a grommet in the foot's rim at the back, a lazy loop round the
+    # right, and off the floor into the plug where it lies in front
+    C = UL["cord"]
+    rs = C["strand"]
+    h = 2 * rs
+    path = [(0.0, 0.29, 0.0128), (0.0, 0.33, 0.0124), (0.006, 0.40, h), (0.035, 0.48, h),
+            (0.13, 0.58, h), (0.32, 0.66, h), (0.56, 0.63, h), (0.78, 0.48, h), (0.93, 0.24, h),
+            (0.98, -0.06, h), (0.95, -0.36, h), (0.88, -0.6, h), (0.8, -0.72, h + 0.002)]
+    P = UL["plug"]
+    M = ul_plug_m()
+    back = M @ Vector((0.0, 0.0, -P["l"] / 2 - 0.012))
+    near = M @ Vector((0.0, 0.0, -P["l"] / 2 - 0.05))
+    path += [((path[-1][0] + near.x) / 2, (path[-1][1] + near.y) / 2, 0.022), tuple(near), tuple(back)]
+    pts = spline(path, 10 if hi else 3)
+    s.cylinder(Vector((0.0, 0.312, 0.0128)), Vector((0.0, 0.333, 0.0128)), 0.015, UL_PLUG, segs(hi, 12))
+    if hi:
+        ul_twist(s, pts, rs, C["pitch"])
+    else:
+        s.tube(pts, h, UL_CORD, 6)
+    ul_plug(s, hi, M)
+    return s
+
+
+def ul_resample(pts, step):
+    P = [Vector(p) for p in pts]
+    out, acc = [P[0]], 0.0
+    for a, b in zip(P, P[1:]):
+        L = (b - a).length
+        t = step - acc
+        while t <= L:
+            out.append(a + (b - a) * (t / L))
+            t += step
+        acc = L - (t - step)
+    out.append(P[-1])
+    return out
+
+
+def ul_twist(s, pts, rs, pitch):
+    """A twisted pair: two cloth-covered strands round each other along the path."""
+    P = ul_resample(pts, 0.004)
+    T = [(P[min(i + 1, len(P) - 1)] - P[max(i - 1, 0)]).normalized() for i in range(len(P))]
+    N = [T[0].cross(Vector((0.0, 0.0, 1.0))).normalized()]
+    for i in range(1, len(P)):
+        n = N[-1] - T[i] * N[-1].dot(T[i])
+        N.append(n.normalized())
+    run = 0.0
+    strands = ([], [])
+    for i, p in enumerate(P):
+        if i:
+            run += (P[i] - P[i - 1]).length
+        ph = TAU * run / pitch
+        B = T[i].cross(N[i])
+        off = N[i] * math.cos(ph) + B * math.sin(ph)
+        strands[0].append(p + off * rs)
+        strands[1].append(p - off * rs)
+    for st in strands:
+        s.tube(st, rs * 0.97, UL_CORD, 8)
+
+
+def ul_plug_m():
+    """The plug's frame: its axis (local Z, out to the prongs) lying level, turned to `yaw`,
+    rolled about itself by `roll`, resting on the floor."""
+    P = UL["plug"]
+    return (Matrix.Translation((P["at"][0], P["at"][1], P["r"]))
+            @ Matrix.Rotation(math.radians(P["yaw"]), 4, "Z")
+            @ Matrix.Rotation(math.radians(90.0), 4, "Y")
+            @ Matrix.Rotation(math.radians(P["roll"]), 4, "Z"))
+
+
+def ul_plug(s, hi, M):
+    """A round brown plug, fluted for the fingers, two flat brass prongs with holes."""
+    P = UL["plug"]
+    r, l = P["r"], P["l"]
+    back = [(0.0, -l / 2 - 0.016), (0.017, -l / 2 - 0.016), (0.02, -l / 2 - 0.012),
+            (0.021, -l / 2 - 0.003), (0.046, -l / 2), (0.054, -l / 2 + 0.004), (r, -l / 2 + 0.013)]
+    front = [(r, l / 2 - 0.011), (r - 0.004, l / 2 - 0.003), (r - 0.011, l / 2), (0.0, l / 2)]
+    if hi:
+        s.lathe(back, UL_PLUG, 48, M)
+        rings = []
+        for i in range(13):
+            z = back[-1][1] + (front[0][1] - back[-1][1]) * i / 12
+            end = min(i, 12 - i) / 2.0
+            ring = []
+            for j in range(192):
+                a = TAU * j / 192
+                u = (P["ribs"] * a / TAU) % 1.0
+                flute = max(0.0, math.cos((u - 0.5) * math.pi * 1.6)) if 0.19 < u < 0.81 else 0.0
+                rr = r - 0.0032 * flute * min(1.0, end)
+                ring.append((rr * math.cos(a), rr * math.sin(a), z))
+            rings.append(ring)
+        s.loft(rings, UL_PLUG, M)
+        s.lathe(front, UL_PLUG, 48, M)
+    else:
+        s.lathe(back + front, UL_PLUG, 20, M)
+    pl, pw, pt = P["prong"]
+    for sx in (-1, 1):
+        x = sx * P["gap"] / 2
+        s.box((x - pt / 2, -pw / 2, l / 2 - 0.006), (x + pt / 2, pw / 2, l / 2 + pl), UL_PRONG,
+              0.0011 if hi else 0.0, 1, M)
+
+
+def ul_prong_holes():
+    """Where the holes near the prongs' tips are, in the find's frame."""
+    P = UL["plug"]
+    M = ul_plug_m()
+    return [M @ Vector((sx * P["gap"] / 2, 0.0, P["l"] / 2 + P["prong"][0] - 0.016)) for sx in (-1, 1)]
+
+
+def ul_curve(t):
+    """The shade's wall at t (0 its foot, 1 its top): the point on the wall's middle (r, z) and
+    its outward normal and upward tangent, in the profile's plane."""
+    S = ULS
+    H = S["z1"] - S["z0"]
+    r = S["r1"] + (S["r0"] - S["r1"]) * (1 - t) ** S["flare"]
+    dr = -(S["r0"] - S["r1"]) * S["flare"] * (1 - t) ** (S["flare"] - 1)
+    T = Vector((dr, H)).normalized()
+    return Vector((r, S["z0"] + H * t)), Vector((T.y, -T.x)), T
+
+
+def ul_shade_profile(nt):
+    """The shade's game shell: round the foot's rolled rim, up the outside, over the top's
+    rim and down the inside."""
+    S = ULS
+    w2, b = S["wall"] / 2, S["bead"]
+    tb = 1.6 * b / 1.0
+    C0, n0, T0 = ul_curve(0.0)
+    C1, n1, T1 = ul_curve(1.0)
+    ts = [tb + (1 - 2 * tb) * i / nt for i in range(nt + 1)]
+    na = 4
+    bot = [C0 + b * (math.cos(f) * n0 + math.sin(f) * T0)
+           for f in [math.pi + math.pi * i / na for i in range(na + 1)]]
+    out = [ul_curve(t)[0] + ul_curve(t)[1] * w2 for t in ts]
+    top = [C1 + b * (math.cos(f) * n1 + math.sin(f) * T1) for f in [math.pi * i / na for i in range(na + 1)]]
+    inn = [ul_curve(t)[0] - ul_curve(t)[1] * w2 for t in reversed(ts)]
+    pts = bot + out + top + inn + [bot[0]]
+    kinds = ([UL_BEAD] * na + [UL_PARCH] * (len(out) + 1) + [UL_BEAD] * na + [UL_PARCH_IN] * (len(inn) + 1))
+    return [(p.x, p.y) for p in pts], kinds[:len(pts) - 1]
+
+
+def ul_lacing(s, top):
+    """Whip-stitching over a rim: the cord goes in through a hole near the edge, over the
+    rolled rim and back out through the next hole, all the way round."""
+    S = ULS
+    C, n_, T = ul_curve(1.0 if top else 0.0)
+    into = -T if top else T                  # from the edge into the wall
+    w2 = S["wall"] / 2 + S["cord"]
+    b = S["bead"] + S["cord"]
+    sa = b * math.sin(math.radians(60))
+    loop = [(w2, S["hole"]), (w2, sa * 1.1)]
+    loop += [(b * math.cos(math.radians(a)), b * math.sin(math.radians(a)))
+             for a in [60 - 300 * i / 10 for i in range(11)]]
+    loop += [(-w2, sa * 1.1), (-w2, S["hole"])]
+    seg = [0.0]
+    for p, q in zip(loop + [loop[0]], (loop + [loop[0]])[1:]):
+        seg.append(seg[-1] + math.dist(p, q))
+    total = seg[-1]
+    nst = S["stitches"][0 if not top else 1]
+    pts = []
+    for k in range(nst):
+        for (nv, sv), u in zip(loop, seg):
+            th = TAU * (k + u / total) / nst
+            c, sn = math.cos(th), math.sin(th)
+            rr = C.x + nv * n_.x + sv * into.x
+            zz = C.y + nv * n_.y + sv * into.y
+            pts.append((rr * c, rr * sn, zz))
+    pts.append(pts[0])
+    s.tube(pts, S["cord"], UL_LACE, sides=6, caps=False)
+
+
+def ul_shade(hi):
+    """The parchment bell with its laced rims and the seam's overlap at the back, the spider
+    and finial that hold it on the harp, and the frosted bulb in the socket."""
+    s = Shape()
+    S = ULS
+    prof, kinds = ul_shade_profile(40 if hi else 10)
+    s.lathe(prof, UL_PARCH, 192 if hi else 64, kinds=kinds)
+    if hi:
+        ul_lacing(s, False)
+        ul_lacing(s, True)
+        # the seam: where the parchment's end overlaps its start, a cut edge on the outside
+        th = math.radians(S["seam"]) + 0.0
+        pts = []
+        for i in range(41):
+            t = 0.03 + 0.94 * i / 40
+            c, n_, _ = ul_curve(t)
+            p = c + n_ * (S["wall"] / 2 + S["wall"] * 0.5)
+            a = th + S["overlap"] / p.x
+            pts.append((p.x * math.cos(a), p.x * math.sin(a), p.y))
+        s.tube(pts, S["wall"] * 0.5, UL_SEAM, sides=6)
+    # the spider: a washer on the harp's top, three spokes out to the top rim's ring
+    ht = UL["harp"]["top"]
+    s.lathe([(0.0, ht + 0.003), (0.026, ht + 0.003), (0.028, ht + 0.0065), (0.026, ht + 0.01),
+             (0.0, ht + 0.01)], UL_HARP, segs(hi, 20))
+    for i in range(3):
+        a = TAU * i / 3 + math.radians(30)
+        s.cylinder(Vector((0.02 * math.cos(a), 0.02 * math.sin(a), ht + 0.0065)),
+                   Vector(((S["r1"] - 0.004) * math.cos(a), (S["r1"] - 0.004) * math.sin(a), S["z1"])),
+                   0.0034, UL_HARP, segs(hi, 6))
+    # the finial: a turned brass urn with a point, screwed down on the harp's stud
+    f = UL["finial"]
+    fin = [(0.0, f), (0.019, f), (0.023, f + 0.003), (0.025, f + 0.009), (0.023, f + 0.015),
+           (0.015, f + 0.021), (0.013, f + 0.029), (0.016, f + 0.039), (0.024, f + 0.055),
+           (0.029, f + 0.073), (0.029, f + 0.089), (0.025, f + 0.103), (0.017, f + 0.115),
+           (0.009, f + 0.126), (0.005, f + 0.135), (0.003, f + 0.141), (0.0, f + 0.143)]
+    s.lathe(fin, UL_BRASS, segs(hi, 24))
+    # an A19 bulb, frosted inside
+    bb = UL["bulb"]
+    bulb = [(0.0, bb["base"]), (0.051, bb["base"]), (0.051, bb["neck"]), (0.05, bb["neck"] + 0.004),
+            (0.054, 1.676), (0.062, 1.70), (0.078, 1.74), (0.097, 1.79), (0.112, 1.84),
+            (bb["r"], 1.885), (0.118, 1.925), (0.111, 1.962), (0.096, 1.99), (0.072, 2.008),
+            (0.04, 2.018), (0.0, 2.021)]
+    s.lathe(bulb, UL_BULB, 48 if hi else 20, kinds=[UL_FIBRE, UL_FIBRE] + [UL_BULB] * (len(bulb) - 3))
+    return s
+
+
+def ul_key(hi):
+    """The turn key: a stem out of the shell and a flat paddle on it, knurled round its rim,
+    found standing upright (its flat faces to the sides)."""
+    s = Shape()
+    k = ULK
+    a = UL_KDIR
+    p = Vector((0.0, 0.0, 1.0))
+    q = a.cross(p)
+    M = Matrix.Translation(UL_KEY_AT) @ Matrix((
+        (a.x, p.x, q.x, 0.0), (a.y, p.y, q.y, 0.0), (a.z, p.z, q.z, 0.0), (0.0, 0.0, 0.0, 1.0)))
+    s.cylinder(Vector((-0.012, 0.0, 0.0)), Vector((k["out"] + 0.006, 0.0, 0.0)), k["stem_r"], UL_KEY,
+               segs(hi, 10), M=M)
+    s.cylinder(Vector((0.004, 0.0, 0.0)), Vector((0.009, 0.0, 0.0)), 0.011, UL_KEY, segs(hi, 12), M=M)
+    # the paddle, stacked through its thickness (local Z): a pole, a chamfer, the knurled rim,
+    # a chamfer, a pole
+    cx, hx, hy, t = k["out"] + k["len"] / 2, k["len"] / 2, k["w"] / 2, k["t"]
+    m = 96 if hi else 28
+
+    def outline(scale, knurl):
+        ring = []
+        for j in range(m):
+            th = TAU * j / m
+            c, sn = math.cos(th), math.sin(th)
+            e = 2.0 / 2.6
+            x = hx * math.copysign(abs(c) ** e, c)
+            y = hy * math.copysign(abs(sn) ** e, sn) * (0.86 + 0.14 * c)
+            kn = 1.0 - (0.035 * (0.5 + 0.5 * math.cos(th * 44)) if knurl and c > -0.55 else 0.0)
+            ring.append((cx + x * scale * kn, y * scale * kn))
+        return ring
+    rings = [[(cx, 0.0, -t / 2)]]
+    for z, sc, kn in ((-t / 2, 0.9, False), (-t / 2 + 0.0022, 1.0, hi), (t / 2 - 0.0022, 1.0, hi),
+                      (t / 2, 0.9, False)):
+        rings.append([(x, y, z) for x, y in outline(sc, kn)])
+    rings.append([(cx, 0.0, t / 2)])
+    s.loft(rings, UL_KEY, M)
+    return s
+
+
+def ul_look(L, f):
+    nb = L.nb
+    # spun brass under lacquer gone patchy: warm brass, a brown tarnish pooled in the turnings
+    # and reeds, darker spots where the lacquer failed, rubbed bright on the rings
+    C = Coat(L, hexc("#A8864C"), 0.32, 1.0)
+    br = L.k(UL_BRASS, UL_SOCKET, UL_KNURL, UL_KEY, UL_HARP)
+    C.paint(br, nb.tint(hexc("#B28F52"), nb.mr(L.noise(24.0, 61, detail=4), 0.3, 0.7, 0.8, 1.12)),
+            nb.mr(L.noise(18.0, 62, detail=3), 0.3, 0.7, 0.24, 0.4), 1.0)
+    C.paint(nb.mul(br, nb.ss(L.noise(4.0, 63, detail=5, rough=0.62), 0.46, 0.64)), hexc("#5E4A2C"), 0.5, 0.9)
+    C.paint(nb.mul(br, nb.ss(L.noise(30.0, 64, detail=3, rough=0.7), 0.67, 0.73)), hexc("#4B3D27"), 0.6, 0.7)
+    C.paint(nb.mul(br, nb.mul(L.edge(0.005, k=4.0), nb.ss(L.noise(16.0, 65, detail=3), 0.36, 0.5))),
+            hexc("#D6B26A"), 0.2, 1.0)
+    # the socket's shell, the key and the harp: thinner stamped brass, browner, duller
+    C.paint(L.k(UL_SOCKET, UL_KNURL), nb.tint(hexc("#9C7A44"), nb.mr(L.noise(20.0, 66, detail=4), 0.3, 0.7, 0.78, 1.05)),
+            0.4, 1.0)
+    C.paint(L.k(UL_HARP), nb.tint(hexc("#B8975A"), nb.mr(L.noise(30.0, 67, detail=3), 0.3, 0.7, 0.85, 1.05)), 0.3, 1.0)
+    C.paint(L.k(UL_BRASS_IN), hexc("#3A2E20"), 0.7, 0.4)
+    C.paint(L.k(UL_FELT), hexc("#2E3A2A"), 0.97, 0.0)
+    C.paint(L.k(UL_FIBRE), hexc("#2A1E15"), 0.8, 0.0)
+    # the parchment: aged ivory going to honey, fibrous, foxed with brown spots, browner up
+    # where the bulb's heat rose for years; paler inside
+    fib = nb.mr(L.noise(36.0, 68, stretch=(1.0, 1.0, 0.3), detail=5, rough=0.6), 0.3, 0.7, 0.86, 1.1)
+    mot = nb.mr(L.noise(4.5, 69, detail=4, rough=0.55), 0.3, 0.7, 0.88, 1.08)
+    heat = nb.ss(L.z, 1.95, 2.42)
+    paper = L.k(UL_PARCH, UL_SEAM, UL_BEAD)
+    C.paint(paper, nb.tint(nb.tint(nb.mixc(nb.mul(heat, 0.7), hexc("#CDA96C"), hexc("#A2733A")), fib), mot),
+            0.74, 0.0)
+    inside = L.k(UL_PARCH_IN)
+    C.paint(inside, nb.tint(nb.mixc(nb.mul(heat, 0.6), hexc("#DFC48E"), hexc("#B98D50")), fib), 0.8, 0.0)
+    allp = L.k(UL_PARCH, UL_PARCH_IN, UL_SEAM, UL_BEAD)
+    fox = nb.mul(allp, nb.ss(L.noise(24.0, 70, detail=4, rough=0.62), 0.68, 0.745))
+    C.paint(nb.mul(fox, 0.75), hexc("#93653A"))
+    C.paint(L.k(UL_BEAD), nb.tint(hexc("#A57E48"), fib), 0.7, 0.0)
+    C.paint(L.k(UL_LACE), nb.tint(hexc("#4A2F1D"), nb.mr(L.noise(80.0, 71, detail=2), 0.3, 0.7, 0.8, 1.15)), 0.6, 0.0)
+    # the bulb: frosted glass
+    bulb = L.k(UL_BULB)
+    C.paint(bulb, hexc("#EEE9DE"), 0.35, 0.0)
+    # the cord: gold rayon braided over each strand, the 1940s kind; pale on a dark floor so
+    # its line reads from the doorway, running off to nothing
+    weave = nb.sin(nb.mul(nb.add(nb.mul(L.x, 1.3), nb.add(nb.mul(L.y, 0.7), L.z)), 900.0))
+    C.paint(L.k(UL_CORD), nb.mixc(nb.mr(weave, -1, 1, 0, 1), hexc("#7A5A30"), hexc("#C9A466")), 0.62, 0.0,
+            nb.mul(weave, 0.2))
+    # the plug: ivory urea, yellowed and grubby where it's handled; brass prongs with holes
+    C.paint(L.k(UL_PLUG), nb.tint(hexc("#D8C9A6"), nb.mr(L.noise(14.0, 72, detail=4), 0.3, 0.7, 0.86, 1.06)), 0.3, 0.0)
+    C.paint(nb.mul(L.k(UL_PLUG), nb.ss(L.noise(9.0, 73, detail=4), 0.55, 0.7)), hexc("#9C8762"), 0.45)
+    C.paint(L.k(UL_PRONG), hexc("#B8975A"), 0.3, 1.0)
+    holes = 0.0
+    for c in ul_prong_holes():
+        d = nb.vop("DISTANCE", L.P, tuple(c))
+        h1 = nb.ss(d, 0.0046, 0.0036)
+        holes = h1 if isinstance(holes, float) else nb.add(holes, h1, clamp=True)
+    holes = nb.mul(L.k(UL_PRONG), holes)
+    C.paint(holes, hexc("#14100C"), 0.9, 0.0, nb.mul(holes, -1.0))
+    # where it glows: the paper, brightest level with the bulb, dimmer down the flare and up to
+    # the top (the light falls off with distance); the fibres and foxing show through, the
+    # overlap at the seam darker (two layers), the rims dimmer, the lacing dark; the inside
+    # brighter; the bulb full
+    d = nb.vop("DISTANCE", L.P, tuple(UL_BULB_C))
+    fall = nb.mr(d, 0.46, 0.84, 1.0, 0.45)
+    th = nb.math("ARCTAN2", L.y, L.x)
+    rad = nb.pw(nb.add(nb.mul(L.x, L.x), nb.mul(L.y, L.y)), 0.5)
+    arc = nb.mul(nb.sub(th, math.radians(ULS["seam"])), rad)
+    lap = nb.mul(nb.ss(arc, -0.003, 0.002), nb.ss(arc, ULS["overlap"] + 0.004, ULS["overlap"] - 0.002))
+    pulp = nb.mr(L.noise(9.0, 74, detail=5, rough=0.62), 0.25, 0.75, 0.62, 1.12)
+    shine = nb.mul(nb.mul(fall, nb.mul(pulp, nb.mul(fib, mot))), nb.inv(nb.mul(fox, 0.6)))
+    shine = nb.mul(shine, nb.inv(nb.mul(lap, 0.45)))
+    outer = nb.mul(L.k(UL_PARCH, UL_SEAM), shine)
+    inner = nb.mul(inside, nb.mr(d, 0.4, 0.8, 1.0, 0.7))
+    rims = nb.mul(L.k(UL_BEAD), nb.mul(shine, 0.4))
+    C.lights(nb.add(nb.add(outer, inner, clamp=True), nb.add(rims, bulb, clamp=True), clamp=True))
+    C.finish(f.dust, grime=0.5, keep=nb.add(bulb, inside, clamp=True))
+    return C.surface(bump_dist=0.0008, bump=0.45)
+
+
+# the key: fingers take up the slack, it resists the detent, snaps through a quarter turn with
+# a click and settles; a beat with nothing; again, harder; nothing. The light never wavers.
+UL_PADDLE = tuple(UL_KEY_AT + UL_KDIR * (ULK["out"] + ULK["len"] / 2) - Vector((0.0, 0.0, 0.01)))
+UL_TURN = [(0.0, 0.0), (0.12, 7.0, "Quad", "Out"), (0.24, 15.0, "Sine", "InOut"),
+           (0.285, 94.0, "Quad", "In"), (0.33, 88.5, "Quad", "Out"), (0.39, 90.0),
+           (0.92, 90.0), (1.02, 98.0, "Quad", "Out"), (1.14, 106.0, "Sine", "InOut"),
+           (1.185, 184.0, "Quad", "In"), (1.23, 178.5, "Quad", "Out"), (1.29, 180.0), (1.9, 180.0)]
+UNPLUGGED_LAMP = kit.Find(
+    "UnpluggedLamp",
+    [kit.Part("Base", ul_base),
+     kit.Part("Shade", ul_shade, (0.0, 0.0, UL["harp"]["top"]), "Base"),
+     kit.Part("Key", ul_key, tuple(UL_KEY_AT), "Base", tuple(UL_KDIR))],
+    ul_look,
+    lights=[
+        # the pool on the floor out of the shade's foot, wide as the bell
+        dict(kind="Spot", part="Shade", at=(0.0, 0.0, 1.78), face=(0.0, 0.0, -1.0), kelvin=UL["kelvin"],
+             brightness=0.6, range=11, angle=120, shadows=True, preview_watts=30.0, preview_blend=0.3),
+        # the glow through the paper all round
+        dict(kind="Point", part="Shade", at=tuple(UL_BULB_C), kelvin=UL["kelvin"], brightness=0.35,
+             range=10, shadows=False, preview_kind="POINT", preview_watts=5.0, preview_size=0.06),
+        # the ring of light on the ceiling out of the open top
+        dict(kind="Spot", part="Shade", at=(0.0, 0.0, 2.0), face=(0.0, 0.0, 1.0), kelvin=UL["kelvin"],
+             brightness=0.35, range=8, angle=64, shadows=False, preview_watts=14.0, preview_blend=0.3),
+    ],
+    glow=dict(part="Shade", strength=1.4, tint=(255, 170, 96), preview=1.2),
+    motions={
+        # it's found on and it stays on: the glow holds at 1 through everything (so its rest,
+        # the first key, is lit); the key clicks round twice and nothing answers
+        "Switch": dict(duration=1.9, focus=UL_PADDLE, distance=0.1, view=(-1.4, -1.4, -0.3), drop=0.0,
+                       tracks=[("Key", "turn", UL_TURN),
+                               ("Shade", "glow", [(0.0, 1.0), (1.9, 1.0, "Linear", "In")])]),
+    },
+    big=True, dust=UL["dust"], seed=UL["seed"],
+)
+
 FINDS = [DESK_LAMP, NIGHT_LIGHT, TEA_LIGHT, GLOW_STICKS, FAIRY_LIGHTS, LANTERN, MOON_LAMP, BLOB_LAMP, OIL_LAMP, DISCO_BALL, NEON_SIGN,
-         HARD_HAT, FIREFLY_JAR, SPOTLIGHT, STAINED_GLASS_LAMP]
+         HARD_HAT, FIREFLY_JAR, SPOTLIGHT, STAINED_GLASS_LAMP, UNPLUGGED_LAMP]
 
 if __name__ == "__main__":
     kit.main("Lights", HERE, FINDS)
