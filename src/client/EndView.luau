@@ -5,7 +5,7 @@
 
 	- Kept (a loss): the black comes down over the last friend's catch; the building goes quiet
 	  (every sound in the world, as the catch silences the hall: the listener taken far away);
-	  a beat of nothing; far off two doors come down, the second further; then "Kept" lands in
+	  a beat of nothing; far off two doors come down, the second further; then "Caught" lands in
 	  cold red with a low hit and the screen jolts under it; the team's photos drop in one by one,
 	  each with the floor it was lost on, greyed; how far you got and how long it took; and one
 	  warm button, "Again".
@@ -556,7 +556,7 @@ function EndView.new(need: (who: string, on: boolean) -> ()): Brix.System
 				table.clear(played)
 				clearCards()
 				clearedAt, liftAt, pressedAt, going, counted = nil, nil, nil, false, -1
-				s.title.Text = if h == "Top" then ClimbEnd.Copy.Top else ClimbEnd.Copy.Kept
+				s.title.Text = if h == "Top" then ClimbEnd.Copy.Top else ClimbEnd.Copy.Caught
 				s.title.TextColor3 = if h == "Top" then WARM else COLD
 				s.stats.Text =
 					`{string.format(ClimbEnd.Copy.Floor, floor)}   ·   {ClimbEnd.clock(seconds)}`

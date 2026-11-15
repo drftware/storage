@@ -150,7 +150,7 @@ do
 		"ana progress climb started 2",
 		"ben progress climb started 2",
 		"ana earned 1 Coins pile 13 (floor=2)",
-		"ana event climbEnded 2 (floor=2, fate=kept, team=2)",
+		"ana event climbEnded 2 (floor=2, fate=caught, team=2)",
 		"ana progress climb failed 2",
 		"ben event climbEnded 2 (floor=2, fate=left, team=2)",
 		"ben progress climb failed 2",

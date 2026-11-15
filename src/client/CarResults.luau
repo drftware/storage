@@ -2,7 +2,7 @@
 --[[
 	CarResults: how the last climb went, on the back wall of the lobby car its group came back to
 	(L-08e2, GDD "The lobby": "results on the wall"). The black lifts and you're standing in the
-	car with your friends, facing a board: "Kept" in the end's cold red (or "Made it" in the lamp's
+	car with your friends, facing a board: "Caught" in the end's cold red (or "Made it" in the lamp's
 	warm light), how far you got and how long it took, and the team's photos pinned in a row, each
 	with the floor it was lost on, a lost friend's greyed and askew, as the end's screen showed
 	them (EndView) and the Missing board will.
@@ -279,7 +279,7 @@ function CarResults.new(): Brix.System
 		local title = label(back, "Title", HEAVY, if kept then COLD else WARM, 76)
 		title.Position = UDim2.fromOffset(0, 6)
 		title.Size = UDim2.new(1, 0, 0, 78)
-		title.Text = if kept then ClimbEnd.Copy.Kept else ClimbEnd.Copy.Top
+		title.Text = if kept then ClimbEnd.Copy.Caught else ClimbEnd.Copy.Top
 		local stats = label(back, "Stats", PLAIN, INK, 30)
 		stats.Position = UDim2.fromOffset(0, 84)
 		stats.Size = UDim2.new(1, 0, 0, 32)

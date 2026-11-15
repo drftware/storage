@@ -9,7 +9,7 @@
 	  ride or being carried up to the next floor's units (`look`, `over`). It ends as the last free
 	  friend's catch cuts to black. The black comes down on every screen; the
 	  building goes quiet (`Cover`: the server clears the climb under the black); a beat of
-	  silence; far off in the building two doors come down; then "Kept" lands with a low hit, the
+	  silence; far off in the building two doors come down; then "Caught" lands with a low hit, the
 	  team's photos drop in one by one, each with the floor it was lost on, as the Missing board
 	  will show them, and "Again" rises.
 	- **Top** (an escape): the car leaves the top floor with friends aboard (`Climb.Top`, a stand-in
@@ -141,7 +141,8 @@ ClimbEnd.Row = 5
 
 -- The words. Few: the screen says how far you got and gives one button.
 ClimbEnd.Copy = {
-	Kept = "Kept",
+	-- the whole team caught (never "Kept": the owner dropped the word, D-189)
+	Caught = "Caught",
 	Top = "Made it",
 	Floor = "Floor %d",
 	Again = "Again",

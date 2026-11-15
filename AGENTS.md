@@ -9,7 +9,8 @@ stays under 150 lines. Current state lives in HANDOFF.md; history lives in `git 
   another with no top floor. On each floor they open units to find that floor's code, punch it
   into the freight elevator and get everyone aboard before the gate shuts, while monsters hunt
   them (the code calls them keepers; the owner hasn't picked a name, so say monsters to the
-  owner). Rojo + strict Luau. No title is picked yet.
+  owner). The code's `Kept` and `KeptPlayers` mean a caught player, but the owner dropped the
+  word "kept" (D-189): players see "Caught", so say caught. Rojo + strict Luau. No title yet.
 - **Design source of truth:** the GDD, https://claude.ai/artifact/UtmFtWGEMRQkNmWmCEhFWN (a Claude
   Doc; read it with the docs tools, never WebFetch). Pull only the section your ticket names.
 - **Build state:** HANDOFF.md (now) · `docs/ROADMAP.md` (tickets) · `docs/DECISIONS.md` (why) ·

@@ -26,7 +26,7 @@
 	  were carried up wrapped before a friend cut them free (0 while a kept friend stays put).
 	- `findKept`: each find kept at the gate, with which find and the floor.
 	- `climbEnded`: one for each player as a climb ends: its floor (the value too), how it went
-	  for them (`out`, `kept` or `left`) and the team's size. `again`: each press of Again.
+	  for them (`out`, `caught` or `left`) and the team's size. `again`: each press of Again.
 	- The `climb` path: each floor started as the team reaches it, completed as its gate shuts
 	  with them aboard, failed where a player's climb ends there. Roblox's progression dashboard
 	  shows where climbs end.
@@ -217,7 +217,7 @@ function Record.plan(brix: any): any
 			team = Record.counted(1, Record.TeamMost),
 			gave = oneOf({ "nothing", "coins", "find", "tool", "keeper" }),
 			find = oneOf(Deal.Finds),
-			fate = oneOf({ "out", "kept", "left" }),
+			fate = oneOf({ "out", "caught", "left" }),
 		},
 		events = {
 			doorOpened = { "floor", "gave" },
@@ -242,7 +242,7 @@ function Record.plan(brix: any): any
 	}
 end
 
-local FATES: { [Fate]: string } = { Out = "out", Kept = "kept", Left = "left" }
+local FATES: { [Fate]: string } = { Out = "out", Kept = "caught", Left = "left" }
 
 -- Seconds to a tenth: what a dashboard shows of a wait.
 local function tenths(seconds: number): number

@@ -5208,3 +5208,18 @@ from the GDD's "Coins, cash and finds"; nothing in it is built). Both docs now s
   until the generated floors (S4-01) are solid.
 
 Not chosen: a seventh grade; the name Mythic; noise that gives a carrier away; free pity odds.
+
+## D-189 "Kept" is gone everywhere players and the owner look: a wiped team is "Caught" (Nov 14)
+
+The owner, after dropping Kept as a grade (D-188): drop the word everywhere. The end screen's word
+and the car's results board say "Caught" (`ClimbEnd.Copy.Caught`), the climb's analytics record
+the fate as `caught`, and the design doc's draft taglines read "Don't get caught". "Caught" is
+the word a player would use ("we got caught on floor 7") and the GDD's own section name.
+
+Left as working names, as "keepers" is: the code's `Kept`, `KeptPlayers`, the `Kept` fate and
+state values, attribute names and `art/keptwrap`. Nothing on screen shows them; renaming them is
+churn with no player benefit. The analytics `findKept` and the funnel step `kept` mean a find you
+took home, plain English, and stay.
+
+Not chosen: "Wrapped" (describes the body, not what happened to the team); "Game over" (says
+nothing about the monsters).

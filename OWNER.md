@@ -74,9 +74,9 @@ black on their way to being wrapped in a unit. Needs two players, as the test ab
   3. When the gate opens on floor 2, step out and walk straight into a monster within a few
      seconds (or, if none is near, close Roblox on your device the moment the gate opens).
   4. What to look for on your screen: you get grabbed, and about a second later, as your catch
-     cuts to black, the "Kept" black comes down. Your eyes should not open inside a unit first.
+     cuts to black, the "Caught" black comes down. Your eyes should not open inside a unit first.
   5. What to look for on your friend's screen: their view may start to go dark from the carry,
-     then the "Kept" black takes over. No door slam or film squeal after the "Kept" black starts,
+     then the "Caught" black takes over. No door slam or film squeal after the "Caught" black starts,
      no "Back in" word, nothing flashing.
   6. On the results, your friend's photo should say floor 2 (the floor they were carried to),
      not floor 1.
@@ -508,11 +508,6 @@ Nothing in it is built yet. What still waits on you, in the order it holds work 
 You answered the [item catalog](https://claude.ai/artifact/29wkaNXM3Yw86xTMb3sjQQ)'s 14 questions
 on Nov 14 (D-188); the catalog and the design doc now say what you chose. These are the gaps I
 filled. Each default stands unless you say otherwise.
-- [ ] **"Kept" outside the grades.** You dropped Kept as a grade because it sounds made up and too
-  on the nose for a storage building. The same word is still what the game says when a monster
-  gets you: "Kept" in red on the end screen, and friends are "kept" in units. The design doc's
-  draft taglines say "Don't get kept". My default: leave those until you say. Should the word go
-  everywhere? If so, name what the end screen should say instead (or I'll offer a few).
 - [ ] **Kept's eight finds moved up to Secret.** So a Secret can turn up from floor 10 (1 find in
   500) and more often from floor 25 (1 in 100), and the whole server hears about it. The other
   way: move them down to Legendary, and Secrets stay floor 25 and up only (1 in 1,000).
@@ -1126,7 +1121,7 @@ how it looks and sounds, the swing on the spot, and two riders.
 ## Now: judge L-08e2, back in your car (built Nov 12, D-123)
 
 At the end of a climb, "Again" brings your group back standing in the car you left from, in your
-old order with the host's choices kept, facing the results on its back wall ("Kept" or "Made it",
+old order with the host's choices kept, facing the results on its back wall ("Caught" or "Made it",
 the floor and time, everyone's photo with the floor they were lost on), and the count runs 20 s
 for another go. Anyone can step out and back in; the results stay on the wall until the car next
 leaves. On your group's own server its six cars open at that moment, and your next climb rides
@@ -1488,14 +1483,14 @@ drop off a top or into a unit, and a sound behind a shut door.
 
 ## Now: judge L-08d, the climb ends (built Nov 11)
 
-Verified in Studio on seed 7, one player: caught by 157's Mannequin, the climb ended ("Kept",
+Verified in Studio on seed 7, one player: caught by 157's Mannequin, the climb ended ("Caught",
 floor 1); floor 3 punched and ridden alone ended in the light ("Made it"); left behind watching two
-stand-ins who were then removed ended as "Kept" with your photo on floor 1 and the team on floor
+stand-ins who were then removed ended as "Caught" with your photo on floor 1 and the team on floor
 2. "Again" by mouse and by Enter each laid a fresh floor 1 with you in its lobby, everything back
 to normal. Frames in `docs/art/L-08d-*.jpg`. What Studio can't tell: two players, a phone, the
 sounds, how it feels.
 - [ ] **Two players, a wipe.** Both get caught (or one left behind, then the other caught). On the
-  last catch the black should hold, the building go quiet, two doors slam far off, then "Kept"
+  last catch the black should hold, the building go quiet, two doors slam far off, then "Caught"
   slams down with a low hit and a jolt, both photos drop in greyed and tilted with the floor each
   was lost on, "Floor N · time", then the warm "Again". Does it feel like a loss? Too long or
   too short? Are the far doors right for "the building's sound"?
@@ -1517,7 +1512,7 @@ sounds, how it feels.
   the lobby with the floor you were kept on): the results show the same photos and floors; the
   board waits for your lobby plan. (5) **A wipe ends it** even though a watcher could otherwise
   Cut Free back in: with nobody left climbing there's no floor to cut back into. (6) The words:
-  "Kept", "Made it", "Floor 2 · 6:42", "Again", "Waiting", "Back in 10", "Going back".
+  "Caught", "Made it", "Floor 2 · 6:42", "Again", "Waiting", "Back in 10", "Going back".
 
 ## Now: judge L-08c, left behind (built Nov 11)
 

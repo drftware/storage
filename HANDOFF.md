@@ -2,14 +2,14 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-14, session 179 (the owner's answers on finds, D-188; docs only) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-14, session 179 (the owner's answers on finds, D-188 and D-189) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
 - S3-01 is done. S3-01b (D-187): a friend being carried up counts as wrapped on the floor they're
   carried to, so "Kept" lands as the last free friend's catch cuts to black, and the photo names
   that floor. Once the end begins the carries stop; a carried black holds until the end's cover.
 - D-188: the owner answered the catalog's 14 questions (Secret on top, a luck boost on sale,
-  trapping pays 5 coins, boss floors possible); docs only. `OWNER.md` asks what follows.
+  trapping pays 5 coins, boss floors possible). D-189: the end screen says "Caught", never "Kept".
 - Seen in Studio Play (one player, two stand-ins): the wipe landed 1.1 s after the car reached
   floor 3, fate `Kept|3`, nobody carried after it, Again clean, no errors. Two players wait on
   `OWNER.md`.
