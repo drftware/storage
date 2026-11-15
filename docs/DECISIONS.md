@@ -5496,3 +5496,28 @@ Defaults taken overnight (in `OWNER.md` once S3-02b writes the phone test):
 - S3-02 was split for the session's size: S3-02a (this), S3-02b (the server's wiring and Studio's
   made-up receipts).
 
+## D-207 The server takes receipts: Purchasing, Live, and the owner's two test switches (S3-02b, Nov 15)
+`Purchasing` (a server system after `recording`) finds each `Products` row's id once at start by its
+Dashboard title (4 tries, 5 s apart), then builds Brix's Purchases over Saving's saves (`saves()` or
+`began`, which Studio fires a moment late) with Recording's Analytics, and Brix's PlayerPurchases on
+`ProcessReceipt`. `Live` (slot `live`) is Brix's LiveConfig of every product's switch (true/false,
+on by default) over Roblox's experience configs, kept current by Brix's ConfigRefresher. Proven in
+Studio Play with made-up receipts: granted once, the same id again granted nothing, a failed write
+waited and was granted once when the save came back; a switch set off took the offer off sale.
+Defaults taken overnight:
+- **Nothing sells on a server where no row's title matches a product.** Brix refuses an empty offer
+  table, so Purchases isn't built and `ProcessReceipt` isn't set; Roblox keeps any receipt for a
+  server that knows it. A product made while servers run sells on servers started after.
+- **Studio gives a row with no product a made-up id** (its place in `Products.Names`), so receipts
+  can be tried before the product exists. Such an offer can't be prompted (no price).
+- **The owner's test switches work on live servers too**, since only server code can set a
+  Workspace attribute: `DevSaveFails` (every save write fails) and `DevPrompt` (an offer's name;
+  prompts the place's owner, anyone in Studio, owner-only offers included). `DevReceipt` is Studio
+  only. The owner is a user (not a group), so "the owner" is `game.CreatorId`.
+- **`prompt` answers Brix's listing or its not-on-sale**, and refuses with Brix's own reasons:
+  `unknownOffer` for an owner-only offer asked for anyone else, `notHeld` before this server sells.
+  S3-03 and S3-04 branch on them.
+- **`offerShown` is recorded only once a prompt went up**, so with Brix's `offerBought` it gives
+  each offer's share of prompts that sell.
+- **Each grant prints one line on live servers too** (`[Purchasing] granted <offer> to <name>
+  (bought N)`), for reading a purchase's fate in the server log.

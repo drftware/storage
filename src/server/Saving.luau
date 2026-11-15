@@ -15,8 +15,15 @@
 
 	Later systems read a player's save with `data(player)` (nil until it has loaded, which takes a
 	moment after joining, or longer when hopping from another server that's still letting go) and
-	`loaded`, change it in place, and call `save(player)` after something worth keeping at once,
-	such as a purchase. Nothing changes it yet.
+	`loaded`, change it in place, and call `save(player)` after something worth keeping at once.
+	Purchasing (S3-02b) grants purchases through the Brix `Saves` underneath, from `saves()` or as
+	`began` fires: Studio makes it a moment late, after asking whether DataStores answer.
+
+	A forced save failure, for testing that purchases are never lost: while Workspace's
+	`DevSaveFails` attribute is true, every write fails with a warning, as a DataStore outage would.
+	Only server code can set it (a client's attribute change never reaches the server): Studio's
+	command bar in Play, or the owner in the Developer Console's server command line on a live server
+	(`workspace:SetAttribute("DevSaveFails", true)`).
 
 	Studio keeps its saves in their own DataStore, `STUDIO_STORE`, so a test never touches a live
 	player's save. If Studio can't reach DataStores (Game Settings > Security > "Enable Studio
@@ -43,6 +50,8 @@ local LEASE = 90
 
 -- A player whose save this server now holds, and its data.
 export type Loaded = Brix.LoadedSave<Save.Data>
+-- The Brix saves underneath, holding every player's save on this server.
+export type Held = Brix.Saves<Save.Data>
 
 export type SavingSystem = Brix.System & {
 	-- A player's save was claimed and its data is ready.
@@ -51,6 +60,10 @@ export type SavingSystem = Brix.System & {
 	data: (self: any, player: Player) -> Save.Data?,
 	-- Writes a player's save now, after something worth keeping at once. May yield.
 	save: (self: any, player: Player) -> (),
+	-- The saves underneath, once made (see `began`); nil before then and after the server stops.
+	saves: (self: any) -> Brix.Saves<Save.Data>?,
+	-- The saves underneath were made: at start on a live server, a moment later in Studio.
+	began: Brix.Signal<Held>,
 }
 
 local Saving = {}
@@ -93,9 +106,15 @@ end
 
 -- The store with a line printed for each write: every write in Studio (Play's Output, a test's
 -- proof), only claims and let-gos on a live server (its log, F9, without a line per autosave).
+-- While Workspace's `DevSaveFails` is true, each write fails without reaching the store.
 local function logged(inner: Brix.SaveStore, everyWrite: boolean): Brix.SaveStore
 	return {
 		update = function(_: any, key: string, change: Brix.SaveChange): string?
+			if workspace:GetAttribute("DevSaveFails") == true then
+				local problem = "not written: DevSaveFails is on"
+				warn(`[Saving] {key}: {problem}`)
+				return problem
+			end
 			local what, after: unknown = "", nil
 			local problem = inner:update(key, function(current: unknown): unknown
 				local server, session = leaseOf(current)
@@ -129,7 +148,9 @@ end
 
 function Saving.new(): SavingSystem
 	local loaded = Brix.Signal.new() :: Brix.Signal<Loaded>
+	local began = Brix.Signal.new() :: Brix.Signal<Held>
 	local playerSaves: Brix.PlayerSaves<Save.Data>? = nil
+	local held: Brix.Saves<Save.Data>? = nil
 	local stopped = false
 	local forward: Brix.SignalConnection? = nil
 
@@ -156,6 +177,8 @@ function Saving.new(): SavingSystem
 			loaded:fire(each)
 		end)
 		playerSaves = made
+		held = saves
+		began:fire(saves)
 		made:start()
 	end
 
@@ -172,6 +195,7 @@ function Saving.new(): SavingSystem
 	local system = {
 		name = "Saving",
 		loaded = loaded,
+		began = began,
 	}
 
 	function system.start(_: any, _context: Brix.Context)
@@ -198,6 +222,7 @@ function Saving.new(): SavingSystem
 
 	function system.stop(_: any)
 		stopped = true
+		held = nil
 		if forward then
 			forward:disconnect()
 			forward = nil
@@ -215,6 +240,10 @@ function Saving.new(): SavingSystem
 	function system.data(_: any, player: Player): Save.Data?
 		local current = playerSaves
 		return if current then current:data(player) else nil
+	end
+
+	function system.saves(_: any): Brix.Saves<Save.Data>?
+		return held
 	end
 
 	function system.save(_: any, player: Player)

@@ -2348,3 +2348,22 @@ verified: a doc page, Studio, or "untested".
   pointed at `DoorMiddle` did. Take the find the same way; drop with `Remotes.ToolDrop`.
 - **A kit-built find's joints hold its pose in C0** (D-203): `Finds.pose` writes each Motor6D's
   C0 (C1 plain) because Transform doesn't replicate; the view model's `ScaleTo` scales them.
+
+## Purchases in Studio (S3-02b, Nov 15)
+
+- **`GetDeveloperProductsAsync` answers an empty page** while the experience has no developer
+  products. Purchasing reads each entry's `Name` and `ProductId` (`DeveloperProductId` is a
+  different number, not the one prompts take); the field names are unverified until a product
+  exists: the server's `[Purchasing] products:` line should show the Dashboard's id.
+- **A made-up product id (1, 2 ...) can't be prompted**: Brix's Marketplace asks Roblox its price
+  and gets "Item not found in batch response", so it isn't on sale (`unpriced`). Made-up receipts
+  through `ServerStorage.DevReceipt` grant all the same.
+- **`DevReceipt` waits while a save fails**, as Brix's PlayerPurchases tries again after 1, 2, 4,
+  8, 15, then every 30 seconds while the buyer stays: invoke it from `task.spawn`, turn
+  `DevSaveFails` off, and it answers `PurchaseGranted` on the next try (seen: 3.6 s).
+- **ConfigService prints "Config value not found for key ..."** once per read for each key no
+  config sets (Roblox's own line, not a warning). `SetTestingValue(key, false)` from a Server
+  `execute_luau` reached the live config within 4 seconds.
+- **Rojo can sync a new module twice.** After this session, ServerScriptService.Server held two
+  copies each of `Live`, `Purchasing`, `Feeds` and `Taps`, sources identical; `require(script.X)`
+  takes one, so a later edit could land in the copy that isn't run. Reconnecting Rojo rebuilds it.

@@ -31,6 +31,8 @@ local Kneels = require(script.Kneels)
 local Machines = require(script.Machines)
 local Minimaps = require(script.Minimaps)
 local Prompts = require(script.Prompts)
+local Live = require(script.Live)
+local Purchasing = require(script.Purchasing)
 local Recording = require(script.Recording)
 local Ladders = require(script.Ladders)
 local MotionLights = require(script.MotionLights)
@@ -101,6 +103,11 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "lobbyCars", system = LobbyCars.new() },
 	-- What every player earns and does, sent to Roblox's analytics (last: it only listens).
 	{ slot = "recording", system = Recording.new() },
+	-- The live config: each product's switch, changed on every server without an update.
+	{ slot = "live", system = Live.new() },
+	-- Robux purchases: Roblox's receipts granted into saves exactly once (after recording: it
+	-- hands Brix's Purchases Recording's analytics).
+	{ slot = "purchasing", system = Purchasing.new() },
 }
 -- The test hall and its "Walk a floor" post: Studio only now the lobby is the way in (D-109).
 if RunService:IsStudio() then

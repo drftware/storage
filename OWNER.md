@@ -39,6 +39,30 @@ nowhere else.
   3. Caught holding a note, it drops where you were caught, so a friend can fetch it.
   4. One marked box a unit at most.
 
+- [ ] **Buy the test purchase for real** (S3-02b, D-207; made-up receipts seen in Studio Play,
+  never a real one). This spends real Robux: three purchases at the price you pick. Use the
+  Roblox app on your computer, since the server's command line needs a keyboard.
+  1. Creator Hub > Creations > this experience > Monetization > Developer Products: make one
+     named exactly `Test purchase`, at the lowest price it allows.
+  2. In Studio, with Rojo connected, File > Publish to Roblox.
+  3. Play the published place. Press F9, pick Server, and find the line `[Purchasing] products:
+     testPurchase <number>`: the number should be the product's ID on the Dashboard. If it says
+     "not on Roblox", the name in step 1 doesn't match exactly.
+  4. In the Server command line, type `workspace:SetAttribute("DevPrompt", "testPurchase")` and
+     press Enter. Roblox's purchase box should show "Test purchase" at your price. Buy it. The
+     Server log should say `[Purchasing] granted testPurchase to <you> (bought 1)`.
+  5. Type `workspace:SetAttribute("DevSaveFails", true)`, then the DevPrompt line again, and
+     buy. The log should warn `not written: DevSaveFails is on`, with no "granted" line.
+  6. Leave the game at once, wait two minutes, and play again (a new server). Within a few
+     seconds of loading, the Server log should say `granted testPurchase to <you> (bought 2)`,
+     once: the purchase whose save failed, granted on the next server.
+  7. Leave, and play once more: no new "granted" line.
+  8. Creator Hub > this experience > Configs: add `sellTestPurchase`, a boolean, false, and
+     publish it. Wait a minute in a game, then send the DevPrompt line: no purchase box, and
+     the log says `'testPurchase' is switched off`. Set it back to true and publish.
+  9. Tell the next session it passed (or what didn't), so Brix's ENG-23e is marked done in its
+     HANDOFF.
+
 - [ ] **Answer Brix's gift and receipt choices** (its DECISIONS E-075 to E-078, listed in Brix's
   HANDOFF) before S3-04 sells gift versions of the wrap colours.
 

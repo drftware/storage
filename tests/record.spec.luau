@@ -104,6 +104,7 @@ do
 		{ player = "ben", fate = "Left", floor = 2 },
 	})
 	book:again("ben")
+	book:shown("ana", "testPurchase")
 
 	ok(#problems == 0, `no problems ({problems[1]})`)
 	local records = recorder:records()
@@ -155,6 +156,7 @@ do
 		"ben event climbEnded 2 (floor=2, fate=left, team=2)",
 		"ben progress climb failed 2",
 		"ben event again 1 ()",
+		"ana event offerShown 1 (offer=testPurchase)",
 	}
 	ok(#said == #want, `{#want} records, got {#said}`)
 	for i = 1, math.max(#said, #want) do

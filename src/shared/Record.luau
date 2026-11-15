@@ -25,6 +25,9 @@
 	- `caught`, with the floor. `freed`, with the floor and, as its value, how many floors they
 	  were carried up wrapped before a friend cut them free (0 while a kept friend stays put).
 	- `findKept`: each find kept at the gate, with which find and the floor.
+	- `offerShown`: each time a player is put in front of an offer's Roblox purchase prompt
+	  (S3-02b), with which offer. Brix's Purchases records `offerBought` for each one bought, so the
+	  two make each offer's share of prompts that sell.
 	- `climbEnded`: one for each player as a climb ends: its floor (the value too), how it went
 	  for them (`out`, `caught` or `left`) and the team's size. `again`: each press of Again.
 	- The `climb` path: each floor started as the team reaches it, completed as its gate shuts
@@ -171,6 +174,8 @@ export type Book<P> = {
 	ended: (self: any, endings: { Ending<P> }) -> (),
 	-- `player` pressed Again.
 	again: (self: any, player: P) -> (),
+	-- `player` was shown Roblox's purchase prompt for the offer named `offer` (a `Products` name).
+	shown: (self: any, player: P, offer: string) -> (),
 	-- A lobby car left at `t` with `players` aboard.
 	carLeft: (self: any, players: { P }, t: number) -> (),
 }
@@ -235,6 +240,8 @@ function Record.plan(brix: any): any
 			-- purchase once it's saved, valued at the Robux spent.
 			shopViewed = {},
 			offerBought = { "offer" },
+			-- Each purchase prompt put up (S3-02b): with offerBought, how many prompts sell.
+			offerShown = { "offer" },
 		},
 		economy = {
 			currencies = { Record.Currency, Record.Cash },
@@ -437,6 +444,10 @@ function Record.new<P>(analytics: Analytics<P>): Book<P>
 
 	function book.again(_: any, player: P)
 		analytics:event(player, "again")
+	end
+
+	function book.shown(_: any, player: P, offer: string)
+		analytics:event(player, "offerShown", 1, { offer = offer })
 	end
 
 	function book.carLeft(_: any, players: { P }, t: number)

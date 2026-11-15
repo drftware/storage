@@ -13,8 +13,10 @@
 	car's machine (`spent`), a battery taken from a unit (Batteries' `taken`), a gate shutting with
 	riders aboard (Climbs' `shut`), finds kept there (GatePay's `kept`), a catch (Keepers' `caught`),
 	a friend cutting someone free (KeptPlayers' `freed`), the climb's end and each Again
-	(ClimbEnds), the coins left at the end turned into cash (CashOut's `cashed`), and a lobby car
-	leaving (LobbyCars' `departed`). A floor is the climb's floor now,
+	(ClimbEnds), the coins left at the end turned into cash (CashOut's `cashed`), a lobby car
+	leaving (LobbyCars' `departed`), and a purchase prompt put up (Purchasing's `shown`). Purchasing
+	hands Brix's Purchases this Analytics (`analytics()`), which records each view of the shop and
+	each purchase itself. A floor is the climb's floor now,
 	0 off a climb (Studio's test hall).
 
 	A record Brix refuses (one the plan doesn't declare, or past Roblox's 120 a minute plus 20 a
@@ -39,6 +41,7 @@ local GatePay = require(script.Parent.GatePay)
 local Keepers = require(script.Parent.Keepers)
 local KeptPlayers = require(script.Parent.KeptPlayers)
 local LobbyCars = require(script.Parent.LobbyCars)
+local Purchasing = require(script.Parent.Purchasing)
 
 local STUDIO = RunService:IsStudio()
 -- Different problems warned in full a server; past these, only the minute's count.
@@ -49,6 +52,8 @@ local COUNT_EVERY = 60
 export type RecordingSystem = Brix.System & {
 	-- How many records were dropped since the server started, for whatever reason.
 	dropped: (self: any) -> number,
+	-- The Analytics every record goes through, for Brix's Purchases (Purchasing); nil before start.
+	analytics: (self: any) -> Brix.Analytics<Player>?,
 }
 
 local Recording = {}
@@ -74,6 +79,7 @@ end
 
 function Recording.new(): RecordingSystem
 	local climbs: Climbs.Climbs? = nil
+	local made: Brix.Analytics<Player>? = nil
 	local signals: { Brix.SignalConnection } = {}
 	local connections: { RBXScriptConnection } = {}
 	local dropped = 0
@@ -116,6 +122,10 @@ function Recording.new(): RecordingSystem
 		return dropped
 	end
 
+	function system.analytics(_: any): Brix.Analytics<Player>?
+		return made
+	end
+
 	function system.start(_: any, context: Brix.Context)
 		local registry = context.registry
 		local sink = Brix.Roblox.AnalyticsSink.analyticsService()
@@ -136,6 +146,7 @@ function Recording.new(): RecordingSystem
 			sink = send,
 			onProblem = onProblem,
 		})
+		made = analytics
 		local b = Record.new(analytics)
 
 		-- any: the registry hands back plain Systems; each slot is filled by its system (init.server)
@@ -150,6 +161,7 @@ function Recording.new(): RecordingSystem
 		local ends = (registry:get("climbEnds") :: any) :: ClimbEnds.ClimbEndsSystem? -- any: as above
 		local cars = (registry:get("lobbyCars") :: any) :: LobbyCars.LobbyCars? -- any: as above
 		local cashOut = (registry:get("cashOut") :: any) :: CashOut.CashOutSystem? -- any: as above
+		local purchasing = (registry:get("purchasing") :: any) :: Purchasing.PurchasingSystem? -- any: as above
 
 		for _, player in Players:GetPlayers() do
 			b:joined(player, os.clock())
@@ -213,6 +225,9 @@ function Recording.new(): RecordingSystem
 		end)
 		on(cars and cars.departed, function(aboard: { Player })
 			b:carLeft(aboard, os.clock())
+		end)
+		on(purchasing and purchasing.shown, function(s: Purchasing.Shown)
+			b:shown(s.player, s.offer)
 		end)
 	end
 

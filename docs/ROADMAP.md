@@ -1999,17 +1999,20 @@ Done when nobody quits a climb because they were caught.
     kept on, not the one they were left on (`ClimbFate`). Playing alone: one catch still ends
     it. Studio's "CutFree" let-in for a watcher still stands you in the lobby (S3-03 owns it).
     Spec the rules; one-player checks with a stand-in friend (STUDIO.md "Testing left behind").
-- [ ] **S3-02 Purchases that are never lost.** Split for size (D-206). The moment: a player pays
+- [x] **S3-02 Purchases that are never lost.** Split for size (D-206); done Nov 15 (D-207). The moment: a player pays
   Robux and gets it at once, exactly once, never lost, even when a save fails or they change servers.
   - [x] **S3-02a The save's ledger and the product table** (Nov 15, D-206). The pin moved to Brix
     `5cdb8c2`; the save's version 2 (`purchases`, `recipients`, `bought`); `Products` (each row's
     Dashboard title, live switch, grant; the owner's "Test purchase"); Record's plan takes Brix's
     `shopViewed` and `offerBought`; `tests/products.spec.luau` runs Brix's Purchases over the
     game's own save: granted once, a repeat, a failed write, a hop, switched off.
-  - [ ] **S3-02b The server takes receipts.** A `Purchasing` system: product ids found by title,
-    Brix's `PlayerPurchases` over `Saving`'s saves, a `Live` system (LiveConfig over ConfigService)
-    for the switches, every prompt recorded, the owner's dev prompt and a forced save failure;
-    proven in Studio with made-up receipts. Its phone test is also Brix's ENG-23e.
+  - [x] **S3-02b The server takes receipts** (Nov 15, D-207). `Purchasing`: product ids found by
+    Dashboard title, Brix's Purchases and `PlayerPurchases` over `Saving`'s saves, `prompt`,
+    `granted`, `shown` (Recording's `offerShown`); `Live`: LiveConfig over ConfigService for the
+    switches; Workspace's `DevPrompt` and `DevSaveFails`, Studio's `DevReceipt`. Seen in Studio
+    Play with made-up receipts: granted once, a repeat ignored, a failed write waited and then
+    granted once, a switch taking the offer off sale. A real purchase, a hop and the switch from
+    the Creator Hub wait on `OWNER.md` (also Brix's ENG-23e).
 - [ ] **S3-03 Cut Free, Free a Friend, Free Everyone.** Offered only on the screen you see
   while caught, and Free Everyone before the results when the whole team is wrapped. Cut Free
   while you're being carried up stands you in the car at the next floor. (Cut Free is built and
