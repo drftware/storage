@@ -103,6 +103,14 @@
     "assetId": 103700720195388,
     "sha256": "1bdb7528d6b5c0ce1940881b60085a1227be27d61a25d6d2704a01e37a45459a"
   },
+  "StainedGlassLamp": {
+    "assetId": 124251337930074,
+    "sha256": "c6fef8d749679ba2b48093060647949e8f040d9cf1f4966c14b8d4cdb0f62dfd"
+  },
+  "StainedGlassLampEmissive": {
+    "assetId": 74797031191448,
+    "sha256": "f103cafba93736095948b169ec834b091ef13d07ea59feb1a98fb6acac282b26"
+  },
   "TeaLight": {
     "assetId": 111143504211306,
     "sha256": "dfdc21a9659ff403d9d6c8019250bf6add12723b19bde3ab5c41591b4ee8abc1"

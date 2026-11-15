@@ -6,9 +6,10 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-02m, the stained-glass lamp (Legendary, Fragile: it throws coloured patterns on your
-walls; not researched yet, see the newest note), then the lamp that's on when you find it. The
-oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next
+**Next:** F-02n, the lamp that's on when you find it (Secret: it never runs down; loose only
+from floor 25; in a power cut it's the only light on the floor), the last Light; its plan is in
+the newest note. Then F-03b, the die-cast car, then F-04 Wind-ups and noisemakers. The oil
+lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next
 touched.
 
 ## Order
@@ -35,6 +36,40 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 15, F-02m (the stained-glass lamp built and in Studio).** `sg_*` in `lights/build.py`,
+  spec `STAINED_GLASS`, README, D-198. A leaded cone shade on a cast bronze base with two
+  brass pull-chain sockets, 22 in tall with a 14 in shade (from a 15.5 in, 24 in Chairish
+  listing and its close-up of the vented cap). Our own pattern: gold diamonds on cobalt round
+  the apron, twelve ruby four-petal blossoms with gold hearts, leaves and amber cabochons on
+  green, four rows of honey bricks. **How the pattern is made:** the game mesh is a plain
+  shell; the detailed mesh is every glass piece (`sg_pieces`, polygons in angle and height),
+  both faces, with a half-round lead bead over every join (`sg_leads` dedupes shared sides),
+  so the bake draws the pattern and the leading's relief exactly. Kinds pick each piece's
+  colour (`SG_GLASS_COL`). Anything that stands proud of the game mesh more than the bake's
+  reach (0.008 out) bakes wrong: the cabochons rise 0.006. A lathe whose profile runs top to
+  bottom faces inward and bakes dark: run profiles bottom to top. Fragile: one cobalt piece in
+  the apron, front left, has a hairline crack (a pale line that burns bright lit); a drop's chip
+  would show on the apron's bottom rim. Parts `Base` (root), `Shade` (glow), `ChainA` (pulled:
+  `stretch` and `turn`), `ChainB` (sways); motions `SwitchOn`, `SwitchOff`. Lights: a warm
+  Spot down out of the shade (0.6, range 10, 110 degrees), a weak Point, and three coloured
+  Spots out through the band (ruby front, green and cobalt behind; 0.5, range 9, 70 degrees).
+  2048 at 501 texels a stud, 10,148 triangles. **Seen in Studio** (a lit M unit from the
+  doorway, off and on): the pattern reads off; on, the shade glows in its colours and the
+  coloured Spots **do draw in Edit** at these wide angles: red on the back wall, green on the
+  left, blue on the right (the narrow ones earlier didn't). The warm down Spot lights the whole
+  unit a little brighter than its bulb: fine at home, where it lives; trim it if a floor ever
+  holds it lit. **The Secret lamp, not started** (this session wrapped at about 235k).
+  Default look (the catalog says nothing): an ordinary 1940s table lamp, a turned brass column
+  on a round stepped base with a pleated or plain yellowed parchment bell shade, harp and
+  finial, a brass turn-key socket; plainly lit with no power, its cord running off the base
+  to a two-prong plug lying loose on the floor, so a player sees at once it shouldn't be on;
+  its light a touch too steady and warm. Sizes: 1940s brass lamps run about 25 in to the
+  shade's top with a 6.5 in base (Chairish listings, the search "vintage brass table lamp
+  1940s"): look at two or three photos first. Parts: `Base` (root, with cord and plug),
+  `Shade` (glow), `Key` (turns). One motion: `Switch`, the key clicks round a quarter turn and
+  nothing happens: the light stays on (no flicker anywhere). Add one line to `OWNER.md` asking
+  the owner to judge this look (the rarest light in the game).
 
 - **Nov 15, F-02l (the theatre spotlight built; the hat, the jar and the spotlight in Studio).**
   The hard hat and the jar were uploaded and imported (`import("Lights", {"HardHat",
@@ -375,7 +410,7 @@ A light set down switched on lights the space round it until it runs down. Wheth
 | Miner's hard hat | Rare | Wear: a lamp on your head lights whatever you look at, for a minute | A light that leaves your hands free | Nov 15, F-02j |
 | Jar of fireflies | Epic | Open: fireflies drift out and light the unit for a minute, then they're gone |  | Nov 15, F-02k |
 | Theatre spotlight | Epic | At home: point it at your best find | Big find | Nov 15, F-02l |
-| Stained-glass lamp | Legendary | At home: it throws coloured patterns on your walls | Fragile | |
+| Stained-glass lamp | Legendary | At home: it throws coloured patterns on your walls | Fragile | Nov 15, F-02m |
 | A lamp that's on when you find it | Secret | It never runs down | Loose only, floor 25 up. In a power cut it's the only light on the floor | |
 
 ## Cars from Figures and models (2 of 14) · F-03

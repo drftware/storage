@@ -115,7 +115,10 @@ verified: a doc page, Studio, or "untested".
 - **Spot lights drew nothing in Edit `screen_capture`s** (F-02h, Nov 15): the disco ball's six
   SpotLights (Shadows off, facing out, Range 14) showed no dot on a room's walls at Angle 4 and
   Brightness 1.2, nor at Angle 30 and Brightness 8, while a PointLight and emissive masks in the
-  same capture drew. Judge spot lights in Play on a device, not in Edit captures.
+  same capture drew. Judge spot lights in Play on a device, not in Edit captures. Wide ones do
+  draw (F-02m, Nov 15): the stained-glass lamp's three coloured SpotLights (Angle 70,
+  Brightness 0.5, Range 9, facing out and a little down) each put a clear patch of colour on a
+  unit's walls in an Edit capture, and its Angle 110 Spot down lit the floor.
 
 ## Camera and prompts
 

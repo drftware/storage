@@ -5332,3 +5332,17 @@ backed off, a heavy swing that overshoots and settles, the leaves swinging after
 ticket to play with its own end angles. The barn-door leaves are hinged parts, ready for a
 later ticket to shape the beam; nothing closes them yet. Its red is a dark oxblood with no
 maker's name.
+
+## D-198 The stained-glass lamp is a leaded cone shade in our own pattern, lit by its pull chain (F-02m, Nov 15)
+
+The catalog's stained-glass lamp ("At home: it throws coloured patterns on your walls",
+Legendary, Fragile) is built as the leaded-glass table lamp most players picture: a cone shade
+of small glass pieces in lead lines with a vented cap and finial, on a dark cast bronze base,
+22 in tall with a 14 in shade. Its pattern is our own in that tradition (gold diamonds on cobalt
+round the apron, ruby four-petal blossoms with amber cabochons on green, honey bricks to the top),
+copying no maker's named design. It switches on the way the real ones do: a tug on one of its
+two ball-chain pulls. The coloured patterns are three coloured spot lights shining out through
+the band (ruby, green, cobalt) beside the bulbs' warm pool, since Roblox lights can't project
+an image; they read on a unit's walls in Studio. It's found with one hairline crack in an apron
+piece, as old shades often are, so Fragile has a place to show.
+

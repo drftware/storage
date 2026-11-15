@@ -582,3 +582,33 @@ SPOTLIGHT = dict(
     switch_on=50.0,         # the toggle's throw, degrees
     dust=0.55, seed=7.7,
 )
+
+# The stained-glass lamp (F-02m): a leaded-glass table lamp of the 1910s to 1930s kind, a cone
+# shade of small glass pieces in lead lines on a cast bronze base with two pull-chain sockets.
+# Sizes from a 15.5 in shade, 24 in tall listing (Chairish 23548881) and a 10.75 in, 17.75 in
+# one: this one has a 14 in shade and stands 22 in, so it reads as a lamp, not a lampshade,
+# from a doorway. The pattern is our own in that tradition (README).
+STAINED_GLASS = dict(
+    shade=dict(
+        z0=1.30, z1=1.44,       # the apron: a 1.4 in band round the shade's foot
+        top=2.02,               # the cone's top, under the vented cap
+        r0=0.712, r1=0.700,     # the apron flares a little to its foot
+        r_top=0.215,
+        belly=0.025,            # the cone bows out this much midway: a soft bell, not a funnel
+        wall=0.012,             # glass and came, an eighth of an inch
+        lead=0.0068,            # a lead line's half width: an eighth of an inch across
+        rim=0.0095,             # the heavier came round the foot and the top
+    ),
+    # the pattern, all ours: ruby four-petal blossoms on green, amber cabochons between them,
+    # honey bricks to the top, a border of gold diamonds on cobalt round the apron
+    band=dict(n=12, t1=0.40),   # 12 blossoms in the cone's lower 40 per cent
+    bricks=dict(t=(0.40, 0.555, 0.70, 0.85, 1.0), n=(36, 30, 24, 18)),
+    apron=dict(n=24),
+    jewel=dict(r=0.024, rise=0.0062),
+    crack=dict(cell=17),        # the apron piece with a hairline crack (front left as found)
+    cap=dict(holes=((0.092, 14), (0.135, 22), (0.18, 30)), hole_r=0.0085),
+    sockets=dict(x=0.10, z0=1.45, z1=1.60, r=0.034),
+    chain=dict(x=0.142, z=1.555, end=1.10, bead=0.0055, step=0.0165),   # the pull 2 in under the rim, in reach
+    kelvin=2700,
+    dust=0.5, seed=8.3,
+)

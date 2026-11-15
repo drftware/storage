@@ -578,3 +578,41 @@ uploaded FBX (CRAFT.md, "Into Studio"); the place keeps them once the owner save
   leaves lag and swing after the stop). Rest is how it's found: pointing straight ahead, off.
 - **Bake:** 2048 at about 257 texels a stud (big: the stand's tubes take a lot of the square);
   the head, where a player looks, holds up close.
+
+## Stained-glass lamp (Nov 15, F-02m)
+
+- **What it is:** a leaded-glass table lamp of the 1910s to 1930s kind, Legendary and Fragile.
+  A cone shade with a slight bell of small glass pieces in lead lines, a short apron at its
+  foot, a vented bronze cap (three rings of holes the light shows through) and a turned finial;
+  under it a spider ring, two frosted bulbs in brass sockets on a cluster, each socket with a
+  brass ball chain and a little bronze pull hanging 2 in below the rim. The base is cast bronze
+  patinated near black-brown, a dull green bloom in patches, rubbed warm on the edges: a weighted
+  round foot stepped up to a dome, a stem with a vase knop and two rings, the pipe up the middle
+  to the finial. The pattern is ours: gold diamonds point to point on cobalt round the apron;
+  twelve ruby four-petal blossoms with gold hearts and olive leaves on green, an amber cabochon
+  in a lead ring where each pair of blossoms' leaves meet; four rows of honey and amber bricks,
+  each row half a brick round. The glass is streaked along the cone with milky wisps and a faint
+  ripple. Found with one hairline crack across a cobalt piece of the apron, front left.
+- **References:** a 1980s leaded lamp with a bronze base, 15.5 in shade, 24 in tall, and its
+  close-up of the vented cap and lead lines (chairish.com/product/23548881); listings of a
+  Handel-school lamp at 10.75 in by 17.75 in and of larger 18 to 21 in shades (Chairish,
+  1stdibs, InCollect search results); a lit hanging leaded shade and a lit table lamp on
+  Wikimedia Commons (search "leaded glass lamp") for how the colours glow and the lead goes
+  black against them.
+- **Size:** 22 in tall, a 14 in shade (2.2 by 1.42 studs): a lamp, not a lampshade, from a
+  doorway. Lead lines an eighth of an inch across, the foot and top rims heavier.
+- **Tells:** the coloured cone on a thin dark stem; lit, a lantern of colours.
+- **Parts:** `Base` (root, at the foot's middle); `Shade` (the glass, cap, finial, spider and
+  bulbs, the glow part; it never moves); `ChainA` and `ChainB` hang from the sockets' sides at
+  (plus and minus 0.142, 0, 1.555) and swing about Y.
+- **Light:** a warm Spot down out of the shade's foot (2,700 K, 0.6, range 10, 110 degrees,
+  shadows) for the pool on the table; a weak Point (0.3, range 8); three coloured Spots out
+  through the band, ruby to the front, green and cobalt behind (0.5, range 9, 70 degrees, no
+  shadows): the patterns on your walls. The glass glows in its own colours (strength 1.8).
+- **Motions:** `SwitchOn` (a tug on chain A: it gives, clicks, springs back and swings, the
+  other chain sways after it; the bulbs come up through the glass in a breath), `SwitchOff`
+  (the same tug, the glow fading through orange).
+- **Fragile:** the crack is a pale line that burns bright when lit; a drop's chip would show
+  on the apron's bottom rim.
+- **Bake:** 2048 at about 501 texels a stud, 10,148 triangles. In Studio as
+  `ReplicatedStorage.Props.Finds.StainedGlassLamp` (the owner saves).

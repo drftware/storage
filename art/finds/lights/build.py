@@ -5013,8 +5013,427 @@ SPOTLIGHT = kit.Find(
     big=True, dust=SL["dust"], seed=SL["seed"],
 )
 
+# --- the stained-glass lamp --------------------------------------------------------------------
+
+(SG_AMBER1, SG_AMBER2, SG_AMBER3, SG_RUBY1, SG_RUBY2, SG_GREEN1, SG_GREEN2, SG_GREEN3,
+ SG_COBALT1, SG_COBALT2, SG_GOLD, SG_JEWEL, SG_CRACK, SG_LEAD, SG_RIM, SG_BRONZE, SG_BRONZE_IN,
+ SG_CAP, SG_BRASS, SG_BULB, SG_CHAIN) = range(159, 180)
+SG_GLASS = (SG_AMBER1, SG_AMBER2, SG_AMBER3, SG_RUBY1, SG_RUBY2, SG_GREEN1, SG_GREEN2, SG_GREEN3,
+            SG_COBALT1, SG_COBALT2, SG_GOLD, SG_JEWEL)
+SGK = K.STAINED_GLASS
+SGS = SGK["shade"]
+TAU = 2.0 * math.pi
+SG_CH = SGK["chain"]
+SG_CHAIN_A = (SG_CH["x"], 0.0, SG_CH["z"])
+SG_CHAIN_B = (-SG_CH["x"], 0.0, SG_CH["z"])
+
+
+def sg_rz(z, cone=None):
+    """The shade's outside radius at height z and its slope dr/dz, on the apron or the cone
+    (at the crease between them, `cone` says which)."""
+    S = SGS
+    if cone is None:
+        cone = z > S["z1"]
+    if not cone:
+        k = (S["r1"] - S["r0"]) / (S["z1"] - S["z0"])
+        return S["r0"] + k * (z - S["z0"]), k
+    h = S["top"] - S["z1"]
+    t = (z - S["z1"]) / h
+    r = S["r1"] + (S["r_top"] - S["r1"]) * t + S["belly"] * math.sin(math.pi * t)
+    return r, ((S["r_top"] - S["r1"]) + S["belly"] * math.pi * math.cos(math.pi * t)) / h
+
+
+def sg_P(th, z, off=0.0, cone=None):
+    """A point on the shade at angle th (round from +X) and height z, moved off along its normal
+    (out positive, in negative)."""
+    r, dr = sg_rz(z, cone)
+    n = math.hypot(1.0, dr)
+    rr = r + off / n
+    return Vector((rr * math.cos(th), rr * math.sin(th), z - off * dr / n))
+
+
+def sg_N(th, z, cone=None):
+    return (sg_P(th, z, 1.0, cone) - sg_P(th, z, 0.0, cone)).normalized()
+
+
+def sg_pieces():
+    """Every glass piece as (kind, [(th, z), ...] anticlockwise seen from outside, cone?).
+    Our own pattern in the leaded tradition: a border of gold diamonds on cobalt round the
+    apron; a band of twelve ruby four-petal blossoms with gold hearts and leaves on green;
+    four rows of honey bricks, each row half a brick round from the last, to the top."""
+    S, B, R, A = SGS, SGK["band"], SGK["bricks"], SGK["apron"]
+    rng = random.Random(83)
+    h = S["top"] - S["z1"]
+    out = []
+    n = A["n"]
+
+    def ap(u, v):
+        return (u * TAU / n, S["z0"] + (S["z1"] - S["z0"]) * v)
+    for c in range(n):
+        out.append((SG_GOLD, [ap(c + 0.5, 0.0), ap(c + 1.0, 0.5), ap(c + 0.5, 1.0), ap(c, 0.5)], False))
+        out.append((SG_COBALT1 if c % 2 else SG_COBALT2, [ap(c + 1.0, 0.5), ap(c + 1.5, 1.0), ap(c + 0.5, 1.0)], False))
+        out.append((SG_COBALT2 if c % 2 else SG_COBALT1, [ap(c + 0.5, 0.0), ap(c + 1.5, 0.0), ap(c + 1.0, 0.5)], False))
+    nb_ = B["n"]
+    T, Bm, Lf, Rt, Cc = (0.5, 0.92), (0.5, 0.16), (0.2, 0.55), (0.8, 0.55), (0.5, 0.55)
+    hu, hv = 0.075, 0.095
+    Cr, Cl, Ct, Cb = (Cc[0] + hu, Cc[1]), (Cc[0] - hu, Cc[1]), (Cc[0], Cc[1] + hv), (Cc[0], Cc[1] - hv)
+    left = [
+        (SG_GREEN2, [(0.5, 0.0), Bm, (0.3, 0.3)]),                         # a leaf
+        (SG_GREEN1, [(0.0, 0.0), (0.5, 0.0), (0.3, 0.3), (0.0, 0.55)]),
+        (SG_GREEN3, [(0.3, 0.3), Bm, Lf, (0.0, 0.55)]),
+        (SG_GREEN1, [(0.0, 0.55), Lf, T, (0.5, 1.0), (0.0, 1.0)]),
+        (SG_RUBY1, [Lf, Bm, Cb, Cl]),                                       # petals
+        (SG_RUBY2, [T, Lf, Cl, Ct]),
+    ]
+    cell = []
+    for k, poly in left:
+        cell.append((k, poly))
+        mk = {SG_RUBY1: SG_RUBY2, SG_RUBY2: SG_RUBY1, SG_GREEN1: SG_GREEN3, SG_GREEN3: SG_GREEN1}.get(k, k)
+        cell.append((mk, [(1.0 - u, v) for (u, v) in reversed(poly)]))
+    cell.append((SG_GOLD, [Cb, Cr, Ct, Cl]))                                # the heart
+    t1 = B["t1"]
+    for c in range(nb_):
+        for k, poly in cell:
+            out.append((k, [((c + u) * TAU / nb_, S["z1"] + h * t1 * v) for (u, v) in poly], True))
+    ts, ns = R["t"], R["n"]
+    for row, m in enumerate(ns):
+        za, zb = S["z1"] + h * ts[row], S["z1"] + h * ts[row + 1]
+        sh = 0.5 * (row % 2)
+        for i in range(m):
+            a0, a1 = (i + sh) * TAU / m, (i + 1 + sh) * TAU / m
+            k = rng.choices((SG_AMBER1, SG_AMBER2, SG_AMBER3), (0.45, 0.35, 0.2))[0]
+            out.append((k, [(a0, za), (a1, za), (a1, zb), (a0, zb)], True))
+    return out
+
+
+SG_ZJ = SGS["z1"] + (SGS["top"] - SGS["z1"]) * SGK["band"]["t1"] * 0.55   # where the jewels sit
+
+
+def sg_tri(s, A, B_, C_, kind, off, m, flip, cone):
+    """A triangle of the shade in (angle, height), cut m times along each side so it follows
+    the curve, laid on the surface off along its normal."""
+    vs = {}
+
+    def V(i, j):
+        if (i, j) not in vs:
+            th = A[0] + (B_[0] - A[0]) * i / m + (C_[0] - A[0]) * j / m
+            z = A[1] + (B_[1] - A[1]) * i / m + (C_[1] - A[1]) * j / m
+            vs[(i, j)] = s.bm.verts.new(sg_P(th, z, off, cone))
+        return vs[(i, j)]
+    for i in range(m):
+        for j in range(m - i):
+            tris = [(V(i, j), V(i + 1, j), V(i, j + 1))]
+            if i + j < m - 1:
+                tris.append((V(i + 1, j), V(i + 1, j + 1), V(i, j + 1)))
+            for t in tris:
+                s._f(list(reversed(t)) if flip else list(t), kind)
+
+
+def sg_len(a, b, cone):
+    return (sg_P(b[0], b[1], 0.0, cone) - sg_P(a[0], a[1], 0.0, cone)).length
+
+
+def sg_piece(s, kind, poly, cone, off, flip):
+    """One piece of glass: a fan from its middle, its sides cut into short runs."""
+    c = (sum(p[0] for p in poly) / len(poly), sum(p[1] for p in poly) / len(poly))
+    rim = []
+    for a, b in zip(poly, poly[1:] + poly[:1]):
+        n = max(1, math.ceil(sg_len(a, b, cone) / 0.03))
+        rim += [(a[0] + (b[0] - a[0]) * i / n, a[1] + (b[1] - a[1]) * i / n) for i in range(n)]
+    for a, b in zip(rim, rim[1:] + rim[:1]):
+        m = max(1, min(4, math.ceil(max(sg_len(c, a, cone), sg_len(c, b, cone)) / 0.03)))
+        sg_tri(s, c, a, b, kind, off, m, flip, cone)
+
+
+def sg_leads(pieces):
+    """Every lead line once: each piece's sides, shared sides counted once, without the rims
+    (the heavier came) and the crease between apron and cone (its own ring)."""
+    S = SGS
+    seen, out = set(), []
+    for k, poly, cone in pieces:
+        for a, b in zip(poly, poly[1:] + poly[:1]):
+            if any(abs(a[1] - z) < 1e-6 and abs(b[1] - z) < 1e-6 for z in (S["z0"], S["z1"], S["top"])):
+                continue
+            key = tuple(sorted((round(p[0] % TAU, 5) % round(TAU, 5), round(p[1], 5)) for p in (a, b)))
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append((a, b, cone))
+    return out
+
+
+def sg_ring(s, z, off, r, cone, hi, kind=SG_RIM):
+    n = segs(hi, 64)
+    pts = [sg_P(TAU * i / n, z, off, cone) for i in range(n + 1)]
+    s.tube(pts, r, kind, sides=6 if hi else 4, caps=False)
+
+
+def sg_frame(p, nrm):
+    return Matrix.Translation(p) @ nrm.to_track_quat("Z", "Y").to_matrix().to_4x4()
+
+
+SG_CRACK_PATH = [[(14.82, 0.0), (14.88, 0.08), (14.86, 0.14), (14.95, 0.22), (14.99, 0.3),
+                  (15.04, 0.37)],
+                 [(14.95, 0.22), (15.08, 0.25), (15.19, 0.21)]]
+
+
+def sg_profile():
+    """The shade's game shell: up the outside, over the top, down the inside."""
+    S, w = SGS, SGS["wall"]
+    zs = [S["z0"], (S["z0"] + S["z1"]) / 2, S["z1"]]
+    zc = [S["z1"] + (S["top"] - S["z1"]) * i / 14 for i in range(1, 15)]
+
+    def rz(z, off, cone):
+        p = sg_P(0.0, z, off, cone)
+        return (p.x, p.z)
+    out = [rz(z, 0.0, False) for z in zs] + [rz(z, 0.0, True) for z in zc]
+    inn = [rz(z, -w, False) for z in zs] + [rz(S["z1"], -w, True)] + [rz(z, -w, True) for z in zc]
+    prof = out + list(reversed(inn)) + [out[0]]
+    no = len(out) - 1
+    kinds = [SG_AMBER1 if i < no else (SG_RIM if i == no or i == len(prof) - 2 else SG_GREEN1)
+             for i in range(len(prof) - 1)]
+    return prof, kinds
+
+
+def sg_shade(hi):
+    """The leaded shade, its vented cap and finial, the spider under it and the two bulbs.
+    The game mesh is a plain shell; the detailed one is the glass, piece by piece, both faces,
+    with half-round lead lines over every join, inside and out, so the bake draws the pattern
+    and the leading's relief exactly; amber cabochons where the blossoms' leaves meet; one
+    cobalt piece in the apron has a hairline crack, as old shades do (it's Fragile)."""
+    s = Shape()
+    S, w = SGS, SGS["wall"]
+    if hi:
+        pieces = sg_pieces()
+        for k, poly, cone in pieces:
+            sg_piece(s, k, poly, cone, 0.0, False)
+            sg_piece(s, k, poly, cone, -w, True)
+        for a, b, cone in sg_leads(pieces):
+            n = max(2, math.ceil(sg_len(a, b, cone) / 0.02))
+            for off in (0.0, -w):
+                pts = [sg_P(a[0] + (b[0] - a[0]) * i / n, a[1] + (b[1] - a[1]) * i / n, off, cone)
+                       for i in range(n + 1)]
+                s.tube(pts, S["lead"], SG_LEAD, sides=6)
+        for z, cone, r in ((S["z0"], False, S["rim"]), (S["top"], True, S["rim"] * 0.9),
+                           (S["z1"], False, S["lead"] * 1.15)):
+            for off in (0.0, -w):
+                sg_ring(s, z, off, r, cone, hi)
+        prof, kinds = sg_profile()
+        no = len([k for k in kinds if k == SG_AMBER1])
+        s.lathe(prof[no:no + 2], SG_RIM, 128)
+        s.lathe(prof[-2:], SG_RIM, 128)
+        J = SGK["jewel"]
+        nb_ = SGK["band"]["n"]
+        for c in range(nb_):
+            th = c * TAU / nb_
+            M = sg_frame(sg_P(th, SG_ZJ, 0.0, True), sg_N(th, SG_ZJ, True))
+            r, up = J["r"], J["rise"]
+            s.lathe([(r, -0.002), (r * 0.95, up * 0.22), (r * 0.75, up * 0.62), (r * 0.45, up * 0.9),
+                     (0.0, up)], SG_JEWEL, 24, M)
+            ring = [M @ Vector((math.cos(a) * (r + 0.002), math.sin(a) * (r + 0.002), 0.0))
+                    for a in [TAU * i / 24 for i in range(25)]]
+            s.tube(ring, S["lead"], SG_LEAD, sides=6, caps=False)
+        na = SGK["apron"]["n"]
+        for path in SG_CRACK_PATH:
+            for off in (0.0007, -w - 0.0007):
+                pts = []
+                for (u0, v0), (u1, v1) in zip(path, path[1:]):
+                    for i in range(4):
+                        u, v = u0 + (u1 - u0) * i / 4, v0 + (v1 - v0) * i / 4
+                        pts.append(sg_P(u * TAU / na, S["z0"] + (S["z1"] - S["z0"]) * v, off, False))
+                u, v = path[-1]
+                pts.append(sg_P(u * TAU / na, S["z0"] + (S["z1"] - S["z0"]) * v, off, False))
+                s.tube(pts, 0.0017, SG_CRACK, sides=4)
+    else:
+        prof, kinds = sg_profile()
+        s.lathe(prof, SG_AMBER1, 48, kinds=kinds)
+    # the vented cap over the top row, and the finial that holds it all on the pipe
+    cap = [(0.016, 2.06), (0.195, 2.019), (0.228, 2.014), (0.238, 2.018), (0.24, 2.028),
+           (0.232, 2.036), (0.19, 2.054), (0.15, 2.072), (0.11, 2.088), (0.075, 2.098),
+           (0.058, 2.102), (0.05, 2.108), (0.034, 2.114), (0.03, 2.124), (0.036, 2.132),
+           (0.045, 2.146), (0.046, 2.158), (0.04, 2.172), (0.03, 2.184), (0.018, 2.194),
+           (0.006, 2.2), (0.0, 2.201)]
+    ck = [SG_BRONZE_IN, SG_BRONZE_IN] + [SG_CAP] * 9 + [SG_BRONZE] * (len(cap) - 12)
+    s.lathe(cap, SG_CAP, segs(hi, 32), kinds=ck)
+    # the spider: a ring inside the top row and three arms to the pipe
+    zsp, rsp = 2.008, 0.192
+    s.tube([(rsp * math.cos(a), rsp * math.sin(a), zsp) for a in [TAU * i / 32 for i in range(33)]],
+           0.0055, SG_BRONZE, sides=6, caps=False)
+    for i in range(3):
+        a = TAU * i / 3 + 0.5
+        s.cylinder(Vector((0.014 * math.cos(a), 0.014 * math.sin(a), zsp)),
+                   Vector((rsp * math.cos(a), rsp * math.sin(a), zsp)), 0.005, SG_BRONZE, 6)
+    # two frosted bulbs in the sockets
+    bulb = [(0.0, 1.60), (0.02, 1.60), (0.023, 1.635), (0.03, 1.66), (0.058, 1.70), (0.082, 1.74),
+            (0.092, 1.78), (0.088, 1.815), (0.07, 1.846), (0.04, 1.864), (0.0, 1.87)]
+    for x in (SGK["sockets"]["x"], -SGK["sockets"]["x"]):
+        s.lathe(bulb, SG_BULB, segs(hi, 24), Matrix.Translation((x, 0.0, 0.0)))
+    return s
+
+
+SG_STEM = [(0.0, 0.012), (0.29, 0.012), (0.31, 0.0), (0.335, 0.0), (0.342, 0.01), (0.342, 0.028),
+           (0.334, 0.038), (0.305, 0.045), (0.27, 0.058), (0.22, 0.082), (0.17, 0.106),
+           (0.138, 0.126), (0.122, 0.146), (0.127, 0.16), (0.119, 0.176), (0.088, 0.188),
+           (0.072, 0.208), (0.061, 0.26), (0.057, 0.31), (0.063, 0.355), (0.084, 0.395),
+           (0.092, 0.425), (0.082, 0.455), (0.052, 0.478), (0.043, 0.53), (0.04, 0.72),
+           (0.043, 0.89), (0.058, 0.92), (0.066, 0.945), (0.059, 0.968), (0.042, 0.988),
+           (0.038, 1.15), (0.036, 1.3), (0.041, 1.355), (0.055, 1.375), (0.058, 1.398),
+           (0.05, 1.418), (0.03, 1.43), (0.034, 1.442), (0.054, 1.452), (0.06, 1.47),
+           (0.06, 1.515), (0.047, 1.532), (0.013, 1.54), (0.013, 2.13), (0.0, 2.13)]
+
+
+def sg_base(hi):
+    """The cast bronze base: a weighted round foot stepped up to a dome, a turned stem with a
+    vase knop and two rings, the cluster at its top with two arms out to brass pull-chain
+    sockets, and the pipe running up the middle to the finial."""
+    s = Shape()
+    kinds = [SG_BRONZE_IN] + [SG_BRONZE] * (len(SG_STEM) - 2)
+    s.lathe(SG_STEM, SG_BRONZE, segs(hi, 32), kinds=kinds)
+    So = SGK["sockets"]
+    sock = [(0.0, So["z0"]), (0.028, So["z0"]), (0.034, So["z0"] + 0.01), (0.034, 1.5),
+            (0.0365, 1.505), (0.0365, 1.515), (0.034, 1.52), (So["r"], 1.585), (0.031, 1.595),
+            (0.022, So["z1"]), (0.0, So["z1"])]
+    for sx in (1.0, -1.0):
+        x = So["x"] * sx
+        s.lathe(sock, SG_BRASS, segs(hi, 24), Matrix.Translation((x, 0.0, 0.0)))
+        s.cylinder(Vector((0.04 * sx, 0.0, 1.49)), Vector((x - 0.028 * sx, 0.0, 1.49)), 0.011,
+                   SG_BRONZE, segs(hi, 10))
+        s.cylinder(Vector((x + 0.031 * sx, 0.0, SG_CH["z"])), Vector((SG_CH["x"] * sx, 0.0, SG_CH["z"])),
+                   0.0075, SG_BRASS, segs(hi, 8))
+    return s
+
+
+def sg_chain(sx):
+    def build(hi):
+        """A brass ball chain hanging from the socket's side, and its little bronze pull."""
+        s = Shape()
+        x, z0, z1, rb = SG_CH["x"] * sx, SG_CH["z"] - 0.006, SG_CH["end"], SG_CH["bead"]
+        if hi:
+            n = int((z0 - z1) / SG_CH["step"])
+            for i in range(n + 1):
+                z = z0 - i * (z0 - z1) / n
+                s.lathe([(0.0, -rb), (rb * 0.7, -rb * 0.7), (rb, 0.0), (rb * 0.7, rb * 0.7), (0.0, rb)],
+                        SG_CHAIN, 10, Matrix.Translation((x, 0.0, z)))
+            s.cylinder(Vector((x, 0.0, z0)), Vector((x, 0.0, z1)), 0.0016, SG_CHAIN, 6)
+        else:
+            s.cylinder(Vector((x, 0.0, z0 + 0.005)), Vector((x, 0.0, z1)), rb * 0.8, SG_CHAIN, 6)
+        pull = [(0.0, z1 + 0.002), (0.006, z1 + 0.002), (0.012, z1 - 0.007), (0.016, z1 - 0.026),
+                (0.017, z1 - 0.042), (0.014, z1 - 0.049), (0.0, z1 - 0.051)]
+        s.lathe(pull, SG_BRONZE, segs(hi, 16), Matrix.Translation((x, 0.0, 0.0)))
+        return s
+    return build
+
+
+SG_GLASS_COL = {SG_AMBER1: "#B0611A", SG_AMBER2: "#CC8C34", SG_AMBER3: "#8E4416",
+                SG_RUBY1: "#86121A", SG_RUBY2: "#A8242E", SG_GREEN1: "#284F22",
+                SG_GREEN2: "#788526", SG_GREEN3: "#35632C", SG_COBALT1: "#1D2F86",
+                SG_COBALT2: "#2A4A9C", SG_GOLD: "#D9A43A", SG_JEWEL: "#E08A18"}
+
+
+def sg_look(L, f):
+    nb = L.nb
+    ang = nb.math("ARCTAN2", L.y, L.x)
+    rad = nb.pw(nb.add(nb.mul(L.x, L.x), nb.mul(L.y, L.y)), 0.5)
+    # cast bronze, patinated near black-brown, a dull green bloom in patches, rubbed back to
+    # warm metal on the edges hands and dusters reach
+    C = Coat(L, hexc("#3E2F22"), 0.45, 1.0)
+    bz = L.k(SG_BRONZE, SG_CAP)
+    C.paint(bz, nb.tint(hexc("#3B2C1F"), nb.mr(L.noise(30.0, 31, detail=4), 0.3, 0.7, 0.8, 1.18)),
+            nb.mr(L.noise(25.0, 32, detail=3), 0.3, 0.7, 0.36, 0.55), 1.0)
+    C.paint(nb.mul(bz, nb.ss(L.noise(5.0, 33, detail=5, rough=0.65), 0.57, 0.7)), hexc("#3D4433"), 0.6, 0.5)
+    rub = nb.mul(bz, nb.mul(L.edge(0.006, k=4.0), nb.ss(L.noise(18.0, 34, detail=3), 0.38, 0.52)))
+    C.paint(rub, hexc("#93703F"), 0.28, 1.0)
+    C.paint(L.k(SG_BRONZE_IN), hexc("#1D1712"), 0.75, 0.3)
+    # the cap's vents: rings of holes the bulbs' light shows through
+    holes = 0.0
+    for rho, n in SGK["cap"]["holes"]:
+        du = nb.mul(nb.sub(nb.fract(nb.add(nb.mul(ang, n / TAU), 0.5)), 0.5), TAU * rho / n)
+        dr = nb.sub(rad, rho)
+        d = nb.pw(nb.add(nb.mul(du, du), nb.mul(dr, dr)), 0.5)
+        hr = SGK["cap"]["hole_r"]
+        h1 = nb.ss(d, hr, hr * 0.7)
+        holes = h1 if isinstance(holes, float) else nb.add(holes, h1, clamp=True)
+    holes = nb.mul(L.k(SG_CAP), nb.mul(holes, nb.ss(L.z, 2.04, 2.05)))
+    C.paint(holes, hexc("#4A3216"), 0.9, 0.0, nb.mul(holes, -1.0))
+    # brass sockets and chain, tarnished
+    br = L.k(SG_BRASS, SG_CHAIN)
+    C.paint(br, nb.tint(hexc("#B08E4C"), nb.mr(L.noise(40.0, 35, detail=3), 0.3, 0.7, 0.85, 1.08)), 0.32, 1.0)
+    C.paint(nb.mul(br, nb.ss(L.noise(8.0, 36, detail=4), 0.5, 0.64)), hexc("#6E5A32"), 0.5)
+    # the lead: dull grey, darkened with patina, a coppery cast here and there
+    ld = L.k(SG_LEAD, SG_RIM)
+    C.paint(ld, nb.tint(hexc("#3A3631"), nb.mr(L.noise(40.0, 37, detail=3), 0.3, 0.7, 0.75, 1.2)), 0.5, 0.7)
+    C.paint(nb.mul(ld, nb.ss(L.noise(9.0, 38, detail=4), 0.56, 0.68)), hexc("#4B3424"), 0.5, 0.6)
+    # the glass: each piece its colour, streaked along the cone as rolled glass is, with milky
+    # opal wisps, a little rippled; glossy, and every piece glows when lit
+    streak = nb.mr(L.noise(14.0, 39, stretch=(1.0, 1.0, 0.3), detail=4, rough=0.6), 0.28, 0.72, 0.62, 1.38)
+    glass = L.k(*SG_GLASS)
+    for k, col in SG_GLASS_COL.items():
+        C.paint(L.k(k), nb.tint(hexc(col), streak), 0.1, 0.0)
+    wisp = nb.mul(glass, nb.ss(L.noise(6.0, 40, stretch=(1.0, 1.0, 0.4), detail=5, rough=0.62, distortion=0.6), 0.6, 0.78))
+    C.paint(nb.mul(wisp, 0.42), hexc("#F2DDB4"), 0.14)
+    C.paint(glass, height=nb.mul(glass, nb.mul(L.noise(60.0, 41, detail=2), 0.35)))
+    C.paint(L.k(SG_JEWEL), rough=0.04)
+    # the crack: a pale hairline that catches light off and burns bright lit
+    cr = L.k(SG_CRACK)
+    C.paint(cr, hexc("#E6E1D2"), 0.3, 0.0)
+    bulb = L.k(SG_BULB)
+    C.paint(bulb, hexc("#ECE7DA"), 0.45, 0.0)
+    C.lights(nb.add(nb.add(glass, cr, clamp=True), nb.add(bulb, nb.mul(holes, 0.9), clamp=True), clamp=True))
+    C.finish(f.dust, grime=0.4, keep=bulb)
+    return C.surface(bump_dist=0.0006, bump=0.4)
+
+
+SG_FOCUS = (0.06, 0.0, 1.22)   # between the chains, under the shade's rim
+SG_PULL = [(0.0, 1.0), (0.12, 1.09, "Quad", "Out"), (0.17, 1.1), (0.23, 0.985, "Quad", "In"),
+           (0.31, 1.012), (0.4, 1.0)]
+SG_SWING = [(0.0, 0.0), (0.12, -5.0, "Quad", "Out"), (0.17, -5.0), (0.32, 9.0, "Sine", "Out"),
+            (0.56, -6.5), (0.8, 4.4), (1.04, -2.7), (1.28, 1.5), (1.52, -0.6), (1.75, 0.0)]
+SG_SYMPATHY = [(0.0, 0.0), (0.26, 0.0), (0.46, 2.4), (0.7, -1.9), (0.95, 1.3), (1.2, -0.7),
+               (1.45, 0.3), (1.75, 0.0)]
+SG_COLOURS = ((-90.0, (255, 74, 58)), (30.0, (120, 220, 90)), (150.0, (80, 120, 255)))
+STAINED_GLASS_LAMP = kit.Find(
+    "StainedGlassLamp",
+    [kit.Part("Base", sg_base),
+     kit.Part("Shade", sg_shade, (0.0, 0.0, SGS["z0"]), "Base", (0, 0, 1)),
+     kit.Part("ChainA", sg_chain(1.0), SG_CHAIN_A, "Base", (0, 1, 0)),
+     kit.Part("ChainB", sg_chain(-1.0), SG_CHAIN_B, "Base", (0, 1, 0))],
+    sg_look,
+    lights=[
+        # the bulbs' warm pool on the table and floor, out of the shade's open foot
+        dict(kind="Spot", part="Shade", at=(0.0, 0.0, 1.62), face=(0.0, 0.0, -1.0),
+             kelvin=SGK["kelvin"], brightness=0.6, range=10, angle=110, shadows=True,
+             preview_watts=30.0, preview_blend=0.3),
+        # the glow all round, dim (the glass holds most of it back)
+        dict(kind="Point", part="Shade", at=(0.0, 0.0, 1.75), kelvin=SGK["kelvin"], brightness=0.3,
+             range=8, shadows=False, preview_kind="POINT", preview_watts=4.0, preview_size=0.05),
+    ] + [
+        # the coloured patterns on your walls: ruby out the front, green and cobalt behind
+        dict(kind="Spot", part="Shade", at=(0.25 * math.cos(math.radians(a)), 0.25 * math.sin(math.radians(a)), 1.6),
+             face=tuple(Vector((math.cos(math.radians(a)), math.sin(math.radians(a)), -0.3)).normalized()),
+             rgb=rgb, brightness=0.5, range=9, angle=70, shadows=False, preview_watts=40.0,
+             preview_blend=0.4)
+        for a, rgb in SG_COLOURS],
+    glow=dict(part="Shade", strength=1.8, tint=(255, 222, 180), preview=2.2),
+    motions={
+        # a tug on the chain: it gives, clicks, springs back and swings; the bulbs come up
+        # through the glass in a breath, as a filament does; the other chain sways in sympathy
+        "SwitchOn": dict(duration=1.75, focus=SG_FOCUS, distance=0.28, tracks=[
+            ("ChainA", "stretch", SG_PULL), ("ChainA", "turn", SG_SWING),
+            ("ChainB", "turn", SG_SYMPATHY),
+            ("Shade", "glow", [(0.0, 0.0), (0.16, 0.0), (0.22, 0.62, "Quad", "Out"),
+                               (0.42, 1.0, "Sine", "Out"), (1.75, 1.0)])]),
+        # the same tug; the filaments fade out through orange
+        "SwitchOff": dict(duration=1.75, focus=SG_FOCUS, distance=0.28, tracks=[
+            ("ChainA", "stretch", SG_PULL), ("ChainA", "turn", SG_SWING),
+            ("ChainB", "turn", SG_SYMPATHY),
+            ("Shade", "glow", [(0.0, 1.0), (0.16, 1.0), (0.21, 0.42, "Quad", "Out"),
+                               (0.36, 0.07), (0.55, 0.0), (1.75, 0.0)])]),
+    },
+    big=True, dust=SGK["dust"], seed=SGK["seed"],
+)
+
 FINDS = [DESK_LAMP, NIGHT_LIGHT, TEA_LIGHT, GLOW_STICKS, FAIRY_LIGHTS, LANTERN, MOON_LAMP, BLOB_LAMP, OIL_LAMP, DISCO_BALL, NEON_SIGN,
-         HARD_HAT, FIREFLY_JAR, SPOTLIGHT]
+         HARD_HAT, FIREFLY_JAR, SPOTLIGHT, STAINED_GLASS_LAMP]
 
 if __name__ == "__main__":
     kit.main("Lights", HERE, FINDS)

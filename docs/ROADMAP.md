@@ -2103,7 +2103,10 @@ actions themselves and dealing the new finds on floors are later game tickets.
   - [x] **F-02f** The blob lamp (Nov 15); wax parts can bake alone, a long loop previews at
     fewer frames a second.
   - [x] **F-02g** The oil lamp (Nov 15); renders can skip actions (`ACTIONS=`).
-  - [ ] **F-02h** The disco ball (researched in WAVES.md's newest note), then on down the list.
+  - [x] **F-02h to F-02l** The disco ball, the neon OPEN sign, the miner's hard hat, the jar
+    of fireflies and the theatre spotlight (Nov 15).
+  - [x] **F-02m** The stained-glass lamp (Nov 15, D-198).
+  - [ ] **F-02n** The lamp that's on when you find it (Secret), the last Light.
 - [ ] **F-03 The remote-control car and the die-cast car** (pulled forward from wave 4).
   - [x] F-03a The remote-control car and its transmitter (Nov 15, `art/finds/figures/`).
   - [ ] F-03b The die-cast car.
