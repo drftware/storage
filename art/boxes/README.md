@@ -91,6 +91,6 @@ along the tape's edges, untextured: the game makes them Neon). `spec.py` holds i
 | ![dark](../sheets/boxes-marked-dark-cue.png) | ![open](../sheets/boxes-marked-open.png) |
 
 `boxes-marked-dark` and `-close-cue` too, and `boxes-marked-open-strip` (the opening in ten
-frames; `out/marked-open.mp4` plays it at 30 a second, not kept in git). For the bake the end
+frames; `out/marked-open.mp4` plays it at 30 a second). For the bake the end
 flaps stand open and the tape floats clear, so neither bakes the other's shadow.
 
