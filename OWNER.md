@@ -31,22 +31,15 @@ nowhere else.
   transmitter beside it as one find; the theatre spotlight isn't dealt until floors have big
   finds. Say if any should change.
 
-- [ ] **Decide: the packed units** (your idea, Nov 15, D-204; nothing built). My default for
-  each is in brackets; say which to change.
-  1. Which units get packed? [About one in three of the medium and large units, more on higher
-     floors. Small units (8 by 8 studs) stay open: too small for a path.]
-  2. Which finds aren't in a box? [Big finds and anything too long for one, like the theatre
-     spotlight. Everything else sits in a box.]
-  3. Does an open unit's find sit in a box too? [Yes, so the reveal is always the box.]
-  4. Opening a box: [one press, then a two-second reveal you can't skip: the tape tears, the
-     flaps lift, a beat, the find rises. Friends nearby see it too.]
-  5. Does the grade show as the box opens? [Yes: a blue light for Rare, purple for Epic, gold for
-     Legendary, each with its own sound, as Pet Simulator's eggs do. This replaces the parked
-     glow at the door.]
-  6. What waits at the back of a packed unit? [A box most of the time, a sleeping monster
-     sometimes, never nothing: an empty dead end after that walk feels like a cheat.]
-  7. Can a box hold coins, nothing, or a monster? [Not for now: a box always holds a find. Finds
-     that are monsters in disguise stay parked.]
+- [ ] **Decide (defaults in, the box you open, D-205; nothing built yet):** say if any should
+  change.
+  1. When: the five box tickets (B-01 to B-05) come right after S3-02, before Cut Free and the
+     floor rules. B-01, the box itself, can run on the overnight art track.
+  2. The "something inside" cue: a faint warm line of light along the box's tape and a soft
+     sound when you're close, as Fortnite's chests glow and hum.
+  3. A note dropped in the car stays beside the keypad for that floor, for anyone to read.
+  4. Caught holding a note, it drops where you were caught, so a friend can fetch it.
+  5. One marked box a unit at most.
 
 - [ ] **Answer Brix's gift and receipt choices** (its DECISIONS E-075 to E-078, listed in Brix's
   HANDOFF) before S3-04 sells gift versions of the wrap colours.

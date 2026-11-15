@@ -2,14 +2,14 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-15, session 181 (the order changed: purchases first, D-204) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-15, session 181 (purchases first, D-204; the box you open, D-205) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
 - S3-01 done (D-187); F-G1a done (D-203): 19 Nov 15 finds dealt by grade, stood as found,
   carried and banked; using one does nothing yet. Find art: 20 finds in the place, F-04c next.
 - **Order changed** (D-204): Brix built purchases (its main at `5cdb8c2`, pushed, in no release
-  yet), so Step 3's products come before Step 4 again. F-G1c (the grade shown at the door) is
-  parked: the owner is shaping packed units, finds in boxes you open (`OWNER.md` asks).
+  yet), so Step 3's products come before Step 4 again. **The box you open** (D-205): finds,
+  tools, coins and the code's notes move into marked boxes; opening one is the payoff (B-01 to B-05).
 
 ## Next task: S3-02 Purchases that are never lost
 ROADMAP S3-02. The moment: a player pays Robux and gets it at once, exactly once, never lost, even
@@ -32,14 +32,14 @@ failure, a server hop, a regional price, an offer switched off), which is also B
 and HANDOFF; `src/server/Saving.luau`; `src/server/Recording.luau`.
 
 ## Queue (next sessions per ROADMAP Phase 2)
-0. S3-03 Cut Free, Free a Friend, Free Everyone (it owns Studio's "CutFree" let-in, which still
-   stands a watcher in the lobby); then S3-04 the counter's shop (gifts wait on `OWNER.md`).
+0. **The box you open, B-01 to B-05** (ROADMAP, D-205): the box built (the art track can do it),
+   the reveal, what's found in boxes, the notes in boxes, packed units. Then S3-03 Cut Free (it
+   owns Studio's "CutFree" let-in) and S3-04 the counter's shop (gifts wait on `OWNER.md`).
 1. **S4-01 Floors made by rules.** Split first: S4-01a the rules table and the top gone, S4-01b
-   what changes floor to floor (packed units slot in before S4-01b once answered). Read the GDD's
-   "Floor rules", D-106, D-128, `Climb.luau`, `Deal.luau`; grep `Climb.Top`, `Climb.Building`,
-   `topped` for what leans on the top. The escape ("Made it") has no trigger once the top goes:
-   keep its code, note it. Spec any floor number up to 100 and past it; the climb goes past
-   floor 3 in Studio Play (DevFloorNumber 3). Leave room for boss floors and bigger-inside units.
+   what changes floor to floor. Read the GDD's "Floor rules", D-106, D-128, `Climb.luau`,
+   `Deal.luau`; grep `Climb.Top`, `Climb.Building`, `topped` for what leans on the top. The
+   escape ("Made it") has no trigger once the top goes: keep its code, note it. Spec any floor
+   number up to 100 and past; the climb goes past floor 3 in Studio Play (DevFloorNumber 3).
 2. **F-G1b Using a find plays what it does** (ROADMAP F-G1 has its plan and Read-first list);
    then S4-02, S4-03, S4-04 (5 coins a trapped monster, D-188), S4-05. Any ticket that adds finds
    starts from the catalog doc the GDD's finds section links.

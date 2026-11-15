@@ -5444,3 +5444,34 @@ sleeps or a box waits, and finds inside boxes, so the reveal is opening the box,
 moment, and not the door (ROADMAP "In no step"; `OWNER.md` asks seven questions with defaults).
 
 Not chosen: waiting for Brix 0.2.0; keeping S4-01 first.
+
+## D-205 What you find comes in a box you open (owner, Nov 15)
+
+The owner's design, answering D-204's questions. A door rolls up on what fits a storage unit:
+most units hold somebody's stuff players can't use (stacked boxes, a mattress and the like),
+some are bare. A unit with something to take has one box, marked just enough to show there's
+something in it. Inside is a find, a tool, one or more coins, or one of the code's notes.
+Opening the box is the payoff that brings players back, built with care to feel like opening a
+blind box (Pop Mart's Labubu, blind-bag squishy toys): a find lifts out, shows its grade (a blue
+light for Rare, purple for Epic, gold for Legendary, each with its own sound, as Pet
+Simulator's eggs show theirs) and becomes yours; coins go to the bank as they do now; a tool goes
+to your hands. The code's notes move off the units' back walls (D-044) into boxes: a player
+takes the paper with them and can drop it at the elevator to read later, once the team has
+found them all, as DOORS' library hands you hint books to carry.
+
+Agreed defaults (D-204's questions): about one in three medium and large units packed (boxes to
+the ceiling, a path through to the back, where the marked box or a sleeping monster waits,
+never nothing), more on higher floors; small units stay open. Big finds and anything too long
+for a box stay out of one. Opening is one press, then a two-second reveal you can't skip that
+friends nearby see. Changed by the owner: a box can hold coins (and a tool or a note), not
+only a find.
+
+Defaults the owner hasn't seen yet (`OWNER.md`): these tickets (ROADMAP B-01 to B-05) come right
+after S3-02; the cue is a faint warm line of light at the tape and a soft sound up close, as
+Fortnite's chests glow and hum; a note dropped in the car stays by the keypad for that floor; a
+note held by a caught player drops where they were caught; one marked box a unit at most.
+
+What it replaces: coins loose on the floor (D-132), finds standing on the floor as found
+(F-G1a's pose now plays as a find comes out and when it's dropped), notes on the back walls
+(D-044), somebody's stuff in only half the empty units (D-136), and the grade shown at the
+door (F-G1c, parked by D-204).

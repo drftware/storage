@@ -2015,6 +2015,40 @@ Done when nobody quits a climb because they were caught.
   versions (GDD "Monetization", D-112). The gifts lean on Brix's gift choices (its E-075 to
   E-078), which wait on `OWNER.md`.
 
+### The box you open (the owner, Nov 15, D-205)
+
+Done when opening a box is the moment players come back for. Comes right after S3-02 (D-205's
+default; `OWNER.md` asks). The moment: a door rolls up on somebody's stuff, and in some units one
+box, marked just enough to show something's inside. Opening it is the payoff, built to feel like
+opening a blind box (Pop Mart's Labubu, blind-bag squishies): a find lifts out and shows how rare
+it is, coins go to your bank, a tool goes to your hands, or it's a piece of the code.
+
+- [ ] **B-01 The box, built** (art, the finds kit's way; it can run on the art track). One plain
+  taped cardboard box that never tells what's inside; its open motion (the tape tears, the flaps
+  spring up) and its sounds; the "something inside" cue, just enough (default: a faint warm line
+  of light at the tape seam and a soft sound up close, as Fortnite's chests glow and hum).
+  Judged at phone size.
+- [ ] **B-02 Opening a box: the reveal.** The payoff, built with care and studied from real
+  unboxings and game reveals (Pet Simulator's egg hatch; Brawl Stars' Starr Drops, whose colour
+  tells the prize before it shows). Press Open: the tape tears, a beat with light leaking
+  through the flaps in the grade's colour (blue Rare, purple Epic, gold Legendary, each with its
+  own sound: F-G1c's idea, moved to the box), the flaps burst, the find lifts, turns once and is
+  yours. Two seconds you can't skip; friends nearby see and hear it, a Legendary further off. A
+  Common must still feel good. Feel numbers in Config. Likely two sessions.
+- [ ] **B-03 What's found comes in a box.** The deal puts a unit's find, tool or coins (one or
+  more) in its one marked box instead of loose on the floor; coins go to the bank as they do
+  now, a tool to your hands. Most units show somebody's stuff you can't use (a mattress, stacked
+  boxes, a rug: D-136's dressing, now in most units rather than half the empty ones); some stay
+  bare. Big finds stay out of boxes.
+- [ ] **B-04 The code's notes in boxes.** A note is no longer on a unit's back wall (D-044): it's
+  in a marked box. Take it and carry it; hold it up to read it (D-045). Drop it in the car and it
+  stays by the keypad for anyone to read, so a team gathers the pieces there (as DOORS' library
+  hands you its hint books to carry). Caught holding one, it drops where you were caught.
+- [ ] **B-05 Packed units.** Some medium and large units (about one in three, more on higher
+  floors) are boxes stacked to the ceiling with a path through to the back, where the marked box
+  or a sleeping monster waits, never nothing. Art first (each stack a few models, for low-end
+  phones); the camera in a narrow path judged at phone size. Small units stay open.
+
 ### Step 4: The climb with no top
 
 Done when two climbs in a row feel different and players talk about their best floor.
@@ -2082,15 +2116,8 @@ monster that takes your head; the stair chase and other floors that play differe
 of units; trading; a season pass; boss floors and units far bigger inside than they look
 (D-188); the item catalog's waves (its own build order), with finds you wear, pets and plants
 that live in your unit, and the arcade cabinets' games; fake notes, finds that are monsters in disguise, the monster
-that moves walls, and the dolly.
-
-**Packed units** (the owner's idea, Nov 15, D-204; `OWNER.md` asks, nothing built): some units
-are boxes stacked to the ceiling with a path through to the back, where either a monster sleeps
-or a box waits; finds sit inside boxes, and opening one is the reveal, a blind box moment (Pet
-Simulator's eggs, Pop Mart's blind boxes), not the door. Once answered it is art first (the boxes
-and stacks built the unit's way), and it slots in before S4-01b, since the floor rules decide how
-packed a floor is. It takes over F-G1c's grade glow, and the Packrat's take from a box is to be
-worked out.
+that moves walls, and the dolly. What the Packrat does with a marked box (B-03) is to be worked
+out.
 
 ## Find art: the catalog's wave 1 (from Nov 14)
 
@@ -2141,8 +2168,8 @@ actions themselves and dealing the new finds on floors are later game tickets.
     `Pose.at` on the clients; the server says which motion and when). Lights in a unit count
     against the cap on real lights. (The finds kit could write each find's motion order or rest
     into its set, so `Finds/Order.luau` goes: an art session's call.)
-  - [ ] **F-G1c The grade shows. Parked Nov 15 (owner: cut for now, D-204):** the reveal may
-    move from the door to a box you open (In no step: packed units). As written (the catalog's
+  - [ ] **F-G1c The grade shows. Parked Nov 15 (owner: cut for now, D-204):** the reveal moved
+    from the door to the box you open (B-02, D-205). As written (the catalog's
     "How you can tell"): a Rare's blue glow seen
     from the door and a chime, an Epic's purple light spilling as the door rolls up, a
     Legendary's gold light under the door before it opens, heard by the team. Needs the owner's
