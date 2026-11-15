@@ -31,9 +31,25 @@ nowhere else.
   transmitter beside it as one find; the theatre spotlight isn't dealt until floors have big
   finds. Say if any should change.
 
-- [ ] **Before you push this game, push Brix** (`../engine`): the game's `vendor/brix` now points
-  at Brix `6717740` (S1-02), which is only on this Mac until Brix is pushed; a fresh clone of
-  the game can't fetch it until then.
+- [ ] **Decide: the packed units** (your idea, Nov 15, D-204; nothing built). My default for
+  each is in brackets; say which to change.
+  1. Which units get packed? [About one in three of the medium and large units, more on higher
+     floors. Small units (8 by 8 studs) stay open: too small for a path.]
+  2. Which finds aren't in a box? [Big finds and anything too long for one, like the theatre
+     spotlight. Everything else sits in a box.]
+  3. Does an open unit's find sit in a box too? [Yes, so the reveal is always the box.]
+  4. Opening a box: [one press, then a two-second reveal you can't skip: the tape tears, the
+     flaps lift, a beat, the find rises. Friends nearby see it too.]
+  5. Does the grade show as the box opens? [Yes: a blue light for Rare, purple for Epic, gold for
+     Legendary, each with its own sound, as Pet Simulator's eggs do. This replaces the parked
+     glow at the door.]
+  6. What waits at the back of a packed unit? [A box most of the time, a sleeping monster
+     sometimes, never nothing: an empty dead end after that walk feels like a cheat.]
+  7. Can a box hold coins, nothing, or a monster? [Not for now: a box always holds a find. Finds
+     that are monsters in disguise stay parked.]
+
+- [ ] **Answer Brix's gift and receipt choices** (its DECISIONS E-075 to E-078, listed in Brix's
+  HANDOFF) before S3-04 sells gift versions of the wrap colours.
 
 ## Now: get carried up wrapped, and get found (S3-01a, built Nov 14, D-186; the wake seen in Studio Play, the carry itself not yet run)
 

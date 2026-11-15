@@ -1999,9 +1999,9 @@ Done when nobody quits a climb because they were caught.
     kept on, not the one they were left on (`ClimbFate`). Playing alone: one catch still ends
     it. Studio's "CutFree" let-in for a watcher still stands you in the lobby (S3-03 owns it).
     Spec the rules; one-player checks with a stand-in friend (STUDIO.md "Testing left behind").
-- [ ] **S3-02 Purchases that are never lost.** Waits on Brix: it has no purchases piece built
-  or on its ROADMAP yet (checked Nov 14); a session allowed to edit Brix files the ask there in
-  neutral terms first, and S3-03 and S3-04 sell things, so they wait with it.
+- [ ] **S3-02 Purchases that are never lost.** Brix built its purchases piece on Nov 15 (on its
+  main branch at `5cdb8c2`, in no release yet); this game pins a commit, so the ticket starts by
+  moving the pin (D-204). Its phone test is also Brix's own last purchases check (ENG-23e).
   Brix's purchases on the saved profile: granted
   only after the profile saves. Before anything is sold live: a real phone purchase survives a
   forced save failure and a server hop; every purchase and shop view is recorded; any offer can
@@ -2012,7 +2012,8 @@ Done when nobody quits a climb because they were caught.
   free in Studio, L-07d and L-08c.)
 - [ ] **S3-04 The counter's shop, and wrap colours.** Walk up to the counter and the shop
   opens; a Shop button in the lobby and Roblox's own. Its first shelf: wrap colours, with gift
-  versions (GDD "Monetization", D-112).
+  versions (GDD "Monetization", D-112). The gifts lean on Brix's gift choices (its E-075 to
+  E-078), which wait on `OWNER.md`.
 
 ### Step 4: The climb with no top
 
@@ -2083,6 +2084,14 @@ of units; trading; a season pass; boss floors and units far bigger inside than t
 that live in your unit, and the arcade cabinets' games; fake notes, finds that are monsters in disguise, the monster
 that moves walls, and the dolly.
 
+**Packed units** (the owner's idea, Nov 15, D-204; `OWNER.md` asks, nothing built): some units
+are boxes stacked to the ceiling with a path through to the back, where either a monster sleeps
+or a box waits; finds sit inside boxes, and opening one is the reveal, a blind box moment (Pet
+Simulator's eggs, Pop Mart's blind boxes), not the door. Once answered it is art first (the boxes
+and stacks built the unit's way), and it slots in before S4-01b, since the floor rules decide how
+packed a floor is. It takes over F-G1c's grade glow, and the Packrat's take from a box is to be
+worked out.
+
 ## Find art: the catalog's wave 1 (from Nov 14)
 
 The owner asked on Nov 14 for the catalog's finds as world-class models, built through the night
@@ -2132,7 +2141,9 @@ actions themselves and dealing the new finds on floors are later game tickets.
     `Pose.at` on the clients; the server says which motion and when). Lights in a unit count
     against the cap on real lights. (The finds kit could write each find's motion order or rest
     into its set, so `Finds/Order.luau` goes: an art session's call.)
-  - [ ] **F-G1c The grade shows** (the catalog's "How you can tell"): a Rare's blue glow seen
+  - [ ] **F-G1c The grade shows. Parked Nov 15 (owner: cut for now, D-204):** the reveal may
+    move from the door to a box you open (In no step: packed units). As written (the catalog's
+    "How you can tell"): a Rare's blue glow seen
     from the door and a chime, an Epic's purple light spilling as the door rolls up, a
     Legendary's gold light under the door before it opens, heard by the team. Needs the owner's
     look; the copy of what each grade is stays off screen (no text that explains a rule).

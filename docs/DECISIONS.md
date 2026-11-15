@@ -5423,3 +5423,24 @@ the skates Uncommon 18, the boombox Uncommon 25, the TV Uncommon 22 ("Small box 
 
 Not chosen: dealing every find as likely (a Legendary as common as a teddy kills the hunt);
 putting the rest pose into the art (the sets are the art sessions' and the template is shared).
+
+## D-204 Purchases before the climb with no top; the glow at the door parked (owner, Nov 15)
+
+Brix built its purchases piece on Nov 15: `Purchases`, `Roblox.Marketplace` (asks Roblox for
+prices) and `Roblox.PlayerPurchases` (takes Roblox's receipts and shows purchase prompts), on its
+main branch at `5cdb8c2`, pushed, and in no release (v0.1.0 was tagged before it). This game
+takes Brix as a submodule pinned to a commit (FRAMEWORK.md), so it doesn't wait for Brix 0.2.0:
+S3-02 starts by moving the pin. With purchases no longer blocked, the GDD's build order stands
+again and the owner agreed: Step 3's products (S3-02 to S3-04) come before Step 4, which had been
+pulled ahead only because purchases were blocked. Brix's own last purchases check (its ENG-23e:
+a phone purchase granted once through a forced save failure and a server hop, prices under
+regional pricing, an offer switched off live) needs a published place with real products, so
+S3-02's phone test in `OWNER.md` is that check.
+
+F-G1c (a find's grade shown at the door: a Rare's glow, an Epic's light spilling as the door
+rolls up, a Legendary's gold under the door) is parked: the owner cut it for now. They are
+shaping packed units: boxes stacked to the ceiling with a path to the back, where a monster
+sleeps or a box waits, and finds inside boxes, so the reveal is opening the box, a blind box
+moment, and not the door (ROADMAP "In no step"; `OWNER.md` asks seven questions with defaults).
+
+Not chosen: waiting for Brix 0.2.0; keeping S4-01 first.
