@@ -2,44 +2,43 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-15, session 187 (B-02b, D-210) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-15, session 188 (B-03a, D-211) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- B-02 done. B-02b verified in Studio Play (one player): `DevBox` "OilLamp" stood a box in
-  Unit301; Open: rip 0.12 s, the hold's rattle and blue glow from the tear, flaps held and
-  trembling, the burst at 0.78 s (light flaring to 2.8), slap 0.86 s, the lamp's copy rising and
-  turning, in the hand at 2.25 s as the copy went. A hand-stamped Legendary box's hold washed the
-  unit gold at Level01 (`docs/art/B-02b-hold-legendary-level01.jpg`). Output: no script errors.
-- New: `Opening` reveal rules (`Reveals`, `flapTime`, `glow`, `shake`, `lift`, `handAt`; specced),
-  `Grades.Colours`, `Boxes.Reveal` sounds, `MarkedBoxes.stand(unit, place, find)` stamping
-  `Find`/`Grade`/`LaidAt` and giving the find, `MarkedBoxView`'s held beat, glow, light and copy.
+- B-03a done, verified in Studio Play (one player, seed 2000013's floor 3): real units deal their
+  find or tool inside the marked box when it packs (`Deal.packs`, `Deal.BoxWall`; Deals'
+  `layBoxed`); the padlock opened as a Common into slot 1, the skates as an Uncommon into slot 2;
+  the oil lamp and desk lamp stood loose; `DevBox` "StainedGlassLamp" forced a box. No errors.
+- 16 of 23 finds pack; no Legendary or Secret does (all lamps): a tall marked box is suggested in
+  `OWNER.md`. Of the tools only the padlock packs. The Packrat leaves shut boxes alone.
 - Nothing put in the place by hand. Studio shows two copies of new modules (Rojo glitch; harmless).
 
-## Next task: B-03a A unit's find or tool comes in its box
-ROADMAP B-03 (D-205, D-210). Split it first in ROADMAP: B-03a (this: finds and tools go in the
-box), B-03b (coins in boxes to the bank; somebody's stuff in most units, D-136). The moment:
-a door rolls up on a unit with one warm-lined box; the find is never seen until you open it.
-1. Read how Deals lays a find now (grep `Deals.luau` for `slots:lay`, `"Find"`, `contents.kind`)
-   and the `DevBox` block (it already finds a spot: `DealSpot.inUnit(size, "Find", footprint,
-   note, number, taken)` with the box's footprint, then `markedBoxes:stand(unit, placed(unit,
-   spot), key)`). Replace the find's lay with that, for finds that fit the box.
-2. Big finds stay out: a find whose `Tools.bounds(key).Size` won't fit inside
-   `Boxes.Marked.Size` (less 0.1 a side) is laid as now. Pure rule + spec (e.g. in `Deal.luau`).
-3. A tool dealt to a unit (grep `Deal.luau` for tool kinds) goes in the box too: `stand` takes
-   a catalog key, and `Slots.give` gives tools as it gives finds; a tool's reveal plays as a
-   Common (its row has no grade: check `MarkedBoxes`' `grade` fallback still holds).
-4. The deck's odds, the Packrat's fetching (`Slots.finds`, `loose`) and the faint mark
-   (`FaintMark`) assume finds lie loose: grep `finds(`, `loose`, `FaintMark` and decide each
-   (a boxed find can't be fetched; default it, OWNER.md).
-5. Remove `DevBox`'s "stands in the next unit" once real boxes deal (keep the find-key form if
-   useful for testing grades). Prove in Play as STUDIO.md "Opening a marked box in Play" does.
-**Acceptance:** checks green; in Play a dealt unit's find comes only in a box and its reveal
-plays; a big find still stands loose; OWNER.md has two-player steps.
-**Read first:** ROADMAP B-03; D-205, D-210; `src/server/Deals.luau` (grep, not whole);
-`src/shared/Deal.luau` (grep); `src/server/MarkedBoxes.luau`; `src/shared/DealSpot.luau` (grep).
+## Next task: B-03b Coins in boxes, and somebody's stuff in most units
+ROADMAP B-03b (D-205, D-211, D-136). The moment: a door rolls up on a unit with somebody's stuff
+and one warm-lined box; you open it and coins jingle out into your bank, maybe with a find.
+1. Coins in the box: a unit's coins (`contents.coins`, 1 to 3) go in its box instead of
+   `layCoins` (Deals.luau): a unit with coins and nothing else stands a box holding only coins;
+   with a boxed find or tool, both in the one box. A big loose find's coins: default in a box
+   beside it (one box a unit, D-205), OWNER.md line.
+2. `MarkedBoxes.stand(unit, place, find, coins)`: stamp `Coins` with the open (beside `Find`);
+   pay with `Coins:pay(player, n)` (Coins.luau line ~84; check what it plays and whether the HUD
+   counter jumps) at the reveal's burst or hand beat; an empty-but-coins box plays as a Common
+   with coins rising (MarkedBoxView: a few coin copies from `Coins` art, `CoinSpecs.Piles`).
+   Every action answers: the coins' own sound as they land in the bank.
+3. Somebody's stuff in most units (D-136's `Deal.StuffShare` 0.5 of empty units, Deal.luau ~367,
+   read from the pick): now most units, a box unit too (stuff against a wall, the box clear of
+   it: `DealSpot.stuffIn` then the box with `taken`). Keep `tests/stuffdeal.spec`'s fingerprint
+   rule: no new draw that moves what a seed lays; update the fingerprint deliberately.
+4. Battery (`layBattery`) stays loose (a tool for the torch, picked up on the floor). Decide.
+5. Prove in Play on seed 2000013 (STUDIO.md "Opening many doors fast"): Unit301 had 2 coins and
+   nothing else; Unit312 a padlock and 3 coins; Unit319 the skates and 2 coins.
+**Acceptance:** checks green; in Play a unit's coins come only in its box and reach the bank on
+the open with a sound; most units show somebody's stuff; OWNER.md has two-player steps.
+**Read first:** ROADMAP B-03b; D-211, D-136; `src/server/Deals.luau` (grep `layCoins`,
+`layStuff`, `layBoxed`); `src/server/MarkedBoxes.luau`; `src/server/Coins.luau` (grep `pay`).
 
 ## Queue (next sessions, the owner's ten-ticket order)
-0. **B-03b, B-04, B-05** (ROADMAP, D-205); then S3-03 Cut Free (it owns Studio's "CutFree"
+0. **B-04, B-05** (ROADMAP, D-205); then S3-03 Cut Free (it owns Studio's "CutFree"
    let-in; rows in `Products`, `Purchasing:prompt`), then S3-04.
 1. **S4-01 Floors made by rules.** Split first: S4-01a the rules table and the top gone, S4-01b
    what changes floor to floor. Read the GDD's "Floor rules", D-106, D-128, `Climb.luau`,
@@ -51,12 +50,11 @@ plays; a big find still stands loose; OWNER.md has two-player steps.
 4. L-08e3c, L-14b2d wait on `OWNER.md`; R-01 later. A GDD section costs ~15k context: `view`
    with `outline: true` and `from` the heading's id, then `search` with `blocks` on just the part needed.
 5. Small: a find's copy coming out of a box logged "rbxassetid://73742731927159 failed: No asset
-   content representation" nine times in Play (a find's mesh or texture; check which); the reveal
-   is untested with two players and with a laid (full-hands) find; Rojo's duplicate modules; a
-   dropped find bumps a walking player (D-182); a take could show the arm first (KeeperView Kit);
-   rbxassethash warnings in Play; the Packrat's dead Slots entry and S2-06b1's way home; the
-   Mannequin's pose onto `Rig.luau` (D-176); the watch bar's empty panel; S3-01b's wipe after the
-   bring unseen; S1-07a, S2-02b to d4, S2-03b, S2-05a, S2-07a1 to b2 leftovers; unseen S1-10d1-3.
+   content representation" (a find's mesh or texture; check which); the reveal untested with two
+   players and with a laid (full-hands) find; Rojo's duplicate modules; a dropped find bumps a
+   walking player (D-182); rbxassethash warnings in Play; the Packrat's dead Slots entry and
+   S2-06b1's way home; the Mannequin's pose onto `Rig.luau` (D-176); the watch bar's empty
+   panel; S1-07a, S2-02b to d4, S2-03b, S2-05a, S2-07a1 to b2 leftovers; unseen S1-10d1-3.
 
 ## Kickoff for the next agent
 ```text

@@ -31,8 +31,7 @@ nowhere else.
   transmitter beside it as one find; the theatre spotlight isn't dealt until floors have big
   finds. Say if any should change.
 
-- [ ] **Decide (defaults in, the box you open, D-205; nothing built yet):** say if any should
-  change.
+- [ ] **Decide (defaults in, the box you open, D-205):** say if any should change.
   1. The "something inside" cue: a faint warm line of light along the box's tape and a soft
      sound when you're close, as Fortnite's chests glow and hum.
   2. A note dropped in the car stays beside the keypad for that floor, for anyone to read.
@@ -80,8 +79,8 @@ nowhere else.
      splitting along the seam; the cue is warm lines at the tape's edges plus a soft hum up close.
 - [ ] **Open a marked box with a friend: the reveal** (B-02a, B-02b, D-209, D-210; one player
   seen in Studio Play by me, a Rare all the way into the hand and a Legendary's held breath
-  captured, never two players, never on a phone). No unit deals a box yet (B-03), so Studio
-  stands one for you, holding the find you name.
+  captured, never two players, never on a phone). Studio deals the next unit you open the find
+  you name, in a box even when it's too big for one, so every grade can be seen.
   1. In Studio, Test tab > Clients and Servers: Local Server, 2 players, Start.
   2. In the Server window's command bar, type `workspace:SetAttribute("DevBox", "NightLight")`,
      Enter (a Common). The next door anyone opens has one box with two thin warm lines along its
@@ -105,6 +104,29 @@ nowhere else.
      blue, Epic purple, Legendary gold, Secret red); how long each holds (0.14 s Common up to
      1.2 s Secret); full hands put the find on the floor rather than refusing the Open; a
      Legendary heard 110 studs off, a Secret 140.
+- [ ] **Find things in boxes** (B-03a, D-211; seen in Studio Play by me with one player, never
+  two, never on a phone). Real units now deal their find or tool inside the marked box.
+  1. In Studio, Test tab > Clients and Servers: Local Server, 2 players, Start.
+  2. Both players: take "Walk a floor" by the spawn and open doors on floor 3 together.
+  3. A unit with something to take shows one box with the two thin warm lines along its tape
+     and nothing else to take: the find is never seen until someone presses Open. Open a few.
+  4. A small find (a night light, the skates, a teddy) rises out and flies to the opener's hand;
+     the padlock comes in a box too and opens like a Common. Player 2 should see it from the hall.
+  5. A big find (a lamp taller than the box, the TV, the boombox, the neon sign) and the big tools
+     (saw, bolt cutters, ladder, bubble wrap, air horn) still stand loose on the floor with Take.
+  6. Seed 2000013 (Studio's floor 3) dealt: Unit312 a padlock box, Unit319 the skates, Unit321 a
+     blob lamp, Unit323 a moon lamp, Unit326 a die-cast car, Unit340 a night light, all in boxes;
+     Unit303 the oil lamp and Unit333 the desk lamp standing loose. Unit325 holds an awake
+     Mannequin; Unit304's note is guarded.
+- [ ] **Decide (defaults in, B-03a, D-211):** say if any should change.
+  1. Big finds stand loose, as D-205 says. Today that means no Legendary or Secret ever comes in
+     a box (all three of the top lamps are taller than it), so the gold and red reveals never
+     play in a real climb. My suggestion: a tall marked box (a wardrobe box, built the way the
+     marked box was) for finds too big for the small one; say yes and it becomes a ticket.
+  2. A find fits if it packs in any way round, as you'd pack a moving box (the RC car lies on
+     its side to fit), with a hair of room for the cardboard.
+  3. The Packrat leaves shut boxes alone: it only fetches what lies loose (big finds, dropped
+     finds, a find that came out onto the floor for full hands). It has less to take now.
 - [ ] **Answer Brix's gift and receipt choices** (its DECISIONS E-075 to E-078, listed in Brix's
   HANDOFF) before S3-04 sells gift versions of the wrap colours.
 

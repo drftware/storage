@@ -802,6 +802,31 @@ local function landOn(odds: { [string]: number }, roll: number): (Kind, number)
 	return "Nothing", 0
 end
 
+--[[
+	What comes in the marked box (B-03a, D-205): a unit's find or tool waits inside its one marked
+	box, never seen until someone opens it, if it packs into one turned any way, as you'd pack a
+	moving box; bigger, or too long (a tall lamp, the saw, the ladder), it stands loose on the
+	floor as before, since a box it couldn't have come out of would read as a trick.
+]]
+-- Studs the box's cardboard takes on each side, top and bottom too: a real 18-inch box is about
+-- 17.6 inside. A little more and the skates and the hard hat would stand loose for want of a
+-- hair; less and a find would rise out of a box narrower than itself.
+Deal.BoxWall = 0.05
+
+-- Whether a thing of size `thing` packs into a box of size `box` (each three sizes, studs, in any
+-- order), turned whichever way it fits, `Deal.BoxWall` taken off every side of the box.
+function Deal.packs(thing: { number }, box: { number }): boolean
+	local a, b = table.clone(thing), table.clone(box)
+	table.sort(a)
+	table.sort(b)
+	for i = 1, 3 do
+		if a[i] > b[i] - 2 * Deal.BoxWall then
+			return false
+		end
+	end
+	return true
+end
+
 -- The keeper in a dealt unit, "Asleep" or "Awake", whether it's all the unit holds or stands
 -- with a padlocked unit's find or tool; nil for none.
 function Deal.keeperIn(contents: Contents): Kind?

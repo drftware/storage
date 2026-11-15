@@ -5594,3 +5594,30 @@ Defaults taken overnight (`OWNER.md` "Open a marked box with a friend: the revea
   the box toward the opener, with its Take. Decided at the press; if the hand fills or the
   opener dies during the reveal, it lands there too.
 - **An empty box** (no find, B-03's coins to come) plays as a Common with nothing rising.
+
+## D-211 A unit's find or tool waits in its box when it packs into one (B-03a, Nov 15)
+A unit dealt a find or tool stands its one marked box behind the bulb, facing the doorway, where
+a find would stand, holding it (`Deals.layBoxed`, `MarkedBoxes.stand` with the catalog key); the
+thing is never seen until someone opens the box. Whether it goes in is `Deal.packs` (pure,
+`tests/boxdeal.spec.luau`): its three sizes against the box's, both sorted, so it packs whichever
+way round fits, as you'd pack a moving box, less `Deal.BoxWall` (0.05 studs) of cardboard each
+side (a real 18-inch box is about 17.6 inside; HANDOFF's suggested 0.1 would have left the skates
+and the hard hat loose for a hair). Anything that doesn't pack stands loose as before, since a
+box it couldn't have come out of would read as a trick (D-205: big finds stay out).
+- **What packs today:** 16 of 23 built finds: every Common but the desk lamp, every Uncommon but
+  the boombox and TV, the Epic firefly jar, and four of six Rares (the RC car, cymbal monkey,
+  disco ball, hard hat; not the oil lamp or neon sign). No Legendary or Secret: the stained glass
+  lamp and the unplugged lamp are taller than the box. Of the tools, only the padlock; the saw,
+  bolt cutters, ladder, bubble wrap and air horn are too long. A tool's row has no grade, so it
+  opens as a Common (MarkedBoxes' fallback).
+- **Defaults** (`OWNER.md`): big finds loose (a tall marked box suggested, so the top grades get
+  their reveal); the Packrat leaves shut boxes alone (`Slots.finds` never lists a find still in
+  its box), so it fetches only big, dropped or laid-out finds; the faint mark is a note's and
+  untouched until B-04 moves notes into boxes; the deal's odds are unchanged (a find unit is now a
+  box unit).
+- **`DevBox`** (Studio): a catalog key deals the next unit that opens that find or tool in place
+  of what it held, in its box whatever its size (to see every grade's reveal); `true` is gone.
+- Verified in Studio Play on seed 2000013's floor 3: six units dealt boxes (padlock, skates, blob
+  lamp, moon lamp, die-cast car, night light), the oil lamp and desk lamp stood loose; the padlock
+  opened as a Common into slot 1, the skates as an Uncommon (copy seen from 0.56 s, in the hand at
+  2.1 s) into slot 2; `DevBox` "StainedGlassLamp" stood a forced box. No script errors.

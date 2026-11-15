@@ -3,7 +3,8 @@
 	Marked boxes on the server (B-02a): the one box in a unit with something in it, and its Open.
 	The moment: you press Open and the tape rips, the flaps burst; everyone near hears and sees
 	it (MarkedBoxView plays it on every screen), then a held breath in the grade's light and the
-	find rises out, turns once and flies into the opener's hand (B-02b). B-03 deals what goes in.
+	find rises out, turns once and flies into the opener's hand (B-02b). The deal stands one in a
+	unit whose find or tool packs into it (Deals, `Deal.packs`, B-03a).
 
 	`stand` puts a marked box (`Boxes.cloneMarked`) at a place in a unit's hall piece, tagged
 	`Opening.Tag`, with the unit in an ObjectValue for screens' door checks and one "Open" button
@@ -15,14 +16,16 @@
 	anyone walking into it. An opened box stays where it stood, open, for the rest of the floor.
 
 	What's inside (B-02b) is the server's alone until the open: only then is the box stamped with
-	the find's key and grade (`Find`, `Grade`), in the same batch before `OpenedAt` so every
+	the find's key and grade (`Find`, `Grade`; a tool's key too, B-03a, whose row has no grade,
+	so it opens as a Common), in the same batch before `OpenedAt` so every
 	screen has them as it starts the reveal. If the opener's hands are full as they open it, the
 	box is stamped `LaidAt` too: the find comes out and lands on the floor beside the box, toward
 	them, to take as any find is. Otherwise it goes into their hand (`Slots.give`) the moment the
 	reveal brings it there (`Opening.handAt`, the grade's hold in it), or lands at that spot if
 	their hands filled or they died in the meantime.
 
-	Studio stands one for testing until B-03 deals them (Deals, Workspace `DevBox`).
+	Studio's Workspace `DevBox` deals the next unit any find or tool in one, whatever its size,
+	to see every grade's reveal (Deals).
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -46,15 +49,15 @@ export type Opened = {
 	box: Model,
 	unit: Model,
 	player: Player,
-	find: string?, -- the find's catalog key, nil for an empty box
+	find: string?, -- the find's or tool's catalog key, nil for an empty box
 }
 
 export type MarkedBoxes = Brix.System & {
 	-- Fires as a box is opened, after it's stamped (the find is given later, at `handAt`).
 	opened: Brix.Signal<Opened>,
 	-- Stands a shut marked box at `place` (the middle of its bottom on the floor, its printed side
-	-- facing the place's LookVector) in unit `unit`, into the unit's hall piece, holding find
-	-- `find` (a catalog key). Nil when the place lacks the template.
+	-- facing the place's LookVector) in unit `unit`, into the unit's hall piece, holding find or
+	-- tool `find` (a catalog key). Nil when the place lacks the template.
 	stand: (self: any, unit: Model, place: CFrame, find: string?) -> Model?,
 }
 

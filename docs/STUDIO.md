@@ -2399,7 +2399,16 @@ verified: a doc page, Studio, or "untested".
 
 ## Opening a marked box in Play (B-02a, Nov 15)
 
-- **Stage one:** in Play, from the Server set Workspace `DevBox` to true, stand your character
+- **Since B-03a** real units deal boxes; `DevBox` takes only a catalog key (a find or tool),
+  dealing the next unit that, boxed whatever its size; `true` does nothing now.
+- **Opening many doors fast** (B-03a): from the Server read each unit's `DoorMiddle` WorldCFrame
+  (the unit isn't streamed to the Client until you're near), then on the Client PivotTo the
+  character 4.5 studs out along its LookVector and press the `Open` prompt under `DoorMiddle`.
+  On floor 3 an awake Mannequin (seed 2000013: Unit325) catches you within seconds and ends the
+  climb, after which presses do nothing (`ClimbFate` "Kept"): skip note, padlocked and sleeper
+  units and step back to the lobby (0, 3, 557). `LogService:GetLogHistory()` filtered on the
+  Server reads "Deals:" lines far cheaper than the whole Output.
+- **Stage one:** in Play, from the Server set Workspace `DevBox` to a find's key, stand your character
   4.5 studs out from a unit's door on the face's +LookVector side (`FloorBuilder.face(unit)`; on
   the test hall's floor 3, Unit301's face is (4, 0, -618) looking -X, so stand at (-0.5, 3, -618)),
   then on the Client point a Scriptable camera at its `DoorMiddle` and call the door prompt's

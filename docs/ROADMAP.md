@@ -2077,7 +2077,17 @@ it is, coins go to your bank, a tool goes to your hands, or it's a piece of the 
   more) in its one marked box instead of loose on the floor; coins go to the bank as they do
   now, a tool to your hands. Most units show somebody's stuff you can't use (a mattress, stacked
   boxes, a rug: D-136's dressing, now in most units rather than half the empty ones); some stay
-  bare. Big finds stay out of boxes.
+  bare. Big finds stay out of boxes. Split for size (Nov 15):
+  - [x] **B-03a A unit's find or tool comes in its box.** Done Nov 15 (D-211): `Deal.packs`
+    (pure, `tests/boxdeal.spec.luau`) says what packs into the marked box turned any way, the
+    cardboard's `Deal.BoxWall` off each side; Deals stands the unit's one box where a find would
+    stand holding it (`layBoxed`), else lays it loose as before. 16 of the 23 built finds pack
+    (every Common, Uncommon and Epic but the boombox, TV and desk lamp; four of six Rares) and
+    of the tools only the padlock; no Legendary or Secret fits today (`OWNER.md`). `DevBox`
+    now deals the next unit any find or tool in a box, whatever its size. Verified in Studio Play.
+  - [ ] **B-03b Coins in boxes, and somebody's stuff in most units.** A unit's coins come in its
+    box (alone, or with its find or tool) and go to the bank as the box opens; somebody's stuff
+    (D-136) in most units rather than half the empty ones, beside a box or alone; some bare.
 - [ ] **B-04 The code's notes in boxes.** A note is no longer on a unit's back wall (D-044): it's
   in a marked box. Take it and carry it; hold it up to read it (D-045). Drop it in the car and it
   stays by the keypad for anyone to read, so a team gathers the pieces there (as DOORS' library
@@ -2155,7 +2165,8 @@ of units; trading; a season pass; boss floors and units far bigger inside than t
 (D-188); the item catalog's waves (its own build order), with finds you wear, pets and plants
 that live in your unit, and the arcade cabinets' games; fake notes, finds that are monsters in disguise, the monster
 that moves walls, and the dolly. What the Packrat does with a marked box (B-03) is to be worked
-out.
+out (for now it leaves shut boxes alone, D-211). A tall marked box for the big finds (the lamps,
+the TV) waits on `OWNER.md`.
 
 ## Find art: the catalog's wave 1 (from Nov 14)
 
