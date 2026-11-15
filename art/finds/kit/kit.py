@@ -611,7 +611,8 @@ def stage_renders(find, set_dir, quick=False):
     name = find.name.lower()
     sheet = lambda k: os.path.join(SHEETS, f"{name}-{k}.png")  # noqa: E731
     os.makedirs(SHEETS, exist_ok=True)
-    tmp = find.out(set_dir, "frames")
+    # each find its own frames folder, so two finds can render at once
+    tmp = os.path.join(find.out(set_dir, "frames"), find.name)
     shutil.rmtree(tmp, ignore_errors=True)
     os.makedirs(tmp)
 
@@ -708,7 +709,11 @@ def stage_renders(find, set_dir, quick=False):
            "-filter_complex", "vstack", sheet("unit"))
 
     # 4. every action: 24 frames a second into an MP4, ten of them into a filmstrip
+    # (ACTIONS=Light,Burn renders only those; ACTIONS= none, for redoing stills alone)
+    only = os.environ.get("ACTIONS")
     for action in find.motions:
+        if only is not None and action not in only.split(","):
+            continue
         dur, trs = tracks(find, action)
         coll, objs = scene()
         render.world((0.01, 0.011, 0.014), 1.0)

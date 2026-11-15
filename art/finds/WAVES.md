@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-02f, the blob lamp: coded and baked, not judged (the newest note). Render it, judge
-it, fix, then the oil lamp (researched in the same note) and the disco ball.
+**Next:** F-02h, the disco ball (planned in the newest note: look at its references first),
+then the neon OPEN sign and on down the Lights.
 
 ## Order
 
@@ -33,6 +33,34 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 15, F-02f and F-02g (the blob lamp judged and fixed; the oil lamp built).** Both in
+  `lights/build.py` with README entries. The blob lamp: the lit liquid's glow cut to 0.35 to
+  0.15 and a deeper violet, the wax's glow cut by half (it washed out to peach), and its light
+  moved down under the wax (at 0.66 it burned the pool white). Its Flow filmstrip reads
+  (towers climb on their necks, snap, hang, sink); one nit: in two frames a thin spike pokes
+  out of the top of a rising tower (the neck's top, or `Blob4`, through the blob): check with
+  `bl_check` and the MP4 when next touched. The oil lamp (`OIL_*` in the
+  spec, `ol_*` in the build): see-through glass needs a **dark** colour on every layer (the
+  chimney at a pale colour glowed like yellow plastic when lit), and **no dust on glass sides
+  a light shines through** (the dust lit up as frost: `keep=` the chimney's sides);
+  `ol_chip` knocks a chip out of a lathe's edge (bounded by `rmin`, `zmax`, or it dents the
+  whole side). **Kit changes:** renders take `ACTIONS=Light,Burn` (only those actions;
+  `ACTIONS=` none, for stills alone); each find renders into its own `out/frames/<Find>/`.
+  **Traps:** never run two Blender renders at once: the blob lamp's 384-frame Flow was killed
+  (out of memory) beside another render, and before the frames fix one find's render wiped the
+  other's frames. A probe of a part's face kinds: load `build.py` with importlib in
+  `blender -b --python` and read `shape.bm.faces.layers.int["kind"]`.
+  **The disco ball, planned (references not looked at yet):** look at Wikimedia Commons
+  "Category:Mirror balls" (three photos: whole, close on the tiles, one lit with its spots on
+  a wall) and a listing for size: home balls run 8 to 12 inches with tiles about 10 mm square
+  (the catalog row: Rare, "Spin: spots of light race round the walls"). Build it as a `Ball`
+  part (tiles in latitude rows, the grout between them in the detailed mesh's normal, mirror
+  metal at roughness about 0.05, a few tiles missing or tarnished: found in storage) hanging
+  from a small battery motor by a short chain, the `Ball` turning about Z on the motor's
+  shaft. The spots: several narrow white Spot lights on the `Ball` part pointing out (they
+  turn with it), weak, so they read as moving dots on a unit's walls; `Spin` winds up from
+  still to about 1 turn in 6 s and holds, `SpinDown` slows to a stop with a small swing back.
 
 - **Nov 15, F-02f (the blob lamp coded, not judged).** `BLOB_LAMP` in `lights/build.py` (spec
   `BLOB_*`), in `FINDS`; textures baked (1024, 449 texels a stud, 9,652 triangles) and the
@@ -232,8 +260,8 @@ A light set down switched on lights the space round it until it runs down. Wheth
 | String fairy lights | Uncommon | Switch on: lay them along a hall for a dim line of light |  | Nov 15, F-02c |
 | Camping lantern | Uncommon | Switch on: a wide light for 90 seconds |  | Nov 15, F-02d |
 | Moon lamp | Uncommon | At home: it glows; tap it to change its phase |  | Nov 15, F-02e |
-| Blob lamp | Uncommon | At home: coloured blobs rise and fall |  | |
-| Oil lamp | Rare | Light: warm light that runs down slowly | Fragile | |
+| Blob lamp | Uncommon | At home: coloured blobs rise and fall |  | Nov 15, F-02f |
+| Oil lamp | Rare | Light: warm light that runs down slowly | Fragile | Nov 15, F-02g |
 | Disco ball | Rare | Spin: spots of light race round the walls |  | |
 | Neon OPEN sign | Rare | At home: it buzzes and glows pink |  | |
 | Miner's hard hat | Rare | Wear: a lamp on your head lights whatever you look at, for a minute | A light that leaves your hands free | |

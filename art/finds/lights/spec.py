@@ -322,3 +322,65 @@ BLOB_LAMP = dict(
     seed=71.0,
     dust=0.55,
 )
+
+
+# --- The oil lamp: a clear glass pedestal paraffin lamp with a #2 flat-wick burner -------------
+# References (README): a pressed glass foot, stem and onion fount about 9.5 in to the collar; a
+# brass collar and #2 burner (an air-hole band, four prongs holding the chimney, a slotted
+# dome over a 1 in flat wick, a thumbwheel on a spindle out the side); a 10 in chimney with a
+# 3 in fitter. About 20 in in all. Its frame: the middle of the foot on the floor, front to -Y;
+# the wick runs across X, so the flame shows its broad face to the front.
+OIL_GLASS = dict(
+    # the glass, outside, bottom to top: the hollow under the foot, the foot's rim, the domed
+    # foot, the stem with its knop, the onion fount, the neck the collar screws onto
+    outside=[(0.0, 0.05), (0.08, 0.046), (0.2, 0.024), (0.265, 0.006), (0.285, 0.0),
+             (0.296, 0.004), (0.3, 0.014), (0.298, 0.026), (0.29, 0.034), (0.26, 0.044),
+             (0.2, 0.068), (0.14, 0.1), (0.095, 0.135), (0.072, 0.17), (0.062, 0.2),
+             (0.07, 0.228), (0.078, 0.25), (0.07, 0.272), (0.058, 0.29), (0.056, 0.305),
+             (0.075, 0.322), (0.12, 0.342), (0.18, 0.37), (0.225, 0.405), (0.252, 0.45),
+             (0.262, 0.5), (0.258, 0.545), (0.24, 0.6), (0.205, 0.66), (0.16, 0.72),
+             (0.12, 0.77), (0.095, 0.805), (0.087, 0.82), (0.086, 0.866)],
+    fount=21,                          # the outside from here up is the fount's thin wall
+    wall=0.012,                        # about 3 mm of pressed glass
+    floor=0.352,                       # the fount's floor inside
+    oil=0.55,                          # the paraffin's surface: a little over half full
+    flutes=16,                         # pressed panels round the fount's lower half
+    chips=dict(foot=(-112.0, 0.014)),   # (angle round from +X, depth): a flake off the foot's top edge
+)
+OIL_BURNER = dict(
+    collar=0.836,                      # where the collar's rolled foot meets the glass
+    # the brass, bottom to top: the collar (rolled foot, thread, top), the burner's flared base,
+    # the band of air holes, the shoulder, the gallery the chimney stands in, the slotted dome
+    outside=[(0.0, 0.872), (0.08, 0.872), (0.0875, 0.836), (0.093, 0.838), (0.0955, 0.843),
+             (0.0955, 0.85), (0.0975, 0.855), (0.0955, 0.86), (0.0975, 0.865), (0.0955, 0.87),
+             (0.0975, 0.875), (0.0955, 0.88), (0.0975, 0.888), (0.09, 0.892), (0.1, 0.9),
+             (0.115, 0.912), (0.12, 0.922), (0.12, 0.965), (0.124, 0.97), (0.15, 0.978),
+             (0.158, 0.982), (0.1585, 0.99), (0.152, 0.992), (0.135, 0.986), (0.062, 0.986),
+             (0.059, 0.999), (0.051, 1.017), (0.036, 1.029), (0.016, 1.035), (0.0, 1.036)],
+    holes=dict(n=20, z=0.944, r=0.0075),   # the round air holes round the band
+    slot=(0.05, 0.006),              # the dome's slot the flame comes out of (half length, half width)
+    prongs=dict(n=4, at=45.0, r=0.1555, w=0.022, t=0.003, up=0.055, flare=0.026, lean=32.0),
+    spindle=dict(z=0.944, x0=0.112, x1=0.2, r=0.0058, boss=0.0115),
+    wheel=dict(x=0.205, r=0.042, t=0.011, hub=0.013, knurl=44),
+    flame_at=1.031,                    # the flame's foot, just inside the slot
+)
+OIL_CHIMNEY = dict(
+    # a #2 chimney, outside, from its foot (0) up: the 3 in fitter, a waist, the 4 in bulge,
+    # the long 2 in top, a fire-polished bead at the rim
+    outside=[(0.147, 0.0), (0.15, 0.004), (0.15, 0.03), (0.145, 0.045), (0.158, 0.08),
+             (0.18, 0.13), (0.196, 0.19), (0.2, 0.25), (0.195, 0.31), (0.175, 0.38),
+             (0.145, 0.44), (0.118, 0.5), (0.104, 0.56), (0.1, 0.62), (0.1, 0.975),
+             (0.1025, 0.99)],
+    wall=0.0065,                       # about 2 mm of blown glass
+    chip=(-36.0, 0.013, 0.05),          # (angle round from +X, depth, width): a chip out of the rim
+)
+OIL_FLAME = dict(
+    h=0.125, w=0.048, t=0.011,          # a 1 in wick turned to a good flame: 1.2 in tall, a fan face on
+    kelvin=1900.0,                     # a paraffin flame: deep warm yellow
+)
+OIL_LAMP = dict(
+    wick_up=110.0,                     # degrees the thumbwheel turns to bring the wick up to burn
+    lift=0.3,                          # how high the chimney is lifted to light it
+    seed=79.0,
+    dust=0.5,
+)

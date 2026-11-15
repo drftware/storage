@@ -55,6 +55,8 @@ set's `build.py` as an example; you shouldn't need the kit's code.
   the set (the desk lamp: about 40 s, 5 s, 4 min). Name stages and one find to do less:
   `scripts/art.sh set lights textures DeskLamp`, `... renders DeskLamp`; `quick` renders rough
   sheets in about 90 s for looking while you work. Export always writes the whole set's Luau.
+  `ACTIONS=Light,Burn` before it renders only those actions (`ACTIONS=` none). Run one Blender
+  render at a time: two at once ran out of memory and killed a long one.
 - **A find in code.** `kit.Find(name, parts, look, lights=[...], glow={...}, motions={...},
   dust=, seed=)`; then `kit.main("Lights", HERE, FINDS)` at the bottom of `build.py`. Each
   `kit.Part(name, build, pivot, parent, axis)`: `build(hi)` returns a `shapes.Shape` drawn in

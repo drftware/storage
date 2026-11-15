@@ -2157,26 +2157,28 @@ def bl_look(L, f):
     C.paint(tide, hexc("#8C7FA8"), 0.3, alpha=0.3)
     # the liquid: violet, pinker low down where the hot wax lights it, bluer up top
     lq = L.k(BL_LIQ, BL_LIQTOP)
-    lcol = nb.mixc(nb.ss(L.z, 0.68, 1.15), hexc("#9A4FE0"), hexc("#5D46D2"))
+    lcol = nb.mixc(nb.ss(L.z, 0.68, 1.15), hexc("#7A2CC4"), hexc("#3F2AA6"))
     C.paint(lq, lcol, 0.05, 0.0, alpha=0.3)
     C.paint(L.k(BL_LIQTOP), alpha=0.45)
-    C.lights(nb.mul(lq, nb.mr(L.z, 0.6, 1.22, 1.0, 0.5)))
+    # the liquid only carries the bulb's light, so it glows far less than the wax it holds
+    C.lights(nb.mul(lq, nb.mr(L.z, 0.6, 1.22, 0.35, 0.15)))
     # the wax: red-orange, hottest and yellowest in the pool, glossy where it's molten
     P = BL_P
     pool = L.k(BL_POOL, BL_MOUND)
     marble = nb.mr(L.noise(40.0, 9, detail=3), 0.3, 0.7, 0.93, 1.05)
     hot = nb.ss(L.z, P - 0.03, P + 0.02)
     C.paint(pool, nb.tint(nb.mixc(hot, hexc("#F05A1C"), hexc("#FF9A2C")), marble), 0.26, 0.0)
-    C.lights(nb.mul(pool, nb.mr(L.z, P - 0.06, P + 0.02, 0.7, 1.0)))
+    C.lights(nb.mul(pool, nb.mr(L.z, P - 0.06, P + 0.02, 0.32, 0.48)))
     neck = L.k(BL_NECK)
     nu = nb.mul(nb.sub(L.z, P), 1.0 / BW["neck"]["h"])
     C.paint(neck, nb.tint(nb.mixc(nb.ss(nu, 0.0, 1.0), hexc("#FF8A28"), hexc("#F05220")), marble), 0.28, 0.0)
-    C.lights(nb.mul(neck, nb.mr(nu, 0.0, 1.0, 0.95, 0.75)))
-    # a blob is lit from under: a bright orange belly, a deeper red crown
+    C.lights(nb.mul(neck, nb.mr(nu, 0.0, 1.0, 0.46, 0.34)))
+    # a blob is lit from under: a bright orange belly, a deeper red crown (its glow kept low,
+    # or it washes out to peach: lit wax stays saturated)
     blob = L.k(BL_BLOB)
     bu = nb.mul(nb.sub(L.z, P), 1.0 / 0.06)
     C.paint(blob, nb.tint(nb.mixc(nb.ss(bu, -0.9, 0.9), hexc("#FF6E22"), hexc("#D3301A")), marble), 0.3, 0.0)
-    C.lights(nb.mul(blob, nb.mr(bu, -1.0, 1.0, 0.95, 0.4)))
+    C.lights(nb.mul(blob, nb.mr(bu, -1.0, 1.0, 0.46, 0.16)))
     # the cord: black PVC, its gloss worn dull in places
     C.paint(L.k(BL_CORD), hexc("#161616"), nb.mr(L.noise(30.0, 10, detail=2), 0.3, 0.7, 0.42, 0.6), 0.0)
     C.paint(L.k(BL_SLEEVE), hexc("#141414"), 0.75, 0.0)
@@ -2438,7 +2440,8 @@ BLOB_LAMP = kit.Find(
     lights=[
         # the bulb in the base, seen through violet liquid and orange wax: a pink-violet glow all
         # round; no shadows, so it shines out through the base and the bottle
-        dict(kind="Point", part="Bottle", at=(0.0, 0.0, 0.66), rgb=K.BLOB_LAMP["rgb"], brightness=0.8,
+        # (it sits where the bulb is, under the wax: any higher and it burns the pool white)
+        dict(kind="Point", part="Bottle", at=(0.0, 0.0, 0.57), rgb=K.BLOB_LAMP["rgb"], brightness=0.8,
              range=10, shadows=False, preview_kind="POINT", preview_watts=5.0, preview_size=0.06),
     ],
     glow=dict(part="Bottle", strength=2.0, tint=(255, 214, 196), preview=10.0),
@@ -2467,7 +2470,351 @@ BLOB_LAMP = kit.Find(
     dust=K.BLOB_LAMP["dust"], seed=K.BLOB_LAMP["seed"],
 )
 
-FINDS = [DESK_LAMP, NIGHT_LIGHT, TEA_LIGHT, GLOW_STICKS, FAIRY_LIGHTS, LANTERN, MOON_LAMP, BLOB_LAMP]
+# --- the oil lamp -------------------------------------------------------------------------------
+
+(OL_SOLID, OL_GLASS, OL_GLASS_IN, OL_OIL, OL_OILTOP, OL_WICK, OL_BRASS, OL_BRASS_IN, OL_DOME,
+ OL_STEEL, OL_WHEEL, OL_CHIM, OL_CHIM_IN, OL_FLAME) = range(73, 87)
+OG, OB, OC, OF, OLK = K.OIL_GLASS, K.OIL_BURNER, K.OIL_CHIMNEY, K.OIL_FLAME, K.OIL_LAMP
+OL_CHIM_Z = 0.987                      # the chimney's foot, standing in the gallery's dish
+OL_CHIM_TOP = OL_CHIM_Z + OC["outside"][-1][1]
+OL_FLAME_FOOT = (0.0, 0.0, OB["flame_at"])
+OL_FLAME_MID = (0.0, 0.0, OB["flame_at"] + OF["h"] * 0.4)
+OL_WHEEL_AT = (OB["wheel"]["x"], 0.0, OB["spindle"]["z"])
+
+
+def ol_dense(prof, step):
+    """A profile with points added so no run is longer than step (a chip needs rings to bend)."""
+    out = [prof[0]]
+    for a, b in zip(prof, prof[1:]):
+        n = max(1, math.ceil((Vector(b) - Vector(a)).length / step))
+        out += [(a[0] + (b[0] - a[0]) * i / n, a[1] + (b[1] - a[1]) * i / n) for i in range(1, n + 1)]
+    return out
+
+
+def ol_chip(s, deg, depth, width, z0, z1, down, inward, rmin=0.0, zmax=99.0):
+    """Knock a chip out of a glass edge: the vertices near the angle `deg` (round from +X) and
+    between heights z0 and z1 drop and pull in, most in the middle and at z1, unevenly, like a
+    flake that came away."""
+    a0 = math.radians(deg)
+    rng = np.random.default_rng(int(abs(deg) * 13 + depth * 1000))
+    jag = [rng.uniform(0.75, 1.15) for _ in range(9)]
+    for v in s.bm.verts:
+        r = math.hypot(v.co.x, v.co.y)
+        if r < max(rmin, 1e-6) or not (z0 <= v.co.z <= zmax):
+            continue
+        d = (math.atan2(v.co.y, v.co.x) - a0 + math.pi) % (2.0 * math.pi) - math.pi
+        e = abs(d * r) / (width / 2.0)
+        if e >= 1.0:
+            continue
+        j = jag[min(int((d * r / width + 0.5) * 8.0), 8)]
+        f = (1.0 - e * e) ** 0.6 * j
+        w = min(1.0, (v.co.z - z0) / (z1 - z0))
+        w = w * w * (3.0 - 2.0 * w) * depth * f
+        v.co.z -= w * down
+        v.co.x -= v.co.x / r * w * inward
+        v.co.y -= v.co.y / r * w * inward
+
+
+def ol_fount(hi):
+    """The glass, one shell: up the outside from the hollow under the foot, over the neck's lip,
+    down the fount's inside to its floor. Under the paraffin's surface the inside carries the
+    oil's colour; the surface is a disc meeting the glass in a meniscus. The flat wick hangs
+    from the burner into the oil, twisting a little, its end lying on the floor."""
+    s = Shape()
+    out, w, oil, fl = OG["outside"], OG["wall"], OG["oil"], OG["floor"]
+    fi = OG["fount"]
+    (r0, z0) = out[-1]
+    nl = 4 if hi else 2
+    lip = fillet(r0 - w / 2, z0, w / 2, (0, 180), nl)
+    inner = bl_offset(out[fi:], w)
+    side = [p for p in reversed(inner) if p[1] > fl + 0.012][1:]
+    side += [(side[-1][0] * 0.6, fl + 0.002), (0.0, fl)]
+    k = next(i for i in range(len(side) - 1) if side[i][1] >= oil > side[i + 1][1])
+    (ra, za), (rb, zb) = side[k], side[k + 1]
+    rl = ra + (rb - ra) * (za - oil) / (za - zb)
+    side.insert(k + 1, (rl, oil))
+    prof = out[:-1] + lip + side
+    n_out = len(out) - 1
+    kinds = [(OL_SOLID if i < fi else OL_GLASS) if i < n_out + nl else
+             (OL_GLASS_IN if (prof[i][1] + prof[i + 1][1]) / 2 > oil else OL_OIL)
+             for i in range(len(prof) - 1)]
+    s.lathe(prof, OL_GLASS, segs(hi, 48), kinds=kinds)
+    c = OG["chips"]["foot"]
+    ol_chip(s, c[0], c[1], 0.06, 0.008, 0.036, 0.35, 1.0, rmin=0.25, zmax=0.05)
+    men = [(rl - 0.0004, oil + 0.003), (rl - 0.002, oil + 0.001), (rl - 0.006, oil + 0.0002),
+           (rl - 0.014, oil), (0.0, oil)]
+    s.lathe(men, OL_OILTOP, segs(hi, 48))
+    # the wick: a flat cotton ribbon an inch wide; rings bottom to top, anticlockwise from above
+    hw, ht = 0.047, 0.0032
+    zs = [fl + 0.004, fl + 0.016, 0.4, 0.45, 0.52, 0.6, 0.68, 0.76, 0.83, 0.874]
+    rings = []
+    for z in zs:
+        u = (z - zs[0]) / (zs[-1] - zs[0])
+        cx = 0.045 * (1.0 - u) ** 2.2
+        tw = math.radians(28.0 * (1.0 - u) ** 1.5)
+        ct, st = math.cos(tw), math.sin(tw)
+        ring = []
+        for (a, b) in ((hw, -ht), (hw, ht), (-hw, ht), (-hw, -ht)):
+            ring.append((cx + a * ct - b * st, a * st + b * ct, z))
+        rings.append(ring)
+    s.loft(rings, OL_WICK, cap_bottom=OL_WICK)
+    return s
+
+
+def ol_burner(hi):
+    """The brass burner and collar: one spun shell from the underside, up the threaded collar,
+    the band of air holes and the gallery to the slotted dome; four prongs that hold the
+    chimney; the steel spindle out the side through its boss."""
+    s = Shape()
+    prof = OB["outside"]
+    kinds = [OL_BRASS_IN if i < 2 or i in (22, 23) else (OL_DOME if i >= 24 else OL_BRASS)
+             for i in range(len(prof) - 1)]
+    s.lathe(prof, OL_BRASS, segs(hi, 40), kinds=kinds)
+    P = OB["prongs"]
+    zb = prof[20][1]
+    for i in range(P["n"]):
+        a = math.radians(P["at"] + 360.0 * i / P["n"])
+        R = Matrix.Rotation(a - math.pi / 2.0, 4, "Z")
+        M1 = R @ Matrix.Translation((0.0, P["r"], 0.0))
+        s.box((-P["w"] / 2, 0.0, zb), (P["w"] / 2, P["t"], zb + P["up"]), OL_BRASS,
+              chamfer=0.0008, segs=2 if hi else 1, M=M1)
+        M2 = R @ Matrix.Translation((0.0, P["r"], zb + P["up"] - 0.002)) @ Matrix.Rotation(
+            math.radians(-P["lean"]), 4, "X")
+        s.box((-P["w"] / 2, 0.0, 0.0), (P["w"] / 2, P["t"], P["flare"]), OL_BRASS,
+              chamfer=0.0008, segs=2 if hi else 1, M=M2)
+    S = OB["spindle"]
+    s.cylinder(Vector((0.116, 0.0, S["z"])), Vector((0.134, 0.0, S["z"])), S["boss"], OL_BRASS, segs(hi, 12))
+    s.cylinder(Vector((S["x0"], 0.0, S["z"])), Vector((S["x1"], 0.0, S["z"])), S["r"], OL_STEEL, segs(hi, 8))
+    return s
+
+
+def ol_wheel(hi):
+    """The thumbwheel: a brass disc with a knurled rim and a hub nut on the spindle's end."""
+    s = Shape()
+    W = OB["wheel"]
+    r, t, hb = W["r"], W["t"], W["hub"]
+    M = Matrix.Translation(OL_WHEEL_AT) @ Matrix.Rotation(math.pi / 2.0, 4, "Y")
+    prof = [(0.0, -t / 2), (r - 0.003, -t / 2), (r, -t / 2 + 0.0025), (r, t / 2 - 0.0025),
+            (r - 0.003, t / 2), (hb, t / 2), (hb, t / 2 + 0.0045), (hb - 0.002, t / 2 + 0.0058),
+            (0.0, t / 2 + 0.0058)]
+    s.lathe(prof, OL_WHEEL, segs(hi, 36), M)
+    return s
+
+
+def ol_chimney(hi):
+    """The chimney, one shell of thin blown glass: the fitter, the bulge, the long top with its
+    fire-polished bead, over the rim and down the inside. A chip is out of its rim."""
+    s = Shape()
+    w = OC["wall"]
+    out = [(r, z + OL_CHIM_Z) for r, z in ol_dense(OC["outside"], 0.03 if hi else 0.12)]
+    (r0, z0) = out[-1]
+    nl = 4 if hi else 2
+    lip = fillet(r0 - w / 2, z0, w / 2, (0, 180), nl)
+    inner = bl_offset(out[1:], w)
+    start = (out[0][0] - w * 0.55, OL_CHIM_Z)
+    prof = [start] + out[:-1] + lip + list(reversed(inner))[1:] + [start]
+    n_out = len(out) + nl
+    kinds = [OL_CHIM if i < n_out else OL_CHIM_IN for i in range(len(prof) - 1)]
+    s.lathe(prof, OL_CHIM, segs(hi, 48), kinds=kinds)
+    deg, depth, width = OC["chip"]
+    ol_chip(s, deg, depth, width, z0 - depth * 2.6, z0 + w / 2, 1.0, 0.25)
+    return s
+
+
+def ol_flame(hi):
+    """The flame off a flat wick: a fan, broad face on and thin edge on, as wide as the wick at
+    its foot, rounded over to a soft point."""
+    s = Shape()
+    foot = Vector(OL_FLAME_FOOT)
+    nr, na = (16, 28) if hi else (8, 14)
+    rings = [[tuple(foot + Vector((0.0, 0.0, -0.004)))]]
+    for i in range(1, nr):
+        u = i / nr
+        w = OF["w"] * (1.0 - u ** 3.2) ** 0.55 * (0.9 + 0.14 * math.sin(math.pi * min(u * 1.4, 1.0)))
+        t = OF["t"] * math.sin(math.pi * u ** 0.75) ** 0.8
+        ring = []
+        for j in range(na):
+            a = 2.0 * math.pi * j / na
+            c, sn = math.cos(a), math.sin(a)
+            ring.append((w * math.copysign(abs(c) ** 0.8, c), t * math.copysign(abs(sn) ** 0.8, sn),
+                         foot.z + OF["h"] * u))
+        rings.append(ring)
+    rings.append([tuple(foot + Vector((0.0, 0.0, OF["h"])))])
+    s.loft(rings, OL_FLAME)
+    return s
+
+
+def ol_look(L, f):
+    nb = L.nb
+    ang = nb.math("ARCTAN2", L.y, L.x)
+    rad = nb.pw(nb.add(nb.mul(L.x, L.x), nb.mul(L.y, L.y)), 0.5)
+    # pressed soda-lime glass: a faint sea green, glossy, dark so it reads by its highlights
+    C = Coat(L, hexc("#86A196"), 0.04, 0.0)
+    glass, solid = L.k(OL_GLASS), L.k(OL_SOLID)
+    C.paint(glass, alpha=0.12)
+    C.paint(solid, hexc("#7C9C8F"), alpha=0.22)
+    C.paint(L.k(OL_GLASS_IN), alpha=0.07)
+    # pressed panels round the fount's lower half, and the mould's two seams
+    tri = nb.absf(nb.sub(nb.fract(nb.mul(ang, OG["flutes"] / (2.0 * math.pi))), 0.5))
+    flute = nb.mul(nb.mul(glass, nb.mul(nb.ss(L.z, 0.345, 0.37), nb.ss(L.z, 0.53, 0.49))), nb.ss(tri, 0.5, 0.15))
+    C.paint(flute, height=nb.mul(flute, 0.8))
+    seam = nb.mul(nb.add(glass, solid, clamp=True),
+                  nb.ss(nb.absf(L.x), 0.0016, 0.0006))
+    C.paint(seam, hexc("#B9C9C2"), 0.1, height=nb.mul(seam, 0.5), alpha=0.3)
+    smudge = nb.mul(nb.add(glass, solid, clamp=True), nb.ss(L.noise(7.0, 21, detail=4, rough=0.6), 0.55, 0.7))
+    C.paint(nb.mul(smudge, 0.8), hexc("#CFD3CF"), 0.32, alpha=0.24)
+    # the foot's chip: fresh glass, whiter and frosted where it broke
+    fc = OG["chips"]["foot"]
+    fdist = nb.mul(nb.absf(nb.sub(ang, math.radians(fc[0]))), rad)
+    fchip = nb.mul(nb.mul(solid, nb.ss(fdist, 0.03, 0.018)), nb.mul(nb.ss(rad, 0.272, 0.285), nb.ss(L.z, 0.012, 0.024)))
+    C.paint(fchip, hexc("#E4ECE8"), 0.3, alpha=0.5)
+    # the paraffin: old oil gone amber, a faint tide mark where it stood higher once
+    oil = OG["oil"]
+    C.paint(L.k(OL_OIL), hexc("#74400E"), 0.02, 0.0, alpha=0.5)
+    C.paint(L.k(OL_OILTOP), hexc("#7E4812"), 0.02, 0.0, alpha=0.55)
+    tide = nb.mul(L.k(OL_GLASS_IN), nb.mul(nb.ss(L.z, oil + 0.05, oil + 0.035), nb.ss(L.z, oil + 0.03, oil + 0.036)))
+    C.paint(tide, hexc("#8C6A3A"), 0.3, alpha=0.24)
+    # the wick: cream cotton, soaked amber up from the oil, scorched black at the top
+    wick = L.k(OL_WICK)
+    C.paint(wick, nb.tint(hexc("#D6CBB1"), nb.mr(L.noise(80.0, 22, stretch=(1.0, 1.0, 0.2), detail=2), 0.3, 0.7, 0.9, 1.04)), 0.9, 0.0, alpha=1.0)
+    C.paint(nb.mul(wick, nb.ss(L.z, oil + 0.1, oil - 0.02)), hexc("#9C6C30"), 0.6)
+    # the brass: polished once, tarnished brown in patches and creases, worn bright on edges
+    brass = L.k(OL_BRASS, OL_WHEEL)
+    bcol = nb.tint(hexc("#C9A24F"), nb.mr(L.noise(50.0, 23, detail=3), 0.3, 0.7, 0.9, 1.06))
+    C.paint(brass, bcol, nb.mr(L.noise(40.0, 24, detail=3), 0.3, 0.7, 0.22, 0.34), 1.0)
+    tarn = nb.mul(brass, nb.ss(L.noise(6.0, 25, detail=5, rough=0.65), 0.5, 0.66))
+    C.paint(tarn, hexc("#7E6431"), 0.5)
+    C.paint(nb.mul(tarn, nb.ss(L.noise(14.0, 26, detail=4), 0.6, 0.72)), hexc("#4F4A2E"), 0.6)
+    # the air holes, round the band, clear of the spindle
+    H = OB["holes"]
+    hu = nb.mul(nb.sub(nb.fract(nb.add(nb.mul(ang, H["n"] / (2.0 * math.pi)), 0.5)), 0.5), 2.0 * math.pi * 0.12 / H["n"])
+    hz = nb.sub(L.z, H["z"])
+    hd = nb.pw(nb.add(nb.mul(hu, hu), nb.mul(hz, hz)), 0.5)
+    hole = nb.mul(nb.mul(L.k(OL_BRASS), nb.ss(hd, H["r"], H["r"] * 0.75)),
+                  nb.mul(nb.ss(rad, 0.116, 0.119), nb.ss(nb.absf(ang), 0.2, 0.3)))
+    C.paint(hole, hexc("#0E0B08"), 0.9, 0.2, nb.mul(hole, -1.0))
+    # inside the gallery and under the burner: soot-dark brass
+    C.paint(L.k(OL_BRASS_IN), hexc("#2B2219"), 0.7, 0.3)
+    # the dome: heat-darkened brass, sooty round its slot; the slot itself black
+    dome = L.k(OL_DOME)
+    C.paint(dome, hexc("#8A6A34"), 0.42, 0.9)
+    C.paint(nb.mul(dome, nb.ss(rad, 0.05, 0.02)), hexc("#3A2C1E"), 0.6, 0.5)
+    sx, sw = OB["slot"]
+    slot = nb.mul(dome, nb.mul(nb.ss(nb.absf(L.x), sx, sx - 0.003), nb.ss(nb.absf(L.y), sw, sw - 0.0015)))
+    C.paint(slot, hexc("#060504"), 0.95, 0.0, nb.mul(slot, -1.0))
+    # the spindle: steel, a little rusty
+    st = L.k(OL_STEEL)
+    C.paint(st, hexc("#8F8A83"), 0.38, 1.0)
+    C.paint(nb.mul(st, nb.ss(L.noise(30.0, 27, detail=4), 0.58, 0.68)), hexc("#6E4A2E"), 0.8, 0.1)
+    # the wheel's knurled rim
+    wh = L.k(OL_WHEEL)
+    wy, wz = L.y, nb.sub(L.z, OB["spindle"]["z"])
+    wa = nb.math("ARCTAN2", wz, wy)
+    wr = nb.pw(nb.add(nb.mul(wy, wy), nb.mul(wz, wz)), 0.5)
+    knurl = nb.absf(nb.sub(nb.fract(nb.mul(wa, OB["wheel"]["knurl"] / (2.0 * math.pi))), 0.5))
+    rim = nb.mul(wh, nb.ss(wr, OB["wheel"]["r"] - 0.0035, OB["wheel"]["r"] - 0.001))
+    C.paint(rim, height=nb.mul(rim, nb.mul(nb.ss(knurl, 0.1, 0.4), 1.2)))
+    C.paint(nb.mul(rim, nb.ss(knurl, 0.25, 0.45)), hexc("#E0BE6E"), 0.2)
+    # the chimney: thin clear glass; fingermarks on the bulge, soot inside above the flame
+    ch, chi = L.k(OL_CHIM), L.k(OL_CHIM_IN)
+    # (dark, so the flame inside lights it as glass, not as yellow plastic)
+    C.paint(ch, hexc("#5C6668"), 0.03, 0.0, alpha=0.08)
+    C.paint(chi, hexc("#5C6668"), 0.03, 0.0, alpha=0.06)
+    zc = OL_CHIM_Z
+    prints = nb.mul(nb.mul(ch, nb.mul(nb.ss(L.z, zc + 0.12, zc + 0.18), nb.ss(L.z, zc + 0.36, zc + 0.3))),
+                    nb.ss(L.noise(9.0, 28, detail=4, rough=0.6), 0.55, 0.68))
+    C.paint(prints, hexc("#D2D6D3"), 0.35, alpha=0.22)
+    soot_h = nb.mul(nb.ss(L.z, zc + 0.22, zc + 0.42), nb.ss(L.z, zc + 0.75, zc + 0.55))
+    drift = nb.mr(L.noise(4.0, 29, detail=5, rough=0.65, distortion=0.4), 0.35, 0.7, 0.0, 1.0)
+    C.paint(nb.mul(nb.mul(chi, soot_h), drift), hexc("#221D19"), 0.6, alpha=0.3)
+    cdeg, cdepth, cwidth = OC["chip"]
+    cdist = nb.mul(nb.absf(nb.sub(ang, math.radians(cdeg))), rad)
+    cchip = nb.mul(nb.add(ch, chi, clamp=True), nb.mul(nb.ss(cdist, cwidth * 0.5, cwidth * 0.32),
+                                                       nb.ss(L.z, OL_CHIM_TOP - cdepth * 1.8, OL_CHIM_TOP - cdepth * 0.9)))
+    C.paint(cchip, hexc("#D6E0DC"), 0.25, alpha=0.4)
+    # the flame: blue and faint where it leaves the slot, a white-yellow heart, orange edges
+    # and tip
+    fl = L.k(OL_FLAME)
+    u = nb.mul(nb.sub(L.z, OL_FLAME_FOOT[2]), 1.0 / OF["h"])
+    edge = nb.ss(nb.absf(L.x), OF["w"] * 0.72, OF["w"] * 1.0)
+    fcol = nb.mixc(nb.ss(u, 0.06, 0.18), hexc("#4A66E8"), hexc("#FFE6A6"))
+    fcol = nb.mixc(nb.add(nb.ss(u, 0.5, 0.95), nb.mul(edge, 0.7), clamp=True), fcol, hexc("#FF9C3C"))
+    C.paint(fl, fcol, 0.5, 0.0)
+    C.paint(fl, alpha=nb.mr(u, 0.0, 0.16, 0.25, 0.92))
+    C.paint(nb.mul(fl, nb.ss(u, 0.8, 1.0)), alpha=0.5)
+    C.lights(nb.mul(fl, nb.mr(u, 0.04, 0.18, 0.3, 1.0)))
+    sealed = L.k(OL_OIL, OL_OILTOP, OL_WICK, OL_GLASS_IN, OL_CHIM_IN, OL_FLAME, OL_BRASS_IN)
+    # dust only on the chimney's rim: on its sides the flame lights dust up like frosted plastic
+    sides = nb.mul(ch, nb.ss(L.z, OL_CHIM_TOP - 0.03, OL_CHIM_TOP - 0.12))
+    C.finish(f.dust, grime=0.35, keep=nb.add(sealed, sides, clamp=True))
+    return C.surface(bump_dist=0.0006, bump=0.4)
+
+
+OL_UP, OL_LIFT = OLK["wick_up"], OLK["lift"]
+# the close filmstrips aim this high so the flame, not the burner, fills them
+OL_FLAME_LOOK = (0.0, 0.0, OB["flame_at"] + 0.13)
+OIL_LAMP = kit.Find(
+    "OilLamp",
+    [kit.Part("Fount", ol_fount, clear=True),
+     kit.Part("Burner", ol_burner, (0.0, 0.0, OB["collar"]), "Fount"),
+     kit.Part("Wheel", ol_wheel, OL_WHEEL_AT, "Burner", (1, 0, 0)),
+     kit.Part("Chimney", ol_chimney, (0.0, 0.0, OL_CHIM_Z), "Burner", (0, 0, 1), clear=True),
+     kit.Part("Flame", ol_flame, OL_FLAME_FOOT, "Burner", (0, 1, 0), clear=True)],
+    ol_look,
+    lights=[
+        # a paraffin flame: deep warm, all round; no shadows, so it shines out through the glass
+        dict(kind="Point", part="Flame", at=OL_FLAME_MID, kelvin=OF["kelvin"], brightness=1.4,
+             range=16, shadows=False, preview_kind="POINT", preview_watts=9.0, preview_size=0.02),
+    ],
+    glow=dict(part="Flame", strength=3.0, tint=(255, 176, 92), preview=14.0),
+    # found cold: the flame is scaled to nothing, the wick wound down
+    lit={("Flame", "scale"): 1.0, ("Wheel", "turn"): OL_UP},
+    motions={
+        # lit the way a real one is: the chimney lifted off its prongs, a flame caught low and
+        # lazy, the chimney set back (a ring of glass on brass), its draught drawing the flame
+        # up tall, then the wheel winds the wick up to a good flame
+        "Light": dict(duration=2.6, focus=(0.0, 0.0, 1.3), distance=1.0, tracks=[
+            ("Chimney", "move", [(0.0, 0.0), (0.08, -0.002), (0.4, OL_LIFT + 0.01, "Quad", "Out"),
+                                 (0.52, OL_LIFT), (1.1, OL_LIFT), (1.42, 0.004, "Quad", "In"),
+                                 (1.46, 0.0, "Linear"), (1.5, 0.005, "Quad", "Out"),
+                                 (1.55, 0.0, "Quad", "In"), (1.6, 0.0015, "Quad", "Out"),
+                                 (1.64, 0.0, "Quad", "In")]),
+            ("Flame", "scale", [(0.0, 0.0), (0.55, 0.0), (0.6, 0.3, "Quad", "Out"), (0.75, 0.22),
+                                (1.0, 0.42), (1.3, 0.36), (1.46, 0.4), (1.7, 0.6, "Quad", "Out"),
+                                (2.3, 1.0, "Quad", "Out")]),
+            ("Flame", "stretch", [(0.0, 1.0), (0.6, 0.8), (0.8, 1.15), (1.0, 0.85), (1.2, 1.1),
+                                  (1.4, 0.9), (1.62, 1.35, "Quad", "Out"), (1.85, 0.95),
+                                  (2.05, 1.08), (2.3, 0.97), (2.6, 1.0)]),
+            ("Flame", "turn", [(0.0, 0.0), (0.6, 0.0), (0.8, 6.0), (1.0, -5.0), (1.2, 4.0),
+                               (1.4, -3.0), (1.6, 0.5), (1.9, -0.6), (2.2, 0.0)]),
+            ("Flame", "glow", [(0.0, 0.0), (0.55, 0.0), (0.6, 0.5, "Quad", "Out"), (0.75, 0.38),
+                               (1.0, 0.55), (1.3, 0.48), (1.46, 0.52), (1.7, 0.7, "Quad", "Out"),
+                               (2.3, 1.0, "Quad", "Out"), (2.6, 1.0)]),
+            ("Wheel", "turn", [(0.0, 0.0), (1.7, 0.0), (2.3, OL_UP)])]),
+        # burning: played on a loop; under a chimney the flame is steady, it only breathes
+        "Burn": dict(duration=2.4, focus=OL_FLAME_LOOK, distance=0.2, tracks=[
+            ("Flame", "scale", [(0.0, 1.0), (2.4, 1.0)]),
+            ("Flame", "stretch", [(0.0, 1.0), (0.3, 1.035), (0.62, 0.975), (0.95, 1.02),
+                                  (1.3, 0.985), (1.65, 1.03), (2.0, 0.98), (2.4, 1.0)]),
+            ("Flame", "turn", [(0.0, 0.0), (0.4, 0.8), (0.9, -0.6), (1.4, 0.7), (1.9, -0.5),
+                               (2.4, 0.0)]),
+            ("Flame", "glow", [(0.0, 1.0), (0.3, 0.97), (0.62, 1.0), (0.95, 0.95), (1.3, 0.99),
+                               (1.65, 0.96), (2.0, 1.0), (2.4, 1.0)])]),
+        # the oil gone: the wick dries, the flame sinks, gutters twice and goes out
+        "RunDown": dict(duration=4.0, focus=OL_FLAME_LOOK, distance=0.2, tracks=[
+            ("Flame", "scale", [(0.0, 1.0), (1.4, 0.72), (2.2, 0.5), (2.6, 0.55), (3.0, 0.32),
+                                (3.3, 0.38), (3.65, 0.0, "Quad", "In"), (4.0, 0.0)]),
+            ("Flame", "stretch", [(0.0, 1.0), (1.4, 0.9), (2.2, 0.75), (2.4, 1.05), (2.6, 0.7),
+                                  (3.0, 0.8), (3.2, 0.55), (3.65, 0.5)]),
+            ("Flame", "turn", [(0.0, 0.0), (1.0, 1.2), (2.0, -1.5), (2.4, 2.5), (2.7, -2.0),
+                               (3.1, 2.6), (3.4, -1.5), (3.65, 0.0)]),
+            ("Flame", "glow", [(0.0, 1.0), (1.4, 0.74), (2.2, 0.5), (2.35, 0.62), (2.6, 0.46),
+                               (3.0, 0.3), (3.3, 0.36), (3.65, 0.0, "Quad", "In"), (4.0, 0.0)])]),
+    },
+    dust=OLK["dust"], seed=OLK["seed"],
+)
+
+FINDS = [DESK_LAMP, NIGHT_LIGHT, TEA_LIGHT, GLOW_STICKS, FAIRY_LIGHTS, LANTERN, MOON_LAMP, BLOB_LAMP, OIL_LAMP]
 
 if __name__ == "__main__":
     kit.main("Lights", HERE, FINDS)

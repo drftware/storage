@@ -2099,8 +2099,11 @@ actions themselves and dealing the new finds on floors are later game tickets.
   - [x] **F-02c** The bundle of glow sticks and the string fairy lights (Nov 15); a light may
     give its own `rgb`.
   - [x] **F-02d** The camping lantern (Nov 15), with no kit change.
-  - [ ] **F-02e** The moon lamp (coded, held back by a shading seam on its sphere: WAVES.md's
-    newest note), then the blob lamp and on down the list.
+  - [x] **F-02e** The moon lamp (Nov 15).
+  - [x] **F-02f** The blob lamp (Nov 15); wax parts can bake alone, a long loop previews at
+    fewer frames a second.
+  - [x] **F-02g** The oil lamp (Nov 15); renders can skip actions (`ACTIONS=`).
+  - [ ] **F-02h** The disco ball (researched in WAVES.md's newest note), then on down the list.
 - [ ] **F-03 The remote-control car and the die-cast car** (pulled forward from wave 4).
   - [x] F-03a The remote-control car and its transmitter (Nov 15, `art/finds/figures/`).
   - [ ] F-03b The die-cast car.

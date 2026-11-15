@@ -264,3 +264,82 @@ clips in `out/`.
   settles. `SwitchOff` (0.7 s). `Phase` (0.9 s, per tap): the shade turns 45 degrees about the
   moon, overshooting a little, as the light blinks; the game adds the phase it was on.
 - **For the game:** tapping through the phases is a game ticket. Not in the place yet: F-S1.
+
+## Blob lamp (Nov 15, F-02f)
+
+- **What it is:** the classic wax-in-a-bottle motion lamp: a spun aluminium base (a cone
+  narrowing to a waist, then flaring to the collar the bottle stands in), a tapering glass
+  bottle of violet liquid with red-orange wax lying in its bottom, a spun cap. The cord leaves
+  the back of the foot through a rubber sleeve and runs over the floor through an inline
+  rocker switch to a two-pin plug. The aluminium is satin with fine spinning rings, scuffed
+  dull in patches with a few dings; fingermarks on the glass; a faint tide mark over the
+  liquid where it has stood for years.
+- **References** (looked at Nov 15): Wikimedia Commons, "Category:Lava lamps" ("1990s Mathmos
+  Astro.jpg", "Lava lamp operating.jpg", "Lavalamp red.jpg"), for the shapes, the colours and
+  how the wax looks lit; the motion timed off Commons' "Lava lamp (oT) 01 ies.ogv" (below).
+  The classic lamp is 14.5 inches tall, its base about 4.3 inches across.
+- **Size:** 14.5 inches tall: 1.45 studs, the base 0.43 studs across.
+- **Tells:** the rocket shape (a cone base, a tapering bottle, a pointed cap); lit, coloured
+  blobs climbing and falling in glowing violet.
+- **Parts:** `BlobLamp_Base` (root: the base, sleeve, cord, switch and plug), `_Rocker` (the
+  switch's rocker, turning on its pin), `_Bottle` (see-through: the glass and the liquid in
+  one shell, the glow part), `_Cap`, `_Pool` (the wax on the bottle's floor), `_Mound` (the
+  hump blobs leave from and land on), `_Neck` (the strand a rising tower draws up) and
+  `_Blob1` to `_Blob4`. Each wax part is baked alone, so none is greyed by another's shadow.
+  9,652 triangles; one 1024 texture set at 449 texels a stud.
+- **How the wax moves:** measured off the video, pixel rows a second: a tower climbs about a
+  sixteenth of the bottle a second, slowing near the top; its neck snaps about 16 s in (the
+  neck thins as it stretches, keeping its volume); a blob hangs about 6 s, then sinks, faster
+  at the end; a sinking blob can tear, its top floating back up. `BL_PLAN` holds each blob's
+  keys; `bl_flow()` joins them with a curve that never overshoots and thins them to straight
+  runs; `bl_check` prints any blob touching another or the glass.
+- **Light:** a Point low in the bottle, under the wax where the bulb is (pink-violet
+  (255, 120, 178), Brightness 0.8, Range 10, no shadows; any higher burns the pool white); the liquid glows faintly (0.35 low to 0.15 high), the wax more, its
+  glow kept low so lit wax stays a saturated orange-red rather than washing to peach; strength
+  2.0, tint (255, 214, 196).
+- **Motions:** `SwitchOn` (2.2 s): the rocker clicks, the liquid lights at once, the wax warms
+  into colour a beat behind and the pool stirs. `Flow` (48 s, played on a loop; the previews
+  at 8 frames a second): two towers climb and snap, one blob tears on the way down, the drops
+  left by the snaps fall back in. `SwitchOff` (1.4 s): the light goes, the wax's glow a breath
+  after; the blobs stay where they were (the game stops `Flow` there).
+- **For the game:** placing it at home and switching it is a game ticket. Not in the place
+  yet: F-S1.
+
+## Oil lamp (Nov 15, F-02g)
+
+- **What it is:** a clear pressed-glass pedestal paraffin lamp: a domed foot with a hollow
+  under it, a stem with a knop, an onion fount with sixteen pressed panels round its lower
+  half and the mould's two seams; a brass collar and a #2 flat-wick burner (a band of twenty
+  air holes, a gallery with four prongs holding the chimney, a slotted dome over the wick, a
+  knurled thumbwheel on a steel spindle out the right side); a 10 inch blown-glass chimney
+  with a fire-polished bead. Old amber paraffin a little over half fills the fount, the flat
+  cotton wick hanging into it, soaked from the oil up. Found used: brass tarnished brown in
+  patches, soot inside the chimney over the bulge, a tide mark where the oil stood higher,
+  fingermarks on the chimney's bulge, dust on its rim and the fount's shoulders.
+- **Fragile, so chipped where a chip shows:** a flake off the foot's top edge, front left;
+  a chip out of the chimney's rim, front right (`ol_chip` bends the glass in, the look
+  frosts the fresh break).
+- **References** (looked at Nov 15): Wikimedia Commons "Kerosene lamp CZ modern.jpg" (a clear
+  modern lamp lit: the chimney's proportions, the wick visible in the fount, the flame's
+  size), "Burner on a kerosene lamp.jpg" (the collar, the pierced air band, the crown and the
+  thumbwheel on its long spindle), "Oil Lamp POL-104GR (Poland).jpg" (the burner and the bulge
+  chimney on a small fount); sizes from the hardware listings in WAVES.md's F-02f note
+  (a #2 chimney: 3 in fitter, 4 in bulge, 2 in top, 10 in tall; Queen Anne #2 burner, 1 in wick).
+- **Size:** 20 inches tall (9.5 to the collar, the chimney 10), the foot 6 inches across:
+  2.0 studs tall, 0.6 across the foot.
+- **Tells:** the tall clear chimney with its bulge over a brass burner, a glass fount of amber
+  oil on a foot; lit, a broad yellow flame inside the chimney and the oil glowing.
+- **Parts:** `OilLamp_Fount` (root, see-through: the glass, the oil and the wick in one shell;
+  the foot's middle on the floor), `_Burner` (the brass and the spindle), `_Wheel` (turning
+  about X on the spindle), `_Chimney` (see-through, sliding up its Z to be lifted), `_Flame`
+  (see-through, the glow part; pivot at the slot, leaning about Y; found at `scale` 0).
+  11,936 triangles; one 1024 texture set at 354 texels a stud.
+- **Light:** a Point at the flame (1,900 K, Brightness 1.4, Range 16, no shadows, so it shines
+  out through the glass); strength 3, tint (255, 176, 92).
+- **Motions:** `Light` (2.6 s): lit the way a real one is: the chimney lifted off its prongs,
+  a flame caught low and lazy, the chimney set back with a small ring of glass on brass, its
+  draught pulling the flame up tall, then the wheel winds the wick up to a good flame.
+  `Burn` (2.4 s, a loop): under a chimney the flame only breathes. `RunDown` (4 s): the oil
+  gone, the flame sinks, gutters twice and goes out. Lit, the wheel stands at 110 degrees.
+- **For the game:** "Light: warm light that runs down slowly" is a game ticket: the game holds
+  `Burn`, dims the light over the run and plays `RunDown` at the end. Not in the place yet: F-S1.
