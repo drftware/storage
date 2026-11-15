@@ -1,8 +1,8 @@
 --!strict
 -- lune run tests/battery.spec
 -- Batteries (S1-07b) over 200 seeds on floors 1, 3 and 6: about one unit in ten has one; the same
--- seed lays the same; a door shows the battery it was laid with, the same each time it lifts; a
--- unit with one holds no stuff. They're drawn last, so everything else a seed lays is what it was
+-- seed lays the same; a door shows the battery it was laid with, the same each time it lifts (a
+-- unit with one may hold stuff too since B-03b, laid round it: stuffdeal.spec). They're drawn last, so everything else a seed lays is what it was
 -- before them (deal.spec's fingerprint, every unit's coins included, is unchanged). Where it lies, in both unit sizes over 300
 -- unit numbers: on the unit's floor past the door, clear of a tool, find or keeper and of the
 -- coins beside it. A torch takes one only once its ring has lost a tick. The rate check lets a
@@ -58,7 +58,6 @@ for seed = 1, SEEDS do
 				Deal.open(deck, i, BUILD).battery == c.battery,
 				`seed {seed}: lifted again, the same`
 			)
-			ok(not (c.battery and c.stuff), `seed {seed} unit {i}: a battery's unit holds no stuff`)
 		end
 	end
 end

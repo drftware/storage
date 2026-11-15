@@ -42,12 +42,13 @@ local GLINT_TEXTURE = "rbxasset://textures/particles/sparkles_main.dds"
 local GLINT_RATE = 0.9 -- sparks a second: a twinkle, never a fountain
 
 -- Coins coming into a player's count: how many, the count after, and why: a pile they took
--- ("pile") or the floor's pay at the gate ("gate"). Recording records each (S1-02).
+-- ("pile"), the floor's pay at the gate ("gate") or a marked box they opened ("box", B-03b).
+-- Recording records each (S1-02).
 export type Earned = {
 	player: Player,
 	amount: number,
 	balance: number,
-	reason: "pile" | "gate",
+	reason: "pile" | "gate" | "box",
 }
 
 -- Coins going out of a player's count: how many, the count after, and what they bought (a key
@@ -80,8 +81,10 @@ export type CoinsSystem = Brix.System & {
 	close: (self: any) -> { [Player]: number },
 	-- Every count gone from its player (and their screen): the climb's end has covered everything.
 	clear: (self: any) -> (),
-	-- Adds `coins` to `player`'s count (paid at the gate, S1-06). Nothing outside a climb.
-	pay: (self: any, player: Player, coins: number) -> (),
+	-- Adds `coins` to `player`'s count: paid at the gate (S1-06), or out of a marked box they
+	-- opened (`reason` "box", B-03b; their screen flies the coins in from it). Nothing outside a
+	-- climb.
+	pay: (self: any, player: Player, coins: number, reason: ("gate" | "box")?) -> (),
 }
 
 type Pile = {
@@ -279,7 +282,7 @@ function CoinsSystem.new(): CoinsSystem
 		return true
 	end
 
-	function system.pay(_: any, player: Player, coins: number)
+	function system.pay(_: any, player: Player, coins: number, reason: ("gate" | "box")?)
 		local count = counts[player]
 		if count == nil or coins <= 0 or not climbing then
 			return
@@ -291,7 +294,7 @@ function CoinsSystem.new(): CoinsSystem
 				player = player,
 				amount = amount,
 				balance = count + amount,
-				reason = "gate",
+				reason = reason or "gate",
 			})
 		end
 	end

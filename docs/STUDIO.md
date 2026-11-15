@@ -2408,6 +2408,11 @@ verified: a doc page, Studio, or "untested".
   climb, after which presses do nothing (`ClimbFate` "Kept"): skip note, padlocked and sleeper
   units and step back to the lobby (0, 3, 557). `LogService:GetLogHistory()` filtered on the
   Server reads "Deals:" lines far cheaper than the whole Output.
+  B-03b: `DoorMiddle` holds three prompts (Open, Close, Slam): pick the one whose `ActionText` is
+  "Open" and `Enabled` (`FindFirstChildWhichIsA` finds the disabled Slam). After a PivotTo far
+  down the hall, `RequestStreamAroundAsync` and wait about 2 s before the press, or it does
+  nothing. The coin count on screen is `PlayerGui.CoinCount`'s `Number` text; the Player's
+  `Coins` attribute is the server's count.
 - **Stage one:** in Play, from the Server set Workspace `DevBox` to a find's key, stand your character
   4.5 studs out from a unit's door on the face's +LookVector side (`FloorBuilder.face(unit)`; on
   the test hall's floor 3, Unit301's face is (4, 0, -618) looking -X, so stand at (-0.5, 3, -618)),

@@ -8,7 +8,8 @@
 
 	The plan, everything Brix's Analytics will let through (it refuses any record it doesn't
 	declare, so a misspelt name never reaches a dashboard):
-	- Coins, earned from a pile on a unit's floor (`pile`) or paid at the gate (`gate`), and spent
+	- Coins, earned from a pile on a unit's floor (`pile`), out of a marked box (`box`, B-03b) or
+	  paid at the gate (`gate`), and spent
 	  at the car's machine (`machine`, with the item bought: "Battery" or a tool's key, S1-10c2),
 	  each with the floor and the player's count after.
 	- Cash (S1-12): as a climb ends, the coins a player has left go out (`cashOut`, the item
@@ -54,7 +55,7 @@ Record.TeamMost = 8
 Record.Currency = "Coins"
 Record.Cash = "Cash"
 
-export type Reason = "pile" | "gate"
+export type Reason = "pile" | "gate" | "box"
 -- Why coins went out: the car's machine.
 export type SpendReason = "machine"
 export type Gave = "nothing" | "coins" | "find" | "tool" | "keeper"
@@ -245,7 +246,7 @@ function Record.plan(brix: any): any
 		},
 		economy = {
 			currencies = { Record.Currency, Record.Cash },
-			reasons = { "pile", "gate", "machine", "cashOut", "climb" },
+			reasons = { "pile", "box", "gate", "machine", "cashOut", "climb" },
 			fields = { "floor" },
 		},
 		funnels = {
@@ -342,7 +343,7 @@ function Record.new<P>(analytics: Analytics<P>): Book<P>
 			reason = reason,
 			fields = { floor = floor },
 		})
-		if reason == "pile" then
+		if reason == "pile" or reason == "box" then
 			step(player, "coins")
 		end
 	end

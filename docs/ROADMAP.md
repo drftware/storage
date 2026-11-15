@@ -2073,7 +2073,7 @@ it is, coins go to your bank, a tool goes to your hands, or it's a piece of the 
     it, a Legendary further off. A Common must still feel good. B-02a's open runs straight from
     the tear into the burst (0.1 s, then 0.16 s): the grade's beat needs a hold between them on
     screens (HANDOFF's steps).
-- [ ] **B-03 What's found comes in a box.** The deal puts a unit's find, tool or coins (one or
+- [x] **B-03 What's found comes in a box.** Done Nov 15 (B-03a, B-03b). The deal puts a unit's find, tool or coins (one or
   more) in its one marked box instead of loose on the floor; coins go to the bank as they do
   now, a tool to your hands. Most units show somebody's stuff you can't use (a mattress, stacked
   boxes, a rug: D-136's dressing, now in most units rather than half the empty ones); some stay
@@ -2085,7 +2085,15 @@ it is, coins go to your bank, a tool goes to your hands, or it's a piece of the 
     (every Common, Uncommon and Epic but the boombox, TV and desk lamp; four of six Rares) and
     of the tools only the padlock; no Legendary or Secret fits today (`OWNER.md`). `DevBox`
     now deals the next unit any find or tool in a box, whatever its size. Verified in Studio Play.
-  - [ ] **B-03b Coins in boxes, and somebody's stuff in most units.** A unit's coins come in its
+  - [x] **B-03b Coins in boxes, and somebody's stuff in most units.** Done Nov 15 (D-212): a
+    unit's coins go in its box with its find or tool, else in a box of their own (beside a big
+    loose find, or alone); loose on the floor only where no box can stand. The opener's count
+    takes them with the open (`Coins:pay` "box") and waits while each coin jumps out of the box
+    at the burst, fans out round the find and flies in, ticking (CoinView). Somebody's stuff in
+    7 of 10 units with no keeper or note (`Deal.StuffShare`, read from the scrambled pick, no new
+    draw), laid last clear of all else (`DealSpot.stuff`'s `taken`). The battery stays loose.
+    Verified in Studio Play on seed 2000013 (Units 301, 312, 319).
+    Was: A unit's coins come in its
     box (alone, or with its find or tool) and go to the bank as the box opens; somebody's stuff
     (D-136) in most units rather than half the empty ones, beside a box or alone; some bare.
 - [ ] **B-04 The code's notes in boxes.** A note is no longer on a unit's back wall (D-044): it's

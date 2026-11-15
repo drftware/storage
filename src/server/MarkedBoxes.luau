@@ -4,7 +4,9 @@
 	The moment: you press Open and the tape rips, the flaps burst; everyone near hears and sees
 	it (MarkedBoxView plays it on every screen), then a held breath in the grade's light and the
 	find rises out, turns once and flies into the opener's hand (B-02b). The deal stands one in a
-	unit whose find or tool packs into it (Deals, `Deal.packs`, B-03a).
+	unit whose find or tool packs into it (Deals, `Deal.packs`, B-03a), and puts a unit's coins in
+	it too, or in a box of their own (B-03b): they burst out with the flaps and into the opener's
+	count, chinking as each lands (CoinView).
 
 	`stand` puts a marked box (`Boxes.cloneMarked`) at a place in a unit's hall piece, tagged
 	`Opening.Tag`, with the unit in an ObjectValue for screens' door checks and one "Open" button
@@ -22,7 +24,9 @@
 	box is stamped `LaidAt` too: the find comes out and lands on the floor beside the box, toward
 	them, to take as any find is. Otherwise it goes into their hand (`Slots.give`) the moment the
 	reveal brings it there (`Opening.handAt`, the grade's hold in it), or lands at that spot if
-	their hands filled or they died in the meantime.
+	their hands filled or they died in the meantime. Its coins are stamped with the open too
+	(`Opening.Coins`) and go into the opener's count at once (`Coins:pay`, "box"): their screen
+	holds the count until the coins it flies in from the box land in it, as with a pile.
 
 	Studio's Workspace `DevBox` deals the next unit any find or tool in one, whatever its size,
 	to see every grade's reveal (Deals).
@@ -35,6 +39,7 @@ local Workspace = game:GetService("Workspace")
 
 local Boxes = require(ReplicatedStorage.Shared.Boxes)
 local Brix = require(ReplicatedStorage.Brix)
+local Coins = require(script.Parent.Coins)
 local Slots = require(script.Parent.Slots)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 local Prompts = require(script.Parent.Prompts)
@@ -49,7 +54,8 @@ export type Opened = {
 	box: Model,
 	unit: Model,
 	player: Player,
-	find: string?, -- the find's or tool's catalog key, nil for an empty box
+	find: string?, -- the find's or tool's catalog key, nil for a box of coins alone
+	coins: number, -- how many coins it held (0 to 3), paid to the opener
 }
 
 export type MarkedBoxes = Brix.System & {
@@ -57,8 +63,8 @@ export type MarkedBoxes = Brix.System & {
 	opened: Brix.Signal<Opened>,
 	-- Stands a shut marked box at `place` (the middle of its bottom on the floor, its printed side
 	-- facing the place's LookVector) in unit `unit`, into the unit's hall piece, holding find or
-	-- tool `find` (a catalog key). Nil when the place lacks the template.
-	stand: (self: any, unit: Model, place: CFrame, find: string?) -> Model?,
+	-- tool `find` (a catalog key) and `coins` coins (B-03b). Nil when the place lacks the template.
+	stand: (self: any, unit: Model, place: CFrame, find: string?, coins: number?) -> Model?,
 }
 
 type Standing = {
@@ -67,6 +73,7 @@ type Standing = {
 	button: Vector3,
 	prompt: ProximityPrompt,
 	find: string?,
+	coins: number,
 }
 
 -- Studs from the box's middle to where a find lands beside it (toward the opener): clear of the
@@ -83,6 +90,7 @@ function MarkedBoxes.new(): MarkedBoxes
 	local connections: { RBXScriptConnection } = {}
 	local opened = Brix.Signal.new() :: Brix.Signal<Opened>
 	local slots: Slots.Slots? = nil
+	local bank: Coins.CoinsSystem? = nil
 	local stopped = false
 
 	-- Whether `player` has a free hand for a find: a slot free, and nothing two-handed held.
@@ -169,6 +177,9 @@ function MarkedBoxes.new(): MarkedBoxes
 		if laid then
 			s.box:SetAttribute(Opening.LaidAt, spot)
 		end
+		if s.coins > 0 then
+			s.box:SetAttribute(Opening.Coins, s.coins)
+		end
 		s.box:SetAttribute(Opening.OpenedBy, player.UserId)
 		s.box:SetAttribute(Opening.OpenedAt, Workspace:GetServerTimeNow())
 		local button = s.prompt.Parent
@@ -176,8 +187,17 @@ function MarkedBoxes.new(): MarkedBoxes
 		if button then
 			button:Destroy()
 		end
+		-- the coins go in now, with the stamp: the opener's screen holds its count until the
+		-- coins it flies in from the box land (CoinView)
+		local b = bank
+		if s.coins > 0 and b then
+			b:pay(player, s.coins, "box")
+		end
 		if RunService:IsStudio() then
-			print(`MarkedBoxes: {player.Name} opened the box in {s.unit.Name}: {key or "nothing"}`)
+			local coinsSaid = if s.coins > 0 then ` and {s.coins} coins` else ""
+			print(
+				`MarkedBoxes: {player.Name} opened the box in {s.unit.Name}: {key or "no find"}{coinsSaid}`
+			)
 		end
 		if key then
 			task.delay(
@@ -190,12 +210,12 @@ function MarkedBoxes.new(): MarkedBoxes
 				yaw
 			)
 		end
-		opened:fire({ box = s.box, unit = s.unit, player = player, find = key })
+		opened:fire({ box = s.box, unit = s.unit, player = player, find = key, coins = s.coins })
 	end
 
 	local system = { name = "MarkedBoxes", opened = opened }
 
-	function system.stand(_: any, unit: Model, place: CFrame, find: string?): Model?
+	function system.stand(_: any, unit: Model, place: CFrame, find: string?, coins: number?): Model?
 		-- set up out of the world, then parented once into the hall piece
 		local box = Boxes.cloneMarked(place)
 		if not box then
@@ -222,8 +242,14 @@ function MarkedBoxes.new(): MarkedBoxes
 		prompt.RequiresLineOfSight = false
 		CollectionService:AddTag(box, Opening.Tag)
 
-		local s: Standing =
-			{ box = box, unit = unit, button = button, prompt = prompt, find = find }
+		local s: Standing = {
+			box = box,
+			unit = unit,
+			button = button,
+			prompt = prompt,
+			find = find,
+			coins = math.clamp(math.floor(coins or 0), 0, 3),
+		}
 		standing[box] = s
 		prompt.Triggered:Connect(function(player: Player)
 			open(s, player)
@@ -239,6 +265,7 @@ function MarkedBoxes.new(): MarkedBoxes
 
 	function system.start(_: any, context: Brix.Context)
 		slots = (context.registry:get("slots") :: any) :: Slots.Slots? -- any: the registry is untyped
+		bank = (context.registry:get("coins") :: any) :: Coins.CoinsSystem? -- any: the same
 		table.insert(
 			connections,
 			Players.PlayerRemoving:Connect(function(player: Player)

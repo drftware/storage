@@ -36,8 +36,9 @@ export type Tool = "Saw" | "BoltCutters" | "Padlock" | "Ladder" | "BubbleWrap" |
 export type Situation = { mood: Mood, awake: number }
 
 -- What a unit holds once dealt: a tool says which, a find which, a keeper which and whether it's
--- awake; `coins`, how many coins lie on its floor besides (0 to 3, S1-04a); `stuff`, somebody's
--- stuff standing in a unit with nothing to take (S1-04b2), a name in `Deal.Stuff`. `beside`, a
+-- awake; `coins`, how many coins it holds besides (0 to 3, S1-04a), in its marked box (B-03b);
+-- `stuff`, somebody's stuff standing in a unit with no keeper or note (S1-04b2, B-03b), a name in
+-- `Deal.Stuff`. `beside`, a
 -- keeper standing in a padlocked unit with its find or tool (S1-07a): "Asleep" or "Awake", its
 -- name in `keeper`. `Deal.keeperIn` reads a unit's keeper either way. `battery`, a battery lying
 -- on its floor besides (S1-07b).
@@ -312,8 +313,8 @@ end
 	Batteries (S1-07b): about one unit in ten has a battery lying on its floor (GDD "Your
 	flashlight", the owner's default), as DOORS hides batteries in its drawers: often enough that a
 	dying torch sends you opening doors, rare enough that finding one is a moment. A unit's battery
-	is its own draw, beside whatever else it holds, as its coins are; a unit with one holds no
-	stuff (it has something to take).
+	is its own draw, beside whatever else it holds, as its coins are; it lies loose on the floor,
+	never in the unit's marked box (B-03b: a quick grab for a dying torch, not a reveal).
 ]]
 Deal.BatteryShare = 0.1 -- the share of units with a battery on the floor
 
@@ -354,23 +355,30 @@ function Deal.markFrom(
 end
 
 --[[
-	Somebody's stuff (S1-04b2, GDD "Doors"): of the units with nothing to take (no coins, battery,
-	tool, find or keeper, no note), some are bare and some are full of things only there to look at, so
-	even a door with nothing behind it shows you somebody's life: a stained mattress leaning on the
-	back wall, boxes stacked nearly to the bulb. Lethal Company's rooms and DOORS' drawers are full
-	of junk around the few things worth taking the same way; a bare one still stings.
+	Somebody's stuff (S1-04b2, GDD "Doors"): most units show somebody's life when the door goes
+	up, a stained mattress leaning on the back wall, boxes stacked nearly to the bulb, with the
+	unit's marked box or loose find standing among it (B-03b); some stay bare, so an empty door
+	still stings. Lethal Company's rooms and DOORS' drawers are full of junk around the few things
+	worth taking the same way. Never in a unit with a keeper (it's the keeper's, and nothing solid
+	gets in its way out) or a note (B-04 moves notes into boxes); Deals lays it last, clear of all
+	else the unit holds, so where no wall has room the unit is bare.
 
 	The stuff takes no draw of its own: it's read from the unit's pick, the roll that says which
-	find or keeper a unit holds, which a unit with nothing in it never uses. So adding it moved
-	nothing a seed lays or deals (tests/stuffdeal.spec checks every seed's deal against before).
+	find or keeper a unit holds, scrambled (`Deal.StuffScramble`) so a find unit's stuff doesn't
+	follow which find it is. So it moves nothing a seed lays or deals (tests/stuffdeal.spec checks
+	every seed's deal against before).
 ]]
-Deal.StuffShare = 0.5 -- of the units with nothing to take, the share with somebody's stuff
+Deal.StuffShare = 0.7 -- of the units with no keeper or note, the share with somebody's stuff
+-- The pick is scaled by this and its whole part dropped before it's read for stuff: a find unit's
+-- pick chose its find, and this many cycles across it leave the stuff all but independent of it.
+Deal.StuffScramble = 89
 -- The things, each a name in `Stuff.Pieces` or `Stuff.Stacks` (tests/stuffdeal.spec checks), as
 -- likely as each other. Deals stands the first that fits the unit from the one drawn on (a small
 -- unit's crawl hole spots leave room for the rolled rug alone).
 Deal.Stuff = { "Mattress", "Carpet", "Tower", "Wall", "Heap", "Column" } :: { string }
 
--- The stuff a unit with nothing to take holds from its pick (0 to 1), or nil for a bare unit.
+-- The stuff a unit with no keeper or note holds from its scrambled pick (0 to 1), or nil for a
+-- bare unit.
 function Deal.stuffFrom(pick: number): string?
 	if pick >= Deal.StuffShare then
 		return nil
@@ -878,13 +886,13 @@ function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 			contents.beside = if contents.keeper then beside else nil
 		end
 	end
-	if contents.kind == "Nothing" and contents.coins == 0 and not contents.battery then
+	if Deal.keeperIn(contents) == nil then
 		local note = false
 		for _, n in deck.notes do
 			note = note or n.slot == index
 		end
 		if not note then
-			contents.stuff = Deal.stuffFrom(deck.picks[index])
+			contents.stuff = Deal.stuffFrom((deck.picks[index] * Deal.StuffScramble) % 1)
 		end
 	end
 	deck.dealt[index] = contents

@@ -1,15 +1,16 @@
 --!strict
 -- lune run tests/stuffdeal.spec
--- Somebody's stuff dealt into units (S1-04b2), over 200 seeds on floors 1, 3 and 6: about
--- `Deal.StuffShare` of the units with nothing to take hold one thing, each thing about as often;
--- never a unit with coins, a battery, a tool, a find, a keeper or a note; the same seed the same stuff; and
+-- Somebody's stuff dealt into units (S1-04b2, B-03b), over 200 seeds on floors 1, 3 and 6: about
+-- `Deal.StuffShare` of the units with no keeper or note hold one thing, each thing about as often,
+-- whatever find a unit holds; never a unit with a keeper or a note; the same seed the same stuff; and
 -- every other thing a seed lays and deals is what it was before the stuff (a fingerprint of the
 -- deal, taken last as S2-01 placed the sleepers with the floor: it changes only when a ticket means
 -- to change the deal).
 -- Where it stands, in both unit sizes over 300 unit numbers: back to a wall, inside the floor past
 -- the door's line, wholly clear of both crawl hole spots, the landing under the top's hole and
 -- where its panel falls, and of a note's sight line; too close to the wall for anyone to squeeze
--- behind; in a medium unit every thing fits, in a small one at least the rolled rug.
+-- behind; in a medium unit every thing fits, in a small one at least the rolled rug; and laid last
+-- (B-03b), wholly clear of the floor the unit's marked box takes, in a medium unit still standing.
 local Brix = require("../vendor/brix/src")
 local Deal = require("../src/shared/Deal")
 local DealSpot = require("../src/shared/DealSpot")
@@ -83,7 +84,8 @@ local function feed(s: string)
 	end
 end
 
-local empty, stuffed = 0, 0
+local empty, stuffed = 0, 0 -- units with no keeper or note, and those of them with stuff
+local finds, findStuffed = 0, 0
 local byName: { [string]: number } = {}
 for seed = 1, SEEDS do
 	for _, number in FLOORS do
@@ -111,17 +113,21 @@ for seed = 1, SEEDS do
 				feed(`{i}{c.kind}{c.tool or ""}{c.find or ""}{c.keeper or ""}{c.beside or ""}`)
 				feed(`{c.coins}{lock}`)
 			end
-			local nothing = c.kind == "Nothing" and c.coins == 0 and not c.battery and not noted[i]
-			if nothing then
+			local open = Deal.keeperIn(c) == nil and not noted[i]
+			if open then
 				empty += 1
 				if c.stuff then
 					stuffed += 1
 					byName[c.stuff] = (byName[c.stuff] or 0) + 1
 				end
+				if c.kind == "Find" then
+					finds += 1
+					findStuffed += if c.stuff then 1 else 0
+				end
 			else
 				ok(
 					c.stuff == nil,
-					`seed {seed}: a unit with something to take holds no stuff ({c.kind}, {c.coins} coins)`
+					`seed {seed}: a unit with a keeper or note holds no stuff ({c.kind})`
 				)
 			end
 		end
@@ -134,7 +140,12 @@ ok(
 local share = stuffed / empty
 ok(
 	math.abs(share - Deal.StuffShare) < 0.05,
-	`about {Deal.StuffShare} of empty units hold stuff: {share}`
+	`about {Deal.StuffShare} of units with no keeper or note hold stuff: {share}`
+)
+-- the scramble: a find unit's pick chose its find, and its stuff mustn't follow it
+ok(
+	math.abs(findStuffed / finds - Deal.StuffShare) < 0.08,
+	`about {Deal.StuffShare} of find units hold stuff too: {findStuffed / finds}`
 )
 for _, name in Deal.Stuff do
 	local got = (byName[name] or 0) / stuffed
@@ -169,6 +180,13 @@ end
 
 local EPS = 1e-6
 local stood = 0
+local withBox, boxTries = 0, 0
+local boxSpecs = load("src/shared/Boxes/Specs.luau")
+local BOX: DealSpot.Size = {
+	across = boxSpecs.Marked.Size.X,
+	along = boxSpecs.Marked.Size.Z,
+	tall = boxSpecs.Marked.Size.Y,
+}
 for _, size in { "S", "M" } do
 	local unit = unitOf(size)
 	local side, back = unit.width / 2 - DealSpot.Wall, unit.depth - DealSpot.Wall
@@ -226,6 +244,26 @@ for _, size in { "S", "M" } do
 					)
 				end
 			end
+			-- laid last, round the unit's marked box where a find stands (B-03b)
+			local box = DealSpot.inUnit(unit, "Find", BOX, nil, label)
+			if box then
+				local taken = { DealSpot.around(box, BOX) }
+				local spot = DealSpot.stuff(unit, thing, nil, label, taken)
+				if spot then
+					local poly =
+						DealSpot.footprint(spot.x, spot.z, spot.yaw, thing.across, thing.along)
+					ok(
+						not DealSpot.near(poly, taken[1], 0),
+						`{size} {label}: the {name} keeps clear of the box`
+					)
+				end
+				local name3 = DealSpot.stuffIn(unit, Deal.Stuff, name, sizes, nil, label, taken)
+				if size == "M" then
+					ok(name3 ~= nil, `M {label}: drawn the {name}, something stands by the box`)
+				end
+				withBox += if name3 then 1 else 0
+				boxTries += 1
+			end
 			-- whatever is drawn, a small unit stands something
 			local name2, spot2 = DealSpot.stuffIn(unit, Deal.Stuff, name, sizes, nil, label)
 			ok(name2 ~= nil and spot2 ~= nil, `{size} {label}: drawn the {name}, something stands`)
@@ -241,5 +279,5 @@ if failures > 0 then
 	error("stuffdeal spec failed")
 end
 print(
-	`stuffdeal: {checks} checks passed ({math.floor(share * 100)}% of {empty} empty units hold stuff; {stood} spots)`
+	`stuffdeal: {checks} checks passed ({math.floor(share * 100)}% of {empty} units hold stuff; {stood} spots; {withBox} of {boxTries} stand by a box)`
 )

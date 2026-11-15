@@ -96,6 +96,7 @@ Opening.Reveals = {
 Opening.Grade = "Grade" -- on the box, stamped with the open: the grade of what's inside
 Opening.Find = "Find" -- on the box, stamped with the open: the find's catalog key
 Opening.LaidAt = "LaidAt" -- on the box, if the opener's hands were full: where the find lands
+Opening.Coins = "Coins" -- on the box, stamped with the open: how many coins it held (B-03b)
 
 -- The light through the hold and burst, as a share of the grade's `Glow`: a glimmer as the tape
 -- tears, building to all of it at the burst, a flare past it, then gone as the find rises.

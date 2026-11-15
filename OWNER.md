@@ -127,6 +127,29 @@ nowhere else.
      its side to fit), with a hair of room for the cardboard.
   3. The Packrat leaves shut boxes alone: it only fetches what lies loose (big finds, dropped
      finds, a find that came out onto the floor for full hands). It has less to take now.
+- [ ] **Coins in boxes, and somebody's stuff in most units** (B-03b, D-212; seen in Studio Play
+  by me with one player, never two, never on a phone).
+  1. In Studio, Test tab > Clients and Servers: Local Server, 2 players, Start. Both players:
+     take "Walk a floor" and go to floor 3 together.
+  2. No coins lie on any floor now. Lift Unit301's door: one box with the warm lines, a column
+     of boxes in a back corner. Player 1 opens it: the flaps burst, two coins jump out of the box
+     spinning and fanning apart, with a chink and a jingle; on player 1's screen they fly to the
+     coin count in the top corner, which waits at its old number and ticks up once per coin.
+  3. Player 2 stands in the doorway as player 1 opens Unit312's box: player 2 sees and hears the
+     three coins jump out round the rising padlock, and their own count doesn't change.
+  4. Unit319: the skates and two coins in one box, an old mattress against the back wall. The
+     coins tick in while the skates hang turning, then the skates fly to the hand.
+  5. Walk the floor: most units with no monster show somebody's stuff (a mattress, a rug, boxes
+     stacked), around the box or alone; some are bare; a unit with a monster has none. Nothing
+     stands where you crawl through a wall or drop through a ceiling.
+  6. On a phone (Device emulator, a small phone): the coins out of a box read as coins, and the
+     ones flying to the count are easy to follow.
+- [ ] **Decide (defaults in, B-03b, D-212):** say if any should change.
+  1. A big loose find's coins come in a box of their own beside it, so every unit's coins are a
+     box to open (one box a unit stays true for finds; coins with a big find get their own).
+  2. A battery stays loose on the floor: it's a quick grab for a dying torch, not a reveal.
+  3. Somebody's stuff in 7 of 10 units without a monster or note (it was half the empty ones).
+  4. A box of coins alone opens like a Common: warm light, quick hold, then the coins.
 - [ ] **Answer Brix's gift and receipt choices** (its DECISIONS E-075 to E-078, listed in Brix's
   HANDOFF) before S3-04 sells gift versions of the wrap colours.
 

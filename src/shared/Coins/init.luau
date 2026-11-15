@@ -60,6 +60,11 @@ Coins.Vanish = 0.2 -- seconds it shrinks away from the top of its jump
 Coins.Stagger = 0.06 -- seconds between one coin of a pile and the next: a little ripple
 Coins.Spin = 1.5 -- turns each coin spins in its jump and vanish, standing up on its edge: a flash
 Coins.Sparks = 5 -- sparkles thrown off the pile as it's taken, from its glint
+-- Coins out of a marked box (B-03b), as its flaps burst: each starts `Under` studs below the rim
+-- (out of sight in the box), jumps `Lift` (higher than a pile's, to clear the rim) and fans out
+-- `Fan` studs from a ring `Ring` studs round the middle, so they burst out round a rising find
+-- rather than through it. They leave a beat after the burst (`Opening.Out.Rise`), with the find.
+Coins.Box = { Under = 0.15, Lift = 1.35, Ring = 0.3, Fan = 0.5 }
 -- Seconds the count waits for a take's coins to fly in before it simply shows a rise that came
 -- without one (a pile taken while it was off your screen): longer than a rise takes to arrive.
 Coins.Grace = 0.3

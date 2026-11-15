@@ -475,14 +475,27 @@ end
 	back as it goes. It's solid and it stays, so it keeps wholly clear of everything a player needs
 	the floor for, never giving any of it up as a tool or keeper may: the door's line, both crawl
 	hole spots (a crawl comes out onto the floor there), the landing under the top's hole and where
-	its panel falls, and the note's sight line if it's tall enough to block it (`note` as inUnit's).
+	its panel falls, and the note's sight line if it's tall enough to block it (`note` as inUnit's);
+	and of `taken`, the floor what else the unit holds is laid on (B-03b: its box, a loose find or
+	tool, its coins and battery, each `DealSpot.around`), so it's laid last and goes round them.
 	Nil if no wall has room clear of all that: a small unit's crawl hole spots leave only the
 	middle of its back wall and the front of one side, room for the rolled rug alone.
 ]]
-function DealSpot.stuff(unit: Unit, size: Size, note: number?, number: string): Spot?
+function DealSpot.stuff(
+	unit: Unit,
+	size: Size,
+	note: number?,
+	number: string,
+	taken: { { number } }?
+): Spot?
 	local n = math.floor(math.abs(tonumber(number) or 0))
 	local way = if n % 2 == 0 then 1 else -1
 	local keep = DealSpot.holes(unit)
+	if taken then
+		for _, zone in taken do
+			table.insert(keep, zone)
+		end
+	end
 	for _, zone in DealSpot.landing(unit) do
 		table.insert(keep, zone)
 	end
@@ -518,21 +531,23 @@ function DealSpot.stuff(unit: Unit, size: Size, note: number?, number: string): 
 	return nil
 end
 
--- The stuff unit `number` stands, and where: `drawn` if it fits (`DealSpot.stuff`), else the next
--- in `order` that does, round from it; `sizes` each one's size. Nil if none fits.
+-- The stuff unit `number` stands, and where: `drawn` if it fits (`DealSpot.stuff`, clear of
+-- `taken`), else the next in `order` that does, round from it; `sizes` each one's size. Nil if
+-- none fits.
 function DealSpot.stuffIn(
 	unit: Unit,
 	order: { string },
 	drawn: string,
 	sizes: { [string]: Size },
 	note: number?,
-	number: string
+	number: string,
+	taken: { { number } }?
 ): (string?, Spot?)
 	local start = table.find(order, drawn) or 1
 	for k = 0, #order - 1 do
 		local name = order[(start - 1 + k) % #order + 1]
 		local size = sizes[name]
-		local spot = if size then DealSpot.stuff(unit, size, note, number) else nil
+		local spot = if size then DealSpot.stuff(unit, size, note, number, taken) else nil
 		if spot then
 			return name, spot
 		end

@@ -27,6 +27,13 @@
 	your count, each landing worth its share of the pay (`Pay.split`), ticking higher and higher.
 	A gold "+10" by the count says what came in, and fades once the last coin lands.
 
+	Coins out of a marked box (B-03b): as its flaps burst (with the find, if it holds one) its
+	coins jump out of it on every screen, fanning out round whatever rises between them, spinning
+	up on their edges and gone, with the take's chink (and jingle for two or three) at the box. On
+	the opener's screen each flies on to the count from the top of its jump and ticks it up, as a
+	taken pile's do; the server put them in the count with the open, and the count waits for them.
+	A box seen opened too late for its coins shows none.
+
 	A buy at the car's machine (S1-10c2b, `Buy`): the server tells your screen of the spend before
 	your count drops. One after another the coins leave the count, each ticking it down, a little
 	lower each time, the count dipping; each drops out of the corner and curves into the machine's
@@ -39,11 +46,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
+local Boxes = require(ReplicatedStorage.Shared.Boxes)
 local Brix = require(ReplicatedStorage.Brix)
 local Coins = require(ReplicatedStorage.Shared.Coins)
 local Machine = require(ReplicatedStorage.Shared.Machine)
 local CoinSpecs = require(ReplicatedStorage.Shared.Coins.Specs)
 local Minimap = require(ReplicatedStorage.Shared.Minimap)
+local Opening = require(ReplicatedStorage.Shared.Boxes.Opening)
 local Pay = require(ReplicatedStorage.Shared.Pay)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 
@@ -81,7 +90,20 @@ type Pile = {
 	edge: { CFrame }, -- each coin's turn stood on its edge (its lying yaw kept)
 	sizes: { Vector3 },
 	start: number?, -- when it was taken, on this screen's clock
-	connection: RBXScriptConnection,
+	connection: RBXScriptConnection?, -- the server's pile: its take
+	-- coins out of a marked box (B-03b): this screen's own, gone once they've vanished; each
+	-- fans out by its `drift` as it jumps `lift` (else `Coins.Lift`)
+	owned: boolean?,
+	drift: { Vector3 }?,
+	lift: number?,
+}
+
+-- A marked box's coins waiting to jump out as its flaps burst (B-03b).
+type Pour = {
+	box: Model,
+	leave: number, -- when they jump, on this screen's clock
+	rest: { CFrame }, -- each coin's start, just under the rim, lying flat
+	drift: { Vector3 },
 }
 
 type Flyer = {
@@ -156,6 +178,8 @@ function CoinView.new(): Brix.System
 	local piles: { [Model]: Pile } = {}
 	local moving: { Pile } = {}
 	local flyers: { Flyer } = {}
+	local pours: { Pour } = {}
+	local boxes: { [Model]: RBXScriptConnection } = {}
 	local connections: { RBXScriptConnection } = {}
 
 	local target: number? = nil -- the count the server says
@@ -376,6 +400,24 @@ function CoinView.new(): Brix.System
 		end
 	end
 
+	-- A take's chink at `at`, heard by friends near, with the jingle under it for `n` of two or
+	-- three: a pile taken, or a box's coins jumping out (B-03b).
+	local function chink(at: Vector3, n: number)
+		local spot = Instance.new("Attachment")
+		spot.Name = "CoinTake"
+		spot.Parent = Workspace.Terrain
+		spot.WorldPosition = at
+		sound(Coins.Chink, spot, Coins.Heard):Play()
+		local longest = Coins.Chink.length
+		if n >= 2 then
+			sound(Coins.Jingle, spot, Coins.Heard):Play()
+			longest = math.max(longest, Coins.Jingle.length)
+		end
+		task.delay(longest + 0.3, function()
+			spot:Destroy()
+		end)
+	end
+
 	-- The take, as everyone sees it.
 	local function taken(pile: Pile)
 		if pile.start then
@@ -395,19 +437,7 @@ function CoinView.new(): Brix.System
 		end
 		local count = pile.model:GetAttribute(Coins.CountAttribute)
 		local n = if typeof(count) == "number" then count else #pile.coins
-		local spot = Instance.new("Attachment")
-		spot.Name = "CoinTake"
-		spot.Parent = Workspace.Terrain
-		spot.WorldPosition = at + Vector3.new(0, 0.3, 0)
-		sound(Coins.Chink, spot, Coins.Heard):Play()
-		local longest = Coins.Chink.length
-		if n >= 2 then
-			sound(Coins.Jingle, spot, Coins.Heard):Play()
-			longest = math.max(longest, Coins.Jingle.length)
-		end
-		task.delay(longest + 0.3, function()
-			spot:Destroy()
-		end)
+		chink(at + Vector3.new(0, 0.3, 0), n)
 		if pile.model:GetAttribute(Coins.TakenAttribute) ~= me.UserId then
 			return
 		end
@@ -433,6 +463,8 @@ function CoinView.new(): Brix.System
 			return true
 		end
 		local whole = Coins.LiftTime + Coins.Vanish
+		local lift = pile.lift or Coins.Lift
+		local drift = pile.drift
 		local done = true
 		for i, coin in pile.coins do
 			local u = now - start - (i - 1) * Coins.Stagger
@@ -450,14 +482,16 @@ function CoinView.new(): Brix.System
 				local p = u / Coins.LiftTime
 				local e = 1 - (1 - p) * (1 - p)
 				local turn = rest.Rotation:Lerp(pile.edge[i], e)
-				coin.CFrame = CFrame.new(rest.Position + Vector3.new(0, Coins.Lift * e, 0))
+				local fan = if drift then drift[i] * e else Vector3.zero
+				coin.CFrame = CFrame.new(rest.Position + Vector3.new(0, lift * e, 0) + fan)
 					* spin
 					* turn
 			else
 				local q = (u - Coins.LiftTime) / Coins.Vanish
 				local size = math.max(1 - q * q, 0.02)
+				local fan = if drift then drift[i] * (1 + 0.15 * q) else Vector3.zero
 				coin.Size = pile.sizes[i] * size
-				coin.CFrame = CFrame.new(rest.Position + Vector3.new(0, Coins.Lift + 0.2 * q, 0))
+				coin.CFrame = CFrame.new(rest.Position + Vector3.new(0, lift + 0.2 * q, 0) + fan)
 					* spin
 					* pile.edge[i]
 			end
@@ -742,8 +776,113 @@ function CoinView.new(): Brix.System
 	local function removed(model: Instance)
 		local pile = piles[model :: Model]
 		if pile then
-			pile.connection:Disconnect()
+			if pile.connection then
+				pile.connection:Disconnect()
+			end
 			piles[model :: Model] = nil
+		end
+	end
+
+	-- A marked box opened (B-03b): its coins wait to jump out as its flaps burst, and if it's
+	-- yours, each is already on its way to the count (so the count waits for them).
+	local function boxOpened(box: Model)
+		local count = box:GetAttribute(Opening.Coins)
+		local stamp = box:GetAttribute(Opening.OpenedAt)
+		if typeof(count) ~= "number" or count < 1 or type(stamp) ~= "number" then
+			return
+		end
+		local grade = box:GetAttribute(Opening.Grade)
+		local reveal = Opening.Reveals[if type(grade) == "string" then grade else "Common"]
+			or Opening.Reveals.Common
+		-- on the box's own clock, as MarkedBoxView plays it (`Opening.clock`)
+		local now = Workspace:GetServerTimeNow()
+		local into = now - Opening.clock(stamp, now)
+		local jump = Opening.burst(reveal.Hold) + Opening.Out.Rise
+		if into > jump + Coins.LiftTime then
+			return -- seen too late: they're gone
+		end
+		local leave = os.clock() + math.max(0, jump - into)
+		local base = box:GetPivot()
+		local _, yaw = base:ToOrientation()
+		local mouth = base.Position + Vector3.new(0, Boxes.Marked.Size.Y - Coins.Box.Under, 0)
+		local n = math.clamp(math.floor(count), 1, 3)
+		local mine = box:GetAttribute(Opening.OpenedBy) == me.UserId
+		local spill: Pour = { box = box, leave = leave, rest = {}, drift = {} }
+		for i = 1, n do
+			-- round the middle, the first toward the box's printed side
+			local a = yaw + (i - 1) * TAU / n + (if n == 1 then 0.6 else 0)
+			local dir = Vector3.new(-math.sin(a), 0, -math.cos(a))
+			local rest = CFrame.new(mouth + dir * Coins.Box.Ring) * CFrame.Angles(0, a, 0)
+			spill.rest[i] = rest
+			spill.drift[i] = dir * Coins.Box.Fan
+			if mine then
+				table.insert(flyers, {
+					launch = leave + (i - 1) * Coins.Stagger + Coins.LiftTime,
+					from = nil,
+					at = rest.Position + Vector3.new(0, Coins.Box.Lift, 0) + spill.drift[i],
+					rise = 1 + (i - 1) * Coins.Climb,
+					worth = 1,
+					view = nil,
+					coin = nil,
+					start = nil,
+				})
+			end
+		end
+		table.insert(pours, spill)
+	end
+
+	-- A box's coins jump out now: this screen's own copies, moving as a taken pile's do.
+	local function pourOut(spill: Pour, now: number)
+		local coin = template()
+		if not (coin and spill.box.Parent) then
+			return
+		end
+		local model = Instance.new("Model")
+		model.Name = "BoxCoins"
+		for i, rest in spill.rest do
+			local part = coin:Clone()
+			part.Name = `Coin{i}`
+			part.Anchored = true
+			part.CanCollide = false
+			part.CanTouch = false
+			part.CanQuery = false
+			part.CastShadow = false
+			part.CFrame = rest
+			part.Parent = model
+		end
+		model.Parent = Workspace
+		local pile: Pile = {
+			model = model,
+			coins = {},
+			rest = {},
+			edge = {},
+			sizes = {},
+			start = now,
+			owned = true,
+			drift = spill.drift,
+			lift = Coins.Box.Lift,
+		}
+		gather(pile)
+		table.insert(moving, pile)
+		local mouth = spill.box:GetPivot().Position + Vector3.new(0, Boxes.Marked.Size.Y + 0.3, 0)
+		chink(mouth, #spill.rest)
+	end
+
+	local function boxAdded(inst: Instance)
+		if not inst:IsA("Model") or boxes[inst] then
+			return
+		end
+		-- a box streamed in already open stands open: its coins are long gone
+		boxes[inst] = inst:GetAttributeChangedSignal(Opening.OpenedAt):Connect(function()
+			boxOpened(inst)
+		end)
+	end
+
+	local function boxRemoved(inst: Instance)
+		local c = boxes[inst :: Model]
+		if c then
+			c:Disconnect()
+			boxes[inst :: Model] = nil
 		end
 	end
 
@@ -788,6 +927,18 @@ function CoinView.new(): Brix.System
 			connections,
 			CollectionService:GetInstanceRemovedSignal(Coins.Tag):Connect(removed)
 		)
+		-- marked boxes, for the coins in them (B-03b)
+		for _, box in CollectionService:GetTagged(Opening.Tag) do
+			boxAdded(box)
+		end
+		table.insert(
+			connections,
+			CollectionService:GetInstanceAddedSignal(Opening.Tag):Connect(boxAdded)
+		)
+		table.insert(
+			connections,
+			CollectionService:GetInstanceRemovedSignal(Opening.Tag):Connect(boxRemoved)
+		)
 		task.spawn(SoundPrimer.prime, { Coins.Chink.id, Coins.Jingle.id, Pay.Pour.id })
 		-- the pay at the gate: coins, then the finds kept (KeepView's)
 		task.spawn(function()
@@ -809,9 +960,20 @@ function CoinView.new(): Brix.System
 
 	function system.step(_: any, _dt: number)
 		local now = os.clock()
+		for i = #pours, 1, -1 do
+			local spill = pours[i]
+			if now >= spill.leave then
+				table.remove(pours, i)
+				pourOut(spill, now)
+			end
+		end
 		for i = #moving, 1, -1 do
-			if stepPile(moving[i], now) then
+			local pile = moving[i]
+			if stepPile(pile, now) then
 				table.remove(moving, i)
+				if pile.owned then
+					pile.model:Destroy()
+				end
 			end
 		end
 		for i = #flyers, 1, -1 do
@@ -881,6 +1043,15 @@ function CoinView.new(): Brix.System
 		for model in piles do
 			removed(model)
 		end
+		for model in boxes do
+			boxRemoved(model)
+		end
+		for _, pile in moving do
+			if pile.owned then
+				pile.model:Destroy()
+			end
+		end
+		table.clear(pours)
 		table.clear(moving)
 		table.clear(flyers)
 		gui:Destroy()

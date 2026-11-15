@@ -5,12 +5,13 @@
 	from the floor's deck); this deals each unit the first time anyone can see into it, its door
 	lifting (a peek or an open) or a saw's hole going through its wall or top (D-067),
 	and lays what it holds before anyone sees in, so even a peek shows it: its one marked box behind
-	the bulb holding its find or tool, unseen until someone opens it (MarkedBoxes, B-03a), or, for
-	a find or tool too big for a box (`Deal.packs`), the thing itself loose on the floor (Slots);
-	or the place a keeper stands, which `dealt` hands on (Keepers stands the keeper there); in a
-	unit with nothing to take, sometimes
-	somebody's stuff against a wall (S1-04b2). Left 4 Dead's director deals its items the same way,
-	as the team moves rather than up front. Where in the unit is DealSpot's pure rule.
+	the bulb holding its find or tool and its coins, unseen until someone opens it (MarkedBoxes,
+	B-03a, B-03b), or, for a find or tool too big for a box (`Deal.packs`), the thing itself loose
+	on the floor (Slots) with its coins in a box beside it; or the place a keeper stands, which
+	`dealt` hands on (Keepers stands the keeper there); and in most units without a keeper,
+	somebody's stuff against a wall, clear of all that (S1-04b2, B-03b). Left 4 Dead's director
+	deals its items the same way, as the team moves rather than up front. Where in the unit is
+	DealSpot's pure rule.
 
 	A tool whose art isn't built yet (the saw, the ladder...) is dealt but lies nowhere; in Studio
 	Output says so, and what every unit held, so a tester knows what each door was.
@@ -144,9 +145,6 @@ local function said(contents: Deal.Contents): string
 		local among = if pile then `, among its pile: {table.concat(pile, ", ")}` else ""
 		return `the {contents.keeper}, {string.lower(kind)}{among}`
 	end
-	if contents.stuff then
-		return `nothing to take, only {STUFF_SAID[contents.stuff] or contents.stuff}`
-	end
 	return "nothing"
 end
 
@@ -200,16 +198,18 @@ function Deals.new(): Deals
 			* CFrame.Angles(0, math.rad(spot.yaw), 0)
 	end
 
-	-- Stands unit `unit`'s one marked box (B-03a) holding `key`, a find or tool, if it packs into
-	-- one (`Deal.packs`; `forced`, Studio's `DevBox`, whatever its size), where a find would stand:
-	-- behind the bulb, facing the doorway. Where it stands and the floor it takes, or nil if it
-	-- doesn't pack or can't stand (no room, no template), and the thing is laid loose instead.
+	-- Stands unit `unit`'s one marked box (B-03a) holding `key`, a find or tool, and the unit's
+	-- `count` coins (B-03b), if it packs into one (`Deal.packs`; `forced`, Studio's `DevBox`, whatever
+	-- its size), where a find would stand: behind the bulb, facing the doorway. Where it stands and
+	-- the floor it takes, or nil if it doesn't pack or can't stand (no room, no template), and the
+	-- thing is laid loose instead.
 	local function layBoxed(
 		unit: Model,
 		deck: Deal.Deck,
 		index: number,
 		key: string,
-		forced: boolean
+		forced: boolean,
+		count: number
 	): (CFrame?, { number }?)
 		local boxes = markedBoxes
 		local body = Tools.bounds(key).Size
@@ -222,7 +222,7 @@ function Deals.new(): Deals
 			return nil, nil
 		end
 		local place = placed(unit, spot)
-		if not boxes:stand(unit, place, key) then
+		if not boxes:stand(unit, place, key, count) then
 			return nil, nil
 		end
 		return place, DealSpot.around(spot, BOX_FOOTPRINT)
@@ -231,7 +231,8 @@ function Deals.new(): Deals
 	-- Lays what unit `unit` (slot `index` of `deck`'s floor) was dealt, its tool, find or keeper;
 	-- returns where, or nil, and the floor it takes with room round it (DealSpot.around), which a
 	-- keeper standing with it and the unit's coins keep clear of; for a keeper, its spot; and
-	-- whether its find or tool waits in a marked box. `forced`: Studio's `DevBox` (`layBoxed`).
+	-- whether its find or tool waits in a marked box (its coins with it). `forced`: Studio's
+	-- `DevBox` (`layBoxed`).
 	local function layOne(
 		unit: Model,
 		deck: Deal.Deck,
@@ -252,7 +253,7 @@ function Deals.new(): Deals
 				-- only built tools (tests/carry.spec). Kept as a guard for a tool added half-built.
 				return nil, nil, nil, false
 			end
-			local boxed, area = layBoxed(unit, deck, index, key, forced)
+			local boxed, area = layBoxed(unit, deck, index, key, forced, contents.coins)
 			if boxed then
 				return boxed, area, nil, true
 			end
@@ -286,7 +287,7 @@ function Deals.new(): Deals
 				-- its art isn't in the place (art/finds/README.md says how to import it)
 				return nil, nil, nil, false
 			end
-			local boxed, area = layBoxed(unit, deck, index, key, forced)
+			local boxed, area = layBoxed(unit, deck, index, key, forced, contents.coins)
 			if boxed then
 				return boxed, area, nil, true
 			end
@@ -423,33 +424,68 @@ function Deals.new(): Deals
 	end
 
 	-- Lays unit `unit`'s battery (S1-07b) on its side in the bulb's pool, clear of `taken` (the
-	-- floor its tool, find, keeper and coins take). Whether it was laid.
+	-- floor its tool, find, keeper and coins take). The floor it takes, or nil if it wasn't laid.
 	local function layBattery(
 		unit: Model,
 		deck: Deal.Deck,
 		index: number,
 		taken: { { number } }
-	): boolean
+	): { number }?
 		if not batteries then
-			return false
+			return nil
 		end
 		local size, number, note = shape(deck, index)
 		local cell = BatterySpecs.Battery.Size
 		-- lying along the spot's X: its length across, its width along and up
 		local footprint = { across = cell.Y, along = cell.X, tall = cell.X }
 		local spot = DealSpot.inUnit(size, "Battery", footprint, note, number, taken)
-		if not spot then
-			return false
+		if not (spot and batteries:lay(unit, placed(unit, spot))) then
+			return nil
 		end
-		return batteries:lay(unit, placed(unit, spot))
+		return DealSpot.around(spot, footprint)
 	end
 
-	-- Stands somebody's stuff (S1-04b2) in unit `unit` with its back to a wall: the thing dealt,
-	-- or the next in `Deal.Stuff` that fits (DealSpot.stuffIn), in the unit's hall piece as finds
-	-- are, so it goes with the floor. The name stood, or nil if nothing fits or its art is missing.
-	local function layStuff(unit: Model, deck: Deal.Deck, index: number, drawn: string): string?
+	-- Stands unit `unit`'s coins (B-03b) in a marked box of their own where a find would stand
+	-- (behind the bulb, facing the doorway), clear of `taken` (the floor its loose find or tool, or
+	-- its keeper, takes): coins with no find or tool box to go in. Where the box stands and the
+	-- floor it takes, or nil if it can't (no room, no template).
+	local function layCoinBox(
+		unit: Model,
+		deck: Deal.Deck,
+		index: number,
+		count: number,
+		taken: { { number } }
+	): (CFrame?, { number }?)
+		local boxes = markedBoxes
+		if not boxes then
+			return nil, nil
+		end
 		local size, number, note = shape(deck, index)
-		local name, spot = DealSpot.stuffIn(size, Deal.Stuff, drawn, STUFF_SIZES, note, number)
+		local spot = DealSpot.inUnit(size, "Find", BOX_FOOTPRINT, note, number, taken)
+		if not spot then
+			return nil, nil
+		end
+		local place = placed(unit, spot)
+		if not boxes:stand(unit, place, nil, count) then
+			return nil, nil
+		end
+		return place, DealSpot.around(spot, BOX_FOOTPRINT)
+	end
+
+	-- Stands somebody's stuff (S1-04b2) in unit `unit` with its back to a wall, clear of `taken`
+	-- (all else the unit holds: its box, find, tool, coins and battery, B-03b): the thing dealt, or
+	-- the next in `Deal.Stuff` that fits (DealSpot.stuffIn), in the unit's hall piece as finds are,
+	-- so it goes with the floor. The name stood, or nil if nothing fits or its art is missing.
+	local function layStuff(
+		unit: Model,
+		deck: Deal.Deck,
+		index: number,
+		drawn: string,
+		taken: { { number } }
+	): string?
+		local size, number, note = shape(deck, index)
+		local name, spot =
+			DealSpot.stuffIn(size, Deal.Stuff, drawn, STUFF_SIZES, note, number, taken)
 		if not (name and spot) then
 			return nil
 		end
@@ -490,47 +526,83 @@ function Deals.new(): Deals
 		local contents = Deal.open(deck, index, { mood = "Build", awake = awake })
 		local dev = devDeal(contents)
 		local place, keeper, taken, pileAt, boxed = lay(unit, deck, index, contents, dev)
-		local paid, pile = false, nil
-		if contents.coins > 0 then
-			paid, pile = layCoins(unit, deck, index, contents.coins, taken)
+		-- its coins (B-03b): in its box with its find or tool; else in a box of their own; loose
+		-- on the floor only where no box can stand
+		local count = contents.coins
+		local coinsIn: ("its box" | "a box" | "the floor")? = nil
+		if count > 0 and boxed then
+			coinsIn = "its box"
+		elseif count > 0 then
+			local _, area = layCoinBox(unit, deck, index, count, taken)
+			if area then
+				coinsIn = "a box"
+				table.insert(taken, area)
+			else
+				local laid, pile = layCoins(unit, deck, index, count, taken)
+				if pile then
+					table.insert(taken, pile)
+				end
+				coinsIn = if laid then "the floor" else nil
+			end
 		end
-		if pile then
-			table.insert(taken, pile)
+		local cell = if contents.battery then layBattery(unit, deck, index, taken) else nil
+		if cell then
+			table.insert(taken, cell)
 		end
-		local charged = contents.battery == true and layBattery(unit, deck, index, taken)
 		local drawn = contents.stuff
 		if drawn then
 			-- what stands is what the unit holds: the next that fits, or nothing (said in Output)
-			contents.stuff = layStuff(unit, deck, index, drawn)
+			contents.stuff = layStuff(unit, deck, index, drawn, taken)
 		end
 		if RunService:IsStudio() then
-			local held = said(contents) .. if boxed then " in its box" else ""
-			local laid = if boxed
-					or place
-					or contents.kind == "Nothing"
-				then ""
-				else " (no art yet, so nothing laid)"
+			local things: { string } = {}
+			if contents.kind ~= "Nothing" then
+				local held = said(contents)
+				if boxed then
+					held ..= if coinsIn == "its box"
+						then ` in its box with {count} coins`
+						else " in its box"
+				elseif not place then
+					held ..= " (no art yet, so nothing laid)"
+				end
+				table.insert(things, held)
+			end
+			if count > 0 and coinsIn ~= "its box" then
+				table.insert(
+					things,
+					if coinsIn == "a box"
+						then `{count} coins in a box`
+						elseif
+							coinsIn == "the floor"
+						then `{count} coins on the floor (no room for a box)`
+						else `{count} coins (not laid)`
+				)
+			end
+			if contents.battery then
+				table.insert(things, if cell then "a battery" else "a battery (not laid)")
+			end
+			local stuff = contents.stuff
+			local seen = if stuff then STUFF_SAID[stuff] or stuff else nil
+			local held = if #things > 0
+				then table.concat(things, " and ")
+				elseif seen then `nothing to take, only {seen}`
+				else "nothing"
+			if seen and #things > 0 then
+				held ..= `, and {seen} against a wall`
+			end
 			if dev then
-				laid ..= " (DevBox)"
+				held ..= " (DevBox)"
 			end
 			if contents.beside and not keeper then
-				laid ..= " (no room for its keeper, so it stands nowhere)"
+				held ..= " (no room for its keeper, so it stands nowhere)"
 			end
-			if drawn and not contents.stuff then
-				laid ..= ` (its {drawn} fits against no wall, so it's bare)`
-			elseif drawn and contents.stuff ~= drawn then
-				laid ..= ` (drawn the {drawn}, which doesn't fit)`
+			if drawn and not stuff then
+				held ..= ` (its {drawn} fits against no wall, so no stuff)`
+			elseif drawn and stuff ~= drawn then
+				held ..= ` (drawn the {drawn}, which doesn't fit)`
 			end
 			local guard = if index == deck.guarded then ", guarding its note" else ""
-			local coinsSaid = if contents.coins == 0
-				then ""
-				elseif paid then ` and {contents.coins} coins`
-				else ` and {contents.coins} coins (not laid)`
-			local batterySaid = if not contents.battery
-				then ""
-				elseif charged then " and a battery"
-				else " and a battery (not laid)"
-			print(`Deals: {unit.Name} held {held}{coinsSaid}{batterySaid}{guard}{laid}`)
+			print(`Deals: {unit.Name} held {held}{guard}`)
 		end
 		dealt:fire({
 			unit = unit,

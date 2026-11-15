@@ -5621,3 +5621,33 @@ box it couldn't have come out of would read as a trick (D-205: big finds stay ou
   lamp, moon lamp, die-cast car, night light), the oil lamp and desk lamp stood loose; the padlock
   opened as a Common into slot 1, the skates as an Uncommon (copy seen from 0.56 s, in the hand at
   2.1 s) into slot 2; `DevBox` "StainedGlassLamp" stood a forced box. No script errors.
+
+## D-212 A unit's coins come in a box, and somebody's stuff stands in most units (B-03b, Nov 15)
+No coins lie on a floor any more. A unit's coins (1 to 3) go in its marked box with its find or
+tool; with no box for them (a find or tool too big to pack, a keeper, or nothing else), they get
+a box of their own where a find would stand, clear of what else is there (`Deals.layCoinBox`).
+Only where no box can stand do they lie loose as before. One box a unit (D-205) holds for finds;
+a big loose find's coins in a second box beside it is the default (`OWNER.md`).
+- **The moment:** the opener's coins go into their count with the open (`Coins:pay`, reason
+  "box", which Recording counts as the climb funnel's "coins" step, as a pile was), so nothing
+  is lost if they walk off. Their screen holds the count at its old number: CoinView queues one
+  flying coin per coin the moment it sees `OpenedAt`, launching from the top of each coin's jump.
+  On every screen, at the burst plus `Opening.Out.Rise` (with the find's rise), the coins jump
+  out from under the rim (`Coins.Box`: a higher jump than a pile's, fanning out from a ring) so
+  they burst round a rising find, not through it, with the take's chink and jingle at the box.
+  The count ticks once per coin as each lands, the same tick climbing in pitch. A box of coins
+  alone opens as a Common. In Studio Play a Common box's coins left at 0.47 s and ticked in from
+  1.07 s; the skates' Uncommon box's at 0.58 s and 1.25 s, while the skates hung turning.
+- **The battery stays loose:** it's a quick grab for a dying torch, as DOORS lays batteries out
+  for the taking, not a reveal; a box would also break one box a unit.
+- **Somebody's stuff in most units:** 7 in 10 of the units with no keeper and no note
+  (`Deal.StuffShare` 0.7; it was half the empty ones), so most doors show somebody's life and some
+  stay bare. Never with a keeper (it's the keeper's unit, and nothing solid in its way out) or a
+  note (B-04 moves notes into boxes). Still no draw of its own: the unit's pick, scaled by 89
+  with the whole part dropped (`Deal.StuffScramble`), since a find unit's pick chose its find;
+  the deal's fingerprint is unchanged. Deals lays it last, clear of the box, a loose find or tool,
+  the coins and the battery (`DealSpot.stuff`'s `taken`); in a medium unit something always
+  stands beside the box, in a small one 3534 of 3600 tries (`tests/stuffdeal.spec`).
+- Verified in Studio Play on seed 2000013's floor 3: Unit301 a box of 2 coins alone and a column
+  of boxes; Unit312 the padlock and 3 coins in one box and a rolled rug; Unit319 the skates and 2
+  coins and an old mattress. Each count rose 2, 3 and 2, held until the coins landed. No errors.
