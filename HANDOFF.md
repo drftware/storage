@@ -2,51 +2,52 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-15, session 184 (B-01a, D-208) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-15, session 185 (B-01b, D-208) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- B-01a done: the marked box is built in `art/boxes` (eight parts in `Boxes.fbx`, the shared
-  Cardboard atlas rebaked at 90 texels a stud), its Open motion, cue and hinges in
-  `Boxes/Specs.luau` (`Specs.Marked`), its sounds in `Boxes.Sounds`, sheets
-  `art/sheets/boxes-marked-*.png` judged at phone size. Nothing uploaded or put in the place.
-- The place's box templates (`ReplicatedStorage.Props.Boxes`) are still the old upload with the
-  old atlas baked in, so they look as before. The repo's `Boxes.fbx` is the new one.
-- S3-02's `Purchasing` and `Live` are in; nothing is on sale. Studio shows two copies each of
-  `Live`, `Purchasing`, `Feeds`, `Taps` (a Rojo sync glitch; reconnect Rojo if an edit won't run).
+- B-01b done: `Boxes.fbx` re-uploaded (asset 89264624666926, new ColorMap 82034486652211) and all six
+  templates replaced in the place at `ReplicatedStorage.Props.Boxes`: the five scenery boxes
+  (MeshParts) and `Marked`, a Model of eight parts, PrimaryPart `Marked_Body`, Atomic streaming,
+  only the body solid, every part's pivot on its hinge turned square with the box, the seam Neon
+  at Transparency 1. `Boxes.prepareMarked` and `Boxes.cloneMarked` wrote it. In the place, unsaved.
+- Verified in Studio: the Open motion played by hand in Edit matches the filmstrip; the lit cue
+  reads as two thin clean lines at Level01 and Level21 in Play (`docs/art/B-01b-cue-level01-21.jpg`);
+  the three `Boxes.Sounds` load and play. No unit has a marked box yet (B-03 deals them).
+- Studio shows two copies each of `Live`, `Purchasing`, `Feeds`, `Taps` (Rojo glitch; reconnect).
 
-## Next task: B-01b The box, in Studio
-ROADMAP B-01b (D-208). The moment is B-01a's: a plain box with something in it. This piece puts
-it in the place, so B-02 can open it.
-1. `lune run scripts/upload_art Boxes` (updates asset 89264624666926 in place; `art/boxes/assets.json`).
-   Insert it with the MCP's `insert_asset`; remove the `Assistant:` tag it adds.
-2. Replace the five templates in `ReplicatedStorage.Props.Boxes` with the new ones the README's
-   way (`Boxes.prepare`, PivotTo the origin; set CollisionFidelity per STUDIO.md if it won't take).
-   Check first that no live code holds the old instances (they're cloned by name).
-3. Write `Boxes.prepareMarked(model)` and `Boxes.cloneMarked(pivot, parent)` in
-   `src/shared/Boxes/init.luau`: anchored, CanTouch off, only `Marked_Body` collides (Box
-   fidelity); each part's PivotOffset put on its `Specs.Marked.Parts` hinge (Pivot is from the
-   body's pivot, the middle of its bottom); the seam `Material = Neon`, `Color` the cue's,
-   `Transparency = 1`, CastShadow off. Group the eight inserted `Marked_*` parts into a Model
-   `Marked` (PrimaryPart the body) in `ReplicatedStorage.Props.Boxes`.
-4. In Edit, clone one into a unit and play `Specs.Marked.Motions.Open` by hand with
-   `Finds/Art.luau`'s `Art.sample` (turn = degrees about Axis through Pivot, scale = times size):
-   capture it mid-open and settled; compare with `boxes-marked-open-strip.png`.
-5. Light the cue (seam Transparency to `Cue.Transparency`) and capture from a unit's doorway at
-   QualityLevel 1 and 21 (wait several seconds after switching): it must read faint but clear
-   and not smear (STUDIO.md "Neon blooms into blobs"). Play the three `Boxes.Sounds` once.
-6. Say in OWNER.md's "Judge the marked box" where the templates live.
-**Acceptance:** checks green; the six templates in the place; the marked box opens in Edit as the
-filmstrip shows; the cue reads at phone size in both graphics levels; HANDOFF and OWNER.md say
-where the templates live.
-**Read first:** ROADMAP B-01b; D-208; `art/boxes/README.md` ("Into Studio", "The marked box");
-`src/shared/Boxes/init.luau`; the `Marked` block of `src/shared/Boxes/Specs.luau`; STUDIO.md
-"Importing kit pieces" (line ~861).
+## Next task: B-02a The box opens
+ROADMAP B-02a (B-02 split, D-205, D-208). The moment: you press Open and the tape rips, the flaps
+burst; everyone near hears and sees it. B-02b adds the grade's light and the find coming out.
+1. Server: a marked box answers one "Open" prompt, the way `Coins.lay`'s take does (`Prompts.make`,
+   tap, line of sight off; checked alive, not wrapped, `Reach`, not through a shut door by
+   `RollUpDoor.keepsApart`; rate-limited; once only). It stamps the model, e.g. attribute
+   `OpenedAt` = `workspace:GetServerTimeNow()`, `OpenedBy` = UserId; the server never moves the
+   flaps. Tag the box (e.g. `MarkedBox`) so screens find it. Feel numbers in Config.
+2. Studio-only stand-in until B-03: a Workspace attribute (as `DevCoins` is) stands one marked
+   box in the first unit that opens (`Boxes.cloneMarked(pivot, unit's hall piece)`), cue lit.
+3. Client view (as `BatteryView` plays a take): for each tagged box, while shut, the seam lit
+   (`Specs.Marked.Cue.Transparency`) and the Hum looped with a short roll-off; on `OpenedAt`, play
+   `Specs.Marked.Motions.Open` (0.95 s) stepped only while it moves, from the server time so late
+   screens catch up; one streamed in already open shows the settled pose. Tear at the snap (0.1 s),
+   Flaps at the burst (about 0.3 s), Hum stops at the tear. Recipe proven in Edit this session:
+   turn: `part:PivotTo(box:GetPivot() * CFrame.new(spec.Pivot) * CFrame.fromAxisAngle(spec.Axis,
+   math.rad(Art.sample(track.Keys, t))))`; the seam's scale: `Size = base * v` (each axis at least
+   0.001), `PivotOffset` position times v, then `PivotTo(box pivot * CFrame.new(spec.Pivot))`
+   (base Size and PivotOffset read from the template). It hides by 0.14 s.
+4. Pure parts (the open's rules, the clock from `OpenedAt`) get Lune specs first.
+5. Prove in Play: open one from the Client with `user_keyboard_input` (STUDIO.md "Staging a buy");
+   capture mid-burst and settled at Level01 and 21 in Play; Output clean; a second open refused.
+**Acceptance:** checks green; Open plays the motion and both sounds in Play; a refused or repeated
+open does nothing; OWNER.md has numbered two-player steps for friends seeing it.
+**Read first:** ROADMAP B-02 and B-02a; D-205 and D-208; `src/shared/Boxes/init.luau`;
+`src/server/Coins.luau` (`lay` and its take); `src/client/BatteryView.luau` (a take on every
+screen); STUDIO.md "Staging a buy".
 
 ## Queue (next sessions, the owner's ten-ticket order)
-0. **B-02 to B-05** (ROADMAP, D-205): B-02 plays `Specs.Marked.Motions.Open` (0.95 s) inside its
-   reveal, with `Boxes.Sounds` (Tear at the snap, 0.1 s; Flaps at the burst, about 0.3 s). Then
-   S3-03 Cut Free (it owns Studio's "CutFree" let-in; rows in `Products`, prompted with
-   `Purchasing:prompt`), then S3-04 the counter's shop.
+0. **B-02b to B-05** (ROADMAP, D-205): B-02b the find comes out (the grade's coloured light
+   through the flaps and its sound, F-G1c's idea moved to the box; the find lifts, turns once, is
+   yours; friends see it, a Legendary further off). Then S3-03 Cut Free (it owns Studio's "CutFree"
+   let-in; rows in `Products`, `Purchasing:prompt`), then S3-04 the shop.
 1. **S4-01 Floors made by rules.** Split first: S4-01a the rules table and the top gone, S4-01b
    what changes floor to floor. Read the GDD's "Floor rules", D-106, D-128, `Climb.luau`,
    `Deal.luau`; grep `Climb.Top`, `Climb.Building`, `topped`. The escape ("Made it") has no trigger
@@ -60,8 +61,7 @@ where the templates live.
    a dropped find bumps a walking player (D-182); a take could show the arm first (KeeperView Kit);
    rbxassethash warnings in Play; the Packrat's dead Slots entry and S2-06b1's way home; move the
    Mannequin's pose onto `Rig.luau` (D-176); the watch bar's empty panel; S3-01b's wipe after the
-   bring unseen; S1-07a, S2-02b to d4, S2-03b, S2-05a, S2-07a1 to b2 leftovers; unseen S1-10d1 to
-   d3, S1-06, S1-05.
+   bring unseen; S1-07a, S2-02b to d4, S2-03b, S2-05a, S2-07a1 to b2 leftovers; unseen S1-10d1-3.
 
 ## Kickoff for the next agent
 ```text

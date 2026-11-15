@@ -390,6 +390,17 @@ verified: a doc page, Studio, or "untested".
 - **Neon blooms into blobs at low graphics:** a neon strip brighter than about 150 grey smeared
   into round blotches at Level08 (Lighting's Bloom, Threshold 2). Keep small glowing details at
   mid grey; Neon still reads white.
+- **The Edit view ignores `QualityLevel`; judge low graphics in Play** (Edit, B-01b, Nov 15):
+  setting `settings().Rendering.QualityLevel` to Level01 in Edit left the viewport at full
+  quality (shadows and all). `settings().Rendering.EditQualityLevel` does switch it, but a unit
+  staged at (600, 60, 600) then rendered black but for Neon, even after 40 s with the Edit camera
+  parked in its doorway. In Play the same unit lit flat at Level01 after 20 s. So: stage in Edit
+  (the stage is copied into Play), start Play, from the Server `PivotTo` the character to the
+  doorway and anchor its root, then on the Client set `QualityLevel`, hold a Scriptable camera
+  on `RenderStepped`, wait 15-20 s and capture. Put both settings back to Automatic after.
+- **The marked box's thin Neon seam reads at both levels** (Play, B-01b): two 1.66-stud lines at
+  (196, 122, 58), Transparency 0.3, stayed clean thin lines at Level01 and Level21 from a unit's
+  doorway, faint beside the lit lid at Level01 (`docs/art/B-01b-cue-level01-21.jpg`).
 - **Saving captures:** `screen_capture` images land in the session's `tool-results` folder (the
   path comes back with each image); compose them with ffmpeg `hstack`. In zsh, write ffmpeg's
   options out rather than in a variable: zsh doesn't split it into words.
@@ -910,6 +921,11 @@ verified: a doc page, Studio, or "untested".
   hall from the templates; the place's Edit lighting is dark (ambient 0.03), so an anchored
   invisible part with a SpotLight (Angle 50, Range 40, Brightness 3) beside the capture's camera
   stands in for a torch. Destroy it all after.
+- **The boxes' re-upload came in turned, each part's pivot on its Blender origin** (Edit, B-01b):
+  `insert_asset` of the Boxes FBX gave a Model (with a PackageLink and the `Assistant:` tag) of
+  thirteen MeshParts turned -88 degrees about Y, far from the origin; every part's PivotOffset was
+  its Blender origin (a box's bottom middle, a flap's or tape half's hinge). The rebaked atlas
+  came in with a new ColorMap ID, so all six templates were replaced together.
 - **When the MCP's `insert_asset` fails, InsertService doesn't** (S1-10b2, Nov 14): right after
   the upload, `insert_asset` of the machine answered "Failed to load package asset: Request
   Failed" three times over half an hour; `InsertService:LoadAsset(id)` from an Edit

@@ -63,8 +63,12 @@ nowhere else.
   9. Tell the next session it passed (or what didn't), so Brix's ENG-23e is marked done in its
      HANDOFF.
 
-- [ ] **Judge the marked box** (B-01a, D-208; rendered and judged at phone size by Claude, not yet
-  in Studio). The box a unit's find, coins, tool or note will come in.
+- [ ] **Judge the marked box** (B-01a, B-01b, D-208; judged at phone size by Claude, in renders
+  and in Studio). The box a unit's find, coins, tool or note will come in. It is in the place now:
+  its template is the Model `ReplicatedStorage.Props.Boxes.Marked` (eight parts), beside the five
+  scenery boxes, which were replaced from the same upload (they share the new texture). No unit
+  has one yet: B-03 puts them there. Studio's own capture of the cue at both graphics levels, at
+  phone size, is `docs/art/B-01b-cue-level01-21.jpg` (low graphics left, full right).
   1. Open `art/sheets/boxes-marked-unit.png` beside `boxes-marked-unit-cue.png`: the same unit
      from the doorway, the box plain, then with its "something inside" cue lit (two faint warm
      lines along the tape). Say whether the cue is enough in the hall's light, or too much.

@@ -50,6 +50,12 @@ painted. The game reads the sizes from `src/shared/Boxes/Specs.luau`.
    ```lua
    local Boxes = require(game.ReplicatedStorage.Shared.Boxes)
    local folder = game.ReplicatedStorage.Props.Boxes -- make the two Folders the first time
+   for _, old in folder:GetChildren() do old.Parent = nil end -- the old six, if re-importing
+   local marked = Instance.new("Model"); marked.Parent = workspace -- the marked box's parts first
+   for _, p in workspace.Boxes:GetChildren() do
+       if p:IsA("MeshPart") and p.Name:sub(1, 7) == "Marked_" then p.Parent = marked end
+   end
+   Boxes.prepareMarked(marked); marked:PivotTo(CFrame.new()); marked.Parent = folder
    for _, p in workspace.Boxes:GetChildren() do
        if p:IsA("MeshPart") then
            Boxes.prepare(p, p.Name); p:PivotTo(CFrame.new()); p.Parent = folder
@@ -57,12 +63,18 @@ painted. The game reads the sizes from `src/shared/Boxes/Specs.luau`.
    end
    workspace.Boxes:Destroy()
    ```
-   Remove the `Assistant:` tag `insert_asset` adds. `prepare` anchors the box, turns off touches,
-   squares its pivot and sets its collision to its box (the Open one's hull); from the MCP that
-   last write doesn't take, so set CollisionFidelity in the Properties panel (`docs/STUDIO.md`).
+   A re-upload with a new bake gets new texture IDs, so replace all six templates together
+   (`docs/STUDIO.md`).
+   The `Assistant:` tag `insert_asset` adds sits on the `Boxes` model, which goes. `prepare` anchors
+   the box, turns off touches, squares its pivot and sets its collision to its box (the Open
+   one's hull). `prepareMarked` makes only the body solid, puts each part's pivot on its hinge and
+   turns the seam into the hidden Neon cue. CollisionFidelity written from the MCP takes, though a
+   read in the same call still shows the old value (`docs/STUDIO.md`).
 3. Save the place: the templates live in it at `ReplicatedStorage.Props.Boxes.<Name>` (D-009).
 
 `Boxes.clone(name, pivot, parent)` stands a copy anywhere; L-04d's director will stack them.
+`Boxes.cloneMarked(pivot, parent)` stands a marked box (a Model, its pivot the middle of its
+bottom, its printed side facing the pivot's LookVector).
 
 ## How it's made
 

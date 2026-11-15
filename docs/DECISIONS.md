@@ -5539,4 +5539,11 @@ Defaults taken overnight (`OWNER.md` "Judge the marked box"):
 - **Sounds:** a 0.15 s nylon rip for the tape, a cardboard slap for the flaps, a soft pulsing
   hum looped up close (`Boxes.Sounds`).
 B-01 was split for the session's size: B-01a (the art, this), B-01b (into Studio).
+In the place (B-01b, Nov 15): the template is the Model `ReplicatedStorage.Props.Boxes.Marked`,
+PrimaryPart its body, streamed atomically so a phone never draws a box without its flaps. Only the
+body collides or answers a raycast; the flaps, tape and seam don't, so the burst never shoves a
+player and a prompt or camera ray goes to the body. Each part's pivot sits on its hinge turned
+square with the box, so a motion is one `PivotTo(box pivot * CFrame.new(Pivot) * turn about Axis)`
+per part. The tape's halves cast no shadow (too thin to matter on a phone). The cue's warm PointLight
+is not in the template: whoever lights the cue adds it, counted against the light cap.
 

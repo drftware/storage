@@ -71,4 +71,65 @@ function Boxes.clone(name: Name, pivot: CFrame, parent: Instance): MeshPart?
 	return box
 end
 
+-- The marked box's import step, once, from the command bar or the MCP, on a Model holding the
+-- eight freshly imported `Marked_*` parts (art/boxes/README.md "Into Studio"). Only the body is
+-- solid, as a box; the flaps and tape are thin and moving, so nothing touches, collides with or
+-- raycasts against them. Each part's pivot goes on its hinge, turned square with the box, so a
+-- motion turns it with `part:PivotTo(box:GetPivot() * CFrame.new(Pivot) * fromAxisAngle(Axis, a))`.
+-- The seam's lines become the cue: Neon in its colour, hidden until something lights them.
+function Boxes.prepareMarked(model: Model)
+	local body = model:FindFirstChild(Specs.Marked.Parts[1].Name)
+	assert(body and body:IsA("MeshPart"), "Boxes.prepareMarked: no Marked_Body in the model")
+	-- the import puts the body's pivot on the box's (the middle of its bottom); square it
+	body.PivotOffset = CFrame.new(body.PivotOffset.Position)
+	local pivot = body:GetPivot()
+	for _, spec in Specs.Marked.Parts do
+		local part = model:FindFirstChild(spec.Name)
+		assert(part and part:IsA("MeshPart"), `Boxes.prepareMarked: no {spec.Name} in the model`)
+		local solid = part == body
+		part.Anchored = true
+		part.CanTouch = false
+		part.CanCollide = solid
+		part.CanQuery = solid
+		part.CollisionFidelity = Enum.CollisionFidelity.Box
+		part.PivotOffset = part.CFrame:ToObjectSpace(pivot * CFrame.new(spec.Pivot))
+		if spec.Name == Specs.Marked.Cue.Part then
+			local look = part:FindFirstChildOfClass("SurfaceAppearance")
+			if look then
+				look:Destroy() -- the lines are plain light, never textured
+			end
+			part.Material = Enum.Material.Neon
+			part.Color = Specs.Marked.Cue.Color
+			part.Transparency = 1
+			part.CastShadow = false
+		else
+			part.Color = KRAFT
+			-- the tape is too thin to throw a shadow worth its cost on a phone
+			part.CastShadow = part.Size.Y > Specs.Board / 2
+		end
+	end
+	model.Name = "Marked"
+	model.PrimaryPart = body
+	-- its parts stream in together, so a client never sees a box without its flaps
+	model.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
+	model:SetAttribute("Box", "Marked")
+end
+
+-- A copy of the marked box standing at `pivot` (its bottom's middle, its printed side facing the
+-- pivot's LookVector), parented last. Nil, with a warning, if the place is missing the template.
+function Boxes.cloneMarked(pivot: CFrame, parent: Instance): Model?
+	local folder = templates()
+	local template = if folder then folder:FindFirstChild("Marked") else nil
+	if not (template and template:IsA("Model")) then
+		warn(
+			"Boxes: no template at ReplicatedStorage.Props.Boxes.Marked; import it (art/boxes/README.md)"
+		)
+		return nil
+	end
+	local box = template:Clone()
+	box:PivotTo(pivot)
+	box.Parent = parent
+	return box
+end
+
 return Boxes

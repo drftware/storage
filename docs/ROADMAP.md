@@ -2036,7 +2036,9 @@ it is, coins go to your bank, a tool goes to your hands, or it's a piece of the 
   middle and whips back, the long flaps burst past upright, the end flaps a beat behind); the cue
   (warm Neon lines along the tape, an optional warm light); three sounds in `Boxes.Sounds`. Sheets
   `art/sheets/boxes-marked-*.png`, judged at phone size. Not yet in the place.
-- [ ] **B-01b The box, in Studio.** Upload `Boxes.fbx` (`lune run scripts/upload_art Boxes`, the
+- [x] **B-01b The box, in Studio.** Done Nov 15: six templates in the place, the Open motion
+  matches the filmstrip in Edit, the cue reads at Level01 and 21 in Play, the sounds load (D-208).
+  Was: Upload `Boxes.fbx` (`lune run scripts/upload_art Boxes`, the
   same asset updated), insert it, and make the templates: the five scenery boxes replace those in
   `ReplicatedStorage.Props.Boxes` (they now share the new atlas), the marked box's eight parts go
   in a Model `Marked` there. Write `Boxes.prepareMarked` (anchor, no touches; only the body
@@ -2050,7 +2052,14 @@ it is, coins go to your bank, a tool goes to your hands, or it's a piece of the 
   through the flaps in the grade's colour (blue Rare, purple Epic, gold Legendary, each with its
   own sound: F-G1c's idea, moved to the box), the flaps burst, the find lifts, turns once and is
   yours. Two seconds you can't skip; friends nearby see and hear it, a Legendary further off. A
-  Common must still feel good. Feel numbers in Config. Likely two sessions.
+  Common must still feel good. Feel numbers in Config. Split for size (Nov 15):
+  - [ ] **B-02a The box opens.** A marked box answers "Open" (server-owned: alive, in reach, not
+    through a shut door, rate-limited, opened once); every screen near it plays
+    `Specs.Marked.Motions.Open` with the tear and flaps sounds on their beats; the cue's lines and
+    hum go as the tape tears. Until B-03 deals boxes, a Studio-only way stands one in a unit.
+  - [ ] **B-02b The find comes out.** The beat of light in the grade's colour leaking through the
+    flaps with its own sound, then the find lifts, turns once and is yours; friends see and hear
+    it, a Legendary further off. A Common must still feel good.
 - [ ] **B-03 What's found comes in a box.** The deal puts a unit's find, tool or coins (one or
   more) in its one marked box instead of loose on the floor; coins go to the bank as they do
   now, a tool to your hands. Most units show somebody's stuff you can't use (a mattress, stacked
