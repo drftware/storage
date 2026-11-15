@@ -6,10 +6,10 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-03b, the die-cast car (Common; Push: it rolls off down the hall), in the figures
-set beside the RC car; its plan is in the newest note. Then F-04 Wind-ups and noisemakers. The
-oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next
-touched.
+**Next:** F-04, Wind-ups and noisemakers, in a new set folder (`art/finds/windups/`): first the
+cymbal monkey, then the jack-in-the-box; their plan is in the newest note (not yet researched).
+F-03 is done. The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders
+OilLamp` when next touched.
 
 ## Order
 
@@ -35,6 +35,38 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 15, F-03b (the die-cast car built and in the place; F-03 done).** `dc_*` in
+  `figures/build.py`, spec `DC` and `DC_PUSH`, README, D-200. **How the body's made:** one loft
+  of sections computed along the car (`dc_half`), not stations blended: each section's foot rises
+  round the axles to cut the arches (two rings 0.02 apart make the arch's straight sides), the
+  greenhouse is a trapezoid whose height follows `dc_cabin(y)`, so the windscreen and back window
+  come out of the same rings, and nose and tail turn under in rings drawn in about the section's
+  middle, closing on a point. Windows, shut lines and lamps are look masks in the find's frame
+  and normal (`L.nx`, `L.ny`). **Traps:** `enamel_wear` and `finish` are sized for finds a stud
+  big (edge 0.008, noise 14 to 110 a stud): on a 0.3-stud find write the chips yourself at
+  `L.edge(mm(0.8))` and noise 240 to 420; any dust on glossy metallic paint reads as blotches
+  (dust 0 here). The studio's reflections still mottle glossy metal a little in the sheets; the
+  maps are clean. A find's root can carry the travel channels (`Body` x, y, yaw): the game moves
+  the model. Export rewrote the RC car's FBX; it was restored before upload.
+  **F-04's plan, not researched** (this session wrapped at 230k context). A new set
+  `art/finds/windups/` (`scripts/art.sh set windups`; add it to art.sh's usage comment).
+  *Cymbal monkey* (Rare: wind its key, it bashes its cymbals, loud, for 20 s): look first at
+  Wikimedia Commons ("Category:Cymbal-banging monkeys"), museum records (V&A, Strong Museum)
+  and auction listings for size (about 10 to 12 in tall, a 1950s-60s Japanese clockwork toy: a
+  plush monkey on a tin-and-plastic body, striped trousers, a fez or cap, brass cymbals) and a
+  video for the beat (count clashes a second, and how it slows). Our own monkey, no famous
+  company's character. Parts: `Body` (root), `Head` (nods on a neck pivot), `ArmL`/`ArmR`
+  (turning on shoulder pivots so the cymbals meet square in front), `CymbalL`/`CymbalR` on the
+  hands if they wobble, `Key` (turns backwards as it unwinds), eyes or jaw if the reference
+  shows them moving. Motions: `Wind` (the key turned forward in clicks), `Play` (20 s of clashes
+  whose rhythm slows as the spring runs down; head bob in time; the key turning back).
+  *Jack-in-the-box* (Uncommon: a tune, then a bang a few seconds after you let go): a tin litho
+  cube about 5 to 6 in with a side crank, a latched lid and a clown-like jack on a coil spring
+  (ours, not a famous one). Parts: `Box` (root), `Crank` (side axle), `Lid` (hinge at the back),
+  `Jack` (`move` up and `stretch` on its spring), `Head` if it wobbles separately. Motions:
+  `Wind` (the crank turns with the tune), `Pop` (a pause, the lid bangs open, the jack springs
+  out with overshoot and a wobbling settle). Both get `texels=` for their size.
 
 - **Nov 15, F-02n (the Secret lamp built; the Lights done).** `ul_*` in `lights/build.py`,
   spec `UNPLUGGED`, README, D-199: an ordinary 1940s brass table lamp found lit, its cord to a
@@ -443,7 +475,7 @@ Pulled forward from wave 4 because the owner named the RC car (Nov 14).
 
 | Find | Grade | What it does | Notes | Built |
 |---|---|---|---|---|
-| Die-cast car | Common | Push: it rolls off down the hall |  | |
+| Die-cast car | Common | Push: it rolls off down the hall | Our own late-1960s saloon (D-200) | Nov 15, F-03b |
 | Remote-control car | Rare | Drive (at home): round your unit and out into the hall of units | With its transmitter (D-193) | Nov 15, F-03a |
 
 ## Wind-ups and noisemakers (14) · F-04

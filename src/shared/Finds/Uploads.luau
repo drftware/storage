@@ -4,6 +4,7 @@
 
 return {
 	Figures = {
+		DiecastCar = { Model = 131428797300221 },
 		RCCar = { Model = 91595938207558 },
 	},
 	Lights = {

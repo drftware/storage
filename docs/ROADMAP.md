@@ -2108,9 +2108,9 @@ actions themselves and dealing the new finds on floors are later game tickets.
   - [x] **F-02m** The stained-glass lamp (Nov 15, D-198).
   - [x] **F-02n** The lamp that's on when you find it (Secret), the last Light (Nov 15,
     D-199); a motion may set its filmstrip camera (`view`, `drop`).
-- [ ] **F-03 The remote-control car and the die-cast car** (pulled forward from wave 4).
+- [x] **F-03 The remote-control car and the die-cast car** (pulled forward from wave 4).
   - [x] F-03a The remote-control car and its transmitter (Nov 15, `art/finds/figures/`).
-  - [ ] F-03b The die-cast car.
+  - [x] F-03b The die-cast car (Nov 15, D-200; uploaded and in the place).
 - [x] **F-S1 Into Studio:** the Lights and the cars uploaded, inserted and judged at phone size (Nov 15: `Finds/Kit.luau`, D-194; the die-cast car waits on F-03b).
 - [ ] **F-04 Wind-ups and noisemakers.**
 - [ ] **F-05 Squishies.**

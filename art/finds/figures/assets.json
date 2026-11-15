@@ -1,4 +1,8 @@
 {
+  "DiecastCar": {
+    "assetId": 131428797300221,
+    "sha256": "b6e61635003b32f89c95d637d1a48712b6e8492523c84dff0d0d9cc06c7cb1a7"
+  },
   "RCCar": {
     "assetId": 91595938207558,
     "sha256": "d0795ffec5a40990c5730fe4eec722002cb855654c647871b18ce5233467b383"

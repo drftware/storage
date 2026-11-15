@@ -5356,3 +5356,14 @@ found lit with its cord running across the floor to a plug lying loose, so a pla
 it shouldn't be on; its light is a touch warmer than any bulb in the building and never wavers.
 Its one action, `Switch`, turns the key twice and nothing answers. It's found lit by the kit's
 own rule (its glow track's first key is 1). The look is a default; `OWNER.md` asks the owner.
+
+## D-200 The die-cast car is our own late-1960s saloon, pushed by the RC car's simulation (F-03b, Nov 15)
+
+The catalog's die-cast car (Common, "Push: it rolls off down the hall") is built as a pocket toy
+of the late 1960s, the kind every family had a tin of: our own two-door saloon, 3 inches long, in
+metallic blue on a bright zinc base, with painted windows and pale seats behind them, played
+with (chips to the zinc on its edges). Its `Push` is the RC car's driving simulation without a
+motor: a shove, a roll of about 7 studs that slows, a wandering heading and a rattle on loose
+axles. The travel is on its root part, so the game plays it by moving the model, not a joint.
+Colour and length are defaults the owner hasn't judged.
+

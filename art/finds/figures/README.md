@@ -63,3 +63,44 @@ graphite towers, a silver can motor with a blue end bell; dried back-yard mud lo
 the treads, dust on top. Texture 1024, 172 texels a stud; 18,000 triangles in 14 parts.
 
 **Not in Studio yet** (F-S1).
+
+## Die-cast car (Common): "Push: it rolls off down the hall"
+
+A pocket-size metal toy car of the late 1960s (F-03b, D-200): our own two-door saloon, a zinc
+body in metallic blue, a bright zinc base riveted under it that makes the bumpers and grille,
+and black plastic wheels with silver hubs on crimped steel axles.
+
+**Looked at:** Wikimedia Commons, "Matchbox No. 25 1960s Ford Cortina.jpg" (a 1968 regular-
+wheels car: metallic paint over soft cast edges, a clear window insert with a pale interior,
+the bright base wrapping up into the grille and bumpers, small black wheels with silver hubs),
+the Mercedes saloon from the same photographer's series (metallic blue) and a play-worn van
+from the same search (paint chipped to the zinc on every edge); collectors' notes on how the
+bases were riveted on and the axles crimped (Lesney from 1958), and on sizes (2 to 3 inches;
+Tootsietoys 78 to 84 mm). Its real size: 76 mm nose to tail, 30 wide, 21 tall, wheels 9.6
+across on a 44 wheelbase: 0.31 studs long. No real maker's or carmaker's design or badge: the
+body, its grille and the base's raised lettering are our own.
+
+**Tells:** the metallic paint's shine, the dark glass with pale seats behind it, the silver
+bumpers and grille, four wheels. From a doorway it's a speck (a small find), held it's a toy car.
+
+**Built:** `dc_*` in `build.py`, numbers `DC` and `DC_PUSH` in `spec.py`. The body is one loft
+of cross sections worked out along the car (`dc_half`: sills, belt crease, shoulder, the
+greenhouse standing up the windscreen and down the back window), its arches cut by raising the
+section's foot round each axle, the nose and tail turned under in a 1 mm round. Windows, shut
+lines, door handles, lamps and the grille's slots are painted and pressed in by the look; chips
+to bare zinc on the edges. No dust: on glossy metallic paint any film read as blotches. Texture
+1024 at 1,783 texels a stud; 5,700 triangles in five parts.
+
+**Parts:** `Body` (root, pivot on the floor midway between the axles) and `WheelFL`, `WheelFR`,
+`WheelRL`, `WheelRR`, each turning on its axle (X).
+
+**Push:** a shove from the hand (0.12 s) sends it off at 4 studs a second; it slows on rolling
+drag (1.1 studs a second each second) and stops about 7 studs away, 3.8 s later. The same
+small simulation as the RC car's (`dc_push`, keys by `rdp`): each wheel turns by the distance its
+own tyre rolls, the heading wanders 3 degrees a second on the loose axles, the body tips nose up
+on the shove and drops back with a bounce, and rattles side to side on its axles, dying away as
+it slows. The travel (x, y, yaw) is on the root: the game moves the model's pivot to play it.
+Its filmstrip camera looks down from the front (`view`, `drop`).
+
+**In the place** (Nov 15): uploaded and imported with `import("Figures", {"DiecastCar"})`; its
+parts and pivots checked in Studio's Edit view.

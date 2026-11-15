@@ -70,3 +70,40 @@ TX = dict(
     trigger=dict(y=-6.0, z=120.0, len=44.0, pull=13.0, push=-9.0),
     aerial=dict(y=-60.0, length=190.0, r0=4.6, r1=1.6, sections=7),
 )
+
+# --- The die-cast car: a pocket-size metal toy car of the late 1960s, our own two-door saloon ---
+# References (README): toy cars of the kind ran 66 to 76 long on wheels 9 to 10 across; a zinc
+# body in metallic paint, a bright zinc base making the bumpers and grille, riveted under it,
+# and plastic wheels on crimped steel axles. No real maker's or carmaker's design. All in mm,
+# its frame like the RC car's: front to -Y, the pivot on the floor midway between the axles.
+DC = dict(
+    length=76.0,              # nose to tail of the casting (3 inches: a touch bolder than most)
+    half_w=15.0,              # the body's half width at the belt; its corners round off in plan
+    corner=3.0,               # the plan's corner round at nose and tail
+    wheelbase=44.0, track=25.2,
+    tyre=dict(od=9.6, w=4.0, hub=5.6),   # black plastic tyres on silver hubs
+    arch=5.6,                 # the wheel arches' round about each axle
+    sill=3.5,                 # the casting's lower edge, over the base
+    deck_nose=11.0, deck_cowl=13.0, deck=13.2, deck_tail=12.4,   # the bonnet's and boot's height
+    roof=20.1, crown=0.5,     # the roof and how much it domes
+    cowl=-14.0, screen_top=-5.0,          # y where the windscreen starts and meets the roof
+    back_top=13.0, back_base=22.0,        # and the rear window
+    glass_half=13.2, roof_half=10.4,      # the greenhouse's half width at its foot and its roof
+    b_pillar=4.6,             # y of the door's back window post
+    door=(-12.6, 7.6),        # y of the door's front and back shut lines
+    base=dict(z0=1.9, z1=3.4, half=9.8, side=13.8, end=1.5),
+    bumper=dict(z0=3.0, z1=5.6, half=13.6),
+    seed=11.0,
+    dust=0.0,                # none: on glossy metallic paint any film reads as blotches
+)
+
+# Pushing it (the Push action's motion): a shove from the hand, then it rolls off down the hall
+# of units, slowing on the concrete, its loose axles letting it wander and rattle.
+DC_PUSH = dict(
+    v0=4.0,                   # studs/s as it leaves the hand: a quarter of a player's run
+    shove=0.12,               # s the hand takes to send it off
+    decel=1.1,                # studs/s each second of rolling drag: about 7 studs before it stops
+    drift=3.0,                # degrees a second its heading wanders at full speed
+    rattle=0.55,              # degrees the body rocks on its axles at full speed
+    nose=0.036,               # degrees of nose-up a stud/s^2 as the hand shoves it
+)

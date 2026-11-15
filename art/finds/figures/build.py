@@ -897,7 +897,364 @@ RC_CAR = kit.Find(
     dust=C["dust"], seed=C["seed"],
 )
 
-FINDS = [RC_CAR]
+# --- The die-cast car (F-03b) -------------------------------------------------------------------
+# A pocket-size metal toy car of the late 1960s (README): a zinc body in metallic paint with its
+# windows on the casting, a bright zinc base riveted under it that makes the bumpers and grille,
+# and four black plastic wheels with silver hubs on crimped steel axles. Our own two-door saloon.
+
+(DC_PAINT, DC_ZINC, DC_BRIGHT, DC_TYRE, DC_HUB, DC_STEEL, DC_LAMP) = range(23, 30)
+G = K.DC
+GL = G["length"] / 2
+GYA = (-G["wheelbase"] / 2, G["wheelbase"] / 2)       # the front and rear axles
+GAZ = G["tyre"]["od"] / 2                              # the axles' height: tyres on the floor
+GHM = G["roof"] - G["deck"]                            # the greenhouse's full height
+
+
+def soft01(u, r):
+    """0 to 1 as u runs 0 to 1: straight in the middle, its ends rounded r either side."""
+    def g(s):
+        return 0.0 if s <= 0 else (s * s / 2 if s < 1 else s - 0.5)
+    return (g(u + r) - g(u - r)) / (2 * r)
+
+
+def dc_hw(y):
+    """The body's half width at y: its corners rounded in plan."""
+    c = G["corner"]
+    e = min(c, max(0.0, abs(y) - (GL - c)))
+    return G["half_w"] - (c - math.sqrt(c * c - e * e))
+
+
+def dc_deck(y):
+    """The bonnet's, sills' and boot's height at y."""
+    if y < G["cowl"]:
+        u = (y + GL) / (G["cowl"] + GL)
+        return G["deck_nose"] + (G["deck_cowl"] - G["deck_nose"]) * (1 - (1 - u) ** 2)
+    if y > G["back_base"]:
+        u = (y - G["back_base"]) / (GL - G["back_base"])
+        return G["deck"] + (G["deck_tail"] - G["deck"]) * u * u
+    return G["deck_cowl"] + (G["deck"] - G["deck_cowl"]) * soft01((y - G["cowl"]) / 6.0, 0.3)
+
+
+def dc_cabin(y):
+    """How much of the greenhouse stands at y, 0 to 1: up the windscreen, down the back."""
+    a = soft01((y - G["cowl"]) / (G["screen_top"] - G["cowl"]), 0.12)
+    b = soft01((G["back_base"] - y) / (G["back_base"] - G["back_top"]), 0.12)
+    return min(a, b)
+
+
+def dc_bottom(y):
+    """The casting's lower edge at y: the sill, or up round a wheel arch."""
+    for ya in GYA:
+        d = abs(y - ya)
+        if d <= G["arch"]:
+            return GAZ + math.sqrt(G["arch"] ** 2 - d * d)
+    return G["sill"]
+
+
+def dc_half(y):
+    """The body's half section at y, (x, z) mm, from the bottom's middle round to the roof's."""
+    hw, zb, deck = dc_hw(y), dc_bottom(y), dc_deck(y)
+    k = hw / G["half_w"]
+    gw, rw = G["glass_half"] * k, G["roof_half"] * k
+    H = dc_cabin(y) * GHM
+    q = min(1.0, H / 1.5)
+    belt = deck - 0.55
+    lo = zb + 0.45
+    up = max(lo + 0.3, belt - 1.3)
+    crown = 0.35 + (G["crown"] - 0.35) * min(1.0, H / GHM)
+    top = deck + H
+    return [(0.0, zb), (hw - 1.3, zb), (hw - 0.3, lo), (hw - 0.04, (lo + up) / 2), (hw, up),
+            (hw - 0.12, belt), (hw - 0.9, deck - 0.08), (gw, deck),
+            ((gw + rw) / 2 + 0.15 * q, deck + H * 0.5), (rw + 0.55 * q, top - 0.55 * q),
+            (rw - 0.35, top + 0.12 * q + crown * 0.35), (rw * 0.5, top + crown * 0.8),
+            (0.0, top + crown)]
+
+
+def dc_ys(hi):
+    """Where the body's sections stand along it: evenly, plus round the arches and the glass."""
+    step = 1.0 if hi else 4.0
+    ys = [-GL + i * step for i in range(int(2 * GL / step) + 1)] + [GL]
+    na = 24 if hi else 6
+    for ya in GYA:
+        ys += [ya + G["arch"] * math.cos(math.pi * i / na) for i in range(na + 1)]
+        ys += [ya - G["arch"] - 0.02, ya + G["arch"] + 0.02]
+    for e in (G["cowl"], G["screen_top"], G["back_top"], G["back_base"]):
+        ys += [e - 1.1, e, e + 1.1]
+    ys += [(G["cowl"] + G["screen_top"]) / 2, (G["back_top"] + G["back_base"]) / 2]
+    out = []
+    for y in sorted(y for y in ys if -GL <= y <= GL):
+        if not out or y - out[-1] > 0.015:
+            out.append(y)
+    return out
+
+
+def dc_ring(y, half):
+    pts = [(-x, z) for x, z in half] + [(x, z) for x, z in reversed(half[1:-1])]
+    return [(mm(x), mm(y), mm(z)) for x, z in pts]
+
+
+def dc_body_shell(s, hi):
+    secs = []
+    for y in dc_ys(hi):
+        h = dc_half(y)
+        if hi:
+            h = [(p.x, p.y) for p in catmull(h, 3)]
+        secs.append((y, h))
+    # the nose and tail turn under in a 1 mm round, each closing on a point
+    r = 1.0
+    angs = (25, 50, 70) if hi else (40, 70)
+
+    def cap(y, h, sgn):
+        zc = (h[0][1] + h[-1][1]) / 2
+        hw = max(x for x, _ in h)
+        hz = (h[-1][1] - h[0][1]) / 2
+        out = []
+        for a in angs:
+            d, dy = r * (1 - math.cos(math.radians(a))), r * math.sin(math.radians(a))
+            fx, fz = (hw - d) / hw, (hz - d) / hz
+            out.append((y + sgn * dy, [(x * fx, zc + (z - zc) * fz) for x, z in h]))
+        return out, (mm(0.0), mm(y + sgn * r * 0.97), mm(zc))
+    front, fp = cap(*secs[0], -1)
+    back, bp = cap(*secs[-1], 1)
+    rings = [[fp]] + [dc_ring(y, h) for y, h in reversed(front)]
+    rings += [dc_ring(y, h) for y, h in secs] + [dc_ring(y, h) for y, h in back] + [[bp]]
+    s.loft(rings, DC_PAINT, split=2)
+
+
+def dc_body(hi):
+    s = Shape()
+    dc_body_shell(s, hi)
+    b, bu = G["base"], G["bumper"]
+    # the base: a zinc plate between the wheels, out to the sills between and beyond the arches
+    s.box(V(-b["half"], -GL + b["end"], b["z0"]), V(b["half"], GL - b["end"], b["z1"]), DC_ZINC,
+          mm(0.3), 1)
+    ar = G["arch"] + 0.3
+    for y0, y1 in ((-GL + b["end"], GYA[0] - ar), (GYA[0] + ar, GYA[1] - ar), (GYA[1] + ar, GL - b["end"])):
+        for sd in (-1, 1):
+            x0, x1 = sorted((sd * b["half"], sd * b["side"]))
+            s.box(V(x0, y0, b["z0"] + 0.05), V(x1, y1, b["z1"]), DC_ZINC, mm(0.3), 1)
+    # the base's ends turned up into bumpers, a grille panel and round headlamps in the nose
+    for sg in (-1, 1):
+        y0, y1 = sorted((sg * (GL - 1.6), sg * (GL + 1.5)))
+        s.box(V(-bu["half"], y0, bu["z0"]), V(bu["half"], y1, bu["z1"]), DC_BRIGHT, mm(0.7),
+              3 if hi else 1)
+    s.box(V(-7.6, -GL - 1.0, 6.2), V(7.6, -GL + 1.0, 9.8), DC_BRIGHT, mm(0.35), 2 if hi else 1)
+    for sd in (-1, 1):
+        s.cylinder(V(sd * 10.0, -GL + 1.0, 8.0), V(sd * 10.0, -GL - 0.95, 8.0), mm(1.45), DC_BRIGHT,
+                   segs(hi, 14), cap_kind=DC_LAMP)
+    # the axles in their lugs, crimped over in a dome outside each hub
+    xe = G["track"] / 2 + G["tyre"]["w"] / 2 + 0.05
+    for ya in GYA:
+        s.cylinder(V(-xe, ya, GAZ), V(xe, ya, GAZ), mm(0.42), DC_STEEL, segs(hi, 8))
+        for sd in (-1, 1):
+            ball(s, (sd * (xe - 0.1), ya, GAZ), 0.72, DC_STEEL, hi)
+            x0, x1 = sorted((sd * 7.6, sd * 9.4))
+            s.box(V(x0, ya - 0.8, b["z1"] - 0.1), V(x1, ya + 0.8, GAZ + 1.0), DC_ZINC, mm(0.25), 1)
+    # the rivets that hold the base on, peened over under it
+    for yr in (-27.0, 27.0):
+        ball(s, (0.0, yr, b["z0"]), 1.15, DC_ZINC, hi)
+    if hi:
+        # the maker's lines cast into the base, our own: two rows of raised lettering
+        for row, xr in enumerate((-2.6, 2.6)):
+            yy = -16.0
+            for i, wd in enumerate((4, 6, 3, 7, 5) if row == 0 else (5, 3, 8, 4, 6)):
+                for c in range(wd):
+                    s.box(V(xr - 0.7, yy + c * 0.95, b["z0"] - 0.12), V(xr + 0.7, yy + c * 0.95 + 0.7,
+                          b["z0"] + 0.05), DC_ZINC, mm(0.1), 1)
+                yy += wd * 0.95 + 1.6
+    return s
+
+
+def dc_wheel_at(side, front):
+    return V(side * G["track"] / 2, GYA[0] if front else GYA[1], GAZ)
+
+
+def dc_wheel(side, front):
+    def build(hi):
+        s = Shape()
+        M = T(dc_wheel_at(side, front)) @ Matrix.Rotation(math.radians(90 * side), 4, "Y")
+        t = G["tyre"]
+        R, w, hb = t["od"] / 2, t["w"], t["hub"] / 2
+        f = 3 if hi else 1
+        p = [(0.0, -w / 2 + 0.3), (hb - 0.6, -w / 2 + 0.3), (R - 1.3, -w / 2)]
+        p += fillet(R - 0.6, -w / 2 + 0.6, 0.6, (-90, 0), f + 1)[1:]
+        if hi:
+            # the moulded tread: three fine grooves round
+            for zc in (-0.75, 0.0, 0.75):
+                p += [(R, zc - 0.17), (R - 0.22, zc - 0.11), (R - 0.22, zc + 0.11), (R, zc + 0.17)]
+        p += fillet(R - 0.6, w / 2 - 0.6, 0.6, (0, 90), f + 1)
+        p += [(R - 1.2, w / 2 + 0.04), (hb + 0.3, w / 2 - 0.05)]
+        nt = len(p) - 1
+        # the silver hub, set in: a raised rim, a dished face, the boss the axle's dome sits on
+        p += [(hb, w / 2 - 0.3), (hb - 0.25, w / 2 - 0.1), (hb * 0.6, w / 2 - 0.32), (1.05, w / 2 - 0.12),
+              (0.0, w / 2 - 0.05)]
+        kinds = [DC_TYRE] * nt + [DC_TYRE] + [DC_HUB] * (len(p) - 2 - nt)
+        s.lathe([(mm(r), mm(z)) for r, z in p], DC_TYRE, segs(hi, 20), M, kinds=kinds)
+        return s
+    return build
+
+
+def dc_look(L, f):
+    nb = L.nb
+    x, y, z = L.x, L.y, L.z
+    ax = nb.absf(x)
+
+    def inb(v, lo, hi, soft=0.1):
+        return nb.mul(nb.ss(v, mm(lo - soft), mm(lo + soft)), nb.ss(nb.sub(0.0, v), mm(-hi - soft), mm(-hi + soft)))
+
+    def groove(v, c, w=0.12):
+        return nb.ss(nb.sub(0.0, nb.absf(nb.sub(v, mm(c)))), -mm(2 * w), -mm(w))
+
+    C_ = Coat(L, hexc("#2A64B8"), 0.2, 0.8)
+    paint = L.k(DC_PAINT)
+    # metallic blue enamel, a little uneven where it flowed thin over the casting
+    C_.paint(paint, nb.tint(hexc("#2A64B8"), nb.mr(L.noise(90.0, 1, detail=3), 0.3, 0.7, 0.95, 1.04)),
+             nb.mr(L.noise(160.0, 2, detail=2), 0.3, 0.7, 0.18, 0.22), 0.8)
+    side = nb.ss(nb.absf(L.nx), 0.5, 0.7)
+    top = nb.ss(L.nz, 0.45, 0.65)
+    # the shut lines cast in: the doors, the bonnet and the boot lid
+    lines = nb.mul(nb.mul(side, nb.add(groove(y, G["door"][0]), groove(y, G["door"][1]), clamp=True)),
+                   inb(z, 4.2, 12.3))
+    lid_x = nb.ss(nb.sub(0.0, ax), -mm(13.0), -mm(12.8))
+    bon = nb.add(nb.mul(groove(y, G["cowl"] - 1.0), lid_x),
+                 nb.mul(groove(ax, 12.9), nb.ss(nb.sub(0.0, y), mm(-G["cowl"] + 0.9), mm(-G["cowl"] + 1.1))),
+                 clamp=True)
+    boot = nb.add(nb.mul(groove(y, G["back_base"] + 1.0), lid_x),
+                  nb.mul(groove(ax, 12.9), nb.ss(y, mm(G["back_base"] + 0.9), mm(G["back_base"] + 1.1))),
+                  clamp=True)
+    lines = nb.add(lines, nb.mul(nb.mul(top, nb.ss(z, mm(10.0), mm(10.4))), nb.add(bon, boot, clamp=True)),
+                   clamp=True)
+    C_.paint(nb.mul(paint, lines), hexc("#132845"), 0.5, 0.4, -1.0)
+    # the windows, cast in and painted: tinted glass, the pale seats seen through the sides
+    a = (G["screen_top"] - G["cowl"]) / GHM
+    yA = nb.add(mm(G["cowl"] - a * G["deck"]), nb.mul(z, a))
+    c = (G["back_base"] - G["back_top"]) / GHM
+    yC = nb.sub(mm(G["back_base"] + c * G["deck"]), nb.mul(z, c))
+    sideg = nb.mul(nb.mul(side, inb(z, 13.85, G["roof"] - 0.8)),
+                   nb.mul(nb.ss(nb.sub(y, yA), mm(1.25), mm(1.45)), nb.ss(nb.sub(yC, y), mm(2.0), mm(2.2))))
+    sideg = nb.mul(sideg, nb.ss(nb.absf(nb.sub(y, mm(G["b_pillar"]))), mm(0.6), mm(0.8)))
+    kx = (G["glass_half"] - G["roof_half"]) / GHM
+    xm = nb.sub(mm(G["glass_half"] - 1.3 + kx * G["deck"]), nb.mul(z, kx))
+    span = nb.mul(nb.ss(nb.sub(xm, ax), 0.0, mm(0.2)), inb(z, 14.0, G["roof"] - 0.75))
+    screens = nb.mul(span, nb.add(nb.ss(nb.sub(0.0, L.ny), 0.3, 0.45), nb.ss(L.ny, 0.3, 0.45), clamp=True))
+    glass = nb.mul(paint, nb.add(sideg, screens, clamp=True))
+    C_.paint(glass, hexc("#18232D"), 0.05, 0.0, -0.8)
+    # the seats behind the side glass: the front seat's back under the door window, the bench's
+    # behind the back one, cream plastic seen through the tint
+    seats = nb.add(nb.mul(inb(y, -3.0, 2.2, 0.35), nb.ss(nb.sub(0.0, z), -mm(16.9), -mm(16.4))),
+                   nb.mul(inb(y, 9.5, 15.0, 0.4), nb.ss(nb.sub(0.0, z), -mm(16.4), -mm(15.9))), clamp=True)
+    seats = nb.mul(seats, nb.mr(z, mm(13.9), mm(16.6), 0.15, 0.5))
+    C_.paint(nb.mul(nb.mul(paint, sideg), seats), hexc("#B3A98F"), 0.3)
+    # door handles, tail lamps and the front indicators
+    C_.paint(nb.mul(nb.mul(paint, side), nb.mul(inb(y, 4.9, 6.5, 0.08), inb(z, 11.2, 11.6, 0.08))),
+             hexc("#D3D5D6"), 0.2, 1.0, 0.6)
+    rear = nb.ss(L.ny, 0.6, 0.8)
+    front = nb.ss(nb.sub(0.0, L.ny), 0.6, 0.8)
+    C_.paint(nb.mul(nb.mul(paint, rear), nb.mul(inb(ax, 9.0, 12.4), inb(z, 9.2, 11.0))),
+             hexc("#B5161B"), 0.15, 0.1, 0.3)
+    C_.paint(nb.mul(nb.mul(paint, front), nb.mul(inb(ax, 9.4, 11.4), inb(z, 5.9, 6.6))),
+             hexc("#E2891B"), 0.2, 0.1)
+    # under the casting it's bare and dark
+    C_.paint(nb.mul(paint, nb.ss(nb.sub(0.0, L.nz), 0.5, 0.7)), hexc("#3A3C3F"), 0.6, 0.5)
+    # the base and its bumpers: bright zinc; the grille's slots; the lamps' lenses
+    C_.paint(L.k(DC_ZINC), nb.tint(hexc("#ADB0AE"), nb.mr(L.noise(300.0, 3, detail=3), 0.3, 0.7, 0.86, 1.08)),
+             nb.mr(L.noise(500.0, 4, detail=2), 0.3, 0.7, 0.34, 0.48), 1.0)
+    bright = L.k(DC_BRIGHT)
+    C_.paint(bright, hexc("#D6D8D8"), 0.13, 1.0)
+    slots = nb.ss(nb.sub(0.0, nb.absf(nb.sub(nb.fract(nb.mul(z, 1.0 / mm(0.8))), 0.5))), -0.2, -0.13)
+    grille = nb.mul(nb.mul(bright, front), nb.mul(inb(ax, 0.0, 7.0), inb(z, 6.6, 9.4)))
+    C_.paint(nb.mul(grille, slots), hexc("#2B2D2F"), 0.5, 0.6, -1.0)
+    C_.paint(L.k(DC_LAMP), hexc("#ECEDE8"), 0.06, 0.4)
+    C_.paint(L.k(DC_STEEL), hexc("#9DA1A4"), 0.32, 1.0)
+    # the wheels: black plastic, scuffed grey on the tread; silver hubs
+    tyre = L.k(DC_TYRE)
+    C_.paint(tyre, nb.tint(hexc("#151515"), nb.mr(L.noise(400.0, 5, detail=3), 0.3, 0.7, 0.85, 1.25)),
+             nb.mr(L.noise(300.0, 6, detail=2), 0.3, 0.7, 0.42, 0.58), 0.0)
+    C_.paint(L.k(DC_HUB), hexc("#CDD0D2"), 0.2, 1.0)
+    # played with: the paint chipped to the zinc where it was knocked, on the edges and a few faces
+    edge = L.edge(mm(0.8), k=4.0)
+    bites = nb.mul(edge, nb.ss(L.noise(420.0, 7, detail=4), 0.5, 0.56))
+    chips = nb.mx(nb.ss(bites, 0.35, 0.45), nb.ss(L.noise(240.0, 8, detail=4, rough=0.65), 0.83, 0.86))
+    chips = nb.mul(nb.mul(paint, nb.inv(glass)), chips)
+    C_.paint(chips, hexc("#A6A8A5"), 0.42, 0.9, -0.5)
+    C_.finish(f.dust, grime=0.35)
+    return C_.surface(bump_dist=0.0008, bump=0.6)
+
+
+# --- pushing it: the same small simulation as the RC car's, reduced to keys ----------------------
+
+PU = K.DC_PUSH
+
+
+def dc_push():
+    t_stop = PU["shove"] + PU["v0"] / PU["decel"]
+    dur = round(t_stop + 0.4, 2)
+    n = int(dur * FPS) + 1
+    ts = [i / FPS for i in range(n)]
+
+    def speed(t):
+        if t < PU["shove"]:
+            return PU["v0"] * ease_s(t, 0.0, PU["shove"])
+        return max(0.0, PU["v0"] - PU["decel"] * (t - PU["shove"]))
+    x = y = yaw = 0.0
+    P, H, Vv = [], [], []
+    for t in ts:
+        v = speed(t)
+        P.append(Vector((x, y, 0.0)))
+        H.append(yaw)
+        Vv.append(v)
+        # the loose axles let it wander: a slow meander, more the faster it goes
+        yaw += math.radians(PU["drift"] * math.sin(2 * math.pi * 0.32 * t + 0.5) * v / PU["v0"]) / FPS
+        f = Vector((math.sin(yaw), -math.cos(yaw), 0.0))
+        x, y = x + f.x * v / FPS, y + f.y * v / FPS
+    tr = {("Body", "x"): [p.x for p in P], ("Body", "y"): [p.y for p in P],
+          ("Body", "yaw"): [math.degrees(h) for h in H]}
+    r = mm(G["tyre"]["od"] / 2)
+    for part, side, front in (("WheelFL", 1, True), ("WheelFR", -1, True), ("WheelRL", 1, False),
+                              ("WheelRR", -1, False)):
+        off = Vector((mm(side * G["track"] / 2), mm(GYA[0] if front else GYA[1]), 0.0))
+        ang, out, last = 0.0, [], None
+        for i in range(n):
+            cpt = P[i] + Matrix.Rotation(H[i], 3, "Z") @ off
+            if last is not None:
+                ang += (cpt - last).dot(Vector((math.sin(H[i]), -math.cos(H[i]), 0.0))) / r
+            last = cpt
+            out.append(math.degrees(ang))
+        tr[(part, "turn")] = out
+    af = [(Vv[min(i + 1, n - 1)] - Vv[max(i - 1, 0)]) * FPS / 2 for i in range(n)]
+    # the shove tips its nose up on its axles, and it drops back with a bounce
+    tr[("Body", "pitch")] = spring(ts, lambda i: -PU["nose"] * af[i], 2 * math.pi * 7.0, 0.3)
+    # rolling, it rattles side to side on them, dying away as it slows
+    tr[("Body", "roll")] = [PU["rattle"] * (Vv[i] / PU["v0"]) * (0.65 * math.sin(2 * math.pi * 5.3 * t)
+                            + 0.35 * math.sin(2 * math.pi * 8.1 * t + 1.3)) for i, t in enumerate(ts)]
+    eps = {"x": 0.002, "y": 0.002, "yaw": 0.1, "turn": 2.0, "pitch": 0.05, "roll": 0.08}
+    out = []
+    for (part, ch), vs in tr.items():
+        if max(vs) - min(vs) < 1e-4:
+            continue
+        out.append((part, ch, rdp(ts, vs, eps[ch])))
+    return dur, out
+
+
+DC_DUR, DC_TRACKS = dc_push()
+DIECAST = kit.Find(
+    "DiecastCar",
+    [kit.Part("Body", dc_body),
+     kit.Part("WheelFL", dc_wheel(1, True), tuple(dc_wheel_at(1, True)), "Body", (1, 0, 0)),
+     kit.Part("WheelFR", dc_wheel(-1, True), tuple(dc_wheel_at(-1, True)), "Body", (1, 0, 0)),
+     kit.Part("WheelRL", dc_wheel(1, False), tuple(dc_wheel_at(1, False)), "Body", (1, 0, 0)),
+     kit.Part("WheelRR", dc_wheel(-1, False), tuple(dc_wheel_at(-1, False)), "Body", (1, 0, 0))],
+    dc_look,
+    motions={
+        # a shove from the hand: it leaves at a quarter of a run, nose up a hair, and rolls off
+        # down the hall slowing, wandering and rattling on its loose axles, and stops
+        "Push": dict(duration=DC_DUR, focus=(0.0, 0.0, mm(9.0)), distance=0.8, follow="Body",
+                     view=(-1.1, -2.0, 1.1), drop=0.0, tracks=DC_TRACKS),
+    },
+    dust=G["dust"], seed=G["seed"], texels=1800,
+)
+
+FINDS = [RC_CAR, DIECAST]
 
 if __name__ == "__main__":
     kit.main("Figures", HERE, FINDS)
