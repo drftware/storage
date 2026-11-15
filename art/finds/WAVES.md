@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-02f, the blob lamp: researched, not built (the newest note has its references, sizes
-and plan), then the oil lamp, with the kit.
+**Next:** F-02f, the blob lamp: coded and baked, not judged (the newest note). Render it, judge
+it, fix, then the oil lamp (researched in the same note) and the disco ball.
 
 ## Order
 
@@ -33,6 +33,39 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 15, F-02f (the blob lamp coded, not judged).** `BLOB_LAMP` in `lights/build.py` (spec
+  `BLOB_*`), in `FINDS`; textures baked (1024, 449 texels a stud, 9,652 triangles) and the
+  Luau exported; quick sheets rendered but **not looked at**, so it is not ticked. Next: run
+  `scripts/art.sh set lights renders BlobLamp` (Flow is 52 s at 8 fps, about 420 frames: run it
+  in the background), judge the sheets, fix, write its README entry. Parts: `Base` (spun base,
+  sleeve, cord, inline switch, plug), `Rocker`, `Bottle` (clear: the glass and the violet
+  liquid in one shell, the glow part), `Cap`, `Pool`, `Mound`, `Neck`, `Blob1` to `Blob4`.
+  **Timing, measured** from Commons "Lava lamp (oT) 01 ies.ogv" (pixel rows per second, in the
+  browser): a tower climbs about a sixteenth of the bottle a second, slowing near the top; its
+  neck snaps about 16 s in; the blob hangs about 6 s, then sinks faster (about twice the
+  climb's speed at the end); a sinking blob can tear, its top floating back up. `BL_PLAN` holds
+  each blob's keys; `bl_flow()` joins them with a monotone curve and thins them to Linear keys
+  (no stop at every key); `bl_check` prints blobs touching each other or the glass. **Look
+  for:** a neck that reads (it thins as it stretches, keeping volume), the snap's drop
+  (`Blob4`), the liquid's violet not drowning the wax, blobs not grey (each is `alone`).
+  **Seen once** (the quick `-offon` sheet, small): it reads as a lava lamp at a glance, off and
+  on; lit, the liquid glows near white-lavender and washes the wax to pale pink. First fix:
+  the liquid's glow mask in `bl_look` (`C.lights` on `lq`, now 1.0 to 0.5) down to about 0.35
+  to 0.15, a deeper violet, and the wax's red-orange kept saturated.
+  References: Commons "Category:Lava lamps" ("1990s Mathmos Astro.jpg", "Lava lamp operating.jpg",
+  "Lavalamp red.jpg"); sizes from the F-02e note below. **Kit changes:** `Part(alone=True)`
+  (baked with nothing else: parts hidden where they're built), `finish(..., keep=mask)` (no dust
+  on what's sealed in), a motion's `fps` (previews a long loop at fewer frames).
+  **The oil lamp, researched:** a clear glass pedestal lamp (a 6 in foot, a stem, an onion
+  fount; about 9.5 in to the collar), a brass collar and #2 Queen Anne burner (prongs holding
+  the chimney, a thumbwheel on a spindle out the side), a 10 in chimney (3 in fitter, 4 in
+  bulge, 2 in top: Westinghouse via acehardware.com/p/36426; B&P 3 x 10). About 20 in in all,
+  2 studs. A flat wick's flame is a fan face on and thin edge on (Commons "kerosene lamp
+  flame.jpg"). Fragile: chip the chimney's top rim and the foot's edge. Bing image results for
+  "clear glass pedestal oil lamp queen anne #2 burner chimney" show the shapes. **Context:**
+  photo grids drawn in the browser cost far more than they look; this session hit 270k before
+  judging anything. Look at one photo at a time, small.
 
 - **Nov 15, F-03a (the RC car, taken ahead of the Lights).** Built with its transmitter in a
   new set, `art/finds/figures/` (`scripts/art.sh set figures`; README has references, sizes,

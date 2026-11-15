@@ -95,8 +95,9 @@ class Coat:
         self.paint(m, under, 0.55, 0.85, -0.25)
         return m
 
-    def finish(self, dust, grime=0.6, s=40):
-        """Grime in the creases, then dust on whatever faces up, thinner on the edges."""
+    def finish(self, dust, grime=0.6, s=40, keep=None):
+        """Grime in the creases, then dust on whatever faces up, thinner on the edges; none
+        where `keep` (a mask) says it's sealed away (the wax inside the blob lamp's bottle)."""
         L, nb = self.L, self.nb
         self.col = nb.tint(self.col, nb.mr(L.ao(0.05), 0.0, 1.0, 1.0 - grime, 1.0))
         if dust <= 0:
@@ -106,6 +107,8 @@ class Coat:
         d = nb.mul(nb.mul(L.up, film), nb.mul(dust, nb.inv(nb.mul(edge, 0.7))))
         speck = nb.mul(nb.mul(L.up, nb.ss(L.noise(110.0, s + 1, detail=2), 0.6, 0.72)), 0.4 * dust)
         d = nb.add(d, speck, clamp=True)
+        if keep is not None:
+            d = nb.mul(d, nb.inv(keep))
         self.paint(nb.mul(d, 0.6), hexc("#A39A8C"))
         self.paint(d, rough=0.95, metal=0.0, height=0.04)
         if not isinstance(self.alpha, float):

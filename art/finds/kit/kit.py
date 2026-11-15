@@ -53,12 +53,15 @@ class Part:
     """One piece of a find. `build(hi)` returns a shapes.Shape in the find's frame at rest; the
     part turns or slides about `pivot` along `axis` (Blender frame), under `parent`. A `clear`
     part is see-through where its look's alpha says (glass, a flame): its material carries the
-    colour map's alpha, so it imports in AlphaMode Transparency (docs/STUDIO.md)."""
+    colour map's alpha, so it imports in AlphaMode Transparency (docs/STUDIO.md). An `alone`
+    part is baked with nothing else in the scene: it is hidden where it's built and only ever
+    seen somewhere else (the blob lamp's blobs, all built in one spot inside the wax)."""
 
-    def __init__(self, name, build, pivot=(0.0, 0.0, 0.0), parent=None, axis=None, clear=False):
+    def __init__(self, name, build, pivot=(0.0, 0.0, 0.0), parent=None, axis=None, clear=False,
+                 alone=False):
         self.name, self.build, self.pivot, self.parent = name, build, Vector(pivot), parent
         self.axis = Vector(axis).normalized() if axis else None
-        self.clear = clear
+        self.clear, self.alone = clear, alone
 
 
 class Find:
@@ -82,6 +85,7 @@ class Find:
         self.drive = drive
         self.by = {p.name: p for p in parts}
         self.clear = any(p.clear for p in parts)
+        self.alone = any(p.alone for p in parts)
 
     def out(self, set_dir, *rest):
         return os.path.join(set_dir, "out", *rest)
@@ -312,13 +316,15 @@ def stage_textures(find, set_dir):
         rig.channel(k)
         sc.cycles.samples = 64 if k == "ao" else 8
         for p in find.parts:
-            if find.clear:
+            if find.clear or find.alone:
                 # light goes through glass: a solid part's occlusion leaves the clear parts out
                 # (the candle in its jar isn't in a cave), a clear part's counts only itself.
                 # Every channel, not just "ao": the look's own grime is an occlusion node baked
-                # into the colour, and a shade hugging the moon greyed the half it covered
+                # into the colour, and a shade hugging the moon greyed the half it covered.
+                # An `alone` part neither shades nor is shaded by the others
                 for q in find.parts:
-                    hi[q.name].hide_render = (q.name != p.name) if p.clear else q.clear
+                    h = (((q.name != p.name) if p.clear else q.clear) if find.clear else False)
+                    hi[q.name].hide_render = h or ((p.alone or q.alone) and q.name != p.name)
             bpy.ops.object.select_all(action="DESELECT")
             hi[p.name].select_set(True)
             lo[p.name].select_set(True)
@@ -739,20 +745,22 @@ def stage_renders(find, set_dir, quick=False):
         # would otherwise look at the floor under it)
         cam = render.camera(fc + Vector((-1.1, -2.0, 0.15)) * d * back,
                             fc - Vector((0, 0, 0.14 * d)), lens=40)
-        n = int(math.ceil(dur * 24)) + 6
+        # a long slow loop (the blob lamp's Flow) may preview at fewer frames a second (`fps`)
+        rate = find.motions[action].get("fps", 24)
+        n = int(math.ceil(dur * rate)) + (6 if rate == 24 else 1)
         frames = []
         # `follow`: the camera keeps its place relative to that part as it travels (not its turn)
         ride = objs[follow].matrix_world.translation.copy() if follow else None
         cam_at = cam.location.copy()
         for i in range(n):
-            pose(find, objs, {**rest, **values_at(trs, i / 24.0)}, lts)
+            pose(find, objs, {**rest, **values_at(trs, i / rate)}, lts)
             if follow:
                 cam.location = cam_at + objs[follow].matrix_world.translation - ride
                 bpy.context.view_layer.update()
             f = os.path.join(tmp, f"{action}-{i:03d}.png")
             shoot(cam, f, (480, 360), 24 if quick else 48)
             frames.append(f)
-        ffmpeg("-framerate", "24", "-i", os.path.join(tmp, f"{action}-%03d.png"),
+        ffmpeg("-framerate", str(rate), "-i", os.path.join(tmp, f"{action}-%03d.png"),
                "-c:v", "libx264", "-pix_fmt", "yuv420p", "-vf", "scale=480:360",
                find.out(set_dir, f"{name}-{action.lower()}.mp4"))
         step = max(1, (n - 1) // 9)

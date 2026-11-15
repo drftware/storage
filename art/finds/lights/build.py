@@ -15,6 +15,7 @@ import bmesh  # noqa: E402
 import numpy as np  # noqa: E402
 from mathutils import Matrix, Vector  # noqa: E402
 
+import ease  # noqa: E402
 import kit  # noqa: E402
 import spec as K  # noqa: E402
 from look import Coat, hexc  # noqa: E402
@@ -1890,7 +1891,583 @@ MOON_LAMP = kit.Find(
     dust=MN["dust"], seed=MN["seed"],
 )
 
-FINDS = [DESK_LAMP, NIGHT_LIGHT, TEA_LIGHT, GLOW_STICKS, FAIRY_LIGHTS, LANTERN, MOON_LAMP]
+# --- the blob lamp ------------------------------------------------------------------------------
+
+(BL_ALU, BL_ALU_IN, BL_FOOT, BL_GLASS, BL_GLASS_IN, BL_LIQ, BL_LIQTOP, BL_POOL, BL_MOUND, BL_NECK,
+ BL_BLOB, BL_CORD, BL_SLEEVE, BL_SWITCH, BL_ROCKER, BL_PLUG, BL_PRONG) = range(56, 73)
+BB, BT, BC, BW = K.BLOB_BASE, K.BLOB_BOTTLE, K.BLOB_CAP, K.BLOB_WAX
+BL_P = BW["pool_top"]
+BL_PIVOT = (0.0, 0.0, BL_P)
+BL_SW = BB["switch"]
+BL_SW_M = (Matrix.Translation((BL_SW["at"][0], BL_SW["at"][1], 0.0))
+           @ Matrix.Rotation(math.radians(BL_SW["yaw"]), 4, "Z"))
+BL_ROCK_AT = tuple(BL_SW_M @ Vector((0.0, 0.0, BL_SW["h"] - 0.003)))
+BL_ROCK_AX = tuple(BL_SW_M.to_3x3() @ Vector((0.0, 1.0, 0.0)))
+
+
+def bl_offset(prof, d):
+    """A profile (r, z), listed up the outside, moved d inward along its normals: the glass's
+    inside."""
+    out, n = [], len(prof)
+    for i, (r, z) in enumerate(prof):
+        t = (Vector(prof[min(i + 1, n - 1)]) - Vector(prof[max(i - 1, 0)])).normalized()
+        p = Vector((r, z)) - Vector((t.y, -t.x)) * d
+        out.append((max(p.x, 0.0), p.y))
+    return out
+
+
+BL_IN = bl_offset(BT["outside"], BT["wall"])
+
+
+def bl_rin(z):
+    """The bottle's inside radius at height z, up its side."""
+    for (r0, z0), (r1, z1) in zip(BL_IN, BL_IN[1:]):
+        if z0 <= z <= z1 and z1 > z0:
+            return r0 + (r1 - r0) * (z - z0) / (z1 - z0)
+    return BL_IN[-1][0]
+
+
+def bl_base(hi):
+    """The spun aluminium base: a rolled foot, a cone in to the waist, a flare out to the collar
+    and its rolled rim; inside the collar, the shelf the bottle stands on. The cord leaves the
+    back through a rubber sleeve and runs over the floor through an inline rocker switch to a
+    two-pin plug."""
+    s = Shape()
+    out, ins = BB["outside"], BB["inside"]
+    (r0, z0), (r1, _) = out[-1], ins[0]
+    nl = 6 if hi else 3
+    lip = fillet((r0 + r1) / 2, z0, (r0 - r1) / 2, (0, 180), nl)
+    prof = out[:-1] + lip + ins[1:]
+    n_out = len(out) - 1 + nl
+    kinds = [BL_FOOT] + [BL_ALU] * (n_out - 1) + [BL_ALU_IN] * (len(prof) - 1 - n_out)
+    s.lathe(prof, BL_ALU, segs(hi, 48), kinds=kinds)
+    # the sleeve, square to the cone at the back of the foot
+    g = BB["grommet"]
+    (ra, za), (rb, zb) = out[5], out[6]
+    rz = ra + (rb - ra) * (g["z"] - za) / (zb - za)
+    lean = math.atan2(ra - rb, zb - za)
+    nrm = Vector((0.0, math.cos(lean), math.sin(lean)))
+    foot = Vector((0.0, rz, g["z"]))
+    a, b = foot - nrm * 0.008, foot + nrm * g["len"]
+    s.tube([tuple(a), tuple(a.lerp(b, 0.55)), tuple(b)], g["r"], BL_SLEEVE, segs(hi, 12),
+           radii=[g["r"], g["r"] * 0.86, g["r"] * 0.66])
+    # the switch: a two-part moulded case, a nub at each end where the cord goes in, a raised
+    # frame round the rocker
+    sw, M = BL_SW, BL_SW_M
+    l, w, h = sw["l"], sw["w"], sw["h"]
+    zc = h * 0.42
+    s.box((-l / 2, -w / 2, 0.0), (l / 2, w / 2, h), BL_SWITCH, 0.014 if hi else 0.01, 3 if hi else 1, M)
+    for sx in (-1, 1):
+        s.tube([(sx * (l / 2 - 0.004), 0.0, zc), (sx * (l / 2 + 0.022), 0.0, zc)], 0.019, BL_SWITCH,
+               segs(hi, 12), M, radii=[0.02, 0.0125])
+    rl, rw, _ = sw["rocker"]
+    t = 0.0055
+    for (x0, y0, x1, y1) in [(-rl / 2 - t, -rw / 2 - t, rl / 2 + t, -rw / 2), (-rl / 2 - t, rw / 2, rl / 2 + t, rw / 2 + t),
+                             (-rl / 2 - t, -rw / 2, -rl / 2, rw / 2), (rl / 2, -rw / 2, rl / 2 + t, rw / 2)]:
+        s.box((x0, y0, h - 0.003), (x1, y1, h + 0.0045), BL_SWITCH, 0.0016 if hi else 0.0, 1, M)
+    # the cord: out of the sleeve, down to the floor, into the switch, out and round to the plug
+    cr = BB["cord_r"]
+    u = M.to_3x3() @ Vector((1.0, 0.0, 0.0))
+    A = M @ Vector((-l / 2 - 0.018, 0.0, zc))
+    B = M @ Vector((l / 2 + 0.018, 0.0, zc))
+    pg = BB["plug"]
+    Mp = Matrix.Translation((pg["at"][0], pg["at"][1], 0.0)) @ Matrix.Rotation(math.radians(pg["yaw"]), 4, "Z")
+    E = Mp @ Vector((-0.106, 0.0, 0.0215))
+    lo_ = Vector((0.0, 0.0, cr))
+    one = [tuple(foot + nrm * 0.004), tuple(b + nrm * 0.008), (0.0, 0.262, 0.024), (0.004, 0.3, cr + 0.001),
+           (0.022, 0.338, cr), tuple(A - u * 0.045 + lo_), tuple(A)]
+    two = [tuple(B), tuple(B + u * 0.035 + lo_), (0.372, 0.508, cr), (0.374, 0.552, cr), (0.347, 0.598, cr),
+           (0.29, 0.632, cr), (0.215, 0.648, cr), (0.168, 0.648, cr + 0.003), tuple(E)]
+    k = 6 if hi else 3
+    s.tube(spline(one, k), cr, BL_CORD, segs(hi, 8))
+    s.tube(spline(two, k), cr, BL_CORD, segs(hi, 8))
+    # the plug: a moulded body, a tapered tail where the cord goes in, two flat brass pins
+    s.box((-0.07, -0.038, 0.0), (0.0, 0.038, 0.044), BL_PLUG, 0.012 if hi else 0.008, 3 if hi else 1, Mp)
+    s.tube([(-0.066, 0.0, 0.022), (-0.108, 0.0, 0.0215)], 0.019, BL_PLUG, segs(hi, 12), Mp,
+           radii=[0.019, 0.0125])
+    for sy in (-1, 1):
+        s.box((-0.004, sy * 0.0254 - 0.003, 0.0095), (0.062, sy * 0.0254 + 0.003, 0.0345), BL_PRONG,
+              0.0012 if hi else 0.0, 1, Mp)
+    return s
+
+
+def bl_rocker(hi):
+    """The switch's rocker, built tipped to off: two faces meeting in a shallow V over its axle,
+    sunk into the frame; it rocks about the axle across the switch."""
+    s = Shape()
+    rl, rw, _ = BL_SW["rocker"]
+    M = (Matrix.Translation(BL_ROCK_AT) @ (BL_SW_M.to_3x3().to_4x4())
+         @ Matrix.Rotation(math.radians(BL_SW["off"]), 4, "Y"))
+    for sx in (-1, 1):
+        Mh = M @ Matrix.Rotation(math.radians(-7.0 * sx), 4, "Y")
+        x0, x1 = (-0.002, rl / 2) if sx > 0 else (-rl / 2, 0.002)
+        s.box((x0, -rw / 2, -0.016), (x1, rw / 2, 0.0115), BL_ROCKER, 0.003 if hi else 0.0015,
+              2 if hi else 1, Mh)
+    return s
+
+
+def bl_bottle(hi):
+    """The glass bottle, one shell: up the outside, over the lip, down the inside. The inside
+    under the liquid's surface carries the liquid's colour; the surface is a disc that climbs
+    the glass in a meniscus."""
+    s = Shape()
+    out, w, liq = BT["outside"], BT["wall"], BT["liquid"]
+    (r0, z0) = out[-1]
+    nl = 6 if hi else 3
+    lip = fillet(r0 - w / 2, z0, w / 2, (0, 180), nl)
+    side = list(reversed(BL_IN))[1:]
+    k = next(i for i in range(len(side) - 1) if side[i][1] >= liq > side[i + 1][1])
+    (ra, za), (rb, zb) = side[k], side[k + 1]
+    rl = ra + (rb - ra) * (za - liq) / (za - zb)
+    side.insert(k + 1, (rl, liq))
+    prof = out[:-1] + lip + side
+    n_out = len(out) - 1 + nl
+    kinds = [BL_GLASS if i < n_out else
+             (BL_GLASS_IN if (prof[i][1] + prof[i + 1][1]) / 2 > liq else BL_LIQ)
+             for i in range(len(prof) - 1)]
+    s.lathe(prof, BL_GLASS, segs(hi, 48), kinds=kinds)
+    men = [(rl - 0.0004, liq + 0.0045), (rl - 0.0025, liq + 0.0015), (rl - 0.007, liq + 0.0003),
+           (rl - 0.016, liq), (0.0, liq)]
+    s.lathe(men, BL_LIQTOP, segs(hi, 48))
+    return s
+
+
+def bl_cap(hi):
+    """The cap: spun like the base, a rolled lip over the bottle's neck, a cone, a rounded top."""
+    s = Shape()
+    s.lathe(BC["outside"], BL_ALU, segs(hi, 40))
+    s.lathe(BC["inside"] + [(0.1035, 1.2538)], BL_ALU_IN, segs(hi, 40))
+    return s
+
+
+def bl_waves(seed, n=5):
+    rng = np.random.default_rng(int(seed * 7 + 3))
+    return [(Vector(rng.normal(size=3)).normalized(), rng.uniform(1.0, 2.4), rng.uniform(0.0, 6.28))
+            for _ in range(n)]
+
+
+def bl_lumps(s, c, amt, seed):
+    """Push a round shape in and out a little, smoothly, so no blob is a ball."""
+    waves = bl_waves(seed)
+    for v in s.bm.verts:
+        d = v.co - c
+        if d.length < 1e-9:
+            continue
+        u = d.normalized()
+        k = sum(math.sin(f * math.pi * u.dot(wv) + ph) for wv, f, ph in waves) / len(waves)
+        v.co = c + d * (1.0 + amt * 1.6 * k)
+
+
+def bl_pool(hi):
+    """The wax on the bottle's floor: it fills the round bottom and lies gently uneven on top."""
+    s = Shape()
+    P = BL_P
+    rw = bl_rin(P) - 0.0008
+    floor = [(r, z + 0.0008) for (r, z) in BL_IN if z < P - 0.012]
+    m = 12 if hi else 6
+    top = [(rw, P - 0.004), (rw - 0.0035, P + 0.0012)] + [
+        ((rw - 0.009) * (1 - i / m), P + 0.002 + 0.0016 * math.cos(3.0 * i / m)) for i in range(m + 1)]
+    top[-1] = (0.0, top[-1][1])
+    s.lathe(floor + top, BL_POOL, segs(hi, 40))
+    waves = bl_waves(9.0, 4)
+    for v in s.bm.verts:
+        r = math.hypot(v.co.x, v.co.y)
+        if v.co.z > P - 0.001 and r < rw - 0.006:
+            k = sum(math.sin(f * 18.0 * (v.co.x * wv.x + v.co.y * wv.y) + ph) for wv, f, ph in waves)
+            v.co.z += 0.0014 * k * min(1.0, (rw - 0.006 - r) / 0.03)
+    return s
+
+
+def bl_mound(hi):
+    """The hump in the middle of the pool, where blobs gather to leave and sink back in."""
+    s = Shape()
+    m = BW["mound"]
+    n = 14 if hi else 7
+    prof = [(m["r"] * (1 - i / n), BL_P - 0.004 + (m["h"] + 0.004) * math.exp(-((1 - i / n) / 0.5) ** 2))
+            for i in range(n + 1)]
+    prof[-1] = (0.0, prof[-1][1])
+    s.lathe(prof, BL_MOUND, segs(hi, 28))
+    bl_lumps(s, Vector((0.0, 0.0, BL_P - 0.03)), 0.012, 11.0)
+    return s
+
+
+def bl_neck(hi):
+    """The strand a rising blob draws up out of the mound: wide at its foot, pinched at its
+    waist, opening into the blob. Stretched, it thins (it keeps its volume) until it snaps."""
+    s = Shape()
+    nk = BW["neck"]
+    h0, fo, wa, to = nk["h"], nk["foot"], nk["waist"], nk["top"]
+    cp = [(0.0, fo), (0.12, fo * 0.66), (0.5, wa), (0.88, to * 0.9), (1.0, to)]
+    n = 18 if hi else 9
+    prof = [(0.0, -0.016), (fo * 1.05, -0.012)]
+    for i in range(n + 1):
+        u = i / n
+        j = max(k for k in range(len(cp) - 1) if cp[k][0] <= u) if u < 1 else len(cp) - 2
+        (u0, r0), (u1, r1) = cp[j], cp[j + 1]
+        e = 0.5 - 0.5 * math.cos(math.pi * (u - u0) / (u1 - u0))
+        prof.append((r0 + (r1 - r0) * e, h0 * u))
+    prof += [(to * 0.72, h0 + to * 0.55), (to * 0.36, h0 + to * 0.88), (0.0, h0 + to)]
+    s.lathe(prof, BL_NECK, segs(hi, 16), Matrix.Translation(BL_PIVOT))
+    return s
+
+
+def bl_blob(name):
+    R, lump, seed = BW["blobs"][name]
+
+    def build(hi):
+        s = Shape()
+        m = 20 if hi else 10
+        prof = [(R * math.sin(math.pi * i / m), -R * math.cos(math.pi * i / m)) for i in range(m + 1)]
+        prof[0], prof[-1] = (0.0, -R), (0.0, R)
+        s.lathe(prof, BL_BLOB, segs(hi, 20), Matrix.Translation(BL_PIVOT))
+        bl_lumps(s, Vector(BL_PIVOT), lump, seed)
+        return s
+    return build
+
+
+def bl_look(L, f):
+    nb = L.nb
+    # spun aluminium, satin: fine rings from the spinning, a little brighter and duller by turns
+    C = Coat(L, hexc("#B7BBBF"), 0.3, 1.0)
+    alu = L.k(BL_ALU)
+    rings = L.noise(320.0, 3, stretch=(0.03, 0.03, 1.0), detail=2)
+    bands = L.noise(24.0, 4, stretch=(0.05, 0.05, 1.0), detail=2)
+    C.paint(alu, nb.tint(hexc("#BCC0C4"), nb.mr(nb.add(nb.mul(rings, 0.5), nb.mul(bands, 0.5)), 0.3, 0.7, 0.86, 1.07)),
+            nb.mr(rings, 0.3, 0.7, 0.2, 0.36), 1.0, nb.mul(rings, 0.04))
+    # handled and knocked about: patches of fine scratches gone dull, a few dings, a grey film
+    # in the waist where hands never reach
+    scuff = nb.mul(alu, nb.ss(L.noise(5.0, 5, detail=4, rough=0.6), 0.58, 0.72))
+    C.paint(nb.mul(scuff, nb.ss(L.noise(140.0, 6, stretch=(1.0, 1.0, 0.15), detail=2), 0.45, 0.6)),
+            hexc("#A9ADB0"), 0.46)
+    dings = nb.mul(alu, nb.ss(L.noise(30.0, 7, detail=2), 0.8, 0.86))
+    C.paint(dings, height=-0.35)
+    waist = nb.mul(alu, nb.mul(nb.ss(L.z, 0.3, 0.38), nb.ss(L.z, 0.5, 0.42)))
+    C.paint(nb.mul(waist, 0.35), hexc("#8E9094"), 0.45)
+    C.paint(L.k(BL_ALU_IN), hexc("#2F3032"), 0.7, 0.5)
+    C.paint(L.k(BL_FOOT), hexc("#1C1B1A"), 0.95, 0.0)
+    # the bottle: clear glass, dark and glossy so it reads by its highlights; fingermarks
+    glass = L.k(BL_GLASS)
+    C.paint(glass, hexc("#9AA5AE"), 0.035, 0.0, alpha=0.085)
+    smudge = nb.mul(glass, nb.ss(L.noise(6.0, 8, detail=4, rough=0.6), 0.56, 0.72))
+    C.paint(nb.mul(smudge, 0.8), hexc("#C6CACC"), 0.3, alpha=0.2)
+    liq = BT["liquid"]
+    C.paint(L.k(BL_GLASS_IN), hexc("#9AA5AE"), 0.04, 0.0, alpha=0.07)
+    # a faint tide mark just over the liquid, where it has stood for years
+    tide = nb.mul(L.k(BL_GLASS_IN), nb.mul(nb.ss(L.z, liq + 0.016, liq + 0.004), nb.ss(L.z, liq, liq + 0.002)))
+    C.paint(tide, hexc("#8C7FA8"), 0.3, alpha=0.3)
+    # the liquid: violet, pinker low down where the hot wax lights it, bluer up top
+    lq = L.k(BL_LIQ, BL_LIQTOP)
+    lcol = nb.mixc(nb.ss(L.z, 0.68, 1.15), hexc("#9A4FE0"), hexc("#5D46D2"))
+    C.paint(lq, lcol, 0.05, 0.0, alpha=0.3)
+    C.paint(L.k(BL_LIQTOP), alpha=0.45)
+    C.lights(nb.mul(lq, nb.mr(L.z, 0.6, 1.22, 1.0, 0.5)))
+    # the wax: red-orange, hottest and yellowest in the pool, glossy where it's molten
+    P = BL_P
+    pool = L.k(BL_POOL, BL_MOUND)
+    marble = nb.mr(L.noise(40.0, 9, detail=3), 0.3, 0.7, 0.93, 1.05)
+    hot = nb.ss(L.z, P - 0.03, P + 0.02)
+    C.paint(pool, nb.tint(nb.mixc(hot, hexc("#F05A1C"), hexc("#FF9A2C")), marble), 0.26, 0.0)
+    C.lights(nb.mul(pool, nb.mr(L.z, P - 0.06, P + 0.02, 0.7, 1.0)))
+    neck = L.k(BL_NECK)
+    nu = nb.mul(nb.sub(L.z, P), 1.0 / BW["neck"]["h"])
+    C.paint(neck, nb.tint(nb.mixc(nb.ss(nu, 0.0, 1.0), hexc("#FF8A28"), hexc("#F05220")), marble), 0.28, 0.0)
+    C.lights(nb.mul(neck, nb.mr(nu, 0.0, 1.0, 0.95, 0.75)))
+    # a blob is lit from under: a bright orange belly, a deeper red crown
+    blob = L.k(BL_BLOB)
+    bu = nb.mul(nb.sub(L.z, P), 1.0 / 0.06)
+    C.paint(blob, nb.tint(nb.mixc(nb.ss(bu, -0.9, 0.9), hexc("#FF6E22"), hexc("#D3301A")), marble), 0.3, 0.0)
+    C.lights(nb.mul(blob, nb.mr(bu, -1.0, 1.0, 0.95, 0.4)))
+    # the cord: black PVC, its gloss worn dull in places
+    C.paint(L.k(BL_CORD), hexc("#161616"), nb.mr(L.noise(30.0, 10, detail=2), 0.3, 0.7, 0.42, 0.6), 0.0)
+    C.paint(L.k(BL_SLEEVE), hexc("#141414"), 0.75, 0.0)
+    # the switch: black moulded plastic, a seam round its middle, a white bar on the rocker's on side
+    sw = L.k(BL_SWITCH)
+    C.paint(sw, hexc("#1A1A1A"), 0.48, 0.0)
+    C.paint(nb.mul(sw, nb.mul(nb.ss(L.z, BL_SW["h"] * 0.5 - 0.0025, BL_SW["h"] * 0.5 - 0.0008),
+                              nb.ss(L.z, BL_SW["h"] * 0.5 + 0.0025, BL_SW["h"] * 0.5 + 0.0008))), hexc("#050505"), 0.8)
+    rk = L.k(BL_ROCKER)
+    C.paint(rk, hexc("#202020"), 0.38, 0.0)
+    rx = nb.add(nb.mul(nb.sub(L.x, BL_ROCK_AT[0]), math.cos(math.radians(BL_SW["yaw"]))),
+                nb.mul(nb.sub(L.y, BL_ROCK_AT[1]), math.sin(math.radians(BL_SW["yaw"]))))
+    ry = nb.add(nb.mul(nb.sub(L.x, BL_ROCK_AT[0]), -math.sin(math.radians(BL_SW["yaw"]))),
+                nb.mul(nb.sub(L.y, BL_ROCK_AT[1]), math.cos(math.radians(BL_SW["yaw"]))))
+    bar = nb.mul(nb.mul(nb.ss(rx, -0.024, -0.021), nb.ss(rx, -0.012, -0.015)),
+                 nb.mul(nb.ss(ry, -0.012, -0.010), nb.ss(ry, 0.012, 0.010)))
+    C.paint(nb.mul(rk, nb.mul(bar, L.up)), hexc("#D8D8D2"), 0.5)
+    C.paint(L.k(BL_PLUG), hexc("#191919"), 0.62, 0.0)
+    C.paint(L.k(BL_PRONG), nb.tint(hexc("#C9B98E"), nb.mr(L.noise(60.0, 12, detail=2), 0.3, 0.7, 0.85, 1.05)),
+            0.32, 1.0)
+    sealed = L.k(BL_LIQ, BL_LIQTOP, BL_GLASS_IN, BL_POOL, BL_MOUND, BL_NECK, BL_BLOB, BL_ALU_IN)
+    C.finish(f.dust, grime=0.4, keep=sealed)
+    return C.surface(bump_dist=0.0008, bump=0.4)
+
+
+# The flow: each blob's path written as a few keys, joined by a smooth curve that never
+# overshoots (no stop at every key), sampled and thinned to straight runs for the game.
+BL_FPS = 10.0
+
+
+def bl_pchip(keys):
+    """A monotone cubic through keys [(t, v)]: smooth, and it never overshoots a key."""
+    ts = [k[0] for k in keys]
+    vs = [k[1] for k in keys]
+    n = len(ts)
+    d = [(vs[i + 1] - vs[i]) / (ts[i + 1] - ts[i]) for i in range(n - 1)]
+    m = [0.0] * n
+    for i in range(1, n - 1):
+        if d[i - 1] * d[i] > 0:
+            w1 = 2 * (ts[i + 1] - ts[i]) + (ts[i] - ts[i - 1])
+            w2 = (ts[i + 1] - ts[i]) + 2 * (ts[i] - ts[i - 1])
+            m[i] = (w1 + w2) / (w1 / d[i - 1] + w2 / d[i])
+
+    def at(t):
+        if t <= ts[0]:
+            return vs[0]
+        if t >= ts[-1]:
+            return vs[-1]
+        i = max(j for j in range(n - 1) if ts[j] <= t)
+        h = ts[i + 1] - ts[i]
+        u = (t - ts[i]) / h
+        h00, h10 = 2 * u ** 3 - 3 * u ** 2 + 1, u ** 3 - 2 * u ** 2 + u
+        h01, h11 = -2 * u ** 3 + 3 * u ** 2, u ** 3 - u ** 2
+        return h00 * vs[i] + h10 * h * m[i] + h01 * vs[i + 1] + h11 * h * m[i + 1]
+    return at
+
+
+def bl_rdp(ts, vs, eps):
+    """The fewest keys a straight line between them keeps within eps of the curve."""
+    keep, stack = [0, len(ts) - 1], [(0, len(ts) - 1)]
+    while stack:
+        a, b = stack.pop()
+        worst, at = 0.0, None
+        for i in range(a + 1, b):
+            e = abs(vs[i] - (vs[a] + (vs[b] - vs[a]) * (ts[i] - ts[a]) / (ts[b] - ts[a])))
+            if e > worst:
+                worst, at = e, i
+        if at is not None and worst > eps:
+            keep.append(at)
+            stack += [(a, at), (at, b)]
+    keep.sort()
+    out = [(round(ts[i], 2), round(vs[i], 4), "Linear", "In") for i in keep]
+    out[0] = out[0][:2]
+    return out
+
+
+# Measured off a video of a real lamp (README): a tower climbs about a sixteenth of the bottle a
+# second, slowing near the top; its neck snaps about 16 s in; the blob hangs at the top for about
+# 6 s, then sinks faster, gathering speed, and a sinking blob may tear, its top half floating
+# back up. rise is the blob's middle above the pool; x and y its drift; sc its size (it grows
+# as it draws wax up out of the pool); st its stretch; turn its slow spin.
+BL_PLAN = {
+    "Blob1": dict(
+        sc=[(0, 0), (2.6, 0), (4.2, 0.5), (8, 0.85), (12, 1.0), (16.4, 1.0), (16.7, 1.03), (17.6, 1.0),
+            (28.45, 1.0), (28.85, 0.82), (33.2, 0.82), (34.6, 0.0), (52, 0)],
+        st=[(0, 2.4), (2.6, 2.4), (6, 2.0), (11, 1.6), (16.35, 1.42), (16.75, 1.08), (17.4, 1.24), (18.2, 1.12),
+            (19, 1.16), (23.5, 0.88), (25, 0.85), (26.8, 0.95), (28.4, 1.45), (29.0, 1.05), (29.6, 1.18),
+            (32.8, 1.25), (33.4, 0.62), (34.6, 0.55), (52, 2.4)],
+        rise=[(0, 0.02), (2.6, 0.02), (4.2, 0.065), (8, 0.19), (12, 0.36), (14.5, 0.445), (16.4, 0.49),
+              (18, 0.505), (22, 0.515), (24, 0.515), (26.5, 0.475), (28.5, 0.4), (29.0, 0.38), (31.2, 0.21),
+              (33.2, 0.06), (34.6, 0.025), (52, 0.02)],
+        x=[(0, 0.0), (4, 0.0), (10, 0.012), (16, 0.02), (20, 0.024), (24, 0.026), (27, 0.04), (30, 0.066),
+           (33.2, 0.075), (34.6, 0.075), (52, 0.0)],
+        y=[(0, 0.0), (12, 0.008), (24, -0.006), (33, 0.004), (52, 0.0)],
+        turn=[(0, 0.0), (4, 0.0), (34.6, 55.0), (52, 0.0)]),
+    "Blob2": dict(
+        sc=[(0, 0), (21.9, 0), (23.5, 0.5), (27.5, 0.85), (31.5, 1.0), (36.9, 1.0), (37.2, 1.03), (38.1, 1.0),
+            (48.5, 1.0), (49.9, 0.0), (52, 0)],
+        st=[(0, 2.4), (21.9, 2.4), (25, 2.0), (30, 1.6), (36.85, 1.42), (37.25, 1.08), (37.9, 1.24),
+            (38.7, 1.12), (39.5, 1.16), (40.5, 0.9), (42.5, 0.96), (45, 1.2), (48.2, 1.22), (48.7, 0.62),
+            (49.9, 0.55), (52, 2.4)],
+        rise=[(0, 0.02), (21.9, 0.02), (23.5, 0.065), (27.3, 0.19), (31.3, 0.34), (33.8, 0.42),
+              (36.9, 0.465), (38.5, 0.49), (40.5, 0.497), (42.5, 0.46), (44.5, 0.34), (46.5, 0.2),
+              (48.5, 0.055), (49.9, 0.025), (52, 0.02)],
+        x=[(0, 0.0), (21.9, 0.0), (25, -0.012), (28, -0.03), (32, -0.036), (36, -0.038), (40, -0.036),
+           (44, -0.045), (48.5, -0.06), (49.9, -0.06), (52, 0.0)],
+        y=[(0, 0.0), (30, -0.006), (44, 0.008), (52, 0.0)],
+        turn=[(0, 0.0), (21.9, 0.0), (49.9, -48.0), (52, 0.0)]),
+    "Blob3": dict(
+        sc=[(0, 0), (28.45, 0), (28.8, 1.0), (41.9, 1.0), (43.1, 0.0), (52, 0)],
+        st=[(0, 1.0), (28.45, 1.7), (29.0, 1.05), (29.6, 1.2), (30.4, 1.05), (32, 1.1), (35, 0.9),
+            (36.5, 0.95), (39, 1.18), (41.6, 1.2), (42.1, 0.6), (43.1, 0.55), (52, 1.0)],
+        rise=[(0, 0.02), (28.45, 0.45), (29.0, 0.465), (30.5, 0.45), (33, 0.425), (35.5, 0.415),
+              (38, 0.35), (40, 0.2), (41.9, 0.055), (43.1, 0.02), (52, 0.02)],
+        x=[(0, 0.0), (28.45, 0.055), (30, 0.06), (33, 0.066), (36, 0.066), (40, 0.05), (41.9, 0.035),
+           (43.1, 0.035), (52, 0.0)],
+        y=[(0, 0.0), (52, 0.0)],
+        turn=[(0, 0.0), (28.45, 0.0), (43.1, -40.0), (52, 0.0)]),
+    # the drop left behind when a neck snaps, as a stretched strand of any liquid leaves one
+    "Blob4": dict(
+        sc=[(0, 0), (16.35, 0), (16.6, 1.0), (20.4, 1.0), (21.3, 0.0), (36.95, 0), (37.2, 1.0), (40.8, 1.0),
+            (41.7, 0.0), (52, 0)],
+        st=[(0, 1.0), (16.35, 1.6), (16.85, 0.88), (17.4, 1.08), (18, 1.0), (20.3, 1.05), (20.8, 0.6),
+            (21.3, 0.55), (36.95, 1.6), (37.45, 0.88), (38, 1.08), (38.6, 1.0), (40.7, 1.05), (41.2, 0.6),
+            (41.7, 0.55), (52, 1.0)],
+        rise=[(0, 0.02), (16.35, 0.23), (17.2, 0.235), (20.4, 0.03), (21.3, 0.0), (36.95, 0.22),
+              (37.8, 0.225), (40.8, 0.03), (41.7, 0.0), (52, 0.02)],
+        x=[(0, 0.0), (16.35, 0.009), (20.4, 0.004), (21.3, 0.0), (36.95, -0.016), (40.8, -0.006),
+           (41.7, 0.0), (52, 0.0)],
+        y=[(0, 0.0), (52, 0.0)],
+        turn=[(0, 0.0), (52, 0.0)]),
+}
+# the hump in the pool: it swells before a blob leaves, sags as the neck drains it, jumps back
+# when the neck snaps, and swells as a blob sinks back in
+BL_MOUND_PLAN = dict(
+    st=[(0, 1.0), (3.0, 1.7), (6, 1.35), (10, 1.0), (15.5, 0.86), (16.9, 1.06), (18.5, 1.0), (19.5, 1.0),
+        (22.5, 1.65), (25.5, 1.3), (29, 1.0), (35.5, 0.86), (37.4, 1.06), (39, 1.0), (52, 1.0)],
+    sc=[(0, 1.0), (3.0, 1.12), (6, 1.06), (10, 1.0), (20.4, 1.0), (21.2, 1.05), (22.5, 1.1), (25.5, 1.04),
+        (29, 1.0), (41.0, 1.0), (42.3, 1.14), (44.5, 1.0), (52, 1.0)])
+# the neck: which blob it feeds and when it's there; it snaps as that blob's stretch springs back
+BL_NECK_PLAN = dict(
+    feeds=[(2.4, 17.1, "Blob1"), (21.7, 37.6, "Blob2")],
+    sc=[(0, 0), (2.7, 0), (4.2, 1.0), (16.4, 1.0), (16.95, 0.0), (21.8, 0), (23.4, 1.0), (36.9, 1.0),
+        (37.45, 0.0), (52, 0)])
+
+
+def bl_flow():
+    """Flow's tracks, and the blobs' places at each tenth of a second (for the check)."""
+    L = BW["loop"]
+    ts = [i / BL_FPS for i in range(int(L * BL_FPS) + 1)]
+    tracks, state = [], {}
+    eps = dict(move=0.0015, x=0.0015, y=0.0015, scale=0.012, stretch=0.015, turn=0.8)
+    for name, plan in BL_PLAN.items():
+        c = {k: bl_pchip(v) for k, v in plan.items()}
+        sc = [max(0.0, c["sc"](t)) for t in ts]
+        st = [c["st"](t) for t in ts]
+        rise = [c["rise"](t) for t in ts]
+        mv, last = [], 0.0
+        for a, b, r in zip(sc, st, rise):
+            # the blob's middle rises by move times its scale and stretch (it scales about where
+            # it was built), so divide them out; hold still while it's hidden
+            last = r / (a * b) if a > 0.02 else last
+            mv.append(last)
+        x = [c["x"](t) for t in ts]
+        y = [c["y"](t) for t in ts]
+        tn = [c["turn"](t) for t in ts]
+        state[name] = (sc, st, rise, x, y)
+        for ch, vs in (("move", mv), ("x", x), ("y", y), ("scale", sc), ("stretch", st), ("turn", tn)):
+            tracks.append((name, ch, bl_rdp(ts, vs, eps[ch])))
+    cm = {k: bl_pchip(v) for k, v in BL_MOUND_PLAN.items()}
+    tracks.append(("Mound", "stretch", bl_rdp(ts, [cm["st"](t) for t in ts], eps["stretch"])))
+    tracks.append(("Mound", "scale", bl_rdp(ts, [cm["sc"](t) for t in ts], eps["scale"])))
+    # the neck reaches from the mound into the bottom of the blob it feeds, leaning to it
+    nsc_c = bl_pchip(BL_NECK_PLAN["sc"])
+    h0 = BW["neck"]["h"]
+    nsc, nst, nturn = [], [], []
+    held = (1.0, 0.0)
+    for i, t in enumerate(ts):
+        a = max(0.0, nsc_c(t))
+        nsc.append(a)
+        feed = next((f for f in BL_NECK_PLAN["feeds"] if f[0] <= t < f[1]), None)
+        if feed and a > 0.02 and t < feed[1] - 0.6:
+            sc, st, rise, x, _ = state[feed[2]]
+            R = BW["blobs"][feed[2]][0]
+            H = max(0.012, rise[i] - 0.35 * R * sc[i] * st[i])
+            held = (min(7.0, max(0.5, H / (h0 * max(a, 0.3)))), math.degrees(math.atan2(x[i], max(rise[i], 0.02))))
+        nst.append(held[0])
+        nturn.append(held[1])
+    tracks += [("Neck", "scale", bl_rdp(ts, nsc, eps["scale"])),
+               ("Neck", "stretch", bl_rdp(ts, nst, 0.03)),
+               ("Neck", "turn", bl_rdp(ts, nturn, eps["turn"]))]
+    tracks += [(p, "glow", [(0.0, 1.0), (L, 1.0)])
+               for p in ("Bottle", "Pool", "Mound", "Neck", "Blob1", "Blob2", "Blob3", "Blob4")]
+    return tracks, ts, state
+
+
+def bl_check(ts, state):
+    """Print where blobs crowd each other or the glass (lumps allowed for)."""
+    names = list(state)
+    worst = {}
+    for i, t in enumerate(ts):
+        e = {}
+        for n in names:
+            sc, st, rise, x, y = state[n]
+            if sc[i] < 0.3:
+                continue
+            R, lump, _ = BW["blobs"][n]
+            a, b = R * sc[i] / math.sqrt(st[i]) * (1 + lump), R * sc[i] * st[i] * (1 + lump)
+            e[n] = (x[i], y[i], BL_P + rise[i], a, b)
+            zc = BL_P + rise[i]
+            # the glass: the widest the blob is at each height against the bottle there
+            for k in range(-4, 5):
+                z = zc + b * k / 5
+                half = a * math.sqrt(max(0.0, 1 - (k / 5) ** 2))
+                gap = bl_rin(z) - math.hypot(x[i], y[i]) - half
+                if gap < worst.get((n, "glass"), (1, 0))[0]:
+                    worst[(n, "glass")] = (gap, t)
+            top = BT["liquid"] - (zc + b)
+            if top < worst.get((n, "top"), (1, 0))[0]:
+                worst[(n, "top")] = (top, t)
+        for j, p in enumerate(names):
+            for q in names[j + 1:]:
+                if p not in e or q not in e:
+                    continue
+                if (p, q) == ("Blob1", "Blob3") and 28.3 < t < 30.0:
+                    continue  # a blob tearing in two touches the half it tears from
+                (x1, y1, z1, a1, b1), (x2, y2, z2, a2, b2) = e[p], e[q]
+                d = math.hypot(math.hypot(x1 - x2, y1 - y2) / (a1 + a2), (z1 - z2) / (b1 + b2))
+                if d < worst.get((p, q), (9, 0))[0]:
+                    worst[(p, q)] = (d, t)
+    for k, (v, t) in sorted(worst.items(), key=lambda kv: kv[1][0]):
+        bad = v < (1.0 if k[1] not in ("glass", "top") else 0.004)
+        if bad:
+            print(f"  blob lamp: {k[0]} and {k[1]} {'touch' if k[1] not in ('glass', 'top') else 'gap'} "
+                  f"{v:.3f} at {t:.1f} s")
+
+
+BL_TRACKS, BL_TS, BL_STATE = bl_flow()
+bl_check(BL_TS, BL_STATE)
+BL_LIT_AT = 29.8   # the still for the lit previews: one blob sinking, its torn top floating, a tower
+
+
+def bl_rock(a, b):
+    return [(0.0, a), (0.05, b + (2.0 if b > a else -2.0), "Quad", "Out"), (0.1, b)]
+
+
+BL_ON = BL_SW["on"] - BL_SW["off"]
+BLOB_LAMP = kit.Find(
+    "BlobLamp",
+    [kit.Part("Base", bl_base),
+     kit.Part("Rocker", bl_rocker, BL_ROCK_AT, "Base", BL_ROCK_AX),
+     kit.Part("Bottle", bl_bottle, (0.0, 0.0, BT["outside"][0][1]), "Base", clear=True),
+     kit.Part("Cap", bl_cap, (0.0, 0.0, BC["outside"][0][1]), "Bottle"),
+     kit.Part("Pool", bl_pool, BL_PIVOT, "Bottle"),
+     kit.Part("Mound", bl_mound, (0.0, 0.0, BL_P - 0.004), "Pool", (0, 0, 1), alone=True),
+     kit.Part("Neck", bl_neck, BL_PIVOT, "Pool", (0, 1, 0), alone=True)]
+    + [kit.Part(n, bl_blob(n), BL_PIVOT, "Pool", (0, 0, 1), alone=True) for n in BW["blobs"]],
+    bl_look,
+    lights=[
+        # the bulb in the base, seen through violet liquid and orange wax: a pink-violet glow all
+        # round; no shadows, so it shines out through the base and the bottle
+        dict(kind="Point", part="Bottle", at=(0.0, 0.0, 0.66), rgb=K.BLOB_LAMP["rgb"], brightness=0.8,
+             range=10, shadows=False, preview_kind="POINT", preview_watts=5.0, preview_size=0.06),
+    ],
+    glow=dict(part="Bottle", strength=2.0, tint=(255, 214, 196), preview=10.0),
+    lit={**{(p, ch): ease.sample(ease.keys(ks), BL_LIT_AT) for p, ch, ks in BL_TRACKS},
+         ("Rocker", "turn"): BL_ON},
+    motions={
+        # clicked on at the switch on the cord: the bulb lights the liquid at once, the wax
+        # warms into colour a beat behind, and the pool stirs
+        "SwitchOn": dict(duration=2.2, focus=(0.0, 0.0, 0.62), distance=0.75, tracks=[
+            ("Rocker", "turn", bl_rock(0.0, BL_ON)),
+            ("Bottle", "glow", [(0.0, 0.0), (0.1, 0.0), (0.22, 0.8, "Quad", "Out"), (0.9, 1.0)]),
+            ("Pool", "glow", [(0.0, 0.0), (0.12, 0.0), (0.5, 0.65, "Quad", "Out"), (1.6, 1.0)]),
+            ("Mound", "glow", [(0.0, 0.0), (0.12, 0.0), (0.5, 0.65, "Quad", "Out"), (1.6, 1.0)]),
+            ("Mound", "stretch", [(0.0, 1.0), (1.2, 1.06), (2.2, 1.0)])]),
+        # warm: played on a loop (its end is its start). Two towers climb and snap, one blob
+        # tears on the way down, and the drops left by the snaps fall back in
+        "Flow": dict(duration=BW["loop"], fps=8, focus=(0.0, 0.0, 0.9), distance=0.5, tracks=BL_TRACKS),
+        # clicked off: the light goes, the wax's glow a breath after; the blobs stay where they
+        # were (the game stops Flow there)
+        "SwitchOff": dict(duration=1.4, focus=(0.0, 0.0, 0.62), distance=0.75, tracks=[
+            ("Rocker", "turn", bl_rock(BL_ON, 0.0)),
+            ("Bottle", "glow", [(0.0, 1.0), (0.1, 1.0), (0.3, 0.12, "Quad", "Out"), (0.8, 0.0)]),
+            ("Pool", "glow", [(0.0, 1.0), (0.12, 1.0), (0.5, 0.3, "Quad", "Out"), (1.4, 0.0)]),
+            ("Mound", "glow", [(0.0, 1.0), (0.12, 1.0), (0.5, 0.3, "Quad", "Out"), (1.4, 0.0)])]),
+    },
+    dust=K.BLOB_LAMP["dust"], seed=K.BLOB_LAMP["seed"],
+)
+
+FINDS = [DESK_LAMP, NIGHT_LIGHT, TEA_LIGHT, GLOW_STICKS, FAIRY_LIGHTS, LANTERN, MOON_LAMP, BLOB_LAMP]
 
 if __name__ == "__main__":
     kit.main("Lights", HERE, FINDS)

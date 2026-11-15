@@ -270,3 +270,55 @@ CRADLE = dict(
     foot=0.24, foot_w=0.06,            # each foot's outer edge and how long it stands on the floor
     seed=73.0,
 )
+
+
+# --- The blob lamp: the classic wax-in-a-bottle motion lamp -------------------------------------
+# References (README): a 14.5 inch lamp, a spun aluminium base (a cone narrowing to a waist,
+# then flaring to the collar the bottle stands in), a tapering glass bottle, a spun cap; violet
+# liquid and red-orange wax lit by a bulb in the base. Its frame: the middle of the base on the
+# floor, front to -Y. Measured off a side-on photo scaled to 14.5 in.
+BLOB_BASE = dict(
+    # the base's outside, bottom to top (radius, height): the rolled foot, the cone up to the
+    # waist, the flare up to the collar and its rolled rim; then down inside the collar to the
+    # shelf the bottle stands on
+    outside=[(0.0, 0.003), (0.196, 0.003), (0.207, 0.0), (0.2135, 0.004), (0.2155, 0.009),
+             (0.2135, 0.015), (0.0905, 0.384), (0.0858, 0.396), (0.0858, 0.404), (0.0905, 0.416),
+             (0.1555, 0.536), (0.1605, 0.546), (0.1612, 0.555)],
+    inside=[(0.1555, 0.555), (0.1545, 0.512), (0.13, 0.505), (0.0, 0.505)],
+    # the cord leaves the back of the foot through a rubber sleeve, runs over the floor through
+    # an inline rocker switch to a two-pin plug
+    grommet=dict(z=0.036, r=0.019, len=0.03),
+    cord_r=0.0105,
+    switch=dict(at=(0.205, 0.43), yaw=20.0, l=0.21, w=0.086, h=0.062, rocker=(0.066, 0.05, 0.02),
+                off=-11.0, on=11.0),
+    plug=dict(at=(0.03, 0.645), yaw=180.0),
+)
+BLOB_BOTTLE = dict(
+    # the glass, outside, bottom to top: its round bottom sits down in the collar; widest 1.45 in
+    # above the collar, then a straight taper to the neck the cap sits over
+    outside=[(0.0, 0.507), (0.08, 0.509), (0.124, 0.516), (0.145, 0.53), (0.155, 0.547),
+             (0.1612, 0.565), (0.172, 0.604), (0.1805, 0.65), (0.1848, 0.705), (0.1002, 1.262),
+             (0.0985, 1.27), (0.0985, 1.302)],
+    wall=0.0105,                       # about 3 mm of glass
+    liquid=1.215,                      # the liquid's surface: a clear band of air shows under the cap
+)
+BLOB_CAP = dict(
+    # spun like the base: a rolled lip over the bottle's neck, a cone, a rounded flat top
+    outside=[(0.1035, 1.254), (0.1075, 1.258), (0.1085, 1.266), (0.1072, 1.276), (0.0482, 1.443),
+             (0.044, 1.4495), (0.036, 1.452), (0.0, 1.452)],
+    inside=[(0.0, 1.444), (0.04, 1.442), (0.1005, 1.272), (0.1005, 1.256)],
+)
+BLOB_WAX = dict(
+    pool_top=0.622,                    # the wax lying on the bottle's floor, cold or melted
+    mound=dict(r=0.085, h=0.03),       # the hump in the middle where blobs leave and land
+    neck=dict(h=0.1, foot=0.048, waist=0.017, top=0.034),  # the strand a rising blob draws up
+    # each blob: its size (radius of the ball it would be), how lumpy, and its seed
+    blobs=dict(Blob1=(0.062, 0.07, 1.0), Blob2=(0.055, 0.08, 2.0), Blob3=(0.045, 0.09, 3.0),
+               Blob4=(0.024, 0.06, 4.0)),
+    loop=48.0,                         # seconds before Flow comes round to where it started
+)
+BLOB_LAMP = dict(
+    rgb=(255, 120, 178),               # its light: the bulb through violet liquid and orange wax
+    seed=71.0,
+    dust=0.55,
+)
