@@ -2046,7 +2046,7 @@ it is, coins go to your bank, a tool goes to your hands, or it's a piece of the 
   colour at Transparency 1) and `Boxes.cloneMarked`. Prove in Edit: the Open motion played with
   `Art.sample` looks like the filmstrip; the seam lit reads at phone size from a unit's doorway
   at Level01 and Level21 (Neon smears at low graphics: STUDIO.md); the three sounds play.
-- [ ] **B-02 Opening a box: the reveal.** The payoff, built with care and studied from real
+- [x] **B-02 Opening a box: the reveal.** The payoff, built with care and studied from real
   unboxings and game reveals (Pet Simulator's egg hatch; Brawl Stars' Starr Drops, whose colour
   tells the prize before it shows). Press Open: the tape tears, a beat with light leaking
   through the flaps in the grade's colour (blue Rare, purple Epic, gold Legendary, each with its
@@ -2062,7 +2062,13 @@ it is, coins go to your bank, a tool goes to your hands, or it's a piece of the 
     through a shut door, rate-limited, opened once); every screen near it plays
     `Specs.Marked.Motions.Open` with the tear and flaps sounds on their beats; the cue's lines and
     hum go as the tape tears. Until B-03 deals boxes, a Studio-only way stands one in a unit.
-  - [ ] **B-02b The find comes out.** The beat of light in the grade's colour leaking through the
+  - [x] **B-02b The find comes out.** Done Nov 15 (D-210): the server stamps the find and grade
+    with the open (`Find`, `Grade`, `LaidAt` before `OpenedAt`) and gives it at `Opening.handAt`
+    (`Slots.give`, or laid beside the box for full hands); screens hold the flaps for the grade's
+    hold, trembling and rocking, a Neon glow and one light in the grade's colour building, its
+    own sounds (`Boxes.Reveal`), then the find's copy rises, turns once and flies to the hand.
+    Verified in Studio Play (a Rare into the hand; a Legendary's hold captured).
+    Was: The beat of light in the grade's colour leaking through the
     flaps with its own sound, then the find lifts, turns once and is yours; friends see and hear
     it, a Legendary further off. A Common must still feel good. B-02a's open runs straight from
     the tear into the burst (0.1 s, then 0.16 s): the grade's beat needs a hold between them on

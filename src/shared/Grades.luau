@@ -51,6 +51,21 @@ Grades.Worth = {
 	Secret = { 1000, 12000 },
 } :: { [string]: { number } }
 
+--[[
+	Each grade's colour (red, green, blue 0 to 255), the light a marked box leaks as it opens on a
+	find of that grade (B-02b), as Pet Simulator's eggs and Brawl Stars' Starr Drops tell the prize
+	by colour before it shows: Common the box's own warm light, Uncommon green, Rare blue, Epic
+	purple, Legendary gold, Secret red. Mid-bright, so a Neon glow keeps its colour on a phone.
+]]
+Grades.Colours = {
+	Common = { 255, 170, 92 },
+	Uncommon = { 92, 220, 118 },
+	Rare = { 64, 148, 255 },
+	Epic = { 178, 92, 255 },
+	Legendary = { 255, 196, 56 },
+	Secret = { 255, 54, 92 },
+} :: { [string]: { number } }
+
 -- Each grade's chance, out of 100 (more past `SecretDoubles`), for a find dealt on floor `number`.
 function Grades.odds(number: number): { [string]: number }
 	local band = Grades.Bands[1]

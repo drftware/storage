@@ -2414,3 +2414,20 @@ verified: a doc page, Studio, or "untested".
   the Client with `Boxes.Opening.pose` and each part's `PivotTo` (the view doesn't touch a settled
   box again): `docs/art/B-02a-burst-level01.jpg`, `B-02a-settled-level21.jpg`.
 
+
+## The reveal's sounds and a mid-reveal capture (B-02b, Nov 15)
+
+- **Measured in Edit** (four AudioPlayers each wired to its own AudioAnalyzer, played together,
+  `PeakLevel` in 100 ms bins; all four began about 0.35 s late, which is taken off here): "Magic
+  Tone Tonal Shimmer Shaking Rattle 1" 9116420445 (5.25 s) builds from 0.25 s to its loudest at
+  about 1 s and rings out by 3.4 s; "Phasey Synth Power Up High Pitched Rise 1" 9117297289
+  (3.45 s) rises quietly (peak 0.18) to its top at 2 s, then stops; "Magic Tone Falling Shimmer
+  Flanged 3" 9116418035 (3.29 s) twinkles loudest from 0.85 to 1.55 s; "Magic Whooshes Pass Bys
+  Metallic Shimmering 7" 9125646918 (1.82 s) swells to 0.85 s and cuts at 1.1 s.
+- **Any screen plays a reveal for a box stamped by hand**, so every grade can be seen without
+  opening a unit: from the Server, `Boxes.cloneMarked(cframe)`, set `Grade` and `Find`, tag it
+  `MarkedBox`, parent it, then set `OpenedBy` and `OpenedAt` (`workspace:GetServerTimeNow()`).
+  Nothing is granted (it isn't standing in `MarkedBoxes`).
+- **`screen_capture` grabs the frame at once**: to catch a moment, do the stamp in an
+  `execute_luau` that then `task.wait`s to the moment and returns, and call the capture right
+  after (0.55 s after the stamp caught a Legendary mid-hold).

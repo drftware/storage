@@ -2,8 +2,8 @@
 --[[
 	Marked boxes on the server (B-02a): the one box in a unit with something in it, and its Open.
 	The moment: you press Open and the tape rips, the flaps burst; everyone near hears and sees
-	it (MarkedBoxView plays it on every screen). B-02b brings the find out of it; B-03 deals what
-	goes in.
+	it (MarkedBoxView plays it on every screen), then a held breath in the grade's light and the
+	find rises out, turns once and flies into the opener's hand (B-02b). B-03 deals what goes in.
 
 	`stand` puts a marked box (`Boxes.cloneMarked`) at a place in a unit's hall piece, tagged
 	`Opening.Tag`, with the unit in an ObjectValue for screens' door checks and one "Open" button
@@ -13,6 +13,14 @@
 	the box is stamped with the server's time and the opener (`OpenedAt`, `OpenedBy`). The server
 	never moves a flap: its copy stays shut, and only the body is solid, so nothing changes for
 	anyone walking into it. An opened box stays where it stood, open, for the rest of the floor.
+
+	What's inside (B-02b) is the server's alone until the open: only then is the box stamped with
+	the find's key and grade (`Find`, `Grade`), in the same batch before `OpenedAt` so every
+	screen has them as it starts the reveal. If the opener's hands are full as they open it, the
+	box is stamped `LaidAt` too: the find comes out and lands on the floor beside the box, toward
+	them, to take as any find is. Otherwise it goes into their hand (`Slots.give`) the moment the
+	reveal brings it there (`Opening.handAt`, the grade's hold in it), or lands at that spot if
+	their hands filled or they died in the meantime.
 
 	Studio stands one for testing until B-03 deals them (Deals, Workspace `DevBox`).
 ]]
@@ -24,6 +32,8 @@ local Workspace = game:GetService("Workspace")
 
 local Boxes = require(ReplicatedStorage.Shared.Boxes)
 local Brix = require(ReplicatedStorage.Brix)
+local Slots = require(script.Parent.Slots)
+local Tools = require(ReplicatedStorage.Shared.Tools)
 local Prompts = require(script.Parent.Prompts)
 local StorageUnit = require(ReplicatedStorage.Shared.StorageUnit)
 
@@ -36,15 +46,16 @@ export type Opened = {
 	box: Model,
 	unit: Model,
 	player: Player,
+	find: string?, -- the find's catalog key, nil for an empty box
 }
 
 export type MarkedBoxes = Brix.System & {
-	-- Fires as a box is opened, after it's stamped: B-02b brings out what was in it.
+	-- Fires as a box is opened, after it's stamped (the find is given later, at `handAt`).
 	opened: Brix.Signal<Opened>,
 	-- Stands a shut marked box at `place` (the middle of its bottom on the floor, its printed side
-	-- facing the place's LookVector) in unit `unit`, into the unit's hall piece. Nil when the
-	-- place lacks the template.
-	stand: (self: any, unit: Model, place: CFrame) -> Model?,
+	-- facing the place's LookVector) in unit `unit`, into the unit's hall piece, holding find
+	-- `find` (a catalog key). Nil when the place lacks the template.
+	stand: (self: any, unit: Model, place: CFrame, find: string?) -> Model?,
 }
 
 type Standing = {
@@ -52,7 +63,12 @@ type Standing = {
 	unit: Model,
 	button: Vector3,
 	prompt: ProximityPrompt,
+	find: string?,
 }
+
+-- Studs from the box's middle to where a find lands beside it (toward the opener): clear of the
+-- box and its open flaps, still within a Take's reach.
+local LAID_OUT = 1.9
 
 type Rate = { last: number?, burst: number }
 
@@ -63,6 +79,39 @@ function MarkedBoxes.new(): MarkedBoxes
 	local rates: { [Player]: Rate } = {}
 	local connections: { RBXScriptConnection } = {}
 	local opened = Brix.Signal.new() :: Brix.Signal<Opened>
+	local slots: Slots.Slots? = nil
+	local stopped = false
+
+	-- Whether `player` has a free hand for a find: a slot free, and nothing two-handed held.
+	local function room(player: Player): boolean
+		local s = slots
+		if not s then
+			return false
+		end
+		local keys, hand = s:carried(player)
+		local held = Tools.Catalog[keys[hand] or ""]
+		return table.find(keys, "") ~= nil and not (held and held.bothHands)
+	end
+
+	-- Where a find lands beside the box, toward `from`, and the turn (degrees) that faces it there.
+	local function besideBox(box: Model, from: Vector3): (Vector3, number)
+		local pivot = box:GetPivot()
+		local d = Vector3.new(from.X - pivot.X, 0, from.Z - pivot.Z)
+		local dir = if d.Magnitude > 0.1 then d.Unit else pivot.LookVector
+		return pivot.Position + dir * LAID_OUT, math.deg(math.atan2(-dir.X, -dir.Z))
+	end
+
+	-- The reveal has brought find `key` to `player`'s hand: into it, or onto the floor at `at`.
+	local function grant(player: Player, key: string, laid: boolean, at: Vector3, yaw: number)
+		local s = slots
+		if stopped or not s then
+			return
+		end
+		if not laid and player.Parent and s:give(player, key) then
+			return
+		end
+		s:lay(key, at, yaw)
+	end
 
 	local function open(s: Standing, player: Player)
 		-- type: Triggered hands us a Player. Range: a box still shut and standing, then the checks.
@@ -100,6 +149,23 @@ function MarkedBoxes.new(): MarkedBoxes
 
 		standing[s.box] = nil
 		s.prompt.Enabled = false
+		-- what's inside reaches screens only now, before the stamp, in the same batch
+		local key = s.find
+		local row = if key then Tools.Catalog[key] else nil
+		local grade = if row
+				and row.grade
+				and Opening.Reveals[row.grade]
+			then row.grade
+			else "Common"
+		local laid = key ~= nil and not room(player)
+		local spot, yaw = besideBox(s.box, at)
+		if key then
+			s.box:SetAttribute(Opening.Find, key)
+		end
+		s.box:SetAttribute(Opening.Grade, grade)
+		if laid then
+			s.box:SetAttribute(Opening.LaidAt, spot)
+		end
 		s.box:SetAttribute(Opening.OpenedBy, player.UserId)
 		s.box:SetAttribute(Opening.OpenedAt, Workspace:GetServerTimeNow())
 		local button = s.prompt.Parent
@@ -108,14 +174,25 @@ function MarkedBoxes.new(): MarkedBoxes
 			button:Destroy()
 		end
 		if RunService:IsStudio() then
-			print(`MarkedBoxes: {player.Name} opened the box in {s.unit.Name}`)
+			print(`MarkedBoxes: {player.Name} opened the box in {s.unit.Name}: {key or "nothing"}`)
 		end
-		opened:fire({ box = s.box, unit = s.unit, player = player })
+		if key then
+			task.delay(
+				Opening.handAt(Opening.Reveals[grade].Hold),
+				grant,
+				player,
+				key,
+				laid,
+				spot,
+				yaw
+			)
+		end
+		opened:fire({ box = s.box, unit = s.unit, player = player, find = key })
 	end
 
 	local system = { name = "MarkedBoxes", opened = opened }
 
-	function system.stand(_: any, unit: Model, place: CFrame): Model?
+	function system.stand(_: any, unit: Model, place: CFrame, find: string?): Model?
 		-- set up out of the world, then parented once into the hall piece
 		local box = Boxes.cloneMarked(place)
 		if not box then
@@ -142,7 +219,8 @@ function MarkedBoxes.new(): MarkedBoxes
 		prompt.RequiresLineOfSight = false
 		CollectionService:AddTag(box, Opening.Tag)
 
-		local s: Standing = { box = box, unit = unit, button = button, prompt = prompt }
+		local s: Standing =
+			{ box = box, unit = unit, button = button, prompt = prompt, find = find }
 		standing[box] = s
 		prompt.Triggered:Connect(function(player: Player)
 			open(s, player)
@@ -156,7 +234,8 @@ function MarkedBoxes.new(): MarkedBoxes
 		return box
 	end
 
-	function system.start(_: any, _context: Brix.Context)
+	function system.start(_: any, context: Brix.Context)
+		slots = (context.registry:get("slots") :: any) :: Slots.Slots? -- any: the registry is untyped
 		table.insert(
 			connections,
 			Players.PlayerRemoving:Connect(function(player: Player)
@@ -166,6 +245,7 @@ function MarkedBoxes.new(): MarkedBoxes
 	end
 
 	function system.stop(_: any)
+		stopped = true
 		for _, c in connections do
 			c:Disconnect()
 		end

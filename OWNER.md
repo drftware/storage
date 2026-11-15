@@ -78,26 +78,33 @@ nowhere else.
      burst up past upright, the end flaps a beat behind. Say if it should be slower or punchier.
   4. Decide my defaults (say which to change): the tape snaps across the middle rather than
      splitting along the seam; the cue is warm lines at the tape's edges plus a soft hum up close.
-- [ ] **Open a marked box with a friend** (B-02a, D-209; one player seen in Studio Play by me,
-  never two, never on a phone). Opening only: nothing comes out yet (B-02b), and no unit deals a
-  box yet (B-03), so Studio stands one for you.
+- [ ] **Open a marked box with a friend: the reveal** (B-02a, B-02b, D-209, D-210; one player
+  seen in Studio Play by me, a Rare all the way into the hand and a Legendary's held breath
+  captured, never two players, never on a phone). No unit deals a box yet (B-03), so Studio
+  stands one for you, holding the find you name.
   1. In Studio, Test tab > Clients and Servers: Local Server, 2 players, Start.
-  2. In the Server window's command bar, type `workspace:SetAttribute("DevBox", true)`, Enter.
+  2. In the Server window's command bar, type `workspace:SetAttribute("DevBox", "NightLight")`,
+     Enter (a Common). The next door anyone opens has one box with two thin warm lines along its
+     tape; type the line again for another box.
   3. Both players: take "Walk a floor" by the spawn. Player 1 opens any unit's door; player 2
-     stands in the hall about 10 studs away, looking in. The unit now has one box with two thin
-     warm lines along its tape. (The box goes in the next door opened, once; type step 2 again
-     for another.)
-  4. Player 1 walks up to it: a soft hum close to, and a faint warm glow on the floor round it
-     within a few steps. Press Open (E). The tape should rip across the middle, its halves whip
-     back and the flaps burst up with a slap, the lines and hum gone as it rips. Say if it feels
-     slow, weak or late after your press.
-  5. Player 2 should see the same and hear the rip and slap from the hall. Walk player 2 away
-     about 40 studs and have player 1 do steps 2 to 4 again: the sounds should fade out with
-     distance, not cut off.
-  6. Press Open again on an opened box: nothing (it has no button). Pull the door down with
-     player 2 outside: player 2 never sees an Open through the door.
-  7. Decide my defaults (say which to change): the rip 0.1 s after the box starts moving and the
-     slap at 0.3 s; the hum and glow only up close; an opened box stays open where it stood.
+     stands in the hall about 10 studs away, looking in.
+  4. Player 1 walks up (a soft hum, a faint warm glow) and presses Open (E). The tape rips, the
+     box shivers for a moment in a warm light, the flaps burst, the night light rises out over
+     the rim, turns once and flies into your hand with its pick-up sound. Say if a Common feels
+     flat or empty.
+  5. Do steps 2 and 4 again with each of these, one at a time, and watch for the colour and the
+     sound building while the flaps hold shut and tremble: `"FairyLights"` (Uncommon, green),
+     `"OilLamp"` (Rare, blue), `"FireflyJar"` (Epic, purple), `"StainedGlassLamp"` (Legendary,
+     gold, the longest wait: about 1 s), `"UnpluggedLamp"` (Secret, red). Each should look and
+     sound rarer than the one before. Say any that drags or that you can't tell apart.
+  6. Player 2 should see and hear all of it from the hall, the find flying into player 1's
+     hand. Walk player 2 about 80 studs away for the Legendary: its sounds should still reach.
+  7. Fill player 1's three slots first, then open one: the find comes out, turns and lands on
+     the floor beside the box, facing you, with its Take.
+  8. Decide my defaults (say which to change): the colours (Common warm, Uncommon green, Rare
+     blue, Epic purple, Legendary gold, Secret red); how long each holds (0.14 s Common up to
+     1.2 s Secret); full hands put the find on the floor rather than refusing the Open; a
+     Legendary heard 110 studs off, a Secret 140.
 - [ ] **Answer Brix's gift and receipt choices** (its DECISIONS E-075 to E-078, listed in Brix's
   HANDOFF) before S3-04 sells gift versions of the wrap colours.
 

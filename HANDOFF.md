@@ -2,52 +2,45 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-15, session 186 (B-02a, D-209) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-15, session 187 (B-02b, D-210) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- B-02a done, verified in Studio Play (one player): Workspace `DevBox` stood a marked box in
-  Unit301; its seam lit, hum playing, warm light on near; Open stamped it (`OpenedBy`, `OpenedAt`)
-  and the button went; the client played the open from its first frame 0.09 s after the press,
-  the rip 0.1 s and slap 0.3 s in, seam and hum gone by 0.14 s, flaps settled on their last keys.
-  Output clean. Captures: `docs/art/B-02a-burst-level01.jpg`, `B-02a-settled-level21.jpg`.
-- New: `src/shared/Boxes/Opening.luau` (pure rules and feel numbers; `tests/boxopen.spec.luau`),
-  `src/server/MarkedBoxes.luau` (slot `markedBoxes`: `stand`, the checks, `opened` signal),
-  `src/client/MarkedBoxView.luau`; `Boxes.cloneMarked`'s parent is optional; Deals' `DevBox`.
+- B-02 done. B-02b verified in Studio Play (one player): `DevBox` "OilLamp" stood a box in
+  Unit301; Open: rip 0.12 s, the hold's rattle and blue glow from the tear, flaps held and
+  trembling, the burst at 0.78 s (light flaring to 2.8), slap 0.86 s, the lamp's copy rising and
+  turning, in the hand at 2.25 s as the copy went. A hand-stamped Legendary box's hold washed the
+  unit gold at Level01 (`docs/art/B-02b-hold-legendary-level01.jpg`). Output: no script errors.
+- New: `Opening` reveal rules (`Reveals`, `flapTime`, `glow`, `shake`, `lift`, `handAt`; specced),
+  `Grades.Colours`, `Boxes.Reveal` sounds, `MarkedBoxes.stand(unit, place, find)` stamping
+  `Find`/`Grade`/`LaidAt` and giving the find, `MarkedBoxView`'s held beat, glow, light and copy.
 - Nothing put in the place by hand. Studio shows two copies of new modules (Rojo glitch; harmless).
 
-## Next task: B-02b The find comes out
-ROADMAP B-02 and B-02b (D-205, D-209). The moment: the tape rips, then a held breath with the
-grade's coloured light leaking through the flap gaps and its own sound (blue Rare, purple Epic,
-gold Legendary, as Pet Simulator's eggs and Brawl Stars' Starr Drops tell the prize by colour),
-the flaps burst, the find lifts, turns once and is yours. Two seconds you can't skip; friends near
-see and hear it, a Legendary further off. A Common must still feel good (a warm puff, still lifts).
-1. The grade reaches screens only at the open: the server stamps the box's grade (and what's in
-   it) before `OpenedAt` in `MarkedBoxes`' open (attributes in one batch arrive in order:
-   STUDIO.md), never on a shut box (an exploiter reads attributes). `MarkedBoxes.stand` takes
-   what's inside; `opened` hands it to whoever grants it.
-2. The held beat: today the flaps burst at 0.16 s, straight after the tear. On screens, hold the
-   flap tracks after the tear for a per-grade `Hold` (feel numbers in `Opening`): sample the
-   flaps at `t - hold` once past the tear, a small tremble while held; move the slap beat by the
-   hold. Pure: extend `Opening.pose`/`due`/`settled` with the hold, specs first.
-3. The light: one PointLight in the grade's colour inside the box, brightening through the hold
-   and flaring at the burst, then gone (counts against the light cap; `Grades.luau` has the
-   colours, if not, put them there). Its sound from Roblox's library, measured as
-   STUDIO.md "The marked box's sounds" did; Legendary heard further (`Opening.Heard` per grade).
-4. The find: lifts out of the box, turns once (F-G1a's pose, `Finds.pose`), then goes to the
-   opener as a find picked up does (grep `Slots` for how a find is given to a player's hands; a
-   full hand: decide a default, OWNER.md). Coins and tools come in B-03.
-5. Studio: `DevBox` as a find's key (a string) stands a box holding it; true keeps "a random
-   built find". Prove in Play as STUDIO.md "Opening a marked box in Play" does, one capture per
-   grade colour mid-hold at Level01; Output clean. OWNER.md: two-player steps, one per grade.
-**Acceptance:** checks green; in Play a Rare, Epic and Legendary each show their light and sound
-in the hold, then the find comes out and is the opener's; a Common feels finished, not empty.
-**Read first:** ROADMAP B-02b; D-205, D-209; `src/server/MarkedBoxes.luau`;
-`src/client/MarkedBoxView.luau`; `src/shared/Boxes/Opening.luau`; `src/shared/Grades.luau`.
+## Next task: B-03a A unit's find or tool comes in its box
+ROADMAP B-03 (D-205, D-210). Split it first in ROADMAP: B-03a (this: finds and tools go in the
+box), B-03b (coins in boxes to the bank; somebody's stuff in most units, D-136). The moment:
+a door rolls up on a unit with one warm-lined box; the find is never seen until you open it.
+1. Read how Deals lays a find now (grep `Deals.luau` for `slots:lay`, `"Find"`, `contents.kind`)
+   and the `DevBox` block (it already finds a spot: `DealSpot.inUnit(size, "Find", footprint,
+   note, number, taken)` with the box's footprint, then `markedBoxes:stand(unit, placed(unit,
+   spot), key)`). Replace the find's lay with that, for finds that fit the box.
+2. Big finds stay out: a find whose `Tools.bounds(key).Size` won't fit inside
+   `Boxes.Marked.Size` (less 0.1 a side) is laid as now. Pure rule + spec (e.g. in `Deal.luau`).
+3. A tool dealt to a unit (grep `Deal.luau` for tool kinds) goes in the box too: `stand` takes
+   a catalog key, and `Slots.give` gives tools as it gives finds; a tool's reveal plays as a
+   Common (its row has no grade: check `MarkedBoxes`' `grade` fallback still holds).
+4. The deck's odds, the Packrat's fetching (`Slots.finds`, `loose`) and the faint mark
+   (`FaintMark`) assume finds lie loose: grep `finds(`, `loose`, `FaintMark` and decide each
+   (a boxed find can't be fetched; default it, OWNER.md).
+5. Remove `DevBox`'s "stands in the next unit" once real boxes deal (keep the find-key form if
+   useful for testing grades). Prove in Play as STUDIO.md "Opening a marked box in Play" does.
+**Acceptance:** checks green; in Play a dealt unit's find comes only in a box and its reveal
+plays; a big find still stands loose; OWNER.md has two-player steps.
+**Read first:** ROADMAP B-03; D-205, D-210; `src/server/Deals.luau` (grep, not whole);
+`src/shared/Deal.luau` (grep); `src/server/MarkedBoxes.luau`; `src/shared/DealSpot.luau` (grep).
 
 ## Queue (next sessions, the owner's ten-ticket order)
-0. **B-03 to B-05** (ROADMAP, D-205): B-03 deals what's found into boxes (`MarkedBoxes.stand`
-   from the deal, replacing `DevBox`; coins to the bank, a tool to your hands). Then S3-03 Cut
-   Free (it owns Studio's "CutFree" let-in; rows in `Products`, `Purchasing:prompt`), then S3-04.
+0. **B-03b, B-04, B-05** (ROADMAP, D-205); then S3-03 Cut Free (it owns Studio's "CutFree"
+   let-in; rows in `Products`, `Purchasing:prompt`), then S3-04.
 1. **S4-01 Floors made by rules.** Split first: S4-01a the rules table and the top gone, S4-01b
    what changes floor to floor. Read the GDD's "Floor rules", D-106, D-128, `Climb.luau`,
    `Deal.luau`; grep `Climb.Top`, `Climb.Building`, `topped`. The escape ("Made it") has no trigger
@@ -57,9 +50,11 @@ in the hold, then the find comes out and is the opener's; a Common feels finishe
 3. Once the owner's real purchase passes: mark Brix's ENG-23e done in `../engine`'s HANDOFF.
 4. L-08e3c, L-14b2d wait on `OWNER.md`; R-01 later. A GDD section costs ~15k context: `view`
    with `outline: true` and `from` the heading's id, then `search` with `blocks` on just the part needed.
-5. Small, from earlier (ROADMAP and `git log` hold the detail): Rojo's duplicate modules (above);
-   a dropped find bumps a walking player (D-182); a take could show the arm first (KeeperView Kit);
-   rbxassethash warnings in Play; the Packrat's dead Slots entry and S2-06b1's way home; move the
+5. Small: a find's copy coming out of a box logged "rbxassetid://73742731927159 failed: No asset
+   content representation" nine times in Play (a find's mesh or texture; check which); the reveal
+   is untested with two players and with a laid (full-hands) find; Rojo's duplicate modules; a
+   dropped find bumps a walking player (D-182); a take could show the arm first (KeeperView Kit);
+   rbxassethash warnings in Play; the Packrat's dead Slots entry and S2-06b1's way home; the
    Mannequin's pose onto `Rig.luau` (D-176); the watch bar's empty panel; S3-01b's wipe after the
    bring unseen; S1-07a, S2-02b to d4, S2-03b, S2-05a, S2-07a1 to b2 leftovers; unseen S1-10d1-3.
 

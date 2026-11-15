@@ -22,7 +22,16 @@ Boxes.Opening = Opening
 
 -- Its sounds, from Roblox's licensed library (measured in docs/STUDIO.md "The marked box's
 -- sounds"): `from` and `length` in seconds of the file, played as a Sound's TimePosition window.
-export type Sound = { id: string, from: number, length: number, volume: number, pitch: number? }
+-- `peak`, if set: where in the file it's loudest (a held breath's sound starts so this lands as
+-- the flaps burst).
+export type Sound = {
+	id: string,
+	from: number,
+	length: number,
+	volume: number,
+	pitch: number?,
+	peak: number?,
+}
 Boxes.Sounds = {
 	-- the tape snapping in the middle: a short zippy rip, all of it in its first 75 ms
 	Tear = { id = "rbxassetid://9113836687", from = 0, length = 0.15, volume = 0.8, pitch = 1.1 },
@@ -31,6 +40,48 @@ Boxes.Sounds = {
 	-- something inside: a soft, airy pulsing hum, looped, heard only up close
 	Hum = { id = "rbxassetid://9116732713", from = 0, length = 18, volume = 0.18 },
 } :: { [string]: Sound }
+
+--[[
+	The reveal's sounds (B-02b), each grade its own, from Pro Sound Effects' in Roblox's library
+	(measured in docs/STUDIO.md "The reveal's sounds"). Through the hold a magic rattle builds to
+	its loudest as the flaps burst, deeper and louder the rarer the find (Legendary and Secret add
+	a thin rising tone under it); at the burst, falling twinkles for Rare up, a shimmer of air for
+	Common and Uncommon as the find rises. A higher pitch is lighter and quicker.
+]]
+export type Reveal = { hold: Sound?, rise: Sound?, burst: Sound }
+-- "Magic Tone Tonal Shimmer Shaking Rattle 1": a shaking shimmer, loudest at 1 s, ringing to 3.4
+local RATTLE = "rbxassetid://9116420445"
+-- "Phasey Synth Power Up High Pitched Rise 1": a thin tone rising to its top at 2 s, then gone
+local RISE = "rbxassetid://9117297289"
+-- "Magic Tone Falling Shimmer Flanged 3": twinkles falling, loudest from 0.85 to 1.55 s
+local FALL = "rbxassetid://9116418035"
+-- "Magic Whooshes Pass Bys Metallic Shimmering 7": air shimmering up to 0.9 s, cut at 1.1
+local WHOOSH = "rbxassetid://9125646918"
+local function rattle(pitch: number, volume: number): Sound
+	return { id = RATTLE, from = 0.2, peak = 1, length = 2.6, volume = volume, pitch = pitch }
+end
+local function fall(pitch: number, volume: number): Sound
+	return { id = FALL, from = 0.65, length = 1.9, volume = volume, pitch = pitch }
+end
+local function whoosh(pitch: number, volume: number): Sound
+	return { id = WHOOSH, from = 0.45, length = 0.65, volume = volume, pitch = pitch }
+end
+Boxes.Reveal = {
+	Common = { burst = whoosh(1.15, 0.6) },
+	Uncommon = { hold = rattle(1.35, 0.3), burst = whoosh(1, 0.8) },
+	Rare = { hold = rattle(1.15, 0.45), burst = fall(1.15, 0.7) },
+	Epic = { hold = rattle(1, 0.55), burst = fall(1, 0.85) },
+	Legendary = {
+		hold = rattle(0.88, 0.65),
+		rise = { id = RISE, from = 0.05, peak = 2, length = 2.1, volume = 1.2 },
+		burst = fall(0.85, 1),
+	},
+	Secret = {
+		hold = rattle(0.78, 0.7),
+		rise = { id = RISE, from = 0.05, peak = 2, length = 2.1, volume = 1.3, pitch = 0.9 },
+		burst = fall(0.72, 1.1),
+	},
+} :: { [string]: Reveal }
 
 -- The kraft under the texture, shown only if the maps fail to load.
 local KRAFT = Color3.fromRGB(165, 122, 78)

@@ -54,8 +54,23 @@ local HOLE_TO = math.max(CrawlHoleSpecs.To, PANEL.Centre.Z + PANEL.Size.Z / 2) +
 local LAND_X = (TopHoleSpecs.Left + TopHoleSpecs.Right) / 2
 local LAND_Z = (TopHoleSpecs.Front + TopHoleSpecs.Back) / 2
 -- Studio only, until B-03 deals marked boxes: Workspace's `DevBox` set true stands one shut
--- marked box in the next unit that opens (where a find would stand), then goes back to false.
+-- marked box in the next unit that opens (where a find would stand), holding a random find whose
+-- art is in the place, or set to a find's catalog key, holding that; then goes back to false.
 local DEV_BOX = "DevBox"
+
+-- `DevBox`'s find: the key it names, or any find the place has the art for.
+local function devFind(asked: string | boolean): string?
+	if type(asked) == "string" then
+		return if Tools.Catalog[asked] and Tools.Catalog[asked].find then asked else nil
+	end
+	local built: { string } = {}
+	for key, row in Tools.Catalog do
+		if row.find and Tools.template(key) then
+			table.insert(built, key)
+		end
+	end
+	return if #built > 0 then built[math.random(#built)] else nil
+end
 local FELL = TopHoleSpecs.Parts.PanelEdge
 
 -- Each thing of somebody's stuff's size as DealSpot measures it (S1-04b2).
@@ -424,16 +439,22 @@ function Deals.new(): Deals
 			table.insert(taken, pile)
 		end
 		local charged = contents.battery == true and layBattery(unit, deck, index, taken)
-		if RunService:IsStudio() and markedBoxes and Workspace:GetAttribute(DEV_BOX) == true then
+		local dev = Workspace:GetAttribute(DEV_BOX)
+		if
+			RunService:IsStudio()
+			and markedBoxes
+			and (dev == true or type(dev) == "string" and dev ~= "")
+		then
 			-- a stand-in until B-03 deals them: a box where a find would stand, clear of the rest
 			local size, number, note = shape(deck, index)
 			local box = BoxSpecs.Marked.Size
 			local footprint = { across = box.X, along = box.Z, tall = box.Y }
 			local spot = DealSpot.inUnit(size, "Find", footprint, note, number, taken)
-			if spot and markedBoxes:stand(unit, placed(unit, spot)) then
+			local find = devFind(dev :: string | boolean)
+			if spot and markedBoxes:stand(unit, placed(unit, spot), find) then
 				Workspace:SetAttribute(DEV_BOX, false)
 				table.insert(taken, DealSpot.around(spot, footprint))
-				print(`Deals: stood a marked box in {unit.Name} (DevBox)`)
+				print(`Deals: stood a marked box in {unit.Name} (DevBox, {find or "nothing"})`)
 			end
 		end
 		local drawn = contents.stuff

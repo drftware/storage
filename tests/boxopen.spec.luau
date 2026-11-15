@@ -95,9 +95,16 @@ do
 		end
 		t = next
 	end
-	ok(#heard == 2 and heard[1] == "Tear" and heard[2] == "Flaps", "tear, then flaps, once each")
+	ok(
+		#heard == 4
+			and heard[1] == "Tear"
+			and heard[2] == "Hold"
+			and heard[3] == "Burst"
+			and heard[4] == "Flaps",
+		"tear, hold, burst, then flaps, once each"
+	)
 	local jumped = Opening.due(0, Opening.Beats.Flaps + 0.05)
-	ok(#jumped == 2 and jumped[1] == "Tear", "a slow frame across both plays both, in order")
+	ok(#jumped == 4 and jumped[1] == "Tear", "a slow frame across them plays them all, in order")
 	ok(#Opening.due(0, 3) == 0, "a box seen long after it opened plays no sound")
 	ok(#Opening.due(-0.2, 0) == 0, "nothing before the open")
 end
@@ -134,6 +141,85 @@ ok(Opening.hum(Opening.Beats.Tear + Opening.HumFade) == 0, "the hum is gone afte
 ok(Opening.hum(5) == 0, "and stays gone")
 local mid = Opening.hum(Opening.Beats.Tear + Opening.HumFade / 2)
 ok(mid > 0 and mid < 1, "it fades rather than cuts")
+
+-- The held breath (B-02b): the flaps stop after the tear for the grade's hold, then burst as
+-- they did, `hold` later; the tape runs straight on; the slap waits out the hold.
+do
+	local hold = Opening.Reveals.Legendary.Hold
+	local pose: { [string]: number } = {}
+	local plain: { [string]: number } = {}
+	Opening.pose(Open, Opening.TearAt, plain)
+	Opening.pose(Open, Opening.TearAt + hold * 0.9, pose, hold)
+	ok(
+		near(pose.Marked_FlapFront, plain.Marked_FlapFront),
+		"the flaps hold where the tear left them"
+	)
+	Opening.pose(Open, 0.25, plain)
+	Opening.pose(Open, 0.25, pose, hold)
+	ok(near(pose.Marked_TapeLeft, plain.Marked_TapeLeft), "the tape whips back on time")
+	Opening.pose(Open, 0.3, plain)
+	Opening.pose(Open, 0.3 + hold, pose, hold)
+	ok(
+		near(pose.Marked_FlapFront, plain.Marked_FlapFront),
+		"after the hold the flaps burst as before"
+	)
+	ok(not Opening.settled(Open, Open.Duration + hold - 0.01, hold), "a held open settles later")
+	ok(Opening.settled(Open, Open.Duration + hold, hold), "and settles hold seconds late")
+	local beats: { [string]: number } = {}
+	local t = 0
+	while t < 3 do
+		for _, name in Opening.due(t, t + 1 / 60, hold) do
+			beats[name] = t
+		end
+		t += 1 / 60
+	end
+	ok(math.abs(beats.Flaps - (Opening.Beats.Flaps + hold)) < 0.02, "the slap waits out the hold")
+	ok(math.abs(beats.Hold - Opening.TearAt) < 0.02, "the grade's sound starts as the hold does")
+	-- every grade holds, the rarer the longer, and the whole reveal stays a short one
+	local last = 0
+	for _, grade in { "Common", "Uncommon", "Rare", "Epic", "Legendary", "Secret" } do
+		local r = Opening.Reveals[grade]
+		ok(r ~= nil and r.Hold > last, `{grade} holds longer than the grade below`)
+		last = if r then r.Hold else last
+	end
+	ok(Opening.handAt(Opening.Reveals.Common.Hold) <= 2.1, "a Common is in your hand in about 2 s")
+	ok(Opening.handAt(Opening.Reveals.Secret.Hold) <= 3.1, "a Secret within about 3 s")
+end
+
+-- The light: nothing while shut, a glimmer at the tear growing to all of it at the burst, a flare
+-- past it, then gone before the find is in a hand.
+do
+	local hold = 0.5
+	local b = Opening.burst(hold)
+	ok(Opening.glow(0.05, hold) == 0, "no grade light while shut")
+	ok(near(Opening.glow(Opening.Beats.Tear, hold), Opening.GlowFrom), "a glimmer at the tear")
+	ok(Opening.glow(b - 0.2, hold) < Opening.glow(b - 0.05, hold), "it builds through the hold")
+	ok(near(Opening.glow(b + Opening.FlareRise, hold), Opening.Flare), "it flares at the burst")
+	ok(Opening.glow(Opening.handAt(hold), hold) == 0, "gone by the time the find's in hand")
+	ok(Opening.shake(Opening.TearAt - 0.01, hold) == 0, "no tremble before the tear")
+	ok(Opening.shake(b - 0.01, hold) > Opening.shake(Opening.TearAt + 0.05, hold), "it grows")
+	ok(Opening.shake(b, hold) == 0, "and stops as the flaps burst")
+end
+
+-- The find: in the box until the burst, up over the rim, one whole turn, then into the hand.
+do
+	local hold = 0.3
+	local b = Opening.burst(hold)
+	local up, turn, go = Opening.lift(b, hold)
+	ok(near(up, 0) and near(turn, 0) and near(go, 0), "in the box at the burst")
+	up = Opening.lift(b + Opening.Out.Risen, hold)
+	ok(near(up, 1), "hovering once risen")
+	local most = 0
+	for i = 0, 40 do
+		most = math.max(most, (Opening.lift(b + Opening.Out.Rise + i * 0.01, hold)))
+	end
+	ok(most > 1 and most < 1.15, "it overshoots a hair coming out")
+	up, turn, go = Opening.lift(b + Opening.Out.Go, hold)
+	ok(near(up, 1) and near(turn, 360) and near(go, 0), "one whole turn, then still before it goes")
+	up, turn, go = Opening.lift(Opening.handAt(hold), hold)
+	ok(near(go, 1), "in the hand at handAt")
+	ok(Opening.done(hold) > Opening.handAt(hold), "the copy lingers past the hand")
+end
 
 -- The seam shrinking never reaches zero (a part's size can't).
 ok(Opening.thin(0.274, 0.01) >= Opening.Thinnest, "a shrunk line keeps a size")

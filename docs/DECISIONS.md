@@ -5569,3 +5569,28 @@ then `OpenedAt` (server time), and `opened` fires for B-02b. The server never mo
 - **An opened box stays open where it stood** for the rest of the floor, solid as before.
 - **Studio's `DevBox`** (Workspace, true) stands one where a find would stand in the next unit that
   opens, then turns itself off; B-03 replaces it with the deal.
+
+## D-210 The find comes out: a held breath in the grade's colour, then into your hand (B-02b, Nov 15)
+The server keeps what's inside to itself until the open (`MarkedBoxes.stand(unit, place, find)`),
+then stamps `Find` and `Grade` (and `LaidAt` for full hands) in the same batch before `OpenedAt`,
+and gives the find at `Opening.handAt(hold)` (`Slots.give`, with its pick-up sound). On screens,
+after the tape tears the flaps hold shut for the grade's hold (`Opening.flapTime`), lifting at
+their edges and trembling, the box rocking on its base as a hatching egg wobbles (Pet Simulator);
+a Neon glow under the flaps and one PointLight in the grade's colour build through the hold, flare
+at the burst and die (`Opening.glow`); then a copy of the find rises over the rim with a hair of
+overshoot, turns once and flies to the opener's hand (`Opening.lift`), gone as the server's own
+arrives. In Play a Rare took 0.66 s to burst and was in the hand at 2.25 s; a Legendary's hold
+washed the whole unit gold at Level01 (`docs/art/B-02b-hold-legendary-level01.jpg`).
+Defaults taken overnight (`OWNER.md` "Open a marked box with a friend: the reveal"):
+- **Colours** (`Grades.Colours`): Common the box's own warm light, Uncommon green, Rare blue,
+  Epic purple, Legendary gold, Secret red, as Pet Simulator and Brawl Stars colour theirs.
+- **Holds**: Common 0.14 s, Uncommon 0.3, Rare 0.5, Epic 0.7, Legendary 0.95, Secret 1.2; a
+  Common is in your hand about 1.9 s after the press, a Secret about 2.9 s.
+- **Sounds** (`Boxes.Reveal`, Pro Sound Effects'): a magic rattle through the hold, timed so its
+  loudest lands on the burst, deeper and louder the rarer; Legendary and Secret add a thin
+  rising tone; falling twinkles at the burst from Rare up, a shimmer of air for Common and
+  Uncommon. Heard 30 studs (Common) to 140 (Secret); the rip and slap stay at 40.
+- **Full hands**: the Open still works; the find comes out, turns and lands on the floor beside
+  the box toward the opener, with its Take. Decided at the press; if the hand fills or the
+  opener dies during the reveal, it lands there too.
+- **An empty box** (no find, B-03's coins to come) plays as a Common with nothing rising.
