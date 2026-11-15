@@ -23,6 +23,32 @@ nowhere else.
   at Brix `6717740` (S1-02), which is only on this Mac until Brix is pushed; a fresh clone of
   the game can't fetch it until then.
 
+## Now: bait the Packrat into a unit and slam the door on it (S2-06d, built Nov 14, D-183; the trap seen in Studio Play, taking back from its pile not watched)
+
+The Packrat now turns for a find that turns up nearer to it than the one it is walking to, so
+bait works as it passes instead of some trips later. Everything else here was already true and is
+now checked: a find at the back of a unit draws it in, and pulling the door down while it reaches
+for it traps it like any monster. It pounds and breaks out after 90 seconds, carrying the find if
+its hands had already closed on it. Shut in its own unit, its pile is shut in with it.
+
+1. In Studio, start Play and walk to floor 3 (the dev floor). Press the Packrat post (R) so a
+   Packrat stands in a unit by the lobby. Pick a find up, or get one from a unit.
+2. Before it sees you, open a unit a little way from it, walk to the back wall, and drop your
+   find there (it should land against the back wall, well inside).
+3. Get out of its sight. The roofs of the units work: it never sees you up there. Watch it.
+4. Look for: it walks into that unit, stops a long arm's length from your find, and puts its
+   arm out. Drop down to the door and press Slam then.
+5. Look for: the door slams, and a moment later the first blow from inside, then pounding that
+   gets faster. Stand back. About 90 seconds later the door bursts up and it comes out.
+6. Judge the timing on a phone: from the moment its arm goes out you have about two seconds
+   before it turns round with the find. Is that a fair, tense window, or too tight?
+7. Taking your things back: follow it home and watch which unit it walks into. While it is out
+   on a trip, go in and press Take on the finds in its pile. Look for: each comes into your
+   hands like any find. Then stay in there until it comes home. Look for: it walks in past you
+   with its arms full, lays its find down, then turns on you and takes your best one back.
+8. Shut it in its own unit: when it walks home with a find, slam its door behind it. Look for:
+   it is trapped like anywhere else, and its pile is out of reach until it breaks out.
+
 ## Now: buy off the Packrat with a find, and see its own catch (S2-06c2, built Nov 14, D-182; the turn-off seen in Studio Play, the rest not watched)
 
 When the Packrat is chasing you with empty arms, a find dropped where it can see it, nearer to it

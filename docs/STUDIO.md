@@ -2238,4 +2238,18 @@ verified: a doc page, Studio, or "untested".
   studs ahead of what the client shows, and 0.2 s later it has already reached you. Output: "turns
   off drftware for the find in its path", then "takes a find and heads home with it". Placed only
   12 studs off with your back to it, it sees you at 7 and robs you before a scripted drop.
+- **Baiting the Packrat into a unit from the MCP** (S2-06d, Nov 14): lay the bait before standing
+  it, or the loud open draws it and it catches you. Server: pivot your root to (-6, 3.5, -591),
+  wait for `Floor3.StandPackrat` and 2.5 s, `GiveFind` "" then "Teddy", pivot to the hall at
+  (-48, 3, -594) facing +X. Client: point a Scriptable camera at Unit308's Open, wait 1.2 s,
+  `InputHoldBegin`/`End` (Unit308's inside runs toward +X from its door at X -44.15). Pivot to
+  (-36, 3, -594) facing +X and fire `ToolDrop`: the teddy lies at X -33.4. Then stand on Unit308's
+  roof (bounding box top + 3): the Packrat never sees the tops. Server: `StandPackrat` true (a
+  number does nothing). Client: aim the camera at Slam, watch the Packrat's `KeeperState` (the raw
+  state: reaching reads "Waiting") and when it's Waiting inside (X > -43), pivot to (-47.5, 3,
+  -594), wait 0.25 s, press Slam. It laid the boombox, walked in at about 39 s and was trapped.
+- **Anchoring your root on the Client hides where you went from the server**: a client
+  `PivotTo` followed by `Anchored = true` in the same frame never reached the server, which still
+  had the player where they stood before, and the Packrat came at that spot and caught them. Park
+  a player somewhere it can't see (a unit's roof) instead of anchoring.
 

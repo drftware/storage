@@ -1950,10 +1950,17 @@ Done when a team that has lost its lights goes looking for the breaker without b
       side of its hood (`CaughtLunge` `BODIES`, its Lunge pose). Seen in Play: hunting the
       player, it turned off them for the dropped teddy, took it and went home. The runner's drop
       and the catch's frames not watched (`OWNER.md`).
-  - [ ] **S2-06d Its pile, and trapping it.** The pile shows in its unit as the finds
-    themselves, each with "Take", and taking one back works as any find does. Bait works: it
+  - [x] **S2-06d Its pile, and trapping it** (Nov 14, D-183). The pile shows in its unit as the
+    finds themselves, each with "Take", and taking one back works as any find does. Bait works: it
     walks into a unit for a find at the back and the door comes down on it. Shut in, it pounds
-    and breaks out as any monster does. Shut in its own unit, the pile is shut in with it.
+    and breaks out as any monster does. Shut in its own unit, the pile is shut in with it. Built:
+    a find turning up `Keeper.Nearer` (4 studs) nearer than the one it's going for turns it there,
+    so bait draws it as it passes; the rest already held and is now spec'd in Lune
+    (`tests/collect.spec.luau`: drawn in, trapped reaching or holding, pounding, out at 90 s,
+    home with what it holds; shut in its own unit holding a find, out, it lays it). Seen in Play
+    on floor 3: it laid the boombox, walked into Unit 308 for a teddy at the back, reached, the
+    slam trapped it, it pounded and burst out at 90 s and caught the player standing at the door.
+    Taking back from its pile not watched (`OWNER.md`).
   - [ ] **S2-06e How it sounds.** One sound while it carries and another while its arms are
     empty, each heard before it's seen, made the way the Mannequin's were (L-06c). Real
     recordings, primed.

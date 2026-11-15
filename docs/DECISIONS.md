@@ -5018,3 +5018,24 @@ crowds it). The ticket read "a bit" as about a third.
   passing out of sight past the player's head (checked in `tests/packrat.spec.luau`). Not watched
   on a screen yet (`OWNER.md`).
 
+## D-183 A find turning up nearer turns the Packrat; bait and its trap need nothing new (S2-06d, Nov 14)
+
+- **A nearer find turns it on its way.** Going for a find with empty arms, when what lies loose
+  changes (a find dropped, laid, lifted, a door up or down) and another it can walk to is now at
+  least `Keeper.Nearer` (4 studs, a few strides) nearer along the halls, it turns for that
+  (`Keeper.lying`). Without it, a find dropped at the back of a unit beside its path waited for
+  some later trip, and the GDD's "drop a find at the back of an empty unit, wait for it to walk
+  in" barely worked. Only on a change, so it costs one path length per find then, never a step.
+  The margin keeps two finds about as far off from swapping it back and forth. Never while its
+  arm is out over one, never its own pile. Precedent: Lethal Company's Hoarding Bug goes for the
+  nearest scrap.
+- **Bait and the trap were already there.** It stops a long arm's length (`grab`, 4) short of a
+  find, so one at the back of any unit (8 or 12 deep) has it standing inside, where a door
+  brought down traps it as any monster (`Keeper.trap`). Its arm out, the reach is called off and
+  the find waits; its hands already closed, the find stays in its arms and, out at its row's 90 s,
+  it carries it home. Shut in its own unit, the pile is shut in with it; holding the one it was
+  laying, out, it lays it. Seen in Play: it heard the slam beside it first, then was trapped.
+- **The window is about two seconds** from its arm going out to it turning with the find (reach
+  0.8 s, take 0.5 s, the walk out). Players hide out of sight (a unit's roof, round a corner) and
+  drop to the door when the arm goes out. `OWNER.md` asks whether that's fair on a phone.
+

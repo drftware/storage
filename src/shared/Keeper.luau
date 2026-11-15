@@ -78,7 +78,9 @@
 	server lifts it) and pull it in ("Take"); then it walks home with its arms full (`holding`),
 	slower (`laden`), seeing and hearing no one; at home it crouches over its pile ("PutDown"),
 	lays it there (`laid`: the server puts it on the pile) and comes out for the next. A find gone
-	before it gets there sends it to another; none left, it roams. Its way home shut, it roams on,
+	before it gets there sends it to another, and one turning up `Nearer` turns it there (S2-06d:
+	a find at the back of a unit draws it in, and the door brought down on it traps it as any
+	monster, the find in its arms if it took it); none left, it roams. Its way home shut, it roams on,
 	carrying, and heads home once there's a way. Screens are told its hands and full arms
 	(`shown`). Its own unit and pile are where it was dealt, unless the server says (`nest`).
 
@@ -415,8 +417,8 @@ local function onPile(k: Keeper, p: vector): boolean
 end
 
 -- The find it goes for next (S2-06b1): the nearest along the halls it can walk to, never one on
--- its own pile. Its index in `finds`, or nil. Allocates nothing.
-local function nearestFind(k: Keeper, finds: Finds): number?
+-- its own pile. Its index in `finds` and how far it walks to it, or nil. Allocates nothing.
+local function nearestFind(k: Keeper, finds: Finds): (number?, number)
 	local best, nearest = nil, math.huge
 	for i = 1, finds.count do
 		local p = finds.at[i]
@@ -427,7 +429,7 @@ local function nearestFind(k: Keeper, finds: Finds): number?
 			end
 		end
 	end
-	return best
+	return best, nearest
 end
 
 -- The find a keeper that collects goes for rather than a player it sees `within` studs off
@@ -716,8 +718,9 @@ end
 --- What lies loose on its floor (`Finds`, the server's, filled and reused), told it each time that
 --- changes: a find lifted, dropped or laid, a door going up or down. Only a row that collects
 --- heeds it, and only with empty arms: going for a find that's gone (someone took it first), it
---- goes for the nearest left, or roams; going for one that moved, it follows it; roaming with
---- nothing to fetch, it goes for the nearest it can now walk to. Anything else it's doing (looking
+--- goes for the nearest left, or roams; going for one that moved, it follows it; on its way to
+--- one, a find now `Nearer` than it by that much turns it there (S2-06d: bait works as it passes);
+--- roaming with nothing to fetch, it goes for the nearest it can now walk to. Anything else (looking
 --- at a sound, hunting, standing a while) it finishes first, and picks when it next picks.
 function Keeper.lying(k: Keeper, finds: Finds)
 	k.finds = finds
@@ -732,6 +735,13 @@ function Keeper.lying(k: Keeper, finds: Finds)
 			k.goal = finds.at[i]
 			if k.hands == "Reach" then
 				k.state, k.hands = "Roaming", "None" -- it moved from under its hand
+			end
+		elseif k.state == "Roaming" then
+			-- on its way, one turned up nearer by a few strides (S2-06d): it turns for that, so
+			-- a bait dropped as it passes draws it now, not some trips later
+			local j, d = nearestFind(k, finds)
+			if j and j ~= i and d + Keeper.Nearer < k.pathing:length(k.at, finds.at[i]) then
+				k.goal, k.fetch = finds.at[j], finds.ids[j]
 			end
 		end
 	elseif k.state == "Roaming" then
@@ -790,6 +800,9 @@ Keeper.Same = 12
 -- How near the find it's going for a sound is that find landing where it was dropped (studs):
 -- it doesn't go to look at that (S2-06c2). Tight, so a door slammed beside it still calls it off.
 Keeper.Landing = 3
+-- How much nearer along the halls a find must turn up than the one it's going for to turn it
+-- there (studs, S2-06d): a few strides, so two finds about as far off never swap it back and forth.
+Keeper.Nearer = 4
 
 -- How far it hears, as a share, while it's on its way to the breaker box or has its hand on the
 -- grip (S2-07a2): a third. A door slammed in its own hall still turns it; one two halls off, or a

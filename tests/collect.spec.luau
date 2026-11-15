@@ -51,7 +51,7 @@ ok(COLLECT.laden > 0 and COLLECT.laden < 1, "its arms full, it walks slower")
 local CONE = Brix.Reach.cone
 -- studs behind your middle a find dropped at a run lands (Slots' DROP_BEHIND)
 local DROP_BEHIND = 1.8
-local floors, trips, swaps, roams, robs, baits = 0, 0, 0, 0, 0, 0
+local floors, trips, swaps, roams, robs, baits, baited = 0, 0, 0, 0, 0, 0, 0
 local function checkFloor(seed: number, number: number)
 	local f = Floor.generate(number, Brix.Random.new({ seed = seed }))
 	local where = `floor {number} seed {seed}`
@@ -346,6 +346,143 @@ local function checkFloor(seed: number, number: number)
 		ok(h.target == 7 and h.fetch == 0, `{where}: its own pile isn't bait`)
 	end
 
+	-- a find turning up nearer than the one it's going for turns it there (S2-06d): a bait
+	-- dropped as it passes draws it now, not on some later trip
+	local turn = fresh()
+	Keeper.lying(turn, { ids = { 22 }, at = { farAt }, count = 1 })
+	Keeper.step(turn, DT, RUN)
+	for _ = 1, 30 do
+		Keeper.step(turn, DT, RUN)
+	end
+	ok(turn.fetch == 22, `{where}: going for the far one`)
+	Keeper.lying(turn, { ids = { 22, 11 }, at = { farAt, nearAt }, count = 2 })
+	ok(turn.fetch == 11 and turn.goal == nearAt, `{where}: one turns up nearer, it goes for that`)
+	Keeper.lying(turn, { ids = { 22, 11 }, at = { farAt, nearAt }, count = 2 })
+	ok(turn.fetch == 11, `{where}: and stays on it`)
+
+	-- bait (S2-06d, the GDD's "drop a find at the back of an empty unit, wait for it to walk in,
+	-- and pull the door down"): a find at the back of another open unit draws it in; the door
+	-- brought down on it there traps it as any monster, reaching or holding it already; it pounds,
+	-- breaks out at its row's time and carries what it holds home
+	local baitSlot = 0
+	for i = 1, #map.minX do
+		local s = map.unit[i]
+		if s ~= 0 and s ~= homeSlot and map.y[i] == 0 then
+			local slot = f.slots[s]
+			local fx, fz = Floor.dir(slot.facing)
+			local back = vector.create(slot.x, 0, slot.z)
+				- vector.create(fx, 0, fz) * (Floor.Sizes[slot.size].depth - 1.2)
+			local _, inUnit = KeeperMap.placeAt(map, back)
+			KeeperMap.setDoor(map, s, true)
+			if inUnit == s and walker:length(home, back) < math.huge then
+				baitSlot = s
+				break
+			end
+			KeeperMap.setDoor(map, s, false)
+		end
+	end
+	if baitSlot ~= 0 then
+		local slot = f.slots[baitSlot]
+		local fx, fz = Floor.dir(slot.facing)
+		local back = vector.create(slot.x, 0, slot.z)
+			- vector.create(fx, 0, fz) * (Floor.Sizes[slot.size].depth - 1.2)
+		local lure: Keeper.Finds = { ids = { 88 }, at = { back }, count = 1 }
+		local function lured(): Keeper.Keeper
+			local b = fresh()
+			Keeper.lying(b, lure)
+			Keeper.step(b, DT, RUN)
+			local n = 0
+			while b.hands ~= "Reach" and n < 60 * 120 do
+				Keeper.step(b, DT, RUN)
+				n += 1
+			end
+			return b
+		end
+		local b = lured()
+		local _, inUnit = KeeperMap.placeAt(map, b.at)
+		ok(b.hands == "Reach" and b.fetch == 88, `{where}: it reaches for the bait`)
+		ok(inUnit == baitSlot, `{where}: it walks into the unit for it`)
+		-- the door comes down while its arm is out
+		KeeperMap.setDoor(map, baitSlot, false)
+		ok(Keeper.trap(b, slot, baitSlot), `{where}: the door traps it`)
+		ok(b.state == "Trapped" and b.trappedIn == baitSlot, `{where}: shut in there`)
+		ok(
+			not Keeper.loose(b) and b.hands == "None",
+			`{where}: its reach is off, it's no loose one`
+		)
+		local blows, burstAt, t = 0, 0, 0
+		while not b.burst and t < PACKRAT.breakOut + 5 do
+			Keeper.step(b, DT, RUN)
+			t += DT
+			if b.blow == "Bang" then
+				blows += 1
+			end
+		end
+		ok(blows >= 5, `{where}: it pounds on the door ({blows} blows)`)
+		burstAt = t
+		ok(
+			b.burst and math.abs(burstAt - PACKRAT.breakOut) < 0.1,
+			`{where}: it breaks out at {PACKRAT.breakOut} s ({burstAt})`
+		)
+		KeeperMap.setDoor(map, baitSlot, true)
+		Keeper.lookOut(b, slot, baitSlot)
+		ok(b.trappedIn == 0 and Keeper.loose(b), `{where}: out, it's loose again`)
+
+		-- the door comes down after its hands closed on the bait: shut in holding it, it bursts
+		-- out at its time and walks home with it
+		local h = lured()
+		local n = 0
+		while h.holding == 0 and n < 60 * 5 do
+			Keeper.step(h, DT, RUN)
+			n += 1
+		end
+		ok(h.holding == 88, `{where}: it takes the bait`)
+		KeeperMap.setDoor(map, baitSlot, false)
+		ok(Keeper.trap(h, slot, baitSlot), `{where}: shut in holding it`)
+		ok(h.holding == 88 and Keeper.shown(h) == "Carrying", `{where}: the bait stays in its arms`)
+		t = 0
+		while not h.burst and t < PACKRAT.breakOut + 5 do
+			Keeper.step(h, DT, RUN)
+			t += DT
+		end
+		KeeperMap.setDoor(map, baitSlot, true)
+		Keeper.lookOut(h, slot, baitSlot)
+		ok(h.homing and h.goal == home, `{where}: out, it carries the bait home`)
+		KeeperMap.setDoor(map, baitSlot, false)
+		baited += 1
+	end
+
+	-- shut in its own unit, its pile is shut in with it: crouched laying a find there, the door
+	-- comes down, it's trapped holding it, the pile is still its own, and out, it lays it
+	local layer = fresh()
+	layer.holding, layer.homing, layer.state, layer.goal = 11, true, "Roaming", home
+	local n = 0
+	while layer.hands ~= "PutDown" and n < 60 * 10 do
+		Keeper.step(layer, DT, RUN)
+		n += 1
+	end
+	ok(layer.hands == "PutDown", `{where}: crouched at its pile`)
+	KeeperMap.setDoor(map, homeSlot, false)
+	ok(Keeper.trap(layer, f.slots[homeSlot], homeSlot), `{where}: shut in its own unit`)
+	ok(layer.holding == 11 and layer.state == "Trapped", `{where}: holding the find it was laying`)
+	local _, pileIn = KeeperMap.placeAt(map, home)
+	ok(layer.home == homeSlot and pileIn == homeSlot, `{where}: its pile is shut in with it`)
+	local t = 0
+	while not layer.burst and t < PACKRAT.breakOut + 5 do
+		Keeper.step(layer, DT, RUN)
+		t += DT
+	end
+	KeeperMap.setDoor(map, homeSlot, true)
+	Keeper.lookOut(layer, f.slots[homeSlot], homeSlot)
+	local laidHome = 0
+	n = 0
+	while laidHome == 0 and n < 60 * 10 do
+		Keeper.step(layer, DT, RUN)
+		n += 1
+		laidHome = layer.laid
+	end
+	ok(laidHome == 11, `{where}: out, it lays it on its pile`)
+
 	-- a find taken before it gets there: it goes for another
 	local swap = fresh()
 	local both: Keeper.Finds = { ids = { 11, 22 }, at = { nearAt, farAt }, count = 2 }
@@ -398,6 +535,7 @@ ok(floors >= 12, `enough floors had a trip to walk ({floors})`)
 ok(trips == floors and swaps == floors and roams == floors, "every floor's checks ran")
 ok(robs >= floors // 2, `enough floors had a take ({robs})`)
 ok(baits >= floors // 2, `enough floors had a find dropped in its path ({baits})`)
+ok(baited >= floors // 2, `enough floors had a unit to bait it into ({baited})`)
 
 print(`collect: {checks - failures}/{checks} checks pass ({floors} floors, {trips} trips home)`)
 if failures > 0 then
