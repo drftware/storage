@@ -50,3 +50,43 @@ PLAY = dict(
     ring=6.0,          # degrees each cymbal flaps on its strap from the hit
     winds=4,           # half turns of the key when wound (the Wind motion's clicks)
 )
+
+
+# --- The jack-in-the-box: a 1950s tin music box, our own jack -----------------------------------
+# References (README): the Bruce County Museum's 1953 tin jack-in-the-box is 14 cm tall with its
+# lid shut and 13.5 cm square, the V&A's late-1940s one (Mettoy) much the same: a printed tin
+# cube with rolled corner seams, a shallow lid hinged at the back and painted yellow inside, held
+# shut by a small catch at the front, a wire crank with a wooden knob on the right side, and a
+# clown with a painted composition head and a felt cap on a cloth-covered spring. Ours prints a
+# playing card's suit on each side (a jack in a box), wears a two-tier ruff and harlequin
+# diamonds, and has a painted face that has crazed with age.
+JACK = dict(
+    box=(134.0, 136.0),          # the tin cube's side, and its height to the rim under the lid
+    corner=3.0,                  # radius of the rolled seam at each corner
+    lid=dict(over=67.8, skirt=7.0, top=2.9, hinge=(0.0, 69.6, 137.6), open=112.0),
+    # the lid's outer half width, how far its skirt hangs over the box, its top above the rim,
+    # its hinge pin, and how far it swings open onto its stop (past upright, as both museums'
+    # stand open)
+    latch=dict(pivot=(0.0, -67.2, 119.0), w=12.0, flip=24.0),
+    # the front catch: a sprung tin tab riveted at its foot, hooked over the lid's front edge
+    crank=dict(at=(66.5, 34.0, 90.0), arm=22.0, out=7.0, knob=(6.2, 16.0)),
+    # the crank's axle on the right side (high and towards the back, as both museums' are), the
+    # wire arm's reach, how far the knob stands off, and the turned knob's radius and length
+    floor=5.0,                   # the spring's foot on the box's floor: the jack sways about it
+    neck=209.0,                  # where the head sits in the ruff, popped up
+    closed=(0.785, 0.56),        # the jack's scale and stretch pressed down in the shut box: 44
+    # per cent of its height and about as wide as it stands, under the lid with room to spare
+    dust=0.4, seed=37.0,
+)
+
+# How it plays (timed from a video of a 1950s tin jack-in-the-box's sound, README): the tune's
+# 17 loudest notes over 7.8 s as the crank turns, 0.9 s of nothing, then the bang and four
+# rattles at 0.2, 0.38, 0.52 and 0.65 s after it as the lid bounces on its stop and the jack
+# sways on its spring.
+TUNE = dict(
+    lead=0.3,          # seconds from the start of Wind to the first note (the hand takes hold)
+    length=7.8,        # seconds of tune: the crank turns all through it
+    turns=6.5,         # turns of the crank in that time, about a bar of the tune a turn
+    beat=0.9,          # the silence after the last note before the latch lets go
+    tilt=12.0,         # degrees the jack's head is left cocked at you once it settles
+)

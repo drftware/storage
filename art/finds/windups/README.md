@@ -63,3 +63,64 @@ lacquered tin key worn to steel at its edges with specks of rust. Dust 0.35 grey
 
 **Sheets:** `art/sheets/cymbalmonkey-*.png`; motion previews `out/cymbalmonkey-wind.mp4` and
 `out/cymbalmonkey-play.mp4`.
+
+## Jack-in-the-box (Uncommon): "Wind: a tune, then a bang as it pops"
+
+A tin music box of the 1950s: a printed tin cube with rolled corner seams, a shallow lid on a
+wire hinge at the back, yellow inside, held shut by a sprung nickel catch at the front, a wire
+crank with a turned red knob on the right side, and a clown on a cloth-covered spring inside.
+Ours is no maker's character: each side prints a playing card's suit in a cream panel inside a
+coloured border of marquee dots (spade red-bordered at the front, heart green on the crank's
+side, diamond blue at the back, club mustard on the left: a jack in a box), the lid a red and
+yellow sunburst round a star; the jack wears red-and-cream harlequin diamonds, a two-tier ruff
+and a leaning green felt cap with a wool pompom, and his painted face has crazed with age:
+blue diamonds through black almond eyes, high thin brows, a red nose and a thin red grin whose
+corners climb into his cheeks.
+
+**Looked at:** the Bruce County Museum's 1953 tin jack-in-the-box, record 2017.012.001
+(https://brucemuseum.pastperfectonline.com/webobject/011C739F-8C16-440E-A41F-556931348370: 14
+cm tall shut, 13.5 cm square, clowns printed on every side in coloured borders, a knob crank on
+the right side, a yellow lid standing open past upright, a plastic clown head on a checked cloth
+body); the V&A's late-1940s painted tin one by Mettoy (https://collections.vam.ac.uk/item/O89876:
+a lid "held down by a small catch", yellow inside, a red crank on the right side high and to the
+back, a clown with a plastic head and felt cap on a spotted cloth body over a large spring,
+plays "Pop Goes the Weasel"); a video of a 1953 tin one cranked and popping
+(https://www.youtube.com/watch?v=SYPBQvt-RbY), timed from its sound in the page as the cymbal
+monkey was: the tune's notes at 0, 0.18, 0.87, 1.25, 1.94, 2.33, 2.5, 2.67, 3.24, 3.79, 4.25,
+4.52, 5.89, 6.53, 6.85, 7.38 and 7.77 s, silence for 0.9 s, the bang at 8.66 s, then rattles
+0.2, 0.38, 0.52 and 0.65 s after it. Those note times are for the sound ticket.
+
+**Size:** 134 mm square and 139 mm tall shut, 0.55 studs (10 inches a stud), as the museum's;
+popped, the jack's cap stands 295 mm off the floor, 1.16 studs.
+
+**Tells:** shut, a bright printed cube with a crank on its side and a big black or red suit on
+each face; popped, the clown's white face and red nose on harlequin diamonds above the yellow
+lid.
+
+**Parts** (pivots in `build.py`): `Box` (root: the printed cube, its gold-lacquered inside, the
+crank's bushing, the hinge straps and pin, the catch's rivet), `Crank` (turns about its axle on
+the right side, clockwise as you face that side), `Latch` (the catch, flips forward about its
+rivet at its foot), `Lid` (turns about the hinge pin; drawn open on its stop, 112 degrees, and
+found turned shut), `Jack` (the cloth body and both ruffs, on the spring's foot on the floor:
+sways side to side about it, and is found pressed into the box by `scale` 0.785 and `stretch`
+0.56, 44 per cent of its height), `Head` (rides the jack, tilts side to side about the neck).
+
+**Motions:**
+- `Wind` (9.0 s): the crank turns by itself through the tune, 6.5 turns in 7.8 s, a quicker
+  push and a slower pull each turn as a hand cranks, slowing on the last half turn as the last
+  note sounds; then 0.9 s of nothing in which the lid lifts once against its catch. The game
+  plays `Pop` as it ends.
+- `Pop` (2.95 s): the catch flicks off, the lid bangs onto its stop at 0.095 s and bounces three
+  times (the video's rattles), the jack springs past its height and bobs, sways side to side on
+  its spring with its head swinging after it, settles by 1.75 s, and then slowly cocks its head
+  12 degrees at you and stays that way.
+- `Shut` (0.9 s): pushed back in: the head straightens, the jack is pressed down as the lid comes
+  over and claps shut at 0.55 s, its edge pushes the catch out and the catch clicks over it.
+
+**Look:** the print is all the look's own masks in the find's frame (the lid's worked out where
+it lies shut), over a varnished cream ground with a faint grain, scratched, chipped to tin on the
+edges and rusted along the foot; inside is gold lacquer; the face's crazing is two sizes of
+cracks. The jack's cloth has the spring's coils showing through it as ridges.
+
+**Sheets:** `art/sheets/jackinthebox-*.png`; motion previews `out/jackinthebox-wind.mp4`,
+`-pop.mp4` and `-shut.mp4`.

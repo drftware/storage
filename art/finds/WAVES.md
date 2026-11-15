@@ -6,8 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04b, the jack-in-the-box in `art/finds/windups/` (the set and the cymbal monkey are
-built); its plan is in the newest note (not yet researched). Then the rest of the Wind-ups. The
+**Next:** F-04c, the wind-up chattering teeth, then the wind-up walking robot, in
+`art/finds/windups/` (the set, the cymbal monkey and the jack-in-the-box are built); not yet
+researched, the newest note has a plan. Then the rest of the Wind-ups in the table's order. The
 oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next
 touched.
 
@@ -35,6 +36,33 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 15, F-04b (the jack-in-the-box built and in the place).** `JackInTheBox` in
+  `windups/build.py`, spec `JACK` and `TUNE`, README, D-202. Timed from a video's sound as the
+  monkey was (a 1953 tin one: 7.8 s of tune, 0.9 s of nothing, the bang, three lid bounces).
+  **Drawn popped, found shut:** the lid is drawn open on its stop and the jack popped up, so the
+  bake lights them; their rest values (the first key of the first motion that moves them) shut
+  the lid and press the jack in with `scale` and `stretch` together (scale 0.785 times stretch
+  0.56 is 44 per cent of the height at about the same width; `stretch` alone would make it 34
+  per cent wider and poke through the box). A child rides its parent's `stretch`, so the head
+  squashes a little as the jack bobs: keep the visible bob between 0.93 and 1.11. A look on a
+  part drawn turned (the lid) works out where a face lies at rest by turning `L.x/y/z` back
+  through the hinge in nodes (`jack_look`, "the lid"). **Kit helpers in `build.py`** worth
+  reusing: `rsq` (a rounded square ring, for tins and boxes), `strip` (a bent tin strip along a
+  path: catches, hinge straps), `rounded` (fillets a polyline's corners: wires, cranks), `rivet`.
+  **The template in the place stands as drawn** (lid open, jack up): neither `Finds/Kit.luau`'s
+  import nor `Art.luau` applies rest values, so the game ticket that deals it must pose every
+  part at the first key of the first motion that moves it before it's seen (the tea light's
+  flame needs the same). At 1024 the find gets 379 texels a stud (asked 500): the box's inside eats texels. **Not done:**
+  playing-card corner indices (a small J and pip in each panel's corners) would make the card
+  joke land up close; the sack's diamonds could be finer.
+  **F-04c's plan, not researched.** The chattering teeth (Common, "Wind: they chatter off across
+  the floor"): white plastic teeth in pink gums on two orange feet, a side key; parts `Base`
+  (the lower jaw on its feet, root, travelling with `x`, `y`, `yaw` as the die-cast car does),
+  `Jaw` (the upper jaw, hinged at the back, snapping about 6 to 8 times a second), `Key`, the
+  feet stepping as a walk from a spring. The walking robot (Uncommon, "it clanks off in a
+  straight line for 15 seconds"): a tin litho robot about 6 to 9 inches, legs swinging from
+  the hip, arms swinging opposite, a side key; time both from video sound as above.
 
 - **Nov 15, F-04a (the Wind-ups set started; the cymbal monkey built and in the place).**
   `art/finds/windups/` (`scripts/art.sh set windups`), spec `MONKEY` and `PLAY`, README, D-201.
@@ -520,7 +548,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Wind-up mouse | Uncommon | Wind: it zips off and squeaks wherever it stops |  | |
 | Wind-up walking robot | Uncommon | Wind: it clanks off in a straight line for 15 seconds | A noise you can send down a hall | |
 | Farm-animal spinner | Uncommon | Pull: the arrow spins and an animal noise plays | A throwback toy | |
-| Jack-in-the-box | Uncommon | Wind: a tune, then a bang as it pops | The bang comes a few seconds after you let go | |
+| Jack-in-the-box | Uncommon | Wind: a tune, then a bang as it pops | The bang comes a few seconds after you let go | Nov 15, F-04b |
 | Cymbal monkey | Rare | Wind: it bashes its cymbals for 20 seconds, loud | The strongest lure in the set | Nov 15, F-04a |
 | Pull-string cowboy doll | Rare | Pull: it says one of six lines |  | |
 | Singing fish plaque | Rare | Press: its head turns and it sings |  | |

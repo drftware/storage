@@ -5382,3 +5382,17 @@ cymbals on their straps, so one action reads as frantic from any side. Its parts
 in `art/finds/windups/README.md`; the clash sound is a game ticket's (it lands as the arms reach
 -24 degrees).
 
+
+## D-202 The jack-in-the-box prints card suits, and its bang is timed from a real one (F-04b, Nov 15)
+
+The catalog's jack-in-the-box (Uncommon, "Wind: a tune, then a bang as it pops") is built as a
+1950s tin music box at a museum record's size (13.5 cm square, 14 cm tall shut), with the crank,
+hinge, catch and yellow lid the museum pieces have. It is no maker's character: where the old
+ones print clowns, ours prints a playing card's suit on each side (a jack in a box), and the
+jack is our own clown in harlequin diamonds with a crazed painted face, which suits a horror
+game without being a monster. Its timing comes from the sound of a video of a 1953 one: 7.8 s of
+tune as the crank turns, 0.9 s of silence, the bang, then three bounces of the lid. `Wind` is
+the tune and the silence, with the crank turning by itself (the catalog's "the bang comes a few
+seconds after you let go"); `Pop` is the bang; `Shut` puts it back so it can be wound again,
+which the catalog doesn't ask for but a reused toy needs. Once popped, the jack is left with its
+head cocked at the player. Its parts and numbers are in `art/finds/windups/README.md`.

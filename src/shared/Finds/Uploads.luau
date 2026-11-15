@@ -27,5 +27,6 @@ return {
 	},
 	Windups = {
 		CymbalMonkey = { Model = 124266692491775 },
+		JackInTheBox = { Model = 99780291550799 },
 	},
 }

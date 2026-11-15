@@ -528,7 +528,571 @@ CYMBAL_MONKEY = kit.Find(
     dust=M_["dust"], seed=M_["seed"], texels=450,
 )
 
-FINDS = [CYMBAL_MONKEY]
+# --- The jack-in-the-box (F-04b) ----------------------------------------------------------------
+# A tin music box of the 1950s (README): a printed tin cube with rolled corner seams, a shallow
+# lid on a wire hinge at the back, painted yellow inside and held shut by a sprung catch at the
+# front, a wire crank with a turned knob on the right side, and a clown on a cloth-covered spring
+# inside. Crank it and the tune plays; a beat after the last note the catch lets go, the lid bangs
+# open on its stop and the jack springs out, bobs, sways and settles with its head cocked at you.
+# The lid and the jack are drawn open and popped up (as baked, so the jack is lit, not shaded by
+# the box shut over it); as found, the lid is turned shut and the jack squeezed down inside.
+
+J_ = K.JACK
+TU = K.TUNE
+(LITHO, INSIDE, LIDTOP, LIDIN, STEEL, NICKEL, KNOB, SACK, RUFF, RUFF2, FACE, NOSE, HAIR, HAT,
+ POM) = range(10, 25)
+
+BW, BH = J_["box"]
+LO = J_["lid"]
+OPEN_LID = LO["open"]
+HINGE = V(*LO["hinge"])
+LID_TOP = BH + LO["top"]                 # the lid's top, shut (mm)
+LID_FOOT = LID_TOP - LO["skirt"]         # the bottom of its skirt
+CR = J_["crank"]
+CRANK_AT = V(*CR["at"])
+LATCH_AT = V(*J_["latch"]["pivot"])
+FLOOR, NECK = J_["floor"], J_["neck"]
+SC0, ST0 = J_["closed"]
+HAT_AT, HAT_TILT = (5.0, 1.0, 253.0), 20.0
+
+
+def rsq(hw, z, r, n):
+    """A rounded square's outline at height z (mm), anticlockwise from above, n steps a corner."""
+    r = min(r, hw - 0.01)
+    pts = []
+    for q, (sx, sy) in enumerate(((1, 1), (-1, 1), (-1, -1), (1, -1))):
+        cx, cy = sx * (hw - r), sy * (hw - r)
+        for i in range(n + 1):
+            a = math.radians(90 * q + 90 * i / n)
+            pts.append((mm(cx + r * math.cos(a)), mm(cy + r * math.sin(a)), mm(z)))
+    return pts
+
+
+def rounded(pts, r, n):
+    """A polyline (Vectors) with each inside corner rounded by a curve r long each way."""
+    out = [pts[0]]
+    for a, b, c in zip(pts, pts[1:], pts[2:]):
+        u, w = (a - b), (c - b)
+        ru, rw = min(r, u.length * 0.45), min(r, w.length * 0.45)
+        p, q = b + u.normalized() * ru, b + w.normalized() * rw
+        for i in range(n + 1):
+            t = i / n
+            out.append((1 - t) ** 2 * p + 2 * (1 - t) * t * b + t * t * q)
+    out.append(pts[-1])
+    return out
+
+
+def strip(s, path, x0, x1, t, kind, M=Matrix()):
+    """A bent tin strip: its middle line [(y, z)] in mm, t thick, from x0 to x1, placed by M."""
+    bm = bmesh.new()
+    P = [Vector(p) for p in path]
+    n = len(P)
+    rows = []
+    for i, p in enumerate(P):
+        d = (P[min(i + 1, n - 1)] - P[max(i - 1, 0)]).normalized()
+        o = Vector((-d.y, d.x)) * (t / 2)
+        rows.append([bm.verts.new((mm(x), mm(c.x), mm(c.y))) for x in (x0, x1) for c in (p + o, p - o)])
+    for A, B in zip(rows, rows[1:]):
+        for i, j in ((0, 2), (2, 3), (3, 1), (1, 0)):
+            bm.faces.new((A[i], A[j], B[j], B[i]))
+    for R in (rows[0], rows[-1]):
+        bm.faces.new((R[0], R[2], R[3], R[1]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bmesh.ops.transform(bm, matrix=M, verts=bm.verts)
+    s.merge(bm, kind)
+    bm.free()
+
+
+def rivet(s, at, facing, r, kind, hi):
+    """A domed rivet head at `at` (mm) on a face whose outward normal is `facing` ('-Y', '+Y')."""
+    R = {"-Y": Matrix.Rotation(math.radians(90), 4, "X"),
+         "+Y": Matrix.Rotation(math.radians(-90), 4, "X")}[facing]
+    prof = [(r, -0.4), (r, 0.1), (r * 0.8, 0.55), (r * 0.42, 0.85), (0.0, 0.92)]
+    s.lathe([(mm(a), mm(b)) for a, b in prof], kind, segs(hi, 10), T(V(*at)) @ R)
+
+
+def jb_box(hi):
+    s = Shape()
+    n = 4 if hi else 2
+    c, H = J_["corner"], BH
+    # outside: the floor, the rolled bead at the foot, the printed walls, the neck the lid sits
+    # on, and the rolled rim; then down inside to the floor
+    rows = [(0.0, 64.6, 1.5), (0.5, 66.7, 2.6), (1.6, 67.3, 3.0), (3.6, 67.35, 3.0),
+            (5.0, 66.8, 3.0), (5.8, 66.5, c), (H - 7.4, 66.5, c), (H - 6.4, 66.05, c - 0.4),
+            (H - 1.4, 66.05, c - 0.4), (H - 0.3, 66.3, c - 0.3), (H + 0.35, 65.9, c - 0.6),
+            (H + 0.2, 65.2, c - 1.0)]
+    s.loft([[(0.0, 0.0, 0.0)]] + [rsq(hw, z, r, n) for z, hw, r in rows], LITHO)
+    rows = [(H + 0.2, 65.2, c - 1.0), (H - 1.6, 65.0, c - 1.0), (6.5, 65.0, c - 1.0),
+            (FLOOR, 64.0, c - 1.2)]
+    s.loft([rsq(hw, z, r, n) for z, hw, r in rows] + [[(0.0, 0.0, mm(FLOOR))]], INSIDE)
+    # the crank's pressed bushing on the right side
+    prof = [(8.6, -0.8), (8.5, 0.25), (7.4, 0.7), (4.3, 1.05), (3.3, 1.5), (2.4, 1.75), (0.0, 1.75)]
+    s.lathe([(mm(a), mm(b)) for a, b in prof], STEEL, segs(hi, 20),
+            T(CRANK_AT) @ Matrix.Rotation(math.radians(90), 4, "Y"))
+    # the hinge: two tin straps riveted to the back, joggled out behind the lid's skirt and
+    # rolled round the pin; the pin through every knuckle, peened at its ends
+    hy, hz = LO["hinge"][1:]
+    for sx in (1, -1):
+        x0, x1 = sorted((sx * 40.0, sx * 52.0))
+        path = [(66.85, 118.0), (66.85, 129.3), (hy - 0.7, 131.0), (hy - 0.7, hz)]
+        strip(s, rounded([Vector(p) for p in path], 1.2, 3 if hi else 1), x0, x1, 0.6, STEEL)
+        s.cylinder(V(x0, hy, hz), V(x1, hy, hz), mm(1.55), STEEL, segs(hi, 10))
+        rivet(s, (sx * 46.0, 67.15, 122.0), "+Y", 1.9, STEEL, hi)
+    s.cylinder(V(-58.8, hy, hz), V(58.8, hy, hz), mm(0.75), STEEL, segs(hi, 6))
+    for sx in (1, -1):
+        s.cylinder(V(sx * 58.6, hy, hz), V(sx * 59.4, hy, hz), mm(1.05), STEEL, segs(hi, 8))
+    # the catch's rivet, on the front below the lid
+    rivet(s, (0.0, -67.45, J_["latch"]["pivot"][2]), "-Y", 2.2, STEEL, hi)
+    return s
+
+
+def lid_open():
+    return about(HINGE, Matrix.Rotation(math.radians(OPEN_LID), 4, Vector((-1.0, 0.0, 0.0))))
+
+
+def jb_lid(hi):
+    s = Shape()
+    n = 4 if hi else 2
+    o, tp, zb = LO["over"], LID_TOP, LID_FOOT
+    Mo = lid_open()
+    rows = [(zb, o - 0.6, 3.0), (zb + 0.2, o + 0.15, 3.5), (zb + 1.1, o + 0.25, 3.5),
+            (zb + 1.9, o, 3.4), (tp - 0.8, o, 3.4), (tp - 0.2, o - 0.6, 3.0), (tp, o - 2.2, 2.4),
+            (tp + 0.15, o - 9.0, 1.8)]
+    s.loft([rsq(hw, z, r, n) for z, hw, r in rows] + [[(0.0, 0.0, mm(tp + 0.35))]], LIDTOP, Mo)
+    rows = [(tp - 0.55, o - 9.0, 1.8), (tp - 0.6, o - 0.9, 2.6), (zb + 0.6, o - 0.9, 2.6),
+            (zb, o - 0.6, 3.0)]
+    s.loft([[(0.0, 0.0, mm(tp - 0.5))]] + [rsq(hw, z, r, n) for z, hw, r in rows], LIDIN, Mo)
+    # its knuckles: tabs off the back edge rolled round the pin, between the box's straps
+    hy, hz = LO["hinge"][1:]
+    for x0, x1 in ((-38.5, 38.5), (53.0, 58.0), (-58.0, -53.0)):
+        strip(s, [(63.5, tp + 0.2), (67.4, tp + 0.2), (hy - 0.6, hz + 1.3)], x0, x1, 0.6, LIDTOP, Mo)
+        s.cylinder(V(x0, hy, hz), V(x1, hy, hz), mm(1.55), LIDTOP, segs(hi, 10), M=Mo)
+    return s
+
+
+def jb_latch(hi):
+    s = Shape()
+    w = J_["latch"]["w"] / 2
+    py, pz = J_["latch"]["pivot"][1:]
+    # a thumb tab flared out at the foot, flat on the box, joggled out over the lid's skirt and
+    # hooked over its front edge
+    path = [(py - 1.9, pz - 3.4), (py + 0.35, pz - 1.0), (py + 0.35, 129.3), (-68.6, 130.9),
+            (-68.6, LID_TOP + 0.5), (-64.6, LID_TOP + 0.5)]
+    strip(s, rounded([Vector(p) for p in path], 1.0, 3 if hi else 1), -w, w, 0.6, NICKEL)
+    return s
+
+
+def crank_path():
+    a = math.radians(20.0)
+    d = Vector((0.0, math.sin(a), -math.cos(a)))   # the arm's way as found: down, a little back
+    ax, ay, az = CR["at"]
+    p1 = V(ax + 5.3, ay, az)
+    p2 = p1 + d * mm(CR["arm"])
+    return [V(ax + 2.0, ay, az), p1, p2, p2 + V(CR["out"] + 2.5, 0.0, 0.0)], p2
+
+
+def jb_crank(hi):
+    s = Shape()
+    ax, ay, az = CR["at"]
+    s.cylinder(V(ax - 0.6, ay, az), V(ax + 4.0, ay, az), mm(2.0), STEEL, segs(hi, 10))
+    s.cylinder(V(ax + 1.1, ay, az), V(ax + 3.6, ay, az), mm(3.3), STEEL, segs(hi, 12))
+    pts, p2 = crank_path()
+    s.tube(rounded(pts, mm(3.0), 4 if hi else 2), mm(1.5), STEEL, segs(hi, 8))
+    r, ln = CR["knob"]
+    prof = [(0.0, 0.0), (2.8, 0.0), (3.6, 0.4), (4.6, 1.6), (5.6, 3.6), (r, 6.8), (r - 0.2, 10.0),
+            (r - 0.8, 12.8), (r - 1.9, 14.8), (r - 3.4, ln - 0.2), (0.0, ln)]
+    s.lathe([(mm(a), mm(b)) for a, b in prof], KNOB, segs(hi, 18),
+            T(p2 + V(1.4, 0.0, 0.0)) @ Matrix.Rotation(math.radians(90), 4, "Y"))
+    return s
+
+
+SACK_ROWS = [(5.2, 23.0), (8.0, 27.0), (16.0, 28.5), (60.0, 29.0), (110.0, 29.6), (140.0, 30.4),
+             (162.0, 31.0), (180.0, 30.2), (193.0, 28.0), (201.0, 21.5), (206.0, 14.5),
+             (209.5, 9.5)]
+
+
+def ruff(s, z0, r0, r1, drop, pleats, amp, kind, hi, phase=0.0):
+    """A pleated collar round the neck: out along its underside, round its edge, back along its
+    top; its pleats rise and fall more towards the edge."""
+    mid = (r0 + r1) / 2
+    prof = [(r0, z0 - 3.0), (mid, z0 - 3.0 - drop * 0.45), (r1 - 1.0, z0 - 2.2 - drop),
+            (r1, z0 - 1.3 - drop), (r1 - 1.0, z0 - 0.5 - drop), (mid, z0 - drop * 0.45 + 0.3),
+            (r0, z0 + 0.4)]
+    n = pleats * (12 if hi else 6)
+    rings = []
+    for r, z in prof:
+        a = amp * ((r - r0) / (r1 - r0)) ** 1.2
+        ring = []
+        for j in range(n):
+            th = 2 * math.pi * j / n
+            w = math.sin(pleats * th + phase)
+            rr = r + 0.35 * a * math.cos(pleats * th + phase)
+            ring.append((mm(rr * math.cos(th)), mm(rr * math.sin(th)), mm(z + a * w)))
+        rings.append(ring)
+    s.loft(rings, kind)
+
+
+def jb_jack(hi):
+    s = Shape()
+    rows = smooth_rows(SACK_ROWS, 8 if hi else 5)
+    n = segs(hi, 28)
+    rings = [[(0.0, 0.0, mm(FLOOR))]]
+    for z, r in rows:
+        ring = []
+        gather = min(1.0, max(0.0, (z - 194.0) / 10.0))
+        coil = 0.0
+        if 12.0 < z < 192.0:
+            coil = 1.7 * max(0.0, math.cos(2 * math.pi * (z - 12.0) / 18.5)) ** 3 * min(1.0, (192.0 - z) / 10.0)
+        for j in range(n):
+            th = 2 * math.pi * j / n
+            fold = (0.065 * (1 - gather) * math.sin(7 * th + 0.9 * math.sin(z / 26.0))
+                    + 0.08 * gather * math.sin(14 * th + 0.4))
+            if hi:
+                fold += 0.018 * (1 - gather) * math.sin(12 * th + 2.1 + z / 15.0)
+            rr = r * (1 + fold) + coil
+            ring.append((mm(rr * math.cos(th)), mm(rr * math.sin(th)), mm(z)))
+        rings.append(ring)
+    rings.append([(0.0, 0.0, mm(211.0))])
+    s.loft(rings, SACK)
+    ruff(s, 207.0, 10.0, 40.0, 7.0, 13, 3.6, RUFF, hi)
+    ruff(s, 212.5, 8.6, 29.5, 5.0, 10, 3.0, RUFF2, hi, phase=1.3)
+    return s
+
+
+HEAD_ROWS = [(212.5, 8.0, 7.0, -3.5), (215.0, 14.5, 12.5, -3.5), (219.0, 19.5, 17.5, -3.0),
+             (224.0, 23.0, 21.0, -2.2), (230.0, 24.8, 22.6, -1.5), (236.0, 25.2, 23.0, -1.0),
+             (242.0, 24.6, 22.8, -0.5), (248.0, 22.4, 21.2, 0.0), (253.0, 18.5, 18.0, 0.3),
+             (257.0, 12.5, 12.5, 0.5)]
+
+
+def hat_m():
+    return T(V(*HAT_AT)) @ Matrix.Rotation(math.radians(HAT_TILT), 4, "Y")
+
+
+def jb_head(hi):
+    s = Shape()
+    s.cylinder(V(0.0, -0.5, 203.0), V(0.0, -0.5, 214.0), mm(8.4), FACE, segs(hi, 14))
+    rows = smooth_rows(HEAD_ROWS, 3 if hi else 1)
+    nn = segs(hi, 24)
+    rings = [[(0.0, mm(-3.0), mm(211.5))]]
+    for z, rx, ry, cy in rows:
+        rings.append([(mm(rx * math.cos(2 * math.pi * j / nn)),
+                       mm(cy + ry * math.sin(2 * math.pi * j / nn)), mm(z)) for j in range(nn)])
+    rings.append([(0.0, mm(0.5), mm(259.4))])
+    s.loft(rings, FACE)
+    blob(s, (0.0, -27.0, 232.5), (6.3, 6.3, 6.3), NOSE, hi, lat=10, lon=20)
+    for sx in (1, -1):
+        blob(s, (sx * 24.4, 0.5, 228.0), (3.0, 5.6, 7.0), FACE, hi, lat=6, lon=12)
+        # tufts of yarn hair over the ears
+        blob(s, (sx * 21.5, 7.0, 245.0), (9.5, 10.5, 8.0), HAIR, hi, lat=8, lon=16)
+        blob(s, (sx * 24.0, 3.0, 240.0), (6.5, 8.5, 6.5), HAIR, hi, lat=8, lon=14)
+        blob(s, (sx * 19.5, 11.5, 238.5), (8.0, 8.0, 7.5), HAIR, hi, lat=8, lon=14)
+        if hi:
+            blob(s, (sx * 25.5, 7.0, 245.5), (5.0, 6.0, 5.0), HAIR, hi, lat=6, lon=10)
+            blob(s, (sx * 17.0, 13.0, 247.5), (6.0, 6.0, 5.0), HAIR, hi, lat=6, lon=10)
+    # the cap: a felt cone with a rolled band, leaning, its tip bent further, a wool pompom
+    rows = [(-3.0, 13.0), (0.0, 13.6), (1.0, 13.8), (2.2, 13.3), (12.0, 10.0), (24.0, 5.8),
+            (33.0, 2.4), (35.5, 0.9)]
+    nh = segs(hi, 20)
+    rings = []
+    for z, r in rows:
+        cx = 5.0 * (max(z, 0.0) / 36.0) ** 2
+        rings.append([(mm(cx + r * math.cos(2 * math.pi * j / nh)),
+                       mm(r * math.sin(2 * math.pi * j / nh)), mm(z)) for j in range(nh)])
+    rings.append([(mm(5.0), 0.0, mm(36.0))])
+    s.loft(rings, HAT, hat_m(), cap_bottom=HAT)
+    blob(s, (5.2, 0.0, 38.0), (6.2, 6.2, 5.8), POM, hi, hat_m(), 8, 16)
+    return s
+
+
+def jack_look(L, f):
+    nb = L.nb
+    xm, ym, zm = nb.mul(L.x, K.STUD_MM), nb.mul(L.y, K.STUD_MM), nb.mul(L.z, K.STUD_MM)
+    ax, ay = nb.absf(xm), nb.absf(ym)
+
+    def sq(v):
+        return nb.mul(v, v)
+
+    def disc(u, v, cu, cv, r, soft=0.25):
+        """1 inside the circle (mm) at (cu, cv) of the coordinates u, v."""
+        d = nb.math("SQRT", nb.add(sq(nb.sub(u, cu)), sq(nb.sub(v, cv))))
+        return nb.sub(1.0, nb.ss(d, r - soft, r + soft))
+
+    grain = L.noise(500.0, 1, detail=1)
+    C = Coat(L, hexc("#EDE0BF"), 0.3, 0.0, 0.0)
+
+    # --- the box's printed sides: each a coloured border of cream marquee dots round a cream
+    # panel with a playing card's suit, the four suits round the box; tin shows at the knocks
+    litho = L.k(LITHO)
+    fr, bk = nb.ss(nb.sub(0.0, L.ny), 0.6, 0.8), nb.ss(L.ny, 0.6, 0.8)
+    rt, lf = nb.ss(L.nx, 0.6, 0.8), nb.ss(nb.sub(0.0, L.nx), 0.6, 0.8)
+    side = nb.mul(litho, nb.mx(nb.mx(fr, bk), nb.mx(rt, lf)))
+    u = nb.add(nb.mul(ax, nb.mx(fr, bk)), nb.mul(ay, nb.mx(rt, lf)))
+    zc = (6.5 + BH - 7.8) / 2
+    v = nb.sub(zm, zc)
+    rc = 6.0
+    qx = nb.mx(nb.sub(u, 56.5 - rc), 0.0)
+    qz = nb.mx(nb.sub(nb.absf(v), 50.85 - rc), 0.0)
+    d = nb.sub(nb.math("SQRT", nb.add(sq(qx), sq(qz))), rc)   # mm outside the panel's edge
+    border = nb.ss(d, 1.6, 1.9)
+    key = nb.mul(nb.ss(d, -0.75, -0.55), nb.sub(1.0, nb.ss(d, -0.05, 0.15)))
+    cols = ((fr, "#B4342B"), (rt, "#2F7448"), (bk, "#2C568F"), (lf, "#D49A2B"))
+    tone = nb.mr(grain, 0.3, 0.7, 0.95, 1.04)
+    C.paint(litho, nb.tint(hexc("#EDE0BF"), tone), 0.3, 0.0, 0.0)
+    for m, c in cols:
+        C.paint(nb.mul(nb.mul(side, m), border), nb.tint(hexc(c), tone), 0.3)
+    # the marquee's dots along the middle of the border
+    hz = nb.add(sq(nb.mul(nb.sub(nb.fract(nb.add(nb.div(u, 8.0), 0.5)), 0.5), 8.0)),
+                sq(nb.sub(nb.absf(v), 56.75)))
+    vz = nb.add(sq(nb.mul(nb.sub(nb.fract(nb.add(nb.div(v, 8.0), 0.5)), 0.5), 8.0)),
+                sq(nb.sub(u, 62.4)))
+    dots = nb.sub(1.0, nb.ss(nb.mn(hz, vz), 1.7 ** 2, 2.1 ** 2))
+    C.paint(nb.mul(nb.mul(side, border), dots), hexc("#F2E5C0"), 0.3)
+    C.paint(nb.mul(side, key), hexc("#1E1A19"), 0.3)
+    # the panel: faint rays behind the suit
+    R = 24.0
+    X, Y = nb.div(u, R), nb.div(nb.sub(v, 2.0), R)
+    ang = nb.math("ARCTAN2", Y, nb.add(X, 0.0001))
+    rays = nb.ss(nb.sin(nb.mul(ang, 16.0)), -0.2, 0.2)
+    panel = nb.mul(side, nb.sub(1.0, nb.ss(d, -0.8, -0.6)))
+    C.paint(nb.mul(panel, nb.mul(rays, 0.5)), hexc("#E3D2A6"), 0.3)
+
+    def stem(top):
+        w = nb.add(0.09, nb.mul(nb.mx(nb.sub(top, Y), 0.0), 0.62))
+        inside = nb.sub(1.0, nb.ss(nb.sub(X, w), -0.02, 0.02))
+        return nb.mul(inside, nb.mul(nb.ss(Y, -1.47, -1.43), nb.sub(1.0, nb.ss(Y, top - 0.05, top))))
+
+    def lobes(Yl, cy):
+        """Two round lobes on a triangle coming to a point 1.35 below them (Yl up)."""
+        c = disc(X, Yl, 0.47, cy, 0.5, 0.012)
+        tri = nb.sub(1.0, nb.ss(nb.sub(nb.mul(X, 1.42), nb.add(Yl, 1.35 - cy)), -0.015, 0.015))
+        under = nb.sub(1.0, nb.ss(Yl, cy - 0.02, cy + 0.02))
+        return nb.mx(c, nb.mul(tri, under))
+
+    hrt = lobes(Y, 0.3)
+    spade = nb.mx(lobes(nb.sub(0.0, Y), 0.25), stem(-0.45))
+    diam = nb.sub(1.0, nb.ss(nb.add(nb.div(X, 0.78), nb.div(nb.absf(Y), 1.12)), 0.985, 1.015))
+    club = nb.mx(nb.mx(disc(X, Y, 0.0, 0.52, 0.47, 0.012), disc(X, Y, 0.5, -0.18, 0.47, 0.012)),
+                 nb.mx(disc(X, Y, 0.0, 0.05, 0.3, 0.012), stem(-0.3)))
+    for m, pip, c in ((fr, spade, "#1D1B1C"), (rt, hrt, "#B92B26"), (bk, diam, "#B92B26"),
+                      (lf, club, "#1D1B1C")):
+        C.paint(nb.mul(nb.mul(panel, m), pip), nb.tint(hexc(c), tone), 0.28)
+    # the bottom and the rim: bare tin, gold-lacquered
+    bare = nb.mul(litho, nb.mx(nb.ss(nb.sub(0.0, L.nz), 0.6, 0.8),
+                               nb.mul(nb.ss(L.nz, 0.5, 0.8), nb.ss(zm, BH - 2.0, BH - 1.0))))
+    C.paint(bare, hexc("#A08A5A"), 0.38, 1.0)
+    # inside: gold-lacquered tinplate, never printed
+    C.paint(L.k(INSIDE), nb.tint(hexc("#9C8650"), nb.mr(grain, 0.3, 0.7, 0.9, 1.05)), 0.42, 1.0)
+
+    # --- the lid: worked out where it lies shut (it's drawn open)
+    lid = nb.mx(L.k(LIDTOP), L.k(LIDIN))
+    cb, sb = math.cos(math.radians(OPEN_LID)), math.sin(math.radians(OPEN_LID))
+    hy, hz = LO["hinge"][1:]
+    qy = nb.add(hy, nb.sub(nb.mul(nb.sub(ym, hy), cb), nb.mul(nb.sub(zm, hz), sb)))
+    qn = nb.add(nb.mul(L.ny, sb), nb.mul(L.nz, cb))          # its up, shut
+    top = nb.mul(L.k(LIDTOP), nb.ss(qn, 0.6, 0.8))
+    rr = nb.math("SQRT", nb.add(sq(xm), sq(qy)))
+    la = nb.math("ARCTAN2", qy, xm)
+    burst = nb.ss(nb.sin(nb.mul(la, 12.0)), -0.08, 0.08)
+    C.paint(L.k(LIDTOP), nb.tint(hexc("#B4342B"), tone), 0.3)
+    C.paint(nb.mul(top, burst), nb.tint(hexc("#E7B83A"), tone), 0.3)
+    C.paint(nb.mul(top, nb.sub(1.0, burst)), nb.tint(hexc("#C23A2C"), tone), 0.3)
+    edge_band = nb.ss(nb.mx(ax, nb.absf(qy)), 60.5, 61.0)
+    C.paint(nb.mul(top, edge_band), nb.tint(hexc("#B4342B"), tone), 0.3)
+    C.paint(nb.mul(top, nb.mul(edge_band, nb.sub(1.0, nb.ss(nb.mx(ax, nb.absf(qy)), 61.8, 62.2)))),
+            hexc("#F2E5C0"), 0.3)
+    C.paint(nb.mul(top, nb.sub(1.0, nb.ss(rr, 18.0, 18.3))), hexc("#1E1A19"), 0.3)
+    C.paint(nb.mul(top, nb.sub(1.0, nb.ss(rr, 16.8, 17.1))), nb.tint(hexc("#EDE0BF"), tone), 0.3)
+    tri = nb.mul(nb.absf(nb.sub(nb.fract(nb.sub(nb.mul(la, 5.0 / (2 * math.pi)), 0.25)), 0.5)), 2.0)
+    star = nb.sub(1.0, nb.ss(nb.sub(rr, nb.add(4.2, nb.mul(nb.pw(tri, 1.6), 5.6))), -0.15, 0.15))
+    C.paint(nb.mul(top, star), hexc("#1E1A19"), 0.3)
+    C.paint(L.k(LIDIN), nb.tint(hexc("#E2BE3E"), nb.mr(grain, 0.3, 0.7, 0.92, 1.04)), 0.45)
+
+    # --- knocks: the print chipped to tin on the edges, rust where it sat on damp floors
+    printed = nb.mx(litho, L.k(LIDTOP))
+    chips = nb.mul(nb.mul(printed, L.edge(mm(1.3), k=4.0)),
+                   nb.ss(L.noise(150.0, 3, detail=4), 0.5, 0.58))
+    C.paint(chips, hexc("#A9A8A0"), 0.3, 1.0, -0.0002)
+    scratch = nb.ss(L.noise(260.0, 4, stretch=(1.0, 0.06, 0.06), detail=2), 0.71, 0.74)
+    C.paint(nb.mul(nb.mul(printed, scratch), 0.55), hexc("#B9B3A2"), 0.36, 0.6)
+    rust = nb.mul(nb.mx(nb.mul(litho, nb.sub(1.0, nb.ss(zm, 6.0, 9.0))), nb.mul(L.k(LIDIN), 0.4)),
+                  nb.ss(L.noise(90.0, 5, detail=4), 0.62, 0.7))
+    C.paint(rust, hexc("#6B3A1F"), 0.85, 0.0)
+
+    # --- steel and nickel: the hinge, the crank's wire and bushing, the catch
+    st = L.k(STEEL)
+    C.paint(st, nb.tint(hexc("#8E9092"), nb.mr(L.noise(80.0, 6, detail=3), 0.3, 0.7, 0.85, 1.08)),
+            0.36, 1.0)
+    C.paint(nb.mul(st, nb.ss(L.noise(120.0, 7, detail=4), 0.66, 0.72)), hexc("#6E3B1E"), 0.8, 0.0)
+    ni = L.k(NICKEL)
+    C.paint(ni, hexc("#C2C1BA"), 0.22, 1.0)
+    C.paint(nb.mul(ni, nb.ss(L.noise(140.0, 8, detail=4), 0.6, 0.66)), hexc("#8C8576"), 0.5, 1.0)
+    # the knob: turned wood painted red, rubbed to the wood at its end
+    kn = L.k(KNOB)
+    C.paint(kn, nb.tint(hexc("#B0281F"), tone), 0.38)
+    worn = nb.mul(kn, nb.mul(nb.ss(xm, CR["at"][0] + 26.0, CR["at"][0] + 29.0),
+                             nb.ss(L.noise(60.0, 9, detail=3), 0.4, 0.55)))
+    C.paint(worn, hexc("#C4975E"), 0.6)
+
+    # --- the jack: harlequin cloth over the spring, a two-tier ruff, a crazed painted face
+    sk = L.k(SACK)
+    ang2 = nb.math("ARCTAN2", ym, xm)
+    harl = nb.sub(nb.cos(nb.mul(nb.sub(zm, 150.0), 2 * math.pi / 40.0)), nb.cos(nb.mul(ang2, 8.0)))
+    weave = L.noise(900.0, 10, detail=1)
+    cloth = nb.mr(weave, 0.3, 0.7, 0.88, 1.08)
+    C.paint(sk, nb.tint(hexc("#E9DEC2"), cloth), 0.9, 0.0, nb.mul(weave, 0.00025))
+    C.paint(nb.mul(sk, nb.ss(harl, -0.06, 0.06)), nb.tint(hexc("#A52A27"), cloth), 0.9)
+    C.paint(nb.mul(sk, nb.sub(1.0, nb.ss(nb.absf(harl), 0.05, 0.11))), hexc("#2A1D1A"), 0.9)
+    r_ax = nb.math("SQRT", nb.add(sq(xm), sq(ym)))
+    r1 = L.k(RUFF)
+    C.paint(r1, nb.tint(hexc("#EBE2CC"), cloth), 0.85, 0.0, nb.mul(weave, 0.0002))
+    C.paint(nb.mul(r1, nb.ss(r_ax, 36.8, 37.4)), nb.tint(hexc("#B8322B"), cloth), 0.85)
+    r2 = L.k(RUFF2)
+    C.paint(r2, nb.tint(hexc("#B8322B"), cloth), 0.85, 0.0, nb.mul(weave, 0.0002))
+    C.paint(nb.mul(r2, nb.ss(r_ax, 26.0, 26.6)), nb.tint(hexc("#EBE2CC"), cloth), 0.85)
+
+    fc = L.k(FACE)
+    crack = nb.sub(1.0, nb.ss(nb.voronoi(L.vec(s=11.0), 70.0, feature="DISTANCE_TO_EDGE"), 0.02, 0.07))
+    crack2 = nb.sub(1.0, nb.ss(nb.voronoi(L.vec(s=12.0), 150.0, feature="DISTANCE_TO_EDGE"), 0.02, 0.06))
+    C.paint(fc, nb.tint(hexc("#EEE7D7"), nb.mr(L.noise(40.0, 13, detail=3), 0.3, 0.7, 0.93, 1.03)),
+            0.34, 0.0, 0.0)
+    C.paint(nb.mul(fc, nb.mul(nb.mx(crack, nb.mul(crack2, 0.6)), 0.7)), hexc("#8E7C62"), 0.6, 0.0,
+            -0.00015)
+    front = nb.mul(fc, nb.ss(nb.sub(0.0, L.ny), 0.2, 0.45))
+    for sx in (1, -1):
+        ex = nb.sub(xm, sx * 9.0)
+        dz = nb.sub(zm, 239.5)
+        # a blue harlequin diamond through each eye, the eye an upright black almond with a glint
+        dia = nb.sub(1.0, nb.ss(nb.add(nb.div(nb.absf(ex), 6.0), nb.div(nb.absf(dz), 12.0)), 0.97, 1.03))
+        C.paint(nb.mul(front, dia), hexc("#2E5E9C"), 0.3)
+        eye = nb.sub(1.0, nb.ss(nb.add(sq(nb.div(ex, 3.9)), sq(nb.div(dz, 5.4))), 0.92, 1.08))
+        C.paint(nb.mul(front, eye), hexc("#141213"), 0.14)
+        C.paint(nb.mul(front, disc(xm, zm, sx * 9.0 - 1.2, 241.4, 1.0, 0.2)), hexc("#F4F0E6"), 0.12)
+        brow = nb.mul(nb.sub(1.0, nb.ss(nb.absf(nb.sub(nb.math("SQRT", nb.add(sq(ex), sq(nb.sub(zm, 240.0)))), 10.5)), 0.4, 0.6)),
+                      nb.ss(zm, 247.0, 248.0))
+        C.paint(nb.mul(front, brow), hexc("#141213"), 0.2)
+        C.paint(nb.mul(front, nb.mul(disc(xm, zm, sx * 14.5, 227.0, 5.2, 2.5), 0.6)), hexc("#DE7A73"), 0.34)
+    # the grin: red, its corners drawn up into the cheeks, outlined, the lips' seam through it
+    mz = nb.add(222.0, nb.mul(sq(xm), 0.036))
+    th = nb.add(nb.mul(nb.sub(1.0, sq(nb.div(xm, 17.0)), clamp=True), 3.8), 0.5)
+    off = nb.absf(nb.sub(zm, mz))
+    lips = nb.mul(front, nb.sub(1.0, nb.ss(nb.sub(off, nb.mul(th, 0.5)), -0.1, 0.1)))
+    line = nb.mul(front, nb.sub(1.0, nb.ss(nb.sub(off, nb.add(nb.mul(th, 0.5), 0.55)), -0.1, 0.1)))
+    span = nb.sub(1.0, nb.ss(ax, 17.5, 18.5))
+    C.paint(nb.mul(line, span), hexc("#1E1414"), 0.25)
+    C.paint(nb.mul(lips, span), hexc("#B11E22"), 0.22)
+    C.paint(nb.mul(nb.mul(front, span), nb.sub(1.0, nb.ss(off, 0.25, 0.45))), hexc("#4A1210"), 0.3)
+    nose = L.k(NOSE)
+    C.paint(nose, hexc("#C01D1D"), 0.2)
+    C.paint(nb.mul(nose, nb.ss(L.noise(80.0, 14, detail=3), 0.68, 0.72)), hexc("#E6DCC4"), 0.5)
+    hair = L.k(HAIR)
+    yarn = L.noise(320.0, 15, detail=3, rough=0.7)
+    C.paint(hair, nb.tint(hexc("#C9561F"), nb.mr(yarn, 0.3, 0.7, 0.7, 1.2)), 0.92, 0.0,
+            nb.mul(yarn, 0.0012))
+    hat = L.k(HAT)
+    felt = L.noise(700.0, 16, detail=2)
+    C.paint(hat, nb.tint(hexc("#2E6A5E"), nb.mr(felt, 0.3, 0.7, 0.86, 1.1)), 0.95, 0.0,
+            nb.mul(felt, 0.0002))
+    pom = L.k(POM)
+    wool = L.noise(380.0, 17, detail=3, rough=0.7)
+    C.paint(pom, nb.tint(hexc("#E7DCC2"), nb.mr(wool, 0.3, 0.7, 0.8, 1.08)), 1.0, 0.0,
+            nb.mul(wool, 0.0012))
+    C.finish(f.dust, grime=0.5)
+    return C.surface(bump_dist=0.0012, bump=0.7)
+
+
+# --- how it plays -------------------------------------------------------------------------------
+
+def jack_wind():
+    """The crank turns all through the tune, a quicker push and a slower pull each turn as a
+    hand cranks, slows on its last half turn as the last note sounds, and stops; then a beat of
+    nothing in which the lid lifts against its catch, once."""
+    lead, length, beat = TU["lead"], TU["length"], TU["beat"]
+    t_end = lead + length
+    total = 360.0 * TU["turns"]
+    crank = [(0.0, 0.0), (0.16, -8.0), (lead + 0.12, 50.0, "Quad", "In")]
+    a, t = 50.0, lead + 0.12
+    last = 0.95
+    n = int((total - a - 100.0) // 180.0)
+    span = (t_end - last - t) / n
+    for i in range(n):
+        a += 180.0
+        t += span * (0.9 if i % 2 == 0 else 1.1)
+        crank.append((round(t, 3), a, "Linear", "In"))
+    crank.append((round(t_end, 3), total, "Quad", "Out"))
+    tw = t_end + 0.42
+    lid = [(0.0, -OPEN_LID), (tw, -OPEN_LID), (tw + 0.08, -OPEN_LID + 1.1, "Quad", "Out"),
+           (tw + 0.18, -OPEN_LID, "Quad", "In")]
+    latch = [(0.0, 0.0), (tw, 0.0), (tw + 0.08, 1.6, "Quad", "Out"), (tw + 0.18, 0.0, "Quad", "In")]
+    return round(t_end + beat, 2), [("Crank", "turn", crank), ("Lid", "turn", lid),
+                                    ("Latch", "turn", latch)]
+
+
+def jack_pop():
+    """The catch flicks off, the lid bangs onto its stop and bounces three times, the jack
+    springs up past its height and bobs, sways side to side on its spring with its head swinging
+    after it, settles, and then slowly cocks its head at you."""
+    fl = J_["latch"]["flip"]
+    latch = [(0.0, 0.0), (0.025, fl, "Quad", "Out"), (0.1, 0.0, "Quad", "In"),
+             (0.14, 2.5, "Quad", "Out"), (0.19, 0.0, "Quad", "In")]
+    lid = [(0.0, -OPEN_LID), (0.02, -OPEN_LID), (0.095, 0.0, "Linear", "In"),
+           (0.18, -14.0, "Quad", "Out"), (0.295, 0.0, "Quad", "In"), (0.37, -6.0, "Quad", "Out"),
+           (0.475, 0.0, "Quad", "In"), (0.53, -2.2, "Quad", "Out"), (0.615, 0.0, "Quad", "In")]
+    scale = [(0.0, SC0), (0.03, SC0), (0.11, 1.0, "Quad", "Out")]
+    stretch = [(0.0, ST0), (0.03, ST0), (0.14, 1.11, "Quad", "Out"), (0.27, 0.93), (0.39, 1.05),
+               (0.5, 0.975), (0.62, 1.012), (0.75, 1.0)]
+    sway = [(0.0, 0.0), (0.12, 0.0), (0.22, 8.0), (0.42, -6.5), (0.62, 4.6), (0.82, -3.0),
+            (1.02, 1.8), (1.23, -0.9), (1.46, 0.35), (1.75, 0.0)]
+    head = [(0.0, 0.0), (0.15, 0.0), (0.25, -9.0), (0.46, 7.5), (0.66, -5.2), (0.86, 3.4),
+            (1.07, -1.9), (1.3, 0.8), (1.6, 0.0), (2.05, 0.0), (2.85, TU["tilt"])]
+    return 2.95, [("Latch", "turn", latch), ("Lid", "turn", lid), ("Jack", "scale", scale),
+                  ("Jack", "stretch", stretch), ("Jack", "turn", sway), ("Head", "turn", head)]
+
+
+def jack_shut():
+    """Pushed back down: the head straightens, the jack is pressed into the box as the lid comes
+    over and claps shut, its edge pushes the catch out and the catch clicks over it."""
+    head = [(0.0, TU["tilt"]), (0.3, 0.0)]
+    scale = [(0.0, 1.0), (0.1, 1.0), (0.45, SC0)]
+    stretch = [(0.0, 1.0), (0.1, 1.0), (0.45, ST0)]
+    lid = [(0.0, 0.0), (0.12, 0.0), (0.55, -OPEN_LID, "Quad", "In"),
+           (0.62, -OPEN_LID + 1.6, "Quad", "Out"), (0.7, -OPEN_LID, "Quad", "In")]
+    latch = [(0.0, 0.0), (0.5, 0.0), (0.545, 16.0, "Quad", "Out"), (0.585, 0.0, "Quad", "In"),
+             (0.62, 1.5, "Quad", "Out"), (0.66, 0.0, "Quad", "In")]
+    return 0.9, [("Head", "turn", head), ("Jack", "scale", scale), ("Jack", "stretch", stretch),
+                 ("Lid", "turn", lid), ("Latch", "turn", latch)]
+
+
+JW_DUR, JW_TRACKS = jack_wind()
+JP_DUR, JP_TRACKS = jack_pop()
+JS_DUR, JS_TRACKS = jack_shut()
+WHOLE = (0.0, mm(-10.0), mm(165.0))
+
+JACK_IN_THE_BOX = kit.Find(
+    "JackInTheBox",
+    [kit.Part("Box", jb_box),
+     kit.Part("Crank", jb_crank, tuple(CRANK_AT), "Box", (-1, 0, 0)),
+     kit.Part("Latch", jb_latch, tuple(LATCH_AT), "Box", (1, 0, 0)),
+     kit.Part("Lid", jb_lid, tuple(HINGE), "Box", (-1, 0, 0)),
+     kit.Part("Jack", jb_jack, tuple(V(0.0, 0.0, FLOOR)), "Box", (0, 1, 0)),
+     kit.Part("Head", jb_head, tuple(V(0.0, 0.0, NECK)), "Jack", (0, 1, 0))],
+    jack_look,
+    motions={
+        # the crank turns by itself through the tune (6.5 turns in 7.8 s), stops, and in the
+        # beat of nothing after it the lid lifts once against its catch
+        "Wind": dict(duration=JW_DUR, focus="Crank", distance=0.6, view=(2.0, -0.7, 0.7),
+                     drop=0.0, tracks=JW_TRACKS),
+        # the bang: catch off, lid onto its stop, the jack up, bobbing, swaying, then the head
+        # cocked
+        "Pop": dict(duration=JP_DUR, focus=WHOLE, distance=1.75, tracks=JP_TRACKS),
+        # pushed back in and shut, ready to wind again
+        "Shut": dict(duration=JS_DUR, focus=WHOLE, distance=1.75, tracks=JS_TRACKS),
+    },
+    dust=J_["dust"], seed=J_["seed"], texels=500,
+)
+
+
+FINDS = [CYMBAL_MONKEY, JACK_IN_THE_BOX]
 
 if __name__ == "__main__":
     kit.main("Windups", HERE, FINDS)
