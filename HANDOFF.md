@@ -13,7 +13,8 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   floor 3, nobody carried after it, Again clean. Two players wait on `OWNER.md`.
 - **Find art** (D-190 to D-194, overnight Nov 14-15): eleven Lights and the RC car built and in
   the place as templates made by `Finds/Kit.luau` (the disco ball and neon OPEN sign newest;
-  unsaved, the owner saves); next the miner's hard hat, as `art/finds/WAVES.md` says.
+  unsaved, the owner saves; the ball's wall dots unseen in Studio); next the miner's hard hat,
+  as `art/finds/WAVES.md` says.
 
 ## Next task: S4-01 Floors made by rules (the climb with no top)
 ROADMAP S4-01. The owner said there's no top floor (D-128); the built climb still ends at floor 3
