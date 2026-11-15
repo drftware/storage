@@ -1,0 +1,741 @@
+"""The finds kit: build a find's parts high and low, unwrap, bake, export, preview, write Luau.
+
+How to use it is in art/finds/CRAFT.md, "The kit". A set's build.py describes its finds (Find,
+Part, a look, lights, motions) and calls `main(SET, FINDS)`; scripts/art.sh runs it:
+
+    scripts/art.sh set lights                       every stage, every find in the set
+    scripts/art.sh set lights renders DeskLamp      one stage, one find
+"""
+
+import argparse
+import math
+import os
+import shutil
+import subprocess
+import sys
+
+KIT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.abspath(os.path.join(KIT, "..", "..", ".."))
+sys.path.append(os.path.join(ROOT, "art", "unit"))  # after the set's own folder (its spec.py)
+sys.path.append(KIT)
+
+import bpy  # noqa: E402
+import numpy as np  # noqa: E402
+from mathutils import Matrix, Vector  # noqa: E402
+
+import bake as ub  # noqa: E402  (the unit's PNG writing, pixels, Cycles on the GPU)
+import ease  # noqa: E402
+import render  # noqa: E402
+from look import Look  # noqa: E402
+from nodes import NB, hexc  # noqa: E402
+
+SHEETS = os.path.join(ROOT, "art", "sheets")
+
+# --- texture sizing: how sharp a find is held -------------------------------------------------
+TARGET = 300      # texels a stud wanted (the bedroom set has 99); a find held 2 studs from the
+                  # camera on a phone shows about 150 screen pixels a stud, so 300 stays crisp
+SIZES = (256, 512, 1024)   # a texture set is the smallest of these that reaches TARGET
+BIG = 2048        # allowed only for a find marked big (Roblox may shrink it; judge in Studio)
+PAD = 6           # texels of gutter round each UV island, filled from the island's own edge
+AO_IN_COLOUR = 0.45   # how much of the baked occlusion darkens the colour (Roblox has no AO map)
+CAGE = 0.008      # studs: how far outside the game mesh the bake's rays start
+REACH = 0.02      # studs: how far they look for the detailed mesh
+GOLD = (1.0, 0.766, 0.336)   # gold's own colour (linear), the Gold variant's base
+
+
+class Part:
+    """One piece of a find. `build(hi)` returns a shapes.Shape in the find's frame at rest; the
+    part turns or slides about `pivot` along `axis` (Blender frame), under `parent`."""
+
+    def __init__(self, name, build, pivot=(0.0, 0.0, 0.0), parent=None, axis=None):
+        self.name, self.build, self.pivot, self.parent = name, build, Vector(pivot), parent
+        self.axis = Vector(axis).normalized() if axis else None
+
+
+class Find:
+    """A find: its parts (the first is the root, its pivot the find's), its look, its lights and
+    its motions. `glow` says which parts carry the emissive mask and how they light."""
+
+    def __init__(self, name, parts, look, lights=(), motions=None, glow=None, big=False,
+                 dust=0.6, seed=0.0, notes=""):
+        self.name, self.parts, self.look, self.lights = name, parts, look, list(lights)
+        self.motions = motions or {}
+        self.glow = glow or {}
+        self.big, self.dust, self.seed, self.notes = big, dust, seed, notes
+        self.by = {p.name: p for p in parts}
+
+    def out(self, set_dir, *rest):
+        return os.path.join(set_dir, "out", *rest)
+
+
+def reset():
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+
+
+def tris(ob):
+    return sum(len(p.vertices) - 2 for p in ob.data.polygons)
+
+
+# --- geometry ----------------------------------------------------------------------------------
+
+def build(find, hi, coll):
+    """Every part as an object, origin on its pivot. The game mesh (low) gets weighted normals:
+    hard edges stay crisp, big faces flat, rounds smooth."""
+    objs = {}
+    for p in find.parts:
+        name = f"{find.name}_{p.name}" + ("_hi" if hi else "")
+        ob = p.build(hi).to_object(name, coll, origin=p.pivot)
+        ob.data.set_sharp_from_angle(angle=math.radians(50 if not hi else 70))
+        if not hi:
+            mod = ob.modifiers.new("wn", "WEIGHTED_NORMAL")
+            mod.keep_sharp = True
+            mod.weight = 50
+            dg = bpy.context.evaluated_depsgraph_get()
+            me = bpy.data.meshes.new_from_object(ob.evaluated_get(dg))
+            ob.modifiers.clear()
+            old = ob.data
+            ob.data = me
+            bpy.data.meshes.remove(old)
+            me.name = name
+        objs[p.name] = ob
+    return objs
+
+
+def uv_density(objs, size):
+    area = uv = 0.0
+    for o in objs:
+        me = o.data
+        lay = me.uv_layers.active.data
+        for p in me.polygons:
+            area += p.area
+            pts = [lay[i].uv for i in p.loop_indices]
+            uv += abs(sum(pts[i].x * pts[i - 1].y - pts[i - 1].x * pts[i].y
+                          for i in range(len(pts)))) / 2
+    return size * math.sqrt(uv / area)
+
+
+def _pack(objs, size):
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.uv.select_all(action="SELECT")
+    bpy.ops.uv.pack_islands(rotate=True, margin_method="FRACTION", margin=PAD / size,
+                            shape_method="CONCAVE")
+    bpy.ops.object.mode_set(mode="OBJECT")
+
+
+def unwrap(find, objs):
+    """Pack every part's islands into one square, and size the texture set
+    to the smallest that reaches TARGET texels a stud. Returns (size, texels a stud)."""
+    obs = list(objs.values())
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in obs:
+        o.select_set(True)
+        if not o.data.uv_layers:
+            o.data.uv_layers.new(name="UVMap")
+    bpy.context.view_layer.objects.active = obs[0]
+    # the shapes unwrapped themselves at true size (shapes.py); packing scales them all alike
+    size = 1024
+    _pack(obs, size)
+    sizes = SIZES + ((BIG,) if find.big else ())
+    want = next((s for s in sizes if uv_density(obs, s) >= TARGET), sizes[-1])
+    if want != size:
+        size = want
+        _pack(obs, size)
+    d = uv_density(obs, size)
+    clash = clashes(obs)
+    assert not clash, f"{find.name}: faces share texels: {clash}"
+    return size, d
+
+
+def clashes(objs, n=512):
+    """Texels (at n x n) claimed by two parts, or by two faces of one part beyond the odd texel
+    on a shared edge."""
+    owner = np.full((n, n), -1, dtype=np.int32)
+    face = np.full((n, n), -1, dtype=np.int64)
+    out = {}
+    ys, xs = np.mgrid[0:n, 0:n]
+    cx, cy = xs + 0.5, ys + 0.5
+    for oi, o in enumerate(objs):
+        me = o.data
+        me.calc_loop_triangles()
+        uv = np.empty(len(me.loops) * 2, dtype=np.float32)
+        me.uv_layers.active.data.foreach_get("uv", uv)
+        uv = uv.reshape(-1, 2) * n
+        for t in me.loop_triangles:
+            a, b, c = uv[list(t.loops)]
+            x0, y0 = np.maximum(np.floor(np.minimum(np.minimum(a, b), c)).astype(int), 0)
+            x1, y1 = np.minimum(np.ceil(np.maximum(np.maximum(a, b), c)).astype(int), n)
+            if x1 <= x0 or y1 <= y0:
+                continue
+            px, py = cx[y0:y1, x0:x1], cy[y0:y1, x0:x1]
+
+            def side(u, v):
+                return (v[0] - u[0]) * (py - u[1]) - (v[1] - u[1]) * (px - u[0])
+            s1, s2, s3 = side(a, b), side(b, c), side(c, a)
+            inside = ((s1 >= 0) & (s2 >= 0) & (s3 >= 0)) | ((s1 <= 0) & (s2 <= 0) & (s3 <= 0))
+            box, fbox = owner[y0:y1, x0:x1], face[y0:y1, x0:x1]
+            hit = inside & (box >= 0) & (box != oi)
+            for other in np.unique(box[hit]):
+                k = f"{objs[other].name}/{o.name}"
+                out[k] = out.get(k, 0) + int((box[hit] == other).sum())
+            own = inside & (box == oi) & (fbox != t.polygon_index)
+            if own.any():
+                out[o.name] = out.get(o.name, 0) + int(own.sum())
+            box[inside] = oi
+            fbox[inside] = t.polygon_index
+    slack = {o.name: len(o.data.polygons) for o in objs}
+    return {k: v for k, v in out.items() if v > slack.get(k, 0)}
+
+
+def save_low(find, objs, set_dir):
+    """The unwrapped game meshes, kept so export and renders wear the bake's exact UVs."""
+    path = find.out(set_dir, f"{find.name}.blend")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    bpy.data.libraries.write(path, {o.data for o in objs.values()}, fake_user=True)
+
+
+def load_low(find, set_dir, coll):
+    path = find.out(set_dir, f"{find.name}.blend")
+    with bpy.data.libraries.load(path) as (src, dst):
+        dst.meshes = [m for m in src.meshes if m.startswith(find.name + "_")]
+    objs = {}
+    for p in find.parts:
+        me = bpy.data.meshes[f"{find.name}_{p.name}"]
+        ob = bpy.data.objects.new(me.name, me)
+        coll.objects.link(ob)
+        ob.location = p.pivot
+        objs[p.name] = ob
+    return objs
+
+
+# --- the bake: detailed mesh onto the game mesh --------------------------------------------
+
+class Rig:
+    """The detailed mesh's material: the look's channels, a BSDF for the normal pass, an emitter
+    for everything else."""
+
+    def __init__(self, find):
+        self.mat = bpy.data.materials.new(f"rig_{find.name}")
+        nb = self.nb = NB(self.mat)
+        s = find.look(Look(nb, find.seed), find)
+        val = lambda v: v if isinstance(v, bpy.types.NodeSocket) else nb.val(float(v))  # noqa
+        self.sock = {"col": s.col if isinstance(s.col, bpy.types.NodeSocket) else nb.rgb(s.col),
+                     "rough": val(s.rough), "metal": val(s.metal), "glow": val(s.glow),
+                     "ao": nb.ao(0.12, local=False), "cover": nb.val(1.0)}
+        self.bsdf = nb.node("ShaderNodeBsdfPrincipled")
+        nb.put(self.bsdf.inputs["Base Color"], self.sock["col"])
+        nb.put(self.bsdf.inputs["Normal"], nb.bump(val(s.height), s.bump, s.bump_dist))
+        self.emit = nb.node("ShaderNodeEmission")
+        self.out = nb.node("ShaderNodeOutputMaterial")
+
+    def channel(self, k):
+        links = self.nb.links
+        if k == "normal":
+            links.new(self.bsdf.outputs[0], self.out.inputs["Surface"])
+        else:
+            links.new(self.sock[k], self.emit.inputs["Color"])
+            links.new(self.emit.outputs[0], self.out.inputs["Surface"])
+
+
+def dilate(a, covered, steps):
+    a, cov = a.copy(), covered.copy()
+    for _ in range(steps):
+        acc, cnt = np.zeros_like(a), np.zeros(cov.shape, dtype=np.float32)
+        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)):
+            c = np.roll(np.roll(cov, dy, 0), dx, 1)
+            acc += np.roll(np.roll(a, dy, 0), dx, 1) * c[..., None]
+            cnt += c
+        grow = (~cov) & (cnt > 0)
+        a[grow] = acc[grow] / cnt[grow][:, None]
+        cov |= grow
+    return a
+
+
+def tex(find, set_dir, k):
+    return find.out(set_dir, "textures", f"{find.name}_{k}.png")
+
+
+def stage_textures(find, set_dir):
+    reset()
+    coll = bpy.context.scene.collection
+    hi = build(find, True, coll)
+    lo = build(find, False, coll)
+    size, dens = unwrap(find, lo)
+    save_low(find, lo, set_dir)
+    ub.gpu_cycles(48)
+    sc = bpy.context.scene
+    sc.render.bake.margin = 0
+    sc.render.bake.use_selected_to_active = True
+    sc.render.bake.cage_extrusion = CAGE
+    sc.render.bake.max_ray_distance = REACH
+    rig = Rig(find)
+    for o in hi.values():
+        o.data.materials.append(rig.mat)
+    target = bpy.data.materials.new("target")
+    tnb = NB(target)
+    img_node = tnb.node("ShaderNodeTexImage")
+    tnb.nt.nodes.active = img_node
+    for o in lo.values():
+        o.data.materials.append(target)
+        # the game mesh sits on the detailed one: hide it from every ray but the bake's own
+        for v in ("visible_camera", "visible_diffuse", "visible_glossy", "visible_transmission",
+                  "visible_volume_scatter", "visible_shadow"):
+            setattr(o, v, False)
+    res = {}
+    for k in ("col", "rough", "metal", "glow", "ao", "normal", "cover"):
+        img = bpy.data.images.new(f"{find.name}_{k}", size, size, alpha=True, float_buffer=True)
+        img.colorspace_settings.name = "Non-Color"
+        img.generated_color = (0.5, 0.5, 1.0, 1.0) if k == "normal" else (0, 0, 0, 1)
+        img_node.image = img
+        rig.channel(k)
+        sc.cycles.samples = 64 if k == "ao" else 8
+        for p in find.parts:
+            bpy.ops.object.select_all(action="DESELECT")
+            hi[p.name].select_set(True)
+            lo[p.name].select_set(True)
+            bpy.context.view_layer.objects.active = lo[p.name]
+            bpy.ops.object.bake(type="NORMAL" if k == "normal" else "EMIT", normal_space="TANGENT",
+                                margin=0, use_clear=False, use_selected_to_active=True,
+                                cage_extrusion=CAGE, max_ray_distance=REACH)
+        res[k] = ub.pixels(img)
+    covered = res.pop("cover")[..., 0] > 0.5
+    for k in res:
+        res[k] = dilate(res[k], covered, PAD + 2)
+    col = res["col"][..., :3] * (1.0 - AO_IN_COLOUR * (1.0 - res["ao"][..., :1]))
+    rough, metal, glow = res["rough"][..., 0], res["metal"][..., 0], res["glow"][..., 0]
+    os.makedirs(os.path.dirname(tex(find, set_dir, "x")), exist_ok=True)
+    ub.write_png(tex(find, set_dir, "Color"), ub.q8(ub.to_srgb(np.clip(col, 0, 1))))
+    ub.write_png(tex(find, set_dir, "Normal"), ub.q8(res["normal"][..., :3]))
+    ub.write_png(tex(find, set_dir, "Roughness"), ub.q8(np.clip(rough, 0, 1)))
+    ub.write_png(tex(find, set_dir, "Metalness"), ub.q8(np.clip(metal, 0, 1)))
+    if glow.max() > 0.01:
+        ub.write_png(tex(find, set_dir, "Emissive"), ub.q8(np.clip(glow, 0, 1)))
+    ub.write_png(find.out(set_dir, f"{find.name}_cover.png"), ub.q8(covered.astype(np.float32)))
+    # Gold: solid gold that keeps the find's detail: its light and dark (wear, grime, dust) shade
+    # the gold, the polish follows its roughness, and whatever lights up stays as it was.
+    lum = col @ np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)
+    ref = max(float(np.percentile(lum[covered], 90)), 1e-3)
+    shade = np.clip(0.5 + 0.5 * lum / ref, 0.35, 1.05)[..., None]
+    lit = np.clip(glow * 2.0, 0, 1)[..., None]
+    gcol = np.array(GOLD, dtype=np.float32) * shade * (1 - lit) + col * lit
+    grough = (0.14 + 0.4 * rough) * (1 - lit[..., 0]) + rough * lit[..., 0]
+    gmetal = 1.0 - lit[..., 0] * (1 - metal)
+    ub.write_png(tex(find, set_dir, "GoldColor"), ub.q8(ub.to_srgb(np.clip(gcol, 0, 1))))
+    ub.write_png(tex(find, set_dir, "GoldRoughness"), ub.q8(np.clip(grough, 0, 1)))
+    ub.write_png(tex(find, set_dir, "GoldMetalness"), ub.q8(np.clip(gmetal, 0, 1)))
+    print(f"BAKED {find.name}: {size}x{size}, {dens:.0f} texels a stud, "
+          f"{covered.mean():.0%} islands, {sum(tris(o) for o in lo.values())} triangles")
+
+
+# --- materials for export and previews ----------------------------------------------------
+
+def material(find, set_dir, preview=False, gold=False):
+    """The baked maps on a Principled BSDF (what Roblox's importer reads). A preview material
+    also glows: the emissive map, times the part's `glow` (0 to 1), times the find's light."""
+    key = f"{find.name}{'_gold' if gold else ''}{'_pv' if preview else ''}"
+    if key in bpy.data.materials:
+        return bpy.data.materials[key]
+    mat = bpy.data.materials.new(key)
+    nb = NB(mat)
+    g = "Gold" if gold else ""
+    img = lambda k, nc: nb.node("ShaderNodeTexImage", image=ub.load(tex(find, set_dir, k), nc))  # noqa
+    col, rough, metal = img(g + "Color", False), img(g + "Roughness", True), img(g + "Metalness", True)
+    nrm = img("Normal", True)
+    nm = nb.node("ShaderNodeNormalMap")
+    nb.put(nm.inputs["Color"], nrm.outputs["Color"])
+    bsdf = nb.node("ShaderNodeBsdfPrincipled")
+    out = nb.node("ShaderNodeOutputMaterial")
+    nb.put(bsdf.inputs["Base Color"], col.outputs["Color"])
+    nb.put(bsdf.inputs["Roughness"], rough.outputs["Color"])
+    nb.put(bsdf.inputs["Metallic"], metal.outputs["Color"])
+    nb.put(bsdf.inputs["Normal"], nm.outputs["Normal"])
+    if preview and os.path.exists(tex(find, set_dir, "Emissive")):
+        em = img("Emissive", True)
+        tint = find.glow.get("tint", (255, 200, 140))
+        on = nb.mul(em.outputs["Color"], nb.objattr("glow"))
+        nb.put(bsdf.inputs["Emission Color"],
+               nb.mixc(1.0, col.outputs["Color"], nb.rgb(tuple(c / 255 for c in tint)), "MULTIPLY"))
+        nb.put(bsdf.inputs["Emission Strength"], nb.mul(on, find.glow.get("preview", 12.0)))
+    nb.links.new(bsdf.outputs[0], out.inputs["Surface"])
+    return mat
+
+
+# --- export ---------------------------------------------------------------------------------
+
+def to_roblox(v):
+    """Blender's (x, y, z) to Roblox's, through the FBX's axes: x = -x, y = z, z = y."""
+    return (-v[0], v[2], v[1])
+
+
+def bounds(obs):
+    vs = [ob.matrix_world @ v.co for ob in obs for v in ob.data.vertices]
+    lo = Vector([min(v[i] for v in vs) for i in range(3)])
+    hi = Vector([max(v[i] for v in vs) for i in range(3)])
+    return lo, hi
+
+
+def stage_export(find, set_dir):
+    reset()
+    objs = load_low(find, set_dir, bpy.context.scene.collection)
+    mat = material(find, set_dir)
+    bpy.ops.object.select_all(action="DESELECT")
+    for ob in objs.values():
+        ob.data.materials.clear()
+        ob.data.materials.append(mat)
+        ob.select_set(True)
+    bpy.context.view_layer.objects.active = objs[find.parts[0].name]
+    path = find.out(set_dir, f"{find.name}.fbx")
+    bpy.ops.export_scene.fbx(
+        filepath=path, use_selection=True, object_types={"MESH"},
+        apply_scale_options="FBX_SCALE_UNITS", axis_forward="Z", axis_up="Y",
+        use_mesh_modifiers=True, mesh_smooth_type="OFF", use_tspace=False,
+        add_leaf_bones=False, bake_anim=False, path_mode="COPY", embed_textures=True)
+    print("FBX", path, {n: tris(o) for n, o in objs.items()})
+    return objs
+
+
+def row(find, objs, size):
+    """What the game reads about one find (written into the set's Luau)."""
+    lo, hi = bounds(list(objs.values()))
+    root = find.parts[0].pivot
+    parts = []
+    for p in find.parts:
+        plo, phi = bounds([objs[p.name]])
+        parts.append(dict(name=p.name, parent=p.parent, pivot=to_roblox(p.pivot - root),
+                          axis=to_roblox(p.axis) if p.axis else None,
+                          size=to_roblox(phi - plo), tris=tris(objs[p.name])))
+    return dict(size=to_roblox(hi - lo), centre=to_roblox((lo + hi) / 2 - root),
+                tris=sum(tris(o) for o in objs.values()), tex=size, parts=parts)
+
+
+# --- motion -----------------------------------------------------------------------------------
+
+def tracks(find, action):
+    m = find.motions[action]
+    return m["duration"], [(part, ch, ease.keys(ks)) for part, ch, ks in m["tracks"]]
+
+
+def pose(find, objs, values, lights=None):
+    """Stand every part where `values` {(part, channel): v} put it: a turn (degrees) or a move
+    (studs) about the part's own pivot and axis, carried by its parent's motion."""
+    delta = {}
+    for p in find.parts:
+        D = delta[p.parent] if p.parent else Matrix()
+        L = Matrix()
+        if p.axis is not None:
+            turn = values.get((p.name, "turn"), 0.0)
+            move = values.get((p.name, "move"), 0.0)
+            L = (Matrix.Translation(p.pivot) @ Matrix.Rotation(math.radians(turn), 4, p.axis)
+                 @ Matrix.Translation(-p.pivot) @ Matrix.Translation(p.axis * move))
+        delta[p.name] = D @ L
+        objs[p.name].matrix_world = delta[p.name] @ Matrix.Translation(p.pivot)
+        objs[p.name]["glow"] = values.get((p.name, "glow"), objs[p.name].get("glow", 0.0))
+    for lt, ob in (lights or {}).items():
+        spec = find.lights[lt]
+        D = delta[spec["part"]]
+        at = D @ Vector(spec["at"])
+        ob.location = at
+        face = (D.to_3x3() @ Vector(spec.get("face", (0, 0, -1)))).normalized()
+        ob.rotation_euler = face.to_track_quat("-Z", "Y").to_euler()
+        g = objs[find.glow.get("part", find.parts[0].name)].get("glow", 0.0)
+        ob.data.energy = spec["preview_watts"] * g
+        ob.hide_render = g <= 0.001
+    bpy.context.view_layer.update()
+
+
+def values_at(trs, t):
+    return {(part, ch): ease.sample(ks, t) for part, ch, ks in trs}
+
+
+# --- previews ----------------------------------------------------------------------------------
+
+def place(find, objs, M, coll, values=None, lights=True):
+    """A posed copy of the find at M (a fresh copy each call; the first call uses `objs`)."""
+    for ob in objs.values():
+        if ob.name not in coll.objects:
+            coll.objects.link(ob)
+    lts = {}
+    if lights:
+        for i, spec in enumerate(find.lights):
+            ld = bpy.data.lights.new(f"{find.name}_light{i}", spec.get("preview_kind", "SPOT"))
+            ld.color = tuple(c / 255 for c in ease.kelvin(spec["kelvin"]))
+            ld.shadow_soft_size = spec.get("preview_size", 0.05)
+            if ld.type == "SPOT":
+                ld.spot_size = math.radians(spec.get("angle", 90))
+                ld.spot_blend = spec.get("preview_blend", 0.6)
+            lo = bpy.data.objects.new(ld.name, ld)
+            coll.objects.link(lo)
+            lts[i] = lo
+    pose(find, objs, values or {}, lts)
+    for ob in list(objs.values()) + list(lts.values()):
+        ob.matrix_world = M @ ob.matrix_world
+    return lts
+
+
+def frame_find(find, objs):
+    lo, hi = bounds(list(objs.values()))
+    return (lo + hi) / 2, (hi - lo)
+
+
+def studio(coll):
+    rig = render.studio_rig()
+    for o in rig:
+        o.hide_render = False
+    return rig
+
+
+def unit_room(coll):
+    """A medium unit (10 x 10 studs, 9 high) seen from its open door: concrete floor, ribbed grey
+    walls, a dim warm bulb in the middle, boxes at the back. Its door faces -Y at y = 0."""
+    floor = render.simple("u_floor", hexc("#5E5A54"), 0.85)
+    wall = render.simple("u_wall", hexc("#77797A"), 0.5, 0.6)
+    render.box_obj("u_floor", (-5.0, 0.0, -0.1), (5.0, 10.0, 0.0), floor, coll)
+    render.box_obj("u_back", (-5.0, 10.0, 0.0), (5.0, 10.2, 9.0), wall, coll)
+    render.box_obj("u_left", (-5.2, 0.0, 0.0), (-5.0, 10.2, 9.0), wall, coll)
+    render.box_obj("u_right", (5.0, 0.0, 0.0), (5.2, 10.2, 9.0), wall, coll)
+    render.box_obj("u_top", (-5.2, 0.0, 9.0), (5.2, 10.2, 9.2), wall, coll)
+    render.box_obj("u_lintel", (-5.2, -0.2, 7.6), (5.2, 0.0, 9.2), wall, coll)
+    for c, s, r in (((-3.6, 8.6, 0.0), (2.2, 2.0, 1.7), 6), ((-3.5, 8.7, 1.7), (1.8, 1.6, 1.4), -4),
+                    ((3.4, 8.8, 0.0), (2.4, 2.0, 2.0), -3), ((1.2, 9.0, 0.0), (1.6, 1.5, 1.2), 9)):
+        render.box_prop(coll, c, s, r)
+    bl = bpy.data.lights.new("u_bulb", "POINT")
+    bl.energy, bl.color, bl.shadow_soft_size = 650.0, (1.0, 0.78, 0.52), 0.15
+    bo = bpy.data.objects.new("u_bulb", bl)
+    coll.objects.link(bo)
+    bo.location = (0.0, 5.0, 8.2)
+    render.world((0.004, 0.005, 0.007), 1.0)
+
+
+def ffmpeg(*args):
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *args], check=True)
+
+
+def shoot(cam, path, res, samples):
+    sc = bpy.context.scene
+    sc.render.resolution_x, sc.render.resolution_y = res
+    sc.cycles.samples = samples
+    render.shoot(cam, path)
+
+
+def stage_renders(find, set_dir, quick=False):
+    """The sheets CRAFT.md asks for: lineup with a person, front and back, held, the unit's
+    doorway on a phone (off and on), off and on up close, a filmstrip and an MP4 per action,
+    and Gold."""
+    S = 48 if quick else 128
+    name = find.name.lower()
+    sheet = lambda k: os.path.join(SHEETS, f"{name}-{k}.png")  # noqa: E731
+    os.makedirs(SHEETS, exist_ok=True)
+    tmp = find.out(set_dir, "frames")
+    shutil.rmtree(tmp, ignore_errors=True)
+    os.makedirs(tmp)
+
+    def scene():
+        reset()
+        render.setup(S, (1600, 900))
+        coll = bpy.context.scene.collection
+        objs = load_low(find, set_dir, coll)
+        for ob in objs.values():
+            ob.data.materials.clear()
+            ob.data.materials.append(material(find, set_dir, preview=True))
+        return coll, objs
+
+    rest = {}
+    for part, ch, ks in [t for a in find.motions for t in tracks(find, a)[1]]:
+        rest.setdefault((part, ch), ks[0][1])
+    c, size = None, None
+
+    # 1. the studio: lineup with a person (5.4 studs), front, back, held, Gold
+    coll, objs = scene()
+    studio(coll)
+    place(find, objs, Matrix(), coll, rest, lights=False)
+    c, size = frame_find(find, objs)
+    h = max(size.z, 0.5)
+    before = set(bpy.data.objects)
+    render.kept_figure(coll, (-(size.x / 2 + 1.6), 0.6, 0.0), 0.0, 5.4)
+    person = set(bpy.data.objects) - before
+    cam = render.camera((-1.2, -9.5, 3.2), (-1.2, 0.0, 2.4), lens=40)
+    shoot(cam, sheet("lineup"), (1600, 900), S)
+    for o in person:
+        o.hide_render = True
+    d = max(size.x, size.y, size.z)
+    cam = render.camera(c + Vector((-0.9, -1.9, 0.55)) * d * 1.25, c, lens=45)
+    shoot(cam, sheet("front"), (1600, 900), S)
+    cam = render.camera(c + Vector((1.1, 1.7, 0.75)) * d * 1.25, c, lens=45)
+    shoot(cam, sheet("back"), (1600, 900), S)
+    # held: on a phone (844 x 390, about a 70 degree view up and down), 1.6 studs off
+    cam = render.camera(c + Vector((-0.5, -1.5, 0.5)).normalized() * 2.6, c, lens=12)
+    shoot(cam, sheet("held"), (844, 390), S)
+    gm = material(find, set_dir, preview=True, gold=True)
+    for ob in objs.values():
+        ob.data.materials[0] = gm
+    cam = render.camera(c + Vector((-0.9, -1.9, 0.55)) * d * 1.25, c, lens=45)
+    shoot(cam, sheet("gold"), (1600, 900), S)
+
+    # 2. off and on up close, in the dark, on a floor that shows the pool
+    for state in ("off", "on"):
+        coll, objs = scene()
+        render.world((0.01, 0.011, 0.014), 1.0)
+        fl = render.simple("floor", hexc("#4A4743"), 0.8)
+        render.box_obj("floor", (-20, -20, -0.1), (20, 20, 0.0), fl, coll)
+        vals = dict(rest)
+        if state == "on":
+            vals[(find.glow.get("part"), "glow")] = 1.0
+        place(find, objs, Matrix(), coll, vals)
+        key = bpy.data.lights.new("moon", "AREA")
+        key.energy, key.size, key.color = 320.0, 6.0, (0.75, 0.82, 1.0)
+        ko = bpy.data.objects.new("moon", key)
+        coll.objects.link(ko)
+        ko.location = (6, -4, 8)
+        ko.rotation_euler = (Vector((0, 0, 0)) - ko.location).to_track_quat("-Z", "Y").to_euler()
+        cam = render.camera(c + Vector((-1.0, -2.6, 0.25)) * d * 0.8, c - Vector((0, 0, h * 0.2)),
+                            lens=35)
+        shoot(cam, os.path.join(tmp, f"close-{state}.png"), (960, 900), S)
+    ffmpeg("-i", os.path.join(tmp, "close-off.png"), "-i", os.path.join(tmp, "close-on.png"),
+           "-filter_complex", "hstack", sheet("offon"))
+
+    # 3. the unit's doorway on a phone: deeper than the bulb, facing the door (D-036)
+    for state in ("off", "on"):
+        coll, objs = scene()
+        unit_room(coll)
+        vals = dict(rest)
+        if state == "on":
+            vals[(find.glow.get("part"), "glow")] = 1.0
+        place(find, objs, Matrix.Translation((0.8, 7.0, 0.0)) @ Matrix.Rotation(math.radians(-15), 4, "Z"),
+              coll, vals)
+        cam = render.camera((0.0, -1.0, 4.6), (0.3, 7.0, 0.9), lens=12)
+        shoot(cam, os.path.join(tmp, f"unit-{state}.png"), (844, 390), S)
+    ffmpeg("-i", os.path.join(tmp, "unit-off.png"), "-i", os.path.join(tmp, "unit-on.png"),
+           "-filter_complex", "vstack", sheet("unit"))
+
+    # 4. every action: 24 frames a second into an MP4, ten of them into a filmstrip
+    for action in find.motions:
+        dur, trs = tracks(find, action)
+        coll, objs = scene()
+        render.world((0.01, 0.011, 0.014), 1.0)
+        fl = render.simple("floor", hexc("#4A4743"), 0.8)
+        render.box_obj("floor", (-20, -20, -0.1), (20, 20, 0.0), fl, coll)
+        amb = bpy.data.lights.new("amb", "AREA")
+        amb.energy, amb.size = 520.0, 6.0
+        ao_ = bpy.data.objects.new("amb", amb)
+        coll.objects.link(ao_)
+        ao_.location = (-5, -6, 7)
+        ao_.rotation_euler = (Vector((0, 0, 0)) - ao_.location).to_track_quat("-Z", "Y").to_euler()
+        lts = place(find, objs, Matrix(), coll, values_at(trs, 0.0))
+        focus = find.motions[action].get("focus", find.parts[-1].name)
+        fc = objs[focus].matrix_world.translation
+        cam = render.camera(fc + Vector((-1.1, -2.0, 0.15)) * d * 0.6, fc - Vector((0, 0, 0.2)),
+                            lens=40)
+        n = int(math.ceil(dur * 24)) + 6
+        frames = []
+        for i in range(n):
+            pose(find, objs, values_at(trs, i / 24.0), lts)
+            f = os.path.join(tmp, f"{action}-{i:03d}.png")
+            shoot(cam, f, (480, 360), 24 if quick else 48)
+            frames.append(f)
+        ffmpeg("-framerate", "24", "-i", os.path.join(tmp, f"{action}-%03d.png"),
+               "-c:v", "libx264", "-pix_fmt", "yuv420p", "-vf", "scale=480:360",
+               find.out(set_dir, f"{name}-{action.lower()}.mp4"))
+        step = max(1, (n - 1) // 9)
+        pick = [frames[min(i * step, n - 1)] for i in range(10)]
+        args = []
+        for f in pick:
+            args += ["-i", f]
+        lay = "|".join(f"{(i % 5) * 480}_{(i // 5) * 360}" for i in range(10))
+        ffmpeg(*args, "-filter_complex", f"xstack=inputs=10:layout={lay}",
+               sheet(f"{action.lower()}"))
+    shutil.rmtree(tmp, ignore_errors=True)
+
+
+# --- the generated Luau -----------------------------------------------------------------------
+
+def _v3(v):
+    return f"Vector3.new({v[0]:.3f}, {v[1]:.3f}, {v[2]:.3f})"
+
+
+def write_luau(set_name, finds, rows, path):
+    L = ["--!strict",
+         f"-- Generated by the finds kit (art/finds/kit) from art/finds/{set_name.lower()}/build.py.",
+         "-- Don't edit: change the build and rerun scripts/art.sh set "
+         f"{set_name.lower()}. Studs, Roblox axes,",
+         "-- relative to the find's pivot. What each field means: src/shared/Finds/Art.luau.",
+         "-- Nothing reads this to deal a find until the set's templates are in the place.",
+         "",
+         "local Art = require(script.Parent.Parent.Art)",
+         "",
+         "local Set: { [string]: Art.Find } = {"]
+    for f in finds:
+        r = rows[f.name]
+        L.append(f"\t{f.name} = {{")
+        L.append(f"\t\tSize = {_v3(r['size'])},")
+        L.append(f"\t\tCentre = {_v3(r['centre'])},")
+        L.append(f"\t\tTriangles = {r['tris']},")
+        L.append(f"\t\tTexture = {r['tex']},")
+        L.append("\t\tParts = {")
+        for p in r["parts"]:
+            ax = f"Axis = {_v3(p['axis'])}, " if p["axis"] else ""
+            par = f"Parent = \"{f.name}_{p['parent']}\", " if p["parent"] else ""
+            L.append(f"\t\t\t{{ Name = \"{f.name}_{p['name']}\", {par}Pivot = {_v3(p['pivot'])}, {ax}"
+                     f"Size = {_v3(p['size'])}, Triangles = {p['tris']} }},")
+        L.append("\t\t},")
+        g = f.glow
+        if g:
+            t = g.get("tint", (255, 200, 140))
+            L.append(f"\t\tGlow = {{ Part = \"{f.name}_{g['part']}\", Strength = {g['strength']}, "
+                     f"Tint = Color3.fromRGB({t[0]}, {t[1]}, {t[2]}) }},")
+        L.append("\t\tLights = {")
+        root = f.parts[0].pivot
+        for lt in f.lights:
+            col = ease.kelvin(lt["kelvin"])
+            ang = f"Angle = {lt['angle']}, " if lt["kind"] == "Spot" else ""
+            L.append(f"\t\t\t{{ Kind = \"{lt['kind']}\", Part = \"{f.name}_{lt['part']}\", "
+                     f"At = {_v3(to_roblox(Vector(lt['at']) - root))}, "
+                     f"Face = {_v3(to_roblox(Vector(lt.get('face', (0, 0, -1)))))}, "
+                     f"Color = Color3.fromRGB({col[0]}, {col[1]}, {col[2]}), "
+                     f"Brightness = {lt['brightness']}, Range = {lt['range']}, {ang}"
+                     f"Shadows = {'true' if lt.get('shadows') else 'false'} }},")
+        L.append("\t\t},")
+        L.append("\t\tMotions = {")
+        for action, m in f.motions.items():
+            L.append(f"\t\t\t{action} = {{ Duration = {m['duration']}, Tracks = {{")
+            for part, ch, ks in m["tracks"]:
+                keys = ", ".join(f"{{ {t:g}, {v:g}, \"{st}\", \"{d}\" }}"
+                                 for t, v, st, d in ease.keys(ks))
+                L.append(f"\t\t\t\t{{ Part = \"{f.name}_{part}\", Channel = \"{ch}\", Keys = {{ {keys} }} }},")
+            L.append("\t\t\t} },")
+        L.append("\t\t},")
+        L.append("\t},")
+    L += ["}", "", "return Set", ""]
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as fh:
+        fh.write("\n".join(L))
+    print("SPEC", path)
+
+
+# --- running a set -----------------------------------------------------------------------------
+
+def main(set_name, set_dir, finds):
+    argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--stage", choices=["textures", "export", "renders", "quick"], required=True)
+    ap.add_argument("--find", default="")
+    a = ap.parse_args(argv)
+    chosen = [f for f in finds if not a.find or f.name == a.find]
+    assert chosen, f"no find {a.find} in {set_name}"
+    if a.stage == "textures":
+        for f in chosen:
+            stage_textures(f, set_dir)
+    elif a.stage == "export":
+        rows = {}
+        for f in finds:  # the Luau lists the whole set, so every find is exported
+            if not os.path.exists(f.out(set_dir, f"{f.name}.blend")):
+                print(f"skip {f.name}: no bake yet")
+                continue
+            objs = stage_export(f, set_dir)
+            size = ub.load(tex(f, set_dir, "Color"), False).size[0]
+            rows[f.name] = row(f, objs, size)
+        built = [f for f in finds if f.name in rows]
+        write_luau(set_name, built, rows,
+                   os.path.join(ROOT, "src", "shared", "Finds", "Sets", f"{set_name}.luau"))
+    else:
+        for f in chosen:
+            stage_renders(f, set_dir, quick=a.stage == "quick")

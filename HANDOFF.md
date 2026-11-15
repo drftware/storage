@@ -11,8 +11,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   trapping pays 5 coins, boss floors possible). D-189: the end screen says "Caught", never "Kept". Four follow-ups wait in `OWNER.md`.
 - Seen in Studio Play (one player, two stand-ins): the wipe landed 1.1 s after the car reached
   floor 3, nobody carried after it, Again clean. Two players wait on `OWNER.md`.
-- **Find art** (D-190, overnight Nov 14-15, beside the game's tickets): the catalog's wave 1 per
-  `art/finds/CRAFT.md` and `WAVES.md`. Nothing built yet; next F-01, the kit and the desk lamp.
+- **Find art** (D-190, D-191, overnight Nov 14-15, beside the game's tickets): the finds kit is
+  built (`art/finds/kit/`, CRAFT.md "The kit") and proven on the desk lamp, which is built; next F-02a, the rest of the Lights
+  (`art/finds/WAVES.md`).
 
 ## Next task: S4-01 Floors made by rules (the climb with no top)
 ROADMAP S4-01. The owner said there's no top floor (D-128); the built climb still ends at floor 3

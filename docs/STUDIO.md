@@ -82,6 +82,15 @@ verified: a doc page, Studio, or "untested".
   AlphaMode Transparency** (L-07b, Open Cloud upload, 2026-11-10); without that link it arrives in
   Overlay, as every earlier import did.
 
+- **Glow on a textured find** (Studio Edit, F-01, Nov 15): a SurfaceAppearance has
+  `EmissiveMaskContent`, `EmissiveStrength` (default 1) and `EmissiveTint`. A boombox copy given
+  its own colour map as the mask glowed only where the map was light (the chrome handle and
+  aerial) at strength 4, tinted warm; at strength 0 it was as dark as ever. The glow lights
+  nothing round it, so a lit find also needs a light. ReflectionService says scripts may write
+  `EmissiveStrength`, `EmissiveTint` and `Color`, while `EmissiveMaskContent`, like the maps, has
+  no script write: bake the mask into the template once (plugin or MCP), and switch the glow from
+  the game with the strength. The bloom (Threshold 2) didn't halo the glow in Edit.
+
 ## Camera and prompts
 
 - **A door's middle point holds three buttons** (S1-04a2, Play, 2026-11-14): `DoorMiddle` has

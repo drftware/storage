@@ -5242,3 +5242,16 @@ what ships. Each set's finds stay out of the floors' deal until a game ticket br
 
 Not chosen: one atlas per set at 1024 (the bedroom set's way; blurs held in the hand), and
 greybox first (AGENTS.md: real assets from the start).
+
+## D-191 Finds are built with one shared kit: a texture set each, baked high to low (F-01, Nov 15)
+
+Every catalog find from F-01 on is built with `art/finds/kit/` (CRAFT.md, "The kit"). Each find
+gets its own texture set, sized to reach 300 texels a stud (the bedroom set shares one at 99),
+which on a phone keeps a held find sharp; most finds land on 1024. Detail is modelled on a
+high version and baked onto the game mesh with its occlusion. Moving and lit pieces are their own
+MeshParts pivoted on their real hinges. Glow is the SurfaceAppearance's emissive mask switched by
+`EmissiveStrength` (scripts may write it; the mask is set once on the template). Motions are keys
+in the build, eased by the same sums in Python and in `Finds/Art.luau`, so the game plays what
+the previews showed. The cost: a texture set per find is more memory than a shared atlas; F-S1
+judges it on a phone in Studio.
+

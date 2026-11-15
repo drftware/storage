@@ -41,33 +41,84 @@ built from the catalog (art/finds/WAVES.md lists them) is held to this file.
 - In the set's README, under each find: what you looked at (the pages' addresses), its real size
   and the studs it became (10 inches a stud, the boxes' scale), and its tells.
 
-## The kit (F-01 writes this section)
+## The kit
 
-F-01 builds the shared code every set uses and replaces this paragraph with how it works: where
-the files live (suggested: `art/finds/kit/` for shared code, `art/finds/<set>/` for each set's
-spec, build, README and out; the bedroom set can stay where it is), how a find is split into
-parts, how textures are sized, the bakes, the previews, the Gold look, what goes into the game's
-Specs, and the commands (`scripts/art.sh`). What it has to deliver:
+Built in F-01 (Nov 15) and proven on the desk lamp (`art/finds/lights/`). Read this, then one
+set's `build.py` as an example; you shouldn't need the kit's code.
 
-- **Texture sharpness by how close players get.** No blur in the held view (the flashlight's
-  view sheet camera is a fair test). Likely one texture set per find, sized by its surface (512
-  for a tiny Common, 1024 for most, 2048 only for big finds if Roblox keeps it), several parts of
-  one find sharing it. State the texel density in numbers and check it.
-- **High to low.** Model a detailed version (bevels, seams, stitching, screws, embossed text,
-  dents) and bake its normals and ambient occlusion onto the game mesh; bake the procedural
-  materials (wear, dust, grime, fingerprints) into colour, roughness and metalness. A little of
-  the baked occlusion goes into the colour, since Roblox has no occlusion map.
-- **Clean meshes.** Weighted normals on hard surfaces, round things round at the held distance,
-  no flipped faces, no overlapping UV islands, nothing floating, pivots exact. Triangles: about
-  500 to 3,000 for a small find, up to 6,000 for a medium one, up to 15,000 for a big find
-  (Roblox allows 20,000 a mesh).
-- **Dust, and a clean twin.** Dust settles on whatever faces up (as the bedroom set's
-  `spec.DUST`); a mimic's clean look is the same bake with no dust.
-- **Gold.** Every find gets its Gold look (catalog variants) made from its own maps: solid gold
-  that keeps the find's detail. Rainbow and Huge are the game's job (a material shift, a scale).
-- **The game reads it without dealing it.** Each set's numbers go into generated Luau the game
-  can read (sizes, parts, pivots, lights, motions). Nothing a session adds may change what a
-  floor deals until the set's templates are in the place.
+- **Files.** `art/finds/kit/`: `kit.py` (build, bake, export, previews, the Luau), `shapes.py`
+  (lathe, tube, cylinder, box, `helix`, `arc`, `fillet`), `look.py` (`Look`, `Coat`,
+  `Surface`), `ease.py` (easing, shared with the game, and `kelvin`). A set lives in
+  `art/finds/<set>/`: `spec.py` (every number), `build.py` (its finds), `README.md`, `out/`.
+  Its sheets land in `art/sheets/<find>-*.png`. The bedroom set keeps its own older build.
+- **Commands.** `scripts/art.sh set lights` runs textures, export and renders for every find in
+  the set (the desk lamp: about 40 s, 5 s, 4 min). Name stages and one find to do less:
+  `scripts/art.sh set lights textures DeskLamp`, `... renders DeskLamp`; `quick` renders rough
+  sheets in about 90 s for looking while you work. Export always writes the whole set's Luau.
+- **A find in code.** `kit.Find(name, parts, look, lights=[...], glow={...}, motions={...},
+  dust=, seed=)`; then `kit.main("Lights", HERE, FINDS)` at the bottom of `build.py`. Each
+  `kit.Part(name, build, pivot, parent, axis)`: `build(hi)` returns a `shapes.Shape` drawn in
+  the find's frame at rest (Blender: X across, Y away, front to -Y, Z up, studs, 10 inches a
+  stud); the first part is the root and its pivot is the find's. Ask for more rounds when `hi`
+  (`segs(hi, 32)`) and add what only the detailed version has (the spring's real coils, the
+  bulb's screw thread).
+- **Parts and pivots.** Each part becomes its own MeshPart `<Find>_<Part>` whose origin is its
+  pivot (Roblox keeps it as the part's pivot). The pivot is the real hinge or axle; `axis` is
+  what it turns about (or slides along), in the find's frame; `parent` is the part it rides on.
+- **Kinds.** Every face carries an int `kind` (an enum at the top of the set's build); the look
+  reads it with `L.k(KIND, ...)`.
+- **UVs, built in.** Shapes unwrap as they're built, at true size: a lathe's steep runs unroll
+  into strips cut in two round (`split`), its flat runs (and poles) project from above, a new
+  island wherever the kind changes; a tube is one strip plus two cap discs; a box is projected
+  side by side. The kit packs every part's islands into one square (no smart project: it cut
+  tubes into hundreds of slivers and wasted three quarters of the texture) and checks no two
+  faces share texels.
+- **Texture sizing.** One texture set per find, all its parts sharing it. `TARGET` 300 texels a
+  stud (the bedroom set has 99; a find held 2 studs off on a phone shows about 150 screen pixels
+  a stud); the set is the smallest of 256, 512, 1024 that reaches it, 2048 only for a find made
+  with `big=True`. The bake prints what it got: the desk lamp is 1024 at 319 texels a stud.
+- **The bake (high to low).** Both versions are built at rest; the game mesh (low) gets weighted
+  normals. Each part's detailed mesh is baked onto its game mesh (selected to active, rays from
+  0.008 outside, reaching 0.02): normal (the detailed geometry plus the look's fine bump),
+  colour, roughness, metalness, glow (the emissive mask) and occlusion (0.12 studs, from the
+  whole find at rest, so a moved part keeps a faint shadow of where it was). 45 per cent of the
+  occlusion goes into the colour (Roblox has no AO map). Gutters are filled from each island's
+  own edge. Out: `out/textures/<Find>_Color|Normal|Roughness|Metalness[|Emissive].png`, and
+  `out/<Find>.blend`, the unwrapped game meshes every later stage wears.
+- **Looks.** `look(L, find) -> Surface`: `Coat(L, colour, roughness, metal, height)`, then
+  `paint(mask, ...)` layers, `enamel_wear` (chips that bite edges, never a band), `lights(mask)`
+  (where it glows), `finish(dust, grime)` (creases darkened, dust on whatever faced up as it was
+  found). Masks can be written in studs in the find's frame (`L.x/y/z`, `L.P`).
+- **Dust and a clean twin.** `dust=` on the Find; a mimic's clean look is the same bake with
+  `dust=0` (not built yet).
+- **Gold.** Every bake also writes `<Find>_GoldColor|GoldRoughness|GoldMetalness.png`: gold
+  shaded by the find's own light and dark (wear, grime, dust), polish from its roughness, the
+  normal map shared; whatever glows stays as it was.
+- **Lights.** `lights=[dict(kind="Spot"|"Point", part, at, face, kelvin, brightness, range,
+  angle, shadows, preview_watts)]`, `at` and `face` in the find's frame at rest; colour comes
+  from the colour temperature. `glow=dict(part, strength, tint)` names the part carrying the
+  emissive mask: on Roblox the template's SurfaceAppearance gets `EmissiveMaskContent` (upload
+  the Emissive PNG, a plugin-only property) and the game switches it with `EmissiveStrength`
+  0 to `strength`, which scripts may write (`docs/STUDIO.md`, "Glow"). A glowing piece is its
+  own part. Add a weak Point light beside a Spot: a close spotlight lights nothing at low
+  graphics.
+- **Motion data.** `motions={"SwitchOn": dict(duration, focus, tracks=[(part, channel, keys)])}`;
+  channel `turn` (degrees about the axis), `move` (studs along it) or `glow` (0 to 1, which also
+  scales the lights); keys `(t, value[, style, direction])`, each saying how it is reached
+  (Linear, Sine, Quad, Cubic, Quart, Back; In, Out, InOut; default Sine InOut). Write the
+  wind-up, overshoot and settle as keys. Python (`ease.py`) and Luau (`Finds/Art.luau`) share
+  the same sums.
+- **Previews.** Renders: `-lineup` (beside a 5.4-stud person), `-front`, `-back`, `-held` (a
+  phone's view, 2.6 studs off), `-gold`, `-offon` (in the dark, up close), `-unit` (a medium
+  unit's doorway on a phone, off above on, deeper than the bulb), and per action a ten-frame
+  filmstrip `-<action>.png` plus `out/<find>-<action>.mp4` at 24 frames a second.
+- **The generated Luau.** Export writes `src/shared/Finds/Sets/<Set>.luau`, typed by
+  `src/shared/Finds/Art.luau`: per find its size, centre, triangles, texture side, parts (name,
+  parent, pivot, axis, size, triangles in Roblox axes from the find's pivot), glow, lights and
+  motions. Nothing requires a set until its templates are in the place, so a session never
+  changes what a floor deals. `Art.sample(keys, t)` plays a track.
+- **Into Studio** (F-S1): upload `out/<Find>.fbx` (one Model per find), insert, set each glow
+  part's `EmissiveMaskContent`, keep it in `ReplicatedStorage.Props.Finds`.
 
 ## Things that move or light
 

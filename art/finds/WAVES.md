@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-01, the finds kit, proven on the desk lamp (a switch, a jointed arm, a warm pool of
-light) and as many more Lights as fit. The kit is never shipped unproven.
+**Next:** F-02a, the rest of the Lights from the plug-in night-light down, with the kit (notes
+below).
 
 ## Order
 
@@ -34,7 +34,18 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
 
-- (none yet)
+- **Nov 15, F-01 (the kit and the desk lamp).** The kit is in `art/finds/kit/` and CRAFT.md's
+  "The kit" says how to use it; the desk lamp (`art/finds/lights/`) proves every piece: parts on
+  hinges, the high-to-low bake, glow, two lights, two motions, Gold, the Luau. Its sheets were judged three
+  times (framing, the shade made a bell, the nod doubled to 4 degrees, a dark band at the rim
+  broken into chips); the switch filmstrips with the bigger nod weren't looked at again.
+  Things to know: `quick` sheets take 90 s; look at one composed contact sheet (ffmpeg
+  hstack/vstack into the scratchpad), not each PNG, or the context runs out. Triangles came to
+  6,564 (the shade 2,272 and the base with its cord 2,276): trim the shade's profile if a medium
+  find must stay under 6,000. Packing fills 39 per cent of the square: tighter packing
+  (fewer, bigger islands) would buy density. The person in the lineup is the shrink-wrapped
+  figure from the unit's sheets. `Finds/Art.luau` has no Lune spec yet: add one (ease ends at 0
+  and 1, Back overshoots, a lamp key sampled) when next touched.
 
 ## Lights (16) · F-01, F-02
 
@@ -44,7 +55,7 @@ A light set down switched on lights the space round it until it runs down. Wheth
 |---|---|---|---|---|
 | Plug-in night-light | Common | Switch on (at home): a soft glow by the floor |  | |
 | Tea light in a jar | Common | Light: a small glow for about a minute |  | |
-| Desk lamp | Common | Switch on (at home): a warm pool of light | Needs a socket, so only at home | |
+| Desk lamp | Common | Switch on (at home): a warm pool of light | Needs a socket, so only at home | Nov 15, F-01 |
 | Bundle of glow sticks | Common | Crack: one stick lights a small spot for the rest of the floor; three to a bundle | The glow sticks from the Nov 2 draft | |
 | String fairy lights | Uncommon | Switch on: lay them along a hall for a dim line of light |  | |
 | Camping lantern | Uncommon | Switch on: a wide light for 90 seconds |  | |

@@ -85,8 +85,29 @@
 #                                       unit's textures and stands the elevator in its bays: build
 #                                       both first; about 3 minutes)
 #   scripts/art.sh lobby export         just the front office's FBX and Specs module
+#   scripts/art.sh set lights           a finds set built with the finds kit (art/finds/CRAFT.md,
+#                                       "The kit"): bake, FBX and Luau, sheets and motion previews.
+#                                       Name stages (textures export renders, or quick: fast,
+#                                       rough sheets) and a find (DeskLamp) to do less
 set -euo pipefail
 cd "$(dirname "$0")/.."
+if [ "${1:-}" = "set" ]; then
+	# a finds set built with the finds kit (art/finds/CRAFT.md, "The kit"):
+	#   scripts/art.sh set lights [textures|export|renders|quick ...] [FindName]
+	name=$2
+	shift 2
+	stages=""
+	only=""
+	for w in "$@"; do
+		case $w in textures | export | renders | quick) stages="$stages $w" ;; *) only=$w ;; esac
+	done
+	for st in ${stages:-textures export renders}; do
+		echo "== $name $st ${only}"
+		blender -b --factory-startup -P "art/finds/$name/build.py" -- --stage "$st" ${only:+--find "$only"} 2>&1 \
+			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|skip|DONE|assert" || true
+	done
+	exit 0
+fi
 if [ "${1:-}" = "elevator" ]; then
 	shift
 	for st in ${*:-labels textures export renders}; do
