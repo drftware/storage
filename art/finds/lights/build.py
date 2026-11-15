@@ -4601,8 +4601,420 @@ FIREFLY_JAR = kit.Find(
     dust=FJ["dust"], seed=FJ["seed"], texels=450,
 )
 
+# --- the theatre spotlight ----------------------------------------------------------------------
+
+(SP_ENAMEL, SP_INSIDE, SP_ZINC, SP_BLACK, SP_CHROME, SP_CAST, SP_BAKELITE, SP_RUBBER, SP_GLASS,
+ SP_BRASS, SP_DIAL) = range(148, 159)
+SL = K.SPOTLIGHT
+SC, SDR, SY, SS = SL["can"], SL["doors"], SL["yoke"], SL["stand"]
+SP_TZ = SL["tilt_z"]
+# the can's own frame: z along the beam (out the front, the find's -Y), y up, x across, from the
+# tilt axis
+SP_CAN = Matrix.Translation((0.0, 0.0, SP_TZ)) @ Matrix.Rotation(math.radians(90), 4, "X")
+SP_DOOR_Z = SDR["z"] + SDR["t"]                    # the frame's front, where the leaves hinge
+SP_KNOB_AT = (-(SY["x"] + 0.035), 0.0, SP_TZ)      # the tilt lock, outside the yoke's left arm
+SP_SW_AT = (SC["box"]["x"] + 0.025, -0.62, 0.12)   # the toggle on the focus box's side (can frame)
+SP_SW_AXIS = tuple(SP_CAN.to_3x3() @ Vector((0.0, 0.0, 1.0)))
+
+
+def sp_c(p):
+    """A point in the can's frame, in the find's."""
+    return tuple(SP_CAN @ Vector(p))
+
+
+def sp_stand(hi):
+    s = Shape()
+    n = segs(hi, 16)
+    f = 3 if hi else 2
+    top, cr, rr, lz = SS["top"], SS["column_r"], SS["riser_r"], SS["lock_z"]
+    ft, hz, bz = SS["foot"], SS["hub_z"], SS["brace_z"]
+    # the column, the riser out of its lock collar, the cast top cap and the spigot pin
+    s.cylinder((0, 0, ft), (0, 0, lz + 0.05), cr, SP_CHROME, n)
+    s.lathe([(0.0, ft - 0.03), (cr + 0.01, ft - 0.03), (cr + 0.01, ft + 0.03), (0.0, ft + 0.03)],
+            SP_CAST, n)
+    s.cylinder((0, 0, lz), (0, 0, top - 0.06), rr, SP_CHROME, n)
+    s.lathe([(0.0, lz - 0.01), (cr + 0.016, lz - 0.01), (cr + 0.022, lz + 0.004),
+             (cr + 0.022, lz + 0.07), (cr + 0.01, lz + 0.088), (0.0, lz + 0.088)], SP_CAST, n)
+    y = cr + 0.02
+    s.cylinder((0, y - 0.01, lz + 0.04), (0, y + 0.09, lz + 0.04), 0.011, SP_ZINC, segs(hi, 8))
+    s.cylinder((-0.06, y + 0.09, lz + 0.04), (0.06, y + 0.09, lz + 0.04), 0.012, SP_ZINC,
+               segs(hi, 8))
+    s.lathe([(0.0, top - 0.1), (rr + 0.01, top - 0.1), (rr + 0.028, top - 0.065), (0.074, top - 0.03),
+             (0.074, top - 0.006), (0.068, top), (0.0, top)], SP_CAST, n)
+    pr, pin = SS["pin_r"], SS["pin"]
+    s.lathe([(0.0, top - 0.004), (pr, top - 0.004), (pr, top + 0.08), (pr - 0.006, top + 0.09),
+             (pr - 0.006, top + 0.11), (pr, top + 0.12), (pr, top + pin - 0.012),
+             (pr - 0.012, top + pin), (0.0, top + pin)], SP_ZINC, segs(hi, 12))
+    # the cast spider the legs hang from, and the collar their braces pull on
+    s.lathe([(0.0, hz - 0.09), (0.07, hz - 0.09), (0.1, hz - 0.06), (0.112, hz - 0.02),
+             (0.112, hz + 0.04), (0.09, hz + 0.07), (cr + 0.008, hz + 0.09), (0.0, hz + 0.09)],
+            SP_CAST, n)
+    s.lathe([(0.0, bz - 0.04), (0.084, bz - 0.04), (0.088, bz - 0.03), (0.088, bz + 0.03),
+             (0.084, bz + 0.04), (0.0, bz + 0.04)], SP_CAST, n)
+    wr, ww, cz, tr = SS["wheel_r"], SS["wheel_w"], SS["caster_z"], SS["trail"]
+    for i in range(3):
+        a = math.radians(90 + 120 * i)            # one leg straight back, two splayed forward
+        d = Vector((math.cos(a), math.sin(a), 0.0))
+        t = Vector((-math.sin(a), math.cos(a), 0.0))
+        a0 = d * 0.09 + Vector((0, 0, hz - 0.02))
+        e = d * SS["reach"] + Vector((0, 0, cz + 0.05))
+        s.cylinder(a0, e, SS["leg_r"], SP_CHROME, segs(hi, 10))
+        s.cylinder(a0 + (e - a0) * 0.55, d * 0.08 + Vector((0, 0, bz)), 0.016, SP_CHROME,
+                   segs(hi, 6))
+        c = Vector((e.x, e.y, 0.0))
+        s.cylinder(c + Vector((0, 0, cz - 0.03)), c + Vector((0, 0, cz + 0.11)), 0.05, SP_CAST,
+                   segs(hi, 12))
+        # the caster: a swivel plate, a fork trailing outward and the wheel on its axle
+        s.cylinder(c + Vector((0, 0, cz - 0.05)), c + Vector((0, 0, cz - 0.03)), 0.056, SP_ZINC,
+                   segs(hi, 12))
+        Mf = Matrix.Translation(c) @ Matrix.Rotation(a, 4, "Z")
+        for sy in (-1, 1):
+            y0, y1 = sorted((sy * (ww / 2 + 0.006), sy * (ww / 2 + 0.018)))
+            s.box((-0.04, y0, wr - 0.035), (tr + 0.035, y1, cz - 0.045), SP_ZINC, 0.005,
+                  2 if hi else 1, Mf)
+        s.box((-0.045, -(ww / 2 + 0.018), cz - 0.058), (0.045, ww / 2 + 0.018, cz - 0.045),
+              SP_ZINC, 0.004, 1, Mf)
+        w = c + d * tr + Vector((0, 0, wr))
+        Mw = (Matrix.Translation(w) @ Matrix.Rotation(a + math.pi / 2, 4, "Z")
+              @ Matrix.Rotation(math.pi / 2, 4, "Y"))
+        rd = 0.024
+        tyre = ([(0.032, -ww / 2)] + fillet(wr - rd, -ww / 2 + rd, rd, (-90, 0), f)
+                + fillet(wr - rd, ww / 2 - rd, rd, (0, 90), f) + [(0.032, ww / 2)])
+        s.lathe(tyre, SP_RUBBER, segs(hi, 20), Mw)
+        s.lathe([(0.0, -ww / 2 - 0.01), (0.034, -ww / 2 - 0.01), (0.036, -ww / 2 + 0.004),
+                 (0.036, ww / 2 - 0.004), (0.034, ww / 2 + 0.01), (0.0, ww / 2 + 0.01)], SP_ZINC,
+                segs(hi, 12), Mw)
+        s.cylinder(w - t * (ww / 2 + 0.03), w + t * (ww / 2 + 0.03), 0.011, SP_ZINC, 6)
+    return s
+
+
+def sp_yoke(hi):
+    s = Shape()
+    X, r, bz, bd = SY["x"], SY["r"], SY["bar_z"], SY["bend"]
+    k = 6 if hi else 3
+    path = [(-X, 0.0, SP_TZ - 0.04), (-X, 0.0, bz + bd)]
+    path += arc((-X + bd, 0.0, bz + bd), bd, 180, 270, k, "XZ")[1:]
+    path += arc((X - bd, 0.0, bz + bd), bd, 270, 360, k, "XZ")
+    path += [(X, 0.0, SP_TZ - 0.04)]
+    s.tube(path, r, SP_ENAMEL, segs(hi, 10))
+    for sx in (-1, 1):
+        s.cylinder((sx * (X - 0.035), 0, SP_TZ), (sx * (X + 0.035), 0, SP_TZ), 0.085, SP_ENAMEL,
+                   segs(hi, 16))
+    # the right arm's pivot bolt: a washer and a hex nut
+    s.cylinder((X + 0.035, 0, SP_TZ), (X + 0.048, 0, SP_TZ), 0.06, SP_ZINC, segs(hi, 14))
+    s.cylinder((X + 0.048, 0, SP_TZ), (X + 0.084, 0, SP_TZ), 0.042, SP_ZINC, 6)
+    # the spigot socket that drops over the stand's pin, and its locking T-screw
+    top = SS["top"]
+    s.lathe([(0.0, top + 0.004), (0.07, top + 0.004), (0.072, top + 0.012), (0.072, top + 0.05),
+             (0.058, top + 0.07), (0.058, bz), (0.0, bz)], SP_ENAMEL, segs(hi, 16))
+    zt = top + 0.2
+    s.cylinder((0, 0.05, zt), (0, 0.13, zt), 0.011, SP_ZINC, segs(hi, 8))
+    s.cylinder((-0.055, 0.13, zt), (0.055, 0.13, zt), 0.012, SP_ZINC, segs(hi, 8))
+    return s
+
+
+def sp_knob(hi):
+    """The tilt lock: a four-lobed bakelite knob on a steel stem, out from the yoke's left arm."""
+    s = Shape()
+    M = Matrix.Translation(SP_KNOB_AT) @ Matrix.Rotation(math.radians(-90), 4, "Y")
+    f = 3 if hi else 1
+    prof = [(0.0, 0.0), (0.05, 0.0), (0.05, 0.012), (0.024, 0.014), (0.024, 0.05),
+            (0.062, 0.054), (0.066, 0.06), (0.066, 0.1)]
+    prof += fillet(0.05, 0.1, 0.016, (0, 90), f) + [(0.0, 0.118)]
+    kinds = [SP_ZINC] * 4 + [SP_BAKELITE] * (len(prof) - 5)
+    s.lathe(prof, SP_BAKELITE, segs(hi, 20), M, kinds=kinds)
+    for i in range(4):
+        a = math.radians(45 + 90 * i)
+        c = (0.068 * math.cos(a), 0.068 * math.sin(a))
+        s.cylinder((c[0], c[1], 0.056), (c[0], c[1], 0.108), 0.03, SP_BAKELITE, segs(hi, 12), M=M)
+    return s
+
+
+def sp_can(hi):
+    s = Shape()
+    n = segs(hi, 40)
+    f = 3 if hi else 2
+    c = 2 if hi else 1
+    co, B = SC["core"], SC["bezel"]
+    ri, ro, bf = B["r_in"], B["r_out"], B["front"]
+    back, front, seat = SC["back"], SC["front"], SC["lens"]["seat"]
+    # the shell in one turn: the domed back, the rear band, the sooty drum the louvres stand
+    # round, the front band, the bezel's rolled lip and the lens's well
+    p = [(0.0, back - 0.185), (0.28, back - 0.18), (0.45, back - 0.162)]
+    p += fillet(0.52, back - 0.12, 0.045, (-90, 0), f)
+    p += [(0.565, back - 0.01), (0.54, back), (co, back)]
+    kinds = [SP_ENAMEL] * (len(p) - 1)
+    p += [(co, front)]
+    kinds += [SP_INSIDE]
+    q = [(0.55, front + 0.002), (0.578, front + 0.012), (0.578, 0.52), (ro, 0.535)]
+    q += fillet(ro - 0.04, 0.615, 0.04, (0, 90), f)
+    q += fillet(ri + 0.03, bf - 0.03, 0.03, (90, 180), f)
+    kinds += [SP_ENAMEL] * len(q)
+    p += q
+    p += [(ri, seat), (ri - 0.03, seat)]
+    kinds += [SP_INSIDE, SP_INSIDE]
+    s.lathe(p, SP_ENAMEL, n, SP_CAN, kinds=kinds)
+    # the back: a pressed bead round the dome, the rear focus knob, a maker's plate
+    bz_ = back - 0.172
+    ring = [(0.33 * math.cos(2 * math.pi * i / 48), 0.33 * math.sin(2 * math.pi * i / 48), bz_)
+            for i in range(49)]
+    s.tube(ring, 0.011, SP_ENAMEL, segs(hi, 6), SP_CAN, caps=False)
+    Mb = SP_CAN @ Matrix.Translation((0.0, 0.0, back - 0.182)) @ Matrix.Rotation(math.pi, 4, "X")
+    s.lathe([(0.0, 0.0), (0.05, 0.0), (0.05, 0.012), (0.018, 0.014), (0.018, 0.03), (0.05, 0.032),
+             (0.054, 0.04), (0.054, 0.066), (0.046, 0.076), (0.0, 0.078)], SP_BAKELITE,
+            segs(hi, 16), Mb, kinds=[SP_ZINC] * 4 + [SP_BAKELITE] * 5)
+    s.box((-0.1, 0.15, back - 0.19), (0.1, 0.25, back - 0.172), SP_DIAL, 0.004, 1, SP_CAN)
+    for x in (-0.085, 0.085):
+        s.cylinder((x, 0.2, back - 0.19), (x, 0.2, back - 0.196), 0.007, SP_ZINC, 6, M=SP_CAN)
+    # the louvres, turned like shutters so the drum shows dark between them
+    sr, sw, st = SC["slat_r"], SC["slat_w"], SC["slat_t"]
+    for i in range(SC["slats"]):
+        a = math.radians(360.0 * (i + 0.5) / SC["slats"])
+        M = (SP_CAN @ Matrix.Rotation(a, 4, "Z") @ Matrix.Translation((0, sr, 0))
+             @ Matrix.Rotation(math.radians(SC["twist"]), 4, "Z"))
+        s.box((-sw / 2, -st / 2, back + 0.004), (sw / 2, st / 2, front - 0.004), SP_ENAMEL,
+              0.006 if hi else 0.0, c, M)
+    # the trunnions the yoke holds, on plates riveted over the louvres
+    for sx in (-1, 1):
+        x0, x1 = sorted((sx * 0.52, sx * 0.585))
+        s.box((x0, -0.15, -0.17), (x1, 0.15, 0.17), SP_ENAMEL, 0.014, c, SP_CAN)
+        s.cylinder((sx * 0.58, 0, 0), (sx * (SY["x"] - 0.035), 0, 0), 0.07, SP_ENAMEL,
+                   segs(hi, 16), M=SP_CAN)
+        for ry in (-0.11, 0.11):
+            for rz in (-0.13, 0.13):
+                s.cylinder((sx * 0.582, ry, rz), (sx * 0.594, ry, rz), 0.012, SP_ZINC,
+                           segs(hi, 8), M=SP_CAN)
+    # the carrying handle over the top
+    hz, k = -0.04, (6 if hi else 3)
+    hp = [(-0.22, 0.54, hz), (-0.22, 0.66, hz)]
+    hp += arc((-0.14, 0.66, hz), 0.08, 180, 90, k, "XY")[1:]
+    hp += arc((0.14, 0.66, hz), 0.08, 90, 0, k, "XY") + [(0.22, 0.54, hz)]
+    s.tube(hp, 0.021, SP_ENAMEL, segs(hi, 8), SP_CAN)
+    for sx in (-1, 1):
+        s.box((sx * 0.22 - 0.045, 0.52, hz - 0.06), (sx * 0.22 + 0.045, 0.566, hz + 0.06),
+              SP_ENAMEL, 0.008, c, SP_CAN)
+    # the focus box underneath: its knob out front on a brass scale plate, the toggle's bushing
+    bx = SC["box"]
+    s.box((-bx["x"], bx["y0"], bx["z0"]), (bx["x"], bx["y1"], bx["z1"]), SP_ENAMEL, 0.018, c,
+          SP_CAN)
+    s.box((-0.12, -0.7, bx["z1"] - 0.004), (0.12, -0.54, bx["z1"] + 0.004), SP_DIAL, 0.003, 1,
+          SP_CAN)
+    Mk = SP_CAN @ Matrix.Translation((0.0, -0.615, bx["z1"] + 0.004))
+    kp = [(0.0, 0.0), (0.016, 0.0), (0.016, 0.02), (0.052, 0.022), (0.056, 0.03), (0.056, 0.058),
+          (0.048, 0.068), (0.0, 0.07)]
+    s.lathe(kp, SP_BAKELITE, segs(hi, 16), Mk, kinds=[SP_ZINC, SP_ZINC] + [SP_BAKELITE] * 5)
+    s.cylinder(SP_SW_AT, (SP_SW_AT[0] - 0.03, SP_SW_AT[1], SP_SW_AT[2]), 0.019, SP_ZINC, 6,
+               M=SP_CAN)
+    # the gel clips at the corners, holding the barn doors' frame by its edges
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            y0, y1 = sy * SDR["clip_y"] - 0.045, sy * SDR["clip_y"] + 0.045
+            xs = lambda a, b: sorted((sx * a, sx * b))   # noqa: E731
+            x0, x1 = xs(0.28, 0.665)
+            s.box((x0, y0, 0.53), (x1, y1, 0.56), SP_ZINC, 0.004, 1, SP_CAN)
+            x0, x1 = xs(0.648, 0.665)
+            s.box((x0, y0, 0.53), (x1, y1, 0.708), SP_ZINC, 0.004, 1, SP_CAN)
+            x0, x1 = xs(0.61, 0.665)
+            s.box((x0, y0, 0.692), (x1, y1, 0.708), SP_ZINC, 0.004, 1, SP_CAN)
+    # the barn doors' frame, slid into the clips
+    F, H, z0, z1 = SDR["frame"], SDR["hole"], SDR["z"], SP_DOOR_Z
+    for lo, hi_ in (((-F, H), (F, F)), ((-F, -F), (F, -H)), ((-F, -H), (-H, H)), ((H, -H), (F, H))):
+        s.box((lo[0], lo[1], z0), (hi_[0], hi_[1], z1), SP_BLACK, 0.004, 1, SP_CAN)
+    # the wire guard over the lens
+    for v in (-0.3, -0.1, 0.1, 0.3):
+        h = math.sqrt(ri * ri - v * v) - 0.004
+        s.cylinder((-h, v, 0.642), (h, v, 0.642), 0.006, SP_ZINC, segs(hi, 5), M=SP_CAN)
+        s.cylinder((v, -h, 0.632), (v, h, 0.632), 0.006, SP_ZINC, segs(hi, 5), M=SP_CAN)
+    # the cord out of the focus box, hanging to its stage plug
+    cp = [(0.08, -0.62, -0.31), (0.08, -0.65, -0.42), (0.1, -0.8, -0.49), (0.12, -0.96, -0.5),
+          (0.12, -1.0, -0.5)]
+    s.tube(spline(cp, 6 if hi else 3), 0.021, SP_RUBBER, segs(hi, 8), SP_CAN)
+    s.cylinder((0.08, -0.62, -0.3), (0.08, -0.62, -0.345), 0.032, SP_RUBBER, segs(hi, 10),
+               M=SP_CAN)
+    s.box((0.075, -1.17, -0.54), (0.165, -0.99, -0.46), SP_RUBBER, 0.012, c, SP_CAN)
+    for x in (0.095, 0.12, 0.145):
+        s.cylinder((x, -1.165, -0.5), (x, -1.21, -0.5), 0.0065, SP_BRASS, segs(hi, 6), M=SP_CAN)
+    return s
+
+
+def sp_lens(hi):
+    """The stepped Fresnel lens: rings that rise toward their inner edge and drop back."""
+    s = Shape()
+    Ls = SC["lens"]
+    R, seat, face, nst = Ls["r"], Ls["seat"], Ls["face"], Ls["steps"]
+    p = [(0.0, seat), (R, seat), (R, face)]
+    if hi:
+        for k in range(nst, 0, -1):
+            r1 = R * (k - 1) / nst
+            h = 0.003 + 0.001 * k
+            p += [(r1 + 0.0015, face + h), (r1, face)] if k > 1 else [(R / nst * 0.5, face + h * 0.8),
+                                                                       (0.0, face + h)]
+    else:
+        p += [(R * 0.97, face + 0.005), (0.0, face + 0.006)]
+    s.lathe(p, SP_GLASS, segs(hi, 40), SP_CAN)
+    return s
+
+
+def sp_switch(hi):
+    """The toggle's lever, found down (off)."""
+    s = Shape()
+    M = SP_CAN @ Matrix.Translation(SP_SW_AT) @ Matrix.Rotation(math.radians(-25), 4, "Z")
+    s.cylinder((0.0, 0, 0), (0.055, 0, 0), 0.0075, SP_ZINC, segs(hi, 8), M=M)
+    s.cylinder((0.05, 0, 0), (0.064, 0, 0), 0.0105, SP_ZINC, segs(hi, 8), M=M)
+    return s
+
+
+def sp_door_m(side):
+    """A leaf's hinge frame in the can's: the hinge along x, the leaf out along z, its outside y."""
+    F, z = SDR["frame"], SP_DOOR_Z
+    bo, so = math.radians(SDR["big"]["open"]), math.radians(SDR["side"]["open"])
+    R = Matrix.Rotation
+    if side == "Top":
+        return Matrix.Translation((0, F, z)) @ R(-bo, 4, "X")
+    if side == "Bottom":
+        return Matrix.Translation((0, -F, z)) @ R(bo, 4, "X") @ R(math.pi, 4, "Z")
+    if side == "Right":
+        return Matrix.Translation((F, 0, z)) @ R(so, 4, "Y") @ R(-math.pi / 2, 4, "Z")
+    return Matrix.Translation((-F, 0, z)) @ R(-so, 4, "Y") @ R(math.pi / 2, 4, "Z")
+
+
+def sp_leaf(side, hi):
+    """One barn-door leaf: a tapered black steel sheet, its hinge knuckle, a rolled front edge
+    and the little tab you push it by."""
+    s = Shape()
+    d = SDR["big"] if side in ("Top", "Bottom") else SDR["side"]
+    w0, w1, L, t = d["w0"], d["w1"], d["d"], 0.016
+    M = SP_CAN @ sp_door_m(side)
+    tmp = bmesh.new()
+    bmesh.ops.create_cube(tmp, size=1.0)
+    for v in tmp.verts:
+        u = v.co.z + 0.5
+        v.co = Vector((v.co.x * (w0 + (w1 - w0) * u), v.co.y * t, 0.014 + u * (L - 0.014)))
+    if hi:
+        bmesh.ops.bevel(tmp, geom=list(tmp.edges), offset=0.004, segments=2, profile=0.5,
+                        affect="EDGES", clamp_overlap=True)
+    bmesh.ops.transform(tmp, matrix=M, verts=tmp.verts)
+    s.merge(tmp, SP_BLACK)
+    tmp.free()
+    s.cylinder((-w0 / 2 + 0.03, 0, 0), (w0 / 2 - 0.03, 0, 0), 0.016, SP_ZINC, segs(hi, 10), M=M)
+    s.cylinder((-w1 / 2, 0, L), (w1 / 2, 0, L), 0.011, SP_BLACK, segs(hi, 8), M=M)
+    s.box((-0.05, t / 2 - 0.004, L - 0.1), (0.05, t / 2 + 0.03, L - 0.03), SP_BLACK, 0.006,
+          2 if hi else 1, M)
+    return s
+
+
+def sp_look(L, f):
+    nb = L.nb
+    # oxblood hammertone enamel: the dimpled finish old studio lights wore
+    paint = nb.tint(hexc("#6E211C"), nb.mr(L.noise(2.2, 2, detail=3), 0.3, 0.7, 0.85, 1.1))
+    C = Coat(L, paint, nb.mr(L.noise(6.0, 3, detail=3), 0.2, 0.8, 0.26, 0.42), 0.0,
+             nb.mul(L.noise(140.0, 1, detail=2), 0.3))
+    C.paint(nb.mul(L.up, nb.mr(L.noise(1.4, 4, detail=3), 0.3, 0.7, 0.1, 0.35)), hexc("#8A3A2E"))
+    # the lamp's heat browned the louvres over it
+    heat = nb.mul(L.k(SP_ENAMEL), nb.ss(L.z, SP_TZ + 0.3, SP_TZ + 0.62))
+    C.paint(nb.mul(heat, nb.mr(L.noise(4.0, 5, detail=3), 0.3, 0.7, 0.35, 0.85)), hexc("#3A1C16"),
+            0.55)
+    # the barn doors and their frame: black crinkle paint
+    C.paint(L.k(SP_BLACK), nb.tint(hexc("#1F1E1D"), nb.mr(L.noise(9.0, 9, detail=3), 0.3, 0.7,
+                                                           0.85, 1.15)), 0.62, 0.0)
+    C.enamel_wear(L.k(SP_ENAMEL, SP_BLACK), hexc("#4B4743"), s=5, amount=1.5)
+    C.paint(L.k(SP_INSIDE), hexc("#141211"), 0.75, 0.0)
+    # bright work: zinc-plated fittings, the stand's chrome tubes scratched along their length
+    zinc = nb.tint(hexc("#B6B9BB"), nb.mr(L.noise(18.0, 6, detail=4), 0.3, 0.7, 0.72, 1.0))
+    C.paint(L.k(SP_ZINC), zinc, nb.mr(L.noise(30.0, 7, detail=3), 0.3, 0.7, 0.24, 0.42), 1.0)
+    chrome = nb.tint(hexc("#CFD2D4"), nb.mr(L.noise(30.0, 10, stretch=(1.0, 1.0, 0.06), detail=4),
+                                            0.3, 0.7, 0.8, 1.0))
+    C.paint(L.k(SP_CHROME), chrome, nb.mr(L.noise(40.0, 11, stretch=(1.0, 1.0, 0.06), detail=3),
+                                          0.3, 0.7, 0.1, 0.26), 1.0)
+    rust = nb.mul(L.k(SP_ZINC, SP_CHROME), nb.ss(L.noise(40.0, 8, detail=4, rough=0.7), 0.64, 0.72))
+    C.paint(rust, hexc("#6B3B22"), 0.85, 0.15, 0.05)
+    C.paint(L.k(SP_CAST), hexc("#2A2826"), 0.5, 0.35)
+    C.paint(L.k(SP_BAKELITE), hexc("#1B1512"), 0.3, 0.0)
+    C.paint(L.k(SP_RUBBER), hexc("#232120"), 0.72, 0.0)
+    C.paint(L.k(SP_BRASS), hexc("#A88445"), 0.35, 1.0)
+    C.paint(L.k(SP_DIAL), hexc("#B49F6C"), 0.38, 0.8)
+    # the lens: pressed glass, pale and cold through its rings, greener toward the edge
+    dz = nb.sub(L.z, SP_TZ)
+    rad = nb.pw(nb.add(nb.mul(L.x, L.x), nb.mul(dz, dz)), 0.5)
+    C.paint(L.k(SP_GLASS), nb.mixc(nb.mr(rad, 0.0, 0.44, 0.0, 1.0), hexc("#C7D0CA"), hexc("#8D9B94")),
+            0.14, 0.0)
+    C.lights(nb.mul(L.k(SP_GLASS), nb.mr(rad, 0.0, 0.44, 1.0, 0.62)))
+    C.finish(f.dust, grime=0.5)
+    return C.surface(bump_dist=0.0015, bump=0.45)
+
+
+SP_ON = SL["switch_on"]
+SP_FLIP_ON = [(0.0, 0.0), (0.05, -4.0, "Quad", "Out"), (0.11, SP_ON + 5.0, "Quad", "In"),
+              (0.2, SP_ON, "Back", "Out")]
+SP_FLIP_OFF = [(0.0, SP_ON), (0.05, SP_ON + 4.0, "Quad", "Out"), (0.11, -5.0, "Quad", "In"),
+               (0.2, 0.0, "Back", "Out")]
+# aimed by hand: the lock knob backed off, a nudge the wrong way as the weight is taken, a slow
+# heavy swing that runs past and settles back, the knob snugged; the loose leaves lag and swing
+SP_PAN = [(0.0, 0.0), (0.42, 0.0, "Linear"), (0.6, 2.5, "Quad", "Out"), (1.6, -39.0, "Cubic", "InOut"),
+          (1.9, -35.4), (2.15, -36.0)]
+SP_TILT = [(0.0, 0.0), (0.5, 0.0, "Linear"), (0.68, -2.0, "Quad", "Out"),
+           (1.7, 15.6, "Cubic", "InOut"), (2.0, 13.6), (2.25, 14.0)]
+SP_LOCK = [(0.0, 0.0), (0.38, -160.0, "Quad", "InOut"), (2.4, -160.0, "Linear"),
+           (2.85, 0.0, "Quad", "InOut")]
+SP_SWING_SIDE = [(0.0, 0.0), (0.6, 0.0, "Linear"), (0.95, 2.5), (1.35, -2.0), (1.65, -3.0),
+                 (1.85, 1.8), (2.05, -0.9), (2.3, 0.4), (2.5, 0.0)]
+SP_SWING_BIG = [(0.0, 0.0), (0.68, 0.0, "Linear"), (1.05, -2.0), (1.45, 1.6), (1.75, 2.6),
+                (1.95, -1.4), (2.15, 0.7), (2.4, 0.0)]
+SP_LOOK = (0.0, -0.5, SP_TZ - 0.35)
+F_ = SDR["frame"]
+
+SPOTLIGHT = kit.Find(
+    "Spotlight",
+    [kit.Part("Stand", sp_stand),
+     kit.Part("Yoke", sp_yoke, (0.0, 0.0, SS["top"]), "Stand", (0, 0, 1)),
+     kit.Part("Knob", sp_knob, SP_KNOB_AT, "Yoke", (1, 0, 0)),
+     kit.Part("Can", sp_can, (0.0, 0.0, SP_TZ), "Yoke", (1, 0, 0)),
+     kit.Part("Lens", sp_lens, sp_c((0.0, 0.0, SC["lens"]["seat"])), "Can"),
+     kit.Part("Switch", sp_switch, sp_c(SP_SW_AT), "Can", SP_SW_AXIS),
+     kit.Part("DoorTop", lambda hi: sp_leaf("Top", hi), sp_c((0.0, F_, SP_DOOR_Z)), "Can", (1, 0, 0)),
+     kit.Part("DoorBottom", lambda hi: sp_leaf("Bottom", hi), sp_c((0.0, -F_, SP_DOOR_Z)), "Can",
+              (1, 0, 0)),
+     kit.Part("DoorLeft", lambda hi: sp_leaf("Left", hi), sp_c((-F_, 0.0, SP_DOOR_Z)), "Can",
+              (0, 0, 1)),
+     kit.Part("DoorRight", lambda hi: sp_leaf("Right", hi), sp_c((F_, 0.0, SP_DOOR_Z)), "Can",
+              (0, 0, 1))],
+    sp_look,
+    lights=[
+        # the beam: a narrow warm cone out past the barn doors, onto the find it's aimed at
+        dict(kind="Spot", part="Lens", at=sp_c((0.0, 0.0, 0.72)), face=(0.0, -1.0, 0.0),
+             kelvin=SL["kelvin"], brightness=2.0, range=18, angle=SL["beam"], shadows=True,
+             preview_watts=160.0, preview_blend=0.3),
+        # the spill round the lens, which also lights at low graphics (docs/STUDIO.md)
+        dict(kind="Point", part="Lens", at=sp_c((0.0, 0.0, 0.8)), kelvin=SL["kelvin"],
+             brightness=0.35, range=6, shadows=False, preview_kind="POINT", preview_watts=2.0,
+             preview_size=0.1),
+    ],
+    glow=dict(part="Lens", strength=3.0, tint=(255, 200, 140), preview=12.0),
+    lit={("Switch", "turn"): SP_ON},
+    motions={
+        # the toggle snaps up; a breath later the filament strikes and the lens warms through
+        # orange to full as a big tungsten lamp does
+        "SwitchOn": dict(duration=1.2, focus=SP_LOOK, distance=0.42, tracks=[
+            ("Switch", "turn", SP_FLIP_ON),
+            ("Lens", "glow", [(0.0, 0.0), (0.11, 0.0, "Linear"), (0.16, 0.12, "Quad", "Out"),
+                              (0.8, 1.0, "Quad", "Out"), (1.2, 1.0)])]),
+        # flicked down: the light drops at the click and the filament dies away orange
+        "SwitchOff": dict(duration=1.2, focus=SP_LOOK, distance=0.42, tracks=[
+            ("Switch", "turn", SP_FLIP_OFF),
+            ("Lens", "glow", [(0.0, 1.0), (0.11, 1.0, "Linear"), (0.15, 0.35, "Quad", "Out"),
+                              (1.0, 0.0, "Sine", "Out"), (1.2, 0.0)])]),
+        # pointed at a find: pan and tilt on the real pivots (the game aims it at any angle,
+        # tilt within 70 degrees either way; README)
+        "Aim": dict(duration=3.0, focus=SP_LOOK, distance=0.5, tracks=[
+            ("Knob", "turn", SP_LOCK), ("Yoke", "turn", SP_PAN), ("Can", "turn", SP_TILT),
+            ("DoorLeft", "turn", SP_SWING_SIDE), ("DoorRight", "turn", SP_SWING_SIDE),
+            ("DoorTop", "turn", SP_SWING_BIG), ("DoorBottom", "turn", SP_SWING_BIG)]),
+    },
+    big=True, dust=SL["dust"], seed=SL["seed"],
+)
+
 FINDS = [DESK_LAMP, NIGHT_LIGHT, TEA_LIGHT, GLOW_STICKS, FAIRY_LIGHTS, LANTERN, MOON_LAMP, BLOB_LAMP, OIL_LAMP, DISCO_BALL, NEON_SIGN,
-         HARD_HAT, FIREFLY_JAR]
+         HARD_HAT, FIREFLY_JAR, SPOTLIGHT]
 
 if __name__ == "__main__":
     kit.main("Lights", HERE, FINDS)

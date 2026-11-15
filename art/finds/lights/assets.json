@@ -39,6 +39,14 @@
     "assetId": 106385423503478,
     "sha256": "249f8e241acdb696c37952fefec76159a12df217441f5fd0263cdba9feca1921"
   },
+  "FireflyJar": {
+    "assetId": 125484057276690,
+    "sha256": "6e6f7a05fac8743cfd792bedf8f2d77c3fd79ad08338cd6455f5ea9bc16f36f6"
+  },
+  "FireflyJarEmissive": {
+    "assetId": 120845566128928,
+    "sha256": "13cc717b26268564fc184941bb46aeabd564f4b189174a33cced44cf78ace8fb"
+  },
   "GlowSticks": {
     "assetId": 73530047626071,
     "sha256": "c6b772b127a262ce9a0c39db31de1c2f9da567ed7ee32e66c0fdcea852191dca"
@@ -46,6 +54,14 @@
   "GlowSticksEmissive": {
     "assetId": 132745904151732,
     "sha256": "e0fb55bcedb668753b5e29c65ebff0fd37bd7c0bf6bbd04e524358731a9a1d8c"
+  },
+  "HardHat": {
+    "assetId": 132738999062540,
+    "sha256": "36f65324f2a7ceb2baa816f46f276b23260d4ef635176f7227751c80b0e16236"
+  },
+  "HardHatEmissive": {
+    "assetId": 130086191080987,
+    "sha256": "b48190b629a6e61260cad74084ec3b17fec0035e57254e20e84e2f030ed03bee"
   },
   "MoonLamp": {
     "assetId": 135149115324330,
@@ -78,6 +94,14 @@
   "OilLampEmissive": {
     "assetId": 117244969881764,
     "sha256": "f577a40437c9cf75bc7d18a086ba478d34b0e6ccae37747ce9387292d653480f"
+  },
+  "Spotlight": {
+    "assetId": 88245217696112,
+    "sha256": "6899cf26745971ed1a973f3444813f4766404cd8b65bc532c84f56b2c48d8897"
+  },
+  "SpotlightEmissive": {
+    "assetId": 103700720195388,
+    "sha256": "1bdb7528d6b5c0ce1940881b60085a1227be27d61a25d6d2704a01e37a45459a"
   },
   "TeaLight": {
     "assetId": 111143504211306,

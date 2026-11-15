@@ -6,10 +6,10 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** put the miner's hard hat and the jar of fireflies into Studio (built, not uploaded or
-imported: CRAFT.md "Into Studio", `import("Lights", {"HardHat", "FireflyJar"})`, then look at each
-in a lit unit off and on), then F-02l, the theatre spotlight (researched, photos not looked at
-yet: see the newest note), the stained-glass lamp and the lamp that's on when you find it.
+**Next:** F-02m, the stained-glass lamp (Legendary, Fragile: it throws coloured patterns on your
+walls; not researched yet, see the newest note), then the lamp that's on when you find it. The
+oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next
+touched.
 
 ## Order
 
@@ -35,6 +35,32 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 15, F-02l (the theatre spotlight built; the hat, the jar and the spotlight in Studio).**
+  The hard hat and the jar were uploaded and imported (`import("Lights", {"HardHat",
+  "FireflyJar"})`); the spotlight too (`{"Spotlight"}`): templates in
+  `ReplicatedStorage.Props.Finds` (the owner saves). **Seen in Studio, a lit M unit from the
+  doorway, off and on:** the hat reads at a glance (yellow shell, lamp, battery) and its lamp
+  throws a pool on the floor; the jar reads up close (glass, grass, fireflies glowing). Its three
+  firefly lights all at full together paint the near wall brighter than the bulb, but in play
+  each flashes 0.76 s in 5 at its own time, so one at a time: left at 0.4, range 7; the game
+  ticket should glance at it in Play. The spotlight reads off (red can, barn doors, stand) and
+  on (the lens a bright disc behind its guard); its Spot beam drew nothing in Edit, as the disco
+  ball's didn't, so the beam is unjudged in Roblox. **Edit doesn't apply a Motor6D's
+  `Transform`** (it only moves parts while the game runs): pose a template in Edit by its C0.
+  **The spotlight** (`sp_*` in `lights/build.py`, spec `SPOTLIGHT`, README, D-197) is a 1960s
+  studio Fresnel with barn doors on a rolling stand, from the references (Colortran photo on
+  Commons, a studio 1K rental listing); parts `Stand`, `Yoke` (pan), `Knob` (the tilt lock),
+  `Can` (tilt), `Lens` (glow), `Switch`, four hinged `Door*` leaves; motions `SwitchOn`,
+  `SwitchOff`, `Aim`. 2048 at 256 texels a stud. **Kit change:** the lineup camera backs off for
+  a find taller than 4.2 studs (`kit.py`; shorter finds frame as before). **Not done:** the
+  stained-glass lamp is not researched (this session wrapped at about 270k). Look first at
+  photos of real leaded-glass table lamps (a domed shade of small glass pieces in lead came,
+  a bronze base), get sizes from a listing, and use no real maker's names or designs. Plan:
+  the shade as clear-ish coloured glass pieces (the kit's `clear=True` and alpha) with dark
+  lead lines, the bulb inside as the glow part, a few coloured Point or Spot lights round it
+  for the "coloured patterns on your walls" (check in Studio which reads; Edit draws no Spot
+  beams). Fragile.
 
 - **Nov 15, F-02j and F-02k (the miner's hard hat and the jar of fireflies built).** Both in
   `lights/build.py` (`hh_*`, spec `HARD_HAT`, `HAT_*`, `CAP_LAMP`; `fj_*`/`ff_*`, spec
@@ -348,7 +374,7 @@ A light set down switched on lights the space round it until it runs down. Wheth
 | Neon OPEN sign | Rare | At home: it buzzes and glows pink |  | Nov 15, F-02i |
 | Miner's hard hat | Rare | Wear: a lamp on your head lights whatever you look at, for a minute | A light that leaves your hands free | Nov 15, F-02j |
 | Jar of fireflies | Epic | Open: fireflies drift out and light the unit for a minute, then they're gone |  | Nov 15, F-02k |
-| Theatre spotlight | Epic | At home: point it at your best find | Big find | |
+| Theatre spotlight | Epic | At home: point it at your best find | Big find | Nov 15, F-02l |
 | Stained-glass lamp | Legendary | At home: it throws coloured patterns on your walls | Fragile | |
 | A lamp that's on when you find it | Secret | It never runs down | Loose only, floor 25 up. In a power cut it's the only light on the floor | |
 

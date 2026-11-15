@@ -541,3 +541,44 @@ FIREFLY = dict(
     gone=4.5,                          # the minute's up: they rise and wink out
     lights=(0, 4, 8),                  # the fliers that carry a light
 )
+
+
+# --- the theatre spotlight (F-02l) ----------------------------------------------------------------
+# A 1960s studio Fresnel with an 8 in lens, on a rolling stand at its lowest (README: the
+# references). The head after the 2K "Junior" class (about 12 in across the can, 13 in long); the
+# stand after a three-legged rolling stand collapsed to about 4 ft. Can-local numbers: z along the
+# beam from the tilt axis (front +), y up, x across.
+SPOTLIGHT = dict(
+    tilt_z=4.95,            # the tilt axis over the floor: the lens's middle, a head above a kid
+    can=dict(
+        core=0.5,           # the sooty drum inside the louvres
+        slat_r=0.548,       # the louvres' ring: 11 in across, so the can reads fat from a doorway
+        slats=16, slat_w=0.2, slat_t=0.022,
+        twist=30.0,         # each louvre turned like a shutter, so the dark drum shows between
+        back=-0.49, front=0.45,
+        bezel=dict(r_in=0.44, r_out=0.61, front=0.66),
+        lens=dict(r=0.437, seat=0.56, face=0.585, steps=7),
+        hub=0.56,           # where the side trunnions leave the can
+        box=dict(x=0.2, y0=-0.72, y1=-0.5, z0=-0.32, z1=0.3),   # the focus box underneath
+    ),
+    doors=dict(
+        frame=0.64, hole=0.46, z=0.665, t=0.025,   # the square frame slid into the clips
+        big=dict(w0=1.2, w1=1.38, d=0.84, open=24.0),     # top and bottom leaves, splayed
+        side=dict(w0=0.84, w1=0.9, d=0.55, open=26.0),    # the narrow side leaves
+        clip_y=0.53,
+    ),
+    yoke=dict(x=0.8, r=0.045, bar_z=4.0, bend=0.17),
+    stand=dict(
+        top=3.62,           # the cast top cap the yoke's spigot sits on
+        pin=0.3, pin_r=0.032,
+        column_r=0.066, riser_r=0.05, lock_z=2.42, foot=0.4,
+        hub_z=1.02,         # the cast spider the three legs hang from
+        brace_z=0.46,
+        reach=1.22,         # legs out to the casters: 2.4 studs across, it stands steady
+        leg_r=0.04, caster_z=0.3, wheel_r=0.12, wheel_w=0.07, trail=0.06,
+    ),
+    kelvin=3200,            # a tungsten studio lamp
+    beam=26.0,              # the cone, spot-focused: a pool a find wide at a few studs
+    switch_on=50.0,         # the toggle's throw, degrees
+    dust=0.55, seed=7.7,
+)

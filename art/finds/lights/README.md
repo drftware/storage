@@ -532,3 +532,49 @@ uploaded FBX (CRAFT.md, "Into Studio"); the place keeps them once the owner save
   wall sends some fliers through it: the ticket may play the swarm about the unit's middle
   instead. Check in Play on a phone that a lit firefly reads as a point of light at 3 to 5
   studs; if not, give each a small glow sprite.
+
+## Theatre spotlight (Nov 15, F-02l)
+
+- **What it is:** a 1960s studio Fresnel on its rolling stand, Epic and big: an 8 in stepped
+  lens behind a wire guard in a thick rolled bezel, a drum of sixteen louvres turned like
+  shutters (the sooty drum shows between them), a domed back with a pressed bead, a rear focus
+  knob and a blank brass maker's plate, a carrying handle on top, the focus box underneath
+  with its knob on a brass scale plate, a toggle on its side and a cord hanging to a
+  three-pin stage plug. Four black barn-door leaves on a square frame slid into four gel
+  clips, each leaf a tapered sheet with a hinge knuckle, a rolled edge and a push tab. The
+  tubular U-yoke holds the can on two trunnions: a four-lobed bakelite tilt lock on its left,
+  a nut on its right, a spigot socket with a T-screw dropping over the stand's pin. The stand:
+  a chrome column and riser with a cast lock collar, a cast spider and three legs on braces,
+  each on a swivel caster. Oxblood hammertone enamel, browned by heat over the lamp, chipped
+  to grey primer at the edges; dusty where it faced up.
+- **References** (looked at Nov 15): Wikipedia's "Fresnel lantern" and its photo
+  Colortran_Fresnel.JPG on Commons (the lens door open: the stepped lens in its ring, the
+  reflector and socket, a flat steel yoke with a big side knob); Red Star's rental listing of a
+  studio 1K Fresnel (redstarpictures.com, mole-1k-fresnel-solarspot.webp: the louvred drum, the
+  rolled bezel with a wire guard, gel clips, the top handle, the focus box with its knob and
+  flood/spot plate, the tubular U-yoke with its tilt knob and spigot, the cable coiled on the
+  yoke) and Google image results for vintage studio Fresnels on rolling three-legged stands
+  with casters. Sizes: a 6 in Fresnelite is 12.1 x 10.2 x 12.3 in with its yoke
+  (theatrecrafts.com archive); a studio 2K "Junior" has an 8 in lens. Built: an 8 in lens, an
+  11 in drum, about 2.6 studs across the open leaves; the lens 4.95 studs up on the stand at
+  its lowest (a rolling stand runs about 4 to 8 ft). No maker's name anywhere; the red is a
+  dark oxblood, not any maker's colour.
+- **Tells:** the barn doors round a glowing round lens; the red drum on its U-yoke; the
+  three-legged stand on casters.
+- **Parts:** `Stand` (root, on the floor); `Yoke` pans about Z on the pin (pivot at the top
+  cap); `Knob`, the tilt lock, turns about X on the yoke; `Can` tilts about X through the
+  trunnions; `Lens` (the glow part), `Switch` (the toggle, turns about the beam axis, found
+  down: off), and `DoorTop`, `DoorBottom` (hinged about X) and `DoorLeft`, `DoorRight` (about
+  Z), found splayed open 24 and 26 degrees, all on the can. **For the game's Aim:** pan any
+  angle (the cord turns with the yoke); tilt within 70 degrees either way (past about 80 down
+  a side leaf meets the yoke's arm). Forward is the find's -Y (Roblox -Z).
+- **Light:** a Spot from just in front of the barn doors, 3,200 K, 26 degrees, brightness 2,
+  range 18, with shadows (the leaves shape the beam if a game ticket closes them); a weak Point
+  (0.35, range 6) for low graphics. The lens glows warm, hottest in the middle.
+- **Motions:** `SwitchOn` (the toggle snaps up; the filament strikes a breath later and the
+  lens warms to full over 0.7 s, as a big tungsten lamp does), `SwitchOff` (the drop at the
+  click, an orange fade), `Aim` (the lock knob backed off, a nudge the wrong way as the
+  weight's taken, a slow heavy pan and tilt that runs past and settles, the knob snugged; the
+  leaves lag and swing after the stop). Rest is how it's found: pointing straight ahead, off.
+- **Bake:** 2048 at about 257 texels a stud (big: the stand's tubes take a lot of the square);
+  the head, where a player looks, holds up close.

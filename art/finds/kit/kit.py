@@ -645,7 +645,10 @@ def stage_renders(find, set_dir, quick=False):
     before = set(bpy.data.objects)
     render.kept_figure(coll, (-(size.x / 2 + 1.6), 0.6, 0.0), 0.0, 5.4)
     person = set(bpy.data.objects) - before
-    cam = render.camera((-1.2, -9.5, 3.2), (-1.2, 0.0, 2.4), lens=40)
+    # a find taller than about 4.2 studs (a big find on its stand) pulls the camera back to fit
+    k = max(1.0, (c.z + size.z / 2) / 4.2)
+    cam = render.camera((-1.2, -9.5 * k, 3.2 + (k - 1) * 1.6), (-1.2, 0.0, 2.4 + (k - 1) * 1.6),
+                        lens=40)
     shoot(cam, sheet("lineup"), (1600, 900), S)
     for o in person:
         o.hide_render = True

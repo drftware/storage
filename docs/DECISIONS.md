@@ -5318,3 +5318,17 @@ written as motion data in the jar's frame (`Open`, then `Drift` looped for the m
 `Gone`), timed from field records of the common eastern firefly. Three of them carry a light,
 and each light follows its own firefly's glow, not the find's glow part (the kit's light
 `glow_part`): the game's motion player must do the same.
+
+## D-197 The theatre spotlight is a studio Fresnel on a rolling stand, aimed on its real pivots (F-02l, Nov 15)
+
+The catalog's theatre spotlight ("At home: point it at your best find") is built as the kind of
+stage light the references show and most players picture: a round, louvred studio Fresnel
+with barn doors, on a tubular U-yoke, on a three-legged rolling stand, rather than a modern
+black theatre can. Its lens sits 4.95 studs up, with the stand at its lowest, so it shines
+down onto a shelf or the floor. Aiming is two real pivots: the yoke pans about the stand's pin
+and the can tilts through its trunnions, so the "point it" ticket sets two joint angles toward
+the find (pan any angle, tilt within 70 degrees). `Aim` is a sample of the feel (the lock
+backed off, a heavy swing that overshoots and settles, the leaves swinging after), for that
+ticket to play with its own end angles. The barn-door leaves are hinged parts, ready for a
+later ticket to shape the beam; nothing closes them yet. Its red is a dark oxblood with no
+maker's name.
