@@ -9,7 +9,7 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   carried to, so "Kept" lands as the last free friend's catch cuts to black, and the photo names
   that floor. Once the end begins the carries stop; a carried black holds until the end's cover.
 - D-188: the owner answered the catalog's 14 questions (Secret on top, a luck boost on sale,
-  trapping pays 5 coins, boss floors possible). D-189: the end screen says "Caught", never "Kept".
+  trapping pays 5 coins, boss floors possible). D-189: the end screen says "Caught", never "Kept". Four follow-ups wait in `OWNER.md`.
 - Seen in Studio Play (one player, two stand-ins): the wipe landed 1.1 s after the car reached
   floor 3, fate `Kept|3`, nobody carried after it, Again clean, no errors. Two players wait on
   `OWNER.md`.
