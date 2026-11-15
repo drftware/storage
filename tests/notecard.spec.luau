@@ -192,6 +192,19 @@ for size, depth in { S = 8, M = 12 } do
 end
 ok(NoteCard.Reach < NoteCard.LetGo, "the card stays up a little past where Read shows")
 
+do -- the pocket (B-04a): what's held reads back in order, at most four, nothing from junk
+	local two = NoteCard.pocket({ "_ 7 _ _", "3 _ _ _" })
+	local back = NoteCard.held(two)
+	ok(#back == 2 and back[1] == "_ 7 _ _" and back[2] == "3 _ _ _", "two notes read back in order")
+	ok(
+		#NoteCard.held(nil) == 0 and #NoteCard.held(5) == 0 and #NoteCard.held("") == 0,
+		"junk holds none"
+	)
+	local five = NoteCard.pocket({ "1 _ _ _", "_ 2 _ _", "_ _ 3 _", "_ _ _ 4", "5 _ _ _" })
+	ok(#NoteCard.held(five) == NoteCard.Pocket, "never more than a pocket")
+	ok(not string.find("_ 7 _ _", NoteCard.Join, 1, true), "a note's writing never holds the join")
+end
+
 print(
 	`notecard: {checks - failures}/{checks} checks passed (A16: the digit {string.format(
 		"%.1f",

@@ -37,7 +37,6 @@ local Doors = require(script.Parent.Doors)
 local BoxSpecs = require(ReplicatedStorage.Shared.Boxes.Specs)
 local FloorBuilder = require(script.Parent.FloorBuilder)
 local MarkedBoxes = require(script.Parent.MarkedBoxes)
-local NoteSpot = require(ReplicatedStorage.Shared.Elevator.NoteSpot)
 local Saws = require(script.Parent.Saws)
 local Slots = require(script.Parent.Slots)
 local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
@@ -181,14 +180,9 @@ function Deals.new(): Deals
 				FELL.Size.Z + 2 * HOLE_MARGIN
 			),
 		}
-		local number = slot.number :: string
-		local note: number? = nil
-		for _, n in deck.notes do
-			if n.slot == index then
-				note = NoteSpot.inUnit(spec.Depth, number).x
-			end
-		end
-		return size, number, note
+		-- the note's place on the back wall: kept clear only while a note is stuck there (the
+		-- fallback, `layNoteBox`); since B-04a a note comes in its box
+		return size, slot.number :: string, nil
 	end
 
 	-- Where a spot in unit `unit` is in the world, standing as DealSpot turns it.
@@ -472,6 +466,34 @@ function Deals.new(): Deals
 		return place, DealSpot.around(spot, BOX_FOOTPRINT)
 	end
 
+	-- Stands unit `unit`'s marked box holding the code's note `text` (B-04a) and the unit's `count`
+	-- coins where a find would stand (behind the bulb, facing the doorway), clear of `taken` (its
+	-- keeper's floor). The floor it takes; with no room or template the note goes on the back
+	-- wall as before (D-044), so the code is never lost.
+	local function layNoteBox(
+		unit: Model,
+		deck: Deal.Deck,
+		index: number,
+		text: string,
+		count: number,
+		taken: { { number } }
+	): { number }?
+		local slot = deck.floor.slots[index]
+		local note: MarkedBoxes.Note =
+			{ text = text, size = slot.size, number = slot.number :: string }
+		local boxes = markedBoxes
+		local size, number = shape(deck, index)
+		local spot = if boxes
+			then DealSpot.inUnit(size, "Find", BOX_FOOTPRINT, nil, number, taken)
+			else nil
+		if boxes and spot and boxes:stand(unit, placed(unit, spot), nil, count, note) then
+			return DealSpot.around(spot, BOX_FOOTPRINT)
+		end
+		warn(`Deals: no box for the note in {unit.Name}: it's on the back wall`)
+		FloorBuilder.stickNote(unit, slot.size, number, text)
+		return nil
+	end
+
 	-- Stands somebody's stuff (S1-04b2) in unit `unit` with its back to a wall, clear of `taken`
 	-- (all else the unit holds: its box, find, tool, coins and battery, B-03b): the thing dealt, or
 	-- the next in `Deal.Stuff` that fits (DealSpot.stuffIn), in the unit's hall piece as finds are,
@@ -530,7 +552,22 @@ function Deals.new(): Deals
 		-- on the floor only where no box can stand
 		local count = contents.coins
 		local coinsIn: ("its box" | "a box" | "the floor")? = nil
-		if count > 0 and boxed then
+		-- the code's note (B-04a): in a box of its own, with the unit's coins
+		local note = Deal.noteIn(deck, index)
+		local noteBox = if note
+			then layNoteBox(
+				unit,
+				deck,
+				index,
+				Deal.noteText(deck, note),
+				if boxed then 0 else count,
+				taken
+			)
+			else nil
+		if noteBox then
+			table.insert(taken, noteBox)
+		end
+		if count > 0 and (boxed or noteBox) then
 			coinsIn = "its box"
 		elseif count > 0 then
 			local _, area = layCoinBox(unit, deck, index, count, taken)
@@ -566,6 +603,11 @@ function Deals.new(): Deals
 					held ..= " (no art yet, so nothing laid)"
 				end
 				table.insert(things, held)
+			end
+			if note then
+				local with = if count > 0 and not boxed then ` with {count} coins` else ""
+				local where = if noteBox then ` in its box{with}` else " on its back wall"
+				table.insert(things, `the note "{Deal.noteText(deck, note)}"{where}`)
 			end
 			if count > 0 and coinsIn ~= "its box" then
 				table.insert(

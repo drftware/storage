@@ -70,6 +70,36 @@ export type Layout = {
 	slots: { Box }, -- left to right, as the note's slots read
 }
 
+--[[
+	Notes in your pocket (B-04a). A note taken out of its box is the taker's: the server keeps
+	what each player holds and mirrors it on them in one attribute, each note's writing ("_ 7 _ _")
+	in the order taken, joined by `Join`, so their screen can show and hold up every one. Notes
+	ride apart from your hands, as DOORS keeps its hint paper in a slot of its own, so taking one
+	never costs a find. A floor has at most four.
+]]
+NoteCard.Held = "HeldNotes"
+NoteCard.Join = "|"
+NoteCard.Pocket = 4
+
+-- The notes an attribute's `value` holds, in the order taken (none if it isn't one).
+function NoteCard.held(value: unknown): { string }
+	local out: { string } = {}
+	if type(value) ~= "string" then
+		return out
+	end
+	for text in string.gmatch(value, "[^|]+") do
+		if #out < NoteCard.Pocket then
+			table.insert(out, text)
+		end
+	end
+	return out
+end
+
+-- The attribute for `notes`, in order: what `held` reads back.
+function NoteCard.pocket(notes: { string }): string
+	return table.concat(notes, NoteCard.Join, 1, math.min(#notes, NoteCard.Pocket))
+end
+
 -- The slots a note's writing shows, left to right: "_ 7 _ _" is { "_", "7", "_", "_" }.
 function NoteCard.slots(text: string): { string }
 	local out = {}

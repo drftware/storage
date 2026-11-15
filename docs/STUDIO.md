@@ -2407,7 +2407,9 @@ verified: a doc page, Studio, or "untested".
   On floor 3 an awake Mannequin (seed 2000013: Unit325) catches you within seconds and ends the
   climb, after which presses do nothing (`ClimbFate` "Kept"): skip note, padlocked and sleeper
   units and step back to the lobby (0, 3, 557). `LogService:GetLogHistory()` filtered on the
-  Server reads "Deals:" lines far cheaper than the whole Output.
+  Server reads "Deals:" lines far cheaper than the whole Output. A press only works while the
+  prompt is shown: set the camera Scriptable and point it at the prompt, wait 1.2 s, then press
+  ("Driving a ProximityPrompt" below); B-04a's presses did nothing until it did.
   B-03b: `DoorMiddle` holds three prompts (Open, Close, Slam): pick the one whose `ActionText` is
   "Open" and `Enabled` (`FindFirstChildWhichIsA` finds the disabled Slam). After a PivotTo far
   down the hall, `RequestStreamAroundAsync` and wait about 2 s before the press, or it does

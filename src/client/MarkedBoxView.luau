@@ -35,7 +35,10 @@ local Workspace = game:GetService("Workspace")
 
 local Boxes = require(ReplicatedStorage.Shared.Boxes)
 local Brix = require(ReplicatedStorage.Brix)
+local Elevator = require(ReplicatedStorage.Shared.Elevator)
 local Grades = require(ReplicatedStorage.Shared.Grades)
+local NoteCard = require(ReplicatedStorage.Shared.Elevator.NoteCard)
+local NoteSpot = require(ReplicatedStorage.Shared.Elevator.NoteSpot)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 local StorageUnit = require(ReplicatedStorage.Shared.StorageUnit)
@@ -50,6 +53,14 @@ local GLOW_INSET = 0.12
 local GLOW_UNDER = 0.08
 local GLOW_SEEN = 0.65 -- the glow's opacity at the flare's top over the light's share of it
 local FLOOR_UP = 0.04 -- studs over the box's bottom a find stands inside it (the board under it)
+-- The code's note coming out (B-04a): its paper's middle hangs this far over the find's hover
+-- height, rocking this many degrees this fast, as a loose sheet does in the air; it flies to the
+-- opener's eyes, this many studs in front of their camera, where their card lifts (NoteView).
+local PAPER_ABOVE = 0.35
+local PAPER_ROCK, PAPER_ROCK_RATE = 7, 9
+local PAPER_NEAR = 1.6
+-- The note's light: warm, the colour of the unit's bulb on yellow paper, not a grade's.
+local NOTE_LIGHT = Color3.fromRGB(255, 214, 140)
 
 -- How often (seconds) this screen looks at which boxes are near: their hum, the light, a shut
 -- door between you and an Open.
@@ -75,6 +86,7 @@ type Box = {
 	grade: string,
 	reveal: Opening.Reveal,
 	find: string?,
+	note: string?, -- the code's note it holds, its writing (B-04a)
 	laidAt: Vector3?,
 	opener: Player?,
 	glow: BasePart?,
@@ -146,6 +158,9 @@ local function standing(key: string, at: Vector3, yaw: number): CFrame
 end
 
 local function colour(grade: string): Color3
+	if grade == Opening.NoteGrade then
+		return NOTE_LIGHT
+	end
 	local c = Grades.Colours[grade] or Grades.Colours.Common
 	return Color3.fromRGB(c[1], c[2], c[3])
 end
@@ -239,6 +254,8 @@ function MarkedBoxView.new(): Brix.System
 		b.reveal = Opening.Reveals[b.grade]
 		local find = m:GetAttribute(Opening.Find)
 		b.find = if type(find) == "string" and Tools.Catalog[find] then find else nil
+		local note = m:GetAttribute(Opening.Note)
+		b.note = if type(note) == "string" and note ~= "" then note else nil
 		local laid = m:GetAttribute(Opening.LaidAt)
 		b.laidAt = if typeof(laid) == "Vector3" then laid else nil
 		local by = m:GetAttribute(Opening.OpenedBy)
@@ -308,6 +325,72 @@ function MarkedBoxView.new(): Brix.System
 		return nil
 	end
 
+	-- The code's note `text` coming out of `b`, `t` seconds in: the paper rises out of the box,
+	-- rocking, turns once facing the opener, and flies to their eyes (on their screen) or their
+	-- hand (on friends'), gone as the server puts it in their pocket.
+	local function paperOut(b: Box, text: string, t: number, hold: number)
+		if not b.copy then
+			local template = Elevator.noteTemplate()
+			if not template then
+				b.note = nil -- the place lacks the note's art: nothing to show
+				return
+			end
+			local made = template:Clone()
+			made:ScaleTo(NoteSpot.Scale) -- as big as one stuck on a wall was
+			Elevator.write(made, text)
+			for _, d in made:GetDescendants() do
+				if d:IsA("BasePart") then
+					d.Anchored = true
+					d.CanCollide = false
+					d.CanQuery = false
+					d.CanTouch = false
+				end
+			end
+			b.copy = made
+			made.Parent = Workspace
+		end
+		local copy = b.copy :: Model
+		if copy.Parent == nil then
+			return -- in the pocket already
+		end
+		local up, turn, go = Opening.lift(t, hold)
+		local middle = NoteCard.Middle * NoteSpot.Scale -- from the paper's pivot to its middle
+		local at = b.base.Position
+		local floor = at.Y + FLOOR_UP + middle
+		local top = at.Y + Marked.Size.Y + Opening.Out.Above + PAPER_ABOVE
+		local face = 0
+		local opener = b.opener
+		local character = opener and opener.Character
+		if character then
+			local d = character:GetPivot().Position - at
+			if d.X * d.X + d.Z * d.Z > 0.01 then
+				face = math.atan2(-d.X, -d.Z)
+			end
+		end
+		local rock = math.rad(PAPER_ROCK) * math.sin(t * PAPER_ROCK_RATE) * (1 - go)
+		local hover = CFrame.new(at.X, floor + (top - floor) * up, at.Z)
+			* CFrame.Angles(0, face + math.rad(turn), rock)
+			* CFrame.new(0, -middle, 0)
+		local to: CFrame? = nil
+		if go > 0 then
+			local camera = Workspace.CurrentCamera
+			local hand = character
+				and (character:FindFirstChild("LeftHand") or character:FindFirstChild("Left Arm"))
+			if opener == me and camera then
+				to = camera.CFrame
+					* CFrame.new(0, 0, -PAPER_NEAR)
+					* CFrame.Angles(0, math.pi, 0)
+					* CFrame.new(0, -middle, 0)
+			elseif hand and hand:IsA("BasePart") then
+				to = CFrame.new(hand.Position) * hover.Rotation
+			end
+		end
+		copy:PivotTo(if to then hover:Lerp(to, go) else hover)
+		if go >= 1 then
+			copy:Destroy() -- in their pocket: on the opener's screen, their card lifts now
+		end
+	end
+
 	-- The reveal `t` seconds in: the light, the glow and the find's copy coming out.
 	local function reveal(b: Box, t: number)
 		local hold = b.reveal.Hold
@@ -319,6 +402,11 @@ function MarkedBoxView.new(): Brix.System
 			glow.Transparency = 1 - math.min(1, share / Opening.Flare / GLOW_SEEN)
 		end
 		local key = b.find
+		local text = b.note
+		if text and not key and t >= Opening.burst(hold) then
+			paperOut(b, text, t, hold)
+			return
+		end
 		if not key or t < Opening.burst(hold) then
 			return
 		end

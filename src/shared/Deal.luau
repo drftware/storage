@@ -845,9 +845,24 @@ function Deal.keeperIn(contents: Contents): Kind?
 	return contents.beside
 end
 
+-- The note in unit `index` of `deck`'s floor, or nil if it holds none.
+function Deal.noteIn(deck: Deck, index: number): Note?
+	for _, n in deck.notes do
+		if n.slot == index then
+			return n
+		end
+	end
+	return nil
+end
+
 --[[
 	Deals unit `index` the first time its door lifts and returns what it holds; after that, the
 	same every time (a door shut and lifted again holds what it held).
+
+	A note's unit (B-04a, D-205) has its note in its one marked box, so a find or tool its roll
+	lands on isn't dealt: one box, one thing (and its coins), as D-205's box holds a find, a tool,
+	coins or a note. Its keeper is dealt as any unit's, and so is one standing guard behind a
+	padlock (the roll's find or tool decides that, then the note takes their place).
 ]]
 function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 	local dealt = deck.dealt[index]
@@ -856,6 +871,7 @@ function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 	end
 	local roll = deck.rolls[index]
 	assert(roll, "Deal.open: not a unit")
+	local note = Deal.noteIn(deck, index) ~= nil
 
 	local kind: Kind, within: number = landOn(Deal.odds(deck, index, situation), roll)
 
@@ -865,7 +881,10 @@ function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 		battery = if deck.batteries[index] then true else nil,
 		pile = deck.piles[index],
 	}
-	if kind == "Tool" then
+	local thing = kind == "Find" or kind == "Tool"
+	if note and thing then
+		contents.kind = "Nothing" -- the note is what its box holds (after the guard's roll below)
+	elseif kind == "Tool" then
 		contents.tool = Deal.drawTool(deck)
 	elseif kind == "Find" then
 		contents.find = Deal.findFrom(deck.floor.number, deck.picks[index])
@@ -887,10 +906,6 @@ function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 		end
 	end
 	if Deal.keeperIn(contents) == nil then
-		local note = false
-		for _, n in deck.notes do
-			note = note or n.slot == index
-		end
 		if not note then
 			contents.stuff = Deal.stuffFrom((deck.picks[index] * Deal.StuffScramble) % 1)
 		end

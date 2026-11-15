@@ -299,7 +299,8 @@ for seed = 1, SEEDS do
 			end
 			ok(got.pile == deck.piles[i], `{where}: a door hands back its pile`)
 			local packrat = deck.sleepers[i] == Deal.Packrat.name
-			if i ~= guard and not packrat then
+			-- a note's unit holds its note in place of a find or tool (B-04a): not in the odds
+			if i ~= guard and not packrat and Deal.noteIn(deck, i) == nil then
 				add(if deck.padlocked[i] then locked else open, got.kind)
 				if deck.padlocked[i] then
 					add(beside, got.beside or "Nothing")
@@ -312,8 +313,9 @@ for seed = 1, SEEDS do
 			)
 			if got.beside then
 				ok(
-					(got.kind == "Find" or got.kind == "Tool") and got.keeper ~= nil,
-					`{where}: a keeper beside a find or tool, named`
+					(got.kind == "Find" or got.kind == "Tool" or Deal.noteIn(deck, i) ~= nil)
+						and got.keeper ~= nil,
+					`{where}: a keeper beside a find, tool or note's box, named`
 				)
 			end
 			ok(Deal.open(twin, i, BUILD).kind == got.kind, `{where}: the same seed deals the same`)

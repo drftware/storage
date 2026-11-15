@@ -28,6 +28,12 @@
 	(`Opening.Coins`) and go into the opener's count at once (`Coins:pay`, "box"): their screen
 	holds the count until the coins it flies in from the box land in it, as with a pile.
 
+	A note's box (B-04a) holds the code's note: stamped with the open (`Opening.Note`, its grade
+	`Opening.NoteGrade`, a lighter reveal), it goes into the opener's pocket (`NoteCard.Held`, never
+	a hand) as the paper reaches them, and their screen holds it up. A note's holder who leaves
+	puts it back on its unit's back wall (FloorBuilder.stickNote), so the code is never lost; B-04b
+	drops it where they were instead, and drops a caught player's too.
+
 	Studio's Workspace `DevBox` deals the next unit any find or tool in one, whatever its size,
 	to see every grade's reveal (Deals).
 ]]
@@ -40,6 +46,9 @@ local Workspace = game:GetService("Workspace")
 local Boxes = require(ReplicatedStorage.Shared.Boxes)
 local Brix = require(ReplicatedStorage.Brix)
 local Coins = require(script.Parent.Coins)
+local Floor = require(ReplicatedStorage.Shared.Floor)
+local FloorBuilder = require(script.Parent.FloorBuilder)
+local NoteCard = require(ReplicatedStorage.Shared.Elevator.NoteCard)
 local Slots = require(script.Parent.Slots)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 local Prompts = require(script.Parent.Prompts)
@@ -56,15 +65,28 @@ export type Opened = {
 	player: Player,
 	find: string?, -- the find's or tool's catalog key, nil for a box of coins alone
 	coins: number, -- how many coins it held (0 to 3), paid to the opener
+	note: string?, -- the code's note it held, its writing ("_ 7 _ _"), into the opener's pocket
 }
+
+-- The code's note a box holds (B-04a): its writing, and its unit's size and number, so it can go
+-- back on the unit's back wall if its holder leaves.
+export type Note = { text: string, size: Floor.Size, number: string }
 
 export type MarkedBoxes = Brix.System & {
 	-- Fires as a box is opened, after it's stamped (the find is given later, at `handAt`).
 	opened: Brix.Signal<Opened>,
 	-- Stands a shut marked box at `place` (the middle of its bottom on the floor, its printed side
 	-- facing the place's LookVector) in unit `unit`, into the unit's hall piece, holding find or
-	-- tool `find` (a catalog key) and `coins` coins (B-03b). Nil when the place lacks the template.
-	stand: (self: any, unit: Model, place: CFrame, find: string?, coins: number?) -> Model?,
+	-- tool `find` (a catalog key) and `coins` coins (B-03b), or the code's note `note` (B-04a). Nil
+	-- when the place lacks the template.
+	stand: (
+		self: any,
+		unit: Model,
+		place: CFrame,
+		find: string?,
+		coins: number?,
+		note: Note?
+	) -> Model?,
 }
 
 type Standing = {
@@ -74,7 +96,11 @@ type Standing = {
 	prompt: ProximityPrompt,
 	find: string?,
 	coins: number,
+	note: Note?,
 }
+
+-- A note in a player's pocket, and the unit it came out of.
+type Held = { note: Note, unit: Model }
 
 -- Studs from the box's middle to where a find lands beside it (toward the opener): clear of the
 -- box and its open flaps, still within a Take's reach.
@@ -92,6 +118,55 @@ function MarkedBoxes.new(): MarkedBoxes
 	local slots: Slots.Slots? = nil
 	local bank: Coins.CoinsSystem? = nil
 	local stopped = false
+	local pockets: { [Player]: { Held } } = {}
+
+	-- Mirrors what `player` holds onto them, for their screen (NoteView).
+	local function mirror(player: Player)
+		local texts: { string } = {}
+		local list = pockets[player]
+		if list then
+			for _, h in list do
+				table.insert(texts, h.note.text)
+			end
+		end
+		player:SetAttribute(NoteCard.Held, if #texts > 0 then NoteCard.pocket(texts) else nil)
+	end
+
+	-- A note goes back on its unit's back wall: its holder left (or was gone before it reached them).
+	local function putBack(h: Held)
+		if h.unit.Parent then
+			FloorBuilder.stickNote(h.unit, h.note.size, h.note.number, h.note.text)
+		end
+	end
+
+	-- The reveal has brought the note `h` to `player`: into their pocket, or back on its wall.
+	local function pocket(player: Player, h: Held)
+		if stopped then
+			return
+		end
+		if not player.Parent then
+			putBack(h)
+			return
+		end
+		local list = pockets[player] or {}
+		pockets[player] = list
+		table.insert(list, h)
+		mirror(player)
+		-- the floor it came from goes (the climb moves on): it leaves the pocket with it
+		local gone: RBXScriptConnection
+		gone = h.unit.AncestryChanged:Connect(function()
+			if h.unit:IsDescendantOf(game) then
+				return
+			end
+			gone:Disconnect()
+			local now = pockets[player]
+			local at = if now then table.find(now, h) else nil
+			if now and at then
+				table.remove(now, at)
+				mirror(player)
+			end
+		end)
+	end
 
 	-- Whether `player` has a free hand for a find: a slot free, and nothing two-handed held.
 	local function room(player: Player): boolean
@@ -163,10 +238,10 @@ function MarkedBoxes.new(): MarkedBoxes
 		-- what's inside reaches screens only now, before the stamp, in the same batch
 		local key = s.find
 		local row = if key then Tools.Catalog[key] else nil
-		local grade = if row
-				and row.grade
-				and Opening.Reveals[row.grade]
-			then row.grade
+		local note = s.note
+		local grade = if note and not key
+			then Opening.NoteGrade
+			elseif row and row.grade and Opening.Reveals[row.grade] then row.grade
 			else "Common"
 		local laid = key ~= nil and not room(player)
 		local spot, yaw = besideBox(s.box, at)
@@ -179,6 +254,9 @@ function MarkedBoxes.new(): MarkedBoxes
 		end
 		if s.coins > 0 then
 			s.box:SetAttribute(Opening.Coins, s.coins)
+		end
+		if note then
+			s.box:SetAttribute(Opening.Note, note.text)
 		end
 		s.box:SetAttribute(Opening.OpenedBy, player.UserId)
 		s.box:SetAttribute(Opening.OpenedAt, Workspace:GetServerTimeNow())
@@ -195,8 +273,17 @@ function MarkedBoxes.new(): MarkedBoxes
 		end
 		if RunService:IsStudio() then
 			local coinsSaid = if s.coins > 0 then ` and {s.coins} coins` else ""
+			local noteSaid = if note then `, the note "{note.text}"` else ""
 			print(
-				`MarkedBoxes: {player.Name} opened the box in {s.unit.Name}: {key or "no find"}{coinsSaid}`
+				`MarkedBoxes: {player.Name} opened the box in {s.unit.Name}: {key or "no find"}{noteSaid}{coinsSaid}`
+			)
+		end
+		if note then
+			task.delay(
+				Opening.handAt(Opening.Reveals[grade].Hold),
+				pocket,
+				player,
+				{ note = note, unit = s.unit }
 			)
 		end
 		if key then
@@ -210,12 +297,26 @@ function MarkedBoxes.new(): MarkedBoxes
 				yaw
 			)
 		end
-		opened:fire({ box = s.box, unit = s.unit, player = player, find = key, coins = s.coins })
+		opened:fire({
+			box = s.box,
+			unit = s.unit,
+			player = player,
+			find = key,
+			coins = s.coins,
+			note = if note then note.text else nil,
+		})
 	end
 
 	local system = { name = "MarkedBoxes", opened = opened }
 
-	function system.stand(_: any, unit: Model, place: CFrame, find: string?, coins: number?): Model?
+	function system.stand(
+		_: any,
+		unit: Model,
+		place: CFrame,
+		find: string?,
+		coins: number?,
+		note: Note?
+	): Model?
 		-- set up out of the world, then parented once into the hall piece
 		local box = Boxes.cloneMarked(place)
 		if not box then
@@ -249,6 +350,7 @@ function MarkedBoxes.new(): MarkedBoxes
 			prompt = prompt,
 			find = find,
 			coins = math.clamp(math.floor(coins or 0), 0, 3),
+			note = note,
 		}
 		standing[box] = s
 		prompt.Triggered:Connect(function(player: Player)
@@ -270,6 +372,13 @@ function MarkedBoxes.new(): MarkedBoxes
 			connections,
 			Players.PlayerRemoving:Connect(function(player: Player)
 				rates[player] = nil
+				local held = pockets[player]
+				pockets[player] = nil
+				if held then
+					for _, h in held do
+						putBack(h)
+					end
+				end
 			end)
 		)
 	end
@@ -282,6 +391,7 @@ function MarkedBoxes.new(): MarkedBoxes
 		table.clear(connections)
 		table.clear(standing)
 		table.clear(rates)
+		table.clear(pockets)
 		opened:disconnectAll()
 	end
 

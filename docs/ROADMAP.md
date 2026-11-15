@@ -2100,6 +2100,19 @@ it is, coins go to your bank, a tool goes to your hands, or it's a piece of the 
   in a marked box. Take it and carry it; hold it up to read it (D-045). Drop it in the car and it
   stays by the keypad for anyone to read, so a team gathers the pieces there (as DOORS' library
   hands you its hint books to carry). Caught holding one, it drops where you were caught.
+  Split for size (Nov 15):
+  - [x] **B-04a A note comes in a box.** Done Nov 15 (D-213): a note's unit is dealt no find or
+    tool (`Deal.noteIn`); its box holds the note and its coins (`layNoteBox`, back wall only if no
+    box stands); the note's reveal (`Opening.Reveals.Note`) flies the paper to the opener's eyes
+    and lifts the card; the pocket (`NoteCard.Held`) keeps it, a paper at the screen's left edge.
+    Verified in Studio Play (Unit317, seed 2000013). Was: The note's unit has its one marked box with the note in
+    it (and its coins), never a note on a back wall; the open's reveal is the note's own, lighter
+    than a find's (a paper flap, a warm glimmer), the paper rises, turns and flies to the opener,
+    and lifts onto their screen as D-045's card. They keep it in a pocket of its own, not a
+    hand: a paper tucked at their screen's edge that holds it up again on a tap.
+  - [ ] **B-04b Carry it to the car.** Drop a held note in the car and it stays by the keypad for
+    anyone to read; caught or gone holding one, it drops where you were. Until then a caught
+    player keeps their notes, and a player who leaves puts theirs back on its unit's back wall.
 - [ ] **B-05 Packed units.** Some medium and large units (about one in three, more on higher
   floors) are boxes stacked to the ceiling with a path through to the back, where the marked box
   or a sleeping monster waits, never nothing. Art first (each stack a few models, for low-end

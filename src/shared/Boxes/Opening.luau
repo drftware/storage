@@ -92,7 +92,13 @@ Opening.Reveals = {
 	Epic = { Hold = 0.7, Glow = 1.8, Range = 9, Heard = 64, Shake = 6 },
 	Legendary = { Hold = 0.95, Glow = 2.4, Range = 11, Heard = 110, Shake = 8 },
 	Secret = { Hold = 1.2, Glow = 2.8, Range = 12, Heard = 140, Shake = 9 },
+	-- the code's note (B-04a): lighter than any find, the box barely catches its breath before
+	-- the flaps go, a warm glimmer, heard only by the friends beside you
+	Note = { Hold = 0.06, Glow = 0.5, Range = 5, Heard = 24, Shake = 2 },
 } :: { [string]: Reveal }
+-- The grade stamped on a box holding the code's note (it has no find's grade).
+Opening.NoteGrade = "Note"
+Opening.Note = "Note" -- on the box, stamped with the open: the note's writing ("_ 7 _ _")
 Opening.Grade = "Grade" -- on the box, stamped with the open: the grade of what's inside
 Opening.Find = "Find" -- on the box, stamped with the open: the find's catalog key
 Opening.LaidAt = "LaidAt" -- on the box, if the opener's hands were full: where the find lands

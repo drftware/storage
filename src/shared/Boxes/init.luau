@@ -81,6 +81,17 @@ Boxes.Reveal = {
 		rise = { id = RISE, from = 0.05, peak = 2, length = 2.1, volume = 1.3, pitch = 0.9 },
 		burst = fall(0.72, 1.1),
 	},
+	-- the code's note (B-04a): no rattle, just the sheet's sharp flap as it comes out ("File
+	-- Folder Movement 5", the flap NoteView's card makes, its flap at 0.78 to 0.88 s)
+	Note = {
+		burst = {
+			id = "rbxassetid://9114409576",
+			from = 0.74,
+			length = 0.26,
+			volume = 0.8,
+			pitch = 1.08,
+		},
+	},
 } :: { [string]: Reveal }
 
 -- The kraft under the texture, shown only if the maps fail to load.

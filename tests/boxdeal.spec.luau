@@ -95,6 +95,42 @@ do -- the real box and art (sizes as built on Nov 15)
 	end
 end
 
+do -- a note's unit (B-04a): its box holds the note, so it's never dealt a find or tool
+	local Brix = require("../vendor/brix/src")
+	local Floor = require("../src/shared/Floor")
+	local notes, guarded = 0, 0
+	for seed = 1, 120 do
+		for _, number in { 1, 3, 6 } do
+			local floor = Floor.generate(number, Brix.Random.new({ seed = seed }))
+			local deck = Deal.new(floor, Brix.Random.new({ seed = seed + 1000000 }))
+			for _, note in deck.notes do
+				local got = Deal.open(deck, note.slot, { mood = "Build", awake = 0 })
+				notes += 1
+				ok(
+					got.kind ~= "Find"
+						and got.kind ~= "Tool"
+						and got.find == nil
+						and got.tool == nil,
+					`seed {seed} floor {number}: the note's unit holds no find or tool`
+				)
+				ok(got.stuff == nil, `seed {seed} floor {number}: no stuff with the note`)
+				ok(
+					Deal.noteIn(deck, note.slot) == note,
+					`seed {seed} floor {number}: noteIn finds it`
+				)
+				if note.slot == deck.guarded then
+					guarded += 1
+					ok(
+						got.kind == "Awake",
+						`seed {seed} floor {number}: the guarded note's keeper is awake`
+					)
+				end
+			end
+		end
+	end
+	ok(notes > 0 and guarded > 0, "notes were dealt and some were guarded")
+end
+
 print(`boxdeal: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

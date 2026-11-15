@@ -150,6 +150,28 @@ nowhere else.
   2. A battery stays loose on the floor: it's a quick grab for a dying torch, not a reveal.
   3. Somebody's stuff in 7 of 10 units without a monster or note (it was half the empty ones).
   4. A box of coins alone opens like a Common: warm light, quick hold, then the coins.
+- [ ] **A note comes out of a box** (B-04a, D-213; seen in Studio Play by me with one player,
+  never two, never on a phone; tapping the pocket paper not yet tried).
+  1. In Studio, Test tab > Clients and Servers: Local Server, 2 players, Start. Both players:
+     take "Walk a floor" and go to floor 3 together. No unit has a note on its back wall now.
+  2. Lift Unit317's door: one marked box. Player 1 opens it: a very short hold, a warm glimmer,
+     a paper flap, and a yellow note rises out of the box rocking, turns once and flies at player
+     1's face; on their screen the note lifts big ("_ _ _ 4"), the world dimmed behind it.
+  3. Player 2 stands in the doorway as it opens: they see the note rise and fly to player 1's
+     hand, and their own screen shows nothing more.
+  4. Player 1: tap the note to put it away. A small yellow paper sits tucked at the left edge of
+     the screen with "_ _ _ 4" on it in one line. Tap it: the note lifts again. Walk while it's
+     up: it stays up. Tap again to put it away.
+  5. Open Unit313's box too: a second paper slides in under the first; each holds up its own note.
+  6. On a phone (Device emulator, a small phone held sideways): the pocket papers are easy to
+     tap and don't sit under your thumb on the stick; the card still reads.
+  7. Unit304's note sits behind an awake monster (the guarded note): its box is there with the
+     monster; open it if you can get past.
+- [ ] **Decide (defaults in, B-04a, D-213):** say if any should change.
+  1. A note's unit holds the note and its coins, never a find or tool too (one box, one thing).
+  2. Notes go in a pocket of their own, not one of your three hands, so taking the code never
+     costs a find; each shows as a paper at your screen's left edge.
+  3. A note you just took lifts onto your screen at once, so you read it before anything else.
 - [ ] **Answer Brix's gift and receipt choices** (its DECISIONS E-075 to E-078, listed in Brix's
   HANDOFF) before S3-04 sells gift versions of the wrap colours.
 

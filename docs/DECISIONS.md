@@ -5651,3 +5651,32 @@ a big loose find's coins in a second box beside it is the default (`OWNER.md`).
 - Verified in Studio Play on seed 2000013's floor 3: Unit301 a box of 2 coins alone and a column
   of boxes; Unit312 the padlock and 3 coins in one box and a rolled rug; Unit319 the skates and 2
   coins and an old mattress. Each count rose 2, 3 and 2, held until the coins landed. No errors.
+
+## D-213 A note comes in a box, and goes in your pocket (B-04a, Nov 15)
+
+The code's notes leave the back walls (D-044). A note's unit has its one marked box with the note
+in it, and the unit's coins with it; never a note on a wall unless no box can stand (then it goes
+on the back wall as before, and Studio's Output says so, so the code is never lost).
+
+- **One box, one thing.** A note's unit is never dealt a find or tool: D-205's box holds a find, a
+  tool, coins or a note. The roll still decides its keeper, and behind a padlock a keeper may
+  stand guard by the note's box as one would by a find (`Deal.open`, `Deal.noteIn`). The deal's
+  fingerprint moved (`tests/stuffdeal.spec`); the odds' tallies leave note units out.
+- **Its own reveal**, lighter than any find's (`Opening.Reveals.Note`: a 0.06 s hold, a weak warm
+  light the colour of the bulb on yellow paper, heard 24 studs off), no rattle, just the sheet's
+  sharp flap (the card's own sound) as the flaps burst. The paper rises out of the box rocking as
+  a loose sheet does, turns once facing the opener and flies to their eyes, where the card lifts
+  with it (D-045's card, unchanged): the first thing you do with a note is read it. Friends see it
+  fly to the opener's hand.
+- **A pocket, not a hand** (default, `OWNER.md`). The server keeps each player's notes and mirrors
+  them on the player (`NoteCard.Held`, "_ 7 _ _" joined by "|", at most four). A note never takes
+  a slot, so nobody has to choose between a find and the code, as DOORS keeps its hint paper in a
+  slot of its own. Each held note is a small paper tucked at the screen's left edge with its slots
+  on it, sliding in as you take it; a tap holds it up on the card. Walking doesn't drop a held
+  note's card (it's in your hand); dying does. Notes leave pockets with their floor.
+- **Until B-04b:** a caught player keeps their notes (they can still read them out); a player who
+  leaves puts theirs back on its unit's back wall (`FloorBuilder.stickNote`). B-04b drops them where
+  you were, and lets you leave one in the car by the keypad.
+- Verified in Studio Play on seed 2000013's floor 3: Unit317's box held "_ _ _ 4"; the paper came
+  out, the card lifted with it, the pocket paper showed. No errors.
+

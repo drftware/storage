@@ -14,6 +14,13 @@
 	a paper flap. A tap on it, Read again (E, or X on a gamepad), B, a click, walking off or dying
 	drops it away. You can still walk and look while it's up: a keeper doesn't wait.
 
+	Your pocket (B-04a). A note now comes out of its unit's marked box and flies to the opener's
+	eyes (MarkedBoxView); as the server puts it in their pocket (`NoteCard.Held`, on the player)
+	the card lifts with it, so the first thing you do with a note is read it. Each note you hold
+	is a small paper tucked at your screen's left edge, its slots written on it, sliding in as you
+	take it; a tap holds it up again on the card. Tap, Read, B or a click drops it as before;
+	walking doesn't (it's in your hand, not on a wall), dying does.
+
 	The card's paper is the note's own mesh drawn in a ViewportFrame. A SurfaceGui draws nothing
 	there (seen in Studio, L-05b1d), so the slots are written over the paper on the screen.
 ]]
@@ -59,6 +66,17 @@ local LIGHT_FROM = Vector3.new(-0.45, -0.65, 1)
 local LENS = 8
 -- The paper itself, if the place has lost the note's template (then Output warns as it lays notes).
 local PAPER = Color3.fromRGB(241, 217, 87)
+
+-- The pocket (B-04a): each held note a paper this share of the screen's height (never under a
+-- thumb's 44 points), a quarter of it tucked off the left edge, the first this far down the
+-- screen, each next one this share of a paper lower, crooked by turns. A new one slides in
+-- from off the edge.
+local POCKET_SIDE, POCKET_MIN = 0.13, 44
+local POCKET_TUCK = 0.25
+local POCKET_TOP = 0.26
+local POCKET_STEP = 0.82
+local POCKET_TILT = { -5, 4, -3, 6 }
+local POCKET_IN = TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 
 -- The flap of a sheet of paper (Pro Sound Effects, "File Folder Movement 5", 1.75 s): one sharp
 -- flap at 0.78 to 0.88 s, measured in Studio, and nearly silent around it.
@@ -235,6 +253,9 @@ function NoteView.new(): Brix.System
 	local connections: { RBXScriptConnection } = {}
 	local view: Card? = nil
 	local openOn: Entry? = nil
+	local pocketOpen = false -- a note from your pocket is held up
+	local held: { string } = {} -- the notes in your pocket, in the order taken
+	local papers: { TextButton } = {}
 	local openedAt = -math.huge -- os.clock() when the card last lifted
 	local moving: { Tween } = {}
 	local rest = UDim2.new()
@@ -325,7 +346,7 @@ function NoteView.new(): Brix.System
 	-- A Read button shows on every note but the one held up, and none while one is.
 	local function showPrompts()
 		for _, entry in entries do
-			entry.prompt.Enabled = openOn == nil
+			entry.prompt.Enabled = openOn == nil and not pocketOpen
 		end
 	end
 
@@ -347,10 +368,11 @@ function NoteView.new(): Brix.System
 
 	close = function()
 		local v = view
-		if not openOn or not v then
+		if not (openOn or pocketOpen) or not v then
 			return
 		end
 		openOn = nil
+		pocketOpen = false
 		ContextActionService:UnbindAction(CLOSE_ACTION)
 		stopMoving()
 		local fall = rest + UDim2.fromOffset(0, side * DROP_TO)
@@ -368,17 +390,11 @@ function NoteView.new(): Brix.System
 		showPrompts()
 	end
 
-	local function open(entry: Entry)
-		local v = view
-		local text = Elevator.read(entry.model)
-		if openOn or not v or not text then
-			return
-		end
-		openOn = entry
+	-- Lifts the card with `text` written on it, crooked by `tilt` degrees (the caller marks whose).
+	local function lift(v: Card, text: string, tilt: number)
 		openedAt = os.clock()
 		showPrompts()
 		fit(NoteCard.slots(text))
-		local tilt = tiltOf(entry.model)
 		stopMoving()
 		v.card.Position = rest + UDim2.fromOffset(0, side * LIFT_FROM)
 		v.card.Rotation = tilt + LIFT_TURN
@@ -402,6 +418,98 @@ function NoteView.new(): Brix.System
 			table.unpack(keys)
 		)
 		flap(LIFT_PITCH, 1)
+	end
+
+	local function open(entry: Entry)
+		local v = view
+		local text = Elevator.read(entry.model)
+		if openOn or pocketOpen or not v or not text then
+			return
+		end
+		openOn = entry
+		lift(v, text, tiltOf(entry.model))
+	end
+
+	-- Holds up the `i`th note in your pocket.
+	local function holdPocket(i: number)
+		local v = view
+		local text = held[i]
+		if openOn or pocketOpen or not v or not text then
+			return
+		end
+		pocketOpen = true
+		lift(v, text, POCKET_TILT[(i - 1) % #POCKET_TILT + 1])
+	end
+
+	-- Lays the pocket's papers out on the screen as it is now; `fresh` slides in from off the edge.
+	local function placePapers(fresh: number?)
+		local v = view
+		if not v then
+			return
+		end
+		local size = v.screen.AbsoluteSize
+		local paperSide = math.max(POCKET_MIN, size.Y * POCKET_SIDE)
+		for i, paper in papers do
+			paper.Size = UDim2.fromOffset(paperSide, paperSide)
+			local at = UDim2.fromOffset(
+				-paperSide * POCKET_TUCK,
+				size.Y * POCKET_TOP + (i - 1) * paperSide * POCKET_STEP
+			)
+			if i == fresh then
+				paper.Position = at - UDim2.fromOffset(paperSide, 0)
+				-- its own tween: the card lifting next stops the card's tweens, never this
+				TweenService:Create(paper, POCKET_IN, { Position = at }):Play()
+			else
+				paper.Position = at
+			end
+		end
+	end
+
+	-- Your pocket changed on the server: its papers drawn again, and a note just taken held up.
+	local function pocketChanged()
+		local v = view
+		if not v then
+			return
+		end
+		local now = NoteCard.held(Players.LocalPlayer:GetAttribute(NoteCard.Held))
+		local was = #held
+		held = now
+		for _, paper in papers do
+			paper:Destroy()
+		end
+		table.clear(papers)
+		local ink = Elevator.Specs.Note.Ink
+		for i, text in now do
+			local paper = Instance.new("TextButton")
+			paper.Name = `HeldNote{i}`
+			paper.AutoButtonColor = false
+			paper.BackgroundColor3 = PAPER
+			paper.BorderSizePixel = 0
+			paper.Rotation = POCKET_TILT[(i - 1) % #POCKET_TILT + 1]
+			paper.Text = text
+			paper.FontFace = Font.new(Elevator.Specs.Note.Font, Enum.FontWeight.Bold)
+			paper.TextColor3 = Color3.fromRGB(ink[1], ink[2], ink[3])
+			paper.TextScaled = true
+			paper.TextWrapped = false -- one line, as the note reads (wrapped, "_ _ _" sat over "4")
+			paper.ZIndex = 0 -- under the dim and the card
+			local pad = Instance.new("UIPadding")
+			pad.PaddingLeft = UDim.new(POCKET_TUCK + 0.06, 0) -- clear of the tucked quarter
+			pad.PaddingRight = UDim.new(0.08, 0)
+			pad.PaddingTop = UDim.new(0.2, 0)
+			pad.PaddingBottom = UDim.new(0.2, 0)
+			pad.Parent = paper
+			paper.Activated:Connect(function()
+				holdPocket(i)
+			end)
+			paper.Parent = v.screen
+			papers[i] = paper
+		end
+		placePapers(if #now > was then #now else nil)
+		if #now > was then
+			holdPocket(#now) -- the note you just took, up to read
+		elseif #now < was and pocketOpen then
+			close() -- the floor it came from has gone
+		end
 	end
 
 	local function remove(inst: Instance)
@@ -484,10 +592,11 @@ function NoteView.new(): Brix.System
 			table.insert(
 				connections,
 				v.screen:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-					if openOn then
+					if openOn or pocketOpen then
 						fit(nil)
 						v.card.Position = rest
 					end
+					placePapers(nil)
 				end)
 			)
 			table.insert(
@@ -501,6 +610,11 @@ function NoteView.new(): Brix.System
 			for _, inst in CollectionService:GetTagged(Elevator.NoteTag) do
 				add(inst)
 			end
+			table.insert(
+				connections,
+				Players.LocalPlayer:GetAttributeChangedSignal(NoteCard.Held):Connect(pocketChanged)
+			)
+			pocketChanged()
 			loading = task.spawn(function()
 				-- Measuring text in a font loads it: the async measure waits for its files.
 				local params = Instance.new("GetTextBoundsParams")
@@ -518,6 +632,15 @@ function NoteView.new(): Brix.System
 			end)
 		end,
 		step = function(_: any, _dt: number)
+			if pocketOpen then
+				-- in your hand: only dying drops it
+				local character = Players.LocalPlayer.Character
+				local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+				if not humanoid or humanoid.Health <= 0 then
+					close()
+				end
+				return
+			end
 			local entry = openOn
 			if not entry then
 				return

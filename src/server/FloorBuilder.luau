@@ -9,8 +9,8 @@
 	junction's square a run reaches gets the S unit's steel top, so the run turns the corner; and
 	the kit's wall panel closes every other edge of the tops up to the deck (`Floor`'s lids and
 	panels, D-055). Given
-	the floor's deal, each unit holding one of the code's notes gets it stuck on its back wall
-	(NoteSpot), and each door the deal padlocked is padlocked, as the unit is laid: the floor
+	the floor's deal, each door the deal padlocked is padlocked (the code's notes come in their
+	units' marked boxes since B-04a: Deals), as the unit is laid: the floor
 	arrives that way, without a sound. What's behind each door is dealt when it first lifts (Deals,
 	L-04e). The lobby is a plain room, the freight elevator standing in its back wall and lit only by the car's
 	lamp, until L-05 dresses the lobby.
@@ -357,7 +357,6 @@ type Laying = {
 	panels: { [number]: { Floor.Panel } }, -- the panels closing the tops, by the piece they close
 	deadEnds: { [number]: { Floor.DeadEnd } },
 	fixtures: { [number]: Floor.Fixture },
-	notes: { [Floor.Slot]: string }, -- what the code's note in a unit says, by its slot
 	padlocked: { [Floor.Slot]: boolean }, -- the doors the deal padlocked
 	marked: Floor.Slot?, -- the unit whose jamb carries the floor's faint mark (S1-11)
 	indexOf: { [Floor.Slot]: number }, -- each slot's index in the floor's `slots`
@@ -365,10 +364,13 @@ type Laying = {
 	breathe: () -> (), -- waits for the next frame once this one's share is spent
 }
 
--- The code's note in a unit, on its back wall where NoteSpot says, `text` written on it ("_ 7 _ _").
--- Without the place's note template Elevator.note warns and the unit stays bare.
-local function stickNote(unit: Model, face: CFrame, slot: Floor.Slot, text: string)
-	local spot = NoteSpot.inUnit(Specs[slot.size].Depth, slot.number :: string)
+-- The code's note in unit `unit` (its number `number`, its size `size`), on its back wall where
+-- NoteSpot says, `text` written on it ("_ 7 _ _"). Since B-04a a note comes in its unit's marked
+-- box (Deals); this is where it goes only when no box can hold it, or its holder leaves (until
+-- B-04b drops it where they were). Without the place's template Elevator.note warns.
+function FloorBuilder.stickNote(unit: Model, size: Floor.Size, number: string, text: string)
+	local face = FloorBuilder.face(unit)
+	local spot = NoteSpot.inUnit(Specs[size].Depth, number)
 	local pivot = face * CFrame.new(spot.x, spot.y, spot.z) * CFrame.Angles(0, 0, spot.tilt)
 	local note = Elevator.note(pivot, unit, text)
 	if note then
@@ -446,10 +448,6 @@ local function piece(laying: Laying, index: number, parent: Instance): (Folder, 
 				laying.door
 			)
 			dropWalls(unit, s.drops, origin)
-			local text = laying.notes[s]
-			if text then
-				stickNote(unit, face, s, text)
-			end
 			if laying.padlocked[s] then
 				RollUpDoor.setLocked(unit, true)
 			end
@@ -567,8 +565,7 @@ end
 --[[
 	Lays `floor` with its lobby's middle at `origin` (on the floor, the halls spreading along its
 	-Z) into a new model under `parent`, and returns the model and what it took. With the floor's
-	`deck` (Deal.new), the code's notes go in the units it dealt them to and the doors it padlocked
-	are padlocked. Yields: the lobby
+	`deck` (Deal.new), the doors it padlocked are padlocked and the floor's mark is stamped. Yields: the lobby
 	comes first, then the hall pieces nearest it, each parented as it's finished. Errors if the place
 	lacks a template (FloorBuilder.units says which).
 ]]
@@ -623,7 +620,6 @@ function FloorBuilder.lay(
 		panels = {},
 		deadEnds = {},
 		fixtures = {},
-		notes = {},
 		padlocked = {},
 		marked = nil,
 		indexOf = {},
@@ -675,9 +671,6 @@ function FloorBuilder.lay(
 		laying.fixtures[f.cell] = f
 	end
 	if deck then
-		for _, note in deck.notes do
-			laying.notes[floor.slots[note.slot]] = Deal.noteText(deck, note)
-		end
 		for i in deck.padlocked do
 			laying.padlocked[floor.slots[i]] = true
 		end
