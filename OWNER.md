@@ -63,6 +63,29 @@ find. This needs two players (a friend on a second phone or computer, or a secon
   find you. (3) The padlock's 2.5 minutes start when you wake in the new unit. Say if any should
   change.
 
+## Now: the last friend caught while another is carried up (S3-01b, built Nov 14, D-187; seen in Studio Play with stand-ins, not with two players)
+
+The climb now ends the moment the last free friend is grabbed, even if another friend is in the
+black on their way to being wrapped in a unit. Needs two players, as the test above.
+
+- [ ] **Caught while your friend is carried:**
+  1. Start a climb with a friend. On floor 1, punch the code.
+  2. You ride up alone. Your friend stays out in the lobby and is left behind.
+  3. When the gate opens on floor 2, step out and walk straight into a monster within a few
+     seconds (or, if none is near, close Roblox on your device the moment the gate opens).
+  4. What to look for on your screen: you get grabbed, and about a second later, as your catch
+     cuts to black, the "Kept" black comes down. Your eyes should not open inside a unit first.
+  5. What to look for on your friend's screen: their view may start to go dark from the carry,
+     then the "Kept" black takes over. No door slam or film squeal after the "Kept" black starts,
+     no "Back in" word, nothing flashing.
+  6. On the results, your friend's photo should say floor 2 (the floor they were carried to),
+     not floor 1.
+  7. Press Again on both screens: both of you should come back with a clear screen, nothing
+     stuck black.
+- [ ] **Decide, defaults in place** (D-187): (1) A friend being carried up counts as wrapped, so
+  the end doesn't wait the few seconds for their unit. (2) Their photo names the floor they were
+  carried to. Say if either should change.
+
 ## Now: listen to the Packrat, arms empty and arms full (S2-06e and S2-06e2, built Nov 14, D-184 and D-185; both sets heard playing in Studio Play, not yet judged by ear)
 
 The Packrat now has its own sounds. With its arms empty (coming for you) you should hear soft

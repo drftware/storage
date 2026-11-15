@@ -17,7 +17,9 @@
 	- Carried up (S3-01a): a beat after the gate opens on the new floor (`Left.CarryAttribute`)
 	  the view dips to black as the film squeals round you, and a roll-up door slams down in the
 	  dark; the black holds until you're stood wrapped in a unit there, and CaughtView opens your
-	  eyes on its dark inside.
+	  eyes on its dark inside. If the last free friend is caught on the way (S3-01b), the end's
+	  black comes down over this one: no squeal or slam still to come, and the black holds until
+	  the end's is whole.
 	- Back in: the black lifts on your new character in your friends' lobby, with the film's rip
 	  for Cut Free, and "Back in". The climb's end lets you go without it: the results screen is
 	  where you're back (EndView).
@@ -590,6 +592,7 @@ function WatchView.new(
 					camera.CameraType = Enum.CameraType.Custom
 				end
 				watchBegan, subject, cancelAt, backAt = nil, nil, nil, nil
+				carryAt, keptSeen = nil, nil
 				rest(s)
 			elseif watchBegan then
 				local camera = Workspace.CurrentCamera
@@ -629,7 +632,11 @@ function WatchView.new(
 		local clock = os.clock()
 		-- carried up: the film squeals round you as the dip begins, and a door slams in the black
 		local carryFrom = carryAt
-		if carryFrom then
+		if carryFrom and Workspace:GetAttribute(ClimbEnd.Attribute) ~= nil then
+			-- the climb's end is coming down over us (S3-01b): the carry's beats still to come never
+			-- play under it (the dip itself goes on, into the end's black)
+			played.carrySqueal, played.carrySlam = true, true
+		elseif carryFrom then
 			local t = Workspace:GetServerTimeNow() - carryFrom
 			once("carrySqueal", t, 0, function()
 				local q = Kept.Squeal
@@ -649,6 +656,15 @@ function WatchView.new(
 			s.black.BackgroundTransparency = 0
 			s.title.TextTransparency, s.titleStroke.Transparency = 1, 1
 			showBar(0, s)
+			-- the climb ended while we were on our way to the unit (S3-01b): the end's black comes
+			-- down over this one, and once it's whole the results are where we're back (EndView)
+			local endAt: number?, how: ClimbEnd.How =
+				ClimbEnd.decode(Workspace:GetAttribute(ClimbEnd.Attribute))
+			if endAt and Workspace:GetServerTimeNow() - endAt >= ClimbEnd.cover(how) then
+				backAt, backWhy, carryAt, keptSeen = nil, "", nil, nil
+				rest(s)
+				return
+			end
 			if player:GetAttribute(Kept.Attribute) == true then
 				keptSeen = keptSeen or clock
 				if clock - (keptSeen :: number) >= CARRY_HANDOVER then
@@ -662,7 +678,7 @@ function WatchView.new(
 					end
 					rest(s)
 				end
-			elseif clock - bAt > CARRY_WAIT then
+			elseif not endAt and clock - bAt > CARRY_WAIT then
 				-- no unit for us: we stand in the lobby, and the black lifts as for a let-in
 				backWhy, carryAt = "", nil
 			end

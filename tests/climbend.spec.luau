@@ -33,6 +33,90 @@ ok(not ClimbEnd.over({ "Kept", "Climbing" }), "one friend still climbing: not ov
 ok(not ClimbEnd.over({ "Left" }, 1), "a stand-in friend still climbing (Studio): not over")
 ok(ClimbEnd.over({ "Left" }, 0), "no stand-ins: over")
 
+-- one player at each look, under S3-01's rules: nobody is out of the climb (S3-01b)
+do
+	-- plays out a run of looks for one player: each is { floor, kept, out, carriedTo }
+	type Look = { floor: number, kept: boolean, out: boolean, carried: number? }
+	local function run(looks: { Look }): (ClimbEnd.State, ClimbEnd.Lost?)
+		local state: ClimbEnd.State, was: ClimbEnd.Lost? = "Climbing", nil
+		for _, l in looks do
+			state, was = ClimbEnd.look(was, l.floor, l.kept, l.out, l.carried)
+		end
+		return state, was
+	end
+	local function lost(l: ClimbEnd.Lost?, fate: ClimbEnd.Fate, floor: number): boolean
+		return l ~= nil and l.fate == fate and l.floor == floor
+	end
+
+	local state, l = run({ { floor = 2, kept = false, out = false } })
+	ok(state == "Climbing" and l == nil, "climbing: nothing noted")
+
+	state, l = run({ { floor = 2, kept = true, out = false } })
+	ok(state == "Kept" and lost(l, "Kept", 2), "kept on floor 2")
+
+	-- kept on 2, then left behind as the car goes: still floor 2, and the ride goes on to 3
+	state, l = run({
+		{ floor = 2, kept = true, out = false },
+		{ floor = 2, kept = false, out = true },
+		{ floor = 3, kept = false, out = true },
+	})
+	ok(
+		state == "Left" and lost(l, "Left", 2),
+		"watching the ride: left on the floor you were lost on"
+	)
+
+	-- the car arrives on 3: carried up, they count as kept there before the unit streams in
+	local wrapped = {
+		{ floor = 2, kept = false, out = true },
+		{ floor = 3, kept = false, out = true, carried = 3 },
+		{ floor = 3, kept = false, out = false, carried = 3 }, -- out of the watch, no unit yet
+	}
+	state, l = run(wrapped)
+	ok(state == "Kept" and lost(l, "Kept", 3), "between the black and the unit: kept, on floor 3")
+	ok(state ~= "Climbing", "a carried friend never counts as climbing, so a wipe can land")
+
+	-- stood in the unit: the kept mark, and the carry's over; floor 3 stays
+	table.insert(wrapped, { floor = 3, kept = true, out = false })
+	state, l = run(wrapped)
+	ok(state == "Kept" and lost(l, "Kept", 3), "kept on the floor they were carried to")
+
+	-- left behind again on 3 and carried to 4: the photo follows them up
+	table.insert(wrapped, { floor = 3, kept = false, out = true })
+	table.insert(wrapped, { floor = 4, kept = false, out = true, carried = 4 })
+	table.insert(wrapped, { floor = 4, kept = true, out = false })
+	state, l = run(wrapped)
+	ok(lost(l, "Kept", 4), "carried twice: kept on floor 4")
+
+	-- no unit free on the new floor: stood in its lobby, climbing again
+	state, l = run({
+		{ floor = 3, kept = false, out = true, carried = 3 },
+		{ floor = 3, kept = false, out = false },
+	})
+	ok(state == "Climbing" and l == nil, "no unit for them: back in the lobby, climbing")
+
+	-- cut free on 3, then caught on 4: floor 4
+	state, l = run({
+		{ floor = 3, kept = true, out = false },
+		{ floor = 3, kept = false, out = false },
+		{ floor = 4, kept = true, out = false },
+	})
+	ok(lost(l, "Kept", 4), "cut free, then caught again: the floor of the second catch")
+
+	-- the moment: the last free friend is caught on 3 while a friend is still in the carry's black
+	local carriedFriend = ClimbEnd.look({ fate = "Left", floor = 2 }, 3, false, false, 3)
+	local lastFree = ClimbEnd.look(nil, 3, true, false, nil)
+	ok(
+		ClimbEnd.over({ carriedFriend, lastFree }),
+		"the last free friend caught: a wipe, carry or not"
+	)
+	local stillFree = ClimbEnd.look(nil, 3, false, false, nil)
+	ok(not ClimbEnd.over({ carriedFriend, stillFree }), "a friend still free on 3: not over")
+	ok(not ClimbEnd.over({ carriedFriend }, 1), "a stand-in still free (Studio): not over")
+
+	-- playing alone: one catch ends it
+	ok(ClimbEnd.over({ (ClimbEnd.look(nil, 1, true, false, nil)) }), "alone: one catch ends it")
+end
+
 -- a wipe
 local k = ClimbEnd.Kept
 ok(ClimbEnd.black("Kept", 0) == 0, "the black starts clear, over the catch")

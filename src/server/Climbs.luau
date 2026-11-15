@@ -138,6 +138,14 @@ export type Climbs = Brix.System & {
 	-- Stops the climb: its threads end, the tools lying on its floors and the floors themselves go
 	-- (every floor system lets go of them; a kept player is let out).
 	finish: (self: any) -> (),
+	-- The climb's end has begun (ClimbEnds): the carries stop where they are. A watcher's screen
+	-- may still dip, but nobody is taken out of their watch and given a new character while the
+	-- end's black comes down over them; everyone goes at the end's cover (`finish`).
+	ending: (self: any) -> (),
+	-- The floor `player` is being carried up to (S3-01b): from their car's arrival there until
+	-- they're stood wrapped in one of its units, or in its lobby with no unit free. Nil otherwise.
+	-- The end counts them as kept on it (`ClimbEnd.look`).
+	carrying: (self: any, player: Player) -> number?,
 	-- Lays floor `options.number` of a new climb out of play, for a lobby car to carry its group
 	-- to (L-08e1b1); nothing if one is laid or laying already. Doesn't yield.
 	ready: (self: any, options: Options) -> (),
@@ -240,6 +248,8 @@ function Climbs.new(): Climbs
 	local departing: Brix.SignalConnection? = nil
 	local opening: Brix.SignalConnection? = nil
 	local waits: { Brix.SignalConnection } = {} -- cars waited on to arrive
+	local carried: { [Player]: number } = {} -- who is being carried up, and to which floor
+	local stopped = false -- the climb's end has begun: no more carries (`ending`)
 	local first: OnFloor? = nil -- floor 1 laid out of play for the lobby's next car (`ready`)
 	local firstOptions: Options? = nil
 	local layingFirst: thread? = nil
@@ -391,38 +401,44 @@ function Climbs.new(): Climbs
 				table.remove(waits, i)
 			end
 			local w, k = watching, keptPlayers
-			if not (w and k) then
+			if not (w and k) or stopped then
 				return
 			end
 			local at = Left.carryAt(arrival.at)
 			spawn(function()
-				local carried: { Player } = {}
+				local these: { Player } = {}
 				for _, player in Players:GetPlayers() do
 					if w:isOut(player) then
-						table.insert(carried, player)
+						table.insert(these, player)
+						-- from here they count as kept on this floor: a wipe needn't wait for the unit
+						carried[player] = on.number
 					end
 				end
-				if #carried == 0 then
+				if #these == 0 then
 					return
 				end
-				w:carry(carried, at)
+				w:carry(these, at)
 				task.wait(math.max(at + Left.CarryDip - now(), 0))
-				if climb ~= mine or not on.model.Parent then
-					return
-				end
 				local lobby = on.origin * Climbs.Arrival
-				for _, player in carried do
+				for _, player in these do
 					spawn(function()
-						if climb ~= mine or not w:isOut(player) then
-							return
-						end
-						local character = w:bring(player)
 						if
-							character
-							and climb == mine
-							and not k:store(player, on.model, lobby.Position)
+							climb == mine
+							and on.model.Parent
+							and not stopped
+							and w:isOut(player)
 						then
-							character:PivotTo(lobby)
+							local character = w:bring(player)
+							if
+								character
+								and climb == mine
+								and not k:store(player, on.model, lobby.Position)
+							then
+								character:PivotTo(lobby)
+							end
+						end
+						if climb == mine and carried[player] == on.number then
+							carried[player] = nil
 						end
 					end)
 				end
@@ -741,6 +757,8 @@ function Climbs.new(): Climbs
 		end
 		playing, ahead, layingAhead, between = nil, nil, false, false
 		options, started = nil, nil
+		table.clear(carried)
+		stopped = false
 	end
 
 	-- Where someone joining the climb stands, or nil while there's no floor to stand on.
@@ -960,6 +978,14 @@ function Climbs.new(): Climbs
 
 	function system.finish(_: any)
 		reset()
+	end
+
+	function system.ending(_: any)
+		stopped = true
+	end
+
+	function system.carrying(_: any, player: Player): number?
+		return carried[player]
 	end
 
 	return system

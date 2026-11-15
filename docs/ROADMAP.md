@@ -1976,7 +1976,7 @@ Done when a team that has lost its lights goes looking for the breaker without b
 
 Done when nobody quits a climb because they were caught.
 
-- [ ] **S3-01 Stay wrapped, carried up.** Nobody is out of the climb any more. Wrapped or late
+- [x] **S3-01 Stay wrapped, carried up.** Nobody is out of the climb any more. Wrapped or late
   when the gate shuts, you watch the ride and turn up wrapped in a unit on the next floor, with
   empty hands, floor after floor until a friend cuts you free. Wrapped, you can bang on the
   door or watch a friend, and nothing else. The climb ends only when everyone is wrapped at the
@@ -1987,7 +1987,11 @@ Done when nobody quits a climb because they were caught.
     the padlock's clock fresh. Floor after floor until a friend cuts you free. The watch bar's
     "Back in when they finish" line is gone. The wake seen in Studio Play; the carry itself
     waits on `OWNER.md` (two players).
-  - [ ] **S3-01b Everyone wrapped at once.** The end's rule already is "nobody left climbing"
+  - [x] **S3-01b Everyone wrapped at once** (Nov 14, D-187). A friend being carried up counts as
+    wrapped on the floor they're carried to, so "Kept" lands as the last free friend's catch cuts
+    to black, and their photo names that floor. Once the end begins, the carries stop under it.
+    A wipe mid-carry seen in Studio Play with stand-ins; two players wait on `OWNER.md`.
+    The ticket as written: the end's rule already is "nobody left climbing"
     (`ClimbEnd.over`): check it under the new rules and fix what's off. A watcher mid-ride
     counts as wrapped; a carried player between the black and the unit (a few seconds, while
     the unit streams in) counts as climbing, so a wipe can't land in that gap: decide whether it
@@ -1995,7 +1999,10 @@ Done when nobody quits a climb because they were caught.
     kept on, not the one they were left on (`ClimbFate`). Playing alone: one catch still ends
     it. Studio's "CutFree" let-in for a watcher still stands you in the lobby (S3-03 owns it).
     Spec the rules; one-player checks with a stand-in friend (STUDIO.md "Testing left behind").
-- [ ] **S3-02 Purchases that are never lost.** Brix's purchases on the saved profile: granted
+- [ ] **S3-02 Purchases that are never lost.** Waits on Brix: it has no purchases piece built
+  or on its ROADMAP yet (checked Nov 14); a session allowed to edit Brix files the ask there in
+  neutral terms first, and S3-03 and S3-04 sell things, so they wait with it.
+  Brix's purchases on the saved profile: granted
   only after the profile saves. Before anything is sold live: a real phone purchase survives a
   forced save failure and a server hop; every purchase and shop view is recorded; any offer can
   be switched off without an update; prices are read from Roblox.

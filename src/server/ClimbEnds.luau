@@ -3,13 +3,15 @@
 	ClimbEnds: the climb's end and "Again" on the server (L-08d, ClimbEnd, the GDD's "Whole team
 	kept"), a system. The smallest stand-in for Brix's round loop's results (ENG-13, unbuilt).
 
-	- Kept (a loss): nobody left climbing, everyone kept in a unit or left behind watching
-	  (`ClimbEnd.over`; in Studio a stand-in friend counts as climbing). It ends on the last
-	  friend's catch cutting to black (`ClimbEnd.AfterCatch` after they were kept).
+	- Kept (a loss): nobody left climbing, everyone kept in a unit, left behind watching or being
+	  carried up to the next floor's units (`ClimbEnd.look`, Climbs' `carrying`; `ClimbEnd.over`;
+	  in Studio a stand-in friend counts as climbing). It ends on the last free friend's catch
+	  cutting to black (`ClimbEnd.AfterCatch` after they were kept); from then the carries stop
+	  where they are (Climbs' `ending`), so nobody is handed a new character under the black.
 	- Top (an escape): the car leaves the top floor with friends aboard (Climbs' `topped`). It ends
 	  from the moment the gate hit its post, so the ride plays out first.
 	- Each player's fate goes on them (`ClimbEnd.FateAttribute`: out, kept or left, and the floor
-	  they were lost on, or reached), then the end on Workspace (`ClimbEnd.Attribute`), so every
+	  they were lost on, are kept on now, or reached), then the end on Workspace (`ClimbEnd.Attribute`), so every
 	  screen plays it from the same moment (EndView).
 	- At `ClimbEnd.cover`, when every screen is covered: whatever anyone carries drops, the climb
 	  stops and its floors go (Climbs' `finish`), the watchers are let go of (Watching's
@@ -47,9 +49,6 @@ local Watching = require(script.Parent.Watching)
 -- No climb; a climb on; its end showing, before the screens are covered; the results up; the
 -- next climb being laid.
 type Phase = "Idle" | "Climbing" | "Ending" | "Results" | "Starting"
-
--- Someone out of the climb: how, and the floor they were lost on.
-type Lost = { fate: ClimbEnd.Fate, floor: number }
 
 local STUDIO = RunService:IsStudio()
 -- Seconds the next climb waits for every new character before it lifts the screens anyway.
@@ -105,32 +104,27 @@ function ClimbEnds.new(): ClimbEndsSystem
 	local connections: { RBXScriptConnection } = {}
 	local topping: Brix.SignalConnection? = nil
 	local phase: Phase = "Idle"
-	local lost: { [Player]: Lost } = {}
+	local lost: { [Player]: ClimbEnd.Lost? } = {}
 	local overSince: number? = nil -- server time nobody was seen climbing
 	local startAt: number? = nil -- server time the next climb starts, once someone pressed Again
 	local asked: { [Player]: number } = {} -- os.clock() of each player's last press taken
 	local since = 0 -- seconds since the last look
 	local ends = 0 -- which end it is; a delayed cover from an earlier one stops when it sees another
 
-	-- Who is still climbing, kept or left behind; each one lost is noted with the floor it
-	-- happened on (the first: kept, then left behind as the car goes, is still that floor).
+	-- Who is still climbing, kept, left behind or being carried up (`ClimbEnd.look`); each one
+	-- lost is noted with the floor it happened on, or the floor they're carried up to.
 	local function look(floor: number): { ClimbEnd.State }
 		local states: { ClimbEnd.State } = {}
+		local c, w = climbs, watching
 		for _, player in Players:GetPlayers() do
-			local kept = player:GetAttribute(Kept.Attribute) == true
-			local out = watching ~= nil and watching:isOut(player)
-			local state: ClimbEnd.State = if kept then "Kept" elseif out then "Left" else "Climbing"
-			if state == "Climbing" then
-				lost[player] = nil
-			else
-				local l = lost[player]
-				local fate: ClimbEnd.Fate = if state == "Kept" then "Kept" else "Left"
-				if l then
-					l.fate = fate
-				else
-					lost[player] = { fate = fate, floor = floor }
-				end
-			end
+			local state, l = ClimbEnd.look(
+				lost[player],
+				floor,
+				player:GetAttribute(Kept.Attribute) == true,
+				w ~= nil and w:isOut(player),
+				c and c:carrying(player)
+			)
+			lost[player] = l
 			table.insert(states, state)
 		end
 		return states
@@ -171,6 +165,9 @@ function ClimbEnds.new(): ClimbEndsSystem
 		overSince = nil
 		look(floor)
 		local c = climbs
+		if c then
+			c:ending()
+		end
 		local began = (c and c:startedAt()) or at
 		local endings: { Ending } = {}
 		for _, player in Players:GetPlayers() do

@@ -5,8 +5,9 @@
 	for another run).
 
 	It ends one of two ways:
-	- **Kept** (a loss): nobody is left climbing, everyone kept in a unit or left behind (`over`).
-	  It ends as the last friend's catch cuts to black. The black comes down on every screen; the
+	- **Kept** (a loss): nobody is left climbing, everyone kept in a unit, left behind watching the
+	  ride or being carried up to the next floor's units (`look`, `over`). It ends as the last free
+	  friend's catch cuts to black. The black comes down on every screen; the
 	  building goes quiet (`Cover`: the server clears the climb under the black); a beat of
 	  silence; far off in the building two doors come down; then "Kept" lands with a low hit, the
 	  team's photos drop in one by one, each with the floor it was lost on, as the Missing board
@@ -60,6 +61,8 @@ export type How = "Kept" | "Top"
 export type Fate = "Out" | "Kept" | "Left"
 -- A player as the end sees them: still climbing, kept in a unit, or left behind.
 export type State = "Climbing" | "Kept" | "Left"
+-- Someone out of the climb, as the end notes them: how, and the floor that happened on.
+export type Lost = { fate: Fate, floor: number }
 
 -- Seconds after the first press of Again that the next climb starts anyway: long enough to read
 -- the screen and find the button, short enough that nobody waits on a friend who has gone.
@@ -190,6 +193,32 @@ function ClimbEnd.over(states: { State }, standIns: number?): boolean
 		end
 	end
 	return true
+end
+
+-- One player at one of the server's looks (S3-01b), on `floor`, the one the climb is on: kept in
+-- a unit, left behind watching the ride, or carried up to floor `carriedTo` (from the car's
+-- arrival there until they're stood wrapped in one of its units). Carried counts as kept on the
+-- floor they're carried to: nobody is out of the climb any more, so the black on the way to the
+-- unit is a wrap like any other, and the end lands on the last free friend's catch rather than
+-- waiting a few seconds for the unit to stream in; their photo names the floor they're kept on
+-- now. Otherwise the floor is the one they were first lost on (kept, then left behind as the car
+-- goes, is still that floor). `was` is what the last look noted (nil while climbing). Returns
+-- their state and what to note now (nil while climbing: cut free, they start again).
+function ClimbEnd.look(
+	was: Lost?,
+	floor: number,
+	kept: boolean,
+	out: boolean,
+	carriedTo: number?
+): (State, Lost?)
+	if carriedTo then
+		return "Kept", { fate = "Kept", floor = carriedTo }
+	elseif kept then
+		return "Kept", { fate = "Kept", floor = if was then was.floor else floor }
+	elseif out then
+		return "Left", { fate = "Left", floor = if was then was.floor else floor }
+	end
+	return "Climbing", nil
 end
 
 -- How dark the backdrop is `since` seconds into the end: for a wipe it comes down over the

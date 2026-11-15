@@ -1163,6 +1163,15 @@ verified: a doc page, Studio, or "untested".
   then a left click) or `user_keyboard_input` Return. For phone size, set the Client's
   `PlayerGui.ClimbEnd.Content.Size` to `UDim2.fromOffset(750, 360)` (a landscape iPhone's safe
   area) and capture; set it back to `fromScale(1, 1)`.
+- **Testing a wipe mid-carry** (S3-01b, 2026-11-14): one player and two stand-ins, no captures.
+  In Edit set Workspace's `DevFloorNumber` to 2 (seed 7; clear it after: nil is floor 3), Play;
+  Output names the code ("floor 2's code is 9199" on Nov 14). Stand-ins as in "Testing left
+  behind" at (±2.3, 3, -581.5) facing -Z; you at (-7.8, 3, -593.2) facing the keypad; from the
+  Client fire `Remotes.Keypad` with `Workspace.DevCorridor.Floor2.Lobby.Elevator` and each digit,
+  0.45 s apart; then from the Server pivot to (0.5, 3, -597) and, in the same call, wait for your
+  `CarriedAt` (set as the car arrives on floor 3, about 39 s later, left behind at 20 s), destroy
+  the stand-ins and watch for Workspace's `ClimbEnd` (1.1 s later) and your `ClimbFate`
+  (`Kept|3`). Again from the Client: `Remotes.Again:FireServer()`.
 - **A locked Mac stops Studio drawing** (2026-11-11): with the screen locked, the Client's
   `RenderStepped` fired 0 times a second, so the client Host (stepped on it) stood still and
   `screen_capture` timed out, while Heartbeat ran on. `caffeinate -u` woke the display for 30 s

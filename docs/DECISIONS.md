@@ -5129,3 +5129,41 @@ Not chosen: standing you in the car at the next floor (that's Cut Free's, S3-03)
 watching until a friend opens a unit (you'd have no body to find); a squeal on friends' screens
 from the shut unit (heard from nowhere, it teaches nothing the bangs don't).
 
+
+## D-187 Everyone wrapped at once: a friend being carried up counts as wrapped (S3-01b, Nov 14)
+
+The GDD's "Getting caught": the climb ends only when every player is wrapped at the same moment.
+The moment is the last free friend grabbed, and the black coming down on the whole team as their
+catch cuts to black (`ClimbEnd.AfterCatch`, as D-106 has it). Precedent: Dead by Daylight's match
+ends the moment the last survivor is hooked, whatever the others are in the middle of.
+
+The rule (`ClimbEnd.look`, one player at each of the server's looks ten times a second): kept in
+a unit, left behind watching the ride, or being carried up (Climbs' `carrying`: from the car's
+arrival on the new floor until they're stood in one of its units) counts as wrapped; anyone else
+is climbing. Before this, a carried player had a character and no kept mark for up to 4 s while
+their unit streamed in, so they counted as climbing and a wipe waited for the unit: the last
+caught friend saw their eyes open in the dark before "Kept" came down. Default (`OWNER.md`): no
+waiting, the carry is a wrap like any other.
+
+The floor on each photo (`ClimbFate`, the car's results board): the floor they were first lost
+on (kept, then left behind as the car goes, is still that floor), except that a carry moves it
+to the floor they're carried to, so a friend wrapped on floor 4 after two carries reads floor 4,
+not floor 2. Cut free, the note goes and the next catch names its own floor.
+
+The end mid-carry. Once the end begins (Climbs' `ending`, from ClimbEnds' `endClimb`), no carry
+takes anyone out of their watch: a new character handed over under a black that is still
+coming down would flash the world for a moment. The watcher's dip still plays into black, but the
+squeal and the door slam still to come don't (WatchView), and a carried black that's already up
+holds until the end's own black is whole (`ClimbEnd.cover`), never falling through to the let-in's
+"Back in". Everyone goes at the cover, as at any wipe. Playing alone, one catch still ends it.
+
+Verified in Studio Play with one player and two stand-in friends (STUDIO.md "Testing a wipe
+mid-carry"): left behind on floor 2, the stand-ins removed as the car arrived on floor 3; "Kept"
+landed 1.1 s later, before the dip; the fate read `Kept|3`; nobody was carried up after it;
+Again brought a clean screen with no "Back in"; no errors. The wipe after the bring (inside the
+unit's stream, near instant in Studio) and two real players wait on `OWNER.md`.
+
+Not chosen: waiting for the carried friend's unit before the end (the last catch's moment is
+lost under a second wake); counting a carried friend as climbing until a friend could cut them
+free (nobody is free to); a separate "Carried" fate on the photo (one more word explaining a rule;
+"Kept" and the floor say it).
