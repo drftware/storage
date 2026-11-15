@@ -5466,8 +5466,8 @@ for a box stay out of one. Opening is one press, then a two-second reveal you ca
 friends nearby see. Changed by the owner: a box can hold coins (and a tool or a note), not
 only a find.
 
-Defaults the owner hasn't seen yet (`OWNER.md`): these tickets (ROADMAP B-01 to B-05) come right
-after S3-02; the cue is a faint warm line of light at the tape and a soft sound up close, as
+The owner placed these tickets (ROADMAP B-01 to B-05) right after S3-02, before Cut Free and the
+floor rules. Defaults the owner hasn't seen yet (`OWNER.md`): the cue is a faint warm line of light at the tape and a soft sound up close, as
 Fortnite's chests glow and hum; a note dropped in the car stays by the keypad for that floor; a
 note held by a caught player drops where they were caught; one marked box a unit at most.
 

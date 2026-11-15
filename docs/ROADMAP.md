@@ -2017,8 +2017,8 @@ Done when nobody quits a climb because they were caught.
 
 ### The box you open (the owner, Nov 15, D-205)
 
-Done when opening a box is the moment players come back for. Comes right after S3-02 (D-205's
-default; `OWNER.md` asks). The moment: a door rolls up on somebody's stuff, and in some units one
+Done when opening a box is the moment players come back for. Comes right after S3-02 (the
+owner, Nov 15). The moment: a door rolls up on somebody's stuff, and in some units one
 box, marked just enough to show something's inside. Opening it is the payoff, built to feel like
 opening a blind box (Pop Mart's Labubu, blind-bag squishies): a find lifts out and shows how rare
 it is, coins go to your bank, a tool goes to your hands, or it's a piece of the code.

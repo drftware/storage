@@ -33,13 +33,11 @@ nowhere else.
 
 - [ ] **Decide (defaults in, the box you open, D-205; nothing built yet):** say if any should
   change.
-  1. When: the five box tickets (B-01 to B-05) come right after S3-02, before Cut Free and the
-     floor rules. B-01, the box itself, can run on the overnight art track.
-  2. The "something inside" cue: a faint warm line of light along the box's tape and a soft
+  1. The "something inside" cue: a faint warm line of light along the box's tape and a soft
      sound when you're close, as Fortnite's chests glow and hum.
-  3. A note dropped in the car stays beside the keypad for that floor, for anyone to read.
-  4. Caught holding a note, it drops where you were caught, so a friend can fetch it.
-  5. One marked box a unit at most.
+  2. A note dropped in the car stays beside the keypad for that floor, for anyone to read.
+  3. Caught holding a note, it drops where you were caught, so a friend can fetch it.
+  4. One marked box a unit at most.
 
 - [ ] **Answer Brix's gift and receipt choices** (its DECISIONS E-075 to E-078, listed in Brix's
   HANDOFF) before S3-04 sells gift versions of the wrap colours.
