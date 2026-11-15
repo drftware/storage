@@ -130,3 +130,65 @@ TEA_WIRE = dict(
     bail=dict(inner=0.145, x=0.176, bend=0.008, arms=0.13),  # hook end, arms' x, the arms
     bail_rest=-150.0,              # degrees it's fallen back from upright, its top on the jar
 )
+
+
+# --- The bundle of glow sticks: three 6 inch lightsticks held with a rubber band ---------------
+# References (README): a 6 inch lightstick is 150 to 152 mm long and 15 mm across; a plug cap
+# a touch wider than the tube closes the bottom; the top is sealed into a flat tab with a hole
+# and an open moulded hook beyond it; a thin glass ampoule rides loose inside. Its frame: the
+# bundle's middle on the floor, the sticks along X with their hooks to +X, its front to -Y.
+GLOW_STICK = dict(
+    length=0.6,                    # 152 mm, cap to hook
+    r=0.0295,                      # the tube: 15 mm across
+    cap=dict(r=0.0315, h=0.055, round=0.004),  # the plug cap at the bottom: 16 mm across, 14 long
+    shoulder=0.515,                # where the tube starts closing to its seal
+    seal=0.535,                    # the seal's end on the axis
+    # the flat tab the seal ends in: the hole's centre, its radius, the tab's half width, the
+    # tab's start and end along the stick, its thickness
+    tab=dict(hole=0.551, hole_r=0.0078, w=0.0165, z0=0.524, z1=0.567, t=0.0076),
+    # the open hook past it: its centre, outer and inner radius, thickness, and where the C
+    # starts and ends (degrees round its centre from the stick's side; the gap faces the tab)
+    hook=dict(at=0.58, R=0.0195, r=0.0112, t=0.0066, a0=-125.0, a1=160.0),
+    # the glass ampoule: where it starts and ends, its radius, and how far below the tube's
+    # middle it lies (it sinks; kept inside the bake's reach of the tube wall)
+    vial=dict(z0=0.09, z1=0.49, r=0.0095, drop=0.01),
+    bend=0.3,                      # where it's bent to crack it: its middle
+    crack=34.0,                    # degrees it bends before the ampoule snaps
+)
+GLOW_BUNDLE = dict(
+    # the three sticks (the top one, the front one, the back one): slid along and rolled about
+    # their own axes (degrees) so the hooks don't line up, as a bundle snapped together does
+    sticks=[dict(slide=0.0, roll=-20.0), dict(slide=-0.022, roll=35.0),
+            dict(slide=0.014, roll=-70.0)],
+    band=dict(at=0.17, w=0.016, t=0.0045),  # the rubber band: along the sticks, width, thickness
+    seed=53.0,
+    dust=0.38,
+    rgb=(120, 255, 96),            # a green lightstick's glow (about 520 nm)
+)
+
+
+# --- The string fairy lights: copper-wire micro LEDs coiled loose, on a 3 x AA box -------------
+# References (README): twenty micro LEDs (resin drops on the wire) 10 cm apart on thin copper
+# wire, with a lead to a translucent 3 x AA box (about 68 x 50 x 21 mm) that has a slide switch
+# on top at its cable end and the batteries showing through. Found wound into a loose ring. Its
+# frame: the middle of the whole thing on the floor, its front to -Y. A box's own frame: X along
+# it, its cable end to -X.
+FAIRY = dict(
+    # the coil: its centre, radius, how squashed across, loops, the angle the far end starts at,
+    # and how far the loops wander in and out
+    coil=dict(at=(-0.17, 0.03), R=0.29, oval=0.88, loops=4.5, start=-160.0, wander=0.16),
+    wire=dict(r=0.0022, step=0.04),   # the copper wire (1.1 mm, twice life so it reads), path step
+    # the LEDs: resin drops along the wire (bolder than life: 5.5 mm by 3 mm), every 10 cm from
+    # the far end
+    bead=dict(len=0.022, r=0.0062, every=0.4, first=0.06),
+    box=dict(at=(0.335, -0.06), yaw=-18.0, l=0.275, w=0.191, h=0.08, round=0.008),
+    batt=dict(r=0.0285, l=0.199, nub=(0.0105, 0.0055), y=(-0.0575, 0.0, 0.0575), z=0.0345),
+    lid=-0.075,                        # where the battery lid starts along the box
+    # the slide switch on top: its middle off (x, y), its knob (length, width, height above the
+    # lid), and how far it slides on, towards the cable end
+    switch=dict(at=(-0.103, 0.045), knob=(0.022, 0.02, 0.009), travel=0.014),
+    exit=(-0.04, 0.04),                # where the wire leaves the cable end (y, z)
+    kelvin=2900,                       # warm white LEDs
+    seed=59.0,
+    dust=0.45,
+)

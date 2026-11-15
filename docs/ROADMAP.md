@@ -2096,7 +2096,9 @@ actions themselves and dealing the new finds on floors are later game tickets.
     aren't round.
   - [x] **F-02b** The tea light in a jar (Nov 15); the kit gained see-through glass, the
     `scale` and `stretch` channels and a first-person held sheet (D-192).
-  - [ ] **F-02c** The bundle of glow sticks, then on down WAVES.md's list.
+  - [x] **F-02c** The bundle of glow sticks and the string fairy lights (Nov 15); a light may
+    give its own `rgb`.
+  - [ ] **F-02d** The camping lantern (researched in WAVES.md's notes), then on down the list.
 - [ ] **F-03 The remote-control car and the die-cast car** (pulled forward from wave 4).
 - [ ] **F-S1 Into Studio:** the Lights and the cars uploaded, inserted and judged at phone size.
 - [ ] **F-04 Wind-ups and noisemakers.**

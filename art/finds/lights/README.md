@@ -123,3 +123,74 @@ clips in `out/`.
 - **Not in the place yet:** upload and insert in F-S1. Unlit from a unit's doorway it's
   nearly invisible (clear glass, 5 inches, in a dim unit); lit it's a warm point. Judge with the
   night-light whether small finds need help to be seen.
+
+## Bundle of glow sticks (Nov 15, F-02c)
+
+- **What it is:** three green 6 inch lightsticks, the emergency kind, held with a tan rubber
+  band that has gone powdery and cracked. Two lie on the floor side by side, the third rests
+  in the groove on top; they're slid a little along each other and their hooks don't line up.
+  Each is a clear tube of pale lime liquid with a glass ampoule floating in it and an air
+  bubble along the top, a plug cap at the bottom a touch wider than the tube, and at the top
+  the tube domed shut into a flat tab with a hole and an open moulded hook past it.
+- **References** (looked at Nov 15): Glowlights' product photo of white 6 inch sticks with hooks
+  (glowlights.com/cdn/shop/files/white-6-inch-glow-light-sticks-with-hook-gs6t.jpg: the plug
+  cap's length and step, the tab with its hole, the C hook and its gap facing the tab, the
+  proportions); Glowtopia's 6 inch premium listing (glowtopia.co.uk: 6 inches by 1.5 cm);
+  Varusteleka's MFH light stick (150 by 15 mm); image results for lit and unlit green
+  lightsticks (the lit colour, yellow-green and brightest in the liquid, the caps and hook
+  dim; unlit, pale tinted liquid). Size: 150 to 152 mm long, 15 mm across.
+- **Choices:** all three green, the classic emergency colour: a Roblox glow has one tint per
+  find, so a mixed bundle couldn't light each stick its own colour. The ampoule floats a
+  little above the tube's floor (a real one lies on it) so the bake doesn't catch the tube
+  wall (it's inside the bake's reach of it).
+- **Size:** 6 inches long (0.6 studs), the bundle 3 inches across and 1.5 tall.
+- **Tells:** green tubes with white caps and hooks, banded together; cracked, one lights up
+  bright green.
+- **Parts:** `GlowSticks_Band` (root: the bundle's middle on the floor), `_Stick1` (the top
+  stick's cap half), `_Stick1Tip` (its hook half; bends about its underside at the middle,
+  axis -Y, so it kinks up), `_Stick2` (front) and `_Stick3` (back), whole. The sticks are
+  see-through parts (the tube 0.42, the caps and hook 0.78, the ampoule 0.55). 2,962
+  triangles; one 512 texture set at 590 texels a stud.
+- **Light:** a Point in the top stick (green, (120, 255, 96): the kit's lights now take an
+  `rgb` when the light isn't a hot filament; Brightness 0.7, Range 7, no shadows); the liquid
+  and ampoule glow full, the caps a third, the hook a little; strength 2, tint the same green.
+  Both halves of the top stick glow when it's cracked (`lit`).
+- **Motions:** `Crack` (1.8 s): a grip, the top stick bent up against its stiff plastic until
+  the ampoule snaps at 34 degrees and it gives, then let go: it drops onto the others, bounces
+  twice, and the light comes up from the snap as the liquids mix.
+- **For the game:** the action lights one stick; the top stick's two parts are the one to
+  clone and set down. Not in the place yet: F-S1.
+
+## String fairy lights (Nov 15, F-02c)
+
+- **What it is:** a battery string of twenty warm-white micro LEDs on copper wire, wound into
+  a loose ring for storage and dropped beside its box: a translucent 3 x AA box with a
+  sliding battery lid, a black slide switch at its cable end, and three cells showing through
+  it, two of one make (deep green, gold band) and one odd one (black, orange band). The wire
+  is tarnished in places; each LED is a drop of clear resin with the yellow of its chip
+  showing.
+- **References** (looked at Nov 15): Lights4fun's 50 warm white micro fairy lights
+  (lights4fun.co.uk: how a thin-wire string lies in loose loops); image results for battery
+  fairy lights with a battery box (a translucent 3 x AA box with the batteries showing, the
+  switch at the cable end, the wire leaving through a grommet; a white box with a round
+  button; loose rings of copper string lit warm); listings for LED spacing (2.5 to 10 cm;
+  Festive, Luminal Park, Quick Candles) and the box (3 x AA, clear or translucent). No listing
+  gave the box's size: it's built round three AA cells (14.5 by 50.5 mm): 70 x 49 x 20 mm.
+- **Choices:** the wire twice life (1.1 mm) and the LEDs bolder (5.5 by 3 mm) so they read on
+  a phone; LEDs every 10 cm; the switch on top at the cable end, sliding towards it for on.
+- **Size:** the ring about 6 inches across, the whole 9.5 by 6 inches (0.95 by 0.6 studs).
+- **Tells:** a ring of copper wire dotted with beads, beside a little battery box; lit, a ring
+  of warm points.
+- **Parts:** `FairyLights_Box` (root: the middle of the whole on the floor; see-through, the
+  cells and contacts inside), `_Switch` (slides along the box towards its cable end, 0.014
+  studs), `_String` (the wire and its LEDs; the glow part). 4,124 triangles (the string about
+  3,200: the wire is cut into short pieces so it packs); one 512 texture set at 485 texels a
+  stud.
+- **Light:** a Point over the ring's middle (2,900 K, Brightness 0.6, Range 9, no shadows);
+  the LEDs glow, brightest at their chips; strength 2.5, tint (255, 184, 116).
+- **Motions:** `SwitchOn` (0.7 s): the thumb pushes against the detent, the switch clicks
+  over, and the LEDs come on at once, stutter once on a tired battery's contact, and hold.
+  `SwitchOff` (0.5 s): clicked back, and they're out.
+- **For the game:** "lay them along a hall" is a game ticket; the string's art is the coil.
+  Laid out, the game can draw the line itself (a row of small glowing beads and Point lights)
+  from these colours. Not in the place yet: F-S1.

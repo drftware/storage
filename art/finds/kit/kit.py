@@ -513,7 +513,8 @@ def place(find, objs, M, coll, values=None, lights=True):
     if lights:
         for i, spec in enumerate(find.lights):
             ld = bpy.data.lights.new(f"{find.name}_light{i}", spec.get("preview_kind", "SPOT"))
-            ld.color = tuple(c / 255 for c in ease.kelvin(spec["kelvin"]))
+            # a light that isn't a hot filament (a glow stick's green) gives its own `rgb`
+            ld.color = tuple(c / 255 for c in spec.get("rgb") or ease.kelvin(spec["kelvin"]))
             ld.shadow_soft_size = spec.get("preview_size", 0.05)
             # a Roblox light without shadows shines through everything, the find included (the
             # night-light's bulb inside its shade): the preview does the same
@@ -764,7 +765,7 @@ def write_luau(set_name, finds, rows, path):
         L.append("\t\tLights = {")
         root = f.parts[0].pivot
         for lt in f.lights:
-            col = ease.kelvin(lt["kelvin"])
+            col = lt.get("rgb") or ease.kelvin(lt["kelvin"])
             ang = f"Angle = {lt['angle']}, " if lt["kind"] == "Spot" else ""
             L.append(f"\t\t\t{{ Kind = \"{lt['kind']}\", Part = \"{f.name}_{lt['part']}\", "
                      f"At = {_v3(to_roblox(Vector(lt['at']) - root))}, "

@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-02c, the bundle of glow sticks, then on down the Lights (string fairy lights,
-camping lantern), with the kit (notes below).
+**Next:** F-02d, the camping lantern (its references and plan are in the newest note), then
+on down the Lights (moon lamp, blob lamp), with the kit.
 
 ## Order
 
@@ -33,6 +33,38 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 15, F-02c (the glow sticks and the string fairy lights).** Two finds, built from the
+  kit with one small change: a light may give `rgb=(r, g, b)` instead of a colour temperature
+  (a green glow stick isn't a filament). This session started building at 100k context and
+  wrapped at about 265k, so the camping lantern is next; its research is done:
+  **the camping lantern, ready to build.** Reference: a retro LED camping lantern (image
+  results for "retro LED camping lantern green metal hood bail handle dimmer knob globe"; the
+  clearest was a product shot on media.takealot.com, a "Portable Retro LED Rotary Switch"
+  lantern). From that photo, at 7.5 inches body height: an olive-green steel foot flaring like
+  a bell (4.1 in across, about 0.6 in tall), a straight green band (3 in across, 1 in tall)
+  with a small silver rotary knob on its front, a dark neck and a black seat ring, a clear
+  straight globe (3 in across, 3.2 in tall) round a frosted white hourglass diffuser with
+  horizontal ribs, a black top ring, a wide olive hood like a flat cone (4.3 in across,
+  overhanging), a ribbed steel cap on top, and a chrome wire bail hooked into the hood's sides
+  with a black rubber grip, standing about 2 in above the cap. Listings for 3 D-cell lanterns
+  give 7 to 11 inches tall (Primus 8.3, Rayovac 7.25, Dorcy 7). Plan: parts Body (root),
+  Globe (clear, alpha about 0.1), Diffuser (the glow part), Knob (turns about -Y out of the
+  band), Bail (turns about X through its hinges; found fallen back about 108 degrees, resting
+  on the hood); motions SwitchOn (the knob clicks, then the light rises as the dimmer turns),
+  SwitchOff, RunDown (the 90 seconds end: it flickers and dims), Lift (the bail swings up);
+  one Point light in the diffuser, warm (about 3,200 K), Brightness 1.2, Range 16, no
+  shadows; olive enamel worn at the edges (`enamel_wear`).
+  Traps found: **long thin strips wreck the packing.** A tube is one strip: the fairy lights'
+  ten-stud wire packed to 1 per cent; cut a long tube into pieces (`caps=False`) and ask for
+  `texels=500` (the kit picks a size from the 1024 packing, then the smaller square's gutters
+  eat it: the glow sticks got 178 texels a stud at 256). Hi-only geometry inside a part
+  bakes onto whatever low surface's rays reach it first: keep inner pieces (the ampoule) more
+  than 0.008 + 0.02 studs from the outer wall's game mesh, or they catch the wall. A part
+  bending in the middle (the glow stick's crack) is two parts on a pivot at the convex side's
+  surface: nothing opens, the concave side overlaps inside the tube. Both finds' Point lights
+  have no shadows; judge in F-S1 whether the glow sticks' small green spot and the fairy
+  lights' faint warm wash read on a phone.
 
 - **Nov 15, F-02b (the tea light in a jar).** Built and judged twice (the glass was milky and
   the candle lit the whole jar yellow like a plastic tub: glass wants a dark, glossy colour;
@@ -89,8 +121,8 @@ A light set down switched on lights the space round it until it runs down. Wheth
 | Plug-in night-light | Common | Switch on (at home): a soft glow by the floor | Frosted ribbed shade | Nov 15, F-02a |
 | Tea light in a jar | Common | Light: a small glow for about a minute |  | Nov 15, F-02b |
 | Desk lamp | Common | Switch on (at home): a warm pool of light | Needs a socket, so only at home | Nov 15, F-01 |
-| Bundle of glow sticks | Common | Crack: one stick lights a small spot for the rest of the floor; three to a bundle | The glow sticks from the Nov 2 draft | |
-| String fairy lights | Uncommon | Switch on: lay them along a hall for a dim line of light |  | |
+| Bundle of glow sticks | Common | Crack: one stick lights a small spot for the rest of the floor; three to a bundle | The glow sticks from the Nov 2 draft | Nov 15, F-02c |
+| String fairy lights | Uncommon | Switch on: lay them along a hall for a dim line of light |  | Nov 15, F-02c |
 | Camping lantern | Uncommon | Switch on: a wide light for 90 seconds |  | |
 | Moon lamp | Uncommon | At home: it glows; tap it to change its phase |  | |
 | Blob lamp | Uncommon | At home: coloured blobs rise and fall |  | |

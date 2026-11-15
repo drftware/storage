@@ -785,7 +785,462 @@ TEA_LIGHT = kit.Find(
     dust=TJ["dust"], seed=TJ["seed"],
 )
 
-FINDS = [DESK_LAMP, NIGHT_LIGHT, TEA_LIGHT]
+# --- the bundle of glow sticks ------------------------------------------------------------------
+
+(GS_TUBE, GS_CAP, GS_HOOK, GS_VIAL, GS_BAND) = range(25, 30)
+GS, GB = K.GLOW_STICK, K.GLOW_BUNDLE
+GS_R = GS["r"]
+GS_Z = GS_R + GB["band"]["t"]      # the band under the bottom two lifts them off the floor
+# each stick's axis (y, z): the top one, the front one, the back one, stacked as they lie
+GS_AT = [(0.0, GS_Z + GS_R * math.sqrt(3.0)), (-GS_R, GS_Z), (GS_R, GS_Z)]
+GS_X0 = -GS["length"] / 2
+
+
+def gs_start(i):
+    return Vector((GS_X0 + GB["sticks"][i]["slide"], GS_AT[i][0], GS_AT[i][1]))
+
+
+def gs_frame(i, roll=True):
+    """Stick i's own frame: Z along it from its cap end towards its hook (+X), rolled about
+    itself so the hooks don't line up."""
+    M = Matrix.Translation(gs_start(i)) @ Matrix.Rotation(math.radians(90.0), 4, "Y")
+    return M @ Matrix.Rotation(math.radians(GB["sticks"][i]["roll"]), 4, "Z") if roll else M
+
+
+def gs_split(prof, part, at, cut):
+    """The piece of a profile below ("low") or above ("tip") `at`, with the cut point `cut`."""
+    if part == "low":
+        return [p for p in prof if p[1] < at] + [cut]
+    if part == "tip":
+        return [cut] + [p for p in prof if p[1] > at]
+    return prof
+
+
+def gs_tube_profile(hi):
+    """The tube, cap end to seal: the plug cap (a touch wider, its end set in a hair), the step
+    onto the tube, the tube, and the domed end the seal pinches out of."""
+    r, c = GS_R, GS["cap"]
+    n, rd = (3 if hi else 2), c["round"]
+    prof = ([(0.0, 0.0012), (0.012, 0.0008), (c["r"] - rd, 0.0)]
+            + fillet(c["r"] - rd, rd, rd, (-90, 0), n)[1:]
+            + fillet(c["r"] - 0.0012, c["h"] - 0.0016, 0.0012, (0, 90), n)
+            + [(r + 0.0002, c["h"] - 0.0004), (r, c["h"] + 0.0012)])
+    sh, se = GS["shoulder"], GS["seal"]
+    m = 8 if hi else 5
+    prof += [(r * math.cos(math.radians(90 * k / m)), sh + (se - sh) * math.sin(math.radians(90 * k / m)))
+             for k in range(m)] + [(0.0, se)]
+    return prof
+
+
+def gs_vial_profile(hi):
+    """The ampoule: a round bottom, a straight run, and a shoulder drawn off to the little nub
+    where the glass was sealed."""
+    V = GS["vial"]
+    rv, vb, vt = V["r"], V["z0"], V["z1"]
+    m = 5 if hi else 3
+    return ([(0.0, vb)] + [(rv * math.sin(math.radians(90 * k / m)), vb + rv - rv * math.cos(math.radians(90 * k / m)))
+                           for k in range(1, m + 1)]
+            + [(rv, vt - 0.014), (rv * 0.9, vt - 0.0075), (rv * 0.55, vt - 0.003), (0.0026, vt - 0.0008),
+               (0.002, vt + 0.0025), (0.0015, vt + 0.0046), (0.0, vt + 0.0052)])
+
+
+def gs_plate(outer, inner, t, closed, hi):
+    """A flat plate t thick (local Y) between two loops of (x, z) points the same length: a ring
+    when closed, an open C with its ends capped when not. The detailed one has its edges eased."""
+    bm = bmesh.new()
+    n = len(outer)
+
+    def loop(pts, y):
+        return [bm.verts.new((p[0], y, p[1])) for p in pts]
+
+    ot, ob, it, ib = loop(outer, t / 2), loop(outer, -t / 2), loop(inner, t / 2), loop(inner, -t / 2)
+    for i in range(n if closed else n - 1):
+        j = (i + 1) % n
+        bm.faces.new((ot[i], ot[j], it[j], it[i]))
+        bm.faces.new((ob[i], ib[i], ib[j], ob[j]))
+        bm.faces.new((ob[i], ob[j], ot[j], ot[i]))
+        bm.faces.new((ib[i], it[i], it[j], ib[j]))
+    if not closed:
+        bm.faces.new((ot[0], it[0], ib[0], ob[0]))
+        bm.faces.new((ot[-1], ob[-1], ib[-1], it[-1]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    if hi:
+        sharp = [e for e in bm.edges if e.is_manifold and e.calc_face_angle(0.0) > math.radians(40)]
+        bmesh.ops.bevel(bm, geom=sharp, offset=min(t * 0.22, 0.0016), segments=2, profile=0.5,
+                        affect="EDGES", clamp_overlap=True)
+    return bm
+
+
+def gs_tab(n):
+    """The flat tab the seal ends in: a rounded oblong round its hole."""
+    T = GS["tab"]
+    outer, inner = [], []
+    for k in range(n):
+        a = 2 * math.pi * k / n
+        ca, sa = math.cos(a), math.sin(a)
+        B = (T["z1"] - T["hole"]) if sa > 0 else (T["hole"] - T["z0"])
+        q = (abs(ca / T["w"]) ** 4 + abs(sa / B) ** 4) ** -0.25
+        outer.append((q * ca, T["hole"] + q * sa))
+        inner.append((T["hole_r"] * ca, T["hole"] + T["hole_r"] * sa))
+    return outer, inner
+
+
+def gs_hook(n):
+    """The open hook: a C round its centre, its gap facing back towards the tab."""
+    H = GS["hook"]
+    outer, inner = [], []
+    for k in range(n + 1):
+        a = math.radians(H["a0"] + (H["a1"] - H["a0"]) * k / n)
+        outer.append((H["R"] * math.cos(a), H["at"] + H["R"] * math.sin(a)))
+        inner.append((H["r"] * math.cos(a), H["at"] + H["r"] * math.sin(a)))
+    return outer, inner
+
+
+def gs_stick(i, part):
+    """Stick i: its cap end ("low"), its hook end ("tip", from where it bends) or all of it
+    ("whole"), each with its piece of the ampoule inside."""
+    b = GS["bend"]
+
+    def build(hi):
+        s = Shape()
+        # the ampoule first, so a renderer drawing in order lays the tube over it
+        V = GS["vial"]
+        vprof = gs_split(gs_vial_profile(hi), part, b, (V["r"], b))
+        s.lathe(vprof, GS_VIAL, segs(hi, 10), gs_frame(i, False) @ Matrix.Translation((V["drop"], 0.0, 0.0)))
+        prof = gs_split(gs_tube_profile(hi), part, b, (GS_R, b))
+        h = GS["cap"]["h"]
+        kinds = [GS_CAP if max(p[1], q[1]) <= h else GS_TUBE for p, q in zip(prof, prof[1:])]
+        s.lathe(prof, GS_TUBE, segs(hi, 16), gs_frame(i), kinds=kinds)
+        if part != "low":
+            n = 48 if hi else 20
+            for (o, inn), closed, t in ((gs_tab(n), True, GS["tab"]["t"]),
+                                        (gs_hook(n // 2), False, GS["hook"]["t"])):
+                bm = gs_plate(o, inn, t, closed, hi)
+                s.merge(bm, GS_HOOK, gs_frame(i))
+                bm.free()
+        return s
+
+    return build
+
+
+def gs_band(hi):
+    """The rubber band: a flat ribbon stretched round the three, tight to each stick and
+    straight between them, its edges rounded."""
+    s = Shape()
+    B = GB["band"]
+    t, w = B["t"], B["w"]
+    x0 = GS_X0 + B["at"] - w / 2
+    x1 = x0 + w
+    n = 12 if hi else 6
+    # round the back stick, the top one and the front one: anticlockwise seen from +X
+    arcs = [(GS_AT[2], -30.0), (GS_AT[0], 90.0), (GS_AT[1], 210.0)]
+    prof = [(0.0006, x0), (0.55 * t, x0 + 0.0004), (0.9 * t, x0 + 0.0022), (t, x0 + 0.005),
+            (t, x1 - 0.005), (0.9 * t, x1 - 0.0022), (0.55 * t, x1 - 0.0004), (0.0006, x1)]
+    rings = []
+    for d, x in prof:
+        ring = []
+        for (y, z), a in arcs:
+            for k in range(n + 1):
+                ang = math.radians(a - 60 + 120 * k / n)
+                ring.append((y + (GS_R + d) * math.cos(ang), z + (GS_R + d) * math.sin(ang), x))
+        rings.append(ring)
+    # loft's own frame: its X our Y, its Y our Z, its Z (up the rings) along the sticks
+    M = Matrix(((0, 0, 1, 0), (1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 0, 1)))
+    s.loft(rings, GS_BAND, M)
+    return s
+
+
+def gs_look(L, f):
+    nb = L.nb
+    tube, cap, hook, vial, band = (L.k(GS_TUBE), L.k(GS_CAP), L.k(GS_HOOK), L.k(GS_VIAL),
+                                   L.k(GS_BAND))
+    # frosted polyethylene: the plug caps and the hook, milky, hardly see-through
+    C = Coat(L, hexc("#D3D8CF"), 0.46, 0.0)
+    C.paint(nb.add(cap, hook, clamp=True), alpha=0.78)
+    # the tube: clear polyethylene, the liquid in it a pale lime before it's cracked
+    C.paint(tube, hexc("#B5D23E"), 0.1, alpha=0.42)
+    # the air bubble lying along the top of the liquid: paler and clearer
+    along = nb.mul(nb.ss(L.x, 0.02, 0.035), nb.inv(nb.ss(L.x, 0.08, 0.1)))
+    C.paint(nb.mul(nb.mul(tube, nb.ss(L.nz, 0.82, 0.96)), along), hexc("#E6EFC0"), alpha=0.36)
+    # handled and kept in a drawer: fine scuffs along the tube, duller and a little milky
+    scuff = nb.mul(tube, nb.ss(L.noise(26.0, 61, stretch=(0.06, 1.0, 1.0), detail=4, rough=0.6), 0.56, 0.68))
+    C.paint(nb.mul(scuff, 0.8), hexc("#D7E1A2"), 0.36, alpha=0.6)
+    # the ampoule: thin glass in the liquid, seen mostly by its glints
+    C.paint(vial, hexc("#DCE6CF"), 0.05, alpha=0.55)
+    # the band: natural rubber gone tan and perished, a powdery bloom where it faced up, and
+    # fine cracks across it where it's stretched
+    rub = nb.tint(hexc("#94683F"), nb.mr(L.noise(25.0, 62, detail=4), 0.3, 0.7, 0.85, 1.08))
+    C.paint(band, rub, 0.8, 0.0)
+    C.paint(nb.mul(band, nb.mul(L.up, nb.ss(L.noise(14.0, 63, detail=3), 0.45, 0.65))), hexc("#B59C80"), 0.92)
+    cracks = nb.mul(band, nb.ss(L.noise(60.0, 64, stretch=(0.15, 1.0, 1.0), detail=2), 0.64, 0.69))
+    C.paint(nb.mul(cracks, 0.85), hexc("#3E2C1E"), 0.9)
+    # cracked: the liquid glows, the ampoule in it; the caps and the hook pass a little of it
+    C.lights(nb.add(nb.add(tube, vial, clamp=True), nb.add(nb.mul(cap, 0.35), nb.mul(hook, 0.12)), clamp=True))
+    C.finish(f.dust, grime=0.3)
+    return C.surface(bump_dist=0.0004, bump=0.3)
+
+
+GS_TOP = GS_AT[0][1]
+GS_BEND = tuple(gs_start(0) + Vector((GS["bend"], 0.0, -GS_R)))   # its underside, where it kinks
+GS_MID = tuple(gs_start(0) + Vector((GS["bend"], 0.0, 0.0)))
+GLOW_STICKS = kit.Find(
+    "GlowSticks",
+    [kit.Part("Band", gs_band),
+     kit.Part("Stick1", gs_stick(0, "low"), tuple(gs_start(0)), "Band", clear=True),
+     kit.Part("Stick1Tip", gs_stick(0, "tip"), GS_BEND, "Stick1", (0, -1, 0), clear=True),
+     kit.Part("Stick2", gs_stick(1, "whole"), tuple(gs_start(1)), "Band", clear=True),
+     kit.Part("Stick3", gs_stick(2, "whole"), tuple(gs_start(2)), "Band", clear=True)],
+    gs_look,
+    lights=[
+        # a lightstick's light: a soft green all round, weak; it shines out through its tube
+        dict(kind="Point", part="Stick1", at=GS_MID, rgb=GB["rgb"], brightness=0.7, range=7,
+             shadows=False, preview_kind="POINT", preview_watts=1.4, preview_size=0.03),
+    ],
+    glow=dict(part="Stick1", strength=2.0, tint=GB["rgb"], preview=4.5),
+    # cracked, both halves of the top stick glow
+    lit={("Stick1Tip", "glow"): 1.0},
+    motions={
+        # cracked: a grip, then the top stick bent against its stiff plastic until the ampoule
+        # snaps and it gives all at once; let go, it drops back onto the others and bounces, and
+        # the light comes up from the crack as the liquids mix
+        "Crack": dict(duration=1.8, focus=(0.06, 0.0, 0.07), distance=0.62, tracks=[
+            ("Stick1Tip", "turn", [(0.0, 0.0), (0.12, 3.0, "Quad", "Out"), (0.22, 2.0),
+                                   (0.5, GS["crack"] - 7.0, "Quad", "In"), (0.55, GS["crack"], "Quad", "Out"),
+                                   (0.7, 0.0, "Quad", "In"), (0.79, 4.5, "Quad", "Out"),
+                                   (0.88, 0.0, "Quad", "In"), (0.94, 1.2, "Quad", "Out"),
+                                   (1.0, 0.0, "Quad", "In")]),
+            ("Stick1Tip", "glow", [(0.0, 0.0), (0.55, 0.0), (0.6, 0.45, "Quad", "Out"), (0.76, 0.3),
+                                   (1.5, 1.0), (1.8, 1.0)]),
+            ("Stick1", "glow", [(0.0, 0.0), (0.55, 0.0), (0.62, 0.4, "Quad", "Out"), (0.8, 0.28),
+                                (1.56, 1.0), (1.8, 1.0)])]),
+    },
+    # thin tubes cut into many small islands: asked for more so the packed set lands near 300
+    dust=GB["dust"], seed=GB["seed"], texels=500,
+)
+
+# --- the string fairy lights --------------------------------------------------------------------
+
+(FL_BOX, FL_METAL, FL_WRAP1, FL_WRAP2, FL_BAND1, FL_BAND2, FL_KNOB, FL_GROMMET, FL_WIRE,
+ FL_BEAD) = range(30, 40)
+FL, FB = K.FAIRY, K.FAIRY["box"]
+FL_YAW = math.radians(FB["yaw"])
+# the box's own frame: X along it (its cable end to -X), on the floor
+FL_BOXM = Matrix.Translation((FB["at"][0], FB["at"][1], 0.0)) @ Matrix.Rotation(FL_YAW, 4, "Z")
+FL_EXIT = FL_BOXM @ Vector((-FB["l"] / 2 - 0.012, FL["exit"][0], FL["exit"][1]))
+
+
+def fl_coil(step):
+    """The wire's path from its far end round the loose coil (each loop lying a little in or
+    out of the last, wobbling as wire does, riding over the others), then across to the box."""
+    c, rw = FL["coil"], FL["wire"]["r"]
+    cx, cy = c["at"]
+    a0, total = math.radians(c["start"]), 2 * math.pi * c["loops"]
+    n = int(total * c["R"] / step)
+    pts = []
+    for i in range(n + 1):
+        a = a0 + total * i / n
+        R = c["R"] * (1.0 + c["wander"] * (0.7 * math.sin(a * 0.37 + 1.3) + 0.3 * math.sin(a * 1.13 + 0.4))
+                      + 0.04 * math.sin(2 * a + 2.0))
+        z = rw + 0.0035 * (1 + math.sin(a * 0.61 + 0.9)) + 0.0022 * (1 + math.sin(a * 1.7))
+        pts.append(Vector((cx + R * math.cos(a), cy + R * c["oval"] * math.sin(a), z)))
+    coil = len(pts)
+    # the lead: off the coil along its last heading, down onto the floor, and up into the box
+    t = (pts[-1] - pts[-2]).normalized()
+    back = (FL_BOXM.to_3x3() @ Vector((-1.0, 0.0, 0.0)))
+    lead = [pts[-1], pts[-1] + t * 0.07 + Vector((0, 0, -0.003)),
+            (pts[-1] + FL_EXIT) / 2 + Vector((0.0, -0.03, 0.0)),
+            FL_EXIT + back * 0.07 + Vector((0.0, 0.0, -FL_EXIT.z + rw + 0.002)),
+            FL_EXIT + back * 0.02 + Vector((0.0, 0.0, -0.012)), FL_EXIT]
+    lead = [Vector((p.x, p.y, max(p.z, rw))) for p in lead]
+    sm = [Vector(p) for p in spline(lead, max(3, int(0.12 / step)))]
+    return pts + sm[1:], coil
+
+
+def fl_beads(pts, coil):
+    """Where each LED sits on the coil, measured along the wire from its far end."""
+    B = FL["bead"]
+    out, run, nxt = [], 0.0, B["first"]
+    for i in range(1, coil):
+        d = (pts[i] - pts[i - 1]).length
+        while run + d >= nxt:
+            u = (nxt - run) / d
+            out.append((pts[i - 1].lerp(pts[i], u), (pts[i] - pts[i - 1]).normalized()))
+            nxt += B["every"]
+        run += d
+    return out
+
+
+def fl_string(hi):
+    """The string: the copper wire and its LEDs, each a drop of clear resin on the wire."""
+    s = Shape()
+    W, B = FL["wire"], FL["bead"]
+    pts, coil = fl_coil(W["step"] / (2 if hi else 1))
+    # in pieces: one strip ten studs long won't pack into a square
+    k = 32 if hi else 16
+    for i in range(0, len(pts) - 1, k):
+        s.tube(pts[i:i + k + 1], W["r"], FL_WIRE, 6 if hi else 4, caps=False)
+    h, r = B["len"] / 2, B["r"]
+    n = 3 if hi else 1
+    prof = ([(0.0, -h), (r * 0.45, -h + 0.0012)] + [(r * math.sin(math.radians(a)), -h * 0.62 * math.cos(math.radians(a)))
+                                                    for a in range(30, 151, 120 // (2 * n + 1))][:]
+            + [(r * 0.45, h - 0.0012), (0.0, h)])
+    # placed along the game mesh's path, so both versions put each LED in the same spot
+    for p, t in fl_beads(*fl_coil(W["step"])):
+        p = Vector((p.x, p.y, max(p.z, r)))
+        M = Matrix.Translation(p) @ Vector((0, 0, 1)).rotation_difference(t).to_matrix().to_4x4()
+        s.lathe(prof, FL_BEAD, segs(hi, 6), M)
+    return s
+
+
+def fl_battery(hi, k):
+    """One AA cell: a flat negative end, the printed wrap rolled over both shoulders, a band of
+    colour near the top, the positive nub."""
+    T = FL["batt"]
+    r, L, (nr, nh) = T["r"], T["l"], T["nub"]
+    wrap, band = (FL_WRAP2, FL_BAND2) if k == 1 else (FL_WRAP1, FL_BAND1)
+    n = 3 if hi else 1
+    pts = [((0.0, 0.0), None), ((r - 0.004, 0.0), FL_METAL)]
+    pts += [(p, wrap) for p in fillet(r - 0.003, 0.003, 0.003, (-90, 0), n)[1:]]
+    pts += [((r, L * 0.66), wrap), ((r, L - 0.004), band)]
+    pts += [(p, wrap) for p in fillet(r - 0.004, L - 0.004, 0.004, (0, 90), n)[1:]]
+    pts += [((nr + 0.0018, L), FL_METAL), ((nr, L + 0.0012), FL_METAL), ((nr, L + nh), FL_METAL),
+            ((0.0, L + nh), FL_METAL)]
+    return [p for p, _ in pts], [kk for _, kk in pts[1:]]
+
+
+def fl_box(hi):
+    """The 3 x AA box: three cells inside (one not matching), their contacts, and the frosted
+    box over them, with the grommet the wire leaves by. The detailed one has the lid's grip."""
+    s = Shape()
+    T = FL["batt"]
+    l, w, h = FB["l"], FB["w"], FB["h"]
+    span = T["l"] + T["nub"][1]
+    # the cells first, so a renderer drawing in order lays the frosted box over them
+    for k, y in enumerate(T["y"]):
+        prof, kinds = fl_battery(hi, k)
+        flip = -1.0 if k % 2 else 1.0
+        M = (FL_BOXM @ Matrix.Translation((-span / 2 * flip, y, T["z"]))
+             @ Matrix.Rotation(math.radians(90.0 * flip), 4, "Y"))
+        s.lathe(prof, FL_METAL, segs(hi, 14), M, kinds=kinds)
+        for sx in (-1.0, 1.0):
+            x = sx * (span / 2 + 0.003)
+            s.box((x - 0.0015, y - 0.018, T["z"] - 0.018), (x + 0.0015, y + 0.018, T["z"] + 0.018),
+                  FL_METAL, M=FL_BOXM)
+    s.box((-l / 2, -w / 2, 0.0), (l / 2, w / 2, h), FL_BOX, chamfer=FB["round"], segs=4 if hi else 2,
+          M=FL_BOXM)
+    if hi:
+        # the lid's grip: ribs across its far end
+        for i in range(6):
+            x = l / 2 - 0.022 - i * 0.0068
+            s.box((x - 0.0016, -w * 0.3, h - 0.0004), (x + 0.0016, w * 0.3, h + 0.0013), FL_BOX,
+                  chamfer=0.0005, segs=1, M=FL_BOXM)
+    ey, ez = FL["exit"]
+    s.cylinder((-l / 2 + 0.002, ey, ez), (-l / 2 - 0.012, ey, ez), 0.0072, FL_GROMMET,
+               segs(hi, 10), M=FL_BOXM)
+    return s
+
+
+def fl_switch(hi):
+    """The slide switch's knob, standing out of its slot in the top, ridged for a thumb."""
+    s = Shape()
+    S, h = FL["switch"], FB["h"]
+    (x, y), (kx, ky, kz) = S["at"], S["knob"]
+    s.box((x - kx / 2, y - ky / 2, h - 0.004), (x + kx / 2, y + ky / 2, h + kz), FL_KNOB,
+          chamfer=0.0022, segs=3 if hi else 1, M=FL_BOXM)
+    if hi:
+        for i in range(-2, 3):
+            xx = x + i * 0.0041
+            s.box((xx - 0.001, y - ky / 2 + 0.0025, h + kz - 0.0004), (xx + 0.001, y + ky / 2 - 0.0025, h + kz + 0.0013),
+                  FL_KNOB, chamfer=0.0004, segs=1, M=FL_BOXM)
+    return s
+
+
+def fl_look(L, f):
+    nb = L.nb
+    S, l, w = FL["switch"], FB["l"], FB["w"]
+    # the box's own coordinates (bx along it, by across)
+    c, sn = math.cos(FL_YAW), math.sin(FL_YAW)
+    dx, dy = nb.sub(L.x, FB["at"][0]), nb.sub(L.y, FB["at"][1])
+    bx = nb.add(nb.mul(dx, c), nb.mul(dy, sn))
+    by = nb.sub(nb.mul(dy, c), nb.mul(dx, sn))
+    box = L.k(FL_BOX)
+    top = nb.mul(box, L.up)
+    # frosted polypropylene: milky, the cells showing through soft, whiter where it's thick
+    C = Coat(L, hexc("#C9D0D2"), 0.4, 0.0)
+    C.paint(box, alpha=0.3)
+    C.paint(nb.mul(box, L.edge(0.006)), hexc("#DDE2E3"), alpha=0.62)
+    # the lid's seams: across where it starts, and down both long sides
+    across = nb.band(bx, FL["lid"] - 0.0011, FL["lid"] + 0.0011, 0.0004)
+    sides = nb.mul(nb.band(nb.absf(by), w / 2 - 0.0102, w / 2 - 0.0082, 0.0004), nb.ss(bx, FL["lid"], FL["lid"] + 0.002))
+    C.paint(nb.mul(top, nb.add(across, sides, clamp=True)), hexc("#5C6466"), 0.6, alpha=0.9)
+    # the switch's slot, dark, the length the knob slides
+    x0, y0 = S["at"]
+    kx, ky = S["knob"][0], S["knob"][1]
+    slot = nb.mul(nb.band(bx, x0 - kx / 2 - S["travel"] - 0.0025, x0 + kx / 2 + 0.0025, 0.0006),
+                  nb.band(by, y0 - ky / 2 - 0.0025, y0 + ky / 2 + 0.0025, 0.0006))
+    C.paint(nb.mul(top, slot), hexc("#1E2022"), 0.7, alpha=0.97)
+    # the cells: two of one make, deep green with a gold band, one odd one, black and orange;
+    # nickel-plated ends and contacts
+    C.paint(L.k(FL_WRAP1), hexc("#1E4636"), 0.32, 0.0, alpha=1.0)
+    C.paint(L.k(FL_BAND1), hexc("#C2953A"), 0.3, 0.6, alpha=1.0)
+    C.paint(L.k(FL_WRAP2), hexc("#1B1B1D"), 0.34, 0.0, alpha=1.0)
+    C.paint(L.k(FL_BAND2), hexc("#D0601E"), 0.36, 0.0, alpha=1.0)
+    C.paint(L.k(FL_METAL), hexc("#C4C6C6"), 0.26, 1.0, alpha=1.0)
+    # the knob: black ABS, its ridges worn paler by thumbs; the grommet: black rubber
+    knob = L.k(FL_KNOB)
+    C.paint(knob, hexc("#1C1C1E"), 0.55, 0.0, alpha=1.0)
+    C.paint(nb.mul(knob, nb.mul(L.edge(0.002), 0.6)), hexc("#4A4A4C"), 0.45)
+    C.paint(L.k(FL_GROMMET), hexc("#202020"), 0.78, 0.0, alpha=1.0)
+    # the wire: enamelled copper, bright where it's bent and rubbed, tarnished brown in places
+    wire = L.k(FL_WIRE)
+    C.paint(wire, hexc("#B8683C"), 0.3, 1.0, alpha=1.0)
+    tarnish = nb.mul(wire, nb.ss(L.noise(9.0, 71, detail=4, rough=0.6), 0.5, 0.66))
+    C.paint(nb.mul(tarnish, 0.75), hexc("#6A3F27"), 0.5, 0.8)
+    # the LEDs: clear resin drops, the yellow phosphor of the chip showing on top
+    bead = L.k(FL_BEAD)
+    C.paint(bead, hexc("#EEE9D8"), 0.12, 0.0, alpha=1.0)
+    chip = nb.mul(bead, nb.ss(L.nz, 0.78, 0.97))
+    C.paint(chip, hexc("#EFC24A"), 0.15)
+    C.lights(nb.mx(nb.mul(bead, 0.75), chip))
+    C.finish(f.dust, grime=0.3)
+    return C.surface(bump_dist=0.0004, bump=0.3)
+
+
+FL_T = FL["switch"]["travel"]
+FL_SW = tuple(FL_BOXM @ Vector((FL["switch"]["at"][0], FL["switch"]["at"][1], FB["h"])))
+FL_GLOW = (FL["coil"]["at"][0], FL["coil"]["at"][1], 0.07)
+FAIRY_LIGHTS = kit.Find(
+    "FairyLights",
+    [kit.Part("Box", fl_box, clear=True),
+     kit.Part("Switch", fl_switch, FL_SW, "Box", tuple(FL_BOXM.to_3x3() @ Vector((-1.0, 0.0, 0.0)))),
+     kit.Part("String", fl_string, FL_GLOW, "Box")],
+    fl_look,
+    lights=[
+        # twenty warm LEDs: a faint warm wash round the coil, no shadows (they're everywhere)
+        dict(kind="Point", part="String", at=FL_GLOW, kelvin=FL["kelvin"], brightness=0.6, range=9,
+             shadows=False, preview_kind="POINT", preview_watts=1.2, preview_size=0.25),
+    ],
+    glow=dict(part="String", strength=2.5, tint=(255, 184, 116), preview=6.0),
+    lit={("Switch", "move"): FL_T},
+    motions={
+        # switched on: the thumb pushes against the detent, it clicks over, and the LEDs come on
+        # at once, stutter once on a tired battery's contact, and hold
+        "SwitchOn": dict(duration=0.7, focus=FL_SW, distance=0.42, tracks=[
+            ("Switch", "move", [(0.0, 0.0), (0.09, FL_T * 0.2, "Quad", "In"),
+                                (0.13, FL_T * 1.06, "Quad", "Out"), (0.19, FL_T)]),
+            ("String", "glow", [(0.0, 0.0), (0.13, 0.0), (0.14, 1.0, "Linear"), (0.19, 0.3, "Linear"),
+                                (0.22, 1.0, "Linear"), (0.3, 0.86), (0.42, 1.0), (0.7, 1.0)])]),
+        # switched off: clicked back, and they're out
+        "SwitchOff": dict(duration=0.5, focus=(0.0, 0.0, 0.03), distance=0.9, tracks=[
+            ("Switch", "move", [(0.0, FL_T), (0.08, FL_T * 0.8, "Quad", "In"),
+                                (0.12, -0.0008, "Quad", "Out"), (0.18, 0.0)]),
+            ("String", "glow", [(0.0, 1.0), (0.12, 1.0), (0.15, 0.0, "Quad", "Out"), (0.5, 0.0)])]),
+    },
+    # many thin wire strips: asked for more so the packed set lands near 300
+    dust=FL["dust"], seed=FL["seed"], texels=500,
+)
+
+FINDS = [DESK_LAMP, NIGHT_LIGHT, TEA_LIGHT, GLOW_STICKS, FAIRY_LIGHTS]
 
 if __name__ == "__main__":
     kit.main("Lights", HERE, FINDS)

@@ -109,7 +109,8 @@ set's `build.py` as an example; you shouldn't need the kit's code.
   normal map shared; whatever glows at all stays as it was (the night-light's whole shade).
 - **Lights.** `lights=[dict(kind="Spot"|"Point", part, at, face, kelvin, brightness, range,
   angle, shadows, preview_watts)]`, `at` and `face` in the find's frame at rest; colour comes
-  from the colour temperature. `glow=dict(part, strength, tint)` names the part carrying the
+  from the colour temperature, or from `rgb=(r, g, b)` for a light that isn't a hot filament
+  (the glow sticks' green). `glow=dict(part, strength, tint)` names the part carrying the
   emissive mask: on Roblox the template's SurfaceAppearance gets `EmissiveMaskContent` (upload
   the Emissive PNG, a plugin-only property) and the game switches it with `EmissiveStrength`
   0 to `strength`, which scripts may write (`docs/STUDIO.md`, "Glow"). A glowing piece is its

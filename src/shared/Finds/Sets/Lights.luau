@@ -505,6 +505,212 @@ local Set: { [string]: Art.Find } = {
 			},
 		},
 	},
+	GlowSticks = {
+		Size = Vector3.new(0.635, 0.119, 0.126),
+		Centre = Vector3.new(0.004, 0.060, 0.000),
+		Triangles = 2962,
+		Texture = 512,
+		Parts = {
+			{
+				Name = "GlowSticks_Band",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Size = Vector3.new(0.016, 0.119, 0.126),
+				Triangles = 294,
+			},
+			{
+				Name = "GlowSticks_Stick1",
+				Parent = "GlowSticks_Band",
+				Pivot = Vector3.new(0.300, 0.085, 0.000),
+				Clear = true,
+				Size = Vector3.new(0.300, 0.063, 0.063),
+				Triangles = 374,
+			},
+			{
+				Name = "GlowSticks_Stick1Tip",
+				Parent = "GlowSticks_Stick1",
+				Pivot = Vector3.new(-0.000, 0.056, 0.000),
+				Axis = Vector3.new(-0.000, 0.000, -1.000),
+				Clear = true,
+				Size = Vector3.new(0.299, 0.059, 0.059),
+				Triangles = 550,
+			},
+			{
+				Name = "GlowSticks_Stick2",
+				Parent = "GlowSticks_Band",
+				Pivot = Vector3.new(0.322, 0.034, -0.030),
+				Clear = true,
+				Size = Vector3.new(0.599, 0.062, 0.062),
+				Triangles = 872,
+			},
+			{
+				Name = "GlowSticks_Stick3",
+				Parent = "GlowSticks_Band",
+				Pivot = Vector3.new(0.286, 0.034, 0.030),
+				Clear = true,
+				Size = Vector3.new(0.599, 0.063, 0.063),
+				Triangles = 872,
+			},
+		},
+		Glow = { Part = "GlowSticks_Stick1", Strength = 2.0, Tint = Color3.fromRGB(120, 255, 96) },
+		Lights = {
+			{
+				Kind = "Point",
+				Part = "GlowSticks_Stick1",
+				At = Vector3.new(-0.000, 0.085, 0.000),
+				Face = Vector3.new(-0.000, -1.000, 0.000),
+				Color = Color3.fromRGB(120, 255, 96),
+				Brightness = 0.7,
+				Range = 7,
+				Shadows = false,
+			},
+		},
+		Motions = {
+			Crack = {
+				Duration = 1.8,
+				Tracks = {
+					{
+						Part = "GlowSticks_Stick1Tip",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.12, 3, "Quad", "Out" },
+							{ 0.22, 2, "Sine", "InOut" },
+							{ 0.5, 27, "Quad", "In" },
+							{ 0.55, 34, "Quad", "Out" },
+							{ 0.7, 0, "Quad", "In" },
+							{ 0.79, 4.5, "Quad", "Out" },
+							{ 0.88, 0, "Quad", "In" },
+							{ 0.94, 1.2, "Quad", "Out" },
+							{ 1, 0, "Quad", "In" },
+						},
+					},
+					{
+						Part = "GlowSticks_Stick1Tip",
+						Channel = "glow",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.55, 0, "Sine", "InOut" },
+							{ 0.6, 0.45, "Quad", "Out" },
+							{ 0.76, 0.3, "Sine", "InOut" },
+							{ 1.5, 1, "Sine", "InOut" },
+							{ 1.8, 1, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "GlowSticks_Stick1",
+						Channel = "glow",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.55, 0, "Sine", "InOut" },
+							{ 0.62, 0.4, "Quad", "Out" },
+							{ 0.8, 0.28, "Sine", "InOut" },
+							{ 1.56, 1, "Sine", "InOut" },
+							{ 1.8, 1, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+		},
+	},
+	FairyLights = {
+		Size = Vector3.new(0.980, 0.090, 0.574),
+		Centre = Vector3.new(-0.003, 0.044, 0.030),
+		Triangles = 4124,
+		Texture = 512,
+		Parts = {
+			{
+				Name = "FairyLights_Box",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Clear = true,
+				Size = Vector3.new(0.316, 0.080, 0.262),
+				Triangles = 888,
+			},
+			{
+				Name = "FairyLights_Switch",
+				Parent = "FairyLights_Box",
+				Pivot = Vector3.new(-0.251, 0.080, 0.015),
+				Axis = Vector3.new(0.951, 0.000, 0.309),
+				Size = Vector3.new(0.026, 0.013, 0.024),
+				Triangles = 44,
+			},
+			{
+				Name = "FairyLights_String",
+				Parent = "FairyLights_Box",
+				Pivot = Vector3.new(0.170, 0.070, 0.030),
+				Size = Vector3.new(0.669, 0.043, 0.574),
+				Triangles = 3192,
+			},
+		},
+		Glow = { Part = "FairyLights_String", Strength = 2.5, Tint = Color3.fromRGB(255, 184, 116) },
+		Lights = {
+			{
+				Kind = "Point",
+				Part = "FairyLights_String",
+				At = Vector3.new(0.170, 0.070, 0.030),
+				Face = Vector3.new(-0.000, -1.000, 0.000),
+				Color = Color3.fromRGB(255, 174, 103),
+				Brightness = 0.6,
+				Range = 9,
+				Shadows = false,
+			},
+		},
+		Motions = {
+			SwitchOn = {
+				Duration = 0.7,
+				Tracks = {
+					{
+						Part = "FairyLights_Switch",
+						Channel = "move",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.09, 0.0028, "Quad", "In" },
+							{ 0.13, 0.01484, "Quad", "Out" },
+							{ 0.19, 0.014, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "FairyLights_String",
+						Channel = "glow",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.13, 0, "Sine", "InOut" },
+							{ 0.14, 1, "Linear", "InOut" },
+							{ 0.19, 0.3, "Linear", "InOut" },
+							{ 0.22, 1, "Linear", "InOut" },
+							{ 0.3, 0.86, "Sine", "InOut" },
+							{ 0.42, 1, "Sine", "InOut" },
+							{ 0.7, 1, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+			SwitchOff = {
+				Duration = 0.5,
+				Tracks = {
+					{
+						Part = "FairyLights_Switch",
+						Channel = "move",
+						Keys = {
+							{ 0, 0.014, "Sine", "InOut" },
+							{ 0.08, 0.0112, "Quad", "In" },
+							{ 0.12, -0.0008, "Quad", "Out" },
+							{ 0.18, 0, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "FairyLights_String",
+						Channel = "glow",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.12, 1, "Sine", "InOut" },
+							{ 0.15, 0, "Quad", "Out" },
+							{ 0.5, 0, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+		},
+	},
 }
 
 return Set
