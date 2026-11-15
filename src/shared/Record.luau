@@ -39,6 +39,7 @@
 ]]
 
 local Deal = require("./Deal")
+local Products = require("./Products")
 
 local Record = {}
 
@@ -218,6 +219,7 @@ function Record.plan(brix: any): any
 			gave = oneOf({ "nothing", "coins", "find", "tool", "keeper" }),
 			find = oneOf(Deal.Finds),
 			fate = oneOf({ "out", "caught", "left" }),
+			offer = oneOf(Products.Names),
 		},
 		events = {
 			doorOpened = { "floor", "gave" },
@@ -229,6 +231,10 @@ function Record.plan(brix: any): any
 			batteryTaken = { "floor" },
 			climbEnded = { "floor", "fate", "team" },
 			again = {},
+			-- Brix's Purchases records these two itself (S3-02a): each look at the shop, and each
+			-- purchase once it's saved, valued at the Robux spent.
+			shopViewed = {},
+			offerBought = { "offer" },
 		},
 		economy = {
 			currencies = { Record.Currency, Record.Cash },

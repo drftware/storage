@@ -22,7 +22,7 @@ The keepers' brain is the exception: it is built in this game (owner, 2026-11-09
 
 ## What this game uses from Brix today
 
-At the pinned commit, `6717740` (2026-11-14, moved from `e8397ff` for S1-02). Checked against `src/` on 2026-11-14.
+At the pinned commit, `5cdb8c2` (2026-11-15, moved from `6717740` for S3-02a). Checked against `src/` on 2026-11-15.
 
 | Brix piece | What the game does with it | Where |
 | --- | --- | --- |
@@ -33,18 +33,23 @@ At the pinned commit, `6717740` (2026-11-14, moved from `e8397ff` for S1-02). Ch
 | Reach (`cone`) measured along the keepers' map (their own Pathing) | A keeper's grasp: whom its hand closes on (L-06b3c, D-077) | `src/server/Keepers.luau` hands it to `src/shared/Keeper.luau` |
 | Saves, SaveFormat (`versioned`), Schema, `Roblox.SaveStore.dataStore`, `Roblox.PlayerSaves`, `Roblox.serverId`, `SaveStore.loopback` | Each player's save held by one server, autosaved, let go on leave and shutdown (S1-01, D-134) | `src/server/Saving.luau`, `src/shared/Save.luau` |
 | Analytics, `AnalyticsField.oneOf`, `Roblox.AnalyticsSink.analyticsService`, `AnalyticsSink.recorder` (specs) | What every player earns and does, checked against one plan and sent to Roblox's AnalyticsService (S1-02, D-139) | `src/server/Recording.luau`, `src/shared/Record.luau` |
+| Purchases (specs only so far; the server's wiring, PlayerPurchases, Roblox's Marketplace and LiveConfig over ConfigService, is S3-02b) | Robux purchases granted once, after the save holding them is written (S3-02a, D-206) | `src/shared/Products.luau`, `tests/products.spec.luau` |
 
 Exported at the pin but not used here yet: Schema (data shapes for keeper rows and Config), Pool,
 the other zones (sphere, polygon, any-of, grown), the floor pathing and the sphere reach.
 
 ## What Brix has built since the pin
 
-These are in the pin (moved to `6717740` for S1-02), still not used here.
+These are in the pin (moved to `5cdb8c2` for S3-02a), still not used here.
 Moving the pin is its own small step, taken when a ticket first needs something newer.
 
 | Brix piece | State in Brix | This game's use |
 | --- | --- | --- |
 | The frame driver (`Brix.Roblox.HostDriver`): steps a Host each Heartbeat, catches up after a hitch of up to half a second and says when it had to drop time | Built, not yet run in Studio (its ENG-07a) | Take it when the pin moves; today the server steps the Host from Heartbeat itself |
+| Remotes and the RemoteEvent transport (ENG-09): declared asks and tells, checked and rate-limited | Built | The game's own remotes stand in until a ticket moves them |
+| LiveConfig, `Roblox.ConfigSource.configService`, `Roblox.ConfigRefresher` (ENG-11) | Built, run in Studio | S3-02b uses it for the offers' switches; L-09's tuning later |
+| RoundLoop, RoundPlayers, countdowns, teams, round ends (ENG-13) | Built | `Climbs`/`ClimbEnds` stand in; adopting it is its own ticket |
+| Purchases, Marketplace, `Roblox.PlayerPurchases` (ENG-23) | Built, run in Studio; ENG-23e waits on this game's phone test | S3-02b wires it on the server |
 | The Pursuit system, its stock chases and targetings, and its Roblox adapters (players as runners, a hunter driver) | Built; the adapters not yet run in Studio (ENG-07a). What players see is ENG-07b, not started | Not what keepers run on (D-064). Checked for the chase at L-06b3a2 and not used (D-074): a hunter the game places is never moved by Pursuit again, so a keeper couldn't hand back to roaming, and its reach and runners have no walls or sight |
 
 ## What Brix plans that this game will use
@@ -54,7 +59,6 @@ None of these is built. Each row says what stands in here until it is.
 | This game's need | Brix piece | Brix ticket | Until then |
 | --- | --- | --- | --- |
 | Every client→server ask (the keypad, the torch, tools) declared once, checked and rate-limited | Typed remotes | ENG-09 | The game's own remotes under `ReplicatedStorage.Remotes`, each checked by its server system (`Elevators`, `Flashlights`, `Slots`) |
-| Tuning during playtests without a republish (L-09) | Live config and flags | ENG-11 | Feel numbers in shared Config modules, changed by a republish |
 | Systems' own key events (catches, escapes, save losses) and a plan merge | Telemetry | ENG-12c | `Recording` listens to the game's systems' signals itself (D-139) |
 | The climb as lobby, floors and results (L-08) | Round loop | ENG-13 | `src/server/Climbs.luau` (L-08b, D-104): floors dealt, laid and handed up; `src/server/ClimbEnds.luau` (L-08d, D-106): the end, the results and "Again" into a fresh floor 1; the lobby's cars `src/server/LobbyCars.luau` (L-08e1b, D-120, D-121). Checked Nov 12: ENG-13 unbuilt |
 | A lobby's group sent to a server of its own, together, and received there (L-08e1c) | Round loop's matchmaking | ENG-13 (to file in it) | Stand-in `src/server/Trips.luau` with pure `Trip` (D-122). For a Brix session to file, in neutral terms: "Send a party to a new private instance: one teleport for the party with a payload, a validated payload on arrival, retries to the same instance, a give-up, failures handed back per player, a fallback when sending keeps failing; on the instance, wait for the party (all, or a timeout) before the round starts" |

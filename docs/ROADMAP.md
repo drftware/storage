@@ -1999,13 +1999,17 @@ Done when nobody quits a climb because they were caught.
     kept on, not the one they were left on (`ClimbFate`). Playing alone: one catch still ends
     it. Studio's "CutFree" let-in for a watcher still stands you in the lobby (S3-03 owns it).
     Spec the rules; one-player checks with a stand-in friend (STUDIO.md "Testing left behind").
-- [ ] **S3-02 Purchases that are never lost.** Brix built its purchases piece on Nov 15 (on its
-  main branch at `5cdb8c2`, in no release yet); this game pins a commit, so the ticket starts by
-  moving the pin (D-204). Its phone test is also Brix's own last purchases check (ENG-23e).
-  Brix's purchases on the saved profile: granted
-  only after the profile saves. Before anything is sold live: a real phone purchase survives a
-  forced save failure and a server hop; every purchase and shop view is recorded; any offer can
-  be switched off without an update; prices are read from Roblox.
+- [ ] **S3-02 Purchases that are never lost.** Split for size (D-206). The moment: a player pays
+  Robux and gets it at once, exactly once, never lost, even when a save fails or they change servers.
+  - [x] **S3-02a The save's ledger and the product table** (Nov 15, D-206). The pin moved to Brix
+    `5cdb8c2`; the save's version 2 (`purchases`, `recipients`, `bought`); `Products` (each row's
+    Dashboard title, live switch, grant; the owner's "Test purchase"); Record's plan takes Brix's
+    `shopViewed` and `offerBought`; `tests/products.spec.luau` runs Brix's Purchases over the
+    game's own save: granted once, a repeat, a failed write, a hop, switched off.
+  - [ ] **S3-02b The server takes receipts.** A `Purchasing` system: product ids found by title,
+    Brix's `PlayerPurchases` over `Saving`'s saves, a `Live` system (LiveConfig over ConfigService)
+    for the switches, every prompt recorded, the owner's dev prompt and a forced save failure;
+    proven in Studio with made-up receipts. Its phone test is also Brix's ENG-23e.
 - [ ] **S3-03 Cut Free, Free a Friend, Free Everyone.** Offered only on the screen you see
   while caught, and Free Everyone before the results when the whole team is wrapped. Cut Free
   while you're being carried up stands you in the car at the next floor. (Cut Free is built and

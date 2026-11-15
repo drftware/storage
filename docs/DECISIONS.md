@@ -5475,3 +5475,24 @@ What it replaces: coins loose on the floor (D-132), finds standing on the floor 
 (F-G1a's pose now plays as a find comes out and when it's dropped), notes on the back walls
 (D-044), somebody's stuff in only half the empty units (D-136), and the grade shown at the
 door (F-G1c, parked by D-204).
+
+## D-206 Purchases: the save's ledger, one product table, products found by name (S3-02a, Nov 15)
+The pin moved to Brix `5cdb8c2` (its Purchases, Marketplace, PlayerPurchases, LiveConfig, Remotes and
+round loop; checks green, nothing renamed). The save's version 2 adds `purchases` (Brix's ledger of
+purchase ids), `recipients` (who a friend's purchase is for) and `bought` (how many of each offer, by
+name); version 1 saves come up with all three empty. `src/shared/Products.luau` is the one table:
+each row names its product's exact title on the Creator Dashboard, its live-config switch (on by
+default) and what it grants; every grant also counts the purchase in `bought`, in the same change as
+Brix's ledger. Prices are never in code: Brix's Marketplace asks Roblox each time.
+Defaults taken overnight (in `OWNER.md` once S3-02b writes the phone test):
+- **Products are found by their Dashboard title** (S3-02b reads `GetDeveloperProductsAsync` at
+  start), so making a product with the row's title is all it takes, with no id typed into code.
+  Renaming one on the Dashboard stops it selling.
+- **The owner's test product, "Test purchase"**, grants nothing but its count, so Brix's ENG-23e
+  phone test (forced save failure, server hop) never touches cash. Only the owner's dev prompt
+  shows it.
+- **Each offer has its own live switch** (`sellTestPurchase`, and `sell<Offer>` for each one to
+  come), a plain true/false in the experience's configs, rather than one list of offers off.
+- S3-02 was split for the session's size: S3-02a (this), S3-02b (the server's wiring and Studio's
+  made-up receipts).
+

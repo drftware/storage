@@ -2,66 +2,66 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-15, session 181 (purchases first, D-204; then the box you open, D-205, agreed) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-15, session 182 (S3-02a, D-206; S3-02 split for size) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- S3-01 done (D-187); F-G1a done (D-203): 19 Nov 15 finds dealt by grade, stood as found,
-  carried and banked; using one does nothing yet. Find art: 20 finds in the place, F-04c next.
-- **Order changed** (D-204): Brix built purchases (its main at `5cdb8c2`, pushed, in no release
-  yet), so Step 3's products come before Step 4 again. **The box you open** (D-205): finds,
-  tools, coins and the code's notes move into marked boxes; opening one is the payoff (B-01 to B-05).
+- S3-02a done (D-206): Brix pinned at `5cdb8c2`; the save is at version 2 (`purchases`, `recipients`,
+  `bought`); `src/shared/Products.luau` is the product table (only the owner's "Test purchase" so far);
+  `tests/products.spec.luau` proves Brix's Purchases over the game's save. Nothing on the server yet.
+- The place is published (place 113250085204323, universe 10775008617, owner UserId 11785587236, a
+  user). No developer products yet: `GetDeveloperProductsAsync` answers an empty page.
 
-## Next task: S3-02 Purchases that are never lost
-ROADMAP S3-02. The moment: a player pays Robux and gets it at once, exactly once, never lost, even
-when a save fails or they change servers. Nothing goes on sale here: S3-03 sells Cut Free first.
-1. Read ROADMAP S3-02 and the GDD's "Monetization" section only (docs tools, never WebFetch),
-   then Brix's purchases contract and its HANDOFF's purchases notes in `../engine`.
-2. Move the pin: `vendor/brix` to Brix `5cdb8c2` (or its latest green commit); update
-   FRAMEWORK.md's pinned commit and its "built since the pin" table. Checks green before going on.
-3. Hand Brix's purchases the player's save (`src/server/Saving.luau`): a product is granted only
-   once the save holding it has gone through, and only then is Roblox's receipt answered.
-4. One table of products (what each grants, its live-config switch); prices read from Roblox
-   (`Roblox.Marketplace`), never written in code. Every purchase and every prompt shown is
-   recorded (`src/server/Recording.luau`); any offer can be switched off live (Brix `LiveConfig`).
-5. Prove it in Studio with Brix's made-up receipts on a Studio-only test product: granted once,
-   a repeated receipt ignored, a failed save retried and nothing granted.
-**Acceptance:** checks green; the product table and grant rules spec'd; made-up receipts run in
-Studio; `OWNER.md`: make the products on the published place, then the phone test (a forced save
-failure, a server hop, a regional price, an offer switched off), which is also Brix's ENG-23e.
-**Read first:** ROADMAP S3-02; GDD "Monetization"; FRAMEWORK.md; `../engine`'s Purchases contract
-and HANDOFF; `src/server/Saving.luau`; `src/server/Recording.luau`.
+## Next task: S3-02b The server takes receipts
+ROADMAP S3-02b. The moment: a player pays and gets it at once, exactly once. Nothing goes on sale.
+1. Read Brix's `docs/modules/PlayerPurchases.md` and the "In a place" part of `LiveConfig.md` in
+   `vendor/brix` (Purchases.md only if a rule is unclear; it's long). Don't re-read the GDD.
+2. `Saving`: expose the Brix `Saves` it makes (`began` signal plus `saves()`: made in `begin`, which
+   runs late in Studio after the DataStore probe). In its `logged` store, a write fails with a warning
+   while Workspace's `DevSaveFails` attribute is true (only server code can set it: Studio, or the
+   owner in the Developer Console's server command line).
+3. `src/server/Live.luau` (slot `live`): `Brix.LiveConfig` with `Products.switches()` as defaults and
+   `Brix.Schema.boolean()` per key, over `Brix.Roblox.ConfigSource.configService()`, kept current by
+   `Brix.Roblox.ConfigRefresher`; `current()`.
+4. `src/server/Purchasing.luau`, after `recording` in init.server's list (it needs Recording's
+   Analytics: expose `analytics()` there, made in its start). Find ids: `MarketplaceService:
+   GetDeveloperProductsAsync()` pages, each entry's `Name` against `Products.Rows[*].title`, its
+   `ProductId` (not `DeveloperProductId`; check the field names once a product exists). In Studio,
+   a row not found gets a made-up id (1, 2 ... by sorted name). Then `Brix.Purchases.new` (ledger
+   `data.purchases`, recipients `data.recipients`, `Products.offers(ids)`, marketplace
+   `Brix.Roblox.Marketplace.services()`, `switchedOn` from Live) and `Brix.Roblox.PlayerPurchases`
+   with `keyFor = Save.key(player.UserId)`, `start()`. Expose `prompt(player, offer, recipient?)`
+   (refuses `ownerOnly` rows for others) and a `granted` signal (Purchases' `onGranted`) for S3-03.
+   Print each grant: `[Purchasing] granted <offer> to <name> (bought N)`.
+5. Record `offerShown` (field `offer`) for each prompt put up: Recording listens to a `shown` signal.
+6. Dev: Studio-only `ServerStorage.DevReceipt` BindableFunction handing a made-up receipt table to
+   `playerPurchases:process` and answering the decision's name; Workspace `DevPrompt` (offer name)
+   prompts the owner (anyone in Studio) and clears itself. Dev = Studio, or `game.CreatorType` is User
+   and the player's UserId is `game.CreatorId`.
+7. Prove in Studio Play (Server `execute_luau` invoking `DevReceipt`): granted once, the same id again
+   ignored, `DevSaveFails` on refused and then granted once when off. Stop Play.
+**Acceptance:** checks green; made-up receipts seen in Output as above; `OWNER.md`: make "Test
+purchase" on the Dashboard at the lowest price, then the phone test, numbered and exact: a purchase
+with `DevSaveFails` on, then a server hop, the price in the prompt, `sellTestPurchase` off in the
+experience's configs (Brix's ENG-23e; tell Brix's HANDOFF when it passes).
+**Read first:** ROADMAP S3-02b; `src/shared/Products.luau`; `src/server/Saving.luau`; Recording's
+`start` (lines 100-145); `vendor/brix/docs/modules/PlayerPurchases.md`; LiveConfig.md "In a place".
 
 ## Queue (next sessions per ROADMAP Phase 2)
-0. **The box you open, B-01 to B-05** (ROADMAP, D-205): the box built (the art track can do it),
-   the reveal, what's found in boxes, the notes in boxes, packed units. Then S3-03 Cut Free (it
-   owns Studio's "CutFree" let-in) and S3-04 the counter's shop (gifts wait on `OWNER.md`).
+0. **The box you open, B-01 to B-05** (ROADMAP, D-205), then S3-03 Cut Free (it owns Studio's
+   "CutFree" let-in; it adds its rows to `Products`) and S3-04 the counter's shop.
 1. **S4-01 Floors made by rules.** Split first: S4-01a the rules table and the top gone, S4-01b
    what changes floor to floor. Read the GDD's "Floor rules", D-106, D-128, `Climb.luau`,
-   `Deal.luau`; grep `Climb.Top`, `Climb.Building`, `topped` for what leans on the top. The
-   escape ("Made it") has no trigger once the top goes: keep its code, note it. Spec any floor
-   number up to 100 and past; the climb goes past floor 3 in Studio Play (DevFloorNumber 3).
-2. **F-G1b Using a find plays what it does** (ROADMAP F-G1 has its plan and Read-first list);
-   then S4-02, S4-03, S4-04 (5 coins a trapped monster, D-188), S4-05. Any ticket that adds finds
-   starts from the catalog doc the GDD's finds section links.
-3. L-08e3c, L-14b2d wait on `OWNER.md`; R-01 later.
-4. A dropped find lands 2.2 studs ahead, solid, and a walking player bumps it (D-182).
-5. On other screens a take goes from the hunt's walk straight to Take: a few frames of the arm
-   coming out first would make the snatch land (KeeperView Kit). `grab` (4) not measured.
-6. Output in Play: rbxassethash permission warnings (25, Nov 14); 203785492's asset type mismatch.
-7. The Packrat: carrying a find when its floor is dropped, Slots keeps a dead entry (tiny);
-   S2-06b1's way home shut is unspecced; woken shut in it faces its door; no medium-unit home
-   in 600 floors. The TV meets the forearms at the carry point: seat finds by depth or accept.
-8. Move the Mannequin's pose math onto `Rig.luau` when next touched; fold its and the Packrat's
-   prepare and pose into one body module when a third jointed monster comes (D-176). Trim the
-   watch bar's empty panel height (S3-01a) when the bar is next touched.
-9. S3-01b: a wipe after the bring (while the unit streams in) is spec'd but unseen.
-10. Left from earlier: S1-07a 16 in 100 units hold nothing; S2-02c only a wandering Mannequin
-   takes the errand; S2-02b nobody can throw the breaker by hand; S2-03b loose keepers look at a
-   pounding door; S2-07a2 a monster let out by a wrong code, a missed tap or bursting out can
-   pass the floor's limit; S2-02d4 the first clunk may come 0.3 s late; S2-05a a sleeper woken by
-   a missed tap isn't in `woken`; S2-07a1 a feed copies every monster at the start; S2-07b1 a
-   light coming back over a still player fires `woke`; S2-07b2 the coin's TexturePack
-   (`OWNER.md` asks). Unseen: S1-10d1 to d3, S1-06, S1-05.
+   `Deal.luau`; grep `Climb.Top`, `Climb.Building`, `topped`. The escape ("Made it") has no trigger
+   once the top goes: keep its code, note it. The climb goes past floor 3 in Studio (DevFloorNumber 3).
+2. **F-G1b Using a find plays what it does** (ROADMAP F-G1); then S4-02 to S4-05 (5 coins a trapped
+   monster, D-188). Any ticket that adds finds starts from the catalog doc the GDD's finds section links.
+3. L-08e3c, L-14b2d wait on `OWNER.md`; R-01 later. A GDD section costs ~15k context: `view`
+   with `outline: true` and `from` the heading's id, then `search` with `blocks` on just the part needed.
+4. Small, from earlier (ROADMAP and `git log` hold the detail): a dropped find bumps a walking
+   player (D-182); a take could show the arm first (KeeperView Kit); rbxassethash warnings in Play;
+   the Packrat's dead Slots entry and S2-06b1's way home; move the Mannequin's pose onto `Rig.luau`
+   (D-176); the watch bar's empty panel; S3-01b's wipe after the bring unseen; S1-07a, S2-02b to d4,
+   S2-03b, S2-05a, S2-07a1 to b2 leftovers; unseen S1-10d1 to d3, S1-06, S1-05.
 
 ## Kickoff for the next agent
 ```text

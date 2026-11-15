@@ -11,10 +11,16 @@
 	  stamped: `finds` for each kind of find you've had, `sealed` for each you've had still sealed,
 	  `keepers` for each kind of monster you've trapped (the code calls monsters keepers).
 	- `bestFloor`: the highest floor you've reached, 0 before your first climb.
+	- `purchases`: the ids of the Robux purchases already granted into this save, newest last
+	  (Brix's Purchases keeps the newest 100), so a receipt Roblox sends again never grants twice.
+	- `recipients`: who the next purchase of an offer bought for a friend is for, by offer name
+	  (Brix's Purchases names them just before the prompt).
+	- `bought`: how many of each offer this player has bought, by offer name (`Products`).
 
 	The tickets that earn each write it (GDD "Saving", "The collection book"). So far: `finds` and
-	the book's `finds` page, as finds are kept at the gate (S1-06, `keep`), and `cash`, as the coins
-	left at a climb's end turn into it (S1-12, `earn`).
+	the book's `finds` page, as finds are kept at the gate (S1-06, `keep`), `cash`, as the coins
+	left at a climb's end turn into it (S1-12, `earn`), and the three purchase fields, written by
+	Brix's Purchases and `Products`' grants (S3-02a).
 
 	The save keeps every version it has had, oldest first, through Brix's versioned SaveFormat: a save
 	written at an older version is brought up to the newest as it loads. To change the shape, add a
@@ -41,6 +47,9 @@ export type Data = {
 		keepers: Stamps,
 	},
 	bestFloor: number,
+	purchases: { string },
+	recipients: { [string]: string },
+	bought: Counts,
 }
 
 -- The parts of Brix's SaveFormat contract the server and the spec call (`Brix.SaveFormat<Data>`).
@@ -72,6 +81,9 @@ function Save.fresh(): Data
 		sealed = {},
 		stamps = { finds = {}, sealed = {}, keepers = {} },
 		bestFloor = 0,
+		purchases = {},
+		recipients = {},
+		bought = {},
 	}
 end
 
@@ -120,9 +132,42 @@ function Save.format(brix: any): Format
 		bestFloor = Schema.number({ min = 0, integer = true }),
 	})
 
+	-- Version 2 (S3-02a, Nov 15): version 1 plus what Robux bought: the purchase ledger, who a
+	-- friend's purchase is for, and how many of each offer.
+	local second = Schema.shape({
+		cash = Schema.number({ min = 0, integer = true }),
+		finds = Schema.map(name, count),
+		sealed = Schema.map(name, count),
+		stamps = Schema.shape({
+			finds = Schema.map(name, stamped),
+			sealed = Schema.map(name, stamped),
+			keepers = Schema.map(name, stamped),
+		}),
+		bestFloor = Schema.number({ min = 0, integer = true }),
+		purchases = Schema.list(name),
+		recipients = Schema.map(name, name),
+		bought = Schema.map(name, count),
+	})
+
 	return brix.SaveFormat.versioned({
 		versions = {
 			{ schema = first },
+			{
+				schema = second,
+				-- any: a version 1 save as Brix hands it over, already checked against `first`
+				migrate = function(old: any): any
+					return {
+						cash = old.cash,
+						finds = old.finds,
+						sealed = old.sealed,
+						stamps = old.stamps,
+						bestFloor = old.bestFloor,
+						purchases = {},
+						recipients = {},
+						bought = {},
+					}
+				end,
+			},
 		},
 		fresh = Save.fresh(),
 	})

@@ -32,6 +32,9 @@ local function played(): Save.Data
 	data.stamps.sealed.Skates = 1794700200
 	data.stamps.keepers.Mannequin = 1794700300
 	data.bestFloor = 7
+	data.purchases = { "a1b2c3", "d4e5f6" }
+	data.recipients.freeAFriend = "player_42"
+	data.bought.cutFree = 2
 	return data
 end
 
@@ -55,9 +58,9 @@ local function same(a: unknown, b: unknown): boolean
 	return true
 end
 
--- A new player: nothing yet, at version 1.
+-- A new player: nothing yet, at version 2.
 do
-	ok(format:latest() == 1, "the save is at version 1")
+	ok(format:latest() == 2, "the save is at version 2")
 	local fresh = format:fresh()
 	ok(fresh.cash == 0 and fresh.bestFloor == 0, "a new player has no cash and no best floor")
 	ok(next(fresh.finds) == nil and next(fresh.sealed) == nil, "a new player keeps no finds")
@@ -77,7 +80,7 @@ do
 	local data = played()
 	local stored, problem = format:encode(data)
 	ok(stored ~= nil, `a played save can be stored ({problem})`)
-	local back, decodeProblem = format:decode(1, stored)
+	local back, decodeProblem = format:decode(2, stored)
 	ok(back ~= nil and same(back, data), `a played save comes back the same ({decodeProblem})`)
 end
 
@@ -133,7 +136,14 @@ do
 		data ~= nil and data.cash == 40 and data.finds.Television == 1 and data.bestFloor == 3,
 		`version 1 loads ({problem})`
 	)
-	local newer, newerProblem = format:decode(2, v1)
+	ok(
+		data ~= nil
+			and #data.purchases == 0
+			and next(data.recipients) == nil
+			and next(data.bought) == nil,
+		"version 1 comes up with no purchases"
+	)
+	local newer, newerProblem = format:decode(3, v1)
 	ok(newer == nil and newerProblem ~= nil, "a save from a newer version is refused")
 end
 
