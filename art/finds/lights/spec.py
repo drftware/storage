@@ -241,9 +241,21 @@ LANTERN = dict(
 MOON = dict(
     R=0.295,                           # 15 cm across
     cut=0.011,                         # the flat cut at the bottom the plug fills (4 cm across)
-    craters=420, crater=(0.012, 0.075),  # how many craters, smallest and largest radius
-    hills=0.0012,                      # the low rolling relief between them
-    relief=0.0015,                     # the look's own fine grain
+    segs=(48, 720), rings=(24, 320),   # game mesh, detailed mesh: the craters need the density
+    # the print's relief, in studs out from the sphere (0.001 is a quarter of a millimetre)
+    craters=1300, crater=(0.0065, 0.034),  # how many, smallest and largest radius (power law)
+    depth=0.17, rim=0.3,               # a bowl's depth times its radius; its rim times its depth
+    hills=0.0005,                      # the highlands' low roughness between the craters
+    mare_drop=0.0009,                  # the maria sit a touch lower, smooth and nearly bare
+    # the near side's maria, as the Moon has them: (latitude, longitude, radius) in degrees,
+    # longitude east to the right as seen from the front (IAU)
+    maria=[(33, -16, 19), (28, 17, 12), (8.5, 31, 14), (17, 59, 9), (-8, 51, 14),
+           (-15, 35, 6), (-21, -17, 12), (-24, -39, 7), (13, 4, 5), (-10, -23, 7),
+           (7, -31, 9), (18, -57, 22), (-2, -48, 13), (40, -50, 12), (56, -25, 8),
+           (57, 5, 9), (55, 30, 6), (18, 35, 5)],
+    # the bright young craters whose rays read lit: Tycho and Copernicus (lat, lon, radius)
+    rayed=[(-43, -11, 0.013, 12), (9.6, -20, 0.011, 8)],
+    relief=0.0015,                     # the look's fine pitting, below the mesh's craters
     shade_gap=0.006,                   # the phase shade just outside the surface
     kelvin=3000,
     seed=71.0,

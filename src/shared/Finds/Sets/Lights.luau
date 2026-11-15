@@ -869,6 +869,124 @@ local Set: { [string]: Art.Find } = {
 			},
 		},
 	},
+	MoonLamp = {
+		Size = Vector3.new(0.602, 0.741, 0.596),
+		Centre = Vector3.new(-0.000, 0.371, 0.003),
+		Triangles = 3700,
+		Texture = 1024,
+		Parts = {
+			{
+				Name = "MoonLamp_Cradle",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Size = Vector3.new(0.479, 0.203, 0.479),
+				Triangles = 232,
+			},
+			{
+				Name = "MoonLamp_Moon",
+				Parent = "MoonLamp_Cradle",
+				Pivot = Vector3.new(-0.000, 0.440, 0.000),
+				Axis = Vector3.new(-0.000, 1.000, 0.000),
+				Size = Vector3.new(0.590, 0.581, 0.590),
+				Triangles = 2496,
+			},
+			{
+				Name = "MoonLamp_Shade",
+				Parent = "MoonLamp_Moon",
+				Pivot = Vector3.new(-0.000, 0.440, 0.000),
+				Axis = Vector3.new(-0.000, 1.000, 0.000),
+				Clear = true,
+				Size = Vector3.new(0.602, 0.602, 0.414),
+				Triangles = 972,
+			},
+		},
+		Glow = { Part = "MoonLamp_Moon", Strength = 1.6, Tint = Color3.fromRGB(255, 214, 170) },
+		Lights = {
+			{
+				Kind = "Point",
+				Part = "MoonLamp_Moon",
+				At = Vector3.new(-0.000, 0.440, 0.000),
+				Face = Vector3.new(-0.000, -1.000, 0.000),
+				Color = Color3.fromRGB(255, 177, 110),
+				Brightness = 0.8,
+				Range = 10,
+				Shadows = false,
+			},
+		},
+		Motions = {
+			SwitchOn = {
+				Duration = 1.0,
+				Tracks = {
+					{
+						Part = "MoonLamp_Shade",
+						Channel = "scale",
+						Keys = { { 0, 0, "Sine", "InOut" }, { 0.02, 1, "Linear", "InOut" } },
+					},
+					{
+						Part = "MoonLamp_Moon",
+						Channel = "glow",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.45, 1.08, "Quad", "Out" },
+							{ 0.75, 1, "Sine", "InOut" },
+							{ 1, 1, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+			SwitchOff = {
+				Duration = 0.7,
+				Tracks = {
+					{
+						Part = "MoonLamp_Shade",
+						Channel = "scale",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.5, 1, "Sine", "InOut" },
+							{ 0.52, 0, "Linear", "InOut" },
+						},
+					},
+					{
+						Part = "MoonLamp_Moon",
+						Channel = "glow",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.5, 0, "Quad", "In" },
+							{ 0.7, 0, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+			Phase = {
+				Duration = 0.9,
+				Tracks = {
+					{
+						Part = "MoonLamp_Shade",
+						Channel = "scale",
+						Keys = { { 0, 1, "Sine", "InOut" }, { 0.9, 1, "Sine", "InOut" } },
+					},
+					{
+						Part = "MoonLamp_Shade",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.55, 48, "Quad", "InOut" },
+							{ 0.75, 44, "Sine", "InOut" },
+							{ 0.9, 45, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "MoonLamp_Moon",
+						Channel = "glow",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.08, 0.86, "Quad", "Out" },
+							{ 0.4, 1, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+		},
+	},
 }
 
 return Set

@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-02e, the moon lamp: coded but not built (its sphere shows a shading seam; the
-newest note says where it stands), then the blob lamp, with the kit.
+**Next:** F-02f, the blob lamp: researched, not built (the newest note has its references, sizes
+and plan), then the oil lamp, with the kit.
 
 ## Order
 
@@ -33,6 +33,42 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 15, F-02e (the moon lamp; the blob lamp researched).** The moon lamp is built (README).
+  **Its "seam" wasn't the lathe:** the see-through phase shade sits 0.006 studs outside the
+  moon's back half at bake time, and the look's grime (an occlusion node, baked into the
+  colour) greyed everything under it, with a hard edge where the shade ends. **Kit fix:** for
+  a find with clear parts, every channel's bake now hides the clear parts from the solid
+  ones (before, only the occlusion channel did). The tea light, fairy lights and lantern keep
+  their committed textures; rebuilt, they'd come out a touch lighter under their glass.
+  Lathed spheres are fine for the round finds. **Kit pattern:** a detailed mesh can carry
+  per-point numbers for its look: `bm.verts.layers.float.new(name)` (made before holding any
+  verts: adding a layer frees them), read in the look with an Attribute node (`mn_attr`). The
+  moon's maria and rays come from Python that way, so relief, colour and glow agree; its 1,300
+  craters are numpy on a 720 x 320 detailed lathe (seconds). Started building at 190k context
+  (image-heavy research and sheets): look at fewer, smaller sheets.
+  **The blob lamp, ready to build.** References: Wikimedia Commons "Category:Lava lamps"
+  (the photo "1990s Mathmos Astro.jpg", the classic shape side on; and 7 videos under "Videos
+  of lava lamps" for timing); lavalamp.com model 2089 (14.5 in, 20 oz, glass globe, aluminium
+  base and cap, 25 W appliance bulb); Schylling listings (a 4.25 in footprint). No maker's
+  name or mark ("lava lamp" is a brand: call it the blob lamp). Measured off the photo at
+  14.5 in: the base 5.6 in tall, a cone from 4.3 in across on the floor narrowing to a 1.7 in
+  waist 4 in up, then flaring to a 3.2 in collar; the bottle 7.1 in above the collar, 3.2 in
+  at the collar, widest (3.7) 1.45 in up, then straight to 2.0 in under the cap; the cap a
+  cone 1.8 in tall, 2.1 to 1.75 in. So 1.45 studs tall, 0.43 across. Inside: a wire coil on
+  the bottle's floor, the wax pool on it, red-orange wax in tinted liquid, lit from a bulb in
+  the base. **Plan:** parts `Base` (root, spun aluminium rings, vent slots at the foot, the
+  cord out the back), `Bottle` (clear), `Fluid` (clear, tinted; the glow part), `Cap`, `Pool`
+  (the bottom wax; `stretch` sags as blobs leave, swells as they land) and `Blob1` to `Blob4`
+  (lofted teardrops, pivots at their middles, each axis a few degrees off upright so they
+  drift; `move` along it and `stretch`): a blob necks off the pool (stretched, slow), rises
+  as a teardrop, flattens under the cap, lingers, sinks rounder and slower. `Flow`: one long
+  loop (its keys end where they start; the README says the game loops it), the blobs out of
+  step; `SwitchOn`, `SwitchOff`; found cold, the wax a lump on the bottom. Blob glow: put
+  each blob's glow in `lit` and the switch motions. **Time it from a Commons video** (play it
+  in the browser pane, read `currentTime` with JavaScript as a blob leaves and arrives):
+  published numbers disagree (a student's frame count, about 2.8 cm/s for a small blob, faster
+  once free; an idealised Stokes estimate, 0.3 cm/s).
 
 - **Nov 15, F-02d (the camping lantern; the moon lamp half done).** The lantern is built from
   the kit with no kit change (README: guard bars, a ribbed hood, a knob that clicks and dims,
@@ -148,7 +184,7 @@ A light set down switched on lights the space round it until it runs down. Wheth
 | Bundle of glow sticks | Common | Crack: one stick lights a small spot for the rest of the floor; three to a bundle | The glow sticks from the Nov 2 draft | Nov 15, F-02c |
 | String fairy lights | Uncommon | Switch on: lay them along a hall for a dim line of light |  | Nov 15, F-02c |
 | Camping lantern | Uncommon | Switch on: a wide light for 90 seconds |  | Nov 15, F-02d |
-| Moon lamp | Uncommon | At home: it glows; tap it to change its phase |  | |
+| Moon lamp | Uncommon | At home: it glows; tap it to change its phase |  | Nov 15, F-02e |
 | Blob lamp | Uncommon | At home: coloured blobs rise and fall |  | |
 | Oil lamp | Rare | Light: warm light that runs down slowly | Fragile | |
 | Disco ball | Rare | Spin: spots of light race round the walls |  | |

@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.join(HERE, "..", "kit"))
 sys.path.insert(0, HERE)
 
 import bmesh  # noqa: E402
+import numpy as np  # noqa: E402
 from mathutils import Matrix, Vector  # noqa: E402
 
 import kit  # noqa: E402
@@ -1647,48 +1648,128 @@ def mn_cradle(hi):
     return s
 
 
+def mn_dir(lat, lon):
+    """A point on the moon's face (unit, from its middle): the near side looks out to -Y,
+    longitude east to the right as seen from the front, as the Moon is drawn (IAU)."""
+    la, lo = math.radians(lat), math.radians(lon)
+    return np.array((math.cos(la) * math.sin(lo), -math.cos(la) * math.cos(lo), math.sin(la)))
+
+
+def mn_mare(u, warp):
+    """How much of a mare each direction in u is (0 to 1): soft caps with ragged shores."""
+    out = np.zeros(len(u))
+    for lat, lon, rad in MN["maria"]:
+        ang = np.degrees(np.arccos(np.clip(u @ mn_dir(lat, lon), -1.0, 1.0)))
+        t = np.clip((rad * (1.0 + 0.4 * warp) - ang) / 5.0 + 0.5, 0.0, 1.0)  # a 5 degree shore
+        out = np.maximum(out, t * t * (3 - 2 * t))
+    return out
+
+
+def mn_warp(u):
+    from mathutils import noise
+    return np.array([noise.fractal(Vector(p) * 3.5 + Vector((7.1, 3.3, 1.9)), 0.6, 2.0, 4)
+                     for p in u])
+
+
+def mn_crater(h, u, d, r, w=1.0):
+    """One crater of radius r (studs) at direction d: a bowl, a raised rim, ejecta thinning out;
+    inside it the older relief is mostly gone."""
+    R = MN["R"]
+    cr = r / R
+    near = np.nonzero(u @ d > math.cos(cr * 2.6))[0]
+    if len(near) == 0:
+        return
+    t = np.arccos(np.clip(u[near] @ d, -1.0, 1.0)) / cr
+    depth = MN["depth"] * r
+    rim = MN["rim"] * depth
+    k = (1 / 2.6) ** 3
+    hc = np.where(t < 1.0, -depth + (depth + rim) * t * t,
+                  rim * ((1.0 / np.maximum(t, 1.0)) ** 3 - k) / (1 - k))
+    keep = np.clip((t - 0.8) / 0.25, 0.0, 1.0)
+    h[near] = h[near] * (0.2 + 0.8 * keep * keep) + hc * w
+
+
+def mn_relief(s):
+    """The print's relief on the detailed moon: the maria a touch low and smooth, the highlands
+    rough and crowded with craters (bowls with raised rims, many small, few large, the young
+    ones over the old), Tycho and Copernicus with their rays. Each point also carries `maria`
+    and `ray` (0 to 1) for the look, so the colour and the glow follow the same face."""
+    import random
+    from mathutils import noise
+    R, c = MN["R"], MN["cut"]
+    # (new layers first: adding one frees the verts Python holds)
+    ml = s.bm.verts.layers.float.new("maria")
+    rl = s.bm.verts.layers.float.new("ray")
+    vs = list(s.bm.verts)
+    C = np.array(MN_C)
+    co = np.array([v.co[:] for v in vs]) - C
+    r = np.linalg.norm(co, axis=1)
+    u = co / r[:, None]
+    # the plug's flat stays flat; the relief comes in over the first 3 cm up from the cut
+    f = np.clip((co[:, 2] - (-R + c) - 0.004) / 0.03, 0.0, 1.0)
+    fade = np.where(r > R - c * 1.5, f * f * (3 - 2 * f), 0.0)
+    mar = mn_mare(u, mn_warp(u))
+    h = -MN["mare_drop"] * mar
+    hills = np.array([noise.fractal(Vector(p) * 20.0, 0.55, 2.0, 4) for p in u])
+    h += MN["hills"] * hills * (1.0 - 0.85 * mar)
+    rng = random.Random(MN["seed"])
+    lo, hi = MN["crater"]
+    n = 0
+    while n < MN["craters"]:
+        z = rng.uniform(-1.0, 1.0)
+        a = rng.uniform(0.0, 2 * math.pi)
+        q = math.sqrt(1 - z * z)
+        d = np.array((q * math.cos(a), q * math.sin(a), z))
+        rad = lo * (hi / lo) ** (rng.random() ** 2.4)
+        # the maria are younger: few craters, and small
+        m = mn_mare(d[None, :], mn_warp(d[None, :]))[0]
+        if m > 0.5 and (rng.random() > 0.2 or rad > lo * 1.8):
+            continue
+        mn_crater(h, u, d, rad)
+        n += 1
+    ray = np.zeros(len(vs))
+    for lat, lon, rad, count in MN["rayed"]:
+        d = mn_dir(lat, lon)
+        mn_crater(h, u, d, rad, 1.15)
+        # rays: thin bright streaks out along great circles, fading with distance
+        e1 = np.cross(d, (0.0, 0.0, 1.0))
+        e1 /= np.linalg.norm(e1)
+        e2 = np.cross(d, e1)
+        dist = np.arccos(np.clip(u @ d, -1.0, 1.0))
+        bear = np.arctan2(u @ e2, u @ e1)
+        cr = rad / R
+        halo = np.exp(-((dist / (cr * 3.2)) ** 2))
+        for _ in range(count):
+            b = rng.uniform(-math.pi, math.pi)
+            length = rng.uniform(0.35, 0.9)
+            width = rng.uniform(0.008, 0.02)
+            db = np.angle(np.exp(1j * (bear - b)))
+            across = np.abs(db) * np.sin(np.minimum(dist, math.pi / 2))
+            along = np.clip(1.0 - dist / length, 0.0, 1.0) * np.clip((dist - cr) / cr, 0.0, 1.0)
+            ray = np.maximum(ray, np.exp(-((across / width) ** 2)) * along)
+        ray = np.maximum(ray, halo * 0.8)
+    for i, v in enumerate(vs):
+        v.co = Vector(C + u[i] * (R + h[i] * fade[i]))
+        v[ml] = float(mar[i])
+        v[rl] = float(ray[i] * (1.0 - mar[i] * 0.5))
+
+
 def mn_moon(hi):
     """The moon: a sphere cut flat at the bottom where the plug sits."""
     s = Shape()
     R, c = MN["R"], MN["cut"]
     rc = math.sqrt(R * R - (R - c) ** 2)
     a0 = math.degrees(math.acos((R - c) / R))
-    m = 40 if hi else 18
+    m = MN["rings"][1 if hi else 0]
     plug = [(0.0, -R + c - 0.002), (rc - 0.012, -R + c - 0.002), (rc - 0.006, -R + c + 0.0005)]
     sphere = [(R * math.sin(math.radians(a)), -R * math.cos(math.radians(a)))
               for a in [a0 + (180 - a0) * i / m for i in range(m + 1)]]
     sphere[-1] = (0.0, R)
     prof = plug + sphere
     kinds = [MN_PLUG] * 3 + [MN_MOON] * (len(prof) - 4)
-    s.lathe(prof, MN_MOON, 320 if hi else 36, Matrix.Translation(MN_C), kinds=kinds)
+    s.lathe(prof, MN_MOON, MN["segs"][1 if hi else 0], Matrix.Translation(MN_C), kinds=kinds)
     if hi:
-        # the print's relief: craters (bowls with raised rims, many small, few large) and low
-        # hills, pushed out along each point's radius; the plug's flat stays flat
-        import random
-        from mathutils import noise
-        rng = random.Random(MN["seed"])
-        craters = []
-        for _ in range(MN["craters"]):
-            z = rng.uniform(-1.0, 1.0)
-            a = rng.uniform(0.0, 2 * math.pi)
-            q = math.sqrt(1 - z * z)
-            r = MN["crater"][0] * (MN["crater"][1] / MN["crater"][0]) ** (rng.random() ** 2.2)
-            craters.append((Vector((q * math.cos(a), q * math.sin(a), z)), r / R))
-        for v in s.bm.verts:
-            d = v.co - MN_C
-            if d.length < R - c * 1.5 or d.z < -R + c + 0.004:
-                continue
-            u = d.normalized()
-            h = MN["hills"] * noise.fractal(u * 9.0, 0.6, 2.0, 5)
-            for cu, cr in craters:
-                ang = u.angle(cu)
-                if ang > cr * 1.6:
-                    continue
-                t = ang / cr
-                depth = cr * R * 0.13
-                h += -depth * (1 - t * t) if t < 1 else 0.0
-                h += depth * 0.45 * math.exp(-((t - 1.0) / 0.22) ** 2)
-            v.co = MN_C + u * (R + h)
+        mn_relief(s)
     return s
 
 
@@ -1706,19 +1787,43 @@ def mn_shade(hi):
     return s
 
 
+def mn_attr(L, name):
+    return L.nb.node("ShaderNodeAttribute", attribute_type="GEOMETRY",
+                     attribute_name=name).outputs["Fac"]
+
+
+def mn_pits(L, scale, s, share):
+    """Fine craters below the mesh's: a Voronoi cell's point is a pit's middle, and only
+    `share` of the cells hold one, each its own size: a bowl with a lip."""
+    nb = L.nb
+    v = L.vec(s=s)
+    d = nb.voronoi(v, scale)
+    rnd = nb.voronoi(v, scale, out="Color")
+    rr = nb.add(nb.mul(rnd, 0.6), 0.14)
+    t = nb.div(d, rr)
+    bowl = nb.mr(t, 0.0, 1.0, -1.0, 0.0, "SMOOTHSTEP")
+    lip = nb.mul(nb.band(t, 1.0, 1.1, 0.18), 0.4)
+    return nb.mul(nb.add(bowl, lip), nb.ss(rnd, share + 0.02, share))
+
+
 def mn_look(L, f):
     nb = L.nb
     R = MN["R"]
     moon = L.k(MN_MOON)
-    # the Moon's face: big dark maria, craters with raised rims at two sizes, rays of small pits
-    maria = nb.ss(L.noise(1.7, 1, detail=4, rough=0.55, distortion=0.3), 0.5, 0.58)
-    # printed PLA: ivory, satin, its maria a shade greyer where the print is thicker
-    ivory = nb.mixc(nb.mul(maria, 0.6), hexc("#EFE9DB"), hexc("#D3CDBE"))
-    # (the craters are in the detailed mesh; the look adds only the print's fine grain)
-    C = Coat(L, ivory, 0.52, 0.0, nb.mul(moon, nb.mul(L.noise(60.0, 10, detail=2), 0.15)))
-    # lit through: the highlands glow bright, the thick maria grey, mottled like the real face
-    mottle = nb.mr(L.noise(14.0, 11, detail=4, rough=0.6), 0.25, 0.75, -0.12, 0.12)
-    glow = nb.add(nb.sub(1.0, nb.mul(maria, 0.62)), mottle)
+    # the Moon's own face, carried on the detailed mesh (mn_relief): the maria, the rays
+    maria = mn_attr(L, "maria")
+    ray = mn_attr(L, "ray")
+    # printed PLA: ivory, satin; the maria a shade greyer, as the print's thicker there
+    mott = L.noise(9.0, 12, detail=3, rough=0.6)
+    ivory = nb.mixc(nb.add(nb.mul(maria, 0.5), nb.mul(mott, 0.12)), hexc("#F1ECE1"), hexc("#C9C3B5"))
+    # the fine pitting the mesh is too coarse for, crowded on the highlands, rare on the maria
+    pits = nb.add(mn_pits(L, 70.0, 13, 0.32), nb.mul(mn_pits(L, 150.0, 14, 0.22), 0.6))
+    pits = nb.mul(pits, nb.sub(1.0, nb.mul(maria, 0.8)))
+    grain = nb.mul(L.noise(260.0, 10, detail=2), 0.12)
+    C = Coat(L, ivory, 0.55, 0.0, nb.mul(moon, nb.add(nb.mul(pits, 0.55), grain)))
+    # lit through: the highlands bright, the thick maria grey, Tycho's rays brighter still
+    glow = nb.add(nb.sub(1.0, nb.mul(maria, 0.7)), nb.mr(mott, 0.3, 0.7, -0.08, 0.08))
+    glow = nb.mul(nb.add(glow, nb.mul(ray, 0.25)), nb.add(1.0, nb.mul(pits, 0.25)))
     C.lights(nb.mul(moon, glow))
     # the plug: white ABS, a dark port and the touch dot
     plug = L.k(MN_PLUG)
@@ -1732,15 +1837,18 @@ def mn_look(L, f):
     shade = L.k(MN_SHADE)
     cosb = nb.mul(nb.sub(L.y, MN_C.y), 1.0 / (R + MN["shade_gap"]))
     C.paint(shade, hexc("#0C0E14"), 0.6, 0.0, 0.0, alpha=nb.mul(nb.ss(cosb, -0.2, 0.22), 0.9))
-    # the cradle: pale beech, oiled, its grain running along each piece as it was cut
-    for kind, st in ((MN_WOOD_A, (0.08, 1.0, 1.0)), (MN_WOOD_B, (1.0, 0.08, 1.0))):
+    # the cradle: pale beech, oiled. Its grain runs along each piece as it was cut from the board:
+    # soft, uneven lines, and beech's little dark flecks across them
+    for kind, st in ((MN_WOOD_A, (0.06, 1.0, 1.0)), (MN_WOOD_B, (1.0, 0.06, 1.0))):
         wood = L.k(kind)
-        wob = L.noise(6.0, 7 if kind == MN_WOOD_A else 8, stretch=st, detail=4)
-        grain = nb.sin(nb.mul(nb.add(L.z, nb.mul(wob, 0.03)), 330.0))
-        g = nb.mr(grain, -1.0, 1.0, 0.0, 1.0)
-        col = nb.mixc(nb.mul(nb.pw(g, 3.0), 0.55), hexc("#D9BD92"), hexc("#A98256"))
-        C.paint(wood, nb.tint(col, nb.mr(L.noise(2.0, 9, detail=3), 0.3, 0.7, 0.9, 1.06)), 0.5, 0.0,
-                nb.mul(g, 0.15))
+        sd = 7 if kind == MN_WOOD_A else 8
+        wob = L.noise(5.0, sd, stretch=st, detail=5, rough=0.6)
+        grain = nb.sin(nb.mul(nb.add(L.z, nb.mul(wob, 0.05)), 190.0))
+        g = nb.mul(nb.pw(nb.mr(grain, 0.3, 1.0, 0.0, 1.0), 2.0), nb.mr(L.noise(3.0, sd + 20), 0.3, 0.7, 0.2, 1.0))
+        fleck = nb.mul(nb.ss(L.noise(90.0, sd + 30, stretch=(2.0, 2.0, 0.5), detail=1), 0.68, 0.74), 0.5)
+        col = nb.mixc(nb.add(nb.mul(g, 0.32), fleck), hexc("#DCC199"), hexc("#A88259"))
+        C.paint(wood, nb.tint(col, nb.mr(L.noise(1.6, sd + 2, detail=3), 0.3, 0.7, 0.92, 1.05)), 0.5, 0.0,
+                nb.mul(g, 0.08))
     # handled: the cradle's edges darkened by hands, a dent or two
     edge = L.edge(0.006, k=4.0)
     C.paint(nb.mul(nb.mul(L.k(MN_WOOD_A, MN_WOOD_B), edge), 0.35), hexc("#8B6A45"), 0.6)
@@ -1761,7 +1869,7 @@ MOON_LAMP = kit.Find(
         dict(kind="Point", part="Moon", at=tuple(MN_C), kelvin=MN["kelvin"], brightness=0.8,
              range=10, shadows=False, preview_kind="POINT", preview_watts=7.0, preview_size=0.08),
     ],
-    glow=dict(part="Moon", strength=2.2, tint=(255, 214, 170), preview=2.2),
+    glow=dict(part="Moon", strength=1.6, tint=(255, 214, 170), preview=1.4),
     # found off, its shade hidden; on, the shade stands round it, at full moon to start
     lit={("Shade", "scale"): 1.0},
     motions={
@@ -1782,8 +1890,7 @@ MOON_LAMP = kit.Find(
     dust=MN["dust"], seed=MN["seed"],
 )
 
-# MOON_LAMP is not built yet: its sphere shows a shading seam (WAVES.md, Nov 15 F-02d note)
-FINDS = [DESK_LAMP, NIGHT_LIGHT, TEA_LIGHT, GLOW_STICKS, FAIRY_LIGHTS, LANTERN]
+FINDS = [DESK_LAMP, NIGHT_LIGHT, TEA_LIGHT, GLOW_STICKS, FAIRY_LIGHTS, LANTERN, MOON_LAMP]
 
 if __name__ == "__main__":
     kit.main("Lights", HERE, FINDS)

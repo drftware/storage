@@ -12,9 +12,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - Seen in Studio Play (one player, two stand-ins): the wipe landed 1.1 s after the car reached
   floor 3, nobody carried after it, Again clean. Two players wait on `OWNER.md`.
 - **Find art** (D-190 to D-192, overnight Nov 14-15, beside the game's tickets): the finds kit
-  (`art/finds/kit/`, CRAFT.md "The kit") has built six Lights: the desk lamp, the night-light,
-  the tea light in a jar, the glow sticks, the string fairy lights and the camping lantern;
-  next F-02e, the moon lamp, coded but held back by a shading seam (`art/finds/WAVES.md`).
+  (`art/finds/kit/`) has built seven Lights, the moon lamp last (its seam was the phase shade's
+  shadow in the bake, fixed in the kit); next F-02f, the blob lamp, researched with a plan in
+  `art/finds/WAVES.md`.
 
 ## Next task: S4-01 Floors made by rules (the climb with no top)
 ROADMAP S4-01. The owner said there's no top floor (D-128); the built climb still ends at floor 3

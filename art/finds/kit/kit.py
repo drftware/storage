@@ -309,9 +309,11 @@ def stage_textures(find, set_dir):
         rig.channel(k)
         sc.cycles.samples = 64 if k == "ao" else 8
         for p in find.parts:
-            if k == "ao" and find.clear:
+            if find.clear:
                 # light goes through glass: a solid part's occlusion leaves the clear parts out
-                # (the candle in its jar isn't in a cave), a clear part's counts only itself
+                # (the candle in its jar isn't in a cave), a clear part's counts only itself.
+                # Every channel, not just "ao": the look's own grime is an occlusion node baked
+                # into the colour, and a shade hugging the moon greyed the half it covered
                 for q in find.parts:
                     hi[q.name].hide_render = (q.name != p.name) if p.clear else q.clear
             bpy.ops.object.select_all(action="DESELECT")

@@ -233,3 +233,34 @@ clips in `out/`.
   swings up off the hood, a touch past upright, and settles.
 - **For the game:** the 90 seconds and the wide light are a game ticket; the light's Range is
   the find's. Not in the place yet: F-S1.
+
+## Moon lamp (Nov 15, F-02e)
+
+- **What it is:** a 3D-printed moon in ivory PLA on a cradle of two M-shaped pieces of pale
+  beech halved into each other. The Moon's own near side faces the front: its maria where the
+  Moon has them (Imbrium, Serenitatis, Tranquillitatis, Crisium, Procellarum and the rest), a
+  touch low and smooth; the highlands crowded with crisp craters with raised rims, fine pits
+  between; Tycho and Copernicus with faint rays. A white plug in a flat cut at the bottom
+  holds the touch dot and the USB port. Dust on top, the cradle's edges darkened by hands.
+- **References** (looked at Nov 14 and 15): Bing image results for "3D printed moon lamp wooden
+  stand", "moon lamp wooden stand only replacement cross cradle" and "3d printed moon lamp
+  unlit close up craters white" (an Etsy listing's close-up: dense small craters, smooth grey
+  maria); printed moon lamps run 8 to 20 cm, 15 cm the usual. The maria from the Moon's own
+  map (their latitudes, longitudes and sizes in `spec.py`).
+- **Size:** a 15 cm moon (5.9 inches) whose top stands 7.4 inches off the floor; the cradle's
+  feet 4.8 inches across. 0.59 studs across the moon, 0.74 tall.
+- **Tells:** a pale cratered ball on a little wooden cradle; lit, the Moon's face, grey maria
+  on bright highlands, and a warm pool round its feet.
+- **Parts:** `MoonLamp_Cradle` (root: the cradle's middle on the floor), `_Moon` (the glow
+  part; pivot its middle, turning about Z), `_Shade` (see-through: the dark phase cap just
+  outside the moon, turning about Z with it; found at `scale` 0, on at 1, full moon to start).
+  3,700 triangles (the moon 2,496); one 1024 texture set at 554 texels a stud.
+- **How it's made:** the detailed moon is a 720 x 320 lathe; numpy pushes in 1,300 craters
+  (a power law of sizes, few on the maria) and the maria, and writes `maria` and `ray` on each
+  point, which the look reads (`mn_attr`) so the colour and the glow follow the same face.
+- **Light:** a Point in the moon's middle (3,000 K, Brightness 0.8, Range 10, no shadows); the
+  moon glows, its maria at 0.3 of the highlands; strength 1.6, tint (255, 214, 170).
+- **Motions:** `SwitchOn` (1 s): the light swells through the print, a touch too bright, and
+  settles. `SwitchOff` (0.7 s). `Phase` (0.9 s, per tap): the shade turns 45 degrees about the
+  moon, overshooting a little, as the light blinks; the game adds the phase it was on.
+- **For the game:** tapping through the phases is a game ticket. Not in the place yet: F-S1.
