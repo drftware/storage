@@ -20,6 +20,7 @@
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 local Batteries = require(script.Parent.Batteries)
 local BatterySpecs = require(ReplicatedStorage.Shared.Battery.Specs)
@@ -30,7 +31,9 @@ local CrawlHoleSpecs = require(ReplicatedStorage.Shared.StorageUnit.CrawlHole.Sp
 local Deal = require(ReplicatedStorage.Shared.Deal)
 local DealSpot = require(ReplicatedStorage.Shared.DealSpot)
 local Doors = require(script.Parent.Doors)
+local BoxSpecs = require(ReplicatedStorage.Shared.Boxes.Specs)
 local FloorBuilder = require(script.Parent.FloorBuilder)
+local MarkedBoxes = require(script.Parent.MarkedBoxes)
 local NoteSpot = require(ReplicatedStorage.Shared.Elevator.NoteSpot)
 local Saws = require(script.Parent.Saws)
 local Slots = require(script.Parent.Slots)
@@ -50,6 +53,9 @@ local HOLE_TO = math.max(CrawlHoleSpecs.To, PANEL.Centre.Z + PANEL.Size.Z / 2) +
 -- `TopHoleSpecs.Channel` back from the doorway's face). Nothing is dealt on either.
 local LAND_X = (TopHoleSpecs.Left + TopHoleSpecs.Right) / 2
 local LAND_Z = (TopHoleSpecs.Front + TopHoleSpecs.Back) / 2
+-- Studio only, until B-03 deals marked boxes: Workspace's `DevBox` set true stands one shut
+-- marked box in the next unit that opens (where a find would stand), then goes back to false.
+local DEV_BOX = "DevBox"
 local FELL = TopHoleSpecs.Parts.PanelEdge
 
 -- Each thing of somebody's stuff's size as DealSpot measures it (S1-04b2).
@@ -146,6 +152,7 @@ function Deals.new(): Deals
 	local coins: Coins.CoinsSystem? = nil
 	local batteries: Batteries.Batteries? = nil
 	local keepers: Awake? = nil
+	local markedBoxes: MarkedBoxes.MarkedBoxes? = nil
 
 	-- Unit `index` of `deck`'s floor as DealSpot measures it, its number, and its note's place
 	-- across the back wall if it holds one.
@@ -417,6 +424,18 @@ function Deals.new(): Deals
 			table.insert(taken, pile)
 		end
 		local charged = contents.battery == true and layBattery(unit, deck, index, taken)
+		if RunService:IsStudio() and markedBoxes and Workspace:GetAttribute(DEV_BOX) == true then
+			-- a stand-in until B-03 deals them: a box where a find would stand, clear of the rest
+			local size, number, note = shape(deck, index)
+			local box = BoxSpecs.Marked.Size
+			local footprint = { across = box.X, along = box.Z, tall = box.Y }
+			local spot = DealSpot.inUnit(size, "Find", footprint, note, number, taken)
+			if spot and markedBoxes:stand(unit, placed(unit, spot)) then
+				Workspace:SetAttribute(DEV_BOX, false)
+				table.insert(taken, DealSpot.around(spot, footprint))
+				print(`Deals: stood a marked box in {unit.Name} (DevBox)`)
+			end
+		end
 		local drawn = contents.stuff
 		if drawn then
 			-- what stands is what the unit holds: the next that fits, or nothing (said in Output)
@@ -482,6 +501,7 @@ function Deals.new(): Deals
 		coins = (context.registry:get("coins") :: any) :: Coins.CoinsSystem?
 		batteries = (context.registry:get("batteries") :: any) :: Batteries.Batteries?
 		keepers = (context.registry:get("keepers") :: any) :: Awake?
+		markedBoxes = (context.registry:get("markedBoxes") :: any) :: MarkedBoxes.MarkedBoxes?
 		table.insert(connections, doors.acted:connect(onActed))
 		local saws = (context.registry:get("saws") :: any) :: Saws.Saws?
 		if saws then

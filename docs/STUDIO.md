@@ -2397,3 +2397,20 @@ verified: a doc page, Studio, or "untested".
   tops (its rims) sat exactly level with the shut flaps and won the pixels. Its rims sit 0.004
   under the flaps; any part that lies on another needs the same hair of clearance in Studio too.
 
+## Opening a marked box in Play (B-02a, Nov 15)
+
+- **Stage one:** in Play, from the Server set Workspace `DevBox` to true, stand your character
+  4.5 studs out from a unit's door on the face's +LookVector side (`FloorBuilder.face(unit)`; on
+  the test hall's floor 3, Unit301's face is (4, 0, -618) looking -X, so stand at (-0.5, 3, -618)),
+  then on the Client point a Scriptable camera at its `DoorMiddle` and call the door prompt's
+  `InputHoldBegin()` and `InputHoldEnd()` (a tap there). Output: "Deals: stood a marked box in
+  Unit301 (DevBox)"; the box stood at (14.6, 0, -616.5), facing the doorway.
+- **Open it:** stand at (10.5, 3, -616.5), then on the Client find the box by tag `MarkedBox`, its
+  `Open` attachment's prompt, and call `InputHoldBegin()`/`InputHoldEnd()`. A RenderStepped log
+  showed the stamp arriving 0.09 s after the press, the rip 0.1 s and the slap 0.3 s into the
+  motion, the seam and hum gone by 0.14 s, and FlapFront settling at 118 degrees.
+- **Captures in Play:** `screen_capture` with `camera_position` and `look_at_position` works on the
+  Client's view; move `Workspace.YourFlashlight` out first. A mid-motion pose can be set by hand on
+  the Client with `Boxes.Opening.pose` and each part's `PivotTo` (the view doesn't touch a settled
+  box again): `docs/art/B-02a-burst-level01.jpg`, `B-02a-settled-level21.jpg`.
+

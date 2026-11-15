@@ -29,6 +29,7 @@ local LobbyCars = require(script.LobbyCars)
 local KeptPlayers = require(script.KeptPlayers)
 local Kneels = require(script.Kneels)
 local Machines = require(script.Machines)
+local MarkedBoxes = require(script.MarkedBoxes)
 local Minimaps = require(script.Minimaps)
 local Prompts = require(script.Prompts)
 local Live = require(script.Live)
@@ -67,6 +68,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "coins", system = Coins.new() },
 	-- The batteries on the floors: one laid as a door first lifts, a tap fills a torch that needs it.
 	{ slot = "batteries", system = Batteries.new() },
+	-- The marked boxes: the one box in a unit with something in it, its Open checked and stamped.
+	{ slot = "markedBoxes", system = MarkedBoxes.new() },
 	-- The machine in each floor's car: every waking ride's stock dealt once, shown in its coils.
 	{ slot = "machines", system = Machines.new() },
 	{ slot = "saws", system = Saws.new() },

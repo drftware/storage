@@ -5547,3 +5547,25 @@ square with the box, so a motion is one `PivotTo(box pivot * CFrame.new(Pivot) *
 per part. The tape's halves cast no shadow (too thin to matter on a phone). The cue's warm PointLight
 is not in the template: whoever lights the cue adds it, counted against the light cap.
 
+## D-209 Opening the marked box: the server stamps, every screen plays it (B-02a, Nov 15)
+`MarkedBoxes` (slot `markedBoxes`) stands a box (`stand(unit, place)`: tagged `MarkedBox`, the unit
+in an ObjectValue `Unit`, one tap "Open" on the lid, line of sight off) and checks a press as every
+press is (`Boxes.Opening.refuse`: opened, dead, wrapped, far, a shut door; then `allow`, 3 a second,
+2 at once). The first press to arrive opens it once: the button goes, the box is stamped `OpenedBy`
+then `OpenedAt` (server time), and `opened` fires for B-02b. The server never moves a flap.
+`MarkedBoxView` plays `Specs.Marked.Motions.Open` on every screen. Defaults taken overnight:
+- **A stamp arriving within 0.6 s plays from its first frame where it lands** (`Opening.clock`), so
+  the opener and friends always see the whole tear (ping only delays it); one seen later (streamed
+  in, joined) runs from the server's time, and a box reached after it opened stands open.
+- **The rip plays 0.1 s in, the slap 0.3 s in** (the flaps bursting through upright), heard 40
+  studs off; a beat a screen reaches more than 0.25 s late is skipped, never played out of step.
+- **Up close, while shut:** the hum (heard within 12 studs, playing only within 16, out of step
+  box to box) and the cue's warm PointLight on the one shut box nearest you within 10 studs: one
+  light a screen, whatever the floor holds. Both go with the lines as the tape tears (the hum in
+  0.08 s).
+- **Reach 7 studs** (a little under a coin pile's 8, so you're close enough to see in), the
+  server's 2 of slack. No words for any refusal: an opened box has no button, and a shut door
+  hides its Open on your screen as a battery's Take is hidden.
+- **An opened box stays open where it stood** for the rest of the floor, solid as before.
+- **Studio's `DevBox`** (Workspace, true) stands one where a find would stand in the next unit that
+  opens, then turns itself off; B-03 replaces it with the deal.

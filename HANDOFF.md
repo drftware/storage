@@ -2,52 +2,52 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-15, session 185 (B-01b, D-208) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-15, session 186 (B-02a, D-209) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- B-01b done: `Boxes.fbx` re-uploaded (asset 89264624666926, new ColorMap 82034486652211) and all six
-  templates replaced in the place at `ReplicatedStorage.Props.Boxes`: the five scenery boxes
-  (MeshParts) and `Marked`, a Model of eight parts, PrimaryPart `Marked_Body`, Atomic streaming,
-  only the body solid, every part's pivot on its hinge turned square with the box, the seam Neon
-  at Transparency 1. `Boxes.prepareMarked` and `Boxes.cloneMarked` wrote it. In the place, unsaved.
-- Verified in Studio: the Open motion played by hand in Edit matches the filmstrip; the lit cue
-  reads as two thin clean lines at Level01 and Level21 in Play (`docs/art/B-01b-cue-level01-21.jpg`);
-  the three `Boxes.Sounds` load and play. No unit has a marked box yet (B-03 deals them).
-- Studio shows two copies each of `Live`, `Purchasing`, `Feeds`, `Taps` (Rojo glitch; reconnect).
+- B-02a done, verified in Studio Play (one player): Workspace `DevBox` stood a marked box in
+  Unit301; its seam lit, hum playing, warm light on near; Open stamped it (`OpenedBy`, `OpenedAt`)
+  and the button went; the client played the open from its first frame 0.09 s after the press,
+  the rip 0.1 s and slap 0.3 s in, seam and hum gone by 0.14 s, flaps settled on their last keys.
+  Output clean. Captures: `docs/art/B-02a-burst-level01.jpg`, `B-02a-settled-level21.jpg`.
+- New: `src/shared/Boxes/Opening.luau` (pure rules and feel numbers; `tests/boxopen.spec.luau`),
+  `src/server/MarkedBoxes.luau` (slot `markedBoxes`: `stand`, the checks, `opened` signal),
+  `src/client/MarkedBoxView.luau`; `Boxes.cloneMarked`'s parent is optional; Deals' `DevBox`.
+- Nothing put in the place by hand. Studio shows two copies of new modules (Rojo glitch; harmless).
 
-## Next task: B-02a The box opens
-ROADMAP B-02a (B-02 split, D-205, D-208). The moment: you press Open and the tape rips, the flaps
-burst; everyone near hears and sees it. B-02b adds the grade's light and the find coming out.
-1. Server: a marked box answers one "Open" prompt, the way `Coins.lay`'s take does (`Prompts.make`,
-   tap, line of sight off; checked alive, not wrapped, `Reach`, not through a shut door by
-   `RollUpDoor.keepsApart`; rate-limited; once only). It stamps the model, e.g. attribute
-   `OpenedAt` = `workspace:GetServerTimeNow()`, `OpenedBy` = UserId; the server never moves the
-   flaps. Tag the box (e.g. `MarkedBox`) so screens find it. Feel numbers in Config.
-2. Studio-only stand-in until B-03: a Workspace attribute (as `DevCoins` is) stands one marked
-   box in the first unit that opens (`Boxes.cloneMarked(pivot, unit's hall piece)`), cue lit.
-3. Client view (as `BatteryView` plays a take): for each tagged box, while shut, the seam lit
-   (`Specs.Marked.Cue.Transparency`) and the Hum looped with a short roll-off; on `OpenedAt`, play
-   `Specs.Marked.Motions.Open` (0.95 s) stepped only while it moves, from the server time so late
-   screens catch up; one streamed in already open shows the settled pose. Tear at the snap (0.1 s),
-   Flaps at the burst (about 0.3 s), Hum stops at the tear. Recipe proven in Edit this session:
-   turn: `part:PivotTo(box:GetPivot() * CFrame.new(spec.Pivot) * CFrame.fromAxisAngle(spec.Axis,
-   math.rad(Art.sample(track.Keys, t))))`; the seam's scale: `Size = base * v` (each axis at least
-   0.001), `PivotOffset` position times v, then `PivotTo(box pivot * CFrame.new(spec.Pivot))`
-   (base Size and PivotOffset read from the template). It hides by 0.14 s.
-4. Pure parts (the open's rules, the clock from `OpenedAt`) get Lune specs first.
-5. Prove in Play: open one from the Client with `user_keyboard_input` (STUDIO.md "Staging a buy");
-   capture mid-burst and settled at Level01 and 21 in Play; Output clean; a second open refused.
-**Acceptance:** checks green; Open plays the motion and both sounds in Play; a refused or repeated
-open does nothing; OWNER.md has numbered two-player steps for friends seeing it.
-**Read first:** ROADMAP B-02 and B-02a; D-205 and D-208; `src/shared/Boxes/init.luau`;
-`src/server/Coins.luau` (`lay` and its take); `src/client/BatteryView.luau` (a take on every
-screen); STUDIO.md "Staging a buy".
+## Next task: B-02b The find comes out
+ROADMAP B-02 and B-02b (D-205, D-209). The moment: the tape rips, then a held breath with the
+grade's coloured light leaking through the flap gaps and its own sound (blue Rare, purple Epic,
+gold Legendary, as Pet Simulator's eggs and Brawl Stars' Starr Drops tell the prize by colour),
+the flaps burst, the find lifts, turns once and is yours. Two seconds you can't skip; friends near
+see and hear it, a Legendary further off. A Common must still feel good (a warm puff, still lifts).
+1. The grade reaches screens only at the open: the server stamps the box's grade (and what's in
+   it) before `OpenedAt` in `MarkedBoxes`' open (attributes in one batch arrive in order:
+   STUDIO.md), never on a shut box (an exploiter reads attributes). `MarkedBoxes.stand` takes
+   what's inside; `opened` hands it to whoever grants it.
+2. The held beat: today the flaps burst at 0.16 s, straight after the tear. On screens, hold the
+   flap tracks after the tear for a per-grade `Hold` (feel numbers in `Opening`): sample the
+   flaps at `t - hold` once past the tear, a small tremble while held; move the slap beat by the
+   hold. Pure: extend `Opening.pose`/`due`/`settled` with the hold, specs first.
+3. The light: one PointLight in the grade's colour inside the box, brightening through the hold
+   and flaring at the burst, then gone (counts against the light cap; `Grades.luau` has the
+   colours, if not, put them there). Its sound from Roblox's library, measured as
+   STUDIO.md "The marked box's sounds" did; Legendary heard further (`Opening.Heard` per grade).
+4. The find: lifts out of the box, turns once (F-G1a's pose, `Finds.pose`), then goes to the
+   opener as a find picked up does (grep `Slots` for how a find is given to a player's hands; a
+   full hand: decide a default, OWNER.md). Coins and tools come in B-03.
+5. Studio: `DevBox` as a find's key (a string) stands a box holding it; true keeps "a random
+   built find". Prove in Play as STUDIO.md "Opening a marked box in Play" does, one capture per
+   grade colour mid-hold at Level01; Output clean. OWNER.md: two-player steps, one per grade.
+**Acceptance:** checks green; in Play a Rare, Epic and Legendary each show their light and sound
+in the hold, then the find comes out and is the opener's; a Common feels finished, not empty.
+**Read first:** ROADMAP B-02b; D-205, D-209; `src/server/MarkedBoxes.luau`;
+`src/client/MarkedBoxView.luau`; `src/shared/Boxes/Opening.luau`; `src/shared/Grades.luau`.
 
 ## Queue (next sessions, the owner's ten-ticket order)
-0. **B-02b to B-05** (ROADMAP, D-205): B-02b the find comes out (the grade's coloured light
-   through the flaps and its sound, F-G1c's idea moved to the box; the find lifts, turns once, is
-   yours; friends see it, a Legendary further off). Then S3-03 Cut Free (it owns Studio's "CutFree"
-   let-in; rows in `Products`, `Purchasing:prompt`), then S3-04 the shop.
+0. **B-03 to B-05** (ROADMAP, D-205): B-03 deals what's found into boxes (`MarkedBoxes.stand`
+   from the deal, replacing `DevBox`; coins to the bank, a tool to your hands). Then S3-03 Cut
+   Free (it owns Studio's "CutFree" let-in; rows in `Products`, `Purchasing:prompt`), then S3-04.
 1. **S4-01 Floors made by rules.** Split first: S4-01a the rules table and the top gone, S4-01b
    what changes floor to floor. Read the GDD's "Floor rules", D-106, D-128, `Climb.luau`,
    `Deal.luau`; grep `Climb.Top`, `Climb.Building`, `topped`. The escape ("Made it") has no trigger

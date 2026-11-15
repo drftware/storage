@@ -78,6 +78,26 @@ nowhere else.
      burst up past upright, the end flaps a beat behind. Say if it should be slower or punchier.
   4. Decide my defaults (say which to change): the tape snaps across the middle rather than
      splitting along the seam; the cue is warm lines at the tape's edges plus a soft hum up close.
+- [ ] **Open a marked box with a friend** (B-02a, D-209; one player seen in Studio Play by me,
+  never two, never on a phone). Opening only: nothing comes out yet (B-02b), and no unit deals a
+  box yet (B-03), so Studio stands one for you.
+  1. In Studio, Test tab > Clients and Servers: Local Server, 2 players, Start.
+  2. In the Server window's command bar, type `workspace:SetAttribute("DevBox", true)`, Enter.
+  3. Both players: take "Walk a floor" by the spawn. Player 1 opens any unit's door; player 2
+     stands in the hall about 10 studs away, looking in. The unit now has one box with two thin
+     warm lines along its tape. (The box goes in the next door opened, once; type step 2 again
+     for another.)
+  4. Player 1 walks up to it: a soft hum close to, and a faint warm glow on the floor round it
+     within a few steps. Press Open (E). The tape should rip across the middle, its halves whip
+     back and the flaps burst up with a slap, the lines and hum gone as it rips. Say if it feels
+     slow, weak or late after your press.
+  5. Player 2 should see the same and hear the rip and slap from the hall. Walk player 2 away
+     about 40 studs and have player 1 do steps 2 to 4 again: the sounds should fade out with
+     distance, not cut off.
+  6. Press Open again on an opened box: nothing (it has no button). Pull the door down with
+     player 2 outside: player 2 never sees an Open through the door.
+  7. Decide my defaults (say which to change): the rip 0.1 s after the box starts moving and the
+     slap at 0.3 s; the hum and glow only up close; an opened box stays open where it stood.
 - [ ] **Answer Brix's gift and receipt choices** (its DECISIONS E-075 to E-078, listed in Brix's
   HANDOFF) before S3-04 sells gift versions of the wrap colours.
 

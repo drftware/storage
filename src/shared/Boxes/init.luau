@@ -5,6 +5,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Opening = require(script.Opening)
 local Specs = require(script.Specs)
 
 export type Name = "Small" | "Medium" | "Large" | "Wardrobe" | "Open"
@@ -16,6 +17,8 @@ Boxes.Names = { "Small", "Medium", "Large", "Wardrobe", "Open" } :: { Name }
 -- The marked box (B-01): the one box in a unit with something in it, a Model of parts whose Open
 -- motion tears the tape and springs the flaps (Specs.Marked; art/boxes/README.md).
 Boxes.Marked = Specs.Marked
+-- Opening it (B-02a): the checks on a press, the stamp's clock, the sounds' beats (Opening.luau).
+Boxes.Opening = Opening
 
 -- Its sounds, from Roblox's licensed library (measured in docs/STUDIO.md "The marked box's
 -- sounds"): `from` and `length` in seconds of the file, played as a Sound's TimePosition window.
@@ -116,8 +119,9 @@ function Boxes.prepareMarked(model: Model)
 end
 
 -- A copy of the marked box standing at `pivot` (its bottom's middle, its printed side facing the
--- pivot's LookVector), parented last. Nil, with a warning, if the place is missing the template.
-function Boxes.cloneMarked(pivot: CFrame, parent: Instance): Model?
+-- pivot's LookVector), parented last (left out of the world with no parent, to be set up first).
+-- Nil, with a warning, if the place is missing the template.
+function Boxes.cloneMarked(pivot: CFrame, parent: Instance?): Model?
 	local folder = templates()
 	local template = if folder then folder:FindFirstChild("Marked") else nil
 	if not (template and template:IsA("Model")) then

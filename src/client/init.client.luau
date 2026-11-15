@@ -45,6 +45,7 @@ local LadderView = require(script.LadderView)
 local LobbyView = require(script.LobbyView)
 local MachineMenu = require(script.MachineMenu)
 local MachineView = require(script.MachineView)
+local MarkedBoxView = require(script.MarkedBoxView)
 local NoteView = require(script.NoteView)
 local FaintMarkView = require(script.FaintMarkView)
 local PadlockView = require(script.PadlockView)
@@ -99,6 +100,8 @@ local host = Brix.Host.new({
 		{ slot = "coinView", system = CoinView.new() },
 		-- the batteries: a button only while your torch needs one, a take thrown into its torch
 		{ slot = "batteryView", system = BatteryView.new() },
+		-- the marked boxes: a shut one's lit seam and hum, an open played on every screen (B-02a)
+		{ slot = "markedBoxView", system = MarkedBoxView.new() },
 		-- each floor's breaker box: the clunk and red lamp thrown, the lever under the hand, the hum
 		{ slot = "breakerView", system = BreakerView.new(kick) },
 		-- a security camera's feed over the corner map: a monster doing something, seen (S2-02d);
