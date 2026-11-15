@@ -2083,6 +2083,27 @@ of units; trading; a season pass; boss floors and units far bigger inside than t
 that live in your unit, and the arcade cabinets' games; fake notes, finds that are monsters in disguise, the monster
 that moves walls, and the dolly.
 
+## Find art: the catalog's wave 1 (from Nov 14)
+
+The owner asked on Nov 14 for the catalog's finds as world-class models, built through the night
+(D-190). The bar and the method are in `art/finds/CRAFT.md`; each find's row and whether it's
+built are in `art/finds/WAVES.md`. These tickets make the art and the motion data only: the
+actions themselves and dealing the new finds on floors are later game tickets.
+
+- [ ] **F-01 The finds kit**, proven on the desk lamp and the first Lights.
+- [ ] **F-02 The Lights** (the other 15, or what F-01 left).
+- [ ] **F-03 The remote-control car and the die-cast car** (pulled forward from wave 4).
+- [ ] **F-S1 Into Studio:** the Lights and the cars uploaded, inserted and judged at phone size.
+- [ ] **F-04 Wind-ups and noisemakers.**
+- [ ] **F-05 Squishies.**
+- [ ] **F-06 Plush.**
+- [ ] **F-07 Night Shift Minis and their blind box.**
+- [ ] **F-08 Boxes and tins.**
+- [ ] **F-09 Bags and cases.**
+- [ ] **F-10 Locked and sealed.**
+- [ ] **F-11 Treasures.**
+- [ ] **F-12 The eight wave 1 big finds.**
+
 ## Polish waiting for a slot
 
 - **The tap's bar (S2-05b, D-170):** a faint sound on the marker's sweep (left out so the wait

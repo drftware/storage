@@ -5223,3 +5223,22 @@ took home, plain English, and stay.
 
 Not chosen: "Wrapped" (describes the body, not what happened to the team); "Game over" (says
 nothing about the monsters).
+
+## D-190 The catalog's finds are built to a world-class bar, wave 1 first, overnight (owner, Nov 14)
+
+The owner, Nov 14, late: build the catalog's finds in Blender through the night, "absolute
+world-class", from reference images rather than made up, with anything that does something
+modelled to do it ("lamp that can turn on, RC car that can drive") and its animation perfect.
+Sessions are capped at 300k context.
+
+So: `art/finds/CRAFT.md` holds the bar and the method, and `art/finds/WAVES.md` tracks the 133
+finds of the catalog's wave 1 plus two pulled forward. Lights go first and the remote-control
+car and the die-cast car come next (from wave 4's Figures and models), because the owner named
+both; then the catalog's wave 1 sets in its order. The bedroom set's shared 1024 texture is the
+floor, not the target: new finds must stay sharp held in the hand, so F-01 sizes textures per
+find and bakes detail from a high version. Moving parts are their own parts on real pivots, and
+each action's motion is data that Blender previews and the game plays, so what was judged is
+what ships. Each set's finds stay out of the floors' deal until a game ticket brings them in.
+
+Not chosen: one atlas per set at 1024 (the bedroom set's way; blurs held in the hand), and
+greybox first (AGENTS.md: real assets from the start).
