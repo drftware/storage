@@ -76,6 +76,19 @@ KeeperTell.Beats = BEATS
 -- behind the server), so the thunk lands as its walk stops.
 KeeperTell.HeardAttribute = "KeeperHeard"
 
+-- Whether a keeper shown in `how` (a KeeperMotion How) has its arms full: walking (Carry) or
+-- standing (Hold) as `Keeper.shown` says "Carrying" (S2-06e). Its hands closing on a find or
+-- setting one down are neither: it makes no walk sounds then.
+function KeeperTell.full(how: string): boolean
+	return how == "Carry" or how == "Hold"
+end
+
+-- The tell a body plays (S2-06e): its row's `full` one while its arms are full, if it has one;
+-- else its `tell`, as a keeper that never carries always plays.
+function KeeperTell.of(tell: Tell, full: Tell?, armsFull: boolean): Tell
+	return if armsFull and full then full else tell
+end
+
 -- The keeper states a body stands in a unit in (Keeper): dealt asleep, or awake and watching.
 local STANDING = { Asleep = true, Watching = true }
 

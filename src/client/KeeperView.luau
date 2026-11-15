@@ -67,7 +67,6 @@ type Kit = {
 	walk: (how: How) -> number,
 	transforms: (frame: number) -> { CFrame },
 	tell: (last: number?, travelled: number, how: How) -> (Pose.Sound?, number),
-	quiet: boolean, -- no beats and no creak as it turns (the Packrat's sounds come in S2-06e)
 	-- where a find it holds sits in a How, in its UpperTorso's frame (a carried find's weld C0),
 	-- and how long that find takes to ease there; nil: where the find lay, its hands not yet
 	-- closed on it on this screen (the Packrat's, S2-06b2b; the Mannequin never holds one)
@@ -96,7 +95,7 @@ local PACKRAT_HELD: { [string]: number } = {
 	PutDown = PackratPose.held("PutDown") :: number,
 }
 local function packratWalk(how: How): "Empty" | "Full"
-	return if how == "Carry" or how == "Hold" then "Full" else "Empty"
+	return if KeeperTell.full(how) then "Full" else "Empty"
 end
 -- Where the Packrat holds a find by How (S2-06b2b): between its palms as they close on it and as
 -- it crouches to set it down, against its chest walking or standing full.
@@ -132,12 +131,12 @@ local KITS: { [string]: Kit } = {
 		tell = function(last: number?, travelled: number, how: How): (Pose.Sound?, number)
 			return Pose.tell(last, travelled, plain(how))
 		end,
-		quiet = false,
 		hands = function(_: How): (CFrame?, number)
 			return nil, 0
 		end,
 	},
-	-- glides on its full walk or its empty one by whether its arms are full (D-177); no beats yet
+	-- glides on its full walk or its empty one by whether its arms are full (D-177), and sounds
+	-- each one its own way (S2-06e)
 	Packrat = {
 		motors = Packrat.motors,
 		along = function(travelled: number, how: How): number
@@ -153,10 +152,9 @@ local KITS: { [string]: Kit } = {
 			return if packratWalk(how) == "Full" then 1 else 0
 		end,
 		transforms = Packrat.transforms,
-		tell = function(_: number?, _: number, _: How): (Pose.Sound?, number)
-			return nil, 0
+		tell = function(last: number?, travelled: number, how: How): (Pose.Sound?, number)
+			return PackratPose.tell(packratWalk(how), last, travelled, how)
 		end,
-		quiet = true,
 		hands = function(how: How): (CFrame?, number)
 			return PACKRAT_HANDS[how], PACKRAT_EASE[how] or 0
 		end,
@@ -184,6 +182,7 @@ type View = {
 	heldWhen: number, -- when your beam held it (os.clock), for Output
 	answered: boolean, -- the server's stop has answered that hold
 	told: number?, -- what its kit's `tell` last returned (nil: not posed yet)
+	full: boolean, -- whether it was last shown with its arms full (`KeeperTell.full`), for its sounds
 	turn: number, -- degrees its facing turns before its body creaks (its row's)
 	turnX: number?, -- the facing it measures its next turn from (nil: not shown yet)
 	turnZ: number,
@@ -213,7 +212,10 @@ local KeeperView = {}
 
 -- `heard` plays a beat of a body's walk, or its creak as it turns (KeeperSounds); `beam` is your
 -- torch (FlashlightView).
-function KeeperView.new(heard: (model: Model, beat: KeeperTell.Beat) -> (), beam: Beam): Brix.System
+function KeeperView.new(
+	heard: (model: Model, beat: KeeperTell.Beat, full: boolean) -> (),
+	beam: Beam
+): Brix.System
 	local views: { [Model]: View } = {}
 	local moving: { [Model]: View } = {} -- the ones to step
 	local holding: { [Model]: View } = {} -- the ones whose find is still moving in its arms
@@ -317,8 +319,9 @@ function KeeperView.new(heard: (model: Model, beat: KeeperTell.Beat) -> (), beam
 		end
 		local sound: Pose.Sound?, told: number = view.kit.tell(view.told, f.travelled, how)
 		view.told = told
+		view.full = KeeperTell.full(how)
 		if sound then
-			heard(view.model, sound)
+			heard(view.model, sound, view.full)
 		end
 		if frame ~= view.frame then
 			view.frame = frame
@@ -372,7 +375,7 @@ function KeeperView.new(heard: (model: Model, beat: KeeperTell.Beat) -> (), beam
 			view.turnX, view.turnZ = facing.x, facing.z -- its first facing, or its first real one
 		elseif KeeperTell.turned(turnX, view.turnZ, facing.x, facing.z, view.turn) then
 			view.turnX, view.turnZ = facing.x, facing.z
-			heard(view.model, "Creak")
+			heard(view.model, "Creak", view.full)
 		end
 		view.root.CFrame = CFrame.lookAt(
 			Vector3.new(at.x, at.y, at.z),
@@ -523,7 +526,8 @@ function KeeperView.new(heard: (model: Model, beat: KeeperTell.Beat) -> (), beam
 			heldWhen = 0,
 			answered = false,
 			told = nil,
-			turn = if kit.quiet then math.huge else rowOf.tell.turn,
+			full = false,
+			turn = rowOf.tell.turn,
 			turnX = nil,
 			turnZ = 0,
 			carried = nil,

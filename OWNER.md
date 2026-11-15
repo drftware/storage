@@ -23,6 +23,26 @@ nowhere else.
   at Brix `6717740` (S1-02), which is only on this Mac until Brix is pushed; a fresh clone of
   the game can't fetch it until then.
 
+## Now: listen to the Packrat, arms empty and arms full (S2-06e, built Nov 14, D-184; not heard in Studio Play: please check by ear first)
+
+The Packrat now has its own sounds. With its arms empty (coming for you) you should hear soft
+padded steps and, once a stride, a screech of packing tape pulled off a roll. With its arms full
+(hauling something home) you should hear heavier, quicker steps with the thing in its arms
+jingling and rattling. In my test runs no sound came out of the live game at all, though each
+half worked on its own, so this may be silent for you: if it is, tell the next session.
+
+1. In Studio, start Play on floor 3 (the dev floor). Wear headphones or turn the sound up.
+2. Press the Packrat post (R). A Packrat stands by the lobby and carries its boombox to its pile.
+3. Get on a unit's roof near its hall (it can't see the tops) and wait for it to roam. Listen
+   before you see it: soft thuds and a tape screech every couple of steps. It should sound
+   quiet and wrong, and you should hear it round a corner before it turns into your hall.
+4. Drop a find in a hall (pick one up, then drop it). The Packrat walks to it, picks it up and
+   carries it home. Listen: the sound should change the moment its arms close on it, to heavier
+   steps with a rattle and jingle. You should be able to follow the rattle home.
+5. What to tell me: whether you hear anything at all; whether you can tell empty from full with
+   your eyes shut; whether the tape is creepy or just annoying (it plays once a stride); and
+   whether anything clicks or cuts off.
+
 ## Now: bait the Packrat into a unit and slam the door on it (S2-06d, built Nov 14, D-183; the trap seen in Studio Play, taking back from its pile not watched)
 
 The Packrat now turns for a find that turns up nearer to it than the one it is walking to, so

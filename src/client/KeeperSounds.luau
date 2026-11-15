@@ -49,9 +49,13 @@ type Voice = { sound: Sound, fade: Tween }
 type Body = {
 	model: Model,
 	root: BasePart,
+	-- how it sounds (its row's), and with its arms full (S2-06e); its gaps and the reveal's rise
+	-- are always its `tell`'s
 	tell: KeeperTell.Tell,
-	voices: { [string]: { [number]: Voice } }, -- by sound, then take, made as each first plays
-	took: { [string]: number }, -- the take each sound last played
+	full: KeeperTell.Tell?,
+	armsFull: boolean, -- whether the screen last showed its arms full (KeeperView's `heard`)
+	voices: { [KeeperTell.Sound]: { [number]: Voice } }, -- by sound, then take, made as each plays
+	took: { [KeeperTell.Sound]: number }, -- the take each sound last played
 	last: number?, -- os.clock() of its walk's last beat
 	creaked: number?, -- os.clock() of its last creak
 	revealed: number?, -- os.clock() of its last reveal
@@ -64,23 +68,24 @@ type Body = {
 
 local KeeperSounds = {}
 
--- The system, and `heard` (for KeeperView): a body's walk landed a beat, or it turned.
-function KeeperSounds.new(): (Brix.System, (model: Model, beat: KeeperTell.Beat) -> ())
+-- The system, and `heard` (for KeeperView): a body's walk landed a beat, or it turned, shown
+-- with its arms full or not.
+function KeeperSounds.new(): (Brix.System, (model: Model, beat: KeeperTell.Beat, full: boolean) -> ())
 	local bodies: { [Model]: Body } = {}
 	local connections: { RBXScriptConnection } = {}
 	local random = Random.new()
 
-	local function voiceFor(body: Body, name: string, i: number): Voice
-		local byTake = body.voices[name]
+	local function voiceFor(body: Body, tell: KeeperTell.Tell, name: string, i: number): Voice
+		local row = tell.sounds[name]
+		local byTake = body.voices[row]
 		if not byTake then
 			byTake = {}
-			body.voices[name] = byTake
+			body.voices[row] = byTake
 		end
 		local existing = byTake[i]
 		if existing then
 			return existing
 		end
-		local row = body.tell.sounds[name]
 		local take = row.takes[i]
 		local s = Instance.new("Sound")
 		s.Name = `Keeper{name}`
@@ -92,7 +97,7 @@ function KeeperSounds.new(): (Brix.System, (model: Model, beat: KeeperTell.Beat)
 		s.PlaybackRegion = NumberRange.new(take.start, take.stop)
 		s.Parent = body.root
 		-- timed for its fastest play, so even the quickest is silent before it's cut
-		local fastest = KeeperTell.fastest(body.tell, name)
+		local fastest = KeeperTell.fastest(tell, name)
 		local length = (take.stop - take.start) / fastest
 		local fade = TweenService:Create(
 			s,
@@ -111,13 +116,14 @@ function KeeperSounds.new(): (Brix.System, (model: Model, beat: KeeperTell.Beat)
 		return voice
 	end
 
-	-- Plays a beat's layers at once, each weighed by how near it is, any within its reach.
+	-- Plays a beat's layers at once, each weighed by how near it is, any within its reach: the
+	-- full tell's while its arms are full (S2-06e).
 	local function play(body: Body, beat: KeeperTell.Beat)
 		local camera = Workspace.CurrentCamera -- where this screen hears from
 		if not camera then
 			return
 		end
-		local tell = body.tell
+		local tell = KeeperTell.of(body.tell, body.full, body.armsFull)
 		local distance = (camera.CFrame.Position - body.root.Position).Magnitude
 		local heft = KeeperTell.heft(tell, distance)
 		for _, layer in tell.beats[beat] do
@@ -125,9 +131,9 @@ function KeeperSounds.new(): (Brix.System, (model: Model, beat: KeeperTell.Beat)
 			if distance > row.reach then
 				continue
 			end
-			local i = KeeperTell.take(#row.takes, body.took[layer.sound], random:NextNumber())
-			body.took[layer.sound] = i
-			local voice = voiceFor(body, layer.sound, i)
+			local i = KeeperTell.take(#row.takes, body.took[row], random:NextNumber())
+			body.took[row] = i
+			local voice = voiceFor(body, tell, layer.sound, i)
 			local s = voice.sound
 			local gain, pitch = KeeperTell.weigh(row, heft)
 			voice.fade:Cancel()
@@ -139,11 +145,12 @@ function KeeperSounds.new(): (Brix.System, (model: Model, beat: KeeperTell.Beat)
 		end
 	end
 
-	local function heard(model: Model, beat: KeeperTell.Beat)
+	local function heard(model: Model, beat: KeeperTell.Beat, full: boolean)
 		local body = bodies[model]
 		if not body then
 			return
 		end
+		body.armsFull = full
 		local now = os.clock()
 		if beat == "Creak" then
 			if not KeeperTell.due(body.creaked, now, body.tell.turnGap) then
@@ -272,7 +279,22 @@ function KeeperSounds.new(): (Brix.System, (model: Model, beat: KeeperTell.Beat)
 		end
 	end
 
+	-- Bodies that arrived before their root or their row: bound as the rest arrives, as
+	-- KeeperView does, or a monster that streamed in that way would walk silent for good.
+	local pending: { [Model]: { RBXScriptConnection } } = {}
+
+	local function unpend(model: Model)
+		local conns = pending[model]
+		if conns then
+			pending[model] = nil
+			for _, c in conns do
+				c:Disconnect()
+			end
+		end
+	end
+
 	local function unbind(inst: Instance)
+		unpend(inst :: Model)
 		local body = bodies[inst :: Model]
 		if not body then
 			return
@@ -291,7 +313,8 @@ function KeeperSounds.new(): (Brix.System, (model: Model, beat: KeeperTell.Beat)
 		end
 	end
 
-	local function bind(inst: Instance)
+	local bind: (inst: Instance) -> ()
+	function bind(inst: Instance)
 		-- only bodies in the world: a tagged template elsewhere stays silent
 		if not inst:IsA("Model") or bodies[inst] or not inst:IsDescendantOf(Workspace) then
 			return
@@ -301,12 +324,25 @@ function KeeperSounds.new(): (Brix.System, (model: Model, beat: KeeperTell.Beat)
 		local row = if type(name) == "string" then KeeperRows[name] else nil
 		local root = model.PrimaryPart
 		if not (row and root) then
-			return -- KeeperView says why
+			-- not all here yet (KeeperView says why if it never comes)
+			if not pending[model] then
+				local function again()
+					bind(model)
+				end
+				pending[model] = {
+					model:GetPropertyChangedSignal("PrimaryPart"):Connect(again),
+					model:GetAttributeChangedSignal(ROW_ATTRIBUTE):Connect(again),
+				}
+			end
+			return
 		end
+		unpend(model)
 		local body: Body = {
 			model = model,
 			root = root,
 			tell = row.tell,
+			full = row.full,
+			armsFull = false,
 			voices = {},
 			took = {},
 			last = nil,
@@ -344,10 +380,16 @@ function KeeperSounds.new(): (Brix.System, (model: Model, beat: KeeperTell.Beat)
 	local function ids(): { string }
 		local out = {}
 		for _, row in KeeperRows do
-			for _, sound in row.tell.sounds do
-				for _, take in sound.takes do
-					if not table.find(out, take.id) then
-						table.insert(out, take.id)
+			local tells = { row.tell }
+			if row.full then
+				table.insert(tells, row.full)
+			end
+			for _, tell in tells do
+				for _, sound in tell.sounds do
+					for _, take in sound.takes do
+						if not table.find(out, take.id) then
+							table.insert(out, take.id)
+						end
 					end
 				end
 			end
@@ -379,6 +421,9 @@ function KeeperSounds.new(): (Brix.System, (model: Model, beat: KeeperTell.Beat)
 			table.clear(connections)
 			for model in bodies do
 				unbind(model)
+			end
+			for model in pending do
+				unpend(model)
 			end
 		end,
 	}

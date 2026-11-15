@@ -1961,9 +1961,13 @@ Done when a team that has lost its lights goes looking for the breaker without b
     on floor 3: it laid the boombox, walked into Unit 308 for a teddy at the back, reached, the
     slam trapped it, it pounded and burst out at 90 s and caught the player standing at the door.
     Taking back from its pile not watched (`OWNER.md`).
-  - [ ] **S2-06e How it sounds.** One sound while it carries and another while its arms are
+  - [x] **S2-06e How it sounds.** One sound while it carries and another while its arms are
     empty, each heard before it's seen, made the way the Mannequin's were (L-06c). Real
-    recordings, primed.
+    recordings, primed. Done Nov 14 (D-184): empty, padded steps and a screech of tape once a
+    stride; full, heavier steps with the find jostling and rattling. In Play the Packrat's walk
+    sends its beats and the sound system plays both sets when called (a test copy of each), but
+    the live game played none in three runs: not found before the session's context ran out
+    (HANDOFF Queue 1, `OWNER.md`).
 
 ### Step 3: Getting caught (the first products)
 

@@ -8,6 +8,7 @@ local KeeperRows = require("../src/shared/KeeperRows")
 local KeeperTell = require("../src/shared/KeeperTell")
 local Motion = require("../src/shared/StorageUnit/Motion")
 local Pose = require("../src/shared/Mannequin/Pose")
+local PackratPose = require("../src/shared/Packrat/Pose")
 
 local failures, checks = 0, 0
 local function ok(cond: boolean, what: string)
@@ -350,6 +351,128 @@ do
 		revealGap = 0,
 	} :: any) -- any: a deliberately broken row, missing beats included
 	ok(#bad >= 16, `a broken tell is caught ({#bad}: {table.concat(bad, "; ")})`)
+end
+
+-- The Packrat (S2-06e): each walk's keys land as a foot, a pass, the other foot, then nothing,
+-- each heard once; streaming in, or its arms filling or emptying, is silent until its next key;
+-- its arm going out creaks once; standing, taking or putting down it makes no sound.
+do
+	local function stride(walk: PackratPose.Walk, how: string): { string }
+		local step = PackratPose.Walk.Step[walk]
+		local heard = {}
+		local _, last = PackratPose.tell(walk, nil, 0, how)
+		local t = 0
+		while t < 8 * step - 0.01 do
+			t += step / 20
+			local sound
+			sound, last = PackratPose.tell(walk, last, t, how)
+			if sound then
+				table.insert(heard, sound)
+			end
+		end
+		return heard
+	end
+	local empty = table.concat(stride("Empty", "Walk"), " ")
+	ok(empty == "Drag Heel Footfall Drag Heel Footfall", `empty walk's beats: {empty}`)
+	local full = table.concat(stride("Full", "Carry"), " ")
+	ok(full == "Drag Heel Footfall Drag Heel Footfall", `full walk's beats: {full}`)
+	ok(PackratPose.tell("Empty", nil, 9.3, "Walk") == nil, "streaming in mid-walk is silent")
+
+	-- a late record that jumps two keys makes one sound, the last key's
+	local _, last = PackratPose.tell("Empty", nil, 0, "Walk")
+	local jumped = PackratPose.tell("Empty", last, 2 * PackratPose.Walk.Step.Empty, "Walk")
+	ok(jumped == "Heel", `a jump of keys lands its last: {tostring(jumped)}`)
+
+	-- whether a walk heard anything over its next two keys, from `last` at `from` studs
+	local function heardSoon(walk: PackratPose.Walk, last: number, from: number, how: string)
+		local step = PackratPose.Walk.Step[walk]
+		local a, l = PackratPose.tell(walk, last, from + step, how)
+		local b = PackratPose.tell(walk, l, from + 2 * step, how)
+		return a ~= nil or b ~= nil
+	end
+
+	-- arms filling: silent as it switches, then the full walk's next key is heard
+	local _, e = PackratPose.tell("Empty", nil, 40, "Walk")
+	local s1, f = PackratPose.tell("Full", e, 40.05, "Carry")
+	ok(s1 == nil, "switching to the full walk is silent")
+	ok(heardSoon("Full", f, 40.05, "Carry"), "the full walk's next keys are heard")
+	-- and emptying back at a count far below the full walk's
+	local s3, e2 = PackratPose.tell("Empty", f, 41, "Walk")
+	ok(s3 == nil, "switching back is silent")
+	ok(heardSoon("Empty", e2, 41, "Walk"), "the empty walk's next keys are heard, not held back")
+
+	-- reaching creaks once; the held poses are silent
+	local _, w = PackratPose.tell("Empty", nil, 5, "Walk")
+	local r1, r = PackratPose.tell("Empty", w, 5, "Reach")
+	ok(r1 == "Creak", "its arm going out creaks")
+	ok(PackratPose.tell("Empty", r, 5, "Reach") == nil, "once")
+	for _, how in { "Still", "Take", "PutDown" } do
+		local s = PackratPose.tell("Full", w, 5 + 10, how)
+		ok(s == nil, `{how} is silent`)
+	end
+	ok(PackratPose.tell("Empty", nil, 5, "Reach") == nil, "streamed in reaching: silent")
+end
+
+-- Its arms are full walking (Carry) or standing (Hold) with a find, and only then does a row's
+-- `full` tell play; a row without one always plays its `tell`.
+do
+	for _, how in { "Carry", "Hold" } do
+		ok(KeeperTell.full(how), `{how}: arms full`)
+	end
+	for _, how in { "Walk", "Stop", "Still", "Reach", "Take", "PutDown", "Pull" } do
+		ok(not KeeperTell.full(how), `{how}: arms not full`)
+	end
+	local rat = KeeperRows.Packrat
+	ok(KeeperTell.of(rat.tell, rat.full, true) == rat.full, "the Packrat full plays its full tell")
+	ok(KeeperTell.of(rat.tell, rat.full, false) == rat.tell, "and empty its own")
+	local man = KeeperRows.Mannequin
+	ok(
+		KeeperTell.of(man.tell, man.full, true) == man.tell,
+		"a row with no full tell plays its tell"
+	)
+end
+
+-- Full and empty sound apart, each heard before it's seen, full the heavier tread.
+do
+	local rat = KeeperRows.Packrat
+	local full = rat.full
+	ok(full ~= nil, "the Packrat has a full tell")
+	if full then
+		local problems = KeeperTell.check(full)
+		ok(#problems == 0, `the Packrat's full tell: {table.concat(problems, "; ")}`)
+		local ids = {}
+		for _, sound in rat.tell.sounds do
+			for _, take in sound.takes do
+				ids[take.id] = true
+			end
+		end
+		for name, sound in full.sounds do
+			for _, take in sound.takes do
+				ok(not ids[take.id], `full's {name} shares no recording with the empty walk`)
+			end
+		end
+		local function reach(t: KeeperTell.Tell, beat: KeeperTell.Beat): number
+			local r = 0
+			for _, l in t.beats[beat] do
+				r = math.max(r, t.sounds[l.sound].reach)
+			end
+			return r
+		end
+		local function loud(t: KeeperTell.Tell, beat: KeeperTell.Beat): number
+			local v = 0
+			for _, l in t.beats[beat] do
+				v += t.sounds[l.sound].volume * l.gain
+			end
+			return v
+		end
+		ok(reach(full, "Footfall") > rat.sight, "full, it's heard before it's seen")
+		ok(reach(full, "Footfall") >= reach(rat.tell, "Footfall"), "its load carries as far")
+		ok(loud(full, "Footfall") > loud(rat.tell, "Footfall"), "full, its tread is heavier")
+		ok(loud(full, "Footfall") > loud(full, "Heel"), "full, its lead foot lands heavier")
+		for sname, s in full.sounds do
+			ok(KeeperTell.fastest(full, sname) >= s.pitchMax, `full's {sname}'s fastest`)
+		end
+	end
 end
 
 print(`tell: {checks - failures}/{checks} passed`)

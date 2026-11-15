@@ -5039,3 +5039,31 @@ crowds it). The ticket read "a bit" as about a third.
   0.8 s, take 0.5 s, the walk out). Players hide out of sight (a unit's roof, round a corner) and
   drop to the door when the arm goes out. `OWNER.md` asks whether that's fair on a phone.
 
+## D-184 The Packrat heard: soft pads and tape when it's coming, a rattle when it's hauling (S2-06e, Nov 14)
+The moment: in a dark hall you know from round a corner whether it's coming for you or busy
+hauling something home, as Left 4 Dead's Witch is heard before she's seen and sounds one way
+calm and another coming.
+- **Empty (`KeeperRows` Packrat `tell`):** quiet and wrong. Its blanket-sacked feet land as
+  padded thuds ("Foot Stomp" 1, 4, 7 on carpet, pitched to 0.66 to 0.76, heard to 60, past the
+  48 it sees), the trailing foot lighter so the stride lopes, and once a stride a screech of
+  packing tape pulled off a roll (the kept wrap's peel, L-07b, heard to 50): the tape it wraps
+  you in. Turning, its tape crackles (to 30). Heard, it stops on a heavy step and the tape
+  shrieks; a door lifted on it among its pile, a shift and a long low creak of tape.
+- **Full (`full`, a typed local `PackratFull`):** busy and bright. Heavier, lower steps ("Foot
+  Stomp" 2, 3) with a body's thump under them up close ("Body Impact 2"), the find jostling in
+  its arms at each step (a purse of jingling things knocked on a wall, heard to 70) and junk
+  rattling between ("Ammo Box Movement 2", "Chair Impact 12"). No recording is shared with the
+  empty walk (spec'd), so the two never blur.
+- **The switch** is the How a screen shows (`KeeperTell.full`: Carry or Hold, which is `Keeper.shown`
+  "Carrying"), passed with every beat (`heard(model, beat, full)`), so the sound changes the
+  moment the screen shows its arms full, not when the server decides. `KeeperTell.of` picks the
+  row's `full` tell or its `tell`. Voices are kept per recording row, so two tells never mix.
+- **Its walk's beats** (`Packrat.Pose.tell`): a foot, the pass, the other foot, nothing, on
+  either walk; its arm going out for a find creaks once; held poses are silent; switching walks
+  is silent and its next key is heard (the two walks count keys differently, so `tell`
+  remembers which walk it counted on).
+- **Bound late:** KeeperSounds now binds a body whose root or row arrives after its tag, as
+  KeeperView does (D-108). Not the cause of the silence seen in Play (HANDOFF), kept as a guard.
+Not chosen: a sound per find (each find its own rattle; ROADMAP polish once finds have their
+own sounds), a breathing or voice layer (it's faceless; the owner's call).
+

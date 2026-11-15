@@ -340,6 +340,48 @@ function Pose.frame(walk: Walk, travelled: number): number
 	return Pose.frameAt(walk, Pose.along(walk, travelled))
 end
 
+-- What its walks sound like (S2-06e), each key as a screen shows it land: a foot down
+-- (Footfall), the pass that follows it (Drag), the other foot (Heel, a touch lighter, so the
+-- stride lopes), and nothing on the last pass. The same keys on either walk; its row's `tell` and
+-- `full` say what each beat is (`KeeperRows`): with its arms empty, padded steps and tape
+-- screeching off a roll; full, heavier steps with the find rattling in its arms. Its arm
+-- stretching out for a find creaks once; standing, taking or putting down it makes no sound.
+export type Sound = "Footfall" | "Drag" | "Heel" | "Creak"
+
+local LANDS: { Sound? } = { "Footfall", "Drag", "Heel", nil }
+
+local SLACK = -1 -- what `tell` remembers of it standing in a held pose
+local REACHED = -2 -- or with its arm out over a find
+
+-- What `tell` remembers of it walking: the key it last showed and on which walk, in one number.
+local function told(k: number, walk: Walk): number
+	return k * 2 + (if walk == "Full" then 1 else 0)
+end
+
+-- The sound a body makes as a screen poses it after `travelled` studs on `walk`, shown in `how`
+-- (KeeperMotion's), if any, and what to pass as `last` next time (nil before its first pose on
+-- this screen, which is silent: it streamed in, it didn't move). Each key is heard once, as a
+-- screen shows it landing; a late record that jumps keys makes one sound, the last key's. Its
+-- arms filling or emptying starts the other walk's count, silently, and its next key is heard.
+function Pose.tell(walk: Walk, last: number?, travelled: number, how: string): (Sound?, number)
+	if how == "Reach" then
+		if last == nil or last == REACHED then
+			return nil, REACHED
+		end
+		return "Creak", REACHED -- the blankets and tape strain as the long arm goes out
+	elseif heldFrames[how] or how == "Pull" then
+		return nil, SLACK
+	end
+	local k = Pose.along(walk, travelled) // Pose.Walk.Frames
+	local now = told(k, walk)
+	if last == nil or last < 0 or last % 2 ~= now % 2 then
+		return nil, now
+	elseif now <= last then
+		return nil, last
+	end
+	return LANDS[k % 4 + 1], now
+end
+
 -- The pose a frame shows.
 function Pose.ofFrame(frame: number): Rig.Pose
 	if frame <= #HELD then

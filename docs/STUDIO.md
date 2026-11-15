@@ -1266,6 +1266,24 @@ verified: a doc page, Studio, or "untested".
   4 dB under the boards. Also measured: "Plastic Impact Hard Dropping Hollow Hits" 1 to 4 (two
   or more hits each, mostly under 450 Hz), "Foot Stomp" 1 and 7 (a dull thud on carpet, -12
   dBFS), "Pole Drops 6" 9117734474 (a hollow wood hit at 0.025, a bounce at 0.5, about 850 Hz).
+- **Sounds measured for the Packrat** (S2-06e, 2026-11-14; Edit, AudioPlayers in parallel to
+  AudioAnalyzers, 50 ms bins at half speed, then 10 ms at a quarter; band shares under 190 Hz /
+  190 to 470 / 470 to 2k / over 2k). "Foot Stomp" 1 to 7 (9114523161, ...351, ...345, ...358,
+  ...636, ...612, ...629; a stomp on hard carpet): one hit each at 0.00, -12 dB, gone by 0.08;
+  1, 4, 7 mostly 190 to 470 (56/67/53%), 2 and 3 more 470 to 2k. "Duct Tape ... 3" 9114200240: a
+  burst at 0.05 (-16 dB), crackle after. "Bag Drop Bag Bumping Wall 2" 9113244443 (1.44 s): bumps
+  at 0.04, 0.16, 0.28, 0.46 (-12 dB), contents jingling throughout, centroid 2.3 kHz. "Ammo Box
+  Movement 2" 9113103014: one rattle 0.25 to 0.47 (-12 dB), later ones far quieter. "Chair Impact
+  12" 9113771767: plastic clatter in four runs from 0.03 to 0.9. "Body Impact 2" 9113524237 hits
+  at 0.02, peak 0.04 to 0.06. Passed over: "Jacket 2" (a cloth throw, -21 dB peak, too quiet),
+  "Vehicle Seat 3" (one -18 dB thud), "Robot Footsteps ... Metal Body Rattle 1" (a robot),
+  "Slide By Books 5", "Prop Dirt Drag 11" (a long tumble).
+- **Hearing a keeper from the MCP didn't work** (S2-06e): with the camera pinned to the Packrat by
+  `BindToRenderStep` (priority Camera + 1, Scriptable each frame), the live game made no Sounds
+  on its root over a full carry home and a roam, though a test copy of KeeperView fed its beats
+  and a test copy of KeeperSounds made and played them. Unpinned, the client's camera sat at
+  (0, 8, 5), 700 studs from floor 3, out of every reach. Find where the listener really is (and
+  whether the Mannequin is heard the same way) before trusting a sound check from the MCP.
 - **Sounds measured for the keeper's walk** (L-06c1, 2026-11-10; Edit, AudioPlayer at half speed
   to AudioAnalyzer with `SpectrumEnabled`, 50 then 25 ms bins and the share of the hit's energy
   under 190 Hz / 190 to 470 / 470 to 2k / over 2k; then a quarter speed and 10 ms bins for the

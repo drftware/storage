@@ -90,6 +90,9 @@ export type Row = {
 	-- its body creaking as it turns, and its answer as a door lifted on it standing in a unit first
 	-- shows its feet, from its body on every screen near.
 	tell: KeeperTell.Tell,
+	-- How it sounds with its arms full (S2-06e, `KeeperTell.full`), so a player knows from round a
+	-- corner whether it's coming for them or hauling something home; nil: as `tell` always.
+	full: KeeperTell.Tell?,
 	-- It carries the floor's finds home (`Collect`, S2-06b1); none: it never picks one up.
 	collects: Collect?,
 }
@@ -285,6 +288,114 @@ local Mannequin: Row = {
 	},
 }
 
+-- The Packrat with its arms full (S2-06e, its row's `full`): it's hauling something home and
+-- ignores you. Quicker, heavier steps with its body's weight under them, and the find jostling
+-- and rattling in its arms at every step. Busy and bright where the empty walk is soft: you can
+-- follow the rattle home.
+local PackratFull: KeeperTell.Tell = {
+	sounds = {
+		-- heavier feet: "Foot Stomp" 2 and 3 (more of the stomp's knock, 470 Hz to 2 kHz)
+		Tread = {
+			takes = {
+				{ id = "rbxassetid://9114523351", start = 0, stop = 0.08 },
+				{ id = "rbxassetid://9114523345", start = 0, stop = 0.07 },
+			},
+			fade = 0.03,
+			volume = 0.75,
+			pitchMin = 0.62,
+			pitchMax = 0.7,
+			near = 6,
+			reach = 60,
+			farGain = 0.4,
+			farPitch = 1.1,
+		},
+		-- the load's weight on each step: "Body Impact 2" (a body's hard thump), only close
+		Weight = {
+			takes = {
+				{ id = "rbxassetid://9113524237", start = 0.02, stop = 0.3 },
+			},
+			fade = 0.08,
+			volume = 0.7,
+			pitchMin = 0.9,
+			pitchMax = 1,
+			near = 8,
+			reach = 45,
+			farGain = 0.1,
+			farPitch = 1.15,
+		},
+		-- the find jostled in its arms: three bumps of "Bag Drop Bag Bumping Wall 2" (a purse
+		-- knocked on a wall, its contents jingling), 470 Hz up, the part a phone plays best
+		Jostle = {
+			takes = {
+				{ id = "rbxassetid://9113244443", start = 0.15, stop = 0.26 },
+				{ id = "rbxassetid://9113244443", start = 0.26, stop = 0.4 },
+				{ id = "rbxassetid://9113244443", start = 0.45, stop = 0.62 },
+			},
+			fade = 0.04,
+			volume = 0.55,
+			pitchMin = 0.85,
+			pitchMax = 1,
+			near = 6,
+			-- the rattle carries furthest: you can follow it home
+			reach = 70,
+			farGain = 0.7,
+			farPitch = 1,
+		},
+		-- loose things rattling between steps: "Ammo Box Movement 2" (metal rattling in a box)
+		-- and "Chair Impact 12" (a plastic chair knocked about), a junk pile's clatter
+		Rattle = {
+			takes = {
+				{ id = "rbxassetid://9113103014", start = 0.24, stop = 0.48 },
+				{ id = "rbxassetid://9113771767", start = 0.24, stop = 0.47 },
+				{ id = "rbxassetid://9113771767", start = 0.51, stop = 0.71 },
+				{ id = "rbxassetid://9113771767", start = 0.74, stop = 0.88 },
+			},
+			fade = 0.06,
+			volume = 0.5,
+			pitchMin = 0.9,
+			pitchMax = 1.05,
+			near = 6,
+			reach = 55,
+			farGain = 0.7,
+			farPitch = 1,
+		},
+	},
+	beats = {
+		Footfall = {
+			{ sound = "Tread", gain = 1, pitch = 1 },
+			{ sound = "Weight", gain = 1, pitch = 1 },
+			{ sound = "Jostle", gain = 1, pitch = 1 },
+		},
+		Drag = { { sound = "Rattle", gain = 1, pitch = 1 } },
+		Heel = {
+			{ sound = "Tread", gain = 0.9, pitch = 1.06 },
+			{ sound = "Weight", gain = 0.8, pitch = 1.05 },
+			{ sound = "Jostle", gain = 0.8, pitch = 1.08 },
+		},
+		-- turning with its arms full: the load shifts
+		Creak = { { sound = "Jostle", gain = 1.2, pitch = 0.9 } },
+		-- never heard: full, it stands in no unit, hears nothing and catches no one (D-178).
+		-- Played as the load shifting, should one ever come.
+		Reveal = { { sound = "Jostle", gain = 1.2, pitch = 0.9 } },
+		Lunge = { { sound = "Rattle", gain = 1.5, pitch = 0.9 } },
+		Heard = {
+			{ sound = "Tread", gain = 1.2, pitch = 0.9 },
+			{ sound = "Rattle", gain = 1.5, pitch = 0.9 },
+		},
+		Catch = {
+			{ sound = "Tread", gain = 1.3, pitch = 0.85 },
+			{ sound = "Weight", gain = 1.2, pitch = 0.9 },
+		},
+	},
+	heavyNear = 10,
+	heavyFar = 40,
+	gap = 0.08,
+	turn = 40,
+	turnGap = 0.9,
+	revealRise = 0.4,
+	revealGap = 3,
+}
+
 local Packrat: Row = {
 	name = "Packrat",
 	-- just under your run (the GDD's "just under walking speed"; your walk is your run): with
@@ -321,9 +432,112 @@ local Packrat: Row = {
 	bangEveryLast = 2,
 	bangJitter = 0.25,
 	breakOut = 90,
-	-- its own sounds, full and empty, come in S2-06e; until then the Mannequin's stand in so the
-	-- row checks, and no screen plays them (no Packrat is dealt before S2-06b2)
-	tell = Mannequin.tell,
+	-- Its arms empty, it's coming for you, and it's quiet (S2-06e): padded steps (its feet are
+	-- sacked in blankets) and, once a stride, a screech of packing tape pulled off a roll, the tape
+	-- it wraps you in. You hear the tape before you see it, round a corner, as Left 4 Dead's Witch
+	-- is heard before she's seen. Every take measured (docs/STUDIO.md, "Sounds measured for the
+	-- Packrat").
+	tell = {
+		sounds = {
+			-- a blanket-sacked foot landing: Pro Sound Effects' "Foot Stomp" 1, 4 and 7 (a stomp on
+			-- a hard carpeted floor, mostly 190 to 470 Hz, where a phone still plays), each one hit
+			Pad = {
+				takes = {
+					{ id = "rbxassetid://9114523161", start = 0, stop = 0.09 },
+					{ id = "rbxassetid://9114523358", start = 0, stop = 0.08 },
+					{ id = "rbxassetid://9114523629", start = 0, stop = 0.08 },
+				},
+				fade = 0.03,
+				volume = 0.6,
+				-- pitched down: a big soft body, not a person
+				pitchMin = 0.66,
+				pitchMax = 0.76,
+				near = 6,
+				-- past the 48 it sees, so its steps reach you before it can see you
+				reach = 60,
+				-- far off a soft tap a little higher; close, a muffled thud
+				farGain = 0.35,
+				farPitch = 1.12,
+			},
+			-- tape screeching off a roll: three stretches of the steady peel in Pro Sound Effects'
+			-- "Duct Tape Richard Epilates Himself 2" (the kept wrap's squeal, L-07b), 1 to 2 kHz
+			Tape = {
+				takes = {
+					{ id = "rbxassetid://9114200236", start = 0.78, stop = 1.08 },
+					{ id = "rbxassetid://9114200236", start = 1.2, stop = 1.5 },
+					{ id = "rbxassetid://9114200236", start = 1.72, stop = 2.02 },
+				},
+				fade = 0.08,
+				volume = 0.5,
+				-- a little slow: drawn out, not ripped
+				pitchMin = 0.82,
+				pitchMax = 0.96,
+				near = 6,
+				-- heard nearer than its steps: the tape means it's in your hall
+				reach = 50,
+				farGain = 0.5,
+				farPitch = 1,
+			},
+			-- the tape on its bundle crackling as it turns: two crackles and a burst from "Duct Tape
+			-- Richard Epilates Himself 3"
+			Crackle = {
+				takes = {
+					{ id = "rbxassetid://9114200240", start = 0.03, stop = 0.28 },
+					{ id = "rbxassetid://9114200240", start = 1.2, stop = 1.45 },
+					{ id = "rbxassetid://9114200240", start = 1.6, stop = 1.85 },
+				},
+				fade = 0.06,
+				volume = 0.55,
+				pitchMin = 0.85,
+				pitchMax = 1,
+				near = 4,
+				-- only close: it's turning right there
+				reach = 30,
+				farGain = 0.6,
+				farPitch = 1,
+			},
+		},
+		beats = {
+			-- its lead foot down
+			Footfall = { { sound = "Pad", gain = 1, pitch = 1 } },
+			-- the tape, once a stride
+			Drag = { { sound = "Tape", gain = 1, pitch = 1 } },
+			-- the trailing foot, a little lighter: the stride lopes
+			Heel = { { sound = "Pad", gain = 0.8, pitch = 1.08 } },
+			Creak = { { sound = "Crackle", gain = 1, pitch = 1 } },
+			-- a door lifted on it among its pile: its weight shifting, and the tape creaking long and
+			-- low, as if it heard you
+			Reveal = {
+				{ sound = "Pad", gain = 1.5, pitch = 0.85 },
+				{ sound = "Tape", gain = 1.4, pitch = 0.72 },
+			},
+			-- its catch, in your ears only (L-06c2): it rears up, the tape tearing off the roll at you
+			Lunge = {
+				{ sound = "Tape", gain = 1.8, pitch = 1.1 },
+				{ sound = "Crackle", gain = 1.6, pitch = 0.8 },
+			},
+			-- it heard you (L-15): it stops dead on a heavy step and the tape shrieks as it wrenches
+			-- round toward the sound
+			Heard = {
+				{ sound = "Pad", gain = 1.6, pitch = 0.88 },
+				{ sound = "Tape", gain = 1.6, pitch = 1.15 },
+			},
+			-- its weight landing on you
+			Catch = {
+				{ sound = "Pad", gain = 1.65, pitch = 0.8 },
+				{ sound = "Crackle", gain = 1.4, pitch = 0.75 },
+			},
+		},
+		heavyNear = 10,
+		heavyFar = 40,
+		gap = 0.08,
+		turn = 40,
+		turnGap = 0.9,
+		revealRise = 0.4,
+		revealGap = 3,
+	},
+	-- with its arms full, as `PackratFull` says (S2-06e)
+	full = PackratFull,
 	collects = {
 		-- its reaching fingertips are about 4.2 ahead of its chest (D-177), its chest a little
 		-- behind its feet's front: 4 from its feet puts its hand on the find
