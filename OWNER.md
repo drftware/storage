@@ -311,6 +311,50 @@ Nothing in it is built yet. What still waits on you, in the order it holds work 
 - [ ] **Later, when you take them up:** the monster you hide from, and the monster that takes
   your head. The second has three things to settle first, listed under it in the design doc.
 
+## Decide: the finds catalog (Nov 14; nothing built)
+
+The finds that will turn up in units are listed in their own doc, [Unit finds: the item
+catalog](https://claude.ai/artifact/29wkaNXM3Yw86xTMb3sjQQ): 495 finds in 38 sets, each with a
+grade, a value and what you can do with it. The design doc's "Coins, cash and finds" links to it.
+Nothing in it is built and every number is a starting guess. These 14 change how a climb plays,
+so they wait on you. Each has my default, which stands unless you say otherwise; answer here, in
+the doc, or with a comment on it.
+- [ ] **Seven grades or six?** The design doc has six, ending in Kept. I added a seventh, Secret,
+  above Kept for the very rarest finds. Kept starts turning up from floor 10, Secret from floor
+  25. My default: seven grades.
+- [ ] **Keep the name Kept?** Kids already know Mythic from other Roblox games. My default: keep
+  Kept until you pick a name.
+- [ ] **Does a light you find and set down hold a Mannequin?** A lantern set on the floor lights
+  the space round it, and light stops a Mannequin. My default: yes, and each found light runs
+  down in about a minute, so it buys you a moment, the way the flashlight does.
+- [ ] **Do noisy finds draw monsters?** The noisemakers and instruments. My default: yes, the
+  same way the air horn does. Most are quieter than the air horn; the gold trumpet is as loud.
+- [ ] **Finds that help you search.** The compass, metal detector, crystal ball, camcorder,
+  binoculars and hand mirror, which puts them close to tools. My default: keep them rare, and let
+  the metal detector and crystal ball wear out the way tools do. The other way: cut them.
+- [ ] **Finds that change how you move.** Roller skates make you faster but loud, bunny slippers
+  make you quiet, the knight's helmet narrows what you can see. My default: yes, but they're an
+  untested bet, so try one before the rest are built.
+- [ ] **Four of a kind make a Gold.** The design doc sells every duplicate find on the spot. My
+  default: Commons still sell on the spot; from Uncommon up, a duplicate goes home to your unit
+  instead, and four of the same find turn into one Gold version of it.
+- [ ] **Blind-box Secrets at 1 in 144 boxes.** Each blind-box series hides one Secret figure. My
+  default: yes, 1 in 144, the rate real collectors already chase.
+- [ ] **Charms on your avatar during climbs.** My default: wear up to three, picked in the lobby;
+  they're for looks only and do nothing.
+- [ ] **The shout, the count and the first finder,** for Kept and Secret finds. My default: yes to
+  all three. Everyone on the server sees a line when someone finds one, the collection book shows
+  how many of each exist, and the first player anywhere to find each one is named on its page.
+- [ ] **Hatched pets.** My default: the pets that hatch from eggs stay in your unit for now;
+  having them follow you round the lobby comes later.
+- [ ] **The arcade cabinet's game.** My default: one simple one-screen game, built later; until
+  then the cabinet lights up and plays its title screen.
+- [ ] **The Mashups set,** which rides the craze for silly mash-up characters. My default: keep it,
+  and cut it if it feels cheap to you.
+- [ ] **Help after a long dry spell.** Some games raise your odds after many climbs without a rare
+  find (Genshin Impact does, from memory). My default: no for now; decide once playtests show how
+  long dry spells really run.
+
 ## Now: judge L-08e3, Invite and the dials (built Nov 12, D-124)
 
 Over each car's gate a dial now replaces the number plate: the bay's number with three round
