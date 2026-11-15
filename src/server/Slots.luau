@@ -59,6 +59,8 @@ local Wear = Tools.Wear
 
 local HAND_SOUND_REACH = 24 -- a hand closing on a tool, heard close by
 local FALL = TweenInfo.new(0.32, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+-- A find the Packrat sets on its pile (S2-06b2): eased from its hands to the floor, unhurried
+local PUT_DOWN = TweenInfo.new(0.35, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
 local DROP_AHEAD = 2.2 -- studs in front of your middle where a dropped tool lands
 local REACH_SLACK = 2 -- studs the server allows past a prompt's reach (lag, a long arm)
 -- A kept find's glint as it goes from your hand, for everyone near: the coins' sparkle, warm gold.
@@ -94,6 +96,19 @@ export type Slots = Brix.System & {
 	landed: Brix.Signal<Landed>,
 	-- Fires as someone uses the tool in their hand (its row's `verb`), checked and rate-limited.
 	used: Brix.Signal<Use>,
+	-- Fires as the finds lying loose change (S2-06b2): one laid, dropped, picked up, cleared,
+	-- lifted by a monster or laid on its pile. The Packrat is told (`Keepers`).
+	loose: Brix.Signal<nil>,
+	-- Calls `each` with every find lying loose on a floor: its number and the floor point under
+	-- its middle (the world's). Allocates nothing.
+	finds: (self: any, each: (n: number, at: Vector3) -> ()) -> (),
+	-- A monster's hands close on find `n` lying loose (the Packrat's take, S2-06b2): its prompt
+	-- goes and it's welded to `part`, its middle where it lay, in `holder` (the monster's body).
+	-- The weld, or nil if it no longer lies loose.
+	lift: (self: any, n: number, part: BasePart, holder: Instance) -> Weld?,
+	-- Lays lifted find `n` on the floor at `at`, turned `yaw` degrees, quietly (the Packrat's
+	-- pile): "Take" again, as any find.
+	putDown: (self: any, n: number, at: Vector3, yaw: number) -> (),
 	-- Lays a new tool of catalog key `key` on the floor at `at` (a floor point), turned `yaw`
 	-- degrees. Returns its id, or nil if the place has no template.
 	lay: (self: any, key: string, at: Vector3, yaw: number) -> string?,
@@ -134,6 +149,7 @@ export type Slots = Brix.System & {
 
 type Tool = {
 	id: string,
+	n: number, -- its number, as a keeper's brain knows a find (`Keeper.Finds`, S2-06b2)
 	key: string,
 	model: Model,
 	body: BasePart,
@@ -235,7 +251,10 @@ function Slots.new(): Slots
 	local changed = Brix.Signal.new() :: Brix.Signal<Change>
 	local used = Brix.Signal.new() :: Brix.Signal<Use>
 	local landed = Brix.Signal.new() :: Brix.Signal<Landed>
+	local loose = Brix.Signal.new() :: Brix.Signal<nil>
 	local lying: Folder? = nil
+	-- where each lying tool's middle stands on the floor (its id's), for `finds`
+	local grounds: { [string]: Vector3 } = {}
 	local notice: RemoteEvent? = nil
 	local broke: RemoteEvent? = nil
 	local nextId = 0
@@ -415,6 +434,15 @@ function Slots.new(): Slots
 		t.model.Name = t.key
 		t.model:PivotTo(from or pose)
 		t.model.Parent = lying
+		local box = Tools.bounds(t.key)
+		grounds[t.id] = (pose * CFrame.new(
+			box.Centre.X,
+			box.Centre.Y - box.Size.Y / 2,
+			box.Centre.Z
+		)).Position
+		if Catalog[t.key].find then
+			loose:fire(nil)
+		end
 		if from then
 			local goal = pose * t.body.PivotOffset:Inverse()
 			local tween = TweenService:Create(t.body, FALL, { CFrame = goal })
@@ -667,12 +695,16 @@ function Slots.new(): Slots
 		Carry.take(h.carry, t.id)
 		unoffer(t)
 		t.owner = player
+		grounds[t.id] = nil
 		dress(player)
 		publish(player)
 		local character = player.Character
 		local hand = if character then handOf(character) else nil
 		Tools.play(Catalog[t.key].pickUp, hand or root, HAND_SOUND_REACH)
 		changed:fire({ player = player, kind = "PickUp" })
+		if Catalog[t.key].find then
+			loose:fire(nil)
+		end
 	end
 
 	local function onSwitch(player: Player, slot: unknown)
@@ -878,6 +910,7 @@ function Slots.new(): Slots
 		changed = changed,
 		used = used,
 		landed = landed,
+		loose = loose,
 	}
 
 	function system.start(_: any, _context: Brix.Context)
@@ -933,6 +966,7 @@ function Slots.new(): Slots
 		changed:disconnectAll()
 		used:disconnectAll()
 		landed:disconnectAll()
+		loose:disconnectAll()
 	end
 
 	function system.lay(_: any, key: string, at: Vector3, yaw: number): string?
@@ -948,8 +982,15 @@ function Slots.new(): Slots
 		end
 		nextId += 1
 		local id = `{key}{nextId}`
-		local t: Tool =
-			{ id = id, key = key, model = model, body = body, owner = nil, uses = Wear.full(key) }
+		local t: Tool = {
+			id = id,
+			n = nextId,
+			key = key,
+			model = model,
+			body = body,
+			owner = nil,
+			uses = Wear.full(key),
+		}
 		tools[id] = t
 		layDown(t, pose, nil)
 		return id
@@ -960,12 +1001,76 @@ function Slots.new(): Slots
 		for id, t in tools do
 			if t.owner == nil and t.model.Parent == lying and inside(t.body.Position) then
 				tools[id] = nil
+				grounds[id] = nil
 				unoffer(t)
 				t.model:Destroy()
 				gone += 1
 			end
 		end
+		if gone > 0 then
+			loose:fire(nil)
+		end
 		return gone
+	end
+
+	function system.finds(_: any, each: (n: number, at: Vector3) -> ())
+		for id, t in tools do
+			local at = grounds[id]
+			if at and t.owner == nil and t.model.Parent == lying and Catalog[t.key].find then
+				each(t.n, at)
+			end
+		end
+	end
+
+	-- A find by its number: the one lying loose (`lifted` false) or in a monster's arms.
+	local function numbered(n: number, lifted: boolean): Tool?
+		for id, t in tools do
+			if t.n == n and t.owner == nil and (not grounds[id]) == lifted then
+				return t
+			end
+		end
+		return nil
+	end
+
+	function system.lift(_: any, n: number, part: BasePart, holder: Instance): Weld?
+		local t = numbered(n, false)
+		if not (t and t.model.Parent == lying) then
+			return nil
+		end
+		unoffer(t)
+		grounds[t.id] = nil
+		local box = Tools.bounds(t.key)
+		local middle = t.body.PivotOffset * CFrame.new(box.Centre)
+		local weld = Instance.new("Weld")
+		weld.Name = Tools.CarriedName
+		weld.Part0 = part
+		weld.Part1 = t.body
+		weld.C0 = part.CFrame:ToObjectSpace(t.body.CFrame * middle)
+		weld.C1 = middle
+		weld.Parent = t.body
+		t.weld = weld
+		t.body.Anchored = false
+		t.model.Name = t.key
+		t.model.Parent = holder
+		loose:fire(nil)
+		return weld
+	end
+
+	function system.putDown(_: any, n: number, at: Vector3, yaw: number)
+		local t = numbered(n, true)
+		if not (t and t.weld) then
+			return
+		end
+		local from = t.body.CFrame * t.body.PivotOffset
+		local pose = resting(t.key, at, yaw)
+		t.weld:Destroy()
+		t.weld = nil
+		t.body.Anchored = true
+		layDown(t, pose, nil)
+		-- set down, not dropped: a short ease from its hands to the floor, no clank
+		t.model:PivotTo(from)
+		TweenService:Create(t.body, PUT_DOWN, { CFrame = pose * t.body.PivotOffset:Inverse() })
+			:Play()
 	end
 
 	function system.carried(_: any, player: Player): ({ string }, number)
@@ -1119,6 +1224,7 @@ function Slots.new(): Slots
 		nextId += 1
 		local t: Tool = {
 			id = `{key}{nextId}`,
+			n = nextId,
 			key = key,
 			model = model,
 			body = body,

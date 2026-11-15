@@ -76,6 +76,12 @@ do
 	ok(KeeperMotion.how("Roaming", 4) == "Walk", "walking, it walks")
 	ok(KeeperMotion.how("Waiting", 0) == "Stop", "standing, it's stopped mid-stride")
 	ok(KeeperMotion.how("Hunting", 0) == "Stop", "at arm's length, it's stopped mid-stride")
+	-- the Packrat's hands and full arms (S2-06b2)
+	ok(KeeperMotion.how("Reaching", 0) == "Reach", "its arm out over a find")
+	ok(KeeperMotion.how("Taking", 0) == "Take", "its hands closed on it")
+	ok(KeeperMotion.how("PuttingDown", 0) == "PutDown", "setting it on its pile")
+	ok(KeeperMotion.how("Carrying", 3) == "Carry", "walking with its arms full")
+	ok(KeeperMotion.how("Carrying", 0) == "Hold", "standing with its arms full")
 end
 
 -- A keeper on the server walking `points` at `speed`, starting at `start` and stopping at the

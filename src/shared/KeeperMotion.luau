@@ -102,8 +102,19 @@ export type Record = {
 }
 
 --- How a screen poses it (as Pose.How): slack, walking, stopped mid-stride, or at a breaker box
---- with its hand up on the grip or dragging the lever down (S2-02d2).
-export type How = "Still" | "Walk" | "Stop" | "Reach" | "Pull"
+--- with its hand up on the grip or dragging the lever down (S2-02d2). The Packrat (S2-06b2) also
+--- reaches for a find (Reach), pulls it in (Take), sets it on its pile (PutDown), and walks
+--- (Carry) or stands (Hold) with its arms full.
+export type How =
+	"Still"
+	| "Walk"
+	| "Stop"
+	| "Reach"
+	| "Pull"
+	| "Take"
+	| "PutDown"
+	| "Carry"
+	| "Hold"
 
 --- One screen's view of one keeper: the last few records, and where it's shown.
 export type Follow = {
@@ -253,6 +264,12 @@ function KeeperMotion.how(state: string, speed: number): How
 		return "Reach" -- `Keeper.shown`: its hand on a breaker's lever
 	elseif state == "Pulling" then
 		return "Pull"
+	elseif state == "Taking" then
+		return "Take" -- `Keeper.shown`: the Packrat's hands closed on a find
+	elseif state == "PuttingDown" then
+		return "PutDown"
+	elseif state == "Carrying" then
+		return if speed > 0 then "Carry" else "Hold"
 	end
 	return if speed > 0 then "Walk" else "Stop"
 end

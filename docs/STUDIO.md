@@ -2221,3 +2221,11 @@ verified: a doc page, Studio, or "untested".
 - **Standing in a friend's beam for a client view:** require the view's module from
   `PlayerScripts.Client`, make a second instance with a fake `Beam` whose `friends()` returns your
   own sight table, and call its `step` by hand; the real instance leaves an unlit mark alone.
+
+## Pressing a prompt from a test (S2-06b2a, Nov 14)
+
+- Through the Studio MCP, neither a key sent with `user_keyboard_input` nor the client calling
+  `ProximityPrompt:InputHoldBegin()` / `InputHoldEnd()` fired the dev floor's post (R, hold 0,
+  the player standing at it). A dev post a test must press also listens for a Workspace
+  attribute in Studio (`StandPackrat`), as `SendToBreaker` and `WakeSleepers` do.
+

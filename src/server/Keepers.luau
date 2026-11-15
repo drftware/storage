@@ -109,6 +109,7 @@ local KeeperTell = require(ReplicatedStorage.Shared.KeeperTell)
 local Ladders = require(script.Parent.Ladders)
 local Mannequin = require(ReplicatedStorage.Shared.Mannequin)
 local MotionLights = require(script.Parent.MotionLights)
+local Packrat = require(ReplicatedStorage.Shared.Packrat)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 local Saws = require(script.Parent.Saws)
 local Slots = require(script.Parent.Slots)
@@ -153,7 +154,19 @@ local KITS: { [string]: Kit } = {
 			return body
 		end,
 	},
+	Packrat = {
+		clone = function(pivot: CFrame): Model?
+			local body = Packrat.clone(pivot, nil)
+			if body then
+				Packrat.rest(body)
+			end
+			return body
+		end,
+	},
 }
+-- Where the Packrat lays each find on its pile (S2-06b2), studs across and back from the pile's
+-- middle as it faces it, one after another round again: a small heap, not one spot.
+local PILE: { { number } } = { { 0, 0 }, { -1.3, 0.4 }, { 1.3, 0.4 }, { -0.6, 1.4 }, { 0.7, 1.5 } }
 
 -- Output's words for what it does next.
 local DOING: { [Keeper.State]: string } = {
@@ -231,6 +244,7 @@ type OnFloor = {
 	-- the players who rode out of it as its gate shut (S2-02d4): off it for its cameras, though
 	-- their car climbs level with it for a while
 	left: { [Player]: boolean },
+	finds: Keeper.Finds, -- the finds lying loose on it (S2-06b2), the Packrat's to fetch; reused
 }
 -- `quarry`: whom it hunted as last counted for screens (`tellHunted`), 0 for no one.
 -- `feed`: the security camera feed showing it walk up to throw the breaker (S2-02d), 0 for none.
@@ -243,6 +257,7 @@ type Entry = {
 	quarry: number,
 	feed: number,
 	woke: boolean,
+	piled: number, -- how many finds it has laid on its pile (S2-06b2)
 }
 
 -- A keeper caught a player: its body, whom it caught, and the floor's model (FloorBuilder's).
@@ -327,6 +342,8 @@ function Keepers.new(): Keepers
 	local feeds: Feeds.Feeds? = nil
 	local deals: Deals.Deals? = nil
 	local devErrand = false -- the dev command: every loose Mannequin goes for the box now
+	local toolSlots: Slots.Slots? = nil -- where every find lies (S2-06b2)
+	local looseDirty = true -- the finds lying loose, or a door, changed: the Packrats are told
 	local run = 16 -- a player's full run, studs a second (StarterPlayer's, read at start)
 	local everyone: { Player } = {} -- kept as players come and go: no list made each step
 	local caught = Brix.Signal.new() :: Brix.Signal<Catch>
@@ -872,6 +889,7 @@ function Keepers.new(): Keepers
 		if on then
 			local index = on.slots[change.unit]
 			local through = KeeperMap.letsThrough(change.state)
+			looseDirty = true -- a find behind it may now be reachable, or not
 			local wasOpen = KeeperMap.doorOpen(on.map, index)
 			KeeperMap.setDoor(on.map, index, through)
 			if through then
@@ -1082,6 +1100,73 @@ function Keepers.new(): Keepers
 		end
 	end
 
+	-- Tells every Packrat what lies loose on its floor (S2-06b2): each find Slots has lying on a
+	-- floor, by the floor under it. Once a step at most, after a find or a door changed.
+	local function tellLying()
+		looseDirty = false
+		for _, on in floors do
+			on.finds.count = 0
+		end
+		local s = toolSlots
+		if s then
+			s:finds(function(n: number, at: Vector3)
+				for _, on in floors do
+					local p = on.origin:PointToObjectSpace(at)
+					local here = vector.create(p.X, p.Y, p.Z)
+					if Keeper.onFloor(on.map, here) then
+						local f = on.finds
+						f.count += 1
+						f.ids[f.count], f.at[f.count] = n, here
+						return
+					end
+				end
+			end)
+		end
+		for _, on in floors do
+			for _, entry in on.keepers do
+				if entry.keeper.row.collects then
+					Keeper.lying(entry.keeper, on.finds)
+				end
+			end
+		end
+	end
+
+	-- Its hands closed on find `n` (S2-06b2): Slots lifts it into its arms, held against its chest
+	-- behind its forearms (`Packrat.Chest`), and it rides there on every screen as the body walks.
+	local function tookFind(entry: Entry, n: number)
+		local s, body = toolSlots, entry.body.model
+		local chest = body:FindFirstChild("UpperTorso")
+		local weld = if s and chest and chest:IsA("BasePart") then s:lift(n, chest, body) else nil
+		if not weld then
+			Keeper.dropped(entry.keeper) -- gone from under its hands
+			return
+		end
+		weld.C0 = Packrat.Chest
+		if TRACE then
+			print(`Keepers: the {entry.keeper.row.name} takes a find and heads home with it`)
+		end
+	end
+
+	-- It laid find `n` on its pile (S2-06b2): Slots sets it down there, takeable again.
+	local function laidFind(entry: Entry, n: number)
+		local s, k, on = toolSlots, entry.keeper, entry.on
+		if not s then
+			return
+		end
+		local spot = PILE[entry.piled % #PILE + 1]
+		entry.piled += 1
+		local ahead = k.pile - k.homeAt
+		local m = vector.magnitude(ahead)
+		local face = if m > 1e-3 then ahead / m else k.facing
+		local side = vector.create(-face.z, 0, face.x)
+		local at = k.pile + side * spot[1] + face * spot[2]
+		-- any: as in `putRoot`
+		s:putDown(n, on.origin:PointToWorldSpace((at :: any) :: Vector3), math.random(0, 359))
+		if TRACE then
+			print(`Keepers: the {k.row.name} lays a find on its pile and goes out for the next`)
+		end
+	end
+
 	-- Stands a keeper of row `name` on floor `on`, feet at `at`, facing `facing` (the floor's own
 	-- coordinates), asleep or awake. Its body, or nil (Output says why).
 	local function standOn(
@@ -1127,8 +1212,12 @@ function Keepers.new(): Keepers
 			quarry = 0,
 			feed = 0,
 			woke = false,
+			piled = 0,
 		}
 		table.insert(on.keepers, entry)
+		if row.collects then
+			looseDirty = true -- told what lies loose before its first step
+		end
 		publish(entry, 0, false) -- its first record, before any screen sees it
 		CollectionService:AddTag(body, TAG)
 		body.Parent = on.folder -- last, whole, so every screen gets it as it is
@@ -1465,9 +1554,16 @@ function Keepers.new(): Keepers
 		if elevators then
 			table.insert(connections, elevators.acted:connect(onKeypad))
 		end
-		local slots = (context.registry:get("slots") :: any) :: Slots.Slots?
-		if slots then
-			table.insert(connections, slots.landed:connect(onLanded))
+		local sl = (context.registry:get("slots") :: any) :: Slots.Slots?
+		toolSlots = sl
+		if sl then
+			table.insert(connections, sl.landed:connect(onLanded))
+			table.insert(
+				connections,
+				sl.loose:connect(function()
+					looseDirty = true
+				end)
+			)
 		end
 		local saws = (context.registry:get("saws") :: any) :: Saws.Saws?
 		if saws then
@@ -1487,6 +1583,9 @@ function Keepers.new(): Keepers
 	-- for a floor with a keeper awake to see them.
 	function system.step(_: any, dt: number)
 		local now = os.clock()
+		if looseDirty then
+			tellLying()
+		end
 		for _, on in floors do
 			if on.here < 0 then
 				if anyoneOn(on) then
@@ -1553,6 +1652,11 @@ function Keepers.new(): Keepers
 					errandFeed(entry, not wasErrand)
 				elseif not k.threw then
 					entry.feed = 0 -- called off: an open feed shows it turn away, then cuts out
+				end
+				if k.took ~= 0 then
+					tookFind(entry, k.took)
+				elseif k.laid ~= 0 then
+					laidFind(entry, k.laid)
 				end
 				if k.threw then
 					threw(entry)
@@ -1642,6 +1746,7 @@ function Keepers.new(): Keepers
 			woken = 0,
 			waking = {},
 			left = {},
+			finds = { ids = {}, at = {}, count = 0 },
 		}
 		floors[model] = on
 		for unit, slot in slots do
@@ -1802,6 +1907,14 @@ function Keepers.new(): Keepers
 				if entry.body.model == body then
 					on.keepers[i] = on.keepers[#on.keepers]
 					on.keepers[#on.keepers] = nil
+					local holding, sl = entry.keeper.holding, toolSlots
+					if holding ~= 0 and sl then
+						-- its find stays on the floor where it stood, not gone with its body
+						-- any: as in `putRoot`
+						local feet =
+							on.origin:PointToWorldSpace((entry.keeper.at :: any) :: Vector3)
+						sl:putDown(holding, feet, 0)
+					end
 					release(entry)
 					recount = true
 					return

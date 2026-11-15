@@ -1905,7 +1905,18 @@ Done when a team that has lost its lights goes looking for the breaker without b
       down (`laid`) and comes out for the next. A find gone first sends it to another; none
       left, it roams; its way home shut, it roams carrying. `shown` says Reaching, Taking,
       PuttingDown and Carrying; `nest` moves its pile. `tests/collect.spec.luau`.
-    - [ ] **S2-06b2 Into the game.** The server moves each find (lifted, carried at its chest,
+    - [x] **S2-06b2a The server's finds and its body on screens** (Nov 14, D-179). Slots knows
+      each find by number (`finds`, `loose`, `lift`, `putDown`); `Keepers` tells each Packrat
+      what lies loose and lifts the find into its arms on `took` (welded at its chest) and lays
+      it on its pile on `laid`, takeable again; its body on the server (`KITS`) and on screens
+      (KeeperView's Kit: full and empty walks, reach, take and put down held). The dev floor's
+      lobby has a Packrat post. Seen in Play: out, reach, take, home full, put down, out again.
+    - [ ] **S2-06b2b The deal, the hall lights and the find in its hands.** The deal puts one on
+      floors 3 and up, asleep in a unit holding finds of its own (`Keeper.nest` facing them);
+      hall lights come on as it walks (a default in `OWNER.md`); the find eases from the floor
+      into its hands as they close and sits between them in Take and PutDown, at its chest
+      walking (`Pose.grip`, `Pose.carry`, set per frame on screens). Verified in Play.
+    - [ ] ~~**S2-06b2 Into the game.**~~ Split into b2a and b2b above. The server moves each find (lifted, carried at its chest,
       laid on the pile) and owns where it is; screens show the Packrat's walk full or empty and
       its reach, take and put down (its Kit row in KeeperView, and how a screen learns it
       carries, D-177; `Keeper.shown` now names Carrying, Reaching, Taking and PuttingDown);

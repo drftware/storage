@@ -26,6 +26,7 @@
 	The prompts call RollUpDoor directly; the GDD's door state machine replaces them (L-02).
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
@@ -37,6 +38,8 @@ local Floor = require(ReplicatedStorage.Shared.Floor)
 local FloorBuilder = require(script.Parent.FloorBuilder)
 local FrontOffice = require(script.Parent.FrontOffice)
 local HallLight = require(ReplicatedStorage.Shared.HallLight)
+local Deals = require(script.Parent.Deals)
+local Doors = require(script.Parent.Doors)
 local Keepers = require(script.Parent.Keepers)
 local Lobby = require(ReplicatedStorage.Shared.Lobby)
 local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
@@ -150,6 +153,17 @@ local FLOOR_POST = CFrame.new(9, 0, 9) -- "Come back", in the lobby's corner by 
 -- far from the lobby along the halls, about two hall pieces past it, so a slam at a door by the
 -- lobby is well within its hearing and you watch it come the whole way.
 local MANNEQUIN_POST = CFrame.new(-9, 0, 9)
+-- "Stand one" for the Packrat (S2-06b2), beside the Mannequin's: it opens the shut unit nearest
+-- the lobby as its den, stands one in it facing the back, and lays a boombox in a hall this far
+-- (studs) from the lobby, so a tester watches it come out, fetch it, carry it home and lay it.
+local PACKRAT_POST = CFrame.new(-9, 0, 3)
+local PACKRAT_FIND = 70
+local PACKRAT_IN = 4 -- studs into its unit from the door's line
+local DEV_PACKRAT = "StandPackrat" -- Workspace's attribute a test sets to press the post
+-- the systems the Packrat's post works (set at start)
+local devSlots: Slots.Slots? = nil
+local devDoors: Doors.Doors? = nil
+local devDeals: Deals.Deals? = nil
 -- The way between the front office, where you load in (L-08e1b1), and this hall: a post behind the
 -- hall's spawn point between the other two, and one in the lobby a stride right of where you land.
 local LOBBY_POST = Vector3.new(-34, 0, 0)
@@ -524,6 +538,80 @@ local function mannequinPost(model: Model, origin: CFrame, keepers: Keepers.Keep
 	end)
 end
 
+-- The Packrat's post (S2-06b2): see PACKRAT_POST. Each press stands a fresh one in a fresh den.
+local function packratPost(on: Climbs.OnFloor, keepers: Keepers.Keepers)
+	local model, origin = on.model, on.origin
+	local at = (origin * PACKRAT_POST).Position
+	local post = block(
+		"StandPackrat",
+		Vector3.new(0.4, 4, 0.4),
+		CFrame.new(at.X, FLOOR_TOP + 2, at.Z),
+		CONCRETE,
+		model
+	)
+	local a = Instance.new("Attachment")
+	a.Position = Vector3.new(0, 1, 0)
+	a.Parent = post
+	local p = Prompts.post(a, "Packrat", "Stand one", Enum.KeyCode.R, Enum.KeyCode.ButtonY)
+	local refuse = Prompts.refuser(p)
+	local stood: Model? = nil
+	local function standOne(player: Player?)
+		local doors, deals, slots = devDoors, devDeals, devSlots
+		if not (doors and deals and slots) then
+			return
+		end
+		if stood then
+			keepers:remove(stood)
+			stood = nil
+		end
+		local den: Model?, best = nil, math.huge
+		for unit in on.laid.slots do
+			if doors:stateOf(unit) == "Closed" then
+				local d = (RollUpDoor.frame(unit).Position - origin.Position).Magnitude
+				if d < best then
+					den, best = unit, d
+				end
+			end
+		end
+		local spot, facing = keepers:hallOff(model, PACKRAT_FIND)
+		if not (den and spot and facing) then
+			if player then
+				refuse("No den", player)
+			end
+			return
+		end
+		local frame = RollUpDoor.frame(den)
+		local inside = (frame * CFrame.new(0, 0, PACKRAT_IN)).Position
+		local feet = Vector3.new(inside.X, origin.Position.Y, inside.Z)
+		deals:hold(den) -- its own unit holds nothing the deal lays: only what it brings home
+		stood = keepers:stand("Packrat", model, feet, -frame.LookVector, true)
+		if not stood then
+			if player then
+				refuse("No Packrat", player) -- Output says why
+			end
+			return
+		end
+		doors:move(den, "Open")
+		slots:lay("Boombox", spot, math.random(0, 359))
+		print(
+			`DevCorridor: a Packrat stands in {den.Name}, its door going up; a boombox lies in the hall {PACKRAT_FIND} studs from the lobby. Watch it fetch it home`
+		)
+	end
+	p.Triggered:Connect(standOne)
+	-- a test stands one with no one at the post: set this Workspace attribute true (Studio only)
+	if RunService:IsStudio() then
+		local watching = Workspace:GetAttributeChangedSignal(DEV_PACKRAT):Connect(function()
+			if Workspace:GetAttribute(DEV_PACKRAT) == true then
+				Workspace:SetAttribute(DEV_PACKRAT, false)
+				standOne(nil)
+			end
+		end)
+		model.Destroying:Connect(function()
+			watching:Disconnect()
+		end)
+	end
+end
+
 -- What a tester needs on each floor the climb lays (L-08b): "Come back" and "Stand one" in its
 -- lobby, and in Output its map, how laying it went, its code and where its notes are (which is
 -- guarded: always an awake keeper with it, D-072), and the doors the deal padlocked, so a tester
@@ -539,6 +627,7 @@ local function dressFloor(on: Climbs.OnFloor, keepers: Keepers.Keepers)
 		on.model
 	)
 	mannequinPost(on.model, on.origin, keepers)
+	packratPost(on, keepers)
 	print(
 		`DevCorridor: floor {n} (seed {on.seed}), seen from above, the lobby (L) at the bottom:\n{Floor.map(
 			floor
@@ -740,6 +829,10 @@ function DevCorridor.new(): Brix.System
 			local wraps = (context.registry:get("wraps") :: any) :: Wraps.Wraps
 			-- any: as above; Climbs fills this slot
 			local climbs = (context.registry:get("climbs") :: any) :: Climbs.Climbs
+			devSlots = slots
+			-- any: as above; Doors and Deals fill these slots
+			devDoors = (context.registry:get("doors") :: any) :: Doors.Doors
+			devDeals = (context.registry:get("deals") :: any) :: Deals.Deals
 			local folder = build(lights)
 			built = folder
 			if folder then

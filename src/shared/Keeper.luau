@@ -1319,6 +1319,16 @@ function Keeper.players(): Players
 	return { ids = {}, at = {}, eye = {}, aim = {}, count = 0 }
 end
 
+--- The find in its arms is gone (S2-06b2): the server couldn't lift it, or took it from it. It
+--- stands empty-handed and sets off again, for the next find or a roam.
+function Keeper.dropped(k: Keeper)
+	if k.holding == 0 and k.hands ~= "Take" then
+		return
+	end
+	k.holding, k.took = 0, 0
+	roam(k)
+end
+
 --- Lets go of its route (when its floor or body goes).
 function Keeper.release(k: Keeper)
 	k.route:release()

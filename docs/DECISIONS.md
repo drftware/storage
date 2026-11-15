@@ -4904,3 +4904,35 @@ crowds it). The ticket read "a bit" as about a third.
   PuttingDown as it stands, Carrying in any other state while full (trapped included), for the
   Kit to map in S2-06b2.
 
+## D-179 The Packrat in the game: finds lifted by number, carried on its chest, laid with "Take" (S2-06b2a, Nov 14)
+
+- **Split again for context.** S2-06b2 became b2a (this: the server moves the finds, both
+  bodies, a dev post) and b2b (the deal on floors 3 and up, the hall lights as it walks, the
+  find seated in its hands by frame). The screens' frames came into b2a rather than b2b,
+  because without them a Packrat in Play slides unposed, and the payoff is watching it walk off
+  with your find.
+- **Slots owns every find; the brain knows them by number.** Each tool now has a number (`n`);
+  `Slots:finds` lists the finds lying loose with the floor under each one's middle, `loose`
+  fires whenever that set changes, `lift` welds one into a monster's arms and `putDown` sets it
+  on a floor again. `Keepers` rebuilds each floor's `Keeper.Finds` at most once a step, after a
+  find or a door changed, and tells every Packrat (`Keeper.lying`). If a find can't be lifted,
+  the brain is told it's gone (`Keeper.dropped`) and sets off again.
+- **The find rides its chest, welded.** On `took` the find is welded to the UpperTorso at
+  `Packrat.Chest` (D-176's carry point) and parented into the body, so every screen shows it in
+  the hug wherever that screen poses the body, and it streams with it. Its jump from the floor
+  to the chest as the hands close is the next piece's to ease (and to sit between its hands in
+  Take and PutDown).
+- **Laid finds are takeable at once.** `putDown` eases it from its hands to the floor (0.35 s,
+  no clank, so no monster hears it) and offers "Take" as any find, so S2-06d's "take it back"
+  already works. The pile is a small heap: five spots around the pile's middle in turn.
+- **Screens learn it carries from its state, as D-177 asked.** `KeeperMotion.How` gains Take,
+  PutDown, Carry (walking full) and Hold (standing full); the Kit's `walk` says which of its two
+  walks a How shows and `along` starts again when it changes. The Mannequin's Kit maps the new
+  Hows to its own (it is never told them). The Packrat's Kit plays no beats and no turning creak
+  until S2-06e.
+- **The dev post stands it in a real unit.** Stood in a hall, its own unit would be none, and
+  it would take its pile straight back up; so the post opens the shut unit nearest the lobby
+  (dealing it nothing), stands it inside facing the back, and lays a boombox 70 studs off.
+  Studio's `StandPackrat` Workspace attribute presses the post for a test, since a script
+  can't press a ProximityPrompt (docs/STUDIO.md).
+

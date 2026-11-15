@@ -42,6 +42,7 @@ end
 -- Where a carried find's middle sits, in the UpperTorso's own frame: the chest carries it, so
 -- it rides every turn of the waist and root a screen gives the body.
 local CHEST = CFrame.new(vec(Specs.Carry) - vec(Specs.Parts.UpperTorso.Centre))
+Packrat.Chest = CHEST
 
 function Packrat.template(): Model?
 	local keepers = ReplicatedStorage:FindFirstChild("Keepers")

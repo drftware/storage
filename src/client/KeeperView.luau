@@ -44,6 +44,7 @@ local KeeperMotion = require(ReplicatedStorage.Shared.KeeperMotion)
 local KeeperRows = require(ReplicatedStorage.Shared.KeeperRows)
 local KeeperTell = require(ReplicatedStorage.Shared.KeeperTell)
 local Mannequin = require(ReplicatedStorage.Shared.Mannequin)
+local Packrat = require(ReplicatedStorage.Shared.Packrat)
 local Pose = require(ReplicatedStorage.Shared.Mannequin.Pose)
 local Torch = require(ReplicatedStorage.Shared.Flashlight.Torch)
 
@@ -54,22 +55,86 @@ local MOTION_ATTRIBUTE = "KeeperMotion"
 local ROW_ATTRIBUTE = "Keeper"
 
 -- How each kind of keeper is posed: its joints, the frame it shows, each frame's turns.
+type How = KeeperMotion.How
 type Kit = {
 	motors: (model: Model) -> { Motor6D }?,
-	along: (travelled: number, how: KeeperMotion.How) -> number, -- how far along its walk
-	frameAt: (along: number) -> number, -- the frame for that
-	held: (how: KeeperMotion.How) -> number?, -- the frame standing slack or at a lever, not walking
+	along: (travelled: number, how: How) -> number, -- how far along its walk
+	frameAt: (along: number, how: How) -> number, -- the frame for that
+	held: (how: How) -> number?, -- the frame standing slack, at a lever or with its hands busy
+	-- which of its walks it shows (the Packrat's full or empty, S2-06b2): its `along` starts
+	-- again when that changes, since each walk counts its own keys
+	walk: (how: How) -> number,
 	transforms: (frame: number) -> { CFrame },
-	tell: (last: number?, travelled: number, how: KeeperMotion.How) -> (Pose.Sound?, number),
+	tell: (last: number?, travelled: number, how: How) -> (Pose.Sound?, number),
+	quiet: boolean, -- no beats and no creak as it turns (the Packrat's sounds come in S2-06e)
 }
+
+-- The Mannequin's own poses for a How only the Packrat shows (it never is told those).
+local function plain(how: How): Pose.How
+	if how == "Carry" then
+		return "Walk"
+	elseif how == "Hold" then
+		return "Stop"
+	elseif how == "Take" or how == "PutDown" then
+		return "Still"
+	end
+	return how
+end
+
+local PackratPose = Packrat.Pose
+-- The Packrat's held frames by How (S2-06b2): reaching for a find, pulling it in, setting it down.
+local PACKRAT_HELD: { [string]: number } = {
+	Still = PackratPose.held("Still") :: number,
+	Pull = PackratPose.held("Still") :: number,
+	Reach = PackratPose.held("Reach") :: number,
+	Take = PackratPose.held("Take") :: number,
+	PutDown = PackratPose.held("PutDown") :: number,
+}
+local function packratWalk(how: How): "Empty" | "Full"
+	return if how == "Carry" or how == "Hold" then "Full" else "Empty"
+end
+
 local KITS: { [string]: Kit } = {
 	Mannequin = {
 		motors = Mannequin.motors,
-		along = Pose.along,
-		frameAt = Pose.frameAt,
-		held = Pose.held,
+		along = function(travelled: number, how: How): number
+			return Pose.along(travelled, plain(how))
+		end,
+		frameAt = function(along: number, _: How): number
+			return Pose.frameAt(along)
+		end,
+		held = function(how: How): number?
+			return Pose.held(plain(how))
+		end,
+		walk = function(_: How): number
+			return 0
+		end,
 		transforms = Mannequin.transforms,
-		tell = Pose.tell,
+		tell = function(last: number?, travelled: number, how: How): (Pose.Sound?, number)
+			return Pose.tell(last, travelled, plain(how))
+		end,
+		quiet = false,
+	},
+	-- glides on its full walk or its empty one by whether its arms are full (D-177); no beats yet
+	Packrat = {
+		motors = Packrat.motors,
+		along = function(travelled: number, how: How): number
+			return PackratPose.along(packratWalk(how), travelled)
+		end,
+		frameAt = function(along: number, how: How): number
+			return PackratPose.frameAt(packratWalk(how), along)
+		end,
+		held = function(how: How): number?
+			return PACKRAT_HELD[how]
+		end,
+		walk = function(how: How): number
+			return if packratWalk(how) == "Full" then 1 else 0
+		end,
+		transforms = Packrat.transforms,
+		tell = function(_: number?, _: number, _: How): (Pose.Sound?, number)
+			return nil, 0
+		end,
+		quiet = true,
 	},
 }
 
@@ -85,6 +150,7 @@ type View = {
 	follow: KeeperMotion.Follow,
 	frame: number, -- the frame it was last posed in (0: none yet)
 	along: number, -- the furthest along its walk it has been shown (Pose.along)
+	walk: number, -- which of its walks that is (its kit's `walk`)
 	heldWhen: number, -- when your beam held it (os.clock), for Output
 	answered: boolean, -- the server's stop has answered that hold
 	told: number?, -- what its kit's `tell` last returned (nil: not posed yet)
@@ -129,8 +195,12 @@ function KeeperView.new(heard: (model: Model, beat: KeeperTell.Beat) -> (), beam
 		if held then
 			frame = held
 		else
+			local walk = view.kit.walk(how)
+			if walk ~= view.walk then
+				view.walk, view.along = walk, -1 -- the other walk's keys: counted afresh
+			end
 			view.along = math.max(view.along, view.kit.along(f.travelled, how))
-			frame = view.kit.frameAt(view.along)
+			frame = view.kit.frameAt(view.along, how)
 		end
 		local sound: Pose.Sound?, told: number = view.kit.tell(view.told, f.travelled, how)
 		view.told = told
@@ -333,10 +403,11 @@ function KeeperView.new(heard: (model: Model, beat: KeeperTell.Beat) -> (), beam
 			follow = KeeperMotion.follow(),
 			frame = 0,
 			along = -1,
+			walk = 0,
 			heldWhen = 0,
 			answered = false,
 			told = nil,
-			turn = rowOf.tell.turn,
+			turn = if kit.quiet then math.huge else rowOf.tell.turn,
 			turnX = nil,
 			turnZ = 0,
 			conns = {},
