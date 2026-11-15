@@ -23,6 +23,14 @@
     "assetId": 139140411595796,
     "sha256": "65f4cf6346a0dc43d083563c265006d6127a0492b65864b2a7de9842d5cef9db"
   },
+  "DiscoBall": {
+    "assetId": 117329569947170,
+    "sha256": "98364b6c3df6a0cfd76be87d669b1418aaf141a6e66923167b63c87ce136da40"
+  },
+  "DiscoBallEmissive": {
+    "assetId": 107391352518677,
+    "sha256": "b976f4542878f9fbf4d341632cf0311809250e919b7e8b98a18a1cefd069cfa6"
+  },
   "FairyLights": {
     "assetId": 116946213167800,
     "sha256": "6c16be1ee2c4c826906e40cedbc330f2cd88b55e13f3d4540bd780b38b10676c"
@@ -46,6 +54,14 @@
   "MoonLampEmissive": {
     "assetId": 134416781119139,
     "sha256": "4923037b0a769a79b48ddcd8cd01a74141656d6e65cdcb9a98a380fe05c80f28"
+  },
+  "NeonSign": {
+    "assetId": 139787831570469,
+    "sha256": "959af1e75e681351687924df412d9aad0fcc7f4a0b6287aad901ca67e706739d"
+  },
+  "NeonSignEmissive": {
+    "assetId": 99684095940635,
+    "sha256": "5520a7667ea4c06438e6f5af88571415a60b0ef0a8790c348e498a23c0f5e1db"
   },
   "NightLight": {
     "assetId": 91734482466317,

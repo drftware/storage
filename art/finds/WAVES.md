@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-02h, the disco ball (planned in the F-02f and F-02g note: look at its references first),
-then the neon OPEN sign and on down the Lights.
+**Next:** F-02j, the miner's hard hat (references not looked at yet: see the newest note), then
+the jar of fireflies and on down the Lights.
 
 ## Order
 
@@ -33,6 +33,34 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 15, F-02h and F-02i (the disco ball and the neon OPEN sign built, both in Studio).**
+  Both in `lights/build.py` (`DB_*` and `NE_*`; spec `DISCO_*` and `NEON`) with README entries;
+  uploaded and imported (`import("Lights", {"DiscoBall", "NeonSign"})`), templates in
+  `ReplicatedStorage.Props.Finds` (the owner saves). **The disco ball** is a mirror ball on a
+  tabletop battery motor (the references showed one; it stands on a floor where a hanging one
+  couldn't). Its 1,100 tiles are flat faces only in the detailed mesh, each a degree off true,
+  baked into the normal map: that's the sparkle. Lit, one tile in twenty glows (they turn with
+  the ball, a stand-in for glints) and six narrow Spot lights on the ball throw the dots; no
+  pinspot is modelled (a real ball needs one; this one makes its own light). **Seen in Studio,
+  a plain room lit like a unit (bulb 0.6, range 11), from the doorway, off and on:** the sign
+  reads OPEN even off and glows pink and aqua on, its pink spill on the walls no brighter than
+  the bulb; the ball reads as a silver ball on a stand and glints on. **Not seen: the ball's
+  dots on the walls.** Spot lights drew nothing in Edit captures, even at 30 degrees and
+  brightness 8, so they're unjudged in Roblox; and at low graphics Roblox draws lights in
+  coarse blocks, where 4-degree spots may never show. The game ticket for Spin must check in
+  Play on a phone and may need its dots another way (a few dot decals swept round the walls).
+  **Kit lesson:** a tube packs as one strip, so a long one (the sign's 6-stud border) shrank the
+  whole texture to 195 texels a stud: cut long flat tubes into runs (`ne_chunks`, a stud each;
+  326). **The miner's hard hat, planned (references not looked at yet):** look at photos of a
+  worn miner's hard hat with a cap lamp (a fibreglass or plastic shell with a brim, a lamp
+  bracket on the front, the lamp head with its lens and reflector, a coiled cord down to a
+  belt battery box) and get the sizes from a listing. Parts: `Shell` (root), `Lamp` (the head,
+  the glow part, maybe tilting on its bracket), the cord and battery on the root. Wear: a Spot
+  from the lamp (warm white, narrow, the light that "lights what you look at"), a weak Point
+  beside it; motions `SwitchOn` (the lamp's switch turned, the light comes up) and `RunDown`.
+  It's a find worn on the head: keep its pivot where it sits on a head and note the fit for
+  the game ticket.
 
 - **Nov 15, F-S1 (the night's finds into Studio).** The nine Lights and the RC car are
   templates in `ReplicatedStorage.Props.Finds` (the owner saves the place), made by code: the
@@ -283,8 +311,8 @@ A light set down switched on lights the space round it until it runs down. Wheth
 | Moon lamp | Uncommon | At home: it glows; tap it to change its phase |  | Nov 15, F-02e |
 | Blob lamp | Uncommon | At home: coloured blobs rise and fall |  | Nov 15, F-02f |
 | Oil lamp | Rare | Light: warm light that runs down slowly | Fragile | Nov 15, F-02g |
-| Disco ball | Rare | Spin: spots of light race round the walls |  | |
-| Neon OPEN sign | Rare | At home: it buzzes and glows pink |  | |
+| Disco ball | Rare | Spin: spots of light race round the walls |  | Nov 15, F-02h |
+| Neon OPEN sign | Rare | At home: it buzzes and glows pink |  | Nov 15, F-02i |
 | Miner's hard hat | Rare | Wear: a lamp on your head lights whatever you look at, for a minute | A light that leaves your hands free | |
 | Jar of fireflies | Epic | Open: fireflies drift out and light the unit for a minute, then they're gone |  | |
 | Theatre spotlight | Epic | At home: point it at your best find | Big find | |

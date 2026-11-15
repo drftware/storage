@@ -384,3 +384,59 @@ OIL_LAMP = dict(
     seed=79.0,
     dust=0.5,
 )
+
+# --- the disco ball (F-02h) --------------------------------------------------------------------
+# An 8 inch mirror ball on a tabletop battery motor: the motor's base is a black dome on a wide
+# cone, 7 in across and 3.8 in tall, one D cell inside, turning the ball at 5 turns a minute.
+DISCO_BASE = dict(
+    r=0.35,                            # 7 in across the foot
+    band=(0.012, 0.03),                # the upright band round the foot, where the switch is
+    # the skirt: a hat brim, flat at the band and steepening into the dome (r, z)
+    skirt=[(0.335, 0.04), (0.3, 0.0512), (0.265, 0.0718), (0.23, 0.0984), (0.2, 0.1253),
+           (0.18, 0.145), (0.166, 0.152)],
+    dome=(0.155, 0.162),               # the dome's middle height and radius
+    collar=(0.02, 0.327),              # the boss the shaft comes out of (r, top)
+    feet=dict(n=3, at=0.26, r=0.028, h=0.004),   # rubber feet under it
+    switch=dict(w=0.022, d=0.012, h=0.013, z=0.021, travel=0.014, slot=0.026),
+    jack=dict(z=0.021, r=0.006),      # the DC jack at the back (the motor also runs off a plug)
+)
+DISCO_BALL = dict(
+    r=0.4,                             # 8 in across the tiles' faces
+    core=0.392,                        # the foam sphere under the tiles
+    tile=0.0394,                       # 10 mm square glass mirror tiles
+    gap=0.0039,                        # 1 mm of grout between them
+    t=0.0075,                          # tiles about 2 mm thick
+    rows=29,                           # rows pole to pole (half the circumference over the pitch)
+    tilt=1.1,                          # degrees each tile sits off true (hand-laid; the sparkle)
+    cup=dict(r=0.058, z=0.362, shaft=0.011),   # the motor's cup the ball sits in, its rim
+    plate=dict(r=0.034, t=0.012),      # the hanging plate at the top pole
+    ring=dict(r=0.02, wire=0.0035),    # the hanging ring (it hangs as well as sits)
+    missing=0.008,                     # share of tiles fallen off in storage
+    old=0.05,                          # share gone dark at the back (desilvered)
+    glint=0.05,                        # share that flash when it spins in a light
+)
+DISCO = dict(
+    rpm=5.0,                           # the motor's speed: one turn in 12 s, spots sweep a wall
+                                       # 5 studs away at about 2.6 studs a second
+    kelvin=6500.0,                     # the spots: a cool white LED
+    seed=91.0,
+    dust=0.45,
+)
+
+# --- the neon OPEN sign (F-02i) ----------------------------------------------------------------
+# A real-glass shop sign, 24 x 10 x 3 in: pink letters and an aqua border bent from 10 mm tube,
+# standing an inch off a black acrylic backing on clear posts; each tube's ends bend back
+# through the backing in black rubber boots to the transformer box behind.
+NEON = dict(
+    w=2.4, h=1.0, t=0.025,             # the backing: 24 x 10 in of 1/4 in black acrylic
+    ty=-0.1,                           # the tubes' middles, 1 in in front of it
+    r=0.0197,                          # 10 mm tube
+    letters=dict(z0=0.22, z1=0.78,     # the letters' tube middles, bottom and top (6.4 in tall)
+                 widths=(0.38, 0.32, 0.30, 0.36), gap=0.16),
+    border=dict(hw=1.1, z0=0.09, z1=0.91, rad=0.07, gap=(0.15, 0.25)),
+    box=dict(x=0.2, y=(0.025, 0.17), z=0.25),   # the transformer box behind, its half width
+    toggle=dict(x=0.12, lean=20.0, len=0.07),   # its switch on top: degrees off upright each way
+    eyes=0.9,                          # the hanging eyes on the top edge, either side
+    seed=97.0,
+    dust=0.5,
+)

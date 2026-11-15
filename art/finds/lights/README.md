@@ -348,3 +348,76 @@ uploaded FBX (CRAFT.md, "Into Studio"); the place keeps them once the owner save
   gone, the flame sinks, gutters twice and goes out. Lit, the wheel stands at 110 degrees.
 - **For the game:** "Light: warm light that runs down slowly" is a game ticket: the game holds
   `Burn`, dims the light over the run and plays `RunDown` at the end. Not in the place yet: F-S1.
+
+## Disco ball (Nov 15, F-02h)
+
+- **What it is:** an 8 inch mirror ball sitting in the cup of a tabletop battery motor (a
+  black dome on a wide hat-brim skirt, an upright band round its foot with a slide switch at
+  the front and a DC jack at the back, a battery door and three rubber feet underneath). The
+  ball is 1,100 or so 10 mm glass mirror tiles laid by hand in 29 rows on a foam sphere, each a
+  degree or so off true (that is what makes a mirror ball sparkle), with grey grout between;
+  a hanging plate and ring at its top pole (the ball hangs as well as sits). Found in storage:
+  a little patch of tiles knocked off low on the front left and a few singles gone (bare foam,
+  old glue), one tile in twenty dark at the back where the silvering has rotted, fingermarks
+  round its middle, dust greying its top.
+- **References** (looked at Nov 15): Wikimedia Commons, the search "mirror ball disco"
+  (https://commons.wikimedia.org/wiki/File:Mirror_Ball_(47361192).jpeg, from below: the tiles
+  in rings, fewer to a ring toward the pole; a ball on a ceiling, whole; a blue-lit ball with
+  its spots on the walls); the ADJ tabletop mirror ball motor (M-DCBASE) on
+  https://shop.solotech.com/products/adj-american-dj-table-top-mirror-ball-motor (the
+  dome-on-cone base; 5 RPM, one D cell, for balls up to 8 in; 7 x 7 x 3.8 in from the
+  goknight.com listing). Tile size (10 mm) from mirror ball listings in general, not measured.
+- **Size:** the ball 8 in across, the base 7 in across, 12 in tall in all: 0.8 studs across the
+  ball, 1.18 studs tall.
+- **Tells:** a silver ball of little square mirrors on a black stand; on, white dots sweeping
+  the walls and a scatter of tiles flashing.
+- **Parts:** `DiscoBall_Base` (root: the base and feet), `_Ball` (the ball, its cup and shaft,
+  the plate and ring; turning about Z on the motor's shaft; the glow part), `_Switch` (sliding
+  along X). 4,728 triangles; one 1024 texture set at 443 texels a stud.
+- **Lights:** six narrow white Spots on the ball (6,500 K, Brightness 1.2, Range 14, Angle 4,
+  no shadows), evenly round, each at its own height (4 to 38 degrees up), so they turn with it
+  and sweep the walls in bands; a weak Point at its middle (0.25, Range 6) for low graphics.
+  The glow: one tile in twenty flashes (strength 2, a cool white). There is no pinspot: a
+  real mirror ball needs a light on it; this one makes its own (a game's licence, noted in
+  WAVES.md). Spot lights drew nothing in Studio's Edit captures, so the dots on the walls
+  are unjudged in Roblox (WAVES.md, F-02h).
+- **Motions:** `Spin` (2.4 s): the slide clicks over, the spots come on, the ball takes a second
+  to come up to five turns a minute. `Spinning` (12 s, a loop from where `Spin` ends: one
+  turn). `SpinDown` (1.2 s): slid off, the motor stops, the ball's weight carries it 5 degrees
+  on in its cup and it rocks back a touch. Its turn keys start where `Spin` ends: the game
+  adds where the ball stood.
+- **For the game:** "Spin: spots of light race round the walls" is a game ticket: it plays
+  `Spin`, loops `Spinning` and plays `SpinDown` from the ball's angle.
+
+## Neon OPEN sign (Nov 15, F-02i)
+
+- **What it is:** a real-glass shop sign: OPEN in pink, tall and narrow, inside an aqua border
+  with rounded corners, both bent from 10 mm tube, standing an inch off a black acrylic backing
+  on fourteen clear posts. Each tube's two ends bend back through the backing, painted black
+  there (the blockout, flaking at the bend) and sheathed in black rubber boots; the E's middle
+  bar is its own short tube, as on real signs. Behind: the transformer in a black crinkle-paint
+  box with a toggle switch on top, its cord out the left end to a two-pin plug on the floor;
+  two hanging eyes on the top edge. Found in storage: hairline scratches and scuffs on the
+  acrylic, rust at the box's corners, the pink faded paler on the tubes' tops, dust on top.
+- **References** (looked at Nov 15): Arter's NS12113-AP "Open" sign, aqua and pink
+  (https://restaurantequipment.com/products/neon-sign-open-red-blue-border-10x24-each: the
+  letters, the border, the black backing; 10 x 24 x 3 in, real glass, a UL transformer and
+  6 ft cord); Wikimedia Commons, the search "neon open sign" (a red OPEN with a blue border
+  in a shop window: the tubes standing off the backing, the posts, the ends going back); how
+  the tube's ends, blockout and boots are made from neon practice in general.
+- **Size:** 24 x 10 in, 3 in deep with the box: 2.4 by 1.0 studs, 0.27 deep.
+- **Tells:** the word OPEN in glowing pink tube inside a blue-green frame on black; off, the
+  same in pale coloured glass.
+- **Parts:** `NeonSign_Backing` (root: the acrylic, posts, boots, box, cord, plug and eyes; it
+  stands on its bottom edge), `_Tubes` (every tube, the glow part), `_Toggle` (the switch's
+  bat handle on the box's top, turning about X). 6,328 triangles; one 1024 texture set at 326 texels
+  a stud (each tube is packed in runs of a stud or less: the border in one strip shrank the
+  texture to 195).
+- **Light:** a pink Point a few inches in front (255, 92, 182; Brightness 0.6, Range 10, no
+  shadows); the glow: strength 2.5, untinted (the tubes' own pink and aqua).
+- **Motions:** `SwitchOn` (1.4 s): the toggle snaps over and the tubes strike, a stutter of
+  half-lit flashes as the gas catches, then the full glow, a last dip, steady. `Buzz` (2 s, a
+  loop, with the buzz's sound): the glow only shivers. `SwitchOff` (0.7 s): the glow drops at
+  the click, the pink's coating fading a breath after.
+- **For the game:** "At home: it buzzes and glows pink" is a game ticket: `SwitchOn`, then
+  `Buzz` on a loop with a mains hum, `SwitchOff`.

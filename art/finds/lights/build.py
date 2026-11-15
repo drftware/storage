@@ -5,6 +5,7 @@
 
 import math
 import os
+import random
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -2816,7 +2817,533 @@ OIL_LAMP = kit.Find(
     dust=OLK["dust"], seed=OLK["seed"],
 )
 
-FINDS = [DESK_LAMP, NIGHT_LIGHT, TEA_LIGHT, GLOW_STICKS, FAIRY_LIGHTS, LANTERN, MOON_LAMP, BLOB_LAMP, OIL_LAMP]
+# --- the disco ball ----------------------------------------------------------------------------
+
+(DB_PLASTIC, DB_UNDER, DB_FOOT, DB_SLIDER, DB_STEEL, DB_CUP, DB_GROUT, DB_BARE, DB_TILE,
+ DB_TILE_B, DB_OLD, DB_GLINT, DB_EDGE, DB_PLATE) = range(87, 101)
+
+DBB, DBL, DBK = K.DISCO_BASE, K.DISCO_BALL, K.DISCO
+# the ball's middle, seated on the cup's rim
+DB_Z = DBL["cup"]["z"] + math.sqrt(DBL["r"] ** 2 - DBL["cup"]["r"] ** 2)
+DB_C = Vector((0.0, 0.0, DB_Z))
+DB_PIVOT = (0.0, 0.0, DBB["collar"][1])       # the motor's shaft, where it leaves the base
+DB_SW = DBB["switch"]
+DB_SW_AT = (-DB_SW["travel"] / 2, -DBB["r"] - DB_SW["d"] / 2 + 0.006, DB_SW["z"])
+I4 = Matrix()
+
+
+def db_base_profile(hi):
+    r = DBB["r"]
+    b0, b1 = DBB["band"]
+    dz, dr = DBB["dome"]
+    kr, kz = DBB["collar"]
+    prof = [(0.0, 0.004), (r - 0.02, 0.004), (r - 0.005, 0.006), (r, b0), (r, b1),
+            (r - 0.004, b1 + 0.006)] + DBB["skirt"]
+    # the dome, from just over its middle to the collar
+    angs = range(10, 81, 4) if hi else (10, 24, 38, 51, 63, 74, 80)
+    prof += [(dr * math.cos(math.radians(a)), dz + dr * math.sin(math.radians(a))) for a in angs]
+    prof += [(kr + 0.0015, kz - 0.009), (kr, kz - 0.006), (kr, kz), (0.0, kz)]
+    kinds = [DB_UNDER] + [DB_PLASTIC] * (len(prof) - 2)
+    return prof, kinds
+
+
+def db_base(hi):
+    s = Shape()
+    prof, kinds = db_base_profile(hi)
+    s.lathe(prof, DB_PLASTIC, segs(hi, 40), kinds=kinds)
+    ft = DBB["feet"]
+    for i in range(ft["n"]):
+        a = math.radians(90 + 360 * i / ft["n"])
+        x, y = ft["at"] * math.cos(a), ft["at"] * math.sin(a)
+        s.cylinder((x, y, 0.0), (x, y, 0.0045), ft["r"], DB_FOOT, segs(hi, 12))
+    return s
+
+
+def db_switch(hi):
+    s = Shape()
+    w, d, h = DB_SW["w"], DB_SW["d"], DB_SW["h"]
+    x, y, z = DB_SW_AT
+    s.box((x - w / 2, y - d / 2, z - h / 2), (x + w / 2, y + d / 2, z + h / 2), DB_SLIDER,
+          chamfer=0.002, segs=2 if hi else 1)
+    if hi:
+        # the thumb grip: five ribs across its face
+        for i in range(-2, 3):
+            s.box((x + i * 0.0038 - 0.0007, y - d / 2 - 0.0014, z - h / 2 + 0.0025),
+                  (x + i * 0.0038 + 0.0007, y - d / 2 + 0.001, z + h / 2 - 0.0025), DB_SLIDER)
+    return s
+
+
+def db_sphere(r, n):
+    return [(r * math.sin(math.pi * i / n), DB_Z - r * math.cos(math.pi * i / n)) for i in range(n + 1)]
+
+
+def db_dir(phi, lam):
+    return Vector((math.cos(phi) * math.cos(lam), math.cos(phi) * math.sin(lam), math.sin(phi)))
+
+
+def db_tile_list():
+    """Every tile: (latitude, longitude, width, kind or None where it fell off, tilt, tilt)."""
+    rng = random.Random(DBK["seed"])
+    R, side, gap, rows = DBL["r"], DBL["tile"], DBL["gap"], DBL["rows"]
+    pitch, dphi = side + gap, math.pi / rows
+    cut = {-1: DBL["cup"]["r"] + 0.012, 1: DBL["plate"]["r"] + 0.006}
+    out = []
+    for i in range(rows):
+        phi = -math.pi / 2 + (i + 0.5) * dphi
+        rc = R * math.cos(phi)
+        if rc - side / 2 < cut[1 if phi > 0 else -1]:
+            continue
+        n = int(2 * math.pi * rc / pitch)
+        # sized to the row's edge nearer the pole, so neighbours never overlap there
+        w = min(side, 2 * math.pi * R * math.cos(abs(phi) + dphi / 2) / n - gap * 0.6)
+        off = rng.random() * 2 * math.pi
+        for j in range(n):
+            lam = off + 2 * math.pi * j / n
+            u = rng.random()
+            m, o, g = DBL["missing"], DBL["old"], DBL["glint"]
+            if u < m:
+                kind = None
+            elif u < m + o:
+                kind = DB_OLD
+            elif u < m + o + g:
+                kind = DB_GLINT
+            else:
+                kind = DB_TILE if rng.random() < 0.5 else DB_TILE_B
+            out.append([phi, lam, w, kind, rng.gauss(0.0, DBL["tilt"]), rng.gauss(0.0, DBL["tilt"])])
+    # a knock took out a little patch low on the front left, and one more on the right
+    for c, reach in ((db_dir(-0.3, math.radians(-118)), 0.075), (db_dir(0.42, math.radians(-62)), 0.03)):
+        for t in out:
+            if db_dir(t[0], t[1]).dot(c) > math.cos(reach):
+                t[3] = None
+    return out
+
+
+DB_TILES = db_tile_list()
+
+
+def db_tiles(s):
+    R, t, h = DBL["r"], DBL["t"], DBL["tile"]
+    corners = ((-1, -1), (1, -1), (1, 1), (-1, 1))
+    for phi, lam, w, kind, ta, tb in DB_TILES:
+        n = db_dir(phi, lam)
+        e_lon = Vector((-math.sin(lam), math.cos(lam), 0.0))
+        e_lat = n.cross(e_lon)
+        if kind is None:
+            # the bare foam where it fell, the glue still on it
+            c = DB_C + n * (DBL["core"] + 0.0006)
+            s._f([s._v(c + e_lon * (a * w / 2) + e_lat * (b * h / 2), I4) for a, b in corners], DB_BARE)
+            continue
+        m = (n + e_lat * math.radians(ta) + e_lon * math.radians(tb)).normalized()
+        el = (e_lon - m * e_lon.dot(m)).normalized()
+        et = m.cross(el)
+        c = DB_C + n * R
+        top = [c + el * (a * w / 2) + et * (b * h / 2) for a, b in corners]
+        vt = [s._v(p, I4) for p in top]
+        vb = [s._v(p - m * t, I4) for p in top]
+        s._f(vt, kind)
+        for a in range(4):
+            b = (a + 1) % 4
+            s._f([vt[a], vb[a], vb[b], vt[b]], DB_EDGE)
+
+
+def db_ball(hi):
+    s = Shape()
+    c, pl, rg = DBL["cup"], DBL["plate"], DBL["ring"]
+    # the motor's shaft and the cup the ball sits in
+    s.cylinder((0.0, 0.0, DBB["collar"][1] - 0.003), (0.0, 0.0, c["z"] - 0.01), c["shaft"], DB_STEEL,
+               segs(hi, 10), caps=False)
+    cup = [(0.0, c["z"] - 0.012), (c["shaft"] + 0.004, c["z"] - 0.012), (c["r"] - 0.008, c["z"] - 0.008),
+           (c["r"], c["z"] - 0.003), (c["r"] + 0.0015, c["z"]), (c["r"] - 0.003, c["z"] + 0.0015)]
+    s.lathe(cup, DB_CUP, segs(hi, 24))
+    if hi:
+        s.lathe(db_sphere(DBL["core"], 48), DB_GROUT, 96)
+        db_tiles(s)
+    else:
+        s.lathe(db_sphere(DBL["r"], 24), DB_TILE, 48)
+    # the hanging plate at the top pole, its eye and ring
+    z0 = DB_Z + DBL["core"] - 0.002
+    pt = z0 + pl["t"]
+    s.lathe([(0.0, z0), (pl["r"], z0), (pl["r"], pt - 0.002), (pl["r"] - 0.003, pt), (0.0, pt)],
+            DB_PLATE, segs(hi, 20))
+    s.cylinder((0.0, 0.0, pt - 0.001), (0.0, 0.0, pt + 0.005), 0.007, DB_PLATE, segs(hi, 10))
+    rr, wr = rg["r"], rg["wire"]
+    m = segs(hi, 16)
+    loop = [(rr * math.sin(2 * math.pi * i / m), 0.0, pt + 0.004 + rr - rr * math.cos(2 * math.pi * i / m))
+            for i in range(m + 1)]
+    s.tube(loop, wr, DB_PLATE, sides=segs(hi, 6), caps=False)
+    return s
+
+
+def db_look(L, f):
+    nb = L.nb
+    # the base: black ABS, a fine moulded grain, rubbed glossy round the band where hands lift it
+    C = Coat(L, hexc("#141416"), nb.mr(L.noise(9.0, 1, detail=3), 0.3, 0.7, 0.36, 0.48), 0.0,
+             nb.mul(L.noise(420.0, 2, detail=1), 0.08))
+    plastic = L.k(DB_PLASTIC)
+    band = nb.mul(plastic, nb.ss(L.z, 0.042, 0.032))
+    rub = nb.mul(band, nb.ss(L.noise(14.0, 3, stretch=(1.0, 1.0, 5.0), detail=3), 0.55, 0.7))
+    C.paint(rub, hexc("#262628"), 0.2)
+    scratch = nb.mul(plastic, nb.ss(L.noise(60.0, 4, stretch=(1.0, 1.0, 9.0), detail=2, rough=0.8),
+                                    0.72, 0.76))
+    C.paint(scratch, hexc("#3A3A3C"), 0.3, height=nb.mul(scratch, -0.3))
+    # the switch's slot in the front of the band; the DC jack in the back
+    sw = DB_SW
+    slot = nb.mul(nb.mul(band, nb.ss(L.y, -0.2, -0.25)),
+                  nb.mul(nb.ss(nb.absf(L.x), sw["slot"], sw["slot"] - 0.002),
+                         nb.ss(nb.absf(nb.sub(L.z, sw["z"])), sw["h"] / 2 + 0.002, sw["h"] / 2)))
+    C.paint(slot, hexc("#050505"), 0.9, height=nb.mul(slot, -1.0))
+    jk = DBB["jack"]
+    jr = nb.pw(nb.add(nb.mul(L.x, L.x), nb.mul(nb.sub(L.z, jk["z"]), nb.sub(L.z, jk["z"]))), 0.5)
+    back = nb.mul(band, nb.ss(L.y, 0.2, 0.25))
+    hole = nb.mul(back, nb.ss(jr, jk["r"], jk["r"] - 0.0015))
+    C.paint(hole, hexc("#070707"), 0.8, height=nb.mul(hole, -1.0))
+    C.paint(nb.mul(back, nb.ss(jr, 0.0022, 0.0012)), hexc("#9C9A94"), 0.3, 1.0)
+    # underneath: the battery door's seam and its screw, the rubber feet
+    un = L.k(DB_UNDER)
+    door = nb.mul(nb.ss(nb.absf(L.x), 0.125, 0.12), nb.ss(nb.absf(L.y), 0.075, 0.07))
+    seam = nb.mul(un, nb.sub(door, nb.mul(nb.ss(nb.absf(L.x), 0.12, 0.115),
+                                          nb.ss(nb.absf(L.y), 0.07, 0.065)), clamp=True))
+    C.paint(seam, hexc("#050505"), 0.9, height=nb.mul(seam, -0.8))
+    sr = nb.pw(nb.add(nb.mul(L.x, L.x), nb.mul(nb.sub(L.y, 0.05), nb.sub(L.y, 0.05))), 0.5)
+    C.paint(nb.mul(un, nb.ss(sr, 0.008, 0.006)), hexc("#77746E"), 0.35, 1.0)
+    C.paint(L.k(DB_FOOT), hexc("#1E1D1C"), 0.75, 0.0)
+    C.paint(L.k(DB_SLIDER), hexc("#202022"), 0.42, 0.0)
+    C.paint(L.k(DB_CUP), hexc("#18181A"), 0.4, 0.0)
+    st = L.k(DB_STEEL, DB_PLATE)
+    C.paint(st, hexc("#A8ABAE"), nb.mr(L.noise(30.0, 5, detail=3), 0.3, 0.7, 0.22, 0.38), 1.0)
+    C.paint(nb.mul(st, nb.ss(L.noise(45.0, 6, detail=4, rough=0.7), 0.62, 0.7)), hexc("#6B4A30"), 0.8, 0.1)
+    # the ball: grey grout in the gaps, bare foam and old glue where tiles fell
+    C.paint(L.k(DB_GROUT), hexc("#4A4945"), 0.85, 0.0)
+    bare = L.k(DB_BARE)
+    glue = nb.ss(L.noise(70.0, 7, detail=4, rough=0.6), 0.45, 0.62)
+    C.paint(bare, nb.mixc(glue, hexc("#8C8981"), hexc("#6A5D45")), 0.88, 0.0,
+            nb.mul(bare, nb.mul(glue, 0.8)))
+    # the mirror tiles: silvered glass, two batches a shade apart, the odd one dark at the back
+    C.paint(L.k(DB_TILE, DB_GLINT), hexc("#DCDEE0"), 0.045, 1.0)
+    C.paint(L.k(DB_TILE_B), hexc("#CDD0D3"), 0.08, 1.0)
+    old = L.k(DB_OLD)
+    C.paint(old, hexc("#BFC0BE"), 0.12, 1.0)
+    rot = nb.mul(old, nb.ss(L.noise(55.0, 8, detail=5, rough=0.65), 0.42, 0.56))
+    C.paint(rot, hexc("#34322D"), 0.45, 0.4)
+    C.paint(L.k(DB_EDGE), hexc("#33413C"), 0.2, 0.0)
+    # handled: smeared fingermarks round its middle, where hands turn it
+    tiles = L.k(DB_TILE, DB_TILE_B, DB_GLINT, DB_OLD)
+    belt = nb.mul(nb.ss(nb.absf(nb.sub(L.z, DB_Z)), 0.22, 0.08), nb.ss(L.noise(8.0, 9, detail=4), 0.58, 0.7))
+    C.paint(nb.mul(tiles, belt), rough=0.22)
+    # spinning in a light: a scatter of tiles flash, the rest a faint sheen
+    C.lights(L.k(DB_GLINT))
+    # dust: the ball's top greyed; the base wiped more often than the ball (half as much)
+    C.finish(f.dust, grime=0.4, keep=nb.mul(L.k(DB_PLASTIC, DB_UNDER, DB_FOOT), 0.55))
+    return C.surface(bump_dist=0.0008, bump=0.4)
+
+
+DB_DEG_S = DBK["rpm"] * 6.0          # degrees a second at speed
+DB_T = DB_SW["travel"]
+DB_CLICK = 0.12                       # the slide clicks over and the motor starts
+DB_UP = 1.0                           # seconds the ball takes to come up to speed
+DB_A0 = DB_DEG_S * DB_UP / 2          # degrees it turns getting there
+DB_LEN = 2.4
+DB_END = DB_A0 + DB_DEG_S * (DB_LEN - DB_CLICK - DB_UP)
+DB_ON = [(0.0, 0.0), (0.07, DB_T * 0.3, "Quad", "In"), (0.1, DB_T + 0.0015, "Quad", "Out"),
+         (0.16, DB_T)]
+DB_OFF = [(0.0, DB_T), (0.07, DB_T * 0.7, "Quad", "In"), (0.1, -0.0015, "Quad", "Out"), (0.16, 0.0)]
+# the spots: (degrees round from +X, degrees up), six evenly round, each at its own height, so a
+# ball on the floor sweeps the walls in bands
+DB_SPOTS = [(0.0, 13.0), (60.0, 30.0), (120.0, 6.0), (180.0, 22.0), (240.0, 38.0), (300.0, 9.0)]
+
+
+def db_spot(az, el):
+    d = db_dir(math.radians(el), math.radians(az))
+    return dict(kind="Spot", part="Ball", at=tuple(DB_C + d * (DBL["r"] + 0.012)), face=tuple(d),
+                kelvin=DBK["kelvin"], brightness=1.2, range=14, angle=4, shadows=False,
+                preview_watts=400.0, preview_blend=0.08)
+
+
+DB_LOOK = (0.0, 0.0, 0.62)
+DISCO_BALL = kit.Find(
+    "DiscoBall",
+    [kit.Part("Base", db_base),
+     kit.Part("Ball", db_ball, DB_PIVOT, "Base", (0, 0, 1)),
+     kit.Part("Switch", db_switch, DB_SW_AT, "Base", (1, 0, 0))],
+    db_look,
+    lights=[db_spot(az, el) for az, el in DB_SPOTS] + [
+        # the ball's own sheen: weak, so the dots are what you see
+        dict(kind="Point", part="Ball", at=tuple(DB_C), kelvin=DBK["kelvin"], brightness=0.25,
+             range=6, shadows=False, preview_kind="POINT", preview_watts=1.5, preview_size=0.1)],
+    glow=dict(part="Ball", strength=2.0, tint=(225, 232, 255), preview=6.0),
+    lit={("Switch", "move"): DB_T},
+    texels=520,
+    motions={
+        # the slide clicks over, the spots come on, the ball takes a second to come up to five
+        # turns a minute (a geared motor and the ball's weight)
+        "Spin": dict(duration=DB_LEN, focus=DB_LOOK, distance=1.0, tracks=[
+            ("Switch", "move", DB_ON),
+            ("Ball", "turn", [(0.0, 0.0), (DB_CLICK, 0.0, "Linear"), (DB_CLICK + DB_UP, DB_A0, "Quad", "In"),
+                              (DB_LEN, DB_END, "Linear")]),
+            ("Ball", "glow", [(0.0, 0.0), (DB_CLICK, 0.0, "Linear"), (DB_CLICK + 0.08, 1.0, "Quad", "Out")])]),
+        # spinning: a loop from where Spin ends; one turn in 12 s comes back to the same place
+        "Spinning": dict(duration=12.0, fps=4, focus=DB_LOOK, distance=1.0, tracks=[
+            ("Switch", "move", [(0.0, DB_T), (12.0, DB_T)]),
+            ("Ball", "turn", [(0.0, DB_END), (12.0, DB_END + 360.0, "Linear")]),
+            ("Ball", "glow", [(0.0, 1.0), (12.0, 1.0)])]),
+        # slid off: the motor stops, the ball's weight carries it a few degrees on in its cup and
+        # it rocks back a touch (the game adds where the ball stood)
+        "SpinDown": dict(duration=1.2, focus=DB_LOOK, distance=1.0, tracks=[
+            ("Switch", "move", DB_OFF),
+            ("Ball", "turn", [(0.0, DB_END), (0.1, DB_END + DB_DEG_S * 0.1, "Linear"),
+                              (0.36, DB_END + 5.0, "Quad", "Out"), (0.64, DB_END + 4.2),
+                              (0.92, DB_END + 4.55), (1.2, DB_END + 4.45)]),
+            ("Ball", "glow", [(0.0, 1.0), (0.1, 1.0, "Linear"), (0.2, 0.0, "Quad", "Out")])]),
+    },
+    dust=DBK["dust"], seed=DBK["seed"],
+)
+
+# --- the neon OPEN sign ------------------------------------------------------------------------
+
+(NE_ACRYLIC, NE_PINK, NE_AQUA, NE_BLOCK, NE_BOOT, NE_POST, NE_BOX, NE_TOGGLE, NE_CORD, NE_PLUG,
+ NE_PRONG, NE_EYE) = range(101, 113)
+
+NE = K.NEON
+NE_TY, NE_R = NE["ty"], NE["r"]
+NE_BX = NE["box"]
+NE_TOG_AT = (NE["toggle"]["x"], sum(NE_BX["y"]) / 2, NE_BX["z"] + 0.012)
+
+
+def ne_round(pts, rad, n=5, closed=False):
+    """A polyline in (x, z) with its corners rounded (a curve through each corner's two
+    tangent points), as 3D points in the tubes' plane."""
+    P = [Vector(p) for p in pts]
+    m = len(P)
+    out = []
+    for i in range(m):
+        if not closed and i in (0, m - 1):
+            out.append(P[i])
+            continue
+        a, b, c = P[i - 1], P[i], P[(i + 1) % m]
+        u, v = a - b, c - b
+        t = min(rad, u.length * 0.45, v.length * 0.45)
+        p0, p1 = b + u.normalized() * t, b + v.normalized() * t
+        for k in range(n + 1):
+            s = k / n
+            out.append(p0 * (1 - s) ** 2 + b * (2 * s * (1 - s)) + p1 * s * s)
+    if closed:
+        out.append(out[0])
+    return [Vector((q.x, NE_TY, q.y)) for q in out]
+
+
+def ne_paths():
+    """Each tube: (its points, its kind, whether its ends bend back through the backing)."""
+    L = NE["letters"]
+    z0, z1 = L["z0"], L["z1"]
+    zm = (z0 + z1) / 2
+    w = L["widths"]
+    xs = [-(sum(w) + 3 * L["gap"]) / 2]
+    for k in range(3):
+        xs.append(xs[-1] + w[k] + L["gap"])
+    out = []
+    # O: a squared-off oval, its two ends side by side at the bottom
+    a, b, cx = w[0] / 2, (z1 - z0) / 2, xs[0] + w[0] / 2
+    o = []
+    for k in range(49):
+        t = math.radians(-90 + 7 + (360 - 14) * k / 48)
+        ct, st = math.cos(t), math.sin(t)
+        o.append(Vector((cx + a * math.copysign(abs(ct) ** 0.75, ct), NE_TY,
+                         zm + b * math.copysign(abs(st) ** 0.75, st))))
+    out.append((o, NE_PINK))
+    # P: up the stem, round the bowl, back to the stem
+    x0, x1 = xs[1], xs[1] + w[1]
+    out.append((ne_round([(x0, z0), (x0, z1), (x1 - 0.07, z1), (x1, z1 - 0.07), (x1, zm + 0.08),
+                          (x1 - 0.07, zm), (x0 + 0.035, zm)], 0.06), NE_PINK))
+    # E: top, stem and foot in one bend; the middle bar its own short tube
+    x0, x1 = xs[2], xs[2] + w[2]
+    out.append((ne_round([(x1, z1), (x0, z1), (x0, z0), (x1, z0)], 0.05), NE_PINK))
+    out.append((ne_round([(x0 + 0.04, zm), (x1 - 0.04, zm)], 0.0), NE_PINK))
+    # N: up, the diagonal down, up
+    x0, x1 = xs[3], xs[3] + w[3]
+    out.append((ne_round([(x0, z0), (x0, z1), (x1, z0), (x1, z1)], 0.04), NE_PINK))
+    # the border: a rounded rectangle, its ends meeting at the bottom middle
+    B = NE["border"]
+    g0, g1 = B["gap"]
+    hw = B["hw"]
+    pts = [(g1, B["z0"]), (hw, B["z0"]), (hw, B["z1"]), (-hw, B["z1"]), (-hw, B["z0"]), (g0, B["z0"])]
+    out.append((ne_round(pts, B["rad"], n=6), NE_AQUA))
+    return out, xs
+
+
+NE_PATHS, NE_XS = ne_paths()
+
+
+def ne_leg(s, p, d, hi):
+    """A tube's end bent back through the backing, blacked out, into its rubber boot."""
+    rb = 0.035
+    pts = [p + d * (rb * math.sin(math.pi / 2 * k / 6)) + Vector((0.0, rb * (1 - math.cos(math.pi / 2 * k / 6)), 0.0))
+           for k in range(7)]
+    pts.append(Vector((pts[-1].x, 0.004, pts[-1].z)))
+    s.tube([tuple(q) for q in pts], NE_R, NE_BLOCK, sides=segs(hi, 8), caps=False)
+    q = pts[-1]
+    s.lathe([(0.0, -0.052), (0.024, -0.052), (0.03, -0.042), (0.031, -0.004), (0.036, 0.0)],
+            NE_BOOT, segs(hi, 12), Matrix.Translation((q.x, 0.0, q.z)) @ Matrix.Rotation(math.radians(-90), 4, "X"))
+
+
+def ne_chunks(pts, most=1.0):
+    """A long tube cut into runs of at most `most` studs, sharing their end points, so no strip
+    is too long to pack (the border's 6 studs shrank the whole texture to 195 texels a stud).
+    The tubes lie flat in one plane, so each run's rings line up with the last's."""
+    out, run, d = [], [pts[0]], 0.0
+    for a, b in zip(pts, pts[1:]):
+        run.append(b)
+        d += (b - a).length
+        if d > most:
+            out.append(run)
+            run, d = [b], 0.0
+    if len(run) > 1:
+        out.append(run)
+    return out
+
+
+def ne_tubes(hi):
+    s = Shape()
+    for pts, kind in NE_PATHS:
+        for run in ne_chunks(pts):
+            s.tube([tuple(q) for q in run], NE_R, kind, sides=segs(hi, 8), caps=False)
+        for end, nxt in ((pts[0], pts[1]), (pts[-1], pts[-2])):
+            if (end - nxt).length > 1e-6 and (pts[0] - pts[-1]).length > 1e-4:
+                ne_leg(s, end, (end - nxt).normalized(), hi)
+    return s
+
+
+def ne_backing(hi):
+    s = Shape()
+    w, h, t = NE["w"], NE["h"], NE["t"]
+    s.box((-w / 2, 0.0, 0.0), (w / 2, t, h), NE_ACRYLIC, chamfer=0.006, segs=2 if hi else 1)
+    # the clear posts the tubes stand on
+    L = NE["letters"]
+    zm = (L["z0"] + L["z1"]) / 2
+    xs, wd = NE_XS, L["widths"]
+    B = NE["border"]
+    posts = [(xs[0], zm), (xs[0] + wd[0], zm), (xs[1], L["z0"] + 0.13), (xs[1] + wd[1], zm + 0.14),
+             (xs[2], zm - 0.15), (xs[2], zm + 0.15), (xs[3], zm), (xs[3] + wd[3], zm)]
+    posts += [(sx * B["hw"], zm) for sx in (-1, 1)] + [(sx * 0.6, z) for sx in (-1, 1) for z in (B["z0"], B["z1"])]
+    for x, z in posts:
+        s.lathe([(0.0, NE_TY + NE_R * 0.6), (0.0085, NE_TY + NE_R * 0.6), (0.0085, -0.006),
+                 (0.016, -0.004), (0.017, 0.0)], NE_POST, segs(hi, 10),
+                Matrix.Translation((x, 0.0, z)) @ Matrix.Rotation(math.radians(-90), 4, "X"))
+    # the transformer box behind, its switch's bushing and nut
+    bx = NE_BX
+    s.box((-bx["x"], bx["y"][0], 0.0), (bx["x"], bx["y"][1], bx["z"]), NE_BOX, chamfer=0.005,
+          segs=2 if hi else 1)
+    tx, ty, tz = NE_TOG_AT
+    s.cylinder((tx, ty, bx["z"] - 0.002), (tx, ty, bx["z"] + 0.006), 0.017, NE_EYE, 6)
+    s.cylinder((tx, ty, bx["z"] + 0.006), (tx, ty, tz), 0.01, NE_EYE, segs(hi, 12))
+    # the cord out of the box's left end, lying on the floor to its plug
+    cord = [(-bx["x"] + 0.004, 0.1, 0.06), (-bx["x"] - 0.05, 0.1, 0.045), (-bx["x"] - 0.11, 0.115, 0.014),
+            (-0.5, 0.2, 0.012), (-0.68, 0.19, 0.012), (-0.8, 0.1, 0.012)]
+    s.tube(spline(cord, 4 if hi else 2), 0.012, NE_CORD, sides=segs(hi, 8))
+    a, b = Vector(cord[-2]), Vector(cord[-1])
+    yaw = math.atan2(b.y - a.y, b.x - a.x)
+    M = Matrix.Translation((b.x, b.y, 0.0)) @ Matrix.Rotation(yaw, 4, "Z")
+    s.box((0.0, -0.022, 0.0), (0.06, 0.022, 0.026), NE_PLUG, chamfer=0.006, segs=2 if hi else 1, M=M)
+    for py in (-0.0125, 0.0125):
+        s.box((0.06, py - 0.001, 0.008), (0.1, py + 0.001, 0.02), NE_PRONG, M=M)
+    # the hanging eyes on the top edge
+    for sx in (-1, 1):
+        x = sx * NE["eyes"]
+        s.cylinder((x, t / 2, h - 0.002), (x, t / 2, h + 0.012), 0.004, NE_EYE, segs(hi, 8))
+        m = segs(hi, 12)
+        loop = [(x + 0.018 * math.sin(2 * math.pi * k / m), t / 2, h + 0.012 + 0.018 - 0.018 * math.cos(2 * math.pi * k / m))
+                for k in range(m + 1)]
+        s.tube(loop, 0.0035, NE_EYE, sides=segs(hi, 6), caps=False)
+    return s
+
+
+def ne_toggle(hi):
+    s = Shape()
+    tx, ty, tz = NE_TOG_AT
+    tg = NE["toggle"]
+    M = Matrix.Translation(NE_TOG_AT) @ Matrix.Rotation(math.radians(-tg["lean"]), 4, "X")
+    n = segs(hi, 10)
+    ln = tg["len"]
+    s.lathe([(0.0, -0.004), (0.0055, -0.004), (0.0065, 0.01), (0.0048, ln - 0.008), (0.0058, ln - 0.004),
+             (0.0045, ln), (0.0, ln + 0.0015)], NE_TOGGLE, n, M)
+    return s
+
+
+def ne_look(L, f):
+    nb = L.nb
+    # the backing: black acrylic, glossy, hairline scratches, a bloom of scuffs low down
+    C = Coat(L, hexc("#0A0A0B"), nb.mr(L.noise(6.0, 1, detail=3), 0.3, 0.7, 0.08, 0.16), 0.0)
+    ac = L.k(NE_ACRYLIC)
+    hair = nb.mul(ac, nb.ss(L.noise(90.0, 2, stretch=(1.0, 1.0, 14.0), detail=2, rough=0.8), 0.74, 0.77))
+    C.paint(hair, hexc("#2C2C2E"), 0.3, height=nb.mul(hair, -0.2))
+    scuff = nb.mul(nb.mul(ac, nb.ss(L.z, 0.25, 0.05)), nb.ss(L.noise(12.0, 3, detail=4), 0.55, 0.68))
+    C.paint(scuff, hexc("#1C1C1E"), 0.45)
+    # the tubes: coloured glass, the pink a little faded on the tops where light hit them
+    # (saturated: the glow is this colour times its strength, and a pale one burns white)
+    C.paint(L.k(NE_PINK), hexc("#DE4C98"), 0.12, 0.0)
+    C.paint(nb.mul(L.k(NE_PINK), nb.mul(L.up, 0.35)), hexc("#E57AB2"))
+    C.paint(L.k(NE_AQUA), hexc("#3FC4D2"), 0.12, 0.0)
+    # blockout paint on the bends back, flaking at the bend where the glass shows
+    bl = L.k(NE_BLOCK)
+    C.paint(bl, hexc("#121212"), 0.55, 0.0)
+    C.paint(nb.mul(bl, nb.ss(L.noise(80.0, 4, detail=3), 0.66, 0.72)), hexc("#B7A6AE"), 0.15, 0.0)
+    C.paint(L.k(NE_BOOT), hexc("#141414"), 0.72, 0.0)
+    C.paint(L.k(NE_POST), hexc("#3E4447"), 0.18, 0.0)
+    # the transformer box: black crinkle paint, rust coming through at its edges
+    bx = L.k(NE_BOX)
+    C.paint(bx, hexc("#1B1C1D"), 0.62, 0.3, nb.mul(bx, nb.mul(L.noise(260.0, 5, detail=2), 0.25)))
+    C.enamel_wear(bx, hexc("#5A3B26"), s=6, amount=1.2)
+    C.paint(L.k(NE_TOGGLE), hexc("#C3C5C7"), 0.18, 1.0)
+    eye = L.k(NE_EYE)
+    C.paint(eye, hexc("#9EA1A3"), 0.35, 1.0)
+    C.paint(nb.mul(eye, nb.ss(L.noise(40.0, 6, detail=4), 0.6, 0.68)), hexc("#6A4630"), 0.8, 0.1)
+    C.paint(L.k(NE_CORD), hexc("#111111"), 0.5, 0.0)
+    C.paint(L.k(NE_PLUG), hexc("#151515"), 0.45, 0.0)
+    C.paint(L.k(NE_PRONG), hexc("#B9B4A6"), 0.3, 1.0)
+    C.lights(L.k(NE_PINK, NE_AQUA))
+    C.finish(f.dust, grime=0.5)
+    return C.surface(bump_dist=0.0008, bump=0.4)
+
+
+NE_LEAN = 2.0 * NE["toggle"]["lean"]
+NE_FLIP = [(0.0, 0.0), (0.05, NE_LEAN * 0.35, "Quad", "In"), (0.08, NE_LEAN + 3.0, "Quad", "Out"),
+           (0.14, NE_LEAN)]
+NE_FLOP = [(0.0, NE_LEAN), (0.05, NE_LEAN * 0.65, "Quad", "In"), (0.08, -3.0, "Quad", "Out"), (0.14, 0.0)]
+NE_LOOK = (0.0, -0.1, 0.5)
+NEON_SIGN = kit.Find(
+    "NeonSign",
+    [kit.Part("Backing", ne_backing),
+     kit.Part("Tubes", ne_tubes, (0.0, NE_TY, 0.5), "Backing"),
+     kit.Part("Toggle", ne_toggle, NE_TOG_AT, "Backing", (1, 0, 0))],
+    ne_look,
+    lights=[
+        # the pink spill on whatever is in front of it; no shadows, so it lights the room round
+        dict(kind="Point", part="Tubes", at=(0.0, -0.45, 0.5), rgb=(255, 92, 182), brightness=0.6,
+             range=10, shadows=False, preview_kind="POINT", preview_watts=10.0, preview_size=0.4)],
+    glow=dict(part="Tubes", strength=2.5, tint=(255, 255, 255), preview=4.5),
+    lit={("Toggle", "turn"): NE_LEAN},
+    motions={
+        # the toggle snaps over and the tubes strike: a stutter of half-lit flashes as the gas
+        # catches, then the full glow, a last dip, steady
+        "SwitchOn": dict(duration=1.4, focus=NE_LOOK, distance=0.9, tracks=[
+            ("Toggle", "turn", NE_FLIP),
+            ("Tubes", "glow", [(0.0, 0.0), (0.08, 0.0, "Linear"), (0.1, 0.7, "Linear"), (0.14, 0.05, "Linear"),
+                               (0.26, 0.05, "Linear"), (0.28, 0.9, "Linear"), (0.32, 0.3, "Linear"),
+                               (0.36, 0.85, "Linear"), (0.5, 0.75), (0.53, 1.0, "Linear"), (0.7, 0.9),
+                               (0.82, 1.0), (1.4, 1.0)])]),
+        # on: played on a loop with the buzz; the glow only shivers
+        "Buzz": dict(duration=2.0, focus=NE_LOOK, distance=0.9, tracks=[
+            ("Tubes", "glow", [(0.0, 1.0), (0.4, 0.97), (0.55, 1.0), (1.1, 0.98), (1.3, 0.94, "Linear"),
+                               (1.34, 1.0, "Linear"), (2.0, 1.0)])]),
+        # snapped off: the glow drops at once, the pink's coating a breath behind
+        "SwitchOff": dict(duration=0.7, focus=NE_LOOK, distance=0.9, tracks=[
+            ("Toggle", "turn", NE_FLOP),
+            ("Tubes", "glow", [(0.0, 1.0), (0.07, 1.0, "Linear"), (0.09, 0.18, "Linear"),
+                               (0.45, 0.0, "Quad", "Out")])]),
+    },
+    dust=NE["dust"], seed=NE["seed"],
+)
+
+FINDS = [DESK_LAMP, NIGHT_LIGHT, TEA_LIGHT, GLOW_STICKS, FAIRY_LIGHTS, LANTERN, MOON_LAMP, BLOB_LAMP, OIL_LAMP, DISCO_BALL, NEON_SIGN]
 
 if __name__ == "__main__":
     kit.main("Lights", HERE, FINDS)

@@ -112,6 +112,10 @@ verified: a doc page, Studio, or "untested".
   a Point at 1.4, range 16 lit every wall brighter than the bulb; 0.7, range 10 gave a warm pool
   with the far wall falling off. Clear glass at alpha 0.08 vanished; 0.18 read as glass with the
   wall's ribs showing through.
+- **Spot lights drew nothing in Edit `screen_capture`s** (F-02h, Nov 15): the disco ball's six
+  SpotLights (Shadows off, facing out, Range 14) showed no dot on a room's walls at Angle 4 and
+  Brightness 1.2, nor at Angle 30 and Brightness 8, while a PointLight and emissive masks in the
+  same capture drew. Judge spot lights in Play on a device, not in Edit captures.
 
 ## Camera and prompts
 

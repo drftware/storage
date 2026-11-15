@@ -5293,3 +5293,15 @@ brightness, for the game to scale by the glow. Judged in a lit unit: no find's l
 the unit's own bulb (0.6, range 11), since a lamp that floods the room would make it a light
 source for the whole floor, a game choice for later tickets, not the art's. Small finds being
 specks from a doorway when off is left for the owner (`OWNER.md`).
+
+## D-195 The disco ball sits on a tabletop motor and makes its own dots (F-02h, Nov 15)
+
+The catalog's disco ball spins and throws spots round the walls. A real mirror ball hangs from
+a ceiling motor and needs a pinspot shining on it; a find is set down on a unit's floor or a
+shelf at home, so it's built on a real tabletop battery motor (a black dome on a wide skirt, 5
+turns a minute), and the spots come from six narrow Spot lights riding on the ball, with no
+pinspot modelled: the game's licence, so the player's action (slide the switch) is all it
+takes. The neon OPEN sign is pink letters in an aqua border (a real aqua and pink sign), so it
+"glows pink" as the catalog says while still looking like the shop sign everyone knows.
+Whether Roblox draws the ball's narrow spots on a phone is unchecked (spot lights drew nothing
+in Edit captures): Spin's game ticket checks it in Play and may make the dots another way.
