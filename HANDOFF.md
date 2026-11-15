@@ -11,8 +11,8 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   trapping pays 5 coins, boss floors possible). D-189: the end screen says "Caught", never "Kept". Four follow-ups wait in `OWNER.md`.
 - Seen in Studio Play (one player, two stand-ins): the wipe landed 1.1 s after the car reached
   floor 3, nobody carried after it, Again clean. Two players wait on `OWNER.md`.
-- **Find art** (D-190 to D-195): eleven Lights and the RC car are templates in the place (unsaved;
-  the disco ball's wall dots unseen in Studio); next the miner's hard hat, per `art/finds/WAVES.md`.
+- **Find art** (D-190 to D-196): thirteen Lights and the RC car built, all in the place but the hard
+  hat and firefly jar (not uploaded yet); next those two, then the theatre spotlight (WAVES.md).
 
 ## Next task: S4-01 Floors made by rules (the climb with no top)
 ROADMAP S4-01. The owner said there's no top floor (D-128); the built climb still ends at floor 3

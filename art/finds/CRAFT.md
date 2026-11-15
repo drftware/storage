@@ -119,6 +119,8 @@ set's `build.py` as an example; you shouldn't need the kit's code.
   own part. Add a weak Point light beside a Spot: a close spotlight lights nothing at low
   graphics. A light with `shadows=False` shines through the find in the previews too, as in
   Roblox (the night-light's bulb inside its shade).
+  A light with `glow_part=` follows that part's glow instead of the find's glow part (each of
+  the jar's fireflies blinks its own light).
 - **Motion data.** `motions={"SwitchOn": dict(duration, focus, tracks=[(part, channel, keys)])}`;
   channel `turn` (degrees about the axis), `move` (studs along it), `glow` (0 to 1, which also
   scales the lights), `scale` (times its size about its pivot) or `stretch` (times as tall up

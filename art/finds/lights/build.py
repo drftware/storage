@@ -3343,7 +3343,1266 @@ NEON_SIGN = kit.Find(
     dust=NE["dust"], seed=NE["seed"],
 )
 
-FINDS = [DESK_LAMP, NIGHT_LIGHT, TEA_LIGHT, GLOW_STICKS, FAIRY_LIGHTS, LANTERN, MOON_LAMP, BLOB_LAMP, OIL_LAMP, DISCO_BALL, NEON_SIGN]
+# --- the miner's hard hat ------------------------------------------------------------------------
+
+(HH_SHELL, HH_INSIDE, HH_BAND, HH_LEATHER, HH_STEEL, HH_RIVET, HH_LAMP, HH_CHROME, HH_REFL,
+ HH_BULB, HH_LENS, HH_LENS_IN, HH_KNOB, HH_CORD, HH_CASE, HH_LID, HH_PLATE, HH_SPRING, HH_BRASS,
+ HH_UNDER) = range(113, 133)
+HH, HB, HL, HC, HP = K.HARD_HAT, K.HAT_BRACKET, K.CAP_LAMP, K.HAT_CORD, K.HAT_BATTERY
+HH_V = HH["visor"]
+HH_TAN = math.tan(math.radians(HH_V["slope"]))
+
+
+def hh_ss(a, b, x):
+    """0 below a, 1 past b, smooth between (a > b runs it the other way)."""
+    u = min(1.0, max(0.0, (x - a) / (b - a)))
+    return u * u * (3 - 2 * u)
+
+
+def hh_R(a):
+    """The dome's foot: its distance from the middle at azimuth a (radians from +X, anticlockwise
+    from above; the front is -90 degrees)."""
+    c, s = abs(math.cos(a)), abs(math.sin(a))
+    m = HH["mh"]
+    return ((c / HH["A"]) ** m + (s / HH["B"]) ** m) ** (-1.0 / m)
+
+
+def hh_peak(a):
+    """How far the peak reaches out past the flare at azimuth a: most at the front, rounding off
+    to nothing at the span's ends."""
+    d = abs((a + math.pi / 2 + math.pi) % (2 * math.pi) - math.pi)
+    span = math.radians(HH_V["span"])
+    if d >= span:
+        return 0.0
+    return HH_V["len"] * math.cos(0.5 * math.pi * d / span) ** 1.5
+
+
+def hh_lipz(a):
+    """The lip's underside over the floor: on the floor front and back, up over the ears."""
+    return HH["side_lift"] * (1.0 + math.cos(2 * a)) / 2
+
+
+def hh_zb(a):
+    """The dome's foot over the floor: the flare and the peak droop from it to the lip."""
+    return hh_lipz(a) + HH["zb"] + hh_peak(a) * HH_TAN
+
+
+def hh_rs(a, z, inner=False):
+    """The dome's distance from the middle at azimuth a and height z (no crest)."""
+    t = HH["wall"] if inner else 0.0
+    z0 = hh_zb(a) + (0.004 if inner else HH["lip"])
+    u = min(1.0, max(0.0, (z - z0) / (HH["crown"] - t - z0)))
+    mv = HH["mv"]
+    sphi = u ** (mv / 2)
+    cphi = math.sqrt(max(0.0, 1.0 - sphi * sphi))
+    return (hh_R(a) - t) * cphi ** (2 / mv)
+
+
+def hh_F(p):
+    """Positive outside the dome, negative inside."""
+    a = math.atan2(p[1], p[0])
+    return math.hypot(p[0], p[1]) - hh_rs(a, p[2])
+
+
+def hh_n(p):
+    e = 1e-4
+    g = Vector(((hh_F((p[0] + e, p[1], p[2])) - hh_F((p[0] - e, p[1], p[2]))),
+                (hh_F((p[0], p[1] + e, p[2])) - hh_F((p[0], p[1] - e, p[2]))),
+                (hh_F((p[0], p[1], p[2] + e)) - hh_F((p[0], p[1], p[2] - e)))))
+    return g.normalized()
+
+
+def hh_on(x, z, side=-1):
+    """The dome's surface at (x, z), on its front (side -1) or back (+1)."""
+    lo, hi = 0.0, side * 1.0
+    for _ in range(40):
+        m = (lo + hi) / 2
+        if hh_F((x, m, z)) > 0:
+            hi = m
+        else:
+            lo = m
+    return Vector((x, (lo + hi) / 2, z))
+
+
+def hh_top(x, y):
+    """The dome's surface over the plan point (x, y)."""
+    lo, hi = 0.0, HH["crown"] + 0.01
+    for _ in range(40):
+        m = (lo + hi) / 2
+        if hh_F((x, y, m)) > 0:
+            hi = m
+        else:
+            lo = m
+    return Vector((x, y, (lo + hi) / 2))
+
+
+def hh_crest(p):
+    """The crest's rise at an outer dome point: a ridge along the middle, fading out above the
+    bracket on the front and above the cord clip on the back."""
+    c = HH["crest"]
+    fade = hh_ss(0.455, 0.52, p[2]) if p[1] < 0 else hh_ss(0.36, 0.46, p[2])
+    return c["h"] * math.exp(-(p[0] / c["w"]) ** 2) * fade
+
+
+def hh_shell(hi):
+    s = Shape()
+    n = 256 if hi else 72
+    nd = 44 if hi else 14
+    f = 3 if hi else 1
+    mv, t, er = HH["mv"], HH["wall"], HH["edge"]
+    inner, outer = [], []
+    for j in range(n):
+        a = 2 * math.pi * j / n
+        R, zb, zl = hh_R(a), hh_zb(a), hh_lipz(a)
+        e = HH["flare"] + hh_peak(a)
+        ca, sa = math.cos(a), math.sin(a)
+        # the inside, from the top of the hollow down to its foot
+        col = []
+        for i in range(nd, -1, -1):
+            sp = math.sin(0.5 * math.pi * i / nd)
+            cp = math.cos(0.5 * math.pi * i / nd)
+            r = (R - t) * cp ** (2 / mv)
+            z = zb + 0.004 + (HH["crown"] - t - zb - 0.004) * sp ** (2 / mv)
+            col.append((r, z))
+        inner.append([(r * ca, r * sa, z) for r, z in col])
+        # under the lip, round its rolled edge, back over its top and up the dome
+        prof = [(R - t, zb + 0.004), (R - t + 0.35 * e, zb - 0.45 * (zb - zl) - 0.002),
+                (R + e - er - 0.25 * e, zl + 0.002 + 0.12 * (zb - zl)), (R + e - er, zl)]
+        prof += fillet(R + e - er, zl + er, er, (-90, 90), 3 * f)[1:]
+        prof += [(R + 0.55 * e, zl + 2 * er + 0.5 * (zb - zl) + 0.001),
+                 (R + 0.012, zb + HH["lip"] - 0.001)]
+        for i in range(nd + 1):
+            sp = math.sin(0.5 * math.pi * i / nd)
+            cp = math.cos(0.5 * math.pi * i / nd)
+            prof.append((R * cp ** (2 / mv), zb + HH["lip"] + (HH["crown"] - zb - HH["lip"]) * sp ** (2 / mv)))
+        ring = []
+        for k, (r, z) in enumerate(prof):
+            p = Vector((r * ca, r * sa, z))
+            if k >= len(prof) - nd - 1 and r > 1e-6:
+                p = p + hh_n(p) * hh_crest(p)
+            ring.append(p)
+        outer.append(ring)
+    # columns to rings; the poles collapse to one point
+    rings_in = [[tuple(c[i]) for c in inner] for i in range(len(inner[0]))]
+    rings_in[0] = [(0.0, 0.0, inner[0][0][2])]
+    rings_out = [[tuple(c[i]) for c in outer] for i in range(len(outer[0]))]
+    rings_out[-1] = [(0.0, 0.0, outer[0][-1][2] + HH["crest"]["h"])]
+    s.loft(rings_in, HH_INSIDE)
+    s.loft(rings_out, HH_SHELL)
+    # the suspension's headband, a strap just inside the rim
+    b = HH["band"]
+    rings = []
+    for z, d in ((b["z"], 0.0), (b["z"], b["t"]), (b["z"] + b["h"], b["t"]), (b["z"] + b["h"], 0.0)):
+        rings.append([((hh_R(2 * math.pi * j / n) - t - 0.004 - d) * math.cos(2 * math.pi * j / n),
+                       (hh_R(2 * math.pi * j / n) - t - 0.004 - d) * math.sin(2 * math.pi * j / n),
+                       z + hh_zb(2 * math.pi * j / n) - HH["zb"]) for j in range(0, n, 2)])
+    s.loft(rings, HH_BAND)
+    # the suspension's lugs, moulded buttons either side
+    lg = HH["lugs"]
+    for sx in (-1, 1):
+        lo, hi_ = 0.0, sx * 1.0
+        for _ in range(40):
+            m = (lo + hi_) / 2
+            if hh_F((m, lg["y"], lg["z"])) > 0:
+                hi_ = m
+            else:
+                lo = m
+        p = Vector(((lo + hi_) / 2, lg["y"], lg["z"]))
+        hh_rivet(s, p, hh_n(p), lg["r"], 0.012, HH_RIVET, hi, sink=0.006)
+    return s
+
+
+def hh_frame(p, n):
+    """A matrix at p with its Z along n."""
+    return Matrix.Translation(p) @ Vector((0, 0, 1)).rotation_difference(n).to_matrix().to_4x4()
+
+
+def hh_rivet(s, p, n, r, h, kind, hi, sink=0.003):
+    """A domed rivet head on a surface at p, normal n."""
+    f = 3 if hi else 1
+    prof = [(0.0, -sink), (r, -sink), (r, 0.0)] + [
+        (r * math.cos(math.radians(a)), h * math.sin(math.radians(a))) for a in
+        [90.0 * i / (4 * f) for i in range(1, 4 * f + 1)]]
+    prof[-1] = (0.0, h)
+    s.lathe(prof, kind, segs(hi, 12), hh_frame(p, n))
+
+
+def hh_strap(s, pts, ups, w, t, kind, hi, n=4.0):
+    """A flat strap swept along pts (its face toward ups), its section a rounded rectangle, its
+    ends closed flat."""
+    m = 20 if hi else 8
+    rings = []
+    P = [Vector(p) for p in pts]
+    for i, p in enumerate(P):
+        T = (P[min(i + 1, len(P) - 1)] - P[max(i - 1, 0)]).normalized()
+        u = Vector(ups[i])
+        u = (u - T * u.dot(T)).normalized()
+        sd = u.cross(T)
+        ring = []
+        for j in range(m):
+            th = 2 * math.pi * j / m
+            c, si = math.cos(th), math.sin(th)
+            ring.append(tuple(p + sd * (w / 2 * math.copysign(abs(c) ** (2 / n), c))
+                              + u * (t / 2 * math.copysign(abs(si) ** (2 / n), si))))
+        rings.append(ring)
+    end = P[-1]
+    rings.append([tuple(end + (Vector(q) - end) * 0.5) for q in rings[-1]])
+    rings.append([tuple(end)])
+    s.loft(rings, kind, cap_bottom=kind)
+
+
+def hh_outline(hi):
+    """The leather bracket's outline, anticlockwise seen from the front (x right, z up)."""
+    half = HB["outline"]
+    pts = [(-x, z) for x, z in reversed(half[:-1])] + [(x, z) for x, z in half]
+    # start at the point, go up the right side, across the top, down the left
+    pts = pts[len(half) - 1:] + pts[:len(half) - 1]
+    pts = [(x, 0.0, z) for x, z in pts] + [(pts[0][0], 0.0, pts[0][1])]
+    sm = spline(pts, 12)
+    # resample evenly
+    L = [0.0]
+    for a, b in zip(sm, sm[1:]):
+        L.append(L[-1] + (Vector(b) - Vector(a)).length)
+    m = 120 if hi else 40
+    out = []
+    k = 0
+    for i in range(m):
+        d = L[-1] * i / m
+        while L[k + 1] < d:
+            k += 1
+        u = (d - L[k]) / max(1e-9, L[k + 1] - L[k])
+        q = Vector(sm[k]).lerp(Vector(sm[k + 1]), u)
+        out.append((q.x, q.z))
+    return out
+
+
+def hh_leather_at(x, z, d):
+    """A point on the leather: the shell's front at (x, z), d out along its normal."""
+    p = hh_on(x, z)
+    return p + hh_n(p) * d
+
+
+def hh_bracket(s, hi):
+    ol = hh_outline(hi)
+    c = (0.0, 0.31)
+    t = HB["t"]
+
+    def ring(scale, d, inset=0.0):
+        out = []
+        for x, z in ol:
+            dx, dz = x - c[0], z - c[1]
+            L = math.hypot(dx, dz)
+            k = scale * (1.0 - inset / L)
+            out.append(tuple(hh_leather_at(c[0] + dx * k, c[1] + dz * k, d)))
+        return out
+
+    rings = [ring(1.0, -0.006), ring(1.0, t * 0.55), ring(1.0, t * 0.85, 0.002),
+             ring(1.0, t, 0.0055)]
+    steps = 8 if hi else 3
+    for i in range(1, steps + 1):
+        rings.append(ring(1.0 - i / (steps + 1), t, 0.0055))
+    rings.append([tuple(hh_leather_at(c[0], c[1], t))])
+    s.loft(rings, HH_LEATHER)
+    # the steel strap across it, standing off where the lamp's hook drops behind it
+    st = HB["strap"]
+    zm = (st["z"][0] + st["z"][1]) / 2
+    m = 24 if hi else 10
+    pts, ups = [], []
+    for i in range(m + 1):
+        x = -st["x"] + 2 * st["x"] * i / m
+        off = HB["slot"][1] * hh_ss(st["x"] - 0.004, st["x"] - 0.03, abs(x))
+        p = hh_on(x, zm)
+        nn = hh_n(p)
+        pts.append(p + nn * (t + st["t"] / 2 + off))
+        ups.append(nn)
+    hh_strap(s, pts, ups, st["z"][1] - st["z"][0], st["t"], HH_STEEL, hi)
+    # its rivets, and the leather's
+    for sx in (-1, 1):
+        p = hh_on(sx * (st["x"] - 0.016), zm)
+        nn = hh_n(p)
+        hh_rivet(s, p + nn * (t + st["t"]), nn, 0.011, 0.006, HH_RIVET, hi)
+    for x, z in HB["rivets"]:
+        p = hh_on(x, z)
+        nn = hh_n(p)
+        hh_rivet(s, p + nn * t, nn, 0.012, 0.0065, HH_RIVET, hi)
+
+
+# the lamp's frame: Z forward along its beam, Y up, the origin at the middle of its back
+HH_STRAP_Z = (HB["strap"]["z"][0] + HB["strap"]["z"][1]) / 2
+HH_LAMP_Y = (hh_on(0.0, HH_STRAP_Z).y - HB["t"] - HB["strap"]["t"] - HB["slot"][1] - HL["gap"])
+HH_LAMP_AT = Vector((0.0, HH_LAMP_Y, HL["z"]))
+HH_LAMP_M = Matrix.Translation(HH_LAMP_AT) @ Matrix.Rotation(math.radians(90 + HL["tilt"]), 4, "X")
+HH_FRONT = HL["back"] + HL["body"]["d"] + HL["bezel"]["d"]   # the bezel's front, along the beam
+HH_SEAT = HH_FRONT - 0.012                                    # where the lens sits
+HH_KNOB_Z = HL["back"] + HL["body"]["d"] * 0.5
+# the cord's boot: out of the back's upper right, up and back toward the crown
+HH_BOOT = (HH_LAMP_M @ Vector((0.05, 0.062, 0.02)), HH_LAMP_M @ Vector((0.068, 0.112, -0.004)))
+
+
+def hh_body_r(z):
+    """The housing's radius at z along the beam (from its back)."""
+    b = HL["body"]
+    u = min(1.0, max(0.0, (z - HL["back"]) / b["d"]))
+    return b["r1"] + (b["r0"] - b["r1"]) * u
+
+
+def hh_lamp(hi):
+    s = Shape()
+    f = 3 if hi else 1
+    b, bz, bk = HL["body"], HL["bezel"], HL["back"]
+    # the domed back, the housing widening toward the front, the bezel's rolled ring, its lip
+    # turned in over the lens, and back in to the reflector's rim
+    back = [(b["r1"] * math.sin(math.radians(a)), bk * (1.0 - math.cos(math.radians(a))))
+            for a in [90.0 * i / (6 * f) for i in range(6 * f + 1)]]
+    front = HH_FRONT
+    prof = back + [(b["r1"], bk + 0.01), (b["r0"], bk + b["d"] - 0.004),
+                   (b["r0"] + 0.004, bk + b["d"])]
+    prof += fillet(bz["r"] - 0.008, bk + b["d"] + 0.008, 0.008, (-90, 0), 2 * f)[1:]
+    prof += fillet(bz["r"] - 0.01, front - 0.01, 0.01, (0, 90), 3 * f)[1:]
+    prof += [(bz["r"] - bz["lip"], front - 0.002), (bz["r"] - bz["lip"] - 0.002, front - 0.006),
+             (bz["r"] - bz["lip"] - 0.002, HH_SEAT - 0.004), (HL["reflector"]["r"] + 0.001, HH_SEAT - 0.004)]
+    kinds = [HH_LAMP] * (len(back) + 2) + [HH_CHROME] * (len(prof) - len(back) - 2 - 1)
+    s.lathe(prof, HH_LAMP, segs(hi, 40), HH_LAMP_M, kinds=kinds)
+    # the hook: a flat steel tongue from the top of its back, down behind the strap
+    hk = HL["hook"]
+    yb = b["r1"] * 0.35
+    s.box((-hk["w"] / 2, yb, -HL["gap"] - HB["slot"][1] - 0.002),
+          (hk["w"] / 2, yb + hk["h"], 0.006), HH_STEEL, 0.002, 2 if hi else 1, HH_LAMP_M)
+    s.box((-hk["w"] / 2, yb + hk["h"] - 0.012, -HL["gap"] - HB["slot"][1] - 0.002),
+          (hk["w"] / 2, yb + hk["h"], 0.01), HH_STEEL, 0.002, 2 if hi else 1, HH_LAMP_M)
+    # the knob's boss on top
+    kz = HH_KNOB_Z
+    top = hh_body_r(kz)
+    s.lathe([(0.0, -0.012), (HL["knob"]["r"] + 0.007, -0.012), (HL["knob"]["r"] + 0.007, 0.008),
+             (HL["knob"]["r"] + 0.003, 0.012), (0.0, 0.012)], HH_LAMP, segs(hi, 20),
+            HH_LAMP_M @ Matrix.Translation((0.0, top, kz)) @ Matrix.Rotation(math.radians(-90), 4, "X"))
+    # the cord's rubber boot, out of the back's upper right
+    pts = [HH_BOOT[0].lerp(HH_BOOT[1], i / 6) for i in range(7)]
+    s.tube([tuple(q) for q in pts], 0.028, HH_CORD, 20 if hi else 8,
+           radii=[0.029 - 0.007 * (i / 6) ** 0.7 for i in range(7)])
+    return s
+
+
+def hh_knob(hi):
+    s = Shape()
+    k = HL["knob"]
+    top = hh_body_r(HH_KNOB_Z)
+    M = (HH_LAMP_M @ Matrix.Translation((0.0, top + 0.012, HH_KNOB_Z))
+         @ Matrix.Rotation(math.radians(-90), 4, "X"))
+    f = 3 if hi else 1
+    s.lathe([(0.0, 0.0), (k["r"], 0.0), (k["r"], k["h"] * 0.35)]
+            + fillet(k["r"] - 0.004, k["h"] * 0.35, 0.004, (0, 90), 2 * f)[1:]
+            + [(0.0, k["h"] * 0.35 + 0.004)], HH_KNOB, segs(hi, 24), M)
+    # the fin you turn it by, across it
+    s.box((-k["r"] * 0.95, -0.007, k["h"] * 0.3), (k["r"] * 0.95, 0.007, k["h"]), HH_KNOB, 0.003,
+          2 if hi else 1, M)
+    return s
+
+
+def hh_bulb(hi):
+    """The reflector's bright bowl and the bulb at its heart."""
+    s = Shape()
+    rf, bl = HL["reflector"], HL["bulb"]
+    z0 = HH_SEAT - 0.003
+    m = 16 if hi else 6
+    prof = [(0.016, z0 - rf["d"])]
+    for i in range(1, m + 1):
+        u = i / m
+        prof.append((0.016 + (rf["r"] - 0.016) * u ** 0.5, z0 - rf["d"] * (1.0 - u)))
+    # listed from the middle out and up the bowl's inside, which faces forward
+    s.lathe(list(reversed(prof)), HH_REFL, segs(hi, 32), HH_LAMP_M)
+    # the bulb: a small round envelope on its socket
+    f = 3 if hi else 1
+    zb_ = z0 - rf["d"] + 0.004
+    bulb = [(0.0, zb_ - 0.004), (0.012, zb_ - 0.004), (0.012, zb_ + 0.012)]
+    bulb += fillet(0.0, zb_ + 0.012 + bl["r"], bl["r"], (-60, 90), 6 * f)[1:]
+    kinds = [HH_STEEL, HH_STEEL] + [HH_BULB] * (len(bulb) - 3)
+    s.lathe(bulb, HH_BULB, segs(hi, 20), HH_LAMP_M, kinds=kinds)
+    return s
+
+
+def hh_lens(hi):
+    s = Shape()
+    r = HL["bezel"]["r"] - HL["bezel"]["lip"] - 0.002
+    z = HH_SEAT - 0.002
+    prof = [(0.0, z), (r, z), (r, z + 0.007), (r * 0.6, z + 0.0095), (0.0, z + 0.011)]
+    s.lathe(prof, HH_LENS, segs(hi, 40), HH_LAMP_M, kinds=[HH_LENS_IN, HH_LENS, HH_LENS, HH_LENS])
+    return s
+
+
+def hh_lay(p, d):
+    """A point d out from the dome's surface point p."""
+    return p + hh_n(p) * d
+
+
+HH_CR = HC["r"]
+HH_CLIP = hh_on(0.0, HC["clip_z"], 1)
+HH_BAT_M = (Matrix.Translation((HP["at"][0], HP["at"][1], 0.0))
+            @ Matrix.Rotation(math.radians(HP["yaw"]), 4, "Z"))
+HH_BAT_TOP = HP["h"] + HP["lid"]["h"]
+HH_GLAND = HH_BAT_M @ Vector((0.085, 0.0, HH_BAT_TOP))
+
+
+def hh_cord_over():
+    """The cord from the boot up over the crown to the clip on the back."""
+    d = HH_CR + 0.003
+    t = HB["t"]
+    pts = [HH_BOOT[1], HH_BOOT[1] + (HH_BOOT[1] - HH_BOOT[0]).normalized() * 0.02,
+           hh_lay(hh_on(0.074, 0.43), d + t), hh_lay(hh_on(0.08, 0.475), d)]
+    pts += [hh_lay(hh_top(0.084, y), d) for y in (-0.24, -0.14, -0.04, 0.06, 0.16, 0.25)]
+    pts += [hh_lay(hh_on(0.064, 0.47, 1), d), hh_lay(hh_on(0.036, 0.41, 1), d),
+            hh_lay(hh_on(0.008, 0.365, 1), d), hh_lay(HH_CLIP, d)]
+    return [Vector(q) for q in spline(pts, 6)]
+
+
+def hh_cord_down():
+    """From the clip down the back, over the lip, round the floor and up into the battery."""
+    d = HH_CR + 0.003
+    r = HH_CR
+    g = HH_GLAND
+    up = HH_BAT_M.to_3x3() @ Vector((0.0, 0.0, 1.0))
+    pts = [hh_lay(HH_CLIP, d), hh_lay(hh_on(0.004, 0.27, 1), d), hh_lay(hh_on(0.01, 0.18, 1), d),
+           hh_lay(hh_on(0.018, 0.1, 1), d), Vector((0.026, 0.508, 0.062)),
+           Vector((0.034, 0.56, 0.036)), Vector((0.05, 0.63, r)), Vector((0.13, 0.76, r)),
+           Vector((0.3, 0.83, r)), Vector((0.52, 0.84, r)), Vector((0.74, 0.8, r)),
+           Vector((g.x + 0.16, g.y + 0.36, r + 0.002)), Vector((g.x + 0.2, g.y + 0.3, 0.12)),
+           Vector((g.x + 0.19, g.y + 0.24, 0.42)), Vector((g.x + 0.14, g.y + 0.16, 0.66)),
+           Vector((g.x + 0.07, g.y + 0.07, g.z + HP["spring"]["h"] + 0.07)),
+           g + up * (HP["spring"]["h"] + 0.012), g + up * 0.02]
+    return [Vector(q) for q in spline(pts, 7)]
+
+
+def hh_cord(s, pts, hi):
+    for run in ne_chunks(pts, 0.9):
+        s.tube([tuple(q) for q in run], HH_CR, HH_CORD, segs(hi, 8) + (4 if hi else 0), caps=False)
+
+
+def hh_clip(s, hi):
+    """The steel clip on the back the cord runs under: a strap bent up over it, riveted down
+    either side."""
+    m = 16 if hi else 8
+    pts, ups = [], []
+    w = HH_CR + 0.006
+    for i in range(m + 1):
+        x = -0.05 + 0.1 * i / m
+        p = hh_on(x, HC["clip_z"], 1)
+        nn = hh_n(p)
+        lift = 0.004 + (2 * HH_CR + 0.004) * hh_ss(w + 0.012, w - 0.004, abs(x))
+        pts.append(p + nn * lift)
+        ups.append(nn)
+    hh_strap(s, pts, ups, 0.036, 0.006, HH_STEEL, hi)
+    for sx in (-1, 1):
+        p = hh_on(sx * 0.04, HC["clip_z"], 1)
+        nn = hh_n(p)
+        hh_rivet(s, p + nn * 0.007, nn, 0.008, 0.005, HH_RIVET, hi)
+
+
+def hh_shell_all(hi):
+    s = hh_shell(hi)
+    hh_bracket(s, hi)
+    hh_clip(s, hi)
+    hh_cord(s, hh_cord_over(), hi)
+    return s
+
+
+def hh_pack(hi):
+    """The cord from the clip down to the floor and round to the battery, and the battery."""
+    s = Shape()
+    hh_cord(s, hh_cord_down(), hi)
+    M = HH_BAT_M
+    w, d, h = HP["w"], HP["d"], HP["h"]
+    ld, o = HP["lid"], HP["lid"]["over"]
+    s.box((-w / 2, -d / 2, 0.0), (w / 2, d / 2, h), HH_CASE, 0.018, 3 if hi else 1, M)
+    s.box((-w / 2 - o, -d / 2 - o, h - 0.014), (w / 2 + o, d / 2 + o, h + ld["h"]), HH_LID, 0.01,
+          3 if hi else 1, M)
+    # the lid's latches: steel straps down each narrow side, riveted to the case
+    for sx in (-1, 1):
+        x0 = sx * (w / 2 + o)
+        s.box((min(x0, x0 + sx * 0.007), -0.03, h - 0.085), (max(x0, x0 + sx * 0.007), 0.03, h + ld["h"] - 0.012),
+              HH_STEEL, 0.002, 2 if hi else 1, M)
+        p = M @ Vector((x0 + sx * 0.007, 0.0, h - 0.06))
+        hh_rivet(s, p, M.to_3x3() @ Vector((sx, 0.0, 0.0)), 0.009, 0.005, HH_RIVET, hi)
+    # the cord's gland nut and the strain-relief spring round the cord
+    top = HH_BAT_TOP
+    sp = HP["spring"]
+    s.cylinder((0.085, 0.0, top - 0.004), (0.085, 0.0, top + 0.022), 0.033, HH_STEEL, 6, M=M)
+    s.cylinder((0.085, 0.0, top + 0.02), (0.085, 0.0, top + 0.03), 0.026, HH_STEEL, segs(hi, 16), M=M)
+    coil = helix((0.085, 0.0, top + 0.026), (0.085, 0.0, top + 0.026 + sp["h"]), sp["r"], sp["turns"],
+                 24 if hi else 8)
+    s.tube([tuple(M @ q) for q in coil], 0.0048, HH_SPRING, segs(hi, 6))
+    # the charging contacts on the lid
+    for sy in (-1, 1):
+        s.lathe([(0.0, top - 0.002), (0.013, top - 0.002), (0.013, top + 0.006), (0.009, top + 0.012),
+                 (0.0, top + 0.013)], HH_BRASS, segs(hi, 16),
+                M @ Matrix.Translation((-0.085, sy * 0.04, 0.0)))
+    # the nameplate on the front, its four rivets
+    pl = HP["plate"]
+    s.box((-pl["w"] / 2, -d / 2 - 0.003, pl["z"] - pl["h"] / 2),
+          (pl["w"] / 2, -d / 2 + 0.002, pl["z"] + pl["h"] / 2), HH_PLATE, 0.0015, 1, M)
+    fwd = M.to_3x3() @ Vector((0.0, -1.0, 0.0))
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            p = M @ Vector((sx * (pl["w"] / 2 - 0.012), -d / 2 - 0.003, pl["z"] + sz * (pl["h"] / 2 - 0.011)))
+            hh_rivet(s, p, fwd, 0.0055, 0.003, HH_RIVET, hi)
+    # the belt loop on its back: a steel strap standing off the case
+    m = 16 if hi else 8
+    pts, ups = [], []
+    back = M.to_3x3() @ Vector((0.0, 1.0, 0.0))
+    for i in range(m + 1):
+        x = -0.135 + 0.27 * i / m
+        off = 0.003 + 0.024 * hh_ss(0.135, 0.105, abs(x))
+        pts.append(M @ Vector((x, d / 2 + off, 0.39)))
+        ups.append(back)
+    hh_strap(s, pts, ups, 0.06, 0.006, HH_STEEL, hi)
+    return s
+
+
+def hh_look(L, f):
+    nb = L.nb
+    # safety yellow gel coat over fibreglass, faded on the crown, scuffed black on the sides
+    yellow = nb.tint(hexc("#D29C1C"), nb.mr(L.noise(2.5, 1, detail=3), 0.3, 0.7, 0.86, 1.08))
+    C = Coat(L, yellow, nb.mr(L.noise(6.0, 2, detail=4), 0.25, 0.75, 0.34, 0.52), 0.0,
+             nb.mul(L.noise(300.0, 3, detail=1), 0.06))
+    shell = L.k(HH_SHELL)
+    C.paint(nb.mul(nb.mul(shell, L.up), nb.mr(L.noise(1.4, 4, detail=3), 0.3, 0.7, 0.12, 0.42)),
+            hexc("#E2C163"))
+    scuff = nb.ss(L.noise(6.0, 5, stretch=(4.0, 1.0, 4.0), detail=5, rough=0.65), 0.64, 0.73)
+    C.paint(nb.mul(nb.mul(shell, scuff), 0.8), hexc("#2A2621"), 0.62)
+    hair = nb.mul(nb.band(L.noise(16.0, 6, stretch=(1.0, 3.0, 1.0), detail=2), 0.496, 0.504, 0.004),
+                  nb.ss(L.noise(2.5, 7, detail=2), 0.6, 0.72))
+    C.paint(nb.mul(nb.mul(shell, hair), 0.7), hexc("#DCC68C"), 0.68, None, -0.1)
+    C.enamel_wear(shell, hexc("#9A8F68"), s=8, amount=1.3)
+    # coal dust ground in low down and under the peak; a black thumbprint smudge on the peak
+    low = nb.mul(shell, nb.ss(L.z, 0.17, 0.02))
+    C.paint(nb.mul(low, nb.mr(L.noise(5.0, 9, detail=4), 0.3, 0.7, 0.15, 0.65)), hexc("#3A332A"), 0.72)
+    thumb = nb.mul(nb.mul(nb.ss(nb.absf(nb.sub(L.x, 0.06)), 0.07, 0.02),
+                          nb.ss(nb.absf(nb.add(L.y, 0.6)), 0.06, 0.015)),
+                   nb.ss(L.noise(12.0, 10, detail=4, rough=0.6), 0.4, 0.6))
+    C.paint(nb.mul(nb.mul(shell, thumb), 0.85), hexc("#221E19"), 0.66)
+    C.paint(L.k(HH_INSIDE), nb.tint(hexc("#3D382F"), nb.mr(L.noise(20.0, 11, detail=3), 0.3, 0.7, 0.8, 1.15)),
+            0.86, 0.0)
+    C.paint(L.k(HH_BAND), hexc("#1C1B19"), 0.55, 0.0)
+    # the leather: oiled brown, rubbed pale at its edges, darker where hands and oil met it
+    leather = L.k(HH_LEATHER)
+    C.paint(leather, nb.tint(hexc("#6E4628"), nb.mr(L.noise(9.0, 12, detail=5), 0.3, 0.7, 0.72, 1.2)),
+            nb.mr(L.noise(14.0, 13, detail=4), 0.3, 0.7, 0.5, 0.72), 0.0,
+            nb.mul(L.noise(120.0, 14, detail=3), 0.12))
+    C.paint(nb.mul(nb.mul(leather, L.edge(0.006, k=5.0)), 0.85), hexc("#9C7352"), 0.75)
+    C.paint(nb.mul(leather, nb.ss(L.noise(4.0, 15, detail=4), 0.58, 0.7)), hexc("#2D1B10"), 0.45)
+    # dark steel: the strap, the hook, the clip, the latches; rusted where it's wet
+    steel = L.k(HH_STEEL)
+    C.paint(steel, nb.tint(hexc("#4D4C49"), nb.mr(L.noise(18.0, 16, detail=3), 0.3, 0.7, 0.85, 1.15)),
+            0.5, 0.75)
+    C.paint(nb.mul(steel, nb.ss(L.noise(22.0, 17, detail=5, rough=0.7), 0.56, 0.66)), hexc("#6B3A20"), 0.85, 0.1)
+    C.paint(L.k(HH_RIVET), nb.tint(hexc("#77573A"), nb.mr(L.noise(40.0, 18, detail=3), 0.3, 0.7, 0.8, 1.2)),
+            0.42, 0.85)
+    # the lamp: black moulded housing worn grey at its edges, a chrome bezel, a bright bowl
+    lamp = L.k(HH_LAMP)
+    C.paint(lamp, nb.tint(hexc("#1F1E1C"), nb.mr(L.noise(15.0, 19, detail=3), 0.3, 0.7, 0.85, 1.2)), 0.36, 0.0)
+    C.paint(nb.mul(nb.mul(lamp, L.edge(0.006, k=5.0)), 0.6), hexc("#4A4741"), 0.5)
+    chrome = L.k(HH_CHROME)
+    C.paint(chrome, hexc("#CBCDCF"), nb.mr(L.noise(30.0, 20, detail=3), 0.3, 0.7, 0.12, 0.3), 1.0)
+    C.paint(nb.mul(chrome, nb.ss(L.noise(55.0, 21, detail=5, rough=0.7), 0.64, 0.7)), hexc("#5F5A52"), 0.7, 0.4)
+    refl = L.k(HH_REFL)
+    C.paint(refl, hexc("#E9EAEA"), 0.07, 1.0)
+    C.paint(L.k(HH_BULB), hexc("#F4EBD3"), 0.12, 0.0)
+    # lit, the bowl is brightest round the bulb and falls off toward its rim
+    dz = nb.sub(L.z, HL["z"])
+    ring = nb.mr(nb.add(nb.mul(L.x, L.x), nb.mul(dz, dz)), 0.0, 0.015, 0.55, 0.22)
+    C.lights(nb.add(L.k(HH_BULB), nb.mul(refl, ring), clamp=True))
+    C.paint(L.k(HH_LENS), hexc("#9DAEA8"), 0.03, 0.0, alpha=0.18)
+    C.paint(L.k(HH_LENS_IN), hexc("#9DAEA8"), 0.03, 0.0, alpha=0.12)
+    C.paint(L.k(HH_KNOB), hexc("#262422"), 0.44, 0.0)
+    # the rubber cord, dulled grey where it rubbed
+    cord = L.k(HH_CORD)
+    C.paint(cord, nb.tint(hexc("#1C1C1B"), nb.mr(L.noise(10.0, 22, detail=3), 0.3, 0.7, 0.9, 1.35)), 0.7, 0.0)
+    # the battery: red enamelled steel, chipped to steel, rust round its foot; an aluminium lid
+    case = L.k(HH_CASE)
+    C.paint(case, nb.tint(hexc("#7A281D"), nb.mr(L.noise(4.0, 23, detail=4), 0.3, 0.7, 0.78, 1.1)),
+            nb.mr(L.noise(9.0, 24, detail=3), 0.3, 0.7, 0.4, 0.58), 0.0, nb.mul(L.noise(90.0, 25, detail=3), 0.08))
+    C.enamel_wear(case, hexc("#5E5F5C"), s=26, amount=1.6)
+    # grimy hand marks and drips down its face
+    drip = nb.ss(L.noise(5.0, 32, stretch=(5.0, 5.0, 0.6), detail=4, rough=0.6), 0.58, 0.7)
+    C.paint(nb.mul(nb.mul(case, drip), 0.75), hexc("#3A1C16"), 0.62)
+    C.paint(nb.mul(nb.mul(case, nb.ss(L.z, 0.09, 0.0)), nb.ss(L.noise(26.0, 27, detail=5, rough=0.7), 0.52, 0.62)),
+            hexc("#5E3220"), 0.85, 0.0)
+    lid = L.k(HH_LID)
+    C.paint(lid, nb.tint(hexc("#A3A5A3"), nb.mr(L.noise(12.0, 28, detail=4), 0.3, 0.7, 0.8, 1.1)),
+            nb.mr(L.noise(20.0, 29, detail=3), 0.3, 0.7, 0.4, 0.58), 0.9)
+    plate = L.k(HH_PLATE)
+    C.paint(plate, hexc("#C6C6BE"), 0.36, 0.85)
+    pz = HP["plate"]["z"]
+    rows = nb.add(nb.add(nb.band(L.z, pz + 0.012, pz + 0.02, 0.0012), nb.band(L.z, pz - 0.004, pz + 0.004, 0.0012)),
+                  nb.band(L.z, pz - 0.02, pz - 0.012, 0.0012), clamp=True)
+    words = nb.ss(L.noise(70.0, 30, stretch=(1.0, 1.0, 0.15), detail=2), 0.44, 0.48)
+    C.paint(nb.mul(nb.mul(plate, rows), words), hexc("#2A2A28"), 0.6, 0.2, -0.15)
+    C.paint(L.k(HH_SPRING), hexc("#8B8D8F"), 0.35, 1.0)
+    C.paint(nb.mul(L.k(HH_SPRING), nb.ss(L.noise(60.0, 31, detail=4), 0.55, 0.65)), hexc("#6E3D22"), 0.8, 0.1)
+    C.paint(L.k(HH_BRASS), hexc("#B0884A"), 0.34, 1.0)
+    C.finish(f.dust, grime=0.55, keep=L.k(HH_LENS, HH_LENS_IN, HH_REFL, HH_BULB))
+    return C.surface(bump_dist=0.0012, bump=0.45)
+
+
+HH_HOOK = HH_LAMP_M @ Vector((0.0, HL["body"]["r1"] * 0.35 + HL["hook"]["h"] - 0.006,
+                              -HL["gap"] - HB["slot"][1] / 2))
+HH_UP = HH_LAMP_M.to_3x3() @ Vector((0.0, 1.0, 0.0))
+HH_AIM = (HH_LAMP_M.to_3x3() @ Vector((0.0, 0.0, 1.0))).normalized()
+HH_KNOB_AT = HH_LAMP_M @ Vector((0.0, hh_body_r(HH_KNOB_Z) + 0.012, HH_KNOB_Z))
+HH_LENS_C = HH_LAMP_M @ Vector((0.0, 0.0, HH_SEAT))
+# the filmstrip's camera aims 0.14 of the find's size under its focus: lift it to the knob
+HH_LOOK = tuple(HH_LAMP_M @ Vector((0.0, 0.07, 0.12)) + Vector((0.0, 0.0, 0.2)))
+HH_KNOB_ON = HL["knob"]["on"]
+HH_TURN_ON = [(0.0, 0.0), (0.06, -6.0, "Quad", "Out"), (0.16, HH_KNOB_ON + 6.0, "Quad", "In"),
+              (0.21, HH_KNOB_ON - 2.0, "Quad", "Out"), (0.29, HH_KNOB_ON + 1.0), (0.36, HH_KNOB_ON)]
+HH_TURN_OFF = [(0.0, HH_KNOB_ON), (0.06, HH_KNOB_ON + 5.0, "Quad", "Out"), (0.15, -4.0, "Quad", "In"),
+               (0.21, 1.5, "Quad", "Out"), (0.28, 0.0)]
+# the thumb's push nods the lamp in its bracket, and it rocks back
+HH_NOD = [(0.0, 0.0), (0.06, 0.6, "Quad", "Out"), (0.16, 2.4, "Quad", "In"), (0.26, -1.0),
+          (0.38, 0.4), (0.52, 0.0)]
+HARD_HAT = kit.Find(
+    "HardHat",
+    [kit.Part("Shell", hh_shell_all),
+     kit.Part("Lamp", hh_lamp, tuple(HH_HOOK), "Shell", (1, 0, 0)),
+     kit.Part("Switch", hh_knob, tuple(HH_KNOB_AT), "Lamp", tuple(-HH_UP)),
+     kit.Part("Bulb", hh_bulb, tuple(HH_LENS_C), "Lamp"),
+     kit.Part("Lens", hh_lens, tuple(HH_LENS_C), "Lamp", clear=True),
+     kit.Part("Pack", hh_pack, tuple(HH_CLIP), "Shell")],
+    hh_look,
+    lights=[
+        # the beam: a warm, narrow cone out of the lens, lighting whatever the wearer looks at
+        dict(kind="Spot", part="Lamp", at=tuple(HH_LAMP_M @ Vector((0.0, 0.0, HH_FRONT + 0.004))),
+             face=tuple(HH_AIM), kelvin=HL["kelvin"], brightness=1.5, range=20, angle=40,
+             shadows=True, preview_watts=30.0, preview_blend=0.35),
+        # its spill round the lamp, which also lights at low graphics (docs/STUDIO.md)
+        dict(kind="Point", part="Lamp", at=tuple(HH_LAMP_M @ Vector((0.0, 0.0, HH_FRONT + 0.06))),
+             kelvin=HL["kelvin"], brightness=0.3, range=5, shadows=False, preview_kind="POINT",
+             preview_watts=1.0, preview_size=0.05),
+    ],
+    glow=dict(part="Bulb", strength=3.0, tint=(255, 205, 150), preview=14.0),
+    lit={("Switch", "turn"): HH_KNOB_ON},
+    motions={
+        # a thumb turns the knob: a nudge back, it snaps round into its click, the lamp nods in
+        # its bracket under the push; the filament comes up warm a breath after the click
+        "SwitchOn": dict(duration=0.7, focus=HH_LOOK, distance=0.33, tracks=[
+            ("Switch", "turn", HH_TURN_ON), ("Lamp", "turn", HH_NOD),
+            ("Bulb", "glow", [(0.0, 0.0), (0.155, 0.0, "Linear"), (0.19, 0.45, "Quad", "Out"),
+                              (0.32, 1.0, "Quad", "Out"), (0.7, 1.0)])]),
+        # turned back: the light drops at the click and the filament fades orange to nothing
+        "SwitchOff": dict(duration=0.7, focus=HH_LOOK, distance=0.33, tracks=[
+            ("Switch", "turn", HH_TURN_OFF), ("Lamp", "turn", HH_NOD),
+            ("Bulb", "glow", [(0.0, 1.0), (0.14, 1.0, "Linear"), (0.17, 0.25, "Quad", "Out"),
+                              (0.55, 0.0, "Sine", "Out")])]),
+        # its minute up: the battery sags, the beam browns and stutters and dies
+        "RunDown": dict(duration=3.0, focus=HH_LOOK, distance=0.33, tracks=[
+            ("Bulb", "glow", [(0.0, 1.0), (0.4, 0.86), (0.46, 0.4, "Quad", "Out"), (0.55, 0.8),
+                              (1.0, 0.6), (1.06, 0.18, "Quad", "Out"), (1.14, 0.5), (1.6, 0.32),
+                              (1.66, 0.05, "Quad", "Out"), (1.74, 0.22), (2.2, 0.08),
+                              (2.6, 0.0, "Quad", "In"), (3.0, 0.0)])]),
+    },
+    dust=HH["dust"], seed=HH["seed"],
+)
+
+# --- the jar of fireflies -----------------------------------------------------------------------
+
+(FJ_GLASS, FJ_GLASS_IN, FJ_BAND, FJ_DISC, FJ_UNDER, FJ_GRASS, FJ_STRAW, FJ_TWIG, FF_BODY, FF_WING,
+ FF_EDGE, FF_HOOD, FF_SPOT, FF_LANTERN, FF_LEG) = range(133, 148)
+FJ, FF = K.FIREFLY_JAR, K.FIREFLY
+FJB, FJD = FJ["band"], FJ["disc"]
+FJ_LID = Vector((0.0, 0.0, (FJB["z0"] + FJB["z1"]) / 2))   # the lid's pivot: the band's middle
+FJ_DZ = FJB["z1"] - 0.007                                 # the disc's top, under the band's lip
+
+
+def fj_ss(a, b, x):
+    u = min(1.0, max(0.0, (x - a) / (b - a)))
+    return u * u * (3 - 2 * u)
+
+
+def fj_jar(hi):
+    """The jar: one glass shell, out round its base, up the body and shoulder, over the rim and
+    back down the inside to its floor."""
+    s = Shape()
+    out, ins = FJ["outside"], FJ["inside"]
+    (r0, z0), (r1, _) = out[-1], ins[0]
+    nl = 6 if hi else 3
+    lip = fillet((r0 + r1) / 2, z0, (r0 - r1) / 2, (0, 180), nl)
+    prof = out[:-1] + lip + ins[1:]
+    n_out = len(out) - 1 + nl
+    kinds = [FJ_GLASS] * n_out + [FJ_GLASS_IN] * (len(prof) - 1 - n_out)
+    s.lathe(prof, FJ_GLASS, segs(hi, 40), kinds=kinds)
+    return s
+
+
+def fj_holes():
+    """The nail holes: a sunflower scatter over the panel, nudged off true as a hand punches."""
+    rng = random.Random(FJD["seed"])
+    n, out = FJD["holes"], []
+    for i in range(n):
+        r = 0.094 * math.sqrt((i + 0.5) / n)
+        a = i * 2.39996 + rng.uniform(-0.25, 0.25)
+        r += rng.uniform(-0.004, 0.004)
+        out.append((r * math.cos(a), r * math.sin(a)))
+    return out
+
+
+FJ_HOLES = fj_holes()
+
+
+def fj_disc_z(x, y, hi):
+    """The disc's top: flat, a recessed ring round its panel, each hole a punched crater."""
+    r = math.hypot(x, y)
+    z = FJ_DZ
+    z -= 0.0028 * math.exp(-((r - FJD["panel"]) / 0.0035) ** 2)
+    if hi:
+        for hx, hy in FJ_HOLES:
+            d = math.hypot(x - hx, y - hy)
+            if d < 0.011:
+                z -= 0.0042 * (0.5 + 0.5 * math.cos(math.pi * d / 0.011))
+    return z
+
+
+def fj_lid(hi):
+    s = Shape()
+    f = 3 if hi else 1
+    r, z0, z1, t, lip = FJB["r"], FJB["z0"], FJB["z1"], FJB["t"], FJB["lip"]
+    # the band: round its rolled foot, up the outside (two rings pressed by the thread), over the
+    # top and its lip, back under the lip and down the inside
+    g = 0.0025
+    prof = fillet(r - t / 2, z0 + t / 2, t / 2, (-180, 0), 3 * f)
+    for zc in (z0 + 0.024, z0 + 0.044):
+        prof += [(r, zc - 0.008), (r - g, zc - 0.002), (r - g, zc + 0.002), (r, zc + 0.008)]
+    prof += fillet(r - 0.005, z1 - 0.005, 0.005, (0, 90), 2 * f)[1:]
+    prof += fillet(lip + 0.003, z1 - 0.003, 0.003, (90, 270), 3 * f)[1:]
+    prof += [(r - t, z1 - t - 0.002), (r - t, z0 + 0.003)]
+    prof.append(prof[0])
+    s.lathe(prof, FJ_BAND, segs(hi, 48))
+    # the disc: its underside (the sealing ring's face) and edge, then its punched top
+    dr = FJD["r"]
+    s.lathe([(0.0, FJ_DZ - 0.003), (dr, FJ_DZ - 0.003), (dr, FJ_DZ)], FJ_UNDER, segs(hi, 40))
+    n = 200 if hi else 40
+    m = 46 if hi else 8
+    rings = []
+    for i in range(m):
+        rr = dr * (1.0 - i / m)
+        rings.append([(rr * math.cos(2 * math.pi * j / n), rr * math.sin(2 * math.pi * j / n),
+                       fj_disc_z(rr * math.cos(2 * math.pi * j / n), rr * math.sin(2 * math.pi * j / n), hi))
+                      for j in range(n)])
+    rings.append([(0.0, 0.0, fj_disc_z(0.0, 0.0, hi))])
+    s.loft(rings, FJ_DISC)
+    return s
+
+
+def fj_blade(s, base, lean, height, bend, w, kind, hi):
+    """A blade of grass from base, up and leaning toward `lean` (a direction), its tip bent
+    over by `bend`; a flattened V in section, tapering to a point."""
+    lean = Vector(lean).normalized()
+    b0 = Vector(base)
+    # it leans out until its tip rests on the glass, never through it
+    room = 0.172 - Vector((b0.x, b0.y, 0.0)).dot(lean)
+    reach = min(height * (0.3 + 0.5 * bend), room)
+    b1 = b0 + Vector((0.0, 0.0, height * 0.6)) + lean * reach * 0.35
+    b2 = b0 + Vector((0.0, 0.0, height * (1.0 - 0.45 * bend))) + lean * reach
+    m = 14 if hi else 6
+    rings = []
+    for i in range(m + 1):
+        u = i / m
+        p = b0 * (1 - u) ** 2 + b1 * 2 * u * (1 - u) + b2 * u * u
+        T = ((b1 - b0) * 2 * (1 - u) + (b2 - b1) * 2 * u).normalized()
+        side = T.cross(lean).normalized()
+        nrm = side.cross(T).normalized()
+        if i == m:
+            rings.append([tuple(p)])
+            break
+        ww = w * (1.0 - u) ** 0.55
+        th = 0.0016
+        # anticlockwise seen from the tip: a, then nrm-ward, then -a, then back
+        ring = [p + side * ww, p + nrm * (th + ww * 0.12), p - side * ww, p - nrm * th]
+        rings.append([tuple(q) for q in ring])
+    s.loft(rings, kind, cap_bottom=kind)
+
+
+def fj_grass(hi):
+    s = Shape()
+    rng = random.Random(FJ["seed"] + 1)
+    for k in range(7):
+        a = 2 * math.pi * k / 7 + rng.uniform(-0.3, 0.3)
+        r0 = rng.uniform(0.02, 0.1)
+        base = (r0 * math.cos(a), r0 * math.sin(a), 0.026)
+        lean = (math.cos(a), math.sin(a), 0.0)
+        h = rng.uniform(0.3, 0.46)
+        fj_blade(s, base, lean, h, rng.uniform(0.1, 0.5), rng.uniform(0.009, 0.013),
+                 FJ_STRAW if k in (2, 5) else FJ_GRASS, hi)
+    # a twig across the bottom, leaning on the glass, a short fork off it
+    pts = [(-0.15, 0.07, 0.035), (-0.04, 0.03, 0.07), (0.06, -0.01, 0.11), (0.15, -0.05, 0.16)]
+    sm = spline(pts, 4 if hi else 2)
+    s.tube(sm, 0.0065, FJ_TWIG, segs(hi, 6), radii=[0.0075 - 0.003 * i / (len(sm) - 1) for i in range(len(sm))])
+    fk = [(-0.04, 0.03, 0.07), (-0.02, 0.07, 0.1), (0.0, 0.1, 0.12)]
+    s.tube(fk, 0.004, FJ_TWIG, segs(hi, 5), radii=[0.0045, 0.0035, 0.0025])
+    return s
+
+
+# --- the fireflies: one beetle, built in its own frame (head +Y, back +Z) at each one's rest ---
+
+def ff_bug(s, M, hi):
+    L = FF["length"] / 0.066
+    n = 12 if hi else 8
+
+    def ring(y, w, h, z=0.0, cnt=n):
+        # anticlockwise seen from the head: from the back (+Z) round toward +X
+        return [tuple(M @ (Vector((w * math.sin(2 * math.pi * j / cnt), y, z + h * math.cos(2 * math.pi * j / cnt))) * L))
+                for j in range(cnt)]
+
+    def belly(j, cnt=n):
+        return FF_LANTERN if math.cos(2 * math.pi * (j + 0.5) / cnt) < -0.2 else FF_BODY
+
+    # the abdomen: its tail the lantern underneath and round the tip
+    tail = [[tuple(M @ (Vector((0.0, -0.034, -0.0015)) * L))], ring(-0.031, 0.0055, 0.0032, -0.001),
+            ring(-0.025, 0.0088, 0.0044), ring(-0.017, 0.0105, 0.0048)]
+    s.loft(tail, FF_BODY, kinds=belly)
+    front = [ring(-0.017, 0.0105, 0.0048), ring(-0.006, 0.0112, 0.005), ring(0.006, 0.0105, 0.0048),
+             ring(0.013, 0.0078, 0.0042), [tuple(M @ (Vector((0.0, 0.016, 0.0)) * L))]]
+    s.loft(front, FF_BODY)
+    # the wing covers: a thin shell over its back, their pale margins down each side
+    m = 10 if hi else 6
+
+    def shell(y, w, h, z):
+        out, inn = [], []
+        for j in range(m + 1):
+            a = -math.pi * 0.62 + 1.24 * math.pi * j / m
+            out.append(Vector((w * math.sin(a), y, z + h * math.cos(a))))
+            inn.append(Vector(((w - 0.0012) * math.sin(a), y, z + (h - 0.0012) * math.cos(a))))
+        return [tuple(M @ (q * L)) for q in out + list(reversed(inn))]
+
+    cnt = 2 * (m + 1)
+
+    def edge(j):
+        return FF_EDGE if j in (0, m - 1, m, m + 1, cnt - 2, cnt - 1) or j == m // 2 else FF_WING
+
+    wings = [[tuple(M @ (Vector((0.0, -0.035, 0.002)) * L))], shell(-0.032, 0.006, 0.0042, 0.0004),
+             shell(-0.024, 0.0112, 0.0058, 0.0004), shell(-0.01, 0.0128, 0.0062, 0.0004),
+             shell(0.004, 0.0126, 0.006, 0.0004), shell(0.012, 0.0112, 0.0054, 0.0004)]
+    s.loft(wings, FF_WING, kinds=edge)
+    # the hood over its head: a rounded shield, rose with a black spot in its middle
+    k = 14 if hi else 8
+    hood = []
+    for i, sc in enumerate((1.0, 0.96, 0.8, 0.55, 0.28)):
+        rr = []
+        for j in range(k):
+            a = 2 * math.pi * j / k
+            x = 0.0115 * math.cos(a)
+            y = 0.0225 + (0.011 if math.sin(a) > 0 else 0.0095) * math.sin(a)
+            rr.append(tuple(M @ (Vector((x * sc, 0.0225 + (y - 0.0225) * sc,
+                                          0.0028 + 0.004 * (1.0 - sc ** 2) ** 0.6)) * L)))
+        hood.append(rr)
+    hood.append([tuple(M @ (Vector((0.0, 0.0225, 0.0068)) * L))])
+    s.loft(hood, FF_HOOD, cap_bottom=FF_HOOD)
+    s.lathe([(0.0, -0.001), (0.003, -0.001), (0.0026, 0.0008), (0.0, 0.0012)], FF_SPOT, 8 if hi else 5,
+            M @ Matrix.Translation(Vector((0.0, 0.0215, 0.0062)) * L) @ Matrix.Diagonal((1.0, 1.3, 1.0, 1.0)))
+    # the head, tucked under the hood's front
+    s.lathe([(0.0, -0.004), (0.0035, -0.0035), (0.0045, 0.0), (0.0035, 0.0035), (0.0, 0.004)],
+            FF_BODY, 8 if hi else 5, M @ Matrix.Translation(Vector((0.0, 0.03, -0.0005)) * L)
+            @ Matrix.Rotation(math.radians(-90), 4, "X"))
+    # feelers and six legs, thin dark wire
+    for sx in (-1, 1):
+        s.tube([tuple(M @ (Vector(p) * L)) for p in ((sx * 0.0025, 0.0335, 0.0005), (sx * 0.008, 0.042, 0.003),
+                                                     (sx * 0.013, 0.05, 0.002))], 0.0007 * L, FF_LEG, 3)
+        for y, out, back in ((0.012, 0.016, 0.006), (0.004, 0.018, -0.002), (-0.006, 0.017, -0.012)):
+            s.tube([tuple(M @ (Vector(p) * L)) for p in ((sx * 0.005, y, -0.003), (sx * out, y + back * 0.4, -0.004),
+                                                         (sx * (out + 0.003), y + back, -0.0095))],
+                   0.0008 * L, FF_LEG, 3)
+
+
+FF_L = FF["length"] / 0.066     # the beetle is drawn 66 thousandths long, then scaled
+
+
+def ff_frames():
+    """Each firefly's rest, as found: most on the glass (back to the middle, head up or askew),
+    a few on the jar's floor."""
+    rng = random.Random(FJ["seed"] + 2)
+    out = []
+    wall = [(0.12, 0.0), (0.33, 0.8), (0.2, 1.6), (0.41, 2.4), (0.15, 3.1), (0.3, 3.9), (0.24, 4.7),
+            (0.38, 5.5), (0.1, 2.0)]
+    for z, a in wall:
+        a += rng.uniform(-0.2, 0.2)
+        rad = Vector((math.cos(a), math.sin(a), 0.0))
+        tan = Vector((-math.sin(a), math.cos(a), 0.0))
+        b = math.radians(rng.uniform(-55, 55))
+        Y = Vector((0, 0, 1)) * math.cos(b) + tan * math.sin(b)
+        Z = -rad
+        X = Y.cross(Z)
+        p = rad * (0.187 - 0.0095 * FF_L) + Vector((0, 0, z))
+        out.append((p, X, Y, Z))
+    for r, a, h in ((0.07, 0.6, 2.2), (0.09, 3.6, 0.4), (0.05, 5.0, 4.0)):
+        p = Vector((r * math.cos(a), r * math.sin(a), 0.028 + 0.0095 * FF_L))
+        Y = Vector((math.cos(h), math.sin(h), 0.0))
+        Z = Vector((0, 0, 1))
+        out.append((p, Y.cross(Z), Y, Z))
+    return out
+
+
+FF_REST = ff_frames()
+
+
+def ff_M(i):
+    p, X, Y, Z = FF_REST[i]
+    R = Matrix((X, Y, Z)).transposed()
+    return Matrix.Translation(p) @ R.to_4x4()
+
+
+def ff_part(i):
+    def build(hi):
+        s = Shape()
+        ff_bug(s, ff_M(i), hi)
+        return s
+    return build
+
+
+# --- how they fly (README): every number in FF; a loop the game plays for the minute ------
+
+FF_T = FF["drift"]
+
+
+def ff_quarter_keys(c, a, k, q):
+    """c + a sin(2 pi k t / T + q pi / 2) over the loop, keyed at its quarter points, where a
+    Sine Out (from a crossing to a peak) or Sine In (a peak to a crossing) between them is the
+    curve exactly."""
+    step = FF_T / (4 * k)
+    keys = []
+    for m in range(4 * k + 1):
+        ph = (q + m) % 4
+        v = round(c + a * (0, 1, 0, -1)[ph], 4)
+        if m == 0:
+            keys.append((0.0, v))
+        else:
+            style = ("Sine", "Out") if (q + m - 1) % 4 in (0, 2) else ("Sine", "In")
+            keys.append((round(m * step, 4), v) + style)
+    return keys
+
+
+def ff_flash(t0, peak):
+    """One flash from t0: up fast, held a breath, dying away (keys after an unlit stretch)."""
+    f = FF["flash"]
+    return [(round(t0, 3), 0.0, "Linear", "In"), (round(t0 + f["rise"], 3), peak, "Sine", "Out"),
+            (round(t0 + f["rise"] + f["hold"], 3), round(peak * 0.92, 3), "Linear", "In"),
+            (round(t0 + f["rise"] + f["hold"] + f["fall"], 3), 0.0, "Sine", "In")]
+
+
+def ff_glow(flashes, peaks, end):
+    keys = [(0.0, 0.0)]
+    for t0, pk in sorted(zip(flashes, peaks)):
+        keys += ff_flash(t0, pk)
+    keys.append((end, 0.0, "Linear", "In"))
+    return keys
+
+
+def ff_J(tau):
+    """The J: a dip just before the flash, a climb while it's lit, settling back after."""
+    dip = -FF["dip"] * math.sin(math.pi * (tau + 0.5) / 0.7) if -0.5 <= tau <= 0.2 else 0.0
+    return dip + FF["climb"] * fj_ss(0.0, 0.75, tau) * (1.0 - fj_ss(1.1, 3.4, tau))
+
+
+def ff_plan(i):
+    """Firefly i's loop: a Lissajous figure round its own middle, bobbing, with its flashes."""
+    rng = random.Random(FJ["seed"] + 10 + i)
+    a = rng.uniform(0, 2 * math.pi)
+    rr = FF["middle"] * math.sqrt(rng.random())
+    kx, ky = rng.choice((1, 2)), rng.choice((1, 2))
+    qx = rng.randrange(4)
+    qy = (qx + 1) % 4 if kx == ky else rng.randrange(4)
+    if qx % 2 and qy % 2:
+        qy = (qy + 1) % 4          # never both at a peak at once: it would hang still
+    f1 = rng.uniform(0.3, 3.4)
+    fl = [f1]
+    while True:
+        nxt = fl[-1] + rng.uniform(*FF["every"])
+        if nxt + 1.0 > FF_T or nxt > f1 + FF_T - FF["every"][0]:
+            break
+        fl.append(nxt)
+    return dict(cx=rr * math.cos(a), cy=rr * math.sin(a), ax=rng.uniform(*FF["reach"]),
+                ay=rng.uniform(*FF["reach"]), kx=kx, ky=ky, qx=qx, qy=qy,
+                cz=rng.uniform(*FF["height"]), az=rng.uniform(0.15, 0.4), kz=rng.choice((2, 3)),
+                qz=rng.randrange(4), flashes=fl, rng=rng)
+
+
+FF_PLANS = [ff_plan(i) for i in range(FF["n"])]
+
+
+def ff_drift_at(pl, t):
+    w = 2 * math.pi / FF_T
+    x = pl["cx"] + pl["ax"] * math.sin(w * pl["kx"] * t + pl["qx"] * math.pi / 2)
+    y = pl["cy"] + pl["ay"] * math.sin(w * pl["ky"] * t + pl["qy"] * math.pi / 2)
+    z = pl["cz"] + pl["az"] * math.sin(w * pl["kz"] * t + pl["qz"] * math.pi / 2)
+    for f in pl["flashes"]:
+        tau = (t - f + FF_T / 2) % FF_T - FF_T / 2
+        z += ff_J(tau)
+    return Vector((x, y, z))
+
+
+def ff_drift_vel(pl, t):
+    e = 1e-3
+    return (ff_drift_at(pl, t + e) - ff_drift_at(pl, t - e)) / (2 * e)
+
+
+def ff_hermite(pts, ts, v0, v1):
+    P = [Vector(p) for p in pts]
+    V = [Vector(v0)] + [(P[k + 1] - P[k - 1]) / (ts[k + 1] - ts[k - 1]) for k in range(1, len(P) - 1)] + [Vector(v1)]
+
+    def at(t):
+        if t <= ts[0]:
+            return P[0].copy()
+        if t >= ts[-1]:
+            return P[-1] + V[-1] * (t - ts[-1])
+        k = max(i for i in range(len(ts) - 1) if ts[i] <= t)
+        h = ts[k + 1] - ts[k]
+        u = (t - ts[k]) / h
+        return (P[k] * (2 * u ** 3 - 3 * u ** 2 + 1) + V[k] * h * (u ** 3 - 2 * u ** 2 + u)
+                + P[k + 1] * (-2 * u ** 3 + 3 * u ** 2) + V[k + 1] * h * (u ** 3 - u ** 2))
+    return at
+
+
+def ff_sampled(f, dur, eps, rate=24.0):
+    """Channel keys for f(t) -> (x, y, z), sampled and thinned to straight runs."""
+    n = int(round(dur * rate))
+    ts = [dur * i / n for i in range(n + 1)]
+    ps = [f(t) for t in ts]
+    return [bl_rdp(ts, [p[c] for p in ps], eps) for c in range(3)]
+
+
+def ff_tracks_drift():
+    tr = []
+    for i, pl in enumerate(FF_PLANS):
+        p = FF_REST[i][0]
+        name = f"Firefly{i}"
+        tr.append((name, "x", ff_quarter_keys(pl["cx"] - p.x, pl["ax"], pl["kx"], pl["qx"])))
+        tr.append((name, "y", ff_quarter_keys(pl["cy"] - p.y, pl["ay"], pl["ky"], pl["qy"])))
+        n = int(FF_T * 24)
+        ts = [FF_T * j / n for j in range(n + 1)]
+        tr.append((name, "move", bl_rdp(ts, [ff_drift_at(pl, t).z - p.z for t in ts], 0.012)))
+        tr.append((name, "glow", ff_glow(pl["flashes"], [1.0] * len(pl["flashes"]), FF_T)))
+    return tr
+
+
+def ff_tracks_open():
+    tr = []
+    order = sorted(range(FF["n"]), key=lambda i: -FF_REST[i][0].z)
+    T = FF["open"]
+    for rank, i in enumerate(order):
+        pl = FF_PLANS[i]
+        rng = random.Random(FJ["seed"] + 40 + i)
+        p = FF_REST[i][0]
+        t0 = 1.8 + 0.34 * rank + rng.uniform(0.0, 0.1)
+        d0 = ff_drift_at(pl, 0.0)
+        out = Vector((d0.x, d0.y, 0.0))
+        out = out.normalized() if out.length > 1e-3 else Vector((1.0, 0.0, 0.0))
+        a1 = Vector((p.x * 0.35, p.y * 0.35, min(0.55, max(0.2, p.z + 0.18))))
+        a2 = Vector((rng.uniform(-0.03, 0.03), rng.uniform(-0.03, 0.03), 0.76))
+        a3 = a2 + out * rng.uniform(0.35, 0.6) + Vector((0.0, 0.0, rng.uniform(0.5, 0.8)))
+        path = ff_hermite([p, a1, a2, a3, d0], [t0, t0 + 0.45, t0 + 0.8, t0 + 1.6, T],
+                          (0.0, 0.0, 0.0), ff_drift_vel(pl, 0.0))
+        name = f"Firefly{i}"
+        kx, ky, kz = ff_sampled(lambda t: path(t) - p, T, 0.01)
+        tr += [(name, "x", kx), (name, "y", ky), (name, "move", kz)]
+        # startled as the lid comes off: a flash as it lifts, another on its way out
+        fl = [t0 - 0.2, t0 + 1.4 + rng.uniform(0.3, 1.3)]
+        if fl[1] + 0.8 > T:
+            fl = fl[:1]
+        tr.append((name, "glow", ff_glow(fl, [0.85, 1.0][:len(fl)], T)))
+    return tr
+
+
+def ff_tracks_gone():
+    tr = []
+    T = FF["gone"]
+    for i, pl in enumerate(FF_PLANS):
+        rng = random.Random(FJ["seed"] + 70 + i)
+        p = FF_REST[i][0]
+        d0, v0 = ff_drift_at(pl, 0.0), ff_drift_vel(pl, 0.0)
+        t1, t2 = rng.uniform(0.9, 1.6), rng.uniform(3.0, 4.0)
+        g1 = d0 + v0 * t1 * 0.6 + Vector((0.0, 0.0, 0.7))
+        out = Vector((g1.x, g1.y, 0.0))
+        out = out.normalized() if out.length > 1e-3 else Vector((1.0, 0.0, 0.0))
+        g2 = g1 + out * rng.uniform(0.8, 1.6) + Vector((0.0, 0.0, rng.uniform(1.6, 2.4)))
+        path = ff_hermite([d0, g1, g2], [0.0, t1, t2], v0, out * 0.3 + Vector((0.0, 0.0, 0.6)))
+        name = f"Firefly{i}"
+        kx, ky, kz = ff_sampled(lambda t: path(t) - p, T, 0.01)
+        tr += [(name, "x", kx), (name, "y", ky), (name, "move", kz)]
+        tr.append((name, "glow", ff_glow([t1 - 0.2, max(t2 - 1.1, t1 + 0.7)], [0.8, 0.45], T)))
+        tr.append((name, "scale", [(0.0, 1.0), (t2 - 0.45, 1.0, "Linear", "In"), (t2, 0.02, "Quad", "In"),
+                                   (T, 0.02, "Linear", "In")]))
+    return tr
+
+
+def ff_tracks_idle(T=12.0):
+    tr = []
+    for i in range(FF["n"]):
+        rng = random.Random(FJ["seed"] + 100 + i)
+        fl = [rng.uniform(0.2, 5.0)]
+        if rng.random() < 0.7:
+            fl.append(fl[0] + rng.uniform(4.5, 6.2))
+        fl = [f for f in fl if f + 0.8 < T]
+        tr.append((f"Firefly{i}", "glow", ff_glow(fl, [rng.uniform(0.55, 0.8) for _ in fl], T)))
+    return tr
+
+
+# the lid: unscrewed in three twists, the thread lifting it; popped free, lifted clear, set down
+# on the floor beside the jar on one edge, slapped flat with a last little rock
+FJ_TWIST = [(0.0, 0.0), (0.32, 175.0, "Quad", "InOut"), (0.44, 175.0, "Linear", "In"),
+            (0.76, 355.0, "Quad", "InOut"), (0.88, 355.0, "Linear", "In"), (1.2, 540.0, "Quad", "InOut")]
+FJ_SET = Vector((-0.44, -0.2, 0.0))         # where it's set down, from the jar's middle
+FJ_HALF = (FJB["z1"] - FJB["z0"]) / 2
+
+
+def fj_lid_state(t):
+    """The lid's middle and its pitch (degrees) at t."""
+    ks = ease.keys(FJ_TWIST)
+    thread = FJ["pitch"] * ease.sample(ks, min(t, 1.2)) / 360.0
+    base = FJ_LID.copy()
+
+    def touch(p):
+        return FJ_HALF * math.cos(math.radians(p)) + FJB["r"] * math.sin(math.radians(abs(p)))
+
+    if t <= 1.2:
+        return base + Vector((0, 0, thread)), 0.0
+    up = FJ["turns"] * FJ["pitch"]
+    if t <= 1.32:
+        u = ease.ease("Quad", "Out", (t - 1.2) / 0.12)
+        return base + Vector((0, 0, up + 0.01 * u)), 0.0
+    if t <= 1.62:
+        u = ease.ease("Sine", "InOut", (t - 1.32) / 0.3)
+        return base + Vector((0, 0, up + 0.01 + 0.14 * u)), 0.0
+    hi_ = base + Vector((0, 0, up + 0.15))
+    land = Vector((FJ_SET.x, FJ_SET.y, touch(7.0)))
+    if t <= 2.12:
+        u = (t - 1.62) / 0.5
+        uh = ease.ease("Sine", "InOut", u)
+        zz = hi_.z + (land.z - hi_.z) * ease.ease("Quad", "InOut", u) + 0.08 * math.sin(math.pi * u)
+        return Vector((land.x * uh, land.y * uh, zz)), 7.0 * ease.ease("Sine", "InOut", u)
+    for t0, t1, p0, p1, st in ((2.12, 2.2, 7.0, 0.0, ("Quad", "In")), (2.2, 2.27, 0.0, -1.6, ("Quad", "Out")),
+                               (2.27, 2.34, -1.6, 0.0, ("Quad", "In"))):
+        if t <= t1:
+            pp = p0 + (p1 - p0) * ease.ease(st[0], st[1], (t - t0) / (t1 - t0))
+            return Vector((land.x, land.y, touch(pp))), pp
+    return Vector((land.x, land.y, FJ_HALF)), 0.0
+
+
+def fj_lid_tracks(T):
+    """The lid's channels: its middle and pitch solved for the travel channels (which tilt
+    about its pivot after the move along its axis), sampled and thinned."""
+    n = int(round(T * 48))
+    ts = [T * i / n for i in range(n + 1)]
+    xs, ys, ms, ps = [], [], [], []
+    for t in ts:
+        c, pdeg = fj_lid_state(t)
+        pr = math.radians(pdeg)
+        mv = (c.z - FJ_LID.z) / math.cos(pr)
+        xs.append(c.x - FJ_LID.x)
+        ys.append(c.y - FJ_LID.y + mv * math.sin(pr))
+        ms.append(mv)
+        ps.append(pdeg)
+    return [("Lid", "turn", FJ_TWIST + [(T, 540.0, "Linear", "In")]),
+            ("Lid", "move", bl_rdp(ts, ms, 0.0015)), ("Lid", "x", bl_rdp(ts, xs, 0.0015)),
+            ("Lid", "y", bl_rdp(ts, ys, 0.0015)), ("Lid", "pitch", bl_rdp(ts, ps, 0.15))]
+
+
+def fj_lid_still(T):
+    """The lid lying where it was set down, for the motions after Open."""
+    c, _ = fj_lid_state(99.0)
+    return [("Lid", "turn", [(0.0, 540.0), (T, 540.0, "Linear", "In")]),
+            ("Lid", "move", [(0.0, round(c.z - FJ_LID.z, 4)), (T, round(c.z - FJ_LID.z, 4), "Linear", "In")]),
+            ("Lid", "x", [(0.0, round(c.x, 4)), (T, round(c.x, 4), "Linear", "In")]),
+            ("Lid", "y", [(0.0, round(c.y, 4)), (T, round(c.y, 4), "Linear", "In")])]
+
+
+def fj_look(L, f):
+    nb = L.nb
+    # old aqua glass: dark and glossy so it reads as glass, rippled as old glass is
+    glass = L.k(FJ_GLASS, FJ_GLASS_IN)
+    C = Coat(L, hexc("#77A09A"), 0.04, 0.0, nb.mul(L.noise(14.0, 1, stretch=(1.0, 1.0, 0.35), detail=3), 0.12))
+    C.paint(L.k(FJ_GLASS), alpha=0.18)
+    C.paint(L.k(FJ_GLASS_IN), alpha=0.12)
+    smudge = nb.mul(L.k(FJ_GLASS), nb.ss(L.noise(5.0, 2, detail=4, rough=0.6), 0.58, 0.72))
+    C.paint(nb.mul(smudge, 0.7), hexc("#C2CFCB"), 0.3, alpha=0.24)
+    # the band: brass-coloured lacquer on steel, worn through on its top edge, rust at its foot
+    band = L.k(FJ_BAND)
+    C.paint(band, nb.tint(hexc("#B48E45"), nb.mr(L.noise(10.0, 3, detail=3), 0.3, 0.7, 0.82, 1.1)),
+            nb.mr(L.noise(16.0, 4, detail=3), 0.3, 0.7, 0.28, 0.42), 1.0)
+    C.paint(nb.mul(nb.mul(band, L.edge(0.004, k=5.0)), nb.ss(L.noise(30.0, 5, detail=4), 0.45, 0.6)),
+            hexc("#8C8F90"), 0.4, 1.0)
+    C.paint(nb.mul(nb.mul(band, nb.ss(L.z, FJB["z0"] + 0.012, FJB["z0"])), nb.ss(L.noise(40.0, 6, detail=5), 0.5, 0.6)),
+            hexc("#6B3A1F"), 0.85, 0.1)
+    # the disc: tinplate, every punched hole black with a ring of rust round it
+    disc = L.k(FJ_DISC)
+    C.paint(disc, nb.tint(hexc("#C4C7C6"), nb.mr(L.noise(12.0, 7, detail=3), 0.3, 0.7, 0.85, 1.05)),
+            nb.mr(L.noise(20.0, 8, detail=3), 0.3, 0.7, 0.22, 0.38), 1.0)
+    holes, rust = None, None
+    for hx, hy in FJ_HOLES:
+        d2 = nb.add(nb.mul(nb.sub(L.x, hx), nb.sub(L.x, hx)), nb.mul(nb.sub(L.y, hy), nb.sub(L.y, hy)))
+        h = nb.ss(d2, (FJD["hole"] + 0.0006) ** 2, (FJD["hole"] - 0.0006) ** 2)
+        ru = nb.ss(d2, 0.0115 ** 2, 0.006 ** 2)
+        holes = h if holes is None else nb.add(holes, h, clamp=True)
+        rust = ru if rust is None else nb.add(rust, ru, clamp=True)
+    C.paint(nb.mul(nb.mul(disc, rust), nb.mr(L.noise(50.0, 9, detail=4), 0.3, 0.7, 0.35, 1.0)),
+            hexc("#7A4424"), 0.75, 0.15)
+    C.paint(nb.mul(disc, holes), hexc("#090807"), 0.9, 0.0)
+    C.paint(L.k(FJ_UNDER), hexc("#9A3D24"), 0.6, 0.0)     # the sealing compound's red
+    # grass, green going to straw at its tips; a dry twig
+    gr = L.k(FJ_GRASS)
+    C.paint(gr, nb.mixc(nb.ss(L.z, 0.2, 0.42), hexc("#4F6E27"), hexc("#9C9A4A")), 0.55, 0.0)
+    C.paint(L.k(FJ_STRAW), nb.tint(hexc("#B39A5C"), nb.mr(L.noise(30.0, 10, detail=3), 0.3, 0.7, 0.85, 1.1)),
+            0.62, 0.0)
+    C.paint(L.k(FJ_TWIG), nb.tint(hexc("#5B4734"), nb.mr(L.noise(60.0, 11, detail=4), 0.3, 0.7, 0.7, 1.2)),
+            0.82, 0.0)
+    # the fireflies: dark wing covers with pale margins, a rose hood with a black spot, and the
+    # pale yellow lantern under the tail that glows
+    C.paint(L.k(FF_BODY), hexc("#2A211B"), 0.45, 0.0)
+    C.paint(L.k(FF_WING), hexc("#35291F"), 0.38, 0.0)
+    C.paint(L.k(FF_EDGE), hexc("#C2A95E"), 0.45, 0.0)
+    C.paint(L.k(FF_HOOD), hexc("#C7716A"), 0.4, 0.0)
+    C.paint(L.k(FF_SPOT), hexc("#16110E"), 0.4, 0.0)
+    C.paint(L.k(FF_LANTERN), hexc("#E9E59C"), 0.35, 0.0)
+    C.paint(L.k(FF_LEG), hexc("#211913"), 0.5, 0.0)
+    C.lights(L.k(FF_LANTERN))
+    alive = L.k(FF_BODY, FF_WING, FF_EDGE, FF_HOOD, FF_SPOT, FF_LANTERN, FF_LEG, FJ_GRASS, FJ_STRAW,
+                FJ_TWIG, FJ_GLASS_IN)
+    C.finish(f.dust, grime=0.45, keep=alive)
+    return C.surface(bump_dist=0.001, bump=0.4)
+
+
+FJ_OPEN_T, FJ_GONE_T = FF["open"], FF["gone"]
+FJ_LIGHTS = [dict(kind="Point", part=f"Firefly{i}", at=tuple(FF_REST[i][0]), rgb=FF["rgb"],
+                  brightness=0.4, range=7, shadows=False, preview_kind="POINT", preview_watts=0.5,
+                  preview_size=0.02, glow_part=f"Firefly{i}") for i in FF["lights"]]
+FIREFLY_JAR = kit.Find(
+    "FireflyJar",
+    [kit.Part("Jar", fj_jar, clear=True),
+     kit.Part("Lid", fj_lid, tuple(FJ_LID), "Jar", (0, 0, 1)),
+     kit.Part("Grass", fj_grass, (0.0, 0.0, 0.03), "Jar")]
+    + [kit.Part(f"Firefly{i}", ff_part(i), tuple(FF_REST[i][0]), "Jar", (0, 0, 1)) for i in range(FF["n"])],
+    fj_look,
+    # three of the twelve carry a light: each blinks with its own firefly
+    lights=FJ_LIGHTS,
+    glow=dict(part="Firefly0", strength=4.0, tint=(205, 255, 120), preview=40.0),
+    lit={(f"Firefly{i}", "glow"): 0.8 for i in range(FF["n"])},
+    motions={
+        # as found: they crawl the glass and blink now and then; the game loops it
+        "Idle": dict(duration=12.0, focus=(0.0, 0.0, 0.36), distance=0.8, fps=8,
+                     tracks=ff_tracks_idle(12.0)),
+        # the lid unscrews and is set down; one by one they flash, climb out of the mouth and
+        # drift off to their places round the unit
+        "Open": dict(duration=FJ_OPEN_T, focus=(0.0, 0.0, 1.5), distance=3.6, fps=12,
+                     tracks=fj_lid_tracks(FJ_OPEN_T) + ff_tracks_open()),
+        # the minute they light the unit: each on its own loop, flashing and climbing in the J;
+        # the game loops it
+        "Drift": dict(duration=FF_T, focus=(0.0, 0.0, 1.9), distance=3.8, fps=8,
+                      tracks=fj_lid_still(FF_T) + ff_tracks_drift()),
+        # the minute's up: they rise, flash a last time and wink out
+        "Gone": dict(duration=FJ_GONE_T, focus=(0.0, 0.0, 2.6), distance=4.0, fps=12,
+                     tracks=fj_lid_still(FJ_GONE_T) + ff_tracks_gone()),
+    },
+    dust=FJ["dust"], seed=FJ["seed"], texels=450,
+)
+
+FINDS = [DESK_LAMP, NIGHT_LIGHT, TEA_LIGHT, GLOW_STICKS, FAIRY_LIGHTS, LANTERN, MOON_LAMP, BLOB_LAMP, OIL_LAMP, DISCO_BALL, NEON_SIGN,
+         HARD_HAT, FIREFLY_JAR]
 
 if __name__ == "__main__":
     kit.main("Lights", HERE, FINDS)

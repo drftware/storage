@@ -421,3 +421,114 @@ uploaded FBX (CRAFT.md, "Into Studio"); the place keeps them once the owner save
   the click, the pink's coating fading a breath after.
 - **For the game:** "At home: it buzzes and glows pink" is a game ticket: `SwitchOn`, then
   `Buzz` on a loop with a mains hum, `SwitchOff`.
+
+## Miner's hard hat (Nov 15, F-02j)
+
+- **What it is:** a mid-century miner's cap of safety-yellow fibreglass: a short drooping peak,
+  a low crest front to back over the crown, a flared lip round the sides and back, a moulded
+  lug each side and a black headband inside. On its front a riveted leather bracket with a
+  steel strap across it; a round cap lamp hooks behind the strap (a black housing, a chrome
+  bezel, a clear lens over a bright reflector and bulb, a switch knob with a fin on top). Its
+  rubber cord leaves the lamp in a boot, runs over the crown beside the crest, through a steel
+  clip on the back, down to the floor in a loose loop and up into a red steel battery case
+  standing beside the hat (an aluminium lid with latches down its sides, a spring round the
+  cord where it enters, two brass charging studs, a stamped nameplate, a belt loop on its
+  back). Worn: black scuffs and hairline scratches in the gel coat, the lip chipped to the
+  glass, coal dust ground in low down and a thumb smudge on the peak; the leather rubbed pale
+  at its edges, the battery chipped to steel and rusting at its foot.
+- **References** (looked at Nov 15): Newcastle University's Living Histories, a black cap-style
+  hard hat with its cap lamp and a battery in a leather case
+  (https://livinghistories.newcastle.edu.au/assets/display/367020-max: the lamp's shape, the
+  cord over the crown); WorthPoint, a yellow MSA miner's cap from the front
+  (thumbs.worthpoint.com, "vintage-mining-safety-yellow-msa": the peak, the riveted leather
+  bracket and its steel strap, the side lugs, the wear); Out Of The Blue Artifacts, a cap lamp
+  and its battery (outoftheblueartifacts.com, CAP-LAMP-2: the tall case, its lid and clips,
+  the spring where the cord enters, the nameplate, the bezel and reflector); the Smithsonian's
+  Bullard "Hard Boiled" miner's helmet record (the bracket and the cord holder on the back,
+  5 5/8 x 10 1/2 x 6 1/2 in); Crater Rock Museum's MSA Skullgard with a Wheat lamp and a red
+  battery case (the red case). Sizes: Carlton Bates' Wheat cap lamp listing, 3.35 x 2.45 x
+  3.1 in; the battery from the photos against the lamp.
+- **Size:** the hat 8.4 x 11.6 in, 6 in to the crest; the lamp head 3 in across; the battery
+  3.8 x 1.9 x 6.6 in: the hat 0.84 by 1.16 studs and 0.62 tall, the whole find about 1.5 by
+  1.35 studs (the battery and the cord's loop beside it).
+- **Tells:** a yellow hard hat with a big round lamp on its front; beside it a red box on a
+  black cord. Lit, the lens is a hot white disc and a warm cone lands on the floor ahead.
+- **Parts:** `HardHat_Shell` (root: the middle of the hat's rim on the floor, where it sits on a
+  head; the shell, lugs, headband, bracket, strap, clip, rivets and the cord over the crown),
+  `_Lamp` (the head; it nods about X on its hook behind the strap), `_Switch` (the knob, turning
+  about the lamp's down axis, so positive is clockwise from above; 70 degrees is on), `_Bulb`
+  (the reflector and bulb, the glow part), `_Lens` (see-through), `_Pack` (the cord from the clip
+  down and the battery: its own part so the game can hide it when the hat is worn). 15,792
+  triangles; one 1024 texture set at 319 texels a stud.
+- **Light:** a Spot from the lens along the lamp's beam, nodded 6 degrees down (2,900 K,
+  Brightness 1.5, Range 20, Angle 40, shadows): brighter than the unit's bulb, as a narrow beam
+  lights only a patch; judge it in Studio. A weak Point just ahead of the lens (0.3, Range 5)
+  for low graphics. The glow: strength 3, warm; the bowl falls off from the bulb to its rim.
+- **Motions:** `SwitchOn` (0.7 s): a thumb nudges the knob back, it snaps round into its click,
+  the lamp nods in its bracket under the push and rocks back; the filament comes up warm a
+  breath after the click. `SwitchOff` (0.7 s): turned back, the light drops at the click and
+  fades orange. `RunDown` (3 s): the minute's up: the beam sags, stutters and dies.
+- **For the game:** "Wear: a lamp on your head lights whatever you look at, for a minute" is a
+  game ticket. The hat is built at real size: on a Roblox head (about 1.2 studs across) it
+  wants scaling up about 1.4 times, its pivot (the rim's middle) a little under the head's top.
+  Worn, hide `_Pack` (or hang the battery at the hip) and aim the Spot where the camera looks;
+  play `SwitchOn`, keep it lit for the minute, then `RunDown`.
+
+## Jar of fireflies (Nov 15, F-02k)
+
+- **What it is:** a quart canning jar of old aqua glass (rippled a little, smudged), its
+  two-piece lid: a brass-coloured screw band with the thread's two rings pressed into it, over
+  a tinplate disc punched with 23 nail holes, each a crater with a black hole and a ring of
+  rust where the punch broke the tin; the red sealing ring shows under it through the glass.
+  Inside, seven blades of grass (two gone to straw) leaning on the glass, a forked twig across
+  the bottom, and twelve fireflies on the glass and the floor: dark wing covers with pale
+  margins, a rose hood with a black spot, legs and feelers, and the pale yellow lantern under
+  the tail that glows.
+- **References** (looked at Nov 15): House Digest's "reuse old mason jar lids" (housedigest.com,
+  pest-control-1751294039.jpg: a disc punched with about two dozen nail holes in a scatter,
+  the brass band); Bing image results for "mason jar lid punched nail holes firefly jar grass"
+  (firefly jars with grass inside, glowing at night); the common eastern firefly, Photinus
+  pyralis (Wikipedia; USA-NPN's species profile: 10 to 14 mm, the rose hood with its black
+  spot, the pale margins, the lantern under the last segments). Sizes: a regular-mouth quart
+  jar, 6.75 in tall and 3.9 in across, a 70 mm thread.
+- **Timing, from field records of Photinus pyralis** (USA-NPN; Lloyd's descriptions in the
+  firefly literature; a 2004 flight study, Integrative and Comparative Biology 44:3): the male
+  flashes for about 3/4 of a second (0.6 to 0.8) every 5 to 6 seconds, dipping and lighting
+  on the upswing of a J; searching flight runs 0.6 to 1.5 m a second, low over the ground.
+  Here each flash is 0.24 s up, 0.14 held, 0.38 dying away; a flier flashes every 4.6 to 6.2
+  s, dropping 0.12 studs and climbing 0.38 while lit. They drift slower than searching flight
+  (about 0.25 m a second, 1 stud): a hover-and-wander that stays inside a unit.
+- **Size:** 6.7 in tall to the band (0.67 studs), 3.9 across (0.39). The fireflies are drawn
+  19 mm long, a touch bigger than life, so their lanterns read.
+- **Tells:** a glass jar with a brass lid and grass inside; in the dark, green points of light
+  blinking inside it.
+- **Parts:** `FireflyJar_Jar` (root, the glass, see-through: the middle of its base on the
+  floor), `_Lid` (band and disc together: turns and rises about its Z as it unscrews, then
+  travels and tilts to the floor), `_Grass` (grass and twig, never moves), `_Firefly0` to
+  `_Firefly11` (each its own part, its pivot its middle as found, axis Z: it travels x and y
+  and moves up its Z; each carries the glow mask and its own glow track). 10,474 triangles; one
+  1024 texture set at 473 texels a stud (asked for 450: the fireflies are small).
+- **Lights:** three of the twelve (`Firefly0`, `4`, `8`) carry a Point light (198, 255, 92: the
+  lantern's yellow-green; Brightness 0.4, Range 7, no shadows). **Each light follows its own
+  firefly's glow, not the find's glow part** (the kit's light `glow_part`; the game must do the
+  same). The glow: strength 4, tinted yellow-green.
+- **Motions:** `Idle` (12 s, a loop, as found): they blink now and then in the jar, once or
+  twice each at 0.55 to 0.8. `Open` (8.5 s): the lid unscrews in three twists (a turn and a
+  half, the thread lifting it), pops free, is lifted clear and set down on the floor beside the
+  jar on one edge, slaps flat and rocks; from 1.8 s the fireflies go one by one, top ones
+  first, a third of a second apart: each flashes as it lifts off, climbs to the middle and out
+  of the mouth, and flies out to its place, flashing once more on the way. `Drift` (16 s, a
+  loop, the minute they light the unit): each flies its own figure round its own middle (up
+  to 3 studs from the jar, 1.1 to 3.6 studs high) at 0.6 to 1.6 studs a second, flashing every
+  5 or 6 seconds in the J. `Gone` (4.5 s): they rise and spread, flash a last time dimmer and
+  wink out (scale to 0.02, so the game hides them). The lid stays where it was set down in
+  `Drift` and `Gone`. `Open` ends where `Drift` starts and `Drift` ends where it starts and
+  where `Gone` starts, to the key. The drift's x and y are pure sines keyed at their quarter
+  points (Sine Out to a peak, Sine In from one), exact; the rest sampled and thinned.
+- **For the game:** "Open: the fireflies drift out and light the unit for a minute, then
+  they're gone" is a game ticket: loop `Idle` while it sits found; `Open`, then `Drift` on a
+  loop for the minute, then `Gone` and hide them. The motions assume the jar stands on the
+  floor (the lid is set down beside it); their paths are in the jar's frame, so a jar near a
+  wall sends some fliers through it: the ticket may play the swarm about the unit's middle
+  instead. Check in Play on a phone that a lit firefly reads as a point of light at 3 to 5
+  studs; if not, give each a small glow sprite.

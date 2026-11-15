@@ -5305,3 +5305,16 @@ takes. The neon OPEN sign is pink letters in an aqua border (a real aqua and pin
 "glows pink" as the catalog says while still looking like the shop sign everyone knows.
 Whether Roblox draws the ball's narrow spots on a phone is unchecked (spot lights drew nothing
 in Edit captures): Spin's game ticket checks it in Play and may make the dots another way.
+
+## D-196 The hard hat brings its battery; the jar's fireflies fly on their own (F-02j, F-02k, Nov 15)
+
+The miner's hard hat is the mid-century kind the references show: a yellow fibreglass cap, a
+round cap lamp hooked into a leather bracket on its front, and its cord over the crown to a
+red battery case standing beside it. The cord and battery are their own part (`_Pack`) so the
+"Wear" ticket can hide them or hang the battery at the hip; the hat is real size and wants
+scaling about 1.4 times on a Roblox head. The jar of fireflies is a quart canning jar with a
+punched lid; its twelve fireflies are each their own part with their own glow, flying paths
+written as motion data in the jar's frame (`Open`, then `Drift` looped for the minute, then
+`Gone`), timed from field records of the common eastern firefly. Three of them carry a light,
+and each light follows its own firefly's glow, not the find's glow part (the kit's light
+`glow_part`): the game's motion player must do the same.

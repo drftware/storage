@@ -440,3 +440,104 @@ NEON = dict(
     seed=97.0,
     dust=0.5,
 )
+
+# --- the miner's hard hat (F-02j) ---------------------------------------------------------------
+# A mid-century fibreglass miner's cap (the cap style: a short peak, a low crest over the crown,
+# a flared lip round the sides and back), safety yellow worn to the glass; a riveted leather
+# lamp bracket on its front with a steel slot strap; a round cap lamp hooked in it; its rubber
+# cord over the crown, through a clip on the back and down to a red steel battery case standing
+# beside it. Sizes: the hat 8.4 x 11.6 x 5.8 in; the lamp head 3 in across, 2.6 deep; the
+# battery 3.8 x 1.9 x 6.6 in (README).
+HARD_HAT = dict(
+    A=0.415, B=0.475,                  # the dome's half width and half length at its base
+    crown=0.6,                         # the crown's top over the floor (under the crest)
+    mh=2.3,                            # the plan's squareness (2 an ellipse)
+    mv=2.75,                           # the dome's fullness (2 a half ellipsoid; more, a fuller top)
+    wall=0.016,                        # the fibreglass shell (about 4 mm with its gel coat)
+    zb=0.024,                          # the dome's foot over the floor at the back
+    side_lift=0.03,                    # the lip rises this much over the ears
+    flare=0.032,                       # how far the lip flares out round the sides and back
+    lip=0.018, edge=0.008,             # the lip's thickness and its rolled edge's radius
+    visor=dict(len=0.2, span=74.0, slope=12.0),  # the peak: how far it reaches, degrees either
+                                       # side of the front it spans, and its droop
+    crest=dict(h=0.02, w=0.042),       # the raised ridge front to back over the crown
+    band=dict(z=0.05, h=0.075, t=0.01),  # the suspension's headband, just inside the rim
+    lugs=dict(y=0.02, z=0.14, r=0.034),  # the suspension's round lugs, one each side
+    seed=103.0,
+    dust=0.5,
+)
+
+# the leather bracket on the front: its outline (x half width at z), the steel strap across it
+# that the lamp's hook drops into, and the rivets
+HAT_BRACKET = dict(
+    outline=[(0.088, 0.452), (0.105, 0.43), (0.105, 0.33), (0.06, 0.17), (0.022, 0.135),
+             (0.0, 0.132)],            # from the top corner down to the point, the right half
+    t=0.016,                           # 4 mm leather
+    strap=dict(z=(0.295, 0.335), x=0.118, t=0.009),
+    rivets=[(0.055, 0.425), (-0.055, 0.425), (0.0, 0.163)],
+    slot=(0.03, 0.006),                # the slot the hook drops into: half width, depth
+)
+
+CAP_LAMP = dict(
+    z=0.29, gap=0.012,                 # the head's axis height at its back, and its gap off the strap
+    tilt=6.0,                          # degrees nodded down from level, to light where you look
+    bezel=dict(r=0.15, d=0.042, lip=0.012),  # the chrome ring holding the lens
+    body=dict(r0=0.128, r1=0.112, d=0.17),   # the housing: front and back radii, its depth
+    back=0.035,                        # the domed back's rise
+    reflector=dict(r=0.122, d=0.07),   # the bright bowl behind the lens
+    bulb=dict(r=0.018, l=0.04),
+    hook=dict(w=0.05, h=0.07, t=0.008),  # the flat steel tongue on its back
+    knob=dict(r=0.03, h=0.036, fin=0.026, on=70.0),  # the switch on top; turned 70 degrees on
+    kelvin=2900.0,                     # an incandescent miner's bulb, warm white
+)
+
+HAT_CORD = dict(
+    r=0.02,                            # 1/2 in rubber cord
+    clip_z=0.33,                       # the height of the clip on the back it runs through
+)
+
+HAT_BATTERY = dict(
+    at=(0.66, 0.36), yaw=-28.0,        # where it stands beside the hat, turned toward the front
+    w=0.38, d=0.19, h=0.6,             # the case below its lid
+    lid=dict(h=0.058, over=0.008),     # the lid's height and how far it hangs over the case
+    spring=dict(h=0.1, r=0.026, turns=11),  # the strain-relief spring round the cord on top
+    plate=dict(w=0.16, h=0.07, z=0.43),     # the nameplate on its front
+)
+
+# --- the jar of fireflies (F-02k) -------------------------------------------------------------
+# A quart canning jar of old aqua glass, 6.7 in tall and 3.9 across, its two-piece lid (a
+# tinplate disc punched with nail holes, a brass-coloured screw band), a few blades of grass and
+# a twig inside, and twelve fireflies (the common eastern firefly, about 14 mm long, a touch
+# bigger here at 16 mm). README for the references and the flight timings.
+FIREFLY_JAR = dict(
+    outside=[(0.0, 0.014), (0.14, 0.008), (0.172, 0.0), (0.186, 0.006), (0.193, 0.022),
+             (0.195, 0.045), (0.195, 0.44), (0.19, 0.48), (0.176, 0.52), (0.158, 0.55),
+             (0.146, 0.572), (0.141, 0.59), (0.139, 0.65)],   # the glass, bottom to the rim
+    inside=[(0.124, 0.652), (0.127, 0.6), (0.135, 0.575), (0.15, 0.552), (0.168, 0.522),
+            (0.182, 0.485), (0.187, 0.44), (0.187, 0.05), (0.18, 0.03), (0.15, 0.024),
+            (0.0, 0.028)],                                    # back down the inside to its floor
+    band=dict(r=0.152, z0=0.594, z1=0.668, lip=0.126, t=0.004),  # the screw band
+    disc=dict(r=0.137, z=0.654, panel=0.112, holes=23, hole=0.0055, seed=7),  # the punched lid
+    turns=1.5, pitch=0.0167,           # the thread: turns to come off, studs it rises a turn
+    seed=113.0,
+    dust=0.5,
+)
+
+FIREFLY = dict(
+    n=12,
+    length=0.074,                      # 19 mm head to tail: a touch bigger than life, to read
+    kelvin=None, rgb=(198, 255, 92),   # the cold yellow-green of a firefly's lantern (560 nm)
+    # flight, from field records of the common eastern firefly (README): the male flies about
+    # 1 to 1.5 m a second when searching, slower when he hovers; he flashes for about 3/4 of a
+    # second every 5 to 6 seconds, dipping and lighting on the upswing (the J)
+    flash=dict(rise=0.24, hold=0.14, fall=0.38),   # one flash: up, held, dying away (0.76 s)
+    every=(4.6, 6.2),                  # seconds between a flier's flashes
+    dip=0.12, climb=0.38,              # the J: how far it drops before a flash, climbs during it
+    drift=16.0,                        # the swarm's loop, seconds
+    reach=(0.9, 2.1),                  # each flier's loop, studs either side of its middle
+    middle=1.0,                        # how far a loop's middle wanders from the jar
+    height=(1.3, 3.3),                 # its loop's middle over the floor
+    open=8.5,                          # the lid comes off and the last flier is out and away
+    gone=4.5,                          # the minute's up: they rise and wink out
+    lights=(0, 4, 8),                  # the fliers that carry a light
+)

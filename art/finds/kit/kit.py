@@ -519,7 +519,8 @@ def pose(find, objs, values, lights=None):
         ob.location = at
         face = (D.to_3x3() @ Vector(spec.get("face", (0, 0, -1)))).normalized()
         ob.rotation_euler = face.to_track_quat("-Z", "Y").to_euler()
-        g = objs[find.glow.get("part", find.parts[0].name)].get("glow", 0.0)
+        # a light may follow its own part's glow (each firefly's) instead of the find's
+        g = objs[spec.get("glow_part") or find.glow.get("part", find.parts[0].name)].get("glow", 0.0)
         ob.data.energy = spec["preview_watts"] * g
         ob.hide_render = g <= 0.001
     bpy.context.view_layer.update()

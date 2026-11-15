@@ -6,8 +6,10 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-02j, the miner's hard hat (references not looked at yet: see the newest note), then
-the jar of fireflies and on down the Lights.
+**Next:** put the miner's hard hat and the jar of fireflies into Studio (built, not uploaded or
+imported: CRAFT.md "Into Studio", `import("Lights", {"HardHat", "FireflyJar"})`, then look at each
+in a lit unit off and on), then F-02l, the theatre spotlight (researched, photos not looked at
+yet: see the newest note), the stained-glass lamp and the lamp that's on when you find it.
 
 ## Order
 
@@ -33,6 +35,37 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 15, F-02j and F-02k (the miner's hard hat and the jar of fireflies built).** Both in
+  `lights/build.py` (`hh_*`, spec `HARD_HAT`, `HAT_*`, `CAP_LAMP`; `fj_*`/`ff_*`, spec
+  `FIREFLY_JAR`, `FIREFLY`) with README entries; D-196. **Not in Studio yet:** the session hit the
+  context cap before uploading; the FBX and Luau are exported, the other finds' FBX restored. **The hard hat:** the hat's dome is
+  an analytic surface (`hh_F`, `hh_on`, `hh_top`), so the leather bracket, the clip and the cord
+  over the crown are laid on it exactly; the cord and battery are `_Pack`, hideable when worn.
+  **The jar:** twelve fireflies, each its own part with its own glow track, flying paths in the
+  jar's frame: `Idle` (loop, in the jar), `Open`, `Drift` (loop), `Gone`. Their x and y in
+  `Drift` are pure sines keyed at quarter points with Sine Out/In (exact, few keys); everything
+  else is sampled and thinned with `bl_rdp`. Checked by script: every seam matches to the key,
+  no flier passes through the glass, they stay within 3 studs at 1.1 to 3.6 high. **Kit
+  change:** a light may name `glow_part` to follow that part's glow in the previews (each
+  firefly's light); the game's motion player must do the same (README, D-196). **Travel
+  channels lean about the pivot after the move**: a part moved along its axis then pitched
+  swings about its rest pivot; the lid's landing solves for it (`fj_lid_tracks`). **Context:**
+  this session ran past 300k (two finds with long motion work): budget a find with motion at
+  about 120k. **The theatre spotlight, researched, not built:** sizes from Strand's Fresnelite
+  6 in (12.1 x 10.2 x 12.3 in with its yoke, 10.5 lb, a steel yoke; theatrecrafts.com's
+  archive PDF fresnelite_6_8_2002.pdf), a 1970s Mole-Richardson Combo Junior 1K with a 6 in lens
+  on a 1940s rolling baby stand, 4 to 8 ft, its barn doors fixed and rotating
+  (oldhollywoodlightcompany.com), a 1960s Berkeley theatre light with barn doors, 18 x 30 x 18 in
+  (thehoarde.com); Wikipedia's "Fresnel lantern" (3, 6 and 8 in lenses; barn doors ride in the
+  gel frame's slot). **Look at photos first** (Wikimedia Commons "Fresnel lantern", the Mole
+  listing). Plan: a 6 in Fresnel can with louvres on top, the stepped lens in its ring, a gel
+  frame slot holding four-leaf barn doors, a focus knob under the can; a flat steel yoke with
+  big tilt knobs; a telescoping stand on three legs, about 6 studs to the lens. Parts: `Stand`
+  (root), `Yoke` (pans about Z), `Can` (tilts about X through the knobs), the lens or lamp as
+  the glow part, each barn door leaf hinged, the focus knob. `big=True`. A Spot (3,200 K,
+  narrow) and a weak Point. Motions: `SwitchOn` (the lamp strikes and warms through orange),
+  `Aim` (heavy, damped pan and tilt, a little overshoot against the yoke's friction), `Doors`.
 
 - **Nov 15, F-02h and F-02i (the disco ball and the neon OPEN sign built, both in Studio).**
   Both in `lights/build.py` (`DB_*` and `NE_*`; spec `DISCO_*` and `NEON`) with README entries;
@@ -313,8 +346,8 @@ A light set down switched on lights the space round it until it runs down. Wheth
 | Oil lamp | Rare | Light: warm light that runs down slowly | Fragile | Nov 15, F-02g |
 | Disco ball | Rare | Spin: spots of light race round the walls |  | Nov 15, F-02h |
 | Neon OPEN sign | Rare | At home: it buzzes and glows pink |  | Nov 15, F-02i |
-| Miner's hard hat | Rare | Wear: a lamp on your head lights whatever you look at, for a minute | A light that leaves your hands free | |
-| Jar of fireflies | Epic | Open: fireflies drift out and light the unit for a minute, then they're gone |  | |
+| Miner's hard hat | Rare | Wear: a lamp on your head lights whatever you look at, for a minute | A light that leaves your hands free | Nov 15, F-02j |
+| Jar of fireflies | Epic | Open: fireflies drift out and light the unit for a minute, then they're gone |  | Nov 15, F-02k |
 | Theatre spotlight | Epic | At home: point it at your best find | Big find | |
 | Stained-glass lamp | Legendary | At home: it throws coloured patterns on your walls | Fragile | |
 | A lamp that's on when you find it | Secret | It never runs down | Loose only, floor 25 up. In a power cut it's the only light on the floor | |
