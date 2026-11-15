@@ -6,10 +6,10 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04, Wind-ups and noisemakers, in a new set folder (`art/finds/windups/`): first the
-cymbal monkey, then the jack-in-the-box; their plan is in the newest note (not yet researched).
-F-03 is done. The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders
-OilLamp` when next touched.
+**Next:** F-04b, the jack-in-the-box in `art/finds/windups/` (the set and the cymbal monkey are
+built); its plan is in the newest note (not yet researched). Then the rest of the Wind-ups. The
+oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next
+touched.
 
 ## Order
 
@@ -35,6 +35,34 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 15, F-04a (the Wind-ups set started; the cymbal monkey built and in the place).**
+  `art/finds/windups/` (`scripts/art.sh set windups`), spec `MONKEY` and `PLAY`, README, D-201.
+  **Timing from video's sound:** YouTube plays in the built-in browser; in the page, an
+  `AudioContext` with `createMediaElementSource(video)` into an `AnalyserNode`, sampled every
+  6 ms while it plays at 1x, gives the loudness over time, and peaks with a minimum gap are the
+  hits (clashes here; the jack's tune and its pop next). Wait out the ad (`.ad-showing`) first;
+  autoplay moves on to another video when it ends. Commons had no video of either toy.
+  **Arms built at the hit:** draw the arms where the cymbals meet square, then swing them open
+  by the found angle (`arm_open`), so the bake never darkens faces pressed together and a turn of
+  minus that angle is the hit, exactly square. **Traps:** a lathe's or loft's shape scaled by `M`
+  would unwrap at the wrong size, so ellipsoids are lofts of real points (`blob`); a part that
+  pokes into another shows through it (the ears first sat inside the head's fur: a dark disc in
+  each cup); fur needs strand noise near 240 a stud stretched to 0.07 along Z, finer reads as
+  speckle. A 21 s motion at 24 frames a second writes a 57 KB set module and its filmstrip
+  renders 510 frames (several minutes).
+  **F-04b's plan, the jack-in-the-box, not researched** (Uncommon: wind, a tune, then a bang a
+  few seconds after you let go). Look first: Wikimedia Commons "Jack-in-the-box" photos, a museum
+  record for size (tin-litho cube about 5 to 6 in, a side crank on a square shaft, a lid on a
+  rear hinge held by a spring catch at the front, a cloth-bodied clown-ish jack on a coil spring
+  with a vinyl or composition head; ours, no famous company's), and a video timed by its sound
+  as above (the tune's notes a second as the crank turns, how many turns before the pop, the
+  pop's bang). Parts: `Box` (root), `Crank` (turns on its side axle), `Latch` (the front catch,
+  flips as it releases), `Lid` (rear hinge, flies open past upright and bounces back on its stop),
+  `Jack` (`move` up its spring and `stretch`, overshoot and a wobbling settle), `Head` (wobbles
+  on its neck after the jack). Motions: `Wind` (the crank turns with the tune, a beat of nothing
+  at the end), `Pop` (the latch flips, the lid bangs open, the jack springs out). `texels=` for
+  its tin litho print (500 or more).
 
 - **Nov 15, F-03b (the die-cast car built and in the place; F-03 done).** `dc_*` in
   `figures/build.py`, spec `DC` and `DC_PUSH`, README, D-200. **How the body's made:** one loft
@@ -493,7 +521,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Wind-up walking robot | Uncommon | Wind: it clanks off in a straight line for 15 seconds | A noise you can send down a hall | |
 | Farm-animal spinner | Uncommon | Pull: the arrow spins and an animal noise plays | A throwback toy | |
 | Jack-in-the-box | Uncommon | Wind: a tune, then a bang as it pops | The bang comes a few seconds after you let go | |
-| Cymbal monkey | Rare | Wind: it bashes its cymbals for 20 seconds, loud | The strongest lure in the set | |
+| Cymbal monkey | Rare | Wind: it bashes its cymbals for 20 seconds, loud | The strongest lure in the set | Nov 15, F-04a |
 | Pull-string cowboy doll | Rare | Pull: it says one of six lines |  | |
 | Singing fish plaque | Rare | Press: its head turns and it sings |  | |
 | Clockwork tin bird | Epic | Wind: it hops and whistles | An antique tin toy | |

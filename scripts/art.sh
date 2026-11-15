@@ -86,6 +86,7 @@
 #                                       both first; about 3 minutes)
 #   scripts/art.sh lobby export         just the front office's FBX and Specs module
 #   scripts/art.sh set figures          the Figures and models set (the RC car), the same way
+#   scripts/art.sh set windups          the Wind-ups and noisemakers set (the cymbal monkey), the same way
 #   scripts/art.sh set lights           a finds set built with the finds kit (art/finds/CRAFT.md,
 #                                       "The kit"): bake, FBX and Luau, sheets and motion previews.
 #                                       Name stages (textures export renders, or quick: fast,

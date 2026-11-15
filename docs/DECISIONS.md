@@ -5367,3 +5367,18 @@ motor: a shove, a roll of about 7 studs that slows, a wandering heading and a ra
 axles. The travel is on its root part, so the game plays it by moving the model, not a joint.
 Colour and length are defaults the owner hasn't judged.
 
+## D-201 The cymbal monkey is our own clockwork monkey, its beat timed from real ones (F-04a, Nov 15)
+
+The catalog's cymbal monkey (Rare, "Wind: it bashes its cymbals for 20 seconds, loud") is built
+as the 1960s Japanese clockwork kind at a museum record's size (10.5 inches): a plush monkey sat
+with its legs out, a vinyl face, felt waistcoat, striped trousers and brass cymbals, wound by a
+tin key in its back. It is no maker's character: a green waistcoat edged in gold braid, navy-
+and-cream trousers and a maroon fez with a tassel, where the best-known one wears a yellow vest,
+red stripes and no hat. Its `Play` is 70 clashes over 21 seconds, the beat taken from the sound
+of two videos of real ones (4.6 and 6 a second, each slowing by about a fifth): ours, twice
+their size, starts at 4.2, slows to 3.8, then gives out over its last few clashes and stalls
+short. Every clash nods the head, rolls the eyes up wide, flings the fez's tassel and rings the
+cymbals on their straps, so one action reads as frantic from any side. Its parts and numbers are
+in `art/finds/windups/README.md`; the clash sound is a game ticket's (it lands as the arms reach
+-24 degrees).
+
