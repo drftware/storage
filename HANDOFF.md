@@ -12,7 +12,7 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - Seen in Studio Play (one player, two stand-ins): the wipe landed 1.1 s after the car reached
   floor 3, nobody carried after it, Again clean. Two players wait on `OWNER.md`.
 - **Find art** (D-190 to D-199): all sixteen Lights and the RC car built and in the place (the
-  Secret lamp imported Nov 15); next the die-cast car (WAVES.md), then F-04 Wind-ups.
+  Secret lamp seen lit in Studio Nov 15); next the die-cast car (WAVES.md), then F-04 Wind-ups.
 
 ## Next task: S4-01 Floors made by rules (the climb with no top)
 ROADMAP S4-01. The owner said there's no top floor (D-128); the built climb still ends at floor 3
