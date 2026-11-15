@@ -56,7 +56,10 @@ for seed = 1, SEEDS do
 		for k = 1, math.min(6, #list) do
 			local i = list[k]
 			local first = Deal.open(deck, i, BUILD)
-			ok(first.coins == deck.coins[i], `seed {seed}: the door shows the coins laid`)
+			-- a packed unit with nothing else in its clearing tops its box up (B-05b1)
+			local laid = deck.coins[i]
+			local topped = deck.packed[i] and laid == 0 and first.coins == Deal.PackedCoins
+			ok(first.coins == laid or topped, `seed {seed}: the door shows the coins laid`)
 			ok(
 				Deal.open(deck, i, BUILD).coins == first.coins,
 				`seed {seed}: lifted again, the same`

@@ -84,6 +84,9 @@ export type Deck = {
 	-- the Packrat's pile (S2-06b2b): the finds of its own it sleeps among, by its unit's slot
 	-- index (one unit at most, from floor `Deal.Packrat.from`); its name is in `sleepers` too
 	piles: { [number]: { string } },
+	-- the medium units packed with boxes to the ceiling, a path through to the back (B-05b1), by
+	-- slot index (`Deal.packedShare`; their layout is `PackedLayout`'s)
+	packed: { [number]: boolean },
 	-- where the floor's one breaker box hangs (S2-02b), or nil on a floor with nowhere outside
 	-- the lobby's hall to hang it (`Breaker.spots`)
 	breaker: Breaker.Spot?,
@@ -317,6 +320,35 @@ end
 	never in the unit's marked box (B-03b: a quick grab for a dying torch, not a reveal).
 ]]
 Deal.BatteryShare = 0.1 -- the share of units with a battery on the floor
+
+--[[
+	Packed units (B-05b1, D-205, D-216): about one medium unit in three is boxes stacked to the
+	ceiling with one path through to a clearing at the back, more the higher you climb, so a floor
+	always has a few doors that make you commit to a squeeze before you know what's there. Small
+	units stay open (too tight for a path). Never in the lobby's hall on the floors that teach the
+	doors, so the first doors you meet show their floor; never the Packrat's unit (its pile needs
+	the floor round it). A packed unit is never a walk to nothing: its clearing holds its marked box
+	(a find, a tool, a note or coins) or a monster asleep, so one dealt none of them gets
+	`PackedCoins` in its box; and it never holds somebody's stuff (the stacks are its stuff).
+]]
+Deal.PackedFirst = 0.3 -- the share of medium units packed on floor 1: about one in three
+Deal.PackedRise = 0.02 -- more each floor up, so floor 6 is about two in five
+Deal.PackedMost = 0.5 -- never more than half: an open door must still be the usual
+Deal.PackedCoins = 1 -- coins in the box of a packed unit dealt nothing else: never empty-handed
+
+-- The share of medium units packed on floor `number`.
+function Deal.packedShare(number: number): number
+	return math.min(Deal.PackedMost, Deal.PackedFirst + Deal.PackedRise * (math.max(1, number) - 1))
+end
+
+-- Whether unit `index` of `deck`'s floor may be packed (`Deal.PackedFirst`'s rules).
+function Deal.canPack(deck: Deck, index: number): boolean
+	local slot = deck.floor.slots[index]
+	if not slot or slot.size ~= "M" or deck.piles[index] then
+		return false
+	end
+	return not (deck.floor.number <= Deal.TeachingFloors and deck.firstHall[index])
+end
 
 --[[
 	The faint mark (S1-11, GDD "At most one faint mark on a floor"): one note's door frame may
@@ -593,6 +625,7 @@ function Deal.new(floor: Floor, random: Random): Deck
 		bag = {},
 		sleepers = {},
 		piles = {},
+		packed = {},
 		random = random,
 	}
 	--[[
@@ -653,6 +686,15 @@ function Deal.new(floor: Floor, random: Random): Deck
 	local where, size = random:nextNumber(), random:nextNumber()
 	local finds = { random:nextNumber(), random:nextNumber(), random:nextNumber() }
 	Deal.packratIn(deck, where, size, finds)
+	-- The packed units (B-05b1), drawn last, so packing them moved nothing else a seed lays. Every
+	-- unit draws its one whether it can pack or not, so a change to which can never moves another.
+	local packing = Deal.packedShare(floor.number)
+	for _, i in units do
+		local roll = random:nextNumber()
+		if roll < packing and Deal.canPack(deck, i) then
+			deck.packed[i] = true
+		end
+	end
 	return deck
 end
 
@@ -905,9 +947,14 @@ function Deal.open(deck: Deck, index: number, situation: Situation): Contents
 			contents.beside = if contents.keeper then beside else nil
 		end
 	end
+	local packed = deck.packed[index] == true
 	if Deal.keeperIn(contents) == nil then
-		if not note then
+		if not note and not packed then
 			contents.stuff = Deal.stuffFrom((deck.picks[index] * Deal.StuffScramble) % 1)
+		end
+		local held = contents.find or contents.tool or note
+		if packed and not held and contents.coins == 0 then
+			contents.coins = Deal.PackedCoins -- the walk to the back is never for nothing
 		end
 	end
 	deck.dealt[index] = contents

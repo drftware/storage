@@ -111,9 +111,12 @@ for seed = 1, SEEDS do
 			if printed then
 				local lock = if deck.padlocked[i] then "L" else ""
 				feed(`{i}{c.kind}{c.tool or ""}{c.find or ""}{c.keeper or ""}{c.beside or ""}`)
-				feed(`{c.coins}{lock}`)
+				-- a packed unit's coins as drawn: its top-up (B-05b1, packeddeal.spec) is the one
+				-- change packing makes to what's dealt
+				feed(`{if deck.packed[i] then deck.coins[i] else c.coins}{lock}`)
 			end
-			local open = Deal.keeperIn(c) == nil and not noted[i]
+			-- a packed unit's stacks are its stuff (B-05b1)
+			local open = Deal.keeperIn(c) == nil and not noted[i] and not deck.packed[i]
 			if open then
 				empty += 1
 				if c.stuff then
@@ -127,7 +130,7 @@ for seed = 1, SEEDS do
 			else
 				ok(
 					c.stuff == nil,
-					`seed {seed}: a unit with a keeper or note holds no stuff ({c.kind})`
+					`seed {seed}: a unit with a keeper, a note or stacks holds no stuff ({c.kind})`
 				)
 			end
 		end

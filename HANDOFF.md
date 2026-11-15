@@ -2,48 +2,48 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-15, session 192 (B-05a, D-215) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-15, session 193 (B-05b1, D-216) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- B-05 split: B-05a done. Seven blocks of boxes (`art/packed/`; ColumnA-C, WideA/B, Half,
-  Toppled), one MeshPart each, 84-326 triangles, in the boxes' own texture. `src/shared/Packed`:
-  `prepare`, `clone`, generated `Specs` (footprint, real reach, height, `Pitch` 2, `Ceiling` 10).
-- In the place by hand: `ReplicatedStorage.Props.Packed` (asset 124665632785131), verified in
-  Studio Edit: sizes match Specs, fronts face LookVector, all share the boxes' ColorMap. Not yet
-  laid on any floor; not seen in Play.
-- Sheets `art/sheets/packed-*.png`: a sample packed M unit (`art/packed/spec.py` `SAMPLE`).
+- B-05b split: B-05b1 done, pure only. `src/shared/PackedLayout.luau`: `lay(unit, number, reach,
+  pitch)` gives a medium unit's blocks (name, x, z, yaw in DealSpot's frame), its `path` and
+  `clearing` rectangles, the clearing's `side` and the `bend` (0, about 10). The path is 3 wide
+  up the middle (takes the top hole's landing and runs under the bulb); unit 214 comes out
+  almost as the art sheets' sample. 9 to 11 blocks, at most about 2,100 triangles.
+- `Deal`: `deck.packed` (drawn last, nothing else moved), `packedShare`, `canPack`; a packed unit
+  holds no stuff and an empty one gets `PackedCoins` (1). Specs `tests/packedlayout.spec.luau`,
+  `tests/packeddeal.spec.luau`. Nothing lays the stacks yet: a packed door opens on an ordinary
+  unit without stuff. Blocks in the place: `ReplicatedStorage.Props.Packed` (B-05a, by hand).
 
-## Next task: B-05b The deal and the path
-ROADMAP B-05b (D-205's defaults; D-215 for the blocks). The moment: a door lifts on a wall of
-boxes to the ceiling with one dark path through; you squeeze in, the walls close round the
-camera, and round the bend at the back waits the marked box, or a monster asleep. Never nothing.
-1. Pure layout first, with a Lune spec (`tests/packed.spec.luau` exists; add a layout spec): for
-   an M unit (12 x 12, door 8 wide), the path 3 wide (a body is 2) in from the doorway, bending
-   once at most, to a clearing about 3 deep at the back; blocks along every edge the path and
-   the doorway can see, fronts on the path, at `Specs.Pitch`, gaps no wider than ~1.2. The
-   sheets' `SAMPLE` in `art/packed/spec.py` is one hand-made answer to copy the feel of.
-2. Keep clear (DealSpot): `DealSpot.Door` 2.5 from the doorway's face; side walls' crawl holes
-   (`DealSpot.Hole` 3.3 along their stretch, `DealSpot.holes(unit)`); the drop-in landing from
-   the top (`LandSide` 1.5, `LandBack` 0.9, clear to the door); the bulb hangs mid-unit at ~8.7
-   (keep the path under it, as the sample does). A sleeper needs `DealSpot.Keeper` (2.1 x 1.5)
-   or `Packrat` (2.75 x 2.5) in the clearing.
-3. The deal (`src/shared/Deal.luau`, grep `packs`, `noteIn`, `StuffShare`): about one in three
-   M units packed, more on higher floors (a share in Config with its comment); small units stay
-   open; a packed unit's clearing holds its marked box or a sleeper (no "Nothing"), and no
-   somebody's stuff. A note's unit may be packed. Lay with `Packed.clone` where `DealSpot.stuffIn`
-   lays stuff today (grep `stuffIn` in `src/server`).
-4. Keepers must path through (Keepers' map, D-064): check the map sees the blocks as walls and
-   the 3 wide path as walkable.
-5. Studio Play, seed 2000013's floor 3: walk a packed unit; judge the camera in the path at phone
-   size (small phone sideways). Clipping: say how in OWNER.md, add a ROADMAP polish line.
+## Next task: B-05b2 The stacks on the floor
+ROADMAP B-05b2; D-216. The moment: a door lifts on a wall of boxes to the ceiling with one dark
+path through; you squeeze in, the walls close round the camera, and round the bend at the back
+waits the marked box, or a monster asleep. Never nothing.
+1. Lay the stacks wherever a unit is dealt (`open` and `dealShut` in `src/server/Deals.luau`; a
+   saw's hole deals too): if `deck.packed[index]`, `PackedLayout.lay(size, number, reach,
+   Packed.Specs.Pitch)` with `size` from `shape`, `reach` built once from `Packed.Specs.Blocks`
+   (`PackedLayout.reachOf(b.Lo, b.Hi)`), each block by `Packed.clone(name, placed(unit, block),
+   unit.Parent or unit)` (the hall piece, as `Stuff.lay` is). Lay them before anything else.
+2. Everything the unit holds goes in the clearing, never the path: give `DealSpot.Unit` an
+   optional `room` (the clearing's rectangle) that `spots` (DealSpot ~190) bounds to, ignoring
+   `From`/`To`; `shape` sets it for a packed unit. Add a dealspot spec case. Want the marked box
+   near the bend's corner so its warm line just shows from the doorway (D-215's lure).
+3. Keepers walk out by the bend: find how a keeper leaves its unit (grep `lookOut`, `doorFront`,
+   `offWalls` in `src/shared/Keeper.luau` and `KeeperMap.luau`); a sleeper in the clearing must
+   go spot, `bend`, path middle, door, never through a stack (they move by CFrame, so they'd
+   clip). The Packrat never packs (`canPack`).
+4. Saws: OWNER.md's default (a hole into a packed unit opens onto boxes, no crawl through). Play on seed 2000013's floor 3 (Workspace `DevFloorSeed`, `DevFloorNumber`): Output
+   says which units packed; walk one; judge the camera in the path at a small phone sideways;
+   wake a sleeper in one. Clipping: say how in OWNER.md and add a ROADMAP polish line.
 **Acceptance:** checks green; floor 3 shows packed units with a walkable path to the back; the
-marked box or a sleeper sits in the clearing; OWNER.md has numbered steps to walk one.
-**Read first:** ROADMAP B-05b; D-215 (`docs/DECISIONS.md`, last entry); `art/packed/README.md`;
-`src/shared/DealSpot.luau` (lines 50-105, grep `stuffIn`, `holes`); `src/shared/Deal.luau` (grep
-`packs`, `noteIn`, `stuffFrom`); `src/shared/Packed/init.luau`.
+box or a sleeper waits in the clearing; a woken sleeper walks out by the path; OWNER.md has
+numbered steps to walk one.
+**Read first:** ROADMAP B-05b2; D-216 (`docs/DECISIONS.md`, last entry); the head comment of
+`src/shared/PackedLayout.luau`; `src/server/Deals.luau` (grep `local function shape`, `placed`,
+`local function open`, `dealShut`); `src/shared/DealSpot.luau` lines 190-240 and 330-395.
 
 ## Queue (next sessions, the owner's ten-ticket order)
-0. After B-05b: S3-03 Cut Free (it owns Studio's "CutFree" let-in; rows in `Products`,
+0. After B-05b2: S3-03 Cut Free (it owns Studio's "CutFree" let-in; rows in `Products`,
    `Purchasing:prompt`), then S3-04.
 1. **S4-01 Floors made by rules.** Split first: S4-01a the rules table and the top gone, S4-01b
    what changes floor to floor. Read the GDD's "Floor rules", D-106, D-128, `Climb.luau`,

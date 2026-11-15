@@ -2126,10 +2126,16 @@ it is, coins go to your bank, a tool goes to your hands, or it's a piece of the 
     built by `art/packed/` and in the place at `ReplicatedStorage.Props.Packed` (`Packed.clone`).
     Sheets: `art/sheets/packed-*.png` (a sample packed unit from the doorway, in the path, at
     the clearing). No floor deals them yet.
-  - [ ] **B-05b The deal and the path.** Which M units pack (about one in three, more higher
-    up), the path's shape (in from the door, bending once at most, to a clearing at the back),
-    the blocks laid along it, the marked box or a sleeper in the clearing, the keepers' map and
-    the camera in the path judged at phone size.
+  - B-05b The deal and the path, split for size (Nov 15):
+    - [x] **B-05b1 The layout and the deal.** Done Nov 15 (D-216): `PackedLayout.lay` (a path 3
+      wide up the middle from the doorway, one bend at the back into a clearing about 3 deep the
+      doorway can't see, 9 to 11 blocks, at most about 2,100 triangles) and which M units pack
+      (`Deal.packedShare`: 0.3 on floor 1, rising 0.02 a floor to 0.5; `deck.packed`); a packed
+      unit holds no stuff and is never empty (`Deal.PackedCoins`). Specs:
+      `tests/packedlayout.spec.luau`, `tests/packeddeal.spec.luau`. Nothing laid in the place yet.
+    - [ ] **B-05b2 The stacks on the floor.** Lay a packed unit's blocks as its door first lifts,
+      its marked box or sleeper in the clearing (never in the path), the keepers walking out by
+      the bend, and the camera in the path judged at phone size in Studio Play.
 
 ### Step 4: The climb with no top
 

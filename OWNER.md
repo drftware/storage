@@ -71,6 +71,17 @@ nowhere else.
   2. Open `packed-path.png` (in the path, the torch on the right-hand wall) and
      `packed-clearing.png` (round the bend at the back, the marked box waiting). Tell the next
      session if any box looks wrong up close, or if the walls feel too tidy or too messy.
+- [ ] **Decide (defaults in, B-05b1, D-216): packed units.** Nothing to test yet: B-05b2 lays
+  them on the floor and adds steps to walk one here. Until then a packed unit's door opens on
+  an ordinary unit with no somebody's stuff in it.
+  1. A saw into a packed unit. The stacks stand where a crawl hole through a side wall and the
+     panel cut from the top would fall, because keeping that floor clear would open half the
+     unit. My default for B-05b2: the hole opens onto boxes (you see you've cut into a packed
+     unit, and can't crawl through there). The other choice is that the stacks in the hole's way
+     tumble down to let you through. Say which.
+  2. A packed unit that rolled nothing at all gets 1 coin in its box, so the walk to the back
+     never ends empty-handed. Say if it should be more coins, or a find (that would add about one
+     find for every seven medium units).
 
 - [ ] **Judge the marked box** (B-01a, B-01b, D-208; judged at phone size by Claude, in renders
   and in Studio). The box a unit's find, coins, tool or note will come in. It is in the place now:

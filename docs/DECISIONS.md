@@ -5732,3 +5732,31 @@ Defaults taken:
   see. From the doorway the marked box's warm line just shows past the corner, a lure; B-05b
   decides whether real layouts keep that.
 Not chosen: individual box clones (a packed unit would be 60 to 100 parts); a new texture set.
+
+## D-216 A packed unit is one straight path in and one bend into a clearing, dealt last (B-05b1, Nov 15)
+B-05b was split for the session's size: B-05b1 the layout and the deal (this), B-05b2 laying it on
+the floor, the clearing's box or sleeper, the keepers and the camera.
+- **The shape** (`src/shared/PackedLayout.luau`): the path comes in 3 wide straight up the middle
+  from the doorway to the back wall, so it takes the landing under the top's hole whole and runs
+  under the bulb. About 3 deep from the back wall (`Clearing`, the nearest whole columns), the
+  stacks on one side stop and a clearing opens along the back wall to that side's wall. Which
+  side, and which blocks, follow the unit's number. Blocks stand in lines with their fronts on
+  the path, the doorway's line 2.5 in, the clearing's near side; each line meets the path flush and
+  spreads its spare length between its blocks, so no gap is over 1.2. The floor behind the lines is
+  left empty, so a unit is 9 to 11 blocks and at most about 2,100 triangles, not D-215's estimate
+  of twenty. A low stack stands in the clearing's far corner in two units in three. From the
+  doorway the clearing's far side is always hidden; its near corner may show, the lure D-215 liked.
+- **Which units pack** (`Deal.packedShare`, `deck.packed`): medium units only, 0.3 of them on
+  floor 1 rising 0.02 a floor to at most 0.5; never the lobby's hall on floors 1 and 2 (the first
+  doors you meet show their floor) and never the Packrat's unit (its pile needs the floor round
+  it). Drawn last in `Deal.new`, so every seed deals everything else as before (the stuff spec's
+  fingerprint is unchanged).
+- **Never for nothing**: a packed unit holds no somebody's stuff (the stacks are its stuff), and one
+  dealt no find, tool, note or monster with no coins gets `Deal.PackedCoins` (1) in its box.
+- **What the saw does to a packed unit is open.** The path can't keep the side walls' crawl hole
+  floor (3.3 out from each side wall) or the top's fallen panel's floor clear without opening
+  half the unit, so the stacks stand there. B-05b2's default: a crawl hole or a top hole into a
+  packed unit opens onto boxes; until that's built, OWNER.md asks.
+Not chosen: a path along a side wall (it can't take the landing under the top's hole); filling the
+hidden floor with blocks (costs triangles nobody sees); a find as the empty unit's prize (it would
+add about one find in seven medium units to the economy).
