@@ -455,8 +455,8 @@ Nothing in it is built yet. What still waits on you, in the order it holds work 
   light; sleepers start to wake after four minutes on floors 1 and 2 and six above, three at a
   time, three more every two minutes; the third wrong code and every one after opens five
   units; the big find's unit opens by itself, shows on the corner map, and is no more than a
-  20-second carry away; pay goes up a little each floor and by a quarter for each trapped
-  monster; a climb ends when everyone is wrapped at the same moment; the machine's stock
+  20-second carry away; pay goes up a little each floor, and each trapped monster pays
+  everyone 5 coins (you agreed trapping pays on Nov 14); a climb ends when everyone is wrapped at the same moment; the machine's stock
   changes each ride; perks unlock by reaching a floor or finishing a set; badges at floors 10,
   25, 50 and 100; the marker costs 4 coins, makes five marks and shows on the corner map. They
   stand unless you say one is wrong.
@@ -497,56 +497,37 @@ Nothing in it is built yet. What still waits on you, in the order it holds work 
      Full, it walks at 72% of its empty pace. You'll judge these in play once S2-06b2 puts
      one on a floor.
 - [ ] **Open at the end of the design doc:** a name for the monsters (the code says keepers);
-  the story; where the top grade of find comes from now there are no boss floors; where you
-  pick your two perks (the counter or the elevator's panel); and the thumbnail line. "Don't
+  the story; where you pick your two perks (the counter or the elevator's panel); and the thumbnail line. "Don't
   move. The lights are watching." fitted the monster you dropped on Nov 14, and nothing in the
   game now rewards standing still.
 - [ ] **Later, when you take them up:** the monster you hide from, and the monster that takes
   your head. The second has three things to settle first, listed under it in the design doc.
 
-## Decide: the finds catalog (Nov 14; nothing built)
+## Decide: what follows from your finds answers (Nov 14; nothing built)
 
-The finds that will turn up in units are listed in their own doc, [Unit finds: the item
-catalog](https://claude.ai/artifact/29wkaNXM3Yw86xTMb3sjQQ): 495 finds in 38 sets, each with a
-grade, a value and what you can do with it. The design doc's "Coins, cash and finds" links to it.
-Nothing in it is built and every number is a starting guess. These 14 change how a climb plays,
-so they wait on you. Each has my default, which stands unless you say otherwise; answer here, in
-the doc, or with a comment on it.
-- [ ] **Seven grades or six?** The design doc has six, ending in Kept. I added a seventh, Secret,
-  above Kept for the very rarest finds. Kept starts turning up from floor 10, Secret from floor
-  25. My default: seven grades.
-- [ ] **Keep the name Kept?** Kids already know Mythic from other Roblox games. My default: keep
-  Kept until you pick a name.
-- [ ] **Does a light you find and set down hold a Mannequin?** A lantern set on the floor lights
-  the space round it, and light stops a Mannequin. My default: yes, and each found light runs
-  down in about a minute, so it buys you a moment, the way the flashlight does.
-- [ ] **Do noisy finds draw monsters?** The noisemakers and instruments. My default: yes, the
-  same way the air horn does. Most are quieter than the air horn; the gold trumpet is as loud.
-- [ ] **Finds that help you search.** The compass, metal detector, crystal ball, camcorder,
-  binoculars and hand mirror, which puts them close to tools. My default: keep them rare, and let
-  the metal detector and crystal ball wear out the way tools do. The other way: cut them.
-- [ ] **Finds that change how you move.** Roller skates make you faster but loud, bunny slippers
-  make you quiet, the knight's helmet narrows what you can see. My default: yes, but they're an
-  untested bet, so try one before the rest are built.
-- [ ] **Four of a kind make a Gold.** The design doc sells every duplicate find on the spot. My
-  default: Commons still sell on the spot; from Uncommon up, a duplicate goes home to your unit
-  instead, and four of the same find turn into one Gold version of it.
-- [ ] **Blind-box Secrets at 1 in 144 boxes.** Each blind-box series hides one Secret figure. My
-  default: yes, 1 in 144, the rate real collectors already chase.
-- [ ] **Charms on your avatar during climbs.** My default: wear up to three, picked in the lobby;
-  they're for looks only and do nothing.
-- [ ] **The shout, the count and the first finder,** for Kept and Secret finds. My default: yes to
-  all three. Everyone on the server sees a line when someone finds one, the collection book shows
-  how many of each exist, and the first player anywhere to find each one is named on its page.
-- [ ] **Hatched pets.** My default: the pets that hatch from eggs stay in your unit for now;
-  having them follow you round the lobby comes later.
-- [ ] **The arcade cabinet's game.** My default: one simple one-screen game, built later; until
-  then the cabinet lights up and plays its title screen.
-- [ ] **The Mashups set,** which rides the craze for silly mash-up characters. My default: keep it,
-  and cut it if it feels cheap to you.
-- [ ] **Help after a long dry spell.** Some games raise your odds after many climbs without a rare
-  find (Genshin Impact does, from memory). My default: no for now; decide once playtests show how
-  long dry spells really run.
+You answered the [item catalog](https://claude.ai/artifact/29wkaNXM3Yw86xTMb3sjQQ)'s 14 questions
+on Nov 14 (D-188); the catalog and the design doc now say what you chose. These are the gaps I
+filled. Each default stands unless you say otherwise.
+- [ ] **"Kept" outside the grades.** You dropped Kept as a grade because it sounds made up and too
+  on the nose for a storage building. The same word is still what the game says when a monster
+  gets you: "Kept" in red on the end screen, and friends are "kept" in units. The design doc's
+  draft taglines say "Don't get kept". My default: leave those until you say. Should the word go
+  everywhere? If so, name what the end screen should say instead (or I'll offer a few).
+- [ ] **Kept's eight finds moved up to Secret.** So a Secret can turn up from floor 10 (1 find in
+  500) and more often from floor 25 (1 in 100), and the whole server hears about it. The other
+  way: move them down to Legendary, and Secrets stay floor 25 and up only (1 in 1,000).
+- [ ] **The luck boost is yours alone.** It raises the odds only in the units you open on the
+  next floor, so a friend in a country where Roblox restricts paid random items is never part of
+  it. The other way: it lifts the whole floor for everyone in the car. Either way the shop shows
+  the odds with and without it before you buy (Roblox's rule). It waits on the shop.
+- [ ] **Trapping pays 5 coins** to everyone aboard for each monster shut in a unit as the gate
+  shuts (floor 1's gate pays 10 and rises 2 a floor). You'll judge it in play once S4-04 is built.
+- [ ] **Worn finds and footsteps.** Roller skates, slippers and the helmet can go on a character
+  alongside what you carry; the game already welds things to players (the ladder on your
+  shoulder) and already changes your speed for what you hold. But monsters hear only doors,
+  slams, bangs and drops today, not footsteps, so quiet slippers and loud skates would change
+  nothing. They need monsters that hear running feet, as Lethal Company's eyeless dogs do. That
+  changes every climb, so it's yours to decide when the first worn find is built.
 
 ## Now: judge L-08e3, Invite and the dials (built Nov 12, D-124)
 

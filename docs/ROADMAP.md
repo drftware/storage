@@ -2026,8 +2026,8 @@ Done when two climbs in a row feel different and players talk about their best f
 - [ ] **S4-03 The choice on the elevator's buttons.** Three buttons light up on the car's
   panel, each a version of the next floor and what it pays; most presses wins, a tie at random;
   it lasts that one floor (GDD "The team's choice").
-- [ ] **S4-04 Trapping pays.** Each monster shut in a unit as the gate shuts adds a quarter to
-  everyone's pay. A trapped monster now counts toward the floor's limit on awake monsters
+- [ ] **S4-04 Trapping pays.** Each monster shut in a unit as the gate shuts pays everyone
+  aboard 5 more coins (owner agreed Nov 14, D-188). A trapped monster now counts toward the floor's limit on awake monsters
   (today `Keepers.awakeOn` leaves it out).
 - [ ] **S4-05 The big find.** From floor 2, one a floor, shown only once the code is in: a unit
   rolls up by itself and its place shows on the corner map. Carried in both hands, slower than
@@ -2043,11 +2043,12 @@ Done when players watch the results to the end and change their perks between cl
 
 - [ ] **S5-01 Finds valued one at a time** on the results: picture, name, how rare, what it's
   worth, the cash counting up; then a line for each player.
-- [ ] **S5-02 Rarity, and finds still sealed.** Rarer finds on higher floors; about one in
+- [ ] **S5-02 Rarity, and finds still sealed.** Rarer finds on higher floors, in the catalog's
+  six grades (Secret on top, from floor 10; D-188); about one in
   twenty still in its packaging, worth three times as much. A padlocked unit's find draws a
   grade better (GDD: "the best chance of something great"; S1-07a left it a plain find).
-- [ ] **S5-03 Selling and keeping without a menu.** Copies and common finds sell on the spot;
-  a rare one you don't own is kept.
+- [ ] **S5-03 Selling and keeping without a menu.** Common finds sell on the spot; from
+  Uncommon up every find goes home, copies too, and four of one make its Gold (D-188).
 - [ ] **S5-04 The collection book.** A page for every kind of find, stamped "New" the first
   time; each kind of monster trapped; sets.
 - [ ] **S5-05 The shelf in the elevator.** The host's three best finds, shown in the car.
@@ -2055,7 +2056,9 @@ Done when players watch the results to the end and change their perks between cl
   two picked before a climb.
 - [ ] **S5-07 On sale.** Double cash, cash packs, the starter pack (after your first climb) and
   decor. Then the friend's matching beam colour for joining on your link, and cart cosmetics
-  (D-112).
+  (D-112). The luck boost: one use, used in the elevator, better odds of rare finds next floor;
+  its odds shown before buying and while it's on, never sold where Roblox restricts paid random
+  items (D-188).
 
 ### Step 6: Coming back
 
@@ -2075,7 +2078,9 @@ Then the soft launch (GDD "Build order").
 
 Each waits on the owner (`OWNER.md`) or comes after launch: the monster you hide from; the
 monster that takes your head; the stair chase and other floors that play differently; the hall
-of units; trading; a season pass; fake notes, finds that are monsters in disguise, the monster
+of units; trading; a season pass; boss floors and units far bigger inside than they look
+(D-188); the item catalog's waves (its own build order), with finds you wear, pets and plants
+that live in your unit, and the arcade cabinets' games; fake notes, finds that are monsters in disguise, the monster
 that moves walls, and the dolly.
 
 ## Polish waiting for a slot

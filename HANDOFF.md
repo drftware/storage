@@ -2,12 +2,14 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-14, session 178 (evening run, session 20: S3-01b) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-14, session 179 (the owner's answers on finds, D-188; docs only) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
 - S3-01 is done. S3-01b (D-187): a friend being carried up counts as wrapped on the floor they're
   carried to, so "Kept" lands as the last free friend's catch cuts to black, and the photo names
   that floor. Once the end begins the carries stop; a carried black holds until the end's cover.
+- D-188: the owner answered the catalog's 14 questions (Secret on top, a luck boost on sale,
+  trapping pays 5 coins, boss floors possible); docs only. `OWNER.md` asks what follows.
 - Seen in Studio Play (one player, two stand-ins): the wipe landed 1.1 s after the car reached
   floor 3, fate `Kept|3`, nobody carried after it, Again clean, no errors. Two players wait on
   `OWNER.md`.
@@ -17,6 +19,7 @@ ROADMAP S4-01. The owner said there's no top floor (D-128); the built climb stil
 (`Climb.Top`, D-106). One table says, for any floor number, what it holds and how hard it is.
 1. Read ROADMAP S4-01 and the GDD's "Floor rules" section only (docs tools, never WebFetch). Name
    the moment: two climbs in a row feel different, and floor 7 is scarier than floor 2.
+   Leave room for boss floors and units bigger inside than they look; they come later (D-188).
 2. It's big: split it in ROADMAP first (say S4-01a the rules table and the top gone, S4-01b what
    changes floor to floor), and do the first piece well.
 3. Grep `Climb.Top`, `Climb.Building` and `topped` (Climbs, ClimbEnds, EndView) for what leans on
@@ -43,14 +46,12 @@ punch the code, ride on); the rules spec'd; `OWNER.md` lines for what the owner 
    a dead entry for it (tiny). `remove` sets it down first; the floor drop doesn't.
 6. S2-06b1 left unspecced: its way home shut (roams carrying). The TV meets the forearms at the
    carry point: seat finds by depth or accept.
-7. No medium unit open (never in 600 floors): a small unit, a pile of one. Woken shut in, it
-   faces its door, its pile behind (unwatched).
-8. S4-04 "Trapping pays" was never agreed by the owner (`OWNER.md` asks); don't build it. Any
-   ticket that adds finds starts from the catalog doc the GDD's finds section links (not agreed).
+7. Unwatched: a Packrat woken shut in faces its door; no medium-unit home in 600 floors.
+8. S4-04 "Trapping pays" is agreed now (5 coins a trapped monster, D-188). Any ticket that adds
+   finds starts from the catalog doc the GDD's finds section links (answered Nov 14, D-188).
 9. Move the Mannequin's pose math onto `Rig.luau` when next touched; fold its and the Packrat's
    prepare and pose into one body module when a third jointed monster comes (D-176).
-10. The watch bar keeps an empty panel's height now its rule line is hidden (S3-01a): trim it
-   when the bar is next touched.
+10. Trim the watch bar's empty panel height (S3-01a) when the bar is next touched.
 11. S3-01b: a wipe after the bring (while the unit streams in, near instant in Studio) is spec'd
    and handled on screen but unseen; Studio's "CutFree" let-in still stands a watcher in the
    lobby (S3-03 owns it).

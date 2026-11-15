@@ -5167,3 +5167,44 @@ Not chosen: waiting for the carried friend's unit before the end (the last catch
 lost under a second wake); counting a carried friend as climbing until a friend could cut them
 free (nobody is free to); a separate "Carried" fate on the photo (one more word explaining a rule;
 "Kept" and the floor say it).
+
+## D-188 Finds: six grades with Secret on top, and the catalog's other answers (owner, Nov 14)
+
+The owner answered the item catalog's 14 questions (the catalog is its own Claude Doc, linked
+from the GDD's "Coins, cash and finds"; nothing in it is built). Both docs now say what follows.
+
+- **Six grades: Common, Uncommon, Rare, Epic, Legendary, Secret.** Kept is dropped as a grade:
+  the owner finds it made up and too literal for a storage building. Its eight finds moved up to
+  Secret (a default, `OWNER.md`), so Secrets turn up from floor 10 (0.2%) and from floor 25 (1%).
+  The word still names getting caught (`ClimbEnd.Copy.Kept`, `Kept.luau`); `OWNER.md` asks.
+- **Four of a kind make a Gold** (agreed loosely): commons sell on the spot, everything from
+  Uncommon up goes home, copies too. Precedent: Pet Simulator's golden pets.
+- **Blind boxes hide one Secret in 144.** The shout, the count ("1 of 214") and the first finder
+  named on the find's page: yes, for Secrets (Sol's RNG's server-wide line for its rarest rolls).
+- **A luck boost on sale instead of free help after a dry spell.** One use, bought with Robux,
+  used in the elevator: better odds of rare finds on the next floor. Roblox names luck boosts as
+  paid random items ("probability modifiers", create.roblox.com's paid random items page, read
+  Nov 14): the odds with and without it show before purchase and stay true while it's on, and a
+  player for whom `PolicyService`'s `ArePaidRandomItemsRestricted` is true can't buy or use it.
+  Default (`OWNER.md`): it lifts only the units the buyer opens. Built with the shop (S5-07).
+- **Noisy finds draw monsters only when used**, by the action button, as the air horn does:
+  carrying one never gives you away. The catalog's finds that went off on their own no longer do.
+- **Found lights hold a Mannequin** and run down in about a minute. **Search finds** (compass,
+  metal detector, crystal ball, camcorder, binoculars, hand mirror) stay and stay rare; the
+  detector and the ball wear out like tools.
+- **Worn finds: yes.** Skates, slippers and helmets go on the character alongside what's carried
+  (R15; things are already welded to players and `Slots` already sets walk speed from what you
+  hold). Monsters hear no footsteps today (`Keeper.Hears`), so the quiet/loud part needs that
+  first; `OWNER.md` asks. Try one before the rest.
+- **Charms**: up to three, picked in the lobby, looks only. **Mashups** stay.
+- **The unit comes alive**: hatched pets live there, plants grow when watered (Grow a Garden's
+  loop), more finds like them in time; the owner wants players in awe of the detail. **Arcade
+  cabinets** get real games, maybe several.
+- **Trapping pays**: each monster shut in a unit as the gate shuts pays everyone aboard 5 coins
+  (starting guess; floor 1's gate pays 10, `Pay.Base`). It replaces the GDD's untested "a quarter
+  more". Precedent: R.E.P.O.'s beaten monsters drop an orb worth money.
+- **Boss floors are not ruled out**, nor are units far bigger inside than they look (the owner's
+  example: a jungle going on and on, a rare find at the back and a monster with it). Both wait
+  until the generated floors (S4-01) are solid.
+
+Not chosen: a seventh grade; the name Mythic; noise that gives a carrier away; free pity odds.
