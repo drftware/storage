@@ -458,6 +458,9 @@ function Keepers.new(): Keepers
 			local dx, dz = k.seen.x - k.at.x, k.seen.z - k.at.z
 			local off = math.round(math.sqrt(dx * dx + dz * dz))
 			print(`Keepers: the {k.row.name} sees {who}, {off} studs off, and comes at them`)
+		elseif k.fetch ~= 0 then
+			-- a find nearer than them, lying in its path (S2-06c2)
+			print(`Keepers: the {k.row.name} turns off {who} for the find in its path`)
 		else
 			print(`Keepers: the {k.row.name} lost {who}; it rushes to where it last saw them`)
 		end

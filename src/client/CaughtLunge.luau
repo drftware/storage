@@ -8,9 +8,11 @@
 	(SoundService's listener moved away), so only your own sounds play; the chase music cuts itself
 	(ChaseMusic). Your view is taken from you (the camera Scriptable) and wrenched round to its face
 	(`Caught.turn`). The keeper's real body is hidden on this screen and a copy of it stands in its
-	place in the same stride (the Mannequin's template, its joints' `Transform`s copied), so nothing
-	seems to change. It holds still through the dread. Then it snaps into its lunge (`Pose.Poses.
-	Lunge`) and its head flies at your eye (`Caught.reach`), the body hanging off it, while the view
+	place in the same stride (its own template, its joints' `Transform`s copied: the Mannequin's or
+	the Packrat's, `BODIES`), so nothing seems to change. It holds still through the dread. Then it
+	snaps into its lunge (its own Lunge pose: the Mannequin's head thrust out; the Packrat reared up,
+	its pale hands raised either side of its hood) and its head flies at your eye (`Caught.reach`),
+	the body hanging off it, while the view
 	crash-zooms in (`Caught.lens`): the scream, the sting and the rush (`Caught.Sting`) and its own
 	body's groan (its row's Lunge beat) all at that instant. Its head lands a few inches from your
 	eye, cocked over, with its hollow thunk (the Catch beat) and the hardest kick; at `Caught.Dark`
@@ -32,7 +34,7 @@ local Caught = require(ReplicatedStorage.Shared.Caught)
 local KeeperRows = require(ReplicatedStorage.Shared.KeeperRows)
 local KeeperTell = require(ReplicatedStorage.Shared.KeeperTell)
 local Mannequin = require(ReplicatedStorage.Shared.Mannequin)
-local Pose = require(ReplicatedStorage.Shared.Mannequin.Pose)
+local Packrat = require(ReplicatedStorage.Shared.Packrat)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 
 local STEP = "CaughtLunge"
@@ -56,9 +58,58 @@ local SEIZED = "CaughtSeized"
 local KEEP = { Caught = true, Bang = true }
 local GLOW_COLOR = Color3.fromRGB(Caught.GlowColor[1], Caught.GlowColor[2], Caught.GlowColor[3])
 
--- Its head in the lunge pose, from its root: the copy is flown by its head.
-local LUNGE_HEAD = Mannequin.head(Pose.Poses.Lunge)
-local HEAD_TO_ROOT = LUNGE_HEAD:Inverse()
+-- A monster's body as the lunge throws it (S2-06c2): a copy of its template, its joints, back at
+-- rest, snapped into its lunge, and its head in that pose from its root (the copy is flown by its
+-- head) and the root from the head.
+type Body = {
+	clone: (pivot: CFrame, parent: Instance?) -> Model?,
+	motors: (model: Model) -> { Motor6D }?,
+	rest: (model: Model) -> (),
+	lunge: (model: Model) -> (),
+	head: CFrame,
+	toRoot: CFrame,
+}
+local function newBody(
+	clone: (pivot: CFrame, parent: Instance?) -> Model?,
+	motors: (model: Model) -> { Motor6D }?,
+	rest: (model: Model) -> (),
+	lunge: (model: Model) -> (),
+	head: CFrame
+): Body
+	return {
+		clone = clone,
+		motors = motors,
+		rest = rest,
+		lunge = lunge,
+		head = head,
+		toRoot = head:Inverse(),
+	}
+end
+-- Each jointed monster's, by its row's name; any other's catch throws the Mannequin's.
+local BODIES: { [string]: Body } = {
+	Mannequin = newBody(
+		function(pivot: CFrame, parent: Instance?): Model?
+			return Mannequin.clone(pivot, parent)
+		end,
+		Mannequin.motors,
+		Mannequin.rest,
+		function(model: Model)
+			Mannequin.pose(model, Mannequin.Pose.Poses.Lunge)
+		end,
+		Mannequin.head(Mannequin.Pose.Poses.Lunge)
+	),
+	Packrat = newBody(
+		function(pivot: CFrame, parent: Instance?): Model?
+			return Packrat.clone(pivot, parent)
+		end,
+		Packrat.motors,
+		Packrat.rest,
+		function(model: Model)
+			Packrat.pose(model, Packrat.Pose.Poses.Lunge)
+		end,
+		Packrat.head(Packrat.Pose.Poses.Lunge)
+	),
+}
 
 -- A sting recording, made once, played at each catch.
 type Voice = { sound: Sound, fade: Tween, clip: Caught.Clip }
@@ -73,6 +124,7 @@ type Seized = {
 	copy: Model?, -- the copy of its body flown at you
 	root: BasePart?, -- the copy's root
 	motors: { Motor6D }?,
+	body: Body, -- the body thrown: its own, or the Mannequin's
 	real: { BasePart }, -- the real body's parts, hidden on this screen meanwhile
 	headTo: CFrame, -- its head's place before your eye as it lands
 	headClose: CFrame, -- and pressed in, as it holds the screen
@@ -308,8 +360,8 @@ function CaughtLunge.new(kick: (amount: number) -> ()): Lunge
 						m.Transform = CFrame.identity
 					end
 				end
-				Mannequin.pose(copy, Pose.Poses.Lunge)
-				s.headFrom = root.CFrame * LUNGE_HEAD
+				s.body.lunge(copy)
+				s.headFrom = root.CFrame * s.body.head
 			end
 		end
 		if t >= Caught.Dread + Caught.Lunge and not s.landed then
@@ -323,7 +375,7 @@ function CaughtLunge.new(kick: (amount: number) -> ()): Lunge
 			local to = s.headTo.Position:Lerp(s.headClose.Position, Caught.press(t))
 			local at = from.Position:Lerp(to, r)
 			local turned = from.Rotation:Lerp(s.headTo.Rotation, math.clamp(r, 0, 1))
-			root.CFrame = (turned + at) * HEAD_TO_ROOT
+			root.CFrame = (turned + at) * s.body.toRoot
 		end
 	end
 
@@ -348,7 +400,8 @@ function CaughtLunge.new(kick: (amount: number) -> ()): Lunge
 			local feet = Vector3.new(eye.X, floor, eye.Z)
 			pivot = CFrame.lookAt(feet + flat * STAND_IN, feet)
 		end
-		local copy = Mannequin.clone(pivot, Workspace)
+		local kit = s.body
+		local copy = kit.clone(pivot, Workspace)
 		if not copy then
 			return
 		end
@@ -359,10 +412,10 @@ function CaughtLunge.new(kick: (amount: number) -> ()): Lunge
 				d.CanQuery, d.CanTouch, d.CanCollide = false, false, false
 			end
 		end
-		local motors = Mannequin.motors(copy)
-		local from = body and Mannequin.motors(body)
+		local motors = kit.motors(copy)
+		local from = body and kit.motors(body)
 		if motors and from then
-			Mannequin.rest(copy)
+			kit.rest(copy)
 			for i, m in motors do
 				m.Transform = from[i].Transform
 			end
@@ -419,6 +472,9 @@ function CaughtLunge.new(kick: (amount: number) -> ()): Lunge
 			headTo = eye,
 			headClose = eye,
 			row = if type(name) == "string" then KeeperRows[name] else KeeperRows.Mannequin,
+			body = if type(name) == "string" and BODIES[name]
+				then BODIES[name]
+				else BODIES.Mannequin,
 			lunged = false,
 			landed = false,
 		}

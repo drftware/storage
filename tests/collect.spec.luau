@@ -49,7 +49,9 @@ ok(COLLECT.reach > 0 and COLLECT.take > 0 and COLLECT.putDown > 0, "each part ta
 ok(COLLECT.laden > 0 and COLLECT.laden < 1, "its arms full, it walks slower")
 
 local CONE = Brix.Reach.cone
-local floors, trips, swaps, roams, robs = 0, 0, 0, 0, 0
+-- studs behind your middle a find dropped at a run lands (Slots' DROP_BEHIND)
+local DROP_BEHIND = 1.8
+local floors, trips, swaps, roams, robs, baits = 0, 0, 0, 0, 0, 0
 local function checkFloor(seed: number, number: number)
 	local f = Floor.generate(number, Brix.Random.new({ seed = seed }))
 	local where = `floor {number} seed {seed}`
@@ -225,6 +227,125 @@ local function checkFloor(seed: number, number: number)
 		robs += 1
 	end
 
+	-- a find dropped in its path (S2-06c2): hunting you with empty arms, a find it sees nearer
+	-- than you is what it goes for instead; it reaches, takes it and goes home, and you walk away
+	local chaseAt, chaseFace = Keeper.hallAbout(map, walker, home, 40)
+	local far = chaseAt + chaseFace * 14
+	if
+		KeeperMap.clear(map, chaseAt, far) and KeeperMap.clear(map, chaseAt - chaseFace * 2, far)
+	then
+		local function chaser(row: KeeperRows.Row?, youAt: vector): Keeper.Keeper
+			local h = Keeper.new(
+				row or PACKRAT,
+				map,
+				Brix.Random.new({ seed = seed }),
+				chaseAt,
+				chaseFace,
+				true,
+				CONE
+			)
+			h.state, h.target, h.goal, h.seen = "Hunting", 7, youAt, youAt
+			Keeper.nest(h, home, home)
+			return h
+		end
+		local function lone(id: number, p: vector): Keeper.Finds
+			return { ids = { id }, at = { p }, count = 1 }
+		end
+		local runner = Keeper.players()
+		runner.ids[1], runner.count = 7, 1
+		runner.eye[1], runner.aim[1] = vector.zero, vector.zero
+		local loot = assert(runner.loot)
+		loot[1] = 9 -- they still carry something it would take
+
+		-- between you: it turns off you for the find, takes it and goes, never touching you
+		local youAt = chaseAt + chaseFace * 8
+		runner.at[1] = youAt
+		local h = chaser(nil, youAt)
+		Keeper.lying(h, lone(55, chaseAt + chaseFace * 5))
+		Keeper.step(h, DT, RUN, runner)
+		ok(h.fetch == 55 and h.target == 0, `{where}: a find nearer than you, it goes for that`)
+		ok(h.state ~= "Hunting" and Keeper.shown(h) ~= "Hunting", `{where}: it stops hunting you`)
+		-- the find's own clank as it lands doesn't send it off to look: that's what it's after
+		local landing = chaseAt + chaseFace * 5
+		ok(Keeper.hear(h, landing, 1e6, landing) == nil, `{where}: its landing doesn't turn it`)
+		ok(h.fetch == 55, `{where}: still going for the find`)
+		local touched, huntedAgain, took = false, false, 0
+		steps = 0
+		while h.holding == 0 and steps < 60 * 5 do
+			Keeper.step(h, DT, RUN, runner)
+			steps += 1
+			touched = touched or h.caught ~= 0 or h.robbed ~= 0
+			huntedAgain = huntedAgain or h.state == "Hunting"
+			if h.took ~= 0 then
+				took = h.took
+			end
+		end
+		ok(took == 55 and h.holding == 55, `{where}: it takes the dropped find`)
+		ok(not touched and not huntedAgain, `{where}: you, standing in view, walk away`)
+		for _ = 1, 60 do
+			Keeper.step(h, DT, RUN, runner)
+		end
+		ok(h.homing and h.target == 0, `{where}: it carries it home past you`)
+
+		-- past you, or behind it out of view: it keeps coming for you
+		local beyond = chaser(nil, youAt)
+		Keeper.lying(beyond, lone(55, chaseAt + chaseFace * 11))
+		Keeper.step(beyond, DT, RUN, runner)
+		ok(beyond.target == 7 and beyond.fetch == 0, `{where}: a find past you doesn't save you`)
+		local behind = chaser(nil, youAt)
+		Keeper.lying(behind, lone(55, chaseAt - chaseFace * 2))
+		Keeper.step(behind, DT, RUN, runner)
+		ok(behind.target == 7 and behind.fetch == 0, `{where}: one behind it, it doesn't see`)
+
+		-- the Mannequin keeps coming: it collects nothing
+		local m = chaser(KeeperRows.Mannequin, youAt)
+		Keeper.lying(m, lone(55, chaseAt + chaseFace * 5))
+		Keeper.step(m, DT, RUN, runner)
+		ok(m.target == 7 and m.fetch == 0, `{where}: the Mannequin isn't bought off`)
+
+		-- running from it, you drop what you carry: it falls at your heels (Slots' drop while
+		-- running), between you and it, nearer than you: it goes for that at once
+		local fleeing = chaseAt + chaseFace * 4
+		runner.at[1] = fleeing
+		local r = chaser(nil, fleeing)
+		Keeper.lying(r, lone(66, fleeing - chaseFace * DROP_BEHIND))
+		local switched = -1
+		for s = 1, 30 do
+			runner.at[1] = fleeing + chaseFace * (RUN * DT * s)
+			Keeper.step(r, DT, RUN, runner)
+			if r.fetch == 66 then
+				switched = s
+				break
+			end
+		end
+		ok(switched == 1, `{where}: a runner's drop at their heels buys them off at once`)
+		ok(r.caught == 0 and r.robbed == 0, `{where}: the runner gets away`)
+		baits += 1
+	end
+
+	-- in its own unit, its pile isn't bait: it keeps coming for you
+	local pileAt = home + (outside - home) * 0.4
+	local _, pileUnit = KeeperMap.placeAt(map, pileAt)
+	if pileUnit == homeSlot and KeeperMap.clear(map, home, outside) then
+		local h = Keeper.new(
+			PACKRAT,
+			map,
+			Brix.Random.new({ seed = seed }),
+			home,
+			vector.normalize(vector.create(outside.x - home.x, 0, outside.z - home.z)),
+			true,
+			CONE
+		)
+		h.state, h.target, h.goal, h.seen = "Hunting", 7, outside, outside
+		Keeper.nest(h, home, home)
+		local you = Keeper.players()
+		you.ids[1], you.at[1], you.count = 7, outside, 1
+		you.eye[1], you.aim[1] = vector.zero, vector.zero
+		Keeper.lying(h, { ids = { 77 }, at = { pileAt }, count = 1 })
+		Keeper.step(h, DT, RUN, you)
+		ok(h.target == 7 and h.fetch == 0, `{where}: its own pile isn't bait`)
+	end
+
 	-- a find taken before it gets there: it goes for another
 	local swap = fresh()
 	local both: Keeper.Finds = { ids = { 11, 22 }, at = { nearAt, farAt }, count = 2 }
@@ -276,6 +397,7 @@ end
 ok(floors >= 12, `enough floors had a trip to walk ({floors})`)
 ok(trips == floors and swaps == floors and roams == floors, "every floor's checks ran")
 ok(robs >= floors // 2, `enough floors had a take ({robs})`)
+ok(baits >= floors // 2, `enough floors had a find dropped in its path ({baits})`)
 
 print(`collect: {checks - failures}/{checks} checks pass ({floors} floors, {trips} trips home)`)
 if failures > 0 then

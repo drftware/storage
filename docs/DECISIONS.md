@@ -4993,3 +4993,28 @@ crowds it). The ticket read "a bit" as about a third.
   it's behind you). No words: the empty slot says it.
 - **A dev hook to test it:** the dev floor's `GiveFind` Workspace attribute (Studio only) puts a
   find of that key in the first player's hands.
+
+## D-182 A find dropped in its path buys off the Packrat; its own body in the catch (S2-06c2, Nov 14)
+
+- **The rule, in the brain's sight.** A Packrat with empty arms that would hunt a player (one it
+  keeps its eyes on, or the nearest it notices) goes instead for a find it sees lying nearer than
+  them: in its sight and view along a line the map clears, one it can walk to, never on its own
+  pile (`bait`, `goForSeen` in `Keeper.luau`). The one it's already going for it watches any way
+  it faces, as the one it hunts, so the reach isn't broken. A player nearer than the find still
+  wins: "you before any find" stands. The distance cut runs before any line is cleared. Precedent:
+  a thrown item drawing a monster off in Granny and Hello Neighbor; the GDD's Packrat item 7.
+- **Its own landing doesn't call it off.** Seen in Play: right after it turned off the player, the
+  dropped find's clank sent it to "go and look" and dropped the fetch. A sound within
+  `Keeper.Landing` (3 studs) of the find it's going for is that find landing and is ignored.
+- **A find let go at a run falls at your heels** (Slots' `DROP_BEHIND`, 1.8 studs back along the way
+  you're moving, faster than 6 studs a second). Seen in Play: dropped 2.2 studs ahead, a solid find
+  lands in a runner's path and they run into it; and ahead of the runner it isn't nearer to the
+  monster behind them. At your heels it's between you and it, so the save is instant. Standing,
+  it still lands ahead of you, in sight. This applies to every tool dropped at a run (`OWNER.md`).
+- **The catch throws its own body.** CaughtLunge picks the body by the row's name (`BODIES`:
+  clone, joints, rest, its Lunge pose and its head in it), the Mannequin's for any other. The
+  Packrat's Lunge pose is reared up with both pale hands raised either side of its hood, at the
+  hood's depth, so flown at the eye by its hood they frame it at the screen's edges rather than
+  passing out of sight past the player's head (checked in `tests/packrat.spec.luau`). Not watched
+  on a screen yet (`OWNER.md`).
+

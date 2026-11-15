@@ -91,7 +91,10 @@
 	A keeper that collects (S2-06c, the GDD's Packrat) takes rather than catches when they carry
 	something it takes (`players.loot`, the server's pick from their slots): its hands close on it
 	(`took`, with `robbed` the player) and pull it in, and it walks home with it as after a fetch,
-	the player let go. With empty slots they're caught as by any keeper.
+	the player let go. With empty slots they're caught as by any keeper. A find it sees lying
+	nearer than the one it would hunt is what it goes for instead (S2-06c2, the GDD's "drop a cheap
+	find in its path"): a friend's drop buys them off, as a thrown item draws a monster in Granny
+	or Hello Neighbor.
 
 	It hears a door's open, slam or lift from inside (`Keeper.Hears`, the GDD's loud ones) as far as
 	that sound carries for a player (DoorSound's reach, scaled by its row's `hearing`), measured
@@ -402,30 +405,111 @@ local function sees(k: Keeper, p: vector, anyWay: boolean): number?
 	return d
 end
 
+-- Whether a find at `p` lies on its own pile: in its own unit (S2-06b1). It never takes from it.
+local function onPile(k: Keeper, p: vector): boolean
+	if k.home == 0 then
+		return false
+	end
+	local _, unit = KeeperMap.placeAt(k.map, p)
+	return unit == k.home
+end
+
+-- The find it goes for next (S2-06b1): the nearest along the halls it can walk to, never one on
+-- its own pile. Its index in `finds`, or nil. Allocates nothing.
+local function nearestFind(k: Keeper, finds: Finds): number?
+	local best, nearest = nil, math.huge
+	for i = 1, finds.count do
+		local p = finds.at[i]
+		if not onPile(k, p) then
+			local d = k.pathing:length(k.at, p)
+			if d < nearest then
+				best, nearest = i, d
+			end
+		end
+	end
+	return best
+end
+
+-- The find a keeper that collects goes for rather than a player it sees `within` studs off
+-- (S2-06c2, the GDD's "drop a cheap find in its path"): the nearest lying nearer than them,
+-- straight across, that it sees (in its sight and view, along a line the map clears), can walk
+-- to and isn't on its own pile. The one it's already going for it keeps its eyes on any way it
+-- faces, as the one it hunts. Its index in `finds`, or nil. The distance cut comes before any
+-- line is cleared, so a chase with nothing dropped near costs a few sums. Allocates nothing.
+local function bait(k: Keeper, finds: Finds, within: number): number?
+	local best, nearest = nil, within
+	local at = k.at
+	for i = 1, finds.count do
+		local p = finds.at[i]
+		local dx, dz = p.x - at.x, p.z - at.z
+		if dx * dx + dz * dz < nearest * nearest and not onPile(k, p) then
+			local going = finds.ids[i] == k.fetch
+			local d = sees(k, p, going)
+			if d and d < nearest and (going or k.pathing:length(at, p) < math.huge) then
+				best, nearest = i, d
+			end
+		end
+	end
+	return best
+end
+
+-- It turns from the player it would hunt to the find it sees nearer (`bait`) and goes for it as
+-- for any find: it stops its grab short, reaches and takes it, and goes home with it. Already
+-- going for that one (or reaching for it), nothing changes. Returns whether anything did.
+local function goForSeen(k: Keeper, finds: Finds, i: number, still: boolean): boolean
+	local id = finds.ids[i]
+	if k.fetch == id then
+		return false
+	end
+	k.state, k.target, k.waited = "Roaming", 0, 0
+	k.listening, k.startle, k.errand = false, 0, false
+	k.fetch, k.hands, k.homing = id, "None", false
+	k.goal = finds.at[i]
+	if not still then
+		faceToward(k, k.goal) -- the turn: it has seen it
+	end
+	return true
+end
+
 -- It looks for players. Hunting, it keeps its eyes on the one it hunts while it sees them any way
 -- it faces. Else it notices the nearest it sees within its view, turns to them (unless it's held
 -- `still` by a light) and hunts them. Hunting and seeing no one, it has lost them: it rushes to
--- where it last saw them. Returns whether its state or the one it hunts changed.
+-- where it last saw them. A keeper that collects that sees a find lying nearer than the one it
+-- would hunt goes for the find (`bait`). Returns whether its state or the one it hunts changed.
 local function look(k: Keeper, players: Players, still: boolean): boolean
 	local ids, at = players.ids, players.at
+	local best, nearest, kept = 0, math.huge, false
 	if k.state == "Hunting" then
 		for i = 1, players.count do
 			if ids[i] == k.target then
-				local p = at[i]
-				if sees(k, p, true) then
-					k.seen, k.goal = p, p
-					return false
+				local d = sees(k, at[i], true)
+				if d then
+					best, nearest, kept = i, d, true
 				end
 				break
 			end
 		end
 	end
-	local best, nearest = 0, math.huge
-	for i = 1, players.count do
-		local d = sees(k, at[i], false)
-		if d and d < nearest then
-			best, nearest = i, d
+	if best == 0 then
+		for i = 1, players.count do
+			local d = sees(k, at[i], false)
+			if d and d < nearest then
+				best, nearest = i, d
+			end
 		end
+	end
+	-- a find it sees nearer than them is what a keeper that collects goes for (S2-06c2): a
+	-- friend's drop in its path buys them off
+	local finds = k.finds
+	if best > 0 and finds and k.row.collects then
+		local i = bait(k, finds, nearest)
+		if i then
+			return goForSeen(k, finds, i, still)
+		end
+	end
+	if kept then
+		k.seen, k.goal = at[best], at[best]
+		return false
 	end
 	if best > 0 then
 		local changed = k.state ~= "Hunting" or k.target ~= ids[best]
@@ -490,23 +574,6 @@ local function lootOf(players: Players, id: number): number
 		end
 	end
 	return 0
-end
-
--- The find it goes for next (S2-06b1): the nearest along the halls it can walk to, never one in
--- its own unit (its pile). Its index in `finds`, or nil. Allocates nothing.
-local function nearestFind(k: Keeper, finds: Finds): number?
-	local best, nearest = nil, math.huge
-	for i = 1, finds.count do
-		local p = finds.at[i]
-		local _, unit = KeeperMap.placeAt(k.map, p)
-		if k.home == 0 or unit ~= k.home then
-			local d = k.pathing:length(k.at, p)
-			if d < nearest then
-				best, nearest = i, d
-			end
-		end
-	end
-	return best
 end
 
 -- Where in `finds` the find `id` is, or nil.
@@ -720,6 +787,9 @@ end
 -- the same noise going on: a code's presses, a crawl's pulls, a door banged again. It walks on
 -- toward it without stopping to turn again, and Output and screens don't hear of it again.
 Keeper.Same = 12
+-- How near the find it's going for a sound is that find landing where it was dropped (studs):
+-- it doesn't go to look at that (S2-06c2). Tight, so a door slammed beside it still calls it off.
+Keeper.Landing = 3
 
 -- How far it hears, as a share, while it's on its way to the breaker box or has its hand on the
 -- grip (S2-07a2): a third. A door slammed in its own hall still turns it; one two halls off, or a
@@ -739,12 +809,16 @@ Keeper.ErrandHearing = 1 / 3
 --- through its own door (its trip to the sound from the door's front, plus its own way to the
 --- door) and goes nowhere: it remembers the sound, to go after once out. Its own door's sounds it
 --- doesn't count. On its way to the breaker, or to a find (S2-06b1), it hears only
---- `ErrandHearing` as far; a sound that does reach it calls it off there and then. With a find
---- in its arms it hears nothing at all.
+--- `ErrandHearing` as far; a sound that does reach it calls it off there and then, but not the
+--- find it's going for landing where it was dropped (S2-06c2): that's what it's after. With a
+--- find in its arms it hears nothing at all.
 function Keeper.hear(k: Keeper, from: vector, reach: number, spot: vector): (number?, boolean)
 	local busy = k.errand or k.fetch ~= 0
 	local carries = reach * k.row.hearing * (if busy then Keeper.ErrandHearing else 1)
 	if not (carries > 0) or k.state == "Hunting" or k.holding ~= 0 then
+		return nil, false
+	end
+	if k.fetch ~= 0 and flatDistance(from, k.goal) <= Keeper.Landing then
 		return nil, false
 	end
 	if k.state == "Trapped" then

@@ -224,6 +224,16 @@ function Packrat.carry(model: Model): CFrame
 	return part(model, "UpperTorso").CFrame * CHEST
 end
 
+-- Where its hood sits in a pose, from its HumanoidRootPart: the hood's middle, turned as the hood
+-- is (its blank front toward the frame's LookVector). The catch flies the body by it (S2-06c2,
+-- CaughtLunge), as it flies the Mannequin's by its head.
+function Packrat.head(pose: Rig.Pose): CFrame
+	local placed = Pose.solve(pose)
+	return CFrame.new(-vec(Specs.RootPart.Centre))
+		* cframe(placed.Head)
+		* CFrame.new(vec(Specs.Parts.Head.Centre))
+end
+
 -- A copy of the template standing at `pivot` (its feet on it, facing its LookVector), posed, and
 -- put in `parent`; with none, left out of the world for the caller to finish and put in last.
 function Packrat.clone(pivot: CFrame, parent: Instance?, pose: Rig.Pose?): Model?

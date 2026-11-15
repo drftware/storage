@@ -1927,7 +1927,7 @@ Done when a team that has lost its lights goes looking for the breaker without b
       up, asleep in a unit holding finds (`Keeper.nest` facing its pile, `Keeper.lying` told on
       every change: a find lifted, dropped or laid, a door up or down). Its row borrows the
       Mannequin's sounds until S2-06e: its Kit plays no beats. Verified in Play.
-  - [ ] **S2-06c It takes from you, or wraps you.** With empty arms it comes for a player it
+  - [x] **S2-06c It takes from you, or wraps you.** With empty arms it comes for a player it
     sees at just under walking speed, and light doesn't stop it. Reaching one, it takes their
     most valuable find and carries it home: a tool only if they carry no find, never the
     flashlight, and the big find doesn't count. Empty slots mean an ordinary catch. A find
@@ -1943,10 +1943,13 @@ Done when a team that has lost its lights goes looking for the breaker without b
       it. The robbed screen: a view kick, its creak and the thing's own sound, the thing torn
       from your grip toward it and its picture pulled off the wheel. Seen in Play: it took the
       TV, took it home, laid it, took the teddy, then with empty slots wrapped the player.
-    - [ ] **S2-06c2 A find dropped in its path, and its own catch.** Hunting with empty arms, a
-      find it sees nearer than the one it hunts (a drop, `Slots`) is fetched instead of them,
-      never one on its own pile. Its catch of a player with empty slots throws its own body at
-      them, not the Mannequin's (`CaughtLunge` clones the Mannequin). Spec'd in Lune.
+    - [x] **S2-06c2 A find dropped in its path, and its own catch** (Nov 14, D-182). Hunting
+      with empty arms, a find it sees nearer than the one it would hunt is fetched instead, never
+      one on its own pile, and its landing clank doesn't call it off; a find dropped at a run
+      falls at your heels. Its catch throws its own body, reared up with its pale hands either
+      side of its hood (`CaughtLunge` `BODIES`, its Lunge pose). Seen in Play: hunting the
+      player, it turned off them for the dropped teddy, took it and went home. The runner's drop
+      and the catch's frames not watched (`OWNER.md`).
   - [ ] **S2-06d Its pile, and trapping it.** The pile shows in its unit as the finds
     themselves, each with "Take", and taking one back works as any find does. Bait works: it
     walks into a unit for a find at the back and the door comes down on it. Shut in, it pounds

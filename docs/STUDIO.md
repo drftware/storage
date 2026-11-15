@@ -2228,4 +2228,14 @@ verified: a doc page, Studio, or "untested".
   `ProximityPrompt:InputHoldBegin()` / `InputHoldEnd()` fired the dev floor's post (R, hold 0,
   the player standing at it). A dev post a test must press also listens for a Workspace
   attribute in Studio (`StandPackrat`), as `SendToBreaker` and `WakeSleepers` do.
+- **Testing a drop in front of a hunting Packrat from the MCP** (S2-06c2, Nov 14): `GiveFind`
+  gives nothing until your root stands on the floor (pivot it to (-6, 3.5, -591) first), and
+  setting the value it already holds fires nothing: set it to "" then "Teddy". The held find is
+  the character's `HeldTool` model. Then one Client call does the rest: wait for the Packrat's
+  `KeeperState` to be Roaming with 19 clear studs ahead of it (a raycast), pivot your character 16
+  studs ahead facing it, and the moment `KeeperState` reads Hunting fire `ToolDrop`
+  (`ReplicatedStorage:FindFirstChild("ToolDrop", true)`). Fire it at once: the server is a few
+  studs ahead of what the client shows, and 0.2 s later it has already reached you. Output: "turns
+  off drftware for the find in its path", then "takes a find and heads home with it". Placed only
+  12 studs off with your back to it, it sees you at 7 and robs you before a scripted drop.
 

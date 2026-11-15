@@ -62,6 +62,11 @@ local FALL = TweenInfo.new(0.32, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 -- A find the Packrat sets on its pile (S2-06b2): eased from its hands to the floor, unhurried
 local PUT_DOWN = TweenInfo.new(0.35, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
 local DROP_AHEAD = 2.2 -- studs in front of your middle where a dropped tool lands
+-- Running, it falls at your heels instead (S2-06c2): this far behind your middle, the way you
+-- came, so you never run into your own drop and a find let go to buy off a Packrat on your tail
+-- lands between you and it. Running is moving faster than RUNNING studs a second across the floor.
+local DROP_BEHIND = 1.8
+local RUNNING = 6
 local REACH_SLACK = 2 -- studs the server allows past a prompt's reach (lag, a long arm)
 -- A kept find's glint as it goes from your hand, for everyone near: the coins' sparkle, warm gold.
 local GLINT_TEXTURE = "rbxasset://textures/particles/sparkles_main.dds"
@@ -484,10 +489,15 @@ function Slots.new(): Slots
 		offer(t)
 	end
 
-	-- Where a tool dropped by someone at `root` lands: a floor point just ahead of them, found by a
-	-- ray down that sees only the building (no players, no tools).
+	-- Where a tool dropped by someone at `root` lands: a floor point just ahead of them, or at
+	-- their heels if they're running (`DROP_BEHIND`), found by a ray down that sees only the
+	-- building (no players, no tools).
 	local function dropPoint(root: BasePart): Vector3
-		local ahead = root.CFrame * CFrame.new(0, 0, -DROP_AHEAD)
+		local v = root.AssemblyLinearVelocity
+		local flat = Vector3.new(v.X, 0, v.Z)
+		local ahead = if flat.Magnitude > RUNNING
+			then CFrame.new(root.Position - flat.Unit * DROP_BEHIND)
+			else root.CFrame * CFrame.new(0, 0, -DROP_AHEAD)
 		local params = RaycastParams.new()
 		params.FilterType = Enum.RaycastFilterType.Exclude
 		local skip: { Instance } = {}

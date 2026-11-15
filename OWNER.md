@@ -23,6 +23,33 @@ nowhere else.
   at Brix `6717740` (S1-02), which is only on this Mac until Brix is pushed; a fresh clone of
   the game can't fetch it until then.
 
+## Now: buy off the Packrat with a find, and see its own catch (S2-06c2, built Nov 14, D-182; the turn-off seen in Studio Play, the rest not watched)
+
+When the Packrat is chasing you with empty arms, a find dropped where it can see it, nearer to it
+than you are, is what it goes for instead: it turns off you, reaches for the find, takes it and
+carries it home. If you drop something while running, it now falls at your heels instead of in
+front of you. When the Packrat does catch you, the jump scare throws its own body at you, not the
+Mannequin's.
+
+- [ ] **A friend's drop saves you.** In Studio Play on floor 3, walk to the lobby's "Stand one"
+  Packrat post and press it (R).
+  1. Pick up the boombox in the hall, or any find, so you hold something.
+  2. Stand in a hall where the Packrat will see you, facing it, about 15 studs off.
+  3. When it turns and comes at you (the chase music starts), drop what you hold (the drop
+     button on the wheel, or its key).
+  4. Look for: it turns away from you at once to the thing on the floor, its arm goes out, it
+     takes it, and it walks home past you. The chase music fades. It never touches you.
+- [ ] **The runner's drop.** Same set-up, but turn and run from it while holding a find.
+  1. While it chases you, drop the find without stopping.
+  2. Look for: the find falls just behind you, you keep running without bumping into it, and
+     the Packrat stops for it. Tell me if the find landing behind you looks wrong anywhere else
+     (dropping a tool while walking also puts it behind you now).
+- [ ] **Its own catch.** Let it reach you with empty slots (drop everything first).
+  1. Look for: the jump scare shows the Packrat, not the Mannequin: the grey blanket bundle
+     reared up over you, both long pale hands raised either side of its hood, rushing your eyes
+     before the black. On a phone, check the two pale hands show at the edges of the screen.
+  2. Tell me whether it lands as hard as the Mannequin's.
+
 ## Now: let the Packrat rob you (S2-06c1, built Nov 14, D-181; seen in Studio Play, the robbed screen not watched)
 
 When the Packrat's arms are empty and it reaches you, it takes the best thing you carry instead of

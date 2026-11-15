@@ -182,6 +182,22 @@ local function f2(v: number): string
 	return string.format("%.2f", v)
 end
 
+-- Wrapping you (S2-06c2, the catch's lunge, flown at your eye by its hood): both hands up either
+-- side of the hood, at its depth and a little above it, so they frame it on the caught one's
+-- screen rather than passing out of sight past their head.
+do
+	stands("Lunge", Pose.Poses.Lunge)
+	local placed = Pose.solve(Pose.Poses.Lunge)
+	local hood = Rig.apply(placed.Head, Specs.Parts.Head.Centre)
+	for _, side in { "Left", "Right" } do
+		local h = hand(placed, side)
+		local up, out, ahead = h[2] - hood[2], math.abs(h[1] - hood[1]), hood[3] - h[3]
+		ok(up > 0.2 and up < 1.2, `Lunge: its {side} hand up by its hood ({f2(up)})`)
+		ok(out > 0.8 and out < 1.6, `Lunge: its {side} hand beside its hood ({f2(out)})`)
+		ok(math.abs(ahead) < 0.6, `Lunge: its {side} hand at its hood's depth ({f2(ahead)})`)
+	end
+end
+
 -- Reaching: one long arm far out ahead, nearly level, at a player's chest; the other well back.
 do
 	local placed = Pose.solve(Pose.Poses.Reach)

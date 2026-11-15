@@ -190,6 +190,27 @@ local Poses: { [string]: Rig.Pose } = {
 		LeftKnee = { x = -68 },
 		LeftAnkle = { x = 29 },
 	},
+	-- Wrapping you, the catch thrown at your eyes (S2-06c2, CaughtLunge): reared up over you,
+	-- both long pale arms raised either side of the hood, elbows out, the open hands curled in to
+	-- fold round you; the hood bowed down at you. Flown at your eye by its hood, the two pale hands
+	-- frame it at the edges of a phone's screen as the dark bundle fills the middle.
+	Lunge = {
+		Root = { x = -4 },
+		Waist = { x = -8 },
+		Neck = { x = -10 },
+		RightShoulder = { x = 105, y = 0, z = 40 },
+		RightElbow = { x = 125 },
+		RightWrist = { z = -24 },
+		LeftShoulder = { x = 105, y = 0, z = -40 },
+		LeftElbow = { x = 125 },
+		LeftWrist = { z = 24 },
+		RightHip = { x = 34 },
+		RightKnee = { x = -34 },
+		RightAnkle = { x = 8 },
+		LeftHip = { x = -14 },
+		LeftKnee = { x = 0 },
+		LeftAnkle = { x = 22 },
+	},
 }
 Poses.EmptyStepLeft = Rig.mirror(Poses.EmptyStepRight)
 Poses.EmptyPassLeft = Rig.mirror(Poses.EmptyPassRight)
