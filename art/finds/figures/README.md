@@ -5,6 +5,10 @@ The catalog's "Figures and models" set, built with the finds kit (`art/finds/CRA
 `src/shared/Finds/Sets/Figures.luau`. Two cars were pulled forward from wave 4 (F-03); the set's
 other twelve finds join this folder later.
 
+**In the place** (F-S1, Nov 15): every find here is a template in
+`ReplicatedStorage.Props.Finds.<Find>`, made by `Finds/Kit.luau`'s `import` from the
+uploaded FBX (CRAFT.md, "Into Studio"); the place keeps them once the owner saves it.
+
 ## Remote-control car (Rare): "Drive (at home): round your unit and out into the hall of units"
 
 A 1/10 two-wheel-drive off-road buggy of the 1990s, the 27 MHz kind a kid saved up for, with

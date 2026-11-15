@@ -6,7 +6,7 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-02h, the disco ball (planned in the newest note: look at its references first),
+**Next:** F-02h, the disco ball (planned in the F-02f and F-02g note: look at its references first),
 then the neon OPEN sign and on down the Lights.
 
 ## Order
@@ -33,6 +33,27 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 15, F-S1 (the night's finds into Studio).** The nine Lights and the RC car are
+  templates in `ReplicatedStorage.Props.Finds` (the owner saves the place), made by code: the
+  uploader finds every set's FBX and glow mask by itself, and `Finds/Kit.luau`'s `import` makes
+  each a jointed Model (CRAFT.md, "Into Studio", step by step). **Holds up in Roblox:** every
+  part's pivot and size matched the Luau to 0.001; seen in Studio in a lit unit from the doorway
+  and up close, off and on: the desk lamp, blob lamp, moon lamp, lantern, oil lamp and RC car
+  read at a glance; the glow masks glow (the moon, the blob lamp's violet, the green stick, the
+  night-light's shade); the oil lamp's flame and oil read through its glass. The RC car's Drive,
+  posed at 35 per cent, holds together with the right axes (forward is its -Z, it turns right
+  and drifts right). **Changed:** the oil lamp's light 1.4/16 to 0.7/10 and the lantern's 1.2/16
+  to 0.8/12 (each lit a unit brighter than its bulb); the oil lamp's chimney alpha 0.08/0.06 to
+  0.18/0.12 (it vanished). The oil lamp's sheets weren't re-rendered: run `scripts/art.sh set
+  lights renders OilLamp` with `ACTIONS=` when next touched. **Not judged:** the desk lamp's spot
+  alone, the tea light's jar and the blob lamp's bottle up close (both read from the doorway),
+  any motion but the car's Drive played in Roblox (no motion player exists yet: the game's
+  ticket writes Motor6D Transforms; scale and stretch need Size). Small finds are specks from a
+  doorway when off (`OWNER.md` asks). **The next sets must:** keep lights under the unit's bulb
+  and glass at 0.15 a wall or more; after a rebuild, restore the FBX of finds that didn't change
+  before uploading; check the textures stage printed `BAKED` (once it printed nothing and baked
+  nothing).
 
 - **Nov 15, F-02f and F-02g (the blob lamp judged and fixed; the oil lamp built).** Both in
   `lights/build.py` with README entries. The blob lamp: the lit liquid's glow cut to 0.35 to

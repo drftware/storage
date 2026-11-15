@@ -615,6 +615,23 @@ machine wakes, the real button sinking, a refused pick's buzz and shake.
 6. Decide (my defaults): its sounds (the flap's knock pitched down for the clunk, the tubes'
    tink) and its place (right of centre on a phone, clear of the jump button).
 
+## Decide: small finds you can't see from a doorway (F-S1, Nov 15, D-194; nothing built)
+
+The night's finds are in the place now (`ReplicatedStorage.Props.Finds`: nine lights and the RC
+car, each a template made by code; save the place to keep them). Standing in a lit unit's
+doorway on a phone, the desk lamp, blob lamp, moon lamp, lantern, oil lamp and RC car read at a
+glance, off or on. The small ones (the tea light, the night-light, the glow sticks, the fairy
+lights, all under about 6 inches) are specks when they're off, and the ones away from the bulb
+are lost in the dark.
+
+1. Today a player finds them by walking in and looking down, or by torchlight.
+2. A choice: give a small find a faint glint now and then where the torch or a light catches it
+   (as Fortnite's floor loot shimmers and Pokémon's hidden items sparkle), or leave them
+   hard to see, which makes them a reward for searching.
+3. Default until you say: nothing added; they stay hard to see.
+
+- [ ] Glint on small finds, or leave them for searchers?
+
 ## Decide: the camera feed's defaults (S2-02d1-d2, built Nov 14, D-165, D-166; judged by you)
 
 Your idea, first half: as a Mannequin walks up to the breaker, the corner map on every screen

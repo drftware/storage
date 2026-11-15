@@ -1560,8 +1560,8 @@ LANTERN = kit.Find(
     lights=[
         # LEDs behind frosted plastic: warm, wide, all round; no shadows, so it shines out
         # through the globe and the guard
-        dict(kind="Point", part="Diffuser", at=LN_GLOW_AT, kelvin=LN["kelvin"], brightness=1.2,
-             range=16, shadows=False, preview_kind="POINT", preview_watts=9.0, preview_size=0.05),
+        dict(kind="Point", part="Diffuser", at=LN_GLOW_AT, kelvin=LN["kelvin"], brightness=0.8,
+             range=12, shadows=False, preview_kind="POINT", preview_watts=9.0, preview_size=0.05),
     ],
     glow=dict(part="Diffuser", strength=3.0, tint=(255, 200, 150), preview=9.0),
     motions={
@@ -2718,8 +2718,10 @@ def ol_look(L, f):
     # the chimney: thin clear glass; fingermarks on the bulge, soot inside above the flame
     ch, chi = L.k(OL_CHIM), L.k(OL_CHIM_IN)
     # (dark, so the flame inside lights it as glass, not as yellow plastic)
-    C.paint(ch, hexc("#5C6668"), 0.03, 0.0, alpha=0.08)
-    C.paint(chi, hexc("#5C6668"), 0.03, 0.0, alpha=0.06)
+    # (alpha 0.08 vanished in Roblox, which blends alpha lighter than Cycles and has no
+    # Fresnel to draw glass's edges: F-S1 raised it until the chimney read from a doorway)
+    C.paint(ch, hexc("#5C6668"), 0.03, 0.0, alpha=0.18)
+    C.paint(chi, hexc("#5C6668"), 0.03, 0.0, alpha=0.12)
     zc = OL_CHIM_Z
     prints = nb.mul(nb.mul(ch, nb.mul(nb.ss(L.z, zc + 0.12, zc + 0.18), nb.ss(L.z, zc + 0.36, zc + 0.3))),
                     nb.ss(L.noise(9.0, 28, detail=4, rough=0.6), 0.55, 0.68))
@@ -2763,8 +2765,8 @@ OIL_LAMP = kit.Find(
     ol_look,
     lights=[
         # a paraffin flame: deep warm, all round; no shadows, so it shines out through the glass
-        dict(kind="Point", part="Flame", at=OL_FLAME_MID, kelvin=OF["kelvin"], brightness=1.4,
-             range=16, shadows=False, preview_kind="POINT", preview_watts=9.0, preview_size=0.02),
+        dict(kind="Point", part="Flame", at=OL_FLAME_MID, kelvin=OF["kelvin"], brightness=0.7,
+             range=10, shadows=False, preview_kind="POINT", preview_watts=9.0, preview_size=0.02),
     ],
     glow=dict(part="Flame", strength=3.0, tint=(255, 176, 92), preview=14.0),
     # found cold: the flame is scaled to nothing, the wick wound down

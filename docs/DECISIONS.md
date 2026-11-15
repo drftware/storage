@@ -5280,3 +5280,16 @@ leans on them, the aerial whips in two lengths. The car's motions come from a sm
 simulation (Ackermann steering, each wheel turned by the distance its own tyre rolls), and the
 generated Luau carries `Drive`: wheel radii, wheelbase, track, steering lock, suspension travel
 and a suggested top speed of 20 studs a second.
+
+## D-194 A kit-built find's template is a jointed Model, made by code; its lights stay under the unit's bulb (F-S1, Nov 15)
+
+Every find built with the finds kit goes into the place the same way: `scripts/upload_art`
+uploads its FBX and its glow mask, and `Finds/Kit.luau`'s `import` makes the template in
+`ReplicatedStorage.Props.Finds`, checked against the generated Luau. A template is a Model, not
+one MeshPart like the bedroom finds: its root is anchored and every moving part hangs on a
+Motor6D through its real hinge, so the game plays the art's motions by writing joint
+Transforms, the way Roblox animates bodies, with no welds to rebuild. Lights ship off, at full
+brightness, for the game to scale by the glow. Judged in a lit unit: no find's light outshines
+the unit's own bulb (0.6, range 11), since a lamp that floods the room would make it a light
+source for the whole floor, a game choice for later tickets, not the art's. Small finds being
+specks from a doorway when off is left for the owner (`OWNER.md`).

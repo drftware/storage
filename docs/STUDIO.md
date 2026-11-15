@@ -91,6 +91,28 @@ verified: a doc page, Studio, or "untested".
   no script write: bake the mask into the template once (plugin or MCP), and switch the glow from
   the game with the strength. The bloom (Threshold 2) didn't halo the glow in Edit.
 
+## The finds kit into Studio (F-S1, Nov 15)
+
+- **An Open Cloud "Decal" upload answers with the Decal's ID, not the image's** (Edit): the glow
+  mask came back as AssetTypeId 13. `InsertService:LoadAsset(decalId)` gives a Model holding a
+  Decal whose `Texture` is `rbxassetid://<image>` (AssetTypeId 1), and that's what
+  `EmissiveMaskContent` takes (`Content.fromUri`); `Finds/Kit.luau` looks it up at import.
+- **A kit find's FBX loads unturned and exact** (`LoadAsset`, Edit): a Model wrapping a Model
+  named for the find, every MeshPart square to the world, each pivot on its Blender origin within
+  0.001 of the generated Luau's `Pivot`, each Size its `Size`, SurfaceAppearances in Overlay.
+  Ten finds in one `execute_luau` took longer than the MCP waits ("Target is not reachable") but
+  finished; check the folder after.
+- **In Edit, setting the CFrame of a part held by a Motor6D drags its whole assembly**: posing a
+  jointed copy part by part flew it apart. Pose a test copy with its joints destroyed, or write
+  the joints' Transforms in Play.
+- **Ten lit finds in one unit once blacked out every lit surface in Edit captures** (only the
+  glowing parts drew), and it stayed black after lights were switched off and the quality level
+  set. Rebuilding the test (a fresh unit and copies) cured it; one lit find never did it.
+- **A find's light against the unit's bulb** (Edit, a unit `M` lit like the game, 0.6, range 11):
+  a Point at 1.4, range 16 lit every wall brighter than the bulb; 0.7, range 10 gave a warm pool
+  with the far wall falling off. Clear glass at alpha 0.08 vanished; 0.18 read as glass with the
+  wall's ribs showing through.
+
 ## Camera and prompts
 
 - **A door's middle point holds three buttons** (S1-04a2, Play, 2026-11-14): `DoorMiddle` has

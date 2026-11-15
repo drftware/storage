@@ -4,6 +4,11 @@ The catalog's Lights (art/finds/WAVES.md), built with the finds kit (art/finds/C
 kit"). `scripts/art.sh set lights` rebuilds them; sheets in `art/sheets/<find>-*.png`, motion
 clips in `out/`.
 
+
+**In the place** (F-S1, Nov 15): every find here is a template in
+`ReplicatedStorage.Props.Finds.<Find>`, made by `Finds/Kit.luau`'s `import` from the
+uploaded FBX (CRAFT.md, "Into Studio"); the place keeps them once the owner saves it.
+
 ## Desk lamp (Nov 15, F-01)
 
 - **What it is:** a 1960s-70s spring-balanced desk lamp in oxblood enamel: a two-step round
@@ -334,7 +339,7 @@ clips in `out/`.
   about X on the spindle), `_Chimney` (see-through, sliding up its Z to be lifted), `_Flame`
   (see-through, the glow part; pivot at the slot, leaning about Y; found at `scale` 0).
   11,936 triangles; one 1024 texture set at 354 texels a stud.
-- **Light:** a Point at the flame (1,900 K, Brightness 1.4, Range 16, no shadows, so it shines
+- **Light:** a Point at the flame (1,900 K, Brightness 0.7, Range 10 (1.4 and 16 lit a whole unit brighter than its bulb in Studio, F-S1), no shadows, so it shines
   out through the glass); strength 3, tint (255, 176, 92).
 - **Motions:** `Light` (2.6 s): lit the way a real one is: the chimney lifted off its prongs,
   a flame caught low and lazy, the chimney set back with a small ring of glass on brass, its

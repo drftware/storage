@@ -141,8 +141,29 @@ set's `build.py` as an example; you shouldn't need the kit's code.
   parent, pivot, axis, size, triangles in Roblox axes from the find's pivot), glow, lights and
   motions. Nothing requires a set until its templates are in the place, so a session never
   changes what a floor deals. `Art.sample(keys, t)` plays a track.
-- **Into Studio** (F-S1): upload `out/<Find>.fbx` (one Model per find), insert, set each glow
-  part's `EmissiveMaskContent`, keep it in `ReplicatedStorage.Props.Finds`.
+- **Into Studio** (F-S1, proven on the Lights and the RC car). Two steps, both code:
+  1. `lune run scripts/upload_art` sends every set's `out/<Find>.fbx` (a Model, updated in place
+     later) and `out/textures/<Find>_Emissive.png` (a Decal, new each time it changes) by
+     itself; the IDs go in the set's `assets.json` and `src/shared/Finds/Uploads.luau`. Export
+     rewrites every FBX in the set with new bytes: when only one find changed, `git checkout`
+     the others' FBX first, or all of them go up again.
+  2. In Studio's Edit view, with Rojo synced:
+     `require(game.ReplicatedStorage.Shared.Finds.Kit).import("Lights")` (or `import("Lights",
+     {"OilLamp"})`) loads each find, checks every part's pivot and size against the generated
+     Luau, and makes its template in `ReplicatedStorage.Props.Finds.<Find>`: a Model whose pivot
+     is the find's, the root anchored, every other part held to its parent by a Motor6D through
+     its hinge (the game plays a motion by writing each joint's `Transform`; scale and stretch
+     change the part's Size), glass at Transparency 0.02 in AlphaMode Transparency with no
+     shadow, each glowing part's mask set and its `EmissiveStrength` 0, each light on an
+     Attachment `Light<n>` in its part, facing `Face`, at full brightness and disabled. After
+     changing Luau that Studio already required, require from a clone of `Shared` (STUDIO.md).
+  3. The owner saves the place.
+- **Judged in Roblox** (F-S1): **lights** no brighter than the unit's own bulb (0.6, range 11):
+  a flame or a lantern about 0.7 to 0.8 at range 10 to 12, small glows less; the oil lamp at
+  1.4, range 16, lit every wall of a unit brighter than its bulb. **Glass** below alpha 0.15 a
+  wall vanishes (Roblox has no Fresnel to draw glass's edges): 0.18 outside, 0.12 inside read as
+  a clear chimney with the wall showing through. **Small finds** (under about 6 inches) are
+  specks from a doorway when off; the bigger ones read off and on.
 
 ## Things that move or light
 

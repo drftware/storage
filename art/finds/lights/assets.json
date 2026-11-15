@@ -1,0 +1,74 @@
+{
+  "BlobLamp": {
+    "assetId": 136899173776115,
+    "sha256": "fba8e6d5860b4cfc905def3e5370759a525c617704d43f9e79b349795130bec3"
+  },
+  "BlobLampEmissive": {
+    "assetId": 89550023361629,
+    "sha256": "5063438f6371b3bada9f01b51eb3938a7ac411b82a02b1b4b2408871d4eb8011"
+  },
+  "CampLantern": {
+    "assetId": 138467333671638,
+    "sha256": "767907c74c695023a66d62dc2f2aa1064e13626a64145533a21563ee5dfc6538"
+  },
+  "CampLanternEmissive": {
+    "assetId": 130889436392076,
+    "sha256": "2e6abd42d66bf150002948df63f377eea09f3156d8a4ec761edbc5f98bce3701"
+  },
+  "DeskLamp": {
+    "assetId": 95276367368605,
+    "sha256": "4b7a8b21cd6514e0c48c6b2b4c24f949f228c18e60aa4124513fd31f67977dac"
+  },
+  "DeskLampEmissive": {
+    "assetId": 139140411595796,
+    "sha256": "65f4cf6346a0dc43d083563c265006d6127a0492b65864b2a7de9842d5cef9db"
+  },
+  "FairyLights": {
+    "assetId": 116946213167800,
+    "sha256": "6c16be1ee2c4c826906e40cedbc330f2cd88b55e13f3d4540bd780b38b10676c"
+  },
+  "FairyLightsEmissive": {
+    "assetId": 106385423503478,
+    "sha256": "249f8e241acdb696c37952fefec76159a12df217441f5fd0263cdba9feca1921"
+  },
+  "GlowSticks": {
+    "assetId": 73530047626071,
+    "sha256": "c6b772b127a262ce9a0c39db31de1c2f9da567ed7ee32e66c0fdcea852191dca"
+  },
+  "GlowSticksEmissive": {
+    "assetId": 132745904151732,
+    "sha256": "e0fb55bcedb668753b5e29c65ebff0fd37bd7c0bf6bbd04e524358731a9a1d8c"
+  },
+  "MoonLamp": {
+    "assetId": 135149115324330,
+    "sha256": "6fbec1cd087bef06220ead57629991ccb5a7ed2820cc5d8bb63bb4ced21911f7"
+  },
+  "MoonLampEmissive": {
+    "assetId": 134416781119139,
+    "sha256": "4923037b0a769a79b48ddcd8cd01a74141656d6e65cdcb9a98a380fe05c80f28"
+  },
+  "NightLight": {
+    "assetId": 91734482466317,
+    "sha256": "a3ce3b62923480fc9481e7a7beda4f0c4f327fd6b82c41b30cdfdaf1a5724ba2"
+  },
+  "NightLightEmissive": {
+    "assetId": 136712910283283,
+    "sha256": "d54b35dc8a2c8ad3639bcdf78f723f7d74c16424209ed74aa97d64ddbf20d29c"
+  },
+  "OilLamp": {
+    "assetId": 83217454891598,
+    "sha256": "4030bf775094abd51487e2188aacef840ea8dbf2d01865a10c2af280152eca67"
+  },
+  "OilLampEmissive": {
+    "assetId": 117244969881764,
+    "sha256": "f577a40437c9cf75bc7d18a086ba478d34b0e6ccae37747ce9387292d653480f"
+  },
+  "TeaLight": {
+    "assetId": 111143504211306,
+    "sha256": "dfdc21a9659ff403d9d6c8019250bf6add12723b19bde3ab5c41591b4ee8abc1"
+  },
+  "TeaLightEmissive": {
+    "assetId": 73546862884548,
+    "sha256": "70454b1b07ac4ba239efa4b1034426181b3a71deb00d5495ecd68368df4e00b4"
+  }
+}
