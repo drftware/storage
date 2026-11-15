@@ -8,7 +8,7 @@ local Art = require(script.Parent.Parent.Art)
 
 local Set: { [string]: Art.Find } = {
 	DeskLamp = {
-		Size = Vector3.new(-0.820, 1.468, 2.590),
+		Size = Vector3.new(0.820, 1.468, 2.590),
 		Centre = Vector3.new(-0.050, 0.732, -0.135),
 		Triangles = 6564,
 		Texture = 1024,
@@ -16,7 +16,7 @@ local Set: { [string]: Art.Find } = {
 			{
 				Name = "DeskLamp_Base",
 				Pivot = Vector3.new(-0.000, 0.000, 0.000),
-				Size = Vector3.new(-0.820, 0.337, 1.520),
+				Size = Vector3.new(0.820, 0.337, 1.520),
 				Triangles = 2276,
 			},
 			{
@@ -24,7 +24,7 @@ local Set: { [string]: Art.Find } = {
 				Parent = "DeskLamp_Base",
 				Pivot = Vector3.new(-0.000, 0.275, 0.000),
 				Axis = Vector3.new(-1.000, 0.000, 0.000),
-				Size = Vector3.new(-0.175, 1.228, 0.386),
+				Size = Vector3.new(0.175, 1.228, 0.386),
 				Triangles = 1072,
 			},
 			{
@@ -32,7 +32,7 @@ local Set: { [string]: Art.Find } = {
 				Parent = "DeskLamp_LowerArm",
 				Pivot = Vector3.new(-0.000, 1.429, 0.331),
 				Axis = Vector3.new(-1.000, 0.000, 0.000),
-				Size = Vector3.new(-0.108, 0.298, 1.190),
+				Size = Vector3.new(0.108, 0.298, 1.190),
 				Triangles = 408,
 			},
 			{
@@ -40,7 +40,7 @@ local Set: { [string]: Art.Find } = {
 				Parent = "DeskLamp_UpperArm",
 				Pivot = Vector3.new(-0.000, 1.189, -0.794),
 				Axis = Vector3.new(-1.000, 0.000, 0.000),
-				Size = Vector3.new(-0.613, 0.705, 0.702),
+				Size = Vector3.new(0.613, 0.705, 0.702),
 				Triangles = 2272,
 			},
 			{
@@ -48,14 +48,14 @@ local Set: { [string]: Art.Find } = {
 				Parent = "DeskLamp_Head",
 				Pivot = Vector3.new(-0.000, 1.305, -0.895),
 				Axis = Vector3.new(-0.000, 0.906, 0.423),
-				Size = Vector3.new(-0.044, 0.045, 0.051),
+				Size = Vector3.new(0.044, 0.045, 0.051),
 				Triangles = 96,
 			},
 			{
 				Name = "DeskLamp_Bulb",
 				Parent = "DeskLamp_Head",
 				Pivot = Vector3.new(-0.000, 1.176, -0.955),
-				Size = Vector3.new(-0.236, 0.333, 0.261),
+				Size = Vector3.new(0.236, 0.333, 0.261),
 				Triangles = 440,
 			},
 		},
@@ -171,6 +171,102 @@ local Set: { [string]: Art.Find } = {
 							{ 0, 1, "Sine", "InOut" },
 							{ 0.085, 1, "Linear", "In" },
 							{ 0.12, 0.22, "Quad", "Out" },
+							{ 0.5, 0, "Sine", "Out" },
+						},
+					},
+				},
+			},
+		},
+	},
+	NightLight = {
+		Size = Vector3.new(0.202, 0.529, 0.217),
+		Centre = Vector3.new(-0.000, 0.264, -0.037),
+		Triangles = 820,
+		Texture = 512,
+		Parts = {
+			{
+				Name = "NightLight_Base",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Size = Vector3.new(0.115, 0.129, 0.186),
+				Triangles = 216,
+			},
+			{
+				Name = "NightLight_Shade",
+				Parent = "NightLight_Base",
+				Pivot = Vector3.new(-0.000, 0.120, 0.000),
+				Size = Vector3.new(0.202, 0.409, 0.145),
+				Triangles = 560,
+			},
+			{
+				Name = "NightLight_Switch",
+				Parent = "NightLight_Base",
+				Pivot = Vector3.new(-0.000, 0.049, -0.117),
+				Axis = Vector3.new(-0.000, 1.000, 0.000),
+				Size = Vector3.new(0.020, 0.020, 0.013),
+				Triangles = 44,
+			},
+		},
+		Glow = { Part = "NightLight_Shade", Strength = 2.0, Tint = Color3.fromRGB(255, 190, 122) },
+		Lights = {
+			{
+				Kind = "Point",
+				Part = "NightLight_Shade",
+				At = Vector3.new(-0.000, 0.287, -0.071),
+				Face = Vector3.new(-0.000, -1.000, 0.000),
+				Color = Color3.fromRGB(255, 163, 79),
+				Brightness = 0.7,
+				Range = 8,
+				Shadows = false,
+			},
+		},
+		Motions = {
+			SwitchOn = {
+				Duration = 0.5,
+				Tracks = {
+					{
+						Part = "NightLight_Switch",
+						Channel = "move",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.07, 0.004, "Quad", "In" },
+							{ 0.12, 0.03565, "Quad", "Out" },
+							{ 0.16, 0.03315, "Sine", "Out" },
+							{ 0.22, 0.03565, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "NightLight_Shade",
+						Channel = "glow",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.12, 0, "Linear", "In" },
+							{ 0.15, 0.5, "Quad", "Out" },
+							{ 0.28, 1, "Quad", "Out" },
+						},
+					},
+				},
+			},
+			SwitchOff = {
+				Duration = 0.55,
+				Tracks = {
+					{
+						Part = "NightLight_Switch",
+						Channel = "move",
+						Keys = {
+							{ 0, 0.03565, "Sine", "InOut" },
+							{ 0.07, 0.03165, "Quad", "In" },
+							{ 0.12, 0, "Quad", "Out" },
+							{ 0.16, 0.0025, "Sine", "Out" },
+							{ 0.22, 0, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "NightLight_Shade",
+						Channel = "glow",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.12, 1, "Linear", "In" },
+							{ 0.15, 0.28, "Quad", "Out" },
 							{ 0.5, 0, "Sine", "Out" },
 						},
 					},

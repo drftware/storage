@@ -2090,8 +2090,12 @@ The owner asked on Nov 14 for the catalog's finds as world-class models, built t
 built are in `art/finds/WAVES.md`. These tickets make the art and the motion data only: the
 actions themselves and dealing the new finds on floors are later game tickets.
 
-- [ ] **F-01 The finds kit**, proven on the desk lamp and the first Lights.
-- [ ] **F-02 The Lights** (the other 15, or what F-01 left).
+- [x] **F-01 The finds kit**, proven on the desk lamp (Nov 15).
+- [ ] **F-02 The Lights** (the other 15), a few finds a session:
+  - [x] **F-02a** The plug-in night-light (Nov 15); the kit gained lofts for shells that
+    aren't round.
+  - [ ] **F-02b** The tea light in a jar, which brings see-through glass to the kit; then on
+    down WAVES.md's list.
 - [ ] **F-03 The remote-control car and the die-cast car** (pulled forward from wave 4).
 - [ ] **F-S1 Into Studio:** the Lights and the cars uploaded, inserted and judged at phone size.
 - [ ] **F-04 Wind-ups and noisemakers.**

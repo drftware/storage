@@ -47,7 +47,7 @@ Built in F-01 (Nov 15) and proven on the desk lamp (`art/finds/lights/`). Read t
 set's `build.py` as an example; you shouldn't need the kit's code.
 
 - **Files.** `art/finds/kit/`: `kit.py` (build, bake, export, previews, the Luau), `shapes.py`
-  (lathe, tube, cylinder, box, `helix`, `arc`, `fillet`), `look.py` (`Look`, `Coat`,
+  (lathe, `loft`, tube, cylinder, box, `helix`, `arc`, `fillet`), `look.py` (`Look`, `Coat`,
   `Surface`), `ease.py` (easing, shared with the game, and `kelvin`). A set lives in
   `art/finds/<set>/`: `spec.py` (every number), `build.py` (its finds), `README.md`, `out/`.
   Its sheets land in `art/sheets/<find>-*.png`. The bedroom set keeps its own older build.
@@ -73,10 +73,15 @@ set's `build.py` as an example; you shouldn't need the kit's code.
   side by side. The kit packs every part's islands into one square (no smart project: it cut
   tubes into hundreds of slivers and wasted three quarters of the texture) and checks no two
   faces share texels.
+- **Lofts.** `Shape.loft(rings, kind, kinds=, split=, cap_bottom=)` sweeps a shell through
+  rings of any shape (bottom to top, anticlockwise from above, a one-point ring a pole) and
+  unrolls it like a lathe's side; `kinds(j)` sets a column's kind. The night-light's D-shaped,
+  ribbed shade is one (`nl_shade`): rings scaled about a point make a dome.
 - **Texture sizing.** One texture set per find, all its parts sharing it. `TARGET` 300 texels a
   stud (the bedroom set has 99; a find held 2 studs off on a phone shows about 150 screen pixels
   a stud); the set is the smallest of 256, 512, 1024 that reaches it, 2048 only for a find made
-  with `big=True`. The bake prints what it got: the desk lamp is 1024 at 319 texels a stud.
+  with `big=True`. A small find with fine detail asks for more with `texels=` (the night-light's
+  ribs: 500). The bake prints what it got: the desk lamp is 1024 at 319 texels a stud.
 - **The bake (high to low).** Both versions are built at rest; the game mesh (low) gets weighted
   normals. Each part's detailed mesh is baked onto its game mesh (selected to active, rays from
   0.008 outside, reaching 0.02): normal (the detailed geometry plus the look's fine bump),
@@ -93,7 +98,7 @@ set's `build.py` as an example; you shouldn't need the kit's code.
   `dust=0` (not built yet).
 - **Gold.** Every bake also writes `<Find>_GoldColor|GoldRoughness|GoldMetalness.png`: gold
   shaded by the find's own light and dark (wear, grime, dust), polish from its roughness, the
-  normal map shared; whatever glows stays as it was.
+  normal map shared; whatever glows at all stays as it was (the night-light's whole shade).
 - **Lights.** `lights=[dict(kind="Spot"|"Point", part, at, face, kelvin, brightness, range,
   angle, shadows, preview_watts)]`, `at` and `face` in the find's frame at rest; colour comes
   from the colour temperature. `glow=dict(part, strength, tint)` names the part carrying the
@@ -101,13 +106,17 @@ set's `build.py` as an example; you shouldn't need the kit's code.
   the Emissive PNG, a plugin-only property) and the game switches it with `EmissiveStrength`
   0 to `strength`, which scripts may write (`docs/STUDIO.md`, "Glow"). A glowing piece is its
   own part. Add a weak Point light beside a Spot: a close spotlight lights nothing at low
-  graphics.
+  graphics. A light with `shadows=False` shines through the find in the previews too, as in
+  Roblox (the night-light's bulb inside its shade).
 - **Motion data.** `motions={"SwitchOn": dict(duration, focus, tracks=[(part, channel, keys)])}`;
   channel `turn` (degrees about the axis), `move` (studs along it) or `glow` (0 to 1, which also
   scales the lights); keys `(t, value[, style, direction])`, each saying how it is reached
   (Linear, Sine, Quad, Cubic, Quart, Back; In, Out, InOut; default Sine InOut). Write the
   wind-up, overshoot and settle as keys. Python (`ease.py`) and Luau (`Finds/Art.luau`) share
   the same sums.
+- **Filmstrip camera.** A motion's `focus` is the part the camera looks at, or a point in the
+  find's frame for a small find that should show whole, and `distance` (0.6) how far back it
+  stands, times the find's size.
 - **Previews.** Renders: `-lineup` (beside a 5.4-stud person), `-front`, `-back`, `-held` (a
   phone's view, 2.6 studs off), `-gold`, `-offon` (in the dark, up close), `-unit` (a medium
   unit's doorway on a phone, off above on, deeper than the bulb), and per action a ten-frame

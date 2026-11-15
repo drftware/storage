@@ -61,3 +61,33 @@ def on_shade(v, d=DESK_LAMP):
     _, _, _, o = lamp_joints(d)
     p = rot_x(-d["shade_tilt"], v)
     return (o[0] + p[0], o[1] + p[1], o[2] + p[2])
+
+
+# --- The plug-in night-light: a C7 night-light with a frosted ribbed shade -------------------
+# References (README): about 4.6 inches tall, a shade about 1.75 inches across at its widest over
+# a narrow white base with a slide switch on its front and two plug blades out of its back.
+# Its frame: X across, the wall plate's back face at Y = 0 (the find reaches forward to -Y), Z up
+# from the bottom of the base. The origin is the middle of the base's back edge on the floor.
+NIGHT_LIGHT = dict(
+    # the base: a white plastic block, the slide switch on its front
+    base=dict(w=0.1, d=0.095, h=0.112, round=0.012),
+    slot=dict(w=0.016, z0=0.03, z1=0.088),       # the switch's slot in the base's front
+    tab=dict(w=0.017, h=0.017, out=0.011, z=0.034),
+    travel=0.031,                                # how far the tab slides up to switch on
+    # the plug: two blades out of the back, a real US plug's spacing (half an inch apart)
+    blades=dict(x=0.025, z=0.056, len=0.0625, thick=0.0065, narrow=0.025, wide=0.031),
+    # the shade: rings up from the base (z, width, depth from the wall), a dome on top
+    shade=[(0.104, 0.124, 0.094), (0.11, 0.136, 0.104), (0.2, 0.152, 0.113), (0.3, 0.168, 0.121),
+           (0.37, 0.175, 0.125), (0.4, 0.176, 0.126)],
+    dome=0.06,                                   # how far the top rounds over above the last ring
+    squareness=2.6,                              # the shade's section: 2 a half oval, higher boxier
+    ribs=dict(z0=0.114, z1=0.396, pitch=0.0141, depth=0.0026),
+    bulb=(0.0, -0.062, 0.25),                    # the C7 bulb's middle, inside the shade
+    # the numbers above are a 4.6 inch night-light; it's built 1.15 times that, 5.3 inches, the
+    # size of the bigger plug-in shades (5 to 5.75 inches in listings), so it reads from a doorway
+    scale=1.15,
+    seed=33.0,
+    dust=0.5,
+    # its light: a 4 W candelabra bulb, about 2,600 K, glowing through frosted plastic
+    kelvin=2600,
+)

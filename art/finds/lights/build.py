@@ -11,6 +11,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "kit"))
 sys.path.insert(0, HERE)
 
+import bmesh  # noqa: E402
 from mathutils import Matrix, Vector  # noqa: E402
 
 import kit  # noqa: E402
@@ -312,7 +313,215 @@ DESK_LAMP = kit.Find(
     dust=D["dust"], seed=D["seed"],
 )
 
-FINDS = [DESK_LAMP]
+# --- the plug-in night-light -------------------------------------------------------------------
+
+(HOUSING, FROST, SLOT, TAB, BLADE) = range(13, 18)
+N = K.NIGHT_LIGHT
+NB_, NS_ = N["base"], N["shade"]
+
+
+def nl_section(w, d, s=1.0, hi=False):
+    """One ring of the shade: a rounded D, its flat back on the wall (Y = 0), anticlockwise from
+    above; scaled by s about the middle of its back. Returns the ring and its count in front."""
+    nf, nbk = (32, 4) if hi else (18, 2)
+    e = 2.0 / N["squareness"]
+    sp = lambda c: math.copysign(abs(c) ** e, c)  # noqa: E731
+    ring = []
+    for i in range(nf + 1):
+        a = -math.pi / 2 + math.pi * i / nf
+        ring.append((w / 2 * sp(math.sin(a)) * s, -d * abs(math.cos(a)) ** e * s))
+    for i in range(1, nbk):
+        ring.append((w / 2 * s - w * s * i / nbk, 0.0))
+    return ring, nf
+
+
+def nl_profile():
+    """The shade's (z, width, depth) every few thousandths of a stud, smooth through the spec."""
+    return [Vector(p) for p in spline(NS_, 24)]
+
+
+def nl_at(z, prof):
+    for a, b in zip(prof, prof[1:]):
+        if a.x <= z <= b.x:
+            t = (z - a.x) / max(b.x - a.x, 1e-9)
+            v = a.lerp(b, t)
+            return v.y, v.z
+    return prof[-1].y, prof[-1].z
+
+
+def nl_scaled(build):
+    """A night-light part built to the spec's numbers, then scaled up about the origin."""
+    def go(hi):
+        s = build(hi)
+        k = N["scale"]
+        bmesh.ops.scale(s.bm, vec=(k, k, k), verts=s.bm.verts)
+        return s
+    return go
+
+
+def nl_k(v):
+    return tuple(c * N["scale"] for c in v)
+
+
+def nl_shade(hi):
+    s = Shape()
+    prof = nl_profile()
+    rb = N["ribs"]
+    z0s, z1s = NS_[0][0], NS_[-1][0]
+    if hi:
+        zs = [z0s, NS_[1][0]]
+        z = rb["z0"]
+        while z < rb["z1"]:
+            zs.append(z)
+            z += rb["pitch"] / 6
+        zs.append(z1s)
+    else:
+        zs = [z0s, NS_[1][0], 0.15, 0.2, 0.25, 0.3, 0.35, z1s]
+    rings, nf = [], 0
+    for z in zs:
+        w, d = nl_at(z, prof)
+        sc = 1.0
+        if hi and rb["z0"] <= z <= rb["z1"]:
+            # a rounded rib every pitch, the grooves sharper than the crests, centred on the
+            # game mesh's surface so the bake reaches both
+            c = (0.5 + 0.5 * math.cos(2 * math.pi * (z - rb["z0"]) / rb["pitch"])) ** 1.5
+            sc = 1.0 + rb["depth"] * (c - 0.45) / d
+        ring, nf = nl_section(w, d, sc, hi)
+        rings.append([(x, y, z) for x, y in ring])
+    # the dome: the top rounds over towards the wall
+    w, d = nl_at(z1s, prof)
+    m = 12 if hi else 7
+    for k in range(1, m):
+        a = math.pi / 2 * k / m
+        ring, _ = nl_section(w, d, math.cos(a), hi)
+        rings.append([(x, y, z1s + N["dome"] * math.sin(a)) for x, y in ring])
+    rings.append([(0.0, 0.0, z1s + N["dome"])])
+    s.loft(rings, FROST, kinds=lambda j: FROST if j < nf else HOUSING, split=2,
+           cap_bottom=HOUSING)
+    return s
+
+
+def nl_base(hi):
+    s = Shape()
+    w, d, h, r = NB_["w"], NB_["d"], NB_["h"], NB_["round"]
+    s.box((-w / 2, -d, 0.0), (w / 2, 0.0, h), HOUSING, r, 3 if hi else 2)
+    # the switch's slot: a dark floor behind a raised frame
+    sl = N["slot"]
+    sw, z0, z1 = sl["w"], sl["z0"], sl["z1"]
+    fy = -d - 0.004
+    s.box((-sw / 2, -d - 0.0012, z0), (sw / 2, -d + 0.002, z1), SLOT)
+    fr = 0.0045
+    c = 0.0012 if hi else 0.0
+    for lo_, hi_ in (((-sw / 2 - fr, fy, z0 - fr), (-sw / 2, -d + 0.002, z1 + fr)),
+                     ((sw / 2, fy, z0 - fr), (sw / 2 + fr, -d + 0.002, z1 + fr)),
+                     ((-sw / 2, fy, z0 - fr), (sw / 2, -d + 0.002, z0)),
+                     ((-sw / 2, fy, z1), (sw / 2, -d + 0.002, z1 + fr))):
+        s.box(lo_, hi_, HOUSING, c, 1)
+    # the plug: two flat blades out of the back, one wider (a polarised plug)
+    bl = N["blades"]
+    for x, wd in ((-bl["x"], bl["wide"]), (bl["x"], bl["narrow"])):
+        s.box((x - bl["thick"] / 2, -0.004, bl["z"] - wd / 2),
+              (x + bl["thick"] / 2, bl["len"], bl["z"] + wd / 2), BLADE,
+              0.0012 if hi else 0.0, 2 if hi else 1)
+        # the raised collar the blade comes out of
+        s.box((x - bl["thick"] / 2 - 0.004, -0.002, bl["z"] - wd / 2 - 0.004),
+              (x + bl["thick"] / 2 + 0.004, 0.004, bl["z"] + wd / 2 + 0.004), HOUSING,
+              0.0015 if hi else 0.0, 1)
+    return s
+
+
+def nl_tab(hi):
+    s = Shape()
+    t, d = N["tab"], NB_["d"]
+    y0, y1 = -d - 0.001, -d - 0.001 - t["out"]
+    s.box((-t["w"] / 2, y1, t["z"]), (t["w"] / 2, y0, t["z"] + t["h"]), TAB,
+          0.0022 if hi else 0.0012, 2 if hi else 1)
+    if hi:
+        # three ridges for a thumb
+        for i in range(3):
+            z = t["z"] + t["h"] * (0.28 + 0.22 * i)
+            s.box((-t["w"] / 2 + 0.002, y1 - 0.0016, z - 0.0011),
+                  (t["w"] / 2 - 0.002, y1 + 0.0005, z + 0.0011), TAB, 0.0005, 1)
+    return s
+
+
+def nl_look(L, f):
+    nb = L.nb
+    # ivory plastic: a fine moulded stipple, yellowed on top by years of a warm bulb
+    ivory = nb.tint(hexc("#E2D9C2"), nb.mr(L.noise(3.0, 1, detail=3), 0.3, 0.7, 0.95, 1.03))
+    C = Coat(L, ivory, nb.mr(L.noise(9.0, 2, detail=3), 0.3, 0.7, 0.38, 0.5), 0.0,
+             nb.mul(L.noise(520.0, 3, detail=1), 0.05))
+    C.paint(nb.mul(L.up, 0.35), hexc("#D9CDAA"))
+    scuff = nb.mul(L.edge(0.006, k=4.0), nb.ss(L.noise(30.0, 4, detail=4, rough=0.7), 0.6, 0.68))
+    C.paint(nb.mul(scuff, L.k(HOUSING, TAB)), hexc("#9D978A"), 0.62)
+    # the shade: frosted, milky plastic, glossier on the ribs, browned over the bulb by its heat
+    bx, by, bz = nl_k(N["bulb"])
+    dz = nb.mul(nb.sub(L.z, bz), 0.55)
+    dist = nb.pw(nb.add(nb.mul(nb.sub(L.x, bx), nb.sub(L.x, bx)),
+                        nb.add(nb.mul(nb.sub(L.y, by), nb.sub(L.y, by)), nb.mul(dz, dz))), 0.5)
+    hot = nb.ss(dist, 0.15 * N["scale"], 0.064 * N["scale"])
+    frost = L.k(FROST)
+    C.paint(frost, nb.tint(hexc("#F3F1EC"), nb.mr(L.noise(5.0, 5, detail=3), 0.3, 0.7, 0.96, 1.02)),
+            nb.mr(L.nz, -1.0, 1.0, 0.3, 0.22), 0.0, 0.0)
+    heat = nb.mul(frost, nb.add(nb.mul(nb.ss(L.z, 0.34 * N["scale"], 0.46 * N["scale"]), 0.3), nb.mul(hot, 0.22), clamp=True))
+    C.paint(heat, hexc("#E2CB98"))
+    # lit, it's brightest round the bulb, and the ribs' slopes show as darker lines
+    ribs = nb.inv(nb.mul(nb.pw(nb.mul(L.nz, L.nz), 0.5), 0.45))
+    C.lights(nb.mul(nb.mul(frost, ribs), nb.add(0.06, nb.mul(nb.pw(hot, 1.6), 0.94))))
+    C.paint(L.k(SLOT), hexc("#221E1A"), 0.75, 0.0)
+    C.paint(L.k(TAB), hexc("#DFD8C4"), 0.48, 0.0)
+    # the blades: nickel-plated brass, worn to the brass where a socket gripped them
+    blade = L.k(BLADE)
+    C.paint(blade, nb.tint(hexc("#C9C5BB"), nb.mr(L.noise(40.0, 6, detail=3), 0.3, 0.7, 0.85, 1.0)),
+            nb.mr(L.noise(60.0, 7, stretch=(1.0, 0.1, 1.0), detail=3), 0.3, 0.7, 0.2, 0.34), 1.0)
+    worn = nb.mul(blade, nb.mul(nb.ss(L.y, 0.014, 0.035),
+                                nb.ss(L.noise(24.0, 8, detail=4), 0.45, 0.6)))
+    C.paint(worn, hexc("#B38D55"), 0.36, 1.0)
+    tarnish = nb.mul(blade, nb.ss(L.noise(16.0, 9, detail=4, rough=0.7), 0.62, 0.7))
+    C.paint(tarnish, hexc("#7A705E"), 0.55, 0.8)
+    C.finish(f.dust, grime=0.5)
+    return C.surface(bump_dist=0.0008, bump=0.5)
+
+
+TRAVEL = N["travel"] * N["scale"]
+NIGHT_LIGHT = kit.Find(
+    "NightLight",
+    [kit.Part("Base", nl_scaled(nl_base)),
+     kit.Part("Shade", nl_scaled(nl_shade), nl_k((0.0, 0.0, NS_[0][0])), "Base"),
+     kit.Part("Switch", nl_scaled(nl_tab),
+              nl_k((0.0, -NB_["d"] - 0.001 - N["tab"]["out"] / 2, N["tab"]["z"] + N["tab"]["h"] / 2)),
+              "Base", (0, 0, 1))],
+    nl_look,
+    lights=[
+        # the soft glow by the floor: a 4 W bulb through frosted plastic lights round it, not
+        # in a beam; no shadows, so it shines out through the shade as the glow does
+        dict(kind="Point", part="Shade", at=nl_k(N["bulb"]), kelvin=N["kelvin"], brightness=0.7,
+             range=8, shadows=False, preview_kind="POINT", preview_watts=2.0, preview_size=0.04),
+    ],
+    glow=dict(part="Shade", strength=2.0, tint=(255, 190, 122), preview=3.0),
+    motions={
+        # a thumb pushes the tab up: it sticks, snaps over its catch to the top, knocks back off
+        # the end a hair and settles; the bulb takes a moment to warm, then the shade glows
+        "SwitchOn": dict(duration=0.5, focus=nl_k((0.0, -0.06, 0.26)), distance=0.85, tracks=[
+            ("Switch", "move", [(0.0, 0.0), (0.07, 0.004, "Quad", "In"),
+                                (0.12, TRAVEL, "Quad", "Out"), (0.16, TRAVEL - 0.0025, "Sine", "Out"),
+                                (0.22, TRAVEL)]),
+            ("Shade", "glow", [(0.0, 0.0), (0.12, 0.0, "Linear", "In"), (0.15, 0.5, "Quad", "Out"),
+                               (0.28, 1.0, "Quad", "Out")])]),
+        # pulled back down: the light drops at the click and the filament's orange fades out
+        "SwitchOff": dict(duration=0.55, focus=nl_k((0.0, -0.06, 0.26)), distance=0.85, tracks=[
+            ("Switch", "move", [(0.0, TRAVEL), (0.07, TRAVEL - 0.004, "Quad", "In"),
+                                (0.12, 0.0, "Quad", "Out"), (0.16, 0.0025, "Sine", "Out"),
+                                (0.22, 0.0)]),
+            ("Shade", "glow", [(0.0, 1.0), (0.12, 1.0, "Linear", "In"), (0.15, 0.28, "Quad", "Out"),
+                               (0.5, 0.0, "Sine", "Out")])]),
+    },
+    dust=N["dust"], seed=N["seed"],
+    # its ribs are 0.014 studs apart: at 300 texels a stud they'd smear into four texels
+    texels=500,
+)
+
+FINDS = [DESK_LAMP, NIGHT_LIGHT]
 
 if __name__ == "__main__":
     kit.main("Lights", HERE, FINDS)

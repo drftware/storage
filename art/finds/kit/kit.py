@@ -57,11 +57,14 @@ class Find:
     its motions. `glow` says which parts carry the emissive mask and how they light."""
 
     def __init__(self, name, parts, look, lights=(), motions=None, glow=None, big=False,
-                 dust=0.6, seed=0.0, notes=""):
+                 dust=0.6, seed=0.0, notes="", texels=None):
         self.name, self.parts, self.look, self.lights = name, parts, look, list(lights)
         self.motions = motions or {}
         self.glow = glow or {}
         self.big, self.dust, self.seed, self.notes = big, dust, seed, notes
+        # texels a stud wanted, when a small find's fine detail (the night-light's ribs) needs
+        # more than TARGET to stay sharp held up close
+        self.texels = texels
         self.by = {p.name: p for p in parts}
 
     def out(self, set_dir, *rest):
@@ -137,7 +140,8 @@ def unwrap(find, objs):
     size = 1024
     _pack(obs, size)
     sizes = SIZES + ((BIG,) if find.big else ())
-    want = next((s for s in sizes if uv_density(obs, s) >= TARGET), sizes[-1])
+    target = find.texels or TARGET
+    want = next((s for s in sizes if uv_density(obs, s) >= target), sizes[-1])
     if want != size:
         size = want
         _pack(obs, size)
@@ -316,7 +320,9 @@ def stage_textures(find, set_dir):
     lum = col @ np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)
     ref = max(float(np.percentile(lum[covered], 90)), 1e-3)
     shade = np.clip(0.5 + 0.5 * lum / ref, 0.35, 1.05)[..., None]
-    lit = np.clip(glow * 2.0, 0, 1)[..., None]
+    # anything that glows at all stays itself (the bulb's glass, the night-light's whole shade),
+    # not just its brightest middle, or a dim edge turns half gold in blotches
+    lit = np.clip(glow * 20.0, 0, 1)[..., None]
     gcol = np.array(GOLD, dtype=np.float32) * shade * (1 - lit) + col * lit
     grough = (0.14 + 0.4 * rough) * (1 - lit[..., 0]) + rough * lit[..., 0]
     gmetal = 1.0 - lit[..., 0] * (1 - metal)
@@ -367,6 +373,11 @@ def to_roblox(v):
     return (-v[0], v[2], v[1])
 
 
+def extent(v):
+    """A size in Roblox's axes: the axes swapped like a point's, never negative."""
+    return (abs(v[0]), abs(v[2]), abs(v[1]))
+
+
 def bounds(obs):
     vs = [ob.matrix_world @ v.co for ob in obs for v in ob.data.vertices]
     lo = Vector([min(v[i] for v in vs) for i in range(3)])
@@ -403,8 +414,8 @@ def row(find, objs, size):
         plo, phi = bounds([objs[p.name]])
         parts.append(dict(name=p.name, parent=p.parent, pivot=to_roblox(p.pivot - root),
                           axis=to_roblox(p.axis) if p.axis else None,
-                          size=to_roblox(phi - plo), tris=tris(objs[p.name])))
-    return dict(size=to_roblox(hi - lo), centre=to_roblox((lo + hi) / 2 - root),
+                          size=extent(phi - plo), tris=tris(objs[p.name])))
+    return dict(size=extent(hi - lo), centre=to_roblox((lo + hi) / 2 - root),
                 tris=sum(tris(o) for o in objs.values()), tex=size, parts=parts)
 
 
@@ -460,6 +471,9 @@ def place(find, objs, M, coll, values=None, lights=True):
             ld = bpy.data.lights.new(f"{find.name}_light{i}", spec.get("preview_kind", "SPOT"))
             ld.color = tuple(c / 255 for c in ease.kelvin(spec["kelvin"]))
             ld.shadow_soft_size = spec.get("preview_size", 0.05)
+            # a Roblox light without shadows shines through everything, the find included (the
+            # night-light's bulb inside its shade): the preview does the same
+            ld.use_shadow = spec.get("shadows", True)
             if ld.type == "SPOT":
                 ld.spot_size = math.radians(spec.get("angle", 90))
                 ld.spot_blend = spec.get("preview_blend", 0.6)
@@ -621,10 +635,15 @@ def stage_renders(find, set_dir, quick=False):
         ao_.location = (-5, -6, 7)
         ao_.rotation_euler = (Vector((0, 0, 0)) - ao_.location).to_track_quat("-Z", "Y").to_euler()
         lts = place(find, objs, Matrix(), coll, values_at(trs, 0.0))
+        # the camera looks at the focus part's pivot, or a point (find frame) for a small find
+        # whose action should show whole; `distance` scales how far back it stands
         focus = find.motions[action].get("focus", find.parts[-1].name)
-        fc = objs[focus].matrix_world.translation
-        cam = render.camera(fc + Vector((-1.1, -2.0, 0.15)) * d * 0.6, fc - Vector((0, 0, 0.2)),
-                            lens=40)
+        fc = Vector(focus) if isinstance(focus, tuple) else objs[focus].matrix_world.translation
+        back = find.motions[action].get("distance", 0.6)
+        # aimed a little under the focus part, in proportion (the lamp: 0.2 studs; a night-light
+        # would otherwise look at the floor under it)
+        cam = render.camera(fc + Vector((-1.1, -2.0, 0.15)) * d * back,
+                            fc - Vector((0, 0, 0.14 * d)), lens=40)
         n = int(math.ceil(dur * 24)) + 6
         frames = []
         for i in range(n):

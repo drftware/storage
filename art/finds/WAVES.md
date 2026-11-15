@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-02a, the rest of the Lights from the plug-in night-light down, with the kit (notes
-below).
+**Next:** F-02b, the tea light in a jar, then on down the Lights, with the kit (notes below:
+the jar needs see-through glass first).
 
 ## Order
 
@@ -34,6 +34,22 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
 
+- **Nov 15, F-02a (the plug-in night-light).** Built and judged three times (the dome was
+  faceted, the lit shade blew out flat white with no hot spot, the shade and base were one
+  ivory, and at 4.6 inches it was lost from the doorway, so it's built 1.15 times bigger).
+  Only one find: the session started at 120k context. Kit changes, all in CRAFT.md's kit list:
+  `Shape.loft` (shells through rings of any shape), `texels=` on a Find, a filmstrip `focus`
+  that can be a point plus `distance`, preview lights that honour `shadows=False`, Gold keeping
+  every glowing texel whole, and part sizes in the Luau written positive (they came out
+  negative on X, the desk lamp's too). The desk lamp's sheets weren't re-rendered after these.
+  **The tea light needs see-through glass**, which the kit doesn't do: give `Surface` an alpha,
+  bake it into the colour PNG's alpha, and wire it to the material's Alpha so the FBX imports in
+  AlphaMode Transparency (docs/STUDIO.md, "AlphaMode Transparency cuts unless the part is a hair
+  transparent": the jar part then wants Transparency 0.02 in Studio). Its flame is its own glow
+  part; flicker is `glow` keys plus a small `turn` sway (the kit has no scale channel).
+  For F-S1: from a unit's doorway a 5 inch find is a speck when off; judge whether small finds
+  need help to be seen.
+
 - **Nov 15, F-01 (the kit and the desk lamp).** The kit is in `art/finds/kit/` and CRAFT.md's
   "The kit" says how to use it; the desk lamp (`art/finds/lights/`) proves every piece: parts on
   hinges, the high-to-low bake, glow, two lights, two motions, Gold, the Luau. Its sheets were judged three
@@ -53,7 +69,7 @@ A light set down switched on lights the space round it until it runs down. Wheth
 
 | Find | Grade | What it does | Notes | Built |
 |---|---|---|---|---|
-| Plug-in night-light | Common | Switch on (at home): a soft glow by the floor |  | |
+| Plug-in night-light | Common | Switch on (at home): a soft glow by the floor | Frosted ribbed shade | Nov 15, F-02a |
 | Tea light in a jar | Common | Light: a small glow for about a minute |  | |
 | Desk lamp | Common | Switch on (at home): a warm pool of light | Needs a socket, so only at home | Nov 15, F-01 |
 | Bundle of glow sticks | Common | Crack: one stick lights a small spot for the rest of the floor; three to a bundle | The glow sticks from the Nov 2 draft | |

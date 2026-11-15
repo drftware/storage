@@ -124,6 +124,67 @@ class Shape:
                 self._f([A[j], A[j1], B[j1], B[j]], k,
                         [uv_of(ra, a0, va), uv_of(ra, a1, va), uv_of(rb, a1, vb), uv_of(rb, a0, vb)])
 
+    # --- lofts: a shell through rings of any shape ----------------------------------------------
+    def loft(self, rings, kind, M=Matrix(), kinds=None, split=2, cap_bottom=None):
+        """A surface through rings [[(x, y, z)]], bottom to top, every ring the same count and
+        running anticlockwise seen from above (so faces point out); a ring of one point is a
+        pole. `kinds(j)` gives column j its kind (the span from point j to j + 1). Unrolls like
+        a lathe's side: v up the rings, u the arc round each ring from its piece's middle, cut
+        into `split` pieces round. `cap_bottom` closes the first ring with a fan of that kind,
+        seen from below."""
+        V = [[self._v(p, M) for p in ring] for ring in rings]
+        n = max(len(r) for r in rings)
+        P = [[Vector(p) for p in ring] for ring in rings]
+        # v: the mean distance between rings; arc: each ring's running length round
+        v_at = [0.0]
+        for a, b in zip(P, P[1:]):
+            if len(a) == len(b):
+                d = sum((p - q).length for p, q in zip(a, b)) / len(a)
+            else:
+                c = a if len(a) > 1 else b
+                pole = (b if len(a) > 1 else a)[0]
+                d = sum((p - pole).length for p in c) / len(c)
+            v_at.append(v_at[-1] + d)
+        arcs = []
+        for ring in P:
+            acc = [0.0]
+            for j in range(len(ring)):
+                acc.append(acc[-1] + (ring[(j + 1) % len(ring)] - ring[j]).length)
+            arcs.append(acc)
+        pieces = max(1, split)
+        for piece in range(pieces):
+            o = self.island()
+            j0, j1 = piece * n // pieces, (piece + 1) * n // pieces
+            mid = (j0 + j1) // 2
+
+            def uv(i, j):
+                if len(P[i]) == 1:
+                    return o + Vector((0.0, v_at[i]))
+                return o + Vector((arcs[i][j] - arcs[i][mid], v_at[i]))
+
+            for i in range(len(V) - 1):
+                A, B = V[i], V[i + 1]
+                for j in range(j0, j1):
+                    k = kinds(j) if kinds else kind
+                    jn = j + 1
+                    if len(A) == 1:
+                        self._f([A[0], B[jn % n], B[j]], k, [uv(i, 0), uv(i + 1, jn), uv(i + 1, j)])
+                    elif len(B) == 1:
+                        self._f([A[j], A[jn % n], B[0]], k, [uv(i, j), uv(i, jn), uv(i + 1, 0)])
+                    else:
+                        self._f([A[j], A[jn % n], B[jn % n], B[j]], k,
+                                [uv(i, j), uv(i, jn), uv(i + 1, jn), uv(i + 1, j)])
+        if cap_bottom is not None:
+            o = self.island()
+            ring = P[0]
+            c = sum(ring, Vector()) / len(ring)
+            cv = self._v(c, M)
+            for j in range(n):
+                a, b = ring[j], ring[(j + 1) % n]
+                self._f([V[0][(j + 1) % n], V[0][j], cv], cap_bottom,
+                        [o + b.xy - c.xy, o + a.xy - c.xy, o])
+        return V
+
     # --- swept tubes --------------------------------------------------------------------------
     def tube(self, pts, r, kind, sides=10, M=Matrix(), caps=True, cap_kind=None, radii=None):
         """A round tube along a polyline (rotation-minimising frames), capped flat at both ends:
