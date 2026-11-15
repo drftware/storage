@@ -34,6 +34,20 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
 
+- **Nov 15, F-03a (the RC car, taken ahead of the Lights).** Built with its transmitter in a
+  new set, `art/finds/figures/` (`scripts/art.sh set figures`; README has references, sizes,
+  parts and motions). **Kit changes:** travel channels `x`, `y`, `yaw`, `pitch`, `roll` on any
+  part (pose; the Luau writes them in Roblox axes as x, z, yaw, pitch, roll with signs fixed);
+  a motion's `follow=part` makes the filmstrip camera ride with that part over a floor with
+  saw-cut joints, a tuple `focus` then counts from where that part starts; `Find(drive=...)`
+  writes a `Drive` table (types in `Finds/Art.luau`). The car's motions come from `drive()` in
+  figures/build.py, a small simulation reduced to keys (`rdp`): reuse it for anything that
+  rolls (the die-cast car's Push). **Left for F-03b and polish:** the die-cast car (Common,
+  "Push: it rolls off down the hall"); the car's texture is 1024 at 172 texels a stud, its
+  islands only 30 per cent of the square (many small pieces, each padded): fewer, bigger low
+  pieces would sharpen it; the transmitter's aerial is collapsed and fixed (pulling it out
+  before a drive is a nice beat: sections as parts sliding on `move`). Context ran out early
+  (about 190k before modelling, from long reads and research images): read less.
 - **Nov 15, F-02e (the moon lamp; the blob lamp researched).** The moon lamp is built (README).
   **Its "seam" wasn't the lathe:** the see-through phase shade sits 0.006 studs outside the
   moon's back half at bake time, and the look's grime (an occlusion node, baked into the
@@ -202,7 +216,7 @@ Pulled forward from wave 4 because the owner named the RC car (Nov 14).
 | Find | Grade | What it does | Notes | Built |
 |---|---|---|---|---|
 | Die-cast car | Common | Push: it rolls off down the hall |  | |
-| Remote-control car | Rare | Drive (at home): round your unit and out into the hall of units |  | |
+| Remote-control car | Rare | Drive (at home): round your unit and out into the hall of units | With its transmitter (D-193) | Nov 15, F-03a |
 
 ## Wind-ups and noisemakers (14) · F-04
 

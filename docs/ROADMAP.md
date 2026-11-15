@@ -2102,6 +2102,8 @@ actions themselves and dealing the new finds on floors are later game tickets.
   - [ ] **F-02e** The moon lamp (coded, held back by a shading seam on its sphere: WAVES.md's
     newest note), then the blob lamp and on down the list.
 - [ ] **F-03 The remote-control car and the die-cast car** (pulled forward from wave 4).
+  - [x] F-03a The remote-control car and its transmitter (Nov 15, `art/finds/figures/`).
+  - [ ] F-03b The die-cast car.
 - [ ] **F-S1 Into Studio:** the Lights and the cars uploaded, inserted and judged at phone size.
 - [ ] **F-04 Wind-ups and noisemakers.**
 - [ ] **F-05 Squishies.**

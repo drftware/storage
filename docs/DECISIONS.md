@@ -5268,3 +5268,15 @@ game plays by sizing the MeshPart; a flame is found at scale 0 and the game hide
 lit. The held sheet is now a first-person view with the find in your hands (CRAFT.md), not a
 camera 2.6 studs off. The cost: each clear part is another see-through draw; F-S1 judges glass on
 a phone.
+
+## D-193 The RC car comes with its transmitter, and drives away from it (F-03a, Nov 15)
+
+The remote-control car is one find with its pistol-grip transmitter standing beside it, as real
+ones are kept (a sensible default, not in the catalog row). The transmitter is the find's root,
+so in a preview the car drives off and leaves it behind; in play the game lifts the transmitter
+into your hands and drives the car's parts by wiring. Motions gained travel channels (x, z, yaw,
+pitch, roll, in the parent's frame): the car's lower arms travel over the floor, the chassis
+leans on them, the aerial whips in two lengths. The car's motions come from a small driving
+simulation (Ackermann steering, each wheel turned by the distance its own tyre rolls), and the
+generated Luau carries `Drive`: wheel radii, wheelbase, track, steering lock, suspension travel
+and a suggested top speed of 20 studs a second.

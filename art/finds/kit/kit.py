@@ -66,7 +66,7 @@ class Find:
     its motions. `glow` says which parts carry the emissive mask and how they light."""
 
     def __init__(self, name, parts, look, lights=(), motions=None, glow=None, big=False,
-                 dust=0.6, seed=0.0, notes="", texels=None, lit=None):
+                 dust=0.6, seed=0.0, notes="", texels=None, lit=None, drive=None):
         self.name, self.parts, self.look, self.lights = name, parts, look, list(lights)
         self.motions = motions or {}
         self.glow = glow or {}
@@ -77,6 +77,9 @@ class Find:
         # texels a stud wanted, when a small find's fine detail (the night-light's ribs) needs
         # more than TARGET to stay sharp held up close
         self.texels = texels
+        # a find that drives (the RC car): its numbers for the game's wiring, written into the
+        # Luau as `Drive` (src/shared/Finds/Art.luau says what each is)
+        self.drive = drive
         self.by = {p.name: p for p in parts}
         self.clear = any(p.clear for p in parts)
 
@@ -462,6 +465,13 @@ def row(find, objs, size):
 
 # --- motion -----------------------------------------------------------------------------------
 
+# The travel channels (pose) and what each becomes in Roblox's axes for the Luau: its name there
+# and the sign its values take (Blender X is Roblox's -X, Y its Z, Z its Y; a turn about Blender
+# X is the same turn the other way about Roblox X).
+TRAVEL = ("x", "y", "yaw", "pitch", "roll")
+TO_ROBLOX_CH = {"x": ("x", -1.0), "y": ("z", 1.0), "yaw": ("yaw", 1.0), "pitch": ("pitch", -1.0),
+                "roll": ("roll", 1.0)}
+
 def tracks(find, action):
     m = find.motions[action]
     return m["duration"], [(part, ch, ease.keys(ks)) for part, ch, ks in m["tracks"]]
@@ -484,6 +494,15 @@ def pose(find, objs, values, lights=None):
             move = values.get((p.name, "move"), 0.0)
             L = (Matrix.Translation(p.pivot) @ Matrix.Rotation(math.radians(turn), 4, p.axis) @ S
                  @ Matrix.Translation(-p.pivot) @ Matrix.Translation(p.axis * move))
+        # a part that travels over the floor and leans (the RC car driving off, its chassis on
+        # its springs): x and y in studs along the find's X and Y, then yaw, pitch and roll in
+        # degrees about the find's Z, X and Y through its pivot, all in its parent's frame
+        tv = [values.get((p.name, ch), 0.0) for ch in TRAVEL]
+        if any(tv):
+            L = (Matrix.Translation((tv[0], tv[1], 0.0)) @ Matrix.Translation(p.pivot)
+                 @ Matrix.Rotation(math.radians(tv[2]), 4, "Z")
+                 @ Matrix.Rotation(math.radians(tv[3]), 4, "X")
+                 @ Matrix.Rotation(math.radians(tv[4]), 4, "Y") @ Matrix.Translation(-p.pivot) @ L)
         delta[p.name] = D @ L
         objs[p.name].matrix_world = delta[p.name] @ Matrix.Translation(p.pivot)
         objs[p.name]["glow"] = values.get((p.name, "glow"), objs[p.name].get("glow", 0.0))
@@ -689,6 +708,16 @@ def stage_renders(find, set_dir, quick=False):
         render.world((0.01, 0.011, 0.014), 1.0)
         fl = render.simple("floor", hexc("#4A4743"), 0.8)
         render.box_obj("floor", (-20, -20, -0.1), (20, 20, 0.0), fl, coll)
+        follow = find.motions[action].get("follow")
+        if follow:
+            # a find that travels (the RC car): the slab's saw-cut joints every 2 studs show it
+            # moving while the camera rides along
+            cut = render.simple("joint", hexc("#2E2C2A"), 0.9)
+            for i in range(-10, 11):
+                render.box_obj(f"jx{i}", (i * 2.0 - 0.012, -20, 0.0), (i * 2.0 + 0.012, 20, 0.0008),
+                               cut, coll)
+                render.box_obj(f"jy{i}", (-20, i * 2.0 - 0.012, 0.0), (20, i * 2.0 + 0.012, 0.0008),
+                               cut, coll)
         amb = bpy.data.lights.new("amb", "AREA")
         amb.energy, amb.size = 520.0, 6.0
         ao_ = bpy.data.objects.new("amb", amb)
@@ -701,6 +730,10 @@ def stage_renders(find, set_dir, quick=False):
         # whose action should show whole; `distance` scales how far back it stands
         focus = find.motions[action].get("focus", find.parts[-1].name)
         fc = Vector(focus) if isinstance(focus, tuple) else objs[focus].matrix_world.translation
+        if follow and isinstance(focus, tuple):
+            # a point beside a travelling part rides with it from where it starts (the RC car
+            # rolling in to stop where it was found)
+            fc = fc + objs[follow].matrix_world.translation - find.parts[0].pivot
         back = find.motions[action].get("distance", 0.6)
         # aimed a little under the focus part, in proportion (the lamp: 0.2 studs; a night-light
         # would otherwise look at the floor under it)
@@ -708,8 +741,14 @@ def stage_renders(find, set_dir, quick=False):
                             fc - Vector((0, 0, 0.14 * d)), lens=40)
         n = int(math.ceil(dur * 24)) + 6
         frames = []
+        # `follow`: the camera keeps its place relative to that part as it travels (not its turn)
+        ride = objs[follow].matrix_world.translation.copy() if follow else None
+        cam_at = cam.location.copy()
         for i in range(n):
             pose(find, objs, {**rest, **values_at(trs, i / 24.0)}, lts)
+            if follow:
+                cam.location = cam_at + objs[follow].matrix_world.translation - ride
+                bpy.context.view_layer.update()
             f = os.path.join(tmp, f"{action}-{i:03d}.png")
             shoot(cam, f, (480, 360), 24 if quick else 48)
             frames.append(f)
@@ -780,11 +819,26 @@ def write_luau(set_name, finds, rows, path):
         for action, m in f.motions.items():
             L.append(f"\t\t\t{action} = {{ Duration = {m['duration']}, Tracks = {{")
             for part, ch, ks in m["tracks"]:
-                keys = ", ".join(f"{{ {t:g}, {v:g}, \"{st}\", \"{d}\" }}"
+                ch, sign = TO_ROBLOX_CH.get(ch, (ch, 1.0))
+                keys = ", ".join(f"{{ {t:g}, {sign * v + 0.0:g}, \"{st}\", \"{d}\" }}"
                                  for t, v, st, d in ease.keys(ks))
                 L.append(f"\t\t\t\t{{ Part = \"{f.name}_{part}\", Channel = \"{ch}\", Keys = {{ {keys} }} }},")
             L.append("\t\t\t} },")
         L.append("\t\t},")
+        dv = f.drive
+        if dv:
+            L.append("\t\tDrive = {")
+            L.append(f"\t\t\tBody = \"{f.name}_{dv['body']}\",")
+            L.append(f"\t\t\tSprung = \"{f.name}_{dv['sprung']}\",")
+            L.append("\t\t\tWheels = {")
+            for part, radius, steer in dv["wheels"]:
+                st = f", Steer = \"{f.name}_{steer}\"" if steer else ""
+                L.append(f"\t\t\t\t{{ Part = \"{f.name}_{part}\", Radius = {radius:.4f}{st} }},")
+            L.append("\t\t\t},")
+            for key in ("Wheelbase", "Track", "SteerLock", "Travel", "TopSpeed", "Accel", "Brake",
+                        "Roll", "Pitch"):
+                L.append(f"\t\t\t{key} = {dv[key]:g},")
+            L.append("\t\t},")
         L.append("\t},")
     L += ["}", "", "return Set", ""]
     os.makedirs(os.path.dirname(path), exist_ok=True)

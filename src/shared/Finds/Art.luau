@@ -10,7 +10,8 @@ export type Part = {
 	Name: string,
 	Parent: string?, -- the part it rides on; nil for the root (the find's pivot)
 	Pivot: Vector3, -- its hinge, from the find's pivot
-	Axis: Vector3?, -- what it turns about or slides along (right-handed); nil if it never moves
+	Axis: Vector3?, -- what it turns about or slides along (right-handed); nil if it never turns
+	-- or slides (it may still travel and lean: the travel channels below)
 	Clear: boolean?, -- see-through (glass, a flame): its SurfaceAppearance is in AlphaMode
 	-- Transparency, and the part wants Transparency 0.02 or the alpha cuts (docs/STUDIO.md)
 	Size: Vector3,
@@ -36,12 +37,36 @@ export type Track = {
 	Part: string,
 	-- turn: degrees about its Axis; move: studs along it; glow: 0 to 1 lit; scale: times its size
 	-- about its pivot (near 0: hide it, a MeshPart can't be size 0); stretch: times as tall up
-	-- the find's Y and 1/sqrt as wide about its pivot, squash and stretch keeping its volume
-	Channel: "turn" | "move" | "glow" | "scale" | "stretch",
+	-- the find's Y and 1/sqrt as wide about its pivot, squash and stretch keeping its volume.
+	-- The travel channels move a part over the floor and lean it (the RC car driving off, its
+	-- chassis on its springs), in its parent's frame: x and z in studs along the find's X and Z,
+	-- then yaw, pitch and roll in degrees about its Y, X and Z through the part's pivot:
+	-- CFrame.new(x, 0, z) * pivot * fromAxisAngle(Y, yaw) * fromAxisAngle(X, pitch)
+	-- * fromAxisAngle(Z, roll) * pivot:Inverse(), with the turn and move after them
+	Channel: "turn" | "move" | "glow" | "scale" | "stretch" | "x" | "z" | "yaw" | "pitch" | "roll",
 	Keys: { Key },
 }
 
 export type Motion = { Duration: number, Tracks: { Track } }
+
+-- A find that drives (the RC car): how it's built, so driving it is wiring, not new art. Every
+-- wheel turns about its own Axis at distance / Radius radians; a steered wheel's knuckle turns
+-- about its kingpin (its Axis); the Body travels (x, z, yaw) and the Sprung part leans (pitch,
+-- roll) on the springs over it.
+export type Drive = {
+	Body: string, -- the part that travels: its pivot on the floor midway between the axles
+	Sprung: string, -- what rides the springs: it pitches and rolls over the wheels
+	Wheels: { { Part: string, Radius: number, Steer: string? } }, -- Steer: its knuckle
+	Wheelbase: number, -- studs between the axles
+	Track: number, -- studs between the wheels' middles across
+	SteerLock: number, -- degrees the outer front wheel turns at full lock (the inner turns more)
+	Travel: number, -- studs the springs let a wheel rise and drop, bump to full droop
+	TopSpeed: number, -- studs a second, suggested (what it does to the player: in Figures.luau)
+	Accel: number, -- studs a second each second, flat out from rest
+	Brake: number, -- studs a second each second, braking
+	Roll: number, -- degrees of lean a stud a second squared of cornering
+	Pitch: number, -- degrees of squat or dive a stud a second squared of speeding up or braking
+}
 
 export type Find = {
 	Size: Vector3,
@@ -53,6 +78,7 @@ export type Find = {
 	-- its SurfaceAppearance.EmissiveStrength when on, and EmissiveTint
 	Lights: { Light },
 	Motions: { [string]: Motion },
+	Drive: Drive?,
 }
 
 local Art = {}
