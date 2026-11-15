@@ -2,7 +2,7 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-15, session 181 (purchases first, D-204; the box you open, D-205) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-15, session 181 (purchases first, D-204; then the box you open, D-205, agreed) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
 - S3-01 done (D-187); F-G1a done (D-203): 19 Nov 15 finds dealt by grade, stood as found,
