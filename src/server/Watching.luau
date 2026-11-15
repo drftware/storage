@@ -20,6 +20,10 @@
 	  lobby, as soon as there's a floor to stand on (not between two floors mid-ride): a new
 	  character, `Left.BackAttribute` for their screen's moment. The developer product isn't made
 	  yet, so only Studio takes the ask (`OWNER.md`).
+	- Carried up (S3-01a): nobody is out of the climb for long. When the car they watched
+	  arrives, `carry` dips their screens to black (`Left.CarryAttribute`) and `bring` takes them
+	  out of the watch with a new character, which KeptPlayers stands wrapped in a unit on the new
+	  floor (Climbs runs it). Watching lasts one ride.
 	- The climb's end takes everyone watching with it (`release`, L-08d): the results screen is
 	  where they're back (ClimbEnds), and "Again" gives them a character in the next climb.
 
@@ -46,6 +50,12 @@ export type Watching = Brix.System & {
 	watch: (self: any, players: { Player }, at: number) -> (),
 	-- Whether `player` is out of the climb (left, or watching).
 	isOut: (self: any, player: Player) -> boolean,
+	-- Carried up (S3-01a): the car they watched arrived, so `players` (those still watching) are
+	-- carried at server time `at`: their screens dip to black from then (`Left.CarryAttribute`).
+	carry: (self: any, players: { Player }, at: number) -> (),
+	-- Under the carry's black: takes `player` out of the watch and loads them a new character
+	-- (yields), for KeptPlayers to stand wrapped in a unit. Nil when they aren't watching now.
+	bring: (self: any, player: Player) -> Model?,
 	-- The climb is over: everyone out of it stops watching, with no character given back (the
 	-- results screen is where they are; ClimbEnds gives everyone one in the next climb).
 	release: (self: any) -> (),
@@ -382,6 +392,34 @@ function Watching.new(): Watching
 		end
 	end
 
+	function system.carry(_: any, players: { Player }, at: number)
+		for _, player in players do
+			local entry = left[player]
+			if entry and entry.value and not entry.rejoining and player.Parent then
+				player:SetAttribute(Left.CarryAttribute, at)
+			end
+		end
+	end
+
+	function system.bring(_: any, player: Player): Model?
+		local entry = left[player]
+		local value = entry and entry.value
+		if not (entry and value and not entry.rejoining and player.Parent) then
+			return nil
+		end
+		-- out of the watch first, so the new character isn't taken for a respawn (`step`)
+		left[player] = nil
+		value:Destroy()
+		player.ReplicationFocus = nil
+		player:SetAttribute(Left.CarryAttribute, nil)
+		player:SetAttribute(Left.Attribute, nil)
+		player:LoadCharacter()
+		if STUDIO then
+			print(`Watching: {player.Name} is carried up`)
+		end
+		return if player.Parent then player.Character else nil
+	end
+
 	function system.isOut(_: any, player: Player): boolean
 		return left[player] ~= nil
 	end
@@ -393,6 +431,7 @@ function Watching.new(): Watching
 			end
 			if player.Parent then
 				player.ReplicationFocus = nil
+				player:SetAttribute(Left.CarryAttribute, nil)
 				player:SetAttribute(Left.Attribute, nil)
 			end
 		end

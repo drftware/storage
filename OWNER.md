@@ -23,6 +23,46 @@ nowhere else.
   at Brix `6717740` (S1-02), which is only on this Mac until Brix is pushed; a fresh clone of
   the game can't fetch it until then.
 
+## Now: get carried up wrapped, and get found (S3-01a, built Nov 14, D-186; the wake seen in Studio Play, the carry itself not yet run)
+
+Nobody is out of the climb any more when the elevator leaves without them. You watch your friend
+ride up, and then you wake up wrapped inside one of the new floor's units, for your friends to
+find. This needs two players (a friend on a second phone or computer, or a second Roblox account).
+
+- [ ] **Late for the elevator:**
+  1. Start a climb with a friend. On floor 1, find the code and punch it in.
+  2. Your friend gets in the elevator. You stay out in the lobby and don't get in.
+  3. When the gate shuts you should get the same as before: "Left behind" in red, the black, and
+     then the view over your friend's shoulder as their car rises and stops.
+  4. The bar at the bottom should show only "WATCHING" and your friend's name, with the arrows.
+     There should be no line under the name any more.
+  5. Watch the gate fold open on floor 2. About a second and a half after it is fully open, your
+     view should slowly go black (slower than switching friends). As it goes dark you should hear
+     the plastic film squeal, and in the black a roll-up door slam close by, a little muffled,
+     with a small jolt.
+  6. Your eyes should then open the way they do after any catch (a crack open, shut, then open
+     slowly, blurry and grey at first), and you should be inside a dark unit on floor 2, facing
+     its door, with no "Caught" word, empty hands, and the big Bang button.
+  7. What to look for: no flash of anything between the black and the dark unit (not your
+     friend, not the lobby, not the sky). It should feel like being dragged off and shut in.
+- [ ] **Your friend finds you:** on the friend's screen, after step 6:
+  1. You (the wrapped one) press Bang a few times. Your friend should see the blue bang mark over
+     your unit through the walls, as with any kept friend.
+  2. Your friend walks to that unit and opens it. You should be standing there wrapped in film.
+  3. Your friend holds Cut free on you. The film should rip off, and you're back in the climb on
+     floor 2 with nothing in your hands.
+  4. What to look for: the unit you wake in is never the one nearest the elevator.
+- [ ] **Not found in time:** stay wrapped on floor 2 and let your friend punch floor 2's code and
+  ride up without you. You should get "Left behind" again, watch the ride, and wake wrapped in a
+  unit on floor 3. On floor 3 (the stand-in top) the climb ends as it did before.
+- [ ] **Caught, then carried:** get caught by a monster on floor 1 and stay wrapped while your
+  friend rides up. You should get the same as "Late for the elevator", from step 3.
+- [ ] **Decide, defaults in place** (D-186): (1) The carry starts 1.4 seconds after the gate is
+  fully open, so you see the new floor over your friend's shoulder before the black. (2) Nobody
+  else hears anything when you're put in your unit (no squeal for them): the bangs are how they
+  find you. (3) The padlock's 2.5 minutes start when you wake in the new unit. Say if any should
+  change.
+
 ## Now: listen to the Packrat, arms empty and arms full (S2-06e and S2-06e2, built Nov 14, D-184 and D-185; both sets heard playing in Studio Play, not yet judged by ear)
 
 The Packrat now has its own sounds. With its arms empty (coming for you) you should hear soft
@@ -1499,8 +1539,8 @@ friend, a phone, and how it feels.
   Robux): make the developer product and say its price; until then only Studio shows the button
   (it's free there, so you can feel it). It puts you in your friends' lobby in front of the car,
   facing the hall, with the film's rip and "Back in"; mid-ride it waits for the next floor. (2)
-  What you carried when left behind drops and goes with the floor. (3) The line on the bar is
-  "Back in when they finish" (the results screen is where you're back, L-08d).
+  What you carried when left behind drops and goes with the floor. (3) Moot since S3-01a: the
+  bar's "Back in when they finish" line is gone, because you're never out for longer than a ride.
 
 ## Now: judge L-08b, the next floor (built Nov 11)
 

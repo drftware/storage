@@ -1980,7 +1980,21 @@ Done when nobody quits a climb because they were caught.
   when the gate shuts, you watch the ride and turn up wrapped in a unit on the next floor, with
   empty hands, floor after floor until a friend cuts you free. Wrapped, you can bang on the
   door or watch a friend, and nothing else. The climb ends only when everyone is wrapped at the
-  same moment (GDD "Getting caught"; changes L-08c's and L-08d's rules).
+  same moment (GDD "Getting caught"; changes L-08c's and L-08d's rules). Split in two:
+  - [x] **S3-01a The carry up** (Nov 14, D-186). Left on a floor, you watch the ride; a beat
+    after the gate opens on the new floor your view dips to black with the film's squeal and a
+    door slamming, and you wake wrapped in one of its units (never the nearest), empty-handed,
+    the padlock's clock fresh. Floor after floor until a friend cuts you free. The watch bar's
+    "Back in when they finish" line is gone. The wake seen in Studio Play; the carry itself
+    waits on `OWNER.md` (two players).
+  - [ ] **S3-01b Everyone wrapped at once.** The end's rule already is "nobody left climbing"
+    (`ClimbEnd.over`): check it under the new rules and fix what's off. A watcher mid-ride
+    counts as wrapped; a carried player between the black and the unit (a few seconds, while
+    the unit streams in) counts as climbing, so a wipe can't land in that gap: decide whether it
+    should. The results' "lost on floor N" for a carried player should be the floor they're
+    kept on, not the one they were left on (`ClimbFate`). Playing alone: one catch still ends
+    it. Studio's "CutFree" let-in for a watcher still stands you in the lobby (S3-03 owns it).
+    Spec the rules; one-player checks with a stand-in friend (STUDIO.md "Testing left behind").
 - [ ] **S3-02 Purchases that are never lost.** Brix's purchases on the saved profile: granted
   only after the profile saves. Before anything is sold live: a real phone purchase survives a
   forced save failure and a server hop; every purchase and shop view is recorded; any offer can

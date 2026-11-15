@@ -2277,3 +2277,9 @@ verified: a doc page, Studio, or "untested".
   had the player where they stood before, and the Packrat came at that spot and caught them. Park
   a player somewhere it can't see (a unit's roof) instead of anchoring.
 
+- **Testing a screen's answer to a server mark from the Client alone** (S3-01a, 2026-11-14):
+  `LocalPlayer:SetAttribute(...)` on the Client fires that attribute's changed signals there
+  (it never reaches the server), so one Client call can set the marks and sample the screen in
+  step with it. Two calls (Server sets, Client samples) land seconds apart, past a short moment.
+  The carried wake: set `BroughtAt` to `workspace:GetServerTimeNow()` and `Kept` to true, sample
+  the `Caught` ScreenGui's full-screen frame, then clear both.

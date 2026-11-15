@@ -131,6 +131,29 @@ ok(select(1, Left.decodeBack("x|y")) == nil, "a bad value")
 ok(Left.Near < Left.Back and Left.Clear < Left.Near, "the camera never nearer than Near")
 ok(Left.PitchLow < Left.Pitch and Left.Pitch < Left.PitchHigh, "the resting pitch is in range")
 
+-- carried up (S3-01a): the dip waits for the gate to be all the way open and comes before it
+-- shuts again; it only darkens, goes whole, and the door slams in the black, not in view
+local arrived = 100
+ok(Left.carryAt(arrived) > arrived + Ride.Open, "the carry waits for the gate to open")
+ok(
+	Left.carryAt(arrived) + Left.CarryDip < arrived + Ride.Open + Ride.Linger,
+	"the black is whole before the gate shuts behind the team"
+)
+ok(Left.carry(-0.1) == 0 and Left.carry(0) == 0, "clear before the dip")
+ok(Left.carry(Left.CarryDip / 2) > 0 and Left.carry(Left.CarryDip / 2) < 1, "dipping")
+ok(Left.carry(Left.CarryDip) >= 0.999 and Left.carry(30) == 1, "whole black from the dip's end")
+local last, rising = 0, true
+for i = 1, 40 do
+	local b = Left.carry(i * Left.CarryDip / 40)
+	if b < last then
+		rising = false
+	end
+	last = b
+end
+ok(rising, "the dip only darkens")
+ok(Left.CarrySlam > Left.CarryDip, "the door slams in the black")
+ok(Left.Copy.Until == "", "no line on the bar explains how you get back in")
+
 if failures > 0 then
 	error(`left: {failures} of {checks} checks failed`)
 end

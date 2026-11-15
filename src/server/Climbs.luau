@@ -24,6 +24,9 @@
 	  moment; as the floor is cleared under them they lose their character and watch a friend. A
 	  ride that comes back after all leaves them in. Cut Free lets them back in on the floor the
 	  climb is on (`Climbs.Arrival`), once there's one to stand on.
+	- Carried up (S3-01a): nobody is out for longer than the ride. As the car arrives, each
+	  watcher's screen dips to black a beat after its gate opens (`Left.carryAt`), and under it
+	  they're stood wrapped in one of the new floor's units with empty hands (`carryUp`).
 	- The top (`Climb.Top`): the car leaving it with friends aboard ends the climb, an escape
 	  (`topped`; ClimbEnds shows it). Whoever's left on the floor is left behind as at any floor,
 	  and loses their character at the cable's second knock, as at a hand-off.
@@ -367,6 +370,67 @@ function Climbs.new(): Climbs
 		table.insert(waits, waiting)
 	end
 
+	-- Carried up (S3-01a, the GDD's "When the elevator leaves without you"): once `elevator`
+	-- arrives at `on`, everyone watching the ride is on `on` too. Their screens dip to black a beat
+	-- after the gate opens (`Left.carryAt`, `Watching:carry`); under it each gets a new character
+	-- (`Watching:bring`), stood wrapped in one of the floor's units away from its lobby
+	-- (`KeptPlayers:store`). With no unit free they stand in the lobby, as a late arrival does.
+	local function carryUp(on: OnFloor, elevator: Model, mine: number)
+		local e = elevators
+		if not e then
+			return
+		end
+		local waiting: Brix.SignalConnection
+		waiting = e.arrived:connect(function(arrival: Elevators.Arrival)
+			if arrival.elevator ~= elevator then
+				return
+			end
+			waiting:disconnect()
+			local i = table.find(waits, waiting)
+			if i then
+				table.remove(waits, i)
+			end
+			local w, k = watching, keptPlayers
+			if not (w and k) then
+				return
+			end
+			local at = Left.carryAt(arrival.at)
+			spawn(function()
+				local carried: { Player } = {}
+				for _, player in Players:GetPlayers() do
+					if w:isOut(player) then
+						table.insert(carried, player)
+					end
+				end
+				if #carried == 0 then
+					return
+				end
+				w:carry(carried, at)
+				task.wait(math.max(at + Left.CarryDip - now(), 0))
+				if climb ~= mine or not on.model.Parent then
+					return
+				end
+				local lobby = on.origin * Climbs.Arrival
+				for _, player in carried do
+					spawn(function()
+						if climb ~= mine or not w:isOut(player) then
+							return
+						end
+						local character = w:bring(player)
+						if
+							character
+							and climb == mine
+							and not k:store(player, on.model, lobby.Position)
+						then
+							character:PivotTo(lobby)
+						end
+					end)
+				end
+			end)
+		end)
+		table.insert(waits, waiting)
+	end
+
 	-- The car left `on` with nobody aboard, or the next floor came too late: it arrives back at
 	-- this lobby and is armed again for it.
 	local function comeBack(on: OnFloor, mine: number)
@@ -554,11 +618,12 @@ function Climbs.new(): Climbs
 		-- costs a screen (about 0.3 s in Studio) is spent once, under the cable's knock; every
 		-- rider's screen has the shaft laid outside the new car already (RideView)
 		local left = clear(on)
-		-- whoever's still on it is out of the climb, and watches a friend
+		-- whoever's still on it watches a friend ride up, and turns up wrapped on the new floor
 		if watching then
 			watching:watch(left, leaving.at)
 		end
 		armAfterArrival(above, to, mine)
+		carryUp(above, to, mine)
 	end
 
 	-- The right code: the floor above starts laying.

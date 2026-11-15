@@ -21,6 +21,11 @@
 	the dark inside stays clear.
 	Every number and the curves are `Caught`'s and `Kept`'s.
 
+	Carried up (S3-01a): a player who watched the ride and is stood wrapped in a unit on the new
+	floor (`Kept.BroughtAttribute`, set just before the kept mark) gets no lunge and no "Caught":
+	their screen is already black (WatchView's dip), so it holds black and their eyes open on the
+	dark inside as after any catch.
+
 	It steps only while a catch is on the screen or they're kept.
 ]]
 local ContextActionService = game:GetService("ContextActionService")
@@ -288,6 +293,7 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 	local since = -1 -- seconds since the catch on screen, or -1 with none
 	local kept = false -- the server has us kept (`Kept.Attribute`)
 	local awake = -1 -- seconds since the screen opened on the unit's inside, or -1
+	local carried = false -- the screen's black is a carry's, not a catch's: no lunge, no headline
 	local held: Held? = nil -- held still while the catch is on screen or we're kept
 	local wrap: BasePart? = nil -- the film round us while we're kept, once it's on
 	local running = false
@@ -340,7 +346,7 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 	-- Nothing of the catch left: the screen off, walk and turn back, prompts back. The Bang
 	-- button, if it was up, fades out over `Kept.BangOut` rather than snapping off.
 	local function finish()
-		since, awake = -1, -1
+		since, awake, carried = -1, -1, false
 		queued = false
 		lunge.release()
 		local wasUp = bound
@@ -369,7 +375,7 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 
 	-- unknown: the remote's argument, the keeper's body, which CaughtLunge checks
 	local function onCaught(body: unknown)
-		since, awake = 0, -1
+		since, awake, carried = 0, -1, false
 		lunge.seize(body)
 		if not held then
 			held = hold()
@@ -395,6 +401,25 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 			ProximityPromptService.Enabled = false
 			if not held then
 				held = hold()
+			end
+			local s = screen
+			if
+				since < 0
+				and s
+				and Kept.brought(
+					player:GetAttribute(Kept.BroughtAttribute),
+					Workspace:GetServerTimeNow()
+				)
+			then
+				-- carried up: the black from the cut, then the wake, on our own clock
+				since, awake, carried = Caught.Dark, -1, true
+				s.gui.Enabled = true
+				s.black.BackgroundTransparency = 0
+				if leaving > 0 then
+					leaving = 0
+					s.bangGui.Enabled = false
+					showButton(s, 0)
+				end
 			end
 		elseif since < 0 then
 			finish()
@@ -454,8 +479,8 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 				end
 			end
 			if since >= 0 then
-				-- the lunge's clock, so the black lands on the frame its face goes
-				since = lunge.since()
+				-- the lunge's clock, so the black lands on the frame its face goes; a carry's own
+				since = if carried then since + dt else lunge.since()
 				local lifts = Caught.Dark + Caught.Hold
 				if since >= lifts then
 					lunge.hear() -- the hall comes back as your eyes open
@@ -464,7 +489,7 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 					faceTheDoor() -- in the black, where the server has put us by now
 				end
 				if not Caught.showing(since) then
-					since = -1
+					since, carried = -1, false
 					if s then
 						s.blur.Enabled, s.grey.Enabled = false, false
 					end
@@ -475,7 +500,7 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 					awake = 0
 				elseif s then
 					s.black.BackgroundTransparency = 1 - Caught.blackout(since)
-					local clear = 1 - Caught.headline(since)
+					local clear = if carried then 1 else 1 - Caught.headline(since)
 					s.headline.TextTransparency = clear
 					s.stroke.Transparency = clear
 					local haze = Caught.haze(since)

@@ -532,6 +532,13 @@ do
 	ok(select(3, Kept.wind(Kept.WindCloud)) == 0, "clouded in by WindCloud")
 end
 
+-- carried up (S3-01a): a kept mark that comes just after a carry landed is the carry's
+ok(Kept.brought(100, 100), "a carry that just landed")
+ok(Kept.brought(100, 100 + Kept.BroughtFresh - 0.1), "still fresh")
+ok(not Kept.brought(100, 100 + Kept.BroughtFresh + 0.1), "stale: a later catch is a catch")
+ok(not Kept.brought(nil, 100), "no carry: a catch")
+ok(not Kept.brought("100", 100), "not a number")
+
 print(string.format("kept: %d checks, %d failures", checks, failures))
 if failures > 0 then
 	error("kept spec failed")

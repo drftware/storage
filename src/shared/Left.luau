@@ -111,11 +111,12 @@ Left.OrbitStick = 2.4
 Left.PitchLow = math.rad(-55)
 Left.PitchHigh = math.rad(30)
 
--- The words. Few, and the way back in said plainly.
+-- The words. Few, and none that explains a rule (S3-01a: nobody is out of the climb any more, so
+-- the bar names who you watch and nothing else; `Until` is empty and its line hidden).
 Left.Copy = {
 	Title = "Left behind",
 	Watching = "WATCHING",
-	Until = "Back in when they finish",
+	Until = "",
 	CutFree = "Cut Free",
 	Back = "Back in",
 	Nobody = "Waiting for a friend",
@@ -231,6 +232,36 @@ function Left.decodeBack(value: unknown): (number?, string)
 	local at, why = string.match(value, "^([%d%.%-]+)|(%a*)$")
 	local t = if at then tonumber(at) else nil
 	return t, why or ""
+end
+
+-- Carried up (S3-01a, the GDD's "When the elevator leaves without you"): nobody is out of the
+-- climb. Whoever watched the ride is on the new floor too, wrapped in one of its units. The
+-- server picks the moment from the car's arrival: the gate folds open (`Ride.Open`), the friends
+-- take a step out (`CarryAfter`), and then the watcher's screen dips to black (`carry`) while the
+-- film squeals round them and a roll-up door slams down in the dark; under the black they're
+-- stood in their unit, and their eyes open on its dark inside (CaughtView's wake).
+-- On the player: the server time the dip starts, set while they watch.
+Left.CarryAttribute = "CarriedAt"
+-- Seconds after the gate is all the way open that the dip starts: long enough to see the new
+-- floor's lobby over a friend's shoulder, short enough that the friends haven't left it.
+Left.CarryAfter = 1.4
+-- Seconds the dip takes to go whole: slower than a switch's, a faint, not a cut.
+Left.CarryDip = 0.8
+-- Seconds into the dip the door slams down on you, muffled, in the black.
+Left.CarrySlam = Left.CarryDip + 0.35
+
+-- When a watcher's carry starts (server time), for a car that arrived (levelled) at `arrived`.
+function Left.carryAt(arrived: number): number
+	return arrived + Ride.Open + Left.CarryAfter
+end
+
+-- How black the carry's dip is `t` seconds after it started: clear before, eased to whole over
+-- `CarryDip`, and whole from then on (the server stands you in your unit under it).
+function Left.carry(t: number): number
+	if t <= 0 then
+		return 0
+	end
+	return smooth(t / Left.CarryDip)
 end
 
 return Left

@@ -78,6 +78,9 @@ export type KeptPlayers = Brix.System & {
 	-- A laid floor's deck and its units, each by its slot's index (FloorBuilder's `Laid.slots`):
 	-- players caught on it are stored in its units, until `floor` (the floor's model) is destroyed.
 	add: (self: any, deck: Deal.Deck, units: { [Model]: number }, floor: Instance) -> (),
+	-- Carried up (S3-01a): stands `player`'s new character wrapped in a unit on `floor` (a laid
+	-- floor's model), away from `near`. Yields while it streams in; false when there's no unit.
+	store: (self: any, player: Player, floor: Instance, near: Vector3) -> boolean,
 }
 
 -- A laid floor: its deck, units and their slots, its model (where its bangs are marked for
@@ -122,6 +125,11 @@ type Held = {
 -- What a friend's Cut free shows when the server refuses one they could fix, in place of the kept
 -- friend's name for a moment. The rest (themselves, kept, down, the door shut) never offer the
 -- button at all.
+-- Carried up (S3-01a): seconds the film is said to have been on, so no screen winds it on (it
+-- went on out of sight); and the most seconds the server waits for the unit to stream in.
+local LONG_ON = 60
+local STREAM_WAIT = 4
+
 local CUT_FIX: { [string]: string } = {
 	Short = "Hold to cut",
 	Far = "Get closer",
@@ -218,7 +226,7 @@ function KeptPlayers.new(): KeptPlayers
 
 	-- Wraps `h`'s body head to foot in film, fitted to it at rest and welded to its root: what a
 	-- friend finds when they lift the door. No collision, weight or shadow: it's only seen.
-	local function wrapUp(h: Held)
+	local function wrapUp(h: Held, wound: number)
 		local props = ReplicatedStorage:FindFirstChild("Props")
 		local template = props and props:FindFirstChild(Kept.Wrap)
 		if not (template and template:IsA("BasePart")) then
@@ -245,7 +253,7 @@ function KeptPlayers.new(): KeptPlayers
 		weld.Parent = wrap
 		wrap:AddTag(Kept.WrapTag) -- so every screen finds it for the strain and the tear
 		-- when it went on, so screens that see it now wind it on (KeptWrapOn)
-		wrap:SetAttribute(Kept.WoundAttribute, Workspace:GetServerTimeNow())
+		wrap:SetAttribute(Kept.WoundAttribute, wound)
 		wrap.Parent = h.character
 		h.wrap = wrap
 	end
@@ -323,6 +331,7 @@ function KeptPlayers.new(): KeptPlayers
 		end
 		if player.Parent then
 			player:SetAttribute(Kept.Attribute, nil)
+			player:SetAttribute(Kept.BroughtAttribute, nil)
 		end
 		if RunService:IsStudio() then
 			print(`KeptPlayers: {player.Name} is let out ({why})`)
@@ -522,6 +531,24 @@ function KeptPlayers.new(): KeptPlayers
 		)
 	end
 
+	-- `h` is in `unit` now: the padlock's clock starts, Cut free waits on the door, and their
+	-- screen's light under the door knows the unit.
+	local function settleIn(player: Player, h: Held, unit: Model)
+		h.inside = true
+		local dev = Workspace:GetAttribute(Kept.DevPadlock)
+		h.left, h.lead =
+			Kept.clock(if RunService:IsStudio() and type(dev) == "number" then dev else nil)
+		armCut(player, h)
+		local value = Instance.new("ObjectValue")
+		value.Name = Kept.InsideValue
+		value.Value = unit
+		value.Parent = player
+		h.value = value
+		if RunService:IsStudio() then
+			print(`KeptPlayers: {player.Name} is wrapped and kept in {unit.Name}`)
+		end
+	end
+
 	local function onCaught(catch: Keepers.Catch)
 		local player = catch.player
 		if held[player] or not player.Parent then
@@ -587,7 +614,7 @@ function KeptPlayers.new(): KeptPlayers
 		end
 		-- the film goes on where they stand, so friends watching see it wind round them before
 		-- they vanish (KeptWrapOn); their own screen never draws it (CaughtView)
-		wrapUp(h)
+		wrapUp(h, Workspace:GetServerTimeNow())
 		local to = inside(floor, unit, humanoid.HipHeight + root.Size.Y / 2)
 		-- the unit may be far off: start streaming it in around them while the screen goes black;
 		-- held anchored, they can't fall if it isn't in yet
@@ -604,20 +631,86 @@ function KeptPlayers.new(): KeptPlayers
 				return
 			end
 			character:PivotTo(to)
-			h.inside = true
-			local dev = Workspace:GetAttribute(Kept.DevPadlock)
-			h.left, h.lead =
-				Kept.clock(if RunService:IsStudio() and type(dev) == "number" then dev else nil)
-			armCut(player, h)
-			local value = Instance.new("ObjectValue")
-			value.Name = Kept.InsideValue
-			value.Value = unit
-			value.Parent = player
-			h.value = value
-			if RunService:IsStudio() then
-				print(`KeptPlayers: {player.Name} is wrapped and kept in {unit.Name}`)
-			end
+			settleIn(player, h, unit)
 		end)
+	end
+
+	-- Carried up (S3-01a, the GDD's "When the elevator leaves without you"): `player` watched the
+	-- ride and has just been given a new character under their screen's black (Watching:bring).
+	-- They're stood wrapped in a unit on `floorModel`, away from `near` (its car's lobby) as any
+	-- keep is (`Kept.choose`: shut, nobody in it, never the nearest, an unopened one first), with
+	-- empty hands. No catch: no squeal, and the film is long on, so no screen winds it round them
+	-- (KeptWrapOn); `Kept.BroughtAttribute` tells their screen to open their eyes on the dark
+	-- inside (CaughtView). From then it's any keep: banging, the padlock's clock, a friend's Cut
+	-- free. Yields while the unit streams in. False when the floor isn't known or no unit is free:
+	-- they stand where they are.
+	local function store(player: Player, floorModel: Instance, near: Vector3): boolean
+		local floor = floors[floorModel]
+		local character = player.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		if
+			held[player]
+			or not (floor and character and root and root:IsA("BasePart") and humanoid)
+		then
+			return false
+		end
+		local unit = pick(floor, near)
+		if not unit then
+			if RunService:IsStudio() then
+				print(`KeptPlayers: no unit free on the new floor for {player.Name}`)
+			end
+			return false
+		end
+		root.Anchored = true
+		local h: Held = {
+			character = character,
+			root = root,
+			unit = unit,
+			floor = floor,
+			inside = false,
+			began = {},
+			pulling = {},
+			gone = {},
+			lead = 0,
+			padlocked = false,
+		}
+		held[player] = h
+		table.insert(
+			h.gone,
+			humanoid.Died:Connect(function()
+				letGo(player, "died")
+			end)
+		)
+		table.insert(
+			h.gone,
+			character.AncestryChanged:Connect(function()
+				if not character.Parent then
+					letGo(player, "their character went")
+				end
+			end)
+		)
+		holding[unit] = player
+		if deals then
+			deals:hold(unit)
+		end
+		wrapUp(h, Workspace:GetServerTimeNow() - LONG_ON)
+		local to = inside(floor, unit, humanoid.HipHeight + root.Size.Y / 2)
+		local ok, err = pcall(function()
+			player:RequestStreamAroundAsync(to.Position, STREAM_WAIT)
+		end)
+		if not ok then
+			warn(`KeptPlayers: couldn't stream around {unit.Name} for {player.Name}: {err}`)
+		end
+		if held[player] ~= h or not character.Parent then
+			return false -- they left, or their character went, while it streamed
+		end
+		character:PivotTo(to)
+		-- before the kept mark, so their screen knows it's a carry, not a catch
+		player:SetAttribute(Kept.BroughtAttribute, Workspace:GetServerTimeNow())
+		player:SetAttribute(Kept.Attribute, true)
+		settleIn(player, h, unit)
+		return true
 	end
 
 	-- Remotes.Bang: a kept player hits their door. Nothing to check for type (it takes nothing);
@@ -820,6 +913,10 @@ function KeptPlayers.new(): KeptPlayers
 			cutTest:Destroy()
 			cutTest = nil
 		end
+	end
+
+	function system.store(_: any, player: Player, floor: Instance, near: Vector3): boolean
+		return store(player, floor, near)
 	end
 
 	function system.add(_: any, deck: Deal.Deck, laid: { [Model]: number }, floor: Instance)

@@ -5086,3 +5086,46 @@ close on a find, land on the beat.
   after: all made and loaded at stream-in, every play of both sets loaded at its start.
 Not chosen: stepping bodies off Heartbeat so a screen with no frames still hears them (a screen
 that draws nothing shows nothing; a real player always has frames).
+
+## D-186 Carried up: you watch the ride, then wake wrapped in a unit on the new floor (S3-01a, Nov 14)
+
+The GDD's "When the elevator leaves without you" (agreed Nov 13): nobody is out of the climb.
+Wrapped or late when the gate shuts, you watch your friends ride up, and when they arrive you're
+on that floor too, wrapped in one of its units, with empty hands, until a friend cuts you free.
+Precedent: R.E.P.O.'s dead player, whose head a teammate carries back to bring them in.
+
+The moment. Everything up to the ride is L-08c's (D-105) and unchanged: the sting, the black,
+your character gone at the hand-off, the friend's shoulder as their car levels and the gate folds
+open. Then, `Left.CarryAfter` (1.4 s) after the gate is all the way open, so you've seen the new
+floor's lobby over their shoulder, the view dips to black over `Left.CarryDip` (0.8 s, a faint,
+not a switch's cut) as the film squeals round you; in the black a roll-up door slams close by,
+muffled, with a small jolt (`Left.CarrySlam`); and your eyes open on a dark unit's inside the
+way they do after any catch (CaughtView's wake from `Caught.Dark`, no lunge, no "Caught"). No
+words: the squeal and the slam say you were wrapped and shut in.
+
+How. Climbs' `carryUp` waits for the takeover car's `arrived`, sets `Left.CarryAttribute` (the
+dip's server time, `Left.carryAt`) on everyone watching (`Watching:carry`), and once the black is
+whole takes each out of the watch with a new character (`Watching:bring`: out of its table first,
+so the new character isn't taken for a respawn) and has KeptPlayers stand them in a unit
+(`KeptPlayers:store`): `Kept.choose` from the car's lobby (shut, nobody in it, never the
+nearest, an unopened one first), anchored, wrapped with the film stamped long on (so no screen
+winds it on), the unit streamed in (up to 4 s, under the black), pivoted inside, then
+`Kept.BroughtAttribute` and the kept mark, then the same settling-in as a catch (`settleIn`: the
+padlock's clock, Cut free, the light under the door). WatchView holds its black (over the caught
+screen) until the kept mark has been on 0.1 s, then lets go onto CaughtView's black. With no unit
+free you stand in the lobby (the let-in's lift). The watch bar's "Back in when they finish" is
+gone (it explained a rule, and is false now).
+
+Defaults (`OWNER.md`): 1.4 s after the gate opens; nobody else hears the squeal when you're put
+in (KeptWrapOn skips a brought player: the bangs are how friends find you); the padlock's clock
+starts fresh on the new floor.
+
+Verified: checks green; in Studio Play the server and client started with no errors; the
+carried wake run from the Client (the marks set locally): black whole for the hold with no
+headline, the eyes' keys, clear by about 3.5 s, then the Bang button. The carry across a real
+ride needs two players (or a stand-in friend and many captures) and waits on `OWNER.md`.
+
+Not chosen: standing you in the car at the next floor (that's Cut Free's, S3-03); keeping you
+watching until a friend opens a unit (you'd have no body to find); a squeal on friends' screens
+from the shut unit (heard from nowhere, it teaches nothing the bangs don't).
+

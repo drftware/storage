@@ -14,6 +14,10 @@
 	  who you're watching, the arrows to switch (Q and E, the arrow keys, the bumpers), and how
 	  you get back in. A switch dips to black and lifts on the next friend once they've streamed
 	  in, with a tick. In Studio a Cut Free button lets you back in (the product isn't made yet).
+	- Carried up (S3-01a): a beat after the gate opens on the new floor (`Left.CarryAttribute`)
+	  the view dips to black as the film squeals round you, and a roll-up door slams down in the
+	  dark; the black holds until you're stood wrapped in a unit there, and CaughtView opens your
+	  eyes on its dark inside.
 	- Back in: the black lifts on your new character in your friends' lobby, with the film's rip
 	  for Cut Free, and "Back in". The climb's end lets you go without it: the results screen is
 	  where you're back (EndView).
@@ -31,6 +35,7 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local ClimbEnd = require(ReplicatedStorage.Shared.ClimbEnd)
+local DoorSound = require(ReplicatedStorage.Shared.StorageUnit.DoorSound)
 local Keypad = require(ReplicatedStorage.Shared.Elevator.Keypad)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Left = require(ReplicatedStorage.Shared.Left)
@@ -55,6 +60,16 @@ local BACK_HOLD = 1.6
 local BACK_LIFT = 0.9
 -- Seconds the sting's black takes to clear when the car comes back after all.
 local CANCEL_FADE = 0.6
+-- Carried up: seconds the kept mark must have been on before the black hands over to the caught
+-- screen under it (CaughtView's black is up by then), and the most the black waits for it.
+local CARRY_HANDOVER = 0.1
+local CARRY_WAIT = 8
+-- The door that slams on you in the carry's black: a roll-up door's bang and the thump under it,
+-- low and close (EndView's far slams borrow the same).
+local SLAM_BANG_NAME: DoorSound.SoundName = "Bang"
+local SLAM_THUMP_NAME: DoorSound.SoundName = "Thump"
+local SLAM_BANG = DoorSound.Sounds[SLAM_BANG_NAME]
+local SLAM_THUMP = DoorSound.Sounds[SLAM_THUMP_NAME]
 -- Seconds between counts of the friends you could switch to (the arrows dim with one).
 local COUNT_EVERY = 0.5
 
@@ -214,6 +229,12 @@ local function makeScreen(parent: Instance): Screen
 	local line = text(panel, "Until", 13, INK, Left.Copy.Until, false)
 	line.Position = UDim2.fromOffset(0, 49)
 	line.Size = UDim2.new(1, 0, 0, 16)
+	if Left.Copy.Until == "" then
+		-- no line under the name (S3-01a): the caption and name sit in the panel's middle
+		line.Visible = false
+		caption.Position = UDim2.fromOffset(0, 15)
+		name.Position = UDim2.fromOffset(8, 29)
+	end
 	local back = arrow(group, "Back", "‹", 0)
 	local nextButton = arrow(group, "Next", "›", 1)
 	group.Parent = bar
@@ -285,6 +306,9 @@ function WatchView.new(
 	local bell: Sound? = nil
 	local tick: Sound? = nil
 	local rip: Sound? = nil
+	local squealSound: Sound? = nil
+	local slamBang: Sound? = nil
+	local slamThump: Sound? = nil
 	local remote: RemoteEvent? = nil
 	local controls: any = nil -- any: Roblox's PlayerModule ControlModule, untyped Lua
 	local frozen = false
@@ -304,6 +328,8 @@ function WatchView.new(
 	local backAt: number? = nil -- os.clock() we were let back in
 	local backWhy = ""
 	local backSeen: number? = nil -- os.clock() our new character turned up
+	local carryAt: number? = nil -- server time the carry's dip began (S3-01a)
+	local keptSeen: number? = nil -- os.clock() the kept mark was first seen after a carry
 	local friends = 0
 	local counted = 0
 
@@ -553,6 +579,7 @@ function WatchView.new(
 		if at and not was then
 			table.clear(played)
 			watchBegan, subject, dipAt, landed, cancelAt, focus = nil, nil, nil, nil, nil, nil
+			carryAt, keptSeen = nil, nil
 		elseif was and not at then
 			-- out of the watch: the climb is over (the results are where you're back, EndView),
 			-- back in (Cut Free), or the car came back after all
@@ -570,7 +597,8 @@ function WatchView.new(
 					camera.CameraType = Enum.CameraType.Custom
 				end
 				watchBegan, subject = nil, nil
-				backAt, backSeen, backWhy = os.clock(), nil, ""
+				-- carried up: the black holds for the caught screen under it (step)
+				backAt, backSeen, backWhy = os.clock(), nil, if carryAt then "Carried" else ""
 			else
 				cancelAt, cancelFrom = os.clock(), shownBlack
 			end
@@ -578,6 +606,13 @@ function WatchView.new(
 			if motor and motor.IsPlaying then
 				motor:Stop()
 			end
+		end
+	end
+
+	local function onCarry()
+		local value = player:GetAttribute(Left.CarryAttribute)
+		if type(value) == "number" then
+			carryAt = value
 		end
 	end
 
@@ -592,8 +627,48 @@ function WatchView.new(
 			return
 		end
 		local clock = os.clock()
-		-- back in: the black lifts off your new character, with the rip and "Back in"
+		-- carried up: the film squeals round you as the dip begins, and a door slams in the black
+		local carryFrom = carryAt
+		if carryFrom then
+			local t = Workspace:GetServerTimeNow() - carryFrom
+			once("carrySqueal", t, 0, function()
+				local q = Kept.Squeal
+				play(squealSound, q.from, q.length, q.volume * 0.8, q.pitch)
+			end)
+			once("carrySlam", t, Left.CarrySlam, function()
+				local b, th = SLAM_BANG, SLAM_THUMP
+				play(slamBang, b.Start, b.Stop - b.Start, 0.85, 0.82)
+				play(slamThump, th.Start, th.Stop - th.Start, 1.2, 0.7)
+				kick(0.3)
+			end)
+		end
 		local bAt = backAt
+		if bAt and backWhy == "Carried" then
+			-- the black holds until we're kept on the new floor and the caught screen is up under it
+			s.dark.Enabled = true
+			s.black.BackgroundTransparency = 0
+			s.title.TextTransparency, s.titleStroke.Transparency = 1, 1
+			showBar(0, s)
+			if player:GetAttribute(Kept.Attribute) == true then
+				keptSeen = keptSeen or clock
+				if clock - (keptSeen :: number) >= CARRY_HANDOVER then
+					backAt, carryAt, keptSeen = nil, nil, nil
+					local camera = Workspace.CurrentCamera
+					local humanoid = player.Character
+						and (player.Character :: Model):FindFirstChildOfClass("Humanoid")
+					if camera and humanoid then
+						camera.CameraSubject = humanoid
+						camera.CameraType = Enum.CameraType.Custom
+					end
+					rest(s)
+				end
+			elseif clock - bAt > CARRY_WAIT then
+				-- no unit for us: we stand in the lobby, and the black lifts as for a let-in
+				backWhy, carryAt = "", nil
+			end
+			return
+		end
+		-- back in: the black lifts off your new character, with the rip and "Back in"
 		if bAt then
 			if not backSeen and player.Character then
 				backSeen = clock
@@ -744,6 +819,10 @@ function WatchView.new(
 				nextPop.Scale += (1 - nextPop.Scale) * settle
 			end
 		end
+		local carrying = carryAt
+		if carrying and watchBegan then
+			black = math.max(black, Left.carry(Workspace:GetServerTimeNow() - carrying))
+		end
 		shownBlack = black
 		s.black.BackgroundTransparency = 1 - black
 	end
@@ -824,10 +903,26 @@ function WatchView.new(
 			bellEq.Parent = bell
 			tick = sound("WatchTick", Ride.Sounds.Tick.Id)
 			rip = sound("BackRip", Kept.Rip.id)
-			for _, x in { motor, dread, bell, tick, rip } do
+			squealSound = sound("CarrySqueal", Kept.Squeal.id)
+			slamBang = sound("CarrySlam", SLAM_BANG.Id)
+			slamThump = sound("CarryThump", SLAM_THUMP.Id)
+			-- the slam is behind the unit's door, close: its top end dulled
+			for _, x in { slamBang, slamThump } do
+				local dull = Instance.new("EqualizerSoundEffect")
+				dull.HighGain = Left.Muffle * 0.7
+				dull.Parent = x
+			end
+			for _, x in { motor, dread, bell, tick, rip, squealSound, slamBang, slamThump } do
 				table.insert(sounds, x :: Sound)
 			end
-			task.spawn(SoundPrimer.prime, { Kept.Dread.id, Ride.Sounds.Tick.Id, Kept.Rip.id })
+			task.spawn(SoundPrimer.prime, {
+				Kept.Dread.id,
+				Ride.Sounds.Tick.Id,
+				Kept.Rip.id,
+				Kept.Squeal.id,
+				SLAM_BANG.Id,
+				SLAM_THUMP.Id,
+			})
 			table.insert(
 				connections,
 				s.nextButton.Activated:Connect(function()
@@ -858,6 +953,10 @@ function WatchView.new(
 			table.insert(
 				connections,
 				player:GetAttributeChangedSignal(Left.BackAttribute):Connect(onBack)
+			)
+			table.insert(
+				connections,
+				player:GetAttributeChangedSignal(Left.CarryAttribute):Connect(onCarry)
 			)
 			table.insert(connections, UserInputService.InputBegan:Connect(onInput))
 			table.insert(connections, UserInputService.InputChanged:Connect(onChanged))

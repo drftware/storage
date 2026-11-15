@@ -612,4 +612,18 @@ function Kept.choose(units: { Unit }, x: number, z: number, random: Random): num
 	return pool[random:nextInteger(1, #pool)]
 end
 
+-- Carried up (S3-01a): on the player, the server time they were stood wrapped in a unit on the
+-- next floor after watching the ride (no catch, so no lunge on their screen: their eyes just open
+-- on the dark inside). Set before `Attribute`, cleared as they're let out.
+Kept.BroughtAttribute = "BroughtAt"
+-- Seconds a `BroughtAttribute` stays fresh: a screen that sees `Attribute` turn on this soon after
+-- plays the wake from the black, not the catch.
+Kept.BroughtFresh = 6
+
+--- Whether a screen seeing `Attribute` turn on at server time `now` is seeing a carry land
+--- (`at`, the player's `BroughtAttribute`), not a catch.
+function Kept.brought(at: unknown, now: number): boolean
+	return type(at) == "number" and now - at >= -1 and now - at <= Kept.BroughtFresh
+end
+
 return table.freeze(Kept)

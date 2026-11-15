@@ -64,6 +64,13 @@ function KeptWrapOn.new(): Brix.System
 	local studio = RunService:IsStudio()
 
 	local function squeal(player: Player)
+		if
+			Kept.brought(player:GetAttribute(Kept.BroughtAttribute), Workspace:GetServerTimeNow())
+		then
+			-- carried up (S3-01a): wrapped long ago, stood in a shut unit; their own screen heard
+			-- the film in the dip (WatchView), and nobody else was there to hear it
+			return
+		end
 		if player == Players.LocalPlayer then
 			-- in the black, once its face has rushed you
 			task.delay(Caught.Dark, function()
