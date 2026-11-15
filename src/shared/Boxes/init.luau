@@ -13,6 +13,22 @@ local Boxes = {}
 Boxes.Specs = Specs
 Boxes.Names = { "Small", "Medium", "Large", "Wardrobe", "Open" } :: { Name }
 
+-- The marked box (B-01): the one box in a unit with something in it, a Model of parts whose Open
+-- motion tears the tape and springs the flaps (Specs.Marked; art/boxes/README.md).
+Boxes.Marked = Specs.Marked
+
+-- Its sounds, from Roblox's licensed library (measured in docs/STUDIO.md "The marked box's
+-- sounds"): `from` and `length` in seconds of the file, played as a Sound's TimePosition window.
+export type Sound = { id: string, from: number, length: number, volume: number, pitch: number? }
+Boxes.Sounds = {
+	-- the tape snapping in the middle: a short zippy rip, all of it in its first 75 ms
+	Tear = { id = "rbxassetid://9113836687", from = 0, length = 0.15, volume = 0.8, pitch = 1.1 },
+	-- the flaps bursting up: a cardboard slap, its hit 0.82 s into the file
+	Flaps = { id = "rbxassetid://9113579352", from = 0.8, length = 0.4, volume = 0.9 },
+	-- something inside: a soft, airy pulsing hum, looped, heard only up close
+	Hum = { id = "rbxassetid://9116732713", from = 0, length = 18, volume = 0.18 },
+} :: { [string]: Sound }
+
 -- The kraft under the texture, shown only if the maps fail to load.
 local KRAFT = Color3.fromRGB(165, 122, 78)
 

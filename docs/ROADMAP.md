@@ -2030,11 +2030,20 @@ box, marked just enough to show something's inside. Opening it is the payoff, bu
 opening a blind box (Pop Mart's Labubu, blind-bag squishies): a find lifts out and shows how rare
 it is, coins go to your bank, a tool goes to your hands, or it's a piece of the code.
 
-- [ ] **B-01 The box, built** (art, the finds kit's way; it can run on the art track). One plain
-  taped cardboard box that never tells what's inside; its open motion (the tape tears, the flaps
-  spring up) and its sounds; the "something inside" cue, just enough (default: a faint warm line
-  of light at the tape seam and a soft sound up close, as Fortnite's chests glow and hum).
-  Judged at phone size.
+- [x] **B-01a The box, built** (Nov 15, D-208). The marked box in `art/boxes`: a plain Medium
+  box, maker's print only, eight parts (body, four flaps, two tape halves, the seam's glow lines)
+  on the Cardboard atlas; its Open motion as keys in `Boxes/Specs.luau` (the tape snaps in the
+  middle and whips back, the long flaps burst past upright, the end flaps a beat behind); the cue
+  (warm Neon lines along the tape, an optional warm light); three sounds in `Boxes.Sounds`. Sheets
+  `art/sheets/boxes-marked-*.png`, judged at phone size. Not yet in the place.
+- [ ] **B-01b The box, in Studio.** Upload `Boxes.fbx` (`lune run scripts/upload_art Boxes`, the
+  same asset updated), insert it, and make the templates: the five scenery boxes replace those in
+  `ReplicatedStorage.Props.Boxes` (they now share the new atlas), the marked box's eight parts go
+  in a Model `Marked` there. Write `Boxes.prepareMarked` (anchor, no touches; only the body
+  collides, as a box; each part's PivotOffset on its Specs hinge; the seam Neon in the cue's
+  colour at Transparency 1) and `Boxes.cloneMarked`. Prove in Edit: the Open motion played with
+  `Art.sample` looks like the filmstrip; the seam lit reads at phone size from a unit's doorway
+  at Level01 and Level21 (Neon smears at low graphics: STUDIO.md); the three sounds play.
 - [ ] **B-02 Opening a box: the reveal.** The payoff, built with care and studied from real
   unboxings and game reveals (Pet Simulator's egg hatch; Brawl Stars' Starr Drops, whose colour
   tells the prize before it shows). Press Open: the tape tears, a beat with light leaking

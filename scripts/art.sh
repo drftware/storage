@@ -11,7 +11,8 @@
 #   scripts/art.sh corridor export      just the corridor kit's FBX and Specs module
 #   scripts/art.sh boxes                the moving boxes: labels, their Cardboard bake, FBX, Specs
 #                                       module, look sheets (about 3 minutes)
-#   scripts/art.sh boxes export         just the boxes' FBX and Specs module
+#   scripts/art.sh boxes export         just the boxes' FBX and Specs module (the marked box too)
+#   scripts/art.sh boxes marked         the marked box's sheets and its opening filmstrip (~3 min)
 #   scripts/art.sh finds                the bedroom set's finds: their Bedroom bake, FBX, Specs
 #                                       module, look sheets (the unit look needs the boxes built)
 #   scripts/art.sh finds export         just the finds' FBX and Specs module
@@ -320,7 +321,7 @@ if [ "${1:-}" = "finds" ]; then
 fi
 if [ "${1:-}" = "boxes" ]; then
 	shift
-	for st in ${*:-labels textures export renders}; do
+	for st in ${*:-labels textures export renders marked}; do
 		echo "== boxes $st"
 		blender -b --factory-startup -P art/boxes/build.py -- --stage "$st" 2>&1 \
 			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|atlas|DONE" || true

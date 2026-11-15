@@ -2367,3 +2367,17 @@ verified: a doc page, Studio, or "untested".
 - **Rojo can sync a new module twice.** After this session, ServerScriptService.Server held two
   copies each of `Live`, `Purchasing`, `Feeds` and `Taps`, sources identical; `require(script.X)`
   takes one, so a later edit could land in the copy that isn't run. Reconnecting Rojo rebuilds it.
+
+## The marked box's sounds (B-01a, Nov 15)
+
+- **Measured in Edit** (AudioPlayer to AudioAnalyzer at half speed, `PeakLevel` in 25 ms bins of
+  the file; all three ready at once): Pro Sound Effects' "Cloth Rip Zippy 7" 9113836687 (0.15 s)
+  is all rip in its first 75 ms, the tape's snap; "Cloth Rip Zippy 4" 9113836270 (0.97 s) is a
+  longer even rip, kept as a spare. "Box Slide Cardboard Rub 2" 9113579352 (1.71 s) is a faint rub
+  then one cardboard slap at 0.82 s (peak 0.33), the flaps. "Metallic Glow Constant Distant
+  Pulsing Hum 1" 9116732713 (18.0 s) is the cue's hum, looped. Search results for "packing tape"
+  found no real tape sounds in the licensed library.
+- **A box's coincident faces render as a black band** (Blender, B-01a): the marked box's wall
+  tops (its rims) sat exactly level with the shut flaps and won the pixels. Its rims sit 0.004
+  under the flaps; any part that lies on another needs the same hair of clearance in Studio too.
+

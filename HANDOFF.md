@@ -2,48 +2,51 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-15, session 183 (S3-02b, D-207; S3-02 done) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-15, session 184 (B-01a, D-208) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- S3-02 done. `Purchasing` takes Roblox's receipts through Brix's Purchases over Saving's saves;
-  `Live` holds each product's switch from the experience's configs. Seen in Studio Play with
-  made-up receipts (granted once, a repeat ignored, a failed write waited then granted once, a
-  switch taking the offer off sale). A real purchase waits on `OWNER.md` ("Buy the test purchase").
-- Nothing is on sale to players: S3-03 and S3-04 call `Purchasing:prompt` (answers Brix's listing
-  or not-on-sale, `reason` to branch on) and hear `granted`. Their rows go in `Products`.
-- The experience has no developer products yet. Nothing was put into the place by hand.
-- Studio shows two copies each of `Live`, `Purchasing`, `Feeds`, `Taps` under
-  ServerScriptService.Server (a Rojo sync glitch, sources identical; STUDIO.md "Purchases in
-  Studio"). If an edit to one of them seems not to run, reconnect Rojo.
+- B-01a done: the marked box is built in `art/boxes` (eight parts in `Boxes.fbx`, the shared
+  Cardboard atlas rebaked at 90 texels a stud), its Open motion, cue and hinges in
+  `Boxes/Specs.luau` (`Specs.Marked`), its sounds in `Boxes.Sounds`, sheets
+  `art/sheets/boxes-marked-*.png` judged at phone size. Nothing uploaded or put in the place.
+- The place's box templates (`ReplicatedStorage.Props.Boxes`) are still the old upload with the
+  old atlas baked in, so they look as before. The repo's `Boxes.fbx` is the new one.
+- S3-02's `Purchasing` and `Live` are in; nothing is on sale. Studio shows two copies each of
+  `Live`, `Purchasing`, `Feeds`, `Taps` (a Rojo sync glitch; reconnect Rojo if an edit won't run).
 
-## Next task: B-01 The box, built
-ROADMAP B-01 (D-205). The moment: a door rolls up on somebody's stuff and one plain taped box sits
-there, marked just enough that you know something's inside; you can't tell what. Art only: the
-reveal is B-02. Hold it to `art/finds/CRAFT.md`'s bar.
-1. Read `art/boxes/README.md` (the moving boxes: the Cardboard bake, the Medium box, the Open
-   box with slit tape and flaps up) and CRAFT.md's "The bar", "Things that move or light" and
-   "Judging your own work". Build the marked box on `art/boxes`' spec and Cardboard bake (one
-   more box in `spec.py`, `scripts/art.sh boxes`), not a new texture set.
-2. The marked box: a Medium-size box, tape whole along the top seam, no marker word, nothing
-   that tells what's in it. Its four flaps and the tape's two halves are separate parts with
-   their hinges in the Specs module, so B-02 can tear the tape and spring the flaps.
-3. The open motion as data in the Specs module (the finds kit's way, `art/finds/kit/ease.py`):
-   the tape tears from the middle, the flaps spring up and settle past upright. B-02 plays it.
-4. The "something inside" cue (default: a faint warm line of light along the tape seam, as
-   Fortnite's chests glow): a thin emissive seam part, off by default, in the same FBX.
-5. Sounds: the tape tear, the flaps' thump, the cue's soft hum, chosen and named the way the
-   finds kit does its own (grep "sound" in `art/finds/README.md`); say each id in STUDIO.md.
-6. Look sheets: the box closed in an M unit lit from the hall, in a torch's beam, the seam lit,
-   and the open pose; judge at phone size (a 390-wide crop). Import the FBX into Studio per
-   STUDIO.md "Importing kit pieces"; say where it lives in HANDOFF and OWNER.md.
-**Acceptance:** checks green; `scripts/art.sh boxes` builds it; the sheets read as a plain box
-with something in it at phone size; OWNER.md has a "judge the box" item with the sheet paths.
-**Read first:** ROADMAP B-01; `art/boxes/README.md`; `art/boxes/spec.py`; `art/finds/CRAFT.md`
-(the three sections above); STUDIO.md "Importing kit pieces" (line ~861); D-205.
+## Next task: B-01b The box, in Studio
+ROADMAP B-01b (D-208). The moment is B-01a's: a plain box with something in it. This piece puts
+it in the place, so B-02 can open it.
+1. `lune run scripts/upload_art Boxes` (updates asset 89264624666926 in place; `art/boxes/assets.json`).
+   Insert it with the MCP's `insert_asset`; remove the `Assistant:` tag it adds.
+2. Replace the five templates in `ReplicatedStorage.Props.Boxes` with the new ones the README's
+   way (`Boxes.prepare`, PivotTo the origin; set CollisionFidelity per STUDIO.md if it won't take).
+   Check first that no live code holds the old instances (they're cloned by name).
+3. Write `Boxes.prepareMarked(model)` and `Boxes.cloneMarked(pivot, parent)` in
+   `src/shared/Boxes/init.luau`: anchored, CanTouch off, only `Marked_Body` collides (Box
+   fidelity); each part's PivotOffset put on its `Specs.Marked.Parts` hinge (Pivot is from the
+   body's pivot, the middle of its bottom); the seam `Material = Neon`, `Color` the cue's,
+   `Transparency = 1`, CastShadow off. Group the eight inserted `Marked_*` parts into a Model
+   `Marked` (PrimaryPart the body) in `ReplicatedStorage.Props.Boxes`.
+4. In Edit, clone one into a unit and play `Specs.Marked.Motions.Open` by hand with
+   `Finds/Art.luau`'s `Art.sample` (turn = degrees about Axis through Pivot, scale = times size):
+   capture it mid-open and settled; compare with `boxes-marked-open-strip.png`.
+5. Light the cue (seam Transparency to `Cue.Transparency`) and capture from a unit's doorway at
+   QualityLevel 1 and 21 (wait several seconds after switching): it must read faint but clear
+   and not smear (STUDIO.md "Neon blooms into blobs"). Play the three `Boxes.Sounds` once.
+6. Say in OWNER.md's "Judge the marked box" where the templates live.
+**Acceptance:** checks green; the six templates in the place; the marked box opens in Edit as the
+filmstrip shows; the cue reads at phone size in both graphics levels; HANDOFF and OWNER.md say
+where the templates live.
+**Read first:** ROADMAP B-01b; D-208; `art/boxes/README.md` ("Into Studio", "The marked box");
+`src/shared/Boxes/init.luau`; the `Marked` block of `src/shared/Boxes/Specs.luau`; STUDIO.md
+"Importing kit pieces" (line ~861).
 
 ## Queue (next sessions, the owner's ten-ticket order)
-0. **B-02 to B-05** (ROADMAP, D-205), then S3-03 Cut Free (it owns Studio's "CutFree" let-in;
-   its rows go in `Products`, prompted with `Purchasing:prompt`), then S3-04 the counter's shop.
+0. **B-02 to B-05** (ROADMAP, D-205): B-02 plays `Specs.Marked.Motions.Open` (0.95 s) inside its
+   reveal, with `Boxes.Sounds` (Tear at the snap, 0.1 s; Flaps at the burst, about 0.3 s). Then
+   S3-03 Cut Free (it owns Studio's "CutFree" let-in; rows in `Products`, prompted with
+   `Purchasing:prompt`), then S3-04 the counter's shop.
 1. **S4-01 Floors made by rules.** Split first: S4-01a the rules table and the top gone, S4-01b
    what changes floor to floor. Read the GDD's "Floor rules", D-106, D-128, `Climb.luau`,
    `Deal.luau`; grep `Climb.Top`, `Climb.Building`, `topped`. The escape ("Made it") has no trigger

@@ -27,12 +27,19 @@ sys.path.insert(0, HERE)  # first: this folder's spec.py, not the unit's
 import bpy  # noqa: E402
 from mathutils import Vector  # noqa: E402
 
+import importlib.util  # noqa: E402
+
 import bake  # noqa: E402
 import geo  # noqa: E402
 import render  # noqa: E402
 import spec as K  # noqa: E402
 from materials import Channels  # noqa: E402
 from nodes import NB, hexc  # noqa: E402
+
+# The finds kit's easing (art/finds/kit/ease.py), so the box's motion is played with the same sums.
+_ez = importlib.util.spec_from_file_location("finds_ease", os.path.join(HERE, "..", "finds", "kit", "ease.py"))
+ease = importlib.util.module_from_spec(_ez)
+_ez.loader.exec_module(ease)
 
 OUT = os.path.join(HERE, "out")
 TEX = os.path.join(OUT, "textures")
@@ -43,7 +50,7 @@ SET = "Cardboard"
 PARK = (1.0 - 2.0 / K.TEX, 1.0 - 2.0 / K.TEX)  # the twin faces' texel while baking
 
 # What a face is, for the recipe (a face attribute).
-TOP, FRONT, END, BOTTOM, INNER, RAW, FLAP_TAPED, FLAP_OUT, FLAP_IN = range(9)
+TOP, FRONT, END, BOTTOM, INNER, RAW, FLAP_TAPED, FLAP_OUT, FLAP_IN, TAPE, TAPE_UNDER = range(11)
 X, Y, Z = Vector((1, 0, 0)), Vector((0, 1, 0)), Vector((0, 0, 1))
 
 
@@ -62,6 +69,7 @@ class Faces:
         self.verts, self.st, self.local = [], [], []
         self.polys, self.key, self.kind, self.twin = [], [], [], []
         self.rects = {}  # key -> (width, height) in studs, the faces that own atlas space
+        self.cur, self.part = "Body", []  # the marked box's part each face belongs to
 
     def grid(self, key, kind, o, r, up, w, h, twin=False, bow=0.0, flat=False):
         """A face from corner `o` (its bottom-left seen from outside), `w` studs along `r` and `h`
@@ -86,6 +94,7 @@ class Faces:
                 self.key.append(key)
                 self.kind.append(kind)
                 self.twin.append(twin)
+                self.part.append(self.cur)
         if not twin:
             self.rects[key] = (w, h)
 
@@ -125,6 +134,30 @@ class Faces:
         (coll or bpy.context.scene.collection).objects.link(ob)
         return ob
 
+    def build_parts(self, rects, coll, pivots):
+        """One object a part, named `<box>_<part>`, its origin on its hinge (`pivots`)."""
+        out = {}
+        for nm, pv in pivots.items():
+            sub, remap = Faces(f"{self.name}_{nm}"), {}
+            for i, poly in enumerate(self.polys):
+                if self.part[i] != nm:
+                    continue
+                for v in poly:
+                    if v not in remap:
+                        remap[v] = len(sub.verts)
+                        sub.verts.append(self.verts[v] - pv)
+                        sub.st.append(self.st[v])
+                        sub.local.append(self.local[v])
+                sub.polys.append(tuple(remap[v] for v in poly))
+                sub.key.append(self.key[i])
+                sub.kind.append(self.kind[i])
+                sub.twin.append(self.twin[i])
+            if sub.polys:
+                ob = sub.build(rects, False, coll)
+                ob.location = pv
+                out[nm] = ob
+        return out
+
 
 def sides(F, nm, w, d, h, bulge, kinds=(FRONT, END)):
     """The four outside walls; +Y and +X are twins of -Y and -X."""
@@ -143,15 +176,16 @@ def closed(F, nm, b):
         F.dent(*b["dent"], w, d, h)
 
 
-def flap(F, nm, out_key, kind, o, r, c, w, length, angle, twin):
+def flap(F, nm, out_key, kind, o, r, c, w, length, angle, twin, in_twin=None):
     """A flap hinged on the top edge from `o` along `r`, `angle` degrees open from lying shut
     over the box (towards `c`); outer face, inner face and its three cut edges."""
     t = K.BOARD
+    in_twin = twin if in_twin is None else in_twin
     a = math.radians(angle)
     e = c * math.cos(a) + Z * math.sin(a)
     n = r.cross(e).normalized()
     F.grid(out_key, kind, o, r, e, w, length, twin)
-    F.grid(f"{nm}.flapin", FLAP_IN, o + r * w - n * t, -r, e, w, length, twin)
+    F.grid(f"{nm}.flapin", FLAP_IN, o + r * w - n * t, -r, e, w, length, in_twin)
     F.grid(f"{nm}.rim", RAW, o + e * length, r, -n, w, t, True)
     F.grid(f"{nm}.rim", RAW, o, e, -n, length, t, True)
     F.grid(f"{nm}.rim", RAW, o + r * w, -n, e, t, length, True)
@@ -218,8 +252,10 @@ def pack(all_faces):
 
 
 def build_all(baking, coll=None):
+    """The five scenery boxes ({name: object}); the atlas is packed with the marked box's faces
+    too, so every box keeps its texels whichever is built (build_marked)."""
     all_faces = [faces(n) for n in K.ORDER]
-    rects, density = pack(all_faces)
+    rects, density = pack(all_faces + [marked_faces(baking)])
     objs = {}
     for F in all_faces:
         b = K.BOXES[F.name]
@@ -227,6 +263,64 @@ def build_all(baking, coll=None):
         ob["W"], ob["D"], ob["H"] = b["w"], b["d"], b["h"]
         objs[F.name] = ob
     return objs, all_faces, density
+
+
+def marked_faces(baking):
+    """The marked box in one mesh, each face tagged with its part, shut as it's found. Its inside,
+    flap insides and cut edges wear the Open box's texels (the same size). For the bake the end
+    flaps stand open (shut, they lie under the long flaps and would bake black) and the tape floats
+    clear of the flaps (or their shadow would bake into its sticky side); the seam isn't baked."""
+    b, t, tw = K.MARKED, K.BOARD, K.TAPE / 2
+    w, d, h, bulge = b["w"], b["d"], b["h"], b["bulge"]
+    F = Faces("Marked")
+    sides(F, "Marked", w, d, h, bulge)
+    # the walls' cut tops sit a hair under the shut flaps, or the two would fight for the same pixels
+    iw, idp, ih, top = w - 2 * t, d - 2 * t, h - t - K.UNDER, h - K.UNDER
+    F.grid("Open.inner", INNER, Vector((w / 2 - t, -d / 2 + t, t)), -X, Z, iw, ih, True, bow=-bulge)
+    F.grid("Open.inner", INNER, Vector((-w / 2 + t, d / 2 - t, t)), X, Z, iw, ih, True, bow=-bulge)
+    F.grid("Open.innerend", INNER, Vector((-w / 2 + t, -d / 2 + t, t)), Y, Z, idp, ih, True, bow=-bulge)
+    F.grid("Open.innerend", INNER, Vector((w / 2 - t, d / 2 - t, t)), -Y, Z, idp, ih, True, bow=-bulge)
+    F.grid("Open.floor", INNER, Vector((-w / 2 + t, -d / 2 + t, t)), X, Y, iw, idp, True)
+    F.grid("Open.floor", BOTTOM, Vector((-w / 2, d / 2, 0)), X, -Y, w, d, True, flat=True)
+    F.grid("Open.rim", RAW, Vector((-w / 2, -d / 2, top)), X, Y, w, t, True)
+    F.grid("Open.rim", RAW, Vector((w / 2, d / 2, top)), -X, -Y, w, t, True)
+    F.grid("Open.rim", RAW, Vector((-w / 2, d / 2 - t, top)), -Y, X, idp, t, True)
+    F.grid("Open.rim", RAW, Vector((w / 2, -d / 2 + t, top)), Y, -X, idp, t, True)
+    opened = {p: ks[-1][1] for p, ch, ks in K.OPEN["tracks"] if ch == "turn"}
+    low = h - t - K.UNDER
+    for part, key, kind, o, r, c, twin in (
+            ("FlapFront", "Marked.flap", FLAP_TAPED, (-w / 2, -d / 2, h), X, Y, False),
+            ("FlapBack", "Marked.flap", FLAP_TAPED, (w / 2, d / 2, h), -X, -Y, True),
+            ("FlapLeft", "Marked.endflap", FLAP_OUT, (-w / 2, d / 2, low), -Y, X, False),
+            ("FlapRight", "Marked.endflap", FLAP_OUT, (w / 2, -d / 2, low), Y, -X, True)):
+        F.cur = part
+        angle = opened[part] if baking and kind == FLAP_OUT else 0.0
+        side = w if r in (X, -X) else d
+        flap(F, "Open", key, kind, Vector(o), r, c, side, d / 2, angle, twin, in_twin=True)
+    lift = 1.0 if baking else 0.0
+    top = h + K.TAPE_UP + lift
+    for part, x0, twin in (("TapeLeft", -w / 2, False), ("TapeRight", 0.0, True)):
+        F.cur = part
+        F.grid("Marked.tape", TAPE, Vector((x0, -tw, top)), X, Y, w / 2, K.TAPE, twin, flat=True)
+        F.grid("Marked.tapeunder", TAPE_UNDER, Vector((x0, tw, top - K.TAPE_THICK)), X, -Y,
+               w / 2, K.TAPE, twin, flat=True)
+    if not baking:
+        F.cur = "Seam"
+        x0, length = -w / 2 + K.SEAM_INSET, w - 2 * K.SEAM_INSET
+        for y0 in (tw + K.SEAM_GAP, -(tw + K.SEAM_GAP + K.SEAM_W)):
+            F.grid("Marked.tape", RAW, Vector((x0, y0, h + 0.0015)), X, Y, length, K.SEAM_W, True,
+                   flat=True)
+    return F
+
+
+def build_marked(coll=None, baking=False):
+    """The marked box: baking, one object; otherwise ({part: object}, each object's origin on its
+    hinge, shut), placed at the origin."""
+    rects, _ = pack([faces(n) for n in K.ORDER] + [marked_faces(baking)])
+    F = marked_faces(baking)
+    if baking:
+        return F.build(rects, True, coll)
+    return F.build_parts(rects, coll, {n: Vector(p) for n, p, _ in K.MARKED_PARTS})
 
 
 # --- the label sheet -------------------------------------------------------------------------
@@ -400,8 +494,9 @@ def cardboard(nb, b, sheet):
     # packing tape along the top seam, lapping down both ends (top and bottom). On the opened box
     # it's slit: what's left laps the ends and edges the long flaps' tips.
     tw = K.TAPE / 2
-    off = (seed * 0.37) % 0.03 - 0.015
-    yy = nb.absf(nb.sub(py, nb.add(off, nb.mul(px, 0.008))))
+    marked = b.get("marked")  # its tape is real parts, laid square on the seam
+    off = 0.0 if marked else (seed * 0.37) % 0.03 - 0.015
+    yy = nb.absf(nb.sub(py, nb.add(off, nb.mul(px, 0.0 if marked else 0.008))))
     strip = nb.ss(yy, tw + 0.003, tw - 0.003)
     rag = nb.mul(nb.fract(nb.mul(py, 23.0)), 0.025)
     lap_top = nb.ss(nb.add(nb.sub(pz, h - K.LAP), rag), 0.0, 0.004)
@@ -414,6 +509,8 @@ def cardboard(nb, b, sheet):
         seam = nb.mul(top, nb.ss(yy, 0.006, 0.0015))
         col = nb.mixc(nb.mul(seam, 0.8), col, hexc("#2E2015"))
         tape = nb.mul(strip, nb.add(top, on, clamp=True))
+    if marked:
+        tape = nb.add(tape, isk(TAPE, TAPE_UNDER), clamp=True)
     wr = nb.noise(vec(9.0, 1.0, 9.0, s=8), 3.0, detail=3)
     if b["tape"] == "brown":
         tcol = nb.tint(hexc("#8C5A2A"), nb.mr(wr, 0.3, 0.7, 0.82, 1.12))
@@ -423,6 +520,13 @@ def cardboard(nb, b, sheet):
         clear = nb.mixc(0.25, nb.tint(col, 0.86), hexc("#E0D2AC"))
         col = nb.mixc(tape, col, clear)
         rough = nb.mixf(tape, rough, nb.mr(wr, 0.3, 0.7, 0.14, 0.26))
+    if marked:
+        # the tape's sticky side, seen once it's torn up: paler, glossy, board fibres stuck to it
+        under = isk(TAPE_UNDER)
+        ucol = nb.tint(hexc("#B98A55"), nb.mr(wr, 0.3, 0.7, 0.9, 1.08))
+        ucol = nb.mixc(nb.mul(fib, 0.6), ucol, hexc("#D8BE96"))
+        col = nb.mixc(under, col, ucol)
+        rough = nb.mixf(under, rough, 0.3)
     lip = nb.mul(nb.band(yy, tw - 0.007, tw + 0.001, 0.002), nb.mul(tape, 1.0))
     col = nb.mixc(nb.mul(lip, 0.35), col, hexc("#D8C8A8"))
     height = nb.add(height, nb.add(nb.mul(tape, 0.35), nb.mul(nb.mul(tape, wr), 0.18)))
@@ -483,6 +587,9 @@ def stage_textures():
     sheet = bake.load(LABELS, True)
     bake.SIZES[SET] = (K.TEX, K.TEX)
     items = [(ob, rig(name, K.BOXES[name], sheet)) for name, ob in objs.items()]
+    mk = build_marked(baking=True)
+    mk.location.x = len(objs) * 4.0
+    items.append((mk, rig("Marked", K.MARKED, sheet)))
     bake.bake_set(SET, items, TEX, samples=32)
 
 
@@ -521,9 +628,15 @@ def stage_export():
         ob.data.materials.append(mat)
         ob.location.x = i * 4.0
         rows[F.name] = dict(size=(b["w"], b["h"], b["d"]), tris=F.tris(), open=bool(b.get("open")))
+    parts = build_marked()
+    seam = render.simple("Seam", (*[c / 255 for c in K.CUE["rgb"]], 1.0))
+    for nm, ob in parts.items():
+        ob.data.uv_layers.remove(ob.data.uv_layers["Local"])
+        ob.data.materials.append(seam if nm == "Seam" else mat)
+        ob.location.x += len(objs) * 4.0
     os.makedirs(OUT, exist_ok=True)
     bpy.ops.object.select_all(action="DESELECT")
-    for ob in objs.values():
+    for ob in list(objs.values()) + list(parts.values()):
         ob.select_set(True)
     bpy.context.view_layer.objects.active = objs["Medium"]
     fbx = os.path.join(OUT, "Boxes.fbx")
@@ -533,7 +646,31 @@ def stage_export():
         use_mesh_modifiers=True, mesh_smooth_type="OFF", use_tspace=False,
         add_leaf_bones=False, bake_anim=False, path_mode="COPY", embed_textures=True)
     print("FBX", fbx, {n: r["tris"] for n, r in rows.items()}, f"{density:.0f} texels a stud")
-    K.write_luau(os.path.join(K.ROOT, "src", "shared", "Boxes", "Specs.luau"), rows)
+    K.write_luau(os.path.join(K.ROOT, "src", "shared", "Boxes", "Specs.luau"), rows,
+                 marked_rows(parts))
+
+
+def to_roblox(v):
+    """Blender's (x, y, z) to Roblox's, through the FBX's axes (as the finds kit's)."""
+    return (-v[0], v[2], v[1])
+
+
+def marked_rows(parts):
+    """The marked box's numbers for the Specs module, in Roblox axes from the box's pivot."""
+    b, rows, tris = K.MARKED, [], 0
+    axes = {n: a for n, _, a in K.MARKED_PARTS}
+    for nm, hinge, _ in K.MARKED_PARTS:
+        me = parts[nm].data
+        lo = [min(v.co[i] for v in me.vertices) for i in range(3)]
+        hi = [max(v.co[i] for v in me.vertices) for i in range(3)]
+        n = sum(len(p.vertices) - 2 for p in me.polygons)
+        tris += n
+        size = [abs(c) for c in to_roblox([h - l for h, l in zip(hi, lo)])]
+        rows.append(dict(name=f"Marked_{nm}", pivot=to_roblox(hinge), size=size, tris=n,
+                         axis=to_roblox(axes[nm]) if axes[nm] else None))
+    tracks = [(p, ch, ease.keys(ks)) for p, ch, ks in K.OPEN["tracks"]]
+    return dict(size=(b["w"], b["h"], b["d"]), tris=tris, parts=rows, tracks=tracks,
+                cue_rgb=K.CUE["rgb"], light_rgb=ease.kelvin(K.CUE["light_kelvin"]))
 
 
 # --- look sheets ----------------------------------------------------------------------------
@@ -622,8 +759,115 @@ def stage_renders():
     render.shoot(cam, os.path.join(SHEETS, "boxes-unit-dark.png"), exposure=0.3)
 
 
+def pose(parts, t):
+    """The marked box `t` seconds into its Open motion (0: shut), the keys sampled as the game will."""
+    axes = {n: a for n, _, a in K.MARKED_PARTS}
+    for ob in parts.values():
+        ob.rotation_mode = "AXIS_ANGLE"
+        ob.rotation_axis_angle = (0.0, 0.0, 0.0, 1.0)
+        ob.scale = (1.0, 1.0, 1.0)
+    for part, ch, ks in K.OPEN["tracks"]:
+        v = ease.sample(ease.keys(ks), t)
+        if ch == "turn":
+            parts[part].rotation_axis_angle = (math.radians(v), *axes[part])
+        elif ch == "scale":
+            parts[part].scale = (v, v, v)
+
+
+def stage_marked():
+    """The marked box's sheets: art/sheets/boxes-marked-*.png, and its opening as a filmstrip and
+    an MP4 (out/marked-open.mp4), all in an M unit among somebody's stuff."""
+    import shutil
+    import subprocess
+    reset()
+    render.setup(96, (1600, 900))
+    objs, _, _ = build_all(baking=False)
+    mat = material(False)
+    for ob in objs.values():
+        ob.data.materials.append(mat)
+    parts = build_marked()
+    root = bpy.data.objects.new("Marked", None)
+    bpy.context.scene.collection.objects.link(root)
+    for nm, ob in parts.items():
+        ob.parent = root
+        if nm != "Seam":
+            ob.data.materials.append(mat)
+    glow = render.emissive("SeamGlow", (*[c / 255 for c in K.CUE["rgb"]], 1.0), 3.0)
+    parts["Seam"].data.materials.append(glow)
+    os.makedirs(SHEETS, exist_ok=True)
+
+    render.world((0.004, 0.005, 0.007), 1.0)
+    unit_room(bpy.context.scene.collection)
+    place(objs, "Wardrobe", -4.4, 10.6, 0.0, 6)  # somebody's stuff, against the back wall
+    place(objs, "Large", -1.9, 10.9, 0.0, -3)
+    place(objs, "Medium", -1.85, 10.85, 2.4, 9)
+    place(objs, "Small", 3.6, 10.9, 0.0, 12)
+    place(objs, "Open", 4.2, 8.2, 0.0, 40)
+    root.location, root.rotation_euler = (0.6, 6.4, 0.0), (0.0, 0.0, math.radians(-18))
+    hall = light("hall", "AREA", (0.0, -3.0, 11.0), (0.0, 6.0, 0.0), 900.0, (0.9, 0.94, 1.0), size=6.0)
+    # inside the top, the cue's warm light, as the game's optional PointLight
+    lt = ease.kelvin(K.CUE["light_kelvin"])
+    cue = light("cue", "POINT", (0.0, 0.0, K.MARKED["h"] + 0.05), (0.0, 0.0, 0.0), 1.2,
+                tuple(c / 255 for c in lt), size=0.1)
+    cue.parent = root
+    seam, sheet = parts["Seam"], lambda n: os.path.join(SHEETS, f"boxes-marked-{n}.png")  # noqa: E731
+
+    def cued(on):
+        seam.hide_render = not on
+        cue.hide_render = not on
+
+    pose(parts, 0.0)
+    cam = render.camera((1.2, -4.5, 4.6), (0.2, 7.0, 0.8), lens=26)  # a player at the doorway
+    cued(False)
+    render.shoot(cam, sheet("unit"), exposure=0.3)
+    cued(True)
+    render.shoot(cam, sheet("unit-cue"), exposure=0.3)
+    hall.hide_render = True
+    render.flashlight(cam, True, (0.6, 6.4, 0.8))
+    cued(False)
+    render.shoot(cam, sheet("dark"), exposure=0.3)
+    cued(True)
+    render.shoot(cam, sheet("dark-cue"), exposure=0.3)
+    render.flashlight(cam, False, (0.6, 6.4, 0.8))
+    hall.hide_render = False
+
+    close = render.camera((-0.4, 3.2, 3.3), (0.6, 6.4, 1.2), lens=35)  # kneeling to open it
+    render.shoot(close, sheet("close-cue"), exposure=0.1)
+    cued(False)
+    pose(parts, K.OPEN["duration"])
+    render.shoot(close, sheet("open"), exposure=0.1)
+
+    # the opening: frames at 30 a second, a filmstrip of ten and an MP4
+    sc = bpy.context.scene
+    sc.render.resolution_x, sc.render.resolution_y = 480, 360
+    sc.cycles.samples = 24
+    tmp = os.path.join(OUT, "frames")
+    shutil.rmtree(tmp, ignore_errors=True)
+    os.makedirs(tmp)
+    n = int(round((K.OPEN["duration"] + 0.25) * 30)) + 1
+    frames = []
+    for i in range(n):
+        t = i / 30.0 - 0.1  # a beat shut first, lit as a box with something in it
+        cued(t < 0.12)
+        pose(parts, max(t, 0.0))
+        f = os.path.join(tmp, f"open-{i:03d}.png")
+        render.shoot(close, f)
+        frames.append(f)
+    ff = lambda *a: subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *a], check=True)  # noqa: E731
+    ff("-framerate", "30", "-i", os.path.join(tmp, "open-%03d.png"), "-c:v", "libx264",
+       "-pix_fmt", "yuv420p", os.path.join(OUT, "marked-open.mp4"))
+    pick = [frames[min(round(i * (n - 1) / 9), n - 1)] for i in range(10)]
+    args = []
+    for f in pick:
+        args += ["-i", f]
+    lay = "|".join(f"{(i % 5) * 480}_{(i // 5) * 360}" for i in range(10))
+    ff(*args, "-filter_complex", f"xstack=inputs=10:layout={lay}", sheet("open-strip"))
+    shutil.rmtree(tmp, ignore_errors=True)
+    print("RENDERED", sheet("open-strip"))
+
+
 STAGES = {"labels": stage_labels, "textures": stage_textures, "export": stage_export,
-          "renders": stage_renders}
+          "renders": stage_renders, "marked": stage_marked}
 
 if __name__ == "__main__":
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []

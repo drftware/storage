@@ -63,6 +63,17 @@ nowhere else.
   9. Tell the next session it passed (or what didn't), so Brix's ENG-23e is marked done in its
      HANDOFF.
 
+- [ ] **Judge the marked box** (B-01a, D-208; rendered and judged at phone size by Claude, not yet
+  in Studio). The box a unit's find, coins, tool or note will come in.
+  1. Open `art/sheets/boxes-marked-unit.png` beside `boxes-marked-unit-cue.png`: the same unit
+     from the doorway, the box plain, then with its "something inside" cue lit (two faint warm
+     lines along the tape). Say whether the cue is enough in the hall's light, or too much.
+  2. Open `boxes-marked-dark-cue.png` (in a torch's beam): the lines should catch your eye.
+  3. Open `boxes-marked-open-strip.png` (ten frames, read left to right, top row first) or play
+     `art/boxes/out/marked-open.mp4`: the tape snaps in the middle and whips back, the long flaps
+     burst up past upright, the end flaps a beat behind. Say if it should be slower or punchier.
+  4. Decide my defaults (say which to change): the tape snaps across the middle rather than
+     splitting along the seam; the cue is warm lines at the tape's edges plus a soft hum up close.
 - [ ] **Answer Brix's gift and receipt choices** (its DECISIONS E-075 to E-078, listed in Brix's
   HANDOFF) before S3-04 sells gift versions of the wrap colours.
 

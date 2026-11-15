@@ -74,3 +74,23 @@ art/boxes/build.py   stages labels | textures | export | renders; the faces, the
 
 It borrows the unit's helpers (`art/unit/bake.py`, `nodes.py`, `geo.py`, `render.py`) and its
 Partition and Concrete textures for the look sheets' room.
+
+## The marked box (B-01a, D-208)
+
+The one box in a unit with something in it: a Medium box with the maker's print and nothing
+written on it, fresh tape whole along the seam. It rides in `Boxes.fbx` as eight parts named
+`Marked_<Part>`: Body, FlapFront, FlapBack, FlapLeft and FlapRight (the end flaps, under the long
+ones), TapeLeft and TapeRight (each hinged where it laps down an end) and Seam (two thin lines
+along the tape's edges, untextured: the game makes them Neon). `spec.py` holds its hinges
+(`MARKED_PARTS`), the Open motion's keys (`OPEN`) and the cue (`CUE`); the export writes them into
+`Specs.Marked` in Roblox axes. `scripts/art.sh boxes marked` renders its sheets:
+
+| | |
+|---|---|
+| ![unit](../sheets/boxes-marked-unit.png) | ![cue](../sheets/boxes-marked-unit-cue.png) |
+| ![dark](../sheets/boxes-marked-dark-cue.png) | ![open](../sheets/boxes-marked-open.png) |
+
+`boxes-marked-dark` and `-close-cue` too, and `boxes-marked-open-strip` (the opening in ten
+frames; `out/marked-open.mp4` plays it at 30 a second, not kept in git). For the bake the end
+flaps stand open and the tape floats clear, so neither bakes the other's shadow.
+

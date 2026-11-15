@@ -5,10 +5,37 @@
 -- bottom, on the floor; its labelled long side faces the part's front (LookVector), the
 -- tape runs front to back over the top and laps down the two ends (the part's X sides).
 
+-- The marked box's parts and motion, shaped as Finds/Art.luau's Part and Track (no require:
+-- the tests load this file bare), so Art.sample plays its keys.
+export type Part = {
+	Name: string,
+	Parent: string?,
+	Pivot: Vector3,
+	Axis: Vector3?,
+	Size: Vector3,
+	Triangles: number,
+}
+export type Track = { Part: string, Channel: "turn" | "scale", Keys: { { any } } }
+
 export type Box = {
 	Size: Vector3, -- X the long side, Y up, Z across
 	Triangles: number,
 	Open: boolean, -- the flaps stand up past its top, so nothing stacks on it
+}
+
+export type Marked = {
+	Size: Vector3, -- shut
+	Triangles: number,
+	Parts: { Part },
+	Motions: { [string]: { Duration: number, Tracks: { Track } } }, -- Open: tape tears, flaps spring
+	-- Something's inside: the seam's Neon lines (Transparency 1 in the template) and an
+	-- optional warm light for a player up close, which counts toward the light cap
+	Cue: {
+		Part: string,
+		Color: Color3,
+		Transparency: number,
+		Light: { Color: Color3, Brightness: number, Range: number },
+	},
 }
 
 local Boxes: { [string]: Box } = {
@@ -19,7 +46,175 @@ local Boxes: { [string]: Box } = {
 	Open = { Size = Vector3.new(1.8, 1.6, 1.8), Triangles = 740, Open = true },
 }
 
+-- The marked box (B-01): a Model of these parts, the body first. Parts ride on the body;
+-- each flap and tape half turns about its Axis through its Pivot (both from the box's pivot,
+-- the middle of its bottom). Motions play with Finds/Art.luau's sums (Art.sample).
+local Marked: Marked = {
+	Size = Vector3.new(1.8, 1.6, 1.8),
+	Triangles = 752,
+	Parts = {
+		{
+			Name = "Marked_Body",
+			Pivot = Vector3.new(0, 0, 0),
+			Size = Vector3.new(1.83, 1.6, 1.83),
+			Triangles = 412,
+		},
+		{
+			Name = "Marked_FlapFront",
+			Parent = "Marked_Body",
+			Pivot = Vector3.new(0, 1.6, -0.9),
+			Axis = Vector3.new(-1, 0, 0),
+			Size = Vector3.new(1.8, 0.03, 0.9),
+			Triangles = 82,
+		},
+		{
+			Name = "Marked_FlapBack",
+			Parent = "Marked_Body",
+			Pivot = Vector3.new(0, 1.6, 0.9),
+			Axis = Vector3.new(1, 0, 0),
+			Size = Vector3.new(1.8, 0.03, 0.9),
+			Triangles = 82,
+		},
+		{
+			Name = "Marked_FlapLeft",
+			Parent = "Marked_Body",
+			Pivot = Vector3.new(0.9, 1.566, 0),
+			Axis = Vector3.new(0, 0, -1),
+			Size = Vector3.new(0.9, 0.03, 1.8),
+			Triangles = 82,
+		},
+		{
+			Name = "Marked_FlapRight",
+			Parent = "Marked_Body",
+			Pivot = Vector3.new(-0.9, 1.566, 0),
+			Axis = Vector3.new(0, 0, 1),
+			Size = Vector3.new(0.9, 0.03, 1.8),
+			Triangles = 82,
+		},
+		{
+			Name = "Marked_TapeLeft",
+			Parent = "Marked_Body",
+			Pivot = Vector3.new(0.9, 1.604, 0),
+			Axis = Vector3.new(0, 0, -1),
+			Size = Vector3.new(0.9, 0.0025, 0.2),
+			Triangles = 4,
+		},
+		{
+			Name = "Marked_TapeRight",
+			Parent = "Marked_Body",
+			Pivot = Vector3.new(-0.9, 1.604, 0),
+			Axis = Vector3.new(0, 0, 1),
+			Size = Vector3.new(0.9, 0.0025, 0.2),
+			Triangles = 4,
+		},
+		{
+			Name = "Marked_Seam",
+			Parent = "Marked_Body",
+			Pivot = Vector3.new(0, 1.6, 0),
+			Size = Vector3.new(1.66, 0, 0.274),
+			Triangles = 4,
+		},
+	},
+	Motions = {
+		Open = {
+			Duration = 0.95,
+			Tracks = {
+				{
+					Part = "Marked_TapeLeft",
+					Channel = "turn",
+					Keys = {
+						{ 0, 0, "Sine", "InOut" },
+						{ 0.1, 7, "Quad", "Out" },
+						{ 0.3, 152, "Quad", "Out" },
+						{ 0.46, 128, "Sine", "InOut" },
+						{ 0.62, 140, "Sine", "InOut" },
+						{ 0.76, 136, "Sine", "InOut" },
+					},
+				},
+				{
+					Part = "Marked_TapeRight",
+					Channel = "turn",
+					Keys = {
+						{ 0, 0, "Sine", "InOut" },
+						{ 0.11, 6, "Quad", "Out" },
+						{ 0.32, 158, "Quad", "Out" },
+						{ 0.48, 132, "Sine", "InOut" },
+						{ 0.64, 143, "Sine", "InOut" },
+						{ 0.78, 139, "Sine", "InOut" },
+					},
+				},
+				{
+					Part = "Marked_Seam",
+					Channel = "scale",
+					Keys = {
+						{ 0, 1, "Sine", "InOut" },
+						{ 0.1, 1, "Sine", "InOut" },
+						{ 0.14, 0.01, "Quad", "In" },
+					},
+				},
+				{
+					Part = "Marked_FlapFront",
+					Channel = "turn",
+					Keys = {
+						{ 0, 0, "Sine", "InOut" },
+						{ 0.1, 3, "Quad", "Out" },
+						{ 0.16, 1, "Quad", "In" },
+						{ 0.4, 130, "Quad", "Out" },
+						{ 0.54, 111, "Sine", "InOut" },
+						{ 0.68, 121, "Sine", "InOut" },
+						{ 0.8, 118, "Sine", "InOut" },
+					},
+				},
+				{
+					Part = "Marked_FlapBack",
+					Channel = "turn",
+					Keys = {
+						{ 0, 0, "Sine", "InOut" },
+						{ 0.1, 3, "Quad", "Out" },
+						{ 0.17, 1, "Quad", "In" },
+						{ 0.42, 116, "Quad", "Out" },
+						{ 0.56, 98, "Sine", "InOut" },
+						{ 0.7, 107, "Sine", "InOut" },
+						{ 0.82, 104, "Sine", "InOut" },
+					},
+				},
+				{
+					Part = "Marked_FlapLeft",
+					Channel = "turn",
+					Keys = {
+						{ 0, 0, "Sine", "InOut" },
+						{ 0.22, 0, "Sine", "InOut" },
+						{ 0.46, 108, "Quad", "Out" },
+						{ 0.6, 91, "Sine", "InOut" },
+						{ 0.74, 99, "Sine", "InOut" },
+						{ 0.86, 97, "Sine", "InOut" },
+					},
+				},
+				{
+					Part = "Marked_FlapRight",
+					Channel = "turn",
+					Keys = {
+						{ 0, 0, "Sine", "InOut" },
+						{ 0.23, 0, "Sine", "InOut" },
+						{ 0.48, 140, "Quad", "Out" },
+						{ 0.62, 122, "Sine", "InOut" },
+						{ 0.76, 130, "Sine", "InOut" },
+						{ 0.9, 128, "Sine", "InOut" },
+					},
+				},
+			},
+		},
+	},
+	Cue = {
+		Part = "Marked_Seam",
+		Color = Color3.fromRGB(196, 122, 58),
+		Transparency = 0.3,
+		Light = { Color = Color3.fromRGB(255, 146, 39), Brightness = 0.6, Range = 3 },
+	},
+}
+
 return {
 	Board = 0.03, -- the board's thickness
 	Boxes = Boxes,
+	Marked = Marked,
 }

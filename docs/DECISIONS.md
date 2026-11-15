@@ -5521,3 +5521,22 @@ Defaults taken overnight:
   each offer's share of prompts that sell.
 - **Each grant prints one line on live servers too** (`[Purchasing] granted <offer> to <name>
   (bought N)`), for reading a purchase's fate in the server log.
+
+## D-208 The marked box: eight parts on the boxes' atlas, the tape snaps in the middle (B-01a, Nov 15)
+The box a unit's find, tool, coins or note comes in (D-205) is a Medium box built in `art/boxes`
+beside the scenery boxes and exported in the same `Boxes.fbx`, so all six share one Cardboard
+texture set (the atlas went from 97 to 90 texels a stud; its inside, flap insides and cut edges
+wear the Open box's texels). It has the maker's print and no marker word. It is a Model of eight
+parts: the body, four flaps (the end flaps fold under the long ones), two tape halves and the
+seam (two thin lines along the tape's edges, untextured, so the game makes them Neon).
+Defaults taken overnight (`OWNER.md` "Judge the marked box"):
+- **The tape snaps across the middle and its halves whip back to the box's ends**, rather than
+  splitting along the seam as a knife does: a strip parting in the middle reads on a phone; a
+  split along a 2-inch strip doesn't. The flaps then burst past upright to the Open box's angles.
+- **The cue is two warm lines leaking out along the tape's edges** (196, 122, 58 at 0.3
+  transparency, mid warmth so Neon doesn't smear), with an optional warm PointLight for a player
+  up close; the lines hide as the tape tears. Faint under the hall light, clear in the dark.
+- **Sounds:** a 0.15 s nylon rip for the tape, a cardboard slap for the flaps, a soft pulsing
+  hum looped up close (`Boxes.Sounds`).
+B-01 was split for the session's size: B-01a (the art, this), B-01b (into Studio).
+
