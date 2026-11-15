@@ -4876,3 +4876,31 @@ crowds it). The ticket read "a bit" as about a third.
   walk first (`"Empty"` or `"Full"`), since which walk it shows is the Packrat's own state; the
   Kit's `along(travelled, how)` and `frameAt(along)` don't carry that, so S2-06b2 decides how a
   screen learns it carries (a How of its own, and resetting `along` when the walk changes).
+
+## D-178 The Packrat's trip home: told what lies loose, nearest first, deaf and blind while full (S2-06b1, Nov 14)
+
+- **The server says what lies where; the brain says where it goes.** `Keeper.lying(k, finds)`
+  hands it the server's reused list of loose finds (ids and the floor under each), as `offer`
+  hands the Mannequin the breaker. The server calls it whenever that changes (a find lifted,
+  dropped or laid, a door up or down); the brain answers with `took` and `laid` for one step,
+  as `threw` does, and the server moves the find. Nothing about a find's model is in the brain.
+- **Nearest first, by the walk, not the crow.** It goes for the nearest find along the halls
+  that it can reach (a find behind a shut door isn't reachable), never one in its own unit, so
+  it never takes from its own pile. It commits: a nearer find turning up doesn't turn it. It
+  knows of finds it can't see, so it drains the floor steadily outward (`OWNER.md` asks). Only
+  a find gone first, or one moved, changes its mind.
+- **It stops its grab short, along a clear line.** Like the hunt stopping at `Close`, a fetch
+  stops 4 studs off the find once the map clears the line to it, so its long arm (D-177) lands
+  on the find, never through a wall. The reach is a beat (0.8 s) a player can still snatch the
+  find in; the take is when it becomes its own.
+- **Full, it is a different animal.** While it holds a find it neither sees nor hears anyone
+  (the GDD's "ignores everybody"), walks at 72% of its pace (the full stride's share, so its
+  feet keep their beat) and goes home; shut in, it pounds as any monster and goes home once
+  out. Empty, it hunts as any monster until S2-06c, and on its way to a find it hears a third
+  as far, as the Mannequin's errand does (D-172).
+- **Its way home shut, it roams carrying** and heads home once there's a way (`OWNER.md`).
+- **Screens get names, not new states.** Its core states stay the Mannequin's (it walks as
+  Roaming, stands as Waiting); `shown` names what a body must show: Reaching, Taking and
+  PuttingDown as it stands, Carrying in any other state while full (trapped included), for the
+  Kit to map in S2-06b2.
+

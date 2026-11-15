@@ -1896,15 +1896,23 @@ Done when a team that has lost its lights goes looking for the breaker without b
     find it goes for next, the trip home). It sets hall lights off as it walks (a default in
     `OWNER.md`). The deal puts one on floors 3 and up, asleep in a unit that already holds
     finds of its own. Split in two (Nov 14, context: the brain alone is a session):
-    - [ ] **S2-06b1 The trip home, on the brain.** Its row in `KeeperRows` and the new errand
-      on `Keeper.luau` (the Mannequin's breaker errand is the nearest shape): which find it goes
-      for next, walking to it, the reach and take, the trip home with its arms full and players
-      ignored, putting down, out for more. Pure, with Lune specs first.
+    - [x] **S2-06b1 The trip home, on the brain** (Nov 14, D-178). Its row in `KeeperRows`
+      (a new optional `collects`: grab 4 studs, reach 0.8 s, take 0.5 s, put down 1.2 s, its
+      full walk 72% of its empty one; light does nothing to it) and the trip on `Keeper.luau`:
+      told what lies loose (`Keeper.lying`, the server's `Finds`), it goes for the nearest it
+      can walk to, never one in its own unit; stops its grab short facing it and reaches
+      (`hands` Reach), takes it (`took`), walks home full seeing and hearing no one, puts it
+      down (`laid`) and comes out for the next. A find gone first sends it to another; none
+      left, it roams; its way home shut, it roams carrying. `shown` says Reaching, Taking,
+      PuttingDown and Carrying; `nest` moves its pile. `tests/collect.spec.luau`.
     - [ ] **S2-06b2 Into the game.** The server moves each find (lifted, carried at its chest,
       laid on the pile) and owns where it is; screens show the Packrat's walk full or empty and
       its reach, take and put down (its Kit row in KeeperView, and how a screen learns it
-      carries, D-177); hall lights off as it walks (a default in `OWNER.md`); the deal puts one
-      on floors 3 and up, asleep in a unit holding finds. Verified in Play.
+      carries, D-177; `Keeper.shown` now names Carrying, Reaching, Taking and PuttingDown);
+      hall lights off as it walks (a default in `OWNER.md`); the deal puts one on floors 3 and
+      up, asleep in a unit holding finds (`Keeper.nest` facing its pile, `Keeper.lying` told on
+      every change: a find lifted, dropped or laid, a door up or down). Its row borrows the
+      Mannequin's sounds until S2-06e: its Kit plays no beats. Verified in Play.
   - [ ] **S2-06c It takes from you, or wraps you.** With empty arms it comes for a player it
     sees at just under walking speed, and light doesn't stop it. Reaching one, it takes their
     most valuable find and carries it home: a tool only if they carry no find, never the

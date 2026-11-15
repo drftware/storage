@@ -70,6 +70,18 @@
 	(`lever`, which screens are shown as `Keeper.shown`). A light on it holds it in the beat;
 	anything it hears or sees calls it off.
 
+	It carries finds home (S2-06b1), if its row collects (`collects`, the GDD's Packrat), as Lethal
+	Company's Hoarding Bug carries scrap to its nest. Told what lies loose on its floor (`lying`,
+	the server's), each time it picks where to go next it goes for the nearest find it can walk to,
+	never one on its own pile (in its own unit). It stops its grab short of it, facing it, and
+	stands with its arm out (`hands` "Reach"); its hands close on it (`took` for that step: the
+	server lifts it) and pull it in ("Take"); then it walks home with its arms full (`holding`),
+	slower (`laden`), seeing and hearing no one; at home it crouches over its pile ("PutDown"),
+	lays it there (`laid`: the server puts it on the pile) and comes out for the next. A find gone
+	before it gets there sends it to another; none left, it roams. Its way home shut, it roams on,
+	carrying, and heads home once there's a way. Screens are told its hands and full arms
+	(`shown`). Its own unit and pile are where it was dealt, unless the server says (`nest`).
+
 	It catches the one it hunts (L-06b3c), as Granny's grab or Piggy's swing ends the chase the
 	moment she reaches you: their feet within its row's `reach` along the halls and its
 	`reachAngle` either side of the way it faces (Brix's cone reach, `Reach.cone`, measured along
@@ -132,6 +144,20 @@ export type Cone = (
 	options: { pathing: KeeperMap.Pathing, radius: number, halfAngle: number }
 ) -> Reach
 
+--- The finds lying loose on its floor that a keeper which collects may pick up (S2-06b1), as
+--- parallel arrays `count` long, which the server fills and reuses (`Keeper.lying`): each one's
+--- id (any number but 0) and the floor under it, in the floor's coordinates (a find on a shelf:
+--- the floor under the shelf), so a keeper's line to it can be cleared.
+export type Finds = {
+	ids: { number },
+	at: { vector },
+	count: number,
+}
+
+--- What a collecting keeper's hands are doing as it stands (S2-06b1): its arm out over a find,
+--- its hands closed on it pulling it in, or crouched laying it on its pile.
+export type Hands = "None" | "Reach" | "Take" | "PutDown"
+
 export type Keeper = {
 	row: KeeperRows.Row,
 	map: KeeperMap.Map, -- the floor it's on
@@ -184,6 +210,17 @@ export type Keeper = {
 	-- it throws (Reach), then holding it down as it lingers (Pull); "None" anywhere else
 	lever: Lever,
 	threw: boolean, -- it dragged the lever down this step: the server throws the box
+	-- Collecting (S2-06b1; only a row that `collects`):
+	finds: Finds?, -- what lies loose on its floor, as the server last told it (`lying`)
+	homeAt: vector, -- where it stands to lay a find on its pile: where it was dealt (`nest`)
+	pile: vector, -- its pile: it faces it there
+	home: number, -- its own unit (its slot in the floor), 0 for a hall: it never takes from it
+	fetch: number, -- the id of the find it's going for or reaching for, or 0
+	holding: number, -- the id of the find in its arms, or 0: while it holds one it sees no one
+	homing: boolean, -- it's walking home with it
+	hands: Hands, -- what its hands are doing as it stands
+	took: number, -- the id of the find its hands closed on this step (the server lifts it), or 0
+	laid: number, -- the id of the find it laid on its pile this step (the server puts it there), or 0
 }
 
 export type Lever = "None" | "Reach" | "Pull"
@@ -234,6 +271,12 @@ local BEAM_REACH = Torch.BeamRange
 -- Points up its middle, feet to head, that a beam may catch: about a stud apart on the Mannequin.
 Keeper.BeamPoints = 7
 
+-- How far ahead of where a collecting keeper stands at home its pile is (studs), S2-06b1: its
+-- put-down lays a find low between its hands, a little ahead of its knees (the Packrat's PutDown).
+Keeper.Pile = 1.5
+-- Within this of its grab off a find, along a line the map clears, it's there to reach (studs).
+local GRAB_SLACK = 0.05
+
 local function flat(v: vector): vector
 	local m = math.sqrt(v.x * v.x + v.z * v.z)
 	if m < 1e-9 then
@@ -272,7 +315,7 @@ end
 
 -- It stands still where it is for `seconds`, and remembers the place, so it roams on elsewhere.
 local function stand(k: Keeper, seconds: number)
-	k.state, k.waited, k.wait, k.lever = "Waiting", 0, seconds, "None"
+	k.state, k.waited, k.wait, k.lever, k.hands = "Waiting", 0, seconds, "None", "None"
 	local n = #k.recent
 	if n > 0 then
 		k.recentAt = k.recentAt % n + 1
@@ -378,6 +421,7 @@ local function look(k: Keeper, players: Players, still: boolean): boolean
 		local changed = k.state ~= "Hunting" or k.target ~= ids[best]
 		k.state, k.target, k.waited = "Hunting", ids[best], 0
 		k.listening, k.startle = false, 0
+		k.fetch, k.hands = 0, "None" -- empty-armed, you before any find
 		k.seen, k.goal = at[best], at[best]
 		if changed and not still then
 			faceToward(k, k.seen) -- the turn: it has seen you
@@ -424,10 +468,55 @@ function Keeper.catches(k: Keeper, players: Players): number
 	return 0
 end
 
+-- The find it goes for next (S2-06b1): the nearest along the halls it can walk to, never one in
+-- its own unit (its pile). Its index in `finds`, or nil. Allocates nothing.
+local function nearestFind(k: Keeper, finds: Finds): number?
+	local best, nearest = nil, math.huge
+	for i = 1, finds.count do
+		local p = finds.at[i]
+		local _, unit = KeeperMap.placeAt(k.map, p)
+		if k.home == 0 or unit ~= k.home then
+			local d = k.pathing:length(k.at, p)
+			if d < nearest then
+				best, nearest = i, d
+			end
+		end
+	end
+	return best
+end
+
+-- Where in `finds` the find `id` is, or nil.
+local function findIndex(finds: Finds, id: number): number?
+	for i = 1, finds.count do
+		if finds.ids[i] == id then
+			return i
+		end
+	end
+	return nil
+end
+
 -- It sets off roaming, or, with nowhere it can reach, stands watching where it is; shut in where
 -- it was trapped (it hunted someone in there with it), it goes back to its door, trapped again.
+-- A collecting keeper (S2-06b1) heads home with a find it holds, else for the nearest find
+-- lying loose; with neither, or no way home, it roams (carrying, if it holds one).
 local function roam(k: Keeper)
 	k.listening, k.startle, k.errand = false, 0, false
+	k.fetch, k.hands, k.homing = 0, "None", false
+	if k.row.collects then
+		local finds = k.finds
+		if k.holding ~= 0 then
+			if k.pathing:length(k.at, k.homeAt) < math.huge then
+				k.state, k.goal, k.homing = "Roaming", k.homeAt, true
+				return
+			end
+		elseif finds then
+			local i = nearestFind(k, finds)
+			if i then
+				k.state, k.goal, k.fetch = "Roaming", finds.at[i], finds.ids[i]
+				return
+			end
+		end
+	end
 	-- the floor's Random is drawn only while an errand is offered, so floors without one roam
 	-- exactly as they did
 	if
@@ -461,6 +550,8 @@ function Keeper.new(
 	cone: Cone?
 ): Keeper
 	local pathing = KeeperMap.pathing(map, row.abilities)
+	local face = flat(facing)
+	local _, home = KeeperMap.placeAt(map, at)
 	local reach = if cone
 		then cone({ pathing = pathing, radius = row.reach, halfAngle = math.rad(row.reachAngle) })
 		else nil
@@ -472,7 +563,7 @@ function Keeper.new(
 		random = random,
 		state = if awake then "Watching" else "Asleep",
 		at = at,
-		facing = flat(facing),
+		facing = face,
 		goal = at,
 		heard = at,
 		waited = 0,
@@ -509,7 +600,54 @@ function Keeper.new(
 		errand = false,
 		lever = "None",
 		threw = false,
+		finds = nil,
+		homeAt = at,
+		pile = at + face * Keeper.Pile,
+		home = home,
+		fetch = 0,
+		holding = 0,
+		homing = false,
+		hands = "None",
+		took = 0,
+		laid = 0,
 	}
+end
+
+--- Where a collecting keeper's pile is (S2-06b1): it stands at `at` to lay a find there, facing
+--- `pile` (the floor's coordinates), and never takes a find from the unit `at` is in. Dealt, it's
+--- where it was put, its pile `Pile` studs ahead.
+function Keeper.nest(k: Keeper, at: vector, pile: vector)
+	local _, home = KeeperMap.placeAt(k.map, at)
+	k.homeAt, k.pile, k.home = at, pile, home
+end
+
+--- What lies loose on its floor (`Finds`, the server's, filled and reused), told it each time that
+--- changes: a find lifted, dropped or laid, a door going up or down. Only a row that collects
+--- heeds it, and only with empty arms: going for a find that's gone (someone took it first), it
+--- goes for the nearest left, or roams; going for one that moved, it follows it; roaming with
+--- nothing to fetch, it goes for the nearest it can now walk to. Anything else it's doing (looking
+--- at a sound, hunting, standing a while) it finishes first, and picks when it next picks.
+function Keeper.lying(k: Keeper, finds: Finds)
+	k.finds = finds
+	if not k.row.collects or k.holding ~= 0 then
+		return
+	end
+	if k.fetch ~= 0 then
+		local i = findIndex(finds, k.fetch)
+		if not i then
+			roam(k)
+		elseif finds.at[i] ~= k.goal then
+			k.goal = finds.at[i]
+			if k.hands == "Reach" then
+				k.state, k.hands = "Roaming", "None" -- it moved from under its hand
+			end
+		end
+	elseif k.state == "Roaming" then
+		local i = nearestFind(k, finds)
+		if i then
+			k.goal, k.fetch = finds.at[i], finds.ids[i]
+		end
+	end
 end
 
 --- Offers it the floor's breaker box (S2-02c): it stands at `at` to throw it, facing `box` (the
@@ -532,8 +670,20 @@ function Keeper.offer(k: Keeper, at: vector, box: vector, chance: number, grip: 
 end
 
 --- The state screens are told it's in (KeeperMotion): its own, but standing at a breaker box with
---- its hand on the lever, "Reaching" (up on the grip) or "Pulling" (holding it down), S2-02d2.
+--- its hand on the lever, "Reaching" (up on the grip) or "Pulling" (holding it down), S2-02d2. A
+--- collecting keeper (S2-06b1) shows its hands as it stands, "Reaching" (its arm out over a find),
+--- "Taking" or "PuttingDown", and "Carrying" in any other state while it holds one.
 function Keeper.shown(k: Keeper): string
+	local hands = k.hands
+	if hands == "Reach" then
+		return "Reaching"
+	elseif hands == "Take" then
+		return "Taking"
+	elseif hands == "PutDown" then
+		return "PuttingDown"
+	elseif k.holding ~= 0 then
+		return "Carrying"
+	end
 	local lever = k.lever
 	if k.state ~= "Waiting" or lever == "None" then
 		return k.state
@@ -563,11 +713,13 @@ Keeper.ErrandHearing = 1 / 3
 --- they come): the walk you were hearing stops dead, and you know it heard. Trapped, it hears
 --- through its own door (its trip to the sound from the door's front, plus its own way to the
 --- door) and goes nowhere: it remembers the sound, to go after once out. Its own door's sounds it
---- doesn't count. On its way to the breaker it hears only `ErrandHearing` as far; a sound that
---- does reach it calls it off its errand there and then.
+--- doesn't count. On its way to the breaker, or to a find (S2-06b1), it hears only
+--- `ErrandHearing` as far; a sound that does reach it calls it off there and then. With a find
+--- in its arms it hears nothing at all.
 function Keeper.hear(k: Keeper, from: vector, reach: number, spot: vector): (number?, boolean)
-	local carries = reach * k.row.hearing * (if k.errand then Keeper.ErrandHearing else 1)
-	if not (carries > 0) or k.state == "Hunting" then
+	local busy = k.errand or k.fetch ~= 0
+	local carries = reach * k.row.hearing * (if busy then Keeper.ErrandHearing else 1)
+	if not (carries > 0) or k.state == "Hunting" or k.holding ~= 0 then
 		return nil, false
 	end
 	if k.state == "Trapped" then
@@ -595,6 +747,7 @@ function Keeper.hear(k: Keeper, from: vector, reach: number, spot: vector): (num
 	k.heardSpot, k.place = spot, spot
 	-- called off the breaker: its hand comes off the grip, and screens' cameras let it go
 	k.errand, k.lever = false, "None"
+	k.fetch, k.hands = 0, "None" -- or off the find it was going for
 	return d, news
 end
 
@@ -786,6 +939,8 @@ function Keeper.trap(k: Keeper, slot: Floor.Slot, index: number): boolean
 	k.trapped, k.nextBang = 0, k.row.bangFirst
 	k.burst, k.padlocked, k.heardOut, k.held = false, false, false, false
 	k.listening, k.startle = false, 0
+	-- a find it held stays in its arms; one it was going for or laying down waits
+	k.fetch, k.hands, k.homing = 0, "None", false
 	return true
 end
 
@@ -854,7 +1009,10 @@ function Keeper.lookOut(k: Keeper, slot: Floor.Slot, index: number): boolean
 		k.trappedIn = 0
 		if k.state == "Trapped" then
 			k.burst, k.padlocked = false, false
-			if k.heardOut then
+			if k.holding ~= 0 then
+				roam(k) -- out with a find in its arms: it heads home with it
+				return true
+			elseif k.heardOut then
 				k.state, k.goal, k.waited = "Going", k.place, 0
 				k.listening = true
 				return true
@@ -1005,8 +1163,10 @@ function Keeper.step(
 	k.caught = 0
 	k.threw = false
 	k.blow = "None"
+	k.took, k.laid = 0, 0
 	local looked = false
-	if players and k.state ~= "Asleep" then
+	-- with a find in its arms it sees no one (S2-06b1)
+	if players and k.state ~= "Asleep" and k.holding == 0 then
 		looked = look(k, players, lit ~= 0)
 	end
 	if lit ~= 0 then
@@ -1026,8 +1186,17 @@ function Keeper.step(
 				-- the box) and stands there a while holding it
 				k.errand, k.threw = false, true
 				k.waited, k.wait, k.lever = 0, k.row.linger, "Pull"
-			else
+			elseif k.hands == "Reach" and k.row.collects then
+				-- its arm has been out over the find a beat: its hands close on it (the server
+				-- lifts it) and pull it in; `lying` already sent it on if the find went first
+				k.holding, k.took, k.fetch = k.fetch, k.fetch, 0
+				k.waited, k.wait, k.hands = 0, k.row.collects.take, "Take"
+			elseif k.hands == "PutDown" then
+				-- laid on its pile (the server puts it there): out for the next
+				k.laid, k.holding = k.holding, 0
 				roam(k)
+			else
+				roam(k) -- after the take, home with it (`roam`)
 			end
 			return true
 		end
@@ -1041,8 +1210,16 @@ function Keeper.step(
 	-- moving along its route: hunting and searching at its top speed, else at its walk
 	local hunting = state == "Hunting"
 	local studs = Keeper.pace(k, run) * dt
+	local collect = k.row.collects
+	local grab = if collect and k.fetch ~= 0 then collect.grab else -1
 	if hunting then
 		studs = math.min(studs, math.max(flatDistance(k.at, k.goal) - Keeper.Close, 0))
+	elseif grab >= 0 then
+		-- going for a find: it stops its grab short, once it has a clear line to it
+		local short = flatDistance(k.at, k.goal) - grab
+		if short <= studs and KeeperMap.clear(k.map, k.at, k.goal) then
+			studs = math.max(short, 0)
+		end
 	end
 	local before = k.at
 	local after = if studs > 0 then k.route:advance(before, k.goal, studs) else before
@@ -1055,6 +1232,9 @@ function Keeper.step(
 	end
 	local there = flatDistance(after, k.goal) <= ARRIVE
 	local stuck = studs > 0 and moved <= STUCK
+	local reached = grab >= 0
+		and flatDistance(after, k.goal) <= grab + GRAB_SLACK
+		and KeeperMap.clear(k.map, after, k.goal)
 	if hunting then
 		if moved <= STUCK then
 			faceToward(k, k.goal) -- at arm's length: it stands facing them
@@ -1071,6 +1251,16 @@ function Keeper.step(
 		-- stopped short of a unit's wall: then at the wall, or the hole they went through)
 		stand(k, k.row.linger)
 		faceToward(k, if state == "Going" then k.heard else k.seen)
+	elseif reached and collect then
+		-- at a find (S2-06b1): its arm goes out over it a beat, then it takes it (Waiting, above)
+		stand(k, collect.reach)
+		k.hands = "Reach"
+		faceToward(k, k.goal)
+	elseif there and k.homing and collect then
+		-- home with it: it crouches over its pile and lays it down (Waiting, above)
+		stand(k, collect.putDown)
+		k.hands, k.homing = "PutDown", false
+		faceToward(k, k.pile)
 	elseif there and k.errand then
 		-- at the box: its hand goes up on the grip and it stands a beat, so a camera watching shows
 		-- it (S2-02d2), still on its errand; then it throws (Waiting, above)
@@ -1094,10 +1284,14 @@ function Keeper.pace(k: Keeper, run: number): number
 		return k.row.speed * run
 	elseif state == "Going" and k.startle > 0 then
 		return 0 -- standing where it heard a new sound, turned to it
-	elseif state == "Going" or state == "Roaming" then
-		return k.row.speed * run * k.row.looking
+	end
+	-- its arms full it walks slower (S2-06b1)
+	local collect = k.row.collects
+	local laden = if collect and k.holding ~= 0 then collect.laden else 1
+	if state == "Going" or state == "Roaming" then
+		return k.row.speed * run * k.row.looking * laden
 	elseif state == "Trapped" and flatDistance(k.at, k.goal) > ARRIVE then
-		return k.row.speed * run * k.row.looking -- on its way to stand against its door
+		return k.row.speed * run * k.row.looking * laden -- on its way to stand against its door
 	end
 	return 0
 end
@@ -1111,8 +1305,11 @@ function Keeper.left(k: Keeper): number
 		return 0
 	end
 	local d = k.pathing:length(k.at, k.goal)
+	local collect = k.row.collects
 	if state == "Hunting" then
 		d = math.max(d - Keeper.Close, 0)
+	elseif collect and k.fetch ~= 0 then
+		d = math.max(d - collect.grab, 0) -- it stops its grab short of a find
 	end
 	return d
 end

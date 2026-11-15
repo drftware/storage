@@ -258,11 +258,25 @@ Nothing in it is built yet. What still waits on you, in the order it holds work 
   stops it: the Packrat carrying finds off has Lethal Company's Hoarding Bug behind it, and a
   monster that pulls open doors down is only the idea for later. So none of mine is waiting on
   a yes; say if any should stop.
-- [ ] **The Packrat: two small things, and neither holds work up.** You chose it on Nov 14 as
+- [ ] **The Packrat: a few small things, and none holds work up.** You chose it on Nov 14 as
   the second monster and agreed my six defaults (D-167), so its ticket (S2-06) no longer waits
-  on you. Packrat is a working name: say if you want another. One default I haven't put to
-  you: it sets the hall lights off as it walks, the way a player does, so you see it coming
-  and a Mannequin near it freezes. Say if it should walk in the dark instead.
+  on you. Packrat is a working name: say if you want another. Defaults I haven't put to you:
+  1. It sets the hall lights off as it walks, the way a player does, so you see it coming and
+     a Mannequin near it freezes. Say if it should walk in the dark instead.
+  2. Which find it goes for next (S2-06b1, D-178): always the nearest one it can walk to. It
+     knows where every loose find on the floor is, even ones it can't see, so it works the
+     floor steadily outward from wherever it is. The other way would be: only finds it sees.
+  3. While it walks to a find it hears sounds only a third as far, the way the Mannequin
+     does on its way to the breaker, so it usually gets there. Once it holds a find it hears
+     and sees nobody at all.
+  4. If someone pulls its own unit's door down while it's out carrying a find, it can't get
+     home, so it wanders the halls still holding that find, harmless, until the door goes up
+     again. That makes shutting its door behind it a real trick. Say if it should do
+     something else, such as stand waiting outside its door.
+  5. Its numbers: it stands with its arm out for 0.8 seconds before it takes a find (long
+     enough to snatch it from under its hand), and crouches over its pile for 1.2 seconds.
+     Full, it walks at 72% of its empty pace. You'll judge these in play once S2-06b2 puts
+     one on a floor.
 - [ ] **Open at the end of the design doc:** a name for the monsters (the code says keepers);
   the story; where the top grade of find comes from now there are no boss floors; where you
   pick your two perks (the counter or the elevator's panel); and the thumbnail line. "Don't

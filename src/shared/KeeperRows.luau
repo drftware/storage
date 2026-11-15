@@ -9,6 +9,25 @@
 local KeeperMap = require("./KeeperMap")
 local KeeperTell = require("./KeeperTell")
 local MannequinSpecs = require("./Mannequin/Specs")
+local PackratSpecs = require("./Packrat/Specs")
+
+--- How a keeper that collects finds goes about it (S2-06b1, the Packrat): told what lies loose on
+--- its floor (`Keeper.lying`), it walks to the nearest, reaches, takes it, carries it home to its
+--- pile and comes out for the next, seeing and hearing no one while its arms are full.
+export type Collect = {
+	-- How far from a find it stops to reach for it, its feet to the floor under the find (studs):
+	-- its long arm's span (D-177), so its fingertips land on it rather than it walking onto it.
+	grab: number,
+	-- Seconds it stands with its arm out over the find before its hands close on it: a beat you
+	-- see coming, long enough to snatch the find from under its hand if you're right there.
+	reach: number,
+	-- Seconds its hands close on it, pulling it in to its chest, before it turns for home.
+	take: number,
+	-- Seconds it stands crouched over its pile, laying the find down, before it comes out again.
+	putDown: number,
+	-- Its walk with its arms full, as a share of its walk with them empty: slower, laden.
+	laden: number,
+}
 
 export type Row = {
 	name: string,
@@ -67,6 +86,8 @@ export type Row = {
 	-- its body creaking as it turns, and its answer as a door lifted on it standing in a unit first
 	-- shows its feet, from its body on every screen near.
 	tell: KeeperTell.Tell,
+	-- It carries the floor's finds home (`Collect`, S2-06b1); none: it never picks one up.
+	collects: Collect?,
 }
 
 local Mannequin: Row = {
@@ -260,8 +281,60 @@ local Mannequin: Row = {
 	},
 }
 
+local Packrat: Row = {
+	name = "Packrat",
+	-- just under your run (the GDD's "just under walking speed"; your walk is your run): with
+	-- empty arms it comes for you (S2-06c) and closes in only while you stop or slow
+	speed = 0.9,
+	-- going about its work at a brisk walk, over half your run: quicker than the Mannequin's
+	-- limp, so it gets round the floor, yet you can follow it home at a jog
+	looking = 0.6,
+	abilities = {}, -- it only walks: no ladders, no crawl holes
+	-- with empty arms it hears a door as far as you do; full, it hears nothing (`Keeper.hear`)
+	hearing = 1,
+	-- a little less than the Mannequin's: it has work to get back to
+	linger = 4,
+	startle = 0.6,
+	roamNear = 40,
+	roamFar = 120,
+	roamLinger = 2.5,
+	roamMemory = 4,
+	-- as the Mannequin's: round a corner into its hall with empty arms and it has you
+	sight = 48,
+	sightAngle = 60,
+	-- the GDD: light does nothing to it, so a torch held on a Mannequin won't save your find
+	freezesInLight = false,
+	height = PackratSpecs.Height,
+	-- one long arm out (D-177) reaches a little further than the Mannequin's two, in a narrower
+	-- cone: it has to be facing you
+	reach = 4,
+	reachAngle = 35,
+	-- the GDD: like any monster shut in a unit, it pounds and breaks out after 90 seconds
+	bangFirst = 1.2,
+	bangEvery = 5,
+	bangEveryLast = 2,
+	bangJitter = 0.25,
+	breakOut = 90,
+	-- its own sounds, full and empty, come in S2-06e; until then the Mannequin's stand in so the
+	-- row checks, and no screen plays them (no Packrat is dealt before S2-06b2)
+	tell = Mannequin.tell,
+	collects = {
+		-- its reaching fingertips are about 4.2 ahead of its chest (D-177), its chest a little
+		-- behind its feet's front: 4 from its feet puts its hand on the find
+		grab = 4,
+		reach = 0.8,
+		take = 0.5,
+		-- crouched over the pile long enough to see what it added, if you followed it home
+		putDown = 1.2,
+		-- the full walk's stride is 72% of the empty one (D-177): at 72% of the pace its feet
+		-- keep the same beat, so full reads as weighed down, never as walking in slow motion
+		laden = 0.72,
+	},
+}
+
 local KeeperRows: { [string]: Row } = {
 	Mannequin = Mannequin,
+	Packrat = Packrat,
 }
 
 return table.freeze(KeeperRows)
