@@ -1278,12 +1278,18 @@ verified: a doc page, Studio, or "untested".
   at 0.02, peak 0.04 to 0.06. Passed over: "Jacket 2" (a cloth throw, -21 dB peak, too quiet),
   "Vehicle Seat 3" (one -18 dB thud), "Robot Footsteps ... Metal Body Rattle 1" (a robot),
   "Slide By Books 5", "Prop Dirt Drag 11" (a long tumble).
-- **Hearing a keeper from the MCP didn't work** (S2-06e): with the camera pinned to the Packrat by
-  `BindToRenderStep` (priority Camera + 1, Scriptable each frame), the live game made no Sounds
-  on its root over a full carry home and a roam, though a test copy of KeeperView fed its beats
-  and a test copy of KeeperSounds made and played them. Unpinned, the client's camera sat at
-  (0, 8, 5), 700 studs from floor 3, out of every reach. Find where the listener really is (and
-  whether the Mannequin is heard the same way) before trusting a sound check from the MCP.
+- **Hearing a keeper from the MCP** (S2-06e2, Nov 14): first keep Studio drawing frames (the
+  `caffeinate` pulse in "Getting frames back"). The client steps every monster's walk on
+  RenderStepped, so at 0 frames the server walks a keeper while the client shows it standing and
+  plays nothing: that is what made S2-06e think the Packrat was silent. Then, on the Client,
+  anchor your own root and each RenderStepped set it 14 studs above the keeper's root and 6
+  behind it (the server keeps your character where it was, so the keeper never sees you; the
+  real camera follows, so the real listener is close), and log its root's `Keeper*` Sounds: a
+  play is one newly `IsPlaying` or whose `TimePosition` fell since last frame; note `IsLoaded`
+  at its start. A Packrat: `StandPackrat` (it fetches the boombox, so both sets come in 45 s).
+  A Mannequin: `WakeSleepers` with your root on the floor; three wake shut in, and the first
+  bursts out a minute or so later. Woken Mannequins pounding their doors draw the Packrat to look, and it
+  never fetches: test it in a Play without waking them.
 - **Sounds measured for the keeper's walk** (L-06c1, 2026-11-10; Edit, AudioPlayer at half speed
   to AudioAnalyzer with `SpectrumEnabled`, 50 then 25 ms bins and the share of the hit's energy
   under 190 Hz / 190 to 470 / 470 to 2k / over 2k; then a quarter speed and 10 ms bins for the

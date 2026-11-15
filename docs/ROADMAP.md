@@ -1964,10 +1964,13 @@ Done when a team that has lost its lights goes looking for the breaker without b
   - [x] **S2-06e How it sounds.** One sound while it carries and another while its arms are
     empty, each heard before it's seen, made the way the Mannequin's were (L-06c). Real
     recordings, primed. Done Nov 14 (D-184): empty, padded steps and a screech of tape once a
-    stride; full, heavier steps with the find jostling and rattling. In Play the Packrat's walk
-    sends its beats and the sound system plays both sets when called (a test copy of each), but
-    the live game played none in three runs: not found before the session's context ran out
-    (HANDOFF Queue 1, `OWNER.md`).
+    stride; full, heavier steps with the find jostling and rattling.
+  - [x] **S2-06e2 The Packrat heard in Play.** The S2-06e session heard nothing from it live.
+    Done Nov 14 (D-185): the game was never silent. Studio was drawing no frames in that test,
+    so no monster's walk was shown or heard on the client; with frames, both its sets play,
+    and the Mannequin's walk too. Fixed on the way: each body's sounds are made as it streams
+    in, so its first steps into earshot, and its first steps with its arms full, land on the
+    beat instead of about 0.28 s late and clipped.
 
 ### Step 3: Getting caught (the first products)
 

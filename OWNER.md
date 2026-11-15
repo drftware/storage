@@ -23,13 +23,13 @@ nowhere else.
   at Brix `6717740` (S1-02), which is only on this Mac until Brix is pushed; a fresh clone of
   the game can't fetch it until then.
 
-## Now: listen to the Packrat, arms empty and arms full (S2-06e, built Nov 14, D-184; not heard in Studio Play: please check by ear first)
+## Now: listen to the Packrat, arms empty and arms full (S2-06e and S2-06e2, built Nov 14, D-184 and D-185; both sets heard playing in Studio Play, not yet judged by ear)
 
 The Packrat now has its own sounds. With its arms empty (coming for you) you should hear soft
 padded steps and, once a stride, a screech of packing tape pulled off a roll. With its arms full
 (hauling something home) you should hear heavier, quicker steps with the thing in its arms
-jingling and rattling. In my test runs no sound came out of the live game at all, though each
-half worked on its own, so this may be silent for you: if it is, tell the next session.
+jingling and rattling. An earlier test heard nothing, but that was the test: Studio was drawing
+no frames. With frames, both sets play, and the first steps now land on the beat too.
 
 1. In Studio, start Play on floor 3 (the dev floor). Wear headphones or turn the sound up.
 2. Press the Packrat post (R). A Packrat stands by the lobby and carries its boombox to its pile.
@@ -174,7 +174,7 @@ A post in the test floor's lobby stands one for you.
    into its hands as it bends, and it sets it on the floor from there (no jump). It comes out
    again with empty arms. The boombox now says "Take": you can take it back.
 8. Look for: the hall lights come on round it as it walks, the way they do for you. Press the
-   post again any time for a fresh Packrat in a fresh unit. It makes no sound yet (S2-06e).
+   post again any time for a fresh Packrat in a fresh unit.
 
 ## Now: shut a door on a sleeping monster (S2-05, built Nov 14, D-169 and D-170; seen in Studio Play, not on a phone)
 

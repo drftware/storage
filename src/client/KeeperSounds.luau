@@ -20,8 +20,10 @@
 	`KeeperTell`).
 
 	Only bodies streamed to this screen are heard, each walk beat at most one per its `gap`, each
-	creak one per its `turnGap`, and no layer from past its reach. A body's sounds are made the
-	first time it plays each take, on its root.
+	creak one per its `turnGap`, and no layer from past its reach. A body's sounds, every take of
+	both its tells, are made on its root as it streams in (S2-06e2): a Sound made and played at
+	once starts about 0.28 s late, so its first steps into earshot, and its first steps with its
+	arms full, would land late and clipped by their fade.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -114,6 +116,15 @@ function KeeperSounds.new(): (Brix.System, (model: Model, beat: KeeperTell.Beat,
 		local voice = { sound = s, fade = fade }
 		byTake[i] = voice
 		return voice
+	end
+
+	-- Makes every take of a tell on the body now, so each has loaded before its first beat.
+	local function ready(body: Body, tell: KeeperTell.Tell)
+		for name, row in tell.sounds do
+			for i in row.takes do
+				voiceFor(body, tell, name, i)
+			end
+		end
 	end
 
 	-- Plays a beat's layers at once, each weighed by how near it is, any within its reach: the
@@ -355,6 +366,10 @@ function KeeperSounds.new(): (Brix.System, (model: Model, beat: KeeperTell.Beat,
 			conns = {},
 		}
 		bodies[model] = body
+		ready(body, row.tell)
+		if row.full then
+			ready(body, row.full)
+		end
 		table.insert(
 			body.conns,
 			model:GetAttributeChangedSignal(STATE_ATTRIBUTE):Connect(function()

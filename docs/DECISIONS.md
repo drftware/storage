@@ -5063,7 +5063,26 @@ calm and another coming.
   is silent and its next key is heard (the two walks count keys differently, so `tell`
   remembers which walk it counted on).
 - **Bound late:** KeeperSounds now binds a body whose root or row arrives after its tag, as
-  KeeperView does (D-108). Not the cause of the silence seen in Play (HANDOFF), kept as a guard.
+  KeeperView does (D-108). Not the cause of the silence seen in Play (that was the test, D-185),
+  kept as a guard.
 Not chosen: a sound per find (each find its own rattle; ROADMAP polish once finds have their
 own sounds), a breathing or voice layer (it's faceless; the owner's call).
 
+## D-185 The Packrat was heard all along; each body's sounds are made as it streams in (S2-06e2, Nov 14)
+The moment: the first steps you hear from round a corner, and the first heavy step as its arms
+close on a find, land on the beat.
+- **The silence was the test.** The S2-06e session's Studio was drawing no frames (the display
+  idles with the owner away; STUDIO.md "Getting frames back"), and the client steps every
+  monster's walk on RenderStepped (the Host's `advance`), so no body moved or sent a beat on that
+  screen while the server walked it. With frames, in Play on floor 3: the Packrat's empty walk
+  (pads, tape, crackle) and its full one (tread, weight, jostle, rattle) both played, and a
+  woken Mannequin's walk too. With the pulse stopped, 0 frames: the server walked it, the
+  client showed it still and played nothing. No game change for this.
+- **Fixed on the way:** a Sound made and played at once starts about 0.28 s late (STUDIO.md), so
+  the first play of each take started unloaded, late and cut short by its fade: the first steps
+  into earshot, and the first full-arms steps. KeeperSounds now makes every take of both a
+  body's tells as it binds (13 Sounds for a Mannequin, 19 for a Packrat, idle until played; a
+  body streams in at up to 256 studs and is heard from 70 at most, so they load first). Measured
+  after: all made and loaded at stream-in, every play of both sets loaded at its start.
+Not chosen: stepping bodies off Heartbeat so a screen with no frames still hears them (a screen
+that draws nothing shows nothing; a real player always has frames).
