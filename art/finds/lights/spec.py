@@ -192,3 +192,69 @@ FAIRY = dict(
     seed=59.0,
     dust=0.45,
 )
+
+
+# --- The camping lantern: a retro LED lantern with a dimmer knob ------------------------------
+# References (README): green steel retro LED lanterns (a 3 x D cell lantern is 7 to 11 inches
+# tall: Primus 8.3, Rayovac 7.25, Dorcy 7). A bell-flared steel foot, a straight band with a
+# silver rotary dimmer on its front, a black seat ring, a clear straight globe round a frosted
+# hourglass diffuser with horizontal ribs, guarded by six steel bars, a black top ring, a wide
+# flat hood pressed with ribs, a ribbed cap, and a wire bail with a rubber grip hooked into two
+# lugs on the hood. Its frame: the middle of its foot on the floor, the knob to the front (-Y).
+LANTERN = dict(
+    # the body's outside, bottom to top (radius, height): the foot's rolled lip and bell, the
+    # band with a bead at each end, the dark neck, the black seat ring the globe stands in
+    foot=[(0.0, 0.006), (0.188, 0.006), (0.199, 0.0), (0.207, 0.004), (0.208, 0.011),
+          (0.2, 0.017), (0.183, 0.026), (0.168, 0.038), (0.159, 0.052), (0.155, 0.062)],
+    band=dict(r=0.153, z0=0.062, z1=0.165, bead=0.0045),
+    neck=dict(r=0.138, z1=0.176),
+    seat=dict(r=0.162, z0=0.176, z1=0.202),
+    top=dict(r=0.16, z0=0.526, z1=0.552),          # the black top ring
+    globe=dict(r=0.137, wall=0.009, z0=0.194, z1=0.534),  # 2.7 in across, 3.4 in tall
+    # the frosted diffuser inside: an hourglass (its end and waist radii), horizontal ribs
+    diffuser=dict(z0=0.222, z1=0.5, r_end=0.074, r_waist=0.05, ribs=15, rib=0.0028,
+                  collar=0.08),
+    bars=dict(n=6, R=0.152, r=0.0062, start=0.0),  # the guard: six steel bars round the globe
+    # the hood: a flat cone from its rolled rim up to the cap, pressed with stiffening ribs
+    hood=dict(rim=0.222, bead=0.006, z_rim=0.545, r_top=0.072, z_top=0.652, under=0.15,
+              ribs=12, rib=0.0055),
+    cap=dict(r=0.062, z0=0.646, z1=0.702, dome=0.012, ribs=28, rib=0.0022),
+    # the bail: chrome wire through a lug on each side of the hood; its arms, the arc over the
+    # top and the rubber grip round the arc's middle
+    bail=dict(r=0.0065, lug_x=0.163, x=0.178, z=0.598, arms=0.14, grip_r=0.0165, grip=38.0),
+    bail_rest=-107.0,                  # found fallen back, its arms lying on the hood's rim
+    # the dimmer: a knurled knob on a chrome bezel, its pointer at seven o'clock when off
+    knob=dict(z=0.112, r=0.029, depth=0.03, bezel=0.036, off=150.0, click=24.0, full=255.0),
+    port=dict(z=0.112, w=0.022, h=0.0075),  # the charging port on the band's back
+    kelvin=3200,                       # warm white LEDs behind frosted plastic
+    seed=67.0,
+    dust=0.5,
+)
+
+
+# --- The moon lamp: a 3D-printed moon on a wooden cradle --------------------------------------
+# References (README): moon lamps are printed PLA spheres (8 to 20 cm; 15 cm the usual) whose
+# relief is a lithophane of the Moon, so lit the thick maria read grey and the thin highlands
+# bright; a white plug in a flat cut at the bottom holds the touch switch and the USB port; they
+# sit in a cradle of two M-shaped pieces of pale wood halved into each other. Its frame: the
+# middle of the cradle on the floor, front to -Y.
+MOON = dict(
+    R=0.295,                           # 15 cm across
+    cut=0.011,                         # the flat cut at the bottom the plug fills (4 cm across)
+    craters=420, crater=(0.012, 0.075),  # how many craters, smallest and largest radius
+    hills=0.0012,                      # the low rolling relief between them
+    relief=0.0015,                     # the look's own fine grain
+    shade_gap=0.006,                   # the phase shade just outside the surface
+    kelvin=3000,
+    seed=71.0,
+    dust=0.3,
+)
+CRADLE = dict(
+    t=0.05,                            # the wood's thickness (13 mm)
+    w=0.05,                            # how wide each stick is, across it
+    slope=25.0,                        # the V the moon sits in, degrees from level
+    valley=0.115,                      # the top of the V's bottom, above the floor
+    peak=0.19,                         # how far out each peak is
+    foot=0.24, foot_w=0.06,            # each foot's outer edge and how long it stands on the floor
+    seed=73.0,
+)

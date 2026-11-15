@@ -1240,7 +1240,550 @@ FAIRY_LIGHTS = kit.Find(
     dust=FL["dust"], seed=FL["seed"], texels=500,
 )
 
-FINDS = [DESK_LAMP, NIGHT_LIGHT, TEA_LIGHT, GLOW_STICKS, FAIRY_LIGHTS]
+# --- the camping lantern ------------------------------------------------------------------------
+
+(LN_ENAMEL, LN_BLACK, LN_BARS, LN_GLASS, LN_GLASS_IN, LN_DIFF, LN_CHROME, LN_GRIP, LN_ALU,
+ LN_POINTER, LN_BOTTOM) = range(40, 51)
+LN = K.LANTERN
+LB, LK, LH = LN["bail"], LN["knob"], LN["hood"]
+LN_BAIL_PIVOT = Vector((0.0, 0.0, LB["z"]))
+LN_KNOB_AT = Vector((0.0, -LN["band"]["r"], LK["z"]))
+# the knob's own frame: its face out to -Y, its local +Y up
+LN_KNOB_M = Matrix.Translation(LN_KNOB_AT) @ Matrix.Rotation(math.radians(90), 4, "X")
+LN_GLOW_AT = (0.0, 0.0, (LN["diffuser"]["z0"] + LN["diffuser"]["z1"]) / 2)
+
+
+def ln_runs(*runs):
+    """A lathe profile from runs of (points, kind): a run's spans take its kind, and so does the
+    span joining it to the run before."""
+    prof, kinds = [], []
+    for pts, k in runs:
+        for p in pts:
+            if prof:
+                kinds.append(k)
+            prof.append(p)
+    return prof, kinds
+
+
+def ln_ring(r_of, z, n):
+    """One loft ring, anticlockwise from above; r_of(a) gives its radius at angle a."""
+    return [(r_of(2 * math.pi * j / n) * math.cos(2 * math.pi * j / n),
+             r_of(2 * math.pi * j / n) * math.sin(2 * math.pi * j / n), z) for j in range(n)]
+
+
+def ln_flutes(count, depth, power=1.5):
+    """Rounded flutes round a knurled edge: how far out a point at angle a stands."""
+    return lambda a: depth * (0.5 + 0.5 * math.cos(count * a)) ** power
+
+
+def ln_hood_profile(hi):
+    """The hood: its underside out from the top ring, round the rolled rim, up its top to the cap."""
+    t, h = LN["top"], LH
+    f = 3 if hi else 1
+    c = (h["rim"] - h["bead"], h["z_rim"])
+    under = [(t["r"] - 0.006, t["z1"]), (c[0] - 0.004, c[1] - 0.0048)]
+    rim = fillet(c[0], c[1], h["bead"], (-115, 110), 6 * f)
+    end = rim[-1]
+    m = 10 if hi else 3
+    top = [(end[0] + (h["r_top"] - end[0]) * i / m, end[1] + (h["z_top"] - end[1]) * i / m)
+           for i in range(1, m + 1)]
+    return under + rim + top + [(h["r_top"] - 0.007, h["z_top"] + 0.004)]
+
+
+def ln_hood_z(r):
+    """Height of the hood's top surface at radius r."""
+    prof = ln_hood_profile(False)
+    top = prof[-5:-1]
+    (r0, z0), (r1, z1) = top[0], top[-1]
+    return z0 + (z1 - z0) * (r - r0) / (r1 - r0)
+
+
+def ln_body(hi):
+    s = Shape()
+    n = segs(hi, 40)
+    f = 3 if hi else 1
+    b, nk, se, t, g = LN["band"], LN["neck"], LN["seat"], LN["top"], LN["globe"]
+    bd = b["bead"]
+    foot = LN["foot"]
+    prof, kinds = ln_runs(
+        (foot[:2], LN_BOTTOM),
+        (foot[2:-1], LN_ENAMEL),
+        (fillet(b["r"], b["z0"] + bd, bd, (-90, 90), 3 * f)
+         + fillet(b["r"], b["z1"] - bd, bd, (-90, 90), 3 * f)
+         + [(nk["r"] + 0.004, b["z1"])], LN_ENAMEL),
+        ([(nk["r"], b["z1"] + 0.003), (nk["r"], nk["z1"])], LN_BLACK),
+        ([(se["r"] - 0.004, se["z0"])] + fillet(se["r"] - 0.004, se["z0"] + 0.004, 0.004, (-90, 0), 2 * f)
+         + fillet(se["r"] - 0.004, se["z1"] - 0.004, 0.004, (0, 90), 2 * f)
+         + [(g["r"] + 0.004, se["z1"]), (g["r"] + 0.002, se["z1"] - 0.006),
+            (g["r"] - g["wall"] - 0.003, se["z1"] - 0.006), (0.0, se["z1"] - 0.004)], LN_BLACK),
+    )
+    s.lathe(prof, LN_ENAMEL, n, kinds=kinds)
+    # the top ring, its underside the ceiling seen up through the globe
+    ring = ([(0.0, t["z0"] + 0.004), (g["r"] - g["wall"] - 0.003, t["z0"] + 0.004),
+             (g["r"] - g["wall"] - 0.001, t["z0"])]
+            + fillet(t["r"] - 0.004, t["z0"] + 0.004, 0.004, (-90, 0), 2 * f)
+            + fillet(t["r"] - 0.004, t["z1"] - 0.004, 0.004, (0, 90), 2 * f)
+            + [(t["r"] - 0.012, t["z1"])])
+    s.lathe(ring, LN_BLACK, n)
+    # the diffuser's collars: the socket it stands in and the driver's cup it hangs from
+    d = LN["diffuser"]
+    for z0, z1 in ((se["z1"] - 0.006, d["z0"] + 0.004), (d["z1"] - 0.004, t["z0"] + 0.004)):
+        s.lathe([(0.0, z0), (0.058, z0), (0.06, z0 + 0.003), (0.06, z1 - 0.003), (0.058, z1), (0.0, z1)],
+                LN_BLACK, segs(hi, 24))
+    # the guard: six bars bowed a little outward, each sunk into both rings
+    bs = LN["bars"]
+    m = 12 if hi else 5
+    for i in range(bs["n"]):
+        a = math.radians(bs["start"] + 360.0 * i / bs["n"])
+        za, zb = se["z1"] - 0.004, t["z0"] + 0.004
+        pts = []
+        for k in range(m + 1):
+            u = k / m
+            R = bs["R"] + 0.006 * math.sin(math.pi * u)
+            pts.append((R * math.cos(a), R * math.sin(a), za + (zb - za) * u))
+        s.tube(pts, bs["r"], LN_BARS, 16 if hi else 6)
+    # the hood: pressed ribs on its top in the detailed one
+    hp = ln_hood_profile(hi)
+    if hi:
+        N = 288
+        rib = LH["ribs"]
+        n_rim = len(hp) - 11
+
+        def ring_at(i, r, z):
+            pts = []
+            for j in range(N):
+                a = 2 * math.pi * j / N
+                zz = z
+                if i >= n_rim:
+                    # each rib a rounded ridge 8 mm wide, fading out at both ends
+                    off = (a - math.pi / rib) % (2 * math.pi / rib)
+                    dd = min(off, 2 * math.pi / rib - off) * r
+                    fade = (min(1.0, max(0.0, (r - 0.088) / 0.02))
+                            * min(1.0, max(0.0, (0.2 - r) / 0.012)))
+                    zz += LH["rib"] * fade * math.exp(-(dd / 0.0085) ** 2)
+                pts.append((r * math.cos(a), r * math.sin(a), zz))
+            return pts
+
+        s.loft([ring_at(i, r, z) for i, (r, z) in enumerate(hp)], LN_ENAMEL)
+    else:
+        s.lathe(hp, LN_ENAMEL, n)
+    # the lugs the bail hooks through: tabs pressed up out of the hood
+    for sx in (-1, 1):
+        x = sx * LB["lug_x"]
+        zb = ln_hood_z(LB["lug_x"] + 0.004) - 0.004
+        s.box((x - 0.0035, -0.014, zb), (x + 0.0035, 0.014, LB["z"] + 0.012), LN_ENAMEL, 0.002,
+              2 if hi else 1)
+    # the cap: knurled steel, domed on top
+    c = LN["cap"]
+    cap = ([(c["r"] + 0.003, c["z0"]), (c["r"], c["z0"] + 0.004), (c["r"], c["z0"] + 0.008),
+            (c["r"], c["z1"] - 0.008)]
+           + fillet(c["r"] - 0.006, c["z1"] - 0.006, 0.006, (0, 90), 2 * f)[1:]
+           + [(c["r"] * 0.6, c["z1"] + c["dome"] * 0.7), (c["r"] * 0.3, c["z1"] + c["dome"] * 0.95),
+              (0.0, c["z1"] + c["dome"])])
+    if hi:
+        N = c["ribs"] * 8
+        fl = ln_flutes(c["ribs"], c["rib"])
+        rings = []
+        for i, (r, z) in enumerate(cap):
+            if r <= 1e-6:
+                rings.append([(0.0, 0.0, z)])
+            elif 2 <= i <= 3:
+                rings.append(ln_ring(lambda a, r=r: r + fl(a), z, N))
+            else:
+                rings.append(ln_ring(lambda a, r=r: r, z, N))
+        s.loft(rings, LN_ALU)
+    else:
+        s.lathe(cap, LN_ALU, segs(hi, 28))
+    # the dimmer's chrome bezel, sunk into the band's curve
+    s.lathe([(LK["r"] + 0.002, -0.008), (LK["bezel"], -0.008), (LK["bezel"], 0.002)]
+            + fillet(LK["bezel"] - 0.004, 0.002, 0.004, (0, 90), 2 * f)
+            + [(LK["r"] + 0.002, 0.006), (LK["r"] + 0.002, -0.008)],
+            LN_CHROME, segs(hi, 28), LN_KNOB_M)
+    return s
+
+
+def ln_globe(hi):
+    """The globe: one clear glass tube, its ends hidden in the rings."""
+    s = Shape()
+    g = LN["globe"]
+    r, w = g["r"], g["wall"]
+    prof = ([(r, g["z0"]), (r, g["z1"] - 0.006)] + fillet(r - w / 2, g["z1"] - 0.006, w / 2, (0, 180), 4)[1:]
+            + [(r - w, g["z0"])])
+    kinds = [LN_GLASS] * 5 + [LN_GLASS_IN]
+    s.lathe(prof, LN_GLASS, segs(hi, 40), kinds=kinds)
+    return s
+
+
+def ln_diffuser(hi):
+    """The frosted diffuser: an hourglass ringed with ribs, the LEDs hidden in it."""
+    s = Shape()
+    d = LN["diffuser"]
+    z0, z1 = d["z0"], d["z1"]
+    m = d["ribs"] * 8 if hi else 14
+    prof = [(0.0, z0), (0.05, z0), (d["r_end"] - 0.006, z0 + 0.002)]
+    for i in range(m + 1):
+        u = i / m
+        r = d["r_waist"] + (d["r_end"] - d["r_waist"]) * (2 * u - 1) ** 2
+        if hi:
+            r += d["rib"] * (0.5 - 0.5 * math.cos(2 * math.pi * d["ribs"] * u))
+        prof.append((r, z0 + 0.006 + (z1 - z0 - 0.012) * u))
+    prof += [(d["r_end"] - 0.006, z1 - 0.002), (0.05, z1), (0.0, z1)]
+    s.lathe(prof, LN_DIFF, segs(hi, 24) if not hi else 64)
+    return s
+
+
+def ln_knob(hi):
+    """The dimmer knob: knurled round its edge, a raised pointer across its face."""
+    s = Shape()
+    r, dp = LK["r"], LK["depth"]
+    f = 3 if hi else 1
+    prof = ([(0.0, 0.004), (r - 0.002, 0.004), (r, 0.007), (r, dp - 0.006)]
+            + fillet(r - 0.005, dp - 0.005, 0.005, (0, 90), 2 * f)[1:]
+            + [(r * 0.5, dp + 0.0015), (0.0, dp + 0.002)])
+    if hi:
+        N = 24 * 8
+        fl = ln_flutes(24, 0.0018)
+        rings = []
+        for i, (rr, z) in enumerate(prof):
+            if rr <= 1e-6:
+                rings.append([(0.0, 0.0, z)])
+            elif 2 <= i <= 3:
+                rings.append(ln_ring(lambda a, rr=rr: rr + fl(a), z, N))
+            else:
+                rings.append(ln_ring(lambda a, rr=rr: rr, z, N))
+        s.loft(rings, LN_ALU, LN_KNOB_M)
+    else:
+        s.lathe(prof, LN_ALU, segs(hi, 24), LN_KNOB_M)
+    # the pointer: a ridge from the middle out to the edge, at seven o'clock when off
+    a = math.radians(-LK["off"])
+    P = LN_KNOB_M @ Matrix.Rotation(-a, 4, "Z")
+    s.box((-0.0028, -0.002, dp - 0.002), (0.0028, r - 0.004, dp + 0.004), LN_POINTER, 0.0012,
+          2 if hi else 1, P)
+    return s
+
+
+def ln_bail(hi):
+    """The bail: hooked through the lugs, up the arms, round over the top; the rubber grip on the
+    arc. Built upright and laid back to where it fell on the hood's rim."""
+    s = Shape()
+    z, x, bend, arms = LB["z"], LB["x"], 0.014, LB["arms"]
+    side = [(LB["lug_x"] - 0.012, 0.0, z), (x - bend, 0.0, z)]
+    side += [(x - bend + bend * math.sin(math.radians(a)), 0.0, z + bend - bend * math.cos(math.radians(a)))
+             for a in range(15, 91, 15)]
+    side += [(x, 0.0, z + arms)]
+    top = [(x * math.cos(math.radians(a)), 0.0, z + arms + x * math.sin(math.radians(a)))
+           for a in range(0, 181, 4 if hi else 9)][1:-1]
+    left = [(-p[0], p[1], p[2]) for p in reversed(side)]
+    M = (Matrix.Translation(LN_BAIL_PIVOT) @ Matrix.Rotation(math.radians(LN["bail_rest"]), 4, "X")
+         @ Matrix.Translation(-LN_BAIL_PIVOT))
+    s.tube(side + top + left, LB["r"], LN_CHROME, 24 if hi else 8, M)
+    # the grip: a rubber sleeve round the top of the arc, its ends rounded off
+    g = LB["grip"]
+    m = 30 if hi else 12
+    pts, radii = [], []
+    for i in range(m + 1):
+        a = math.radians(90 - g + 2 * g * i / m)
+        pts.append((x * math.cos(a), 0.0, z + arms + x * math.sin(a)))
+        e = min(i, m - i) / m * 2 * g          # degrees from the nearer end
+        radii.append(LB["grip_r"] * (0.55 + 0.45 * min(1.0, e / 4.0) ** 0.5))
+    s.tube(pts, LB["grip_r"], LN_GRIP, 24 if hi else 10, M, radii=radii)
+    return s
+
+
+def ln_look(L, f):
+    nb = L.nb
+    # olive green powder coat over pressed steel
+    paint = nb.tint(hexc("#56623E"), nb.mr(L.noise(3.0, 1, detail=3), 0.3, 0.7, 0.88, 1.08))
+    C = Coat(L, paint, nb.mr(L.noise(8.0, 2, detail=4), 0.2, 0.8, 0.34, 0.48), 0.0,
+             nb.mul(L.noise(280.0, 3, detail=1), 0.1))
+    enamel = L.k(LN_ENAMEL)
+    # sun-faded on top
+    C.paint(nb.mul(nb.mul(enamel, L.up), nb.mr(L.noise(1.6, 4, detail=3), 0.3, 0.7, 0.12, 0.35)),
+            hexc("#77805C"))
+    C.enamel_wear(enamel, hexc("#5C5D5A"), s=5, amount=1.4)
+    # rust where it was chipped and stood in the damp: freckles round the foot's lip
+    damp = nb.mul(enamel, nb.ss(L.z, 0.05, 0.0))
+    C.paint(nb.mul(damp, nb.ss(L.noise(30.0, 6, detail=5, rough=0.7), 0.6, 0.68)), hexc("#6A3B22"), 0.85, 0.0, 0.1)
+    # the charging port on the band's back, under a rubber flap long lost
+    p = LN["port"]
+    port = nb.mul(nb.mul(nb.ss(L.y, 0.12, 0.14), nb.ss(nb.absf(L.x), p["w"] / 2, p["w"] / 2 - 0.002)),
+                  nb.ss(nb.absf(nb.sub(L.z, p["z"])), p["h"] / 2, p["h"] / 2 - 0.0015))
+    C.paint(nb.mul(port, enamel), hexc("#111111"), 0.6, 0.0, -0.4)
+    # black plastic rings and collars
+    C.paint(L.k(LN_BLACK), nb.tint(hexc("#1D1D1B"), nb.mr(L.noise(20.0, 7, detail=3), 0.3, 0.7, 0.85, 1.15)),
+            nb.mr(L.noise(12.0, 8, detail=3), 0.3, 0.7, 0.42, 0.58), 0.0)
+    # the guard's bars: black-green paint worn to steel where hands grab them
+    bars = L.k(LN_BARS)
+    C.paint(bars, hexc("#2C3125"), 0.42, 0.0)
+    C.paint(nb.mul(bars, nb.ss(L.noise(16.0, 9, stretch=(1.0, 1.0, 0.25), detail=4), 0.6, 0.66)),
+            hexc("#6D6E6B"), 0.4, 0.8)
+    # chrome: the bail and the bezel, bright, pitted with rust specks
+    chrome = L.k(LN_CHROME)
+    C.paint(chrome, hexc("#CDD0D2"), nb.mr(L.noise(35.0, 10, detail=3), 0.3, 0.7, 0.14, 0.26), 1.0)
+    C.paint(nb.mul(chrome, nb.ss(L.noise(60.0, 11, detail=5, rough=0.7), 0.66, 0.72)), hexc("#7A4A2E"), 0.8, 0.1)
+    C.paint(L.k(LN_GRIP), nb.tint(hexc("#1A1918"), nb.mr(L.noise(25.0, 12, detail=3), 0.3, 0.7, 0.9, 1.25)),
+            0.78, 0.0)
+    # brushed aluminium: the knob and the cap, the white line on the knob's pointer
+    alu = L.k(LN_ALU)
+    C.paint(alu, nb.tint(hexc("#BFC2C4"), nb.mr(L.noise(50.0, 13, detail=3), 0.3, 0.7, 0.85, 1.03)),
+            nb.mr(L.noise(70.0, 14, stretch=(1.0, 1.0, 0.1), detail=3), 0.3, 0.7, 0.24, 0.36), 1.0)
+    C.paint(L.k(LN_POINTER), hexc("#ECEAE3"), 0.45, 0.0)
+    C.paint(L.k(LN_BOTTOM), hexc("#62645F"), 0.6, 0.6)
+    # the globe: clear, faintly green glass, smudged by fingers
+    glass = L.k(LN_GLASS, LN_GLASS_IN)
+    C.paint(glass, hexc("#9FB2AA"), 0.04, 0.0, alpha=0.1)
+    smudge = nb.mul(L.k(LN_GLASS), nb.ss(L.noise(6.0, 15, detail=4, rough=0.6), 0.56, 0.7))
+    C.paint(nb.mul(smudge, 0.8), hexc("#CDD2CF"), 0.3, alpha=0.22)
+    # the diffuser: frosted white plastic, its grooves a touch darker
+    diff = L.k(LN_DIFF)
+    d = LN["diffuser"]
+    u = nb.mul(nb.sub(L.z, d["z0"] + 0.006), 1.0 / (d["z1"] - d["z0"] - 0.012))
+    groove = nb.mr(nb.sin(nb.mul(u, 2 * math.pi * d["ribs"] - 0.0)), -1.0, 1.0, 0.0, 1.0)
+    C.paint(diff, nb.mixc(nb.mul(groove, 0.35), hexc("#EDE9DF"), hexc("#CFCBC1")), 0.62, 0.0)
+    C.lights(nb.mul(diff, nb.mr(groove, 0.0, 1.0, 1.0, 0.72)))
+    C.finish(f.dust, grime=0.5)
+    return C.surface(bump_dist=0.0012, bump=0.45)
+
+
+LN_TURN_ON = [(0.0, 0.0), (0.1, LK["click"] + 4.0, "Quad", "Out"), (0.16, LK["click"]),
+              (0.34, LK["click"]), (1.15, LK["full"], "Quad", "InOut")]
+LANTERN = kit.Find(
+    "CampLantern",
+    [kit.Part("Body", ln_body),
+     kit.Part("Globe", ln_globe, LN_GLOW_AT, "Body", clear=True),
+     kit.Part("Diffuser", ln_diffuser, LN_GLOW_AT, "Body"),
+     kit.Part("Knob", ln_knob, tuple(LN_KNOB_AT), "Body", (0, 1, 0)),
+     kit.Part("Bail", ln_bail, tuple(LN_BAIL_PIVOT), "Body", (1, 0, 0))],
+    ln_look,
+    lights=[
+        # LEDs behind frosted plastic: warm, wide, all round; no shadows, so it shines out
+        # through the globe and the guard
+        dict(kind="Point", part="Diffuser", at=LN_GLOW_AT, kelvin=LN["kelvin"], brightness=1.2,
+             range=16, shadows=False, preview_kind="POINT", preview_watts=9.0, preview_size=0.05),
+    ],
+    glow=dict(part="Diffuser", strength=3.0, tint=(255, 200, 150), preview=9.0),
+    motions={
+        # the knob clicks on to a faint glow, then turns up and the light rises with it
+        "SwitchOn": dict(duration=1.5, focus=(0.0, -0.08, 0.3), distance=0.65, tracks=[
+            ("Knob", "turn", LN_TURN_ON),
+            ("Diffuser", "glow", [(0.0, 0.0), (0.1, 0.0), (0.12, 0.16, "Quad", "Out"),
+                                  (0.34, 0.13), (1.15, 1.0, "Quad", "InOut"), (1.5, 1.0)])]),
+        # turned down, the light falls with it, and it clicks off
+        "SwitchOff": dict(duration=0.9, focus=(0.0, -0.08, 0.3), distance=0.65, tracks=[
+            ("Knob", "turn", [(0.0, LK["full"]), (0.45, LK["click"] + 2.0, "Quad", "InOut"),
+                              (0.53, -2.5, "Quad", "In"), (0.62, 0.0, "Quad", "Out")]),
+            ("Diffuser", "glow", [(0.0, 1.0), (0.45, 0.14, "Quad", "InOut"), (0.51, 0.12),
+                                  (0.53, 0.0, "Quad", "Out"), (0.9, 0.0)])]),
+        # its 90 seconds up: the batteries give out, it stutters, sags and dies
+        "RunDown": dict(duration=2.4, focus=(0.0, 0.0, 0.36), distance=0.8, tracks=[
+            ("Diffuser", "glow", [(0.0, 1.0), (0.3, 0.82), (0.36, 0.3, "Quad", "Out"), (0.44, 0.78),
+                                  (0.8, 0.58), (0.85, 0.16, "Quad", "Out"), (0.92, 0.52),
+                                  (1.3, 0.38), (1.35, 0.06, "Quad", "Out"), (1.43, 0.3),
+                                  (1.8, 0.12), (2.1, 0.0, "Quad", "In"), (2.4, 0.0)])]),
+        # picked up by its handle: the bail swings up off the hood, a touch past upright, and
+        # settles
+        "Lift": dict(duration=1.0, focus=(0.0, 0.0, 0.62), distance=1.0, tracks=[
+            ("Bail", "turn", [(0.0, 0.0), (0.3, -LN["bail_rest"] + 6.0, "Quad", "InOut"),
+                              (0.45, -LN["bail_rest"] - 3.0), (0.6, -LN["bail_rest"] + 1.2),
+                              (0.78, -LN["bail_rest"])])]),
+    },
+    dust=LN["dust"], seed=LN["seed"],
+)
+
+# --- the moon lamp ------------------------------------------------------------------------------
+
+(MN_MOON, MN_PLUG, MN_SHADE, MN_WOOD_A, MN_WOOD_B) = range(51, 56)
+MN, CR = K.MOON, K.CRADLE
+MN_ALPHA = math.radians(CR["slope"])
+# the moon rests on the V's four slopes: its middle where each slope's top is a radius away
+MN_C = Vector((0.0, 0.0, CR["valley"] + MN["R"] / math.cos(MN_ALPHA)))
+
+
+def mn_outline():
+    """One cradle piece's outline in its own plane (x across, z up): the V the moon sits in,
+    its two peaks, the legs down to the feet; anticlockwise seen from -Y."""
+    ta = math.tan(MN_ALPHA)
+    zv, p, a, fw = CR["valley"], CR["peak"], CR["foot"], CR["foot_w"]
+    zp = zv + p * ta
+    zb = zv - CR["w"] / math.cos(MN_ALPHA)          # the V's underside at the middle
+    # the leg's inner edge runs parallel to its outer one from the inner corner of the foot;
+    # where it meets the V's underside is the crotch under the peak
+    dx, dz = p - a, zp
+    t = (zb + (a - fw) * ta) / (dz - dx * ta)
+    xi, zi = a - fw + dx * t, dz * t
+    right = [(a - fw, 0.0), (a, 0.0), (p, zp)]
+    out = [(0.0, zb), (xi, zi)] + right + [(0.0, zv)]
+    out += [(-p, zp), (-a, 0.0), (-(a - fw), 0.0), (-xi, zi)]
+    return list(reversed(out))
+
+
+def mn_piece(s, yaw, kind, hi):
+    """A cradle piece: its outline pushed out to the wood's thickness, its edges eased."""
+    tmp = bmesh.new()
+    t = CR["t"]
+    ol = mn_outline()
+    n = len(ol)
+    front = [tmp.verts.new((x, -t / 2, z)) for x, z in ol]
+    back = [tmp.verts.new((x, t / 2, z)) for x, z in ol]
+    tmp.faces.new(front)
+    tmp.faces.new(list(reversed(back)))
+    for i in range(n):
+        j = (i + 1) % n
+        tmp.faces.new((front[i], front[j], back[j], back[i]))
+    bmesh.ops.recalc_face_normals(tmp, faces=list(tmp.faces))
+    bmesh.ops.bevel(tmp, geom=list(tmp.edges), offset=0.0035 if hi else 0.0025,
+                    segments=3 if hi else 1, profile=0.5, affect="EDGES", clamp_overlap=True)
+    bmesh.ops.triangulate(tmp, faces=[f for f in tmp.faces if len(f.verts) > 4])
+    # turned before it's merged: merge's own matrix projects in the wrong frame
+    bmesh.ops.transform(tmp, matrix=Matrix.Rotation(math.radians(yaw), 4, "Z"), verts=tmp.verts)
+    s.merge(tmp, kind)
+    tmp.free()
+
+
+def mn_cradle(hi):
+    s = Shape()
+    mn_piece(s, 0.0, MN_WOOD_A, hi)
+    mn_piece(s, 90.0, MN_WOOD_B, hi)
+    return s
+
+
+def mn_moon(hi):
+    """The moon: a sphere cut flat at the bottom where the plug sits."""
+    s = Shape()
+    R, c = MN["R"], MN["cut"]
+    rc = math.sqrt(R * R - (R - c) ** 2)
+    a0 = math.degrees(math.acos((R - c) / R))
+    m = 40 if hi else 18
+    plug = [(0.0, -R + c - 0.002), (rc - 0.012, -R + c - 0.002), (rc - 0.006, -R + c + 0.0005)]
+    sphere = [(R * math.sin(math.radians(a)), -R * math.cos(math.radians(a)))
+              for a in [a0 + (180 - a0) * i / m for i in range(m + 1)]]
+    sphere[-1] = (0.0, R)
+    prof = plug + sphere
+    kinds = [MN_PLUG] * 3 + [MN_MOON] * (len(prof) - 4)
+    s.lathe(prof, MN_MOON, 320 if hi else 36, Matrix.Translation(MN_C), kinds=kinds)
+    if hi:
+        # the print's relief: craters (bowls with raised rims, many small, few large) and low
+        # hills, pushed out along each point's radius; the plug's flat stays flat
+        import random
+        from mathutils import noise
+        rng = random.Random(MN["seed"])
+        craters = []
+        for _ in range(MN["craters"]):
+            z = rng.uniform(-1.0, 1.0)
+            a = rng.uniform(0.0, 2 * math.pi)
+            q = math.sqrt(1 - z * z)
+            r = MN["crater"][0] * (MN["crater"][1] / MN["crater"][0]) ** (rng.random() ** 2.2)
+            craters.append((Vector((q * math.cos(a), q * math.sin(a), z)), r / R))
+        for v in s.bm.verts:
+            d = v.co - MN_C
+            if d.length < R - c * 1.5 or d.z < -R + c + 0.004:
+                continue
+            u = d.normalized()
+            h = MN["hills"] * noise.fractal(u * 9.0, 0.6, 2.0, 5)
+            for cu, cr in craters:
+                ang = u.angle(cu)
+                if ang > cr * 1.6:
+                    continue
+                t = ang / cr
+                depth = cr * R * 0.13
+                h += -depth * (1 - t * t) if t < 1 else 0.0
+                h += depth * 0.45 * math.exp(-((t - 1.0) / 0.22) ** 2)
+            v.co = MN_C + u * (R + h)
+    return s
+
+
+def mn_shade(hi):
+    """The phase shade: a dark cap just outside the moon, facing the back so the moon shows
+    full from the front; it turns about the moon's axis to wax and wane."""
+    s = Shape()
+    Rs = MN["R"] + MN["shade_gap"]
+    m = 28 if hi else 14
+    prof = [(Rs * math.sin(math.radians(a)), Rs * math.cos(math.radians(a)))
+            for a in [112.0 - 112.0 * i / m for i in range(m + 1)]]
+    prof[-1] = (0.0, Rs)
+    M = Matrix.Translation(MN_C) @ Matrix.Rotation(math.radians(-90), 4, "X")
+    s.lathe(prof, MN_SHADE, 80 if hi else 36, M)
+    return s
+
+
+def mn_look(L, f):
+    nb = L.nb
+    R = MN["R"]
+    moon = L.k(MN_MOON)
+    # the Moon's face: big dark maria, craters with raised rims at two sizes, rays of small pits
+    maria = nb.ss(L.noise(1.7, 1, detail=4, rough=0.55, distortion=0.3), 0.5, 0.58)
+    # printed PLA: ivory, satin, its maria a shade greyer where the print is thicker
+    ivory = nb.mixc(nb.mul(maria, 0.6), hexc("#EFE9DB"), hexc("#D3CDBE"))
+    # (the craters are in the detailed mesh; the look adds only the print's fine grain)
+    C = Coat(L, ivory, 0.52, 0.0, nb.mul(moon, nb.mul(L.noise(60.0, 10, detail=2), 0.15)))
+    # lit through: the highlands glow bright, the thick maria grey, mottled like the real face
+    mottle = nb.mr(L.noise(14.0, 11, detail=4, rough=0.6), 0.25, 0.75, -0.12, 0.12)
+    glow = nb.add(nb.sub(1.0, nb.mul(maria, 0.62)), mottle)
+    C.lights(nb.mul(moon, glow))
+    # the plug: white ABS, a dark port and the touch dot
+    plug = L.k(MN_PLUG)
+    C.paint(plug, hexc("#E6E4DF"), 0.4, 0.0, 0.0)
+    rx, ry = nb.sub(L.x, 0.035), L.y
+    port = nb.mul(nb.ss(nb.absf(rx), 0.006, 0.004), nb.ss(nb.absf(ry), 0.02, 0.017))
+    C.paint(nb.mul(plug, port), hexc("#141414"), 0.6, 0.0, -0.4)
+    dot = nb.ss(nb.pw(nb.add(nb.mul(nb.add(L.x, 0.03), nb.add(L.x, 0.03)), nb.mul(L.y, L.y)), 0.5), 0.011, 0.008)
+    C.paint(nb.mul(plug, dot), hexc("#B9B6B0"), 0.3, 0.0, 0.3)
+    # the shade: a dark film, solid over its middle, fading out a little past the terminator
+    shade = L.k(MN_SHADE)
+    cosb = nb.mul(nb.sub(L.y, MN_C.y), 1.0 / (R + MN["shade_gap"]))
+    C.paint(shade, hexc("#0C0E14"), 0.6, 0.0, 0.0, alpha=nb.mul(nb.ss(cosb, -0.2, 0.22), 0.9))
+    # the cradle: pale beech, oiled, its grain running along each piece as it was cut
+    for kind, st in ((MN_WOOD_A, (0.08, 1.0, 1.0)), (MN_WOOD_B, (1.0, 0.08, 1.0))):
+        wood = L.k(kind)
+        wob = L.noise(6.0, 7 if kind == MN_WOOD_A else 8, stretch=st, detail=4)
+        grain = nb.sin(nb.mul(nb.add(L.z, nb.mul(wob, 0.03)), 330.0))
+        g = nb.mr(grain, -1.0, 1.0, 0.0, 1.0)
+        col = nb.mixc(nb.mul(nb.pw(g, 3.0), 0.55), hexc("#D9BD92"), hexc("#A98256"))
+        C.paint(wood, nb.tint(col, nb.mr(L.noise(2.0, 9, detail=3), 0.3, 0.7, 0.9, 1.06)), 0.5, 0.0,
+                nb.mul(g, 0.15))
+    # handled: the cradle's edges darkened by hands, a dent or two
+    edge = L.edge(0.006, k=4.0)
+    C.paint(nb.mul(nb.mul(L.k(MN_WOOD_A, MN_WOOD_B), edge), 0.35), hexc("#8B6A45"), 0.6)
+    C.finish(f.dust, grime=0.35)
+    return C.surface(bump_dist=MN["relief"], bump=0.7)
+
+
+MN_SHADE_ON = [(0.0, 0.0), (0.02, 1.0, "Linear")]
+MOON_LAMP = kit.Find(
+    "MoonLamp",
+    [kit.Part("Cradle", mn_cradle),
+     kit.Part("Moon", mn_moon, tuple(MN_C), "Cradle", (0, 0, 1)),
+     kit.Part("Shade", mn_shade, tuple(MN_C), "Moon", (0, 0, 1), clear=True)],
+    mn_look,
+    lights=[
+        # warm white LEDs inside the shell: a soft glow all round; no shadows, so it shines out
+        # through the print
+        dict(kind="Point", part="Moon", at=tuple(MN_C), kelvin=MN["kelvin"], brightness=0.8,
+             range=10, shadows=False, preview_kind="POINT", preview_watts=7.0, preview_size=0.08),
+    ],
+    glow=dict(part="Moon", strength=2.2, tint=(255, 214, 170), preview=2.2),
+    # found off, its shade hidden; on, the shade stands round it, at full moon to start
+    lit={("Shade", "scale"): 1.0},
+    motions={
+        # tapped on: the light swells up through the print, a touch too bright, then settles
+        "SwitchOn": dict(duration=1.0, focus=tuple(MN_C), distance=0.75, tracks=[
+            ("Shade", "scale", MN_SHADE_ON),
+            ("Moon", "glow", [(0.0, 0.0), (0.45, 1.08, "Quad", "Out"), (0.75, 1.0), (1.0, 1.0)])]),
+        "SwitchOff": dict(duration=0.7, focus=tuple(MN_C), distance=0.75, tracks=[
+            ("Shade", "scale", [(0.0, 1.0), (0.5, 1.0), (0.52, 0.0, "Linear")]),
+            ("Moon", "glow", [(0.0, 1.0), (0.5, 0.0, "Quad", "In"), (0.7, 0.0)])]),
+        # tapped: the next phase. The shade turns an eighth of the way round, overshooting a
+        # little, and the light blinks as it does (the game adds the phase it was on)
+        "Phase": dict(duration=0.9, focus=tuple(MN_C), distance=0.75, tracks=[
+            ("Shade", "scale", [(0.0, 1.0), (0.9, 1.0)]),
+            ("Shade", "turn", [(0.0, 0.0), (0.55, 48.0, "Quad", "InOut"), (0.75, 44.0), (0.9, 45.0)]),
+            ("Moon", "glow", [(0.0, 1.0), (0.08, 0.86, "Quad", "Out"), (0.4, 1.0)])]),
+    },
+    dust=MN["dust"], seed=MN["seed"],
+)
+
+# MOON_LAMP is not built yet: its sphere shows a shading seam (WAVES.md, Nov 15 F-02d note)
+FINDS = [DESK_LAMP, NIGHT_LIGHT, TEA_LIGHT, GLOW_STICKS, FAIRY_LIGHTS, LANTERN]
 
 if __name__ == "__main__":
     kit.main("Lights", HERE, FINDS)

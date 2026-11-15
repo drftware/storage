@@ -2098,7 +2098,9 @@ actions themselves and dealing the new finds on floors are later game tickets.
     `scale` and `stretch` channels and a first-person held sheet (D-192).
   - [x] **F-02c** The bundle of glow sticks and the string fairy lights (Nov 15); a light may
     give its own `rgb`.
-  - [ ] **F-02d** The camping lantern (researched in WAVES.md's notes), then on down the list.
+  - [x] **F-02d** The camping lantern (Nov 15), with no kit change.
+  - [ ] **F-02e** The moon lamp (coded, held back by a shading seam on its sphere: WAVES.md's
+    newest note), then the blob lamp and on down the list.
 - [ ] **F-03 The remote-control car and the die-cast car** (pulled forward from wave 4).
 - [ ] **F-S1 Into Studio:** the Lights and the cars uploaded, inserted and judged at phone size.
 - [ ] **F-04 Wind-ups and noisemakers.**

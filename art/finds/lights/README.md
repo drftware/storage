@@ -194,3 +194,42 @@ clips in `out/`.
 - **For the game:** "lay them along a hall" is a game ticket; the string's art is the coil.
   Laid out, the game can draw the line itself (a row of small glowing beads and Point lights)
   from these colours. Not in the place yet: F-S1.
+
+## Camping lantern (Nov 15, F-02d)
+
+- **What it is:** a retro LED camping lantern in olive powder coat: a bell-flared steel foot,
+  a straight band with a knurled aluminium dimmer knob on a chrome bezel at the front (a
+  charging port at the back), a black seat ring, a clear glass globe round a frosted white
+  hourglass diffuser ringed with ribs, six black-green guard bars bowed a little outward, a
+  black top ring, a wide flat hood pressed with twelve ribs and rolled at its rim, a knurled
+  cap, and a chrome wire bail with a black rubber grip, hooked through two lugs on the hood.
+  Chipped at the edges, faded on top, rust freckles round the foot, the bars worn to steel
+  where hands grab them, smudges on the glass, dust on what faces up.
+- **References** (looked at Nov 15): a product shot of a "Portable Retro LED Rotary Switch"
+  lantern (media.takealot.com; the clearest: foot, band, knob, globe round an hourglass
+  diffuser, hood, bail); Bing image results for "retro LED camping lantern green metal bail
+  handle rotary dimmer" (the KUNDGLA and BAMWUAN retro lanterns on Amazon: olive green bodies,
+  guard bars round the globe, flat ribbed hoods); olproshop.com's Retro Dimmable Lantern
+  (sage green, rotary knob). Sizes from 3 x D cell lantern listings: 7 to 11 inches tall
+  (Primus 8.3, Rayovac 7.25, Dorcy 7).
+- **Choices:** the guard bars from the KUNDGLA and BAMWUAN lanterns (they make it read as a
+  lantern at a glance); the knob off at seven o'clock, turning clockwise, a click on, then 230
+  degrees of dimmer; no maker's mark.
+- **Size:** 7.1 inches to the cap (4.4 across the hood), 9.1 to the bail's top when it's held
+  up: 0.71 studs tall, 0.44 across.
+- **Tells:** the wide hood over a glass globe with a glowing column inside it, on a flared
+  foot; lit, a warm column and a wide pool on the floor.
+- **Parts:** `CampLantern_Body` (root: the foot's middle on the floor; the foot, band, rings,
+  bars, hood, lugs, cap and bezel), `_Globe` (see-through), `_Diffuser` (the glow part),
+  `_Knob` (turns about Y from the band, positive clockwise seen from the front), `_Bail`
+  (turns about X through the lugs; found fallen back 107 degrees, its arms on the hood's rim).
+  8,084 triangles (the body 5,516); one 1024 texture set at 463 texels a stud.
+- **Light:** a Point in the diffuser's middle (3,200 K, Brightness 1.2, Range 16, no shadows,
+  so it shines out through the globe and the bars); the diffuser glows, its grooves a little
+  dimmer; strength 3, tint (255, 200, 150).
+- **Motions:** `SwitchOn` (1.5 s): the knob clicks on to a faint glow, then turns up and the
+  light rises with it. `SwitchOff` (0.9 s): turned down, the light falls, and it clicks off.
+  `RunDown` (2.4 s, the 90 seconds' end): it stutters, sags and dies. `Lift` (1 s): the bail
+  swings up off the hood, a touch past upright, and settles.
+- **For the game:** the 90 seconds and the wide light are a game ticket; the light's Range is
+  the find's. Not in the place yet: F-S1.

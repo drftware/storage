@@ -711,6 +711,164 @@ local Set: { [string]: Art.Find } = {
 			},
 		},
 	},
+	CampLantern = {
+		Size = Vector3.new(0.444, 0.714, 0.543),
+		Centre = Vector3.new(-0.000, 0.357, 0.049),
+		Triangles = 8084,
+		Texture = 1024,
+		Parts = {
+			{
+				Name = "CampLantern_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Size = Vector3.new(0.444, 0.714, 0.444),
+				Triangles = 5516,
+			},
+			{
+				Name = "CampLantern_Globe",
+				Parent = "CampLantern_Body",
+				Pivot = Vector3.new(-0.000, 0.361, 0.000),
+				Clear = true,
+				Size = Vector3.new(0.274, 0.339, 0.274),
+				Triangles = 480,
+			},
+			{
+				Name = "CampLantern_Diffuser",
+				Parent = "CampLantern_Body",
+				Pivot = Vector3.new(-0.000, 0.361, 0.000),
+				Size = Vector3.new(0.148, 0.278, 0.148),
+				Triangles = 912,
+			},
+			{
+				Name = "CampLantern_Knob",
+				Parent = "CampLantern_Body",
+				Pivot = Vector3.new(-0.000, 0.112, -0.153),
+				Axis = Vector3.new(-0.000, 0.000, 1.000),
+				Size = Vector3.new(0.058, 0.058, 0.030),
+				Triangles = 332,
+			},
+			{
+				Name = "CampLantern_Bail",
+				Parent = "CampLantern_Body",
+				Pivot = Vector3.new(-0.000, 0.598, 0.000),
+				Axis = Vector3.new(-1.000, 0.000, 0.000),
+				Size = Vector3.new(0.368, 0.115, 0.327),
+				Triangles = 844,
+			},
+		},
+		Glow = {
+			Part = "CampLantern_Diffuser",
+			Strength = 3.0,
+			Tint = Color3.fromRGB(255, 200, 150),
+		},
+		Lights = {
+			{
+				Kind = "Point",
+				Part = "CampLantern_Diffuser",
+				At = Vector3.new(-0.000, 0.361, 0.000),
+				Face = Vector3.new(-0.000, -1.000, 0.000),
+				Color = Color3.fromRGB(255, 184, 123),
+				Brightness = 1.2,
+				Range = 16,
+				Shadows = false,
+			},
+		},
+		Motions = {
+			SwitchOn = {
+				Duration = 1.5,
+				Tracks = {
+					{
+						Part = "CampLantern_Knob",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.1, 28, "Quad", "Out" },
+							{ 0.16, 24, "Sine", "InOut" },
+							{ 0.34, 24, "Sine", "InOut" },
+							{ 1.15, 255, "Quad", "InOut" },
+						},
+					},
+					{
+						Part = "CampLantern_Diffuser",
+						Channel = "glow",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.1, 0, "Sine", "InOut" },
+							{ 0.12, 0.16, "Quad", "Out" },
+							{ 0.34, 0.13, "Sine", "InOut" },
+							{ 1.15, 1, "Quad", "InOut" },
+							{ 1.5, 1, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+			SwitchOff = {
+				Duration = 0.9,
+				Tracks = {
+					{
+						Part = "CampLantern_Knob",
+						Channel = "turn",
+						Keys = {
+							{ 0, 255, "Sine", "InOut" },
+							{ 0.45, 26, "Quad", "InOut" },
+							{ 0.53, -2.5, "Quad", "In" },
+							{ 0.62, 0, "Quad", "Out" },
+						},
+					},
+					{
+						Part = "CampLantern_Diffuser",
+						Channel = "glow",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.45, 0.14, "Quad", "InOut" },
+							{ 0.51, 0.12, "Sine", "InOut" },
+							{ 0.53, 0, "Quad", "Out" },
+							{ 0.9, 0, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+			RunDown = {
+				Duration = 2.4,
+				Tracks = {
+					{
+						Part = "CampLantern_Diffuser",
+						Channel = "glow",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.3, 0.82, "Sine", "InOut" },
+							{ 0.36, 0.3, "Quad", "Out" },
+							{ 0.44, 0.78, "Sine", "InOut" },
+							{ 0.8, 0.58, "Sine", "InOut" },
+							{ 0.85, 0.16, "Quad", "Out" },
+							{ 0.92, 0.52, "Sine", "InOut" },
+							{ 1.3, 0.38, "Sine", "InOut" },
+							{ 1.35, 0.06, "Quad", "Out" },
+							{ 1.43, 0.3, "Sine", "InOut" },
+							{ 1.8, 0.12, "Sine", "InOut" },
+							{ 2.1, 0, "Quad", "In" },
+							{ 2.4, 0, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+			Lift = {
+				Duration = 1.0,
+				Tracks = {
+					{
+						Part = "CampLantern_Bail",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.3, 113, "Quad", "InOut" },
+							{ 0.45, 104, "Sine", "InOut" },
+							{ 0.6, 108.2, "Sine", "InOut" },
+							{ 0.78, 107, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+		},
+	},
 }
 
 return Set

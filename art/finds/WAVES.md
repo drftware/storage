@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-02d, the camping lantern (its references and plan are in the newest note), then
-on down the Lights (moon lamp, blob lamp), with the kit.
+**Next:** F-02e, the moon lamp: coded but not built (its sphere shows a shading seam; the
+newest note says where it stands), then the blob lamp, with the kit.
 
 ## Order
 
@@ -33,6 +33,30 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 15, F-02d (the camping lantern; the moon lamp half done).** The lantern is built from
+  the kit with no kit change (README: guard bars, a ribbed hood, a knob that clicks and dims,
+  a bail that lifts; `RunDown` for its 90 seconds' end). Started building at 110k context.
+  **The moon lamp is coded but left out of `FINDS`** (`mn_*` in `lights/build.py`, `MOON` and
+  `CRADLE` in `spec.py`; add `MOON_LAMP` back to `FINDS` to work on it). References: Bing image
+  results for "3D printed moon lamp wooden stand" and "moon lamp wooden stand only replacement
+  cross cradle": printed PLA spheres 8 to 20 cm (15 cm usual), a lithophane (lit, the thick
+  maria grey, the highlands bright); a white plug in a flat cut at the bottom holds the touch
+  switch and USB port; a cradle of two M-shaped pale wood pieces halved into each other. Its
+  phases: a dark see-through `Shade` cap just outside the moon (found at `scale` 0, `lit`
+  1), turning about the moon's upright axis like the terminator; `Phase` turns it 45 degrees
+  a tap (the game adds the phase it was on). What works: the cradle, the shade, the motions.
+  **What doesn't: the sphere shows a hard shading seam down one side** (a meridian at -X, where
+  the lathe's strip splits), with the look's bump on or off, so it's the game mesh's normals
+  or tangents where a lathe's strip splits on a sphere; flatter lathes (the lantern) hide it.
+  Look at how `kit.load_low` builds the mesh (`out/MoonLamp.blend` loaded headless showed no
+  objects), try `split=1` and a seam at the back, or compare a plain lathe sphere. Also: the
+  craters are now in the detailed mesh (420, power-law sizes) but read lumpy: the hills are
+  too big, keep a crater's depth under 0.008 studs (a few black specks: rays missing), and
+  lit, the maria barely show (glow mask `1 - 0.62 maria`: try 0.35 at the maria, and a
+  weaker preview). **Kit trap:** `Shape.merge(bm, kind, M)` with a rotation `M` projects the
+  UVs in the wrong frame (faces collapse to a line, bake black): transform the bmesh first and
+  merge without `M` (`mn_piece` does). The blob lamp isn't researched.
 
 - **Nov 15, F-02c (the glow sticks and the string fairy lights).** Two finds, built from the
   kit with one small change: a light may give `rgb=(r, g, b)` instead of a colour temperature
@@ -123,7 +147,7 @@ A light set down switched on lights the space round it until it runs down. Wheth
 | Desk lamp | Common | Switch on (at home): a warm pool of light | Needs a socket, so only at home | Nov 15, F-01 |
 | Bundle of glow sticks | Common | Crack: one stick lights a small spot for the rest of the floor; three to a bundle | The glow sticks from the Nov 2 draft | Nov 15, F-02c |
 | String fairy lights | Uncommon | Switch on: lay them along a hall for a dim line of light |  | Nov 15, F-02c |
-| Camping lantern | Uncommon | Switch on: a wide light for 90 seconds |  | |
+| Camping lantern | Uncommon | Switch on: a wide light for 90 seconds |  | Nov 15, F-02d |
 | Moon lamp | Uncommon | At home: it glows; tap it to change its phase |  | |
 | Blob lamp | Uncommon | At home: coloured blobs rise and fall |  | |
 | Oil lamp | Rare | Light: warm light that runs down slowly | Fragile | |
