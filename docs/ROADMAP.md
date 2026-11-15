@@ -2119,6 +2119,17 @@ it is, coins go to your bank, a tool goes to your hands, or it's a piece of the 
   floors) are boxes stacked to the ceiling with a path through to the back, where the marked box
   or a sleeping monster waits, never nothing. Art first (each stack a few models, for low-end
   phones); the camera in a narrow path judged at phone size. Small units stay open.
+  Split for size (Nov 15):
+  - [x] **B-05a The stacks' art.** Done Nov 15 (D-215): seven blocks of moving boxes, each one
+    MeshPart of 84 to 326 triangles wearing the boxes' own Cardboard texture (three columns to
+    the ceiling, two wide stacks on a wardrobe box laid down, a half-height stack, a fallen pair),
+    built by `art/packed/` and in the place at `ReplicatedStorage.Props.Packed` (`Packed.clone`).
+    Sheets: `art/sheets/packed-*.png` (a sample packed unit from the doorway, in the path, at
+    the clearing). No floor deals them yet.
+  - [ ] **B-05b The deal and the path.** Which M units pack (about one in three, more higher
+    up), the path's shape (in from the door, bending once at most, to a clearing at the back),
+    the blocks laid along it, the marked box or a sleeper in the clearing, the keepers' map and
+    the camera in the path judged at phone size.
 
 ### Step 4: The climb with no top
 

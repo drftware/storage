@@ -48,6 +48,9 @@
 #                                       Specs module, look sheets (the hall sheets wear the unit's
 #                                       textures; about 3 minutes)
 #   scripts/art.sh breaker export       just the breaker's FBX and Specs module
+#   scripts/art.sh packed               the packed unit's stacks: FBX, Specs module, look sheets (they
+#                                       wear the boxes' textures, so build those first; ~2 minutes)
+#   scripts/art.sh packed export        just the stacks' FBX and Specs module
 #   scripts/art.sh stuff                the mattress and the rolled carpet: their Stuff bake, FBX,
 #                                       Specs module (with the box stacks), look sheets (the sheets
 #                                       need the boxes built; about 4 minutes)
@@ -222,6 +225,15 @@ if [ "${1:-}" = "airhorn" ]; then
 		echo "== airhorn $st"
 		blender -b --factory-startup -P art/airhorn/build.py -- --stage "$st" 2>&1 \
 			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|atlas|DONE" || true
+	done
+	exit 0
+fi
+if [ "${1:-}" = "packed" ]; then
+	shift
+	for st in ${*:-export renders}; do
+		echo "== packed $st"
+		blender -b --factory-startup -P art/packed/build.py -- --stage "$st" 2>&1 \
+			| grep -E -i "error|traceback|assert|RENDERED|FBX|SPEC|DONE" || true
 	done
 	exit 0
 fi

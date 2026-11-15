@@ -5706,3 +5706,29 @@ of MarkedBoxes, which hands each box's note to it.
   paper showed, no Read on dropped notes. A real box's note and a real catch through the running
   system are untested in Studio.
 
+
+## D-215 A packed unit's walls are blocks of boxes that wear the boxes' own texture (B-05a, Nov 15)
+B-05 was split for the session's size: B-05a the stacks' art (this), B-05b the deal and the path.
+A packed unit's walls are built from seven blocks (`art/packed/`): ColumnA to C (one box wide, to
+9.2 to 9.6 of the 10 stud steel top), WideA and WideB (two wide, on a wardrobe box laid on its
+side), Half (5.2 high) and Toppled (a large on its back and a medium tipped off it). Each is one
+MeshPart of 84 to 326 triangles: every box is cut into a few quads a face (2 x 2, bowed out a hair
+at the middle like the boxes kit's), with no faces under a box or on the floor, so a unit walled
+with about twenty of them costs about 5,000 triangles. The blocks' faces map onto the same atlas
+islands the boxes' do (the boxes' own packer, run again), and the FBX carries no texture: on
+import `Packed.prepare` gives each block a copy of the Medium box's SurfaceAppearance, so the
+blocks share the boxes' texture IDs and add no texture memory.
+Defaults taken:
+- **Blocks stand side by side at a 2 stud pitch** (`Specs.Pitch`); a column's boxes are 1.8, so
+  neighbours leave a dark crack about 0.2 wide, as real stacks do. The build nudges any box that
+  would poke past its block's width back in, so neighbours never run into each other
+  (`tests/packed.spec.luau`). A box sits at most 0.1 proud of or sunk behind its block's front,
+  so the torch rakes a wall that isn't flat.
+- **Larges are few** (one a column, two a wide stack): a large box says XMAS on both its side and
+  its end. A medium box wears either its own sides (KITCHEN, FRAGILE) or the open box's (PHOTOS,
+  UP), so a wall reads as many people's things. New marker words would mean rebaking the boxes.
+- **The sheets' sample unit** brings the path in 3 studs wide up the middle (under the bulb) from
+  2.5 in (`DealSpot.Door`), then turns left along the back wall into a clearing the doorway can't
+  see. From the doorway the marked box's warm line just shows past the corner, a lure; B-05b
+  decides whether real layouts keep that.
+Not chosen: individual box clones (a packed unit would be 60 to 100 parts); a new texture set.

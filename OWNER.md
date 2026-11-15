@@ -62,6 +62,16 @@ nowhere else.
   9. Tell the next session it passed (or what didn't), so Brix's ENG-23e is marked done in its
      HANDOFF.
 
+- [ ] **Look at the packed unit's stacks** (B-05a, D-215; judged by Claude in renders, imported
+  into Studio, not yet laid on any floor). The blocks a packed unit's walls will be built from are
+  in the place at `ReplicatedStorage.Props.Packed` (seven MeshParts, put there by hand this
+  session). B-05b lays them; its own steps will follow here.
+  1. Open `art/sheets/packed-door.png`: a medium unit packed to the ceiling from its doorway, one
+     dark path through. Does it say "something's in there" and "I'd have to squeeze in"?
+  2. Open `packed-path.png` (in the path, the torch on the right-hand wall) and
+     `packed-clearing.png` (round the bend at the back, the marked box waiting). Tell the next
+     session if any box looks wrong up close, or if the walls feel too tidy or too messy.
+
 - [ ] **Judge the marked box** (B-01a, B-01b, D-208; judged at phone size by Claude, in renders
   and in Studio). The box a unit's find, coins, tool or note will come in. It is in the place now:
   its template is the Model `ReplicatedStorage.Props.Boxes.Marked` (eight parts), beside the five

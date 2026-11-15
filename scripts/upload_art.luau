@@ -186,6 +186,12 @@ local ART: { Art } = {
 		description = "A grey steel safety switch box on a plywood board: a side lever with a red grip, a pilot lamp, a conduit up the wall",
 	},
 	{
+		key = "Packed",
+		path = "art/packed/out/Packed.fbx",
+		manifest = "art/packed/assets.json",
+		description = "Stacks of cardboard moving boxes piled to the ceiling, as in a packed storage unit",
+	},
+	{
 		key = "Stuff",
 		path = "art/stuff/out/Stuff.fbx",
 		manifest = "art/stuff/assets.json",
