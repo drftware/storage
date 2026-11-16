@@ -758,6 +758,14 @@ def stage_renders(find, set_dir, quick=False):
         view = Vector(find.motions[action].get("view", (-1.1, -2.0, 0.15)))
         drop = find.motions[action].get("drop", 0.14)
         cam = render.camera(fc + view * d * back, fc - Vector((0, 0, drop * d)), lens=40)
+        if "view" in find.motions[action]:
+            # a camera moved round the find takes the stage light with it, a little to its left
+            # and above, so the side it films is lit (the tin bird's key side was in shadow)
+            hz = Vector((view.x, view.y, 0.0))
+            hz = (Matrix.Rotation(math.radians(-30.0), 3, "Z") @ hz.normalized()) if hz.length > 1e-6 else Vector((0, -1, 0))
+            ground = Vector((fc.x, fc.y, 0.0))
+            ao_.location = ground + hz * 7.8 + Vector((0.0, 0.0, 7.0))
+            ao_.rotation_euler = (ground - ao_.location).to_track_quat("-Z", "Y").to_euler()
         # a long slow loop (the blob lamp's Flow) may preview at fewer frames a second (`fps`)
         rate = find.motions[action].get("fps", 24)
         n = int(math.ceil(dur * rate)) + (6 if rate == 24 else 1)
@@ -765,10 +773,15 @@ def stage_renders(find, set_dir, quick=False):
         # `follow`: the camera keeps its place relative to that part as it travels (not its turn)
         ride = objs[follow].matrix_world.translation.copy() if follow else None
         cam_at = cam.location.copy()
+        # the stage light rides along too, so a find that travels a long way (the mouse's run, the
+        # bird's hops) stays lit in every frame instead of running off into the dark
+        amb_at = ao_.location.copy()
         for i in range(n):
             pose(find, objs, {**rest, **values_at(trs, i / rate)}, lts)
             if follow:
-                cam.location = cam_at + objs[follow].matrix_world.translation - ride
+                moved = objs[follow].matrix_world.translation - ride
+                cam.location = cam_at + moved
+                ao_.location = amb_at + Vector((moved.x, moved.y, 0.0))
                 bpy.context.view_layer.update()
             f = os.path.join(tmp, f"{action}-{i:03d}.png")
             shoot(cam, f, (480, 360), 24 if quick else 48)

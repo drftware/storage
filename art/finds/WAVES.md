@@ -6,11 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04d2, the clockwork tin bird, in `art/finds/windups/`: **half built** (Nov 16 note
-below: modelled, baked, exported, quick sheets rendered but not yet looked at). Judge its sheets,
-fix, render full, upload and import, tick it; that finishes step 2 of "The second run's plan"
-below, then follow the plan (step 3, F-04e: the toy siren car, then the squeaky duck). The oil
-lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next touched.
+**Next:** F-04e, step 3 of "The second run's plan" below: the toy siren car, then the squeaky
+rubber duck, in `art/finds/windups/` (the newest note has hints for both). The oil lamp's sheets
+still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next touched.
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -22,7 +20,7 @@ changes the table's order a little.
 1. **F-04c** Chattering teeth (built Nov 15) and, as **F-04c2**, the walking robot (built Nov 16; a
    printed tin robot 6 to 9 inches tall; legs swing from the hip, arms the other way, it clanks
    off straight for 15 s). The newest note has both plans.
-2. **F-04d** Wind-up mouse (zips off, slows, stops with a squeak, its tail wagging behind) and
+2. **F-04d** (both built Nov 16) Wind-up mouse (zips off, slows, stops with a squeak, its tail wagging behind) and
    the clockwork tin bird (Epic: an antique printed-tin bird hopping forward in little jumps, its
    beak opening with each whistle, its tail bobbing; the finest printing in the set). Both are
    small tin walkers on a key: share the key and the walk.
@@ -90,6 +88,37 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04d2 (the clockwork tin bird built, judged and in the place; step 2 done).**
+  `TinBird` in `windups/build.py`, README, D-235. **Judged and fixed:** the head read as a glossy
+  red blob held (a flat red skullcap with a hard ink rim, black lines across the face, a grey disc
+  for an ear, white speckle everywhere). Now, after the V&A sparrow: the cap sweeps from the bill
+  over the crown and down the nape, deeper crimson at its edge with a paler printed sheen and rows
+  of small crimson-keyed feathers (`scales`); a dove-grey stripe under it over the eye; a cream
+  throat so the orange bill stands out held; small printed feathers down the gold breast; chips
+  only on edges and high points; a deeper neck so the head is its own round shape; wire legs
+  1.5 mm. **Bug fixed:** `bird_hop` wrote its travel in mm where the kit reads studs (13-stud
+  hops in the exported Luau); now converted as the tracks are written. **Kit:** the filmstrip's
+  stage light rides with a `follow` find and stands on the camera's side when a motion sets its
+  own `view` (the hop's camera was on the dark side); the mouse's `Zip` was rendered again and
+  stays lit. **Trap:** a motion worked out in mm must convert `x`, `y`, `z` to studs; a find
+  leaving its filmstrip floor (40 studs) shows as dark frames with no floor.
+  **F-04e's plan (step 3), not researched.** *The toy siren car* (Common, "Push: it rolls off,
+  wailing"): a chunky toy emergency car of our own, no real police markings or words, about 5 to
+  6 in (130 to 150 mm) long, tin or hard plastic, push-and-go. Build its body the die-cast car's
+  way (`dc_half` in `figures/build.py`: sections computed along the car, arches cut round the
+  axles; D-200, F-03b's note). Parts: `Body` (root, travels), front and rear `Wheels` on their
+  axles, `Beacon` (the roof light: a red dome turning about Z with its own glow and a red Spot
+  light, `glow_part`, sweeping the walls), maybe a flywheel whir. Motion `Push`: the die-cast
+  car's roll (`DC_PUSH`, `follow`), the beacon spinning and glowing the whole run, slowing as it
+  coasts. Look first at V&A or museum toy police cars and fire chiefs' cars from the 1950s to 70s
+  (the API search), and one push-and-go listing for its size. *The squeaky rubber duck*
+  (Common, "Squeeze: a squeak you can hear down the hall"): the classic yellow bath duck, about
+  3.5 to 4 in (90 to 100 mm) long and 85 tall, an orange bill, painted eyes, a squeak hole
+  underneath, soft vinyl with a satin sheen. One part (or a body plus the bill) on a pivot at its
+  base; motion `Squeeze`: the whole duck squashed with `stretch` (about 0.72), held a beat, then
+  springing back past 1 and settling (the tea light's flame proves the channel; a Back Out key
+  gives the spring). Its squeak hole is a little dimple under the tail.
 
 - **Nov 16, F-04d2 (the tin bird half built: stopped at the context cap; not ticked).**
   `TinBird` in `windups/build.py` (spec `BIRD` and `HOP`), six parts: `Body` (root, the pressed
@@ -719,7 +748,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Cymbal monkey | Rare | Wind: it bashes its cymbals for 20 seconds, loud | The strongest lure in the set | Nov 15, F-04a |
 | Pull-string cowboy doll | Rare | Pull: it says one of six lines |  | |
 | Singing fish plaque | Rare | Press: its head turns and it sings |  | |
-| Clockwork tin bird | Epic | Wind: it hops and whistles | An antique tin toy | |
+| Clockwork tin bird | Epic | Wind: it hops and whistles | An antique tin toy | Nov 16, F-04d2 |
 | Wind-up tin carousel | Epic | Wind: it turns and plays a tune |  | |
 
 ## Squishies (14) · F-05

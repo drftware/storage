@@ -251,3 +251,46 @@ as the gears run, slows as the spring gives out, stalls dead near 5 s, about 11 
 the knob lands hard), the moment the game squeaks. The tail wags on the cam (a whole number of
 wags, so it stops straight) and whips behind as stiff plastic does, ringing when it stops; the
 ears flick on each rock; the key unwinds with the distance run.
+
+## Clockwork tin bird (Epic): "Wind: it hops and whistles"
+
+An antique hopping bird of printed tinplate, the kind German and Japanese makers stamped from the
+1920s to the 1960s: two pressed halves crimped along a seam down its back and belly, a folded tin
+bill, a loose fan tail slotted into the rump, two wire legs on a crank out of its belly, each on a
+stamped foot, and a brass key in its left side. Ours is no real bird and no maker's: a scarlet cap
+that sweeps from the bill over the crown and down the nape, printed the old way (deeper crimson at
+its edge, a paler sheen on the crown, rows of small crimson-keyed feathers), a dove-grey stripe
+under it over the eye, a cream face and throat, a gold breast of small printed feathers deepening
+to ochre round the flanks, an olive scalloped back, a printed wing (teal coverts, a cream and a
+gold bar, long dark flight feathers edged in ochre), and a rust tail barred in brown with cream
+tips. The print is rubbed through to bright tin on the crown, the breast and the seam, chipped at
+the edges, with freckles of rust low down. Our maker's mark (a cream oval in a red ring, an ink
+star) is printed under the belly.
+
+**Looked at:** the V&A's API (`api.vam.ac.uk/v2/objects/search`, see the mouse): O36973, a
+tinplate sparrow (2.25 in tall, 1.5 in wide: a red cap down the nape, a cream face, a grey stripe
+through the eye, a printed red-brown wing of scalloped feathers, a loose fan tail, stamped brown
+legs and feet, the key in its side; photo `framemark.vam.ac.uk/collections/2006AF4148/full/
+!800,600/0/default.jpg`), O36970 a robin (image 2006AF4153); a 1960s German hopping bird listed
+at 85 x 56 x 40 mm. No video with a hop rate was found: `HOP` is a toy's numbers.
+
+**Size:** 115 mm bill to tail tip, 60 tall, 47 across the key: 0.45 studs long, 0.24 tall. A
+speck from a unit's doorway, as every find under six inches is; held, the red cap, the orange
+bill on its cream throat, the eye and the striped tail read at once.
+
+**Tells:** the scarlet cap, the orange bill, the cocked striped tail.
+
+**Parts:** `Body` (root: the pressed body, its pivot under the feet so a pitch rocks it on them;
+travels with `x`, `y`, `z`, `yaw`, `pitch`), `Bill` (the upper bill, still), `Beak` (the lower
+bill on the gape hinge, X: it opens on each whistle note and flicks on landings), `Tail` (the
+fan on its root, X: it floats up in the air and slaps down on landing, cocks when it whistles),
+`Legs` (both wires and feet on the hip crank, X: they kick back and reach forward to land),
+`Key`.
+
+**Motions:** `Wind` (four half turns of the key, a regrip between each, 1.95 s). `Hop` (11.2 s),
+worked out in `bird_hop` from one crank: three little hops (13 mm high and 12 forward fully
+wound, each flight the time gravity gives that height, a kick that keeps the feet planted, a
+swivel either way, a nose-down rock on landing), then it lifts its head, cocks its tail and
+whistles two notes over two turns (the bill opening on each, where the game plays them); lower
+and slower as the spring runs down, wandering a little left, about 0.8 studs in all. The tail and
+lower bill ring off the body's motion as springs.

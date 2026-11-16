@@ -272,8 +272,8 @@ BIRD = dict(
     body=[(-35.0, 0.0, 47.0, 47.0, 0.5), (-34.0, 4.6, 42.4, 51.6, 0.5),
           (-32.0, 8.2, 38.4, 55.2, 0.48), (-29.0, 11.2, 34.4, 58.2, 0.46),
           (-25.0, 13.3, 30.0, 60.0, 0.45), (-20.0, 14.0, 26.2, 60.4, 0.45),
-          (-15.0, 13.8, 23.2, 58.6, 0.44), (-10.0, 14.8, 20.8, 55.4, 0.42),
-          (-4.0, 16.6, 18.8, 52.0, 0.42), (2.0, 17.2, 18.0, 49.6, 0.42),
+          (-15.0, 13.8, 23.2, 58.6, 0.44), (-10.0, 14.4, 20.8, 54.4, 0.42),
+          (-4.0, 16.4, 18.8, 51.0, 0.42), (2.0, 17.2, 18.0, 49.0, 0.42),
           (8.0, 17.0, 18.4, 47.6, 0.42), (14.0, 15.9, 19.9, 45.6, 0.43),
           (20.0, 14.0, 22.8, 43.7, 0.44), (26.0, 11.0, 26.6, 41.8, 0.46),
           (31.0, 7.6, 30.4, 40.0, 0.48), (34.5, 4.0, 33.4, 38.4, 0.5),
@@ -291,7 +291,7 @@ BIRD = dict(
     # width at root and tip, the tin's thickness, the fold along its middle (deg), how many
     # rounded feather tips across its end
     hip=(2.0, 21.0),                   # where the legs' crank comes out of the belly (y, z)
-    leg=dict(x=6.4, r=1.25, foot=0.0), # each wire leg's x, its radius, and where its foot sits (y)
+    leg=dict(x=6.4, r=1.5, foot=0.0), # each wire leg's x, its radius, and where its foot sits (y)
     toes=[(11.5, 17.0), (13.5, 0.0), (11.5, -17.0), (6.5, 180.0)],
     # each stamped toe: its length (mm) and heading (deg from straight ahead, + outward)
     toe=dict(w=2.1, t=1.0),           # the toes' width at the root and the plate's thickness

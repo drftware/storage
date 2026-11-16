@@ -2999,7 +2999,7 @@ def bird_look(L, f):
     BARGOLD, BUFF, GREY, RUST, TINP = "#F0C24A", "#B98F55", "#8D8B78", "#B0532A", "#C3C5BE"
     grain = L.noise(700.0, 1, detail=1)
     tone = nb.mr(grain, 0.3, 0.7, 0.96, 1.03)
-    gloss = nb.mr(L.noise(90.0, 2, detail=3), 0.3, 0.7, 0.22, 0.32)
+    gloss = nb.mr(L.noise(90.0, 2, detail=3), 0.3, 0.7, 0.26, 0.36)
     C = Coat(L, hexc(CREAM), gloss, 0.0, 0.0)
     tin = L.k(TINB)
     side = nb.ss(nb.absf(L.nx), 0.15, 0.45)
@@ -3007,12 +3007,17 @@ def bird_look(L, f):
     down = nb.ss(nb.sub(0.0, L.nz), 0.35, 0.7)
 
     # --- the gold throat and breast, deeper ochre round the flanks, streaked brown on the sides
-    zg = lin(44.0, (-0.012, sq(nb.add(ym, 34.0))))
+    # a cream throat under the bill, so the orange bill stands out against it
+    zg = lin(40.5, (-0.0088, sq(nb.add(ym, 34.0))))
     breast = both(tin, less(nb.sub(zm, zg), 0.0, 1.2))
     deep = nb.mr(nb.add(nb.mul(nb.absf(L.nx), 0.8), nb.mul(nb.ss(zm, 26.0, 40.0), 0.5)), 0.2, 1.1, 0.0, 1.0)
     C.paint(breast, nb.mixc(deep, nb.tint(hexc(GOLD), tone), hexc(OCHRE)), gloss)
     streak = nb.ss(L.noise(260.0, 3, stretch=(1.0, 1.0, 0.22), detail=2), 0.64, 0.71)
     C.paint(both(breast, streak, nb.ss(ax, 7.0, 11.0), nb.ss(ym, -20.0, -12.0)), hexc("#93552A"), gloss)
+    # small printed feathers down the breast, their tips pointing down, keyed in ochre
+    bf = scales(nb.sub(60.0, zm), nb.add(xm, ym), 2.7, 2.5)
+    C.paint(nb.mul(both(breast, nb.band(bf, 0.82, 1.0, 0.07)), 0.75), nb.tint(hexc("#A8601F"), tone), gloss)
+    C.paint(nb.mul(both(breast, nb.band(bf, 0.3, 0.55, 0.12)), 0.4), hexc("#F6CB62"), gloss)
     # the belly behind the legs: cream, shading to buff toward the rump
     C.paint(both(tin, nb.ss(ym, 4.0, 16.0), down, nb.ss(ym, 20.0, 32.0)), hexc(BUFF), gloss)
 
@@ -3025,23 +3030,25 @@ def bird_look(L, f):
     rump = both(tin, nb.ss(ym, 25.0, 30.0), nb.ss(nb.add(L.nz, L.ny), 0.3, 0.7))
     C.paint(rump, nb.tint(hexc(BUFF), tone), gloss)
 
-    # --- the scarlet cap from the bill over the crown, feathered darker, outlined in ink
-    e = nb.add(nb.add(sq(nb.div(ax, 17.0)), sq(nb.div(nb.add(ym, 23.0), 17.0))),
-               sq(nb.div(nb.sub(zm, 62.0), 12.0)))
-    cap = both(tin, less(e, 0.95, 0.025))
-    fe = nb.ss(L.noise(330.0, 4, stretch=(1.0, 0.3, 1.0), detail=2), 0.6, 0.7)
-    C.paint(cap, nb.mixc(fe, nb.tint(hexc(SCAR), tone), hexc(CRIMSON)), gloss)
-    C.paint(both(tin, nb.band(e, 0.95, 1.01, 0.012)), hexc(INK), gloss)
-
-    # --- the face: a fine black line from the bill through the eye, a grey patch behind it
-    zl = lin(48.4, (0.17, nb.add(ym, 34.0)))
-    hl = lin(0.5, (0.05, nb.add(ym, 34.0)))
-    lore = both(tin, side, less(nb.sub(nb.absf(nb.sub(zm, zl)), hl), 0.0, 0.18), nb.ss(ym, -35.5, -34.0),
-                less(ym, -16.0, 1.5))
-    C.paint(lore, hexc(INK), gloss)
-    ear = nb.add(sq(nb.div(nb.add(ym, 17.0), 4.6)), sq(nb.div(nb.sub(zm, 46.6), 3.4)))
-    C.paint(both(tin, side, less(ear, 1.0, 0.06)), nb.tint(hexc(GREY), tone), gloss)
-    C.paint(both(tin, side, nb.band(ear, 1.0, 1.16, 0.04)), hexc(INK), gloss)
+    # --- the scarlet cap, printed the way the old lithographers did it (the V&A's sparrow): it
+    # sweeps from the bill over the crown and down the nape, deeper crimson toward its edge with a
+    # paler printed sheen on the crown, keyed with rows of small crimson-edged feathers that point
+    # back; under its edge a dove-grey stripe runs from the bill over the eye and down the neck
+    zc = lin(49.6, (4.6, nb.ss(ym, -34.0, -25.5)), (-7.0, nb.ss(ym, -21.0, -9.0)))
+    dz = nb.sub(zm, zc)
+    nape = less(ym, -7.0, 1.2)
+    cap = both(tin, nb.ss(dz, 0.0, 0.3), nape)
+    inner = nb.mul(nb.ss(dz, 0.3, 5.0), nb.ss(ym, -6.5, -10.5))
+    C.paint(cap, nb.mixc(inner, nb.tint(hexc(CRIMSON), tone), nb.tint(hexc(SCAR), tone)), gloss)
+    sheen = both(cap, nb.ss(zm, 56.5, 60.0), less(ax, 7.0, 3.0), nb.band(ym, -29.0, -15.0, 3.0))
+    C.paint(nb.mul(sheen, 0.6), hexc("#E5613F"), gloss)
+    cf = scales(nb.add(ym, 40.0), nb.add(xm, zm), 2.4, 2.2)
+    C.paint(both(cap, nb.ss(dz, 0.8, 1.6), nb.band(cf, 0.8, 1.0, 0.07)), hexc("#6E1216"), gloss)
+    C.paint(nb.mul(both(cap, nb.band(cf, 0.25, 0.5, 0.1)), 0.35), hexc("#E8573E"), gloss)
+    stripe = both(tin, side, nb.band(dz, -2.6, 0.0, 0.3), nb.band(ym, -33.0, -7.5, 1.2))
+    C.paint(stripe, nb.tint(hexc("#A3A59B"), tone), gloss)
+    C.paint(both(stripe, less(dz, -2.0, 0.3)), nb.tint(hexc("#7F8178"), tone), gloss)
+    C.paint(both(tin, side, nb.band(dz, -0.18, 0.18, 0.1), nb.band(ym, -33.0, -7.5, 1.0)), hexc("#4E0F12"), gloss)
 
     # --- the printed eye, pressed into a low dome: an ink rim, a cream ring, a gold iris, the
     # pupil and its shine
@@ -3117,15 +3124,16 @@ def bird_look(L, f):
 
     # --- antique wear: the print rubbed through to bright tinplate on the high points and the
     # seam, small chips, freckles of rust low down, fine scratches in the varnish
-    hi_pts = nb.mx(nb.mx(nb.ss(zm, 58.6, 60.2), both(nb.ss(nb.sub(0.0, L.ny), 0.7, 0.9), nb.band(zm, 27.0, 40.0, 3.0))),
+    hi_pts = nb.mx(nb.mx(nb.ss(zm, 59.4, 60.4), both(nb.ss(nb.sub(0.0, L.ny), 0.7, 0.9), nb.band(zm, 27.0, 40.0, 3.0))),
                    less(ax, 0.5, 0.2))
     rub = both(tin, hi_pts, nb.ss(L.noise(120.0, 6, detail=4), 0.5, 0.62))
-    chips = both(tin, nb.ss(L.noise(55.0, 7, detail=5, rough=0.7), 0.78, 0.8))
+    # chips only where hands and knocks reach: the high points, the seam and the edges
+    chips = both(tin, nb.mx(hi_pts, L.edge(mm(1.2), k=3.0)), nb.ss(L.noise(55.0, 7, detail=5, rough=0.7), 0.74, 0.77))
     worn = nb.mx(rub, nb.mx(chips, both(tin, L.edge(mm(0.5), k=4.0), nb.ss(L.noise(200.0, 8, detail=4), 0.6, 0.7))))
     C.paint(worn, hexc(TINP), 0.3, 1.0, -0.15)
     rusty = nb.mul(L.k(TINB, TAILR, TAILB), nb.ss(L.noise(70.0, 9, detail=5, rough=0.7), 0.76, 0.8))
     C.paint(nb.mul(rusty, nb.mx(less(zm, 22.0, 3.0), L.k(TAILR, TAILB))), hexc("#6B381D"), 0.85, 0.0, 0.1)
-    scratch = both(tin, nb.ss(L.noise(900.0, 10, stretch=(1.0, 0.04, 1.0), detail=1), 0.7, 0.73))
+    scratch = both(tin, nb.ss(L.noise(900.0, 10, stretch=(1.0, 0.04, 1.0), detail=1), 0.74, 0.77))
     C.paint(nb.mul(scratch, 0.5), hexc("#E6E0CC"), 0.4)
 
     # --- the bill: folded orange tin, darker at the tip, ink along the gape, a nostril each side
@@ -3302,7 +3310,9 @@ def bird_hop():
         ks[0] = ks[0][:2]
         return ks
 
-    tracks = [(part, ch, [(round(kk[0], 4), round(kk[1], 4), *kk[2:]) for kk in ks])
+    # the hop's sums run in mm (gravity's 9,810 mm/s²); the kit's travel is in studs
+    tracks = [(part, ch, [(round(kk[0], 4), round(mm(kk[1]) if ch in ("x", "y", "z") else kk[1], 4),
+                           *kk[2:]) for kk in ks])
               for (part, ch), ks in tr.items()]
     tracks += [("Tail", "turn", keyed(tails)), ("Beak", "turn", keyed(bills)), ("Key", "turn", key)]
     return round(end, 2), tracks, beats

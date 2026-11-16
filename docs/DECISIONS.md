@@ -6161,3 +6161,13 @@ Mannequin"; SCP-173 and Five Nights at Freddy's, as L-06b3b's light rule). How i
   dropping it). Whether a lit lantern you carry should hold one is the owner's (`OWNER.md`).
 Seen in Studio Play: the lantern's drop woke a Mannequin 17 studs off, it came at the player and
 froze 9.5 studs from the lantern, held 35 s after the player left, and walked on as it ran down.
+
+## D-235 The tin bird's hop is worked out in millimetres; the kit's travel is studs (F-04d2, Nov 16)
+
+The tin bird's `Hop` comes from one crank in `windups/build.py` (`bird_hop`), the mouse's way
+(D-232): hop heights, steps and flight times in millimetres with gravity at 9,810 mm/s², so the
+sums read like the toy. Its `x`, `y` and `z` keys are turned into studs as the tracks are
+written: the first export wrote millimetres where the kit reads studs, so the bird leapt 13 studs
+and walked off the filmstrip's stage. The filmstrip's stage light now rides along with a find
+that travels (`follow`) and stands on the camera's side when a motion picks its own `view`, so a
+travelling find stays lit in every frame.
