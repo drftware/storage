@@ -2,47 +2,43 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-16, session 214 (the RC car's handling, built in Brix and pushed) · **Checks:** green here and in Brix · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix `main` at `1a97787`, pushed, CI passes.
+**Updated:** 2026-11-16, session 215 (driving a body from a player's device, built in Brix) · **Checks:** green here and in Brix · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix `main` at `c9f6667`, committed, **not pushed** (waits on the owner's yes, first in `OWNER.md`).
 
 ## State
-- The owner (D-252): "absolute world-class", and Brix code is written from here when a ticket needs
-  a system Brix lacks, by Brix's own rules, then the pin moves. AGENTS.md and `docs/FRAMEWORK.md`
-  carry the rule.
-- F-G1b3c2 (drive the RC car) is split in four (ROADMAP, D-252). The car is a physics body the
-  driver's device moves, so walls and shut doors stop it and friends see it smoothly; the server
-  checks every move. F-G1b3c2a is done: Brix's `Handling.car` (its ENG-24a, E-079), throttle and
-  steering in with the car's real speed, the speed and turn out; 41 specs, a bench, a module page.
-- Brix is pushed (CI passes); the pin is still `5cdb8c2` and moves when F-G1b3c2c first uses it.
-- Earlier today: the lamps switch on anywhere (F-G1b3c1, D-250); worn finds and the home unit are
-  designed (D-251: F-G1b4, F-G1b5, S5-03a-c, one question in `OWNER.md`). Find art: F-05e (step
-  14) and F-05f (step 15) are left in `art/finds/WAVES.md`.
-- F-G1d done (D-253, a side session): the 12 wind-ups and 10 squishies built overnight are dealt;
-  seen in Play, the stress ball found, carried aboard and kept. Pressing them is F-G1e.
+- F-G1b3c2b is done in Brix (its ENG-24b, E-080): `Brix.MoveCheck.ground` judges how fast and far
+  the car may move; `Brix.Roblox.Driving.server` hands the car to its driver's device, checks every
+  move and a ray for walls, and puts a bad move back with a half-second hold; `.client` reads the
+  move stick on any device, holds the character still and drives the car's constraints.
+- Seen in Brix's Studio example: driven at a wall at 14 studs a second, the car stopped flush
+  against it; a 40-stud teleport and a hop through the wall were put back; the driver leaving
+  ended the drive. Studio's simulated keys reached the game only once, so runs steer from scripts.
+- The pin is still `5cdb8c2`; it moves to `c9f6667` (Handling and Driving) once Brix is pushed.
+- Earlier today: the lamps switch on anywhere (F-G1b3c1, D-250); worn finds and the home unit
+  designed (D-251); F-G1d dealt the wind-ups and squishies (D-253).
 
-## Next task: F-G1b3c2b Driving a body from a player's device, in Brix (its ENG-24b)
-The moment it serves: the car moves the instant you push the stick on a phone, stops dead at a
-wall, and can't be cheated through one. This session works in `../engine` by Brix's rules.
-1. Read `../engine/AGENTS.md` and `../engine/HANDOFF.md`: its Next task is this ticket, with steps,
-   acceptance and a Read-first list. Follow Brix's protocol there (its HANDOFF untracked, its commit
-   with no trailer, ask before pushing).
-2. Verify the Roblox APIs first (network ownership, `LinearVelocity` in plane mode,
-   `AlignOrientation`, the control module's `GetMoveVector`) and log them in Brix's `docs/STUDIO.md`.
-3. The pure move check with specs; then `Roblox.Driving.server` and `Roblox.Driving.client`; then
-   Brix's `examples/Driving` run in Studio (a copy of Brix's dev place, never the "Storage" window).
-4. Back here: tick F-G1b3c2b, update `docs/FRAMEWORK.md`'s Brix rows, and promote F-G1b3c2c.
-**Acceptance:** Brix's check green; the move check's specs; the example driven into a wall stops,
-a forced teleport is put back, the driver leaving ends the drive, each logged in Brix's
-`docs/STUDIO.md`; this repo's check green.
-**Read first:** `../engine/AGENTS.md`; `../engine/HANDOFF.md` and its Read-first list; D-252 (grep
-"^## D-252" docs/DECISIONS.md).
-
-## After it: F-G1b3c2c Drive it (moves the pin first)
-The car set down in front of you apart from its transmitter, which stays in your hands (the model
-is one: `RCCar_Remote` is the root and the car hangs off `RCCar_Arms`, so the car needs its own
-assembly); the hood camera low and wide with a jolt on a bump; the stick through Brix, a sideways
-push mixing in a little throttle; a motor whine rising with speed; wheels turning and steering;
-the back button; walking to it takes it back. Feel numbers in Config. Studio Play: lobby, down a
-hall, into an open unit, stopping at a shut door.
+## Next task: F-G1b3c2c Drive it (moves the pin first)
+The moment: you set the car down and the hood camera drops you to the floor, low and wide; push
+the stick and it leaps off at once with a rising whine, the wheels turning, and stops dead at a
+shut door.
+1. Once the owner has said yes in chat, push Brix's `main` (`git -C ../engine push`), wait for its
+   CI, and say so in Brix's HANDOFF. No yes: stop and ask; nothing below works on the old pin.
+2. Move the pin: `vendor/brix` to `c9f6667`; update `docs/FRAMEWORK.md` (the pin line and the two
+   Brix rows for Handling and Driving, now in use). Check green.
+3. The car set down apart from its transmitter: the model is one (`RCCar_Remote` is the root, the
+   car hangs off `RCCar_Arms`), so the car needs its own assembly, unanchored, with low friction
+   on its floor parts (Brix's Driving page says why). Find the code: `grep -rn RCCar src docs/CODEMAP.md`.
+4. Server: a `Driving.server` per drive, the check at the handling's top × 1.25; `ended` and
+   `putBack` told to the driver's client. Client: `Driving.client` with the handling's feel
+   numbers in Config, `controls` mixing a little throttle into a sideways push (E-079); the hood
+   camera with a jolt on a bump and on a put-back; a whine from `asked()`; wheels turning; the
+   back button; walking to it takes it back.
+5. Studio Play: from the lobby down a hall into an open unit, stopping at a shut door. Steer by
+   script if Studio's keys don't reach the game.
+**Acceptance:** check green; the pin at `c9f6667`; in Play the car drives and stops at a shut door
+with no put-back, logged; the phone stick and friends' view go to `OWNER.md`.
+**Read first:** `docs/ROADMAP.md` (grep "F-G1b3c2"); `../engine/docs/modules/Driving.md`;
+`../engine/docs/modules/Handling.md`; D-252 (grep "^## D-252" docs/DECISIONS.md); the RC car's
+code (grep above).
 
 ## Queue (next sessions, the owner's ticket order)
 1. F-G1b3c2d the driver's body, then F-G1b3c3 the collector steals the car (ROADMAP); then
@@ -62,6 +58,8 @@ hall, into an open unit, stopping at a shut door.
    opening a box in Play logs rbxassetid://92259888500166 failing 27 times (not in the place's
    instances or our source: find what plays it).
 7. F-G1e pressing the wind-ups and squishies (ROADMAP), when the owner slots it in.
+8. Two Studio windows of Brix's dev place (`dev-drive.rbxl`, `dev-drive2.rbxl`) are open and can
+   be closed; never the "Storage" window.
 
 ## Kickoff for the next agent
 ```text

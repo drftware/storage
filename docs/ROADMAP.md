@@ -2437,9 +2437,16 @@ actions themselves and dealing the new finds on floors are later game tickets.
           - [x] **F-G1b3c2a How the car answers its stick, in Brix** (Brix ENG-24a): Brix's
             Handling, throttle and steering in, the speed to drive at and the turn out, a car
             that can't turn standing still, held back by whatever stops it.
-          - [ ] **F-G1b3c2b Driving a body from a player's device, in Brix** (Brix ENG-24b):
+          - [x] **F-G1b3c2b Driving a body from a player's device, in Brix** (Brix ENG-24b):
             the server hands the body to its driver and checks every move, the client reads the
             move stick on any device and steps the handling. Built and run in Brix's Studio.
+            Done Nov 16 (Brix `c9f6667`, not pushed): `Brix.MoveCheck.ground` and
+            `Brix.Roblox.Driving.server` and `.client`. In Brix's example place a car driven at
+            the wall stopped flush against it, a teleport and a hop through the wall were put
+            back, and the driver leaving ended the drive. What c needs to know: the server holds
+            the car half a second after a bad move (`putBack` fires, for a jolt); the client's
+            `asked()` gives the speed and turn for the whine and the wheels; `controls` is where
+            the sideways push mixes in throttle; the car's floor parts need low friction.
           - [ ] **F-G1b3c2c Drive it.** The pin moved; the car set down in front of you apart
             from its transmitter, which stays in your hands; your view on its hood, low and wide
             with a jolt on a bump; the stick drives it through Brix; a motor whine rising with

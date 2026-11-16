@@ -54,6 +54,7 @@ Moving the pin is its own small step, taken when a ticket first needs something 
 | Purchases, Marketplace, `Roblox.PlayerPurchases` (ENG-23) | Built, run in Studio; ENG-23e waits on this game's phone test | S3-02b wires it on the server |
 | The Pursuit system, its stock chases and targetings, and its Roblox adapters (players as runners, a hunter driver) | Built; the adapters not yet run in Studio (ENG-07a). What players see is ENG-07b, not started | Not what keepers run on (D-064). Checked for the chase at L-06b3a2 and not used (D-074): a hunter the game places is never moved by Pursuit again, so a keeper couldn't hand back to roaming, and its reach and runners have no walls or sight |
 | Handling and the stock `Handling.car` (ENG-24a, at `1a97787`, pushed Nov 16): throttle and steering in, with the body's real speed, the speed to drive at and the turn out | Built from here at the owner's word (D-252); specs and a bench, nothing touches Roblox | The RC car's handling on the driver's client (F-G1b3c2c), once the pin moves |
+| Driving a body from a player's device (ENG-24b, at `c9f6667`, not yet pushed): `MoveCheck.ground`, how fast and far a body may move as the server judges it; `Roblox.Driving.server`, which hands the body to its driver, checks every move and a ray for walls, and puts a bad move back with a half-second hold; `Roblox.Driving.client`, which reads the move stick through Roblox's control module, holds the character still and drives a LinearVelocity and an AlignOrientation | Built from here at the owner's word (D-252); specs, and its example run in Brix's Studio (a wall, a teleport, the driver leaving) | The RC car (F-G1b3c2c), once Brix is pushed and the pin moves |
 
 ## What Brix plans that this game will use
 
@@ -70,7 +71,6 @@ None of these is built. Each row says what stands in here until it is.
 | A debug overlay, a gated cheat console, replaying a seed | Developer tooling | ENG-17 | Studio-only dev systems (`DevCorridor`) |
 | Error reports and step timing from live servers | Observability | ENG-18 | Nothing yet |
 | Carried items: slots, one in hand, pick up, switch, drop, hand over (L-11b) | None planned (checked Nov 8) | To file | Stand-in `Tools.Carry` (pure rules) and `src/server/Slots.luau`. Ticket for a Brix session to file, in neutral terms: "A carried-items system: a fixed number of slots per player, one active; take, switch, release and transfer between players, each validated (type, reach, room, rate) and replicated; items as data rows" |
-| A body driven from a player's device: the server hands it over and checks every move, the client reads the move stick and steps the handling (F-G1b3c2) | Driving adapters | ENG-24b, next, built from here | Nothing: the RC car waits on it |
 
 ## What lives in this game
 
