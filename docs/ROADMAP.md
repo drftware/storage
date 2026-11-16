@@ -2133,9 +2133,17 @@ it is, coins go to your bank, a tool goes to your hands, or it's a piece of the 
       (`Deal.packedShare`: 0.3 on floor 1, rising 0.02 a floor to 0.5; `deck.packed`); a packed
       unit holds no stuff and is never empty (`Deal.PackedCoins`). Specs:
       `tests/packedlayout.spec.luau`, `tests/packeddeal.spec.luau`. Nothing laid in the place yet.
-    - [ ] **B-05b2 The stacks on the floor.** Lay a packed unit's blocks as its door first lifts,
-      its marked box or sleeper in the clearing (never in the path), the keepers walking out by
-      the bend, and the camera in the path judged at phone size in Studio Play.
+    - [x] **B-05b2a The stacks on the floor, in code.** Done Nov 15 (D-217): `Deals` stands a
+      packed unit's blocks as its door first lifts or a saw's hole goes through (`layStacks`),
+      before anything it holds; everything it holds stands in the clearing (`DealSpot.Unit.room`,
+      `stacks`), the marked box just round the bend (`lure`), a sleeper at the hidden end
+      (`nook`); the corner's low stack stands last, only where nothing else does (`layCorner`).
+      Keepers' map: the unit is its path and its clearing joined at the bend (`KeeperMap.pack`).
+      A crawl hole into a packed unit has no Crawl button. Spec `tests/packedwalk.spec.luau`.
+      Passes checks, untested in Studio.
+    - [ ] **B-05b2b Walk a packed unit in Studio.** Play it: the stacks on the right side, the
+      box's sliver from the doorway, a sleeper walking out by the bend, the camera in the path at
+      phone size, the crawl button gone. Fix what feels wrong.
 
 ### Step 4: The climb with no top
 
@@ -2274,6 +2282,11 @@ actions themselves and dealing the new finds on floors are later game tickets.
 - [ ] **F-12 The eight wave 1 big finds.**
 
 ## Polish waiting for a slot
+
+- **Saw panels in a packed unit** (B-05b2a): the top's cut panel falls half under the doorway's
+  stacks (it lies at about x -1.9, 2.7 to 5.1 in), and a crawl hole's panel reaches 3.2 out from
+  the wall, under the path's stacks. Both read as wedged under the boxes; a fall that stops on
+  the stacks would be better.
 
 - **Finds' own sounds (F-G1a):** the Nov 15 finds borrow the tools' and the bedroom set's pick-up
   and drop sounds, pitched (`Tools/Catalog.luau`'s CLINK, TIN and the rest). Glass wants a glass

@@ -437,6 +437,53 @@ function KeeperMap.doorFront(map: Map, slot: number, out: number): (vector, vect
 	return door, door + map.outward[slot] * out
 end
 
+--- What `pack` needs of a packed unit's layout (PackedLayout.Layout has it), in the unit's own
+--- frame: x across, its +X to the right of someone in the doorway looking out, z in from the
+--- door's outer face. Rectangles as polygons (x1, z1, x2, z2, ...).
+export type Packing = { path: { number }, clearing: { number }, bend: { x: number, z: number } }
+
+-- The floor's rectangle round polygon `poly` in unit `slot`'s frame, whose door's outer face is
+-- at (ox, oz) looking out along `out`.
+local function unitRect(
+	poly: { number },
+	ox: number,
+	oz: number,
+	out: vector,
+	toZ: number?
+): (number, number, number, number)
+	local x0, x1, z0, z1 = math.huge, -math.huge, math.huge, -math.huge
+	for i = 1, #poly, 2 do
+		local ux, uz = poly[i], poly[i + 1]
+		if toZ then
+			uz = if uz > 0 then toZ else uz
+		end
+		local x, z = ox - out.z * ux - out.x * uz, oz + out.x * ux - out.z * uz
+		x0, x1, z0, z1 = math.min(x0, x), math.max(x1, x), math.min(z0, z), math.max(z1, z)
+	end
+	return x0, x1, z0, z1
+end
+
+--- A packed unit (B-05b2, D-216), by its slot: its floor becomes its path, from the doorway up the
+--- middle to the bend, and its clearing, joined at the bend. A keeper walking out of the clearing
+--- turns at the bend and comes down the middle of the path, never through a stack (keepers move
+--- by CFrame and would walk through one), and sees from one to the other only through the path's
+--- mouth. The path keeps the unit's place, so its doorway still opens onto it; it runs on to the
+--- bend over the clearing's middle, where a point is the path's. Returns the bend on the floor.
+function KeeperMap.pack(map: Map, slot: number, layout: Packing): (number, number)
+	local k = map.doorways[slot]
+	assert(k, `slot {slot} is not a unit`)
+	local u = map.nodePlace[2 * k]
+	local ox, oz, out = map.nodeX[2 * k], map.nodeZ[2 * k], map.outward[slot]
+	local bend = layout.bend
+	local x0, x1, z0, z1 = unitRect(layout.path, ox, oz, out, bend.z)
+	map.minX[u], map.maxX[u], map.minZ[u], map.maxZ[u] = x0, x1, z0, z1
+	local cx0, cx1, cz0, cz1 = unitRect(layout.clearing, ox, oz, out)
+	local c = place(map, cx0, cx1, cz0, cz1, map.y[u], slot)
+	local bx, bz = ox - out.z * bend.x - out.x * bend.z, oz + out.x * bend.x - out.z * bend.z
+	addPassage(map, u, bx, map.y[u], bz, c, bx, map.y[c], bz, 0, 1, true)
+	return bx, bz
+end
+
 --- Whether a keeper can walk through a door in this state: only when it's all the way up. A door
 --- peeking, rising or coming down is shut to keepers, so pulling a door down is always safety.
 function KeeperMap.letsThrough(state: Door.State): boolean

@@ -297,7 +297,8 @@ function Climbs.new(): Climbs
 				model,
 				origin,
 				Brix.Random.new({ seed = seed }),
-				deck.sleepers
+				deck.sleepers,
+				deck.packed
 			)
 		end
 		if wraps then

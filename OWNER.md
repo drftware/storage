@@ -71,14 +71,24 @@ nowhere else.
   2. Open `packed-path.png` (in the path, the torch on the right-hand wall) and
      `packed-clearing.png` (round the bend at the back, the marked box waiting). Tell the next
      session if any box looks wrong up close, or if the walls feel too tidy or too messy.
-- [ ] **Decide (defaults in, B-05b1, D-216): packed units.** Nothing to test yet: B-05b2 lays
-  them on the floor and adds steps to walk one here. Until then a packed unit's door opens on
-  an ordinary unit with no somebody's stuff in it.
-  1. A saw into a packed unit. The stacks stand where a crawl hole through a side wall and the
-     panel cut from the top would fall, because keeping that floor clear would open half the
-     unit. My default for B-05b2: the hole opens onto boxes (you see you've cut into a packed
-     unit, and can't crawl through there). The other choice is that the stacks in the hole's way
-     tumble down to let you through. Say which.
+- [ ] **Walk a packed unit** (B-05b2a, D-217; passes checks, untested in Studio until B-05b2b,
+  which may change these steps).
+  1. In Studio, set Workspace's `DevFloorSeed` to 2000013 and `DevFloorNumber` to 3, then Play.
+     Output says "Deals: packed with boxes on floor 3:" and the units' names.
+  2. Lift one of those doors. Look for: a wall of boxes to the ceiling as it rises, one dark
+     path up the middle, and at the back the corner of a marked box just showing round the bend
+     (Output's "held" line for that unit says which way the clearing turns).
+  3. Set Studio's device to a small phone sideways and walk the path: the stacks close round
+     you. Look for the camera clipping into boxes or jerking as you turn into the clearing.
+  4. Round the bend: open the box. Units with a sleeping monster have it standing at the far
+     end of the clearing instead; wake it and watch it walk to the middle of the path at the bend
+     and down it, never through the boxes.
+  5. Saw a crawl hole into a packed unit from the unit beside it: there is no Crawl button, and
+     the hole shows boxes.
+- [ ] **Decide (defaults in, B-05b1, D-216, D-217): packed units.**
+  1. A saw into a packed unit. Built as my default: the hole opens onto boxes and has no Crawl
+     button either side. The other choice is that the stacks in the hole's way tumble down to
+     let you through. Say if you want that instead.
   2. A packed unit that rolled nothing at all gets 1 coin in its box, so the walk to the back
      never ends empty-handed. Say if it should be more coins, or a find (that would add about one
      find for every seven medium units).

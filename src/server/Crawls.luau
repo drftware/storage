@@ -26,12 +26,18 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local CrawlHole = require(ReplicatedStorage.Shared.StorageUnit.CrawlHole)
 local Crawling = require(ReplicatedStorage.Shared.StorageUnit.CrawlHole.Crawling)
+local Packed = require(ReplicatedStorage.Shared.Packed)
 local Prompts = require(script.Parent.Prompts)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 local Slots = require(script.Parent.Slots)
 local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 local UnitKit = require(ReplicatedStorage.Shared.StorageUnit.UnitKit)
+
+-- Whether `unit` is packed with boxes to the ceiling (B-05b2): its stacks stand where you'd crawl.
+local function packed(unit: Model): boolean
+	return unit:GetAttribute(Packed.UnitAttribute) == true
+end
 
 export type CrawlEvent = {
 	player: Player,
@@ -159,6 +165,9 @@ function Crawls.new(): Crawls
 	end
 
 	local function crawl(hole: Hole, side: Side, player: Player)
+		if packed(side.from) or packed(side.into) then
+			return -- its button is hidden: the hole opens onto a packed unit's boxes
+		end
 		local t = os.clock()
 		local last = lastPress[player]
 		if last and t - last < Crawling.RepeatSeconds then
@@ -268,6 +277,18 @@ function Crawls.new(): Crawls
 			refuse = Prompts.refuser(p),
 		}
 		table.insert(hole.sides, side)
+		-- a hole into a packed unit opens onto its boxes (B-05b2, D-216): no button either side,
+		-- whether the stacks stood before the saw went through or as it did
+		local function sync()
+			p.Enabled = not (packed(from) or packed(into))
+		end
+		sync()
+		for _, unit in { from, into } do
+			table.insert(
+				hole.conns,
+				unit:GetAttributeChangedSignal(Packed.UnitAttribute):Connect(sync)
+			)
+		end
 		table.insert(
 			hole.conns,
 			p.Triggered:Connect(function(player: Player)

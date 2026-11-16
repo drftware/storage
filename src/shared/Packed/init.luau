@@ -7,6 +7,8 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Floor = require(script.Parent.Floor)
+local PackedLayout = require(script.Parent.PackedLayout)
 local Specs = require(script.Specs)
 
 export type Name = "ColumnA" | "ColumnB" | "ColumnC" | "WideA" | "WideB" | "Half" | "Toppled"
@@ -14,7 +16,18 @@ export type Name = "ColumnA" | "ColumnB" | "ColumnC" | "WideA" | "WideB" | "Half
 local Packed = {}
 
 Packed.Specs = Specs
+-- The attribute a packed unit's Model carries (true) once its stacks stand (B-05b2): a crawl
+-- hole into it opens onto boxes, so nobody crawls through (Crawls).
+Packed.UnitAttribute = "PackedUnit"
 Packed.Names = { "ColumnA", "ColumnB", "ColumnC", "WideA", "WideB", "Half", "Toppled" } :: { Name }
+
+-- Each block's boxes' real reach from its pivot (PackedLayout.reachOf), made once.
+local REACH: { [string]: PackedLayout.Reach } = {}
+for name, block in Specs.Blocks do
+	local lo, hi = block.Lo, block.Hi
+	REACH[name] = PackedLayout.reachOf({ X = lo.X, Z = lo.Z }, { X = hi.X, Z = hi.Z })
+end
+Packed.Reach = REACH
 
 local KRAFT = Color3.fromRGB(165, 122, 78) -- the boxes' own (Boxes.prepare), under the Overlay map
 
@@ -49,6 +62,19 @@ function Packed.prepare(part: MeshPart, name: Name, skin: SurfaceAppearance)
 	end
 	skin:Clone().Parent = part
 	part:SetAttribute("Packed", name)
+end
+
+-- How unit `number` of size `size` packs (B-05b2, D-216): its blocks, path, clearing and bend in
+-- its own frame (DealSpot's), or nil if it's too small to pack. The deal lays its stacks by this
+-- and the keepers' map walks its path by it, so both see the same unit.
+function Packed.layout(size: Floor.Size, number: string): PackedLayout.Layout?
+	local unit = Floor.Sizes[size]
+	return PackedLayout.lay(
+		{ width = unit.width, depth = unit.depth, doorWidth = unit.door },
+		number,
+		REACH,
+		Specs.Pitch
+	)
 end
 
 -- A copy of a block standing at `pivot` (the middle of its footprint, its front facing the

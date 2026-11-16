@@ -43,6 +43,16 @@ export type Unit = {
 	hole: { from: number, to: number }?,
 	landing: { x: number, z: number }?,
 	fallen: { number }?,
+	-- A packed unit (B-05b2, D-216): all it holds stands on `room`, its clearing (a rectangle as a
+	-- polygon, x1, z1, ...), in place of the floor past the door and the depths `From` and `To`
+	-- give, and never within `DealSpot.Stack` of `stacks`, the floor its stacks stand on (a
+	-- polygon each, never given up). A find, or the box it or the unit's note or coins come in,
+	-- goes nearest `lure` (x, z), just round the bend, so a sliver of it shows from the doorway; a
+	-- keeper goes nearest `nook`, the clearing's hidden end, and walks out by the bend.
+	room: { number }?,
+	stacks: { { number } }?,
+	lure: { number }?,
+	nook: { number }?,
 }
 export type Thing = "Tool" | "Find" | "Keeper" | "Coins" | "Battery"
 -- A thing's size as it stands at yaw 0: X across, Z along (front to back), Y tall.
@@ -70,6 +80,9 @@ DealSpot.To = { Tool = 0.7, Find = 1, Keeper = 1, Coins = 0.7, Battery = 0.7 } :
 -- Studs kept between a unit's coins and the other thing it holds, all round, so a pile never lies
 -- on a tool or against a keeper's feet, and each reads on its own.
 DealSpot.Apart = 0.5
+-- Studs between what a packed unit holds and its stacks (B-05b2): close enough to read as set
+-- down in the clearing, never touching the boxes.
+DealSpot.Stack = 0.25
 -- Half the note's width as drawn (the art's 0.7-stud note at NoteSpot.Scale 1.6).
 DealSpot.NoteHalf = 0.56
 -- Studs kept clear around the sight line from the doorway to the note, so nothing even brushes it.
@@ -80,6 +93,7 @@ DealSpot.Sight = 0.3
 DealSpot.Under = 3.5
 -- How far apart the spots tried are, in studs. Finer looks no different in a unit.
 DealSpot.Step = 0.5
+local NONE: { { number } } = {}
 -- A tool lies at one of these turns from square: never along a wall, so it looks dropped.
 DealSpot.ToolYaws = { 20, 55, 80, 110, 145, 170 }
 -- A find or keeper turns this many degrees from facing the doorway's middle, one way or the other.
@@ -203,24 +217,44 @@ local function spots(
 	local side = unit.width / 2 - DealSpot.Wall
 	local back = math.min(unit.depth - DealSpot.Wall, to * unit.depth)
 	local front = math.max(DealSpot.Door, from * unit.depth)
+	local left, right = -side, side
+	local room = unit.room
+	if room then
+		-- a packed unit: its clearing only, however deep
+		local x0, x1, z0, z1 = math.huge, -math.huge, math.huge, -math.huge
+		for i = 1, #room, 2 do
+			x0, x1 = math.min(x0, room[i]), math.max(x1, room[i])
+			z0, z1 = math.min(z0, room[i + 1]), math.max(z1, room[i + 1])
+		end
+		left, right = math.max(x0, -side), math.min(x1, side)
+		front, back = math.max(z0, DealSpot.Door), math.min(z1, unit.depth - DealSpot.Wall)
+	end
+	local stacks = unit.stacks or NONE
+	-- a clearing is tight: tried twice as finely, so a box and a keeper standing guard both fit
+	local step = if room then DealSpot.Step / 2 else DealSpot.Step
 	-- across from the middle out both ways alike, and in from the back wall, where things stand
-	local reach = math.floor(side / DealSpot.Step)
+	local reach = math.floor(side / step)
 	local z = back
 	while z >= front do
 		for column = -reach, reach do
-			local x = column * DealSpot.Step
+			local x = column * step
 			local turned = yaw or (if straight then 0 else DealSpot.facing(x, z)) + turn
 			local poly = DealSpot.footprint(x, z, turned, across, along)
 			local fits = true
 			for i = 1, #poly, 2 do
 				local px, pz = poly[i], poly[i + 1]
-				if math.abs(px) > side or pz > back or pz < front then
+				if px < left or px > right or pz > back or pz < front then
 					fits = false
 					break
 				end
 			end
 			if fits and sight and DealSpot.near(poly, sight, DealSpot.Sight) then
 				fits = false
+			end
+			for _, stack in stacks do
+				if fits and DealSpot.near(poly, stack, DealSpot.Stack) then
+					fits = false
+				end
 			end
 			for _, zone in holes do
 				if fits and DealSpot.near(poly, zone, 0) then
@@ -231,7 +265,7 @@ local function spots(
 				table.insert(found, { x = x, z = z, yaw = turned })
 			end
 		end
-		z -= DealSpot.Step
+		z -= step
 	end
 	return found
 end
@@ -325,7 +359,8 @@ end
 	on a crawl hole spot behind the bulb than in front of it, and nothing lies where you'd land
 	while it fits anywhere else. Nil only if it fits nowhere past the door. `near` (x, z), if
 	given, takes the spot that fits nearest it rather than the unit's own: the Packrat at the back
-	of its unit and its pile at its feet (S2-06b2b).
+	of its unit and its pile at its feet (S2-06b2b). In a packed unit (`unit.room`) a find or box
+	takes the spot nearest its `lure` and a keeper nearest its `nook`, unless `near` is given.
 ]]
 function DealSpot.inUnit(
 	unit: Unit,
@@ -372,6 +407,9 @@ function DealSpot.inUnit(
 	end
 	if #found == 0 then
 		return nil
+	end
+	if unit.room and not near then
+		near = if thing == "Keeper" then unit.nook elseif thing == "Find" then unit.lure else nil
 	end
 	if near then
 		local best, bestD = found[1], math.huge

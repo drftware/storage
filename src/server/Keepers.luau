@@ -97,6 +97,7 @@ local Doors = require(script.Parent.Doors)
 local Elevators = require(script.Parent.Elevators)
 local Flashlights = require(script.Parent.Flashlights)
 local Floor = require(ReplicatedStorage.Shared.Floor)
+local FloorBuilder = require(script.Parent.FloorBuilder)
 local Horn = require(ReplicatedStorage.Shared.Tools.Horn)
 local Keypad = require(ReplicatedStorage.Shared.Elevator.Keypad)
 local Kept = require(ReplicatedStorage.Shared.Kept)
@@ -110,6 +111,7 @@ local Ladders = require(script.Parent.Ladders)
 local Mannequin = require(ReplicatedStorage.Shared.Mannequin)
 local MotionLight = require(ReplicatedStorage.Shared.MotionLight)
 local MotionLights = require(script.Parent.MotionLights)
+local Packed = require(ReplicatedStorage.Shared.Packed)
 local Packrat = require(ReplicatedStorage.Shared.Packrat)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 local Saws = require(script.Parent.Saws)
@@ -290,7 +292,9 @@ export type Keepers = Brix.System & {
 	-- slot (`laid.slots`), `origin` is where it was laid, and `random` (a fresh Brix Random from the
 	-- floor's seed, not the deal's, so roams never change what the units hold) picks where its
 	-- keepers roam. `asleep` is its deal's sleepers (`Deal.Deck.sleepers`: each unit's slot, its
-	-- keeper's name), behind doors nobody has lifted yet. Its keepers go when `model` is destroyed.
+	-- keeper's name), behind doors nobody has lifted yet. `packed` is its deal's packed units
+	-- (`Deal.Deck.packed`, B-05b2): keepers walk their path and turn at the bend. Its keepers go
+	-- when `model` is destroyed.
 	add: (
 		self: any,
 		floor: Floor.Floor,
@@ -298,7 +302,8 @@ export type Keepers = Brix.System & {
 		model: Model,
 		origin: CFrame,
 		random: Floor.Random,
-		asleep: { [number]: string }
+		asleep: { [number]: string },
+		packed: { [number]: boolean }?
 	) -> (),
 	-- `riders` rode out of laid floor `model` as its gate shut (Climbs' `shut`, S2-02d4): from now
 	-- on they aren't on it for its security cameras though their car climbs level with it for a
@@ -1823,7 +1828,8 @@ function Keepers.new(): Keepers
 		model: Model,
 		origin: CFrame,
 		random: Floor.Random,
-		asleep: { [number]: string }
+		asleep: { [number]: string },
+		packed: { [number]: boolean }?
 	)
 		if floors[model] then
 			return
@@ -1863,6 +1869,26 @@ function Keepers.new(): Keepers
 			finds = { ids = {}, at = {}, count = 0 },
 		}
 		floors[model] = on
+		-- a packed unit's floor is its path and its clearing, joined at the bend (B-05b2)
+		local packedSlots: { [number]: boolean } = packed or {}
+		for slot in packedSlots do
+			local s = floor.slots[slot]
+			local unit = units[slot]
+			local layout = if s and s.number then Packed.layout(s.size, s.number) else nil
+			if layout and unit then
+				local bx, bz = KeeperMap.pack(on.map, slot, layout)
+				if RunService:IsStudio() then
+					-- the map's frame against the one the deal lays the stacks in
+					local bend = layout.bend
+					local want = origin:PointToObjectSpace(
+						(FloorBuilder.face(unit) * CFrame.new(bend.x, 0, bend.z)).Position
+					)
+					if math.abs(want.X - bx) > 0.1 or math.abs(want.Z - bz) > 0.1 then
+						warn(`Keepers: {unit.Name}'s bend is off the map's ({bx}, {bz} for {want})`)
+					end
+				end
+			end
+		end
 		for unit, slot in slots do
 			floorOf[unit] = on
 			local state: Door.State = if doors then doors:stateOf(unit) else "Closed"

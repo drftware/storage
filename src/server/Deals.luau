@@ -37,6 +37,8 @@ local Doors = require(script.Parent.Doors)
 local BoxSpecs = require(ReplicatedStorage.Shared.Boxes.Specs)
 local FloorBuilder = require(script.Parent.FloorBuilder)
 local MarkedBoxes = require(script.Parent.MarkedBoxes)
+local Packed = require(ReplicatedStorage.Shared.Packed)
+local PackedLayout = require(ReplicatedStorage.Shared.PackedLayout)
 local Saws = require(script.Parent.Saws)
 local Slots = require(script.Parent.Slots)
 local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
@@ -64,6 +66,9 @@ local BOX = BoxSpecs.Marked.Size
 local BOX_SIZE = { BOX.X, BOX.Y, BOX.Z }
 local BOX_FOOTPRINT: DealSpot.Size = { across = BOX.X, along = BOX.Z, tall = BOX.Y }
 local FELL = TopHoleSpecs.Parts.PanelEdge
+-- A packed unit's low stack in its clearing's far corner (PackedLayout): stood last, and only where
+-- nothing the unit holds stands, so a sleeper or a box always has the clearing's hidden end.
+local CORNER: Packed.Name = "Half"
 
 -- Each thing of somebody's stuff's size as DealSpot measures it (S1-04b2).
 local STUFF_SIZES: { [string]: DealSpot.Size } = {}
@@ -180,6 +185,21 @@ function Deals.new(): Deals
 				FELL.Size.Z + 2 * HOLE_MARGIN
 			),
 		}
+		-- a packed unit (B-05b2): all it holds stands in its clearing, clear of its stacks (the
+		-- corner's low stack aside: `layCorner`)
+		local layout = if deck.packed[index]
+			then Packed.layout(slot.size, slot.number :: string)
+			else nil
+		if layout then
+			local stacks: { { number } } = {}
+			for _, b in layout.blocks do
+				if b.name ~= CORNER then
+					table.insert(stacks, PackedLayout.footprint(b, Packed.Reach[b.name]))
+				end
+			end
+			size.room, size.stacks, size.lure, size.nook =
+				layout.clearing, stacks, layout.lure, layout.nook
+		end
 		-- the note's place on the back wall: kept clear only while a note is stuck there (the
 		-- fallback, `layNoteBox`); since B-04a a note comes in its box
 		return size, slot.number :: string, nil
@@ -190,6 +210,50 @@ function Deals.new(): Deals
 		return FloorBuilder.face(unit)
 			* CFrame.new(spot.x, 0, spot.z)
 			* CFrame.Angles(0, math.rad(spot.yaw), 0)
+	end
+
+	-- A packed unit's stacks (B-05b2, D-216), stood as its door first lifts (or a saw's hole goes
+	-- through), before anything it holds: a wall of boxes to the ceiling with one path through
+	-- and a bend at the back. All but the corner's low stack (`layCorner`), in the unit's hall
+	-- piece as somebody's stuff is. Its layout, or nil if it isn't packed.
+	local function layStacks(unit: Model, deck: Deal.Deck, index: number): PackedLayout.Layout?
+		local slot = deck.floor.slots[index]
+		local layout = if deck.packed[index]
+			then Packed.layout(slot.size, slot.number :: string)
+			else nil
+		if not layout then
+			return nil
+		end
+		unit:SetAttribute(Packed.UnitAttribute, true)
+		for _, b in layout.blocks do
+			if b.name ~= CORNER then
+				local at = placed(unit, { x = b.x, z = b.z, yaw = b.yaw })
+				Packed.clone(b.name :: Packed.Name, at, unit.Parent or unit)
+			end
+		end
+		return layout
+	end
+
+	-- The corner's low stack, if `layout` has one and nothing in `taken` (all the unit holds, with
+	-- room round it) stands on its floor. Whether it stood.
+	local function layCorner(
+		unit: Model,
+		layout: PackedLayout.Layout,
+		taken: { { number } }
+	): boolean
+		for _, b in layout.blocks do
+			if b.name == CORNER then
+				local floor = PackedLayout.footprint(b, Packed.Reach[CORNER])
+				for _, area in taken do
+					if DealSpot.near(floor, area, 0) then
+						return false
+					end
+				end
+				local at = placed(unit, { x = b.x, z = b.z, yaw = b.yaw })
+				return Packed.clone(CORNER, at, unit.Parent or unit) ~= nil
+			end
+		end
+		return false
 	end
 
 	-- Stands unit `unit`'s one marked box (B-03a) holding `key`, a find or tool, and the unit's
@@ -547,6 +611,7 @@ function Deals.new(): Deals
 		local awake = if keepers then keepers:awakeOn(unit) else 0
 		local contents = Deal.open(deck, index, { mood = "Build", awake = awake })
 		local dev = devDeal(contents)
+		local packing = layStacks(unit, deck, index)
 		local place, keeper, taken, pileAt, boxed = lay(unit, deck, index, contents, dev)
 		-- its coins (B-03b): in its box with its find or tool; else in a box of their own; loose
 		-- on the floor only where no box can stand
@@ -591,6 +656,7 @@ function Deals.new(): Deals
 			-- what stands is what the unit holds: the next that fits, or nothing (said in Output)
 			contents.stuff = layStuff(unit, deck, index, drawn, taken)
 		end
+		local corner = if packing then layCorner(unit, packing, taken) else false
 		if RunService:IsStudio() then
 			local things: { string } = {}
 			if contents.kind ~= "Nothing" then
@@ -644,6 +710,12 @@ function Deals.new(): Deals
 				held ..= ` (drawn the {drawn}, which doesn't fit)`
 			end
 			local guard = if index == deck.guarded then ", guarding its note" else ""
+			if packing then
+				-- DealSpot's -X is your right as you face the door from the hall
+				local side = if packing.side < 0 then "right" else "left"
+				local low = if corner then ", a low stack in its corner" else ""
+				held ..= ` (packed: its clearing round the bend to your {side} from the hall{low})`
+			end
 			print(`Deals: {unit.Name} held {held}{guard}`)
 		end
 		dealt:fire({
@@ -720,10 +792,23 @@ function Deals.new(): Deals
 	end
 
 	function system.add(_: any, deck: Deal.Deck, laid: { [Model]: number }, floor: Instance)
+		local packedNames: { string } = {}
 		for unit, index in laid do
 			if not deck.dealt[index] then
 				units[unit] = { deck = deck, index = index }
 			end
+			if deck.packed[index] then
+				table.insert(packedNames, unit.Name)
+			end
+		end
+		if RunService:IsStudio() and #packedNames > 0 then
+			table.sort(packedNames)
+			print(
+				`Deals: packed with boxes on floor {deck.floor.number}: {table.concat(
+					packedNames,
+					", "
+				)}`
+			)
 		end
 		floor.Destroying:Once(function()
 			for unit in laid do

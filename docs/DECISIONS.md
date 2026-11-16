@@ -5760,3 +5760,28 @@ the floor, the clearing's box or sleeper, the keepers and the camera.
 Not chosen: a path along a side wall (it can't take the landing under the top's hole); filling the
 hidden floor with blocks (costs triangles nobody sees); a find as the empty unit's prize (it would
 add about one find in seven medium units to the economy).
+
+## D-217 A packed unit's things stand in its clearing; keepers turn at the bend (B-05b2a, Nov 15)
+B-05b2 was split for the session's size: B-05b2a the code (this), B-05b2b walking it in Studio.
+- **Stacks first.** `Deals.open` stands the blocks (`layStacks`) before anything the unit holds, in
+  the unit's hall piece as somebody's stuff is, and marks the unit `PackedUnit` (an attribute).
+  `Packed.layout(size, number)` is the one layout both the deal and the keepers' map use.
+- **The clearing holds it all.** `DealSpot.Unit` gains `room` (the clearing: things stand there in
+  place of the floor past the door and the From/To depths), `stacks` (never within
+  `DealSpot.Stack`, 0.25, of a block), `lure` and `nook`. A find or any box goes nearest `lure`,
+  the back wall `PackedLayout.Lure` (1.5) past the path's edge, so its near corner shows from the
+  doorway; a keeper goes nearest `nook`, the clearing's far end, wholly out of the path's line.
+  The clearing is searched on a quarter-stud grid, so a keeper guarding a find (a padlocked
+  unit's) always fits beside its box, at the end of the path.
+- **The corner's low stack stands last**, only where nothing the unit holds stands, so a sleeper
+  or a box always has the clearing's hidden end.
+- **Keepers walk the path.** `KeeperMap.pack` makes the unit's place its path (from the doorway up
+  the middle to the bend) and adds the clearing as a place joined at the bend, so a woken sleeper
+  turns there and comes down the middle, never through a stack (keepers move by CFrame), and
+  can't see the hall until it reaches the path's line. Studio warns if the map's bend and the
+  stacks' disagree.
+- **Saws** (OWNER.md's default): a crawl hole into a packed unit has no Crawl button either side
+  (no words: the boxes are what you see). The top's hole lands you in the path, as the layout
+  keeps its landing clear. Panels falling under the stacks is a polish line.
+Not chosen: laying the keeper before the box so a guard always gets the nook (the box would lose
+its place round the bend); the stacks as keeper-map walls (the map has no walls, only places).

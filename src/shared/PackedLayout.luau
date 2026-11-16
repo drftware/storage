@@ -46,6 +46,11 @@ export type Layout = {
 	-- where the path turns into the clearing, on the path's middle line: a keeper walking out of
 	-- the clearing goes by it, so it never cuts the corner through a stack
 	bend: { x: number, z: number },
+	-- (x, z) where what the unit holds goes (DealSpot.Unit's `lure` and `nook`): the back wall
+	-- just round the bend, so a sliver of a box there shows from the doorway (D-215's lure), and
+	-- the clearing's far end at the side wall, out of sight, where a keeper sleeps
+	lure: { number },
+	nook: { number },
 }
 
 -- Studs across the path. A player is 2 across, so a 3 wide path is a squeeze you walk without
@@ -61,6 +66,10 @@ PackedLayout.Gap = 1.2
 -- Units narrower than this, studs, stay open (D-205: small units are never packed): the path,
 -- a stack on each side and the clearing's near stack need about this much.
 PackedLayout.Narrowest = 10
+-- Studs past the path's edge, along the back wall, that a box is drawn to (`lure`): its near
+-- corner stands about a third of a stud round the corner, where an eye at the doorway just
+-- catches it, and a keeper guarding it still fits at the end of the path beside it.
+PackedLayout.Lure = 1.5
 -- Of the units, the share (by number) with a low stack in the clearing's far corner.
 PackedLayout.HalfShare = 2 / 3
 
@@ -263,6 +272,8 @@ function PackedLayout.lay(
 		path = rect(-P, 0, P, C),
 		clearing = rect(-W, C, P, B),
 		bend = { x = 0, z = (C + B) / 2 },
+		lure = { (-P - PackedLayout.Lure) * m, B },
+		nook = { -W * m, (C + B) / 2 },
 	}
 end
 
