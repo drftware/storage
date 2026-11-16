@@ -15,6 +15,8 @@
 	  (Brix's grant rules: never throw, never yield). Nil for an offer whose effect lands at once
 	  on the server, such as Cut Free (S3-03), heard from Purchases' `onGranted`.
 	- `ownerOnly`: prompted only by the place's owner's dev prompt, never shown to players.
+	- `forAnother`: bought for another player, named as the prompt goes up (Brix's recipients,
+	  D-206); its grant still lands in the buyer's save, and the sale's `recipient` says who.
 
 	Prices are never here: Roblox's are read each time an offer is shown (Brix's Marketplace).
 	Whatever a row grants, `offers` also counts the purchase in the save's `bought`, the same
@@ -32,18 +34,20 @@ export type Row = {
 	switch: string,
 	grant: Grant?,
 	ownerOnly: boolean?,
+	forAnother: boolean?,
 }
 
 -- The shape of each offer handed to `Brix.Purchases.new` (`Brix.PurchaseOffer<Save.Data, Player>`).
 export type Offer = {
 	product: number,
 	grant: Grant,
+	forAnother: boolean?,
 }
 
 local Products = {}
 
--- Every product, by offer name. Step 3's products (Free a Friend, Free Everyone, then wrap
--- colours) join as S3-03 and S3-04 put them on sale.
+-- Every product, by offer name. Step 3's products (Free Everyone, then wrap colours) join as
+-- S3-03 and S3-04 put them on sale.
 Products.Rows = table.freeze({
 	-- Cut Free (S3-03a, GDD "Getting caught", DOORS' revive): caught, you pay and you're out at
 	-- once. Granted as a spare in the save, which the server spends as it frees you (CutFrees),
@@ -53,6 +57,19 @@ Products.Rows = table.freeze({
 		switch = "sellCutFree",
 		grant = function(_sale: Sale, data: Save.Data): string?
 			data.spares.cutFree = (data.spares.cutFree or 0) + 1
+			return nil
+		end,
+	}),
+	-- Free a Friend (S3-03b, GDD "Getting caught"): you pay to free a caught friend from
+	-- wherever you're standing. Bought for them, but granted as a spare in the buyer's save,
+	-- which the server spends as it frees the friend (CutFrees): one that lands after they're
+	-- already out waits for the buyer's next press, so the purchase is never lost.
+	freeFriend = table.freeze({
+		title = "Free a Friend",
+		switch = "sellFreeFriend",
+		forAnother = true,
+		grant = function(_sale: Sale, data: Save.Data): string?
+			data.spares.freeFriend = (data.spares.freeFriend or 0) + 1
 			return nil
 		end,
 	}),
@@ -98,6 +115,7 @@ function Products.offers(ids: { [string]: number }): { [string]: Offer }
 		local own = row.grant
 		offers[name] = {
 			product = product,
+			forAnother = row.forAnother,
 			grant = function(sale: Sale, data: Save.Data): string?
 				local why = if own then own(sale, data) else nil
 				if why ~= nil then

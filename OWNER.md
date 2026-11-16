@@ -89,6 +89,30 @@ nowhere else.
      Buy it: you're standing in the car beside your friends as it reaches the next floor.
   9. With a gamepad: Y presses Cut Free, A still bangs.
 
+- [ ] **Make the Free a Friend product and free a friend from across the floor** (S3-03b,
+  D-222; in Studio Play Claude saw the pill drawn with a face and a purchase with no friend named
+  kept as a spare; freeing a real second player has never been tried). Two choices are yours:
+  (a) the GDD's table says Free a Friend shows on the caught screen, but its own line says you
+  free a friend "from wherever you are standing", so it was built for the free player, under the
+  corner map; say if you meant the caught screen. (b) A purchase that lands after your friend is
+  already out stays with you as a spare Free a Friend, used by your next press with no box (the
+  ticket's default was a spare Cut Free instead).
+  1. Creator Hub > this experience > Monetization > Developer Products: make one named exactly
+     `Free a Friend`, at your price (the GDD says 49 Robux).
+  2. In Studio: Test > Clients and Servers, 2 players, Start. In the Server window's Command Bar,
+     run `workspace:SetAttribute("WakeSleepers", true)`. Get Player2 caught; keep Player1 free.
+  3. On Player1, under the corner map: a beat after the catch, a warm pill eases in from the
+     right with Player2's face and "Free". No price. Nothing on Player2's screen changes.
+  4. Player1: Left Alt, click the pill. A soft click, the pill springs and dims. In Studio (no
+     purchase there) Player2's film rips at once and their door hauls up; on Player1's screen a
+     faint rip, and the pill swells and fades. Server log: `[CutFrees] Player1 freed Player2`.
+  5. Get two players caught with a third free (3 players): two pills, the first caught on top.
+  6. A gamepad on Player1: a small "Y" sits left of the top pill; Y presses it.
+  7. Published, with a friend, on your phone: get your friend caught, tap Free, buy. Their film
+     rips and their door goes up. Then get them caught again, tap Free, and before you buy, have
+     a third friend cut them free by hand; now buy. The log says your Free a Friend waits in your
+     save; get them caught again and tap Free: no purchase box, they're freed at once.
+
 - [ ] **Look at the packed unit's stacks** (B-05a, D-215; judged by Claude in renders, imported
   into Studio, not yet laid on any floor). The blocks a packed unit's walls will be built from are
   in the place at `ReplicatedStorage.Props.Packed` (seven MeshParts, put there by hand this

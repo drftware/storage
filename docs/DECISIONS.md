@@ -5873,3 +5873,30 @@ box (the floor in front of it is 1.27, the Mannequin 1.89 across).
   fading with the bar, with the same click, spring and dim.
 - Colours in the shared module are plain `{ r, g, b }` records: the Lune specs load
   `CutFree.luau`, and Lune has no `Color3`.
+
+---
+## D-222 Free a Friend: a free player's pill with the friend's face, under the corner map (S3-03b, Nov 15)
+The GDD's "Getting caught": Free a Friend "frees a friend who is caught, from wherever you are
+standing", 49 Robux. DOORS' revive, bought for a friend (Brix's `forAnother`, D-206).
+- **The buyer is the free player.** The GDD's product table puts it on "the screen you see while
+  you are caught", but a caught player would buy Cut Free, and "wherever you are standing" is the
+  free one; built for them, the table's line in `OWNER.md`.
+- **The moment:** a friend's scream cuts off across the floor and their dot drops off the map;
+  `CutFree.FriendInAfter` (0.8 s) later a warm pill eases in under the map, their headshot and
+  "Free". Paid and freed, their film rips and door hauls up as their own Cut Free would (cut by
+  the buyer: the record and every screen count the buyer as cutter); left behind, they stand in
+  the car at the next floor. The buyer hears a faint rip (`CutFree.FriendRipVolume`) and the
+  pill swells and goes, if they pressed it in the last `FriendHeardFor` seconds.
+- **One pill per caught friend**, the longest caught on top, at most `FriendMost` (3). Cut Free's
+  warm ink, no price, no pulse. A tap, or a click with a freed mouse (Left Alt); no computer key,
+  so it never grabs at a player mid-chase (F is the tap's); Y on a gamepad presses the top one.
+- **The grant is a spare in the buyer's save** (`spares.freeFriend`), spent as the friend named
+  in the sale is freed. A friend already out when it lands leaves it there, and the buyer's next
+  press spends it with no prompt. The ticket's default was a spare Cut Free; a spare of what was
+  bought keeps the purchase what the buyer paid for (`OWNER.md`).
+- **The press** (`Remotes.FreeFriend`, the friend's UserId) is checked: no faster than
+  `CutFree.AskEvery`, a whole non-zero UserId (`CutFree.friendId`), a player in this server, not
+  the asker, caught now. The asker may be caught too; only the screen decides who sees it.
+- Studio: Workspace `DevFreeFriend` (a UserId) stands up a pill as if that player were caught;
+  `DevReceipt` takes `recipient` (a save key), naming who it's for as the prompt would.
+

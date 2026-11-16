@@ -86,7 +86,9 @@ export type KeptPlayers = Brix.System & {
 	-- Cut Free (S3-03a): `player`, wrapped inside their unit, tears free as a friend's cut tears
 	-- them (every screen plays the rip and the slump), and a beat later their door hauls itself
 	-- all the way up, its padlock off first if one is on. False when they aren't inside a unit.
-	cutFree: (self: any, player: Player) -> boolean,
+	-- `cutter`, a friend who paid to free them (Free a Friend, S3-03b), is the one the record
+	-- and every screen count as cutting; by default it's them.
+	cutFree: (self: any, player: Player, cutter: Player?) -> boolean,
 }
 
 -- A laid floor: its deck, units and their slots, its model (where its bangs are marked for
@@ -925,13 +927,14 @@ function KeptPlayers.new(): KeptPlayers
 		return store(player, floor, near)
 	end
 
-	function system.cutFree(_: any, player: Player): boolean
+	function system.cutFree(_: any, player: Player, cutter: Player?): boolean
 		local h = held[player]
 		if not (h and h.inside) then
 			return false
 		end
 		local unit = h.unit
-		letGo(player, "Cut Free", player.UserId)
+		local by = cutter or player
+		letGo(player, if by == player then "Cut Free" else "Free a Friend", by.UserId)
 		task.delay(CutFree.DoorAfter, function()
 			local d = doors
 			if not (unit and d and unit.Parent) then

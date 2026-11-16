@@ -20,6 +20,7 @@ local CaughtView = require(script.CaughtView)
 local BatteryView = require(script.BatteryView)
 local BreakerView = require(script.BreakerView)
 local FeedView = require(script.FeedView)
+local FreeFriendView = require(script.FreeFriendView)
 local CoinView = require(script.CoinView)
 local KeptWrapOn = require(script.KeptWrapOn)
 local ChaseMusic = require(script.ChaseMusic)
@@ -109,6 +110,8 @@ local host = Brix.Host.new({
 		-- after the keepers' bodies and the box are posed, so its picture shows this frame's
 		{ slot = "feedView", system = FeedView.new() },
 		{ slot = "caughtView", system = CaughtView.new(kick) },
+		-- a caught friend's face under the corner map, to pay to free them (S3-03b)
+		{ slot = "freeFriendView", system = FreeFriendView.new() },
 		{ slot = "chaseMusic", system = ChaseMusic.new() },
 		{ slot = "keptWrapOn", system = KeptWrapOn.new() },
 		{ slot = "cutFreeView", system = CutFreeView.new(kick) },

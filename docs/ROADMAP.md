@@ -2031,7 +2031,14 @@ Done when nobody quits a climb because they were caught.
     from the save (no prompt), a second freed by a click (Studio's free path) with no bang sent,
     the door up and the walk out; the phone layout at 844 by 390. The real purchase, a phone and
     the watch bar's press wait on `OWNER.md`.
-  - [ ] **S3-03b Free a Friend.** Pay to free a caught friend (Brix's recipients, D-206).
+  - [x] **S3-03b Free a Friend** (Nov 15, D-222). The `Free a Friend` product row (bought for a
+    friend, granted as a spare in the buyer's save); `Remotes.FreeFriend` takes the friend's
+    UserId, checked (rate, a whole UserId, in this server, not you, caught), spends a spare or
+    prompts with the friend's save key as recipient; the grant frees the friend the sale names
+    (cut by the buyer) or waits as a spare. A free player sees a warm pill per caught friend
+    under the corner map, their face and "Free" (Y on a gamepad). Seen in Studio Play: the pill
+    and a grant with no friend named kept. Freeing a real second player waits on `OWNER.md`.
+    Polish not built: the pill doesn't follow the map off screen (the lobby, the feed).
   - [ ] **S3-03c Free Everyone before the results**, and playing alone: one catch ends the
     climb today before Cut Free can be bought (ClimbEnd.over), so the end waits on the offer.
 - [ ] **S3-04 The counter's shop, and wrap colours.** Walk up to the counter and the shop

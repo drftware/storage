@@ -28,7 +28,8 @@
 	- Studio only: `ServerStorage.DevReceipt`, a BindableFunction taking a made-up receipt, as Roblox
 	  hands one over, and answering the decision's name (`PurchaseGranted`, `NotProcessedYet`).
 	  Missing fields are filled in: the first player as buyer, a fresh purchase id, 0 Robux spent;
-	  `offer` (an offer name) stands in for `ProductId`. While a save fails it waits and tries again,
+	  `offer` (an offer name) stands in for `ProductId`, and `recipient` (a save key) names who a
+	  purchase for a friend is for, as the prompt would have. While a save fails it waits and tries again,
 	  as a real receipt does, so it answers once the write lands or the buyer leaves.
 	- Saving's `DevSaveFails` makes every save write fail.
 ]]
@@ -315,6 +316,20 @@ function Purchasing.new(): PurchasingSystem
 			info.ProductId = found[info.offer]
 		end
 		info.offer = nil
+		-- `recipient`, a save key: who the purchase is for, named in the buyer's save as a prompt
+		-- would (Free a Friend, S3-03b); Studio can't prompt a made-up product, so this stands in
+		local recipient = info.recipient
+		info.recipient = nil
+		local s = saving
+		local buyer = Players:GetPlayerByUserId(info.PlayerId)
+		local data = if s and buyer then s:data(buyer) else nil
+		if type(recipient) == "string" and data and type(info.ProductId) == "number" then
+			for name, id in found do
+				if id == info.ProductId then
+					data.recipients[name] = recipient
+				end
+			end
+		end
 		info.PurchaseId = info.PurchaseId or HttpService:GenerateGUID(false)
 		info.CurrencySpent = info.CurrencySpent or 0
 		info.CurrencyType = info.CurrencyType or Enum.CurrencyType.Robux

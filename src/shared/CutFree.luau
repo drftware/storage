@@ -68,24 +68,75 @@ CutFree.DimTime = 0.12
 -- panel's.
 CutFree.Click = { id = "rbxassetid://15675059323", pitch = 0.9, volume = 0.35 }
 
--- How many Cut Frees `data` holds paid for and unused.
-function CutFree.spares(data: Save.Data): number
-	local held: number? = data.spares[CutFree.Offer]
+-- Free a Friend (S3-03b, GDD "Getting caught"): you're free, a friend is caught somewhere on
+-- the floor, and you pay to free them from wherever you're standing. Their film rips and their
+-- door hauls up exactly as their own Cut Free would; left behind, they're standing in the car at
+-- the next floor. Bought for them (Brix's recipients, D-206), granted as a spare in the buyer's
+-- save and spent as the friend is freed, so one that lands after they're already out waits for
+-- the buyer's next press, with no prompt.
+
+-- The offer's name in `Products` and in the save's `spares`.
+CutFree.FriendOffer = "freeFriend"
+-- Where a press for a friend reaches the server, in ReplicatedStorage.Remotes, carrying the
+-- friend's UserId. Its `OnAttribute` is the same flag as Cut Free's, for this offer.
+CutFree.FriendRemote = "FreeFriend"
+-- The pill's one word, beside the friend's face.
+CutFree.FriendWord = "Free"
+-- Most caught friends with a pill at once, the longest caught first: three stacked pills still
+-- clear a landscape phone's bottom edge under the corner map.
+CutFree.FriendMost = 3
+-- Seconds after a friend is caught before their pill eases in: the catch lands first (its
+-- scream, their dot gone off the map), then the way to pay for them.
+CutFree.FriendInAfter = 0.8
+-- The pill's height in points (above Apple's 44-point tap minimum), its width as a share of
+-- that, and the points between pills and under the corner map.
+CutFree.FriendTall = 46
+CutFree.FriendWide = 2.5
+CutFree.FriendGap = 8
+-- Seconds the pill takes to ease in (sliding from the screen's edge) and to fade out.
+CutFree.FriendIn = 0.32
+CutFree.FriendOut = 0.25
+-- Your friend freed by your press: the film's rip, quieter than in the hall (it's across the
+-- floor), and the pill's swell (scale) as it goes.
+CutFree.FriendRipVolume = 0.45
+CutFree.FriendFreedSwell = 1.12
+-- Seconds a press stays yours: a friend freed this long after it plays the rip on your screen.
+-- A purchase can take a while to land, and a friend freed by somebody else after that isn't
+-- yours to hear.
+CutFree.FriendHeardFor = 60
+
+-- How many of the offer named `offer` (Cut Free by default) `data` holds paid for and unused.
+function CutFree.spares(data: Save.Data, offer: string?): number
+	local held: number? = data.spares[offer or CutFree.Offer]
 	return held or 0
 end
 
--- Spends one of `data`'s spare Cut Frees: whether there was one. Never goes below none.
-function CutFree.spend(data: Save.Data): boolean
-	local held = CutFree.spares(data)
+-- Spends one of `data`'s spares of `offer` (Cut Free by default): whether there was one. Never
+-- goes below none.
+function CutFree.spend(data: Save.Data, offer: string?): boolean
+	local name = offer or CutFree.Offer
+	local held = CutFree.spares(data, name)
 	if held <= 0 then
 		return false
 	end
 	if held == 1 then
-		data.spares[CutFree.Offer] = nil
+		data.spares[name] = nil
 	else
-		data.spares[CutFree.Offer] = held - 1
+		data.spares[name] = held - 1
 	end
 	return true
+end
+
+-- The friend a Free a Friend press names, checked as the remote hands it over: a whole,
+-- non-zero UserId Roblox could give (Studio's test players have negative ones), or nil.
+function CutFree.friendId(value: unknown): number?
+	if type(value) ~= "number" or value ~= value or value % 1 ~= 0 then
+		return nil
+	end
+	if value == 0 or math.abs(value) > 2 ^ 53 then
+		return nil
+	end
+	return value
 end
 
 return table.freeze(CutFree)
