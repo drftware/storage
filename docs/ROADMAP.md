@@ -2080,6 +2080,28 @@ Done when nobody quits a climb because they were caught.
   - [ ] **S3-04c Patterned wraps** (later, with art): the GDD's "colour or pattern" at the top
     of the price range (caution-tape print, camo, glow in the dark through the SurfaceAppearance's
     `EmissiveStrength`, STUDIO.md), each a texture set made the art way.
+- [ ] **S3-05 Caught players each in an empty unit of their own** (bugs from the owner's
+  three-player playtest, Nov 15; sessions 11 and 12 of the ten-ticket run, after F-G1b). The
+  moment: caught or left behind, you wake shut in a unit of your own, wrapped, and bang on the
+  door until a friend follows the noise to you and cuts you free. Two bugs broke it:
+  - [ ] **S3-05a Two players left behind land on top of each other, and can't be cut free.**
+    Two players missed the car. On the next floor each watched the ride over the shoulder of the
+    friend who made it, as meant; then both woke wrapped on the same spot in front of the
+    elevator instead of in units, each one's camera inside the other's body. The third player's
+    Cut free said "Get closer" every time and never worked. Should be: each wakes in a unit of
+    their own (never the same one), wrapped, with the Bang button, and a friend at the door can
+    cut them free. Look at why both missed a unit: the carry's `KeptPlayers:store`, `Kept.choose`
+    and the fallback that stands you in the lobby when no unit is free (D-186); whether two
+    carries in the same moment can pick the same unit before either is marked as holding
+    someone; whether the new floor's units are ready when the pick runs. If the fallback stays,
+    it never stands two players on one spot and never leaves a wrapped player nobody can free.
+    Reproduce with two stand-ins left behind (STUDIO.md "Testing left behind").
+  - [ ] **S3-05b A caught friend put in the unit you're standing in.** A friend was caught and
+    turned up wrapped in the shut unit the owner was standing in. `Kept.free` asks only that a
+    unit is shut with no monster and no caught player in it, so a free player inside a shut unit
+    doesn't count. Should be: the pick skips any unit with anyone inside, free or caught, door
+    up or down. A failing Lune spec for the pick first.
+  Both: `OWNER.md`'s carried-up steps (S3-01a) become three-player steps that cover these.
 
 ### The box you open (the owner, Nov 15, D-205)
 

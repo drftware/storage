@@ -40,13 +40,16 @@ OWNER.md steps for a long climb with a friend. S4-01b (rows actually changing fl
 
 ## Queue (next sessions, the owner's ten-ticket order)
 1. **S4-01b What changes floor to floor** (after S4-01a).
-2. **F-G1b Using a find plays what it does** (ROADMAP F-G1); then S4-02 to S4-05 (5 coins a trapped
-   monster, D-188). Any ticket that adds finds starts from the catalog doc the GDD's finds section links.
-3. Once the owner's real purchase passes: mark Brix's ENG-23e done in `../engine`'s HANDOFF.
-4. A Studio hook to catch yourself for real (CatchTest finds no keeper even after WakeSleepers
+2. **F-G1b Using a find plays what it does** (ROADMAP F-G1). Any ticket that adds finds starts
+   from the catalog doc the GDD's finds section links.
+3. **S3-05a, then S3-05b: caught players each in an empty unit of their own** (the owner's
+   playtest bugs, Nov 15): the run's sessions 11 and 12, right after F-G1b, before the run ends.
+   Then S4-02 to S4-05 (5 coins a trapped monster, D-188).
+4. Once the owner's real purchase passes: mark Brix's ENG-23e done in `../engine`'s HANDOFF.
+5. A Studio hook to catch yourself for real (CatchTest finds no keeper even after WakeSleepers
    and 24 s, Nov 15; a Workspace attribute that catches by the nearest sleeper would do).
-5. B-05b2b polish: a guard's box hides round the bend. L-08e3c, L-14b2d wait; R-01 later.
-6. Small: the shop's polish (ROADMAP S3-04b); Free Everyone's swap sound (Cut Free's click
+6. B-05b2b polish: a guard's box hides round the bend. L-08e3c, L-14b2d wait; R-01 later.
+7. Small: the shop's polish (ROADMAP S3-04b); Free Everyone's swap sound (Cut Free's click
    pitched down for now); Free a Friend's pills don't follow the map off screen; coin count and
    corner map up while wrapped; "rbxassetid://203785492 failed"; `ConfigService: Config value
    not found` (the `sell*` switches, now ten); "Stand one" never shows from the MCP;
