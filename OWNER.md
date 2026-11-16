@@ -113,6 +113,32 @@ nowhere else.
      a third friend cut them free by hand; now buy. The log says your Free a Friend waits in your
      save; get them caught again and tap Free: no purchase box, they're freed at once.
 
+- [ ] **Make the Free Everyone product and get the whole team caught** (S3-03c, D-223; in
+  Studio Play Claude saw the results wait 12 s on a stand-in catch and a late purchase kept as a
+  spare; the pill's swap and everyone freed by one press have never been seen). Two choices are
+  yours: (a) playing alone, the pill stays Cut Free while the end waits (it frees you, the whole
+  team; a dearer button for the same thing would be a trick); say if solo should see Free
+  Everyone. (b) The wait is 12 s from the last catch (`ClimbEnd.OfferFor`), longer while a
+  purchase box is open; say if it feels long or short.
+  1. Creator Hub > this experience > Monetization > Developer Products: make one named exactly
+     `Free Everyone`, at your price (the GDD says 149 Robux).
+  2. In Studio, alone: Play, walk floor 3 with `workspace:SetAttribute("WakeSleepers", true)` in
+     the server's Command Bar, and get caught. Before: the results came on the catch's black.
+     Now: you wake in the unit with Bang and the warm Cut Free pill, and the results only come
+     down about 8 s after the pill is up. Don't press: they come down as before.
+  3. Again, and this time press Cut Free (F) while you wait: the film rips, the door goes up, the
+     climb carries on. Log: `ClimbEnds: freed before the results; the climb carries on`.
+  4. Test > Clients and Servers, 2 players. Get Player1 caught, then Player2. On both screens,
+     as the second catch lands, the pill grows wider into "Free Everyone" with a low click and a
+     small swell (Player2 sees it already reading Free Everyone as their pill comes in).
+  5. Player1 presses it (F, or Left Alt and click). In Studio both films rip at once, both doors
+     go up, and nobody sees the results. Log: `[CutFrees] Player1 freed everyone (2; ...)`.
+  6. Get both caught again and press nothing: the results come down about 12 s after the catch.
+  7. Leave one of them free and caught on the watch bar (left behind): its pill swaps the same.
+  8. Published, with a friend, on your phone: both caught, tap Free Everyone, buy: both freed.
+     Again, tap it and cancel the box: the results come down shortly after. Again, tap it and
+     take your time in the box (20 s), then buy: the results wait for you, both freed.
+
 - [ ] **Look at the packed unit's stacks** (B-05a, D-215; judged by Claude in renders, imported
   into Studio, not yet laid on any floor). The blocks a packed unit's walls will be built from are
   in the place at `ReplicatedStorage.Props.Packed` (seven MeshParts, put there by hand this

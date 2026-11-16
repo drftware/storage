@@ -5900,3 +5900,28 @@ standing", 49 Robux. DOORS' revive, bought for a friend (Brix's `forAnother`, D-
 - Studio: Workspace `DevFreeFriend` (a UserId) stands up a pill as if that player were caught;
   `DevReceipt` takes `recipient` (a save key), naming who it's for as the prompt would.
 
+## D-223 Free Everyone: the results wait while every caught screen offers it (S3-03c, Nov 15)
+The GDD's "Getting caught": Free Everyone (149 Robux) frees every caught player at once; if the
+whole team is caught it's offered before the results, and the climb carries on from that floor.
+DOORS' revive on its death screen.
+- **The moment:** the last of you is wrapped; instead of the black coming down, the dark holds,
+  and on every caught screen the warm pill grows into "Free Everyone" (wider, a swell, its click
+  pitched low: a chance, not a press). Someone pays and every film rips, every door goes up.
+  Nobody does and the results come down as before. No countdown on screen (no visible clocks).
+- **How long it waits:** `ClimbEnd.OfferFor`, 12 s from the last catch (about 8 s with the pill
+  up), only while the offer is on sale (`CutFrees:offers`); nothing on sale, the end lands on the
+  catch's black as before (`ClimbEnd.ends`). A prompt put up for it keeps the wait open until
+  it's closed unbought (MarketplaceService's `PromptProductPurchaseFinished`) or its grant
+  lands, at most `OfferPrompt` (30 s) after the press, so a buyer is never cut off mid-purchase.
+- **Alone, the pill stays Cut Free** (`CutFree.wipeOffer`): it frees you, the whole team, and
+  showing a dearer button for the same thing would be a trick. The end waits on it the same.
+- **The grant is a spare Free Everyone in the buyer's save**, spent freeing every caught player
+  (each cut by the buyer; one spare however many it frees). Players still in the black after a
+  catch are freed on the same purchase over the settle tries. Nobody caught (the results came
+  first), it's kept, and the buyer's next wipe press spends it with no prompt.
+- **Nobody is freed once the end has begun** (`ClimbEnd.Attribute` set): the black is coming
+  down, and a spare spent under it would be a purchase lost. This holds for Cut Free and Free a
+  Friend too, which before could be spent in that second and a half.
+- **Who sees it:** every caught screen (wrapped, carried, left behind on the watch bar). Free
+  players can't exist in a wipe, so Free a Friend's pills never show then.
+

@@ -64,6 +64,24 @@ do
 	ok(CutFree.friendId(nil) == nil, "nothing is nobody")
 end
 
+-- Free Everyone (S3-03c): a spare in the buyer's save, spent once however many it frees; alone,
+-- the wipe's offer is Cut Free, which does the same for you.
+do
+	ok(Products.Rows[CutFree.EveryoneOffer] ~= nil, "Free Everyone is a product")
+	local offers = Products.offers({ [CutFree.EveryoneOffer] = 103 })
+	local offer = offers[CutFree.EveryoneOffer]
+	local data = Save.fresh()
+	ok(offer.grant({ offer = CutFree.EveryoneOffer }, data) == nil, "its grant never refuses")
+	ok(CutFree.spares(data, CutFree.EveryoneOffer) == 1, "a purchase is one spare")
+	ok(CutFree.spares(data) == 0, "not a Cut Free")
+	ok(CutFree.spend(data, CutFree.EveryoneOffer), "freeing everyone spends it")
+	ok(not CutFree.spend(data, CutFree.EveryoneOffer), "once")
+	ok(CutFree.wipeOffer(1) == CutFree.Offer, "alone, the wipe offers Cut Free")
+	ok(CutFree.wipeOffer(0) == CutFree.Offer, "and with nobody counted")
+	ok(CutFree.wipeOffer(2) == CutFree.EveryoneOffer, "with a friend, Free Everyone")
+	ok(CutFree.EveryoneWide > CutFree.Wide, "its pill is wider than Cut Free's")
+end
+
 print(`cutfree.spec: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

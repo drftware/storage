@@ -2013,7 +2013,7 @@ Done when nobody quits a climb because they were caught.
     Play with made-up receipts: granted once, a repeat ignored, a failed write waited and then
     granted once, a switch taking the offer off sale. A real purchase, a hop and the switch from
     the Creator Hub wait on `OWNER.md` (also Brix's ENG-23e).
-- [ ] **S3-03 Cut Free, Free a Friend, Free Everyone.** Offered only on the screen you see
+- [x] **S3-03 Cut Free, Free a Friend, Free Everyone.** Offered only on the screen you see
   while caught, and Free Everyone before the results when the whole team is wrapped. Cut Free
   while you're being carried up stands you in the car at the next floor. Split for size:
   - [x] **S3-03a1 Cut Free sold and used, on the server** (Nov 15, D-220). The `Cut Free`
@@ -2039,8 +2039,19 @@ Done when nobody quits a climb because they were caught.
     under the corner map, their face and "Free" (Y on a gamepad). Seen in Studio Play: the pill
     and a grant with no friend named kept. Freeing a real second player waits on `OWNER.md`.
     Polish not built: the pill doesn't follow the map off screen (the lobby, the feed).
-  - [ ] **S3-03c Free Everyone before the results**, and playing alone: one catch ends the
-    climb today before Cut Free can be bought (ClimbEnd.over), so the end waits on the offer.
+  - [x] **S3-03c Free Everyone before the results** (Nov 15, D-223). The `Free Everyone`
+    product row (switch `sellFreeEveryone`, a spare in the buyer's save). Once everyone's caught
+    and the offer is on sale, the results wait (`ClimbEnd.WaitAttribute` on Workspace,
+    `ClimbEnd.OfferFor` 12 s from the catch, longer while a prompt is open, `OfferPrompt`); every
+    caught screen's pill (the caught screen's and the watch bar's) grows into "Free Everyone"
+    with a swell and a low click; a press (`Remotes.FreeEveryone`, checked: rate, caught, the
+    wipe waiting) spends a spare or prompts; the grant frees every caught player, cut by the
+    buyer, or keeps. Alone, the pill stays Cut Free and the end waits on it. Nobody is freed once
+    the end's black has begun. Seen in Studio Play: the remote on, a made-up receipt with nobody
+    caught kept as a spare, and a stand-in catch (the `Kept` attribute set by hand) holding the
+    results 12.1 s, then ending. Not run: a real catch (CatchTest finds no keeper, STUDIO.md),
+    the pill's swap on screen, everyone freed by one press; those wait on `OWNER.md`.
+    Polish not built: the swap's own sound (now Cut Free's click pitched down).
 - [ ] **S3-04 The counter's shop, and wrap colours.** Walk up to the counter and the shop
   opens; a Shop button in the lobby and Roblox's own. Its first shelf: wrap colours, with gift
   versions (GDD "Monetization", D-112). The gifts lean on Brix's gift choices (its E-075 to

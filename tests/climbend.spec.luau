@@ -312,6 +312,24 @@ for key, text in ClimbEnd.Copy do
 	ok(words <= 4, `"{key}" is a few words`)
 end
 
+-- A wipe waits on its offer (S3-03c): on the catch's black when nothing's offered, after
+-- `OfferFor` when it is, and never while a buyer's prompt is open, up to `OfferPrompt`.
+do
+	local catch = ClimbEnd.AfterCatch
+	ok(not ClimbEnd.ends(catch - 0.05, false, nil), "nothing offered: not before the black")
+	ok(ClimbEnd.ends(catch, false, nil), "nothing offered: on the catch's black")
+	ok(ClimbEnd.ends(catch, false, 2), "a prompt doesn't hold what isn't offered")
+	ok(ClimbEnd.OfferFor > catch + 6, "the offer stands several seconds past the black")
+	ok(not ClimbEnd.ends(catch, true, nil), "offered: the black doesn't end it")
+	ok(not ClimbEnd.ends(ClimbEnd.OfferFor - 0.1, true, nil), "nor anything before OfferFor")
+	ok(ClimbEnd.ends(ClimbEnd.OfferFor, true, nil), "offered and not bought: it ends")
+	ok(not ClimbEnd.ends(ClimbEnd.OfferFor + 5, true, 4), "an open prompt holds it")
+	ok(
+		ClimbEnd.ends(ClimbEnd.OfferFor + 5, true, ClimbEnd.OfferPrompt),
+		"until the prompt's been up OfferPrompt"
+	)
+end
+
 if failures > 0 then
 	error(`climbend: {failures} of {checks} checks failed`)
 end

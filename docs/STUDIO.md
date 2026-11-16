@@ -2476,3 +2476,13 @@ verified: a doc page, Studio, or "untested".
 - **`screen_capture` grabs the frame at once**: to catch a moment, do the stamp in an
   `execute_luau` that then `task.wait`s to the moment and returns, and call the capture right
   after (0.55 s after the stamp caught a Legendary mid-hold).
+
+## Catching yourself from the MCP (S3-03c, Nov 15)
+
+- `ServerStorage.CatchTest` answers `NoKeeper` while floor 3's monsters are all asleep behind
+  shut doors (the log's "Keepers: asleep behind shut doors"): sleepers aren't in the list it
+  searches, and nothing from the MCP opened a door or pressed "Walk a floor" (see above).
+- To hold a wipe without a catch: in Play, the server's `player:SetAttribute("Kept", true)` makes
+  the end's look count you caught (the caught screen doesn't draw, nothing frees you). Seen:
+  `ClimbWaits` at once, the end 12.1 s later.
+

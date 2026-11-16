@@ -105,6 +105,36 @@ CutFree.FriendFreedSwell = 1.12
 -- yours to hear.
 CutFree.FriendHeardFor = 60
 
+-- Free Everyone (S3-03c, GDD "Getting caught", 149 Robux): the whole team is caught, and before
+-- the results come down every caught screen's pill reads Free Everyone. One press, one purchase,
+-- and every film on the floor rips at once, every door goes up, and the climb carries on from
+-- this floor. Granted as a spare in the buyer's save and spent as it frees them, so one that lands
+-- after the results keeps for the buyer's next wipe. Playing alone, the pill stays Cut Free: it
+-- does the same for you, and a dearer button for the same thing would be a trick.
+
+-- The offer's name in `Products` and in the save's `spares`.
+CutFree.EveryoneOffer = "freeEveryone"
+-- Where a caught player's press reaches the server, in ReplicatedStorage.Remotes, carrying
+-- nothing. Its `OnAttribute` is the same flag as Cut Free's, for this offer.
+CutFree.EveryoneRemote = "FreeEveryone"
+-- The pill's words while the wipe waits.
+CutFree.EveryoneWord = "Free Everyone"
+-- Its width as a share of its height: wider than Cut Free's so the words keep Cut Free's size.
+CutFree.EveryoneWide = 3.45
+-- The swap: as everyone's caught, the pill grows into its new words over `SwapTime` seconds,
+-- swelling to `Swell` and settling, with its click pitched down to `SwapPitch` (not a press:
+-- a chance), so a player who wasn't looking at it hears the way out change.
+CutFree.SwapTime = 0.35
+CutFree.Swell = 1.08
+CutFree.SwapPitch = 0.62
+CutFree.SwapVolume = 0.28
+
+-- The offer every caught screen shows while a wipe waits, with `players` in the server: Cut Free
+-- alone (it frees you, the whole team), Free Everyone with friends.
+function CutFree.wipeOffer(players: number): string
+	return if players <= 1 then CutFree.Offer else CutFree.EveryoneOffer
+end
+
 -- How many of the offer named `offer` (Cut Free by default) `data` holds paid for and unused.
 function CutFree.spares(data: Save.Data, offer: string?): number
 	local held: number? = data.spares[offer or CutFree.Offer]

@@ -29,6 +29,12 @@
 	dims it while Roblox's prompt comes up (`CutFree.AskEvery`); once paid, the film rips off you,
 	the door hauls up and both buttons fade as you're let out. Every number is `CutFree`'s.
 
+	Free Everyone (S3-03c, D-223): once the whole team is caught the results wait
+	(`ClimbEnd.WaitAttribute`), and with friends here the pill grows into "Free Everyone": wider,
+	a swell and its click pitched down, so the way out changing is heard as well as seen. A press
+	then asks Remotes.FreeEveryone instead; paid, every film on the floor rips at once. Alone it
+	stays Cut Free, which does the same for you.
+
 	Carried up (S3-01a): a player who watched the ride and is stood wrapped in a unit on the new
 	floor (`Kept.BroughtAttribute`, set just before the kept mark) gets no lunge and no "Caught":
 	their screen is already black (WatchView's dip), so it holds black and their eyes open on the
@@ -47,6 +53,7 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Caught = require(ReplicatedStorage.Shared.Caught)
+local ClimbEnd = require(ReplicatedStorage.Shared.ClimbEnd)
 local CaughtLunge = require(script.Parent.CaughtLunge)
 local CutFree = require(ReplicatedStorage.Shared.CutFree)
 local Kept = require(ReplicatedStorage.Shared.Kept)
@@ -69,6 +76,8 @@ local BUTTON_LOW = 0.76 -- elsewhere, its foot as a share of the screen's height
 local CAPTION_SIZE = 18
 local PRESS = TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local PRESSED = 0.84 -- the button's scale at a press, springing back
+-- Free Everyone's swap settling from its swell (`CutFree.SwapTime`)
+local SWAP = TweenInfo.new(CutFree.SwapTime, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local CUT_ACTION = "KeptCutFree"
 -- Cut Free's warm ink and fill (`CutFree.Ink`, `CutFree.Fill`)
 local INK_WARM = Color3.fromRGB(CutFree.Ink.r, CutFree.Ink.g, CutFree.Ink.b)
@@ -267,7 +276,7 @@ end
 -- The Bang button's place and size for this screen: under the right thumb on a phone, low in
 -- the middle elsewhere, with its key under it. Cut Free stands left of it, level with its middle,
 -- `CutFree.Gap` of its side clear.
-local function placeButton(s: Screen, touch: boolean)
+local function placeButton(s: Screen, touch: boolean, wide: number)
 	local camera = Workspace.CurrentCamera
 	local view = if camera then camera.ViewportSize else Vector2.new(1280, 720)
 	local b = s.holder
@@ -291,7 +300,7 @@ local function placeButton(s: Screen, touch: boolean)
 	end
 	b.Size = UDim2.fromOffset(side, side)
 	local tall = math.round(side * CutFree.Tall)
-	c.Size = UDim2.fromOffset(math.round(tall * CutFree.Wide), tall)
+	c.Size = UDim2.fromOffset(math.round(tall * wide), tall)
 	-- its key on the same line as Bang's: both 6 under Bang's foot, the pill being level with
 	-- Bang's middle
 	s.cutKey.Position = UDim2.new(0.5, 0, 0.5, math.round(side / 2) + 6)
@@ -429,6 +438,18 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 	local cutDrawn = -1 -- the look last drawn, so a still frame writes nothing
 	local cutAsked = -math.huge -- os.clock of our last press sent
 	local cutBound = false -- its keys are bound
+	local everyoneRemote: RemoteEvent? = nil
+	local everyoneOn = false -- Free Everyone is on sale here
+	local waits = false -- a wipe waits on its offer (`ClimbEnd.WaitAttribute`)
+	local wantAll = false -- the pill should read Free Everyone: a wipe waits, friends here, on sale
+	local cutAll = false -- it does
+	local cutWide = CutFree.Wide -- its width as a share of its height, easing on the swap
+
+	-- Whether the pill should read Free Everyone now.
+	local function lookAll()
+		local alone = CutFree.wipeOffer(#Players:GetPlayers()) == CutFree.Offer
+		wantAll = waits and everyoneOn and not alone
+	end
 
 	-- Both buttons off at once, no fade: a new catch's black is coming over them.
 	local function hideButtons(s: Screen)
@@ -444,15 +465,17 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 	local function cutPress()
 		local s = screen
 		local now = os.clock()
-		if not (s and bound and cutOn and cutShown >= 1) or now - cutAsked < CutFree.AskEvery then
+		local on = if cutAll then everyoneOn else cutOn
+		if not (s and bound and on and cutShown >= 1) or now - cutAsked < CutFree.AskEvery then
 			return
 		end
 		cutAsked = now
+		s.click.PlaybackSpeed, s.click.Volume = CutFree.Click.pitch, CutFree.Click.volume
 		s.click.TimePosition = 0
 		s.click:Play()
 		s.cutPop.Scale = CutFree.Pressed
 		TweenService:Create(s.cutPop, PRESS, { Scale = 1 }):Play()
-		local r = cutRemote
+		local r = if cutAll then everyoneRemote else cutRemote
 		if r then
 			r:FireServer()
 		end
@@ -612,7 +635,7 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 			local s = makeScreen(player:WaitForChild("PlayerGui"))
 			screen = s
 			touch = UserInputService.TouchEnabled
-			placeButton(s, touch)
+			placeButton(s, touch, cutWide)
 			showButton(s, 0)
 			showCut(s, 0)
 			local last = UserInputService:GetLastInputType()
@@ -631,7 +654,7 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 				table.insert(
 					connections,
 					camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-						placeButton(s, touch)
+						placeButton(s, touch, cutWide)
 					end)
 				)
 			end
@@ -662,7 +685,36 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 					)
 					look()
 				end
+				local all = folder and folder:WaitForChild(CutFree.EveryoneRemote, 30)
+				if running and all and all:IsA("RemoteEvent") then
+					everyoneRemote = all
+					local function look()
+						everyoneOn = all:GetAttribute(CutFree.OnAttribute) == true
+						lookAll()
+					end
+					table.insert(
+						connections,
+						all:GetAttributeChangedSignal(CutFree.OnAttribute):Connect(look)
+					)
+					look()
+				end
 			end)
+			local function lookWaits()
+				waits = Workspace:GetAttribute(ClimbEnd.WaitAttribute) ~= nil
+				lookAll()
+			end
+			table.insert(
+				connections,
+				Workspace:GetAttributeChangedSignal(ClimbEnd.WaitAttribute):Connect(lookWaits)
+			)
+			table.insert(connections, Players.PlayerAdded:Connect(lookAll))
+			table.insert(
+				connections,
+				Players.PlayerRemoving:Connect(function()
+					task.defer(lookAll) -- once they're gone from the list
+				end)
+			)
+			lookWaits()
 		end,
 		step = function(_: any, dt: number)
 			local s = screen
@@ -748,8 +800,30 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 				end
 			end
 			if s and (bound or cutShown > 0 or cutBound) then
+				-- Free Everyone: the pill grows into its words as the wipe waits (seen, it swells
+				-- and its click sounds low); back to Cut Free if the wait ends with us still here
+				if wantAll ~= cutAll then
+					cutAll = wantAll
+					s.cut.Text = if cutAll then CutFree.EveryoneWord else CutFree.Word
+					if cutAll and cutShown > 0 then
+						s.cutPop.Scale = CutFree.Swell
+						TweenService:Create(s.cutPop, SWAP, { Scale = 1 }):Play()
+						s.click.PlaybackSpeed, s.click.Volume =
+							CutFree.SwapPitch, CutFree.SwapVolume
+						s.click.TimePosition = 0
+						s.click:Play()
+					end
+				end
+				local wideTo = if cutAll then CutFree.EveryoneWide else CutFree.Wide
+				if cutWide ~= wideTo then
+					local by = dt * (CutFree.EveryoneWide - CutFree.Wide) / CutFree.SwapTime
+					cutWide = if cutShown > 0 then toward(cutWide, wideTo, by) else wideTo
+					local tall = s.cutHolder.Size.Y.Offset
+					s.cutHolder.Size = UDim2.fromOffset(math.round(tall * cutWide), tall)
+				end
 				-- Cut Free: up a beat after Bang while it's on sale, out with Bang at Bang's pace
-				local up = bound and cutOn and awake >= CutFree.InAfter
+				local on = if cutAll then everyoneOn else cutOn
+				local up = bound and on and awake >= CutFree.InAfter
 				local want = if up then 1 else 0
 				local pace = if want > cutShown then Kept.BangIn else Kept.BangOut
 				cutShown = toward(cutShown, want, dt / pace)

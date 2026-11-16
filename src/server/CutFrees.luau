@@ -28,13 +28,26 @@
 	save; once saved, this spends it freeing the friend the sale names, counted as cut by the
 	buyer. A friend already out (freed by someone, gone) leaves it waiting for the buyer's next
 	press. In Studio, with no product of its name, a press frees the friend for nothing.
+
+	Free Everyone (S3-03c) is the wipe's: once everyone's caught, ClimbEnds holds the results
+	(`ClimbEnd.WaitAttribute` on Workspace) while the offer is on sale (`offers`: Free Everyone,
+	or Cut Free for a player alone), and longer while a prompt from either is open (`asking`). A
+	caught player's press (Remotes.FreeEveryone, carrying nothing) is checked: no faster than
+	`CutFree.AskEvery`, caught now, the wipe waiting. A spare in their save frees every caught
+	player at once (each cut by the buyer); otherwise the prompt goes up. The grant is a spare in
+	the buyer's save, spent freeing everyone still caught, or kept for their next wipe. Nobody is
+	freed once the end has begun (`ClimbEnd.Attribute`): the black is coming down, and a spare
+	spent under it would be a purchase lost.
 ]]
+local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Caught = require(ReplicatedStorage.Shared.Caught)
+local ClimbEnd = require(ReplicatedStorage.Shared.ClimbEnd)
 local CutFree = require(ReplicatedStorage.Shared.CutFree)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local KeptPlayers = require(script.Parent.KeptPlayers)
@@ -51,15 +64,26 @@ local SETTLE_WAIT = 0.5
 
 local CutFrees = {}
 
-function CutFrees.new(): Brix.System
+export type CutFrees = Brix.System & {
+	-- Whether the offer a wipe holds for is on sale now: Free Everyone, or Cut Free alone.
+	offers: (self: any) -> boolean,
+	-- Seconds since the newest Cut Free or Free Everyone prompt still open was put up, or nil.
+	asking: (self: any) -> number?,
+}
+
+function CutFrees.new(): CutFrees
 	local kept: KeptPlayers.KeptPlayers? = nil
 	local watching: Watching.Watching? = nil
 	local purchasing: Purchasing.PurchasingSystem? = nil
 	local saving: Saving.SavingSystem? = nil
 	local remote: RemoteEvent? = nil
 	local friendRemote: RemoteEvent? = nil
+	local everyoneRemote: RemoteEvent? = nil
 	local asked: { [Player]: number } = {} -- os.clock() of each player's last press taken
 	local askedFriend: { [Player]: number } = {} -- the same, for Free a Friend
+	local askedEveryone: { [Player]: number } = {} -- the same, for Free Everyone
+	-- os.clock() a Cut Free or Free Everyone prompt went up for each player, till it's answered
+	local prompted: { [Player]: number } = {}
 	local signals: { Brix.SignalConnection } = {}
 	local connections: { RBXScriptConnection } = {}
 	local looked = math.huge -- seconds since the on-sale look, so the first step looks
@@ -80,11 +104,44 @@ function CutFrees.new(): Brix.System
 		return watching ~= nil and watching:cutFree(player)
 	end
 
+	-- Whether the climb's end has begun: its black is coming down, so nobody is freed under it.
+	local function ending(): boolean
+		return Workspace:GetAttribute(ClimbEnd.Attribute) ~= nil
+	end
+
+	-- Frees every caught player, cut by `buyer`: how many were.
+	local function freeAll(buyer: Player): number
+		local n = 0
+		for _, p in Players:GetPlayers() do
+			if caught(p) and free(p, buyer) then
+				n += 1
+			end
+		end
+		return n
+	end
+
+	-- Spends one of `buyer`'s spares of Free Everyone freeing every caught player, if they hold
+	-- one and someone can be freed now: whether it did.
+	local function useEveryone(buyer: Player): boolean
+		local data = if saving then saving:data(buyer) else nil
+		if ending() or not (data and CutFree.spares(data, CutFree.EveryoneOffer) > 0) then
+			return false
+		end
+		local n = freeAll(buyer)
+		if n == 0 then
+			return false
+		end
+		CutFree.spend(data, CutFree.EveryoneOffer)
+		local left = CutFree.spares(data, CutFree.EveryoneOffer)
+		print(`[CutFrees] {buyer.Name} freed everyone ({n} freed, {left} spare Free Everyone left)`)
+		return true
+	end
+
 	-- Spends one of `buyer`'s spares of `offer` on freeing `who` (themselves for Cut Free, a
 	-- friend for Free a Friend), if they hold one and `who` can be freed now: whether it did.
 	local function useSpare(buyer: Player, who: Player, offer: string): boolean
 		local data = if saving then saving:data(buyer) else nil
-		if not (data and CutFree.spares(data, offer) > 0 and free(who, buyer)) then
+		if ending() or not (data and CutFree.spares(data, offer) > 0 and free(who, buyer)) then
 			return false
 		end
 		CutFree.spend(data, offer)
@@ -117,14 +174,16 @@ function CutFrees.new(): Brix.System
 			return
 		end
 		asked[player] = t
-		if not caught(player) or useSpare(player, player, CutFree.Offer) then
+		if not caught(player) or ending() or useSpare(player, player, CutFree.Offer) then
 			return
 		end
 		local p = purchasing
 		if p and p:sells(CutFree.Offer) then
 			task.spawn(function() -- the prompt yields
 				local listing, refused = p:prompt(player, CutFree.Offer)
-				if listing == nil and refused then
+				if listing then
+					prompted[player] = os.clock()
+				elseif refused then
 					print(`[CutFrees] no prompt for {player.Name}: {refused.reason}`)
 				end
 			end)
@@ -164,6 +223,65 @@ function CutFrees.new(): Brix.System
 		end
 	end
 
+	-- A caught player's press while the wipe waits: checked, then a spare spent or the prompt up.
+	local function askEveryone(player: Player)
+		local t = os.clock()
+		if t - (askedEveryone[player] or -math.huge) < CutFree.AskEvery then
+			return
+		end
+		askedEveryone[player] = t
+		if not caught(player) or Workspace:GetAttribute(ClimbEnd.WaitAttribute) == nil then
+			return
+		end
+		if useEveryone(player) then
+			return
+		end
+		local p = purchasing
+		if p and p:sells(CutFree.EveryoneOffer) then
+			task.spawn(function() -- the prompt yields
+				local listing, refused = p:prompt(player, CutFree.EveryoneOffer)
+				if listing then
+					prompted[player] = os.clock()
+				elseif refused then
+					print(`[CutFrees] no Free Everyone prompt for {player.Name}: {refused.reason}`)
+				end
+			end)
+		elseif STUDIO and not ending() then
+			local n = freeAll(player)
+			print(
+				`[CutFrees] {player.Name} freed everyone ({n}; Studio, no "Free Everyone" product)`
+			)
+		end
+	end
+
+	-- A spare Free Everyone just saved into `buyer`'s save: spent freeing everyone caught now,
+	-- trying a few times while someone's caught but not yet somewhere to be freed from; then
+	-- those still in the black are freed on the same purchase. Nobody caught, it's kept.
+	local function settleEveryone(buyer: Player)
+		local spent = false
+		for _ = 1, SETTLE_TRIES do
+			if not buyer.Parent or ending() then
+				break
+			end
+			local anyone = false
+			for _, p in Players:GetPlayers() do
+				anyone = anyone or caught(p)
+			end
+			if not anyone then
+				break
+			end
+			if not spent then
+				spent = useEveryone(buyer)
+			else
+				freeAll(buyer)
+			end
+			task.wait(SETTLE_WAIT)
+		end
+		if buyer.Parent and not spent then
+			print(`[CutFrees] {buyer.Name}'s Free Everyone waits in their save for their next wipe`)
+		end
+	end
+
 	-- A spare of `offer` just saved into `buyer`'s save: spend it freeing `who` now, trying a
 	-- few times while they're caught but not yet somewhere to be freed from, or leave it there.
 	local function settle(buyer: Player, who: Player?, offer: string, waits: string)
@@ -188,7 +306,10 @@ function CutFrees.new(): Brix.System
 	-- kept as a spare.
 	local function onGranted(sale: Purchasing.Sale)
 		local buyer = sale.buyer
-		if sale.offer == CutFree.Offer then
+		prompted[buyer] = nil
+		if sale.offer == CutFree.EveryoneOffer then
+			task.spawn(settleEveryone, buyer)
+		elseif sale.offer == CutFree.Offer then
 			task.spawn(
 				settle,
 				buyer,
@@ -220,6 +341,23 @@ function CutFrees.new(): Brix.System
 
 	local system = { name = "CutFrees" }
 
+	-- Whether the offer a wipe holds for is on sale with this many players here.
+	function system.offers(_: any): boolean
+		local offer = CutFree.wipeOffer(#Players:GetPlayers())
+		local p = purchasing
+		return STUDIO or (p ~= nil and p:sells(offer))
+	end
+
+	function system.asking(_: any): number?
+		local newest: number? = nil
+		for _, at in prompted do
+			if newest == nil or at > newest then
+				newest = at
+			end
+		end
+		return if newest then os.clock() - newest else nil
+	end
+
 	function system.start(_: any, context: Brix.Context)
 		local registry = context.registry
 		-- any: the registry hands back a plain System; each slot is filled by its system (init.server)
@@ -249,11 +387,34 @@ function CutFrees.new(): Brix.System
 				askFriend(player, value)
 			end)
 		)
+		local er = makeRemote(folder, CutFree.EveryoneRemote)
+		everyoneRemote = er
+		table.insert(
+			connections,
+			er.OnServerEvent:Connect(function(player: Player)
+				askEveryone(player)
+			end)
+		)
+		-- a prompt closed unbought stops holding the wipe; bought, it holds till the grant lands
+		-- (or `ClimbEnd.OfferPrompt` runs out, should the grant never come)
+		table.insert(
+			connections,
+			MarketplaceService.PromptProductPurchaseFinished:Connect(
+				function(userId: number, _product: number, bought: boolean)
+					local who = Players:GetPlayerByUserId(userId)
+					if who and not bought then
+						prompted[who] = nil
+					end
+				end
+			)
+		)
 		table.insert(
 			connections,
 			Players.PlayerRemoving:Connect(function(player: Player)
 				asked[player] = nil
 				askedFriend[player] = nil
+				askedEveryone[player] = nil
+				prompted[player] = nil
 			end)
 		)
 		if watching then
@@ -281,6 +442,11 @@ function CutFrees.new(): Brix.System
 		if fr and fr:GetAttribute(CutFree.OnAttribute) ~= friendOn then
 			fr:SetAttribute(CutFree.OnAttribute, friendOn)
 		end
+		local er = everyoneRemote
+		local everyoneOn = STUDIO or (p ~= nil and p:sells(CutFree.EveryoneOffer))
+		if er and er:GetAttribute(CutFree.OnAttribute) ~= everyoneOn then
+			er:SetAttribute(CutFree.OnAttribute, everyoneOn)
+		end
 	end
 
 	function system.stop(_: any)
@@ -294,6 +460,12 @@ function CutFrees.new(): Brix.System
 		table.clear(connections)
 		table.clear(asked)
 		table.clear(askedFriend)
+		table.clear(askedEveryone)
+		table.clear(prompted)
+		if everyoneRemote then
+			everyoneRemote:Destroy()
+			everyoneRemote = nil
+		end
 		if remote then
 			remote:Destroy()
 			remote = nil

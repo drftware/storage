@@ -34,6 +34,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local SoundService = game:GetService("SoundService")
+local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
@@ -51,6 +52,10 @@ local SoundPrimer = require(script.Parent.SoundPrimer)
 local STUDIO = RunService:IsStudio()
 -- Cut Free's warm ink and fill (`CutFree.Ink`, `CutFree.Fill`)
 local INK_WARM = Color3.fromRGB(CutFree.Ink.r, CutFree.Ink.g, CutFree.Ink.b)
+-- The watch bar's Cut Free pill: its width as a share of its 44-point height (150 wide)
+local WATCH_CUT_WIDE = 150 / 44
+-- Free Everyone's swap growing the pill and settling (`CutFree.SwapTime`)
+local SWAP = TweenInfo.new(CutFree.SwapTime, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local FILL_WARM = Color3.fromRGB(CutFree.Fill.r, CutFree.Fill.g, CutFree.Fill.b)
 local CAMERA_STEP = "WatchCamera"
 local INK = Color3.fromRGB(214, 206, 196)
@@ -252,7 +257,7 @@ local function makeScreen(parent: Instance): Screen
 	cutFree.Name = "CutFree"
 	cutFree.AnchorPoint = Vector2.new(0.5, 1)
 	cutFree.Position = UDim2.new(0.5, 0, 1, -96)
-	cutFree.Size = UDim2.fromOffset(150, 44)
+	cutFree.Size = UDim2.fromOffset(math.round(44 * WATCH_CUT_WIDE), 44)
 	cutFree.BackgroundColor3 = FILL_WARM
 	cutFree.AutoButtonColor = false
 	cutFree.FontFace = Font.fromEnum(Enum.Font.BuilderSansBold)
@@ -323,6 +328,11 @@ function WatchView.new(
 	local cutOn = false -- Cut Free is on sale here (`CutFree.OnAttribute`)
 	local cutAsked = -math.huge -- os.clock() of our last Cut Free press
 	local cutDim = 1 -- 1, or down toward `CutFree.Dim` while a press is out
+	-- Free Everyone (S3-03c): the pill reads it while a wipe waits with friends here, on sale
+	local everyoneRemote: RemoteEvent? = nil
+	local everyoneOn = false
+	local waits = false -- `ClimbEnd.WaitAttribute` is on Workspace
+	local cutAll = false
 	local controls: any = nil -- any: Roblox's PlayerModule ControlModule, untyped Lua
 	local frozen = false
 	local cursor = false
@@ -546,7 +556,7 @@ function WatchView.new(
 		s.bar.Enabled = on
 		s.group.GroupTransparency = 1 - share
 		local cut = s.cutFree
-		cut.Visible = on and cutOn
+		cut.Visible = on and (if cutAll then everyoneOn else cutOn)
 		if cut.Visible then
 			local out = 1 - share * cutDim
 			cut.BackgroundTransparency = CutFree.FillSee + (1 - CutFree.FillSee) * out
@@ -988,13 +998,19 @@ function WatchView.new(
 				s.cutFree.Activated:Connect(function()
 					-- springs, clicks and dims while the prompt comes up; the server takes it from there
 					local now = os.clock()
-					if not (watchBegan and cutOn) or now - cutAsked < CutFree.AskEvery then
+					local sells = if cutAll then everyoneOn else cutOn
+					if not (watchBegan and sells) or now - cutAsked < CutFree.AskEvery then
 						return
 					end
 					cutAsked = now
 					play(cutClick, 0, 0.5, CutFree.Click.volume, CutFree.Click.pitch)
 					s.cutPop.Scale = CutFree.Pressed
-					ask("CutFree")
+					local all = everyoneRemote
+					if cutAll and all then
+						all:FireServer()
+					else
+						ask("CutFree")
+					end
 				end)
 			)
 			task.spawn(function()
@@ -1010,6 +1026,62 @@ function WatchView.new(
 					)
 					look()
 				end
+				-- Free Everyone: as the wipe waits with friends here the pill grows into it,
+				-- swelling, with its click low (as the caught screen's, CaughtView)
+				local all = folder and folder:WaitForChild(CutFree.EveryoneRemote, 30)
+				if not (screen and all and all:IsA("RemoteEvent")) then
+					return
+				end
+				everyoneRemote = all
+				local function lookAll()
+					local sc = screen
+					local alone = CutFree.wipeOffer(#Players:GetPlayers()) == CutFree.Offer
+					local want = waits and everyoneOn and not alone
+					if want == cutAll or not sc then
+						return
+					end
+					cutAll = want
+					local cut = sc.cutFree
+					cut.Text = if want then CutFree.EveryoneWord else CutFree.Word
+					local tall = cut.Size.Y.Offset
+					local wide = if want then CutFree.EveryoneWide else WATCH_CUT_WIDE
+					TweenService
+						:Create(
+							cut,
+							SWAP,
+							{ Size = UDim2.fromOffset(math.round(tall * wide), tall) }
+						)
+						:Play()
+					if want and cut.Visible then
+						sc.cutPop.Scale = CutFree.Swell
+						play(cutClick, 0, 0.5, CutFree.SwapVolume, CutFree.SwapPitch)
+					end
+				end
+				local function look()
+					everyoneOn = all:GetAttribute(CutFree.OnAttribute) == true
+					lookAll()
+				end
+				local function lookWaits()
+					waits = Workspace:GetAttribute(ClimbEnd.WaitAttribute) ~= nil
+					lookAll()
+				end
+				table.insert(
+					connections,
+					all:GetAttributeChangedSignal(CutFree.OnAttribute):Connect(look)
+				)
+				table.insert(
+					connections,
+					Workspace:GetAttributeChangedSignal(ClimbEnd.WaitAttribute):Connect(lookWaits)
+				)
+				table.insert(connections, Players.PlayerAdded:Connect(lookAll))
+				table.insert(
+					connections,
+					Players.PlayerRemoving:Connect(function()
+						task.defer(lookAll) -- once they're gone from the list
+					end)
+				)
+				look()
+				lookWaits()
 			end)
 			table.insert(
 				connections,

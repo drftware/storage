@@ -8,6 +8,11 @@
 	  in Studio a stand-in friend counts as climbing). It ends on the last free friend's catch
 	  cutting to black (`ClimbEnd.AfterCatch` after they were kept); from then the carries stop
 	  where they are (Climbs' `ending`), so nobody is handed a new character under the black.
+	  While the wipe's offer is on sale (CutFrees' `offers`: Free Everyone, or Cut Free alone,
+	  S3-03c) it waits first: `ClimbEnd.WaitAttribute` on Workspace from the moment everyone's
+	  caught tells every caught screen to show it, and the end comes `ClimbEnd.OfferFor` after
+	  the catch, later while a prompt is open (`ClimbEnd.ends`). Anyone freed meanwhile and the
+	  climb carries on from this floor.
 	- Top (an escape): the car leaves the top floor with friends aboard (Climbs' `topped`). It ends
 	  from the moment the gate hit its post, so the ride plays out first.
 	- Each player's fate goes on them (`ClimbEnd.FateAttribute`: out, kept or left, and the floor
@@ -42,6 +47,7 @@ local Keypad = require(ReplicatedStorage.Shared.Elevator.Keypad)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Left = require(ReplicatedStorage.Shared.Left)
 local Climbs = require(script.Parent.Climbs)
+local CutFrees = require(script.Parent.CutFrees)
 local LobbyCars = require(script.Parent.LobbyCars)
 local Slots = require(script.Parent.Slots)
 local Watching = require(script.Parent.Watching)
@@ -100,6 +106,7 @@ function ClimbEnds.new(): ClimbEndsSystem
 	local watching: Watching.Watching? = nil
 	local slots: Slots.Slots? = nil
 	local lobbyCars: LobbyCars.LobbyCars? = nil
+	local cutFrees: CutFrees.CutFrees? = nil
 	local remote: RemoteEvent? = nil
 	local connections: { RBXScriptConnection } = {}
 	local topping: Brix.SignalConnection? = nil
@@ -370,6 +377,7 @@ function ClimbEnds.new(): ClimbEndsSystem
 		slots = (registry:get("slots") :: any) :: Slots.Slots -- any: as above
 		-- any: as above; LobbyCars starts after this, but every slot is filled before any starts
 		lobbyCars = (registry:get("lobbyCars") :: any) :: LobbyCars.LobbyCars
+		cutFrees = (registry:get("cutFrees") :: any) :: CutFrees.CutFrees -- any: as above
 		topping = c.topped:connect(function(t: Climbs.Topped)
 			endClimb("Top", t.from.number, t.at)
 		end)
@@ -427,17 +435,36 @@ function ClimbEnds.new(): ClimbEndsSystem
 		local on = c:current()
 		if not on then
 			phase = "Idle"
+			overSince = nil
+			Workspace:SetAttribute(ClimbEnd.WaitAttribute, nil)
 			return
 		end
 		if ClimbEnd.over(look(on.number), standIns()) then
-			-- the last friend was kept just now: the end lands as their catch cuts to black
+			-- the last friend was kept just now: the end lands as their catch cuts to black, or
+			-- once the wipe's offer has waited on every caught screen (S3-03c)
 			local t = now()
 			local first = overSince or t
 			overSince = first
-			if t >= first + ClimbEnd.AfterCatch then
+			local cf = cutFrees
+			local offered = cf ~= nil and cf:offers()
+			local waits = Workspace:GetAttribute(ClimbEnd.WaitAttribute)
+			if offered and waits == nil then
+				Workspace:SetAttribute(ClimbEnd.WaitAttribute, first)
+				if STUDIO then
+					print(`ClimbEnds: everyone's caught on floor {on.number}; the offer waits`)
+				end
+			end
+			if ClimbEnd.ends(t - first, offered, if cf then cf:asking() else nil) then
+				Workspace:SetAttribute(ClimbEnd.WaitAttribute, nil)
 				endClimb("Kept", on.number, t)
 			end
 		else
+			if overSince and Workspace:GetAttribute(ClimbEnd.WaitAttribute) ~= nil then
+				Workspace:SetAttribute(ClimbEnd.WaitAttribute, nil)
+				if STUDIO then
+					print("ClimbEnds: freed before the results; the climb carries on")
+				end
+			end
 			overSince = nil
 		end
 	end
@@ -457,6 +484,7 @@ function ClimbEnds.new(): ClimbEndsSystem
 			remote = nil
 		end
 		Workspace:SetAttribute(ClimbEnd.Attribute, nil)
+		Workspace:SetAttribute(ClimbEnd.WaitAttribute, nil)
 		Workspace:SetAttribute(ClimbEnd.StartAttribute, nil)
 		table.clear(lost)
 		table.clear(asked)

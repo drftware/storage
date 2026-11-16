@@ -46,8 +46,8 @@ export type Offer = {
 
 local Products = {}
 
--- Every product, by offer name. Step 3's products (Free Everyone, then wrap colours) join as
--- S3-03 and S3-04 put them on sale.
+-- Every product, by offer name. Step 3's last products, wrap colours, join as S3-04 puts them on
+-- sale.
 Products.Rows = table.freeze({
 	-- Cut Free (S3-03a, GDD "Getting caught", DOORS' revive): caught, you pay and you're out at
 	-- once. Granted as a spare in the save, which the server spends as it frees you (CutFrees),
@@ -70,6 +70,18 @@ Products.Rows = table.freeze({
 		forAnother = true,
 		grant = function(_sale: Sale, data: Save.Data): string?
 			data.spares.freeFriend = (data.spares.freeFriend or 0) + 1
+			return nil
+		end,
+	}),
+	-- Free Everyone (S3-03c, GDD "Getting caught"): the whole team is caught, and before the
+	-- results one player pays to free every caught player at once. Granted as a spare in the
+	-- buyer's save, which the server spends as it frees them (CutFrees): one that lands after the
+	-- results waits for the buyer's next wipe, so the purchase is never lost.
+	freeEveryone = table.freeze({
+		title = "Free Everyone",
+		switch = "sellFreeEveryone",
+		grant = function(_sale: Sale, data: Save.Data): string?
+			data.spares.freeEveryone = (data.spares.freeEveryone or 0) + 1
 			return nil
 		end,
 	}),

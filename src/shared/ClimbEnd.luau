@@ -447,4 +447,32 @@ end
 -- The catch's black, when a wipe ends: the screen the last friend was caught on is black then.
 ClimbEnd.AfterCatch = Caught.Dark
 
+-- Free Everyone before the results (S3-03c, the GDD's "Getting caught"): the last of you is
+-- wrapped, and instead of the results the dark holds with one warm way out on every caught
+-- screen (Free Everyone; Cut Free when you're playing alone). Someone pays and every film rips
+-- at once; nobody does and the results come down as before. DOORS' revive on its death screen.
+
+-- On Workspace while a wipe waits on that offer: the server time everyone was caught.
+ClimbEnd.WaitAttribute = "ClimbWaits"
+-- Seconds from the last catch that a wipe waits while the offer is on sale: the catch's black
+-- and waking in the unit (the pill is up about 3.5 s in), then about 8 s with it in front of you,
+-- long enough to see it and decide, short enough that nobody sits in the dark wondering.
+ClimbEnd.OfferFor = 12
+-- The most seconds after a press that an open purchase prompt keeps the wipe waiting, so a buyer
+-- reading Roblox's prompt is never cut off mid-purchase. Cancelled, the wait ends as it would have.
+ClimbEnd.OfferPrompt = 30
+
+-- Whether a wipe ends now, `since` seconds after everyone was caught: on the catch's black when
+-- nothing is offered; otherwise once `OfferFor` has run out and no prompt opened in the last
+-- `OfferPrompt` seconds is still up (`askedAgo`, seconds since it opened, or nil).
+function ClimbEnd.ends(since: number, offered: boolean, askedAgo: number?): boolean
+	if not offered then
+		return since >= ClimbEnd.AfterCatch
+	end
+	if askedAgo ~= nil and askedAgo < ClimbEnd.OfferPrompt then
+		return false
+	end
+	return since >= ClimbEnd.OfferFor
+end
+
 return ClimbEnd
