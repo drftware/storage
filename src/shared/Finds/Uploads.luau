@@ -29,6 +29,7 @@ return {
 		ChatteringTeeth = { Model = 100233455108959 },
 		CymbalMonkey = { Model = 124266692491775 },
 		JackInTheBox = { Model = 99780291550799 },
+		RubberDuck = { Model = 100329520837990 },
 		SirenCar = { Model = 86198441631731, Emissive = 119938648369668 },
 		TinBird = { Model = 128316798025282 },
 		WalkingRobot = { Model = 109415009719114 },

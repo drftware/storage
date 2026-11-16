@@ -6185,3 +6185,17 @@ catches with a flicker on the first push and dies 0.9 s after the car stops. The
 the game's sound to play over `Push`, not part of the art. Its lacquer is smooth: a fine
 roughness noise broke the top light's sheen into what looked like dust on the bonnet, so painted
 tin finds keep their roughness variation broad and gentle.
+
+## D-237 The rubber duck is one soft surface, its game mesh gathered where it bends (F-04e2, Nov 16)
+
+A vinyl duck has no seams between head, body, tail and wings, so it is drawn as rounded volumes
+melted together and sampled as one surface along rays from a point low in its breast, rather
+than built from lathes and lofts joined at edges. The game mesh (40 rings of 64, 5,562
+triangles with the bill) is evened out over that surface with each point pulled toward a
+neighbour whose edge cuts inside the curve (`dk_settle`), so points gather at the tail's tip,
+the wing's edge and the tuft. Evened out plainly, its flat faces cut 5 mm inside the tail's tip,
+past the bake's 2 mm cage, and the bake left black holes there; gathered, they stay within
+0.8 mm at the same triangle count. Any later find drawn the same way (the squishies, plush)
+should check that gap before baking. The squeeze is one `stretch` track on the whole duck
+keeping its volume, as the tea light's flame does; a dent that bends in one place waits for
+bones (F-05a).

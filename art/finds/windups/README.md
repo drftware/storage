@@ -342,3 +342,49 @@ game wails the siren over it (D-236).
 
 **In the place:** uploaded (`assets.json`) and imported in Edit on Nov 16 as
 `ReplicatedStorage.Props.Finds.SirenCar` (the beacon's glow mask set, both lights disabled).
+
+## Squeaky rubber duck (Common): "Squeeze: a squeak you can hear down the hall"
+
+The classic yellow vinyl bath duck, our own: one soft hollow moulding in a bright egg-yolk
+yellow with a satin sheen and the mould's faint orange peel, warmer low down where the vinyl is
+thickest. A big round head sat forward on a broad body, a small round tuft on the crown along
+the mould seam, an upturned tail, and on each side a moulded teardrop wing raised off the body,
+its edge and three feather grooves toward the tip pressed in. A glossy orange bill, the upper
+and lower halves meeting in a smile, the mouth line dark between them. Printed eyes: a white
+almond, a big black pupil looking ahead, a shine, a fine dark rim, rubbed thin in specks.
+Underneath, the squeak hole with a little rolled lip. The seam runs faint down the middle, over
+the crown, the back and under. Played with: the breast and tail tip scuffed matt, the bill worn
+back to yellow in specks along its rim, a little dust on top.
+
+**Looked at:** the V&A's 1950s English moulded bath duck O1122250 (12.7 cm, a raised feathered
+wing, an upturned tail, an open bill); Wikimedia Commons' "Yellow rubber duck.jpg", "1 Yellow
+rubber duck.jpg" (the round tuft, the wide bill, the lemon-yolk yellow), "Rubber Duck
+(7250751978).jpg" (the satin vinyl's soft broad highlights) and "NIND dustyrubberduck
+ISO200.png" (dust specks on top).
+
+**Size:** 96 mm bill to tail, 87 tall, 72 wide, as the common 3.5 to 4 inch squeakers are: 0.38
+studs long, 0.34 tall. A yellow speck from a unit's doorway; held, the round head, the orange
+bill and the eyes read at once.
+
+**Tells:** the yellow, the orange bill, the round head on a broad body.
+
+**How it's made:** the duck is one soft surface, rounded volumes melted together (`dk_sdf`:
+body, breast, upturned tail, round head, a teardrop wing each side, the tuft, a flat foot),
+sampled along rays from one point low in the breast (`DUCK.centre`, from where every bit of it
+is in sight) and then evened out over the surface, pulled toward where it bends (`dk_settle`),
+so the game mesh's flat faces stay within 0.8 mm of the detailed surface (D-237). The bill is
+two moulded lofts.
+
+**Parts:** `Body` alone (root, its pivot on the floor under its middle): the whole duck, bill
+and all.
+
+**Motions:** `Squeeze` (1.17 s), worked out in `duck_squeeze`: the fingers close and it rises a
+touch (stretch 1.035), squashes to 0.72 keeping its volume (the squeak, which the game plays
+here, loud enough to carry down the hall), is held a beat at 0.70 as the last air wheezes out,
+then let go it springs back past its size (1.11) and wobbles still (0.955, 1.025, 0.992). Its
+nose dips 4 degrees as it's pressed and lifts on the bounce.
+
+**Sheets:** `art/sheets/rubberduck-*.png`; motion preview `out/rubberduck-squeeze.mp4`.
+
+**In the place:** uploaded (`assets.json`) and imported in Edit on Nov 16 as
+`ReplicatedStorage.Props.Finds.RubberDuck`.

@@ -8674,16 +8674,16 @@ local Set: { [string]: Art.Find } = {
 		},
 	},
 	RubberDuck = {
-		Size = Vector3.new(0.285, 0.344, 0.368),
-		Centre = Vector3.new(-0.000, 0.172, -0.003),
-		Triangles = 5562,
+		Size = Vector3.new(0.286, 0.344, 0.377),
+		Centre = Vector3.new(-0.000, 0.172, 0.001),
+		Triangles = 6762,
 		Texture = 1024,
 		Parts = {
 			{
 				Name = "RubberDuck_Body",
 				Pivot = Vector3.new(-0.000, 0.000, 0.000),
-				Size = Vector3.new(0.285, 0.344, 0.368),
-				Triangles = 5562,
+				Size = Vector3.new(0.286, 0.344, 0.377),
+				Triangles = 6762,
 			},
 		},
 		Lights = {},

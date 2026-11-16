@@ -1647,6 +1647,11 @@ verified: a doc page, Studio, or "untested".
   layer updates: compose its matrix from `location` and `scale` before moving it elsewhere.
 
 ### Blender traps met building the finds (Nov 7, `art/finds/`)
+- **A `scripts/art.sh set` stage that prints only its `==` header did nothing** (F-04e2, Nov 16;
+  three times, its first stage each time, cause not found): the bake or render never ran and the
+  old files stay. Run that stage's Blender line directly (`blender -b --factory-startup -P
+  art/finds/windups/build.py -- --stage textures --find RubberDuck`), which worked every time,
+  and check the files' times before trusting the next stage.
 - `bmesh.ops.create_uvsphere` numbers its points differently from run to run. Anything whose
   UVs are saved and worn later must build its spheres point by point (`build.py` `ellipsoid`).
 - Smart project over several objects at once can fold one object's islands over each other (the

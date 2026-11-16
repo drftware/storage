@@ -6,9 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04e2, finish the squeaky rubber duck (half built: the newest note says exactly where
-it stands), in `art/finds/windups/`; then step 4 (F-04f, the kazoo and the toy drum). The oil
-lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next touched.
+**Next:** F-04f, the kazoo and the toy drum (step 4), in `art/finds/windups/`; the newest note has
+their plans. The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp`
+when next touched.
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -24,7 +24,7 @@ changes the table's order a little.
    the clockwork tin bird (Epic: an antique printed-tin bird hopping forward in little jumps, its
    beak opening with each whistle, its tail bobbing; the finest printing in the set). Both are
    small tin walkers on a key: share the key and the walk.
-3. **F-04e** Toy siren car (a chunky toy emergency car of our own, no real police markings; the
+3. **F-04e** (both built Nov 16) Toy siren car (a chunky toy emergency car of our own, no real police markings; the
    die-cast car's way of making a body; its roof light spins and glows red with its own light,
    so it sweeps the hall's walls as it rolls) and the squeaky rubber duck (squeeze: the whole
    duck squashes and springs back).
@@ -88,6 +88,37 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04e2 (the squeaky rubber duck built, judged and in the place; step 3 done).**
+  `RubberDuck` in `windups/build.py`, README, D-237. Uploaded and imported in Edit
+  (`ReplicatedStorage.Props.Finds.RubberDuck`). **The holes fixed:** the game mesh's flat faces
+  cut 5 mm inside the tail's tip (not the wings), past the bake's 2 mm cage; `dk_settle` now
+  pulls each point harder toward a neighbour whose edge sinks inside the surface, so points
+  gather where it bends: under 0.7 mm everywhere, no folds. The game mesh is 44 rings of 72
+  (6,762 triangles with the bill). **Judged beside the references and fixed, rendered three
+  times:** the mould seam's raised line read as a fold down the tail (now a third as tall); the
+  wing read as a round disc stuck on from behind (now a teardrop narrowing toward its tip,
+  eased in so its outline has no corner, its painted edge following); the tuft was a sharp
+  spike (now round-topped); the yellow was mustard (now a brighter egg yolk, less darkening low
+  down, less grime); the bill was a flat pillow with a dark smudge under its tip, the bake
+  catching the lower bill's dark top across a 0.5 mm mouth gap (now rounder, the gap 1 mm).
+  **Left for F-04k's Studio look:** close up from behind, a faint crease at the very tip of the
+  tail along the back seam (the loft's halves part there); held and from the front it doesn't
+  show. **Trap:** `scripts/art.sh set windups <stage> RubberDuck` printed only its header and
+  did nothing three times; running the Blender line directly worked every time (STUDIO.md).
+  **F-04f's plan (step 4), not researched.** *The kazoo* (Common, "Blow: a buzzy note"): a tin
+  or plastic tube about 4 to 5 in (100 to 125 mm) long, the mouth end narrowing, a round turret
+  on top with a cap pressed over the paper (or wax-paper) skin; tin ones are printed with bands.
+  One root `Body`, the `Cap` its own part maybe, the `Skin` a thin disc under the cap; motion
+  `Blow`: the skin shivers fast (a `scale` or `move` track, a few frames a cycle) for about a
+  second, the whole kazoo tipping up a touch as it's put to the lips. Look at two or three
+  museum or listing photos for size and the cap's holes. *The toy drum* (a kid's tin drum with
+  zigzag rope sides, the tell from a doorway, two wooden sticks with round heads): about 6 to 8
+  in across, printed tin shell, rope laced in a zigzag between two hoops, a skin top; parts
+  `Body` (root), `StickL`, `StickR` (each turning about its hand's pivot). Motion `Drum`: a
+  stick comes down (a wind-up lift first), the head shivers (a small `stretch` or `scale` on a
+  `Head` part), the stick bounces off; then the other. The rope zigzag wants a `helix`-like
+  path or `tube` between the hoops; check its triangle count.
 
 - **Nov 16, F-04e2 (the squeaky rubber duck half built: stopped at the context cap; not ticked).**
   `RubberDuck` in `windups/build.py` (spec `DUCK`, `SQUEEZE`; `Finds/Order` has it), one part
@@ -817,7 +848,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Find | Grade | What it does | Notes | Built |
 |---|---|---|---|---|
 | Kazoo | Common | Blow: a buzzy note |  | |
-| Squeaky rubber duck | Common | Squeeze: a squeak you can hear down the hall |  | |
+| Squeaky rubber duck | Common | Squeeze: a squeak you can hear down the hall |  | Nov 16, F-04e2 |
 | Toy siren car | Common | Push: it rolls off, wailing | A noise that moves | Nov 16, F-04e |
 | Wind-up chattering teeth | Common | Wind: they chatter off across the floor | Monsters come to look | Nov 15, F-04c |
 | Toy drum | Uncommon | Bang: loud |  | |

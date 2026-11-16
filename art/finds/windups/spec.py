@@ -386,21 +386,23 @@ SIREN_RUN = dict(
 DUCK = dict(
     body=((0.0, 6.0, 19.0), (35.0, 38.0, 25.0)),    # the broad low hull it floats on
     chest=((0.0, -12.0, 28.0), (29.0, 24.0, 24.0)),  # its round breast, rising to the head
-    tail=dict(at=(0.0, 33.0, 36.0), r=(12.5, 18.0, 9.5), rise=38.0),
+    tail=dict(at=(0.0, 33.0, 36.0), r=(14.0, 18.0, 9.5), rise=38.0),
     # the upturned pointed tail: its middle, radii, and how steeply it points up (deg)
     head=((0.0, -11.0, 62.0), (22.5, 22.0, 22.0)),   # a big round head sat forward on the breast
-    crest=dict(at=(0.0, -12.0, 82.4), r=(3.2, 8.5, 3.2), tip=-14.0),
-    # the little moulded crest along the seam on its crown, tipped forward (deg)
-    wing=dict(at=(29.0, 15.0, 28.0), r=(6.0, 19.0, 11.0), rise=16.0, toe=7.0),
+    crest=dict(at=(0.0, -12.0, 82.8), r=(4.2, 7.5, 3.8), tip=-18.0),
+    # the little moulded tuft along the seam on its crown, tipped forward (deg): round-topped,
+    # as the references' are (a thinner one read as a sharp spike from the front)
+    wing=dict(at=(29.0, 15.0, 28.0), r=(6.0, 19.0, 11.0), rise=16.0, toe=7.0, taper=0.5),
     # the left wing, raised a little off the side (the right mirrors it), its back end lifted
-    # `rise` and its front turned in `toe` (deg)
-    blend=dict(head=11.0, chest=10.0, tail=9.0, wing=6.0, crest=4.5, base=5.0),
+    # `rise` and its front turned in `toe` (deg), narrowing toward its tip to half its height
+    # (`taper`), a teardrop: an even oval read as a round disc stuck on from behind
+    blend=dict(head=11.0, chest=10.0, tail=12.0, wing=7.5, crest=6.0, base=5.0),
     # how wide each melts into the rest (mm): a soft neck, a wing that swells from the side (its
     # moulded edge is drawn in the look), a rounded foot
     centre=(0.0, -16.0, 20.0),       # where its surface is sampled from: low in the breast, where
     # every bit of it, the tail's top and the chin's underside both, is in sight
-    bill=dict(base=(-24.0, 58.6), tip=(-47.5, 57.4), hw=(9.6, 13.2), up=(8.6, 5.0),
-              lo=(5.6, 3.2), short=1.6, smile=2.6, gap=0.5),
+    bill=dict(base=(-24.0, 58.6), tip=(-47.5, 57.4), hw=(9.6, 13.2), up=(9.4, 6.0),
+              lo=(6.0, 3.8), short=1.6, smile=2.6, gap=1.0),
     # the moulded bill sunk in the face at `base` (y, z) to its tip: half width at the base and
     # flared at the tip, the upper and lower bills' depth there, how far short of the upper the
     # lower stops, how much the mouth's corners turn up, the mouth line's gap (mm)
