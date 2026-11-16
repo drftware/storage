@@ -2374,11 +2374,17 @@ actions themselves and dealing the new finds on floors are later game tickets.
       model on the server; `FindUseView` plays its motions, light and sounds on every screen by
       its joints (`Finds.joints`), your own on your view's copy at once; the button hides while a
       press would do nothing. Each press seen in Studio Play.
-    - [ ] **F-G1b3 The cymbal monkey's lure and the cars** (next): the monkey bashes its cymbals for 20
-      seconds and monsters keep coming while it plays (a lure that lasts, unlike a blast); the
-      RC car drives off round the unit (`Art.Drive`, the set's `Wheels` motion); the die-cast
-      car is set down and rolls off down the hall (its `Push`). Then D-188's "found lights hold
-      a Mannequin" (a lit find on the floor counts as a light the Mannequin stops in).
+    - [ ] **F-G1b3 The cymbal monkey's lure, the cars, found lights hold a Mannequin.** Split
+      Nov 16:
+      - [x] **F-G1b3a The monkey's lure and the toy car** (Nov 16, D-233; both seen in Studio
+        Play): wound, the monkey clangs a cymbal on every clash and every monster on the floor
+        hears it every 2 s until it stalls (`Use.lureUntil`); pushed, the toy car is set down in
+        front of you and rolls about 7 studs, stopping short of a wall, where the server already
+        laid it (`Use.FromAttribute`, `Finds.joints`'s `from`).
+      - [ ] **F-G1b3b A lit find on the floor holds a Mannequin** (next; D-188): a found light
+        lit on the floor counts as a light the Mannequin stops in.
+      - [ ] **F-G1b3c The RC car drives off its transmitter.** Waits on `OWNER.md`: its catalog
+        line says it drives at home, so it has no press in the building for now (D-233).
   - [ ] **F-G1c The grade shows. Parked Nov 15 (owner: cut for now, D-204):** the reveal moved
     from the door to the box you open (B-02, D-205). As written (the catalog's
     "How you can tell"): a Rare's blue glow seen
@@ -2404,6 +2410,9 @@ actions themselves and dealing the new finds on floors are later game tickets.
   clang, lower and louder); time the music box against the Wind (its winding into the tune) and
   the match against the tea light's and oil lamp's Light. Pro Sound Effects first (`search_asset`,
   query ending "SFX"); store searches for "spring" and "boing" found nothing usable.
+- **The monkey and the toy car** (F-G1b3a): the toy car's roll fading as it slows (the clip is
+  cut), a tick as it meets a wall, the monkey's wind measured against its key, and a lighter
+  clash than the pitched-up crash cymbal; a hand set-down as the car leaves it.
 - **A pressed find's hand** (F-G1b2): your hand doesn't move as you press (the horn rises); a small
   thumb-press dip of the held find, and a friend's arm lifting a lit lantern to look, would sell it.
 

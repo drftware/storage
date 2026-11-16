@@ -197,21 +197,52 @@ function Finds.pose(model: Model, name: string, values: Pose.Values)
 	shine(find, parts, values, true)
 end
 
+-- Whether a root's values take it over the floor or lean it (the toy car's x, z, yaw, pitch, roll).
+local function travelling(v: { [string]: number }?): boolean
+	return v ~= nil
+		and (
+			(v.x or 0) ~= 0
+			or (v.z or 0) ~= 0
+			or (v.yaw or 0) ~= 0
+			or (v.pitch or 0) ~= 0
+			or (v.roll or 0) ~= 0
+		)
+end
+
+-- Where a kit-built find's root stands for `values`, in the find's frame (its travel over the
+-- floor included), from where `model`'s root was drawn; nil before `pose` has stood it.
+function Finds.rootAt(model: Model, name: string, values: Pose.Values): CFrame?
+	local find = Finds.art(name)
+	local root = if find then model:FindFirstChild(find.Parts[1].Name) else nil
+	if not (find and root) then
+		return nil
+	end
+	local drawn, drawnSize = root:GetAttribute(DRAWN), root:GetAttribute(DRAWN_SIZE)
+	if typeof(drawn) ~= "CFrame" or typeof(drawnSize) ~= "Vector3" then
+		return nil
+	end
+	return (placed(drawn, drawnSize, Pose.solve(find, values)[find.Parts[1].Name]))
+end
+
 --[[
 	Stands a kit-built find at `values` by its joints alone, never moving a part: a find in a hand
 	is in the character's assembly, and setting a part's CFrame there would drag the player. Each
 	part's place in the find's frame comes from where it was drawn (`pose` recorded it) and the
 	kit's sums; each Motor6D then holds its part there from its Part0. The root stays where it
-	stands (no pressable find moves its root). `scale` is the copy's size against the art (your
-	view's copy is drawn at `Hands.Scale`); `lights` false leaves its lights off. Parts not yet
-	streamed in are skipped.
+	stands: a find whose root travels (the toy car rolling) keeps its shape round it, its wheels
+	turning, unless `from` is given. `from` is where the find's frame stood as its motion began,
+	for a find lying loose only: its root is moved along the travel from there, on this screen
+	alone (never in a hand: that would drag the player). `scale` is the copy's size against the
+	art (your view's copy is drawn at `Hands.Scale`); `lights` false leaves its lights off. Parts
+	not yet streamed in are skipped.
 ]]
 function Finds.joints(
 	model: Model,
 	name: string,
 	values: Pose.Values,
 	scale: number,
-	lights: boolean
+	lights: boolean,
+	from: CFrame?
 )
 	local find = Finds.art(name)
 	if not find then
@@ -220,13 +251,25 @@ function Finds.joints(
 	local moved = Pose.solve(find, values)
 	local parts: { [string]: BasePart } = {}
 	local places: { [BasePart]: CFrame } = {}
+	local travels = from ~= nil or travelling(values[find.Parts[1].Name])
 	for i, spec in find.Parts do
 		local part = model:FindFirstChild(spec.Name)
 		if part and part:IsA("BasePart") then
 			parts[spec.Name] = part
 			local drawn, drawnSize = part:GetAttribute(DRAWN), part:GetAttribute(DRAWN_SIZE)
 			local posed = part:GetAttribute(POSED)
-			if i == 1 and typeof(posed) == "CFrame" then
+			if
+				i == 1
+				and travels
+				and typeof(drawn) == "CFrame"
+				and typeof(drawnSize) == "Vector3"
+			then
+				local at = placed(drawn, drawnSize, moved[spec.Name])
+				places[part] = at.Rotation + at.Position * scale
+				if from then
+					part.CFrame = from * places[part]
+				end
+			elseif i == 1 and typeof(posed) == "CFrame" then
 				places[part] = posed.Rotation + posed.Position * scale
 			elseif i > 1 and typeof(drawn) == "CFrame" and typeof(drawnSize) == "Vector3" then
 				local at, size = placed(drawn, drawnSize, moved[spec.Name])
@@ -238,9 +281,9 @@ function Finds.joints(
 	for part, at in places do
 		for _, joint in part:GetChildren() do
 			if joint:IsA("Motor6D") and joint.Part1 == part then
-				local from = joint.Part0 and places[joint.Part0]
-				if from then
-					joint.C0 = from:ToObjectSpace(at)
+				local held = joint.Part0 and places[joint.Part0]
+				if held then
+					joint.C0 = held:ToObjectSpace(at)
 					joint.C1 = CFrame.identity
 				end
 			end

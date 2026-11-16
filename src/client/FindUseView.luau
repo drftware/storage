@@ -19,6 +19,11 @@
 	nothing (a tea light burning, a jack mid-tune, a spent glow stick).
 
 	Real lights shine on the `Use.LightsShown` nearest lit finds only; the rest still glow.
+
+	A step with a `hit` sounds on every beat of its motion (the cymbal monkey's every clash), only
+	the beats still to come for a find just come into view. A find set down to play (the toy car)
+	rolls from where it was set down to where the server laid it, its root moved on this screen
+	alone while it lies loose and rolls; it holds where it stopped short if it met a wall.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -66,6 +71,14 @@ type Entry = {
 	view: Model?, -- your view's copy it last posed (your own find in hand)
 	dirty: boolean, -- pose again whatever the frame (a part streamed in)
 	glowing: boolean, -- a candidate for real lights
+	shines: boolean, -- it has real lights at all
+	-- each step motion's beats (seconds into it) that sound its `hit`, by motion name
+	beats: { [string]: { number } },
+	beatStep: number, -- the step and stamp the beats follow, and the next beat to sound
+	beatAt: number,
+	beatNext: number,
+	from: CFrame?, -- where a find set down to play set off (the server's stamp)
+	stop: number?, -- the seconds into its press it stopped short
 	connections: { RBXScriptConnection },
 }
 
@@ -108,6 +121,33 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 		end
 		e.predicted = nil
 		e.stamp = s
+		local from, stop = m:GetAttribute(Use.FromAttribute), m:GetAttribute(Use.StopAttribute)
+		e.from = if typeof(from) == "CFrame" then from else nil
+		e.stop = if type(stop) == "number" then stop else nil
+	end
+
+	-- The beats of `motion` that sound a `hit` on `part`: every key where its turn is furthest.
+	local function beatsOf(motion: Art.Motion?, part: string): { number }
+		local out: { number } = {}
+		if not motion then
+			return out
+		end
+		for _, track in motion.Tracks do
+			if track.Part == part and track.Channel == "turn" then
+				local far = 0
+				for _, k in track.Keys do
+					if math.abs(k[2]) > math.abs(far) then
+						far = k[2]
+					end
+				end
+				for _, k in track.Keys do
+					if far ~= 0 and math.abs(k[2] - far) < 1e-3 then
+						table.insert(out, k[1])
+					end
+				end
+			end
+		end
+		return out
 	end
 
 	local function add(model: Model, key: string): Entry?
@@ -119,6 +159,13 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 		local art = Finds.art(key)
 		if not (row and art) then
 			return nil
+		end
+		local beats: { [string]: { number } } = {}
+		for _, step in row.on do
+			local hit = step.hit
+			if hit then
+				beats[step.motion] = beatsOf(art.Motions[step.motion], hit.part)
+			end
 		end
 		local e: Entry = {
 			model = model,
@@ -140,6 +187,13 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 			view = nil,
 			dirty = true,
 			glowing = false,
+			shines = #art.Lights > 0,
+			beats = beats,
+			beatStep = -1,
+			beatAt = -1,
+			beatNext = 1,
+			from = nil,
+			stop = nil,
 			connections = {},
 		}
 		entries[model] = e
@@ -265,6 +319,39 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 		end
 	end
 
+	-- A step's `hit` on each beat its motion passes, `t` seconds in: never a burst after a hitch,
+	-- and only the beats still to come for a step first seen mid-way.
+	local function beat(e: Entry, stamp: Use.Stamp, f: Use.Frame)
+		local s = Use.stepAt(e.row, stamp.state, f.step)
+		local hit = s and s.hit
+		local times = s and e.beats[s.motion]
+		if not (s and hit and times and f.motion == s.motion) then
+			return
+		end
+		if e.beatStep ~= f.step or e.beatAt ~= stamp.at then
+			e.beatStep, e.beatAt, e.beatNext = f.step, stamp.at, 1
+			while e.beatNext <= #times and times[e.beatNext] < f.t - 0.05 do
+				e.beatNext += 1
+			end
+		end
+		local due = false
+		while e.beatNext <= #times and times[e.beatNext] <= f.t do
+			e.beatNext += 1
+			due = true
+		end
+		local body = Tools.body(e.model)
+		if due and body then
+			Tools.play(hit.sound, body, Use.Reach)
+		end
+	end
+
+	-- Whether `model` lies loose on a floor (not in a hand or a monster's): its root may be moved.
+	local function loose(model: Model): boolean
+		local parent = model.Parent
+		local body = Tools.body(model)
+		return parent ~= nil and not parent:IsA("Model") and body ~= nil and body.Anchored
+	end
+
 	-- Which finds' real lights shine: the nearest glowing ones, your own in hand first.
 	local function rank(mine: Model?)
 		local camera = Workspace.CurrentCamera
@@ -342,11 +429,27 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 				continue
 			end
 			local stamp = stampOf(e)
-			local f = Use.frame(e.row, stamp, if stamp then now - stamp.at else 0, e.durations)
-			e.glowing = not f.spent
+			-- a stop short is the server's stamp's: your own press shown early has none
+			local stop = if stamp and stamp == e.stamp then e.stop else nil
+			local elapsed = if stamp then Use.played(now - stamp.at, stop) else 0
+			local f = Use.frame(e.row, stamp, elapsed, e.durations)
+			e.glowing = e.shines
+				and not f.spent
 				and (f.lit or (stamp ~= nil and stamp.state ~= "Off" and f.motion ~= nil))
 			if stamp then
 				hear(e, stamp, f.step, now - stamp.at)
+				beat(e, stamp, f)
+			end
+			-- a find set down to play rolls on this screen while it lies loose and rolls
+			local from: CFrame? = nil
+			if e.row.down and stamp and stamp == e.stamp and e.from then
+				local total = 0
+				for _, step in Use.chain(e.row, stamp.state) do
+					total += Use.length(step, e.durations)
+				end
+				if now - stamp.at <= (stop or total) + 0.5 and loose(model) then
+					from = e.from
+				end
 			end
 			local shownView = if own then view else nil
 			if
@@ -366,7 +469,7 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 				Finds.joints(model, e.key, values, model:GetScale(), false)
 				Finds.joints(shownView, e.key, values, shownView:GetScale(), e.lights)
 			else
-				Finds.joints(model, e.key, values, model:GetScale(), e.lights)
+				Finds.joints(model, e.key, values, model:GetScale(), e.lights, from)
 			end
 		end
 	end

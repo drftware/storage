@@ -8,7 +8,13 @@
 	state, the server clock and the light left as attributes, and the tag, and every screen plays
 	it from there (`FindUseView`). The same model moves from hand to floor and back, so a lantern
 	dropped lit stays lit. A noisy find (the jack) is heard by every monster on the floor as its
-	bang starts, where the find is then, unless it was pressed again since.
+	bang starts, where the find is then, unless it was pressed again since; a lure (the cymbal
+	monkey) is heard again every few seconds for as long as it plays (F-G1b3a).
+
+	A find set down to play (the toy car, `down`) leaves your hand: it's stood on the floor in
+	front of you, and its path is walked here first, so it stops short where it would roll into a
+	wall. The server lays it where its roll ends at once (that's where it is, for picking up and
+	for the Packrat) and stamps where it set off; every screen rolls it there.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -17,12 +23,17 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Pose = require(ReplicatedStorage.Shared.Finds.Pose)
 local Finds = require(ReplicatedStorage.Shared.Finds)
 local Keepers = require(script.Parent.Keepers)
 local Slots = require(script.Parent.Slots)
 local Use = require(ReplicatedStorage.Shared.Finds.Use)
 
 local FindUses = {}
+
+-- Seconds between the points of a set-down find's path checked for walls: a toy car at its
+-- fastest moves under half a stud in one.
+local PATH_STEP = 0.1
 
 -- The stamp on `model`, nil if it was never pressed.
 local function stampOf(model: Model): Use.Stamp?
@@ -38,6 +49,7 @@ function FindUses.new(): Brix.System
 	local leaving: RBXScriptConnection? = nil
 	local last: { [Player]: number } = {} -- each player's last press that took, os.clock
 	local keepers: Keepers.Keepers? = nil
+	local slots: Slots.Slots? = nil
 
 	-- The jack's bang, `delay` seconds after the press stamped `at`: heard where the find is then.
 	local function bang(model: Model, at: number, delay: number, who: string)
@@ -52,6 +64,136 @@ function FindUses.new(): Brix.System
 				)
 			end
 		end)
+	end
+
+	-- A lure (the cymbal monkey) heard by every monster on the floor from `from` seconds after the
+	-- press stamped `at` until `to`, every `every` seconds, wherever the find is then: one task a
+	-- press, ended by another press, the find's going or the end of its play.
+	local function lure(
+		model: Model,
+		at: number,
+		from: number,
+		to: number,
+		every: number,
+		who: string
+	)
+		task.delay(from, function()
+			local times, heard = 0, 0
+			while model.Parent ~= nil and model:GetAttribute(Use.AtAttribute) == at do
+				if Workspace:GetServerTimeNow() - at >= to then
+					break
+				end
+				local k = keepers
+				if k then
+					heard =
+						math.max(heard, k:hear(model:GetPivot().Position, Use.LureReach, "a lure"))
+				end
+				times += 1
+				task.wait(every)
+			end
+			if RunService:IsStudio() then
+				print(
+					`FindUses: {who}'s {model:GetAttribute(Use.KeyAttribute)} lured {times} times; {heard} heard it`
+				)
+			end
+		end)
+	end
+
+	--[[
+		Sets `use`'s find down to play its press (`down`): out of the player's hand onto the floor
+		just in front of them, facing where they face, its path walked for walls, laid where it ends.
+		Where it set off and where it stopped short go on the model for every screen. False, and it
+		stays in hand, if there's no floor in front of them.
+	]]
+	local function setDown(
+		use: Slots.Use,
+		row: Use.Row,
+		state: Use.State,
+		durations: { [string]: number }
+	): boolean
+		local s = slots
+		local character = use.player.Character
+		local body = character and character:FindFirstChild("HumanoidRootPart")
+		local art = Finds.art(use.key)
+		local box = Finds.box(use.key)
+		if not (s and body and body:IsA("BasePart") and art and box) then
+			return false
+		end
+		local model = use.model
+		local params = RaycastParams.new()
+		params.FilterType = Enum.RaycastFilterType.Exclude
+		local skip: { Instance } = { model }
+		for _, p in Players:GetPlayers() do
+			if p.Character then
+				table.insert(skip, p.Character)
+			end
+		end
+		params.FilterDescendantsInstances = skip
+		local look = body.CFrame.LookVector
+		local flat = Vector3.new(look.X, 0, look.Z)
+		if flat.Magnitude < 1e-3 then
+			return false
+		end
+		flat = flat.Unit
+		-- just in front of your feet, short of a wall
+		local wall = Workspace:Raycast(body.Position, flat * Use.SetAhead, params)
+		local over = if wall
+			then wall.Position - flat * (box.Size.Z / 2 + 0.1)
+			else body.Position + flat * Use.SetAhead
+		local floor = Workspace:Raycast(over, Vector3.new(0, -8, 0), params)
+		if not floor then
+			return false
+		end
+		local from = CFrame.lookAt(floor.Position, floor.Position + flat)
+		-- its root along the press, sampled
+		local rest = Finds.rest(use.key)
+		local stamp: Use.Stamp = { state = state, at = 0, left = Use.Forever }
+		local function rootAt(t: number): CFrame?
+			local f = Use.frame(row, stamp, t, durations)
+			local m = if f.motion then art.Motions[f.motion] else nil
+			return Finds.rootAt(model, use.key, if m then Pose.at(m, f.t, rest) else rest)
+		end
+		local total = 0
+		for _, step in Use.chain(row, state) do
+			total += Use.length(step, durations)
+		end
+		local first = rootAt(0)
+		if not first then
+			return false
+		end
+		local stop: number? = nil
+		local was = (from * first).Position
+		local t = 0
+		while t < total do
+			local nextT = math.min(t + PATH_STEP, total)
+			local at = rootAt(nextT) :: CFrame
+			local p = (from * at).Position
+			local step = p - was
+			-- its nose ahead of its middle: it stops as its nose meets the wall
+			if
+				step.Magnitude > 1e-4
+				and Workspace:Raycast(was, step + step.Unit * box.Size.Z / 2, params)
+			then
+				stop = t
+				break
+			end
+			was, t = p, nextT
+		end
+		local id = s:place(use.player, use.key)
+		if not id then
+			return false
+		end
+		local ends = from * (rootAt(stop or total) :: CFrame)
+		local _, yaw = ends:ToOrientation()
+		s:lower(id, Vector3.new(ends.X, floor.Position.Y, ends.Z), math.deg(yaw), true)
+		-- then exactly where every screen's roll ends
+		local root = model:FindFirstChild(art.Parts[1].Name)
+		if root and root:IsA("BasePart") then
+			model:PivotTo(ends * root.CFrame:Inverse() * model:GetPivot())
+		end
+		model:SetAttribute(Use.FromAttribute, from)
+		model:SetAttribute(Use.StopAttribute, stop)
+		return true
 	end
 
 	local function onUsed(use: Slots.Use)
@@ -74,6 +216,9 @@ function FindUses.new(): Brix.System
 			return
 		end
 		local state: Use.State = pressed :: Use.State
+		if row.down and not setDown(use, row, state, durations) then
+			return
+		end
 		last[player] = t
 		model:SetAttribute(Use.KeyAttribute, use.key)
 		model:SetAttribute(Use.StateAttribute, state)
@@ -82,7 +227,10 @@ function FindUses.new(): Brix.System
 		model:SetAttribute(Use.AtAttribute, now)
 		CollectionService:AddTag(model, Use.Tag)
 		local delay = Use.noiseAt(row, state, durations)
-		if delay then
+		local to = Use.lureUntil(row, state, durations)
+		if delay and to and row.lure then
+			lure(model, now, delay, to, row.lure, player.Name)
+		elseif delay then
 			bang(model, now, delay, player.Name)
 		end
 	end
@@ -92,6 +240,7 @@ function FindUses.new(): Brix.System
 	function system.start(_: any, context: Brix.Context)
 		local s = (context.registry:get("slots") :: any) :: Slots.Slots? -- any: the registry's
 		keepers = (context.registry:get("keepers") :: any) :: Keepers.Keepers?
+		slots = s
 		if s then
 			table.insert(connections, s.used:connect(onUsed))
 		else

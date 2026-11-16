@@ -36,6 +36,9 @@ export type Step = {
 	-- `Use.Forever` until the light runs out. None: it plays once through.
 	loop: number?,
 	sound: Sound?, -- heard at the find as the step starts
+	-- a sound at every beat of the step's motion: each key where `part`'s turn is at its furthest
+	-- (the cymbal monkey's every clash, as its arms swing in)
+	hit: { part: string, sound: Sound }?,
 }
 
 export type Row = {
@@ -55,6 +58,16 @@ export type Row = {
 	-- the motion whose start every monster on the floor hears, as an air horn's blast (the jack's
 	-- Pop): a noisy find draws monsters only when it's used (D-188)
 	noise: string?,
+	-- seconds between hearings for as long as the `noise` step plays: monsters keep coming to the
+	-- find all through it, not just at its start (the cymbal monkey, Call of Duty Zombies' Monkey
+	-- Bomb)
+	lure: number?,
+	-- a toy: its press is over once its motions end, and it takes another (the monkey wound again,
+	-- the toy car pushed again). The jack is one by its `reset`.
+	toy: boolean?,
+	-- set down to play: the press takes it out of your hand and stands it on the floor in front of
+	-- you, and it plays there, travelling as its motion travels (the toy car let go to roll off)
+	down: boolean?,
 }
 
 -- What the last press started: "On" plays `on`, "Again" plays `reset` then `on`, "Off" plays
@@ -95,6 +108,15 @@ Use.LightsShown = 2
 -- refused press (another's bang, a lag spike) falls back within a breath.
 Use.Predict = 1.5
 
+-- How far a lure is heard along the halls, in studs: as far as the air horn's blast (`Horn`), the
+-- loudest thing on a floor. What it does to the player: a cymbal monkey left in a unit draws
+-- every monster two halls round to it, again and again, while you work somewhere else.
+Use.LureReach = 130
+
+-- Studs in front of your middle a find set down to play is stood (the toy car let go): just past
+-- your feet, so it rolls away from in front of you, never out from under you.
+Use.SetAhead = 1.6
+
 -- The torch's own switch (`Torch.OnSound`, `OffSound`): a lantern, the fairy lights' box and the
 -- hard hat's lamp click as a torch does.
 local CLICK_ON: Sound = { id = "rbxassetid://9114480271", from = 0.38, length = 0.14, volume = 1.4 }
@@ -110,6 +132,16 @@ local MATCH_ID = "rbxassetid://71757268954484"
 -- (`CLANG`), lower and louder; a real spring bang is ROADMAP polish (F-G1b2's follow-up).
 local POP: Sound =
 	{ id = "rbxassetid://9116460746", from = 0, length = 0.42, volume = 1.3, pitch = 0.75 }
+-- Pro Sound Effects' "Toy Plastic Feet Wind Up 1" (4.9 s, a key wound then a run): its winding
+-- under the monkey's Wind (the key in its back turning).
+local WIND: Sound = { id = "rbxassetid://9120219923", from = 0, length = 2.4, volume = 1 }
+-- "Crash Cymbal" (Creator Store, one hit of a 17-inch crash, almost no silence before it),
+-- pitched up and cut short into a small brass toy cymbal's clang: one each clash.
+local CLASH: Sound =
+	{ id = "rbxassetid://867306119", from = 0, length = 0.35, volume = 0.9, pitch = 1.9 }
+-- "Rolling loop" (Creator Store, small wheels rolling): under the toy car's Push, cut as it
+-- slows (a fade is ROADMAP polish).
+local ROLL: Sound = { id = "rbxassetid://99838569349900", from = 0, length = 3.4, volume = 0.6 }
 
 --[[
 	The rows, by catalog key. Each find's one line is the item catalog's (art/finds/WAVES.md):
@@ -185,7 +217,32 @@ Use.Rows = {
 		reset = { motion = "Shut" },
 		noise = "Pop",
 	},
+	-- "Wind: it bashes its cymbals for 20 seconds, loud", "the strongest lure in the set": wind it,
+	-- set it down, and every monster on the floor keeps coming to it until it stalls.
+	CymbalMonkey = {
+		verb = "Wind",
+		on = {
+			{ motion = "Wind", sound = WIND },
+			{ motion = "Play", hit = { part = "CymbalMonkey_ArmL", sound = CLASH } },
+		},
+		noise = "Play",
+		lure = 2,
+		toy = true,
+	},
+	-- "Push: it rolls off down the hall": let go in front of you, it rolls about seven studs,
+	-- wandering, and slows to a stop where it can be picked up again.
+	DiecastCar = {
+		verb = "Push",
+		on = { { motion = "Push", sound = ROLL } },
+		toy = true,
+		down = true,
+	},
 } :: { [string]: Row }
+
+-- Whether `row` is a toy: pressed again once its motions end (`toy`, or the jack's `reset`).
+function Use.toy(row: Row): boolean
+	return row.toy == true or row.reset ~= nil
+end
 
 -- The steps a state plays, in order.
 function Use.chain(row: Row, state: State): { Step }
@@ -264,7 +321,7 @@ function Use.frame(row: Row, stamp: Stamp?, elapsed: number, durations: { [strin
 		t = t,
 		step = i,
 		-- a light stays lit after its press's motions; a toy's press is over once they end
-		lit = not ended or row.lasts ~= nil or row.off ~= nil or row.reset == nil,
+		lit = not ended or row.lasts ~= nil or row.off ~= nil or not Use.toy(row),
 		spent = false,
 	}
 end
@@ -305,7 +362,7 @@ function Use.press(
 	for _, step in steps do
 		length += Use.length(step, durations)
 	end
-	if row.reset and elapsed >= length then
+	if Use.toy(row) and elapsed >= length then
 		return "Again", stamp.left
 	end
 	return nil, 0
@@ -333,6 +390,16 @@ Use.AtAttribute = "UseAt"
 Use.LeftAttribute = "UseLeft"
 Use.KeyAttribute = "UseKey"
 Use.Tag = "FindUsed"
+-- A find set down to play (`down`): where its frame stood as it was set down (a CFrame), so
+-- every screen plays its travel from there to where the server laid it; and, if it rolled into
+-- something, the seconds into its press it stopped short (it holds that frame from then on).
+Use.FromAttribute = "UseFrom"
+Use.StopAttribute = "UseStop"
+
+-- Where a find is in its press as every screen plays it: `elapsed`, held at a stop short.
+function Use.played(elapsed: number, stop: number?): number
+	return if stop then math.min(elapsed, stop) else elapsed
+end
 
 -- `left` as the attribute carries it.
 function Use.encode(left: number): number
@@ -348,6 +415,21 @@ function Use.read(state: unknown, at: unknown, left: unknown): Stamp?
 		return nil
 	end
 	return { state = state :: State, at = at, left = if left < 0 then Use.Forever else left }
+end
+
+-- Seconds after a press in state `state` that its lure stops being heard (its `noise` step's
+-- end), nil if it's no lure.
+function Use.lureUntil(row: Row, state: State, durations: { [string]: number }): number?
+	local start = Use.noiseAt(row, state, durations)
+	if not (start and row.lure) then
+		return nil
+	end
+	for _, step in Use.chain(row, state) do
+		if step.motion == row.noise then
+			return start + Use.length(step, durations)
+		end
+	end
+	return nil
 end
 
 -- Seconds after a press in state `state` that its noise starts (the jack's bang), nil if it

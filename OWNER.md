@@ -57,6 +57,28 @@ nowhere else.
      other should see it light in their hand and hear the click there.
   8. On a phone: is the button where your thumb wants it, and does the lit hall still run smooth
      with three or four lights lit near you? (Only the two nearest light the room; the rest glow.)
+- [ ] **Try (F-G1b3a, built Nov 16, D-233; both seen in Studio Play, the monsters coming not
+  watched, not on a phone):** wind the cymbal monkey and push the toy car.
+  1. In Studio, set Workspace's `DevFloorNumber` to 1 and press Play. In the command bar (Server),
+     run `workspace:SetAttribute("GiveFind", "CymbalMonkey")`: the monkey lands in your hand and
+     a **Wind** button shows.
+  2. Press Wind: its key turns with a winding sound, then it bashes its cymbals for about 21
+     seconds, a clang on every clash, slowing and stalling at the end. Listen: does each clang
+     land as the cymbals meet? Is the clang too big for a toy (it's a pitched-up crash cymbal)?
+  3. Wind it near a sleeping monster, drop it in a unit and run: the monster should wake and
+     keep coming back to the monkey for as long as it plays (it's heard every 2 seconds, as far
+     as the air horn), then lose interest once it stalls. Press Wind again after it stalls: it
+     winds from the start.
+  4. Set `GiveFind` to "" and then "DiecastCar". Face down a hall and press **Push**: the car
+     leaves your hand, sits on the floor just in front of you and rolls about 7 studs, wandering a
+     little and slowing to a stop. Walk to it: Take is where it stopped.
+  5. Pick it up, face a wall from 3 studs away and press Push: it should stop at the wall, not go
+     through. (The roll's sound cuts off as it slows; a fade is ROADMAP polish.)
+  6. With two players: both should see the car roll the same way and stop in the same place.
+- [ ] **Decide (default in, F-G1b3a):** the RC car's catalog line says it drives "at home",
+  round your unit and out into the hall of units, so in the building it has no press yet, like
+  the lamps that work at home. Want it to drive off its transmitter in the building too? Say so
+  and F-G1b3c builds it.
 - [ ] **Decide (defaults in, F-G1a):** the Secret lamp's name on screen is "Old lamp" (the
   catalog calls it "A lamp that's on when you find it"); the RC car carries with its
   transmitter beside it as one find; the theatre spotlight isn't dealt until floors have big

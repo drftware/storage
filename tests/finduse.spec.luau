@@ -183,6 +183,53 @@ do
 	ok(shut ~= nil and shut.motion == "Shut" and pop ~= nil and pop.motion == "Pop", "stepAt: jack")
 end
 
+-- the cymbal monkey: wound, it bashes its cymbals, lured monsters hear it all through its Play,
+-- and once it stalls it's wound again from the start (no lid to shut)
+do
+	local row, d = Use.Rows.CymbalMonkey, durations("CymbalMonkey")
+	local state = Use.press(row, nil, 0, d)
+	ok(state == "On", "monkey: wound")
+	local stamp: Use.Stamp = { state = "On", at = 0, left = Use.Forever }
+	ok(Use.frame(row, stamp, d.Wind + 1, d).motion == "Play", "monkey: plays after its wind")
+	ok(Use.frame(row, stamp, d.Wind + 1, d).lit, "monkey: still going mid-play")
+	ok(Use.press(row, stamp, d.Wind + 1, d) == nil, "monkey: can't be wound mid-play")
+	ok(near(Use.noiseAt(row, "On", d) or -1, d.Wind), "monkey: heard from its first clash")
+	ok(near(Use.lureUntil(row, "On", d) or -1, d.Wind + d.Play), "monkey: heard until it stalls")
+	local done = d.Wind + d.Play + 0.1
+	local over = Use.frame(row, stamp, done, d)
+	ok(not over.lit and not over.spent, "monkey: stalled, not spent")
+	local again = Use.press(row, stamp, done, d)
+	ok(again == "Again", "monkey: wound again once it stalls")
+	ok(Use.chain(row, "Again")[1].motion == "Wind", "monkey: again is a wind, no reset")
+	ok(
+		Use.lureUntil(Use.Rows.JackInTheBox, "On", durations("JackInTheBox")) == nil,
+		"jack: no lure"
+	)
+	ok(row.on[2].hit ~= nil and row.on[2].hit.part == "CymbalMonkey_ArmL", "monkey: clash per beat")
+end
+
+-- the toy car: pushed, it's set down and rolls; once it stops it's pushed again, never a light
+do
+	local row, d = Use.Rows.DiecastCar, durations("DiecastCar")
+	ok(row.down == true, "car: set down to roll")
+	ok(Use.press(row, nil, 0, d) == "On", "car: pushed")
+	local stamp: Use.Stamp = { state = "On", at = 0, left = Use.Forever }
+	ok(Use.frame(row, stamp, 1, d).lit, "car: rolling")
+	ok(Use.press(row, stamp, 1, d) == nil, "car: no push mid-roll")
+	local stopped = Use.frame(row, stamp, d.Push + 1, d)
+	ok(not stopped.lit and stopped.motion == "Push", "car: stopped, held at its roll's end")
+	ok(Use.press(row, stamp, d.Push + 1, d) == "Again", "car: pushed again")
+	ok(Use.noiseAt(row, "On", d) == nil, "car: quiet to monsters")
+end
+
+-- the glow stick is still a light (not a toy): lit for good after its crack
+do
+	local row, d = Use.Rows.GlowSticks, durations("GlowSticks")
+	ok(not Use.toy(row) and Use.toy(Use.Rows.JackInTheBox), "toys: the jack, not the glow stick")
+	local f = Use.frame(row, { state = "On", at = 0, left = Use.Forever }, 999, d)
+	ok(f.lit, "glow stick: lit for good")
+end
+
 print(`finduse: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

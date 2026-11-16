@@ -153,7 +153,9 @@ export type Slots = Brix.System & {
 	-- no room, a big tool in their hands, no living character, or the place lacks its art.
 	give: (self: any, player: Player, key: string, quiet: boolean?) -> boolean,
 	-- Lays placed tool `id` on the floor at `at`, turned `yaw` degrees (its front gone from under it).
-	lower: (self: any, id: string, at: Vector3, yaw: number) -> (),
+	-- `still`: stood there at once, no fall and no clank (the toy car let go to roll: every screen
+	-- plays its roll there from where it was set down).
+	lower: (self: any, id: string, at: Vector3, yaw: number, still: boolean?) -> (),
 	-- Drops everything `player` carries where they stand, as dying does (caught by a keeper, L-07a).
 	dropAll: (self: any, player: Player) -> (),
 	-- Takes every find out of `player`'s slots for good (the gate shut with them aboard, S1-06):
@@ -1363,13 +1365,17 @@ function Slots.new(): Slots
 		return true
 	end
 
-	function system.lower(_: any, id: string, at: Vector3, yaw: number)
+	function system.lower(_: any, id: string, at: Vector3, yaw: number, still: boolean?)
 		local t = tools[id]
 		if not (t and t.placed) then
 			return
 		end
 		t.placed = nil
-		layDown(t, resting(t.key, at, yaw), t.body.CFrame * t.body.PivotOffset)
+		layDown(
+			t,
+			resting(t.key, at, yaw),
+			if still then nil else t.body.CFrame * t.body.PivotOffset
+		)
 	end
 
 	return system :: any -- any: the table is the Slots shape built field by field above

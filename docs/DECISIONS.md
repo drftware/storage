@@ -6117,3 +6117,17 @@ room; the rest still glow. The press button hides while `Use.press` says nothing
 Sounds for now: the switches click as the torch does, the tea light and oil lamp strike a match
 ("match strike/ignite", Creator Store), the jack winds its music box and bangs with the
 catalog's tin clang made lower and louder. The rest wait in ROADMAP polish.
+
+## D-233 The monkey lures for its whole play; the toy car is set down and rolls where the server laid it (F-G1b3a, Nov 16)
+
+The cymbal monkey is the catalog's "strongest lure", Call of Duty Zombies' Monkey Bomb: wound, it
+plays 21 seconds and every monster on the floor hears it every 2 seconds (`lure`), as far as the
+air horn (`Use.LureReach`), wherever it is then, until it stalls or is wound again; each clash
+sounds as its arms meet (the arm's furthest keys). A toy (`toy`) is pressed again once its
+motions end, with no reset. The toy car (`down`) leaves your hand on its press: stood on the
+floor 1.6 studs ahead facing where you face, its Push walked every 0.1 s for walls, laid at
+once where it ends (no fall, no clank: `Slots.lower`'s `still`), and stamped with where it set
+off and where it stopped short; every screen moves its root along the travel while it lies loose
+and rolls, so it ends exactly where the server has it (seen within 0.01 studs). Finds without
+real lights no longer take one of the two light slots. The RC car's catalog line says it
+drives at home, so, like D-229's home lamps, it has no press in the building yet (`OWNER.md`).
