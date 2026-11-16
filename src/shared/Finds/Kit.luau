@@ -87,12 +87,31 @@ function Kit.prepare(model: Model, set: string, name: string, emissive: string?)
 	end
 	local root = parts[find.Parts[1].Name]
 	-- The importer keeps each part's FBX frame, which is the find's (X across, Y up, front -Z),
-	-- and each part's Blender origin as its pivot: the root's is the find's.
-	local frame = CFrame.new(root:GetPivot().Position) * root.CFrame.Rotation
+	-- and each part's Blender origin as its pivot: the root's is the find's. A skinned part
+	-- (one with bones, F-05a) has its root bone, "<Part>Root", on that origin instead.
+	local function pivotOf(part: MeshPart): Vector3
+		local held = part:FindFirstChild(part.Name .. "Root")
+		return if held and held:IsA("Bone") then held.WorldPosition else part:GetPivot().Position
+	end
+	local frame = CFrame.new(pivotOf(root)) * root.CFrame.Rotation
 	local wrong: { string } = {}
+	local bones = find.Bones
+	if bones then
+		for _, bone in bones do
+			local held = parts[bone.Part]:FindFirstChild(bone.Name, true)
+			if not (held and held:IsA("Bone")) then
+				table.insert(wrong, `{bone.Part} has no bone {bone.Name}`)
+			else
+				local at = frame:PointToObjectSpace(held.WorldPosition)
+				if (at - bone.At).Magnitude > TOLERANCE then
+					table.insert(wrong, `{bone.Name} at {at} not {bone.At}`)
+				end
+			end
+		end
+	end
 	for _, spec in find.Parts do
 		local part = parts[spec.Name]
-		local pivot = frame:PointToObjectSpace(part:GetPivot().Position)
+		local pivot = frame:PointToObjectSpace(pivotOf(part))
 		local turned = frame.Rotation:ToObjectSpace(part.CFrame.Rotation)
 		if (pivot - spec.Pivot).Magnitude > TOLERANCE then
 			table.insert(wrong, `{spec.Name} pivot {pivot} not {spec.Pivot}`)
@@ -135,7 +154,8 @@ function Kit.prepare(model: Model, set: string, name: string, emissive: string?)
 			end
 		end
 		for _, old in part:GetChildren() do
-			if old:IsA("JointInstance") or old:IsA("Attachment") then
+			-- a Bone is an Attachment too: keep the bones a skinned part bends by (F-05a)
+			if old:IsA("JointInstance") or (old:IsA("Attachment") and not old:IsA("Bone")) then
 				old:Destroy()
 			end
 		end
@@ -192,7 +212,7 @@ function Kit.prepare(model: Model, set: string, name: string, emissive: string?)
 	model.PrimaryPart = root
 	model:SetAttribute("Find", name)
 	model:SetAttribute("Set", set)
-	return `{name}: {#find.Parts} parts, {#find.Lights} lights{if emissive
+	return `{name}: {#find.Parts} parts, {if bones then #bones else 0} bones, {#find.Lights} lights{if emissive
 		then ", glow mask"
 		else ""}`
 end

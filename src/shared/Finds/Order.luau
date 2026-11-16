@@ -18,6 +18,7 @@ return {
 	CowboyDoll = { "Pull" },
 	SingingFish = { "Press" },
 	TinCarousel = { "Wind", "Play" },
+	ButterStick = { "Squeeze" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },

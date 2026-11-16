@@ -145,6 +145,36 @@ local function shine(
 	end
 end
 
+-- Bends its parts where its bones say (a squishy's dent, F-05a): each bone's `move` slides it
+-- along its Axis, `scale` times as far, and its `turn` tips it about its Hinge, in its part's
+-- frame as drawn (docs/STUDIO.md "Bones").
+local function bend(
+	find: Art.Find,
+	parts: { [string]: BasePart },
+	values: Pose.Values,
+	scale: number
+)
+	local bones = find.Bones
+	if not bones then
+		return
+	end
+	for _, spec in bones do
+		local part = parts[spec.Part]
+		local bone = if part then part:FindFirstChild(spec.Name, true) else nil
+		if part and bone and bone:IsA("Bone") then
+			local v = values[spec.Name]
+			local slide = (if v then v.move else nil) or 0
+			local turned = part.CFrame:ToObjectSpace(bone.WorldCFrame).Rotation
+			local moved = CFrame.new(turned:VectorToObjectSpace(spec.Axis * (slide * scale)))
+			local hinge = spec.Hinge
+			local tip = (if v then v.turn else nil) or 0
+			bone.Transform = if hinge and tip ~= 0
+				then moved * CFrame.fromAxisAngle(turned:VectorToObjectSpace(hinge), math.rad(tip))
+				else moved
+		end
+	end
+end
+
 --[[
 	Stands `model`, a kit-built find's model (its template, or a copy wherever it is), at `values`
 	(`rest`, or a motion's frame by `Pose.at`): every part moved, turned and sized as the kit's
@@ -195,6 +225,7 @@ function Finds.pose(model: Model, name: string, values: Pose.Values)
 		end
 	end
 	shine(find, parts, values, true)
+	bend(find, parts, values, 1)
 end
 
 -- Whether a root's values take it over the floor or lean it (the toy car's x, z, yaw, pitch, roll;
@@ -292,6 +323,7 @@ function Finds.joints(
 		end
 	end
 	shine(find, parts, values, lights)
+	bend(find, parts, values, scale)
 end
 
 -- A dull grey under the texture, shown only if the maps fail to load.

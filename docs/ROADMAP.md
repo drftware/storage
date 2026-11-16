@@ -2410,7 +2410,9 @@ actions themselves and dealing the new finds on floors are later game tickets.
   carousel (Nov 16, D-245). F-04k (Nov 16): all 14 imported and judged together in a lit
   unit in Studio; the fish plaque's board made paler so its fish reads, the jack-in-the-box's
   playing-card corners added (`art/finds/WAVES.md`, its note).
-- [ ] **F-05 Squishies.**
+- [ ] **F-05 Squishies.** In `art/finds/squishies/`. F-05a (Nov 16, D-246): bones in the finds
+  kit, checked in Studio, proven on the squishy butter stick. Next F-05b the stress ball, mochi
+  bun and toast slice, then F-05c to F-05f (`art/finds/WAVES.md`, the second run's plan).
 - [ ] **F-06 Plush.**
 - [ ] **F-07 Night Shift Minis and their blind box.**
 - [ ] **F-08 Boxes and tins.**

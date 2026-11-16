@@ -93,6 +93,31 @@ verified: a doc page, Studio, or "untested".
 
 ## The finds kit into Studio (F-S1, Nov 15)
 
+- **Bones: a skinned MeshPart comes through our FBX and upload path** (F-05a, Nov 16, verified
+  in Studio, Edit). A Blender mesh parented to an armature (vertex groups named after the bones,
+  an Armature modifier), exported with `object_types={"MESH", "ARMATURE"}`,
+  `add_leaf_bones=False`, `use_armature_deform_only=True`, then sent by `scripts/upload_art`
+  (Open Cloud, a Model), loads by `InsertService:LoadAsset` as a Model holding the MeshPart
+  (`HasSkinnedMesh` true) with the bones as `Bone` instances inside it, nested as in Blender
+  (`<Part>Root`, then each bone under it), plus an `InitialPoses` folder and an
+  `AnimationController` (the import drops both). The armature object itself becomes nothing.
+  The skinned MeshPart's position is its box's middle; its root bone sits on the Blender origin
+  (the pivot), which `Kit.prepare` reads instead of `GetPivot` for a boned part.
+- **Writing a `Bone.Transform` from a script bends the mesh in Edit**, no Animator needed:
+  `Transform` is in the bone's own frame and multiplies after its `CFrame` (a slide is
+  `CFrame.new(v)`, `v` turned into the bone's frame first; then `* CFrame.fromAxisAngle`).
+  The butter stick's dent showed at once, its tablespoon marks dipping into it.
+- **Skinning moves normals with the bones but never recomputes them**: a bone that only slides
+  leaves the dent's sides shaded as the flat top they were, so the dent shows only in outline.
+  The butter stick's six rim bones tip its sides toward the middle (`turn` about each one's
+  tangent) and the far slope then catches the light. Any bend that should shade needs bones
+  that turn, not only slide.
+- **A Bone is an Attachment** (`IsA("Attachment")` is true): code clearing a part's
+  attachments deletes its bones too. `Kit.prepare` keeps them.
+- Not checked yet: a skinned MeshPart resized (a find shown scaled) keeps its bones where they
+  were, so the bend may land off; the game's `Finds.joints` scales a bone's slide but not its
+  place. Check it before a boned find is ever shown at another size.
+
 - **An Open Cloud "Decal" upload answers with the Decal's ID, not the image's** (Edit): the glow
   mask came back as AssetTypeId 13. `InsertService:LoadAsset(decalId)` gives a Model holding a
   Decal whose `Texture` is `rbxassetid://<image>` (AssetTypeId 1), and that's what

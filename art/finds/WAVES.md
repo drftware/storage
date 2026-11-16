@@ -6,7 +6,7 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-05a, bones in the kit, proven on the squishy butter stick (step 10).
+**Next:** F-05b, the stress ball with a face, the mochi bun and the squishy toast slice (step 11).
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -46,7 +46,7 @@ changes the table's order a little.
    down, timed from a music-box video).
 9. **F-04k** (done Nov 16) A Studio look at all 14 Wind-ups together in a unit at phone size; fix what reads
    badly. Also the jack-in-the-box's playing-card corners and the oil lamp's sheets. Ticks F-04.
-10. **F-05a** Bones in the kit, proven on the squishy butter stick (squeeze: a dent that slowly
+10. **F-05a** (done Nov 16) Bones in the kit, proven on the squishy butter stick (squeeze: a dent that slowly
     fills back in). CRAFT.md: a find that bends in places needs bones. Check in Studio first that
     a skinned MeshPart from our FBX imports and that moving its Bones bends it on a phone-size
     view; write what you learn in `docs/STUDIO.md`. If bones won't work in Roblox, record why and
@@ -87,6 +87,30 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-05a (bones in the kit; the squishy butter stick built; step 10 done; uploaded
+  91493472138143 and imported).** **The answer on bones: they work.** A tiny skinned box sent
+  through `scripts/upload_art` loaded with its MeshPart skinned and its bones inside it, and a
+  `Bone.Transform` written from a script bent it in Edit (docs/STUDIO.md "Bones", D-246). **Kit:**
+  `kit.Bone(name, at, reach | weight=, axis=, hinge=)` on `kit.Part(..., bones=[...])`; the low
+  mesh is skinned at load (`skin`: a `<Part>Root` bone on the pivot holds the rest), tracks name
+  a bone like a part (`move` studs along its axis, `turn` degrees about its hinge), the FBX
+  carries the armature, the Luau a `Bones` list, `Kit.import` keeps the bones (a Bone is an
+  Attachment: it was deleting them), and `Finds.pose`/`Finds.joints` write each bone's
+  `Transform`. **Trap:** skinning never recomputes normals, so a bone that only slides leaves a
+  dent's sides lit like the flat top; turn bones round it (the stick's six rim bones, their
+  shares in `bu_bones` making one smooth bowl). Not yet checked: a boned find resized in Roblox.
+  **The stick** (`art/finds/squishies/`, its own `build.py`, prefix `bu_`/`BU_`): 140 x 40 x 40
+  mm, sunny yellow foam, BUTTER and tablespoon ticks printed in navy (ink drawn in code), one
+  part lofted dense over its top; its Squeeze presses a 8.5 mm thumb dent in a third of a second
+  and lets it creep flat over seven seconds. Judged on quick sheets and in Studio (the dent read
+  at once, the ticks dipping into it, its far side lit); the filmstrip camera moved closer.
+  **F-05b's hints (step 11, not researched):** whole-body squash on the kit's `stretch` (the
+  duck's way), no bones needed. The stress ball with a face: a foam or rubber ball about 2.5 to
+  3 in across, eyes as their own parts pushed outward (`move` along each eye's axis) as the ball
+  squashes. The mochi bun: a soft white or pastel dome about 2.5 in, a puff of a squash, slow
+  rise. The toast slice: a bread-slice squishy about 4 to 5 in, crust darker, the face's pores;
+  it springs back fast, like bread. A bone dent (this kit) suits the toast's thumbprint if wanted.
 
 - **Nov 16, F-04k (the 14 Wind-ups judged together in Studio; step 9 done; F-04 ticked).**
   All 14 imported fresh with `Kit.import` (the chattering teeth and the farm-animal spinner had
@@ -1339,7 +1363,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 |---|---|---|---|---|
 | Stress ball with a face | Common | Squeeze: its eyes bulge out |  | |
 | Goo ball | Common | Squeeze: it oozes between your fingers and slowly comes back | The craze of 2026 | |
-| Squishy butter stick | Common | Squeeze: leaves a dent that slowly fills back in | A 2026 squishy trend | |
+| Squishy butter stick | Common | Squeeze: leaves a dent that slowly fills back in | A 2026 squishy trend | Nov 16, F-05a |
 | Mochi bun | Common | Squeeze: a soft puff of a sound |  | |
 | Paper squishy with a drawn face | Uncommon | Squeeze: it crinkles | Looks homemade; cheap to build | |
 | Squishy toast slice | Uncommon | Squeeze: springs back like real bread |  | |

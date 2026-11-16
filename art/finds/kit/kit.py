@@ -49,19 +49,43 @@ HOLD = (0.3, -0.34, 1.05)
 HOLD_TURN = -28.0
 
 
+class Bone:
+    """A bone that bends its part in one place (F-05a: the butter stick's dent). The game mesh's
+    vertices within `reach` studs of `at` (the find's frame at rest) follow it, all the way at
+    `at` and easing to nothing at `reach`; the rest stay with the part. `weight(co)` (a point in
+    the find's frame, studs) gives the share instead, 0 to 1. Its `move` track slides it along
+    `axis` (studs), carrying those vertices with it: a dent pressed in, a cheek puffed out; its
+    `turn` track tips them about `hinge` through `at` (degrees). A bone that only slides leaves
+    the mesh's normals as they were (Roblox skins them, never recomputes them), so a dent's sides
+    need bones that turn to catch the light (the butter stick's rim). In Roblox it is a Bone in
+    the part's MeshPart, played by its Transform (docs/STUDIO.md "Bones")."""
+
+    def __init__(self, name, at, reach=1.0, axis=(0.0, 0.0, -1.0), weight=None, hinge=None):
+        self.name, self.at, self.reach = name, Vector(at), reach
+        self.axis, self.weight = Vector(axis).normalized(), weight
+        self.hinge = Vector(hinge).normalized() if hinge else None
+
+    def share(self, co):
+        if self.weight:
+            return max(0.0, min(1.0, self.weight(co)))
+        u = max(0.0, 1.0 - (co - self.at).length / self.reach)
+        return u * u * (3.0 - 2.0 * u)
+
+
 class Part:
     """One piece of a find. `build(hi)` returns a shapes.Shape in the find's frame at rest; the
     part turns or slides about `pivot` along `axis` (Blender frame), under `parent`. A `clear`
     part is see-through where its look's alpha says (glass, a flame): its material carries the
     colour map's alpha, so it imports in AlphaMode Transparency (docs/STUDIO.md). An `alone`
     part is baked with nothing else in the scene: it is hidden where it's built and only ever
-    seen somewhere else (the blob lamp's blobs, all built in one spot inside the wax)."""
+    seen somewhere else (the blob lamp's blobs, all built in one spot inside the wax). `bones`
+    bend the part in places (Bone): its game mesh is skinned to them."""
 
     def __init__(self, name, build, pivot=(0.0, 0.0, 0.0), parent=None, axis=None, clear=False,
-                 alone=False):
+                 alone=False, bones=()):
         self.name, self.build, self.pivot, self.parent = name, build, Vector(pivot), parent
         self.axis = Vector(axis).normalized() if axis else None
-        self.clear, self.alone = clear, alone
+        self.clear, self.alone, self.bones = clear, alone, list(bones)
 
 
 class Find:
@@ -229,7 +253,47 @@ def load_low(find, set_dir, coll):
         coll.objects.link(ob)
         ob.location = p.pivot
         objs[p.name] = ob
+        if p.bones:
+            skin(find, p, ob, coll)
     return objs
+
+
+def skin(find, p, ob, coll):
+    """A boned part's armature, `<Find>_<Part>_Rig`: a root bone on its pivot holding what no
+    bone bends, and each Bone from its `at` pointing along its `axis` (so a pose bone's Y is its
+    move), its vertices weighted by `share`. The rig rides on the part (its child at the pivot),
+    so the part's own motion carries it; export hangs the part under it instead (stage_export)."""
+    arm = bpy.data.armatures.new(f"{ob.name}_Rig")
+    rig = bpy.data.objects.new(arm.name, arm)
+    coll.objects.link(rig)
+    rig.location = p.pivot
+    bpy.context.view_layer.objects.active = rig
+    bpy.ops.object.mode_set(mode="EDIT")
+    root = arm.edit_bones.new(f"{ob.name}Root")
+    root.head, root.tail = (0.0, 0.0, 0.0), (0.0, 0.0, 0.05)
+    for b in p.bones:
+        eb = arm.edit_bones.new(f"{find.name}_{b.name}")
+        eb.head = b.at - p.pivot
+        eb.tail = eb.head + b.axis * 0.05
+        eb.parent = root
+    bpy.ops.object.mode_set(mode="OBJECT")
+    held = ob.vertex_groups.new(name=f"{ob.name}Root")  # the edit bone is gone
+    groups = [ob.vertex_groups.new(name=f"{find.name}_{b.name}") for b in p.bones]
+    for v in ob.data.vertices:
+        co = v.co + p.pivot
+        ws = [b.share(co) for b in p.bones]
+        total = sum(ws)
+        if total > 1.0:
+            ws = [w / total for w in ws]
+        for g, w in zip(groups, ws):
+            if w > 1e-4:
+                g.add([v.index], w, "REPLACE")
+        held.add([v.index], max(0.0, 1.0 - sum(ws)), "REPLACE")
+    mod = ob.modifiers.new("bones", "ARMATURE")
+    mod.object = rig
+    rig.parent = ob
+    rig.matrix_parent_inverse = Matrix()
+    rig.location = (0.0, 0.0, 0.0)
 
 
 # --- the bake: detailed mesh onto the game mesh --------------------------------------------
@@ -442,12 +506,24 @@ def stage_export(find, set_dir):
     objs = load_low(find, set_dir, bpy.context.scene.collection)
     wear(find, set_dir, objs)
     bpy.ops.object.select_all(action="DESELECT")
-    for ob in objs.values():
+    for p in find.parts:
+        ob = objs[p.name]
         ob.select_set(True)
+        if p.bones:
+            # Roblox's importer wants the skinned mesh under its armature (the bone test's way,
+            # docs/STUDIO.md "Bones"): the rig takes the part's place, the part rides it
+            rig = ob.children[0]
+            rig.parent = None
+            rig.matrix_world = Matrix.Translation(p.pivot)
+            ob.parent = rig
+            ob.matrix_parent_inverse = rig.matrix_world.inverted()
+            rig.select_set(True)
     bpy.context.view_layer.objects.active = objs[find.parts[0].name]
     path = find.out(set_dir, f"{find.name}.fbx")
+    boned = any(p.bones for p in find.parts)
     bpy.ops.export_scene.fbx(
-        filepath=path, use_selection=True, object_types={"MESH"},
+        filepath=path, use_selection=True,
+        object_types={"MESH", "ARMATURE"} if boned else {"MESH"}, use_armature_deform_only=True,
         apply_scale_options="FBX_SCALE_UNITS", axis_forward="Z", axis_up="Y",
         use_mesh_modifiers=True, mesh_smooth_type="OFF", use_tspace=False,
         add_leaf_bones=False, bake_anim=False, path_mode="COPY", embed_textures=True)
@@ -465,8 +541,11 @@ def row(find, objs, size):
         parts.append(dict(name=p.name, parent=p.parent, pivot=to_roblox(p.pivot - root),
                           axis=to_roblox(p.axis) if p.axis else None, clear=p.clear,
                           size=extent(phi - plo), tris=tris(objs[p.name])))
+    bones = [dict(name=b.name, part=p.name, at=to_roblox(b.at - root), axis=to_roblox(b.axis),
+                  hinge=to_roblox(b.hinge) if b.hinge else None)
+             for p in find.parts for b in p.bones]
     return dict(size=extent(hi - lo), centre=to_roblox((lo + hi) / 2 - root),
-                tris=sum(tris(o) for o in objs.values()), tex=size, parts=parts)
+                tris=sum(tris(o) for o in objs.values()), tex=size, parts=parts, bones=bones)
 
 
 # --- motion -----------------------------------------------------------------------------------
@@ -513,6 +592,15 @@ def pose(find, objs, values, lights=None):
         delta[p.name] = D @ L
         objs[p.name].matrix_world = delta[p.name] @ Matrix.Translation(p.pivot)
         objs[p.name]["glow"] = values.get((p.name, "glow"), objs[p.name].get("glow", 0.0))
+        if p.bones:
+            rig = objs[p.name].children[0]
+            for b in p.bones:
+                pb = rig.pose.bones[f"{find.name}_{b.name}"]
+                pb.location = (0.0, values.get((b.name, "move"), 0.0), 0.0)
+                if b.hinge is not None:
+                    pb.rotation_mode = "AXIS_ANGLE"
+                    h = pb.bone.matrix_local.to_3x3().inverted() @ b.hinge
+                    pb.rotation_axis_angle = (math.radians(values.get((b.name, "turn"), 0.0)), *h)
     for lt, ob in (lights or {}).items():
         spec = find.lights[lt]
         D = delta[spec["part"]]
@@ -832,6 +920,13 @@ def write_luau(set_name, finds, rows, path):
             L.append(f"\t\t\t{{ Name = \"{f.name}_{p['name']}\", {par}Pivot = {_v3(p['pivot'])}, {ax}"
                      f"Size = {_v3(p['size'])}, Triangles = {p['tris']} }},")
         L.append("\t\t},")
+        if r["bones"]:
+            L.append("\t\tBones = {")
+            for b in r["bones"]:
+                L.append(f"\t\t\t{{ Name = \"{f.name}_{b['name']}\", Part = \"{f.name}_{b['part']}\", "
+                         f"At = {_v3(b['at'])}, Axis = {_v3(b['axis'])}"
+                         + (f", Hinge = {_v3(b['hinge'])}" if b["hinge"] else "") + " },")
+            L.append("\t\t},")
         g = f.glow
         if g:
             t = g.get("tint", (255, 200, 140))

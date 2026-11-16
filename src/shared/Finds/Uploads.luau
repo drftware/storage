@@ -25,6 +25,9 @@ return {
 		TeaLight = { Model = 111143504211306, Emissive = 73546862884548 },
 		UnpluggedLamp = { Model = 86157780275524, Emissive = 71456218738890 },
 	},
+	Squishies = {
+		ButterStick = { Model = 91493472138143 },
+	},
 	Windups = {
 		ChatteringTeeth = { Model = 100233455108959 },
 		CowboyDoll = { Model = 131267358363261 },

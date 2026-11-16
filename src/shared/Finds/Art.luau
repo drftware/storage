@@ -33,8 +33,20 @@ export type Light = {
 -- One key: time (seconds), value, and how it's reached from the key before (EasingStyle and
 -- EasingDirection names: Linear, Sine, Quad, Cubic, Quart, Back; In, Out, InOut).
 export type Key = { any } -- { number, number, string, string }; a tuple Luau can't type
-export type Track = {
+-- A bone that bends its part in one place (a squishy's dent, F-05a): a Bone named Name inside the
+-- part's MeshPart (the mesh is skinned to it), At from the find's pivot as drawn. A track's
+-- `move` on it slides it Axis-ward by that many studs, carrying the mesh near it, and `turn`
+-- tips it that many degrees about Hinge through At (Bone.Transform, docs/STUDIO.md "Bones").
+export type Bone = {
+	Name: string,
 	Part: string,
+	At: Vector3,
+	Axis: Vector3,
+	Hinge: Vector3?,
+}
+
+export type Track = {
+	Part: string, -- a part's name, or a bone's (Bones below), which takes `move` and `turn`
 	-- turn: degrees about its Axis; move: studs along it; glow: 0 to 1 lit; scale: times its size
 	-- about its pivot (near 0: hide it, a MeshPart can't be size 0); stretch: times as tall up
 	-- the find's Y and 1/sqrt as wide about its pivot, squash and stretch keeping its volume.
@@ -85,6 +97,7 @@ export type Find = {
 	Triangles: number,
 	Texture: number, -- its texture set's side, in texels
 	Parts: { Part },
+	Bones: { Bone }?, -- what bends its parts in places, if anything does
 	Glow: { Part: string, Strength: number, Tint: Color3 }?, -- the part with the emissive mask,
 	-- its SurfaceAppearance.EmissiveStrength when on, and EmissiveTint
 	Lights: { Light },

@@ -14,8 +14,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - `ServerStorage.CatchTest` works again once you stand on the floor (STUDIO.md "Testing where a
   catch stores you"): from the front office it says "NoKeeper".
 - F-G1b is done but for F-G1b3c (the RC car), which waits on `OWNER.md`.
-- Find art (`art/finds/WAVES.md`): F-04 done: all 14 wind-ups imported and judged together in
-  Studio (F-04k). Next F-05a, bones in the kit, proven on the squishy butter stick. Stage HEAD
+- Find art (`art/finds/WAVES.md`): F-05a done: bones in the finds kit (D-246), proven on the
+  squishy butter stick, its dent seen bending in Studio. Next F-05b, the stress ball, mochi bun
+  and toast slice. Stage HEAD plus your own lines only.
   plus your own lines only.
 
 ## Next task: S4-02 Monsters by lowest floor

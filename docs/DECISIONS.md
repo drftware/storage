@@ -6302,3 +6302,20 @@ The game plays its tune at the top's speed, so the tune slows with it; by defaul
 waltz on a music-box comb. The horses are drawn as a side-view distance field, traced and puffed
 into two halves round a crimped seam, the way tin horses are pressed.
 (`art/finds/windups/README.md`, "Wind-up tin carousel".)
+
+## D-246 · 2026-11-16 · The finds kit bends in places with bones
+A find that bends in one place (a squishy's dent, later a plush's ear) is a part with bones:
+`kit.Bone(name, at, reach | weight, axis, hinge)`, the game mesh skinned to them in Blender, the
+FBX carrying the armature, the generated Luau a `Bones` list (`Art.Bone`), each track's `Part`
+naming a part or a bone, and the game writing each bone's `Transform` from its `move` and `turn`
+(`Finds.pose`, `Finds.joints`). Checked first in Studio: the skinned mesh and its bones survive
+our Open Cloud upload, and a Transform written from a script bends it in Edit (docs/STUDIO.md
+"Bones"). A bone that only slides doesn't change how the mesh catches the light, so a dent is one
+bone sinking its floor and six round it sinking half as far and tipping their slope toward the
+middle; their shares are worked out to make one smooth bowl (`art/finds/squishies/build.py`,
+`bu_bones`). Proven on the squishy butter stick: a thumb's dent pressed in over a third of a
+second, held, then creeping back flat over about seven seconds, the slow-rise foam's way.
+Not chosen: a pressed piece that sinks and rises (it would show its seam on a soft block, and
+plush needs bones anyway); a whole-body squash (`stretch`), which the stress ball and mochi will
+use, but which can't make a dent.
+
