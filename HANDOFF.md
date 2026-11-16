@@ -5,12 +5,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 **Updated:** 2026-11-15, session 206 (a find's press, its rules) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- F-G1b split in three (ROADMAP). F-G1b1 done (D-229): `Finds/Use.luau`, pure and tested
-  (tests/finduse.spec, 87 checks), holds every press: the tea light, oil lamp, glow sticks,
-  fairy lights, lantern, hard hat, firefly jar, disco ball and jack-in-the-box. Nothing in the
-  game reads it yet: no find has a press button until F-G1b2. Not seen in Studio.
-- S4-01b's floors (more doors, Big floors, locked notes) seen in Play last session; not by a
-  player on a high floor, two players or a phone (`OWNER.md`).
+- F-G1b split in three (ROADMAP). F-G1b1 done (D-229): `Finds/Use.luau`, pure and tested (87
+  checks), holds every press (tea light, oil lamp, glow sticks, fairy lights, lantern, hard
+  hat, firefly jar, disco ball, jack). Nothing in the game reads it yet; not seen in Studio.
 - Studio holds doubled modules, `FloorRules` too (STUDIO.md, OWNER.md).
 - Find art (`art/finds/WAVES.md`): chattering teeth built, not imported; next the walking robot.
 
@@ -62,14 +59,9 @@ lines 100-125, 175-250; `src/shared/Finds/init.luau` (`pose`); `src/shared/Finds
 2. Once the owner's real purchase passes: mark Brix's ENG-23e done in `../engine`'s HANDOFF.
 3. A Studio hook to catch yourself for real (CatchTest finds no keeper even after WakeSleepers
    and 24 s, Nov 15; a Workspace attribute that catches by the nearest sleeper would do).
-4. B-05b2b polish: a guard's box hides round the bend. L-08e3c, L-14b2d wait; R-01 later.
-5. Small: the shop's polish (ROADMAP S3-04b); Free Everyone's swap sound; Free a Friend's pills
-   don't follow the map off screen; coin count and corner map up while wrapped;
-   "rbxassetid://203785492 failed"; `ConfigService: Config value not found` (the `sell*`
-   switches); "Stand one" never shows from the MCP; two-player reveal/coins/notes; a dropped find
-   bumps a walker (D-182); rbxassethash warnings; Packrat's dead Slots entry; Mannequin pose onto
-   `Rig.luau` (D-176); the watch bar's empty panel; S1-07a, S2-02b-d4, S2-03b, S2-05a, S2-07a1-b2
-   leftovers; S1-10d1-3; box words (D-215); the save's "best floor" still reads 0 after a ride.
+4. Small (ROADMAP lists them): B-05b2b's box round the bend; L-08e3c, L-14b2d wait; S3-04b's
+   polish; Free Everyone's swap sound; `sell*` Config warnings, a dropped find bumps a walker (D-182), the
+   save's "best floor" still 0 after a ride, S1-07a to S2-07b2 leftovers, box words (D-215).
 
 ## Kickoff for the next agent
 ```text
