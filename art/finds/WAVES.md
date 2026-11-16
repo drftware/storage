@@ -6,7 +6,7 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-05b2, the mochi bun and the squishy toast slice (the rest of step 11).
+**Next:** F-05b3, the squishy toast slice (the rest of step 11), then step 12 (F-05c).
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -52,8 +52,9 @@ changes the table's order a little.
     view; write what you learn in `docs/STUDIO.md`. If bones won't work in Roblox, record why and
     build the dent another way (a pressed piece that sinks and rises). Plush needs the same.
 11. **F-05b** Stress ball with a face (built Nov 16; its eyes are their own parts, pushed out as
-    it squashes), then, as **F-05b2**, the mochi bun and squishy toast slice (springs back like bread). Whole-body squash, the tea light's
-    flame's `stretch`.
+    it squashes), then, as **F-05b2**, the mochi bun (built Nov 16), and, as **F-05b3**, the
+    squishy toast slice (springs back like bread). Whole-body squash, the tea light's flame's
+    `stretch`.
 12. **F-05c** Jumbo slow-rise strawberry (the same squash, ten seconds to rise), squishy capybara
     (a tiny happy sigh), paper squishy with a drawn face (crinkled paper, looks homemade).
 13. **F-05d** Gel bead ball, glitter goo ball, galaxy goo ball (Legendary): a see-through skin,
@@ -87,6 +88,31 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-05b2 (the mochi bun built; uploaded 75693422662417 and imported; the toast slice
+  left for F-05b3, the session was past the brief's 120k after the bun).** `MochiBun` in
+  `squishies/build.py` (prefix `mb_`/`MB_`, kind 5; spec `MOCHI`, `SINK`); README section,
+  `Order.luau`. A 72 mm sakura-pink TPR mochi of our own, dusted with starch as the powdered
+  daifuku on Commons are, a tiny two-dot face and blush printed low on its front; one lathed part
+  (a flat foot, the side rolling under, a superellipse dome), slumped a hair aside by a shear in
+  the lathe's matrix. Its squeeze sinks slow and heavy to 0.6 tall and heaves back without ever
+  passing round (3.2 s). Judged on quick sheets twice, full sheets once and in Studio under a
+  unit's bulb. **Found and fixed:** the starch came out a uniform white cap (now blotches with
+  pink showing through and streaks down the sides: less weight on facing up, more on the noise);
+  a Voronoi's edges for the crazing read as tiles (now two noise iso-lines, `|n - 0.5|` thin).
+  **In Studio** a find's front faces the template's LookVector (-Z): put the judging bulb on
+  that side, or the face sits in the dark.
+  **F-05b3's hints (not researched):** a slow-rise PU foam toast squishy of our own, about 4 to
+  5 in tall and 1 in thick: the slice's outline is a square base under a wider rounded crown
+  with little ears (draw it as a 2D outline), the crust a golden-brown band 5 to 8 mm wide round
+  the edge, deeper on the crown; the crumb face pale cream, full of pores (noise, or the
+  stress ball's ink way for a pore image), toasted a touch darker toward the edge; a cute face
+  printed on it is common on real ones (ours, `mb_face_ink`'s way). Build it as the butter
+  stick's loft (outline rings from the back face to the front, each shrunk at the ends for a
+  rounded edge), one part, standing on its bottom crust so the whole-body `stretch` reads (0.75
+  tall, then a fast spring back: 1.05, 0.97, 1.0 by about 0.6 s after letting go). Crust by
+  distance from the outline, drawn in numpy as an image and projected along Y like the face.
+  Then step 12: the jumbo slow-rise strawberry, squishy capybara, paper squishy.
 
 - **Nov 16, F-05b (the stress ball with a face built; uploaded 87393666160557 and imported).**
   `StressBall` in `squishies/build.py` (prefix `sb_`/`SB_`, kinds 2 to 4; spec `STRESS`,
@@ -1385,7 +1411,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Stress ball with a face | Common | Squeeze: its eyes bulge out |  | Nov 16, F-05b |
 | Goo ball | Common | Squeeze: it oozes between your fingers and slowly comes back | The craze of 2026 | |
 | Squishy butter stick | Common | Squeeze: leaves a dent that slowly fills back in | A 2026 squishy trend | Nov 16, F-05a |
-| Mochi bun | Common | Squeeze: a soft puff of a sound |  | |
+| Mochi bun | Common | Squeeze: a soft puff of a sound |  | Nov 16, F-05b2 |
 | Paper squishy with a drawn face | Uncommon | Squeeze: it crinkles | Looks homemade; cheap to build | |
 | Squishy toast slice | Uncommon | Squeeze: springs back like real bread |  | |
 | Gel bead ball | Uncommon | Squeeze: the beads swirl inside |  | |

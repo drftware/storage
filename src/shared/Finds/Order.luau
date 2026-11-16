@@ -20,6 +20,7 @@ return {
 	TinCarousel = { "Wind", "Play" },
 	ButterStick = { "Squeeze" },
 	StressBall = { "Squeeze" },
+	MochiBun = { "Squeeze" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },

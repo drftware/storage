@@ -476,7 +476,134 @@ STRESS_BALL = kit.Find(
     dust=SB["dust"], seed=SB["seed"], texels=1000,
 )
 
-FINDS = [BUTTER_STICK, STRESS_BALL]
+# --- The mochi bun (F-05b2) ----------------------------------------------------------------------
+# A TPR mochi squishy of our own (README): a soft sakura-pink dome slumped onto its footprint, its
+# side rolling under, dusted with white starch as real ones are (thick, cracked patches over its
+# top, thin wisps down its sides with the pink showing through), a tiny two-dot face and blush
+# printed low on its front. Squeezed, it sinks slow and heavy and spreads (`stretch`), then heaves
+# back and settles into shape without ever springing past it.
+
+MB = K.MOCHI
+MB_SKIN = 5
+
+
+def mb_profile(hi):
+    """Its outline, floor to top (mm): the flat foot, the side rolling under to the belly (a
+    quarter circle), then a full superellipse dome to the top."""
+    r, h, b, f, p = MB["r"], MB["h"], MB["belly"], MB["foot"], MB["round_top"]
+    n_roll, n_dome = (24, 64) if hi else (8, 18)
+    prof = [(0.0, 0.0), (f * 0.55, 0.0)]
+    for i in range(n_roll + 1):
+        a = -math.pi / 2 + math.pi / 2 * i / n_roll
+        prof.append((f + (r - f) * math.cos(a), b + b * math.sin(a)))
+    for i in range(1, n_dome):
+        t = math.pi / 2 * i / n_dome
+        prof.append((r * math.cos(t) ** (2 / p), b + (h - b) * math.sin(t) ** (2 / p)))
+    prof.append((0.0, h))
+    return prof
+
+
+def mb_body(hi):
+    """The bun, spun about its middle (its face in the middle of a texture strip), a hair oval,
+    its top slumped a little to one side and back, as a soft thing sits."""
+    sx, sy = MB["oval"]
+    lx, ly = MB["lean"]
+    M = Matrix(((sx, 0.0, lx, 0.0), (0.0, sy, ly, 0.0), (0.0, 0.0, 1.0, 0.0), (0.0, 0.0, 0.0, 1.0)))
+    sh = Shape()
+    sh.lathe([(mm(r), mm(z)) for r, z in mb_profile(hi)], MB_SKIN, 160 if hi else 40, M=M)
+    return sh
+
+
+def mb_face_ink(res=512, W=20.0, zc=18.0):
+    """The face seen straight on from the front (x across, z up, W mm each way from (0, zc)):
+    the eyes (two dark ovals) and a tiny smile in one mask, the blush (two soft ovals) in another."""
+    xs = np.linspace(-W, W, res)[None, :]
+    zs = np.linspace(zc - W, zc + W, res)[:, None]
+    px = 2 * W / res
+    eyes = np.zeros((res, res))
+    blush = np.zeros((res, res))
+    for side in (1, -1):
+        ex, ez, ew, eh = side * MB["eye_dx"], MB["eye_z"], MB["eye_w"], MB["eye_h"]
+        d = (np.hypot((xs - ex) / ew, (zs - ez) / eh) - 1.0) * min(ew, eh)
+        eyes = np.maximum(eyes, np.clip(0.5 - d / px, 0.0, 1.0))
+        bx, bz = side * MB["blush_dx"], MB["blush_z"]
+        q = np.hypot((xs - bx) / MB["blush_w"], (zs - bz) / MB["blush_h"])
+        blush = np.maximum(blush, np.clip((1.25 - q) / 0.55, 0.0, 1.0) ** 1.5)
+    (cx, cz), r = MB["smile_c"], MB["smile_r"]
+    smile = bu_ink(res, res, (-W, zc - W, W, zc + W),
+                   [bu_segments(("A", (cx, cz), r, *MB["smile_a"]), 16)], MB["smile_w"])
+    return np.maximum(eyes, smile), blush
+
+
+def mochi_look(L, f):
+    nb = L.nb
+    xm, zm = nb.mul(L.x, K.STUD_MM), nb.mul(L.z, K.STUD_MM)
+    # the TPR: sakura pink, satin, deeper and a touch richer low down where it rolls under and
+    # the starch never reaches, faintly mottled where the cast is thicker; a soft pebbly skin
+    C = Coat(L, hexc("#F3B5C5"), 0.46)
+    C.paint(nb.mul(nb.inv(nb.ss(zm, 3.0, 24.0)), 0.8), hexc("#E890AA"), 0.42)
+    C.paint(nb.mul(nb.ss(L.noise(9.0, 1, detail=3), 0.45, 0.75), 0.45), hexc("#EEA4B9"))
+    C.paint(nb.ss(L.noise(900.0, 2, detail=2), 0.4, 0.8), height=0.15)
+    # the face, printed in cocoa brown, the blush in a deeper rose sprayed soft
+    ink, blush = mb_face_ink()
+    front = nb.ss(nb.mul(L.ny, -1.0), 0.3, 0.6)
+    W, zc = 20.0, 18.0
+    uv = nb.comb(nb.add(nb.mul(xm, 1 / (2 * W)), 0.5),
+                 nb.add(nb.mul(nb.sub(zm, zc), 1 / (2 * W)), 0.5), 0.0)
+    looks = []
+    for name, mask in (("MochiFace", ink), ("MochiBlush", blush)):
+        t = nb.node("ShaderNodeTexImage", image=bu_image(name, mask), interpolation="Cubic",
+                    extension="CLIP")
+        nb.put(t.inputs["Vector"], uv)
+        looks.append(nb.mul(front, t.outputs["Color"]))
+    face, cheeks = looks
+    C.paint(nb.mul(cheeks, 0.75), hexc("#E57F9C"), 0.44)
+    C.paint(face, hexc("#3B2426"), 0.3, height=0.2)
+    # the starch: thick where it faces up, in blotches with ragged, crisp edges; thin wisps down
+    # the sides; loose grains at the edges of both; none in the crease it sits on. The thick
+    # patches craze into little plates as they dry, the pink showing in the cracks. Over the
+    # face it lies thinner, rubbed by thumbs.
+    up = nb.ss(L.nz, -0.15, 0.9)
+    blot = nb.add(L.noise(17.0, 4, detail=5, rough=0.66, distortion=0.5),
+                  nb.mul(L.noise(70.0, 5, detail=3), 0.2))
+    streak = nb.mul(L.noise(9.0, 9, stretch=(1.0, 1.0, 0.25), detail=3), 0.35)
+    T = nb.add(nb.mul(up, 0.72), nb.mul(nb.sub(nb.add(blot, streak), 0.72), 2.1))
+    rubbed = nb.mul(front, nb.mul(nb.inv(nb.ss(nb.absf(nb.sub(zm, 19.0)), 6.0, 12.0)),
+                                  nb.inv(nb.ss(nb.absf(xm), 14.0, 20.0))))
+    T = nb.sub(T, nb.mul(rubbed, 0.35))
+    T = nb.mul(T, nb.ss(L.nz, -0.55, -0.25))
+    thin = nb.ss(T, 0.18, 0.58)
+    C.paint(nb.mul(thin, 0.6), hexc("#FBEFF1"), 0.82, height=0.3)
+    thick = nb.ss(T, 0.6, 0.66)
+    C.paint(thick, hexc("#FBF8F5"), 0.95, height=0.7)
+    grains = nb.mul(nb.ss(L.noise(700.0, 6, detail=1), 0.6, 0.64), nb.ss(T, 0.08, 0.45))
+    C.paint(grains, hexc("#FFFDFB"), 0.95, height=0.8)
+    crack = None
+    for sc, s in ((60.0, 7), (125.0, 8)):
+        iso = nb.absf(nb.sub(L.noise(sc, s, detail=2, distortion=0.6), 0.5))
+        c = nb.inv(nb.ss(iso, 0.0, 0.014))
+        crack = c if crack is None else nb.mx(crack, nb.mul(c, 0.7))
+    crack = nb.mul(crack, nb.mul(thick, nb.ss(L.noise(25.0, 10, detail=2), 0.35, 0.6)))
+    C.paint(nb.mul(crack, 0.7), hexc("#F1C4CF"), 0.7, height=0.3)
+    C.finish(f.dust, grime=0.2)
+    return C.surface(bump_dist=mm(0.1), bump=0.5)
+
+
+MOCHI_BUN = kit.Find(
+    "MochiBun",
+    [kit.Part("Body", mb_body)],
+    mochi_look,
+    motions={
+        # squeezed in the hand: it gives slowly, sinks heavy and wide (the game's soft puff of
+        # air here), held, then let go: it heaves back and settles into shape, never past it
+        "Squeeze": dict(duration=round(K.SINK[-1][0] + 0.3, 2),
+                        tracks=[("Body", "stretch", K.SINK)],
+                        focus=(0.0, 0.0, mm(MB["h"] * 0.45)), distance=0.95),
+    },
+    dust=MB["dust"], seed=MB["seed"], texels=1000,
+)
+
+FINDS = [BUTTER_STICK, STRESS_BALL, MOCHI_BUN]
 
 if __name__ == "__main__":
     kit.main("Squishies", HERE, FINDS)

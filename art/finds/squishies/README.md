@@ -67,3 +67,37 @@ the ball's squash (D-247) so it stays round.
 **In Studio.** Uploaded (87393666160557) and imported with both eyes on Motor6Ds; posed at the
 squeeze's peak from a script, the ball's size went to 0.68 tall and 1.21 wide and each eye's to
 about 1.27 times, round (D-247). Its positions move only in Play (Motor6D offsets).
+
+## Mochi bun (F-05b2, Nov 16)
+
+**References.** Powdered daifuku on Wikimedia Commons ("Assortment of mochis from the Niji store
+(in Barcelona)", photos 1 to 4): soft domes slumped onto the plate, the side rolling under to a
+smaller footprint, dusted with white starch in thick, crazed patches over the top and thin wisps
+down the sides with the colour showing through. Mochi and bun squishies sold in 2026: 2 in minis
+in TPR (target.com, A-93276370), a 5 x 1 in jumbo custard bun (walmart.com/ip/17278610743),
+Puka's large dim-sum mystery buns (bannershallmark.com, squishy-dumplings); real ones are dusted
+with powder to stop the TPR sticking.
+
+**Size.** 72 mm across, 42 mm tall (2.8 x 1.65 in): 0.288 x 0.165 studs, a hair oval, its top
+slumped 1.5 mm aside and 1 mm back.
+
+**Tells.** The soft pink dome; the patchy white starch; a tiny face of our own (two dark oval
+eyes, a small smile, rose blush) printed low on its front. From a unit's doorway it is a pale
+speck (a small find); held, the face and the powder read at once.
+
+**What it is.** `Body`, one lathed part: a flat foot, the side rolling under in a quarter circle
+to its widest point 13 mm up, then a superellipse dome. The starch is drawn by thickness (facing
+up, blotchy noise, streaks down the sides, thinner over the face where thumbs rub it): thin
+frosting, thick matte patches, loose grains at their edges, and fine crazing where the thick
+powder dried (two noise iso-lines; a Voronoi read as tiles). The face and blush are ink drawn
+in code, seen straight on from the front (`mb_face_ink`). 1024 texture at 1798 texels a stud;
+2,160 triangles.
+
+**Squeeze** (3.2 s + 0.3): no spring at all. It barely gives as the fingers meet it, then sinks
+heavy to 0.6 tall in under half a second, spreading wide; held, it creeps a little flatter; let
+go, it heaves most of the way back in half a second and settles into shape over the next one and
+a half, never past round. The game's soft puff of air goes at the sink.
+
+**In Studio.** Uploaded (75693422662417) and imported; its size matched the Luau. Judged under a
+0.6, range 11 bulb from a hand's distance: the face, blush and starch patches read, the pink a
+touch peach in the warm light. Its front faces the template's LookVector (-Z).

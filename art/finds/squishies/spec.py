@@ -107,3 +107,43 @@ SWELL = [                             # each eye's size: the bubble swells as it
     (0.92, 1.03),
     (1.04, 1.0),
 ]
+
+# --- The mochi bun (F-05b2) ----------------------------------------------------------------------
+# References (README): powdered daifuku (Wikimedia Commons, "Assortment of mochis from the Niji
+# store (in Barcelona)"), about 55 to 60 mm across, a soft dome slumped onto the plate, its side
+# rolling under to a smaller footprint, dusted with white starch: thick, cracked patches on top,
+# thin wisps down the sides with the colour showing through. Mochi and bun squishies sold in 2026
+# run from 2 in minis to 5.5 in jumbos (a 5 x 1 in custard bun, walmart.com/ip/17278610743); ours
+# is a palm-sized TPR mochi squishy in sakura pink, dusted with powder as real ones are to stop
+# them sticking, a tiny two-dot face of our own printed low on its front.
+MOCHI = dict(
+    r=36.0,           # its widest radius, a third of the way up (mm): 72 mm, 2.8 in across
+    h=42.0,           # its height (mm): 1.65 in
+    belly=13.0,       # how high its widest point stands (mm); below it the side rolls under
+    foot=23.0,        # the flat footprint's radius it sits on (mm)
+    round_top=2.25,   # the dome's superellipse power: 2 an ellipse, more a fuller, flatter top
+    oval=(1.015, 0.985),  # a hair wider than deep, slumped
+    lean=(0.035, 0.025),  # its top slumped this far aside and back, per mm of height
+    # the face, printed on its front (mm across and up the front, seen straight on): the eyes'
+    # half spacing, height, and size (half width, half height); the smile's centre, radius, ends
+    # (degrees) and stroke; the blush's offset, size (half width, half height) and softness
+    eye_dx=8.2, eye_z=20.5, eye_w=1.45, eye_h=1.9,
+    smile_c=(0.0, 18.4), smile_r=2.2, smile_a=(205.0, 335.0), smile_w=0.85,
+    blush_dx=12.5, blush_z=17.0, blush_w=3.6, blush_h=2.1,
+    dust=0.15, seed=23.0,
+)
+
+# The squeeze, timed like a TPR mochi squishy in the hand: no spring at all. The fingers close
+# and it gives slowly, then all at once, sagging wide under the palm; held, it creeps a little
+# flatter; let go, it heaves most of the way back in half a second and then settles into shape
+# over another second and a half, never past round (seconds, height[, style, way]).
+SINK = [
+    (0.0, 1.0),
+    (0.12, 0.97, "Sine", "In"),       # the fingers meet it: it barely gives
+    (0.55, 0.6, "Quad", "InOut"),     # then sinks, heavy, spreading under the palm
+    (1.0, 0.57, "Sine", "Out"),       # held: it creeps a little flatter
+    (1.08, 0.57),                     # let go
+    (1.62, 0.87, "Quad", "Out"),      # heaves most of the way back
+    (2.5, 0.982, "Sine", "Out"),      # and settles slowly, never past round
+    (3.2, 1.0, "Sine", "InOut"),
+]

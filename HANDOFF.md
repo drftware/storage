@@ -14,9 +14,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - `ServerStorage.CatchTest` works again once you stand on the floor (STUDIO.md "Testing where a
   catch stores you"): from the front office it says "NoKeeper".
 - F-G1b is done but for F-G1b3c (the RC car), which waits on `OWNER.md`.
-- Find art (`art/finds/WAVES.md`): F-05b done: the stress ball with a face, its eyes their own
-  parts bulging out as the ball squashes (D-247), uploaded and imported. Next F-05b2, the mochi
-  bun and toast slice.
+- Find art (`art/finds/WAVES.md`): F-05b2 done: the mochi bun, a powdered pink dome with a tiny
+  face that sinks slow and heavy, uploaded and imported. Next F-05b3, the toast slice, then
+  step 12 (strawberry, capybara, paper squishy).
 
 ## Next task: S4-02 Monsters by lowest floor
 The moment: a climb that keeps changing under you. Floor 1 teaches the Mannequin alone; higher

@@ -376,6 +376,42 @@ local Set: { [string]: Art.Find } = {
 			},
 		},
 	},
+	MochiBun = {
+		Size = Vector3.new(0.288, 0.165, 0.279),
+		Centre = Vector3.new(-0.002, 0.083, 0.001),
+		Triangles = 2160,
+		Texture = 1024,
+		Parts = {
+			{
+				Name = "MochiBun_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Size = Vector3.new(0.288, 0.165, 0.279),
+				Triangles = 2160,
+			},
+		},
+		Lights = {},
+		Motions = {
+			Squeeze = {
+				Duration = 3.5,
+				Tracks = {
+					{
+						Part = "MochiBun_Body",
+						Channel = "stretch",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.12, 0.97, "Sine", "In" },
+							{ 0.55, 0.6, "Quad", "InOut" },
+							{ 1, 0.57, "Sine", "Out" },
+							{ 1.08, 0.57, "Sine", "InOut" },
+							{ 1.62, 0.87, "Quad", "Out" },
+							{ 2.5, 0.982, "Sine", "Out" },
+							{ 3.2, 1, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+		},
+	},
 }
 
 return Set
