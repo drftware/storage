@@ -2440,7 +2440,7 @@ actions themselves and dealing the new finds on floors are later game tickets.
           - [x] **F-G1b3c2b Driving a body from a player's device, in Brix** (Brix ENG-24b):
             the server hands the body to its driver and checks every move, the client reads the
             move stick on any device and steps the handling. Built and run in Brix's Studio.
-            Done Nov 16 (Brix `c9f6667`, not pushed): `Brix.MoveCheck.ground` and
+            Done Nov 16 (Brix `c9f6667`, pushed, CI passes): `Brix.MoveCheck.ground` and
             `Brix.Roblox.Driving.server` and `.client`. In Brix's example place a car driven at
             the wall stopped flush against it, a teleport and a hop through the wall were put
             back, and the driver leaving ended the drive. What c needs to know: the server holds

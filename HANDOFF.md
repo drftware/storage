@@ -2,7 +2,7 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-16, session 215 (driving a body from a player's device, built in Brix) · **Checks:** green here and in Brix · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix `main` at `c9f6667`, committed, **not pushed** (waits on the owner's yes, first in `OWNER.md`).
+**Updated:** 2026-11-16, session 215 (driving a body from a player's device, built in Brix) · **Checks:** green here and in Brix · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix `main` at `c9f6667`, pushed, CI passes.
 
 ## State
 - F-G1b3c2b is done in Brix (its ENG-24b, E-080): `Brix.MoveCheck.ground` judges how fast and far
@@ -12,7 +12,8 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - Seen in Brix's Studio example: driven at a wall at 14 studs a second, the car stopped flush
   against it; a 40-stud teleport and a hop through the wall were put back; the driver leaving
   ended the drive. Studio's simulated keys reached the game only once, so runs steer from scripts.
-- The pin is still `5cdb8c2`; it moves to `c9f6667` (Handling and Driving) once Brix is pushed.
+- Brix is pushed (CI passes); the pin is still `5cdb8c2` and moves to `c9f6667` (Handling and
+  Driving) as F-G1b3c2c starts.
 - Earlier today: the lamps switch on anywhere (F-G1b3c1, D-250); worn finds and the home unit
   designed (D-251); F-G1d dealt the wind-ups and squishies (D-253).
 
@@ -20,19 +21,17 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 The moment: you set the car down and the hood camera drops you to the floor, low and wide; push
 the stick and it leaps off at once with a rising whine, the wheels turning, and stops dead at a
 shut door.
-1. Once the owner has said yes in chat, push Brix's `main` (`git -C ../engine push`), wait for its
-   CI, and say so in Brix's HANDOFF. No yes: stop and ask; nothing below works on the old pin.
-2. Move the pin: `vendor/brix` to `c9f6667`; update `docs/FRAMEWORK.md` (the pin line and the two
+1. Move the pin (Brix is pushed): `vendor/brix` to `c9f6667`; update `docs/FRAMEWORK.md` (the pin line and the two
    Brix rows for Handling and Driving, now in use). Check green.
-3. The car set down apart from its transmitter: the model is one (`RCCar_Remote` is the root, the
+2. The car set down apart from its transmitter: the model is one (`RCCar_Remote` is the root, the
    car hangs off `RCCar_Arms`), so the car needs its own assembly, unanchored, with low friction
    on its floor parts (Brix's Driving page says why). Find the code: `grep -rn RCCar src docs/CODEMAP.md`.
-4. Server: a `Driving.server` per drive, the check at the handling's top × 1.25; `ended` and
+3. Server: a `Driving.server` per drive, the check at the handling's top × 1.25; `ended` and
    `putBack` told to the driver's client. Client: `Driving.client` with the handling's feel
    numbers in Config, `controls` mixing a little throttle into a sideways push (E-079); the hood
    camera with a jolt on a bump and on a put-back; a whine from `asked()`; wheels turning; the
    back button; walking to it takes it back.
-5. Studio Play: from the lobby down a hall into an open unit, stopping at a shut door. Steer by
+4. Studio Play: from the lobby down a hall into an open unit, stopping at a shut door. Steer by
    script if Studio's keys don't reach the game.
 **Acceptance:** check green; the pin at `c9f6667`; in Play the car drives and stops at a shut door
 with no put-back, logged; the phone stick and friends' view go to `OWNER.md`.

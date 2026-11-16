@@ -5,8 +5,6 @@ nowhere else.
 
 ## Now
 
-- [ ] **Say yes to pushing Brix** (its `c9f6667`, driving a body from a player's device): the RC
-  car's next session (F-G1b3c2c) moves this game's pin to it, and a pin needs Brix pushed first.
 - [ ] **If Studio stops getting changes, click Connect** in Studio's Rojo plugin (connected Nov 13
   at 23:30; each session checks it first and says so in HANDOFF.md).
 - [ ] **Playing on your phone** (D-109): with Rojo connected, use File > Publish to Roblox (Save
