@@ -2291,8 +2291,24 @@ Done when players watch the results to the end and change their perks between cl
   six grades (Secret on top, from floor 10; D-188); about one in
   twenty still in its packaging, worth three times as much. A padlocked unit's find draws a
   grade better (GDD: "the best chance of something great"; S1-07a left it a plain find).
-- [ ] **S5-03 Selling and keeping without a menu.** Common finds sell on the spot; from
-  Uncommon up every find goes home, copies too, and four of one make its Gold (D-188).
+- [ ] **S5-03 Your home unit, and taking finds up** (the owner, Nov 16, D-251; Grow a Garden's
+  plots, Animal Crossing's house storage, Minecraft's and Lethal Company's lost gear). Common
+  finds sell on the spot as the climb ends; from Uncommon up every find goes home, copies too
+  (D-188), with no menu. Moved up from after launch (PROPOSAL idea 29), since your finds are now
+  your gear. Split into these; the first gets its full plan when it's next:
+  - [ ] **S5-03a The hall of units.** A unit of your own off the lobby, one per player on the
+    server, the same storage unit the floors are built from, open to friends; your name on it.
+    Its art first (the hall, the shelf, the chest), the unit's way.
+  - [ ] **S5-03b The shelf and the chest.** Finds that come home walk onto your shelf, or into
+    the chest when it's full. Press the chest: a panel of everything you own, each find once with
+    its count ("x2") and a search; put a find on the shelf, swapping one off when full; make a
+    Gold from four of a kind when you choose (default, `OWNER.md`). A lamp on the shelf lights
+    your unit; the item list's "at home" actions come later, a find at a time.
+  - [ ] **S5-03c Taking finds up.** Take any find from the chest into a slot and carry it to the
+    elevator. On the climb it's at risk like any find: stolen, dropped where you're caught, lost
+    if it isn't aboard when the elevator leaves or the whole team is caught. What comes back goes
+    home, lights full again. The save marks a find out until its climb ends and strikes it off
+    only when lost on a climb that ended properly; a crash never costs one.
 - [ ] **S5-04 The collection book.** A page for every kind of find, stamped "New" the first
   time; each kind of monster trapped; sets.
 - [ ] **S5-05 The shelf in the elevator.** The host's three best finds, shown in the car.
@@ -2302,7 +2318,8 @@ Done when players watch the results to the end and change their perks between cl
   decor. Then the friend's matching beam colour for joining on your link, and cart cosmetics
   (D-112). The luck boost: one use, used in the elevator, better odds of rare finds next floor;
   its odds shown before buying and while it's on, never sold where Roblox restricts paid random
-  items (D-188).
+  items (D-188). A bigger home unit, more shelf space (D-251, Bloxburg's larger plot): medium
+  for cash, large for Robux (default, `OWNER.md`); the chest holds everything for everyone.
 
 ### Step 6: Coming back
 
@@ -2321,10 +2338,10 @@ Then the soft launch (GDD "Build order").
 ### In no step
 
 Each waits on the owner (`OWNER.md`) or comes after launch: the monster you hide from; the
-monster that takes your head; the stair chase and other floors that play differently; the hall
-of units; trading; a season pass; boss floors and units far bigger inside than they look
-(D-188); the item catalog's waves (its own build order), with finds you wear, pets and plants
-that live in your unit, and the arcade cabinets' games; fake notes, finds that are monsters in disguise, the monster
+monster that takes your head; the stair chase and other floors that play differently; monsters
+that hear your feet (held off, D-251); trading; a season pass; boss floors and units far bigger
+inside than they look (D-188); the item catalog's waves (its own build order), with pets and
+plants that live in your unit, and the arcade cabinets' games; fake notes, finds that are monsters in disguise, the monster
 that moves walls, and the dolly. What the Packrat does with a marked box (B-03) is to be worked
 out (for now it leaves shut boxes alone, D-211). A tall marked box for the big finds (the lamps,
 the TV) waits on `OWNER.md`.
@@ -2417,7 +2434,21 @@ actions themselves and dealing the new finds on floors are later game tickets.
           the floor, shakes, cuts to static, and you're back in your own eyes; it goes on the
           pile, there to take back. A friend picking the car up ends your drive too; a car
           still out when the elevator leaves is left behind with the floor.
-        - Home: it drives round your home too, once home is built (no ticket yet).
+        - Home: it drives round your home too, once home is built (S5-03).
+    - [ ] **F-G1b4 The hard hat goes on your head** (the owner, Nov 16, D-251; Phasmophobia's
+      head torch). The moment: your flashlight stutters out, no battery, the Mannequin two halls
+      off, and you pull the hard hat on. First a head and feet on the character, apart from the
+      slots (welded as the ladder is). Wear lifts the hat onto your head with the shell's knock
+      and the lamp's click, lit, and frees its slot. Its headlamp beam is tighter and whiter than
+      the flashlight's, goes where you look and bobs with your walk; friends see the light on
+      your forehead. It holds a Mannequin as any found light does. It lasts a minute, dimming and
+      stuttering out as the flashlight dies, then sits dark on your head; a battery fills it as
+      it fills the flashlight (the emptier light takes it). Caught, it drops with everything
+      else. On a phone only the nearest few headlamps light the walls, as the hall lights do.
+    - [ ] **F-G1b5 Skates and slippers**, their art first (not yet in `art/finds/WAVES.md`):
+      Wear puts them on your feet. Slippers are looks only. Skates make you faster (default:
+      faster than your walk, still slower than a chasing monster, tuned in play), with the
+      wheels' roll under you. Monsters don't hear feet (D-251).
   - [ ] **F-G1c The grade shows. Parked Nov 15 (owner: cut for now, D-204):** the reveal moved
     from the door to the box you open (B-02, D-205). As written (the catalog's
     "How you can tell"): a Rare's blue glow seen

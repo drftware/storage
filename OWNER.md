@@ -1004,12 +1004,27 @@ filled. Each default stands unless you say otherwise.
   the odds with and without it before you buy (Roblox's rule). It waits on the shop.
 - [ ] **Trapping pays 5 coins** to everyone aboard for each monster shut in a unit as the gate
   shuts (floor 1's gate pays 10 and rises 2 a floor). You'll judge it in play once S4-04 is built.
-- [ ] **Worn finds and footsteps.** Roller skates, slippers and the helmet can go on a character
-  alongside what you carry; the game already welds things to players (the ladder on your
-  shoulder) and already changes your speed for what you hold. But monsters hear only doors,
-  slams, bangs and drops today, not footsteps, so quiet slippers and loud skates would change
-  nothing. They need monsters that hear running feet, as Lethal Company's eyeless dogs do. That
-  changes every climb, so it's yours to decide when the first worn find is built.
+- [ ] **Your home unit and taking finds up: the gaps I filled (Nov 16, D-251).** You decided
+  that anything you take up can be lost, that your home has a shelf and a chest, and that copies
+  are spares. Each of these stands unless you say otherwise:
+  1. A find you brought stays yours. If a friend picks it up and carries it aboard, it still
+     goes home to you, so friends can rescue your things. The other way: whoever carries it
+     home keeps it (as Steal a Brainrot does), which lets a stranger in a public server walk
+     off with your Legendary.
+  2. Leaving mid-climb drops what you carry where you stand, the same as being caught, so
+     nobody quits to save their gear. A friend can still carry it home for you (point 1).
+  3. Lights that run down come home full for the next climb, as Lethal Company's ship charges
+     batteries between trips. Things that get used up are gone once used: a cracked glow stick,
+     a jar of fireflies let out.
+  4. Four of a kind make a Gold only when you choose to, at the chest (as Pet Simulator's
+     golden machine works), so your copies stay spares until then.
+  5. Commons still sell on the spot as the climb ends, so a tea light is something you find
+     on a floor, never something you bring. The other way: commons go home too, and the chest
+     fills with them.
+  6. Bigger units: the design doc had small, medium and large bought with cash, and you said
+     Robux. My default is medium for cash and large for Robux, so both kinds of player have
+     something to aim for. The chest holds everything for everyone; only shelf space is sold.
+  7. When your flashlight and the hard hat both want a battery, the emptier one takes it.
 - [ ] **The lamp that's on when you find it (the Secret Light) looks like an ordinary 1940s brass
   table lamp,** lit warm, its parchment shade glowing, its cord running across the floor to a plug
   lying loose: it's on with nothing to power it. The catalog didn't say how it looks, so this is my

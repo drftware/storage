@@ -2,7 +2,7 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-16, session 212 (the lamps switch on anywhere; the RC car's design) · **Checks:** green at this commit · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-16, session 213 (worn finds and the home unit, designed with the owner) · **Checks:** green at this commit · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
 - F-G1b3c1 is done (D-250): the desk lamp, night-light, moon, blob and glass lamps and the neon
@@ -13,6 +13,11 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   on its hood through the halls and into open units, so a player hiding in a unit can watch for
   monsters or look for finds; the collector (the Packrat) steals it. Defaults in D-250 (no range,
   no battery, monsters don't hear it, no headlight); the owner said "go ahead" to them.
+- The owner's design (D-251, nothing built): the hard hat is worn, a headlamp for a minute that
+  a battery fills; skates make you faster, slippers are looks; monsters don't hear feet yet.
+  Home is your own unit off the lobby with a shelf and a chest (every find you own, counted);
+  any find can be taken up in a slot and lost on the climb. Tickets F-G1b4, F-G1b5, S5-03a-c;
+  the gaps I filled are in `OWNER.md`.
 - Find art (`art/finds/WAVES.md`): the second run ended at F-05d3, the galaxy goo ball;
   F-05e (step 14) and F-05f (step 15) are left.
 
@@ -43,11 +48,13 @@ the toy car's walk); `src/shared/Finds/Sets/Figures.luau` lines 10-130 (the RC c
 its Launch, Drive and Stop motions); `docs/FRAMEWORK.md`.
 
 ## Queue (next sessions, the owner's ticket order)
-1. F-G1b3c3 the collector steals the car (ROADMAP), right after F-G1b3c2.
+1. F-G1b3c3 the collector steals the car (ROADMAP), right after F-G1b3c2; then F-G1b4 the hard
+   hat on your head. F-G1b5 (skates, slippers) waits for their art.
 2. S4-02 monsters by lowest floor (its plan is in ROADMAP), then S4-03 the choice on the
    elevator's buttons, S4-04 trapping pays (5 coins a trapped monster), S4-05 the big find.
 3. The item catalog doc still says "at home" for the six lamps and the RC car; `WAVES.md` has
-   the new lines (D-250). Bring the doc in line when it's next opened.
+   the new lines (D-250). The catalog's hard hat, skates and slippers and the design doc's
+   finds and home sections need D-251. Bring both in line when they're next opened.
 4. Once the owner's real purchase passes: mark Brix's ENG-23e done in `../engine`'s HANDOFF.
 5. Trips stands every late arrival or respawn on the one arrival spot; two at once overlap
    until physics pushes them apart. Spread them (`ClimbEnd.spot`) as the carry's fallback does.

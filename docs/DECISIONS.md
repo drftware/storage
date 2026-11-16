@@ -6385,3 +6385,56 @@ At home you drive it too.
 Not chosen: the lamps never running down (a common desk lamp would beat the lantern); a
 signal range that fades the hood camera to static (Siege has none, and a hidden player should
 be able to scout the whole floor).
+
+## D-251 · 2026-11-16 · Your finds are your gear: a home unit with a shelf and a chest, and anything you take up can be lost
+
+The owner, talking through the miner's hard hat as a second light that you wear: worn finds go on
+the character, a home unit holds what you keep, and your finds become what you prepare a climb
+with. You can take any find up, not only worn ones, at your own risk.
+
+- **Precedents:** Minecraft (what you carry drops where you die, and you go back for it before
+  something else takes it) and Lethal Company (gear left where a crewmate died stays on the moon
+  unless someone carries it back) for taking gear up at risk; Grow a Garden's plots (each player's
+  own place on a shared server, open to friends) for the home unit, which the design doc already
+  planned as the hall of units (PROPOSAL idea 29); Animal Crossing's house storage (everything
+  kept in storage, only what you set out on show) for the shelf and the chest; Bloxburg's larger
+  plot sold for Robux for bigger units; Phasmophobia's head torch for the hard hat; Roblox's
+  classic Speed Coil for the skates.
+- **The hard hat goes on your head.** Wear lifts it on, lit, and frees its slot. Its headlamp
+  beam is tighter and whiter than the flashlight's and goes where you look. It holds a Mannequin
+  as any found light does. It lasts a minute (owner: "sure") and a battery fills it, as it fills
+  the flashlight (owner: "yes, obviously"). There's no switch: putting it on lights it, so you
+  save its light by waiting. When spent it stays on your head, dark. Default: when both lights
+  want a battery, the emptier one by share takes it.
+- **Worn finds** have a head and feet of their own, apart from the three slots. Slippers are
+  looks only for now. Skates make you faster (default: faster than your walk, still slower than
+  a chasing monster, tuned in play). Monsters hearing footsteps is held off (owner), which
+  closes OWNER.md's question about worn finds and footsteps.
+- **Home is your own unit** in a hall of units off the lobby, one per player on the server,
+  which friends can walk into. It holds a display shelf and one chest. Pressing the chest opens a
+  panel of everything you own: each find once, with how many you have ("x2"), and a search. From
+  it you put finds on the shelf (swapping one off when the shelf is full) and take finds out to
+  carry. Copies are spares: take one hard hat up and lose it, and the other is still at home.
+  The chest is the one menu; coming home still needs none (D-188): commons sell as the climb
+  ends, and from Uncommon up finds walk onto your shelf or into the chest.
+- **Take anything up.** Any find can go up, a lamp or a glow stick too (lit and dropped, it pins
+  a Mannequin). Each takes a slot, so what you bring is a choice. On the climb a brought find is
+  at risk like any other: the Packrat can steal it (take it back from its pile before the
+  elevator leaves); caught, everything you carry drops where you were caught (already true,
+  `Slots:dropAll`), worn finds too, and you or a friend can pick it back up; anything not aboard
+  when the elevator leaves is lost for good, and so is everything carried when the whole team is
+  caught. Whatever comes back goes home.
+- **Defaults** (in `OWNER.md`): a find you brought stays yours, so whoever carries it aboard, it
+  goes home to you; leaving mid-climb drops what you carry where you stand; lights that run down
+  come home full (Lethal Company's ship charges batteries between trips), while things used up (a
+  cracked glow stick, released fireflies) are gone; four of a kind make a Gold only when you
+  choose, at the chest (Pet Simulator's golden machine), so copies stay spares; commons still
+  sell on the spot, so tea lights are found, not brought; bigger units: medium for cash, as the
+  design doc says, and large for Robux. The chest holds everything for everyone.
+- **The save:** a find taken out stays in the save, marked out, until its climb ends; it's struck
+  off only when it was lost on a climb that ended properly. A server that shuts down or crashes
+  mid-climb never costs a find.
+
+Not chosen: finds brought from home being safe from loss (my first default; the owner wants the
+risk); a separate gear screen before a climb (the chest does that job); monsters hearing feet,
+for now.
