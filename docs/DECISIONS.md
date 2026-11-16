@@ -5948,3 +5948,27 @@ storage building.
   worn name that's no longer a colour, or no longer owned, is the plain film.
 - Tints were judged in Studio Play at phone size on stand-in films: all six read as coloured film
   with the body showing through; Black reads as smoky dark film, not a solid shape.
+
+## D-225 The counter's shop: you in each colour, priced by Roblox, bought through the server (S3-04b, Nov 15)
+The moment: you walk up to the counter, the shop slides up, and every card is you turning in that
+colour's film; you buy one and the film snaps tight round you. Proven: Fortnite's item shop and
+DOORS' shop (cards in a row, a price on each, owned ones marked Owned or Equipped).
+- **The figure is you.** Each card's ViewportFrame holds a copy of your own character (scripts,
+  tools and sounds stripped, anchored) with the film fitted round its box as the server fits it
+  (`Kept.fit`) and tinted (`WrapColours.tint`). Seeing yourself in the colour sells it better
+  than a stand-in body. Made as the shop opens, gone as it shuts; only then does anything step.
+- **Seven cards: the plain film first.** Taking a colour off needs a way back, so the clear film
+  is a card of its own, always yours (Wear or Worn).
+- **The counter's prompt is made on each screen**, not by the server: it only opens a screen.
+  The server never trusts the screen anyway: `BuyWrap` and `WearWrap` take a colour's name
+  (checked: a string, short, a colour; Wear also empty), no faster than `Shop.AskEvery`.
+- **The shelf answers at once; prices follow.** Roblox's prices (Brix's `viewShop`, which also
+  records the look) take seconds in Studio, so `ShopShelf` answers owned and worn at once with
+  the prices last fetched for that player and fetches fresh ones behind it; the screen asks once
+  more 1.2 s later if a price is missing. A Buy with no price yet reads just "Buy".
+- **"Roblox's own" Shop button** (ROADMAP S3-04) was never defined: taken as a Shop button in
+  Roblox's own top-bar row, at its left end, shown only in the front office (`OWNER.md`).
+- **In Studio, Buy runs the real grant**: with no product of its title on Roblox, the press
+  hands Purchasing's `DevReceipt` a made-up receipt, so the save, the attribute and the card's
+  flip all run as a purchase would.
+- A wear change is saved 5 s after the last one, so trying colours on writes once.

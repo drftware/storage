@@ -1,0 +1,164 @@
+--!strict
+--[[
+	Shop (S3-04b, GDD "Monetization", D-112): the counter's shop, its first shelf the wrap colours.
+	The moment: back in the lobby after a climb you walk up to the front office's counter and the
+	shop slides up, each colour a figure of you turning in its film with its price on Buy; you buy
+	one and the film snaps tight round the figure with the film's squeal and the card says Worn.
+	Fortnite's item shop and DOORS' shop are bought from a screen like it (cards in a row, a price
+	on each, owned ones marked).
+
+	Three remotes in ReplicatedStorage.Remotes, each checked on the server (Wearing):
+	- `ShopShelf` (RemoteFunction, nothing carried): each colour's price, whether you own it, and
+	  what you wear (`Shelf`). Asking it records one look at the shop (Brix's `shopViewed`).
+	- `BuyWrap` (RemoteEvent, a colour's name): puts Roblox's purchase prompt for it up, through
+	  the server (`Purchasing.prompt`), never the screen's own.
+	- `WearWrap` (RemoteEvent, a colour's name or empty for the plain film): puts on one you own.
+	A purchase or a change lands as the Player's `WrapColour` attribute (WrapColours), which the
+	screen hears to flip the card.
+
+	Every feel number the screen uses is here.
+]]
+local WrapColours = require("./WrapColours")
+
+local Shop = {}
+
+Shop.RemoteFolder = "Remotes"
+Shop.ShelfRemote = "ShopShelf"
+Shop.BuyRemote = "BuyWrap"
+Shop.WearRemote = "WearWrap"
+
+-- Seconds between a player's asks the server takes, each remote alike: a mashed button costs
+-- nothing, and a shop never needs answering faster.
+Shop.AskEvery = 0.4
+
+-- A card's state, as its button reads: Buy (with the price), Wear (owned, not worn), Worn.
+export type State = "buy" | "wear" | "worn"
+
+-- One colour on the shelf as the server answers it: its name, its price (nil while Roblox has
+-- none for it, or it's owned), whether it's yours.
+export type Item = { name: string, price: number?, owned: boolean }
+export type Shelf = { worn: string, items: { Item } }
+
+-- The longest name a remote takes: a colour's offer name is far shorter.
+local NAME_MAX = 32
+
+-- The words on screen (few words, one verb each: AGENTS.md).
+Shop.Words = table.freeze({
+	title = "Wraps",
+	buy = "Buy",
+	wear = "Wear",
+	worn = "Worn",
+	plain = "Plain",
+	open = "Shop", -- the counter's prompt and the lobby's button
+})
+
+-- The counter's prompt: in the lobby's own frame, just in front of the counter's face (its front
+-- is at x 51, the counter 14 long down z, centred at z -35; Lobby.Specs), at a hand's height.
+Shop.CounterAt = table.freeze({ 49.6, 3.2, -35 })
+-- Studs from the counter its prompt shows: walking up to it, not across the room.
+Shop.CounterReach = 9
+
+-- The screen's feel.
+-- Seconds the shop takes to slide up from the bottom, and to drop away.
+Shop.SlideIn = 0.32
+Shop.SlideOut = 0.2
+-- How far down the screen the shop starts its slide (a share of its own height).
+Shop.SlideFrom = 0.6
+-- A card's width over its height, and the gap between cards (share of the row's height).
+Shop.CardAspect = 0.66
+Shop.CardGap = 0.05
+-- Seconds between each card's pop as the shop opens, left to right: the row deals out.
+Shop.DealEvery = 0.04
+-- Turns a second each figure makes in its film: slow enough to read the colour, alive.
+Shop.Spin = 0.12
+-- Seconds after a shelf answer missing a price that the screen asks once more: Roblox's prices
+-- reach the server a moment after the shop opens.
+Shop.PriceWait = 1.2
+-- A press: the button's scale at once, springing back.
+Shop.Pressed = 0.88
+-- Seconds a Buy stays dimmed after a press while Roblox's prompt comes up (a second press then is
+-- ignored), and how dim.
+Shop.AskDim = 1.6
+Shop.Dim = 0.5
+-- The film snapping tight on a bought or worn colour: the figure squeezed to this scale across,
+-- then sprung back over this many seconds, with the film's squeal (`Kept.Squeal`) at this pitch
+-- and volume (higher and shorter than a catch's: a snap, not a dread).
+Shop.SnapSqueeze = 0.82
+Shop.SnapTime = 0.42
+Shop.SnapPitch = 1.25
+Shop.SnapVolume = 0.7
+Shop.SnapLength = 0.55
+-- The card's flash as it flips to Worn: its rim lit in the colour, fading over this many seconds.
+Shop.FlashTime = 0.6
+-- A press's click (Roblox's "UI Bright Click", as the car's panel and Cut Free).
+Shop.Click = table.freeze({ id = "rbxassetid://15675059323", pitch = 1, volume = 0.35 })
+-- The shop's open: the click pitched down, a slide's thunk.
+Shop.OpenPitch = 0.8
+
+-- The value a remote carried, as a colour's name for `WearWrap` (empty for the plain film) or
+-- `BuyWrap` (`plain` false: a colour only), or nil when it isn't one: never trusts the client.
+function Shop.name(value: unknown, plain: boolean): string?
+	if type(value) ~= "string" or #value > NAME_MAX then
+		return nil
+	end
+	if value == "" then
+		return if plain then "" else nil
+	end
+	return if WrapColours.get(value) then value else nil
+end
+
+-- A card's state for the colour named `name`, given what the server answered.
+function Shop.state(item: Item, worn: string): State
+	if item.name == worn and item.owned then
+		return "worn"
+	end
+	return if item.owned then "wear" else "buy"
+end
+
+-- What the server answers for a save: each colour on the shelf in order, priced from `prices`
+-- (offer name to Robux, as Purchasing's shelf answers), owned or not, and what's worn.
+function Shop.shelf(
+	data: { wraps: { [string]: number }, wornWrap: string },
+	prices: { [string]: number }
+): Shelf
+	local items: { Item } = {}
+	for _, colour in WrapColours.Shelf do
+		local owned = WrapColours.owns(data, colour.name)
+		table.insert(items, {
+			name = colour.name,
+			price = if owned then nil else prices[colour.name],
+			owned = owned,
+		})
+	end
+	return { worn = WrapColours.worn(data), items = items }
+end
+
+-- The shelf the screen was answered, read safely (a RemoteFunction's answer is plain data, but
+-- typed here at the one boundary): nil if it isn't a shelf.
+function Shop.read(value: unknown): Shelf?
+	if type(value) ~= "table" then
+		return nil
+	end
+	local t = value :: { [string]: unknown }
+	local worn, items = t.worn, t.items
+	if type(worn) ~= "string" or type(items) ~= "table" then
+		return nil
+	end
+	local out: { Item } = {}
+	for _, raw in items :: { unknown } do
+		if type(raw) == "table" then
+			local i = raw :: { [string]: unknown }
+			local name, price, owned = i.name, i.price, i.owned
+			if type(name) == "string" and WrapColours.get(name) and type(owned) == "boolean" then
+				table.insert(out, {
+					name = name,
+					price = if type(price) == "number" then price else nil,
+					owned = owned,
+				})
+			end
+		end
+	end
+	return { worn = worn, items = out }
+end
+
+return table.freeze(Shop)

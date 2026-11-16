@@ -141,8 +141,7 @@ nowhere else.
 
 - [ ] **Make the six wrap colour products and get caught in one** (S3-04a, D-224; in Studio
   Play Claude saw a made-up Blue purchase owned, worn at once and refused a second time, and all
-  six colours on stand-in films; a real catch in a colour has never been seen). The shop screen
-  comes next (S3-04b); until then a colour is bought through the dev prompt.
+  six colours on stand-in films; a real catch in a colour has never been seen).
   1. **Decide (defaults in):** the six are Blue, Red, Green, Pink, Orange and Black, at 99, 99,
      99, 149, 149 and 199 Robux (the GDD says 99 to 499; patterns would fill the top later). A
      colour bought is put on at once. Say if any name, colour or price should change.
@@ -163,6 +162,27 @@ nowhere else.
      `workspace:SetAttribute("DevPrompt", "wrapBlue")`. The real purchase box comes up; buy it.
      Get caught with a friend: they find you in blue. Run the same line again: no box this time
      (the log says you already own it).
+
+- [ ] **Try the counter's shop on your phone** (S3-04b, D-225; in Studio Play Claude opened it
+  from the top bar's Shop button, saw seven cards each showing the player in that film, Wear on
+  the plain film and a Studio buy of Red flip the cards; not seen: phone size, a real price, the
+  snap's sound, the counter's prompt pressed by hand). Needs the six products above made first.
+  1. **Decide (default in):** the roadmap said the shop opens "from Roblox's own" too; nobody
+     wrote down what that meant. Claude took it as a Shop button in Roblox's own top-bar row, at
+     its left end, only in the lobby. Say if you meant something else.
+  2. Published, on your phone, in the lobby: walk up to the counter (on your left as you come in
+     the door). A Shop button shows in front of it. Tap it: the shop slides up from the bottom
+     and seven cards deal out left to right, each one you, slowly turning, in a film: clear,
+     then Blue, Red, Green, Pink, Orange, Black. Swipe the row: it scrolls sideways.
+  3. Look at the buttons: colours you don't own show the Robux price in a warm pill (it may say
+     just "Buy" for a second before the price arrives); the one you wear says Worn, others you
+     own say Wear.
+  4. Buy one: Roblox's box comes up. Buy it: that card's film snaps tight round you with a short
+     high squeal, its rim flashes and it says Worn; the card you wore before now says Wear.
+  5. Tap Wear on Plain: it says Worn, the colour says Wear. Get caught on the next climb: the film
+     is clear.
+  6. Close it with the X or a tap above it; open it again from the Shop button at the top left
+     of the screen (it shows only in the lobby). Walk out through a car: it shuts by itself.
 
 - [ ] **Clear Studio's doubled modules** (found Nov 15): `ServerScriptService.Server` and
   `ReplicatedStorage.Shared` hold two copies of each module made in recent sessions (Purchasing,

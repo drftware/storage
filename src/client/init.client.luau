@@ -56,6 +56,7 @@ local ToolView = require(script.ToolView)
 local KeepView = require(script.KeepView)
 local TripView = require(script.TripView)
 local RideView = require(script.RideView)
+local ShopView = require(script.ShopView)
 local TapView = require(script.TapView)
 local UnderDoor = require(script.UnderDoor)
 local UnitLights = require(script.UnitLights)
@@ -155,6 +156,8 @@ local host = Brix.Host.new({
 		-- the lobby's platform carts: every cart rolling, and riding one yourself (L-08e4b1)
 		{ slot = "cartView", system = cartView },
 		{ slot = "cartRide", system = CartRide.new(ownCart, cartTold, kick, holdView) },
+		-- the counter's shop: its prompt, the lobby's Shop button, the wrap colours (S3-04b)
+		{ slot = "shopView", system = ShopView.new() },
 	},
 })
 host:start()

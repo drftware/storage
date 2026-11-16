@@ -76,6 +76,10 @@ export type PurchasingSystem = Brix.System & {
 	-- Roblox (a made-up Studio id doesn't count), this server sells, and its switch is on. For
 	-- a screen deciding whether to show the offer's button at all.
 	sells: (self: any, offer: string) -> boolean,
+	-- Every offer on sale to `player` now, by name, at the Robux Roblox reports to them (an offer
+	-- their save can't buy, such as a wrap colour they own, isn't there), recorded as one look at
+	-- the shop (`shopViewed`, Brix's `viewShop`). Empty while nothing is on sale. May yield.
+	shelf: (self: any, player: Player) -> { [string]: number },
 }
 
 -- The part of Recording this reads: its Analytics, made in its start.
@@ -133,6 +137,7 @@ function Purchasing.new(): PurchasingSystem
 	local real: { [string]: true } = {} -- offers with a product on Roblox, not made up
 	local saves: Brix.Saves<Save.Data>? = nil
 	local playerPurchases: Brix.PlayerPurchases? = nil
+	local shop: Brix.Purchases<Player>? = nil -- the Purchases PlayerPurchases takes receipts for
 	local stopped = false
 	local signals: { Brix.SignalConnection } = {}
 	local connections: { RBXScriptConnection } = {}
@@ -200,6 +205,7 @@ function Purchasing.new(): PurchasingSystem
 			end,
 		})
 		playerPurchases = made
+		shop = purchases
 		made:start()
 	end
 
@@ -275,6 +281,21 @@ function Purchasing.new(): PurchasingSystem
 
 	function system.sells(_: any, offer: string): boolean
 		return playerPurchases ~= nil and real[offer] == true and switchedOn(offer)
+	end
+
+	function system.shelf(_: any, player: Player): { [string]: number }
+		local prices: { [string]: number } = {}
+		local p = shop
+		if p == nil or playerPurchases == nil then
+			return prices
+		end
+		local asked, listings = pcall(p.viewShop, p, player, Save.key(player.UserId))
+		if asked and type(listings) == "table" then
+			for _, listing in listings do
+				prices[listing.offer] = listing.price
+			end
+		end
+		return prices
 	end
 
 	-- The dev prompt: the offer named in Workspace's DevPrompt, to every dev player here.
@@ -395,6 +416,7 @@ function Purchasing.new(): PurchasingSystem
 		if playerPurchases then
 			playerPurchases:stop()
 			playerPurchases = nil
+			shop = nil
 		end
 	end
 

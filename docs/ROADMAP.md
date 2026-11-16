@@ -2066,12 +2066,17 @@ Done when nobody quits a climb because they were caught.
     granted, worn at once, and a second prompt refused ("already owns"); all six tints on
     stand-in films read as coloured film at phone size. Not run: a real catch in a colour (no
     keeper awake for CatchTest; `OWNER.md`).
-  - [ ] **S3-04b The counter's shop screen.** Walk up to the counter (or press the lobby's Shop
-    button) and the shop slides up on its first shelf: each colour as a wrapped figure turning
-    in its film, its price from Roblox, Buy; owned ones say Wear or Worn. A press asks the
-    server (`Purchasing.prompt`, never the client's own prompt); bought, the figure's film
-    snaps tight with the film's squeal and the card flips to Worn. A `WearWrap` remote (checked:
-    rate, a name, owned) puts on an owned colour or the plain film. Gifts wait on `OWNER.md`.
+  - [x] **S3-04b The counter's shop screen** (Nov 15, D-225). Walk up to the counter and press
+    Shop (a prompt only your screen makes), or the Shop button at the left of the top bar, both
+    only in the front office: the shop slides up and deals out seven cards, the plain film then
+    the six colours, each a copy of you turning in that film. Buy (the warm pill, with the Robux
+    price once Roblox reports it) asks the server, which puts Roblox's prompt up; bought, the
+    film snaps tight with a high, short squeal, the rim flashes and the card says Worn. Wear puts
+    on an owned colour or the plain film. Seen in Studio Play: the cards painted within 0.6 s of
+    opening; Wear on the plain film and a Studio buy of Red each flipped the cards and the
+    attribute. Not seen: phone size, a real price, the snap's sound (`OWNER.md`).
+    **Polish left:** a gift button on each card once gifts are decided; a "new" glint on colours
+    added later; the counter lit a touch warmer while the shop's up.
   - [ ] **S3-04c Patterned wraps** (later, with art): the GDD's "colour or pattern" at the top
     of the price range (caution-tape print, camo, glow in the dark through the SurfaceAppearance's
     `EmissiveStrength`, STUDIO.md), each a texture set made the art way.
@@ -2217,7 +2222,12 @@ Done when two climbs in a row feel different and players talk about their best f
 
 - [ ] **S4-01 Floors made by rules, to floor 100.** One table says for any floor number what
   it holds and how hard it is (GDD "Floor rules"); the climb no longer ends at floor 3 (D-106).
-  Room left for floors that play differently.
+  Room left for floors that play differently. Split Nov 15 for a session's size:
+  - [ ] **S4-01a The rules table and the top gone.** One pure table (`FloorRules`, Lune-tested)
+    answering, for any floor number, what `Deal` and `Climb` read today from fixed numbers; the
+    climb goes on past floor 3. The escape ("Made it") keeps its code but has no trigger; note it.
+  - [ ] **S4-01b What changes floor to floor.** The table's rows actually change the floors as
+    you climb (more units, more monsters awake, fewer notes), each step named in the table.
 - [ ] **S4-02 Monsters by lowest floor.** Each monster's row carries the lowest floor it can
   appear on; above it the game mixes it in at random.
 - [ ] **S4-03 The choice on the elevator's buttons.** Three buttons light up on the car's
