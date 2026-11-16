@@ -47,8 +47,8 @@ nowhere else.
   5. Drop a lit one in the hall with the Mannequin coming (the lantern's steps below): it stops
      where the lamp's light reaches. The desk lamp's pool is small (about 4 studs); the
      night-light's barely reaches at all.
-- [ ] **Try (F-G1b3c2c, built Nov 16, D-254; driven by script in Studio Play, not on a phone,
-  not with a friend):** drive the RC car.
+- [ ] **Try (F-G1b3c2c and F-G1b3c2d, built Nov 16, D-254 and D-256; driven by script in Studio
+  Play, not on a phone, not with a friend):** drive the RC car.
   1. In Studio press Play. In the command bar (Server), run
      `workspace:SetAttribute("GiveFind", "RCCar")`: a **Drive** button shows.
   2. Face down the test hall and press Drive: the transmitter clicks, the car is set down in front
@@ -60,8 +60,18 @@ nowhere else.
      second too fast to steer between the unit doors?
   4. Press jump (or Back, top left): you're back in your own eyes and the car stays put. Walk to
      it with the transmitter in your hand: it's back in your hands with a clack.
-  5. With a friend: do they see the car drive smoothly, its wheels turning, and hear its whine?
-     (Your body crouching with the antenna up is F-G1b3c2d, next.)
+  5. Drive it away down the hall, turn it round and look back: you're crouched on your heels,
+     the transmitter up at your chest in both hands, its aerial past your bowed head, your torch
+     pointed at the floor. Does the crouch read as "busy driving" from there? Keep driving to
+     your feet: the view comes home and the car clacks back into your hands.
+  6. With a friend (Studio's Test tab, Clients and Servers, 2 players, or a real server): stand
+     by them while they drive. Do you see them settle into the crouch with a rustle, the
+     transmitter held by its grip and wheel (not floating beside their hand), and stand back up
+     when they press Back? Do you see the car drive smoothly, its wheels turning, and hear its
+     whine? Is their torch held down, not raised to where their view is?
+  7. Get caught while driving (drive near a sleeping Mannequin's unit and wake it, or use
+     `ServerStorage.CatchTest` with one stood near you): your view should leave the car at once
+     and the catch turns you from your own eyes to its face; the transmitter drops.
 - [ ] **Decide (default in, F-G1b3c2e):** does the RC car trip the motion lights as it drives
   under them, as you do? Default: no, it's too small and low for their sensors, so a dark hall
   stays dark and its view goes infrared. If yes, the car lights its own way down the halls and

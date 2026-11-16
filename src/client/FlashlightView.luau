@@ -30,6 +30,7 @@
 	your screen the same way. Pressed while it's dead, the button only clicks dully, the torch dips
 	in your hand and the button shakes: nothing explains it.
 ]]
+local CollectionService = game:GetService("CollectionService")
 local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -41,6 +42,7 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local Caught = require(ReplicatedStorage.Shared.Caught)
 local Charge = require(ReplicatedStorage.Shared.Flashlight.Charge)
+local Drive = require(ReplicatedStorage.Shared.Finds.Drive)
 local Flashlight = require(ReplicatedStorage.Shared.Flashlight)
 local HandRoom = require(script.Parent.HandRoom)
 local InFlight = require(script.Parent.InFlight)
@@ -858,7 +860,10 @@ function FlashlightView.new(): (Brix.System, Beam)
 			local target = if type(aim) == "number" then aim else 0
 			f.pitch = target + (f.pitch - target) * math.exp(-Torch.AimFollow * dt)
 			local step = dt / Torch.ArmBlend
-			f.raise = math.clamp(f.raise + (if on then step else -step), 0, 1)
+			-- a friend driving the RC car holds their torch at the floor ahead (DriverBodies)
+			local character = model.Parent
+			local up = on and not (character and CollectionService:HasTag(character, Drive.BodyTag))
+			f.raise = math.clamp(f.raise + (if up then step else -step), 0, 1)
 		end
 	end
 

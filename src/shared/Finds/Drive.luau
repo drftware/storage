@@ -118,6 +118,54 @@ Drive.PitchRate = 10
 -- along the floor, and up or down.
 Drive.TakeReach = 3
 Drive.TakeHeight = 4
+-- Or drive it home to your feet (F-G1b3c2d): once it has been this many studs from your feet
+-- since the drive began, coming back within `TakeReach` takes it back. It's set down closer than
+-- that, so it doesn't snap straight back into your hands as you start.
+Drive.HomeAway = 4.5
+
+--[[
+	The driver's body (F-G1b3c2d): while you drive, every screen, yours included, crouches your
+	body over the transmitter, as a drone pilot squats over their controller in Rainbow Six Siege.
+	Your character carries `BodyTag` from the server. The transmitter is a pistol-grip one: your
+	left hand round its grip, finger on the trigger, your right on the wheel at its side, its aerial
+	up past your bowed head, and the torch in your right hand pointed at the floor ahead.
+	Radians about each joint's own across axis, as `Kneel.Pose` turns them (a hanging arm or leg
+	swings forward for positive; the body over the root pitches forward for negative); `Sink` and
+	`Back` are shares of the hip height, so the feet stay flat on the floor on any avatar's legs.
+	`In` turns an arm in across the chest; each hand's `Pitch` and `Yaw` are its turn against your
+	body, whatever the arm above it does. Tuned in Studio on a standard avatar (hip height 2): the
+	left hand mid-chest, a stud and a half ahead; the right on the wheel within a tenth of a stud.
+]]
+Drive.BodyTag = "DrivingCar"
+Drive.Crouch = {
+	Down = 0.45, -- seconds to crouch, and to stand back up: a settle, not a drop
+	Sink = 0.42,
+	Back = 0.15,
+	Lean = math.rad(-20), -- hunched over it
+	Waist = math.rad(-10),
+	Neck = math.rad(-5), -- the head bowed over the transmitter
+	Hip = math.rad(105), -- thighs out ahead, nearly level
+	HipOut = math.rad(15), -- knees a little apart
+	Knee = math.rad(-110),
+	Ankle = math.rad(25), -- feet flat
+	Left = {
+		Shoulder = math.rad(62),
+		In = math.rad(65),
+		Elbow = math.rad(82),
+		-- the transmitter upright, facing ahead, its wheel to your right: the find's quarter turn in
+		-- the hand and the art's 18 degrees undone
+		Pitch = 0,
+		Yaw = math.rad(-72),
+	},
+	Right = {
+		Shoulder = math.rad(55),
+		In = math.rad(65),
+		Elbow = math.rad(60),
+		-- the torch pointed 30 degrees down at the floor ahead, clear of the transmitter
+		Pitch = math.rad(-60),
+		Yaw = math.rad(-180),
+	},
+}
 
 -- What the stick says, as throttle and steering (each -1 to 1), from the control module's move
 -- vector (`across` right, `along` its z: forward is negative). A diagonal counts as full on both,
@@ -201,6 +249,16 @@ end
 function Drive.takes(dx: number, dy: number, dz: number): boolean
 	return dx * dx + dz * dz <= Drive.TakeReach * Drive.TakeReach
 		and math.abs(dy) <= Drive.TakeHeight
+end
+
+-- A car you drive, `dx`, `dy`, `dz` studs from your feet, `away` if it has been `HomeAway` from
+-- them since the drive began: whether it has been away now, and whether it's home (taken back).
+function Drive.home(away: boolean, dx: number, dy: number, dz: number): (boolean, boolean)
+	if not away then
+		away = dx * dx + dz * dz >= Drive.HomeAway * Drive.HomeAway
+			or math.abs(dy) > Drive.TakeHeight
+	end
+	return away, away and Drive.takes(dx, dy, dz)
 end
 
 return Drive

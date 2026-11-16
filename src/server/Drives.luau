@@ -13,12 +13,17 @@
 	who (`Driver`) and their streaming follows the car (`Player.ReplicationFocus`), so the halls it
 	drives down stream in on their screen.
 
+	While the car is out, the transmitter is held by its own handle (`regrip`): the find is held
+	by the car's roof, which isn't in the hand any more. While they drive, the driver's character
+	carries `Drive.BodyTag`, so every screen crouches it over the transmitter (DriverBodies).
+
 	The drive ends when the driver says Back (`DriveBack`), lets go of the transmitter (switched,
-	pocketed, dropped), dies, leaves, or the car falls out of the world. The car stays where it
-	stopped, anchored so nobody kicks it about. Drive again with the transmitter in hand and it
-	drives on from there. Walk to it with the transmitter in your hand and it's back in it: its
-	parts go back into the find, joined to the transmitter as they were. A find that goes takes its
-	car with it.
+	pocketed, dropped), is caught (`Kept.Attribute`), dies, leaves, or the car falls out of the
+	world. The car stays where it stopped, anchored so nobody kicks it about. Drive again with the
+	transmitter in hand and it drives on from there. Walk to it with the transmitter in your hand,
+	or drive it back to your feet once it has been away (`Drive.home`), and it's back in your hand:
+	its parts go back into the find, joined to the transmitter as they were. A find that goes takes
+	its car with it.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -29,6 +34,7 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local Drive = require(ReplicatedStorage.Shared.Finds.Drive)
 local Finds = require(ReplicatedStorage.Shared.Finds)
+local Kept = require(ReplicatedStorage.Shared.Kept)
 local Slots = require(script.Parent.Slots)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 
@@ -53,8 +59,11 @@ type Car = {
 	joint: Motor6D, -- the body's joint: from the transmitter in the find, from the hull out here
 	jointFrom: BasePart, -- the transmitter's part it hangs from in the find
 	jointC0: CFrame,
+	pivot: CFrame, -- the find's own grip (its body's PivotOffset), to put back
 	drive: Brix.DrivingServer?,
 	driver: Player?,
+	character: Model?, -- the driver's, tagged `Drive.BodyTag` while they drive
+	away: boolean, -- the car has been `Drive.HomeAway` from its driver's feet this drive
 	going: RBXScriptConnection,
 }
 
@@ -77,6 +86,32 @@ local function rootOf(player: Player): BasePart?
 		return root
 	end
 	return nil
+end
+
+-- The find's grip moved from `from` to `to`: its body's pivot (where a hand or the floor holds
+-- it) and the weld of a hand holding it there now.
+local function regrip(find: Model, from: CFrame, to: CFrame)
+	local body = Tools.body(find)
+	if not body then
+		return
+	end
+	body.PivotOffset = to
+	for _, weld in body:GetChildren() do
+		if
+			weld:IsA("Weld")
+			and weld.Part1 == body
+			and (weld.C1.Position - from.Position).Magnitude < 1e-3
+		then
+			weld.C1 = to
+		end
+	end
+end
+
+-- The transmitter's own grip for a find held at `pivot`: its handle, under the middle of its head
+-- (the part's middle across and front to back, measured in Studio), at the height the whole find
+-- is held, so a transmitter dropped alone still lands on its foot.
+local function handleOf(pivot: CFrame): CFrame
+	return CFrame.new(0, pivot.Position.Y, 0)
 end
 
 -- Every part in `parts` moved rigidly so `body` lands on `at`, keeping how they sit round it.
@@ -125,6 +160,11 @@ function Drives.new(): Brix.System
 		car.driver = nil
 		drive:stop()
 		car.model:SetAttribute(Drive.DriverAttribute, nil)
+		local character = car.character
+		car.character = nil
+		if character then
+			CollectionService:RemoveTag(character, Drive.BodyTag)
+		end
 		if driver and driver.ReplicationFocus == car.hull then
 			driver.ReplicationFocus = nil
 		end
@@ -165,6 +205,7 @@ function Drives.new(): Brix.System
 		end
 		car.joint.Part0 = car.jointFrom
 		car.joint.C0 = car.jointC0
+		regrip(find, handleOf(car.pivot), car.pivot)
 		car.model:Destroy()
 		find:SetAttribute(Drive.OutAttribute, nil)
 		say(`the car is back with its transmitter ({why})`)
@@ -201,7 +242,8 @@ function Drives.new(): Brix.System
 			table.insert(parts, part)
 		end
 		local inFind = Finds.rootAt(find, Drive.Key, Finds.rest(Drive.Key))
-		if not (joint and joint.Part0 and inFind) then
+		local held = Tools.body(find)
+		if not (joint and joint.Part0 and inFind and held) then
 			return nil
 		end
 		local params = RaycastParams.new()
@@ -274,6 +316,8 @@ function Drives.new(): Brix.System
 		end
 		joint.Part0 = hull
 		joint.C0 = hullAt:Inverse() * bodyAt
+		local pivot = held.PivotOffset
+		regrip(find, pivot, handleOf(pivot))
 
 		local car: Car
 		car = {
@@ -285,8 +329,11 @@ function Drives.new(): Brix.System
 			joint = joint,
 			jointFrom = from,
 			jointC0 = c0,
+			pivot = pivot,
 			drive = nil,
 			driver = nil,
+			character = nil,
+			away = false,
 			-- a find that goes takes its car with it
 			going = find.AncestryChanged:Connect(function()
 				if find.Parent == nil and cars[find] == car then
@@ -342,6 +389,12 @@ function Drives.new(): Brix.System
 			return
 		end
 		car.model:SetAttribute(Drive.DriverAttribute, player.UserId)
+		car.away = false
+		local character = player.Character
+		if character then
+			car.character = character
+			CollectionService:AddTag(character, Drive.BodyTag)
+		end
 		player.ReplicationFocus = car.hull
 		say(`{player.Name} is driving`)
 	end
@@ -371,11 +424,15 @@ function Drives.new(): Brix.System
 	end
 
 	local function onFrame(dt: number)
-		-- a drive ends the moment its driver lets go of the transmitter or dies
+		-- a drive ends the moment its driver is caught, lets go of the transmitter or dies
 		for _, car in cars do
 			local driver = car.driver
-			if car.drive and driver and not (holderOf(car.find) == driver and rootOf(driver)) then
-				endDrive(car, "let go")
+			if car.drive and driver then
+				if driver:GetAttribute(Kept.Attribute) == true then
+					endDrive(car, "caught")
+				elseif not (holderOf(car.find) == driver and rootOf(driver)) then
+					endDrive(car, "let go")
+				end
 			end
 		end
 		takeIn -= dt
@@ -383,19 +440,29 @@ function Drives.new(): Brix.System
 			return
 		end
 		takeIn = TAKE_EVERY
+		-- a car walked to with its transmitter in hand, or driven back to its driver's feet
 		local back: { Car } = {}
+		local why: { string } = {}
 		for _, car in cars do
-			local holder = if car.drive then nil else holderOf(car.find)
+			local driving = car.drive ~= nil
+			local holder = if driving then car.driver else holderOf(car.find)
 			local root = holder and rootOf(holder)
 			if root and car.hull.Parent then
 				local d = car.hull.Position - root.Position
-				if Drive.takes(d.X, d.Y, d.Z) then
+				local home = false
+				if driving then
+					car.away, home = Drive.home(car.away, d.X, d.Y, d.Z)
+				else
+					home = Drive.takes(d.X, d.Y, d.Z)
+				end
+				if home then
 					table.insert(back, car)
+					table.insert(why, if driving then "driven home" else "walked to it")
 				end
 			end
 		end
-		for _, car in back do
-			takeBack(car, "walked to it")
+		for i, car in back do
+			takeBack(car, why[i])
 		end
 	end
 

@@ -413,7 +413,9 @@ end
 local CaughtView = {}
 
 -- The system; `kick` jerks the view (CameraShake's).
-function CaughtView.new(kick: (amount: number) -> ()): Brix.System
+-- `leave`: anything holding your view somewhere else (the RC car's hood) gives it back at once,
+-- before the lunge takes it.
+function CaughtView.new(kick: (amount: number) -> (), leave: (() -> ())?): Brix.System
 	local player = Players.LocalPlayer
 	local screen: Screen? = nil
 	local lunge = CaughtLunge.new(kick)
@@ -582,6 +584,9 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 	-- unknown: the remote's argument, the keeper's body, which CaughtLunge checks
 	local function onCaught(body: unknown)
 		since, awake, carried = 0, -1, false
+		if leave then
+			leave()
+		end
 		lunge.seize(body)
 		if not held then
 			held = hold()

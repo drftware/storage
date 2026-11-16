@@ -33,6 +33,7 @@ local ElevatorView = require(script.ElevatorView)
 local EndView = require(script.EndView)
 local FlashlightView = require(script.FlashlightView)
 local DriveView = require(script.DriveView)
+local DriverBodies = require(script.DriverBodies)
 local FindUseView = require(script.FindUseView)
 local HornView = require(script.HornView)
 local FreeCursor = require(script.FreeCursor)
@@ -132,7 +133,8 @@ local host = Brix.Host.new({
 		-- a security camera's feed over the corner map: a monster doing something, seen (S2-02d);
 		-- after the keepers' bodies and the box are posed, so its picture shows this frame's
 		{ slot = "feedView", system = FeedView.new() },
-		{ slot = "caughtView", system = CaughtView.new(kick) },
+		-- caught while driving the RC car, your view leaves its hood first
+		{ slot = "caughtView", system = CaughtView.new(kick, driving.leave) },
 		-- a caught friend's face under the corner map, to pay to free them (S3-03b)
 		{ slot = "freeFriendView", system = FreeFriendView.new() },
 		{ slot = "chaseMusic", system = ChaseMusic.new() },
@@ -167,6 +169,9 @@ local host = Brix.Host.new({
 		-- left behind (L-08c): its camera runs between CameraShake's undo and apply
 		-- the RC car: your view on its hood while you drive, between CameraShake's undo and apply
 		{ slot = "driveView", system = driveView },
+		-- every driver crouched over the transmitter; yours shown only while your view is on the
+		-- car, so after the drive view in the same frame
+		{ slot = "driverBodies", system = DriverBodies.new(driving.viewing) },
 		{ slot = "watchView", system = WatchView.new(kick, needCursor) },
 		-- the climb's end (L-08d): over everything, the results and "Again"
 		{ slot = "endView", system = EndView.new(needCursor) },

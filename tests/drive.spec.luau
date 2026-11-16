@@ -108,6 +108,36 @@ do
 	ok(not Drive.takes(0, Drive.TakeHeight + 1, 0), "nor a floor up")
 end
 
+-- driving it home to your feet (F-G1b3c2d)
+do
+	ok(Drive.HomeAway > Drive.TakeReach, "it has to leave your reach to come home")
+	ok(Drive.SetAhead < Drive.TakeReach, "set down, it starts inside your reach")
+	local away, home = Drive.home(false, Drive.SetAhead, -3, 0)
+	ok(not away and not home, "just set down: not home, so the drive starts")
+	away, home = Drive.home(false, Drive.TakeReach + 0.5, -3, 0)
+	ok(not away and not home, "a nudge out of reach isn't away")
+	away, home = Drive.home(away, 1, -3, 0)
+	ok(not home, "nor is coming back from it home")
+	away, home = Drive.home(false, Drive.HomeAway + 1, -3, 0)
+	ok(away and not home, "driven off down the hall")
+	away, home = Drive.home(away, 4, -3, 0)
+	ok(away and not home, "on its way back, not yet at your feet")
+	away, home = Drive.home(away, 1, -3, 1)
+	ok(away and home, "driven to your feet: home")
+	away, home = Drive.home(true, 1, -3 - Drive.TakeHeight, 0)
+	ok(not home, "under you a floor down isn't home")
+	away = Drive.home(false, 0, Drive.TakeHeight + 1, 0)
+	ok(away, "a floor away counts as away")
+end
+
+-- the crouch keeps the feet on the floor
+do
+	local c = Drive.Crouch
+	local foot = c.Lean + c.Hip + c.Knee + c.Ankle
+	ok(math.abs(foot) < math.rad(1), "the feet stay flat under the crouch")
+	ok(c.Down > 0 and c.Sink > 0 and c.Sink < 0.6, "crouched, not sat on the floor")
+end
+
 -- the handling's numbers make sense together
 do
 	local h = Drive.Handling

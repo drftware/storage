@@ -6516,3 +6516,29 @@ when there are lights but go infrared if the lights go out."
   be a light that holds the Mannequin.
 - Open, default in: the car doesn't trip motion lights (`OWNER.md`).
 
+
+## D-256 · 2026-11-16 · The RC car's driver crouches over the transmitter, and the car can be driven home (F-G1b3c2d)
+
+- **The driver crouches on every screen, theirs included:** on their heels, hunched, the
+  transmitter held up at the chest in both hands (left round its pistol grip, right on its wheel),
+  its aerial past the bowed head, the torch in the right hand pointed at the floor ahead (Rainbow
+  Six Siege's drone pilots squat over their controllers). The server tags the character
+  `Drive.BodyTag`; each screen poses the joints (`Drive.Crouch`, DriverBodies), eased over 0.45 s
+  with the peek's cloth rustle. Your own body is shown only while your view is on the car, so the
+  hood sees you crouched when you drive back, and it's hidden again the moment your view comes
+  home. A friend's torch arm isn't raised to their aim while they drive.
+- **The aerial is already up:** the transmitter's telescopic aerial is modelled extended and isn't
+  a part of its own, so there's nothing to raise. A telescoping raise as you press Drive would need
+  the aerial split out in the art (ROADMAP polish).
+- **With its car out, the transmitter is held by its handle:** the find is held by the car's roof,
+  so with the car gone the hand held air a stud from the transmitter. While the car is out the
+  find's grip (its body's `PivotOffset`, and the hand's weld) moves to the handle at the same
+  height, so a transmitter dropped alone still lands on its foot; taken back, the old grip returns.
+- **Caught, the drive ends at once:** the server ends it on the caught mark (`Kept.Attribute`),
+  before the drop that would end it anyway, and your screen leaves the hood before the catch's
+  lunge reads your view (CaughtView calls DriveView's `leave`), so the lunge turns you from your
+  own eyes to what caught your body.
+- **Driving it to your feet takes it back,** once it has been 4.5 studs away this drive
+  (`Drive.home`); it's set down closer than that, so it doesn't snap straight back as you start.
+- Not chosen: a kneel on one knee (asymmetric, more numbers, no clearer); the peek's kneel itself
+  (chest to the floor, wrong for holding something up).

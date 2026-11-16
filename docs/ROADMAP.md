@@ -2462,9 +2462,21 @@ actions themselves and dealing the new finds on floors are later game tickets.
             the inner front wheel turning more than the outer (the art's Ackermann); the wheels
             and springs pose by `Finds.joints`, which allocates a little each frame for a car in
             view (fine for one car; a pooled pose if more drive at once).
-          - [ ] **F-G1b3c2d The driver's body.** You crouch still with the transmitter, its
+          - [x] **F-G1b3c2d The driver's body.** You crouch still with the transmitter, its
             antenna up; caught, the drive ends; driving it to your feet takes it back; friends
             see it drive (their view and the phone stick go to `OWNER.md`).
+            Done Nov 16 (D-256): `DriverBodies`, `Drive.Crouch`, `Drive.home`, Drives' tag,
+            caught end and re-grip, DriveView's `leave`. In Studio Play: crouched on your heels,
+            the transmitter upright in both hands (right hand within 0.06 of its wheel), seen
+            from the hood after a U-turn; your root still while crouched; driven home from 11
+            studs ("driven home" in Output) with your view, grip and stance back; caught (by
+            hand: the caught mark and the catch message) ended the drive ("caught") and the
+            lunge started from your own eye. Not run: a friend's view, a phone, a real
+            keeper's catch (OWNER.md).
+            Polish, by name: the aerial telescoping up as you press Drive (split it out of the
+            transmitter in the art); the first-person view's transmitter still held by the car's
+            roof while its car is out (ToolView's copy); a small settle of the shoulders as the
+            car moves, so a crouched driver isn't a statue.
           - [ ] **F-G1b3c2e The car sees in the dark** (the owner, Nov 16, D-255; Outlast's
             camcorder and Phasmophobia's video cameras). The moment: you drive out of a lit
             hall into a dark one, the view clicks over to grainy green, and at the edge of what
@@ -2483,6 +2495,10 @@ actions themselves and dealing the new finds on floors are later game tickets.
             4. Monsters' eyes shine white in it (Outlast's night vision), for each monster with
                eyes to light.
             5. Back gives you your own eyes in full colour at once.
+            6. Your own torch is held to your view wherever it is (`Workspace.YourFlashlight`),
+               so while you drive it sits on the hood and, lit, lights the hall ahead like a
+               headlight: hide it and its light while your view is on the car (DriveView's
+               `viewing`), its light back as it was when you're home.
             One real light on one screen, only while driving and dark: fine on low-end phones.
             Whether the car trips motion lights itself waits on `OWNER.md` (default no).
         - [ ] **F-G1b3c3 The collector steals it.** A driven car is a find lying loose, so the

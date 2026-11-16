@@ -324,4 +324,7 @@ function KneelView.new(): Brix.System
 	}
 end
 
+-- The rustle, for another view crouching a body (DriverBodies).
+KneelView.rustle = rustle
+
 return KneelView

@@ -45,6 +45,9 @@ local LEAN_RATE = 10
 -- How fast the front wheels follow the steer (per second): `Drive.Handling.steerTime`'s ease.
 local STEER_RATE = 1 / Drive.Handling.steerTime * 3
 local BACK_ACTION = "DriveBack"
+-- Studs over your root Roblox's first-person view rides (`Kneel.CameraOverRoot`): where `leave`
+-- puts your view.
+local EYE = 1.5
 -- Studio only: the player attribute a test steers with, the stick as a Vector3 (x right, z back)
 local STICK = "DriveStick"
 
@@ -81,6 +84,11 @@ export type Api = {
 	press: () -> boolean,
 	-- whether a press would do anything now (not while you drive)
 	can: () -> boolean,
+	-- whether your view is on the car you drive (DriverBodies shows your body then)
+	viewing: () -> boolean,
+	-- caught (CaughtView, before the lunge takes your view): out of the car at once, your view
+	-- back in your head, so the lunge turns you from your own eyes to what caught your body
+	leave: () -> (),
 }
 
 local DriveView = {}
@@ -471,6 +479,23 @@ function DriveView.new(hand: ToolView.Hand, kick: (amount: number) -> ()): (Brix
 		end,
 		can = function(): boolean
 			return driving == nil and alive()
+		end,
+		viewing = function(): boolean
+			return driving ~= nil
+		end,
+		leave = function()
+			if not driving then
+				return
+			end
+			stopDriving(false)
+			local camera = Workspace.CurrentCamera
+			local character = player.Character
+			local root = character and character:FindFirstChild("HumanoidRootPart")
+			if camera and root and root:IsA("BasePart") then
+				local look = root.CFrame.LookVector
+				local eye = root.Position + Vector3.new(0, EYE, 0)
+				camera.CFrame = CFrame.lookAt(eye, eye + Vector3.new(look.X, 0, look.Z))
+			end
 		end,
 	}
 

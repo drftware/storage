@@ -2651,4 +2651,20 @@ verified: a doc page, Studio, or "untested".
   (5.48 s): steady near -28 dB from 2.4 to 4.9 s (AudioAnalyzer, 0.25 s bins), looped there.
 - The dev hall is unlit: the hood view is black against a shut door (F-G1b3c2e makes it
   infrared where the lights are out).
+- **Your own body stays hidden while your view is on the car** (F-G1b3c2d): first person's hiding
+  (`LocalTransparencyModifier` 1 on every part) sticks once the camera goes Scriptable, so the hood
+  never saw you. DriverBodies shows it from the drive view's step and puts back what was there
+  the moment your view is home (the camera's hiding may not write again if it thinks nothing
+  changed). `Workspace.YourFlashlight` is your torch held to your view, wherever the view is: on
+  the hood while you drive (F-G1b3c2e's to deal with).
+- **Looking at your own body from outside in Play:** `screen_capture` in Play shows the client's
+  own view and ignores `camera_position`. A Client `BindToRenderStep` at `RenderPriority.Last + 50`
+  that sets the camera wins over the camera scripts but not over anything writing the camera in
+  `RenderStepped` (DriveView's hood, after bound steps), so stop driving first. In first person
+  your body turns to face where the camera looks: set `Humanoid.AutoRotate` false, or you only
+  ever see its back. Unhide your body's parts in the same bound step.
+- **A catch without a keeper:** Server `ReplicatedStorage.Remotes.Caught:FireClient(player, nil)`
+  plays the lunge with a stand-in, and `player:SetAttribute("Kept", true)` marks you caught (alone,
+  ClimbEnds then says everyone's caught; stop Play after). KeptPlayers isn't told, so nothing
+  drops: good for checking what the caught mark alone does.
 
