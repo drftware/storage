@@ -7,10 +7,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 ## State
 - F-G1b split in three (ROADMAP). F-G1b1 done (D-229): `Finds/Use.luau`, pure and tested (87
   checks), holds every press (tea light, oil lamp, glow sticks, fairy lights, lantern, hard
-  hat, firefly jar, disco ball, jack). Nothing in the game reads it yet; not seen in Studio.
-  Studio holds doubled modules, `FloorRules` too (STUDIO.md, OWNER.md).
+  hat, firefly jar, disco ball, jack); unused in game yet. Studio has doubled modules (STUDIO.md).
 - Find art (`art/finds/WAVES.md`): teeth built, not imported; next the walking robot. Its run's
-  `art/finds/windups/spec.py` is left uncommitted on purpose: the chain never stages its files.
+  edits under `art/finds/windups/` stay uncommitted on purpose: the chain never stages them.
 
 ## Next task: F-G1b2 The press in the game
 The moment: you take a lantern, press Switch, it clicks on and lights the hall; your friend sees
