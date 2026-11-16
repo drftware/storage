@@ -2,7 +2,7 @@
 -- lune run tests/kept.spec
 -- Getting kept (L-07a): where the building stores you once the keeper has wrapped you. Only a unit
 -- whose door is all the way down, not padlocked, with no keeper in it (nor the guard's place) and
--- nobody kept in it already; never the nearest one to where you were caught while another will
+-- nobody in it already, kept or free; never the nearest one to where you were caught while another will
 -- do; one nobody has opened before ahead of one that's been seen into; and spread at random over
 -- the rest, so your friends have to look.
 local Brix = require("../vendor/brix/src")
@@ -22,8 +22,15 @@ local function unit(
 	z: number,
 	changes: { [string]: any }?
 ): Kept.Unit -- any: test overrides
-	local u: Kept.Unit =
-		{ x = x, z = z, shut = true, dealt = false, keeper = false, holding = false }
+	local u: Kept.Unit = {
+		x = x,
+		z = z,
+		shut = true,
+		dealt = false,
+		keeper = false,
+		holding = false,
+		someone = false,
+	}
 	if changes then
 		for k, v in changes do
 			(u :: any)[k] = v -- any: a test's override of one field
@@ -38,6 +45,9 @@ ok(not Kept.free(unit(0, 0, { shut = false })), "not one whose door isn't all th
 ok(not Kept.free(unit(0, 0, { keeper = true })), "not one a keeper is in")
 ok(not Kept.free(unit(0, 0, { holding = true })), "not one already holding someone")
 ok(Kept.free(unit(0, 0, { dealt = true })), "one already seen into will do")
+-- S3-05b (the owner's three-player test): a friend shut themself in a unit, another was caught,
+-- and turned up wrapped beside them. Anyone standing inside, free or caught, rules a unit out.
+ok(not Kept.free(unit(0, 0, { someone = true })), "not one a friend is standing in")
 
 local random = Brix.Random.new({ seed = 7 })
 
@@ -122,6 +132,37 @@ for seed = 1, 40 do
 	end
 end
 ok(true, "friends stored together each get a unit of their own")
+
+-- A friend shut in a unit is never given company (S3-05b): caught next to them or far off, carried
+-- up alone or with others, the pick passes their unit over, and with only theirs left it's none.
+ok(
+	Kept.choose({ unit(30, 0, { someone = true }), unit(2, 0, { keeper = true }) }, 0, 0, random)
+		== nil,
+	"none when the only shut, empty-of-keepers unit has a friend in it"
+)
+for seed = 1, 40 do
+	local r = Brix.Random.new({ seed = seed })
+	local floor = {}
+	for i = 1, 6 do
+		table.insert(
+			floor,
+			unit(i * 8, (i % 2) * 6, { dealt = i % 2 == 0, someone = i == 3 or i == 5 })
+		)
+	end
+	local taken: { [number]: boolean } = {}
+	for _ = 1, 6 do
+		local i = Kept.choose(floor, 0, 0, r)
+		if not i then
+			break
+		end
+		if floor[i].someone or taken[i] then
+			ok(false, `seed {seed}: someone stored in unit {i}, where a friend already stands`)
+		end
+		taken[i] = true
+		floor[i].holding = true
+	end
+end
+ok(true, "friends stored together never land where a friend is standing")
 
 -- Where in the unit you wake: past its middle, facing the door, the dark between you and it.
 ok(Kept.Back > 0.5 and Kept.Back < 0.85, `past the middle, off the back wall ({Kept.Back})`)

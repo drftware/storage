@@ -1261,6 +1261,21 @@ verified: a doc page, Studio, or "untested".
   each digit 0.45 s apart; from the Server pivot to (-1599.5, 3, -597). Left behind about 20 s
   later, carried and kept about 54 s after the pivot ("KeptPlayers: … is wrapped and kept in
   UnitNNN"); floor 2's car is at (-1600, 0, -1588).
+- **Testing where a catch stores you, with friends in units** (S3-05b, 2026-11-16): plain Play
+  (seed 7). Wait for 29 units under `DevCorridor.Floor1`; a unit's door is down while its
+  `DoorMotion` starts "Close", and `DoorLocked` marks a padlock. Make the stand-in template (the
+  Cut free recipe's clone), then clone it into each unit you want taken, tagged `StandInFriend`,
+  at `RollUpDoor.frame(unit) * CFrame.new(0, 3, depth / 2)` (depth 12, or 8 for an S unit): +Z
+  in that frame runs into the unit. Pivot yourself to floor 1's lobby (0.5, 3, -597) first, then
+  set `WakeSleepers` and invoke `ServerStorage.CatchTest` every half second: from the lobby it
+  catches within a second (from the front office it's "NoKeeper": the team must be on the
+  floor). Output names the unit; `player:LoadCharacter()` lets you out for the next catch.
+  For the carry, do the left-behind recipe in plain Play (floor 1's code 3330, you at
+  (-7.8, 3, -593.2) for the keypad); floor 2 is laid before the gate shuts, so fill its units
+  then. Stand-ins in floor 2's units can be the one you watch ("watches FriendUnit201").
+- **A long `execute_luau` call drops** (2026-11-16): one that runs past about 20 seconds returns
+  "Target is not reachable", but its code goes on running in Play. Keep each call short, or let
+  it run and read the result off `LogService:GetLogHistory()` in the next call.
 - **Testing the end from the MCP** (L-08d, 2026-11-11): one player, no stand-ins. A wipe: the
   catch recipe above (seed 7, floor 1, 157's guard) ends the climb about 1 s after you're kept
   (Output: "ClimbEnds: the climb ended (Kept)"). The top: set Workspace's `DevFloorNumber` to 3 in

@@ -2080,7 +2080,7 @@ Done when nobody quits a climb because they were caught.
   - [ ] **S3-04c Patterned wraps** (later, with art): the GDD's "colour or pattern" at the top
     of the price range (caution-tape print, camo, glow in the dark through the SurfaceAppearance's
     `EmissiveStrength`, STUDIO.md), each a texture set made the art way.
-- [ ] **S3-05 Caught players each in an empty unit of their own** (bugs from the owner's
+- [x] **S3-05 Caught players each in an empty unit of their own** (bugs from the owner's
   three-player playtest, Nov 15; sessions 11 and 12 of the ten-ticket run, after F-G1b). The
   moment: caught or left behind, you wake shut in a unit of your own, wrapped, and bang on the
   door until a friend follows the noise to you and cuts you free. Two bugs broke it:
@@ -2100,7 +2100,11 @@ Done when nobody quits a climb because they were caught.
     someone; whether the new floor's units are ready when the pick runs. If the fallback stays,
     it never stands two players on one spot and never leaves a wrapped player nobody can free.
     Reproduce with two stand-ins left behind (STUDIO.md "Testing left behind").
-  - [ ] **S3-05b A caught friend put in the unit you're standing in.** (next) A friend was caught and
+  - [x] **S3-05b A caught friend put in the unit you're standing in.** (Nov 16, D-244: the
+    pick now skips any shut unit a player's body stands in, free or caught; Studio stand-ins
+    count too. Seen in Studio Play: with stand-ins in 20 of floor 1's 23 free units, six catches
+    all landed in the empty three; with 24 of floor 2's filled, a carry landed in an empty one.
+    Three real players wait on `OWNER.md`.) A friend was caught and
     turned up wrapped in the shut unit the owner was standing in. `Kept.free` asks only that a
     unit is shut with no monster and no caught player in it, so a free player inside a shut unit
     doesn't count. Should be: the pick skips any unit with anyone inside, free or caught, door

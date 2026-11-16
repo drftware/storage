@@ -6273,3 +6273,19 @@ of their own in front of the car (`ClimbEnd.spot`, the end's Again row), never t
 unit pick itself was sound: each pick marks its unit before the next (now spec'd for friends
 stored together). The rule for anything that gives a player a new character during a climb:
 move it off the spawn in the same frame (docs/STUDIO.md).
+
+## D-244 Nobody is ever stored in a unit someone is standing in (Nov 16, S3-05b)
+
+The owner's three-player test (Nov 15): a friend was caught and turned up wrapped in the shut
+unit the owner was standing in. The pick (`Kept.choose`) knew a unit's door, its keepers and
+whether it already held someone caught, but not whether a free player stood inside it, so a
+friend who'd pulled a door down on themself counted as an empty unit.
+
+Now each unit as the pick sees it (`Kept.Unit`) has `someone`: any player's root inside it, free
+or caught, tested in the door's frame the way a keeper's feet are (`KeptPlayers`' `someoneIn`:
+across the opening's width, from the door to the back wall, from the floor to the ceiling). The
+body being stored is left out (it's the one being moved). In Studio the stand-in friends
+(`Left.StandInTag`) count too, so one player can test it. The carry (`store`, D-243) uses the
+same pick, so a friend carried up never lands with someone on the new floor either. With every
+shut unit taken, the old fallbacks hold: a catch lets you go after the wrap, a carry stands you
+on a spot of your own by the car. A door that's up was already skipped (`shut`).

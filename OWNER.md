@@ -490,7 +490,7 @@ nowhere else.
 - [ ] **Answer Brix's gift and receipt choices** (its DECISIONS E-075 to E-078, listed in Brix's
   HANDOFF) before S3-04 sells gift versions of the wrap colours.
 
-## Now: two friends carried up wrapped, each to a unit of their own (S3-01a, D-186; fixed Nov 16 for S3-05a, D-243)
+## Now: two friends carried up wrapped, each to a unit of their own (S3-01a, D-186; fixed Nov 16 for S3-05a, D-243, and S3-05b, D-244)
 
 Nobody is out of the climb when the elevator leaves without them: you watch a friend ride up,
 then wake wrapped inside one of the new floor's units, for your friends to find. In your Nov 15
@@ -524,6 +524,18 @@ you ride on a server of your own), with three players: you and friends A and B.
   units on floor 3.
 - [ ] **Caught, then carried:** A gets caught by a monster on floor 1 and stays wrapped; B stays
   out of the elevator; you ride up. Both should wake in units of their own as in step 5.
+- [ ] **Never put in with a friend** (S3-05b, D-244): in your Nov 15 test a friend was caught
+  and woke wrapped in the shut unit you were standing in. Now the game never stores anyone in a
+  unit someone stands in. Seen in Studio with stand-in friends filling all but three units: every
+  catch went into one of the empty three. Never yet with real players.
+  1. Start a climb with A and B. On floor 1, open a unit, step inside and get its door shut with
+     you inside (as you did on Nov 15). Stay in there.
+  2. B does the same in another unit and stays in.
+  3. A goes and gets caught by a monster.
+  4. What to look for: A wakes wrapped in a third unit, never yours or B's. You and B never see A
+     appear beside you, and A's bangs come from a different door.
+  5. Come out, find A by the bangs and cut A free. Do steps 1 to 4 twice more (the unit is
+     chosen at random): A must never land in yours or B's.
 - [ ] **Decide, defaults in place** (D-186): (1) The carry starts 1.4 seconds after the gate is
   fully open, so you see the new floor over your friend's shoulder before the black. (2) Nobody
   else hears anything when you're put in your unit (no squeal for them): the bangs are how they

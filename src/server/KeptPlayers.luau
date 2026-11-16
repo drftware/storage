@@ -50,6 +50,7 @@
 	Workspace's `DevPadlockSeconds` attribute (Studio only, `Kept.DevPadlock`) shortens the
 	padlock's clock for each keep that starts after it's set.
 ]]
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -66,6 +67,7 @@ local FloorBuilder = require(script.Parent.FloorBuilder)
 local Keepers = require(script.Parent.Keepers)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local KeptWrap = require(ReplicatedStorage.Shared.KeptWrap.Specs)
+local Left = require(ReplicatedStorage.Shared.Left)
 local Prompts = require(script.Parent.Prompts)
 local Slots = require(script.Parent.Slots)
 local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
@@ -373,13 +375,62 @@ function KeptPlayers.new(): KeptPlayers
 		return found
 	end
 
-	-- The unit on `floor` the building stores someone caught at `at` in, or nil.
-	local function pick(floor: Floor, at: Vector3): Model?
+	-- Where every body but `who`'s stands now: each player's root, free or kept, and in Studio the
+	-- stand-in friends' (Left.StandInTag), so one player can test it (docs/STUDIO.md).
+	local function bodies(who: Player): { Vector3 }
+		local out: { Vector3 } = {}
+		for _, other in Players:GetPlayers() do
+			local root = other ~= who
+				and other.Character
+				and other.Character:FindFirstChild("HumanoidRootPart")
+			if root and root:IsA("BasePart") then
+				table.insert(out, root.Position)
+			end
+		end
+		if RunService:IsStudio() then
+			for _, inst in CollectionService:GetTagged(Left.StandInTag) do
+				local root = inst:IsA("Model") and inst:FindFirstChild("HumanoidRootPart")
+				if root and root:IsA("BasePart") then
+					table.insert(out, root.Position)
+				end
+			end
+		end
+		return out
+	end
+
+	-- Whether any of `roots` stands inside the unit whose door's outer face is `face`, `width` by
+	-- `depth` by `height` studs: a friend who shut themself in, or one kept there.
+	local function someoneIn(
+		roots: { Vector3 },
+		face: CFrame,
+		width: number,
+		depth: number,
+		height: number
+	): boolean
+		for _, at in roots do
+			local p = face:PointToObjectSpace(at)
+			if
+				math.abs(p.X) < width / 2
+				and p.Z > 0
+				and p.Z < depth
+				and p.Y > -1
+				and p.Y < height
+			then
+				return true
+			end
+		end
+		return false
+	end
+
+	-- The unit on `floor` the building stores `who`, caught at `at`, in, or nil. Never one anybody
+	-- stands in (S3-05b): `who`'s own body is left out, as it's the one being moved.
+	local function pick(floor: Floor, at: Vector3, who: Player): Model?
 		local d = doors
 		if not d then
 			return nil
 		end
 		local deck = floor.deck
+		local roots = bodies(who)
 		local list: { Kept.Unit } = {}
 		for i, unit in floor.units do
 			local index = floor.slots[unit]
@@ -398,6 +449,7 @@ function KeptPlayers.new(): KeptPlayers
 						else index == deck.guarded or deck.sleepers[index] ~= nil
 				) or keeperIn(face, spec.Width, spec.Depth),
 				holding = if holding[unit] then true else false,
+				someone = someoneIn(roots, face, spec.Width, spec.Depth, spec.WallHeight),
 			}
 		end
 		local i = Kept.choose(list, at.X, at.Z, random)
@@ -582,7 +634,7 @@ function KeptPlayers.new(): KeptPlayers
 		end
 		root.Anchored = true
 		local floor = floors[catch.floor]
-		local unit = if floor then pick(floor, root.Position) else nil
+		local unit = if floor then pick(floor, root.Position, player) else nil
 		local h: Held = {
 			character = character,
 			root = root,
@@ -670,7 +722,7 @@ function KeptPlayers.new(): KeptPlayers
 		then
 			return false
 		end
-		local unit = pick(floor, near)
+		local unit = pick(floor, near, player)
 		if not unit then
 			if RunService:IsStudio() then
 				print(`KeptPlayers: no unit free on the new floor for {player.Name}`)

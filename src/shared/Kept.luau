@@ -10,7 +10,8 @@
 	is the GDD's own twist on the hook, so friends have to look.
 
 	Which unit: one whose door is all the way down (not padlocked, not open), with no keeper in it
-	(nor the guard's place, D-072) and nobody kept in it already. Never the nearest of those to
+	(nor the guard's place, D-072) and nobody in it already, kept or standing there free (S3-05b).
+	Never the nearest of those to
 	where you were caught while another will do. One nobody has seen into ahead of one that's been
 	opened, so you're behind a door friends haven't tried yet, and it holds only you.
 ]]
@@ -124,8 +125,9 @@ end
 
 -- A unit as the choice sees it: where it stands on the floor (x, z: any one frame, the catch's
 -- too), whether its door is all the way down and not padlocked (`shut`), whether anyone has seen
--- into it (`dealt`), whether a keeper is in it or the guard's place is kept there (`keeper`), and
--- whether someone is kept in it now (`holding`).
+-- into it (`dealt`), whether a keeper is in it or the guard's place is kept there (`keeper`),
+-- whether someone is kept in it now (`holding`), and whether any player stands inside it now, free
+-- or caught (`someone`: a friend who shut themself in is never given company, S3-05b).
 export type Unit = {
 	x: number,
 	z: number,
@@ -133,6 +135,7 @@ export type Unit = {
 	dealt: boolean,
 	keeper: boolean,
 	holding: boolean,
+	someone: boolean,
 }
 
 -- Brix's Random, as `Floor` takes it.
@@ -575,9 +578,9 @@ Kept.ClickKick = 0.35
 Kept.Dread = { id = "rbxassetid://1846887425", from = 0, length = 3.4, volume = 0.9, pitch = 1 }
 Kept.DreadFriends = 0.35
 
---- Whether unit `u` can hold a kept player now.
+--- Whether unit `u` can hold a kept player now: shut, and nobody in it, keeper or player.
 function Kept.free(u: Unit): boolean
-	return u.shut and not u.keeper and not u.holding
+	return u.shut and not u.keeper and not u.holding and not u.someone
 end
 
 --- Which of `units` the building stores someone caught at (`x`, `z`) in: its index, or nil when
