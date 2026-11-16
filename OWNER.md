@@ -27,14 +27,26 @@ nowhere else.
   polish.) The jack-in-the-box should be shut, the tea light unlit. Pressing one is the next item.
 - [ ] **Decide (defaults in, F-G1b1, D-229; try them in the next item):** which finds have a
   press in the building, and how long each lasts.
-  1. The lamps the catalog says work "at home" (desk lamp, night-light, moon lamp, blob lamp,
-     glass lamp, neon sign) get no press in the building, since they need a socket. Say if you'd
-     rather they switch on anywhere.
-  2. The Secret lamp is found lit and never goes out, so it has no press either.
-  3. The hard hat switches on in your hand for now; worn on your head comes with worn finds.
-  4. How long each light lasts: tea light 60 s, oil lamp 150 s, lantern 90 s, hard hat 60 s,
-     firefly jar 60 s; the glow stick, fairy lights and disco ball never run down. A switch
-     (lantern, hat, fairy lights, disco ball) keeps what's left when you switch it off.
+  1. The Secret lamp is found lit and never goes out, so it has no press.
+  2. The hard hat switches on in your hand for now; worn on your head comes with worn finds.
+  3. How long each light lasts: tea light 60 s, oil lamp 150 s, lantern 90 s, hard hat 60 s,
+     firefly jar 60 s, each lamp 60 s; the glow stick, fairy lights and disco ball never run
+     down. A switch (lantern, hat, lamps, fairy lights, disco ball) keeps what's left when you
+     switch it off.
+- [ ] **Try (F-G1b3c1, built Nov 16, D-250; the desk lamp and neon sign checked in Studio Play,
+  not on a phone):** the lamps switch on anywhere now.
+  1. In Studio, set Workspace's `DevFloorNumber` to 1 and press Play. In the command bar (Server),
+     run `workspace:SetAttribute("GiveFind", "DeskLamp")`: a **Switch** button shows.
+  2. Press Switch: it clicks, the lamp's head nods, the bulb lights and a warm pool spreads in
+     front of you. Press again: off. Again: on, with the rest of its minute.
+  3. Leave it on: after a minute it fades out by itself and the button goes. Does the fade read
+     as the lamp dying, or as someone switching it off? (A flicker of its own is ROADMAP polish.)
+  4. Set `GiveFind` to "" and then each of "NightLight", "MoonLamp", "BlobLamp" (its blobs
+     should flow once it's warmed up), "NeonSign" (it stutters on, then buzzes pink) and
+     "StainedGlassLamp" (coloured patterns on the walls).
+  5. Drop a lit one in the hall with the Mannequin coming (the lantern's steps below): it stops
+     where the lamp's light reaches. The desk lamp's pool is small (about 4 studs); the
+     night-light's barely reaches at all.
 - [ ] **Try (F-G1b2, built Nov 16, D-231; each press checked in Studio Play, not on a phone, not
   with a friend):** press a find and watch it do what it is.
   1. In Studio, set Workspace's `DevFloorNumber` to 1 and press Play. In the command bar (Server),
@@ -97,10 +109,6 @@ nowhere else.
   Mannequin; only one lying on the floor does (the catalog says found lights hold it, and the
   moment is dropping it behind you). Holding one lit, it walks right up to you through its light.
   Should a lit find you carry hold it too, like your torch does? Say so and it's a small change.
-- [ ] **Decide (default in, F-G1b3a):** the RC car's catalog line says it drives "at home",
-  round your unit and out into the hall of units, so in the building it has no press yet, like
-  the lamps that work at home. Want it to drive off its transmitter in the building too? Say so
-  and F-G1b3c builds it.
 - [ ] **Decide (defaults in, F-G1a):** the Secret lamp's name on screen is "Old lamp" (the
   catalog calls it "A lamp that's on when you find it"); the RC car carries with its
   transmitter beside it as one find; the theatre spotlight isn't dealt until floors have big

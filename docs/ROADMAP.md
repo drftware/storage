@@ -2394,8 +2394,30 @@ actions themselves and dealing the new finds on floors are later game tickets.
         reaches (a camp lantern about 10 studs, a tea light 7), shaded by walls and shut doors,
         until it runs down (`Use.litUntil`, `Keeper.Glows`). In a hand it holds nothing yet
         (`OWNER.md`).
-      - [ ] **F-G1b3c The RC car drives off its transmitter.** Waits on `OWNER.md`: its catalog
-        line says it drives at home, so it has no press in the building for now (D-233).
+      - [ ] **F-G1b3c The lamps and the RC car work in the building** (the owner, Nov 16, D-250).
+        Split Nov 16:
+        - [x] **F-G1b3c1 The lamps switch on anywhere** (Nov 16; seen in Studio Play): the desk
+          lamp, night-light, moon, blob and glass lamps and the neon sign each get a Switch,
+          lit about a minute (`Use.LampLasts`), keeping what's left when switched off, fading out
+          by their switch-off when spent; lying lit, each holds a Mannequin as far as its light
+          reaches. The moon lamp's phase tap stays for home.
+        - [ ] **F-G1b3c2 Drive the RC car** (Rainbow Six Siege's drones). The moment: you crouch
+          in a unit with the door half down, and through a camera on the car's hood you watch
+          the hall for what's coming. Press Drive: the car is set down in front of you and your
+          view moves to its hood, low and wide; the move stick drives it (forward, back,
+          steering) down the halls and into any open unit, never through a shut door or a wall;
+          a button brings you back to your own eyes and the car stays where it is. Your body
+          crouches still with the transmitter, and a monster can catch it there: caught, the
+          drive ends. Smooth on the driver's screen, the server checking every move (a speed
+          cap, no walls), friends seeing it drive. Answers: a motor whine rising with speed, a
+          jolt on a bump, the transmitter's antenna in your hands. Take it back by walking to
+          it, or by driving it to your feet.
+        - [ ] **F-G1b3c3 The collector steals it.** A driven car is a find lying loose, so the
+          Packrat takes it as it takes any (S2-06b): on the driver's screen the view lifts off
+          the floor, shakes, cuts to static, and you're back in your own eyes; it goes on the
+          pile, there to take back. A friend picking the car up ends your drive too; a car
+          still out when the elevator leaves is left behind with the floor.
+        - Home: it drives round your home too, once home is built (no ticket yet).
   - [ ] **F-G1c The grade shows. Parked Nov 15 (owner: cut for now, D-204):** the reveal moved
     from the door to the box you open (B-02, D-205). As written (the catalog's
     "How you can tell"): a Rare's blue glow seen
@@ -2443,6 +2465,10 @@ actions themselves and dealing the new finds on floors are later game tickets.
 - **The monkey and the toy car** (F-G1b3a): the toy car's roll fading as it slows (the clip is
   cut), a tick as it meets a wall, the monkey's wind measured against its key, and a lighter
   clash than the pitched-up crash cymbal; a hand set-down as the car leaves it.
+- **The lamps going out** (F-G1b3c1): each lamp fades out by its switch-off when its minute is
+  spent, so the desk lamp's head nods as it dies. Each wants a running-down motion of its own
+  in its art script (a flicker, a bulb browning out, the neon stuttering dark), and the neon
+  sign a real hum under its Buzz (it clicks on as a torch does for now).
 - **A pressed find's hand** (F-G1b2): your hand doesn't move as you press (the horn rises); a small
   thumb-press dip of the held find, and a friend's arm lifting a lit lantern to look, would sell it.
 

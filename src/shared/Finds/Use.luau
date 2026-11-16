@@ -13,9 +13,8 @@
 	is in its motions (`frame`). Pure numbers: Lune tests it (tests/finduse.spec); the motions'
 	lengths come in as `durations` (a find's set's Duration by motion name).
 
-	Not here (D-229): the lamps the catalog says work at home (the desk lamp, the night-light, the
-	moon, blob and glass lamps, the neon sign) have no press in the building; the Secret lamp is
-	found lit and never runs down, so it has none either.
+	Not here: the Secret lamp is found lit and never runs down, so it has no press (D-229). The
+	lamps the catalog once kept for home switch on anywhere now (D-250).
 ]]
 
 local Art = require("./Art")
@@ -145,6 +144,22 @@ local CLASH: Sound =
 -- slows (a fade is ROADMAP polish).
 local ROLL: Sound = { id = "rbxassetid://99838569349900", from = 0, length = 3.4, volume = 0.6 }
 
+-- Seconds a lamp stays lit in all (D-250): about a minute, D-188's default for a found light,
+-- so the lantern's 90 seconds is still the long one. Its switch keeps what's left.
+Use.LampLasts = 60
+
+-- A lamp's row: switched on by `on`, off by its SwitchOff with a click, and when its light is
+-- spent it fades out by the same motion, silent.
+local function lamp(on: { Step }): Row
+	return {
+		verb = "Switch",
+		on = on,
+		lasts = Use.LampLasts,
+		out = { { motion = "SwitchOff" } },
+		off = { motion = "SwitchOff", sound = CLICK_OFF },
+	}
+end
+
 --[[
 	The rows, by catalog key. Each find's one line is the item catalog's (art/finds/WAVES.md):
 	how long a light lasts is D-188's "about a minute" unless the catalog says otherwise.
@@ -211,6 +226,28 @@ Use.Rows = {
 		on = { { motion = "Spin" }, { motion = "Spinning", loop = Use.Forever } },
 		off = { motion = "SpinDown" },
 	},
+	-- The lamps the catalog once kept for home (D-250, the owner, Nov 16): each switches on
+	-- anywhere, stays lit about a minute (D-188's default for a light) and keeps what's left when
+	-- switched off, as the lantern does. None has a motion of its own for running down yet, so
+	-- each fades out by its switch-off, silent (ROADMAP polish: a flicker as each one dies).
+	-- "Switch on: a warm pool of light".
+	DeskLamp = lamp({ { motion = "SwitchOn", sound = CLICK_ON } }),
+	-- "Switch on: a soft glow by the floor".
+	NightLight = lamp({ { motion = "SwitchOn", sound = CLICK_ON } }),
+	-- "It glows"; its tap to change the moon's phase stays at home for now.
+	MoonLamp = lamp({ { motion = "SwitchOn", sound = CLICK_ON } }),
+	-- "Coloured blobs rise and fall": it warms up, then flows for as long as it's lit.
+	BlobLamp = lamp({
+		{ motion = "SwitchOn", sound = CLICK_ON },
+		{ motion = "Flow", loop = Use.Forever },
+	}),
+	-- "It buzzes and glows pink": it stutters on, then buzzes (a real neon hum is ROADMAP polish).
+	NeonSign = lamp({
+		{ motion = "SwitchOn", sound = CLICK_ON },
+		{ motion = "Buzz", loop = Use.Forever },
+	}),
+	-- "It throws coloured patterns on your walls".
+	StainedGlassLamp = lamp({ { motion = "SwitchOn", sound = CLICK_ON } }),
 	-- "Wind: a tune, then a bang as it pops. The bang comes a few seconds after you let go": wind
 	-- it, set it down, walk away, and see what comes to look.
 	JackInTheBox = {

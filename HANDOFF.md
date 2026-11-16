@@ -2,60 +2,59 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-16, session 211 (nobody is stored in a unit someone stands in) · **Checks:** green at this commit (the find-art run's uncommitted carousel files fail `findpose.spec` until it commits them) · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-16, session 212 (the lamps switch on anywhere; the RC car's design) · **Checks:** green at this commit · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- S3-05 is done, and with it the owner's overnight chain. S3-05b (D-244): the pick that stores a
-  caught or carried player (`Kept.choose`) now skips any shut unit a player's body stands in,
-  free or caught (`Kept.Unit.someone`, filled by `KeptPlayers`' `someoneIn`); Studio stand-ins
-  count too. Seen in Studio Play: with stand-ins in 20 of floor 1's 23 free units, six catches
-  all went into the empty three; with 24 of floor 2's filled, a carry did too. Three real
-  players wait on `OWNER.md` ("Never put in with a friend", in the carried-up section).
-- `ServerStorage.CatchTest` works again once you stand on the floor (STUDIO.md "Testing where a
-  catch stores you"): from the front office it says "NoKeeper".
-- F-G1b is done but for F-G1b3c (the RC car), which waits on `OWNER.md`.
-- Find art (`art/finds/WAVES.md`): F-05d3 done: the galaxy goo ball, a faintly glowing nebula
-  ball whose stars swirl when squeezed (imported; D-249: found glowing). The second run ends
-  here; F-05e (step 14) and F-05f (step 15) are left.
+- F-G1b3c1 is done (D-250): the desk lamp, night-light, moon, blob and glass lamps and the neon
+  sign each have a Switch anywhere, lit a minute (`Use.LampLasts`), keeping what's left when off,
+  fading out by their switch-off when spent. Seen in Studio Play: the desk lamp on, off (31 s
+  kept), on again, out after its time and no press after; the neon sign stutters on and buzzes.
+- The owner made the RC car a recon car (D-250, ROADMAP F-G1b3c2 and c3): driven from a camera
+  on its hood through the halls and into open units, so a player hiding in a unit can watch for
+  monsters or look for finds; the collector (the Packrat) steals it. Defaults in D-250 (no range,
+  no battery, monsters don't hear it, no headlight); the owner said "go ahead" to them.
+- Find art (`art/finds/WAVES.md`): the second run ended at F-05d3, the galaxy goo ball;
+  F-05e (step 14) and F-05f (step 15) are left.
 
-## Next task: S4-02 Monsters by lowest floor
-The moment: a climb that keeps changing under you. Floor 1 teaches the Mannequin alone; higher
-up, monsters you've met before turn up mixed together, so no two climbs feel the same.
-Much of it exists: `Deal.Keepers` lists each dealt monster with the floor it joins (`from`) and
-`keeperFrom` (Deal.luau, grep "local function keeperFrom") draws at random among those joined;
-the Packrat is one a floor from 3 (`Deal.Packrat`, grep "Deal.Packrat.from"). D-226 left both
-for this ticket.
-1. Read ROADMAP S4-02 and the GDD's "The monsters" and "Floor rules" sections (docs tools, only
-   those). Write down what the GDD asks that today's code doesn't do.
-2. Move each monster's lowest floor onto its row in `KeeperRows` (one row says everything about
-   a monster, D-064), and have `Deal` read it there; `Deal.Keepers` and `Deal.Packrat.from` go.
-3. "Above it the game mixes it in at random": if the GDD gives a rule for how often each
-   monster appears past its floor, build it into `FloorRules` (a named step or a curve, as
-   S4-01 did); if not, keep today's draw, pick a sensible default and add an `OWNER.md` line.
-4. Lune specs first (`tests/deal.spec.luau` or `tests/floorrules.spec.luau`): no monster ever
-   appears below its lowest floor, from floor 1 to 300; above it each comes up.
-5. Studio: lay floors 1, 3 and 8 (`DevFloorNumber` in Edit) and read Output's "asleep behind
-   shut doors" lines for which monsters each floor got.
-**Acceptance:** checks green; the spec fails before and passes after any change to the draw;
-Output in Play shows the right monsters per floor; anything without a precedent in a hit game
-goes to `OWNER.md`, not built.
-**Read first:** ROADMAP S4-02 (grep "S4-02"); `src/shared/KeeperRows.luau` (the `Row` type,
-lines 1-80); `src/shared/Deal.luau` (grep "Deal.Keepers", "keeperFrom", "Deal.Packrat");
-`src/shared/FloorRules.luau` lines 1-60; D-226 (grep "^## D-226" docs/DECISIONS.md); the GDD's
-"The monsters".
+## Next task: F-G1b3c2 Drive the RC car
+The moment: you crouch in a unit with the door half down, and through a camera on the car's hood
+you watch the hall for what's coming. Precedent: Rainbow Six Siege's drones.
+1. Read ROADMAP F-G1b3c2 and D-250. Check `docs/FRAMEWORK.md` for anything Brix has for a
+   vehicle, a camera swap or taking over the move stick before building one.
+2. If it won't fit one session, split it in ROADMAP first (say, driving on your screen and the
+   hood camera; then the server's checks and friends seeing it).
+3. The pure core first, with a Lune spec: the car's step (throttle and steering in, a speed and
+   turn cap, stopping at walls and shut doors), as the toy car's walk is pure today.
+4. Server: Drive sets the car down in front of you, as the toy car's Push does (`down`), then
+   moves it by the driver's input, checking every move (rate-limited, speed-capped, no walls).
+   Pick the way that's smooth on a phone and still checked (network ownership with the server
+   checking, or the server stepping input), verify the API, and note it in `docs/STUDIO.md`.
+   Your body crouches still with the transmitter; caught, the drive ends.
+5. Client: the view moves to the hood (low, wide, a jolt on bumps); the move stick drives; a
+   button brings you back and the car stays. A motor whine rising with speed.
+6. Studio Play: drive from the lobby down a hall into an open unit; it stops at a shut door;
+   walk back to it and take it.
+**Acceptance:** checks green; the step's spec fails before and passes after; seen in Studio Play
+driving into a unit and stopping at a shut door; a friend's view and the phone stick go to
+`OWNER.md` as exact steps.
+**Read first:** ROADMAP F-G1b3c2 (grep "F-G1b3c2"); D-250 (grep "^## D-250" docs/DECISIONS.md);
+`src/shared/Finds/Use.luau` (grep "DiecastCar", "down"); `src/server/FindUses.luau` (grep "down",
+the toy car's walk); `src/shared/Finds/Sets/Figures.luau` lines 10-130 (the RC car's parts and
+its Launch, Drive and Stop motions); `docs/FRAMEWORK.md`.
 
 ## Queue (next sessions, the owner's ticket order)
-1. After S4-02: S4-03 the choice on the elevator's buttons, S4-04 trapping pays (5 coins a
-   trapped monster), S4-05 the big find.
-2. F-G1b3c the RC car drives off its transmitter, if the owner says so (`OWNER.md`).
-3. Once the owner's real purchase passes: mark Brix's ENG-23e done in `../engine`'s HANDOFF.
-4. Trips stands every late arrival or respawn on the one arrival spot; two at once overlap
+1. F-G1b3c3 the collector steals the car (ROADMAP), right after F-G1b3c2.
+2. S4-02 monsters by lowest floor (its plan is in ROADMAP), then S4-03 the choice on the
+   elevator's buttons, S4-04 trapping pays (5 coins a trapped monster), S4-05 the big find.
+3. The item catalog doc still says "at home" for the six lamps and the RC car; `WAVES.md` has
+   the new lines (D-250). Bring the doc in line when it's next opened.
+4. Once the owner's real purchase passes: mark Brix's ENG-23e done in `../engine`'s HANDOFF.
+5. Trips stands every late arrival or respawn on the one arrival spot; two at once overlap
    until physics pushes them apart. Spread them (`ClimbEnd.spot`) as the carry's fallback does.
-5. Small (ROADMAP lists them): the finds' press sounds and hand (F-G1b2 polish), the monkey and
-   toy car's polish (F-G1b3a); B-05b2b's box round the bend; L-08e3c, L-14b2d wait; S3-04b's
-   polish; Free Everyone's swap sound; `sell*` Config warnings, a dropped find bumps a walker
-   (D-182), the save's "best floor" still 0 after a ride, S1-07a to S2-07b2 leftovers, box
-   words (D-215).
+6. Small (ROADMAP lists them): the lamps going out, the finds' press sounds and hand, the monkey
+   and toy car's polish; B-05b2b's box round the bend; L-08e3c, L-14b2d wait; S3-04b's polish;
+   Free Everyone's swap sound; `sell*` Config warnings, a dropped find bumps a walker (D-182),
+   the save's "best floor" still 0 after a ride, S1-07a to S2-07b2 leftovers, box words (D-215).
 
 ## Kickoff for the next agent
 ```text

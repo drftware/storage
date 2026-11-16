@@ -254,6 +254,11 @@ verified: a doc page, Studio, or "untested".
   drops it (it landed 2 studs behind you). The drop's clank woke the Mannequin; it froze 9.5 studs
   from the lantern ("freezes in the light of a find on the floor") and "walks on" as it ran down.
   Park at (0, 400, 0) anchored after the drop, or it catches you once the light's out.
+- **Reading whether your own held find is lit, from the MCP** (F-G1b3c1, Nov 16): its lights
+  shine on your view's copy (`Workspace.YourTool`), so `HeldTool`'s stay disabled even when lit.
+  Each light sits in a `Light{i}` attachment under its part, and a part's glow is its
+  SurfaceAppearance's `EmissiveStrength`, not its Material. Shorten a press from the Server by
+  setting the held model's `UseAt` to `workspace:GetServerTimeNow()` and `UseLeft` to 2.
 - **Waking one sleeper on purpose** (B-05b2b): Workspace `GiveFind` set to "AirHorn" puts the
   horn in your hand; a Client `ReplicatedStorage.Remotes.ToolUse:FireServer()` blows it, and
   every keeper in reach wakes and comes to look. Stand at the unit's doorway; sample the keeper

@@ -1579,21 +1579,21 @@ A light set down switched on lights the space round it until it runs down. Wheth
 
 | Find | Grade | What it does | Notes | Built |
 |---|---|---|---|---|
-| Plug-in night-light | Common | Switch on (at home): a soft glow by the floor | Frosted ribbed shade | Nov 15, F-02a |
+| Plug-in night-light | Common | Switch on: a soft glow by the floor, for about a minute (D-250) | Frosted ribbed shade | Nov 15, F-02a |
 | Tea light in a jar | Common | Light: a small glow for about a minute |  | Nov 15, F-02b |
-| Desk lamp | Common | Switch on (at home): a warm pool of light | Needs a socket, so only at home | Nov 15, F-01 |
+| Desk lamp | Common | Switch on: a warm pool of light, for about a minute (D-250) |  | Nov 15, F-01 |
 | Bundle of glow sticks | Common | Crack: one stick lights a small spot for the rest of the floor; three to a bundle | The glow sticks from the Nov 2 draft | Nov 15, F-02c |
 | String fairy lights | Uncommon | Switch on: lay them along a hall for a dim line of light |  | Nov 15, F-02c |
 | Camping lantern | Uncommon | Switch on: a wide light for 90 seconds |  | Nov 15, F-02d |
-| Moon lamp | Uncommon | At home: it glows; tap it to change its phase |  | Nov 15, F-02e |
-| Blob lamp | Uncommon | At home: coloured blobs rise and fall |  | Nov 15, F-02f |
+| Moon lamp | Uncommon | Switch on: it glows for about a minute (D-250); at home, tap it to change its phase |  | Nov 15, F-02e |
+| Blob lamp | Uncommon | Switch on: coloured blobs rise and fall, for about a minute (D-250) |  | Nov 15, F-02f |
 | Oil lamp | Rare | Light: warm light that runs down slowly | Fragile | Nov 15, F-02g |
 | Disco ball | Rare | Spin: spots of light race round the walls |  | Nov 15, F-02h |
-| Neon OPEN sign | Rare | At home: it buzzes and glows pink |  | Nov 15, F-02i |
+| Neon OPEN sign | Rare | Switch on: it buzzes and glows pink, for about a minute (D-250) |  | Nov 15, F-02i |
 | Miner's hard hat | Rare | Wear: a lamp on your head lights whatever you look at, for a minute | A light that leaves your hands free | Nov 15, F-02j |
 | Jar of fireflies | Epic | Open: fireflies drift out and light the unit for a minute, then they're gone |  | Nov 15, F-02k |
 | Theatre spotlight | Epic | At home: point it at your best find | Big find | Nov 15, F-02l |
-| Stained-glass lamp | Legendary | At home: it throws coloured patterns on your walls | Fragile | Nov 15, F-02m |
+| Stained-glass lamp | Legendary | Switch on: it throws coloured patterns on the walls, for about a minute (D-250) | Fragile | Nov 15, F-02m |
 | A lamp that's on when you find it | Secret | It never runs down | Loose only, floor 25 up. In a power cut it's the only light on the floor || Nov 15, F-02n |
 
 ## Cars from Figures and models (2 of 14) · F-03
@@ -1603,7 +1603,7 @@ Pulled forward from wave 4 because the owner named the RC car (Nov 14).
 | Find | Grade | What it does | Notes | Built |
 |---|---|---|---|---|
 | Die-cast car | Common | Push: it rolls off down the hall | Our own late-1960s saloon (D-200) | Nov 15, F-03b |
-| Remote-control car | Rare | Drive (at home): round your unit and out into the hall of units | With its transmitter (D-193) | Nov 15, F-03a |
+| Remote-control car | Rare | Drive: steer it down the halls and into open units, seeing from its hood; the collector steals it (D-250) | With its transmitter (D-193) | Nov 15, F-03a |
 
 ## Wind-ups and noisemakers (14) · F-04
 

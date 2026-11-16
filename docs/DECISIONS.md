@@ -6359,3 +6359,29 @@ use, but which can't make a dent.
 - **So:** whatever lays a find in a unit (a game ticket) must set each glowing part's
   `EmissiveStrength` and enable its lights from their rest keys, not leave them at the
   template's 0 and disabled.
+
+## D-250 · 2026-11-16 · The lamps switch on anywhere; the RC car is driven, a recon car the collector steals (F-G1b3c)
+
+The owner answered D-229's and D-233's defaults: the lamps the catalog kept for home work in the
+building too, and the RC car "serves an actual purpose": you drive it yourself through the halls
+and into any open unit, seeing from a camera on its hood, so a player can hide in a unit and use
+it to watch for monsters or look for finds. The collector (the Packrat) can and will steal it.
+At home you drive it too.
+
+- **Precedent:** Rainbow Six Siege's drones (a small car driven from its own camera while your
+  body stands defenceless); the Packrat taking a loose find is ours already (S2-06b).
+- **The lamps (built, F-G1b3c1):** each a switch (`Use.Rows`, `lamp`), lit `Use.LampLasts` (60 s,
+  D-188's minute for a light, so the 90 s lantern is still the long one), keeping what's left
+  when switched off. None has a motion for running down, so a spent lamp fades by its
+  switch-off, silent; a flicker of its own is ROADMAP polish. The moon lamp's phase tap and the
+  theatre spotlight stay at home.
+- **The car's defaults** (proposed Nov 16; the owner replied "go ahead"): no range limit and no
+  battery, as Siege's drones have neither; players hear its motor, monsters don't (a car they
+  heard would be a weaker cymbal monkey); no headlight, since light stops the Mannequin and a
+  headlight would stop it from anywhere; only the collector cares about it; taken, it goes on
+  the pile, there to take back as any find is; a friend picking it up ends your drive; left on
+  the floor when the elevator goes, it's lost with the floor.
+
+Not chosen: the lamps never running down (a common desk lamp would beat the lantern); a
+signal range that fades the hood camera to static (Siege has none, and a hidden player should
+be able to scout the whole floor).
