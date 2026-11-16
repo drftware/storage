@@ -69,7 +69,8 @@ lacquered tin key worn to steel at its edges with specks of rust. Dust 0.35 grey
 A tin music box of the 1950s: a printed tin cube with rolled corner seams, a shallow lid on a
 wire hinge at the back, yellow inside, held shut by a sprung nickel catch at the front, a wire
 crank with a turned red knob on the right side, and a clown on a cloth-covered spring inside.
-Ours is no maker's character: each side prints a playing card's suit in a cream panel inside a
+Ours is no maker's character: each side prints a playing card's suit in a cream panel (with a card's
+corner indices, a J over a small pip top left and turned round bottom right, F-04k) inside a
 coloured border of marquee dots (spade red-bordered at the front, heart green on the crank's
 side, diamond blue at the back, club mustard on the left: a jack in a box), the lid a red and
 yellow sunburst round a star; the jack wears red-and-cream harlequin diamonds, a two-tier ruff
@@ -561,8 +562,8 @@ white cord and ring; our red-star tag in the right side seam. Nothing of a famou
 `SingingFish`, F-04i (Nov 16), D-242. A singing wall plaque of our own: a slate-blue speckled
 channel catfish in glossy painted latex (cream belly, a faint lateral line, a soft gill fold,
 amber eyes, thin lips the head's own grey, two long drooping barbels, two short nose ones, four
-pale chin whiskers, ray-painted fins, a forked tail curled off the board) on an arched honey-oak
-board with a routed edge, leaning back on a fold-out leg; a brass oval plate engraved with a
+pale chin whiskers, ray-painted fins, a forked tail curled off the board) on an arched pale
+honey-oak board (made paler in F-04k: in Roblox's dim unit the darker oak hid the fish) with a routed edge, leaning back on a fold-out leg; a brass oval plate engraved with a
 leaping fish over two waves (no words), a red button in a black bezel lower right, a drilled
 speaker grille lower left; behind, a black battery box held by four screws, its ribbed door,
 our red star, and a keyhole hanger routed in the raw back. Nothing of the famous bass.

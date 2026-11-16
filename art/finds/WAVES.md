@@ -6,9 +6,7 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04k, a Studio look at all 14 Wind-ups together in a unit at phone size (step 9).
-The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders
-OilLamp` when next touched.
+**Next:** F-05a, bones in the kit, proven on the squishy butter stick (step 10).
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -46,7 +44,7 @@ changes the table's order a little.
 8. **F-04j** (built Nov 16) Wind-up tin carousel alone (Epic, the most parts: a printed canopy turning on a
    centre pole, three or four horses rising and falling out of step, the tune slowing as it runs
    down, timed from a music-box video).
-9. **F-04k** A Studio look at all 14 Wind-ups together in a unit at phone size; fix what reads
+9. **F-04k** (done Nov 16) A Studio look at all 14 Wind-ups together in a unit at phone size; fix what reads
    badly. Also the jack-in-the-box's playing-card corners and the oil lamp's sheets. Ticks F-04.
 10. **F-05a** Bones in the kit, proven on the squishy butter stick (squeeze: a dent that slowly
     fills back in). CRAFT.md: a find that bends in places needs bones. Check in Studio first that
@@ -89,6 +87,48 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04k (the 14 Wind-ups judged together in Studio; step 9 done; F-04 ticked).**
+  All 14 imported fresh with `Kit.import` (the chattering teeth and the farm-animal spinner had
+  never been; every part's pivot and size matched the Luau). Stood in a medium unit's light (a
+  clone of `Units.M` at (600, 0.5, 600), door parts gone, a bulb at 0.6, range 11), three rows,
+  captured from the doorway at eye height and up close. **Read at a glance from the doorway:**
+  the cowboy doll (hat and face), the farm spinner (red barn, white dial), the tin carousel, the
+  jack-in-the-box, the drum (zigzag cord), the duck (yellow); the robot and the monkey read as
+  figures, darker (the monkey sat in the dim corner). The teeth, mouse, kazoo and tin bird are
+  specks from the doorway, as CRAFT.md expects, and read up close (the teeth's red gums, the
+  mouse's key, the bird's print). **Sizes** sit right beside each other (the cowboy 12.5 in
+  sitting, the monkey 10.6, the carousel 8.5, the robot 7.4, the duck 3.4). **Glow:** the siren
+  car's beacon on (strength 2.5, its Spot 1.4 and Point 0.4) puts a red pool and streak on the
+  floor about as bright as the bulb's light there, no brighter: kept. **Fixed:** the singing
+  fish's honey-oak board went dark red-brown in Roblox's dim light (the Blender `-unit` sheet
+  showed it orange), so the slate fish vanished into it from the doorway: the oak is paler
+  (#E6BC80 to #B98149, `fish.py`) and the fish now reads as a dark shape on a board (STUDIO.md,
+  CRAFT.md "Judged in Roblox"). The jack-in-the-box's playing-card corners are in: a J over a
+  small pip top left, turned round bottom right, on every panel, in the suit's colour, read the
+  right way round on all four sides (`jack_look`'s `jay` and `suits`). Both re-baked, exported,
+  re-uploaded in place and re-imported; their sheets re-rendered (without filmstrips: the
+  motion didn't change); the oil lamp's sheets rendered too. **Drawn pose:** the
+  jack-in-the-box's template stands open, as drawn; it's found shut (its first key), so whatever
+  lays finds in units must pose each at its rest keys (CRAFT.md "Into Studio"). The duck's tail
+  crease doesn't show from behind at play size. **Trap, found and half fixed:** `build.py` is one
+  module, and later finds reused names earlier finds read when they're built: the siren car's
+  `NOSE = SL + 0.97 * SF` replaced the jack-in-the-box's `NOSE` kind, so its bake died ("float
+  object cannot be interpreted as an integer"); renamed `SNOSE`. Still clashing (each only bites
+  when that earlier find is rebuilt; the Luau and uploaded FBX are unaffected): `NECK` (the
+  monkey's pivot, replaced by the jack-in-the-box's), `SL`, `SR` (the monkey's arm axes, by the
+  siren car's), `AR` (by the spinner's arrow), `BW` (the jack-in-the-box's box, by the kazoo's
+  blow; read only where it's set), `FOOT` (the teeth's kind, by the tin bird's), `chaikin`,
+  `ankle`, `stud`, `HP` (the bird's hop, by the drum's hoop). Before rebuilding the monkey,
+  teeth, robot or bird, list them with an `ast` pass over `build.py`'s top-level names and give
+  the later ones a prefix. New finds go in their own module (the fish and carousel way).
+  **F-05a's hints (step 10, not researched):** a squishy butter stick, a slow-rise foam toy
+  about 5 in long, a pale yellow block with a half-peeled foil wrapper. Check bones in Studio
+  first, as the plan says: export a test FBX with an armature skinning a box, import it, move a
+  `Bone`'s `Transform` in Edit and see the mesh bend at phone size; write what you learn in
+  `docs/STUDIO.md`. The squeeze: a thumb-sized dent pressed in, then filling back over 5 to 10 s
+  (time it from a slow-rise squishy video). Start the squishies in a new set,
+  `art/finds/squishies/`.
 
 - **Nov 16, F-04j (the wind-up tin carousel built; step 8 done, the last wind-up; uploaded
   95828409843783 and imported).** `TinCarousel` in `windups/carousel.py`, now in `FINDS` for

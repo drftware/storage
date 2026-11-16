@@ -14,9 +14,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - `ServerStorage.CatchTest` works again once you stand on the floor (STUDIO.md "Testing where a
   catch stores you"): from the front office it says "NoKeeper".
 - F-G1b is done but for F-G1b3c (the RC car), which waits on `OWNER.md`.
-- Find art (`art/finds/WAVES.md`): all 14 wind-ups built; the tin carousel (F-04j) is imported.
-  Next F-04k, a Studio look at all 14 together (the farm-animal spinner is uploaded, not
-  imported). Stage HEAD plus your own lines only.
+- Find art (`art/finds/WAVES.md`): F-04 done: all 14 wind-ups imported and judged together in
+  Studio (F-04k). Next F-05a, bones in the kit, proven on the squishy butter stick. Stage HEAD
+  plus your own lines only.
 
 ## Next task: S4-02 Monsters by lowest floor
 The moment: a climb that keeps changing under you. Floor 1 teaches the Mannequin alone; higher

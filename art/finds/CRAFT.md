@@ -164,12 +164,18 @@ set's `build.py` as an example; you shouldn't need the kit's code.
      Attachment `Light<n>` in its part, facing `Face`, at full brightness and disabled. After
      changing Luau that Studio already required, require from a clone of `Shared` (STUDIO.md).
   3. The owner saves the place.
+  The template stands as drawn, not as found (F-04k): whatever lays a find in a unit poses
+  each part at its rest key first (the jack-in-the-box is drawn open, found shut with its jack
+  squashed inside; the tea light's flame found at scale 0).
 - **Judged in Roblox** (F-S1): **lights** no brighter than the unit's own bulb (0.6, range 11):
   a flame or a lantern about 0.7 to 0.8 at range 10 to 12, small glows less; the oil lamp at
   1.4, range 16, lit every wall of a unit brighter than its bulb. **Glass** below alpha 0.15 a
   wall vanishes (Roblox has no Fresnel to draw glass's edges): 0.18 outside, 0.12 inside read as
   a clear chimney with the wall showing through. **Small finds** (under about 6 inches) are
-  specks from a doorway when off; the bigger ones read off and on.
+  specks from a doorway when off; the bigger ones read off and on. **Value** (F-04k): Roblox's
+  bulb is darker and redder than the `-unit` sheet, so saturated reds and pale faces read and
+  mid browns go dark: a tell drawn as a shape on a background (the fish on its plaque) needs the
+  two far apart in value.
 
 ## Things that move or light
 

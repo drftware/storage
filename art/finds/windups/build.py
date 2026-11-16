@@ -858,26 +858,56 @@ def jack_look(L, f):
     panel = nb.mul(side, nb.sub(1.0, nb.ss(d, -0.8, -0.6)))
     C.paint(nb.mul(panel, nb.mul(rays, 0.5)), hexc("#E3D2A6"), 0.3)
 
-    def stem(top):
-        w = nb.add(0.09, nb.mul(nb.mx(nb.sub(top, Y), 0.0), 0.62))
-        inside = nb.sub(1.0, nb.ss(nb.sub(X, w), -0.02, 0.02))
-        return nb.mul(inside, nb.mul(nb.ss(Y, -1.47, -1.43), nb.sub(1.0, nb.ss(Y, top - 0.05, top))))
+    def suits(X, Y, s):
+        """The four suits drawn about (0, 0) in units of the pip's size; X is |across|; s the
+        edge's softness in those units."""
+        def stem(top):
+            w = nb.add(0.09, nb.mul(nb.mx(nb.sub(top, Y), 0.0), 0.62))
+            inside = nb.sub(1.0, nb.ss(nb.sub(X, w), -s, s))
+            return nb.mul(inside, nb.mul(nb.ss(Y, -1.47, -1.43),
+                                         nb.sub(1.0, nb.ss(Y, top - 0.05, top))))
 
-    def lobes(Yl, cy):
-        """Two round lobes on a triangle coming to a point 1.35 below them (Yl up)."""
-        c = disc(X, Yl, 0.47, cy, 0.5, 0.012)
-        tri = nb.sub(1.0, nb.ss(nb.sub(nb.mul(X, 1.42), nb.add(Yl, 1.35 - cy)), -0.015, 0.015))
-        under = nb.sub(1.0, nb.ss(Yl, cy - 0.02, cy + 0.02))
-        return nb.mx(c, nb.mul(tri, under))
+        def lobes(Yl, cy):
+            """Two round lobes on a triangle coming to a point 1.35 below them (Yl up)."""
+            c = disc(X, Yl, 0.47, cy, 0.5, s * 0.6)
+            tri = nb.sub(1.0, nb.ss(nb.sub(nb.mul(X, 1.42), nb.add(Yl, 1.35 - cy)), -s * 0.75, s * 0.75))
+            under = nb.sub(1.0, nb.ss(Yl, cy - s, cy + s))
+            return nb.mx(c, nb.mul(tri, under))
 
-    hrt = lobes(Y, 0.3)
-    spade = nb.mx(lobes(nb.sub(0.0, Y), 0.25), stem(-0.45))
-    diam = nb.sub(1.0, nb.ss(nb.add(nb.div(X, 0.78), nb.div(nb.absf(Y), 1.12)), 0.985, 1.015))
-    club = nb.mx(nb.mx(disc(X, Y, 0.0, 0.52, 0.47, 0.012), disc(X, Y, 0.5, -0.18, 0.47, 0.012)),
-                 nb.mx(disc(X, Y, 0.0, 0.05, 0.3, 0.012), stem(-0.3)))
-    for m, pip, c in ((fr, spade, "#1D1B1C"), (rt, hrt, "#B92B26"), (bk, diam, "#B92B26"),
-                      (lf, club, "#1D1B1C")):
-        C.paint(nb.mul(nb.mul(panel, m), pip), nb.tint(hexc(c), tone), 0.28)
+        hrt = lobes(Y, 0.3)
+        spade = nb.mx(lobes(nb.sub(0.0, Y), 0.25), stem(-0.45))
+        diam = nb.sub(1.0, nb.ss(nb.add(nb.div(X, 0.78), nb.div(nb.absf(Y), 1.12)),
+                                 1.0 - s * 0.75, 1.0 + s * 0.75))
+        club = nb.mx(nb.mx(disc(X, Y, 0.0, 0.52, 0.47, s * 0.6), disc(X, Y, 0.5, -0.18, 0.47, s * 0.6)),
+                     nb.mx(disc(X, Y, 0.0, 0.05, 0.3, s * 0.6), stem(-0.3)))
+        return spade, hrt, diam, club
+
+    def box(a, b, a0, a1, b0, b1, s=0.15):
+        return nb.mul(nb.mul(nb.ss(a, a0 - s, a0 + s), nb.sub(1.0, nb.ss(a, a1 - s, a1 + s))),
+                      nb.mul(nb.ss(b, b0 - s, b0 + s), nb.sub(1.0, nb.ss(b, b1 - s, b1 + s))))
+
+    def jay(a, b):
+        """A serif J 8 mm tall about (0, 0) (mm, a to the reader's right, b up)."""
+        s = 0.15
+        ring = nb.math("SQRT", nb.add(sq(a), sq(nb.add(b, 1.2))))
+        bowl = nb.mul(nb.mul(nb.ss(ring, 1.0 - s, 1.0 + s), nb.sub(1.0, nb.ss(ring, 2.4 - s, 2.4 + s))),
+                      nb.sub(1.0, nb.ss(b, -1.2 - s, -1.2 + s)))
+        return nb.mx(nb.mx(box(a, b, 1.0, 2.4, -1.25, 4.0), box(a, b, -0.4, 3.6, 2.85, 4.0)),
+                     nb.mx(bowl, box(a, b, -2.4, -1.0, -1.25, -0.3)))
+
+    big = suits(X, Y, 0.02)
+    # the corner indices, as on a real card: a J over a small pip top left, the same turned
+    # round bottom right (signed across, the reader's right, on every side)
+    us = nb.add(nb.sub(nb.mul(xm, fr), nb.mul(xm, bk)), nb.sub(nb.mul(ym, rt), nb.mul(ym, lf)))
+    corner = []
+    for a, b in ((nb.add(us, 46.0), nb.sub(v, 39.0)), (nb.sub(46.0, us), nb.sub(-39.0, v))):
+        small = suits(nb.absf(nb.div(a, 3.6)), nb.div(nb.add(b, 10.0), 3.6), 0.05)
+        corner.append((jay(a, b), small))
+    for i, (m, c) in enumerate(((fr, "#1D1B1C"), (rt, "#B92B26"), (bk, "#B92B26"), (lf, "#1D1B1C"))):
+        ink = big[i]
+        for j, sm in corner:
+            ink = nb.mx(ink, nb.mx(j, sm[i]))
+        C.paint(nb.mul(nb.mul(panel, m), ink), nb.tint(hexc(c), tone), 0.28)
     # the bottom and the rim: bare tin, gold-lacquered
     bare = nb.mul(litho, nb.mx(nb.ss(nb.sub(0.0, L.nz), 0.6, 0.8),
                                nb.mul(nb.ss(L.nz, 0.5, 0.8), nb.ss(zm, BH - 2.0, BH - 1.0))))
@@ -3368,7 +3398,7 @@ SYA = (-SC["wheelbase"] / 2, SC["wheelbase"] / 2)     # the front and rear axles
 SAZ = SC["tyre"]["od"] / 2                            # the axles' height: tyres on the floor
 SHM = SC["roof"] - SC["deck"]                         # the greenhouse's full height
 SF = SC["fine"]                                       # the die-cast car's small offsets, scaled
-NOSE = SL + 0.97 * SF                                 # the rounded ends reach this far out
+SNOSE = SL + 0.97 * SF                                 # the rounded ends reach this far out
 BEA = SC["beacon"]
 
 
@@ -3532,7 +3562,7 @@ def bumper_path(sg, hi):
     a little way down one side round to the other, running so its outside is on its right."""
     c, hw = SC["corner"], SC["half_w"]
     g = 0.5
-    rx, ry = c + g, c + (NOSE - SL) + g
+    rx, ry = c + g, c + (SNOSE - SL) + g
     yc = sg * (SL - c)
     wrap = 5.0
     na = 10 if hi else 4
@@ -3575,14 +3605,14 @@ def sc_body(hi):
         sec = [sec[0], sec[1], sec[3], sec[5], sec[7], sec[8]]
     for sg in (-1, 1):
         sweep(s, bumper_path(sg, hi), sec, SC_BRIGHT)
-        yo = sg * (NOSE + 0.5)
+        yo = sg * (SNOSE + 0.5)
         for sd in (-1, 1):
             y0, y1 = sorted((yo, yo + sg * (d + 1.3)))
             s.box(V(sd * 12.0 - 1.7, y0, z0 - 0.8), V(sd * 12.0 + 1.7, y1, z1 + 1.6), SC_BRIGHT,
                   mm(0.9), 2 if hi else 1)
     # the grille across the nose, its headlamps standing proud in each end
     gr = SC["grille"]
-    s.box(V(-gr["half"], -NOSE - 0.9, gr["z"][0]), V(gr["half"], -NOSE + 3.0, gr["z"][1]),
+    s.box(V(-gr["half"], -SNOSE - 0.9, gr["z"][0]), V(gr["half"], -SNOSE + 3.0, gr["z"][1]),
           SC_BRIGHT, mm(0.7), 2 if hi else 1)
     la = SC["lamp"]
     R = la["r"]
@@ -3590,7 +3620,7 @@ def sc_body(hi):
             (R * 0.62, 1.6), (R * 0.32, 1.95), (0.0, 2.05)]
     kinds = [SC_BRIGHT] * 4 + [SC_LENS] * 3
     for sd in (-1, 1):
-        M = T(V(sd * la["x"], -NOSE - 0.9, la["z"])) @ Matrix.Rotation(math.radians(90), 4, "X")
+        M = T(V(sd * la["x"], -SNOSE - 0.9, la["z"])) @ Matrix.Rotation(math.radians(90), 4, "X")
         s.lathe([(mm(r), mm(z)) for r, z in prof], SC_BRIGHT, segs(hi, 16), M, kinds=kinds)
     # the roof light's pressed tin base
     zr = sc_roof_z(BEA["y"])

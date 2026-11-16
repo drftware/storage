@@ -2402,13 +2402,14 @@ actions themselves and dealing the new finds on floors are later game tickets.
     from the door and a chime, an Epic's purple light spilling as the door rolls up, a
     Legendary's gold light under the door before it opens, heard by the team. Needs the owner's
     look; the copy of what each grade is stays off screen (no text that explains a rule).
-- [ ] **F-04 Wind-ups and noisemakers.** Built, in `art/finds/windups/`: F-04a the cymbal monkey,
+- [x] **F-04 Wind-ups and noisemakers.** Built, in `art/finds/windups/`: F-04a the cymbal monkey,
   F-04b the jack-in-the-box, F-04c the chattering teeth (Nov 15), F-04c2 the walking robot,
   F-04d the wind-up mouse, F-04d2 the clockwork tin bird, F-04e the toy siren car and F-04e2 the
   squeaky rubber duck, F-04f the kazoo, F-04f2 the toy drum, F-04g the farm-animal spinner and
   F-04h the pull-string cowboy doll, F-04i the singing fish plaque and F-04j the wind-up tin
-  carousel (Nov 16, D-245). Next F-04k, a Studio look at all 14 together, as
-  `art/finds/WAVES.md`'s second run plans.
+  carousel (Nov 16, D-245). F-04k (Nov 16): all 14 imported and judged together in a lit
+  unit in Studio; the fish plaque's board made paler so its fish reads, the jack-in-the-box's
+  playing-card corners added (`art/finds/WAVES.md`, its note).
 - [ ] **F-05 Squishies.**
 - [ ] **F-06 Plush.**
 - [ ] **F-07 Night Shift Minis and their blind box.**

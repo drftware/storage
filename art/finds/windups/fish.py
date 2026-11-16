@@ -597,7 +597,8 @@ def fish_look(L, f):
         p = Vector(p) * K.STUD_MM
         return nb.math("SQRT", nb.add(nb.add(sq(nb.sub(xm, p.x)), sq(nb.sub(ym, p.y))), sq(nb.sub(zm, p.z))))
 
-    # --- the board: honey oak under a clear varnish; the raw back paler and dry
+    # --- the board: pale honey oak under a clear varnish; the raw back paler and dry. Pale so
+    #     the slate fish stands out on it in a dim unit (F-04k: at #CC975A it went dark in Roblox)
     face, edge, back = L.k(FS_FACE), L.k(FS_WOOD), L.k(FS_BACK)
     wood = nb.mx(nb.mx(face, edge), back)
     rings_ = L.noise(46.0, 3, stretch=(0.045, 1.0, 1.0), detail=3, distortion=0.4)
@@ -608,16 +609,16 @@ def fish_look(L, f):
     flecks = nb.mul(nb.ss(L.noise(120.0, 7, stretch=(0.35, 1.0, 1.0), detail=2), 0.66, 0.72),
                     nb.ss(L.noise(30.0, 8), 0.4, 0.6))
     tone = nb.mr(L.noise(6.0, 9, detail=2), 0.3, 0.7, 0.9, 1.08)
-    OAK = nb.tint(nb.mixc(late, hexc("#CC975A"), hexc("#94592A")), tone)
+    OAK = nb.tint(nb.mixc(late, hexc("#E6BC80"), hexc("#B98149")), tone)
     C = Coat(L, OAK, 0.24, 0.0, 0.0)
     C.paint(nb.mul(wood, nb.mul(pores, nb.add(0.2, nb.mul(late, 0.4)))), hexc("#6E4320"), 0.3, None, fs_h(-0.05))
-    C.paint(nb.mul(wood, nb.mul(flecks, 0.5)), hexc("#D9AE73"))
+    C.paint(nb.mul(wood, nb.mul(flecks, 0.5)), hexc("#F0D3A0"))
     C.paint(wood, None, None, None, nb.mul(late, fs_h(0.03)))
     # varnish rubbed thin on the routed edge's bead and the corners, a few dings in the face
     rub = nb.mul(nb.mul(edge, L.edge(0.006, k=4.0)), nb.ss(L.noise(16.0, 10, detail=3), 0.45, 0.62))
-    C.paint(nb.mul(rub, 0.7), hexc("#D7AA6E"), 0.5)
+    C.paint(nb.mul(rub, 0.7), hexc("#EDCC98"), 0.5)
     ding = nb.mul(face, nb.ss(L.noise(55.0, 11, detail=3), 0.74, 0.78))
-    C.paint(nb.mul(ding, 0.6), hexc("#7E5229"), 0.42, None, fs_h(-0.25))
+    C.paint(nb.mul(ding, 0.6), hexc("#946537"), 0.42, None, fs_h(-0.25))
     C.paint(back, nb.tint(hexc("#C9A272"), nb.mr(late, 0.0, 1.0, 1.05, 0.86)), 0.78)
     # the speaker grille lower left: holes drilled through the face in a ring
     gx, gz = FI["grille"]["at"]

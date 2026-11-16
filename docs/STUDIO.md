@@ -119,6 +119,12 @@ verified: a doc page, Studio, or "untested".
   draw (F-02m, Nov 15): the stained-glass lamp's three coloured SpotLights (Angle 70,
   Brightness 0.5, Range 9, facing out and a little down) each put a clear patch of colour on a
   unit's walls in an Edit capture, and its Angle 110 Spot down lit the floor.
+- **A unit's bulb in Roblox is darker and redder than the Blender `-unit` sheet** (F-04k, Nov 16):
+  the singing fish's honey-oak board (#CC975A to #94592A) read orange behind a dark fish in
+  Blender, but dark red-brown in Studio, the slate fish lost on it from the doorway, while the
+  saturated reds (the barn spinner, the drum) and pale faces read. A find whose tell is a shape
+  on a background needs the two far apart in value; judge it in Studio. A face that leans away
+  from the bulb (the plaque stood in front of it) goes near black: that's light, not the art.
 - **A freshly uploaded glow mask draws black for about a minute** (F-02n, Nov 15): the Secret
   lamp's shade, imported three minutes after its upload, showed black in an Edit capture with
   `EmissiveStrength` 1.4 and the mask set; a minute later (strength toggled 0 and back) it glowed.
