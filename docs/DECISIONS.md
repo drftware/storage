@@ -6319,3 +6319,15 @@ Not chosen: a pressed piece that sinks and rises (it would show its seam on a so
 plush needs bones anyway); a whole-body squash (`stretch`), which the stress ball and mochi will
 use, but which can't make a dent.
 
+## D-247 · 2026-11-16 · The stress ball is ours, and its eyes ride the squash as their own parts
+- **What:** the stress ball with a face (F-05b) is a lime-green vinyl eye-popper ball of our
+  own: two white bubble eyes in soft rubber lips, black pupils crossed a little, a thin printed
+  grin with a dimple at each end; no famous character's face, colour or ears. Each eye is its
+  own part on the ball (`EyeL`, `EyeR`), pivoting on its middle, its axis straight out of its
+  socket: a squeeze squashes the whole ball (`stretch`), and each eye goes out along its axis
+  and swells (`move`, `scale`) while stretching against the ball's squash so it stays round.
+- **Why:** the catalog's action is "its eyes bulge out"; the real toys push their eyes out of
+  the face on air. A child part rides its parent's squash in the kit's pose (Blender and
+  `Pose.solve` alike), so a part that must keep its own shape on a squashed body counters it
+  with its own stretch (here 1/s to the 0.9). The eyes are baked `alone`, so the dark inside of
+  the ball never shades the white that comes out of it.

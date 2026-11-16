@@ -34,3 +34,36 @@ the dent's sides catch the light in Roblox. The ticks over the top dip into it.
 
 **In Studio.** Uploaded (91493472138143) and imported with its eight bones (the root and seven);
 the dent posed from a script shows in Edit (docs/STUDIO.md "Bones").
+
+## Stress ball with a face (F-05b, Nov 16)
+
+**References.** Rubber eye-popper squeeze balls: a promo smiley ball 1.75 in across, glossy blue
+vinyl with two big white bubble eyes standing proud of the face and a thin printed black grin
+(qualitylogoproducts.com/stress-balls/smilin-eye-poppin-pal.htm); a popping-eye squeeze toy with
+clear bubble eyes (target.com, Toy Planet Pop Eye Squeeze Toy, A-94979556); listings of sensory
+popping-eye balls at 2.76 in. Squeezed, the air inside shoves the eyes out of the face; let go,
+they pop back in.
+
+**Size.** 70 mm across (2.76 in): 0.276 studs, sitting 1.2 mm onto a small, soft flat spot.
+
+**Tells.** The lime-green ball; two big white eyes with crossed black pupils; the grin. From a
+unit's doorway it is a green speck (a small find); held, the face reads at once.
+
+**What it is.** `Body` (the root): a lathed ball (its face in the middle of a texture strip), a
+soft rubber lip round each socket, the mould's faint seam over its sides and top, a fill-plug
+ring under it. `EyeL` and `EyeR`: white rubber bubbles (most of a sphere and the neck hidden in
+the ball), each pivoting on its middle, its axis straight out of its socket, baked `alone` so
+the ball's dark inside never shades them. The grin is ink drawn in code on an equidistant map
+of the face (`sb_face_ink`), so its stroke is even all round the curve; the pupils are drawn by
+direction from each eye's middle, looking 17 degrees in and 9 up. 1024 texture at 1520 texels a
+stud; 5,072 triangles.
+
+**Squeeze** (1.22 s + 0.3): the fingers close (it bulges up a hair), it squashes to 0.68 tall in
+a quarter second, and a beat behind it each eye goes 7.6 mm out along its axis and swells 1.3
+times, the right a hair after the left; held; let go, the ball springs back past round and
+wobbles still while the eyes snap home a hair past and bounce once. Each eye stretches against
+the ball's squash (D-247) so it stays round.
+
+**In Studio.** Uploaded (87393666160557) and imported with both eyes on Motor6Ds; posed at the
+squeeze's peak from a script, the ball's size went to 0.68 tall and 1.21 wide and each eye's to
+about 1.27 times, round (D-247). Its positions move only in Play (Motor6D offsets).

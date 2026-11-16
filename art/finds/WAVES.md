@@ -6,7 +6,7 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-05b, the stress ball with a face, the mochi bun and the squishy toast slice (step 11).
+**Next:** F-05b2, the mochi bun and the squishy toast slice (the rest of step 11).
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -51,8 +51,8 @@ changes the table's order a little.
     a skinned MeshPart from our FBX imports and that moving its Bones bends it on a phone-size
     view; write what you learn in `docs/STUDIO.md`. If bones won't work in Roblox, record why and
     build the dent another way (a pressed piece that sinks and rises). Plush needs the same.
-11. **F-05b** Stress ball with a face (its eyes are their own parts, pushed out as it squashes),
-    mochi bun, squishy toast slice (springs back like bread). Whole-body squash, the tea light's
+11. **F-05b** Stress ball with a face (built Nov 16; its eyes are their own parts, pushed out as
+    it squashes), then, as **F-05b2**, the mochi bun and squishy toast slice (springs back like bread). Whole-body squash, the tea light's
     flame's `stretch`.
 12. **F-05c** Jumbo slow-rise strawberry (the same squash, ten seconds to rise), squishy capybara
     (a tiny happy sigh), paper squishy with a drawn face (crinkled paper, looks homemade).
@@ -87,6 +87,27 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-05b (the stress ball with a face built; uploaded 87393666160557 and imported).**
+  `StressBall` in `squishies/build.py` (prefix `sb_`/`SB_`, kinds 2 to 4; spec `STRESS`,
+  `SQUISH`, `POP`, `SWELL`); README section, D-247, `Order.luau`. A lime-green vinyl eye-popper
+  ball of our own, 70 mm, two white bubble eyes in rubber lips, pupils crossed a little, a
+  printed grin. Judged on quick sheets and full ones. **Found and fixed:** the pupils looked
+  outward (`Z x axis` points to +X, the ball's left: inward is `-across * side`); the filmstrip
+  camera stood too far back (0.95 now). **The trick, for any squishy with a part on it:** a
+  child part rides its parent's `stretch` (pose and `Pose.solve` alike), so give it its own
+  `stretch` keys at 1/s (here s to the -0.9) at the same times to keep its shape, and `alone=True`
+  so the parent's closed inside doesn't bake black onto what comes out of it. In Studio Edit a
+  pose script changes sizes but not positions (Motor6D offsets apply only in Play).
+  **F-05b2's hints (rest of step 11, not researched):** no bones, the ball's whole-body
+  `stretch`. The mochi bun: a soft, matte, faintly dusty-white dome about 2.5 to 3 in across and
+  1.5 in tall (a flour-dusted mochi or dumpling squishy; some have a tiny printed face, keep it
+  plain or a two-dot face), its squash slow and heavy (sinks over a half second, rises over one
+  or two, no overshoot: the opposite of the ball's spring). The toast slice: a bread-slice
+  squishy about 4 to 5 in, golden-brown crust round a pale crumb face full of pores (draw the
+  pores by noise in the look, a crust band by distance from the edge), standing on its edge or
+  lying flat; it springs back fast like bread, a small overshoot. Both one part each; quick
+  sheets first.
 
 - **Nov 16, F-05a (bones in the kit; the squishy butter stick built; step 10 done; uploaded
   91493472138143 and imported).** **The answer on bones: they work.** A tiny skinned box sent
@@ -1361,7 +1382,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 
 | Find | Grade | What it does | Notes | Built |
 |---|---|---|---|---|
-| Stress ball with a face | Common | Squeeze: its eyes bulge out |  | |
+| Stress ball with a face | Common | Squeeze: its eyes bulge out |  | Nov 16, F-05b |
 | Goo ball | Common | Squeeze: it oozes between your fingers and slowly comes back | The craze of 2026 | |
 | Squishy butter stick | Common | Squeeze: leaves a dent that slowly fills back in | A 2026 squishy trend | Nov 16, F-05a |
 | Mochi bun | Common | Squeeze: a soft puff of a sound |  | |

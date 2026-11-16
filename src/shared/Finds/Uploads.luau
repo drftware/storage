@@ -27,6 +27,7 @@ return {
 	},
 	Squishies = {
 		ButterStick = { Model = 91493472138143 },
+		StressBall = { Model = 87393666160557 },
 	},
 	Windups = {
 		ChatteringTeeth = { Model = 100233455108959 },

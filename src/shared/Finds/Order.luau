@@ -19,6 +19,7 @@ return {
 	SingingFish = { "Press" },
 	TinCarousel = { "Wind", "Play" },
 	ButterStick = { "Squeeze" },
+	StressBall = { "Squeeze" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },

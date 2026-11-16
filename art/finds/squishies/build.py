@@ -270,7 +270,213 @@ BUTTER_STICK = kit.Find(
     dust=BU["dust"], seed=BU["seed"], texels=1100,
 )
 
-FINDS = [BUTTER_STICK]
+
+# --- The stress ball with a face (F-05b) ---------------------------------------------------------
+# A rubber eye-popper squeeze ball of our own (README): a glossy lime-green vinyl ball, two big
+# white bubble eyes standing proud of it in soft rubber lips, black pupils crossed a little, a
+# thin black grin printed under them with a dimple at each end. Squeezed, the whole ball squashes
+# (`stretch`) and the air shoves the eyes out of their sockets, swelling; let go, it springs
+# back and they pop home. Each eye is its own part riding the ball, its axis straight out of its
+# socket; it stretches against the ball's squash so it stays round as it bulges.
+
+SB = K.STRESS
+SB_SKIN, SB_LIP, SB_EYE = 2, 3, 4
+SB_R = SB["r"]
+SB_SOFT = 1.6                         # how gently its flat spot rounds into the ball (mm)
+
+
+def sb_flat(zr):
+    """The ball's height over the floor for its sphere's height zr (mm, the floor at -sink): a
+    soft maximum with 0, so it sits on a small, rounded flat spot."""
+    lo = (-SB["sink"] + math.sqrt(SB["sink"] ** 2 + SB_SOFT ** 2)) / 2
+    return (zr + math.sqrt(zr * zr + SB_SOFT ** 2)) / 2 - lo
+
+
+SB_ZC = sb_flat(SB_R - SB["sink"])    # the ball's middle, over the pivot on the floor (mm)
+
+
+def sb_dir(side):
+    """An eye's axis: up eye_up and out eye_out to `side` (+1 the ball's left, at +X)."""
+    u, o = math.radians(SB["eye_up"]), math.radians(SB["eye_out"])
+    return Vector((side * math.sin(o) * math.cos(u), -math.cos(o) * math.cos(u), math.sin(u)))
+
+
+def sb_centre(side):
+    """An eye's middle (mm), eye_in inside the ball's skin."""
+    return Vector((0.0, 0.0, SB_ZC)) + sb_dir(side) * (SB_R - SB["eye_in"])
+
+
+def sb_frame(side):
+    """The eye's own frame in studs: Z out along its axis, the origin its middle."""
+    rot = Vector((0.0, 0.0, 1.0)).rotation_difference(sb_dir(side)).to_matrix().to_4x4()
+    return Matrix.Translation(sb_centre(side) / K.STUD_MM) @ rot
+
+
+def sb_body(hi):
+    """The ball, spun from pole to pole (its front, where the face is printed, in the middle of
+    a texture strip), and a soft rubber lip round each eye's socket."""
+    n, seg = (112, 192) if hi else (28, 48)
+    prof = [(0.0, 0.0)]
+    for i in range(1, n):
+        a = -math.pi / 2 + math.pi * i / n
+        prof.append((mm(SB_R * math.cos(a)), mm(sb_flat(SB_ZC + SB_R * math.sin(a)))))
+    prof.append((0.0, mm(sb_flat(SB_ZC + SB_R))))
+    sh = Shape()
+    sh.lathe(prof, SB_SKIN, seg, split=2)
+    e, L, h = SB["eye_r"], SB["lip_r"], SB["lip_h"]
+
+    def skin(rho):
+        return math.sqrt(SB_R ** 2 - rho ** 2) - (SB_R - SB["eye_in"])
+    lip = [(L + 0.4, -0.7), (L, 0.05), (L - 0.5, 0.45 * h), (L - 1.0, 0.8 * h),
+           ((L + e) / 2, h), (e + 0.6, 0.85 * h), (e + 0.2, 0.45 * h), (e - 0.05, -0.15),
+           (e - 0.3, -1.0)]
+    lip = [(mm(r), mm(skin(r) + dz)) for r, dz in lip]
+    for side in (1, -1):
+        sh.lathe(lip, SB_LIP, 72 if hi else 28, M=sb_frame(side), strips=True)
+    return sh
+
+
+def sb_eye(side):
+    def build(hi):
+        """A white rubber bubble: most of a sphere, and the neck it's blown from, hidden in
+        the ball until a squeeze shoves it out."""
+        e, nr, nd = SB["eye_r"], SB["neck_r"], SB["neck_d"]
+        n = 40 if hi else 14
+        prof = [(nr, -nd), (nr, -11.0), (nr + 0.25, -8.6)]
+        a0 = -44.0
+        for i in range(n):
+            a = math.radians(a0 + (90.0 - a0) * i / n)
+            prof.append((e * math.cos(a), e * math.sin(a)))
+        prof.append((0.0, e))
+        sh = Shape()
+        sh.lathe([(mm(r), mm(z)) for r, z in prof], SB_EYE, 64 if hi else 24, M=sb_frame(side))
+        return sh
+    return build
+
+
+def sb_pupil(side):
+    """Where an eye's pupil looks: in toward the nose and up from its axis."""
+    d = sb_dir(side)
+    across = Vector((0.0, 0.0, 1.0)).cross(d).normalized()     # toward +X, the ball's left
+    upv = d.cross(across).normalized()
+    a, b = math.radians(SB["look_in"]), math.radians(SB["look_up"])
+    inward = -across * side         # the left eye (at +X) looks toward -X, the right toward +X
+    return (d * math.cos(a) * math.cos(b) + inward * math.sin(a) + upv * math.sin(b)).normalized()
+
+
+def sb_face_ink(res=1024, W=30.0):
+    """The grin, w x h texels over the ball's front seen straight on (x across, z up, W mm each
+    way from the ball's middle): each texel's spot on the skin measured out from the front's
+    middle (an equidistant map), so the stroke is the same width all round the curve."""
+    xs = np.linspace(-W, W, res)[None, :]
+    zs = np.linspace(-W, W, res)[:, None]
+    q = np.clip(SB_R ** 2 - xs ** 2 - zs ** 2, 1e-6, None)
+    th = np.arccos(np.clip(np.sqrt(q) / SB_R, -1, 1))
+    rr = np.hypot(xs, zs) + 1e-9
+    u, v = SB_R * th * xs / rr, SB_R * th * zs / rr
+    (cx, cy), r = SB["grin_c"], SB["grin_r"]
+    a0, a1 = SB["grin_a"]
+    strokes = [bu_segments(("A", (cx, cy), r, a0, a1), 40)]
+    for a in (a0, a1):
+        nx, ny = math.cos(math.radians(a)), math.sin(math.radians(a))
+        ex, ey = cx + r * nx, cy + r * ny
+        d = SB["dimple"] / 2
+        strokes.append([(ex - nx * d, ey - ny * d), (ex + nx * d, ey + ny * d)])
+    dist = np.full(u.shape, 1e9)
+    for pts in strokes:
+        for (ax, ay), (bx, by) in zip(pts, pts[1:]):
+            vx, vy = bx - ax, by - ay
+            t = np.clip(((u - ax) * vx + (v - ay) * vy) / max(vx * vx + vy * vy, 1e-9), 0, 1)
+            dist = np.minimum(dist, np.hypot(u - ax - t * vx, v - ay - t * vy))
+    px = 2 * W / res
+    return np.clip(0.5 - (dist - SB["grin_w"] / 2) / px, 0.0, 1.0)
+
+
+def stress_look(L, f):
+    nb = L.nb
+    xm, zm = nb.mul(L.x, K.STUD_MM), nb.mul(L.z, K.STUD_MM)
+    eye = L.k(SB_EYE)
+    # the ball: glossy lime vinyl, its colour a touch deeper where the rotocast wall is thicker,
+    # a fine orange-peel skin, the mould's faint seam round its sides and over its top
+    C = Coat(L, hexc("#8FD13C"), 0.34)
+    C.paint(nb.mul(nb.ss(L.noise(7.0, 1, detail=3), 0.45, 0.75), 0.7), hexc("#7CC232"), 0.36)
+    C.paint(nb.mul(nb.ss(L.noise(20.0, 2, detail=2), 0.55, 0.72), 0.5), hexc("#A2DC52"))
+    peel = nb.ss(L.noise(1500.0, 3, detail=2), 0.45, 0.75)
+    C.paint(peel, height=0.25)
+    C.paint(nb.mul(nb.ss(L.noise(380.0, 4, detail=2), 0.66, 0.74), 0.6), rough=0.48)
+    seam = nb.mul(nb.band(L.y, -mm(0.12), mm(0.12), mm(0.1)), nb.inv(eye))
+    C.paint(seam, hexc("#86C835"), 0.42, height=0.9)
+    # the fill plug under it, where the ball was sealed: a little ring on its flat spot
+    plug = nb.band(nb.math("SQRT", nb.add(nb.mul(L.x, L.x), nb.mul(L.y, L.y))),
+                   mm(2.6), mm(3.2), mm(0.25))
+    C.paint(nb.mul(plug, nb.ss(nb.mul(L.nz, -1.0), 0.8, 0.95)), hexc("#7BB830"), 0.5, height=0.8)
+    # the eyes: white rubber bubbles, glossy, a touch greyer low down where the vinyl stretches
+    # thin over the neck; each pupil a glossy black dot printed on, raised a hair
+    C.paint(eye, hexc("#F2EFE6"), 0.2)
+    pupils = None
+    for side in (1, -1):
+        c = sb_centre(side) / K.STUD_MM
+        v = nb.vop("NORMALIZE", nb.vop("SUBTRACT", L.P, tuple(c)))
+        out = nb.vop("DOT_PRODUCT", v, tuple(sb_dir(side)))
+        thin = nb.mul(nb.inv(nb.ss(out, -0.2, 0.35)), eye)
+        C.paint(nb.mul(thin, 0.8), hexc("#D7D6CE"), 0.26)
+        d = nb.vop("DOT_PRODUCT", v, tuple(sb_pupil(side)))
+        cos = [math.cos(math.radians(SB["pupil"] + e)) for e in (0.8, -0.8)]
+        p = nb.ss(d, *cos)
+        pupils = p if pupils is None else nb.add(pupils, p, clamp=True)
+    pupils = nb.mul(pupils, eye)
+    C.paint(pupils, hexc("#121214"), 0.16, height=0.6)
+    # the grin, printed in black, glossier than the vinyl, its edge a little soft where the
+    # spray mask lifted, rubbed thin where a thumb meets it most
+    img = bu_image("StressGrin", sb_face_ink())
+    t = nb.node("ShaderNodeTexImage", image=img, interpolation="Cubic", extension="CLIP")
+    nb.put(t.inputs["Vector"], nb.comb(nb.add(nb.mul(xm, 1 / 60.0), 0.5),
+                                       nb.add(nb.mul(nb.sub(zm, SB_ZC), 1 / 60.0), 0.5), 0.0))
+    front = nb.mul(nb.ss(nb.mul(L.ny, -1.0), 0.3, 0.6), nb.inv(eye))
+    ink = nb.mul(front, t.outputs["Color"])
+    rub = nb.mul(nb.ss(L.noise(70.0, 6, detail=3), 0.55, 0.75), 0.35)
+    ink = nb.mul(ink, nb.inv(rub))
+    C.paint(ink, hexc("#161618"), 0.26)
+    C.finish(f.dust, grime=0.3)
+    return C.surface(bump_dist=mm(0.1), bump=0.5)
+
+
+def sb_squeeze():
+    """The ball squashes and springs back (SQUISH); each eye goes out along its axis and swells
+    (POP, SWELL), the right one a hair behind the left, and stretches against the ball's squash
+    so it stays round."""
+    def later(keys, dt):
+        return [keys[0]] + [(round(k[0] + dt, 3), *k[1:]) for k in keys[1:]]
+    tracks = [("Body", "stretch", K.SQUISH)]
+    keep = [(k[0], round(k[1] ** -0.9, 4), *k[2:]) for k in K.SQUISH]
+    for name, dt in (("EyeL", 0.0), ("EyeR", 0.025)):
+        tracks.append((name, "move", later([(k[0], mm(k[1]), *k[2:]) for k in K.POP], dt)))
+        tracks.append((name, "scale", later(K.SWELL, dt)))
+        tracks.append((name, "stretch", keep))
+    return round(K.SQUISH[-1][0] + 0.3, 2), tracks
+
+
+SB_DUR, SB_TRACKS = sb_squeeze()
+
+STRESS_BALL = kit.Find(
+    "StressBall",
+    [kit.Part("Body", sb_body),
+     kit.Part("EyeL", sb_eye(1), pivot=tuple(sb_centre(1) / K.STUD_MM), parent="Body",
+              axis=tuple(sb_dir(1)), alone=True),
+     kit.Part("EyeR", sb_eye(-1), pivot=tuple(sb_centre(-1) / K.STUD_MM), parent="Body",
+              axis=tuple(sb_dir(-1)), alone=True)],
+    stress_look,
+    motions={
+        # squeezed in the hand: it squashes and the eyes bulge out of their sockets (the game's
+        # rubbery squeak and a little rush of air here), held, then let go: it springs back
+        # and the eyes pop home
+        "Squeeze": dict(duration=SB_DUR, tracks=SB_TRACKS, focus=(0.0, 0.0, mm(SB_ZC)),
+                        distance=0.95),
+    },
+    dust=SB["dust"], seed=SB["seed"], texels=1000,
+)
+
+FINDS = [BUTTER_STICK, STRESS_BALL]
 
 if __name__ == "__main__":
     kit.main("Squishies", HERE, FINDS)
