@@ -138,3 +138,68 @@ CHATTER = dict(
     drift=6.0,         # degrees a second it can veer as it goes
     winds=4,           # half turns of the key when wound
 )
+
+
+# --- The walking robot: a 1950s-style printed tin walker of our own -----------------------------
+# References (README): the small keyed walkers sold as reproductions of post-war Japanese toys
+# (11.5 cm tall, 6 cm wide) and 1950s-60s originals of 6.5 to 8.5 in: a boxy printed torso, a
+# square head with an aerial, arms on shoulder pins swinging opposite the legs, short legs on hip
+# pins and big flat pressed-tin feet, a key in its back. Ours is 6.4 in to the top of its head
+# (7.2 with its aerial's ball), printed cobalt blue with a dark gauge panel, red feet, hands and
+# ears, a coil-spring aerial with a red ball.
+ROBOT = dict(
+    torso=[(54.0, 26.5, 17.0, 4.5), (54.6, 28.4, 19.0, 5.4), (55.8, 29.4, 19.9, 5.9),
+           (57.4, 29.3, 19.8, 5.9), (58.6, 29.0, 19.6, 5.8), (100.0, 30.6, 20.5, 6.0),
+           (110.0, 31.0, 20.6, 6.0), (113.6, 30.5, 20.1, 5.8), (115.8, 28.6, 18.4, 5.0),
+           (116.7, 25.8, 15.8, 3.8), (117.0, 21.0, 12.0, 2.6)],
+    # the torso's sections from its foot up: height, half width, half depth, corner radius (mm)
+    chest=dict(x=19.0, z=(72.0, 106.0), front=-21.9),   # the raised gauge panel on its chest
+    dial=[(-7.0, 96.5, 6.2), (9.0, 97.5, 4.0)],        # its two dials: x, z, the face's radius
+    buttons=[-10.0, 0.0, 10.0], button_z=77.5,          # three plastic buttons along its foot
+    head=[(121.2, 20.0, 15.0, 4.0), (121.8, 23.2, 18.2, 6.0), (122.9, 24.4, 19.4, 6.8),
+          (124.4, 24.8, 19.8, 7.0), (125.9, 24.4, 19.4, 7.0), (151.0, 24.4, 19.4, 7.0),
+          (155.5, 24.0, 19.0, 7.0), (158.6, 22.6, 17.6, 6.6), (160.6, 19.6, 14.8, 5.6),
+          (161.7, 14.5, 10.0, 4.0)],
+    head_top=162.0,
+    eyes=(9.6, 146.5, 5.1),            # the left eye's x and z, and the lens's radius
+    mouth=dict(x=10.5, z=(129.0, 136.5)),
+    ear=dict(z=143.0, r=8.6),          # the red ear cones on each side of the head
+    neck=(115.5, 122.0, 11.6),         # the steel collar between torso and head: foot, top, radius
+    aerial=dict(at=(0.0, 0.0, 163.6), coil=(2.8, 0.85, 6.0, 177.4), ball=(182.0, 4.7)),
+    # the coil's radius, wire radius, turns and top; the ball's middle and radius
+    shoulder=(38.0, 0.0, 106.0),       # the left arm's pin (the right mirrors it): left is +X
+    arm=dict(hw=5.6, hd=8.8, r=3.4, wrist=72.0),
+    hand=dict(y=-1.0, z=62.5, r=7.4, wire=2.9, open=40.0),   # the C-claw: middle, radius,
+    # thickness, and degrees open either side of straight ahead
+    hip=(14.5, 0.0, 58.0),             # the left leg's pin
+    leg=dict(hw=7.0, hd=8.0, r=2.4, top=63.0, foot=9.0),     # its foot end sits deep in the cuff
+    ankle=13.0,                        # the ankle pin's height above the sole
+    foot=dict(hw=12.5, toe=-31.0, heel=15.0, r=8.0, h=9.7, cuff=(10.4, 11.4, 15.6)),
+    # half width, toe and heel (y), the corner radius, the top; the cuff round the leg's foot:
+    # its half width, half depth and top
+    key=dict(at=(0.0, 20.3, 86.0), shaft=(1.6, 7.6), wing=(7.6, 5.8, 8.0), t=1.3),
+    # the key on its back: the shaft's radius and length; each wing's half width, half length
+    # and how far out from the middle
+    dust=0.05, seed=53.0,
+)
+
+# How it walks (timed from a video of a small tin walker's clanks, README: a footfall about every
+# 0.28 s, fully wound). Both legs, both arms and the waddle run off one crank: a step for each
+# leg every two footfalls, the arms swinging opposite the legs.
+WALK = dict(
+    rate=3.6,          # footfalls a second, fully wound: a brisk clank-clank-clank
+    fade=0.35,         # how much it slows across the run
+    length=17.0,       # how long the spring would last unslowed: it gives out near 15 s (the catalog)
+    knee=6.0,          # how suddenly it gives out at the end
+    last=0.55,         # the slowest gap between footfalls (s) before it stalls
+    swing=15.0,        # degrees each leg swings either side of straight: 23 mm a step
+    arm=24.0,          # degrees each arm swings either side of hanging
+    lift=2.2,          # mm a swinging foot clears the floor at mid-swing
+    roll=3.0,          # degrees it rocks onto the planted foot
+    wiggle=2.5,        # degrees it twists with each step
+    lean=3.0,          # degrees it leans into the walk
+    jolt=0.7,          # degrees it nods as each foot clanks down
+    winds=5,           # half turns of the key when wound
+    aerial=(5.0, 0.12, 18.0),   # the aerial's sway: how often a second, its damping, the ball's
+    # height over its pin (mm)
+)

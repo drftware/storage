@@ -10,5 +10,9 @@
   "JackInTheBox": {
     "assetId": 99780291550799,
     "sha256": "5c803023752b8d3011a470b61cc7f25a852bae9ba596f2d5dd8766968a99b88f"
+  },
+  "WalkingRobot": {
+    "assetId": 109415009719114,
+    "sha256": "823360de1ad3cfccb3a3704b789913712001b3a611a99a65c5821558e23ff923"
   }
 }

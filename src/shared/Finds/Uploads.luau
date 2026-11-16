@@ -29,5 +29,6 @@ return {
 		ChatteringTeeth = { Model = 100233455108959 },
 		CymbalMonkey = { Model = 124266692491775 },
 		JackInTheBox = { Model = 99780291550799 },
+		WalkingRobot = { Model = 109415009719114 },
 	},
 }

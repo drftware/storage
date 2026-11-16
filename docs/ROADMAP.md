@@ -2384,8 +2384,8 @@ actions themselves and dealing the new finds on floors are later game tickets.
     Legendary's gold light under the door before it opens, heard by the team. Needs the owner's
     look; the copy of what each grade is stays off screen (no text that explains a rule).
 - [ ] **F-04 Wind-ups and noisemakers.** Built, in `art/finds/windups/`: F-04a the cymbal monkey,
-  F-04b the jack-in-the-box, F-04c the chattering teeth (Nov 15). Next F-04c2 the walking
-  robot, then F-04d to F-04k as `art/finds/WAVES.md`'s second run plans.
+  F-04b the jack-in-the-box, F-04c the chattering teeth (Nov 15), F-04c2 the walking robot
+  (Nov 16). Next F-04d to F-04k as `art/finds/WAVES.md`'s second run plans.
 - [ ] **F-05 Squishies.**
 - [ ] **F-06 Plush.**
 - [ ] **F-07 Night Shift Minis and their blind box.**

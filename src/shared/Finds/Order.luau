@@ -7,6 +7,7 @@ return {
 	BlobLamp = { "SwitchOn", "Flow", "SwitchOff" },
 	CampLantern = { "SwitchOn", "SwitchOff", "RunDown", "Lift" },
 	ChatteringTeeth = { "Wind", "Chatter" },
+	WalkingRobot = { "Wind", "Walk" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },

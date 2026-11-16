@@ -6078,3 +6078,17 @@ by `Use.press` on both sides: the button hides then, rather than taking a dead p
 
 Not chosen: timers on the server flipping each find's state (the stamp and the pure sums need
 none); a find's whole state replicated every frame.
+
+## D-230 The walking robot walks on flat feet that never slide (F-04c2, Nov 16)
+
+The wind-up walking robot (`art/finds/windups/`, "Wind: it clanks off in a straight line for 15
+seconds") is a printed tin walker of our own, 6.4 in to its head. Its walk is worked out, not
+keyed by hand: one crank phase drives the legs (15 degrees from the hips), the arms (24 degrees,
+opposite), the waddle and the twist; each step, the planted foot is pinned to the floor and the
+body moves only by what that foot's backward swing gives (a footfall about every 0.28 s, timed
+from a real walker's clanks, slowing over the run). The feet are their own parts on the legs: they
+counter-turn to stay flat on the floor whatever the leg, lean and waddle do, and slide a little
+along the leg to keep their soles down (the game has no up-down travel for the whole find). The
+aerial is a damped spring driven by the body's sway and clanks, so its wobble follows what the
+body did. It walks straight (the catalog's line), so a game ticket can aim it down a hall: it
+covers about 3.4 studs.

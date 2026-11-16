@@ -175,3 +175,39 @@ and `-chatter.mp4`.
 **In the place:** uploaded (`assets.json`), not imported yet: Studio was in Play when it was
 built. Import it in Edit with `require(game.ReplicatedStorage.Shared.Finds.Kit).import("Windups",
 {"ChatteringTeeth"})` (from a clone of `Shared` if Studio already required it).
+
+## Wind-up walking robot (Uncommon): "Wind: it clanks off in a straight line for 15 seconds"
+
+A printed tin walker in the post-war Japanese way: a boxy torso, a square head on a steel collar,
+arms on shoulder pins, short legs on hip pins standing in big flat pressed-tin feet, a key in its
+back. Ours is no maker's: printed cobalt blue with rows of pressed rivets, a dark gauge panel in a
+red frame on its chest (a cream dial with a red zone and needle, a small yellow dial, a bar meter,
+three plastic buttons: red, yellow, green), a yellow-and-black hazard belt, amber lens eyes in
+steel bezels, a grille mouth, red ear cones, a strip of little lamps on its brow, a coil-spring
+aerial with a red ball, red C-claw hands, gunmetal legs with two bare-tin ribs, red feet with a
+dark sole line, a hatch on its back with a red diamond maker's mark and a brass butterfly key.
+
+**Looked at:** a Nomura-style 1950s-60s tin "Sparky" robot (antiquetoys.com, "Nomura or Noguchi
+Tin Windup Sparky Robot": the boxy torso, the domed square head, ear discs, arms hung on the
+shoulders, the key in its side), Maison Empereur's small wind-up robot (empereur.fr, a
+reproduction of the post-war walkers: 11.5 cm tall, 6 cm wide; square head, printed chest of
+dials, flat arms on pins, big red feet), listings of 1950s-60s walkers (a Yoshiya "Space Man"
+8.5 in, a Daiya walker 6.5 in), the Science Museum Group's 1950s Yoshiya "Atom Robot" record (tin
+litho before plastic), and a YouTube review of a clockwork metal walker ("Clockwork Metal Robot
+- unboxing and review"): it walks with its arms swinging opposite its legs, and its clanks come
+about every 0.28 s, timed from the sound as the cymbal monkey's were.
+**Size:** 162 mm (6.4 in) to the top of its head, 187 mm (7.4 in) to the aerial's ball: 0.64 and
+0.73 studs; 87 mm across its arms, feet 46 mm long.
+**Tells:** the boxy blue body on stubby legs in big red feet, the aerial and ball on top, the
+round amber eyes. From a doorway it's a small find: a blue and red speck, like the teeth.
+**Parts:** `Body` (root, travelling `x`, `y`, `yaw`, leaning `pitch`, waddling `roll`), `LegL`
+and `LegR` (turn about X on hip pins 14.5 mm either side), `FootL` and `FootR` (on the legs at
+the ankle pin: `pitch` and `roll` keep the sole flat, `move` along the leg keeps it on the floor
+or lifts it on its swing), `ArmL` and `ArmR` (turn about X on shoulder pins), `Aerial` (`pitch`
+and `roll` about its socket), `Key` (turns about Y). Left is +X.
+**Motions:** `Wind` (five half turns of the key), `Walk` (about 15 s of footfalls, 3.6 a second
+slowing to under 2, the arms swinging 24 degrees opposite the legs' 15, rocking 3 degrees onto
+the planted foot, leaning 3 degrees into it and nodding on each clank; the aerial is a damped
+spring flung about by the sway and the clanks; it stalls, the legs straighten, and the arms swing
+on their pins a moment). It covers about 3.4 studs. The body moves only as the planted foot
+pushes it, so no foot slides (`robot_walk`).

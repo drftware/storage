@@ -6,11 +6,11 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04c2, the wind-up walking robot, in `art/finds/windups/` (the set, the cymbal
-monkey, the jack-in-the-box and the chattering teeth are built); not yet researched, the newest
-note has a plan. It finishes step 1 of "The second run's plan" below; then follow the plan,
-session by session. The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp`
-when next touched.
+**Next:** F-04d, the wind-up mouse and the clockwork tin bird, in `art/finds/windups/` (the set,
+the cymbal monkey, the jack-in-the-box, the chattering teeth and the walking robot are built); not
+yet researched, the newest note has hints. It is step 2 of "The second run's plan" below; then
+follow the plan, session by session. The oil lamp's sheets still want `ACTIONS= scripts/art.sh set
+lights renders OilLamp` when next touched.
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -19,7 +19,7 @@ session takes the next batch from the Next line; if a batch doesn't fit, it stop
 boundary and the next session carries on. The finds are batched where they share pieces, which
 changes the table's order a little.
 
-1. **F-04c** Chattering teeth (built Nov 15) and, as **F-04c2**, the walking robot (a
+1. **F-04c** Chattering teeth (built Nov 15) and, as **F-04c2**, the walking robot (built Nov 16; a
    printed tin robot 6 to 9 inches tall; legs swing from the hip, arms the other way, it clanks
    off straight for 15 s). The newest note has both plans.
 2. **F-04d** Wind-up mouse (zips off, slows, stops with a squeak, its tail wagging behind) and
@@ -90,6 +90,37 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04c2 (the walking robot built, uploaded and in the place).** `WalkingRobot` in `windups/build.py`,
+  spec `ROBOT` and `WALK`, README, D-230. Step 1 of the plan is done. **A walk worked out, not
+  keyed:** `robot_walk` drives every part off one crank phase, pins the planted foot's sole to the
+  floor and moves the body only by that foot's push (exact, yaw and lean included), so nothing
+  slides; feet are their own parts that counter-turn flat and `move` along the leg to keep the
+  sole down (a pendulum's foot rises at the ends of its swing: 1.5 mm here). The aerial is a
+  damped spring simulated from the body's accelerations; keys sit at each curve's turning points
+  (`extremes`) and at half or quarter steps of the crank (`turning`): 1,900 keys for 16 s. **The
+  kit has no up-down travel** for a whole find (`x`, `y`, `yaw`, `pitch`, `roll` only): the tin
+  bird's hops need one. Add a `z` channel to `kit.TRAVEL` (Blender Z is Roblox Y) and to
+  `Finds/Art.luau`'s pose, with a Lune spec, before keying hops. **Helpers worth reusing:**
+  `rrect` and `boxloft` (rounded boxes from (z, half width, half depth, radius) rows: tin bodies,
+  heads, feet), `stud` with `FACING` (a lathed button, rivet, bezel or cone facing any of the six
+  ways), the look's `rivets` (printed pressed rivets with an ink ring and a highlight) and `band`.
+  Arms first drawn 9 mm thick read as sticks in the held view; 11 mm with bigger claws read.
+  **Not done:** the `Walk` filmstrip's camera stands far back (distance 1.15) in the dark: 0.8
+  would show the stride better; the module grew 60 KB (1,900 keys), trim the feet's quarter steps
+  if the set gets heavy.
+  **F-04d's plan, not researched.** *Wind-up mouse* (Uncommon, "Wind: it zips off and squeaks
+  wherever it stops"): look at listings of tin or felt-covered clockwork mice (about 3 to 4 in
+  long, 75 to 100 mm; a grey felt or printed tin body, round ears, bead eyes, whiskers, a long
+  tail of cord or coiled wire, the key in its side, two drive wheels and a guide wheel hidden
+  under it) and one video for how fast it runs down. Parts: `Body` (root: `x`, `y`, `yaw`; it
+  zips off, veers a little, slows, stops dead with a nose-down rock), `Tail` (wags behind, a
+  turn about Z from its root, with follow-through), `Key`, maybe `WheelL`/`WheelR` if they show.
+  *Clockwork tin bird* (Epic, "Wind: it hops and whistles"): an antique printed tin bird about 4
+  to 5 in long on two wire legs, the finest printing in the set (feathers in two or three
+  colours, an eye ring); parts `Body` (root, hopping: needs the `z` channel above), `Beak` (the
+  lower bill opens with each whistle), `Tail` (bobs on each landing), `Key`. Share the key (the
+  robot's `rb_key` wings) and the hop's rhythm between them only where they truly match.
 
 - **Nov 15, F-04c (the chattering teeth built, uploaded, not imported: Studio was in Play; the
   robot not started).** `ChatteringTeeth` in
@@ -627,7 +658,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Wind-up chattering teeth | Common | Wind: they chatter off across the floor | Monsters come to look | Nov 15, F-04c |
 | Toy drum | Uncommon | Bang: loud |  | |
 | Wind-up mouse | Uncommon | Wind: it zips off and squeaks wherever it stops |  | |
-| Wind-up walking robot | Uncommon | Wind: it clanks off in a straight line for 15 seconds | A noise you can send down a hall | |
+| Wind-up walking robot | Uncommon | Wind: it clanks off in a straight line for 15 seconds | A noise you can send down a hall | Nov 16, F-04c2 |
 | Farm-animal spinner | Uncommon | Pull: the arrow spins and an animal noise plays | A throwback toy | |
 | Jack-in-the-box | Uncommon | Wind: a tune, then a bang as it pops | The bang comes a few seconds after you let go | Nov 15, F-04b |
 | Cymbal monkey | Rare | Wind: it bashes its cymbals for 20 seconds, loud | The strongest lure in the set | Nov 15, F-04a |

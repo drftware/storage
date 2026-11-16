@@ -17,7 +17,7 @@ from mathutils import Matrix, Vector  # noqa: E402
 import kit  # noqa: E402
 import spec as K  # noqa: E402
 from look import Coat, hexc  # noqa: E402
-from shapes import Shape, fillet  # noqa: E402
+from shapes import Shape, arc, fillet, helix  # noqa: E402
 
 mm = K.mm
 
@@ -1674,7 +1674,654 @@ CHATTERING_TEETH = kit.Find(
 )
 
 
-FINDS = [CYMBAL_MONKEY, JACK_IN_THE_BOX, CHATTERING_TEETH]
+# --- The walking robot (F-04c2) -----------------------------------------------------------------
+# A printed tin walker of our own (README): a boxy cobalt-blue torso with a gauge panel, a square
+# head with lens eyes and a coil-spring aerial, arms on shoulder pins, short ribbed legs on hip
+# pins and big red pressed-tin feet, a key in its back. Wound, it clanks off in a straight line.
+
+RB = K.ROBOT
+RW = K.WALK
+(BODYT, HEADT, ARMT, PANEL, STEELK, REDT, LENS, BALL, KEYT, LEGT) = range(25, 35)
+
+FACING = {"+X": Matrix.Rotation(math.radians(90), 4, "Y"),
+          "-X": Matrix.Rotation(math.radians(-90), 4, "Y"),
+          "-Y": Matrix.Rotation(math.radians(90), 4, "X"),
+          "+Y": Matrix.Rotation(math.radians(-90), 4, "X"),
+          "+Z": Matrix()}
+
+
+def rrect(hw, hd, z, r, n, cx=0.0, cy=0.0):
+    """A rounded rectangle's outline at height z (mm), anticlockwise from above."""
+    r = min(r, hw - 0.01, hd - 0.01)
+    pts = []
+    for q, (sx, sy) in enumerate(((1, 1), (-1, 1), (-1, -1), (1, -1))):
+        ox, oy = cx + sx * (hw - r), cy + sy * (hd - r)
+        for i in range(n + 1):
+            a = math.radians(90 * q + 90 * i / n)
+            pts.append((mm(ox + r * math.cos(a)), mm(oy + r * math.sin(a)), mm(z)))
+    return pts
+
+
+def boxloft(s, rows, kind, n, cx=0.0, cy=0.0, bottom=None, top=None):
+    """A closed rounded box through rows (z, hw, hd, r), capped by poles at bottom and top."""
+    rings = [rrect(hw, hd, z, r, n, cx, cy) for z, hw, hd, r in rows]
+    if bottom is not None:
+        rings = [[(mm(cx), mm(cy), mm(bottom))]] + rings
+    if top is not None:
+        rings = rings + [[(mm(cx), mm(cy), mm(top))]]
+    s.loft(rings, kind)
+
+
+def stud(s, at, facing, prof, kind, hi, n=12):
+    """A lathed button (profile [(r, out)] mm) standing out of a face at `at` (mm)."""
+    s.lathe([(mm(a), mm(b)) for a, b in prof], kind, segs(hi, n), T(V(*at)) @ FACING[facing])
+
+
+def hip(sx):
+    return V(sx * RB["hip"][0], RB["hip"][1], RB["hip"][2])
+
+
+def ankle(sx):
+    return V(sx * RB["hip"][0], 0.0, RB["ankle"])
+
+
+def shoulder(sx):
+    return V(sx * RB["shoulder"][0], RB["shoulder"][1], RB["shoulder"][2])
+
+
+def rb_body(hi):
+    s = Shape()
+    n = 6 if hi else 3
+    boxloft(s, RB["torso"], BODYT, n, bottom=RB["torso"][0][0] - 0.2, top=RB["torso"][-1][0] + 0.15)
+    # the gauge panel pressed out of the chest, its two dial bezels and three plastic buttons
+    ch = RB["chest"]
+    z0, z1 = ch["z"]
+    s.box(V(-ch["x"], ch["front"], z0), V(ch["x"], -19.8, z1), PANEL, mm(0.9), 2 if hi else 1)
+    fy = ch["front"]
+    for x, z, r in RB["dial"]:
+        k = r / 6.2
+        stud(s, (x, fy, z), "-Y", [(r + 1.3 * k, -0.3), (r + 1.3 * k, 0.25), (r + 0.85 * k, 0.85),
+                                   (r + 0.25 * k, 0.95), (r - 0.1, 0.55), (r - 0.25, -0.1)], STEELK, hi, 18)
+    for x in RB["buttons"]:
+        stud(s, (x, fy, RB["button_z"]), "-Y", [(2.9, -0.3), (2.9, 0.35), (2.5, 1.0), (1.5, 1.45),
+                                                 (0.0, 1.55)], LENS, hi, 12)
+    # the shoulder bosses the arms swing on
+    for sx in (1, -1):
+        stud(s, (sx * 30.4, 0.0, RB["shoulder"][2]), "+X" if sx > 0 else "-X",
+             [(7.6, -0.6), (7.6, 0.35), (6.8, 1.15), (4.2, 1.5), (0.0, 1.5)], BODYT, hi, 20)
+    # the neck: a steel collar with two pressed ribs
+    z0, z1, r = RB["neck"]
+    prof = [(r - 1.0, z0), (r, z0 + 1.0), (r, z0 + 1.9), (r - 0.6, z0 + 2.5), (r, z0 + 3.1),
+            (r, z0 + 4.2), (r - 0.9, z0 + 5.6), (r - 2.5, z1)]
+    s.lathe([(mm(a), mm(b)) for a, b in prof], STEELK, segs(hi, 24))
+    # the head, its lens eyes in steel bezels, the mouth grille, the ear cones
+    boxloft(s, RB["head"], HEADT, n, bottom=121.0, top=RB["head_top"])
+    ex, ez, er = RB["eyes"]
+    hy = -RB["head"][5][2]
+    for sx in (1, -1):
+        stud(s, (sx * ex, hy, ez), "-Y", [(er + 2.2, -0.5), (er + 2.2, 0.3), (er + 1.6, 1.35),
+                                          (er + 0.7, 1.6), (er + 0.1, 1.2), (er - 0.1, 0.5)], STEELK, hi, 20)
+        stud(s, (sx * ex, hy, ez), "-Y", [(er + 0.2, 0.3), (er, 1.4), (er * 0.8, 2.6),
+                                          (er * 0.48, 3.25), (0.0, 3.45)], LENS, hi, 20)
+    mo = RB["mouth"]
+    s.box(V(-mo["x"], hy - 1.3, mo["z"][0]), V(mo["x"], hy + 0.4, mo["z"][1]), STEELK, mm(0.55),
+          2 if hi else 1)
+    hw = RB["head"][5][1]
+    for sx in (1, -1):
+        f = "+X" if sx > 0 else "-X"
+        at = (sx * (hw - 0.4), 0.0, RB["ear"]["z"])
+        r = RB["ear"]["r"]
+        stud(s, at, f, [(r, -0.5), (r, 0.5), (r - 0.5, 1.4), (r * 0.66, 2.5), (r * 0.42, 3.6),
+                        (3.0, 4.4), (2.8, 4.6)], REDT, hi, 20)
+        stud(s, at, f, [(2.3, 4.2), (2.3, 7.0), (1.9, 7.6), (1.1, 7.9), (0.0, 8.0)], STEELK, hi, 12)
+    # the aerial's socket on top of the head, ringed by pressed rivets
+    az = RB["head_top"]
+    prof = [(4.8, az - 0.6), (4.8, az + 0.5), (4.0, az + 1.4), (2.6, az + 1.75), (0.0, az + 1.75)]
+    s.lathe([(mm(a), mm(b)) for a, b in prof], STEELK, segs(hi, 16))
+    return s
+
+
+def rb_arm(sx):
+    a = RB["arm"]
+    px, py, pz = sx * RB["shoulder"][0], RB["shoulder"][1], RB["shoulder"][2]
+    hd_ = RB["hand"]
+
+    def build(hi):
+        s = Shape()
+        n = 4 if hi else 2
+        hw, hd, r = a["hw"], a["hd"], a["r"]
+        w = a["wrist"]
+        rows = [(w, hw - 1.2, hd - 2.0, r - 0.8), (w + 0.6, hw - 0.3, hd - 0.6, r - 0.2),
+                (w + 1.6, hw, hd, r), (pz - 14.0, hw, hd, r), (pz - 12.8, hw + 0.45, hd + 0.45, r),
+                (pz - 11.0, hw + 0.45, hd + 0.45, r), (pz - 9.8, hw, hd, r), (pz + 3.0, hw, hd, r),
+                (pz + 5.4, hw - 0.4, hd - 1.2, r), (pz + 6.8, hw - 1.0, hd - 3.6, r - 0.4),
+                (pz + 7.5, hw - 1.8, hd - 6.0, 1.6)]
+        boxloft(s, rows, ARMT, n, px, py, bottom=w - 0.1, top=pz + 7.7)
+        # the pin it swings on, peened over on the outside
+        stud(s, (px + sx * hw, py, pz), "+X" if sx > 0 else "-X",
+             [(2.7, -0.4), (2.7, 0.1), (2.2, 0.65), (1.2, 0.95), (0.0, 1.0)], STEELK, hi, 12)
+        # the wrist and the red C-claw, open to the front
+        s.cylinder(V(px, py + hd_["y"] * 0.5, w + 1.5), V(px, py + hd_["y"], hd_["z"] + hd_["r"] - 0.5),
+                   mm(3.4), REDT, segs(hi, 12))
+        o = hd_["open"]
+        pts = arc((px, py + hd_["y"], hd_["z"]), hd_["r"], -180 + o, 180 - o, 24 if hi else 12)
+        pts = [Vector((mm(x), mm(y), mm(z))) for x, y, z in pts]
+        s.tube(pts, mm(hd_["wire"]), REDT, segs(hi, 10))
+        for p in (pts[0], pts[-1]):
+            blob(s, (p.x * K.STUD_MM, p.y * K.STUD_MM, p.z * K.STUD_MM),
+                 (hd_["wire"] * 1.05,) * 3, REDT, hi, lat=5, lon=10)
+        return s
+    return build
+
+
+def rb_leg(sx):
+    lg = RB["leg"]
+    cx = sx * RB["hip"][0]
+
+    def build(hi):
+        s = Shape()
+        n = 3 if hi else 2
+        hw, hd, r = lg["hw"], lg["hd"], lg["r"]
+        rows = [(lg["foot"] + 0.4, hw - 0.6, hd - 0.6, r - 0.4)]
+        z = lg["foot"] + 1.0
+        rows.append((z, hw, hd, r))
+        for zr in (28.0, 33.5):          # two pressed ribs round the knee
+            rows += [(zr - 1.0, hw, hd, r), (zr - 0.3, hw + 0.65, hd + 0.65, r + 0.3),
+                     (zr + 0.9, hw + 0.65, hd + 0.65, r + 0.3), (zr + 1.6, hw, hd, r)]
+        rows.append((lg["top"] - 0.6, hw, hd, r))
+        boxloft(s, rows, LEGT, n, cx, 0.0, bottom=lg["foot"], top=lg["top"])
+        return s
+    return build
+
+
+def rb_foot(sx):
+    f = RB["foot"]
+    cx = sx * RB["hip"][0]
+    cy = (f["toe"] + f["heel"]) / 2
+    hd = (f["heel"] - f["toe"]) / 2
+
+    def build(hi):
+        s = Shape()
+        n = 6 if hi else 3
+        hw, r, h = f["hw"], f["r"], f["h"]
+        rows = [(0.0, 1.1), (0.45, 0.25), (1.4, 0.0), (h - 3.4, 0.0), (h - 1.6, 0.8), (h - 0.6, 2.4),
+                (h - 0.1, 4.6)]
+        boxloft(s, [(z, hw - i, hd - i, r - i * 0.6) for z, i in rows], REDT, n, cx, cy,
+                bottom=0.0, top=h)
+        # the cuff the leg stands in, rolled over at its top, the ankle pin through it
+        cw, cd, ct = f["cuff"]
+        rows = [(h - 1.0, cw, cd, 3.0), (ct - 0.9, cw, cd, 3.0), (ct - 0.3, cw - 0.35, cd - 0.35, 2.8),
+                (ct, cw - 1.0, cd - 1.0, 2.4), (ct - 0.2, cw - 1.9, cd - 1.9, 2.0),
+                (ct - 1.2, cw - 2.3, cd - 2.3, 1.8), (h + 0.6, cw - 2.3, cd - 2.3, 1.8)]
+        boxloft(s, rows, REDT, 3 if hi else 2, cx, 0.0, top=h + 0.4)
+        stud(s, (cx + sx * cw, 0.0, RB["ankle"]), "+X" if sx > 0 else "-X",
+             [(2.4, -0.4), (2.4, 0.1), (2.0, 0.6), (1.1, 0.9), (0.0, 0.95)], STEELK, hi, 12)
+        return s
+    return build
+
+
+def rb_aerial(hi):
+    s = Shape()
+    ad = RB["aerial"]
+    ax, ay, az = ad["at"]
+    cr_, wr, turns, top = ad["coil"]
+    s.cylinder(V(ax, ay, az - 1.2), V(ax, ay, az + 1.0), mm(cr_ + wr * 0.6), STEELK, segs(hi, 12))
+    pts = helix(V(ax, ay, az + 0.6), V(ax, ay, top), mm(cr_), turns, 18 if hi else 9)
+    s.tube(pts, mm(wr), STEELK, segs(hi, 6))
+    bz, br = ad["ball"]
+    s.cylinder(V(ax, ay, top - 0.8), V(ax, ay, bz - br + 1.0), mm(1.4), STEELK, segs(hi, 8))
+    blob(s, (ax, ay, bz), (br, br, br), BALL, hi, lat=8, lon=16)
+    return s
+
+
+def rb_key(hi):
+    s = Shape()
+    k = RB["key"]
+    x, y, z = k["at"]
+    r, ln = k["shaft"]
+    s.cylinder(V(x, y - 1.5, z), V(x, y + ln, z), mm(r), KEYT, segs(hi, 10))
+    s.cylinder(V(x, y + ln - 2.2, z), V(x, y + ln, z), mm(2.9), KEYT, segs(hi, 14))
+    hw, hl, out = k["wing"]
+    t = k["t"]
+    m = segs(hi, 14)
+    # the wings stand upright either side of the shaft, so it shows its bow side-on
+    Mw = T(V(x, y, z)) @ Matrix.Rotation(math.radians(90), 4, "Y")
+    yc = ln + hl - 0.6
+    bv = 0.3 if hi else 0.0
+    for sw in (1, -1):
+        lobe = [(sw * out + hw * math.cos(2 * math.pi * j / m), yc + hl * math.sin(2 * math.pi * j / m))
+                for j in range(m)]
+        prism(s, lobe, -t / 2, t / 2, KEYT, Mw, bv)
+    prism(s, [(3.2, ln - 0.6), (3.2, yc + 2.5), (-3.2, yc + 2.5), (-3.2, ln - 0.6)], -t / 2, t / 2,
+          KEYT, Mw, bv)
+    return s
+
+
+def robot_look(L, f):
+    nb = L.nb
+    xm, ym, zm = nb.mul(L.x, K.STUD_MM), nb.mul(L.y, K.STUD_MM), nb.mul(L.z, K.STUD_MM)
+    ax = nb.absf(xm)
+    sgn = nb.div(xm, nb.add(ax, 0.001))
+
+    def sq(v):
+        return nb.mul(v, v)
+
+    def disc(u, v, cu, cv, r, soft=0.2):
+        d = nb.math("SQRT", nb.add(sq(nb.sub(u, cu)), sq(nb.sub(v, cv))))
+        return nb.sub(1.0, nb.ss(d, r - soft, r + soft))
+
+    def band(v, a, b, soft=0.15):
+        """1 between a and b."""
+        return nb.mul(nb.ss(v, a - soft, a + soft), nb.sub(1.0, nb.ss(v, b - soft, b + soft)))
+
+    def both(*ms):
+        out = ms[0]
+        for m in ms[1:]:
+            out = nb.mul(out, m)
+        return out
+
+    grain = L.noise(500.0, 1, detail=1)
+    tone = nb.mr(grain, 0.3, 0.7, 0.95, 1.04)
+    BLUE, BLUE2, CREAM, INK, RED, YEL = "#2B5BA6", "#3A6CB8", "#E9DDB8", "#1B1D22", "#C3302A", "#E6B437"
+    SILVER = "#93A2B5"
+    C = Coat(L, hexc(BLUE), 0.32, 0.0, 0.0)
+    fr, bk = nb.ss(nb.sub(0.0, L.ny), 0.6, 0.8), nb.ss(L.ny, 0.6, 0.8)
+    sd = nb.ss(nb.absf(L.nx), 0.6, 0.8)
+    up, dn = nb.ss(L.nz, 0.6, 0.8), nb.ss(nb.sub(0.0, L.nz), 0.6, 0.8)
+    torso, head, arm = L.k(BODYT), L.k(HEADT), L.k(ARMT)
+    blue = L.k(BODYT, HEADT, ARMT)
+    C.paint(blue, nb.tint(hexc(BLUE), tone), 0.32, 0.0)
+
+    def rivets(mask, u, v, u0, step, phase=0.0, r=1.05):
+        """A column of printed, pressed rivets at u = u0, every `step` mm along v."""
+        dv = nb.mul(nb.sub(nb.fract(nb.add(nb.div(v, step), 0.5 + phase)), 0.5), step)
+        du = nb.sub(u, u0)
+        d2 = nb.add(sq(du), sq(dv))
+        ring = nb.sub(1.0, nb.ss(d2, (r + 0.2) ** 2, (r + 0.45) ** 2))
+        dot = nb.sub(1.0, nb.ss(d2, (r - 0.15) ** 2, (r + 0.15) ** 2))
+        hl = nb.sub(1.0, nb.ss(nb.add(sq(nb.add(du, 0.35)), sq(nb.sub(dv, 0.35))), 0.08, 0.3))
+        C.paint(nb.mul(mask, ring), hexc(INK), 0.32)
+        C.paint(nb.mul(mask, dot), hexc(SILVER), 0.3, 0.0, 0.00012)
+        C.paint(both(mask, dot, hl), hexc("#D9DEE2"), 0.3)
+
+    # --- the torso: rivets up its corners, a hazard-striped belt, a vent, a hatch on its back
+    tz = band(zm, 66.5, 113.0)
+    for s_ in (1, -1):
+        rivets(both(torso, nb.mx(fr, bk), tz), xm, zm, s_ * 24.6, 6.0)
+        rivets(both(torso, sd, tz), ym, zm, s_ * 14.8, 6.0)
+    u = nb.add(nb.mul(xm, nb.mx(fr, bk)), nb.mul(ym, sd))
+    belt = both(torso, band(zm, 58.9, 66.2), nb.sub(1.0, up))
+    C.paint(belt, nb.tint(hexc(YEL), tone), 0.32)
+    stripes = nb.ss(nb.sin(nb.mul(nb.add(u, zm), 2 * math.pi / 7.0)), -0.12, 0.12)
+    C.paint(both(belt, stripes, band(zm, 59.7, 65.4)), hexc(INK), 0.32)
+    C.paint(both(torso, nb.sub(1.0, up), nb.mx(band(zm, 58.4, 59.2, 0.1), band(zm, 65.9, 66.7, 0.1))),
+            hexc(INK), 0.32)
+    C.paint(both(torso, nb.sub(1.0, nb.ss(zm, 58.2, 58.6))), hexc("#2A2E36"), 0.34)
+    vent = both(torso, fr, band(zm, 107.6, 113.4), band(ax, -1.0, 13.0))
+    C.paint(vent, hexc(INK), 0.34)
+    C.paint(both(vent, band(nb.fract(nb.div(nb.sub(zm, 107.6), 1.95)), 0.42, 0.95, 0.06),
+                 band(ax, -1.0, 12.2), band(zm, 108.3, 112.7)), hexc(BLUE2), 0.32)
+    # the hatch on its back, the key's wind ring and our maker's mark, a diamond
+    hz = nb.sub(zm, 87.0)
+    rc = 3.0
+    qx, qz = nb.mx(nb.sub(ax, 17.0 - rc), 0.0), nb.mx(nb.sub(nb.absf(hz), 22.5 - rc), 0.0)
+    dh = nb.sub(nb.math("SQRT", nb.add(sq(qx), sq(qz))), rc)
+    back = both(torso, bk)
+    C.paint(both(back, nb.sub(1.0, nb.ss(dh, -0.2, 0.0))), nb.tint(hexc(BLUE2), tone), 0.32)
+    C.paint(both(back, band(dh, -0.45, 0.25, 0.1)), hexc(INK), 0.32)
+    for cx, cz in ((14.0, 67.5), (14.0, 106.5)):
+        C.paint(both(back, disc(ax, zm, cx, cz, 1.4)), hexc(INK), 0.32)
+        C.paint(both(back, disc(ax, zm, cx, cz, 1.0)), hexc(SILVER), 0.3, 0.0, 0.00012)
+    kz = RB["key"]["at"][2]
+    C.paint(both(back, disc(xm, zm, 0.0, kz, 6.2)), hexc(INK), 0.32)
+    C.paint(both(back, disc(xm, zm, 0.0, kz, 5.4)), hexc(CREAM), 0.32)
+    C.paint(both(back, disc(xm, zm, 0.0, kz, 3.6)), hexc(INK), 0.32)
+    dia = nb.add(nb.div(ax, 5.6), nb.div(nb.absf(nb.sub(zm, 101.0)), 4.2))
+    C.paint(both(back, nb.sub(1.0, nb.ss(dia, 0.95, 1.05))), hexc(RED), 0.3)
+    C.paint(both(back, nb.sub(1.0, nb.ss(dia, 0.62, 0.72))), hexc(CREAM), 0.3)
+    C.paint(both(back, disc(xm, zm, 0.0, 101.0, 1.1)), hexc(RED), 0.3)
+    C.paint(both(torso, up, nb.ss(zm, 115.0, 115.5)), nb.tint(hexc(BLUE2), tone), 0.32)
+
+    # --- the gauge panel: a dark plate in a red frame, two dials, a bar meter, label dashes
+    pn = L.k(PANEL)
+    pf = nb.mul(pn, fr)
+    C.paint(pn, hexc("#A9ACAE"), 0.3, 1.0)
+    C.paint(pf, nb.tint(hexc("#202328"), tone), 0.34, 0.0)
+    rc = 2.4
+    qx, qz = nb.mx(nb.sub(ax, 16.6 - rc), 0.0), nb.mx(nb.sub(nb.absf(nb.sub(zm, 89.0)), 14.6 - rc), 0.0)
+    dp = nb.sub(nb.math("SQRT", nb.add(sq(qx), sq(qz))), rc)
+    C.paint(both(pf, band(dp, -0.5, 0.5, 0.1)), hexc(RED), 0.3)
+    for (cx, cz, r), face, ticks, needle, ncol in (
+            (RB["dial"][0], CREAM, 12, 132.0, RED), (RB["dial"][1], YEL, 8, 48.0, INK)):
+        px, pz = nb.sub(xm, cx), nb.sub(zm, cz)
+        rr = nb.math("SQRT", nb.add(sq(px), sq(pz)))
+        C.paint(both(pf, disc(xm, zm, cx, cz, r - 0.1)), nb.tint(hexc(face), tone), 0.28)
+        ang = nb.math("ARCTAN2", pz, nb.add(px, 0.0001))
+        fa = nb.fract(nb.mul(ang, ticks / (2 * math.pi)))
+        tick = nb.sub(1.0, nb.ss(nb.mn(fa, nb.sub(1.0, fa)), 0.05, 0.09))
+        C.paint(both(pf, tick, band(rr, r * 0.68, r * 0.9, 0.08)), hexc(INK), 0.28)
+        if r > 5.0:
+            # the red zone, a third of the way round on the right
+            C.paint(both(pf, band(rr, r * 0.55, r * 0.66, 0.08), band(ang, -1.1, 0.15, 0.04)),
+                    hexc(RED), 0.28)
+        a = math.radians(needle)
+        dx, dz = math.cos(a), math.sin(a)
+        along = nb.add(nb.mul(px, dx), nb.mul(pz, dz))
+        off = nb.absf(nb.sub(nb.mul(pz, dx), nb.mul(px, dz)))
+        C.paint(both(pf, nb.sub(1.0, nb.ss(off, 0.25, 0.42)), band(along, -1.2, r * 0.82, 0.1)),
+                hexc(ncol), 0.28)
+        C.paint(both(pf, disc(xm, zm, cx, cz, 0.95)), hexc(INK), 0.28)
+    meter = both(pf, band(zm, 83.4, 88.4, 0.1), band(xm, -15.4, 15.4, 0.1))
+    C.paint(meter, hexc("#0E0F12"), 0.3)
+    seg = band(nb.fract(nb.div(nb.add(xm, 15.0), 3.0)), 0.08, 0.86, 0.04)
+    cell = both(meter, seg, band(zm, 84.0, 87.8, 0.1), band(xm, -15.0, 15.0, 0.1))
+    lit = nb.sub(1.0, nb.ss(xm, 5.8, 6.2))
+    for lo, hi_, c in ((-16.0, 0.0, "#3E9A4B"), (0.0, 6.0, YEL), (6.0, 16.0, RED)):
+        C.paint(both(cell, band(xm, lo, hi_, 0.05)), hexc(c), 0.3)
+    C.paint(both(cell, nb.sub(1.0, lit)), hexc("#5A2622"), 0.3)
+    dash = both(pf, band(zm, 90.4, 91.1, 0.08), band(nb.fract(nb.div(xm, 2.2)), 0.15, 0.75, 0.05),
+                nb.mx(band(xm, -13.5, -1.5, 0.1), band(xm, 3.5, 14.5, 0.1)))
+    C.paint(dash, hexc(CREAM), 0.3)
+
+    # --- the head: rivets, a strip of little lamps on its brow, rings round the eyes and ears,
+    # a grille on the back of its head, rivets round the aerial
+    hb = band(zm, 126.5, 158.0)
+    for s_ in (1, -1):
+        rivets(both(head, nb.mx(fr, bk), hb), xm, zm, s_ * 19.6, 5.5)
+    brow = both(head, fr, band(zm, 153.6, 158.4), band(ax, -1.0, 15.6))
+    C.paint(brow, hexc(INK), 0.32)
+    lamp = both(brow, band(nb.fract(nb.div(nb.add(xm, 14.0), 4.0)), 0.18, 0.82, 0.05),
+                band(zm, 154.6, 157.4, 0.1), band(ax, -1.0, 14.6))
+    alt = nb.ss(nb.sin(nb.mul(nb.add(xm, 14.0), math.pi / 4.0)), -0.05, 0.05)
+    C.paint(lamp, hexc(RED), 0.25)
+    C.paint(nb.mul(lamp, alt), hexc(YEL), 0.25)
+    ex, ez, er = RB["eyes"]
+    for s_ in (1, -1):
+        C.paint(both(head, fr, disc(xm, zm, s_ * ex, ez, er + 3.3)), hexc(INK), 0.32)
+        C.paint(both(head, fr, disc(xm, zm, s_ * ex, ez, er + 2.6)), hexc(CREAM), 0.3)
+    C.paint(both(head, fr, band(zm, 127.6, 138.0), band(ax, -1.0, 12.4)), hexc(INK), 0.32)
+    ring = disc(ym, zm, 0.0, RB["ear"]["z"], RB["ear"]["r"] + 3.2)
+    C.paint(both(head, sd, ring), hexc(CREAM), 0.3)
+    C.paint(both(head, sd, disc(ym, zm, 0.0, RB["ear"]["z"], RB["ear"]["r"] + 2.2)), hexc(INK), 0.32)
+    gr = both(head, bk, band(zm, 131.0, 151.0), band(ax, -1.0, 13.5))
+    C.paint(gr, hexc(INK), 0.32)
+    C.paint(both(gr, band(nb.fract(nb.div(nb.sub(zm, 131.0), 2.5)), 0.45, 0.95, 0.05),
+                 band(ax, -1.0, 12.7), band(zm, 131.6, 150.4)), hexc(BLUE2), 0.32)
+    C.paint(both(head, nb.sub(1.0, nb.ss(zm, 126.0, 126.4))), hexc("#2A2E36"), 0.34)
+    rr = nb.math("SQRT", nb.add(sq(xm), sq(ym)))
+    ang = nb.math("ARCTAN2", ym, nb.add(xm, 0.0001))
+    fa = nb.sub(nb.fract(nb.mul(ang, 8 / (2 * math.pi))), 0.5)
+    tdot = nb.add(sq(nb.sub(rr, 9.5)), sq(nb.mul(fa, 2 * math.pi * 9.5 / 8)))
+    top = both(head, up)
+    C.paint(nb.mul(top, nb.sub(1.0, nb.ss(tdot, 1.3, 1.9))), hexc(INK), 0.32)
+    C.paint(nb.mul(top, nb.sub(1.0, nb.ss(tdot, 0.7, 1.1))), hexc(SILVER), 0.3, 0.0, 0.00012)
+
+    # --- the arms: a pressed elbow band in silver, a cream stripe down the outside
+    outer = nb.ss(nb.mul(L.nx, sgn), 0.6, 0.8)
+    C.paint(both(arm, band(zm, 92.0, 96.0, 0.1)), hexc(SILVER), 0.3, 0.0)
+    C.paint(both(arm, nb.mx(band(zm, 91.6, 92.3, 0.08), band(zm, 95.7, 96.4, 0.08))), hexc(INK), 0.32)
+    C.paint(both(arm, outer, band(ym, -1.3, 1.3, 0.1), nb.mx(band(zm, 75.0, 90.5), band(zm, 97.5, 103.0))),
+            hexc(CREAM), 0.3)
+
+    # --- legs: printed gunmetal, their pressed ribs bare tin
+    lg = L.k(LEGT)
+    C.paint(lg, nb.tint(hexc("#6C737C"), tone), 0.36, 0.0)
+    C.paint(both(lg, nb.mx(band(zm, 27.2, 30.4, 0.2), band(zm, 32.7, 35.9, 0.2))), hexc("#B9BAB5"), 0.3, 1.0)
+
+    # --- red tin: the feet (bare tin soles, a dark sole line), the hands, the ears
+    rd = L.k(REDT)
+    C.paint(rd, nb.tint(hexc(RED), tone), 0.32, 0.0)
+    C.paint(both(rd, band(zm, 1.6, 3.0, 0.1), nb.sub(1.0, up), nb.sub(1.0, dn)), hexc(INK), 0.34)
+    C.paint(both(rd, dn, nb.sub(1.0, nb.ss(zm, 1.0, 1.5))), hexc("#8F8C84"), 0.5, 1.0)
+
+    # --- printed tin knocked about: chips to bare tin on the edges, scuffs, a little rust low down
+    printed = L.k(BODYT, HEADT, ARMT, REDT, LEGT)
+    chips = both(printed, L.edge(mm(1.1), k=4.0), nb.ss(L.noise(220.0, 3, detail=4), 0.47, 0.55))
+    C.paint(chips, hexc("#ABAAA2"), 0.3, 1.0, -0.00015)
+    scratch = nb.ss(L.noise(300.0, 4, stretch=(1.0, 0.06, 0.06), detail=2), 0.69, 0.72)
+    C.paint(both(printed, scratch, 0.5), hexc("#B6B2A6"), 0.36, 0.6)
+    rust = both(nb.mx(rd, lg), nb.sub(1.0, nb.ss(zm, 6.0, 14.0)), nb.ss(L.noise(110.0, 5, detail=4), 0.64, 0.7))
+    C.paint(rust, hexc("#6B3A1F"), 0.85, 0.0)
+
+    # --- steel: the neck, bezels, pins, the mouth grille's plate, the aerial's coil and socket
+    st = L.k(STEELK)
+    C.paint(st, nb.tint(hexc("#A2A5A6"), nb.mr(L.noise(80.0, 6, detail=3), 0.3, 0.7, 0.86, 1.06)),
+            0.3, 1.0)
+    C.paint(both(st, nb.ss(L.noise(130.0, 7, detail=4), 0.68, 0.73)), hexc("#6E3B1E"), 0.8, 0.0)
+    mz0, mz1 = RB["mouth"]["z"]
+    slots = both(st, fr, band(zm, mz0 + 1.2, mz1 - 1.2), band(ax, -1.0, RB["mouth"]["x"] - 1.6),
+                 band(nb.fract(nb.div(nb.sub(zm, mz0 + 1.2), 1.7)), 0.4, 0.95, 0.05))
+    C.paint(slots, hexc("#15161A"), 0.6, 0.0)
+    # the key: brass-lacquered tin
+    ky = L.k(KEYT)
+    C.paint(ky, nb.tint(hexc("#B8934A"), nb.mr(L.noise(90.0, 8, detail=3), 0.3, 0.7, 0.88, 1.06)), 0.3, 1.0)
+    # plastic: amber lens eyes with a printed iris, red, yellow and green buttons, the red ball
+    ln_ = L.k(LENS)
+    eyes = nb.mul(ln_, nb.ss(zm, 138.0, 139.0))
+    C.paint(ln_, hexc("#E8B22E"), 0.1, 0.0)
+    ex_ = nb.sub(xm, nb.mul(sgn, ex))
+    ez_ = nb.sub(zm, ez)
+    C.paint(nb.mul(eyes, disc(ex_, ez_, 0.0, 0.0, 3.0)), hexc("#D45A1E"), 0.1)
+    C.paint(nb.mul(eyes, disc(ex_, ez_, 0.0, 0.0, 1.8)), hexc("#121214"), 0.08)
+    C.paint(nb.mul(eyes, disc(ex_, ez_, -1.5, 1.6, 0.9, 0.25)), hexc("#FFF6DC"), 0.08)
+    btn = nb.mul(ln_, nb.sub(1.0, nb.ss(zm, 138.0, 139.0)))
+    C.paint(nb.mul(btn, nb.sub(1.0, nb.ss(xm, -5.2, -4.8))), hexc("#D3322B"), 0.14)
+    C.paint(nb.mul(btn, band(xm, -5.0, 5.0, 0.2)), hexc("#EBC13A"), 0.14)
+    C.paint(nb.mul(btn, nb.ss(xm, 4.8, 5.2)), hexc("#3DA04E"), 0.14)
+    C.paint(L.k(BALL), hexc("#CF2A22"), 0.16, 0.0)
+    C.finish(f.dust, grime=0.5)
+    return C.surface(bump_dist=0.0012, bump=0.7)
+
+
+# --- how it walks -------------------------------------------------------------------------------
+# One crank drives it all: psi counts footfalls, each leg swinging through a full stroke every two,
+# the arms the other way. The body moves only as the planted foot's backward swing pushes it, so
+# no foot ever slides, and each foot's `move` keeps its sole on the floor (or lifts it clear on
+# its swing) whatever the legs, the lean and the waddle do.
+
+def walk_rate(t):
+    u = min(t / RW["length"], 1.0)
+    return RW["rate"] * (1 - RW["fade"] * u) * max(0.0, 1 - u ** RW["knee"]) ** 0.5
+
+
+def smooth(e0, e1, x):
+    u = min(1.0, max(0.0, (x - e0) / (e1 - e0)))
+    return u * u * (3 - 2 * u)
+
+
+def robot_walk():
+    dt = 1.0 / FPS
+    r0 = RW["rate"]
+    t, psi, stop = 0.0, 0.0, None
+    ts, ps, rs = [], [], []
+    while True:
+        r = walk_rate(t) if stop is None else 0.0
+        if stop is None and t > 0.5 and r < 1.0 / RW["last"]:
+            stop, r = t, 0.0
+        ts.append(t)
+        ps.append(psi)
+        rs.append(r)
+        if stop is not None and t > stop + 1.8:
+            break
+        psi += r * dt
+        t += dt
+    n = len(ts)
+    falls = [ts[i] for i in range(1, n) if math.floor(ps[i] - 0.5) > math.floor(ps[i - 1] - 0.5)]
+    stop_i = next(i for i, t_ in enumerate(ts) if t_ >= stop)
+    a_stop = min(1.0, (rs[stop_i - 1] / r0) ** 0.6)
+    hipz = RB["hip"][2]
+    ank = RB["ankle"]
+    fx = RB["hip"][0]
+    fcy = (RB["foot"]["toe"] + RB["foot"]["heel"]) / 2
+    H = RB["aerial"]["at"][2]
+    tr = {}
+
+    def put(part, ch, v):
+        tr.setdefault((part, ch), []).append(v)
+
+    planted = "R"                   # it sets off on its left foot
+    P = None
+    bx = by = 0.0
+    fi = 0
+    for i, t_ in enumerate(ts):
+        if t_ < stop:
+            a = min(1.0, t_ / 0.15) * min(1.0, (rs[i] / r0) ** 0.6)
+            aa = a
+        else:
+            a = a_stop * (1 - smooth(0.0, 0.4, t_ - stop))
+            # the arms swing on their pins after the crank stops, and settle
+            aa = a_stop * math.exp(-(t_ - stop) / 0.32) * math.cos(2 * math.pi * 1.7 * (t_ - stop))
+        ph = math.pi * ps[i]
+        sw = RW["swing"] * a * math.sin(ph)          # degrees the left foot is forward
+        tauL, tauR = -sw, sw                          # turns about +X: + swings back
+        roll = -RW["roll"] * a * math.cos(ph)         # + lowers the left (+X) side
+        yaw = -RW["wiggle"] * a * math.sin(ph)
+        while fi < len(falls) and falls[fi] <= t_:
+            fi += 1
+        tf = falls[fi - 1] if fi else -1.0
+        e = min(1.0, (walk_rate(tf) / r0) ** 0.7) if fi else 0.0
+        jolt = RW["jolt"] * e * (1 - math.exp(-(t_ - tf) / 0.015)) * math.exp(-(t_ - tf) / 0.06) \
+            if fi and t_ < stop + 0.3 else 0.0
+        lean = RW["lean"] * a
+        pitch = lean + jolt
+        swingL = math.cos(ph) > 0
+        if t_ >= stop:
+            swingL = planted == "R"
+        now = "R" if swingL else "L"
+        R = Matrix.Rotation(math.radians(yaw), 4, "Z") @ Matrix.Rotation(math.radians(pitch), 4, "X") \
+            @ Matrix.Rotation(math.radians(roll), 4, "Y")
+        soles = {}
+        for side, sx, tau in (("L", 1, tauL), ("R", -1, tauR)):
+            hp = Vector((mm(sx * fx), 0.0, mm(hipz)))
+            Lg = T(hp) @ Matrix.Rotation(math.radians(tau), 4, "X") @ T(-hp)
+            ak = Vector((mm(sx * fx), 0.0, mm(ank)))
+            fp, fr = -(tau + lean), -roll
+            Lf = T(ak) @ Matrix.Rotation(math.radians(fp), 4, "X") @ Matrix.Rotation(math.radians(fr), 4, "Y") @ T(-ak)
+            sole = Vector((mm(sx * fx), mm(fcy), 0.0))
+            z0 = (R @ Lg @ Lf @ sole).z
+            swinging = (side == "L") == swingL
+            lift = mm(RW["lift"]) * a * abs(math.cos(ph)) ** 1.5 if swinging and t_ < stop else 0.0
+            m = lift - z0
+            q = R @ Lg @ Lf @ T(Vector((0.0, 0.0, m))) @ sole
+            soles[side] = q
+            put("Foot" + side, "move", m)
+            put("Foot" + side, "pitch", fp)
+            put("Foot" + side, "roll", fr)
+            put("Leg" + side, "turn", tau)
+        if P is None or now != planted:
+            planted = now
+            P = Vector((bx, by, 0.0)) + soles[planted]
+        bx, by = P.x - soles[planted].x, P.y - soles[planted].y
+        put("Body", "x", bx)
+        put("Body", "y", by)
+        put("Body", "yaw", yaw)
+        put("Body", "pitch", pitch)
+        put("Body", "roll", roll)
+        put("ArmL", "turn", RW["arm"] * aa * math.sin(ph))
+        put("ArmR", "turn", -RW["arm"] * aa * math.sin(ph))
+        put("Key", "turn", 180.0 * RW["winds"] * (1.0 - ps[i] / ps[-1]))
+    # the aerial: a spring and ball on the head, flung about by the body's sway and each clank
+    f_, z_, l_ = RW["aerial"]
+    w = 2 * math.pi * f_
+
+    def d2(vs, i):
+        return (vs[min(i + 1, n - 1)] - 2 * vs[i] + vs[max(i - 1, 0)]) / (dt * dt)
+
+    Bp = [math.radians(v) for v in tr[("Body", "pitch")]]
+    Br = [math.radians(v) for v in tr[("Body", "roll")]]
+    By = [v * K.STUD_MM for v in tr[("Body", "y")]]
+    Bx = [v * K.STUD_MM for v in tr[("Body", "x")]]
+    thp = thr = vp = vr = 0.0
+    for i in range(n):
+        ay_ = d2(By, i) - H * d2(Bp, i)
+        ax_ = d2(Bx, i) + H * d2(Br, i)
+        acc_p = -w * w * thp - 2 * z_ * w * vp + ay_ / l_ - d2(Bp, i)
+        acc_r = -w * w * thr - 2 * z_ * w * vr - ax_ / l_ - d2(Br, i)
+        vp += acc_p * dt
+        vr += acc_r * dt
+        thp += vp * dt
+        thr += vr * dt
+        put("Aerial", "pitch", max(-25.0, min(25.0, math.degrees(thp))))
+        put("Aerial", "roll", max(-25.0, min(25.0, math.degrees(thr))))
+
+    # keys only where each curve turns: half steps for the crank's sines, quarter steps for the
+    # feet's lifts, a curve's own turning points (the aerial, the arms' settle), and the ends
+    ends = {0, stop_i, n - 1}
+
+    def turning(step, off=0.0):
+        out_ = set(ends)
+        for i in range(1, stop_i + 1):
+            if math.floor(ps[i] / step + off) != math.floor(ps[i - 1] / step + off):
+                out_.add(i)
+        return out_
+
+    def extremes(vs, i0=0):
+        out_ = set()
+        for i in range(max(1, i0), n - 1):
+            if (vs[i] - vs[i - 1]) * (vs[i + 1] - vs[i]) < 0:
+                out_.add(i)
+        return out_
+
+    half, quarter = turning(0.5), turning(0.25)
+    tracks = []
+    for (part, ch), vs in tr.items():
+        if max(vs) - min(vs) < 1e-6:
+            continue
+        if part == "Key":
+            ks = rdp(ts, vs, 3.0)
+        elif (part, ch) == ("Body", "pitch"):
+            ks = rdp(ts, vs, 0.04)
+        else:
+            if part == "Aerial":
+                pick = extremes(vs) | ends
+            elif ch == "move" or (part, ch) == ("Body", "x"):
+                pick = quarter | extremes(vs, stop_i)
+            else:
+                pick = half | extremes(vs, stop_i)
+            ks = [(round(ts[i], 3), round(vs[i], 5), "Sine", "InOut") for i in sorted(pick)]
+            ks[0] = ks[0][:2]
+        tracks.append((part, ch, ks))
+    return round(ts[-1], 2), tracks, falls
+
+
+def robot_wind():
+    keys, t = [(0.0, 0.0), (0.15, 0.0)], 0.15
+    for i in range(RW["winds"]):
+        keys += [(t + 0.3, 180.0 * (i + 1), "Sine", "InOut"), (t + 0.46, 180.0 * (i + 1))]
+        t += 0.46
+    return round(t + 0.2, 2), [("Key", "turn", keys)]
+
+
+WALK_DUR, WALK_TRACKS, FALLS = robot_walk()
+RWIND_DUR, RWIND_TRACKS = robot_wind()
+
+WALKING_ROBOT = kit.Find(
+    "WalkingRobot",
+    [kit.Part("Body", rb_body),
+     kit.Part("LegL", rb_leg(1), tuple(hip(1)), "Body", (1, 0, 0)),
+     kit.Part("LegR", rb_leg(-1), tuple(hip(-1)), "Body", (1, 0, 0)),
+     kit.Part("FootL", rb_foot(1), tuple(ankle(1)), "LegL", (0, 0, 1)),
+     kit.Part("FootR", rb_foot(-1), tuple(ankle(-1)), "LegR", (0, 0, 1)),
+     kit.Part("ArmL", rb_arm(1), tuple(shoulder(1)), "Body", (1, 0, 0)),
+     kit.Part("ArmR", rb_arm(-1), tuple(shoulder(-1)), "Body", (1, 0, 0)),
+     kit.Part("Aerial", rb_aerial, tuple(V(*RB["aerial"]["at"])), "Body", (0, 0, 1)),
+     kit.Part("Key", rb_key, tuple(V(*RB["key"]["at"])), "Body", (0, 1, 0))],
+    robot_look,
+    motions={
+        # the key wound in five half turns, a regrip between each
+        "Wind": dict(duration=RWIND_DUR, focus="Key", distance=0.8, view=(1.2, 2.0, 0.7),
+                     drop=0.0, tracks=RWIND_TRACKS),
+        # fifteen seconds of clanking off in a straight line: legs swinging from the hips, arms
+        # the other way, rocking onto each planted foot, the aerial whipping about; it slows,
+        # gives out, and its arms swing on a moment after it stops
+        "Walk": dict(duration=WALK_DUR, focus=(0.0, 0.0, mm(95.0)), distance=1.15, follow="Body",
+                     view=(-1.1, -2.0, 0.45), drop=0.0, tracks=WALK_TRACKS),
+    },
+    dust=RB["dust"], seed=RB["seed"], texels=900,
+)
+
+
+FINDS = [CYMBAL_MONKEY, JACK_IN_THE_BOX, CHATTERING_TEETH, WALKING_ROBOT]
 
 if __name__ == "__main__":
     kit.main("Windups", HERE, FINDS)
