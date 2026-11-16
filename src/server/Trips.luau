@@ -53,6 +53,7 @@ local Workspace = game:GetService("Workspace")
 local Boarding = require(ReplicatedStorage.Shared.Lobby.Boarding)
 local Brix = require(ReplicatedStorage.Brix)
 local Climb = require(ReplicatedStorage.Shared.Climb)
+local Kept = require(ReplicatedStorage.Shared.Kept)
 local Lobby = require(ReplicatedStorage.Shared.Lobby)
 local Ride = require(ReplicatedStorage.Shared.Elevator.Ride)
 local Trip = require(ReplicatedStorage.Shared.Lobby.Trip)
@@ -258,6 +259,24 @@ function Trips.new(): Trips
 		end)
 	end
 
+	-- Whether `player`'s character may be stood at the car now (`Trip.standsLate`): still on the
+	-- front office's spawn, and neither being carried up by the climb nor held in a unit. A friend
+	-- left behind is given a new character on the spawn and stood wrapped in a unit of their own
+	-- (KeptPlayers:store); stood at the car instead, two landed on one spot, far from the units
+	-- their Cut free is judged at (S3-05a).
+	local function mayStand(player: Player): boolean
+		local root = rootOf(player)
+		if not root then
+			return false
+		end
+		local s, c = spawnAt, climbs
+		return Trip.standsLate(
+			s == nil or (root.Position - s).Magnitude <= AT_SPAWN,
+			c ~= nil and c:carrying(player) ~= nil,
+			player:GetAttribute(Kept.Attribute) == true
+		)
+	end
+
 	-- Stands `player` on the floor the climb is on, in front of its car, once there's one to stand
 	-- on and the group's car is open (a late arrival, or a respawn at the front office).
 	local function standLate(player: Player)
@@ -285,7 +304,8 @@ function Trips.new(): Trips
 			local at = spot :: CFrame
 			streamTo({ player }, at.Position, STREAM_MOST)
 			local character = player.Character
-			if player.Parent and character then
+			-- asked again after the stream: the climb may have taken them meanwhile
+			if player.Parent and character and mayStand(player) then
 				character:PivotTo(at)
 				placed[player] = true
 				player:SetAttribute(Trip.ArrivedAttribute, at)
@@ -299,17 +319,16 @@ function Trips.new(): Trips
 
 	-- A new character on a group's own server: one that spawned at the front office after its
 	-- player was stood in the climb (a respawn) goes back to the climb's floor. A character the
-	-- climb loads itself (the end's Again, a friend cut free) is moved off the spawn in the same
-	-- frame, so a frame later it isn't there.
+	-- climb loads itself (the end's Again, a friend cut free, a friend carried up) is moved off
+	-- the spawn in the same frame, so a frame later it isn't there; one carried up is skipped
+	-- outright besides (`mayStand`).
 	local function newCharacter(player: Player)
 		if not placed[player] or homed then
 			return
 		end
 		task.defer(function()
 			task.wait()
-			local root = rootOf(player)
-			local s = spawnAt
-			if root and s and (root.Position - s).Magnitude <= AT_SPAWN then
+			if spawnAt and mayStand(player) then
 				standLate(player)
 			end
 		end)

@@ -346,6 +346,20 @@ do
 	ok(Trip.WordStale > Trip.WordEvery * 2, "a lobby forgets only after two words are missed")
 end
 
+-- a new character on a group's own server stood at the car (S3-05a): a respawn or a late arrival
+-- still on the front office's spawn is; a friend left behind, being carried up to wake wrapped
+-- in a unit (or already held in one), never is, wherever their body stands meanwhile
+do
+	ok(Trip.standsLate(true, false, false), "a respawn on the spawn is stood at the car")
+	ok(not Trip.standsLate(false, false, false), "a body stood elsewhere by the climb stays put")
+	ok(
+		not Trip.standsLate(true, true, false),
+		"a friend being carried up is never stood at the car"
+	)
+	ok(not Trip.standsLate(true, false, true), "a friend held in a unit is never stood at the car")
+	ok(not Trip.standsLate(false, true, true), "nor once they're in their unit")
+end
+
 print(`trip: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

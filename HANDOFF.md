@@ -2,53 +2,56 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-16, session 209 (a dropped lantern holds the Mannequin) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-16, session 210 (two friends carried up each land in their own unit) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- F-G1b3b done (D-234): a found light lying lit on the floor holds a Mannequin as far as its own
-  lamp reaches (lantern 9.6 studs, tea light 7.2), shaded by walls and shut doors, until it runs
-  down (`Use.litUntil`, `Use.reach`, `Keeper.Glows`, `Keepers`' `lamps`). In a hand it holds
-  nothing (the owner's call, `OWNER.md`). Seen in Studio Play: the dropped lantern's clank woke a
-  Mannequin, it came at the player, froze 9.5 studs from the lantern, held 35 s with nobody near
-  and walked on as the light ran out. New Studio hook: Workspace `StandMannequin`.
+- S3-05a done (D-243): on a group's own server Trips stood every new character still on the
+  spawn at the car a frame on, and the carry's new character sat on the spawn while its unit
+  streamed in, so two friends left behind were stood on one spot, wrapped, far from the units
+  their Cut free is judged at. Now `KeptPlayers:store` moves the body in at once, and Trips
+  stands no one the climb is carrying or holding (`Trip.standsLate`). The carry's fallback
+  stands each on a spot of their own (`ClimbEnd.spot`). Seen in Studio on a trip server
+  (`DevTrip` "Arrive"): one player left behind woke in Unit229 and stayed there, Bang button up.
+  Three players wait on `OWNER.md` (its carried-up steps are three-player steps now).
 - F-G1b is done but for F-G1b3c (the RC car), which waits on `OWNER.md`.
 - Find art (`art/finds/WAVES.md`): the tin carousel (F-04j) is half built (modelled, baked,
   motion keyed; not rendered or judged): finish it from WAVES.md's newest note. The farm-animal
   spinner is uploaded, not imported. Stage HEAD plus your own lines only.
 
-## Next task: S3-05a Two players left behind land on top of each other, and can't be cut free
-The moment: left behind, you wake shut in a unit of your own, wrapped, bang on the door, and a
-friend follows the noise and cuts you free. In the owner's three-player test (Nov 15) two left
-behind both woke wrapped on one spot in front of the elevator, cameras inside each other, and
-the third player's Cut free said "Get closer" forever.
-1. A lead: `src/server/Climbs.luau` near line 441 carries each left-behind player up in its own
-   `spawn`, and when `KeptPlayers:store` fails it pivots the character to the one `lobby` CFrame,
-   so two failures stack on one spot, still wrapped, in no unit, so Cut free never finds them.
-2. Find why `store` failed for both: `KeptPlayers.luau`'s `store` (grep "local function store")
-   and `Kept.choose` / `Kept.free` (`src/shared/Kept.luau`); whether two carries in the same
-   moment pick the same unit before either is marked holding someone; whether the new floor's
-   units are ready (dealt, doors down) when the pick runs. A failing Lune spec first for any
-   pure part (two picks in a row never share a unit).
-3. Fix so each wakes in a unit of their own. If a fallback stays, it never stands two players on
-   one spot and never leaves a wrapped player nobody can free (stand them unwrapped, spaced
-   apart, or retry the pick a beat later; D-186 has the rule).
-4. Studio: STUDIO.md "Testing left behind from the MCP" with two stand-ins left behind; read
-   Output for where each was stored, and check Cut free works at each one's door.
-**Acceptance:** checks green; two left behind each land wrapped in a different unit with the
-Bang button, and a friend at each door can cut them free; `OWNER.md`'s carried-up steps (S3-01a)
-become three-player steps covering this (numbered, plain words).
-**Read first:** ROADMAP S3-05a (grep "S3-05a"); `src/server/Climbs.luau` 410-450;
-`src/server/KeptPlayers.luau` (`store`, grep only); `src/shared/Kept.luau` (`choose`, `free`);
-D-186 (grep "^## D-186" docs/DECISIONS.md); STUDIO.md "Testing left behind from the MCP".
+## Next task: S3-05b A caught friend put in the unit you're standing in
+The moment: caught, you wake shut in a unit of your own, and bang until a friend comes. In the
+owner's test a friend was caught and turned up wrapped in the shut unit the owner stood in.
+`Kept.free` (`src/shared/Kept.luau`) asks only that a unit is shut, with no monster and no caught
+player in it: a free player inside a shut unit doesn't count.
+1. A failing Lune spec first (`tests/kept.spec.luau`, its `unit(x, z, changes)` builder): a
+   shut unit with anyone inside (a new `Kept.Unit` field, say `someone`) is never free, and
+   `Kept.choose` passes over it.
+2. `KeptPlayers.luau`'s `pick` (grep "local function pick") fills each unit's fields; add
+   whether any player's root stands inside, free or caught, the way `keeperIn` tests a keeper's
+   feet (`face:PointToObjectSpace`, |x| < width/2, 0 < z < depth, |y| < 4). Count Studio
+   stand-ins too (`Left.StandInTag`), so one player can test it. Door up or down: a unit with its
+   door up is already skipped (`shut`).
+3. The same pick serves the carry (`store`, D-243): a friend standing in a shut unit on the new
+   floor is skipped there too. Keep `store`'s move in the same frame as the new character.
+4. Studio: STUDIO.md "Testing getting kept from the MCP" (seed 7, floor 1) and "Testing Cut free
+   from the MCP" (the stand-in clone): put a stand-in inside a shut unit, get caught, and read
+   Output's "is wrapped and kept in UnitNNN": never the stand-in's unit, over a few catches.
+**Acceptance:** checks green; the spec fails before and passes after; seen in Play that a caught
+player is never stored in a unit someone stands in; `OWNER.md` gets a numbered three-player step
+(a friend shuts themself in a unit, another gets caught) in the carried-up section.
+**Read first:** ROADMAP S3-05b (grep "S3-05b"); `src/shared/Kept.luau` (`Unit` type, `free`,
+`choose`); `src/server/KeptPlayers.luau` (`pick`, `keeperIn`, grep only); `tests/kept.spec.luau`
+lines 1-45; D-243 (grep "^## D-243" docs/DECISIONS.md); STUDIO.md lines 597-660.
 
 ## Queue (next sessions, the owner's ticket order)
-1. **S3-05b A caught friend put in the unit you're standing in** (ROADMAP S3-05b; a failing spec
-   for the pick first). Then S4-02 to S4-05 (5 coins a trapped monster).
+1. After S3-05b (the last of the owner's chain): S4-02 to S4-05 (5 coins a trapped monster).
 2. F-G1b3c the RC car drives off its transmitter, if the owner says so (`OWNER.md`).
 3. Once the owner's real purchase passes: mark Brix's ENG-23e done in `../engine`'s HANDOFF.
 4. A Studio hook to catch yourself for real (CatchTest finds no keeper even after WakeSleepers
    and 24 s, Nov 15; a Workspace attribute that catches by the nearest sleeper would do).
-5. Small (ROADMAP lists them): the finds' press sounds and hand (F-G1b2 polish), the monkey and
+5. Trips stands every late arrival or respawn on the one arrival spot; two at once overlap
+   until physics pushes them apart. Spread them (`ClimbEnd.spot`) as the carry's fallback does.
+6. Small (ROADMAP lists them): the finds' press sounds and hand (F-G1b2 polish), the monkey and
    toy car's polish (F-G1b3a); B-05b2b's box round the bend; L-08e3c, L-14b2d wait; S3-04b's
    polish; Free Everyone's swap sound; `sell*` Config warnings, a dropped find bumps a walker
    (D-182), the save's "best floor" still 0 after a ride, S1-07a to S2-07b2 leftovers, box

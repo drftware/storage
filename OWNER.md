@@ -490,40 +490,40 @@ nowhere else.
 - [ ] **Answer Brix's gift and receipt choices** (its DECISIONS E-075 to E-078, listed in Brix's
   HANDOFF) before S3-04 sells gift versions of the wrap colours.
 
-## Now: get carried up wrapped, and get found (S3-01a, built Nov 14, D-186; the wake seen in Studio Play, the carry itself not yet run)
+## Now: two friends carried up wrapped, each to a unit of their own (S3-01a, D-186; fixed Nov 16 for S3-05a, D-243)
 
-Nobody is out of the climb any more when the elevator leaves without them. You watch your friend
-ride up, and then you wake up wrapped inside one of the new floor's units, for your friends to
-find. This needs two players (a friend on a second phone or computer, or a second Roblox account).
+Nobody is out of the climb when the elevator leaves without them: you watch a friend ride up,
+then wake wrapped inside one of the new floor's units, for your friends to find. In your Nov 15
+test two friends left behind both woke wrapped on one spot in front of the elevator and couldn't
+be cut free. That was the trip server standing every new body at the elevator; it now leaves
+anyone being carried up alone. Seen in Studio with one player on a trip server (woke in a unit,
+stayed there); never yet with three real players. Play this on the real game (a lobby car, so
+you ride on a server of your own), with three players: you and friends A and B.
 
-- [ ] **Late for the elevator:**
-  1. Start a climb with a friend. On floor 1, find the code and punch it in.
-  2. Your friend gets in the elevator. You stay out in the lobby and don't get in.
-  3. When the gate shuts you should get the same as before: "Left behind" in red, the black, and
-     then the view over your friend's shoulder as their car rises and stops.
-  4. The bar at the bottom should show only "WATCHING" and your friend's name, with the arrows.
-     There should be no line under the name any more.
-  5. Watch the gate fold open on floor 2. About a second and a half after it is fully open, your
-     view should slowly go black (slower than switching friends). As it goes dark you should hear
-     the plastic film squeal, and in the black a roll-up door slam close by, a little muffled,
-     with a small jolt.
-  6. Your eyes should then open the way they do after any catch (a crack open, shut, then open
-     slowly, blurry and grey at first), and you should be inside a dark unit on floor 2, facing
-     its door, with no "Caught" word, empty hands, and the big Bang button.
-  7. What to look for: no flash of anything between the black and the dark unit (not your
-     friend, not the lobby, not the sky). It should feel like being dragged off and shut in.
-- [ ] **Your friend finds you:** on the friend's screen, after step 6:
-  1. You (the wrapped one) press Bang a few times. Your friend should see the blue bang mark over
-     your unit through the walls, as with any kept friend.
-  2. Your friend walks to that unit and opens it. You should be standing there wrapped in film.
-  3. Your friend holds Cut free on you. The film should rip off, and you're back in the climb on
-     floor 2 with nothing in your hands.
-  4. What to look for: the unit you wake in is never the one nearest the elevator.
-- [ ] **Not found in time:** stay wrapped on floor 2 and let your friend punch floor 2's code and
-  ride up without you. You should get "Left behind" again, watch the ride, and wake wrapped in a
-  unit on floor 3. The climb carries on from there (it has no top since S4-01a).
-- [ ] **Caught, then carried:** get caught by a monster on floor 1 and stay wrapped while your
-  friend rides up. You should get the same as "Late for the elevator", from step 3.
+- [ ] **Two left behind at once:**
+  1. Start a climb from a lobby car with A and B. On floor 1, find the code and punch it in.
+  2. You get in the elevator. A and B stay out in the lobby and don't get in.
+  3. When the gate shuts, A and B should each get "Left behind" in red, the black, and then the
+     view over your shoulder as the car rises and stops. Their bars show only "WATCHING" and
+     your name, with the arrows.
+  4. On floor 2, about a second and a half after the gate is fully open, A's and B's views should
+     slowly go black, with the film's squeal and, in the black, a roll-up door slamming close by.
+  5. A and B should each wake inside a dark unit, facing its door, with no "Caught" word, empty
+     hands and the big Bang button. What to look for: each is in a different unit, neither is
+     in front of the elevator, and neither camera is inside the other's body.
+  6. Wait 10 seconds. Neither of them should move or get moved anywhere.
+- [ ] **You find them both:** on your screen, after step 6:
+  1. A and B press Bang a few times. You should see a blue bang mark over each of their two units
+     through the walls.
+  2. Walk to A's unit and open it. A should be standing inside, wrapped in film.
+  3. Hold Cut free on A. The film should rip off and A is back in the climb with nothing in
+     their hands. No "Get closer".
+  4. Do the same at B's unit. What to look for: neither unit is the one nearest the elevator.
+- [ ] **Not found in time:** leave A and B wrapped on floor 2, punch floor 2's code and ride up
+  alone. Both should get "Left behind" again, watch the ride, and wake wrapped in two different
+  units on floor 3.
+- [ ] **Caught, then carried:** A gets caught by a monster on floor 1 and stays wrapped; B stays
+  out of the elevator; you ride up. Both should wake in units of their own as in step 5.
 - [ ] **Decide, defaults in place** (D-186): (1) The carry starts 1.4 seconds after the gate is
   fully open, so you see the new floor over your friend's shoulder before the black. (2) Nobody
   else hears anything when you're put in your unit (no squeal for them): the bangs are how they

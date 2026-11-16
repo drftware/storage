@@ -6251,3 +6251,25 @@ motor's push and every move back a spring's snap, as the real toys are built. Th
 song at 1.55 s; the recording waits on `OWNER.md`. Meshes handed to the kit's `merge` or lathe
 must be in studs: they unwrap from the numbers they're given, before their matrix.
 (`art/finds/windups/README.md`, "Singing fish plaque".)
+
+## D-243 A friend carried up is moved into their unit at once, and the trip server leaves them alone (Nov 16, S3-05a)
+
+The owner's three-player test (Nov 15): two friends left behind both woke wrapped on one spot in
+front of floor 2's elevator, cameras inside each other, and the third player's Cut free said
+"Get closer" for ever. Why: on a group's own server (a lobby car's trip, so never in a plain
+Studio Play) Trips takes any new character still on the front office's spawn a frame after it
+appears for a respawn, and stands it in front of the climb's car (`standLate`, one spot for
+everyone). The carry gives each friend left behind a new character (`Watching:bring`), and
+`KeptPlayers:store` wrapped them and held them on the spawn for up to 4 s while their unit
+streamed in, then moved them in; Trips' move landed after it. Both were stood on the one spot,
+still wrapped and marked kept, with Cut free judged at units far away.
+
+Now: `store` moves the body into its unit in the same frame the character is given (anchored,
+it can't fall while the unit streams in; the screen is black until the kept mark), and again
+after the stream. Trips stands a new character only by `Trip.standsLate`: still on the spawn,
+and neither being carried up (`Climbs:carrying`) nor kept, asked a frame on and again right
+before the move. With no unit free, the carry's fallback stands each friend unwrapped on a spot
+of their own in front of the car (`ClimbEnd.spot`, the end's Again row), never two on one. The
+unit pick itself was sound: each pick marks its unit before the next (now spec'd for friends
+stored together). The rule for anything that gives a player a new character during a climb:
+move it off the spawn in the same frame (docs/STUDIO.md).

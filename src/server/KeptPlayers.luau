@@ -657,8 +657,8 @@ function KeptPlayers.new(): KeptPlayers
 	-- empty hands. No catch: no squeal, and the film is long on, so no screen winds it round them
 	-- (KeptWrapOn); `Kept.BroughtAttribute` tells their screen to open their eyes on the dark
 	-- inside (CaughtView). From then it's any keep: banging, the padlock's clock, a friend's Cut
-	-- free. Yields while the unit streams in. False when the floor isn't known or no unit is free:
-	-- they stand where they are.
+	-- free. Moved in before anything yields, then yields while the unit streams in. False when
+	-- the floor isn't known or no unit is free: they stand where they are.
 	local function store(player: Player, floorModel: Instance, near: Vector3): boolean
 		local floor = floors[floorModel]
 		local character = player.Character
@@ -711,6 +711,11 @@ function KeptPlayers.new(): KeptPlayers
 		end
 		wrapUp(h, player, Workspace:GetServerTimeNow() - LONG_ON)
 		local to = inside(floor, unit, humanoid.HipHeight + root.Size.Y / 2)
+		-- in the unit at once, in the frame the character was given: a new character still on the
+		-- front office's spawn a frame on is taken for a respawn and stood at the car (Trips), which
+		-- stood two friends on one spot, wrapped, far from their units (S3-05a). Anchored, it can't
+		-- fall while the unit streams in, and their screen is black till the kept mark.
+		character:PivotTo(to)
 		local ok, err = pcall(function()
 			player:RequestStreamAroundAsync(to.Position, STREAM_WAIT)
 		end)
@@ -720,7 +725,7 @@ function KeptPlayers.new(): KeptPlayers
 		if held[player] ~= h or not character.Parent then
 			return false -- they left, or their character went, while it streamed
 		end
-		character:PivotTo(to)
+		character:PivotTo(to) -- again, should anything have moved them while it streamed
 		-- before the kept mark, so their screen knows it's a carry, not a catch
 		player:SetAttribute(Kept.BroughtAttribute, Workspace:GetServerTimeNow())
 		player:SetAttribute(Kept.Attribute, true)

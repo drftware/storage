@@ -2084,8 +2084,11 @@ Done when nobody quits a climb because they were caught.
   three-player playtest, Nov 15; sessions 11 and 12 of the ten-ticket run, after F-G1b). The
   moment: caught or left behind, you wake shut in a unit of your own, wrapped, and bang on the
   door until a friend follows the noise to you and cuts you free. Two bugs broke it:
-  - [ ] **S3-05a Two players left behind land on top of each other, and can't be cut free.**
-    (next)
+  - [x] **S3-05a Two players left behind land on top of each other, and can't be cut free.**
+    (Nov 16, D-243: on a group's own server Trips stood every new character still on the spawn
+    at the car a frame on, and the carry's new character waited on the spawn while its unit
+    streamed in; now it's moved in at once and Trips leaves anyone carried or held alone. Seen
+    in Studio on a trip server, one player; three players wait on `OWNER.md`.)
     Two players missed the car. On the next floor each watched the ride over the shoulder of the
     friend who made it, as meant; then both woke wrapped on the same spot in front of the
     elevator instead of in units, each one's camera inside the other's body. The third player's
@@ -2097,7 +2100,7 @@ Done when nobody quits a climb because they were caught.
     someone; whether the new floor's units are ready when the pick runs. If the fallback stays,
     it never stands two players on one spot and never leaves a wrapped player nobody can free.
     Reproduce with two stand-ins left behind (STUDIO.md "Testing left behind").
-  - [ ] **S3-05b A caught friend put in the unit you're standing in.** A friend was caught and
+  - [ ] **S3-05b A caught friend put in the unit you're standing in.** (next) A friend was caught and
     turned up wrapped in the shut unit the owner was standing in. `Kept.free` asks only that a
     unit is shut with no monster and no caught player in it, so a free player inside a shut unit
     doesn't count. Should be: the pick skips any unit with anyone inside, free or caught, door

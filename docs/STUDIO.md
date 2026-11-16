@@ -1246,6 +1246,21 @@ verified: a doc page, Studio, or "untested".
   takes "Next", "Back" and "CutFree" from the Client. Set the Client's
   `settings().Rendering.QualityLevel` to Level12 first (the Edit setting doesn't carry into
   Play), or the car draws black after the 1000-stud move.
+- **A new character mid-climb must leave the spawn in the same frame** (S3-05a, 2026-11-16): on
+  a group's own server Trips stands any new character still within 40 studs of the front
+  office's spawn a frame after it appears at the climb's car (a respawn). Whatever calls
+  `LoadCharacter` during a climb moves the body before it yields (KeptPlayers:store waited on a
+  4 s stream first, so two carried friends were stood on one spot). Plain Studio Play never runs
+  this: set `DevTrip` to "Arrive" to see it.
+- **Testing left behind on a trip server** (S3-05a, 2026-11-16): in Edit set Workspace's
+  `DevTrip` to "Arrive" (clear it after Stop), Play. You arrive in the group climb's floor 1 car
+  mid-ride (`Workspace.GroupClimb`, laid at x -1600: the recipe's spots shift by -1600 in x).
+  Output names its code (the second "floor 1's code is" line; the first is DevCorridor's own).
+  About 18 s on, stand-ins at (-1600 ±2.3, 3, -581.5) facing -Z, you at (-1607.8, 3, -593.2);
+  from the Client fire `Remotes.Keypad` with `Workspace.GroupClimb.Floor1.Lobby.Elevator` and
+  each digit 0.45 s apart; from the Server pivot to (-1599.5, 3, -597). Left behind about 20 s
+  later, carried and kept about 54 s after the pivot ("KeptPlayers: … is wrapped and kept in
+  UnitNNN"); floor 2's car is at (-1600, 0, -1588).
 - **Testing the end from the MCP** (L-08d, 2026-11-11): one player, no stand-ins. A wipe: the
   catch recipe above (seed 7, floor 1, 157's guard) ends the climb about 1 s after you're kept
   (Output: "ClimbEnds: the climb ended (Kept)"). The top: set Workspace's `DevFloorNumber` to 3 in

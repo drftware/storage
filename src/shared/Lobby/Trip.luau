@@ -325,6 +325,14 @@ function Trip.readWord(data: unknown): Word?
 	return { server = d.server :: string, floor = floor :: number }
 end
 
+--- Whether a character on a group's own server is stood at the climb's car, as a late arrival or a
+--- respawn at the front office is: only while it's still on the front office's spawn
+--- (`atSpawn`), and never while the climb is carrying its player up (`carried`) or holding them
+--- wrapped in a unit (`kept`): the climb stands those itself, in a unit of their own (S3-05a).
+function Trip.standsLate(atSpawn: boolean, carried: boolean, kept: boolean): boolean
+	return atSpawn and not carried and not kept
+end
+
 -- Whether the group's car goes at server time `t`: everyone in `group` is in `arrived` (UserIds),
 -- or `Wait` has passed since the first arrived at `firstAt`. Nobody arrived: it waits.
 function Trip.ready(group: { number }, arrived: { number }, firstAt: number?, t: number): boolean

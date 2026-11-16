@@ -53,6 +53,7 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Climb = require(ReplicatedStorage.Shared.Climb)
+local ClimbEnd = require(ReplicatedStorage.Shared.ClimbEnd)
 local Departure = require(ReplicatedStorage.Shared.Elevator.Departure)
 local Deal = require(ReplicatedStorage.Shared.Deal)
 local Floor = require(ReplicatedStorage.Shared.Floor)
@@ -390,7 +391,8 @@ function Climbs.new(): Climbs
 	-- arrives at `on`, everyone watching the ride is on `on` too. Their screens dip to black a beat
 	-- after the gate opens (`Left.carryAt`, `Watching:carry`); under it each gets a new character
 	-- (`Watching:bring`), stood wrapped in one of the floor's units away from its lobby
-	-- (`KeptPlayers:store`). With no unit free they stand in the lobby, as a late arrival does.
+	-- (`KeptPlayers:store`). With no unit free they stand in the lobby, as a late arrival does,
+	-- each on a spot of their own (`ClimbEnd.spot`).
 	local function carryUp(on: OnFloor, elevator: Model, mine: number)
 		local e = elevators
 		if not e then
@@ -426,7 +428,11 @@ function Climbs.new(): Climbs
 				w:carry(these, at)
 				task.wait(math.max(at + Left.CarryDip - now(), 0))
 				local lobby = on.origin * Climbs.Arrival
-				for _, player in these do
+				for n, player in these do
+					-- with no unit to be had, each stands unwrapped on a spot of their own in
+					-- front of the car, as a late arrival does: never two on one (S3-05a)
+					local x, z = ClimbEnd.spot(n)
+					local stand = lobby * CFrame.new(x, 0, z)
 					spawn(function()
 						if
 							climb == mine
@@ -440,7 +446,7 @@ function Climbs.new(): Climbs
 								and climb == mine
 								and not k:store(player, on.model, lobby.Position)
 							then
-								character:PivotTo(lobby)
+								character:PivotTo(stand)
 							end
 						end
 						if climb == mine and carried[player] == on.number then

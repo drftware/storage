@@ -94,6 +94,35 @@ ok(Kept.choose(nearSeen, 0, 0, random) == 2, "the unopened one, the seen-into on
 local nearUnopened = { unit(2, 0), unit(30, 0, { dealt = true }) }
 ok(Kept.choose(nearUnopened, 0, 0, random) == 2, "never the nearest, even if it's the unopened one")
 
+-- Several friends stored at once from one spot (S3-05a: two left behind, carried up together):
+-- each pick marks its unit holding before the next, so no two ever share one, and once every
+-- free unit holds someone the next gets none (and stands in the lobby, on a spot of their own).
+for seed = 1, 40 do
+	local r = Brix.Random.new({ seed = seed })
+	local floor = {}
+	for i = 1, 6 do
+		table.insert(floor, unit(i * 8, (i % 2) * 6, { dealt = i % 3 == 0, keeper = i == 4 }))
+	end
+	local taken: { [number]: boolean } = {}
+	local picks = 0
+	for _ = 1, 6 do
+		local i = Kept.choose(floor, 0, 0, r)
+		if not i then
+			break
+		end
+		if taken[i] then
+			ok(false, `seed {seed}: two friends stored in unit {i}`)
+		end
+		taken[i] = true
+		floor[i].holding = true
+		picks += 1
+	end
+	if picks ~= 5 then
+		ok(false, `seed {seed}: {picks} friends stored, not one in each of the 5 free units`)
+	end
+end
+ok(true, "friends stored together each get a unit of their own")
+
 -- Where in the unit you wake: past its middle, facing the door, the dark between you and it.
 ok(Kept.Back > 0.5 and Kept.Back < 0.85, `past the middle, off the back wall ({Kept.Back})`)
 ok(type(Kept.Attribute) == "string" and #Kept.Attribute > 0, "the player's kept flag has a name")
