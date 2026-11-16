@@ -11,6 +11,14 @@
     "assetId": 99780291550799,
     "sha256": "5c803023752b8d3011a470b61cc7f25a852bae9ba596f2d5dd8766968a99b88f"
   },
+  "SirenCar": {
+    "assetId": 86198441631731,
+    "sha256": "a12088cacc516862b08dd1e2d002327a98f2b8b36b38a06081353bc189425cf0"
+  },
+  "SirenCarEmissive": {
+    "assetId": 119938648369668,
+    "sha256": "9f5edbdd1b47845886ace12756de3b35ace840abecdacbf7f8aa68e266a398c9"
+  },
   "TinBird": {
     "assetId": 128316798025282,
     "sha256": "d04dd814ffa3db2412bddd6f7cfa30a4480ac61d5c28423eaa5e374693514f86"

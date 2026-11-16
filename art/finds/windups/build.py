@@ -3686,8 +3686,10 @@ def sc_look(L, f):
     rear = nb.ss(L.ny, 0.6, 0.8)
     front = nb.ss(nb.sub(0.0, L.ny), 0.6, 0.8)
     # litho red under its lacquer, the print a little uneven, the lacquer a little orange-peeled
-    C_.paint(paint, nb.tint(RED, nb.mr(L.noise(70.0, 1, detail=3), 0.3, 0.7, 0.93, 1.05)),
-             nb.mr(L.noise(140.0, 2, detail=2), 0.3, 0.7, 0.26, 0.34), 0.0)
+    # (a fine roughness noise broke the top light's sheen into a pale speckled film on the
+    # bonnet and boot; the lacquer is smooth, so only a broad, gentle wander)
+    C_.paint(paint, nb.tint(RED, nb.mr(L.noise(45.0, 1, detail=2), 0.3, 0.7, 0.955, 1.03)),
+             nb.mr(L.noise(25.0, 2, detail=1), 0.3, 0.7, 0.19, 0.24), 0.0)
     # the cream roof and pillars, and the cream flash down each side with a silver line either edge
     cabin = nb.ss(z, mm(SC["deck"] + 0.5), mm(SC["deck"] + 1.1))
     C_.paint(nb.mul(paint, cabin), CREAM, 0.32)
@@ -3745,11 +3747,40 @@ def sc_look(L, f):
     C_.paint(frame, SILVER, 0.22, 0.85)
     glass = nb.mul(paint, nb.add(side_glass(0.0), screens(0.0), clamp=True))
     # printed glass: deep blue-grey, paler low down, two white glints slanting across each pane
-    C_.paint(glass, nb.mixc(nb.mr(z, mm(36.0), mm(48.0)), hexc("#5C7486"), hexc("#22303C")), 0.12, 0.2)
+    C_.paint(glass, nb.mixc(nb.mr(z, mm(36.0), mm(48.0)), hexc("#7896AA"), hexc("#2E4252")), 0.12, 0.2)
     q = nb.fract(nb.mul(nb.add(nb.add(y, nb.mul(x, 0.9)), nb.mul(z, 0.8)), 1.0 / mm(34.0)))
-    glint = nb.add(nb.mul(nb.ss(q, 0.30, 0.305), nb.ss(nb.sub(0.0, q), -0.385, -0.38)),
-                   nb.mul(nb.ss(q, 0.42, 0.425), nb.ss(nb.sub(0.0, q), -0.44, -0.435)), clamp=True)
-    C_.paint(nb.mul(glass, glint), hexc("#C9D6DD"), 0.12)
+    # a broad soft sheen and a fainter narrow one (thin hard lines read as cracks)
+    glint = nb.add(nb.mul(nb.mul(nb.ss(q, 0.26, 0.31), nb.ss(nb.sub(0.0, q), -0.40, -0.35)), 0.42),
+                   nb.mul(nb.mul(nb.ss(q, 0.44, 0.455), nb.ss(nb.sub(0.0, q), -0.485, -0.47)), 0.25),
+                   clamp=True)
+    C_.paint(nb.mul(glass, glint), hexc("#D5E1E6"), 0.12)
+    # the crew printed on the side glass, as every tin car of the kind has them: a driver in a
+    # peaked cap in the front window and a passenger behind, in profile looking ahead, a navy
+    # tunic, a pink face with one dark eye, the hair at the back, a gold badge on the cap
+    pane = nb.mul(paint, side_glass(0.0))
+
+    def ell(yc_, zc_, ry, rz, soft=0.1):
+        a = nb.mul(nb.sub(y, mm(yc_)), 1.0 / mm(ry))
+        b = nb.mul(nb.sub(z, mm(zc_)), 1.0 / mm(rz))
+        return nb.ss(nb.sub(0.0, nb.add(nb.mul(a, a), nb.mul(b, b))), -1.0 - soft, -1.0 + soft)
+    NAVY = hexc("#1C2740")
+    for yh, cap in ((-3.0, True), (16.6, False)):
+        zh = 43.2
+        torso = nb.add(ell(yh + 1.0, zh - 7.6, 4.4, 5.2),
+                       nb.mul(inb(y, yh - 3.0, yh + 4.8, 0.1), inb(z, SC["deck"], zh - 7.0, 0.1)), clamp=True)
+        C_.paint(nb.mul(pane, torso), NAVY, 0.15)
+        head = ell(yh, zh, 2.5, 2.9)
+        C_.paint(nb.mul(pane, head), hexc("#E3A47F"), 0.15)
+        hair = nb.mul(head, nb.add(nb.ss(y, mm(yh + 0.6), mm(yh + 0.9)),
+                                   nb.ss(z, mm(zh + 1.3), mm(zh + 1.6)), clamp=True))
+        C_.paint(nb.mul(pane, hair), hexc("#3A2418"), 0.15)
+        if cap:
+            crown = nb.add(nb.mul(inb(y, yh - 2.6, yh + 2.7, 0.08), inb(z, zh + 1.2, zh + 3.2, 0.08)),
+                           ell(yh + 0.3, zh + 3.1, 2.9, 0.9), clamp=True)
+            peak = nb.mul(inb(y, yh - 4.3, yh - 1.8, 0.08), inb(z, zh + 0.9, zh + 1.6, 0.08))
+            C_.paint(nb.mul(pane, nb.add(crown, peak, clamp=True)), NAVY, 0.15)
+            C_.paint(nb.mul(pane, ell(yh - 1.9, zh + 2.4, 0.6, 0.6)), hexc("#D9AE45"), 0.2, 0.6)
+        C_.paint(nb.mul(pane, ell(yh - 1.5, zh + 0.4, 0.45, 0.5)), INK, 0.2)
     # the tail: lamps either side and a number plate between, printed; the base under it bare
     lamps = nb.mul(nb.mul(paint, rear), nb.mul(inb(ax, 17.0, 26.0), inb(z, 19.0, 25.0)))
     C_.paint(lamps, SILVER, 0.2, 0.9)
@@ -3781,7 +3812,8 @@ def sc_look(L, f):
     C_.paint(L.k(SC_TYRE), nb.tint(hexc("#1A1A1A"), nb.mr(L.noise(400.0, 6, detail=3), 0.3, 0.7, 0.85, 1.25)),
              nb.mr(L.noise(300.0, 7, detail=2), 0.3, 0.7, 0.62, 0.78), 0.0)
     C_.paint(L.k(SC_WALL), nb.tint(hexc("#E6E1D3"), nb.mr(L.noise(200.0, 8, detail=3), 0.3, 0.7, 0.82, 1.0)), 0.6, 0.0)
-    C_.paint(L.k(SC_HUB), hexc("#D9DBD7"), 0.3, 1.0)
+    # (fully metal and glossy they mirrored the dark room and read black from the front)
+    C_.paint(L.k(SC_HUB), hexc("#E6E8E3"), 0.38, 0.75)
     # the dome: red moulded plastic, deeper at its foot where it's thick, a pale lamp-glow core
     dome = L.k(SC_DOME)
     C_.paint(dome, nb.mixc(nb.mr(z, mm(56.0), mm(66.0)), hexc("#8E0E0B"), hexc("#D0261B")), 0.12, 0.0)

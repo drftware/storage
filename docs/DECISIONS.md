@@ -6171,3 +6171,17 @@ written: the first export wrote millimetres where the kit reads studs, so the bi
 and walked off the filmstrip's stage. The filmstrip's stage light now rides along with a find
 that travels (`follow`) and stands on the camera's side when a motion picks its own `view`, so a
 travelling find stays lit in every frame.
+
+## D-236 The siren car's roof light is its own lamp, sweeping red, with no words on the car (F-04e, Nov 16)
+
+The toy siren car is a 1960s-style tin friction chief's car of our own (the V&A's tin fire
+chief's and highway patrol cars, Duckwells' Ichiko patrol car), not any real force's: red and
+cream, a door roundel with our "7", a printed driver in a peaked cap and a passenger in its
+windows, as every tin car of the kind has, and no words or badges. Its roof light is the part
+that answers the push: a red fluted dome turning about its own post (`SirenCar_Beacon`), geared
+to the flywheel so it speeds up with the pushes and slows as the car coasts, carrying a red Spot
+light that sweeps round the walls and floor and a weak Point light for low graphics. The lamp
+catches with a flicker on the first push and dies 0.9 s after the car stops. The siren's wail is
+the game's sound to play over `Push`, not part of the art. Its lacquer is smooth: a fine
+roughness noise broke the top light's sheen into what looked like dust on the bonnet, so painted
+tin finds keep their roughness variation broad and gentle.

@@ -6,9 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04e, step 3 of "The second run's plan" below: finish the toy siren car (half built,
-the newest note says exactly where it stands), then the squeaky rubber duck, in
-`art/finds/windups/` (the F-04d2 note has the duck's hints). The oil lamp's sheets still want
+**Next:** F-04e2, the rest of step 3 of "The second run's plan" below: the squeaky rubber duck
+alone, in `art/finds/windups/` (the second F-04d2 note has its hints; the toy siren car is
+built), then step 4 (F-04f, the kazoo and the toy drum). The oil lamp's sheets still want
 `ACTIONS= scripts/art.sh set lights renders OilLamp` when next touched.
 
 ## The second run's plan (owner's yes, Nov 15)
@@ -89,6 +89,27 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04e (the toy siren car built, judged and in the place; the duck not started).**
+  `SirenCar` in `windups/build.py`, README, D-236. Uploaded and imported in Edit
+  (`ReplicatedStorage.Props.Finds.SirenCar`). **Judged beside the V&A's two tin cars and fixed,
+  rendered twice:** the bonnet and boot wore a pale speckled film under the top light (a fine
+  roughness noise breaking the lacquer's sheen; now a broad gentle wander, 0.19 to 0.24); the
+  windscreen's thin glints read as cracks (now one broad soft sheen and a faint narrow one); the
+  hubcaps mirrored the dark room and read black (now 0.75 metal, 0.38 rough, paler); and both
+  museum cars print a crew in their windows, so ours has a driver in a navy peaked cap with a
+  gold badge and a passenger behind, in profile, on lighter blue glass. The push filmstrip's red
+  pools sweep the floor; lit, the dome burns red without washing pink. **Trap:** exporting one
+  find (`... export SirenCar`) still writes the whole set's Luau, unformatted: its diff looks
+  like 8,593 lines lost until `stylua` (or `check.sh`) reflows it, then it matches HEAD. The
+  quick render that "rendered nothing" last session was not seen again: `renders SirenCar`
+  worked both times. **F-04e2's plan (the duck):** the second F-04d2 note below has it (about
+  90 to 100 mm long, 85 tall, one part or a body plus the bill, `Squeeze` with `stretch` about
+  0.72, held a beat, then a Back Out spring past 1). Look first at two or three photos of a
+  classic yellow bath duck with a known size (a museum record or a listing), its squeak hole
+  under the tail, the satin vinyl's sheen and the moulding seam; its eyes are printed, not
+  parts. Then step 4: the kazoo (a tin or plastic tube about 4 to 5 in, a turret cap over the
+  paper skin) and the toy drum (zigzag rope sides, the tell from a doorway, and two sticks).
 
 - **Nov 16, F-04e (the toy siren car half built: stopped at the context cap; not ticked).**
   `SirenCar` in `windups/build.py` (spec `SIREN` and `SIREN_RUN`; `Finds/Order` has it), four
@@ -764,7 +785,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 |---|---|---|---|---|
 | Kazoo | Common | Blow: a buzzy note |  | |
 | Squeaky rubber duck | Common | Squeeze: a squeak you can hear down the hall |  | |
-| Toy siren car | Common | Push: it rolls off, wailing | A noise that moves | |
+| Toy siren car | Common | Push: it rolls off, wailing | A noise that moves | Nov 16, F-04e |
 | Wind-up chattering teeth | Common | Wind: they chatter off across the floor | Monsters come to look | Nov 15, F-04c |
 | Toy drum | Uncommon | Bang: loud |  | |
 | Wind-up mouse | Uncommon | Wind: it zips off and squeaks wherever it stops |  | Nov 16, F-04d |

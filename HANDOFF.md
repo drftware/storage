@@ -12,8 +12,8 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   Mannequin, it came at the player, froze 9.5 studs from the lantern, held 35 s with nobody near
   and walked on as the light ran out. New Studio hook: Workspace `StandMannequin`.
 - F-G1b is done but for F-G1b3c (the RC car), which waits on `OWNER.md`.
-- Find art (`art/finds/WAVES.md`): the toy siren car is half built (Nov 16, F-04e: baked and
-  exported, fixes not rendered yet); next finish it, then the squeaky duck. The run commits its
+- Find art (`art/finds/WAVES.md`): the toy siren car is built and in the place (Nov 16,
+  F-04e); next the squeaky duck (F-04e2), then the kazoo and the toy drum. The run commits its
   own files by path; stage HEAD plus your own lines only.
 
 ## Next task: S3-05a Two players left behind land on top of each other, and can't be cut free

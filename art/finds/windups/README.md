@@ -294,3 +294,51 @@ swivel either way, a nose-down rock on landing), then it lifts its head, cocks i
 whistles two notes over two turns (the bill opening on each, where the game plays them); lower
 and slower as the spring runs down, wandering a little left, about 0.8 studs in all. The tail and
 lower bill ring off the body's motion as springs.
+
+## Toy siren car (Common): "Push: it rolls off, wailing"
+
+A chunky tin friction car of the kind Japanese and English makers pressed from the 1950s to the
+70s, a chief's car of our own: a red body with a cream roof and pillars, a cream flash down each
+side between two silver lines, a gold-ringed white roundel on each door with our "7" in it (no
+real force's words or badges), printed chrome round the windows, door handles and shut lines,
+and blue printed glass with a driver in a navy peaked cap (a gold badge on it) in the front
+window and a passenger behind, both in profile looking ahead, as both museum cars have them. Up
+front a slotted tin grille with two headlamps standing proud in its ends; tin bumpers wrapped
+round the nose and tail, each with a pair of over-riders; amber and red tail lamps and a made-up
+plate at the back. Black rubber tyres with printed whitewalls on bright pressed tin hubcaps. On
+the roof a red fluted plastic dome on a pressed tin base. Underneath, a bare tin pan and the
+friction motor's steel case on the rear axle. Played with: the print chipped to bright tin on
+its edges, a few rust spots in the deepest chips, fine scuffs along the sides. No dust: on the
+glossy lacquer any film read as blotches.
+
+**Looked at:** the V&A's tin friction fire chief's car O1172564 (England, maybe 1950s, 11 cm
+long, 4 wide, 3 tall; photo `framemark.vam.ac.uk/collections/2010ED1399/full/!800,600/0/default.jpg`)
+and highway patrol car O1172567 (11.2 cm; `2010ED1586`): printed crew in pale glass, printed
+chrome, silver bumpers, the friction motor underneath; Duckwells' 1960s Ichiko friction patrol
+car (9.25 in), whose roof lights turn as it rolls. No video was timed: the run's numbers are a
+fast friction car's (spec `SIREN_RUN`).
+
+**Size:** 140 mm nose to tail (154 with the bumpers), 60 wide at the belt, 52 tall to the roof,
+71 to the dome's top: 0.61 studs long, 0.28 tall. A speck from a unit's doorway off, as every
+find under six inches is; lit, its red pool on the floor reads from the doorway. Held, the red
+and cream, the roof light, the roundel and the crew read at once.
+
+**Tells:** the red dome on the roof, the red and cream body, the whitewalls.
+
+**Parts:** `Body` (root: the pressed shell built the die-cast car's way, D-200, plus pan, motor
+case, bumpers, grille, headlamps and the dome's tin base; travels with `x`, `y`, `yaw`, `pitch`,
+`roll`), `FrontWheels` and `RearWheels` (two tyres, hubcaps and their axle each, turning about
+X), `Beacon` (the red dome turning about Z on its post, the glow part, carrying a red Spot light
+tilted 8 degrees down that sweeps the walls and floor, and a weak Point light for low graphics).
+
+**Motions:** `Push` (7.1 s), worked out in `sc_push`: two pushes along the floor rev the flywheel
+(the lamp catches with a flicker on the first, the dome starts turning), then it leaves the hand
+at 5.4 studs a second, the nose lifting as the flywheel bites, wandering a little and rattling
+on its axles, slows as the flywheel runs down and coasts to a stop about 10 studs off. The dome
+turns geared to the flywheel, slower and slower, and the lamp dies 0.9 s after it stops. The
+game wails the siren over it (D-236).
+
+**Sheets:** `art/sheets/sirencar-*.png`; motion preview `out/sirencar-push.mp4`.
+
+**In the place:** uploaded (`assets.json`) and imported in Edit on Nov 16 as
+`ReplicatedStorage.Props.Finds.SirenCar` (the beacon's glow mask set, both lights disabled).

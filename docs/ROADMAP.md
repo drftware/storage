@@ -2397,8 +2397,8 @@ actions themselves and dealing the new finds on floors are later game tickets.
     look; the copy of what each grade is stays off screen (no text that explains a rule).
 - [ ] **F-04 Wind-ups and noisemakers.** Built, in `art/finds/windups/`: F-04a the cymbal monkey,
   F-04b the jack-in-the-box, F-04c the chattering teeth (Nov 15), F-04c2 the walking robot,
-  F-04d the wind-up mouse and F-04d2 the clockwork tin bird (Nov 16). Next F-04e the toy siren
-  car and the squeaky duck, then F-04f to F-04k as `art/finds/WAVES.md`'s second run plans.
+  F-04d the wind-up mouse, F-04d2 the clockwork tin bird and F-04e the toy siren car (Nov 16).
+  Next F-04e2 the squeaky duck, then F-04f to F-04k as `art/finds/WAVES.md`'s second run plans.
 - [ ] **F-05 Squishies.**
 - [ ] **F-06 Plush.**
 - [ ] **F-07 Night Shift Minis and their blind box.**
