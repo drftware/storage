@@ -318,3 +318,52 @@ ROCK = [
     (2.5, -0.7, "Sine", "InOut"),
     (2.85, 0.0, "Sine", "InOut"),
 ]
+
+# --- The paper squishy with a drawn face (F-05c3) -------------------------------------------------
+# References (README): kids' homemade paper squishies (One Little Project's food templates, Craftsy
+# Hacks' blue cat, Red Ted Art's emoji faces): two sheets of printer paper cut to one outline,
+# coloured in with marker inside a thick black line drawn round the edge, covered front and back
+# in strips of clear 2 in packing tape laid across, the front's tape cut into tabs round the
+# curves and folded over onto the back, stuffed with fibre fill or shredded plastic bags through
+# the bottom, which a last strip seals, so it puffs like a little pillow. Templates print one to a
+# letter page; Craftsy Hacks' cat is as wide as the hand holding it. Ours is a ginger cat's head of
+# our own, 4.6 in wide and 4.4 in tall to its ear tips, 1.4 in thick at its puffiest.
+PAPER = dict(
+    # its outline seen from the front, the right half from the chin's middle round the cheek, up
+    # the ear and over to the top's middle (mm across, mm up); a smooth curve runs through them
+    outline=[(0.0, 0.0), (16.0, 0.7), (31.0, 3.6), (43.5, 10.0), (52.5, 20.5), (57.4, 33.0),
+             (58.2, 46.0), (56.0, 58.0), (51.8, 68.5), (49.8, 79.0), (48.6, 90.0), (47.0, 99.5),
+             (44.6, 105.0), (41.0, 104.6), (33.5, 97.6), (25.0, 90.6), (16.0, 88.4), (8.0, 89.2),
+             (0.0, 89.5)],
+    centre=46.0,       # the point its faces' rings shrink toward (mm up the middle)
+    puff=16.0,         # how far each face puffs out at its middle (mm): stuffed, not overstuffed
+    puff_p=2.1,        # how steeply each face rises off the seam (a pillow's, not a ball's)
+    smooth=110,        # how much the stuffing rounds off the pinch lines into the ears
+    seam=0.7,          # half the taped seam's thickness round the edge (mm)
+    lean=12.0,         # tipped back this far (degrees), its face turned up a little to you
+    # the marker line round the edge: its width and how far in from the cut edge it runs
+    line=2.8, line_in=1.9,
+    dust=0.08, seed=37.0,
+)
+
+# The squeeze, timed like crumpling a taped paper pouch: the fingers close and it gives in little
+# crunching jumps as creases buckle, never smoothly; held flat; let go, it puffs back unevenly, a
+# quick pop part way, a stall on a crease, a second pop, a slow creep and a last crackle, and
+# never springs past its shape (paper has no spring) (seconds, height[, style, way]).
+CRINKLE = [
+    (0.0, 1.0),
+    (0.05, 1.012, "Sine", "Out"),     # the fingers meet it: it bulges a hair
+    (0.12, 0.9, "Quad", "Out"),       # a crease buckles: crunch
+    (0.17, 0.904, "Sine", "InOut"),   # catches on the next
+    (0.24, 0.81, "Quad", "Out"),      # crunch
+    (0.29, 0.815, "Sine", "InOut"),
+    (0.37, 0.745, "Quad", "Out"),     # flat under the thumb
+    (0.68, 0.735, "Sine", "InOut"),   # held, still pressing
+    (0.74, 0.74),                     # let go
+    (0.83, 0.862, "Quad", "Out"),     # pops part way back
+    (0.97, 0.874, "Sine", "InOut"),   # stalls on a crease
+    (1.04, 0.93, "Quad", "Out"),      # a second pop
+    (1.3, 0.955, "Sine", "InOut"),    # creeps
+    (1.37, 0.986, "Quad", "Out"),     # a last little crackle
+    (1.62, 1.0, "Sine", "InOut"),
+]

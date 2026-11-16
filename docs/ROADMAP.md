@@ -2417,8 +2417,9 @@ actions themselves and dealing the new finds on floors are later game tickets.
   foam slice with a face that springs back like bread. F-05c (Nov 16): the jumbo slow-rise
   strawberry, a thumb's dent in its side that takes ten seconds to rise (bones; a boned find is
   one mesh, docs/STUDIO.md). F-05c2 (Nov 16): the squishy capybara, a foam loaf with a mandarin
-  on its head that sinks in a contented sigh. Next F-05c3 (the paper squishy), then F-05d to
-  F-05f (`art/finds/WAVES.md`, the second run's plan).
+  on its head that sinks in a contented sigh. F-05c3 (Nov 16): the paper squishy, a kid's
+  taped marker cat that crunches flat and puffs back unevenly. Next F-05d (the gel bead, glitter
+  and galaxy goo balls), then F-05e and F-05f (`art/finds/WAVES.md`, the second run's plan).
 - [ ] **F-06 Plush.**
 - [ ] **F-07 Night Shift Minis and their blind box.**
 - [ ] **F-08 Boxes and tins.**

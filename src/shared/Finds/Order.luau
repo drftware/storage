@@ -24,6 +24,7 @@ return {
 	ToastSlice = { "Squeeze" },
 	JumboStrawberry = { "Squeeze" },
 	Capybara = { "Squeeze" },
+	PaperSquishy = { "Squeeze" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },

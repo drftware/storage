@@ -6,7 +6,7 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-05c3, the rest of step 12: the paper squishy with a drawn face; then step 13, F-05d.
+**Next:** F-05d, step 13: the gel bead ball, then the glitter goo ball and the galaxy goo ball.
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -57,7 +57,7 @@ changes the table's order a little.
     `stretch`.
 12. **F-05c** Jumbo slow-rise strawberry (built Nov 16; a thumb's dent on bones, ten seconds to
     rise), then, as **F-05c2**, the squishy capybara (built Nov 16; a tiny happy sigh) and, as
-    **F-05c3**, the paper squishy with a drawn face (crinkled paper, looks homemade).
+    **F-05c3**, the paper squishy with a drawn face (built Nov 16; crinkled paper, homemade).
 13. **F-05d** Gel bead ball, glitter goo ball, galaxy goo ball (Legendary): a see-through skin,
     the firefly jar's glass way, with an inside that swirls and settles.
 14. **F-05e** Goo ball (oozes between your fingers), colour-change goo ball (changes colour only
@@ -89,6 +89,36 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-05c3 (the paper squishy built; step 12 done; uploaded 84002820704702 and imported;
+  step 13 not started: the session was past the brief's 120k before it began).** `PaperSquishy`
+  in `squishies/build.py` (prefix `pp_`/`PP_`, kind 13; spec `PAPER`, `CRINKLE`); README section,
+  `Order.luau`. A kid's homemade paper squishy of our own: a ginger cat's head 4.6 in wide drawn
+  in marker (a thick wobbly outline, streaky orange colouring with a white muzzle, pink ears and
+  nose, big shiny eyes, whiskers, forehead stripes, a little heart on the back), taped in clear
+  packing tape and puffed like a pillow, tipped back 12 degrees on its seam. Squeeze: it crunches
+  flat in little jumps and puffs back unevenly, a pop, a stall, a pop, a creep (whole-body
+  `stretch`; bones and stretch together are untested in Roblox). Judged on quick sheets twice,
+  full sheets once; not looked at in Studio (the context cap).
+  **New and reusable:** `pp_body` builds any flat stuffed pouch from a star-shaped outline (two
+  faces lofted from a rounded seam to a pole, puffed by `pp_puff`, a smoothed distance from the
+  edge, so narrow parts stay thin); `pp_drawings`' `hand` draws a stroke as a hand would and
+  `ink` gives it a marker's uneven width; `tape` gives any taped thing its strip edges, tabs and
+  the seam's gathered pleats; Voronoi facets tipped by each cell's colour make crumpled paper
+  or foil (`paper_look`'s last loop). `ts_outline(n, half)` takes any half outline now.
+  **Trap:** `pp_noise2` (sines) thresholded high gives a regular polka-dot lattice, not random
+  specks: use it only for broad wandering, never for sparse spots.
+  **F-05d's hints (not researched):** *Gel bead ball:* a squishy stress ball about 2.4 to 2.8 in
+  across, a clear stretchy TPR skin filled with dozens of small water beads (about 6 to 9 mm,
+  pastel, see-through) that press against the skin; squeezed, the beads bulge out between your
+  fingers as bumps in the mesh net or skin. Build the skin as the firefly jar's glass way
+  (`clear=True`, alpha about 0.15 outside), the beads inside as their own `alone` part (or
+  printed with depth if too many triangles), the whole thing squashing with `stretch` (the
+  stress ball's way) and the beads riding it. *Glitter goo ball:* the same clear skin full of
+  clear gel and fine glitter that swirls when squeezed and settles slowly: a glitter part inside
+  that turns and sinks after the squash. *Galaxy goo ball* (Legendary): dark blue-purple gel
+  with star specks and a nebula swirl, glowing faintly (the night-light's glow mask), its inside
+  turning slowly. Look at 2026 listings for their real sizes and how see-through the skins are.
 
 - **Nov 16, F-05c2 (the squishy capybara built; uploaded 127773297862764 and imported, not looked at in Studio: the context cap; the paper squishy left for F-05c3).** `Capybara` in
   `squishies/build.py` (prefix `cb_`/`CB_`, kinds 10 to 12; spec `CAPY`, `SIGH`, `ROCK`); README
@@ -1502,7 +1532,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Goo ball | Common | Squeeze: it oozes between your fingers and slowly comes back | The craze of 2026 | |
 | Squishy butter stick | Common | Squeeze: leaves a dent that slowly fills back in | A 2026 squishy trend | Nov 16, F-05a |
 | Mochi bun | Common | Squeeze: a soft puff of a sound |  | Nov 16, F-05b2 |
-| Paper squishy with a drawn face | Uncommon | Squeeze: it crinkles | Looks homemade; cheap to build | |
+| Paper squishy with a drawn face | Uncommon | Squeeze: it crinkles | Looks homemade; cheap to build | Nov 16, F-05c3 |
 | Squishy toast slice | Uncommon | Squeeze: springs back like real bread |  | Nov 16, F-05b3 |
 | Gel bead ball | Uncommon | Squeeze: the beads swirl inside |  | |
 | Glitter goo ball | Uncommon | Squeeze: glitter swirls, then settles |  | |

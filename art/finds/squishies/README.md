@@ -229,3 +229,40 @@ behind (`ROCK`, 3 degrees). The game's tiny happy sigh plays here.
 flat lid that read grumpy (now arched, sleepy), ears too big and bear-like (smaller, set back).
 Its template is in the place (`ReplicatedStorage.Props.Finds.Capybara`, the mandarin on a
 Motor6D), not yet looked at in Studio.
+
+## Paper squishy with a drawn face (F-05c3, Nov 16)
+
+`PaperSquishy` (prefix `pp_`/`PP_`, kind 13; spec `PAPER`, `CRINKLE`). Uncommon, "Squeeze: it
+crinkles". Uploaded as 84002820704702; its template is in `ReplicatedStorage.Props.Finds`.
+
+- **Looked at:** onelittleproject.com/paper-squishy (the method and its avocado, cupcake and pizza:
+  the paper cut close to a thick black line, packing tape laid across in strips, cut into tabs
+  round curves and folded onto the back, stuffed through the bottom), craftsyhacks.com/
+  paper-squishies (a blue cat's head as wide as the hand that holds it, a squeezed one creasing),
+  redtedart.com/how-to-make-paper-squishies-emoji (overstuffed emoji faces, every tape strip's
+  edge and crinkle showing: the homemade end).
+- **Real size:** none sold, so the size comes from the templates: one to a letter page, hand
+  wide. Ours is 4.6 in wide, 4.1 in tall tipped back (4.4 in to its ear tips drawn), 1.4 in thick:
+  0.46 x 0.41 x 0.15 studs.
+- **Tells:** a cat's head with two pointed ears, a kid's thick wobbly black outline, streaky
+  orange marker with a white muzzle, two big shiny eyes; glossy tape crinkled all over.
+- **Built:** one part, two faces lofted from the taped seam in to their middles through rings
+  shrunk toward the head's middle (the outline is star-shaped from there), each point puffed by
+  its distance in from the edge, smoothed so the stuffing rounds the pinch lines into the ears
+  (`pp_puff`), so the ears stay thin as real ones do. Each face unwraps flat as seen from its side.
+  Drawn standing, tipped back 12 degrees on its seam so its face turns up a little to you.
+- **Look:** everything drawn is numpy images over the front view (`pp_drawings`, three masks an
+  image, six images): the outline and face strokes wander as a hand draws (`hand`), their width
+  varies; paper left white where the colouring stopped short of the line; the back has a little
+  hand-drawn heart, three stripes and the front's tape tabs folded over (cuts out from the edge
+  and their ends). The tape: glossy (0.12), smudged, silvery where it lifted along its strips'
+  edges, the edges a fine ridge; pleats gathered round the seam where flat paper was puffed
+  (`tape`, along the outline's length); crumpled facets at three sizes (a Voronoi cell's position
+  and colour tip each facet its own way, so the creases are sharp, as crumpled paper's are).
+- **Squeeze:** whole-body `stretch` (CRINKLE): it crunches down in three little jumps to 0.74 as
+  creases buckle, held, then puffs back unevenly, a pop to 0.86, a stall, a pop, a creep and a last
+  crackle, never past its shape (paper has no spring). Not bones: a stretch on a boned part is
+  untested in Roblox (STUDIO.md), and a front-to-back flatten barely shows from the front.
+- **Judged:** quick sheets twice (fixed: the colouring's holidays read as snow, the tape's edges
+  and lifted film read as white paint, the back's heart was a blob, the crumples too faint), full
+  sheets once. From the `-unit` doorway it is an orange speck, as every 4 in squishy is.

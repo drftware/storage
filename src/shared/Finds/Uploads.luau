@@ -30,6 +30,7 @@ return {
 		Capybara = { Model = 127773297862764 },
 		JumboStrawberry = { Model = 81603530188772 },
 		MochiBun = { Model = 75693422662417 },
+		PaperSquishy = { Model = 84002820704702 },
 		StressBall = { Model = 87393666160557 },
 		ToastSlice = { Model = 109999579926471 },
 	},

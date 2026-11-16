@@ -809,6 +809,49 @@ local Set: { [string]: Art.Find } = {
 			},
 		},
 	},
+	PaperSquishy = {
+		Size = Vector3.new(0.465, 0.412, 0.145),
+		Centre = Vector3.new(-0.000, 0.206, 0.037),
+		Triangles = 4784,
+		Texture = 1024,
+		Parts = {
+			{
+				Name = "PaperSquishy_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Size = Vector3.new(0.465, 0.412, 0.145),
+				Triangles = 4784,
+			},
+		},
+		Lights = {},
+		Motions = {
+			Squeeze = {
+				Duration = 1.92,
+				Tracks = {
+					{
+						Part = "PaperSquishy_Body",
+						Channel = "stretch",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.05, 1.012, "Sine", "Out" },
+							{ 0.12, 0.9, "Quad", "Out" },
+							{ 0.17, 0.904, "Sine", "InOut" },
+							{ 0.24, 0.81, "Quad", "Out" },
+							{ 0.29, 0.815, "Sine", "InOut" },
+							{ 0.37, 0.745, "Quad", "Out" },
+							{ 0.68, 0.735, "Sine", "InOut" },
+							{ 0.74, 0.74, "Sine", "InOut" },
+							{ 0.83, 0.862, "Quad", "Out" },
+							{ 0.97, 0.874, "Sine", "InOut" },
+							{ 1.04, 0.93, "Quad", "Out" },
+							{ 1.3, 0.955, "Sine", "InOut" },
+							{ 1.37, 0.986, "Quad", "Out" },
+							{ 1.62, 1, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+		},
+	},
 }
 
 return Set

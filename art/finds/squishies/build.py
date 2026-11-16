@@ -615,11 +615,12 @@ TS_FOAM = 6
 TS_T, TS_E = TS["thick"], TS["edge"]
 
 
-def ts_outline(n):
-    """The slice's outline seen from the front, n points (n even) anticlockwise from the bottom's
-    middle, as (across, up) mm: a closed Catmull-Rom curve through the spec's half outline and its
-    mirror, spaced by length plus turning, so corners get more points than straight runs."""
-    half = TS["outline"]
+def ts_outline(n, half=None):
+    """The slice's outline (or any flat squishy's `half` outline) seen from the front, n points
+    (n even) anticlockwise from the bottom's middle, as (across, up) mm: a closed Catmull-Rom
+    curve through the half outline and its mirror, spaced by length plus turning, so corners get
+    more points than straight runs."""
+    half = half or TS["outline"]
     ctrl = half + [(-x, z) for x, z in reversed(half[1:-1])]
     m = len(ctrl)
     dense = []
@@ -1482,7 +1483,390 @@ CAPYBARA = kit.Find(
     dust=CB["dust"], seed=CB["seed"], texels=1000,
 )
 
-FINDS = [BUTTER_STICK, STRESS_BALL, MOCHI_BUN, TOAST_SLICE, JUMBO_STRAWBERRY, CAPYBARA]
+# --- The paper squishy with a drawn face (F-05c3) -------------------------------------------------
+# A kid's homemade paper squishy (README): a ginger cat's head drawn on printer paper in marker, a
+# thick black line round the edge, coloured in with streaky orange, a white muzzle, pink ears and
+# nose, two big shiny eyes; front and back covered in strips of clear packing tape, the front's
+# tape cut into tabs folded onto the back, stuffed so it puffs like a little pillow. One part: two
+# faces lofted from the taped seam in to their middles, each puffed by how far in from the edge it
+# lies (smoothed, as stuffing rounds a pouch's pinch lines), tipped back a little on its seam. The
+# tape is the look: glossy all over, its strips' edges catching the light, pleats gathered round
+# the seam where flat paper was puffed, and crumpled creases everywhere. Its squeeze crunches
+# down in little jumps and puffs back unevenly.
+
+PP = K.PAPER
+PP_PAPER = 13
+PP_BOX = (-64.0, -6.0, 64.0, 116.0)    # the drawings' extent seen from the front (mm)
+PP_RES = 6.0                            # the drawings' texels a mm
+PP_LEAN = math.radians(PP["lean"])
+# its frame: drawn standing, its face to -Y, then tipped back on its seam and lifted onto it
+PP_M = Matrix.Translation((0.0, 0.0, mm(PP["seam"]))) @ Matrix.Rotation(-PP_LEAN, 4, "X")
+PP_CACHE = {}
+
+
+def pp_outline(n):
+    return ts_outline(n, PP["outline"])
+
+
+def pp_wave(t, scale, seed, k=5):
+    """Smooth noise from -1 to 1 along t: a few sines of random wavelength about `scale`."""
+    rng = np.random.default_rng(int(seed))
+    out = np.zeros_like(np.asarray(t, float))
+    for _ in range(k):
+        f = 2 * math.pi / (scale * rng.uniform(0.6, 1.6))
+        out = out + np.sin(np.asarray(t) * f + rng.uniform(0, 2 * math.pi))
+    return out / math.sqrt(k / 2)
+
+
+def pp_noise2(xs, zs, scale, seed, k=8):
+    """The same over the front view: sines of random direction and wavelength about `scale`."""
+    rng = np.random.default_rng(int(seed))
+    out = 0.0
+    for _ in range(k):
+        a = rng.uniform(0, 2 * math.pi)
+        f = 2 * math.pi / (scale * rng.uniform(0.6, 1.6))
+        out = out + np.sin((xs * math.cos(a) + zs * math.sin(a)) * f + rng.uniform(0, 2 * math.pi))
+    return out / math.sqrt(k / 2)
+
+
+def pp_field(res=PP_RES):
+    """Each point of the front view over PP_BOX, res a mm: how far inside the outline it lies (mm,
+    below 0 outside) and how far round the outline its nearest point is (mm from the chin)."""
+    key = ("field", res)
+    if key in PP_CACHE:
+        return PP_CACHE[key]
+    x0, z0, x1, z1 = PP_BOX
+    w, h = int((x1 - x0) * res), int((z1 - z0) * res)
+    xs = np.linspace(x0, x1, w)[None, :]
+    zs = np.linspace(z0, z1, h)[:, None]
+    P = pp_outline(640)
+    d = np.full((h, w), 1e9)
+    s = np.zeros((h, w))
+    inside = np.zeros((h, w), bool)
+    acc = 0.0
+    for (ax, az), (bx, bz) in zip(P, P[1:] + P[:1]):
+        vx, vz = bx - ax, bz - az
+        ln = math.hypot(vx, vz)
+        t = np.clip(((xs - ax) * vx + (zs - az) * vz) / max(ln * ln, 1e-12), 0, 1)
+        dd = np.hypot(xs - ax - t * vx, zs - az - t * vz)
+        m = dd < d
+        d = np.where(m, dd, d)
+        s = np.where(m, acc + t * ln, s)
+        if abs(vz) > 1e-12:
+            inside ^= ((az > zs) != (bz > zs)) & (xs < ax + (zs - az) * vx / vz)
+        acc += ln
+    PP_CACHE[key] = out = (xs, zs, np.where(inside, d, -d), s, acc)
+    return out
+
+
+def pp_puff():
+    """Each face's puff over the front view (mm out from the seam's middle, 1 mm grid): the
+    distance in from the edge, smoothed so the stuffing rounds the pinch lines, eased up off the
+    seam steeply and flattening over the middle."""
+    if "puff" in PP_CACHE:
+        return PP_CACHE["puff"]
+    xs, zs, d, _, _ = pp_field(1.0)
+    inside = d > 0
+    u = np.maximum(d, 0.0)
+    for _ in range(PP["smooth"]):
+        avg = 0.25 * (np.roll(u, 1, 0) + np.roll(u, -1, 0) + np.roll(u, 1, 1) + np.roll(u, -1, 1))
+        u = np.where(inside, 0.5 * u + 0.5 * avg, 0.0)
+    t = u / u.max()
+    PP_CACHE["puff"] = out = (xs[0], zs[:, 0], PP["puff"] * (1 - (1 - t) ** PP["puff_p"]))
+    return out
+
+
+def pp_sample(grid, x, z):
+    gx, gz, H = grid
+    i = min(max((x - gx[0]) / (gx[1] - gx[0]), 0.0), len(gx) - 1.001)
+    j = min(max((z - gz[0]) / (gz[1] - gz[0]), 0.0), len(gz) - 1.001)
+    i0, j0 = int(i), int(j)
+    fi, fj = i - i0, j - j0
+    return ((1 - fi) * (1 - fj) * H[j0, i0] + fi * (1 - fj) * H[j0, i0 + 1]
+            + (1 - fi) * fj * H[j0 + 1, i0] + fi * fj * H[j0 + 1, i0 + 1])
+
+
+def pp_body(hi):
+    """The pouch: the taped seam's round edge, then each face from the outline in to its middle
+    through rings shrunk toward the head's middle (the outline is star-shaped from there), each
+    point puffed out by pp_puff. Each face unwraps as seen from its side, at true size."""
+    n, N = (480, 34) if hi else (104, 10)
+    O = np.array(pp_outline(n))
+    C = np.array((0.0, PP["centre"]))
+    puff = pp_puff()
+    seam = PP["seam"]
+    sh = Shape()
+
+    def vert(x, y, z):
+        return (sh._v((mm(x), mm(y), mm(z)), PP_M), x, z)
+
+    edge = [vert(x, 0.0, z) for x, z in ts_inset(O, -seam)]
+    round_ = ts_inset(O, -seam * 0.62)
+    fr = [1.0 - (0.28 * s + 0.72 * s * s) for s in np.linspace(0.0, 1.0, N + 1)][:-1]
+    for side in (-1, 1):                 # the front (out to -Y), then the back
+        rings = [edge, [vert(x, side * seam * 0.78, z) for x, z in round_]]
+        for r in fr:
+            rings.append([vert(x, side * (seam + pp_sample(puff, x, z)), z)
+                          for x, z in C + r * (O - C)])
+        pole = vert(C[0], side * (seam + pp_sample(puff, *C)), C[1])
+        o = sh.island()
+
+        def face(vs, side=side, o=o):
+            vs = vs if side < 0 else [vs[0]] + vs[:0:-1]
+            sh._f([v[0] for v in vs], PP_PAPER, [o + Vector((-side * mm(v[1]), mm(v[2])))
+                                                 for v in vs])
+
+        for A, B in zip(rings, rings[1:]):
+            for j in range(n):
+                face([A[j], A[(j + 1) % n], B[(j + 1) % n], B[j]])
+        for j in range(n):
+            face([rings[-1][j], rings[-1][(j + 1) % n], pole])
+    return sh
+
+
+def pp_drawings():
+    """What's drawn and taped on each face, seen from the front over PP_BOX, as three images a
+    face, three masks each: (marker black, pink, white paper left uncoloured), (tape edges, tape
+    lifted off the paper, the seam's pleats' height), (tabby stripes, blush or the heart, -)."""
+    if "draw" in PP_CACHE:
+        return PP_CACHE["draw"]
+    xs, zs, d, s, per = pp_field()
+    x0, z0 = PP_BOX[0], PP_BOX[1]
+    H, W = d.shape
+    px = 1.0 / PP_RES
+    wob = pp_noise2(xs, zs, 4.5, 5)
+
+    def soft(v):
+        return np.clip(0.5 + v / px, 0.0, 1.0)
+
+    def hand(pts, seed, amp=0.3):
+        """A stroke as a hand draws it: resampled every 0.8 mm and wandering off its line."""
+        P = np.array(pts, float)
+        acc = np.concatenate([[0.0], np.cumsum(np.hypot(*np.diff(P, axis=0).T))])
+        t = np.linspace(0.0, acc[-1], max(int(acc[-1] / 0.8), 2))
+        Q = np.stack([np.interp(t, acc, P[:, 0]), np.interp(t, acc, P[:, 1])], 1)
+        tg = np.gradient(Q, axis=0)
+        tg /= np.linalg.norm(tg, axis=1)[:, None] + 1e-9
+        return Q + np.stack([-tg[:, 1], tg[:, 0]], 1) * (amp * pp_wave(t, 7.0, seed))[:, None]
+
+    def dist(strokes, margin=4.0):
+        out = np.full((H, W), 1e9)
+        for P in strokes:
+            c0 = max(int((P[:, 0].min() - margin - x0) * PP_RES), 0)
+            c1 = min(int((P[:, 0].max() + margin - x0) * PP_RES) + 1, W)
+            r0 = max(int((P[:, 1].min() - margin - z0) * PP_RES), 0)
+            r1 = min(int((P[:, 1].max() + margin - z0) * PP_RES) + 1, H)
+            X, Z = xs[:, c0:c1], zs[r0:r1, :]
+            sub = out[r0:r1, c0:c1]
+            for (ax, az), (bx, bz) in zip(P, P[1:]):
+                vx, vz = bx - ax, bz - az
+                t = np.clip(((X - ax) * vx + (Z - az) * vz) / max(vx * vx + vz * vz, 1e-12), 0, 1)
+                sub = np.minimum(sub, np.hypot(X - ax - t * vx, Z - az - t * vz))
+            out[r0:r1, c0:c1] = sub
+        return out
+
+    def ink(strokes, width, seed):
+        return soft(width / 2 * (1 + 0.16 * wob) - dist([hand(p, seed + i)
+                                                          for i, p in enumerate(strokes)]))
+
+    def oval(cx, cz, rx, rz, taper=None):
+        if taper:   # narrower toward its bottom end, as a stroke lifted off
+            rx = rx * np.clip((zs - (cz - rz)) / (2 * rz), taper, 1.0)
+        q = np.hypot((xs - cx) / rx, (zs - cz) / rz)
+        return soft((1.0 - q) * np.minimum(rx, rz) + 0.22 * wob)
+
+    def inside(pts):
+        P = np.array(pts, float)
+        m = np.zeros((H, W), bool)
+        for (ax, az), (bx, bz) in zip(P, np.roll(P, -1, 0)):
+            if abs(bz - az) > 1e-12:
+                m ^= ((az > zs) != (bz > zs)) & (xs < ax + (zs - az) * (bx - ax) / (bz - az))
+        return m.astype(float)
+
+    def arc(c, r, a0, a1, n=14):
+        return [(c[0] + r * math.cos(math.radians(a0 + (a1 - a0) * i / n)),
+                 c[1] + r * math.sin(math.radians(a0 + (a1 - a0) * i / n))) for i in range(n + 1)]
+
+    def outline(seed):
+        c = PP["line_in"] + 0.45 * pp_wave(s, 14.0, seed)
+        return soft(PP["line"] / 2 * (1 + 0.16 * wob) - np.abs(d - c)) * (d > -0.3)
+
+    def gaps(seed):
+        """Paper left white: the cut edge, and where the colouring stopped short of the line."""
+        band = (d > PP["line_in"]) * (d < PP["line_in"] + PP["line"] / 2 + 1.6)
+        short = band * np.clip((pp_noise2(xs, zs, 7.0, seed) - 0.75) * 2.0, 0.0, 1.0)
+        return np.maximum(short, soft(0.15 - d))
+
+    def tape(edges, tabs, seed):
+        """The tape's edges (a strip's straight-ish edges across, and on the back the front's tabs
+        folded over: cuts out from the edge and their ends), the silvery film where it lifted along
+        them, and the seam's gathered pleats."""
+        rng = np.random.default_rng(seed)
+        line = np.zeros((H, W))
+        lift = np.zeros((H, W))
+        for k, (z, slope, curve) in enumerate(edges):
+            e = z + slope * xs + curve * xs * xs + 0.5 * pp_wave(xs, 30.0, seed + k)
+            line = np.maximum(line, soft(0.2 - np.abs(zs - e)))
+            side = np.clip((zs - e) / 2.4, 0.0, 1.0) * (zs > e) * (zs - e < 2.4)
+            lift = np.maximum(lift, side * np.clip(pp_wave(xs, 11.0, seed + 9 + k) - 0.1, 0, 1))
+        if tabs:
+            bounds = np.concatenate([[0.0], np.cumsum(rng.uniform(11.0, 18.0, 40))])
+            bounds = bounds[bounds < per - 8.0].tolist() + [per]
+            k = np.clip(np.searchsorted(bounds, s), 1, len(bounds) - 1)
+            lens = rng.uniform(8.0, 13.0, len(bounds) + 1)
+            ln = lens[k]
+            cut = np.minimum(s - np.take(bounds, k - 1), np.take(bounds, k) - s)
+            line = np.maximum(line, soft(0.2 - cut) * (d < ln) * (d > 0.2))
+            line = np.maximum(line, soft(0.2 - np.abs(d - ln)))
+            lift = np.maximum(lift, np.clip((d - ln + 2.2) / 2.2, 0, 1) * (d < ln)
+                              * np.clip(pp_wave(s, 9.0, seed + 3), 0, 1))
+        phase = s / 6.2 + 0.9 * pp_wave(s, 40.0, seed + 4) + 0.03 * d * pp_wave(s, 25.0, seed + 5)
+        idx = np.floor(phase)
+        length = 4.0 + 11.0 * np.modf(np.abs(np.sin(idx * 12.9898 + seed) * 43758.5453))[0]
+        tri = 2.0 * np.abs(phase - idx - 0.5) * 2.0 - 1.0
+        pleat = tri * np.clip(1.0 - d / length, 0.0, 1.0) ** 0.7 * (d > 0)
+        return line, lift, 0.5 + 0.5 * np.clip(pleat, -1.0, 1.0)
+
+    # the front: the cat's face
+    blk = outline(11)
+    for sx, cx, cz, rx, rz in ((-1, -18.6, 51.0, 5.0, 6.0), (1, 18.9, 50.4, 5.35, 6.25)):
+        blk = np.maximum(blk, oval(cx, cz, rx, rz))
+    shine = np.maximum.reduce([oval(cx + 1.75, cz + 2.3, 1.8, 1.8) for cx, cz in
+                               ((-18.6, 51.0), (18.9, 50.4))]
+                              + [oval(cx - 1.6, cz - 2.7, 0.8, 0.8) for cx, cz in
+                                 ((-18.6, 51.0), (18.9, 50.4))])
+    nose = [(-4.0, 41.6), (4.1, 41.4), (0.1, 37.4)]
+    ears = [[(33.0, 91.0), (42.6, 101.4), (46.4, 84.0)], [(-32.4, 90.4), (-42.0, 100.6),
+                                                         (-46.0, 84.6)]]
+    face = [nose + [nose[0]], [(0.1, 37.4), (0.0, 35.3)],
+            arc((-3.05, 35.3), 3.05, 0, -180), arc((3.05, 35.3), 3.05, 180, 360),
+            [(35.0, 42.0), (52.5, 46.0)], [(35.5, 38.0), (54.0, 37.2)], [(35.0, 34.0), (51.5, 28.8)],
+            [(-35.0, 41.6), (-52.0, 45.2)], [(-35.5, 37.6), (-53.6, 37.6)],
+            [(-35.0, 33.6), (-51.0, 29.4)]]
+    blk = np.maximum(blk, ink(face, 1.45, 21))
+    blk = np.maximum(blk, ink([e + [e[0]] for e in ears], 1.35, 41))
+    pink = np.maximum.reduce([inside(nose)] + [inside(e) for e in ears])
+    muzzle = np.maximum(oval(-6.3, 34.6, 8.8, 7.6), oval(6.3, 34.4, 8.9, 7.7))
+    white = np.maximum.reduce([gaps(31), shine, muzzle * (1 - pink)])
+    stripes = np.maximum.reduce([oval(-8.8, 81.6, 1.8, 6.2, 0.3), oval(0.3, 80.8, 1.9, 7.4, 0.3),
+                                 oval(9.0, 81.8, 1.8, 6.0, 0.3)])
+    hatch = 0.55 + 0.45 * np.clip(np.sin((xs * 0.5 + zs * 0.866) * 2 * math.pi / 1.15) * 3, -1, 1)
+    blush = np.maximum(oval(-28.5, 42.6, 5.2, 3.2), oval(28.8, 42.2, 5.0, 3.3)) * hatch
+    F1 = (blk * (1 - shine), pink, white)
+    F2 = tape([(8.0, 0.01, 0.0011), (35.5, -0.025, 0.0), (79.5, 0.035, 0.0)], False, 51)
+    F3 = (stripes, blush, np.zeros_like(blk))
+    # the back: the outline again, a little heart, the back of the head's stripes, the tabs
+    t = np.linspace(0.0, 2 * math.pi, 73)
+    heart = [(-13.0 + 0.5 * 16 * math.sin(a) ** 3,
+              57.0 + 0.5 * (13 * math.cos(a) - 5 * math.cos(2 * a) - 2 * math.cos(3 * a)
+                            - math.cos(4 * a))) for a in t]
+    hb = ink([heart], 1.3, 71)
+    B1 = (np.maximum(outline(12), hb), inside(heart[:-1]) * (1 - hb), gaps(32))
+    B2 = tape([(30.0, 0.02, 0.0), (71.0, -0.03, 0.0)], True, 61)
+    B3 = (np.maximum.reduce([oval(-9.0, 80.0, 1.6, 6.4, 0.3), oval(0.0, 79.0, 1.7, 7.4, 0.3),
+                             oval(9.4, 80.4, 1.6, 6.2, 0.3)]), np.zeros_like(blk),
+          np.zeros_like(blk))
+    PP_CACHE["draw"] = out = (F1, F2, F3, B1, B2, B3)
+    return out
+
+
+def pp_image(name, chans):
+    h, w = chans[0].shape
+    img = bpy.data.images.new(name, w, h, alpha=False)
+    img.colorspace_settings.name = "Non-Color"
+    px = np.ones((h, w, 4), np.float32)
+    for i, c in enumerate(chans):
+        px[..., i] = c
+    img.pixels.foreach_set(px.ravel())
+    img.pack()
+    return img
+
+
+def paper_look(L, f):
+    nb = L.nb
+    ca, sa = math.cos(PP_LEAN), math.sin(PP_LEAN)
+    up = nb.sub(L.z, mm(PP["seam"]))
+    # back in the pouch's own frame, as drawn standing (mm)
+    xm = nb.mul(L.x, K.STUD_MM)
+    zm = nb.mul(nb.add(nb.mul(L.y, sa), nb.mul(up, ca)), K.STUD_MM)
+    ym = nb.mul(nb.sub(nb.mul(L.y, ca), nb.mul(up, sa)), K.STUD_MM)
+    front = nb.ss(ym, 0.2, -0.2)
+    back = nb.inv(front)
+    x0, z0, x1, z1 = PP_BOX
+    uv = nb.comb(nb.mul(nb.sub(xm, x0), 1 / (x1 - x0)), nb.mul(nb.sub(zm, z0), 1 / (z1 - z0)),
+                 0.0)
+    draw = pp_drawings()
+
+    def img(name, chans):
+        t = nb.node("ShaderNodeTexImage", image=pp_image(name, chans), interpolation="Cubic",
+                    extension="EXTEND")
+        nb.put(t.inputs["Vector"], uv)
+        return nb.sep(t.outputs["Color"])
+
+    F = [img(f"Paper{k}F", c) for k, c in enumerate(draw[:3])]
+    B = [img(f"Paper{k}B", c) for k, c in enumerate(draw[3:])]
+
+    def both(i, c):
+        return nb.add(nb.mul(front, F[i][c]), nb.mul(back, B[i][c]))
+
+    blk, white, pink = both(0, 0), both(0, 2), nb.mul(front, F[0][1])
+    edge, lift, pleat = both(1, 0), both(1, 1), both(1, 2)
+    stripes, blush = both(2, 0), both(2, 1)
+    heart = nb.mul(back, B[0][1])
+    # printer paper under the tape, a cool white with a faint fibre
+    C = Coat(L, hexc("#F3F1EA"), 0.12)
+    C.paint(nb.ss(L.noise(900.0, 1, detail=2), 0.3, 0.8), height=0.12)
+    # coloured in with an orange marker in diagonal back-and-forth strokes: darker where strokes
+    # overlapped, lighter where the nib ran dry, the paper left white where the kid stopped short
+    q = nb.add(nb.mul(xm, 0.819), nb.mul(zm, 0.574))
+    r = nb.sub(nb.mul(zm, 0.819), nb.mul(xm, 0.574))
+    streak = nb.noise((nb.comb(nb.mul(q, 0.55), nb.mul(r, 0.035), 0.0), None), 1.0, detail=2)
+    blot = L.noise(30.0, 3, detail=2)
+    colour = nb.inv(white)
+    C.paint(colour, hexc("#F58A2E"))
+    C.paint(nb.mul(colour, nb.ss(streak, 0.52, 0.66)), hexc("#EC731F"))
+    C.paint(nb.mul(colour, nb.mul(nb.ss(streak, 0.4, 0.28), 0.55)), hexc("#F8A452"))
+    C.paint(nb.mul(colour, nb.mul(nb.ss(blot, 0.55, 0.75), 0.4)), hexc("#E46A1C"))
+    C.paint(nb.mul(colour, stripes), hexc("#B5461A"))
+    C.paint(pink, hexc("#F27A9B"))
+    C.paint(nb.mul(nb.mul(front, blush), 0.8), hexc("#F2708A"))
+    C.paint(heart, hexc("#E2303F"))
+    C.paint(blk, hexc("#1E1A1C"), height=0.1)
+    # the tape over everything: a glossy film, a touch grey, smudged with fingerprints; silvery
+    # where it lifted off the paper, its cut edges catching the light
+    C.paint(nb.mul(nb.ss(L.noise(55.0, 6, detail=3), 0.56, 0.72), 0.8), rough=0.3)
+    C.paint(nb.mul(lift, 0.2), hexc("#F2F6F6"), 0.2, height=0.3)
+    C.paint(nb.mul(edge, 0.12), hexc("#FFFFFF"))
+    C.paint(edge, rough=0.3, height=0.8)
+    # crumpled: the paper's facets, each tipped its own way, at two sizes, and the pleats gathered
+    # round the seam where flat sheets were puffed out
+    for sc, amp, sd in ((12.0, 5.0, 6), (26.0, 6.0, 7), (64.0, 3.0, 8)):
+        vw = L.vec(s=sd)
+        cell = nb.voronoi(vw, sc, out="Position")
+        rnd = nb.vop("SUBTRACT", nb.voronoi(vw, sc, out="Color"), (0.5, 0.5, 0.5))
+        tilt = nb.vop("DOT_PRODUCT", nb.vop("SUBTRACT", vw[0], cell), rnd)
+        C.paint(1.0, height=nb.mul(tilt, sc * amp))
+    C.paint(1.0, height=nb.mul(nb.sub(pleat, 0.5), 4.6))
+    C.finish(f.dust, grime=0.2)
+    return C.surface(bump_dist=mm(0.12), bump=0.6)
+
+
+PAPER_SQUISHY = kit.Find(
+    "PaperSquishy",
+    [kit.Part("Body", pp_body)],
+    paper_look,
+    motions={
+        # squeezed: it crunches flat in little jumps as its creases buckle, held, then let go it
+        # puffs back unevenly, a pop, a stall, a pop and a creep, never past its shape
+        "Squeeze": dict(duration=round(K.CRINKLE[-1][0] + 0.3, 2),
+                        tracks=[("Body", "stretch", K.CRINKLE)],
+                        focus=(0.0, 0.0, mm(52.0)), distance=1.0),
+    },
+    dust=PP["dust"], seed=PP["seed"], texels=1000,
+)
+
+FINDS = [BUTTER_STICK, STRESS_BALL, MOCHI_BUN, TOAST_SLICE, JUMBO_STRAWBERRY, CAPYBARA,
+         PAPER_SQUISHY]
 
 if __name__ == "__main__":
     kit.main("Squishies", HERE, FINDS)
