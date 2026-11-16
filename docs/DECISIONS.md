@@ -6346,3 +6346,16 @@ use, but which can't make a dent.
   sphere's triangles. Full-metal flakes reflect the dark unit and read grey; half metal with a
   bright colour stays bright from every side and still flashes where one faces the light. The
   galaxy goo ball's nebula is the next to use it.
+
+## D-249 · 2026-11-16 · A find can be found glowing: its glow tracks' first key says how much
+- **What:** the galaxy goo ball's glow tracks (its `Gel`, the kit's glow part, and its three
+  star bands) start at 0.8, so its rest pose is glowing faintly: the emissive mask at 0.8 of its
+  `Glow.Strength` and its light at 0.8 of its brightness. A squeeze raises them to 1 and they
+  fade back. Nothing new in the kit: a part's rest value is already its first key in its first
+  motion (CRAFT.md, motion data).
+- **Why:** the catalog's galaxy ball is a ball of glowing stars; found dark, it would be a
+  speck from a doorway, and its glow is the Legendary's tell. A find switched on and off (the
+  lamps) still starts at 0.
+- **So:** whatever lays a find in a unit (a game ticket) must set each glowing part's
+  `EmissiveStrength` and enable its lights from their rest keys, not leave them at the
+  template's 0 and disabled.

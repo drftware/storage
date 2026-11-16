@@ -495,3 +495,48 @@ GLITTER_DEEP = glitter_swirl(0.35, 1.2, 3.85)
 GLITTER_RISE_TOP = glitter_rise(0.1, 1.1, 3.3, 0.0045)
 GLITTER_RISE_MID = glitter_rise(0.2, 1.4, 4.4, 0.0035)
 GLITTER_RISE_LOW = glitter_rise(0.3, 1.7, 5.0, 0.003)
+
+# --- The galaxy goo ball (F-05d3) ----------------------------------------------------------------
+# A clear TPR squeeze ball full of deep blue-violet galaxy gel, of our own (README): galaxy gel balls
+# sell at 2 to 4 in, most 2.5 in; the handmade galaxy vortex ball held in a palm reads about
+# 2.75 in, and the Legendary takes that. A glossy, faintly violet skin with the glitter ball's seam
+# and plug; inside, a nebula swirls through the gel (magenta clouds on one side, teal on the
+# other, dark lanes through both) over a dense field of tiny stars; silver and gold star sequins
+# and fine silver glitter hang through it, a few pale sparkle stars and a pearl moon glow
+# faintly, and a tiny ringed planet floats near the top.
+GALAXY = dict(
+    r=35.0,            # the ball's outside radius: 70 mm across (2.75 in)
+    sink=1.1,          # how far it settles onto the floor: a small soft flat spot
+    skin=1.5,          # the TPR skin's thickness (mm): the gel fills it to its inside
+    # the star sequins: silver five-pointed, gold five-pointed, and pale four-pointed sparkles
+    # that glow; how many of each, their points' radius (mm) and their waist's share of it
+    silver=11, gold=7, sparkle=10, star_r=(1.9, 2.8), star_in=0.43, sparkle_in=0.24,
+    # the fine glitter: hex specks, how many and how big (corner radius, mm)
+    specks=80, speck_r=(0.45, 0.8),
+    gap=2.4, wall=3.2,  # how far apart two pieces stay and how near the gel's wall they come (mm)
+    band=9.0,          # the swirling bands, by a piece's height over the middle (mm)
+    # the pearl moon (radius mm, its middle from the ball's) and the ringed planet (its ball's
+    # radius, its ring's inner and outer, its tilt in degrees, its middle)
+    moon_r=3.3, moon=(-7.0, -13.5, 1.5),
+    planet_r=1.7, ring=(2.4, 4.1), ring_tilt=(24.0, -18.0), planet=(9.5, -9.0, 13.0),
+    # the nebula: a band of cloud round the ball, its plane's facing (square to the front
+    # camera's view, so it crosses the ball's far side corner to corner from the front and the
+    # back alike), the way along it that runs from teal to magenta, and how wide it spreads (mm)
+    neb_n=(0.62, -0.34, -0.71), neb_t=(0.62, -0.34, 0.71), neb_w=17.0,
+    dust=0.08, seed=61.0,
+)
+
+# The galaxy's swirl, slower and dreamier than the glitter ball's: the squeeze stirs the top
+# stars round first, the middle a beat behind, the bottom later, each about one turn over six to
+# seven seconds, lifting a hair and drifting back down; the nebula's gel turns last and slowest
+# behind them, so its clouds drift round the ball, and all stop where they began (a seamless
+# loop). Stirred, the stars and clouds brighten a little and fade back as they settle.
+GALAXY_TOP = glitter_swirl(0.1, 1.0, 4.6)
+GALAXY_MID = glitter_swirl(0.2, 1.3, 5.2)
+GALAXY_LOW = glitter_swirl(0.3, 1.5, 5.6)
+GALAXY_NEB = glitter_swirl(0.4, 1.8, 6.2)
+GALAXY_RISE_TOP = glitter_rise(0.1, 1.4, 4.6, 0.005)
+GALAXY_RISE_MID = glitter_rise(0.2, 1.8, 5.6, 0.004)
+GALAXY_RISE_LOW = glitter_rise(0.3, 2.1, 6.2, 0.0035)
+GALAXY_GLOW = [(0.0, 0.8), (0.3, 0.8), (1.2, 1.0, "Sine", "Out"), (4.4, 1.0),
+               (8.0, 0.8, "Sine", "InOut")]

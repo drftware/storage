@@ -2294,8 +2294,332 @@ GLITTER_GOO_BALL = kit.Find(
     dust=GG["dust"], seed=GG["seed"], texels=1000, cage=0.0016,
 )
 
+# --- the galaxy goo ball (F-05d3) -----------------------------------------------------------------
+
+GX = K.GALAXY
+GX_SKIN, GX_GEL = 29, 30
+GX_SPECK, GX_SILVER, GX_GOLD, GX_SPARKLE = 31, 32, 33, 34
+GX_MOON, GX_PLANET, GX_RING = 35, 36, 37
+GX_SEQ = (GX_SPECK, GX_SILVER, GX_GOLD, GX_SPARKLE)
+GX_R = GX["r"]
+GX_RIN = GX_R - GX["skin"]             # the skin's inside, where the gel meets it (mm)
+GX_RGEL = GX_RIN - 0.3                 # the gel's wall, a hair inside the skin's (mm)
+GX_FLOOR = GX["skin"] + 0.3            # the gel's flat bottom over the floor (mm)
+
+
+def gx_flat(zr):
+    """The ball's height over the floor for its sphere's height zr (mm): the glitter ball's
+    small, rounded flat spot."""
+    lo = (-GX["sink"] + math.sqrt(GX["sink"] ** 2 + GB_SOFT ** 2)) / 2
+    return (zr + math.sqrt(zr * zr + GB_SOFT ** 2)) / 2 - lo
+
+
+GX_ZC = gx_flat(GX_R - GX["sink"])     # the ball's middle over the pivot on the floor (mm)
+
+
+def gx_pieces():
+    """The sequins hung in the gel: [(centre from the ball's middle mm, facing, spin, radius mm,
+    kind)], with room kept for the moon and the planet, the sparkles first, then the silver and
+    gold stars, then the fine glitter, each clear of the rest and of the gel's wall and floor,
+    every one facing its own random way."""
+    rng = np.random.default_rng(int(GX["seed"]))
+    reach = GX_RGEL - GX["wall"]
+    lowest = GX_FLOOR + 1.8 - GX_ZC
+    got = [(np.array(GX["moon"]), None, 0.0, GX["moon_r"] + 1.0, GX_MOON),
+           (np.array(GX["planet"]), None, 0.0, GX["ring"][1] + 0.6, GX_PLANET)]
+
+    def place(n, r_of, kind, gap_of):
+        while n:
+            c = rng.uniform(-reach, reach, 3)
+            r = r_of()
+            if np.linalg.norm(c) > reach or c[2] < lowest + r:
+                continue
+            if any(np.linalg.norm(c - q[0]) < gap_of(r, q[3]) for q in got):
+                continue
+            nrm = rng.normal(0, 1, 3)
+            got.append((c, nrm / np.linalg.norm(nrm), float(rng.uniform(0, math.tau)), r, kind))
+            n -= 1
+
+    for kind, key in ((GX_SPARKLE, "sparkle"), (GX_SILVER, "silver"), (GX_GOLD, "gold")):
+        place(GX[key], lambda: float(rng.uniform(*GX["star_r"])), kind, lambda r, q: r + q + 1.4)
+    place(GX["specks"], lambda: float(rng.uniform(*GX["speck_r"])), GX_SPECK,
+          lambda r, q: max(GX["gap"], r + q + 0.5))
+    return got[2:]
+
+
+GX_LIST = gx_pieces()
+
+
+def gx_band(c):
+    """Which swirling band a piece rides, by its height over the ball's middle (mm)."""
+    return "Top" if c[2] > GX["band"] else ("Low" if c[2] < -GX["band"] else "Mid")
+
+
+def gx_skin(hi):
+    """The skin: the glitter ball's, bigger: the ball spun pole to pole, its outside only."""
+    n, seg = (112, 192) if hi else (24, 44)
+    prof = [(0.0, 0.0)]
+    for i in range(1, n):
+        a = -math.pi / 2 + math.pi * i / n
+        prof.append((mm(GX_R * math.cos(a)), mm(gx_flat(GX_ZC + GX_R * math.sin(a)))))
+    prof.append((0.0, mm(gx_flat(GX_ZC + GX_R))))
+    sh = Shape()
+    sh.lathe(prof, GX_SKIN, seg, split=2)
+    return sh
+
+
+def gx_gel(hi):
+    """The gel's wall a hair inside the skin, flattened over its floor, drawn facing in: the
+    nebula is painted on it, so through the skin you see the far side's clouds."""
+    n, seg = (96, 160) if hi else (24, 44)
+    prof = []
+    for i in range(n + 1):
+        a = -math.pi / 2 + math.pi * i / n
+        z = GX_ZC + GX_RGEL * math.sin(a) - GX_FLOOR
+        z = GX_FLOOR + (z + math.sqrt(z * z + 1.2 ** 2)) / 2
+        rho = GX_RGEL * math.cos(a)
+        prof.append((0.0 if abs(rho) < 1e-6 else mm(rho), mm(z)))
+    sh = Shape()
+    sh.lathe(prof, GX_GEL, seg, split=2)
+    bmesh.ops.reverse_faces(sh.bm, faces=list(sh.bm.faces))
+    return sh
+
+
+def gx_piece(sh, c, nrm, spin, r, kind):
+    """One sequin, both its faces, each its own island laid flat: a hexagon of fine glitter, a
+    five-pointed star, or a four-pointed sparkle with long thin points."""
+    n = Vector(tuple(nrm))
+    u = n.orthogonal().normalized()
+    w = n.cross(u)
+    o = Vector((0.0, 0.0, GX_ZC)) + Vector(tuple(c))
+    if kind == GX_SPECK:
+        rim = [(r, spin + math.pi * i / 3) for i in range(6)]
+    else:
+        k, waist = (4, GX["sparkle_in"]) if kind == GX_SPARKLE else (5, GX["star_in"])
+        rim = [(r if i % 2 == 0 else waist * r, spin + math.pi * i / k) for i in range(2 * k)]
+    flat = [Vector((rr * math.cos(a), rr * math.sin(a))) for rr, a in rim]
+    for side in (1.0, -1.0):
+        mid = o + n * (side * GG_THIN)
+        pts = [sh.bm.verts.new((mid + u * p.x + w * p.y) / K.STUD_MM) for p in flat]
+        isl = sh.island()
+        uv = [isl + p / K.STUD_MM for p in flat]
+        order = list(range(len(pts))) if side > 0 else list(reversed(range(len(pts))))
+        if kind == GX_SPECK:
+            sh._f([pts[i] for i in order], kind, [uv[i] for i in order])
+        else:
+            hub = sh.bm.verts.new(mid / K.STUD_MM)
+            for j in range(len(order)):
+                a, b = order[j], order[(j + 1) % len(order)]
+                sh._f([hub, pts[a], pts[b]], kind, [isl, uv[a], uv[b]])
+
+
+def gx_ball(sh, c, r, kind, hi, M=None):
+    """A little ball (the moon, the planet) of radius r at c from the ball's middle (mm)."""
+    n, seg = (16, 28) if hi else (8, 14)
+    prof = [(0.0, mm(-r))]
+    for i in range(1, n):
+        a = -math.pi / 2 + math.pi * i / n
+        prof.append((mm(r * math.cos(a)), mm(r * math.sin(a))))
+    prof.append((0.0, mm(r)))
+    o = (Vector((0.0, 0.0, GX_ZC)) + Vector(c)) / K.STUD_MM
+    sh.lathe(prof, kind, seg, M=Matrix.Translation(o) @ (M or Matrix()), split=2)
+
+
+GX_TILT = (Matrix.Rotation(math.radians(GX["ring_tilt"][0]), 4, "X")
+           @ Matrix.Rotation(math.radians(GX["ring_tilt"][1]), 4, "Y"))
+
+
+def gx_planet(sh, hi):
+    """The ringed planet: a little ball and a flat ring round it, tipped, both ring faces."""
+    gx_ball(sh, GX["planet"], GX["planet_r"], GX_PLANET, hi, GX_TILT)
+    o = (Vector((0.0, 0.0, GX_ZC)) + Vector(GX["planet"])) / K.STUD_MM
+    r1, r2 = GX["ring"]
+    for side in (1.0, -1.0):
+        prof = [(mm(r2), 0.0), (mm(r1), 0.0)] if side > 0 else [(mm(r1), 0.0), (mm(r2), 0.0)]
+        M = Matrix.Translation(o) @ GX_TILT @ Matrix.Translation((0.0, 0.0, side * mm(GG_THIN)))
+        sh.lathe(prof, GX_RING, 40 if hi else 20, M=M)
+
+
+def gx_stars_part(band):
+    def build(hi):
+        """The sequins of one band, and the moon or planet if it rides it."""
+        sh = Shape()
+        for c, nrm, spin, r, kind in GX_LIST:
+            if gx_band(c) == band:
+                gx_piece(sh, c, nrm, spin, r, kind)
+        if gx_band(GX["moon"]) == band:
+            gx_ball(sh, GX["moon"], GX["moon_r"], GX_MOON, hi)
+        if gx_band(GX["planet"]) == band:
+            gx_planet(sh, hi)
+        return sh
+    return build
+
+
+# each sequin's colour, roughness and metalness: half metal at most, as the glitter ball found,
+# so they stay bright in a dim unit; the sparkles pale and barely metal, as they glow
+GX_COLS = {GX_SPECK: ("#E6ECFF", 0.12, 0.42), GX_SILVER: ("#F4F6FF", 0.1, 0.3),
+           GX_GOLD: ("#FFDB6E", 0.1, 0.48), GX_SPARKLE: ("#EEF4FF", 0.16, 0.15)}
+
+
+def galaxy_look(L, f):
+    nb = L.nb
+    seq = L.k(*GX_SEQ)
+    gel, skin = L.k(GX_GEL), L.k(GX_SKIN)
+    moon, planet, ring = L.k(GX_MOON), L.k(GX_PLANET), L.k(GX_RING)
+    # the skin: clear TPR, faintly violet, glossy, a faint orange-peel from the mould, the
+    # parting line over its sides and top, a fill plug under it, thumb smudges
+    C = Coat(L, hexc("#9A93C4"), 0.06, 0.0, nb.mul(L.noise(1400.0, 1, detail=2), 0.12))
+    C.paint(skin, alpha=0.18)
+    haze = nb.mul(nb.mul(skin, nb.ss(L.noise(9.0, 2, detail=3), 0.5, 0.78)), 0.6)
+    C.paint(haze, hexc("#A69FCB"), 0.12, alpha=0.26)
+    smudge = nb.mul(skin, nb.ss(L.noise(26.0, 3, detail=4, rough=0.6), 0.6, 0.74))
+    C.paint(nb.mul(smudge, 0.8), hexc("#B3ADD0"), 0.3, alpha=0.27)
+    seam = nb.mul(nb.band(L.y, -mm(0.14), mm(0.14), mm(0.12)), skin)
+    C.paint(seam, hexc("#C9C4E4"), 0.16, height=0.9, alpha=0.5)
+    rr = nb.math("SQRT", nb.add(nb.mul(L.x, L.x), nb.mul(L.y, L.y)))
+    plug = nb.mul(nb.band(rr, -mm(1.0), mm(3.6), mm(0.3)), nb.ss(nb.mul(L.nz, -1.0), 0.8, 0.95))
+    C.paint(nb.mul(plug, skin), hexc("#BDB7DA"), 0.4, height=0.6, alpha=0.62)
+
+    # the gel's far side, seen through it: deep blue-violet night, uneven as poured gel is
+    C.paint(gel, hexc("#120F42"), 0.3, 0.0, alpha=1.0)
+    C.paint(nb.mul(gel, nb.mul(nb.ss(L.noise(6.0, 24, detail=3), 0.5, 0.74), 0.85)), hexc("#0B0926"))
+    C.paint(nb.mul(gel, nb.mul(nb.ss(L.noise(5.0, 25, detail=3), 0.55, 0.8), 0.7)), hexc("#2A1D8C"))
+    C.paint(nb.mul(gel, nb.mul(nb.ss(L.noise(4.0, 27, detail=2), 0.55, 0.78), 0.75)), hexc("#0F1F66"))
+    # its floor deeper still, so the light that comes through the skin and pools there reads
+    # violet, never milky
+    C.paint(nb.mul(gel, nb.mul(nb.ss(L.nz, 0.35, 0.9), 0.7)), hexc("#0A0828"))
+    # the nebula: a band of cloud round the ball, tipped (its plane's distance d, wandering), its
+    # clouds lumpy and wispy, magenta along one end of it and teal along the other (s), violet
+    # where they meet, bright where they're thick, dark lanes of dust cut through them
+    dz = nb.add(L.z, -mm(GX_ZC))
+    nv, tv = Vector(GX["neb_n"]).normalized(), Vector(GX["neb_t"]).normalized()
+
+    def along(v):
+        return nb.add(nb.add(nb.mul(L.x, v.x), nb.mul(L.y, v.y)), nb.mul(dz, v.z))
+
+    d = nb.add(along(nv), nb.mul(nb.add(L.noise(3.5, 21, detail=3, distortion=1.2), -0.5), mm(30.0)))
+    s = nb.add(along(tv), nb.mul(nb.add(L.noise(4.0, 22, detail=2), -0.5), mm(26.0)))
+    spread = nb.ss(nb.absf(d), mm(GX["neb_w"]), mm(1.5))
+    dens = nb.mr(L.noise(9.0, 23, detail=6, rough=0.62, distortion=0.7), 0.36, 0.72)
+    cloud = nb.mul(gel, nb.mul(spread, dens))
+    pink = nb.ss(s, -mm(9.0), mm(13.0))
+    C.paint(nb.mul(cloud, pink), hexc("#CF3A95"))
+    C.paint(nb.mul(cloud, nb.inv(pink)), hexc("#1DA9BC"))
+    C.paint(nb.mul(nb.mul(cloud, nb.band(pink, 0.3, 0.7, 0.2)), 0.65), hexc("#6E43CF"))
+    core = nb.ss(cloud, 0.5, 0.92)
+    C.paint(nb.mul(core, pink), hexc("#FF97CF"))
+    C.paint(nb.mul(core, nb.inv(pink)), hexc("#9DF3EC"))
+    lane = nb.band(L.noise(13.0, 26, detail=4, distortion=0.4), 0.482, 0.518, 0.014)
+    C.paint(nb.mul(nb.mul(lane, nb.mul(gel, spread)), 0.88), hexc("#0A0821"))
+
+    # the stars behind it all, thicker in the nebula's band: tiny white ones everywhere, fewer
+    # blue-white ones, and a few big warm ones with a soft halo; and holographic glitter
+    stars = None
+    for sd, sc, size, col, share, g in ((31, 130.0, 0.15, "#FFFFFF", 0.5, 0.8),
+                                        (32, 70.0, 0.13, "#CFE0FF", 0.76, 1.0),
+                                        (33, 30.0, 0.075, "#FFF4DC", 0.88, 1.0)):
+        vw = L.vec(s=sd)
+        dist = nb.voronoi(vw, sc)
+        pick = nb.add(nb.sep(nb.voronoi(vw, sc, out="Color"))[0], nb.mul(spread, 0.22))
+        on = nb.ss(pick, share, share + 0.02)
+        speck = nb.mul(gel, nb.mul(nb.inv(nb.ss(dist, size * 0.6, size)), on))
+        if sd == 33:
+            halo = nb.mul(gel, nb.mul(nb.mul(nb.inv(nb.ss(dist, size, size * 3.2)), on), 0.4))
+            C.paint(halo, hexc("#B9A8FF"))
+            speck = nb.add(speck, nb.mul(halo, 0.6), clamp=True)
+        C.paint(speck, hexc(col), 0.2, 0.0)
+        speck = nb.mul(speck, g)
+        stars = speck if stars is None else nb.add(stars, speck, clamp=True)
+    vw = L.vec(s=34)
+    dist = nb.voronoi(vw, 95.0)
+    pc = nb.sep(nb.voronoi(vw, 95.0, out="Color"))
+    holo = nb.mul(gel, nb.mul(nb.inv(nb.ss(dist, 0.08, 0.13)), nb.ss(pc[0], 0.84, 0.86)))
+    for lo, hi_, col in ((0.0, 0.4, "#FF8FD0"), (0.4, 0.75, "#8FF0FF"), (0.75, 1.0, "#FFE08A")):
+        C.paint(nb.mul(holo, nb.band(pc[1], lo, hi_, 0.01)), hexc(col), 0.14, 0.45)
+
+    # the sequins: each kind its colour and shine, every one's shade a little off the next as
+    # holographic film is, white flashes across some, the deeper ones tinted by the gel
+    for k, (col, rough, metal) in GX_COLS.items():
+        C.paint(L.k(k), hexc(col), rough, metal, alpha=1.0)
+    # the fine glitter holographic: pink, ice blue and lilac-silver, one shade a speck
+    hue = L.noise(70.0, 16, detail=1)
+    for lo, hi_, col in ((0.0, 0.45, "#FFB0E0"), (0.55, 1.0, "#A2EEFF")):
+        C.paint(nb.mul(L.k(GX_SPECK), nb.band(hue, lo, hi_, 0.02)), hexc(col), 0.12, 0.4)
+    film = nb.mr(L.noise(260.0, 14, detail=1), 0.3, 0.7, 0.74, 1.26)
+    C.col = nb.mixc(seq, C.col, nb.tint(C.col, film))
+    flash = nb.mul(seq, nb.ss(L.noise(300.0, 15, detail=1), 0.64, 0.69))
+    C.paint(flash, hexc("#FFFFFF"), 0.06, 0.55)
+    deep = nb.math("SQRT", nb.add(nb.add(nb.mul(L.x, L.x), nb.mul(L.y, L.y)), nb.mul(dz, dz)))
+    C.paint(nb.mul(seq, nb.mul(nb.inv(nb.ss(deep, mm(8.0), mm(26.0))), 0.34)), hexc("#5A49C4"))
+    # the moon: a pearl bead, soft grey seas and a few craters
+    C.paint(moon, hexc("#EFE9F6"), 0.3, 0.12, alpha=1.0)
+    C.paint(nb.mul(moon, nb.ss(L.noise(260.0, 41, detail=3), 0.55, 0.7)), hexc("#C8C0DA"))
+    mv = L.vec(s=42)
+    crater = nb.mul(moon, nb.inv(nb.ss(nb.voronoi(mv, 420.0), 0.12, 0.26)))
+    C.paint(nb.mul(crater, nb.ss(nb.sep(nb.voronoi(mv, 420.0, out="Color"))[0], 0.55, 0.57)),
+            hexc("#ABA2C4"), height=-0.4)
+    # the planet: amber, banded, its ring pale gold with fine grooves
+    C.paint(planet, hexc("#F2B465"), 0.32, 0.15, alpha=1.0)
+    C.paint(nb.mul(planet, nb.ss(nb.sin(nb.mul(L.z, 2400.0)), 0.2, 0.7)), hexc("#C9824A"))
+    pv = Vector(GX["planet"]) + Vector((0.0, 0.0, GX_ZC))
+    px, py, pz = (nb.add(a, -mm(b)) for a, b in ((L.x, pv.x), (L.y, pv.y), (L.z, pv.z)))
+    rp = nb.math("SQRT", nb.add(nb.add(nb.mul(px, px), nb.mul(py, py)), nb.mul(pz, pz)))
+    C.paint(ring, hexc("#EADCB4"), 0.22, 0.4, alpha=1.0)
+    C.paint(nb.mul(ring, nb.ss(nb.sin(nb.mul(rp, 5200.0)), 0.3, 0.9)), hexc("#B99E6E"))
+
+    # what glows, faintly: the stars on the gel, the nebula's thick clouds and their cores, the
+    # sparkle stars and the moon
+    C.lights(nb.add(nb.add(stars, nb.mul(cloud, 0.2), clamp=True), nb.mul(core, 0.3), clamp=True))
+    C.lights(L.k(GX_SPARKLE))
+    C.lights(nb.mul(moon, 0.18))
+    C.finish(f.dust, grime=0.08, keep=nb.add(nb.add(gel, seq, clamp=True),
+                                             nb.add(nb.add(moon, planet, clamp=True), ring, clamp=True),
+                                             clamp=True))
+    return C.surface(bump_dist=mm(0.1), bump=0.4)
+
+
+GX_FOCUS = (0.0, 0.0, mm(GX_ZC))
+
+GALAXY_GOO_BALL = kit.Find(
+    "GalaxyGooBall",
+    [kit.Part("Body", gx_skin, clear=True),
+     kit.Part("Gel", gx_gel, (0.0, 0.0, 0.0), "Body", (0, 0, 1), inside=True),
+     kit.Part("StarsLow", gx_stars_part("Low"), (0.0, 0.0, 0.0), "Body", (0, 0, 1)),
+     kit.Part("StarsMid", gx_stars_part("Mid"), (0.0, 0.0, 0.0), "Body", (0, 0, 1)),
+     kit.Part("StarsTop", gx_stars_part("Top"), (0.0, 0.0, 0.0), "Body", (0, 0, 1))],
+    galaxy_look,
+    lights=[
+        # a faint violet glow all round, shining out through the skin: from a doorway it reads
+        # as a softly glowing ball; far weaker than the unit's bulb
+        dict(kind="Point", part="Gel", at=GX_FOCUS, rgb=(150, 116, 255), brightness=0.4, range=7,
+             shadows=False, preview_kind="POINT", preview_watts=0.8, preview_size=0.03),
+    ],
+    glow=dict(part="Gel", strength=1.5, tint=(226, 214, 255), preview=4.0),
+    motions={
+        # squeezed: it squashes slow and heavy (the glitter ball's squeeze) and the stars swirl
+        # round inside, the top first, the middle and bottom a beat behind, each about one slow
+        # turn, lifting a hair and drifting back down; the nebula turns last and slowest behind
+        # them so its clouds drift round the ball; stirred, everything brightens a little and
+        # fades back as it settles, all stopping where it began
+        "Squeeze": dict(duration=8.2, focus=GX_FOCUS, distance=0.95,
+                        tracks=[("Body", "stretch", K.GOO),
+                                ("StarsTop", "turn", K.GALAXY_TOP),
+                                ("StarsTop", "move", K.GALAXY_RISE_TOP),
+                                ("StarsTop", "glow", K.GALAXY_GLOW),
+                                ("StarsMid", "turn", K.GALAXY_MID),
+                                ("StarsMid", "move", K.GALAXY_RISE_MID),
+                                ("StarsMid", "glow", K.GALAXY_GLOW),
+                                ("StarsLow", "turn", K.GALAXY_LOW),
+                                ("StarsLow", "move", K.GALAXY_RISE_LOW),
+                                ("StarsLow", "glow", K.GALAXY_GLOW),
+                                ("Gel", "turn", K.GALAXY_NEB),
+                                ("Gel", "glow", K.GALAXY_GLOW)]),
+    },
+    dust=GX["dust"], seed=GX["seed"], texels=1000, cage=0.0016,
+)
+
 FINDS = [BUTTER_STICK, STRESS_BALL, MOCHI_BUN, TOAST_SLICE, JUMBO_STRAWBERRY, CAPYBARA,
-         PAPER_SQUISHY, GEL_BEAD_BALL, GLITTER_GOO_BALL]
+         PAPER_SQUISHY, GEL_BEAD_BALL, GLITTER_GOO_BALL, GALAXY_GOO_BALL]
 
 if __name__ == "__main__":
     kit.main("Squishies", HERE, FINDS)

@@ -355,3 +355,64 @@ hands over to its long coast (Quart Out): `glitter_swirl` in the spec.
 - **Studio:** uploaded (81331925763211), not imported: Studio was in Play when it was ready.
   `require(game.ReplicatedStorage.Shared.Finds.Kit).import("Squishies", {"GlitterGooBall"})` in
   Edit makes its template; check that `GlitterGooBall_Gel` comes in one-sided with no shadow.
+
+## Galaxy goo ball (F-05d3, Nov 16)
+
+`GalaxyGooBall` (prefix `gx_`/`GX_`, kinds 29 to 37; spec `GALAXY`, `GOO`, `GALAXY_TOP`,
+`GALAXY_MID`, `GALAXY_LOW`, `GALAXY_NEB`, `GALAXY_RISE_*`, `GALAXY_GLOW`). Legendary, "Squeeze:
+stars drift and swirl inside".
+
+**References.** Bing image results for "galaxy glitter stress ball gel stars clear" and "galaxy
+nebula gel squeeze ball" (Nov 16): Walmart's "Starry Sky Galaxy Stress Ball" in nebula purple,
+emerald and blue (a clear ball of tinted gel hung with silver holographic flakes and star
+sequins, the glitter thicker low down); printed-foam galaxy balls (deep blue with violet clouds
+and white specks, the colours to take); and an Etsy maker's holographic galaxy vortex ball held
+in a palm (https://i.etsystatic.com/64912518/r/il/a1cb9a/7931369659/il_fullxfull.7931369659_6168.jpg,
+looked at, not saved): deep blue-violet gel packed with glitter, a magenta nebula swirling up
+one side, a pearl moon bead in it. Sizes: Kurtz Bros' Galactic Glitter Ball 2.5 in, Arggh's
+glitter gel balls 2.5 and 4 in, Therapy Shoppe's Celestial Gel Ball 2 in; the vortex ball in a
+palm reads about 2.75 in.
+
+**Size.** 70 mm across (2.75 in): 0.276 studs, between the 2.5 in gel balls and the 4 in
+full-size, sitting 1.1 mm onto a small, soft flat spot. Stars 3.8 to 5.6 mm across, the moon
+6.6 mm, the planet's ring 8.2 mm.
+
+**Tells.** A deep blue-violet ball with pink and teal clouds and white stars, glowing faintly.
+From a unit's doorway it is a small cool violet glint in a faint violet pool of its own light,
+the one cold colour in a warm room; held, the nebula, the sparkle stars, the moon and the
+ringed planet read at once.
+
+**What it is.** `Body` (the root, clear): the glitter ball's skin, bigger, alpha 0.18, a darker
+violet-grey (`#9A93C4`) so it doesn't lay a milky veil over the gel. `Gel` (the glow part): the
+gel's wall facing in (the kit's `inside` part), painted as the night sky seen through the
+ball: deep blue-violet, darker in its floor so the light pooling there stays violet; a band of
+nebula round the ball (its plane square to the front camera's view, so from the front or the
+back it crosses the far side corner to corner), wandering and wispy, teal along one end,
+magenta along the other, violet where they meet, pale cores where it's thickest, dark dust
+lanes through it; three layers of painted stars, thicker in the band (tiny white ones, blue-white
+ones, a few warm ones with a soft halo) and holographic glitter specks. Its emissive mask: the
+painted stars, the clouds faintly, their cores a little more. `StarsLow`, `StarsMid`,
+`StarsTop`: 28 star sequins (silver and gold five-pointed, pale four-pointed sparkles that glow)
+and 80 fine glitter hexes (pink, ice blue, lilac-silver), each facing its own random way, both
+faces; the pearl moon (craters, soft seas, a faint glow) rides the middle band, a tiny amber
+ringed planet the top. A violet Point light at its middle (brightness 0.4, range 7, no shadow)
+lights the floor round it. 1024 texture at about 1230 texels a stud; about 5,700 triangles.
+
+**Found glowing.** Its glow tracks start at 0.8, so it is found glowing faintly (the stars,
+clouds, sparkles and moon, and its light at 0.8 of full); a squeeze brightens it to full and it
+fades back as it settles. Whatever lays it in a unit must set its parts' glow and light from
+their rest keys (D-249).
+
+**Squeeze** (8.2 s): the glitter ball's squeeze (it bulges a hair, squashes slow and heavy to
+0.72, heaves back and settles), while the stars swirl round inside, slower and dreamier than the
+glitter: the top band first, the middle and bottom a beat behind, each one turn over about six
+seconds, lifting a hair and drifting back down; the nebula turns last and slowest behind them,
+so its clouds drift round the ball; all stop where they began (a seamless loop).
+
+- **Judged:** quick sheets twice (fixed: a milky skin over a grey-lavender gel; the nebula
+  hiding at one edge with its teal never seen; grey hex glitter; the moon glowing as a flat
+  disc; a faint doorway read), full sheets once.
+- **Studio:** uploaded (128329446635375, its glow mask 80360072013614) and imported in Edit
+  (`ReplicatedStorage.Props.Finds.GalaxyGooBall`): the skin clear with no shadow, the gel and
+  the star bands carrying the glow mask, the light in place and disabled. Not yet looked at in
+  Studio's view: check the faint glow from a doorway with its strength at 0.8 of 1.5.

@@ -6,7 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-05d3, the rest of step 13: the galaxy goo ball (Legendary).
+**Next:** F-05e, step 14: the goo ball, the colour-change goo ball and the mega goo ball. The
+second run stopped after step 13 (the account's weekly limit): steps 14 and 15 are left.
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -59,7 +60,7 @@ changes the table's order a little.
     rise), then, as **F-05c2**, the squishy capybara (built Nov 16; a tiny happy sigh) and, as
     **F-05c3**, the paper squishy with a drawn face (built Nov 16; crinkled paper, homemade).
 13. **F-05d** Gel bead ball (built Nov 16), then, as **F-05d2**, the glitter goo ball (built
-    Nov 16), and, as **F-05d3**, the galaxy goo ball (Legendary): a see-through skin, the firefly jar's glass way, with an inside
+    Nov 16), and, as **F-05d3**, the galaxy goo ball (built Nov 16; Legendary): a see-through skin, the firefly jar's glass way, with an inside
     that swirls and settles.
 14. **F-05e** Goo ball (oozes between your fingers), colour-change goo ball (changes colour only
     where pressed: may need a new trick, say so), mega goo ball (Epic, both hands).
@@ -90,6 +91,43 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-05d3 (the galaxy goo ball built; step 13 done; uploaded 128329446635375 and imported, its
+  template checked by code, not looked at in Studio's view: the context cap; the second run ends
+  here: steps 14 and 15 are left).** `GalaxyGooBall` in `squishies/build.py` (prefix
+  `gx_`/`GX_`, kinds 29 to 37; spec `GALAXY`, `GALAXY_*`); README section, `Order.luau`, D-249.
+  A 2.75 in clear ball of our own, deep blue-violet gel with a nebula band (teal to magenta,
+  dark dust lanes, a dense painted star field) on its `inside` wall, 28 star sequins (silver,
+  gold, and pale four-pointed sparkles that glow), 80 holographic glitter hexes, a pearl moon
+  and a tiny ringed planet hung through it, glowing faintly with a weak violet Point light of
+  its own. Squeeze (8.2 s): the glitter ball's squash; the stars swirl one slow turn in three
+  bands, the nebula's gel turning last behind them; everything brightens a little and fades
+  back. Judged on quick sheets twice and full sheets once. About 5,700 triangles.
+  **Found glowing (D-249):** its glow tracks start at 0.8, so its rest pose glows; the game
+  ticket that lays finds must set glow and lights from rest keys (the template imports dark).
+  **Found:** a pale clear skin at alpha 0.18 lays a milky veil over a dark gel in a lit room:
+  give a skin over something dark a darker colour (`#9A93C4`); a painted band on the `inside`
+  wall shows best with its plane square to the camera's view (`neb_n`), or it hides at one
+  edge; a glowing ball reads as a flat disc: glow it 0.2 at most; Blender's Point light at the
+  middle of a small ball makes a hot spot on the wall near it that Roblox's flat falloff won't.
+  **What's left of the plan:** step 14 (F-05e: the goo ball, the colour-change goo ball, the
+  mega goo ball) and step 15 (F-05f: the squishy cake slice, then a Studio look at all 14
+  Squishies at phone size, which ticks F-05). 11 of the 14 Squishies are built.
+  **F-05e's hints (not researched):** *Goo ball* (Common, "oozes between your fingers and slowly
+  comes back", the craze of 2026): a matte, doughy, opaque pastel ball about 2.5 in filled with
+  thick goo (look at the 2026 listings and a slow-squeeze video for how far the lobes push out
+  and how long it takes to round again, about 3 to 5 s). Squeezed, lobes bulge out between the
+  fingers: the kit's bones (F-05a, the butter stick and the strawberry), four or five round the
+  middle pushing out while the whole ball squashes (`stretch`; bones and stretch together are
+  untested in Roblox, the paper squishy's note), then creeping back slowly (Quart Out).
+  *Colour-change goo ball* (Rare, "changes colour where your fingers pressed"): thermochromic;
+  a texture can't change in places at run time, so it needs a new trick, flagged in `OWNER.md`
+  if it is a bet: one way is the emissive mask painted as finger and palm prints in the second
+  colour (a `glow` track fading in on the squeeze and out over a few seconds), which works only
+  where the new colour is lighter than the old (violet to pink); check in Studio first.
+  *Mega goo ball* (Epic, "both hands, and a deep squelch that carries"): the goo ball at 4 to
+  5 in (the 4 in full-size gel balls), heavier: a slower squash with both hands, deeper lobes,
+  a longer wobble back; reuse the goo ball's builder with its own numbers.
 
 - **Nov 16, F-05d2 (the glitter goo ball built; uploaded 81331925763211, not imported: Studio was in Play; the galaxy goo ball left for
   F-05d3: the context cap).** `GlitterGooBall` in `squishies/build.py` (prefix `gg_`/`GG_`,
@@ -1605,7 +1643,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Squishy cake slice | Rare | Squeeze: frosting squishes out of the side |  | |
 | Squishy capybara | Rare | Squeeze: it lets out a tiny, happy sigh |  | Nov 16, F-05c2 |
 | Mega goo ball | Epic | Squeeze: both hands, and a deep squelch that carries | Loud enough to draw a monster | |
-| Galaxy goo ball | Legendary | Squeeze: stars drift and swirl inside |  | |
+| Galaxy goo ball | Legendary | Squeeze: stars drift and swirl inside |  | Nov 16, F-05d3 |
 
 ## Plush (16) · F-06
 

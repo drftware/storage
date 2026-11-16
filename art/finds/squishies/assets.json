@@ -7,6 +7,14 @@
     "assetId": 127773297862764,
     "sha256": "32582b775989c2242a34346dabcf4d1267ced7fc37814c1c173571596ffefcda"
   },
+  "GalaxyGooBall": {
+    "assetId": 128329446635375,
+    "sha256": "0a77555ce04cde985b4a93ff344fa8021292a7a0edf5ac1464796ed4a952ca26"
+  },
+  "GalaxyGooBallEmissive": {
+    "assetId": 80360072013614,
+    "sha256": "41a9a5214a6b365adf1c60c33814b83955e8c1ba108fe0dacd8b1d95e7b65dcd"
+  },
   "GelBeadBall": {
     "assetId": 79353970920181,
     "sha256": "b966ba13f05a9082a6f27c778e1117691f6dff9ff027b82cf4f78ffb8098ba66"

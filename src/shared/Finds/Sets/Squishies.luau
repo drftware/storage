@@ -1094,6 +1094,202 @@ local Set: { [string]: Art.Find } = {
 			},
 		},
 	},
+	GalaxyGooBall = {
+		Size = Vector3.new(0.276, 0.268, 0.276),
+		Centre = Vector3.new(-0.000, 0.134, 0.000),
+		Triangles = 5680,
+		Texture = 1024,
+		Parts = {
+			{
+				Name = "GalaxyGooBall_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Clear = true,
+				Size = Vector3.new(0.276, 0.268, 0.276),
+				Triangles = 2024,
+			},
+			{
+				Name = "GalaxyGooBall_Gel",
+				Parent = "GalaxyGooBall_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Axis = Vector3.new(-0.000, 1.000, 0.000),
+				Inside = true,
+				Size = Vector3.new(0.261, 0.255, 0.261),
+				Triangles = 2024,
+			},
+			{
+				Name = "GalaxyGooBall_StarsLow",
+				Parent = "GalaxyGooBall_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Axis = Vector3.new(-0.000, 1.000, 0.000),
+				Size = Vector3.new(0.173, 0.082, 0.209),
+				Triangles = 368,
+			},
+			{
+				Name = "GalaxyGooBall_StarsMid",
+				Parent = "GalaxyGooBall_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Axis = Vector3.new(-0.000, 1.000, 0.000),
+				Size = Vector3.new(0.217, 0.074, 0.228),
+				Triangles = 716,
+			},
+			{
+				Name = "GalaxyGooBall_StarsTop",
+				Parent = "GalaxyGooBall_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Axis = Vector3.new(-0.000, 1.000, 0.000),
+				Size = Vector3.new(0.166, 0.068, 0.184),
+				Triangles = 548,
+			},
+		},
+		Glow = { Part = "GalaxyGooBall_Gel", Strength = 1.5, Tint = Color3.fromRGB(226, 214, 255) },
+		Lights = {
+			{
+				Kind = "Point",
+				Part = "GalaxyGooBall_Gel",
+				At = Vector3.new(-0.000, 0.132, 0.000),
+				Face = Vector3.new(-0.000, -1.000, 0.000),
+				Color = Color3.fromRGB(150, 116, 255),
+				Brightness = 0.4,
+				Range = 7,
+				Shadows = false,
+			},
+		},
+		Motions = {
+			Squeeze = {
+				Duration = 8.2,
+				Tracks = {
+					{
+						Part = "GalaxyGooBall_Body",
+						Channel = "stretch",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.1, 1.022, "Sine", "Out" },
+							{ 0.4, 0.72, "Quad", "Out" },
+							{ 0.82, 0.706, "Sine", "InOut" },
+							{ 1, 1.045, "Quad", "Out" },
+							{ 1.18, 0.981, "Sine", "InOut" },
+							{ 1.38, 1.007, "Sine", "InOut" },
+							{ 1.62, 1, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "GalaxyGooBall_StarsTop",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.1, 0, "Sine", "InOut" },
+							{ 1.1, 109.091, "Quad", "In" },
+							{ 5.7, 360, "Quart", "Out" },
+						},
+					},
+					{
+						Part = "GalaxyGooBall_StarsTop",
+						Channel = "move",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.1, 0, "Sine", "InOut" },
+							{ 1.4, 0.005, "Sine", "InOut" },
+							{ 4.6, 0, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "GalaxyGooBall_StarsTop",
+						Channel = "glow",
+						Keys = {
+							{ 0, 0.8, "Sine", "InOut" },
+							{ 0.3, 0.8, "Sine", "InOut" },
+							{ 1.2, 1, "Sine", "Out" },
+							{ 4.4, 1, "Sine", "InOut" },
+							{ 8, 0.8, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "GalaxyGooBall_StarsMid",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.2, 0, "Sine", "InOut" },
+							{ 1.5, 120, "Quad", "In" },
+							{ 6.7, 360, "Quart", "Out" },
+						},
+					},
+					{
+						Part = "GalaxyGooBall_StarsMid",
+						Channel = "move",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.2, 0, "Sine", "InOut" },
+							{ 1.8, 0.004, "Sine", "InOut" },
+							{ 5.6, 0, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "GalaxyGooBall_StarsMid",
+						Channel = "glow",
+						Keys = {
+							{ 0, 0.8, "Sine", "InOut" },
+							{ 0.3, 0.8, "Sine", "InOut" },
+							{ 1.2, 1, "Sine", "Out" },
+							{ 4.4, 1, "Sine", "InOut" },
+							{ 8, 0.8, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "GalaxyGooBall_StarsLow",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.3, 0, "Sine", "InOut" },
+							{ 1.8, 125.581, "Quad", "In" },
+							{ 7.4, 360, "Quart", "Out" },
+						},
+					},
+					{
+						Part = "GalaxyGooBall_StarsLow",
+						Channel = "move",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.3, 0, "Sine", "InOut" },
+							{ 2.1, 0.0035, "Sine", "InOut" },
+							{ 6.2, 0, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "GalaxyGooBall_StarsLow",
+						Channel = "glow",
+						Keys = {
+							{ 0, 0.8, "Sine", "InOut" },
+							{ 0.3, 0.8, "Sine", "InOut" },
+							{ 1.2, 1, "Sine", "Out" },
+							{ 4.4, 1, "Sine", "InOut" },
+							{ 8, 0.8, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "GalaxyGooBall_Gel",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.4, 0, "Sine", "InOut" },
+							{ 2.2, 132.245, "Quad", "In" },
+							{ 8.4, 360, "Quart", "Out" },
+						},
+					},
+					{
+						Part = "GalaxyGooBall_Gel",
+						Channel = "glow",
+						Keys = {
+							{ 0, 0.8, "Sine", "InOut" },
+							{ 0.3, 0.8, "Sine", "InOut" },
+							{ 1.2, 1, "Sine", "Out" },
+							{ 4.4, 1, "Sine", "InOut" },
+							{ 8, 0.8, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+		},
+	},
 }
 
 return Set

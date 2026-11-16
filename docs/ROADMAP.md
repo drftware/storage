@@ -2421,8 +2421,10 @@ actions themselves and dealing the new finds on floors are later game tickets.
   taped marker cat that crunches flat and puffs back unevenly. F-05d (Nov 16): the gel bead
   ball, a clear ball of pastel water beads that swirl round inside as it squashes. F-05d2
   (Nov 16, D-248): the glitter goo ball, clear aqua gel hung through with glitter and gold stars
-  that whip round and coast to a stop. Next F-05d3 (the galaxy goo ball), then F-05e and F-05f (`art/finds/WAVES.md`, the second
-  run's plan).
+  that whip round and coast to a stop. F-05d3 (Nov 16, D-249): the galaxy goo ball, deep
+  blue-violet gel with teal and magenta nebula clouds, star sequins, a pearl moon and a ringed
+  planet, found glowing faintly; squeezed, the stars swirl round and the clouds drift. Next
+  F-05e, then F-05f (`art/finds/WAVES.md`, the second run's plan).
 - [ ] **F-06 Plush.**
 - [ ] **F-07 Night Shift Minis and their blind box.**
 - [ ] **F-08 Boxes and tins.**
