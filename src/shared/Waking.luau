@@ -12,7 +12,7 @@
 	The numbers are feel numbers; each says what it does to the player.
 ]]
 
-local Deal = require("./Deal")
+local FloorRules = require("./FloorRules")
 
 local Waking = {}
 
@@ -43,7 +43,7 @@ Waking.SizeMost = 5
 
 -- The most keepers stepping on a floor at once, loose or pounding, for low-end phones (GDD tech
 -- plan): past it a wave waits, and those it owes wake as room opens. Six is double the director's
--- highest cap for loose keepers (`Deal.awakeCap`), since pounding ones stand still.
+-- highest cap for loose keepers (the floor rules' `awake`), since pounding ones stand still.
 Waking.AwakeMost = 6
 
 --- Seconds on `floor` before the first sleepers wake.
@@ -93,7 +93,7 @@ end
 --[[
 	Whether one a wave woke may burst out of its unit now, at its time (S2-07a2): only while the
 	floor's `loose` keepers and the woken ones `ahead` of it (shut in longer, or already bursting)
-	leave room under the deal's cap on loose keepers (`Deal.awakeCap`). Else it pounds on past its
+	leave room under the deal's cap on loose keepers (the floor rules' `awake`). Else it pounds on past its
 	time (`Keeper.hold`), and the longest shut in is the first out when a place opens. So a wave
 	never sets more loose than the floor allows, as Left 4 Dead's director holds a special back
 	until one of its places is free (from memory). Held, it pounds until its time as ever, then
@@ -101,7 +101,7 @@ end
 	still); this caps only the ones a wave sets loose.
 ]]
 function Waking.free(floor: number, loose: number, ahead: number): boolean
-	return loose + ahead < Deal.awakeCap(floor)
+	return loose + ahead < FloorRules.at(floor).awake
 end
 
 --- Which of the `slots` (units with a sleeper behind a door never lifted) wake: `n` of them, each

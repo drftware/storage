@@ -23,6 +23,7 @@
 local Breaker = require("./Breaker")
 local Catalog = require("./Tools/Catalog")
 local Floor = require("./Floor")
+local FloorRules = require("./FloorRules")
 local Grades = require("./Grades")
 
 type Floor = Floor.Floor
@@ -85,7 +86,7 @@ export type Deck = {
 	-- index (one unit at most, from floor `Deal.Packrat.from`); its name is in `sleepers` too
 	piles: { [number]: { string } },
 	-- the medium units packed with boxes to the ceiling, a path through to the back (B-05b1), by
-	-- slot index (`Deal.packedShare`; their layout is `PackedLayout`'s)
+	-- slot index (the floor rules' `packed`; their layout is `PackedLayout`'s)
 	packed: { [number]: boolean },
 	-- where the floor's one breaker box hangs (S2-02b), or nil on a floor with nowhere outside
 	-- the lobby's hall to hang it (`Breaker.spots`)
@@ -103,7 +104,7 @@ Deal.Kinds = KINDS
 	The sleepers (S2-01, D-152): 10 in 100 units hold a keeper asleep, placed when the floor is
 	laid, whatever the mood a door later lifts in (GDD "What changed here": the director still
 	chooses coins, finds and tools as a door opens, not sleepers). Never in the guarded note's unit
-	(its keeper is awake) nor in the lobby's hall on floors 1 and 2; behind a padlock, twice as
+	(its keeper is awake) nor in the lobby's hall while the floors teach; behind a padlock, twice as
 	often (`PadlockedKeeper`), standing with its find or tool.
 ]]
 Deal.Asleep = 10
@@ -138,13 +139,6 @@ Deal.Odds = {
 ]]
 Deal.PadlockedHolds = { Find = 70, Tool = 30 } :: { [string]: number }
 Deal.PadlockedKeeper = 2
-
--- How many keepers the deal will have awake at once, by floor (GDD "The director": each band caps
--- them; the tech plan caps them for low-end phones). Past it a keeper is dealt asleep instead, so
--- a door is as risky but the hall isn't flooded, as Left 4 Dead's director caps its specials.
-function Deal.awakeCap(number: number): number
-	return if number <= 2 then 1 elseif number <= 4 then 2 else 3
-end
 
 -- The keepers a door can hold, each from the floor it joins on (GDD "The building"). A keeper
 -- joins this list when its ticket builds it: the Mannequin first (L-06). Dale and the Moth are
@@ -275,11 +269,6 @@ function Deal.findFrom(number: number, pick: number, taken: { string }?): string
 	return if last then last[#last] else nil -- a pick of exactly 1
 end
 
--- Floors 1 and 2 teach the lights, the doors and the hole trap (GDD "The building"), so on them
--- the first tool out of the bag is a saw, and the lobby's hall deals no keepers: your first doors
--- teach you to open them before one bites (the director's breathing room, GDD).
-Deal.TeachingFloors = 2
-
 --[[
 	Coins (S1-04a): about seven units in ten have one to three coins lying on the floor (GDD
 	"Doors", a starting guess), as DOORS has gold in most of its drawers but not all: most doors
@@ -331,23 +320,18 @@ Deal.BatteryShare = 0.1 -- the share of units with a battery on the floor
 	(a find, a tool, a note or coins) or a monster asleep, so one dealt none of them gets
 	`PackedCoins` in its box; and it never holds somebody's stuff (the stacks are its stuff).
 ]]
-Deal.PackedFirst = 0.3 -- the share of medium units packed on floor 1: about one in three
-Deal.PackedRise = 0.02 -- more each floor up, so floor 6 is about two in five
-Deal.PackedMost = 0.5 -- never more than half: an open door must still be the usual
+-- How many are packed is the floor rules' (`FloorRules` `packed`): about one in three on floor 1,
+-- more higher up, never more than half.
 Deal.PackedCoins = 1 -- coins in the box of a packed unit dealt nothing else: never empty-handed
 
--- The share of medium units packed on floor `number`.
-function Deal.packedShare(number: number): number
-	return math.min(Deal.PackedMost, Deal.PackedFirst + Deal.PackedRise * (math.max(1, number) - 1))
-end
-
--- Whether unit `index` of `deck`'s floor may be packed (`Deal.PackedFirst`'s rules).
+-- Whether unit `index` of `deck`'s floor may be packed (the rules above): never in the lobby's hall
+-- while the floors teach (the floor rules' `teaching`), so the first doors you meet open clear.
 function Deal.canPack(deck: Deck, index: number): boolean
 	local slot = deck.floor.slots[index]
 	if not slot or slot.size ~= "M" or deck.piles[index] then
 		return false
 	end
-	return not (deck.floor.number <= Deal.TeachingFloors and deck.firstHall[index])
+	return not (FloorRules.at(deck.floor.number).teaching and deck.firstHall[index])
 end
 
 --[[
@@ -359,11 +343,11 @@ end
 	shows itself to a peek (the feet in the light), so the mark always points somewhere new. Floors 1
 	and 2 always have one, so the first floors a team plays are where it meets the mark.
 ]]
-Deal.MarkShare = 0.6 -- above floors 1 and 2, the share of floors with a mark (a starting guess)
+Deal.MarkShare = 0.6 -- past the teaching floors, the share of floors with a mark (a starting guess)
 
 -- The unit (slot index) whose door frame carries the floor's faint mark, or nil for none: on a
 -- floor `number` with these `notes` and its `guarded` unit, from two draws, each 0 to 1: `share`
--- against MarkShare (floors 1 and 2 always have one), `pick` across the notes not guarded.
+-- against MarkShare (teaching floors always have one), `pick` across the notes not guarded.
 function Deal.markFrom(
 	number: number,
 	notes: { Note },
@@ -371,7 +355,7 @@ function Deal.markFrom(
 	share: number,
 	pick: number
 ): number?
-	if number > Deal.TeachingFloors and share >= Deal.MarkShare then
+	if not FloorRules.at(number).teaching and share >= Deal.MarkShare then
 		return nil
 	end
 	local pool: { number } = {}
@@ -418,27 +402,20 @@ function Deal.stuffFrom(pick: number): string?
 	return Deal.Stuff[math.floor(pick / Deal.StuffShare * #Deal.Stuff) + 1]
 end
 
--- The share of a floor's units that start padlocked: a few on floors 1 and 2, where you learn the
--- doors (about 4 of 60), more above (about 10 of 80). None in the lobby's own hall: the first
--- doors you meet open, so the hole trap can be learned there.
-function Deal.padlockShare(number: number): number
-	return if number <= 2 then 0.06 else 0.12
-end
+-- The share of a floor's units that start padlocked is the floor rules' (`FloorRules` `padlocks`).
+-- None in the lobby's own hall: the first doors you meet open, so the hole trap can be learned
+-- there.
 
 --[[
-	The code's notes (GDD "Codes"): two on floors 1 and 2 with two digits each, so they go fast;
-	four above with one each. Every digit is on exactly one note. They lie past the lobby's hall,
+	The code's notes (GDD "Codes"): two on the teaching floors with two digits each, so they go
+	fast; four above with one each. Every digit is on exactly one note. They lie past the lobby's hall,
 	one to each wing in turn, so a team splits up to find them, as DOORS spreads its door-50 code
 	through the library's books. Within a wing a note keeps this far (straight line) from the
 	others where it can: two hall pieces.
 ]]
 Deal.NoteSpacing = 48
--- From this floor, at least one note lies behind a padlock (GDD "Codes").
-Deal.PadlockedNoteFrom = 6
-
-function Deal.noteCount(number: number): number
-	return if number <= 2 then 2 else 4
-end
+-- How many notes a floor has, and from which floor one lies behind a padlock (GDD "Codes"), are the
+-- floor rules' (`FloorRules` `notes`, `padlockedNote`).
 
 local function shuffle(list: { any }, random: Random) -- any: shuffles any list in place
 	for i = #list, 2, -1 do
@@ -539,13 +516,13 @@ function Deal.new(floor: Floor, random: Random): Deck
 	shuffle(lockPool, random)
 	local padlocked: { [number]: boolean } = {}
 	local locks =
-		math.min(#lockPool, math.max(1, math.round(#units * Deal.padlockShare(floor.number))))
+		math.min(#lockPool, math.max(1, math.round(#units * FloorRules.at(floor.number).padlocks)))
 	for k = 1, locks do
 		padlocked[lockPool[k]] = true
 	end
 
 	-- The notes: which places each shows, then a wing each in turn.
-	local count = Deal.noteCount(floor.number)
+	local count = FloorRules.at(floor.number).notes
 	local places = { 1, 2, 3, 4 }
 	shuffle(places, random)
 	local per = 4 // count
@@ -569,7 +546,7 @@ function Deal.new(floor: Floor, random: Random): Deck
 		-- This note's wing, or the next with room: a unit there at least NoteSpacing from every
 		-- note so far, at random. The padlocked note is the first, behind a padlock. With room
 		-- nowhere, the unit farthest from the notes.
-		local wantLock = k == 1 and floor.number >= Deal.PadlockedNoteFrom
+		local wantLock = k == 1 and FloorRules.at(floor.number).padlockedNote
 		local pool: { number } = {}
 		for z = 0, #zones - 1 do
 			local zone = zones[(k - 1 + z) % #zones + 1]
@@ -650,7 +627,7 @@ function Deal.new(floor: Floor, random: Random): Deck
 	deck.guarded = open[random:nextInteger(1, #open)]
 
 	refill(deck)
-	if floor.number <= Deal.TeachingFloors then
+	if FloorRules.at(floor.number).teaching then
 		-- The bag's next tool is its last: swap a saw there.
 		local bag = deck.bag
 		local saw = table.find(bag, "Saw") :: number
@@ -688,7 +665,7 @@ function Deal.new(floor: Floor, random: Random): Deck
 	Deal.packratIn(deck, where, size, finds)
 	-- The packed units (B-05b1), drawn last, so packing them moved nothing else a seed lays. Every
 	-- unit draws its one whether it can pack or not, so a change to which can never moves another.
-	local packing = Deal.packedShare(floor.number)
+	local packing = FloorRules.at(floor.number).packed
 	for _, i in units do
 		local roll = random:nextNumber()
 		if roll < packing and Deal.canPack(deck, i) then
@@ -742,12 +719,12 @@ function Deal.packratIn(deck: Deck, where: number, count: number, picks: { numbe
 end
 
 -- The chance, 0 to 1, that unit `index` holds a sleeper from the floor's start (`Deal.Asleep`):
--- none in the guarded note's unit, nor in the lobby's hall on floors 1 and 2; twice an ordinary
--- unit's behind a padlock.
+-- none in the guarded note's unit, nor in the lobby's hall while the floors teach; twice an
+-- ordinary unit's behind a padlock.
 function Deal.sleeperShare(deck: Deck, index: number): number
 	if index == deck.guarded then
 		return 0
-	elseif deck.floor.number <= Deal.TeachingFloors and deck.firstHall[index] then
+	elseif FloorRules.at(deck.floor.number).teaching and deck.firstHall[index] then
 		return 0
 	end
 	local share = Deal.Asleep / 100
@@ -769,14 +746,15 @@ local function move(odds: { [string]: number }, from: Kind, to: Kind)
 end
 
 -- The director's two limits on keepers, on any odds (`Deal.Kinds` keys): none in the lobby's hall
--- on floors 1 and 2, and none awake past the floor's cap (the guard's place counted, below).
+-- while the floors teach, and none awake past the floor's cap (the guard's place counted, below).
 local function limit(odds: { [string]: number }, deck: Deck, index: number, situation: Situation)
 	local guard = deck.guarded
 	local awake = situation.awake + (if guard and not deck.dealt[guard] then 1 else 0)
-	if deck.floor.number <= Deal.TeachingFloors and deck.firstHall[index] then
+	local rules = FloorRules.at(deck.floor.number)
+	if rules.teaching and deck.firstHall[index] then
 		move(odds, "Asleep", "Nothing")
 		move(odds, "Awake", "Nothing")
-	elseif awake >= Deal.awakeCap(deck.floor.number) then
+	elseif awake >= rules.awake then
 		move(odds, "Awake", "Asleep")
 	end
 end
@@ -787,7 +765,7 @@ end
 	`besideOdds`). The guarded note's unit is always a keeper awake, whatever the mood and however many are
 	loose. Every other door counts the guard among those awake from the floor's start, before
 	anyone has found it: until its unit is dealt (and the guard is counted with the rest), its
-	place is kept. So on floors 1 and 2, which allow one awake, every other keeper is dealt
+	place is kept. So on the teaching floors, which allow one awake, every other keeper is dealt
 	asleep until the guard is trapped behind a door.
 ]]
 function Deal.odds(deck: Deck, index: number, situation: Situation): { [string]: number }

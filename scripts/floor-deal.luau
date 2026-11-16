@@ -15,6 +15,7 @@ local Brix = require("../vendor/brix/src")
 local Climb = require("../src/shared/Climb")
 local Floor = require("../src/shared/Floor")
 local Deal = require("../src/shared/Deal")
+local FloorRules = require("../src/shared/FloorRules")
 
 local seed = tonumber(process.args[1]) or 1
 local number = tonumber(process.args[2]) or 1
@@ -58,7 +59,7 @@ for _, i in units do
 end
 print(`Padlocked ({#locks}): {table.concat(locks, " ")}`)
 
-print(`\nBehind the doors in {mood} (* padlocked, n a note; up to {Deal.awakeCap(number)} awake):`)
+print(`\nBehind the doors in {mood} (* padlocked, n a note; up to {FloorRules.at(number).awake} awake):`)
 local counts = { Nothing = 0, Find = 0, Tool = 0, Asleep = 0, Awake = 0 } :: { [string]: number }
 local tools = {} :: { [string]: number }
 local line, awake = {}, 0

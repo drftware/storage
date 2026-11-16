@@ -27,9 +27,9 @@
 	- Carried up (S3-01a): nobody is out for longer than the ride. As the car arrives, each
 	  watcher's screen dips to black a beat after its gate opens (`Left.carryAt`), and under it
 	  they're stood wrapped in one of the new floor's units with empty hands (`carryUp`).
-	- The top (`Climb.Top`): the car leaving it with friends aboard ends the climb, an escape
-	  (`topped`; ClimbEnds shows it). Whoever's left on the floor is left behind as at any floor,
-	  and loses their character at the cable's second knock, as at a hand-off.
+	- No top (S4-01a, D-226): every floor deals the one above it, as long as anyone rides. How each
+	  floor plays is the floor rules' (`FloorRules`). The escape (`topped`, ClimbEnds' "Made it")
+	  keeps its code but nothing fires it now; a way out, should the owner want one, would fire it.
 	- Nobody aboard, or a next floor that isn't laid by `Climb.Latest`: the car arrives back at
 	  its own lobby and is armed again for the same floor; a next floor already laid waits for the
 	  next time it leaves.
@@ -89,7 +89,8 @@ export type Options = {
 	parent: Instance, -- what floors are laid into
 }
 
--- The car leaving the top floor with friends aboard: the team made it.
+-- The team made it out: ClimbEnds' escape ("Made it"). Nothing fires it since the climb lost its
+-- top (S4-01a, D-226); the escape's screen is kept for a way out the owner may want later.
 export type Topped = {
 	from: OnFloor,
 	at: number, -- server time the gate hit its post
@@ -464,7 +465,7 @@ function Climbs.new(): Climbs
 	-- Starts laying the floor above `on` if it isn't laid or being laid: as the right code opens
 	-- the gate, so it's ready long before the car leaves (laying took 2 to 5 s in Studio).
 	local function prepare(o: Options, on: OnFloor)
-		if ahead or layingAhead or on.number >= Climb.Top then
+		if ahead or layingAhead then
 			return
 		end
 		layingAhead = true
@@ -690,34 +691,6 @@ function Climbs.new(): Climbs
 		between = true
 		if watching then
 			watching:strand(stranded, leaving.at)
-		end
-		if on.number >= Climb.Top then
-			-- the top: the team made it (ClimbEnds ends the climb). Whoever's left on the floor
-			-- loses their character at the cable's second knock, as at a hand-off, so nothing
-			-- reaches them before the end covers every screen.
-			toppedSignal:fire({
-				from = on,
-				at = leaving.at,
-				riders = leaving.aboard,
-				stranded = stranded,
-			})
-			spawn(function()
-				while climb == mine and rideSince(leaving.at) < Climb.HandOff do
-					task.wait()
-				end
-				local w = watching
-				if climb ~= mine or not w then
-					return
-				end
-				local still: { Player } = {}
-				for _, player in stranded do
-					if player.Parent and w:isOut(player) then
-						table.insert(still, player)
-					end
-				end
-				w:watch(still, leaving.at)
-			end)
-			return
 		end
 		spawn(function()
 			ride(o, on, leaving, mine, stranded, standIns)

@@ -2245,9 +2245,12 @@ Done when two climbs in a row feel different and players talk about their best f
 - [ ] **S4-01 Floors made by rules, to floor 100.** One table says for any floor number what
   it holds and how hard it is (GDD "Floor rules"); the climb no longer ends at floor 3 (D-106).
   Room left for floors that play differently. Split Nov 15 for a session's size:
-  - [ ] **S4-01a The rules table and the top gone.** One pure table (`FloorRules`, Lune-tested)
+  - [x] **S4-01a The rules table and the top gone.** One pure table (`FloorRules`, Lune-tested)
     answering, for any floor number, what `Deal` and `Climb` read today from fixed numbers; the
     climb goes on past floor 3. The escape ("Made it") keeps its code but has no trigger; note it.
+    Done Nov 15 (D-226): `FloorRules.at(n)`, four named steps (floors 1, 3, 5, 6) and the packed
+    curve, today's numbers unchanged; `Climb.Top` and `Building` gone; floor 3 rode to floor 4
+    and floors 5 and 101 laid in Studio Play. Passes `tests/floorrules.spec` to floor 300.
   - [ ] **S4-01b What changes floor to floor.** The table's rows actually change the floors as
     you climb (more units, more monsters awake, fewer notes), each step named in the table.
 - [ ] **S4-02 Monsters by lowest floor.** Each monster's row carries the lowest floor it can

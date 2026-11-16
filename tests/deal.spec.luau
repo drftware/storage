@@ -15,6 +15,7 @@
 local Brix = require("../vendor/brix/src")
 local Floor = require("../src/shared/Floor")
 local Deal = require("../src/shared/Deal")
+local FloorRules = require("../src/shared/FloorRules")
 
 local failures, checks = 0, 0
 local function ok(cond: boolean, what: string)
@@ -120,7 +121,10 @@ for seed = 1, SEEDS do
 		end
 
 		-- The notes.
-		ok(#deck.notes == Deal.noteCount(number), `{where}: {Deal.noteCount(number)} notes`)
+		ok(
+			#deck.notes == FloorRules.at(number).notes,
+			`{where}: {FloorRules.at(number).notes} notes`
+		)
 		local shown, zones, slots = {}, {}, {}
 		local wings = {}
 		for _, i in units do
@@ -172,7 +176,7 @@ for seed = 1, SEEDS do
 		for p = 1, 4 do
 			ok(shown[p] == true, `{where}: digit {p} is on a note`)
 		end
-		if number >= Deal.PadlockedNoteFrom then
+		if FloorRules.at(number).padlockedNote then
 			ok(lockedNote, `{where}: a note behind a padlock`)
 		end
 
@@ -186,7 +190,7 @@ for seed = 1, SEEDS do
 				`{where}: no padlock in the lobby's hall`
 			)
 		end
-		local want = math.max(1, math.round(#units * Deal.padlockShare(number)))
+		local want = math.max(1, math.round(#units * FloorRules.at(number).padlocks))
 		ok(locks == want, `{where}: {want} padlocks, got {locks}`)
 
 		-- The sleepers, placed before a door lifts (S2-01).
@@ -197,7 +201,7 @@ for seed = 1, SEEDS do
 			)
 			ok(i ~= deck.guarded, `{where}: no sleeper in the guard's unit`)
 			ok(
-				number > Deal.TeachingFloors or not inLobbyHall(floor, units, wingCount, i),
+				not FloorRules.at(number).teaching or not inLobbyHall(floor, units, wingCount, i),
 				`{where}: no sleeper in the first hall`
 			)
 			local joined = name == Deal.Packrat.name and number >= Deal.Packrat.from
@@ -263,7 +267,7 @@ for seed = 1, SEEDS do
 			local seen = {}
 			for t = 1, bagSize do
 				local tool = Deal.drawTool(bagDeck)
-				if b == 1 and t == 1 and number <= Deal.TeachingFloors then
+				if b == 1 and t == 1 and FloorRules.at(number).teaching then
 					ok(tool == "Saw", `{where}: the first tool is a saw`)
 				end
 				seen[tool] = (seen[tool] or 0) + 1
@@ -327,7 +331,7 @@ for seed = 1, SEEDS do
 				Deal.open(deck, i, { mood = "Relief", awake = 9 }) == got,
 				`{where}: lifted again, the same`
 			)
-			if number <= Deal.TeachingFloors and inLobbyHall(floor, units, wingCount, i) then
+			if FloorRules.at(number).teaching and inLobbyHall(floor, units, wingCount, i) then
 				ok(
 					got.kind ~= "Asleep" and got.kind ~= "Awake",
 					`{where}: no keeper in the first hall`
@@ -365,7 +369,8 @@ for seed = 1, SEEDS do
 		local _, inRelief = lay(seed, number)
 		for _, i in units do
 			if i ~= guard and deck.sleepers[i] ~= Deal.Packrat.name then
-				local cap = { mood = "Build", awake = Deal.awakeCap(number) } :: Deal.Situation
+				local cap =
+					{ mood = "Build", awake = FloorRules.at(number).awake } :: Deal.Situation
 				local c = Deal.open(atCap, i, cap)
 				local p = Deal.open(inPeak, i, { mood = "Peak", awake = 0 })
 				if deck.sleepers[i] then

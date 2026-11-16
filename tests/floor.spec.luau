@@ -114,7 +114,8 @@ for name, slots in Floor.JunctionSlots do
 	end
 end
 
--- 2. The plans fit their shape (Brix Schema), so a typo in a row can't lay a broken floor.
+-- 2. The plans fit their shape (Brix Schema), so a typo in a row can't lay a broken floor (how
+-- many doors each floor keeps is the floor rules', checked in floorrules.spec).
 local S = Brix.Schema
 local chance = S.number({ min = 0, max = 1 })
 local PLAN = S.shape({
@@ -125,7 +126,6 @@ local PLAN = S.shape({
 	keepOn = chance,
 	smallRows = chance,
 	plainWalls = chance,
-	units = S.number({ min = 1, max = Floor.MaxUnits, integer = true }),
 	teachHoles = S.boolean(),
 })
 for name, plan in Floor.Plans do
@@ -935,7 +935,7 @@ ok(distinct >= floors * 0.95, `seeds lay different floors ({distinct} of {floors
 ok(overlapsFound > 0, "the back-corner deck overlaps were checked (some exist)")
 ok(atCap <= floors * 0.02, `floors rarely reach the unit cap ({atCap} of {floors})`)
 for name, band in counts do
-	local plan = if name == "short" then Floor.Plans.Short else Floor.Plans.Full
+	local plan = Floor.planFor(if name == "short" then 1 else 3)
 	local mean = band.sum / band.n
 	ok(
 		math.abs(mean - plan.units) <= 1.5,

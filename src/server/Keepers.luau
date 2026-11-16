@@ -87,6 +87,7 @@ local Caught = require(ReplicatedStorage.Shared.Caught)
 local Chase = require(ReplicatedStorage.Shared.Chase)
 local Climb = require(ReplicatedStorage.Shared.Climb)
 local Deal = require(ReplicatedStorage.Shared.Deal)
+local FloorRules = require(ReplicatedStorage.Shared.FloorRules)
 local Crawls = require(script.Parent.Crawls)
 local Deals = require(script.Parent.Deals)
 local Feed = require(ReplicatedStorage.Shared.Feed)
@@ -335,7 +336,7 @@ export type Keepers = Brix.System & {
 	-- Bubble wrap's pops read it (`Wraps`). Allocates nothing.
 	feet: (self: any, each: (body: Model, at: Vector3) -> ()) -> (),
 	-- How many keepers are loose now on the floor `unit` is on (0 off any keepers' floor): awake
-	-- and not trapped behind a door. The deal's cap counts these (`Deal.awakeCap`).
+	-- and not trapped behind a door. The deal's cap counts these (the floor rules' `awake`).
 	awakeOn: (self: any, unit: Model) -> number,
 	-- The keeper standing loose in `unit` (S2-05a, the tap): whether it's asleep, nil when none
 	-- stands there, and whether it has seen `player` (it hunts them).
@@ -1467,9 +1468,9 @@ function Keepers.new(): Keepers
 					local unit = on.floor.slots[k.trappedIn].number
 					print(
 						if held
-							then `Keepers: the {k.row.name} in Unit {unit} is held in: floor {number} has its {Deal.awakeCap(
+							then `Keepers: the {k.row.name} in Unit {unit} is held in: floor {number} has its {FloorRules.at(
 								number
-							)} loose`
+							).awake} loose`
 							else `Keepers: the {k.row.name} in Unit {unit} may break out now`
 					)
 				end

@@ -184,9 +184,31 @@ nowhere else.
   6. Close it with the X or a tap above it; open it again from the Shop button at the top left
      of the screen (it shows only in the lobby). Walk out through a car: it shuts by itself.
 
+- [ ] **Climb past floor 3 with a friend** (S4-01a, D-226; in Studio Play Claude rode alone from
+  floor 3 to floor 4, and started floors 5 and 101 straight away: each laid and dealt with no
+  warnings. Not seen: two players, a long climb, a phone). Floor 3 used to be the top, where the
+  ride ended in the light ("Made it"). Now every floor leads to the next.
+  1. Published, with a friend: ride up from a lobby car and play floors 1 and 2 as usual.
+  2. Punch floor 3's code and ride up together. The ride should go on as any ride does and open
+     on floor 4, its units numbered 401 and up. No light, no "Made it".
+  3. Keep climbing to floor 6 or 7. What to look for: from floor 3 every floor is full size with
+     four notes; from floor 5 up to three monsters can be loose at once (two before); from floor 6
+     one note is always behind a padlock, so you need bolt cutters or a saw through the side. Each
+     gate pays 2 coins more than the floor before. Packed units get a little more common each floor.
+  4. Let both of you get caught. "Caught" should show the floor you reached, two digits fitting
+     if you made it past 9.
+  5. In Studio you can start on any floor: set Workspace's `DevFloorNumber` (no longer capped at
+     10) and walk through "Walk a floor".
+  6. **Decide (default in):** "Made it" has nothing to trigger it now. Its screen and code are
+     kept, unused, in case you want a way out later (say, cashing out between floors). Say if
+     you'd rather it went.
+  7. Tell the next session whether floor 4 felt any harder than floor 3. Today floors 3 and 4 play
+     the same; S4-01b makes each floor change from the one below (more doors, more monsters
+     awake, fewer notes), each change named in the floor rules.
+
 - [ ] **Clear Studio's doubled modules** (found Nov 15): `ServerScriptService.Server` and
   `ReplicatedStorage.Shared` hold two copies of each module made in recent sessions (Purchasing,
-  Products, WrapColours, Wearing and more), as if Rojo were connected twice. Disconnect Rojo,
+  Products, WrapColours, Wearing, FloorRules and more), as if Rojo were connected twice. Disconnect Rojo,
   delete both copies of each doubled module, click Connect once: Rojo puts one back of each.
 
 - [ ] **Look at the packed unit's stacks** (B-05a, D-215; judged by Claude in renders, imported
@@ -393,7 +415,7 @@ find. This needs two players (a friend on a second phone or computer, or a secon
   4. What to look for: the unit you wake in is never the one nearest the elevator.
 - [ ] **Not found in time:** stay wrapped on floor 2 and let your friend punch floor 2's code and
   ride up without you. You should get "Left behind" again, watch the ride, and wake wrapped in a
-  unit on floor 3. On floor 3 (the stand-in top) the climb ends as it did before.
+  unit on floor 3. The climb carries on from there (it has no top since S4-01a).
 - [ ] **Caught, then carried:** get caught by a monster on floor 1 and stay wrapped while your
   friend rides up. You should get the same as "Late for the elevator", from step 3.
 - [ ] **Decide, defaults in place** (D-186): (1) The carry starts 1.4 seconds after the gate is
@@ -1490,7 +1512,7 @@ up from there. Verified in Studio, one player: on Studio's own server (ride up f
 Again, back in car 3, out and in, ride again) and on a group's own server (`DevTrip` "Arrive":
 back in car 1, ride again on that server); a four-friend "Made it" board faked on a car to judge
 its look. The place was saved as version 35 so Studio's test teleport ("Send") runs this code.
-- [ ] **Alone, live:** join, ride up, lose (or reach floor 3), press Again. The black lifts on the
+- [ ] **Alone, live:** join, ride up, lose, press Again. The black lifts on the
   car's back wall: your photo, the floor, the time; the count pops in with the chime. Step out,
   back in, let it go: it rides up to a new floor 1 on the same server.
 - [ ] **With friends:** two or three in one car, ride up, end it, Again. You're all back in the same
@@ -1859,14 +1881,10 @@ sounds, how it feels.
   their button reads "Waiting", and "Back in 10" counts down. The other presses: it goes at
   once with the elevator's chime and "Going back", a moment of black, then you're back in your
   lobby car as the black lifts (L-08e2). Is one press obvious? Is 10 s right?
-- [ ] **Two players, the top.** Ride up from floor 3 together, or one rides and one stays: at the
-  cable's second knock the light floods in, the motor's gone, the bell rings clear, then "Made
-  it" in warm light, riders' photos in colour and the left one's greyed. Does it feel like an
-  escape?
 - [ ] **On a phone**: the screen and the button at phone size; tap Again.
-- [ ] **Decide, defaults in place** (D-106): (1) **The top is floor 3** for now, so a run is short
-  enough to replay. You've since said there's no top at all (D-128); the built climb still ends
-  at floor 3 until S4-01 makes floors by rules. (2)
+- [ ] **Decide, defaults in place** (D-106): (1) **There is no top** (S4-01a, D-226): the climb
+  goes on until everyone is caught, so "Made it" can't happen now (its screen is kept; see "Climb
+  past floor 3"). (2)
   **Where Again leads**: back in your lobby car (L-08e2; the test hall's climb in Studio still
   goes to a fresh floor 1). (3) **Again waits** for
   everyone, or 10 s after the first press. (4) **The Missing board** (GDD: your photo goes up in

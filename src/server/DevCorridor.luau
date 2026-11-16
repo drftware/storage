@@ -691,9 +691,7 @@ local function devFloor(folder: Folder, climbs: Climbs.Climbs, keepers: Keepers.
 	local seed = Workspace:GetAttribute("DevFloorSeed")
 	local number = Workspace:GetAttribute("DevFloorNumber")
 	local s = if type(seed) == "number" then seed else FLOOR_SEED
-	local n = if type(number) == "number"
-		then math.clamp(math.floor(number), 1, 10)
-		else FLOOR_NUMBER
+	local n = if type(number) == "number" then math.max(math.floor(number), 1) else FLOOR_NUMBER
 	local walk = travelPost(
 		"WalkFloor",
 		Vector3.new(-34, 0, -3),

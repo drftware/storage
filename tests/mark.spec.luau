@@ -7,6 +7,7 @@
 local Brix = require("../vendor/brix/src")
 local Floor = require("../src/shared/Floor")
 local Deal = require("../src/shared/Deal")
+local FloorRules = require("../src/shared/FloorRules")
 local FaintMark = require("../src/shared/FaintMark")
 
 local failures, checks = 0, 0
@@ -66,13 +67,13 @@ for _, number in { 1, 2, 3, 6 } do
 			end
 			ok(isNote, `floor {number} seed {seed}: the mark is on a note's unit`)
 			ok(m ~= deck.guarded, `floor {number} seed {seed}: never the guarded note's unit`)
-		elseif number <= Deal.TeachingFloors then
+		elseif FloorRules.at(number).teaching then
 			ok(false, `floor {number} seed {seed}: a teaching floor always has a mark`)
 		end
 		local _, again = lay(seed, number)
 		ok(again.marked == deck.marked, `floor {number} seed {seed}: the same seed marks the same`)
 	end
-	if number > Deal.TeachingFloors then
+	if not FloorRules.at(number).teaching then
 		local share = marked / SEEDS
 		ok(
 			math.abs(share - Deal.MarkShare) < 0.08,
@@ -80,7 +81,7 @@ for _, number in { 1, 2, 3, 6 } do
 		)
 	end
 	-- every note but the guarded one gets marked sometimes (on floors with four notes, each)
-	local count = Deal.noteCount(number)
+	local count = FloorRules.at(number).notes
 	local seen = 0
 	for k = 1, count do
 		if (onSlot[k] or 0) > 0 then

@@ -8,6 +8,7 @@
 -- slam traps it.
 local Brix = require("../vendor/brix/src")
 local Floor = require("../src/shared/Floor")
+local FloorRules = require("../src/shared/FloorRules")
 local Keeper = require("../src/shared/Keeper")
 local KeeperMap = require("../src/shared/KeeperMap")
 local KeeperRows = require("../src/shared/KeeperRows")
@@ -29,7 +30,7 @@ local ROW = KeeperRows.Mannequin
 local TOL = 1e-3
 
 -- the layout as it was played in Studio, every unit standing (before S1-03 walled half of them)
-Floor.Plans.Short.units = Floor.MaxUnits
+FloorRules.Steps[1].units = Floor.MaxUnits
 local f = Floor.generate(1, Brix.Random.new({ seed = 7 }))
 local map = KeeperMap.build(f)
 local function slotOf(number: string): number

@@ -11,6 +11,7 @@
 local Brix = require("../vendor/brix/src")
 local Floor = require("../src/shared/Floor")
 local Deal = require("../src/shared/Deal")
+local FloorRules = require("../src/shared/FloorRules")
 
 local failures, checks = 0, 0
 local function ok(cond: boolean, what: string)
@@ -48,7 +49,7 @@ for seed = 1, SEEDS do
 		local deck = deal(floor, seed)
 		local where = `seed {seed} floor {number}`
 		local units = Deal.units(floor)
-		local cap = Deal.awakeCap(number)
+		local cap = FloorRules.at(number).awake
 
 		-- Exactly one guarded unit, holding a note.
 		local guard = deck.guarded

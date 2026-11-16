@@ -42,6 +42,8 @@ local CELL = 24 -- a straight's length, a junction's square: the floor's grid
 local HALL = 8 -- door face to door face
 local SPAN = 32 -- a straight's deck across: the hall and a row of M units each side
 
+local FloorRules = require("./FloorRules")
+
 local Floor = {}
 Floor.Cell = CELL
 Floor.HallWidth = HALL
@@ -63,10 +65,11 @@ Floor.ElevatorDepth = CELL
 
 --[[
 	A floor plan: how big a floor is and how it reads. Each number changes what the climb feels like,
-	so they live here with what they do. Floors 1 and 2 are short (GDD "The building": two notes,
-	about 3 minutes); from floor 3 they're full size (four notes, 4 to 6 minutes).
+	so they live here with what they do. Which plan a floor gets, and how many of its doors it
+	keeps, is the floor rules' (`FloorRules`): short while the floors teach (GDD "The building": two
+	notes, about 3 minutes), then full size (four notes, 4 to 6 minutes).
 ]]
-export type Plan = {
+export type Shape = {
 	columns: number, -- junction points across (odd: the lobby takes the middle one)
 	rows: number, -- junction points deep, the lobby's row included
 	straights: number, -- the tree's halls, 24 studs each: how far the floor sprawls
@@ -74,9 +77,6 @@ export type Plan = {
 	keepOn: number, -- 0 to 1: how often a hall carries on straight rather than turning (long aisles)
 	smallRows: number, -- 0 to 1: how often a straight's side is three S units, not two M
 	plainWalls: number, -- 0 to 1: how often a slot is a plain wall: the rhythm of doors down a hall
-	-- About how many doors the floor keeps of the ones its halls have room for (GDD "Doors": fewer
-	-- units). Fewer makes each door a choice and leaves stretches of blank wall to be chased down.
-	units: number,
 	-- The hall from the lobby to the first fork teaches the hole trap (GDD: floors 1 and 2): no
 	-- plain walls there but the ones a back corner needs, and a back-cornered side three small
 	-- units, so the first doors you meet stand side by side, neighbours to saw between. Its first
@@ -84,8 +84,23 @@ export type Plan = {
 	teachHoles: boolean,
 }
 
+-- A floor's plan: its shape, and about how many doors it keeps of the ones its halls have room
+-- for (`FloorRules`' `units`).
+export type Plan = {
+	columns: number,
+	rows: number,
+	straights: number,
+	loops: number,
+	keepOn: number,
+	smallRows: number,
+	plainWalls: number,
+	units: number,
+	teachHoles: boolean,
+}
+
 Floor.Plans = {
-	-- Floors 1 and 2 teach lights and doors: a few halls, a loop, a dead end or two to get caught in.
+	-- Short: the teaching floors' lights and doors, a few halls, a loop, a dead end or two to get
+	-- caught in. Its halls have room for about 60 units.
 	Short = {
 		columns = 5,
 		rows = 3,
@@ -94,10 +109,9 @@ Floor.Plans = {
 		keepOn = 0.6,
 		smallRows = 0.25,
 		plainWalls = 0.08,
-		units = 30, -- of about 60 its halls have room for: half the doors, each one a pick
 		teachHoles = true,
-	} :: Plan,
-	-- Floors 3 and up: half as many halls again and a second loop, so four notes take searching
+	} :: Shape,
+	-- Full size: half as many halls again and a second loop, so four notes take searching
 	-- for and a chase has room. Its halls have room for about 80 units (60 to 99).
 	Full = {
 		columns = 5,
@@ -107,9 +121,8 @@ Floor.Plans = {
 		keepOn = 0.6,
 		smallRows = 0.25,
 		plainWalls = 0.08,
-		units = 40, -- of about 80: half, as on floors 1 and 2, over halls half as long again
 		teachHoles = false,
-	} :: Plan,
+	} :: Shape,
 }
 
 -- How often the tree grows from its newest hall rather than one picked at random: high gives long
@@ -258,9 +271,30 @@ function Floor.dir(d: number): (number, number)
 end
 local dir = Floor.dir
 
--- The plan for floor `number`.
+-- Each floor's plan once worked out, by number, so a floor's plan is the same table every time.
+local planned: { [number]: Plan } = {}
+
+-- The plan for floor `number`: the shape its rules name, keeping the doors they say.
 function Floor.planFor(number: number): Plan
-	return if number <= 2 then Floor.Plans.Short else Floor.Plans.Full
+	local rules = FloorRules.at(number)
+	local plan = planned[rules.number]
+	if plan then
+		return plan
+	end
+	local s = if rules.plan == "Short" then Floor.Plans.Short else Floor.Plans.Full
+	local made: Plan = {
+		columns = s.columns,
+		rows = s.rows,
+		straights = s.straights,
+		loops = s.loops,
+		keepOn = s.keepOn,
+		smallRows = s.smallRows,
+		plainWalls = s.plainWalls,
+		units = rules.units,
+		teachHoles = s.teachHoles,
+	}
+	planned[rules.number] = made
+	return made
 end
 
 -- Anything laid out from a face like a unit: a slot, a junction's lid.

@@ -2,7 +2,8 @@
 --[[
 	The climb (L-08b): floor after floor, as Dandy's World's elevator opens on a new floor at every
 	stop. The next floor is dealt and laid while the team rides up to it, and the gate opens on a
-	floor nobody has seen; the one below is cleared away.
+	floor nobody has seen; the one below is cleared away. There is no top floor (S4-01a, D-226):
+	the climb goes on until nobody is left climbing, each floor a little harder (`FloorRules`).
 
 	- Every floor has its own seed, drawn from the climb's (`seedOf`): floor 1's is the climb's own,
 	  so a seed's first floor is the one `lune run scripts/floor-map <seed> 1` prints, and every
@@ -28,14 +29,6 @@ local Climb = {}
 -- Studs along -Z from one floor's lobby to the next one's. A floor spans under 300 studs, so two
 -- floors' nearest halls stand over 700 apart, far past the 256-stud streaming radius.
 Climb.Spacing = 1000
-
--- The building's floors (Floor's plans run 1 to 10).
-Climb.Building = 10
-
--- The top of the climb: the car leaving it with friends aboard ends the climb, an escape
--- (ClimbEnd), and no floor is dealt past it. A stand-in at floor 3 until Phase 2 builds the top
--- floor (`Building`, Unit 0's), so a run is short enough to play again and again (OWNER.md).
-Climb.Top = 3
 
 -- Seconds into the ride that riders are moved into the next floor's car: the cable's last knock,
 -- late in the cruise, with the hall you left long black and the next one's dark not yet lifting.

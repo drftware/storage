@@ -18,7 +18,7 @@
 
 	Until the director exists (Phase 2) every door deals in its Build mood, and the keepers awake
 	are the brain's count of those awake on the floor now (`Keepers.awakeOn`: dealt awake, or woken
-	by a noise), so the cap (`Deal.awakeCap`) sees what's really loose. The guarded note's unit is
+	by a noise), so the cap (the floor rules' `awake`) sees what's really loose. The guarded note's unit is
 	always dealt a keeper awake (D-072), and the deal keeps its place under the cap until then.
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

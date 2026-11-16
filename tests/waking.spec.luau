@@ -5,9 +5,9 @@
 -- and wakes more at once, within its floors' limits. A step never wakes more than are owed, more
 -- than are left asleep, or past the phone cap, and what the cap held back wakes once there's room.
 -- Picks are distinct sleepers, every door as likely as any other. One a wave woke breaks out only
--- while the floor has room under its limit on loose monsters (S2-07a2, `Deal.awakeCap`), the
+-- while the floor has room under its limit on loose monsters (S2-07a2, the floor rules' `awake`), the
 -- longest shut in first.
-local Deal = require("../src/shared/Deal")
+local FloorRules = require("../src/shared/FloorRules")
 local Waking = require("../src/shared/Waking")
 
 local failures, checks = 0, 0
@@ -147,7 +147,7 @@ ok(Waking.free(3, 1, 0), "floor 3 allows two: one loose, it may burst")
 ok(not Waking.free(3, 1, 1), "floor 3, one loose and one ahead: it pounds on")
 ok(not Waking.free(9, 3, 0), "floor 9 allows three: three loose, it pounds on")
 for floor = 1, 40 do
-	local cap = Deal.awakeCap(floor)
+	local cap = FloorRules.at(floor).awake
 	for loose = 0, 6 do
 		for ahead = 0, 6 do
 			ok(

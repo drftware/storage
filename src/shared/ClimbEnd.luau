@@ -12,8 +12,8 @@
 	  silence; far off in the building two doors come down; then "Caught" lands with a low hit, the
 	  team's photos drop in one by one, each with the floor it was lost on, as the Missing board
 	  will show them, and "Again" rises.
-	- **Top** (an escape): the car leaves the top floor with friends aboard (`Climb.Top`, a stand-in
-	  until Phase 2's top floor). The ride goes as any ride does until the cable's second knock,
+	- **Top** (an escape): the team makes it out (`Climbs.topped`). The climb has no top now
+	  (S4-01a, D-226), so nothing fires it; the screen is kept for a way out later. The ride goes as any ride does until the cable's second knock,
 	  where every other ride hands over to the next floor; here light floods down the shaft
 	  instead, white and whole, and the motor is gone; the bell rings clear; the white settles into
 	  the warm lamp light of the results, "Made it".

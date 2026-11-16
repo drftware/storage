@@ -5972,3 +5972,34 @@ DOORS' shop (cards in a row, a price on each, owned ones marked Owned or Equippe
   hands Purchasing's `DevReceipt` a made-up receipt, so the save, the attribute and the card's
   flip all run as a purchase would.
 - A wear change is saved 5 s after the last one, so trying colours on writes once.
+
+## D-226 One table for every floor, and no top (S4-01a, Nov 15)
+
+The GDD's "Floor rules": one table says, for any floor number, what the floor holds and how hard
+it is, and the climb never tops out (D-128 took the top away; the stand-in top at floor 3, D-106,
+was all that ended a run in an escape). The moment it serves: the car rises off floor 3 and floor 4
+is just there, so a team keeps going for a best floor.
+
+- **`FloorRules.at(number)` answers for any floor**, 1 to 100 and past (below 1 counts as 1). It
+  holds what `Floor` and `Deal` read from fixed numbers before: the plan (short or full size),
+  how many doors the floor keeps, the notes, the share of padlocks, whether a note is padlocked,
+  the most monsters loose, the packed share, and whether the floor teaches (the lobby's hall
+  quiet, a saw first in the bag, the faint mark always there). Every floor's rules are worked out
+  once and frozen.
+- **Steps, each named for what players meet**, so S4-01b's changes read as a list: "Learning the
+  doors" (floor 1), "Full size" (3), "Three loose" (5), "A note behind a padlock" (6). A step sets
+  only what it names; the rest carries on. Smooth growth (the packed share) is a curve with a most.
+- **Today's numbers kept exactly**: no floor plays differently yet; that's S4-01b.
+- **The curves that already grew with the floor stay with what they drive**: waking (`Waking`),
+  pay (`Pay`), the Mannequin's breaker errands (`Breaker`), find grades (`Grades`) and each
+  monster's lowest floor (`Deal.Keepers`, `Deal.Packrat`; S4-02 owns those). `floorrules.spec`
+  checks them with the table from floor 1 to 300: in range and never easier higher up. `Waking`
+  no longer needs `Deal` at all.
+- **The door count moved from the plans to the rules**: `Floor.Plans` hold only each plan's
+  shape; `Floor.planFor` puts the rules' count in, one plan table per floor number.
+- **The top is gone**: `Climb.Top` and `Climb.Building` are removed; every floor lays the one above
+  it. The escape (`Climbs.topped`, ClimbEnds' light and "Made it") keeps its code, but nothing
+  fires it; a way out the owner may want later would (`OWNER.md`).
+- **Floors past 99 work**: a unit's number is its floor and two digits ("10102"); its plate's
+  text scales to fit. Floor 101 laid and dealt in Studio Play. `DevFloorNumber` is no longer
+  capped at 10.
