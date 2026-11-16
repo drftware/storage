@@ -14,9 +14,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - `ServerStorage.CatchTest` works again once you stand on the floor (STUDIO.md "Testing where a
   catch stores you"): from the front office it says "NoKeeper".
 - F-G1b is done but for F-G1b3c (the RC car), which waits on `OWNER.md`.
-- Find art (`art/finds/WAVES.md`): F-05c done: the jumbo slow-rise strawberry, a thumb's dent
-  in its side rising over ten seconds, uploaded and imported. Next F-05c2 (step 12): the squishy
-  capybara, then F-05c3 the paper squishy.
+- Find art (`art/finds/WAVES.md`): F-05c2 done: the squishy capybara, a foam loaf with a
+  mandarin on its head that sinks in a contented sigh, uploaded and imported. Next F-05c3
+  (step 12): the paper squishy with a drawn face, then step 13, the goo balls.
 
 ## Next task: S4-02 Monsters by lowest floor
 The moment: a climb that keeps changing under you. Floor 1 teaches the Mannequin alone; higher

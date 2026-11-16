@@ -6,8 +6,7 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-05c2, step 12: the squishy capybara, then, as F-05c3, the paper squishy with a
-drawn face.
+**Next:** F-05c3, the rest of step 12: the paper squishy with a drawn face; then step 13, F-05d.
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -57,8 +56,8 @@ changes the table's order a little.
     squishy toast slice (built Nov 16; springs back like bread). Whole-body squash, the tea light's flame's
     `stretch`.
 12. **F-05c** Jumbo slow-rise strawberry (built Nov 16; a thumb's dent on bones, ten seconds to
-    rise), then, as **F-05c2**, the squishy capybara (a tiny happy sigh) and, as **F-05c3**, the
-    paper squishy with a drawn face (crinkled paper, looks homemade).
+    rise), then, as **F-05c2**, the squishy capybara (built Nov 16; a tiny happy sigh) and, as
+    **F-05c3**, the paper squishy with a drawn face (crinkled paper, looks homemade).
 13. **F-05d** Gel bead ball, glitter goo ball, galaxy goo ball (Legendary): a see-through skin,
     the firefly jar's glass way, with an inside that swirls and settles.
 14. **F-05e** Goo ball (oozes between your fingers), colour-change goo ball (changes colour only
@@ -90,6 +89,33 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-05c2 (the squishy capybara built; uploaded 127773297862764 and imported, not looked at in Studio: the context cap; the paper squishy left for F-05c3).** `Capybara` in
+  `squishies/build.py` (prefix `cb_`/`CB_`, kinds 10 to 12; spec `CAPY`, `SIGH`, `ROCK`); README
+  section, `Order.luau`. A 4.3 in caramel foam capybara of our own lying like a loaf: a barrel
+  body and a box of a head lofted tail to nose through superellipse rings (`cb_section`: round
+  over the body, boxier over the head, the ends drawn in round and blunt), cup ears and four
+  paws in the same mesh, sleepy half-shut eyes under arched lids, a broad nose and a little w of
+  a mouth, and a mandarin balanced on its head as its own part. Squeeze: a breath in, then a
+  long sigh out to 0.785 tall (the eyes squash nearly shut), let go, it breathes back up in a
+  second and settles; the mandarin rides it round and rocks a beat behind. Judged on quick
+  sheets twice and full sheets once; from the `-unit` doorway it is a speck with an orange dot,
+  as every 4 in squishy is. **Found and fixed:** anything sunk into a body in the same
+  mesh bakes the body's skin under it black (the rays start inside it): make it its own
+  `alone` part; a flat lid over a half-shut eye reads grumpy, an arched one sleepy.
+  **New and reusable:** `cb_section`/`cb_ring` loft any animal-shaped squishy along its length
+  from a table of stations (half width, belly, widest line, top), its ends rounded off by
+  `tail_end`/`nose_end`; `cb_eye_ink` prints a pair of side-facing eyes from one image mirrored
+  by |x| (any animal's eyes on the sides of its head).
+  **F-05c3's hints (not researched):** *Paper squishy with a drawn face:* a homemade one, about
+  4 in, two sheets of printer paper taped all over with clear packing tape (glossy, crinkled,
+  the tape's edges catching the light in overlapping strips), stuffed with shredded plastic bags
+  so the outline puffs; a simple shape (a rounded square or a cartoon cat's head) with a marker
+  face drawn by hand (wobbly strokes: `bu_ink` with noise on the points). Build it as the toast
+  slice's loft (`ts_outline`, `ts_inset`) but puffed thicker in the middle and pinched thin at
+  the taped edge. Its crinkle is a short squash with little uneven wobbles (keys at odd times,
+  no smooth spring). Then step 13 (F-05d): the gel bead, glitter and galaxy goo balls, each a
+  see-through skin (the firefly jar's glass way) with an inside that swirls and settles.
 
 - **Nov 16, F-05c (the jumbo slow-rise strawberry built; uploaded 81603530188772 and imported;
   the brief's 120k was passed during it, so the capybara waits for F-05c2).** `JumboStrawberry`
@@ -1483,7 +1509,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Jumbo slow-rise strawberry | Uncommon | Squeeze: the dent takes ten seconds to rise back |  | Nov 16, F-05c |
 | Colour-change goo ball | Rare | Squeeze: it changes colour where your fingers pressed |  | |
 | Squishy cake slice | Rare | Squeeze: frosting squishes out of the side |  | |
-| Squishy capybara | Rare | Squeeze: it lets out a tiny, happy sigh |  | |
+| Squishy capybara | Rare | Squeeze: it lets out a tiny, happy sigh |  | Nov 16, F-05c2 |
 | Mega goo ball | Epic | Squeeze: both hands, and a deep squelch that carries | Loud enough to draw a monster | |
 | Galaxy goo ball | Legendary | Squeeze: stars drift and swirl inside |  | |
 

@@ -242,3 +242,79 @@ RISE = [
     (4.4, 0.48, "Quad", "Out"),     # the slow rise, quickest first
     (11.1, 0.0, "Sine", "Out"),     # creeping the last of the way smooth
 ]
+
+# --- The squishy capybara (F-05c2) ---------------------------------------------------------------
+# References (README): capybara slow-rise squishies sold in 2026 run from 2 in minis to jumbos;
+# a standard one is 3.5 in long and 3 in tall, moulded PU foam in two halves (a faint seam down
+# the middle), satin brown with a dot eye and a little nose; a jumbo sits up with a darker muzzle.
+# Real capybaras (Commons) have a long box of a head, its top straight from the small round ears
+# high at the back to a deep, blunt muzzle with the nostrils high on its front, eyes high on the
+# sides, and a barrel body that lies flat on its belly with the legs tucked under. Ours lies like
+# that, as a loaf: 4.3 in long, 2.6 in wide, 2.1 in tall (2.7 with its mandarin), head two fifths
+# sleepy half-shut eyes and a little mandarin balanced on its head, as capybaras in hot springs
+# wear one. Lengths in mm; y from its tail (+) to its nose (-), z up from the floor.
+CAPY = dict(
+    # its sides, tail to nose: (y, half width, belly line, widest line, top) at each station
+    stations=[
+        (30.0, 28.5, 1.0, 22.5, 49.0),     # the rump, where it starts to round off
+        (22.0, 31.5, 0.0, 23.0, 53.0),     # the haunches, highest
+        (6.0, 33.0, 0.0, 23.5, 52.5),      # the belly, widest
+        (-8.0, 31.0, 0.0, 25.0, 50.5),     # the shoulders
+        (-15.0, 28.0, 1.0, 28.0, 50.0),    # the neck, a soft dip in the top line
+        (-22.0, 27.5, 3.0, 30.0, 54.0),    # the crown behind the eyes, where the ears sit
+        (-33.0, 25.5, 5.5, 30.0, 52.0),    # the cheeks
+        (-43.0, 21.5, 7.5, 28.5, 48.0),    # the muzzle
+        (-47.0, 20.5, 8.0, 28.0, 47.0),    # where the nose starts to round
+    ],
+    p_top=(2.3, 2.9),   # how square its top half is: the body round (2), the head boxier
+    p_bot=(3.4, 2.8),   # and its underside, flat where it lies
+    head_from=-14.0,    # where the head's squarer shape takes over (y)
+    # its ends, each rounded off over this length; the second number how blunt (2 a round dome,
+    # more a flatter face with rounded edges): the rump round, the muzzle's front blunt
+    tail_end=(21.0, 2.3), nose_end=(10.0, 3.4),
+    # the ears, small and round, high at the back of the head: centre (x, y, how far over the
+    # skin), radius, and the way they face (out, forward, up)
+    ear=(18.0, -17.0, 0.4), ear_r=5.6, ear_out=(0.66, -0.12, 0.74),
+    # the paws peeking out under it: (x, y, half sizes across, along, up)
+    paws=[(14.5, -16.5, 6.2, 8.4, 4.6), (25.0, 31.0, 7.0, 10.5, 5.2)],
+    # the mandarin on its head: where it sits (y, how far its bottom sinks in), radius, how
+    # squat, its tilt (degrees about x and y)
+    orange=(-25.0, 0.6), orange_r=9.0, orange_squat=0.84, orange_tilt=(8.0, -6.0),
+    leaf=(8.5, 3.6, 0.9),   # its leaf: length, half width, half thickness (mm)
+    # the face: the eyes seen from 62 degrees round from straight ahead, centred this far back,
+    # up and out; their size; the lid's height over the centre at its ends (what's left showing
+    # below it is the sleepy half-shut eye) and how much it arches up in the middle
+    eye_turn=62.0, eye_y=-37.0, eye_z=41.0, eye_w=3.6, eye_h=3.2, lid=-0.35, arch=0.75,
+    blush=(-1.0, -6.8, 4.4, 2.5),   # the blush below each eye: offset, half width, half height
+    nose_z=40.0, nose_w=6.4, nose_h=3.5,   # the nose, high on the muzzle's front
+    mouth_z=33.2, mouth_r=1.7, mouth_w=0.62,
+    dust=0.15, seed=31.0,
+)
+
+# The squeeze, timed as a contented sigh: as the fingers close it draws a little breath, then
+# lets it all out, sinking slow and settling wide, its sleepy eyes squeezed nearly shut; held,
+# content; let go, it breathes back up over a second with a soft settle, never past its shape
+# (seconds, height[, style, way]).
+SIGH = [
+    (0.0, 1.0),
+    (0.22, 1.03, "Sine", "InOut"),    # a little breath in
+    (0.84, 0.8, "Quad", "InOut"),     # and the long sigh out, sinking wide
+    (1.25, 0.785, "Sine", "Out"),     # held, content, settling a touch more
+    (1.35, 0.785),                    # let go
+    (2.15, 0.972, "Quad", "Out"),     # it breathes back up
+    (2.6, 1.0, "Sine", "InOut"),      # and settles into shape
+]
+
+# The mandarin rides the sigh a beat behind, as a loose thing balanced on a moving head does: it
+# barely tips back as the breath comes in, rocks forward as the head sinks, and when the head
+# breathes back up it rocks back and forth once and settles (seconds, degrees forward).
+ROCK = [
+    (0.0, 0.0),
+    (0.3, -1.0),
+    (0.95, 2.6, "Sine", "InOut"),
+    (1.4, 0.7, "Sine", "InOut"),
+    (1.75, -3.0, "Sine", "InOut"),
+    (2.15, 1.8, "Sine", "InOut"),
+    (2.5, -0.7, "Sine", "InOut"),
+    (2.85, 0.0, "Sine", "InOut"),
+]

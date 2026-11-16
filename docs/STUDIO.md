@@ -1716,6 +1716,10 @@ verified: a doc page, Studio, or "untested".
   layer updates: compose its matrix from `location` and `scale` before moving it elsewhere.
 
 ### Blender traps met building the finds (Nov 7, `art/finds/`)
+- **A piece sunk into a body in the same part bakes the body's skin under it black** (F-05c2,
+  Nov 16, the capybara's mandarin): the bake's rays start a little outside the game mesh, so
+  where the piece sits closer than that they start inside its detailed mesh. Make the piece its
+  own `alone` part (the strawberry's leaves lie 0.35 mm off the skin and were fine).
 - **A `scripts/art.sh set` stage that prints only its `==` header did nothing** (F-04e2, Nov 16;
   three times, its first stage each time, cause not found): the bake or render never ran and the
   old files stay. Run that stage's Blender line directly (`blender -b --factory-startup -P

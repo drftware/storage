@@ -27,6 +27,7 @@ return {
 	},
 	Squishies = {
 		ButterStick = { Model = 91493472138143 },
+		Capybara = { Model = 127773297862764 },
 		JumboStrawberry = { Model = 81603530188772 },
 		MochiBun = { Model = 75693422662417 },
 		StressBall = { Model = 87393666160557 },

@@ -182,3 +182,50 @@ then rises slowly, quickest first, and creeps the last of the way smooth ten sec
 thumb let go (`K.RISE`). The butter stick's bones on a curved side (`sr_bones`): a middle bone
 sliding along the skin's inward normal and eight round it, half way out, sliding half as far and
 tipping their share of the bowl's slope toward the middle, so its sides catch the light.
+
+## Squishy capybara (F-05c2, Nov 16)
+
+**References.** Capybara slow-rise squishies sold in 2026: a moulded memory-foam one, 3 in tall x
+3.5 in long, satin brown, a dot eye and a small nose, a faint mould seam down its middle
+(curiousmindsbusybags.com, "Capybara Slow Rise Squishy Toy", photo capybarasquish1); a jumbo
+that sits up with a darker muzzle (well.ca, "Keycraft Jumbo Capybara"); listings from 1.75 in
+minis to jumbos (a WebSearch for "capybara slow rising squishy toy"). Real capybaras on Wikimedia
+Commons (a media search for "capybara head"): a long box of a head, its top straight from the
+small round ears high at its back to a deep, blunt muzzle with the nostrils high on its front,
+the eyes high on its sides, a barrel body lying flat on its belly. Ours is our own, no plush or
+character: a loaf of a capybara lying down, sleepy and content, a mandarin balanced on its head
+as capybaras in hot springs wear one.
+
+**Size.** 108 mm long, 66 mm wide, 54 mm to the top of its back and ears and 69 mm to the
+mandarin's leaf (4.3 x 2.6 x 2.1 in, 2.7 in with the mandarin): 0.43 x 0.26 x 0.27 studs, lying
+on its belly.
+
+**Tells.** The capybara's box of a head with its blunt muzzle and big nose; the brown loaf of a
+body; the orange dot on top. From a doorway it is a brown loaf with an orange on it; held, the
+sleepy face, the little ears and the paws read.
+
+**What it is.** `Body`, lofted ring by ring from the tip of its rump to its nose (`cb_body`):
+each ring a superellipse through smooth curves of its half width, belly line, widest line and
+top (`CB["stations"]`, `cb_spline`), round over the body and boxier over the head, its ends
+drawn in to a round rump and a blunt muzzle (`tail_end`, `nose_end`); the ears (little cups
+facing out and up, sunk in the head) and four paws peeking out under it in the same mesh.
+`Orange` is its own part on the head (`cb_orange`, `alone`: baked with the body it printed a
+black disc on the head under it): a squat mandarin with a dimple, a stem and a leaf. The look:
+caramel foam airbrushed chestnut down its back, cream under its chin and on its cheeks, the
+muzzle's front a touch deeper, fine pores, a faint seam down its back; the ears' insides and the
+toes deeper brown. The face is printed from two images: one sleepy eye with a heavy, gently
+arched lid, a shine and the blush, seen from 62 degrees round and mirrored by |x| so one image
+makes both (`cb_eye_ink`); the broad nose, its nostrils and a little w of a mouth from the front
+(`cb_nose_ink`). 1024 texture, about 1290 texels a stud.
+
+**Squeeze.** A contented sigh (`SIGH`, 2.9 s): a little breath in (1.03 tall), then it sinks
+slow and wide to 0.785 tall, its eyes squeezed nearly shut by the squash, held; let go, it
+breathes back up over a second and settles, never past its shape. The mandarin rides the head
+down and up keeping its shape (its own `stretch` at the body's to the -0.85) and rocks a beat
+behind (`ROCK`, 3 degrees). The game's tiny happy sigh plays here.
+
+**Judged.** Quick sheets twice, then full sheets. Fixed: a black disc baked under the mandarin
+(now its own part), the mould seam reading as a crack over the head (now only down the back), a
+flat lid that read grumpy (now arched, sleepy), ears too big and bear-like (smaller, set back).
+Its template is in the place (`ReplicatedStorage.Props.Finds.Capybara`, the mandarin on a
+Motor6D), not yet looked at in Studio.

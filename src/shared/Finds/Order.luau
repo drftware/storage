@@ -23,6 +23,7 @@ return {
 	MochiBun = { "Squeeze" },
 	ToastSlice = { "Squeeze" },
 	JumboStrawberry = { "Squeeze" },
+	Capybara = { "Squeeze" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },

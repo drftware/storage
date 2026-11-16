@@ -739,6 +739,76 @@ local Set: { [string]: Art.Find } = {
 			},
 		},
 	},
+	Capybara = {
+		Size = Vector3.new(0.260, 0.271, 0.425),
+		Centre = Vector3.new(-0.000, 0.135, -0.012),
+		Triangles = 6172,
+		Texture = 1024,
+		Parts = {
+			{
+				Name = "Capybara_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Size = Vector3.new(0.260, 0.213, 0.425),
+				Triangles = 5344,
+			},
+			{
+				Name = "Capybara_Orange",
+				Parent = "Capybara_Body",
+				Pivot = Vector3.new(-0.000, 0.210, -0.098),
+				Axis = Vector3.new(-1.000, 0.000, 0.000),
+				Size = Vector3.new(0.070, 0.061, 0.070),
+				Triangles = 828,
+			},
+		},
+		Lights = {},
+		Motions = {
+			Squeeze = {
+				Duration = 2.9,
+				Tracks = {
+					{
+						Part = "Capybara_Body",
+						Channel = "stretch",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.22, 1.03, "Sine", "InOut" },
+							{ 0.84, 0.8, "Quad", "InOut" },
+							{ 1.25, 0.785, "Sine", "Out" },
+							{ 1.35, 0.785, "Sine", "InOut" },
+							{ 2.15, 0.972, "Quad", "Out" },
+							{ 2.6, 1, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "Capybara_Orange",
+						Channel = "stretch",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.22, 0.9752, "Sine", "InOut" },
+							{ 0.84, 1.2089, "Quad", "InOut" },
+							{ 1.25, 1.2285, "Sine", "Out" },
+							{ 1.35, 1.2285, "Sine", "InOut" },
+							{ 2.15, 1.0244, "Quad", "Out" },
+							{ 2.6, 1, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "Capybara_Orange",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.3, -1, "Sine", "InOut" },
+							{ 0.95, 2.6, "Sine", "InOut" },
+							{ 1.4, 0.7, "Sine", "InOut" },
+							{ 1.75, -3, "Sine", "InOut" },
+							{ 2.15, 1.8, "Sine", "InOut" },
+							{ 2.5, -0.7, "Sine", "InOut" },
+							{ 2.85, 0, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+		},
+	},
 }
 
 return Set

@@ -1134,7 +1134,355 @@ JUMBO_STRAWBERRY = kit.Find(
     dust=SR["dust"], seed=SR["seed"], texels=1000,
 )
 
-FINDS = [BUTTER_STICK, STRESS_BALL, MOCHI_BUN, TOAST_SLICE, JUMBO_STRAWBERRY]
+# --- The squishy capybara (F-05c2) ----------------------------------------------------------------
+# A slow-rise foam capybara of our own (README), lying like a loaf: a barrel body, a box of a head,
+# small round ears, paws peeking out under it, sleepy half-shut eyes and a mandarin balanced on its
+# head. One part lofted ring by ring from its tail to its nose, the ears, paws and mandarin in the
+# same mesh; its squeeze is the whole capybara sinking in a contented sigh (the mochi's whole-body
+# stretch, softer).
+
+CB = K.CAPY
+CB_FOAM, CB_PEEL, CB_LEAF = 10, 11, 12
+
+
+def cb_spline(ys, vs):
+    """A smooth function through (y, v) points: cubic Hermite with Catmull-Rom slopes, flat at
+    the ends, held beyond them."""
+    order = np.argsort(ys)
+    Y, V = np.array(ys, float)[order], np.array(vs, float)[order]
+    m = np.zeros(len(Y))
+    m[1:-1] = (V[2:] - V[:-2]) / (Y[2:] - Y[:-2])
+
+    def f(y):
+        y = min(max(y, Y[0]), Y[-1])
+        i = min(int(np.searchsorted(Y, y, side="right")) - 1, len(Y) - 2)
+        h = Y[i + 1] - Y[i]
+        t = (y - Y[i]) / h
+        return float((2 * t ** 3 - 3 * t * t + 1) * V[i] + (t ** 3 - 2 * t * t + t) * h * m[i]
+                     + (3 * t * t - 2 * t ** 3) * V[i + 1] + (t ** 3 - t * t) * h * m[i + 1])
+    return f
+
+
+CB_FIT = [cb_spline([s[0] for s in CB["stations"]], [s[k] for s in CB["stations"]])
+          for k in (1, 2, 3, 4)]
+
+
+def cb_section(y):
+    """Its cross-section at y (mm): half width, belly line, widest line, top, and how square its
+    top and bottom halves are (the body round, the head boxier)."""
+    a, zb, zm, zt = (f(y) for f in CB_FIT)
+    t = min(1.0, max(0.0, (CB["head_from"] + 8.0 - y) / 16.0))
+    w = t * t * (3 - 2 * t)
+    (pt0, pt1), (pb0, pb1) = CB["p_top"], CB["p_bot"]
+    return a, zb, zm, zt, pt0 + (pt1 - pt0) * w, pb0 + (pb1 - pb0) * w
+
+
+def cb_ring(sec, y, n, f=1.0):
+    """A ring round the section (mm, anticlockwise seen from the nose, so faces point out), drawn
+    in to f of its size about its middle for the rounded ends."""
+    a, zb, zm, zt, pt, pb = sec
+    cz = (zb + zt) / 2
+    out = []
+    for j in range(n):
+        ph = 2 * math.pi * j / n
+        c, s = math.cos(ph), math.sin(ph)
+        p = pt if s >= 0 else pb
+        x = a * math.copysign(abs(c) ** (2 / p), c)
+        z = zm + (zt - zm) * abs(s) ** (2 / p) if s >= 0 else zm - (zm - zb) * abs(s) ** (2 / p)
+        out.append((x * f, y, cz + (z - cz) * f))
+    return out
+
+
+def cb_top(x, y):
+    """The skin's height over (x, y) on its top half (mm), and its outward normal there."""
+    def z_at(xx, yy):
+        a, zb, zm, zt, pt, pb = cb_section(yy)
+        c = min(1.0, abs(xx) / a) ** (pt / 2)
+        return zm + (zt - zm) * max(0.0, 1 - c * c) ** (1 / pt)
+    z = z_at(x, y)
+    dzdx = (z_at(x + 0.05, y) - z_at(x - 0.05, y)) / 0.1
+    dzdy = (z_at(x, y + 0.05) - z_at(x, y - 0.05)) / 0.1
+    return z, Vector((-dzdx, -dzdy, 1.0)).normalized()
+
+
+def cb_eye_x():
+    """How far out the skin is at the eye's height (mm): where the eye is printed."""
+    a, zb, zm, zt, pt, pb = cb_section(CB["eye_y"])
+    s = ((CB["eye_z"] - zm) / (zt - zm)) ** (pt / 2)
+    return a * math.sqrt(1 - s * s) ** (2 / pt)
+
+
+def cb_ellipsoid(r_along, r_up, hi, n=None):
+    """A lathe profile of an ellipse, pole to pole (studs)."""
+    n = n or (16 if hi else 7)
+    return [(mm(r_along * math.cos(t)), mm(r_up * math.sin(t)))
+            for t in (math.pi * (i / n - 0.5) for i in range(n + 1))]
+
+
+def cb_turn_to(axis):
+    return Vector((0.0, 0.0, 1.0)).rotation_difference(Vector(axis).normalized()).to_matrix().to_4x4()
+
+
+def cb_body(hi):
+    """The capybara, lofted from the tip of its rump to its nose, its ends rounded off, then its
+    ears and paws in the same mesh."""
+    n = 112 if hi else 48
+    st = CB["stations"]
+    y0, y1 = st[0][0], st[-1][0]
+    ne = 18 if hi else 8
+    rings = []
+    ry, q = CB["tail_end"]
+    sec = cb_section(y0)
+    for i in range(ne, 0, -1):
+        b = math.pi / 2 * i / ne
+        y = y0 + ry * math.sin(b)
+        if i == ne:
+            rings.append([(0.0, y, (sec[1] + sec[3]) / 2)])
+        else:
+            rings.append(cb_ring(sec, y, n, math.cos(b) ** (2 / q)))
+    count = int(math.ceil((y0 - y1) / (1.2 if hi else 2.6)))
+    for i in range(count + 1):
+        y = y0 - (y0 - y1) * i / count
+        rings.append(cb_ring(cb_section(y), y, n))
+    ry, q = CB["nose_end"]
+    sec = cb_section(y1)
+    for i in range(1, ne + 1):
+        b = math.pi / 2 * i / ne
+        y = y1 - ry * math.sin(b)
+        if i == ne:
+            rings.append([(0.0, y, (sec[1] + sec[3]) / 2)])
+        else:
+            rings.append(cb_ring(sec, y, n, math.cos(b) ** (2 / q)))
+    sh = Shape()
+    sh.loft([[tuple(mm(c) for c in p) for p in ring] for ring in rings], CB_FOAM)
+    # the ears: little round cups facing out, forward and up, their backs sunk in the head
+    ex, ey, lift = CB["ear"]
+    k = CB["ear_r"] / 6.8
+    cup = [(0.0, -3.4), (5.0, -3.1), (6.5, -1.0), (6.8, 0.8), (6.3, 2.3), (5.3, 3.0), (4.4, 2.6),
+           (3.2, 1.6), (1.6, 1.15), (0.0, 1.05)]
+    for side in (1, -1):
+        z, nrm = cb_top(ex, ey)
+        ax_ = Vector((CB["ear_out"][0] * side, CB["ear_out"][1], CB["ear_out"][2]))
+        c = Vector((ex * side, ey, z)) + nrm * lift
+        M = Matrix.Translation(c / K.STUD_MM) @ cb_turn_to(ax_)
+        sh.lathe([(mm(r * k), mm(h * k)) for r, h in cup], CB_FOAM, 40 if hi else 14, M=M)
+    # the paws, peeking out under its chest and beside its rump, flat on the floor
+    for px, py, hx, hy, hz in CB["paws"]:
+        for side in (1, -1):
+            M = (Matrix.Translation(Vector((px * side, py, hz)) / K.STUD_MM)
+                 @ Matrix.Diagonal((hx / hy, 1.0, 1.0, 1.0)))
+            sh.lathe(cb_ellipsoid(hy, hz, hi), CB_FOAM, 32 if hi else 12,
+                     M=M @ Matrix.Rotation(math.pi / 2, 4, "Z"))
+    return sh
+
+
+CB_TILT = (Matrix.Rotation(math.radians(CB["orange_tilt"][0]), 4, "X")
+           @ Matrix.Rotation(math.radians(CB["orange_tilt"][1]), 4, "Y"))
+CB_BASE = Vector((0.0, CB["orange"][0], cb_top(0.0, CB["orange"][0])[0] - CB["orange"][1]))
+CB_OC = CB_BASE + CB_TILT.to_3x3() @ Vector((0.0, 0.0, CB["orange_r"] * CB["orange_squat"]))
+
+
+def cb_orange(hi):
+    """The mandarin balanced on its head, its own part (it rides the head's sigh but keeps its
+    shape and rocks a little; baked alone, or the head's skin under it baked black from the
+    inside of the peel): squat, a dimple where its stem was, tilted a little, its stem and a
+    leaf."""
+    R, sq = CB["orange_r"], CB["orange_squat"]
+    tilt, oc = CB_TILT, CB_OC
+    sh = Shape()
+    nprof = 28 if hi else 14
+    prof = []
+    for i in range(nprof + 1):
+        t = math.pi * (i / nprof - 0.5)
+        r = R * math.cos(t)
+        h = R * sq * math.sin(t)
+        if t > 0:
+            h -= 1.0 * math.exp(-(r / 2.6) ** 2)
+        prof.append((mm(r), mm(h)))
+    sh.lathe(prof, CB_PEEL, 64 if hi else 28, M=Matrix.Translation(oc / K.STUD_MM) @ tilt)
+    top = oc + (tilt.to_3x3() @ Vector((0.0, 0.0, R * sq - 1.0)))
+    up = tilt.to_3x3() @ Vector((0.0, 0.0, 1.0))
+    sh.cylinder(tuple(mm(c) for c in top - up * 0.6), tuple(mm(c) for c in top + up * 1.3),
+                mm(1.05), CB_LEAF, sides=10 if hi else 6)
+    L_, W_, T_ = CB["leaf"]
+    yaw = math.radians(35.0)
+    d = Vector((math.cos(yaw), math.sin(yaw), 0.0))
+    lc = top + d * (L_ * 0.45) + up * 0.5
+    M = (Matrix.Translation(lc / K.STUD_MM) @ tilt @ Matrix.Rotation(yaw, 4, "Z")
+         @ Matrix.Rotation(math.radians(14.0), 4, "Y") @ Matrix.Diagonal((1.0, W_ / (L_ / 2), 1.0, 1.0)))
+    sh.lathe(cb_ellipsoid(L_ / 2, T_, hi, 10 if hi else 5), CB_LEAF, 24 if hi else 10, M=M)
+    return sh
+
+
+CB_EX = cb_eye_x()
+CB_A = math.radians(CB["eye_turn"])
+
+
+def cb_eye_ink(res=512, W=10.0):
+    """One eye and its blush, seen from eye_turn degrees round from straight ahead, centred on the
+    eye (u back toward its outer corner, w up, W mm each way): the sleepy eye a dark oval with its
+    top hidden under a heavy, gently arched lid (a peaceful half-shut look; a flat lid read as
+    grumpy), a small shine low in it, the lid's line running a hair past; the blush under it."""
+    us = np.linspace(-W, W, res)[None, :]
+    ws = np.linspace(-W, W, res)[:, None]
+    px = 2 * W / res
+    ew, eh, lid, arch = CB["eye_w"], CB["eye_h"], CB["lid"], CB["arch"]
+    lid_w = lid + arch * (1.0 - np.clip(us / ew, -1.2, 1.2) ** 2)
+    d_oval = (np.hypot(us / ew, ws / eh) - 1.0) * min(ew, eh)
+    d = np.maximum(d_oval, ws - lid_w)
+    eye = np.clip(0.5 - d / px, 0.0, 1.0)
+    arc = [(u_, lid + arch * (1.0 - (u_ / ew) ** 2) + 0.1) for u_ in np.linspace(-ew * 1.06, ew * 1.1, 24)]
+    line = bu_ink(res, res, (-W, -W, W, W), [arc], 0.6)
+    eye = np.maximum(eye, line)
+    shine = np.clip(0.5 - (np.hypot(us + 1.05, ws + 1.15) - 0.55) / px, 0.0, 1.0)
+    bu_, bw, bhw, bhh = CB["blush"]
+    q = np.hypot((us - bu_) / bhw, (ws - bw) / bhh)
+    blush = np.clip((1.25 - q) / 0.55, 0.0, 1.0) ** 1.5
+    return eye, shine, blush
+
+
+CB_NZC, CB_NW = 36.0, 9.0      # the nose image's middle height and half size (mm)
+
+
+def cb_nose_ink(res=512):
+    """The nose and mouth seen straight on from the front (x across, z up, CB_NW mm each way from
+    (0, CB_NZC)): a broad rounded nose wider at the top, two nostril commas, the line down from
+    it and a little w of a mouth."""
+    W, zc = CB_NW, CB_NZC
+    xs = np.linspace(-W, W, res)[None, :]
+    zs = np.linspace(zc - W, zc + W, res)[:, None]
+    px = 2 * W / res
+    nz, nw, nh = CB["nose_z"], CB["nose_w"], CB["nose_h"]
+    wide = nw * (1.0 + 0.13 * (zs - nz) / nh)
+    q = (np.abs(xs / wide) ** 2.6 + np.abs((zs - nz) / nh) ** 2.6) ** (1 / 2.6)
+    nose = np.clip(0.5 - (q - 1.0) * nh / px, 0.0, 1.0)
+    nostril = np.zeros((res, res))
+    for side in (1, -1):
+        u, v = xs - side * 2.7, zs - (nz + 0.5)
+        a = math.radians(-28.0 * side)
+        uu, vv = u * math.cos(a) + v * math.sin(a), -u * math.sin(a) + v * math.cos(a)
+        dd = (np.hypot(uu / 1.25, vv / 0.55) - 1.0) * 0.55
+        nostril = np.maximum(nostril, np.clip(0.5 - dd / px, 0.0, 1.0))
+    mz, mr = CB["mouth_z"], CB["mouth_r"]
+    top = nz - nh + 0.3
+    strokes = [[(0.0, top), (0.0, mz + mr)]]
+    for side in (1, -1):
+        strokes.append(bu_segments(("A", (side * mr, mz + mr), mr, 180.0, 360.0), 14))
+    mouth = bu_ink(res, res, (-W, zc - W, W, zc + W), strokes, CB["mouth_w"])
+    return np.maximum(nose, mouth), nostril
+
+
+def capybara_look(L, f):
+    nb = L.nb
+    xm, ym, zm = nb.mul(L.x, K.STUD_MM), nb.mul(L.y, K.STUD_MM), nb.mul(L.z, K.STUD_MM)
+    ax = nb.absf(xm)
+    foam = L.k(CB_FOAM)
+    # the foam: warm caramel brown, satin-matt, airbrushed a deeper chestnut down its back and
+    # over its crown, paler and creamier under its chin, chest and belly and on its cheeks; the
+    # muzzle's front a touch deeper; mottled faintly where the spray went on uneven
+    C = Coat(L, hexc("#C88D58"), 0.7)
+    back = nb.mul(nb.ss(L.nz, 0.3, 0.92), nb.ss(zm, 28.0, 50.0))
+    C.paint(nb.mul(back, 0.8), hexc("#9A5F35"), 0.72)
+    C.paint(nb.mul(nb.inv(nb.ss(zm, 4.0, 20.0)), 0.75), hexc("#E4BE8E"))
+    head = nb.inv(nb.ss(ym, -30.0, -20.0))
+    cheek = nb.mul(head, nb.mul(nb.ss(zm, 12.0, 20.0), nb.inv(nb.ss(zm, 31.0, 39.0))))
+    C.paint(nb.mul(cheek, 0.6), hexc("#E8C49A"))
+    muzzle = nb.mul(nb.inv(nb.ss(ym, -54.0, -48.0)), nb.ss(zm, 24.0, 32.0))
+    C.paint(nb.mul(muzzle, 0.55), hexc("#A86B40"))
+    C.paint(nb.mul(nb.ss(L.noise(8.0, 1, detail=4), 0.45, 0.8), 0.35), hexc("#BC7E4A"))
+    pores = nb.ss(L.noise(1300.0, 3, detail=2), 0.58, 0.72)
+    pits = nb.ss(L.noise(380.0, 4, detail=2), 0.66, 0.74)
+    C.paint(nb.mul(nb.add(pores, nb.mul(pits, 0.8), clamp=True), foam), height=-0.35)
+    # the mould's seam, faint, down the middle of its back (over the head it read as a crack)
+    seam = nb.mul(nb.inv(nb.ss(ax, 0.1, 0.34)), nb.mul(nb.ss(zm, 16.0, 24.0), nb.ss(ym, -14.0, -6.0)))
+    C.paint(nb.mul(seam, nb.mul(foam, 0.35)), hexc("#B9804E"), 0.6, height=0.3)
+    # the ears' insides, a deeper brown
+    ex, ey, _ = CB["ear"]
+    ez, _ = cb_top(ex, ey)
+    o = Vector(CB["ear_out"]).normalized()
+    dx, dy, dz = nb.sub(ax, ex), nb.sub(ym, ey), nb.sub(zm, ez + 1.0)
+    along = nb.add(nb.add(nb.mul(dx, o.x), nb.mul(dy, o.y)), nb.mul(dz, o.z))
+    r2 = nb.sub(nb.add(nb.add(nb.mul(dx, dx), nb.mul(dy, dy)), nb.mul(dz, dz)), nb.mul(along, along))
+    dish = nb.mul(nb.inv(nb.ss(r2, 3.0 ** 2, 4.6 ** 2)), nb.ss(along, 0.6, 1.4))
+    C.paint(nb.mul(dish, foam), hexc("#7B4A2C"), 0.74)
+    # the paws a little deeper brown at their toes
+    toes = None
+    for px_, py_, hx, hy, hz in CB["paws"]:
+        q = nb.add(nb.mul(nb.sub(ax, px_), 1 / hx), 0.0)
+        r = nb.mul(nb.sub(ym, py_ - hy * 0.55), 1 / (hy * 0.75))
+        m = nb.mul(nb.inv(nb.ss(nb.add(nb.mul(q, q), nb.mul(r, r)), 0.6, 1.1)),
+                   nb.inv(nb.ss(zm, hz * 1.3, hz * 1.9)))
+        toes = m if toes is None else nb.mx(toes, m)
+    C.paint(nb.mul(toes, nb.mul(foam, 0.6)), hexc("#8A5432"))
+    # the face, printed: sleepy eyes and blush seen from each side (one image, mirrored by |x|),
+    # the nose and mouth from the front
+    eye, shine, blush = cb_eye_ink()
+    W = 10.0
+    u = nb.add(nb.mul(nb.sub(ax, CB_EX), math.cos(CB_A)), nb.mul(nb.sub(ym, CB["eye_y"]), math.sin(CB_A)))
+    w = nb.sub(zm, CB["eye_z"])
+    uv = nb.comb(nb.add(nb.mul(u, 1 / (2 * W)), 0.5), nb.add(nb.mul(w, 1 / (2 * W)), 0.5), 0.0)
+    facing = nb.sub(nb.mul(nb.mul(nb.math("SIGN", xm), L.nx), math.sin(CB_A)),
+                    nb.mul(L.ny, math.cos(CB_A)))
+    side_gate = nb.mul(nb.mul(nb.ss(facing, 0.15, 0.4), foam), nb.inv(nb.ss(ym, -28.0, -24.0)))
+    looks = []
+    for name, mask in (("CapyEye", eye), ("CapyShine", shine), ("CapyBlush", blush)):
+        t = nb.node("ShaderNodeTexImage", image=bu_image(name, mask), interpolation="Cubic",
+                    extension="CLIP")
+        nb.put(t.inputs["Vector"], uv)
+        looks.append(nb.mul(side_gate, t.outputs["Color"]))
+    eyes, shines, cheeks = looks
+    C.paint(nb.mul(cheeks, 0.7), hexc("#E88F86"), 0.66)
+    C.paint(eyes, hexc("#2A1A14"), 0.32, height=0.2)
+    C.paint(shines, hexc("#F4ECE2"), 0.3)
+    ink, nostril = cb_nose_ink()
+    uvn = nb.comb(nb.add(nb.mul(xm, 1 / (2 * CB_NW)), 0.5),
+                  nb.add(nb.mul(nb.sub(zm, CB_NZC), 1 / (2 * CB_NW)), 0.5), 0.0)
+    front = nb.mul(nb.mul(nb.ss(nb.mul(L.ny, -1.0), 0.35, 0.65), foam), nb.inv(nb.ss(ym, -51.0, -46.0)))
+    looks = []
+    for name, mask in (("CapyNose", ink), ("CapyNostril", nostril)):
+        t = nb.node("ShaderNodeTexImage", image=bu_image(name, mask), interpolation="Cubic",
+                    extension="CLIP")
+        nb.put(t.inputs["Vector"], uvn)
+        looks.append(nb.mul(front, t.outputs["Color"]))
+    nose, nostrils = looks
+    C.paint(nose, hexc("#4A2A1B"), 0.4, height=0.25)
+    C.paint(nostrils, hexc("#1E120D"), 0.5)
+    # the mandarin: bright peel, deeper where it rounds under, dimpled all over with oil pores,
+    # glossier than the foam; its leaf a waxy green, its stem a dull olive
+    peel = L.k(CB_PEEL)
+    C.paint(peel, hexc("#F59324"), 0.46)
+    oz = CB_OC.z
+    C.paint(nb.mul(peel, nb.mul(nb.inv(nb.ss(zm, oz - 6.0, oz + 2.0)), 0.6)), hexc("#E06F12"))
+    C.paint(nb.mul(peel, nb.mul(nb.ss(L.noise(30.0, 6, detail=3), 0.5, 0.8), 0.4)), hexc("#FBA63A"))
+    C.paint(nb.mul(peel, nb.ss(L.noise(520.0, 7, detail=1), 0.55, 0.7)), height=-0.5)
+    green = L.k(CB_LEAF)
+    C.paint(green, hexc("#3E9638"), 0.5)
+    C.paint(nb.mul(green, nb.mul(nb.ss(L.noise(40.0, 8, detail=2), 0.5, 0.8), 0.4)), hexc("#2F7A2C"))
+    C.finish(f.dust, grime=0.25)
+    return C.surface(bump_dist=mm(0.12), bump=0.5)
+
+
+CAPYBARA = kit.Find(
+    "Capybara",
+    [kit.Part("Body", cb_body),
+     kit.Part("Orange", cb_orange, pivot=tuple(CB_BASE / K.STUD_MM), parent="Body",
+              axis=(1.0, 0.0, 0.0), alone=True)],
+    capybara_look,
+    motions={
+        # squeezed: a little breath in, then a long contented sigh out (the game's tiny happy
+        # sigh here), sinking wide with its sleepy eyes squeezed nearly shut; let go, it breathes
+        # back up and settles, never past its shape
+        "Squeeze": dict(duration=round(K.SIGH[-1][0] + 0.3, 2),
+                        tracks=[("Body", "stretch", K.SIGH),
+                                ("Orange", "stretch", [(k[0], round(k[1] ** -0.85, 4), *k[2:])
+                                                       for k in K.SIGH]),
+                                ("Orange", "turn", K.ROCK)],
+                        focus=(0.0, mm(-6.0), mm(30.0)), distance=0.72),
+    },
+    dust=CB["dust"], seed=CB["seed"], texels=1000,
+)
+
+FINDS = [BUTTER_STICK, STRESS_BALL, MOCHI_BUN, TOAST_SLICE, JUMBO_STRAWBERRY, CAPYBARA]
 
 if __name__ == "__main__":
     kit.main("Squishies", HERE, FINDS)
