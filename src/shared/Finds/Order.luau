@@ -10,6 +10,7 @@ return {
 	WalkingRobot = { "Wind", "Walk" },
 	WindupMouse = { "Wind", "Zip" },
 	TinBird = { "Wind", "Hop" },
+	SirenCar = { "Push" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },

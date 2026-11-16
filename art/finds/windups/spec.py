@@ -321,3 +321,56 @@ HOP = dict(
     jaw=(16.0, 0.22),  # the lower bill's flick on its hinge
     winds=4,           # half turns of the key when wound
 )
+
+# --- The toy siren car: a 1960s Japanese tin friction car of our own --------------------------
+# References (README): the V&A's small English tin friction cars (11 cm: a fire chief's car, a
+# highway patroller), a 1960s Japanese friction patrol car (9.25 in) whose roof lights turn as it
+# rolls. Ours is a chunky two-door chief's car, 140 mm (5.5 in) long: pressed and printed tin in
+# red with a cream roof and side flash, a numbered door roundel of our own (no real force's words
+# or crest), tin bumpers and grille, rubber tyres with whitewalls on tin hubcaps, and a red
+# fluted dome on a tin base on the roof, which the flywheel turns and a lamp inside lights.
+SIREN = dict(
+    length=140.0, half_w=30.0,     # nose to tail of the pressed body, half its width at the belt
+    corner=7.0,                    # the plan's corners round off this much at nose and tail
+    wheelbase=82.0, track=50.0,    # between the axles, and between the wheels' middles
+    tyre=dict(od=26.0, w=10.0, hub=15.0, wall=(9.4, 11.0)),
+    # rubber tyres: outside diameter, width, the tin hubcap's diameter, and the whitewall
+    # printed between these radii on the outer sidewall
+    arch=15.0,                     # the wheel arches' round about each axle
+    sill=8.0,                      # the body's rolled lower edge
+    deck_nose=28.0, deck_cowl=32.0, deck=33.0, deck_tail=30.0,   # bonnet and boot heights
+    roof=50.0, crown=1.8,          # the roof's height and how much it domes
+    cowl=-24.0, screen_top=-9.0,   # y where the windscreen starts and where it meets the roof
+    back_top=22.0, back_base=37.0, # and the rear window
+    glass_half=26.5, roof_half=22.0,   # the greenhouse's half width at its foot and its roof
+    b_pillar=8.0,                  # y of the door window's back post
+    door=(-21.0, 15.0),            # y of the door's front and back shut lines
+    fine=1.8,                      # the small offsets in the section, times the die-cast car's
+    base=dict(z0=7.0, z1=8.4, half=24.0),       # the tin floor pan between the sills
+    motor=dict(y=(18.0, 52.0), x=13.0, z=(4.6, 9.0)),   # the friction motor's case on the rear axle
+    bumper=dict(z=(10.0, 16.5), half=30.6, d=3.4),     # the tin bumpers: height, half width, depth
+    grille=dict(half=22.0, z=(16.8, 24.6)),      # the tin grille across the nose
+    lamp=dict(x=17.0, z=20.7, r=4.0),            # the headlamps set in the grille's ends
+    beacon=dict(y=-1.0, base=(10.6, 4.2), r=8.8, h=15.0, flutes=12),
+    # the roof light: y on the roof; its tin base's radius and height; the red dome's radius,
+    # height and the flutes moulded round it
+    number="7",                    # the door roundel's number (ours, no real force's)
+    dust=0.0, seed=83.0,     # none: on the glossy lacquer any film reads as blotches (the
+    # die-cast car's lesson); the creases still darken
+)
+
+# How it goes (the Push action): two pushes along the floor rev its flywheel, whirring, then it
+# leaves the hand and rolls off down the hall on the flywheel, its roof light turning with it,
+# slowing as the flywheel runs down, and coasts to a stop.
+SIREN_RUN = dict(
+    strokes=2,          # pushes before it's let go
+    stroke=(0.07, 0.24),  # studs each push carries it, and how long a push takes (s)
+    press=1.6,          # degrees its nose dips as the hand presses down on the roof
+    v0=5.4,             # studs/s as it leaves the hand: about 1.4 m/s, a fast friction car
+    drag=(0.55, 0.32),  # the flywheel's run-down: studs/s lost a second, plus this share of its speed
+    drift=2.2,          # degrees a second its heading wanders at full speed
+    rattle=0.7,         # degrees the tin body rocks on its axles at full speed
+    squat=1.4,          # degrees its nose lifts as the flywheel bites
+    spin=2.6,           # turns a second of the roof light at full speed (geared to the flywheel)
+    glow=(0.3, 0.9),    # the lamp comes up over the pushes; it fades this long after it stops
+)

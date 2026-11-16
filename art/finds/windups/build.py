@@ -3353,7 +3353,591 @@ TIN_BIRD = kit.Find(
 )
 
 
-FINDS = [CYMBAL_MONKEY, JACK_IN_THE_BOX, CHATTERING_TEETH, WALKING_ROBOT, WINDUP_MOUSE, TIN_BIRD]
+# --- The toy siren car (F-04e) ------------------------------------------------------------------
+# A 1960s Japanese tin friction car of our own (README): a pressed, printed tin body in red with a
+# cream roof and side flash, a numbered roundel on each door, tin bumpers and grille, rubber tyres
+# with printed whitewalls on tin hubcaps, a friction motor on the rear axle, and a red fluted dome
+# on the roof that the flywheel turns and a lamp lights. Its body is built the die-cast car's way
+# (sections computed along the car, arches cut round the axles; D-200).
+
+(SC_PAINT, SC_PAN, SC_BRIGHT, SC_TYRE, SC_WALL, SC_HUB, SC_LENS, SC_DOME, SC_STEEL) = range(54, 63)
+SC = K.SIREN
+SR = K.SIREN_RUN
+SL = SC["length"] / 2
+SYA = (-SC["wheelbase"] / 2, SC["wheelbase"] / 2)     # the front and rear axles
+SAZ = SC["tyre"]["od"] / 2                            # the axles' height: tyres on the floor
+SHM = SC["roof"] - SC["deck"]                         # the greenhouse's full height
+SF = SC["fine"]                                       # the die-cast car's small offsets, scaled
+NOSE = SL + 0.97 * SF                                 # the rounded ends reach this far out
+BEA = SC["beacon"]
+
+
+def sc_soft(u, r):
+    """0 to 1 as u runs 0 to 1: straight in the middle, its ends rounded r either side."""
+    def g(s):
+        return 0.0 if s <= 0 else (s * s / 2 if s < 1 else s - 0.5)
+    return (g(u + r) - g(u - r)) / (2 * r)
+
+
+def sc_catmull(P, n):
+    P = [Vector(p) for p in P]
+    P = [P[0] * 2 - P[1]] + P + [P[-1] * 2 - P[-2]]
+    out = []
+    for i in range(1, len(P) - 2):
+        p0, p1, p2, p3 = P[i - 1], P[i], P[i + 1], P[i + 2]
+        for j in range(n):
+            u = j / n
+            out.append(0.5 * ((2 * p1) + (-p0 + p2) * u + (2 * p0 - 5 * p1 + 4 * p2 - p3) * u * u
+                              + (-p0 + 3 * p1 - 3 * p2 + p3) * u * u * u))
+    out.append(P[-2])
+    return out
+
+
+def sc_hw(y):
+    """The body's half width at y: its corners rounded in plan."""
+    c = SC["corner"]
+    e = min(c, max(0.0, abs(y) - (SL - c)))
+    return SC["half_w"] - (c - math.sqrt(c * c - e * e))
+
+
+def sc_deck(y):
+    """The bonnet's, sills' and boot's height at y."""
+    if y < SC["cowl"]:
+        u = (y + SL) / (SC["cowl"] + SL)
+        return SC["deck_nose"] + (SC["deck_cowl"] - SC["deck_nose"]) * (1 - (1 - u) ** 2)
+    if y > SC["back_base"]:
+        u = (y - SC["back_base"]) / (SL - SC["back_base"])
+        return SC["deck"] + (SC["deck_tail"] - SC["deck"]) * u * u
+    return SC["deck_cowl"] + (SC["deck"] - SC["deck_cowl"]) * sc_soft((y - SC["cowl"]) / (6.0 * SF), 0.3)
+
+
+def sc_cabin(y):
+    """How much of the greenhouse stands at y, 0 to 1: up the windscreen, down the back."""
+    a = sc_soft((y - SC["cowl"]) / (SC["screen_top"] - SC["cowl"]), 0.12)
+    b = sc_soft((SC["back_base"] - y) / (SC["back_base"] - SC["back_top"]), 0.12)
+    return min(a, b)
+
+
+def sc_bottom(y):
+    """The body's lower edge at y: the rolled sill, or up round a wheel arch."""
+    for ya in SYA:
+        d = abs(y - ya)
+        if d <= SC["arch"]:
+            return SAZ + math.sqrt(SC["arch"] ** 2 - d * d)
+    return SC["sill"]
+
+
+def sc_half(y):
+    """The body's half section at y, (x, z) mm, from the bottom's middle round to the roof's."""
+    f = SF
+    hw, zb, deck = sc_hw(y), sc_bottom(y), sc_deck(y)
+    k = hw / SC["half_w"]
+    gw, rw = SC["glass_half"] * k, SC["roof_half"] * k
+    H = sc_cabin(y) * SHM
+    q = min(1.0, H / (1.5 * f))
+    belt = deck - 0.55 * f
+    lo = zb + 0.45 * f
+    up = max(lo + 0.3 * f, belt - 1.3 * f)
+    crown = 0.35 * f + (SC["crown"] - 0.35 * f) * min(1.0, H / SHM)
+    top = deck + H
+    return [(0.0, zb), (hw - 1.3 * f, zb), (hw - 0.3 * f, lo), (hw - 0.04 * f, (lo + up) / 2),
+            (hw, up), (hw - 0.12 * f, belt), (hw - 0.9 * f, deck - 0.08 * f), (gw, deck),
+            ((gw + rw) / 2 + 0.15 * q * f, deck + H * 0.5), (rw + 0.55 * q * f, top - 0.55 * q * f),
+            (rw - 0.35 * f, top + 0.12 * q * f + crown * 0.35), (rw * 0.5, top + crown * 0.8),
+            (0.0, top + crown)]
+
+
+def sc_ys(hi):
+    """Where the body's sections stand along it: evenly, plus round the arches and the glass."""
+    step = 1.5 if hi else 6.0
+    ys = [-SL + i * step for i in range(int(2 * SL / step) + 1)] + [SL]
+    na = 24 if hi else 6
+    for ya in SYA:
+        ys += [ya + SC["arch"] * math.cos(math.pi * i / na) for i in range(na + 1)]
+        ys += [ya - SC["arch"] - 0.03, ya + SC["arch"] + 0.03]
+    for e in (SC["cowl"], SC["screen_top"], SC["back_top"], SC["back_base"]):
+        ys += [e - 2.0, e, e + 2.0]
+    ys += [(SC["cowl"] + SC["screen_top"]) / 2, (SC["back_top"] + SC["back_base"]) / 2]
+    out = []
+    for y in sorted(y for y in ys if -SL <= y <= SL):
+        if not out or y - out[-1] > 0.03:
+            out.append(y)
+    return out
+
+
+def sc_ring(y, half):
+    pts = [(-x, z) for x, z in half] + [(x, z) for x, z in reversed(half[1:-1])]
+    return [(mm(x), mm(y), mm(z)) for x, z in pts]
+
+
+def sc_shell(s, hi):
+    secs = []
+    for y in sc_ys(hi):
+        h = sc_half(y)
+        if hi:
+            h = [(p.x, p.y) for p in sc_catmull(h, 3)]
+        secs.append((y, h))
+    # the nose and tail turn under in a round, each closing on a point
+    r = SF
+    angs = (25, 50, 70) if hi else (40, 70)
+
+    def cap(y, h, sgn):
+        zc = (h[0][1] + h[-1][1]) / 2
+        hw = max(x for x, _ in h)
+        hz = (h[-1][1] - h[0][1]) / 2
+        out = []
+        for a in angs:
+            d, dy = r * (1 - math.cos(math.radians(a))), r * math.sin(math.radians(a))
+            fx, fz = (hw - d) / hw, (hz - d) / hz
+            out.append((y + sgn * dy, [(x * fx, zc + (z - zc) * fz) for x, z in h]))
+        return out, (mm(0.0), mm(y + sgn * r * 0.97), mm(zc))
+    front, fp = cap(*secs[0], -1)
+    back, bp = cap(*secs[-1], 1)
+    rings = [[fp]] + [sc_ring(y, h) for y, h in reversed(front)]
+    rings += [sc_ring(y, h) for y, h in secs] + [sc_ring(y, h) for y, h in back] + [[bp]]
+    s.loft(rings, SC_PAINT, split=2)
+
+
+def sc_roof_z(y):
+    return sc_half(y)[-1][1]
+
+
+def sweep(s, path, sec, kind):
+    """A section [(out, up)] (mm) swept along a plan path [(x, y, z)] (mm), square to it, its
+    `out` to the right of the way the path runs; capped at both ends."""
+    bm = bmesh.new()
+    n = len(path)
+    rings = []
+    for i, p in enumerate(path):
+        a, b = Vector(path[max(i - 1, 0)]), Vector(path[min(i + 1, n - 1)])
+        t = b - a
+        t.z = 0.0
+        t.normalize()
+        out = Vector((t.y, -t.x, 0.0))
+        rings.append([bm.verts.new(V(*p) + out * mm(u) + Vector((0.0, 0.0, mm(v)))) for u, v in sec])
+    m = len(sec)
+    for A, B in zip(rings, rings[1:]):
+        for j in range(m):
+            j1 = (j + 1) % m
+            bm.faces.new((A[j], A[j1], B[j1], B[j]))
+    bm.faces.new(rings[0][::-1])
+    bm.faces.new(rings[-1])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    s.merge(bm, kind)
+    bm.free()
+
+
+def bumper_path(sg, hi):
+    """The bumper's line in plan round the nose (sg -1) or the tail (+1), just off the body, from
+    a little way down one side round to the other, running so its outside is on its right."""
+    c, hw = SC["corner"], SC["half_w"]
+    g = 0.5
+    rx, ry = c + g, c + (NOSE - SL) + g
+    yc = sg * (SL - c)
+    wrap = 5.0
+    na = 10 if hi else 4
+    pts = [(-(hw + g), yc - sg * wrap)]
+    for i in range(na + 1):
+        a = math.pi / 2 * i / na
+        pts.append((-(hw - c) - rx * math.cos(a), yc + sg * ry * math.sin(a)))
+    for i in range(na + 1):
+        a = math.pi / 2 * i / na
+        pts.append(((hw - c) + rx * math.sin(a), yc + sg * ry * math.cos(a)))
+    pts.append((hw + g, yc - sg * wrap))
+    if sg > 0:
+        pts.reverse()
+    return [(x, y, 0.0) for x, y in pts]
+
+
+def sc_body(hi):
+    s = Shape()
+    sc_shell(s, hi)
+    # the tin floor pan between the wheels, and out to the sills between and beyond the arches
+    b = SC["base"]
+    inner = SC["track"] / 2 - SC["tyre"]["w"] / 2 - 1.2
+    s.box(V(-inner, -SL + 5.0, b["z0"]), V(inner, SL - 5.0, b["z1"]), SC_PAN, mm(0.4), 1)
+    ar = SC["arch"] + 0.4
+    for y0, y1 in ((-SL + 5.0, SYA[0] - ar), (SYA[0] + ar, SYA[1] - ar), (SYA[1] + ar, SL - 5.0)):
+        for sd in (-1, 1):
+            x0, x1 = sorted((sd * inner, sd * b["half"]))
+            s.box(V(x0, y0, b["z0"] + 0.1), V(x1, y1, b["z1"]), SC_PAN, mm(0.4), 1)
+    # the friction motor's steel case on the rear axle, hanging under the pan
+    mo = SC["motor"]
+    s.box(V(-mo["x"], mo["y"][0], mo["z"][0]), V(mo["x"], mo["y"][1], mo["z"][1]), SC_STEEL,
+          mm(1.2), 2 if hi else 1)
+    # the tin bumpers wrapped round the nose and tail, with a pair of over-riders on each
+    bu = SC["bumper"]
+    z0, z1, d = bu["z"][0], bu["z"][1], bu["d"]
+    zm = (z0 + z1) / 2
+    sec = [(-1.2, z0 + 0.6), (0.4, z0), (d * 0.7, z0 + 0.3), (d * 0.95, z0 + 1.3), (d, zm),
+           (d * 0.95, z1 - 1.1), (d * 0.7, z1 - 0.2), (0.4, z1), (-1.2, z1 - 0.6)]
+    if not hi:
+        sec = [sec[0], sec[1], sec[3], sec[5], sec[7], sec[8]]
+    for sg in (-1, 1):
+        sweep(s, bumper_path(sg, hi), sec, SC_BRIGHT)
+        yo = sg * (NOSE + 0.5)
+        for sd in (-1, 1):
+            y0, y1 = sorted((yo, yo + sg * (d + 1.3)))
+            s.box(V(sd * 12.0 - 1.7, y0, z0 - 0.8), V(sd * 12.0 + 1.7, y1, z1 + 1.6), SC_BRIGHT,
+                  mm(0.9), 2 if hi else 1)
+    # the grille across the nose, its headlamps standing proud in each end
+    gr = SC["grille"]
+    s.box(V(-gr["half"], -NOSE - 0.9, gr["z"][0]), V(gr["half"], -NOSE + 3.0, gr["z"][1]),
+          SC_BRIGHT, mm(0.7), 2 if hi else 1)
+    la = SC["lamp"]
+    R = la["r"]
+    prof = [(R + 0.6, -0.4), (R + 0.6, 0.9), (R + 0.3, 1.35), (R - 0.3, 1.35), (R - 0.5, 1.0),
+            (R * 0.62, 1.6), (R * 0.32, 1.95), (0.0, 2.05)]
+    kinds = [SC_BRIGHT] * 4 + [SC_LENS] * 3
+    for sd in (-1, 1):
+        M = T(V(sd * la["x"], -NOSE - 0.9, la["z"])) @ Matrix.Rotation(math.radians(90), 4, "X")
+        s.lathe([(mm(r), mm(z)) for r, z in prof], SC_BRIGHT, segs(hi, 16), M, kinds=kinds)
+    # the roof light's pressed tin base
+    zr = sc_roof_z(BEA["y"])
+    bR, bH = BEA["base"]
+    prof = [(0.0, -1.5), (bR, -1.5), (bR + 0.15, 0.3), (bR - 0.2, 0.9), (bR - 1.0, 1.4),
+            (bR - 1.5, 2.2), (bR - 1.5, bH - 0.4), (bR - 1.9, bH), (0.0, bH)]
+    s.lathe([(mm(r), mm(z)) for r, z in prof], SC_BRIGHT, segs(hi, 20), T(V(0.0, BEA["y"], zr)))
+    return s
+
+
+def flute(a, n, depth):
+    """The dome's moulded flutes: 1 on each ridge, 1 - depth in each groove."""
+    return 1.0 - depth * (0.5 - 0.5 * math.cos(n * a))
+
+
+def sc_beacon(hi):
+    """The red dome on its turntable: a flange, a fluted wall, a fluted cap and its sprue nub,
+    drawn about its pivot on the base's top."""
+    s = Shape()
+    R, H, n = BEA["r"], BEA["h"], BEA["flutes"]
+    m = n * (8 if hi else 4)
+    c = Vector((0.0, BEA["y"], 0.0))
+    z0 = sc_roof_z(BEA["y"]) + BEA["base"][1] - 0.2
+
+    def ring(r, z, depth):
+        return [(mm(c.x + r * flute(2 * math.pi * j / m, n, depth) * math.cos(2 * math.pi * j / m)),
+                 mm(c.y + r * flute(2 * math.pi * j / m, n, depth) * math.sin(2 * math.pi * j / m)),
+                 mm(z0 + z)) for j in range(m)]
+    wall = H - 6.0
+    rings = [[(mm(c.x), mm(c.y), mm(z0))], ring(R + 0.6, 0.0, 0.0), ring(R + 0.6, 1.0, 0.0),
+             ring(R + 0.05, 1.15, 0.04), ring(R, 1.5, 0.05)]
+    for z in ((2.5, 4.0, 5.5) if hi else (4.0,)):
+        rings.append(ring(R, z, 0.05))
+    na = 8 if hi else 4
+    for i in range(na + 1):
+        a = math.pi / 2 * 0.86 * i / na
+        rings.append(ring(R * math.cos(a), wall + 5.4 * math.sin(a), 0.05 * math.cos(a) ** 2))
+    rings += [ring(1.3, H - 0.25, 0.0), ring(1.0, H, 0.0), [(mm(c.x), mm(c.y), mm(z0 + H + 0.1))]]
+    s.loft(rings, SC_DOME, split=2)
+    return s
+
+
+def sc_wheels(front):
+    """A pair of rubber tyres on tin hubcaps, fixed to one steel axle."""
+    def build(hi):
+        s = Shape()
+        ya = SYA[0] if front else SYA[1]
+        t = SC["tyre"]
+        R, w, hb = t["od"] / 2, t["w"], t["hub"] / 2
+        w0, w1 = t["wall"]
+        f = 3 if hi else 1
+        p = [(0.0, -w / 2 + 0.8), (hb - 1.0, -w / 2 + 0.8), (R - 3.0, -w / 2)]
+        p += fillet(R - 1.6, -w / 2 + 1.6, 1.6, (-90, 0), f + 1)[1:]
+        if hi:
+            # the moulded tread: three grooves round
+            for zc in (-2.2, 0.0, 2.2):
+                p += [(R, zc - 0.5), (R - 0.55, zc - 0.32), (R - 0.55, zc + 0.32), (R, zc + 0.5)]
+        p += fillet(R - 1.6, w / 2 - 1.6, 1.6, (0, 90), f + 1)
+        e = len(p) - 1
+        # the outer sidewall, the whitewall printed on it, the bead round the hubcap
+        p += [(w1, w / 2 + 0.1), (w0, w / 2 + 0.12), (hb + 0.5, w / 2 - 0.1)]
+        # the tin hubcap pressed into it: a rim, a dished ring, a domed middle and its boss
+        p += [(hb, w / 2 - 0.2), (hb - 0.3, w / 2 + 0.5), (hb - 1.2, w / 2 + 0.75),
+              (hb * 0.55, w / 2 + 0.55), (2.2, w / 2 + 1.4), (1.0, w / 2 + 1.8), (0.0, w / 2 + 1.85)]
+        kinds = [SC_TYRE] * (e + 1) + [SC_WALL] + [SC_TYRE] * 2 + [SC_HUB] * (len(p) - e - 5)
+        prof = [(mm(r), mm(z)) for r, z in p]
+        for side in (-1, 1):
+            M = T(V(side * SC["track"] / 2, ya, SAZ)) @ Matrix.Rotation(math.radians(90 * side), 4, "Y")
+            s.lathe(prof, SC_TYRE, segs(hi, 22), M, kinds=kinds)
+        xe = SC["track"] / 2 - w / 2 + 0.6
+        s.cylinder(V(-xe, ya, SAZ), V(xe, ya, SAZ), mm(1.1), SC_STEEL, segs(hi, 8))
+        return s
+    return build
+
+
+def sc_look(L, f):
+    nb = L.nb
+    x, y, z = L.x, L.y, L.z
+    ax = nb.absf(x)
+
+    def inb(v, lo, hi, soft=0.12):
+        return nb.mul(nb.ss(v, mm(lo - soft), mm(lo + soft)), nb.ss(nb.sub(0.0, v), mm(-hi - soft), mm(-hi + soft)))
+
+    def line(v, c, w=0.18):
+        return nb.ss(nb.sub(0.0, nb.absf(nb.sub(v, mm(c)))), -mm(2 * w), -mm(w))
+
+    RED, CREAM = hexc("#B8231B"), hexc("#EDE2C4")
+    INK, SILVER = hexc("#1E1A19"), hexc("#C9CBC8")
+    C_ = Coat(L, RED, 0.3, 0.0)
+    paint = L.k(SC_PAINT)
+    side = nb.ss(nb.absf(L.nx), 0.5, 0.7)
+    top = nb.ss(L.nz, 0.45, 0.65)
+    rear = nb.ss(L.ny, 0.6, 0.8)
+    front = nb.ss(nb.sub(0.0, L.ny), 0.6, 0.8)
+    # litho red under its lacquer, the print a little uneven, the lacquer a little orange-peeled
+    C_.paint(paint, nb.tint(RED, nb.mr(L.noise(70.0, 1, detail=3), 0.3, 0.7, 0.93, 1.05)),
+             nb.mr(L.noise(140.0, 2, detail=2), 0.3, 0.7, 0.26, 0.34), 0.0)
+    # the cream roof and pillars, and the cream flash down each side with a silver line either edge
+    cabin = nb.ss(z, mm(SC["deck"] + 0.5), mm(SC["deck"] + 1.1))
+    C_.paint(nb.mul(paint, cabin), CREAM, 0.32)
+    flash = nb.mul(nb.mul(side, inb(z, 21.4, 25.4, 0.1)),
+                   nb.mul(nb.ss(y, mm(-60.0), mm(-58.5)), nb.ss(nb.sub(0.0, y), mm(-66.5), mm(-65.0))))
+    C_.paint(nb.mul(paint, flash), CREAM, 0.32)
+    trims = nb.mul(nb.mul(side, nb.add(line(z, 21.1, 0.22), line(z, 25.7, 0.22), clamp=True)),
+                   nb.mul(nb.ss(y, mm(-61.0), mm(-60.0)), nb.ss(nb.sub(0.0, y), mm(-67.0), mm(-66.0))))
+    C_.paint(nb.mul(paint, trims), SILVER, 0.22, 0.8)
+    # the shut lines printed dark over the pressing: doors, bonnet and boot lid
+    doors = nb.mul(nb.mul(side, nb.add(line(y, SC["door"][0]), line(y, SC["door"][1]), clamp=True)),
+                   inb(z, 9.6, SC["deck"] - 0.6))
+    lid_x = nb.ss(nb.sub(0.0, ax), -mm(25.4), -mm(25.0))
+    bon = nb.add(nb.mul(line(y, SC["cowl"] - 2.0), lid_x),
+                 nb.mul(line(ax, 25.2), nb.ss(nb.sub(0.0, y), mm(-SC["cowl"] + 1.6), mm(-SC["cowl"] + 2.0))),
+                 clamp=True)
+    boot = nb.add(nb.mul(line(y, SC["back_base"] + 2.0), lid_x),
+                  nb.mul(line(ax, 25.2), nb.ss(y, mm(SC["back_base"] + 1.6), mm(SC["back_base"] + 2.0))),
+                  clamp=True)
+    lids = nb.mul(nb.mul(top, nb.ss(z, mm(24.0), mm(24.6))), nb.add(bon, boot, clamp=True))
+    C_.paint(nb.mul(paint, nb.add(doors, lids, clamp=True)), INK, 0.4)
+    # the door roundel: a gold ring, a white disc and our number, on both sides read the right way
+    yc, zc = (SC["door"][0] + SC["door"][1]) / 2, 23.4
+    dy, dz = nb.sub(y, mm(yc)), nb.sub(z, mm(zc))
+    d = nb.math("SQRT", nb.add(nb.mul(dy, dy), nb.mul(dz, dz)))
+    disc = nb.mul(nb.mul(side, paint), nb.ss(nb.sub(0.0, d), -mm(7.0), -mm(6.8)))
+    C_.paint(disc, hexc("#D3A43C"), 0.3, 0.6)
+    C_.paint(nb.mul(disc, nb.ss(nb.sub(0.0, d), -mm(5.9), -mm(5.7))), hexc("#F3EFE4"), 0.3, 0.0)
+    sg = nb.sub(nb.mul(nb.ss(x, -mm(0.1), mm(0.1)), 2.0), 1.0)
+    u = nb.mul(nb.sub(y, mm(yc)), sg)
+    v = dz
+    bar = nb.mul(inb(u, -2.7, 2.7, 0.08), inb(v, 2.4, 3.7, 0.08))
+    dist = nb.absf(nb.add(nb.mul(nb.sub(u, mm(2.5)), 0.8998), nb.mul(nb.sub(v, mm(2.6)), -0.4363)))
+    stem = nb.mul(nb.ss(nb.sub(0.0, dist), -mm(0.72), -mm(0.6)), inb(v, -3.9, 2.9, 0.08))
+    C_.paint(nb.mul(disc, nb.add(bar, stem, clamp=True)), hexc("#A81E18"), 0.3, 0.0)
+    # door handles and the printed chrome round the windows
+    C_.paint(nb.mul(nb.mul(paint, side), nb.mul(inb(y, 8.8, 12.6, 0.1), inb(z, 29.2, 30.2, 0.1))),
+             SILVER, 0.2, 0.9, 0.4)
+    a = (SC["screen_top"] - SC["cowl"]) / SHM
+    yA = nb.add(mm(SC["cowl"] - a * SC["deck"]), nb.mul(z, a))
+    c = (SC["back_base"] - SC["back_top"]) / SHM
+    yC = nb.sub(mm(SC["back_base"] + c * SC["deck"]), nb.mul(z, c))
+
+    def side_glass(m):
+        g = nb.mul(nb.mul(side, inb(z, SC["deck"] + 2.2 - m, SC["roof"] - 2.0 + m)),
+                   nb.mul(nb.ss(nb.sub(y, yA), mm(2.8 - m), mm(3.1 - m)), nb.ss(nb.sub(yC, y), mm(4.4 - m), mm(4.7 - m))))
+        return nb.mul(g, nb.ss(nb.absf(nb.sub(y, mm(SC["b_pillar"]))), mm(1.5 - m), mm(1.8 - m)))
+    kx = (SC["glass_half"] - SC["roof_half"]) / SHM
+
+    def screens(m):
+        xm = nb.sub(mm(SC["glass_half"] - 3.0 + m + kx * SC["deck"]), nb.mul(z, kx))
+        span = nb.mul(nb.ss(nb.sub(xm, ax), 0.0, mm(0.3)), inb(z, SC["deck"] + 2.0 - m, SC["roof"] - 1.8 + m))
+        return nb.mul(span, nb.add(nb.ss(nb.sub(0.0, L.ny), 0.3, 0.45), nb.ss(L.ny, 0.3, 0.45), clamp=True))
+    frame = nb.mul(paint, nb.add(side_glass(0.9), screens(0.9), clamp=True))
+    C_.paint(frame, SILVER, 0.22, 0.85)
+    glass = nb.mul(paint, nb.add(side_glass(0.0), screens(0.0), clamp=True))
+    # printed glass: deep blue-grey, paler low down, two white glints slanting across each pane
+    C_.paint(glass, nb.mixc(nb.mr(z, mm(36.0), mm(48.0)), hexc("#5C7486"), hexc("#22303C")), 0.12, 0.2)
+    q = nb.fract(nb.mul(nb.add(nb.add(y, nb.mul(x, 0.9)), nb.mul(z, 0.8)), 1.0 / mm(34.0)))
+    glint = nb.add(nb.mul(nb.ss(q, 0.30, 0.305), nb.ss(nb.sub(0.0, q), -0.385, -0.38)),
+                   nb.mul(nb.ss(q, 0.42, 0.425), nb.ss(nb.sub(0.0, q), -0.44, -0.435)), clamp=True)
+    C_.paint(nb.mul(glass, glint), hexc("#C9D6DD"), 0.12)
+    # the tail: lamps either side and a number plate between, printed; the base under it bare
+    lamps = nb.mul(nb.mul(paint, rear), nb.mul(inb(ax, 17.0, 26.0), inb(z, 19.0, 25.0)))
+    C_.paint(lamps, SILVER, 0.2, 0.9)
+    lens = nb.mul(nb.mul(paint, rear), nb.mul(inb(ax, 18.0, 25.0), inb(z, 20.0, 24.0)))
+    C_.paint(lens, nb.mixc(nb.mr(z, mm(20.5), mm(23.5)), hexc("#E0381F"), hexc("#FF8A4A")), 0.08, 0.0)
+    C_.paint(nb.mul(lens, inb(ax, 18.0, 20.6)), hexc("#F2A23A"), 0.1, 0.0)
+    plate = nb.mul(nb.mul(paint, rear), nb.mul(inb(ax, 0.0, 9.0), inb(z, 18.0, 24.6)))
+    C_.paint(plate, hexc("#E9DFC0"), 0.35)
+    cx = nb.absf(nb.sub(nb.fract(nb.mul(nb.add(x, mm(1.25)), 1.0 / mm(2.5))), 0.5))
+    cz = nb.absf(nb.sub(z, mm(21.3)))
+    cell = nb.mul(nb.ss(nb.sub(0.0, cx), -0.36, -0.33), nb.ss(nb.sub(0.0, cz), -mm(1.75), -mm(1.6)))
+    hole = nb.mul(nb.ss(nb.sub(0.0, cx), -0.14, -0.11), nb.ss(nb.sub(0.0, cz), -mm(1.05), -mm(0.9)))
+    bar = nb.mul(nb.ss(nb.sub(0.0, cz), -mm(0.3), -mm(0.18)), nb.ss(nb.sin(nb.mul(x, 1.0 / mm(1.6))), -0.2, 0.2))
+    marks = nb.mul(nb.mul(inb(ax, 0.0, 6.4), cell), nb.add(nb.inv(hole), bar, clamp=True))
+    C_.paint(nb.mul(plate, marks), INK, 0.4)
+    C_.paint(nb.mul(paint, nb.ss(nb.sub(0.0, L.nz), 0.5, 0.7)), hexc("#4A4C4E"), 0.6)
+    # tinplate: the bright bumpers, grille and base, the bare floor pan, the steel motor case
+    tin = nb.tint(hexc("#D5D7D3"), nb.mr(L.noise(260.0, 3, detail=3), 0.3, 0.7, 0.88, 1.06))
+    C_.paint(L.k(SC_BRIGHT), tin, nb.mr(L.noise(420.0, 4, detail=2), 0.3, 0.7, 0.24, 0.34), 1.0)
+    slots = nb.ss(nb.sub(0.0, nb.absf(nb.sub(nb.fract(nb.mul(z, 1.0 / mm(1.3))), 0.5))), -0.24, -0.16)
+    grille = nb.mul(nb.mul(L.k(SC_BRIGHT), front),
+                    nb.mul(inb(ax, 0.0, 11.8), inb(z, SC["grille"]["z"][0] + 1.2, SC["grille"]["z"][1] - 1.2)))
+    C_.paint(nb.mul(grille, slots), hexc("#2A2C2E"), 0.5, 0.5)
+    C_.paint(L.k(SC_PAN), nb.tint(hexc("#B9BCB8"), nb.mr(L.noise(300.0, 5, detail=3), 0.3, 0.7, 0.85, 1.05)),
+             0.42, 1.0)
+    C_.paint(L.k(SC_STEEL), hexc("#55595C"), 0.45, 0.9)
+    C_.paint(L.k(SC_LENS), hexc("#EDEEE6"), 0.06, 0.3)
+    # rubber tyres, a printed whitewall, pressed tin hubcaps
+    C_.paint(L.k(SC_TYRE), nb.tint(hexc("#1A1A1A"), nb.mr(L.noise(400.0, 6, detail=3), 0.3, 0.7, 0.85, 1.25)),
+             nb.mr(L.noise(300.0, 7, detail=2), 0.3, 0.7, 0.62, 0.78), 0.0)
+    C_.paint(L.k(SC_WALL), nb.tint(hexc("#E6E1D3"), nb.mr(L.noise(200.0, 8, detail=3), 0.3, 0.7, 0.82, 1.0)), 0.6, 0.0)
+    C_.paint(L.k(SC_HUB), hexc("#D9DBD7"), 0.3, 1.0)
+    # the dome: red moulded plastic, deeper at its foot where it's thick, a pale lamp-glow core
+    dome = L.k(SC_DOME)
+    C_.paint(dome, nb.mixc(nb.mr(z, mm(56.0), mm(66.0)), hexc("#8E0E0B"), hexc("#D0261B")), 0.12, 0.0)
+    # played with: the print chipped to the tin on the edges and a few knocks on the faces, fine
+    # scuffs along the sides, a little rust in the deepest chips
+    edge = L.edge(mm(1.4), k=4.0)
+    bites = nb.mul(edge, nb.ss(L.noise(300.0, 9, detail=4), 0.5, 0.56))
+    chips = nb.mx(nb.ss(bites, 0.35, 0.45), nb.ss(L.noise(180.0, 10, detail=4, rough=0.65), 0.84, 0.87))
+    chips = nb.mul(nb.mul(paint, nb.inv(glass)), chips)
+    C_.paint(chips, hexc("#BDBFBA"), 0.4, 0.9, -0.4)
+    rust = nb.mul(chips, nb.ss(L.noise(90.0, 11, detail=3), 0.62, 0.7))
+    C_.paint(rust, hexc("#6E4228"), 0.8, 0.1)
+    scuff = nb.mul(nb.mul(paint, side), nb.ss(L.noise(260.0, 12, stretch=(1.0, 0.06, 1.0), detail=2), 0.71, 0.73))
+    C_.paint(nb.mul(scuff, 0.6), hexc("#D9B9A8"), 0.5)
+    # lit, the side the lamp's reflector faces burns, the rest of the dome a dim red round it
+    C_.lights(nb.mul(dome, nb.add(0.16, nb.mul(nb.pw(nb.ss(nb.sub(0.0, L.ny), -0.1, 0.95), 2.0), 0.84))))
+    C_.finish(f.dust, grime=0.35)
+    return C_.surface(bump_dist=0.0008, bump=0.6)
+
+
+# --- pushing it: two pushes rev the flywheel, then it goes -----------------------------------------
+
+def sc_spring(n, target, w, zeta):
+    x, v, out = 0.0, 0.0, []
+    dt = 1.0 / FPS
+    for i in range(n):
+        v += (w * w * (target(i) - x) - 2 * zeta * w * v) * dt
+        x += v * dt
+        out.append(x)
+    return out
+
+
+def sc_push():
+    dt = 1.0 / FPS
+    d0, t0 = SR["stroke"]
+    segs_ = []
+    t = 0.12
+    for k in range(SR["strokes"]):
+        segs_.append((t, t + t0, d0))
+        segs_.append((t + t0 + 0.03, t + 1.6 * t0 + 0.03, -0.75 * d0))
+        t += 1.6 * t0 + 0.08
+    t_rel, shove = t, 0.16
+    a_, b_ = SR["drag"]
+    ts, ss_, vs = [], [], []
+    s_, v, tt, t_stop = 0.0, 0.0, 0.0, None
+    while True:
+        if tt < t_rel:
+            s_ = 0.0
+            for ta, tb, dd in segs_:
+                if tt >= tb:
+                    s_ += dd
+                elif tt > ta:
+                    s_ += dd * smooth(0.0, 1.0, (tt - ta) / (tb - ta))
+            v = (s_ - ss_[-1]) / dt if ss_ else 0.0
+        else:
+            u = tt - t_rel
+            if u < shove:
+                v = SR["v0"] * smooth(0.0, 1.0, u / shove)
+            else:
+                v = max(0.0, v - (a_ + b_ * v) * dt)
+            s_ += v * dt
+            if t_stop is None and u > shove and v <= 0.0:
+                t_stop = tt
+        ts.append(tt)
+        ss_.append(s_)
+        vs.append(v)
+        if t_stop is not None and tt > t_stop + 0.3 + SR["glow"][1] + 0.25:
+            break
+        tt += dt
+    n = len(ts)
+    x = yy = yaw = 0.0
+    tr = {k: [] for k in (("Body", "x"), ("Body", "y"), ("Body", "yaw"), ("FrontWheels", "turn"),
+                          ("RearWheels", "turn"), ("Beacon", "turn"))}
+    fly, ang = 0.0, 0.0
+    for i in range(n):
+        tr[("Body", "x")].append(x)
+        tr[("Body", "y")].append(yy)
+        tr[("Body", "yaw")].append(math.degrees(yaw))
+        turn = math.degrees(ss_[i] / mm(SAZ))
+        tr[("FrontWheels", "turn")].append(turn)
+        tr[("RearWheels", "turn")].append(turn)
+        # the flywheel: wound up by each push forward (its clutch slips going back), then it
+        # drives the car; the roof light turns geared to it
+        if ts[i] < t_rel:
+            wound = sum(min(1.0, max(0.0, (ts[i] - ta) / (tb - ta))) for ta, tb, dd in segs_ if dd > 0)
+            fly = max(fly - 0.3 * dt, 0.35 * wound)
+        else:
+            fly = max(fly - 0.3 * dt, vs[i] / SR["v0"])
+        ang += 360.0 * SR["spin"] * min(fly, 1.0) * dt
+        tr[("Beacon", "turn")].append(ang)
+        ds = (ss_[i] - ss_[i - 1]) if i else 0.0
+        yaw += math.radians(SR["drift"] * math.sin(2 * math.pi * 0.27 * ts[i] + 0.4) * vs[i] / SR["v0"]) * dt
+        x += math.sin(yaw) * ds
+        yy -= math.cos(yaw) * ds
+    af = [(vs[min(i + 1, n - 1)] - vs[max(i - 1, 0)]) / (2 * dt) for i in range(n)]
+    kq = SR["squat"] / (SR["v0"] / shove)
+    pitch = sc_spring(n, lambda i: -kq * max(-12.0, min(af[i], SR["v0"] / shove)), 2 * math.pi * 6.0, 0.3)
+    tr[("Body", "pitch")] = pitch
+    tr[("Body", "roll")] = [SR["rattle"] * min(1.0, abs(vs[i]) / SR["v0"]) ** 0.7
+                            * (0.65 * math.sin(2 * math.pi * 5.3 * t) + 0.35 * math.sin(2 * math.pi * 8.1 * t + 1.3))
+                            for i, t in enumerate(ts)]
+    eps = {"x": 0.0015, "y": 0.0015, "yaw": 0.1, "turn": 2.5, "pitch": 0.04, "roll": 0.06}
+    out = []
+    for (part, ch), vs_ in tr.items():
+        if max(vs_) - min(vs_) < 1e-4:
+            continue
+        out.append((part, ch, rdp(ts, vs_, eps[ch])))
+    # the lamp catches with a flicker on the first push, burns the whole run and dies after it stops
+    g0 = segs_[0][0]
+    up, fade = SR["glow"]
+    out.append(("Beacon", "glow", [(0.0, 0.0), (g0, 0.0), (g0 + 0.04, 0.75, "Quad", "Out"),
+                                   (g0 + 0.09, 0.4), (g0 + up, 1.0, "Quad", "Out"),
+                                   (round(t_stop + 0.3, 3), 1.0),
+                                   (round(t_stop + 0.3 + fade, 3), 0.0, "Sine", "InOut")]))
+    return round(ts[-1], 2), out, t_rel, t_stop, ss_[-1]
+
+
+SC_DUR, SC_TRACKS, SC_REL, SC_STOP, SC_RUN = sc_push()
+SC_TOP = sc_roof_z(BEA["y"])
+BEACON_AT = V(0.0, BEA["y"], SC_TOP + BEA["base"][1] - 0.2)
+BEAM_AT = V(0.0, BEA["y"] - BEA["r"] - 0.9, SC_TOP + BEA["base"][1] + 5.0)
+SC_RED = (255, 48, 36)
+
+SIREN_CAR = kit.Find(
+    "SirenCar",
+    [kit.Part("Body", sc_body),
+     kit.Part("FrontWheels", sc_wheels(True), tuple(V(0.0, SYA[0], SAZ)), "Body", (1, 0, 0)),
+     kit.Part("RearWheels", sc_wheels(False), tuple(V(0.0, SYA[1], SAZ)), "Body", (1, 0, 0)),
+     kit.Part("Beacon", sc_beacon, tuple(BEACON_AT), "Body", (0, 0, 1))],
+    sc_look,
+    lights=[
+        # the beam: a red cone out of the dome's lit side, turning with it, sweeping the walls
+        dict(kind="Spot", part="Beacon", at=tuple(BEAM_AT), face=(0.0, -0.99, -0.14), rgb=SC_RED,
+             brightness=1.4, range=14, angle=50, shadows=True, preview_watts=70.0,
+             preview_blend=0.35),
+        # the dome's own glow on the roof and the floor round it, which also lights at low
+        # graphics, where a close spotlight lights nothing (docs/STUDIO.md)
+        dict(kind="Point", part="Beacon", at=tuple(BEACON_AT + V(0.0, 0.0, 6.0)), rgb=SC_RED,
+             brightness=0.4, range=5, shadows=False, preview_kind="POINT", preview_watts=0.5,
+             preview_size=0.02),
+    ],
+    glow=dict(part="Beacon", strength=2.5, tint=SC_RED, preview=4.0),
+    motions={
+        # two pushes along the floor rev the flywheel (the lamp catches with a flicker, the roof
+        # light starts to turn); let go, it shoots off down the hall, its beam sweeping round,
+        # wandering a little and rattling on its axles, slows as the flywheel runs down and stops;
+        # the light turns slower and slower, then the lamp dies (the game wails the siren)
+        "Push": dict(duration=SC_DUR, focus=(0.0, 0.0, mm(26.0)), distance=1.0, follow="Body",
+                     view=(-1.1, -2.0, 1.0), drop=0.0, tracks=SC_TRACKS),
+    },
+    dust=SC["dust"], seed=SC["seed"], texels=1400,
+)
+
+
+FINDS = [CYMBAL_MONKEY, JACK_IN_THE_BOX, CHATTERING_TEETH, WALKING_ROBOT, WINDUP_MOUSE, TIN_BIRD,
+         SIREN_CAR]
 
 if __name__ == "__main__":
     kit.main("Windups", HERE, FINDS)

@@ -6,9 +6,10 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04e, step 3 of "The second run's plan" below: the toy siren car, then the squeaky
-rubber duck, in `art/finds/windups/` (the newest note has hints for both). The oil lamp's sheets
-still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next touched.
+**Next:** F-04e, step 3 of "The second run's plan" below: finish the toy siren car (half built,
+the newest note says exactly where it stands), then the squeaky rubber duck, in
+`art/finds/windups/` (the F-04d2 note has the duck's hints). The oil lamp's sheets still want
+`ACTIONS= scripts/art.sh set lights renders OilLamp` when next touched.
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -88,6 +89,31 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04e (the toy siren car half built: stopped at the context cap; not ticked).**
+  `SirenCar` in `windups/build.py` (spec `SIREN` and `SIREN_RUN`; `Finds/Order` has it), four
+  parts: `Body` (root: the die-cast car's sections, D-200, at 140 mm; tin pan, the friction
+  motor's case, swept tin bumpers with over-riders, grille, headlamps, the roof light's tin base),
+  `FrontWheels` and `RearWheels` (two tyres with printed whitewalls on tin hubcaps and their axle
+  each, turning about X), `Beacon` (the red fluted dome turning about Z, the glow part, carrying a
+  red Spot that sweeps round and a weak Point). Motion `Push`: two pushes rev the flywheel (the
+  lamp catches with a flicker, the dome starts turning), it shoots off at 5.4 studs/s, drifts,
+  rattles, coasts about 10 studs as the flywheel runs down and stops; the dome slows with it, the
+  lamp dies after. Baked 1024 at 766 texels a stud, 8,212 triangles (the wheels' lathes are most
+  of it: trim `segs` if Studio says so). Luau exported. Not uploaded or imported. **References:**
+  the V&A's O1172564 (a tin friction fire chief's car, 11 cm) and O1172567 (a highway patrol
+  car, 11.2 cm), Duckwells' 1960s Ichiko friction patrol car (9.25 in; its roof lights turn as it
+  rolls). README not written yet. **Judged once** (first quick sheets, looked at): it reads as a
+  red-and-cream 1960s tin chief's car with a roof light, roundel "7" and whitewalls. Fixed in code
+  but **not rendered again**: dust 0 (a pale film blotched the glossy bonnet and boot), tail lamps
+  as bright lenses (they read as silver brackets), the plate's barcode stripes made glyph cells,
+  fewer and broader window glints, rougher bright tin (hubcaps read black), a bigger dome
+  (r 8.8, h 15), the dome's lit side hotter than the rest, the beam tilted 8 degrees down with a
+  stronger preview so its sweep shows on the filmstrip's floor. **Next session:** rebake, render
+  (`scripts/art.sh set windups textures SirenCar`, then `... renders SirenCar`: a second `quick`
+  printed only its header and rendered nothing, cause not found), look beside the references,
+  fix, render again, then README, D-number, upload and import, tick. **Watch:** the beam's sweep
+  in the filmstrip (it barely showed before the tilt); whether the lit dome still washes pink.
 
 - **Nov 16, F-04d2 (the clockwork tin bird built, judged and in the place; step 2 done).**
   `TinBird` in `windups/build.py`, README, D-235. **Judged and fixed:** the head read as a glossy
