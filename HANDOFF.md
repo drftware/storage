@@ -2,7 +2,7 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-15, session 195 (B-05b2b, D-218) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-15, session 196 (the sleeper's walk measured; no code) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
 - B-05 packed units are done. Seen in Play (floor 3, seed 2000013): Unit302's stacks stand true
@@ -14,7 +14,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   because Studio stopped drawing frames mid-session (`docs/STUDIO.md`, "When Studio stops
   drawing"). OWNER.md "Walk a packed unit" has the exact steps.
 - Two polish lines under B-05b2b in ROADMAP: a sleeper walks through a box in its clearing; a
-  guard's box still hides.
+  guard's box still hides. Session 196 measured the first one and stopped at its context limit,
+  with no code changed. The clearing is too shallow for the walk to go round the box, so the
+  box has to stand behind the sleeper. The ROADMAP line has the numbers and the fix.
 - Studio's Workspace `DevFloorSeed` is back to 7 and `DevFloorNumber` cleared, as found.
 
 ## Next task: S3-03 Cut Free, Free a Friend, Free Everyone
