@@ -424,3 +424,66 @@ SQUEEZE = dict(
     # let go: the vinyl springs back past its size and wobbles still (s, stretch)
     nod=(4.0, -2.4, 0.9),  # degrees its nose dips at the squash, lifts on the bounce, then dips
 )
+
+# --- The kazoo: a classic pressed-tin kazoo of our own --------------------------------------------
+# References (README): the Kazoo Museum's board of the 18 pressings that make a tin kazoo
+# (Wikimedia Commons, "Kazoo manufacturing steps.JPG": a tin top embossed with a name and three
+# raised rings, a red-printed bottom half crimped over its edges, both ends turned under, a
+# threaded collar pressed onto the top, a cap with a punched hole screwed over a card ring that
+# holds the skin), "2023 Kazoo (1).jpg" (the submarine taper, the ridge down the top, the cap's
+# rolled lip and threads, brushed metal), and the Grover Center's 1970s toy kazoo (1985.006.140:
+# painted, two halves crimped together, three indentations on top). Listings give 4.75 in
+# (121 mm) long. Ours: a tin top, a red bottom, a tin cap, a cream wax-paper skin. Lengths run
+# along Y from the mouth end (-Y, the wide flattened end you hum into) to the narrow tail (+Y);
+# the bottom lies on the floor at z = 0.
+KAZOO = dict(
+    length=121.0,                 # mouth lip to tail lip (mm)
+    # The museum board's finished kazoo (measured off the photo): nearly full width from the
+    # mouth end back to the cap, then a long straight taper to the narrow tail, a submarine.
+    w=(11.5, 11.1, 4.9),          # half width at the mouth end, at the knee, at the tail
+    h=(12.6, 12.2, 9.0),          # height of the ridge down the top, the same three places
+    knee=(0.30, 0.05),            # where the taper starts (a fraction of the length back from
+    # the mouth) and how softly it bends there
+    seam=0.46,                    # where the halves meet up the sides, a fraction of the height:
+    # the red bottom half is the shallower one, its edge crimped over the top's (0.40, as the
+    # references, showed the red as a thin line from any angle above; a touch bolder)
+    top_sq=2.5, bot_sq=3.4,       # how square the top and bottom halves' sections are
+    # (2 an oval; the bottom is flatter, so it lies still on the floor)
+    ridge=0.11,                   # the crease down the middle of the top: how much it peaks
+    bead=(0.42, 0.75),            # the crimped seam's bead along each side: how far it stands
+    # out and its half height (mm), just under where the halves meet
+    lip=(0.55, 0.45),             # the rolled lips' radius at the mouth end and the tail (mm)
+    deep=(13.0, 9.0),             # how far into each end you can see before it's dark (mm)
+    cap_at=39.0,                  # the cap's middle, back from the mouth end (mm)
+    collar=dict(r=9.4, ri=8.6, up=4.0, low=4.4),
+    # the threaded collar pressed onto the top: outer and inner radius, how far it stands up off
+    # the ridge and reaches down into the tube (mm); as wide as the body (10.4) it stood out of
+    # the body's rounded sides under the cap
+    skin=dict(r=8.9, dome=0.25, t=0.12, on=0.05),
+    # the wax-paper skin on its card, resting on the collar's rim: radius, how far it bulges up,
+    # its thickness, how far above the rim it sits (mm)
+    cap=dict(r=12.6, skirt=11.95, gap=0.7, top=6.0, hole=4.6, dish=0.55, bead=0.7),
+    # the screw cap, wider than the body: its rolled rim's outer radius, the skirt's radius, how
+    # far above the ridge its rim stops, its top's height, the punched hole's radius, how far its
+    # top dishes down to the hole, the rim's roll (mm); its foot turns in under to the collar's
+    # thread, as a screw cap's does
+    rings=[(55.0, 3.0), (69.5, 2.75), (83.5, 2.45)],
+    # the three rings pressed into the top (back from the mouth end, radius, mm)
+    mark=dict(at=13.5, r=(5.0, 3.1), star=2.2),  # our maker's mark: an oval with a star, pressed
+    # into the top between the mouth end and the cap (back from the mouth end, half length and
+    # half width, the star's radius)
+    dust=0.35, seed=97.0,
+)
+
+# How it plays (the Blow action): lifted to the lips, the mouth end tipping up; the hum starts
+# and the paper skin under the cap shivers, a buzz too fast to see but for its flicker, swelling
+# a little through the note; the note stops, the skin stills, and it's lowered back.
+BLOW = dict(
+    lift=(0.32, 3.5, -6.0),       # s to bring it up, mm it rises, degrees its mouth end tips up
+    hum=(0.36, 1.58),             # the note starts and stops (s)
+    buzz=24.0,                    # the skin's flicks a second (every frame of a 24 fps preview:
+    # the real buzz is a few hundred, too fast to see, so it shows as a shimmer)
+    skin=(0.2, 0.5),              # how far it flicks (mm) and how much its bulge pumps (stretch)
+    swell=1.6,                    # the note leans in: degrees more tip at its loudest
+    lower=(1.62, 2.1),            # lowered back from, and at rest by (s)
+)

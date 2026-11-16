@@ -12,9 +12,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   Mannequin, it came at the player, froze 9.5 studs from the lantern, held 35 s with nobody near
   and walked on as the light ran out. New Studio hook: Workspace `StandMannequin`.
 - F-G1b is done but for F-G1b3c (the RC car), which waits on `OWNER.md`.
-- Find art (`art/finds/WAVES.md`): the toy siren car and the squeaky rubber duck are built and
-  in the place (Nov 16, F-04e2); next the kazoo and the toy drum (F-04f, step 4 of the second
-  run's plan). Stage HEAD plus your own lines only.
+- Find art (`art/finds/WAVES.md`): the kazoo is half built (Nov 16, F-04f: modelled, baked,
+  judged once; its second look, Blow motion, export and import remain); then the toy drum
+  (step 4 of the second run's plan). Stage HEAD plus your own lines only.
 
 ## Next task: S3-05a Two players left behind land on top of each other, and can't be cut free
 The moment: left behind, you wake shut in a unit of your own, wrapped, bang on the door, and a

@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04f, the kazoo and the toy drum (step 4), in `art/finds/windups/`; the newest note has
-their plans. The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp`
+**Next:** F-04f, finish the kazoo (half built: the newest note says exactly where it stands),
+then the toy drum (step 4), in `art/finds/windups/`; the F-04e2 note has the drum's plan. The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp`
 when next touched.
 
 ## The second run's plan (owner's yes, Nov 15)
@@ -88,6 +88,36 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04f (the kazoo half built: stopped at the context cap; not ticked; drum not
+  started).** `Kazoo` in `windups/build.py` (`kz_*`, `kazoo_look`, `kazoo_blow`; spec `KAZOO`,
+  `BLOW`; in `FINDS`), parts `Body` (root: the shell, both ends' insides, the collar, the cap)
+  and `Skin` (the wax-paper disc under the cap, its pivot at its base on the collar's rim, its
+  axis square to the top). **References:** Wikimedia Commons' "Kazoo manufacturing steps.JPG"
+  (the Kazoo Museum's board of the 18 pressings: tin top with a name and three pressed rings,
+  red-printed bottom half crimped over its edges, ends turned under, threaded collar, dished
+  cap with a punched hole over a card ring and skin; open the original, 3470 px, and scroll),
+  "2023 Kazoo (1).jpg" (submarine taper, ridge down the top, brushed metal), the Grover Center's
+  1970s toy kazoo (hub.catalogit.app, 1985.006.140: painted, two halves crimped, three
+  indentations). Listings: 4.75 in (121 mm). Measured off the board: nearly full width (23 mm)
+  from the mouth to the cap, then a straight taper to a 10 mm tail; cap about 26 mm across, its
+  middle 39 mm back from the mouth. **Judged once** (quick sheets): it reads as a kazoo at
+  once. Fixed and rebaked (3,740 triangles, 1024 at 1,953 texels a stud), **not yet looked
+  at:** the collar stood out of the body's rounded sides under the cap (now r 9.4, the cap's
+  foot turned in under to it), the red half showed only as a thin line (seam 0.40 to 0.46),
+  tarnish blotches softened, and **the pressed rings and star mark were missing from the normal
+  map.** **Trap (kit, worth STUDIO.md):** `Coat.paint(height=)` is in units of the surface's
+  `bump_dist` (Blender's Bump node multiplies Height by Distance), not studs: `mm(0.3)` with
+  `bump_dist` 0.0006 is nothing. The kazoo now uses `kz_h(mm) = mm / 0.15` with `bump_dist`
+  `mm(0.15)`, bump 1.0. The duck's seam and wing grooves (`mm(...)` heights) are flat for the
+  same reason: F-04k should fix them. **Left to do:** look at `kazoo-front/back/held/unit`
+  (the committed sheets are this second bake's quick ones) beside the references; check the
+  rings and star read and the skin through the hole isn't too dark; fix and render again;
+  `scripts/art.sh set windups renders Kazoo` (the Blow filmstrip has never been rendered:
+  check the skin's shimmer reads and the mouth end tips up toward the lips, pitch negative);
+  export (restore the set's other FBX after; add `Kazoo = { "Blow" }` to
+  `src/shared/Finds/Order.luau`), README section, upload and import if Studio is in Edit,
+  tick. Then the drum (F-04e2 note's plan).
 
 - **Nov 16, F-04e2 (the squeaky rubber duck built, judged and in the place; step 3 done).**
   `RubberDuck` in `windups/build.py`, README, D-237. Uploaded and imported in Edit

@@ -4284,8 +4284,331 @@ RUBBER_DUCK = kit.Find(
 )
 
 
+# --- The kazoo (F-04f) ---------------------------------------------------------------------------
+# A classic pressed-tin kazoo of our own (README): a tin top with a crease down its middle, three
+# rings and our star mark pressed into it, a red-printed bottom half crimped over its edges, both
+# ends turned under, a threaded collar on top and a dished screw cap with a punched hole, through
+# which the cream wax-paper skin shows. Hum into the wide end and the skin buzzes.
+
+KZ = K.KAZOO
+BW = K.BLOW
+(KZ_SHELL, KZ_IN, KZ_CAP, KZ_COLLAR, KZ_SKIN) = range(66, 71)
+KZ_L = KZ["length"]
+KY0 = -KZ_L / 2            # the mouth end's lip (mm)
+
+
+def kz_soft(d):
+    """max(d, 0), its corner rounded over KZ.knee's softness."""
+    k = KZ["knee"][1]
+    return k * math.log1p(math.exp(d / k)) if d < 8 * k else d
+
+
+def kz_dims(t):
+    """Half width, ridge height and seam height (mm) a fraction t back from the mouth end."""
+    kn = KZ["knee"][0]
+
+    def run(v):
+        a = (v[0] - v[1]) / kn
+        b = (v[1] - v[2]) / (1.0 - kn) - a
+        return v[0] - a * t - b * kz_soft(t - kn)
+    H = run(KZ["h"])
+    return run(KZ["w"]), H, KZ["seam"] * H
+
+
+def kz_xz(t, phi, bead=1.0):
+    """A point round the section at t (x across, z up, mm): phi 0 at the right-hand seam, up
+    over the ridge to the left seam at pi, then round under the bottom."""
+    w, H, ys = kz_dims(t)
+    c, s = math.cos(phi), math.sin(phi)
+    if s >= 0.0:
+        u, v = abs(c) ** (2.0 / KZ["top_sq"]), s ** (2.0 / KZ["top_sq"])
+        rn = 1.0 - KZ["ridge"] * math.sqrt(0.003)
+        z = ys + (H - ys) * v * (1.0 - KZ["ridge"] * math.sqrt(u * u + 0.003)) / rn
+    else:
+        u, v = abs(c) ** (2.0 / KZ["bot_sq"]), (-s) ** (2.0 / KZ["bot_sq"])
+        z = ys * (1.0 - v)
+    x = math.copysign(w * u, c)
+    if bead:
+        b, hh = KZ["bead"]
+        x += math.copysign(b * bead * math.exp(-((z - (ys - 0.2)) / hh) ** 2), c)
+    return x, z
+
+
+def kz_section(t, n, bead=1.0, inset=0.0):
+    pts = [kz_xz(t, 2 * math.pi * j / n, bead) for j in range(n)]
+    if not inset:
+        return pts
+    out = []
+    for j, (x, z) in enumerate(pts):
+        (xa, za), (xb, zb) = pts[j - 1], pts[(j + 1) % n]
+        tx, tz = xb - xa, zb - za
+        ln = math.hypot(tx, tz) or 1.0
+        out.append((x - inset * tz / ln, z + inset * tx / ln))
+    return out
+
+
+def kz_ring(sec, Y):
+    return [(mm(x), mm(Y), mm(z)) for x, z in sec]
+
+
+def kz_lip(rings, t, Y_end, r, n, steps, toward):
+    """The rolled lip at an end: from the outside round to the inside (toward = -1, the mouth),
+    or from the inside round to the outside (toward = +1, the tail)."""
+    out = kz_section(t, n, 0.0)
+    mid = kz_section(t, n, 0.0, r)
+    for i in range(steps + 1):
+        a = math.pi * i / steps if toward < 0 else math.pi * (1.0 - i / steps)
+        ca, sa = math.cos(a), math.sin(a)
+        sec = [(mx + ca * (ox - mx), mz + ca * (oz - mz)) for (ox, oz), (mx, mz) in zip(out, mid)]
+        rings.append(kz_ring(sec, Y_end - toward * r * (1.0 - sa)))
+
+
+def kz_depth(s, end, n, steps):
+    """The inside of an end, seen past its lip: the wall a few mm in, then a dark wall across."""
+    r = KZ["lip"][0 if end < 0 else 1]
+    d = KZ["deep"][0 if end < 0 else 1]
+    Y_lip = (KY0 + r) if end < 0 else (-KY0 - r)
+    Y_deep = (KY0 + d) if end < 0 else (-KY0 - d)
+    rings = []
+    for i in range(steps + 1):
+        Y = Y_lip + (Y_deep - Y_lip) * i / steps if end < 0 else Y_deep + (Y_lip - Y_deep) * i / steps
+        rings.append(kz_ring(kz_section((Y - KY0) / KZ_L, n, 0.0, 2 * r), Y))
+    zc = sum(p[2] for p in rings[0 if end > 0 else -1]) / n
+    pole = [(0.0, mm(Y_deep), zc)]
+    rings = [pole] + rings if end > 0 else rings + [pole]
+    s.loft(rings, KZ_IN)
+
+
+CAP_T = KZ["cap_at"] / KZ_L
+_, CAP_H, _ = kz_dims(CAP_T)
+# the collar stands square to the top, which falls a little toward the tail
+_slope = (kz_dims(CAP_T + 0.01)[1] - kz_dims(CAP_T - 0.01)[1]) / (0.02 * KZ_L)
+CAP_R = Matrix.Rotation(math.atan(_slope), 4, "X")
+CAP_AT = V(0.0, KY0 + KZ["cap_at"], CAP_H)
+CAP_M = T(CAP_AT) @ CAP_R
+SK = KZ["skin"]
+SKIN_AT = CAP_AT + (CAP_R.to_3x3() @ V(0.0, 0.0, KZ["collar"]["up"] + SK["on"]))
+SKIN_AXIS = tuple(CAP_R.to_3x3() @ Vector((0.0, 0.0, 1.0)))
+
+
+def kz_turret(s, hi):
+    """The threaded collar and the dished screw cap over it (mm about the collar's foot)."""
+    co, cp = KZ["collar"], KZ["cap"]
+    r, ri, up = co["r"], co["ri"], co["up"]
+    prof = [(r - 0.3, -co["low"]), (r, -co["low"]), (r, 0.3)]
+    if hi:
+        for zc in (0.95, 2.3):          # the rolled thread, where it shows under the cap's rim
+            prof += [(r, zc - 0.4), (r + 0.16, zc - 0.22), (r + 0.24, zc), (r + 0.16, zc + 0.22), (r, zc + 0.4)]
+    prof += [(r, up - 0.35), (r - 0.12, up - 0.08), (r - 0.4, up), (ri + 0.3, up - 0.05),
+             (ri + 0.05, up - 0.3), (ri, up - 0.6), (ri, 0.0), (0.0, 0.0)]
+    s.lathe([(mm(a), mm(b)) for a, b in prof], KZ_COLLAR, segs(hi, 28), CAP_M)
+    # the cap: up the outside from its rolled rim, over the dished top and the hole's turned-down
+    # edge, then back out under the top and down inside the skirt
+    ro, rs, g, top, hole, dish, bd = (cp[k] for k in ("r", "skirt", "gap", "top", "hole", "dish", "bead"))
+    rin = rs - 0.3
+    rc = r + 0.3                        # the foot's inner edge, just clear of the collar's thread
+    bc = (ro - bd, g + bd)              # the rolled rim's middle
+    if hi:
+        foot = [(rc + 0.15, g + 0.42), (rc, g + 0.3), (rc + 0.05, g + 0.08), (rc + 0.25, g)]
+        angs = [270, 290, 315, 340, 360, 380, 405, 425, 445]
+        rim = [(bc[0] + bd * math.cos(math.radians(a)), bc[1] + bd * math.sin(math.radians(a))) for a in angs]
+        skirt = [(rs, g + 2 * bd + 0.15)]
+        for zc in (g + 2.15, g + 2.85):             # the thread rolled into the skirt
+            skirt += [(rs, zc - 0.28), (rs - 0.1, zc - 0.12), (rs - 0.14, zc), (rs - 0.1, zc + 0.12), (rs, zc + 0.28)]
+        n_d = 9
+        dishp = [(rs - 0.05, top - 0.6), (rs - 0.2, top - 0.25), (rs - 0.45, top - 0.06), (rs - 0.8, top)]
+        for i in range(1, n_d + 1):
+            f = i / n_d
+            rr = (rs - 0.8) + ((hole + 0.75) - (rs - 0.8)) * f
+            dishp.append((rr, top - dish * (1.0 - (1.0 - f) ** 2)))
+        edge = [(hole + 0.4, top - dish - 0.08), (hole + 0.12, top - dish - 0.22), (hole, top - dish - 0.45),
+                (hole + 0.08, top - dish - 0.62), (hole + 0.3, top - dish - 0.7)]
+        under = [(hole + 0.9, top - dish - 0.38), (rs - 1.0, top - 0.33), (rin, top - 0.5), (rin, g + 2 * bd),
+                 (rin - 0.3, g + 0.45), (rc + 0.6, g + 0.42)]
+        prof = foot + rim + skirt + dishp + edge + under
+    else:
+        prof = [(rc + 0.1, g + 0.4), (rc, g + 0.1), (rc + 0.3, g), (ro - bd, g), (ro, g + bd), (rs, g + 2 * bd),
+                (rs, top - 0.45), (rs - 0.6, top), (hole + 0.75, top - dish), (hole, top - dish - 0.45),
+                (hole + 0.6, top - dish - 0.55), (rin, top - 0.5), (rin, g + 0.45), (rc + 0.4, g + 0.42)]
+    s.lathe([(mm(a), mm(b)) for a, b in prof], KZ_CAP, segs(hi, 28), CAP_M)
+
+
+def kz_body(hi):
+    s = Shape()
+    n = 192 if hi else 40
+    nl = 118 if hi else 20
+    steps = 8 if hi else 3
+    rm, rt = KZ["lip"]
+    tm, tt = rm / KZ_L, 1.0 - rt / KZ_L
+    rings = []
+    # from inside the tail, round its lip, along the outside to the mouth end, round its lip
+    kz_lip(rings, tt, -KY0, rt, n, steps, +1)
+    for i in range(1, nl):
+        t = tt + (tm - tt) * i / nl
+        Y = KY0 + t * KZ_L
+        fade = min(ss_(t * KZ_L - rm, 0.6, 3.0), ss_((1.0 - t) * KZ_L - rt, 0.6, 3.0))
+        rings.append(kz_ring(kz_section(t, n, fade if hi else 0.0), Y))
+    kz_lip(rings, tm, KY0, rm, n, steps, -1)
+    s.loft(rings, KZ_SHELL)
+    kz_depth(s, +1, n, 4 if hi else 1)
+    kz_depth(s, -1, n, 4 if hi else 1)
+    kz_turret(s, hi)
+    return s
+
+
+def ss_(v, a, b):
+    f = min(max((v - a) / (b - a), 0.0), 1.0)
+    return f * f * (3 - 2 * f)
+
+
+def kz_skin(hi):
+    s = Shape()
+    r, d, t = SK["r"], SK["dome"], SK["t"]
+    fr = [0.0, 0.3, 0.55, 0.75, 0.9, 1.0] if hi else [0.0, 0.6, 1.0]
+    lo = [(r * f, d * (1.0 - f * f)) for f in fr]
+    prof = lo + [(r, t)] + [(r * f, t + d * (1.0 - f * f)) for f in reversed(fr[:-1])]
+    s.lathe([(mm(a), mm(b)) for a, b in prof], KZ_SKIN, segs(hi, 20),
+            T(SKIN_AT) @ CAP_R)
+    return s
+
+
+KZ_BD = mm(0.15)            # the look's bump distance: a height of 1 stands 0.15 mm proud
+
+
+def kz_h(v):
+    """A height in mm, in the bump's units (the Bump node multiplies height by its distance)."""
+    return v / 0.15
+
+
+def kazoo_look(L, f):
+    nb = L.nb
+    xm, ym, zm = nb.mul(L.x, K.STUD_MM), nb.mul(L.y, K.STUD_MM), nb.mul(L.z, K.STUD_MM)
+
+    def sq(v):
+        return nb.mul(v, v)
+
+    shell, inside = L.k(KZ_SHELL), L.k(KZ_IN)
+    cap, collar, skin = L.k(KZ_CAP), L.k(KZ_COLLAR), L.k(KZ_SKIN)
+    # where the halves meet: the seam's height along the kazoo (KZ.seam of the ridge's height)
+    kn = KZ["knee"][0]
+    h0, h1, h2 = KZ["h"]
+    a = (h0 - h1) / kn
+    b = (h1 - h2) / (1.0 - kn) - a
+    t = nb.mul(nb.sub(ym, KY0), 1.0 / KZ_L)
+    H = nb.sub(nb.sub(h0, nb.mul(t, a)), nb.mul(nb.math("MAXIMUM", nb.sub(t, kn), 0.0), b))
+    up_seam = nb.sub(zm, nb.mul(H, KZ["seam"]))
+    red = nb.mul(shell, nb.sub(1.0, nb.ss(up_seam, 0.3, 0.42)))
+    tin = nb.mul(shell, nb.ss(up_seam, 0.3, 0.42))
+    topf = nb.mul(tin, nb.ss(L.nz, 0.55, 0.8))
+
+    # tinplate: a warm pale lacquered tin, brushed in fine streaks down its length
+    streak = L.noise(700.0, 1, stretch=(1.0, 0.025, 1.0), detail=3)
+    TIN = nb.tint(hexc("#D8D2C1"), nb.mr(streak, 0.3, 0.7, 0.9, 1.05))
+    C = Coat(L, TIN, nb.mr(L.noise(500.0, 2, stretch=(1.0, 0.03, 1.0), detail=2), 0.3, 0.7, 0.24, 0.34), 0.8)
+    # the bottom half printed red, a glossy lacquered print
+    RED = nb.tint(hexc("#B4241B"), nb.mr(L.noise(60.0, 3, detail=2), 0.3, 0.7, 0.95, 1.04))
+    C.paint(red, RED, nb.mr(L.noise(40.0, 4, detail=1), 0.3, 0.7, 0.26, 0.32), 0.0)
+    # the crimp: the red edge folded over the tin, a fine dark line where it grips
+    crimp = nb.mul(shell, nb.mul(nb.ss(up_seam, 0.18, 0.32), nb.sub(1.0, nb.ss(up_seam, 0.42, 0.6))))
+    C.paint(nb.mul(crimp, 0.7), hexc("#3A2A22"), 0.5, 0.2, kz_h(-0.06))
+    # the inside: bare tin, dull, darkening into the tube
+    C.paint(inside, hexc("#6A665C"), 0.5, 0.6)
+    # the three rings pressed into the top, each a round groove with its middle left standing
+    for at, R in KZ["rings"]:
+        d = nb.math("SQRT", nb.add(sq(xm), sq(nb.sub(ym, KY0 + at))))
+        groove = nb.mul(nb.ss(d, 0.42 * R, 0.62 * R), nb.sub(1.0, nb.ss(d, 0.84 * R, 1.02 * R)))
+        C.paint(nb.mul(topf, groove), None, None, None, kz_h(-0.3))
+        C.paint(nb.mul(nb.mul(topf, groove), 0.35), hexc("#9D9682"))
+    # our maker's mark: a raised oval rim with a five-point star in it
+    mk = KZ["mark"]
+    my = nb.sub(ym, KY0 + mk["at"])
+    e = nb.math("SQRT", nb.add(sq(nb.mul(xm, 1.0 / mk["r"][1])), sq(nb.mul(my, 1.0 / mk["r"][0]))))
+    rim = nb.mul(nb.ss(e, 0.76, 0.82), nb.sub(1.0, nb.ss(e, 0.93, 1.0)))
+    rs = nb.math("SQRT", nb.add(sq(xm), sq(my)))
+    th = nb.math("ARCTAN2", xm, nb.sub(0.0, my))
+    lobe = nb.pw(nb.add(0.5, nb.mul(nb.math("COSINE", nb.mul(th, 5.0)), 0.5)), 2.4)
+    edge_r = nb.mul(nb.add(0.4, nb.mul(lobe, 0.6)), mk["star"])
+    star = nb.sub(1.0, nb.ss(nb.sub(rs, edge_r), -0.1, 0.1))
+    C.paint(nb.mul(topf, nb.add(rim, star, clamp=True)), None, 0.22, None, kz_h(0.17))
+    # the cap and collar: the same tin, the cap a little greyer and handled more
+    CAPT = nb.tint(hexc("#D3CFC3"), nb.mr(L.noise(300.0, 5, detail=3), 0.3, 0.7, 0.9, 1.04))
+    C.paint(nb.add(cap, collar, clamp=True), CAPT, nb.mr(L.noise(350.0, 6, detail=2), 0.3, 0.7, 0.24, 0.32), 0.8)
+    rimb = nb.mul(cap, L.edge(mm(0.5), k=4.0))
+    C.paint(nb.mul(rimb, 0.6), hexc("#ECE9DF"), 0.18)
+    # the wax-paper skin: cream, faintly crinkled, a little yellowed toward its edge
+    sk_r = nb.math("SQRT", nb.add(sq(xm), sq(nb.sub(ym, KY0 + KZ["cap_at"]))))
+    PAPER = nb.tint(hexc("#F1E9D2"), nb.mr(L.noise(160.0, 7, detail=3), 0.3, 0.7, 0.93, 1.03))
+    C.paint(skin, nb.mixc(nb.ss(sk_r, 3.0, 8.0), PAPER, hexc("#E2D2A8")), 0.42, 0.0,
+            nb.mul(L.noise(900.0, 8, detail=3), kz_h(0.03)))
+    # handled: tarnish where fingers hold it near the mouth end, fine scratches down its length,
+    # the red rubbed thin on the bottom where it's been slid about, chipped at the lips and seam
+    hold = nb.mul(tin, nb.mul(nb.sub(1.0, nb.ss(ym, -25.0, 5.0)), nb.ss(L.noise(45.0, 9, detail=4), 0.5, 0.68)))
+    C.paint(nb.mul(hold, 0.4), hexc("#A39A84"), 0.42)
+    scr = nb.ss(L.noise(1100.0, 10, stretch=(1.0, 0.018, 1.0), detail=2), 0.73, 0.76)
+    C.paint(nb.mul(nb.mul(nb.add(tin, cap, clamp=True), scr), 0.5), hexc("#EEEBE2"), 0.2)
+    C.paint(nb.mul(nb.mul(red, scr), 0.5), hexc("#C9C4B6"), 0.3, 0.8)
+    under = nb.mul(red, nb.ss(nb.sub(0.0, L.nz), 0.6, 0.85))
+    C.paint(nb.mul(under, nb.ss(L.noise(80.0, 11, stretch=(1.0, 0.2, 1.0), detail=3), 0.45, 0.7)),
+            hexc("#A23A2E"), 0.55)
+    ends = nb.add(nb.sub(1.0, nb.ss(ym, KY0 + 1.0, KY0 + 3.0)), nb.ss(ym, -KY0 - 3.0, -KY0 - 1.0), clamp=True)
+    chips = C.enamel_wear(nb.mul(red, nb.add(nb.mul(ends, 0.9), nb.mul(crimp, 0.5), clamp=True)),
+                          hexc("#C4BFB1"), 12, 1.0)
+    rust = nb.mul(chips, nb.ss(L.noise(120.0, 13, detail=3), 0.55, 0.66))
+    C.paint(rust, hexc("#7A4A2A"), 0.75, 0.1)
+    C.finish(f.dust, grime=0.4)
+    return C.surface(bump_dist=KZ_BD, bump=1.0)
+
+
+# --- how it plays ---------------------------------------------------------------------------------
+
+def kazoo_blow():
+    """Lifted to the lips, the mouth end tipping up; the note starts and the skin under the cap
+    shivers, swelling a little; the note stops, the skin stills, and it's lowered back."""
+    lt, rise, tip = BW["lift"]
+    h0, h1 = BW["hum"]
+    l0, l1 = BW["lower"]
+    sw = BW["swell"]
+    z = [(0.0, 0.0), (lt * 0.8, mm(rise * 1.08), "Sine", "InOut"), (lt + 0.06, mm(rise)),
+         (l0, mm(rise)), (l1 - 0.14, mm(-0.3), "Sine", "InOut"), (l1, 0.0)]
+    pitch = [(0.0, 0.0), (lt * 0.85, tip * 1.1, "Sine", "InOut"), (lt + 0.08, tip),
+             (h0 + 0.45, tip - sw), (h1 - 0.15, tip - 0.35 * sw), (l0, tip),
+             (l1 - 0.12, 0.6, "Sine", "InOut"), (l1, 0.0)]
+    mv, st = BW["skin"]
+    step = 1.0 / BW["buzz"]
+    move, stretch = [(0.0, 0.0), (h0, 0.0)], [(0.0, 1.0), (h0, 1.0)]
+    i, t = 1, h0 + step
+    while t < h1 + 0.1:
+        att = min((t - h0) / 0.07, 1.0)
+        rel = 1.0 - min(max((t - h1) / 0.1, 0.0), 1.0)
+        amp = att * rel * (0.82 + 0.18 * math.sin(math.pi * min((t - h0) / (h1 - h0), 1.0)))
+        sg = 1.0 if i % 2 else -1.0
+        move.append((round(t, 4), mm(mv) * amp * sg, "Linear", "InOut"))
+        stretch.append((round(t, 4), 1.0 + st * amp * sg, "Linear", "InOut"))
+        i, t = i + 1, t + step
+    move.append((round(h1 + 0.14, 4), 0.0))
+    stretch.append((round(h1 + 0.14, 4), 1.0))
+    return l1, [("Body", "z", z), ("Body", "pitch", pitch), ("Skin", "move", move), ("Skin", "stretch", stretch)]
+
+
+KB_DUR, KB_TRACKS = kazoo_blow()
+
+KAZOO = kit.Find(
+    "Kazoo",
+    [kit.Part("Body", kz_body),
+     kit.Part("Skin", kz_skin, tuple(SKIN_AT), "Body", SKIN_AXIS)],
+    kazoo_look,
+    motions={
+        # put to the lips and hummed into: the skin under the cap buzzes (the game plays the
+        # note here), swelling as the note leans in, then stills, and it's lowered
+        "Blow": dict(duration=KB_DUR, focus=tuple(CAP_AT + V(0.0, 0.0, 4.0)), distance=0.8,
+                     view=(-1.1, -2.0, 1.5), drop=0.0, tracks=KB_TRACKS),
+    },
+    dust=KZ["dust"], seed=KZ["seed"], texels=1100,
+)
+
+
 FINDS = [CYMBAL_MONKEY, JACK_IN_THE_BOX, CHATTERING_TEETH, WALKING_ROBOT, WINDUP_MOUSE, TIN_BIRD,
-         SIREN_CAR, RUBBER_DUCK]
+         SIREN_CAR, RUBBER_DUCK, KAZOO]
 
 if __name__ == "__main__":
     kit.main("Windups", HERE, FINDS)
