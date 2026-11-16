@@ -619,3 +619,83 @@ PULL = dict(
     end=3.45,                     # all still by (s); it stops at 1305 degrees: three turns and
     # five animals on. The game picks the animal by adding a multiple of 45 to every spin key.
 )
+
+
+# --- The pull-string cowboy doll: a 1960s talking doll in its own cowboy clothes ---------------
+# References (README): Mattel's 1961 Matty and Sister Belle are 16 in (406 mm) tall, a stuffed
+# cloth body sewn to a vinyl face with painted features, yarn hair, a pull-string talker with a
+# plastic ring on a cord; the 1964 Drowsy is 14 in with vinyl hands; a 1949 cowboy doll has a
+# vinyl face, a felt hat, a fringed vest over a check shirt. Ours sits with its legs out, as
+# those photos show them: a ginger kid in a cream felt hat, a green spotted bandana, a blue
+# check shirt, a tan suede vest fringed at the hem, jeans turned up over black boots, and a
+# white ring on a cord out of the middle of its back. Its own clothes and face: no cow print,
+# no star, no brown hat.
+DOLL = dict(
+    # the stuffed body, seat to neck: (z, half wide, half deep, middle in y) in mm
+    torso=[(1.0, 0.0, 0.0, 6.0), (4.0, 44.0, 35.0, 6.0), (14.0, 58.0, 43.0, 5.0),
+           (30.0, 63.0, 46.0, 4.0), (52.0, 61.0, 45.0, 4.0), (76.0, 57.0, 43.0, 4.5),
+           (100.0, 58.0, 42.0, 5.0), (122.0, 59.0, 40.0, 6.0), (138.0, 56.0, 37.0, 7.0),
+           (150.0, 48.0, 33.0, 8.0), (158.0, 35.0, 27.0, 8.0), (164.0, 21.0, 19.0, 8.0),
+           (168.0, 0.0, 0.0, 8.0)],
+    seam=(0.035, 0.16),           # the sewn side seams pinch the stuffing in this much, this wide
+    # (a fraction of the radius, radians): the pillowy look of a stuffed cloth body
+    belt=(38.0, 47.0),            # the jeans' belt, z from and to (mm); jeans below it
+    hem=55.0,                     # the vest's hem; its fringe hangs from here
+    fringe=(19.0, 1.0, 3.2, 26.0),  # the fringe: how long, how far off the body inside and out,
+    # and the gap left at the front between the vest's two panels (mm across)
+    neck=(0.0, 4.0, 158.0),       # the head nods about X through here
+    head=(0.0, -2.0, 224.0),      # the vinyl head's middle and radii: a big round kid's head
+    head_r=(54.0, 50.0, 60.0),
+    eyes=(19.0, -45.5, 224.0),    # the left eye's middle on the face (the right mirrors it)
+    mouth=196.0,                  # the grin's middle, this high
+    # the hat: where its brim's middle sits on the head, tipped back this far (degrees), the
+    # brim's half sizes, its curl up at the sides, and the crown's base, height and crease
+    hat=dict(at=(0.0, 6.0, 262.0), tilt=-11.0, brim=(97.0, 90.0), curl=19.0, dip=4.0,
+             crown=(53.0, 49.0), h=58.0, crease=11.0, pinch=0.17, t=3.2),
+    shoulder=(57.0, 7.0, 140.0),  # the left shoulder, where the arm is sewn on (the right mirrors)
+    elbow=(68.0, -3.0, 90.0),
+    wrist=(74.0, -16.0, 46.0),
+    arm_r=(21.0, 17.5, 15.0),     # the sleeve's radius at shoulder, elbow and wrist
+    hand=(75.0, -21.0, 29.0),     # the vinyl hand's middle, resting on the floor beside the hip
+    hip=(31.0, -6.0, 31.0),       # the left leg, hip to ankle (the right mirrors it)
+    knee=(37.0, -78.0, 34.0),
+    ankle=(40.0, -132.0, 27.0),
+    leg_r=(30.0, 26.0, 23.0),
+    cuff=(10.0, 2.2),             # the jeans turned up at the ankle: this wide, this proud (mm)
+    boot=dict(at=(40.0, -150.0, 46.0), r=(19.0, 15.0, 37.0), lean=-12.0, shaft=22.0),
+    # the black boot: its foot's middle and radii (the sole faces you, toes up, as it sits), how
+    # far it leans back (degrees), and the shaft's radius where it goes into the jeans
+    grommet=(0.0, 47.0, 92.0),    # where the cord comes out of the middle of its back
+    pull=-20.0,                   # the cord pulls out this far below level, back and down (degrees)
+    cord=(1.1, 66.0, 68.0),       # the white cord's radius and its two runs' lengths (mm): the outer
+    # run comes out with the ring; the inner one follows at half the speed, so the cord shows
+    # whole from the back to the ring when it's out, and it all hides in the body at rest
+    ring=dict(r=15.0, t=2.8, tab=6.0, off=3.5),
+    # the white plastic ring: its radius and thickness, the tab it hangs from, how far off the
+    # back it hangs
+    tag=(-61.0, 62.0),            # the maker's cloth tag sewn into the right side seam (x, z)
+    dust=0.5, seed=131.0,
+)
+
+# How it plays (the Pull action): a kid hooks the ring, pulls the cord out to its end and lets
+# go; the cord creeps back in as the doll talks (a governor in the voice box holds it to the
+# speed the line plays at), the arms jiggle and the head bobs with the words, and the ring clacks
+# home and flops down against its back. The game starts one of the six lines at `let_go`.
+TALK = dict(
+    hook=(70.0, 0.12),            # the ring swings up in line with the cord this far, this long
+    out=(120.0, 0.40),            # the cord pulled out this far (mm), in this long (s)
+    give=1.5,                     # it stretches this much more as it hits its end (mm)
+    hold=0.14,                    # held out (s)
+    zip=(6.0, 0.04),              # let go: the first bit snaps in this far, this fast
+    creep=2.3,                    # then it creeps back the rest of the way in this long (s), the
+    # line playing
+    flutter=0.07,                 # the governor's speed wobbles this much as it creeps
+    clack=(4.0, 0.05),            # the last this-far snaps home this fast (mm, s)
+    tip=(-2.4, 1.3),              # the doll tips back this far as you pull (degrees), and rocks
+    # forward this far when you let go
+    jiggle=(4.5, 5.5),            # the arms flap this far (degrees) this often (a second) as it talks
+    nod=(3.5, 2.6),               # the head bobs this far (degrees), on the words
+    sway=2.2,                     # and leans side to side this far over the line
+    end=3.8,                      # all still by (s)
+    seed=7,
+)

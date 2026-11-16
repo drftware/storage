@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04h, the pull-string cowboy doll (step 6): its hints are the newest note. The
-oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next
+**Next:** F-04h, finish the pull-string cowboy doll (step 6): it's half built, and the newest
+note says where it stands and what's left. The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next
 touched.
 
 ## The second run's plan (owner's yes, Nov 15)
@@ -89,6 +89,58 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04h (the cowboy doll half built: modelled, looked and baked, never rendered; stopped
+  at the context cap; not ticked, nothing uploaded).** `CowboyDoll` in `windups/build.py`
+  (`dl_*`, `doll_look`, `doll_talk`; spec `DOLL`, `TALK`). It isn't in `FINDS` unless its name is
+  on the command line (`if "CowboyDoll" in sys.argv`), so the set's own export and upload skip
+  it; when it's judged, put it in the list for good. `scripts/art.sh set windups textures
+  CowboyDoll` bakes clean: 2048 at 686 texels a stud, 17,456 triangles, 4 min. Its bake outputs
+  in `out/` are left uncommitted; rebuild them. **References:** dollreference.com's Mattel 1960s
+  page (Matty and Sister Belle, 1961: 16 in, a stuffed cloth body, a vinyl face with painted
+  features, orange yarn hair, a pull-string talker; Matty sits with legs out, the ring by his
+  feet); collectorsweekly.com's "Roy Rogers doll" (a 1949 cowboy doll: vinyl face, felt hat,
+  fringed vest over a check shirt, cloth body); Mattel's Drowsy (1964, 14 in, vinyl hands). No
+  brands on ours. **What it is** (mm; sat on the floor, front at -Y): a ginger kid 13 in to the
+  hat's top, sat with its legs out. `Body` (root): a stuffed torso whose side seams pinch it in,
+  a tan suede vest painted on it (open V front, chest pockets with snaps, cream saddle stitches,
+  the shirt showing at the armholes), a suede fringe skirt round the sides and back (none in
+  front, where the thighs are), a green bandana with cream spots knotted under the chin, a dark
+  belt with a brass horseshoe buckle, jeans legs with gold double-stitched seams and turned-up
+  cuffs, black vinyl boots standing up with brown soles and heels to you and a cream stitched
+  curl on each, a cream grommet in the middle of the back (z 108), a white cloth tag with our red
+  star in the right side seam. `Head` (nods about X at the neck, z 158): a round vinyl head with
+  chubby cheeks, snub nose, big painted blue eyes glancing left with lashes and ginger brows,
+  freckles, an open grin with top teeth and a tongue, ginger yarn tufts under the hat, and a
+  cream felt hat (brim curled at the sides, binding, pinched front, centre crease, dark band, a
+  brass concho over the right ear) tipped back 11 degrees. `ArmL`, `ArmR`: blue check sleeves
+  sewn on at the shoulders, vinyl hands resting on the floor; they turn out and forward. `Cord`
+  (moves out along the pull, 20 degrees below level, back) and `CordIn` (the same axis at half
+  the speed: two 66 and 68 mm runs, so the cord shows whole from the back to the ring when out
+  and hides in the body at rest), `Ring` (on `Cord`, turns about X at its tab: hangs flat on the
+  back at rest, swings 70 degrees up in line with the cord as it's hooked). Motion `Pull`
+  (3.8 s): hooked, pulled 120 mm in 0.4 s with a little give at the end, the doll tipped back
+  2.4 degrees, held, let go at `DL_LET_GO` (0.62 s: the game starts a line there); the cord zips
+  6 mm, then creeps back over 2.3 s with a governor's flutter while the arms jiggle (5.5 a
+  second) and the head bobs on the words and sways; it clacks home and the ring flops down
+  and bounces twice. **Left, in order:** (1) quick sheets (`scripts/art.sh set windups quick
+  CowboyDoll`) and look hard: the torso's and limbs' size against Matty's photo, the hat's
+  crown and brim (does it read as a cowboy hat from a doorway?), whether the hair tufts fill
+  the gap under the crown, the boots' shape (one ellipsoid, a toe blob and a heel box: may want
+  a real boot loft), the fringe against the arms (the wrists pass through its sides), the face's
+  painted features' sizes and placement (eyes `DL["eyes"]`, grin `DL["mouth"]`), that the vest's
+  armholes and V land where they should, and that no face is inside out (my own lofts: the
+  fringe, bandana, brim and band walk their cross-sections anticlockwise, as the jack's ruff). (2)
+  The Pull filmstrip (view from its left and behind): the cord's two runs never show a gap, the
+  ring's swing reads, the arms don't go through the floor or body. (3) Fix, full renders, the
+  README section (references, size, tells, the six lines below, `DL_LET_GO`), a D-number,
+  `CowboyDoll = { "Pull" }` in `src/shared/Finds/Order.luau`, export, upload, import, tick.
+  **Six lines** (a default for whoever records; `OWNER.md` asks who): "Howdy, partner!",
+  "Let's ride on up to the top!", "I'm the bravest buckaroo in the bunkhouse!", "Giddy-up,
+  horsey!", "Don't you leave me in here, partner.", "Time for bed, little cowpoke." **Found:**
+  in `windups/build.py`, a new find's module names can silently replace an older find's (my
+  `TK` and `hat_m` broke the teeth and the jack); give each find's names its own prefix. The
+  look's `nb.ss` wants plain numbers for its edges: `nb.ss(nb.sub(v, socket), a, b)`.
 
 - **Nov 16, F-04g (the farm-animal spinner built; step 5 done; uploaded, not imported).**
   `FarmSpinner` in `windups/build.py` (`sp_*`, `spinner_look`, `spinner_pull`; spec `SPINNER`,
