@@ -11,6 +11,7 @@
 ]]
 
 local Grades = require("../Grades")
+local Use = require("../Finds/Use")
 
 export type Sound = {
 	id: string,
@@ -496,10 +497,13 @@ type Built = {
 }
 
 -- A row for a find built with the kit: it hangs from your left hand by its grip, low on the left
--- of your view with its front turned to you, as the bedroom set does.
+-- of your view with its front turned to you, as the bedroom set does. A find with a press
+-- (`Finds/Use`'s rows: the lantern's Switch, the jack's Wind) gets that press's word.
 local function built(key: string, b: Built)
 	local hold = HOLD[b.size]
+	local press = Use.Rows[key]
 	Catalog[key] = {
+		verb = if press then press.verb else nil,
 		name = b.name,
 		template = key,
 		find = true,

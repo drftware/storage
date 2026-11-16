@@ -21,6 +21,7 @@ local DevCorridor = require(script.DevCorridor)
 local Doors = require(script.Doors)
 local Elevators = require(script.Elevators)
 local Flashlights = require(script.Flashlights)
+local FindUses = require(script.FindUses)
 local FrontOffice = require(script.FrontOffice)
 local GatePay = require(script.GatePay)
 local Horns = require(script.Horns)
@@ -89,6 +90,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "pockets", system = Pockets.new() },
 	-- Blowing the air horn: its gap between blows, the blast on every screen, keepers coming to it.
 	{ slot = "horns", system = Horns.new() },
+	-- Pressing a find (the lantern's Switch, the jack's Wind): its stamp on the model, the bang heard.
+	{ slot = "findUses", system = FindUses.new() },
 	-- Laying bubble wrap: a Lay checked against the halls, the roll spent, a sheet across the hall.
 	{ slot = "wraps", system = Wraps.new() },
 	{ slot = "minimaps", system = Minimaps.new() },

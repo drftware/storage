@@ -14,6 +14,7 @@ local Carry = require("../src/shared/Tools/Carry")
 local Catalog = require("../src/shared/Tools/Catalog")
 local Deal = require("../src/shared/Deal")
 local Grades = require("../src/shared/Grades")
+local Use = require("../src/shared/Finds/Use")
 
 local failures, checks = 0, 0
 local function ok(cond: boolean, what: string)
@@ -241,7 +242,10 @@ for key, row in Catalog do
 			`{key}: a worth within its grade's`
 		)
 		ok(type(row.heft) == "number" and row.heft >= 0 and row.heft <= 1, `{key}: a heft, 0 to 1`)
-		ok(not row.bothHands and not row.verb, `{key}: a find takes one hand and does nothing`)
+		-- a find takes one hand; it does something only with a press of its own (Finds/Use)
+		local press = Use.Rows[key]
+		ok(not row.bothHands, `{key}: a find takes one hand`)
+		ok(row.verb == (if press then press.verb else nil), `{key}: its press's word, or none`)
 	else
 		ok(table.find(Deal.Tools, key) ~= nil, `{key}: one of the deal's tools`)
 		ok(fs.isFile(`src/shared/Tools/Specs/{key}.luau`), `{key}: its generated Specs`)

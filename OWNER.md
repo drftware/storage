@@ -24,10 +24,9 @@ nowhere else.
   four: glow sticks, night-lights, tea lights and toy cars often, a disco ball or lantern now
   and then, the glass lamp about 1 find in 200. Take one: does it sit right in your view and
   in your hand at phone size? (Each uses its size's hold for now, and borrowed sounds; ROADMAP
-  polish.) The jack-in-the-box should be shut, the tea light unlit. Using one does nothing yet
-  (F-G1b next).
-- [ ] **Decide (defaults in, F-G1b1, D-229; nothing to try yet, the press reaches the game in
-  F-G1b2):** which finds have a press in the building, and how long each lasts.
+  polish.) The jack-in-the-box should be shut, the tea light unlit. Pressing one is the next item.
+- [ ] **Decide (defaults in, F-G1b1, D-229; try them in the next item):** which finds have a
+  press in the building, and how long each lasts.
   1. The lamps the catalog says work "at home" (desk lamp, night-light, moon lamp, blob lamp,
      glass lamp, neon sign) get no press in the building, since they need a socket. Say if you'd
      rather they switch on anywhere.
@@ -36,6 +35,28 @@ nowhere else.
   4. How long each light lasts: tea light 60 s, oil lamp 150 s, lantern 90 s, hard hat 60 s,
      firefly jar 60 s; the glow stick, fairy lights and disco ball never run down. A switch
      (lantern, hat, fairy lights, disco ball) keeps what's left when you switch it off.
+- [ ] **Try (F-G1b2, built Nov 16, D-231; each press checked in Studio Play, not on a phone, not
+  with a friend):** press a find and watch it do what it is.
+  1. In Studio, set Workspace's `DevFloorNumber` to 1 and press Play. In the command bar (Server),
+     run `workspace:SetAttribute("GiveFind", "CampLantern")`: a lantern lands in your hand and a
+     round **Switch** button shows (left click on a computer).
+  2. Press Switch: it clicks, the lantern lights up and the hall around you brightens. Press
+     again: it clicks off and goes dark. Again: back on, with its 90 seconds where you left them.
+  3. Drop it (the wheel's Drop): it falls lit and stays lit on the floor; walk away and back.
+  4. Set `GiveFind` to "" and then "JackInTheBox". Press **Wind**: the button goes, the crank
+     turns to its music box for 9 seconds, then the lid bangs open and the clown springs out,
+     and the button comes back. Listen: does the tune end where the bang comes? The bang is a
+     borrowed tin clang for now (ROADMAP polish). Do it near a sleeping monster: it should
+     come to look, as it does for the air horn.
+  5. Press Wind again: the clown is pushed back in and the lid shuts first, then the winding.
+  6. Do the same with "TeaLight" (a match strikes, the flame catches and flickers, and the button
+     stays away until it gutters out after a minute), "OilLamp", "GlowSticks", "FairyLights",
+     "HardHat", "FireflyJar" and "DiscoBall". The glow stick, jar and disco ball are silent for
+     now (their snap, lid and hum are ROADMAP polish).
+  7. With two players (Test > Clients and Servers, 2 players): one presses the lantern; the
+     other should see it light in their hand and hear the click there.
+  8. On a phone: is the button where your thumb wants it, and does the lit hall still run smooth
+     with three or four lights lit near you? (Only the two nearest light the room; the rest glow.)
 - [ ] **Decide (defaults in, F-G1a):** the Secret lamp's name on screen is "Old lamp" (the
   catalog calls it "A lamp that's on when you find it"); the RC car carries with its
   transmitter beside it as one find; the theatre spotlight isn't dealt until floors have big

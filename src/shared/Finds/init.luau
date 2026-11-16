@@ -55,6 +55,26 @@ function Finds.art(name: string): Art.Find?
 	end
 end
 
+-- Each kit-built find's motions' lengths by motion name (what `Use` sums), read once.
+local lengths: { [string]: { [string]: number } } = {}
+
+-- A kit-built find's motions' lengths by name (empty for the bedroom set).
+function Finds.durations(name: string): { [string]: number }
+	local made = lengths[name]
+	if made then
+		return made
+	end
+	local out: { [string]: number } = {}
+	local find = Finds.art(name)
+	if find then
+		for motion, m in find.Motions do
+			out[motion] = m.Duration
+		end
+	end
+	lengths[name] = out
+	return out
+end
+
 -- A find's box (the bedroom set's from its Specs, a kit-built one's as drawn), nil if unknown.
 function Finds.box(name: string): Box?
 	local spec = Specs.Finds[name]
@@ -88,6 +108,41 @@ local function placed(drawn: CFrame, drawnSize: Vector3, moved: Pose.Affine): (C
 		math.max(drawnSize.Z * sz, TINY)
 	)
 	return CFrame.fromMatrix(Vector3.new(x, y, z), right, up, back), size
+end
+
+-- The glow: a lit part's mask brightens, and each light follows its own part's glow if that
+-- glows, else the find's glow part's. `lights` false keeps every light off (the glow still
+-- shows): a screen lights only the few nearest finds.
+local function shine(
+	find: Art.Find,
+	parts: { [string]: BasePart },
+	values: Pose.Values,
+	lights: boolean
+)
+	local glow = find.Glow
+	local function glowOf(partName: string): number?
+		local v = values[partName]
+		return if v then v.glow else nil
+	end
+	if glow then
+		for partName, part in parts do
+			local g = glowOf(partName)
+			local look = part:FindFirstChildOfClass("SurfaceAppearance")
+			if g and look then
+				look.EmissiveStrength = glow.Strength * g
+			end
+		end
+	end
+	for i, spec in find.Lights do
+		local part = parts[spec.Part]
+		local at = if part then part:FindFirstChild(`Light{i}`) else nil
+		local light = if at then at:FindFirstChildWhichIsA("Light") else nil
+		if light then
+			local g = glowOf(spec.Part) or (if glow then glowOf(glow.Part) else nil) or 0
+			light.Brightness = spec.Brightness * g
+			light.Enabled = lights and g > 0.001
+		end
+	end
 end
 
 --[[
@@ -139,31 +194,59 @@ function Finds.pose(model: Model, name: string, values: Pose.Values)
 			end
 		end
 	end
-	-- the glow: a lit part's mask brightens, and each light follows its own part's glow if that
-	-- glows, else the find's glow part's
-	local glow = find.Glow
-	local function glowOf(partName: string): number?
-		local v = values[partName]
-		return if v then v.glow else nil
+	shine(find, parts, values, true)
+end
+
+--[[
+	Stands a kit-built find at `values` by its joints alone, never moving a part: a find in a hand
+	is in the character's assembly, and setting a part's CFrame there would drag the player. Each
+	part's place in the find's frame comes from where it was drawn (`pose` recorded it) and the
+	kit's sums; each Motor6D then holds its part there from its Part0. The root stays where it
+	stands (no pressable find moves its root). `scale` is the copy's size against the art (your
+	view's copy is drawn at `Hands.Scale`); `lights` false leaves its lights off. Parts not yet
+	streamed in are skipped.
+]]
+function Finds.joints(
+	model: Model,
+	name: string,
+	values: Pose.Values,
+	scale: number,
+	lights: boolean
+)
+	local find = Finds.art(name)
+	if not find then
+		return
 	end
-	if glow then
-		for partName, part in parts do
-			local g = glowOf(partName)
-			local look = part:FindFirstChildOfClass("SurfaceAppearance")
-			if g and look then
-				look.EmissiveStrength = glow.Strength * g
+	local moved = Pose.solve(find, values)
+	local parts: { [string]: BasePart } = {}
+	local places: { [BasePart]: CFrame } = {}
+	for i, spec in find.Parts do
+		local part = model:FindFirstChild(spec.Name)
+		if part and part:IsA("BasePart") then
+			parts[spec.Name] = part
+			local drawn, drawnSize = part:GetAttribute(DRAWN), part:GetAttribute(DRAWN_SIZE)
+			local posed = part:GetAttribute(POSED)
+			if i == 1 and typeof(posed) == "CFrame" then
+				places[part] = posed.Rotation + posed.Position * scale
+			elseif i > 1 and typeof(drawn) == "CFrame" and typeof(drawnSize) == "Vector3" then
+				local at, size = placed(drawn, drawnSize, moved[spec.Name])
+				places[part] = at.Rotation + at.Position * scale
+				part.Size = size * scale
 			end
 		end
 	end
-	for i, spec in find.Lights do
-		local at = parts[spec.Part]:FindFirstChild(`Light{i}`)
-		local light = if at then at:FindFirstChildWhichIsA("Light") else nil
-		if light then
-			local g = glowOf(spec.Part) or (if glow then glowOf(glow.Part) else nil) or 0
-			light.Brightness = spec.Brightness * g
-			light.Enabled = g > 0.001
+	for part, at in places do
+		for _, joint in part:GetChildren() do
+			if joint:IsA("Motor6D") and joint.Part1 == part then
+				local from = joint.Part0 and places[joint.Part0]
+				if from then
+					joint.C0 = from:ToObjectSpace(at)
+					joint.C1 = CFrame.identity
+				end
+			end
 		end
 	end
+	shine(find, parts, values, lights)
 end
 
 -- A dull grey under the texture, shown only if the maps fail to load.

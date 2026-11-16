@@ -11,8 +11,10 @@
 	a friend's its model's) sags in pitch and dies away as it runs dry (`Horn.Dry`).
 
 	The button is every tool's with a verb (D-087): a press with another such tool in hand goes to
-	its own view's handler (`presses`: the bubble wrap's Lay, WrapView), which answers on your
-	screen, and is sent to the server the same way.
+	its own view's handler (`presses`: the bubble wrap's Lay, WrapView; a find's Switch or Wind,
+	FindUseView), which answers on your screen, and is sent to the server the same way. `can` says
+	whether such a press would do anything now: the button hides while it wouldn't (a tea light
+	burning, a jack mid-tune) and springs back when it would.
 
 	Friends': when the server stamps a carried horn as blown (`Horn.BlownAttribute`), the blast
 	plays at its bell, heard as far as keepers hear it (`Horn.Reach`), and the arm holding it rises
@@ -50,6 +52,10 @@ local BUTTON_OF_JUMP = 0.74
 local BUTTON_MIN, BUTTON_MAX = 52, 92 -- pixels
 local BUTTON_GAP = 0.22 -- of the button, between it and the jump button
 local DIM = 0.75 -- the button's background and words while the horn isn't ready yet
+-- Seconds between asking whether the tool in hand would take a press (`can`).
+local CAN_EVERY = 0.1
+-- The button's scale as it springs back for a press that would do something again.
+local BACK_FROM = 0.6
 
 -- A friend's arm raised, on this screen.
 type Arm = {
@@ -102,7 +108,8 @@ local HornView = {}
 function HornView.new(
 	hand: ToolView.Hand,
 	kick: (amount: number) -> (),
-	presses: { [string]: () -> boolean }?
+	presses: { [string]: () -> boolean }?,
+	can: ((key: string) -> boolean)?
 ): Brix.System
 	local connections: { RBXScriptConnection } = {}
 	local horns: { [Model]: RBXScriptConnection } = {} -- carried horns, their blasts watched
@@ -118,6 +125,8 @@ function HornView.new(
 	local holding = "" -- the catalog key in your hand with a verb, or ""
 	local lastBlow: number? = nil -- your last blow, os.clock
 	local ready = true
+	local canIn = 0
+	local could = true -- the tool in hand would take a press (`can`), as last asked
 
 	local function alive(): boolean
 		local character = player.Character
@@ -184,10 +193,12 @@ function HornView.new(
 			else nil
 		local row = if type(key) == "string" then Catalog[key] else nil
 		holding = if row and row.verb and key then key :: string else ""
+		could = holding ~= "" and (can == nil or can(holding))
+		canIn = CAN_EVERY
 		local b = button
 		if b then
 			b.Text = if row and row.verb then row.verb else ""
-			b.Visible = holding ~= ""
+			b.Visible = could
 		end
 	end
 
@@ -458,6 +469,20 @@ function HornView.new(
 		end
 		if not ready and Horn.allow(lastBlow, os.clock()) then
 			showReady(true)
+		end
+		canIn -= dt
+		if can and holding ~= "" and canIn <= 0 then
+			canIn = CAN_EVERY
+			local now = can(holding)
+			local b, s = button, press
+			if now ~= could and b then
+				b.Visible = now
+				if now and s then
+					s.Scale = BACK_FROM
+					TweenService:Create(s, PRESS, { Scale = 1 }):Play()
+				end
+			end
+			could = now
 		end
 	end
 

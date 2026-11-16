@@ -32,6 +32,7 @@ local DoorView = require(script.DoorView)
 local ElevatorView = require(script.ElevatorView)
 local EndView = require(script.EndView)
 local FlashlightView = require(script.FlashlightView)
+local FindUseView = require(script.FindUseView)
 local HornView = require(script.HornView)
 local FreeCursor = require(script.FreeCursor)
 local GateClock = require(script.GateClock)
@@ -61,6 +62,7 @@ local TapView = require(script.TapView)
 local UnderDoor = require(script.UnderDoor)
 local UnitLights = require(script.UnitLights)
 local WatchView = require(script.WatchView)
+local Use = require(ReplicatedStorage.Shared.Finds.Use)
 local Wrap = require(ReplicatedStorage.Shared.Tools.Wrap)
 local WrapView = require(script.WrapView)
 
@@ -71,6 +73,15 @@ local keeperSounds, keeperHeard = KeeperSounds.new()
 local flashlightView, myBeam = FlashlightView.new()
 local toolView, myHand = ToolView.new(needCursor, kick)
 local wrapView, lay = WrapView.new(myHand, kick)
+local findUseView, findUse = FindUseView.new(myHand)
+-- the button's presses with a tool or find in hand other than the horn: each answers on your
+-- screen first (the wrap laid, the lantern clicking on)
+local presses: { [string]: () -> boolean } = { [Wrap.Key] = lay }
+for key in Use.Rows do
+	presses[key] = function(): boolean
+		return findUse.press(key)
+	end
+end
 local cartView, ownCart, cartTold = CartView.new()
 local machineView, pressMachine = MachineView.new()
 
@@ -130,7 +141,9 @@ local host = Brix.Host.new({
 		-- after ToolView: your finds kept at the gate rise out of its slots (S1-06)
 		{ slot = "keepView", system = KeepView.new() },
 		-- after ToolView, so its button lands beside a bar that's there
-		{ slot = "hornView", system = HornView.new(myHand, kick, { [Wrap.Key] = lay }) },
+		{ slot = "hornView", system = HornView.new(myHand, kick, presses, findUse.can) },
+		-- a pressed find's motions, light and sound on every screen; yours on your view's copy too
+		{ slot = "findUseView", system = findUseView },
 		{ slot = "wrapView", system = wrapView },
 		{ slot = "sawView", system = SawView.new(kick) },
 		{ slot = "crawlView", system = CrawlView.new(kick) },

@@ -82,6 +82,19 @@ Use.Forever = math.huge
 -- mashing the button can't spam a monster-drawing bang or flicker a light for everyone.
 Use.Gap = 0.35
 
+-- How far a find's sounds carry, in studs (the music box down a hall, a click across a unit).
+-- What it does to the player: a friend round the corner hears the jack winding before its bang.
+Use.Reach = 60
+
+-- The most pressed finds whose real lights shine at once on a screen, the nearest to its camera
+-- (your own in hand first); the rest still glow. What it does: a hall of lit finds stays smooth
+-- on a low-end phone (the GDD's cap on real lights).
+Use.LightsShown = 2
+
+-- Seconds your own press shows before the server's word must land: a click with no wait, and a
+-- refused press (another's bang, a lag spike) falls back within a breath.
+Use.Predict = 1.5
+
 -- The torch's own switch (`Torch.OnSound`, `OffSound`): a lantern, the fairy lights' box and the
 -- hard hat's lamp click as a torch does.
 local CLICK_ON: Sound = { id = "rbxassetid://9114480271", from = 0.38, length = 0.14, volume = 1.4 }
@@ -90,6 +103,13 @@ local CLICK_OFF: Sound = { id = "rbxassetid://9114480269", from = 0.1, length = 
 -- "Frère Jacques"; its first 9 seconds under the jack's Wind (the crank turning). Not yet
 -- measured against the motion: F-G1b2 judges where the winding ends and the tune starts.
 local MUSIC_BOX: Sound = { id = "rbxassetid://9117044359", from = 0, length = 9, volume = 1.1 }
+-- "match strike/ignite" (Creator Store, 2.4 s): a match struck and catching, under the wick's
+-- Light (the tea light's whole strike, the oil lamp's strike and its flame taking).
+local MATCH_ID = "rbxassetid://71757268954484"
+-- The jack's bang as its lid flies open: for now the catalog's "Metal Container 2" tin hit
+-- (`CLANG`), lower and louder; a real spring bang is ROADMAP polish (F-G1b2's follow-up).
+local POP: Sound =
+	{ id = "rbxassetid://9116460746", from = 0, length = 0.42, volume = 1.3, pitch = 0.75 }
 
 --[[
 	The rows, by catalog key. Each find's one line is the item catalog's (art/finds/WAVES.md):
@@ -99,14 +119,20 @@ Use.Rows = {
 	-- "Light: a small glow for about a minute": the wick catches, flickers, then gutters out.
 	TeaLight = {
 		verb = "Light",
-		on = { { motion = "Light" }, { motion = "Flicker", loop = Use.Forever } },
+		on = {
+			{ motion = "Light", sound = { id = MATCH_ID, from = 0, length = 1.3, volume = 0.9 } },
+			{ motion = "Flicker", loop = Use.Forever },
+		},
 		lasts = 60,
 		out = { { motion = "GoOut" } },
 	},
 	-- "Light: warm light that runs down slowly": longer than any other found light.
 	OilLamp = {
 		verb = "Light",
-		on = { { motion = "Light" }, { motion = "Burn", loop = Use.Forever } },
+		on = {
+			{ motion = "Light", sound = { id = MATCH_ID, from = 0, length = 2.4, volume = 0.9 } },
+			{ motion = "Burn", loop = Use.Forever },
+		},
 		lasts = 150,
 		out = { { motion = "RunDown" } },
 	},
@@ -155,7 +181,7 @@ Use.Rows = {
 	-- it, set it down, walk away, and see what comes to look.
 	JackInTheBox = {
 		verb = "Wind",
-		on = { { motion = "Wind", sound = MUSIC_BOX }, { motion = "Pop" } },
+		on = { { motion = "Wind", sound = MUSIC_BOX }, { motion = "Pop", sound = POP } },
 		reset = { motion = "Shut" },
 		noise = "Pop",
 	},
@@ -283,6 +309,45 @@ function Use.press(
 		return "Again", stamp.left
 	end
 	return nil, 0
+end
+
+-- The step numbered `n` in a frame (`Frame.step`): the press's steps, then `out`'s; nil for 0.
+function Use.stepAt(row: Row, state: State, n: number): Step?
+	local steps = Use.chain(row, state)
+	if n <= #steps then
+		return steps[n]
+	end
+	local out = row.out
+	return if out and state ~= "Off" then out[n - #steps] else nil
+end
+
+--[[
+	The stamp on a used find's model, as attributes (the server writes them, every screen reads
+	them, and they ride the model from hand to floor): the state, the server clock it began, and
+	the light left (-1 for `Use.Forever`, which an attribute can't be trusted to carry). The
+	catalog key rides along so a screen knows the find whatever the model is named (a held one is
+	`HeldTool`), and the tag marks the models to watch.
+]]
+Use.StateAttribute = "UseState"
+Use.AtAttribute = "UseAt"
+Use.LeftAttribute = "UseLeft"
+Use.KeyAttribute = "UseKey"
+Use.Tag = "FindUsed"
+
+-- `left` as the attribute carries it.
+function Use.encode(left: number): number
+	return if left == Use.Forever then -1 else left
+end
+
+-- A stamp from the three attributes' values, nil unless they make one.
+function Use.read(state: unknown, at: unknown, left: unknown): Stamp?
+	if state ~= "On" and state ~= "Again" and state ~= "Off" then
+		return nil
+	end
+	if type(at) ~= "number" or type(left) ~= "number" or at ~= at or left ~= left then
+		return nil
+	end
+	return { state = state :: State, at = at, left = if left < 0 then Use.Forever else left }
 end
 
 -- Seconds after a press in state `state` that its noise starts (the jack's bang), nil if it

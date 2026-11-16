@@ -6092,3 +6092,28 @@ along the leg to keep their soles down (the game has no up-down travel for the w
 aerial is a damped spring driven by the body's sway and clanks, so its wobble follows what the
 body did. It walks straight (the catalog's line), so a game ticket can aim it down a hall: it
 covers about 3.4 studs.
+
+## D-231 A pressed find plays out by its joints, on every screen (F-G1b2, Nov 16)
+
+The press reaches the game. The server (`FindUses`) takes `Slots.used` for a find with a row in
+`Finds/Use`, keeps `Use.Gap` between one player's presses, asks `Use.press` against the stamp on
+the find's model, and writes the stamp as attributes (`UseState`, `UseLeft` with -1 for forever,
+`UseKey`, then `UseAt` last) and tags the model `FindUsed`. The same model moves between hand and
+floor, so a lantern dropped lit stays lit. The jack's bang is `task.delay(Use.noiseAt)`, heard by
+`Keepers:hearHorn` where the find is then, unless it was pressed again since.
+
+Every screen (`FindUseView`) works out each tagged find's frame from the stamp and the server
+clock and stands it by its joints alone (`Finds.joints`): each part's place comes from where it
+was drawn and the kit's sums, and each Motor6D's C0 holds it there, so no part is ever moved and
+a find in a hand never drags its holder. The root stays put (no pressable find moves its root). A
+find is posed again only when its frame moves, within 90 studs of the camera. Your own find in
+hand plays on your view's copy too, which carries the light; your press shows at once with the
+stamp it will get, kept until the server's lands within `Use.Predict` (its clock kept, so nothing
+replays). A step's sound plays as the step starts; a find seen more than a second after its press
+is silent until its next step. Only the `Use.LightsShown` (2) nearest glowing finds light the
+room; the rest still glow. The press button hides while `Use.press` says nothing would happen
+(no refusal text, the owner's rule), and springs back when a press would work again.
+
+Sounds for now: the switches click as the torch does, the tea light and oil lamp strike a match
+("match strike/ignite", Creator Store), the jack winds its music box and bangs with the
+catalog's tin clang made lower and louder. The rest wait in ROADMAP polish.

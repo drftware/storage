@@ -545,6 +545,9 @@ export type Hand = {
 	-- puts `button` beside the wheel's button on its left, sized as the Drop button, kept there as
 	-- the screen changes
 	beside: (button: GuiButton) -> (),
+	-- your view's copy of what's in your hand and its catalog key (nil, "" for none): a pressed
+	-- find plays its motions on it (`FindUseView`)
+	model: () -> (Model?, string),
 }
 
 -- `needCursor` frees a computer's mouse while the wheel is open, to click a slot; `jolt` kicks
@@ -1825,6 +1828,9 @@ function ToolView.new(
 			besideButton = b
 			b.Parent = if ui then ui.hud else nil
 			layout()
+		end,
+		model = function(): (Model?, string)
+			return shownModel, if shownModel then shownKey else ""
 		end,
 	}
 

@@ -2509,3 +2509,8 @@ verified: a doc page, Studio, or "untested".
 - **A stand-in look at films on bodies** (Play, server `execute_luau`): `character.Archivable =
   true`, clone it, anchor the clone's root, weld a `Props.KeptWrap` clone to it. Good enough to
   judge a tint; the real fit is `Kept.fit` in KeptPlayers.
+- **A press state narrowed from `State?` reads as plain `string`** (luau-lsp, F-G1b2): after
+  `if not state then return end`, passing it where `"On" | "Again" | "Off"` is wanted failed, and
+  so did a bare cast. `local state: Use.State = pressed :: Use.State` (annotated and cast) works.
+- **Rojo doubled FindUses and FindUseView too** (Edit, Nov 16): both show twice in Studio, as in
+  the doubled-modules note above; harmless while both update.

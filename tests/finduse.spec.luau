@@ -158,6 +158,31 @@ do
 	ok(f.motion == nil and not f.lit and not f.spent, "unpressed: at rest")
 end
 
+-- the stamp as attributes carry it, and each frame's step back by number (its sound)
+do
+	local row = Use.Rows.CampLantern
+	ok(Use.encode(Use.Forever) == -1 and Use.encode(42) == 42, "encode: forever as -1")
+	local s = Use.read("On", 100, -1)
+	ok(s ~= nil and s.state == "On" and s.at == 100 and s.left == Use.Forever, "read: forever")
+	ok(Use.read("Lit", 100, 5) == nil, "read: no such state")
+	ok(Use.read("On", "100", 5) == nil and Use.read("On", 100, nil) == nil, "read: not numbers")
+	ok(Use.read("On", 0 / 0, 5) == nil, "read: not a number")
+	ok(Use.read(nil, nil, nil) == nil, "read: never pressed")
+	local d = durations("CampLantern")
+	local f = Use.frame(row, { state = "On", at = 0, left = 90 }, 90 + 0.01, d)
+	local step = Use.stepAt(row, "On", f.step)
+	ok(step ~= nil and step.motion == "RunDown", "stepAt: into out")
+	local on = Use.stepAt(row, "On", 1)
+	ok(on ~= nil and on.sound ~= nil, "stepAt: the switch clicks")
+	ok(Use.stepAt(row, "On", 0) == nil, "stepAt: none before")
+	local off = Use.stepAt(row, "Off", 1)
+	ok(off ~= nil and off.motion == "SwitchOff" and Use.stepAt(row, "Off", 2) == nil, "stepAt: off")
+	local jack = Use.Rows.JackInTheBox
+	local shut = Use.stepAt(jack, "Again", 1)
+	local pop = Use.stepAt(jack, "Again", 3)
+	ok(shut ~= nil and shut.motion == "Shut" and pop ~= nil and pop.motion == "Pop", "stepAt: jack")
+end
+
 print(`finduse: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

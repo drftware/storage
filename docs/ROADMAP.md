@@ -2370,9 +2370,11 @@ actions themselves and dealing the new finds on floors are later game tickets.
       motion monsters hear), `frame` (where a stamped find is in its motions), `press` (what a
       press does now, nil when it does nothing) and `noiseAt`. Rows for the tea light, oil lamp,
       glow sticks, fairy lights, lantern, hard hat, firefly jar, disco ball and the jack.
-    - [ ] **F-G1b2 The press in the game** (next): the server stamps a pressed find's model,
-      every screen plays its motions, lights and sounds from the stamp (HANDOFF has the plan).
-    - [ ] **F-G1b3 The cymbal monkey's lure and the cars:** the monkey bashes its cymbals for 20
+    - [x] **F-G1b2 The press in the game** (Nov 16, D-231): `FindUses` stamps a pressed find's
+      model on the server; `FindUseView` plays its motions, light and sounds on every screen by
+      its joints (`Finds.joints`), your own on your view's copy at once; the button hides while a
+      press would do nothing. Each press seen in Studio Play.
+    - [ ] **F-G1b3 The cymbal monkey's lure and the cars** (next): the monkey bashes its cymbals for 20
       seconds and monsters keep coming while it plays (a lure that lasts, unlike a blast); the
       RC car drives off round the unit (`Art.Drive`, the set's `Wheels` motion); the die-cast
       car is set down and rolls off down the hall (its `Push`). Then D-188's "found lights hold
@@ -2396,6 +2398,14 @@ actions themselves and dealing the new finds on floors are later game tickets.
 - [ ] **F-12 The eight wave 1 big finds.**
 
 ## Polish waiting for a slot
+
+- **The finds' press sounds** (F-G1b2): the glow stick's snap, the firefly jar's lid and shimmer,
+  the disco ball's motor hum, and a real spring bang for the jack's Pop (now the catalog's tin
+  clang, lower and louder); time the music box against the Wind (its winding into the tune) and
+  the match against the tea light's and oil lamp's Light. Pro Sound Effects first (`search_asset`,
+  query ending "SFX"); store searches for "spring" and "boing" found nothing usable.
+- **A pressed find's hand** (F-G1b2): your hand doesn't move as you press (the horn rises); a small
+  thumb-press dip of the held find, and a friend's arm lifting a lit lantern to look, would sell it.
 
 - **Saw panels in a packed unit** (B-05b2a): the top's cut panel falls half under the doorway's
   stacks (it lies at about x -1.9, 2.7 to 5.1 in), and a crawl hole's panel reaches 3.2 out from
