@@ -2,7 +2,7 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-16, session 214 (the RC car's handling, built in Brix) · **Checks:** green here and in Brix · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix `main` at `1a97787`, pushed, CI passes.
+**Updated:** 2026-11-16, session 214 (the RC car's handling, built in Brix and pushed) · **Checks:** green here and in Brix · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix `main` at `1a97787`, pushed, CI passes.
 
 ## State
 - The owner (D-252): "absolute world-class", and Brix code is written from here when a ticket needs
