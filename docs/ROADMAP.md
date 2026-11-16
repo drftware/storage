@@ -2477,7 +2477,7 @@ actions themselves and dealing the new finds on floors are later game tickets.
             transmitter in the art); the first-person view's transmitter still held by the car's
             roof while its car is out (ToolView's copy); a small settle of the shoulders as the
             car moves, so a crouched driver isn't a statue.
-          - [ ] **F-G1b3c2e The car sees in the dark** (the owner, Nov 16, D-255; Outlast's
+          - [x] **F-G1b3c2e The car sees in the dark** (the owner, Nov 16, D-255; Outlast's
             camcorder and Phasmophobia's video cameras). The moment: you drive out of a lit
             hall into a dark one, the view clicks over to grainy green, and at the edge of what
             it shows two white eyes look back.
@@ -2501,6 +2501,17 @@ actions themselves and dealing the new finds on floors are later game tickets.
                `viewing`), its light back as it was when you're home.
             One real light on one screen, only while driving and dark: fine on low-end phones.
             Whether the car trips motion lights itself waits on `OWNER.md` (default no).
+            Done Nov 16 (D-257): `Finds/Infrared`, `InfraredView`, DriveView's `hull`,
+            FlashlightView's `away`. In Studio Play: the dark dev hall went infrared with the
+            click and flicker once the view landed on the hood; a hall light tripped beside the
+            car (a moving part tagged to trip lights) gave colour; as it timed out the view
+            flickered back to infrared within a tenth of a second; a Mannequin 12 studs down a
+            dark hall stood in the lamp with two pale eyes; Back gave colour on the frame the
+            camera came home; a torch left on went dark on the hood and lit again after Back.
+            Not run: a phone, a friend's view (OWNER.md, the RC car's steps 8-9).
+            Polish, by name: the car's own front is black in infrared (the lamp lights only
+            ahead; a faint spill on the bonnet); a quiet hiss under the infrared; a friend's
+            torch on the car, or a lit find on the floor, counted as light (D-257 left them out).
         - [ ] **F-G1b3c3 The collector steals it.** A driven car is a find lying loose, so the
           Packrat takes it as it takes any (S2-06b): on the driver's screen the view lifts off
           the floor, shakes, cuts to static, and you're back in your own eyes; it goes on the

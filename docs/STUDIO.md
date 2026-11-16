@@ -2649,14 +2649,28 @@ verified: a doc page, Studio, or "untested".
   Scriptable back to Custom"); DriveView sets Scriptable every frame, so the hood view holds.
 - **The whine:** Pro Sound Effects' "Servo Long Slow Bursts Whir Mostly Constant 2" 9125924630
   (5.48 s): steady near -28 dB from 2.4 to 4.9 s (AudioAnalyzer, 0.25 s bins), looped there.
-- The dev hall is unlit: the hood view is black against a shut door (F-G1b3c2e makes it
-  infrared where the lights are out).
+- The dev hall is unlit: the hood view goes infrared there (F-G1b3c2e). Its lights' spots are
+  (6, 0, 0), (-18, 0, 0), (30, 0, 0); pivot to (-12, 3, 0) facing +X and the car sets down at
+  about (-9.6, 0, 0), in the pool of the one at -18.
+- **Tripping a hall light without a player** (F-G1b3c2e): a Server anchored, non-colliding part
+  tagged `TripsLights`, moved 0.2 studs every 0.05 s for a second under the fixture, trips it
+  (the server compares positions each tick); it goes dark 7.5 s after the part stops.
+- **Turning the car from the MCP:** a Client loop setting `DriveStick` to (±1, 0, 0) by the sign of
+  the hull's look crossed with the way to the target, until their dot passes 0.97, then zero.
+- **A streamed-out attachment reads as if at the world's middle** (F-G1b3c2e): when the lobby's
+  elevators streamed out (a Model's parts stream apart from it), their `LampLight` attachment's
+  `WorldPosition` came back near (0, 0, 0), right on the dev hall, so the car read as under a
+  lamp. Check `IsDescendantOf(Workspace)` before trusting a position, and read a unit's or a
+  fixture's position when you use it, not when it's tagged: a floor tags them before it has
+  finished moving them into place.
+- **Eyes through a ColorCorrection's tint:** a white BillboardGui (LightInfluence 0) comes out
+  tinted; its `Brightness` at 6 burns through to white (seen in Play, F-G1b3c2e).
 - **Your own body stays hidden while your view is on the car** (F-G1b3c2d): first person's hiding
   (`LocalTransparencyModifier` 1 on every part) sticks once the camera goes Scriptable, so the hood
   never saw you. DriverBodies shows it from the drive view's step and puts back what was there
   the moment your view is home (the camera's hiding may not write again if it thinks nothing
-  changed). `Workspace.YourFlashlight` is your torch held to your view, wherever the view is: on
-  the hood while you drive (F-G1b3c2e's to deal with).
+  changed). `Workspace.YourFlashlight` is your torch held to your view, wherever the view is, so
+  FlashlightView puts it away while your view is on the car (F-G1b3c2e).
 - **Looking at your own body from outside in Play:** `screen_capture` in Play shows the client's
   own view and ignores `camera_position`. A Client `BindToRenderStep` at `RenderPriority.Last + 50`
   that sets the camera wins over the camera scripts but not over anything writing the camera in

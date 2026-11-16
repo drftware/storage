@@ -47,8 +47,8 @@ nowhere else.
   5. Drop a lit one in the hall with the Mannequin coming (the lantern's steps below): it stops
      where the lamp's light reaches. The desk lamp's pool is small (about 4 studs); the
      night-light's barely reaches at all.
-- [ ] **Try (F-G1b3c2c and F-G1b3c2d, built Nov 16, D-254 and D-256; driven by script in Studio
-  Play, not on a phone, not with a friend):** drive the RC car.
+- [ ] **Try (F-G1b3c2c, F-G1b3c2d and F-G1b3c2e, built Nov 16, D-254, D-256 and D-257; driven
+  by script in Studio Play, not on a phone, not with a friend):** drive the RC car.
   1. In Studio press Play. In the command bar (Server), run
      `workspace:SetAttribute("GiveFind", "RCCar")`: a **Drive** button shows.
   2. Face down the test hall and press Drive: the transmitter clicks, the car is set down in front
@@ -72,6 +72,17 @@ nowhere else.
   7. Get caught while driving (drive near a sleeping Mannequin's unit and wake it, or use
      `ServerStorage.CatchTest` with one stood near you): your view should leave the car at once
      and the catch turns you from your own eyes to its face; the transmitter drops.
+  8. The dark: drive out of a lit hall into a dark one. The view clicks (a small relay) and
+     flickers over to grainy green, a lamp on the car lighting about 30 studs ahead. Have a
+     friend walk under the light by the car (alone: Back, walk under it, Drive again within
+     seven seconds): it clicks back to colour. Is the click too loud or too quiet, the grain
+     too strong on a phone, the green too dark to steer by?
+  9. Drive up to a Mannequin in the dark (Server: `workspace:SetAttribute("StandMannequin",
+     true)` stands one asleep on the laid floor at (0, 0, -656), facing its lobby): two white
+     points shine on its face, from about 40 studs, brightest close. Do they read as eyes
+     looking back, and are they big enough on a phone far down a hall? Turn your torch on before
+     you drive: it's out while you drive and lit again when you press Back. A friend standing
+     by you sees no light on the car.
 - [ ] **Decide (default in, F-G1b3c2e):** does the RC car trip the motion lights as it drives
   under them, as you do? Default: no, it's too small and low for their sensors, so a dark hall
   stays dark and its view goes infrared. If yes, the car lights its own way down the halls and

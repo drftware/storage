@@ -34,6 +34,7 @@ local EndView = require(script.EndView)
 local FlashlightView = require(script.FlashlightView)
 local DriveView = require(script.DriveView)
 local DriverBodies = require(script.DriverBodies)
+local InfraredView = require(script.InfraredView)
 local FindUseView = require(script.FindUseView)
 local HornView = require(script.HornView)
 local FreeCursor = require(script.FreeCursor)
@@ -73,7 +74,6 @@ local cameraShake, kick, holdView = CameraShake.new()
 local freeCursor, needCursor = FreeCursor.new()
 local elevatorView, pressKeypad = ElevatorView.new(kick)
 local keeperSounds, keeperHeard = KeeperSounds.new()
-local flashlightView, myBeam = FlashlightView.new()
 local toolView, myHand = ToolView.new(needCursor, kick)
 local wrapView, lay = WrapView.new(myHand, kick)
 local findUseView, findUse = FindUseView.new(myHand)
@@ -88,6 +88,8 @@ end
 -- the RC car's Drive (F-G1b3c2c): the button hides while you drive
 local driveView, driving = DriveView.new(myHand, kick)
 presses[Drive.Key] = driving.press
+-- your torch is put away while your view is on the car you drive
+local flashlightView, myBeam = FlashlightView.new(driving.viewing)
 local function can(key: string): boolean
 	if key == Drive.Key then
 		return driving.can()
@@ -172,6 +174,9 @@ local host = Brix.Host.new({
 		-- every driver crouched over the transmitter; yours shown only while your view is on the
 		-- car, so after the drive view in the same frame
 		{ slot = "driverBodies", system = DriverBodies.new(driving.viewing) },
+		-- the car's view in the dark (F-G1b3c2e): after the drive view has put the camera on the
+		-- hood, so its lamp rides there this frame
+		{ slot = "infraredView", system = InfraredView.new(driving.hull) },
 		{ slot = "watchView", system = WatchView.new(kick, needCursor) },
 		-- the climb's end (L-08d): over everything, the results and "Again"
 		{ slot = "endView", system = EndView.new(needCursor) },

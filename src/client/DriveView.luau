@@ -84,8 +84,11 @@ export type Api = {
 	press: () -> boolean,
 	-- whether a press would do anything now (not while you drive)
 	can: () -> boolean,
-	-- whether your view is on the car you drive (DriverBodies shows your body then)
+	-- whether your view is on the car you drive (DriverBodies shows your body then, FlashlightView
+	-- hides your torch)
 	viewing: () -> boolean,
+	-- the car your view is on: its hull (InfraredView judges the light there), nil when it's home
+	hull: () -> BasePart?,
 	-- caught (CaughtView, before the lunge takes your view): out of the car at once, your view
 	-- back in your head, so the lunge turns you from your own eyes to what caught your body
 	leave: () -> (),
@@ -482,6 +485,10 @@ function DriveView.new(hand: ToolView.Hand, kick: (amount: number) -> ()): (Brix
 		end,
 		viewing = function(): boolean
 			return driving ~= nil
+		end,
+		hull = function(): BasePart?
+			local d = driving
+			return if d then d.hull else nil
 		end,
 		leave = function()
 			if not driving then

@@ -6542,3 +6542,26 @@ when there are lights but go infrared if the lights go out."
   (`Drive.home`); it's set down closer than that, so it doesn't snap straight back as you start.
 - Not chosen: a kneel on one knee (asymmetric, more numbers, no clearer); the peek's kneel itself
   (chest to the floor, wrong for holding something up).
+
+## D-257 · 2026-11-16 · How the RC car's screen tells light from dark, and what infrared looks like (F-G1b3c2e)
+
+Built from D-255. The choices that weren't the owner's:
+- **The driver's screen judges the light at the car, ten times a second, from what every screen
+  already knows:** a hall light's state (lit only; dark, a breaker's cut and the alarm's Out are
+  all no light) and its pool (`MotionLight.PoolReach`, the same pool that holds a Mannequin), a
+  unit whose door is up (its bulb is wired to its door), and the freight elevator's lamp. Nothing
+  new is sent. Once in colour it holds 2 studs past a pool's edge, so a car parked there doesn't
+  click back and forth.
+- **Only inside the building's halls is dark dark:** more than 48 studs from every hall light (the
+  lobby, lit by its own lamps) the view stays in colour.
+- **Not counted as light:** a friend's torch on the car and a lit find on the floor. Night vision
+  doesn't switch off for a torch, and a lamp's pool is small; both are in ROADMAP to revisit.
+- **The look reuses what's built:** the security feed's grain (`Feed.Grain`), lighter; the hall
+  light's relay click, smaller and higher, flat in your ears; a ColorCorrection made on the
+  driver's screen alone. The lamp is one SpotLight on that screen only.
+- **The eyes are two billboards per monster on attachments of the screen's own**, moved to its
+  head each frame (nothing added to its body), glowing past white so they burn through the green
+  cast, shown facing the car within 40 studs and hidden by walls as the monster is.
+- **Your torch is put away while your view is on the car,** its light out, lit again as it was
+  when you're back; while away it lights no faint mark. In the game's rules it's still on in your
+  hand (the server tests it from your head along where you look), unchanged here.

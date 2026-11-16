@@ -315,10 +315,12 @@ export type Beam = {
 	friends: () -> { Torch.Sight },
 }
 
--- The system, and your torch for KeeperView and FaintMarkView.
-function FlashlightView.new(): (Brix.System, Beam)
+-- The system, and your torch for KeeperView and FaintMarkView. `away` says whether your view is
+-- away from your body (on the RC car you drive, DriveView's `viewing`).
+function FlashlightView.new(away: (() -> boolean)?): (Brix.System, Beam)
 	local connections: { RBXScriptConnection } = {}
 	local own: Flashlight.Rig? = nil
+	local ownAway = false -- your torch put away while your view is away from your body
 	local ownBeam: Attachment? = nil
 	local ownPull = 0 -- how far your torch is pulled back from a wall, studs
 	local ownClick: Click? = nil
@@ -718,8 +720,18 @@ function FlashlightView.new(): (Brix.System, Beam)
 			local from = (grip * LENS_FRONT).Position
 			beamAt.WorldCFrame = full.Rotation + HandRoom.clear(from, full.Position)
 		end
+		-- your view on the RC car you drive (F-G1b3c2e): your torch would sit on its hood and light
+		-- the hall ahead like a headlight, so it's out of sight and its light out, every frame (a
+		-- press of its button while you drive changes nothing here); home, it's lit as it was
+		local gone = away ~= nil and away()
+		if gone then
+			Flashlight.light(r, false, true) -- writes only what changes
+		elseif ownAway then
+			Flashlight.light(r, mine, true)
+		end
+		ownAway = gone
 		local shown = alive()
-		local t = if shown and camera:GetAttribute(SEIZED) ~= true then 0 else 1
+		local t = if shown and not gone and camera:GetAttribute(SEIZED) ~= true then 0 else 1
 		if r.body.LocalTransparencyModifier ~= t then
 			r.body.LocalTransparencyModifier = t
 			r.lens.LocalTransparencyModifier = t
@@ -1045,7 +1057,7 @@ function FlashlightView.new(): (Brix.System, Beam)
 			soon = mine
 		end,
 		light = function(): number
-			return if mine then level else 0
+			return if mine and not ownAway then level else 0
 		end,
 		friends = function(): { Torch.Sight }
 			return sights
