@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-05c, step 12: the jumbo slow-rise strawberry first, then the squishy capybara and
-the paper squishy with a drawn face.
+**Next:** F-05c2, step 12: the squishy capybara, then, as F-05c3, the paper squishy with a
+drawn face.
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -56,8 +56,9 @@ changes the table's order a little.
     it squashes), then, as **F-05b2**, the mochi bun (built Nov 16), and, as **F-05b3**, the
     squishy toast slice (built Nov 16; springs back like bread). Whole-body squash, the tea light's flame's
     `stretch`.
-12. **F-05c** Jumbo slow-rise strawberry (the same squash, ten seconds to rise), squishy capybara
-    (a tiny happy sigh), paper squishy with a drawn face (crinkled paper, looks homemade).
+12. **F-05c** Jumbo slow-rise strawberry (built Nov 16; a thumb's dent on bones, ten seconds to
+    rise), then, as **F-05c2**, the squishy capybara (a tiny happy sigh) and, as **F-05c3**, the
+    paper squishy with a drawn face (crinkled paper, looks homemade).
 13. **F-05d** Gel bead ball, glitter goo ball, galaxy goo ball (Legendary): a see-through skin,
     the firefly jar's glass way, with an inside that swirls and settles.
 14. **F-05e** Goo ball (oozes between your fingers), colour-change goo ball (changes colour only
@@ -89,6 +90,34 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-05c (the jumbo slow-rise strawberry built; uploaded 81603530188772 and imported;
+  the brief's 120k was passed during it, so the capybara waits for F-05c2).** `JumboStrawberry`
+  in `squishies/build.py` (prefix `sr_`/`SR_`, kinds 7 to 9; spec `STRAWB`, `RISE`); README
+  section, `Order.luau`. A 4.4 x 4.8 in rich red PU foam strawberry of our own: a fat rounded
+  cone lofted up a Catmull-Rom outline (`sr_curve`, `sr_point`), rows of yellow teardrop seeds in
+  shallow pits (an unrolled numpy image, `sr_seed_ink`), six leaves lofted along the skin round a
+  hub and a leaning stem. Squeeze: a 12 mm thumb dent in its front on nine bones (the butter
+  stick's `bu_bones` sums on a curved side: `sr_bones` measures across the skin's tangent plane
+  and gates the far side out), rising over ten seconds. Judged on quick sheets twice (fixed: the
+  cap too thin to read in the hand, an apple-round tip, tan seeds, the dent filmed edge-on),
+  full sheets once, and in Studio under a warm 0.6 bulb with the dent pressed by `Finds.pose`.
+  **Trap, found here:** an FBX with bones and two meshes imports as a Motor6D rig and drops the
+  bones (docs/STUDIO.md): a boned find is one mesh, the cap built into the berry's shape.
+  **New and reusable:** `sr_frame(s, th)` gives any lathe-like skin's point, normal and the ways
+  down and round it, so a piece can be laid on a curved body (the leaves, a capybara's ears or
+  feet); `sr_seed_ink` prints any repeating mark on a round body at true size.
+  **F-05c2's hints (not researched):** *Squishy capybara:* a sitting capybara squishy of our own,
+  about 3.5 to 4.5 in long: a barrel body lying low, a big blunt square muzzle, small round ears
+  high on the head, tiny eyes, short stubby legs tucked under, warm tan-brown PU foam with a
+  darker back and a paler belly; a contented face (closed eyes as two arcs, a small nose). Look
+  at real capybara photos for the head's box shape and nostrils high on the muzzle, and at 2026
+  capybara squishies for the cute proportions (head about a third of its length). Build the body
+  and head as one loft or lathe-like skin (`sr_frame` lays the ears and feet on it); whole-body
+  `stretch` for the sigh, the mochi's `SINK` way but softer: it sinks slow over 0.6 s to about
+  0.82 tall, holds, and lets out over 1.2 s with a small settle, no spring past. No bones needed
+  unless a dent is wanted. *Paper squishy* (F-05c3): as the toast's hints said, `ts_outline`
+  and `ts_inset` fit its flat puffed outline; the tape's gloss and crinkles in the look.
 
 - **Nov 16, F-05b3 (the squishy toast slice built; step 11 done; uploaded 109999579926471 and
   imported; the brief's 120k was passed after the toast, so step 12 waits).** `ToastSlice` in
@@ -1451,7 +1480,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Squishy toast slice | Uncommon | Squeeze: springs back like real bread |  | Nov 16, F-05b3 |
 | Gel bead ball | Uncommon | Squeeze: the beads swirl inside |  | |
 | Glitter goo ball | Uncommon | Squeeze: glitter swirls, then settles |  | |
-| Jumbo slow-rise strawberry | Uncommon | Squeeze: the dent takes ten seconds to rise back |  | |
+| Jumbo slow-rise strawberry | Uncommon | Squeeze: the dent takes ten seconds to rise back |  | Nov 16, F-05c |
 | Colour-change goo ball | Rare | Squeeze: it changes colour where your fingers pressed |  | |
 | Squishy cake slice | Rare | Squeeze: frosting squishes out of the side |  | |
 | Squishy capybara | Rare | Squeeze: it lets out a tiny, happy sigh |  | |

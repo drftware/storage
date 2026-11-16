@@ -103,6 +103,11 @@ verified: a doc page, Studio, or "untested".
   `AnimationController` (the import drops both). The armature object itself becomes nothing.
   The skinned MeshPart's position is its box's middle; its root bone sits on the Blender origin
   (the pivot), which `Kit.prepare` reads instead of `GetPivot` for a boned part.
+- **A boned find must be one mesh** (F-05c, Nov 16, seen in Studio): an FBX with bones and two
+  MeshParts (the strawberry's berry and its cap as a child part) loads as a Motor6D rig, each
+  MeshPart with a `<Part>Motor6D`, a `RootPart` and an `AnimationController`, and the dent's
+  bones survive only as CFrameValues in `InitialPoses`: `Kit.import` stops with "has no bone".
+  Build everything that doesn't bend into the boned part's own mesh (`sr_body` adds the cap).
 - **Writing a `Bone.Transform` from a script bends the mesh in Edit**, no Animator needed:
   `Transform` is in the bone's own frame and multiplies after its `CFrame` (a slide is
   `CFrame.new(v)`, `v` turned into the bone's frame first; then `* CFrame.fromAxisAngle`).

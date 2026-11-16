@@ -22,6 +22,7 @@ return {
 	StressBall = { "Squeeze" },
 	MochiBun = { "Squeeze" },
 	ToastSlice = { "Squeeze" },
+	JumboStrawberry = { "Squeeze" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },

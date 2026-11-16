@@ -802,7 +802,339 @@ TOAST_SLICE = kit.Find(
     dust=TS["dust"], seed=TS["seed"], texels=1000,
 )
 
-FINDS = [BUTTER_STICK, STRESS_BALL, MOCHI_BUN, TOAST_SLICE]
+# --- The jumbo slow-rise strawberry (F-05c) -------------------------------------------------------
+# A jumbo slow-rise PU foam strawberry of our own (README): a fat rounded cone, rich red airbrushed
+# deeper toward its tip and lighter over its shoulder, rows of yellow teardrop seeds printed in
+# shallow pits, a flat green cap of six pointed leaves round a short stem, all one part. Squeeze
+# it and a thumb's dent sinks deep into its front and takes ten seconds to rise back, carried by
+# the butter stick's bones: one in the middle that sinks, eight round it that tip the dent's sides.
+
+SR = K.STRAWB
+SR_SKIN, SR_LEAF, SR_STEM = 7, 8, 9
+
+
+def sr_curve():
+    """The outline as a dense smooth curve (a Catmull-Rom through the spec's points, its ends
+    held): arrays of r, z and the arc length s from the bottom's middle (mm)."""
+    ctrl = SR["outline"]
+    pts = [ctrl[0]] + ctrl + [ctrl[-1]]
+    dense = []
+    for i in range(1, len(pts) - 2):
+        p0, p1, p2, p3 = (np.array(pts[i + k]) for k in (-1, 0, 1, 2))
+        for t in np.linspace(0.0, 1.0, 64, endpoint=False):
+            dense.append(0.5 * (2 * p1 + (p2 - p0) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t
+                                + (3 * p1 - p0 - 3 * p2 + p3) * t ** 3))
+    dense.append(np.array(ctrl[-1], float))
+    d = np.array(dense)
+    s = np.concatenate([[0.0], np.cumsum(np.hypot(*np.diff(d, axis=0).T))])
+    return d[:, 0], d[:, 1], s
+
+
+SR_R, SR_Z, SR_S = sr_curve()
+SR_LEN = float(SR_S[-1])
+SR_UP = int(np.argmax(SR_Z))            # where the outline stops climbing (the shoulder's top)
+SR_ZT = 126.0                           # the seed image's height (mm)
+
+
+def sr_at(s):
+    """(r, z) on the outline at arc length s from the bottom (mm)."""
+    return float(np.interp(s, SR_S, SR_R)), float(np.interp(s, SR_S, SR_Z))
+
+
+def sr_point(s, th):
+    """A point on the berry's skin (mm, the find's frame): arc length s up the outline, th radians
+    round from the front, anticlockwise from above; three broad lobes, a hair oval, the top slumped
+    a little aside and toward you."""
+    r, z = sr_at(s)
+    r *= 1.0 + SR["lobes"] * math.cos(3 * th + 0.5) * math.sin(math.pi * min(1.0, z / 118.0))
+    sx, sy = SR["oval"]
+    lx, ly = SR["lean"]
+    return Vector((r * math.sin(th) * sx + lx * z, -r * math.cos(th) * sy + ly * z, z))
+
+
+def sr_frame(s, th):
+    """The skin at (s, th): its point, outward normal, the way down it (toward the tip) and the
+    way round it (anticlockwise from above)."""
+    ds = sr_point(s + 0.05, th) - sr_point(s - 0.05, th)
+    dt = sr_point(s, th + 0.002) - sr_point(s, th - 0.002)
+    return sr_point(s, th), dt.cross(ds).normalized(), -ds.normalized(), dt.normalized()
+
+
+def sr_thetas(n):
+    """n angles round from the front, anticlockwise, closest together at the front."""
+    a = SR["crowd"]
+    return [p - a * math.sin(p) for p in (2 * math.pi * j / n for j in range(n))]
+
+
+def sr_ring_s(hi):
+    """The rings' arc lengths up the outline: close through the dent's heights, wider elsewhere."""
+    f = 2 if hi else 1
+    lo, top = SR["fine"]
+    out, s = [0.0], 0.0
+    while True:
+        z = sr_at(s)[1]
+        step = (SR["ring_fine"] if lo <= z <= top else SR["ring"]) / f
+        s += step
+        if s >= SR_LEN - 0.5 * step:
+            break
+        out.append(s)
+    return out + [SR_LEN]
+
+
+def sr_body(hi):
+    """The berry, lofted ring by ring up its outline from the flat spot's middle to the top's, and
+    its cap in the same mesh (sr_cap): Roblox's importer turns an FBX with bones and two meshes
+    into a Motor6D rig and drops the bones, so a boned find is one part (docs/STUDIO.md "Bones")."""
+    ths = sr_thetas(SR["around"] * (2 if hi else 1))
+    rings = []
+    for s in sr_ring_s(hi):
+        if s <= 0.0 or s >= SR_LEN:
+            rings.append([tuple(mm(c) for c in sr_point(s, 0.0))])
+        else:
+            rings.append([tuple(mm(c) for c in sr_point(s, th)) for th in ths])
+    sh = Shape()
+    sh.loft(rings, SR_SKIN)
+    sr_cap(sh, hi)
+    return sh
+
+
+SR_TOP = sr_point(SR_LEN, 0.0)          # the top's middle, where the cap grows (mm)
+
+
+def sr_leaf_w(u):
+    """A leaf's half width along it (0 its base, 1 its tip), over its widest: a rounded base
+    swelling to its widest two fifths along, then a long pointed taper."""
+    if u <= 0.4:
+        return 0.34 + 0.66 * math.sin(math.pi / 2 * u / 0.4)
+    return ((1.0 - u) / 0.6) ** 0.9
+
+
+def sr_cap(sh, hi):
+    """The cap, added to the berry's shape: six leaves, each lofted from its base under the hub to its pointed tip, lying on
+    the skin (each ring's points slid round the berry from the leaf's middle line, so the leaf
+    hugs it across), lifting off it toward the tip, a lens in section with a groove down its
+    middle; the low hub they grow from; the short stem, leaning."""
+    n_round, n_len = (24, 30) if hi else (12, 13)
+    t0, t1 = SR["leaf_t"]
+    rng = np.random.default_rng(int(SR["seed"]))
+    for k in range(SR["leaves"]):
+        L = SR["leaf_l"][k % 2] * rng.uniform(0.95, 1.05)
+        phi = 2 * math.pi * k / SR["leaves"] + 0.3 + math.radians(rng.uniform(-7.0, 7.0))
+        lift = SR["leaf_lift"] * rng.uniform(0.75, 1.2)
+        W = SR["leaf_w"] * (1.0 if k % 2 == 0 else 0.86) * rng.uniform(0.94, 1.06)
+        bend = rng.uniform(-0.1, 0.1)       # the tip swept a little round (radians)
+        rings = []
+        for i in range(n_len + 1):
+            u = i / n_len
+            s = SR_LEN - (4.0 + L * u)
+            h = 0.35 + lift * u ** 2.6
+            if i == n_len:
+                p, nrm, _, _ = sr_frame(s, phi + bend)
+                rings.append([tuple(mm(c) for c in p + nrm * h)])
+                continue
+            hw, th_, ring = W * sr_leaf_w(u), t0 + (t1 - t0) * u, []
+            r_s = max(3.0, sr_at(s)[0])
+            for j in range(n_round):
+                a = 2 * math.pi * j / n_round
+                v, side = math.cos(a), math.sin(a)
+                p, nrm, _, _ = sr_frame(s, phi + bend * u * u + hw * v / r_s)
+                if side > 0:
+                    off = th_ / 2 * side - SR["groove"] * math.exp(-(v / 0.16) ** 2) * (1 - u) ** 0.5
+                else:
+                    off = 0.6 * th_ / 2 * side
+                ring.append(tuple(mm(c) for c in p + nrm * (h - 0.25 * v * v + off)))
+            rings.append(ring)
+        sh.loft(rings, SR_LEAF, cap_bottom=SR_LEAF)
+    R, H = SR["hub_r"], SR["hub_h"]
+    hub = [(R + 0.6, -1.8), (R, 0.0), (R * 0.86, H * 0.55), (R * 0.62, H * 0.86),
+           (R * 0.32, H * 0.98), (0.0, H)]
+    base = SR_TOP + Vector((0.0, 0.0, 1.0))
+    sh.lathe([(mm(r), mm(z)) for r, z in hub], SR_LEAF, 48 if hi else 16,
+             M=Matrix.Translation(base / K.STUD_MM))
+    sr, sl = SR["stem_r"], SR["stem_l"]
+    stem = [(sr + 1.2, -0.6), (sr, 1.6), (sr * 0.93, sl * 0.45), (sr * 0.88, sl * 0.82),
+            (sr * 0.74, sl * 0.95), (sr * 0.4, sl), (0.0, sl * 1.01)]
+    M = (Matrix.Translation((base + Vector((0.0, 0.0, H - 0.8))) / K.STUD_MM)
+         @ Matrix.Rotation(math.radians(SR["stem_tilt"]), 4, Vector((0.6, 0.8, 0.0))))
+    sh.lathe([(mm(r), mm(z)) for r, z in stem], SR_STEM, 32 if hi else 10, M=M)
+
+
+def sr_dent_frame():
+    """The dent's middle on the skin, the skin's outward normal there, and two ways along the
+    skin (round, up)."""
+    th, z = math.radians(SR["dent"][0]), SR["dent"][1]
+    s = float(np.interp(z, SR_Z[:SR_UP + 1], SR_S[:SR_UP + 1]))
+    C, n, down, rnd = sr_frame(s, th)
+    E2 = (-down - rnd * (-down).dot(rnd)).normalized()
+    return C, n, rnd, E2
+
+
+def sr_bones():
+    """The dent's bones (kit.Bone), the butter stick's way on a curved side: its middle sinks the
+    floor along the skin's inward normal; each of eight round it, half way out, sinks half as far
+    and tips its share of the slope toward the middle; their shares make one smooth bowl (bu_bones'
+    sums), measured across the skin, the berry's far side left alone."""
+    C, n, E1, E2 = sr_dent_frame()
+    R, nr = SR["dent_r"], SR["rims"]
+
+    def bowl(co):
+        d = Vector(co) * K.STUD_MM - C
+        a, b = d.dot(E1), d.dot(E2)
+        u = min(1.0, math.hypot(a, b) / R)
+        s = 1.0 - u * u * (3 - 2 * u)
+        near = max(0.0, min(1.0, (d.dot(n) + 14.0) / 6.0))
+        return s, math.atan2(b, a), near
+
+    def middle(co):
+        s, _, near = bowl(co)
+        return max(0.0, 2 * s - 1) * near
+
+    def rim(k):
+        phi = 2 * math.pi * k / nr
+
+        def w(co):
+            s, a, near = bowl(co)
+            d = abs((a - phi + math.pi) % (2 * math.pi) - math.pi)
+            return 2 * min(s, 1 - s) * max(0.0, 1 - d / (2 * math.pi / nr)) * near
+        return w
+
+    inward = tuple(-n)
+    bones = [kit.Bone("Dent", tuple(C / K.STUD_MM), weight=middle, axis=inward)]
+    for k in range(nr):
+        phi = 2 * math.pi * k / nr
+        radial = E1 * math.cos(phi) + E2 * math.sin(phi)
+        at = C + radial * (R / 2) - n * ((R / 2) ** 2 / 120.0)
+        bones.append(kit.Bone(f"Rim{k + 1}", tuple(at / K.STUD_MM), weight=rim(k), axis=inward,
+                              hinge=tuple(radial.cross(n))))
+    return bones
+
+
+def sr_squeeze():
+    """The dent's tracks from RISE: the middle sinks dent_d, the ring half that and tips."""
+    def scaled(v):
+        return [(k[0], k[1] * v, *k[2:]) for k in K.RISE]
+    tracks = [("Dent", "move", scaled(mm(SR["dent_d"])))]
+    for k in range(SR["rims"]):
+        tracks.append((f"Rim{k + 1}", "move", scaled(mm(SR["dent_d"] / 2))))
+        tracks.append((f"Rim{k + 1}", "turn", scaled(SR["tilt"])))
+    return round(K.RISE[-1][0] + 0.5, 2), tracks
+
+
+def sr_seed_ink(res=(1024, 2048)):
+    """The seeds unrolled: u round the berry (the front in the middle, the back at both edges), v
+    up it (0 the floor, 1 at SR_ZT mm). Staggered rows up the skin, each row as many seeds as fit
+    round it, each seed drawn at its true size where it lands (squeezed in v where the skin slopes,
+    in u by the ring's radius), a hair turned and sized at random. Two masks: the yellow teardrops
+    (pointing up toward the cap) and the round pits they sit in, deepest in the middle."""
+    H, W = res
+    seed = np.zeros((H, W))
+    pit = np.zeros((H, W))
+    rng = np.random.default_rng(int(SR["seed"]) + 1)
+    L2, w2, p2 = SR["seed_l"] / 2, SR["seed_w"] / 2, SR["pit"] / 2
+    k, s = 0, SR["seed_from"]
+    while s < SR_LEN - SR["seed_to"]:
+        r, z = sr_at(s)
+        dzds = max(0.12, (sr_at(s + 0.5)[1] - sr_at(s - 0.5)[1]) / 1.0)
+        n = max(3, round(2 * math.pi * r / SR["pitch"]))
+        pu, pv = W / (2 * math.pi * r), H / SR_ZT * dzds      # pixels a mm, round and up
+        half = int(math.ceil(p2 * 1.3 * max(pu, pv))) + 2
+        for j in range(n):
+            th = 2 * math.pi * (j + 0.5 * (k % 2) + rng.uniform(-0.12, 0.12)) / n
+            cu = (th / (2 * math.pi) + 0.5) * W
+            cv = (z + rng.uniform(-0.6, 0.6) * dzds) / SR_ZT * H
+            cols = np.arange(int(cu) - half, int(cu) + half + 1)
+            rows = np.arange(max(0, int(cv) - half), min(H, int(cv) + half + 1))
+            x = ((cols + 0.5 - cu) / pu)[None, :]
+            y = ((rows + 0.5 - cv) / pv)[:, None]
+            # the pit: a soft round bowl a little below the seed's middle
+            d = np.hypot(x, y + 0.35) / p2
+            bowl = np.clip(1.0 - d * d, 0.0, 1.0) ** 0.8
+            # the seed: a teardrop, turned a little, its point up
+            a = math.radians(rng.uniform(-16.0, 16.0))
+            sz = rng.uniform(0.88, 1.1)
+            xr = (x * math.cos(a) - y * math.sin(a)) / sz
+            yr = (x * math.sin(a) + y * math.cos(a)) / sz
+            t = yr / L2
+            q = (xr / (w2 * np.clip(1.0 - 0.45 * t, 0.2, 2.0))) ** 2 + t * t
+            aa = 1.6 / (min(pu, pv) * w2)
+            drop = np.clip((1.0 - q) / aa, 0.0, 1.0)
+            cc = cols % W
+            pit[np.ix_(rows, cc)] = np.maximum(pit[np.ix_(rows, cc)], bowl)
+            seed[np.ix_(rows, cc)] = np.maximum(seed[np.ix_(rows, cc)], drop)
+        k += 1
+        s += SR["row"]
+    return seed, pit
+
+
+def strawberry_look(L, f):
+    nb = L.nb
+    xm, ym, zm = nb.mul(L.x, K.STUD_MM), nb.mul(L.y, K.STUD_MM), nb.mul(L.z, K.STUD_MM)
+    lx, ly = SR["lean"]
+    sx, sy = SR["oval"]
+    xs = nb.mul(nb.sub(xm, nb.mul(zm, lx)), 1 / sx)          # the berry's own across and back,
+    ys = nb.mul(nb.sub(ym, nb.mul(zm, ly)), -1 / sy)         # the lean taken out
+    rho = nb.math("SQRT", nb.add(nb.mul(xs, xs), nb.mul(ys, ys)))
+    skin = L.k(SR_SKIN)
+    green = L.k(SR_LEAF, SR_STEM)
+    # the foam: rich strawberry red, matt, airbrushed deeper toward the tip and lighter, warmer
+    # over the shoulder; faintly mottled where the spray went on unevenly; a fine porous skin
+    C = Coat(L, hexc("#DE2634"), 0.8)
+    C.paint(nb.mul(nb.inv(nb.ss(zm, 6.0, 56.0)), 0.8), hexc("#B5172A"), 0.8)
+    C.paint(nb.mul(nb.ss(zm, 82.0, 117.0), 0.7), hexc("#F0504A"))
+    C.paint(nb.mul(nb.ss(L.noise(7.0, 1, detail=4), 0.45, 0.8), 0.45), hexc("#D01F31"))
+    C.paint(nb.mul(nb.ss(L.noise(22.0, 2, detail=3), 0.58, 0.78), 0.4), hexc("#EC4046"))
+    pores = nb.ss(L.noise(1300.0, 3, detail=2), 0.58, 0.72)
+    pits = nb.ss(L.noise(380.0, 4, detail=2), 0.66, 0.74)
+    C.paint(nb.add(pores, nb.mul(pits, 0.8), clamp=True), height=-0.35)
+    # the seeds: printed yellow teardrops sunk in shallow pits, the pits a touch darker inside
+    seed, pit = sr_seed_ink()
+    th = nb.math("ARCTAN2", xs, ys)
+    uv = nb.comb(nb.add(nb.mul(th, 1 / (2 * math.pi)), 0.5), nb.mul(zm, 1 / SR_ZT), 0.0)
+    looks = []
+    for name, mask in (("StrawberrySeeds", seed), ("StrawberryPits", pit)):
+        t = nb.node("ShaderNodeTexImage", image=bu_image(name, mask), interpolation="Cubic",
+                    extension="EXTEND")
+        nb.put(t.inputs["Vector"], uv)
+        looks.append(nb.mul(skin, t.outputs["Color"]))
+    seeds, hollow = looks
+    C.paint(hollow, height=-2.2)
+    C.paint(nb.mul(hollow, 0.4), hexc("#A8142A"))
+    C.paint(seeds, hexc("#FFD23F"), 0.6, height=0.8)
+    C.paint(nb.mul(seeds, nb.mul(nb.ss(L.noise(260.0, 5, detail=2), 0.5, 0.7), 0.6)),
+            hexc("#F2B630"))
+    # the cap: leaf green foam, darker toward the hub, lighter and yellower at the tips; the stem
+    # a deeper olive, its cut end browner
+    C.paint(green, hexc("#48A23A"), 0.74)
+    C.paint(nb.mul(green, nb.inv(nb.ss(rho, 5.0, 16.0))), hexc("#2F7A2C"))
+    C.paint(nb.mul(green, nb.mul(nb.ss(rho, 20.0, 36.0), 0.7)), hexc("#7CC455"))
+    C.paint(nb.mul(green, nb.mul(nb.ss(L.noise(30.0, 6, detail=3), 0.5, 0.8), 0.35)),
+            hexc("#3E9135"))
+    stem = L.k(SR_STEM)
+    C.paint(stem, hexc("#4F8A30"), 0.72)
+    ztop = SR_TOP.z + 1.0 + SR["hub_h"] - 0.8 + SR["stem_l"]
+    C.paint(nb.mul(stem, nb.ss(zm, ztop - 2.2, ztop - 0.8)), hexc("#7A7A3C"), 0.8)
+    C.finish(f.dust, grime=0.25)
+    return C.surface(bump_dist=mm(0.12), bump=0.5)
+
+
+SR_DUR, SR_TRACKS = sr_squeeze()
+SR_C, SR_N, _, _ = sr_dent_frame()
+
+JUMBO_STRAWBERRY = kit.Find(
+    "JumboStrawberry",
+    [kit.Part("Berry", sr_body, bones=sr_bones())],
+    strawberry_look,
+    motions={
+        # a thumb pressed deep into its side and let go: the dent sinks, is held, gives a little
+        # back at once, then takes ten seconds to rise smooth (the game's soft squish on the press)
+        "Squeeze": dict(duration=SR_DUR, tracks=SR_TRACKS,
+                        focus=tuple((SR_C + SR_N * 4.0) / K.STUD_MM),
+                        distance=0.8, view=(0.45, -1.0, 0.3), drop=0.0),
+    },
+    dust=SR["dust"], seed=SR["seed"], texels=1000,
+)
+
+FINDS = [BUTTER_STICK, STRESS_BALL, MOCHI_BUN, TOAST_SLICE, JUMBO_STRAWBERRY]
 
 if __name__ == "__main__":
     kit.main("Squishies", HERE, FINDS)

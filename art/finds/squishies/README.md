@@ -138,3 +138,47 @@ clipping the crown), full sheets once, and in Studio under a warm 0.6 bulb (temp
 then crushes fast to 0.75 tall under the thumb; held a moment; let go, it springs back to 1.05 in
 a seventh of a second, dips to 0.97 and settles inside two thirds of a second, softer than the
 rubber ball's ring. Whole-body `stretch` (`K.SPRING`).
+
+## Jumbo slow-rise strawberry (F-05c, Nov 16)
+
+**References.** Jumbo strawberry squishies sold in 2026, seen in an image search for "jumbo slow
+rise strawberry squishy" (bing.com/images) and four listing photos opened from it: an 8 in giant
+vinyl strawberry with sculpted seed pits (m.media-amazon.com/images/I/616-nbX4-tL), a classic
+slow-rise pair with a star cap and a stem (walmart.com, "Giant Strawberry Squishy, Classic
+Slow-Rise"), a 25 cm one held in two hands (banggood), and a PU foam jumbo printed with yellow
+teardrop seeds (m.media-amazon.com/images/I/51FdZzlfavL). Sizes: Sunny Days' Squeezy Strawberry 5
+x 5 x 5 in (target.com A-94757072), a Walmart "extra large" 5 in, a half jumbo 13 cm tall
+(lmk.today). A fat rounded cone widest a little over half way up, rich red, a flat green cap of
+pointed leaves lying over the shoulder round a short stem.
+
+**Size.** 112 mm across, 121 mm to the top of the shoulder, 136 mm to the stem's tip (4.4 x 4.8
+in, 5.4 in with the stem): 0.45 x 0.54 x 0.44 studs, standing on the little flat spot a soft
+foam tip settles onto.
+
+**Tells.** The strawberry shape (the rounded cone, the tip it stands on); rows of yellow seeds
+on red; the green star of a cap and its stem. From a unit's doorway it is a red ball with a green
+top; held, the seeds and the leaves read at once.
+
+**What it is.** `Berry`, one part (the cap is in the same mesh: Roblox's importer turns an FBX
+with bones and two meshes into a Motor6D rig and drops the bones). The berry is lofted ring by
+ring up a Catmull-Rom outline (`sr_curve`), three broad lobes round it, a hair oval, its top
+slumped a little aside; its points crowd at the front where the thumb goes (`sr_thetas`) and its
+rings through the dent's heights (`sr_ring_s`). Each of six leaves (long and short in turn, a
+little uneven) is lofted along the skin from under the hub to its point, every ring's points
+slid round the berry so it hugs it across, lifting toward the tip, a lens in section with a
+groove down its middle; a low hub and a leaning stem on top. The seeds are an unrolled numpy
+image (`sr_seed_ink`): staggered rows, each as many seeds as fit round it, every teardrop drawn
+at its true size where it lands, sitting in a round pit sunk in the bump. Airbrushed deeper red
+toward the tip and lighter, warmer over the shoulder. 1024 texture at 888 texels a stud; 10,286
+triangles (dense where the dent bends). Judged on quick sheets twice (fixed: a thin, small cap
+that didn't read in the hand, an apple-round tip, tan seeds, the filmstrip filming the dent
+edge-on), full sheets once, and in Studio under a warm 0.6 bulb, the dent pressed by
+`Finds.pose` (template in `ReplicatedStorage.Props.Finds.JumboStrawberry`, uploaded
+81603530188772).
+
+**Squeeze** (11.1 s + 0.5): the dent takes ten seconds to rise back. A thumb goes 12 mm into its
+front in 0.38 s, slowing as the foam fights it; held; let go, it gives a little back at once,
+then rises slowly, quickest first, and creeps the last of the way smooth ten seconds after the
+thumb let go (`K.RISE`). The butter stick's bones on a curved side (`sr_bones`): a middle bone
+sliding along the skin's inward normal and eight round it, half way out, sliding half as far and
+tipping their share of the bowl's slope toward the middle, so its sides catch the light.

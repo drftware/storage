@@ -191,3 +191,54 @@ SPRING = [
     (1.1, 1.008, "Sine", "InOut"),
     (1.26, 1.0, "Sine", "InOut"),
 ]
+
+# --- The jumbo slow-rise strawberry (F-05c) -----------------------------------------------------
+# References (README): jumbo strawberry squishies sold in 2026 run 4.5 to 6.3 in (Sunny Days'
+# Squeezy Strawberry 5 x 5 x 5 in; a Walmart "extra large" 5 in; a half jumbo 13 cm tall): a fat
+# rounded cone, widest a little over half way up, a broad rounded tip it stands on, rich red PU
+# foam airbrushed lighter over the shoulder, rows of little yellow teardrop seeds printed in
+# shallow pits, a flat green cap of pointed leaves lying over the top round a short stem. Ours is
+# 4.9 in tall and 4.4 in across, six leaves of our own, long and short in turn.
+STRAWB = dict(
+    # its outline, the floor to the top's middle (mm out from its middle, mm up); a smooth curve
+    # runs through these points: a little flat spot it settles on, the rounded tip, widest 62 per
+    # cent up, the shoulder rolling over into a shallow dip where the cap sits
+    outline=[(0.0, 0.0), (8.0, 0.0), (16.0, 1.5), (25.0, 6.6), (33.5, 16.0), (42.5, 30.0),
+             (49.5, 46.0), (54.2, 62.0), (56.2, 76.0), (55.2, 89.0), (51.0, 101.0),
+             (43.0, 111.0), (31.0, 118.0), (17.0, 121.4), (7.0, 121.0), (0.0, 120.2)],
+    lobes=0.022,      # three broad lobes round it (share of the radius), as a real berry has
+    oval=(1.015, 0.985),
+    lean=(0.028, -0.012),  # its top slumped this far aside and toward you, per mm of height
+    # the game mesh: points round each ring (closest together at the front, where the dent goes:
+    # `crowd` 0 even, 0.5 the front's half as far apart as the average), rings this far apart
+    # through the dent's heights and further elsewhere (the detailed mesh halves them all)
+    around=80, crowd=0.5, ring_fine=2.2, ring=5.0, fine=(46.0, 102.0),
+    # the seeds: printed yellow teardrops (long, wide, mm) in shallow round pits, in staggered
+    # rows this far apart up the berry and round it, none on the flat spot or under the cap
+    seed_l=3.4, seed_w=2.0, pit=5.0, row=10.5, pitch=12.5, seed_from=7.0, seed_to=26.0,
+    # the cap: six leaves round the stem (long and short in turn, mm along the berry's skin from
+    # the top's middle), their widest (half width, mm), how high their tips curl off the skin,
+    # how thick they are at the base and tip, the midrib's groove; the hub they grow from (its
+    # radius, how high) and the stem (its radius, length, tilt in degrees)
+    leaves=6, leaf_l=(47.0, 38.0), leaf_w=12.5, leaf_lift=3.4, leaf_t=(3.6, 1.5), groove=0.8,
+    hub_r=11.0, hub_h=4.6, stem_r=3.9, stem_l=12.0, stem_tilt=13.0,
+    # the thumb's dent, on its front a little right of the middle: its middle (degrees round from
+    # the front, mm up), its radius and how deep it goes, how far its sides tip toward the middle
+    # at its deepest (degrees), and the bones round it
+    dent=(8.0, 74.0), dent_r=23.0, dent_d=12.0, tilt=32.0, rims=8,
+    dust=0.2, seed=37.0,
+)
+
+# The squeeze, timed like a jumbo slow-rise squishy in the hand: a thumb pressed deep into its
+# side, slowing as the foam fights it, held, let go: a little give back at once, then the dent
+# rises slowly, quickest first, and creeps the last of the way smooth ten seconds after the thumb
+# let go (listings: "slow rising"; the catalog's "ten seconds to rise back"). (seconds, how far
+# in: 0 none, 1 the full dent[, style, way])
+RISE = [
+    (0.0, 0.0),
+    (0.38, 1.0, "Quad", "Out"),     # the thumb goes in deep
+    (1.1, 1.0),                     # held
+    (1.4, 0.92, "Sine", "Out"),     # let go: the first little give back
+    (4.4, 0.48, "Quad", "Out"),     # the slow rise, quickest first
+    (11.1, 0.0, "Sine", "Out"),     # creeping the last of the way smooth
+]
