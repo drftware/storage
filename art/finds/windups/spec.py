@@ -524,9 +524,9 @@ DRUM = dict(
     star=13.0,                    # the cream star printed in each V that opens upward (radius, mm)
     roundel=(8.0, 5.4, 3.6),      # the red roundel printed between them: outer, ring's outer and inner radius
     register=(0.35, -0.25),       # the red print's misregistration (mm round, mm up): a real litho's tell
-    mark=dict(r=(11.0, 8.0), star=4.2),
+    mark=dict(r=(14.0, 10.0), star=5.5),
     # our maker's mark printed in the V at the back instead of a star: an oval plate (half wide,
-    # half tall) with the kazoo's star in it
+    # half tall) rimmed in gold, with the kazoo's star in it; as big as a star, so it reads
     stick=dict(length=190.0, r=(4.5, 3.0), neck=2.6, bead=5.5, grip=40.0, tip=(14.0, 30.0),
                splay=20.0, gap=0.5),
     # each turned beech stick: its length, radius at the butt and where the taper ends, the neck

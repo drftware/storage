@@ -13,6 +13,7 @@ return {
 	SirenCar = { "Push" },
 	RubberDuck = { "Squeeze" },
 	Kazoo = { "Blow" },
+	ToyDrum = { "Bang" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },

@@ -6208,3 +6208,12 @@ on a tube 121 mm long, finer than the detailed mesh's rows, and the bake turns e
 same normal map. The red bottom half is painted to fold 1.5 mm up over the seam's bead onto the
 top's side, as a crimped tin kazoo's is: the shell is widest at the seam and the half below tucks
 under it, so without the fold the red showed as a hairline from any view above.
+
+## D-239 The toy drum's worn patch sits where its beads land, spread toward the middle (F-04f2, Nov 16)
+The drum's sticks are found lying across the head, and in `Bang` each turns about the hand's
+grip, so its bead comes down where it lay. The grey-brown patch worn into the calfskin, pocked
+with small dents (`drum_look`), is centred there, but its halo is drawn 10 mm toward the head's
+middle, as a kid's hits wander: centred under the bead, the beads hid it from every view. The
+pressed grooves round each hoop's band, the head's veins and the dents are painted heights, not
+modelled, as the kazoo's pressings are (D-238); each groove is 1 mm wide, two texels at the
+drum's 511 texels a stud, since a finer one vanished from the normal map.

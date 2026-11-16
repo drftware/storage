@@ -431,3 +431,53 @@ pumping, swelling through the note as the kazoo leans in 1.6 degrees more; the n
 
 **In the place:** uploaded (`assets.json`) and imported in Edit on Nov 16 as
 `ReplicatedStorage.Props.Finds.Kazoo`.
+
+## Toy drum (Uncommon): "Bang: loud"
+
+A child's tin drum, our own: a lithographed tin shell in deep blue under a glossy lacquer, a
+cream star in every V the cord makes and a red-and-cream roundel in every V between, a fine
+cream line round the shell near each hoop, the red printed a hair off the cream as a real
+litho's colours are. Two rolled-tin hoops in glossy red enamel, each with a fat bead rolled at
+both edges and two fine grooves pressed round its band; a white cotton cord gone ivory, three
+twisted strands, laced in ten V's through tin grommets in the hoops, the tell from a doorway.
+A calfskin head lies under the top hoop's turned-in lip: two-tone mottle, fine veins, broad
+darker clouds and the faint streak of the calf's spine across it. Two turned beech sticks with
+round beads lie across the top, beads on the head, butts out over the front rim. At the back,
+in place of a star, our maker's mark: a cream oval as big as a star, rimmed in gold, a fine red
+line inside and a red star. Played with for years: a grey-brown patch worn into the head where
+the beads land, pocked with small dents, a fainter played-on zone between; the beads greyed and
+dented, the sticks darker where they're held; the front rim nicked in a few clusters where the
+sticks catch it, rusting at their cores; the hoops' enamel chipped in patches and rusting at
+the foot; the shell's ink rubbed thin low down and at the front, worn to the tin here and
+there, dragged scratches round it, a shallow dent low on the front right with its ink crazed;
+the cream ink gone faintly yellow; the tin bottom dull and freckled with rust.
+
+**Looked at:** Laurel Leaf Farm's Ohio Art drum (6.25 x 3.75 in: litho shell with picture
+medallions, rolled white hoops, plain sticks with round ends), Theriault's c.1895 child's drum
+(7 in: red hoops, the rope laced in V's through holes in the hoops, paper heads, sticks), the
+V&A's Chad Valley drum B.624:1-1999 (6 x 3 in, pressed steel, litho medallions, cord through
+holes in the top) and Red Balloon's tin drum listing (about 7 x 5 in, two wooden sticks).
+
+**Size:** 165 mm (6.5 in) across the shell, 175 over the hoops, 115 tall: 0.69 studs across.
+Small from a unit's doorway (cream head, crossed sticks, red rims; the zigzag barely shows, as
+for any find this size); held, the stars, red hoops and white zigzag read at once.
+
+**Tells:** the white zigzag cord between two red hoops, the cream head with sticks across it.
+
+**Parts:** `Body` (root, its pivot on the floor at its middle): the shell and bottom, both
+hoops, the cord and the grommets. `Head` (the calfskin) rides on it, its pivot at its middle,
+axis up, and `move`s. `StickL` and `StickR` each turn about the hand's grip 40 mm from the
+butt, axis level and square to the stick: a positive turn lifts the bead.
+
+**Motions:** `Bang` (2.3 s), worked out in `drum_bang`: a kid banging it, left, right, left,
+right, then both together. Each stick lifts 30 degrees in 0.15 s, slowing into the top, snaps
+down onto the head in 0.06 s, quicker and quicker, bounces 9 degrees off it and settles with a
+small second bounce; the head dips 1.5 mm and shivers back; the whole drum gives 0.5 mm. The
+double lifts 44 degrees, slower, bounces 15, dips the head 2.6 mm and the drum 1.5. **The hits
+land at 0.22, 0.49, 0.76 and 1.03 s, the double at 1.61 s: the game plays a bang at each**
+(the double louder).
+
+**Sheets:** `art/sheets/toydrum-*.png`; motion preview `out/toydrum-bang.mp4`.
+
+**In the place:** uploaded (`assets.json`) and imported in Edit on Nov 16 as
+`ReplicatedStorage.Props.Finds.ToyDrum`.

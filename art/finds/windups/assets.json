@@ -31,6 +31,10 @@
     "assetId": 128316798025282,
     "sha256": "d04dd814ffa3db2412bddd6f7cfa30a4480ac61d5c28423eaa5e374693514f86"
   },
+  "ToyDrum": {
+    "assetId": 119199588572642,
+    "sha256": "acf415411595eae92e589508e97e38fa156aa315aaf432d07db017a7a9fe5ac0"
+  },
   "WalkingRobot": {
     "assetId": 109415009719114,
     "sha256": "823360de1ad3cfccb3a3704b789913712001b3a611a99a65c5821558e23ff923"

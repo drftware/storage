@@ -6,10 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** finish F-04f2, the toy drum (step 4's second find), half built in
-`art/finds/windups/`: the newest note says exactly what's left; then F-04g, the farm-animal
-spinner (step 5). The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp`
-when next touched.
+**Next:** F-04g, the farm-animal spinner (step 5), alone; the newest note has its hints. The
+oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next
+touched.
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -30,7 +29,7 @@ changes the table's order a little.
    so it sweeps the hall's walls as it rolls) and the squeaky rubber duck (squeeze: the whole
    duck squashes and springs back).
 4. **F-04f** Kazoo (built Nov 16; blow: the paper skin under its cap shivers) and, as
-   **F-04f2**, the toy drum (a kid's tin
+   **F-04f2**, the toy drum (built Nov 16; a kid's tin
    drum with zigzag rope sides, the tell from a doorway, and two sticks; a stick comes down, the
    head shivers, the stick bounces off).
 5. **F-04g** Farm-animal spinner alone (pull: the lever comes down and snaps back, the arrow
@@ -90,6 +89,39 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04f2 (the toy drum built, judged and in the place; step 4 done).** `ToyDrum` in
+  `windups/build.py`, README section (with the Bang's hit times for the game: 0.22, 0.49, 0.76,
+  1.03 and the double at 1.61 s), D-239. Uploaded and imported in Edit
+  (`ReplicatedStorage.Props.Finds.ToyDrum`: 4 parts, 3 joints, its pivots and sizes checked).
+  **What up close needed** (the half-built note's six, all done, judged on quick sheets twice and
+  full sheets once): the head is calfskin now (two-tone mottle, broad darker clouds, fine veins,
+  a faint spine streak across it, a grey-brown worn patch pocked with dents); the front rim's
+  nicks are a few irregular clusters rusting at their cores, and the hoops' enamel chips in
+  patches instead of a dotted line along every roll; two pressed grooves round each hoop band,
+  broken round the grommets; the sticks warmer with real grain lines, the beads plainly greyed;
+  the maker's mark as big as a star with a gold rim; the shell rubbed low and at the front,
+  dragged scratches bright to the tin at their cores, the cream ink faintly yellowed. **Found:**
+  the worn patch centred under the beads was hidden by them from every view; its halo now sits
+  10 mm toward the middle (D-239). The veins at full strength read as crackle; keep a hide's
+  veins faint. A 0.5 mm groove is one texel at 511 texels a stud and vanishes: paint grooves at
+  least 1 mm wide. The baked occlusion leaves a faint shadow of each stick on the head when it
+  lifts in Bang (the kit's way, as for every moved part). **F-04g's hints (step 5, not
+  researched):** the plan's step 5. Look at vintage talking farm-animal spinner toys on museum,
+  auction or collector pages (at least four photos, and one video of a pull for the timing): the
+  face's size (about 10 to 12 in across), the body's depth, where the lever sits and how far it
+  travels, the arrow's hub and the clicking stop. Ours must not look like the famous one: give it
+  its own body (say, a squat barn-red housing with a round face set in it, a white trim, a made-up
+  maker's mark) and its own picture style. The face: eight animals in a ring (cow, pig, sheep,
+  horse, hen, duck, dog, cat), each a flat bold print drawn in code as masks in the look (the
+  drum's stars and the kazoo's mark show the way: polar shapes, ellipses, `within`/`bell`), each
+  in its own coloured wedge or roundel so it reads in the hand at phone size; judge each animal
+  up close and redraw any that reads as a blob. Parts: `Body` (root), `Lever` (turning on its
+  pivot at the side), `Arrow` (turning about the face's middle, axis out of the face). Motion
+  `Pull`: the lever is pulled down (about 0.25 s), let go and snaps back with an overshoot; the
+  arrow spins two or three turns, slows (Quart Out) and ticks over the last few pictures, a small
+  back-wobble at each, to stop exactly on one: land its final angle on a multiple of 45 degrees so
+  the game can add a multiple of 45 to choose the animal.
 
 - **Nov 16, F-04f2 (the toy drum half built: stopped at the context cap; not ticked, not
   exported, not uploaded).** `ToyDrum` in `windups/build.py` (`drum_*`, `hoop_rz`, `cord_runs`,
@@ -950,7 +982,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Squeaky rubber duck | Common | Squeeze: a squeak you can hear down the hall |  | Nov 16, F-04e2 |
 | Toy siren car | Common | Push: it rolls off, wailing | A noise that moves | Nov 16, F-04e |
 | Wind-up chattering teeth | Common | Wind: they chatter off across the floor | Monsters come to look | Nov 15, F-04c |
-| Toy drum | Uncommon | Bang: loud |  | |
+| Toy drum | Uncommon | Bang: loud |  | Nov 16, F-04f2 |
 | Wind-up mouse | Uncommon | Wind: it zips off and squeaks wherever it stops |  | Nov 16, F-04d |
 | Wind-up walking robot | Uncommon | Wind: it clanks off in a straight line for 15 seconds | A noise you can send down a hall | Nov 16, F-04c2 |
 | Farm-animal spinner | Uncommon | Pull: the arrow spins and an animal noise plays | A throwback toy | |

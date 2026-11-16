@@ -4957,14 +4957,18 @@ def drum_look(L, f):
     front = nb.mul(shell, nb.sub(1.0, back))
     star = nb.mul(front, within(nb.sub(ds, star_r), 0.0, 0.14))
     gold = nb.mul(front, bell(nb.sub(ds, star_r), 1.25, 0.3))
-    CREAM = nb.tint(hexc("#EFE4C6"), nb.mr(L.noise(90.0, 23, detail=2), 0.3, 0.7, 0.95, 1.03))
+    # the cream ink gone faintly yellow with age, more in some places than others
+    CREAM = nb.tint(nb.mixc(nb.ss(L.noise(5.0, 20, detail=3), 0.35, 0.75), hexc("#EFE3C2"), hexc("#E4CF9C")),
+                    nb.mr(L.noise(90.0, 23, detail=2), 0.3, 0.7, 0.95, 1.03))
     RED = hexc("#C02A20")
-    C.paint(gold, hexc("#C7A042"), 0.3, 0.55)
+    GOLD = hexc("#C7A042")
+    C.paint(gold, GOLD, 0.3, 0.55)
     C.paint(star, CREAM, 0.3, 0.0)
     mk = DR["mark"]
     e = hyp(nb.mul(us, 1.0 / mk["r"][0]), nb.mul(dv, 1.0 / mk["r"][1]))
     plate = nb.mul(nb.mul(shell, back), within(e, 1.0, 0.02))
     C.paint(plate, CREAM, 0.3, 0.0)
+    C.paint(nb.mul(nb.mul(shell, back), bell(e, 0.985, 0.075)), GOLD, 0.3, 0.55)
     eu = hyp(nb.mul(nb.sub(us, ru), 1.0 / mk["r"][0]), nb.mul(nb.sub(dv, rv), 1.0 / mk["r"][1]))
     C.paint(nb.mul(nb.mul(shell, back), bell(eu, 0.8, 0.045)), RED, 0.3, 0.0)
     ds_r = hyp(nb.sub(us, ru), nb.sub(dv, rv))
@@ -4991,12 +4995,19 @@ def drum_look(L, f):
     craze = nb.mul(shell, bell(dent, 8.5, 2.5))
     C.paint(nb.mul(craze, nb.ss(L.noise(260.0, 24, detail=3), 0.6, 0.66)), hexc("#C6C0B0"), 0.3, 0.8)
     # rubbed where it's been dragged and carried: the ink thinned, here and there worn to tin
-    rub = nb.mul(shell, nb.mul(nb.ss(L.noise(9.0, 25, detail=4, rough=0.6), 0.5, 0.7),
-                               nb.add(0.35, nb.mul(nb.sub(1.0, nb.ss(zm, 20.0, 60.0)), 0.65))))
-    C.paint(nb.mul(rub, 0.55), hexc("#55678F"), 0.36)
-    C.paint(nb.mul(rub, nb.ss(L.noise(70.0, 26, detail=3), 0.6, 0.68)), hexc("#C2BDAE"), 0.3, 0.85)
-    scr = nb.ss(L.noise(900.0, 27, stretch=(0.04, 0.04, 1.0), detail=2), 0.74, 0.77)
-    C.paint(nb.mul(nb.mul(shell, scr), 0.6), hexc("#8D93A6"), 0.3, 0.4)
+    # most low down, where it's been pushed along the floor, and at the front, where a kid's
+    # knees and belt rubbed it while they marched
+    low = nb.sub(1.0, nb.ss(zm, 18.0, 62.0))
+    fore = nb.ss(nb.sub(0.0, ym), 0.0, 70.0)
+    where = nb.add(nb.add(0.2, nb.mul(low, 0.6)), nb.mul(fore, 0.45), clamp=True)
+    rub = nb.mul(shell, nb.mul(nb.ss(L.noise(9.0, 25, detail=4, rough=0.6), 0.46, 0.68), where))
+    C.paint(nb.mul(rub, 0.62), hexc("#56688F"), 0.38)
+    C.paint(nb.mul(rub, nb.ss(L.noise(70.0, 26, detail=3), 0.58, 0.66)), hexc("#C2BDAE"), 0.3, 0.85)
+    # scratches round the drum from being dragged, a few bright to the tin at their cores
+    sn = L.noise(900.0, 27, stretch=(0.04, 0.04, 1.0), detail=2)
+    scr = nb.mul(nb.mul(shell, nb.ss(sn, 0.71, 0.75)), nb.add(0.35, nb.mul(where, 0.65), clamp=True))
+    C.paint(nb.mul(scr, 0.75), hexc("#8D93A6"), 0.32, 0.4)
+    C.paint(nb.mul(nb.mul(shell, nb.ss(sn, 0.765, 0.79)), where), hexc("#BDB9AC"), 0.3, 0.85)
     # the tin bottom: dull tinplate, freckled with rust
     C.paint(floor, nb.tint(hexc("#B8B3A4"), nb.mr(L.noise(30.0, 28, detail=3), 0.3, 0.7, 0.85, 1.05)), 0.38, 0.85)
     C.paint(nb.mul(floor, nb.ss(L.noise(40.0, 29, detail=4), 0.62, 0.7)), hexc("#7A4A2A"), 0.8, 0.1)
@@ -5015,13 +5026,29 @@ def drum_look(L, f):
     C.paint(nb.mul(hoop, within(dh, gi, 0.1)), hexc("#120F0C"), 0.85, 0.0)   # the hole, dark
     C.paint(grom, nb.tint(hexc("#CFC8B4"), nb.mr(L.noise(200.0, 32, detail=2), 0.3, 0.7, 0.8, 1.05)), 0.26, 0.9)
     C.paint(nb.mul(grom, nb.ss(L.noise(150.0, 33, detail=3), 0.58, 0.66)), hexc("#6E5338"), 0.6, 0.3)
+    # two fine grooves pressed round each hoop's band, just in from its rolls, broken round
+    # every grommet; grime settles in them
+    rr = hyp(xm, ym)
+    band_lo, band_hi = DR_H - HP["h"] + 2.0 * HP["roll"] + 0.5, DR_H - 2.0 * DR_RT - 0.3
+    grv = None
+    for zz in (band_lo + 0.8, band_hi - 0.7, DR_H - band_lo - 0.8, DR_H - band_hi + 0.7):
+        g = bell(zm, zz, 0.5)
+        grv = g if grv is None else nb.add(grv, g, clamp=True)
+    grv = nb.mul(nb.mul(nb.mul(hoop, grv), nb.ss(rr, DR_B - 0.7, DR_B - 0.25)), nb.ss(dh, go + 0.35, go + 0.8))
+    C.paint(nb.mul(grv, 0.8), hexc("#661310"), 0.45, None, dr_h(-0.24))
+    # the top rim nicked at the front where the sticks catch it: a few bites in clusters, big
+    # and small, rusting at their cores; the enamel otherwise chipped in patches, not evenly
     top_roll = nb.mul(hoop, nb.ss(zm, DR_H - 2.6, DR_H - 1.4))
-    nick = nb.mul(top_roll, nb.mul(nb.ss(nb.sub(0.0, ym), 10.0, 60.0), nb.ss(L.noise(45.0, 34, detail=4), 0.55, 0.62)))
-    chips = C.enamel_wear(nb.mul(hoop, nb.add(0.75, nb.mul(top_roll, 0.25))), hexc("#C2BDAE"), 35, 1.0)
-    C.paint(nick, hexc("#BDB8A9"), 0.4, 0.85, dr_h(-0.05))
     foot = nb.sub(1.0, nb.ss(zm, 3.0, 8.0))
-    C.paint(nb.mul(nb.add(chips, nick, clamp=True), nb.add(nb.mul(foot, 0.9), 0.25, clamp=True)),
-            hexc("#7B4528"), 0.8, 0.1)
+    nn = L.noise(45.0, 34, detail=4)
+    cluster = nb.ss(L.noise(7.0, 37, detail=2), 0.48, 0.6)
+    nick = nb.mul(nb.mul(top_roll, nb.ss(nb.sub(0.0, ym), 10.0, 60.0)),
+                  nb.mx(nb.mul(nb.ss(nn, 0.6, 0.65), cluster), nb.ss(L.noise(16.0, 38, detail=3), 0.72, 0.75)))
+    patchy = nb.add(nb.ss(L.noise(6.0, 39, detail=2), 0.44, 0.52), foot, clamp=True)
+    chips = C.enamel_wear(nb.mul(hoop, patchy), hexc("#C2BDAE"), 35, 1.0)
+    C.paint(nick, hexc("#BDB8A9"), 0.4, 0.85, dr_h(-0.08))
+    C.paint(nb.mul(nick, nb.ss(L.noise(110.0, 35, detail=2), 0.5, 0.62)), hexc("#8A4A26"), 0.8, 0.1)
+    C.paint(nb.mul(chips, nb.add(nb.mul(foot, 0.9), 0.25, clamp=True)), hexc("#7B4528"), 0.8, 0.1)
     C.paint(nb.mul(nb.mul(hoop, foot), nb.ss(L.noise(25.0, 36, detail=4), 0.5, 0.64)), hexc("#5E2A1A"), 0.6)
 
     # the cord: white cotton gone ivory, dirtier toward the holes where hands pull it
@@ -5033,36 +5060,60 @@ def drum_look(L, f):
 
     # the calfskin head: cream hide, mottled and veined, darker where it rolls over the edge;
     # scuffed grey where the beads have struck it for years, with little dents
-    rh = hyp(xm, ym)
+    rh = rr
     mott = L.noise(14.0, 51, detail=4, rough=0.6)
-    SKIN = nb.tint(nb.mixc(nb.ss(mott, 0.4, 0.7), hexc("#EAD8B0"), hexc("#D7BE8E")),
-                   nb.mr(L.noise(120.0, 52, detail=3), 0.3, 0.7, 0.95, 1.03))
+    SKIN = nb.tint(nb.mixc(nb.ss(mott, 0.36, 0.68), hexc("#EEDDB6"), hexc("#D1B381")),
+                   nb.mr(L.noise(120.0, 52, detail=3), 0.3, 0.7, 0.94, 1.04))
     C.paint(head, SKIN, 0.6, 0.0, nb.mul(L.noise(700.0, 53, detail=3), dr_h(0.03)))
-    vein = bell(L.noise(5.0, 54, detail=3, distortion=0.4), 0.5, 0.012)
-    C.paint(nb.mul(nb.mul(head, vein), 0.4), hexc("#C4A877"), 0.6)
+    # broad clouds where the hide is thicker: darker, warmer
+    C.paint(nb.mul(nb.mul(head, nb.ss(L.noise(4.0, 57, detail=3, rough=0.55), 0.52, 0.72)), 0.5),
+            hexc("#C6A46F"), 0.58)
+    vein = bell(L.noise(5.0, 54, detail=3, distortion=0.4), 0.5, 0.009)
+    C.paint(nb.mul(nb.mul(head, vein), 0.3), hexc("#C2A271"), 0.6)
+    # the calf's spine: a faint darker streak right across the hide, a little wavy, in front of
+    # where the sticks land
+    sa = math.radians(14.0)
+    across = nb.add(nb.add(nb.mul(xm, -math.sin(sa)), nb.mul(ym, math.cos(sa))), 16.0)
+    wob = nb.mul(nb.sub(L.noise(3.0, 58, detail=2), 0.5), 9.0)
+    spine = nb.sub(1.0, nb.ss(nb.absf(nb.add(across, wob)), 0.8, 4.5))
+    C.paint(nb.mul(nb.mul(head, spine), 0.38), hexc("#BC9A66"), 0.56)
     C.paint(nb.mul(head, nb.ss(rh, DR_R * 0.84, DR_R * 0.97)), hexc("#C9AF80"), 0.62)
-    strike = None
+    # where the beads land: years of hits have worn a grey-brown patch, polished a little,
+    # pocked with small round dents; a fainter played-on zone between the two
+    strike, core = None, None
     for name in ("StickL", "StickR"):
         _, Cb, _, _, _ = STICKS[name]
         dd = hyp(nb.sub(xm, Cb.x), nb.sub(ym, Cb.y - 4.0))
-        m = nb.sub(1.0, nb.ss(dd, 3.0, 15.0))
+        # hits wander toward the middle: the worn patch spreads out in front of the bead
+        w = Vector((Cb.x, Cb.y, 0.0)) * (1.0 - 10.0 / math.hypot(Cb.x, Cb.y))
+        dw = hyp(nb.sub(xm, w.x), nb.sub(ym, w.y))
+        m, c = nb.sub(1.0, nb.ss(dw, 6.0, 21.0)), nb.sub(1.0, nb.ss(dd, 2.0, 11.0))
         strike = m if strike is None else nb.add(strike, m, clamp=True)
+        core = c if core is None else nb.add(core, c, clamp=True)
+    played = nb.sub(1.0, nb.ss(hyp(xm, nb.sub(ym, 18.0)), 12.0, 42.0))
+    C.paint(nb.mul(nb.mul(head, played), 0.3), hexc("#B39A74"), 0.55)
     sm = nb.mul(head, strike)
-    C.paint(nb.mul(sm, nb.mr(L.noise(35.0, 55, detail=4), 0.3, 0.7, 0.35, 0.8)), hexc("#9F8B6B"), 0.45)
-    C.paint(nb.mul(sm, nb.ss(L.noise(230.0, 56, detail=2), 0.66, 0.74)), hexc("#857154"), 0.5, 0.0, dr_h(-0.12))
+    C.paint(nb.mul(sm, nb.mr(L.noise(35.0, 55, detail=4), 0.3, 0.7, 0.7, 1.0)), hexc("#857258"), 0.48)
+    C.paint(nb.mul(nb.mul(head, core), 0.45), hexc("#6F5F4A"), 0.46)
+    pock = nb.sub(1.0, nb.ss(nb.voronoi(L.vec(s=59.0), 85.0), 0.1, 0.32))
+    dents = nb.mul(nb.mul(nb.mul(head, core), pock), nb.ss(L.noise(60.0, 56, detail=2), 0.42, 0.55))
+    C.paint(dents, hexc("#76654E"), 0.52, 0.0, dr_h(-0.3))
 
     # the sticks: turned beech, lacquered; grey and dented at the beads, darker where held
     grain = L.noise(55.0, 61, stretch=(1.0, 0.035, 1.0), detail=4)
-    WOOD = nb.tint(nb.mixc(nb.ss(grain, 0.4, 0.75), hexc("#DDBE8F"), hexc("#C39B66")),
-                   nb.mr(L.noise(300.0, 62, stretch=(1.0, 0.05, 1.0), detail=2), 0.3, 0.7, 0.93, 1.04))
-    C.paint(stick, WOOD, 0.42, 0.0, nb.mul(grain, dr_h(0.03)))
+    WOOD = nb.tint(nb.mixc(nb.ss(grain, 0.34, 0.72), hexc("#E6BF86"), hexc("#B9844C")),
+                   nb.mr(L.noise(300.0, 62, stretch=(1.0, 0.05, 1.0), detail=2), 0.3, 0.7, 0.92, 1.05))
+    C.paint(stick, WOOD, 0.42, 0.0, nb.mul(grain, dr_h(0.04)))
+    # fine dark grain lines running down the turned beech
+    fine = bell(L.noise(150.0, 64, stretch=(1.0, 0.02, 1.0), detail=3), 0.5, 0.03)
+    C.paint(nb.mul(nb.mul(stick, fine), 0.5), hexc("#9A673A"), 0.44)
     for name in ("StickL", "StickR"):
         B, Cb, _, _, _ = STICKS[name]
-        tip = nb.mul(stick, nb.sub(1.0, nb.ss(dist3(Cb), ST["bead"] + 0.2, ST["bead"] + 2.0)))
-        C.paint(nb.mul(tip, 0.7), hexc("#A08868"), 0.55)
-        C.paint(nb.mul(tip, nb.ss(L.noise(260.0, 63, detail=2), 0.62, 0.7)), hexc("#7E6A50"), 0.6, 0.0, dr_h(-0.1))
+        tip = nb.mul(stick, nb.sub(1.0, nb.ss(dist3(Cb), ST["bead"] + 0.8, ST["bead"] + 4.0)))
+        C.paint(nb.mul(tip, 0.82), hexc("#9C8C74"), 0.6)
+        C.paint(nb.mul(tip, nb.ss(L.noise(260.0, 63, detail=2), 0.64, 0.7)), hexc("#7A6A55"), 0.62, 0.0, dr_h(-0.12))
         held = nb.mul(stick, nb.sub(1.0, nb.ss(dist3(B), 30.0, 70.0)))
-        C.paint(nb.mul(held, 0.5), hexc("#AE8A5C"), 0.3)
+        C.paint(nb.mul(held, 0.55), hexc("#A47F50"), 0.3)
     C.finish(f.dust, grime=0.5)
     return C.surface(bump_dist=DR_BD, bump=1.0)
 
