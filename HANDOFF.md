@@ -2,7 +2,7 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-16, session 214 (the RC car's handling, built in Brix) · **Checks:** green here and in Brix · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix `main` at `1a97787`, committed, not pushed.
+**Updated:** 2026-11-16, session 214 (the RC car's handling, built in Brix) · **Checks:** green here and in Brix · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix `main` at `1a97787`, pushed, CI passes.
 
 ## State
 - The owner (D-252): "absolute world-class", and Brix code is written from here when a ticket needs
@@ -12,7 +12,7 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   driver's device moves, so walls and shut doors stop it and friends see it smoothly; the server
   checks every move. F-G1b3c2a is done: Brix's `Handling.car` (its ENG-24a, E-079), throttle and
   steering in with the car's real speed, the speed and turn out; 41 specs, a bench, a module page.
-- The pin is still `5cdb8c2`: it moves once Brix is pushed (`OWNER.md`'s new item).
+- Brix is pushed (CI passes); the pin is still `5cdb8c2` and moves when F-G1b3c2c first uses it.
 - Earlier today: the lamps switch on anywhere (F-G1b3c1, D-250); worn finds and the home unit are
   designed (D-251: F-G1b4, F-G1b5, S5-03a-c, one question in `OWNER.md`). Find art: F-05e (step
   14) and F-05f (step 15) are left in `art/finds/WAVES.md`.
@@ -36,7 +36,7 @@ a forced teleport is put back, the driver leaving ends the drive, each logged in
 **Read first:** `../engine/AGENTS.md`; `../engine/HANDOFF.md` and its Read-first list; D-252 (grep
 "^## D-252" docs/DECISIONS.md).
 
-## After it: F-G1b3c2c Drive it (needs Brix pushed, then the pin moved)
+## After it: F-G1b3c2c Drive it (moves the pin first)
 The car set down in front of you apart from its transmitter, which stays in your hands (the model
 is one: `RCCar_Remote` is the root and the car hangs off `RCCar_Arms`, so the car needs its own
 assembly); the hood camera low and wide with a jolt on a bump; the stick through Brix, a sideways

@@ -53,7 +53,7 @@ Moving the pin is its own small step, taken when a ticket first needs something 
 | RoundLoop, RoundPlayers, countdowns, teams, round ends (ENG-13) | Built | `Climbs`/`ClimbEnds` stand in; adopting it is its own ticket |
 | Purchases, Marketplace, `Roblox.PlayerPurchases` (ENG-23) | Built, run in Studio; ENG-23e waits on this game's phone test | S3-02b wires it on the server |
 | The Pursuit system, its stock chases and targetings, and its Roblox adapters (players as runners, a hunter driver) | Built; the adapters not yet run in Studio (ENG-07a). What players see is ENG-07b, not started | Not what keepers run on (D-064). Checked for the chase at L-06b3a2 and not used (D-074): a hunter the game places is never moved by Pursuit again, so a keeper couldn't hand back to roaming, and its reach and runners have no walls or sight |
-| Handling and the stock `Handling.car` (ENG-24a, at `1a97787`, not yet pushed): throttle and steering in, with the body's real speed, the speed to drive at and the turn out | Built from here at the owner's word (D-252); specs and a bench, nothing touches Roblox | The RC car's handling on the driver's client (F-G1b3c2c), once the pin moves |
+| Handling and the stock `Handling.car` (ENG-24a, at `1a97787`, pushed Nov 16): throttle and steering in, with the body's real speed, the speed to drive at and the turn out | Built from here at the owner's word (D-252); specs and a bench, nothing touches Roblox | The RC car's handling on the driver's client (F-G1b3c2c), once the pin moves |
 
 ## What Brix plans that this game will use
 
