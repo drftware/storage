@@ -3968,8 +3968,307 @@ SIREN_CAR = kit.Find(
 )
 
 
+# --- The squeaky rubber duck (F-04e2) -------------------------------------------------------------
+# A classic yellow vinyl bath duck of our own (README): one soft hollow moulding, a big round head
+# sat forward on a broad body, an upturned tail, a moulded wing on each side and a little crest
+# along the seam on its crown, an orange bill with a smile, printed eyes, a squeak hole
+# underneath. Squeezed, the whole of it squashes, squeaks and springs back.
+
+import numpy as np  # noqa: E402
+
+DK = K.DUCK
+SQ = K.SQUEEZE
+(DK_VINYL, DK_BILL, DK_MOUTH) = range(63, 66)
+
+
+def _rot(rise, toe=0.0):
+    """An ellipsoid's own X, Y, Z (columns) in the duck's frame: its Y tipped up `rise` degrees
+    about X, then turned `toe` degrees about Z."""
+    a, b = math.radians(rise), math.radians(toe)
+    Rx = np.array([[1.0, 0.0, 0.0], [0.0, math.cos(a), -math.sin(a)], [0.0, math.sin(a), math.cos(a)]])
+    Rz = np.array([[math.cos(b), -math.sin(b), 0.0], [math.sin(b), math.cos(b), 0.0], [0.0, 0.0, 1.0]])
+    return Rz @ Rx
+
+
+def _ell(P, c, r, R=None):
+    q = P - np.array(c)
+    if R is not None:
+        q = q @ R
+    r = np.array(r)
+    return (np.linalg.norm(q / r, axis=-1) - 1.0) * r.min()
+
+
+def _smin(a, b, k):
+    """The two volumes melted together, over about k (mm)."""
+    h = np.clip(0.5 + 0.5 * (b - a) / k, 0.0, 1.0)
+    return b * (1 - h) + a * h - k * h * (1 - h)
+
+
+TAIL_R = _rot(DK["tail"]["rise"])
+WING_R = _rot(DK["wing"]["rise"], -DK["wing"]["toe"])
+CREST_R = _rot(DK["crest"]["tip"])
+
+
+def dk_sdf(P):
+    """How far outside the duck each point of P (..., 3; mm) is, about: negative inside."""
+    bl = DK["blend"]
+    d = _smin(_ell(P, *DK["body"]), _ell(P, *DK["chest"]), bl["chest"])
+    t = DK["tail"]
+    d = _smin(d, _ell(P, t["at"], t["r"], TAIL_R), bl["tail"])
+    d = _smin(d, _ell(P, *DK["head"]), bl["head"])
+    w = DK["wing"]
+    Pm = P.copy()
+    Pm[..., 0] = np.abs(Pm[..., 0])
+    d = _smin(d, _ell(Pm, w["at"], w["r"], WING_R), bl["wing"])
+    c = DK["crest"]
+    d = _smin(d, _ell(P, c["at"], c["r"], CREST_R), bl["crest"])
+    return -_smin(-d, P[..., 2], bl["base"])      # flat underneath, so it stands (and floats)
+
+
+def dk_march(D, origin, reach=90.0, step=0.4):
+    """Where each ray D (n, 3) from `origin` first leaves the duck (mm), and how many rays go
+    back in further out (0 when every bit of the duck is seen from `origin`)."""
+    C = np.array(origin)
+    ts = np.arange(0.0, reach, step)
+    out = dk_sdf(C + D[:, None, :] * ts[:, None]) > 0
+    first = np.argmax(out, axis=-1)
+    lo, hi = ts[np.maximum(first - 1, 0)], ts[first]
+    for _ in range(18):
+        mid = (lo + hi) / 2
+        o = dk_sdf(C + D * mid[:, None]) > 0
+        hi, lo = np.where(o, mid, hi), np.where(o, lo, mid)
+    again = (~out) & (np.arange(len(ts)) > first[:, None])
+    return C + D * hi[:, None], int(again.any(axis=-1).sum())
+
+
+def dk_grad(P, h=0.03):
+    return np.stack([dk_sdf(P + e) - dk_sdf(P - e) for e in np.eye(3) * h], axis=-1) / (2 * h)
+
+
+def dk_normal(p):
+    g = dk_grad(np.array([p]))[0]
+    return g / np.linalg.norm(g)
+
+
+def dk_settle(R, poles, iters):
+    """Even the sampled grid (rings, columns, 3) out over the surface: rays from one point
+    graze the wing's top, the tail and the chin and leave long faces there, so each point slides
+    along the surface toward its neighbours' middle, then is put back on it."""
+    for _ in range(iters):
+        up = np.concatenate([R[1:], np.broadcast_to(poles[1], (1,) + R.shape[1:])], axis=0)
+        dn = np.concatenate([np.broadcast_to(poles[0], (1,) + R.shape[1:]), R[:-1]], axis=0)
+        avg = (up + dn + np.roll(R, 1, axis=1) + np.roll(R, -1, axis=1)) / 4
+        g = dk_grad(R)
+        n = g / np.linalg.norm(g, axis=-1, keepdims=True)
+        m = avg - R
+        m -= n * (m * n).sum(-1, keepdims=True)
+        R = R + 0.5 * m
+        for _ in range(2):
+            g = dk_grad(R)
+            R = R - g * (dk_sdf(R) / (g * g).sum(-1))[..., None]
+    return R
+
+
+def dk_eye():
+    """The left eye's middle on the head (mm), the way across it toward the back, and up it."""
+    e = DK["eye"]
+    az, el = math.radians(e["az"]), math.radians(e["el"])
+    d = np.array([[math.sin(az) * math.cos(el), -math.cos(az) * math.cos(el), math.sin(el)]])
+    p = dk_march(d, DK["head"][0])[0][0]
+    n = dk_normal(p)
+    t1 = np.cross([0.0, 0.0, 1.0], n)
+    t1 /= np.linalg.norm(t1)
+    t2 = np.cross(n, t1)
+    return p, t1, t2 if t2[2] > 0 else -t2, n
+
+
+def dk_bill_rings(upper, hi):
+    """The moulded bill, base (sunk in the face) to tip: the upper bill's round side up and the
+    lower's down, their flat sides meeting at the mouth, which turns up at its corners (the
+    smile). Rings bunch toward the tip, which rounds off in plan and side."""
+    b = DK["bill"]
+    (y0, z0), (y1, z1) = b["base"], b["tip"]
+    if not upper:
+        y1 += b["short"]
+    m, k = segs(hi, 10), segs(hi, 5)
+    nr = segs(hi, 10)
+    hs = b["up"] if upper else b["lo"]
+    rings = []
+    for i in range(nr + 1):
+        u = math.sin(0.5 * math.pi * i / nr)
+        y = y0 + (y1 - y0) * u
+        zc = z0 + (z1 - z0) * u - (0.0 if upper else b["gap"])
+        if i == nr:
+            rings.append([(mm(0.0), mm(y), mm(zc - (0.0 if upper else 0.6)))])
+            break
+        rnd = 1.0 if u < 0.6 else math.sqrt(max(0.0, 1 - ((u - 0.6) / 0.4) ** 2))
+        w = (b["hw"][0] + (b["hw"][1] - b["hw"][0]) * u ** 0.7) * max(rnd, 0.0) ** 0.8
+        h = (hs[0] + (hs[1] - hs[0]) * u) * (0.35 + 0.65 * rnd)
+
+        def zg(x):
+            return zc + b["smile"] * (x / b["hw"][1]) ** 2
+
+        ring = []
+        if upper:      # over the top from +x to -x, then back along the flat underside
+            for j in range(m):
+                a = math.pi * j / m
+                x = w * math.cos(a)
+                ring.append((x, zg(x) + h * math.sin(a) ** 0.6))
+            ring += [(-w + 2 * w * j / k, zg(-w + 2 * w * j / k)) for j in range(k)]
+        else:          # under from -x to +x, then back along the flat top
+            for j in range(m):
+                a = math.pi * j / m
+                x = -w * math.cos(a)
+                ring.append((x, zg(x) - h * math.sin(a) ** 0.6))
+            ring += [(w - 2 * w * j / k, zg(w - 2 * w * j / k)) for j in range(k)]
+        rings.append([(mm(x), mm(y), mm(z)) for x, z in ring])
+    return rings, m
+
+
+def dk_body(hi):
+    """The duck, sampled along rays from inside its neck: rings from its foot to its crown, each
+    starting straight ahead, so the loft's two halves part along the mould seam front and back."""
+    s = Shape()
+    nr, n = (140, 200) if hi else (40, 64)
+    C = DK["centre"]
+    a = -math.pi / 2 + 2 * math.pi * np.arange(n) / n
+    R, again = [], 0
+    for i in range(1, nr):
+        ph = math.pi * i / nr
+        D = np.stack([math.sin(ph) * np.cos(a), math.sin(ph) * np.sin(a),
+                      -math.cos(ph) * np.ones(n)], axis=-1)
+        pts, g = dk_march(D, C)
+        again += g
+        R.append(pts)
+    if again:
+        print(f"  RubberDuck: {again} rays see the duck twice (a fold in its surface)")
+    poles = [dk_march(np.array([[0.0, 0.0, z]]), C)[0][0] for z in (-1.0, 1.0)]
+    R = dk_settle(np.array(R), poles, 40)
+    rings = ([[tuple(mm(v) for v in poles[0])]] + [[tuple(mm(v) for v in p) for p in r] for r in R]
+             + [[tuple(mm(v) for v in poles[1])]])
+    s.loft(rings, DK_VINYL)
+    for upper in (True, False):
+        br, m = dk_bill_rings(upper, hi)
+        s.loft(br, DK_BILL, kinds=lambda j, m=m: DK_BILL if j < m else DK_MOUTH)
+    return s
+
+
+def duck_look(L, f):
+    nb = L.nb
+    xm, ym, zm = nb.mul(L.x, K.STUD_MM), nb.mul(L.y, K.STUD_MM), nb.mul(L.z, K.STUD_MM)
+    ax = nb.absf(xm)
+
+    def sq(v):
+        return nb.mul(v, v)
+
+    def dot(o, t):
+        """(P - o) . t in mm, P mirrored onto the left side."""
+        return nb.add(nb.add(nb.mul(nb.sub(ax, o[0]), t[0]), nb.mul(nb.sub(ym, o[1]), t[1])),
+                      nb.mul(nb.sub(zm, o[2]), t[2]))
+
+    vin = L.k(DK_VINYL)
+    # the vinyl: a warm egg-yolk yellow with a satin sheen and the mould's faint orange peel,
+    # deeper and warmer low down where it's thickest, a touch paler up on the crown
+    mott = L.noise(80.0, 1, detail=3)
+    peel = L.noise(2400.0, 2, detail=2)
+    col = nb.tint(hexc("#F6C624"), nb.mr(mott, 0.3, 0.7, 0.955, 1.035))
+    C = Coat(L, col, nb.mr(L.noise(150.0, 3, detail=2), 0.3, 0.7, 0.33, 0.43), 0.0,
+             nb.mul(peel, 0.00011))
+    C.paint(nb.mul(vin, nb.mul(nb.sub(1.0, nb.ss(zm, 2.0, 16.0)), 0.55)), hexc("#E4A10F"))
+    C.paint(nb.mul(vin, nb.mul(nb.ss(zm, 70.0, 86.0), 0.45)), hexc("#F7D140"))
+    # the mould's seam: a faint raised line down the middle, over the crown, the back and under
+    seam = nb.mul(vin, nb.sub(1.0, nb.ss(ax, 0.12, 0.5)))
+    C.paint(seam, None, 0.3, None, mm(0.09))
+    # each wing's moulded edge and three feather grooves toward its tip
+    w = DK["wing"]
+    R = WING_R
+    lx, ly, lz = (dot(w["at"], tuple(R[:, i])) for i in range(3))
+    e = nb.add(sq(nb.mul(ly, 1.0 / w["r"][1])), sq(nb.mul(lz, 1.0 / w["r"][2])))
+    out = nb.ss(lx, -2.0, 1.0)
+    rim = nb.mul(nb.mul(vin, out), nb.mul(nb.ss(e, 0.8, 0.88), nb.sub(1.0, nb.ss(e, 0.93, 1.02))))
+    grooves = None
+    for g in (6.5, 10.5, 14.5):
+        yy = nb.add(nb.sub(ly, g), nb.mul(sq(lz), -0.02))
+        band = nb.sub(1.0, nb.ss(nb.absf(yy), 0.25, 0.75))
+        grooves = band if grooves is None else nb.add(grooves, band, clamp=True)
+    feath = nb.mul(nb.mul(vin, out), nb.mul(grooves, nb.sub(1.0, nb.ss(e, 0.7, 0.86))))
+    C.paint(nb.add(rim, feath, clamp=True), hexc("#E2A914"), 0.45, None, -mm(0.22))
+    # printed eyes: a white almond, a big black pupil looking ahead, a shine, a fine dark rim;
+    # the print rubbed thin in specks
+    E, t1, t2, n = dk_eye()
+    ey = DK["eye"]
+    u, v, h = dot(E, t1), dot(E, t2), nb.absf(dot(E, n))
+    near = nb.sub(1.0, nb.ss(h, 2.5, 4.0))
+    k_w = nb.add(sq(nb.mul(u, 1.0 / ey["w"])), sq(nb.mul(v, 1.0 / ey["h"])))
+    pw, ph = ey["pupil"]
+    k_p = nb.add(sq(nb.mul(nb.add(u, 1.0), 1.0 / pw)), sq(nb.mul(nb.add(v, 0.35), 1.0 / ph)))
+    k_s = nb.add(sq(nb.add(u, 1.9)), sq(nb.sub(v, 1.25)))
+    rub = nb.ss(L.noise(900.0, 4, detail=3), 0.75, 0.79)
+    eye = nb.mul(nb.mul(vin, near), nb.sub(1.0, rub))
+    C.paint(nb.mul(eye, nb.sub(1.0, nb.ss(k_w, 1.12, 1.2))), hexc("#1B1512"), 0.3)
+    C.paint(nb.mul(eye, nb.sub(1.0, nb.ss(k_w, 0.92, 1.0))), hexc("#F4F0E6"), 0.3)
+    C.paint(nb.mul(eye, nb.sub(1.0, nb.ss(k_p, 0.92, 1.0))), hexc("#100D0C"), 0.22)
+    C.paint(nb.mul(eye, nb.sub(1.0, nb.ss(k_s, ey["shine"] ** 2 * 0.8, ey["shine"] ** 2))),
+            hexc("#FBFAF5"), 0.22)
+    # the squeak hole: dark inside, a little rolled lip round it
+    ho = DK["hole"]
+    rr = nb.math("SQRT", nb.add(sq(xm), sq(nb.sub(ym, ho["y"]))))
+    low = nb.sub(1.0, nb.ss(zm, 0.6, 1.4))
+    C.paint(nb.mul(nb.mul(vin, low), nb.sub(1.0, nb.ss(rr, ho["r"] - 0.3, ho["r"]))),
+            hexc("#2B1F08"), 0.8, None, -mm(0.4))
+    lip = nb.mul(nb.ss(rr, ho["r"] - 0.1, ho["r"] + 0.25),
+                 nb.sub(1.0, nb.ss(rr, ho["r"] + ho["lip"] - 0.3, ho["r"] + ho["lip"])))
+    C.paint(nb.mul(nb.mul(vin, low), lip), None, 0.3, None, mm(0.25))
+    # the bill: orange paint, glossier than the vinyl, a darker mouth line, worn back to the
+    # yellow along its tip's rim
+    bi = L.k(DK_BILL)
+    C.paint(bi, nb.tint(hexc("#EE6418"), nb.mr(L.noise(200.0, 5, detail=3), 0.3, 0.7, 0.95, 1.05)), 0.27)
+    C.paint(L.k(DK_MOUTH), hexc("#A8320E"), 0.4)
+    tip = nb.mul(nb.mul(bi, L.edge(mm(0.9), k=4.0)),
+                 nb.mul(nb.sub(1.0, nb.ss(ym, -46.8, -45.6)), nb.ss(L.noise(200.0, 6, detail=3), 0.5, 0.62)))
+    C.paint(tip, hexc("#F2B62C"), 0.36)
+    # scuffed matt and a touch paler on what it was knocked about on: the breast and tail tip
+    hit = nb.add(nb.sub(1.0, nb.ss(ym, -36.0, -31.0)), nb.ss(ym, 44.0, 49.0), clamp=True)
+    sc = nb.mul(nb.mul(vin, hit), nb.ss(L.noise(70.0, 7, detail=3), 0.5, 0.7))
+    C.paint(nb.mul(sc, 0.5), None, 0.6)
+    C.finish(f.dust, grime=0.45)
+    return C.surface(bump_dist=0.0008, bump=0.6)
+
+
+# --- how it squeaks -------------------------------------------------------------------------------
+
+def duck_squeeze():
+    """The whole duck squashed and let go: a rise as the fingers close, a quick squash (the
+    squeak), held a beat, then a spring back past its size and a wobble still; its nose dips as
+    it's pressed and lifts on the bounce."""
+    g, sq, ho, bo = SQ["grip"], SQ["squash"], SQ["hold"], SQ["bounce"]
+    st = [(0.0, 1.0), (g[0], g[1], "Sine", "Out"), (sq[0], sq[1], "Quad", "Out"),
+          (ho[0], ho[1], "Sine", "InOut")]
+    st += [(t, v, "Quad", "Out") if i == 0 else (t, v) for i, (t, v) in enumerate(bo)]
+    a, b, c = SQ["nod"]
+    pitch = [(0.0, 0.0), (g[0], -0.1 * a, "Sine", "Out"), (sq[0], a, "Quad", "Out"), (ho[0], a),
+             (bo[0][0], b, "Quad", "Out"), (bo[1][0], c), (bo[3][0], 0.0)]
+    return round(bo[-1][0] + 0.25, 2), [("Body", "stretch", st), ("Body", "pitch", pitch)]
+
+
+DQ_DUR, DQ_TRACKS = duck_squeeze()
+
+RUBBER_DUCK = kit.Find(
+    "RubberDuck",
+    [kit.Part("Body", dk_body)],
+    duck_look,
+    motions={
+        # squeezed in the hand: it squashes, squeaks (the game's squeak here, loud enough to
+        # carry down the hall), is held a beat, and springs back with a wobble
+        "Squeeze": dict(duration=DQ_DUR, focus=(0.0, mm(-4.0), mm(42.0)), distance=1.15,
+                        tracks=DQ_TRACKS),
+    },
+    dust=DK["dust"], seed=DK["seed"], texels=900,
+)
+
+
 FINDS = [CYMBAL_MONKEY, JACK_IN_THE_BOX, CHATTERING_TEETH, WALKING_ROBOT, WINDUP_MOUSE, TIN_BIRD,
-         SIREN_CAR]
+         SIREN_CAR, RUBBER_DUCK]
 
 if __name__ == "__main__":
     kit.main("Windups", HERE, FINDS)

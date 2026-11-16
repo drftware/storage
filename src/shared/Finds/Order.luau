@@ -11,6 +11,7 @@ return {
 	WindupMouse = { "Wind", "Zip" },
 	TinBird = { "Wind", "Hop" },
 	SirenCar = { "Push" },
+	RubberDuck = { "Squeeze" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },

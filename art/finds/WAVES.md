@@ -6,10 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04e2, the rest of step 3 of "The second run's plan" below: the squeaky rubber duck
-alone, in `art/finds/windups/` (the second F-04d2 note has its hints; the toy siren car is
-built), then step 4 (F-04f, the kazoo and the toy drum). The oil lamp's sheets still want
-`ACTIONS= scripts/art.sh set lights renders OilLamp` when next touched.
+**Next:** F-04e2, finish the squeaky rubber duck (half built: the newest note says exactly where
+it stands), in `art/finds/windups/`; then step 4 (F-04f, the kazoo and the toy drum). The oil
+lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next touched.
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -89,6 +88,40 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04e2 (the squeaky rubber duck half built: stopped at the context cap; not ticked).**
+  `RubberDuck` in `windups/build.py` (spec `DUCK`, `SQUEEZE`; `Finds/Order` has it), one part
+  `Body`. **How it's made (new):** the duck is one soft surface, rounded volumes melted together
+  (`dk_sdf`: body, breast, upturned tail, round head, a wing each side, a crest on the crown,
+  a flat foot), sampled along rays from one point low in the breast (`DK["centre"]`, the only
+  spot found from which every bit is in sight: higher up, the back hides the tail's top and the
+  chin hides itself, which folds the surface), then evened out over the surface (`dk_settle`).
+  The loft's two halves part along the mould seam front and back. The bill is two moulded
+  lofts (upper and lower, a smile). Eyes, the wing's moulded edge and feathers, the seam ridge
+  and the squeak hole are in the look. Motion `Squeeze`: `stretch` 1.035 (grip), 0.72 (the
+  squeak), held 0.70, springs back 1.11, wobbles 0.955, 1.025, settles; the nose dips 4 degrees
+  as it's pressed. **References:** the V&A's O1122250 (a 1950s English moulded bath duck,
+  12.7 cm, raised feathered wing, upturned tail, open bill) and Wikimedia Commons'
+  "Yellow rubber duck.jpg", "1 Yellow rubber duck.jpg", "Rubber Duck (7250751978).jpg" and
+  "NIND dustyrubberduck ISO200.png" (dust specks on top, satin vinyl). Size: about 98 mm bill
+  to tail, 87 tall, 73 wide (common 3.5 to 4 in squeakers). README not written yet.
+  **Judged once** (quick sheets, looked at): it reads at once as a classic rubber duck; the
+  squeeze filmstrip reads (squash, tall overshoot, wobble). Flagged: the crest was a sharp spike,
+  the bill a thin flat tongue, pale speckle on the breast and bill tip like a rash, orange specks
+  in the pupils, and **the back sheet shows black holes and a crater on both wings**: the game
+  mesh (40 x 64 rays) cuts the wing's back-top and the tail's top up to 4.2 mm inside the
+  detailed surface, past the bake's reach (`CAGE` 2 mm out, `REACH` 5 mm), so the bake misses.
+  **Fixed in code but not rebaked or rendered:** a soft crest (blend 4.5), a wing that swells
+  from the side (blend 6), a thicker bill with more smile and the lower bill showing, a brighter
+  yellow, wear on the bill only at its rim, softer breast scuffs, fewer eye specks. **Still to
+  fix:** the 4.2 mm gap (the ducktest in this note's recipe: sample face middles of the low grid
+  with `dk_sdf`, keep every one under about 1 mm). Try weighting `dk_settle`'s pull by the gap
+  (more points where the surface bends), or more rays only at the back (rings sampled densely
+  near the horizon), before raising the whole grid (48 x 80 is 7.7k triangles, too many for a
+  small find). Then `scripts/art.sh set windups textures RubberDuck`, `... export RubberDuck`
+  (restore the set's other FBX after), `quick`, look at front, back, held and unit beside the
+  references, fix, full `renders RubberDuck`, README, upload and import if Studio is in Edit.
+  The FBX, textures and sheets committed now are the first bake's, holes and all.
 
 - **Nov 16, F-04e (the toy siren car built, judged and in the place; the duck not started).**
   `SirenCar` in `windups/build.py`, README, D-236. Uploaded and imported in Edit

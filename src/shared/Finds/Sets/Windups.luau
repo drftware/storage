@@ -8673,6 +8673,56 @@ local Set: { [string]: Art.Find } = {
 			},
 		},
 	},
+	RubberDuck = {
+		Size = Vector3.new(0.285, 0.344, 0.368),
+		Centre = Vector3.new(-0.000, 0.172, -0.003),
+		Triangles = 5562,
+		Texture = 1024,
+		Parts = {
+			{
+				Name = "RubberDuck_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Size = Vector3.new(0.285, 0.344, 0.368),
+				Triangles = 5562,
+			},
+		},
+		Lights = {},
+		Motions = {
+			Squeeze = {
+				Duration = 1.17,
+				Tracks = {
+					{
+						Part = "RubberDuck_Body",
+						Channel = "stretch",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.07, 1.035, "Sine", "Out" },
+							{ 0.2, 0.72, "Quad", "Out" },
+							{ 0.34, 0.7, "Sine", "InOut" },
+							{ 0.48, 1.11, "Quad", "Out" },
+							{ 0.6, 0.955, "Sine", "InOut" },
+							{ 0.71, 1.025, "Sine", "InOut" },
+							{ 0.82, 0.992, "Sine", "InOut" },
+							{ 0.92, 1, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "RubberDuck_Body",
+						Channel = "pitch",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.07, 0.4, "Sine", "Out" },
+							{ 0.2, -4, "Quad", "Out" },
+							{ 0.34, -4, "Sine", "InOut" },
+							{ 0.48, 2.4, "Quad", "Out" },
+							{ 0.6, -0.9, "Sine", "InOut" },
+							{ 0.82, 0, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+		},
+	},
 }
 
 return Set

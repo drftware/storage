@@ -374,3 +374,51 @@ SIREN_RUN = dict(
     spin=2.6,           # turns a second of the roof light at full speed (geared to the flywheel)
     glow=(0.3, 0.9),    # the lamp comes up over the pushes; it fades this long after it stops
 )
+
+
+# --- The squeaky rubber duck: a classic yellow vinyl bath duck of our own -------------------------
+# References (README): the V&A's 1950s English moulded bath duck (O1122250, 12.7 cm long, a raised
+# feathered wing, an upturned tail, a flat open bill painted red), and Wikimedia Commons photos of
+# modern squeaky vinyl ducks (a round head sat on a broad body, a crest along the mould seam on
+# its crown, printed eyes with a shine, a wide orange bill with a smile, a squeak hole under it).
+# Ours is about 98 mm from bill to tail and 86 tall, as the common 3.5 to 4 inch squeakers are.
+# The duck is one surface, drawn as rounded volumes melted together (each a centre, radii, mm).
+DUCK = dict(
+    body=((0.0, 6.0, 19.0), (35.0, 38.0, 25.0)),    # the broad low hull it floats on
+    chest=((0.0, -12.0, 28.0), (29.0, 24.0, 24.0)),  # its round breast, rising to the head
+    tail=dict(at=(0.0, 33.0, 36.0), r=(12.5, 18.0, 9.5), rise=38.0),
+    # the upturned pointed tail: its middle, radii, and how steeply it points up (deg)
+    head=((0.0, -11.0, 62.0), (22.5, 22.0, 22.0)),   # a big round head sat forward on the breast
+    crest=dict(at=(0.0, -12.0, 82.4), r=(3.2, 8.5, 3.2), tip=-14.0),
+    # the little moulded crest along the seam on its crown, tipped forward (deg)
+    wing=dict(at=(29.0, 15.0, 28.0), r=(6.0, 19.0, 11.0), rise=16.0, toe=7.0),
+    # the left wing, raised a little off the side (the right mirrors it), its back end lifted
+    # `rise` and its front turned in `toe` (deg)
+    blend=dict(head=11.0, chest=10.0, tail=9.0, wing=6.0, crest=4.5, base=5.0),
+    # how wide each melts into the rest (mm): a soft neck, a wing that swells from the side (its
+    # moulded edge is drawn in the look), a rounded foot
+    centre=(0.0, -16.0, 20.0),       # where its surface is sampled from: low in the breast, where
+    # every bit of it, the tail's top and the chin's underside both, is in sight
+    bill=dict(base=(-24.0, 58.6), tip=(-47.5, 57.4), hw=(9.6, 13.2), up=(8.6, 5.0),
+              lo=(5.6, 3.2), short=1.6, smile=2.6, gap=0.5),
+    # the moulded bill sunk in the face at `base` (y, z) to its tip: half width at the base and
+    # flared at the tip, the upper and lower bills' depth there, how far short of the upper the
+    # lower stops, how much the mouth's corners turn up, the mouth line's gap (mm)
+    eye=dict(az=36.0, el=17.0, w=4.6, h=5.6, pupil=(3.0, 4.0), shine=1.05),
+    # each printed eye: where it sits on the head (degrees round from straight ahead and up from
+    # the head's middle), its white's half width and height, the black pupil's, the shine's radius
+    hole=dict(y=18.0, r=2.3, lip=1.0),   # the squeak hole under the body: y, its radius, its lip
+    dust=0.3, seed=89.0,
+)
+
+# How it squeaks (the Squeeze action): squeezed, the whole duck squashes keeping its volume (the
+# tea light flame's `stretch`), wheezing out its squeak, is held a beat, then let go it springs
+# back past its size and wobbles still, its nose dipping as it's pressed and lifting on the bounce.
+SQUEEZE = dict(
+    grip=(0.07, 1.035),   # s and stretch: it rises a touch as the fingers close (the wind-up)
+    squash=(0.2, 0.72),   # s and stretch at the bottom of the squeeze: the squeak
+    hold=(0.34, 0.70),    # held a beat, the last of the air wheezing out
+    bounce=[(0.48, 1.11), (0.6, 0.955), (0.71, 1.025), (0.82, 0.992), (0.92, 1.0)],
+    # let go: the vinyl springs back past its size and wobbles still (s, stretch)
+    nod=(4.0, -2.4, 0.9),  # degrees its nose dips at the squash, lifts on the bounce, then dips
+)
