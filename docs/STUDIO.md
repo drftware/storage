@@ -1652,6 +1652,15 @@ verified: a doc page, Studio, or "untested".
   old files stay. Run that stage's Blender line directly (`blender -b --factory-startup -P
   art/finds/windups/build.py -- --stage textures --find RubberDuck`), which worked every time,
   and check the files' times before trusting the next stage.
+- **A find's `Coat.paint(height=)` is in units of the surface's `bump_dist`, not studs**
+  (F-04f, Nov 16): Blender's Bump node multiplies Height by Distance, so `mm(0.3)` with
+  `bump_dist` 0.0006 is nothing, and the kazoo's pressed rings first baked flat. Pick a
+  `bump_dist` in studs and write heights in its units (the kazoo: `bump_dist` `mm(0.15)`,
+  `kz_h(mm) = mm / 0.15`). The rubber duck's seam and wing grooves are flat for this reason.
+- **Blender sometimes dies loading its Metal shaders** (F-04f, Nov 16: `NSException` from
+  `ccl::ShaderCache::load_kernel` in the log, once in four runs): nothing is written, the old
+  textures stay and the next stage renders with them. Grep the bake's log for `BAKED` and run
+  it again if it's missing.
 - `bmesh.ops.create_uvsphere` numbers its points differently from run to run. Anything whose
   UVs are saved and worn later must build its spheres point by point (`build.py` `ellipsoid`).
 - Smart project over several objects at once can fold one object's islands over each other (the

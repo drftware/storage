@@ -388,3 +388,46 @@ nose dips 4 degrees as it's pressed and lifts on the bounce.
 
 **In the place:** uploaded (`assets.json`) and imported in Edit on Nov 16 as
 `ReplicatedStorage.Props.Finds.RubberDuck`.
+
+## Kazoo (Common): "Blow: a buzzy note"
+
+The classic pressed-tin kazoo, our own: a bright tinplate top brushed down its length with a
+soft crease along its middle, a red-printed bottom half whose edges are rolled over the top's in
+a crimped bead down each side, both ends turned under, the wide flattened mouth end you hum into
+and a long straight taper to the narrow tail, a submarine. On top a threaded collar and a dished
+screw cap with a punched hole, through which the cream wax-paper skin shows. Pressed up out of
+the top: three bold rings down the taper, as the museum board's are, and our maker's mark near
+the mouth end (an oval rim, a fine line inside it, a raised star in a stippled field). The cap
+has a ribbed grip band above its thread and a bead pressed round its top. Handled for years:
+tarnish dark in every pressed crease, along the seam and round the collar's foot; the rings'
+crests, the star, the cap's rim and the ridge polished bright by a pocket; dull yellow-grey
+blotches toward the tail; the red rubbed thin underneath, worn through to the tin on the
+crimp's crest and the bottom corners, chipped at the lips.
+
+**Looked at:** Wikimedia Commons' "Kazoo manufacturing steps.JPG" (the Kazoo Museum's board of
+the 18 pressings: the tin top with a name and three pressed rings, the red bottom crimped over
+its edges, the ends turned under, the threaded collar, the dished cap with its punched hole over
+a card ring and the skin), "2023 Kazoo (1).jpg" (the submarine taper, the ridge down the top,
+the cap's rolled lip and threads) and the Grover Center's 1970s toy kazoo (hub.catalogit.app,
+1985.006.140: painted, two halves crimped together, three indentations on top).
+
+**Size:** 121 mm (4.75 in, as listings give) mouth to tail, 23 mm across the mouth end, 12.6 mm
+tall to the ridge and 18 tall to the cap: 0.48 studs long. A speck from a unit's doorway (a
+small find, CRAFT.md); held, the tube with its cap on top and the red stripe read at once.
+
+**Tells:** the round cap standing on the tube, the taper, the red half under the tin.
+
+**Parts:** `Body` (root, its pivot under its middle on the floor): the shell, both ends'
+insides, the collar and the cap. `Skin` rides on it, its pivot at its foot on the collar's rim,
+its axis square to the top (it leans back a touch with the top's fall toward the tail).
+
+**Motions:** `Blow` (2.1 s), worked out in `kazoo_blow`: lifted 3.5 mm in 0.32 s with a touch
+of overshoot, its mouth end tipping up 6 degrees toward the lips; the note starts at 0.36 s
+(the game plays the buzz here) and the skin flicks up and down every frame, 0.2 mm, its bulge
+pumping, swelling through the note as the kazoo leans in 1.6 degrees more; the note stops at
+1.58 s, the skin stills, and it's lowered back by 2.1 s.
+
+**Sheets:** `art/sheets/kazoo-*.png`; motion preview `out/kazoo-blow.mp4`.
+
+**In the place:** uploaded (`assets.json`) and imported in Edit on Nov 16 as
+`ReplicatedStorage.Props.Finds.Kazoo`.

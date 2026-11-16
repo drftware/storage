@@ -12,6 +12,7 @@ return {
 	TinBird = { "Wind", "Hop" },
 	SirenCar = { "Push" },
 	RubberDuck = { "Squeeze" },
+	Kazoo = { "Blow" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },

@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04f, finish the kazoo (half built: the newest note says exactly where it stands),
-then the toy drum (step 4), in `art/finds/windups/`; the F-04e2 note has the drum's plan. The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp`
+**Next:** F-04f2, the toy drum (step 4's second find), in `art/finds/windups/`: the F-04e2
+note has its plan and the F-04f note its hints; then F-04g, the farm-animal spinner (step 5). The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp`
 when next touched.
 
 ## The second run's plan (owner's yes, Nov 15)
@@ -28,7 +28,8 @@ changes the table's order a little.
    die-cast car's way of making a body; its roof light spins and glows red with its own light,
    so it sweeps the hall's walls as it rolls) and the squeaky rubber duck (squeeze: the whole
    duck squashes and springs back).
-4. **F-04f** Kazoo (blow: the paper skin under its cap shivers) and the toy drum (a kid's tin
+4. **F-04f** Kazoo (built Nov 16; blow: the paper skin under its cap shivers) and, as
+   **F-04f2**, the toy drum (a kid's tin
    drum with zigzag rope sides, the tell from a doorway, and two sticks; a stick comes down, the
    head shivers, the stick bounces off).
 5. **F-04g** Farm-animal spinner alone (pull: the lever comes down and snaps back, the arrow
@@ -88,6 +89,35 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04f (the kazoo built, judged and in the place; the drum not started).** `Kazoo`
+  in `windups/build.py`, README, D-238; uploaded and imported in Edit
+  (`ReplicatedStorage.Props.Finds.Kazoo`, its pivots and sizes checked). **What up close
+  needed:** it read as a plain grey tube. Now pressed up out of the top: three bold rings down
+  the taper (half the top's width, as the museum board's), our maker's mark (an oval rim, a
+  fine line, a polished star on a dark stippled field); a knurled grip band round the cap
+  above its thread and a bead round the cap's top; tarnish in every crease, polish on every
+  crest and down the ridge; the red rubbed through on the crimp's crest and bottom corners.
+  **Found:** the red half showed as a hairline from above at any seam height, because the shell
+  is widest at the seam and the half below tucks under; it now folds 1.5 mm up over the bead
+  (`KAZOO.fold`), as a crimped kazoo's does, and reads as a stripe. The Blow camera stands in
+  close on the cap (`distance` 0.38): the lift, the tip toward the lips and the skin's shimmer
+  through the hole read; the dark filmstrip stage turns bare tin near black, as for every metal
+  find. **Traps (STUDIO.md):** paint heights are in `bump_dist` units, not studs; Blender died
+  once loading Metal shaders (no `BAKED` line, old textures kept): grep the log, run again.
+  The kit writes a set's keys compactly; `scripts/check.sh`'s formatter expands them, so the
+  Windups Luau shows thousands of lines changed until it's run. **The drum's hints (F-04f2):**
+  a child's tin drum about 6 to 8 in across and 4 to 5 tall (look for vintage lithographed tin
+  toy drums on museum or auction pages: printed tin shell, two painted hoops, a white cord
+  laced in a zigzag between them through little hooks, the tell from a doorway; a skin or
+  printed-paper head, a strap or cord loop; two turned wooden sticks with round heads). Parts:
+  `Body` (root: the shell and hoops and cord), `Head` (the top skin, its own part so it can
+  `stretch` a hair), `StickL`, `StickR` (each turning about the hand's pivot near its butt end,
+  lying across the top when found). Motion `Drum`: a stick lifts (wind-up), snaps down, the
+  head dips and shivers, the stick bounces up off it and settles; then the other, about
+  four beats a second like a kid banging it. The zigzag cord: `tube` along a polyline
+  between the hoops, low rounds; keep it under 1,500 triangles. Paint heights in `bump_dist`
+  units (the kazoo's `kz_h`).
 
 - **Nov 16, F-04f (the kazoo half built: stopped at the context cap; not ticked; drum not
   started).** `Kazoo` in `windups/build.py` (`kz_*`, `kazoo_look`, `kazoo_blow`; spec `KAZOO`,
@@ -877,7 +907,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 
 | Find | Grade | What it does | Notes | Built |
 |---|---|---|---|---|
-| Kazoo | Common | Blow: a buzzy note |  | |
+| Kazoo | Common | Blow: a buzzy note |  | Nov 16, F-04f |
 | Squeaky rubber duck | Common | Squeeze: a squeak you can hear down the hall |  | Nov 16, F-04e2 |
 | Toy siren car | Common | Push: it rolls off, wailing | A noise that moves | Nov 16, F-04e |
 | Wind-up chattering teeth | Common | Wind: they chatter off across the floor | Monsters come to look | Nov 15, F-04c |

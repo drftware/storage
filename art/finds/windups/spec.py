@@ -444,14 +444,16 @@ KAZOO = dict(
     h=(12.6, 12.2, 9.0),          # height of the ridge down the top, the same three places
     knee=(0.30, 0.05),            # where the taper starts (a fraction of the length back from
     # the mouth) and how softly it bends there
-    seam=0.46,                    # where the halves meet up the sides, a fraction of the height:
-    # the red bottom half is the shallower one, its edge crimped over the top's (0.40, as the
-    # references, showed the red as a thin line from any angle above; a touch bolder)
-    top_sq=2.5, bot_sq=3.4,       # how square the top and bottom halves' sections are
-    # (2 an oval; the bottom is flatter, so it lies still on the floor)
+    seam=0.5,                     # where the halves meet up the sides, a fraction of the height:
+    # the red bottom half, its edge crimped over the top's (0.40 as the references showed the
+    # red as a thin line from any angle above; at half height it reads as a band down the side)
+    top_sq=2.5, bot_sq=4.2,       # how square the top and bottom halves' sections are
+    # (2 an oval; the bottom is flatter, so it lies still on the floor, its sides more upright)
+    fold=1.5,                     # how far the red half's crimped edge folds up over the seam
+    # onto the top's side (mm): the red stripe seen from above, the half below tucking under
     ridge=0.11,                   # the crease down the middle of the top: how much it peaks
-    bead=(0.42, 0.75),            # the crimped seam's bead along each side: how far it stands
-    # out and its half height (mm), just under where the halves meet
+    bead=(0.62, 0.7),             # the crimped seam's rolled bead along each side: how far it
+    # stands out and its half height (mm), just under where the halves meet
     lip=(0.55, 0.45),             # the rolled lips' radius at the mouth end and the tail (mm)
     deep=(13.0, 9.0),             # how far into each end you can see before it's dark (mm)
     cap_at=39.0,                  # the cap's middle, back from the mouth end (mm)
@@ -467,11 +469,19 @@ KAZOO = dict(
     # far above the ridge its rim stops, its top's height, the punched hole's radius, how far its
     # top dishes down to the hole, the rim's roll (mm); its foot turns in under to the collar's
     # thread, as a screw cap's does
-    rings=[(55.0, 3.0), (69.5, 2.75), (83.5, 2.45)],
-    # the three rings pressed into the top (back from the mouth end, radius, mm)
-    mark=dict(at=13.5, r=(5.0, 3.1), star=2.2),  # our maker's mark: an oval with a star, pressed
-    # into the top between the mouth end and the cap (back from the mouth end, half length and
-    # half width, the star's radius)
+    rings=[(60.0, 4.2, 0.45), (74.0, 3.7, 0.42), (87.0, 3.2, 0.38)],
+    # the three rings pressed up out of the top down the taper, as bold as the museum board's,
+    # about half the top's width: back from the mouth end, radius, how far the bead stands (mm)
+    ring_w=0.75,                  # each ring's bead: how far it runs either side of its crest (mm)
+    mark=dict(at=15.0, r=(6.0, 4.4), star=2.6, up=0.38),
+    # our maker's mark pressed up out of the top between the mouth end and the cap: an oval rim
+    # with a fine line inside it and a five-point star in a stippled field (back from the mouth
+    # end, half length and half width, the star's radius, how far the rim stands, mm)
+    knurl=dict(n=60, band=(3.2, 5.45), up=0.16),
+    # the cap's grip band above its thread: ribs round it, the band's foot and top above the
+    # collar's foot, how far a rib stands (mm)
+    cap_ring=(2.7, 0.55, 0.22),   # a bead pressed round the cap's top: radius out from the hole's
+    # edge, its half width, how far it stands (mm)
     dust=0.35, seed=97.0,
 )
 

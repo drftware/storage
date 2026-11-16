@@ -6199,3 +6199,12 @@ past the bake's 2 mm cage, and the bake left black holes there; gathered, they s
 should check that gap before baking. The squeeze is one `stretch` track on the whole duck
 keeping its volume, as the tea light's flame does; a dent that bends in one place waits for
 bones (F-05a).
+
+## D-238 The kazoo's pressings are in its look, and its red folds up over the seam (F-04f, Nov 16)
+The kazoo's rings, maker's mark, the cap's ribbed grip band and the bead round its top are
+painted heights in its look (`kazoo_look`), baked into the normal map, with tarnish painted into
+each crease and polish on each crest, rather than modelled: they are a few tenths of a millimetre
+on a tube 121 mm long, finer than the detailed mesh's rows, and the bake turns either into the
+same normal map. The red bottom half is painted to fold 1.5 mm up over the seam's bead onto the
+top's side, as a crimped tin kazoo's is: the shell is widest at the seam and the half below tucks
+under it, so without the fold the red showed as a hairline from any view above.

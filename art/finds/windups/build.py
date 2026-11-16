@@ -4487,6 +4487,16 @@ def kazoo_look(L, f):
     def sq(v):
         return nb.mul(v, v)
 
+    def bell(d, at, w):
+        """1 at `at`, falling smoothly to 0 `w` either side: a pressed bead's crest."""
+        return nb.mul(nb.ss(d, at - w, at), nb.sub(1.0, nb.ss(d, at, at + w)))
+
+    def total(ms):
+        out = ms[0]
+        for m in ms[1:]:
+            out = nb.add(out, m, clamp=True)
+        return out
+
     shell, inside = L.k(KZ_SHELL), L.k(KZ_IN)
     cap, collar, skin = L.k(KZ_CAP), L.k(KZ_COLLAR), L.k(KZ_SKIN)
     # where the halves meet: the seam's height along the kazoo (KZ.seam of the ridge's height)
@@ -4497,59 +4507,134 @@ def kazoo_look(L, f):
     t = nb.mul(nb.sub(ym, KY0), 1.0 / KZ_L)
     H = nb.sub(nb.sub(h0, nb.mul(t, a)), nb.mul(nb.math("MAXIMUM", nb.sub(t, kn), 0.0), b))
     up_seam = nb.sub(zm, nb.mul(H, KZ["seam"]))
-    red = nb.mul(shell, nb.sub(1.0, nb.ss(up_seam, 0.3, 0.42)))
-    tin = nb.mul(shell, nb.ss(up_seam, 0.3, 0.42))
-    topf = nb.mul(tin, nb.ss(L.nz, 0.55, 0.8))
+    # the red half's edge is rolled up over the seam's bead onto the top's side, as a crimped
+    # kazoo's is: that fold is the red a player sees from above (the half below tucks under)
+    fold = KZ["fold"]
+    red = nb.mul(shell, nb.sub(1.0, nb.ss(up_seam, fold - 0.06, fold + 0.06)))
+    tin = nb.mul(shell, nb.ss(up_seam, fold - 0.06, fold + 0.06))
+    top = nb.mul(tin, nb.ss(L.nz, 0.35, 0.6))      # the top, where the pressings are
+    lows, highs = [], []                            # creases that tarnish, crests that polish
 
-    # tinplate: a warm pale lacquered tin, brushed in fine streaks down its length
+    # tinplate: bright, faintly warm, lacquered, brushed in fine streaks down its length
     streak = L.noise(700.0, 1, stretch=(1.0, 0.025, 1.0), detail=3)
-    TIN = nb.tint(hexc("#D8D2C1"), nb.mr(streak, 0.3, 0.7, 0.9, 1.05))
-    C = Coat(L, TIN, nb.mr(L.noise(500.0, 2, stretch=(1.0, 0.03, 1.0), detail=2), 0.3, 0.7, 0.24, 0.34), 0.8)
+    TIN = nb.tint(hexc("#DEDACE"), nb.mr(streak, 0.3, 0.7, 0.86, 1.07))
+    C = Coat(L, TIN, nb.mr(L.noise(500.0, 2, stretch=(1.0, 0.03, 1.0), detail=2), 0.3, 0.7, 0.17, 0.3), 0.9)
     # the bottom half printed red, a glossy lacquered print
-    RED = nb.tint(hexc("#B4241B"), nb.mr(L.noise(60.0, 3, detail=2), 0.3, 0.7, 0.95, 1.04))
-    C.paint(red, RED, nb.mr(L.noise(40.0, 4, detail=1), 0.3, 0.7, 0.26, 0.32), 0.0)
-    # the crimp: the red edge folded over the tin, a fine dark line where it grips
-    crimp = nb.mul(shell, nb.mul(nb.ss(up_seam, 0.18, 0.32), nb.sub(1.0, nb.ss(up_seam, 0.42, 0.6))))
-    C.paint(nb.mul(crimp, 0.7), hexc("#3A2A22"), 0.5, 0.2, kz_h(-0.06))
+    RED = nb.tint(hexc("#B8261C"), nb.mr(L.noise(60.0, 3, detail=2), 0.3, 0.7, 0.94, 1.05))
+    C.paint(red, RED, nb.mr(L.noise(40.0, 4, detail=1), 0.3, 0.7, 0.22, 0.3), 0.0)
+    # the crimp: the red edge rolled over the tin's, a dark line where it grips, its crest
+    # rubbed through to the tin in places from years in a pocket
+    crimp = nb.mul(shell, bell(up_seam, fold + 0.1, 0.18))
+    C.paint(nb.mul(crimp, 0.85), hexc("#2E2520"), 0.5, 0.2, kz_h(-0.08))
+    # the fold is two thicknesses of tin: it stands a step proud of the top's side
+    C.paint(nb.mul(shell, nb.sub(1.0, nb.ss(up_seam, fold - 0.1, fold + 0.02))), height=kz_h(0.1))
+    crest = nb.mul(red, bell(up_seam, -0.25, 0.55))
+    rub = nb.ss(L.noise(30.0, 14, stretch=(1.0, 0.08, 1.0), detail=4), 0.5, 0.62)
+    C.paint(nb.mul(crest, rub), hexc("#BDB7A8"), 0.3, 0.85)
     # the inside: bare tin, dull, darkening into the tube
     C.paint(inside, hexc("#6A665C"), 0.5, 0.6)
-    # the three rings pressed into the top, each a round groove with its middle left standing
-    for at, R in KZ["rings"]:
+
+    # the three rings pressed up out of the top: a round bead, its middle sunk a touch
+    w = KZ["ring_w"]
+    for at, R, up in KZ["rings"]:
         d = nb.math("SQRT", nb.add(sq(xm), sq(nb.sub(ym, KY0 + at))))
-        groove = nb.mul(nb.ss(d, 0.42 * R, 0.62 * R), nb.sub(1.0, nb.ss(d, 0.84 * R, 1.02 * R)))
-        C.paint(nb.mul(topf, groove), None, None, None, kz_h(-0.3))
-        C.paint(nb.mul(nb.mul(topf, groove), 0.35), hexc("#9D9682"))
-    # our maker's mark: a raised oval rim with a five-point star in it
+        bead = bell(d, R, w)
+        mid = nb.sub(1.0, nb.ss(d, R - 1.4, R - 0.7))
+        C.paint(nb.mul(top, bead), height=kz_h(up))
+        C.paint(nb.mul(top, mid), height=kz_h(-0.1))
+        lows.append(nb.mul(top, nb.add(bell(d, R + w, 0.4), nb.mul(bell(d, R - w, 0.35), 0.6), clamp=True)))
+        highs.append(nb.mul(top, nb.ss(bead, 0.72, 0.95)))
+
+    # our maker's mark: an oval rim, a fine line inside it, a raised star in a stippled field
     mk = KZ["mark"]
     my = nb.sub(ym, KY0 + mk["at"])
-    e = nb.math("SQRT", nb.add(sq(nb.mul(xm, 1.0 / mk["r"][1])), sq(nb.mul(my, 1.0 / mk["r"][0]))))
-    rim = nb.mul(nb.ss(e, 0.76, 0.82), nb.sub(1.0, nb.ss(e, 0.93, 1.0)))
+    rx, ry = mk["r"][1], mk["r"][0]
+    e = nb.math("SQRT", nb.add(sq(nb.mul(xm, 1.0 / rx)), sq(nb.mul(my, 1.0 / ry))))
+    mtop = nb.mul(tin, nb.ss(L.nz, 0.3, 0.5))
+    rim = bell(e, 0.88, 0.11)
+    line = bell(e, 0.7, 0.045)
+    field = nb.sub(1.0, nb.ss(e, 0.64, 0.68))
     rs = nb.math("SQRT", nb.add(sq(xm), sq(my)))
     th = nb.math("ARCTAN2", xm, nb.sub(0.0, my))
     lobe = nb.pw(nb.add(0.5, nb.mul(nb.math("COSINE", nb.mul(th, 5.0)), 0.5)), 2.4)
-    edge_r = nb.mul(nb.add(0.4, nb.mul(lobe, 0.6)), mk["star"])
-    star = nb.sub(1.0, nb.ss(nb.sub(rs, edge_r), -0.1, 0.1))
-    C.paint(nb.mul(topf, nb.add(rim, star, clamp=True)), None, 0.22, None, kz_h(0.17))
+    edge_r = nb.mul(nb.add(0.38, nb.mul(lobe, 0.62)), mk["star"])
+    star = nb.sub(1.0, nb.ss(nb.sub(rs, edge_r), -0.12, 0.12))
+    # the star's arms bevelled: highest down their middles
+    bev = nb.sub(1.0, nb.mul(nb.math("MINIMUM", nb.math("DIVIDE", rs, edge_r), 1.0), 0.45))
+    stip = nb.ss(L.noise(900.0, 15, detail=1), 0.55, 0.62)
+    C.paint(nb.mul(mtop, rim), height=kz_h(mk["up"]))
+    C.paint(nb.mul(mtop, line), height=kz_h(0.14))
+    C.paint(nb.mul(mtop, nb.mul(star, bev)), height=kz_h(mk["up"] * 0.95))
+    C.paint(nb.mul(nb.mul(mtop, field), nb.mul(nb.sub(1.0, star), stip)), height=kz_h(-0.06))
+    lows.append(nb.mul(mtop, nb.add(bell(e, 0.88 + 0.13, 0.06), nb.mul(field, nb.sub(1.0, star)), clamp=True)))
+    lows.append(nb.mul(nb.mul(mtop, field), nb.mul(bell(nb.sub(rs, edge_r), 0.15, 0.12), 1.0)))
+    highs.append(nb.mul(mtop, nb.add(nb.ss(rim, 0.7, 0.95), nb.mul(star, 0.9), clamp=True)))
+    mfield = nb.mul(nb.mul(mtop, field), nb.sub(1.0, star))     # darkest: the star stands on it
+
     # the cap and collar: the same tin, the cap a little greyer and handled more
-    CAPT = nb.tint(hexc("#D3CFC3"), nb.mr(L.noise(300.0, 5, detail=3), 0.3, 0.7, 0.9, 1.04))
-    C.paint(nb.add(cap, collar, clamp=True), CAPT, nb.mr(L.noise(350.0, 6, detail=2), 0.3, 0.7, 0.24, 0.32), 0.8)
+    CAPT = nb.tint(hexc("#D6D2C6"), nb.mr(L.noise(300.0, 5, detail=3), 0.3, 0.7, 0.9, 1.05))
+    C.paint(nb.add(cap, collar, clamp=True), CAPT, nb.mr(L.noise(350.0, 6, detail=2), 0.3, 0.7, 0.2, 0.3), 0.9)
+    # in the cap's frame: across its middle, round it, and up from the collar's foot (the cap
+    # leans back a touch with the top, so its up runs a touch toward the mouth)
+    dy = nb.sub(ym, KY0 + KZ["cap_at"])
+    dcap = nb.math("SQRT", nb.add(sq(xm), sq(dy)))
+    zc = nb.sub(nb.sub(zm, CAP_H), nb.mul(dy, _slope))
+    # the grip band above the thread: fine ribs pressed round it, tarnish between them
+    kn_ = KZ["knurl"]
+    rib = nb.add(0.5, nb.mul(nb.math("COSINE", nb.mul(nb.math("ARCTAN2", xm, dy), float(kn_["n"]))), 0.5))
+    band = nb.mul(nb.mul(cap, nb.sub(1.0, nb.ss(nb.math("ABSOLUTE", L.nz), 0.35, 0.6))),
+                  nb.mul(nb.ss(zc, kn_["band"][0], kn_["band"][0] + 0.25),
+                         nb.sub(1.0, nb.ss(zc, kn_["band"][1] - 0.25, kn_["band"][1]))))
+    C.paint(nb.mul(band, nb.ss(rib, 0.25, 0.75)), height=kz_h(kn_["up"]))
+    lows.append(nb.mul(band, nb.mul(nb.sub(1.0, nb.ss(rib, 0.05, 0.35)), 0.8)))
+    highs.append(nb.mul(band, nb.mul(nb.ss(rib, 0.8, 1.0), 0.8)))
+    # the bead pressed round the cap's top, between the rim and the hole
+    cr = KZ["cap_ring"]
+    ctop = nb.mul(cap, nb.ss(L.nz, 0.6, 0.85))
+    cbead = bell(dcap, KZ["cap"]["hole"] + cr[0], cr[1])
+    C.paint(nb.mul(ctop, cbead), height=kz_h(cr[2]))
+    lows.append(nb.mul(ctop, nb.mul(bell(dcap, KZ["cap"]["hole"] + cr[0] + cr[1], 0.3), 0.7)))
+    highs.append(nb.mul(ctop, nb.ss(cbead, 0.7, 0.95)))
+    # the cap's rolled rim, polished by thumbs
     rimb = nb.mul(cap, L.edge(mm(0.5), k=4.0))
-    C.paint(nb.mul(rimb, 0.6), hexc("#ECE9DF"), 0.18)
+    highs.append(nb.mul(rimb, 0.6))
+    # where the collar's foot meets the top and under the cap's rim: tarnish creeps in
+    lows.append(nb.mul(shell, nb.mul(bell(dcap, KZ["collar"]["r"] + 0.6, 1.4), 0.9)))
+    lows.append(nb.mul(collar, 0.5))
+
     # the wax-paper skin: cream, faintly crinkled, a little yellowed toward its edge
-    sk_r = nb.math("SQRT", nb.add(sq(xm), sq(nb.sub(ym, KY0 + KZ["cap_at"]))))
     PAPER = nb.tint(hexc("#F1E9D2"), nb.mr(L.noise(160.0, 7, detail=3), 0.3, 0.7, 0.93, 1.03))
-    C.paint(skin, nb.mixc(nb.ss(sk_r, 3.0, 8.0), PAPER, hexc("#E2D2A8")), 0.42, 0.0,
+    C.paint(skin, nb.mixc(nb.ss(dcap, 3.0, 8.0), PAPER, hexc("#E2D2A8")), 0.42, 0.0,
             nb.mul(L.noise(900.0, 8, detail=3), kz_h(0.03)))
-    # handled: tarnish where fingers hold it near the mouth end, fine scratches down its length,
-    # the red rubbed thin on the bottom where it's been slid about, chipped at the lips and seam
+
+    # aged tinplate: dull yellow-grey blotches, thicker toward the tail and low down the sides
+    blot = nb.ss(L.noise(16.0, 16, detail=4, rough=0.6), 0.5, 0.72)
+    aged = nb.mul(tin, nb.mul(blot, nb.add(0.35, nb.mul(nb.ss(ym, -10.0, 50.0), 0.4))))
+    C.paint(nb.mul(aged, 0.55), hexc("#B9AE92"), 0.38)
+    # handled: tarnish where fingers hold it near the mouth end, polish on every crest and down
+    # the ridge where a pocket rubs it, fine scratches down its length
     hold = nb.mul(tin, nb.mul(nb.sub(1.0, nb.ss(ym, -25.0, 5.0)), nb.ss(L.noise(45.0, 9, detail=4), 0.5, 0.68)))
-    C.paint(nb.mul(hold, 0.4), hexc("#A39A84"), 0.42)
+    C.paint(nb.mul(hold, 0.4), hexc("#A39A84"), 0.4)
+    # the creases: tarnish dark and dull in every pressed groove, the seam and round the collar
+    low = total(lows)
+    C.paint(nb.mul(nb.mul(low, nb.add(tin, nb.add(cap, collar, clamp=True), clamp=True)), 0.85),
+            hexc("#544D40"), 0.55, 0.5)
+    C.paint(nb.mul(mfield, 0.9), hexc("#4A4438"), 0.62, 0.35)
+    C.paint(nb.mul(nb.mul(low, red), 0.6), hexc("#5A1A14"), 0.45)
+    ridge = nb.mul(tin, nb.mul(nb.ss(nb.sub(zm, H), -0.9, -0.15),
+                               nb.mr(L.noise(25.0, 17, stretch=(1.0, 0.15, 1.0), detail=3), 0.35, 0.7, 0.3, 1.0)))
+    high = nb.add(total(highs), ridge, clamp=True)
+    C.paint(nb.mul(high, 0.75), hexc("#F4F2EC"), 0.1, 0.95)
     scr = nb.ss(L.noise(1100.0, 10, stretch=(1.0, 0.018, 1.0), detail=2), 0.73, 0.76)
-    C.paint(nb.mul(nb.mul(nb.add(tin, cap, clamp=True), scr), 0.5), hexc("#EEEBE2"), 0.2)
+    C.paint(nb.mul(nb.mul(nb.add(tin, cap, clamp=True), scr), 0.5), hexc("#F0EDE5"), 0.16)
     C.paint(nb.mul(nb.mul(red, scr), 0.5), hexc("#C9C4B6"), 0.3, 0.8)
+    # the red rubbed thin on the bottom where it's been slid about, worn through at the corners
     under = nb.mul(red, nb.ss(nb.sub(0.0, L.nz), 0.6, 0.85))
     C.paint(nb.mul(under, nb.ss(L.noise(80.0, 11, stretch=(1.0, 0.2, 1.0), detail=3), 0.45, 0.7)),
             hexc("#A23A2E"), 0.55)
+    corner = nb.mul(nb.mul(red, L.edge(mm(1.2), k=4.0)), nb.ss(nb.sub(0.0, L.nz), 0.2, 0.5))
+    C.paint(nb.mul(corner, nb.ss(L.noise(40.0, 18, stretch=(1.0, 0.1, 1.0), detail=4), 0.48, 0.6)),
+            hexc("#BDB7A8"), 0.32, 0.85)
     ends = nb.add(nb.sub(1.0, nb.ss(ym, KY0 + 1.0, KY0 + 3.0)), nb.ss(ym, -KY0 - 3.0, -KY0 - 1.0), clamp=True)
     chips = C.enamel_wear(nb.mul(red, nb.add(nb.mul(ends, 0.9), nb.mul(crimp, 0.5), clamp=True)),
                           hexc("#C4BFB1"), 12, 1.0)
@@ -4600,7 +4685,7 @@ KAZOO = kit.Find(
     motions={
         # put to the lips and hummed into: the skin under the cap buzzes (the game plays the
         # note here), swelling as the note leans in, then stills, and it's lowered
-        "Blow": dict(duration=KB_DUR, focus=tuple(CAP_AT + V(0.0, 0.0, 4.0)), distance=0.8,
+        "Blow": dict(duration=KB_DUR, focus=tuple(CAP_AT + V(0.0, 0.0, 4.0)), distance=0.38,
                      view=(-1.1, -2.0, 1.5), drop=0.0, tracks=KB_TRACKS),
     },
     dust=KZ["dust"], seed=KZ["seed"], texels=1100,
