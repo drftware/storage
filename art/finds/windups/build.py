@@ -6609,8 +6609,14 @@ COWBOY_DOLL = kit.Find(
 )
 
 
+# --- The singing fish plaque (F-04i): its own module, fish.py ------------------------------------
+
+from fish import SINGING_FISH  # noqa: E402
+
 FINDS = [CYMBAL_MONKEY, JACK_IN_THE_BOX, CHATTERING_TEETH, WALKING_ROBOT, WINDUP_MOUSE, TIN_BIRD,
          SIREN_CAR, RUBBER_DUCK, KAZOO, TOY_DRUM, FARM_SPINNER, COWBOY_DOLL]
+if "SingingFish" in sys.argv:       # half built: only when named, so export and upload skip it
+    FINDS.append(SINGING_FISH)
 
 if __name__ == "__main__":
     kit.main("Windups", HERE, FINDS)

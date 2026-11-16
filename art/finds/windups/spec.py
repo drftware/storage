@@ -699,3 +699,71 @@ TALK = dict(
     end=3.8,                      # all still by (s)
     seed=7,
 )
+
+
+# --- The singing fish plaque: our own channel catfish on a honey-oak board -----------------------
+# References (README): singing fish plaques are 13 x 8 in (a trout on a rock) to about 14 x 10 in
+# (the famous bass); a latex rubber fish over a plastic skeleton with three motors (the tail out,
+# the body out from the board, the lower jaw down), each sprung back when its motor stops
+# (HowStuffWorks' teardown); some stand on a fold-out leg. Ours: a slate-blue speckled channel
+# catfish with long whiskers on an arched, routed, varnished oak board, a red button lower right,
+# a brass plate with an engraved fish (no words), a speaker grille lower left.
+FISH = dict(
+    board=(360.0, 245.0, 22.0),     # the board: wide, tall, thick (mm), an arched top, flat foot
+    arch=(5.0, 3.0, 150.0, 95.0),   # the outline's squareness below and above, and how far the
+    # arch rises above, and the foot sits below, its widest line (mm)
+    # the routed edge, back to front: (in from the outline, mm toward the back from the face)
+    ogee=[(1.5, 22.0), (0.0, 20.5), (0.0, 13.0), (0.4, 10.5), (1.6, 8.6), (3.6, 7.6), (5.6, 6.6),
+          (7.4, 4.8), (8.6, 2.6), (9.2, 0.8), (10.2, 0.0)],
+    lean=15.0,                      # degrees it leans back on its fold-out leg
+    box=(250.0, 150.0, 26.0, 110.0),  # the black battery and speaker box behind: wide, tall, deep,
+    # its middle's height on the board (mm)
+    leg=(18.0, 4.0, 150.0),         # the fold-out leg: wide, thick, and its hinge's height (mm)
+    # the fish (mm): its tail's tip at x0 on the board, its middle line this high
+    x0=-150.0, z=140.0,
+    # (w from the tail's tip, bottom and top of the side view about the middle line, half thick
+    # toward you and toward the board, how far its back stands off the board)
+    body=[(46.0, -13.0, 13.0, 8.0, 5.5, 3.6), (58.0, -14.5, 14.5, 9.0, 6.0, 3.3),
+          (70.0, -16.0, 16.0, 11.0, 7.0, 3.0), (82.0, -16.5, 16.5, 11.5, 7.5, 2.5),
+          (100.0, -20.0, 21.0, 14.0, 9.0, 2.0), (130.0, -27.0, 27.5, 18.0, 11.0, 1.5),
+          (160.0, -33.0, 33.0, 21.0, 12.5, 1.5), (190.0, -37.0, 37.5, 23.5, 13.5, 2.0),
+          (215.0, -37.5, 38.0, 25.5, 14.5, 3.0), (240.0, -33.0, 33.0, 27.0, 15.0, 4.5),
+          (258.0, -27.0, 27.0, 26.5, 15.0, 6.0), (272.0, -21.0, 20.5, 24.5, 14.0, 7.0),
+          (283.0, -14.5, 13.5, 20.0, 11.5, 8.0), (289.0, -8.0, 7.0, 13.0, 7.5, 8.5)],
+    snout=291.5, chin=288.0,        # where the upper head's and the chin's rounded ends reach
+    arch_up=(4.0, 7.0),             # its back arches: the tail and the head lifted this much (mm)
+    knuckle=(82.0, 15.0, 10.0),     # the hinge the body and tail both turn on: w, and the rubber
+    # ball's half height and radius there (a ball turning on its own axis never gapes)
+    mouth=(238.0, -7.0, 226.0),     # the jaw's hinge (w, height) and where its back end tucks in
+    lip=(3.0, 3.4),                 # the upper and lower lips' thickness (mm radius)
+    eye=(263.0, 11.0, 6.2),         # w, height, radius: a touch bigger than life, to read
+    gill=232.0,                     # the gill cover's back edge, at its middle (w)
+    tail=dict(curl=16.0, at=60.0, lobe=(64.0, 34.0, 28.0)),  # the tail turns out this many
+    # degrees from w=at; its lobes reach back to the tip, this far up and down, the fork this deep
+    whisker=dict(long=(62.0, 2.5), nose=(11.0, 1.1), chin=(19.0, 1.3)),  # length, root radius
+    button=dict(at=(128.0, 44.0), r=9.0, dome=5.0, bezel=(13.5, 3.0), travel=2.6),
+    plate=dict(at=(0.0, 46.0), half=(54.0, 16.0), t=1.4),
+    grille=dict(at=(-128.0, 44.0), r=12.5, hole=1.5),
+    dust=0.45, seed=31.0,
+)
+
+# How it sings when pressed (seconds, degrees). Timed from how the real toys are built: each
+# motor drives its piece out quickly and a spring snaps it back, so every move out is a push and
+# every move back a snap; the jaw opens on each sung syllable, about four a second.
+SING = dict(
+    press=(0.0, 0.06, 0.18, 0.27),  # the button: pushed, bottomed, let go, home
+    flaps=[0.28, 0.6],              # the tail's two flaps before it sings
+    flap=(30.0, 0.12, 0.09, 3.0),   # out this far in this long, snapped back, overshooting this
+    out=(0.95, 0.4, 78.0, 6.0),     # the head swings out: starts, takes, how far, overshoot
+    beat=0.5,                       # the song's beat: 120 a minute
+    sing=1.55,                      # the first sung syllable
+    # (beat, length in beats, how wide the mouth opens): two bars, the last note held long
+    notes=[(0.0, 0.5, 26.0), (0.5, 0.25, 15.0), (0.75, 0.25, 18.0), (1.0, 0.5, 28.0),
+           (1.5, 0.5, 16.0), (2.0, 1.0, 30.0), (3.0, 0.25, 14.0), (3.25, 0.25, 18.0),
+           (3.5, 0.5, 22.0), (4.0, 0.5, 28.0), (4.5, 0.25, 16.0), (4.75, 0.25, 20.0),
+           (5.0, 0.5, 26.0), (5.5, 0.5, 18.0), (6.0, 1.5, 32.0)],
+    beat_flaps=[2.0, 6.0, 6.5],     # the tail flicks on these beats while it sings
+    back=(5.6, 0.26, 7.0),          # the head snaps back: starts, takes, how far it bounces off
+    last_flap=6.15,                 # one last flap as it settles
+    end=6.9,
+)

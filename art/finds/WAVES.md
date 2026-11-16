@@ -6,7 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04i, the singing fish plaque (step 7): the newest note has its research hints. The
+**Next:** F-04i, finish the singing fish plaque (step 7): the newest note says exactly where it
+stands (modelled and baked, never rendered). The
 oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next
 touched.
 
@@ -89,6 +90,56 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04i (the singing fish plaque half built: modelled, looked and baked, never
+  rendered; stopped at the context cap; not ticked, nothing uploaded).** Its own module,
+  `windups/fish.py` (`fs_*`, `FS_*`, `fish_look`, `fish_press`; spec `FISH`, `SING`), imported
+  by `build.py` and added to `FINDS` only when `SingingFish` is on the command line, so the
+  set's export and upload skip it until it's judged. `scripts/art.sh set windups textures
+  SingingFish` bakes clean: 2048 at 753 texels a stud, 9,268 triangles, 3 min; the bake's
+  outputs in `out/` are left uncommitted, rebuild them. **References:** HowStuffWorks' singing
+  fish teardown (a latex skin over a plastic skeleton; three motors drive the tail out from the
+  board, the body out, the lower jaw down, and a spring snaps each back when its motor stops; a
+  30 s clip; a photocell, speaker and battery box in the plaque); a 1999 singing trout listing
+  (treasurevalleyantiques.com: 13 x 8 x 3.75 in); the famous bass's listings (about 15 x 10.5
+  in boxed, 11 in fish; a fold-out stand on some); Commons' close-up of a singing fish's latex
+  head and its wall of dark wavy-edged plaques (ours must not look like them); Wikipedia's
+  channel catfish photo (proportions, fins, whiskers, slate back to white belly). No video
+  sampled: the timing comes from the motors-and-springs build (out is a push, back is a snap)
+  and about four syllables a second. **What it is** (mm; the board's face at y 0, leaned 15
+  degrees back on a fold-out leg, its foot's back edge on the floor): `Plaque` (root) a 360 x
+  245 x 22 honey-oak board, square below and arched above (a superellipse), a routed ogee edge
+  all round, the raw back with a black battery box, a ribbed door, our red star, the leg on a
+  hinge with a rubber foot; a brass oval plate (engraved border, a leaping fish over two waves,
+  no words, two screws); a black bezel lower right; a drilled speaker grille lower left.
+  `Button` (moves in along the board's normal, 2.6 mm). `Body` (turns about the board's
+  vertical through the hinge ball at w 82 from the tail's tip; positive swings the head out to
+  you): a 290 mm slate-blue speckled latex channel catfish, its back flat to the board, a cream
+  belly, a lateral line, a gill cover's crease, dorsal, adipose, anal, pelvic and pectoral fins
+  as tapered fanned plates with rays, glossy gold-ringed eyes on both sides, a thick upper lip
+  round the snout, two long whiskers and two short nose ones, a rubber ball at the hinge (a
+  spheroid round the hinge's own axis, so the body and tail never gape however they turn).
+  `Tail` (the same hinge, positive flaps it out): the stub and a deeply forked fin curled 16
+  degrees out. `Jaw` (on `Body`, turns about the fish's thickness at w 238, positive opens):
+  the lower jaw with a pink tongue, a thick lower lip and four pale chin whiskers; its back end
+  tucks inside the head. Motion `Press` (6.9 s): button in and out, two tail flaps, the head
+  out to 84 degrees in 0.4 s and wobbling to 78, two bars at 120 a minute from 1.55 s (the
+  game starts the song there; held notes quiver, loud ones jolt the head), the head snaps back
+  at 5.6 s and clacks twice, a last flap. **Left, in order:** (1) quick sheets (`scripts/art.sh
+  set windups quick SingingFish`) and look hard beside the catfish photo: the fish's size on the
+  board and its flat back against it, the snout and mouth (the cut where the head's lower ring
+  rises to the mouth line between w 226 and 238, hidden by the jaw at rest), lips meeting,
+  whiskers not through the board, the fins' outlines and the ray paint lining up with them
+  (`fish_look`'s fin list of centres), the plate's engraving (a fish body ellipse, a tail
+  wedge, waves; may read as mush: fix or simplify), the speaker holes, the board's arch and
+  ogee, the leg reaching the floor. (2) The Press filmstrip (front right): the head's swing
+  shows its face, the hinge ball never gapes, the jaw's back end stays inside the head, the
+  tail clears the board. (3) Fix, full renders, the README section, a D-number,
+  `SingingFish = { "Press" }` in `src/shared/Finds/Order.luau`, put it in `FINDS` for good,
+  export, upload, import, tick; F-04j's hints (the tin carousel: a printed canopy on a centre
+  pole, three or four horses rising and falling out of step, the tune slowing as it runs down;
+  time it from a music-box video) still to write. **Found:** a rigid head and tail on one hinge
+  join without a gap if each closes onto a ball shaped round that hinge's own axis.
 
 - **Nov 16, F-04h (the pull-string cowboy doll built; step 6 done; uploaded 131267358363261 and
   imported).** `CowboyDoll` in
