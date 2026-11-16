@@ -139,6 +139,36 @@ nowhere else.
      Again, tap it and cancel the box: the results come down shortly after. Again, tap it and
      take your time in the box (20 s), then buy: the results wait for you, both freed.
 
+- [ ] **Make the six wrap colour products and get caught in one** (S3-04a, D-224; in Studio
+  Play Claude saw a made-up Blue purchase owned, worn at once and refused a second time, and all
+  six colours on stand-in films; a real catch in a colour has never been seen). The shop screen
+  comes next (S3-04b); until then a colour is bought through the dev prompt.
+  1. **Decide (defaults in):** the six are Blue, Red, Green, Pink, Orange and Black, at 99, 99,
+     99, 149, 149 and 199 Robux (the GDD says 99 to 499; patterns would fill the top later). A
+     colour bought is put on at once. Say if any name, colour or price should change.
+  2. Creator Hub > this experience > Monetization > Developer Products: make six, named exactly
+     `Blue Wrap`, `Red Wrap`, `Green Wrap`, `Pink Wrap`, `Orange Wrap`, `Black Wrap`, at your
+     prices.
+  3. In Studio, Test > Clients and Servers, 2 players. In the server's Command Bar:
+     `game.ServerStorage.DevReceipt:Invoke({ offer = "wrapRed" })` (it answers PurchaseGranted
+     and gives Player1 Red). Then `workspace:SetAttribute("WakeSleepers", true)` and get
+     Player1 caught on floor 3.
+  4. As Player2, watch the catch if you can: the film winding round Player1 is red. Then find
+     Player1's unit and lift the door: they stand wrapped in red film, their body showing
+     through. Hold Cut free: the shreds that fly are red too.
+  5. Back in the server's Command Bar: `game.ServerStorage.DevReceipt:Invoke({ offer =
+     "wrapBlack" })`, and get Player1 caught again: now the film is a smoky black. Look at it
+     in a dark unit with the flashlight: can you still tell it's a person in film?
+  6. Published, on your phone: in the Developer Console's server command line,
+     `workspace:SetAttribute("DevPrompt", "wrapBlue")`. The real purchase box comes up; buy it.
+     Get caught with a friend: they find you in blue. Run the same line again: no box this time
+     (the log says you already own it).
+
+- [ ] **Clear Studio's doubled modules** (found Nov 15): `ServerScriptService.Server` and
+  `ReplicatedStorage.Shared` hold two copies of each module made in recent sessions (Purchasing,
+  Products, WrapColours, Wearing and more), as if Rojo were connected twice. Disconnect Rojo,
+  delete both copies of each doubled module, click Connect once: Rojo puts one back of each.
+
 - [ ] **Look at the packed unit's stacks** (B-05a, D-215; judged by Claude in renders, imported
   into Studio, not yet laid on any floor). The blocks a packed unit's walls will be built from are
   in the place at `ReplicatedStorage.Props.Packed` (seven MeshParts, put there by hand this

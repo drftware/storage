@@ -69,6 +69,7 @@ local KeptWrap = require(ReplicatedStorage.Shared.KeptWrap.Specs)
 local Prompts = require(script.Parent.Prompts)
 local Slots = require(script.Parent.Slots)
 local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
+local WrapColours = require(ReplicatedStorage.Shared.WrapColours)
 
 -- A kept player cut free by a friend (`cutter`, their UserId; 0 for Studio's stand-in friends), or
 -- by their own Cut Free (`cutter` is then their own UserId).
@@ -233,8 +234,9 @@ function KeptPlayers.new(): KeptPlayers
 	end
 
 	-- Wraps `h`'s body head to foot in film, fitted to it at rest and welded to its root: what a
-	-- friend finds when they lift the door. No collision, weight or shadow: it's only seen.
-	local function wrapUp(h: Held, wound: number)
+	-- friend finds when they lift the door. No collision, weight or shadow: it's only seen. The
+	-- film is `player`'s wrap colour (S3-04a), its tint on every screen with the part itself.
+	local function wrapUp(h: Held, player: Player, wound: number)
 		local props = ReplicatedStorage:FindFirstChild("Props")
 		local template = props and props:FindFirstChild(Kept.Wrap)
 		if not (template and template:IsA("BasePart")) then
@@ -255,6 +257,11 @@ function KeptPlayers.new(): KeptPlayers
 		wrap.Massless = true
 		wrap.CastShadow = false
 		wrap.Transparency = Kept.WrapBlend
+		local look = wrap:FindFirstChildWhichIsA("SurfaceAppearance")
+		if look then
+			local worn = player:GetAttribute(WrapColours.Attribute)
+			look.Color = WrapColours.tint(if type(worn) == "string" then worn else nil)
+		end
 		wrap.CFrame = h.root.CFrame * offset
 		local weld = Instance.new("Weld")
 		weld.Part0, weld.Part1, weld.C0 = h.root, wrap, offset
@@ -622,7 +629,7 @@ function KeptPlayers.new(): KeptPlayers
 		end
 		-- the film goes on where they stand, so friends watching see it wind round them before
 		-- they vanish (KeptWrapOn); their own screen never draws it (CaughtView)
-		wrapUp(h, Workspace:GetServerTimeNow())
+		wrapUp(h, player, Workspace:GetServerTimeNow())
 		local to = inside(floor, unit, humanoid.HipHeight + root.Size.Y / 2)
 		-- the unit may be far off: start streaming it in around them while the screen goes black;
 		-- held anchored, they can't fall if it isn't in yet
@@ -702,7 +709,7 @@ function KeptPlayers.new(): KeptPlayers
 		if deals then
 			deals:hold(unit)
 		end
-		wrapUp(h, Workspace:GetServerTimeNow() - LONG_ON)
+		wrapUp(h, player, Workspace:GetServerTimeNow() - LONG_ON)
 		local to = inside(floor, unit, humanoid.HipHeight + root.Size.Y / 2)
 		local ok, err = pcall(function()
 			player:RequestStreamAroundAsync(to.Position, STREAM_WAIT)

@@ -17,6 +17,8 @@
 	- `ownerOnly`: prompted only by the place's owner's dev prompt, never shown to players.
 	- `forAnother`: bought for another player, named as the prompt goes up (Brix's recipients,
 	  D-206); its grant still lands in the buyer's save, and the sale's `recipient` says who.
+	- `owned`: for a thing bought once and kept (a wrap colour), whether the save already has it:
+	  an owned thing is never put on sale to that player again.
 
 	Prices are never here: Roblox's are read each time an offer is shown (Brix's Marketplace).
 	Whatever a row grants, `offers` also counts the purchase in the save's `bought`, the same
@@ -24,6 +26,7 @@
 	is ever a product (GDD: nothing random is sold, for Robux or for cash).
 ]]
 local Save = require("./Save")
+local WrapColours = require("./WrapColours")
 
 -- any: Brix's sale, as `Brix.PurchaseSale<Player>`; only `offer` is read here.
 type Sale = any
@@ -35,6 +38,7 @@ export type Row = {
 	grant: Grant?,
 	ownerOnly: boolean?,
 	forAnother: boolean?,
+	owned: ((data: Save.Data) -> boolean)?,
 }
 
 -- The shape of each offer handed to `Brix.Purchases.new` (`Brix.PurchaseOffer<Save.Data, Player>`).
@@ -46,9 +50,8 @@ export type Offer = {
 
 local Products = {}
 
--- Every product, by offer name. Step 3's last products, wrap colours, join as S3-04 puts them on
--- sale.
-Products.Rows = table.freeze({
+-- Every product, by offer name; the wrap colours are added after, one row each.
+local rows: { [string]: Row } = {
 	-- Cut Free (S3-03a, GDD "Getting caught", DOORS' revive): caught, you pay and you're out at
 	-- once. Granted as a spare in the save, which the server spends as it frees you (CutFrees),
 	-- so one that lands after a friend already freed you waits for your next catch.
@@ -93,7 +96,27 @@ Products.Rows = table.freeze({
 		switch = "sellTestPurchase",
 		ownerOnly = true,
 	}),
-} :: { [string]: Row })
+}
+
+-- Wrap colours (S3-04a, GDD "Monetization"): one product each, "Blue Wrap" and so on, bought once
+-- and kept. The grant owns it for good and puts it on at once (`WrapColours`), a permanent thing
+-- in the save, never a spare; one bought again (two prompts open at once) is still granted, worn
+-- and counted, never refused, since the Robux are spent.
+for _, colour in WrapColours.Shelf do
+	local name = colour.name
+	rows[name] = table.freeze({
+		title = `{colour.label} Wrap`,
+		switch = `sell{string.upper(string.sub(name, 1, 1))}{string.sub(name, 2)}`,
+		grant = function(_sale: Sale, data: Save.Data): string?
+			WrapColours.own(data, name, os.time())
+			return nil
+		end,
+		owned = function(data: Save.Data): boolean
+			return WrapColours.owns(data, name)
+		end,
+	})
+end
+Products.Rows = table.freeze(rows)
 
 -- Every offer name, sorted: the values Recording's `offer` field takes.
 Products.Names = (function(): { string }

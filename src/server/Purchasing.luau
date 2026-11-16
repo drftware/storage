@@ -256,6 +256,12 @@ function Purchasing.new(): PurchasingSystem
 		if row == nil or (row.ownerOnly and not isDev(player)) then
 			return nil, notOnSale(offer, "unknownOffer", `{offer} isn't an offer for {player.Name}`)
 		end
+		-- a thing bought once and kept (a wrap colour) is never sold to its owner again
+		local owned = row.owned
+		local data = if owned and saving then saving:data(player) else nil
+		if owned and data and owned(data) then
+			return nil, notOnSale(offer, "notBuyable", `{player.Name} already owns {offer}`)
+		end
 		local made = playerPurchases
 		if made == nil then
 			return nil, notOnSale(offer, "notHeld", "nothing is on sale on this server yet")

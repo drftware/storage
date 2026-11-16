@@ -136,7 +136,10 @@ function CutFreeView.new(kick: (amount: number) -> ()): Brix.System
 		at.Parent = wrap
 		local e = Instance.new("ParticleEmitter")
 		e.Texture = texture
-		e.Color = ColorSequence.new(Color3.fromRGB(236, 240, 244))
+		-- the film's own near-white, in its wrap colour (S3-04a): the tint the server gave it
+		local look = wrap:FindFirstChildWhichIsA("SurfaceAppearance")
+		local tint = if look then look.Color else Color3.new(1, 1, 1)
+		e.Color = ColorSequence.new(Color3.new(0.925 * tint.R, 0.941 * tint.G, 0.957 * tint.B))
 		e.LightEmission = 0.15
 		e.LightInfluence = 0.85
 		e.Size = SHRED_SIZE

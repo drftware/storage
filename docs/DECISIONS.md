@@ -5925,3 +5925,26 @@ DOORS' revive on its death screen.
 - **Who sees it:** every caught screen (wrapped, carried, left behind on the watch bar). Free
   players can't exist in a wipe, so Free a Friend's pills never show then.
 
+
+## D-224 Wrap colours: six tints on the one film, owned for good and worn at once (S3-04a, Nov 15)
+The moment: a friend lifts your door and finds you wrapped in your colour, the one they know is
+you. GDD "Monetization": wrap colours at the counter, 99 to 499 Robux, "the colour or pattern of
+the shrink-wrap you get wrapped in". Proven: Fortnite's and DOORS' cosmetics are bought once, kept,
+and seen by friends; real pallet film comes in colours, so a coloured wrap still belongs in a
+storage building.
+- **A colour is a tint, not new art.** The film stays the one model (art/keptwrap) with its
+  near-white clear colour map; the server sets its SurfaceAppearance's `Color` (script-writable,
+  STUDIO.md) as it wraps you, so the colour reaches every screen with the part and nothing else is
+  sent. Patterns need texture sets of their own and wait for S3-04c.
+- **Six colours, plain names** (Blue, Red, Green, Pink, Orange, Black: names a player would say,
+  the owner's Nov 15 rule), each its own product titled "<Colour> Wrap". Default prices, owner's to
+  set on the Dashboard: Blue, Red, Green 99; Pink, Orange 149; Black 199 (`OWNER.md`).
+- **Owned for good, never a spare.** Save version 4 adds `wraps` (owned, by offer name, stamped
+  with when first bought) and `wornWrap` (empty for the plain film). A purchase owns it and puts it
+  on at once; an owned colour is refused at the prompt (`notBuyable`), and one bought twice anyway
+  (two prompts open) is still granted and counted, never refused, since the Robux are spent.
+- **What you wear rides on the Player** (`WrapColour`, mirrored by `Wearing` from the save as it
+  loads and as a colour is granted), so the wrap and later screens read it without the save. A
+  worn name that's no longer a colour, or no longer owned, is the plain film.
+- Tints were judged in Studio Play at phone size on stand-in films: all six read as coloured film
+  with the body showing through; Black reads as smoky dark film, not a solid shape.

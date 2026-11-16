@@ -2486,3 +2486,18 @@ verified: a doc page, Studio, or "untested".
   the end's look count you caught (the caught screen doesn't draw, nothing frees you). Seen:
   `ClimbWaits` at once, the end 12.1 s later.
 
+
+## Wrap colours (S3-04a, Nov 15)
+
+- **A server script writes `SurfaceAppearance.Color` at runtime** (Play): the kept film's clone
+  tinted before parenting showed the tint on the client, multiplied over its near-white colour map
+  (AlphaMode Transparency kept the film see-through). A LocalScript reads `Color` fine.
+- **New modules show up twice in Studio** (Edit, Nov 15): `ServerScriptService.Server` and
+  `ReplicatedStorage.Shared` hold two ModuleScripts each for modules made in recent sessions
+  (Purchasing, CutFrees, Products, WrapColours, Wearing ...), both with the same Source, as if two
+  Rojo connections each made its own; older modules are single. Harmless while both update, but
+  a stale double would silently win a `require`. The owner reconnecting Rojo once and deleting
+  the doubles fixes it (`OWNER.md`).
+- **A stand-in look at films on bodies** (Play, server `execute_luau`): `character.Archivable =
+  true`, clone it, anchor the clone's root, weld a `Props.KeptWrap` clone to it. Good enough to
+  judge a tint; the real fit is `Kept.fit` in KeptPlayers.

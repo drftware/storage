@@ -2055,7 +2055,26 @@ Done when nobody quits a climb because they were caught.
 - [ ] **S3-04 The counter's shop, and wrap colours.** Walk up to the counter and the shop
   opens; a Shop button in the lobby and Roblox's own. Its first shelf: wrap colours, with gift
   versions (GDD "Monetization", D-112). The gifts lean on Brix's gift choices (its E-075 to
-  E-078), which wait on `OWNER.md`.
+  E-078), which wait on `OWNER.md`. Split Nov 15 for the session's size:
+  - [x] **S3-04a Wrap colours owned and worn** (Nov 15, D-224). Six colours (Blue, Red, Green,
+    Pink, Orange, Black; `WrapColours`), each its own product ("Blue Wrap" ...); bought, it's
+    owned for good (save version 4: `wraps`, `wornWrap`) and worn at once; an owned colour is
+    never prompted again. `Wearing` (server) mirrors the worn colour onto the Player
+    (`WrapColour`), and the film a keeper wraps you in is tinted it (its SurfaceAppearance's
+    `Color`), so every screen sees it; the cut-free shreds take the tint too. Seen in Studio
+    Play: a version 3 save loaded and saved at version 4; a made-up receipt for `wrapBlue`
+    granted, worn at once, and a second prompt refused ("already owns"); all six tints on
+    stand-in films read as coloured film at phone size. Not run: a real catch in a colour (no
+    keeper awake for CatchTest; `OWNER.md`).
+  - [ ] **S3-04b The counter's shop screen.** Walk up to the counter (or press the lobby's Shop
+    button) and the shop slides up on its first shelf: each colour as a wrapped figure turning
+    in its film, its price from Roblox, Buy; owned ones say Wear or Worn. A press asks the
+    server (`Purchasing.prompt`, never the client's own prompt); bought, the figure's film
+    snaps tight with the film's squeal and the card flips to Worn. A `WearWrap` remote (checked:
+    rate, a name, owned) puts on an owned colour or the plain film. Gifts wait on `OWNER.md`.
+  - [ ] **S3-04c Patterned wraps** (later, with art): the GDD's "colour or pattern" at the top
+    of the price range (caution-tape print, camo, glow in the dark through the SurfaceAppearance's
+    `EmissiveStrength`, STUDIO.md), each a texture set made the art way.
 
 ### The box you open (the owner, Nov 15, D-205)
 

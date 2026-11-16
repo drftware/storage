@@ -36,6 +36,8 @@ local function played(): Save.Data
 	data.recipients.freeAFriend = "player_42"
 	data.bought.cutFree = 2
 	data.spares.cutFree = 1
+	data.wraps.wrapBlue = 1794700400
+	data.wornWrap = "wrapBlue"
 	return data
 end
 
@@ -59,9 +61,9 @@ local function same(a: unknown, b: unknown): boolean
 	return true
 end
 
--- A new player: nothing yet, at version 3.
+-- A new player: nothing yet, at version 4.
 do
-	ok(format:latest() == 3, "the save is at version 3")
+	ok(format:latest() == 4, "the save is at version 4")
 	local fresh = format:fresh()
 	ok(fresh.cash == 0 and fresh.bestFloor == 0, "a new player has no cash and no best floor")
 	ok(next(fresh.finds) == nil and next(fresh.sealed) == nil, "a new player keeps no finds")
@@ -70,6 +72,10 @@ do
 			and next(fresh.stamps.sealed) == nil
 			and next(fresh.stamps.keepers) == nil,
 		"a new player's book has no stamps"
+	)
+	ok(
+		next(fresh.wraps) == nil and fresh.wornWrap == "",
+		"a new player owns no wrap colours and wears the plain film"
 	)
 	ok(fresh ~= format:fresh(), "each new save is its own table")
 	local stored, problem = format:encode(fresh)
@@ -81,7 +87,7 @@ do
 	local data = played()
 	local stored, problem = format:encode(data)
 	ok(stored ~= nil, `a played save can be stored ({problem})`)
-	local back, decodeProblem = format:decode(3, stored)
+	local back, decodeProblem = format:decode(4, stored)
 	ok(back ~= nil and same(back, data), `a played save comes back the same ({decodeProblem})`)
 end
 
@@ -163,7 +169,28 @@ do
 			and next(two.spares) == nil,
 		`version 2 loads with its purchases and no spares ({twoProblem})`
 	)
-	local newer, newerProblem = format:decode(4, v1)
+	-- Version 3 as the DataStore holds it (Nov 15): a Cut Free waiting as a spare.
+	local v3 = {
+		cash = 7,
+		finds = {},
+		sealed = {},
+		stamps = { finds = {}, sealed = {}, keepers = {} },
+		bestFloor = 3,
+		purchases = { "p1", "p2" },
+		recipients = {},
+		bought = { cutFree = 2 },
+		spares = { cutFree = 1 },
+	}
+	local three, threeProblem = format:decode(3, v3)
+	ok(
+		three ~= nil
+			and three.spares.cutFree == 1
+			and three.bought.cutFree == 2
+			and next(three.wraps) == nil
+			and three.wornWrap == "",
+		`version 3 loads with its spares, no wrap colours and the plain film ({threeProblem})`
+	)
+	local newer, newerProblem = format:decode(5, v1)
 	ok(newer == nil and newerProblem ~= nil, "a save from a newer version is refused")
 end
 

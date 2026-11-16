@@ -36,6 +36,7 @@ local Prompts = require(script.Prompts)
 local Live = require(script.Live)
 local Purchasing = require(script.Purchasing)
 local CutFrees = require(script.CutFrees)
+local Wearing = require(script.Wearing)
 local Recording = require(script.Recording)
 local Ladders = require(script.Ladders)
 local MotionLights = require(script.MotionLights)
@@ -118,6 +119,9 @@ local systems: { Brix.HostEntry } = {
 	-- Cut Free: the caught screen's press, its prompt, and the grant that frees you (after
 	-- purchasing, keptPlayers, watching and saving: it hears and calls all four).
 	{ slot = "cutFrees", system = CutFrees.new() },
+	-- What each player wears, from their save onto them: their wrap colour, for the film a keeper
+	-- wraps them in (after saving and purchasing: it hears both).
+	{ slot = "wearing", system = Wearing.new() },
 }
 -- The test hall and its "Walk a floor" post: Studio only now the lobby is the way in (D-109).
 if RunService:IsStudio() then

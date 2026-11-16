@@ -18,11 +18,16 @@
 	- `bought`: how many of each offer this player has bought, by offer name (`Products`).
 	- `spares`: offers paid for and not yet used, by offer name: a Cut Free whose purchase landed
 	  once you were already free waits here, and your next Cut Free press uses it (S3-03a).
+	- `wraps`: the wrap colours you own, for good, by offer name, stamped with when each was first
+	  bought (`WrapColours`, S3-04a).
+	- `wornWrap`: the wrap colour you wear when caught, an offer name in `wraps`, or empty for the
+	  plain clear film.
 
 	The tickets that earn each write it (GDD "Saving", "The collection book"). So far: `finds` and
 	the book's `finds` page, as finds are kept at the gate (S1-06, `keep`), `cash`, as the coins
 	left at a climb's end turn into it (S1-12, `earn`), and the three purchase fields, written by
-	Brix's Purchases and `Products`' grants (S3-02a).
+	Brix's Purchases and `Products`' grants (S3-02a), and the two wrap fields, by the wrap colours'
+	grants (S3-04a).
 
 	The save keeps every version it has had, oldest first, through Brix's versioned SaveFormat: a save
 	written at an older version is brought up to the newest as it loads. To change the shape, add a
@@ -53,6 +58,8 @@ export type Data = {
 	recipients: { [string]: string },
 	bought: Counts,
 	spares: Counts,
+	wraps: Stamps,
+	wornWrap: string,
 }
 
 -- The parts of Brix's SaveFormat contract the server and the spec call (`Brix.SaveFormat<Data>`).
@@ -88,6 +95,8 @@ function Save.fresh(): Data
 		recipients = {},
 		bought = {},
 		spares = {},
+		wraps = {},
+		wornWrap = "",
 	}
 end
 
@@ -171,6 +180,26 @@ function Save.format(brix: any): Format
 		spares = Schema.map(name, count),
 	})
 
+	-- Version 4 (S3-04a, Nov 15): version 3 plus the wrap colours owned, stamped with when each was
+	-- first bought, and the one worn (empty for the plain film).
+	local fourth = Schema.shape({
+		cash = Schema.number({ min = 0, integer = true }),
+		finds = Schema.map(name, count),
+		sealed = Schema.map(name, count),
+		stamps = Schema.shape({
+			finds = Schema.map(name, stamped),
+			sealed = Schema.map(name, stamped),
+			keepers = Schema.map(name, stamped),
+		}),
+		bestFloor = Schema.number({ min = 0, integer = true }),
+		purchases = Schema.list(name),
+		recipients = Schema.map(name, name),
+		bought = Schema.map(name, count),
+		spares = Schema.map(name, count),
+		wraps = Schema.map(name, stamped),
+		wornWrap = Schema.string({ maxLength = 64 }),
+	})
+
 	return brix.SaveFormat.versioned({
 		versions = {
 			{ schema = first },
@@ -204,6 +233,25 @@ function Save.format(brix: any): Format
 						recipients = old.recipients,
 						bought = old.bought,
 						spares = {},
+					}
+				end,
+			},
+			{
+				schema = fourth,
+				-- any: a version 3 save as Brix hands it over, already checked against `third`
+				migrate = function(old: any): any
+					return {
+						cash = old.cash,
+						finds = old.finds,
+						sealed = old.sealed,
+						stamps = old.stamps,
+						bestFloor = old.bestFloor,
+						purchases = old.purchases,
+						recipients = old.recipients,
+						bought = old.bought,
+						spares = old.spares,
+						wraps = {},
+						wornWrap = "",
 					}
 				end,
 			},
