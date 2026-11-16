@@ -36,6 +36,7 @@ return {
 		SingingFish = { Model = 77947947536831 },
 		SirenCar = { Model = 86198441631731, Emissive = 119938648369668 },
 		TinBird = { Model = 128316798025282 },
+		TinCarousel = { Model = 95828409843783 },
 		ToyDrum = { Model = 119199588572642 },
 		WalkingRobot = { Model = 109415009719114 },
 		WindupMouse = { Model = 108541924029710 },

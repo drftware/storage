@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04j, the wind-up tin carousel (step 8), half built: the newest note says exactly
-what is left. The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders
+**Next:** F-04k, a Studio look at all 14 Wind-ups together in a unit at phone size (step 9).
+The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders
 OilLamp` when next touched.
 
 ## The second run's plan (owner's yes, Nov 15)
@@ -43,7 +43,7 @@ changes the table's order a little.
    button; the tail flaps, the head swings out to face you, the mouth opens in time, then it all
    swings back). Our own fish and plaque, not the famous one's. Its song is the same `OWNER.md`
    question as the doll's lines.
-8. **F-04j** Wind-up tin carousel alone (Epic, the most parts: a printed canopy turning on a
+8. **F-04j** (built Nov 16) Wind-up tin carousel alone (Epic, the most parts: a printed canopy turning on a
    centre pole, three or four horses rising and falling out of step, the tune slowing as it runs
    down, timed from a music-box video).
 9. **F-04k** A Studio look at all 14 Wind-ups together in a unit at phone size; fix what reads
@@ -89,6 +89,25 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04j (the wind-up tin carousel built; step 8 done, the last wind-up; uploaded
+  95828409843783 and imported).** `TinCarousel` in `windups/carousel.py`, now in `FINDS` for
+  good; README section, D-245 (the game chain took D-244), `Order.luau`. Judged on quick sheets
+  twice and full sheets once beside a 1950s musical carousel (1stDibs). **Found and fixed:** each
+  horse's printed saddle (two rectangles and an inner gold outline) read as a letter E from the
+  front: now a scalloped, tasselled saddle cloth, a seat between a cantle and pommel stamped into
+  the outline (two small capsules in `CR["capsules"]`), a rounded skirt and a stirrup; the black
+  horse's gold cloth swallowed its gold border (red now); the canopy's rose medallions read as
+  cherries (five-petal flowers now); the Wind camera filmed the key end-on, a turning line (three
+  quarters from the front now, closer); the Play camera stood too far back in the dark (closer,
+  higher, its own light). Full-size carousels turn at about 4 rpm with the horses up and down
+  twice a turn; the toy's turn in 4 s stays.
+  **F-04k's hints (step 9):** import or check all 14 Wind-up templates in
+  `ReplicatedStorage.Props.Finds` (the farm-animal spinner is uploaded, not imported), stand them
+  in a medium unit under its bulb, and look from the doorway at phone size (Studio's
+  `screen_capture`); the small ones (teeth, mouse, kazoo, duck) will be specks, which is expected
+  (CRAFT.md). Then the jack-in-the-box's playing-card corners and the oil lamp's sheets, and tick
+  F-04 in ROADMAP.
 
 - **Nov 16, F-04j (the tin carousel half built: modelled, looked and baked, motion keyed, never
   rendered; stopped at the context cap; not ticked, nothing uploaded).** Its own module,
@@ -1272,7 +1291,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Pull-string cowboy doll | Rare | Pull: it says one of six lines | The first cloth find | Nov 16, F-04h |
 | Singing fish plaque | Rare | Press: its head turns and it sings |  | Nov 16, F-04i |
 | Clockwork tin bird | Epic | Wind: it hops and whistles | An antique tin toy | Nov 16, F-04d2 |
-| Wind-up tin carousel | Epic | Wind: it turns and plays a tune |  | |
+| Wind-up tin carousel | Epic | Wind: it turns and plays a tune |  | Nov 16, F-04j |
 
 ## Squishies (14) · F-05
 

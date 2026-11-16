@@ -2406,8 +2406,9 @@ actions themselves and dealing the new finds on floors are later game tickets.
   F-04b the jack-in-the-box, F-04c the chattering teeth (Nov 15), F-04c2 the walking robot,
   F-04d the wind-up mouse, F-04d2 the clockwork tin bird, F-04e the toy siren car and F-04e2 the
   squeaky rubber duck, F-04f the kazoo, F-04f2 the toy drum, F-04g the farm-animal spinner and
-  F-04h the pull-string cowboy doll and F-04i the singing fish plaque (Nov 16). Next F-04j the
-  wind-up tin carousel, then F-04k as `art/finds/WAVES.md`'s second run plans.
+  F-04h the pull-string cowboy doll, F-04i the singing fish plaque and F-04j the wind-up tin
+  carousel (Nov 16, D-245). Next F-04k, a Studio look at all 14 together, as
+  `art/finds/WAVES.md`'s second run plans.
 - [ ] **F-05 Squishies.**
 - [ ] **F-06 Plush.**
 - [ ] **F-07 Night Shift Minis and their blind box.**

@@ -589,3 +589,45 @@ our red star, and a keyhole hanger routed in the raw back. Nothing of the famous
   matrix: built in mm with a scaling matrix, their islands came out 254 times too big and the
   packer squeezed the fish's skin to nothing (it baked flat cream, the board's edge black).
   `fish.py`'s `fs_merge` and `fs_lathe` hand them studs.
+
+## Wind-up tin carousel (Epic): "Wind: it turns and plays a tune"
+
+`TinCarousel`, F-04j (Nov 16), D-245. A musical merry-go-round of our own in printed tin, the
+set's showpiece: a red drum with eight arched navy panels (a gold star or a cream-and-red
+sunburst in each), red pilasters with cream diamonds, two rows of printed bulbs and rolled gold
+beads, a brass butterfly key in its side; on it a platform of radial boards with a red band of
+gold studs, a mirrored column in gold frames, and a tent-like canopy of sixteen crimson and cream
+gores with gold seams (a five-petal flower in a cream medallion on each crimson gore, a red
+diamond on each cream one), a royal-blue rim of gold studs, a navy scalloped valance with a red or
+green mirror jewel in each scallop, a brass finial and a red pennant. Four pressed-tin horses
+(black, dapple grey, white, palomino) ride twisted brass poles, each with its own saddle cloth
+(scalloped, gold-bordered, tasselled), a saddle stamped up at the cantle and pommel, a rounded
+skirt and a stirrup, a gold bridle, a breast collar with red jewels, a painted eye, mane and tail.
+No maker's mark.
+- **References:** Alexander Taron's hand-made German tin horse carousel (Christmas Central's
+  listing: 8 in tall, 6 in across; a printed eight-panel canopy, a scalloped blue-and-gold
+  valance, a brass ball on top, a striped column); Northlight's carousel music boxes (7.25 x 3.25
+  in, 6.5 x 4.75 in); 1stDibs' 1950s wind-up musical carousel (wide drum, horses leaping on thin
+  brass poles, horse about a third of the drum across); the Museo del Juguete's tin carousel on
+  Wikimedia Commons; full-size carousels turn at about 4 rpm with the horses up and down twice a
+  turn (Spokane's, Zamperla's 7 m ride).
+- **Size:** 214 mm tall, 157 mm across the valance; 0.84 studs tall (10 inches a stud).
+- **Tells:** the striped canopy with its scalloped valance, horses on poles, the red drum.
+- **Parts:** `Base` (root, the drum), `Key` (turns about X in the drum's right side), `Top` (the
+  platform, column, canopy and poles, turning about the centre pole), `Horse1` to `Horse4` (ride
+  on `Top`, each sliding up and down its own pole).
+- **Wind** (1.95 s): four half turns of the key, a regrip between each.
+- **Play** (16.4 s): it comes up to a turn every four seconds in 0.9 s, steady to 9.5 s, then
+  slows as the spring runs down, to a stop at 15.5 s and a little rock back on the gears' slack;
+  the key turns back as it unwinds; each horse rises and falls 9 mm either side twice a turn, out
+  of step with the next. **For the game:** play the tune at the top's speed, pitch and pace
+  falling with it; by default a public-domain waltz ("Over the Waves", 1888) on a music-box
+  comb, like the jack-in-the-box's tune.
+- **Texture:** 2048 at 953 texels a stud, 13,944 triangles.
+- **In Studio:** uploaded (95828409843783) and imported Nov 16: the template is in
+  `ReplicatedStorage.Props.Finds.TinCarousel` (seven parts, six joints).
+- **Found:** a flat pressed-tin animal is cheap to build well as a distance field (round pieces
+  in its side view), traced by marching squares, filled by `delaunay_2d_cdt` and puffed into two
+  halves round a crimped seam (`cr_horse_mesh`). A printed saddle drawn as rectangles with an
+  inner gold outline read as a letter E from the front; a rounded skirt, a stamped cantle and
+  pommel and a stirrup read as a saddle.

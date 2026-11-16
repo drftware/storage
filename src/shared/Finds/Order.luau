@@ -17,6 +17,7 @@ return {
 	FarmSpinner = { "Pull" },
 	CowboyDoll = { "Pull" },
 	SingingFish = { "Press" },
+	TinCarousel = { "Wind", "Play" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },

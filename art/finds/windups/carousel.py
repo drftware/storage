@@ -491,7 +491,7 @@ def carousel_look(L, f):
     fb, pb = cell(48)
     C.paint(plat, nb.tint(hexc(RED), tone), gloss)
     pt = both(plat, top)
-    C.paint(pt, nb.tint(nb.mixc(pb, hexc("#C99A5E"), hexc("#DDB577")),
+    C.paint(pt, nb.tint(nb.mixc(pb, hexc("#B57E45"), hexc("#C9995C")),
                         nb.mr(L.noise(180.0, 4, stretch=(1.0, 1.0, 1.0), detail=3), 0.3, 0.7, 0.9, 1.05)), gloss)
     C.paint(both(pt, nb.ss(nb.absf(fb), 0.44, 0.49)), hexc("#5A3A22"), gloss)
     C.paint(both(pt, nb.ss(rr, 52.0, 52.3)), nb.tint(hexc(RED), tone), gloss)
@@ -528,13 +528,15 @@ def carousel_look(L, f):
     crim, crm = nb.inv(pg), pg
     C.paint(both(can, crim, less(e, 1.0, 0.04)), hexc(CREAM), gloss)
     gold(both(can, crim, nb.band(e, 1.0, 1.28, 0.03)))
-    rose = hyp(ug, nb.sub(dv, 0.5))
-    psi = nb.math("ARCTAN2", nb.sub(dv, 0.5), ug)
-    C.paint(both(can, crim, less(rose, 2.4, 0.1)), hexc("#C8232C"), gloss)
-    swirl = nb.fract(nb.add(nb.mul(rose, 0.9), nb.div(psi, 2 * math.pi)))
-    C.paint(both(can, crim, less(rose, 2.3, 0.1), nb.band(swirl, 0.0, 0.2, 0.05)), hexc("#76121A"), gloss)
-    leaf = hyp(nb.div(nb.sub(nb.absf(ug), 2.1), 1.6), nb.div(nb.add(dv, 2.0), 0.85))
+    # a five-petal flower, a petal pointing up the canopy, two leaves under it
+    leaf = hyp(nb.div(nb.sub(nb.absf(ug), 1.9), 1.5), nb.div(nb.sub(dv, 2.3), 0.75))
     C.paint(both(can, crim, less(leaf, 1.0, 0.08)), hexc("#2F7A45"), gloss)
+    rose = hyp(ug, nb.add(dv, 0.6))
+    psi = nb.math("ARCTAN2", nb.add(dv, 0.6), ug)
+    petal = nb.add(1.3, nb.mul(nb.pw(nb.absf(nb.cos(nb.mul(nb.add(psi, math.pi / 2), 2.5))), 0.6), 1.5))
+    C.paint(both(can, crim, less(nb.sub(rose, petal), 0.0, 0.1)), hexc("#C8232C"), gloss)
+    C.paint(both(can, crim, less(nb.sub(rose, nb.mul(petal, 0.5)), 0.0, 0.08)), hexc("#86161E"), gloss)
+    gold(both(can, crim, less(rose, 0.75, 0.08)))
     uw = nb.mul(fg, nb.mul(rr, 2 * math.pi / 16))
     C.paint(both(can, crm, less(nb.absf(uw), 0.45, 0.08), nb.band(rr, 18.0, 61.0, 0.2)), hexc(RED), gloss)
     dmd = nb.add(nb.div(nb.absf(ug), 2.6), nb.div(nb.absf(dv), 4.6))
@@ -631,18 +633,27 @@ def carousel_look(L, f):
             d1 = seg(lx, lz, *c[:4])
             hd = d1 if hd is None else nb.mn(hd, d1)
     C.paint(both(hor, less(hd, 2.3, 0.15)), hexc("#2E2622"), 0.4)
-    # the blanket, its gold edge and studs; the saddle over it, edged in gold; the girth
-    bl = hyp(nb.div(nb.add(lx, 1.5), 10.8), nb.div(nb.add(lz, 5.0), 7.6))
-    blanket = both(hor, less(bl, 1.0, 0.03))
-    C.paint(blanket, nb.tint(pal(["#E2B24A", "#2A8C8C", "#2F5DB3", "#C73A2F"]), tone), gloss, None, 0.5)
-    gold(both(hor, nb.band(bl, 0.88, 0.98, 0.02)))
-    sc = hyp(nb.div(nb.add(lx, 1.5), 7.8), nb.div(nb.add(lz, 1.2), 3.6))
-    flap = both(nb.band(lx, -5.5, 3.5, 0.2), nb.band(lz, -11.5, -1.0, 0.2))
-    sad = both(hor, nb.mx(less(sc, 1.0, 0.04), flap))
+    # the saddle cloth: its lower edge scalloped, a gold border, a gold tassel under each scallop;
+    # over it the saddle, its seat across the back between the stamped cantle and pommel and its
+    # skirt hanging in a rounded flap edged in gold, a stirrup on its strap; the girth
+    cu = nb.add(lx, 1.5)
+    q = nb.sub(nb.fract(nb.div(nb.add(cu, 19.5), 3.0)), 0.5)
+    zb = nb.add(-9.2, nb.mul(sq(nb.mul(q, 2.0)), 1.2))
+    dzb = nb.sub(lz, zb)
+    cloth = both(hor, less(nb.absf(cu), 9.8, 0.12), nb.ss(dzb, -0.1, 0.1), less(lz, 0.6, 0.15))
+    C.paint(cloth, nb.tint(pal(["#C0352C", "#2A8C8C", "#2F5DB3", "#7A3E9A"]), tone), gloss, None, 0.5)
+    gold(both(cloth, nb.mx(nb.mx(less(dzb, 0.75, 0.1), nb.ss(nb.absf(cu), 9.0, 9.2)), nb.ss(lz, -0.2, 0.0))))
+    gold(both(hor, less(hyp(nb.mul(q, 3.0), nb.add(lz, 9.9)), 0.6, 0.1), less(nb.absf(cu), 9.0, 0.1)))
     sad_c = pal(["#2F7D4C", "#6A3A8E", "#B7262A", "#2C4FA3"])
-    C.paint(sad, nb.tint(sad_c, tone), 0.25, None, 0.8)
-    gold(both(hor, nb.mx(nb.band(sc, 0.86, 1.0, 0.03),
-                         both(flap, nb.inv(both(nb.band(lx, -4.8, 2.8, 0.1), nb.band(lz, -10.8, -1.6, 0.1)))))))
+    seat = both(hor, nb.band(lx, -9.0, 4.2, 0.15), nb.ss(lz, -2.6, -2.3))
+    sk = hyp(nb.div(nb.add(lx, 1.6), 4.8), nb.div(nb.add(lz, 1.6), 6.4))
+    skirt = both(hor, less(sk, 1.0, 0.03))
+    C.paint(nb.mx(seat, skirt), nb.tint(sad_c, tone), 0.25, None, 0.8)
+    gold(nb.mx(both(skirt, nb.ss(sk, 0.85, 0.89)),
+               both(seat, nb.inv(skirt), nb.band(lz, -2.4, -1.7, 0.08))))
+    C.paint(both(hor, less(nb.absf(nb.add(lx, 3.0)), 0.38, 0.08), nb.band(lz, -10.0, -2.0, 0.1)),
+            nb.tint(sad_c, 0.55), 0.3)
+    gold(both(hor, less(nb.absf(nb.sub(hyp(nb.add(lx, 3.0), nb.mul(nb.add(lz, 10.8), 1.2)), 0.85)), 0.28, 0.08)))
     C.paint(both(hor, nb.band(lx, 4.4, 5.8, 0.15), nb.band(lz, -17.5, -6.0, 0.2)), nb.tint(sad_c, 0.7), 0.3)
     # breast collar with red jewels, bridle, reins
     bc = nb.sub(hyp(nb.sub(lx, 1.5), nb.add(lz, 5.0)), 13.5)
@@ -748,12 +759,13 @@ TIN_CAROUSEL = kit.Find(
     carousel_look,
     motions={
         # the key wound in four half turns, a regrip between each
-        "Wind": dict(duration=CR_WIND_DUR, focus="Key", distance=0.45, view=(2.0, -0.9, 0.5),
+        "Wind": dict(duration=CR_WIND_DUR, focus="Key", distance=0.3, view=(1.2, -1.7, 0.45),
                      drop=0.0, tracks=CR_WIND),
         # let go, the top comes up to speed, the horses rising and falling out of step; the key
         # turns back as the spring unwinds; it all slows over the last six seconds (the game
         # slows the tune with it) and rocks back on the gears' slack as it stops
-        "Play": dict(duration=RD["end"], focus=(0.0, 0.0, mm(108.0)), distance=1.35, drop=0.1,
+        "Play": dict(duration=RD["end"], focus=(0.0, 0.0, mm(108.0)), distance=0.85, drop=0.1,
+                     view=(-1.1, -2.0, 0.55),
                      tracks=CR_PLAY),
     },
     dust=CR["dust"], seed=CR["seed"], big=True, texels=900,

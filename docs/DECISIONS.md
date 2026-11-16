@@ -6289,3 +6289,16 @@ body being stored is left out (it's the one being moved). In Studio the stand-in
 same pick, so a friend carried up never lands with someone on the new floor either. With every
 shut unit taken, the old fallbacks hold: a catch lets you go after the wrap, a carry stands you
 on a spot of your own by the car. A door that's up was already skipped (`shut`).
+
+## D-245 The tin carousel is ours: printed tin horses on a red drum, slowing as it runs down (Nov 16, F-04j)
+
+Our wind-up carousel is a red printed drum with a butterfly key, a turning platform, a mirrored
+column and a crimson-and-cream canopy with a navy scalloped valance, and four pressed-tin horses
+(black, dapple grey, white, palomino) on twisted brass poles, with no maker's mark. The top turns
+once every four seconds (a toy runs faster than a full-size ride's 4 rpm), each horse rises and
+falls twice a turn out of step with the next (as a full-size ride's cranks do), and it all slows
+over the last six seconds as the spring runs down, rocking back on the gears' slack as it stops.
+The game plays its tune at the top's speed, so the tune slows with it; by default a public-domain
+waltz on a music-box comb. The horses are drawn as a side-view distance field, traced and puffed
+into two halves round a crimped seam, the way tin horses are pressed.
+(`art/finds/windups/README.md`, "Wind-up tin carousel".)
