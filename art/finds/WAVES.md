@@ -6,7 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04g, the farm-animal spinner (step 5), alone; the newest note has its hints. The
+**Next:** F-04g, the farm-animal spinner (step 5), carried on: its printed face is done
+(`windups/spinner_face.py`); build the toy round it from the newest note's plan. The
 oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next
 touched.
 
@@ -89,6 +90,67 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04g (the farm-animal spinner half built: its face drawn and judged; stopped at the
+  context cap with no 3D yet; not ticked, nothing uploaded).** `windups/spinner_face.py` draws
+  the printed face in numpy: `draw(n)` gives RGBA (sRGB, rows bottom up, the key's mask in
+  alpha); `blender -b --factory-startup -P art/finds/windups/spinner_face.py -- <out.png> [px]`
+  writes it alone in 8 s; sheet `art/sheets/farmspinner-face.png`. Eight wedges, sky blue and
+  sunflower by turns with white spokes, clockwise from the top: cow, pig, sheep, horse, duck,
+  cat, rooster, dog, each a bold flat print in a 1.15 mm warm-black key, the colours printed
+  0.2 mm off the key as a real litho's are; a red rim; a cream sunburst middle in a red ring
+  with a white pointer mark at each wedge. No words on it. Judged whole and up close (the cow
+  and rooster at full size) twice: every animal reads at a glance. Fixed: legs hang behind the
+  bodies, pictures 12% bigger (`SCALE`), the rooster's tail three sweeping sickle feathers.
+  Not looked at since: `NUDGE` moved the duck, horse and dog off the spokes; check the duck's
+  bill and the horse's tail clear them. **References:** Basic Fun's classic Farmer Says listing
+  (basicfun.com; the famous one: a yellow round body with a top handle, 12 pastel wedges with
+  names, a blue middle, a fat red arrow, a red pull tab on a string; ours shares none of it),
+  Relic's value guide (tryrelic.app: plastic case, paper litho face, nylon pull-string, a metal
+  mechanism), the Retroist (1965; you set the arrow, then pull), listings: about 10.5 x 10 x 3
+  in. **The plan for the rest** (mm; X across, front at -Y, floor z = 0):
+  1. `Body` (root, pivot on the floor at its middle): a barn-shaped housing of our own, 250
+     wide, 72 deep, walls to 200, a gambrel roof (knees at x +-88, z 246, ridge 268: convex),
+     corners rounded (10 at the foot, 8 eaves, 6 knees and ridge), edges 5 round. Barn-red
+     moulded plastic (#B8322A), a slate-blue roof (#3E5C7A) with pressed shingle rows, a white
+     trim band printed round the front 6 in from its edge, a fine mould seam round the sides at
+     y = 0, a flat back with four screws and a round speaker grille, our maker's mark (the set's
+     cream oval, gold rim, red star) on a plaque in the gable at z 244. Dial middle at z 118.
+     Build the walls and their rounds as one `loft` back to front (rings the barn outline,
+     anticlockwise seen from the front, sampled at the same angles round the dial's middle);
+     the front plane (outline to the bezel's foot) and the back as flat quads with planar UVs
+     (`s._f(verts, kind, uvs)` plus an `island()` offset); the bezel and face as one `lathe`
+     about the dial's axis (`M = T(centre) @ Matrix.Rotation(radians(90), 4, "X")` stands its Z
+     out of the face), profile (106, 0), (105, 2), (103, 4), (99, 4), (97.5, 2.5), (97, -1.5),
+     then the face in to (0, -1.5), so the face projects straight on; a white collar under the
+     hub.
+  2. The face in the look: make the image once (`bpy.data.images.new`, `pixels.foreach_set`
+     of `draw(2048)`); `nb.node("ShaderNodeTexImage", image=img, interpolation="Cubic",
+     extension="EXTEND")`, its Vector `nb.comb(x_mm / 200 + 0.5, (z_mm - 118) / 200 + 0.5, 0)`;
+     paint its Color on the face's kind (roughness 0.35, varnished print), then wear: rubbed
+     low and near the lever, fingerprints, a few fine scratches, faded a touch.
+  3. `Lever`: a yellow (#F2B705) arm 12 wide and 8 thick with a ball knob (r 15), pivot inside
+     the right wall at (105, 0, 150), axis along Y; at rest 30 degrees up (knob near x 170,
+     z 187), pulled down 70; it comes out through a dark slot in the right wall (z 133 to 167,
+     12 wide), painted as a mask.
+  4. `Arrow`: a weathervane arrow of our own, black (#1B1E24), 3 thick, 4 to 7 above the face,
+     its tip at r 56 (just into the pictures), a swallow-tail fletch to r 52 on the other side
+     (two convex quads), a brass dome hub (r 13). Pivot at the dial's middle, axis (0, 1, 0)
+     (a positive turn is clockwise from the front: check on the filmstrip).
+  5. Motion `Pull` (about 3.4 s): the lever lifts 4 degrees (0.06 s), comes down 70 (0.25 s),
+     held 0.05 s, snaps back (0.1 s, Quad In) 8 past rest and settles in two bounces; the toy
+     jolts a hair (root `z` and `roll`) as it hits its stop; the arrow starts as the lever
+     snaps back, spins about two and a half turns slowing (Quart Out), then ticks over the last
+     three pictures, each a quick 45-degree step, a small back-wobble and a longer pause, to
+     stop at 1305 (three turns and five pictures: a multiple of 45, so the game lands on
+     another animal by scaling the spin's keys to 1305 + 45k). The game plays the noise as it
+     stops.
+  6. `kit.Find("FarmSpinner", ..., big=True, texels=900)`: about 3.3 square studs of surface,
+     so 2048 at about 900 texels a stud (each picture about 160 texels across). Then quick
+     sheets, judge, fix, full renders, export (`FarmSpinner = { "Pull" }` in `Order.luau`),
+     README section, a D-number, upload and import if Studio is in Edit, tick. Studio wasn't
+     connected this session. The pull-string cowboy doll (step 6) follows; its hints are the
+     plan's step 6.
 
 - **Nov 16, F-04f2 (the toy drum built, judged and in the place; step 4 done).** `ToyDrum` in
   `windups/build.py`, README section (with the Bang's hit times for the game: 0.22, 0.49, 0.76,
