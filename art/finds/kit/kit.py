@@ -93,7 +93,7 @@ class Find:
     its motions. `glow` says which parts carry the emissive mask and how they light."""
 
     def __init__(self, name, parts, look, lights=(), motions=None, glow=None, big=False,
-                 dust=0.6, seed=0.0, notes="", texels=None, lit=None, drive=None):
+                 dust=0.6, seed=0.0, notes="", texels=None, lit=None, drive=None, cage=None):
         self.name, self.parts, self.look, self.lights = name, parts, look, list(lights)
         self.motions = motions or {}
         self.glow = glow or {}
@@ -107,6 +107,10 @@ class Find:
         # a find that drives (the RC car): its numbers for the game's wiring, written into the
         # Luau as `Drive` (src/shared/Finds/Art.luau says what each is)
         self.drive = drive
+        # how far outside the game mesh the bake's rays start (studs): shorter than CAGE for a
+        # find of small pieces packed close (the gel bead ball's beads), whose rays from CAGE out
+        # start inside the next piece and bake its surface onto this one; REACH scales with it
+        self.cage = cage or CAGE
         self.by = {p.name: p for p in parts}
         self.clear = any(p.clear for p in parts)
         self.alone = any(p.alone for p in parts)
@@ -355,8 +359,8 @@ def stage_textures(find, set_dir):
     sc = bpy.context.scene
     sc.render.bake.margin = 0
     sc.render.bake.use_selected_to_active = True
-    sc.render.bake.cage_extrusion = CAGE
-    sc.render.bake.max_ray_distance = REACH
+    sc.render.bake.cage_extrusion = find.cage
+    sc.render.bake.max_ray_distance = REACH * find.cage / CAGE
     rig = Rig(find)
     for o in hi.values():
         o.data.materials.append(rig.mat)
@@ -395,7 +399,8 @@ def stage_textures(find, set_dir):
             bpy.context.view_layer.objects.active = lo[p.name]
             bpy.ops.object.bake(type="NORMAL" if k == "normal" else "EMIT", normal_space="TANGENT",
                                 margin=0, use_clear=False, use_selected_to_active=True,
-                                cage_extrusion=CAGE, max_ray_distance=REACH)
+                                cage_extrusion=find.cage,
+                                max_ray_distance=REACH * find.cage / CAGE)
         res[k] = ub.pixels(img)
     for o in hi.values():
         o.hide_render = False

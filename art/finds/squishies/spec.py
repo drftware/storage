@@ -367,3 +367,66 @@ CRINKLE = [
     (1.37, 0.986, "Quad", "Out"),     # a last little crackle
     (1.62, 1.0, "Sine", "InOut"),
 ]
+
+# --- The gel bead ball (F-05d) -------------------------------------------------------------------
+# A clear TPR stress ball packed with water beads of our own (README): sold 2.5 to 3 in across;
+# the beads inside, grown about 10 mm, press flat against the skin so the ball reads as a sphere
+# of pastel dots with a thin milky web between them (the DIY balloon ball's look), the skin itself
+# a hair milky and glossy, with a moulded seam round its middle and a fill plug underneath.
+GELBEAD = dict(
+    r=33.0,            # the ball's outside radius: 66 mm across (2.6 in)
+    sink=1.0,          # how far it settles onto the floor: a small soft flat spot
+    skin=1.5,          # the TPR skin's thickness (mm): the beads press against its inside
+    # the beads touching the skin: how many, their radius (mm, each a little off it, as grown
+    # beads are), how far each presses into the skin's inside (mm: the round patch it makes
+    # there) and how softly that patch rolls round into the bead (mm)
+    n=90, bead_r=5.6, bead_jit=0.5, press=0.8, roll=1.4,
+    core=23.8,         # the deeper beads, seen between them as a pale cloud: this radius (mm)
+    # the bands that swirl apart when it's squeezed, by a bead's height over the middle (mm)
+    band=9.0,
+    dust=0.14, seed=41.0,
+)
+
+# The squeeze, timed like a water-filled stress ball: slower and heavier than the hollow stress
+# ball (the water has to move), then let go it heaves back past round and wobbles longer and
+# lower, the water still slopping (seconds, height[, style, way]).
+SLOSH = [
+    (0.0, 1.0),
+    (0.08, 1.03, "Sine", "Out"),      # the fingers close round it: it bulges up a hair first
+    (0.32, 0.7, "Quad", "Out"),       # squashed, the beads shoved round inside
+    (0.72, 0.685, "Sine", "InOut"),   # held, still pressing
+    (0.86, 1.07, "Quad", "Out"),      # let go: heaves back past round
+    (1.0, 0.962),
+    (1.14, 1.025),
+    (1.28, 0.986),
+    (1.43, 1.006),
+    (1.58, 1.0),
+]
+# The beads' swirl (degrees about the ball's upright, anticlockwise from above): the squeeze
+# shoves the top band round one way, the middle the other and the bottom a little, each a beat
+# behind the last; let go, they slop back past where they were and settle slowly, as beads in
+# water do (seconds, degrees[, style, way]).
+SWIRL_TOP = [
+    (0.0, 0.0), (0.1, 0.0),
+    (0.44, 40.0, "Quad", "Out"),
+    (0.74, 48.0, "Sine", "InOut"),
+    (1.02, -11.0, "Quad", "Out"),
+    (1.45, 3.5, "Sine", "InOut"),
+    (1.95, 0.0, "Sine", "InOut"),
+]
+SWIRL_MID = [
+    (0.0, 0.0), (0.13, 0.0),
+    (0.47, -23.0, "Quad", "Out"),
+    (0.76, -28.0, "Sine", "InOut"),
+    (1.06, 7.0, "Quad", "Out"),
+    (1.5, -2.0, "Sine", "InOut"),
+    (2.0, 0.0, "Sine", "InOut"),
+]
+SWIRL_LOW = [
+    (0.0, 0.0), (0.16, 0.0),
+    (0.5, 14.0, "Quad", "Out"),
+    (0.78, 18.0, "Sine", "InOut"),
+    (1.1, -5.0, "Quad", "Out"),
+    (1.55, 1.2, "Sine", "InOut"),
+    (2.05, 0.0, "Sine", "InOut"),
+]

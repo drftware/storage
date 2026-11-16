@@ -1865,8 +1865,207 @@ PAPER_SQUISHY = kit.Find(
     dust=PP["dust"], seed=PP["seed"], texels=1000,
 )
 
+# --- The gel bead ball (F-05d) -------------------------------------------------------------------
+# A clear TPR stress ball packed with water beads, of our own (README): a hair milky, glossy skin
+# with a moulded seam over it and a fill plug underneath, and inside it about 120 pastel beads,
+# each pressed flat where it meets the skin, so the ball reads as a sphere of coloured dots with a
+# thin milky web between them; the deeper beads show through the gaps as a pale cloud. Squeezed,
+# it squashes heavy and slops back (`stretch`), and the beads swirl round inside it in three
+# bands, top, middle and bottom, each turning its own way a beat behind the last, then slopping
+# back past where they were and settling.
+
+GB = K.GELBEAD
+GB_SKIN, GB_CORE = 14, 15
+GB_BEADS = (16, 17, 18, 19, 20, 21)    # lavender, mint, lemon, sky, pink, peach
+GB_R = GB["r"]
+GB_RIN = GB_R - GB["skin"]             # the skin's inside, where the beads press flat (mm)
+GB_SOFT = 1.6                          # how gently its flat spot rounds into the ball (mm)
+
+
+def gb_flat(zr):
+    """The ball's height over the floor for its sphere's height zr (mm, the floor at -sink): a
+    soft maximum with 0, so it sits on a small, rounded flat spot (the stress ball's way)."""
+    lo = (-GB["sink"] + math.sqrt(GB["sink"] ** 2 + GB_SOFT ** 2)) / 2
+    return (zr + math.sqrt(zr * zr + GB_SOFT ** 2)) / 2 - lo
+
+
+GB_ZC = gb_flat(GB_R - GB["sink"])     # the ball's middle over the pivot on the floor (mm)
+
+
+def gb_beads():
+    """The beads against the skin: [(direction from the ball's middle, radius mm, colour kind)],
+    spread evenly over the sphere (a Fibonacci spiral, nudged off its pattern and relaxed apart so
+    no two crowd), each a little off the grown size, the colours dealt at random but never the
+    same as both of its nearest neighbours."""
+    rng = np.random.default_rng(int(GB["seed"]))
+    n = GB["n"]
+    i = np.arange(n) + 0.5
+    z = 1 - 2 * i / n
+    th = math.pi * (1 + 5 ** 0.5) * i
+    p = np.stack([np.sqrt(1 - z * z) * np.cos(th), np.sqrt(1 - z * z) * np.sin(th), z], 1)
+    p += rng.normal(0, 0.06, p.shape)
+    p /= np.linalg.norm(p, axis=1)[:, None]
+    want = 1.02 * math.sqrt(4 * math.pi / n * 2 / math.sqrt(3))    # the hex packing's spacing
+    for _ in range(60):
+        d = p[:, None, :] - p[None, :, :]
+        r = np.linalg.norm(d, axis=2) + np.eye(n)
+        push = np.clip(want - r, 0, None) / r
+        p += 0.25 * (d * push[..., None]).sum(1)
+        p /= np.linalg.norm(p, axis=1)[:, None]
+    rad = GB["bead_r"] + rng.uniform(-GB["bead_jit"], GB["bead_jit"], n)
+    near = np.argsort(np.linalg.norm(p[:, None] - p[None], axis=2), axis=1)[:, 1:3]
+    kinds = []
+    for j in range(n):
+        while True:
+            k = int(rng.integers(len(GB_BEADS)))
+            seen = [kinds[m] for m in near[j] if m < j]
+            if len(seen) < 2 or not all(s == GB_BEADS[k] for s in seen):
+                break
+        kinds.append(GB_BEADS[k])
+    return [(Vector(tuple(p[j])), float(rad[j]), kinds[j]) for j in range(n)]
+
+
+GB_LIST = gb_beads()
+
+
+def gb_band(d):
+    """Which swirling band a bead rides, by its middle's height over the ball's (mm)."""
+    h = d.z * (GB_RIN - GB["bead_r"] + GB["press"])
+    return "Top" if h > GB["band"] else ("Low" if h < -GB["band"] else "Mid")
+
+
+def gb_skin(hi):
+    """The skin: the ball spun from pole to pole, its outside only (it's clear)."""
+    n, seg = (112, 192) if hi else (20, 36)
+    prof = [(0.0, 0.0)]
+    for i in range(1, n):
+        a = -math.pi / 2 + math.pi * i / n
+        prof.append((mm(GB_R * math.cos(a)), mm(gb_flat(GB_ZC + GB_R * math.sin(a)))))
+    prof.append((0.0, mm(gb_flat(GB_ZC + GB_R))))
+    sh = Shape()
+    sh.lathe(prof, GB_SKIN, seg, split=2)
+    return sh
+
+
+def gb_bead(sh, d, r, kind, hi):
+    """One bead spun about its own axis out from the ball's middle: a sphere whose outer side is
+    pressed into a round patch against the skin's inside, rolling softly into the bead (a smooth
+    minimum of the bead and the skin), its bottom held off the floor inside the flat spot. Its
+    inner side faces the cloud of deeper beads and is never seen, so it's left open."""
+    c = GB_RIN - r + GB["press"]
+    if hi:
+        angs = [-40.0 + 5.0 * i for i in range(26)] + [90.0]
+    else:
+        angs = [-40.0, -2.0, 32.0, 60.0, 90.0]
+    k = GB["roll"]
+    prof = []
+    for a in angs:
+        a = math.radians(a)
+        rho, zb = r * math.cos(a), r * math.sin(a)
+        zs = math.sqrt(max(GB_RIN ** 2 - rho * rho, 0.0)) - c
+        zz = (zb + zs - math.sqrt((zb - zs) ** 2 + k * k)) / 2
+        prof.append((0.0 if abs(rho) < 1e-6 else mm(rho), mm(zz)))
+    rot = Vector((0.0, 0.0, 1.0)).rotation_difference(d).to_matrix().to_4x4()
+    M = Matrix.Translation(Vector((0.0, 0.0, GB_ZC)) / K.STUD_MM + d * (c / K.STUD_MM)) @ rot
+    n0 = len(sh.bm.verts)
+    sh.lathe(prof, kind, 28 if hi else 14, M=M, split=2)
+    sh.bm.verts.ensure_lookup_table()
+    floor = mm(GB["skin"] + 0.35)
+    for v in sh.bm.verts[n0:]:
+        if v.co.z < floor + mm(1.0):
+            q = v.co.z - floor
+            v.co.z = floor + (q + math.sqrt(q * q + mm(0.6) ** 2)) / 2
+
+
+def gb_beads_part(band):
+    def build(hi):
+        """The beads of one band; the middle band also carries the pale cloud of deeper beads."""
+        sh = Shape()
+        for d, r, kind in GB_LIST:
+            if gb_band(d) == band:
+                gb_bead(sh, d, r, kind, hi)
+        if band == "Mid":
+            n, seg = (48, 64) if hi else (10, 16)
+            prof = [(0.0, mm(GB_ZC - GB["core"]))]
+            for i in range(1, n):
+                a = -math.pi / 2 + math.pi * i / n
+                prof.append((mm(GB["core"] * math.cos(a)), mm(GB_ZC + GB["core"] * math.sin(a))))
+            prof.append((0.0, mm(GB_ZC + GB["core"])))
+            sh.lathe(prof, GB_CORE, seg, split=2)
+        return sh
+    return build
+
+
+GB_COLS = {16: "#A98BE6", 17: "#72D6A2", 18: "#F0D84E", 19: "#69B4EE", 20: "#F287B8",
+           21: "#F7A266"}
+
+
+def gelbead_look(L, f):
+    nb = L.nb
+    beads = L.k(*GB_BEADS)
+    # the skin: clear TPR a hair milky, glossy, a faint orange-peel from the mould, the parting
+    # line over its sides and top, a fill plug under it, rubbed and smudged where thumbs go
+    C = Coat(L, hexc("#AABFC4"), 0.07, 0.0, nb.mul(L.noise(1400.0, 1, detail=2), 0.12))
+    skin = L.k(GB_SKIN)
+    C.paint(skin, alpha=0.18)
+    haze = nb.mul(nb.mul(skin, nb.ss(L.noise(9.0, 2, detail=3), 0.5, 0.78)), 0.75)
+    C.paint(haze, hexc("#D3DDDF"), 0.12, alpha=0.27)
+    smudge = nb.mul(skin, nb.ss(L.noise(26.0, 3, detail=4, rough=0.6), 0.6, 0.74))
+    C.paint(nb.mul(smudge, 0.8), hexc("#C8D2D4"), 0.3, alpha=0.24)
+    seam = nb.mul(nb.band(L.y, -mm(0.14), mm(0.14), mm(0.12)), skin)
+    C.paint(seam, hexc("#D5DFE1"), 0.16, height=0.9, alpha=0.46)
+    rr = nb.math("SQRT", nb.add(nb.mul(L.x, L.x), nb.mul(L.y, L.y)))
+    plug = nb.mul(nb.band(rr, -mm(1.0), mm(3.4), mm(0.3)), nb.ss(nb.mul(L.nz, -1.0), 0.8, 0.95))
+    C.paint(nb.mul(plug, skin), hexc("#C4CED0"), 0.4, height=0.6, alpha=0.6)
+    # the beads: glossy gel, each its colour, lighter and clearer in the middle of its flat patch
+    # against the skin (light goes through more of it there), deeper round the patch's edge and
+    # down its sides, and each bead a little off the next in shade
+    for k, col in GB_COLS.items():
+        C.paint(L.k(k), hexc(col), 0.07, 0.0, alpha=1.0)
+    c = (0.0, 0.0, mm(GB_ZC))
+    out = nb.vop("DOT_PRODUCT", L.N, nb.vop("NORMALIZE", nb.vop("SUBTRACT", L.P, c)))
+    shade = nb.mr(out, 0.2, 0.99, 0.55, 1.12)
+    shade = nb.mul(shade, nb.mr(L.noise(45.0, 4, detail=2), 0.3, 0.7, 0.9, 1.08))
+    C.col = nb.mixc(beads, C.col, nb.tint(C.col, shade))
+    clear = nb.mul(beads, nb.mul(nb.ss(out, 0.93, 0.998), 0.12))
+    C.paint(clear, hexc("#F4F6F2"))
+    # far down its sides, deep in the gaps, it's seen through the water: a hair milky
+    web = nb.mul(beads, nb.mul(nb.inv(nb.ss(out, 0.05, 0.4)), 0.4))
+    C.paint(web, hexc("#DCE3E4"), 0.1)
+    # the deeper beads, a pale milky cloud of all their colours through the water
+    core = L.k(GB_CORE)
+    cloud = nb.mixc(nb.ss(L.noise(30.0, 5, detail=2), 0.4, 0.6), hexc("#C9C0E4"), hexc("#BFE2CF"))
+    cloud = nb.mixc(nb.ss(L.noise(30.0, 6, detail=2), 0.45, 0.62), cloud, hexc("#E9DDB0"))
+    cloud = nb.mixc(nb.ss(L.noise(30.0, 7, detail=2), 0.5, 0.66), cloud, hexc("#E7C3D4"))
+    C.paint(core, cloud, 0.2, 0.0, alpha=1.0)
+    C.finish(f.dust, grime=0.1, keep=nb.add(beads, core, clamp=True))
+    return C.surface(bump_dist=mm(0.1), bump=0.4)
+
+
+GB_FOCUS = (0.0, 0.0, mm(GB_ZC))
+
+GEL_BEAD_BALL = kit.Find(
+    "GelBeadBall",
+    [kit.Part("Body", gb_skin, clear=True),
+     kit.Part("BeadsLow", gb_beads_part("Low"), (0.0, 0.0, 0.0), "Body", (0, 0, 1)),
+     kit.Part("BeadsMid", gb_beads_part("Mid"), (0.0, 0.0, 0.0), "Body", (0, 0, 1)),
+     kit.Part("BeadsTop", gb_beads_part("Top"), (0.0, 0.0, 0.0), "Body", (0, 0, 1))],
+    gelbead_look,
+    motions={
+        # squeezed: it squashes heavy as the water moves and the beads swirl round inside, the
+        # top band one way, the middle the other, the bottom a little; let go, it heaves back and
+        # wobbles, and the beads slop back past where they were and settle
+        "Squeeze": dict(duration=2.3, focus=GB_FOCUS, distance=0.95,
+                        tracks=[("Body", "stretch", K.SLOSH),
+                                ("BeadsTop", "turn", K.SWIRL_TOP),
+                                ("BeadsMid", "turn", K.SWIRL_MID),
+                                ("BeadsLow", "turn", K.SWIRL_LOW)]),
+    },
+    dust=GB["dust"], seed=GB["seed"], texels=1000, cage=0.0016,
+)
+
 FINDS = [BUTTER_STICK, STRESS_BALL, MOCHI_BUN, TOAST_SLICE, JUMBO_STRAWBERRY, CAPYBARA,
-         PAPER_SQUISHY]
+         PAPER_SQUISHY, GEL_BEAD_BALL]
 
 if __name__ == "__main__":
     kit.main("Squishies", HERE, FINDS)

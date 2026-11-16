@@ -852,6 +852,108 @@ local Set: { [string]: Art.Find } = {
 			},
 		},
 	},
+	GelBeadBall = {
+		Size = Vector3.new(0.260, 0.253, 0.260),
+		Centre = Vector3.new(-0.000, 0.126, 0.000),
+		Triangles = 10476,
+		Texture = 1024,
+		Parts = {
+			{
+				Name = "GelBeadBall_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Clear = true,
+				Size = Vector3.new(0.260, 0.253, 0.260),
+				Triangles = 1368,
+			},
+			{
+				Name = "GelBeadBall_BeadsLow",
+				Parent = "GelBeadBall_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Axis = Vector3.new(-0.000, 1.000, 0.000),
+				Size = Vector3.new(0.218, 0.101, 0.231),
+				Triangles = 2940,
+			},
+			{
+				Name = "GelBeadBall_BeadsMid",
+				Parent = "GelBeadBall_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Axis = Vector3.new(-0.000, 1.000, 0.000),
+				Size = Vector3.new(0.243, 0.187, 0.243),
+				Triangles = 3424,
+			},
+			{
+				Name = "GelBeadBall_BeadsTop",
+				Parent = "GelBeadBall_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Axis = Vector3.new(-0.000, 1.000, 0.000),
+				Size = Vector3.new(0.217, 0.105, 0.217),
+				Triangles = 2744,
+			},
+		},
+		Lights = {},
+		Motions = {
+			Squeeze = {
+				Duration = 2.3,
+				Tracks = {
+					{
+						Part = "GelBeadBall_Body",
+						Channel = "stretch",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.08, 1.03, "Sine", "Out" },
+							{ 0.32, 0.7, "Quad", "Out" },
+							{ 0.72, 0.685, "Sine", "InOut" },
+							{ 0.86, 1.07, "Quad", "Out" },
+							{ 1, 0.962, "Sine", "InOut" },
+							{ 1.14, 1.025, "Sine", "InOut" },
+							{ 1.28, 0.986, "Sine", "InOut" },
+							{ 1.43, 1.006, "Sine", "InOut" },
+							{ 1.58, 1, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "GelBeadBall_BeadsTop",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.1, 0, "Sine", "InOut" },
+							{ 0.44, 40, "Quad", "Out" },
+							{ 0.74, 48, "Sine", "InOut" },
+							{ 1.02, -11, "Quad", "Out" },
+							{ 1.45, 3.5, "Sine", "InOut" },
+							{ 1.95, 0, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "GelBeadBall_BeadsMid",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.13, 0, "Sine", "InOut" },
+							{ 0.47, -23, "Quad", "Out" },
+							{ 0.76, -28, "Sine", "InOut" },
+							{ 1.06, 7, "Quad", "Out" },
+							{ 1.5, -2, "Sine", "InOut" },
+							{ 2, 0, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "GelBeadBall_BeadsLow",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.16, 0, "Sine", "InOut" },
+							{ 0.5, 14, "Quad", "Out" },
+							{ 0.78, 18, "Sine", "InOut" },
+							{ 1.1, -5, "Quad", "Out" },
+							{ 1.55, 1.2, "Sine", "InOut" },
+							{ 2.05, 0, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+		},
+	},
 }
 
 return Set

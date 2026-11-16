@@ -94,6 +94,10 @@ set's `build.py` as an example; you shouldn't need the kit's code.
   occlusion goes into the colour (Roblox has no AO map). Gutters are filled from each island's
   own edge. Out: `out/textures/<Find>_Color|Normal|Roughness|Metalness[|Emissive].png`, and
   `out/<Find>.blend`, the unwrapped game meshes every later stage wears.
+  A find of small pieces packed close (the gel bead ball's beads) asks for shorter rays with
+  `cage=` on its Find (0.0016 studs; the reach shrinks with it): from 0.008 out the rays start
+  inside the next piece and bake black, jagged rims round every one. Its game mesh must then
+  sit within that of the detailed one.
 - **Looks.** `look(L, find) -> Surface`: `Coat(L, colour, roughness, metal, height)`, then
   `paint(mask, ...)` layers, `enamel_wear` (chips that bite edges, never a band), `lights(mask)`
   (where it glows), `finish(dust, grime)` (creases darkened, dust on whatever faced up as it was
@@ -194,6 +198,10 @@ set's `build.py` as an example; you shouldn't need the kit's code.
 - **Squish and squeeze.** Squishies and plush squash and stretch keeping their volume: the
   kit's `stretch` channel does it to a whole part (the tea light's flame proves it); a find that
   bends in places needs bones, which the kit doesn't have yet.
+  Something loose inside a see-through squishy that swirls as it squashes (the gel bead ball's
+  beads) is bands of it, each its own part turning about the find's upright through the pivot
+  on the floor: a turn about Z commutes with the squash, so it rides the body's `stretch`
+  without shearing in Roblox.
 - **Vehicles and rollers.** Wheels are parts on their axles, steered wheels turn on their real
   kingpins, and the spec gives wheel radius, wheelbase, steering lock and suspension travel, so
   driving the RC car later is wiring, not modelling.

@@ -266,3 +266,45 @@ crinkles". Uploaded as 84002820704702; its template is in `ReplicatedStorage.Pro
 - **Judged:** quick sheets twice (fixed: the colouring's holidays read as snow, the tape's edges
   and lifted film read as white paint, the back's heart was a blob, the crumples too faint), full
   sheets once. From the `-unit` doorway it is an orange speck, as every 4 in squishy is.
+
+## Gel bead ball (F-05d, Nov 16)
+
+`GelBeadBall` (prefix `gb_`/`GB_`, kinds 14 to 21; spec `GELBEAD`, `SLOSH`, `SWIRL_TOP`,
+`SWIRL_MID`, `SWIRL_LOW`). Uncommon, "Squeeze: the beads swirl inside".
+
+**References.** A water bead stress ball made in a balloon (bitzngiggles.com/water-bead-stress-ball):
+pastel beads (lavender, mint, lemon, sky, pink, peach) about 12 mm across pressed against the
+skin as round patches, a thin milky web between them. Vat19's Giant Bead Stress Ball
+(vat19.com/item/giant-bead-stress-ball): clear TPR, 5 in, small beads in green, blue and yellow.
+Rainbow Resource's Crystal Bead Stress Ball (rainbowresource.com/035561.html): clear balls of one
+colour of beads. Sizes from listings: 2.5 in (Curious Minds' gel and water bead ball), 3 in (Ben
+Franklin's jumbo squishy bead ball).
+
+**Size.** 66 mm across (2.6 in): 0.26 studs, sitting 1 mm onto a small, soft flat spot. The
+beads are 10.2 to 12.2 mm across, as water beads grow.
+
+**Tells.** A clear ball of pastel dots. From a unit's doorway it is a speck (a small find); held,
+the beads read at once through the glossy skin.
+
+**What it is.** `Body` (the root, clear): the TPR skin, its outside only, alpha 0.18 with milky
+haze and thumb smudges a little more solid, the mould's parting line over its sides and top, a
+fill plug under it. `BeadsLow`, `BeadsMid` and `BeadsTop`: 90 beads spread over the inside of
+the skin (a Fibonacci spiral nudged off its pattern and relaxed apart, `gb_beads`), each a
+sphere pressed 0.8 mm flat where it meets the skin and rolled softly into it (a smooth minimum
+of bead and skin, `gb_bead`), its inner side left open against the pale cloud of deeper beads
+(a sphere in `BeadsMid`). Each band turns about the ball's upright through the pivot on the
+floor, so it rides the ball's squash without shearing. A bead is lighter where it faces out
+and deeper round its edge, as light through a coloured gel bead is, each a little off the next.
+Baked with the kit's new shorter `cage` (0.0016 studs): from the usual 0.008 the rays started
+inside the next bead and baked black, jagged rims round every bead. 1024 texture at 851 texels
+a stud; 10,476 triangles.
+
+**Squeeze** (2.3 s): the fingers close (it bulges a hair), it squashes heavier than the stress
+ball to 0.7 tall in a third of a second and holds; let go, it heaves back to 1.07 and wobbles
+longer and lower, the water slopping. The beads swirl: the top band 48 degrees one way, the
+middle 28 the other, the bottom 18, each a beat behind the last; let go, they slop back past
+where they were and settle by 2 s.
+
+- **Judged:** quick sheets three times (fixed: the beads pressed so flat they read as octagonal
+  candy chips; black jagged rims from the bake; pale bead sides that read as pills; dark holes
+  between the beads, now the pale cloud), full sheets once.

@@ -6,7 +6,7 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-05d, step 13: the gel bead ball, then the glitter goo ball and the galaxy goo ball.
+**Next:** F-05d2, step 13: the glitter goo ball, then the galaxy goo ball.
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -58,8 +58,9 @@ changes the table's order a little.
 12. **F-05c** Jumbo slow-rise strawberry (built Nov 16; a thumb's dent on bones, ten seconds to
     rise), then, as **F-05c2**, the squishy capybara (built Nov 16; a tiny happy sigh) and, as
     **F-05c3**, the paper squishy with a drawn face (built Nov 16; crinkled paper, homemade).
-13. **F-05d** Gel bead ball, glitter goo ball, galaxy goo ball (Legendary): a see-through skin,
-    the firefly jar's glass way, with an inside that swirls and settles.
+13. **F-05d** Gel bead ball (built Nov 16), then, as **F-05d2**, the glitter goo ball and the
+    galaxy goo ball (Legendary): a see-through skin, the firefly jar's glass way, with an inside
+    that swirls and settles.
 14. **F-05e** Goo ball (oozes between your fingers), colour-change goo ball (changes colour only
     where pressed: may need a new trick, say so), mega goo ball (Epic, both hands).
 15. **F-05f** Squishy cake slice (frosting pushes out the side), then a Studio look at all 14
@@ -89,6 +90,38 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-05d (the gel bead ball built; uploaded 79353970920181 and imported; not looked at
+  in Studio: the context cap; the glitter and galaxy goo balls left for F-05d2).** `GelBeadBall`
+  in `squishies/build.py` (prefix `gb_`/`GB_`, kinds 14 to 21; spec `GELBEAD`, `SLOSH`,
+  `SWIRL_*`); README section, `Order.luau`. A 2.6 in clear TPR ball of our own packed with 90
+  pastel water beads (lavender, mint, lemon, sky, pink, peach), each pressed a hair flat against
+  the skin, a pale cloud of deeper beads showing between them. Squeeze: a heavy squash to 0.7
+  that slops back and wobbles, while the beads swirl in three bands (top 48 degrees one way,
+  middle 28 the other, bottom 18), slopping back past and settling by 2 s. Judged on quick
+  sheets three times and full sheets once. 10,476 triangles.
+  **Kit change:** `kit.Find(..., cage=)` sets how far outside the game mesh the bake's rays
+  start (default 0.008 studs; the reach shrinks with it): packed small pieces need about 0.0016,
+  or each bakes its neighbour's surface as black, jagged rims (CRAFT.md, the bake).
+  **New and reusable:** `gb_beads` spreads n things evenly over a sphere (a Fibonacci spiral,
+  nudged and relaxed, colours dealt so no bead matches both nearest neighbours); `gb_bead` presses
+  a sphere against a skin with a smooth minimum (`roll` sets how soft); an inside that swirls is
+  bands turning about the find's upright through the floor pivot, which rides `stretch` without
+  shearing (CRAFT.md, squish). **Found:** beads pressed flat (2 mm) read as candy chips and pale
+  bead sides as pills; nearly round beads coloured all over read as beads.
+  **F-05d2's hints (not researched):** *Glitter goo ball* (Uncommon): a 2.4 to 2.8 in clear TPR
+  ball full of tinted clear gel (pink, aqua or violet) with chunky glitter suspended in it (hex
+  flakes 1 to 3 mm, a few star or heart sequins about 5 mm). Reuse `gb_skin`'s way with its own
+  numbers; the gel's tint can be the skin's colour at a higher alpha (0.3 to 0.4) rather than a
+  second clear layer (two clear layers sort badly in Roblox); the glitter as small metallic
+  flakes (metal 1, rough 0.15, each tipped at random so they sparkle) in two or three bands
+  spread through the volume, not just at the skin. Its swirl: turn each band a full 360 or 720
+  degrees easing out to a slow stop, so it ends exactly where it started (a seamless loop), the
+  catalog's "swirls, then settles". *Galaxy goo ball* (Legendary): deep blue-violet gel, a
+  nebula painted on an inner core sphere (soft magenta and teal clouds, darker lanes), star
+  specks as an emissive mask (`glow=` on the core, the night-light's way) plus a few tiny flakes
+  nearer the skin for depth; the core turns slowly through a full turn as it's squeezed. It must
+  be breathtaking up close: judge the held view hardest.
 
 - **Nov 16, F-05c3 (the paper squishy built; step 12 done; uploaded 84002820704702 and imported;
   step 13 not started: the session was past the brief's 120k before it began).** `PaperSquishy`
@@ -1534,7 +1567,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Mochi bun | Common | Squeeze: a soft puff of a sound |  | Nov 16, F-05b2 |
 | Paper squishy with a drawn face | Uncommon | Squeeze: it crinkles | Looks homemade; cheap to build | Nov 16, F-05c3 |
 | Squishy toast slice | Uncommon | Squeeze: springs back like real bread |  | Nov 16, F-05b3 |
-| Gel bead ball | Uncommon | Squeeze: the beads swirl inside |  | |
+| Gel bead ball | Uncommon | Squeeze: the beads swirl inside |  | Nov 16, F-05d |
 | Glitter goo ball | Uncommon | Squeeze: glitter swirls, then settles |  | |
 | Jumbo slow-rise strawberry | Uncommon | Squeeze: the dent takes ten seconds to rise back |  | Nov 16, F-05c |
 | Colour-change goo ball | Rare | Squeeze: it changes colour where your fingers pressed |  | |
