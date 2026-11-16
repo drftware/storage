@@ -6502,3 +6502,17 @@ Not chosen: holding the galaxy goo ball back to deeper floors (D-203 deals every
 - **Numbers (defaults to tune with the owner):** 18 studs a second flat out in half a second, 7
   backing; the server allows 1.25 times that; the hood at 0.52 studs, 88 degrees wide.
 
+## D-255 · 2026-11-16 · The RC car's view goes infrared when the lights near it are out (F-G1b3c2e)
+
+The owner, asked about a headlight for dark halls: "What about infrared if it's dark?", then
+"if players trip the lights on I don't think the view should stay infrared. It should be normal
+when there are lights but go infrared if the lights go out."
+- **The hood view follows the lights near the car:** normal colour where they're on, infrared
+  (green-cast black and white with grain, Outlast's camcorder and Phasmophobia's video cameras)
+  where they're out, switching with a relay click and a flicker.
+- **The infrared lamp is seen only on the driver's screen** and isn't a light in the game's rules:
+  it holds no Mannequin. Monsters' eyes shine white in it.
+- **Not chosen:** a headlight on the car, which friends and monsters would see, and which would
+  be a light that holds the Mannequin.
+- Open, default in: the car doesn't trip motion lights (`OWNER.md`).
+

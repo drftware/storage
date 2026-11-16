@@ -15,7 +15,8 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - Seen in Studio Play (steered by the Studio-only `DriveStick` attribute): set down, 0 to 16
   studs a second in 0.4 s, stopped dead at a shut door with no put back, Back, taken back. Not
   run: into an open unit (dev-hall doors all shut), phone, a friend's view (OWNER.md).
-- The dev hall is unlit, so the hood view there is black: OWNER.md asks about a headlight.
+- The dev hall is unlit, so the hood view there is black. The owner chose infrared where the
+  lights are out and normal colour where they're on (D-255): F-G1b3c2e, after the body.
 
 ## Next task: F-G1b3c2d The driver's body
 The moment: you crouch in a unit, transmitter up, antenna raised, watching the hall through
@@ -35,8 +36,9 @@ back, logged; the phone stick and friends' view in `OWNER.md`.
 `src/client/DriveView.luau`; D-254 (grep "^## D-254" docs/DECISIONS.md); CODEMAP's Kneel rows.
 
 ## Queue (next sessions, the owner's ticket order)
-1. F-G1b3c3 the collector steals the car (ROADMAP; the car lives in `Workspace.Driven` today, so
-   it would outlive its floor); then F-G1b4 the hard hat. F-G1b5 waits for its art.
+1. F-G1b3c2e the car sees in the dark (ROADMAP, D-255), then F-G1b3c3 the collector steals the
+   car (the car lives in `Workspace.Driven` today, so it would outlive its floor); then F-G1b4
+   the hard hat. F-G1b5 waits for its art.
 2. Brix ticket: Driving's default stick read requires `PlayerScripts.PlayerModule`, which places
    on Roblox's Input Action System lack; fall back to `Humanoid.MoveDirection` turned by the
    camera, as this game's `input` does (D-254). Built in `../engine` by its rules, then the pin.

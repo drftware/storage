@@ -2649,6 +2649,6 @@ verified: a doc page, Studio, or "untested".
   Scriptable back to Custom"); DriveView sets Scriptable every frame, so the hood view holds.
 - **The whine:** Pro Sound Effects' "Servo Long Slow Bursts Whir Mostly Constant 2" 9125924630
   (5.48 s): steady near -28 dB from 2.4 to 4.9 s (AudioAnalyzer, 0.25 s bins), looped there.
-- The dev hall is unlit: the hood view is black against a shut door (OWNER.md's headlight
-  question).
+- The dev hall is unlit: the hood view is black against a shut door (F-G1b3c2e makes it
+  infrared where the lights are out).
 

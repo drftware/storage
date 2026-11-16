@@ -2465,6 +2465,26 @@ actions themselves and dealing the new finds on floors are later game tickets.
           - [ ] **F-G1b3c2d The driver's body.** You crouch still with the transmitter, its
             antenna up; caught, the drive ends; driving it to your feet takes it back; friends
             see it drive (their view and the phone stick go to `OWNER.md`).
+          - [ ] **F-G1b3c2e The car sees in the dark** (the owner, Nov 16, D-255; Outlast's
+            camcorder and Phasmophobia's video cameras). The moment: you drive out of a lit
+            hall into a dark one, the view clicks over to grainy green, and at the edge of what
+            it shows two white eyes look back.
+            1. Where the lights near the car are on (motion lights tripped and powered, a unit's
+               bulb lit), the hood view is in normal colour. Where they're out (not tripped,
+               or a breaker thrown), it's infrared: black and white with a green cast and a
+               little grain. Where the lit state lives: `MotionLights`, `HallLights`,
+               `UnitLights`, `Breakers` (CODEMAP).
+            2. The switch answers: a small relay click and a quick flicker as it changes, as a
+               security camera's night mode does; lights tripped or switched back on near the
+               car flick it back to colour the same way.
+            3. Infrared, the car carries a lamp only the driver's screen sees, about 30 studs
+               ahead and fading to black past that. Friends see no light. It isn't a light in
+               the game's rules: it doesn't hold the Mannequin or stop anything light stops.
+            4. Monsters' eyes shine white in it (Outlast's night vision), for each monster with
+               eyes to light.
+            5. Back gives you your own eyes in full colour at once.
+            One real light on one screen, only while driving and dark: fine on low-end phones.
+            Whether the car trips motion lights itself waits on `OWNER.md` (default no).
         - [ ] **F-G1b3c3 The collector steals it.** A driven car is a find lying loose, so the
           Packrat takes it as it takes any (S2-06b): on the driver's screen the view lifts off
           the floor, shakes, cuts to static, and you're back in your own eyes; it goes on the

@@ -62,10 +62,10 @@ nowhere else.
      it with the transmitter in your hand: it's back in your hands with a clack.
   5. With a friend: do they see the car drive smoothly, its wheels turning, and hear its whine?
      (Your body crouching with the antenna up is F-G1b3c2d, next.)
-- [ ] **Decide (default in, F-G1b3c2c):** in a dark hall the hood view shows nothing; the car has
-  no light of its own (Rainbow Six Siege's drones have none, but its maps are lit). Default: no
-  light, you drive by the hall lights and what friends light up. Or: a dim headlight on the car
-  (an untested bet here). Your torch's beam doesn't follow you onto the hood.
+- [ ] **Decide (default in, F-G1b3c2e):** does the RC car trip the motion lights as it drives
+  under them, as you do? Default: no, it's too small and low for their sensors, so a dark hall
+  stays dark and its view goes infrared. If yes, the car lights its own way down the halls and
+  anyone near sees the lights trip, a giveaway to a friend and maybe a monster.
 - [ ] **Try (F-G1b2, built Nov 16, D-231; each press checked in Studio Play, not on a phone, not
   with a friend):** press a find and watch it do what it is.
   1. In Studio, set Workspace's `DevFloorNumber` to 1 and press Play. In the command bar (Server),
