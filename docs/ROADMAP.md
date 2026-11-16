@@ -2286,29 +2286,31 @@ Done when two climbs in a row feel different and players talk about their best f
 Done when players watch the results to the end and change their perks between climbs.
 
 - [ ] **S5-01 Finds valued one at a time** on the results: picture, name, how rare, what it's
-  worth, the cash counting up; then a line for each player.
+  worth, the haul's worth counting up (the cash comes when you sell at your chest, D-251); then
+  a line for each player.
 - [ ] **S5-02 Rarity, and finds still sealed.** Rarer finds on higher floors, in the catalog's
   six grades (Secret on top, from floor 10; D-188); about one in
   twenty still in its packaging, worth three times as much. A padlocked unit's find draws a
   grade better (GDD: "the best chance of something great"; S1-07a left it a plain find).
 - [ ] **S5-03 Your home unit, and taking finds up** (the owner, Nov 16, D-251; Grow a Garden's
-  plots, Animal Crossing's house storage, Minecraft's and Lethal Company's lost gear). Common
-  finds sell on the spot as the climb ends; from Uncommon up every find goes home, copies too
-  (D-188), with no menu. Moved up from after launch (PROPOSAL idea 29), since your finds are now
-  your gear. Split into these; the first gets its full plan when it's next:
+  plots, Animal Crossing's house storage, Minecraft's and Lethal Company's lost gear). Every
+  find you carry onto the elevator goes home, commons and copies too, with no menu. Moved up
+  from after launch (PROPOSAL idea 29), since your finds are now your gear. Split into these;
+  the first gets its full plan when it's next:
   - [ ] **S5-03a The hall of units.** A unit of your own off the lobby, one per player on the
     server, the same storage unit the floors are built from, open to friends; your name on it.
     Its art first (the hall, the shelf, the chest), the unit's way.
   - [ ] **S5-03b The shelf and the chest.** Finds that come home walk onto your shelf, or into
-    the chest when it's full. Press the chest: a panel of everything you own, each find once with
-    its count ("x2") and a search; put a find on the shelf, swapping one off when full; make a
-    Gold from four of a kind when you choose (default, `OWNER.md`). A lamp on the shelf lights
-    your unit; the item list's "at home" actions come later, a find at a time.
+    the chest when it's full. Press the chest: a panel of everything you own, each kind of find
+    once with its count ("x2"), a search bar and rarity filters; put a find on the shelf,
+    swapping one off when full; sell whatever you want. With four of one kind the panel offers
+    Gold: a big animation, and the four become one Gold. A lamp on the shelf lights your unit;
+    the item list's "at home" actions come later, a find at a time. Trading comes later.
   - [ ] **S5-03c Taking finds up.** Take any find from the chest into a slot and carry it to the
-    elevator. On the climb it's at risk like any find: stolen, dropped where you're caught, lost
-    if it isn't aboard when the elevator leaves or the whole team is caught. What comes back goes
-    home, lights full again. The save marks a find out until its climb ends and strikes it off
-    only when lost on a climb that ended properly; a crash never costs one.
+    elevator. On the climb it's at risk like any find: stolen, dropped where you're caught or
+    where you leave, lost if it isn't aboard when the elevator leaves. Whoever carries a find
+    aboard takes it home, wherever it came from. The save marks a find out until its climb ends
+    and strikes it off only when lost on a climb that ended properly; a crash never costs one.
 - [ ] **S5-04 The collection book.** A page for every kind of find, stamped "New" the first
   time; each kind of monster trapped; sets.
 - [ ] **S5-05 The shelf in the elevator.** The host's three best finds, shown in the car.
@@ -2319,7 +2321,7 @@ Done when players watch the results to the end and change their perks between cl
   (D-112). The luck boost: one use, used in the elevator, better odds of rare finds next floor;
   its odds shown before buying and while it's on, never sold where Roblox restricts paid random
   items (D-188). A bigger home unit, more shelf space (D-251, Bloxburg's larger plot): medium
-  for cash, large for Robux (default, `OWNER.md`); the chest holds everything for everyone.
+  and large, both for Robux; the chest holds everything for everyone.
 
 ### Step 6: Coming back
 
@@ -2442,9 +2444,10 @@ actions themselves and dealing the new finds on floors are later game tickets.
       and the lamp's click, lit, and frees its slot. Its headlamp beam is tighter and whiter than
       the flashlight's, goes where you look and bobs with your walk; friends see the light on
       your forehead. It holds a Mannequin as any found light does. It lasts a minute, dimming and
-      stuttering out as the flashlight dies, then sits dark on your head; a battery fills it as
-      it fills the flashlight (the emptier light takes it). Caught, it drops with everything
-      else. On a phone only the nearest few headlamps light the walls, as the hall lights do.
+      stuttering out as the flashlight dies, and no battery refills it: spent, it falls off your
+      head and breaks as the saw does (D-141's break: bits fly, a clank monsters hear, a fade).
+      Caught, it drops with everything else. On a phone only the nearest few headlamps light
+      the walls, as the hall lights do.
     - [ ] **F-G1b5 Skates and slippers**, their art first (not yet in `art/finds/WAVES.md`):
       Wear puts them on your feet. Slippers are looks only. Skates make you faster (default:
       faster than your walk, still slower than a chasing monster, tuned in play), with the

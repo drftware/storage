@@ -13,11 +13,11 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   on its hood through the halls and into open units, so a player hiding in a unit can watch for
   monsters or look for finds; the collector (the Packrat) steals it. Defaults in D-250 (no range,
   no battery, monsters don't hear it, no headlight); the owner said "go ahead" to them.
-- The owner's design (D-251, nothing built): the hard hat is worn, a headlamp for a minute that
-  a battery fills; skates make you faster, slippers are looks; monsters don't hear feet yet.
-  Home is your own unit off the lobby with a shelf and a chest (every find you own, counted);
-  any find can be taken up in a slot and lost on the climb. Tickets F-G1b4, F-G1b5, S5-03a-c;
-  the gaps I filled are in `OWNER.md`.
+- The owner's design (D-251, nothing built): the hard hat is worn, a headlamp for a minute,
+  then it falls and breaks (no battery); skates make you faster, slippers are looks; monsters
+  don't hear feet yet. Home is your own unit off the lobby with a shelf and a chest (every find
+  you own, counted, sold from there); any find can be taken up in a slot and lost; whoever
+  carries a find aboard keeps it. Tickets F-G1b4, F-G1b5, S5-03a-c; one question in `OWNER.md`.
 - Find art (`art/finds/WAVES.md`): the second run ended at F-05d3, the galaxy goo ball;
   F-05e (step 14) and F-05f (step 15) are left.
 
