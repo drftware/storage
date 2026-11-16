@@ -6,8 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04f2, the toy drum (step 4's second find), in `art/finds/windups/`: the F-04e2
-note has its plan and the F-04f note its hints; then F-04g, the farm-animal spinner (step 5). The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp`
+**Next:** finish F-04f2, the toy drum (step 4's second find), half built in
+`art/finds/windups/`: the newest note says exactly what's left; then F-04g, the farm-animal
+spinner (step 5). The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp`
 when next touched.
 
 ## The second run's plan (owner's yes, Nov 15)
@@ -89,6 +90,44 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04f2 (the toy drum half built: stopped at the context cap; not ticked, not
+  exported, not uploaded).** `ToyDrum` in `windups/build.py` (`drum_*`, `hoop_rz`, `cord_runs`,
+  `stick_place`, `drum_look`, `drum_bang`; spec `DRUM`, `BANG`; in `FINDS`). Parts `Body` (root
+  on the floor at its middle: the tin shell and bottom, both red rolled-tin hoops, the cord, and
+  in the detailed mesh a tin grommet at every hole), `Head` (the calfskin, pivot at its middle,
+  axis up, `move`s), `StickL`, `StickR` (each turning about the hand's grip 40 mm from its butt;
+  a positive turn lifts the tip, checked on the filmstrip). As found the sticks lie across the
+  top, beads on the head just behind its middle, butts out over the front rim toward you.
+  **References:** Laurel Leaf Farm's Ohio Art drum (6.25 x 3.75 in: litho shell with picture
+  medallions, rolled white hoops, plain sticks with round ends), Theriault's c.1895 child's drum
+  (7 in: red hoops, the rope laced in V's through holes in the hoops, paper heads, sticks), the
+  V&A's Chad Valley drum B.624:1-1999 (6 x 3 in, pressed steel, litho medallions, cord through
+  holes in the top), Red Balloon's tin drum listing (about 7 x 5 in, two wooden sticks). Ours:
+  165 mm (6.5 in) across the shell, 175 over the hoops, 115 tall: 0.69 studs. **Kit change:**
+  `Shape.lathe(strips=True)` unrolls flat spans as strips too; the hoops' flat rims each took a
+  texture square as wide as the hoop (24% packed, 314 texels a stud; now 63%, 511, 1024 square,
+  5,376 triangles). **Judged once** (quick sheets, all rendered and committed): it reads as a toy
+  drum at once from the front, held and on the filmstrip; from the doorway it's small (cream
+  head, crossed sticks, red rims; the zigzag barely shows, as for any find this size). The
+  Bang filmstrip shows single lifts and the double lift right. **Left to do, in order:** (1) the
+  head is plain: stronger two-tone mottle, a faint spine line, a plainly grey-brown scuffed patch
+  with little dents where the beads land (`strike` in `drum_look`); (2) the front rim's nicks
+  read as an even dotted line: sparser, irregular, a little rust; (3) the hoop bands are plain: two
+  fine pressed grooves round each band, clear of the holes; (4) sticks: stronger grain, warmer,
+  the beads plainly greyed; (5) the maker's mark at the back is too small beside the stars (try
+  `mark` r 14 x 10, star 5.5, a gold rim); (6) a little more honest wear on the shell (rubbed
+  low and at the front, scratches, the cream gone faintly yellow). Then rebake
+  (`blender -b --factory-startup -P art/finds/windups/build.py -- --stage textures --find
+  ToyDrum`, about 45 s), `quick`, look again (check a hit frame by frame: the kit renders frame
+  i at i/24 s into `out/frames/ToyDrum/`, deleted after; hits land at 0.22, 0.49, 0.76, 1.03
+  and the double at 1.61 s), full `renders`, export (restore the set's other FBX after; add
+  `ToyDrum = { "Bang" }` to `src/shared/Finds/Order.luau`), README section (hit times for the
+  game's bangs), upload and import if Studio is in Edit, tick. **F-04g's hints (step 5, not
+  researched):** WAVES.md's plan step 5; look at vintage farm-animal spinner toys for size (about
+  10 in across), the pull lever's pivot and the arrow's hub; parts `Body`, `Lever` (turning on its
+  pivot), `Arrow` (turning about the face's middle); motion `Pull`: the lever comes down and snaps
+  back, the arrow spins, slows and ticks to a stop on an animal.
 
 - **Nov 16, F-04f (the kazoo built, judged and in the place; the drum not started).** `Kazoo`
   in `windups/build.py`, README, D-238; uploaded and imported in Edit

@@ -497,3 +497,59 @@ BLOW = dict(
     swell=1.6,                    # the note leans in: degrees more tip at its loudest
     lower=(1.62, 2.1),            # lowered back from, and at rest by (s)
 )
+
+# --- The toy drum (F-04f2) ------------------------------------------------------------------------
+# A child's tin drum of our own: a printed tin shell (a deep blue field, cream stars and red
+# roundels), red-painted rolled-tin hoops top and bottom, a white cotton cord laced in ten V's
+# between them through punched holes in the hoops, a calfskin head under the top hoop's rolled lip
+# and two turned beech sticks lying across the top, as found. Listings and museum records give 6
+# to 7 in across and 3 to 5 in tall (README); ours is 6.5 in across the shell, 4.5 in tall. The
+# drum stands on the floor at z = 0, centred on the origin; the sticks' butts stick out the front.
+DRUM = dict(
+    r=82.5,                       # the shell's radius (165 mm across, 6.5 in)
+    h=115.0,                      # bottom hoop's foot to top hoop's rim (4.5 in)
+    hoop=dict(h=15.0, out=3.5, roll=1.6, lip=80.0, deep=9.0),
+    # each rolled-tin hoop: how tall it is, how far its band stands out from the shell, the
+    # radius of the bead rolled at each edge, the radius its top roll turns in to over the head,
+    # and how far down inside that lip reaches (mm): below the head even when a hit dips it
+    head=dict(sink=4.2, flat=0.9),
+    # the calfskin head: how far below the top hoop's rim it lies, and the fraction of the
+    # shell's radius it stays flat before it curves down over the shell's edge under the lip
+    floor=4.0,                    # the tin bottom, this far up inside the bottom hoop (mm)
+    cord=dict(n=10, r=1.2, hole=7.5, grommet=(1.7, 2.7, 0.35), twist=7.0),
+    # the cord: n holes in each hoop, so n V's round the drum; its radius; how far each hole is
+    # in from the drum's end (the middle of the hoop's band); a tin grommet round each hole (the
+    # hole's radius, the ring's radius, how far it stands); the twist of its three strands (mm a turn)
+    stripe=(4.5, 0.8),            # a printed cream line round the shell this far from each hoop, this wide
+    star=13.0,                    # the cream star printed in each V that opens upward (radius, mm)
+    roundel=(8.0, 5.4, 3.6),      # the red roundel printed between them: outer, ring's outer and inner radius
+    register=(0.35, -0.25),       # the red print's misregistration (mm round, mm up): a real litho's tell
+    mark=dict(r=(11.0, 8.0), star=4.2),
+    # our maker's mark printed in the V at the back instead of a star: an oval plate (half wide,
+    # half tall) with the kazoo's star in it
+    stick=dict(length=190.0, r=(4.5, 3.0), neck=2.6, bead=5.5, grip=40.0, tip=(14.0, 30.0),
+               splay=20.0, gap=0.5),
+    # each turned beech stick: its length, radius at the butt and where the taper ends, the neck
+    # under the bead, the bead's radius; the hand's grip this far from the butt (its pivot); as
+    # found its bead rests on the head this far either side of the middle and back from it, the
+    # stick splayed this many degrees off straight ahead, resting this far above the rim (mm)
+    dust=0.4, seed=113.0,
+)
+
+# How it plays (the Bang action): a kid banging it, left, right, left, right, then both sticks
+# together, the loud one. Each stick lifts, snaps down onto the head and bounces off; the head
+# dips under the hit and shivers back; the whole drum gives a little under each blow.
+BANG = dict(
+    first=0.22,                   # the first hit lands (s): the game plays a bang at each hit
+    beat=0.27,                    # s between hits, about four a second like a kid banging
+    hits=4,                       # single hits, left stick first, then the two together
+    lift=(30.0, 0.15),            # degrees the tip lifts before a hit, and how long that takes (s)
+    snap=0.06,                    # s from the top of the lift down onto the head: it accelerates
+    bounce=(9.0, 0.07, 0.08),     # degrees it bounces up off the head, s going up, s coming back
+    double=dict(gap=0.58, lift=(44.0, 0.3), bounce=15.0),
+    # the double hit: s after the last single hit, a bigger, slower lift, a bigger bounce
+    head=(1.5, 2.6),              # mm the head dips under a hit, and under the double
+    shiver=(0.45, 0.25, 0.12),    # the head's swings back after the dip, each a fraction of it
+    jolt=(0.5, 1.5),              # mm the whole drum gives under a hit, and under the double
+    end=2.3,                      # all still by (s)
+)

@@ -43,11 +43,13 @@ class Shape:
         return f
 
     # --- solids of revolution --------------------------------------------------------------
-    def lathe(self, profile, kind, segs, M=Matrix(), kinds=None, split=2):
+    def lathe(self, profile, kind, segs, M=Matrix(), kinds=None, split=2, strips=False):
         """Spin a profile [(r, z)] about Z. List it bottom to top on the outside (then back down
         the inside for a shell) and the faces point outward. A point with r = 0 is a pole.
         `kinds` (one per profile span) overrides `kind` span by span. Steep spans unroll into
-        strips cut into `split` pieces round; flat spans (and poles) project from above."""
+        strips cut into `split` pieces round; flat spans (and poles) project from above, unless
+        `strips` unrolls them too (a ring with no middle: a drum's hoop, whose flat rims would
+        each take a texture square as wide as the whole hoop)."""
         rings = []
         for r, z in profile:
             if r <= 1e-6:
@@ -61,7 +63,7 @@ class Shape:
 
         def flat(i):
             (r0, z0), (r1, z1) = profile[i], profile[i + 1]
-            return abs(z1 - z0) < 0.6 * abs(r1 - r0)
+            return not strips and abs(z1 - z0) < 0.6 * abs(r1 - r0)
 
         # islands: runs of spans with the same kind and the same way of unrolling; a flat run
         # also breaks where it turns back on itself

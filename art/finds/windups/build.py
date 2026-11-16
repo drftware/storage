@@ -4692,8 +4692,452 @@ KAZOO = kit.Find(
 )
 
 
+# --- The toy drum (F-04f2) -----------------------------------------------------------------------
+# A child's tin drum of our own (README): a printed tin shell (a deep blue field, cream stars and
+# red roundels), red rolled-tin hoops, a white cotton cord laced in ten V's between them through
+# punched holes, a calfskin head under the top hoop's rolled lip, and two turned beech sticks
+# lying across the top. Bang: a stick lifts, snaps down onto the head and bounces off; the head
+# dips and shivers; then the other stick, and at the end both together.
+
+DR = K.DRUM
+BG = K.BANG
+(DR_SHELL, DR_FLOOR, DR_HOOP, DR_CORD, DR_HEAD, DR_STICK, DR_GROM) = range(71, 78)
+DR_R, DR_H = DR["r"], DR["h"]
+HP = DR["hoop"]
+DR_B = DR_R + HP["out"]                 # the hoops' band (mm)
+DR_RT = HP["roll"] * 1.25               # the top roll is fatter: it rolls over and in, over the head
+HEAD_Z = DR_H - DR["head"]["sink"]
+CD = DR["cord"]
+DR_N = CD["n"]
+TOP0 = -90.0 + 180.0 / DR_N             # the first top hole (degrees round from +X): a bottom
+BOT0 = -90.0                            # hole straight at the front, a star above it
+ST = DR["stick"]
+ST_AX = ST["length"] - ST["bead"]       # butt end to the bead's middle (mm)
+
+
+def cyl(r, th, z):
+    a = math.radians(th)
+    return Vector((r * math.cos(a), r * math.sin(a), z))
+
+
+def dr_roll(c, rad, a0, a1, n):
+    """Points round a rolled bead's section: centre c (r, z), from angle a0 to a1 (degrees)."""
+    return [(c[0] + rad * math.cos(math.radians(a0 + (a1 - a0) * i / n)),
+             c[1] + rad * math.sin(math.radians(a0 + (a1 - a0) * i / n))) for i in range(n + 1)]
+
+
+def hoop_rz(hi):
+    """The top hoop's section (r, z mm): up the outside from its rolled foot, round the fat roll
+    at the rim, in over the head and down inside the lip, back out under it to the shell."""
+    R, b, rr, rt = DR_R, DR_B, HP["roll"], DR_RT
+    z0, z1, lip, deep = DR_H - HP["h"], DR_H, HP["lip"], HP["deep"]
+    q = 3 if hi else 1
+    pts = [(R + 0.15, z0 + 0.9), (R + 0.9, z0 + 0.05)]
+    pts += dr_roll((b - 0.2 * rr, z0 + rr), rr, -90, 90, 2 * q)
+    pts += [(b, z0 + 2 * rr + 0.5), (b, z1 - 2 * rt - 0.3)]
+    pts += dr_roll((b - 0.25 * rt, z1 - rt), rt, -90, 90, 2 * q)
+    pts += [(lip + 1.6, z1 - 0.1), (lip + 0.35, z1 - 0.55), (lip, z1 - 1.5),
+            (lip, z1 - deep + 0.8), (lip + 0.7, z1 - deep), (R + 0.15, z1 - deep)]
+    return pts
+
+
+def cord_runs():
+    """Each run of cord, top hole to bottom hole, as six points (mm): in the hole, just out of
+    it, over the roll at the hoop's foot, the same at the other hoop, out of the hole, in it."""
+    b, rr, cr = DR_B, HP["roll"], CD["r"]
+    zt, zb = DR_H - CD["hole"], CD["hole"]
+    z_ct, z_cb = DR_H - HP["h"] + rr, HP["h"] - rr        # the rolls' crests
+    r_c = b + 0.8 * rr + cr
+    runs = []
+    for k in range(DR_N):
+        ta = TOP0 + 360.0 * k / DR_N
+        for tb in (ta - 180.0 / DR_N, ta + 180.0 / DR_N):
+            def at(z, r):
+                return cyl(r, ta + (tb - ta) * (zt - z) / (zt - zb), z)
+            runs.append([cyl(b - 1.0, ta, zt), at(zt - 1.6, b + 0.9 * cr), at(z_ct, r_c),
+                         at(z_cb, r_c), at(zb + 1.6, b + 0.9 * cr), cyl(b - 1.0, tb, zb)])
+    return runs
+
+
+def chaikin(P, n):
+    for _ in range(n):
+        Q = [P[0]]
+        for a, c in zip(P, P[1:]):
+            Q += [a.lerp(c, 0.25), a.lerp(c, 0.75)]
+        P = Q + [P[-1]]
+    return P
+
+
+def resample(P, step):
+    """Points every `step` mm along the polyline P."""
+    acc = [0.0]
+    for a, c in zip(P, P[1:]):
+        acc.append(acc[-1] + (c - a).length)
+    n = max(int(acc[-1] / step), 1)
+    out, j = [], 0
+    for i in range(n + 1):
+        d = acc[-1] * i / n
+        while j < len(P) - 2 and acc[j + 1] < d:
+            j += 1
+        f = (d - acc[j]) / max(acc[j + 1] - acc[j], 1e-9)
+        out.append(P[j].lerp(P[j + 1], min(max(f, 0.0), 1.0)))
+    return out
+
+
+def strands(s, P, r, kind):
+    """The cord's three twisted strands along the path P (mm), for the detailed mesh."""
+    T = [(P[min(i + 1, len(P) - 1)] - P[max(i - 1, 0)]).normalized() for i in range(len(P))]
+    U = [T[0].cross(Vector((0, 0, 1))).normalized()]
+    for t in T[1:]:
+        u = U[-1] - t * U[-1].dot(t)
+        U.append(u.normalized())
+    along = [0.0]
+    for a, c in zip(P, P[1:]):
+        along.append(along[-1] + (c - a).length)
+    for k in range(3):
+        pts = []
+        for p, t, u, l in zip(P, T, U, along):
+            ph = 2 * math.pi * (l / CD["twist"] + k / 3.0)
+            w = t.cross(u)
+            pts.append(p + (u * math.cos(ph) + w * math.sin(ph)) * (0.42 * r))
+        s.tube([tuple(mm(c) for c in q) for q in pts], mm(0.62 * r), kind, sides=6)
+
+
+def to_radial(p):
+    """A matrix standing a lathe's Z out square from the drum's side at p (mm)."""
+    rd = Vector((p.x, p.y, 0.0)).normalized()
+    return T(Vector(tuple(mm(c) for c in p))) @ Vector((0, 0, 1)).rotation_difference(rd).to_matrix().to_4x4()
+
+
+def drum_body(hi):
+    s = Shape()
+    n = segs(hi, 48)
+    R, fl = DR_R, DR["floor"]
+    # the tin shell and its bottom, one piece
+    s.lathe([(mm(a), mm(c)) for a, c in [(0.0, fl), (R - 1.2, fl), (R, fl + 1.2), (R, HEAD_Z - 1.4),
+                                          (R - 0.9, HEAD_Z - 0.5)]],
+            DR_SHELL, n, kinds=[DR_FLOOR, DR_FLOOR, DR_SHELL, DR_SHELL])
+    # the two rolled-tin hoops: the bottom one the top one upside down
+    top = hoop_rz(hi)
+    for prof in (top, [(r, DR_H - z) for r, z in reversed(top)]):
+        s.lathe([(mm(a), mm(c)) for a, c in prof], DR_HOOP, n, strips=True)
+    # the cord, laced in V's between the hoops; detailed, three twisted strands
+    for run in cord_runs():
+        if hi:
+            strands(s, resample(chaikin(run, 3), 0.5), CD["r"], DR_CORD)
+        else:
+            s.tube([tuple(mm(c) for c in p) for p in run], mm(CD["r"]), DR_CORD, sides=6, caps=False)
+    if hi:
+        # a tin grommet round every hole the cord goes through
+        gi, go, gh = CD["grommet"]
+        for k in range(DR_N):
+            for th, z in ((TOP0 + 360.0 * k / DR_N, DR_H - CD["hole"]), (BOT0 + 360.0 * k / DR_N, CD["hole"])):
+                p = cyl(DR_B - 0.15, th, z)
+                prof = [(go + 0.05, -0.3), (go, 0.05), (go - 0.35, gh), (gi + 0.3, gh), (gi + 0.05, 0.2), (gi, -0.3)]
+                s.lathe([(mm(a), mm(c)) for a, c in prof], DR_GROM, 20, to_radial(p))
+    return s
+
+
+def drum_head(hi):
+    s = Shape()
+    R, f = DR_R, DR["head"]["flat"]
+    rim = [(R + 0.4, -5.0), (R + 0.4, -2.6), (R - 0.4, -1.0), (0.96 * R, -0.3), (f * R, 0.0)]
+    inner = [(f * R * (1.0 - i / 6.0), 0.0) for i in range(1, 7)] if hi else [(0.0, 0.0)]
+    s.lathe([(mm(a), mm(HEAD_Z + c)) for a, c in rim + inner], DR_HEAD, segs(hi, 48))
+    return s
+
+
+def stick_rz(hi):
+    """A stick's turned section (r, along mm), from the butt (0) to the bead's tip."""
+    L, (r0, r1), rn, rb = ST["length"], ST["r"], ST["neck"], ST["bead"]
+    cz = L - rb
+    butt = [(r0 * math.sin(math.radians(a)), 0.6 * r0 * (1 - math.cos(math.radians(a))))
+            for a in ((0, 30, 55, 75, 90) if hi else (0, 45, 90))]
+    shaft = [(r0, 45.0), (0.5 * (r0 + r1), 100.0), (r1, 150.0), (rn + 0.25, cz - rb - 1.2)]
+    if hi:
+        shaft = [(r0, 20.0)] + shaft[:1] + [(0.75 * r0 + 0.25 * r1, 75.0)] + shaft[1:2] + \
+                [(0.25 * r0 + 0.75 * r1, 125.0)] + shaft[2:]
+    a0 = math.degrees(math.asin(rn / rb))
+    nb_ = 8 if hi else 5
+    bead = [(rb * math.sin(math.radians(a)), cz - rb * math.cos(math.radians(a)))
+            for a in [a0 + (180.0 - a0) * i / nb_ for i in range(nb_ + 1)]]
+    bead[-1] = (0.0, L)
+    return butt + shaft + bead
+
+
+def stick_place(side):
+    """Where a stick lies as found (mm): its butt, its bead's middle, its direction butt to tip,
+    its grip (the pivot) and its axis (a turn lifts the tip). side -1 the left, 1 the right."""
+    rb = ST["bead"]
+    tx, ty = ST["tip"]
+    Cb = Vector((side * tx, ty, HEAD_Z + rb))
+    sp = math.radians(ST["splay"])
+    d = Vector((-side * math.sin(sp), math.cos(sp), 0.0))
+    # where it crosses the top roll's crest, and how high it rests there
+    rc = DR_B - 0.25 * DR_RT
+    cd = Cb.x * d.x + Cb.y * d.y
+    s = cd + math.sqrt(cd * cd - (Cb.x ** 2 + Cb.y ** 2) + rc * rc)
+    x = ST_AX - s                                   # from the butt
+    r0, r1 = ST["r"]
+    rx = r0 if x < 45.0 else r0 + (r1 - r0) * min((x - 45.0) / 105.0, 1.0)
+    rise = DR_H + ST["gap"] + rx - Cb.z
+    d = Vector((d.x, d.y, -rise / s)).normalized()
+    B = Cb - d * ST_AX
+    G = B + d * ST["grip"]
+    a = Vector((d.y, -d.x, 0.0)).normalized()
+    return B, Cb, d, G, a
+
+
+STICKS = {"StickL": stick_place(-1), "StickR": stick_place(1)}
+
+
+def drum_stick(name):
+    B, _, d, _, _ = STICKS[name]
+
+    def build(hi):
+        s = Shape()
+        M = T(Vector(tuple(mm(c) for c in B))) @ Vector((0, 0, 1)).rotation_difference(d).to_matrix().to_4x4()
+        s.lathe([(mm(a), mm(c)) for a, c in stick_rz(hi)], DR_STICK, segs(hi, 12), M)
+        return s
+    return build
+
+
+DR_BD = mm(0.15)            # the look's bump distance: a height of 1 stands 0.15 mm proud
+
+
+def dr_h(v):
+    """A height in mm, in the bump's units."""
+    return v / 0.15
+
+
+def drum_look(L, f):
+    nb = L.nb
+    xm, ym, zm = nb.mul(L.x, K.STUD_MM), nb.mul(L.y, K.STUD_MM), nb.mul(L.z, K.STUD_MM)
+
+    def sq(v):
+        return nb.mul(v, v)
+
+    def bell(d, at, w):
+        return nb.mul(nb.ss(d, at - w, at), nb.sub(1.0, nb.ss(d, at, at + w)))
+
+    def within(d, r, soft=0.16):
+        return nb.sub(1.0, nb.ss(d, r - soft, r + soft))
+
+    def hyp(a, b):
+        return nb.math("SQRT", nb.add(sq(a), sq(b)))
+
+    def dist3(p):
+        return nb.math("SQRT", nb.add(nb.add(sq(nb.sub(xm, p.x)), sq(nb.sub(ym, p.y))), sq(nb.sub(zm, p.z))))
+
+    shell, floor, hoop = L.k(DR_SHELL), L.k(DR_FLOOR), L.k(DR_HOOP)
+    cord, head, stick, grom = L.k(DR_CORD), L.k(DR_HEAD), L.k(DR_STICK), L.k(DR_GROM)
+    th = nb.math("ARCTAN2", ym, xm)
+    step = math.pi / DR_N
+
+    def local(phase):
+        """Radians from the nearest of the n repeats that start at `phase` (degrees)."""
+        return nb.math("WRAP", nb.sub(th, math.radians(phase)), step, -step)
+
+    lo_z, hi_z = HP["h"], DR_H - HP["h"]
+
+    # the shell: deep blue litho ink on tinplate under a glossy lacquer
+    BLUE = nb.tint(hexc("#1D3784"), nb.mr(L.noise(18.0, 21, detail=3), 0.3, 0.7, 0.9, 1.07))
+    C = Coat(L, BLUE, nb.mr(L.noise(60.0, 22, detail=2), 0.3, 0.7, 0.24, 0.34), 0.0)
+    ru, rv = DR["register"]
+    # in each V opening upward a cream star ringed by a fine gold line; at the back our maker's
+    # mark instead: a cream oval plate, a red line round it, a red star
+    us = nb.mul(local(BOT0), DR_R)
+    zs = hi_z - 19.0
+    dv = nb.sub(zm, zs)
+    ds = hyp(us, dv)
+    ph = nb.math("ARCTAN2", us, dv)
+    lobe = nb.pw(nb.add(0.5, nb.mul(nb.math("COSINE", nb.mul(ph, 5.0)), 0.5)), 2.4)
+    star_r = nb.mul(nb.add(0.38, nb.mul(lobe, 0.62)), DR["star"])
+    back = nb.mul(nb.sub(1.0, nb.ss(nb.absf(xm), 22.0, 26.0)), nb.ss(ym, 30.0, 40.0))
+    front = nb.mul(shell, nb.sub(1.0, back))
+    star = nb.mul(front, within(nb.sub(ds, star_r), 0.0, 0.14))
+    gold = nb.mul(front, bell(nb.sub(ds, star_r), 1.25, 0.3))
+    CREAM = nb.tint(hexc("#EFE4C6"), nb.mr(L.noise(90.0, 23, detail=2), 0.3, 0.7, 0.95, 1.03))
+    RED = hexc("#C02A20")
+    C.paint(gold, hexc("#C7A042"), 0.3, 0.55)
+    C.paint(star, CREAM, 0.3, 0.0)
+    mk = DR["mark"]
+    e = hyp(nb.mul(us, 1.0 / mk["r"][0]), nb.mul(dv, 1.0 / mk["r"][1]))
+    plate = nb.mul(nb.mul(shell, back), within(e, 1.0, 0.02))
+    C.paint(plate, CREAM, 0.3, 0.0)
+    eu = hyp(nb.mul(nb.sub(us, ru), 1.0 / mk["r"][0]), nb.mul(nb.sub(dv, rv), 1.0 / mk["r"][1]))
+    C.paint(nb.mul(nb.mul(shell, back), bell(eu, 0.8, 0.045)), RED, 0.3, 0.0)
+    ds_r = hyp(nb.sub(us, ru), nb.sub(dv, rv))
+    ph_r = nb.math("ARCTAN2", nb.sub(us, ru), nb.sub(dv, rv))
+    lobe_r = nb.pw(nb.add(0.5, nb.mul(nb.math("COSINE", nb.mul(ph_r, 5.0)), 0.5)), 2.4)
+    mstar = within(nb.sub(ds_r, nb.mul(nb.add(0.38, nb.mul(lobe_r, 0.62)), mk["star"])), 0.0, 0.1)
+    C.paint(nb.mul(nb.mul(shell, back), mstar), RED, 0.3, 0.0)
+    # in each V opening downward a red roundel: red, a cream ring, a red middle; the red printed
+    # a hair off the cream, as a real litho's colours are
+    ur = nb.mul(local(TOP0), DR_R)
+    zr = lo_z + 19.0
+    o, ring_o, ring_i = DR["roundel"]
+    dr_ = hyp(nb.sub(ur, ru), nb.sub(zm, zr + rv))
+    dc = hyp(ur, nb.sub(zm, zr))
+    C.paint(nb.mul(shell, within(dr_, o)), RED, 0.3, 0.0)
+    C.paint(nb.mul(shell, nb.mul(within(dc, ring_o), nb.sub(1.0, within(dc, ring_i)))), CREAM, 0.3, 0.0)
+    # a cream line round the shell near each hoop
+    sw = DR["stripe"]
+    for zz in (lo_z + sw[0], hi_z - sw[0]):
+        C.paint(nb.mul(shell, nb.band(zm, zz - sw[1] / 2, zz + sw[1] / 2, 0.12)), CREAM, 0.3, 0.0)
+    # knocked about: a shallow dent low on the front right, its ink crazed at the rim
+    dent = dist3(cyl(DR_R, -58.0, 40.0))
+    C.paint(nb.mul(shell, nb.sub(1.0, nb.ss(dent, 2.0, 11.0))), height=dr_h(-0.7))
+    craze = nb.mul(shell, bell(dent, 8.5, 2.5))
+    C.paint(nb.mul(craze, nb.ss(L.noise(260.0, 24, detail=3), 0.6, 0.66)), hexc("#C6C0B0"), 0.3, 0.8)
+    # rubbed where it's been dragged and carried: the ink thinned, here and there worn to tin
+    rub = nb.mul(shell, nb.mul(nb.ss(L.noise(9.0, 25, detail=4, rough=0.6), 0.5, 0.7),
+                               nb.add(0.35, nb.mul(nb.sub(1.0, nb.ss(zm, 20.0, 60.0)), 0.65))))
+    C.paint(nb.mul(rub, 0.55), hexc("#55678F"), 0.36)
+    C.paint(nb.mul(rub, nb.ss(L.noise(70.0, 26, detail=3), 0.6, 0.68)), hexc("#C2BDAE"), 0.3, 0.85)
+    scr = nb.ss(L.noise(900.0, 27, stretch=(0.04, 0.04, 1.0), detail=2), 0.74, 0.77)
+    C.paint(nb.mul(nb.mul(shell, scr), 0.6), hexc("#8D93A6"), 0.3, 0.4)
+    # the tin bottom: dull tinplate, freckled with rust
+    C.paint(floor, nb.tint(hexc("#B8B3A4"), nb.mr(L.noise(30.0, 28, detail=3), 0.3, 0.7, 0.85, 1.05)), 0.38, 0.85)
+    C.paint(nb.mul(floor, nb.ss(L.noise(40.0, 29, detail=4), 0.62, 0.7)), hexc("#7A4A2A"), 0.8, 0.1)
+
+    # the hoops: red enamel on rolled tin, glossy, chipped on the rolls' crests, the top rim
+    # nicked at the front where the sticks catch it, the foot rusting where it's chipped
+    HRED = nb.tint(hexc("#B4231B"), nb.mr(L.noise(40.0, 31, detail=2), 0.3, 0.7, 0.92, 1.06))
+    C.paint(hoop, HRED, 0.3, 0.0)
+    ub = DR_B
+    zt, zb = DR_H - CD["hole"], CD["hole"]
+    dt = hyp(nb.mul(local(TOP0), ub), nb.sub(zm, zt))
+    db = hyp(nb.mul(local(BOT0), ub), nb.sub(zm, zb))
+    dh = nb.mn(dt, db)
+    gi, go, gh = CD["grommet"]
+    C.paint(nb.mul(hoop, bell(dh, go + 0.2, 0.45)), hexc("#5A1611"), 0.5)     # grime round the grommet
+    C.paint(nb.mul(hoop, within(dh, gi, 0.1)), hexc("#120F0C"), 0.85, 0.0)   # the hole, dark
+    C.paint(grom, nb.tint(hexc("#CFC8B4"), nb.mr(L.noise(200.0, 32, detail=2), 0.3, 0.7, 0.8, 1.05)), 0.26, 0.9)
+    C.paint(nb.mul(grom, nb.ss(L.noise(150.0, 33, detail=3), 0.58, 0.66)), hexc("#6E5338"), 0.6, 0.3)
+    top_roll = nb.mul(hoop, nb.ss(zm, DR_H - 2.6, DR_H - 1.4))
+    nick = nb.mul(top_roll, nb.mul(nb.ss(nb.sub(0.0, ym), 10.0, 60.0), nb.ss(L.noise(45.0, 34, detail=4), 0.55, 0.62)))
+    chips = C.enamel_wear(nb.mul(hoop, nb.add(0.75, nb.mul(top_roll, 0.25))), hexc("#C2BDAE"), 35, 1.0)
+    C.paint(nick, hexc("#BDB8A9"), 0.4, 0.85, dr_h(-0.05))
+    foot = nb.sub(1.0, nb.ss(zm, 3.0, 8.0))
+    C.paint(nb.mul(nb.add(chips, nick, clamp=True), nb.add(nb.mul(foot, 0.9), 0.25, clamp=True)),
+            hexc("#7B4528"), 0.8, 0.1)
+    C.paint(nb.mul(nb.mul(hoop, foot), nb.ss(L.noise(25.0, 36, detail=4), 0.5, 0.64)), hexc("#5E2A1A"), 0.6)
+
+    # the cord: white cotton gone ivory, dirtier toward the holes where hands pull it
+    CORD = nb.tint(hexc("#ECE6D5"), nb.mr(L.noise(300.0, 41, detail=3), 0.3, 0.7, 0.88, 1.04))
+    C.paint(cord, CORD, 0.93, 0.0, nb.mul(L.noise(1400.0, 42, detail=2), dr_h(0.05)))
+    near = nb.mul(cord, nb.sub(1.0, nb.ss(dh, 3.0, 14.0)))
+    C.paint(nb.mul(near, 0.55), hexc("#A79C84"), 0.95)
+    C.paint(nb.mul(nb.mul(cord, nb.ss(L.noise(50.0, 43, detail=3), 0.55, 0.7)), 0.4), hexc("#B9AE94"), 0.95)
+
+    # the calfskin head: cream hide, mottled and veined, darker where it rolls over the edge;
+    # scuffed grey where the beads have struck it for years, with little dents
+    rh = hyp(xm, ym)
+    mott = L.noise(14.0, 51, detail=4, rough=0.6)
+    SKIN = nb.tint(nb.mixc(nb.ss(mott, 0.4, 0.7), hexc("#EAD8B0"), hexc("#D7BE8E")),
+                   nb.mr(L.noise(120.0, 52, detail=3), 0.3, 0.7, 0.95, 1.03))
+    C.paint(head, SKIN, 0.6, 0.0, nb.mul(L.noise(700.0, 53, detail=3), dr_h(0.03)))
+    vein = bell(L.noise(5.0, 54, detail=3, distortion=0.4), 0.5, 0.012)
+    C.paint(nb.mul(nb.mul(head, vein), 0.4), hexc("#C4A877"), 0.6)
+    C.paint(nb.mul(head, nb.ss(rh, DR_R * 0.84, DR_R * 0.97)), hexc("#C9AF80"), 0.62)
+    strike = None
+    for name in ("StickL", "StickR"):
+        _, Cb, _, _, _ = STICKS[name]
+        dd = hyp(nb.sub(xm, Cb.x), nb.sub(ym, Cb.y - 4.0))
+        m = nb.sub(1.0, nb.ss(dd, 3.0, 15.0))
+        strike = m if strike is None else nb.add(strike, m, clamp=True)
+    sm = nb.mul(head, strike)
+    C.paint(nb.mul(sm, nb.mr(L.noise(35.0, 55, detail=4), 0.3, 0.7, 0.35, 0.8)), hexc("#9F8B6B"), 0.45)
+    C.paint(nb.mul(sm, nb.ss(L.noise(230.0, 56, detail=2), 0.66, 0.74)), hexc("#857154"), 0.5, 0.0, dr_h(-0.12))
+
+    # the sticks: turned beech, lacquered; grey and dented at the beads, darker where held
+    grain = L.noise(55.0, 61, stretch=(1.0, 0.035, 1.0), detail=4)
+    WOOD = nb.tint(nb.mixc(nb.ss(grain, 0.4, 0.75), hexc("#DDBE8F"), hexc("#C39B66")),
+                   nb.mr(L.noise(300.0, 62, stretch=(1.0, 0.05, 1.0), detail=2), 0.3, 0.7, 0.93, 1.04))
+    C.paint(stick, WOOD, 0.42, 0.0, nb.mul(grain, dr_h(0.03)))
+    for name in ("StickL", "StickR"):
+        B, Cb, _, _, _ = STICKS[name]
+        tip = nb.mul(stick, nb.sub(1.0, nb.ss(dist3(Cb), ST["bead"] + 0.2, ST["bead"] + 2.0)))
+        C.paint(nb.mul(tip, 0.7), hexc("#A08868"), 0.55)
+        C.paint(nb.mul(tip, nb.ss(L.noise(260.0, 63, detail=2), 0.62, 0.7)), hexc("#7E6A50"), 0.6, 0.0, dr_h(-0.1))
+        held = nb.mul(stick, nb.sub(1.0, nb.ss(dist3(B), 30.0, 70.0)))
+        C.paint(nb.mul(held, 0.5), hexc("#AE8A5C"), 0.3)
+    C.finish(f.dust, grime=0.5)
+    return C.surface(bump_dist=DR_BD, bump=1.0)
+
+
+# --- how it plays ---------------------------------------------------------------------------------
+
+def drum_bang():
+    """Left, right, left, right, then both: each stick lifts, snaps down onto the head (the game
+    plays a bang here), bounces off it twice and settles; the head dips and shivers back; the
+    drum gives a little under each blow. Returns the duration, the tracks and the hit times."""
+    first, beat, n = BG["first"], BG["beat"], BG["hits"]
+    lift, lift_t = BG["lift"]
+    snap = BG["snap"]
+    bup, t_up, t_dn = BG["bounce"]
+    dbl = BG["double"]
+    reach = ST_AX - ST["grip"]                       # grip to bead (mm)
+    sticks = {"StickL": [(0.0, 0.0)], "StickR": [(0.0, 0.0)]}
+    hits = []
+    for i in range(n):
+        hits.append((first + i * beat, ("StickL", "StickR")[i % 2:i % 2 + 1], False))
+    hits.append((hits[-1][0] + dbl["gap"], ("StickL", "StickR"), True))
+    head = [(0.0, 0.0)]
+    body = [(0.0, 0.0)]
+    for t, who, big in hits:
+        up, ut, bo = (dbl["lift"][0], dbl["lift"][1], dbl["bounce"]) if big else (lift, lift_t, bup)
+        dip = BG["head"][1 if big else 0]
+        dip_deg = math.degrees(math.atan(dip / reach))
+        for name in who:
+            k = sticks[name]
+            start = max(t - snap - ut, k[-1][0] + 0.01)
+            k += [(round(start, 4), 0.0),
+                  (round(t - snap, 4), up, "Sine", "Out"),            # up, slowing into the top
+                  (round(t, 4), -dip_deg, "Quad", "In"),              # down, quicker and quicker
+                  (round(t + t_up, 4), bo, "Quad", "Out"),            # off the head
+                  (round(t + t_up + t_dn, 4), 0.0, "Quad", "In"),     # back onto it
+                  (round(t + t_up + t_dn + 0.035, 4), bo * 0.2, "Quad", "Out"),
+                  (round(t + t_up + t_dn + 0.07, 4), 0.0, "Quad", "In")]
+        sv = BG["shiver"]
+        head += [(round(t - 0.012, 4), 0.0), (round(t + 0.012, 4), mm(-dip), "Quad", "Out"),
+                 (round(t + 0.045, 4), mm(dip * sv[0])), (round(t + 0.075, 4), mm(-dip * sv[1])),
+                 (round(t + 0.105, 4), mm(dip * sv[2])), (round(t + 0.14, 4), 0.0)]
+        j = BG["jolt"][1 if big else 0]
+        body += [(round(t - 0.01, 4), 0.0), (round(t + 0.03, 4), mm(-j), "Quad", "Out"),
+                 (round(t + 0.16, 4), 0.0, "Sine", "InOut")]
+    tracks = [(name, "turn", k) for name, k in sticks.items()]
+    tracks += [("Head", "move", head), ("Body", "z", body)]
+    return BG["end"], tracks, [round(t, 3) for t, _, _ in hits]
+
+
+DB_DUR, DB_TRACKS, DB_HITS = drum_bang()
+
+
+def stud(v):
+    return tuple(mm(c) for c in v)
+
+
+TOY_DRUM = kit.Find(
+    "ToyDrum",
+    [kit.Part("Body", drum_body),
+     kit.Part("Head", drum_head, (0.0, 0.0, mm(HEAD_Z)), "Body", (0.0, 0.0, 1.0)),
+     kit.Part("StickL", drum_stick("StickL"), stud(STICKS["StickL"][3]), "Body", tuple(STICKS["StickL"][4])),
+     kit.Part("StickR", drum_stick("StickR"), stud(STICKS["StickR"][3]), "Body", tuple(STICKS["StickR"][4]))],
+    drum_look,
+    motions={
+        # banged by a kid: left, right, left, right, then both together, the loud one (the game
+        # plays a bang at each of DB_HITS)
+        "Bang": dict(duration=DB_DUR, focus=(0.0, mm(-10.0), mm(HEAD_Z + 25.0)), distance=0.75,
+                     view=(-1.1, -2.0, 1.3), drop=0.0, tracks=DB_TRACKS),
+    },
+    dust=DR["dust"], seed=DR["seed"], texels=600,
+)
+
+
 FINDS = [CYMBAL_MONKEY, JACK_IN_THE_BOX, CHATTERING_TEETH, WALKING_ROBOT, WINDUP_MOUSE, TIN_BIRD,
-         SIREN_CAR, RUBBER_DUCK, KAZOO]
+         SIREN_CAR, RUBBER_DUCK, KAZOO, TOY_DRUM]
 
 if __name__ == "__main__":
     kit.main("Windups", HERE, FINDS)
