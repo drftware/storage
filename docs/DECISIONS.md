@@ -6217,3 +6217,13 @@ middle, as a kid's hits wander: centred under the bead, the beads hid it from ev
 pressed grooves round each hoop's band, the head's veins and the dents are painted heights, not
 modelled, as the kazoo's pressings are (D-238); each groove is 1 mm wide, two texels at the
 drum's 511 texels a stud, since a finer one vanished from the normal map.
+
+## D-240 The farm-animal spinner is a red barn, and flat faces keep rounds off them (Nov 16, F-04g)
+
+Our talking farm toy is a barn of our own (red case with pressed boards, a slate gambrel roof,
+white trim, a white bezel, a yellow side lever, a black weathervane arrow), so nothing reads as
+the famous yellow round one. Its Pull motion stops the arrow at 1305 degrees, a multiple of 45,
+so the game picks the animal by adding 45 x k to the spin. In the kit, a flat face that meets a
+round (the case's front round its bezel, its walls their rounded edges) needs a sharp foot or a
+ring just past the round: the hi mesh's smooth shading otherwise bends across long flat
+triangles and the normal bake streaks them. (`art/finds/windups/README.md`, "Farm-animal spinner".)

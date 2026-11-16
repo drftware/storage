@@ -481,3 +481,35 @@ land at 0.22, 0.49, 0.76 and 1.03 s, the double at 1.61 s: the game plays a bang
 
 **In the place:** uploaded (`assets.json`) and imported in Edit on Nov 16 as
 `ReplicatedStorage.Props.Finds.ToyDrum`.
+
+## Farm-animal spinner (Uncommon): "Pull: the arrow spins and an animal noise plays"
+
+`FarmSpinner`, F-04g (Nov 16), D-240. A talking farm toy of our own: a squat barn-red case
+with pressed vertical boards, a slate-blue gambrel roof of pressed shingles overhanging it, white
+trim and roof boards, a white bezel round a printed face of eight animals (cow, pig, sheep,
+horse, duck, cat, rooster, dog on sky-blue and sunflower wedges, drawn in code by
+`spinner_face.py`), a black weathervane arrow on a brass dome hub, a yellow ball-knob lever down
+the right wall, our maker's mark (cream oval, gold rim, red star) in the gable, a speaker grille
+and four screws on the back.
+- **References:** Basic Fun's classic Farmer Says listing (basicfun.com; the famous one: a
+  yellow round body, twelve named pastel wedges, a red arrow, a pull tab; ours shares none of
+  it), Relic's value guide (tryrelic.app: a plastic case, a paper litho face, a metal
+  mechanism), the Retroist's 1965 history, listings giving about 10.5 x 10 x 3 in.
+- **Size:** 250 mm wide, 72 deep at the walls (82 at the roof), 281 tall: 0.98 x 0.32 x 1.1
+  studs (10 inches a stud). The face is 194 mm across.
+- **Tells:** the red barn with its gambrel roof, the big round picture dial, the yellow lever.
+- **Parts:** `Body` (root, on the floor at its middle), `Lever` (turns about Y through its pivot
+  inside the right wall, 105 mm out and 150 up; a positive turn pulls it down), `Arrow` (turns
+  about Y through the face's middle, 124 up; a positive turn is clockwise from the front).
+- **Pull** (3.45 s): the lever lifts 4 degrees, comes down 70 to its stop (0.32 s), is let go
+  and snaps back 8 past rest with two bounces; the toy tips 0.8 degrees toward the lever while
+  it's pressed and hops 0.7 mm as it slams back. The arrow spins three and a quarter turns,
+  slowing (Quart Out, 1.8 s), then hops into the next notch three times, the clicks at 2.3,
+  2.63 and 3.07 s, to stop at 1305 degrees: the cat, five animals on from the cow it rests on.
+  **For the game:** add 45 x k to every Arrow key after its first two to land on another animal,
+  and play the animal's noise as it stops; the next pull starts from wherever it stopped (the
+  arrow's keys are relative), or snap its rest to the last animal.
+- **Texture:** 2048 at 699 texels a stud, the face's island half again as fine, the back's 0.6.
+- **Found:** a bezel whose foot rounds smoothly into the front bends the hi mesh's shading
+  across the long front triangles, and the normal bake streaks the flat front: square the foot
+  off (it stays sharp) and put a ring just past every round's start (D-240).

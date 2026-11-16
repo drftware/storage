@@ -5187,8 +5187,538 @@ TOY_DRUM = kit.Find(
 )
 
 
+# --- The farm-animal spinner (F-04g) --------------------------------------------------------------
+
+import spinner_face  # noqa: E402
+
+SP = K.SPINNER
+PU = K.PULL
+(SP_WALL, SP_FRONT, SP_TRIM, SP_BACK, SP_ROOF, SP_UNDER, SP_FASCIA, SP_BEZEL, SP_FACE, SP_COLLAR,
+ SP_LEVER, SP_KNOB, SP_ARROW, SP_HUB, SP_SCREW) = range(81, 96)
+SP_W, SP_D = SP["w"] / 2, SP["d"] / 2      # half across, half deep (mm)
+ZC = SP["dial"]
+SP_E = SP["edge"]
+FACE_IN = -SP["bezel"][-1][1]               # the face lies this far in from the front (mm)
+FACE_R = SP["bezel"][-1][0]                 # and shows to this radius, under the bezel's lip
+RF = SP["roof"]
+LV = SP["lever"]
+AR = SP["arrow"]
+LV_AT = V(*LV["pivot"])
+AR_AT = V(0.0, -SP_D + FACE_IN, ZC)         # the arrow turns about the face's middle
+# the dial's frame: its middle on the front, local x across, y up the face, z out toward you
+FACE_M = T(V(0.0, -SP_D, ZC)) @ Matrix.Rotation(math.radians(90), 4, "X")
+
+
+def v2(x, y):
+    return Vector((x, y))
+
+
+def sp_corners():
+    """The barn's outline (x, z mm) seen from the front, anticlockwise from the right foot,
+    each corner with its round."""
+    r = SP["rounds"]
+    kx, kz = SP["knee"]
+    return [(v2(SP_W, 0.0), r["foot"]), (v2(SP_W, SP["eave"]), r["eave"]), (v2(kx, kz), r["knee"]),
+            (v2(0.0, SP["ridge"]), r["ridge"]), (v2(-kx, kz), r["knee"]),
+            (v2(-SP_W, SP["eave"]), r["eave"]), (v2(-SP_W, 0.0), r["foot"])]
+
+
+def out_n(e):
+    """The outward normal of an anticlockwise outline's edge running along e."""
+    return v2(e.y, -e.x).normalized()
+
+
+def sp_outline(d, n=8):
+    """The outline inset d (mm), a closed polyline: each corner an arc about the same middle as
+    the full outline's, d smaller (a moulded case's rounded edge, followed in)."""
+    C = sp_corners()
+    pts = []
+    for i, (b, r) in enumerate(C):
+        a, c = C[i - 1][0], C[(i + 1) % len(C)][0]
+        n1, n2 = out_n(b - a), out_n(c - b)
+        mid = b - (n1 + n2) * (r / (1.0 + n1.dot(n2)))
+        a1, a2 = math.atan2(n1.y, n1.x), math.atan2(n2.y, n2.x)
+        while a2 < a1:
+            a2 += 2 * math.pi
+        for k in range(n + 1):
+            t = a1 + (a2 - a1) * k / n
+            pts.append(mid + v2(math.cos(t), math.sin(t)) * (r - d))
+    return pts
+
+
+def ray_hit(poly, th):
+    """Where a ray from the dial's middle at th (radians anticlockwise from +x) meets poly."""
+    o, u = v2(0.0, ZC), v2(math.cos(th), math.sin(th))
+    for i, a in enumerate(poly):
+        e = poly[(i + 1) % len(poly)] - a
+        den = u.x * e.y - u.y * e.x
+        if abs(den) < 1e-12:
+            continue
+        w = a - o
+        t = (w.x * e.y - w.y * e.x) / den
+        s = (w.x * u.y - w.y * u.x) / den
+        if t > 0.0 and -1e-9 <= s <= 1.0 + 1e-9:
+            return o + u * t
+    raise ValueError("the ray missed the outline")
+
+
+def sp_angles(hi):
+    """The angles round the dial's middle every ring of the case is sampled at: even steps plus
+    each corner's arc, so the rounds stay round."""
+    ths = [2 * math.pi * j / segs(hi, 64) for j in range(segs(hi, 64))]
+    ths += [math.atan2(p.y - ZC, p.x) % (2 * math.pi) for p in sp_outline(0.0, 4 if hi else 2)]
+    out = []
+    for t in sorted(ths):
+        if not out or t - out[-1] > math.radians(0.7):
+            out.append(t)
+    if out[0] + 2 * math.pi - out[-1] < math.radians(0.7):
+        out.pop()
+    return out
+
+
+def sp_ring(d, ths):
+    poly = sp_outline(d)
+    return [ray_hit(poly, t) for t in ths]
+
+
+def sp_case(s, hi):
+    """The barn's moulded case: walls, bottom and the rounded front and back edges as one loft,
+    back to front; the flat front round the bezel with the white trim printed on it; the back."""
+    ths = sp_angles(hi)
+    n, nr = len(ths), (3 if hi else 2)
+    rings = []
+    for side in (1, -1):
+        for k in range(nr + 1):
+            ph = 0.5 * math.pi * (k if side > 0 else nr - k) / nr
+            y = side * (SP_D - SP_E * (1.0 - math.cos(ph)))
+            rings.append([(mm(p.x), mm(y), mm(p.y)) for p in sp_ring(SP_E * (1.0 - math.sin(ph)), ths)])
+            if side > 0 and k == nr:
+                # a ring just past the round, so its bent shading stays off the flat walls
+                rings.append([(mm(p.x), mm(y - 1.0), mm(p.y)) for p in sp_ring(0.0, ths)])
+                rings.append([(mm(p.x), mm(-(y - 1.0)), mm(p.y)) for p in sp_ring(0.0, ths)])
+    s.loft(rings, SP_WALL, split=4)
+    # the front, from the edge's foot in to the bezel, the white trim band printed in it
+    t0, tw = SP["trim"]
+    rb = SP["bezel"][0][0]
+    fr = [sp_ring(d, ths) for d in (SP_E, t0, t0 + tw)]
+    fr.append([v2(rb * math.cos(t), ZC + rb * math.sin(t)) for t in ths])
+    kinds = (SP_FRONT, SP_TRIM, SP_FRONT)
+    o = s.island()
+    vs = [[s._v((mm(p.x), mm(-SP_D), mm(p.y)), Matrix()) for p in ring] for ring in fr]
+    for r in range(3):
+        for j in range(n):
+            q = [(r + 1, j), (r, j), (r, (j + 1) % n), (r + 1, (j + 1) % n)]
+            s._f([vs[a][b] for a, b in q], kinds[r], [o + v2(mm(fr[a][b].x), mm(fr[a][b].y)) for a, b in q])
+    # the back, flat; its texture coarser (a grille and four screws are all it has)
+    back, back_in = fr[0], sp_ring(SP_E + 1.5, ths)
+    o = s.island()
+
+    def uvb(p):
+        return o + v2(-mm(p.x), mm(p.y)) * 0.6
+    c = s._v((0.0, mm(SP_D), mm(ZC)), Matrix())
+    bv = [s._v((mm(p.x), mm(SP_D), mm(p.y)), Matrix()) for p in back]
+    bi = [s._v((mm(p.x), mm(SP_D), mm(p.y)), Matrix()) for p in back_in]
+    for j in range(n):
+        jn = (j + 1) % n
+        s._f([bi[j], bi[jn], bv[jn], bv[j]], SP_BACK, [uvb(back_in[j]), uvb(back_in[jn]), uvb(back[jn]), uvb(back[j])])
+        s._f([c, bi[jn], bi[j]], SP_BACK, [uvb(v2(0.0, ZC)), uvb(back_in[jn]), uvb(back_in[j])])
+    if hi:
+        for sx, sz in SP["screws"]:
+            M = T(V(sx, SP_D, sz)) @ Matrix.Rotation(math.radians(-90), 4, "X")
+            prof = [(3.4, -0.4), (3.4, 0.45), (2.9, 0.9), (1.6, 1.08), (0.0, 1.12)]
+            s.lathe([(mm(a), mm(b)) for a, b in prof], SP_SCREW, 20, M)
+
+
+def sp_dial(s, hi):
+    """The white bezel and the collar the arrow turns on, and the printed face: its own fan, its
+    texture half again as fine as the rest (the pictures are what a player looks at)."""
+    n = segs(hi, 64)
+    s.lathe([(mm(r), mm(z)) for r, z in SP["bezel"]], SP_BEZEL, n, FACE_M)
+    col = SP["collar"] + [(0.0, SP["collar"][-1][1])]
+    s.lathe([(mm(r), mm(z)) for r, z in col], SP_COLLAR, segs(hi, 32), FACE_M)
+    o, k = s.island(), 1.5
+    rings = []
+    for r in ([1.0, 0.66, 0.33] if hi else [1.0]):
+        pts = [v2(FACE_R * r * math.cos(2 * math.pi * j / n), FACE_R * r * math.sin(2 * math.pi * j / n))
+               for j in range(n)]
+        rings.append((pts, [s._v((mm(p.x), mm(p.y), mm(-FACE_IN)), FACE_M) for p in pts]))
+
+    def uvf(p):
+        return o + v2(mm(p.x), mm(p.y)) * k
+    for (pa, va), (pb, vb) in zip(rings, rings[1:]):
+        for j in range(n):
+            jn = (j + 1) % n
+            s._f([vb[j], va[j], va[jn], vb[jn]], SP_FACE, [uvf(pb[j]), uvf(pa[j]), uvf(pa[jn]), uvf(pb[jn])])
+    pl, vl = rings[-1]
+    c = s._v((0.0, 0.0, mm(-FACE_IN)), FACE_M)
+    for j in range(n):
+        jn = (j + 1) % n
+        s._f([c, vl[j], vl[jn]], SP_FACE, [uvf(v2(0.0, 0.0)), uvf(pl[j]), uvf(pl[jn])])
+
+
+def sp_roof_lines(hi):
+    """The roof's section (x, z mm), both lines right to left: its underside on the barn's roof
+    line from the right eave's tip to the left's, and its top, the underside lifted by the roof's
+    thickness, round over the knees and the ridge. Also which underside point each top point
+    stands over, and its normal."""
+    kx, kz = SP["knee"]
+    E, Kn = v2(SP_W, SP["eave"]), v2(kx, kz)
+    tip = E + (E - Kn).normalized() * RF["eave"]
+    under = [tip, Kn, v2(0.0, SP["ridge"]), v2(-kx, kz), v2(-tip.x, tip.y)]
+    segn = [out_n(under[i + 1] - under[i]) for i in range(len(under) - 1)]
+    na = 6 if hi else 3
+    top, over, nrm = [], [], []
+    for i, p in enumerate(under):
+        if i in (0, len(under) - 1):
+            qs = [segn[0] if i == 0 else segn[-1]]
+        else:
+            a1, a2 = math.atan2(segn[i - 1].y, segn[i - 1].x), math.atan2(segn[i].y, segn[i].x)
+            while a2 < a1:
+                a2 += 2 * math.pi
+            qs = [v2(math.cos(a1 + (a2 - a1) * k / na), math.sin(a1 + (a2 - a1) * k / na)) for k in range(na + 1)]
+        for q in qs:
+            top.append(p + q * RF["t"])
+            over.append(i)
+            nrm.append(q)
+    return under, top, over, nrm, segn
+
+
+def sp_roof_ring(lines, c):
+    """The roof's section as one ring, anticlockwise seen from the front (the top right to left,
+    then the underside back), shrunk c (mm) all round for its rounded ends."""
+    under, top, over, nrm, segn = lines
+    m = len(under)
+
+    def along(i):
+        if i == 0:
+            return (under[1] - under[0]).normalized()
+        if i == m - 1:
+            return (under[m - 2] - under[m - 1]).normalized()
+        return v2(0.0, 0.0)
+    T_ = [p - q * c + along(i) * c for p, q, i in zip(top, nrm, over)]
+    U_ = []
+    for i, p in enumerate(under):
+        nn = sum((segn[j] for j in (i - 1, i) if 0 <= j < m - 1), v2(0.0, 0.0)).normalized()
+        U_.append(p + nn * c + along(i) * c)
+    return T_, U_
+
+
+def sp_roof(s, hi):
+    """The slate roof: a gambrel slab over the barn's roof line, overhanging front and back and
+    running past the eaves, its ends rounded; its front and back edges flat boards."""
+    lines = sp_roof_lines(hi)
+    nt = len(lines[1])
+    Y, c = SP_D + RF["over"], 1.6
+    rings, steps = [], (3 if hi else 2)
+    for side in (1, -1):
+        for k in range(steps + 1):
+            ph = 0.5 * math.pi * (k if side > 0 else steps - k) / steps
+            T_, U_ = sp_roof_ring(lines, c * (1.0 - math.sin(ph)))
+            y = side * (Y - c * (1.0 - math.cos(ph)))
+            rings.append([(mm(p.x), mm(y), mm(p.y)) for p in T_ + list(reversed(U_))])
+            if side > 0 and k == steps:
+                rings.append([(mm(p.x), mm(y - 1.0), mm(p.y)) for p in T_ + list(reversed(U_))])
+                rings.append([(mm(p.x), mm(1.0 - y), mm(p.y)) for p in T_ + list(reversed(U_))])
+    s.loft(rings, SP_ROOF, kinds=lambda j: SP_ROOF if j < nt - 1 else SP_UNDER, split=2)
+    T_, U_ = sp_roof_ring(lines, c)
+    over = lines[2]
+    for y, sign in ((-Y, 1.0), (Y, -1.0)):
+        o = s.island()
+        vt = [s._v((mm(p.x), mm(y), mm(p.y)), Matrix()) for p in T_]
+        vu = [s._v((mm(p.x), mm(y), mm(p.y)), Matrix()) for p in U_]
+        for i in range(nt - 1):
+            a, b = over[i], over[i + 1]
+            f, P = [vu[a], vt[i], vt[i + 1]], [U_[a], T_[i], T_[i + 1]]
+            if a != b:
+                f.append(vu[b])
+                P.append(U_[b])
+            if sign < 0:
+                f.reverse()
+                P.reverse()
+            s._f(f, SP_FASCIA, [o + v2(sign * mm(p.x), mm(p.y)) for p in P])
+
+
+def sp_body(hi):
+    s = Shape()
+    sp_case(s, hi)
+    sp_dial(s, hi)
+    sp_roof(s, hi)
+    return s
+
+
+def sp_lever(hi):
+    """The yellow lever: a round-edged bar from its pivot inside the right wall out through the
+    slot, a ball knob on its end; as found raised, its rest."""
+    s = Shape()
+    M = T(LV_AT) @ Matrix.Rotation(math.radians(-LV["rest"]), 4, "Y")
+    w, t, reach, kr = LV["w"] / 2, LV["t"] / 2, LV["reach"], LV["knob"]
+    s.box((mm(-6.0), mm(-w), mm(-t)), (mm(reach - 0.6 * kr), mm(w), mm(t)), SP_LEVER,
+          chamfer=mm(2.4), segs=segs(hi, 2), M=M)
+    blob(s, (reach, 0.0, 0.0), (kr, kr, kr), SP_KNOB, hi, M, lat=12, lon=24)
+    return s
+
+
+def sp_arrow(hi):
+    """The black weathervane arrow over the face, pointing straight up as found, on its brass
+    dome hub."""
+    s = Shape()
+    z0, z1 = -FACE_IN + AR["lift"][0], -FACE_IN + AR["lift"][1]
+    hr, hw = AR["head"]
+    sw = AR["shaft"]
+    t0, t1, tw = AR["tail"]
+    b = 0.5 if hi else 0.0
+    prism(s, [(hw, hr), (0.0, AR["tip"]), (-hw, hr)], z0, z1, SP_ARROW, FACE_M, b)
+    prism(s, [(sw, t1 + 10.0), (sw, hr + 1.0), (-sw, hr + 1.0), (-sw, t1 + 10.0)], z0 + 0.2, z1 - 0.2, SP_ARROW, FACE_M, b)
+    vane = [(-0.7 * sw, t0), (-tw, t0 - 11.0), (-tw, t1), (-0.7 * sw, t1 + 12.0)]
+    prism(s, vane, z0 + 0.3, z1 - 0.3, SP_ARROW, FACE_M, b)
+    prism(s, [(-x, y) for x, y in reversed(vane)], z0 + 0.3, z1 - 0.3, SP_ARROW, FACE_M, b)
+    s.lathe([(mm(r), mm(z)) for r, z in AR["hub"]], SP_HUB, segs(hi, 32), FACE_M)
+    return s
+
+
+SP_BD = mm(0.15)            # the look's bump distance: a height of 1 stands 0.15 mm proud
+_FACE_IMG = []
+
+
+def sp_h(v):
+    """A height in mm, in the bump's units."""
+    return v / 0.15
+
+
+def face_image():
+    """The printed face (spinner_face.py) as a Blender image, drawn once."""
+    import bpy
+    if not _FACE_IMG:
+        n = 2048
+        rgba = spinner_face.draw(n)
+        rgba[..., 3] = 1.0
+        img = bpy.data.images.new("FarmSpinnerFace", n, n, alpha=False)
+        img.pixels.foreach_set(rgba.astype("float32").ravel())
+        _FACE_IMG.append(img)
+    return _FACE_IMG[0]
+
+
+def spinner_look(L, f):
+    nb = L.nb
+    xm, ym, zm = nb.mul(L.x, K.STUD_MM), nb.mul(L.y, K.STUD_MM), nb.mul(L.z, K.STUD_MM)
+
+    def sq(v):
+        return nb.mul(v, v)
+
+    def bell(d, at, w):
+        return nb.mul(nb.ss(d, at - w, at), nb.sub(1.0, nb.ss(d, at, at + w)))
+
+    def within(d, r, soft=0.16):
+        return nb.sub(1.0, nb.ss(d, r - soft, r + soft))
+
+    def hyp(a, b):
+        return nb.math("SQRT", nb.add(sq(a), sq(b)))
+
+    def star(u, v, r):
+        ph = nb.math("ARCTAN2", u, v)
+        lobe = nb.pw(nb.add(0.5, nb.mul(nb.math("COSINE", nb.mul(ph, 5.0)), 0.5)), 2.4)
+        return within(nb.sub(hyp(u, v), nb.mul(nb.add(0.38, nb.mul(lobe, 0.62)), r)), 0.0, 0.12)
+
+    wall, front, trim, back = L.k(SP_WALL), L.k(SP_FRONT), L.k(SP_TRIM), L.k(SP_BACK)
+    roof, under, fascia = L.k(SP_ROOF), L.k(SP_UNDER), L.k(SP_FASCIA)
+    bezel, face, collar = L.k(SP_BEZEL), L.k(SP_FACE), L.k(SP_COLLAR)
+    lever, knob, arrow, hub, screw = L.k(SP_LEVER), L.k(SP_KNOB), L.k(SP_ARROW), L.k(SP_HUB), L.k(SP_SCREW)
+    case = L.k(SP_WALL, SP_FRONT, SP_BACK)
+    dz = nb.sub(zm, ZC)
+    rd = hyp(xm, dz)                                  # from the dial's middle, across the front
+
+    # the case: barn-red moulded plastic, satin, a faint swirl from the mould
+    RED = nb.tint(hexc("#B3302A"), nb.mr(L.noise(5.0, 31, detail=3), 0.3, 0.7, 0.92, 1.06))
+    C = Coat(L, RED, nb.mr(L.noise(45.0, 32, detail=2), 0.3, 0.7, 0.36, 0.48), 0.0,
+             nb.mul(L.noise(400.0, 33, detail=2), sp_h(0.03)))
+    # the mould's seam round the sides, halfway back
+    C.paint(nb.mul(wall, bell(ym, 0.0, 0.35)), hexc("#C3463C"), 0.4, 0.0, sp_h(0.18))
+    # the lever's slot down the right wall, dark inside
+    sz0, sz1, shw = LV["slot"]
+    zmid, zr = (sz0 + sz1) / 2, (sz1 - sz0) / 2
+    slot_d = nb.sub(hyp(nb.mx(nb.sub(nb.absf(nb.sub(zm, zmid)), zr - shw), 0.0), ym), shw)
+    slot = nb.mul(wall, nb.mul(within(slot_d, 0.0, 0.3), nb.ss(xm, SP_W - 8.0, SP_W - 4.0)))
+    C.paint(slot, hexc("#1C0E0B"), 0.8, 0.0, sp_h(-2.0))
+    # the barn's boards pressed into the case, up the front and the sides, each a shade of its
+    # own, a dark groove between them
+    bw, gw, gd = SP["boards"]
+    side = nb.ss(nb.absf(L.nx), 0.6, 0.8)
+    run = nb.mixf(side, nb.div(nb.add(xm, bw / 2), bw), nb.div(nb.add(ym, bw / 2), bw))
+    boarded = nb.add(front, nb.mul(wall, nb.mul(side, nb.ss(zm, 2.0, 4.0))), clamp=True)
+    boarded = nb.mul(boarded, nb.sub(1.0, nb.mul(nb.mul(front, nb.ss(zm, ZC + 104.0, ZC + 108.0)),
+                                                within(hyp(nb.mul(xm, 1.0 / 18.0), nb.mul(nb.sub(zm, SP["mark"]["z"]), 1.0 / 12.0)), 1.0, 0.05))))
+    bn = nb.node("ShaderNodeTexWhiteNoise", noise_dimensions="3D")
+    nb.put(bn.inputs["Vector"], nb.comb(nb.math("FLOOR", run), side, SP["seed"]))
+    C.paint(nb.mul(boarded, 0.6), nb.tint(hexc("#B3302A"), nb.mr(bn.outputs["Value"], 0.0, 1.0, 0.9, 1.08)))
+    groove = nb.mul(boarded, nb.ss(nb.mul(nb.absf(nb.sub(nb.fract(run), 0.5)), bw), bw / 2 - gw / 2 - 0.25, bw / 2 - gw / 2 + 0.25))
+    C.paint(groove, hexc("#7E1F1B"), 0.55, 0.0, sp_h(-gd))
+    # white trim round the front, a raised moulded board; the bezel and collar white plastic
+    WHITE = hexc("#EFE9DC")
+    C.paint(trim, WHITE, 0.42, 0.0, sp_h(0.4))
+    C.paint(nb.add(bezel, collar, clamp=True), hexc("#F2EEE4"), 0.26)
+    # our maker's mark on the front gable: a cream oval plate, a gold rim, a red star
+    mk = SP["mark"]
+    gable = nb.mul(front, nb.ss(zm, ZC + 104.0, ZC + 108.0))
+    mz = nb.sub(zm, mk["z"])
+    e = hyp(nb.mul(xm, 1.0 / mk["r"][0]), nb.mul(mz, 1.0 / mk["r"][1]))
+    C.paint(nb.mul(gable, within(e, 1.0, 0.03)), hexc("#F1E6C8"), 0.34, 0.0, sp_h(0.35))
+    C.paint(nb.mul(gable, bell(e, 0.97, 0.07)), hexc("#C9A243"), 0.3, 0.6)
+    C.paint(nb.mul(gable, star(nb.sub(xm, 0.3), nb.add(mz, 0.2), mk["star"])), hexc("#C23A2C"), 0.34)
+    # the back: a round speaker grille of ring slots, four screws sunk in it
+    gr, gn = SP["grille"]
+    ring = nb.mul(bell(nb.fract(nb.div(rd, gr / gn)), 0.5, 0.2), nb.sub(1.0, nb.ss(rd, gr - 1.0, gr)))
+    spokes = nb.mul(nb.ss(nb.absf(xm), 1.6, 2.4), nb.ss(nb.absf(dz), 1.6, 2.4))
+    slots = nb.mul(nb.mul(back, nb.mul(ring, spokes)), nb.ss(rd, 4.0, 5.0))
+    C.paint(slots, hexc("#170C0A"), 0.8, 0.0, sp_h(-1.6))
+    for sx, sz in SP["screws"]:
+        ds = hyp(nb.sub(xm, sx), nb.sub(zm, sz))
+        C.paint(nb.mul(back, within(ds, 4.4, 0.25)), hexc("#2A1411"), 0.7, 0.0, sp_h(-0.8))
+        cross = nb.mx(nb.sub(1.0, nb.ss(nb.absf(nb.sub(xm, sx)), 0.35, 0.55)),
+                      nb.sub(1.0, nb.ss(nb.absf(nb.sub(zm, sz)), 0.35, 0.55)))
+        C.paint(screw, hexc("#9EA0A2"), 0.34, 1.0)
+        C.paint(nb.mul(nb.mul(screw, cross), within(ds, 2.4, 0.2)), hexc("#3A3836"), 0.6, 0.6, sp_h(-0.5))
+
+    # the roof: slate-blue pressed shingles in rows up each slope, tabs staggered row to row,
+    # each shingle a shade of its own; a plain cap along the ridge and a flashing at the knees
+    kx, kz = SP["knee"]
+    Kn, Rg, E = v2(kx, kz), v2(0.0, SP["ridge"]), v2(SP_W, SP["eave"])
+    tip = E + (E - Kn).normalized() * RF["eave"]
+    ul, uu, Ll = (Kn - tip).normalized(), (Rg - Kn).normalized(), (Kn - tip).length
+    ax = nb.absf(xm)
+    s_lo = nb.add(nb.mul(nb.sub(ax, tip.x), ul.x), nb.mul(nb.sub(zm, tip.y), ul.y))
+    s_up = nb.add(Ll, nb.add(nb.mul(nb.sub(ax, Kn.x), uu.x), nb.mul(nb.sub(zm, Kn.y), uu.y)))
+    upper = nb.ss(L.nz, 0.8, 0.9)
+    sr = nb.mixf(upper, s_lo, s_up)
+    row = nb.div(sr, RF["row"])
+    fr_ = nb.fract(row)
+    rown = nb.math("FLOOR", row)
+    col = nb.div(nb.add(ym, nb.mul(nb.fract(nb.mul(rown, 0.5)), RF["tab"])), RF["tab"])
+    wn = nb.node("ShaderNodeTexWhiteNoise", noise_dimensions="3D")
+    nb.put(wn.inputs["Vector"], nb.comb(rown, nb.math("FLOOR", col), SP["seed"]))
+    cap = nb.sub(1.0, nb.ss(ax, 8.0, 10.0))
+    flash = nb.sub(1.0, nb.ss(nb.absf(nb.sub(sr, Ll)), 4.0, 5.5))
+    plain = nb.add(cap, flash, clamp=True)
+    shing = nb.mul(roof, nb.sub(1.0, plain))
+    SLATE = nb.tint(nb.mixc(nb.ss(L.noise(4.0, 34, detail=3), 0.4, 0.7), hexc("#3F5D7B"), hexc("#4A6884")),
+                    nb.mr(wn.outputs["Value"], 0.0, 1.0, 0.84, 1.1))
+    step = nb.mul(nb.sub(1.0, fr_), nb.ss(fr_, 0.0, 0.05))
+    gap = nb.mul(nb.ss(nb.absf(nb.sub(nb.fract(col), 0.5)), 0.455, 0.475), nb.sub(1.0, nb.ss(fr_, 0.55, 0.65)))
+    C.paint(roof, SLATE, 0.62, 0.0)
+    C.paint(shing, height=nb.mul(nb.sub(step, nb.mul(gap, 0.8)), sp_h(0.7)))
+    C.paint(nb.mul(shing, nb.mul(nb.sub(1.0, nb.ss(fr_, 0.0, 0.12)), 0.35)), hexc("#2C435A"))
+    C.paint(nb.mul(shing, gap), hexc("#243649"), 0.7)
+    C.paint(nb.mul(roof, plain), hexc("#35506B"), 0.5)
+    C.paint(nb.mul(roof, bell(nb.absf(nb.sub(sr, Ll)), 4.8, 0.5)), height=sp_h(0.3))
+    # chalky where the sun got at it: the top faded paler
+    C.paint(nb.mul(nb.mul(roof, L.up), nb.mul(nb.ss(L.noise(7.0, 35, detail=4), 0.45, 0.8), 0.4)), hexc("#7B8FA3"), 0.75)
+    C.paint(under, hexc("#2B3F55"), 0.6)
+    # the roof's boards front and back, white, rubbed through here and there to the blue
+    C.paint(fascia, WHITE, 0.45)
+    C.paint(nb.mul(fascia, nb.ss(L.noise(16.0, 36, detail=4, rough=0.6), 0.62, 0.7)), hexc("#5D7590"), 0.5)
+
+    # the printed face: a varnished litho, faded a touch with years of sun
+    img = face_image()
+    tex = nb.node("ShaderNodeTexImage", image=img, interpolation="Cubic", extension="EXTEND")
+    nb.put(tex.inputs["Vector"], nb.comb(nb.add(nb.mul(xm, 0.005), 0.5), nb.add(nb.mul(dz, 0.005), 0.5), 0.0))
+    PRINT = nb.mixc(0.1, tex.outputs["Color"], hexc("#F2E6C6"))
+    C.paint(face, PRINT, 0.3, 0.0)
+    # rubbed where fingers went: low down, and on the right toward the lever; the ink worn thin
+    # to the paper there, and greasy smudges dulling the varnish
+    where = nb.add(nb.mul(nb.sub(1.0, nb.ss(dz, -90.0, -30.0)), 0.7), nb.mul(nb.ss(xm, 30.0, 95.0), 0.5), clamp=True)
+    rub = nb.mul(face, nb.mul(nb.ss(L.noise(11.0, 41, detail=4, rough=0.6), 0.5, 0.72), where))
+    C.paint(nb.mul(rub, 0.4), hexc("#EADFC3"), 0.45)
+    C.paint(nb.mul(face, nb.ss(L.noise(22.0, 42, detail=3), 0.58, 0.7)), rough=0.5)
+    # a fine ring scratched round it where the arrow's tip has dragged for years
+    drag = nb.mul(nb.mul(face, bell(rd, AR["tip"] - 1.5, 0.5)), nb.ss(L.noise(30.0, 43, detail=2), 0.35, 0.5))
+    C.paint(nb.mul(drag, 0.7), hexc("#EFE6D2"), 0.4, 0.0, sp_h(-0.1))
+    sn = L.noise(700.0, 44, stretch=(0.05, 1.0, 0.05), detail=2)
+    C.paint(nb.mul(nb.mul(face, nb.ss(sn, 0.73, 0.77)), 0.6), hexc("#E8DECA"), 0.4)
+
+    # the lever and knob: glossy yellow plastic, a seam round the knob's middle
+    YEL = nb.tint(hexc("#F0B20A"), nb.mr(L.noise(8.0, 51, detail=2), 0.3, 0.7, 0.94, 1.04))
+    C.paint(nb.add(lever, knob, clamp=True), YEL, 0.28)
+    C.paint(nb.mul(knob, bell(ym, 0.0, 0.3)), hexc("#D99C08"), 0.35, 0.0, sp_h(0.15))
+    # the arrow: black plastic, glossy, scuffed pale on its edges; its hub brass, tarnished
+    C.paint(arrow, hexc("#1A1C21"), 0.26)
+    C.paint(nb.mul(nb.mul(arrow, L.edge(0.004, k=4.0)), nb.ss(L.noise(40.0, 52, detail=3), 0.5, 0.65)),
+            hexc("#4A4C52"), 0.45)
+    BRASS = nb.mixc(nb.ss(L.noise(20.0, 53, detail=4), 0.45, 0.7), hexc("#C9A048"), hexc("#7E6431"))
+    C.paint(hub, BRASS, nb.mr(L.noise(20.0, 53, detail=4), 0.45, 0.7, 0.24, 0.5), 1.0)
+    # the case scuffed pale on its edges and corners, the low ones most, from years of floors
+    scuff = nb.mul(nb.mul(case, L.edge(0.006, k=4.0)), nb.ss(L.noise(26.0, 54, detail=4, rough=0.6), 0.5, 0.64))
+    scuff = nb.mul(scuff, nb.add(0.45, nb.mul(nb.sub(1.0, nb.ss(zm, 10.0, 60.0)), 0.55)))
+    C.paint(nb.mul(scuff, 0.7), hexc("#D98B7E"), 0.55)
+    C.finish(f.dust, grime=0.5)
+    return C.surface(bump_dist=SP_BD, bump=1.0)
+
+
+# --- how it plays ---------------------------------------------------------------------------------
+
+def spinner_pull():
+    """The lever pulled down to its stop and let go: it snaps back past its rest and settles;
+    the snap flicks the arrow round three and a quarter turns, slowing, and it hops over the
+    last three animals into its notch. The toy tips toward the lever as it's pressed and hops as
+    the lever slams back. Returns the duration, the tracks and the arrow's clicks (s)."""
+    lift, t_lift = PU["lift"]
+    down, t_down = PU["down"]
+    snap, t_snap = PU["snap"]
+    t1 = t_lift
+    t2 = t1 + t_down
+    t3 = t2 + PU["hold"]
+    t4 = t3 + t_snap
+    lever = [(0.0, 0.0), (t1, lift, "Sine", "Out"), (t2, down, "Quad", "In"),
+             (t2 + 0.025, down - 2.5, "Quad", "Out"), (t3, down, "Quad", "In"), (t4, snap, "Quad", "In")]
+    t = t4
+    for v, dt in PU["settle"]:
+        t += dt
+        lever.append((t, v, "Sine", "InOut"))
+    tilt = PU["tilt"]
+    up = mm(SP_W * math.sin(math.radians(tilt)))     # the lever's side stays on the floor
+    roll = [(0.0, 0.0), (t1, 0.0), (t2, tilt, "Sine", "InOut"), (t3, tilt), (t3 + 0.07, 0.0, "Quad", "In")]
+    hop = mm(PU["hop"])
+    z = [(0.0, 0.0), (t1, 0.0), (t2, up, "Sine", "InOut"), (t3, up), (t3 + 0.07, 0.0, "Quad", "In"),
+         (t4, 0.0), (t4 + 0.035, hop, "Quad", "Out"), (t4 + 0.09, 0.0, "Quad", "In"),
+         (t4 + 0.12, hop * 0.2, "Quad", "Out"), (t4 + 0.15, 0.0, "Quad", "In")]
+    sp = PU["spin"]
+    a0 = t3 + sp["after"]
+    ang, t = sp["free"], a0 + sp["time"]
+    arrow = [(0.0, 0.0), (a0, 0.0), (t, ang, "Quart", "Out")]
+    w1, w2 = PU["wobble"]
+    clicks = []
+    for step, pause in PU["ticks"]:
+        ang += 45.0
+        arrow += [(t + step, ang + w1, "Sine", "InOut"), (t + step + 0.05, ang + w2, "Quad", "InOut"),
+                  (t + step + 0.09, ang, "Sine", "Out")]
+        clicks.append(round(t + step, 3))
+        t += step + 0.09 + pause
+
+    def r4(ks):
+        return [(round(k[0], 4),) + tuple(k[1:]) for k in ks]
+    tracks = [("Lever", "turn", r4(lever)), ("Arrow", "turn", r4(arrow)),
+              ("Body", "roll", r4(roll)), ("Body", "z", r4(z))]
+    return PU["end"], tracks, clicks
+
+
+SP_DUR, SP_TRACKS, SP_CLICKS = spinner_pull()
+
+FARM_SPINNER = kit.Find(
+    "FarmSpinner",
+    [kit.Part("Body", sp_body),
+     kit.Part("Lever", sp_lever, tuple(LV_AT), "Body", (0.0, 1.0, 0.0)),
+     kit.Part("Arrow", sp_arrow, tuple(AR_AT), "Body", (0.0, 1.0, 0.0))],
+    spinner_look,
+    motions={
+        # pulled by a kid: the lever down and let go, the arrow spun to an animal (the game
+        # plays a click at each of SP_CLICKS and the animal's noise as it stops)
+        "Pull": dict(duration=SP_DUR, focus=(mm(20.0), mm(-30.0), mm(150.0)), distance=0.9,
+                     view=(0.8, -2.0, 0.45), drop=0.0, tracks=SP_TRACKS),
+    },
+    dust=SP["dust"], seed=SP["seed"], big=True, texels=800,
+)
+
+
 FINDS = [CYMBAL_MONKEY, JACK_IN_THE_BOX, CHATTERING_TEETH, WALKING_ROBOT, WINDUP_MOUSE, TIN_BIRD,
-         SIREN_CAR, RUBBER_DUCK, KAZOO, TOY_DRUM]
+         SIREN_CAR, RUBBER_DUCK, KAZOO, TOY_DRUM, FARM_SPINNER]
 
 if __name__ == "__main__":
     kit.main("Windups", HERE, FINDS)

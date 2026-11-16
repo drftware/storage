@@ -6,8 +6,7 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04g, the farm-animal spinner (step 5), carried on: its printed face is done
-(`windups/spinner_face.py`); build the toy round it from the newest note's plan. The
+**Next:** F-04h, the pull-string cowboy doll (step 6): its hints are the newest note. The
 oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next
 touched.
 
@@ -33,7 +32,7 @@ changes the table's order a little.
    **F-04f2**, the toy drum (built Nov 16; a kid's tin
    drum with zigzag rope sides, the tell from a doorway, and two sticks; a stick comes down, the
    head shivers, the stick bounces off).
-5. **F-04g** Farm-animal spinner alone (pull: the lever comes down and snaps back, the arrow
+5. **F-04g** (built Nov 16) Farm-animal spinner alone (pull: the lever comes down and snaps back, the arrow
    spins, slows and ticks to a stop on an animal). The work is the face: eight little animal
    pictures drawn in code that read in the hand. Our own toy, not the famous one.
 6. **F-04h** Pull-string cowboy doll alone (cloth body, vinyl head, hat, a ring on a string in
@@ -90,6 +89,28 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04g (the farm-animal spinner built; step 5 done; uploaded, not imported).**
+  `FarmSpinner` in `windups/build.py` (`sp_*`, `spinner_look`, `spinner_pull`; spec `SPINNER`,
+  `PULL`), README section, D-240, `Order.luau`. A red barn case with pressed boards, a slate
+  gambrel roof slab overhanging it, white trim, the printed face in a white bezel, a black
+  weathervane arrow, a yellow ball lever on the right. Judged on quick sheets twice and full
+  sheets once. FBX uploaded (104775452079091); not imported: the session hit its context cap,
+  so the set's Studio look (F-04k) imports it. **Found:** a flat face meeting a smooth round
+  streaks in the normal bake (the hi mesh's shading bends across long triangles): give it a
+  sharp foot or a ring just past the round (D-240). Export with a find name writes the set's
+  Luau unformatted (9000 lines of diff) until `scripts/check.sh` runs StyLua; that's fine.
+  The pig's ear on the face still reads a little like a horn (`spinner_face.py`, `pig`).
+  **F-04h's hints (step 6, not researched):** look at vintage pull-string talking cowboy dolls
+  on museum, auction and collector pages (at least four photos): about 15 to 16 in tall, a
+  cloth body with sewn joints, a vinyl head and hands, a felt or vinyl hat, a plastic ring on a
+  cord out of the back. Ours must not read as a famous film's cowboy: other clothes (say a
+  plaid shirt, a fringed suede vest, jeans), other colours and its own face. Parts: `Body`
+  (root, sitting or lying as found), `Ring` (moves out along the cord's line from the back),
+  `ArmL`, `ArmR` (turning at the shoulders); maybe `Jaw` if the mouth moves. Motion `Pull`: the
+  ring pulled out about 120 mm (0.4 s), let go, the cord zips back in over 2 to 3 s while the
+  arms jiggle and the head nods; the first cloth find, so its look needs a woven cloth bump and
+  stitched seams. Its six lines need recorded audio we own: that question goes in `OWNER.md`.
 
 - **Nov 16, F-04g (the farm-animal spinner half built: its face drawn and judged; stopped at the
   context cap with no 3D yet; not ticked, nothing uploaded).** `windups/spinner_face.py` draws
@@ -1047,7 +1068,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Toy drum | Uncommon | Bang: loud |  | Nov 16, F-04f2 |
 | Wind-up mouse | Uncommon | Wind: it zips off and squeaks wherever it stops |  | Nov 16, F-04d |
 | Wind-up walking robot | Uncommon | Wind: it clanks off in a straight line for 15 seconds | A noise you can send down a hall | Nov 16, F-04c2 |
-| Farm-animal spinner | Uncommon | Pull: the arrow spins and an animal noise plays | A throwback toy | |
+| Farm-animal spinner | Uncommon | Pull: the arrow spins and an animal noise plays | A throwback toy || Nov 16, F-04g |
 | Jack-in-the-box | Uncommon | Wind: a tune, then a bang as it pops | The bang comes a few seconds after you let go | Nov 15, F-04b |
 | Cymbal monkey | Rare | Wind: it bashes its cymbals for 20 seconds, loud | The strongest lure in the set | Nov 15, F-04a |
 | Pull-string cowboy doll | Rare | Pull: it says one of six lines |  | |

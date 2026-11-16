@@ -553,3 +553,69 @@ BANG = dict(
     jolt=(0.5, 1.5),              # mm the whole drum gives under a hit, and under the double
     end=2.3,                      # all still by (s)
 )
+
+# --- The farm-animal spinner: a talking farm toy of our own, a red barn with a dial ------------
+# References (README): the classic talking farm spinner is about 10.5 x 10 x 3 in (267 x 254 x
+# 76 mm): a moulded plastic case, a paper litho face of animals in a ring, an arrow over it on
+# the dial's axle, pulled by a handle or string, a metal mechanism inside. Ours is a squat red
+# barn with a slate-blue gambrel roof, a white bezel round its own printed face
+# (spinner_face.py), a yellow lever down its right side and a black weathervane arrow.
+SPINNER = dict(
+    w=250.0,                      # across the walls (9.8 in)
+    d=72.0,                       # front to back, walls (2.8 in)
+    eave=206.0,                   # the walls' height, where the roof starts
+    knee=(88.0, 252.0),           # the gambrel roof's knees (x either side, z): the barn's tell
+    ridge=274.0,                  # the roof line's top (10.8 in), before the roof's own thickness
+    rounds=dict(foot=10.0, eave=8.0, knee=6.0, ridge=6.0),
+    # the outline's corners rounded this much (mm), as a moulded case's are
+    edge=5.0,                     # the front and back edges rounded this much (mm)
+    dial=124.0,                   # the dial's middle, this high (mm)
+    bezel=[(106.0, 0.0), (106.0, 1.6), (105.2, 3.1), (103.0, 4.0), (99.0, 4.0), (97.5, 2.5), (97.0, -1.5)],
+    # the white bezel round the face (r, out from the front mm): it stands 4 proud, square off
+    # the front (a smooth foot bends the front's shading into streaks), and the
+    # printed face lies 1.5 in, under its lip from r 97 (the print is drawn to r 100)
+    collar=[(16.5, -1.5), (16.5, 0.6), (15.6, 1.6), (13.5, 1.9)],
+    # the white collar the arrow turns on (r, out from the front mm)
+    trim=(6.0, 3.0),              # a white band printed round the front, this far in, this wide
+    boards=(14.0, 1.2, 0.35),     # the barn's boards pressed in the case: wide, groove wide, deep (mm)
+    roof=dict(t=7.0, over=5.0, eave=10.0, row=11.5, tab=13.0),
+    # the roof: its thickness, how far it overhangs front and back, how far it runs past the
+    # eaves down its slope, and its pressed shingles' rows up the slope and tabs along it (mm)
+    lever=dict(pivot=(105.0, 0.0, 150.0), reach=75.0, w=12.0, t=8.0, knob=15.0, rest=30.0,
+               slot=(126.0, 168.0, 8.0)),
+    # the yellow lever: its pivot inside the right wall, the knob's middle this far out, the
+    # arm this wide (front to back) and thick, the ball knob's radius, raised this many degrees
+    # as found; it comes out through a slot in the right wall (z from, z to, half wide)
+    arrow=dict(tip=56.0, head=(38.0, 9.0), shaft=2.2, tail=(-26.0, -54.0, 12.0), lift=(4.0, 7.0),
+               hub=[(13.0, 0.8), (13.0, 2.0), (12.0, 4.2), (9.5, 6.4), (5.5, 7.8), (0.0, 8.3)]),
+    # the black weathervane arrow: its tip this far out, its head's back (r, half wide), the
+    # shaft's half width, the swallow-tail fletch (from, to, half wide), how high over the face
+    # it lies (mm out from the face), and its brass dome hub (r, out from the front mm)
+    screws=[(-95.0, 30.0), (95.0, 30.0), (-72.0, 214.0), (72.0, 214.0)],
+    grille=(34.0, 6),             # the round speaker grille on the back: radius (mm), rings of slots
+    mark=dict(z=251.0, r=(15.0, 9.5), star=6.0),
+    # our maker's mark on the front gable: an oval cream plate rimmed in gold with a red star
+    dust=0.45, seed=127.0,
+)
+
+# How it plays (the Pull action): a kid pulls the lever down to its stop and lets go; it snaps
+# back up, past where it rests, and settles; the snap flicks the arrow, which spins fast,
+# slows, then ticks over the last three animals, each a quick hop into the next notch, to stop
+# on one. The toy tips a hair toward the lever as it's pulled and hops as the lever slams back.
+PULL = dict(
+    lift=(-4.0, 0.08),            # the lever first lifts this far (degrees), this long (s)
+    down=(70.0, 0.24),            # then comes down this far past rest, in this long (s)
+    hold=0.06,                    # held at the bottom (s)
+    snap=(-8.0, 0.09),            # let go: back up this far past rest, this fast (s)
+    settle=[(3.0, 0.06), (-1.2, 0.05), (0.0, 0.05)],    # two bounces at its stop (degrees, s)
+    tilt=0.8,                     # degrees the far side lifts as the lever is pressed down
+    hop=0.7,                      # mm the toy hops as the lever slams back to its stop
+    spin=dict(after=0.02, free=1170.0, time=1.8),
+    # the arrow starts this long after the lever leaves the bottom, and spins this far (three
+    # and a quarter turns), slowing all the way, this long (s)
+    ticks=[(0.10, 0.12), (0.12, 0.2), (0.15, 0.0)],
+    # then three 45-degree hops into the next notch: each this long, then a pause (s)
+    wobble=(4.0, -1.5),           # each hop overshoots the notch this far, then back this far
+    end=3.45,                     # all still by (s); it stops at 1305 degrees: three turns and
+    # five animals on. The game picks the animal by adding a multiple of 45 to every spin key.
+)

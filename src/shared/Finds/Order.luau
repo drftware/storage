@@ -14,6 +14,7 @@ return {
 	RubberDuck = { "Squeeze" },
 	Kazoo = { "Blow" },
 	ToyDrum = { "Bang" },
+	FarmSpinner = { "Pull" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },
