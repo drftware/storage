@@ -71,9 +71,10 @@ nowhere else.
   2. Open `packed-path.png` (in the path, the torch on the right-hand wall) and
      `packed-clearing.png` (round the bend at the back, the marked box waiting). Tell the next
      session if any box looks wrong up close, or if the walls feel too tidy or too messy.
-- [ ] **Walk a packed unit** (B-05b2, D-217, D-218). Seen in Play by Claude: the stacks, the
-  path, and a Mannequin walking out by the bend. Not seen: the box's new corner (Studio stopped
-  drawing), the phone camera, the saw.
+- [ ] **Walk a packed unit** (B-05b2, D-217, D-218, D-219). Seen in Play by Claude: the stacks,
+  the path, and a Mannequin walking out by the bend. Not seen: the box's new corner (Studio stopped
+  drawing), the sleeper's new spot round the bend with its box behind it, the phone camera, the
+  saw.
   1. In Studio, set Workspace's `DevFloorSeed` to 2000013 and `DevFloorNumber` to 3, then Play.
      Output says "Deals: packed with boxes on floor 3: Unit302, Unit303, ..." (eight units).
   2. Lift Unit302. Look for: a
@@ -84,9 +85,12 @@ nowhere else.
   3. Set Studio's device to a small phone sideways and walk the path: the stacks close round
      you. Look for the camera clipping into boxes as you turn right into the clearing, and open
      the box there.
-  4. Lift Unit316 (Output: "held the Mannequin, asleep"). It stands at the far end of the
-     clearing, round the bend to the right. Blow an air horn at the doorway: it turns out to the
-     bend and comes straight down the path's middle at you, through no box.
+  4. Lift Unit316 (Output: "held the Mannequin, asleep"). From the doorway you see nothing of it:
+     look for any shoulder or hand poking past the last stack. Walk to the bend: it stands just
+     round the corner to the right, side-on, facing you. If the unit holds a box (the code's note
+     or coins), the box stands behind it at the far end; reach past the Mannequin and Open it.
+     Back at the doorway, blow an air horn: it turns out to the bend and comes straight down the
+     path's middle at you, never through its box.
   5. Saw a crawl hole into a packed unit from the unit beside it: there is no Crawl button, and
      the hole shows boxes.
 - [ ] **Decide (defaults in, B-05b1, D-216, D-217): packed units.**

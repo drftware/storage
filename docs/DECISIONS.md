@@ -5800,3 +5800,24 @@ beside its box, 2.1 across, so that box can't come nearer the path than it stand
   wall breaks the tie.
 - A sleeper with a box in its clearing walks through it at the bend; a ROADMAP polish line.
 Not chosen: a deeper clearing (re-lays every unit's stacks); a glow from the box (a polish line).
+
+## D-219 A sleeper waits just round the bend, its box behind it (B-05b2b fix, Nov 15)
+- **The moment:** you walk the dark path, turn the corner, and the Mannequin is right there,
+  side-on to the doorway and facing you; the marked box waits behind it at the far end, and you
+  reach past it to open the box. Its walk out, woken, goes straight to the bend and never
+  crosses the box. DOORS' Library works the same way: the books you need lie past Figure, and
+  one loud move brings it to you.
+- **Why side-on:** beside the path the clearing is 4.1 across. Facing the doorway a sleeper is 2.1
+  across, so it, the half stud kept round it and a 1.8 box need 4.4. Side-on it is 1.5, leaving
+  0.3, less than a step of the spot grid, so its floor stands flush with the path's line
+  (`PackedLayout` `hide`, `face`).
+- **Reaching the box:** a player can't get round the sleeper, but keepers don't block players
+  (the Mannequin's parts don't collide) and the box's Open reaches 7 studs with no line-of-sight
+  check, so it opens from the bend.
+- **The path's end stays clear:** with a sleeper laid, Deals keeps everything laid after it (the
+  note's or coins' box, loose coins, a battery, stuff) off the path's end (`walk`), so the box
+  can't fall back to the walk when it can't turn to face the doorway behind the sleeper.
+- A guard (a padlocked unit's keeper) still stands at the path's end beside its box at the lure
+  (D-218), facing the doorway. A box with no keeper still peeks.
+Not chosen: a deeper clearing (re-lays every unit's stacks, D-218); bending the walk round the
+box (the floor in front of it is 1.27, the Mannequin 1.89 across).

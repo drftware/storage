@@ -48,7 +48,8 @@ export type Unit = {
 	-- give, and never within `DealSpot.Stack` of `stacks`, the floor its stacks stand on (a
 	-- polygon each, never given up). A find, or the box it or the unit's note or coins come in,
 	-- goes nearest `lure` (x, z), just round the bend, so a sliver of it shows from the doorway; a
-	-- keeper goes nearest `nook`, the clearing's hidden end, and walks out by the bend.
+	-- keeper goes nearest `nook`, the clearing's hidden end (a sleeper: `hide`, below), and walks
+	-- out by the bend.
 	room: { number }?,
 	stacks: { { number } }?,
 	lure: { number }?,
@@ -56,6 +57,13 @@ export type Unit = {
 	-- where a box with no keeper to stand beside it goes instead of `lure` (B-05b2b): its near
 	-- corner just inside the path's line, so it shows from the doorway. Passed as `near`.
 	peek: { number }?,
+	-- where a keeper sleeps (B-05b2b fix, D-219): `hide` (x, z) just round the bend, flush with
+	-- the path's line, standing at `face`, side-on to the doorway and facing the path; then a box
+	-- goes behind it at `nook`. `walk` is the path's end, which its walk out turns on: what's
+	-- laid after it keeps clear of it (Deals passes it in `taken`). Passed as `near` and `yaw`.
+	hide: { number }?,
+	face: number?,
+	walk: { number }?,
 }
 export type Thing = "Tool" | "Find" | "Keeper" | "Coins" | "Battery"
 -- A thing's size as it stands at yaw 0: X across, Z along (front to back), Y tall.
@@ -310,7 +318,8 @@ local function search(
 	holes: { { number } },
 	n: number,
 	turn: number,
-	behind: boolean
+	behind: boolean,
+	standing: number?
 ): { Spot }
 	local across, along = size.across, size.along
 	local found: { Spot } = {}
@@ -337,6 +346,10 @@ local function search(
 			then { DealSpot.From[thing] }
 			else { DealSpot.From[thing], 0 }
 		for _, from in tiers do
+			-- at the turn asked for (a sleeper side-on round a packed unit's bend), if it fits
+			if standing and #found == 0 then
+				found = spots(unit, across, along, sight, holes, from, to, standing, 0, false)
+			end
 			for way = 1, 3 do
 				if #found == 0 then
 					local straight = way > 1
@@ -364,6 +377,8 @@ end
 	given, takes the spot that fits nearest it rather than the unit's own: the Packrat at the back
 	of its unit and its pile at its feet (S2-06b2b). In a packed unit (`unit.room`) a find or box
 	takes the spot nearest its `lure` and a keeper nearest its `nook`, unless `near` is given.
+	`yaw`, if given, stands a find or keeper at that turn where it fits, before facing the doorway:
+	a sleeper round a packed unit's bend, facing the path (`unit.hide`, `unit.face`).
 ]]
 function DealSpot.inUnit(
 	unit: Unit,
@@ -372,7 +387,8 @@ function DealSpot.inUnit(
 	note: number?,
 	number: string,
 	taken: { { number } }?,
-	near: { number }?
+	near: { number }?,
+	yaw: number?
 ): Spot?
 	local n = math.floor(math.abs(tonumber(number) or 0))
 	local turn = DealSpot.Turns[(n * 3) % #DealSpot.Turns + 1]
@@ -403,7 +419,7 @@ function DealSpot.inUnit(
 			{ keep = kept, behind = false },
 		}
 	do
-		found = search(unit, thing, size, sight, try.keep, n, turn, try.behind)
+		found = search(unit, thing, size, sight, try.keep, n, turn, try.behind, yaw)
 		if #found > 0 then
 			break
 		end

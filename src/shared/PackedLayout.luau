@@ -48,9 +48,17 @@ export type Layout = {
 	bend: { x: number, z: number },
 	-- (x, z) where what the unit holds goes (DealSpot.Unit's `lure` and `nook`): the back wall
 	-- just round the bend, so a sliver of a box there shows from the doorway (D-215's lure), and
-	-- the clearing's far end at the side wall, out of sight, where a keeper sleeps
+	-- the clearing's far end at the side wall, out of sight, where a box goes behind a sleeper
 	lure: { number },
 	nook: { number },
+	-- where a keeper sleeps (D-219): `hide` (x, z) just round the bend, its floor flush with the
+	-- path's line, standing at `face`, side-on to the doorway and facing the path, so whoever comes
+	-- round the corner meets it face to face; the box goes behind it at `nook`, so its walk out to
+	-- the bend never crosses the box. `walk` is the path's end (a polygon), the floor that walk
+	-- turns on, kept clear of all that's laid after the keeper.
+	hide: { number },
+	face: number,
+	walk: { number },
 	-- (x, z) where a box goes when no keeper must stand beside it (DealSpot.Unit's `peek`, B-05b2b):
 	-- the back wall, its near corner `Peek` inside the path's line, so it shows straight down the
 	-- path from anywhere in the doorway
@@ -287,6 +295,16 @@ function PackedLayout.lay(
 		-- a box's middle a stud off the back wall: a point on the wall itself ties a spot deeper
 		-- in the path with the one round the corner, and the first found won
 		peek = { (-P - PackedLayout.Peek) * m, B - 1 },
+		-- side-on, the sleeper is `Keeper.along` across the floor: beside the path the clearing is
+		-- 4.1 across, and the sleeper, the room kept round it (`DealSpot.Apart`) and a 1.8 box
+		-- leave 0.3, less than a step of the spot grid, so its floor stands flush with the path's
+		-- line, its back to the back wall
+		hide = {
+			(-P - DealSpot.Keeper.along / 2) * m,
+			B - DealSpot.Keeper.across / 2,
+		},
+		face = -90 * m,
+		walk = rect(-P, C, P, B),
 	}
 end
 

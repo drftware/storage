@@ -199,6 +199,7 @@ function Deals.new(): Deals
 			end
 			size.room, size.stacks, size.lure, size.nook, size.peek =
 				layout.clearing, stacks, layout.lure, layout.nook, layout.peek
+			size.hide, size.face, size.walk = layout.hide, layout.face, layout.walk
 		end
 		-- the note's place on the back wall: kept clear only while a note is stuck there (the
 		-- fallback, `layNoteBox`); since B-04a a note comes in its box
@@ -385,7 +386,17 @@ function Deals.new(): Deals
 				end
 				return nil, nil, nil, false
 			end
-			local spot = DealSpot.inUnit(size, "Keeper", DealSpot.Keeper, note, number)
+			-- in a packed unit, just round the bend facing the path (D-219)
+			local spot = DealSpot.inUnit(
+				size,
+				"Keeper",
+				DealSpot.Keeper,
+				note,
+				number,
+				nil,
+				size.hide,
+				size.face
+			)
 			if spot then
 				return at(spot), DealSpot.around(spot, DealSpot.Keeper), spot, false
 			end
@@ -454,6 +465,12 @@ function Deals.new(): Deals
 			local middle = if pile and spot
 				then layPile(unit, deck, index, pile, spot, taken)
 				else nil
+			-- a packed unit's sleeper walks out over the path's end: nothing laid after it goes
+			-- there (D-219)
+			local walk = shape(deck, index).walk
+			if spot and walk and not pile then
+				table.insert(taken, walk)
+			end
 			return place, place, taken, middle, boxed
 		end
 		local size, number, note = shape(deck, index)
@@ -511,21 +528,24 @@ function Deals.new(): Deals
 
 	-- Stands unit `unit`'s coins (B-03b) in a marked box of their own where a find would stand
 	-- (behind the bulb, facing the doorway), clear of `taken` (the floor its loose find or tool, or
-	-- its keeper, takes): coins with no find or tool box to go in. Where the box stands and the
-	-- floor it takes, or nil if it can't (no room, no template).
+	-- its keeper, takes): coins with no find or tool box to go in. `asleep`: a keeper sleeps in the
+	-- unit, so in a packed one the box goes behind it (D-219). Where the box stands and the floor it
+	-- takes, or nil if it can't (no room, no template).
 	local function layCoinBox(
 		unit: Model,
 		deck: Deal.Deck,
 		index: number,
 		count: number,
-		taken: { { number } }
+		taken: { { number } },
+		asleep: boolean
 	): (CFrame?, { number }?)
 		local boxes = markedBoxes
 		if not boxes then
 			return nil, nil
 		end
 		local size, number, note = shape(deck, index)
-		local spot = DealSpot.inUnit(size, "Find", BOX_FOOTPRINT, note, number, taken, size.peek)
+		local near = if asleep then size.nook else size.peek
+		local spot = DealSpot.inUnit(size, "Find", BOX_FOOTPRINT, note, number, taken, near)
 		if not spot then
 			return nil, nil
 		end
@@ -538,23 +558,25 @@ function Deals.new(): Deals
 
 	-- Stands unit `unit`'s marked box holding the code's note `text` (B-04a) and the unit's `count`
 	-- coins where a find would stand (behind the bulb, facing the doorway), clear of `taken` (its
-	-- keeper's floor). The floor it takes; with no room or template the note goes on the back
-	-- wall as before (D-044), so the code is never lost.
+	-- keeper's floor). `asleep`: as `layCoinBox`. The floor it takes; with no room or template the
+	-- note goes on the back wall as before (D-044), so the code is never lost.
 	local function layNoteBox(
 		unit: Model,
 		deck: Deal.Deck,
 		index: number,
 		text: string,
 		count: number,
-		taken: { { number } }
+		taken: { { number } },
+		asleep: boolean
 	): { number }?
 		local slot = deck.floor.slots[index]
 		local note: MarkedBoxes.Note =
 			{ text = text, size = slot.size, number = slot.number :: string }
 		local boxes = markedBoxes
 		local size, number = shape(deck, index)
+		local near = if asleep then size.nook else size.peek
 		local spot = if boxes
-			then DealSpot.inUnit(size, "Find", BOX_FOOTPRINT, nil, number, taken, size.peek)
+			then DealSpot.inUnit(size, "Find", BOX_FOOTPRINT, nil, number, taken, near)
 			else nil
 		if boxes and spot and boxes:stand(unit, placed(unit, spot), nil, count, note) then
 			return DealSpot.around(spot, BOX_FOOTPRINT)
@@ -619,6 +641,8 @@ function Deals.new(): Deals
 		local dev = devDeal(contents)
 		local packing = layStacks(unit, deck, index)
 		local place, keeper, taken, pileAt, boxed = lay(unit, deck, index, contents, dev)
+		-- a keeper sleeps here, not standing guard: a box laid now goes behind it (D-219)
+		local asleep = keeper ~= nil and not contents.beside and not contents.pile
 		-- its coins (B-03b): in its box with its find or tool; else in a box of their own; loose
 		-- on the floor only where no box can stand
 		local count = contents.coins
@@ -632,7 +656,8 @@ function Deals.new(): Deals
 				index,
 				Deal.noteText(deck, note),
 				if boxed then 0 else count,
-				taken
+				taken,
+				asleep
 			)
 			else nil
 		if noteBox then
@@ -641,7 +666,7 @@ function Deals.new(): Deals
 		if count > 0 and (boxed or noteBox) then
 			coinsIn = "its box"
 		elseif count > 0 then
-			local _, area = layCoinBox(unit, deck, index, count, taken)
+			local _, area = layCoinBox(unit, deck, index, count, taken, asleep)
 			if area then
 				coinsIn = "a box"
 				table.insert(taken, area)

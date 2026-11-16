@@ -2148,32 +2148,12 @@ it is, coins go to your bank, a tool goes to your hands, or it's a piece of the 
       path's line (`PackedLayout.Peek`; passes checks, its look untested in Studio: Studio
       stopped drawing frames). The phone camera and the saw's missing Crawl button are the
       owner's (`OWNER.md` "Walk a packed unit").
-      - [ ] Polish: a sleeper at the clearing's far end with a box in the clearing (the code's
-        note, or coins) walks through that box on its way to the bend (keepers move by
-        CFrame). Measured Nov 15 (fix session, stopped at its context limit, no code changed):
-        the walk can't go round the box. A medium unit's clearing is 3.07 deep (z 8.53 to
-        11.6); the sleeper stands at about 4.25 across, and the box laid after it lands at
-        1.25 to 1.5 across, z 10.35 to 10.6, half in the path's line, more than the planned 0.4
-        because it has to keep clear of the sleeper. A 1.8 box leaves at most 1.27 of
-        floor in front of it, and the Mannequin is 1.89 across the shoulders. So a box
-        anywhere between the sleeper and the bend is always in its way. Two fixes work:
-        1. **Recommended: the box goes behind the sleeper.** In a clearing with a sleeper, lay
-           the sleeper first, nearest a new spot just round the bend (still wholly out of the
-           path's line and hidden from the hall, the spec's checks), then lay the note's or
-           coins' box nearest `nook` (the clearing's far end) with the sleeper's floor
-           excluded. In `Deals.luau`, `layOne` lays the "Keeper" spot nearest `nook`, and
-           `layCoinBox` and `layNoteBox` pass `size.peek`. That box is then guarded by the
-           monster, so D-218's sliver stays for every box with no monster beside it, and a
-           packed unit with no sliver means something waits round the corner. Check first that
-           the box's prompt reaches from the bend: 1.27 is too narrow for a player to get past
-           the sleeper, and keepers don't block players.
-        2. A deeper clearing (one column fewer on the path's clearing side, about 5.07 deep)
-           with the bend and `nook` moved to about 1.25 off the clearing's near side, so the walk
-           passes in front of a box at the back wall. This re-lays every unit's stacks and
-           shortens the squeeze by 2 studs (D-218 turned it down).
-        Test first in `tests/packedwalk.spec.luau` part 2: lay the sleeper, then a box (as
-        `layNoteBox` does, clear of the sleeper's `DealSpot.around`), and fail if the walk's
-        `BODY` ever meets the box's footprint.
+      - [x] Polish: a sleeper walked through the box in its clearing (the code's note, or
+        coins) on its way to the bend: the clearing is too shallow to step round it. Fixed Nov 15
+        (D-219): the sleeper stands just round the bend, side-on and facing the path, its floor
+        flush with the path's line; the box goes behind it at the far end, and nothing laid after
+        it goes on the path's end. `tests/packedwalk.spec.luau` walks 169 sleepers past their
+        boxes. Passes checks, untested in Studio (`OWNER.md` "Walk a packed unit", step 4).
       - [ ] Polish: a guard's box (padlocked) still hides wholly round the bend; a sound or a
         glint from it would be its lure.
 

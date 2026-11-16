@@ -209,6 +209,9 @@ verified: a doc page, Studio, or "untested".
   horn in your hand; a Client `ReplicatedStorage.Remotes.ToolUse:FireServer()` blows it, and
   every keeper in reach wakes and comes to look. Stand at the unit's doorway; sample the keeper
   (`DevCorridor.FloorN.Keepers`) from a Server `task.spawn` into a StringValue, then read it.
+- **A Server `RollUpDoor.play(unit, "Open")` didn't lift floor 3's units** (D-219 fix session, Nov
+  15): with `DevFloorNumber` 3 and one player in the lobby, no stacks stood beside Unit316 and no
+  keeper or marked box was tagged six seconds on. Go to the floor first, or find out why.
 - **A Client `execute_luau` has its own module cache** (L-20a): `require` of a shared module there
   returns a different table from the one the game's LocalScripts hold, so setting a number on it
   (to stretch `Wheel.Linger` for a shot) changes nothing in the game. Batch the input and the

@@ -2,7 +2,7 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-15, session 196 (the sleeper's walk measured; no code) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-15, session 197 (a packed unit's sleeper waits round the bend) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
 - B-05 packed units are done. Seen in Play (floor 3, seed 2000013): Unit302's stacks stand true
@@ -13,10 +13,12 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   its keeper fits at the path's end (D-218). Passes checks; its look is untested in Studio,
   because Studio stopped drawing frames mid-session (`docs/STUDIO.md`, "When Studio stops
   drawing"). OWNER.md "Walk a packed unit" has the exact steps.
-- Two polish lines under B-05b2b in ROADMAP: a sleeper walks through a box in its clearing; a
-  guard's box still hides. Session 196 measured the first one and stopped at its context limit,
-  with no code changed. The clearing is too shallow for the walk to go round the box, so the
-  box has to stand behind the sleeper. The ROADMAP line has the numbers and the fix.
+- Fixed: a woken sleeper walked through the box in its packed unit's clearing. It now stands
+  just round the bend, side-on and facing the path, with the box behind it at the far end, and
+  nothing is laid on the path's end after it (D-219). `tests/packedwalk.spec.luau` proves the
+  walk misses the box for 169 sleepers. Passes checks, untested in Studio: a script-lifted door
+  didn't open on floor 3 (`docs/STUDIO.md`). OWNER.md "Walk a packed unit" step 4 has the look.
+- One B-05b2b polish line left in ROADMAP: a guard's box still hides wholly round the bend.
 - Studio's Workspace `DevFloorSeed` is back to 7 and `DevFloorNumber` cleared, as found.
 
 ## Next task: S3-03 Cut Free, Free a Friend, Free Everyone
@@ -60,7 +62,6 @@ OWNER.md (grep `(D-105)`); `src/shared/Products.luau`;
    rbxassethash warnings; the Packrat's dead Slots entry, S2-06b1's way home; the Mannequin's
    pose onto `Rig.luau` (D-176); the watch bar's empty panel; S1-07a, S2-02b-d4, S2-03b,
    S2-05a, S2-07a1-b2 leftovers; unseen S1-10d1-3. More box words need the boxes' rebake (D-215).
-   A sleeping Mannequin in a packed unit faces the stacks, not the path (Unit316): judge it.
 
 ## Kickoff for the next agent
 ```text

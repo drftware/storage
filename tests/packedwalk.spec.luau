@@ -63,7 +63,24 @@ local function unitOf(layout: PackedLayout.Layout): DealSpot.Unit
 		lure = layout.lure,
 		nook = layout.nook,
 		peek = layout.peek,
+		hide = layout.hide,
+		face = layout.face,
+		walk = layout.walk,
 	}
+end
+
+-- A sleeper as Deals lays it in a packed unit (D-219), then a box laid after it, behind it
+-- (`layNoteBox`, `layCoinBox`): clear of the sleeper and of the path's end, nearest `nook`.
+local function sleeperOf(unit: DealSpot.Unit, number: string): DealSpot.Spot?
+	return DealSpot.inUnit(unit, "Keeper", DealSpot.Keeper, nil, number, nil, unit.hide, unit.face)
+end
+local function boxBehind(
+	unit: DealSpot.Unit,
+	number: string,
+	sleeper: DealSpot.Spot
+): DealSpot.Spot?
+	local taken = { DealSpot.around(sleeper, DealSpot.Keeper), unit.walk :: { number } }
+	return DealSpot.inUnit(unit, "Find", BOX, nil, number, taken, unit.nook)
 end
 
 local function rectOf(poly: { number }): (number, number, number, number)
@@ -140,20 +157,34 @@ for n = 100, 999 do
 			`{number}: the lone box peeks into the path's line ({lone.x}, {lone.z})`
 		)
 	end
-	-- a sleeper, with the code's note in a box beside it
-	local keeper = DealSpot.inUnit(unit, "Keeper", DealSpot.Keeper, nil, number)
+	-- a sleeper just round the bend, side-on and facing the path, with the code's note in a box
+	-- behind it (D-219)
+	local keeper = sleeperOf(unit, number)
 	ok(keeper ~= nil, `{number}: a sleeping keeper fits in the clearing`)
 	if keeper then
 		ok(standsWell(unit, keeper, DealSpot.Keeper), `{number}: the sleeper stands well`)
-		ok(
-			keeper.x * side - DealSpot.Keeper.across / 2 > P - 0.3,
-			`{number}: the sleeper is out of the path's line ({keeper.x})`
+		ok(keeper.yaw == layout.face, `{number}: the sleeper faces the path ({keeper.yaw})`)
+		local body = DealSpot.footprint(
+			keeper.x,
+			keeper.z,
+			keeper.yaw,
+			DealSpot.Keeper.across,
+			DealSpot.Keeper.along
 		)
-		local area = DealSpot.around(keeper, DealSpot.Keeper)
-		local note = DealSpot.inUnit(unit, "Find", BOX, nil, number, { area })
-		ok(note ~= nil, `{number}: the note's box fits beside the sleeper`)
+		local x0, x1 = rectOf(body)
+		local nearEdge = math.min(x0 * side, x1 * side)
+		ok(
+			nearEdge > P - EPS and nearEdge < P + 0.3,
+			`{number}: the sleeper stands just out of the path's line ({keeper.x})`
+		)
+		local note = boxBehind(unit, number, keeper)
+		ok(note ~= nil, `{number}: the note's box fits behind the sleeper`)
 		if note then
 			ok(standsWell(unit, note, BOX), `{number}: the note's box stands well`)
+			ok(
+				note.x * side > keeper.x * side,
+				`{number}: the box is behind the sleeper ({note.x}, {keeper.x})`
+			)
 		end
 	end
 end
@@ -204,11 +235,17 @@ for _, seed in { 2000013, 7, 2026, 31337 } do
 			local s = f.slots[i]
 			local number = s.number :: string
 			local unit = unitOf(layout)
-			local spot = DealSpot.inUnit(unit, "Keeper", DealSpot.Keeper, nil, number)
+			local spot = sleeperOf(unit, number)
 			if not spot then
 				continue
 			end
 			walked += 1
+			-- the code's note or the coins in a box, laid after it as Deals does
+			local box = boxBehind(unit, number, spot)
+			ok(box ~= nil, `unit {number}: a box fits behind the sleeper`)
+			local boxFloor = if box
+				then DealSpot.footprint(box.x, box.z, box.yaw, BOX.across, BOX.along)
+				else nil
 			local from = toFloor(s, spot.x, spot.z)
 			local _, slot = KeeperMap.placeAt(map, from)
 			ok(slot == i, `unit {number}: the sleeper stands on its own unit's map`)
@@ -225,7 +262,7 @@ for _, seed in { 2000013, 7, 2026, 31337 } do
 			if not trip then
 				continue
 			end
-			local passed = false
+			local passed, crossed = false, false
 			local at = from
 			for _, w in trip do
 				if vector.magnitude(vector.create(w.x - bend.x, 0, w.z - bend.z)) < 0.05 then
@@ -248,11 +285,15 @@ for _, seed in { 2000013, 7, 2026, 31337 } do
 								break
 							end
 						end
+						if boxFloor and DealSpot.near(body, boxFloor, 0) then
+							crossed = true
+						end
 					end
 				end
 				at = vector.create(w.x, at.y, w.z)
 			end
 			ok(passed, `unit {number}: the walk out turns at the bend`)
+			ok(not crossed, `unit {number}: the sleeper's walk out crosses its box`)
 		end
 	end
 end
