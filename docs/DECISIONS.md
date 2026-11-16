@@ -6239,3 +6239,15 @@ soft bumps in it: separate ellipsoids for cheeks and chin bulged like mumps. Fri
 real separate strips hanging from a sewn band, never a grooved shell, which read as a knitted
 waistband from behind. The game starts one of the six lines at the doll's `DL_LET_GO` (0.62 s);
 the recorded audio waits on `OWNER.md`. (`art/finds/windups/README.md`, "Pull-string cowboy doll".)
+
+## D-242 The singing fish plaque is a catfish of our own on honey oak (Nov 16, F-04i)
+
+Our singing fish is a slate-blue speckled channel catfish with drooping barbels and amber eyes on
+an arched, routed honey-oak board, with a plain brass plate engraved with a fish over waves (no
+words), a red button and a drilled grille, so nothing reads as the famous bass on its dark plaque
+with gold lettering. Its lips are the head's own grey: pale lips round an open mouth read as a
+shark's teeth. The head swings out about a vertical hinge near the tail, and every move out is a
+motor's push and every move back a spring's snap, as the real toys are built. The game starts the
+song at 1.55 s; the recording waits on `OWNER.md`. Meshes handed to the kit's `merge` or lathe
+must be in studs: they unwrap from the numbers they're given, before their matrix.
+(`art/finds/windups/README.md`, "Singing fish plaque".)

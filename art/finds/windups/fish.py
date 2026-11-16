@@ -34,6 +34,22 @@ FS_Z0 = FI["ogee"][1][1] * math.sin(FS_LEAN)          # the back of the foot's e
 LEAN_M = Matrix.Translation((0.0, 0.0, FS_Z0)) @ Matrix.Rotation(-FS_LEAN, 4, "X")
 TO = Matrix.Scale(1.0 / K.STUD_MM, 4) @ LEAN_M       # plaque mm -> the find's frame in studs
 FB = Matrix(((1, 0, 0, 0), (0, 0, -1, 0), (0, 1, 0, 0), (0, 0, 0, 1)))   # a lathe's Z out of the face
+# the same lean for a mesh already in studs: the kit unwraps a merged mesh and a lathe from their
+# own coordinates, so everything is handed over in studs (in mm its islands were 254 times too big
+# and the packer squeezed the fish's skin to nothing)
+TOS = Matrix.Translation((0.0, 0.0, FS_Z0 / K.STUD_MM)) @ Matrix.Rotation(-FS_LEAN, 4, "X")
+
+
+def fs_merge(s, bm, kind):
+    """Merge a plaque-mm bmesh, scaled to studs first so it unwraps at the true size."""
+    bmesh.ops.scale(bm, vec=Vector((1.0 / K.STUD_MM,) * 3), verts=bm.verts)
+    s.merge(bm, kind, TOS)
+
+
+def fs_lathe(s, prof, kind, segs, M):
+    """A lathe from a profile in mm, M taking mm to the find's frame; unwrapped in studs."""
+    s.lathe([(r / K.STUD_MM, z / K.STUD_MM) for r, z in prof], kind, segs,
+            M @ Matrix.Scale(K.STUD_MM, 4))
 
 
 def fs_segs(hi, n):
@@ -100,7 +116,7 @@ def fs_panel(s, rings, centre, kind, toward_front):
     for j in range(len(last)):
         f = (last[j], last[(j + 1) % len(last)], c)
         bm.faces.new(f if toward_front else tuple(reversed(f)))
-    s.merge(bm, kind, TO)
+    fs_merge(s, bm, kind)
     bm.free()
 
 
@@ -177,8 +193,7 @@ def fs_front(s, hi):
     r = bt["r"]
     prof = [(ro, -0.4), (ro, hb * 0.5), (ro - 0.9, hb * 0.92), (ro - 2.3, hb), (r + 1.0, hb * 0.85),
             (r + 0.6, hb * 0.4), (r + 0.6, -3.0)]
-    s.lathe(prof, FS_BEZEL, fs_segs(hi, 24),
-            TO @ Matrix.Translation((bx, 0.0, bz)) @ FB)
+    fs_lathe(s, prof, FS_BEZEL, fs_segs(hi, 24), TO @ Matrix.Translation((bx, 0.0, bz)) @ FB)
 
 
 def fs_plaque(hi):
@@ -197,8 +212,7 @@ def fs_button(hi):
     prof = [(r, -3.0), (r, hb - 1.2), (r * 0.97, hb + dome * 0.32), (r * 0.86, hb + dome * 0.62),
             (r * 0.66, hb + dome * 0.84), (r * 0.36, hb + dome * 0.97), (0.0, hb + dome)]
     s = Shape()
-    s.lathe(prof, FS_BUTTON, fs_segs(hi, 24),
-            TO @ Matrix.Translation((bx, 0.0, bz)) @ FB)
+    fs_lathe(s, prof, FS_BUTTON, fs_segs(hi, 24), TO @ Matrix.Translation((bx, 0.0, bz)) @ FB)
     return s
 
 
@@ -322,7 +336,7 @@ def fs_fan(s, c, ring, n, tc, te, kind):
         k = (j + 1) % m
         bm.faces.new((a[j], b[j], b[k], a[k]))
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    s.merge(bm, kind, TO)
+    fs_merge(s, bm, kind)
     bm.free()
 
 
@@ -349,8 +363,8 @@ def fs_fins_body(s):
     # the dorsal fin, its stiff spine leading, swept back
     c = (X0 + 194.0, fs_sec(194.0)[2], fs_top(194.0) - 8.0)
     ring = [(X0 + w, fs_sec(w)[2], fs_top(w) + du) for w, du in
-            ((211.0, -6.0), (210.0, 4.0), (206.0, 12.0), (201.0, 22.0), (196.0, 33.0), (192.0, 37.0),
-             (188.0, 30.0), (183.0, 14.0), (179.0, 0.0), (178.0, -6.0))]
+            ((211.0, -6.0), (210.0, 4.0), (206.0, 11.0), (201.0, 19.0), (196.0, 25.0), (192.5, 28.0),
+             (189.5, 27.5), (186.5, 23.0), (183.0, 12.0), (179.0, 0.0), (178.0, -6.0))]
     fs_fan(s, c, ring, (0, 1, 0), 4.5, 1.0, FS_FIN)
     # the little fleshy adipose fin on the back, near the tail
     c = (X0 + 114.0, fs_sec(114.0)[2], fs_top(114.0) - 5.0)
@@ -429,11 +443,10 @@ def fs_body(hi):
         yl = (Vector((0, 0, 1)) - zl * zl.z).normalized()
         R = Matrix((yl.cross(zl), yl, zl)).transposed().to_4x4()
         prof = [(1.0, -2.0), (0.98, 0.0), (0.9, 0.3), (0.72, 0.52), (0.42, 0.68), (0.0, 0.73)]
-        s.lathe([(r * a, r * b) for a, b in prof], FS_EYE, n,
-                TO @ Matrix.Translation(at) @ R)
+        fs_lathe(s, [(r * a, r * b) for a, b in prof], FS_EYE, n, TO @ Matrix.Translation(at) @ R)
     # the upper lip, round the snout from corner to corner
     ul, ll = FI["lip"]
-    pts = fs_lip_path(X0 + end + 1.2, ul * 0.35, fs_ws(WH, end, 4.0 if hi else 6.0))
+    pts = fs_lip_path(X0 + end - 0.6, ul * 0.35, fs_ws(WH, end, 4.0 if hi else 6.0))
     m = len(pts)
     s.tube([Ls(p) for p in pts], mm(ul), FS_LIP, fs_segs(hi, 8),
            radii=[mm(ul * (0.55 + 0.45 * math.sin(math.pi * i / (m - 1)) ** 0.5)) for i in range(m)])
@@ -445,12 +458,10 @@ def fs_body(hi):
         sy = -1.0 if front else 1.0
         root = fs_side(270.0, fs_zm(270.0) + 3.5, front)
         root.y -= sy * 0.8
-        offs = [(0, 0, 0), (-6 * k, 7 * sy * k, -2 * k), (-18 * k, 12 * sy * k, -8 * k),
-                (-32 * k, 14 * sy * k, -16 * k), (-46 * k, 13 * sy * k, -25 * k),
-                (-58 * k, 10 * sy * k, -33 * k)] if front else \
-            [(0, 0, 0), (-6 * k, 2.0, -2 * k), (-18 * k, 3.5, -8 * k), (-32 * k, 4.0, -16 * k),
-             (-46 * k, 4.0, -25 * k), (-58 * k, 4.0, -33 * k)]
-        fs_whisker(s, root, offs, wr, 0.6, FS_WHISK, hi)
+        drop = [(0, 0.0, 0), (-8, 5.0, -0.5), (-20, 10.0, -2.5), (-33, 13.0, -7), (-45, 14.0, -14),
+                (-55, 13.0, -23), (-62, 12.0, -33)]
+        offs = [(x * k, (y * sy * k) if front else min(y, 4.0), z * k) for x, y, z in drop]
+        fs_whisker(s, root, offs, wr, 0.35, FS_WHISK, hi)
         nl, nr = FI["whisker"]["nose"]
         S = fs_sec(279.0)
         root = Vector((X0 + 279.0, S[2] + (-0.5 * S[3] if front else 0.4 * S[4]), fs_top(279.0) - 3.0))
@@ -486,7 +497,7 @@ def fs_jaw(hi):
     fs_ell(s, (X0 + w, fs_ymid(w), fs_zm(w) + 0.2), (13.0, 8.0, 2.4), FS_TONGUE, hi, 6, 14)
     # the thick lower lip
     ul, ll = FI["lip"]
-    pts = fs_lip_path(X0 + last + 0.8, -ll * 0.7, fs_ws(WH, last, 4.0 if hi else 6.0))
+    pts = fs_lip_path(X0 + last - 0.6, -ll * 0.7, fs_ws(WH, last, 4.0 if hi else 6.0))
     m = len(pts)
     s.tube([Ls(p) for p in pts], mm(ll), FS_LIP, fs_segs(hi, 8),
            radii=[mm(ll * (0.5 + 0.5 * math.sin(math.pi * i / (m - 1)) ** 0.5)) for i in range(m)])
@@ -498,7 +509,7 @@ def fs_jaw(hi):
         root = Vector((X0 + w, fs_ymid(w) + f * half, S[0] - S[1] * 0.9 + 1.0))
         k = cl / 19.0
         fs_whisker(s, root, [(0, 0, 0), (-3 * k, f * 2, -6 * k), (-8 * k, f * 4, -12 * k),
-                             (-14 * k, f * 5, -16.5 * k), (-19 * k, f * 5, -19 * k)], cr, 0.5, FS_CHIN, hi)
+                             (-14 * k, f * 5, -16.5 * k), (-19 * k, f * 5, -19 * k)], cr, 0.3, FS_CHIN, hi)
     return s
 
 
@@ -592,14 +603,14 @@ def fish_look(L, f):
     rings_ = L.noise(46.0, 3, stretch=(0.045, 1.0, 1.0), detail=3, distortion=0.4)
     flow = L.noise(9.0, 4, stretch=(0.2, 1.0, 1.0), detail=2)
     late = nb.ss(nb.fract(nb.add(nb.mul(rings_, 7.0), nb.mul(flow, 3.0))), 0.62, 0.9)
-    pores = nb.mul(bell(L.noise(240.0, 5, stretch=(0.03, 1.0, 1.0), detail=2), 0.5, 0.025),
+    pores = nb.mul(bell(L.noise(240.0, 5, stretch=(0.012, 1.0, 1.0), detail=2), 0.5, 0.025),
                    nb.ss(L.noise(80.0, 6, stretch=(0.2, 1.0, 1.0)), 0.45, 0.6))
     flecks = nb.mul(nb.ss(L.noise(120.0, 7, stretch=(0.35, 1.0, 1.0), detail=2), 0.66, 0.72),
                     nb.ss(L.noise(30.0, 8), 0.4, 0.6))
     tone = nb.mr(L.noise(6.0, 9, detail=2), 0.3, 0.7, 0.9, 1.08)
-    OAK = nb.tint(nb.mixc(late, hexc("#C99458"), hexc("#9C6430")), tone)
+    OAK = nb.tint(nb.mixc(late, hexc("#CC975A"), hexc("#94592A")), tone)
     C = Coat(L, OAK, 0.24, 0.0, 0.0)
-    C.paint(nb.mul(wood, nb.mul(pores, 0.75)), hexc("#6E4320"), 0.3, None, fs_h(-0.05))
+    C.paint(nb.mul(wood, nb.mul(pores, nb.add(0.2, nb.mul(late, 0.4)))), hexc("#6E4320"), 0.3, None, fs_h(-0.05))
     C.paint(nb.mul(wood, nb.mul(flecks, 0.5)), hexc("#D9AE73"))
     C.paint(wood, None, None, None, nb.mul(late, fs_h(0.03)))
     # varnish rubbed thin on the routed edge's bead and the corners, a few dings in the face
@@ -624,7 +635,7 @@ def fish_look(L, f):
     box, door, bez = L.k(FS_BOX), L.k(FS_DOOR), L.k(FS_BEZEL)
     plastic = nb.mx(nb.mx(box, door), bez)
     grain = L.noise(500.0, 12, detail=1)
-    C.paint(plastic, nb.tint(hexc("#1C1B1A"), nb.mr(grain, 0.3, 0.7, 0.9, 1.1)), 0.55, 0.0,
+    C.paint(plastic, nb.tint(hexc("#252423"), nb.mr(grain, 0.3, 0.7, 0.9, 1.1)), 0.55, 0.0,
             nb.mul(grain, fs_h(0.03)))
     C.paint(bez, hexc("#141414"), 0.3)
     ribs = nb.mul(door, nb.mul(band(zl, FI["box"][3] + 10.0, FI["box"][3] + 30.0, 0.2),
@@ -637,6 +648,18 @@ def fish_look(L, f):
     lobe = nb.pw(nb.add(0.5, nb.mul(nb.math("COSINE", nb.mul(ph, 5.0)), 0.5)), 2.4)
     star = nb.mul(box, within(nb.sub(hyp(su, sv), nb.mul(nb.add(0.38, nb.mul(lobe, 0.62)), 7.0)), 0.0, 0.15))
     C.paint(nb.mul(star, nb.ss(nyl, 0.5, 0.8)), hexc("#B5231C"), 0.4)
+    bw, bh = FI["box"][0] / 2 - 9.0, FI["box"][1] / 2 - 9.0
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            d = hyp(nb.sub(xl, sx * bw), nb.sub(zl, FI["box"][3] + sz * bh))
+            C.paint(nb.mul(box, within(d, 3.2, 0.3)), hexc("#0E0E0E"), 0.4, None, fs_h(-0.6))
+            head = nb.mul(box, within(d, 2.6, 0.2))
+            C.paint(head, hexc("#55575A"), 0.35, 0.8, fs_h(0.3))
+            C.paint(nb.mul(head, bell(nb.sub(xl, sx * bw), 0.0, 0.45)), hexc("#151515"), 0.5, 0.3, fs_h(-0.4))
+    kz = FI["box"][3] + FI["box"][1] / 2 + 34.0
+    key = nb.mx(within(hyp(xl, nb.sub(zl, kz)), 5.0, 0.3),
+                nb.mul(within(nb.absf(xl), 2.6, 0.25), band(zl, kz, kz + 14.0, 0.3)))
+    C.paint(nb.mul(back, key), hexc("#2A1C10"), 0.9, None, fs_h(-1.5))
 
     # --- the brass plate: an engraved border, a leaping fish over two waves, no words
     brass = L.k(FS_BRASS)
@@ -680,20 +703,21 @@ def fish_look(L, f):
     C.paint(nb.mul(fishy, nb.clamp(up)), BACK, 0.3)
     belly = nb.mul(skin, nb.clamp(nb.add(nb.ss(nb.sub(0.0, nzl), 0.3, 0.8), nb.ss(nb.sub(0.0, zrel), 16.0, 26.0))))
     C.paint(belly, BELLY, 0.36)
-    # the back toward the board: plain grey latex
-    C.paint(nb.mul(skin, nb.ss(nyl, 0.75, 0.95)), hexc("#4D555B"), 0.42)
+    # the back toward the board: the airbrush only oversprays it, the grey latex shows through
+    C.paint(nb.mul(nb.mul(skin, nb.ss(nyl, 0.8, 0.97)), 0.55), hexc("#4D555B"), 0.42)
     # speckles over the back and flanks, none on the belly
     spots = nb.mul(nb.sub(1.0, nb.ss(nb.voronoi(L.vec(s=17.0), 38.0), 0.1, 0.19)),
                    nb.ss(L.noise(60.0, 18), 0.42, 0.52))
     C.paint(nb.mul(nb.mul(skin, spots), nb.sub(1.0, nb.clamp(nb.mul(belly, 1.6)))), hexc("#1A1F24"), 0.3)
     # the lateral line, a fine pale thread of pores along the flank
     lat = nb.mul(nb.mul(skin, bell(nb.sub(zrel, 2.0), 0.0, 0.45)), band(w, 92.0, 228.0, 4.0))
-    C.paint(nb.mul(lat, nb.ss(nb.math("SINE", nb.mul(xl, 1.9)), -0.2, 0.4)), hexc("#B9C3C6"), 0.35, None, fs_h(-0.15))
+    C.paint(nb.mul(nb.mul(lat, 0.4), nb.add(0.4, nb.mul(nb.ss(nb.math("SINE", nb.mul(xl, 1.9)), -0.2, 0.6), 0.6))),
+            hexc("#AEB9BD"), 0.35, None, fs_h(-0.1))
     # the gill cover's edge: a dark crease curving down behind the head, the cover a shade paler
     xg = nb.sub(X0 + FI["gill"], nb.mul(nb.sub(1.0, sq(nb.div(zrel, 30.0))), 9.0))
     dg = nb.sub(xl, xg)
     gills = nb.mul(skin, nb.sub(1.0, nb.ss(nb.absf(zrel), 24.0, 30.0)))
-    C.paint(nb.mul(nb.mul(gills, bell(dg, 0.0, 0.9)), 0.85), hexc("#20272D"), 0.35, None, fs_h(-0.6))
+    C.paint(nb.mul(nb.mul(gills, bell(dg, 0.0, 1.8)), 0.6), hexc("#26303A"), 0.35, None, fs_h(-0.5))
     cover = nb.mul(nb.mul(gills, nb.ss(dg, 0.5, -2.0)), nb.ss(w, 236.0, 244.0))
     C.paint(nb.mul(nb.mul(cover, nb.sub(1.0, belly)), 0.25), hexc("#9AA8AF"))
     # the latex skin: a fine pebble and a wet gloss, a little duller where dust sits
@@ -701,11 +725,11 @@ def fish_look(L, f):
             nb.mul(L.noise(650.0, 20, detail=2), fs_h(0.06)))
     # the rubber ball at the hinge: a fold of darker latex
     kn = L.k(FS_KNUCK)
-    C.paint(kn, hexc("#3A444C"), 0.4, None, nb.mul(nb.math("SINE", nb.mul(zl, 2.2)), fs_h(0.15)))
+    C.paint(nb.mul(kn, 0.3), hexc("#2E363D"), 0.36, None, nb.mul(nb.math("SINE", nb.mul(zl, 2.2)), fs_h(0.15)))
     # the fins: slate with darker rays fanning from their roots, darkest at the edges
     rays = None
     for cx, cz, nrays, R in ((X0 + 58.0, FZ + fs_arch(58.0), 80.0, 62.0),
-                             (X0 + 194.0, fs_top(194.0) - 8.0, 60.0, 44.0),
+                             (X0 + 194.0, fs_top(194.0) - 8.0, 60.0, 37.0),
                              (X0 + 114.0, fs_top(114.0) - 5.0, 0.0, 12.0),
                              (X0 + 122.0, fs_bot(122.0) + 22.0, 90.0, 42.0),
                              (X0 + 160.0, fs_bot(160.0) + 5.0, 70.0, 18.0),
@@ -733,8 +757,8 @@ def fish_look(L, f):
     C.paint(nb.mul(tng, nb.ss(nzl, 0.85, 0.97)), hexc("#B5585C"), 0.36)
     # thick pale lips, a dark line where they meet
     lip = L.k(FS_LIP)
-    C.paint(lip, nb.tint(hexc("#C8BAAE"), nb.mr(mott, 0.3, 0.7, 0.9, 1.05)), 0.34)
-    C.paint(nb.mul(lip, bell(nb.sub(zl, nb.add(zf, MZ)), -0.4, 0.8)), hexc("#5B3E3A"), 0.4)
+    # lips the head's own grey, a shade warmer: pale lips round an open mouth read as teeth
+    C.paint(lip, nb.tint(hexc("#77818A"), nb.mr(mott, 0.3, 0.7, 0.92, 1.05)), 0.3)
     # the eyes: a black pupil in a gold ring, glassy
     eyes = L.k(FS_EYE)
     C.paint(eyes, hexc("#14110C"), 0.05)
@@ -742,11 +766,15 @@ def fish_look(L, f):
         at, nrm, r = fs_eye_at(front)
         apex = Ls(at + nrm * r * 0.73)
         d = dist3(apex)
-        C.paint(nb.mul(eyes, bell(d, r * 0.56, r * 0.2)), hexc("#C69427"), 0.08)
-        C.paint(nb.mul(eyes, nb.ss(d, r * 0.78, r * 0.92)), hexc("#2B2F2E"), 0.2)
+        iris = nb.mul(nb.ss(d, r * 0.3, r * 0.36), nb.sub(1.0, nb.ss(d, r * 0.6, r * 0.68)))
+        C.paint(nb.mul(eyes, iris), hexc("#B8811F"), 0.06)
+        C.paint(nb.mul(eyes, bell(d, r * 0.6, r * 0.08)), hexc("#5E3B10"), 0.06)
+        # each pass stays on its own eye, or the second eye's rim paints over the first's iris
+        C.paint(nb.mul(eyes, nb.mul(nb.ss(d, r * 0.78, r * 0.92), nb.sub(1.0, nb.ss(d, r * 1.6, r * 1.8)))),
+                hexc("#2B2F2E"), 0.2)
     # the whiskers dark, the chin's pale
     C.paint(L.k(FS_WHISK), hexc("#2B3238"), 0.33)
-    C.paint(L.k(FS_CHIN), hexc("#DDD4C3"), 0.4)
+    C.paint(L.k(FS_CHIN), hexc("#C2B8AB"), 0.4)
     C.finish(f.dust, grime=0.55)
     return C.surface(bump_dist=FS_BD, bump=1.0)
 
@@ -834,8 +862,9 @@ SINGING_FISH = kit.Find(
     fish_look,
     motions={
         # pressed by a kid: the game starts the song at SING["sing"] (its first syllable)
-        "Press": dict(duration=SG["end"], focus=Ls((0.0, -30.0, 140.0)), distance=0.95,
-                      view=(1.0, -2.0, 0.35), drop=0.05, tracks=FS_TRACKS),
+        # filmed from the front left: the swung-out head turns its painted side and face that way
+        "Press": dict(duration=SG["end"], focus=Ls((-30.0, -80.0, 140.0)), distance=0.8,
+                      view=(-0.8, -2.0, 0.3), drop=0.05, tracks=FS_TRACKS),
     },
     dust=FI["dust"], seed=FI["seed"], big=True, texels=600,
 )

@@ -33,6 +33,7 @@ return {
 		JackInTheBox = { Model = 99780291550799 },
 		Kazoo = { Model = 119412872767964 },
 		RubberDuck = { Model = 100329520837990 },
+		SingingFish = { Model = 77947947536831 },
 		SirenCar = { Model = 86198441631731, Emissive = 119938648369668 },
 		TinBird = { Model = 128316798025282 },
 		ToyDrum = { Model = 119199588572642 },

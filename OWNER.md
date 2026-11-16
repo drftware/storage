@@ -995,12 +995,14 @@ filled. Each default stands unless you say otherwise.
   lying loose: it's on with nothing to power it. The catalog didn't say how it looks, so this is my
   default. Pictures: `art/sheets/unpluggedlamp-front.png`, and `-unit.png` from a unit's doorway.
   The other way: something stranger, but then it stops being the quiet "that shouldn't be on".
-- [ ] **Who records the voices for the talking finds?** The pull-string cowboy doll (being built)
-  says one of six short lines when you pull its ring, and the singing fish plaque (next) sings a
-  few seconds of a song. Both need recordings the game owns: you or a friend reading them, a
-  hired voice actor, or text-to-speech run through an old-record crackle. Default until you
-  say: both play silently (the doll's cord whirrs, the fish's motor hums); the doll's six lines
-  are drafted in `art/finds/WAVES.md`'s Nov 16 F-04h note.
+- [ ] **Who records the voices for the talking finds?** The pull-string cowboy doll (built)
+  says one of six short lines when you pull its ring, and the singing fish plaque (built) sings
+  two bars: about 6 seconds at 120 beats a minute, starting 1.55 s after the press, its mouth
+  already timed to 15 sung syllables. Both need recordings the game owns: you or a friend
+  reading them, a hired voice actor, or text-to-speech run through an old-record crackle. The
+  fish's tune has to be ours or long out of copyright (an old sea shanty or nursery tune), never
+  a famous singing fish's songs. Default until you say: both play silently (the doll's cord
+  whirrs, the fish's motor hums); the doll's six lines are in `art/finds/windups/README.md`.
 
 ## Now: judge L-08e3, Invite and the dials (built Nov 12, D-124)
 

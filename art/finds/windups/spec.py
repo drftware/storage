@@ -735,12 +735,13 @@ FISH = dict(
     knuckle=(82.0, 15.0, 10.0),     # the hinge the body and tail both turn on: w, and the rubber
     # ball's half height and radius there (a ball turning on its own axis never gapes)
     mouth=(238.0, -7.0, 226.0),     # the jaw's hinge (w, height) and where its back end tucks in
-    lip=(3.0, 3.4),                 # the upper and lower lips' thickness (mm radius)
+    lip=(1.9, 2.2),                 # the upper and lower lips' thickness (mm radius): thin, or
+    # they stick out of the snout like a clothes-peg
     eye=(263.0, 11.0, 6.2),         # w, height, radius: a touch bigger than life, to read
     gill=232.0,                     # the gill cover's back edge, at its middle (w)
     tail=dict(curl=16.0, at=60.0, lobe=(64.0, 34.0, 28.0)),  # the tail turns out this many
     # degrees from w=at; its lobes reach back to the tip, this far up and down, the fork this deep
-    whisker=dict(long=(62.0, 2.5), nose=(11.0, 1.1), chin=(19.0, 1.3)),  # length, root radius
+    whisker=dict(long=(70.0, 2.0), nose=(10.0, 0.9), chin=(17.0, 0.95)),  # length, root radius
     button=dict(at=(128.0, 44.0), r=9.0, dome=5.0, bezel=(13.5, 3.0), travel=2.6),
     plate=dict(at=(0.0, 46.0), half=(54.0, 16.0), t=1.4),
     grille=dict(at=(-128.0, 44.0), r=12.5, hole=1.5),

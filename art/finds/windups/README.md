@@ -555,3 +555,37 @@ white cord and ring; our red-star tag in the right side seam. Nothing of a famou
 - **Found:** soft things made of separate ellipsoids read as lumps where they stick out of each
   other (the first cheeks and chin): loft one surface and push soft bumps into it. Fringe is real
   strips under a sewn band; a grooved shell read as a knitted waistband (D-241).
+
+## Singing fish plaque (Rare): "Press: its head turns and it sings"
+
+`SingingFish`, F-04i (Nov 16), D-242. A singing wall plaque of our own: a slate-blue speckled
+channel catfish in glossy painted latex (cream belly, a faint lateral line, a soft gill fold,
+amber eyes, thin lips the head's own grey, two long drooping barbels, two short nose ones, four
+pale chin whiskers, ray-painted fins, a forked tail curled off the board) on an arched honey-oak
+board with a routed edge, leaning back on a fold-out leg; a brass oval plate engraved with a
+leaping fish over two waves (no words), a red button in a black bezel lower right, a drilled
+speaker grille lower left; behind, a black battery box held by four screws, its ribbed door,
+our red star, and a keyhole hanger routed in the raw back. Nothing of the famous bass.
+- **References:** HowStuffWorks' singing fish teardown (a latex skin on a plastic skeleton,
+  three motors push the tail, the body and the jaw out and springs snap them back; photocell,
+  speaker and batteries in the plaque), treasurevalleyantiques.com's 1999 singing trout (13 x 8
+  x 3.75 in), the famous bass's listings (about 15 x 10.5 in boxed), Wikimedia Commons' close-up
+  of a singing fish's latex head, Wikipedia's channel catfish photo (proportions, fins, barbels).
+- **Size:** board 360 x 245 x 22 mm, fish 290 mm; leaning on its leg it is 1.42 x 0.94 x 0.70
+  studs (10 inches a stud).
+- **Tells:** a fish on a wooden plaque, the red button, the whiskers.
+- **Parts:** `Plaque` (root), `Button` (moves in 2.6 mm), `Body` (turns about the board's
+  vertical through a rubber ball 82 mm from the tail's tip: positive swings the head out to
+  you), `Tail` (the same hinge, flaps out), `Jaw` (on `Body`, opens about the fish's thickness).
+- **Press** (6.9 s): the button goes in, the tail flaps twice, the head swings out to 84 degrees
+  in 0.4 s and wobbles to 78, two bars sung at 120 a minute from 1.55 s (the jaw opens on each of
+  15 syllables, held notes quiver, loud ones jolt the head, the tail flicks on the beat), the
+  head snaps back at 5.6 s and clacks twice, a last flap. **For the game:** start the song at
+  1.55 s; who records it waits on `OWNER.md`.
+- **Texture:** 2048 at 744 texels a stud, 9,300 triangles.
+- **In Studio:** uploaded (77947947536831) and imported Nov 16: the template is in
+  `ReplicatedStorage.Props.Finds.SingingFish`.
+- **Found:** `Shape.merge` and the lathe unwrap from the numbers they're handed, before their
+  matrix: built in mm with a scaling matrix, their islands came out 254 times too big and the
+  packer squeezed the fish's skin to nothing (it baked flat cream, the board's edge black).
+  `fish.py`'s `fs_merge` and `fs_lathe` hand them studs.

@@ -6,10 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04i, finish the singing fish plaque (step 7): the newest note says exactly where it
-stands (modelled and baked, never rendered). The
-oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next
-touched.
+**Next:** F-04j, the wind-up tin carousel (step 8): the newest note has its hints. The oil
+lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next touched.
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -40,7 +38,7 @@ changes the table's order a little.
    its back; the string runs out and zips back in while its arms jiggle). The first cloth find.
    Must not read as a famous film's cowboy: other clothes, colours and face. Its six spoken
    lines need recorded audio we own: put that question in `OWNER.md`.
-7. **F-04i** Singing fish plaque alone (a rubber fish on a wooden plaque with a plate and a
+7. **F-04i** (built Nov 16) Singing fish plaque alone (a rubber fish on a wooden plaque with a plate and a
    button; the tail flaps, the head swings out to face you, the mouth opens in time, then it all
    swings back). Our own fish and plaque, not the famous one's. Its song is the same `OWNER.md`
    question as the doll's lines.
@@ -90,6 +88,31 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04i (the singing fish plaque built; step 7 done; uploaded 77947947536831 and
+  imported).** `SingingFish` in `windups/fish.py`, now in `FINDS` for good; README section,
+  D-242, `Order.luau`. Judged on quick sheets twice and full sheets twice beside the channel
+  catfish photo. **Found and fixed:** the first bake painted the fish flat cream and the board's
+  edge black: `Shape.merge` and the lathe unwrap from the numbers they're handed, so the board,
+  fins, button and eyes built in mm came out 254 times too big and the packer squeezed the skin
+  to nothing (`fs_merge`, `fs_lathe` now hand them studs; a UV probe per part and kind found it
+  in one run: worth doing whenever a bake looks flat). Then: the lips were pale tubes jutting
+  from the snout like a clothes-peg (thin, the head's grey now: pale lips round an open mouth
+  read as teeth); the barbels were straight rods (a soft droop now); the eye loop's rim paint
+  blacked out the other eye's iris (each pass kept near its own eye); a bright dotted lateral
+  line (faint); a tall shark-like dorsal (lower, rounder); the Press camera filmed the plain back
+  of the swung-out head (front left now: the head turns its painted side that way).
+  **F-04j's hints (step 8, not researched):** a wind-up tin carousel, Epic, the set's most
+  parts. Look at antique and 1950s lithographed tin carousels on listings and museum pages (at
+  least four photos) and one music-box carousel video for the tune's slowing and the horses'
+  rhythm; real ones are about 6 to 9 in tall and 5 to 7 in across. Parts: `Base` (root, a
+  printed drum with the key in its side), `Key` (turns as it unwinds), `Top` (the canopy, the
+  pole and the platform turning together about the centre pole), and three or four `Horse`
+  parts riding on `Top`, each sliding up and down its own pole out of step (a crank under the
+  canopy). Motions `Wind` and `Play`: the top turns at a music-box pace, slowing over the last
+  few seconds as the spring runs down, the horses' rise and fall slowing with it. The printing
+  is the work: scalloped canopy edges, stripes, little painted panels, gold lines (the tin
+  bird's printing in `windups/build.py` is the example). No real makers' marks.
 
 - **Nov 16, F-04i (the singing fish plaque half built: modelled, looked and baked, never
   rendered; stopped at the context cap; not ticked, nothing uploaded).** Its own module,
@@ -1203,7 +1226,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Jack-in-the-box | Uncommon | Wind: a tune, then a bang as it pops | The bang comes a few seconds after you let go | Nov 15, F-04b |
 | Cymbal monkey | Rare | Wind: it bashes its cymbals for 20 seconds, loud | The strongest lure in the set | Nov 15, F-04a |
 | Pull-string cowboy doll | Rare | Pull: it says one of six lines | The first cloth find | Nov 16, F-04h |
-| Singing fish plaque | Rare | Press: its head turns and it sings |  | |
+| Singing fish plaque | Rare | Press: its head turns and it sings |  | Nov 16, F-04i |
 | Clockwork tin bird | Epic | Wind: it hops and whistles | An antique tin toy | Nov 16, F-04d2 |
 | Wind-up tin carousel | Epic | Wind: it turns and plays a tune |  | |
 

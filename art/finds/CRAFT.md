@@ -75,6 +75,8 @@ set's `build.py` as an example; you shouldn't need the kit's code.
   side by side. The kit packs every part's islands into one square (no smart project: it cut
   tubes into hundreds of slivers and wasted three quarters of the texture) and checks no two
   faces share texels.
+  Hand `merge` and `lathe` their numbers in studs: they unwrap from them before their matrix, so a
+  piece built in mm gets islands 254 times too big and squeezes the rest (F-04i).
 - **Lofts.** `Shape.loft(rings, kind, kinds=, split=, cap_bottom=)` sweeps a shell through
   rings of any shape (bottom to top, anticlockwise from above, a one-point ring a pole) and
   unrolls it like a lathe's side; `kinds(j)` sets a column's kind. The night-light's D-shaped,
