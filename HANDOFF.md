@@ -14,8 +14,8 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   4 notes, 5 padlocks and paid 14 coins; floors 5 and 101 started straight away (`DevFloorNumber`,
   now uncapped) laid and dealt, plates "10102". No new warnings. Play stopped; the attribute is
   cleared again. Not seen: two players, a long climb, a phone (`OWNER.md` "Climb past floor 3").
-- Studio holds doubled modules, `FloorRules` too (STUDIO.md, OWNER.md). A second find-art run
-  (the rest of the wind-ups and the squishies) is planned in `art/finds/WAVES.md`.
+- Studio holds doubled modules, `FloorRules` too (STUDIO.md, OWNER.md).
+- Find art (`art/finds/WAVES.md`): chattering teeth built, not imported; next the walking robot.
 
 ## Next task: S4-01b What changes floor to floor
 ROADMAP S4-01b. The moment: each floor up feels a notch tighter (more doors to search, more

@@ -90,3 +90,51 @@ TUNE = dict(
     beat=0.9,          # the silence after the last note before the latch lets go
     tilt=12.0,         # degrees the jack's head is left cocked at you once it settles
 )
+
+
+# --- The chattering teeth: a walking wind-up novelty, our own -----------------------------------
+# References (README): listings put walking wind-up teeth at 1.75 to 2.5 in (44 to 64 mm) long
+# and about as tall; vintage ones (late 1940s on) are a moulded denture, red-pink gums and cream
+# teeth, the clockwork inside between the jaws at the back, a key on the side; the walking kind
+# stands on two cartoon feet whose toes poke out in front. Ours is 2.6 in wide, 2 in tall on
+# orange three-toed feet, with a white wing key on the right.
+TEETH = dict(
+    arch=dict(half=22.0, front=-22.0, p=2.6, back=(23.5, 12.0)),
+    # the arch's centreline: a superellipse quarter from the front (0, front) round to the side
+    # (half, 0), then straight back to `back` on each side (it widens a little, as dentures do)
+    gum=dict(t=10.5, low=14.0, top=50.0, papilla=2.6, lip=0.9),
+    # the gum band's thickness at its foot, the lower jaw's foot and the upper's top, how far
+    # the gum rises between two teeth, and how much it stands proud of a tooth at the gum line
+    occ=34.0,                    # where the two rows of teeth meet, shut
+    teeth=[(7.0, 7.4, 2.5, 7.0), (6.0, 7.0, 2.4, 5.0), (6.2, 7.6, 2.9, 3.0),
+           (6.2, 6.4, 3.4, 0.0), (7.0, 5.8, 4.0, 0.0), (7.4, 5.4, 4.3, 0.0)],
+    # each side's teeth from the middle out: width along the arch, how far it stands out of the
+    # gum, half its depth, and how far it leans out (degrees): two incisors, a canine, molars
+    gap=0.2,                     # between two teeth
+    hinge=(0.0, 15.0, 34.0),     # the top jaw's hinge pin, at the back between the jaws
+    drawn=9.0,                   # degrees the top jaw stands open as it's found: a grin
+    foot=dict(x=12.5, splay=7.0, ankle=(-3.0, 3.0), leg=(2.6, 9.0, 16.0)),
+    # the feet's middle either side, how far each turns out, the ankle the foot rocks on (y, z),
+    # and the leg's radius, foot and top
+    key=dict(at=(27.0, 5.0, 21.0), shaft=(2.0, 7.5), wing=(15.0, 9.5), t=1.6),
+    dust=0.06, seed=41.0,
+)
+
+# How it runs (timed from a video of a walking wind-up teeth's sound, README: clicks about
+# 0.085 s apart in bursts, the jaw's open and its snap, so 6 to 7 snaps a second). Every snap
+# lands a footfall: the feet are on the same crank, a step for each foot every two snaps.
+CHATTER = dict(
+    rate=7.0,          # snaps a second, fully wound: a frantic clatter
+    fade=0.3,          # how much it slows across the run
+    length=10.0,       # seconds of running
+    knee=5.0,          # how suddenly it gives out at the end
+    last=0.32,         # the slowest gap between snaps (s) before it stalls
+    open=30.0,         # degrees the top jaw gapes before each snap, fully wound
+    stride=2.6,        # mm each foot swings either side of its middle (it walks 4x this a step)
+    lift=1.8,          # mm a foot lifts as it swings forward
+    toe=6.0,           # degrees a swinging foot's toe tips up
+    roll=4.0,          # degrees it waddles onto the planted foot
+    wiggle=2.5,        # degrees it swivels with each step
+    drift=6.0,         # degrees a second it can veer as it goes
+    winds=4,           # half turns of the key when wound
+)

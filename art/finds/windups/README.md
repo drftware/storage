@@ -124,3 +124,54 @@ cracks. The jack's cloth has the spring's coils showing through it as ridges.
 
 **Sheets:** `art/sheets/jackinthebox-*.png`; motion previews `out/jackinthebox-wind.mp4`,
 `-pop.mp4` and `-shut.mp4`.
+
+## Wind-up chattering teeth (Common): "Wind: they chatter off across the floor"
+
+A walking wind-up denture: a moulded set of red-pink gums with cream teeth, the clockwork
+between the jaws at the back (a tin box, two brass gears on top, the top jaw's pin on two
+posts), a key on the side, standing on two cartoon feet whose round toes poke out in front.
+Ours is no maker's: glossy orange three-toed feet turned a little out, a white wing key on the
+right, twelve teeth a jaw (two broad incisors, a pointed canine, three molars each side), the
+gum dipping round the middle of each tooth and rising to a point between two.
+
+**Looked at:** listings for walking wind-up teeth (Hobby Lobby's "Wind-Up Chatter Teeth With
+Feet": 1 3/4 in long, 1 3/8 wide, 1 3/4 tall; Boing Toys' classic chattering teeth, 2.5 in; a
+metric listing at 7.5 x 6.3 x 4.4 cm), an image search's photos of vintage ones (a boxed 1949
+talking teeth, a 1970 one opened to its tin clockwork between the jaws at the back, a walking
+pair on brown feet with orange toes and a white side key) and today's walking party-favour
+kind; a video of a walking pair running (https://www.youtube.com/watch?v=XzsjkzlkxHA), timed
+from its sound in the page: clicks in bursts about 0.085 s apart, the jaw's open and its snap,
+so 6 to 7 snaps a second. Commons had one photo of plain chattering teeth and no video.
+
+**Size:** 65 mm across with the key, 62 deep with the toes, 54 tall: 0.26 by 0.24 by 0.21
+studs (10 inches a stud), the bigger listings' size.
+
+**Tells:** a grin of cream teeth in red gums, the dark gap between the rows, on two orange feet.
+
+**Parts** (pivots in `build.py`): `Base` (root: the lower jaw, its teeth, the mouth's floor,
+the clockwork and the pin), `Jaw` (the top jaw, teeth and domed palate; turns about the pin
+behind the teeth, + opens; drawn 9 degrees open as found, a grin, so a turn of -9 shuts it),
+`FootL` and `FootR` (each on its ankle under the jaw: `y` swings it fore and aft, `move` lifts
+it, `pitch` tips its toe), `Key` (turns about its shaft on the right side).
+
+**Motions:**
+- `Wind` (2.19 s): the key turned four half turns, a regrip between each.
+- `Chatter` (10.4 s): the top jaw levered open and slammed shut 7 times a second, slowing a
+  third across the run, each snap a footfall: the feet ride one crank, a step for each every
+  two snaps, the lifted one swinging forward toe up while the planted one pushes it on. It
+  waddles onto the planted foot, swivels a little each step, jolts forward on each snap and
+  veers as it goes, about 1.2 studs in all, the key spinning back. It gives out, the jaw
+  stalls half open and sags back to its grin. Keys sit where each curve turns, eased, so the
+  ten seconds stay small in the Luau.
+
+**Look:** glossy pink-red plastic with a fine stipple, deeper red in the mouth, rubbed pale on
+the high edges; cream teeth yellowing toward the gum with a hairline of grime where each goes
+in (the top row's coordinates worked back to where it lies shut); orange feet with a mould
+seam round the side and dull scuffed soles; a white key gone ivory; tin and brass inside.
+
+**Sheets:** `art/sheets/chatteringteeth-*.png`; motion previews `out/chatteringteeth-wind.mp4`
+and `-chatter.mp4`.
+
+**In the place:** uploaded (`assets.json`), not imported yet: Studio was in Play when it was
+built. Import it in Edit with `require(game.ReplicatedStorage.Shared.Finds.Kit).import("Windups",
+{"ChatteringTeeth"})` (from a clone of `Shared` if Studio already required it).

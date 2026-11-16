@@ -26,6 +26,7 @@ return {
 		UnpluggedLamp = { Model = 86157780275524, Emissive = 71456218738890 },
 	},
 	Windups = {
+		ChatteringTeeth = { Model = 100233455108959 },
 		CymbalMonkey = { Model = 124266692491775 },
 		JackInTheBox = { Model = 99780291550799 },
 	},

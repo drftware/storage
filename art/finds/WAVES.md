@@ -6,10 +6,10 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04c, the wind-up chattering teeth, then the wind-up walking robot, in
-`art/finds/windups/` (the set, the cymbal monkey and the jack-in-the-box are built); not yet
-researched, the newest note has a plan. Then follow "The second run's plan" below, session by
-session. The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp`
+**Next:** F-04c2, the wind-up walking robot, in `art/finds/windups/` (the set, the cymbal
+monkey, the jack-in-the-box and the chattering teeth are built); not yet researched, the newest
+note has a plan. It finishes step 1 of "The second run's plan" below; then follow the plan,
+session by session. The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp`
 when next touched.
 
 ## The second run's plan (owner's yes, Nov 15)
@@ -19,8 +19,7 @@ session takes the next batch from the Next line; if a batch doesn't fit, it stop
 boundary and the next session carries on. The finds are batched where they share pieces, which
 changes the table's order a little.
 
-1. **F-04c** Chattering teeth (white teeth in pink gums on two orange feet, a side key; the top
-   jaw snaps 6 to 8 times a second as the feet shuffle it along) and the walking robot (a
+1. **F-04c** Chattering teeth (built Nov 15) and, as **F-04c2**, the walking robot (a
    printed tin robot 6 to 9 inches tall; legs swing from the hip, arms the other way, it clanks
    off straight for 15 s). The newest note has both plans.
 2. **F-04d** Wind-up mouse (zips off, slows, stops with a squeak, its tail wagging behind) and
@@ -91,6 +90,33 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 15, F-04c (the chattering teeth built, uploaded, not imported: Studio was in Play; the
+  robot not started).** `ChatteringTeeth` in
+  `windups/build.py`, spec `TEETH` and `CHATTER`, README, D-227. Step 1 of the plan is half
+  done: research ate the context (two videos' sound, one muddied by music; a frame-difference
+  try on video was swamped by the hand-held camera: use sound, in a quiet stretch, and count
+  click pairs), so the cap stopped it after one find. **Light motion data:** a long walk
+  sampled and thinned with `rdp` at a fine tolerance wrote 160 KB of keys; `teeth_chatter`'s
+  `turning` puts a key only where each curve turns (a sine's extremes, its zeros) eased Sine
+  InOut, which is exact for a sine and a third the size. Use it for any walker. **A walk that
+  doesn't slide:** the body moves forward only by the planted foot's backward swing (speed =
+  stride x crank rate x |sin|), and the planted foot's `move` lifts it by what the body's roll
+  would sink it. **Drawn open:** the top jaw is drawn 9 degrees open and found that way, so the
+  template in the place needs no rest pose. 10.7k triangles (gums swept every 1.6 mm, teeth 10
+  round): heavy for a Common, fine for one held find; trim the gum's rings if a floor deals many.
+  **F-04c2's plan, the walking robot, not researched** (Uncommon, "Wind: it clanks off in a
+  straight line for 15 seconds"). Look first: the Science Museum Group's "Atom Robot" (Yoshiya,
+  1950s, collection.sciencemuseumgroup.org.uk/objects/co8538872) for build and size,
+  theoldrobots.com (a 5.5 in walking astronaut; an 8.5 in Space Man) and a modern tin
+  reproduction's video for the clank rate, timed from its sound. A printed tin litho robot of our
+  own, 6 to 7 in (150 to 180 mm) tall: a boxy torso with a printed chest panel (dials, a gauge,
+  rivets), a square head with a visor and an aerial, arms on shoulder pins, legs on hip pins and
+  flat feet, a key in its side or back. Parts: `Body` (root: travel `x`, `y`, `yaw`, a waddle
+  `roll`), `LegL`/`LegR` (swing about the hip, opposite), `ArmL`/`ArmR` (swing opposite the
+  legs), `Aerial` (follows through on each step), `Key`. Motions: `Wind`, `Walk` (15 s of
+  clanking steps in a straight line, slowing at the end). Reuse the jack's `rsq`, `strip`,
+  `rivet` for tin, its look for printing, and the teeth's `turning` keys.
 
 - **Nov 15, F-04b (the jack-in-the-box built and in the place).** `JackInTheBox` in
   `windups/build.py`, spec `JACK` and `TUNE`, README, D-202. Timed from a video's sound as the
@@ -598,7 +624,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Kazoo | Common | Blow: a buzzy note |  | |
 | Squeaky rubber duck | Common | Squeeze: a squeak you can hear down the hall |  | |
 | Toy siren car | Common | Push: it rolls off, wailing | A noise that moves | |
-| Wind-up chattering teeth | Common | Wind: they chatter off across the floor | Monsters come to look | |
+| Wind-up chattering teeth | Common | Wind: they chatter off across the floor | Monsters come to look | Nov 15, F-04c |
 | Toy drum | Uncommon | Bang: loud |  | |
 | Wind-up mouse | Uncommon | Wind: it zips off and squeaks wherever it stops |  | |
 | Wind-up walking robot | Uncommon | Wind: it clanks off in a straight line for 15 seconds | A noise you can send down a hall | |

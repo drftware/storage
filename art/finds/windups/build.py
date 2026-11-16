@@ -1092,7 +1092,589 @@ JACK_IN_THE_BOX = kit.Find(
 )
 
 
-FINDS = [CYMBAL_MONKEY, JACK_IN_THE_BOX]
+# --- The chattering teeth (F-04c) ---------------------------------------------------------------
+# A moulded denture on two orange feet: the lower jaw, the clockwork between the jaws at the back
+# and the feet's legs make the Base; the top jaw swings on a pin behind the teeth. Wind the key
+# and the top jaw clatters open and snaps shut seven times a second while the feet, on the same
+# crank, shuffle it off across the floor, a footfall every snap. As found the jaw stands a little
+# open in a grin (drawn that way, so the bake lights the teeth), the feet planted.
+
+(GUM, GUM_IN, TOOTH, FOOT, KEYP, MECH, GEAR) = range(10, 17)
+
+TT = K.TEETH
+CH = K.CHATTER
+TA = TT["arch"]
+TG = TT["gum"]
+OCC = TT["occ"]
+DRAWN = TT["drawn"]
+JAW_AT = V(*TT["hinge"])
+# the top jaw is drawn this far open about its pin (+ opens about -X)
+M_OPEN = about(JAW_AT, Matrix.Rotation(math.radians(DRAWN), 4, Vector((-1.0, 0.0, 0.0))))
+
+
+def _arch():
+    """The arch's centreline (mm), left back end round the front to the right back end, as
+    points every 0.25 mm, with the running length to each."""
+    a, f, p = TA["half"], TA["front"], TA["p"]
+    bx, by = TA["back"]
+    q = [Vector((-bx + (bx - a) * i / 40, by * (1 - i / 40), 0.0)) for i in range(40)]
+    for i in range(801):
+        th = -math.pi / 2 + math.pi * i / 800
+        s, c = math.sin(th), math.cos(th)
+        q.append(Vector((a * math.copysign(abs(s) ** (2 / p), s), f * abs(c) ** (2 / p), 0.0)))
+    q += [Vector((a + (bx - a) * i / 40, by * i / 40, 0.0)) for i in range(1, 41)]
+    acc = [0.0]
+    for u, v in zip(q, q[1:]):
+        acc.append(acc[-1] + (v - u).length)
+    return q, acc
+
+
+ARCH, ARCH_S = _arch()
+ARCH_L = ARCH_S[-1]
+MID = ARCH_L / 2
+
+
+def arch_at(s):
+    """The centreline's point, tangent and outward normal (horizontal) at running length s."""
+    s = min(max(s, 0.0), ARCH_L)
+    lo, hi = 0, len(ARCH_S) - 1
+    while hi - lo > 1:
+        m = (lo + hi) // 2
+        if ARCH_S[m] <= s:
+            lo = m
+        else:
+            hi = m
+    u = (s - ARCH_S[lo]) / max(ARCH_S[hi] - ARCH_S[lo], 1e-9)
+    p = ARCH[lo].lerp(ARCH[hi], u)
+    t = (ARCH[min(hi + 2, len(ARCH) - 1)] - ARCH[max(lo - 2, 0)]).normalized()
+    return p, t, Vector((t.y, -t.x, 0.0))
+
+
+def _teeth():
+    """Every tooth: its running length, width, how far it stands, half depth, lean."""
+    out = []
+    for sx in (1, -1):
+        s = TT["gap"] / 2
+        for w, vis, hd, lean in TT["teeth"]:
+            out.append((MID + sx * (s + w / 2), w, vis, hd, lean))
+            s += w + TT["gap"]
+    return sorted(out)
+
+
+TEETH_AT = _teeth()
+EDGE_S = TT["gap"] / 2 + sum(w + TT["gap"] for w, *_ in TT["teeth"])   # the last tooth's end
+
+
+def _between(s, field):
+    """A tooth's number at s (1 how far it stands out, 2 half its depth), eased between the
+    middles of neighbouring teeth."""
+    d = abs(s - MID)
+    cs = [(abs(c - MID), row[field]) for c, *row in TEETH_AT if c >= MID]
+    cs = [(0.0, cs[0][1])] + cs + [(EDGE_S + 4.0, cs[-1][1])]
+    for (d0, v0), (d1, v1) in zip(cs, cs[1:]):
+        if d <= d1:
+            u = (d - d0) / max(d1 - d0, 1e-9)
+            return v0 + (v1 - v0) * (3 * u * u - 2 * u * u * u)
+    return cs[-1][1]
+
+
+def scallop(s):
+    """How far the gum climbs a tooth at s (mm): none at a tooth's middle, rising to a point
+    between two (the papilla), and level past the last tooth."""
+    d = abs(s - MID)
+    pap = TG["papilla"]
+    for c, w, *_ in TEETH_AT:
+        if c >= MID and abs(d - abs(c - MID)) <= w / 2 + TT["gap"] / 2:
+            return pap * (abs(d - abs(c - MID)) / (w / 2 + TT["gap"] / 2)) ** 2.2
+    return pap
+
+
+def chaikin(pts, n):
+    for _ in range(n):
+        q = []
+        for i in range(len(pts)):
+            a, b = pts[i], pts[(i + 1) % len(pts)]
+            q += [(0.75 * a[0] + 0.25 * b[0], 0.75 * a[1] + 0.25 * b[1]),
+                  (0.25 * a[0] + 0.75 * b[0], 0.25 * a[1] + 0.75 * b[1])]
+        pts = q
+    return pts
+
+
+def gum_section(s, upper):
+    """The gum band's cross-section at s as (u out, w up) mm, anticlockwise: wide and rounded at
+    its foot, closing in on the teeth at the gum line, a little proud of them."""
+    t2 = TG["t"] / 2
+    tw = _between(s, 2) + TG["lip"]
+    # the gum line: the occlusal plane less the tooth that stands out of it, plus the scallop
+    line = OCC - _between(s, 1) + scallop(s)
+    if upper:
+        g0, g1 = 2 * OCC - line, TG["top"]
+        # its top climbs inward to meet the palate's dome
+        ctrl = [(0.0, g1 + 0.8), (-t2 * 0.8, g1 + 1.6), (-t2 - 0.3, g1 - 3.0), (-t2 - 0.4, (g0 + g1) / 2),
+                (-tw - 0.7, g0 + 1.4), (-tw * 0.5, g0), (tw * 0.5, g0), (tw + 0.7, g0 + 1.4),
+                (t2 + 0.4, (g0 + g1) / 2), (t2 + 0.3, g1 - 4.0), (t2 * 0.8, g1)]
+    else:
+        g0, g1 = TG["low"], line
+        ctrl = [(0.0, g0), (t2 * 0.8, g0), (t2 + 0.3, g0 + 4.0), (t2 + 0.4, (g0 + g1) / 2),
+                (tw + 0.7, g1 - 1.4), (tw * 0.5, g1), (-tw * 0.5, g1), (-tw - 0.7, g1 - 1.4),
+                (-t2 - 0.4, (g0 + g1) / 2), (-t2 - 0.3, g0 + 4.0), (-t2 * 0.8, g0)]
+    return ctrl
+
+
+def gum_band(s_, upper, hi, M=Matrix()):
+    """The gum swept round the arch, its back ends rounded off."""
+    sub = 3 if hi else 1
+    n = int(ARCH_L / (0.4 if hi else 1.6))
+    rings = []
+
+    def ring(s, k=1.0, back=0.0):
+        p, t, nn = arch_at(s)
+        sec = chaikin(gum_section(s, upper), sub)
+        wm = sum(w for _, w in sec) / len(sec)
+        pts = [p + nn * (u * k) + Vector((0, 0, wm + (w - wm) * k)) + t * back for u, w in sec]
+        return [tuple(mm(c) for c in q) for q in pts]
+
+    p0, t0, n0 = arch_at(0.0)
+    flip = n0.cross(Vector((0, 0, 1))).dot(t0) < 0
+    cap = 2.6
+    caps = [math.radians(a) for a in (30, 55, 75)]
+
+    def pole(s, back):
+        r = ring(s, 1e-3, back)
+        c = Vector((sum(q[0] for q in r), sum(q[1] for q in r), sum(q[2] for q in r))) / len(r)
+        return [tuple(c)]
+    rings.append(pole(0.0, -cap))
+    for a in caps:
+        rings.append(ring(0.0, math.sin(a), -cap * math.cos(a)))
+    for i in range(n + 1):
+        rings.append(ring(ARCH_L * i / n))
+    for a in reversed(caps):
+        rings.append(ring(ARCH_L, math.sin(a), cap * math.cos(a)))
+    rings.append(pole(ARCH_L, cap))
+    if flip:
+        rings = [list(reversed(r)) for r in rings]
+    s_.loft(rings, GUM, M, split=4)
+
+
+def tooth(s_, c, w, vis, hd, lean, upper, hi, M=Matrix()):
+    """One tooth: a rounded, slightly boxy column from its root in the gum to a domed tip."""
+    p, t, nn = arch_at(c)
+    up = Vector((0, 0, -1 if upper else 1))
+    ax = (up * math.cos(math.radians(lean)) + nn * math.sin(math.radians(lean))).normalized()
+    a, b = t, nn
+    if a.cross(b).dot(ax) < 0:
+        a = -a
+    hw = w / 2 - 0.06
+    tip = OCC + (0.15 if upper else -0.15)
+    root = OCC + (vis + 3.0 if upper else -vis - 3.0)
+    L_ = abs(tip - root)
+    base = p + Vector((0, 0, root))
+    rc = min(hd, 1.7 if hw > 2.9 else 2.6)          # the tip's rounding: canines come to a point
+    nr = 24 if hi else 10
+    zs = [0.0, 0.3, 0.6, 1.0] if hi else [0.0, 1.0]
+    zs = [z * (L_ - rc) for z in zs]
+    caps = [math.radians(a_) for a_ in ((25, 45, 62, 76, 86) if hi else (45, 78))]
+    rings = []
+    e = 3.2
+    for z in zs:
+        k = 0.93 + 0.07 * min(1.0, z / max(L_ - rc, 1e-6) * 1.6)
+        rings.append((z, k, k))
+    for ang in caps:
+        rings.append((L_ - rc + rc * math.sin(ang), math.cos(ang), math.cos(ang) ** 0.8))
+    out = []
+    for z, kd, kw in rings:
+        ring_ = []
+        for j in range(nr):
+            th = 2 * math.pi * j / nr
+            cx, sy = math.cos(th), math.sin(th)
+            u = hw * kw * math.copysign(abs(cx) ** (2 / e), cx)
+            v = hd * kd * math.copysign(abs(sy) ** (2 / e), sy)
+            q = base + ax * z + a * u + b * v
+            ring_.append(tuple(mm(k_) for k_ in q))
+        out.append(ring_)
+    out.append([tuple(mm(k_) for k_ in base + ax * L_)])
+    s_.loft(out, TOOTH, M)
+
+
+def floor_ring(offset, z, k=1.0):
+    """The inside of the U (the arch's centreline pulled in by `offset`), closed across the back,
+    scaled about its middle by k, at height z: anticlockwise from above."""
+    pts = []
+    n = 48
+    for i in range(n + 1):
+        p, t, nn = arch_at(ARCH_L * i / n)
+        pts.append(p - nn * offset)
+    c = sum(pts, Vector()) / len(pts)
+    return [(mm(c.x + (q.x - c.x) * k), mm(c.y + (q.y - c.y) * k), mm(z)) for q in pts]
+
+
+def floor_middle():
+    r = floor_ring(3.0, 0.0)
+    return sum(q[0] for q in r) / len(r) * K.STUD_MM, sum(q[1] for q in r) / len(r) * K.STUD_MM
+
+
+def tt_base(hi):
+    s = Shape()
+    gum_band(s, False, hi)
+    for c, w, vis, hd, lean in TEETH_AT:
+        tooth(s, c, w, vis, hd, lean, False, hi)
+    # the mouth's floor: a slab inside the U, its top a little below the gum line
+    rings = [floor_ring(3.0, TG["low"] + 0.6), floor_ring(3.0, 21.0), floor_ring(3.0, 22.4, 0.9)]
+    fx, fy = floor_middle()
+    rings.append([(mm(fx), mm(fy), mm(23.0))])
+    s.loft(rings, GUM_IN, cap_bottom=GUM_IN)
+    # the clockwork between the jaws at the back: a tin box, two brass gears on top, the pin
+    prism(s, [(-8.0, 3.0), (8.0, 3.0), (8.0, 16.0), (-8.0, 16.0)], 21.0, 31.0, MECH,
+          bevel=0.5 if hi else 0.0)
+    for (gx, gy, gr, gn) in ((2.6, 8.4, 5.2, 16), (-4.2, 6.2, 2.8, 10)):
+        nd = 40 if hi else gn
+        rr = gr - 0.7 if hi else gr - 0.3
+        disc = [(gx + rr * math.cos(2 * math.pi * j / nd), gy + rr * math.sin(2 * math.pi * j / nd))
+                for j in range(nd)]
+        prism(s, disc, 31.0, 32.0, GEAR, bevel=0.15 if hi else 0.0)
+        if hi:
+            # its teeth: little tabs round the rim (a toothed rim isn't convex)
+            for j in range(gn):
+                th = 2 * math.pi * j / gn
+                ca, sa = math.cos(th), math.sin(th)
+                tab = [(gx + (gr - 0.9) * ca + 0.45 * sa, gy + (gr - 0.9) * sa - 0.45 * ca),
+                       (gx + gr * ca + 0.35 * sa, gy + gr * sa - 0.35 * ca),
+                       (gx + gr * ca - 0.35 * sa, gy + gr * sa + 0.35 * ca),
+                       (gx + (gr - 0.9) * ca - 0.45 * sa, gy + (gr - 0.9) * sa + 0.45 * ca)]
+                prism(s, tab, 31.0, 32.0, GEAR)
+        s.cylinder(V(gx, gy, 30.5), V(gx, gy, 32.6), mm(0.9), MECH, segs(hi, 8))
+    s.cylinder(V(-10.5, 15.0, 34.0), V(10.5, 15.0, 34.0), mm(1.1), MECH, segs(hi, 10))
+    for sx in (1, -1):
+        prism(s, [(sx * 8.0 - 0.8, 12.5), (sx * 8.0 + 0.8, 12.5), (sx * 8.0 + 0.8, 16.5),
+                  (sx * 8.0 - 0.8, 16.5)], 21.0, 34.8, MECH)
+    return s
+
+
+def tt_jaw(hi):
+    s = Shape()
+    gum_band(s, True, hi, M_OPEN)
+    for c, w, vis, hd, lean in TEETH_AT:
+        tooth(s, c, w, vis, hd, lean, True, hi, M_OPEN)
+    # the palate: the roof of the mouth, seen from under when it gapes, domed on top
+    top = TG["top"]
+    rings = [floor_ring(3.0, top - 6.0), floor_ring(3.0, top - 1.2), floor_ring(3.0, top + 1.2, 0.9),
+             floor_ring(3.0, top + 2.6, 0.72), floor_ring(3.0, top + 3.5, 0.48),
+             floor_ring(3.0, top + 3.95, 0.24)]
+    fx, fy = floor_middle()
+    rings.append([(mm(fx), mm(fy), mm(top + 4.05))])
+    s.loft(rings, GUM, M_OPEN, cap_bottom=GUM_IN)
+    # two tin lugs hang down from the roof onto the pin
+    for sx in (1, -1):
+        prism(s, [(sx * 10.0 - 0.7, 12.0), (sx * 10.0 + 0.7, 12.0), (sx * 10.0 + 0.7, 16.8),
+                  (sx * 10.0 - 0.7, 16.8)], 32.6, top - 4.0, MECH, M_OPEN)
+    return s
+
+
+TF = TT["foot"]
+# the foot from heel to toe: (y, half width, height), mm, before it's turned out
+FOOT_ROWS = [(5.0, 5.4, 8.4), (3.5, 6.6, 10.6), (0.5, 7.2, 11.7), (-4.0, 7.6, 12.0), (-9.5, 7.9, 11.3),
+             (-15.0, 8.4, 10.0), (-20.0, 8.8, 8.7), (-24.0, 8.6, 7.6), (-27.0, 7.4, 6.4),
+             (-28.6, 5.4, 5.0)]
+
+
+def ankle(sx):
+    return V(sx * TF["x"], *TF["ankle"])
+
+
+def tt_foot(sx):
+    def build(hi):
+        s = Shape()
+        cx = sx * TF["x"]
+        M = about(ankle(sx), Matrix.Rotation(math.radians(-sx * TF["splay"]), 4, "Z"))
+        rows = smooth_rows(FOOT_ROWS, 3 if hi else 1)
+        nr = segs(hi, 14)
+        rings = [[(mm(cx), mm(6.4), mm(5.0))]]
+        for y, hw, h in rows:
+            ring = []
+            for j in range(nr):
+                th = 2 * math.pi * j / nr
+                c, sn = math.cos(th), math.sin(th)
+                e = 2.0 if sn > 0 else 4.0
+                ring.append((mm(cx + hw * math.copysign(abs(c) ** (2 / e), c)), mm(y),
+                             mm(h / 2 + h / 2 * math.copysign(abs(sn) ** (2 / e), sn))))
+            rings.append(ring)
+        rings.append([(mm(cx), mm(-29.6), mm(3.2))])
+        # swept heel to toe (toward -Y): anticlockwise seen from the toe is (x, z) anticlockwise
+        s.loft(rings, FOOT, M)
+        # three round toes across the front
+        for dx, dy, r in ((-5.0, -28.6, (3.0, 3.6, 3.2)), (0.0, -29.9, (3.3, 3.9, 3.6)),
+                          (5.0, -28.6, (3.0, 3.6, 3.2))):
+            blob(s, (cx + dx, dy, r[2] - 0.15), r, FOOT, hi, M, lat=8, lon=14)
+        r_, z0, z1 = TF["leg"]
+        s.cylinder(V(cx, -3.0, z0), V(cx, -3.0, z1), mm(r_), FOOT, segs(hi, 12))
+        return s
+    return build
+
+
+TK = TT["key"]
+
+
+def tt_key(hi):
+    s = Shape()
+    at = V(*TK["at"])
+    r, L_ = TK["shaft"]
+    s.cylinder(at + V(-2.0, 0, 0), at + V(L_, 0, 0), mm(r), KEYP, segs(hi, 10))
+    s.cylinder(at + V(L_ - 2.0, 0, 0), at + V(L_ + 1.6, 0, 0), mm(3.4), KEYP, segs(hi, 14))
+    # the wings: two rounded lobes of white plastic standing up and down from the hub
+    Mw = T(at + V(L_, 0, 0)) @ Matrix.Rotation(math.radians(90), 4, "Y")
+    wz, wy = TK["wing"]
+    n = segs(hi, 16)
+    for sz in (1, -1):
+        lobe = [(sz * (wz * 0.28) + wz * 0.26 * math.cos(2 * math.pi * j / n),
+                 wy * 0.5 * math.sin(2 * math.pi * j / n)) for j in range(n)]
+        prism(s, lobe, -TK["t"] / 2, TK["t"] / 2, KEYP, Mw, 0.3 if hi else 0.0)
+    return s
+
+
+def teeth_look(L, f):
+    nb = L.nb
+    x, y, z = L.x, L.y, L.z
+
+    def groove(v, c, w):
+        return nb.ss(nb.sub(0.0, nb.absf(nb.sub(v, mm(c)))), -mm(2 * w), -mm(w))
+
+    gum = L.k(GUM, GUM_IN)
+    C_ = Coat(L, hexc("#D8445B"), 0.3, 0.0)
+    # glossy pink-red plastic, its tone a little uneven as moulded plastic is, a fine stipple
+    C_.paint(gum, nb.tint(hexc("#D8445B"), nb.mr(L.noise(170.0, 1, detail=3), 0.3, 0.7, 0.92, 1.06)),
+             nb.mr(L.noise(300.0, 2, detail=2), 0.3, 0.7, 0.26, 0.36), 0.0,
+             nb.mul(nb.mr(L.noise(1400.0, 9, detail=2), 0.35, 0.65, -0.5, 0.5), 0.12))
+    # deeper red inside the mouth, where the light never reached the plastic
+    C_.paint(L.k(GUM_IN), hexc("#9E2C40"), 0.45)
+    # rubbed paler on the high edges where it's been handled and dropped
+    edge = L.edge(mm(0.7), k=4.0)
+    C_.paint(nb.mul(nb.mul(gum, edge), nb.ss(L.noise(380.0, 3, detail=4), 0.45, 0.6)),
+             hexc("#E57E8D"), 0.5)
+    # the teeth: cream enamel-look plastic, yellowed toward the gum, glossy; the top row's
+    # coordinates are worked back to where it lies shut (it's drawn open)
+    cb, sb = math.cos(math.radians(DRAWN)), math.sin(math.radians(DRAWN))
+    hy, hz = mm(TT["hinge"][1]), mm(TT["hinge"][2])
+    zs = nb.add(hz, nb.add(nb.mul(nb.sub(y, hy), sb), nb.mul(nb.sub(z, hz), cb)))
+    upper = nb.ss(z, mm(OCC + 1.0), mm(OCC + 1.2))
+    zt = nb.mixf(upper, z, zs)
+    from_tip = nb.absf(nb.sub(zt, mm(OCC)))
+    tooth = L.k(TOOTH)
+    C_.paint(tooth, nb.tint(hexc("#F2EAD3"), nb.mr(L.noise(420.0, 4, detail=3), 0.3, 0.7, 0.95, 1.03)),
+             0.16, 0.0)
+    C_.paint(nb.mul(tooth, nb.mr(from_tip, mm(2.5), mm(7.0), 0.0, 0.7)), hexc("#D9C38E"), 0.22)
+    # a hairline of grime where each tooth goes into the gum
+    C_.paint(nb.mul(tooth, nb.mul(nb.ss(from_tip, mm(5.6), mm(7.8)), 0.4)), hexc("#8C6A4A"), 0.4)
+    # the moulding's parting line round each tooth's tip, a hair paler, and a few scuffs
+    C_.paint(nb.mul(tooth, nb.mul(nb.ss(nb.sub(0.0, from_tip), -mm(0.5), -mm(0.25)),
+                                  nb.ss(L.noise(260.0, 5), 0.4, 0.6))), hexc("#FFFBEE"), 0.3)
+    # the feet: glossy orange, scuffed dull and darker on the soles, a mould seam round the side
+    foot = L.k(FOOT)
+    C_.paint(foot, nb.tint(hexc("#F0701A"), nb.mr(L.noise(200.0, 6, detail=3), 0.3, 0.7, 0.93, 1.05)),
+             nb.mr(L.noise(340.0, 7, detail=2), 0.3, 0.7, 0.3, 0.42), 0.0)
+    sole = nb.mul(foot, nb.ss(nb.sub(0.0, L.nz), 0.4, 0.7))
+    C_.paint(sole, nb.tint(hexc("#9A4B1E"), nb.mr(L.noise(500.0, 8, detail=4), 0.3, 0.7, 0.8, 1.1)), 0.75)
+    side = nb.inv(nb.ss(nb.absf(L.nz), 0.6, 0.8))
+    C_.paint(nb.mul(nb.mul(foot, groove(z, 4.6, 0.12)), side), hexc("#FF9B55"), 0.45, None, 0.3)
+    C_.paint(nb.mul(nb.mul(foot, edge), nb.ss(L.noise(420.0, 10, detail=4), 0.5, 0.62)),
+             hexc("#F7A066"), 0.55)
+    # the key: white plastic gone ivory, glossy where fingers wore it
+    key = L.k(KEYP)
+    C_.paint(key, nb.tint(hexc("#ECE6D6"), nb.mr(L.noise(300.0, 11, detail=3), 0.3, 0.7, 0.94, 1.03)),
+             0.3, 0.0)
+    # the clockwork: tin gone dull and a little oily; brass gears
+    mech = L.k(MECH)
+    C_.paint(mech, nb.tint(hexc("#D2D2C8"), nb.mr(L.noise(260.0, 12, detail=4), 0.3, 0.7, 0.85, 1.05)),
+             nb.mr(L.noise(400.0, 13, detail=2), 0.3, 0.7, 0.42, 0.58), 0.35)
+    C_.paint(L.k(GEAR), nb.tint(hexc("#C9A04A"), nb.mr(L.noise(300.0, 14, detail=3), 0.3, 0.7, 0.8, 1.05)),
+             0.3, 1.0)
+    C_.finish(f.dust, grime=0.3)
+    return C_.surface(bump_dist=0.0006, bump=0.5)
+
+
+# --- how it runs ----------------------------------------------------------------------------------
+
+FPS = 240.0
+
+
+def rdp(ts, vs, eps):
+    """The fewest keys a straight line between them keeps within eps of the curve (the die-cast
+    car's)."""
+    keep = [0, len(ts) - 1]
+    stack = [(0, len(ts) - 1)]
+    while stack:
+        a, b = stack.pop()
+        worst, at = 0.0, None
+        for i in range(a + 1, b):
+            u = (ts[i] - ts[a]) / (ts[b] - ts[a])
+            e = abs(vs[i] - (vs[a] + (vs[b] - vs[a]) * u))
+            if e > worst:
+                worst, at = e, i
+        if at is not None and worst > eps:
+            keep.append(at)
+            stack += [(a, at), (at, b)]
+    keep.sort()
+    out = [(round(ts[i], 3), round(vs[i], 5), "Linear", "In") for i in keep]
+    out[0] = out[0][:2]
+    return out
+
+
+def chatter_rate(t):
+    u = min(t / CH["length"], 1.0)
+    return CH["rate"] * (1 - CH["fade"] * u) * max(0.0, 1 - u ** CH["knee"]) ** 0.5
+
+
+def teeth_chatter():
+    """The run: a crank turning at the snap rate, slowing and giving out. The top jaw is levered
+    open by its cam and snaps shut on each half turn; each snap lands a footfall."""
+    dt = 1.0 / FPS
+    r0, A, B = CH["rate"], mm(CH["stride"]), mm(CH["lift"])
+    # the crank, sampled: psi counts snaps
+    t, psi, ts, ps, rs = 0.0, 0.4, [], [], []
+    stop = None
+    while True:
+        r = chatter_rate(t) if stop is None else 0.0
+        if stop is None and t > 0.5 and r < 1.0 / CH["last"]:
+            stop, r = t, 0.0
+        ts.append(t)
+        ps.append(psi)
+        rs.append(r)
+        if stop is not None and t > stop + 1.3:
+            break
+        psi += r * dt
+        t += dt
+    n = len(ts)
+    dur = round(ts[-1], 2)
+    # snaps where psi crosses a whole number
+    snaps = [ts[i] for i in range(1, n) if math.floor(ps[i]) > math.floor(ps[i - 1])]
+    # the jaw: levered open by the cam over most of each beat, slammed shut, a tiny rebound
+    jaw = [(0.0, 0.0)]
+    first = snaps[0]
+    jaw.append((first * 0.7, CH["open"] * 0.6 - DRAWN, "Sine", "Out"))
+    for k, tc in enumerate(snaps):
+        P = (snaps[k + 1] - tc) if k + 1 < len(snaps) else (tc - snaps[k - 1]) * 1.3
+        e = max(0.35, min(1.0, (chatter_rate(tc) / r0) ** 1.2))
+        jaw += [(tc, -DRAWN, "Quad", "In"), (tc + 0.022, -DRAWN + 2.4 * e, "Quad", "Out"),
+                (tc + 0.045, -DRAWN, "Quad", "In")]
+        if k + 1 < len(snaps):
+            jaw.append((tc + 0.82 * P, -DRAWN + CH["open"] * e, "Sine", "InOut"))
+    # spent: the cam leaves it half open, and the spring lets it sag back to its grin
+    tl = snaps[-1]
+    jaw += [(tl + 0.3, -DRAWN + 0.35 * CH["open"], "Sine", "Out"), (tl + 1.1, 0.0, "Sine", "InOut")]
+    # the feet on the crank, a step for each foot every two snaps; the body rides the planted one
+    tr = {k: [] for k in (("FootL", "y"), ("FootL", "move"), ("FootL", "pitch"), ("FootR", "y"),
+                          ("FootR", "move"), ("FootR", "pitch"), ("Base", "x"), ("Base", "y"),
+                          ("Base", "yaw"), ("Base", "roll"), ("Base", "pitch"), ("Key", "turn"))}
+    bx = by = yaw = 0.0
+    wound = 180.0 * CH["winds"]
+    psi_end = ps[-1]
+    last_snap = -1.0
+    si = 0
+    for i, tt_ in enumerate(ts):
+        # how hard it's going: ramps in as the spring takes, fades as it runs down, settles
+        if tt_ < stop:
+            a = min(1.0, tt_ / 0.12) * min(1.0, (rs[i] / r0) ** 0.7)
+        else:
+            a = (chatter_rate(stop - dt) / r0) ** 0.7 * max(0.0, 1 - (tt_ - stop) / 0.25)
+        roll = CH["roll"] * a * math.sin(math.pi * ps[i] + 1.5 * math.pi)
+        th = math.pi * ps[i] + 1.5 * math.pi
+        for part, ph, fx in (("FootL", th, -TF["x"]), ("FootR", th + math.pi, TF["x"])):
+            sw = max(0.0, math.sin(ph))
+            tr[(part, "y")].append(A * a * math.cos(ph))
+            # lifted, plus what keeps the planted sole on the floor as the body rolls onto it
+            tr[(part, "move")].append(B * a * sw ** 1.5
+                                      + max(0.0, mm(fx) * math.sin(math.radians(roll))))
+            tr[(part, "pitch")].append(-CH["toe"] * a * sw ** 1.2)
+        v = A * a * math.pi * rs[i] * abs(math.sin(th))
+        yaw += math.radians(CH["drift"] * math.sin(2 * math.pi * 0.21 * tt_ + 0.8) * a) * dt
+        f = Vector((math.sin(yaw), -math.cos(yaw), 0.0))
+        tr[("Base", "x")].append(bx)
+        tr[("Base", "y")].append(by)
+        bx, by = bx + f.x * v * dt, by + f.y * v * dt
+        tr[("Base", "yaw")].append(math.degrees(yaw) + CH["wiggle"] * a * math.cos(th))
+        tr[("Base", "roll")].append(roll)
+        while si < len(snaps) and snaps[si] <= tt_:
+            last_snap = snaps[si]
+            si += 1
+        jolt = math.exp(-(tt_ - last_snap) / 0.03) if last_snap >= 0 else 0.0
+        frac = ps[i] - math.floor(ps[i])
+        tr[("Base", "pitch")].append(a * (-1.4 * frac + 1.6 * jolt))
+        tr[("Key", "turn")].append(wound * (1.0 - (ps[i] - ps[0]) / (psi_end - ps[0])))
+    # keys where each curve turns (a sine is exact between its turning points eased Sine InOut),
+    # so a stride costs a few keys, not a sampled curve: the crank's phase in quarter turns
+    stop_i = next(i for i, t_ in enumerate(ts) if t_ >= stop)
+    ends = {0, stop_i, min(n - 1, stop_i + int(0.25 * FPS)), n - 1}
+
+    def turning(phase, step, off=0.0):
+        """Sample indices where phase / step + off crosses a whole number."""
+        out_ = set(ends)
+        for i in range(1, n):
+            if math.floor(phase[i] / step + off) != math.floor(phase[i - 1] / step + off):
+                out_.add(i)
+        return sorted(out_)
+
+    thL = [math.pi * p_ + 1.5 * math.pi for p_ in ps]
+    thR = [t_ + math.pi for t_ in thL]
+    pick = {("FootL", "y"): turning(thL, math.pi), ("FootR", "y"): turning(thR, math.pi),
+            ("FootL", "move"): turning(thL, math.pi / 2), ("FootR", "move"): turning(thR, math.pi / 2),
+            ("FootL", "pitch"): turning(thL, math.pi / 2), ("FootR", "pitch"): turning(thR, math.pi / 2),
+            ("Base", "x"): turning(thL, math.pi), ("Base", "y"): turning(thL, math.pi),
+            ("Base", "yaw"): turning(thL, math.pi), ("Base", "roll"): turning(thL, math.pi, 0.5)}
+    tracks = [("Jaw", "turn", jaw)]
+    for (part, ch), vs in tr.items():
+        if max(vs) - min(vs) < 1e-6:
+            continue
+        if (part, ch) in pick:
+            ks = [(round(ts[i], 3), round(vs[i], 5), "Sine", "InOut") for i in pick[(part, ch)]]
+            ks[0] = ks[0][:2]
+        elif ch == "pitch":
+            # the body: rocks back as the jaw is levered open, jolts forward on the snap
+            ks = [(0.0, 0.0)]
+            for k_, tc in enumerate(snaps):
+                e = min(1.0, (chatter_rate(tc) / r0) ** 0.7)
+                ks += [(round(tc, 3), round(-1.4 * e, 3), "Sine", "In"),
+                       (round(tc + 0.014, 3), round(1.6 * e, 3), "Quad", "Out"),
+                       (round(tc + 0.07, 3), round(0.15 * e, 3), "Sine", "Out")]
+            ks.append((round(snaps[-1] + 0.6, 3), 0.0))
+        else:
+            ks = rdp(ts, vs, 3.0)
+        tracks.append((part, ch, ks))
+    return dur, tracks, snaps
+
+
+def teeth_wind():
+    keys, t = [(0.0, 0.0), (0.15, 0.0)], 0.15
+    for i in range(CH["winds"]):
+        keys += [(t + 0.3, 180.0 * (i + 1), "Sine", "InOut"), (t + 0.46, 180.0 * (i + 1))]
+        t += 0.46
+    return round(t + 0.2, 2), [("Key", "turn", keys)]
+
+
+TEETH_DUR, TEETH_TRACKS, SNAPS = teeth_chatter()
+TWIND_DUR, TWIND_TRACKS = teeth_wind()
+
+CHATTERING_TEETH = kit.Find(
+    "ChatteringTeeth",
+    [kit.Part("Base", tt_base),
+     kit.Part("Jaw", tt_jaw, tuple(JAW_AT), "Base", (-1, 0, 0)),
+     kit.Part("FootL", tt_foot(-1), tuple(ankle(-1)), "Base", (0, 0, 1)),
+     kit.Part("FootR", tt_foot(1), tuple(ankle(1)), "Base", (0, 0, 1)),
+     kit.Part("Key", tt_key, tuple(V(*TK["at"])), "Base", (1, 0, 0))],
+    teeth_look,
+    motions={
+        # the key wound in four half turns, a regrip between each
+        "Wind": dict(duration=TWIND_DUR, focus="Key", distance=0.75, view=(2.0, -0.9, 0.7),
+                     drop=0.0, tracks=TWIND_TRACKS),
+        # ten seconds of chattering: the top jaw levered open and slammed shut seven times a
+        # second, a footfall each snap, waddling onto the planted foot and veering as it goes,
+        # the key spinning back; it slows, gives out, and the jaw sags back to its grin
+        "Chatter": dict(duration=TEETH_DUR, focus=(0.0, mm(-4.0), mm(24.0)), distance=1.0,
+                        follow="Base", view=(-1.1, -2.0, 0.6), drop=0.0, tracks=TEETH_TRACKS),
+    },
+    dust=TT["dust"], seed=TT["seed"], texels=1600,
+)
+
+
+FINDS = [CYMBAL_MONKEY, JACK_IN_THE_BOX, CHATTERING_TEETH]
 
 if __name__ == "__main__":
     kit.main("Windups", HERE, FINDS)

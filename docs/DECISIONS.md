@@ -6003,3 +6003,17 @@ is just there, so a team keeps going for a best floor.
 - **Floors past 99 work**: a unit's number is its floor and two digits ("10102"); its plate's
   text scales to fit. Floor 101 laid and dealt in Studio Play. `DevFloorNumber` is no longer
   capped at 10.
+
+## D-227 The chattering teeth walk on feet, a footfall every snap (F-04c, Nov 15)
+
+The catalog's wind-up chattering teeth (Common, "Wind: they chatter off across the floor") are
+built as the walking kind: a moulded denture, red-pink gums and cream teeth, on two orange
+cartoon feet with a white key on the side, at the bigger listings' size (about 2.5 in). The
+feet are what let them "chatter off across the floor": plain teeth only hop in place. The jaw
+snaps 7 times a second, from the sound of a video of a walking pair (clicks about 0.085 s apart,
+the open and the snap), and the feet share its crank, so every snap lands a footfall; the body
+only moves while a foot is planted, so the soles never slide. As found, the top jaw stands 9
+degrees open in a grin (drawn that way, so the bake lights both rows of teeth), and that is how
+the template stands in the place. A run's feet and body keys sit only where each curve turns,
+eased Sine InOut, which draws the same strides as a sampled curve with a third of the keys.
+Its parts and numbers are in `art/finds/windups/README.md`.
