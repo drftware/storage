@@ -35,6 +35,7 @@ local function played(): Save.Data
 	data.purchases = { "a1b2c3", "d4e5f6" }
 	data.recipients.freeAFriend = "player_42"
 	data.bought.cutFree = 2
+	data.spares.cutFree = 1
 	return data
 end
 
@@ -58,9 +59,9 @@ local function same(a: unknown, b: unknown): boolean
 	return true
 end
 
--- A new player: nothing yet, at version 2.
+-- A new player: nothing yet, at version 3.
 do
-	ok(format:latest() == 2, "the save is at version 2")
+	ok(format:latest() == 3, "the save is at version 3")
 	local fresh = format:fresh()
 	ok(fresh.cash == 0 and fresh.bestFloor == 0, "a new player has no cash and no best floor")
 	ok(next(fresh.finds) == nil and next(fresh.sealed) == nil, "a new player keeps no finds")
@@ -80,7 +81,7 @@ do
 	local data = played()
 	local stored, problem = format:encode(data)
 	ok(stored ~= nil, `a played save can be stored ({problem})`)
-	local back, decodeProblem = format:decode(2, stored)
+	local back, decodeProblem = format:decode(3, stored)
 	ok(back ~= nil and same(back, data), `a played save comes back the same ({decodeProblem})`)
 end
 
@@ -143,7 +144,26 @@ do
 			and next(data.bought) == nil,
 		"version 1 comes up with no purchases"
 	)
-	local newer, newerProblem = format:decode(3, v1)
+	-- Version 2 as the DataStore holds it (Nov 15): a Test purchase granted.
+	local v2 = {
+		cash = 12,
+		finds = {},
+		sealed = {},
+		stamps = { finds = {}, sealed = {}, keepers = {} },
+		bestFloor = 2,
+		purchases = { "p1" },
+		recipients = {},
+		bought = { testPurchase = 1 },
+	}
+	local two, twoProblem = format:decode(2, v2)
+	ok(
+		two ~= nil
+			and two.purchases[1] == "p1"
+			and two.bought.testPurchase == 1
+			and next(two.spares) == nil,
+		`version 2 loads with its purchases and no spares ({twoProblem})`
+	)
+	local newer, newerProblem = format:decode(4, v1)
 	ok(newer == nil and newerProblem ~= nil, "a save from a newer version is refused")
 end
 

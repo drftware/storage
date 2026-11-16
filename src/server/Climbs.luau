@@ -199,6 +199,8 @@ end
 -- Where someone let back into the climb stands, in a floor's lobby (its origin's frame): in front
 -- of the car, facing the hall, as if they'd just stepped out of it.
 Climbs.Arrival = CFrame.lookAt(Vector3.new(0, 3, 6), Vector3.new(0, 3, -12))
+-- The car's spots Cut Free picks from (Trip.spot's six: front row, then back), the emptiest.
+Climbs.CarSpots = 6
 
 -- Studio only: the stand-in friends (Left.StandInTag) standing in `elevator`'s car, who ride with
 -- it as a player would, so one player can be left behind (docs/STUDIO.md).
@@ -247,6 +249,8 @@ function Climbs.new(): Climbs
 	local threads: { thread } = {}
 	local departing: Brix.SignalConnection? = nil
 	local opening: Brix.SignalConnection? = nil
+	local reaching: Brix.SignalConnection? = nil
+	local levelled: OnFloor? = nil -- the floor played whose car has reached it (Cut Free's spot)
 	local waits: { Brix.SignalConnection } = {} -- cars waited on to arrive
 	local carried: { [Player]: number } = {} -- who is being carried up, and to which floor
 	local stopped = false -- the climb's end has begun: no more carries (`ending`)
@@ -771,6 +775,38 @@ function Climbs.new(): Climbs
 		return on.origin * Climbs.Arrival
 	end
 
+	-- Where someone who Cut Free while out stands (S3-03a, the GDD: standing in the elevator when
+	-- it reaches the next floor): in the played floor's car once it has reached the floor, at
+	-- the car's spot furthest from anyone in it, facing its gate; nil before.
+	local function carSpot(): CFrame?
+		local on = playing
+		local car = on and on.elevator
+		if between or not (on and car and car.Parent and on.model.Parent) or levelled ~= on then
+			return nil
+		end
+		local pivot = car:GetPivot()
+		local best: Vector3? = nil
+		local room = -1
+		for i = 1, Climbs.CarSpots do
+			local x, z = Trip.spot(i)
+			local at = Vector3.new(x, 3, z)
+			local world = pivot:PointToWorldSpace(at)
+			local nearest = math.huge
+			for _, player in Players:GetPlayers() do
+				local character = player.Character
+				local root = character and character:FindFirstChild("HumanoidRootPart")
+				if root and root:IsA("BasePart") then
+					nearest = math.min(nearest, (root.Position - world).Magnitude)
+				end
+			end
+			if nearest > room then
+				best, room = at, nearest
+			end
+		end
+		local at = best or Vector3.new(0, 3, 4)
+		return pivot * CFrame.lookAt(at, at - Vector3.zAxis)
+	end
+
 	local system = {
 		name = "Climbs",
 		laid = laidSignal,
@@ -793,9 +829,16 @@ function Climbs.new(): Climbs
 		local w = (registry:get("watching") :: any) :: Watching.Watching -- any: as above
 		watching = w
 		w:setArrival(arrivalSpot)
+		w:setInCar(carSpot)
 		local e = elevators :: Elevators.Elevators
 		departing = e.departed:connect(departed)
 		opening = e.acted:connect(acted)
+		reaching = e.arrived:connect(function(a: Elevators.Arrival)
+			local on = playing
+			if on and a.elevator == on.elevator then
+				levelled = on
+			end
+		end)
 	end
 
 	function system.stop(_: any)
@@ -808,12 +851,12 @@ function Climbs.new(): Climbs
 			first.model:Destroy()
 			first, firstOptions = nil, nil
 		end
-		for _, c in { departing, opening } do
+		for _, c in { departing, opening, reaching } do
 			if c then
 				c:disconnect()
 			end
 		end
-		departing, opening = nil, nil
+		departing, opening, reaching = nil, nil, nil
 		laidSignal:disconnectAll()
 		handedOff:disconnectAll()
 		toppedSignal:disconnectAll()

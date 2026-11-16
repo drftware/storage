@@ -2015,8 +2015,20 @@ Done when nobody quits a climb because they were caught.
     the Creator Hub wait on `OWNER.md` (also Brix's ENG-23e).
 - [ ] **S3-03 Cut Free, Free a Friend, Free Everyone.** Offered only on the screen you see
   while caught, and Free Everyone before the results when the whole team is wrapped. Cut Free
-  while you're being carried up stands you in the car at the next floor. (Cut Free is built and
-  free in Studio, L-07d and L-08c.)
+  while you're being carried up stands you in the car at the next floor. Split for size:
+  - [x] **S3-03a1 Cut Free sold and used, on the server** (Nov 15, D-220). The `Cut Free`
+    product row; the save's version 3 holds `spares` (paid, not yet used); `CutFrees` takes the
+    press (`Remotes.CutFree`, or the watch bar's), spends a spare or puts up Roblox's prompt, and
+    on the grant frees you: wrapped, the film rips and the door hauls itself up, padlock or
+    not; carried up, you stand in the car once it reaches the next floor. A grant that lands
+    once you're free waits as a spare. Seen in Studio Play: a made-up receipt granted and kept
+    as a spare. The catch-then-free walk waits on S3-03a2's Play test and `OWNER.md`.
+  - [ ] **S3-03a2 The Cut Free button on the caught screen.** CaughtView's button beside Bang,
+    shown while `Remotes.CutFree`'s `On` is true; the watch bar's button on the same flag (not
+    Studio only). Its press, its wait while Roblox's prompt is up, and its exit with the rip.
+  - [ ] **S3-03b Free a Friend.** Pay to free a caught friend (Brix's recipients, D-206).
+  - [ ] **S3-03c Free Everyone before the results**, and playing alone: one catch ends the
+    climb today before Cut Free can be bought (ClimbEnd.over), so the end waits on the offer.
 - [ ] **S3-04 The counter's shop, and wrap colours.** Walk up to the counter and the shop
   opens; a Shop button in the lobby and Roblox's own. Its first shelf: wrap colours, with gift
   versions (GDD "Monetization", D-112). The gifts lean on Brix's gift choices (its E-075 to

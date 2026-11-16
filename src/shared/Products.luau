@@ -42,9 +42,20 @@ export type Offer = {
 
 local Products = {}
 
--- Every product, by offer name. Step 3's products (Cut Free, Free a Friend, Free Everyone, then
--- wrap colours) join as S3-03 and S3-04 put them on sale.
+-- Every product, by offer name. Step 3's products (Free a Friend, Free Everyone, then wrap
+-- colours) join as S3-03 and S3-04 put them on sale.
 Products.Rows = table.freeze({
+	-- Cut Free (S3-03a, GDD "Getting caught", DOORS' revive): caught, you pay and you're out at
+	-- once. Granted as a spare in the save, which the server spends as it frees you (CutFrees),
+	-- so one that lands after a friend already freed you waits for your next catch.
+	cutFree = table.freeze({
+		title = "Cut Free",
+		switch = "sellCutFree",
+		grant = function(_sale: Sale, data: Save.Data): string?
+			data.spares.cutFree = (data.spares.cutFree or 0) + 1
+			return nil
+		end,
+	}),
 	-- The owner's test: a real purchase on the published place that grants nothing but its count,
 	-- for Brix's ENG-23e phone test (a forced save failure, a server hop), so the test never
 	-- touches cash or anything a player plays for.

@@ -71,6 +71,10 @@ export type PurchasingSystem = Brix.System & {
 		offer: string,
 		recipient: string?
 	) -> (Brix.PurchaseListing?, Brix.PurchaseNotOnSale?),
+	-- Whether the offer named `offer` can be prompted here now: a product of its title exists on
+	-- Roblox (a made-up Studio id doesn't count), this server sells, and its switch is on. For
+	-- a screen deciding whether to show the offer's button at all.
+	sells: (self: any, offer: string) -> boolean,
 }
 
 -- The part of Recording this reads: its Analytics, made in its start.
@@ -125,6 +129,7 @@ function Purchasing.new(): PurchasingSystem
 	local live: Live.LiveSystem? = nil
 	local recorder: Recorder? = nil
 	local ids: { [string]: number }? = nil
+	local real: { [string]: true } = {} -- offers with a product on Roblox, not made up
 	local saves: Brix.Saves<Save.Data>? = nil
 	local playerPurchases: Brix.PlayerPurchases? = nil
 	local stopped = false
@@ -226,6 +231,7 @@ function Purchasing.new(): PurchasingSystem
 			local id = titles[Products.Rows[name].title]
 			if id then
 				found[name] = id
+				real[name] = true
 				table.insert(said, `{name} {id}`)
 			elseif STUDIO then
 				found[name] = index
@@ -258,6 +264,10 @@ function Purchasing.new(): PurchasingSystem
 			shown:fire({ player = player, offer = offer })
 		end
 		return listing, refused
+	end
+
+	function system.sells(_: any, offer: string): boolean
+		return playerPurchases ~= nil and real[offer] == true and switchedOn(offer)
 	end
 
 	-- The dev prompt: the offer named in Workspace's DevPrompt, to every dev player here.

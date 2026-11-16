@@ -35,6 +35,7 @@ local Pockets = require(script.Pockets)
 local Prompts = require(script.Prompts)
 local Live = require(script.Live)
 local Purchasing = require(script.Purchasing)
+local CutFrees = require(script.CutFrees)
 local Recording = require(script.Recording)
 local Ladders = require(script.Ladders)
 local MotionLights = require(script.MotionLights)
@@ -114,6 +115,9 @@ local systems: { Brix.HostEntry } = {
 	-- Robux purchases: Roblox's receipts granted into saves exactly once (after recording: it
 	-- hands Brix's Purchases Recording's analytics).
 	{ slot = "purchasing", system = Purchasing.new() },
+	-- Cut Free: the caught screen's press, its prompt, and the grant that frees you (after
+	-- purchasing, keptPlayers, watching and saving: it hears and calls all four).
+	{ slot = "cutFrees", system = CutFrees.new() },
 }
 -- The test hall and its "Walk a floor" post: Studio only now the lobby is the way in (D-109).
 if RunService:IsStudio() then

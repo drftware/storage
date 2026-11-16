@@ -16,6 +16,8 @@
 	- `recipients`: who the next purchase of an offer bought for a friend is for, by offer name
 	  (Brix's Purchases names them just before the prompt).
 	- `bought`: how many of each offer this player has bought, by offer name (`Products`).
+	- `spares`: offers paid for and not yet used, by offer name: a Cut Free whose purchase landed
+	  once you were already free waits here, and your next Cut Free press uses it (S3-03a).
 
 	The tickets that earn each write it (GDD "Saving", "The collection book"). So far: `finds` and
 	the book's `finds` page, as finds are kept at the gate (S1-06, `keep`), `cash`, as the coins
@@ -50,6 +52,7 @@ export type Data = {
 	purchases: { string },
 	recipients: { [string]: string },
 	bought: Counts,
+	spares: Counts,
 }
 
 -- The parts of Brix's SaveFormat contract the server and the spec call (`Brix.SaveFormat<Data>`).
@@ -84,6 +87,7 @@ function Save.fresh(): Data
 		purchases = {},
 		recipients = {},
 		bought = {},
+		spares = {},
 	}
 end
 
@@ -149,6 +153,24 @@ function Save.format(brix: any): Format
 		bought = Schema.map(name, count),
 	})
 
+	-- Version 3 (S3-03a, Nov 15): version 2 plus the offers paid for and not yet used, by name: a
+	-- Cut Free that landed after a friend had already freed you waits here for your next catch.
+	local third = Schema.shape({
+		cash = Schema.number({ min = 0, integer = true }),
+		finds = Schema.map(name, count),
+		sealed = Schema.map(name, count),
+		stamps = Schema.shape({
+			finds = Schema.map(name, stamped),
+			sealed = Schema.map(name, stamped),
+			keepers = Schema.map(name, stamped),
+		}),
+		bestFloor = Schema.number({ min = 0, integer = true }),
+		purchases = Schema.list(name),
+		recipients = Schema.map(name, name),
+		bought = Schema.map(name, count),
+		spares = Schema.map(name, count),
+	})
+
 	return brix.SaveFormat.versioned({
 		versions = {
 			{ schema = first },
@@ -165,6 +187,23 @@ function Save.format(brix: any): Format
 						purchases = {},
 						recipients = {},
 						bought = {},
+					}
+				end,
+			},
+			{
+				schema = third,
+				-- any: a version 2 save as Brix hands it over, already checked against `second`
+				migrate = function(old: any): any
+					return {
+						cash = old.cash,
+						finds = old.finds,
+						sealed = old.sealed,
+						stamps = old.stamps,
+						bestFloor = old.bestFloor,
+						purchases = old.purchases,
+						recipients = old.recipients,
+						bought = old.bought,
+						spares = {},
 					}
 				end,
 			},

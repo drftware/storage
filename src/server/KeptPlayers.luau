@@ -58,6 +58,7 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Caught = require(ReplicatedStorage.Shared.Caught)
+local CutFree = require(ReplicatedStorage.Shared.CutFree)
 local Deal = require(ReplicatedStorage.Shared.Deal)
 local Deals = require(script.Parent.Deals)
 local Doors = require(script.Parent.Doors)
@@ -69,7 +70,8 @@ local Prompts = require(script.Parent.Prompts)
 local Slots = require(script.Parent.Slots)
 local Specs = require(ReplicatedStorage.Shared.StorageUnit.Specs)
 
--- A kept player cut free by a friend (`cutter`, their UserId; 0 for Studio's stand-in friends).
+-- A kept player cut free by a friend (`cutter`, their UserId; 0 for Studio's stand-in friends), or
+-- by their own Cut Free (`cutter` is then their own UserId).
 export type Freed = { player: Player, cutter: number }
 
 export type KeptPlayers = Brix.System & {
@@ -81,6 +83,10 @@ export type KeptPlayers = Brix.System & {
 	-- Carried up (S3-01a): stands `player`'s new character wrapped in a unit on `floor` (a laid
 	-- floor's model), away from `near`. Yields while it streams in; false when there's no unit.
 	store: (self: any, player: Player, floor: Instance, near: Vector3) -> boolean,
+	-- Cut Free (S3-03a): `player`, wrapped inside their unit, tears free as a friend's cut tears
+	-- them (every screen plays the rip and the slump), and a beat later their door hauls itself
+	-- all the way up, its padlock off first if one is on. False when they aren't inside a unit.
+	cutFree: (self: any, player: Player) -> boolean,
 }
 
 -- A laid floor: its deck, units and their slots, its model (where its bangs are marked for
@@ -917,6 +923,26 @@ function KeptPlayers.new(): KeptPlayers
 
 	function system.store(_: any, player: Player, floor: Instance, near: Vector3): boolean
 		return store(player, floor, near)
+	end
+
+	function system.cutFree(_: any, player: Player): boolean
+		local h = held[player]
+		if not (h and h.inside) then
+			return false
+		end
+		local unit = h.unit
+		letGo(player, "Cut Free", player.UserId)
+		task.delay(CutFree.DoorAfter, function()
+			local d = doors
+			if not (unit and d and unit.Parent) then
+				return
+			end
+			if d:stateOf(unit) == "Locked" then
+				d:lock(unit, false)
+			end
+			d:move(unit, "Open")
+		end)
+		return true
 	end
 
 	function system.add(_: any, deck: Deal.Deck, laid: { [Model]: number }, floor: Instance)

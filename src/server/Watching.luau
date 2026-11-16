@@ -16,10 +16,10 @@
 	- Their screen asks for the next friend or the one before (`Remotes.Watch`, checked as every
 	  remote is: its type, that they're watching, its rate). A friend who goes (left, kept on
 	  and cleared, gone from the game) or comes back as a new character is followed to the next.
-	- Back in: Cut Free (the GDD's revive, DOORS' model) puts them on their friends' floor, in its
-	  lobby, as soon as there's a floor to stand on (not between two floors mid-ride): a new
-	  character, `Left.BackAttribute` for their screen's moment. The developer product isn't made
-	  yet, so only Studio takes the ask (`OWNER.md`).
+	- Back in: Cut Free (S3-03a, the GDD's revive, DOORS' model; CutFrees sells it) stands them
+	  in the car beside their friends once it has reached the next floor (`setInCar`), not
+	  wrapped in a unit waiting to be found: a new character, `Left.BackAttribute` for their
+	  screen's moment. The watch bar's ask is handed to CutFrees (`onCutFree`).
 	- Carried up (S3-01a): nobody is out of the climb for long. When the car they watched
 	  arrives, `carry` dips their screens to black (`Left.CarryAttribute`) and `bring` takes them
 	  out of the watch with a new character, which KeptPlayers stands wrapped in a unit on the new
@@ -62,6 +62,14 @@ export type Watching = Brix.System & {
 	-- Where someone let back in stands, on the floor the climb is on now; nil while there's no
 	-- floor to stand on (no climb, or a ride between two floors). Climbs sets it.
 	setArrival: (self: any, arrival: () -> CFrame?) -> (),
+	-- Where someone who Cut Free while out stands: in the car of the floor the climb is on, once
+	-- it has reached that floor; nil before. Climbs sets it.
+	setInCar: (self: any, inCar: () -> CFrame?) -> (),
+	-- Cut Free (S3-03a): lets `player`, left behind or watching, back into the climb, standing in
+	-- the car as it reaches the next floor. False when they aren't out, or already on their way.
+	cutFree: (self: any, player: Player) -> boolean,
+	-- Who hears a watcher's Cut Free press on the watch bar (CutFrees).
+	onCutFree: (self: any, heard: (player: Player) -> ()) -> (),
 }
 
 -- A friend who can be watched: a player in the climb, or a stand-in in Studio.
@@ -113,6 +121,8 @@ function Watching.new(): Watching
 	local connections: { RBXScriptConnection } = {}
 	local slots: Slots.Slots? = nil
 	local arrival: (() -> CFrame?)? = nil
+	local inCar: (() -> CFrame?)? = nil
+	local cutFreeHeard: ((player: Player) -> ())? = nil
 	local remote: RemoteEvent? = nil
 	local since = 0 -- seconds since the last look
 
@@ -183,8 +193,10 @@ function Watching.new(): Watching
 		task.spawn(function()
 			local spot: CFrame? = nil
 			local waited = 0
+			local find: (() -> CFrame?)? = if why == "CutFree" and inCar then inCar else arrival
 			while player.Parent and left[player] == entry do
-				spot = if arrival then arrival() else nil
+				local f = find
+				spot = if f then f() else nil
 				if spot or waited >= FLOOR_WAIT then
 					break
 				end
@@ -226,9 +238,8 @@ function Watching.new(): Watching
 		end
 		entry.asked = t
 		if what == "CutFree" then
-			-- the developer product isn't made yet: Studio only, until it is (OWNER.md)
-			if STUDIO then
-				letIn(player, "CutFree")
+			if cutFreeHeard then
+				cutFreeHeard(player)
 			end
 			return
 		end
@@ -441,6 +452,23 @@ function Watching.new(): Watching
 
 	function system.setArrival(_: any, f: () -> CFrame?)
 		arrival = f
+	end
+
+	function system.setInCar(_: any, f: () -> CFrame?)
+		inCar = f
+	end
+
+	function system.cutFree(_: any, player: Player): boolean
+		local entry = left[player]
+		if not (entry and not entry.rejoining and player.Parent) then
+			return false
+		end
+		letIn(player, "CutFree")
+		return true
+	end
+
+	function system.onCutFree(_: any, heard: (player: Player) -> ())
+		cutFreeHeard = heard
 	end
 
 	return system

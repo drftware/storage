@@ -62,6 +62,13 @@ nowhere else.
   9. Tell the next session it passed (or what didn't), so Brix's ENG-23e is marked done in its
      HANDOFF.
 
+- [ ] **Make the Cut Free product and pick its price** (S3-03a1, D-220; a made-up receipt seen
+  in Studio Play, a real purchase never made). The GDD prices revives at 40 to 55 Robux.
+  1. Creator Hub > this experience > Monetization > Developer Products: make one named exactly
+     `Cut Free`, at your price (default if you don't decide: 45 Robux).
+  2. Publish, play, and in the Server log (F9) look for `[Purchasing] products: cutFree <number>`.
+  3. The caught screen's button comes in S3-03a2; its test steps follow there.
+
 - [ ] **Look at the packed unit's stacks** (B-05a, D-215; judged by Claude in renders, imported
   into Studio, not yet laid on any floor). The blocks a packed unit's walls will be built from are
   in the place at `ReplicatedStorage.Props.Packed` (seven MeshParts, put there by hand this
@@ -1768,10 +1775,9 @@ friend, a phone, and how it feels.
   1000-stud jump under Automatic graphics (as it did for riders in L-08b): does a phone?
 - [ ] **Left behind while kept:** get caught on floor 1 and stay kept as the car leaves with your
   friend. You should get the same moment from inside the unit, then watch them. Untested.
-- [ ] **Decide, defaults in place** (D-105): (1) **Cut Free** is the GDD's paid revive (40 to 55
-  Robux): make the developer product and say its price; until then only Studio shows the button
-  (it's free there, so you can feel it). It puts you in your friends' lobby in front of the car,
-  facing the hall, with the film's rip and "Back in"; mid-ride it waits for the next floor. (2)
+- [ ] **Decide, defaults in place** (D-105): (1) Moot since S3-03a1 (D-220): Cut Free's product
+  and price are the "Make the Cut Free product" item; bought while left behind, it now stands
+  you in the car once it reaches the next floor. (2)
   What you carried when left behind drops and goes with the floor. (3) Moot since S3-01a: the
   bar's "Back in when they finish" line is gone, because you're never out for longer than a ride.
 

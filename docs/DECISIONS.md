@@ -5801,6 +5801,31 @@ beside its box, 2.1 across, so that box can't come nearer the path than it stand
 - A sleeper with a box in its clearing walks through it at the bend; a ROADMAP polish line.
 Not chosen: a deeper clearing (re-lays every unit's stacks); a glow from the box (a polish line).
 
+## D-220 Cut Free on the server: a spare in the save, spent as it frees you (S3-03a1, Nov 15)
+The GDD's "Getting caught": the screen you see while caught offers Cut Free, for Robux only; it
+frees you right now, and bought while you're carried up, you're standing in the elevator when it
+reaches the next floor. DOORS' revive. Built: `Products.Rows.cutFree` (title `Cut Free`, switch
+`sellCutFree`); the save's version 3 adds `spares` (offers paid for and not yet used, by name);
+`CutFree` (shared numbers, `spares`, `spend`); `CutFrees` (server system, slot `cutFrees`).
+- **The grant is a spare, spent as you're freed.** A purchase lands seconds after the press, and
+  by then a friend may have cut you free or the climb may have ended. Freeing you straight from
+  the grant would lose that purchase, so the grant only adds a spare (saved before Roblox hears
+  it's granted), and once saved CutFrees spends it on freeing you. If you can't be freed it waits
+  in the save, and your next press uses it with no prompt. DOORS keeps bought revives too.
+- **Freed in your unit, the door hauls itself up.** The film rips off you as a friend's cut rips
+  it (every screen plays it; the record counts you freed, cutter yourself), then
+  `CutFree.DoorAfter` (0.45 s) later the door rolls all the way up on its own, its padlock off
+  first if one is on. Not chosen: standing you in the lobby (the old Studio let-in) or leaving
+  you shut in the dark (a paid escape you'd still need a friend for).
+- **Carried up, you stand in the car once it has reached the floor** (`Climbs`' car spot, the
+  emptiest of the car's six riding spots, facing the gate), not mid-ride, where your screen
+  wouldn't show the ride your friends see. A purchase that lands after you're already in a unit
+  frees you there instead.
+- **The button shows only while it can sell**: `Remotes.CutFree`'s `On` (a product of that title
+  exists and its switch is on; checked every 2 s). In Studio it's always on, and with no product
+  to prompt a press frees you for nothing, as before, so its moment can be felt.
+- Split for size: S3-03a1 (this), S3-03a2 (the buttons), S3-03b, S3-03c.
+
 ## D-219 A sleeper waits just round the bend, its box behind it (B-05b2b fix, Nov 15)
 - **The moment:** you walk the dark path, turn the corner, and the Mannequin is right there,
   side-on to the doorway and facing you; the marked box waits behind it at the far end, and you
