@@ -12,9 +12,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   Mannequin, it came at the player, froze 9.5 studs from the lantern, held 35 s with nobody near
   and walked on as the light ran out. New Studio hook: Workspace `StandMannequin`.
 - F-G1b is done but for F-G1b3c (the RC car), which waits on `OWNER.md`.
-- Find art (`art/finds/WAVES.md`): the wind-up mouse built by the art run (Nov 16, F-04d, D-232),
-  uploaded and in the place; next the clockwork tin bird (F-04d2). The run commits its own files
-  by path; a shared doc holding its lines and yours: stage HEAD plus your own lines only.
+- Find art (`art/finds/WAVES.md`): the clockwork tin bird half built by the art run (Nov 16,
+  F-04d2: modelled, baked, Luau exported, its sheets not yet judged; finds can now hop, a `y`
+  travel channel). The run commits its own files by path; stage HEAD plus your own lines only.
 
 ## Next task: S3-05a Two players left behind land on top of each other, and can't be cut free
 The moment: left behind, you wake shut in a unit of your own, wrapped, bang on the door, and a

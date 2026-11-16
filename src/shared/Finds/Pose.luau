@@ -163,12 +163,12 @@ function Pose.solve(find: Art.Find, values: Values): { [string]: Affine }
 		else
 			own = Pose.mul(onto, Pose.mul(grow, off))
 		end
-		local x, z = v.x or 0, v.z or 0
+		local x, y, z = v.x or 0, v.y or 0, v.z or 0
 		local yaw, pitch, roll = v.yaw or 0, v.pitch or 0, v.roll or 0
-		if x ~= 0 or z ~= 0 or yaw ~= 0 or pitch ~= 0 or roll ~= 0 then
+		if x ~= 0 or y ~= 0 or z ~= 0 or yaw ~= 0 or pitch ~= 0 or roll ~= 0 then
 			local lean =
 				Pose.mul(turn(0, 1, 0, yaw), Pose.mul(turn(1, 0, 0, pitch), turn(0, 0, 1, roll)))
-			own = Pose.mul(move(x, 0, z), Pose.mul(onto, Pose.mul(lean, Pose.mul(off, own))))
+			own = Pose.mul(move(x, y, z), Pose.mul(onto, Pose.mul(lean, Pose.mul(off, own))))
 		end
 		out[p.Name] = Pose.mul(base, own)
 	end

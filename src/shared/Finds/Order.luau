@@ -9,6 +9,7 @@ return {
 	ChatteringTeeth = { "Wind", "Chatter" },
 	WalkingRobot = { "Wind", "Walk" },
 	WindupMouse = { "Wind", "Zip" },
+	TinBird = { "Wind", "Hop" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },

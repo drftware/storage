@@ -14,6 +14,7 @@ sys.path.insert(0, HERE)
 import bmesh  # noqa: E402
 from mathutils import Matrix, Vector  # noqa: E402
 
+import ease  # noqa: E402
 import kit  # noqa: E402
 import spec as K  # noqa: E402
 from look import Coat, hexc  # noqa: E402
@@ -2726,7 +2727,623 @@ WINDUP_MOUSE = kit.Find(
 )
 
 
-FINDS = [CYMBAL_MONKEY, JACK_IN_THE_BOX, CHATTERING_TEETH, WALKING_ROBOT, WINDUP_MOUSE]
+# --- The clockwork tin bird (F-04d2) --------------------------------------------------------------
+# An antique printed-tin songbird of our own (README): two pressed halves crimped along the back
+# and belly, a bill of folded tin, a loose fan tail riveted under the rump, wire legs on stamped
+# feet, a brass key in its left side. Wound and set down, it hops in little jumps, three at a
+# time, then lifts its head, cocks its tail and whistles twice, lower and slower as it runs down.
+
+BD = K.BIRD
+HP = K.HOP
+(TINB, BILL, MOUTH, TAILT, TAILB, TAILR, LEGW, FOOT, BKEY) = range(45, 54)
+
+
+def bd_section(row, a):
+    """A point round the body's section `row` (y, half width, belly, back, widest line) at angle
+    a, anticlockwise seen from behind (+Y): two half ellipses meeting at the widest line."""
+    y, hw, zb, zt, low = row
+    zc = zb + low * (zt - zb)
+    c, s = math.cos(a), math.sin(a)
+    h = zt - zc if s >= 0 else zc - zb
+    return (-hw * c, y, zc + h * s)
+
+
+BD_FINE = smooth_rows([tuple(r) for r in BD["body"]], 8)
+
+
+def bd_row(y):
+    for a, b in zip(BD_FINE, BD_FINE[1:]):
+        if a[0] <= y <= b[0]:
+            u = (y - a[0]) / (b[0] - a[0])
+            return tuple(p + (q - p) * u for p, q in zip(a, b))
+    return BD_FINE[-1]
+
+
+def bd_x(y, z):
+    """The body's half width (mm) at y and height z."""
+    _, hw, zb, zt, low = bd_row(y)
+    zc = zb + low * (zt - zb)
+    h = zt - zc if z >= zc else zc - zb
+    s = min(1.0, abs(z - zc) / max(h, 1e-6))
+    return hw * math.sqrt(max(0.0, 1 - s * s))
+
+
+def bd_body(hi):
+    s = Shape()
+    rows = smooth_rows([tuple(r) for r in BD["body"]], 4 if hi else 2)
+    n = segs(hi, 24)
+    rings = []
+    for i, row in enumerate(rows):
+        y, hw, zb, zt, low = row
+        if i in (0, len(rows) - 1):
+            rings.append([(mm(0.0), mm(y), mm((zb + zt) / 2))])
+        else:
+            rings.append([tuple(mm(v) for v in bd_section((y, max(hw, 0.05), zb, zt, low),
+                                                          2 * math.pi * j / n)) for j in range(n)])
+    s.loft(rings, TINB)
+    return s
+
+
+def bill_rings(upper, hi, gap=0.0):
+    """The folded tin bill, base (sunk in the face) to tip: D-shaped rings, the upper bill's
+    round side up and the lower's down, their flat sides meeting at the gape."""
+    b = BD["bill"]
+    (y0, z0), (y1, z1) = b["base"], b["tip"]
+    m, k = segs(hi, 8), segs(hi, 3)
+    nr = segs(hi, 7)
+    rings = []
+    for i in range(nr + 1):
+        u = i / nr
+        y = y0 + (y1 - y0) * u
+        zg = z0 + (z1 - z0) * u - b["droop"] * u * u - gap
+        if i == nr:
+            rings.append([(mm(0.0), mm(y), mm(zg))])
+            break
+        w = b["hw"] * (1 - u) ** 0.85
+        h = (b["up"] if upper else b["lo"]) * (1 - u) ** 0.75
+        ring = []
+        if upper:      # over the top from +x to -x, then back along the flat underside
+            ring += [(w * math.cos(math.pi * j / m), zg + h * math.sin(math.pi * j / m)) for j in range(m)]
+            ring += [(-w + 2 * w * j / k, zg) for j in range(k)]
+        else:          # under from -x to +x, then back along the flat top
+            ring += [(-w * math.cos(math.pi * j / m), zg - h * math.sin(math.pi * j / m)) for j in range(m)]
+            ring += [(w - 2 * w * j / k, zg) for j in range(k)]
+        rings.append([(mm(x), mm(y), mm(z)) for x, z in ring])
+    return rings, m
+
+
+def bd_bill(hi):
+    s = Shape()
+    rings, m = bill_rings(True, hi)
+    s.loft(rings, BILL, kinds=lambda j: BILL if j < m else MOUTH)
+    return s
+
+
+def bd_beak(hi):
+    s = Shape()
+    rings, m = bill_rings(False, hi, gap=0.06)
+    s.loft(rings, BILL, kinds=lambda j: BILL if j < m else MOUTH)
+    return s
+
+
+def plate(s, cols, t, kinds, M=Matrix()):
+    """A tin plate (mm) from a grid of its top surface `cols` [i][j] (i across, j along), `t`
+    thick below it, placed by M: its top, its underside and its rim strip are each one island
+    unrolled at true size. `kinds` (top, underside, rim)."""
+    ni, nj = len(cols), len(cols[0])
+    top = [[s._v(V(*p), M) for p in col] for col in cols]
+    bot = [[s._v(V(p[0], p[1], p[2] - t), M) for p in col] for col in cols]
+    ko, ku, kr = kinds
+    o1, o2 = s.island(), s.island()
+    for i in range(ni - 1):
+        for j in range(nj - 1):
+            q = [(i, j), (i + 1, j), (i + 1, j + 1), (i, j + 1)]
+            s._f([top[a][b] for a, b in q], ko, [o1 + Vector((mm(cols[a][b][0]), mm(cols[a][b][1])))
+                                                 for a, b in q])
+            q.reverse()
+            s._f([bot[a][b] for a, b in q], ku, [o2 + Vector((-mm(cols[a][b][0]), mm(cols[a][b][1])))
+                                                 for a, b in q])
+    # the rim, anticlockwise round the outline seen from above
+    loop = ([(i, 0) for i in range(ni - 1)] + [(ni - 1, j) for j in range(nj - 1)]
+            + [(i, nj - 1) for i in range(ni - 1, 0, -1)] + [(0, j) for j in range(nj - 1, 0, -1)])
+    o3, run = s.island(), 0.0
+    for q, (a, b) in enumerate(loop):
+        c, d = loop[(q + 1) % len(loop)]
+        step = (Vector(cols[c][d]) - Vector(cols[a][b])).length
+        uv = [o3 + Vector((mm(u), mm(v))) for u, v in ((run, 0.0), (run + step, 0.0), (run + step, t), (run, t))]
+        s._f([bot[a][b], bot[c][d], top[c][d], top[a][b]], kr, uv)
+        run += step
+
+
+def tail_cols(hi):
+    """The fan tail's top in its own frame: across x, along +y from its root, the fold along its
+    middle lifting the rib, the end cut into rounded feather tips, the outer ones shorter."""
+    tl = BD["tail"]
+    ln, (w0, w1), tips = tl["len"], tl["w"], tl["tips"]
+    ni, nj = segs(hi, 20) + 1, segs(hi, 7) + 1
+    fold = math.tan(math.radians(tl["fold"]))
+    cols = []
+    for i in range(ni):
+        u = -1 + 2 * i / (ni - 1)
+        k = min(tips - 1, int((u + 1) / 2 * tips))
+        q = (u + 1) / 2 * tips - k
+        end = ln - 2.6 * u * u - 3.4 * (1 - math.sqrt(max(0.0, 1 - (2 * q - 1) ** 2)))
+        col = []
+        for j in range(nj):
+            v = j / (nj - 1)
+            y = end * v
+            x = u * (w0 + (w1 - w0) * (y / ln) ** 0.8) / 2
+            col.append((x, y, -abs(x) * fold - 0.006 * y * y / 10))
+        cols.append(col)
+    return cols
+
+
+def tail_frame():
+    tl = BD["tail"]
+    return T(V(0.0, *tl["root"])) @ Matrix.Rotation(math.radians(tl["rise"]), 4, "X")
+
+
+def bd_tail(hi):
+    s = Shape()
+    plate(s, tail_cols(hi), BD["tail"]["t"], (TAILT, TAILB, TAILR), tail_frame())
+    return s
+
+
+def foot_at(sx):
+    return Vector((sx * BD["leg"]["x"], BD["leg"]["foot"], 0.0))
+
+
+def bd_legs(hi):
+    """Two wire legs out of the crank in the belly, each on a stamped foot: three toes ahead,
+    one behind, a round heel where they meet. Both swing together about the hip."""
+    s = Shape()
+    lg, tw = BD["leg"], BD["toe"]
+    hy, hz = BD["hip"]
+    for sx in (1, -1):
+        heel = foot_at(sx)
+        pts = [heel + Vector((0.0, 0.3, 0.9)), heel + Vector((0.0, -0.1, 6.0)),
+               heel + Vector((0.0, 0.7, 13.5)), Vector((heel.x, hy, hz + 1.5))]
+        s.tube([tuple(V(*p)) for p in pts], mm(lg["r"]), LEGW, segs(hi, 6),
+               radii=[mm(lg["r"] * f) for f in (1.25, 1.0, 1.0, 1.0)])
+        s.cylinder(V(heel.x, heel.y, 0.0), V(heel.x, heel.y, tw["t"] + 0.35), mm(2.2), FOOT,
+                   segs(hi, 12))
+        for ln, ang in BD["toes"]:
+            a = math.radians(ang) * sx
+            d = Vector((math.sin(a), -math.cos(a), 0.0))
+            side = Vector((d.y, -d.x, 0.0))     # across, so across x along is up
+            ni, nj = segs(hi, 4) + 1, segs(hi, 4) + 1
+            cols = []
+            for i in range(ni):
+                u = -1 + 2 * i / (ni - 1)
+                end = ln - 1.0 * (1 - math.sqrt(max(0.0, 1 - u * u)))
+                col = []
+                for j in range(nj):
+                    v = j / (nj - 1)
+                    r = 1.2 + (end - 1.2) * v
+                    w = tw["w"] * (1 - 0.4 * v) / 2
+                    p = heel + d * r + side * (u * w)
+                    col.append((p.x, p.y, tw["t"] + 0.25 * (1 - v) ** 2))
+                cols.append(col)
+            plate(s, cols, tw["t"], (FOOT, FOOT, FOOT))
+    return s
+
+
+def bd_key_at():
+    k = BD["key"]
+    return Vector((bd_x(k["y"], k["z"]) - 0.4, k["y"], k["z"]))
+
+
+def bd_key(hi):
+    """The wing key out of its left side, the mouse's."""
+    s = Shape()
+    k = BD["key"]
+    Mk = T(V(*bd_key_at())) @ Matrix.Rotation(math.radians(-90), 4, "Z")
+    r, ln = k["shaft"]
+    s.cylinder(Mk @ V(0.0, -1.5, 0.0), Mk @ V(0.0, ln, 0.0), mm(r), BKEY, segs(hi, 10))
+    s.cylinder(Mk @ V(0.0, ln - 1.8, 0.0), Mk @ V(0.0, ln, 0.0), mm(2.3), BKEY, segs(hi, 14))
+    hw, hl, out = k["wing"]
+    t = k["t"]
+    m = segs(hi, 14)
+    Mw = Mk @ Matrix.Rotation(math.radians(90), 4, "Y")
+    yc = ln + hl - 0.6
+    bv = 0.25 if hi else 0.0
+    for sw in (1, -1):
+        lobe = [(sw * out + hw * math.cos(2 * math.pi * j / m), yc + hl * math.sin(2 * math.pi * j / m))
+                for j in range(m)]
+        prism(s, lobe, -t / 2, t / 2, BKEY, Mw, bv)
+    prism(s, [(2.4, ln - 0.6), (2.4, yc + 1.8), (-2.4, yc + 1.8), (-2.4, ln - 0.6)], -t / 2, t / 2,
+          BKEY, Mw, bv)
+    return s
+
+
+def bird_look(L, f):
+    nb = L.nb
+    xm, ym, zm = nb.mul(L.x, K.STUD_MM), nb.mul(L.y, K.STUD_MM), nb.mul(L.z, K.STUD_MM)
+    ax = nb.absf(xm)
+
+    def sq(v):
+        return nb.mul(v, v)
+
+    def lin(c, *terms):
+        """c plus each (k, v) as k times v."""
+        out = c
+        for k, v in terms:
+            out = nb.add(out, nb.mul(v, k))
+        return out
+
+    def both(*ms):
+        out = ms[0]
+        for m in ms[1:]:
+            out = nb.mul(out, m)
+        return out
+
+    def less(v, a, soft=0.15):
+        """1 below a."""
+        return nb.ss(v, a + soft, a - soft)
+
+    def disc(u, v, cu, cv, r, soft=0.12):
+        return less(nb.math("SQRT", nb.add(sq(nb.sub(u, cu)), sq(nb.sub(v, cv)))), r, soft)
+
+    def scales(u, v, pu, pv, k=2.0):
+        """Overlapping printed feathers in rows along u (each row `pu` mm), their round tips
+        toward +u and every other row offset half a feather: how far toward a feather's rim a
+        point lies, 0 at its base, 1 on its rim."""
+        a = nb.div(u, pu)
+        row = nb.math("FLOOR", a)
+        c = nb.add(nb.div(v, pv), nb.mul(nb.math("FLOORED_MODULO", row, 2.0), 0.5))
+        fa, fc = nb.fract(a), nb.sub(nb.fract(c), 0.5)
+        return nb.math("SQRT", nb.add(sq(fa), sq(nb.mul(fc, k))))
+
+    CREAM, GOLD, OCHRE, SCAR, CRIMSON = "#EFE2C2", "#E7AE34", "#C9822A", "#C22B26", "#86171A"
+    INK, OLIVE, DBROWN, TEAL, TEAL2 = "#1A1612", "#77653A", "#3A2A1E", "#2E6E78", "#245A63"
+    BARGOLD, BUFF, GREY, RUST, TINP = "#F0C24A", "#B98F55", "#8D8B78", "#B0532A", "#C3C5BE"
+    grain = L.noise(700.0, 1, detail=1)
+    tone = nb.mr(grain, 0.3, 0.7, 0.96, 1.03)
+    gloss = nb.mr(L.noise(90.0, 2, detail=3), 0.3, 0.7, 0.22, 0.32)
+    C = Coat(L, hexc(CREAM), gloss, 0.0, 0.0)
+    tin = L.k(TINB)
+    side = nb.ss(nb.absf(L.nx), 0.15, 0.45)
+    up = nb.ss(L.nz, 0.2, 0.55)
+    down = nb.ss(nb.sub(0.0, L.nz), 0.35, 0.7)
+
+    # --- the gold throat and breast, deeper ochre round the flanks, streaked brown on the sides
+    zg = lin(44.0, (-0.012, sq(nb.add(ym, 34.0))))
+    breast = both(tin, less(nb.sub(zm, zg), 0.0, 1.2))
+    deep = nb.mr(nb.add(nb.mul(nb.absf(L.nx), 0.8), nb.mul(nb.ss(zm, 26.0, 40.0), 0.5)), 0.2, 1.1, 0.0, 1.0)
+    C.paint(breast, nb.mixc(deep, nb.tint(hexc(GOLD), tone), hexc(OCHRE)), gloss)
+    streak = nb.ss(L.noise(260.0, 3, stretch=(1.0, 1.0, 0.22), detail=2), 0.64, 0.71)
+    C.paint(both(breast, streak, nb.ss(ax, 7.0, 11.0), nb.ss(ym, -20.0, -12.0)), hexc("#93552A"), gloss)
+    # the belly behind the legs: cream, shading to buff toward the rump
+    C.paint(both(tin, nb.ss(ym, 4.0, 16.0), down, nb.ss(ym, 20.0, 32.0)), hexc(BUFF), gloss)
+
+    # --- the back between the wings: olive, scalloped with small dark-edged feathers; a buff rump
+    back = both(tin, up, nb.ss(ym, -11.0, -6.0))
+    C.paint(back, nb.tint(hexc(OLIVE), tone), gloss)
+    dm = scales(nb.add(ym, 8.0), xm, 2.6, 2.3)
+    C.paint(both(back, nb.band(dm, 0.62, 0.86, 0.06)), hexc("#9C8650"), gloss)
+    C.paint(both(back, nb.band(dm, 0.86, 1.0, 0.05)), hexc("#3B3020"), gloss)
+    rump = both(tin, nb.ss(ym, 25.0, 30.0), nb.ss(nb.add(L.nz, L.ny), 0.3, 0.7))
+    C.paint(rump, nb.tint(hexc(BUFF), tone), gloss)
+
+    # --- the scarlet cap from the bill over the crown, feathered darker, outlined in ink
+    e = nb.add(nb.add(sq(nb.div(ax, 17.0)), sq(nb.div(nb.add(ym, 23.0), 17.0))),
+               sq(nb.div(nb.sub(zm, 62.0), 12.0)))
+    cap = both(tin, less(e, 0.95, 0.025))
+    fe = nb.ss(L.noise(330.0, 4, stretch=(1.0, 0.3, 1.0), detail=2), 0.6, 0.7)
+    C.paint(cap, nb.mixc(fe, nb.tint(hexc(SCAR), tone), hexc(CRIMSON)), gloss)
+    C.paint(both(tin, nb.band(e, 0.95, 1.01, 0.012)), hexc(INK), gloss)
+
+    # --- the face: a fine black line from the bill through the eye, a grey patch behind it
+    zl = lin(48.4, (0.17, nb.add(ym, 34.0)))
+    hl = lin(0.5, (0.05, nb.add(ym, 34.0)))
+    lore = both(tin, side, less(nb.sub(nb.absf(nb.sub(zm, zl)), hl), 0.0, 0.18), nb.ss(ym, -35.5, -34.0),
+                less(ym, -16.0, 1.5))
+    C.paint(lore, hexc(INK), gloss)
+    ear = nb.add(sq(nb.div(nb.add(ym, 17.0), 4.6)), sq(nb.div(nb.sub(zm, 46.6), 3.4)))
+    C.paint(both(tin, side, less(ear, 1.0, 0.06)), nb.tint(hexc(GREY), tone), gloss)
+    C.paint(both(tin, side, nb.band(ear, 1.0, 1.16, 0.04)), hexc(INK), gloss)
+
+    # --- the printed eye, pressed into a low dome: an ink rim, a cream ring, a gold iris, the
+    # pupil and its shine
+    ey, ez = BD["eye"]["y"], BD["eye"]["z"]
+    er = BD["eye"]["r"]
+    face = both(tin, nb.ss(nb.absf(L.nx), 0.3, 0.6))
+    de = nb.math("SQRT", nb.add(sq(nb.sub(ym, ey)), sq(nb.sub(zm, ez))))
+    C.paint(both(face, less(de, er, 0.12)), hexc(INK), 0.18, 0.0, nb.mul(nb.mr(de, 0.0, er, 1.3, 0.0), 1.0))
+    C.paint(both(face, less(de, er - 0.55, 0.1)), hexc("#F5EEDA"), 0.16)
+    C.paint(both(face, less(de, er - 1.15, 0.1)), hexc("#D9952B"), 0.16)
+    C.paint(both(face, less(de, er - 2.05, 0.1)), hexc("#0C0B0A"), 0.14)
+    C.paint(both(face, disc(ym, zm, ey - 0.55, ez + 0.6, 0.42, 0.1)), hexc("#FFFFFF"), 0.14)
+
+    # --- the wing: pressed proud of the body and printed in three parts, front to back: teal
+    # scalloped coverts, a cream and then a gold bar, long dark flight feathers edged in ochre
+    # with a hairline of gold ink, converging to its point over the rump
+    q = nb.div(nb.sub(ym, 14.0), 23.0)
+    W = nb.mul(nb.mul(nb.math("SQRT", nb.mx(nb.sub(1.0, sq(q)), 0.0)), 17.0),
+               nb.sub(1.0, nb.mul(nb.mx(q, 0.0), 0.3)))
+    ztop = lin(48.3, (-0.33, ym))
+    v = nb.div(nb.sub(ztop, zm), nb.mx(W, 0.05))
+    xin = lin(5.5, (8.0, nb.ss(q, -0.6, -1.0)))
+    wing_out = both(tin, less(v, 1.0, 0.04), nb.ss(nb.sub(ax, xin), 0.0, 0.4), less(nb.absf(q), 1.0, 0.02),
+                    nb.ss(ax, 3.0, 5.0))
+    wing = both(tin, less(v, 0.94, 0.03), nb.ss(nb.sub(ax, xin), 0.6, 1.0),
+                less(nb.absf(q), 0.97, 0.02))
+    C.paint(wing_out, hexc(INK), gloss, 0.0, 0.6)
+    C.paint(wing, nb.tint(hexc(TEAL), tone), gloss, 0.0, 0.4)
+    uw = nb.div(nb.add(ym, 9.0), 46.0)
+    vw = nb.mn(nb.mx(v, 0.0), 1.0)
+    cov = both(wing, less(uw, 0.30, 0.004))
+    dc = scales(nb.add(ym, 9.0), nb.mul(vw, 17.0), 3.1, 2.9)
+    C.paint(both(cov, nb.ss(L.noise(40.0, 5), 0.3, 0.7)), hexc(TEAL2))
+    C.paint(both(cov, nb.band(dc, 0.66, 0.87, 0.05)), hexc("#D9CFAE"), gloss, 0.0, 0.15)
+    C.paint(both(cov, nb.band(dc, 0.87, 1.0, 0.04)), hexc(INK), gloss, 0.0, 0.25)
+    C.paint(both(wing, nb.band(uw, 0.30, 0.335, 0.004)), hexc(CREAM), gloss)
+    C.paint(both(wing, nb.band(uw, 0.335, 0.35, 0.003)), hexc(INK), gloss)
+    C.paint(both(wing, nb.band(uw, 0.35, 0.43, 0.004)), nb.tint(hexc(BARGOLD), tone), gloss)
+    flight = both(wing, nb.ss(uw, 0.43, 0.434))
+    fv = nb.mul(vw, 5.0)
+    fr = nb.fract(fv)
+    fk = nb.math("FLOORED_MODULO", nb.math("FLOOR", fv), 2.0)
+    C.paint(flight, nb.mixc(fk, nb.tint(hexc(DBROWN), tone), nb.tint(hexc("#4C3726"), tone)), gloss)
+    C.paint(both(flight, nb.ss(fr, 0.68, 0.74)), nb.tint(hexc("#C79A4E"), tone), gloss)
+    C.paint(both(flight, nb.band(fr, 0.6, 0.64, 0.02)), hexc("#D8B266"), 0.26, 0.85)
+    C.paint(both(flight, nb.mx(less(fr, 0.06, 0.02), nb.ss(fr, 0.95, 0.99))), hexc(INK), gloss, 0.0, -0.25)
+    C.paint(both(wing, nb.band(uw, 0.425, 0.44, 0.003)), hexc(INK), gloss)
+
+    # --- the crimped seam along the back and belly, its tabs, the key's bush, the legs' slots
+    seam = both(tin, less(ax, 0.55, 0.3), less(nb.absf(L.nx), 0.45, 0.1))
+    C.paint(seam, None, None, None, 0.9)
+    C.paint(both(seam, less(ax, 0.22, 0.08)), hexc("#5A4A36"), gloss)
+    for ty in (-6.0, 11.0, 25.0):
+        tab = both(tin, down, less(ax, 1.5, 0.12), less(nb.absf(nb.sub(ym, ty)), 1.1, 0.12))
+        C.paint(tab, hexc(TINP), 0.3, 1.0, 1.0)
+    ky, kz = BD["key"]["y"], BD["key"]["z"]
+    left = both(tin, nb.ss(xm, 4.0, 6.0))
+    C.paint(both(left, disc(ym, zm, ky, kz, 3.0)), hexc(INK), gloss)
+    C.paint(both(left, disc(ym, zm, ky, kz, 2.6)), hexc(TINP), 0.3, 1.0, 0.7)
+    C.paint(both(left, disc(ym, zm, ky, kz, 1.5)), hexc("#151310"), 0.6, 0.0)
+    hy = BD["hip"][0]
+    slot = both(tin, down, nb.band(ax, BD["leg"]["x"] - 1.3, BD["leg"]["x"] + 1.3, 0.15),
+                nb.band(ym, hy - 2.8, hy + 2.2, 0.15))
+    C.paint(slot, hexc("#100E0C"), 0.7)
+    # our maker's mark under the belly: a cream oval in a red ring, an ink star in it
+    mu, mv = nb.sub(xm, 5.0), nb.sub(ym, 17.0)
+    mo = nb.add(sq(nb.div(mu, 3.0)), sq(nb.div(mv, 4.6)))
+    mark = both(tin, down)
+    C.paint(both(mark, less(mo, 1.0, 0.05)), hexc("#B8312B"), gloss)
+    C.paint(both(mark, less(mo, 0.62, 0.05)), hexc(CREAM), gloss)
+    star = nb.add(nb.math("SQRT", nb.absf(mu)), nb.math("SQRT", nb.absf(nb.mul(mv, 0.8))))
+    C.paint(both(mark, less(star, 1.45, 0.08)), hexc(INK), gloss)
+
+    # --- antique wear: the print rubbed through to bright tinplate on the high points and the
+    # seam, small chips, freckles of rust low down, fine scratches in the varnish
+    hi_pts = nb.mx(nb.mx(nb.ss(zm, 58.6, 60.2), both(nb.ss(nb.sub(0.0, L.ny), 0.7, 0.9), nb.band(zm, 27.0, 40.0, 3.0))),
+                   less(ax, 0.5, 0.2))
+    rub = both(tin, hi_pts, nb.ss(L.noise(120.0, 6, detail=4), 0.5, 0.62))
+    chips = both(tin, nb.ss(L.noise(55.0, 7, detail=5, rough=0.7), 0.78, 0.8))
+    worn = nb.mx(rub, nb.mx(chips, both(tin, L.edge(mm(0.5), k=4.0), nb.ss(L.noise(200.0, 8, detail=4), 0.6, 0.7))))
+    C.paint(worn, hexc(TINP), 0.3, 1.0, -0.15)
+    rusty = nb.mul(L.k(TINB, TAILR, TAILB), nb.ss(L.noise(70.0, 9, detail=5, rough=0.7), 0.76, 0.8))
+    C.paint(nb.mul(rusty, nb.mx(less(zm, 22.0, 3.0), L.k(TAILR, TAILB))), hexc("#6B381D"), 0.85, 0.0, 0.1)
+    scratch = both(tin, nb.ss(L.noise(900.0, 10, stretch=(1.0, 0.04, 1.0), detail=1), 0.7, 0.73))
+    C.paint(nb.mul(scratch, 0.5), hexc("#E6E0CC"), 0.4)
+
+    # --- the bill: folded orange tin, darker at the tip, ink along the gape, a nostril each side
+    bl = L.k(BILL)
+    by0 = BD["bill"]["base"][0]
+    C.paint(bl, nb.mixc(nb.ss(ym, by0 - 6.0, by0 - 15.5), nb.tint(hexc("#E49125"), tone), hexc("#A9561B")), 0.3)
+    C.paint(both(bl, L.edge(mm(0.35), k=4.0)), hexc(INK), 0.3)
+    C.paint(both(bl, disc(ax, ym, 1.6, by0 - 5.0, 0.45, 0.1), nb.ss(L.nz, 0.3, 0.6)), hexc(INK), 0.3)
+    C.paint(both(bl, L.edge(mm(0.25), k=4.0), nb.ss(L.noise(150.0, 11, detail=3), 0.5, 0.6)), hexc(TINP), 0.3, 1.0)
+    C.paint(L.k(MOUTH), hexc("#7A2620"), 0.5, 0.0)
+
+    # --- the tail: a fan of rust feathers on gold lacquer tin, shafts in ochre, three dark bars
+    # chevroned to the root, cream tips, its cut edge bare tinplate
+    tt = L.k(TAILT)
+    ry, rz = BD["tail"]["root"]
+    ca, sa = math.cos(math.radians(BD["tail"]["rise"])), math.sin(math.radians(BD["tail"]["rise"]))
+    st = lin(0.0, (ca, nb.sub(ym, ry)), (sa, nb.sub(zm, rz)))
+    phi = nb.math("ARCTAN2", xm, nb.add(st, 9.0))
+    ft = nb.add(nb.mul(phi, 17.0), 4.0)
+    ff = nb.fract(ft)
+    C.paint(tt, nb.mixc(nb.math("FLOORED_MODULO", nb.math("FLOOR", ft), 2.0), nb.tint(hexc(RUST), tone),
+                        nb.tint(hexc("#A04726"), tone)), gloss)
+    C.paint(both(tt, nb.ss(nb.absf(nb.sub(ff, 0.5)), 0.3, 0.45)), hexc("#7E3A1E"), gloss)
+    chev = nb.sub(st, nb.mul(nb.absf(nb.sub(ff, 0.5)), 2.4))
+    for b0, b1 in ((12.0, 15.0), (22.0, 25.5), (31.5, 35.0)):
+        C.paint(both(tt, nb.band(chev, b0, b1, 0.25)), hexc(DBROWN), gloss)
+    C.paint(both(tt, less(nb.absf(nb.sub(ff, 0.5)), 0.035, 0.012), nb.ss(st, 3.0, 6.0)), hexc("#D7A25A"), 0.26, 0.6)
+    C.paint(both(tt, less(nb.absf(nb.sub(ff, 0.0)), 0.02, 0.01)), hexc(INK), gloss)
+    C.paint(both(tt, nb.ss(nb.sub(st, lin(37.0, (-0.022, sq(xm)))), 0.0, 1.5)), hexc(CREAM), gloss)
+    C.paint(both(tt, L.edge(mm(0.45), k=4.0)), hexc(INK), gloss)
+    C.paint(L.k(TAILB), nb.tint(hexc("#BE9A55"), nb.mr(L.noise(60.0, 12, detail=3), 0.3, 0.7, 0.85, 1.05)), 0.34, 0.75)
+    C.paint(L.k(TAILR), hexc("#B5B6AE"), 0.35, 1.0)
+    C.paint(both(L.k(TAILT, TAILB), L.edge(mm(0.3), k=4.0), nb.ss(L.noise(180.0, 13, detail=4), 0.45, 0.6)),
+            hexc(TINP), 0.3, 1.0)
+
+    # --- legs and feet: dark brown enamel over steel, the toes' tips and heels knocked bright
+    lg = L.k(LEGW, FOOT)
+    C.paint(lg, nb.tint(hexc("#3A2A20"), nb.mr(L.noise(150.0, 14, detail=3), 0.3, 0.7, 0.85, 1.1)), 0.5, 0.0)
+    C.paint(both(lg, L.edge(mm(0.35), k=4.0), nb.ss(L.noise(120.0, 15, detail=4), 0.45, 0.58)),
+            hexc("#8F8C84"), 0.4, 1.0)
+    C.paint(both(lg, nb.ss(L.noise(90.0, 16, detail=5), 0.72, 0.77)), hexc("#5E3218"), 0.85, 0.0)
+
+    # --- the key: brass, rubbed bright on the wings' edges
+    kk = L.k(BKEY)
+    C.paint(kk, nb.tint(hexc("#B8934A"), nb.mr(L.noise(90.0, 17, detail=3), 0.3, 0.7, 0.86, 1.06)), 0.3, 1.0, 0.0)
+    C.paint(nb.mul(kk, L.edge(mm(0.35), k=4.0)), hexc("#DDBE72"), 0.22)
+    C.finish(f.dust, grime=0.45)
+    return C.surface(bump_dist=0.0015, bump=0.7)
+
+
+# --- how it hops ----------------------------------------------------------------------------------
+# One crank, one turn a beat: three hops, then a whistle that takes two turns. A hop is written
+# exactly: crouched on its feet it kicks (the legs swing back and the body moves forward by just
+# what keeps the feet planted), then flies a parabola (Quad Out to the peak, Quad In to the floor:
+# its flight time is the one gravity gives that height), swivelling a little, legs reaching
+# forward to land, and rocks onto its breast. The loose tin tail and the hinged lower bill ring
+# off the body's motion as damped springs: the tail floats up in the air and slaps down on each
+# landing; the bill flicks open on a landing and sings on a whistle.
+
+G_MM = 9810.0
+
+
+def hop_rate(t):
+    u = min(t / HP["length"], 1.0)
+    return HP["rate"] * (1 - HP["fade"] * u) * max(0.0, 1 - u ** HP["knee"]) ** 0.5
+
+
+def bird_hop():
+    leg_len = BD["hip"][1]
+    tr = {k: [(0.0, 0.0)] for k in (("Body", "x"), ("Body", "y"), ("Body", "z"), ("Body", "yaw"),
+                                     ("Body", "pitch"), ("Legs", "turn"))}
+    sing_tail, sing_bill = [(0.0, 0.0)], [(0.0, 0.0)]
+    beats = []
+    t, k, hops = 0.0, 0, 0
+    x = y = head = 0.0
+    while True:
+        r = hop_rate(t)
+        if r < HP["stall"]:
+            break
+        B = 1.0 / r
+        p = r / HP["rate"]
+        if k % (HP["pattern"] + 1) == HP["pattern"]:
+            # the whistle: head up, tail cocked, two notes, over two turns of the crank
+            D = 2 * B
+            s = p ** 0.5
+            hu, tc, bo = HP["sing"]
+            tr[("Body", "pitch")] += [(t + 0.22 * D, -hu * s), (t + 0.78 * D, -hu * s * 0.85),
+                                      (t + D, 0.0)]
+            sing_tail += [(t + 0.18 * D, tc * s, "Sine", "Out"), (t + 0.8 * D, tc * s * 0.8),
+                          (t + D, 0.0)]
+            for c0, a in ((0.24, 1.0), (0.56, 0.82)):
+                c = t + c0 * D
+                sing_bill += [(c, 0.0), (c + 0.045, bo * a * s, "Quad", "Out"),
+                              (c + 0.11, bo * a * s * 0.9), (c + 0.16, 0.0, "Quad", "In")]
+            beats.append((t, D, "whistle"))
+            t += D
+            k += 1
+            continue
+        h = HP["height"] * p ** 1.5
+        tf = math.sqrt(8 * h / G_MM)
+        tp = HP["push"] * B
+        ta, tl = t + tp, t + tp + tf
+        kd, kl = HP["kick"]
+        leg_kick = kl * p
+        push = leg_len * math.sin(math.radians(leg_kick))
+        step = HP["step"] * p
+        hops += 1
+        side = 1 if hops % 2 else -1
+        new_head = head + side * HP["turn"][0] * p + HP["turn"][1]
+        a0 = math.radians(head)
+        xp, yp = x + math.sin(a0) * push, y - math.cos(a0) * push
+        am = math.radians((head + new_head) / 2)
+        x1, y1 = xp + math.sin(am) * step, yp - math.cos(am) * step
+        c0 = t + 0.15 * tp
+        tr[("Body", "x")] += [(c0, x), (ta, xp, "Sine", "In"), (tl, x1, "Linear", "In")]
+        tr[("Body", "y")] += [(c0, y), (ta, yp, "Sine", "In"), (tl, y1, "Linear", "In")]
+        tr[("Legs", "turn")] += [(c0, 0.0), (ta, leg_kick, "Sine", "In"),
+                                 (ta + tf * 0.55, HP["tuck"] * p), (tl, 0.0, "Sine", "In")]
+        tr[("Body", "z")] += [(ta, 0.0), (ta + tf / 2, h, "Quad", "Out"), (tl, 0.0, "Quad", "In")]
+        tr[("Body", "yaw")] += [(ta, head), (tl, new_head)]
+        settle = min(t + B, tl + 0.2)
+        tr[("Body", "pitch")] += [(t + 0.6 * tp, kd * p), (ta, kd * p * 0.3, "Sine", "In"),
+                                  (ta + tf / 2, -2.5 * p, "Sine", "Out"), (tl, 0.0, "Sine", "In"),
+                                  (tl + (settle - tl) * 0.35, HP["land"] * p, "Sine", "Out"),
+                                  (settle, 0.0)]
+        x, y, head = x1, y1, new_head
+        beats.append((t, B, "hop"))
+        t += B
+        k += 1
+    end = t + 0.9
+    # the key unwinds through its half turns as the crank turns
+    turns = sum(2 if kind == "whistle" else 1 for _, _, kind in beats)
+    key, done = [(0.0, 180.0 * HP["winds"])], 0
+    for t0, D, kind in beats:
+        done += 2 if kind == "whistle" else 1
+        key.append((round(t0 + D, 3), round(180.0 * HP["winds"] * (1 - done / turns), 3), "Linear", "In"))
+
+    # the springs, sampled off the written keys
+    dt = 1.0 / FPS
+    ts = [i * dt for i in range(int(end / dt) + 1)]
+    zk, pk = ease.keys(tr[("Body", "z")]), ease.keys(tr[("Body", "pitch")])
+    tk, bk = ease.keys(sing_tail), ease.keys(sing_bill)
+    zs = [ease.sample(zk, u) for u in ts]
+    ps = [ease.sample(pk, u) for u in ts]
+    n = len(ts)
+
+    def d2(vs, i):
+        return (vs[min(i + 1, n - 1)] - 2 * vs[i] + vs[max(i - 1, 0)]) / (dt * dt)
+
+    ft, zt_ = HP["tail"]
+    wt = 2 * math.pi * ft
+    fj, zj = HP["jaw"]
+    wj = 2 * math.pi * fj
+    a = va = b = vb = 0.0
+    tails, bills = [], []
+    for i in range(n):
+        acc = d2(zs, i) + G_MM            # what the tail feels: gravity, less the body's fall
+        # the tail sags under that load about where it rests under gravity, and the body's pitch
+        # swings it the other way
+        va += (-wt * wt * a - 2 * zt_ * wt * va - math.degrees((acc - G_MM) / 38.0) - d2(ps, i)) * dt
+        a += va * dt
+        a = max(-16.0, min(18.0, a))
+        vb += (-wj * wj * b - 2 * zj * wj * vb + math.degrees(max(0.0, acc - G_MM) / 70.0)) * dt
+        b += vb * dt
+        if b < 0.0:                       # shut against its stop
+            b, vb = 0.0, -vb * 0.2
+        tails.append(a + ease.sample(tk, ts[i]))
+        bills.append(min(28.0, b + ease.sample(bk, ts[i])))
+
+    def keyed(vs):
+        pick = {0, n - 1} | {i for i in range(1, n - 1) if (vs[i] - vs[i - 1]) * (vs[i + 1] - vs[i]) < 0}
+        pick |= {i for i in range(1, n - 1) if (vs[i] == 0.0) != (vs[i - 1] == 0.0)}
+        ks = [(round(ts[i], 3), round(vs[i], 3), "Sine", "InOut") for i in sorted(pick)]
+        ks[0] = ks[0][:2]
+        return ks
+
+    tracks = [(part, ch, [(round(kk[0], 4), round(kk[1], 4), *kk[2:]) for kk in ks])
+              for (part, ch), ks in tr.items()]
+    tracks += [("Tail", "turn", keyed(tails)), ("Beak", "turn", keyed(bills)), ("Key", "turn", key)]
+    return round(end, 2), tracks, beats
+
+
+def bird_wind():
+    keys, t = [(0.0, 0.0), (0.15, 0.0)], 0.15
+    for i in range(HP["winds"]):
+        keys += [(t + 0.26, 180.0 * (i + 1), "Sine", "InOut"), (t + 0.4, 180.0 * (i + 1))]
+        t += 0.4
+    return round(t + 0.2, 2), [("Key", "turn", keys)]
+
+
+HOP_DUR, HOP_TRACKS, HOP_BEATS = bird_hop()
+BWIND_DUR, BWIND_TRACKS = bird_wind()
+GAPE = tuple(V(0.0, *BD["gape"]))
+
+TIN_BIRD = kit.Find(
+    "TinBird",
+    [kit.Part("Body", bd_body),
+     kit.Part("Bill", bd_bill, GAPE, "Body"),
+     kit.Part("Beak", bd_beak, GAPE, "Body", (1, 0, 0)),
+     kit.Part("Tail", bd_tail, tuple(V(0.0, *BD["tail"]["root"])), "Body", (1, 0, 0)),
+     kit.Part("Legs", bd_legs, tuple(V(0.0, *BD["hip"])), "Body", (1, 0, 0)),
+     kit.Part("Key", bd_key, tuple(V(*bd_key_at())), "Body", (1, 0, 0))],
+    bird_look,
+    motions={
+        # the key wound in four half turns, a regrip between each
+        "Wind": dict(duration=BWIND_DUR, focus="Key", distance=0.9, view=(2.0, -0.6, 0.7),
+                     drop=0.0, tracks=BWIND_TRACKS),
+        # set down, it hops off in little jumps, three at a time, then lifts its head, cocks its
+        # tail and whistles twice (where the game plays its two notes), lower and slower as the
+        # spring runs down, wandering a little to its left
+        "Hop": dict(duration=HOP_DUR, focus=(0.0, mm(2.0), mm(30.0)), distance=1.5, follow="Body",
+                    view=(2.0, -0.7, 0.45), drop=0.0, tracks=HOP_TRACKS),
+    },
+    dust=BD["dust"], seed=BD["seed"], texels=1500,
+)
+
+
+FINDS = [CYMBAL_MONKEY, JACK_IN_THE_BOX, CHATTERING_TEETH, WALKING_ROBOT, WINDUP_MOUSE, TIN_BIRD]
 
 if __name__ == "__main__":
     kit.main("Windups", HERE, FINDS)

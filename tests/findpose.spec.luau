@@ -105,6 +105,13 @@ do
 	local moved = Pose.solve(find(), { Base = { x = 2, z = -1, yaw = 90 } })
 	local x, y, z = Pose.apply(moved.Base, 1, 0, 0)
 	ok(near(x, 2) and near(y, 0) and near(z, -2), "travel moves, then yaws about the pivot")
+	-- a hop: y lifts it straight up (Roblox Y), over the floor and after the yaw
+	local hop = Pose.solve(find(), { Base = { x = 2, y = 0.5, yaw = 90 } })
+	local hx, hy, hz = Pose.apply(hop.Base, 1, 0, 0)
+	ok(near(hx, 2) and near(hy, 0.5) and near(hz, -1), "a hop lifts it up Y")
+	local ax, ay, az = Pose.apply(hop.Arm, 0, 0, 0)
+	local bx, by, bz = Pose.apply(Pose.solve(find(), { Base = { x = 2, yaw = 90 } }).Arm, 0, 0, 0)
+	ok(near(ax, bx) and near(ay, by + 0.5) and near(az, bz), "and its children ride the hop")
 end
 
 -- found as the sheets show: rest from the order

@@ -39,11 +39,22 @@ export type Track = {
 	-- about its pivot (near 0: hide it, a MeshPart can't be size 0); stretch: times as tall up
 	-- the find's Y and 1/sqrt as wide about its pivot, squash and stretch keeping its volume.
 	-- The travel channels move a part over the floor and lean it (the RC car driving off, its
-	-- chassis on its springs), in its parent's frame: x and z in studs along the find's X and Z,
-	-- then yaw, pitch and roll in degrees about its Y, X and Z through the part's pivot:
-	-- CFrame.new(x, 0, z) * pivot * fromAxisAngle(Y, yaw) * fromAxisAngle(X, pitch)
+	-- chassis on its springs, the tin bird hopping), in its parent's frame: x, y and z in studs
+	-- along the find's X, Y (up) and Z, then yaw, pitch and roll in degrees about its Y, X and Z
+	-- through the part's pivot: CFrame.new(x, y, z) * pivot * fromAxisAngle(Y, yaw)
+	-- * fromAxisAngle(X, pitch)
 	-- * fromAxisAngle(Z, roll) * pivot:Inverse(), with the turn and move after them
-	Channel: "turn" | "move" | "glow" | "scale" | "stretch" | "x" | "z" | "yaw" | "pitch" | "roll",
+	Channel: "turn"
+		| "move"
+		| "glow"
+		| "scale"
+		| "stretch"
+		| "x"
+		| "y"
+		| "z"
+		| "yaw"
+		| "pitch"
+		| "roll",
 	Keys: { Key },
 }
 

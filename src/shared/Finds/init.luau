@@ -197,11 +197,13 @@ function Finds.pose(model: Model, name: string, values: Pose.Values)
 	shine(find, parts, values, true)
 end
 
--- Whether a root's values take it over the floor or lean it (the toy car's x, z, yaw, pitch, roll).
+-- Whether a root's values take it over the floor or lean it (the toy car's x, z, yaw, pitch, roll;
+-- the tin bird's hop, y).
 local function travelling(v: { [string]: number }?): boolean
 	return v ~= nil
 		and (
 			(v.x or 0) ~= 0
+			or (v.y or 0) ~= 0
 			or (v.z or 0) ~= 0
 			or (v.yaw or 0) ~= 0
 			or (v.pitch or 0) ~= 0

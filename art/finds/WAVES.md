@@ -6,11 +6,11 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04d2, the clockwork tin bird, in `art/finds/windups/` (the set, the cymbal monkey, the
-jack-in-the-box, the chattering teeth, the walking robot and the wind-up mouse are built); not
-yet researched, the newest note has hints. It finishes step 2 of "The second run's plan" below;
-then follow the plan, session by session. The oil lamp's sheets still want `ACTIONS=
-scripts/art.sh set lights renders OilLamp` when next touched.
+**Next:** F-04d2, the clockwork tin bird, in `art/finds/windups/`: **half built** (Nov 16 note
+below: modelled, baked, exported, quick sheets rendered but not yet looked at). Judge its sheets,
+fix, render full, upload and import, tick it; that finishes step 2 of "The second run's plan"
+below, then follow the plan (step 3, F-04e: the toy siren car, then the squeaky duck). The oil
+lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next touched.
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -90,6 +90,33 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04d2 (the tin bird half built: stopped at the context cap; not ticked).**
+  `TinBird` in `windups/build.py` (spec `BIRD` and `HOP`), six parts: `Body` (root, the pressed
+  tin body, pivot under its feet so a pitch rocks it on them), `Bill` (upper, still), `Beak`
+  (lower bill on the gape hinge, X), `Tail` (fan plate on its root, X), `Legs` (both wire legs
+  and stamped feet on the hip crank, X), `Key`. Baked 1024 at 2,063 texels a stud, 3,590
+  triangles; Luau exported (motions `Wind`, `Hop`; `Finds/Order` has them); quick sheets
+  `art/sheets/tinbird-*.png` rendered and **not looked at**. Not uploaded or imported.
+  **References:** the V&A's API (see the mouse's note): O36973, a tinplate sparrow (2.25 in tall,
+  1.5 in wide, a red cap, cream face, printed wing, a loose fan tail, stamped brown feet, key in
+  its side; photo `framemark.vam.ac.uk/collections/2006AF4148/full/!800,600/0/default.jpg`),
+  O36970 a robin (2006AF4153); a 1960s German hopping bird listed at 85 x 56 x 40 mm. No video
+  found with a hop rate (the ECU museum's has no playable source): `HOP` is a toy's numbers,
+  3.3 hops a second at first, each hop's flight time the one gravity gives its height.
+  **The kit now has up-down travel:** `z` in `kit.TRAVEL` (Roblox `y`), in `Finds/Art.luau`'s
+  type, `Finds/Pose.luau`'s `solve` and `Finds.travelling`, with a `findpose` spec. **New
+  helpers:** `plate` (a tin plate from a grid of its top, its top, underside and rim each one
+  island: the tail and the stamped toes), `bill_rings` (a D-section folded bill, upper and lower),
+  the look's `scales` (rows of overlapping printed feathers) and `less`; never give `nb.ss` or a
+  `less` edge a socket (Python compares the edges: subtract first). `bird_hop` writes the root
+  exactly (a kick that keeps the feet planted, a parabola, a swivel, a landing rock) and rings the
+  tail and lower bill as springs off it. **To do, in order:** look at every quick sheet beside the
+  sparrow photo (the printing reads at phone size? the wing's edge where it wraps the back, the
+  cap's line, the tail coming out of the rump's top, the bill's join, feet flat on the floor);
+  fix; `scripts/art.sh set windups textures TinBird`, export, `git checkout` the set's other FBX,
+  full renders; upload and import if Studio is in Edit; README section (references above), a
+  decision line, tick it.
 
 - **Nov 16, F-04d (the wind-up mouse built; the tin bird not started: the context cap).**
   `WindupMouse` in `windups/build.py`, spec `MOUSE` and `ZIP`, README, D-232. A grey flocked

@@ -260,3 +260,64 @@ ZIP = dict(
     # degrees and seconds each
     winds=4,           # half turns of the key when wound
 )
+
+# --- The clockwork tin bird: an antique printed-tin songbird of our own ------------------------
+# References (README): the V&A's tinplate sparrow (O36973: 2.25 in tall, 1.5 in wide, two
+# pressed halves crimped along the back and belly, a red cap, a cream face, a printed wing, a
+# fan tail loosely joined, two stamped metal feet, the key in its side) and robin (O36970), and a
+# 1960s German hopping bird listed at 85 x 56 x 40 mm. Ours is 112 mm from bill to tail tip,
+# 60 mm tall and 34 mm wide: a scarlet cap, a gold breast, dark wings with a gold bar and teal
+# scalloped coverts, a rust tail barred in brown. It hops on a crank and whistles on a bellows.
+BIRD = dict(
+    body=[(-35.0, 0.0, 47.0, 47.0, 0.5), (-34.0, 4.6, 42.4, 51.6, 0.5),
+          (-32.0, 8.2, 38.4, 55.2, 0.48), (-29.0, 11.2, 34.4, 58.2, 0.46),
+          (-25.0, 13.3, 30.0, 60.0, 0.45), (-20.0, 14.0, 26.2, 60.4, 0.45),
+          (-15.0, 13.8, 23.2, 58.6, 0.44), (-10.0, 14.8, 20.8, 55.4, 0.42),
+          (-4.0, 16.6, 18.8, 52.0, 0.42), (2.0, 17.2, 18.0, 49.6, 0.42),
+          (8.0, 17.0, 18.4, 47.6, 0.42), (14.0, 15.9, 19.9, 45.6, 0.43),
+          (20.0, 14.0, 22.8, 43.7, 0.44), (26.0, 11.0, 26.6, 41.8, 0.46),
+          (31.0, 7.6, 30.4, 40.0, 0.48), (34.5, 4.0, 33.4, 38.4, 0.5),
+          (36.2, 0.0, 35.8, 35.8, 0.5)],
+    # the pressed body from the face (-y) to the rump: y, half width, belly, back, and where its
+    # widest line runs from belly (0) to back (1) (mm)
+    bill=dict(base=(-31.0, 47.4), tip=(-46.5, 45.4), hw=4.8, up=3.6, lo=2.5, droop=0.9),
+    # the bill sunk into the face at `base` (y, z), its tip; half width and the upper and lower
+    # bills' depth at the base; how far the tip bends down. The lower bill hinges at the gape.
+    gape=(-33.2, 46.8),                # where the lower bill hinges (y, z)
+    eye=dict(y=-24.5, z=50.0, r=3.4),  # the printed eye on each side of the head
+    tail=dict(root=(27.0, 36.0), len=44.0, rise=24.0, w=(9.0, 23.0), t=0.9, fold=9.0,
+              tips=5),
+    # the fan tail slotted into the rump: its root (y, z), length, how far it angles up (deg),
+    # width at root and tip, the tin's thickness, the fold along its middle (deg), how many
+    # rounded feather tips across its end
+    hip=(2.0, 21.0),                   # where the legs' crank comes out of the belly (y, z)
+    leg=dict(x=6.4, r=1.25, foot=0.0), # each wire leg's x, its radius, and where its foot sits (y)
+    toes=[(11.5, 17.0), (13.5, 0.0), (11.5, -17.0), (6.5, 180.0)],
+    # each stamped toe: its length (mm) and heading (deg from straight ahead, + outward)
+    toe=dict(w=2.1, t=1.0),           # the toes' width at the root and the plate's thickness
+    key=dict(y=6.0, z=33.0, shaft=(1.3, 5.6), wing=(5.0, 4.0, 5.4), t=1.1),
+    dust=0.05, seed=71.0,
+)
+
+# How it hops (README): the crank kicks it into little hops, three, then it stops and whistles
+# twice, its head up and its tail cocked; as the spring gives out the hops get lower and slower.
+HOP = dict(
+    rate=3.3,          # crank turns a second fully wound: one hop or one whistle each
+    length=12.0,       # how long the spring would run unslowed (s)
+    fade=0.5,          # how much it slows across the run
+    knee=4.0,          # how suddenly it gives out at the end
+    stall=1.35,        # turns a second where it gives up
+    pattern=3,         # hops before each whistle
+    height=13.0,       # mm the first hops rise (falling as g does: the flight time follows)
+    step=12.0,         # mm forward a hop, fully wound
+    push=0.34,         # the share of a turn spent crouched, kicking, before it leaves the floor
+    turn=(4.5, 1.4),   # degrees it swivels either way a hop, and how far it drifts left a hop
+    kick=(5.0, 11.0),  # the nose dip and the legs' push back as it kicks (deg)
+    tuck=-9.0,         # the legs swing forward in the air, reaching for the floor (deg)
+    land=2.6,          # the nose-down rock as it lands (deg)
+    sing=(7.0, 13.0, 21.0),   # whistling: head up, tail cocked, bill open (deg); a whistle
+    # takes two turns of the crank, two notes
+    tail=(9.0, 0.16),  # the loose tin tail's bob: how often a second, its damping
+    jaw=(16.0, 0.22),  # the lower bill's flick on its hinge
+    winds=4,           # half turns of the key when wound
+)

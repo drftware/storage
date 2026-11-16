@@ -474,9 +474,9 @@ def row(find, objs, size):
 # The travel channels (pose) and what each becomes in Roblox's axes for the Luau: its name there
 # and the sign its values take (Blender X is Roblox's -X, Y its Z, Z its Y; a turn about Blender
 # X is the same turn the other way about Roblox X).
-TRAVEL = ("x", "y", "yaw", "pitch", "roll")
-TO_ROBLOX_CH = {"x": ("x", -1.0), "y": ("z", 1.0), "yaw": ("yaw", 1.0), "pitch": ("pitch", -1.0),
-                "roll": ("roll", 1.0)}
+TRAVEL = ("x", "y", "z", "yaw", "pitch", "roll")
+TO_ROBLOX_CH = {"x": ("x", -1.0), "y": ("z", 1.0), "z": ("y", 1.0), "yaw": ("yaw", 1.0),
+                "pitch": ("pitch", -1.0), "roll": ("roll", 1.0)}
 
 def tracks(find, action):
     m = find.motions[action]
@@ -501,14 +501,15 @@ def pose(find, objs, values, lights=None):
             L = (Matrix.Translation(p.pivot) @ Matrix.Rotation(math.radians(turn), 4, p.axis) @ S
                  @ Matrix.Translation(-p.pivot) @ Matrix.Translation(p.axis * move))
         # a part that travels over the floor and leans (the RC car driving off, its chassis on
-        # its springs): x and y in studs along the find's X and Y, then yaw, pitch and roll in
-        # degrees about the find's Z, X and Y through its pivot, all in its parent's frame
+        # its springs, the tin bird hopping): x, y and z in studs along the find's X, Y and Z,
+        # then yaw, pitch and roll in degrees about the find's Z, X and Y through its pivot, all
+        # in its parent's frame
         tv = [values.get((p.name, ch), 0.0) for ch in TRAVEL]
         if any(tv):
-            L = (Matrix.Translation((tv[0], tv[1], 0.0)) @ Matrix.Translation(p.pivot)
-                 @ Matrix.Rotation(math.radians(tv[2]), 4, "Z")
-                 @ Matrix.Rotation(math.radians(tv[3]), 4, "X")
-                 @ Matrix.Rotation(math.radians(tv[4]), 4, "Y") @ Matrix.Translation(-p.pivot) @ L)
+            L = (Matrix.Translation((tv[0], tv[1], tv[2])) @ Matrix.Translation(p.pivot)
+                 @ Matrix.Rotation(math.radians(tv[3]), 4, "Z")
+                 @ Matrix.Rotation(math.radians(tv[4]), 4, "X")
+                 @ Matrix.Rotation(math.radians(tv[5]), 4, "Y") @ Matrix.Translation(-p.pivot) @ L)
         delta[p.name] = D @ L
         objs[p.name].matrix_world = delta[p.name] @ Matrix.Translation(p.pivot)
         objs[p.name]["glow"] = values.get((p.name, "glow"), objs[p.name].get("glow", 0.0))
