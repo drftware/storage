@@ -2360,16 +2360,23 @@ actions themselves and dealing the new finds on floors are later game tickets.
     stood as it's found (`Finds.pose`, `Finds/Pose.luau`: the jack shut, flames out, the
     Secret lamp lit); the Packrat takes your most valuable find first. The theatre spotlight
     waits for big finds (both hands, the floor's big find behind the code door).
-  - [ ] **F-G1b Using a find plays what it does** (next; Read first: `Finds/Pose.luau`'s `at`,
-    `Finds/init.luau`'s `pose`, `Tools/Catalog.luau`'s `verb`, `src/server/Slots.luau`'s use,
-    `art/finds/WAVES.md` for each find's one line). Its own press while it's in your hand, as
-    the air horn's Blow: a lamp switches on and lights the unit (and runs down where the
-    catalog says), the RC car drives, the cymbal monkey clashes (a loud lure: noisy finds
-    draw monsters only when used, D-188), the jack-in-the-box cranks and pops. Each use needs
-    its own sound and its motion played on every screen (write each joint's C0 from
-    `Pose.at` on the clients; the server says which motion and when). Lights in a unit count
-    against the cap on real lights. (The finds kit could write each find's motion order or rest
-    into its set, so `Finds/Order.luau` goes: an art session's call.)
+  - [ ] **F-G1b Using a find plays what it does.** Its own press while it's in your hand, as the
+    air horn's Blow: the lantern clicks on, the tea light catches and flickers, the glow stick
+    cracks, the jar's fireflies drift out, the jack-in-the-box cranks its tune and bangs open
+    and every monster on the floor hears it. Split Nov 15 (the session ran short of room):
+    - [x] **F-G1b1 The rules of every press** (Nov 15, D-229): `Finds/Use.luau`, pure and tested
+      (tests/finduse.spec): each find's row (its word, the motions a press plays, how long it
+      stays lit, how it runs down, a switch's off, the jack's shut before winding again, the
+      motion monsters hear), `frame` (where a stamped find is in its motions), `press` (what a
+      press does now, nil when it does nothing) and `noiseAt`. Rows for the tea light, oil lamp,
+      glow sticks, fairy lights, lantern, hard hat, firefly jar, disco ball and the jack.
+    - [ ] **F-G1b2 The press in the game** (next): the server stamps a pressed find's model,
+      every screen plays its motions, lights and sounds from the stamp (HANDOFF has the plan).
+    - [ ] **F-G1b3 The cymbal monkey's lure and the cars:** the monkey bashes its cymbals for 20
+      seconds and monsters keep coming while it plays (a lure that lasts, unlike a blast); the
+      RC car drives off round the unit (`Art.Drive`, the set's `Wheels` motion); the die-cast
+      car is set down and rolls off down the hall (its `Push`). Then D-188's "found lights hold
+      a Mannequin" (a lit find on the floor counts as a light the Mannequin stops in).
   - [ ] **F-G1c The grade shows. Parked Nov 15 (owner: cut for now, D-204):** the reveal moved
     from the door to the box you open (B-02, D-205). As written (the catalog's
     "How you can tell"): a Rare's blue glow seen

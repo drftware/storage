@@ -6052,3 +6052,29 @@ sleepers wake, the packed share), as Dandy's World's floors hold once they're at
 - **Specs judge each floor by its own rules:** `floor.spec` bands by plan (short, full, big) and
   compares each floor's doors to its own rules' count; it lays floors 12 to 26 too. `climb.spec`
   climbs 30 seeds to floor 26 (60 to floor 10 before).
+
+## D-229 A find's press is one stamp on its model, played out by every screen (F-G1b1, Nov 15)
+
+A find with a press (`Finds/Use.luau`'s rows) keeps one stamp, set by the server: what the last
+press started (On, Again, Off), the server clock when it began, and the seconds of light left.
+Every screen works out from it where the find is in its own motions (`Use.frame`), so a lantern
+dropped lit stays lit on the floor and a friend arriving late sees the tea light mid-flicker. A
+press that would do nothing (still burning, running down, spent, the jack mid-tune) is refused
+by `Use.press` on both sides: the button hides then, rather than taking a dead press.
+
+- **Which finds press:** the ones the catalog says work anywhere: the tea light and oil lamp
+  (Light; a minute and two and a half, then they go out for good), the glow sticks (Crack; lit
+  for the rest of the floor), the fairy lights, lantern and hard hat (Switch; a switch keeps its
+  battery when switched off, as Lethal Company's flashlight does; the lantern 90 s, the hat 60),
+  the firefly jar (Open; a minute, then they're gone), the disco ball (Spin, until stopped) and
+  the jack-in-the-box (Wind; its tune, then the bang every monster hears, as an air horn blast;
+  popped, it's shut and wound again by the next press).
+- **No press (defaults, `OWNER.md`):** the lamps the catalog says work "at home" (the desk lamp,
+  night-light, moon, blob and glass lamps, neon sign) need a socket, so none in the building; the
+  Secret lamp is found lit and never runs down; the hard hat is switched on in your hand until
+  worn finds come (D-188).
+- **Sounds:** the switches click as the torch does; the jack's crank is Pro Sound Effects' music
+  box under its Wind, not yet measured; the rest are F-G1b2's.
+
+Not chosen: timers on the server flipping each find's state (the stamp and the pure sums need
+none); a find's whole state replicated every frame.

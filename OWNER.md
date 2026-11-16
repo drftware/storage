@@ -26,6 +26,16 @@ nowhere else.
   in your hand at phone size? (Each uses its size's hold for now, and borrowed sounds; ROADMAP
   polish.) The jack-in-the-box should be shut, the tea light unlit. Using one does nothing yet
   (F-G1b next).
+- [ ] **Decide (defaults in, F-G1b1, D-229; nothing to try yet, the press reaches the game in
+  F-G1b2):** which finds have a press in the building, and how long each lasts.
+  1. The lamps the catalog says work "at home" (desk lamp, night-light, moon lamp, blob lamp,
+     glass lamp, neon sign) get no press in the building, since they need a socket. Say if you'd
+     rather they switch on anywhere.
+  2. The Secret lamp is found lit and never goes out, so it has no press either.
+  3. The hard hat switches on in your hand for now; worn on your head comes with worn finds.
+  4. How long each light lasts: tea light 60 s, oil lamp 150 s, lantern 90 s, hard hat 60 s,
+     firefly jar 60 s; the glow stick, fairy lights and disco ball never run down. A switch
+     (lantern, hat, fairy lights, disco ball) keeps what's left when you switch it off.
 - [ ] **Decide (defaults in, F-G1a):** the Secret lamp's name on screen is "Old lamp" (the
   catalog calls it "A lamp that's on when you find it"); the RC car carries with its
   transmitter beside it as one find; the theatre spotlight isn't dealt until floors have big
