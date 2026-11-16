@@ -42,8 +42,9 @@ Waking.SizeEvery = 3
 Waking.SizeMost = 5
 
 -- The most keepers stepping on a floor at once, loose or pounding, for low-end phones (GDD tech
--- plan): past it a wave waits, and those it owes wake as room opens. Six is double the director's
--- highest cap for loose keepers (the floor rules' `awake`), since pounding ones stand still.
+-- plan): past it a wave waits, and those it owes wake as room opens. Six leaves room for one
+-- pounding behind a door past the director's highest cap for loose keepers (the floor rules'
+-- `awake`, five from floor 25), since pounding ones stand still.
 Waking.AwakeMost = 6
 
 --- Seconds on `floor` before the first sleepers wake.

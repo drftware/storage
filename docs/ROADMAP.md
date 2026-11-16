@@ -2242,7 +2242,7 @@ it is, coins go to your bank, a tool goes to your hands, or it's a piece of the 
 
 Done when two climbs in a row feel different and players talk about their best floor.
 
-- [ ] **S4-01 Floors made by rules, to floor 100.** One table says for any floor number what
+- [x] **S4-01 Floors made by rules, to floor 100.** One table says for any floor number what
   it holds and how hard it is (GDD "Floor rules"); the climb no longer ends at floor 3 (D-106).
   Room left for floors that play differently. Split Nov 15 for a session's size:
   - [x] **S4-01a The rules table and the top gone.** One pure table (`FloorRules`, Lune-tested)
@@ -2251,8 +2251,12 @@ Done when two climbs in a row feel different and players talk about their best f
     Done Nov 15 (D-226): `FloorRules.at(n)`, four named steps (floors 1, 3, 5, 6) and the packed
     curve, today's numbers unchanged; `Climb.Top` and `Building` gone; floor 3 rode to floor 4
     and floors 5 and 101 laid in Studio Play. Passes `tests/floorrules.spec` to floor 300.
-  - [ ] **S4-01b What changes floor to floor.** The table's rows actually change the floors as
+  - [x] **S4-01b What changes floor to floor.** The table's rows actually change the floors as
     you climb (more units, more monsters awake, fewer notes), each step named in the table.
+    Done Nov 15 (D-228): six steps past floor 6 ("More doors" 8, "Four loose" 10, "Big floors"
+    12 with a third plan, "Two notes behind padlocks" 15, "More doors still" 20, "Five loose"
+    25), then it holds; the notes stay four (`OWNER.md` decides). Floors 8, 11 and 25 laid in
+    Studio Play, 11 rode to 12; laying's worst frame is 6 ms.
 - [ ] **S4-02 Monsters by lowest floor.** Each monster's row carries the lowest floor it can
   appear on; above it the game mixes it in at random.
 - [ ] **S4-03 The choice on the elevator's buttons.** Three buttons light up on the car's

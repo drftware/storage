@@ -123,7 +123,20 @@ Floor.Plans = {
 		plainWalls = 0.08,
 		teachHoles = false,
 	} :: Shape,
-}
+	-- Big (from floor 12): two more columns of halls and a third loop, as wide again as Full but
+	-- no deeper, so floors still stand far apart (`Climb.Spacing`). Its halls have room for about
+	-- 100 units (95 and more; a floor numbers at most `MaxUnits`), and the rules keep 60 to 70.
+	Big = {
+		columns = 7,
+		rows = 4,
+		straights = 15,
+		loops = 3,
+		keepOn = 0.6,
+		smallRows = 0.25,
+		plainWalls = 0.08,
+		teachHoles = false,
+	} :: Shape,
+} :: { [FloorRules.Plan]: Shape }
 
 -- How often the tree grows from its newest hall rather than one picked at random: high gives long
 -- winding halls, low gives many short stubs.
@@ -281,7 +294,7 @@ function Floor.planFor(number: number): Plan
 	if plan then
 		return plan
 	end
-	local s = if rules.plan == "Short" then Floor.Plans.Short else Floor.Plans.Full
+	local s = Floor.Plans[rules.plan]
 	local made: Plan = {
 		columns = s.columns,
 		rows = s.rows,
@@ -1268,19 +1281,6 @@ function Floor.generate(number: number, random: Random): Floor
 		end
 	end
 
-	-- A floor's numbers have two digits after the floor's (MAX_UNITS): past that, units picked at
-	-- random become plain walls. The plans keep this rare (tests/floor.spec counts).
-	local units = {}
-	for i, s in slots do
-		if s.kind == "Unit" then
-			table.insert(units, i)
-		end
-	end
-	while #units > Floor.MaxUnits do
-		local cut = table.remove(units, random:nextInteger(1, #units)) :: number
-		slots[cut].kind = "Wall"
-	end
-
 	-- 4. The dead ends and the lights.
 	local deadEnds: { DeadEnd } = {}
 	local fixtures: { Fixture } = {}
@@ -1384,6 +1384,30 @@ function Floor.generate(number: number, random: Random): Floor
 
 	-- 5b. Fewer units: about the plan's count stay, the rest become blank wall.
 	thin(slots, cells, at, plan, firstStretch, number, random)
+
+	-- 5c. A floor's numbers have two digits after the floor's (`MaxUnits`): past that, units picked
+	-- at random become plain walls and the rest are numbered again in the order you meet them. It
+	-- comes after the thinning, so a big plan's halls may have room for more than that while the
+	-- floor keeps fewer; the rules keep it rare (tests/floor.spec counts).
+	local kept: { number } = {}
+	for i, s in slots do
+		if s.kind == "Unit" then
+			table.insert(kept, i)
+		end
+	end
+	if #kept > Floor.MaxUnits then
+		table.sort(kept, function(a: number, b: number): boolean
+			return (tonumber(slots[a].number) :: number) < (tonumber(slots[b].number) :: number)
+		end)
+		while #kept > Floor.MaxUnits do
+			local cut = table.remove(kept, random:nextInteger(1, #kept)) :: number
+			slots[cut].kind = "Wall"
+			slots[cut].number = nil
+		end
+		for n, i in kept do
+			slots[i].number = string.format("%d%02d", number, n)
+		end
+	end
 
 	-- 6. Shared walls: of two units side by side in one row, the shallower (or the later) leaves out
 	-- the wall between them, so the two never stand one in the same place.

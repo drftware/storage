@@ -6017,3 +6017,38 @@ degrees open in a grin (drawn that way, so the bake lights both rows of teeth), 
 the template stands in the place. A run's feet and body keys sit only where each curve turns,
 eased Sine InOut, which draws the same strides as a sampled curve with a third of the keys.
 Its parts and numbers are in `art/finds/windups/README.md`.
+
+## D-228 The climb steps up eight times, then holds from floor 25 (S4-01b, Nov 15)
+
+The moment: each floor up feels a notch tighter, and the team can name what changed. The floor
+rules (D-226) gain six steps past floor 6, each named for what players meet and each from a hit
+game, then nothing past floor 25: from there only the slow curves rise (pay, finds, how soon
+sleepers wake, the packed share), as Dandy's World's floors hold once they're at their hardest.
+
+- **"More doors" (floor 8):** 50 doors of the full plan's ~80 (40 before), padlocks 15%. More to
+  search before the code is in, as Dandy's World asks for more machines higher up.
+- **"Four loose" (10):** up to four monsters loose, as Dandy's World sends more Twisteds higher
+  up and Left 4 Dead's director allows more specials as it ramps.
+- **"Big floors" (12):** a third plan, `Big`: 7 columns by 4 rows of junctions, 15 halls, 3
+  loops (room for 95 doors and more), keeping 60. As wide again as Full but no deeper, so floors
+  still stand 790+ studs apart. Lethal Company's harder moons hold bigger buildings.
+- **"Two notes behind padlocks" (15):** `padlockedNote` (a yes/no) became `lockedNotes` (a
+  count, always fewer than the notes); padlocks 18%. Two ways through needed, as Piggy's way out
+  wants more than one tool found.
+- **"More doors still" (20):** 70 doors on the big plan, padlocks 20%.
+- **"Five loose" (25):** the last step. `Waking.AwakeMost` (6) still leaves one more pounding.
+- **The notes stay four, not fewer.** ROADMAP said "fewer notes", but with the notes among the
+  doors at random a team opens `notes * (doors + 1) / (notes + 1)` doors on average to hold
+  them all, so fewer notes alone is quicker (and the GDD's "Codes" says four above the teaching
+  floors). `floorrules.spec` now checks that search never shrinks floor to floor, so a later step
+  can cut notes only with doors to make up for it. The owner can overrule (`OWNER.md`).
+- **The 99-door cap moved after the thinning** (`Floor.generate` 5c): the big plan's halls have
+  room for more than a floor numbers, so the cap now cuts (and renumbers) only if a floor keeps
+  more than 99, never before the thinning picks its doors. Floors 1 to 6 lay exactly as before
+  (`deal.spec`'s fingerprint, now over floors 1 to 6).
+- **Laying no longer has a long first frame:** publishing the tops and building the lobby each
+  get their own frame when the slice runs over (`FloorBuilder.lay`). The worst frame laying a
+  floor fell from 17 to 46 ms (floor 12 during a ride) to 5 to 7 ms on every floor.
+- **Specs judge each floor by its own rules:** `floor.spec` bands by plan (short, full, big) and
+  compares each floor's doors to its own rules' count; it lays floors 12 to 26 too. `climb.spec`
+  climbs 30 seeds to floor 26 (60 to floor 10 before).

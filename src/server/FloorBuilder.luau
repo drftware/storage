@@ -697,8 +697,13 @@ function FloorBuilder.lay(
 	local model = Instance.new("Model")
 	model.Name = `Floor{floor.number}`
 	model.WorldPivot = origin
+	-- publishing the tops and building the lobby each get a frame of their own when the slice runs
+	-- over: together they made one long frame (46 ms laying floor 12 in Play; 6 ms at most after,
+	-- S4-01b), and a team on the floor below must never feel the next one being laid
 	local tops, lips = Tops.rects(floor)
+	breathe()
 	publishTops(model, origin, tops, lips)
+	breathe()
 	local hall, elevator = lobby(origin)
 	hall.Parent = model
 	laid.elevator = elevator

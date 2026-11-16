@@ -1,6 +1,7 @@
 --!strict
 -- lune run tests/floor.spec
--- The floor generator (L-01a) over 200 seeds, on a short floor and a full one each: the same seed
+-- The floor generator (L-01a) over 200 seeds, on a short floor, a full one and a big one each
+-- (S4-01b: each judged by its own floor's rules): the same seed
 -- gives the same floor, and every layout rule holds: a straight between two junctions, the kit's
 -- slots at every junction, no unit in another or in a hall or over two decks' overlap, every
 -- door onto a hall, every stretch of hall under a light that watches it, numbers unique and in
@@ -13,6 +14,7 @@ local fs = require("@lune/fs")
 
 local Brix = require("../vendor/brix/src")
 local Floor = require("../src/shared/Floor")
+local FloorRules = require("../src/shared/FloorRules")
 local MotionLight = require("../src/shared/MotionLight")
 
 local failures, checks = 0, 0
@@ -203,12 +205,13 @@ local mostCutOff, fewestLinks, fewestFirst, shortestRun, longestRun =
 local SAME_SEED_ALIKE = 0
 local seen: { [string]: boolean } = {}
 local distinct, floors, atCap, maxUnits = 0, 0, 0, 0
--- the units each floor band keeps (S1-03), and its floors with a long bare stretch
-type Band = { n: number, sum: number, lo: number, hi: number, bare: number, longestBare: number }
+-- the units each plan's floors keep (S1-03): how far from their rules' count on average, the
+-- fewest and most, and its floors with a long bare stretch
+type Band = { n: number, off: number, lo: number, hi: number, bare: number, longestBare: number }
 local function band(): Band
-	return { n = 0, sum = 0, lo = math.huge, hi = 0, bare = 0, longestBare = 0 }
+	return { n = 0, off = 0, lo = math.huge, hi = 0, bare = 0, longestBare = 0 }
 end
-local counts = { short = band(), full = band() }
+local counts: { [FloorRules.Plan]: Band } = { Short = band(), Full = band(), Big = band() }
 local overlapsFound = 0
 local mostPanels, mostLids = 0, 0
 
@@ -584,7 +587,7 @@ local function checkFloor(seed: number, number: number)
 	end
 	-- holes only between side-by-side neighbours (OWNER.md's default): no unit backs onto another
 	ok(backLinks == 0, `{where}: {backLinks} units back onto another`)
-	local short = number <= 2
+	local short = FloorRules.at(number).plan == "Short"
 	-- fewer units (S1-03) leave about half the crawl links there were
 	ok(links >= (if short then 14 else 18), `{where}: only {links} crawl links`)
 	ok(cutOff <= (if short then 0 else 2), `{where}: {cutOff} units with no neighbour to crawl to`)
@@ -871,9 +874,9 @@ local function checkFloor(seed: number, number: number)
 
 	-- fewer units (S1-03, GDD "Doors"): about the plan's count, a door in every wing, and no long
 	-- stretch of hall with no door on either side
-	local band = if number <= 2 then counts.short else counts.full
+	local band = counts[FloorRules.at(number).plan]
 	band.n += 1
-	band.sum += #units
+	band.off += #units - f.plan.units
 	band.lo = math.min(band.lo, #units)
 	band.hi = math.max(band.hi, #units)
 	ok(
@@ -928,18 +931,18 @@ end
 
 for seed = 1, 200 do
 	checkFloor(seed, 1 + seed % 2) -- floors 1 and 2: the short plan
-	checkFloor(seed, 3 + seed % 8) -- floors 3 to 10: the full one
+	checkFloor(seed, 3 + seed % 9) -- floors 3 to 11: the full one, 40 doors and then 50
+	checkFloor(seed, 12 + seed % 15) -- floors 12 to 26: the big one, 60 doors and then 70
 end
 ok(SAME_SEED_ALIKE == floors, "every seed lays its floor the same way twice")
 ok(distinct >= floors * 0.95, `seeds lay different floors ({distinct} of {floors})`)
 ok(overlapsFound > 0, "the back-corner deck overlaps were checked (some exist)")
 ok(atCap <= floors * 0.02, `floors rarely reach the unit cap ({atCap} of {floors})`)
 for name, band in counts do
-	local plan = Floor.planFor(if name == "short" then 1 else 3)
-	local mean = band.sum / band.n
+	local mean = band.off / band.n
 	ok(
-		math.abs(mean - plan.units) <= 1.5,
-		`{name} floors keep {mean} units on average, not about {plan.units}`
+		band.n > 0 and math.abs(mean) <= 1.5,
+		`{name} floors keep {mean} units more than their rules say, on average`
 	)
 	-- a long bare stretch only where the halls stood bare before any were walled (rare)
 	ok(
@@ -947,7 +950,7 @@ for name, band in counts do
 		`{name} floors: {band.bare} of {band.n} with a long bare stretch`
 	)
 end
-ok(counts.short.bare == 0, "floors 1 and 2: never a long bare stretch")
+ok(counts.Short.bare == 0, "floors 1 and 2: never a long bare stretch")
 
 -- the side names: a door looking -Z, you face +Z to see it, so its left wall is toward +X
 ok(Floor.sideDir({ facing = 3 } :: any, "left") == 0, "a slot's left is your left facing its door") -- any: only facing is read
@@ -957,8 +960,9 @@ if failures > 0 then
 	error(`{failures} of {checks} floor checks failed`)
 end
 print(
-	`floor: {checks} checks passed over {floors} floors ({counts.short.lo} to {counts.short.hi} units `
-		.. `on floors 1 and 2, {counts.full.lo} to {counts.full.hi} above; at most {counts.full.longestBare} `
+	`floor: {checks} checks passed over {floors} floors ({counts.Short.lo} to {counts.Short.hi} units `
+		.. `on short floors, {counts.Full.lo} to {counts.Full.hi} on full, {counts.Big.lo} to {counts.Big.hi} `
+		.. `on big; at most {math.max(counts.Full.longestBare, counts.Big.longestBare)} `
 		.. `bare hall pieces in a row; crawl links `
 		.. `at least {fewestLinks}, {fewestFirst} before the first fork on floors 1 and 2; at most `
 		.. `{mostCutOff} units cut off; top runs {shortestRun} to {longestRun} studs, closed by at most `

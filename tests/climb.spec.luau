@@ -29,11 +29,12 @@ local function deal(seed: number, number: number): (Floor.Floor, Deal.Deck)
 end
 
 local STREAMING = 256 -- the place's streaming target radius
-local FLOORS = 10 -- floors dealt per climb: past every step of the floor rules
+local CLIMBS = 30 -- seeds climbed
+local FLOORS = 26 -- floors dealt per climb: past every step of the floor rules (the last on 25)
 local fewestApart = math.huge
 local sameCodes = 0
 local compared = 0
-for seed = 1, 60 do
+for seed = 1, CLIMBS do
 	ok(Climb.seedOf(seed, 1) == seed, `seed {seed}: floor 1 keeps the climb's seed`)
 	local before: Floor.Floor? = nil
 	local beforeCode = ""
@@ -112,5 +113,5 @@ if failures > 0 then
 	error(`{failures} of {checks} climb checks failed`)
 end
 print(
-	`climb: {checks} checks passed over 60 climbs of {FLOORS} floors (floors at least {fewestApart} studs apart; {sameCodes} of {compared} codes repeated the floor below's)`
+	`climb: {checks} checks passed over {CLIMBS} climbs of {FLOORS} floors (floors at least {fewestApart} studs apart; {sameCodes} of {compared} codes repeated the floor below's)`
 )

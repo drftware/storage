@@ -415,7 +415,7 @@ end
 ]]
 Deal.NoteSpacing = 48
 -- How many notes a floor has, and from which floor one lies behind a padlock (GDD "Codes"), are the
--- floor rules' (`FloorRules` `notes`, `padlockedNote`).
+-- floor rules' (`FloorRules` `notes`, `lockedNotes`).
 
 local function shuffle(list: { any }, random: Random) -- any: shuffles any list in place
 	for i = #list, 2, -1 do
@@ -544,9 +544,10 @@ function Deal.new(floor: Floor, random: Random): Deck
 		local shown = table.move(places, (k - 1) * per + 1, k * per, 1, {})
 		table.sort(shown)
 		-- This note's wing, or the next with room: a unit there at least NoteSpacing from every
-		-- note so far, at random. The padlocked note is the first, behind a padlock. With room
-		-- nowhere, the unit farthest from the notes.
-		local wantLock = k == 1 and FloorRules.at(floor.number).padlockedNote
+		-- note so far, at random. The padlocked notes (the rules' `lockedNotes`) are the first,
+		-- each behind a padlock. With room nowhere, the unit farthest from the notes (padlocked if
+		-- one is still free).
+		local wantLock = k <= FloorRules.at(floor.number).lockedNotes
 		local pool: { number } = {}
 		for z = 0, #zones - 1 do
 			local zone = zones[(k - 1 + z) % #zones + 1]
@@ -569,10 +570,15 @@ function Deal.new(floor: Floor, random: Random): Deck
 		else
 			local best = -1
 			slot = outside[1]
-			for _, i in outside do
-				local d = nearest(floor, i, notes)
-				if not used[i] and (not wantLock or padlocked[i]) and d > best then
-					best, slot = d, i
+			for _, lock in { wantLock, false } do
+				for _, i in outside do
+					local d = nearest(floor, i, notes)
+					if not used[i] and (not lock or padlocked[i]) and d > best then
+						best, slot = d, i
+					end
+				end
+				if best >= 0 then
+					break
 				end
 			end
 		end

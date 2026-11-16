@@ -1,10 +1,11 @@
 --!strict
 -- lune run tests/floorrules.spec
--- The floor rules (S4-01a, GDD "Floor rules"): one table says, for any floor number, how the
--- floor is laid and dealt, and the climb has no top, so every answer must hold from floor 1 to far
--- past 100. Each value stays in range; nothing gets easier as you climb (more loose, more locks,
--- more packed; the teaching floors never come back); the steps are in order and each changes
--- something; a floor's rules are the same frozen table every time. The other per-floor curves
+-- The floor rules (S4-01a, S4-01b, GDD "Floor rules"): one table says, for any floor number, how
+-- the floor is laid and dealt, and the climb has no top, so every answer must hold from floor 1 to
+-- far past 100. Each value stays in range; nothing gets easier as you climb (more loose, more
+-- locks, more packed, never a shorter search for the code; the teaching floors never come back);
+-- the steps are in order, each changes something, and the climb's steps (S4-01b) land where they
+-- say and then hold; a floor's rules are the same frozen table every time. The other per-floor curves
 -- (waking, pay, the Mannequin's breaker errands, find grades) hold far up too, never easier. Floors well past
 -- 100 lay and deal like any other: their units numbered after the floor ("10001"), their notes
 -- the rules' count.
@@ -32,6 +33,16 @@ end
 local HIGH = 300 -- the floors checked one by one: three times the GDD's "about 100"
 local CODE = 4 -- the code's digits, split evenly across the notes
 
+-- How many doors a team opens, on average, before it holds every note: with the notes among the
+-- floor's doors at random, `notes * (units + 1) / (notes + 1)`. Fewer notes alone would make it
+-- quicker (one note is found sooner than the last of four), so a step may cut the notes only with
+-- enough doors to make up for it.
+local function search(r: FloorRules.Rules): number
+	return r.notes * (r.units + 1) / (r.notes + 1)
+end
+-- The plans, smallest first.
+local PLAN_SIZE = { Short = 1, Full = 2, Big = 3 }
+
 -- 1. The steps: in order from floor 1, the first setting every rule, each one changing something.
 local steps = FloorRules.Steps
 ok(steps[1].from == 1, "the first step is floor 1's")
@@ -42,7 +53,7 @@ ok(
 		and first.units ~= nil
 		and first.notes ~= nil
 		and first.padlocks ~= nil
-		and first.padlockedNote ~= nil
+		and first.lockedNotes ~= nil
 		and first.awake ~= nil,
 	"the first step sets every rule"
 )
@@ -57,7 +68,7 @@ for i = 2, #steps do
 		or below.units ~= at.units
 		or below.notes ~= at.notes
 		or below.padlocks ~= at.padlocks
-		or below.padlockedNote ~= at.padlockedNote
+		or below.lockedNotes ~= at.lockedNotes
 		or below.awake ~= at.awake
 	ok(changed, `step "{s.name}" changes something on floor {s.from}`)
 end
@@ -71,7 +82,7 @@ for n = 1, HIGH do
 	ok(r == FloorRules.at(n), `{where}: the same rules every time`)
 	ok(table.isfrozen(r), `{where}: its rules can't be changed`)
 	ok(r.step ~= "", `{where}: named for a step`)
-	ok(r.plan == "Short" or r.plan == "Full", `{where}: a plan Floor has`)
+	ok(Floor.Plans[r.plan] ~= nil, `{where}: a plan Floor has ({r.plan})`)
 	ok(
 		r.units >= 1 and r.units <= Floor.MaxUnits and r.units == math.floor(r.units),
 		`{where}: keeps a whole number of doors, 1 to {Floor.MaxUnits} ({r.units})`
@@ -79,6 +90,12 @@ for n = 1, HIGH do
 	ok(
 		r.notes >= 1 and CODE % r.notes == 0,
 		`{where}: the code's digits split evenly ({r.notes} notes)`
+	)
+	ok(
+		r.lockedNotes >= 0
+			and r.lockedNotes < r.notes
+			and r.lockedNotes == math.floor(r.lockedNotes),
+		`{where}: fewer notes padlocked than there are notes ({r.lockedNotes} of {r.notes})`
 	)
 	ok(
 		r.padlocks >= 0 and r.padlocks <= 0.5,
@@ -99,12 +116,49 @@ for n = 1, HIGH do
 		ok(r.padlocks >= last.padlocks, `{where}: no fewer padlocks than the floor below`)
 		ok(r.packed >= last.packed, `{where}: no less packed than the floor below`)
 		ok(not (r.teaching and not last.teaching), `{where}: the teaching floors don't come back`)
+		ok(r.lockedNotes >= last.lockedNotes, `{where}: no fewer padlocked notes than below`)
 		ok(
-			r.padlockedNote or not last.padlockedNote,
-			`{where}: a padlocked note stays once it's come`
+			search(r) >= search(last) - 1e-9,
+			`{where}: the code no quicker to find than below ({search(r)} doors, {search(last)} below)`
 		)
+		ok(PLAN_SIZE[r.plan] >= PLAN_SIZE[last.plan], `{where}: no smaller a plan than below`)
 	end
 	last = r
+end
+-- The climb's steps (S4-01b), each on its floor with what it names, and nothing after floor 25.
+local function stepOn(n: number, name: string, what: (r: FloorRules.Rules) -> boolean)
+	local r = FloorRules.at(n)
+	ok(r.step == name and what(r), `floor {n}: "{name}" ({r.step})`)
+	ok(FloorRules.at(n - 1).step ~= name, `floor {n - 1}: not yet "{name}"`)
+end
+stepOn(8, "More doors", function(r)
+	return r.units == 50 and r.plan == "Full"
+end)
+stepOn(10, "Four loose", function(r)
+	return r.awake == 4
+end)
+stepOn(12, "Big floors", function(r)
+	return r.plan == "Big" and r.units == 60
+end)
+stepOn(15, "Two notes behind padlocks", function(r)
+	return r.lockedNotes == 2 and r.notes == 4
+end)
+stepOn(20, "More doors still", function(r)
+	return r.units == 70
+end)
+stepOn(25, "Five loose", function(r)
+	return r.awake == 5
+end)
+ok(steps[#steps].from == 25, "floor 25 is the last step: the climb holds from there")
+ok(
+	FloorRules.at(HIGH).awake < Waking.AwakeMost,
+	"room on a phone for one pounding past the most loose"
+)
+for n = 3, HIGH do
+	ok(
+		FloorRules.at(n).notes == 4,
+		`floor {n}: four notes, as the GDD's "Codes" says above the teaching floors`
+	)
 end
 ok(FloorRules.at(1).teaching and FloorRules.at(2).teaching, "floors 1 and 2 teach")
 ok(not FloorRules.at(3).teaching, "floor 3 is the first not to")
@@ -153,7 +207,7 @@ for n = 1, HIGH do
 end
 
 -- 4. Floors well past 100 lay and deal like any other.
-local FLOORS = { 1, 2, 3, 4, 5, 6, 7, 10, 25, 50, 99, 100, 101, 150, 250 }
+local FLOORS = { 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 20, 25, 50, 99, 100, 101, 150, 250 }
 local laid = 0
 for _, n in FLOORS do
 	for seed = 1, 3 do
@@ -192,6 +246,20 @@ for _, n in FLOORS do
 			seen[number] = true
 		end
 		ok(#deck.notes == rules.notes, `{where}: {rules.notes} notes ({#deck.notes})`)
+		local lockedNotes = 0
+		for _, note in deck.notes do
+			if deck.padlocked[note.slot] then
+				lockedNotes += 1
+			end
+		end
+		ok(
+			lockedNotes >= rules.lockedNotes,
+			`{where}: {rules.lockedNotes} notes behind padlocks ({lockedNotes})`
+		)
+		ok(
+			math.abs(#units - rules.units) <= rules.units // 4 + 3,
+			`{where}: {#units} doors where the rules keep about {rules.units}`
+		)
 		ok(#deck.code == CODE, `{where}: a {CODE}-digit code`)
 		local locks = 0
 		for _ in deck.padlocked do

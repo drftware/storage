@@ -29,7 +29,7 @@ local function ok(cond: boolean, what: string)
 end
 
 local SEEDS = 200
-local FLOORS = { 1, 3, 6 }
+local FLOORS = { 1, 3, 6, 15 }
 
 local function lay(seed: number, number: number)
 	local floor = Floor.generate(number, Brix.Random.new({ seed = seed }))
@@ -75,9 +75,10 @@ local closest = math.huge
 -- What every seed lays before a door lifts (code, notes, padlocks, guard, each unit's rolls and
 -- coins, the bag), folded into one number for seeds 1 to 60: S1-07a changed what a door deals,
 -- not what a floor lays, so this is what it was before S1-07a. It changes only when a ticket
--- means to move what a seed lays.
+-- means to move what a seed lays. Floors past 6 (S4-01b's steps) aren't in it.
 local LAID = 730595903
 local LAID_SEEDS = 60
+local LAID_FLOORS = 6
 local laid = 7
 local function feed(s: string)
 	for i = 1, #s do
@@ -91,7 +92,7 @@ for seed = 1, SEEDS do
 		local _, twin = lay(seed, number)
 		local units = unitsOf(floor)
 		local where = `seed {seed} floor {number}`
-		if seed <= LAID_SEEDS then
+		if seed <= LAID_SEEDS and number <= LAID_FLOORS then
 			feed(table.concat(deck.code, ","))
 			for _, note in deck.notes do
 				feed(`n{note.slot}:{table.concat(note.places, ",")}`)
@@ -137,7 +138,7 @@ for seed = 1, SEEDS do
 		for _ in wings do
 			wingCount += 1
 		end
-		local lockedNote = false
+		local lockedNotes = 0
 		for _, note in deck.notes do
 			local slot = floor.slots[note.slot]
 			ok(slot ~= nil and slot.kind == "Unit", `{where}: a note lies in a unit`)
@@ -157,7 +158,9 @@ for seed = 1, SEEDS do
 				ok(not shown[p], `{where}: each digit on one note`)
 				shown[p] = true
 			end
-			lockedNote = lockedNote or deck.padlocked[note.slot] == true
+			if deck.padlocked[note.slot] then
+				lockedNotes += 1
+			end
 			for _, other in deck.notes do
 				if other ~= note then
 					local o = floor.slots[other.slot]
@@ -176,9 +179,11 @@ for seed = 1, SEEDS do
 		for p = 1, 4 do
 			ok(shown[p] == true, `{where}: digit {p} is on a note`)
 		end
-		if FloorRules.at(number).padlockedNote then
-			ok(lockedNote, `{where}: a note behind a padlock`)
-		end
+		local wantLocked = FloorRules.at(number).lockedNotes
+		ok(
+			lockedNotes >= wantLocked,
+			`{where}: {wantLocked} notes behind padlocks, {lockedNotes} are`
+		)
 
 		-- The padlocks.
 		local locks = 0

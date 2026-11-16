@@ -888,6 +888,14 @@ verified: a doc page, Studio, or "untested".
   client), so a floor laid at start takes about 1.4 s by the clock for 65 ms of work; judge
   laying by its work per frame (`FloorBuilder`'s `Laid`), not by the clock. `execute_luau` on the
   Server can require `FloorBuilder` and lay a test floor (it yields fine), then `:Destroy()` it.
+- **Timing a floor's lay from the MCP** (S4-01b, 2026-11-15, Play): once Play has settled, a
+  Server `execute_luau` that requires `FloorBuilder` (search ServerScriptService's descendants),
+  `Floor.generate(n, Brix.Random.new({ seed = Climb.seedOf(7, n) }))`, `Deal.new`, then
+  `FloorBuilder.lay(floor, CFrame.new(5000 * k, 0, 8000), folder, deck)` returns `Laid` (`working`,
+  `frames`, `longest`); destroy the folder after. Floors 3 to 60 took 70 to 100 ms of work, at
+  most 7 ms a frame. A ride from any `DevFloorNumber` floor works as from floor 1: the car stands
+  at (0, 0, -588); the Client must `WaitForChild("Elevator", 10)` under `FloorN.Lobby` (it
+  streams in), and the Output's "floor N's code is" line gives the digits.
 
 ## Importing kit pieces
 

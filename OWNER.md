@@ -202,9 +202,40 @@ nowhere else.
   6. **Decide (default in):** "Made it" has nothing to trigger it now. Its screen and code are
      kept, unused, in case you want a way out later (say, cashing out between floors). Say if
      you'd rather it went.
-  7. Tell the next session whether floor 4 felt any harder than floor 3. Today floors 3 and 4 play
-     the same; S4-01b makes each floor change from the one below (more doors, more monsters
-     awake, fewer notes), each change named in the floor rules.
+  7. Tell the next session whether floor 4 felt any harder than floor 3. Floors 3 and 4 still
+     play the same: the climb now changes on floors 5, 6, 8, 10, 12, 15, 20 and 25 (the next item).
+
+- [ ] **Feel each floor get harder as you climb** (S4-01b, D-228; in Studio Play Claude laid floors
+  8, 11 and 25 for real and rode from 11 up to 12; floors 3, 10, 12, 15, 20, 25 and 60 were laid
+  from the server to time them. Not seen: anyone playing them, two players, a phone). The floor
+  rules now step up eight times and then hold. Start on a step's first floor with Workspace's
+  `DevFloorNumber`, in Studio or published with a friend, and play it to the gate.
+  1. **Floor 8, "More doors":** about 50 doors instead of 40 on the same halls. Look for: the
+     code takes longer to piece together, fewer long blank walls, and one note still behind a
+     padlock.
+  2. **Floor 10, "Four loose":** up to four monsters out at once (three before). Look for: a hall
+     is rarely empty for long; while you hide from one you hear another.
+  3. **Floor 12, "Big floors":** a wider building, two more columns of halls and a third loop,
+     about 60 doors. Look for: the far wing feels a long way from the elevator, and the sprint for
+     the gate is longer. On a phone, watch the frame rate as you walk the far halls (about half as
+     many parts again as a floor 3).
+  4. **Floor 15, "Two notes behind padlocks":** two of the four notes are always behind padlocks
+     (about 11 padlocked doors in all). Look for: one pair of bolt cutters isn't enough; the team
+     needs cutters twice, or cutters and a saw through the side.
+  5. **Floor 20, "More doors still":** about 70 doors on the big floor. Look for: doors down every
+     hall, nowhere to stand that isn't next to one.
+  6. **Floor 25, "Five loose":** up to five monsters out at once, the most a phone carries with
+     one more pounding behind a door. From here the floors stop getting harder; only the pay and
+     the finds keep rising.
+  7. Tell the next session whether any step lands too early, too late or too hard. Each step's
+     floor and number is one line in `src/shared/FloorRules.luau`.
+  8. **Decide (default in):** the notes stay at four from floor 3 up and never drop. The ticket
+     said "fewer notes", but fewer notes make the code quicker to find (one note turns up sooner
+     than the last of four), and the GDD's "Codes" says four above the teaching floors. The code
+     gets harder instead with more doors to search and a second padlocked note. Say if you want
+     fewer notes on high floors anyway (it would need more doors to make up for it).
+  9. **Decide (default in):** the climb stops getting harder at floor 25 and holds there. Say if you
+     want it to keep climbing longer, or level off sooner.
 
 - [ ] **Clear Studio's doubled modules** (found Nov 15): `ServerScriptService.Server` and
   `ReplicatedStorage.Shared` hold two copies of each module made in recent sessions (Purchasing,

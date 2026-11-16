@@ -4,7 +4,9 @@
 	the floor is, how many doors and notes it has, how many start padlocked, how many monsters can
 	be loose at once and how many of its units are packed. The climb has no top floor, so every
 	answer holds from floor 1 to 100 and past: a value that grows with the floor stops at its most,
-	as Dandy's World's floors grow harder up to a point and then hold.
+	as Dandy's World's floors grow harder up to a point and then hold. Here the last step is floor
+	25's (S4-01b): above it only the slow curves still rise (what a floor pays, its finds, how soon
+	sleepers wake, the packed share).
 
 	Two kinds of rule:
 	- **Steps** (`Steps`): a change that lands on one floor and stays, each named for what players
@@ -24,7 +26,7 @@
 local FloorRules = {}
 
 -- A floor plan by name: Floor's `Plans` hold what each looks like (halls, loops, how it winds).
-export type Plan = "Short" | "Full"
+export type Plan = "Short" | "Full" | "Big"
 
 -- Everything the rules say about one floor.
 export type Rules = {
@@ -44,8 +46,9 @@ export type Rules = {
 	-- The share of the floor's units that start padlocked: a few while you learn the doors, more
 	-- once a pair of bolt cutters is worth carrying.
 	padlocks: number,
-	-- One note lies behind a padlock (GDD "Codes"): the cutters become something a team needs.
-	padlockedNote: boolean,
+	-- How many of the notes lie behind a padlock (GDD "Codes"), always fewer than the notes: one
+	-- makes the cutters something a team needs, two makes a team plan for two ways through.
+	lockedNotes: number,
 	-- The most monsters loose at once (GDD "The director": each band caps them; the tech plan caps
 	-- them for low-end phones). Past it a monster is dealt asleep instead, so a door is as risky but
 	-- the hall isn't flooded, as Left 4 Dead's director caps its specials.
@@ -63,11 +66,12 @@ export type Step = {
 	units: number?,
 	notes: number?,
 	padlocks: number?,
-	padlockedNote: boolean?,
+	lockedNotes: number?,
 	awake: number?,
 }
 
--- The steps, lowest floor first. The first sets every field.
+-- The steps, lowest floor first. The first sets every field. Each names the hit game it comes
+-- from and the moment it makes; `OWNER.md` says what to feel on each step's first floor.
 FloorRules.Steps = {
 	{
 		from = 1,
@@ -77,7 +81,7 @@ FloorRules.Steps = {
 		units = 30, -- of about 60 the short plan's halls have room for: half the doors, each a pick
 		notes = 2,
 		padlocks = 0.06, -- about 2 of 30 doors: you meet a padlock, you rarely need one
-		padlockedNote = false,
+		lockedNotes = 0,
 		awake = 1,
 	},
 	{
@@ -98,7 +102,57 @@ FloorRules.Steps = {
 	{
 		from = 6,
 		name = "A note behind a padlock", -- the code needs bolt cutters, or a saw through the side
-		padlockedNote = true,
+		lockedNotes = 1,
+	},
+	{
+		-- More to search before the code is in, as Dandy's World asks for more machines higher up:
+		-- the four notes hide among more doors, so the floor runs longer and the monsters have
+		-- longer to find you. The blank stretches of wall get shorter.
+		from = 8,
+		name = "More doors",
+		units = 50, -- of about 80: five doors in eight, the most the full plan keeps
+		padlocks = 0.15, -- about 8 of 50
+	},
+	{
+		-- A fourth monster can be out, as Dandy's World sends more Twisteds onto higher floors (and
+		-- Left 4 Dead's director allows more specials as it ramps): a hall is rarely empty, and
+		-- you hide from one while you hear another.
+		from = 10,
+		name = "Four loose",
+		awake = 4,
+	},
+	{
+		-- A bigger building, as Lethal Company's harder moons hold bigger facilities: the far wing
+		-- is a long way from the elevator, and the last friend's sprint for the gate is longer.
+		from = 12,
+		name = "Big floors",
+		plan = "Big",
+		units = 60, -- of about 100 the big plan's halls have room for: a little over half
+	},
+	{
+		-- Two of the four notes behind padlocks: the same lock as floor 6, twice, so the team needs
+		-- two ways through (cutters and a saw, or cutters twice), as Piggy's way out wants more
+		-- than one tool found first.
+		from = 15,
+		name = "Two notes behind padlocks",
+		lockedNotes = 2,
+		padlocks = 0.18, -- about 11 of 60: locked doors become a common sight
+	},
+	{
+		-- The big floors fill in: more doors on the same long halls, as Dandy's World keeps adding
+		-- machines. Every hall has doors, so there's nowhere to stand that isn't next to one.
+		from = 20,
+		name = "More doors still",
+		units = 70, -- of about 100: seven in ten
+		padlocks = 0.2, -- about 14 of 70
+	},
+	{
+		-- The most a phone carries (`Waking.AwakeMost`, 6, leaves room for one more pounding behind
+		-- a door). From here every floor is as hard as the climb gets; only its pay and its finds
+		-- keep rising, as Dandy's World's floors hold once they're at their hardest.
+		from = 25,
+		name = "Five loose",
+		awake = 5,
 	},
 } :: { Step }
 
@@ -127,7 +181,7 @@ function FloorRules.at(number: number): Rules
 	local units: number? = first.units
 	local notes: number? = first.notes
 	local padlocks: number? = first.padlocks
-	local padlockedNote: boolean? = first.padlockedNote
+	local lockedNotes: number? = first.lockedNotes
 	local awake: number? = first.awake
 	for _, s in FloorRules.Steps do
 		if s.from > n then
@@ -141,9 +195,7 @@ function FloorRules.at(number: number): Rules
 		units = s.units or units
 		notes = s.notes or notes
 		padlocks = s.padlocks or padlocks
-		if s.padlockedNote ~= nil then
-			padlockedNote = s.padlockedNote
-		end
+		lockedNotes = s.lockedNotes or lockedNotes
 		awake = s.awake or awake
 	end
 	assert(
@@ -152,7 +204,7 @@ function FloorRules.at(number: number): Rules
 			and units ~= nil
 			and notes ~= nil
 			and padlocks ~= nil
-			and padlockedNote ~= nil
+			and lockedNotes ~= nil
 			and awake ~= nil,
 		"FloorRules: the first step must set every rule"
 	)
@@ -164,7 +216,7 @@ function FloorRules.at(number: number): Rules
 		units = units,
 		notes = notes,
 		padlocks = padlocks,
-		padlockedNote = padlockedNote,
+		lockedNotes = lockedNotes,
 		awake = awake,
 		packed = math.min(
 			FloorRules.PackedMost,
