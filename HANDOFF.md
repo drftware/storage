@@ -12,10 +12,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   Seen in Studio Play: the monkey lured 11 times over its play (no monster near, so 0 heard);
   the car rolled 1.6 to 9.1 studs ahead, client and server within 0.01 studs. The wall stop and
   the sounds by ear are the owner's (`OWNER.md`). The RC car has no press (catalog: at home).
-- Find art (`art/finds/WAVES.md`): the walking robot built by the art run (Nov 16, commit eb41e5f), in
-  the place. If that run leaves edits uncommitted in a shared doc again, stage that doc as HEAD
-  plus your own lines only (`git hash-object -w`, `git update-index --cacheinfo`). It had the
-  wind-up mouse (D-232) uncommitted on Nov 16; this session took D-233.
+- Find art (`art/finds/WAVES.md`): the wind-up mouse built by the art run (Nov 16, F-04d, D-232),
+  uploaded and in the place; next the clockwork tin bird (F-04d2). The run commits its own files
+  by path; a shared doc holding its lines and yours: stage HEAD plus your own lines only.
 
 ## Next task: F-G1b3b A lit find on the floor holds a Mannequin (D-188)
 The moment: chased down a hall, you drop your lit lantern behind you and the Mannequin freezes in

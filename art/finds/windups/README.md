@@ -211,3 +211,43 @@ the planted foot, leaning 3 degrees into it and nodding on each clank; the aeria
 spring flung about by the sway and the clanks; it stalls, the legs straighten, and the arms swing
 on their pins a moment). It covers about 3.4 studs. The body moves only as the planted foot
 pushes it, so no foot slides (`robot_walk`).
+
+## Wind-up mouse (Uncommon): "Wind: it zips off and squeaks wherever it stops"
+
+A flocked clockwork mouse of the kind sold from the 1920s to now: a grey teardrop body of nylon
+flock over a tin shell, sitting on a grey plastic plate with two drive wheels under its middle
+and a tin knob under its rump to rest on. Ours is no maker's: pink-lined felt ears cupped
+forward, domed printed eyes (cream, a warm brown iris looking ahead, a printed shine), a pink
+bead nose, three black nylon whiskers a side, a stiff black plastic tail on the wag cam, a brass
+butterfly key out of its left side through a tin eyelet. The flock is rubbed darker along its
+back where hands pick it up and worn through to the dark shell at the snout's tip and the
+underside's edge.
+
+**Looked at:** the V&A's mechanical mouse B.114-1996 (collections.vam.ac.uk/item/O36956: Hong
+Kong, 1975-79, grey nylon flock over metal, cloth ears, printed paper eyes, a black plastic tail,
+the key bar out of its left side, a grey plastic underside, two wheels under the centre, a
+balancing knob at the back; 1.5 in tall and wide) and its photo; Brent Museum's 1925 clockwork
+mouse T944 (bma-collections.brent.gov.uk, 85 mm long, 38 wide, 40 high, fabric over iron). Two
+modern listings (kidero.be, goodio.be) were behind bot checks; one mentioned a tail that wags as
+it runs. No video was timed: the run's numbers come from a toy's speed (spec `ZIP`).
+
+**Size:** 84 mm nose to rump, 40 wide, 36 tall (44 to the ears' tops), the tail reaching 52 mm
+behind: 0.33 studs long, 0.17 tall. A speck from a unit's doorway, as every find under six inches
+is; held, its pink ears, eyes and brass key read at once.
+
+**Tells:** the pink ears, the grey teardrop, the brass key.
+
+**Parts:** `Body` (root: the flock, eyes, nose, whiskers, plate, knob, eyelet; travels with `x`,
+`y`, `yaw`, `pitch`), `Ears` (both, on one hinge across the head: they flick when it stops),
+`Wheels` (both on one axle), `Tail` (wags about its root with `turn`, bobs with `pitch`), `Key`.
+The ears are their own part because the bake smeared them onto the flock where their feet sink in
+(dark wedges); the eyes' domes sit deep with their skirts under the flock for the same reason.
+
+**Motions:** `Wind` (four half turns of the key, a regrip between each, 1.95 s). `Zip` (6 s):
+worked out from one spring in `mouse_zip`. It bites and launches in 0.06 s at 3 studs a second,
+curls 3.2 degrees a stud to its left (one wheel drags), shimmies and its nose buzzes on its knob
+as the gears run, slows as the spring gives out, stalls dead near 5 s, about 11 studs off and
+36 degrees round, then rocks onto its nose three times (5.4, 1.5, 0.35 degrees: parabolas, so
+the knob lands hard), the moment the game squeaks. The tail wags on the cam (a whole number of
+wags, so it stops straight) and whips behind as stiff plastic does, ringing when it stops; the
+ears flick on each rock; the key unwinds with the distance run.

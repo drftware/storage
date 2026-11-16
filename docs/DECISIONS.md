@@ -6118,6 +6118,17 @@ Sounds for now: the switches click as the torch does, the tea light and oil lamp
 ("match strike/ignite", Creator Store), the jack winds its music box and bangs with the
 catalog's tin clang made lower and louder. The rest wait in ROADMAP polish.
 
+## D-232 The wind-up mouse's run is worked out from one spring (F-04d, Nov 16)
+
+The mouse's `Zip` comes from one sum in `windups/build.py` (`mouse_zip`), not hand keys: its
+speed from the spring (a quick bite, then fading until it stalls dead), its heading from a
+steady curl to the left, its shimmy and nose buzz from the distance run (the gears), its wheels
+and key from the distance, its stop as three nose-down rocks drawn as parabolas, and its tail and
+ears as springs flung about by the body. Keys sit only where each curve turns, eased to be exact
+for the shape between (the walkers' way), so the game plays what was judged. The tail's cam is
+tuned to a whole number of wags, so it always stops straight. Small pieces sunk into a part
+(ears, eye domes) smear onto it in the bake, so they become their own part or sit deep.
+
 ## D-233 The monkey lures for its whole play; the toy car is set down and rolls where the server laid it (F-G1b3a, Nov 16)
 
 The cymbal monkey is the catalog's "strongest lure", Call of Duty Zombies' Monkey Bomb: wound, it

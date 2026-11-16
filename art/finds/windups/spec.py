@@ -203,3 +203,60 @@ WALK = dict(
     aerial=(5.0, 0.12, 18.0),   # the aerial's sway: how often a second, its damping, the ball's
     # height over its pin (mm)
 )
+
+
+# --- The wind-up mouse: a flocked clockwork mouse, our own -----------------------------------
+# References (README): the V&A's 1970s Hong Kong mouse (B.114-1996: grey nylon flock over a tin
+# shell, cloth ears, printed eyes, a black plastic tail, the key bar out of its left side, two
+# wheels under its middle, a balancing knob at the back; 1.5 in tall and wide) and Brent Museum's
+# 1925 clockwork mouse (T944: 85 mm long, 38 wide, 40 high). Ours: grey flock, pink-lined felt
+# ears, domed printed eyes, a pink bead nose and nylon whiskers, a brass wing key.
+MOUSE = dict(
+    body=[(-45.6, 0.0, 9.0, 9.0), (-44.6, 2.6, 6.6, 11.6), (-42.5, 5.0, 5.2, 13.8),
+          (-39.0, 7.6, 4.2, 16.6), (-33.0, 10.8, 3.3, 20.6), (-25.0, 14.4, 2.7, 25.6),
+          (-15.0, 17.6, 2.4, 30.4), (-4.0, 19.6, 2.3, 34.0), (7.0, 20.2, 2.4, 35.6),
+          (17.0, 19.2, 2.7, 34.6), (25.0, 16.8, 3.4, 30.8), (31.0, 13.4, 4.6, 25.4),
+          (35.0, 9.0, 6.6, 19.6), (37.3, 4.6, 9.0, 15.2), (38.2, 0.0, 12.0, 12.0)],
+    # the body from the nose's tip (-y) to the rump: y, half width, its underside, its top (mm)
+    low=0.42,          # where the widest line runs, from underside (0) to top (1): fuller low
+    flat=3.2,          # the underside's squareness (2 an ellipse): it sits flat on its plate
+    ear=dict(at=(10.2, -14.0, 28.0), r=8.4, face=(0.42, -0.84, 0.30), lean=0.30),
+    # the left ear's foot on the head, the felt disc's radius, which way its cup opens, and how
+    # far it leans out from upright
+    eye=dict(y=-29.0, z=19.2, r=3.6, face=(0.80, -0.48, 0.36)),   # domed printed eyes, a quarter
+    # of the way from the body's own facing toward `face`
+    nose=(0.0, -45.4, 9.0, 2.5),
+    whiskers=[(0.30, 0.22), (0.38, 0.0), (0.30, -0.24)],   # each one's back and up lean
+    whisker=dict(at=(-41.4, 9.8), len=19.0, r=0.42),
+    wheel=dict(x=9.4, r=5.2, w=2.6),   # the two drive wheels on one axle under its middle
+    plate=dict(hw=12.0, y=(-21.0, 23.0), z=(1.4, 2.8), r=6.0),     # the grey plastic base
+    knob=(26.0, 2.6),                  # the balancing knob under its rump: y and radius
+    tail=[(0.0, 36.0, 11.6), (0.0, 45.0, 15.6), (0.4, 54.0, 20.6), (1.4, 63.0, 24.8),
+          (3.0, 72.0, 27.4), (5.0, 81.0, 28.2), (6.8, 89.0, 27.2)],
+    tail_r=(2.0, 0.9),                 # the plastic tail's thickness at its root and its tip
+    key=dict(y=8.0, z=15.0, shaft=(1.3, 5.6), wing=(5.4, 4.4, 5.8), t=1.1),
+    # the key out of its left side: the shaft's radius and length; each wing's half width, half
+    # length and how far out from the middle; its thickness
+    dust=0.05, seed=67.0,
+)
+
+# How it runs (README): it zips off at a toy's top speed, veers a little to its left, slows as
+# the spring gives out, stalls dead, rocks onto its nose and squeaks there.
+ZIP = dict(
+    top=3.0,           # studs a second fully wound (0.76 m/s, a quick toy)
+    grip=0.06,         # seconds its wheels take to bite and launch it
+    length=5.4,        # how long the spring would run unslowed (s)
+    fade=0.45,         # how much it slows across the run
+    knee=5.0,          # how suddenly it gives out at the end
+    stall=0.95,        # studs a second where the spring gives up and it stops dead
+    halt=0.06,         # seconds it takes to stop dead
+    veer=3.2,          # degrees a stud it curls to its left (one wheel drags)
+    shimmy=(1.4, 0.5), # degrees it shimmies either side, and studs a shimmy
+    buzz=(0.55, 0.22), # degrees its nose hops as the gears buzz, and studs a hop
+    wag=(20.0, 0.48),  # degrees the tail wags either side, and studs a wag (its cam)
+    tail=(14.0, 0.12), # the plastic tail's own whip: how often a second, its damping
+    ears=(11.0, 0.18), # the felt ears' flick on their feet: how often a second, its damping
+    rock=[(5.4, 0.20), (1.5, 0.11), (0.35, 0.055)],   # the nose-down rocks when it stops:
+    # degrees and seconds each
+    winds=4,           # half turns of the key when wound
+)

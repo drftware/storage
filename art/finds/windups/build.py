@@ -2321,7 +2321,412 @@ WALKING_ROBOT = kit.Find(
 )
 
 
-FINDS = [CYMBAL_MONKEY, JACK_IN_THE_BOX, CHATTERING_TEETH, WALKING_ROBOT]
+# --- The wind-up mouse (F-04d) ------------------------------------------------------------------
+# A flocked clockwork mouse (README): a grey teardrop body over a tin shell on a plastic plate, two
+# drive wheels under its middle and a knob under its rump, pink-lined felt ears, domed printed
+# eyes, a pink bead nose, nylon whiskers, a stiff black tail on a wagging cam, a brass key in its
+# left side. Wound and set down, it zips off, veers, slows, stalls dead and rocks onto its nose.
+
+MO = K.MOUSE
+ZP = K.ZIP
+(FLOCK, EAR_IN, MEYE, MNOSE, WHISK, MTAIL, MKEY, PLATE, TYRE, HUB) = range(35, 45)
+
+
+def mo_section(row, a):
+    """A point round the body's section `row` (y, half width, underside, top; mm) at angle a,
+    anticlockwise seen from behind (+Y): an ellipse above its widest line, squarer below."""
+    y, hw, zb, zt = row
+    zc = zb + MO["low"] * (zt - zb)
+    c, s = math.cos(a), math.sin(a)
+    e, h = (2.0, zt - zc) if s >= 0 else (MO["flat"], zc - zb)
+    cx = math.copysign(abs(c) ** (2.0 / e), c)
+    sz = math.copysign(abs(s) ** (2.0 / e), s)
+    return (-hw * cx, y, zc + h * sz)
+
+
+MO_FINE = smooth_rows([tuple(r) for r in MO["body"]], 8)
+
+
+def mo_row(y):
+    for a, b in zip(MO_FINE, MO_FINE[1:]):
+        if a[0] <= y <= b[0]:
+            u = (y - a[0]) / (b[0] - a[0])
+            return tuple(p + (q - p) * u for p, q in zip(a, b))
+    return MO_FINE[-1]
+
+
+def mo_x(y, z):
+    """The body's half width (mm) at y and height z."""
+    _, hw, zb, zt = mo_row(y)
+    zc = zb + MO["low"] * (zt - zb)
+    e, h = (2.0, zt - zc) if z >= zc else (MO["flat"], zc - zb)
+    s = min(1.0, abs(z - zc) / h) ** (e / 2.0)
+    return hw * math.sqrt(max(0.0, 1 - s * s)) ** (2.0 / e)
+
+
+def frame(face, up):
+    """A turn taking +Z to `face` with +Y as near `up` as it can be (4x4)."""
+    zl = Vector(face).normalized()
+    yl = (Vector(up) - zl * Vector(up).dot(zl)).normalized()
+    return Matrix((yl.cross(zl), yl, zl)).transposed().to_4x4()
+
+
+EAR_PROF = [(0.0, 0.0), (3.0, 0.25), (5.6, 0.9), (7.6, 1.8), (8.6, 2.9), (8.7, 3.5), (8.1, 3.8),
+            (6.6, 3.1), (4.2, 2.3), (2.0, 1.9), (0.0, 1.8)]
+EAR_KINDS = [FLOCK] * 6 + [EAR_IN] * 4
+
+
+def mo_normal(sx, y, z):
+    """Which way the body's side faces at y, z on side sx."""
+    h = 0.2
+    return Vector((sx, -(mo_x(y + h, z) - mo_x(y - h, z)) / (2 * h),
+                   -(mo_x(y, z + h) - mo_x(y, z - h)) / (2 * h))).normalized()
+
+
+EYE_PROF = [(1.0, -2.2), (0.98, 0.0), (0.92, 0.9), (0.75, 1.6), (0.45, 2.1), (0.0, 2.3)]
+
+
+def eye_at(sx):
+    """The eye's foot and facing (mm) on side sx, and its dome's apex. The dome's skirt sits deep
+    in the body all round, so no edge of it stands proud for the bake to smear onto the flock."""
+    e = MO["eye"]
+    face = Vector((sx * e["face"][0], e["face"][1], e["face"][2])).normalized()
+    d = (mo_normal(sx, e["y"], e["z"]) * 0.75 + face * 0.25).normalized()
+    at = Vector((sx * mo_x(e["y"], e["z"]), e["y"], e["z"])) - d * 0.9
+    return at, d, at + d * 2.3
+
+
+def key_at():
+    k = MO["key"]
+    return Vector((mo_x(k["y"], k["z"]) - 0.4, k["y"], k["z"]))
+
+
+def mo_body(hi):
+    s = Shape()
+    rows = smooth_rows([tuple(r) for r in MO["body"]], 4 if hi else 2)
+    n = segs(hi, 20)
+    rings = []
+    for i, (y, hw, zb, zt) in enumerate(rows):
+        if i in (0, len(rows) - 1):
+            rings.append([(mm(0.0), mm(y), mm((zb + zt) / 2))])
+        else:
+            rings.append([tuple(mm(v) for v in mo_section((y, max(hw, 0.05), zb, zt),
+                                                          2 * math.pi * j / n)) for j in range(n)])
+    s.loft(rings, FLOCK)
+    # domed printed eyes, a pink bead nose
+    for sx in (1, -1):
+        at, d, _ = eye_at(sx)
+        r = MO["eye"]["r"]
+        s.lathe([(mm(r * a), mm(b)) for a, b in EYE_PROF], MEYE, segs(hi, 16),
+                T(V(*at)) @ frame(d, (0.0, 0.0, 1.0)))
+    nx, ny, nz, nr = MO["nose"]
+    blob(s, (nx, ny, nz), (nr, nr * 0.92, nr * 0.92), MNOSE, hi, lat=6, lon=12)
+    # nylon whiskers fanning from each side of the snout, drooping a little
+    wk = MO["whisker"]
+    wy, wz = wk["at"]
+    for sx in (1, -1):
+        root = Vector((sx * (mo_x(wy, wz) - 0.6), wy, wz))
+        for back, up in MO["whiskers"]:
+            d = Vector((sx, back, up)).normalized()
+            pts = [root + d * wk["len"] * q / 3 - Vector((0.0, 0.0, 1.6 * (q / 3) ** 2)) for q in range(4)]
+            s.tube([tuple(V(*p)) for p in pts], mm(wk["r"]), WHISK, segs(hi, 3),
+                   radii=[mm(wk["r"] * f) for f in (1.0, 0.8, 0.6, 0.4)])
+    # the grey plastic plate underneath, the tin knob it rests on behind, the key's eyelet
+    pl = MO["plate"]
+    y0, y1 = pl["y"]
+    z0, z1 = pl["z"]
+    boxloft(s, [(z0, pl["hw"], (y1 - y0) / 2, pl["r"]), (z1, pl["hw"], (y1 - y0) / 2, pl["r"])],
+            PLATE, segs(hi, 4), cy=(y0 + y1) / 2, bottom=z0, top=z1)
+    ky, kr = MO["knob"]
+    blob(s, (0.0, ky, kr), (kr, kr, kr), HUB, hi, lat=6, lon=12)
+    ka = key_at()
+    stud(s, (ka.x - 0.3, ka.y, ka.z), "+X", [(3.4, -0.8), (3.3, 0.2), (2.7, 0.65), (1.7, 0.7),
+                                            (1.4, 0.2)], HUB, hi, 12)
+    return s
+
+
+def mo_ears(hi):
+    """The felt ears, cupped forward, their feet sunk in the head: their own part, so the bake
+    keeps them off the flock, and they flick when it stops dead."""
+    s = Shape()
+    ea = MO["ear"]
+    k = ea["r"] / 8.4
+    prof = [(mm(r * k), mm(z * k)) for r, z in EAR_PROF]
+    for sx in (1, -1):
+        R = frame((sx * ea["face"][0], ea["face"][1], ea["face"][2]), (sx * ea["lean"], 0.0, 1.0))
+        foot = Vector((sx * ea["at"][0], ea["at"][1], ea["at"][2]))
+        mid = foot + (R.to_3x3() @ Vector((0.0, 1.0, 0.0))) * ea["r"] * 0.78
+        s.lathe(prof, FLOCK, segs(hi, 22), T(V(*mid)) @ R, kinds=EAR_KINDS)
+    return s
+
+
+def mo_wheels(hi):
+    s = Shape()
+    w = MO["wheel"]
+    r, hw = w["r"], w["w"] / 2
+    for sx in (1, -1):
+        at = (sx * w["x"], 0.0, r)
+        stud(s, at, "+X", [(r - 1.3, -hw), (r - 0.25, -hw + 0.05), (r - 0.02, -hw + 0.5), (r, 0.0),
+                           (r - 0.02, hw - 0.5), (r - 0.25, hw - 0.05), (r - 1.3, hw)], TYRE, hi, 16)
+        stud(s, at, "+X", [(0.0, -hw + 0.25), (r - 1.2, -hw + 0.25), (r - 1.2, hw - 0.25),
+                           (0.0, hw - 0.25)], HUB, hi, 16)
+    s.cylinder(V(-w["x"], 0.0, r), V(w["x"], 0.0, r), mm(0.8), HUB, segs(hi, 8))
+    return s
+
+
+def mo_tail(hi):
+    s = Shape()
+    pts = smooth_rows([tuple(p) for p in MO["tail"]], 4 if hi else 2)
+    r0, r1 = MO["tail_r"]
+    n = len(pts)
+    radii = [mm(r0 + (r1 - r0) * (i / (n - 1)) ** 0.8) for i in range(n)]
+    s.tube([tuple(V(*p)) for p in pts], radii[0], MTAIL, segs(hi, 8), radii=radii)
+    blob(s, pts[-1], (r1, r1, r1), MTAIL, hi, lat=4, lon=8)
+    return s
+
+
+def mo_key(hi):
+    """The robot's wing key, smaller, out of the left side."""
+    s = Shape()
+    k = MO["key"]
+    Mk = T(V(*key_at())) @ Matrix.Rotation(math.radians(-90), 4, "Z")
+    r, ln = k["shaft"]
+    s.cylinder(Mk @ V(0.0, -1.5, 0.0), Mk @ V(0.0, ln, 0.0), mm(r), MKEY, segs(hi, 10))
+    s.cylinder(Mk @ V(0.0, ln - 1.8, 0.0), Mk @ V(0.0, ln, 0.0), mm(2.3), MKEY, segs(hi, 14))
+    hw, hl, out = k["wing"]
+    t = k["t"]
+    m = segs(hi, 14)
+    Mw = Mk @ Matrix.Rotation(math.radians(90), 4, "Y")
+    yc = ln + hl - 0.6
+    bv = 0.25 if hi else 0.0
+    for sw in (1, -1):
+        lobe = [(sw * out + hw * math.cos(2 * math.pi * j / m), yc + hl * math.sin(2 * math.pi * j / m))
+                for j in range(m)]
+        prism(s, lobe, -t / 2, t / 2, MKEY, Mw, bv)
+    prism(s, [(2.6, ln - 0.6), (2.6, yc + 2.0), (-2.6, yc + 2.0), (-2.6, ln - 0.6)], -t / 2, t / 2,
+          MKEY, Mw, bv)
+    return s
+
+
+def mouse_look(L, f):
+    nb = L.nb
+    xm, ym, zm = nb.mul(L.x, K.STUD_MM), nb.mul(L.y, K.STUD_MM), nb.mul(L.z, K.STUD_MM)
+    ax = nb.absf(xm)
+
+    def sq(v):
+        return nb.mul(v, v)
+
+    def dist(c):
+        return nb.math("SQRT", nb.add(nb.add(sq(nb.sub(ax, c[0])), sq(nb.sub(ym, c[1]))),
+                                      sq(nb.sub(zm, c[2]))))
+
+    # flock: a short nylon pile sprayed over the tin, a fine fuzz, mottled where it lay thick or
+    # thin, its nap brushed back along the body
+    fib = L.noise(1800.0, 1, detail=2)
+    mott = L.noise(110.0, 2, detail=3)
+    nap = L.noise(420.0, 3, stretch=(1.0, 0.25, 1.0), detail=2)
+    col = nb.tint(nb.tint(hexc("#80857B"), nb.mr(mott, 0.3, 0.7, 0.9, 1.08)),
+                  nb.mr(fib, 0.3, 0.7, 0.9, 1.07))
+    C = Coat(L, col, nb.mr(fib, 0.3, 0.7, 0.86, 0.96), 0.0,
+             nb.add(nb.mul(fib, 0.0008), nb.mul(nap, 0.0004)))
+    flock = L.k(FLOCK)
+    # rubbed flat and darker along the back where hands pick it up
+    held = nb.mul(flock, nb.mul(nb.ss(zm, 25.0, 33.0), nb.ss(L.noise(60.0, 4, detail=3), 0.42, 0.62)))
+    C.paint(nb.mul(held, 0.7), hexc("#696D65"), 0.72)
+    # worn through to the dark shell at the snout's tip and along the underside's edge
+    tip = nb.mul(flock, nb.sub(1.0, nb.ss(ym, -43.0, -39.5)))
+    low = nb.mul(flock, nb.sub(1.0, nb.ss(zm, 2.6, 4.2)))
+    bare = nb.mul(nb.add(tip, low), nb.ss(L.noise(150.0, 5, detail=4), 0.36, 0.52))
+    C.paint(nb.mul(bare, 0.9), hexc("#3A3935"), 0.5, 0.0, 0.0)
+    scuff = nb.mul(nb.mul(flock, L.edge(mm(0.8), k=4.0)), nb.ss(L.noise(300.0, 6, detail=4), 0.55, 0.68))
+    C.paint(scuff, hexc("#5A5D55"), 0.78)
+    # the ears' felt lining, pink, deeper where it cups
+    ein = L.k(EAR_IN)
+    C.paint(ein, nb.tint(hexc("#DCA49C"), nb.mr(fib, 0.3, 0.7, 0.86, 1.06)), 0.93, 0.0,
+            nb.mul(fib, 0.0007))
+    # printed eyes under clear domes: cream, a warm brown iris looking ahead, a black pupil, a
+    # printed shine and a dark rim
+    _, _, apex = eye_at(1)
+    eye = L.k(MEYE)
+    C.paint(eye, hexc("#F0EBDD"), 0.05, 0.0, 0.0)
+    iris = (apex.x - 0.15, apex.y - 0.75, apex.z - 0.2)
+    di = dist(iris)
+    C.paint(nb.mul(eye, nb.sub(1.0, nb.ss(di, 1.95, 2.2))), hexc("#8E4326"), 0.05)
+    C.paint(nb.mul(eye, nb.sub(1.0, nb.ss(di, 1.05, 1.25))), hexc("#0D0C0B"), 0.05)
+    C.paint(nb.mul(eye, nb.sub(1.0, nb.ss(dist((apex.x - 0.1, apex.y - 0.3, apex.z + 0.95)), 0.35, 0.5))),
+            hexc("#FFFFFF"), 0.05)
+    C.paint(nb.mul(eye, nb.ss(dist(apex), 3.25, 3.4)), hexc("#4A3B33"), 0.06)
+    # the bead nose: glossy pink, rubbed paler on its tip
+    no = L.k(MNOSE)
+    C.paint(no, nb.tint(hexc("#D8738A"), nb.mr(L.noise(300.0, 7), 0.3, 0.7, 0.92, 1.05)), 0.26, 0.0, 0.0)
+    C.paint(nb.mul(no, nb.sub(1.0, nb.ss(ym, -47.2, -46.4))), hexc("#E9A2B0"), 0.35)
+    C.paint(L.k(WHISK), hexc("#171614"), 0.35, 0.0, 0.0)
+    # the tail: black moulded plastic, satin, scuffed grey in places
+    tl = L.k(MTAIL)
+    C.paint(tl, nb.tint(hexc("#1C1C1B"), nb.mr(L.noise(200.0, 8), 0.3, 0.7, 0.85, 1.15)),
+            nb.mr(L.noise(260.0, 9), 0.3, 0.7, 0.36, 0.55), 0.0, 0.0)
+    C.paint(nb.mul(tl, nb.ss(L.noise(500.0, 10, detail=4), 0.62, 0.72)), hexc("#4A4A47"), 0.6)
+    # the key: brass, rubbed bright on the wings' edges
+    ky = L.k(MKEY)
+    C.paint(ky, nb.tint(hexc("#B8934A"), nb.mr(L.noise(90.0, 11, detail=3), 0.3, 0.7, 0.86, 1.06)),
+            0.3, 1.0, 0.0)
+    C.paint(nb.mul(ky, L.edge(mm(0.35), k=4.0)), hexc("#DDBE72"), 0.22)
+    # underneath: grey plastic, dark slots the wheels show through; tin wheels with rubber tyres
+    pl = L.k(PLATE)
+    C.paint(pl, nb.tint(hexc("#5E5F5B"), nb.mr(L.noise(240.0, 12), 0.3, 0.7, 0.92, 1.06)), 0.6, 0.0, 0.0)
+    slot = nb.mul(nb.mul(nb.ss(ax, 7.4, 7.7), nb.sub(1.0, nb.ss(ax, 11.1, 11.4))),
+                  nb.sub(1.0, nb.ss(nb.absf(ym), 6.2, 6.6)))
+    C.paint(nb.mul(pl, slot), hexc("#121211"), 0.7)
+    C.paint(L.k(TYRE), nb.tint(hexc("#1E1D1C"), nb.mr(L.noise(300.0, 13), 0.3, 0.7, 0.9, 1.12)), 0.85, 0.0, 0.0)
+    C.paint(L.k(HUB), nb.tint(hexc("#C4C5BE"), nb.mr(L.noise(160.0, 14, detail=3), 0.3, 0.7, 0.85, 1.04)),
+            0.32, 1.0, 0.0)
+    C.finish(f.dust, grime=0.5)
+    return C.surface(bump_dist=0.0008, bump=0.6)
+
+
+# --- how it runs ----------------------------------------------------------------------------------
+
+def mouse_zip():
+    """The run worked out from one spring: speed, the veer, the shimmy and buzz, the stall and its
+    nose-down rocks, the wheels, the unwinding key, the tail on its cam whipping as plastic does."""
+    dt = 1.0 / FPS
+
+    def drive(t):
+        u = min(t / ZP["length"], 1.0)
+        return ZP["top"] * (1 - ZP["fade"] * u) * max(0.0, 1 - u ** ZP["knee"]) ** 0.5
+
+    ts, vs = [], []
+    t, stall, v0 = 0.0, None, 0.0
+    while True:
+        if stall is None and t > 0.5 and drive(t) < ZP["stall"]:
+            stall, v0 = t, drive(t)
+        v = drive(t) * smooth(0.0, ZP["grip"], t) if stall is None else \
+            v0 * (1 - smooth(stall, stall + ZP["halt"], t))
+        ts.append(t)
+        vs.append(v)
+        if stall is not None and t > stall + ZP["halt"] + 0.9:
+            break
+        t += dt
+    n = len(ts)
+    ds = [0.0]
+    for i in range(1, n):
+        ds.append(ds[-1] + (vs[i] + vs[i - 1]) / 2 * dt)
+    dt_ = ds[-1]
+    stop_i = next(i for i in range(n) if ts[i] >= stall + ZP["halt"])
+    rock_t = stall + ZP["halt"] * 0.5
+    wa, wl = ZP["wag"]
+    wl = dt_ / max(1, round(dt_ / wl))           # a whole number of wags: the tail ends straight
+    sa, sl = ZP["shimmy"]
+    ba, bl = ZP["buzz"]
+    tr = {k: [] for k in (("Body", "x"), ("Body", "y"), ("Body", "yaw"), ("Body", "pitch"),
+                          ("Wheels", "turn"), ("Key", "turn"), ("Tail", "turn"), ("Tail", "pitch"),
+                          ("Ears", "turn"))}
+    x = y = 0.0
+    cam = []
+    for i in range(n):
+        d, v = ds[i], vs[i]
+        head = ZP["veer"] * d
+        if i:
+            a = math.radians(head)
+            x += math.sin(a) * (ds[i] - ds[i - 1])
+            y -= math.cos(a) * (ds[i] - ds[i - 1])
+        tr[("Body", "x")].append(x)
+        tr[("Body", "y")].append(y)
+        tr[("Body", "yaw")].append(head + sa * math.sin(2 * math.pi * d / sl))
+        p = ba * abs(math.sin(math.pi * d / bl)) * min(1.0, v / ZP["top"]) ** 0.5
+        u = ts[i] - rock_t
+        for peak, dur in ZP["rock"]:
+            if 0.0 <= u < dur:
+                p = 4 * peak * u * (dur - u) / (dur * dur)
+                break
+            u -= dur
+        tr[("Body", "pitch")].append(p)
+        tr[("Wheels", "turn")].append(math.degrees(d * K.STUD_MM / MO["wheel"]["r"]))
+        tr[("Key", "turn")].append(180.0 * ZP["winds"] * (1.0 - d / dt_))
+        cam.append(wa * math.sin(2 * math.pi * d / wl))
+
+    def d2(vs_, i):
+        return (vs_[min(i + 1, n - 1)] - 2 * vs_[i] + vs_[max(i - 1, 0)]) / (dt * dt)
+
+    # the tail: stiff plastic on the cam, whipping behind each wag and ringing when it stops dead
+    f_, z_ = ZP["tail"]
+    w = 2 * math.pi * f_
+    fy = fp = vy = vp = fe = ve = 0.0
+    we, ze = 2 * math.pi * ZP["ears"][0], ZP["ears"][1]
+    yaw = tr[("Body", "yaw")]
+    pit = tr[("Body", "pitch")]
+    for i in range(n):
+        vy += (-w * w * fy - 2 * z_ * w * vy - d2(cam, i) - d2(yaw, i)) * dt
+        vp += (-w * w * fp - 2 * z_ * w * vp - d2(pit, i)) * dt
+        ve += (-we * we * fe - 2 * ze * we * ve - d2(pit, i)) * dt
+        fe += ve * dt
+        tr[("Ears", "turn")].append(max(-10.0, min(10.0, fe)))
+        fy += vy * dt
+        fp += vp * dt
+        tr[("Tail", "turn")].append(cam[i] + max(-18.0, min(18.0, fy)))
+        tr[("Tail", "pitch")].append(max(-15.0, min(15.0, fp)))
+
+    ends = {0, stop_i, n - 1}
+
+    def extremes(vs_):
+        return {i for i in range(1, n - 1) if (vs_[i] - vs_[i - 1]) * (vs_[i + 1] - vs_[i]) < 0}
+
+    quarter = {i for i in range(1, n) if math.floor(4 * ds[i] / sl) != math.floor(4 * ds[i - 1] / sl)}
+    tracks = []
+    for (part, ch), vs_ in tr.items():
+        if (part, ch) in (("Body", "x"), ("Body", "y")):
+            ks = rdp(ts, vs_, 0.0015)
+        elif (part, ch) in (("Wheels", "turn"), ("Key", "turn")):
+            ks = rdp(ts, vs_, 3.0)
+        elif (part, ch) == ("Body", "pitch"):
+            # the knob bounces: |sin| hops while it runs, parabolas as it rocks; a peak is reached
+            # slowing (Out), a landing speeding up (In), which is exact for both
+            ks = [(0.0, 0.0)]
+            for i in sorted(extremes(vs_) | ends)[1:]:
+                rising = vs_[i] > vs_[i - 1]
+                style = "Quad" if ts[i] > rock_t else "Sine"
+                ks.append((round(ts[i], 3), round(vs_[i], 4), style, "Out" if rising else "In"))
+        else:
+            pick = extremes(vs_) | ends | (quarter if (part, ch) == ("Body", "yaw") else set())
+            ks = [(round(ts[i], 3), round(vs_[i], 4), "Sine", "InOut") for i in sorted(pick)]
+            ks[0] = ks[0][:2]
+        tracks.append((part, ch, ks))
+    return round(ts[-1], 2), tracks, dt_, stall
+
+
+def mouse_wind():
+    keys, t = [(0.0, 0.0), (0.15, 0.0)], 0.15
+    for i in range(ZP["winds"]):
+        keys += [(t + 0.26, 180.0 * (i + 1), "Sine", "InOut"), (t + 0.4, 180.0 * (i + 1))]
+        t += 0.4
+    return round(t + 0.2, 2), [("Key", "turn", keys)]
+
+
+MZIP_DUR, MZIP_TRACKS, MZIP_RUN, MZIP_STALL = mouse_zip()
+MWIND_DUR, MWIND_TRACKS = mouse_wind()
+
+WINDUP_MOUSE = kit.Find(
+    "WindupMouse",
+    [kit.Part("Body", mo_body),
+     kit.Part("Ears", mo_ears, tuple(V(0.0, *MO["ear"]["at"][1:])), "Body", (1, 0, 0)),
+     kit.Part("Wheels", mo_wheels, tuple(V(0.0, 0.0, MO["wheel"]["r"])), "Body", (1, 0, 0)),
+     kit.Part("Tail", mo_tail, tuple(V(*MO["tail"][0])), "Body", (0, 0, 1)),
+     kit.Part("Key", mo_key, tuple(V(*key_at())), "Body", (1, 0, 0))],
+    mouse_look,
+    motions={
+        # the key wound in four half turns, a regrip between each
+        "Wind": dict(duration=MWIND_DUR, focus="Key", distance=0.9, view=(2.0, -0.6, 0.7),
+                     drop=0.0, tracks=MWIND_TRACKS),
+        # set down, it zips off, curls a little to its left, slows as the spring gives out,
+        # stalls dead and rocks onto its nose (where the game squeaks), its tail wagging behind
+        "Zip": dict(duration=MZIP_DUR, focus=(0.0, mm(-5.0), mm(16.0)), distance=1.3, follow="Body",
+                    view=(2.0, -0.9, 0.7), drop=0.0, tracks=MZIP_TRACKS),
+    },
+    dust=MO["dust"], seed=MO["seed"], texels=900,
+)
+
+
+FINDS = [CYMBAL_MONKEY, JACK_IN_THE_BOX, CHATTERING_TEETH, WALKING_ROBOT, WINDUP_MOUSE]
 
 if __name__ == "__main__":
     kit.main("Windups", HERE, FINDS)

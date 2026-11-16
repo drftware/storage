@@ -30,5 +30,6 @@ return {
 		CymbalMonkey = { Model = 124266692491775 },
 		JackInTheBox = { Model = 99780291550799 },
 		WalkingRobot = { Model = 109415009719114 },
+		WindupMouse = { Model = 108541924029710 },
 	},
 }

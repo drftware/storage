@@ -8,6 +8,7 @@ return {
 	CampLantern = { "SwitchOn", "SwitchOff", "RunDown", "Lift" },
 	ChatteringTeeth = { "Wind", "Chatter" },
 	WalkingRobot = { "Wind", "Walk" },
+	WindupMouse = { "Wind", "Zip" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },

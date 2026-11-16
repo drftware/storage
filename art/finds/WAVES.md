@@ -6,11 +6,11 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04d, the wind-up mouse and the clockwork tin bird, in `art/finds/windups/` (the set,
-the cymbal monkey, the jack-in-the-box, the chattering teeth and the walking robot are built); not
-yet researched, the newest note has hints. It is step 2 of "The second run's plan" below; then
-follow the plan, session by session. The oil lamp's sheets still want `ACTIONS= scripts/art.sh set
-lights renders OilLamp` when next touched.
+**Next:** F-04d2, the clockwork tin bird, in `art/finds/windups/` (the set, the cymbal monkey, the
+jack-in-the-box, the chattering teeth, the walking robot and the wind-up mouse are built); not
+yet researched, the newest note has hints. It finishes step 2 of "The second run's plan" below;
+then follow the plan, session by session. The oil lamp's sheets still want `ACTIONS=
+scripts/art.sh set lights renders OilLamp` when next touched.
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -90,6 +90,34 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04d (the wind-up mouse built; the tin bird not started: the context cap).**
+  `WindupMouse` in `windups/build.py`, spec `MOUSE` and `ZIP`, README, D-232. A grey flocked
+  clockwork mouse, 84 mm, from the V&A's B.114-1996 and Brent Museum's T944. **Museum photos
+  without bot checks:** the V&A's API (`api.vam.ac.uk/v2/objects/search?q=...&images_exist=1`,
+  read with `javascript_tool`) gives ids, and `framemark.vam.ac.uk/collections/<image id>/full/
+  !800,600/0/default.jpg` shows the big photo; shop listings (kidero, goodio) sat behind
+  Cloudflare. **Bake trap:** small pieces sunk into a part (ears, eye domes, within the bake's
+  2 mm reach) smear onto it as dark wedges and crescents: make them their own part (the ears,
+  which then flick on the stop) or sink them deep with the skirt under the surface (`EYE_PROF`).
+  **Helpers worth reusing:** `frame(face, up)` (a turn taking +Z to any facing), `mo_normal`
+  (which way a body's side faces, for seating eyes), `mo_key` (the robot's key along any axis by
+  a matrix), `mouse_zip`'s pitch keys (a peak reached Out, a landing In: exact for |sin| hops and
+  for parabolas) and its spring-flex for a stiff tail. **Not done:** no video timing (the run's
+  numbers are a toy's speed, spec `ZIP`); the plate has no maker's mark moulded in; the `Zip`
+  filmstrip follows it out of the preview's light, so its last frames are dark (the run itself
+  reads: it travels, curls left, settles, the tail in a new pose each frame). Uploaded and
+  imported (`ReplicatedStorage.Props.Finds.WindupMouse`, five parts, joints checked).
+  **F-04d2's plan, the clockwork tin bird, not researched** (Epic, "Wind: it hops and
+  whistles"): an antique printed tin bird about 4 to 5 in long (100 to 125 mm) on two wire legs,
+  the finest printing in the set (feathers in two or three colours, an eye ring, a printed wing
+  over a pressed one). Look first with the V&A's API ("tin bird", "clockwork bird") and one
+  video for the hop rate. Parts: `Body` (root, hopping), `Beak` (the lower bill opens with each
+  whistle), `Tail` (bobs on each landing, the mouse's spring-flex), `Key` (`mo_key`), maybe the
+  legs folding on each hop. **First** add a `z` travel channel to `kit.TRAVEL` and
+  `TO_ROBLOX_CH` (Blender Z is Roblox Y), to `Finds/Art.luau`'s pose and `Finds/Pose.luau`'s
+  `solve`, with a Lune spec: the hops need it. Key each hop as a parabola (Quad Out up, Quad In
+  down), the mouse's way.
 
 - **Nov 16, F-04c2 (the walking robot built, uploaded and in the place).** `WalkingRobot` in `windups/build.py`,
   spec `ROBOT` and `WALK`, README, D-230. Step 1 of the plan is done. **A walk worked out, not
@@ -657,7 +685,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Toy siren car | Common | Push: it rolls off, wailing | A noise that moves | |
 | Wind-up chattering teeth | Common | Wind: they chatter off across the floor | Monsters come to look | Nov 15, F-04c |
 | Toy drum | Uncommon | Bang: loud |  | |
-| Wind-up mouse | Uncommon | Wind: it zips off and squeaks wherever it stops |  | |
+| Wind-up mouse | Uncommon | Wind: it zips off and squeaks wherever it stops |  | Nov 16, F-04d |
 | Wind-up walking robot | Uncommon | Wind: it clanks off in a straight line for 15 seconds | A noise you can send down a hall | Nov 16, F-04c2 |
 | Farm-animal spinner | Uncommon | Pull: the arrow spins and an animal noise plays | A throwback toy | |
 | Jack-in-the-box | Uncommon | Wind: a tune, then a bang as it pops | The bang comes a few seconds after you let go | Nov 15, F-04b |

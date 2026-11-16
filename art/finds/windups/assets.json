@@ -14,5 +14,9 @@
   "WalkingRobot": {
     "assetId": 109415009719114,
     "sha256": "823360de1ad3cfccb3a3704b789913712001b3a611a99a65c5821558e23ff923"
+  },
+  "WindupMouse": {
+    "assetId": 108541924029710,
+    "sha256": "2f188e0c836b298d25161bee18ebc79dbee45143fae84d67b13415d41a263f44"
   }
 }
