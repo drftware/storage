@@ -966,6 +966,31 @@ do
 				Keeper.new(MANNEQUIN, map, RANDOM, inside, vector.create(-fx, 0, -fz), true)
 			Keeper.step(shut, DT, RUN, players, true)
 			ok(shut.lit == 0, `{where}: inside a unit, a hall light doesn't reach it`)
+			-- a found light lying lit (F-G1b3b), a lantern inside the unit: shut in with it, it's
+			-- lit; out in the hall, its door down shades it and its door up lets it through; past
+			-- its reach, or once it's run down, it isn't
+			local glows: Keeper.Glows = { at = { inside }, reach = { 12 }, count = 1 }
+			Keeper.step(shut, DT, RUN, players, false, glows)
+			ok(shut.lit == Keeper.FoundLight, `{where}: shut in with a lit lantern, it's lit`)
+			Keeper.step(k, DT, RUN, players, false, glows)
+			ok(k.lit == 0, `{where}: a lantern behind a shut door doesn't reach it`)
+			KeeperMap.setDoor(map, slot, true)
+			Keeper.step(k, DT, RUN, players, false, glows)
+			ok(k.lit == Keeper.FoundLight, `{where}: its door up, the lantern inside reaches it`)
+			local gx, gz = k.at.x - inside.x, k.at.z - inside.z
+			glows.reach[1] = math.sqrt(gx * gx + gz * gz) - 0.25
+			Keeper.step(k, DT, RUN, players, false, glows)
+			ok(k.lit == 0, `{where}: a quarter stud past the lantern's reach, it isn't lit`)
+			glows.reach[1], glows.count = 12, 0
+			Keeper.step(k, DT, RUN, players, false, glows)
+			ok(k.lit == 0, `{where}: the lantern run down, it isn't lit`)
+			-- one dropped in the hall beside it; a hall light takes it first
+			glows.at[1], glows.count = k.at + vector.create(fx, 0, fz) * 4, 1
+			Keeper.step(k, DT, RUN, players, false, glows)
+			ok(k.lit == Keeper.FoundLight, `{where}: a lantern dropped in the hall by it lights it`)
+			Keeper.step(k, DT, RUN, players, true, glows)
+			ok(k.lit == Keeper.HallLight, `{where}: under a hall light too, the hall light's it`)
+			KeeperMap.setDoor(map, slot, false)
 			-- asleep, nothing lights it; a row that doesn't freeze in light never is
 			local sleeper = Keeper.new(MANNEQUIN, map, RANDOM, spot, vector.create(fx, 0, fz))
 			holding(6, inside, toward(eye, spot + vector.create(0, 3, 0)))

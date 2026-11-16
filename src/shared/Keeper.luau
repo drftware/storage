@@ -54,8 +54,10 @@
 	only while no light is on it, as SCP-173 in SCP: Containment Breach moves only while unseen and
 	Five Nights at Freddy's animatronics never move while the camera is on them. A light is on it
 	while it stands in a hall (not inside a unit, whose walls shade it) under a lit hall light's
-	pool (`step`'s `hallLit`, the server's MotionLights), or while a player's torch beam reaches it
-	(`inTorch`: within the beam's reach and cone, along a line the map clears). Lit, it holds where
+	pool (`step`'s `hallLit`, the server's MotionLights), while a found light lies lit near it on
+	the floor (`step`'s `glows`, F-G1b3b: within its reach, along a line the map clears, so a
+	unit's walls and a shut door shade it), or while a player's torch beam reaches it (`inTorch`:
+	within the beam's reach and cone, along a line the map clears). Lit, it holds where
 	it stands, as it stands, keeping its state, its trip and its clocks: it doesn't walk or turn,
 	but it still sees and hears, so it may start hunting you while frozen and comes the moment the
 	light leaves it. Screens hold it on the key its stride was on (`Pose.freeze`).
@@ -166,6 +168,15 @@ export type Finds = {
 	count: number,
 }
 
+--- The found lights lying lit on a floor (F-G1b3b), as parallel arrays `count` long that the
+--- server fills and reuses: where each lies (the floor under it, in the floor's coordinates) and
+--- how far along the floor its light holds a keeper that freezes in light (`Use.reach`).
+export type Glows = {
+	at: { vector },
+	reach: { number },
+	count: number,
+}
+
 --- What a collecting keeper's hands are doing as it stands (S2-06b1): its arm out over a find,
 --- its hands closed on it pulling it in, or crouched laying it on its pile.
 export type Hands = "None" | "Reach" | "Take" | "PutDown"
@@ -190,7 +201,8 @@ export type Keeper = {
 	target: number, -- the id of the player it hunts, or 0
 	seen: vector, -- where it last saw them
 	widthCos: number, -- the cosine of its row's sightAngle: how wide it sees
-	lit: number, -- the light on it: 0 none, `Keeper.HallLight`, or the id of whose torch it's in
+	-- the light on it: 0 none, `Keeper.HallLight`, `Keeper.FoundLight`, or whose torch it's in
+	lit: number,
 	reach: Reach?, -- its grasp, along its map; none, it never catches (specs of the walk alone)
 	caught: number, -- the id of the player it caught this step, or 0
 	trappedIn: number, -- the unit (its slot in the floor) it's shut in by a door it was behind, or 0
@@ -266,6 +278,8 @@ Keeper.Close = 2.5
 
 -- `lit` while it stands under a lit hall light.
 Keeper.HallLight = -1
+-- `lit` while a found light lying lit on the floor holds it.
+Keeper.FoundLight = -2
 
 -- How far inside its doorway a trapped keeper stands to bang on it, feet to the corridor wall's
 -- face (studs). The Mannequin's walk holds an arm out level, its hand about 2.7 ahead of its feet,
@@ -1175,8 +1189,9 @@ end
 
 -- The light on it now (`lit`'s values): none unless its row freezes in light and it's awake; a
 -- hall light if `hallLit` (a lit fixture's pool is where it stands) and it's in a hall, not inside
--- a unit, whose walls shade it; else the first player whose torch is on it.
-local function lightOn(k: Keeper, players: Players?, hallLit: boolean): number
+-- a unit, whose walls shade it; a found light if one of `glows` lies within its reach along a line
+-- the map clears; else the first player whose torch is on it.
+local function lightOn(k: Keeper, players: Players?, hallLit: boolean, glows: Glows?): number
 	if not k.row.freezesInLight or k.state == "Asleep" then
 		return 0
 	end
@@ -1184,6 +1199,16 @@ local function lightOn(k: Keeper, players: Players?, hallLit: boolean): number
 		local _, unit = KeeperMap.placeAt(k.map, k.at)
 		if unit == 0 then
 			return Keeper.HallLight
+		end
+	end
+	if glows then
+		local at, reach = k.at, glows.reach
+		for i = 1, glows.count do
+			local g = glows.at[i]
+			local dx, dz, r = at.x - g.x, at.z - g.z, reach[i]
+			if dx * dx + dz * dz <= r * r and KeeperMap.clear(k.map, g, at) then
+				return Keeper.FoundLight
+			end
 		end
 	end
 	if players then
@@ -1258,7 +1283,8 @@ end
 
 --- Steps it by `dt` seconds, `run` being a player's full run (studs a second; its row's speeds are
 --- shares of it), with `players` those it may see (none: it sees no one) and `hallLit` whether a
---- lit hall light's pool is where it stands (the server's MotionLights). Returns whether anything
+--- lit hall light's pool is where it stands (the server's MotionLights) and `glows` the found
+--- lights lying lit on its floor (none: there are none). Returns whether anything
 --- a body shows changed: where it stands, the way it faces or its state. Held by a light, it says
 --- so every step; whether it is, and whose light, is `lit`. Whom it caught this step is `caught`
 --- (0 for no one): it stands over where it caught them, waiting, the one it hunted let go. What a
@@ -1268,9 +1294,10 @@ function Keeper.step(
 	dt: number,
 	run: number,
 	players: Players?,
-	hallLit: boolean?
+	hallLit: boolean?,
+	glows: Glows?
 ): boolean
-	local lit = lightOn(k, players, hallLit == true)
+	local lit = lightOn(k, players, hallLit == true, glows)
 	k.lit = lit
 	k.caught = 0
 	k.threw = false

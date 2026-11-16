@@ -75,6 +75,28 @@ nowhere else.
   5. Pick it up, face a wall from 3 studs away and press Push: it should stop at the wall, not go
      through. (The roll's sound cuts off as it slows; a fade is ROADMAP polish.)
   6. With two players: both should see the car roll the same way and stop in the same place.
+- [ ] **Try (F-G1b3b, built Nov 16, D-234; seen in Studio Play, not on a phone):** drop a lit
+  lantern to stop the Mannequin.
+  1. In Studio, set Workspace's `DevFloorNumber` to 1 and press Play. In the command bar (Server),
+     run `workspace:SetAttribute("StandMannequin", true)`: a Mannequin stands asleep in the hall
+     about 60 studs past the lobby's far side, facing the lobby (`Stand one` on the lobby's post
+     does the same).
+  2. Run `workspace:SetAttribute("GiveFind", "CampLantern")` and press **Switch**: it lights.
+  3. Walk down the hall toward the Mannequin until it's about 15 studs ahead of you, then drop
+     the lantern at your feet (the drop key). The clank wakes it and it comes at you: it should
+     stop dead about 10 studs from the lantern, mid-stride, lit by it, and stay there.
+  4. Walk away out of sight and come back: it's still standing where the lantern holds it.
+     Does it look lit where it stopped, or does it seem to stop in the dark? (If it's dark, its
+     reach is `Use.LightShare` in `src/shared/Finds/Use.luau`: lower it.)
+  5. After 90 seconds the lantern runs down and goes out: the Mannequin walks on at once.
+  6. Again with the lantern inside an open unit and the Mannequin out in the hall: pull the door
+     down and the Mannequin should walk (the door shades the light); lift it and it stops again.
+  7. Try a tea light (`GiveFind` "TeaLight", **Light**): it holds it only about 7 studs off, for a
+     minute.
+- [ ] **Decide (default in, F-G1b3b):** a lit lantern or tea light in your hand doesn't stop the
+  Mannequin; only one lying on the floor does (the catalog says found lights hold it, and the
+  moment is dropping it behind you). Holding one lit, it walks right up to you through its light.
+  Should a lit find you carry hold it too, like your torch does? Say so and it's a small change.
 - [ ] **Decide (default in, F-G1b3a):** the RC car's catalog line says it drives "at home",
   round your unit and out into the hall of units, so in the building it has no press yet, like
   the lamps that work at home. Want it to drive off its transmitter in the building too? Say so

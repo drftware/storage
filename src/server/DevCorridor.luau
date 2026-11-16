@@ -162,6 +162,7 @@ local PACKRAT_FIND = 70
 local PACKRAT_IN = 4 -- studs into its unit from the door's line
 local DEV_PACKRAT = "StandPackrat" -- Workspace's attribute a test sets to press the post
 local DEV_GIVE = "GiveFind" -- Workspace's attribute a test sets to a find's key: in your hands
+local DEV_MANNEQUIN = "StandMannequin" -- Workspace's attribute a test sets to press its post
 -- the systems the Packrat's post works (set at start)
 local devSlots: Slots.Slots? = nil
 local devDoors: Doors.Doors? = nil
@@ -523,7 +524,7 @@ local function mannequinPost(model: Model, origin: CFrame, keepers: Keepers.Keep
 	local p = Prompts.post(a, "Mannequin", "Stand one")
 	local refuse = Prompts.refuser(p)
 	local stood: Model? = nil
-	p.Triggered:Connect(function(player: Player)
+	local function standOne(player: Player?)
 		if stood then
 			keepers:remove(stood)
 			stood = nil
@@ -531,13 +532,29 @@ local function mannequinPost(model: Model, origin: CFrame, keepers: Keepers.Keep
 		local spot, facing = keepers:hallOff(model, MANNEQUIN_OFF)
 		stood = if spot and facing then keepers:stand("Mannequin", model, spot, facing) else nil
 		if not stood then
-			refuse("No Mannequin", player) -- Output says why
+			if player then
+				refuse("No Mannequin", player) -- Output says why
+			end
 			return
 		end
 		print(
 			`DevCorridor: a Mannequin stands in the hall {MANNEQUIN_OFF} studs from the lobby, facing it; slam a door by the lobby and watch it come`
 		)
-	end)
+	end
+	p.Triggered:Connect(standOne)
+	-- a test stands one with no one at the post (F-G1b3b): set this Workspace attribute true
+	-- (Studio only)
+	if RunService:IsStudio() then
+		local watching = Workspace:GetAttributeChangedSignal(DEV_MANNEQUIN):Connect(function()
+			if Workspace:GetAttribute(DEV_MANNEQUIN) == true then
+				Workspace:SetAttribute(DEV_MANNEQUIN, false)
+				standOne(nil)
+			end
+		end)
+		model.Destroying:Connect(function()
+			watching:Disconnect()
+		end)
+	end
 end
 
 -- The Packrat's post (S2-06b2): see PACKRAT_POST. Each press stands a fresh one in a fresh den.

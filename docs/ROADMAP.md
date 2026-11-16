@@ -2085,6 +2085,7 @@ Done when nobody quits a climb because they were caught.
   moment: caught or left behind, you wake shut in a unit of your own, wrapped, and bang on the
   door until a friend follows the noise to you and cuts you free. Two bugs broke it:
   - [ ] **S3-05a Two players left behind land on top of each other, and can't be cut free.**
+    (next)
     Two players missed the car. On the next floor each watched the ride over the shoulder of the
     friend who made it, as meant; then both woke wrapped on the same spot in front of the
     elevator instead of in units, each one's camera inside the other's body. The third player's
@@ -2381,8 +2382,11 @@ actions themselves and dealing the new finds on floors are later game tickets.
         hears it every 2 s until it stalls (`Use.lureUntil`); pushed, the toy car is set down in
         front of you and rolls about 7 studs, stopping short of a wall, where the server already
         laid it (`Use.FromAttribute`, `Finds.joints`'s `from`).
-      - [ ] **F-G1b3b A lit find on the floor holds a Mannequin** (next; D-188): a found light
-        lit on the floor counts as a light the Mannequin stops in.
+      - [x] **F-G1b3b A lit find on the floor holds a Mannequin** (Nov 16, D-234; seen in Studio
+        Play): a found light lying lit is a light the Mannequin stops in, as far as its own lamp
+        reaches (a camp lantern about 10 studs, a tea light 7), shaded by walls and shut doors,
+        until it runs down (`Use.litUntil`, `Keeper.Glows`). In a hand it holds nothing yet
+        (`OWNER.md`).
       - [ ] **F-G1b3c The RC car drives off its transmitter.** Waits on `OWNER.md`: its catalog
         line says it drives at home, so it has no press in the building for now (D-233).
   - [ ] **F-G1c The grade shows. Parked Nov 15 (owner: cut for now, D-204):** the reveal moved

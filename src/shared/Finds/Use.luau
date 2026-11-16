@@ -18,6 +18,8 @@
 	found lit and never runs down, so it has none either.
 ]]
 
+local Art = require("./Art")
+
 local Use = {}
 
 -- A sound a step plays as it starts (the Catalog's Sound: an id, where in the recording, how
@@ -447,6 +449,43 @@ function Use.noiseAt(row: Row, state: State, durations: { [string]: number }): n
 		at += Use.length(step, durations)
 	end
 	return nil
+end
+
+-- A found light lying lit holds a Mannequin this share of its light's range from it (F-G1b3b):
+-- past that the glow on its body is too faint to read as lit, and it would seem to stop in the
+-- dark. A camp lantern's 12 holds it about 10 studs off, a tea light's 9 about 7.
+Use.LightShare = 0.8
+
+--[[
+	Found lights hold a Mannequin (F-G1b3b, D-188): one lying lit on the floor is a light it stops
+	in, as it stops under a hall light or in a torch beam. The server clock until which a find
+	stamped `stamp` is lit: from its press for as long as its light lasts (`left`), for good if it
+	never runs down (math.huge); nil if it isn't lit (never pressed, switched off) or isn't a light
+	(a toy plays, it doesn't glow).
+]]
+function Use.litUntil(row: Row, stamp: Stamp?): number?
+	if not stamp or stamp.state == "Off" or Use.toy(row) then
+		return nil
+	end
+	return stamp.at + stamp.left
+end
+
+-- How far a found light lying lit holds a Mannequin, along the floor (studs): its widest point
+-- light's range (a spot's only if it has no point light: a beam that points away is no pool
+-- round it), times `LightShare`; 0 for a find with no light.
+function Use.reach(find: Art.Find?): number
+	if not find then
+		return 0
+	end
+	local point, other = 0, 0
+	for _, light in find.Lights do
+		if light.Kind == "Point" then
+			point = math.max(point, light.Range)
+		else
+			other = math.max(other, light.Range)
+		end
+	end
+	return (if point > 0 then point else other) * Use.LightShare
 end
 
 return Use

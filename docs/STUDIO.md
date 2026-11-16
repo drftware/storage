@@ -205,6 +205,14 @@ verified: a doc page, Studio, or "untested".
   `screen_capture` timed out. A Client `execute_luau` counting `RenderStepped` for a second read
   0: the viewport wasn't drawing (the Mac's screen asleep or Studio hidden). Count frames first
   when prompts won't show; nothing on screen works until it draws again.
+- **A found light holding a Mannequin, from the MCP** (F-G1b3b, Nov 16): Play with
+  `DevFloorNumber` 1; Server `workspace:SetAttribute("StandMannequin", true)` stands one asleep at
+  (0, 0, -656) facing the lobby. Anchor your root, pivot it to (0, 3.5, -641), stream around,
+  unanchor; `GiveFind` "CampLantern", a Client `Remotes.ToolUse:FireServer()` switches it on, a
+  Server `SetAttribute("UseLeft", 45)` on the held model shortens it, and `Remotes.ToolDrop`
+  drops it (it landed 2 studs behind you). The drop's clank woke the Mannequin; it froze 9.5 studs
+  from the lantern ("freezes in the light of a find on the floor") and "walks on" as it ran down.
+  Park at (0, 400, 0) anchored after the drop, or it catches you once the light's out.
 - **Waking one sleeper on purpose** (B-05b2b): Workspace `GiveFind` set to "AirHorn" puts the
   horn in your hand; a Client `ReplicatedStorage.Remotes.ToolUse:FireServer()` blows it, and
   every keeper in reach wakes and comes to look. Stand at the unit's doorway; sample the keeper

@@ -27,7 +27,9 @@
 	  is told how many keepers hunt them (Remotes.Hunted to them alone, `Chase`), once each time
 	  that changes, for the sting and the chase bed only they hear (L-06b4b1).
 	- Light freezes a keeper whose row says so (the Mannequin, L-06b3b): each step it's told
-	  whether a lit hall light's pool is where it stands (`MotionLights.lightOn`), and each living
+	  whether a lit hall light's pool is where it stands (`MotionLights.lightOn`), the found lights
+	  lying lit on its floor (F-G1b3b: a lantern dropped behind you, gathered with the finds Slots
+	  has lying loose, each until it runs down), and each living
 	  player's torch, from their eyes along their facing at their aim (`Flashlights`), so it
 	  decides whether a light is on it (`Keeper.step`). Frozen or let go, screens hear of it at
 	  once, not after the records' usual gap, so it stops on the stride it was on.
@@ -99,11 +101,13 @@ local Elevators = require(script.Parent.Elevators)
 local Flashlights = require(script.Parent.Flashlights)
 local Floor = require(ReplicatedStorage.Shared.Floor)
 local FloorBuilder = require(script.Parent.FloorBuilder)
+local Finds = require(ReplicatedStorage.Shared.Finds)
 local Horn = require(ReplicatedStorage.Shared.Tools.Horn)
 local Keypad = require(ReplicatedStorage.Shared.Elevator.Keypad)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Keeper = require(ReplicatedStorage.Shared.Keeper)
 local Torch = require(ReplicatedStorage.Shared.Flashlight.Torch)
+local Use = require(ReplicatedStorage.Shared.Finds.Use)
 local KeeperMap = require(ReplicatedStorage.Shared.KeeperMap)
 local KeeperMotion = require(ReplicatedStorage.Shared.KeeperMotion)
 local KeeperRows = require(ReplicatedStorage.Shared.KeeperRows)
@@ -267,7 +271,12 @@ type OnFloor = {
 	-- their car climbs level with it for a while
 	left: { [Player]: boolean },
 	finds: Keeper.Finds, -- the finds lying loose on it (S2-06b2), the Packrat's to fetch; reused
+	-- the found lights lying lit on it (F-G1b3b), gathered with its finds: the server clock each
+	-- runs down at (`Use.litUntil`) beside where it lies and its reach; reused
+	lamps: Lamps,
+	glows: Keeper.Glows, -- those still lit this step, the Mannequin's to freeze in; reused
 }
+type Lamps = { at: { vector }, reach: { number }, till: { number }, count: number }
 -- `quarry`: whom it hunted as last counted for screens (`tellHunted`), 0 for no one.
 -- `feed`: the security camera feed showing it walk up to throw the breaker (S2-02d), 0 for none.
 -- `woke`: a wave woke it behind its shut door and it's still shut in there (S2-03b): the floor's
@@ -369,6 +378,7 @@ function Keepers.new(): Keepers
 	local devErrand = false -- the dev command: every loose Mannequin goes for the box now
 	local toolSlots: Slots.Slots? = nil -- where every find lies (S2-06b2)
 	local looseDirty = true -- the finds lying loose, or a door, changed: the Packrats are told
+	local reaches: { [string]: number } = {} -- each found light's reach (`Use.reach`), by key
 	local run = 16 -- a player's full run, studs a second (StarterPlayer's, read at start)
 	local everyone: { Player } = {} -- kept as players come and go: no list made each step
 	local caught = Brix.Signal.new() :: Brix.Signal<Catch>
@@ -447,6 +457,8 @@ function Keepers.new(): Keepers
 			print(`Keepers: the {k.row.name} walks on`)
 		elseif k.lit == Keeper.HallLight then
 			print(`Keepers: the {k.row.name} freezes in the light`)
+		elseif k.lit == Keeper.FoundLight then
+			print(`Keepers: the {k.row.name} freezes in the light of a find on the floor`)
 		else
 			local player = Players:GetPlayerByUserId(k.lit)
 			local whose = if player then `{player.Name}'s` else `player {k.lit}'s`
@@ -1140,14 +1152,40 @@ function Keepers.new(): Keepers
 
 	-- Tells every Packrat what lies loose on its floor (S2-06b2): each find Slots has lying on a
 	-- floor, by the floor under it. Once a step at most, after a find or a door changed.
+	-- A find lying loose as a found light (F-G1b3b): the server clock it's lit until
+	-- (`Use.litUntil`) and how far it holds a Mannequin, or nil if it isn't a lit light. A find
+	-- takes presses only in a hand, so its stamp can't change while it lies: it's read as it lands.
+	local function lampOf(model: Model): (number?, number)
+		local key = model:GetAttribute(Use.KeyAttribute)
+		local row = if type(key) == "string" then Use.Rows[key] else nil
+		if type(key) ~= "string" or not row then
+			return nil, 0
+		end
+		local till = Use.litUntil(
+			row,
+			Use.read(
+				model:GetAttribute(Use.StateAttribute),
+				model:GetAttribute(Use.AtAttribute),
+				model:GetAttribute(Use.LeftAttribute)
+			)
+		)
+		local reach = reaches[key]
+		if not reach then
+			reach = Use.reach(Finds.art(key))
+			reaches[key] = reach
+		end
+		return if reach > 0 then till else nil, reach
+	end
+
 	local function tellLying()
 		looseDirty = false
 		for _, on in floors do
 			on.finds.count = 0
+			on.lamps.count = 0
 		end
 		local s = toolSlots
 		if s then
-			s:finds(function(n: number, at: Vector3)
+			s:finds(function(n: number, at: Vector3, model: Model)
 				for _, on in floors do
 					local p = on.origin:PointToObjectSpace(at)
 					local here = vector.create(p.X, p.Y, p.Z)
@@ -1155,6 +1193,12 @@ function Keepers.new(): Keepers
 						local f = on.finds
 						f.count += 1
 						f.ids[f.count], f.at[f.count] = n, here
+						local till, reach = lampOf(model)
+						if till then
+							local l = on.lamps
+							l.count += 1
+							l.at[l.count], l.reach[l.count], l.till[l.count] = here, reach, till
+						end
 						return
 					end
 				end
@@ -1719,6 +1763,19 @@ function Keepers.new(): Keepers
 				wakeDue(on)
 			end
 			holdWoken(on)
+			-- the found lights still lit on it now (F-G1b3b): a lantern runs down where it lies
+			local glows, lamps = on.glows, on.lamps
+			glows.count = 0
+			if lamps.count > 0 then
+				local clock = Workspace:GetServerTimeNow()
+				for i = 1, lamps.count do
+					if lamps.till[i] > clock then
+						glows.count += 1
+						glows.at[glows.count], glows.reach[glows.count] =
+							lamps.at[i], lamps.reach[i]
+					end
+				end
+			end
 			local list = on.players
 			list.count = 0
 			for _, entry in on.keepers do
@@ -1732,7 +1789,8 @@ function Keepers.new(): Keepers
 				local was: Keeper.State = k.state
 				local target = k.target
 				local before = k.at
-				local wasLit = k.lit ~= 0
+				local litBy = k.lit
+				local wasLit = litBy ~= 0
 				local wasErrand = k.errand
 				if k.row.freezesInLight and Keeper.loose(k) then
 					offer(on, k, now)
@@ -1743,7 +1801,7 @@ function Keepers.new(): Keepers
 					hallLit =
 						motionLights:lightOn(on.origin:PointToWorldSpace((k.at :: any) :: Vector3))
 				end
-				local changed = Keeper.step(k, dt, run, list, hallLit)
+				local changed = Keeper.step(k, dt, run, list, hallLit, glows)
 				local froze = (k.lit ~= 0) ~= wasLit
 				if changed or froze then
 					local dx, dz = k.at.x - before.x, k.at.z - before.z
@@ -1756,7 +1814,8 @@ function Keepers.new(): Keepers
 						catch(entry, k.caught) -- before its state's line: the catch, then the stand
 					end
 					changedState(entry, was)
-					if TRACE and froze then
+					if TRACE and k.lit ~= litBy then
+						-- frozen, let go, or held now by another light (the hall's went out)
 						traceLight(entry)
 					end
 					if TRACE and k.caught == 0 and k.robbed == 0 and k.target ~= target then
@@ -1868,6 +1927,8 @@ function Keepers.new(): Keepers
 			waking = {},
 			left = {},
 			finds = { ids = {}, at = {}, count = 0 },
+			lamps = { at = {}, reach = {}, till = {}, count = 0 },
+			glows = { at = {}, reach = {}, count = 0 },
 		}
 		floors[model] = on
 		-- a packed unit's floor is its path and its clearing, joined at the bend (B-05b2)

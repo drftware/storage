@@ -2,44 +2,48 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-16, session 208 (the monkey's lure and the toy car) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-16, session 209 (a dropped lantern holds the Mannequin) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- F-G1b3a done (D-233): wound, the cymbal monkey clangs on every clash and every monster on the
-  floor hears it every 2 s until it stalls (`Use.lureUntil`, `FindUses`'s `lure`); pushed, the
-  toy car is set down in front of you and rolls about 7 studs, stopping short of a wall, laid by
-  the server where it ends and rolled there on every screen (`UseFrom`, `Finds.joints`'s `from`).
-  Seen in Studio Play: the monkey lured 11 times over its play (no monster near, so 0 heard);
-  the car rolled 1.6 to 9.1 studs ahead, client and server within 0.01 studs. The wall stop and
-  the sounds by ear are the owner's (`OWNER.md`). The RC car has no press (catalog: at home).
+- F-G1b3b done (D-234): a found light lying lit on the floor holds a Mannequin as far as its own
+  lamp reaches (lantern 9.6 studs, tea light 7.2), shaded by walls and shut doors, until it runs
+  down (`Use.litUntil`, `Use.reach`, `Keeper.Glows`, `Keepers`' `lamps`). In a hand it holds
+  nothing (the owner's call, `OWNER.md`). Seen in Studio Play: the dropped lantern's clank woke a
+  Mannequin, it came at the player, froze 9.5 studs from the lantern, held 35 s with nobody near
+  and walked on as the light ran out. New Studio hook: Workspace `StandMannequin`.
+- F-G1b is done but for F-G1b3c (the RC car), which waits on `OWNER.md`.
 - Find art (`art/finds/WAVES.md`): the wind-up mouse built by the art run (Nov 16, F-04d, D-232),
   uploaded and in the place; next the clockwork tin bird (F-04d2). The run commits its own files
   by path; a shared doc holding its lines and yours: stage HEAD plus your own lines only.
 
-## Next task: F-G1b3b A lit find on the floor holds a Mannequin (D-188)
-The moment: chased down a hall, you drop your lit lantern behind you and the Mannequin freezes in
-its pool, as it does under a hall light or your torch; the tea light buys a few seconds, the
-lantern a minute and a half.
-1. Read how a light freezes it: `Keeper.luau`'s `lightOn` (grep "local function lightOn") and
-   where `Keepers.luau` feeds it torches and hall pools (grep "hallLit", "freezesInLight").
-2. A lit find lying loose counts as a light where its lit frame says (`Use.frame(...).lit`, not
-   `spent`, state not "Off"): the server reads each `FindUsed` model's stamp (`Use.read` on its
-   attributes) and its place; a lit find in a hand counts as a torch-like light only if the
-   GDD says so (default: floor only, as D-188 says "found lights").
-3. Its reach from the find's art light (`Finds.art(key).Lights`: Range) or a Config number with
-   a comment; a unit's walls shade it as they shade hall light.
-4. A Lune spec for the pure part (which stamps count as lit at a time), then Studio: GiveFind
-   "CampLantern", Switch, drop it, wake a Mannequin (`DevFloorNumber` 1, its post) and read
-   `Keepers: the Mannequin` lines in Output (a LogService listener into a StringValue).
-**Acceptance:** checks green; a lit find on the floor freezes a Mannequin in its reach and
-lets it go as it runs down or is switched off; `OWNER.md` says how to try it (numbered steps).
-**Read first:** `src/shared/Keeper.luau` (`lightOn`, grep only); `src/server/Keepers.luau`
-(grep "hallLit", "lit ="); `src/shared/Finds/Use.luau` (`frame`, `read`); D-188's found-lights
-line (grep "found lights" docs/DECISIONS.md); ROADMAP F-G1b3b.
+## Next task: S3-05a Two players left behind land on top of each other, and can't be cut free
+The moment: left behind, you wake shut in a unit of your own, wrapped, bang on the door, and a
+friend follows the noise and cuts you free. In the owner's three-player test (Nov 15) two left
+behind both woke wrapped on one spot in front of the elevator, cameras inside each other, and
+the third player's Cut free said "Get closer" forever.
+1. A lead: `src/server/Climbs.luau` near line 441 carries each left-behind player up in its own
+   `spawn`, and when `KeptPlayers:store` fails it pivots the character to the one `lobby` CFrame,
+   so two failures stack on one spot, still wrapped, in no unit, so Cut free never finds them.
+2. Find why `store` failed for both: `KeptPlayers.luau`'s `store` (grep "local function store")
+   and `Kept.choose` / `Kept.free` (`src/shared/Kept.luau`); whether two carries in the same
+   moment pick the same unit before either is marked holding someone; whether the new floor's
+   units are ready (dealt, doors down) when the pick runs. A failing Lune spec first for any
+   pure part (two picks in a row never share a unit).
+3. Fix so each wakes in a unit of their own. If a fallback stays, it never stands two players on
+   one spot and never leaves a wrapped player nobody can free (stand them unwrapped, spaced
+   apart, or retry the pick a beat later; D-186 has the rule).
+4. Studio: STUDIO.md "Testing left behind from the MCP" with two stand-ins left behind; read
+   Output for where each was stored, and check Cut free works at each one's door.
+**Acceptance:** checks green; two left behind each land wrapped in a different unit with the
+Bang button, and a friend at each door can cut them free; `OWNER.md`'s carried-up steps (S3-01a)
+become three-player steps covering this (numbered, plain words).
+**Read first:** ROADMAP S3-05a (grep "S3-05a"); `src/server/Climbs.luau` 410-450;
+`src/server/KeptPlayers.luau` (`store`, grep only); `src/shared/Kept.luau` (`choose`, `free`);
+D-186 (grep "^## D-186" docs/DECISIONS.md); STUDIO.md "Testing left behind from the MCP".
 
 ## Queue (next sessions, the owner's ticket order)
-1. **S3-05a, then S3-05b: caught players each in an empty unit of their own** (the owner's
-   playtest bugs, Nov 15), before the run ends. Then S4-02 to S4-05 (5 coins a trapped monster).
+1. **S3-05b A caught friend put in the unit you're standing in** (ROADMAP S3-05b; a failing spec
+   for the pick first). Then S4-02 to S4-05 (5 coins a trapped monster).
 2. F-G1b3c the RC car drives off its transmitter, if the owner says so (`OWNER.md`).
 3. Once the owner's real purchase passes: mark Brix's ENG-23e done in `../engine`'s HANDOFF.
 4. A Studio hook to catch yourself for real (CatchTest finds no keeper even after WakeSleepers

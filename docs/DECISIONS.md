@@ -6142,3 +6142,22 @@ off and where it stopped short; every screen moves its root along the travel whi
 and rolls, so it ends exactly where the server has it (seen within 0.01 studs). Finds without
 real lights no longer take one of the two light slots. The RC car's catalog line says it
 drives at home, so, like D-229's home lamps, it has no press in the building yet (`OWNER.md`).
+
+## D-234 A found light lying lit holds a Mannequin as far as its own lamp reaches (F-G1b3b, Nov 16)
+
+The moment: chased down a hall, you drop your lit lantern behind you and the Mannequin freezes in
+its pool, as it does under a hall light or in your torch beam (D-188: "found lights hold a
+Mannequin"; SCP-173 and Five Nights at Freddy's, as L-06b3b's light rule). How it's decided:
+- **Lit** is the stamp the screens already play (`Use.litUntil`): from the press for as long as its
+  light lasts, for good if it never runs down (a glow stick), never when switched off or a toy.
+  A find takes presses only in a hand, so the server reads a lying find's stamp once, as it lands
+  (`Keepers`' `tellLying`, beside the Packrat's list), and drops it as its time runs out.
+- **Reach** is the find's own lamp: its widest point light's range (a spot's only if it has none)
+  times `Use.LightShare` 0.8, past which the glow on a body is too faint to read as lit. A camp
+  lantern holds it 9.6 studs off, a tea light 7.2, a glow stick 5.6.
+- **Shade** is the map's clear line (`KeeperMap.clear`, as torches use): walls and a shut door
+  block it, an open doorway lets it through. A hall light still wins where both shine.
+- **In a hand it holds nothing** (the ticket's default: D-188 says found lights, and the moment is
+  dropping it). Whether a lit lantern you carry should hold one is the owner's (`OWNER.md`).
+Seen in Studio Play: the lantern's drop woke a Mannequin 17 studs off, it came at the player and
+froze 9.5 studs from the lantern, held 35 s after the player left, and walked on as it ran down.

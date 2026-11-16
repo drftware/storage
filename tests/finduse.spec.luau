@@ -230,6 +230,56 @@ do
 	ok(f.lit, "glow stick: lit for good")
 end
 
+-- found lights hold a Mannequin (F-G1b3b): a light lying lit is lit until its stamp says, just as
+-- every screen plays it (`frame`); switched off, never pressed or a toy, it's no light; its reach
+-- is its widest point light's range, cut to the share whose glow still reads on a body
+do
+	local lights = 0
+	for key, row in Use.Rows do
+		local d = durations(key)
+		local state, left = Use.press(row, nil, 0, d)
+		if state and left then
+			local stamp: Use.Stamp = { state = state, at = 100, left = left }
+			local till = Use.litUntil(row, stamp)
+			if Use.toy(row) then
+				ok(till == nil, `{key}: a toy is no light, playing or not`)
+			else
+				lights += 1
+				ok(till ~= nil and till > 100, `{key}: pressed, it's lit`)
+				for _, e in { 0, 1, 59.9, 60.1, 89.9, 90.1, 149.9, 150.1, 5000 } do
+					ok(
+						Use.frame(row, stamp, e, d).lit == (100 + e < (till or 0)),
+						`{key}: lit {e} s on as its screen plays it`
+					)
+				end
+				if row.off then
+					local off: Use.Stamp = { state = "Off", at = 100, left = left }
+					ok(Use.litUntil(row, off) == nil, `{key}: switched off, it isn't lit`)
+				end
+				local art = Fixture.kit[key]
+				if art then
+					local r = Use.reach(art)
+					ok(r > 0 and r < 20, `{key}: its light holds a Mannequin {r} studs off`)
+				end
+			end
+		end
+		ok(Use.litUntil(row, nil) == nil, `{key}: never pressed, it isn't lit`)
+	end
+	ok(lights >= 6, `enough lights to check ({lights})`)
+	ok(
+		Use.litUntil(Use.Rows.GlowSticks, { state = "On", at = 0, left = Use.Forever }) == math.huge,
+		"glow stick: lit for good"
+	)
+	local lantern = Fixture.kit.CampLantern
+	ok(
+		lantern ~= nil and near(Use.reach(lantern), 12 * Use.LightShare),
+		"lantern: 12 studs of light, cut"
+	)
+	ok(Use.reach(nil) == 0, "no art: no reach")
+	local monkey = Fixture.kit.CymbalMonkey
+	ok(monkey == nil or Use.reach(monkey) == 0, "monkey: no light of its own")
+end
+
 print(`finduse: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

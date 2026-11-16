@@ -113,9 +113,9 @@ export type Slots = Brix.System & {
 	-- Fires as the finds lying loose change (S2-06b2): one laid, dropped, picked up, cleared,
 	-- lifted by a monster or laid on its pile. The Packrat is told (`Keepers`).
 	loose: Brix.Signal<nil>,
-	-- Calls `each` with every find lying loose on a floor: its number and the floor point under
-	-- its middle (the world's). Allocates nothing.
-	finds: (self: any, each: (n: number, at: Vector3) -> ()) -> (),
+	-- Calls `each` with every find lying loose on a floor: its number, the floor point under its
+	-- middle (the world's) and its model (a found light's stamp, F-G1b3b). Allocates nothing.
+	finds: (self: any, each: (n: number, at: Vector3, model: Model) -> ()) -> (),
 	-- A monster's hands close on find `n` lying loose (the Packrat's take, S2-06b2): its prompt
 	-- goes and it's welded to `part`, its middle where it lay, in `holder` (the monster's body).
 	-- The weld, or nil if it no longer lies loose.
@@ -1053,11 +1053,11 @@ function Slots.new(): Slots
 		return gone
 	end
 
-	function system.finds(_: any, each: (n: number, at: Vector3) -> ())
+	function system.finds(_: any, each: (n: number, at: Vector3, model: Model) -> ())
 		for id, t in tools do
 			local at = grounds[id]
 			if at and t.owner == nil and t.model.Parent == lying and Catalog[t.key].find then
-				each(t.n, at)
+				each(t.n, at, t.model)
 			end
 		end
 	end
