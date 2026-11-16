@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04h, finish the pull-string cowboy doll (step 6): it's half built, and the newest
-note says where it stands and what's left. The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next
+**Next:** F-04i, the singing fish plaque (step 7): the newest note has its research hints. The
+oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next
 touched.
 
 ## The second run's plan (owner's yes, Nov 15)
@@ -35,7 +35,7 @@ changes the table's order a little.
 5. **F-04g** (built Nov 16) Farm-animal spinner alone (pull: the lever comes down and snaps back, the arrow
    spins, slows and ticks to a stop on an animal). The work is the face: eight little animal
    pictures drawn in code that read in the hand. Our own toy, not the famous one.
-6. **F-04h** Pull-string cowboy doll alone (cloth body, vinyl head, hat, a ring on a string in
+6. **F-04h** (built Nov 16) Pull-string cowboy doll alone (cloth body, vinyl head, hat, a ring on a string in
    its back; the string runs out and zips back in while its arms jiggle). The first cloth find.
    Must not read as a famous film's cowboy: other clothes, colours and face. Its six spoken
    lines need recorded audio we own: put that question in `OWNER.md`.
@@ -89,6 +89,34 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04h (the pull-string cowboy doll built; step 6 done; uploaded 131267358363261 and
+  imported).** `CowboyDoll` in
+  `windups/build.py`, now in `FINDS` for good; README section, D-241, `Order.luau`. Judged on
+  quick sheets three times beside Matty (dollreference.com, 1961) and on full sheets once. Fixed
+  from the first look: the cheeks and chin were separate balls that bulged like mumps (now one
+  smooth head loft, `dl_skull_ring`, with soft cheek and muzzle bumps and a moulded neck); hair
+  tufts poked through the hat's crown at the back like orange beads (now tucked under the brim);
+  the vest's fringe read as a knitted waistband from behind (now 27 mm separate suede strips
+  under a sewn band, `dl_fringe`); blotchy camouflage denim (a broad soft fade now); a faceted
+  crown top (every crown row, 76 round, in the game mesh); tiny hands floating above the floor
+  (bigger mittens resting on it); the yarn hair a row of sausages (now small staggered curls).
+  2048 at 692 texels a stud, 18,632 triangles. **Found:** a soft-looking thing made of separate
+  ellipsoids reads as lumps the moment they stick out of each other: loft one surface and push
+  bumps into it. Cloth fringe wants real strips, not a grooved shell.
+  **F-04i's hints (step 7, not researched):** look at singing fish plaques on listings and
+  collector pages (at least four photos, and one video for the timing): the famous one is a
+  largemouth bass on a dark wood-look plaque with a gold plate and a red button, about 15 in
+  wide and 10 tall (check a listing). Ours must be our own fish and plaque: say a speckled trout
+  or a whiskered catfish, a shield-shaped varnished plaque, our own made-up plate (no words that
+  copy it). Parts: `Plaque` (root, lying on its back as found, or leaning), `Fish` (turns about a
+  hinge near its tail, so the head swings out to face you), `Tail` (flaps about its root),
+  `Jaw` (opens about its hinge under the gills), `Button` (moves in). Motion `Press`: the button
+  goes in, the tail flaps two or three times, the head swings out about 80 degrees and holds,
+  the mouth opens and shuts in time with a song (a beat from video), the head swings back and
+  the tail gives a last flap. Its song is the same `OWNER.md` question as the doll's lines. The
+  fish's rubber skin wants printed scales and a glossy wet look; the plaque wants wood grain
+  under varnish, so read the toy drum's sticks in `windups/build.py` for a wood look.
 
 - **Nov 16, F-04h (the cowboy doll half built: modelled, looked and baked, never rendered; stopped
   at the context cap; not ticked, nothing uploaded).** `CowboyDoll` in `windups/build.py`
@@ -1123,7 +1151,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Farm-animal spinner | Uncommon | Pull: the arrow spins and an animal noise plays | A throwback toy || Nov 16, F-04g |
 | Jack-in-the-box | Uncommon | Wind: a tune, then a bang as it pops | The bang comes a few seconds after you let go | Nov 15, F-04b |
 | Cymbal monkey | Rare | Wind: it bashes its cymbals for 20 seconds, loud | The strongest lure in the set | Nov 15, F-04a |
-| Pull-string cowboy doll | Rare | Pull: it says one of six lines |  | |
+| Pull-string cowboy doll | Rare | Pull: it says one of six lines | The first cloth find | Nov 16, F-04h |
 | Singing fish plaque | Rare | Press: its head turns and it sings |  | |
 | Clockwork tin bird | Epic | Wind: it hops and whistles | An antique tin toy | Nov 16, F-04d2 |
 | Wind-up tin carousel | Epic | Wind: it turns and plays a tune |  | |

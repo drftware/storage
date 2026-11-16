@@ -6227,3 +6227,15 @@ so the game picks the animal by adding 45 x k to the spin. In the kit, a flat fa
 round (the case's front round its bezel, its walls their rounded edges) needs a sharp foot or a
 ring just past the round: the hi mesh's smooth shading otherwise bends across long flat
 triangles and the normal bake streaks them. (`art/finds/windups/README.md`, "Farm-animal spinner".)
+
+## D-241 The pull-string cowboy doll is a ginger kid of our own, and cloth hangs as real strips (Nov 16, F-04h)
+
+Our talking cowboy doll is a 1960s-style talker of our own: a ginger, freckled kid with
+side-glancing blue eyes and an open grin, a cream felt hat, a blue check shirt, a fringed tan
+suede vest, a green spotted bandana and jeans, so nothing reads as a famous film's cowboy (no
+yellow plaid, no cow-print vest, no brown hat, no red bandana, no long face). A vinyl head is one
+smooth loft whose lower half is a rounder square than a circle, with the cheeks and the muzzle as
+soft bumps in it: separate ellipsoids for cheeks and chin bulged like mumps. Fringe is built as
+real separate strips hanging from a sewn band, never a grooved shell, which read as a knitted
+waistband from behind. The game starts one of the six lines at the doll's `DL_LET_GO` (0.62 s);
+the recorded audio waits on `OWNER.md`. (`art/finds/windups/README.md`, "Pull-string cowboy doll".)

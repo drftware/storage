@@ -513,3 +513,45 @@ and four screws on the back.
 - **Found:** a bezel whose foot rounds smoothly into the front bends the hi mesh's shading
   across the long front triangles, and the normal bake streaks the flat front: square the foot
   off (it stays sharp) and put a ring just past every round's start (D-240).
+
+## Pull-string cowboy doll (Rare): "Pull: it says one of six lines"
+
+`CowboyDoll`, F-04h (Nov 16), D-241. The set's first cloth find: a 1960s-style talking doll of
+our own, sat on the floor with its legs out. A ginger, freckled kid with a round vinyl head
+(side-glancing blue eyes with lashes, ginger brows, a snub nose, soft blushed cheeks, an open
+grin with top teeth and a tongue), curly ginger yarn hair under a cream felt hat (curled brim
+with a brown binding, a pinched and creased crown, a dark band, a brass concho over the right
+ear); a stuffed cloth body in a blue check shirt, a tan suede vest (open front, saddle-stitched
+edges, chest pockets with snaps, a real fringe of suede strips round the sides and back), a
+green bandana with cream spots knotted under the chin, a dark belt with a brass horseshoe
+buckle, jeans with gold-stitched seams and turned-up cuffs, black vinyl boots with cream stitched
+curls; chubby vinyl mitten hands on the floor; a cream grommet in the middle of its back with a
+white cord and ring; our red-star tag in the right side seam. Nothing of a famous film's cowboy.
+- **References:** dollreference.com's Mattel 1960s page (Matty and Sister Belle, 1961: 16 in, a
+  stuffed cloth body, a painted vinyl face, yarn hair, a pull-string talker; Matty sits with his
+  legs out and the ring by his feet), collectorsweekly.com's 1949 cowboy doll (vinyl face, felt
+  hat, fringed vest over a check shirt, cloth body), Mattel's Drowsy (1964, 14 in, vinyl hands),
+  clickamericana.com's 1960s pull-string talkers.
+- **Size:** 318 mm to the hat's top as it sits (12.5 in; a 16 in doll standing), 195 mm across
+  the brim, 262 mm from the boots to the ring: 0.77 x 1.25 x 1.03 studs (10 inches a stud).
+- **Tells:** the cream cowboy hat, the big round freckled face, the fringed vest, the white ring
+  in its back.
+- **Parts:** `Body` (root, on the floor at its middle), `Head` (nods about X at the neck, 158 mm
+  up), `ArmL`, `ArmR` (sewn on at the shoulders; turn out and forward), `Cord` and `CordIn`
+  (slide out of the grommet along the pull, 20 degrees below level, the inner run at half the
+  speed, so the cord shows whole when out and hides at rest), `Ring` (on `Cord`, turns about X
+  at its tab: flat on the back at rest, up in line with the cord when hooked).
+- **Pull** (3.8 s): the ring swings up as it's hooked, the cord comes out 120 mm in 0.4 s with a
+  little give at its end, the doll tips back 2.4 degrees; let go at `DL_LET_GO` (0.62 s), the
+  cord zips 6 mm, then creeps home over 2.3 s with a governor's flutter while the arms jiggle
+  (5.5 a second) and the head bobs on the words and sways; it clacks home and the ring flops
+  down and bounces twice. **For the game:** start one of the six lines at 0.62 s.
+- **Six lines** (a default for whoever records; `OWNER.md` asks who): "Howdy, partner!", "Let's
+  ride on up to the top!", "I'm the bravest buckaroo in the bunkhouse!", "Giddy-up, horsey!",
+  "Don't you leave me in here, partner.", "Time for bed, little cowpoke."
+- **Texture:** 2048 at 692 texels a stud (asked for 800), 18,632 triangles.
+- **In Studio:** uploaded (131267358363261) and imported Nov 16: the template is in
+  `ReplicatedStorage.Props.Finds.CowboyDoll`.
+- **Found:** soft things made of separate ellipsoids read as lumps where they stick out of each
+  other (the first cheeks and chin): loft one surface and push soft bumps into it. Fringe is real
+  strips under a sewn band; a grooved shell read as a knitted waistband (D-241).

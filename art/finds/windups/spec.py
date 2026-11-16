@@ -641,7 +641,7 @@ DOLL = dict(
     # (a fraction of the radius, radians): the pillowy look of a stuffed cloth body
     belt=(38.0, 47.0),            # the jeans' belt, z from and to (mm); jeans below it
     hem=55.0,                     # the vest's hem; its fringe hangs from here
-    fringe=(19.0, 1.0, 3.2, 26.0),  # the fringe: how long, how far off the body inside and out,
+    fringe=(27.0, 1.0, 3.2, 26.0),  # the fringe: how long, how far off the body inside and out,
     # and the gap left at the front between the vest's two panels (mm across)
     neck=(0.0, 4.0, 158.0),       # the head nods about X through here
     head=(0.0, -2.0, 224.0),      # the vinyl head's middle and radii: a big round kid's head
@@ -656,7 +656,7 @@ DOLL = dict(
     elbow=(68.0, -3.0, 90.0),
     wrist=(74.0, -16.0, 46.0),
     arm_r=(21.0, 17.5, 15.0),     # the sleeve's radius at shoulder, elbow and wrist
-    hand=(75.0, -21.0, 29.0),     # the vinyl hand's middle, resting on the floor beside the hip
+    hand=(75.0, -21.0, 22.0),     # the vinyl hand's middle, resting on the floor beside the hip
     hip=(31.0, -6.0, 31.0),       # the left leg, hip to ankle (the right mirrors it)
     knee=(37.0, -78.0, 34.0),
     ankle=(40.0, -132.0, 27.0),

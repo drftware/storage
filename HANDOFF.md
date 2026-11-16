@@ -12,9 +12,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   Mannequin, it came at the player, froze 9.5 studs from the lantern, held 35 s with nobody near
   and walked on as the light ran out. New Studio hook: Workspace `StandMannequin`.
 - F-G1b is done but for F-G1b3c (the RC car), which waits on `OWNER.md`.
-- Find art (`art/finds/WAVES.md`): the pull-string cowboy doll (F-04h) is half built: modelled,
-  looked and baked, not yet rendered or judged; finish it from WAVES.md's newest note. The
-  farm-animal spinner is uploaded, not imported. Stage HEAD plus your own lines only.
+- Find art (`art/finds/WAVES.md`): the pull-string cowboy doll (F-04h) is built, uploaded and
+  imported; next F-04i, the singing fish plaque (WAVES.md's newest note). The farm-animal
+  spinner is uploaded, not imported. Stage HEAD plus your own lines only.
 
 ## Next task: S3-05a Two players left behind land on top of each other, and can't be cut free
 The moment: left behind, you wake shut in a unit of your own, wrapped, bang on the door, and a

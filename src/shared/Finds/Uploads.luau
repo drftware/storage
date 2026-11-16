@@ -27,6 +27,7 @@ return {
 	},
 	Windups = {
 		ChatteringTeeth = { Model = 100233455108959 },
+		CowboyDoll = { Model = 131267358363261 },
 		CymbalMonkey = { Model = 124266692491775 },
 		FarmSpinner = { Model = 104775452079091 },
 		JackInTheBox = { Model = 99780291550799 },

@@ -3,13 +3,17 @@
     "assetId": 100233455108959,
     "sha256": "73ce088377dd1c796951c4d3c7bd37d01f26e47b622b08765c25f50685b74f6a"
   },
+  "CowboyDoll": {
+    "assetId": 131267358363261,
+    "sha256": "b8f24e3a815a0e4cb672ba2992f0b39aee1e337f4fab73075f26630e1d377eca"
+  },
   "CymbalMonkey": {
     "assetId": 124266692491775,
     "sha256": "304591e13d2958e8cd54d07a3056485a9cfadaf0ee56442ca4d0b9a52705e7a7"
   },
   "FarmSpinner": {
     "assetId": 104775452079091,
-    "sha256": "85d71a8be2552e8c2fc6af3ee3b82a2a6aa49606b194da6c27f3672f3fde22e8"
+    "sha256": "a9df564e5ba1b69894d1f4c0a0786ef8024c8924470452b738e6a612e4ade865"
   },
   "JackInTheBox": {
     "assetId": 99780291550799,

@@ -5810,27 +5810,50 @@ def dl_front(th, half):
 
 
 def dl_fringe(s, hi):
+    """The vest's suede fringe: a sewn band round the hem's sides and back, and below it real
+    strands, each its own cut strip, hanging loose over the belt and the jeans' seat."""
     ln, d_in, d_out, gap = DL["fringe"]
     top = DL["hem"]
-    n = segs(hi, 160)
-    strands = 84
+    band_h = 4.0
+    n = segs(hi, 64)
 
-    def length(th):
-        k = smooth(52.0, 60.0, abs(dl_on(top, th, 0.0)[0])) if math.sin(th) < 0 else 1.0
-        if hi:
-            j = int((th % (2 * math.pi)) / (2 * math.pi) * strands)
-            k *= 0.9 + 0.1 * ((j * 7) % 5) / 4.0
-        return max(0.6, ln * k)
-
-    def groove(th, u):
-        if not hi:
-            return 0.0
-        w = abs(math.sin(th * strands / 2))
-        return -1.1 * (1.0 - min(1.0, w * 3.0)) * (1.0 - u) ** 0.5
-
-    prof = [(0.0, d_in), (0.0, d_out), (0.35, d_out + 0.4), (0.7, d_out + 0.2), (1.0, d_out - 0.5),
-            (1.0, d_in)]
-    dl_shell(s, DL_FRINGE, n, prof, lambda th: top + 0.6, lambda th: top - length(th), groove)
+    def back(th):
+        # no fringe across the front, where the vest is open over the thighs
+        return smooth(54.0, 60.0, abs(dl_on(top, th, 0.0)[0])) if math.sin(th) < 0 else 1.0
+    prof = [(0.0, d_in), (0.0, d_out - 0.6), (0.5, d_out - 0.4), (1.0, d_out - 0.9), (1.0, d_in)]
+    # the band is a full ring whose front fades to nothing (it hides under the vest's hem there)
+    dl_shell(s, DL_FRINGE, n, prof, lambda th: top + 0.6,
+             lambda th: top + 0.6 - band_h * max(0.04, back(th)),
+             lambda th, u: -(d_out + 0.6) * (1.0 - back(th)))
+    import random
+    rng = random.Random(41)
+    strands = 64
+    w, t = 3.3, 0.9                               # each strip's width and thickness (mm)
+    rows = 4 if hi else 2
+    for i in range(strands):
+        th = 2 * math.pi * (i + 0.5) / strands + rng.uniform(-0.012, 0.012)
+        if back(th) < 0.5:
+            continue
+        L = ln * rng.uniform(0.88, 1.04)
+        z0 = top + 0.6 - band_h + 0.8               # its top, hidden under the band
+        flare = rng.uniform(0.6, 1.6)               # how far its tip swings out
+        R = max(1.0, dl_at(top)[0])                 # turns mm across into an angle round the body
+        twist = rng.uniform(-0.3, 0.3) if hi else 0.0
+        rings = []
+        for k in range(rows + 1):
+            u = k / rows                            # 0 at the tip, 1 at the top
+            z = z0 - L * (1.0 - u)
+            off = d_in + 0.5 + flare * (1.0 - u) ** 1.6
+            a = twist * (1.0 - u)                   # the loose tip turns a little on itself
+            ring = []
+            # its corners anticlockwise seen from above: out and back, out and on, in, in
+            for cn, ct in ((t / 2, -w / 2), (t / 2, w / 2), (-t / 2, w / 2), (-t / 2, -w / 2)):
+                n_ = cn * math.cos(a) - ct * math.sin(a)
+                t_ = cn * math.sin(a) + ct * math.cos(a)
+                x, y = dl_on(z, th + t_ / R, off + n_)
+                ring.append((mm(x), mm(y), mm(z)))
+            rings.append(ring)
+        s.loft(rings, DL_FRINGE, cap_bottom=DL_FRINGE)
 
 
 def dl_bandana(s, hi):
@@ -6011,13 +6034,14 @@ def dl_hat(s, hi):
     s.loft(rings(bead), DL_BIND, Mh)
     s.loft(rings([(f, t / 2) for f in reversed(fs)]), DL_HAT, Mh)
     # the crown, pinched at the front and creased down the middle
-    rows = CROWN_ROWS if hi else CROWN_ROWS[::2] + [CROWN_ROWS[-1]]
-    cr = [[crown_pt(z, k, 2 * math.pi * j / n) for j in range(n)] for z, k in rows]
+    # every row in the game mesh too: the crown's top and crease are its silhouette
+    nc = segs(hi, 76)
+    cr = [[crown_pt(z, k, 2 * math.pi * j / nc) for j in range(nc)] for z, k in CROWN_ROWS]
     cr.append([(0.0, 0.0, mm(DL_HT["h"] - DL_HT["crease"]))])
     s.loft(cr, DL_HAT, Mh)
     # the leather band round it
     band = [(1.5, -0.6), (1.5, 1.4), (5.0, 1.7), (8.8, 1.4), (8.8, -0.6)]
-    s.loft([[crown_pt(z, 1.0, 2 * math.pi * j / n, o) for j in range(n)] for z, o in band],
+    s.loft([[crown_pt(z, 1.0, 2 * math.pi * j / nc, o) for j in range(nc)] for z, o in band],
            DL_BAND, Mh)
     # a small brass concho on the band, over the right ear
     th = math.pi + 0.42
@@ -6027,16 +6051,55 @@ def dl_hat(s, hi):
     s.lathe([(mm(a), mm(b)) for a, b in prof], DL_BRASS, segs(hi, 16), Mc)
 
 
+def dl_skull_ring(z, n):
+    """The moulded vinyl head and neck at the height z (mm): one smooth shell, round on top,
+    full and chubby through the cheeks and jaw (a kid's face is widest low down), the neck
+    growing out of it underneath. Points anticlockwise from above."""
+    hx, hy, hz = DL["head"]
+    rx, ry, rz = DL["head_r"]
+    rel = (z - hz) / rz
+    if rel >= 0:
+        kh = math.sqrt(max(0.0, 1.0 - rel * rel))
+    else:
+        # the lower half is a rounder square than a circle: full cheeks and a soft jaw
+        kh = max(0.0, 1.0 - abs(rel) ** 2.4) ** (1.0 / 2.4)
+    rn = 20.5
+    neck = 1.0 - smooth(170.0, 182.0, z)          # the neck only shows under the jaw
+    ring = []
+    for j in range(n):
+        th = 2 * math.pi * j / n
+        c, s_ = math.cos(th), math.sin(th)
+        ax_ = (rx * kh) ** 6 + (rn * neck) ** 6
+        ay_ = ((ry if s_ < 0 else ry * 1.04) * kh) ** 6 + (rn * neck) ** 6
+        w = (rx * kh) ** 6 / max(ax_, 1e-9)
+        cy = hy * w + 4.0 * (1.0 - w)
+        x, y = ax_ ** (1 / 6) * c, cy + ay_ ** (1 / 6) * s_
+        # the cheeks: soft and round either side of the grin, never balls stuck on
+        d = abs(math.remainder(th + math.pi / 2, 2 * math.pi))
+        cheek = 4.2 * math.exp(-((z - 203.0) / 12.5) ** 2) * math.exp(-((d - 0.66) / 0.42) ** 2)
+        # a little fullness round the mouth, so the grin sits on a rounded muzzle
+        muzzle = 2.2 * math.exp(-((z - 193.0) / 9.0) ** 2) * math.exp(-(d / 0.5) ** 2)
+        g = (cheek + muzzle) * kh
+        ring.append((mm(x + g * c), mm(y + g * s_), mm(z)))
+    return ring
+
+
+def dl_skull(s, hi):
+    n = segs(hi, 32)
+    step = 3.0 if hi else 6.0
+    top = DL["head"][2] + DL["head_r"][2]
+    zs = [146.0 + step * i for i in range(int((top - 1.5 - 146.0) / step) + 1)]
+    rings = [dl_skull_ring(z, n) for z in zs]
+    rings.append([(0.0, mm(DL["head"][1]), mm(top))])
+    s.loft(rings, DL_VINYL)
+
+
 def dl_head(hi):
     s = Shape()
-    nx, ny, nz = DL["neck"]
-    s.cylinder(V(0.0, ny, 146.0), V(0.0, ny - 2.0, 178.0), mm(21.0), DL_VINYL, segs(hi, 18))
-    blob(s, DL["head"], DL["head_r"], DL_VINYL, hi, lat=16, lon=30)
+    dl_skull(s, hi)
     for sx in (1, -1):
-        blob(s, (sx * 27.0, -31.0, 205.0), (20.0, 17.0, 18.0), DL_VINYL, hi, lat=10, lon=18)
         blob(s, (sx * 53.0, 2.0, 216.0), (6.5, 10.0, 14.0), DL_VINYL, hi, lat=8, lon=14)
-    blob(s, (0.0, -38.0, 181.0), (18.0, 10.0, 12.0), DL_VINYL, hi, lat=8, lon=16)
-    blob(s, (0.0, -52.5, 212.0), (7.5, 6.0, 6.5), DL_VINYL, hi, lat=8, lon=14)
+    blob(s, (0.0, -53.0, 211.0), (7.0, 5.5, 6.0), DL_VINYL, hi, lat=8, lon=14)
     # ginger yarn hair: a fringe under the brim, tufts all round under the crown, the nape
     hx, hy, hz = DL["head"]
     rx, ry, rz = DL["head_r"]
@@ -6044,21 +6107,34 @@ def dl_head(hi):
     def on_head(x, z, out):
         q = 1.0 - (x / rx) ** 2 - ((z - hz) / rz) ** 2
         return hy - ry * math.sqrt(max(q, 0.0)) - out
-    for x in (-27.0, -14.0, 0.0, 14.0, 27.0):
-        z = 255.0 + 0.004 * x * x
-        blob(s, (x, on_head(x, z, -4.0), z), (9.5, 7.0, 10.5), DL_HAIR, hi,
-             about(V(x, on_head(x, z, -4.0), z), Matrix.Rotation(math.radians(-x * 0.8), 4, "Y")), 6, 12)
+    # the yarn is looped into small curls, two staggered rows of them across the forehead
+    for xs, z0, r, out in (((-30.0, -20.0, -10.0, 0.0, 10.0, 20.0, 30.0), 257.0, (6.8, 5.5, 7.4), -3.0),
+                           ((-25.0, -15.0, -5.0, 5.0, 15.0, 25.0), 249.5, (6.0, 5.0, 6.4), -2.2)):
+        for x in xs:
+            z = z0 + 0.005 * x * x
+            c = (x, on_head(x, z, out), z)
+            blob(s, c, r, DL_HAIR, hi,
+                 about(V(*c), Matrix.Rotation(math.radians(-x * 0.9), 4, "Y")), 5, 10)
     Mh = dl_hat_m()
-    for k in range(13):
-        # round the sides and back, from the front left to the front right
-        th = -math.pi / 2 + math.radians(48.0 + 264.0 * k / 12.0)
-        c = Mh @ Vector(crown_pt(0.0, 0.9, th))
-        cm = (c.x * K.STUD_MM, c.y * K.STUD_MM, c.z * K.STUD_MM - 6.0)
-        blob(s, cm, (12.0, 12.0, 11.5), DL_HAIR, hi, lat=6, lon=12)
+    for k in range(20):
+        # curls round the sides and back, from the front left to the front right, up and down
+        # by turns so the edge under the brim is curly, not a row of beads
+        th = -math.pi / 2 + math.radians(48.0 + 264.0 * k / 19.0)
+        # tucked under the brim: the tops stop short of its underside, so none pokes through
+        c = Mh @ Vector(crown_pt(0.0, 0.88, th))
+        cm = (c.x * K.STUD_MM, c.y * K.STUD_MM, c.z * K.STUD_MM - 12.5 - 3.5 * (k % 2))
+        blob(s, cm, (9.0, 9.0, 9.0), DL_HAIR, hi, lat=5, lon=10)
+
+    def on_back(x, z, out):
+        q = 1.0 - (x / rx) ** 2 - ((z - hz) / rz) ** 2
+        return hy + ry * 1.04 * math.sqrt(max(q, 0.0)) + out
     for sx in (1, -1):
-        blob(s, (sx * 49.5, -14.0, 238.0), (6.5, 8.5, 13.0), DL_HAIR, hi, lat=6, lon=12)
-        blob(s, (sx * 18.0, 40.0, 224.0), (13.0, 9.0, 14.0), DL_HAIR, hi, lat=6, lon=12)
-    blob(s, (0.0, 44.0, 228.0), (13.0, 9.0, 14.0), DL_HAIR, hi, lat=6, lon=12)
+        # a curl in front of each ear, and the nape's curls
+        blob(s, (sx * 49.0, -12.0, 243.0), (6.0, 7.0, 7.2), DL_HAIR, hi, lat=5, lon=10)
+        blob(s, (sx * 50.5, -15.5, 232.0), (5.5, 6.5, 6.6), DL_HAIR, hi, lat=5, lon=10)
+    for x, z in ((-26.0, 229.0), (-13.0, 225.0), (0.0, 227.0), (13.0, 225.0), (26.0, 229.0),
+                 (-19.0, 237.0), (0.0, 237.0), (19.0, 237.0)):
+        blob(s, (x, on_back(x, z, -2.5), z), (8.0, 6.0, 8.0), DL_HAIR, hi, lat=5, lon=10)
     dl_hat(s, hi)
     return s
 
@@ -6116,9 +6192,10 @@ def dl_arm(sx):
         hx, hy, hz = DL["hand"]
         hc = Vector((sx * hx, hy, hz))
         Mhd = about(V(*hc), Matrix.Rotation(math.radians(-sx * 12.0), 4, "Z"))
-        blob(s, tuple(hc), (9.5, 15.0, 18.5), DL_VINYL, hi, Mhd, 10, 18)
-        tc = (sx * (hx - 4.5), hy - 13.5, hz + 6.0)
-        blob(s, tc, (5.0, 6.5, 8.5), DL_VINYL, hi,
+        # a chubby mitten hand, its heel on the floor (a 1960s talker's vinyl hand)
+        blob(s, tuple(hc), (10.5, 16.5, 21.0), DL_VINYL, hi, Mhd, 10, 18)
+        tc = (sx * (hx - 5.0), hy - 15.0, hz + 7.0)
+        blob(s, tc, (5.5, 7.0, 9.0), DL_VINYL, hi,
              Mhd @ about(V(*tc), Matrix.Rotation(math.radians(-25.0), 4, "X")), 6, 10)
         return s
     return build
@@ -6227,12 +6304,13 @@ def doll_look(L, f):
     # rubbed paler where hands go: the front edges and the pockets
     rub = nb.mul(nb.mul(vest, front), nb.ss(L.noise(40.0, 7, detail=2), 0.55, 0.7))
     C.paint(nb.mul(rub, 0.6), hexc("#C59A6C"), 0.92)
-    # the strands: each its own shade, darker toward the tips
+    # the strands: each its own shade (they were cut from different bits of the hide), darker
+    # and handled toward the tips
     ang = nb.math("ARCTAN2", nb.sub(ym, 5.0), xm)
-    strand = nb.mr(nb.sin(nb.mul(ang, 84.0 * 0.5 * 2.0)), -1.0, 1.0, 0.9, 1.06)
+    strand = nb.mr(nb.sin(nb.mul(ang, 64.0 * 0.37)), -1.0, 1.0, 0.92, 1.06)
     C.paint(fringe, nb.tint(nb.tint(hexc("#A87447"), strand), nb.mr(suede, 0.3, 0.7, 0.86, 1.1)), 0.9)
-    tips = nb.mul(fringe, nb.sub(1.0, nb.ss(zm, DL["hem"] - 16.0, DL["hem"] - 8.0)))
-    C.paint(nb.mul(tips, 0.45), hexc("#6E4A2C"), 0.9)
+    tips = nb.mul(fringe, nb.sub(1.0, nb.ss(zm, DL["hem"] - 24.0, DL["hem"] - 10.0)))
+    C.paint(nb.mul(tips, 0.4), hexc("#6E4A2C"), 0.9)
     # the edge rolled under and stitched in cream, a row of saddle stitches 3.5 mm in
     roll = nb.mul(vest, nb.sub(1.0, nb.ss(e, 1.2, 1.8)))
     C.paint(roll, hexc("#8A5B35"), 0.85, 0.0, hh(2.0))
@@ -6252,10 +6330,11 @@ def doll_look(L, f):
     # the jeans: indigo denim with slubs along the legs, faded where it wore, gold-stitched seams
     legs = nb.mx(L.k(DL_JEANS), jeans_t)
     slub = L.noise(260.0, 8, stretch=(1.0, 0.08, 1.0), detail=2)
-    denim = nb.mr(slub, 0.3, 0.7, 0.86, 1.12)
+    denim = nb.mr(slub, 0.3, 0.7, 0.93, 1.07)
     C.paint(legs, nb.tint(hexc("#2E4A78"), denim), 0.86, 0.0, hh(nb.mul(L.noise(1200.0, 9, detail=1), 1.0)))
-    fade = nb.mul(nb.mul(L.k(DL_JEANS), L.up), nb.ss(L.noise(55.0, 10, detail=3), 0.4, 0.62))
-    C.paint(nb.mul(fade, 0.7), nb.tint(hexc("#6582AE"), denim), 0.9)
+    # worn paler on the tops of the thighs and knees: broad and soft, never camouflage blotches
+    fade = nb.mul(nb.mul(L.k(DL_JEANS), L.up), nb.ss(L.noise(16.0, 10, detail=2), 0.42, 0.7))
+    C.paint(nb.mul(fade, 0.42), nb.tint(hexc("#5874A0"), denim), 0.9)
     seam = nb.mul(L.k(DL_JEANS), nb.ss(nxa, 0.9985, 0.9995))
     C.paint(seam, hexc("#22385C"), 0.9, 0.0, hh(-2.5))
     gold = nb.mul(nb.mul(L.k(DL_JEANS), band(nxa, 0.9895, 0.9945, 0.0012)), dashes(ym, 2.8))
@@ -6531,11 +6610,7 @@ COWBOY_DOLL = kit.Find(
 
 
 FINDS = [CYMBAL_MONKEY, JACK_IN_THE_BOX, CHATTERING_TEETH, WALKING_ROBOT, WINDUP_MOUSE, TIN_BIRD,
-         SIREN_CAR, RUBBER_DUCK, KAZOO, TOY_DRUM, FARM_SPINNER]
-# The cowboy doll is half built (WAVES.md, Nov 16 F-04h note): it bakes, but its sheets
-# aren't judged yet, so no export or upload takes it until it's added here.
-if "CowboyDoll" in sys.argv:
-    FINDS.append(COWBOY_DOLL)
+         SIREN_CAR, RUBBER_DUCK, KAZOO, TOY_DRUM, FARM_SPINNER, COWBOY_DOLL]
 
 if __name__ == "__main__":
     kit.main("Windups", HERE, FINDS)

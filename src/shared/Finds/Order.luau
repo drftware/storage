@@ -15,6 +15,7 @@ return {
 	Kazoo = { "Blow" },
 	ToyDrum = { "Bang" },
 	FarmSpinner = { "Pull" },
+	CowboyDoll = { "Pull" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },
