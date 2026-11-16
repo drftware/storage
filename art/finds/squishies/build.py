@@ -603,7 +603,206 @@ MOCHI_BUN = kit.Find(
     dust=MB["dust"], seed=MB["seed"], texels=1000,
 )
 
-FINDS = [BUTTER_STICK, STRESS_BALL, MOCHI_BUN]
+# --- The squishy toast slice (F-05b3) -------------------------------------------------------------
+# A slow-rise foam slice of white toast of our own (README): a square base under a wider rounded
+# crown, the crust airbrushed golden brown round its edge and darker over the crown, the crumb a
+# pale cream full of little pores, a cute face printed low on its front. One part, lofted from
+# each face through its rounded edge to the middle, standing on its bottom crust; its squeeze is
+# the whole slice crushing down and springing back, past its shape and settling, like bread.
+
+TS = K.TOAST
+TS_FOAM = 6
+TS_T, TS_E = TS["thick"], TS["edge"]
+
+
+def ts_outline(n):
+    """The slice's outline seen from the front, n points (n even) anticlockwise from the bottom's
+    middle, as (across, up) mm: a closed Catmull-Rom curve through the spec's half outline and its
+    mirror, spaced by length plus turning, so corners get more points than straight runs."""
+    half = TS["outline"]
+    ctrl = half + [(-x, z) for x, z in reversed(half[1:-1])]
+    m = len(ctrl)
+    dense = []
+    for i in range(m):
+        p0, p1, p2, p3 = (np.array(ctrl[(i + k) % m]) for k in (-1, 0, 1, 2))
+        for t in np.linspace(0.0, 1.0, 48, endpoint=False):
+            dense.append(0.5 * (2 * p1 + (p2 - p0) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t
+                                + (3 * p1 - p0 - 3 * p2 + p3) * t ** 3))
+    dense = np.array(dense)
+    top = (len(half) - 1) * 48
+    right = dense[:top + 1]
+    seg = np.diff(right, axis=0)
+    ang = np.arctan2(seg[:, 1], seg[:, 0])
+    turn = np.abs((np.diff(ang) + np.pi) % (2 * np.pi) - np.pi)
+    cost = np.hypot(seg[:, 0], seg[:, 1]) + 9.0 * np.concatenate([[0.0], turn])
+    acc = np.concatenate([[0.0], np.cumsum(cost)])
+    want = np.linspace(0.0, acc[-1], n // 2 + 1)
+    xs = np.interp(want, acc, right[:, 0])
+    zs = np.interp(want, acc, right[:, 1])
+    xs[0] = xs[-1] = 0.0
+    pts = list(zip(xs, zs))
+    return pts + [(-x, z) for x, z in reversed(pts[1:-1])]
+
+
+def ts_inset(pts, d):
+    """The outline moved d mm inward along its normals (it runs anticlockwise)."""
+    P = np.array(pts)
+    t = np.roll(P, -1, axis=0) - np.roll(P, 1, axis=0)
+    t /= np.linalg.norm(t, axis=1)[:, None]
+    return P + d * np.stack([-t[:, 1], t[:, 0]], axis=1)
+
+
+def ts_body(hi):
+    """The slice: its front half lofted from the front face (capped) round the rounded edge and
+    back to the middle, then the same turned half a turn about Z for the back."""
+    n = 360 if hi else 96
+    ne, nb = (14, 4) if hi else (4, 1)
+    out = ts_outline(n)
+    rings = []
+    for k in range(ne + 1):
+        a = math.radians(90 * k / ne)
+        ring = ts_inset(out, TS_E * (1 - math.sin(a)))
+        rings.append([(mm(u), mm(v), mm(TS_E * (1 - math.cos(a)))) for u, v in ring])
+    for k in range(1, nb + 1):
+        w = TS_E + (TS_T / 2 - TS_E) * k / nb
+        rings.append([(mm(u), mm(v), mm(w)) for u, v in out])
+    # the loft's (across, up, in): across to -X (a proper turn, so its faces point out; the
+    # outline is the same both ways), up to Z, in to +Y from the front face at -thick/2
+    R = Matrix(((-1, 0, 0, 0), (0, 0, 1, 0), (0, 1, 0, 0), (0, 0, 0, 1)))
+    M = Matrix.Translation((0.0, -mm(TS_T / 2), 0.0)) @ R
+    sh = Shape()
+    for half in (Matrix(), Matrix.Rotation(math.pi, 4, "Z")):
+        sh.loft(rings, TS_FOAM, M=half @ M, cap_bottom=TS_FOAM)
+    return sh
+
+
+TS_BOX = (-58.0, -4.0, 58.0, 116.0)     # the face images' extent seen from the front (mm)
+
+
+def ts_crust_dist(res=(928, 960)):
+    """How far each point of the front view lies inside the outline (mm, over 24), for the crust
+    band, its toasted glow and the ragged edge between them, which the look draws."""
+    w, h = res
+    x0, z0, x1, z1 = TS_BOX
+    xs = np.linspace(x0, x1, w)[None, :]
+    zs = np.linspace(z0, z1, h)[:, None]
+    P = ts_outline(480)
+    d = np.full((h, w), 1e9)
+    for (ax, az), (bx, bz) in zip(P, P[1:] + P[:1]):
+        vx, vz = bx - ax, bz - az
+        t = np.clip(((xs - ax) * vx + (zs - az) * vz) / max(vx * vx + vz * vz, 1e-9), 0, 1)
+        d = np.minimum(d, np.hypot(xs - ax - t * vx, zs - az - t * vz))
+    return np.clip(d / 24.0, 0.0, 1.0)
+
+
+def ts_face_ink(res=640, W=26.0, zc=48.0):
+    """The face seen straight on (W mm each way from (0, zc)): the eyes and the open mouth (one
+    ink mask), each eye's shine, the tongue, and the blush."""
+    xs = np.linspace(-W, W, res)[None, :]
+    zs = np.linspace(zc - W, zc + W, res)[:, None]
+    px = 2 * W / res
+
+    def oval(cx, cz, rw, rh):
+        dd = (np.hypot((xs - cx) / rw, (zs - cz) / rh) - 1.0) * min(rw, rh)
+        return np.clip(0.5 - dd / px, 0.0, 1.0)
+
+    ink = np.zeros((res, res))
+    shine = np.zeros((res, res))
+    blush = np.zeros((res, res))
+    for side in (1, -1):
+        ex, ez, ew, eh = side * TS["eye_dx"], TS["eye_z"], TS["eye_w"], TS["eye_h"]
+        ink = np.maximum(ink, oval(ex, ez, ew, eh))
+        shine = np.maximum(shine, oval(ex + 0.7, ez + 1.15, 0.72, 0.8))
+        bx, bz = side * TS["blush_dx"], TS["blush_z"]
+        q = np.hypot((xs - bx) / TS["blush_w"], (zs - bz) / TS["blush_h"])
+        blush = np.maximum(blush, np.clip((1.25 - q) / 0.55, 0.0, 1.0) ** 1.5)
+    # the mouth: a little open smile, flat along its top with round corners, a tongue low in it
+    (cx, cz), mw, md = TS["mouth_c"], TS["mouth_w"], TS["mouth_d"]
+    lip = TS["mouth_line"] * 0.5
+    mouth = oval(cx, cz + lip, mw, md + lip) * np.clip(0.5 - (zs - cz - lip) / px, 0.0, 1.0)
+    ink = np.maximum(ink, mouth)
+    tongue = oval(cx, cz - md * 0.98, mw * 0.62, md * 0.62) * oval(cx, cz + lip, mw - 0.55,
+                                                                       md + lip - 0.55)
+    return ink, shine, tongue, blush
+
+
+def toast_look(L, f):
+    nb = L.nb
+    xm, zm = nb.mul(L.x, K.STUD_MM), nb.mul(L.z, K.STUD_MM)
+    front = nb.ss(nb.mul(L.ny, -1.0), 0.3, 0.6)
+
+    def projected(name, mask, box):
+        x0, z0, x1, z1 = box
+        uv = nb.comb(nb.mul(nb.sub(xm, x0), 1 / (x1 - x0)), nb.mul(nb.sub(zm, z0), 1 / (z1 - z0)),
+                     0.0)
+        t = nb.node("ShaderNodeTexImage", image=bu_image(name, mask), interpolation="Cubic",
+                    extension="EXTEND")
+        nb.put(t.inputs["Vector"], uv)
+        return t.outputs["Color"]
+
+    # how far in from the edge (mm), roughened so the crust's inner edge wanders as baked bread's
+    dm = nb.mul(projected("ToastDist", ts_crust_dist(), TS_BOX), 24.0)
+    dm = nb.add(dm, nb.mul(nb.sub(L.noise(36.0, 1, detail=3), 0.5), 3.4))
+    dm = nb.add(dm, nb.mul(nb.sub(L.noise(150.0, 2, detail=2), 0.5), 1.1))
+    crown = nb.ss(zm, 62.0, 92.0)
+    band = nb.add(TS["crust"], nb.mul(crown, TS["crust_top"] - TS["crust"]))
+    crust = nb.inv(nb.ss(nb.sub(dm, band), -0.5, 0.5))
+    glow = nb.inv(nb.ss(nb.sub(dm, band), 0.0, TS["toasted"]))
+    crumb = nb.inv(crust)
+    # the crumb: pale cream foam, matte, a touch warmer toward the middle; toasted golden near the
+    # crust; full of little pores, longer up and down as bread rises, darker in their hollows
+    C = Coat(L, hexc("#F8E6B9"), 0.86)
+    C.paint(nb.mul(nb.ss(L.noise(7.0, 3, detail=2), 0.45, 0.7), 0.4), hexc("#F4DCA6"))
+    C.paint(nb.mul(glow, 0.95), hexc("#EDBA6A"), 0.84)
+    C.paint(nb.mul(nb.ss(glow, 0.55, 1.0), 0.6), hexc("#E2A253"), 0.82)
+    pores = None
+    for sc, s, lo in ((120.0, 4, 0.64), (260.0, 5, 0.62), (520.0, 6, 0.6)):
+        p = nb.ss(L.noise(sc, s, stretch=(1.0, 1.0, 0.62), detail=2, distortion=0.4), lo,
+                  lo + 0.05)
+        pores = p if pores is None else nb.mx(pores, nb.mul(p, 0.8))
+    pores = nb.mul(pores, crumb)
+    C.paint(nb.mul(pores, 0.8), hexc("#D9B677"), 0.92, height=-1.1)
+    # each pore's lower lip catches the light a touch, as a cut crumb's walls do
+    lip = nb.mul(nb.ss(L.noise(260.0, 5, stretch=(1.0, 1.0, 0.62), detail=2, distortion=0.4,
+                               ), 0.55, 0.6), nb.mul(crumb, nb.inv(pores)))
+    C.paint(nb.mul(lip, 0.45), hexc("#FFF4D6"))
+    C.paint(nb.ss(L.noise(1100.0, 7, detail=1), 0.35, 0.75), height=0.12)
+    # the crust: golden brown, airbrushed in patches, deepest at the very edge and over the crown,
+    # a faint sheen where it baked hardest
+    C.paint(crust, hexc("#C98A45"), 0.72)
+    C.paint(nb.mul(crust, nb.mul(nb.ss(L.noise(26.0, 8, detail=3), 0.4, 0.7), 0.6)),
+            hexc("#B5702F"))
+    C.paint(nb.mul(crust, nb.inv(nb.ss(dm, 0.0, 3.2))), hexc("#A8642A"), 0.66)
+    C.paint(nb.mul(crust, nb.mul(crown, 0.85)), hexc("#94531F"), 0.6)
+    C.paint(nb.mul(crust, nb.ss(L.noise(300.0, 9, detail=2), 0.55, 0.62)), height=-0.4)
+    C.paint(nb.mul(crust, nb.ss(L.noise(700.0, 11, detail=2), 0.3, 0.8)), height=0.3)
+    # the face, printed in dark cocoa with a white shine in each eye, a pink tongue, a soft blush
+    ink, shine, tongue, blush = ts_face_ink()
+    box = (-26.0, 22.0, 26.0, 74.0)
+    cheeks = nb.mul(front, projected("ToastBlush", blush, box))
+    C.paint(nb.mul(cheeks, 0.7), hexc("#F09A86"), 0.84)
+    C.paint(nb.mul(front, projected("ToastFace", ink, box)), hexc("#3A2216"), 0.42, height=0.25)
+    C.paint(nb.mul(front, projected("ToastTongue", tongue, box)), hexc("#E06C7A"), 0.42)
+    C.paint(nb.mul(front, projected("ToastShine", shine, box)), hexc("#FFF9F0"), 0.4)
+    C.finish(f.dust, grime=0.25)
+    return C.surface(bump_dist=mm(0.12), bump=0.55)
+
+
+TOAST_SLICE = kit.Find(
+    "ToastSlice",
+    [kit.Part("Body", ts_body)],
+    toast_look,
+    motions={
+        # squeezed in the hand: the crumb crushes down fast under the thumb, held, then let go it
+        # springs back up like bread, a little past its shape, and settles
+        "Squeeze": dict(duration=round(K.SPRING[-1][0] + 0.3, 2),
+                        tracks=[("Body", "stretch", K.SPRING)],
+                        focus=(0.0, 0.0, mm(60.0)), distance=1.02),
+    },
+    dust=TS["dust"], seed=TS["seed"], texels=1000,
+)
+
+FINDS = [BUTTER_STICK, STRESS_BALL, MOCHI_BUN, TOAST_SLICE]
 
 if __name__ == "__main__":
     kit.main("Squishies", HERE, FINDS)

@@ -21,6 +21,7 @@ return {
 	ButterStick = { "Squeeze" },
 	StressBall = { "Squeeze" },
 	MochiBun = { "Squeeze" },
+	ToastSlice = { "Squeeze" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },

@@ -412,6 +412,43 @@ local Set: { [string]: Art.Find } = {
 			},
 		},
 	},
+	ToastSlice = {
+		Size = Vector3.new(0.412, 0.435, 0.110),
+		Centre = Vector3.new(-0.000, 0.217, 0.000),
+		Triangles = 2112,
+		Texture = 1024,
+		Parts = {
+			{
+				Name = "ToastSlice_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Size = Vector3.new(0.412, 0.435, 0.110),
+				Triangles = 2112,
+			},
+		},
+		Lights = {},
+		Motions = {
+			Squeeze = {
+				Duration = 1.56,
+				Tracks = {
+					{
+						Part = "ToastSlice_Body",
+						Channel = "stretch",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.06, 1.015, "Sine", "Out" },
+							{ 0.24, 0.75, "Quad", "Out" },
+							{ 0.62, 0.735, "Sine", "InOut" },
+							{ 0.68, 0.74, "Sine", "InOut" },
+							{ 0.82, 1.05, "Quad", "Out" },
+							{ 0.96, 0.972, "Sine", "InOut" },
+							{ 1.1, 1.008, "Sine", "InOut" },
+							{ 1.26, 1, "Sine", "InOut" },
+						},
+					},
+				},
+			},
+		},
+	},
 }
 
 return Set

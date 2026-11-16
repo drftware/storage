@@ -29,6 +29,7 @@ return {
 		ButterStick = { Model = 91493472138143 },
 		MochiBun = { Model = 75693422662417 },
 		StressBall = { Model = 87393666160557 },
+		ToastSlice = { Model = 109999579926471 },
 	},
 	Windups = {
 		ChatteringTeeth = { Model = 100233455108959 },

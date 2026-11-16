@@ -6,7 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-05b3, the squishy toast slice (the rest of step 11), then step 12 (F-05c).
+**Next:** F-05c, step 12: the jumbo slow-rise strawberry first, then the squishy capybara and
+the paper squishy with a drawn face.
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -53,7 +54,7 @@ changes the table's order a little.
     build the dent another way (a pressed piece that sinks and rises). Plush needs the same.
 11. **F-05b** Stress ball with a face (built Nov 16; its eyes are their own parts, pushed out as
     it squashes), then, as **F-05b2**, the mochi bun (built Nov 16), and, as **F-05b3**, the
-    squishy toast slice (springs back like bread). Whole-body squash, the tea light's flame's
+    squishy toast slice (built Nov 16; springs back like bread). Whole-body squash, the tea light's flame's
     `stretch`.
 12. **F-05c** Jumbo slow-rise strawberry (the same squash, ten seconds to rise), squishy capybara
     (a tiny happy sigh), paper squishy with a drawn face (crinkled paper, looks homemade).
@@ -88,6 +89,40 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-05b3 (the squishy toast slice built; step 11 done; uploaded 109999579926471 and
+  imported; the brief's 120k was passed after the toast, so step 12 waits).** `ToastSlice` in
+  `squishies/build.py` (prefix `ts_`/`TS_`, kind 6; spec `TOAST`, `SPRING`); README section,
+  `Order.luau`. A 4.3 in foam slice of white toast of our own: the crown wider than the base, a
+  golden-brown crust darker over the crown, a pale cream crumb toasted golden toward the crust and
+  full of pores stretched up and down, a face (dark oval eyes with a white shine, a little open
+  smile with a pink tongue, coral blush). One part lofted from each face round a rounded edge to
+  the middle. Squeeze crushes it to 0.75 tall and lets it spring back to 1.05, 0.97, 1.0 in 0.58 s.
+  **New and reusable:** `ts_outline` draws any flat squishy's outline as a closed Catmull-Rom
+  curve through a half outline and its mirror, spaced by length plus turning; `ts_inset` moves it
+  in for a rounded edge (check no inset point reverses: the shoulders' notch must be rounder than
+  the edge radius); `ts_crust_dist` is a distance-from-the-outline image for any band drawn round
+  an edge (crust, a printed border, a seam). Judged on quick sheets twice, full once, in Studio
+  once. **Trap:** `screen_capture` with `camera_position` showed the user's view, not ours: set
+  `workspace.CurrentCamera.CFrame` in an Edit `execute_luau` first, capture with no camera, then
+  put the camera back (docs/STUDIO.md).
+  **F-05c's hints (step 12, not researched):** *Jumbo slow-rise strawberry:* a PU foam strawberry
+  about 4 to 5 in tall (jumbo squishies run 4.5 to 6 in), a fat cone with a rounded tip, rich red
+  airbrushed with a lighter shoulder, rows of yellow seeds sunk in little dimples (a seed pattern
+  in the look on a spiral, with height), a green leafy cap of five or six pointed leaves and a
+  stem, its own part (a lathe for the body with the cap as a second part or a loft). Its squeeze
+  is a thumb dent that takes ten seconds to rise: the butter stick's bones (a centre bone and a
+  ring round it, `bu_bones`), the dent on its front face where a thumb lands. *Squishy capybara:*
+  a sitting capybara squishy of our own about 3.5 to 4.5 in, a barrel body, blunt square muzzle,
+  small round ears, tiny eyes, warm tan-brown with a darker back; a contented face (closed
+  eyes as two arcs, maybe a little orange on its head). The sigh is a whole-body squash that
+  sinks slow and lets out (the mochi's `SINK` way, softer, a small settle); its ears could ride
+  as parts with counter-stretch (the stress ball's eyes). *Paper squishy:* a homemade one, about
+  4 in, two layers of printer paper taped all over with clear tape (glossy, crinkled, tape
+  edges), stuffed with shredded plastic bags so the outline puffs; a simple shape (a rounded
+  square or a cartoon face) with a marker face drawn by hand (wobbly strokes, `bu_ink` with
+  noise added to the points). Its crinkle is a short squash with little uneven wobbles (keys at
+  odd times). `ts_outline` and `ts_inset` fit all three outlines that are flat.
 
 - **Nov 16, F-05b2 (the mochi bun built; uploaded 75693422662417 and imported; the toast slice
   left for F-05b3, the session was past the brief's 120k after the bun).** `MochiBun` in
@@ -1413,7 +1448,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Squishy butter stick | Common | Squeeze: leaves a dent that slowly fills back in | A 2026 squishy trend | Nov 16, F-05a |
 | Mochi bun | Common | Squeeze: a soft puff of a sound |  | Nov 16, F-05b2 |
 | Paper squishy with a drawn face | Uncommon | Squeeze: it crinkles | Looks homemade; cheap to build | |
-| Squishy toast slice | Uncommon | Squeeze: springs back like real bread |  | |
+| Squishy toast slice | Uncommon | Squeeze: springs back like real bread |  | Nov 16, F-05b3 |
 | Gel bead ball | Uncommon | Squeeze: the beads swirl inside |  | |
 | Glitter goo ball | Uncommon | Squeeze: glitter swirls, then settles |  | |
 | Jumbo slow-rise strawberry | Uncommon | Squeeze: the dent takes ten seconds to rise back |  | |

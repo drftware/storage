@@ -322,6 +322,9 @@ verified: a doc page, Studio, or "untested".
   with no phone active), then Play. Touch is on: the dynamic thumbstick is the left part of the
   screen (`PlayerGui.TouchGui`), and `user_mouse_input` drags drive it and the look. A
   `screen_capture` right after a teleport can come back black; take it again.
+- **`screen_capture`'s `camera_position` can be ignored in Edit** (F-05b3, Nov 16): it showed
+  the owner's view, not a find laid out at y 500. Save `workspace.CurrentCamera.CFrame`, set it
+  with `CFrame.lookAt` in an Edit `execute_luau`, capture with no camera, then put it back.
 - **A thin mesh gets a bad decomposition:** the unit's Facade (0.001 thick, doorway cut out) given
   PreciseConvexDecomposition at runtime got a hull across the doorway (a ray down the doorway's
   middle hit it). `CollisionFidelity` is writable in Edit (a read in the same script can still show

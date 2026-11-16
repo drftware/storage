@@ -101,3 +101,40 @@ a half, never past round. The game's soft puff of air goes at the sink.
 **In Studio.** Uploaded (75693422662417) and imported; its size matched the Luau. Judged under a
 0.6, range 11 bulb from a hand's distance: the face, blush and starch patches read, the pink a
 touch peach in the warm light. Its front faces the template's LookVector (-Z).
+
+## Squishy toast slice (F-05b3, Nov 16)
+
+**References.** Toast-slice squishies sold in 2026, seen in an image search for "toast slice
+squishy slow rise face" and "slow rising toast squishy in hand crust" (bing.com/images): PU foam
+slices with a square base under a wider rounded crown that overhangs the sides at the shoulders,
+a golden-brown crust airbrushed round the edge and darker over the crown, a pale cream crumb
+toasted a touch golden next to the crust, many with a small kawaii face printed low on the front.
+Sizes: a 4.3 in sticky bread squishy (Amazon, SUISUILE), a 5.4 x 5.4 x 1.9 in toast squishy
+(fufusquishy.com), 5.1 in bread squishies (walmart.com/ip/19393364882); a real Pullman slice is
+about 4 x 4 in.
+
+**Size.** 104.8 mm across the crown, 92 mm across the base, 110.4 mm tall, 28 mm thick (4.1 x 4.3
+x 1.1 in): 0.412 x 0.435 x 0.110 studs, standing on its bottom crust.
+
+**Tells.** The slice's outline (the crown wider than the base, its gentle dip between two
+shoulders); the brown crust ringing a pale face; our own face: two dark oval eyes with a white
+shine, a little open smile with a pink tongue, soft coral blush. From a unit's doorway it is a
+small pale speck with a brown rim; held, the slice and the face read at once.
+
+**What it is.** `Body`, one part lofted from each face (a capped fan) round a 5.5 mm rounded
+edge to the middle, the back half the front turned half a turn about Z. Its outline is a closed
+Catmull-Rom curve through the spec's half outline and its mirror (`ts_outline`), its points
+spaced by length plus turning so the corners get more. The crust, the toasted glow and the ragged
+edge between them are drawn from how far each point lies inside the outline, a numpy image
+projected along Y (`ts_crust_dist`), roughened by noise; the band is 5 mm on the sides and 8.5 mm
+over the crown. The crumb's pores are three sizes of noise blobs stretched up and down as bread
+rises, sunk in the bump with their lower lips lighter. The face is ink drawn in code
+(`ts_face_ink`). 1024 texture at 1278 texels a stud; 2,112 triangles. Judged on quick sheets
+twice (fixed: a cooler, flatter crumb, faint pores, a smooth crust, small eyes, the filmstrip
+clipping the crown), full sheets once, and in Studio under a warm 0.6 bulb (template in
+`ReplicatedStorage.Props.Finds.ToastSlice`, uploaded 109999579926471).
+
+**Squeeze** (1.26 s + 0.3): springs back like bread. The fingers meet it and it bulges a hair,
+then crushes fast to 0.75 tall under the thumb; held a moment; let go, it springs back to 1.05 in
+a seventh of a second, dips to 0.97 and settles inside two thirds of a second, softer than the
+rubber ball's ring. Whole-body `stretch` (`K.SPRING`).

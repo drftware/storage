@@ -10,5 +10,9 @@
   "StressBall": {
     "assetId": 87393666160557,
     "sha256": "2d025cc34a42e4aa52cfbf5eb44f72c52d057c9da425470dbfc5b8aa4f950e70"
+  },
+  "ToastSlice": {
+    "assetId": 109999579926471,
+    "sha256": "3dc9a2105ff7be98d8968d79ccc80883936ff40f3706a6a29a9c5ace02b4462b"
   }
 }

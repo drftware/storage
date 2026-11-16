@@ -2413,8 +2413,10 @@ actions themselves and dealing the new finds on floors are later game tickets.
 - [ ] **F-05 Squishies.** In `art/finds/squishies/`. F-05a (Nov 16, D-246): bones in the finds
   kit, checked in Studio, proven on the squishy butter stick. F-05b (Nov 16, D-247): the stress
   ball with a face, its eyes bulging out of their sockets. F-05b2 (Nov 16): the mochi bun, a
-  powdered pink dome that sinks slow and heavy. Next F-05b3 the toast slice, then F-05c to F-05f
-  (`art/finds/WAVES.md`, the second run's plan).
+  powdered pink dome that sinks slow and heavy. F-05b3 (Nov 16): the toast slice, a crusted
+  foam slice with a face that springs back like bread. Next F-05c (the slow-rise strawberry,
+  the capybara, the paper squishy), then F-05d to F-05f (`art/finds/WAVES.md`, the second
+  run's plan).
 - [ ] **F-06 Plush.**
 - [ ] **F-07 Night Shift Minis and their blind box.**
 - [ ] **F-08 Boxes and tins.**

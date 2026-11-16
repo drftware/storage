@@ -147,3 +147,47 @@ SINK = [
     (2.5, 0.982, "Sine", "Out"),      # and settles slowly, never past round
     (3.2, 1.0, "Sine", "InOut"),
 ]
+
+# --- The squishy toast slice (F-05b3) -----------------------------------------------------------
+# References (README): toast-slice squishies sold in 2026 are PU foam slices 4.3 to 5.4 in tall
+# and wide and 1.1 to 1.9 in thick (one 4.3 in, one 5.4 x 5.4 x 1.9 in), the slice's outline a
+# square base under a wider rounded crown that overhangs it a little at the shoulders, the crust
+# airbrushed golden brown round the edge and darker over the crown, the crumb face pale cream,
+# often with a cute face printed low on it. Ours: 4.4 in tall, 4.1 in across the crown, 1.1 in
+# thick, standing on its bottom crust; a face of our own.
+TOAST = dict(
+    # its outline seen from the front, the right half from the bottom's middle up and over to the
+    # top's middle (mm across, mm up); a smooth curve runs through these points
+    outline=[(0.0, 0.0), (18.0, 0.0), (34.0, 0.15), (41.5, 1.4), (45.0, 6.0), (46.0, 14.0),
+             (46.2, 32.0), (45.9, 50.0), (45.4, 58.0), (46.4, 64.5), (49.6, 69.0), (52.0, 75.0),
+             (52.2, 83.0), (49.8, 92.0), (44.0, 100.0), (35.0, 106.0), (24.0, 109.6),
+             (12.0, 110.4), (0.0, 109.2)],
+    thick=28.0,       # front face to back face (mm): 1.1 in
+    edge=5.5,         # how round the faces' edges are (mm)
+    # the crust: its band on the face (mm in from the outline), deeper over the crown (from the
+    # shoulders up), then a toasted glow fading into the crumb over this much more
+    crust=5.0, crust_top=8.5, toasted=11.0,
+    # the face, printed low on the front (mm across and up, seen straight on): the eyes' half
+    # spacing, height and size (half width, half height); the mouth's centre, half width, depth
+    # and stroke; the blush's offset, size and height
+    eye_dx=13.5, eye_z=52.0, eye_w=2.55, eye_h=3.3,
+    mouth_c=(0.0, 46.0), mouth_w=3.9, mouth_d=3.1, mouth_line=0.8,
+    blush_dx=20.5, blush_z=46.0, blush_w=4.6, blush_h=2.7,
+    dust=0.15, seed=31.0,
+)
+
+# The squeeze, timed like a bread squishy in the hand: the fingers close and it gives fast, the
+# crumb crushing down under the thumb; held a moment; let go, it springs back up like real bread,
+# a little past its shape, dips under and settles inside two thirds of a second, softer than the
+# rubber ball's ring (seconds, height[, style, way]).
+SPRING = [
+    (0.0, 1.0),
+    (0.06, 1.015, "Sine", "Out"),     # the fingers meet it: it bulges a hair
+    (0.24, 0.75, "Quad", "Out"),      # crushed under the thumb
+    (0.62, 0.735, "Sine", "InOut"),   # held, still pressing
+    (0.68, 0.74),                     # let go
+    (0.82, 1.05, "Quad", "Out"),      # springs back up past its shape
+    (0.96, 0.972, "Sine", "InOut"),
+    (1.1, 1.008, "Sine", "InOut"),
+    (1.26, 1.0, "Sine", "InOut"),
+]
