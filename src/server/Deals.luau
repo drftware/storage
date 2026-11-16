@@ -197,8 +197,8 @@ function Deals.new(): Deals
 					table.insert(stacks, PackedLayout.footprint(b, Packed.Reach[b.name]))
 				end
 			end
-			size.room, size.stacks, size.lure, size.nook =
-				layout.clearing, stacks, layout.lure, layout.nook
+			size.room, size.stacks, size.lure, size.nook, size.peek =
+				layout.clearing, stacks, layout.lure, layout.nook, layout.peek
 		end
 		-- the note's place on the back wall: kept clear only while a note is stuck there (the
 		-- fallback, `layNoteBox`); since B-04a a note comes in its box
@@ -260,14 +260,15 @@ function Deals.new(): Deals
 	-- `count` coins (B-03b), if it packs into one (`Deal.packs`; `forced`, Studio's `DevBox`, whatever
 	-- its size), where a find would stand: behind the bulb, facing the doorway. Where it stands and
 	-- the floor it takes, or nil if it doesn't pack or can't stand (no room, no template), and the
-	-- thing is laid loose instead.
+	-- thing is laid loose instead. `guarded`: a keeper will stand beside it.
 	local function layBoxed(
 		unit: Model,
 		deck: Deal.Deck,
 		index: number,
 		key: string,
 		forced: boolean,
-		count: number
+		count: number,
+		guarded: boolean
 	): (CFrame?, { number }?)
 		local boxes = markedBoxes
 		local body = Tools.bounds(key).Size
@@ -275,7 +276,10 @@ function Deals.new(): Deals
 			return nil, nil
 		end
 		local size, number, note = shape(deck, index)
-		local spot = DealSpot.inUnit(size, "Find", BOX_FOOTPRINT, note, number)
+		-- in a packed unit, a box with a keeper to stand beside it keeps the lure, leaving the
+		-- path's end for its guard; any other peeks round the corner (B-05b2b)
+		local near = if guarded then nil else size.peek
+		local spot = DealSpot.inUnit(size, "Find", BOX_FOOTPRINT, note, number, nil, near)
 		if not spot then
 			return nil, nil
 		end
@@ -311,7 +315,8 @@ function Deals.new(): Deals
 				-- only built tools (tests/carry.spec). Kept as a guard for a tool added half-built.
 				return nil, nil, nil, false
 			end
-			local boxed, area = layBoxed(unit, deck, index, key, forced, contents.coins)
+			local boxed, area =
+				layBoxed(unit, deck, index, key, forced, contents.coins, contents.beside ~= nil)
 			if boxed then
 				return boxed, area, nil, true
 			end
@@ -345,7 +350,8 @@ function Deals.new(): Deals
 				-- its art isn't in the place (art/finds/README.md says how to import it)
 				return nil, nil, nil, false
 			end
-			local boxed, area = layBoxed(unit, deck, index, key, forced, contents.coins)
+			local boxed, area =
+				layBoxed(unit, deck, index, key, forced, contents.coins, contents.beside ~= nil)
 			if boxed then
 				return boxed, area, nil, true
 			end
@@ -519,7 +525,7 @@ function Deals.new(): Deals
 			return nil, nil
 		end
 		local size, number, note = shape(deck, index)
-		local spot = DealSpot.inUnit(size, "Find", BOX_FOOTPRINT, note, number, taken)
+		local spot = DealSpot.inUnit(size, "Find", BOX_FOOTPRINT, note, number, taken, size.peek)
 		if not spot then
 			return nil, nil
 		end
@@ -548,7 +554,7 @@ function Deals.new(): Deals
 		local boxes = markedBoxes
 		local size, number = shape(deck, index)
 		local spot = if boxes
-			then DealSpot.inUnit(size, "Find", BOX_FOOTPRINT, nil, number, taken)
+			then DealSpot.inUnit(size, "Find", BOX_FOOTPRINT, nil, number, taken, size.peek)
 			else nil
 		if boxes and spot and boxes:stand(unit, placed(unit, spot), nil, count, note) then
 			return DealSpot.around(spot, BOX_FOOTPRINT)

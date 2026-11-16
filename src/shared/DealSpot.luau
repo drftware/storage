@@ -53,6 +53,9 @@ export type Unit = {
 	stacks: { { number } }?,
 	lure: { number }?,
 	nook: { number }?,
+	-- where a box with no keeper to stand beside it goes instead of `lure` (B-05b2b): its near
+	-- corner just inside the path's line, so it shows from the doorway. Passed as `near`.
+	peek: { number }?,
 }
 export type Thing = "Tool" | "Find" | "Keeper" | "Coins" | "Battery"
 -- A thing's size as it stands at yaw 0: X across, Z along (front to back), Y tall.

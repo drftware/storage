@@ -2141,9 +2141,18 @@ it is, coins go to your bank, a tool goes to your hands, or it's a piece of the 
       Keepers' map: the unit is its path and its clearing joined at the bend (`KeeperMap.pack`).
       A crawl hole into a packed unit has no Crawl button. Spec `tests/packedwalk.spec.luau`.
       Passes checks, untested in Studio.
-    - [ ] **B-05b2b Walk a packed unit in Studio.** Play it: the stacks on the right side, the
-      box's sliver from the doorway, a sleeper walking out by the bend, the camera in the path at
-      phone size, the crawl button gone. Fix what feels wrong.
+    - [x] **B-05b2b Walk a packed unit in Studio** (D-218). Seen in Play on floor 3 (seed
+      2000013): Unit302's stacks stand true, its path one dark squeeze; Unit316's Mannequin woke
+      to a horn, turned at the bend and came down the path's middle, through no stack. The box
+      round the bend hid wholly from the doorway: a box with no guard now peeks 0.4 into the
+      path's line (`PackedLayout.Peek`; passes checks, its look untested in Studio: Studio
+      stopped drawing frames). The phone camera and the saw's missing Crawl button are the
+      owner's (`OWNER.md` "Walk a packed unit").
+      - [ ] Polish: a sleeper at the clearing's far end with a box in the clearing (the code's
+        note, or coins) walks through that box on its way to the bend (keepers move by
+        CFrame). Lay the box first round the far end, or bend the sleeper's walk in front of it.
+      - [ ] Polish: a guard's box (padlocked) still hides wholly round the bend; a sound or a
+        glint from it would be its lure.
 
 ### Step 4: The climb with no top
 

@@ -51,6 +51,10 @@ export type Layout = {
 	-- the clearing's far end at the side wall, out of sight, where a keeper sleeps
 	lure: { number },
 	nook: { number },
+	-- (x, z) where a box goes when no keeper must stand beside it (DealSpot.Unit's `peek`, B-05b2b):
+	-- the back wall, its near corner `Peek` inside the path's line, so it shows straight down the
+	-- path from anywhere in the doorway
+	peek: { number },
 }
 
 -- Studs across the path. A player is 2 across, so a 3 wide path is a squeeze you walk without
@@ -70,6 +74,12 @@ PackedLayout.Narrowest = 10
 -- corner stands about a third of a stud round the corner, where an eye at the doorway just
 -- catches it, and a keeper guarding it still fits at the end of the path beside it.
 PackedLayout.Lure = 1.5
+-- Studs past the path's edge that a box with no guard is drawn to (`peek`, B-05b2b): seen in Play,
+-- the lure's box hid wholly behind the last stack from every spot in the doorway, so a box with
+-- nothing to stand beside it stands half a stud round the corner instead, its 1.8 stud front
+-- poking 0.4 into the path's line: a hand's width of marked box at the foot of the back wall,
+-- straight down the path, and nothing else in the unit to see.
+PackedLayout.Peek = 0.5
 -- Of the units, the share (by number) with a low stack in the clearing's far corner.
 PackedLayout.HalfShare = 2 / 3
 
@@ -274,6 +284,9 @@ function PackedLayout.lay(
 		bend = { x = 0, z = (C + B) / 2 },
 		lure = { (-P - PackedLayout.Lure) * m, B },
 		nook = { -W * m, (C + B) / 2 },
+		-- a box's middle a stud off the back wall: a point on the wall itself ties a spot deeper
+		-- in the path with the one round the corner, and the first found won
+		peek = { (-P - PackedLayout.Peek) * m, B - 1 },
 	}
 end
 

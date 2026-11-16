@@ -5785,3 +5785,18 @@ B-05b2 was split for the session's size: B-05b2a the code (this), B-05b2b walkin
   keeps its landing clear. Panels falling under the stacks is a polish line.
 Not chosen: laying the keeper before the box so a guard always gets the nook (the box would lose
 its place round the bend); the stacks as keeper-map walls (the map has no walls, only places).
+
+## D-218 A lone box peeks round the bend (B-05b2b, Nov 15)
+Seen in Play (Unit302, floor 3, seed 2000013): the box at the lure (1.5 past the path's edge, at the
+back wall) hid wholly behind the last stack from every spot in the doorway, so D-215's sliver never
+showed. Moving the lure in wasn't enough: a guard (a padlocked unit's keeper) needs the path's end
+beside its box, 2.1 across, so that box can't come nearer the path than it stands.
+- **Two spots.** A box with no keeper to stand beside it (a find's or tool's box with no guard,
+  a note's box, a coin box) goes nearest `peek` (`PackedLayout.Peek`, 0.5 past the path's edge, a
+  stud off the back wall): its 1.8 stud front pokes 0.4 into the path's line, a hand's width of
+  marked box at the foot of the back wall straight down the path. A guard's box keeps the lure.
+- **A stud off the wall.** A peek on the back wall's line tied a spot deeper in the path with the
+  one round the corner (both 1.25 away), and the first found won; a box's middle a stud off the
+  wall breaks the tie.
+- A sleeper with a box in its clearing walks through it at the bend; a ROADMAP polish line.
+Not chosen: a deeper clearing (re-lays every unit's stacks); a glow from the box (a polish line).

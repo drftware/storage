@@ -62,6 +62,7 @@ local function unitOf(layout: PackedLayout.Layout): DealSpot.Unit
 		stacks = stacks,
 		lure = layout.lure,
 		nook = layout.nook,
+		peek = layout.peek,
 	}
 end
 
@@ -126,6 +127,18 @@ for n = 100, 999 do
 		end
 		local coins = DealSpot.inUnit(unit, "Coins", COINS, nil, number, { area })
 		ok(coins ~= nil and standsWell(unit, coins, COINS), `{number}: loose coins fit too`)
+	end
+	-- a box with no guard (B-05b2b): round the corner, but its near edge inside the path's line,
+	-- so it shows straight down the path from anywhere in the doorway
+	local lone = DealSpot.inUnit(unit, "Find", BOX, nil, number, nil, unit.peek)
+	ok(lone ~= nil, `{number}: a lone box fits at the peek`)
+	if lone then
+		ok(standsWell(unit, lone, BOX), `{number}: the lone box stands well`)
+		local near = lone.x * side - BOX.across / 2
+		ok(
+			near < P - 0.3 and lone.x * side > P,
+			`{number}: the lone box peeks into the path's line ({lone.x}, {lone.z})`
+		)
 	end
 	-- a sleeper, with the code's note in a box beside it
 	local keeper = DealSpot.inUnit(unit, "Keeper", DealSpot.Keeper, nil, number)

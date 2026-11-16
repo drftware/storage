@@ -2,45 +2,45 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-15, session 194 (B-05b2a, D-217) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
+**Updated:** 2026-11-15, session 195 (B-05b2b, D-218) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage).
 
 ## State
-- B-05b2 split: B-05b2a done in code, passes checks, untested in Studio. As a packed unit's
-  door first lifts (or a saw's hole goes through), `Deals.layStacks` stands its blocks
-  (`Packed.layout(size, number)`, the one layout the deal and the keepers' map share) in the
-  hall piece and marks the unit `PackedUnit`; everything it holds stands in its clearing
-  (`DealSpot.Unit.room`, `stacks`): a box nearest `lure` (just round the bend), a keeper nearest
-  `nook` (the hidden end); the corner's low stack last, only if clear (`layCorner`).
-- Keepers: `KeeperMap.pack` makes the unit its path plus its clearing, joined at the bend
-  (`Keepers.add` takes `deck.packed`; Studio warns if the map's bend and the stacks' disagree).
-- Crawls: no Crawl button on a hole into or out of a packed unit.
-- Studio Output: "Deals: packed with boxes on floor N: ..." as a floor is laid, and each packed
-  unit's "held" line ends "(packed: its clearing round the bend to your right/left from the hall)".
+- B-05 packed units are done. Seen in Play (floor 3, seed 2000013): Unit302's stacks stand true
+  with one dark path; Unit316's Mannequin, woken by a horn, turned at the bend and came down the
+  path's middle through no stack; no "bend is off the map" warning.
+- Fixed: the box round the bend hid wholly from the doorway. A box with no guard now stands at
+  `peek` (`PackedLayout.Peek`), poking 0.4 into the path's line; a guard's box keeps the lure so
+  its keeper fits at the path's end (D-218). Passes checks; its look is untested in Studio,
+  because Studio stopped drawing frames mid-session (`docs/STUDIO.md`, "When Studio stops
+  drawing"). OWNER.md "Walk a packed unit" has the exact steps.
+- Two polish lines under B-05b2b in ROADMAP: a sleeper walks through a box in its clearing; a
+  guard's box still hides.
+- Studio's Workspace `DevFloorSeed` is back to 7 and `DevFloorNumber` cleared, as found.
 
-## Next task: B-05b2b Walk a packed unit in Studio
-ROADMAP B-05b2b; D-217. The moment: a door lifts on a wall of boxes with one dark path; you
-squeeze in, the walls close round the camera, and round the bend waits the box or a sleeper.
-1. Workspace `DevFloorSeed` 2000013, `DevFloorNumber` 3; Play. Read Output's packed list; no
-   "bend is off the map" warning (if there is one, the unit frame's X sign in
-   `KeeperMap.pack`'s `unitRect` is flipped against `FloorBuilder.face`).
-2. Lift a packed unit (teleport the character with execute_luau). Check the stacks stand in
-   the unit (not mirrored, not floating), the clearing turns the side Output says, the box
-   stands round the bend, and its corner shows from the doorway (one small screenshot).
-3. The camera in the path at a small phone sideways: zoomed in? clipping? If Roblox's camera
-   pops badly, look for the game's camera code (grep `CameraMinZoomDistance`, `Popper`) before
-   building anything; a fix that fits goes in, else a ROADMAP polish line.
-4. Wake a sleeper in a packed unit (find one with Output's "held" lines; `Workspace` dev
-   attributes or a horn) and watch it walk spot, bend, path middle, door.
-5. Saw into a packed unit (the saw dev flow in OWNER.md's crawl steps): no Crawl button.
-6. Fix what's wrong; tighten OWNER.md's "Walk a packed unit" steps to what you saw.
-**Acceptance:** checks green; the above seen in Play and said so in OWNER.md; Play stopped.
-**Read first:** ROADMAP B-05b2b; D-217 (`docs/DECISIONS.md`, last entry); OWNER.md "Walk a packed
-unit"; `src/server/Deals.luau` (grep `layStacks`, `layCorner`); `src/shared/KeeperMap.luau`
-(grep `function KeeperMap.pack`); `docs/STUDIO.md` (grep `execute_luau`, `Play`).
+## Next task: S3-03 Cut Free, Free a Friend, Free Everyone
+ROADMAP S3-03. The moment: you're wrapped and carried off; one button on the caught screen
+stands you back in the car at the next floor, and a friend can pay to free you instead.
+1. Size it first. Three offers is more than one session: split in ROADMAP (S3-03a Cut Free paid
+   on the caught screen, incl. while carried up; S3-03b Free a Friend; S3-03c Free Everyone
+   before the results) and do S3-03a properly.
+2. Read what exists: Cut Free is built and free in Studio (L-07d, L-08c, `CutFreeView`,
+   `Watching`'s "CutFree" let-in, which still stands you in the lobby). The paid path goes
+   through `Products` rows and `Purchasing:prompt` (S3-02, D-206, D-207): grant only after the
+   save, never lost.
+3. Cut Free while carried up stands you in the car at the next floor (a decision near
+   DECISIONS line 5128 left that to S3-03; grep `that's Cut Free's`).
+4. Every press answers: the button's motion and sound, the unwrap, the arrival. No rule text.
+5. Prove it in Play with Studio's test purchase (`Workspace` `DevPrompt`, `Purchasing.luau`
+   header). Before any Play test, count Client `RenderStepped` frames: 0 means Studio isn't
+   drawing and prompts won't show.
+**Acceptance:** checks green; the caught screen's Cut Free buys (Studio test purchase), saves,
+then frees you into the car; OWNER.md steps for each offer; Play stopped.
+**Read first:** ROADMAP S3-03; DECISIONS D-105 and D-206 (grep `^## D-105`, `^## D-206`);
+OWNER.md (grep `(D-105)`); `src/shared/Products.luau`;
+`src/client/CutFreeView.luau`; `src/server/Purchasing.luau` (grep `function`, `prompt`).
 
 ## Queue (next sessions, the owner's ten-ticket order)
-0. After B-05b2b: S3-03 Cut Free (it owns Studio's "CutFree" let-in; rows in `Products`,
-   `Purchasing:prompt`), then S3-04.
+0. After S3-03: S3-04 The counter's shop and wrap colours (gifts wait on `OWNER.md`).
 1. **S4-01 Floors made by rules.** Split first: S4-01a the rules table and the top gone, S4-01b
    what changes floor to floor. Read the GDD's "Floor rules", D-106, D-128, `Climb.luau`,
    `Deal.luau`; grep `Climb.Top`, `Climb.Building`, `topped`. The escape ("Made it") has no trigger
@@ -58,6 +58,7 @@ unit"; `src/server/Deals.luau` (grep `layStacks`, `layCorner`); `src/shared/Keep
    rbxassethash warnings; the Packrat's dead Slots entry, S2-06b1's way home; the Mannequin's
    pose onto `Rig.luau` (D-176); the watch bar's empty panel; S1-07a, S2-02b-d4, S2-03b,
    S2-05a, S2-07a1-b2 leftovers; unseen S1-10d1-3. More box words need the boxes' rebake (D-215).
+   A sleeping Mannequin in a packed unit faces the stacks, not the path (Unit316): judge it.
 
 ## Kickoff for the next agent
 ```text

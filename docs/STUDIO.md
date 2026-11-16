@@ -200,6 +200,15 @@ verified: a doc page, Studio, or "untested".
   on; setting the jump's Visible by hand afterwards made both follow. Cause unknown; anything
   that must go with the jump in a given state should also watch that state (they now watch
   `Kept`).
+- **When Studio stops drawing** (B-05b2b, Nov 15): mid-session, after a Play restart, prompts
+  never showed (`PromptShown` silent, the camera 3 studs off an enabled Open) and
+  `screen_capture` timed out. A Client `execute_luau` counting `RenderStepped` for a second read
+  0: the viewport wasn't drawing (the Mac's screen asleep or Studio hidden). Count frames first
+  when prompts won't show; nothing on screen works until it draws again.
+- **Waking one sleeper on purpose** (B-05b2b): Workspace `GiveFind` set to "AirHorn" puts the
+  horn in your hand; a Client `ReplicatedStorage.Remotes.ToolUse:FireServer()` blows it, and
+  every keeper in reach wakes and comes to look. Stand at the unit's doorway; sample the keeper
+  (`DevCorridor.FloorN.Keepers`) from a Server `task.spawn` into a StringValue, then read it.
 - **A Client `execute_luau` has its own module cache** (L-20a): `require` of a shared module there
   returns a different table from the one the game's LocalScripts hold, so setting a number on it
   (to stretch `Wheel.Linger` for a shot) changes nothing in the game. Batch the input and the
