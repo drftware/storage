@@ -21,8 +21,8 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 The moment: you set the car down and the hood camera drops you to the floor, low and wide; push
 the stick and it leaps off at once with a rising whine, the wheels turning, and stops dead at a
 shut door.
-1. Move the pin (Brix is pushed): `vendor/brix` to `c9f6667`; update `docs/FRAMEWORK.md` (the pin line and the two
-   Brix rows for Handling and Driving, now in use). Check green.
+1. Move the pin (Brix is pushed): `vendor/brix` to `c9f6667`; update `docs/FRAMEWORK.md` (the
+   pin line and the two Brix rows for Handling and Driving, now in use). Check green.
 2. The car set down apart from its transmitter: the model is one (`RCCar_Remote` is the root, the
    car hangs off `RCCar_Arms`), so the car needs its own assembly, unanchored, with low friction
    on its floor parts (Brix's Driving page says why). Find the code: `grep -rn RCCar src docs/CODEMAP.md`.
