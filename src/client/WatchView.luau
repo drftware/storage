@@ -13,7 +13,9 @@
 	  drag (or hold the right mouse button, or the right stick) to swing round them. At the bottom,
 	  who you're watching, the arrows to switch (Q and E, the arrow keys, the bumpers), and how
 	  you get back in. A switch dips to black and lifts on the next friend once they've streamed
-	  in, with a tick. In Studio a Cut Free button lets you back in (the product isn't made yet).
+	  in, with a tick. Above the bar, Cut Free (S3-03a2), the caught screen's warm button, stands
+	  while the offer is on sale (`Remotes.CutFree`'s `On`); a press springs it, clicks and dims it
+	  while Roblox's prompt comes up, and the ask goes through the Watch remote (CutFrees).
 	- Carried up (S3-01a): a beat after the gate opens on the new floor (`Left.CarryAttribute`)
 	  the view dips to black as the film squeals round you, and a roll-up door slams down in the
 	  dark; the black holds until you're stood wrapped in a unit there, and CaughtView opens your
@@ -39,6 +41,7 @@ local Brix = require(ReplicatedStorage.Brix)
 local ClimbEnd = require(ReplicatedStorage.Shared.ClimbEnd)
 local DoorSound = require(ReplicatedStorage.Shared.StorageUnit.DoorSound)
 local Keypad = require(ReplicatedStorage.Shared.Elevator.Keypad)
+local CutFree = require(ReplicatedStorage.Shared.CutFree)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Left = require(ReplicatedStorage.Shared.Left)
 local Ride = require(ReplicatedStorage.Shared.Elevator.Ride)
@@ -46,6 +49,9 @@ local RideClock = require(script.Parent.RideClock)
 local SoundPrimer = require(script.Parent.SoundPrimer)
 
 local STUDIO = RunService:IsStudio()
+-- Cut Free's warm ink and fill (`CutFree.Ink`, `CutFree.Fill`)
+local INK_WARM = Color3.fromRGB(CutFree.Ink.r, CutFree.Ink.g, CutFree.Ink.b)
+local FILL_WARM = Color3.fromRGB(CutFree.Fill.r, CutFree.Fill.g, CutFree.Fill.b)
 local CAMERA_STEP = "WatchCamera"
 local INK = Color3.fromRGB(214, 206, 196)
 local NAME_INK = Color3.fromRGB(244, 238, 230)
@@ -93,7 +99,8 @@ type Screen = {
 	nextButton: TextButton,
 	name: TextLabel,
 	namePop: UIScale,
-	cutFree: TextButton?,
+	cutFree: TextButton,
+	cutPop: UIScale,
 }
 
 local function round(parent: Instance, radius: number)
@@ -240,30 +247,29 @@ local function makeScreen(parent: Instance): Screen
 	local back = arrow(group, "Back", "‹", 0)
 	local nextButton = arrow(group, "Next", "›", 1)
 	group.Parent = bar
-	local cutFree: TextButton? = nil
-	if STUDIO then
-		-- the product isn't made yet (OWNER.md): Studio lets you feel the way back in
-		local b = Instance.new("TextButton")
-		b.Name = "CutFree"
-		b.AnchorPoint = Vector2.new(0.5, 1)
-		b.Position = UDim2.new(0.5, 0, 1, -96)
-		b.Size = UDim2.fromOffset(150, 40)
-		b.BackgroundColor3 = Color3.fromRGB(28, 26, 24)
-		b.BackgroundTransparency = 0.2
-		b.AutoButtonColor = true
-		b.FontFace = Font.fromEnum(Enum.Font.BuilderSansBold)
-		b.TextSize = 18
-		b.TextColor3 = NAME_INK
-		b.Text = Left.Copy.CutFree
-		round(b, 0.5)
-		local stroke = Instance.new("UIStroke")
-		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-		stroke.Color = INK
-		stroke.Transparency = 0.6
-		stroke.Parent = b
-		b.Parent = bar
-		cutFree = b
-	end
+	-- Cut Free, above the bar: the caught screen's warm pill (CaughtView), shown while on sale
+	local cutFree = Instance.new("TextButton")
+	cutFree.Name = "CutFree"
+	cutFree.AnchorPoint = Vector2.new(0.5, 1)
+	cutFree.Position = UDim2.new(0.5, 0, 1, -96)
+	cutFree.Size = UDim2.fromOffset(150, 44)
+	cutFree.BackgroundColor3 = FILL_WARM
+	cutFree.AutoButtonColor = false
+	cutFree.FontFace = Font.fromEnum(Enum.Font.BuilderSansBold)
+	cutFree.TextSize = 20
+	cutFree.TextColor3 = INK_WARM
+	cutFree.Text = CutFree.Word
+	cutFree.Visible = false
+	round(cutFree, 0.5)
+	local cutRing = Instance.new("UIStroke")
+	cutRing.Name = "Ring"
+	cutRing.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	cutRing.Color = INK_WARM
+	cutRing.Thickness = 2
+	cutRing.Parent = cutFree
+	local cutPop = Instance.new("UIScale")
+	cutPop.Parent = cutFree
+	cutFree.Parent = bar
 	bar.Parent = parent
 	return {
 		dark = dark,
@@ -279,6 +285,7 @@ local function makeScreen(parent: Instance): Screen
 		name = name,
 		namePop = namePop,
 		cutFree = cutFree,
+		cutPop = cutPop,
 	}
 end
 
@@ -308,10 +315,14 @@ function WatchView.new(
 	local bell: Sound? = nil
 	local tick: Sound? = nil
 	local rip: Sound? = nil
+	local cutClick: Sound? = nil
 	local squealSound: Sound? = nil
 	local slamBang: Sound? = nil
 	local slamThump: Sound? = nil
 	local remote: RemoteEvent? = nil
+	local cutOn = false -- Cut Free is on sale here (`CutFree.OnAttribute`)
+	local cutAsked = -math.huge -- os.clock() of our last Cut Free press
+	local cutDim = 1 -- 1, or down toward `CutFree.Dim` while a press is out
 	local controls: any = nil -- any: Roblox's PlayerModule ControlModule, untyped Lua
 	local frozen = false
 	local cursor = false
@@ -534,6 +545,17 @@ function WatchView.new(
 		local on = share > 0.01
 		s.bar.Enabled = on
 		s.group.GroupTransparency = 1 - share
+		local cut = s.cutFree
+		cut.Visible = on and cutOn
+		if cut.Visible then
+			local out = 1 - share * cutDim
+			cut.BackgroundTransparency = CutFree.FillSee + (1 - CutFree.FillSee) * out
+			cut.TextTransparency = out
+			local ring = cut:FindFirstChildOfClass("UIStroke")
+			if ring then
+				ring.Transparency = CutFree.RingSee + (1 - CutFree.RingSee) * out
+			end
+		end
 		setCursor(on)
 	end
 
@@ -834,6 +856,12 @@ function WatchView.new(
 			if nextPop then
 				nextPop.Scale += (1 - nextPop.Scale) * settle
 			end
+			s.cutPop.Scale += (1 - s.cutPop.Scale) * settle
+			local dimTo = if clock - cutAsked < CutFree.AskEvery then CutFree.Dim else 1
+			local by = dt * (1 - CutFree.Dim) / CutFree.DimTime
+			cutDim = if cutDim < dimTo
+				then math.min(cutDim + by, dimTo)
+				else math.max(cutDim - by, dimTo)
 		end
 		local carrying = carryAt
 		if carrying and watchBegan then
@@ -919,6 +947,7 @@ function WatchView.new(
 			bellEq.Parent = bell
 			tick = sound("WatchTick", Ride.Sounds.Tick.Id)
 			rip = sound("BackRip", Kept.Rip.id)
+			cutClick = sound("WatchCutFreeClick", CutFree.Click.id)
 			squealSound = sound("CarrySqueal", Kept.Squeal.id)
 			slamBang = sound("CarrySlam", SLAM_BANG.Id)
 			slamThump = sound("CarryThump", SLAM_THUMP.Id)
@@ -928,13 +957,16 @@ function WatchView.new(
 				dull.HighGain = Left.Muffle * 0.7
 				dull.Parent = x
 			end
-			for _, x in { motor, dread, bell, tick, rip, squealSound, slamBang, slamThump } do
+			for _, x in
+				{ motor, dread, bell, tick, rip, cutClick, squealSound, slamBang, slamThump }
+			do
 				table.insert(sounds, x :: Sound)
 			end
 			task.spawn(SoundPrimer.prime, {
 				Kept.Dread.id,
 				Ride.Sounds.Tick.Id,
 				Kept.Rip.id,
+				CutFree.Click.id,
 				Kept.Squeal.id,
 				SLAM_BANG.Id,
 				SLAM_THUMP.Id,
@@ -951,17 +983,34 @@ function WatchView.new(
 					switch("Back")
 				end)
 			)
-			local cut = s.cutFree
-			if cut then
-				table.insert(
-					connections,
-					cut.Activated:Connect(function()
-						if watchBegan then
-							ask("CutFree")
-						end
-					end)
-				)
-			end
+			table.insert(
+				connections,
+				s.cutFree.Activated:Connect(function()
+					-- springs, clicks and dims while the prompt comes up; the server takes it from there
+					local now = os.clock()
+					if not (watchBegan and cutOn) or now - cutAsked < CutFree.AskEvery then
+						return
+					end
+					cutAsked = now
+					play(cutClick, 0, 0.5, CutFree.Click.volume, CutFree.Click.pitch)
+					s.cutPop.Scale = CutFree.Pressed
+					ask("CutFree")
+				end)
+			)
+			task.spawn(function()
+				local folder = ReplicatedStorage:WaitForChild(Keypad.RemoteFolder, 30)
+				local sells = folder and folder:WaitForChild(CutFree.Remote, 30)
+				if screen and sells and sells:IsA("RemoteEvent") then
+					local function look()
+						cutOn = sells:GetAttribute(CutFree.OnAttribute) == true
+					end
+					table.insert(
+						connections,
+						sells:GetAttributeChangedSignal(CutFree.OnAttribute):Connect(look)
+					)
+					look()
+				end
+			end)
 			table.insert(
 				connections,
 				player:GetAttributeChangedSignal(Left.Attribute):Connect(onLeft)

@@ -622,6 +622,14 @@ verified: a doc page, Studio, or "untested".
   reads the run; invoke the catch from the Server 2.4 to 2.6 s after arming it. Then the kept
   unit is the player's `KeptIn.Value`; Cut free as below, and `Humanoid:MoveTo` 8 studs ahead
   checks you walk.
+  (S3-03a2, Nov 15: no Floor1 post any more; "Stand one" is `Workspace.DevCorridor.Floor3.
+  StandMannequin` at (-9, 2, -591), and its prompt never showed from the MCP. Instead set
+  Workspace's `WakeSleepers` true from the Server and invoke CatchTest every half second until it
+  says "Caught": a woken sleeper is the nearest keeper. Awake sleepers go on hunting, so a later
+  catch can be a real one.)
+- **Lune specs and colours** (S3-03a2): a shared module a spec requires can't call `Color3` (Lune
+  has no Roblox types; the spec fails "attempt to index nil with 'fromRGB'"). Keep its colours as
+  plain `{ r, g, b }` records (`Wrap.Tint`, `CutFree.Ink`) and build the `Color3` on the screen.
 - **A click on a button, from the MCP** (L-16a): `user_mouse_input` to an `instance_path` lands a
   click whose `InputObject.Position` (below the top bar's inset) goes straight into
   `PlayerGui:GetGuiObjectsAtPosition`, which skips buttons under a hidden frame (the keypad's).

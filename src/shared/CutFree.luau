@@ -36,6 +36,38 @@ CutFree.DoorAfter = 0.45
 -- within a breath.
 CutFree.LookEvery = 2
 
+-- The button (S3-03a2): the one warm thing on the caught screen, beside Bang, and on the watch
+-- bar. One word on it; Roblox's own prompt shows the price, so nothing else is written.
+CutFree.Word = "Cut Free"
+-- Its warm ink (the word and its ring) and its dark, warm fill: the hall's light seen through the
+-- crack under the door, against Bang's cold off-white. 0 to 255 each (Color3.fromRGB on screen;
+-- plain numbers so the Lune specs can load this).
+CutFree.Ink = table.freeze({ r = 255, g = 206, b = 150 })
+CutFree.Fill = table.freeze({ r = 44, g = 28, b = 14 })
+-- The fill's and ring's transparency fully in: a touch more solid than Bang's, so it reads as
+-- the way out rather than one more thing to hit.
+CutFree.FillSee = 0.3
+CutFree.RingSee = 0.2
+-- Seconds after Bang starts coming up that Cut Free starts: Bang lands first as the thing you do,
+-- then the way out eases in beside it, never both popping at once.
+CutFree.InAfter = 0.35
+-- Its size beside Bang: its height as a share of Bang's side, its width as a share of its own
+-- height. Smaller than Bang, so a mashing thumb finds Bang and Cut Free is a choice.
+CutFree.Tall = 0.46
+CutFree.Wide = 2.15
+-- The gap between it and Bang, as a share of Bang's side: on a phone about a thumb's width, so
+-- the right thumb hammering Bang never lands on it.
+CutFree.Gap = 0.42
+-- A press: the button springs to this scale and back (as Bang's press), and its look drops to
+-- this share of fully in while the press is out (`AskEvery`), so a second tap reads as taken.
+CutFree.Pressed = 0.86
+CutFree.Dim = 0.45
+-- Seconds the dim takes to fall and to come back: quick, so the press reads at once.
+CutFree.DimTime = 0.12
+-- Its click (Roblox's "UI Bright Click", as the car's panel), a little lower and warmer than the
+-- panel's.
+CutFree.Click = { id = "rbxassetid://15675059323", pitch = 0.9, volume = 0.35 }
+
 -- How many Cut Frees `data` holds paid for and unused.
 function CutFree.spares(data: Save.Data): number
 	local held: number? = data.spares[CutFree.Offer]

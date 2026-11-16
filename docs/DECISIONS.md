@@ -5846,3 +5846,30 @@ reaches the next floor. DOORS' revive. Built: `Products.Rows.cutFree` (title `Cu
   (D-218), facing the doorway. A box with no keeper still peeks.
 Not chosen: a deeper clearing (re-lays every unit's stacks, D-218); bending the walk round the
 box (the floor in front of it is 1.27, the Mannequin 1.89 across).
+
+## D-221 The Cut Free button: a warm pill beside Bang, F on a computer (S3-03a2, Nov 15)
+- **The moment:** wrapped in the dark, Bang comes up as the thing you do; a beat later
+  (`CutFree.InAfter`, 0.35 s) one smaller warm pill eases in to its left, the way out. Press it,
+  pay, and the film rips off you and the door hauls up; both buttons fade as you walk out. DOORS'
+  revive button on its death screen.
+- **Warm against cold.** Bang is cold off-white on black; Cut Free is the hall's warm light on a
+  dark warm fill (`CutFree.Ink`, `Fill`), a touch more solid. No pulse or glow: a paid button
+  that throbs at a scared player is a trick, and "Hooked by fun, never by tricks" rules it out.
+- **Placement.** Level with Bang's middle, left of it, `CutFree.Gap` (0.42 of Bang's side, 44
+  points on an iPhone in landscape) clear, `Tall` 0.46 of Bang's side (48 points: above Apple's
+  44-point tap minimum). On a phone the right thumb mashing Bang never reaches it, so a paid spare
+  is never spent by accident. On a computer its key sits on Bang's key line.
+- **F on a computer, Y on a gamepad.** First person pins the mouse to the middle, so a key reaches
+  Cut Free as Click reaches Bang (FreeCursor's Left Alt still lets you click it). Not E: E is the
+  game's use key, and a scared player mashing E at the door would spend a spare by accident. Not
+  freeing the mouse while caught: you'd lose looking round the dark unit.
+- **A click on Cut Free isn't a bang.** Bang binds the left mouse button everywhere; a click that
+  lands on Cut Free (a freed mouse) is Cut Free's alone (`PlayerGui:GetGuiObjectsAtPosition`).
+  Seen in Play: the server counted no bangs from it.
+- **A press dims it for `CutFree.AskEvery`** (to `Dim`, 0.45 of fully in) as Roblox's prompt comes
+  up, and the press is ignored till then, as the server would drop it. Cancel the prompt and it
+  comes back.
+- **The watch bar's button is the same pill**, shown on the same `On` flag (not Studio only now),
+  fading with the bar, with the same click, spring and dim.
+- Colours in the shared module are plain `{ r, g, b }` records: the Lune specs load
+  `CutFree.luau`, and Lune has no `Color3`.

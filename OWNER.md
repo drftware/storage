@@ -62,12 +62,32 @@ nowhere else.
   9. Tell the next session it passed (or what didn't), so Brix's ENG-23e is marked done in its
      HANDOFF.
 
-- [ ] **Make the Cut Free product and pick its price** (S3-03a1, D-220; a made-up receipt seen
-  in Studio Play, a real purchase never made). The GDD prices revives at 40 to 55 Robux.
+- [ ] **Make the Cut Free product, pick its price, and buy your way out** (S3-03a1 and a2, D-220,
+  D-221; in Studio Play Claude was freed by F with a spare from the save and by a click with no
+  product, the door up and the walk out; a real purchase, a phone and the watch bar never tried).
+  The GDD prices revives at 40 to 55 Robux.
   1. Creator Hub > this experience > Monetization > Developer Products: make one named exactly
      `Cut Free`, at your price (default if you don't decide: 45 Robux).
   2. Publish, play, and in the Server log (F9) look for `[Purchasing] products: cutFree <number>`.
-  3. The caught screen's button comes in S3-03a2; its test steps follow there.
+  3. In Studio first, to feel it: Test > Clients and Servers, 2 players, Start (with a friend
+     still free, one catch doesn't end the climb). In the Server window, View > Command Bar, run
+     `workspace:SetAttribute("WakeSleepers", true)` so sleeping monsters wake now. With Player1,
+     find one and get caught.
+  4. Look for: in the dark of the unit, Bang comes up, then a beat later a smaller warm "Cut
+     Free" pill to its left, with F under it on the same line as Bang's "Click". No price, no
+     other words.
+  5. Press F: a soft click and the pill dips; in Studio (no purchase there) the film rips off you
+     at once, the door hauls itself up, and both buttons fade together. Walk out. Does the
+     moment feel like a way out, not an ad?
+  6. On your phone, playing the published game with a friend: get caught. The pill sits left of
+     Bang, a thumb's width clear; hammer Bang with your right thumb and check you never hit Cut
+     Free by accident.
+  7. Tap Cut Free: Roblox's purchase box with your price. Cancel it: nothing happens, and the
+     pill can be tapped again after a second and a half. Tap again and buy: the box closes, the
+     film rips, the door hauls up, you walk out. Server log: `[CutFrees] <you> cut free`.
+  8. Get left behind (the car leaves without you): above the WATCHING bar is the same warm pill.
+     Buy it: you're standing in the car beside your friends as it reaches the next floor.
+  9. With a gamepad: Y presses Cut Free, A still bangs.
 
 - [ ] **Look at the packed unit's stacks** (B-05a, D-215; judged by Claude in renders, imported
   into Studio, not yet laid on any floor). The blocks a packed unit's walls will be built from are

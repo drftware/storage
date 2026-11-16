@@ -2023,9 +2023,14 @@ Done when nobody quits a climb because they were caught.
     not; carried up, you stand in the car once it reaches the next floor. A grant that lands
     once you're free waits as a spare. Seen in Studio Play: a made-up receipt granted and kept
     as a spare. The catch-then-free walk waits on S3-03a2's Play test and `OWNER.md`.
-  - [ ] **S3-03a2 The Cut Free button on the caught screen.** CaughtView's button beside Bang,
-    shown while `Remotes.CutFree`'s `On` is true; the watch bar's button on the same flag (not
-    Studio only). Its press, its wait while Roblox's prompt is up, and its exit with the rip.
+  - [x] **S3-03a2 The Cut Free button on the caught screen** (Nov 15, D-221). A warm pill eases
+    in a beat after Bang, left of it (a thumb's width clear on a phone; F under it on a computer,
+    Y on a gamepad), only while `Remotes.CutFree`'s `On` is true; the watch bar's button is the
+    same pill on the same flag. A press springs, clicks, asks the server and dims it while the
+    prompt is up; freed, both buttons fade. Seen in Studio Play: a catch freed by F with a spare
+    from the save (no prompt), a second freed by a click (Studio's free path) with no bang sent,
+    the door up and the walk out; the phone layout at 844 by 390. The real purchase, a phone and
+    the watch bar's press wait on `OWNER.md`.
   - [ ] **S3-03b Free a Friend.** Pay to free a caught friend (Brix's recipients, D-206).
   - [ ] **S3-03c Free Everyone before the results**, and playing alone: one catch ends the
     climb today before Cut Free can be bought (ClimbEnd.over), so the end waits on the offer.

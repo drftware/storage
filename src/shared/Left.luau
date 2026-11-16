@@ -117,7 +117,6 @@ Left.Copy = {
 	Title = "Left behind",
 	Watching = "WATCHING",
 	Until = "",
-	CutFree = "Cut Free",
 	Back = "Back in",
 	Nobody = "Waiting for a friend",
 }

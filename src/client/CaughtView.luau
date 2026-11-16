@@ -21,6 +21,14 @@
 	the dark inside stays clear.
 	Every number and the curves are `Caught`'s and `Kept`'s.
 
+	Cut Free (S3-03a2, D-220): a beat after Bang comes up, a smaller warm button eases in beside it,
+	left of it (on a phone a thumb's width clear of Bang, so mashing never lands on it), its key
+	under it on a computer (F, or a gamepad's Y: the mouse is the view in first person, so a key
+	reaches it as Click reaches Bang). It stands only while the offer is on sale
+	(`Remotes.CutFree`'s `On`). A press springs it, clicks, asks the server (nothing carried) and
+	dims it while Roblox's prompt comes up (`CutFree.AskEvery`); once paid, the film rips off you,
+	the door hauls up and both buttons fade as you're let out. Every number is `CutFree`'s.
+
 	Carried up (S3-01a): a player who watched the ride and is stood wrapped in a unit on the new
 	floor (`Kept.BroughtAttribute`, set just before the kept mark) gets no lunge and no "Caught":
 	their screen is already black (WatchView's dip), so it holds black and their eyes open on the
@@ -40,7 +48,9 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local Caught = require(ReplicatedStorage.Shared.Caught)
 local CaughtLunge = require(script.Parent.CaughtLunge)
+local CutFree = require(ReplicatedStorage.Shared.CutFree)
 local Kept = require(ReplicatedStorage.Shared.Kept)
+local SoundPrimer = require(script.Parent.SoundPrimer)
 
 -- The headline's size (pixels), as the gate's "Going up" (GateClock).
 local HEADLINE_SIZE = 34
@@ -59,6 +69,11 @@ local BUTTON_LOW = 0.76 -- elsewhere, its foot as a share of the screen's height
 local CAPTION_SIZE = 18
 local PRESS = TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local PRESSED = 0.84 -- the button's scale at a press, springing back
+local CUT_ACTION = "KeptCutFree"
+-- Cut Free's warm ink and fill (`CutFree.Ink`, `CutFree.Fill`)
+local INK_WARM = Color3.fromRGB(CutFree.Ink.r, CutFree.Ink.g, CutFree.Ink.b)
+local FILL_WARM = Color3.fromRGB(CutFree.Fill.r, CutFree.Fill.g, CutFree.Fill.b)
+local CUT_TEXT_MAX = 26 -- the word's largest size (pixels), so a big screen's pill stays a pill
 
 type Screen = {
 	gui: ScreenGui,
@@ -71,6 +86,12 @@ type Screen = {
 	ring: UIStroke,
 	pop: UIScale,
 	caption: TextLabel,
+	cutHolder: Frame, -- Cut Free and its key under it, beside Bang
+	cut: TextButton,
+	cutRing: UIStroke,
+	cutPop: UIScale,
+	cutKey: TextLabel,
+	click: Sound, -- Cut Free's press
 	blur: BlurEffect, -- the wake's haze, on this screen only
 	grey: ColorCorrectionEffect,
 }
@@ -161,6 +182,56 @@ local function makeScreen(parent: Instance): Screen
 	caption.TextSize = CAPTION_SIZE
 	caption.TextColor3 = INK
 	caption.Parent = holder
+
+	-- Cut Free: a warm pill beside Bang, its key under it the same way
+	local cutHolder = Instance.new("Frame")
+	cutHolder.Name = "CutFree"
+	cutHolder.BackgroundTransparency = 1
+	cutHolder.Visible = false
+	cutHolder.Parent = bangGui
+	local cut = Instance.new("TextButton")
+	cut.Name = "Button"
+	cut.Size = UDim2.fromScale(1, 1)
+	cut.AutoButtonColor = false
+	cut.BackgroundColor3 = FILL_WARM
+	cut.Font = Enum.Font.GothamBold
+	cut.Text = CutFree.Word
+	cut.TextColor3 = INK_WARM
+	cut.TextScaled = true
+	cut.Parent = cutHolder
+	local cutCorner = Instance.new("UICorner")
+	cutCorner.CornerRadius = UDim.new(0.5, 0)
+	cutCorner.Parent = cut
+	local cutPad = Instance.new("UIPadding")
+	cutPad.PaddingLeft, cutPad.PaddingRight = UDim.new(0.13, 0), UDim.new(0.13, 0)
+	cutPad.PaddingTop, cutPad.PaddingBottom = UDim.new(0.27, 0), UDim.new(0.27, 0)
+	cutPad.Parent = cut
+	local cutLimit = Instance.new("UITextSizeConstraint")
+	cutLimit.MaxTextSize = CUT_TEXT_MAX
+	cutLimit.Parent = cut
+	local cutRing = Instance.new("UIStroke")
+	cutRing.Color = INK_WARM
+	cutRing.Thickness = 2
+	cutRing.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	cutRing.Parent = cut
+	local cutPop = Instance.new("UIScale")
+	cutPop.Parent = cut
+	local cutKey = Instance.new("TextLabel")
+	cutKey.Name = "Key"
+	cutKey.AnchorPoint = Vector2.new(0.5, 0)
+	cutKey.Position = UDim2.new(0.5, 0, 1, 6)
+	cutKey.Size = UDim2.fromOffset(160, CAPTION_SIZE + 6)
+	cutKey.BackgroundTransparency = 1
+	cutKey.FontFace = Font.fromEnum(Enum.Font.BuilderSansBold)
+	cutKey.TextSize = CAPTION_SIZE
+	cutKey.TextColor3 = INK_WARM
+	cutKey.Parent = cutHolder
+	local click = Instance.new("Sound")
+	click.Name = "CutFreeClick"
+	click.SoundId = CutFree.Click.id
+	click.PlaybackSpeed = CutFree.Click.pitch
+	click.Volume = CutFree.Click.volume
+	click.Parent = bangGui
 	bangGui.Parent = parent
 	local blur = Instance.new("BlurEffect")
 	blur.Name = "CaughtBlur"
@@ -182,32 +253,51 @@ local function makeScreen(parent: Instance): Screen
 		ring = ring,
 		pop = pop,
 		caption = caption,
+		cutHolder = cutHolder,
+		cut = cut,
+		cutRing = cutRing,
+		cutPop = cutPop,
+		cutKey = cutKey,
+		click = click,
 		blur = blur,
 		grey = grey,
 	}
 end
 
 -- The Bang button's place and size for this screen: under the right thumb on a phone, low in
--- the middle elsewhere, with its key under it.
+-- the middle elsewhere, with its key under it. Cut Free stands left of it, level with its middle,
+-- `CutFree.Gap` of its side clear.
 local function placeButton(s: Screen, touch: boolean)
 	local camera = Workspace.CurrentCamera
 	local view = if camera then camera.ViewportSize else Vector2.new(1280, 720)
 	local b = s.holder
+	local c = s.cutHolder
+	c.AnchorPoint = Vector2.new(1, 0.5)
+	local side
 	if touch then
-		local side = math.clamp(math.round(view.Y * PHONE_SIDE), PHONE_MIN, PHONE_MAX)
+		side = math.clamp(math.round(view.Y * PHONE_SIDE), PHONE_MIN, PHONE_MAX)
 		local edge = math.round(view.X * PHONE_EDGE)
 		b.AnchorPoint = Vector2.new(1, 1)
 		b.Position = UDim2.new(1, -edge, 1, -edge)
-		b.Size = UDim2.fromOffset(side, side)
+		local gap = math.round(side * CutFree.Gap)
+		c.Position = UDim2.new(1, -(edge + side + gap), 1, -(edge + math.round(side / 2)))
 	else
-		local side = math.clamp(math.round(view.Y * DESK_SIDE), DESK_MIN, DESK_MAX)
+		side = math.clamp(math.round(view.Y * DESK_SIDE), DESK_MIN, DESK_MAX)
 		b.AnchorPoint = Vector2.new(0.5, 1)
 		b.Position = UDim2.fromScale(0.5, BUTTON_LOW)
-		b.Size = UDim2.fromOffset(side, side)
+		local gap = math.round(side * CutFree.Gap)
+		c.Position =
+			UDim2.new(0.5, -(math.round(side / 2) + gap), BUTTON_LOW, -math.round(side / 2))
 	end
+	b.Size = UDim2.fromOffset(side, side)
+	local tall = math.round(side * CutFree.Tall)
+	c.Size = UDim2.fromOffset(math.round(tall * CutFree.Wide), tall)
+	-- its key on the same line as Bang's: both 6 under Bang's foot, the pill being level with
+	-- Bang's middle
+	s.cutKey.Position = UDim2.new(0.5, 0, 0.5, math.round(side / 2) + 6)
 end
 
--- The key under the button for the input in use: none for a thumb.
+-- The key under Bang for the input in use: none for a thumb.
 local function keyFor(input: Enum.UserInputType): string
 	if input == Enum.UserInputType.Touch then
 		return ""
@@ -217,6 +307,16 @@ local function keyFor(input: Enum.UserInputType): string
 	return "Click"
 end
 
+-- The key under Cut Free: none for a thumb.
+local function cutKeyFor(input: Enum.UserInputType): string
+	if input == Enum.UserInputType.Touch then
+		return ""
+	elseif string.find(input.Name, "Gamepad") then
+		return "Y"
+	end
+	return "F"
+end
+
 -- The button's look `level` of the way in (0 out, 1 in).
 local function showButton(s: Screen, level: number)
 	local out = 1 - level
@@ -224,6 +324,24 @@ local function showButton(s: Screen, level: number)
 	s.button.TextTransparency = out
 	s.ring.Transparency = RING_SEE + (1 - RING_SEE) * out
 	s.caption.TextTransparency = out
+end
+
+-- Cut Free's look `level` of the way in (0 out and untouchable, 1 in).
+local function showCut(s: Screen, level: number)
+	local out = 1 - level
+	s.cutHolder.Visible = level > 0
+	s.cut.BackgroundTransparency = CutFree.FillSee + (1 - CutFree.FillSee) * out
+	s.cut.TextTransparency = out
+	s.cutRing.Transparency = CutFree.RingSee + (1 - CutFree.RingSee) * out
+	s.cutKey.TextTransparency = out
+end
+
+-- `from` moved toward `to` by at most `by`.
+local function toward(from: number, to: number, by: number): number
+	if from < to then
+		return math.min(from + by, to)
+	end
+	return math.max(from - by, to)
 end
 
 -- Who's held still, and their own walk, jump and turn to give back. Held by the Humanoid's own
@@ -304,6 +422,73 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 	local lastBang: number? = nil -- os.clock of our last bang sent
 	local queued = false -- a press waiting for the next bang
 	local leaving = 0 -- seconds left of the Bang button fading as we're let out
+	local cutRemote: RemoteEvent? = nil
+	local cutOn = false -- the offer is on sale here (`CutFree.OnAttribute`)
+	local cutShown = 0 -- Cut Free's arrival, 0 to 1
+	local cutDim = 1 -- 1, or down toward `CutFree.Dim` while a press is out
+	local cutDrawn = -1 -- the look last drawn, so a still frame writes nothing
+	local cutAsked = -math.huge -- os.clock of our last press sent
+	local cutBound = false -- its keys are bound
+
+	-- Both buttons off at once, no fade: a new catch's black is coming over them.
+	local function hideButtons(s: Screen)
+		leaving = 0
+		s.bangGui.Enabled = false
+		showButton(s, 0)
+		cutShown, cutDrawn = 0, 0
+		showCut(s, 0)
+	end
+
+	-- A press of Cut Free or its key: while it's fully up and no press is out, it springs, clicks
+	-- and asks the server; Roblox's prompt (or a spare in the save) answers from there.
+	local function cutPress()
+		local s = screen
+		local now = os.clock()
+		if not (s and bound and cutOn and cutShown >= 1) or now - cutAsked < CutFree.AskEvery then
+			return
+		end
+		cutAsked = now
+		s.click.TimePosition = 0
+		s.click:Play()
+		s.cutPop.Scale = CutFree.Pressed
+		TweenService:Create(s.cutPop, PRESS, { Scale = 1 }):Play()
+		local r = cutRemote
+		if r then
+			r:FireServer()
+		end
+	end
+
+	local function onCutAction(
+		_: string,
+		state: Enum.UserInputState,
+		_input: InputObject
+	): Enum.ContextActionResult
+		if state == Enum.UserInputState.Begin then
+			cutPress()
+		end
+		return Enum.ContextActionResult.Sink
+	end
+
+	-- Whether a click at `input` lands on Cut Free (a freed cursor's click): then it's Cut Free's,
+	-- not a bang.
+	local function onCut(input: InputObject): boolean
+		local s = screen
+		if
+			not (
+				s
+				and s.cutHolder.Visible
+				and input.UserInputType == Enum.UserInputType.MouseButton1
+			)
+		then
+			return false
+		end
+		local gui = player:FindFirstChildOfClass("PlayerGui")
+		if not gui then
+			return false
+		end
+		local at = input.Position
+		return table.find(gui:GetGuiObjectsAtPosition(at.X, at.Y), s.cut :: GuiObject) ~= nil
+	end
 
 	-- Bangs now: the view jolts, the button springs, and the server is asked.
 	local function bang()
@@ -335,9 +520,9 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 	local function onAction(
 		_: string,
 		state: Enum.UserInputState,
-		_input: InputObject
+		input: InputObject
 	): Enum.ContextActionResult
-		if state == Enum.UserInputState.Begin then
+		if state == Enum.UserInputState.Begin and not onCut(input) then
 			press()
 		end
 		return Enum.ContextActionResult.Sink
@@ -358,11 +543,9 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 			screen.gui.Enabled = false
 			screen.blur.Enabled, screen.grey.Enabled = false, false
 			if wasUp and running then
-				leaving = Kept.BangOut
+				leaving = Kept.BangOut -- Cut Free fades with it, at the same pace (step)
 			else
-				leaving = 0
-				screen.bangGui.Enabled = false
-				showButton(screen, 0)
+				hideButtons(screen)
 			end
 		end
 		if held then
@@ -383,9 +566,7 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 		if screen then
 			screen.gui.Enabled = true
 			if leaving > 0 then
-				leaving = 0
-				screen.bangGui.Enabled = false
-				showButton(screen, 0)
+				hideButtons(screen)
 			end
 		end
 	end
@@ -416,9 +597,7 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 				s.gui.Enabled = true
 				s.black.BackgroundTransparency = 0
 				if leaving > 0 then
-					leaving = 0
-					s.bangGui.Enabled = false
-					showButton(s, 0)
+					hideButtons(s)
 				end
 			end
 		elseif since < 0 then
@@ -435,14 +614,18 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 			touch = UserInputService.TouchEnabled
 			placeButton(s, touch)
 			showButton(s, 0)
-			s.caption.Text = keyFor(UserInputService:GetLastInputType())
+			showCut(s, 0)
+			local last = UserInputService:GetLastInputType()
+			s.caption.Text, s.cutKey.Text = keyFor(last), cutKeyFor(last)
 			table.insert(connections, s.button.Activated:Connect(press))
+			table.insert(connections, s.cut.Activated:Connect(cutPress))
 			table.insert(
 				connections,
 				UserInputService.LastInputTypeChanged:Connect(function(input: Enum.UserInputType)
-					s.caption.Text = keyFor(input)
+					s.caption.Text, s.cutKey.Text = keyFor(input), cutKeyFor(input)
 				end)
 			)
+			task.spawn(SoundPrimer.prime, { CutFree.Click.id })
 			local camera = Workspace.CurrentCamera
 			if camera then
 				table.insert(
@@ -466,6 +649,18 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 				local bangs = folder and folder:WaitForChild(Kept.BangRemote, 30)
 				if running and bangs and bangs:IsA("RemoteEvent") then
 					bangRemote = bangs
+				end
+				local sells = folder and folder:WaitForChild(CutFree.Remote, 30)
+				if running and sells and sells:IsA("RemoteEvent") then
+					cutRemote = sells
+					local function look()
+						cutOn = sells:GetAttribute(CutFree.OnAttribute) == true
+					end
+					table.insert(
+						connections,
+						sells:GetAttributeChangedSignal(CutFree.OnAttribute):Connect(look)
+					)
+					look()
 				end
 			end)
 		end,
@@ -552,6 +747,36 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 					bang()
 				end
 			end
+			if s and (bound or cutShown > 0 or cutBound) then
+				-- Cut Free: up a beat after Bang while it's on sale, out with Bang at Bang's pace
+				local up = bound and cutOn and awake >= CutFree.InAfter
+				local want = if up then 1 else 0
+				local pace = if want > cutShown then Kept.BangIn else Kept.BangOut
+				cutShown = toward(cutShown, want, dt / pace)
+				local out = os.clock() - cutAsked < CutFree.AskEvery
+				local dimTo = if out then CutFree.Dim else 1
+				cutDim = toward(cutDim, dimTo, dt * (1 - CutFree.Dim) / CutFree.DimTime)
+				local look = cutShown * cutDim
+				if look ~= cutDrawn then
+					cutDrawn = look
+					showCut(s, look)
+				end
+				if up ~= cutBound then
+					cutBound = up
+					if up then
+						ContextActionService:BindActionAtPriority(
+							CUT_ACTION,
+							onCutAction,
+							false,
+							Enum.ContextActionPriority.High.Value,
+							Enum.KeyCode.F,
+							Enum.KeyCode.ButtonY
+						)
+					else
+						ContextActionService:UnbindAction(CUT_ACTION)
+					end
+				end
+			end
 		end,
 		stop = function(_: any)
 			running = false
@@ -560,6 +785,10 @@ function CaughtView.new(kick: (amount: number) -> ()): Brix.System
 			end
 			table.clear(connections)
 			finish()
+			if cutBound then
+				cutBound = false
+				ContextActionService:UnbindAction(CUT_ACTION)
+			end
 			lunge.destroy()
 			if screen then
 				screen.gui:Destroy()
