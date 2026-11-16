@@ -6,8 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-04j, the wind-up tin carousel (step 8): the newest note has its hints. The oil
-lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next touched.
+**Next:** F-04j, the wind-up tin carousel (step 8), half built: the newest note says exactly
+what is left. The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders
+OilLamp` when next touched.
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -88,6 +89,49 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-04j (the tin carousel half built: modelled, looked and baked, motion keyed, never
+  rendered; stopped at the context cap; not ticked, nothing uploaded).** Its own module,
+  `windups/carousel.py` (`cr_*`, `CR_*` kinds 131 to 146, `carousel_look`, `carousel_play`,
+  `carousel_wind`; spec `CAROUSEL`, `RIDE`), in `FINDS` only when `TinCarousel` is on the command
+  line (the fish's way), so the set's export and upload skip it. `scripts/art.sh set windups
+  textures TinCarousel` bakes clean: 2048 at 956 texels a stud, 13,928 triangles, 5.5 min; its
+  `out/` files are left uncommitted, rebuild them. **References:** Alexander Taron's hand-made
+  German tin horse carousel (Christmas Central's listing: 8 in tall, 6 in across; an eight-panel
+  red canopy printed with pictures, a scalloped blue-and-gold valance, a brass ball on top, a
+  striped column); Northlight's carousel music boxes (7.25 x 3.25 in, 6.5 x 4.75 in); the Museo
+  del Juguete's tin carousel on Commons. No video sampled: paced like a carousel music box (a turn
+  in 4 s, each horse up and down twice a turn). **What it is** (mm, 214 tall, 157 across):
+  `Base` (root) a red printed drum 133 across with rolled gold beads, eight arched navy panels (a
+  gold star or a red-and-cream sunburst in each), red pilasters with cream diamonds, two rows of
+  printed bulbs, a brass bushing; `Key` a brass butterfly key out of the drum's right side
+  (turns about X at (65.5, 0, 18)); `Top` (turns about Z) a platform of radial boards with a red
+  band of gold studs, a mirrored column, a tent-like canopy of sixteen crimson and cream gores
+  with gold seams, a rose medallion on each crimson gore and a red diamond on each cream, a
+  royal-blue rim band of gold studs, a navy scalloped valance (16 scallops, a red or green mirror
+  jewel in each), a brass finial and a waving red pennant, four twisted brass poles (a lofted
+  four-lobed barley twist in the detailed mesh); `Horse1` to `Horse4` (ride on `Top`, slide along
+  Z) pressed-tin horses: a side view drawn as round pieces (`CR["capsules"]`, a signed distance
+  field), traced by marching squares, filled by a constrained Delaunay mesh and puffed into two
+  halves round a flat crimped seam (`cr_horse_mesh`); black, dapple grey, white and palomino, each
+  its own saddle and blanket, gold bridle, breast collar and reins, painted eye, mane and tail.
+  Motion `Wind` (1.95 s, four half turns) and `Play` (16.4 s: up to 90 degrees a second in 0.9 s,
+  steady to 9.5 s, slowing as (1 - s) ** 1.4 to a stop at 15.5 s, a 1.6 degree rock back on the
+  gears' slack; the key turns back as it unwinds; each horse rises and falls 9 mm either side,
+  keyed at its top and bottom, out of step). **Left, in order:** (1) `scripts/art.sh set windups
+  quick TinCarousel` and look hard: the horses' outline (does it read as a carousel jumper, or
+  as a lump? legs and hooves apart, head and ear, tail; `CR["capsules"]` moves it), their print
+  (the saddle, blanket, mane and bridle land where `carousel_look`'s horse section expects:
+  check on the front-left white horse), the pole through each saddle and its brass collars, the
+  canopy's gores, medallions and valance jewels, the drum's panels and bulbs, the pennant, the
+  key; that hooves clear the platform and ears the valance at the ends of the stroke. (2) The
+  Play filmstrip: horses out of step and in time with the turn, the slow-down. (3) Fix, full
+  renders, README section, a D-number, `TinCarousel = { "Wind", "Play" }` in
+  `src/shared/Finds/Order.luau`, put it in `FINDS` for good, export (then `git checkout` the
+  other finds' FBX), upload, import, tick; then move Next to step 9 (F-04k). **Found:** a flat
+  pressed-tin animal is cheap to build well as a distance field traced and filled by
+  `mathutils.geometry.delaunay_2d_cdt` (Blender has no PIL to check an outline, so judge it on
+  the quick sheet).
 
 - **Nov 16, F-04i (the singing fish plaque built; step 7 done; uploaded 77947947536831 and
   imported).** `SingingFish` in `windups/fish.py`, now in `FINDS` for good; README section,

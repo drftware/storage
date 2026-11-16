@@ -6613,8 +6613,15 @@ COWBOY_DOLL = kit.Find(
 
 from fish import SINGING_FISH  # noqa: E402
 
+# --- The wind-up tin carousel (F-04j): its own module, carousel.py -------------------------------
+
+from carousel import TIN_CAROUSEL  # noqa: E402
+
 FINDS = [CYMBAL_MONKEY, JACK_IN_THE_BOX, CHATTERING_TEETH, WALKING_ROBOT, WINDUP_MOUSE, TIN_BIRD,
          SIREN_CAR, RUBBER_DUCK, KAZOO, TOY_DRUM, FARM_SPINNER, COWBOY_DOLL, SINGING_FISH]
+# half built (WAVES.md): only when named, so the set's export and upload skip it until it's judged
+if "TinCarousel" in sys.argv:
+    FINDS.append(TIN_CAROUSEL)
 
 if __name__ == "__main__":
     kit.main("Windups", HERE, FINDS)

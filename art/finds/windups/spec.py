@@ -768,3 +768,79 @@ SING = dict(
     last_flap=6.15,                 # one last flap as it settles
     end=6.9,
 )
+
+
+# --- The wind-up tin carousel (F-04j): our own musical merry-go-round, Epic ---------------------
+# References (README): a hand-made German tin horse carousel, 8 in tall and 6 in across (Alexander
+# Taron's, Christmas Central's listing): an eight-panel printed canopy with a scalloped valance and
+# a brass ball on top, a striped centre column, riders on rods; Northlight's carousel music boxes
+# (7.25 in by 3.25, 6.5 in by 4.75); the Museo del Juguete's tin carousel (Commons). Ours: a red
+# printed drum with a key in its side, a turning platform, a mirrored column, four pressed-tin
+# horses on twisted brass poles under a crimson-and-cream canopy with a pennant, 214 mm tall.
+CAROUSEL = dict(
+    # each lathe's profile, (radius, height) in mm from the floor under the centre pole
+    drum=[(0.0, 1.0), (58.0, 1.0), (63.2, 0.2), (65.4, 0.9), (66.6, 2.6), (66.0, 4.4), (65.5, 5.4),
+          (65.5, 30.6), (66.0, 31.6), (66.6, 33.4), (65.4, 35.1), (63.0, 35.9), (56.0, 36.3),
+          (16.0, 37.3), (13.0, 37.9), (0.0, 37.9)],
+    platform=[(0.0, 38.3), (57.0, 38.3), (61.2, 38.6), (62.3, 39.6), (62.3, 41.0), (61.6, 41.6),
+              (58.0, 41.9), (0.0, 41.9)],
+    column=[(14.5, 41.9), (13.8, 43.4), (11.2, 45.0), (10.2, 47.5), (10.0, 50.0), (10.0, 140.0),
+            (10.6, 142.0), (11.6, 143.8), (11.2, 145.6), (9.6, 146.6)],
+    # the canopy: underside out from the column, the rolled rim, then a tent-like cone that rises
+    # steeper toward the top (rise mm over the cone, its power), to a collar under the finial
+    under=[(0.0, 146.4), (9.6, 146.4), (40.0, 148.6), (74.0, 150.8)],
+    rim=[(76.2, 151.2), (77.3, 152.4), (77.0, 153.8), (75.6, 154.6)],
+    cone=(75.6, 13.0, 28.0, 1.3),
+    collar=[(11.0, 183.4), (10.4, 185.6), (0.0, 186.0)],
+    finial=[(0.0, 185.8), (6.0, 186.3), (6.5, 187.8), (4.0, 189.4), (3.2, 190.2), (4.6, 191.6),
+            (5.0, 194.0), (4.6, 196.4), (3.0, 198.6), (1.0, 204.5), (0.0, 206.0)],
+    flag=dict(rod=(0.65, 198.0, 215.0), at=(209.0, 214.0), length=15.0, wave=1.6, t=0.6),
+    # the valance under the rim: scallops (count, the tips' height, how high the cusps rise)
+    valance=dict(n=16, top=152.6, tip=139.0, cusp=4.5, r=(77.4, 78.6), t=0.5),
+    # four horses on twisted brass poles (radius from the centre, radius of the pole, its twist:
+    # one lobe round in this many mm), each at an angle round; the saddle's height at mid stroke
+    poles=dict(r=50.0, rod=1.6, twist=14.0, lobes=4, depth=0.17, z=(41.9, 149.6)),
+    horse_at=[45.0, 135.0, 225.0, 315.0],
+    saddle_z=95.0,
+    # a pressed-tin horse: two halves crimped round a flat seam (flange mm out, its half
+    # thickness), puffed out up to `puff` mm, rising over `soft` mm in from the seam; drawn as
+    # round pieces in its side view (mm: x forward, z up, from the pole at the saddle's top)
+    flange=(0.55, 0.3), puff=4.0, soft=2.4,
+    ellipses=[(-2.0, -8.0, 16.0, 8.5)],
+    circles=[(10.0, -7.0, 8.0), (-12.0, -6.5, 8.5), (19.5, 12.0, 4.4)],
+    # tapered pieces (from x, z, to x, z, radius at each end): neck, head, ear, legs, tail
+    capsules=[(9.0, -3.0, 17.0, 13.0, 7.0, 4.5), (18.0, 15.0, 26.5, 7.2, 4.2, 3.0),
+              (16.4, 18.0, 15.8, 22.6, 1.6, 0.55),
+              (11.0, -12.0, 19.5, -17.0, 3.2, 2.2), (19.5, -17.0, 16.5, -24.0, 2.0, 1.7),
+              (16.5, -24.0, 17.6, -25.6, 2.0, 2.0),
+              (7.5, -13.0, 12.5, -21.0, 3.2, 2.1), (12.5, -21.0, 10.5, -28.0, 2.0, 1.7),
+              (10.5, -28.0, 11.6, -29.6, 2.0, 2.0),
+              (-13.0, -11.0, -20.0, -22.0, 5.0, 2.3), (-20.0, -22.0, -18.5, -30.0, 2.1, 1.7),
+              (-18.5, -30.0, -18.2, -32.0, 2.0, 2.0),
+              (-8.5, -12.5, -13.0, -23.0, 4.0, 2.2), (-13.0, -23.0, -10.0, -30.5, 2.1, 1.7),
+              (-10.0, -30.5, -9.4, -32.4, 2.0, 2.0),
+              (-17.0, -2.0, -23.0, -5.0, 2.6, 2.8), (-23.0, -5.0, -26.0, -11.0, 2.8, 2.4),
+              (-26.0, -11.0, -25.0, -18.0, 2.4, 1.3)],
+    blend=(2.2, 0.9),               # how softly the body's pieces join, and the legs' and hooves'
+    key=dict(at=(65.5, 0.0, 18.0), shaft=(1.5, 9.5), hub=(2.6, 3.0), wing=(6.4, 7.4), t=1.3),
+    dust=0.4, seed=37.0,
+)
+
+# How it plays (seconds, degrees, mm). A spring under the drum turns the platform, canopy and
+# column together about the centre pole; a crank under the canopy, geared to the turning, lifts
+# each horse up and down its pole twice a revolution, each out of step with the next. Paced like
+# a carousel music box: a turn in four seconds, the tune at that speed, both slowing over the
+# last six seconds as the spring runs down (the game plays the tune at the top's speed).
+RIDE = dict(
+    speed=90.0,                     # degrees a second, full wound
+    spin_up=0.9,                    # seconds to come up to speed
+    steady=9.5,                     # when the spring starts to run down
+    stop=15.5,                      # when it has stopped
+    fade=1.4,                       # the run-down's curve: the speed falls as (1 - s) ** fade
+    rock=(1.6, 0.6),                # the gears' slack: it rocks back this far, then settles
+    bobs=2.0,                       # each horse's rises a revolution
+    lift=9.0,                       # each horse's rise and fall either side of mid stroke (mm)
+    phase=[0.25, 0.75, 0.0, 0.5],   # each horse's place in its stroke as it's found
+    winds=4,                        # half turns of the key to wind it
+    end=16.4,
+)
