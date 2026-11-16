@@ -2495,6 +2495,17 @@ verified: a doc page, Studio, or "untested".
   its Open button (the prompt's attachment, 3 studs out from the unit's middle); a keyboard E
   from the MCP didn't open it, a Client `InputHoldBegin`/`End` with the camera Scriptable and
   pointed at `DoorMiddle` did. Take the find the same way; drop with `Remotes.ToolDrop`.
+- **From a unit to the gate in one Play** (F-G1d, Nov 16; plain Play, seed 7, floor 1): the doors
+  are 3 studs out in the hall from `FloorBuilder.face(unit)` (`face * CFrame.new(0, 3, -3)`;
+  +Z runs into the unit), but on the Client a unit doesn't exist until you pivot there and
+  `RequestStreamAroundAsync`, so get the spots from the Server first. A find in its box has no
+  Take button: pressing the box's Open (tag `MarkedBox`, its `Unit` ObjectValue names the unit)
+  puts the find straight into your first slot (`ToolSlot1`) and your hand. Then from the Client
+  stand at (-7.8, 3, -593.2), fire `Remotes.Keypad` with `DevCorridor.Floor1.Lobby.Elevator`
+  and 3, 3, 3, 0 0.45 s apart; from the Server pivot to (0.5, 3, -584): about 30 s later
+  Output says "GatePay: … kept StressBall". Seed 7's floor 1 now deals the stress ball in 104,
+  mochi buns in 107 and 111, the kazoo in 124 and the butter stick in 128. In Edit,
+  `Tools.template` returned nil for the new rows: Edit had the old Catalog cached; Play is fresh.
 - **A kit-built find's joints hold its pose in C0** (D-203): `Finds.pose` writes each Motor6D's
   C0 (C1 plain) because Transform doesn't replicate; the view model's `ScaleTo` scales them.
 

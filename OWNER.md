@@ -18,6 +18,9 @@ nowhere else.
   added a top-level folder (ReplicatedFirst's `TripCover`, which keeps the black up as you
   arrive on your group's server) and a running `rojo serve` only reads those at start. Without
   it the trip works, but the front office may flash for a moment as you arrive.
+- [ ] **Push Brix** (`../engine`, `main` at `1a97787`, Nov 16, D-252): the RC car's handling was
+  built there and committed, not pushed. This game takes Brix from GitHub, so the car can't use it
+  until it's pushed: say "push Brix" in a session and it's done, CI checked.
 
 - [ ] **Find the new finds** (F-G1a, D-203; seen in Studio Play by me on floor 1, not on a
   phone): play a climb and open doors. Floor 1 now deals the Nov 15 finds beside the bedroom

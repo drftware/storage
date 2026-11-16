@@ -189,8 +189,9 @@ Deal.Bag = {
 
 --[[
 	The finds a door can hold (S1-05, F-G1a), each a catalog row with its grade, worth and the floor
-	it's dealt from (`Tools.Catalog`). The 1980s bedroom set (D-035) and the finds built overnight
-	on Nov 15 (art/finds/WAVES.md): the Lights, the cars and the first wind-ups. Which one a unit
+	it's dealt from (`Tools.Catalog`). The 1980s bedroom set (D-035), the finds built overnight
+	on Nov 15 (art/finds/WAVES.md: the Lights, the cars and the first wind-ups) and on Nov 16 (the
+	rest of the wind-ups and the squishies built so far, F-G1d). Which one a unit
 	holds is `Deal.findFrom`'s roll: a grade by the floor, then a find of that grade.
 
 	The theatre spotlight is built but not dealt: six studs tall, it's one of the catalog's big
@@ -220,6 +221,28 @@ Deal.Finds = {
 	"RCCar",
 	"CymbalMonkey",
 	"JackInTheBox",
+	"Kazoo",
+	"RubberDuck",
+	"SirenCar",
+	"ChatteringTeeth",
+	"ToyDrum",
+	"WindupMouse",
+	"WalkingRobot",
+	"FarmSpinner",
+	"CowboyDoll",
+	"SingingFish",
+	"TinBird",
+	"TinCarousel",
+	"StressBall",
+	"ButterStick",
+	"MochiBun",
+	"PaperSquishy",
+	"ToastSlice",
+	"GelBeadBall",
+	"GlitterGooBall",
+	"JumboStrawberry",
+	"Capybara",
+	"GalaxyGooBall",
 } :: { string }
 
 --[[

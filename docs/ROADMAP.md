@@ -2430,7 +2430,24 @@ actions themselves and dealing the new finds on floors are later game tickets.
           drive ends. Smooth on the driver's screen, the server checking every move (a speed
           cap, no walls), friends seeing it drive. Answers: a motor whine rising with speed, a
           jolt on a bump, the transmitter's antenna in your hands. Take it back by walking to
-          it, or by driving it to your feet.
+          it, or by driving it to your feet. Split Nov 16 (D-252): how a driven thing moves is
+          built in Brix, for every game, then used here. The car is a physics body the driver's
+          own device moves (walls and shut doors stop it as they stop you, and friends see it
+          move smoothly), and the server checks every move.
+          - [x] **F-G1b3c2a How the car answers its stick, in Brix** (Brix ENG-24a): Brix's
+            Handling, throttle and steering in, the speed to drive at and the turn out, a car
+            that can't turn standing still, held back by whatever stops it.
+          - [ ] **F-G1b3c2b Driving a body from a player's device, in Brix** (Brix ENG-24b):
+            the server hands the body to its driver and checks every move, the client reads the
+            move stick on any device and steps the handling. Built and run in Brix's Studio.
+          - [ ] **F-G1b3c2c Drive it.** The pin moved; the car set down in front of you apart
+            from its transmitter, which stays in your hands; your view on its hood, low and wide
+            with a jolt on a bump; the stick drives it through Brix; a motor whine rising with
+            speed; its wheels turn and steer; the back button; walking to it takes it back.
+            Studio Play: from the lobby down a hall into an open unit, stopping at a shut door.
+          - [ ] **F-G1b3c2d The driver's body.** You crouch still with the transmitter, its
+            antenna up; caught, the drive ends; driving it to your feet takes it back; friends
+            see it drive (their view and the phone stick go to `OWNER.md`).
         - [ ] **F-G1b3c3 The collector steals it.** A driven car is a find lying loose, so the
           Packrat takes it as it takes any (S2-06b): on the driver's screen the view lifts off
           the floor, shakes, cuts to static, and you're back in your own eyes; it goes on the
@@ -2458,6 +2475,20 @@ actions themselves and dealing the new finds on floors are later game tickets.
     from the door and a chime, an Epic's purple light spilling as the door rolls up, a
     Legendary's gold light under the door before it opens, heard by the team. Needs the owner's
     look; the copy of what each grade is stays off screen (no text that explains a rule).
+  - [x] **F-G1d The Nov 16 finds dealt** (Nov 16, D-253; seen in Studio Play on floor 1, seed 7:
+    of 14 units opened, five dealt new finds (the stress ball, two mochi buns, the kazoo, the
+    butter stick); the stress ball came out of its box into your hand, rode up and was kept at
+    the gate). The other 12 wind-ups and 10 squishies built overnight join the deal with the
+    catalog's grade and worth (`Tools.Catalog` rows, `Deal.Finds`), each stood at its rest as
+    it's found; the glitter goo ball imported into the place. The four squishies not built yet
+    (the goo ball, the colour-change goo ball, the cake slice, the mega goo ball) join as built.
+  - [ ] **F-G1e Pressing the wind-ups and squishies.** Each one's own press while it's in your
+    hand, as F-G1b did for the Lights (`Finds/Use` rows, `FindUses`): the wind-ups' noise that
+    monsters come to (the teeth chatter off, the robot clanks down a hall, the mouse zips and
+    squeaks, the tin bird hops and whistles, the carousel turns and plays, the siren car rolls
+    off wailing; the kazoo, duck, drum, spinner, cowboy doll and fish on a press), and squeezing
+    the squishies (the dent filling back in, the beads, glitter and stars swirling, the
+    capybara's sigh). About 22 rows: split it here before starting.
 - [x] **F-04 Wind-ups and noisemakers.** Built, in `art/finds/windups/`: F-04a the cymbal monkey,
   F-04b the jack-in-the-box, F-04c the chattering teeth (Nov 15), F-04c2 the walking robot,
   F-04d the wind-up mouse, F-04d2 the clockwork tin bird, F-04e the toy siren car and F-04e2 the
@@ -2514,7 +2545,8 @@ actions themselves and dealing the new finds on floors are later game tickets.
 - **Finds' own sounds (F-G1a):** the Nov 15 finds borrow the tools' and the bedroom set's pick-up
   and drop sounds, pitched (`Tools/Catalog.luau`'s CLINK, TIN and the rest). Glass wants a glass
   clink (the tea light, the firefly jar, the glass lamp), tin a hollow tin knock (the wind-ups),
-  the disco ball its mirrors rattling.
+  the disco ball its mirrors rattling. The Nov 16 finds (F-G1d) borrow the same way: the
+  squishies and the cowboy doll take the teddy's cloth grab (`SOFT`), wanting a soft squelch.
 - **Each find's own hold (F-G1a):** the Nov 15 finds sit in your view by size (small, medium,
   large) with grips picked from their boxes; judge each at phone size and give the odd ones
   (the desk lamp's long arm, the RC car with its transmitter, the neon sign) their own.

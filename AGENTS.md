@@ -82,8 +82,10 @@ fresh one.
 
 - **Systems come from Brix first** (`../engine`, its own repository; `docs/FRAMEWORK.md`; owner,
   2026-11-05). Before building any system, check what Brix exports or has planned; this game
-  supplies only its policies, adapters, data and art. Use only Brix's exports at a pinned version,
-  never edit it from here, and put a missing piece in Brix's ROADMAP in neutral terms. The one
+  supplies only its policies, adapters, data and art. Use only Brix's exports at a pinned version.
+  A system a ticket needs that Brix lacks is built in Brix, from here, as its own Brix ticket by
+  Brix's own AGENTS.md (neutral names, its checks, its commits), then the pin moves (owner,
+  2026-11-16, D-252). The one
   exception is the keepers' brain, which lives in this game and is built against Brix's contracts
   so it can move there later (D-064).
 - **Reusable systems over shortcuts.** Build each feature as the system the next floor or keeper

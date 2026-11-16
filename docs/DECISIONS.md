@@ -6439,3 +6439,45 @@ Not chosen: finds brought from home being safe from loss; a lost find going back
 who lost it when someone else carries it aboard; a battery refilling the hard hat; commons sold
 on the spot; a separate gear screen before a climb (the chest does that job); monsters hearing
 feet, for now.
+
+## D-252 · 2026-11-16 · Driving is built in Brix; the RC car is a body its driver's device moves (F-G1b3c2)
+
+The owner, starting F-G1b3c2: "make sure it's absolute world-class. Write the code in Brix if you
+have to, so that the Brix library will be in even better shape to iterate quickly on new games and
+ideas within this game."
+
+- **Brix work from here (the rule, now in AGENTS.md and `docs/FRAMEWORK.md`):** a system a ticket
+  needs that Brix lacks is built in `../engine` as one Brix ticket, by Brix's own rules (nothing
+  about this game, its check, its docs, its commit with no trailer), then the pin moves once Brix
+  is pushed. It replaces "never edit Brix from here, only file a ticket".
+- **How the car moves:** a physics body its driver's device owns (network ownership), as Roblox's
+  own vehicles are. It moves at once on the driver's phone, walls and shut doors stop it as they
+  stop a character, and friends see it move through Roblox's own smoothed replication. The server
+  checks every move (no faster than the car's top, no wall passed through) and takes it back from
+  a bad one. Not chosen: the server stepping the car from sent input, which puts a phone's round
+  trip between the stick and the hood camera (Siege's drones answer at once).
+- **Split:** Brix's Handling (ENG-24a, done: how a body answers its stick, held back by walls),
+  Brix's driving adapters (ENG-24b), then here: drive it (c), the driver's body (d).
+- **The handling's defaults** (Brix's stock car; numbers tuned in c): it can't turn standing still,
+  as a car can't; the game mixes a little throttle into a sideways push of the stick, so a phone
+  player pushing left from rest still turns. Its wheels ease into a turn over a fifth of a second.
+
+## D-253 · 2026-11-16 · The Nov 16 wind-ups and squishies are dealt as the Nov 15 finds are (F-G1d)
+
+The 12 wind-ups and 10 squishies built overnight Nov 15-16 join the floors' deal the way D-203
+set it: each with the item catalog's grade and worth as written, dealt from floor 1, a unit
+rolling a grade by its floor and then one find of that grade. On floor 1 that's now 13 Commons,
+3 Epics (the firefly jar, the tin bird, the tin carousel) and 2 Legendaries (the glass lamp, the
+galaxy goo ball): a teddy is about 1 find in 21 there, an Epic 1 in 120, a glass lamp 1 in 400.
+
+- **Sounds borrowed** until each has its own (ROADMAP polish "Finds' own sounds"): the wind-ups
+  take the tin, clack and plastic stretches pitched by size; the squishies and the cowboy doll
+  the teddy's cloth grab (`SOFT` in `Tools/Catalog.luau`), the paper squishy the plastic rustle.
+- **Held by size:** palm-sized (Small) but for the drum, the cowboy doll, the carousel and the
+  jumbo strawberry (Medium) and the farm spinner and the fish plaque (Large).
+- **Not yet:** pressing them (F-G1e). The four squishies not built are dealt as they're built.
+- The check that a teddy turns up far more often than the glass lamp asks for 12 times now,
+  not 20: it's about 19 with the new commons and the second Legendary.
+
+Not chosen: holding the galaxy goo ball back to deeper floors (D-203 deals every grade from floor
+1 at the catalog's odds; only the Secret waits for floor 25).

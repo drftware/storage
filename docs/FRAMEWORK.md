@@ -11,11 +11,13 @@ The keepers' brain is the exception: it is built in this game (owner, 2026-11-09
 
 ## Between the two repositories
 
-- Never edit Brix from a session here, and never put anything about this game into it. Brix work
-  happens in a Brix session, which keeps its own HANDOFF.
+- When a ticket here needs a system Brix lacks, a session here builds it in Brix (`../engine`) as
+  one Brix ticket, by Brix's own rules: its AGENTS.md, nothing about this game, its check green, its
+  ROADMAP, DECISIONS and CHANGELOG, its own untracked HANDOFF overwritten, and its commit with no
+  trailer. Then, once Brix is pushed, the pin moves. (Owner, 2026-11-16, D-252: Brix should get
+  better at iterating on new ideas in this game; this replaces "never edit Brix from here".)
 - This game uses only what Brix exports (`require(ReplicatedStorage.Brix)`), at a pinned version.
-- When Brix is missing something this game needs from the lists below, write a ticket in Brix's
-  `docs/ROADMAP.md` in neutral terms, with no names from this game.
+- Never put anything about this game into Brix.
 - If a ticket here can't wait for a planned Brix piece, it says so and builds the smallest stand-in
   in this repo behind the shape Brix will have, to swap out when Brix ships it. Never a parallel
   system that lives on, with one named exception: the keepers' brain.
@@ -51,6 +53,7 @@ Moving the pin is its own small step, taken when a ticket first needs something 
 | RoundLoop, RoundPlayers, countdowns, teams, round ends (ENG-13) | Built | `Climbs`/`ClimbEnds` stand in; adopting it is its own ticket |
 | Purchases, Marketplace, `Roblox.PlayerPurchases` (ENG-23) | Built, run in Studio; ENG-23e waits on this game's phone test | S3-02b wires it on the server |
 | The Pursuit system, its stock chases and targetings, and its Roblox adapters (players as runners, a hunter driver) | Built; the adapters not yet run in Studio (ENG-07a). What players see is ENG-07b, not started | Not what keepers run on (D-064). Checked for the chase at L-06b3a2 and not used (D-074): a hunter the game places is never moved by Pursuit again, so a keeper couldn't hand back to roaming, and its reach and runners have no walls or sight |
+| Handling and the stock `Handling.car` (ENG-24a, at `1a97787`, not yet pushed): throttle and steering in, with the body's real speed, the speed to drive at and the turn out | Built from here at the owner's word (D-252); specs and a bench, nothing touches Roblox | The RC car's handling on the driver's client (F-G1b3c2c), once the pin moves |
 
 ## What Brix plans that this game will use
 
@@ -67,6 +70,7 @@ None of these is built. Each row says what stands in here until it is.
 | A debug overlay, a gated cheat console, replaying a seed | Developer tooling | ENG-17 | Studio-only dev systems (`DevCorridor`) |
 | Error reports and step timing from live servers | Observability | ENG-18 | Nothing yet |
 | Carried items: slots, one in hand, pick up, switch, drop, hand over (L-11b) | None planned (checked Nov 8) | To file | Stand-in `Tools.Carry` (pure rules) and `src/server/Slots.luau`. Ticket for a Brix session to file, in neutral terms: "A carried-items system: a fixed number of slots per player, one active; take, switch, release and transfer between players, each validated (type, reach, room, rate) and replicated; items as data rows" |
+| A body driven from a player's device: the server hands it over and checks every move, the client reads the move stick and steps the handling (F-G1b3c2) | Driving adapters | ENG-24b, next, built from here | Nothing: the RC car waits on it |
 
 ## What lives in this game
 

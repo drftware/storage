@@ -473,6 +473,8 @@ local STEEL: Sound = { id = "rbxassetid://9114008989", from = 0, length = 1.4, v
 local PLASTIC: Sound = { id = "rbxassetid://9113768847", from = 0.22, length = 0.9, volume = 0.8 }
 -- "Shield Impacts 15": a plastic case hitting the floor, crunchy
 local CRUNCH: Sound = { id = "rbxassetid://9119075637", from = 0, length = 0.7, volume = 0.8 }
+-- "Pillow Blanket 1": the teddy's grab on the cloth, for the squishies and the cowboy doll
+local SOFT: Sound = { id = "rbxassetid://9117373366", from = 0.4, length = 0.4, volume = 0.75 }
 
 local function pitched(s: Sound, pitch: number, volume: number?): Sound
 	return {
@@ -718,6 +720,228 @@ built("JackInTheBox", {
 	size = "Medium",
 	pickUp = pitched(SLAP, 1.1),
 	drop = TIN,
+})
+built("Kazoo", {
+	name = "Kazoo",
+	grade = "Common",
+	worth = 2,
+	grip = { 0, 0.05, 0.05 }, -- its tube, behind the bump
+	heft = 0.02,
+	size = "Small",
+	pickUp = pitched(CLACK, 1.9, 0.6),
+	drop = pitched(PLASTIC, 2.1, 0.4),
+})
+built("RubberDuck", {
+	name = "Rubber duck",
+	grade = "Common",
+	worth = 3,
+	grip = { 0, 0.15, 0 }, -- round its body
+	heft = 0.04,
+	size = "Small",
+	pickUp = pitched(HOLLOW, 1.7, 0.6),
+	drop = pitched(HOLLOW, 1.4, 0.55),
+})
+built("SirenCar", {
+	name = "Siren car",
+	grade = "Common",
+	worth = 5,
+	grip = { 0, 0.14, 0 }, -- round its middle, under the light bar
+	heft = 0.06,
+	size = "Small",
+	pickUp = pitched(CLACK, 1.6),
+	drop = pitched(PLASTIC, 1.8, 0.5),
+})
+built("ChatteringTeeth", {
+	name = "Chattering teeth",
+	grade = "Common",
+	worth = 6,
+	grip = { 0, 0.12, 0 }, -- round the jaws, shut
+	heft = 0.05,
+	size = "Small",
+	pickUp = pitched(CLACK, 1.75),
+	drop = pitched(PLASTIC, 1.9, 0.5),
+})
+built("ToyDrum", {
+	name = "Toy drum",
+	grade = "Uncommon",
+	worth = 10,
+	grip = { 0, 0.3, 0 }, -- its tin shell
+	heft = 0.3,
+	size = "Medium",
+	pickUp = pitched(SLAP, 1.15),
+	drop = pitched(TIN, 0.95),
+})
+built("WindupMouse", {
+	name = "Wind-up mouse",
+	grade = "Uncommon",
+	worth = 12,
+	grip = { 0, 0.09, 0 }, -- round its tin body
+	heft = 0.04,
+	size = "Small",
+	pickUp = pitched(SLAP, 1.6, 0.55),
+	drop = pitched(TIN, 1.75, 0.55),
+})
+built("WalkingRobot", {
+	name = "Wind-up robot",
+	grade = "Uncommon",
+	worth = 15,
+	grip = { 0, 0.45, 0 }, -- round its chest
+	heft = 0.15,
+	size = "Small",
+	pickUp = pitched(SLAP, 1.35),
+	drop = pitched(TIN, 1.35),
+})
+built("FarmSpinner", {
+	name = "Farm spinner",
+	grade = "Uncommon",
+	worth = 16,
+	grip = { 0, 1.0, 0 }, -- the handle on its top
+	heft = 0.35,
+	size = "Large",
+	pickUp = pitched(HOLLOW, 1.0),
+	drop = pitched(PLASTIC, 1.0),
+})
+built("CowboyDoll", {
+	name = "Cowboy doll",
+	grade = "Rare",
+	worth = 45,
+	grip = { 0, 0.75, 0 }, -- round its chest, under the hat
+	heft = 0.25,
+	size = "Medium",
+	pickUp = SOFT,
+	drop = pitched(SOFT, 0.75, 0.6),
+})
+built("SingingFish", {
+	name = "Singing fish",
+	grade = "Rare",
+	worth = 50,
+	grip = { 0, 0.8, 0 }, -- the plaque's top edge
+	heft = 0.4,
+	size = "Large",
+	pickUp = pitched(HOLLOW, 0.95),
+	drop = pitched(CRUNCH, 0.9),
+})
+built("TinBird", {
+	name = "Tin bird",
+	grade = "Epic",
+	worth = 140,
+	grip = { 0, 0.12, 0 }, -- round its tin body
+	heft = 0.06,
+	size = "Small",
+	pickUp = pitched(CLINK, 1.6),
+	drop = pitched(TIN, 1.85, 0.55),
+})
+built("TinCarousel", {
+	name = "Tin carousel",
+	grade = "Epic",
+	worth = 200,
+	grip = { 0, 0.75, 0 }, -- the pole under its canopy
+	heft = 0.4,
+	size = "Medium",
+	pickUp = pitched(CLANG, 1.3),
+	drop = pitched(TIN, 1.0),
+})
+
+-- The squishies: soft, so they borrow the teddy's grab, higher for the small ones.
+built("StressBall", {
+	name = "Stress ball",
+	grade = "Common",
+	worth = 2,
+	grip = { 0, 0.14, 0 }, -- round the ball
+	heft = 0.04,
+	size = "Small",
+	pickUp = pitched(SOFT, 1.5),
+	drop = pitched(SOFT, 1.2, 0.5),
+})
+built("ButterStick", {
+	name = "Butter stick",
+	grade = "Common",
+	worth = 4,
+	grip = { 0, 0.08, 0 }, -- round the stick
+	heft = 0.04,
+	size = "Small",
+	pickUp = pitched(SOFT, 1.45),
+	drop = pitched(SOFT, 1.15, 0.5),
+})
+built("MochiBun", {
+	name = "Mochi bun",
+	grade = "Common",
+	worth = 4,
+	grip = { 0, 0.09, 0 }, -- round the bun
+	heft = 0.02,
+	size = "Small",
+	pickUp = pitched(SOFT, 1.6),
+	drop = pitched(SOFT, 1.3, 0.45),
+})
+built("PaperSquishy", {
+	name = "Paper squishy",
+	grade = "Uncommon",
+	worth = 10,
+	grip = { 0, 0.2, 0 }, -- round its middle
+	heft = 0.01,
+	size = "Small",
+	pickUp = RUSTLE,
+	drop = pitched(RUSTLE, 0.8, 0.5),
+})
+built("ToastSlice", {
+	name = "Toast slice",
+	grade = "Uncommon",
+	worth = 11,
+	grip = { 0, 0.22, 0 }, -- pinched by its crust
+	heft = 0.02,
+	size = "Small",
+	pickUp = pitched(SOFT, 1.4),
+	drop = pitched(SOFT, 1.1, 0.5),
+})
+built("GelBeadBall", {
+	name = "Gel bead ball",
+	grade = "Uncommon",
+	worth = 12,
+	grip = { 0, 0.13, 0 }, -- round the ball
+	heft = 0.05,
+	size = "Small",
+	pickUp = pitched(SOFT, 1.35),
+	drop = pitched(SOFT, 1.05, 0.55),
+})
+built("GlitterGooBall", {
+	name = "Glitter goo ball",
+	grade = "Uncommon",
+	worth = 15,
+	grip = { 0, 0.12, 0 }, -- round the ball
+	heft = 0.05,
+	size = "Small",
+	pickUp = pitched(SOFT, 1.35),
+	drop = pitched(SOFT, 1.05, 0.55),
+})
+built("JumboStrawberry", {
+	name = "Jumbo strawberry",
+	grade = "Uncommon",
+	worth = 18,
+	grip = { 0, 0.25, 0 }, -- round its middle
+	heft = 0.08,
+	size = "Medium",
+	pickUp = pitched(SOFT, 1.15),
+	drop = pitched(SOFT, 0.9, 0.55),
+})
+built("Capybara", {
+	name = "Squishy capybara",
+	grade = "Rare",
+	worth = 55,
+	grip = { 0, 0.14, 0 }, -- round its back
+	heft = 0.04,
+	size = "Small",
+	pickUp = pitched(SOFT, 1.3),
+	drop = pitched(SOFT, 1.0, 0.55),
+})
+built("GalaxyGooBall", {
+	name = "Galaxy goo ball",
+	grade = "Legendary",
+	worth = 350,
+	grip = { 0, 0.14, 0 }, -- round the ball
+	heft = 0.05,
+	size = "Small",
+	pickUp = pitched(SOFT, 1.25),
+	drop = pitched(SOFT, 0.95, 0.55),
 })
 
 return Catalog

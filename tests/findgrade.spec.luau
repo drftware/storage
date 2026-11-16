@@ -108,11 +108,12 @@ for _, number in { 1, 3, 12, 30, 60 } do
 	)
 end
 
--- the commons are 62 in 100 on the first floors: the teddy is common, the glass lamp rare
+-- the commons are 62 in 100 on the first floors: the teddy is common, the glass lamp rare (13
+-- commons share the 62 and 2 Legendaries the half, so about 19 teddies to a glass lamp, F-G1d)
 do
 	local _, finds = spread(1)
 	ok(
-		(finds.Teddy or 0) > 20 * (finds.StainedGlassLamp or 0),
+		(finds.Teddy or 0) > 12 * (finds.StainedGlassLamp or 0),
 		"a teddy far more often than the glass lamp"
 	)
 end
