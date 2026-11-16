@@ -47,6 +47,25 @@ nowhere else.
   5. Drop a lit one in the hall with the Mannequin coming (the lantern's steps below): it stops
      where the lamp's light reaches. The desk lamp's pool is small (about 4 studs); the
      night-light's barely reaches at all.
+- [ ] **Try (F-G1b3c2c, built Nov 16, D-254; driven by script in Studio Play, not on a phone,
+  not with a friend):** drive the RC car.
+  1. In Studio press Play. In the command bar (Server), run
+     `workspace:SetAttribute("GiveFind", "RCCar")`: a **Drive** button shows.
+  2. Face down the test hall and press Drive: the transmitter clicks, the car is set down in front
+     of you and your view swoops down onto its hood, low and wide. Is that drop quick enough, and
+     is the hood view too low or too high (`Drive.HoodUp`)?
+  3. Push forward: it leaps off with a whine rising in pitch, front wheels turning into a turn,
+     and stops dead at a shut door with a jolt. Steer it round a corner. On the phone: does a
+     thumb pushed left from rest pull it round (a little throttle is mixed in)? Is 18 studs a
+     second too fast to steer between the unit doors?
+  4. Press jump (or Back, top left): you're back in your own eyes and the car stays put. Walk to
+     it with the transmitter in your hand: it's back in your hands with a clack.
+  5. With a friend: do they see the car drive smoothly, its wheels turning, and hear its whine?
+     (Your body crouching with the antenna up is F-G1b3c2d, next.)
+- [ ] **Decide (default in, F-G1b3c2c):** in a dark hall the hood view shows nothing; the car has
+  no light of its own (Rainbow Six Siege's drones have none, but its maps are lit). Default: no
+  light, you drive by the hall lights and what friends light up. Or: a dim headlight on the car
+  (an untested bet here). Your torch's beam doesn't follow you onto the hood.
 - [ ] **Try (F-G1b2, built Nov 16, D-231; each press checked in Studio Play, not on a phone, not
   with a friend):** press a find and watch it do what it is.
   1. In Studio, set Workspace's `DevFloorNumber` to 1 and press Play. In the command bar (Server),

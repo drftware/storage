@@ -13,6 +13,7 @@ local fs = require("@lune/fs")
 local Carry = require("../src/shared/Tools/Carry")
 local Catalog = require("../src/shared/Tools/Catalog")
 local Deal = require("../src/shared/Deal")
+local Drive = require("../src/shared/Finds/Drive")
 local Grades = require("../src/shared/Grades")
 local Use = require("../src/shared/Finds/Use")
 
@@ -242,10 +243,12 @@ for key, row in Catalog do
 			`{key}: a worth within its grade's`
 		)
 		ok(type(row.heft) == "number" and row.heft >= 0 and row.heft <= 1, `{key}: a heft, 0 to 1`)
-		-- a find takes one hand; it does something only with a press of its own (Finds/Use)
+		-- a find takes one hand; it does something only with a press of its own (Finds/Use, or
+		-- the RC car's Drive, Finds/Drive)
 		local press = Use.Rows[key]
+		local word = if press then press.verb elseif key == Drive.Key then Drive.Verb else nil
 		ok(not row.bothHands, `{key}: a find takes one hand`)
-		ok(row.verb == (if press then press.verb else nil), `{key}: its press's word, or none`)
+		ok(row.verb == word, `{key}: its press's word, or none`)
 	else
 		ok(table.find(Deal.Tools, key) ~= nil, `{key}: one of the deal's tools`)
 		ok(fs.isFile(`src/shared/Tools/Specs/{key}.luau`), `{key}: its generated Specs`)

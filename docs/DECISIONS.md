@@ -6481,3 +6481,24 @@ galaxy goo ball): a teddy is about 1 find in 21 there, an Epic 1 in 120, a glass
 
 Not chosen: holding the galaxy goo ball back to deeper floors (D-203 deals every grade from floor
 1 at the catalog's odds; only the Secret waits for floor 25).
+
+## D-254 · 2026-11-16 · The RC car comes off its transmitter onto the floor, and you get back with jump (F-G1b3c2c)
+
+- **The car is the find's own parts:** Drive moves the drive's body and all that rides on it out
+  of the find into a model of its own on the floor, on an invisible box with no friction (the
+  meshes ride it without colliding), its body's joint hung from the box. The transmitter stays
+  in your hand as the find, so slots, drops and the Packrat still see one find. Taken back, the
+  parts go home and the joint hangs from the transmitter as before. Not chosen: a copy of the car,
+  which would make the find two things to keep in step.
+- **Back is the jump button** (Roblox's own vehicle seats are left with jump), with a Back button
+  top left for anyone who doesn't know it, and B or Backspace.
+- **Take it back by walking to it with the transmitter in your hand** (within 3 studs); Drive
+  again drives on from wherever it stopped. Idle, the car is anchored so nobody kicks it about.
+- **While you drive, your streaming follows the car** (`Player.ReplicationFocus`), so the halls it
+  drives down stream in; your own body stays.
+- **The stick is read from `Humanoid.MoveDirection`** turned back by the hood's facing, as the cart
+  ride reads it: this place's PlayerModule hands out no move vector, so Brix's default read gives
+  nothing here.
+- **Numbers (defaults to tune with the owner):** 18 studs a second flat out in half a second, 7
+  backing; the server allows 1.25 times that; the hood at 0.52 studs, 88 degrees wide.
+

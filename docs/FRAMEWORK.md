@@ -24,7 +24,7 @@ The keepers' brain is the exception: it is built in this game (owner, 2026-11-09
 
 ## What this game uses from Brix today
 
-At the pinned commit, `5cdb8c2` (2026-11-15, moved from `6717740` for S3-02a). Checked against `src/` on 2026-11-15.
+At the pinned commit, `c9f6667` (2026-11-16, moved from `5cdb8c2` for F-G1b3c2c). Checked against `src/` on 2026-11-16.
 
 | Brix piece | What the game does with it | Where |
 | --- | --- | --- |
@@ -35,6 +35,8 @@ At the pinned commit, `5cdb8c2` (2026-11-15, moved from `6717740` for S3-02a). C
 | Reach (`cone`) measured along the keepers' map (their own Pathing) | A keeper's grasp: whom its hand closes on (L-06b3c, D-077) | `src/server/Keepers.luau` hands it to `src/shared/Keeper.luau` |
 | Saves, SaveFormat (`versioned`), Schema, `Roblox.SaveStore.dataStore`, `Roblox.PlayerSaves`, `Roblox.serverId`, `SaveStore.loopback` | Each player's save held by one server, autosaved, let go on leave and shutdown (S1-01, D-134) | `src/server/Saving.luau`, `src/shared/Save.luau` |
 | Analytics, `AnalyticsField.oneOf`, `Roblox.AnalyticsSink.analyticsService`, `AnalyticsSink.recorder` (specs) | What every player earns and does, checked against one plan and sent to Roblox's AnalyticsService (S1-02, D-139) | `src/server/Recording.luau`, `src/shared/Record.luau` |
+| Handling (`Handling.car`, ENG-24a) | How the RC car answers its stick: the speed to drive at and the turn, held back by walls; its numbers are the game's `Config` | `src/shared/Finds/Drive.luau`, `src/client/DriveView.luau` |
+| Driving (`MoveCheck.ground`, `Roblox.Driving.server` and `.client`, ENG-24b) | The RC car driven from its driver's own device: the server hands it over, checks every move and puts a bad one back; the driver's client reads the move stick and steers it | `src/server/Drives.luau`, `src/client/DriveView.luau` |
 | Purchases (specs only so far; the server's wiring, PlayerPurchases, Roblox's Marketplace and LiveConfig over ConfigService, is S3-02b) | Robux purchases granted once, after the save holding them is written (S3-02a, D-206) | `src/shared/Products.luau`, `tests/products.spec.luau` |
 
 Exported at the pin but not used here yet: Schema (data shapes for keeper rows and Config), Pool,
@@ -42,7 +44,7 @@ the other zones (sphere, polygon, any-of, grown), the floor pathing and the sphe
 
 ## What Brix has built since the pin
 
-These are in the pin (moved to `5cdb8c2` for S3-02a), still not used here.
+These are in the pin (moved to `c9f6667` for F-G1b3c2c), still not used here.
 Moving the pin is its own small step, taken when a ticket first needs something newer.
 
 | Brix piece | State in Brix | This game's use |
@@ -53,8 +55,6 @@ Moving the pin is its own small step, taken when a ticket first needs something 
 | RoundLoop, RoundPlayers, countdowns, teams, round ends (ENG-13) | Built | `Climbs`/`ClimbEnds` stand in; adopting it is its own ticket |
 | Purchases, Marketplace, `Roblox.PlayerPurchases` (ENG-23) | Built, run in Studio; ENG-23e waits on this game's phone test | S3-02b wires it on the server |
 | The Pursuit system, its stock chases and targetings, and its Roblox adapters (players as runners, a hunter driver) | Built; the adapters not yet run in Studio (ENG-07a). What players see is ENG-07b, not started | Not what keepers run on (D-064). Checked for the chase at L-06b3a2 and not used (D-074): a hunter the game places is never moved by Pursuit again, so a keeper couldn't hand back to roaming, and its reach and runners have no walls or sight |
-| Handling and the stock `Handling.car` (ENG-24a, at `1a97787`, pushed Nov 16): throttle and steering in, with the body's real speed, the speed to drive at and the turn out | Built from here at the owner's word (D-252); specs and a bench, nothing touches Roblox | The RC car's handling on the driver's client (F-G1b3c2c), once the pin moves |
-| Driving a body from a player's device (ENG-24b, at `c9f6667`, pushed Nov 16): `MoveCheck.ground`, how fast and far a body may move as the server judges it; `Roblox.Driving.server`, which hands the body to its driver, checks every move and a ray for walls, and puts a bad move back with a half-second hold; `Roblox.Driving.client`, which reads the move stick through Roblox's control module, holds the character still and drives a LinearVelocity and an AlignOrientation | Built from here at the owner's word (D-252); specs, and its example run in Brix's Studio (a wall, a teleport, the driver leaving) | The RC car (F-G1b3c2c), once the pin moves |
 
 ## What Brix plans that this game will use
 

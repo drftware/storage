@@ -10,6 +10,7 @@
 	(init) does the instances.
 ]]
 
+local Drive = require("../Finds/Drive")
 local Grades = require("../Grades")
 local Use = require("../Finds/Use")
 
@@ -500,12 +501,13 @@ type Built = {
 
 -- A row for a find built with the kit: it hangs from your left hand by its grip, low on the left
 -- of your view with its front turned to you, as the bedroom set does. A find with a press
--- (`Finds/Use`'s rows: the lantern's Switch, the jack's Wind) gets that press's word.
+-- (`Finds/Use`'s rows: the lantern's Switch, the jack's Wind) gets that press's word, and the
+-- RC car its Drive (`Finds/Drive`).
 local function built(key: string, b: Built)
 	local hold = HOLD[b.size]
 	local press = Use.Rows[key]
 	Catalog[key] = {
-		verb = if press then press.verb else nil,
+		verb = if press then press.verb elseif key == Drive.Key then Drive.Verb else nil,
 		name = b.name,
 		template = key,
 		find = true,

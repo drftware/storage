@@ -21,6 +21,7 @@ local DevCorridor = require(script.DevCorridor)
 local Doors = require(script.Doors)
 local Elevators = require(script.Elevators)
 local Flashlights = require(script.Flashlights)
+local Drives = require(script.Drives)
 local FindUses = require(script.FindUses)
 local FrontOffice = require(script.FrontOffice)
 local GatePay = require(script.GatePay)
@@ -92,6 +93,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "horns", system = Horns.new() },
 	-- Pressing a find (the lantern's Switch, the jack's Wind): its stamp on the model, the bang heard.
 	{ slot = "findUses", system = FindUses.new() },
+	-- the RC car set down and driven from its driver's device (F-G1b3c2c)
+	{ slot = "drives", system = Drives.new() },
 	-- Laying bubble wrap: a Lay checked against the halls, the roll spent, a sheet across the hall.
 	{ slot = "wraps", system = Wraps.new() },
 	{ slot = "minimaps", system = Minimaps.new() },

@@ -2630,3 +2630,25 @@ verified: a doc page, Studio, or "untested".
   so did a bare cast. `local state: Use.State = pressed :: Use.State` (annotated and cast) works.
 - **Rojo doubled FindUses and FindUseView too** (Edit, Nov 16): both show twice in Studio, as in
   the doubled-modules note above; harmless while both update.
+
+## Driving the RC car in Play (F-G1b3c2c, Nov 16)
+
+- **Brix's Driving client reads no stick in this place by default:** it requires
+  `PlayerScripts.PlayerModule` for `GetControls():GetMoveVector()`, which isn't there (the
+  PlayerModule note above). Pass `input`: DriveView turns `Humanoid.MoveDirection` back by the
+  camera's flat facing. MoveDirection still follows the stick with WalkSpeed held at 0.
+- **Steering from the MCP:** `workspace:SetAttribute("GiveFind", "RCCar")` (Server) puts it in your
+  hand from the spawn; aim the Custom camera from a Client call, pivot the character, then fire
+  `ReplicatedStorage.Remotes.ToolUse`; set the player's `DriveStick` attribute (a Vector3, x right,
+  z back) to steer, Studio only. `Driving.DriveBack:FireServer()` is Back.
+- **Measured in the test hall** (Client, 0.1 s samples): from standing 4.2, 7.8, 12.0, 16.2 studs a
+  second, then it stopped dead at Unit103's shut door (hull 0.74 studs short of the collider's
+  face), no put back, creeping under 0.1 studs in the next second against it. Nosed into the
+  hall's side mid-turn it slides along the wall at 1 to 2 studs a second, as the handling meant.
+- **The MCP resets the camera type after an `execute_luau`** that changed it ("Resetting from
+  Scriptable back to Custom"); DriveView sets Scriptable every frame, so the hood view holds.
+- **The whine:** Pro Sound Effects' "Servo Long Slow Bursts Whir Mostly Constant 2" 9125924630
+  (5.48 s): steady near -28 dB from 2.4 to 4.9 s (AudioAnalyzer, 0.25 s bins), looped there.
+- The dev hall is unlit: the hood view is black against a shut door (OWNER.md's headlight
+  question).
+

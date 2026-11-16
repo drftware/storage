@@ -32,6 +32,7 @@ local DoorView = require(script.DoorView)
 local ElevatorView = require(script.ElevatorView)
 local EndView = require(script.EndView)
 local FlashlightView = require(script.FlashlightView)
+local DriveView = require(script.DriveView)
 local FindUseView = require(script.FindUseView)
 local HornView = require(script.HornView)
 local FreeCursor = require(script.FreeCursor)
@@ -62,6 +63,7 @@ local TapView = require(script.TapView)
 local UnderDoor = require(script.UnderDoor)
 local UnitLights = require(script.UnitLights)
 local WatchView = require(script.WatchView)
+local Drive = require(ReplicatedStorage.Shared.Finds.Drive)
 local Use = require(ReplicatedStorage.Shared.Finds.Use)
 local Wrap = require(ReplicatedStorage.Shared.Tools.Wrap)
 local WrapView = require(script.WrapView)
@@ -81,6 +83,15 @@ for key in Use.Rows do
 	presses[key] = function(): boolean
 		return findUse.press(key)
 	end
+end
+-- the RC car's Drive (F-G1b3c2c): the button hides while you drive
+local driveView, driving = DriveView.new(myHand, kick)
+presses[Drive.Key] = driving.press
+local function can(key: string): boolean
+	if key == Drive.Key then
+		return driving.can()
+	end
+	return findUse.can(key)
 end
 local cartView, ownCart, cartTold = CartView.new()
 local machineView, pressMachine = MachineView.new()
@@ -141,7 +152,7 @@ local host = Brix.Host.new({
 		-- after ToolView: your finds kept at the gate rise out of its slots (S1-06)
 		{ slot = "keepView", system = KeepView.new() },
 		-- after ToolView, so its button lands beside a bar that's there
-		{ slot = "hornView", system = HornView.new(myHand, kick, presses, findUse.can) },
+		{ slot = "hornView", system = HornView.new(myHand, kick, presses, can) },
 		-- a pressed find's motions, light and sound on every screen; yours on your view's copy too
 		{ slot = "findUseView", system = findUseView },
 		{ slot = "wrapView", system = wrapView },
@@ -154,6 +165,8 @@ local host = Brix.Host.new({
 		{ slot = "freeCursor", system = freeCursor },
 		{ slot = "hallHaze", system = HallHaze.new() },
 		-- left behind (L-08c): its camera runs between CameraShake's undo and apply
+		-- the RC car: your view on its hood while you drive, between CameraShake's undo and apply
+		{ slot = "driveView", system = driveView },
 		{ slot = "watchView", system = WatchView.new(kick, needCursor) },
 		-- the climb's end (L-08d): over everything, the results and "Again"
 		{ slot = "endView", system = EndView.new(needCursor) },

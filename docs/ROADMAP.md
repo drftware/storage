@@ -2447,11 +2447,21 @@ actions themselves and dealing the new finds on floors are later game tickets.
             the car half a second after a bad move (`putBack` fires, for a jolt); the client's
             `asked()` gives the speed and turn for the whine and the wheels; `controls` is where
             the sideways push mixes in throttle; the car's floor parts need low friction.
-          - [ ] **F-G1b3c2c Drive it.** The pin moved; the car set down in front of you apart
+          - [x] **F-G1b3c2c Drive it.** The pin moved; the car set down in front of you apart
             from its transmitter, which stays in your hands; your view on its hood, low and wide
             with a jolt on a bump; the stick drives it through Brix; a motor whine rising with
             speed; its wheels turn and steer; the back button; walking to it takes it back.
             Studio Play: from the lobby down a hall into an open unit, stopping at a shut door.
+            Done Nov 16 (D-254, pin `c9f6667`): `Finds/Drive`, `Drives`, `DriveView`. In Studio
+            Play, steered by script in the dev hall: set down, driven, from standing to 16 studs
+            a second in 0.4 s and stopped dead at a shut door with no put back; Back gave your
+            eyes back and anchored it; walking to it took it back. Not run: into an open unit
+            (every dev-hall door was shut), the phone stick, a friend's view (OWNER.md).
+            Polish, by name: the wheel, Drop and torch buttons still show while you drive (hide
+            them, Back alone); the Back button's own press motion; a static fizz on a put back;
+            the inner front wheel turning more than the outer (the art's Ackermann); the wheels
+            and springs pose by `Finds.joints`, which allocates a little each frame for a car in
+            view (fine for one car; a pooled pose if more drive at once).
           - [ ] **F-G1b3c2d The driver's body.** You crouch still with the transmitter, its
             antenna up; caught, the drive ends; driving it to your feet takes it back; friends
             see it drive (their view and the phone stick go to `OWNER.md`).
@@ -2459,7 +2469,9 @@ actions themselves and dealing the new finds on floors are later game tickets.
           Packrat takes it as it takes any (S2-06b): on the driver's screen the view lifts off
           the floor, shakes, cuts to static, and you're back in your own eyes; it goes on the
           pile, there to take back. A friend picking the car up ends your drive too; a car
-          still out when the elevator leaves is left behind with the floor.
+          still out when the elevator leaves is left behind with the floor (today it lives in
+          `Workspace.Driven`, outside any floor, so it would stay: move it into its floor's
+          model, and a transmitter whose car is lost becomes what?).
         - Home: it drives round your home too, once home is built (S5-03).
     - [ ] **F-G1b4 The hard hat goes on your head** (the owner, Nov 16, D-251; Phasmophobia's
       head torch). The moment: your flashlight stutters out, no battery, the Mannequin two halls
