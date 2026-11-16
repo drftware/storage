@@ -8,9 +8,64 @@ order below. Each session works from the Next line and moves it on.
 
 **Next:** F-04c, the wind-up chattering teeth, then the wind-up walking robot, in
 `art/finds/windups/` (the set, the cymbal monkey and the jack-in-the-box are built); not yet
-researched, the newest note has a plan. Then the rest of the Wind-ups in the table's order. The
-oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp` when next
-touched.
+researched, the newest note has a plan. Then follow "The second run's plan" below, session by
+session. The oil lamp's sheets still want `ACTIONS= scripts/art.sh set lights renders OilLamp`
+when next touched.
+
+## The second run's plan (owner's yes, Nov 15)
+
+The rest of the Wind-ups (12) and all 14 Squishies, about 15 sessions, to CRAFT.md's bar. A
+session takes the next batch from the Next line; if a batch doesn't fit, it stops at a find
+boundary and the next session carries on. The finds are batched where they share pieces, which
+changes the table's order a little.
+
+1. **F-04c** Chattering teeth (white teeth in pink gums on two orange feet, a side key; the top
+   jaw snaps 6 to 8 times a second as the feet shuffle it along) and the walking robot (a
+   printed tin robot 6 to 9 inches tall; legs swing from the hip, arms the other way, it clanks
+   off straight for 15 s). The newest note has both plans.
+2. **F-04d** Wind-up mouse (zips off, slows, stops with a squeak, its tail wagging behind) and
+   the clockwork tin bird (Epic: an antique printed-tin bird hopping forward in little jumps, its
+   beak opening with each whistle, its tail bobbing; the finest printing in the set). Both are
+   small tin walkers on a key: share the key and the walk.
+3. **F-04e** Toy siren car (a chunky toy emergency car of our own, no real police markings; the
+   die-cast car's way of making a body; its roof light spins and glows red with its own light,
+   so it sweeps the hall's walls as it rolls) and the squeaky rubber duck (squeeze: the whole
+   duck squashes and springs back).
+4. **F-04f** Kazoo (blow: the paper skin under its cap shivers) and the toy drum (a kid's tin
+   drum with zigzag rope sides, the tell from a doorway, and two sticks; a stick comes down, the
+   head shivers, the stick bounces off).
+5. **F-04g** Farm-animal spinner alone (pull: the lever comes down and snaps back, the arrow
+   spins, slows and ticks to a stop on an animal). The work is the face: eight little animal
+   pictures drawn in code that read in the hand. Our own toy, not the famous one.
+6. **F-04h** Pull-string cowboy doll alone (cloth body, vinyl head, hat, a ring on a string in
+   its back; the string runs out and zips back in while its arms jiggle). The first cloth find.
+   Must not read as a famous film's cowboy: other clothes, colours and face. Its six spoken
+   lines need recorded audio we own: put that question in `OWNER.md`.
+7. **F-04i** Singing fish plaque alone (a rubber fish on a wooden plaque with a plate and a
+   button; the tail flaps, the head swings out to face you, the mouth opens in time, then it all
+   swings back). Our own fish and plaque, not the famous one's. Its song is the same `OWNER.md`
+   question as the doll's lines.
+8. **F-04j** Wind-up tin carousel alone (Epic, the most parts: a printed canopy turning on a
+   centre pole, three or four horses rising and falling out of step, the tune slowing as it runs
+   down, timed from a music-box video).
+9. **F-04k** A Studio look at all 14 Wind-ups together in a unit at phone size; fix what reads
+   badly. Also the jack-in-the-box's playing-card corners and the oil lamp's sheets. Ticks F-04.
+10. **F-05a** Bones in the kit, proven on the squishy butter stick (squeeze: a dent that slowly
+    fills back in). CRAFT.md: a find that bends in places needs bones. Check in Studio first that
+    a skinned MeshPart from our FBX imports and that moving its Bones bends it on a phone-size
+    view; write what you learn in `docs/STUDIO.md`. If bones won't work in Roblox, record why and
+    build the dent another way (a pressed piece that sinks and rises). Plush needs the same.
+11. **F-05b** Stress ball with a face (its eyes are their own parts, pushed out as it squashes),
+    mochi bun, squishy toast slice (springs back like bread). Whole-body squash, the tea light's
+    flame's `stretch`.
+12. **F-05c** Jumbo slow-rise strawberry (the same squash, ten seconds to rise), squishy capybara
+    (a tiny happy sigh), paper squishy with a drawn face (crinkled paper, looks homemade).
+13. **F-05d** Gel bead ball, glitter goo ball, galaxy goo ball (Legendary): a see-through skin,
+    the firefly jar's glass way, with an inside that swirls and settles.
+14. **F-05e** Goo ball (oozes between your fingers), colour-change goo ball (changes colour only
+    where pressed: may need a new trick, say so), mega goo ball (Epic, both hands).
+15. **F-05f** Squishy cake slice (frosting pushes out the side), then a Studio look at all 14
+    Squishies at phone size. Ticks F-05.
 
 ## Order
 
