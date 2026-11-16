@@ -79,13 +79,19 @@ class Part:
     colour map's alpha, so it imports in AlphaMode Transparency (docs/STUDIO.md). An `alone`
     part is baked with nothing else in the scene: it is hidden where it's built and only ever
     seen somewhere else (the blob lamp's blobs, all built in one spot inside the wax). `bones`
-    bend the part in places (Bone): its game mesh is skinned to them."""
+    bend the part in places (Bone): its game mesh is skinned to them. An `inside` part is a
+    wall seen from within (the glitter goo ball's gel): its builder draws it facing in, and as
+    Roblox draws only a face's front, through a clear part it shows the far side's inside while
+    its near side lets you see what's in front of it. It casts no shadow (what's inside stays
+    lit), neither shades nor is shaded by the other parts in the bake, and the previews cull
+    its back faces as Roblox does."""
 
     def __init__(self, name, build, pivot=(0.0, 0.0, 0.0), parent=None, axis=None, clear=False,
-                 alone=False, bones=()):
+                 alone=False, bones=(), inside=False):
         self.name, self.build, self.pivot, self.parent = name, build, Vector(pivot), parent
         self.axis = Vector(axis).normalized() if axis else None
         self.clear, self.alone, self.bones = clear, alone, list(bones)
+        self.inside = inside
 
 
 class Find:
@@ -392,7 +398,8 @@ def stage_textures(find, set_dir):
                 # An `alone` part neither shades nor is shaded by the others
                 for q in find.parts:
                     h = (((q.name != p.name) if p.clear else q.clear) if find.clear else False)
-                    hi[q.name].hide_render = h or ((p.alone or q.alone) and q.name != p.name)
+                    apart = p.alone or q.alone or p.inside or q.inside
+                    hi[q.name].hide_render = h or (apart and q.name != p.name)
             bpy.ops.object.select_all(action="DESELECT")
             hi[p.name].select_set(True)
             lo[p.name].select_set(True)
@@ -444,12 +451,14 @@ def stage_textures(find, set_dir):
 
 # --- materials for export and previews ----------------------------------------------------
 
-def material(find, set_dir, preview=False, gold=False, clear=False):
+def material(find, set_dir, preview=False, gold=False, clear=False, inside=False):
     """The baked maps on a Principled BSDF (what Roblox's importer reads). A preview material
     also glows: the emissive map, times the part's `glow` (0 to 1), times the find's light. A
     clear one takes its alpha from the colour map's (Roblox then imports AlphaMode
-    Transparency)."""
-    key = f"{find.name}{'_gold' if gold else ''}{'_pv' if preview else ''}{'_clear' if clear else ''}"
+    Transparency). An inside part's preview shows only its faces' fronts, as Roblox does."""
+    inside = inside and preview
+    key = (f"{find.name}{'_gold' if gold else ''}{'_pv' if preview else ''}"
+           f"{'_clear' if clear else ''}{'_in' if inside else ''}")
     if key in bpy.data.materials:
         return bpy.data.materials[key]
     mat = bpy.data.materials.new(key)
@@ -475,7 +484,14 @@ def material(find, set_dir, preview=False, gold=False, clear=False):
         nb.put(bsdf.inputs["Emission Color"],
                nb.mixc(1.0, col.outputs["Color"], nb.rgb(tuple(c / 255 for c in tint)), "MULTIPLY"))
         nb.put(bsdf.inputs["Emission Strength"], nb.mul(on, find.glow.get("preview", 12.0)))
-    nb.links.new(bsdf.outputs[0], out.inputs["Surface"])
+    if inside:
+        cull = nb.node("ShaderNodeMixShader")
+        nb.links.new(nb.node("ShaderNodeNewGeometry").outputs["Backfacing"], cull.inputs[0])
+        nb.links.new(bsdf.outputs[0], cull.inputs[1])
+        nb.links.new(nb.node("ShaderNodeBsdfTransparent").outputs[0], cull.inputs[2])
+        nb.links.new(cull.outputs[0], out.inputs["Surface"])
+    else:
+        nb.links.new(bsdf.outputs[0], out.inputs["Surface"])
     return mat
 
 
@@ -503,7 +519,8 @@ def wear(find, set_dir, objs, **kw):
     for p in find.parts:
         ob = objs[p.name]
         ob.data.materials.clear()
-        ob.data.materials.append(material(find, set_dir, clear=p.clear, **kw))
+        ob.data.materials.append(material(find, set_dir, clear=p.clear, inside=p.inside, **kw))
+        ob.visible_shadow = not p.inside
 
 
 def stage_export(find, set_dir):
@@ -545,7 +562,7 @@ def row(find, objs, size):
         plo, phi = bounds([objs[p.name]])
         parts.append(dict(name=p.name, parent=p.parent, pivot=to_roblox(p.pivot - root),
                           axis=to_roblox(p.axis) if p.axis else None, clear=p.clear,
-                          size=extent(phi - plo), tris=tris(objs[p.name])))
+                          inside=p.inside, size=extent(phi - plo), tris=tris(objs[p.name])))
     bones = [dict(name=b.name, part=p.name, at=to_roblox(b.at - root), axis=to_roblox(b.axis),
                   hinge=to_roblox(b.hinge) if b.hinge else None)
              for p in find.parts for b in p.bones]
@@ -770,7 +787,7 @@ def stage_renders(find, set_dir, quick=False):
         ob.matrix_world = M.inverted() @ ob.matrix_world
     for p in find.parts:
         objs[p.name].data.materials[0] = material(find, set_dir, preview=True, gold=True,
-                                                  clear=p.clear)
+                                                  clear=p.clear, inside=p.inside)
     cam = render.camera(c + Vector((-0.9, -1.9, 0.55)) * d * 1.25, c, lens=45)
     shoot(cam, sheet("gold"), (1600, 900), S)
 
@@ -922,6 +939,7 @@ def write_luau(set_name, finds, rows, path):
             ax = f"Axis = {_v3(p['axis'])}, " if p["axis"] else ""
             par = f"Parent = \"{f.name}_{p['parent']}\", " if p["parent"] else ""
             ax += "Clear = true, " if p["clear"] else ""
+            ax += "Inside = true, " if p["inside"] else ""
             L.append(f"\t\t\t{{ Name = \"{f.name}_{p['name']}\", {par}Pivot = {_v3(p['pivot'])}, {ax}"
                      f"Size = {_v3(p['size'])}, Triangles = {p['tris']} }},")
         L.append("\t\t},")

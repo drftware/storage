@@ -140,7 +140,11 @@ function Kit.prepare(model: Model, set: string, name: string, emissive: string?)
 		part.CanTouch = false
 		part.CollisionFidelity = Enum.CollisionFidelity.Box
 		part.Color = FALLBACK
-		part.CastShadow = not spec.Clear
+		part.CastShadow = not (spec.Clear or spec.Inside)
+		if spec.Inside then
+			-- only its fronts drawn: the near side of a wall drawn facing in shows what's inside
+			part.DoubleSided = false
+		end
 		part.Transparency = if spec.Clear then CLEAR else 0
 		local look = part:FindFirstChildOfClass("SurfaceAppearance")
 		if look then

@@ -14,6 +14,8 @@ export type Part = {
 	-- or slides (it may still travel and lean: the travel channels below)
 	Clear: boolean?, -- see-through (glass, a flame): its SurfaceAppearance is in AlphaMode
 	-- Transparency, and the part wants Transparency 0.02 or the alpha cuts (docs/STUDIO.md)
+	Inside: boolean?, -- a wall seen from within (the glitter goo ball's gel), drawn facing in:
+	-- one-sided and casting no shadow, so through a clear part it shows the far side's inside
 	Size: Vector3,
 	Triangles: number,
 }

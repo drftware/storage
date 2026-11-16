@@ -954,6 +954,146 @@ local Set: { [string]: Art.Find } = {
 			},
 		},
 	},
+	GlitterGooBall = {
+		Size = Vector3.new(0.252, 0.245, 0.252),
+		Centre = Vector3.new(-0.000, 0.122, 0.000),
+		Triangles = 6128,
+		Texture = 1024,
+		Parts = {
+			{
+				Name = "GlitterGooBall_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Clear = true,
+				Size = Vector3.new(0.252, 0.245, 0.252),
+				Triangles = 2024,
+			},
+			{
+				Name = "GlitterGooBall_Gel",
+				Parent = "GlitterGooBall_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Axis = Vector3.new(-0.000, 1.000, 0.000),
+				Inside = true,
+				Size = Vector3.new(0.239, 0.232, 0.239),
+				Triangles = 2024,
+			},
+			{
+				Name = "GlitterGooBall_GlitterLow",
+				Parent = "GlitterGooBall_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Axis = Vector3.new(-0.000, 1.000, 0.000),
+				Size = Vector3.new(0.199, 0.075, 0.187),
+				Triangles = 696,
+			},
+			{
+				Name = "GlitterGooBall_GlitterMid",
+				Parent = "GlitterGooBall_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Axis = Vector3.new(-0.000, 1.000, 0.000),
+				Size = Vector3.new(0.197, 0.071, 0.214),
+				Triangles = 852,
+			},
+			{
+				Name = "GlitterGooBall_GlitterTop",
+				Parent = "GlitterGooBall_Body",
+				Pivot = Vector3.new(-0.000, 0.000, 0.000),
+				Axis = Vector3.new(-0.000, 1.000, 0.000),
+				Size = Vector3.new(0.173, 0.082, 0.190),
+				Triangles = 532,
+			},
+		},
+		Lights = {},
+		Motions = {
+			Squeeze = {
+				Duration = 5.6,
+				Tracks = {
+					{
+						Part = "GlitterGooBall_Body",
+						Channel = "stretch",
+						Keys = {
+							{ 0, 1, "Sine", "InOut" },
+							{ 0.1, 1.022, "Sine", "Out" },
+							{ 0.4, 0.72, "Quad", "Out" },
+							{ 0.82, 0.706, "Sine", "InOut" },
+							{ 1, 1.045, "Quad", "Out" },
+							{ 1.18, 0.981, "Sine", "InOut" },
+							{ 1.38, 1.007, "Sine", "InOut" },
+							{ 1.62, 1, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "GlitterGooBall_GlitterTop",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.1, 0, "Sine", "InOut" },
+							{ 0.7, 113.684, "Quad", "In" },
+							{ 3.3, 360, "Quart", "Out" },
+						},
+					},
+					{
+						Part = "GlitterGooBall_GlitterTop",
+						Channel = "move",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.1, 0, "Sine", "InOut" },
+							{ 1.1, 0.0045, "Sine", "InOut" },
+							{ 3.3, 0, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "GlitterGooBall_GlitterMid",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.2, 0, "Sine", "InOut" },
+							{ 1.1, 127.059, "Quad", "In" },
+							{ 4.4, 360, "Quart", "Out" },
+						},
+					},
+					{
+						Part = "GlitterGooBall_GlitterMid",
+						Channel = "move",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.2, 0, "Sine", "InOut" },
+							{ 1.4, 0.0035, "Sine", "InOut" },
+							{ 4.4, 0, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "GlitterGooBall_GlitterLow",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.3, 0, "Sine", "InOut" },
+							{ 1.4, 136.552, "Quad", "In" },
+							{ 5, 360, "Quart", "Out" },
+						},
+					},
+					{
+						Part = "GlitterGooBall_GlitterLow",
+						Channel = "move",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.3, 0, "Sine", "InOut" },
+							{ 1.7, 0.003, "Sine", "InOut" },
+							{ 5, 0, "Sine", "InOut" },
+						},
+					},
+					{
+						Part = "GlitterGooBall_Gel",
+						Channel = "turn",
+						Keys = {
+							{ 0, 0, "Sine", "InOut" },
+							{ 0.35, 0, "Sine", "InOut" },
+							{ 1.55, 138.24, "Quad", "In" },
+							{ 5.4, 360, "Quart", "Out" },
+						},
+					},
+				},
+			},
+		},
+	},
 }
 
 return Set

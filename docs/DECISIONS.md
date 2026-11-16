@@ -6331,3 +6331,18 @@ use, but which can't make a dent.
   `Pose.solve` alike), so a part that must keep its own shape on a squashed body counters it
   with its own stretch (here 1/s to the 0.9). The eyes are baked `alone`, so the dark inside of
   the ball never shades the white that comes out of it.
+
+## D-248 · 2026-11-16 · What's inside a clear find shows its far side on a wall drawn facing in
+- **What:** the finds kit has an `inside` part (`kit.Part(..., inside=True)`, `Inside` in the
+  set's Luau): a wall its builder draws facing in (the glitter goo ball's gel, a hair inside its
+  clear skin). Roblox draws only a face's front, so its near side vanishes and its far side's
+  inside shows behind everything in front of it; it casts no shadow and is baked apart from the
+  other parts; `Kit.import` makes it one-sided with no shadow, and the previews cull its back
+  faces as Roblox does. The glitter itself is half metal at most.
+- **Why:** a clear ball of tinted gel needs a body of colour behind its glitter. A solid core
+  hid every flake behind it and left a see-through ring round it (a ball in a ball); a second
+  clear layer sorts badly against the skin in Roblox (the same middle). A wall facing in gives
+  the gel's colour, the light pooling in its bottom, and full depth to every flake, for one
+  sphere's triangles. Full-metal flakes reflect the dark unit and read grey; half metal with a
+  bright colour stays bright from every side and still flashes where one faces the light. The
+  galaxy goo ball's nebula is the next to use it.

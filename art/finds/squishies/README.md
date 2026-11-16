@@ -308,3 +308,50 @@ where they were and settle by 2 s.
 - **Judged:** quick sheets three times (fixed: the beads pressed so flat they read as octagonal
   candy chips; black jagged rims from the bake; pale bead sides that read as pills; dark holes
   between the beads, now the pale cloud), full sheets once.
+
+## Glitter goo ball (F-05d2, Nov 16)
+
+`GlitterGooBall` (prefix `gg_`/`GG_`, kinds 22 to 28; spec `GLITTER`, `GOO`, `GLITTER_TOP`,
+`GLITTER_MID`, `GLITTER_LOW`, `GLITTER_DEEP`, `GLITTER_RISE_*`). Uncommon, "Squeeze: glitter
+swirls, then settles".
+
+**References.** Bing image results for "glitter stress ball clear gel squeeze" (Nov 16): a clear
+lavender gel ball hung through with fine iridescent glitter, its edge deeper, the light pooling
+bright low inside it; a lime one with chunky hex flakes and star sequins; aqua, pink and yellow
+ones of the same kind. Sizes from listings: Arggh's mini glitter stress balls, 2.5 in, clear PU
+filled with foil glitter and gel; Walmart's 2.5 in glitter thick-gel stress ball, a clear skin
+over sparkly gel.
+
+**Size.** 64 mm across (2.5 in): 0.25 studs, sitting 1 mm onto a small, soft flat spot. The hex
+flakes are 1.6 to 2.9 mm across, the stars 5.2 mm.
+
+**Tells.** A clear aqua ball full of sparkle. From a unit's doorway it is a speck (a small
+find); held, the glitter and the gold stars read at once through the glossy skin.
+
+**What it is.** `Body` (the root, clear): the gel bead ball's skin, alpha 0.2, rounder (24 by
+44), a pale clear aqua so gold stays gold through it. `Gel`: the gel's wall a hair inside the
+skin, drawn facing in, the kit's new `inside` part: Roblox draws only a face's front, so
+through the near side you see the far side's inside, and every flake in front of it with real
+depth; the light pools bright in its bottom because its face looks up there. It carries the
+fine glitter (silver and gold specks) and a few tiny bubbles, and casts no shadow, so the
+glitter inside stays lit. `GlitterLow`, `GlitterMid`, `GlitterTop`: 230 hex flakes and 12
+stars hung through the gel (`gg_glitter`: kept apart and clear of the wall, each facing its
+own random way), both faces of each, silver most, then gold, rose and lilac. They are half
+metal at most (a full metal flake in a dim unit shows the dark room and reads grey), each a
+little off the next in shade, with white flashes across some as holographic film catches the
+light; the deeper ones are tinted by the gel. 1024 texture at 1231 texels a stud; 6,128
+triangles.
+
+**Squeeze** (5.6 s): the fingers close (it bulges a hair), it squashes slow and heavy to 0.72
+tall, holds, and let go heaves back to 1.045 and settles fast, the gel too thick to slosh. The
+glitter whips round inside, the top band first and fastest, the middle a beat behind, the
+bottom later and the fine glitter deep in the gel last, twisting like a stirred drink; each
+lifts a hair and coasts on, slowing all the while, drifting back down to stop a whole turn on,
+where it began (a seamless loop). Each band's speed is matched where its spin-up (Quad In)
+hands over to its long coast (Quart Out): `glitter_swirl` in the spec.
+
+- **Judged:** quick sheets three times (fixed: full-metal flakes that went grey in dim light;
+  gold stars turned olive by an aqua skin; small flakes; a faceted outline), full sheets once.
+- **Studio:** uploaded (81331925763211), not imported: Studio was in Play when it was ready.
+  `require(game.ReplicatedStorage.Shared.Finds.Kit).import("Squishies", {"GlitterGooBall"})` in
+  Edit makes its template; check that `GlitterGooBall_Gel` comes in one-sided with no shadow.

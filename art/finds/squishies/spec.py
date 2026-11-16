@@ -430,3 +430,68 @@ SWIRL_LOW = [
     (1.55, 1.2, "Sine", "InOut"),
     (2.05, 0.0, "Sine", "InOut"),
 ]
+
+# --- The glitter goo ball (F-05d2) ---------------------------------------------------------------
+# A clear TPR squeeze ball full of tinted glitter gel, of our own (README): sold 2.5 in across;
+# a clear, glossy skin with a moulded seam and a fill plug like the gel bead ball's, the gel a
+# clear aqua, chunky glitter hung all through it (hex flakes 1.6 to 2.9 mm, silver most, then
+# gold, rose and lilac holographic) with a dozen gold star sequins, and fine glitter and a few
+# tiny bubbles deep in it, seen on the far side's inside.
+GLITTER = dict(
+    r=32.0,            # the ball's outside radius: 64 mm across (2.5 in)
+    sink=1.0,          # how far it settles onto the floor: a small soft flat spot
+    skin=1.4,          # the TPR skin's thickness (mm): the gel fills it to its inside
+    # the hex flakes hung in the gel: how many, their size (the hexagon's corner radius, mm),
+    # how far apart two must stay (mm, so none cross), and how near the gel's wall they may come
+    flakes=230, flake_r=(0.8, 1.45), gap=2.8, wall=2.9,
+    # how the flakes are dealt: silver, gold, rose, lilac (shares of the whole)
+    mix=(0.46, 0.24, 0.18, 0.12),
+    # the star sequins: how many, their points' radius and their waist's (mm)
+    stars=12, star_r=2.6, star_in=1.12,
+    band=8.0,          # the swirling bands, by a flake's height over the middle (mm): equal thirds
+    dust=0.12, seed=53.0,
+)
+
+# The squeeze, timed like a thick gel ball: the fingers close and it bulges a hair, squashes slow
+# and heavy, and let go it heaves back past round only a little and settles quickly, the gel too
+# thick to slosh (seconds, height[, style, way]).
+GOO = [
+    (0.0, 1.0),
+    (0.1, 1.022, "Sine", "Out"),      # the fingers close round it: it bulges up a hair first
+    (0.4, 0.72, "Quad", "Out"),       # squashed slow, the gel shoved round inside
+    (0.82, 0.706, "Sine", "InOut"),   # held, still pressing
+    (1.0, 1.045, "Quad", "Out"),      # let go: heaves back past round
+    (1.18, 0.981),
+    (1.38, 1.007),
+    (1.62, 1.0),
+]
+
+
+def glitter_swirl(start, spin, coast, s=1.0):
+    """One band's swirl (degrees about the upright, anticlockwise from above): still until the
+    squeeze reaches it at `start`, then whipped round faster and faster for `spin` seconds, then
+    coasting a long way on, slowing all the while, to stop a whole turn on at `coast` seconds
+    later, where it started (a seamless loop: the glitter looks the same at rest). The handover
+    angle is where the two speeds match: a Quad In's last speed 2a/spin equals a Quart Out's
+    first, 4(360 - a)/coast."""
+    a = 720.0 * spin / (coast + 2.0 * spin)
+    return [(0.0, 0.0), (start, 0.0), (start + spin, s * a, "Quad", "In"),
+            (start + spin + coast, s * 360.0, "Quart", "Out")]
+
+
+def glitter_rise(start, peak, end, h):
+    """One band lifted a hair by its swirl (studs up the ball) and settling slowly back down."""
+    return [(0.0, 0.0), (start, 0.0), (peak, h, "Sine", "InOut"), (end, 0.0, "Sine", "InOut")]
+
+
+# The glitter's swirl: the squeeze whips the top band round first and fastest, the middle a beat
+# behind and the bottom later still, so the glitter twists round inside like a stirred drink; each
+# lifts a hair as it goes and drifts back down, the top stopping first and the fine glitter deep
+# in the gel last, by 5.4 s.
+GLITTER_TOP = glitter_swirl(0.1, 0.6, 2.6)
+GLITTER_MID = glitter_swirl(0.2, 0.9, 3.3)
+GLITTER_LOW = glitter_swirl(0.3, 1.1, 3.6)
+GLITTER_DEEP = glitter_swirl(0.35, 1.2, 3.85)
+GLITTER_RISE_TOP = glitter_rise(0.1, 1.1, 3.3, 0.0045)
+GLITTER_RISE_MID = glitter_rise(0.2, 1.4, 4.4, 0.0035)
+GLITTER_RISE_LOW = glitter_rise(0.3, 1.7, 5.0, 0.003)

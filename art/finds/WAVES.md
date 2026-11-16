@@ -6,7 +6,7 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** F-05d2, step 13: the glitter goo ball, then the galaxy goo ball.
+**Next:** F-05d3, the rest of step 13: the galaxy goo ball (Legendary).
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -58,8 +58,8 @@ changes the table's order a little.
 12. **F-05c** Jumbo slow-rise strawberry (built Nov 16; a thumb's dent on bones, ten seconds to
     rise), then, as **F-05c2**, the squishy capybara (built Nov 16; a tiny happy sigh) and, as
     **F-05c3**, the paper squishy with a drawn face (built Nov 16; crinkled paper, homemade).
-13. **F-05d** Gel bead ball (built Nov 16), then, as **F-05d2**, the glitter goo ball and the
-    galaxy goo ball (Legendary): a see-through skin, the firefly jar's glass way, with an inside
+13. **F-05d** Gel bead ball (built Nov 16), then, as **F-05d2**, the glitter goo ball (built
+    Nov 16), and, as **F-05d3**, the galaxy goo ball (Legendary): a see-through skin, the firefly jar's glass way, with an inside
     that swirls and settles.
 14. **F-05e** Goo ball (oozes between your fingers), colour-change goo ball (changes colour only
     where pressed: may need a new trick, say so), mega goo ball (Epic, both hands).
@@ -90,6 +90,37 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, F-05d2 (the glitter goo ball built; uploaded 81331925763211, not imported: Studio was in Play; the galaxy goo ball left for
+  F-05d3: the context cap).** `GlitterGooBall` in `squishies/build.py` (prefix `gg_`/`GG_`,
+  kinds 22 to 28; spec `GLITTER`, `GOO`, `GLITTER_*`); README section, `Order.luau`, D-248. A
+  2.5 in clear aqua gel ball of our own hung through with 230 hex flakes (silver, gold, rose,
+  lilac) and 12 gold stars, fine glitter and tiny bubbles deeper in. Squeeze (5.6 s): a slow,
+  heavy squash to 0.72; the glitter whips round in three bands, top first, coasts on slowing,
+  lifted a hair and drifting back down, and stops a whole turn on (seamless). Judged on quick
+  sheets three times and full sheets once. 6,128 triangles.
+  **Kit change (D-248):** `kit.Part(..., inside=True)`: a wall drawn facing in (its builder
+  reverses its faces: `bmesh.ops.reverse_faces`). Roblox draws only fronts, so through a clear
+  skin you see the far side's inside behind every flake, with real depth, and the light pools in
+  its bottom by itself. No shadow (Blender `visible_shadow`, Roblox `CastShadow`), baked apart,
+  previews cull its back faces, `Kit.import` makes it one-sided. A solid core instead hides
+  what's behind it and leaves a see-through ring (a ball in a ball).
+  **Found:** full-metal flakes read grey in dim light (they show the dark room): half metal at
+  most, bright colours, low roughness, white flashes painted across some; an aqua skin turns
+  gold olive: keep a clear skin pale and let the inside wall carry the colour. `glitter_swirl`
+  in the spec matches a spin-up's speed to its coast's, so a swirl reads as one push.
+  **F-05d3's hints (not researched):** *Galaxy goo ball* (Legendary, "stars drift and swirl
+  inside"): Bing's "starry sky galaxy stress ball" and "nebula" results show the kind: 2.5 to
+  3 in, deep violet or emerald gel, fine silver glitter and star sequins. Reuse the glitter
+  ball whole: its skin (paler violet tint), the `inside` gel wall painted as a nebula (deep
+  blue-violet, soft magenta and teal clouds with darker lanes, many tiny star specks), with
+  `glow=` on the gel wall (an emissive mask on the nebula's brightest clouds and the stars, the
+  night-light's way) so it reads as a glowing ball from a doorway; the flakes become silver
+  stars and fine specks (fewer hexes, more 4- and 5-point stars), a few on an emissive mask
+  too. Motion: the glitter ball's swirl, slower and dreamier (one turn over 6 to 7 s), and the
+  gel wall turning a little behind so the nebula drifts. Judge the held view hardest, then the
+  `-unit` view: a faint glow must carry from the doorway (a Point light of its own, very weak,
+  violet `rgb=`, CRAFT's lights rule).
 
 - **Nov 16, F-05d (the gel bead ball built; uploaded 79353970920181 and imported; not looked at
   in Studio: the context cap; the glitter and galaxy goo balls left for F-05d2).** `GelBeadBall`
@@ -1568,7 +1599,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Paper squishy with a drawn face | Uncommon | Squeeze: it crinkles | Looks homemade; cheap to build | Nov 16, F-05c3 |
 | Squishy toast slice | Uncommon | Squeeze: springs back like real bread |  | Nov 16, F-05b3 |
 | Gel bead ball | Uncommon | Squeeze: the beads swirl inside |  | Nov 16, F-05d |
-| Glitter goo ball | Uncommon | Squeeze: glitter swirls, then settles |  | |
+| Glitter goo ball | Uncommon | Squeeze: glitter swirls, then settles |  | Nov 16, F-05d2 |
 | Jumbo slow-rise strawberry | Uncommon | Squeeze: the dent takes ten seconds to rise back |  | Nov 16, F-05c |
 | Colour-change goo ball | Rare | Squeeze: it changes colour where your fingers pressed |  | |
 | Squishy cake slice | Rare | Squeeze: frosting squishes out of the side |  | |

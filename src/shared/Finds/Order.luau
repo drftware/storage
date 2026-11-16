@@ -26,6 +26,7 @@ return {
 	Capybara = { "Squeeze" },
 	PaperSquishy = { "Squeeze" },
 	GelBeadBall = { "Squeeze" },
+	GlitterGooBall = { "Squeeze" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },

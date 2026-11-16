@@ -93,6 +93,11 @@ verified: a doc page, Studio, or "untested".
 
 ## The finds kit into Studio (F-S1, Nov 15)
 
+- **A clear part imports DoubleSided true, an opaque one false** (F-05d2, Nov 16, read in Studio,
+  Edit, on the gel bead ball's template): the importer turns it on for a mesh whose material has
+  alpha. `MeshPart.DoubleSided` can be written from the MCP's Luau (plugin context), so
+  `Kit.import` sets it false on an `Inside` part (a wall drawn facing in) to be sure its near
+  side never hides what's in front of it.
 - **Bones: a skinned MeshPart comes through our FBX and upload path** (F-05a, Nov 16, verified
   in Studio, Edit). A Blender mesh parented to an armature (vertex groups named after the bones,
   an Armature modifier), exported with `object_types={"MESH", "ARMATURE"}`,

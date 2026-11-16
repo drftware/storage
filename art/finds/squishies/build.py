@@ -13,6 +13,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "kit"))
 sys.path.insert(0, HERE)
 
+import bmesh  # noqa: E402
 import bpy  # noqa: E402
 import numpy as np  # noqa: E402
 from mathutils import Matrix, Vector  # noqa: E402
@@ -2064,8 +2065,237 @@ GEL_BEAD_BALL = kit.Find(
     dust=GB["dust"], seed=GB["seed"], texels=1000, cage=0.0016,
 )
 
+# --- The glitter goo ball (F-05d2) ---------------------------------------------------------------
+# A clear TPR squeeze ball full of aqua glitter gel, of our own (README): the gel bead ball's
+# glossy skin, seam and fill plug, and through it a clear aqua gel with chunky glitter hung all
+# through it, hex flakes tipped every which way (silver most, then gold, rose and lilac
+# holographic) and a dozen gold stars; deeper in, fine glitter and a few tiny bubbles. The gel
+# is a wall drawn facing in (`inside`): through the near side you see its far side's inside, the
+# light pooling in its bottom, and every flake in front of it. Squeezed, it squashes slow and
+# heavy (`stretch`), the glitter whips round in three bands, top first, and coasts on, slowing,
+# lifted a hair, drifting back down and settling a whole turn on, where it began.
+
+GG = K.GLITTER
+GG_SKIN, GG_GEL = 22, 23
+GG_FLAKES = (24, 25, 26, 27)           # silver, gold, rose, lilac
+GG_STAR = 28
+GG_R = GG["r"]
+GG_RIN = GG_R - GG["skin"]             # the skin's inside, where the gel meets it (mm)
+GG_RGEL = GG_RIN - 0.3                 # the gel's wall, a hair inside the skin's (mm)
+GG_FLOOR = GG["skin"] + 0.3            # the gel's flat bottom over the floor (mm)
+GG_THIN = 0.06                         # half a flake's thickness (mm)
+
+
+def gg_flat(zr):
+    """The ball's height over the floor for its sphere's height zr (mm): the gel bead ball's
+    small, rounded flat spot."""
+    lo = (-GG["sink"] + math.sqrt(GG["sink"] ** 2 + GB_SOFT ** 2)) / 2
+    return (zr + math.sqrt(zr * zr + GB_SOFT ** 2)) / 2 - lo
+
+
+GG_ZC = gg_flat(GG_R - GG["sink"])     # the ball's middle over the pivot on the floor (mm)
+
+
+def gg_glitter():
+    """The glitter hung in the gel: [(centre from the ball's middle mm, facing, spin, radius mm,
+    kind)], stars first, each kept clear of the rest and of the gel's wall and floor, flakes dealt
+    by the spec's shares; every one faces its own random way, as glitter settles in gel."""
+    rng = np.random.default_rng(int(GG["seed"]))
+    reach = GG_RGEL - GG["wall"]
+    lowest = GG_FLOOR + 1.6 - GG_ZC
+    got = []
+
+    def place(n, r_of, kind_of, gap_of):
+        while n:
+            c = rng.uniform(-reach, reach, 3)
+            r = r_of()
+            if np.linalg.norm(c) > reach or c[2] < lowest + r:
+                continue
+            if any(np.linalg.norm(c - q[0]) < gap_of(r, q[3]) for q in got):
+                continue
+            nrm = rng.normal(0, 1, 3)
+            got.append((c, nrm / np.linalg.norm(nrm), float(rng.uniform(0, math.tau)), r,
+                        kind_of()))
+            n -= 1
+
+    place(GG["stars"], lambda: GG["star_r"] * float(rng.uniform(0.9, 1.08)), lambda: GG_STAR,
+          lambda r, q: r + q + 1.2)
+    cum = np.cumsum(GG["mix"])
+    place(GG["flakes"], lambda: float(rng.uniform(*GG["flake_r"])),
+          lambda: GG_FLAKES[int(np.searchsorted(cum, rng.uniform(0, cum[-1])))],
+          lambda r, q: max(GG["gap"], r + q + 0.5))
+    return got
+
+
+GG_LIST = gg_glitter()
+
+
+def gg_band(c):
+    """Which swirling band a piece of glitter rides, by its height over the ball's middle (mm)."""
+    return "Top" if c[2] > GG["band"] else ("Low" if c[2] < -GG["band"] else "Mid")
+
+
+def gg_skin(hi):
+    """The skin: the ball spun from pole to pole, its outside only (it's clear); rounder than
+    the gel bead ball's, whose beads hid its outline's facets."""
+    n, seg = (112, 192) if hi else (24, 44)
+    prof = [(0.0, 0.0)]
+    for i in range(1, n):
+        a = -math.pi / 2 + math.pi * i / n
+        prof.append((mm(GG_R * math.cos(a)), mm(gg_flat(GG_ZC + GG_R * math.sin(a)))))
+    prof.append((0.0, mm(gg_flat(GG_ZC + GG_R))))
+    sh = Shape()
+    sh.lathe(prof, GG_SKIN, seg, split=2)
+    return sh
+
+
+def gg_gel(hi):
+    """The gel's wall a hair inside the skin, flattened over its floor, drawn facing in."""
+    n, seg = (96, 160) if hi else (24, 44)
+    prof = []
+    for i in range(n + 1):
+        a = -math.pi / 2 + math.pi * i / n
+        z = GG_ZC + GG_RGEL * math.sin(a) - GG_FLOOR
+        z = GG_FLOOR + (z + math.sqrt(z * z + 1.2 ** 2)) / 2
+        rho = GG_RGEL * math.cos(a)
+        prof.append((0.0 if abs(rho) < 1e-6 else mm(rho), mm(z)))
+    sh = Shape()
+    sh.lathe(prof, GG_GEL, seg, split=2)
+    bmesh.ops.reverse_faces(sh.bm, faces=list(sh.bm.faces))
+    return sh
+
+
+def gg_piece(sh, c, nrm, spin, r, kind):
+    """One flake (a hexagon) or star sequin, both its faces, each its own island laid flat."""
+    n = Vector(tuple(nrm))
+    u = n.orthogonal().normalized()
+    w = n.cross(u)
+    o = Vector((0.0, 0.0, GG_ZC)) + Vector(tuple(c))
+    if kind == GG_STAR:
+        rim = [(r if i % 2 == 0 else GG["star_in"] * r / GG["star_r"], spin + math.pi * i / 5)
+               for i in range(10)]
+    else:
+        rim = [(r, spin + math.pi * i / 3) for i in range(6)]
+    flat = [Vector((rr * math.cos(a), rr * math.sin(a))) for rr, a in rim]
+    for side in (1.0, -1.0):
+        mid = o + n * (side * GG_THIN)
+        pts = [sh.bm.verts.new((mid + u * p.x + w * p.y) / K.STUD_MM) for p in flat]
+        isl = sh.island()
+        uv = [isl + p / K.STUD_MM for p in flat]
+        order = list(range(len(pts))) if side > 0 else list(reversed(range(len(pts))))
+        if kind == GG_STAR:
+            hub = sh.bm.verts.new(mid / K.STUD_MM)
+            for j in range(len(order)):
+                a, b = order[j], order[(j + 1) % len(order)]
+                sh._f([hub, pts[a], pts[b]], kind, [isl, uv[a], uv[b]])
+        else:
+            sh._f([pts[i] for i in order], kind, [uv[i] for i in order])
+
+
+def gg_glitter_part(band):
+    def build(hi):
+        """The glitter of one band; the same pieces in the detailed and the game mesh."""
+        sh = Shape()
+        for c, nrm, spin, r, kind in GG_LIST:
+            if gg_band(c) == band:
+                gg_piece(sh, c, nrm, spin, r, kind)
+        return sh
+    return build
+
+
+# each kind's colour, roughness and metalness: half metal at most, or in a dim unit the flakes
+# show the dark room and read as grey specks; a bright colour keeps them bright from every side
+# and the low roughness still flashes where one faces the light
+GG_COLS = {24: ("#F1F5FA", 0.12, 0.42), 25: ("#F8CF55", 0.13, 0.5), 26: ("#FF98C8", 0.13, 0.36),
+           27: ("#C9B1FF", 0.13, 0.36), 28: ("#FFD763", 0.11, 0.5)}
+
+
+def glitter_look(L, f):
+    nb = L.nb
+    glit = L.k(*GG_FLAKES, GG_STAR)
+    gel, skin = L.k(GG_GEL), L.k(GG_SKIN)
+    # the skin: clear TPR, the aqua gel showing faintly in it, glossy, a faint orange-peel from
+    # the mould, the parting line over its sides and top, a fill plug under it, thumb smudges
+    C = Coat(L, hexc("#A8DFE2"), 0.06, 0.0, nb.mul(L.noise(1400.0, 1, detail=2), 0.12))
+    C.paint(skin, alpha=0.2)
+    haze = nb.mul(nb.mul(skin, nb.ss(L.noise(9.0, 2, detail=3), 0.5, 0.78)), 0.6)
+    C.paint(haze, hexc("#9EE0E2"), 0.12, alpha=0.3)
+    smudge = nb.mul(skin, nb.ss(L.noise(26.0, 3, detail=4, rough=0.6), 0.6, 0.74))
+    C.paint(nb.mul(smudge, 0.8), hexc("#B4DCDE"), 0.3, alpha=0.3)
+    seam = nb.mul(nb.band(L.y, -mm(0.14), mm(0.14), mm(0.12)), skin)
+    C.paint(seam, hexc("#C6E8E9"), 0.16, height=0.9, alpha=0.5)
+    rr = nb.math("SQRT", nb.add(nb.mul(L.x, L.x), nb.mul(L.y, L.y)))
+    plug = nb.mul(nb.band(rr, -mm(1.0), mm(3.4), mm(0.3)), nb.ss(nb.mul(L.nz, -1.0), 0.8, 0.95))
+    C.paint(nb.mul(plug, skin), hexc("#B9DEE0"), 0.4, height=0.6, alpha=0.62)
+    # the gel's far side, seen through it: clear aqua, uneven as poured gel is, deeper in clouds,
+    # the light that comes through it pooling bright in its bottom (its face looks up there)
+    C.paint(gel, hexc("#27BEC8"), 0.3, 0.0, alpha=1.0)
+    C.paint(nb.mul(gel, nb.ss(L.noise(14.0, 8, detail=3), 0.5, 0.72)), hexc("#5BD9DB"))
+    C.paint(nb.mul(gel, nb.mul(nb.ss(L.noise(10.0, 9, detail=3), 0.55, 0.76), 0.7)),
+            hexc("#1699AB"))
+    pool = nb.mul(gel, nb.mul(nb.ss(L.nz, 0.45, 0.95), nb.mr(L.noise(18.0, 10), 0.3, 0.7, 0.6, 1.0)))
+    C.paint(pool, hexc("#8DE8E1"), 0.25)
+    # fine glitter deep in the gel: specks, silver and a few gold, and a few tiny bubbles,
+    # silvery rings round a clear middle
+    for s, sc, size, col, metal, share in ((11, 120.0, 0.15, "#F4F9FA", 0.45, 0.38),
+                                           (12, 75.0, 0.12, "#F6CF60", 0.5, 0.7)):
+        vw = L.vec(s=s)
+        d = nb.voronoi(vw, sc)
+        pick = nb.sep(nb.voronoi(vw, sc, out="Color"))[0]
+        speck = nb.mul(gel, nb.mul(nb.inv(nb.ss(d, size * 0.6, size)), nb.ss(pick, share, share + 0.02)))
+        C.paint(speck, hexc(col), 0.16, metal)
+    vw = L.vec(s=13)
+    d = nb.voronoi(vw, 30.0)
+    pick = nb.sep(nb.voronoi(vw, 30.0, out="Color"))[0]
+    bub = nb.mul(gel, nb.mul(nb.inv(nb.ss(d, 0.075, 0.09)), nb.ss(pick, 0.88, 0.9)))
+    C.paint(bub, hexc("#9BE3E0"), 0.06)
+    C.paint(nb.mul(bub, nb.ss(d, 0.045, 0.08)), hexc("#F1FAF9"), 0.05, 0.3)
+    # the glitter: each kind its colour and shine, every flake's shade a little off the next as
+    # holographic film is, and the deeper ones seen through more gel, so tinted aqua and dimmer
+    for k, (col, rough, metal) in GG_COLS.items():
+        C.paint(L.k(k), hexc(col), rough, metal, alpha=1.0)
+    holo = nb.mr(L.noise(260.0, 14, detail=1), 0.3, 0.7, 0.74, 1.26)
+    C.col = nb.mixc(glit, C.col, nb.tint(C.col, holo))
+    # and here and there a flash across a flake, where its film catches the light white
+    flash = nb.mul(glit, nb.ss(L.noise(300.0, 15, detail=1), 0.64, 0.69))
+    C.paint(flash, hexc("#FFFFFF"), 0.06, 0.55)
+    dz = nb.add(L.z, -mm(GG_ZC))
+    deep = nb.math("SQRT", nb.add(nb.add(nb.mul(L.x, L.x), nb.mul(L.y, L.y)), nb.mul(dz, dz)))
+    C.paint(nb.mul(glit, nb.mul(nb.inv(nb.ss(deep, mm(8.0), mm(24.0))), 0.32)), hexc("#5FD3D8"))
+    C.finish(f.dust, grime=0.1, keep=nb.add(glit, gel, clamp=True))
+    return C.surface(bump_dist=mm(0.1), bump=0.4)
+
+
+GG_FOCUS = (0.0, 0.0, mm(GG_ZC))
+
+GLITTER_GOO_BALL = kit.Find(
+    "GlitterGooBall",
+    [kit.Part("Body", gg_skin, clear=True),
+     kit.Part("Gel", gg_gel, (0.0, 0.0, 0.0), "Body", (0, 0, 1), inside=True),
+     kit.Part("GlitterLow", gg_glitter_part("Low"), (0.0, 0.0, 0.0), "Body", (0, 0, 1)),
+     kit.Part("GlitterMid", gg_glitter_part("Mid"), (0.0, 0.0, 0.0), "Body", (0, 0, 1)),
+     kit.Part("GlitterTop", gg_glitter_part("Top"), (0.0, 0.0, 0.0), "Body", (0, 0, 1))],
+    glitter_look,
+    motions={
+        # squeezed: it squashes slow and heavy and the glitter whips round inside, the top band
+        # first and fastest, the fine glitter deep in the gel last; let go, it heaves back and
+        # settles while the glitter coasts on, lifted a hair, slowing and drifting back down,
+        # to stop a whole turn on
+        "Squeeze": dict(duration=5.6, focus=GG_FOCUS, distance=0.95,
+                        tracks=[("Body", "stretch", K.GOO),
+                                ("GlitterTop", "turn", K.GLITTER_TOP),
+                                ("GlitterTop", "move", K.GLITTER_RISE_TOP),
+                                ("GlitterMid", "turn", K.GLITTER_MID),
+                                ("GlitterMid", "move", K.GLITTER_RISE_MID),
+                                ("GlitterLow", "turn", K.GLITTER_LOW),
+                                ("GlitterLow", "move", K.GLITTER_RISE_LOW),
+                                ("Gel", "turn", K.GLITTER_DEEP)]),
+    },
+    dust=GG["dust"], seed=GG["seed"], texels=1000, cage=0.0016,
+)
+
 FINDS = [BUTTER_STICK, STRESS_BALL, MOCHI_BUN, TOAST_SLICE, JUMBO_STRAWBERRY, CAPYBARA,
-         PAPER_SQUISHY, GEL_BEAD_BALL]
+         PAPER_SQUISHY, GEL_BEAD_BALL, GLITTER_GOO_BALL]
 
 if __name__ == "__main__":
     kit.main("Squishies", HERE, FINDS)

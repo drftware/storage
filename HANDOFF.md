@@ -14,9 +14,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - `ServerStorage.CatchTest` works again once you stand on the floor (STUDIO.md "Testing where a
   catch stores you"): from the front office it says "NoKeeper".
 - F-G1b is done but for F-G1b3c (the RC car), which waits on `OWNER.md`.
-- Find art (`art/finds/WAVES.md`): F-05d done: the gel bead ball, a clear ball of pastel water
-  beads that swirl round inside as it squashes, uploaded and imported. Next F-05d2 (rest of
-  step 13): the glitter and galaxy goo balls.
+- Find art (`art/finds/WAVES.md`): F-05d2 done: the glitter goo ball, clear aqua gel whose
+  glitter and gold stars whip round and coast to a stop (uploaded, not imported: Studio was in
+  Play). Next F-05d3 (rest of step 13): the galaxy goo ball.
 
 ## Next task: S4-02 Monsters by lowest floor
 The moment: a climb that keeps changing under you. Floor 1 teaches the Mannequin alone; higher
