@@ -2982,3 +2982,14 @@ verified: a doc page, Studio, or "untested".
 - The client streams a home unit only near it: `Units.Unit1` may be missing on a Client run.
 - Lune's `CFrame.lookAt` flips Z (looking toward (0.6, 0, 0.8) gives a LookVector of
   (0.6, 0, -0.8)); build a frame with `fromMatrix` in code a spec loads (`Arranged.face`).
+
+## A find's bones and the hold, read in Play (S3b, Nov 17)
+
+- **Bones bend by `CFrame`:** a held find's bones are posed from each bone's `FindBoneRest`
+  attribute (a CFrame), so read `rest:ToObjectSpace(bone.CFrame)`; `Transform` reads nothing.
+  Your view's copy (`Workspace.YourTool`, a Folder, at 0.3) keeps its rest unscaled, so its
+  offsets read about 1.7 studs off: compare its turns, which match the held one's.
+- **Seed 7's floor 1 catches you fast:** twice inside a minute of opening Unit107 with nothing
+  tagged as a keeper at first. Squeeze or press soon after taking the find, or stand your own
+  Mannequin (`StandMannequin`, asleep at (0, 0, -656)) and expect it to catch you.
+- `screen_capture` timed out twice in Play with the display asleep: read state instead.

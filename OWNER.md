@@ -206,6 +206,14 @@ nowhere else.
   3. On the phone: does it run smoothly with several units open? (Every open unit's bulb is a
      real light here, unlike on a climb.) Then step into a car: it still takes you up.
 
+- [ ] **Hug the mega goo ball, with a friend** (S3b, D-310; seen in Studio Play by me, no
+  picture: Studio's captures timed out). Studio's Test tab, 2 players; on the Server,
+  `workspace:SetAttribute("GiveFind", "MegaGooBall")` puts it in player 1's hands. On player 1's
+  phone-sized screen: the ball sits low in the middle, filling the bottom; pressing a slot or
+  picking something up does nothing. Press Squeeze: the sides flatten, the goo heaves out and
+  slowly comes back, a deep squelch. On player 2's screen: the ball is at player 1's chest, not in
+  their belly or floating (my default: 1 stud ahead, half a stud below the chest's middle); their
+  arms don't wrap it yet (ROADMAP polish). Say if the hold should sit higher or nearer.
 - [ ] **Find the new finds** (F-G1a, D-203; seen in Studio Play by me on floor 1, not on a
   phone): play a climb and open doors. Floor 1 now deals the Nov 15 finds beside the bedroom
   four: glow sticks, night-lights, tea lights and toy cars often, a disco ball or lantern now

@@ -7872,3 +7872,18 @@ The moment: your lava lamp set on the job box stays, for you and every friend, a
   height is the drawn box's.
 - The unit's frame (`Arranged.face`) is built square rather than with `CFrame.lookAt`: the same
   frame in Roblox, and Lune's `lookAt` flips Z, so the spec checks the real maths.
+
+## D-310 · 2026-11-17 · A find that takes both hands is hugged at your chest (S3b)
+
+The catalog's mega goo ball says "both hands". It is carried as Lethal Company's two-handed
+scrap is: while it's in your hands you can't switch slots, pocket it or pick anything up; drop it
+first (the ladder's `bothHands` rule, which `Slots`, `ToolView`, `MarkedBoxes` and `Carry` already
+obey).
+- **As data, once:** the find's game row in its art spec says `bothHands=True`; `rows.py` writes
+  it into `Finds/Rows` and `Finds/Game`'s type; `Tools/Catalog`'s kit loop gives such a find
+  `bothHands`, a hold low and centred in your view (`BOTH`), and friends see it at your chest
+  (`CHEST`, its `shoulder` from the upper torso, its front ahead). Any later two-handed find needs
+  only the field.
+- **The Packrat leaves it**, as it leaves the ladder (`Carry.worth`): what it takes is what your
+  hand can let go of.
+- **Not built:** friends' arms round it (ROADMAP polish); the hold judged on a phone (OWNER.md).

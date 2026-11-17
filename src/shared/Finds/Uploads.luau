@@ -34,6 +34,7 @@ return {
 		GlitterGooBall = { Model = 81331925763211 },
 		GooBall = { Model = 73237673219847 },
 		JumboStrawberry = { Model = 81603530188772 },
+		MegaGooBall = { Model = 118514980301268 },
 		MochiBun = { Model = 75693422662417 },
 		PaperSquishy = { Model = 84002820704702 },
 		StressBall = { Model = 87393666160557 },

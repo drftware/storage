@@ -2936,32 +2936,46 @@ def mega_look(L, f):
     # thick, in big soft patches (the goo ball's scale times its size)
     C = Coat(L, hexc("#84D92F"), 0.15)
     C.paint(nb.mul(nb.ss(L.noise(1.6, 11, detail=2), 0.45, 0.75), 0.3), hexc("#6CC424"), 0.17)
-    # its grade (Epic): violet folded through the green, as a marbled squeeze ball's two colours
-    # are before it's moulded: smooth ribbons in pairs along the lines where one slow, stretched
-    # swirl crosses two levels, each with a deep core and a lighter edge. Nothing green and round
-    # in a fruit bowl has them (S3a: jagged veins read as a globe's coastlines)
-    marble = L.noise(1.7, 21, stretch=(1.0, 1.0, 2.4), detail=1)
-
-    def ribbon(at, half, soft):
-        lo, hi = at - half, at + half
-        return nb.mul(nb.ss(marble, lo - soft, lo), nb.inv(nb.ss(marble, hi, hi + soft)))
-    for at, half in ((0.42, 0.028), (0.57, 0.018)):
-        # crisp, a lighter violet rim inside a deep core: a soft edge mixed the lime and lilac
-        # into a muddy grey (S3a)
-        C.paint(ribbon(at, half + 0.008, 0.004), hexc("#9B4FEA"), 0.15)
-        C.paint(ribbon(at, half - 0.004, 0.004), hexc("#6F1FC8"), 0.15)
-    crinkle = nb.ss(L.noise(120.0, 13, stretch=(1.0, 1.0, 2.6), detail=4), 0.63, 0.69)
-    C.paint(nb.mul(crinkle, 0.35), hexc("#55BE25"), 0.28, height=-0.22)
-    grain = nb.ss(L.noise(1400.0, 14, detail=1), 0.42, 0.78)
-    C.paint(grain, height=0.05)
     # where the goo heaves out between the palms the skin stretches thinnest: lighter and smoother,
-    # painted where the blisters rise (faint at rest; the bulge carries it into the light)
+    # painted where the blisters rise (faint at rest; the bulge carries it into the light), under
+    # the violet: over it, it washed the ribbons out front grey (S3b)
     th = nb.math("ARCTAN2", L.y, L.x)
     u = nb.cos(nb.mul(nb.sub(th, MEGA.front), float(MG["presses"])))
     out = nb.pw(nb.mul(nb.add(u, 1.0), 0.5), 1.5)
     s = nb.absf(nb.div(nb.sub(L.z, mm(MEGA.zc)), mm(MEGA.r)))
     q = nb.inv(nb.pw(nb.mn(nb.div(s, math.sin(MEGA.reach)), 1.0), 2.0))
     C.paint(nb.mul(nb.mul(out, nb.mul(q, q)), 0.6), hexc("#AEF26A"), 0.1)
+    # its grade (Epic): violet folded through the green, as a marbled squeeze ball's two colours
+    # are before it's moulded: smooth ribbons in pairs along the lines where one slow, stretched
+    # swirl crosses two levels, each with a deep core and a lighter edge. Nothing green and round
+    # in a fruit bowl has them (S3a: jagged veins read as a globe's coastlines)
+    # Each ribbon is drawn by how far a point lies from its line (the swirl's level over how fast
+    # the swirl changes there), so it keeps its width everywhere and its edge stays hard: drawn by
+    # the level alone, it spread into wide pale loops where the swirl ran flat, and a soft edge
+    # there mixed the lime and violet into grey (S3a, S3b)
+    v = L.vec(1.0, 1.0, 2.4, s=21)[0]
+    marble = nb.noise((v, None), 1.7, detail=1)
+    e = 0.002   # studs: the step the swirl's slope is measured over
+    slope = nb.vop("LENGTH", nb.comb(*(
+        nb.sub(nb.noise((nb.vop("ADD", v, d), None), 1.7, detail=1), marble)
+        for d in ((e, 0.0, 0.0), (0.0, e, 0.0), (0.0, 0.0, e)))))
+    slope = nb.mx(nb.div(slope, e), 0.05)
+    # thick and thin along their length, as a hand-folded marble is
+    swell = nb.add(0.7, nb.mul(L.noise(2.3, 27, detail=1), 0.6))
+
+    def ribbon(at, half):
+        far = nb.div(nb.absf(nb.sub(marble, at)), slope)
+        w = nb.mul(swell, half)
+        return nb.mr(far, w, nb.add(w, 0.0016), 1.0, 0.0, "SMOOTHSTEP")
+    for at, half in ((0.42, 0.024), (0.57, 0.015)):
+        # a lighter violet rim round a deep core, both crisp (studs; 0.024 is 6 mm: thinner read
+        # as lines drawn on, not two colours folded together, S3b)
+        C.paint(ribbon(at, half + 0.006), hexc("#9B4FEA"), 0.15)
+        C.paint(ribbon(at, half - 0.001), hexc("#6F1FC8"), 0.15)
+    crinkle = nb.ss(L.noise(120.0, 13, stretch=(1.0, 1.0, 2.6), detail=4), 0.63, 0.69)
+    C.paint(nb.mul(crinkle, 0.35), hexc("#55BE25"), 0.28, height=-0.22)
+    grain = nb.ss(L.noise(1400.0, 14, detail=1), 0.42, 0.78)
+    C.paint(grain, height=0.05)
     C.finish(f.dust, grime=0.25)
     return C.surface(bump_dist=mm(0.12), bump=0.45)
 

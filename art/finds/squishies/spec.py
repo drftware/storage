@@ -630,8 +630,9 @@ MEGABALL = dict(
     soft=9.0,          # how gently that flat spot rounds into the ball (mm)
     # the squeeze: two palms press in on its left and right; the goo's height out front and back
     # (mm), a palm's dent (mm), how far up and down both reach (degrees from the waist) and the
-    # top pushed up (mm); `dent_pow` 2 makes a dent as wide as a palm (the goo ball's 3: a finger)
-    presses=2, bulge=18.0, dent=21.0, dent_pow=2.0, reach=66.0, rise=11.0,
+    # top pushed up (mm); `dent_pow` 2 makes a dent as wide as a palm (the goo ball's 3: a finger).
+    # S3b deepened the hug (18, 21, 11 were): past the peak the heave barely showed
+    presses=2, bulge=25.0, dent=26.0, dent_pow=2.0, reach=66.0, rise=14.0,
     front=-90.0,       # a blister faces the front (your view sees it heave towards you)
     ring=20.0, per=6,  # the bones: rings this far above and below the waist, six a press
     plug_r=0.0,        # no plug on top: on a big green ball it read as an apple's stem (S3a)
@@ -844,6 +845,9 @@ GAME = [
         grip=(0, 0.4, 0),  # round its middle
         heft=0.45,  # an 8 in ball of goo, about 3 lb: it sags as it lands in your arms
         size="Large",
+        # "both hands": hugged to your chest, as Lethal Company's two-handed scrap is carried (no
+        # switching slots or picking anything up till you drop it)
+        bothHands=True,
         pickUp=pitched(SOFT, 0.8, 0.9),
         drop=pitched(SQUELCH, 0.6, 0.8),  # it lands in a heavy, wet slap
         # "both hands, and a deep squelch that carries": the goo ball's squelch an octave down

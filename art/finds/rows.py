@@ -31,7 +31,7 @@ SETS = ["lights", "figures", "windups", "squishies"]
 GRADES = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Secret"]  # Grades.Names
 SIZES = ["Small", "Medium", "Large"]
 ROW = ["key", "catalog", "name", "grade", "worth", "from_", "loose", "lit", "fragile", "grip", "heft", "size",
-       "pickUp", "drop", "verb", "press"]
+       "bothHands", "pickUp", "drop", "verb", "press"]
 NEEDED = ["key", "catalog", "name", "grade", "worth", "grip", "heft", "size", "pickUp", "drop"]
 PRESS = ["verb", "on", "more", "lasts", "out", "off", "reset", "noise", "heard", "lure", "toy", "down",
          "walks", "lays"]
@@ -212,6 +212,7 @@ def rows():
                 "grip": list(g["grip"]),
                 "heft": g["heft"],
                 "size": g["size"],
+                "bothHands": True if g.get("bothHands") else None,
                 "pickUp": sound(where, g["pickUp"]),
                 "drop": sound(where, g["drop"]),
                 "verb": p["verb"] if p else g.get("verb"),

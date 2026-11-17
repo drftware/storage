@@ -111,6 +111,9 @@ export type Row = {
 	grip: { number }, -- where your hand closes, studs from the middle of its bottom
 	heft: number, -- how heavy it feels in your hand, 0 to 1
 	size: "Small" | "Medium" | "Large", -- where it sits in your view (`Tools.Catalog`'s HOLD)
+	-- the catalog says both hands: hugged to your chest, centred low in your view; no switching
+	-- slots or picking anything up till you drop it (`Tools.Catalog`'s `bothHands`)
+	bothHands: boolean?,
 	pickUp: Sound, -- your hand closing on it
 	drop: Sound, -- it landing on the concrete
 	-- its press's one word (the RC car's Drive, whose press is `Finds/Drive`); none: no press

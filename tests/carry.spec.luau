@@ -15,6 +15,7 @@ local Catalog = require("../src/shared/Tools/Catalog")
 local Deal = require("../src/shared/Deal")
 local Drive = require("../src/shared/Finds/Drive")
 local Grades = require("../src/shared/Grades")
+local Rows = require("../src/shared/Finds/Rows")
 local Use = require("../src/shared/Finds/Use")
 
 local failures, checks = 0, 0
@@ -243,11 +244,26 @@ for key, row in Catalog do
 			`{key}: a worth within its grade's`
 		)
 		ok(type(row.heft) == "number" and row.heft >= 0 and row.heft <= 1, `{key}: a heft, 0 to 1`)
-		-- a find takes one hand; it does something only with a press of its own (Finds/Use, or
-		-- the RC car's Drive, Finds/Drive)
+		-- a find takes one hand, but for one whose game row says both (the mega goo ball, D-310):
+		-- that one is hugged at your chest, its front ahead; it does something only with a press
+		-- of its own (Finds/Use, or the RC car's Drive, Finds/Drive)
 		local press = Use.Rows[key]
 		local word = if press then press.verb elseif key == Drive.Key then Drive.Verb else nil
-		ok(not row.bothHands, `{key}: a find takes one hand`)
+		local both = false
+		for _, r in Rows do
+			if r.key == key and r.bothHands then
+				both = true
+			end
+		end
+		ok(row.bothHands == (if both then true else nil), `{key}: both hands only as its row says`)
+		if both then
+			local chest, hand = row.shoulder, row.inHand
+			ok(
+				chest ~= nil and chest[3] < 0 and hand[1] == 0 and hand[2] == 0 and hand[3] == 0,
+				`{key}: hugged at your chest, its front ahead`
+			)
+			ok(Carry.worth(row) == nil, `{key}: left by the Packrat, as the ladder is`)
+		end
 		ok(row.verb == word, `{key}: its press's word, or none`)
 	else
 		ok(table.find(Deal.Tools, key) ~= nil, `{key}: one of the deal's tools`)

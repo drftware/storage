@@ -2997,8 +2997,11 @@ actions themselves and dealing the new finds on floors are later game tickets.
   the prints bloom and cool back on your view's copy and on the ball friends see, its squelch).
   S3a (Nov 17, D-307): the mega goo ball's art (the goo ball's builder as the class `Goo`, two
   palms, 8 in, acid green marbled violet) and its row (Epic, 120, a deep squelch heard 90
-  studs); not ticked, imported or seen in Play. Next S3b: the full sheets judged, ticked, held in
-  both hands (the ladder's `bothHands`), imported and seen in Play. Polish: a squishy squeezed
+  studs); not ticked, imported or seen in Play. S3b (Nov 17, D-310): its ribbons kept to their
+  width with hard edges (no grey), its hug deeper; ticked, held in both hands at your chest (a
+  row's `bothHands`), imported and seen in Play (dealt, taken, switching refused, squeezed, a
+  Mannequin woken). Next S4, the squishy cake slice. Polish: friends' arms round a hugged find
+  (`Joints`, as `HornView` raises the horn arm); the mega goo ball banked at the gate. Polish: a squishy squeezed
   again before its press is over (the colour ball's fade could then run 8 s).
 - [ ] **F-06 Plush.**
 - [ ] **F-07 Night Shift Minis and their blind box.**

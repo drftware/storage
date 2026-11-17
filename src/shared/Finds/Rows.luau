@@ -2254,13 +2254,14 @@ local Rows: { Game.Row } = {
 	{
 		key = "MegaGooBall",
 		set = "Squishies",
-		judged = false,
+		judged = true,
 		name = "Mega goo ball",
 		grade = "Epic",
 		worth = 120,
 		grip = { 0, 0.4, 0 },
 		heft = 0.45,
 		size = "Large",
+		bothHands = true,
 		pickUp = {
 			id = "rbxassetid://9117373366",
 			from = 0.4,

@@ -457,6 +457,13 @@ local HOLD = {
 	Large = { at = { -1.55, -0.8, -2.4 }, turn = { 215, 4, 0 } },
 }
 
+-- A find the catalog says takes both hands (the mega goo ball, S3b), as Lethal Company's
+-- two-handed scrap is carried: hugged to your chest. Your view: low and in the middle, nearer
+-- than a big one in one hand, filling the bottom of the screen. Friends: at your chest, from your
+-- upper torso's middle (right, up, back), its front ahead and its sides under your arms.
+local BOTH = { at = { 0, -0.95, -2.05 }, turn = { 180, 8, 0 } }
+local CHEST = { 0, -0.45, -1.0 }
+
 -- A kit find's catalog row: it hangs from your left hand by its grip, low on the left of your
 -- view with its front turned to you, as the bedroom set does. Its verb is its press's word
 -- (`Finds/Use` plays the press: the lantern's Switch, the jack's Wind), or the RC car's Drive
@@ -465,7 +472,8 @@ for _, row in Rows do
 	if not row.judged then
 		continue
 	end
-	local hold = HOLD[row.size]
+	local both = row.bothHands == true
+	local hold = if both then BOTH else HOLD[row.size]
 	Catalog[row.key] = {
 		verb = row.verb,
 		name = row.name,
@@ -482,7 +490,9 @@ for _, row in Rows do
 		holdTurn = hold.turn,
 		use = hold.at,
 		useTurn = hold.turn,
-		inHand = { 0, 90, 0 },
+		inHand = if both then { 0, 0, 0 } else { 0, 90, 0 },
+		shoulder = if both then CHEST else nil,
+		bothHands = if both then true else nil,
 		icon = { 0.62, 14, 200, 0 },
 		pickUp = row.pickUp,
 		drop = row.drop,

@@ -22,6 +22,8 @@ at `7f25310`, NOT on Brix's `origin` yet (nor 482368f and 6574e0c before it).
   set out. Watch it with a Server `GetAsync` on "Saves.studio" (STUDIO.md).
 - Stage only your own paths; the find run commits its own `art/finds/`, `src/shared/Finds/`,
   `src/shared/Tools/Catalog.luau`, and may have hunks in `docs/`: stage yours as a blob then.
+- Find art (third run): S3b done, the mega goo ball hugged in both hands (D-310), seen in Play;
+  of the last four squishies only the cake slice is left. Next: S4, the squishy cake slice (WAVES.md's Next).
 
 ## Next task: S5-03e3a Lift, drag and set down
 The moment: at home you tap Arrange, lift your lava lamp out of the box list, slide it over the

@@ -522,6 +522,11 @@ pale shimmer read as a globe's coastlines and clouds: smooth paired ribbons, the
 On the full sheets their soft edges mixed lime and lilac into grey bands: crisp edges. Pale
 loops remain where the lighter rim spreads over flat stretches of the swirl (S3b fixes it).
 The squeeze's filmstrip reads: the sides flatten, the goo heaves front and back.
+S3b (full sheets twice): each ribbon now drawn by its distance from its line (the swirl's level
+over its slope), so it keeps its width, thick and thin along its length, with hard edges: no
+pale loops. Grey still showed out front where the stretched skin's lighter green was painted over
+the violet: it goes under it now. Ribbons widened to 12 mm so the marbling reads at phone size.
+The hug deepened (bulge 25, dent 26, rise 14 mm): past its peak the heave barely showed.
 
 **The squeeze** (25 bones: two rings of twelve and one on top): the goo ball's blisters with two
 presses for five, each dent as wide as a palm (`dent_pow` 2, a finger's is 3), slower to close
