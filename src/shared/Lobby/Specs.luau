@@ -9,6 +9,7 @@ export type Part = { Size: Vec, Centre: Vec, Triangles: number }
 export type Box = { Name: string, Centre: Vec, Size: Vec }
 export type Card = { Name: string, Centre: Vec, Size: { number }, Facing: Vec }
 export type Stock = { Kind: string, At: Vec, Turn: number }
+export type Piece = { Kind: string, At: Vec, Turn: number }
 export type Slot = {
 	Number: number,
 	Side: string,
@@ -97,6 +98,46 @@ local Specs = {
 		{ Kind = "Small", At = { 58.920, 6.150, -139.220 }, Turn = 3.0 },
 		{ Kind = "Small", At = { 59.050, 6.150, -137.140 }, Turn = -1.5 },
 	} :: { Stock },
+	-- The home's furnishings round the floor (Home.Specs.Pieces): each piece's origin on the floor,
+	-- turned about Y in degrees (0: its front toward -Z).
+	Dressing = {
+		{ Kind = "Plant", At = { 58.950, 0.000, -128.100 }, Turn = 127.0 },
+		{ Kind = "Bench", At = { 58.960, 0.000, -112.000 }, Turn = 90.0 },
+		{ Kind = "Plant", At = { 58.950, 0.000, -115.900 }, Turn = 74.0 },
+		{ Kind = "Plant", At = { 58.950, 0.000, -108.100 }, Turn = 164.0 },
+		{ Kind = "Bench", At = { 58.960, 0.000, -92.000 }, Turn = 90.0 },
+		{ Kind = "Plant", At = { 58.950, 0.000, -95.900 }, Turn = 111.0 },
+		{ Kind = "Plant", At = { 58.950, 0.000, -88.100 }, Turn = 201.0 },
+		{ Kind = "Bench", At = { 58.960, 0.000, -72.000 }, Turn = 90.0 },
+		{ Kind = "Plant", At = { 58.950, 0.000, -75.900 }, Turn = 148.0 },
+		{ Kind = "Plant", At = { 58.950, 0.000, -68.100 }, Turn = 238.0 },
+		{ Kind = "Bench", At = { 58.960, 0.000, -52.000 }, Turn = 90.0 },
+		{ Kind = "Plant", At = { 58.950, 0.000, -55.900 }, Turn = 185.0 },
+		{ Kind = "Plant", At = { 58.950, 0.000, -48.100 }, Turn = 275.0 },
+		{ Kind = "Bench", At = { 58.960, 0.000, -32.000 }, Turn = 90.0 },
+		{ Kind = "Plant", At = { 58.950, 0.000, -35.900 }, Turn = 222.0 },
+		{ Kind = "Plant", At = { 58.950, 0.000, -28.100 }, Turn = 312.0 },
+		{ Kind = "Plant", At = { 58.950, 0.000, -15.900 }, Turn = 259.0 },
+		{ Kind = "Plant", At = { -58.950, 0.000, -128.100 }, Turn = 172.0 },
+		{ Kind = "Bench", At = { -58.960, 0.000, -112.000 }, Turn = -90.0 },
+		{ Kind = "Plant", At = { -58.950, 0.000, -115.900 }, Turn = 119.0 },
+		{ Kind = "Plant", At = { -58.950, 0.000, -108.100 }, Turn = 209.0 },
+		{ Kind = "Bench", At = { -58.960, 0.000, -92.000 }, Turn = -90.0 },
+		{ Kind = "Plant", At = { -58.950, 0.000, -95.900 }, Turn = 156.0 },
+		{ Kind = "Plant", At = { -58.950, 0.000, -88.100 }, Turn = 246.0 },
+		{ Kind = "Bench", At = { -58.960, 0.000, -72.000 }, Turn = -90.0 },
+		{ Kind = "Plant", At = { -58.950, 0.000, -75.900 }, Turn = 193.0 },
+		{ Kind = "Plant", At = { -58.950, 0.000, -68.100 }, Turn = 283.0 },
+		{ Kind = "Bench", At = { -58.960, 0.000, -52.000 }, Turn = -90.0 },
+		{ Kind = "Plant", At = { -58.950, 0.000, -55.900 }, Turn = 230.0 },
+		{ Kind = "Plant", At = { -58.950, 0.000, -48.100 }, Turn = 320.0 },
+		{ Kind = "Bench", At = { -58.960, 0.000, -32.000 }, Turn = -90.0 },
+		{ Kind = "Plant", At = { -58.950, 0.000, -35.900 }, Turn = 267.0 },
+		{ Kind = "Plant", At = { -58.950, 0.000, -28.100 }, Turn = 357.0 },
+		{ Kind = "Plant", At = { -58.950, 0.000, -15.900 }, Turn = 304.0 },
+		{ Kind = "Planter", At = { 20.000, 0.000, -72.000 }, Turn = 0.0 },
+		{ Kind = "Planter", At = { -20.000, 0.000, -72.000 }, Turn = 0.0 },
+	} :: { Piece },
 	-- Flat places the game writes on: the bay numbers, Everkeep's name, the cart rack's sign.
 	Cards = {
 		{

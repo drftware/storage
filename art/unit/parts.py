@@ -204,7 +204,10 @@ def facade(s):
     return m
 
 
-def frame(s):
+def frame(s, dress=True):
+    """The steel round the door. dress=False keeps only the door's own mechanism (posts, guides,
+    stop bolts, the header's beam) for a front that wraps the doorway in its own trim (the
+    home's oak casing, art/home/front.py)."""
     m = Mesh("Frame")
     W2, H, F, T, P = s.width / 2, s.wall_height, s.facade, s.trim, s.trim_proud
     dw2, dh = s.door_width / 2, s.door_height
@@ -215,20 +218,21 @@ def frame(s):
     chan_x = geo.map_strip("channel", 0)
     raw = geo.map_strip("raw")
     for sd in (-1, 1):
-        # jamb: a steel post cover wrapping the opening's side
-        lo = (min(sd * dw2, sd * (dw2 + T)), -P, 0.0)
-        hi = (max(sd * dw2, sd * (dw2 + T)), 0.40, dh + T)
-        jam = by_normal([(lambda n, sd=sd: n.x * sd < -0.7, scuff_z)], trim_z)
-        geo.box(m, lo, hi, jam, bevel=0.018, segments=2)
-        # pilaster: half a post at the unit's edge
-        lo = (min(sd * (W2 - s.pilaster), sd * W2), -0.07, 0.0)
-        hi = (max(sd * (W2 - s.pilaster), sd * W2), F, H)
-        geo.box(m, lo, hi, trim_z, bevel=0.015, segments=2,
-                edges=lambda e, c, sz: True)
-        # kick plate
-        x0, x1 = sorted((sd * (W2 - s.pilaster), sd * (dw2 + T)))
-        geo.box(m, (x0, -0.035, 0.0), (x1, 0.0, s.kick), geo.map_strip("diamond", 0),
-                bevel=0.01)
+        if dress:
+            # jamb: a steel post cover wrapping the opening's side
+            lo = (min(sd * dw2, sd * (dw2 + T)), -P, 0.0)
+            hi = (max(sd * dw2, sd * (dw2 + T)), 0.40, dh + T)
+            jam = by_normal([(lambda n, sd=sd: n.x * sd < -0.7, scuff_z)], trim_z)
+            geo.box(m, lo, hi, jam, bevel=0.018, segments=2)
+            # pilaster: half a post at the unit's edge
+            lo = (min(sd * (W2 - s.pilaster), sd * W2), -0.07, 0.0)
+            hi = (max(sd * (W2 - s.pilaster), sd * W2), F, H)
+            geo.box(m, lo, hi, trim_z, bevel=0.015, segments=2,
+                    edges=lambda e, c, sz: True)
+            # kick plate
+            x0, x1 = sorted((sd * (W2 - s.pilaster), sd * (dw2 + T)))
+            geo.box(m, (x0, -0.035, 0.0), (x1, 0.0, s.kick), geo.map_strip("diamond", 0),
+                    bevel=0.01)
         # framing post behind the facade, the guide bolts to it
         x0, x1 = sorted((sd * (dw2 + T), sd * (dw2 + T + 0.3)))
         geo.box(m, (x0, F, 0.0), (x1, 0.42, H), chan_z, bevel=0.01)
@@ -264,13 +268,14 @@ def frame(s):
             z += 1.25
     # header trim and the beam behind it
     o = dw2 + T
-    geo.box(m, (-o, -P, dh), (o, 0.40, dh + T),
-            by_normal([(lambda n: n.z < -0.7, geo.map_strip("scuffed", 0))], trim_x),
-            bevel=0.018, segments=2)
+    if dress:
+        geo.box(m, (-o, -P, dh), (o, 0.40, dh + T),
+                by_normal([(lambda n: n.z < -0.7, geo.map_strip("scuffed", 0))], trim_x),
+                bevel=0.018, segments=2)
     geo.box(m, (-(o + 0.3), F, dh + T - 0.05), (o + 0.3, 0.42, dh + T + 0.45), chan_x,
             bevel=0.01)
-    # top cap along the corridor wall
-    geo.box(m, (-W2, -0.08, H - 0.12), (W2, F + 0.02, H + 0.012), trim_x, bevel=0.012)
+    if dress:  # top cap along the corridor wall
+        geo.box(m, (-W2, -0.08, H - 0.12), (W2, F + 0.02, H + 0.012), trim_x, bevel=0.012)
     return m
 
 

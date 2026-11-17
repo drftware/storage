@@ -17,12 +17,16 @@ This file is loaded by path as `lobby_spec` (build.py): the name `spec` belongs 
 kit's spec, which the corridor's pieces read.
 """
 
+import importlib.util
 import math
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 ELEVATOR_SPEC = os.path.join(ROOT, "art", "elevator", "spec.py")
+_home = importlib.util.spec_from_file_location("home_spec", os.path.join(ROOT, "art", "home", "home_spec.py"))
+HOME = importlib.util.module_from_spec(_home)  # the home's kit: its furnishings' sizes
+_home.loader.exec_module(HOME)
 
 # --- the room: the building's ground floor (D-259) ---------------------------------------------
 # Wide enough for six cars side by side with a post between each. Deep enough for six units down
@@ -316,6 +320,38 @@ def slot_rows():
     return out
 
 
+# --- the home's furnishings round the floor (D-266) ---------------------------------------------
+# A plant by each door and an oak bench between, against the walls between the units, and two
+# square planters you sit round in the open middle either side of the runner (a hotel lobby's).
+DRESS_GAP = 0.12         # a piece's back off the baseboard
+PLANT_OFF = 3.9          # a door's plant, this far from the partition line it's beside (a bench
+                         # sits on the line: its ends clear the pots, the pots clear the casings)
+ISLANDS = ((-20.0, -72.0), (20.0, -72.0))  # the planters' middles: under a cross beam, 15 off
+                                           # the runner either side, lanes wide to the walls
+
+
+def dressing():
+    """Each furnishing piece on the floor: (kind, x, y, turn), Blender, turn about z in degrees
+    (0: its front toward -y, as the home's kit builds it)."""
+    out = []
+    w = WIDTH / 2 - HOME.BASE_PROUD - DRESS_GAP
+    pr, bd = HOME.POT_RIM[0], HOME.BENCH[1]
+    lines = slot_lines()
+    for side in (-1, 1):
+        face = -90.0 * side  # into the room
+        for k, m in enumerate(lines):
+            if 0 < k < len(lines) - 1:
+                out.append(("Bench", (side * (w - bd / 2), m), face))
+            for dy in (-PLANT_OFF, PLANT_OFF):
+                y = m + dy
+                if lines[0] < y < lines[-1]:
+                    turn = (37.0 * (k + 1) + (90.0 if dy > 0 else 0.0) + (45.0 if side > 0 else 0.0)) % 360.0
+                    out.append(("Plant", (side * (w - pr), y), turn))
+    for x, y in ISLANDS:
+        out.append(("Planter", (x, y), 0.0))
+    return [(kind, x, y, turn) for kind, (x, y), turn in out]
+
+
 def write_luau(path, parts, slots):
     """parts: {name: dict(size=(x, y, z) Roblox, centre=(x, y, z) Blender, tris=n)}; slots: the
     cart rack's slot middles (Blender)."""
@@ -332,6 +368,7 @@ def write_luau(path, parts, slots):
         "export type Box = { Name: string, Centre: Vec, Size: Vec }",
         "export type Card = { Name: string, Centre: Vec, Size: { number }, Facing: Vec }",
         "export type Stock = { Kind: string, At: Vec, Turn: number }",
+        "export type Piece = { Kind: string, At: Vec, Turn: number }",
         "export type Slot = { Number: number, Side: string, Door: Vec, Out: Vec, Inside: Box, Card: string,",
         "\tBulb: Vec }",
         "",
@@ -359,7 +396,12 @@ def write_luau(path, parts, slots):
           "\t-- in degrees.", "\tStock = {"]
     for kind, x, y, z, turn in stock():
         L.append(f"\t\t{{ Kind = \"{kind}\", At = {lua_vec(b2r((x, y, z)))}, Turn = {turn:.1f} }},")
-    L += ["\t} :: { Stock },", "\t-- Flat places the game writes on: the bay numbers, Everkeep's name, the cart rack's sign.",
+    L += ["\t} :: { Stock },",
+          "\t-- The home's furnishings round the floor (Home.Specs.Pieces): each piece's origin on the floor,",
+          "\t-- turned about Y in degrees (0: its front toward -Z).", "\tDressing = {"]
+    for kind, x, y, turn in dressing():
+        L.append(f"\t\t{{ Kind = \"{kind}\", At = {lua_vec(b2r((x, y, 0.0)))}, Turn = {turn:.1f} }},")
+    L += ["\t} :: { Piece },", "\t-- Flat places the game writes on: the bay numbers, Everkeep's name, the cart rack's sign.",
           "\tCards = {"]
     for name, c, (w, h), n in cards():
         L.append(f"\t\t{{ Name = \"{name}\", Centre = {lua_vec(b2r(c))}, Size = {{ {w:.2f}, {h:.2f} }}, "

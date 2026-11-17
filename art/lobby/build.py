@@ -39,6 +39,12 @@ import render  # noqa: E402
 import spec as C  # noqa: E402  the corridor's spec
 from geo import Mesh  # noqa: E402
 
+sys.path.append(HOME)  # last: the home's modules share no names with the unit's or corridor's
+from carpentry import plaster_uv, wood_box  # noqa: E402
+import front as home_front  # noqa: E402  the home's kit (art/home): its front and furnishings
+import furnish as home_furnish  # noqa: E402
+import looks  # noqa: E402  the home's sets
+
 
 def load(name, path):
     s = importlib.util.spec_from_file_location(name, path)
@@ -53,8 +59,8 @@ E = load("elevator_spec", K.ELEVATOR_SPEC)
 OUT = os.path.join(HERE, "out")
 TEX = os.path.join(UNIT, "out", "textures")
 HOME_TEX = os.path.join(HOME, "out", "textures")  # the home's sets (art/home: build those first)
-HOME_SETS = {"Plaster", "Wood"}
-bake.TINTED.add("Plaster")  # the paint is the part's Color, as the unit's Facade
+HOME_SETS = set(looks.LOOKS) | set(looks.SIZES)
+bake.TINTED.update(looks.TINTED)  # the paint is the part's Color, as the unit's Facade
 SHEETS = os.path.join(K.ROOT, "art", "sheets")
 FBX = os.path.join(OUT, "Lobby.fbx")
 TEXSET = {"Floor": "Concrete", "Boards": "Wood", "Deck": "TrimSheet", "Joists": "TrimSheet",
@@ -91,6 +97,8 @@ def check():
     """The lobby must fit the climb's own elevator and the corridor's light exactly."""
     assert tuple(K.OPENING) == tuple(E.OPENING), "the bays' hole isn't the elevator's"
     assert K.WALL == E.WALL and K.JAMB == E.JAMB and K.HEADER == E.HEADER, "not the elevator's wall"
+    assert K.BASE == K.HOME.BASE and tuple(K.RAIL) == tuple(K.HOME.RAIL), "the home front's trim isn't the room's"
+    assert K.DOOR_SIZE == K.HOME.DOOR_SIZE, "the home front isn't the gap's door"
     assert abs(E.KEYPAD[0] + E.BACKPLATE[0] / 2 - K.KEYPAD_REACH) < 1e-6, "the keypad moved"
     gap = K.BAY_PITCH - K.OPENING[0] / 2 - K.JAMB
     assert K.KEYPAD_REACH < gap - 0.5, "a car's keypad runs into the next car's frame"
@@ -127,37 +135,6 @@ def floor():
         x0, x1 = sorted((side * W2, side * back))
         geo.box(boards, (x0, lines[0], -C.FLOOR_SKIRT), (x1, lines[-1], 0.0), uv)
     return {"Floor": m, "Boards": boards}
-
-
-def plaster_uv(tile=4.0):
-    """Painted plaster: world-planar, 4 studs to a tile, whichever way a face looks."""
-    def f(vs, n):
-        ax = max(range(3), key=lambda i: abs(n[i]))
-        a, b = {0: (1, 2), 1: (0, 2), 2: (0, 1)}[ax]
-        return [(v[a] / tile, v[b] / tile) for v in vs]
-    return f
-
-
-def wood_uv(axis, lo, hi, column=4):
-    """Wood trim (beams, rails, baseboards, benches) out of one plank of the floor's bake: the
-    piece's length runs down the plank, so no plank joints show, the grain drawn out along it."""
-    off = (column * 0.618034) % 1.0
-    v0, v1 = (1.0 - off) / 3.0 + 0.01, (2.0 - off) / 3.0 - 0.01  # one plank's run in V
-    u0, u1 = (column + 0.12) / 12.0, (column + 0.88) / 12.0
-    span = [max(hi[i] - lo[i], 1e-6) for i in range(3)]
-    def f(vs, n):
-        ax = max(range(3), key=lambda i: abs(n[i]))
-        other = [i for i in range(3) if i not in (ax, axis)]
-        k = other[0] if other else [i for i in range(3) if i != ax][0]
-        t = lambda v: (v[axis] - lo[axis]) / span[axis] if ax != axis else 0.5
-        return [(u0 + (u1 - u0) * (v[k] - lo[k]) / span[k], v0 + (v1 - v0) * t(v)) for v in vs]
-    return f
-
-
-def wood_box(m, lo, hi, column=4):
-    """A box of wood trim, its grain along its longest side."""
-    axis = max(range(3), key=lambda i: abs(hi[i] - lo[i]))
-    geo.box(m, lo, hi, wood_uv(axis, lo, hi, column))
 
 
 def ceiling(wood):
@@ -746,58 +723,130 @@ def unit_kit():
 SHUT = (3, 10)  # in the sheets these units are shut and locked; the rest stand open
 NAMES = ("Maya", "Jax", "Rowan", "Kit", "Theo", "Ivy", "Sam", "Nova", "Eli", "Pip", "Ash", "Zoe")
 FINDS = (((-5.5, 24.0, 0.0), "Medium", 12.0), ((-3.2, 25.2, 0.0), "Small", -8.0),
-         ((-5.0, 24.6, 1.8), "Small", 20.0), ((5.8, 18.0, 0.0), "Medium", -4.0),
+         ((-5.0, 24.6, 1.8), "Small", 20.0), ((6.8, 20.0, 0.0), "Medium", -4.0),
          ((2.0, 27.0, 0.0), "Medium", 3.0))  # stand-in boxes in each open unit (unit frame)
 
 
-def unit_fronts(coll):
-    """The climb's M unit with its walls, floor and top dropped (its facade, frame and roll-up
-    door) standing in every gap, wearing the M's bake; its bulb lit under each slot's top. Render
-    copies of one build, open or shut by SHUT."""
+# The sheets' paints for the home's kit (the game's are b3's): the front's wall the room's sage,
+# its inside the units' warm white, a clay door, cream pots, a stone planter, a mustard beanbag.
+HOME_TINT = {"Facade": TINT["Walls"], "FacadeBack": TINT["UnitWallsLeft"], "HomeDoor": "#B5684E",
+             "Pot": "#E9E2D3", "Planter": "#D8CCB6", "Beanbag": "#B98A3C", "LampShade": "#F1E8D6"}
+
+
+def home_texsets():
+    """Every home part's texture set (None: plain), as art/home/build.py exports them."""
+    out = {n: home_front.TEXSET.get(n) for n in home_front.BUILDERS}
+    out.update(home_furnish.TEXSET)
+    out.update({n: "HomeDoor" for n in home_front.DOOR_PARTS})
+    return out
+
+
+def home_material(name, set_name):
+    if set_name is None:
+        if name == "Lamp":
+            return render.emissive("unit_lamp_lit", (1.0, 0.9, 0.76), 5.0)
+        return render.simple(f"plain_{name}", home_front.PLAIN[name], 0.4)
+    tex = HOME_TEX if set_name in HOME_SETS else TEX
+    return bake.textured(set_name, tex, for_export=False)
+
+
+def home_parts(coll, meshes, sets):
+    """Render objects for the home's meshes, hidden: the originals the sheets copy into place."""
+    out = {}
+    for name, mesh in meshes.items():
+        ob = mesh.build(coll)
+        ob.data.materials.append(home_material(name, sets[name]))
+        tint = HOME_TINT.get(name)
+        if tint:
+            ob["tint"] = (*render.hexc(tint), 1.0)
+        ob.hide_render = True
+        out[name] = ob
+    return out
+
+
+def place(coll, objs, at):
+    for o in objs:
+        c = o.copy()
+        c.hide_render = False
+        coll.objects.link(c)
+        c.matrix_world = at @ o.matrix_world
+
+
+def furnishings(coll):
+    """The home's furnishings, built once and hidden: {piece kind: [its objects]}."""
+    sets = home_texsets()
+    objs = home_parts(coll, home_furnish.meshes(), sets)
+    objs["LampShade"].data.materials.clear()  # lit from inside: the cloth glows warm
+    objs["LampShade"].data.materials.append(render.emissive("shade_lit", render.hexc(HOME_TINT["LampShade"]), 1.2))
+    return {kind: [objs[n] for n in names] for kind, names in K.HOME.PIECES.items()}
+
+
+def turned(x, y, turn, at=None):
+    m = Matrix.Translation((x, y, 0.0)) @ Matrix.Rotation(math.radians(turn), 4, "Z")
+    return at @ m if at is not None else m
+
+
+def home_fronts(coll, pieces):
+    """The home front in every gap (art/home/front.py) on the M's door rig, its door wearing
+    HomeDoor in clay, open or shut by SHUT; in each unit its round lamp lit and, in the open ones,
+    the starter set (the rug, the beanbag, the floor lamp glowing) and stand-in finds."""
     uk = unit_kit()
     sub = uk.collection("UnitFront", coll)
     unit = uk.Unit(uk.Spec(K.DOOR_SIZE), sub)
     dk = [unit.objs[n] for n in ("BottomBar", "LatchBolt", "Padlock", "Hardware", "Drum", "NumberPlate")]
     bake.copy_atlas(dk, os.path.join(UNIT, "out", K.DOOR_SIZE, "unit.blend"))
-    for name, ob in unit.objs.items():
-        if uk.TEXSET.get(name):
-            ob.data.materials.append(bake.textured(uk.TEXSET[name], TEX, for_export=False))
-    unit.objs["Facade"]["tint"] = (*render.hexc(TINT["Walls"]), 1.0)  # the home's wall paint
+    door = home_material("CurtainClosed", "HomeDoor")
+    for name in home_front.DOOR_PARTS:
+        ob = unit.objs[name]
+        ob.data.materials.clear()
+        ob.data.materials.append(door)
+        ob["tint"] = (*render.hexc(HOME_TINT["HomeDoor"]), 1.0)
     chain = list(unit.make_chain().objects)
-    drop = ("WallLeft", "WallRight", "WallBack", "Floor", "Top", "DoorOrigin", "Slat_A", "Slat_B",
-            "Slat_C", "CurtainClosed")
-    fixed = [o for n, o in unit.objs.items() if n not in drop]
+    for o in chain:
+        o["tint"] = unit.objs["Slat_A"]["tint"]
+    sets = home_texsets()
+    fixed = list(home_parts(sub, home_front.meshes(unit.spec), sets).values())
+    fixed += [unit.objs[n] for n in ("BottomBar", "LatchBolt", "Hardware", "Drum")]
     for shut in (False, True):
         unit.pose(0.0 if shut else unit.spec.travel, locked=shut)
         bpy.context.view_layer.update()
         show = fixed + ([unit.objs["CurtainClosed"]] if shut else chain)
-        show = [o for o in show if not o.hide_render]
         for n, side, y in K.slots():
-            if (n in SHUT) != shut:
-                continue
-            at = slot_frame(side, y)
-            for o in show:
-                c = o.copy()
-                coll.objects.link(c)
-                c.matrix_world = at @ o.matrix_world
+            if (n in SHUT) == shut:
+                place(coll, show, slot_frame(side, y))
     for o in list(unit.objs.values()) + chain:
         o.hide_render = True
-    glass = render.emissive("bulb_lit", (1.0, 0.84, 0.6), 7.0)
-    for n, side, door, _, _, bulb in K.slot_rows():
-        at = slot_frame(side, door[1])
-        corridor.build_bulb(coll, for_export=False, glass=glass,
-                            matrix=Matrix.Translation(bulb) @ at.to_3x3().to_4x4())
-        ld = bpy.data.lights.new("unit_bulb", "POINT")
-        ld.energy, ld.color, ld.shadow_soft_size = 1500.0, (1.0, 0.78, 0.52), 0.15
-        lo = bpy.data.objects.new("unit_bulb", ld)
+    d, hang = K.HOME.LAMP
+    lamp = home_front.lamp_at(unit.spec)
+    for n, side, door_at, _, _, _ in K.slot_rows():
+        at = slot_frame(side, door_at[1])
+        ld = bpy.data.lights.new("unit_lamp", "AREA")
+        ld.shape, ld.size = "DISK", d * 0.9
+        ld.energy, ld.color = 1100.0, (1.0, 0.86, 0.7)
+        lo = bpy.data.objects.new("unit_lamp", ld)
         coll.objects.link(lo)
-        lo.location = Vector(bulb) - Vector((0.0, 0.0, 0.9))
+        lo.location = at @ Vector((lamp[0], lamp[1], lamp[2] - hang / 2 - 0.02))
         if n in SHUT:
             continue
+        for kind, (x, y), turn in K.HOME.STARTER:
+            place(coll, pieces[kind], turned(x, y, turn, at))
+            if kind == "FloorLamp":
+                pd = bpy.data.lights.new("floor_lamp", "POINT")
+                pd.energy, pd.color, pd.shadow_soft_size = 140.0, (1.0, 0.78, 0.5), 0.3
+                po = bpy.data.objects.new("floor_lamp", pd)
+                coll.objects.link(po)
+                stem = K.HOME.FLOOR_LAMP[1]
+                po.location = at @ Vector((x, y, stem + 0.2))
         yaw = math.atan2(at[1][0], at[0][0])
         for (lx, ly, lz), kind, turn in FINDS:
             sx, sy, sz = K.BOX_SIZE[kind]
             render.box_prop(coll, tuple(at @ Vector((lx, ly, lz))), (sy, sx, sz), yaw + math.radians(turn))
+
+
+def dress_floor(coll, pieces):
+    """The plants, benches and planters round the floor (K.dressing)."""
+    for kind, x, y, turn in K.dressing():
+        place(coll, pieces[kind], turned(x, y, turn))
 
 
 def fixtures(coll):
@@ -860,7 +909,7 @@ def dressing(coll):
         render.box_prop(coll, (x, y, z), (sy, sx, sz), math.radians(90 + turn))
 
 
-def stage_renders():
+def stage_renders(only=None):
     reset()
     render.setup(96, (1560, 720))
     coll = bpy.context.scene.collection
@@ -871,7 +920,9 @@ def stage_renders():
     gm.node_tree.nodes["Principled BSDF"].inputs["Transmission Weight"].default_value = 0.85
     glass.data.materials.append(gm)
     cars(coll)
-    unit_fronts(coll)
+    pieces = furnishings(coll)
+    home_fronts(coll, pieces)
+    dress_floor(coll, pieces)
     fixtures(coll)
     dressing(coll)
     # the porch light outside over the door (Lobby.Porch): a sodium pool on the concrete
@@ -900,10 +951,18 @@ def stage_renders():
         ("unit", (37.0, -94.0, 5.2), (60.0, -82.0, 6.6), 18.0, 0.4),
         # from a unit's back corner out its door to the floor (unit 4)
         ("inside", (-88.4, -70.4, 6.2), (-40.0, -60.0, 3.6), 18.0, 0.4),
+        # walking up to your own unit (9): the plants either side, its starter set waiting inside
+        ("home", (47.0, -87.5, 4.7), (66.0, -81.0, 2.6), 17.0, 0.4),
+        # a bench between two doors and the planter in the middle, from across the floor
+        ("nook", (-6.0, -96.0, 5.0), (-40.0, -70.0, 2.4), 16.0, 0.4),
     ]
     for name, loc, target, lens, ex in shots:
+        if only and name not in only:
+            continue
         cam = render.camera(loc, target, lens=lens)
         render.shoot(cam, os.path.join(SHEETS, f"lobby-{name}.png"), exposure=ex)
+    if only and "plan" not in only:
+        return
     # the plan, from above with the deck lifted off
     for n in ("Ceiling", "Deck", "Joists", "Panel", "UnitTops", "WallsUpper", "Lamps"):
         objs[n].hide_render = True
@@ -925,5 +984,7 @@ if __name__ == "__main__":
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     ap = argparse.ArgumentParser()
     ap.add_argument("--stage", choices=list(STAGES), required=True)
-    STAGES[ap.parse_args(argv).stage]()
+    ap.add_argument("--only", nargs="*", help="renders: just these sheets (spawn, unit, home, ...)")
+    a = ap.parse_args(argv)
+    STAGES[a.stage](a.only) if a.stage == "renders" else STAGES[a.stage]()
     print("DONE")

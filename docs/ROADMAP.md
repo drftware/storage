@@ -2337,7 +2337,7 @@ Done when players watch the results to the end and change their perks between cl
           lamps and a bulkhead where it meets the cars' steel deck; the units' insides smooth
           plaster with flat ceilings and baseboards; a runner rug to the cars. The cars'
           strip keeps its concrete, deck, joists and hall lights. Exported, not uploaded.
-        - [ ] **S5-03a2b2 The home's furnishings and front** (art): the home front kit in
+        - [x] **S5-03a2b2 The home's furnishings and front** (art; D-266): the home front kit in
           `art/home` (a clean roll-up door in a warm colour on the climb's door rig, a painted
           frame with no diamond plate, a light switch plate inside by the door); potted
           plants by the doors and benches between units on the ground floor, a couple of
@@ -2347,6 +2347,12 @@ Done when players watch the results to the end and change their perks between cl
           glow (Neon) and the runner Fabric; the hall lights only over the cars; the home
           front in each gap in place of the climb's M; the switch (Switch; a click; the light
           warms up or down over about 0.2 s; dark with the door down and the light off).
+          From b2 (D-266): import `art/home/out/Home.fbx`; the home front's parts per
+          `Home.Specs` (the M's door rig with its slats, curtain and bar in HomeDoor, no padlock
+          or number plate); each unit's own round Lamp in place of the climb's bulb; the
+          starter set (`Home.Specs.Starter`) and the floor's furnishings
+          (`Lobby.Specs.Dressing`: 24 plants, 10 benches, 2 planters) placed, with colliders
+          and Seats on the benches and planters; the floor lamp's PointLight.
       - [ ] **S5-03a2c The ground floor weighed for a phone** (after the new look): up to 25 real lights (6 fills,
         12 home bulbs, 6 car lamps, the porch) and the room's 87,446 triangles plus twelve M
         fronts and six cars, weighed at Galaxy A16 size against the GDD tech plan's caps;

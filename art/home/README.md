@@ -18,8 +18,27 @@ The ground floor (`art/lobby`) wears both; its wood trim takes one plank of the 
 drawn out along its length (`wood_uv`), so beams and rails show grain but no plank joints.
 Sheets: `art/sheets/lobby-spawn.png`, `lobby-unit.png`, `lobby-inside.png`.
 
-## Still to build (S5-03a2b2)
+## The front and the furnishings (S5-03a2b2, D-266)
 
-The home front (a clean roll-up door in a warm colour on the climb's door rig, a painted frame,
-a light switch plate inside by the door), potted plants and benches for the ground floor, and a
-rug, a beanbag and a floor lamp for every unit.
+`scripts/art.sh home` runs `textures`, `door` (HomeDoor on the M's own door parts: build the
+unit's M first) and `export` (`out/Home.fbx`, `src/shared/Home/Specs.luau`), under a minute.
+More sets: Leaf (512x1024: four leaf columns, soil below V 0.12), Fabric (512², tinted),
+Rug (512², baked colours), HomeDoor (1024², the DoorKit's layout, tinted).
+
+| Part | Set | Tris | What it is |
+|---|---|---|---|
+| Facade, FacadeBack | Plaster | 36 each | the wall across the front, outside and in |
+| Casing | Wood | 360 | casing, plinths, cornice, reveal lining, baseboards, rail |
+| Frame | TrimSheet | 1348 | the M's mechanism only (`parts.frame(dress=False)`) |
+| Switch, SwitchToggle | plain | 44 each | the plate and its rocker (pivot at its middle) |
+| Lamp | plain | 76 | the unit's round ceiling lamp |
+| CurtainClosed, Slat_A/B/C, BottomBar, LatchBolt, Hardware, Drum | HomeDoor | the M's | the door, kept new |
+| Pot, Plant | Plaster, Leaf | 236, 528 | a snake plant in a cream pot |
+| Bench | Wood | 404 | an oak bench with a back |
+| Planter, PlanterSeat, PlanterPlants | Plaster, Wood, Leaf | 24, 176, 2196 | the island you sit round |
+| Rug, Beanbag | Rug, Fabric | 12, 360 | the starter rug and beanbag |
+| FloorLamp, LampShade | Wood, Fabric | 288, 192 | the starter floor lamp |
+
+Home.fbx: 10,664 triangles in 25 parts. Sheets (drawn by `art/lobby`): `lobby-home.png` (your
+unit from the floor), `lobby-nook.png` (a bench and a planter), `lobby-unit.png`,
+`lobby-inside.png`, `lobby-spawn.png`.

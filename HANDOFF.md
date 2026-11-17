@@ -2,52 +2,50 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-16, session 224 (the ground floor re-done calm) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `c9f6667`.
+**Updated:** 2026-11-17, session 225 (the home front and furnishings) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `c9f6667`.
 
 ## State
 - The home (D-259; the Claude Doc https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools
-  only) is built a ROADMAP piece a session (S5-03). The home look (S5-03a2b, D-263) is split
-  three ways: b1 is done (D-264), b2 is the art below, b3 puts it all in the game.
-- b1: the home's own baked sets (`art/home`: Plaster, Wood; `scripts/art.sh home`) and the
-  ground floor re-drawn in them: oak planks, sage and cream plaster walls with a wood baseboard
-  and rail, a white ceiling on wood beams with 28 round lamps, a red runner, plaster unit
-  insides. The cars' 12-deep strip keeps the climb's concrete, deck, joists and hall lights.
-  Sheets: `art/sheets/lobby-spawn.png`, `-unit`, `-inside`. FBX and `Lobby/Specs.luau`
-  exported, NOT uploaded: the place still holds the old template (version 57), which keeps
-  working; the new parts need b3's `Lobby.prepare` paint before they import.
-- The fronts in the gaps are still the climb's M (D-262), and the bulbs the climb's.
-- Find art (third find run): P1 done (D-265, D-266): the game deals and presses every kit find
-  from the row in its art spec (`art/finds/PIPELINE.md`), seen in Play. Next: V1 Squeeze
-  (ROADMAP F-G1e1; `art/finds/WAVES.md`).
+  only) is built a ROADMAP piece a session (S5-03). The home look (S5-03a2b, D-263): b1 the
+  room (D-264) and b2 the front and furnishings (D-266) are art only; b3 puts them in the game.
+- b2 (D-266, `art/home/README.md`): `art/home/out/Home.fbx`, 25 parts, 10,664 triangles: the
+  home front (the M's door rig in an oak-cased doorway, the sage wall across, HomeDoor kept
+  new and tinted clay, a light switch with its own rocker, the unit's round lamp), a snake
+  plant in a pot, an oak bench, a planter island with a seat round it, the starter rug,
+  beanbag and floor lamp. `src/shared/Home/Specs.luau` (generated) has the switch, lamp,
+  pieces, starter set and every part's box; `Lobby.Specs.Dressing` places 24 plants, 10
+  benches and 2 planters. Sheets: `art/sheets/lobby-home.png`, `lobby-nook.png`, and the
+  spawn, unit and inside sheets re-drawn. NOTHING uploaded: the place still holds the old
+  lobby template (version 57) with the climb's M fronts, which keeps working.
+- Find art (third find run): P1a done (D-265); next there P1b (ROADMAP F-G1f2).
 
-## Next task: S5-03a2b2 The home's furnishings and front (art)
-The moment: from the car you see a row of little homes, a plant by each door and a bench
-between, and inside yours a rug, a beanbag and a lamp waiting (D-263; Animal Crossing's first
-tent comes furnished).
-1. Look at `art/sheets/lobby-unit.png` and `lobby-inside.png`; read D-263 and D-264.
-2. In `art/home`: the home front, built from the unit kit's door rig (`art/unit/parts.py`,
-   the M's numbers) so the door still rolls: a clean roll-up door (a no-wear DoorKit variant
-   or new home set; the game tints it warm), a painted frame and facade with no diamond plate,
-   and a light switch plate inside by the door. Its own FBX and Specs, the unit's way.
-3. Furnishings, each its own part: a snake plant in a pot (a Leaf bake: dark green with
-   lighter cross bands, yellow edges, a soil band), a wood bench, a rug, a beanbag, a floor
-   lamp. Place plants and benches on the ground floor's walls between doors in `art/lobby`
-   (spec rows the game can read) and a couple of islands in the open middle.
-4. Sheets: the front shut and open, a furnished unit, the floor from the spawn. Judge each at
-   phone size (about 640 wide): calm, cared for, plainly not the climb.
-Split again if it won't fit (the front, then the furnishings).
-**Acceptance:** check green; new sheets show the home front and a furnished unit, the climb's
-units unchanged; triangle counts in the README; nothing uploaded yet (b3 does it).
-**Read first:** D-264 (grep "^## D-264" docs/DECISIONS.md); `art/home/README.md`;
-`art/unit/README.md` (Parts, How it's made); `art/unit/parts.py` (the door rig's parts);
-`art/lobby/build.py` (`unit_shells`, `wood_box`, `unit_fronts`); `art/home/looks.py`.
+## Next task: S5-03a2b3 The home look in the game
+The moment: you load in and the ground floor is plainly a calm home, your unit a little house
+with a clay door, a plant either side, its lamp on and a beanbag waiting (D-263).
+1. Look at `art/sheets/lobby-spawn.png`, `lobby-home.png`, `lobby-nook.png` first (I ran out
+   of room to judge them at phone size: fix anything that reads wrong before uploading).
+2. Upload and import `art/lobby/out/Lobby.fbx` and `art/home/out/Home.fbx` in Studio (the
+   unit's way, `docs/STUDIO.md`); keep the templates where `Lobby` finds its parts.
+3. `Lobby.prepare`: paint the new parts (`Lobby.Paint`: walls, ceiling, the units' insides,
+   the front's Facade sage and FacadeBack warm white, the door clay, pots cream, the beanbag
+   mustard), Lamps Neon, the runner Fabric; the hall lights only over the cars.
+4. The home front in each gap in place of the climb's M, on `RollUpDoor` with the HomeDoor
+   slats, curtain and bar (no padlock, no number plate); each unit's Lamp for the bulb.
+5. Place the starter set (`Home.Specs.Starter`) in each unit and `Lobby.Specs.Dressing` round
+   the floor, with colliders and Seats on benches and planters; a PointLight in each floor lamp.
+6. The switch: Switch (the lamps' verb), a click, the rocker rocks (`Home.Specs.Switch.Tilt`),
+   the light warms up or down over about 0.2 s; dark with the door down and the light off.
+Split if it won't fit (the import and paint, then the switch and furnishings).
+**Acceptance:** check green; Play in Studio shows the home fronts, furnishings and the switch
+working (Output clean); OWNER.md lists what to try on a phone.
+**Read first:** D-266 (grep "^## D-266" docs/DECISIONS.md); ROADMAP S5-03a2b3;
+`src/shared/Home/Specs.luau`; `art/home/README.md`; `src/shared/Lobby` (grep `prepare`);
+`docs/STUDIO.md` (the FBX import recipe).
 
 ## Queue (next sessions, the owner's ticket order)
-1. S5-03a2b3 the home look in the game (ROADMAP has its steps: upload, prepare's paint and
-   looks for the new parts, Neon lamps, hall lights only over the cars, the home front in
-   each gap, the switch), then S5-03a2c the ground floor weighed for a phone, then S5-03a3 a
-   unit each (a Brix plots system first, D-252), F-G1b4a the hard hat on your head, S5-03b
-   the mirror test, then S5-03c to h.
+1. S5-03a2c the ground floor weighed for a phone, then S5-03a3 a unit each (a Brix plots
+   system first, D-252), F-G1b4a the hard hat on your head, S5-03b the mirror test, then
+   S5-03c to h.
 2. F-G1b4b the hard hat spent and broken; F-G1b5 waits for its art.
 3. Brix ticket: Driving's stick read needs `PlayerScripts.PlayerModule`; fall back to the camera-
    turned `Humanoid.MoveDirection` as `input` does (D-254). Built in `../engine`, then the pin.

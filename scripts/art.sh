@@ -85,7 +85,8 @@
 #   scripts/art.sh feed                 the security camera feed's grain and snow pictures (seconds)
 #   scripts/art.sh mark                 the faint mark on a note's door frame: its chalk texture
 #                                       (drawn with numpy, no bake), FBX, look sheet (seconds)
-#   scripts/art.sh home                 the home's texture sets (plaster, oak), art/home/out/textures
+#   scripts/art.sh home [stages]        the home's kit: textures (plaster, oak, leaf, fabric, rug), door
+#                                       (HomeDoor), export (Home.fbx, src/shared/Home/Specs.luau)
 #                                       (seconds; the ground floor wears them)
 #   scripts/art.sh lobby                the front office: FBX, Specs module, look sheets (it wears the
 #                                       unit's textures and stands the elevator in its bays: build
@@ -139,8 +140,12 @@ if [ "${1:-}" = "elevator" ]; then
 	exit 0
 fi
 if [ "${1:-}" = "home" ]; then
-	blender -b --factory-startup -P art/home/build.py -- --stage textures 2>&1 \
-		| grep -E -i "error|traceback|BAKED|DONE" || true
+	shift
+	for st in ${*:-textures door export}; do
+		echo "== home $st"
+		blender -b --factory-startup -P art/home/build.py -- --stage "$st" 2>&1 \
+			| grep -E -i "error|traceback|BAKED|FBX|SPEC|DONE|assert" || true
+	done
 	exit 0
 fi
 if [ "${1:-}" = "lobby" ]; then

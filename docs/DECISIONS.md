@@ -6834,3 +6834,36 @@ game's code.
 - **Big finds wait.** A big find (both hands, behind a floor's code door) gets no game row until
   a floor has a big-find place, so the theatre spotlight stays out of the deal.
 
+## D-266 · 2026-11-17 · The home front and the furnishings (S5-03a2b2)
+
+The home's kit (`art/home`) gets its front and furnishings, D-263 made real. The moment: from
+the car you see a row of little homes, a plant by each door and a bench between, and inside
+yours a rug, a beanbag and a lamp waiting (Animal Crossing's first tent comes furnished; a
+hotel lobby's planters and benches).
+
+- **The home front** is the M's door rig in a home's doorway: the room's sage plaster wall runs
+  across the front with its oak baseboard and rail, an oak casing on plinth blocks under a
+  small cornice frames the door, the reveal is lined in oak back to the guides. The climb's
+  jambs, pilasters, kick plates and cap are gone (`parts.frame(dress=False)` keeps only the
+  mechanism). The door wears **HomeDoor**, the DoorKit's own layout baked new (satin enamel,
+  bright galvanized, a clean bar), tinted by the game: clay in the sheets. The padlock and
+  number plate stay on the climb: a home's door latches, and its owner's name is over it.
+- **A light switch** inside by the door, on your left as you walk in, twice a real plate's
+  size so it reads on a phone, its rocker a part of its own for the game to rock. **A round
+  ceiling lamp** in each unit, the lobby's look, in place of the climb's bare bulb.
+- **Furnishings, each its own part on its own origin**: a snake plant in a cream pot (a Leaf
+  bake: banded leaves, yellow margins, soil), an oak bench with a back, a square planter you
+  sit round on an oak seat with five snake plants in it, the starter rug (a flat-weave in
+  terracotta, teal, mustard and oatmeal, baked), a slumped beanbag and a floor lamp with a
+  drum shade (Fabric, tinted). New sets: Leaf, Fabric, Rug, HomeDoor.
+- **The floor:** a plant either side of every door and a bench on each partition line between
+  (24 plants, 10 benches), two planters in the middle under the cross beam at y -72, 20 off the
+  runner either side: lanes stay wide to the walls and the carts' way. Rows the game reads:
+  `Lobby.Specs.Dressing`; the starter set: `Home.Specs.Starter`.
+- **Phone cost:** Home.fbx is 10,664 triangles in 25 parts; a plant is 764, a bench 404, a
+  planter 2,396, a starter set 852. The floor's furnishings add 27,168 triangles of instanced copies.
+- **Defaults the owner may change** (`OWNER.md`): the clay door, cream pots, a mustard beanbag,
+  no padlock at home.
+- **Not chosen:** a padlock on home doors; carpet in the units (the oak reads warmer); a round
+  planter (four boards read cleaner at phone size than a ring); the climb's bulb kept.
+

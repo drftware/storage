@@ -30,7 +30,8 @@ nowhere else.
   4. Four lamps in a unit cast real light; any more just glow.
   5. Only a unit's owner works its light switch (D-263); visitors see it as it is.
   6. Every unit starts with a rug, a beanbag and a floor lamp (D-263), as Animal Crossing's
-     first tent comes furnished.
+     first tent comes furnished. My picks (D-266): a clay door in an oak casing, cream pots, a
+     mustard beanbag, and no padlock on home doors. Look at `art/sheets/lobby-home.png`.
   7. The ground floor is 156 studs deep (the front office was 48), so a new player runs about
      9 seconds from loading in to the cars, past all 12 units.
   8. Each unit's door is the climb's 8-wide door, in a unit 20 wide. A 12-wide door would show
