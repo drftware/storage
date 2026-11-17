@@ -1177,6 +1177,18 @@ function Keepers.new(): Keepers
 		return if reach > 0 then till else nil, reach
 	end
 
+	-- The lit finds worn on heads now (F-G1b4a1, D-277): where each head is and how far its light
+	-- holds a Mannequin, as a found light lying lit does. Gathered once a step; reused.
+	local worn = { at = {} :: { Vector3 }, reach = {} :: { number }, count = 0 }
+	local wornClock = 0
+	local function wornLamp(_player: Player, model: Model)
+		local till, reach = lampOf(model)
+		if till and till > wornClock then
+			worn.count += 1
+			worn.at[worn.count], worn.reach[worn.count] = model:GetPivot().Position, reach
+		end
+	end
+
 	local function tellLying()
 		looseDirty = false
 		for _, on in floors do
@@ -1748,6 +1760,11 @@ function Keepers.new(): Keepers
 		if looseDirty then
 			tellLying()
 		end
+		worn.count = 0
+		if toolSlots then
+			wornClock = Workspace:GetServerTimeNow()
+			toolSlots:worn(wornLamp)
+		end
 		for _, on in floors do
 			if on.here < 0 then
 				if anyoneOn(on) then
@@ -1774,6 +1791,15 @@ function Keepers.new(): Keepers
 						glows.at[glows.count], glows.reach[glows.count] =
 							lamps.at[i], lamps.reach[i]
 					end
+				end
+			end
+			-- and those lit on heads on it, from where each head is now
+			for i = 1, worn.count do
+				local p = on.origin:PointToObjectSpace(worn.at[i])
+				local here = vector.create(p.X, p.Y, p.Z)
+				if Keeper.onFloor(on.map, here) then
+					glows.count += 1
+					glows.at[glows.count], glows.reach[glows.count] = here, worn.reach[i]
 				end
 			end
 			local list = on.players

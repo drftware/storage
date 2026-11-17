@@ -2781,3 +2781,18 @@ verified: a doc page, Studio, or "untested".
   door's Close with the character moved in front of it by script: don't count on it to press a
   prompt in a test; the two-player door test is the owner's (`OWNER.md`).
 
+
+## The hard hat on your head, seen in Play (F-G1b4a1, Nov 17)
+- **Wearing it from the MCP:** Play; Server `workspace:SetAttribute("GiveFind", "HardHat")` (you
+  spawn on the ground floor, about (0, 3, 450)); Client `ReplicatedStorage.Remotes.ToolUse:
+  FireServer()`. Seen: `ToolSlot1` "" and `ToolHead` "HardHat", the model `WornFind` in the
+  character at scale 1.4, its pivot 0.18 studs over the head's middle, the pack hidden, stamped
+  `UseState` On with `UseLeft` -1 (forever, at home), its SpotLight (1.5) and PointLight (0.3) lit
+  on the wearer's screen. Not seen: how it looks (the MCP's screen capture timed out in Play).
+- **Once, the first Wear after starting Play stayed dark on the wearer's screen:** stamped and
+  tagged, but `FindUseView` never posed it (the bulb's emissive 0, lights off) until the tag was
+  removed and added again on that client. A second run, restarted, lit at once; a client listener
+  saw the tag arrive with `UseKey` already set. Cause unknown; watch for it.
+- **`Model:ScaleTo` on a find on the server** grows its parts and Motor6Ds together, and
+  `FindUseView`'s `Finds.joints(model, key, values, model:GetScale(), ...)` keeps posing it right;
+  `ScaleTo(1)` puts it back as it drops (the drop not yet seen in Play).

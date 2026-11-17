@@ -2382,8 +2382,9 @@ Done when players watch the results to the end and change their perks between cl
         your name over your door, doors up by default, a pulled-down door locked to all but its
         holder (the climb's locked rattle), unclaimed homes padlocked, the switch the holder's only
         (D-263), ShutIn's depth for a home. It runs Brix's ENG-25b in Studio as it goes.
-  - [ ] **F-G1b4a The hard hat on your head** (its own ticket in Step 4's finds; the owner put
-    it here, Nov 16).
+  - [x] **F-G1b4a1 The hard hat on your head, lit** (D-277; its own ticket in Step 4's finds,
+    the owner put it here, Nov 16; seen in Studio Play with one player).
+  - [ ] **F-G1b4a2 The headlamp's beam** (after S5-03b; see Step 4's F-G1b4a2).
   - [ ] **S5-03b The mirror test** (ideas 21, 22): one mirror in a unit, built as D-259 says,
     judged at Galaxy A16 size; what Roblox does and doesn't draw goes in `docs/STUDIO.md`. The
     owner judges it in Studio before S5-03f.
@@ -2649,12 +2650,20 @@ actions themselves and dealing the new finds on floors are later game tickets.
       head and breaks as the saw does (D-141's break: bits fly, a clank monsters hear, a fade).
       Caught, it drops with everything else. On a phone only the nearest few headlamps light
       the walls, as the hall lights do. Split for one session each (Nov 16):
-      - [ ] **F-G1b4a On your head and lit.** A head place on the character apart from the
-        slots, welded as the ladder is; Wear (the hat's one word, replacing its Switch) lifts it
-        on with the shell's knock and the lamp's click, lit, and frees its slot; the beam,
-        tighter and whiter than the torch's, where you look, bobbing with your walk; friends
-        see the light on your forehead; it holds a Mannequin as any found light does (its
-        stamp in `Slots:finds`' place, now from your head); caught, it drops with the rest.
+      - [x] **F-G1b4a1 On your head and lit** (D-277; seen in Studio Play with one player,
+        the two-client view waits on `OWNER.md`). Wear (the hat's one word, replacing its
+        Switch) takes it from your hand onto your head (`Slots:toHead`, `Finds/Head`'s fit),
+        frees its slot, the shell's knock as it lands and the lamp's click as its switch flips;
+        it lights the hall from your forehead for everyone with the hat's own lamp; it holds a
+        Mannequin as a found light lying lit does, from where your head is; caught, it drops
+        with the rest; aboard at the gate, it's kept with your finds; on the ground floor its
+        light never runs down.
+      - [ ] **F-G1b4a2 The headlamp's beam.** Your own beam drawn from your eyes, tighter and
+        whiter than the torch's, going where you look (pitch too, not just where your head
+        turns) and bobbing with your walk (`Torch.step`'s stride); the beam swinging up into
+        place as the hat goes on (the pull-on, felt in first person); friends' beams from their
+        lamp along their aim (`Aim`), replacing the hat's warm art light while it's worn; the
+        hat dropping onto a friend's head with a little settle rather than appearing there.
       - [ ] **F-G1b4b Spent and broken.** Its minute dims and stutters out as the flashlight
         dies; spent, it falls off your head and breaks (D-141); on a phone only the nearest
         few headlamps light the walls.

@@ -868,14 +868,15 @@ GAME = [
         size="Medium",
         pickUp=HOLLOW,
         drop=pitched(PLASTIC, 0.95),
-        # "A lamp on your head lights whatever you look at, for a minute"; worn later (D-188's
-        # worn finds, F-G1b4), switched on in your hand for now
+        # "A lamp on your head lights whatever you look at, for a minute": Wear puts it on your
+        # head (D-188's worn finds, F-G1b4a1, D-277), the shell's knock as it lands and the lamp's
+        # click as its switch flips. No switch off: on your head it burns its minute (F-G1b4b).
         press=dict(
-            verb="Switch",
-            on=[dict(motion="SwitchOn", sound=CLICK_ON)],
+            verb="Wear",
+            on=[dict(motion="SwitchOn", sound=pitched(HOLLOW, 0.85),
+                     cues=[dict(at=0.14, sound=CLICK_ON)])],
             lasts=60,
             out=[dict(motion="RunDown")],
-            off=dict(motion="SwitchOff", sound=CLICK_OFF),
         ),
     ),
     dict(

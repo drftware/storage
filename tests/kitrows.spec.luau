@@ -13,6 +13,10 @@ local Rows = require("../src/shared/Finds/Rows")
 local Use = require("../src/shared/Finds/Use")
 local Was = require("./fixtures/kitrows") :: any -- a frozen literal: read field by field below
 
+-- Finds whose press was changed on purpose since the freeze, each tested in its own spec: the
+-- hard hat's Switch became Wear (F-G1b4a1, D-277; tests/head.spec).
+local CHANGED: { [string]: boolean } = { HardHat = true }
+
 local failures, checks = 0, 0
 local function ok(cond: boolean, what: string)
 	checks += 1
@@ -61,6 +65,9 @@ for i, row in Rows do
 	local c = was.catalog
 	ok(row.judged, `{key}: judged (its line in WAVES.md ticked built)`)
 	for _, field in { "name", "grade", "worth", "from", "grip", "heft", "pickUp", "drop", "verb" } do
+		if field == "verb" and CHANGED[key] then
+			continue
+		end
 		-- a verb added where there was none comes with its new press (V1 on): its press's word
 		if field == "verb" and c.verb == nil and not was.press and row.press then
 			ok(row.verb == row.press.verb, `{key}: its new verb is its press's`)
@@ -70,7 +77,7 @@ for i, row in Rows do
 	end
 	ok(same(HOLD[row.size], c.hold), `{key}: sits in your view as it did ({row.size})`)
 	-- a press it had is kept step for step; one added where there was none is new data (V1 on)
-	if was.press then
+	if was.press and not CHANGED[key] then
 		ok(same(row.press, was.press), `{key}: its press as it was`)
 	end
 end

@@ -587,17 +587,29 @@ local Rows: { Game.Row } = {
 			volume = 0.8,
 			pitch = 0.95,
 		},
-		verb = "Switch",
+		verb = "Wear",
 		press = {
-			verb = "Switch",
+			verb = "Wear",
 			on = {
 				{
 					motion = "SwitchOn",
 					sound = {
-						id = "rbxassetid://9114480271",
-						from = 0.38,
-						length = 0.14,
-						volume = 1.4,
+						id = "rbxassetid://9117544893",
+						from = 0,
+						length = 0.42,
+						volume = 0.8,
+						pitch = 0.85,
+					},
+					cues = {
+						{
+							at = 0.14,
+							sound = {
+								id = "rbxassetid://9114480271",
+								from = 0.38,
+								length = 0.14,
+								volume = 1.4,
+							},
+						},
 					},
 				},
 			},
@@ -605,15 +617,6 @@ local Rows: { Game.Row } = {
 			out = {
 				{
 					motion = "RunDown",
-				},
-			},
-			off = {
-				motion = "SwitchOff",
-				sound = {
-					id = "rbxassetid://9114480269",
-					from = 0.1,
-					length = 0.14,
-					volume = 1.4,
 				},
 			},
 		},

@@ -30,7 +30,10 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local Pose = require(ReplicatedStorage.Shared.Finds.Pose)
 local Finds = require(ReplicatedStorage.Shared.Finds)
+local Head = require(ReplicatedStorage.Shared.Finds.Head)
 local Keepers = require(script.Parent.Keepers)
+local Lobby = require(ReplicatedStorage.Shared.Lobby)
+local LobbySpecs = require(ReplicatedStorage.Shared.Lobby.Specs)
 local Slots = require(script.Parent.Slots)
 local Use = require(ReplicatedStorage.Shared.Finds.Use)
 
@@ -280,6 +283,18 @@ function FindUses.new(): Brix.System
 		}
 	end
 
+	-- Is `player` standing on the ground floor, where nothing runs down (D-259)?
+	local function atHome(player: Player): boolean
+		local character = player.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		if not (root and root:IsA("BasePart")) then
+			return false
+		end
+		local p = Lobby.Origin:PointToObjectSpace(root.Position)
+		local room = LobbySpecs.Room
+		return Head.home(p.X, p.Y, p.Z, room.Width, room.Depth)
+	end
+
 	local function onUsed(use: Slots.Use)
 		local row = Use.Rows[use.key]
 		if not row then
@@ -296,6 +311,22 @@ function FindUses.new(): Brix.System
 		local now = Workspace:GetServerTimeNow()
 		local stamp = stampOf(model)
 		local pressed, left = Use.press(row, stamp, if stamp then now - stamp.at else 0, durations)
+		-- Wear (F-G1b4a1, D-277): it goes from your hand onto your head and lights there; one
+		-- already lit goes back on as it is, its light still running
+		if row.verb == Head.Verb then
+			local s = slots
+			local lit = stamp ~= nil and not Use.frame(row, stamp, now - stamp.at, durations).spent
+			if not (s and (pressed or lit) and s:toHead(player, use.key)) then
+				return
+			end
+			if not pressed then
+				last[player] = t
+				return
+			end
+			if atHome(player) then
+				left = Use.Forever
+			end
+		end
 		if not pressed then
 			return
 		end

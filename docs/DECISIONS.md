@@ -7098,3 +7098,31 @@ polish (the session's context cap): as built it always lands on the cat. Sounds 
 Studio (AudioAnalyzer): "Cat Meow Sound" (Creator Store, 0.97 s, the meow 0.06 to 0.6 s; it
 loads in Play); Pro Sound Effects' "Robot Servo 3" (the whirr, 0.8 pitch over 2.4 s) and
 "Robot Servo 19" (the hum, 0.7 pitch over 6 s).
+
+## D-277 · 2026-11-17 · The hard hat goes on your head: Wear, lit, its slot freed (F-G1b4a1)
+
+The owner's ticket (Nov 16, D-251) was too big for one session's context, so it is split: this
+part puts the hat on your head and lights it; F-G1b4a2 draws the headlamp's own beam.
+
+- **Wear is the hat's press.** Its row's word (`art/finds/lights/spec.py`, rows regenerated) is
+  Wear: the press takes it from your hand onto your head (`Slots:toHead`), frees its slot, and
+  lights it as before. The press is the shell's knock (the hollow plastic knock its pick-up uses,
+  pitched down) with the lamp's click as a timed cue at 0.14 s, as its switch flips. It has no
+  switch off: on your head it burns its minute (F-G1b4b spends it). A hat already lit goes back
+  on as it is. The frozen rows test (`tests/kitrows.spec`) skips its verb and press, now tested in
+  `tests/head.spec`.
+- **On your head it's still in your slots' system.** `Slots` keeps one worn find per player
+  (`ToolHead` on the Player, `WornBy` on the model), welded to the head's hat point by
+  `Finds/Head`'s fit: grown 1.4 times (D-196), the rim 0.42 studs down, tipped 4 degrees, the
+  cord and battery hidden. Caught or dying, it drops with the rest; aboard as the gate shuts, it's
+  kept with your finds, leaving your head in a glint; a new character gets it back. Defaults the
+  owner may change (OWNER.md): kept at the gate, one hat at a time, the Packrat never takes it.
+- **Its light for now is the hat's own lamp**, the art's warm spot and glow, drawn by
+  `FindUseView` as any found light and pointing where your head faces. F-G1b4a2 replaces it with
+  the tighter, whiter beam that follows your look and bobs.
+- **It holds a Mannequin as a found light lying lit does**, from where your head is now: Keepers
+  gathers each lit worn find once a step and counts it with the floor's glows.
+- **At home it never runs down** (D-259): worn on the ground floor (the front office's room and
+  40 studs round it, `Head.home`), its light is stamped forever. A hat worn at home and then
+  carried up the climb stays lit forever; F-G1b4b should start its minute as you leave home.
+

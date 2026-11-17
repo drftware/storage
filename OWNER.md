@@ -16,6 +16,16 @@ nowhere else.
   opens it again. Player 2 doesn't see player 1's light switch. Close player 2's window: their card
   fades blank, their door comes down and a padlock clicks on. Listen: is the hiss right for a name
   going up? And my default: anyone may pull an open home's door down; only opening is the holder's.
+- [ ] **The hard hat on your head, with a friend** (F-G1b4a1, D-277; seen with one player only).
+  Studio's Test tab, 2 players; on the Server, `workspace:SetAttribute("GiveFind", "HardHat")`
+  puts one in player 1's hands. Player 1 presses Wear. Look for, on player 2's screen: the hat sits
+  on player 1's head (not floating, not sunk to the eyes, its battery hidden), you hear a hollow
+  knock and then the lamp's click, and a warm light shines from their forehead the way they face.
+  On player 1's screen: the hat's slot is empty and the hall ahead lights up. Then let a Mannequin
+  catch player 1 on a floor: the hat falls with everything else. Say whether 1.4 times its real
+  size looks right on a Roblox head. My defaults, say which to change: a worn hat is kept at the
+  gate with your other finds (it goes from your head in a glint); you can't wear a second hat over
+  one; the Packrat robs your hands, never your head.
 - [ ] **If Studio stops getting changes, click Connect** in Studio's Rojo plugin (connected Nov 13
   at 23:30; each session checks it first and says so in HANDOFF.md).
 - [ ] **Playing on your phone** (D-109): with Rojo connected, use File > Publish to Roblox (Save

@@ -56,6 +56,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Head = require(ReplicatedStorage.Shared.Finds.Head)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Prompts = require(script.Parent.Prompts)
 local StorageUnit = require(ReplicatedStorage.Shared.StorageUnit)
@@ -106,7 +107,8 @@ export type Change = {
 		| "Place"
 		| "Keep"
 		| "Break"
-		| "Taken",
+		| "Taken"
+		| "Wear",
 }
 
 -- A press of ToolUse that passed: who, the tool's catalog key, and its model in their hand.
@@ -189,6 +191,13 @@ export type Slots = Brix.System & {
 	lower: (self: any, id: string, at: Vector3, yaw: number, still: boolean?) -> (),
 	-- Drops everything `player` carries where they stand, as dying does (caught by a keeper, L-07a).
 	dropAll: (self: any, player: Player) -> (),
+	-- Wear (F-G1b4a1, D-277): the find `key` in `player`'s hand goes onto their head
+	-- (`Head.fit`): out of its slot, welded to their head, still theirs (dropped where they're
+	-- caught, kept at the gate). Its model, or nil if it isn't in their hand or isn't worn.
+	toHead: (self: any, player: Player, key: string) -> Model?,
+	-- Each living player's find on their head, and its model (for keepers: a lit hat holds a
+	-- Mannequin from where the head is).
+	worn: (self: any, each: (player: Player, model: Model) -> ()) -> (),
 	-- Takes every find out of `player`'s slots for good (the gate shut with them aboard, S1-06):
 	-- each goes from their hand with a glint everyone near sees, and their tools stay. The kept
 	-- finds' catalog keys, slot order.
@@ -255,6 +264,24 @@ local function handOf(character: Model): (BasePart?, CFrame)
 	return hand, CFrame.new(at)
 end
 
+-- The head and where a worn find sits on it (`Head.fit`): its hat point (the top of the head),
+-- moved down, ahead and tipped by the fit.
+local function headOf(character: Model, fit: Head.Fit): (BasePart?, CFrame)
+	local head = character:FindFirstChild("Head")
+	if not (head and head:IsA("BasePart")) then
+		return nil, CFrame.identity
+	end
+	local hat = head:FindFirstChild("HatAttachment")
+	local top = if hat and hat:IsA("Attachment")
+		then hat.Position
+		else Vector3.new(0, head.Size.Y / 2, 0)
+	return head,
+		CFrame.new(top + Vector3.new(0, -fit.down, -fit.ahead)) * CFrame.Angles(
+			math.rad(-fit.tip),
+			0,
+			0
+		)
+end
 local function rootOf(player: Player): BasePart?
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
@@ -319,6 +346,8 @@ function Slots.new(): Slots
 	local grounds: { [string]: Vector3 } = {}
 	-- each find with a piece out on a floor (`out`), by its model
 	local outs: { [Model]: Out } = {}
+	-- the find each player wears on their head (`toHead`, F-G1b4a1), its id
+	local heads: { [Player]: string } = {}
 	local notice: RemoteEvent? = nil
 	local broke: RemoteEvent? = nil
 	local snatched: RemoteEvent? = nil
@@ -389,6 +418,11 @@ function Slots.new(): Slots
 		if player:GetAttribute(Tools.PocketedAttribute) ~= h.carry.pocketed then
 			player:SetAttribute(Tools.PocketedAttribute, h.carry.pocketed)
 		end
+		local worn = heads[player]
+		local onHead = if worn and tools[worn] then tools[worn].key else ""
+		if player:GetAttribute(Head.Attribute) ~= onHead then
+			player:SetAttribute(Head.Attribute, onHead)
+		end
 	end
 
 	-- Takes a tool out of any hand: unwelded, out of the world.
@@ -452,6 +486,82 @@ function Slots.new(): Slots
 		t.weld = weld
 		t.body.Anchored = false
 		t.model.Parent = character
+	end
+
+	-- Puts the find `player` wears onto their character's head (`Head.fit`), grown to fit a
+	-- Roblox head and its cord and battery hidden; stowed while they have no character.
+	local function wearOn(player: Player)
+		local id = heads[player]
+		local t = if id then tools[id] else nil
+		local fit = if t then Head.fit(t.key) else nil
+		if not (t and fit) then
+			return
+		end
+		local character = player.Character
+		if not character then
+			stow(t)
+			return
+		end
+		local head, on = headOf(character, fit)
+		if not head then
+			stow(t)
+			return
+		end
+		if t.weld and t.weld.Part0 == head then
+			return
+		end
+		if t.weld then
+			t.weld:Destroy()
+		end
+		if t.model:GetScale() ~= fit.scale then
+			t.model:ScaleTo(fit.scale)
+		end
+		for _, name in fit.hide do
+			local part = t.model:FindFirstChild(name, true)
+			if part and part:IsA("BasePart") then
+				part.Transparency = 1
+			end
+		end
+		t.model.Name = Head.ModelName
+		t.model:SetAttribute(Head.WornAttribute, player.UserId)
+		t.model:PivotTo(head.CFrame * on)
+		local weld = Instance.new("Weld")
+		weld.Name = Head.WeldName
+		weld.Part0 = head
+		weld.Part1 = t.body
+		weld.C0 = on
+		weld.C1 = t.body.PivotOffset
+		weld.Parent = t.body
+		t.weld = weld
+		t.body.Anchored = false
+		t.model.Parent = character
+	end
+
+	-- Takes `player`'s worn find off their head, back to its own size and look, out of the
+	-- world: the tool, or nil if they wear nothing. Its caller says where it goes next.
+	local function offHead(player: Player): Tool?
+		local id = heads[player]
+		heads[player] = nil
+		local t = if id then tools[id] else nil
+		if not t then
+			return nil
+		end
+		stow(t)
+		local fit = Head.fit(t.key)
+		if fit then
+			if t.model:GetScale() ~= 1 then
+				t.model:ScaleTo(1)
+			end
+			for _, name in fit.hide do
+				local part = t.model:FindFirstChild(name, true)
+				if part and part:IsA("BasePart") then
+					part.Transparency = 0
+				end
+			end
+		end
+		t.model:SetAttribute(Head.WornAttribute, nil)
+		t.model.Name = t.key
+		return t
 	end
 
 	local pickUp: (Tool, Player) -> ()
@@ -561,6 +671,10 @@ function Slots.new(): Slots
 			return
 		end
 		local ids = Carry.clear(h.carry)
+		local worn = offHead(player) -- falls with the rest (F-G1b4a1)
+		if worn then
+			table.insert(ids, worn.id)
+		end
 		for k, id in ids do
 			local t = tools[id]
 			if t then
@@ -955,6 +1069,8 @@ function Slots.new(): Slots
 			end
 			if character.Parent then
 				dress(player)
+				character:WaitForChild("Head", 5)
+				wearOn(player)
 				pace(player, handOfPlayer(player))
 			end
 		end
@@ -969,6 +1085,11 @@ function Slots.new(): Slots
 				local t = if held then tools[held] else nil
 				if t and t.owner == player then
 					stow(t)
+				end
+				local worn = heads[player]
+				local w = if worn then tools[worn] else nil
+				if w then
+					stow(w)
 				end
 			end)
 		)
@@ -1020,6 +1141,7 @@ function Slots.new(): Slots
 			Players.PlayerRemoving:Connect(function(player: Player)
 				dropAll(player, rootOf(player))
 				hands[player] = nil
+				heads[player] = nil
 			end)
 		)
 		for _, player in Players:GetPlayers() do
@@ -1340,6 +1462,14 @@ function Slots.new(): Slots
 			return row ~= nil and row.find == true and not (t and outs[t.model])
 		end)
 		local keys: { string } = {}
+		-- the find on your head is kept with the rest, going from your head in a glint
+		local worn = heads[player]
+		local w = if worn then tools[worn] else nil
+		if w and not outs[w.model] then
+			glint(w.body.Position)
+			offHead(player)
+			table.insert(ids, w.id)
+		end
 		for _, id in ids do
 			local t = tools[id]
 			if t then
@@ -1463,6 +1593,35 @@ function Slots.new(): Slots
 		publish(player)
 		changed:fire({ player = player, kind = "Place" })
 		return t.id, t.model
+	end
+
+	function system.toHead(_: any, player: Player, key: string): Model?
+		local h = handOfPlayer(player)
+		local id = Carry.held(h.carry)
+		local t = if id then tools[id] else nil
+		if not (t and t.key == key and Head.fit(key) and rootOf(player)) or heads[player] then
+			return nil
+		end
+		Carry.release(h.carry)
+		if t.weld then
+			t.weld:Destroy()
+			t.weld = nil
+		end
+		heads[player] = t.id
+		wearOn(player)
+		dress(player)
+		publish(player)
+		changed:fire({ player = player, kind = "Wear" })
+		return t.model
+	end
+
+	function system.worn(_: any, each: (player: Player, model: Model) -> ())
+		for player, id in heads do
+			local t = tools[id]
+			if t and t.model.Parent and rootOf(player) then
+				each(player, t.model)
+			end
+		end
 	end
 
 	function system.handBack(_: any, player: Player, id: string): string?
