@@ -147,46 +147,63 @@ function Pose.hold(values: Values, from: Values, part: string, channels: { strin
 	return out
 end
 
+-- How part `p` moved from where it was drawn by its own channels `v`, before its parent's
+-- motion: turned or slid along its axis and grown about its pivot, then leaned and moved over the
+-- floor. `grows` false leaves its scale and stretch out.
+local function own(p: Art.Part, v: { [string]: number }, grows: boolean): Affine
+	local pv = p.Pivot
+	local onto, off = move(pv.X, pv.Y, pv.Z), move(-pv.X, -pv.Y, -pv.Z)
+	local grow = Pose.Identity
+	if grows then
+		local sc = math.max(v.scale or 1, SMALLEST)
+		local st = math.max(v.stretch or 1, SMALLEST)
+		local wide = sc / math.sqrt(st)
+		grow = size(wide, sc * st, wide)
+	end
+	local out: Affine
+	local axis = p.Axis
+	if axis then
+		local slide = v.move or 0
+		out = Pose.mul(
+			onto,
+			Pose.mul(
+				turn(axis.X, axis.Y, axis.Z, v.turn or 0),
+				Pose.mul(grow, Pose.mul(off, move(axis.X * slide, axis.Y * slide, axis.Z * slide)))
+			)
+		)
+	else
+		out = Pose.mul(onto, Pose.mul(grow, off))
+	end
+	local x, y, z = v.x or 0, v.y or 0, v.z or 0
+	local yaw, pitch, roll = v.yaw or 0, v.pitch or 0, v.roll or 0
+	if x ~= 0 or y ~= 0 or z ~= 0 or yaw ~= 0 or pitch ~= 0 or roll ~= 0 then
+		local lean =
+			Pose.mul(turn(0, 1, 0, yaw), Pose.mul(turn(1, 0, 0, pitch), turn(0, 0, 1, roll)))
+		out = Pose.mul(move(x, y, z), Pose.mul(onto, Pose.mul(lean, Pose.mul(off, out))))
+	end
+	return out
+end
+
 -- How each part moved from where it was drawn, for `values`. Parents come before their children
 -- in a find's Parts (the kit writes them so).
 function Pose.solve(find: Art.Find, values: Values): { [string]: Affine }
 	local out: { [string]: Affine } = {}
 	for _, p in find.Parts do
-		local v: { [string]: number } = values[p.Name] or {}
 		local base = if p.Parent then out[p.Parent] else Pose.Identity
-		local sc = math.max(v.scale or 1, SMALLEST)
-		local st = math.max(v.stretch or 1, SMALLEST)
-		local wide = sc / math.sqrt(st)
-		local pv = p.Pivot
-		local onto, off = move(pv.X, pv.Y, pv.Z), move(-pv.X, -pv.Y, -pv.Z)
-		local grow = size(wide, sc * st, wide)
-		local own: Affine
-		local axis = p.Axis
-		if axis then
-			local slide = v.move or 0
-			own = Pose.mul(
-				onto,
-				Pose.mul(
-					turn(axis.X, axis.Y, axis.Z, v.turn or 0),
-					Pose.mul(
-						grow,
-						Pose.mul(off, move(axis.X * slide, axis.Y * slide, axis.Z * slide))
-					)
-				)
-			)
-		else
-			own = Pose.mul(onto, Pose.mul(grow, off))
-		end
-		local x, y, z = v.x or 0, v.y or 0, v.z or 0
-		local yaw, pitch, roll = v.yaw or 0, v.pitch or 0, v.roll or 0
-		if x ~= 0 or y ~= 0 or z ~= 0 or yaw ~= 0 or pitch ~= 0 or roll ~= 0 then
-			local lean =
-				Pose.mul(turn(0, 1, 0, yaw), Pose.mul(turn(1, 0, 0, pitch), turn(0, 0, 1, roll)))
-			own = Pose.mul(move(x, y, z), Pose.mul(onto, Pose.mul(lean, Pose.mul(off, own))))
-		end
-		out[p.Name] = Pose.mul(base, own)
+		out[p.Name] = Pose.mul(base, own(p, values[p.Name] or {}, true))
 	end
 	return out
+end
+
+--[[
+	How a find's root is carried by its own channels for `values`, its squash and stretch left
+	out: the kazoo lifted and tipped to your lips, the duck nodding as it's squeezed (F-G1e3c). A
+	hand holds the root still (`Finds.joints`), so its grip moves by this from rest instead; a
+	squishy's squash stays about its middle in your hand (F-G1e1b).
+]]
+function Pose.carry(find: Art.Find, values: Values): Affine
+	local root = find.Parts[1]
+	return own(root, values[root.Name] or {}, false)
 end
 
 return Pose

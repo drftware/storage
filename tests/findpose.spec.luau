@@ -147,6 +147,51 @@ do
 	ok((base.JackInTheBox_Crank or {}).turn == crank, "and leaves the rest it started from alone")
 end
 
+-- a root carried by its own channels, its squash left out (F-G1e3c): the hand's grip moves by it
+do
+	local function same(a: { number }, b: { number }): boolean
+		for i = 1, 12 do
+			if not near(a[i], b[i], 1e-6) then
+				return false
+			end
+		end
+		return true
+	end
+	-- the kazoo at the top of its lift: carried, and the carry is the root's whole move (it has
+	-- no squash)
+	local kazoo = Fixture.kit.Kazoo
+	local base = rest("Kazoo")
+	local up = Pose.at(kazoo.Motions.Blow, 1.0, base)
+	local carried = Pose.carry(kazoo, up)
+	ok(not same(carried, Pose.carry(kazoo, base)), "the kazoo's lift carries its root")
+	ok(same(carried, Pose.solve(kazoo, up).Kazoo_Body), "and is all its root's move")
+	ok(
+		same(Pose.carry(kazoo, Pose.at(kazoo.Motions.Blow, 2.1, base)), Pose.carry(kazoo, base)),
+		"lowered, it's back where the hand holds it"
+	)
+	-- a squishy squashed flat: its root not carried at all, so it squashes about its middle
+	for _, name in { "StressBall", "MochiBun", "Capybara" } do
+		local find = Fixture.kit[name]
+		local motion = find.Motions.Squeeze
+		local b = rest(name)
+		local squeezed = false
+		for t = 0, 2, 0.1 do
+			local v = Pose.at(motion, t, b)
+			squeezed = squeezed or not same(Pose.solve(find, v)[find.Parts[1].Name], Pose.Identity)
+			ok(same(Pose.carry(find, v), Pose.carry(find, b)), `{name}'s squash carries nothing`)
+		end
+		ok(squeezed, `{name} does squash`)
+	end
+	-- the duck's nod as it's squeezed is carried; its squash isn't
+	local duck = Fixture.kit.RubberDuck
+	local nod = false
+	for t = 0, 2, 0.05 do
+		local v = Pose.at(duck.Motions.Squeeze, t, rest("RubberDuck"))
+		nod = nod or not same(Pose.carry(duck, v), Pose.carry(duck, rest("RubberDuck")))
+	end
+	ok(nod, "the duck's nod carries its root")
+end
+
 print(`findpose: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

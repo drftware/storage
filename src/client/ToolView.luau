@@ -548,6 +548,9 @@ export type Hand = {
 	-- your view's copy of what's in your hand and its catalog key (nil, "" for none): a pressed
 	-- find plays its motions on it (`FindUseView`)
 	model: () -> (Model?, string),
+	-- moves your view's copy by `delta` from where your grip holds it, in its root's own space:
+	-- a find's root carried by its own motion (the kazoo lifted to your lips, `Finds.shift`)
+	shift: (delta: CFrame) -> (),
 }
 
 -- `needCursor` frees a computer's mouse while the wheel is open, to click a slot; `jolt` kicks
@@ -587,6 +590,9 @@ function ToolView.new(
 	local shownModel: Model? = nil
 	local shownBody: BasePart? = nil
 	local bodyOff = CFrame.identity
+	-- your view's copy moved from your grip by its own motion (`Hand.shift`), as a move of its
+	-- pivot: the kazoo lifted to your lips
+	local viewShift = CFrame.identity
 	-- the shown tool's box from its grip (drawn small), for how far ahead of your eye it reaches
 	local boxOff = CFrame.identity
 	local boxHalf = Vector3.zero
@@ -1115,6 +1121,7 @@ function ToolView.new(
 			shownModel:Destroy()
 		end
 		shownModel, shownBody, shownKey = nil, nil, key
+		viewShift = CFrame.identity
 		if key == "" or not viewFolder then
 			return
 		end
@@ -1395,7 +1402,7 @@ function ToolView.new(
 			)
 		local reach = HandRoom.reach(small * boxOff, boxHalf)
 		pull = Hands.follow(pull, Hands.pull(HandRoom.room(cam, reach), reach), dt)
-		local grip = cam * CFrame.new(0, -Hands.Duck * pull, pull) * small
+		local grip = cam * CFrame.new(0, -Hands.Duck * pull, pull) * small * viewShift
 		-- the whole model, so a second part (the ladder's fly) moves with it
 		local model = shownModel
 		if model then
@@ -1831,6 +1838,10 @@ function ToolView.new(
 		end,
 		model = function(): (Model?, string)
 			return shownModel, if shownModel then shownKey else ""
+		end,
+		shift = function(delta: CFrame)
+			-- the root at grip * bodyOff, moved by `delta` in its own space
+			viewShift = bodyOff * delta * bodyOff:Inverse()
 		end,
 	}
 

@@ -208,6 +208,7 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 		for _, c in e.connections do
 			c:Disconnect()
 		end
+		Finds.grip(model, CFrame.identity)
 	end
 
 	local function onTagged(inst: Instance)
@@ -407,6 +408,7 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 				Finds.joints(model, e.key, e.rest, model:GetScale(), false)
 				if view and model == mine and viewKey == e.key then
 					Finds.joints(view, e.key, e.rest, view:GetScale(), false)
+					hand.shift(CFrame.identity)
 				end
 				drop(model)
 				continue
@@ -472,6 +474,15 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 				Finds.joints(shownView, e.key, values, shownView:GetScale(), e.lights)
 			else
 				Finds.joints(model, e.key, values, model:GetScale(), e.lights, from)
+			end
+			-- its root's own motion (the kazoo lifted to your lips) moves the grip that holds
+			-- it, here and in your view's copy; a find set down to play never plays in a hand
+			if not e.row.down then
+				Finds.grip(model, Finds.shift(model, e.key, values, e.rest, model:GetScale()))
+				if shownView then
+					local scale = shownView:GetScale()
+					hand.shift(Finds.shift(shownView, e.key, values, e.rest, scale))
+				end
 			end
 		end
 	end

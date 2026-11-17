@@ -2796,3 +2796,9 @@ verified: a doc page, Studio, or "untested".
 - **`Model:ScaleTo` on a find on the server** grows its parts and Motor6Ds together, and
   `FindUseView`'s `Finds.joints(model, key, values, model:GetScale(), ...)` keeps posing it right;
   `ScaleTo(1)` puts it back as it drops (the drop not yet seen in Play).
+- **A Weld's C0 or C1 set on a client shows on that screen only** (F-G1e3c, Nov 17): the joint is
+  worked out locally, on your own character as on a friend's, so `Finds.grip` moves a held find's
+  root on every screen without touching the server; the server's C1 is kept on the weld as the
+  `FindGripRest` attribute (client-set, so local too). Measured in Play: the kazoo's root against
+  `LeftHand` tipped 7.5 degrees and came back to 0.0000 studs; the stress ball's stayed within
+  0.00003 studs as it squashed to 0.66 of its height.

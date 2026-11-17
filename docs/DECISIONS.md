@@ -7126,3 +7126,16 @@ part puts the hat on your head and lights it; F-G1b4a2 draws the headlamp's own 
   40 studs round it, `Head.home`), its light is stamped forever. A hat worn at home and then
   carried up the climb stays lit forever; F-G1b4b should start its minute as you leave home.
 
+## D-278 A find's root carried by its own motion moves the grip that holds it (F-G1e3c, Nov 17)
+- **The moment:** you blow the kazoo and it tips up toward your lips as it hums, in your hand,
+  in your view and in your friends' hands, then settles back.
+- **The problem:** `Finds.joints` never moves a find's root (a find in a hand is part of the
+  character, and moving a part there drags the player), so a motion on the root's own channels
+  (the kazoo's lift and tip, the duck's nod, the spinner's tip toward its lever) never showed.
+- **The rule:** `Pose.carry` is the root's own rigid move (its lean, travel and turn), its squash
+  and stretch left out so a squishy still squashes about its middle in the hand (D-269).
+  `Finds.shift` turns it into a move from rest, and every screen moves what holds the root by it:
+  the hand's weld (`Finds.grip` sets its C1, keeping the server's C1 on the weld as
+  `FindGripRest` so shifts never add up) and your view's copy (`Hand.shift`). A find set down to
+  play (`down`) never plays in a hand, so it's left out.
+

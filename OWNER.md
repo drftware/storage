@@ -259,6 +259,9 @@ nowhere else.
   the toy drum. Same setup, `GiveFind` each, then press.
   1. Blow the **kazoo**: one buzzy note once it's at your lips, about a second. Does it sound
      like a kazoo, not a trumpet? (It's the last note of a kazoo fanfare, played a little low.)
+     Since Nov 17 (V3c, D-278) it tips up about 7 degrees in your hand as it hums: with a friend,
+     does it tip in their hand too, and is the tip enough to read as "to the lips" on a phone?
+     (Your arm doesn't move; a bigger lift is an art change.)
   2. Bang the **drum**: left, right, left, right, then both sticks, a bang each. Does the double
      sound louder? (One recording for all five today.)
   3. Loudness defaults chosen: the kazoo carries 60 studs (down the hall, as the duck), the drum

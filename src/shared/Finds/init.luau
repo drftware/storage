@@ -326,6 +326,63 @@ function Finds.joints(
 	bend(find, parts, values, scale)
 end
 
+--[[
+	How far a kit-built find's root has moved from `rest` for `values`, in the root's own space, at
+	the copy's `scale`: its own tip, lift and turn (the kazoo lifted to your lips, F-G1e3c), never
+	its squash (`Pose.carry`). `joints` never moves the root, so whatever holds the root moves by
+	this instead: the hand's grip (`grip`), your view's copy (`ToolView`'s `shift`). Identity
+	before `pose` has stood the copy.
+]]
+function Finds.shift(
+	model: Model,
+	name: string,
+	values: Pose.Values,
+	rest: Pose.Values,
+	scale: number
+): CFrame
+	local find = Finds.art(name)
+	local root = if find then model:FindFirstChild(find.Parts[1].Name) else nil
+	if not (find and root) then
+		return CFrame.identity
+	end
+	local drawn, drawnSize = root:GetAttribute(DRAWN), root:GetAttribute(DRAWN_SIZE)
+	if typeof(drawn) ~= "CFrame" or typeof(drawnSize) ~= "Vector3" then
+		return CFrame.identity
+	end
+	local from = placed(drawn, drawnSize, Pose.carry(find, rest))
+	local to = placed(drawn, drawnSize, Pose.carry(find, values))
+	from = from.Rotation + from.Position * scale
+	to = to.Rotation + to.Position * scale
+	return from:Inverse() * to
+end
+
+-- The grip each weld holding a find's root had before `grip` moved it, on this screen only.
+local GRIP_REST = "FindGripRest"
+
+--[[
+	Moves what holds `model`'s root (a hand's or a head's weld, the server's) by `shift` from where
+	the server set it, on this screen: the root goes where `shift` says, and everything jointed to
+	it follows. The grip's own place is kept on the weld, so shifts never add up, and a new weld
+	from the server starts from its own. Identity puts it back.
+]]
+function Finds.grip(model: Model, shift: CFrame)
+	local root = model.PrimaryPart
+	if not root then
+		return
+	end
+	for _, weld in root:GetChildren() do
+		if weld:IsA("Weld") and weld.Part1 == root then
+			local kept = weld:GetAttribute(GRIP_REST)
+			local rest = if typeof(kept) == "CFrame" then kept else weld.C1
+			if typeof(kept) ~= "CFrame" then
+				weld:SetAttribute(GRIP_REST, rest)
+			end
+			-- the root sits at Part0 * C0 * C1:Inverse(), so this sets it at that times `shift`
+			weld.C1 = shift:Inverse() * rest
+		end
+	end
+end
+
 -- A dull grey under the texture, shown only if the maps fail to load.
 local FALLBACK = Color3.fromRGB(128, 124, 118)
 

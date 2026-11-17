@@ -6,9 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** V3c (ROADMAP F-G1e3c, short): the kazoo's lift to your lips shown in hand; then V4
-(F-G1e4), the siren car. V3b is done (Nov 17): the spinner, doll and fish seen in Play. Read
-V3b's note.
+**Next:** V3d (ROADMAP F-G1e3d): the farm spinner lands on any animal, the server's pick; then
+V4 (F-G1e4), the siren car. V3c is done (Nov 17): the kazoo's lift shows in hand. Read V3c's
+note: the spinner's design and the sounds found so far are in it.
 
 ## The third run's plan (owner's brief, Nov 16 night)
 
@@ -40,7 +40,7 @@ head, belong to the home chain (ROADMAP S5-03, F-G1b4): listed as waiting, not b
 4. **V2 Wind and go** (done Nov 17: V2a the verb and the teeth; V2b the robot, mouse, bird and carousel): the chattering teeth, walking robot, wind-up mouse and tin bird travel
    across the floor on their travel channels, luring as they go and stopping at walls. The
    carousel plays in place.
-5. **V3 One press, one noise** (V3a done Nov 17: the cues, the kazoo and the drum; V3b done Nov 17: the spinner, doll and fish; V3c left: the kazoo's lift in hand): the kazoo, toy drum, farm-animal spinner, cowboy doll and singing
+5. **V3 One press, one noise** (V3a done Nov 17: the cues, the kazoo and the drum; V3b done Nov 17: the spinner, doll and fish; V3c done Nov 17: the kazoo's lift in hand; V3d left: the spinner lands on any animal): the kazoo, toy drum, farm-animal spinner, cowboy doll and singing
    fish, each with its motion, its sound and a loudness on the lure (the doll and the fish ship
    the defaults OWNER.md names: the cord's whirr, the motor's hum).
 6. **V4 The siren car**: it rolls as the die-cast car does, its beacon spins and lights the hall,
@@ -96,14 +96,14 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 | A lamp that's on when you find it (`UnpluggedLamp`, "Old lamp") | It never runs down; in a power cut the only light on the floor · none, found lit | found lit at rest; it holds no Mannequin, since D-234 reads only a press's stamp (V5) | Secret · 7,000 · floor 25 up, standing loose (too tall for the box) ✓ | |
 | Die-cast car (`DiecastCar`) | It rolls off down the hall · Push (quiet: "just for the feel") | works (D-233) | Common · 4 · floor 1 up ✓ | |
 | Remote-control car (`RCCar`) | Drive it (at home; D-250: anywhere, and the collector steals it) · Drive (Rainbow Six Siege's drones) | works (D-250 to D-258); at home waits on the home chain | Rare · 60 · floor 1 up ✓ | |
-| Kazoo (`Kazoo`) | A buzzy note · Blow, a noise (Lethal Company's airhorn) | works: blown, one note once at your lips, heard 60 studs (V3a); its lift to your lips doesn't show in hand (V3b) | Common · 2 · floor 1 up ✓ | Nov 17, V3a: given (GiveFind), pressed in hand: its hum played 0.43 s in (the fanfare's held note, 0.75 pitch); "made its noise (60 studs); 1 heard it", the Mannequin 16 studs along the halls woke and turned to it, then caught me; its skin's buzz not measured (a fraction of a mm) |
+| Kazoo (`Kazoo`) | A buzzy note · Blow, a noise (Lethal Company's airhorn) | works: blown, one note once at your lips, heard 60 studs (V3a); it tips up toward your lips in hand, about 7.5 degrees, and settles back (V3c) | Common · 2 · floor 1 up ✓ | Nov 17, V3a: given (GiveFind), pressed in hand: its hum played 0.43 s in (the fanfare's held note, 0.75 pitch); "made its noise (60 studs); 1 heard it", the Mannequin 16 studs along the halls woke and turned to it, then caught me; its skin's buzz not measured (a fraction of a mm). Nov 17, V3c: its body against the left hand tipped to 7.5 degrees and 0.014 studs by 0.8 s, the same in your view's copy, back to 0.0000 by 2.3 s |
 | Squeaky rubber duck (`RubberDuck`) | A squeak you can hear down the hall · Squeeze, a noise | works: squeezed, squashes in hand (to 0.70), squeaks, heard 60 studs (V1) | Common · 3 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its squeak played; a Mannequin asleep 46 studs off along the halls woke, turned and came to look; no squash seen; Nov 17, V1b: pressed in hand, squashed to 0.70 of its height in hand and in your view's copy, its root still in the hand |
 | Toy siren car (`SirenCar`) | It rolls off, wailing · Push, a noise that moves | the roll is built; the wail heard as it goes and the beacon lighting the hall are missing (V4) | Common · 5 · floor 1 up ✓ | |
 | Wind-up chattering teeth (`ChatteringTeeth`) | They chatter off across the floor; monsters come to look · Wind (R.E.P.O.'s music box; the monkey's lure) | works: wound, set down, chatters off, a clack each snap, lures every 2 s where it is along its path, 90 studs (V2a) | Common · 6 · floor 1 up ✓ | Nov 17, V2a: given (GiveFind), pressed: set down, wound (its ratchet), 52 clacks over 9 s, the jaw swinging 0.51 rad, walked 0.93 studs and stopped; a Mannequin asleep 58 studs off heard the lure, woke and walked to the teeth and stood looking there while I was 97 studs away; walking on at a wall seen with the mouse (V2b) |
 | Toy drum (`ToyDrum`) | Loud · Bang, a noise | works: banged, left, right, left, right, then both, a bang each hit, heard 130 studs (V3a) | Uncommon · 10 · floor 1 up ✓ | Nov 17, V3a: given (GiveFind), pressed in hand: bangs at 0.28, 0.61, 0.88, 1.14 and 1.68 s (the third heard twice, ROADMAP polish); the left stick lifting 25 degrees and striking three times; "made its noise (130 studs); 1 heard it", the Mannequin woke, turned to it and caught me |
 | Wind-up mouse (`WindupMouse`) | It zips off and squeaks wherever it stops · Wind | works: wound, set down, zips off, squeaks where it stalls, lures every 2 s where it is, 60 studs (V2b) | Uncommon · 12 · floor 1 up ✓ | Nov 17, V2b: given (GiveFind), pressed facing the lobby's west wall: set down, wound, zipped 7 studs into the wall (`UseStop` 4.7 s) and held there, its run playing on: two squeaks at 7.25 and 7.39 s where it stalls |
 | Wind-up walking robot (`WalkingRobot`) | It clanks off in a straight line for 15 seconds · Wind | works: wound, set down, walks off a clank each footfall, lures every 2 s where it is, 90 studs (V2b) | Uncommon · 15 · floor 1 up ✓ | Nov 17, V2b: given, pressed in the lobby: wound, 45 clanks from 2.9 s to 17.4 s, slowing, laid 3.8 studs on; a Mannequin asleep 56 studs up the hall woke at 4 s, walked to the robot and waited at it while I was out of sight |
-| Farm-animal spinner (`FarmSpinner`) | The arrow spins and an animal noise plays · Pull, a noise | works: pulled, the lever clacks, the arrow spins and ticks into three notches, the cat meows, heard 60 studs (V3b); it always lands on the cat (the server's pick is ROADMAP polish) | Uncommon · 16 · floor 1 up ✓ | Nov 17, V3b: given (GiveFind), pulled in hand: the clack at 0.50 s, ticks at 2.37, 2.70, 3.10 s, the meow at 3.24 s; the arrow spun and slowed in hand and in your view's copy alike and rested on the cat; "made its noise (60 studs); 1 heard it": the Mannequin 16 studs off woke, turned to it and came and caught me |
+| Farm-animal spinner (`FarmSpinner`) | The arrow spins and an animal noise plays · Pull, a noise | works: pulled, the lever clacks, the arrow spins and ticks into three notches, the cat meows, heard 60 studs (V3b); it always lands on the cat (the server's pick is F-G1e3d, V3d) | Uncommon · 16 · floor 1 up ✓ | Nov 17, V3b: given (GiveFind), pulled in hand: the clack at 0.50 s, ticks at 2.37, 2.70, 3.10 s, the meow at 3.24 s; the arrow spun and slowed in hand and in your view's copy alike and rested on the cat; "made its noise (60 studs); 1 heard it": the Mannequin 16 studs off woke, turned to it and came and caught me |
 | Jack-in-the-box (`JackInTheBox`) | A tune, then a bang as it pops · Wind | works (D-229, D-231) | Uncommon · 18 · floor 1 up ✓ | |
 | Cymbal monkey (`CymbalMonkey`) | Cymbals for 20 seconds, loud, the strongest lure · Wind (Call of Duty Zombies' Monkey Bomb) | works (D-233) | Rare · 40 · floor 1 up ✓ | Nov 17, P1b: dealt (DevBox), taken, pressed (wind, then a clash each beat, arms swinging), banked |
 | Pull-string cowboy doll (`CowboyDoll`) | It says one of six lines · Pull, a noise | works: pulled, its cord whirs home and clacks in, heard 60 studs (V3b); its voice waits on the owner | Rare · 45 · floor 1 up ✓ | Nov 17, V3b: given, pulled in hand: the cord out 0.74 studs by 0.5 s and creeping home by 3 s in hand and in your view's copy; the whirr from 0.67 s, the clack at 3.06 s; "made its noise (60 studs)" (no monster in reach) |
@@ -244,6 +244,30 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, V3c (the kazoo's lift in hand; seen in Play; the spinner's pick left as V3d).** A
+  root's own motion now moves what holds it (D-278): `Pose.carry` (the root's lean, travel and
+  turn, never its squash), `Finds.shift` (that as a move from rest, at a copy's scale),
+  `Finds.grip` (sets the C1 of every Weld on the root, the server's kept as `FindGripRest`) and
+  `Hand.shift` (your view's copy), called by `FindUseView` for every find not `down`. Also now
+  shown in hand: the drum's tiny bounce, the spinner's tip toward its lever, the doll's rock, the
+  duck's nod. **Seen in Play** (`GiveFind`, `ToolUse` from the Client): the kazoo's body against
+  `LeftHand` 7.5 degrees and 0.014 studs at the top, the same in your view's copy, back to
+  0.0000 by 2.3 s; the stress ball within 0.00003 studs while squashed to 0.66. Output: only
+  the known lines. **V3d, the spinner (context cap, not started):** a step field `lands=dict(
+  part="FarmSpinner_Arrow", every=45, at=3.2, calls=[cow, pig, sheep, horse, duck, cat, rooster,
+  dog])` (the face's clockwise order from the cow at 0; 1305 degrees is 29 eighths, the cat)
+  replacing the MEOW cue, through `rows.py` (STEP) and `Game.Step`. Pure in `Use`: the pick
+  (never the stop it's on), and the bent motion: every Arrow key plus `from` eighths, the keys
+  from the first that differs from key 1 plus `(to - from - 29) % 8` eighths; `Use.timeline`
+  takes the stop to add its call. Server (`FindUses`, beside the stamp, before `UseAt`):
+  `UseLandFrom` = the last `UseLand` (0 if none), `UseLand` = the pick. Client: bend once per
+  stamp (your predicted press lands naturally from where it stands; the server's word arrives in
+  the 0.4 s before the spin), beats from the art's motion, so the ticks stay. The frame holds
+  the last step's end, so the arrow stays on its animal until the next pull. **Sounds:** MEOW
+  (Creator Store) is the cat; Pro Sound Effects found: "Pig Grunts 3" 9117352464, "Sheep
+  Blats 1" 9119065374, "Billy Goat 5" 9113443288 (a baa); none yet for the cow, horse, duck,
+  rooster or dog (search "(SFX)" names; verified-only doesn't filter to them), all unmeasured.
 
 - **Nov 17, V3b (the spinner, the doll and the fish; seen in Play; V3c left).** Rows only on
   V3a's cues (D-276), each `noise` the step, `heard=DOWN_THE_HALL`, a toy: the spinner's `hit` on

@@ -2736,10 +2736,18 @@ actions themselves and dealing the new finds on floors are later game tickets.
         meow as it stops; the doll's whirr and clack home; the fish's click, motors' hum and two
         knocks. A part's last key is no beat (`Use.beats`). All three seen in Play; the spinner
         woke a Mannequin that came to it.
-      - [ ] **F-G1e3c The kazoo's lift to your lips, in hand.** Its lift and tip are its root's
-        motion (`Kazoo_Body`'s own channels), and `Finds.joints` places every joint round the root,
-        so the hand holds it still. Offset the grip weld that holds the root (its `Part0` is the
-        hand) by the root's move from rest, on every screen and on your view's copy's weld.
+      - [x] **F-G1e3c The kazoo's lift to your lips, in hand.** (Nov 17, V3c; D-278) A root's own
+        tip and lift move the grip that holds it (`Pose.carry`, `Finds.shift`, `Finds.grip`,
+        `Hand.shift`): the kazoo tips 7.5 degrees in your hand and your view, and settles back;
+        the squishies still squash about their middle. Seen in Play.
+      - [ ] **F-G1e3d The farm spinner lands on any animal.** The server picks one of the eight
+        each pull (never the one it's on) and writes it with where it started beside the stamp;
+        every screen bends the arrow's keys so it ends there (all keys plus the start, the keys
+        from its first move plus whole extra eighths) and plays that animal's call, the ticks
+        unchanged. A step's `lands` field in the art spec (part, stop size, when the call plays,
+        the eight calls in the face's order), rows.py and `Game.Step`, pure rules in `Finds/Use`
+        with a Lune spec. The design and the sounds found so far are in `art/finds/WAVES.md`'s
+        V3c note.
     - [ ] **F-G1e4 The siren car (V4).** It rolls as the toy car does, its beacon spins and
       lights the hall while it rolls, and its wail lures along its path (F-G1e2's lure).
     - [ ] **F-G1e5 The rest the audit found (V5).** Split before starting: (a) a press on a
@@ -2822,7 +2830,7 @@ actions themselves and dealing the new finds on floors are later game tickets.
   the wall, under the path's stacks. Both read as wedged under the boxes; a fall that stops on
   the stacks would be better.
 
-- **The farm spinner's arrow lands on any animal (F-G1e3, D-274):** as built it always stops on
+- **The farm spinner's arrow lands on any animal (now ticket F-G1e3d):** as built it always stops on
   the cat. The server picks an animal each pull, the view adds 45 degrees a step to the arrow's
   spin keys and plays that animal's call; the next pull starts from where it stopped (the art's
   README, "For the game"), not snapping back to the cow.

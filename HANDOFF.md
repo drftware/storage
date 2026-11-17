@@ -18,6 +18,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   (`docs/STUDIO.md`); a restart lit at once.
 - F-G1b4a2 (the headlamp's own beam, following your look and bobbing) is split off, queued.
 - Still over the triangle default: the cars' 51k, ticketed as S5-03a2d.
+- Find art (third find run): V3c done (D-278: a find's own tip and lift move the grip that holds
+  it; the kazoo tips to your lips, seen in Play). Next: V3d, the spinner lands on any animal
+  (ROADMAP F-G1e3d), then V4 the siren car (`art/finds/WAVES.md`).
 
 ## Next task: S5-03b The mirror test (the owner's order, D-259)
 The moment: you walk into your home, see yourself in a real mirror, the hard hat on your head
