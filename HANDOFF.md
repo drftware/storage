@@ -18,6 +18,7 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   walls copied in front of the glass. Now `Mirror.keeps` picks what's copied, the unit's walls
   stand in it as plain parts, and it sharpens up close. You, the right way round, your room
   behind you, 60 frames a second. The owner's look and the phone's frame rate wait on OWNER.md.
+- The hat you wear is out of your own eye (D-282, `HeadView`): seen in Play, `docs/art/F-G1b4a-own-view.jpg`.
 - Still over the triangle default: the cars' 51k, ticketed as S5-03a2d.
 - Find art (third find run): V4a built the siren car (D-281: rolls off wailing, its roof light
   lit only while it plays, a 90-stud lure); NOT seen in Play (Studio was busy). Next: V4b, its
@@ -58,6 +59,7 @@ sparkle, and stays there after a rejoin.
    if it comes back, make `FindUseView` re-read a tagged model whose key arrives late.
 8. The worn hard hat sits on your chin (seen in the mirror, D-280): `Slots`' head weld seats the
    find's pivot, which isn't at the hat's rim; fit it so the shell sits on your head (F-G1b4a's).
+   After a respawn under a held camera, Roblox never re-hid your body in first person (D-282).
    The finds session's work (D-278, D-279) is still uncommitted in the shared checkout.
 
 ## Kickoff for the next agent

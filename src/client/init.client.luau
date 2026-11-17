@@ -41,6 +41,7 @@ local FreeCursor = require(script.FreeCursor)
 local GateClock = require(script.GateClock)
 local HallHaze = require(script.HallHaze)
 local HallLights = require(script.HallLights)
+local HeadView = require(script.HeadView)
 local HomeCards = require(script.HomeCards)
 local HomeLights = require(script.HomeLights)
 local KeeperSounds = require(script.KeeperSounds)
@@ -118,6 +119,8 @@ local host = Brix.Host.new({
 		{ slot = "homeCards", system = HomeCards.new() },
 		-- the mirror in your home: you, the right way round, your unit behind you (S5-03b)
 		{ slot = "mirrorView", system = MirrorView.new() },
+		-- the find on your head kept out of your own eye, still on you for friends and the mirror
+		{ slot = "headView", system = HeadView.new() },
 		{ slot = "behindDoors", system = BehindDoors.new() },
 		{ slot = "elevatorView", system = elevatorView },
 		{ slot = "keypadPad", system = KeypadPad.new(pressKeypad, needCursor) },

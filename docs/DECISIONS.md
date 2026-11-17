@@ -7232,3 +7232,22 @@ you slip the other way. Built from rows on verbs that already existed:
 - **Its sounds**: the wail is Pro Sound Effects' small whooper toy siren from the first push;
   the toy car's wheels roll under it as it's let go. A recording of a real friction siren and
   its pitch following the flywheel are ROADMAP polish.
+
+## D-282 · 2026-11-17 · The hat you wear is hidden from your own eye (F-G1b4a1b)
+
+- **The moment:** you put the hard hat on and look down a dark hall, its lamp lighting the way
+  from your brow, with no shell or brim in your view. Friends see it on you; so does the mirror.
+- **Why Roblox's own hiding wasn't enough:** the hat is welded to your head inside your
+  character, so Roblox's PlayerModule hides it in first person, but only while its own camera
+  runs. Under a camera the game holds (a crawl, a held shot) a hat put on then stays drawn: in
+  Studio Play, respawned under a held camera, the hat's parts sat at 0 and its shell filled the
+  bottom of the view (the S5-03b capture). Seen too: after that respawn the PlayerModule never
+  hid the new body again, even back in its own camera (HANDOFF's queue).
+- **The rule:** `HeadView` (client only, nothing sent) hides your own worn find from your screen
+  each frame after the camera: wholly with the camera within `Head.HideNear` (1.5 studs) of your
+  head, shown past `Head.HideFar` (3), eased between and over time (`Head.fade`, about a fifth of
+  a second) so it never pops as the camera leaves your head; never less hidden than your head is,
+  so a view that hides your whole body hides the hat with it. Local transparency never touches a
+  light, so the lamp still lights the hall; MirrorView's copy keeps its own look, so the mirror
+  still shows the hat on you. Tested in `tests/head.spec`; seen in Play (same respawn: the hat's
+  parts at 1, both lights on; a fresh Play: nothing over your view, the mirror showing the hat).

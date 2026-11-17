@@ -54,6 +54,38 @@ function Head.fit(key: string): Fit?
 end
 
 --[[
+	Your own eye (D-282): with your camera at your head, the hat you wear is hidden from you alone,
+	so its shell and brim never fill your view; friends and the mirror still see it on you, and
+	its lamp still lights the way. Roblox hides your body in first person only while its own camera
+	runs, so a camera the game holds (a crawl, a shot) would show the hat; this rule never depends
+	on it. `HideNear`: studs from your head's middle inside which it's wholly hidden (first person
+	sits at about 0.5). `HideFar`: studs past which it shows in full (no camera zooms out between).
+	`HideRate`: how fast it fades in or out, per second (about a fifth of a second), so it never
+	pops as the camera leaves your head (the RC car's view, being caught).
+]]
+Head.HideNear = 1.5
+Head.HideFar = 3
+Head.HideRate = 14
+
+-- How hidden your worn find should be (0 shown, 1 hidden) with your camera `distance` studs
+-- from your head's middle.
+function Head.hidden(distance: number): number
+	if distance <= Head.HideNear then
+		return 1
+	elseif distance >= Head.HideFar then
+		return 0
+	end
+	local t = (Head.HideFar - distance) / (Head.HideFar - Head.HideNear)
+	return t * t * (3 - 2 * t) -- eased at both ends
+end
+
+-- `now` moved toward `goal` over `dt` seconds at `HideRate`, landing on it once within a hair.
+function Head.fade(now: number, goal: number, dt: number): number
+	local next = goal + (now - goal) * math.exp(-Head.HideRate * dt)
+	return if math.abs(next - goal) < 0.01 then goal else next
+end
+
+--[[
 	The ground floor (D-259: "At home nothing runs down"): is a point, in the front office's own
 	frame (`Lobby.Origin`; studs right, up and back from its front edge), on it? Its room is
 	`width` across and `depth` back from that edge; the homes open off its walls and run `beyond`

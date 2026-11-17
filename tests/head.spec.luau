@@ -58,6 +58,32 @@ ok(not Head.home(-1600, 3, -1200, W, D), "the climb's floors are far off")
 ok(not Head.home(0, 3, -400, W, D), "well past its back wall")
 ok(not Head.home(0, 120, -78, W, D), "high over it")
 
+-- your own eye (D-282): wholly hidden with the camera at your head, shown once it's well off,
+-- fading smoothly between, and the fade lands on its goal without overshooting
+ok(Head.hidden(0) == 1 and Head.hidden(0.5) == 1, "first person hides it wholly")
+ok(Head.hidden(Head.HideFar) == 0 and Head.hidden(12) == 0, "a camera well off shows it")
+local mid = Head.hidden((Head.HideNear + Head.HideFar) / 2)
+ok(mid > 0.45 and mid < 0.55, "halfway out, half hidden")
+local prev = 1
+local steady = true
+for d = Head.HideNear, Head.HideFar, 0.1 do
+	local h = Head.hidden(d)
+	steady = steady and h <= prev and h >= 0 and h <= 1
+	prev = h
+end
+ok(steady, "the farther the camera, the less it hides")
+local f = 0
+for _ = 1, 10 do
+	f = Head.fade(f, 1, 1 / 60)
+	ok(f > 0 and f <= 1, "a fade in stays between shown and hidden")
+end
+ok(f > 0.8 and f < 1, "a sixth of a second in, nearly hidden but not popped")
+for _ = 1, 60 do
+	f = Head.fade(f, 1, 1 / 60)
+end
+ok(f == 1, "it lands on hidden")
+ok(Head.fade(0.5, 0, 0) == 0.5, "no time, no change")
+
 print(`head: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)
