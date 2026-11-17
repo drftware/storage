@@ -253,6 +253,16 @@ verified: a doc page, Studio, or "untested".
   `screen_capture` timed out. A Client `execute_luau` counting `RenderStepped` for a second read
   0: the viewport wasn't drawing (the Mac's screen asleep or Studio hidden). Count frames first
   when prompts won't show; nothing on screen works until it draws again.
+- **When `screen_capture` times out, capture the window from macOS** (S5-03b seen, Nov 17):
+  bring Studio to the front (`osascript -e 'tell application "RobloxStudio" to activate'`; it then
+  drew at 60 frames a second), get its window number from a few lines of Swift run with `swift`
+  (`CGWindowListCopyWindowInfo`, owner "Roblox Studio"), then `screencapture -x -o -l <number> -t
+  jpg out.jpg`. osascript can't read window bounds here (no assistive access).
+- **Holding a shot in Play** (S5-03b): the game puts the camera back to Custom, so a Client
+  `BindToRenderStep` at `Camera.Value + 0.5` that sets Scriptable and the CFrame every frame holds
+  it (and runs before MirrorView at + 1). A find worn while it holds isn't hidden from your own
+  eye: hide it the same way. A module required from the MCP's Client `execute_luau` is its own
+  copy: changing a field on it changes nothing in the game's scripts.
 - **A found light holding a Mannequin, from the MCP** (F-G1b3b, Nov 16): Play with
   `DevFloorNumber` 1; Server `workspace:SetAttribute("StandMannequin", true)` stands one asleep at
   (0, 0, -656) facing the lobby. Anchor your root, pivot it to (0, 3.5, -641), stream around,

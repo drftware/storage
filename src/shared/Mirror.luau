@@ -26,9 +26,15 @@ Mirror.Still = 70 -- within this the nearest mirror holds a still picture of its
 Mirror.Reach = 34 -- studs round the glass whose room and people are copied behind it
 Mirror.MaxParts = 900 -- the room's copy stops here, so a crowded floor can't flood a phone
 Mirror.PixelsPerStud = 64 -- the glass's sharpness: 64 reads crisp on a phone a few studs off
+-- Up close 64 goes to steps on your reflection's edges (S5-03b seen), so the picture sharpens as
+-- you come up to it: pixels per stud = Sharpness / your distance from the glass, in steps of 32,
+-- from PixelsPerStud up to PixelsPerStudMax (128 at 2 studs: about the phone's own pixels).
+Mirror.Sharpness = 256
+Mirror.PixelsPerStudMax = 128
 Mirror.Pick = 0.2 -- seconds between choosing which mirror is live (and syncing what people wear)
 Mirror.MaxFov = 118 -- a ViewportFrame's camera tops out at 120 degrees
 Mirror.Near = 0.1 -- closer to the glass than this the picture isn't drawn (no room to see)
+Mirror.Margin = 2 -- studs beside the glass a thing through it may stand and still be copied
 
 -- `p` reflected through the plane through `c` with unit normal `n`.
 function Mirror.point(p: Vector3, c: Vector3, n: Vector3): Vector3
@@ -71,6 +77,64 @@ function Mirror.axis(x: Vector3, y: Vector3, z: Vector3, size: Vector3, up: Vect
 		end
 	end
 	return best
+end
+
+-- A mirror's glass: its Front face's middle, its normal out into the room, its right and up as
+-- someone facing it sees them, and its size in studs.
+export type Glass = {
+	c: Vector3,
+	n: Vector3,
+	right: Vector3,
+	up: Vector3,
+	width: number,
+	height: number,
+}
+
+-- Whether a still thing (rotation columns `x`, `y`, `z`, `size`, middle `at`) may be copied
+-- behind the glass. Its copy stands where its reflection would, so whatever of it reaches behind
+-- the glass comes out in front of it, between your eye and the picture, and one such copy covers
+-- the whole glass (S5-03b, seen: the lobby's merged walls run behind every unit's mirror). So:
+-- wholly in front, yes; wholly behind, no; through the glass, only a floor or ceiling (level and
+-- flat, which no line of sight through the glass meets) or something off to its side.
+function Mirror.keeps(
+	x: Vector3,
+	y: Vector3,
+	z: Vector3,
+	size: Vector3,
+	at: Vector3,
+	g: Glass,
+	level: Vector3
+): boolean
+	local function extent(v: Vector3): number
+		return (
+			math.abs(x:Dot(v)) * size.X
+			+ math.abs(y:Dot(v)) * size.Y
+			+ math.abs(z:Dot(v)) * size.Z
+		) / 2
+	end
+	local ahead = (at - g.c):Dot(g.n)
+	local e = extent(g.n)
+	if ahead - e >= 0 then
+		return true
+	elseif ahead + e < 0 then
+		return false
+	end
+	-- wholly below the glass's foot or above its top, as a floor or ceiling is: a line of sight
+	-- from your eye through the glass never comes down or up that far in front of it
+	local off = at - g.c
+	local rise, tall = off:Dot(level), extent(level)
+	local foot = (g.height / 2) * math.abs(g.up:Dot(level))
+	if rise + tall <= -foot or rise - tall >= foot then
+		return true
+	end
+	return math.abs(off:Dot(g.right)) - extent(g.right) > g.width / 2 + Mirror.Margin
+		or math.abs(off:Dot(g.up)) - extent(g.up) > g.height / 2 + Mirror.Margin
+end
+
+-- The picture's pixels per stud with your eye `distance` studs off the glass (Mirror.Sharpness).
+function Mirror.sharpness(distance: number): number
+	local ppu = math.floor(Mirror.Sharpness / math.max(distance, 0.01) / 32) * 32
+	return math.clamp(ppu, Mirror.PixelsPerStud, Mirror.PixelsPerStudMax)
 end
 
 -- A body part's partner across the body (an R15 or R6 part named Left or Right), or itself.

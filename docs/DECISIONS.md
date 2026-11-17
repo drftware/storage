@@ -7189,3 +7189,22 @@ copies; this is how it's built, as a test the owner judges before S5-03f.
   art for S5-03f.
 - **It lives in this game for now**: it's a test. If the owner keeps it, S5-03f weighs moving its
   maths to Brix as a neutral part (D-252).
+- **Seen in Studio Play, Nov 17, and fixed** (session 233; `docs/art/S5-03b-*.jpg`). With Studio
+  in front it drew at 60 frames a second, and macOS `screencapture` of its window stood in for the
+  MCP's capture (STUDIO.md). The glass was blank: the lobby's merged meshes (the units' walls, the
+  woodwork) passed the old test by their middles, so the wall the mirror leans on was copied half
+  a stud in front of the glass and hid the whole picture. Now `Mirror.keeps` decides what is
+  copied: wholly in front, yes; through the glass, only what lies below its foot or above its top
+  (floors, ceilings) or well off to its side. The unit's walls and baseboards, which exist only in
+  those meshes, stand in the picture as plain parts, from the door face (the glass's `Face`
+  attribute) and `Home.Mirror.Room`.
+- Close up, 64 pixels a stud went to steps on your outline, so the picture sharpens as you come up
+  (`Mirror.sharpness`: 64 from 4 studs off, 96, then 128 at 2). In front of it Studio held 60.
+- Seen right: you the right way round (the torch in your right hand on your right), the room behind
+  you with its rug, plant and lamp, the floor and walls running on into the glass, the far corner
+  and not you from the side; the switch off dims the reflection with the room. Its ceiling lamp's
+  copy stayed lit with the switch off; it now takes the lamp's colour and material each frame
+  (passes checks, not seen again).
+- The mirror showed a bug that isn't its own: the worn hard hat sits on your chin, its shell's
+  middle 0.4 studs below your head's (the head weld in `Slots` seats the find's pivot, which isn't
+  at the hat's rim). Queued in HANDOFF.

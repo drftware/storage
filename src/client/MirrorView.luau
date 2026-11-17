@@ -60,6 +60,7 @@ type Shown = {
 	movers: { Pair },
 	bodies: { [Model]: Body },
 	live: boolean,
+	ppu: number, -- the picture's sharpness now (Mirror.sharpness)
 }
 
 local MirrorView = {}
@@ -135,17 +136,79 @@ function MirrorView.new(): Brix.System
 		return nil
 	end
 
+	-- The glass as Shared.Mirror takes it.
+	local function glassOf(glass: BasePart): Mirror.Glass
+		local c, n, right, up = glassFrame(glass)
+		return { c = c, n = n, right = right, up = up, width = glass.Size.X, height = glass.Size.Y }
+	end
+
+	-- `cf` turned over along its longer level side (Mirror.axis) and stood behind the glass.
+	local function behind(cf: CFrame, size: Vector3, c: Vector3, n: Vector3): CFrame
+		local i = Mirror.axis(cf.XVector, cf.YVector, cf.ZVector, size, UP)
+		local across = if i == 1 then cf.XVector elseif i == 2 then cf.YVector else cf.ZVector
+		return reflected(cf, c, n, across)
+	end
+
+	-- The unit's walls and baseboards, stood in the picture as plain parts (Home.Mirror.Room):
+	-- the real ones are in the lobby's merged meshes, which Mirror.keeps leaves out. The wall
+	-- the mirror leans on is left out the same way, being behind the glass.
+	local function copyWalls(s: Shown, g: Mirror.Glass)
+		local unit = s.unit
+		local face = s.glass:GetAttribute("Face")
+		local width = if unit then unit:GetAttribute("RoomWidth") else nil
+		local depth = if unit then unit:GetAttribute("RoomDepth") else nil
+		if typeof(face) ~= "CFrame" or type(width) ~= "number" or type(depth) ~= "number" then
+			return
+		end
+		local room = Home.Mirror.Room
+		local w2, h, f, t, b = width / 2, room.Height, room.Front, room.Partition, room.Base
+		local gap = room.Gap / 2
+		-- one wall or baseboard: its middle and size in the face's frame (+Z in from the door, X across)
+		local function slab(at: Vector3, size: Vector3, colour: Color3)
+			local cf = (face :: CFrame) * CFrame.new(at)
+			if not Mirror.keeps(cf.XVector, cf.YVector, cf.ZVector, size, cf.Position, g, UP) then
+				return
+			end
+			local p = Instance.new("Part")
+			p.Anchored = true
+			p.CanCollide = false
+			p.CanQuery = false
+			p.CanTouch = false
+			p.Material = Enum.Material.SmoothPlastic
+			p.TopSurface = Enum.SurfaceType.Smooth
+			p.BottomSurface = Enum.SurfaceType.Smooth
+			p.Size = size
+			p.Color = colour
+			p.CFrame = behind(cf, size, g.c, g.n)
+			p.Parent = s.world
+		end
+		local wall, oak = Home.Mirror.Wall, Home.Mirror.Oak
+		local mid, long = (f + depth) / 2, depth - f
+		local side = (w2 + gap) / 2 -- the front wall's middle either side of the doorway
+		local off = t / 2 + 0.03 -- a baseboard's middle off its wall's middle
+		for _, x in { -1, 1 } do
+			slab(Vector3.new(x * w2, h / 2, mid), Vector3.new(t, h, long), wall) -- a partition
+			slab(Vector3.new(x * side, h / 2, f - 0.05), Vector3.new(w2 - gap, h, 0.1), wall)
+			slab(Vector3.new(x * (w2 - off), b / 2, mid), Vector3.new(0.06, b, long - 2 * t), oak)
+			slab(Vector3.new(x * side, b / 2, f + 0.03), Vector3.new(w2 - gap, b, 0.06), oak)
+		end
+		slab(Vector3.new(0, h / 2, depth), Vector3.new(width, h, t), wall) -- the back wall
+		slab(Vector3.new(0, b / 2, depth - off), Vector3.new(width - 2 * t, b, 0.06), oak)
+	end
+
 	-- The room in front of the glass, copied behind it once: everything of the glass's floor
-	-- within Mirror.Reach whose middle is in front of the glass (or a floor or ceiling crossing
-	-- it), but not the mirror itself nor the neighbours' units.
+	-- within Mirror.Reach that Mirror.keeps lets through, but not the mirror itself nor the
+	-- neighbours' units; then the unit's walls (copyWalls).
 	local function copyRoom(s: Shown)
 		local glass = s.glass
-		local c, n = glassFrame(glass)
+		local g = glassOf(glass)
+		local c, n = g.c, g.n
 		local mine = glass.Parent
 		local top: Instance = glass
 		while top.Parent and top.Parent ~= Workspace do
 			top = top.Parent :: Instance
 		end
+		copyWalls(s, g)
 		local count = 0
 		for _, d in top:GetDescendants() do
 			if count >= Mirror.MaxParts then
@@ -163,28 +226,12 @@ function MirrorView.new(): Brix.System
 			if owner and owner ~= s.unit then
 				continue -- a neighbour's unit: all behind the walls
 			end
-			local half = p.Size.Magnitude / 2
-			local ahead = (p.Position - c):Dot(n)
-			if (p.Position - c).Magnitude - half > Mirror.Reach or ahead + half < 0 then
+			if (p.Position - c).Magnitude - p.Size.Magnitude / 2 > Mirror.Reach then
 				continue
 			end
 			local cf = p.CFrame
-			local i = Mirror.axis(cf.XVector, cf.YVector, cf.ZVector, p.Size, UP)
-			local across = if i == 1 then cf.XVector elseif i == 2 then cf.YVector else cf.ZVector
-			if ahead < 0 then
-				-- crossing the glass: only a floor or ceiling (flat, level) is let through
-				local i2 = 0
-				local most = -1
-				for k, v in { cf.XVector, cf.YVector, cf.ZVector } do
-					local u = math.abs(v:Dot(UP))
-					if u > most then
-						i2, most = k, u
-					end
-				end
-				local sizes = { p.Size.X, p.Size.Y, p.Size.Z }
-				if sizes[i2] > math.min(sizes[1], sizes[2], sizes[3]) + 1e-3 then
-					continue
-				end
+			if not Mirror.keeps(cf.XVector, cf.YVector, cf.ZVector, p.Size, p.Position, g, UP) then
+				continue
 			end
 			p.Archivable = true
 			local copy = p:Clone()
@@ -202,7 +249,7 @@ function MirrorView.new(): Brix.System
 				end
 			end
 			copy.Anchored = true
-			copy.CFrame = reflected(cf, c, n, across)
+			copy.CFrame = behind(cf, p.Size, c, n)
 			copy.Parent = s.world
 			count += 1
 			if
@@ -342,7 +389,7 @@ function MirrorView.new(): Brix.System
 		if not v then
 			return
 		end
-		local ppu = Mirror.PixelsPerStud
+		local ppu = s.ppu
 		s.frame.Size = UDim2.fromOffset(v.width * ppu, v.height * ppu)
 		s.frame.Position = UDim2.new(0.5, v.x * ppu, 0.5, -v.y * ppu)
 		s.camera.FieldOfView = v.fov
@@ -354,10 +401,8 @@ function MirrorView.new(): Brix.System
 			s.world:BulkMoveTo(body.parts, body.cframes, Enum.BulkMoveMode.FireCFrameChanged)
 		end
 		for _, m in s.movers do
-			local cf = m.from.CFrame
-			local i = Mirror.axis(cf.XVector, cf.YVector, cf.ZVector, m.from.Size, UP)
-			local across = if i == 1 then cf.XVector elseif i == 2 then cf.YVector else cf.ZVector
-			m.to.CFrame = reflected(cf, c, n, across)
+			m.to.CFrame = behind(m.from.CFrame, m.from.Size, c, n)
+			looks(m.from, m.to) -- the lamp goes dark in the glass when the switch is off
 		end
 	end
 
@@ -367,7 +412,7 @@ function MirrorView.new(): Brix.System
 		local eye = c + n * 7
 		local v = Mirror.view(eye, c, n, right, up, s.glass.Size.X, s.glass.Size.Y)
 		if v then
-			local ppu = Mirror.PixelsPerStud
+			local ppu = s.ppu
 			s.frame.Size = UDim2.fromOffset(v.width * ppu, v.height * ppu)
 			s.frame.Position = UDim2.new(0.5, v.x * ppu, 0.5, -v.y * ppu)
 			s.camera.FieldOfView = v.fov
@@ -420,6 +465,7 @@ function MirrorView.new(): Brix.System
 			movers = {},
 			bodies = {},
 			live = false,
+			ppu = Mirror.PixelsPerStud,
 		}
 		copyRoom(s)
 		lightOf(s)
@@ -467,6 +513,15 @@ function MirrorView.new(): Brix.System
 				for character in s.bodies do
 					dropBody(s, character)
 				end
+				still(s)
+			end
+		end
+		-- sharper as you come up close, so your reflection's edges don't go to steps
+		local ppu = if live then Mirror.sharpness((eye - c):Dot(n)) else Mirror.PixelsPerStud
+		if ppu ~= s.ppu then
+			s.ppu = ppu
+			s.gui.PixelsPerStud = ppu
+			if not live then
 				still(s)
 			end
 		end

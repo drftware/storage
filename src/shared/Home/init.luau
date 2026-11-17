@@ -110,6 +110,13 @@ Home.Mirror = {
 	Lean = 6,
 	Oak = Color3.fromHex("#B98A5E"), -- the home's oak trim
 	Backing = Color3.fromHex("#C9D3D6"), -- the glass where no picture is drawn: cool, pale
+	-- The room's walls as the mirror shows them (S5-03b seen): the real ones are merged into the
+	-- lobby's meshes, which run behind the glass and can't be copied, so MirrorView stands plain
+	-- walls in the picture (art/lobby's unit shells). Studs: their height, the front wall's
+	-- inside in from the door face, the doorway's width (the home's facade fills it), the wood
+	-- baseboard's height and the partitions' thickness. Wall: the units' warm white.
+	Room = { Height = 10, Front = 0.29, Gap = 12, Base = 0.55, Partition = 0.25 },
+	Wall = Color3.fromHex("#E8DFCF"),
 }
 Home.InsideOnly = { "Drum", "Hardware" }
 Home.InsideMargin = 2
@@ -332,6 +339,7 @@ function Home.mirror(unit: Model, face: CFrame): Model
 	glass.CastShadow = false
 	glass.Reflectance = 0.2
 	glass:AddTag("Mirror")
+	glass:SetAttribute("Face", face) -- the unit's door face, for the walls MirrorView stands
 	model.Parent = unit
 	return model
 end

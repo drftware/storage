@@ -2,7 +2,7 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-17, session 232 (the mirror test, S5-03b) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `482368f`, NOT on Brix's `origin` yet (push Brix first, OWNER.md).
+**Updated:** 2026-11-17, session 233 (the mirror seen and fixed, S5-03b) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `482368f`, NOT on Brix's `origin` yet (push Brix first, OWNER.md).
 
 ## State
 - The home (D-259; the Claude Doc https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools
@@ -14,11 +14,10 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   posed each frame with left and right swapped (`Shared.Mirror`'s maths, `tests/mirror.spec`).
   Your camera looks square into the glass and the picture is cut to it, so it's a window onto
   the reflected world. One mirror at a time: live within 24 studs and on screen, still within 70.
-- Checked by numbers in Studio Play: copies within 0.002 studs of their reflections, your right
-  hand's reflection on your right, the copy's head facing back out. The picture itself was NOT
-  seen: Studio drew at 15 frames a second and every screenshot timed out. The owner's look (and
-  the phone's frame rate in front of it) waits on OWNER.md; if it doesn't convince, a fix goes in
-  ahead of S5-03f.
+- Seen in Studio Play (session 233, `docs/art/S5-03b-*.jpg`): it was blank, the lobby's merged
+  walls copied in front of the glass. Now `Mirror.keeps` picks what's copied, the unit's walls
+  stand in it as plain parts, and it sharpens up close. You, the right way round, your room
+  behind you, 60 frames a second. The owner's look and the phone's frame rate wait on OWNER.md.
 - Still over the triangle default: the cars' 51k, ticketed as S5-03a2d.
 - Find art (third find run): V3 done (V3d, D-279: the farm spinner lands on a new animal each
   pull, the server's pick, its call as it stops; seen in Play). Next: V4 the siren car (ROADMAP
@@ -57,9 +56,9 @@ sparkle, and stays there after a rejoin.
    `Seat:Sit` in a quick try (S5-03a2b4). A spare home lifted from inside stays unpadlocked
    until someone holds it and leaves (D-275). The worn hat's first-Wear dark screen (STUDIO.md):
    if it comes back, make `FindUseView` re-read a tagged model whose key arrives late.
-8. The mirror once seen: if the picture spills past the glass, a ViewportFrame larger than its
-   SurfaceGui isn't being cut; clip it in a Frame or a CanvasGroup. The finds session's work
-   (D-278, D-279) was left uncommitted in the shared checkout, not staged here.
+8. The worn hard hat sits on your chin (seen in the mirror, D-280): `Slots`' head weld seats the
+   find's pivot, which isn't at the hat's rim; fit it so the shell sits on your head (F-G1b4a's).
+   The finds session's work (D-278, D-279) is still uncommitted in the shared checkout.
 
 ## Kickoff for the next agent
 ```text

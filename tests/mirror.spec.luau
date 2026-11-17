@@ -140,6 +140,42 @@ do
 	)
 end
 
+-- What of the room may be copied (S5-03b seen): a copy reaching out in front of the glass hides
+-- the whole picture, as the lobby's merged walls did. Glass at z = 0 facing +Z, 2.4 by 5.6.
+do
+	local g: Mirror.Glass =
+		{ c = Vector3.new(0, 3, 0), n = Z, right = X, up = Y, width = 2.4, height = 5.6 }
+	local function keeps(at: Vector3, size: Vector3): boolean
+		return Mirror.keeps(X, Y, Z, size, at, g, Y)
+	end
+	ok(keeps(Vector3.new(0, 3, 5), Vector3.new(2, 2, 2)), "keeps: a box wholly in front")
+	ok(not keeps(Vector3.new(0, 3, -3), Vector3.new(2, 2, 2)), "keeps: not a box wholly behind")
+	ok(
+		not keeps(Vector3.new(0, 5, -0.5), Vector3.new(40, 10, 0.25)),
+		"keeps: not the wall it leans on"
+	)
+	ok(
+		not keeps(Vector3.new(0, 5, 10), Vector3.new(30, 10, 40)),
+		"keeps: not a merged mesh through it"
+	)
+	ok(keeps(Vector3.new(0, 0, 0), Vector3.new(40, 0.2, 40)), "keeps: a floor through it")
+	ok(keeps(Vector3.new(0, 10, 0), Vector3.new(40, 0.2, 40)), "keeps: a ceiling through it")
+	ok(
+		keeps(Vector3.new(15, 5, 3), Vector3.new(0.25, 10, 8)),
+		"keeps: a wall through it, off to the side"
+	)
+	ok(
+		not keeps(Vector3.new(1.5, 3, 0), Vector3.new(1, 1, 1)),
+		"keeps: not a box poking through beside it"
+	)
+end
+
+-- the picture sharpens as you come up to the glass, in steps, between its two bounds
+ok(Mirror.sharpness(10) == Mirror.PixelsPerStud, "sharpness: far off, the plain picture")
+ok(Mirror.sharpness(2) == 128, "sharpness: 2 studs off, 128")
+ok(Mirror.sharpness(2.5) == 96, "sharpness: 2.5 studs off, 96")
+ok(Mirror.sharpness(0.2) == Mirror.PixelsPerStudMax, "sharpness: right up close, the most")
+
 print(`mirror: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)
