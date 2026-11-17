@@ -2811,8 +2811,11 @@ actions themselves and dealing the new finds on floors are later game tickets.
       - [ ] **F-G1e5b The glow sticks' other two sticks** (three to a bundle): one more crack
         each, the art has one `Crack`.
       - [ ] **F-G1e5c The fairy lights laid along a hall** for a dim line of light.
-      - [ ] **F-G1e5d The Old lamp holds a Mannequin while it lies lit**, as D-234's found
-        lights do (D-234 reads only a press's stamp).
+      - [x] **F-G1e5d The Old lamp holds a Mannequin while it lies lit** (Nov 17, V5d; seen in
+        Studio Play, D-289): its row says found lit (`lit`), and the server reads it as lit for
+        good with no press (`Use.lampUntil`). Seen: dropped in a hall, its clank woke a Mannequin
+        17 studs off, which stopped 8.0 studs from it (its reach) and held there 50 s, hunting
+        the player from 12.6 studs. Not seen: lifting it again to watch it walk on.
       - [ ] **F-G1e5e Fragile:** the oil lamp and the glass lamp chip to half their worth when
         dropped hard (R.E.P.O.'s valuables).
       - [x] **F-G1e5f The carousel's tune slows as it runs down** (Nov 17, V5f; seen in Studio

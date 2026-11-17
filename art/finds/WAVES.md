@@ -6,9 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** V5d (ROADMAP F-G1e5d, the Old lamp holds a Mannequin while it lies lit), then V5's
-pieces b, c, e in that order. V5a (the boombox and the teddy) and V5f (the carousel's tune slows
-as it runs down) are done and seen in Play (Nov 17, V5a; Nov 17, V5f).
+**Next:** V5b (ROADMAP F-G1e5b, the glow sticks' other two sticks: an art rebuild and import),
+then V5's pieces c, e in that order. V5a (the boombox and the teddy), V5f (the carousel's tune
+slows) and V5d (the Old lamp holds a Mannequin) are done and seen in Play (Nov 17).
 
 ## The third run's plan (owner's brief, Nov 16 night)
 
@@ -45,7 +45,7 @@ head, belong to the home chain (ROADMAP S5-03, F-G1b4): listed as waiting, not b
    the defaults OWNER.md names: the cord's whirr, the motor's hum).
 6. **V4 The siren car** (done Nov 17: V4a built it; V4b saw it in Play and set the wail's start): it rolls as the die-cast car does, its beacon spins and lights the hall,
    and its wail lures.
-7. **V5 onwards** (V5a done Nov 17: the boombox and the teddy; V5f done Nov 17: the carousel's tune slows): whatever else A1 finds missing that isn't at home only.
+7. **V5 onwards** (V5a done Nov 17: the boombox and the teddy; V5f done Nov 17: the carousel's tune slows; V5d done Nov 17: the Old lamp holds a Mannequin): whatever else A1 finds missing that isn't at home only.
 8. **S1 to S4 The last four squishies**, each from photos to playable through PIPELINE.md, its
    first proof: S1 the goo ball (oozes between your fingers and slowly comes back, on bones);
    S2 the colour-change goo ball (changes colour where pressed: find the way that holds up in
@@ -93,7 +93,7 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 | Jar of fireflies (`FireflyJar`) | Fireflies drift out and light the unit for a minute · Open | works | Epic · 110 · floor 1 up ✓ | |
 | Theatre spotlight (not dealt; art `Spotlight`) | At home: point it at your best find; a big find | waits on the home chain and on a floor with a big-find place | catalog: Epic · 240, big find; game: not dealt, no catalog row (right until a floor has a big-find place) | |
 | Stained-glass lamp (`StainedGlassLamp`) | Coloured patterns on the walls (D-250: anywhere); fragile · Switch | works; fragile is missing (V5) | Legendary · 480 · floor 1 up ✓ | |
-| A lamp that's on when you find it (`UnpluggedLamp`, "Old lamp") | It never runs down; in a power cut the only light on the floor · none, found lit | found lit at rest; it holds no Mannequin, since D-234 reads only a press's stamp (V5) | Secret · 7,000 · floor 25 up, standing loose (too tall for the box) ✓ | |
+| A lamp that's on when you find it (`UnpluggedLamp`, "Old lamp") | It never runs down; in a power cut the only light on the floor · none, found lit | works: found lit at rest, and lying anywhere it holds a Mannequin for good, 8 studs (V5d, D-289) | Secret · 7,000 · floor 25 up, standing loose (too tall for the box) ✓ | Nov 17, V5d: given (GiveFind), dropped in floor 1's hall: its clank woke the Mannequin 17 studs off, which came and stopped 8.0 studs from the lamp ("freezes in the light of a find on the floor"), held there 50 s with me parked away, and again hunting me from 12.6 studs ("sees drftware, 13 studs off" then held); not lifted again (the custom Take prompt didn't fire from the MCP) |
 | Die-cast car (`DiecastCar`) | It rolls off down the hall · Push (quiet: "just for the feel") | works (D-233) | Common · 4 · floor 1 up ✓ | |
 | Remote-control car (`RCCar`) | Drive it (at home; D-250: anywhere, and the collector steals it) · Drive (Rainbow Six Siege's drones) | works (D-250 to D-258); at home waits on the home chain | Rare · 60 · floor 1 up ✓ | |
 | Kazoo (`Kazoo`) | A buzzy note · Blow, a noise (Lethal Company's airhorn) | works: blown, one note once at your lips, heard 60 studs (V3a); it tips up toward your lips in hand, about 7.5 degrees, and settles back (V3c) | Common · 2 · floor 1 up ✓ | Nov 17, V3a: given (GiveFind), pressed in hand: its hum played 0.43 s in (the fanfare's held note, 0.75 pitch); "made its noise (60 studs); 1 heard it", the Mannequin 16 studs along the halls woke and turned to it, then caught me; its skin's buzz not measured (a fraction of a mm). Nov 17, V3c: its body against the left hand tipped to 7.5 degrees and 0.014 studs by 0.8 s, the same in your view's copy, back to 0.0000 by 2.3 s |
@@ -144,7 +144,7 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
    `Finds/OneMesh`, D-286); (b) the glow
    sticks' other two sticks (one more crack each; the art has one `Crack`); (c) the fairy
    lights laid along a hall; (d) the Old lamp holding a Mannequin while it lies lit, as D-234's
-   found lights do; (e) fragile: the oil lamp and the glass lamp chip to half their worth when
+   found lights do (done Nov 17, V5d: its row says found lit, D-289); (e) fragile: the oil lamp and the glass lamp chip to half their worth when
    dropped hard (R.E.P.O.'s valuables).
 
 **Grade, worth and floor mismatches P1 must fix: none.** All 46 match the catalog's grade and
@@ -246,6 +246,19 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, V5d (the Old lamp holds a Mannequin; seen in Play; V5b next).** The lamp has no
+  press (D-229), so it never carries `UseKey` or a stamp: a game row can now say `lit=True`
+  (found lit; `rows.py` refuses it with a press), `Use.FoundLit` lists those, and
+  `Use.lampUntil(key, stamp)` is what `Keepers`' `lampOf` reads (math.huge for a found-lit find,
+  the stamp for the rest), naming a never-pressed find by its `Tool` attribute (D-289). Nothing
+  changed on screen: its rest pose already glows. **Seen in Play:** A1's table. **Not seen:**
+  lifting it again to watch the Mannequin walk on: the custom Take prompt fired neither from
+  `InputHoldBegin` nor from the MCP's E key (STUDIO.md). **For V5b:** the bundle's art has one
+  `Crack` (CRAFT.md whole, a rebuild through `scripts/art.sh`, an import in Edit only); its press
+  is `GlowSticks` in `art/finds/lights/spec.py`'s GAME, `lasts` forever, so two more cracks need
+  either a press that counts (three presses, three sticks lit) or a stick handed out per crack:
+  read the catalog's line first. Output: only the known lines.
 
 - **Nov 17, V5f (the carousel's tune slows; seen in Play; V5d next).** No recording of a music
   box running down turned up (`search_asset`: "music box winding down", "slowing down"), so a

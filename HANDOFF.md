@@ -20,7 +20,7 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   from a fresh clone (`art/home/README.md` "Into Studio", `docs/STUDIO.md`).
 - Dev path: `ServerStorage.ShelfTest:Invoke(player, key)` (Studio) keeps a find as a gate does;
   with the shelf full it goes in the box. The owner's save has six on the shelf already.
-- Find art: V5d done (D-289, the Old lamp holds a Mannequin); next in `art/finds/WAVES.md`.
+- Find art: V5d seen in Play (D-289, the Old lamp holds a Mannequin); next V5b (`art/finds/WAVES.md`).
 
 ## Next task: S5-03c2b1 The job box's panel, to look through
 The moment: you open the job box and, as the lid lifts, a panel slides up with everything you

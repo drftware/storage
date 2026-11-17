@@ -7419,6 +7419,9 @@ Five Nights at Freddy's, as the hall lights do), and this one never runs down (t
   the map's clear line. In a hand it still holds nothing (D-234's default, OWNER.md's question).
 - Every screen already shows it lit at rest (its `Switch` motion's first key glows), so nothing
   changes on screen: only that the Mannequin now obeys what players see.
+Seen in Studio Play: dropped in floor 1's hall, its clank woke a Mannequin 17 studs off, which
+came and froze 8.0 studs from it ("freezes in the light of a find on the floor"), held 50 s with
+nobody near, and held again while hunting the player from 12.6 studs.
 
 ## D-290 · 2026-11-17 · The job box seen in Studio; its home keeps the c2a1 layout (S5-03c2a2)
 

@@ -292,6 +292,10 @@ verified: a doc page, Studio, or "untested".
   drops it (it landed 2 studs behind you). The drop's clank woke the Mannequin; it froze 9.5 studs
   from the lantern ("freezes in the light of a find on the floor") and "walks on" as it ran down.
   Park at (0, 400, 0) anchored after the drop, or it catches you once the light's out.
+- **A find's Take prompt can't be pressed from the MCP** (F-G1e5d, Nov 17): its ProximityPrompt
+  is custom-styled (`Prompts.make`); a Client `InputHoldBegin`/`InputHoldEnd` within reach (5
+  studs of 8, enabled) took nothing, and `user_keyboard_input` E didn't take it either (a
+  unit's door opened about then). Hand finds out with `GiveFind` and take them away some other way.
 - **Reading whether your own held find is lit, from the MCP** (F-G1b3c1, Nov 16): its lights
   shine on your view's copy (`Workspace.YourTool`), so `HeldTool`'s stay disabled even when lit.
   Each light sits in a `Light{i}` attachment under its part, and a part's glow is its
