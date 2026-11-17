@@ -27,6 +27,41 @@ Gold.Never = "Secret" :: Grades.Grade
 -- What a Gold is called on screen: "Gold Teddy bear".
 Gold.Word = "Gold"
 
+--[[
+	The show when four become a Gold (S5-03c3b2), as Pet Simulator's golden machine and every
+	gacha reveal build to a flash: Gold pressed, the panel dims and four copies of the find's
+	picture fly off its card to a ring round the screen's middle, each landing with a chink a step
+	higher; they swirl inward, ever faster, turning gold as a shimmer rises under them; a white-gold
+	flash, a ring and sparks, and one big Gold pops at the middle with rays turning behind it and
+	its name under it; it holds, then flies down onto its card. Sizes are shares of the screen's
+	height, so a phone and a monitor see the same show.
+]]
+Gold.Show = table.freeze({
+	Spread = 0.42, -- seconds each copy takes from the card to its place on the ring
+	Stagger = 0.06, -- seconds between the four leaving the card: one, two, three, four
+	Ring = 0.24, -- the ring's radius: wide enough that the four read as four on a phone
+	Copy = 0.2, -- each copy's size on the ring
+	Orbit = 1.4, -- seconds they swirl inward: long enough to build, short enough not to drag
+	Turns = 1.75, -- turns they make round the middle as they close in, gathering speed
+	Shrink = 0.6, -- a copy's size as it reaches the middle, of its size on the ring
+	Jitter = 5, -- points the four shiver in the swirl's last third: about to burst
+	Glow = 1.4, -- the halo growing between them as they close, of a copy's size on the ring
+	Flash = 0.55, -- seconds the white-gold flash takes to clear
+	Burst = 0.5, -- seconds the ring of light takes to spread and fade
+	BurstSize = 1.3, -- the ring's size when it fades
+	Sparks = 12, -- sparks thrown out at the flash
+	SparkFly = 0.32, -- how far a spark goes
+	SparkTime = 0.6, -- seconds a spark flies before it's gone
+	Big = 0.46, -- the Gold's size at the middle: big, the payoff
+	Pop = 0.45, -- seconds the Gold takes to pop up to its size, overshooting a touch
+	Rays = 0.95, -- the rays' length behind it
+	Spin = 5, -- seconds a ray takes to turn once: slow and grand
+	Hold = 0.9, -- seconds it sits big at the middle before it goes to its card
+	Veil = 0.45, -- the panel dimmed this much behind the show (0 clear, 1 black)
+	Fade = 0.3, -- seconds the dim, the rays and the name take to go once it flies
+	Chink = 0.14, -- each copy's chink this much higher in pitch than the one before
+})
+
 -- The Gold of find `name`: its key in the save.
 function Gold.key(name: string): string
 	return name .. Gold.Mark

@@ -2885,3 +2885,12 @@ verified: a doc page, Studio, or "untested".
   the Sound whose `SoundId` is the tune's every 0.5 s (`TimePosition`, `PlaybackSpeed`, `Volume`,
   its two shifters' `Octave`). A tune starts about 0.25 s behind its step (loading), so it ends
   0.25 s of recording short of its region: harmless.
+
+## Judging a dim from a capture (S5-03c3b2, Nov 17)
+
+- A shrunk `screencapture` read back as an image can hide a dim: the Gold show's veil (black at
+  0.45) looked undimmed in every preview, though a Client probe read 0.45 the whole show. Measure
+  instead: `sips -s format bmp` a frame down to 200 wide and average its bytes in plain Python
+  (no PIL here); the screen's mean went from 60 to 33 under the veil.
+- Rojo syncs to Edit, not to a running Play: stop Play and start it again to try a change.
+

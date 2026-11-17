@@ -71,8 +71,15 @@ nowhere else.
 - [ ] **Decide: Gold defaults** (S5-03c3b1, D-298). My defaults, yours to change: four of one find
   make one Gold worth five times the find (the item catalog's table), so making one beats selling
   the four a little; cracked lamps go into a Gold first and come out whole; no Secret Golds; a Gold
-  only sells until it can go on the shelf and in your hand (S5-03c3b3). Nothing to test yet: the
-  Gold button and its animation come next (S5-03c3b2).
+  only sells until it can go on the shelf and in your hand (S5-03c3b3).
+- [ ] **Judge: four make a Gold, on a phone** (S5-03c3b2, D-299). Seen in Studio at the window's
+  size (1380 by 761), not on a phone. Keep four of one find (or have them), open your job box, tap
+  that card: Gold glows over Sell with a shine. Press it. Look for: the panel dims; four pictures
+  leave the card one by one with rising chinks; they swirl in faster, turning gold, a rattle and a
+  rising tone building; a white-gold flash, a ring and sparks; the Gold big in the middle with
+  turning rays and its name; it flies onto its card beside the four. Does it feel big enough, too
+  long (about 3.5 s), and are the sounds right? A Gold when the four were the card's last: the
+  card goes under the flash and the Gold takes its place (fixed after the Studio pass, unseen).
 - [ ] **Sell a find from your job box** (S5-03c3a, D-297). Seen working in Studio Play at
   computer size on Nov 17, sounds not heard. Yours, at Galaxy A16 size: open the box, tap a kind
   you have several of, press the gold Sell (it shows the price): the picture should fly into your

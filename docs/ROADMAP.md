@@ -2450,7 +2450,7 @@ Done when players watch the results to the end and change their perks between cl
       stamped, in one step, written as a sale is); not for Secrets; a Gold sells at five times;
       its card sits beside its find's, gilded (ToolPicture), Sell only. Passes checks, untested in
       Studio.
-    - [ ] **S5-03c3b2 Four make a Gold, the big animation, seen** (D-251): a Gold verb glowing on
+    - [x] **S5-03c3b2 Four make a Gold, the big animation, seen** (D-251, D-299): a Gold verb glowing on
       a card with four or more (`BoxPanel.offers`); press it and the four pictures fly out round
       the screen's middle, swirl inward faster with a rising shimmer, flash, and one gold picture
       lands big with its own sound, then deals onto its new card (`BoxPanel.made`). Seen in Play.

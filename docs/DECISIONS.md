@@ -7621,3 +7621,22 @@ Secrets.
   beside the four. A Gold only sells for now (Take and Shelf hidden on its card, refused by the
   server) until S5-03c3b3.
 
+## D-299 · 2026-11-17 · Four make a Gold: the show plays at once, the flash waits on the server (S5-03c3b2)
+
+The owner asked for "a big animation" when four become a Gold (D-251). Precedents: Pet
+Simulator's golden machine (copies drawn together into one gold pet) and every gacha reveal's
+build to a flash (the job box's own Legendary reveal, `Boxes.Reveal`).
+- **Gold is a third verb over Sell** on a card with four or more that can be made Gold, filled gold
+  with a slow white shine crossing it, so it reads as the special one. A Gold's card gets a gold
+  rim instead of its rarity's.
+- **The show starts on the press, the flash waits on the answer**: the four leave the card and swirl
+  for about two seconds while the server answers (it always has by then). Made: the flash and the
+  Gold. Refused, or no answer by the flash: the four fly back onto their card, quietly. An answer
+  after that is counted at once with no show.
+- **The sounds are the reveal's Legendary set**, timed so the rattle and the rising tone are
+  loudest at the flash, the falling twinkles at the flash with the coins' jingle; each copy lands
+  on the ring with a chink a step higher. No new sound assets.
+- **Everything over the panel is one veil** that swallows taps for the whole show, so no card can
+  be picked mid-swirl. The panel closing ends the show where it is.
+- Feel numbers in `Home/Gold`'s `Show`; about 3.5 s in all (swirl 2 s, hold 0.9 s, flight 0.4 s).
+

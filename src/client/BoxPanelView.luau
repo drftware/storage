@@ -30,6 +30,18 @@
 	counts up to the new total the way the results board does (Cash: fast, then slowing, a tick
 	for each step, rising, landing with a swell and a jingle). The count ticks down; the last
 	one's card shrinks away. A refused sale settles back onto its card.
+
+	Four make a Gold (S5-03c3b2, D-298, Home.Gold's `Show`): a card with four or more that can be
+	made Gold shows a third verb over Sell, Gold, a slow shine crossing it. Press it and the panel
+	dims under a veil that swallows taps; four copies of the picture leave the card one after
+	another, its count ticking down, each landing on a ring round the screen's middle with a chink
+	a step higher; they swirl inward ever faster, turning gold, a glow growing between them, as
+	the reveal's Legendary rattle and rising tone build to their loudest; then a white-gold flash, a
+	ring of light and sparks, and the Gold pops up big at the middle, rays turning slowly behind it
+	and its name under it, to the reveal's falling twinkles and the coins' jingle. It holds, then
+	flies down onto its card, dealt beside the four (`BoxPanel.made`), which pops in with a chink.
+	The server's answer is needed by the flash: refused, or none by then, and the four fly back
+	onto their card, quietly.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -49,7 +61,10 @@ local Tools = require(ReplicatedStorage.Shared.Tools)
 
 local BoxPanel = require(ReplicatedStorage.Shared.Home.BoxPanel)
 local Shelf = require(ReplicatedStorage.Shared.Home.Shelf)
+local Boxes = require(ReplicatedStorage.Shared.Boxes)
 local JobBox = Home.JobBox
+local Gold = Home.Gold
+local G = Gold.Show
 local Carry = Tools.Carry
 local me = Players.LocalPlayer
 
@@ -73,6 +88,12 @@ local BACK = TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out
 local LAND = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local GONE = TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 local SWELL = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+local GILT = Color3.fromRGB(255, 203, 72) -- a Gold: its verb, its card's rim, the show's glow
+local WHITE_GOLD = Color3.fromRGB(255, 245, 212) -- the flash, the shine crossing the Gold verb
+local TINT = Color3.fromRGB(255, 212, 105) -- the four copies, gilded as they swirl
+local SPREAD = TweenInfo.new(G.Spread, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+local VEIL = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local rng = Random.new()
 
 -- A card on the panel: what it shows and its parts.
 type Shown = {
@@ -97,6 +118,26 @@ type Ask = {
 type Well = { frame: Frame, picture: ViewportFrame, rim: UIStroke, pop: UIScale, key: string }
 -- A chip: its rarity (nil for All), its button, its pop.
 type Chip = { grade: Grades.Grade?, button: TextButton, pop: UIScale, colour: Color3 }
+-- Four of a find becoming one Gold on screen (S5-03c3b2): the find, the card the four leave and
+-- what it counted, the four copies, the swirl's glow, its sounds building, everything else it
+-- made, and the server's answer once it comes. `stage`: Spread, Orbit, Reveal, or Back (home).
+type Show = {
+	key: string,
+	shown: Shown,
+	count: number,
+	copies: { ViewportFrame },
+	core: Frame,
+	veil: TextButton,
+	sounds: { Sound },
+	parts: { Instance },
+	stage: string,
+	answer: boolean?,
+	target: Shown?, -- the Gold's card, once the server made it
+	new: boolean, -- that card is new: it pops in as the Gold lands on it
+	gone: boolean, -- the four were the card's last: it goes under the flash
+	run: Tween?, -- the swirl's driver
+	mine: number, -- the panel's opening it began in
+}
 
 local function colourOf(grade: Grades.Grade): Color3
 	local c = Grades.Colours[grade] or Grades.Colours.Common
@@ -121,6 +162,50 @@ local function corner(parent: Instance, radius: UDim)
 	c.Parent = parent
 end
 
+-- One of the reveal's recordings (Boxes' sounds) played on your screen from `from`, a second in
+-- its file, to its end, then gone.
+local function once(spec: Boxes.Sound, from: number, parent: Instance): Sound
+	local s = Instance.new("Sound")
+	s.SoundId = spec.id
+	s.Volume = spec.volume
+	s.PlaybackSpeed = spec.pitch or 1
+	s.PlaybackRegionsEnabled = true
+	s.PlaybackRegion = NumberRange.new(from, spec.from + spec.length)
+	s.Parent = parent
+	s:Play()
+	task.delay((spec.from + spec.length - from) / (spec.pitch or 1) + 0.2, function()
+		s:Destroy()
+	end)
+	return s
+end
+
+-- A piece of the show over everything: a plain frame anchored at its middle, `colour`, round
+-- when `round`.
+local function piece(z: number, colour: Color3, round: boolean, parent: Instance): Frame
+	local f = Instance.new("Frame")
+	f.AnchorPoint = Vector2.new(0.5, 0.5)
+	f.BorderSizePixel = 0
+	f.BackgroundColor3 = colour
+	f.ZIndex = z
+	if round then
+		corner(f, UDim.new(0.5, 0))
+	end
+	f.Parent = parent
+	return f
+end
+
+-- Where the show plays, the screen's middle a touch high, and the screen's height.
+local function middle(): (Vector2, number)
+	local camera = Workspace.CurrentCamera
+	local view = if camera then camera.ViewportSize else Vector2.new(1280, 720)
+	return Vector2.new(view.X / 2, view.Y * 0.45), view.Y
+end
+
+-- Where on the ring round the middle copy `i` of the four lands: up left, then round clockwise.
+local function angleOf(i: number): number
+	return -0.75 * math.pi + (i - 1) * 2 * math.pi / Gold.Need
+end
+
 local BoxPanelView = {}
 
 function BoxPanelView.new(need: FreeCursor.Need): Brix.System
@@ -143,6 +228,7 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 	local countFrom, countTotal = 0, 0 -- where that count started, and where it lands
 	local countTurn, countLast = 0, -math.huge -- the tick sounds taking turns, and when one last played
 	local guard = -math.huge -- until then taps on cards wait: one just left (BoxPanel.Guard)
+	local show: Show? = nil -- four becoming a Gold on screen
 
 	-- built in start
 	local backdrop: TextButton
@@ -165,6 +251,9 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 	local shelfPop: UIScale
 	local sellButton: TextButton
 	local sellPop: UIScale
+	local goldButton: TextButton
+	local goldPop: UIScale
+	local goldShine: Tween
 	local purse: Frame -- your cash, over the panel's top right corner
 	local purseText: TextLabel
 	local pursePop: UIScale
@@ -172,6 +261,7 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 	local ticks: { Sound } = {}
 	local chink: Sound
 	local jingle: Sound
+	local chinks: { Sound } = {} -- the four copies landing on the ring, each a step higher
 	local layer: Frame
 
 	local function play(pitch: number)
@@ -324,9 +414,33 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 	local function paintVerbs()
 		local gold = picked ~= nil and picked.card.gold == true -- a Gold only sells, for now
 		local both = not gold and free - pending(nil, BoxPanel.Ways.Shelf) > 0
+		local offer = false
+		if picked then
+			local card = picked.card
+			local row = (Tools.Catalog :: any)[card.key] -- any: keyed by text
+			offer = BoxPanel.offers(card, row) and card.count - pending(card.key, nil) >= Gold.Need
+		end
 		takeButton.Visible = not gold
 		shelfButton.Visible = both
-		takeButton.Size = if both then UDim2.new(0.5, -2, 0.47, 0) else UDim2.fromScale(1, 0.47)
+		goldButton.Visible = offer
+		-- two rows over the card's name (Sell; Take and Shelf), or three with Gold on top
+		local row = if offer then 0.3 else 0.47
+		local step = if offer then 0.35 else 0.53
+		verbs.Position = UDim2.fromScale(0.05, if offer then 0.22 else 0.5)
+		verbs.Size = UDim2.fromScale(0.9, if offer then 0.73 else 0.45)
+		sellButton.Position = UDim2.fromScale(0, if offer then step else 0)
+		sellButton.Size = UDim2.fromScale(1, row)
+		local low = if offer then step * 2 else step
+		takeButton.Position = UDim2.fromScale(0, low)
+		takeButton.Size = if both then UDim2.new(0.5, -2, row, 0) else UDim2.fromScale(1, row)
+		shelfButton.Position = UDim2.fromScale(1, low)
+		shelfButton.Size = UDim2.new(0.5, -2, row, 0)
+		goldButton.Size = UDim2.fromScale(1, row)
+		if offer and goldShine.PlaybackState ~= Enum.PlaybackState.Playing then
+			goldShine:Play()
+		elseif not offer and goldShine.PlaybackState == Enum.PlaybackState.Playing then
+			goldShine:Pause()
+		end
 	end
 
 	-- Your cash counts up from what it shows to `total`, as the results board's does: fast, then
@@ -373,6 +487,9 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		picked = nil
 		verbs.Visible = false
 		verbs.Parent = panel
+		if goldShine and goldShine.PlaybackState == Enum.PlaybackState.Playing then
+			goldShine:Pause()
+		end
 		if s then
 			TweenService:Create(s.pop, SETTLE, { Scale = 1 }):Play()
 			TweenService:Create(s.rim, GLOW, { Thickness = 1.5, Transparency = 0.25 }):Play()
@@ -449,7 +566,7 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 	end
 
 	local function makeCard(card: BoxPanel.Card, order: number): Shown
-		local colour = colourOf(card.grade)
+		local colour = if card.gold then GILT else colourOf(card.grade)
 		local frame = Instance.new("Frame")
 		frame.Name = card.key
 		frame.LayoutOrder = order
@@ -569,7 +686,32 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		return chip
 	end
 
+	-- The Gold's show stops where it is, everything it made gone: done, or the panel closing.
+	local function endShow()
+		local s = show
+		if not s then
+			return
+		end
+		show = nil
+		local run = s.run
+		if run then
+			run:Cancel()
+		end
+		for _, c in s.copies do
+			c:Destroy()
+		end
+		for _, sound in s.sounds do
+			sound:Stop()
+		end
+		for _, p in s.parts do
+			p:Destroy()
+		end
+		s.core:Destroy()
+		s.veil:Destroy()
+	end
+
 	local function clear()
+		endShow()
 		unpick()
 		for _, c in watching do
 			c:Disconnect()
@@ -595,6 +737,7 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		box = nil
 		generation += 1
 		local mine = generation
+		endShow()
 		need("BoxPanel", false)
 		search:ReleaseFocus()
 		local up = JobBox.angle(true, 0, os.clock() - openedAt)
@@ -684,42 +827,49 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		end
 	end
 
-	-- One of `key` came out: its card counts one fewer and goes, shrinking, at none; the cards
-	-- after it settle into their new places.
+	-- Card `s`, its last one gone, shrinks away; the cards after it settle into their places.
+	local function drop(s: Shown)
+		local i = table.find(shown, s)
+		if i then
+			table.remove(shown, i)
+		end
+		guard = os.clock() + BoxPanel.Guard
+		if picked == s then
+			unpick()
+		end
+		local order = s.frame.LayoutOrder
+		TweenService:Create(s.pop, GONE, { Scale = 0 }):Play()
+		task.delay(GONE.Time, function()
+			s.frame:Destroy()
+			for _, after in shown do
+				if after.frame.LayoutOrder > order and after.frame.Visible then
+					after.pop.Scale = 0.92
+					TweenService:Create(after.pop, SETTLE, { Scale = 1 }):Play()
+				end
+			end
+			if #all == 0 and box then
+				message.Text = BoxPanel.Words.empty
+				message.Visible = true
+			end
+		end)
+	end
+
+	-- One of `key` came out: its card counts one fewer and goes, shrinking, at none.
 	local function tick(key: string)
 		local card = BoxPanel.took(all, key)
 		if not card then
 			return
 		end
-		for i, s in shown do
+		for _, s in shown do
 			if s.card ~= card then
 				continue
 			end
 			if card.count >= 1 then
 				s.badge.Text = BoxPanel.badge(card.count)
 				s.badge.Visible = s.badge.Text ~= ""
-				break
+			else
+				drop(s)
 			end
-			table.remove(shown, i)
-			guard = os.clock() + BoxPanel.Guard
-			if picked == s then
-				unpick()
-			end
-			local order = s.frame.LayoutOrder
-			TweenService:Create(s.pop, GONE, { Scale = 0 }):Play()
-			task.delay(GONE.Time, function()
-				s.frame:Destroy()
-				for _, after in shown do
-					if after.frame.LayoutOrder > order and after.frame.Visible then
-						after.pop.Scale = 0.92
-						TweenService:Create(after.pop, SETTLE, { Scale = 1 }):Play()
-					end
-				end
-				if #all == 0 and box then
-					message.Text = BoxPanel.Words.empty
-					message.Visible = true
-				end
-			end)
 			break
 		end
 	end
@@ -978,6 +1128,536 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		end)
 	end
 
+	-- Four of `key` made one Gold (the server said so): the cards learn it (`BoxPanel.made`) and
+	-- every card goes to its place. During the show (`s`) the Gold's card waits unseen for the
+	-- Gold to land on it and the four's card waits for the flash; answered after the show gave up,
+	-- both happen at once.
+	local function applyMade(key: string, s: Show?): (Shown?, boolean, boolean)
+		local card, new = BoxPanel.made(all, Tools.Catalog :: any, key) -- any: its rows carry more than Row
+		if not card then
+			return nil, false, false
+		end
+		local gone = false
+		for _, sh in shown do
+			if sh.card.key ~= key then
+				continue
+			end
+			gone = table.find(all, sh.card) == nil
+			if not s then
+				if gone then
+					drop(sh)
+				else
+					sh.badge.Text = BoxPanel.badge(sh.card.count)
+					sh.badge.Visible = sh.badge.Text ~= ""
+				end
+			end
+			break
+		end
+		local target: Shown? = nil
+		if new then
+			target = makeCard(card, 0)
+			table.insert(shown, target :: Shown)
+		else
+			for _, sh in shown do
+				if sh.card == card then
+					target = sh
+					break
+				end
+			end
+		end
+		-- every other place, so a card the four emptied keeps its own (just after its Gold's)
+		-- until it goes under the flash
+		local order: { [BoxPanel.Card]: number } = {}
+		for i, c in all do
+			order[c] = i * 2
+		end
+		for _, sh in shown do
+			sh.frame.LayoutOrder = order[sh.card] or (order[card] or 0) + 1
+		end
+		local t = target
+		if t then
+			t.frame.Visible = BoxPanel.match(card, search.Text, grade)
+			if not s then
+				t.badge.Text = BoxPanel.badge(card.count)
+				t.badge.Visible = t.badge.Text ~= ""
+				t.pop.Scale = if new then 0 else 1.15
+				TweenService:Create(t.pop, POP, { Scale = 1 }):Play()
+			end
+		end
+		return target, new, gone
+	end
+
+	-- The ask refused, or no answer by the flash: the four fly back onto their card and it counts
+	-- what it did. Quietly.
+	local function goHome(s: Show)
+		if show ~= s or s.stage == "Reveal" or s.stage == "Back" then
+			return
+		end
+		s.stage = "Back"
+		local run = s.run
+		if run then
+			run:Cancel()
+		end
+		for _, sound in s.sounds do
+			sound:Stop()
+		end
+		local pic = s.shown.picture
+		local home = pic.AbsolutePosition + pic.AbsoluteSize / 2
+		local wide = math.min(pic.AbsoluteSize.X, pic.AbsoluteSize.Y)
+		for _, c in s.copies do
+			TweenService:Create(c, BACK, {
+				Position = UDim2.fromOffset(home.X, home.Y),
+				Size = UDim2.fromOffset(wide, wide),
+				ImageColor3 = Color3.new(1, 1, 1),
+			}):Play()
+		end
+		TweenService:Create(s.core, BACK, { BackgroundTransparency = 1 }):Play()
+		TweenService:Create(s.veil, BACK, { BackgroundTransparency = 1 }):Play()
+		task.delay(BACK.Time, function()
+			if show ~= s then
+				return
+			end
+			local sh = s.shown
+			if sh.frame.Parent then
+				sh.picture.Visible = sh.card.count >= 1
+				sh.badge.Text = BoxPanel.badge(sh.card.count)
+				sh.badge.Visible = sh.badge.Text ~= ""
+			end
+			endShow()
+			guard = os.clock() + BoxPanel.Guard
+			if box then
+				paintVerbs()
+			end
+		end)
+	end
+
+	-- The Gold, landed on its card: the card pops in (new) or swells, its rim flaring gold.
+	local function landGold(s: Show)
+		local t = s.target
+		if t and t.frame.Parent then
+			t.picture.Visible = true
+			t.badge.Text = BoxPanel.badge(t.card.count)
+			t.badge.Visible = t.badge.Text ~= ""
+			t.pop.Scale = if s.new then 0.4 else 1.2
+			TweenService:Create(t.pop, if s.new then POP else SETTLE, { Scale = 1 }):Play()
+			t.rim.Thickness = BoxPanel.Glow + 1
+			t.rim.Transparency = 0
+			TweenService:Create(t.rim, TweenInfo.new(0.7), { Thickness = 1.5, Transparency = 0.25 })
+				:Play()
+		end
+		local c = chinks[1]
+		c.PlaybackSpeed = 0.9
+		c.TimePosition = 0
+		c:Play()
+		guard = os.clock() + BoxPanel.Guard
+		task.delay(G.Fade, function()
+			if show == s then
+				endShow()
+			end
+		end)
+	end
+
+	-- The flash: the four are gone, and the Gold pops up big at the middle, rays turning behind
+	-- it, its name under it; it holds, then flies onto its card.
+	local function reveal(s: Show)
+		s.stage = "Reveal"
+		table.clear(s.sounds) -- the build rings out under the flash
+		for _, c in s.copies do
+			c:Destroy()
+		end
+		table.clear(s.copies)
+		s.core.Visible = false
+		if s.gone and s.shown.frame.Parent then
+			drop(s.shown) -- the four were its last: it goes under the flash
+		elseif s.shown.frame.Parent then
+			s.shown.badge.Text = BoxPanel.badge(s.shown.card.count)
+			s.shown.badge.Visible = s.shown.badge.Text ~= ""
+		end
+		local at, tall = middle()
+		local here = UDim2.fromOffset(at.X, at.Y)
+		local set = Boxes.Reveal.Legendary
+		if gui then
+			once(set.burst, set.burst.from, gui)
+		end
+		jingle.TimePosition = 0
+		jingle:Play()
+
+		local flash = piece(9, WHITE_GOLD, false, layer)
+		flash.AnchorPoint = Vector2.zero
+		flash.Size = UDim2.fromScale(1, 1)
+		flash.BackgroundTransparency = 0.05
+		table.insert(s.parts, flash)
+		TweenService:Create(
+			flash,
+			TweenInfo.new(G.Flash, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+			{ BackgroundTransparency = 1 }
+		):Play()
+
+		local ring = piece(5, GILT, true, layer)
+		ring.BackgroundTransparency = 1
+		ring.Position = here
+		ring.Size = UDim2.fromOffset(tall * 0.12, tall * 0.12)
+		local line = Instance.new("UIStroke")
+		line.Color = WHITE_GOLD
+		line.Thickness = 7
+		line.Parent = ring
+		table.insert(s.parts, ring)
+		local burst = TweenInfo.new(G.Burst, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+		local far = tall * G.BurstSize
+		TweenService:Create(ring, burst, { Size = UDim2.fromOffset(far, far) }):Play()
+		TweenService:Create(line, burst, { Thickness = 1, Transparency = 1 }):Play()
+
+		local spark = TweenInfo.new(G.SparkTime, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+		for i = 1, G.Sparks do
+			local a = (i + rng:NextNumber(-0.3, 0.3)) * 2 * math.pi / G.Sparks
+			local reach = tall * G.SparkFly * rng:NextNumber(0.7, 1.2)
+			local wide = math.max(math.floor(tall * 0.024), 4)
+			local sp = piece(5, if i % 2 == 0 then WHITE_GOLD else GILT, false, layer)
+			sp.Position = here
+			sp.Rotation = 45
+			sp.Size = UDim2.fromOffset(wide, wide)
+			table.insert(s.parts, sp)
+			TweenService
+				:Create(sp, spark, {
+					Position = UDim2.fromOffset(
+						at.X + math.cos(a) * reach,
+						at.Y + math.sin(a) * reach
+					),
+					Size = UDim2.fromOffset(2, 2),
+					BackgroundTransparency = 1,
+					Rotation = 225,
+				})
+				:Play()
+		end
+
+		local rays: { Frame } = {}
+		local spin = TweenInfo.new(G.Spin, Enum.EasingStyle.Linear, Enum.EasingDirection.In, -1)
+		for k = 0, 3 do
+			local ray = piece(2, GILT, false, layer)
+			ray.Position = here
+			ray.Size = UDim2.fromOffset(tall * G.Rays, math.max(math.floor(tall * 0.05), 8))
+			ray.Rotation = k * 45
+			ray.BackgroundTransparency = 1
+			local fade = Instance.new("UIGradient") -- bright at the middle, gone at the tips
+			fade.Transparency = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 1),
+				NumberSequenceKeypoint.new(0.5, 0.15),
+				NumberSequenceKeypoint.new(1, 1),
+			})
+			fade.Parent = ray
+			table.insert(s.parts, ray)
+			table.insert(rays, ray)
+			TweenService:Create(ray, TweenInfo.new(G.Pop), { BackgroundTransparency = 0.35 }):Play()
+			TweenService:Create(ray, spin, { Rotation = k * 45 + 360 }):Play()
+		end
+
+		local big = math.floor(tall * G.Big)
+		local gold = Instance.new("ViewportFrame")
+		gold.Name = "Gold"
+		gold.AnchorPoint = Vector2.new(0.5, 0.5)
+		gold.BackgroundTransparency = 1
+		gold.Position = here
+		gold.Size = UDim2.fromOffset(big, big)
+		gold.Ambient = Color3.fromRGB(170, 160, 140)
+		gold.LightColor = Color3.fromRGB(255, 240, 210)
+		gold.LightDirection = Vector3.new(-0.4, -1, -0.6)
+		gold.ZIndex = 6
+		local grow = Instance.new("UIScale")
+		grow.Scale = 0
+		grow.Parent = gold
+		gold.Parent = layer
+		ToolPicture.draw(gold, Gold.key(s.key))
+		TweenService:Create(
+			grow,
+			TweenInfo.new(G.Pop, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+			{ Scale = 1 }
+		):Play()
+
+		local t = s.target
+		local title = Instance.new("TextLabel")
+		title.Name = "Title"
+		title.AnchorPoint = Vector2.new(0.5, 0)
+		title.BackgroundTransparency = 1
+		title.Position = UDim2.fromOffset(at.X, at.Y + big * 0.5)
+		title.Size = UDim2.fromOffset(tall * 1.4, math.floor(tall * 0.085))
+		title.FontFace = Font.fromEnum(Enum.Font.BuilderSansExtraBold)
+		title.TextScaled = true
+		title.TextColor3 = GILT
+		title.Text = if t then t.card.name else Gold.Word
+		title.ZIndex = 7
+		local edge = Instance.new("UIStroke")
+		edge.Color = DARK
+		edge.Thickness = 2
+		edge.Parent = title
+		local titlePop = Instance.new("UIScale")
+		titlePop.Scale = 0
+		titlePop.Parent = title
+		title.Parent = layer
+		table.insert(s.parts, title)
+		task.delay(G.Pop * 0.4, function()
+			if show == s then
+				TweenService:Create(titlePop, POP, { Scale = 1 }):Play()
+			end
+		end)
+
+		task.delay(G.Pop + G.Hold, function()
+			if show ~= s then
+				gold:Destroy()
+				return
+			end
+			local fade = TweenInfo.new(G.Fade)
+			for _, ray in rays do
+				TweenService:Create(ray, fade, { BackgroundTransparency = 1 }):Play()
+			end
+			TweenService:Create(title, fade, { TextTransparency = 1 }):Play()
+			TweenService:Create(edge, fade, { Transparency = 1 }):Play()
+			TweenService:Create(s.veil, fade, { BackgroundTransparency = 1 }):Play()
+			local dest = s.target
+			if not (dest and dest.frame.Parent and dest.frame.Visible and box) then
+				-- its card is filtered out of sight: it shrinks away where it is
+				TweenService:Create(grow, GONE, { Scale = 0 }):Play()
+				table.insert(s.parts, gold)
+				task.delay(GONE.Time, function()
+					if show == s then
+						landGold(s)
+					end
+				end)
+				return
+			end
+			local onto = dest :: Shown
+			play(1.2)
+			fly(
+				{
+					key = Gold.key(s.key),
+					way = BoxPanel.Ways.Gold,
+					shown = onto,
+					copy = gold,
+					scale = grow,
+					done = true,
+				},
+				function(): (Vector2, number)
+					local p = onto.picture
+					return p.AbsolutePosition + p.AbsoluteSize / 2,
+						math.min(p.AbsoluteSize.X, p.AbsoluteSize.Y)
+				end,
+				false,
+				function()
+					if show == s then
+						landGold(s)
+					end
+				end
+			)
+		end)
+	end
+
+	-- The four swirl inward round the middle, ever faster, turning gold, a glow growing between
+	-- them and shivering at the end; then the flash if the server made the Gold, else home.
+	local function orbit(s: Show)
+		if show ~= s or s.stage ~= "Spread" then
+			return
+		end
+		s.stage = "Orbit"
+		local driver = Instance.new("NumberValue")
+		table.insert(s.parts, driver)
+		-- the glow: a faint wide halo with a bright heart, so it reads as light, not a disc
+		local heart = piece(3, WHITE_GOLD, true, s.core)
+		heart.BackgroundTransparency = 1
+		heart.Position = UDim2.fromScale(0.5, 0.5)
+		heart.Size = UDim2.fromScale(0.45, 0.45)
+		local white = Color3.new(1, 1, 1)
+		driver.Changed:Connect(function(p: number)
+			local at, tall = middle()
+			local r = tall * G.Ring * (1 - p) ^ 0.75
+			local turn = 2 * math.pi * G.Turns * p * p
+			local wide = tall * G.Copy * (1 - (1 - G.Shrink) * p)
+			local shiver = if p > 0.66 then G.Jitter * (p - 0.66) / 0.34 else 0
+			local tint = white:Lerp(TINT, math.min(p * 1.5, 1))
+			for i, c in s.copies do
+				local a = angleOf(i) + turn
+				c.Position = UDim2.fromOffset(
+					at.X + math.cos(a) * r + rng:NextNumber(-shiver, shiver),
+					at.Y + math.sin(a) * r + rng:NextNumber(-shiver, shiver)
+				)
+				c.Size = UDim2.fromOffset(wide, wide)
+				c.ImageColor3 = tint
+			end
+			local glow = tall * G.Copy * G.Glow * p
+			s.core.Position = UDim2.fromOffset(at.X, at.Y)
+			s.core.Size = UDim2.fromOffset(glow, glow)
+			s.core.BackgroundTransparency = 1 - 0.3 * p * p
+			heart.BackgroundTransparency = 1 - 0.85 * p * p * p
+		end)
+		local tween = TweenService:Create(
+			driver,
+			TweenInfo.new(G.Orbit, Enum.EasingStyle.Linear),
+			{ Value = 1 }
+		)
+		s.run = tween
+		tween.Completed:Connect(function(state: Enum.PlaybackState)
+			if state ~= Enum.PlaybackState.Completed or show ~= s or s.stage ~= "Orbit" then
+				return
+			end
+			if s.answer == true and box and s.mine == generation then
+				reveal(s)
+			else
+				goHome(s)
+			end
+		end)
+		tween:Play()
+	end
+
+	-- Gold pressed on the picked card (four or more of it): the server is asked and the show
+	-- begins at once, the four leaving the card one after another for the ring round the middle.
+	local function makeGold()
+		local s = picked
+		if not (s and box) or show then
+			return
+		end
+		spring(goldPop)
+		local key = s.card.key
+		local row = (Tools.Catalog :: any)[key] -- any: keyed by text
+		if not BoxPanel.offers(s.card, row) or s.card.count - pending(key, nil) < Gold.Need then
+			return
+		end
+		local folder = ReplicatedStorage:FindFirstChild(BoxPanel.RemoteFolder)
+		local remote = folder and folder:FindFirstChild(BoxPanel.TakeRemote)
+		if not (remote and remote:IsA("RemoteEvent")) then
+			return
+		end
+		play(1.35)
+		unpick()
+		remote:FireServer(key, BoxPanel.Ways.Gold)
+
+		local veil = Instance.new("TextButton") -- dims the panel and swallows every tap on it
+		veil.Name = "Veil"
+		veil.AutoButtonColor = false
+		veil.Text = ""
+		veil.BackgroundColor3 = Color3.new(0, 0, 0)
+		veil.BackgroundTransparency = 1
+		veil.Size = UDim2.fromScale(1, 1)
+		veil.ZIndex = 1
+		veil.Parent = layer
+		TweenService:Create(veil, VEIL, { BackgroundTransparency = G.Veil }):Play()
+		local core = piece(3, GILT, true, layer)
+		core.BackgroundTransparency = 1
+		local run: Show = {
+			key = key,
+			shown = s,
+			count = s.card.count,
+			copies = {},
+			core = core,
+			veil = veil,
+			sounds = {},
+			parts = {},
+			stage = "Spread",
+			answer = nil,
+			target = nil,
+			new = false,
+			gone = false,
+			run = nil,
+			mine = generation,
+		}
+		show = run
+
+		-- the reveal's Legendary rattle and rising tone, each at its loudest as the flash comes
+		local flashAt = G.Stagger * (Gold.Need - 1) + G.Spread + G.Orbit
+		local set = Boxes.Reveal.Legendary
+		local build: { Boxes.Sound } = {}
+		for _, spec in { set.hold, set.rise } :: { Boxes.Sound? } do
+			if spec then
+				table.insert(build, spec)
+			end
+		end
+		for _, spec in build do
+			local k = spec.pitch or 1
+			local peak = spec.peak or spec.from
+			local from = math.max(spec.from, peak - flashAt * k)
+			task.delay(math.max(flashAt - (peak - from) / k, 0), function()
+				if show == run and run.stage ~= "Back" and gui then
+					table.insert(run.sounds, once(spec, from, gui))
+				end
+			end)
+		end
+
+		local pic = s.picture
+		local from = pic.AbsolutePosition + pic.AbsoluteSize / 2
+		local start = math.min(pic.AbsoluteSize.X, pic.AbsoluteSize.Y)
+		local at, tall = middle()
+		local ring, wide = tall * G.Ring, tall * G.Copy
+		for i = 1, Gold.Need do
+			local copy = Instance.new("ViewportFrame")
+			copy.Name = `Four{i}`
+			copy.AnchorPoint = Vector2.new(0.5, 0.5)
+			copy.BackgroundTransparency = 1
+			copy.Position = UDim2.fromOffset(from.X, from.Y)
+			copy.Size = UDim2.fromOffset(start, start)
+			copy.Ambient = pic.Ambient
+			copy.LightColor = pic.LightColor
+			copy.LightDirection = pic.LightDirection
+			copy.ZIndex = 4
+			copy.Visible = false
+			copy.Parent = layer
+			ToolPicture.draw(copy, key)
+			table.insert(run.copies, copy)
+			task.delay((i - 1) * G.Stagger, function()
+				if show ~= run or run.stage ~= "Spread" then
+					return
+				end
+				copy.Visible = true
+				local left = run.count - i
+				s.badge.Text = BoxPanel.badge(left)
+				s.badge.Visible = s.badge.Text ~= ""
+				if left < 1 then
+					pic.Visible = false
+				end
+				local a = angleOf(i)
+				local tween = TweenService:Create(copy, SPREAD, {
+					Position = UDim2.fromOffset(
+						at.X + math.cos(a) * ring,
+						at.Y + math.sin(a) * ring
+					),
+					Size = UDim2.fromOffset(wide, wide),
+				})
+				tween.Completed:Connect(function(state: Enum.PlaybackState)
+					if state == Enum.PlaybackState.Completed and show == run then
+						local c = chinks[i] or chinks[1]
+						c.PlaybackSpeed = 1 + G.Chink * (i - 1)
+						c.TimePosition = 0
+						c:Play()
+					end
+				end)
+				tween:Play()
+			end)
+		end
+		task.delay(flashAt - G.Orbit, function()
+			orbit(run)
+		end)
+	end
+
+	-- The server's answer to Gold: the four of `key` made one (`ok`), or didn't.
+	local function goldTook(key: string, ok: boolean)
+		local s = show
+		if
+			s
+			and s.key == key
+			and s.answer == nil
+			and (s.stage == "Spread" or s.stage == "Orbit")
+		then
+			s.answer = ok
+			if not ok then
+				goHome(s)
+				return
+			end
+			local target, new, gone = applyMade(key, s)
+			s.target, s.new, s.gone = target, new, gone
+			return
+		end
+		if ok and box then
+			applyMade(key, nil) -- answered after the show gave up: the cards catch up at once
+			paintVerbs()
+		end
+	end
+
 	local function askClose()
 		spring(closePop)
 		play(0.8)
@@ -1188,6 +1868,32 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		shelfRim.Parent = shelfButton
 		shelfPop = Instance.new("UIScale")
 		shelfPop.Parent = shelfButton
+		-- Gold, on top while the card holds four: gold, a slow shine crossing it now and then
+		goldButton = verb("Gold", BoxPanel.Words.gold, Color3.new(1, 1, 1), DARK)
+		goldButton.Visible = false
+		goldPop = Instance.new("UIScale")
+		goldPop.Parent = goldButton
+		local goldRim = Instance.new("UIStroke")
+		goldRim.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		goldRim.Color = WHITE_GOLD
+		goldRim.Thickness = 1.5
+		goldRim.Parent = goldButton
+		local shine = Instance.new("UIGradient")
+		shine.Rotation = 15
+		shine.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, GILT),
+			ColorSequenceKeypoint.new(0.4, GILT),
+			ColorSequenceKeypoint.new(0.5, WHITE_GOLD),
+			ColorSequenceKeypoint.new(0.6, GILT),
+			ColorSequenceKeypoint.new(1, GILT),
+		})
+		shine.Offset = Vector2.new(-1, 0)
+		shine.Parent = goldButton
+		goldShine = TweenService:Create(
+			shine,
+			TweenInfo.new(1.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, false, 0.9),
+			{ Offset = Vector2.new(1, 0) }
+		)
 
 		-- your cash, over the panel's top right corner: where a find you sell goes
 		purse = Instance.new("Frame")
@@ -1224,6 +1930,9 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		ticks = { coinSound(Coins.Tick, g), coinSound(Coins.Tick, g) }
 		chink = coinSound(Coins.Chink, g)
 		jingle = coinSound(Coins.Jingle, g)
+		for _ = 1, Gold.Need do
+			table.insert(chinks, coinSound(Coins.Chink, g))
+		end
 		table.insert(
 			connections,
 			purseValue.Changed:Connect(function(v: number)
@@ -1303,6 +2012,7 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 				takeOut(BoxPanel.Ways.Sell, sellPop)
 			end)
 		)
+		table.insert(connections, goldButton.Activated:Connect(makeGold))
 		-- your hands follow your slots while the panel is up
 		for i = 1, Carry.Slots do
 			table.insert(
@@ -1334,8 +2044,11 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 					-- any: a remote's arguments, checked here
 					remote.OnClientEvent:Connect(function(key: any, way: any, ok: any, at: any)
 						local name, to = BoxPanel.name(key), BoxPanel.way(way)
-						-- making a Gold is answered once the panel offers it (S5-03c3b2)
-						if name and to and to ~= BoxPanel.Ways.Gold and type(ok) == "boolean" then
+						if not (name and to and type(ok) == "boolean") then
+							return
+						elseif to == BoxPanel.Ways.Gold then
+							goldTook(name, ok)
+						else
 							took(name, to :: BoxPanel.Way, ok, at) -- the frozen module widens it to string
 						end
 					end)
