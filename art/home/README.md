@@ -111,9 +111,28 @@ find on or gather round. Built in `furnish.py`, numbers in `home_spec.py` (`CRAT
 own pale shade, grain and late-wood lines, a knot, a saw's faint arcs, and on the first six (deck
 boards) nail heads at `pallet_nails()`; `pine_uv` lays a board down a strip in studs from its end,
 so the nails meet the stringers. Bake it alone: `--stage textures --sets Pine`.
-`--stage furniture` (10 s) draws `art/sheets/home-furniture.png`: the four by a person for scale,
-then a unit made into a hangout from the door, from a seat and by the wall. Home.fbx: 21,820
-triangles in 53 parts. Not uploaded until g4.
+## The counter's furniture, part two (S5-03g1c2, D-324)
+
+Soft things and warm light, what makes a unit somewhere you'd stay. Numbers `BLANKET*`, `CAMP_*`,
+`STRING*`, `NEON_*` in `home_spec.py`. The blanket and camp bed stand on the floor like the rest;
+the string lights' origin is their clips' line (the cable hangs below it, the hooks' tops at 0, so
+they clip to the wire ceiling or a wall's top), the neon sign's its middle on the wall's face,
+front -y, like a name card. `Home.Specs.Glows` names each lit piece's Neon parts, its clear parts
+and its one real light (near only, D-271).
+
+| Piece | Parts | Sets | Tris | What it is |
+|---|---|---|---|---|
+| Blanket | Blanket, BlanketBinding | Fabric (tinted), Fabric (tinted) | 2970, 416 | a moving blanket folded into a floor cushion (top 0.44): four folds, each bulging and a hair off true, the top quilted in puffed diamonds (geometry), a binding round each fold's front and right |
+| CampBed | CampBed, CampBedFrame, CampBedPillow | Fabric, plain aluminium, Fabric | 1488, 644, 196 | a canvas sling at 1.45 sagging 0.3 between two rails (both sides: you see under it), sleeves round the rails and end bars, three X legs on pivots, a pillow at its head (+x) |
+| StringLights | StringLights, StringBulbs | plain black, plain (Neon) | 1232, 1440 | 9.6 studs of cable in three catenary swags from four hooks, twelve sockets, a warm globe under each |
+| NeonSign | NeonSignTube, NeonSignBack, NeonSignFittings | plain (Neon), plain (clear glass), plain | 2620, 108, 600 | a crescent moon and a star in its hollow in one warm tube each (swept flat, then stood up so the rings never twist), on a clear acrylic backing on four standoffs, the tube on little posts, its ends in black sleeves |
+
+`--stage furniture` (20 s) draws `art/sheets/home-furniture.png`, three rows of two: each part's
+four by a person for scale; a unit made into a hangout from the door by day, then at night with
+the ceiling lamp off (only the string lights and the moon); from a seat and by the wall. The sheet
+lights each glow with a point light hidden from the camera and draws the acrylic at alpha 0.18
+(Cycles' glass shadows its wall black). Home.fbx: 33,534 triangles in 63 parts. Not uploaded
+until g4.
 
 ## Into Studio (S5-03a2b3, D-268)
 

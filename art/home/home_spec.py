@@ -147,6 +147,36 @@ STEEL_TIERS = (0.35, 2.2, 4.05, 5.9)  # each tier's top: four, the room between 
 STEEL_ANGLE = (0.22, 0.04)       # the angle posts: each leg's width, the steel's thickness
 STEEL_LIP = 0.16                 # each tier's edge folded down from its top, front and back
 
+# The counter's furniture, part two (S5-03g1c2, D-324): soft things and warm light, what makes a
+# unit somewhere you'd stay. The blanket and camp bed stand on the floor like the rest; the string
+# lights hang from their clips (their origin the clips' line, the cable below it, -z), and the neon
+# sign hangs on a wall like a name card (its origin its middle on the wall's face, front -y).
+BLANKET = (3.2, 2.7, 0.44)       # a moving blanket folded into a floor cushion: across, deep, tall
+                                 # (a seat on the floor round the pallet table, its top at 1.2)
+BLANKET_LAYERS = 4               # folds you see stacked up its sides, each bulging, pinched between
+BLANKET_QUILT = (0.62, 0.075)    # the quilting's diamonds: across one, how deep the stitches pull
+BLANKET_BIND = 0.042             # the binding round its open edges (front and right): its radius
+CAMP_BED = (6.4, 2.5, 1.45)      # the camp bed: long, across its rails, the rails' height (under
+                                 # the crate's seat: you lie on it, your feet stay near the floor)
+CAMP_SAG = 0.3                   # the canvas sags this far at its middle under nobody
+CAMP_TUBE = (0.06, 0.55)         # the frame's tube radius; the end bars this far in from the rails'
+                                 # ends (the canvas runs between them)
+CAMP_PILLOW = (0.95, 1.7, 0.36)  # the pillow at its head (+x): long, across, thick
+STRING = (9.6, 3, 0.7, 0.15)     # the string lights: long, swags, each swag's droop, the clips'
+                                 # hooks (a small home is 10 across: it spans one)
+STRING_BULBS = (12, 0.15, 0.3)   # bulbs: how many, the globe's radius, its middle below the cable
+STRING_LIGHT = (16.0, 1.2, "#FFC27A")  # its one real light (near only, D-271): range (to the floor
+                                 # under a home's 10-high ceiling, lamp off), brightness,
+                                 # the bulbs' warm colour (the game makes them Neon in it)
+NEON_SIGN = (2.9, 2.8, 0.06, 0.14)  # the neon sign's clear backing: across, tall, thick, off the wall
+NEON_MOON = (1.1, 1.1, (0.38, 0.32))  # a crescent moon: the outer circle's radius, the bite's
+                                 # radius and its middle from the moon's (x, up)
+NEON_STAR = (0.36, 0.15, (0.76, 0.64))  # a star in the moon's hollow: points' radius, the dips'
+                                 # radius, its middle from the moon's
+NEON_SIGN_TUBE = (0.05, 0.09)    # the tube's radius, off the backing's face
+NEON_LIGHT = (8.0, 1.1, "#FFD27A")  # its one real light (near only): range, brightness, the glow's
+                                 # colour (warm yellow to start; the game colours the tube)
+
 
 PINE = (8, 4.4)  # the Pine set (looks.py): boards across it, each running its height in studs; the
                  # first six the deck boards, nailed at pallet_nails(), the last two the stringers'
@@ -170,7 +200,23 @@ def furniture_tops():
     return {"MilkCrate": [((0.0, 0.0, ch), (cw, cd))],
             "Pallet": [((0.0, 0.0, ph * PALLET_STACK), (pl, pd))],
             "FoldingTable": [((0.0, 0.0, th), (tl, td))],
-            "SteelShelf": [((0.0, 0.0, z), (sw - 2 * t, sd - 2 * t)) for z in STEEL_TIERS]}
+            "SteelShelf": [((0.0, 0.0, z), (sw - 2 * t, sd - 2 * t)) for z in STEEL_TIERS],
+            "Blanket": [((0.0, 0.0, BLANKET[2]), (BLANKET[0] - 0.5, BLANKET[1] - 0.5))],
+            "CampBed": [((-0.6, 0.0, CAMP_BED[2] - CAMP_SAG), (CAMP_BED[0] - 3.0, CAMP_BED[1] - 0.8))]}
+
+
+def glows():
+    """The pieces that light up (D-324): the parts the game makes Neon, the parts it makes clear
+    glass, and the one real light each throws (near only, D-271), its middle in the piece's frame
+    (Blender)."""
+    length, swags, droop, hook = STRING
+    _, globe, drop = STRING_BULBS
+    srange, sbright, scol = STRING_LIGHT
+    nrange, nbright, ncol = NEON_LIGHT
+    return {"StringLights": (("StringBulbs",), (), (0.0, -0.6, -hook - droop - drop), srange,
+                             sbright, scol),
+            "NeonSign": (("NeonSignTube",), ("NeonSignBack",), (0.0, -0.9, 0.0), nrange, nbright,
+                         ncol)}
 
 
 # Where each piece of a unit's starter set stands, in the unit frame (x, y in from the doorway),
@@ -191,7 +237,11 @@ PIECES = {"Plant": ("Pot", "Plant"), "Bench": ("Bench",), "Planter": ("Planter",
           "Rail": ("Rail", "RailHangers", "RailSteel", "RailWheels"),
           "MilkCrate": ("MilkCrate",), "Pallet": ("Pallet",),
           "FoldingTable": ("FoldingTable", "FoldingTableLegs"),
-          "SteelShelf": ("SteelShelf", "SteelShelfBolts")}
+          "SteelShelf": ("SteelShelf", "SteelShelfBolts"),
+          "Blanket": ("Blanket", "BlanketBinding"),
+          "CampBed": ("CampBed", "CampBedFrame", "CampBedPillow"),
+          "StringLights": ("StringLights", "StringBulbs"),
+          "NeonSign": ("NeonSignTube", "NeonSignBack", "NeonSignFittings")}
 
 
 def mirror_box():
@@ -375,6 +425,8 @@ def write_luau(path, parts, switch, toggle, lamp, cards_of):
         "export type Part = { Size: Vec, Centre: Vec, Triangles: number }",
         "export type Placed = { Kind: string, At: Vec, Turn: number }",
         "export type Top = { At: Vec, Size: { number } }",
+        "export type Glow = { Neon: { string }, Clear: { string }, Light: Vec, Range: number,",
+        "\tBrightness: number, Colour: string }",
         "export type Swatch = { Id: string, Colour: string }",
         "export type Floor = { Id: string, Set: string, Colours: { Swatch } }",
         "export type Paper = { Id: string, Set: string }",
@@ -457,6 +509,15 @@ def write_luau(path, parts, switch, toggle, lamp, cards_of):
             L.append(f"\t\t\t{{ At = {lua_vec(b2r(c))}, Size = {{ {w:.3f}, {d:.3f} }} }},")
         L.append("\t\t},")
     L += ["\t} :: { [string]: { Top } },"]
+    L += ["\t-- The pieces that light up (D-324): the parts the game makes Neon in Colour, the parts it",
+          "\t-- makes clear glass, and the one real light each throws, near you only (D-271), its middle",
+          "\t-- in the piece's frame.",
+          "\tGlows = {"]
+    for kind, (neon, clear, at, rng, bright, col) in glows().items():
+        names = lambda ns: "{ " + ", ".join(f'"{n}"' for n in ns) + " }" if ns else "{}"
+        L += [f"\t\t{kind} = {{ Neon = {names(neon)}, Clear = {names(clear)}, Light = {lua_vec(b2r(at))},",
+              f"\t\t\tRange = {rng}, Brightness = {bright}, Colour = \"{col}\" }},"]
+    L += ["\t} :: { [string]: Glow },"]
     L += luau_looks()
     L += luau_cards(cards_of)
     L += [

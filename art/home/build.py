@@ -452,9 +452,11 @@ def stage_cards():
 
 
 # --- the counter's furniture sheet (S5-03g1c1, D-323) ---------------------------------------------
-# The four new pieces set out as a shop would, by a person for scale, then a unit made into a place
-# to hang out: the pallet on the rug, crates and the beanbag round it, the folding table on the
-# right wall, the steel shelf on the back with boxes on it. art/sheets/home-furniture.png.
+# Each part's four pieces set out as a shop would, by a person for scale, then a unit made into a
+# place to hang out: the pallet on the rug, crates, the beanbag and the folded blanket round it, the
+# folding table on the right wall, the camp bed on the left, the steel shelf and the neon moon on
+# the back, string lights over it all; by day, then at night with the ceiling lamp low.
+# art/sheets/home-furniture.png, three rows of two.
 FURN_RES = (640, 360)  # a panel: a phone's landscape screen at about half size
 
 
@@ -476,8 +478,41 @@ def place(name, at, turn, tint=None):
     return ob
 
 
-def piece(kind, at, turn, tints=None):
-    return [place(n, at, turn, (tints or {}).get(n)) for n in K.PIECES[kind]]
+def clear_mat():
+    """Clear acrylic: the game's Glass, near enough."""
+    m = render.simple("acrylic", (0.92, 0.96, 0.98), 0.04)
+    for node in m.node_tree.nodes:
+        if node.type == "BSDF_PRINCIPLED":
+            node.inputs["Alpha"].default_value = 0.18
+    return m
+
+
+def piece(kind, at, turn, tints=None, z=0.0):
+    """A piece's parts at `at` (its origin `z` up), turned; a piece that lights up (K.glows) with
+    its Neon parts glowing, its clear parts clear and its one light on."""
+    import math
+    names = K.PIECES[kind]
+    obs = [place(n, at, turn, (tints or {}).get(n)) for n in names]
+    for ob in obs:
+        ob.location.z = z
+    glow = K.glows().get(kind)
+    if glow:
+        neon, clear, (lx, ly, lz), rng, _, col = glow
+        for n, ob in zip(names, obs):
+            if n in neon:
+                ob.data.materials[0] = render.emissive(f"glow_{n}", render.hexc(col), 6.0)
+            elif n in clear:
+                ob.data.materials[0] = clear_mat()
+        t = math.radians(turn)
+        ld = bpy.data.lights.new(f"glow_{kind}", "POINT")
+        ld.energy, ld.color, ld.shadow_soft_size = 14.0 * rng, render.hexc(col), 0.4
+        lo = bpy.data.objects.new(f"glow_{kind}", ld)
+        lo.visible_camera = False
+        lo.location = (at[0] + lx * math.cos(t) - ly * math.sin(t),
+                       at[1] + lx * math.sin(t) + ly * math.cos(t), z + lz)
+        bpy.context.scene.collection.objects.link(lo)
+        obs.append(lo)
+    return obs
 
 
 def person(at):
@@ -495,6 +530,7 @@ def person(at):
 
 
 TINTS = {"FoldingTable": "#E5DFD2", "SteelShelf": "#93A88E"}  # the sheet's paints (the game's, g4)
+BLANKET_TINTS = {"Blanket": "#4F6F8F", "BlanketBinding": "#D8C9A6"}  # a mover's blue, cream binding
 
 
 def stage_furniture():
@@ -518,27 +554,42 @@ def stage_furniture():
         piece("FoldingTable", (8.2, 18.5), -90.0, TINTS) + \
         piece("MilkCrate", (6.2, 17.4), 80.0, {"MilkCrate": "#B8613F"}) + \
         piece("SteelShelf", (-4.8, 28.4), 0.0, TINTS)
+    show2 = person((-1.0, 26.6)) + piece("Blanket", (-6.0, 25.4), 10.0, BLANKET_TINTS) + \
+        piece("CampBed", (4.0, 26.0), 0.0, {"CampBed": "#9C9A78", "CampBedPillow": "#EDE6D8"}) + \
+        piece("StringLights", (0.0, 23.0), 0.0, None, LOOK_ROOM[2]) + \
+        piece("NeonSign", (-5.2, LOOK_ROOM[1]), 0.0, None, 5.6)
+    hang += piece("Blanket", (-3.2, 7.2), 14.0, BLANKET_TINTS) + \
+        piece("CampBed", (-8.2, 21.6), 90.0, {"CampBed": "#9C9A78", "CampBedPillow": "#EDE6D8"}) + \
+        piece("StringLights", (0.0, 13.6), 0.0, None, LOOK_ROOM[2]) + \
+        piece("NeonSign", (4.6, LOOK_ROOM[1]), 0.0, None, 6.2)
     for z in K.STEEL_TIERS[:3]:  # boxes standing in for finds on the shelf's tiers
         hang.append(render.box_prop(coll, (-5.6, 28.4, z), (1.3, 1.0, 0.9), 0.07))
         hang.append(render.box_prop(coll, (-3.9, 28.3, z), (0.9, 0.8, 0.7), -0.1))
     shots = []
     tmp = tempfile.mkdtemp(prefix="home-furn-")
     views = (("show", (0.0, 12.0, 4.6), (0.0, 26.0, 2.0), 24.0),
+             ("show2", (0.0, 11.0, 5.0), (0.0, 26.0, 4.4), 22.0),
              ("unit", (-1.5, -1.0, 6.2), (0.8, 18.0, 3.2), 16.0),
+             ("night", (-1.5, -1.0, 6.2), (0.8, 18.0, 3.2), 16.0),
              ("sit", (6.0, 5.5, 3.6), (-1.5, 13.5, 1.2), 22.0),
              ("wall", (0.5, 11.5, 4.6), (7.0, 19.5, 2.0), 26.0))
+    lamp, fill = bpy.data.objects["look_lamp"].data, bpy.data.objects["look_door"].data
+    day = (lamp.energy, fill.energy)
     for name, loc, target, lens in views:
         for ob in show:
             ob.hide_render = name != "show"
+        for ob in show2:
+            ob.hide_render = name != "show2"
         for ob in hang:
-            ob.hide_render = name == "show"
+            ob.hide_render = name.startswith("show")
+        lamp.energy, fill.energy = (0.0, day[1] * 0.12) if name == "night" else day  # lamp off
         cam = render.camera(loc, target, lens=lens)
         path = os.path.join(tmp, f"{name}.png")
         render.shoot(cam, path)
         img = bpy.data.images.load(path)
         shots.append((bake.pixels(img)[..., :3] * 255.0 + 0.5).astype(np.uint8))
         bpy.data.images.remove(img)
-    sheet = np.vstack([np.hstack(shots[0:2]), np.hstack(shots[2:4])])
+    sheet = np.vstack([np.hstack(shots[0:2]), np.hstack(shots[2:4]), np.hstack(shots[4:6])])
     out = os.path.join(K.ROOT, "art", "sheets", "home-furniture.png")
     bake.write_png(out, sheet)
     print("SHEET", out)

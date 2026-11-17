@@ -18,6 +18,14 @@ its footprint on the floor, its front toward -y (home_spec.py).
     FoldingTableLegs            (plain)
     SteelShelf, SteelShelfBolts a powder-coated steel shelf, four tiers on angle posts (Plaster),
                                 zinc bolts and rubber feet (plain; D-323)
+    Blanket, BlanketBinding     a quilted moving blanket folded into a floor cushion (Fabric, its
+                                binding Fabric in a darker tint; D-324)
+    CampBed, CampBedFrame,      a camp bed: a canvas sling (Fabric) on a folding frame of X legs
+    CampBedPillow               (plain), a pillow at its head (Fabric)
+    StringLights, StringBulbs   string lights in swags from their clips (plain cable; the bulbs
+                                plain, the game makes them Neon)
+    NeonSignTube, NeonSignBack, a neon moon and star on a clear backing: the tube (the game makes
+    NeonSignFittings            it Neon), the acrylic (clear glass), standoffs and posts (plain)
 """
 
 import math
@@ -730,10 +738,15 @@ def pallet():
 
 
 def loft(m, rings, mapper, cap_top=True, cap_bottom=True):
-    """Rounded rectangles [(half across, half deep, corner radius, z)] bottom to top, joined into
-    one smooth-sided solid (cards.py's rounded outline, laid flat), capped."""
+    """Rounded rectangles [(half across, half deep, corner radius, z, and optionally its middle's
+    x, y)] bottom to top, joined into one smooth-sided solid (cards.py's rounded outline, laid
+    flat), capped."""
     from cards import rounded
-    loops = [[m.vert((px, py, z)) for px, py in rounded(a, b, r, 4)] for a, b, r, z in rings]
+    loops = []
+    for ring in rings:
+        a, b, r, z = ring[:4]
+        dx, dy = ring[4:6] if len(ring) > 4 else (0.0, 0.0)
+        loops.append([m.vert((px + dx, py + dy, z)) for px, py in rounded(a, b, r, 4)])
     def put(idx, normal, smooth):
         m.face(idx, mapper([m.verts[i] for i in idx], normal), smooth)
     n = len(loops[0])
@@ -847,6 +860,360 @@ BUILDERS.update({"MilkCrate": milk_crate, "Pallet": pallet, "FoldingTable": fold
                  "FoldingTableLegs": folding_table_legs, "SteelShelf": steel_shelf,
                  "SteelShelfBolts": steel_shelf_bolts})
 
+# --- the counter's furniture, part two (S5-03g1c2, D-324) -----------------------------------------
+# Soft things and warm light, what turns a unit you keep finds in into one you stay in: a moving
+# blanket folded into a cushion on the floor, a camp bed to lie on, string lights in swags overhead,
+# a neon moon on the wall. Calm and warm (D-263): nothing hard, rusty or the climb's.
+
+def fabric_flat_uv(tile=2.0):
+    """Fabric over a flat soft thing: its tops by x and y, its sides by their run and z, in
+    studs over `tile`."""
+    def f(vs, n):
+        if abs(n[2]) > 0.6:
+            return [(v.x / tile, v.y / tile) for v in vs]
+        along = 1 if abs(n[0]) > abs(n[1]) else 0
+        return [(v[along] / tile, v.z / tile) for v in vs]
+    return f
+
+
+def blanket_layers():
+    """Each fold of the blanket: its middle (dx, dy) and its bottom and top, a hair off true."""
+    W, D, H = K.BLANKET
+    n = K.BLANKET_LAYERS
+    h = (H - K.BLANKET_QUILT[1]) / n
+    rnd = random.Random(24)
+    return [(rnd.uniform(-0.04, 0.04), rnd.uniform(-0.035, 0.035), k * h, (k + 1) * h)
+            for k in range(n)]
+
+
+BLANKET_R = 0.24  # the folded blanket's corners' radius
+
+
+def blanket():
+    """The moving blanket folded into a cushion: its folds stacked, each bulging out and pinched
+    where it meets the next; its top quilted in diamonds, each puffed up between its stitches
+    (geometry, so the quilting reads on a phone)."""
+    m = Mesh("Blanket")
+    W, D, H = K.BLANKET
+    a, b, r = W / 2, D / 2, BLANKET_R
+    s, depth = K.BLANKET_QUILT
+    layers = blanket_layers()
+    pinch, ease = 0.05, 0.016
+    rings = []
+    for k, (dx, dy, z0, z1) in enumerate(layers):
+        h = z1 - z0
+        if k == 0:
+            rings.append((a - pinch, b - pinch, r - pinch, 0.0, dx, dy))
+        rings += [(a - ease, b - ease, r - ease, z0 + 0.22 * h, dx, dy),
+                  (a, b, r, z0 + 0.5 * h, dx, dy),
+                  (a - ease, b - ease, r - ease, z0 + 0.8 * h, dx, dy)]
+        if k < len(layers) - 1:
+            nx, ny = layers[k + 1][:2]
+            rings.append((a - pinch, b - pinch, r - pinch, z1, (dx + nx) / 2, (dy + ny) / 2))
+    dx, dy, _, zt = layers[-1]
+    rings.append((a - 0.06, b - 0.06, r - 0.06, zt, dx, dy))
+    mp = fabric_flat_uv()
+    loft(m, rings, mp)
+    # the quilted top: a grid inside the top's edge, puffed between diagonal stitches, its edge
+    # tucked a hair under the top so no seam shows
+    inset, step = 0.12, 0.08
+    x0, x1, y0, y1 = -a + inset, a - inset, -b + inset, b - inset
+    nx, ny = int(round((x1 - x0) / step)), int(round((y1 - y0) / step))
+    p = s / math.sqrt(2)  # stitch lines this far apart, square across
+    def z_at(x, y):
+        u, v = (x + y) / math.sqrt(2), (x - y) / math.sqrt(2)
+        f = min(abs(u - p * round(u / p)), abs(v - p * round(v / p))) / (p / 2)
+        e = min(1.0, min(x - x0, x1 - x, y - y0, y1 - y) / 0.16)
+        e = e * e * (3 - 2 * e)
+        return zt - 0.012 + (0.012 + depth * math.sin(math.pi / 2 * f) ** 0.4) * e
+    idx = [[m.vert((x0 + (x1 - x0) * i / nx + dx, y0 + (y1 - y0) * j / ny + dy,
+                    z_at(x0 + (x1 - x0) * i / nx, y0 + (y1 - y0) * j / ny)))
+            for j in range(ny + 1)] for i in range(nx + 1)]
+    for i in range(nx):
+        for j in range(ny):
+            q = [idx[i][j], idx[i + 1][j], idx[i + 1][j + 1], idx[i][j + 1]]
+            m.face(q, mp([m.verts[k] for k in q], (0, 0, 1)), True)
+    return m
+
+
+def blanket_binding():
+    """The binding round the blanket's open edges, a stripe along each fold's front and right
+    (Fabric, tinted darker than the blanket)."""
+    from cards import rounded
+    m = Mesh("BlanketBinding")
+    W, D, H = K.BLANKET
+    rad = K.BLANKET_BIND
+    out = 0.3 * rad
+    loop = rounded(W / 2 + out, D / 2 + out, BLANKET_R + out, 4)
+    run = loop[18:20] + loop[0:7]  # round the front-left corner, the front, the right, a little on
+    for dx, dy, z0, z1 in blanket_layers():
+        z = (z0 + z1) / 2
+        geo.sweep(m, [(x + dx, y + dy, z) for x, y in run], rad, segs=6, mapper=fabric_flat_uv())
+    return m
+
+
+def camp_sling(x, y):
+    """The canvas's height at (x, y): sagging most at its middle, taut at its rails and end bars."""
+    L, Wd, top = K.CAMP_BED
+    _, end = K.CAMP_TUBE
+    lc = L / 2 - end
+    return top - K.CAMP_SAG * (1 - (2 * y / Wd) ** 2) * (1 - min(1.0, abs(x) / lc) ** 4)
+
+
+def camp_bed():
+    """The camp bed's canvas: a sling between its rails sagging at its middle, both sides (you see
+    under it), its sleeves round the rails and the end bars (Fabric: the game tints it)."""
+    m = Mesh("CampBed")
+    L, Wd, top = K.CAMP_BED
+    tr, end = K.CAMP_TUBE
+    lc = L / 2 - end
+    mp = fabric_flat_uv(2.0)
+    nx, ny = 28, 12
+    pts = [[(-lc + 2 * lc * i / nx, -Wd / 2 + Wd * j / ny) for j in range(ny + 1)] for i in range(nx + 1)]
+    for side, dz in ((1, 0.0), (-1, -0.03)):
+        idx = [[m.vert((x, y, camp_sling(x, y) + dz)) for x, y in row] for row in pts]
+        for i in range(nx):
+            for j in range(ny):
+                q = [idx[i][j], idx[i + 1][j], idx[i + 1][j + 1], idx[i][j + 1]]
+                if side < 0:
+                    q.reverse()
+                m.face(q, mp([m.verts[k] for k in q], (0, 0, side)), True)
+    sleeve = tr * 1.75
+    for sy in (-1, 1):
+        geo.cylinder(m, "x", (0.0, sy * Wd / 2, top), sleeve, 2 * lc, segs=10, mapper=mp)
+    for sx in (-1, 1):
+        geo.cylinder(m, "y", (sx * lc, 0.0, top), sleeve, Wd, segs=10, mapper=mp)
+    return m
+
+
+def camp_bed_frame():
+    """Its folding frame (plain: the game makes it aluminium): two rails with rubber tips, an end
+    bar at each end, and three X legs, each two tubes on a pivot, rubber feet on the floor."""
+    m = Mesh("CampBedFrame")
+    L, Wd, top = K.CAMP_BED
+    tr, end = K.CAMP_TUBE
+    lc = L / 2 - end
+    for sy in (-1, 1):
+        geo.cylinder(m, "x", (0.0, sy * Wd / 2, top), tr, L, segs=8, mapper=PLAIN)
+        for sx in (-1, 1):
+            geo.cylinder(m, "x", (sx * (L / 2 + 0.03), sy * Wd / 2, top), tr * 1.25, 0.08, segs=8,
+                         mapper=PLAIN)
+    for sx in (-1, 1):
+        geo.cylinder(m, "y", (sx * lc, 0.0, top), tr * 0.85, Wd, segs=8, mapper=PLAIN)
+    foot = Wd / 2 - 0.14
+    t = (Wd / 2) / (Wd / 2 + foot)
+    zc = top - 0.02 + (0.07 - top + 0.02) * t
+    for xs in (-lc + 0.4, 0.0, lc - 0.4):
+        for sy in (-1, 1):
+            x = xs + sy * tr * 0.95
+            geo.sweep(m, [(x, sy * Wd / 2, top - 0.02), (x, -sy * foot, 0.07)], tr * 0.9, segs=8,
+                      mapper=PLAIN)
+            geo.cylinder(m, "z", (x, -sy * foot, 0.04), tr * 1.5, 0.08, segs=8, mapper=PLAIN)
+        geo.cylinder(m, "x", (xs, 0.0, zc), tr * 0.75, 4.4 * tr, segs=8, mapper=PLAIN)
+    return m
+
+
+def camp_bed_pillow():
+    """A pillow at the bed's head (+x), sunk a little into the canvas."""
+    m = Mesh("CampBedPillow")
+    L, Wd, top = K.CAMP_BED
+    _, end = K.CAMP_TUBE
+    pl, pw, pt = K.CAMP_PILLOW
+    x = L / 2 - end - pl / 2 - 0.15
+    z = camp_sling(x, 0.0) - 0.02
+    a, b = pl / 2, pw / 2
+    loft(m, ((a - 0.16, b - 0.2, 0.12, z, x, 0.0), (a - 0.04, b - 0.05, 0.3, z + 0.07, x, 0.0),
+             (a, b, 0.36, z + pt * 0.5, x, 0.0), (a - 0.05, b - 0.06, 0.3, z + pt - 0.07, x, 0.0),
+             (a - 0.18, b - 0.24, 0.12, z + pt, x, 0.0)), fabric_flat_uv(1.5))
+    return m
+
+
+def string_cable():
+    """The string lights' cable from its first clip to its last, a swag between each (a catenary's
+    shape), hanging below the hooks' tops at z 0."""
+    length, swags, droop, hook = K.STRING
+    span, per, k0 = length / swags, 14, 1.6
+    c0 = math.cosh(k0)
+    pts = []
+    for k in range(swags):
+        for i in range(per + (1 if k == swags - 1 else 0)):
+            t = i / per
+            z = -hook - droop * (c0 - math.cosh(k0 * (2 * t - 1))) / (c0 - 1)
+            pts.append((-length / 2 + (k + t) * span, 0.0, z))
+    return pts
+
+
+def string_bulb_spots():
+    """Where each bulb's socket hangs from the cable: evenly along it, none at a clip."""
+    pts = [Vector(p) for p in string_cable()]
+    cum = [0.0]
+    for p, q in zip(pts, pts[1:]):
+        cum.append(cum[-1] + (q - p).length)
+    n = K.STRING_BULBS[0]
+    out = []
+    for i in range(n):
+        s = (i + 0.5) * cum[-1] / n
+        k = max(j for j in range(len(cum) - 1) if cum[j] <= s)
+        out.append(pts[k].lerp(pts[k + 1], (s - cum[k]) / (cum[k + 1] - cum[k])))
+    return out
+
+
+def globe(m, c, r, segs=10, rings=7, mapper=PLAIN):
+    """A round bulb (a UV sphere), smooth."""
+    top, bot = m.vert((c[0], c[1], c[2] + r)), m.vert((c[0], c[1], c[2] - r))
+    loops = []
+    for j in range(1, rings):
+        ph = math.pi * j / rings
+        loops.append([m.vert((c[0] + r * math.sin(ph) * math.cos(2 * math.pi * i / segs),
+                              c[1] + r * math.sin(ph) * math.sin(2 * math.pi * i / segs),
+                              c[2] + r * math.cos(ph))) for i in range(segs)])
+    def put(q):
+        vs = [m.verts[k] for k in q]
+        m.face(q, mapper(vs, geo._normal(vs)), True)
+    for i in range(segs):
+        j = (i + 1) % segs
+        put([top, loops[0][i], loops[0][j]])
+        for k in range(len(loops) - 1):
+            put([loops[k][i], loops[k + 1][i], loops[k + 1][j], loops[k][j]])
+        put([bot, loops[-1][j], loops[-1][i]])
+
+
+def string_lights():
+    """The cable in its swags, a hook at each clip up to the wire ceiling, and under the cable at
+    each bulb a socket (plain: the game makes it black rubber)."""
+    m = Mesh("StringLights")
+    length, swags, droop, hook = K.STRING
+    _, r, drop = K.STRING_BULBS
+    geo.sweep(m, string_cable(), 0.024, segs=6, mapper=PLAIN)
+    for k in range(swags + 1):
+        x = -length / 2 + k * length / swags
+        geo.sweep(m, [(x, 0.0, -hook - 0.01), (x, 0.0, -0.06), (x, 0.03, -0.014), (x, 0.07, -0.024)],
+                  0.014, segs=5, mapper=PLAIN)
+    for p in string_bulb_spots():
+        z0, z1 = p.z - 0.04, p.z - drop + r * 0.85
+        geo.cylinder(m, "z", (p.x, p.y, p.z - 0.02), 0.02, 0.05, segs=6, mapper=PLAIN)
+        geo.cylinder(m, "z", (p.x, p.y, (z0 + z1) / 2), 0.055, z0 - z1, segs=8, mapper=PLAIN)
+    return m
+
+
+def string_bulbs():
+    """The bulbs, a warm globe under each socket (plain: the game makes them Neon, D-324)."""
+    m = Mesh("StringBulbs")
+    _, r, drop = K.STRING_BULBS
+    for p in string_bulb_spots():
+        globe(m, (p.x, p.y, p.z - drop), r)
+    return m
+
+
+def chaikin(pts, iters):
+    """A closed outline's corners rounded off, `iters` times."""
+    for _ in range(iters):
+        out = []
+        for i, p in enumerate(pts):
+            q = pts[(i + 1) % len(pts)]
+            out += [(0.75 * p[0] + 0.25 * q[0], 0.75 * p[1] + 0.25 * q[1]),
+                    (0.25 * p[0] + 0.75 * q[0], 0.25 * p[1] + 0.75 * q[1])]
+        pts = out
+    return pts
+
+
+def neon_shapes():
+    """The sign's two tube shapes as closed outlines in (x, up), anticlockwise, centred on the
+    backing: a crescent moon (round its outer circle the long way, back round the bite, its horns
+    rounded so a tube bends round them) and a star in its hollow."""
+    R, r, (cx, cz) = K.NEON_MOON
+    d, base = math.hypot(cx, cz), math.atan2(cz, cx)
+    ao = math.acos((R * R + d * d - r * r) / (2 * R * d))  # where the circles cross, from each
+    ai = math.acos((r * r + d * d - R * R) / (2 * r * d))
+    outer = [(R * math.cos(t), R * math.sin(t))
+             for t in (base + ao + (2 * math.pi - 2 * ao) * k / 22 for k in range(23))]
+    inner = [(cx + r * math.cos(t), cz + r * math.sin(t))
+             for t in (base + math.pi + ai - 2 * ai * k / 14 for k in range(15))]
+    moon = chaikin(outer + inner[1:-1], 2)
+    so, si, (sx, sz) = K.NEON_STAR
+    star = []
+    for k in range(10):
+        t = math.pi / 2 + math.pi * k / 5
+        rr = so if k % 2 == 0 else si
+        star.append((sx + rr * math.cos(t), sz + rr * math.sin(t)))
+    star = [q for i, p in enumerate(star)
+            for q in (p, ((p[0] + star[(i + 1) % 10][0]) / 2, (p[1] + star[(i + 1) % 10][1]) / 2))]
+    star = chaikin(star, 2)
+    xs = [p[0] for p in moon + star]
+    zs = [p[1] for p in moon + star]
+    mx, mz = (min(xs) + max(xs)) / 2, (min(zs) + max(zs)) / 2
+    return [[(x - mx, z - mz) for x, z in shape] for shape in (moon, star)]
+
+
+def neon_runs():
+    """Each shape's tube run (x, y, z), open at its lowest point where both ends bend back into
+    the backing; and the backing's face (y)."""
+    _, _, nt, noff = K.NEON_SIGN
+    _, toff = K.NEON_SIGN_TUBE
+    face = -noff - nt
+    y = face - toff
+    runs = []
+    for shape in neon_shapes():
+        i = min(range(len(shape)), key=lambda k: shape[k][1])
+        lo = shape[i]
+        keep = [p for p in shape[i:] + shape[:i] if math.hypot(p[0] - lo[0], p[1] - lo[1]) > 0.07]
+        body = [(x, y, z) for x, z in keep]
+        runs.append([(keep[0][0], face + 0.01, keep[0][1])] + body +
+                    [(keep[-1][0], face + 0.01, keep[-1][1])])
+    return runs, face, y
+
+
+def neon_sign_tube():
+    """The glass tube, the moon's run and the star's (plain: the game makes it Neon). Swept flat
+    then stood up, so its rings never twist where the run turns vertical."""
+    from mathutils import Matrix
+    m = Mesh("NeonSignTube")
+    rad, _ = K.NEON_SIGN_TUBE
+    runs, _, _ = neon_runs()
+    up = Matrix.Rotation(math.radians(90), 4, "X")  # (x, y, z) -> (x, -z, y)
+    for run in runs:
+        flat = Mesh("flat")
+        geo.sweep(flat, [(x, z, -y) for x, y, z in run], rad, segs=6, mapper=PLAIN)
+        m.extend(flat, up)
+    return m
+
+
+def neon_sign_back():
+    """The clear acrylic backing, its corners rounded (plain: the game makes it clear glass)."""
+    from cards import rounded, slab
+    m = Mesh("NeonSignBack")
+    nw, nh, nt, noff = K.NEON_SIGN
+    slab(m, rounded(nw / 2, nh / 2, 0.22, 6), -noff - nt, -noff, PLAIN)
+    return m
+
+
+def neon_sign_fittings():
+    """Four polished standoffs off the wall through the acrylic, little posts holding the tube off
+    it, a black sleeve where each end goes in (plain)."""
+    m = Mesh("NeonSignFittings")
+    nw, nh, nt, noff = K.NEON_SIGN
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            x, z = sx * (nw / 2 - 0.22), sz * (nh / 2 - 0.22)
+            geo.cylinder(m, "y", (x, -noff / 2, z), 0.04, noff, segs=8, mapper=PLAIN)
+            geo.cylinder(m, "y", (x, -noff - nt - 0.014, z), 0.065, 0.028, segs=12, mapper=PLAIN)
+    runs, face, y = neon_runs()
+    for run in runs:
+        body = run[1:-1]
+        for k in range(len(body) // 8, len(body), max(1, len(body) // 5)):
+            x, _, z = body[k]
+            geo.cylinder(m, "y", (x, (y + face) / 2, z), 0.016, face - y, segs=6, mapper=PLAIN)
+        for x, _, z in (run[0], run[-1]):
+            geo.cylinder(m, "y", (x, face - 0.04, z), 0.065, 0.08, segs=8, mapper=PLAIN)
+    return m
+
+
+BUILDERS.update({"Blanket": blanket, "BlanketBinding": blanket_binding, "CampBed": camp_bed,
+                 "CampBedFrame": camp_bed_frame, "CampBedPillow": camp_bed_pillow,
+                 "StringLights": string_lights, "StringBulbs": string_bulbs,
+                 "NeonSignTube": neon_sign_tube, "NeonSignBack": neon_sign_back,
+                 "NeonSignFittings": neon_sign_fittings})
+
 TEXSET = {"Pot": "Plaster", "Plant": "Leaf", "Bench": "Wood", "Planter": "Plaster",
           "PlanterSeat": "Wood", "PlanterPlants": "Leaf", "Rug": "Rug", "Beanbag": "Fabric",
           "FloorLamp": "Wood", "LampShade": "Fabric", "Shelf": "Wood", "ShelfBack": "Plaster",
@@ -854,7 +1221,10 @@ TEXSET = {"Pot": "Plaster", "Plant": "Leaf", "Bench": "Wood", "Planter": "Plaste
           "JobBoxRunners": "Wood", "MirrorFrame": "Wood", "MirrorBevel": None,
           "MirrorPads": None, "Rail": "Wood", "RailHangers": "Wood", "RailSteel": None,
           "RailWheels": None, "MilkCrate": None, "Pallet": "Pine", "FoldingTable": "Plaster",
-          "FoldingTableLegs": None, "SteelShelf": "Plaster", "SteelShelfBolts": None}
+          "FoldingTableLegs": None, "SteelShelf": "Plaster", "SteelShelfBolts": None,
+          "Blanket": "Fabric", "BlanketBinding": "Fabric", "CampBed": "Fabric", "CampBedFrame": None,
+          "CampBedPillow": "Fabric", "StringLights": None, "StringBulbs": None,
+          "NeonSignTube": None, "NeonSignBack": None, "NeonSignFittings": None}
 
 
 def meshes():

@@ -11,6 +11,14 @@ export type Vec = { number } -- x, y, z
 export type Part = { Size: Vec, Centre: Vec, Triangles: number }
 export type Placed = { Kind: string, At: Vec, Turn: number }
 export type Top = { At: Vec, Size: { number } }
+export type Glow = {
+	Neon: { string },
+	Clear: { string },
+	Light: Vec,
+	Range: number,
+	Brightness: number,
+	Colour: string,
+}
 export type Swatch = { Id: string, Colour: string }
 export type Floor = { Id: string, Set: string, Colours: { Swatch } }
 export type Paper = { Id: string, Set: string }
@@ -50,6 +58,10 @@ local Specs = {
 		Pallet = { "Pallet" },
 		FoldingTable = { "FoldingTable", "FoldingTableLegs" },
 		SteelShelf = { "SteelShelf", "SteelShelfBolts" },
+		Blanket = { "Blanket", "BlanketBinding" },
+		CampBed = { "CampBed", "CampBedFrame", "CampBedPillow" },
+		StringLights = { "StringLights", "StringBulbs" },
+		NeonSign = { "NeonSignTube", "NeonSignBack", "NeonSignFittings" },
 	} :: { [string]: { string } },
 	-- A unit's starter set (D-263): each piece's origin in the unit's frame, turned about Y
 	-- (degrees, 0 with its front toward the door).
@@ -120,7 +132,34 @@ local Specs = {
 			{ At = { -0.000, 4.050, 0.000 }, Size = { 3.520, 1.420 } },
 			{ At = { -0.000, 5.900, 0.000 }, Size = { 3.520, 1.420 } },
 		},
+		Blanket = {
+			{ At = { -0.000, 0.440, 0.000 }, Size = { 2.700, 2.200 } },
+		},
+		CampBed = {
+			{ At = { 0.600, 1.150, 0.000 }, Size = { 3.400, 1.700 } },
+		},
 	} :: { [string]: { Top } },
+	-- The pieces that light up (D-324): the parts the game makes Neon in Colour, the parts it
+	-- makes clear glass, and the one real light each throws, near you only (D-271), its middle
+	-- in the piece's frame.
+	Glows = {
+		StringLights = {
+			Neon = { "StringBulbs" },
+			Clear = {},
+			Light = { -0.000, -1.150, -0.600 },
+			Range = 16.0,
+			Brightness = 1.2,
+			Colour = "#FFC27A",
+		},
+		NeonSign = {
+			Neon = { "NeonSignTube" },
+			Clear = { "NeonSignBack" },
+			Light = { -0.000, 0.000, -0.900 },
+			Range = 8.0,
+			Brightness = 1.1,
+			Colour = "#FFD27A",
+		},
+	} :: { [string]: Glow },
 	-- The looks a player gives their home (D-321). Ids are what a home's save keeps; each
 	-- list starts with a new home's. Colours are hex for Color3.fromHex. Floors tile at
 	-- FloorTile studs and papers at PaperTile, so one floor panel and one wall panel (UVs in
@@ -255,10 +294,35 @@ local Specs = {
 			Centre = { -0.000, 1.700, -0.050 },
 			Triangles = 404,
 		},
+		Blanket = {
+			Size = { 3.250, 0.440, 2.723 },
+			Centre = { 0.008, 0.220, 0.023 },
+			Triangles = 2970,
+		},
+		BlanketBinding = {
+			Size = { 3.169, 0.346, 2.642 },
+			Centre = { -0.087, 0.183, -0.071 },
+			Triangles = 416,
+		},
 		BottomBar = {
 			Size = { 8.640, 0.501, 0.497 },
 			Centre = { -0.000, 0.310, 0.544 },
 			Triangles = 912,
+		},
+		CampBed = {
+			Size = { 5.500, 0.435, 2.710 },
+			Centre = { -0.000, 1.338, 0.000 },
+			Triangles = 1488,
+		},
+		CampBedFrame = {
+			Size = { 6.540, 1.525, 2.650 },
+			Centre = { -0.000, 0.763, 0.000 },
+			Triangles = 644,
+		},
+		CampBedPillow = {
+			Size = { 0.950, 0.360, 1.700 },
+			Centre = { -2.025, 1.412, 0.000 },
+			Triangles = 196,
 		},
 		CardBoard = {
 			Size = { 6.300, 1.560, 0.200 },
@@ -410,6 +474,21 @@ local Specs = {
 			Centre = { -0.000, 3.110, 0.040 },
 			Triangles = 176,
 		},
+		NeonSignBack = {
+			Size = { 2.900, 2.800, 0.060 },
+			Centre = { -0.000, 0.000, -0.170 },
+			Triangles = 108,
+		},
+		NeonSignFittings = {
+			Size = { 2.590, 2.490, 0.290 },
+			Centre = { -0.000, 0.000, -0.145 },
+			Triangles = 600,
+		},
+		NeonSignTube = {
+			Size = { 2.270, 2.155, 0.143 },
+			Centre = { 0.001, -0.003, -0.262 },
+			Triangles = 2620,
+		},
 		Pallet = {
 			Size = { 4.460, 1.205, 3.657 },
 			Centre = { -0.030, 0.599, -0.000 },
@@ -491,6 +570,16 @@ local Specs = {
 			Size = { 3.660, 5.870, 1.560 },
 			Centre = { -0.000, 2.935, 0.000 },
 			Triangles = 816,
+		},
+		StringBulbs = {
+			Size = { 9.213, 0.662, 0.278 },
+			Centre = { -0.000, -0.924, 0.000 },
+			Triangles = 1440,
+		},
+		StringLights = {
+			Size = { 9.628, 0.975, 0.128 },
+			Centre = { -0.000, -0.490, 0.009 },
+			Triangles = 1232,
 		},
 		Switch = {
 			Size = { 0.450, 0.700, 0.050 },

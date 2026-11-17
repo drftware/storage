@@ -2586,7 +2586,7 @@ Done when players watch the results to the end and change their perks between cl
         (`docs/art/S5-03f4b3-*`). The dark glass came once, on the session's first look; the
         polish section has it.
   - [ ] **S5-03g Walls, floor, door, name cards and furniture** (ideas 18 to 20), art first:
-    - [ ] **S5-03g1 The art**, the unit's way (`art/home/`), calm and warm (D-263), in three. The
+    - [x] **S5-03g1 The art**, the unit's way (`art/home/`), calm and warm (D-263), in three. The
       plan doc's ideas: paint or paper the partitions; lay a floor of boards, carpet, checkerboard
       tiles or rubber matting; colour your roll-up door, which is what the hall sees while it's
       down; a name card over the door in stencil (everyone's to start), hand-painted, chalkboard
@@ -2603,16 +2603,23 @@ Done when players watch the results to the end and change their perks between cl
         chalkboard in oak and pink neon that lights the wall, each its own parts in Home.fbx
         (`art/home/cards.py`), lettered in Studio's own fonts; `Home.Specs.Cards`; the sheet
         `art/sheets/home-cards.png` from the floor, down the hall and across it. Not uploaded.
-      - [ ] **S5-03g1c The counter's furniture** (idea 19; the beanbag and rug exist), in
+      - [x] **S5-03g1c The counter's furniture** (idea 19; the beanbag and rug exist), in
         `art/home/furnish.py`, split in two (S5-03g1b):
         - [x] **S5-03g1c1** milk crate, pallet, folding table, steel shelf (D-323): an upturned
           crate you sit on, holes through it; two pine pallets stacked into a coffee table (the
           `Pine` set, nails where the boards cross); a pale moulded table on graphite legs; a
           sage powder-coated shelf, four tiers on angle posts. `Home.Specs.Tops` gives their flat
           tops. Sheet `art/sheets/home-furniture.png`, judged at phone size. Not uploaded.
-        - [ ] **S5-03g1c2** moving blanket, camp bed, string lights, neon sign (the name card's
-          tube, `cards.py`'s `rounded` and `neon_path`).
-    - [ ] **S5-03g2 Paint and floors on the Arrange screen**, saved per home. The art first: one
+        - [x] **S5-03g1c2** moving blanket, camp bed, string lights, neon sign (D-324): a quilted
+          mover's blanket folded into a floor cushion, cream binding at each fold; an olive canvas
+          camp bed sagging on X legs, a pillow at its head; twelve warm globes in three swags from
+          hooks that clip to the wire ceiling; a neon crescent moon and star on clear acrylic.
+          `Home.Specs.Glows`: each lit piece's Neon and clear parts and its one light, near only
+          (D-271). The sheet adds them by a person, then the hangout at night, the lamp off. Not
+          uploaded.
+    - [ ] **S5-03g2 Paint and floors on the Arrange screen**, saved per home, in two: g2a the
+      panels and swatches (art, export, Specs; no game code), g2b the Arrange screen's picker and
+      the save. The art first: one
       floor panel (UVs in studs over `Looks.FloorTile`) and one wall panel (over `PaperTile`) per
       partition, back and front wall, in `art/home`; a swatch part per set in Home.fbx carries its
       SurfaceAppearance into Studio, and the game clones it onto the panels (game scripts can't
@@ -2622,7 +2629,10 @@ Done when players watch the results to the end and change their perks between cl
       (`art/lobby/build.py signs()` drops its unit cards); the name is written on `Face` in its
       `Font` (Font.fromName) and `Ink`; the neon's tube goes Neon in `Glow`, its name gets a glow
       stroke and a light (`CardLight`) on the wall; the spray (Holding.Card) still lands the name.
-    - [ ] **S5-03g4 Furniture at the counter in a weekly stock.**
+    - [ ] **S5-03g4 Furniture at the counter in a weekly stock.** The lit pieces from
+      `Specs.Glows`: their Neon parts Neon in `Colour`, clear parts Glass, their one light thrown
+      only near you as the floor lamps' are (`Home.FloorLamp.Near`, D-271); the string lights hang
+      from the ceiling by their origin, the neon sign from a wall like a name card.
   - [ ] **S5-03h Four sizes and the walls that move** (ideas 30, 31): small to start, medium for
     cash, large and XL for Robux; the partitions grind back and the door widens, everything set
     out staying where it was.

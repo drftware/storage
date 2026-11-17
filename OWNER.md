@@ -98,12 +98,17 @@ nowhere else.
   read every name from across the floor, and does the neon one make you want it? My defaults, say
   which to change: stencilled steel (slate blue, cream letters) is every home's; a painted board
   (forest green, cream pinstripe) and a chalkboard in oak are for cash; neon (pink) is for Robux.
-- [ ] **The counter's furniture, part one** (S5-03g1c1, D-323; art only, not in the game until
-  S5-03g4). Open `art/sheets/home-furniture.png` on your phone: top left, a milk crate, a pallet
-  coffee table, a folding table and a steel shelf by a person for scale; the rest, a unit made
-  into a place to hang out. Look for: would you buy each to sit on, set a find on or gather round?
-  My defaults, say which to change: the crate upturned to sit on (colours mustard, teal,
-  terracotta), two pallets stacked into the coffee table, a pale table top, a sage shelf.
+- [ ] **The counter's furniture** (S5-03g1c1 and c2, D-323, D-324; art only, not in the game
+  until S5-03g4). Open `art/sheets/home-furniture.png` on your phone: top left, a milk crate, a
+  pallet coffee table, a folding table and a steel shelf by a person for scale; top right, a
+  folded moving blanket, a camp bed, string lights and a neon moon and star; then a unit made
+  into a place to hang out, by day and at night with the ceiling lamp off. Look for: would you buy
+  each to sit on, lie on, set a find on or gather round, and does the night one feel like a
+  sleepover? My defaults, say which to change: the crate upturned to sit on (colours mustard, teal,
+  terracotta), two pallets stacked into the coffee table, a pale table top, a sage shelf; the
+  blanket folded into a floor cushion (mover's blue, cream binding), an olive canvas camp bed with
+  a cream pillow, twelve warm globe bulbs in three swags, and a moon and star for the neon (warm
+  yellow; the name card's neon is the word, this one the picture).
 - [ ] **Come home to your shelf** (S5-03c1b, D-285; seen in Studio Play Nov 17 on a 1380x761
   window, not at phone size; pictures in `docs/art/S5-03c1b-*.jpg`). Play with one player. On the
   Server, `game.ServerStorage.ShelfTest:Invoke(game.Players:GetPlayers()[1], "Boombox")` keeps a

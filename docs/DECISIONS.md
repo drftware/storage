@@ -8247,3 +8247,34 @@ piece with a flat top a find can stand on (idea 14).
   into a hangout from the door, from a seat and by the wall. Judged at phone size: all four read.
 - Not in Studio: g4 uploads Home.fbx and sets them out at the counter. Their prices and default
   colours wait on the owner (`OWNER.md`).
+
+## D-324 · 2026-11-17 · The counter's furniture, part two: a blanket, a camp bed, string lights, a neon moon (S5-03g1c2)
+
+Idea 19, the unit's way. The moment: you turn the ceiling lamp off and your unit is a sleepover,
+friends on the blanket and the camp bed under string lights and a glowing moon. Precedent: Adopt
+Me's and Bloxburg's homes, where string lights, neon signs and beds are the furniture players buy
+to make a room theirs; Animal Crossing's lit furniture.
+- **The moving blanket is folded into a floor cushion** (3.2 by 2.7, top at 0.44, under the pallet
+  table's 1.2): a seat on the floor round the coffee table and a top a find can sit on. Four folds,
+  each bulging and pinched where it meets the next, a hair off true; the top quilted in diamonds
+  puffed in the geometry (a baked quilt didn't read on a phone); a binding at each fold's front
+  and right, its own part so the game tints it apart (the sheet: mover's blue, cream binding; dark
+  binding vanished in shadow). Not draped over a crate: Arrange sets pieces on the floor.
+- **The camp bed** is a canvas sling at 1.45 (under the crate's seat) sagging 0.3, both sides
+  modelled because you see under it, sleeves round its rails and end bars, three X legs on pivots,
+  a pillow at its head. Canvas and pillow are Fabric, tinted (olive and cream on the sheet).
+- **The string lights** are 9.6 studs (a small home is 10 across) in three catenary swags from
+  four hooks, twelve warm globes. Their origin is the clips' line, everything below it, so they
+  hang from the wire ceiling (idea 14) or along a wall's top.
+- **The neon sign is a picture, the name card's neon the word**: a crescent moon with a star in
+  its hollow, one tube each, on clear acrylic (the game's Glass) on standoffs, hung like a card.
+  Swept flat, then stood up, so the tube's rings never twist where its run turns vertical (the
+  card's tube can). Warm yellow to start; the game colours the tube.
+- **Lights for a phone (D-271):** the bulbs and tube are Neon (a glow, no light), and each lit
+  piece throws one real light, only near you as the floor lamps do. `Home.Specs.Glows` names each
+  one's Neon parts, clear parts, its light's middle, range and brightness: the string lights 16
+  (to the floor under a 10-high ceiling), 1.2; the moon 8, 1.1.
+- Home.fbx 33,534 triangles in 63 parts; the pieces 2.3k to 3.4k each. Sheet
+  `art/sheets/home-furniture.png` now three rows: both parts by a person, the hangout by day and at
+  night (lamp off), from a seat and by the wall. Judged at phone size: all four read; the night
+  panel is warm under the bulbs and round the moon. Their prices and colours wait on the owner.
