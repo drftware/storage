@@ -74,6 +74,13 @@ local PRESS: Arrange.Sound = {
 }
 
 local STILL = "ArrangeStill"
+local BODY = "ArrangeBody"
+-- What first person draws in front of the camera (ToolView's and InfraredView's held things),
+-- hidden with your body while arranging: they ride up with the camera.
+local VIEWS = { "YourTool", "YourInfrared" }
+-- Your torch is FlashlightView's, which sets its own transparency every frame: it puts it out of
+-- sight while this is set on the camera (CaughtLunge's, for a catch; its light is left as it was).
+local SEIZED = "CaughtSeized"
 -- Above the default controls' bindings, so a key held while arranging moves nobody.
 local STILL_PRIORITY = Enum.ContextActionPriority.High.Value + 50
 local STILL_KEYS = {
@@ -463,10 +470,24 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		end)
 	end
 
+	-- The verbs pop in at the corner while a find is lifted, and the tray slides down out of the
+	-- way so the floor by the door shows; it slides back up when the find is set down or let go.
 	local function showVerbs(l: Lifted?)
 		local v = verbs
 		if v then
+			local was = v.Visible
 			v.Visible = l ~= nil
+			local scale = v:FindFirstChildOfClass("UIScale")
+			if scale and l and not was then
+				scale.Scale = 0.8
+				TweenService:Create(scale, POP, { Scale = 1 }):Play()
+			end
+		end
+		local t = tray
+		if t and open then
+			TweenService:Create(t, QUICK, {
+				Position = UDim2.new(0.5, 0, 1, if l then 120 else -10),
+			}):Play()
 		end
 		local a = awayButton
 		if a then
@@ -929,7 +950,7 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		p.CanTouch = false
 		p.Transparency = 1
 		p.Size = Vector3.new(area.width, 0.05, area.depth)
-		p.CFrame = f * CFrame.new(0, 0.03, 0)
+		p.CFrame = f * CFrame.new(0, Feel.GridLift, 0)
 		local sg = Instance.new("SurfaceGui")
 		sg.Face = Enum.NormalId.Top
 		sg.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
@@ -943,7 +964,9 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 			l.BackgroundColor3 = Color3.new(1, 1, 1)
 			l.BackgroundTransparency = 1
 			l.AnchorPoint = Vector2.new(0.5, 0.5)
-			l.Size = if alongX then UDim2.new(0, 2, 1, 0) else UDim2.new(1, 0, 0, 2)
+			l.Size = if alongX
+				then UDim2.new(0, Feel.GridLine, 1, 0)
+				else UDim2.new(1, 0, 0, Feel.GridLine)
 			l.Position = if alongX then UDim2.fromScale(at, 0.5) else UDim2.fromScale(0.5, at)
 			l.Parent = sg
 			TweenService:Create(l, RISE, { BackgroundTransparency = Feel.GridFade }):Play()
@@ -971,6 +994,62 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		end
 	end
 
+	-- Your own body (and what you hold or wear) hidden from your eyes while you arrange: the camera
+	-- hangs over where you stand, and your head would hide the floor by the door. Roblox's camera
+	-- scripts set each part's LocalTransparencyModifier as the camera moves, so while it rises this
+	-- holds them hidden each frame after the camera's step; once it's still, nothing rewrites them.
+	local hiddenParts: { BasePart } = {}
+	local hiddenDecals: { Decal } = {}
+	local bodyRun = 0
+	local function fade(value: number)
+		for _, p in hiddenParts do
+			p.LocalTransparencyModifier = value
+		end
+		for _, d in hiddenDecals do
+			d.LocalTransparencyModifier = value
+		end
+	end
+	local function body(hidden: boolean)
+		RunService:UnbindFromRenderStep(BODY)
+		bodyRun += 1
+		local run = bodyRun
+		if hidden then
+			table.clear(hiddenParts)
+			table.clear(hiddenDecals)
+			local roots: { Instance } = {}
+			for _, name in VIEWS do
+				local held = Workspace:FindFirstChild(name)
+				if held then
+					table.insert(roots, held)
+				end
+			end
+			if me.Character then
+				table.insert(roots, me.Character)
+			end
+			for _, root in roots do
+				for _, d in root:GetDescendants() do
+					if d:IsA("BasePart") then
+						table.insert(hiddenParts, d)
+					elseif d:IsA("Decal") then
+						table.insert(hiddenDecals, d)
+					end
+				end
+			end
+			RunService:BindToRenderStep(BODY, Enum.RenderPriority.Camera.Value + 1, function()
+				fade(1)
+			end)
+			task.delay(Feel.Rise + 0.1, function()
+				if run == bodyRun then
+					RunService:UnbindFromRenderStep(BODY)
+				end
+			end)
+		else
+			fade(0)
+			table.clear(hiddenParts)
+			table.clear(hiddenDecals)
+		end
+	end
+
 	local function openNow()
 		local camera = Workspace.CurrentCamera
 		if open or not camera then
@@ -983,6 +1062,9 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		room = r
 		open = true
 		still(true)
+		body(true)
+		me:SetAttribute(Tools.StowAttribute, true) -- the tool wheel slides away, clear of the room
+		camera:SetAttribute(SEIZED, true)
 		need("ArrangeView", true)
 		showButton(false)
 		savedCamera = camera.CFrame
@@ -1016,6 +1098,12 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		pending = nil
 		dragInput = nil
 		still(false)
+		body(false)
+		me:SetAttribute(Tools.StowAttribute, nil) -- the wheel comes back up
+		local seized = Workspace.CurrentCamera
+		if seized then
+			seized:SetAttribute(SEIZED, nil)
+		end
 		need("ArrangeView", false)
 		local camera = Workspace.CurrentCamera
 		if camera then
@@ -1084,10 +1172,11 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		g.DisplayOrder = 5
 
 		-- The Arrange button: four squares, one lifted and outlined (a find picked up), its word under.
+		-- Top right, where Done stands while arranging (the torch's switch is under it, S5-03e3a2).
 		local group = Instance.new("CanvasGroup")
 		group.BackgroundTransparency = 1
-		group.AnchorPoint = Vector2.new(1, 0.5)
-		group.Position = UDim2.new(1, -14, 0.42, 0)
+		group.AnchorPoint = Vector2.new(1, 0)
+		group.Position = UDim2.new(1, -14, 0, 4)
 		group.Size = UDim2.fromOffset(74, 92)
 		group.GroupTransparency = 1
 		group.Visible = false
@@ -1191,24 +1280,25 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		layout.Parent = s
 		list = s
 
-		-- What you do with the lifted find, over the tray's right end.
+		-- What you do with the lifted find: a corner cluster under the right thumb (the tray slides
+		-- away while a find is lifted, so the whole room shows). Place where the jump button sits,
+		-- Turn above it, Put away beside Place, × beside Turn.
 		local v = Instance.new("Frame")
 		v.BackgroundTransparency = 1
 		v.AnchorPoint = Vector2.new(1, 1)
-		v.Position = UDim2.new(1, -14, 1, -112)
-		v.Size = UDim2.fromOffset(400, 48)
+		v.Position = UDim2.new(1, -14, 1, -14)
+		v.Size = UDim2.fromOffset(238, 106)
 		v.Visible = false
 		v.Parent = g
-		local vLayout = Instance.new("UIListLayout")
-		vLayout.FillDirection = Enum.FillDirection.Horizontal
-		vLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
-		vLayout.Padding = UDim.new(0, 10)
-		vLayout.SortOrder = Enum.SortOrder.LayoutOrder
-		vLayout.Parent = v
+		Instance.new("UIScale").Parent = v
 		verbs = v
+		local function at(button: TextButton, right: number, up: number)
+			button.AnchorPoint = Vector2.new(1, 1)
+			button.Position = UDim2.new(1, -right, 1, -up)
+		end
 		local cancel = pill("×", 48, PANEL, v)
 		cancel.TextSize = 30
-		cancel.LayoutOrder = 1
+		at(cancel, 122, 58)
 		cancel.Activated:Connect(function()
 			local l = lifted
 			if l and not l.asking then
@@ -1217,20 +1307,20 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 			end
 		end)
 		local away = pill("Put away", 116, PANEL, v)
-		away.LayoutOrder = 2
+		at(away, 122, 0)
 		away.Activated:Connect(function()
 			press(away)
 			awayNow()
 		end)
 		awayButton = away
-		local turn = pill("Turn", 88, PANEL, v)
-		turn.LayoutOrder = 3
+		local turn = pill("Turn", 112, PANEL, v)
+		at(turn, 0, 58)
 		turn.Activated:Connect(function()
 			press(turn)
 			turnNow()
 		end)
 		local placeB = pill("Place", 112, FITS, v)
-		placeB.LayoutOrder = 4
+		at(placeB, 0, 0)
 		placeB.TextColor3 = PANEL
 		placeB.Activated:Connect(function()
 			local l = lifted

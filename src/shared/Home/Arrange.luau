@@ -69,7 +69,12 @@ Arrange.Feel = table.freeze({
 	Follow = 0.05,
 	-- The grid: squares this big (studs; the snap's step is finer, so a find ticks between lines).
 	Grid = 1,
-	GridFade = 0.85, -- the lines' transparency: faint
+	-- The lines' transparency and width (pixels at 24 a stud): faint, but seen on the oak at phone
+	-- size from the far wall (0.85 and 2 vanished there, S5-03e3a2).
+	GridFade = 0.55,
+	GridLine = 3,
+	-- How high the grid floats over the floor (studs): over the rug, so it shows across it.
+	GridLift = 0.09,
 	-- A refused or cancelled find slides back where it came from over this long (seconds).
 	Back = 0.35,
 	-- The puff of dust as it lands: this many motes.

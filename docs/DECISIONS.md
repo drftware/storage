@@ -7913,3 +7913,24 @@ Place, and it drops with a soft knock and a puff of dust. Bloxburg's build mode,
   to arrive there before it goes, so there's never a gap; no answer in 3 s slides it back.
 - Riders stay put while the find under them is dragged and jump when it's set down (ROADMAP polish).
 
+## D-312 · 2026-11-17 · Arrange seen on a phone: the room kept clear (S5-03e3a2)
+
+Seen in Studio Play on the Galaxy A16 (685x338): the moment works (lift out of the tray with a
+whoosh, ticks, green on the job box, red in the shelf, Place, a knock), but the screen got in its
+own way. What changed:
+- **The Arrange button sits top right**, where Done stands while arranging, so the one spot
+  opens and closes it. At 0.42 down the right edge its word sat on the torch's switch.
+- **The tray slides away while a find is lifted**, and back up when it's set down or let go: the
+  tray hid the near third of the floor. **The verbs are a corner cluster** under the right thumb
+  (Place where the jump button sits, Turn above it, Put away beside Place, × beside Turn), not a
+  row across the room's middle, where it covered the find being judged.
+- **Nothing of you shows in the room:** your body and what first person draws in front of the
+  camera are hidden from your eye (held each frame while the camera rises, as Roblox's camera
+  scripts rewrite them as it moves); your torch is put out of sight with the camera attribute a
+  catch uses (`CaughtSeized`, FlashlightView's own rule; its light stays); the tool wheel slides
+  away (`Tools.StowAttribute`, as the machine's menu does).
+- **The grid reads:** lines 3 px at 24 a stud and 0.55 transparent (2 px at 0.85 vanished on the
+  oak at phone size), floated 0.09 over the floor so it shows over the rug.
+- Kept: the fixed camera high by the door (OWNER.md home defaults 12); a lifted find jumps under
+  the finger (a thumb offset is ROADMAP polish).
+

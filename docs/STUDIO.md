@@ -2967,6 +2967,23 @@ verified: a doc page, Studio, or "untested".
   it) rides in it. Studio's in-memory store, used when Studio can't reach DataStores, may run
   the transform at once: there a change made after the let-go can miss.
 
+## The Arrange screen on the Galaxy A16 (S5-03e3a2, Nov 17)
+
+- **Mapping a macOS window capture to the gui:** with the Device Simulator's phone drawn at its
+  default size in a 1386x972 Studio window, cropping 668x314 at (358, 361) gives the phone's
+  screen, and a gui point is (crop - (49, 52)) / 0.845. Taps from `user_mouse_input` still land
+  at x - 47 in gui space (STUDIO.md's A16 notes), so click at (gui x + 47, gui y).
+- **Roblox's camera scripts rewrite your body's `LocalTransparencyModifier` only when its value
+  changes** (the distance from the camera's Focus): set it after a Scriptable camera stops and
+  it stays; while the camera moves, hold it each frame bound after `RenderPriority.Camera`.
+- **FlashlightView writes its torch's transparency every frame**, so hiding it from outside
+  doesn't stick; the camera attribute `CaughtSeized` is its own rule for out of sight.
+- **A yellow blob by the door in the Arrange view is the beanbag**, not your hat: a ray from
+  the camera hits your (hidden) hair first, since `Raycast` ignores local transparency.
+- `start_stop_play` true right after a stop can report "Game Started" and stay in Edit: check
+  `get_studio_state` and start again. `character_navigation` fails before the character loads;
+  a Client `PivotTo` after `CharacterAdded` works.
+
 ## Arranging, seen in Play (S5-03e2b, Nov 17)
 
 - One player, Unit1, the owner's test save, all from a Server `execute_luau` through

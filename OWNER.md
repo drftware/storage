@@ -185,6 +185,11 @@ nowhere else.
   12. Arranging (D-311): a find you drag stays lifted where you let go, green or red, until you
       press Place (or Turn, Put away, ×), rather than setting down the moment you let go, so a
       phone can turn it first. The camera sits high in the corner by the door and doesn't move.
+      While a find is lifted the tray slides away and Place, Turn, Put away and × gather in the
+      bottom right corner (D-312). On a real phone: is a find at the far wall big enough to
+      drag, and do you want it to ride above your thumb rather than under it? Set something on
+      the portable TV or the toy drum, then move that: the find on top should jump with it (my
+      test save has neither, so I couldn't watch it).
 - [ ] **Walk into your home** (S5-03a2b3 and b4, D-268; seen in Studio Play by me, the switch
   pressed with T and with a tap on the A16 simulator, but I couldn't take a single picture, so
   how it looks is yours). Press Play, or publish and play on a phone (Galaxy A16):
