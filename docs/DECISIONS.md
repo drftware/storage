@@ -7467,3 +7467,22 @@ filters).
   raised lid shows above it.
 - **Seen in Studio Play** at computer size (1380x761): 18 kinds, four chips, "lamp" left the two
   lamps, the X dropped it with the lid. The phone check is the owner's (OWNER.md).
+
+## D-292 · 2026-11-17 · The glow sticks crack one stick a press, three to a bundle (F-G1e5b)
+- **The catalog's line:** "Crack: one stick lights a small spot for the rest of the floor; three
+  to a bundle." Each press cracks the next stick in the band and it stays lit for good, as the
+  first did (DOORS' lighter, a light used again; the catalog's Crack is a Switch on). No stick is
+  handed out: the bundle stays one find, its worth unchanged.
+- **The press that counts:** a light's row can carry `more` (steps), each later press playing the
+  next once the last one's motions are over; the stamp carries `count` (the `UseCount`
+  attribute, 1 to 16, anything else read as the first). `Use.press` returns it; the server writes
+  it before `UseAt`. `rows.py` refuses `more` with `off`, `reset`, `toy` or `lasts`.
+- **The art:** the bottom two sticks are split at their middles like the top one; each kinks
+  outwards about its outer side (the band holds their cap ends), snaps at 34 degrees and is
+  shaken, the wags dying away while the light pulses up. The first crack keeps its motion.
+- **The light:** each stick its own small point light (0.7, then 0.25 and 0.25, range 7), so all
+  three stay a small glow; its Mannequin reach is unchanged (the widest range). A screen lights
+  only its nearest few finds.
+- **The sound:** every crack snaps (Pro Sound Effects' "Plastic Crack 2", from 0.1 s, its crack
+  at 0.13 s, pitch 1.35, the third 1.25); the second and third slosh as they're shaken (`SLOSH`,
+  short, soft, 1.7). The first crack had no sound before.

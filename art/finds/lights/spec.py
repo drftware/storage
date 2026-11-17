@@ -658,6 +658,8 @@ from game import (  # noqa: E402
     CLINK,
     CRUNCH,
     FOREVER,
+    GLOW_CRACK,
+    GLOW_SHAKE,
     HOLLOW,
     MATCH_ID,
     PLASTIC,
@@ -734,8 +736,19 @@ GAME = [
         size="Small",
         pickUp=RUSTLE,
         drop=pitched(PLASTIC, 1.9, 0.45),
-        # "Crack: one stick lights a small spot for the rest of the floor"
-        press=dict(verb="Crack", on=[dict(motion="Crack")]),
+        # "Crack: one stick lights a small spot for the rest of the floor; three to a bundle":
+        # each press cracks the next stick (F-G1e5b), the snap as the ampoule breaks, the second
+        # and third shaken to mix
+        press=dict(
+            verb="Crack",
+            on=[dict(motion="Crack", cues=[dict(at=0.55, sound=GLOW_CRACK)])],
+            more=[
+                dict(motion="Crack2", cues=[dict(at=0.57, sound=GLOW_CRACK),
+                                            dict(at=0.69, sound=GLOW_SHAKE)]),
+                dict(motion="Crack3", cues=[dict(at=0.63, sound=pitched(GLOW_CRACK, 1.25)),
+                                            dict(at=0.75, sound=GLOW_SHAKE)]),
+            ],
+        ),
     ),
     dict(
         key="FairyLights",

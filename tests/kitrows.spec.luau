@@ -15,8 +15,9 @@ local Use = require("../src/shared/Finds/Use")
 local Was = require("./fixtures/kitrows") :: any -- a frozen literal: read field by field below
 
 -- Finds whose press was changed on purpose since the freeze, each tested in its own spec: the
--- hard hat's Switch became Wear (F-G1b4a1, D-277; tests/head.spec).
-local CHANGED: { [string]: boolean } = { HardHat = true }
+-- hard hat's Switch became Wear (F-G1b4a1, D-277; tests/head.spec); the glow sticks' one crack
+-- became three, a sound each (F-G1e5b; tests/finduse.spec).
+local CHANGED: { [string]: boolean } = { HardHat = true, GlowSticks = true }
 
 local failures, checks = 0, 0
 local function ok(cond: boolean, what: string)

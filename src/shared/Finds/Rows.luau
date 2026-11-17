@@ -195,6 +195,70 @@ local Rows: { Game.Row } = {
 			on = {
 				{
 					motion = "Crack",
+					cues = {
+						{
+							at = 0.55,
+							sound = {
+								id = "rbxassetid://9117458008",
+								from = 0.1,
+								length = 0.3,
+								volume = 0.8,
+								pitch = 1.35,
+							},
+						},
+					},
+				},
+			},
+			more = {
+				{
+					motion = "Crack2",
+					cues = {
+						{
+							at = 0.57,
+							sound = {
+								id = "rbxassetid://9117458008",
+								from = 0.1,
+								length = 0.3,
+								volume = 0.8,
+								pitch = 1.35,
+							},
+						},
+						{
+							at = 0.69,
+							sound = {
+								id = "rbxassetid://9120502356",
+								from = 0.1,
+								length = 0.6,
+								volume = 0.45,
+								pitch = 1.7,
+							},
+						},
+					},
+				},
+				{
+					motion = "Crack3",
+					cues = {
+						{
+							at = 0.63,
+							sound = {
+								id = "rbxassetid://9117458008",
+								from = 0.1,
+								length = 0.3,
+								volume = 0.8,
+								pitch = 1.25,
+							},
+						},
+						{
+							at = 0.75,
+							sound = {
+								id = "rbxassetid://9120502356",
+								from = 0.1,
+								length = 0.6,
+								volume = 0.45,
+								pitch = 1.7,
+							},
+						},
+					},
 				},
 			},
 		},

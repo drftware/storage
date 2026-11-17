@@ -21,6 +21,8 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   Galaxy A16 size or chip taps by hand (OWNER.md). `screen_capture` timed out; the macOS window
   capture works (STUDIO.md). Dev path: `ServerStorage.ShelfTest:Invoke(player, key)` keeps a find;
   open the box from a Client with the prompt's `InputHoldBegin`/`End`, a Scriptable camera on it.
+- Find art: V5b seen in Play (D-292, the glow sticks crack one stick a press, three to a bundle);
+  next V5c, the fairy lights laid along a hall (`art/finds/WAVES.md`).
 
 ## Next task: S5-03c2b2 Taking a find out of the job box
 The moment: in the open panel you tap the Boombox card, it lifts and glows, Take; it flies out of

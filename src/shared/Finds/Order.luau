@@ -34,7 +34,7 @@ return {
 	DiscoBall = { "Spin", "Spinning", "SpinDown" },
 	FairyLights = { "SwitchOn", "SwitchOff" },
 	FireflyJar = { "Idle", "Open", "Drift", "Gone" },
-	GlowSticks = { "Crack" },
+	GlowSticks = { "Crack", "Crack2", "Crack3" },
 	HardHat = { "SwitchOn", "SwitchOff", "RunDown" },
 	JackInTheBox = { "Wind", "Pop", "Shut" },
 	MoonLamp = { "SwitchOn", "SwitchOff", "Phase" },

@@ -33,7 +33,8 @@ SIZES = ["Small", "Medium", "Large"]
 ROW = ["key", "catalog", "name", "grade", "worth", "from_", "loose", "lit", "grip", "heft", "size",
        "pickUp", "drop", "verb", "press"]
 NEEDED = ["key", "catalog", "name", "grade", "worth", "grip", "heft", "size", "pickUp", "drop"]
-PRESS = ["verb", "on", "lasts", "out", "off", "reset", "noise", "heard", "lure", "toy", "down", "walks"]
+PRESS = ["verb", "on", "more", "lasts", "out", "off", "reset", "noise", "heard", "lure", "toy", "down",
+         "walks"]
 STEP = ["motion", "loop", "sound", "hit", "cues", "lands"]
 SOUND = ["id", "from", "length", "volume", "pitch", "slows"]
 SLOWS = ["at", "stop", "fade"]
@@ -145,7 +146,9 @@ def step(where, s):
 def press(where, p):
     check_keys(where, p, PRESS)
     out = ordered(p, PRESS)
-    for k in ("on", "out"):
+    if "more" in out and ("off" in out or "reset" in out or out.get("toy") or "lasts" in out):
+        fail(f"{where}: more is a light that stays lit (no off, reset, toy or lasts)")
+    for k in ("on", "more", "out"):
         if k in out:
             out[k] = [step(f"{where}.{k}", s) for s in out[k]]
     for k in ("off", "reset"):

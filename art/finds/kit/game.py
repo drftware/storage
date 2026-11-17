@@ -101,6 +101,14 @@ CRINKLE = sound("rbxassetid://9125723588", 0, 0.47, 1.6)
 # little higher and soft: the capybara's tiny, happy sigh.
 SIGH = sound("rbxassetid://9117408118", 0, 0.8, 0.7, 1.2)
 
+# A glow stick cracked (F-G1e5b): Pro Sound Effects' "Plastic Crack 2" (1.6 s, hard plastic
+# breaking with a crunch), its first crack (loudest 0.13 s in, peak 140, measured in Studio),
+# started just before it so it lands on the snap, higher for a thin tube with glass inside.
+GLOW_CRACK = sound("rbxassetid://9117458008", 0.1, 0.3, 0.8, 1.35)
+# ... then shaken to mix: "Water Bottle 14"'s slosh (`SLOSH`), short, soft and high, a little
+# liquid and the glass rattling in a thin tube.
+GLOW_SHAKE = sound("rbxassetid://9120502356", 0.1, 0.6, 0.45, 1.7)
+
 # The chattering teeth's every snap (F-G1e2): the hard plastic clack (`CLACK`), higher and cut
 # short, as their plastic jaws slam shut seven times a second.
 SNAP = sound("rbxassetid://9119728830", 0.15, 0.2, 0.5, 2.2)

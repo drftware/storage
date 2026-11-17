@@ -107,15 +107,40 @@ do
 	ok(Use.press(row, on, 100, d) == nil, "lantern: dead takes no press")
 end
 
--- the glow stick: cracked once, lit for good
+-- the glow sticks: three to a bundle (F-G1e5b), each press cracks the next stick, which stays lit
+-- for good; never a stick mid-crack, never a fourth
 do
 	local row, d = Use.Rows.GlowSticks, durations("GlowSticks")
-	local state, left = Use.press(row, nil, 0, d)
-	ok(state == "On" and left == Use.Forever, "glow stick: never runs down")
-	local stamp: Use.Stamp = { state = "On", at = 0, left = left }
+	local state, left, count = Use.press(row, nil, 0, d)
+	ok(state == "On" and left == Use.Forever and count == 1, "glow stick: never runs down")
+	local stamp: Use.Stamp = { state = "On", at = 0, left = left, count = count }
 	local f = Use.frame(row, stamp, 1000, d)
 	ok(f.motion == "Crack" and near(f.t, d.Crack) and f.lit and not f.spent, "glow stick: lit")
-	ok(Use.press(row, stamp, 1000, d) == nil, "glow stick: cracked once")
+	local more = row.more or {}
+	ok(#more == 2, "glow sticks: two more sticks to crack")
+	ok(Use.press(row, stamp, 0.5, d) == nil, "glow sticks: not while the first still cracks")
+	local s2, l2, c2 = Use.press(row, stamp, 1000, d)
+	ok(s2 == "On" and l2 == Use.Forever and c2 == 2, "glow sticks: the second stick")
+	local second: Use.Stamp = { state = "On", at = 1000, left = l2, count = c2 }
+	local g = Use.frame(row, second, 0.2, d)
+	ok(g.motion == (more[1] and more[1].motion) and g.lit and g.step == 1, "glow sticks: it cracks")
+	local step2 = Use.stepAt(row, "On", 1, 2)
+	ok(step2 ~= nil and step2 == more[1], "glow sticks: the second's own step (its sound)")
+	ok(Use.started(row, "On", 1, d, 2) == 0, "glow sticks: the second starts at once")
+	local s3, _, c3 = Use.press(row, second, 1000, d)
+	ok(s3 == "On" and c3 == 3, "glow sticks: the third stick")
+	local third: Use.Stamp = { state = "On", at = 2000, left = Use.Forever, count = 3 }
+	local h = Use.frame(row, third, 1000, d)
+	ok(h.motion == (more[2] and more[2].motion) and h.lit and not h.spent, "glow sticks: all lit")
+	ok(Use.press(row, third, 1000, d) == nil, "glow sticks: three to a bundle")
+	ok(Use.litUntil(row, third) == math.huge, "glow sticks: all three hold a Mannequin for good")
+	-- a stamp from before the count, or a count no bundle has, reads as the first
+	ok(Use.read("On", 100, -1).count == nil, "read: no count, the first press")
+	ok(Use.read("On", 100, -1, 2).count == 2, "read: the count")
+	ok(
+		Use.read("On", 100, -1, 2.5).count == nil and Use.read("On", 100, -1, 99).count == nil,
+		"read: a count no bundle has"
+	)
 end
 
 -- the disco ball: spins until stopped, and again

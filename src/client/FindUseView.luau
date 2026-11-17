@@ -147,11 +147,18 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 		local s = Use.read(
 			m:GetAttribute(Use.StateAttribute),
 			m:GetAttribute(Use.AtAttribute),
-			m:GetAttribute(Use.LeftAttribute)
+			m:GetAttribute(Use.LeftAttribute),
+			m:GetAttribute(Use.CountAttribute)
 		)
 		local p = e.predicted
-		if s and p and s.state == p.state and math.abs(s.at - p.at) < Use.Predict then
-			s = { state = s.state, at = p.at, left = s.left }
+		if
+			s
+			and p
+			and s.state == p.state
+			and s.count == p.count
+			and math.abs(s.at - p.at) < Use.Predict
+		then
+			s = { state = s.state, at = p.at, left = s.left, count = s.count }
 		end
 		e.predicted = nil
 		e.stamp = s
@@ -177,9 +184,12 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 			return nil
 		end
 		local beats: { [string]: { Use.Cue } } = {}
-		for _, step in row.on do
-			if step.hit or step.cues then
-				beats[step.motion] = Use.timeline(step, art.Motions[step.motion])
+		-- the first press's steps and a bundle's later ones (the glow sticks' next crack, F-G1e5b)
+		for _, steps in { row.on, row.more or {} } do
+			for _, step in steps do
+				if step.hit or step.cues then
+					beats[step.motion] = Use.timeline(step, art.Motions[step.motion])
+				end
 			end
 		end
 		local lands = Use.lands(row)
@@ -283,10 +293,10 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 	end
 
 	-- Whether a press of `key` (in your hand as `model`) does something now.
-	local function would(key: string, model: Model): (Use.State?, number)
+	local function would(key: string, model: Model): (Use.State?, number, number?)
 		local row = Use.Rows[key]
 		if not row then
-			return nil, 0
+			return nil, 0, nil
 		end
 		local e = entries[model]
 		local s = if e
@@ -294,7 +304,8 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 			else Use.read(
 				model:GetAttribute(Use.StateAttribute),
 				model:GetAttribute(Use.AtAttribute),
-				model:GetAttribute(Use.LeftAttribute)
+				model:GetAttribute(Use.LeftAttribute),
+				model:GetAttribute(Use.CountAttribute)
 			)
 		local now = Workspace:GetServerTimeNow()
 		return Use.press(row, s, if s then now - s.at else 0, Finds.durations(key))
@@ -310,7 +321,7 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 			if clock - lastPress < Use.Gap then
 				return false
 			end
-			local pressed, left = would(key, model)
+			local pressed, left, count = would(key, model)
 			if not pressed then
 				return false
 			end
@@ -320,7 +331,8 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 				return false
 			end
 			lastPress = clock
-			e.predicted = { state = state, at = Workspace:GetServerTimeNow(), left = left }
+			e.predicted =
+				{ state = state, at = Workspace:GetServerTimeNow(), left = left, count = count }
 			e.predictedUntil = clock + Use.Predict
 			return true
 		end,
@@ -409,8 +421,8 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 			-- come upon part way through a tune (walked up to, or dropped from a hand, which hands
 			-- every screen a new copy): the boombox's song joined where it is now (`Use.join`)
 			if late then
-				local s = Use.stepAt(e.row, stamp.state, step)
-				local started = Use.started(e.row, stamp.state, step, e.durations)
+				local s = Use.stepAt(e.row, stamp.state, step, stamp.count)
+				local started = Use.started(e.row, stamp.state, step, e.durations, stamp.count)
 				local joined = if s
 						and s.sound
 						and started
@@ -428,7 +440,7 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 			return
 		end
 		e.heardStep = step
-		local s = Use.stepAt(e.row, stamp.state, step)
+		local s = Use.stepAt(e.row, stamp.state, step, stamp.count)
 		local sound = s and s.sound
 		local body = Tools.body(e.model)
 		if sound and body then
@@ -439,7 +451,7 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 	-- A step's sounds on each beat and cue its motion passes, `t` seconds in: never a burst of one
 	-- sound after a hitch, and only the ones still to come for a step first seen mid-way.
 	local function beat(e: Entry, stamp: Use.Stamp, f: Use.Frame)
-		local s = Use.stepAt(e.row, stamp.state, f.step)
+		local s = Use.stepAt(e.row, stamp.state, f.step, stamp.count)
 		local times = s and e.beats[s.motion]
 		if s and s.lands then
 			local _, to = landing(e, stamp)
@@ -598,7 +610,7 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 			local from: CFrame? = nil
 			if e.row.down and stamp and stamp == e.stamp and e.from then
 				local total = 0
-				for _, step in Use.chain(e.row, stamp.state) do
+				for _, step in Use.chain(e.row, stamp.state, stamp.count) do
 					total += Use.length(step, e.durations)
 				end
 				-- a wind-up stopped by a wall plays on where it stands, bobbing as it goes

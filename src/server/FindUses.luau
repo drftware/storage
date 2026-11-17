@@ -58,7 +58,8 @@ local function stampOf(model: Model): Use.Stamp?
 	return Use.read(
 		model:GetAttribute(Use.StateAttribute),
 		model:GetAttribute(Use.AtAttribute),
-		model:GetAttribute(Use.LeftAttribute)
+		model:GetAttribute(Use.LeftAttribute),
+		model:GetAttribute(Use.CountAttribute)
 	)
 end
 
@@ -311,7 +312,8 @@ function FindUses.new(): Brix.System
 		local durations = Finds.durations(use.key)
 		local now = Workspace:GetServerTimeNow()
 		local stamp = stampOf(model)
-		local pressed, left = Use.press(row, stamp, if stamp then now - stamp.at else 0, durations)
+		local pressed, left, count =
+			Use.press(row, stamp, if stamp then now - stamp.at else 0, durations)
 		-- Wear (F-G1b4a1, D-277): it goes from your hand onto your head and lights there; one
 		-- already lit goes back on as it is, its light still running
 		if row.verb == Head.Verb then
@@ -352,6 +354,8 @@ function FindUses.new(): Brix.System
 		model:SetAttribute(Use.KeyAttribute, use.key)
 		model:SetAttribute(Use.StateAttribute, state)
 		model:SetAttribute(Use.LeftAttribute, Use.encode(left))
+		-- which of a bundle's presses: the glow sticks' next stick (F-G1e5b)
+		model:SetAttribute(Use.CountAttribute, count)
 		-- last, so a screen reading the stamp on this change sees all of it
 		model:SetAttribute(Use.AtAttribute, now)
 		CollectionService:AddTag(model, Use.Tag)

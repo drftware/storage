@@ -153,18 +153,22 @@ uploaded FBX (CRAFT.md, "Into Studio"); the place keeps them once the owner save
   bright green.
 - **Parts:** `GlowSticks_Band` (root: the bundle's middle on the floor), `_Stick1` (the top
   stick's cap half), `_Stick1Tip` (its hook half; bends about its underside at the middle,
-  axis -Y, so it kinks up), `_Stick2` (front) and `_Stick3` (back), whole. The sticks are
-  see-through parts (the tube 0.42, the caps and hook 0.78, the ampoule 0.55). 2,962
-  triangles; one 512 texture set at 590 texels a stud.
-- **Light:** a Point in the top stick (green, (120, 255, 96): the kit's lights now take an
-  `rgb` when the light isn't a hot filament; Brightness 0.7, Range 7, no shadows); the liquid
-  and ampoule glow full, the caps a third, the hook a little; strength 2, tint the same green.
-  Both halves of the top stick glow when it's cracked (`lit`).
+  axis -Y, so it kinks up), `_Stick2` and `_Stick3` (the front and back sticks' cap halves, held
+  by the band), `_Stick2Tip` and `_Stick3Tip` (their hook halves; each bends about its outer side
+  at the middle, axis -Z and +Z, so it kinks outwards; Nov 17, V5b). The sticks are see-through
+  parts (the tube 0.42, the caps and hook 0.78, the ampoule 0.55). One 512 texture set.
+- **Light:** a Point in each stick (green, (120, 255, 96): the kit's lights take an `rgb` when
+  the light isn't a hot filament; no shadows, range 7): the top one's 0.7, the other two 0.25
+  each, each following its own stick's glow, so all three lit stay a small glow. The liquid and
+  ampoule glow full, the caps a third, the hook a little; strength 2, tint the same green. Both
+  halves of a stick glow once it's cracked.
 - **Motions:** `Crack` (1.8 s): a grip, the top stick bent up against its stiff plastic until
   the ampoule snaps at 34 degrees and it gives, then let go: it drops onto the others, bounces
-  twice, and the light comes up from the snap as the liquids mix.
-- **For the game:** the action lights one stick; the top stick's two parts are the one to
-  clone and set down. Not in the place yet: F-S1.
+  twice, and the light comes up from the snap as the liquids mix. `Crack2` (2.1 s) and `Crack3`
+  (2.2 s): the front stick, then the back one, bent outwards until it snaps, then shaken, the
+  wags dying away while the light pulses up; the sticks already cracked held lit.
+- **For the game:** one press a stick, three to a bundle (D-292); each crack snaps, the second
+  and third slosh as they're shaken. Imported Nov 17 (V5b).
 
 ## String fairy lights (Nov 15, F-02c)
 

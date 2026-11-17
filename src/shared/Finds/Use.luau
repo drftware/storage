@@ -36,8 +36,9 @@ export type Row = Game.Press
 export type State = "On" | "Again" | "Off"
 -- The stamp the server keeps on a used find: its state, the server clock when it began (`at`,
 -- Workspace:GetServerTimeNow()), and the seconds of light left as it began (`Use.Forever` for a
--- find that never runs down).
-export type Stamp = { state: State, at: number, left: number }
+-- find that never runs down), and which of a bundle's presses it is (`count`: 1, or none, for
+-- the first; 2 for the glow sticks' second stick, F-G1e5b).
+export type Stamp = { state: State, at: number, left: number, count: number? }
 
 -- Where a find is in its motions, `elapsed` seconds after its stamp.
 export type Frame = {
@@ -121,8 +122,14 @@ function Use.toy(row: Row): boolean
 	return row.toy == true or row.reset ~= nil
 end
 
--- The steps a state plays, in order.
-function Use.chain(row: Row, state: State): { Step }
+-- The steps a state plays, in order; a light with `more` plays its next one on each later press
+-- (`count`, the stamp's: 2 plays the first of `more`).
+function Use.chain(row: Row, state: State, count: number?): { Step }
+	local more = row.more
+	if more and state == "On" and count and count > 1 then
+		local step = more[count - 1]
+		return if step then { step } else {}
+	end
 	if state == "Off" then
 		return if row.off then { row.off } else {}
 	end
@@ -170,7 +177,7 @@ function Use.frame(row: Row, stamp: Stamp?, elapsed: number, durations: { [strin
 		return { motion = nil, t = 0, step = 0, lit = false, spent = false }
 	end
 	local e = math.max(elapsed, 0)
-	local steps = Use.chain(row, stamp.state)
+	local steps = Use.chain(row, stamp.state, stamp.count)
 	if stamp.state == "Off" then
 		local step, i, t = walk(steps, e, durations)
 		return {
@@ -204,23 +211,24 @@ function Use.frame(row: Row, stamp: Stamp?, elapsed: number, durations: { [strin
 end
 
 --[[
-	What a press does to a find stamped `stamp`, `elapsed` seconds after it: the new state and the
-	light it starts with (the server stamps it with its clock), or nil if the press does nothing
-	now (still burning, running down, spent, or the jack still mid-tune). Your screen asks the
-	same, to show the button only when a press would do something.
+	What a press does to a find stamped `stamp`, `elapsed` seconds after it: the new state, the
+	light it starts with (the server stamps it with its clock) and which of its presses it is
+	(`Stamp.count`), or nil if the press does nothing now (still burning, running down, spent, the
+	jack still mid-tune, a glow stick still cracking or the bundle all cracked). Your screen asks
+	the same, to show the button only when a press would do something.
 ]]
 function Use.press(
 	row: Row,
 	stamp: Stamp?,
 	elapsed: number,
 	durations: { [string]: number }
-): (State?, number)
+): (State?, number, number?)
 	if not stamp then
-		return "On", row.lasts or Use.Forever
+		return "On", row.lasts or Use.Forever, 1
 	end
 	local now = Use.frame(row, stamp, elapsed, durations)
 	if now.spent then
-		return nil, 0
+		return nil, 0, nil
 	end
 	if row.off then
 		if stamp.state == "Off" then
@@ -233,16 +241,22 @@ function Use.press(
 		end
 		return "Off", left
 	end
-	-- not a switch: once its press's motions are over, a toy is pressed again; a light isn't
-	local steps = Use.chain(row, stamp.state)
+	-- not a switch: once its press's motions are over, a toy is pressed again; a light isn't,
+	-- unless it has more to it (the bundle's next glow stick)
+	local steps = Use.chain(row, stamp.state, stamp.count)
 	local length = 0
 	for _, step in steps do
 		length += Use.length(step, durations)
 	end
 	if Use.toy(row) and elapsed >= length then
-		return "Again", stamp.left
+		return "Again", stamp.left, stamp.count
 	end
-	return nil, 0
+	local more = row.more
+	local count = stamp.count or 1
+	if more and stamp.state == "On" and elapsed >= length and count <= #more then
+		return "On", stamp.left, count + 1
+	end
+	return nil, 0, nil
 end
 
 -- A step's sound at least this long (seconds, as heard) is a tune, not a click: a find come into
@@ -255,10 +269,16 @@ Use.JoinLeft = 0.5
 -- octave each); slower than that it fades as it slows, the last note dying away as the toy stops.
 Use.SlowHeld = 0.25
 
--- Seconds after a press in state `state` that its step `n` starts (`Frame.step`); nil for a
--- step of `out` or none.
-function Use.started(row: Row, state: State, n: number, durations: { [string]: number }): number?
-	local steps = Use.chain(row, state)
+-- Seconds after a press in state `state` (the `count`th, `Stamp.count`) that its step `n` starts
+-- (`Frame.step`); nil for a step of `out` or none.
+function Use.started(
+	row: Row,
+	state: State,
+	n: number,
+	durations: { [string]: number },
+	count: number?
+): number?
+	local steps = Use.chain(row, state, count)
 	if n < 1 or n > #steps then
 		return nil
 	end
@@ -319,9 +339,10 @@ function Use.through(slows: Slows, t: number): number
 	return upTo(math.max(t, 0)) - upTo(0)
 end
 
--- The step numbered `n` in a frame (`Frame.step`): the press's steps, then `out`'s; nil for 0.
-function Use.stepAt(row: Row, state: State, n: number): Step?
-	local steps = Use.chain(row, state)
+-- The step numbered `n` in a frame (`Frame.step`) of the `count`th press (`Stamp.count`): the
+-- press's steps, then `out`'s; nil for 0.
+function Use.stepAt(row: Row, state: State, n: number, count: number?): Step?
+	local steps = Use.chain(row, state, count)
 	if n <= #steps then
 		return steps[n]
 	end
@@ -339,6 +360,7 @@ end
 Use.StateAttribute = "UseState"
 Use.AtAttribute = "UseAt"
 Use.LeftAttribute = "UseLeft"
+Use.CountAttribute = "UseCount" -- which of a bundle's presses (`Stamp.count`)
 Use.KeyAttribute = "UseKey"
 Use.Tag = "FindUsed"
 -- A find set down to play (`down`): where its frame stood as it was set down (a CFrame), so
@@ -529,15 +551,33 @@ function Use.encode(left: number): number
 	return if left == Use.Forever then -1 else left
 end
 
--- A stamp from the three attributes' values, nil unless they make one.
-function Use.read(state: unknown, at: unknown, left: unknown): Stamp?
+-- The most presses a find with `more` can be stamped with: a count past it is nobody's.
+Use.MostCount = 16
+
+-- A stamp from the attributes' values, nil unless they make one; a count that isn't a whole
+-- number from 1 to `MostCount` reads as none (the first press).
+function Use.read(state: unknown, at: unknown, left: unknown, count: unknown?): Stamp?
 	if state ~= "On" and state ~= "Again" and state ~= "Off" then
 		return nil
 	end
 	if type(at) ~= "number" or type(left) ~= "number" or at ~= at or left ~= left then
 		return nil
 	end
-	return { state = state :: State, at = at, left = if left < 0 then Use.Forever else left }
+	local n: number? = nil
+	if
+		type(count) == "number"
+		and count == math.floor(count)
+		and count >= 1
+		and count <= Use.MostCount
+	then
+		n = count
+	end
+	return {
+		state = state :: State,
+		at = at,
+		left = if left < 0 then Use.Forever else left,
+		count = n,
+	}
 end
 
 -- Seconds after a press in state `state` that its lure stops being heard (its `noise` step's

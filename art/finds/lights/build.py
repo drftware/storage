@@ -986,18 +986,62 @@ def gs_look(L, f):
 GS_TOP = GS_AT[0][1]
 GS_BEND = tuple(gs_start(0) + Vector((GS["bend"], 0.0, -GS_R)))   # its underside, where it kinks
 GS_MID = tuple(gs_start(0) + Vector((GS["bend"], 0.0, 0.0)))
+# the bottom two kink outwards, away from the bundle (the band holds their cap ends): each about
+# its outer side at the middle, so the front one's hook end swings to the front, the back one's
+# to the back
+GS_BEND2 = tuple(gs_start(1) + Vector((GS["bend"], -GS_R, 0.0)))
+GS_BEND3 = tuple(gs_start(2) + Vector((GS["bend"], GS_R, 0.0)))
+GS_MID2 = tuple(gs_start(1) + Vector((GS["bend"], 0.0, 0.0)))
+GS_MID3 = tuple(gs_start(2) + Vector((GS["bend"], 0.0, 0.0)))
+
+
+def gs_crack(part, shake, glow_at, length):
+    """A bottom stick cracked (F-G1e5b): gripped, bent outwards against its stiff plastic until
+    the ampoule snaps and it gives, then shaken to mix, as you do with a real one: the hook end
+    whipping out and back, each wag smaller, while the light comes up through it in pulses."""
+    c = GS["crack"]
+    snap = 0.55 + glow_at
+    keys = [(0.0, 0.0), (0.12, 3.0, "Quad", "Out"), (0.22, 2.0),
+            (snap - 0.05, c - 7.0, "Quad", "In"), (snap, c, "Quad", "Out")]
+    t = snap
+    for gap, swing in shake:
+        t += gap
+        keys.append((round(t, 3), swing, "Quad", "In" if swing < 4 else "Out"))
+    tip = [(0.0, 0.0), (snap, 0.0), (snap + 0.05, 0.4, "Quad", "Out"), (snap + 0.2, 0.3),
+           (snap + 0.33, 0.55), (snap + 0.55, 0.72), (snap + 1.0, 1.0), (length, 1.0)]
+    body = [(0.0, 0.0), (snap, 0.0), (snap + 0.07, 0.35, "Quad", "Out"), (snap + 0.24, 0.25),
+            (snap + 0.42, 0.5), (snap + 1.06, 1.0), (length, 1.0)]
+    return [(part + "Tip", "turn", keys), (part + "Tip", "glow", tip), (part, "glow", body)]
+
+
+def gs_held(parts, length):
+    """The sticks already cracked, held lit through a later crack."""
+    return [(p, "glow", [(0.0, 1.0), (length, 1.0)]) for p in parts]
+
+
 GLOW_STICKS = kit.Find(
     "GlowSticks",
     [kit.Part("Band", gs_band),
      kit.Part("Stick1", gs_stick(0, "low"), tuple(gs_start(0)), "Band", clear=True),
      kit.Part("Stick1Tip", gs_stick(0, "tip"), GS_BEND, "Stick1", (0, -1, 0), clear=True),
-     kit.Part("Stick2", gs_stick(1, "whole"), tuple(gs_start(1)), "Band", clear=True),
-     kit.Part("Stick3", gs_stick(2, "whole"), tuple(gs_start(2)), "Band", clear=True)],
+     kit.Part("Stick2", gs_stick(1, "low"), tuple(gs_start(1)), "Band", clear=True),
+     kit.Part("Stick2Tip", gs_stick(1, "tip"), GS_BEND2, "Stick2", (0, 0, -1), clear=True),
+     kit.Part("Stick3", gs_stick(2, "low"), tuple(gs_start(2)), "Band", clear=True),
+     kit.Part("Stick3Tip", gs_stick(2, "tip"), GS_BEND3, "Stick3", (0, 0, 1), clear=True)],
     gs_look,
     lights=[
         # a lightstick's light: a soft green all round, weak; it shines out through its tube
         dict(kind="Point", part="Stick1", at=GS_MID, rgb=GB["rgb"], brightness=0.7, range=7,
              shadows=False, preview_kind="POINT", preview_watts=1.4, preview_size=0.03),
+        # the second and third stick each add a little more of the same green as they're
+        # cracked: weaker, so the three together stay a small glow (a low-end phone lights only
+        # the nearest few finds at all)
+        dict(kind="Point", part="Stick2", at=GS_MID2, rgb=GB["rgb"], brightness=0.25, range=7,
+             shadows=False, preview_kind="POINT", preview_watts=0.5, preview_size=0.03,
+             glow_part="Stick2"),
+        dict(kind="Point", part="Stick3", at=GS_MID3, rgb=GB["rgb"], brightness=0.25, range=7,
+             shadows=False, preview_kind="POINT", preview_watts=0.5, preview_size=0.03,
+             glow_part="Stick3"),
     ],
     glow=dict(part="Stick1", strength=2.0, tint=GB["rgb"], preview=4.5),
     # cracked, both halves of the top stick glow
@@ -1016,6 +1060,17 @@ GLOW_STICKS = kit.Find(
                                    (1.5, 1.0), (1.8, 1.0)]),
             ("Stick1", "glow", [(0.0, 0.0), (0.55, 0.0), (0.62, 0.4, "Quad", "Out"), (0.8, 0.28),
                                 (1.56, 1.0), (1.8, 1.0)])]),
+        # the next press: the front stick, its hook end bent out towards you until it snaps, then
+        # shaken, the wags dying away (F-G1e5b)
+        "Crack2": dict(duration=2.1, focus=(0.03, -0.03, 0.04), distance=0.82, view=(-0.8, -2.0, 1.1),
+                       tracks=gs_held(["Stick1", "Stick1Tip"], 2.1) + gs_crack(
+                           "Stick2", [(0.12, 6.0), (0.1, 17.0), (0.1, 3.0), (0.1, 13.0), (0.1, 2.0),
+                                      (0.1, 9.0), (0.12, 0.0), (0.08, 2.5), (0.08, 0.0)], 0.02, 2.1)),
+        # the last press: the back stick, bent out away from you, a touch stiffer, and shaken
+        "Crack3": dict(duration=2.2, focus=(0.03, 0.03, 0.04), distance=0.82, view=(-0.8, 2.0, 1.1),
+                       tracks=gs_held(["Stick1", "Stick1Tip", "Stick2", "Stick2Tip"], 2.2) + gs_crack(
+                           "Stick3", [(0.12, 5.0), (0.11, 18.0), (0.1, 2.0), (0.11, 14.0), (0.1, 3.0),
+                                      (0.11, 8.0), (0.12, 0.0), (0.08, 3.0), (0.08, 0.0)], 0.08, 2.2)),
     },
     # thin tubes cut into many small islands: asked for more so the packed set lands near 300
     dust=GB["dust"], seed=GB["seed"], texels=500,

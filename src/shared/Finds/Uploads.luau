@@ -14,7 +14,7 @@ return {
 		DiscoBall = { Model = 117329569947170, Emissive = 107391352518677 },
 		FairyLights = { Model = 116946213167800, Emissive = 106385423503478 },
 		FireflyJar = { Model = 125484057276690, Emissive = 120845566128928 },
-		GlowSticks = { Model = 73530047626071, Emissive = 132745904151732 },
+		GlowSticks = { Model = 73530047626071, Emissive = 128490583062620 },
 		HardHat = { Model = 132738999062540, Emissive = 130086191080987 },
 		MoonLamp = { Model = 135149115324330, Emissive = 134416781119139 },
 		NeonSign = { Model = 139787831570469, Emissive = 99684095940635 },

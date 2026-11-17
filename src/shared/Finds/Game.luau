@@ -56,6 +56,10 @@ export type Press = {
 	-- a switch: a press while it's lit plays this and keeps what's left of `lasts` for the next
 	-- press, as Lethal Company's flashlight keeps its battery
 	off: Step?,
+	-- a light with more to it: each later press, once the last one's motions are over, plays the
+	-- next of these, and it stays lit on (the glow sticks' second and third stick, three to a
+	-- bundle, F-G1e5b: each a crack, a shake and a glow, as DOORS' lighter is used again)
+	more: { Step }?,
 	-- played before `on` when it's pressed again once `on` has finished (the jack pushed back
 	-- into its box and the lid shut, before it's wound again)
 	reset: Step?,

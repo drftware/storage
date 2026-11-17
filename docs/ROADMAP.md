@@ -2812,8 +2812,13 @@ actions themselves and dealing the new finds on floors are later game tickets.
         back). `Finds/OneMesh` by hand; a tune joins where it is for a find come upon part way
         (`Use.join`). Seen: a Mannequin 56 studs off woke and came, then went to the dropped
         boombox; the song carried on after the drop.
-      - [ ] **F-G1e5b The glow sticks' other two sticks** (three to a bundle): one more crack
-        each, the art has one `Crack`.
+      - [x] **F-G1e5b The glow sticks' other two sticks** (Nov 17, V5b; seen in Studio Play, not
+        on a phone; D-292): each press cracks the next stick, three to a bundle: the bottom two
+        kink outwards, snap and are shaken, each lighting its own small glow; every crack snaps
+        (the first had no sound). A light's row can carry `more`, the stamp a `count`. Seen: the
+        count 1, 2, 3 and a fourth press refused; each stick's glow and light on in turn; the
+        bends peaking 32, 34 and 30 degrees, the shakes after; the snaps at 0.60, 0.60 and
+        0.65 s, the slosh at 0.72 and 0.78 s.
       - [ ] **F-G1e5c The fairy lights laid along a hall** for a dim line of light.
       - [x] **F-G1e5d The Old lamp holds a Mannequin while it lies lit** (Nov 17, V5d; seen in
         Studio Play, D-289): its row says found lit (`lit`), and the server reads it as lit for

@@ -6,9 +6,10 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** V5b (ROADMAP F-G1e5b, the glow sticks' other two sticks: an art rebuild and import),
-then V5's pieces c, e in that order. V5a (the boombox and the teddy), V5f (the carousel's tune
-slows) and V5d (the Old lamp holds a Mannequin) are done and seen in Play (Nov 17).
+**Next:** V5c (ROADMAP F-G1e5c, the fairy lights laid along a hall for a dim line of light),
+then V5e (fragile). V5a (the boombox and the teddy), V5f (the carousel's tune slows), V5d (the
+Old lamp holds a Mannequin) and V5b (the glow sticks' other two sticks) are done and seen in Play
+(Nov 17).
 
 ## The third run's plan (owner's brief, Nov 16 night)
 
@@ -45,7 +46,7 @@ head, belong to the home chain (ROADMAP S5-03, F-G1b4): listed as waiting, not b
    the defaults OWNER.md names: the cord's whirr, the motor's hum).
 6. **V4 The siren car** (done Nov 17: V4a built it; V4b saw it in Play and set the wail's start): it rolls as the die-cast car does, its beacon spins and lights the hall,
    and its wail lures.
-7. **V5 onwards** (V5a done Nov 17: the boombox and the teddy; V5f done Nov 17: the carousel's tune slows; V5d done Nov 17: the Old lamp holds a Mannequin): whatever else A1 finds missing that isn't at home only.
+7. **V5 onwards** (V5a done Nov 17: the boombox and the teddy; V5f done Nov 17: the carousel's tune slows; V5d done Nov 17: the Old lamp holds a Mannequin; V5b done Nov 17: three sticks to a bundle): whatever else A1 finds missing that isn't at home only.
 8. **S1 to S4 The last four squishies**, each from photos to playable through PIPELINE.md, its
    first proof: S1 the goo ball (oozes between your fingers and slowly comes back, on bones);
    S2 the colour-change goo ball (changes colour where pressed: find the way that holds up in
@@ -81,7 +82,7 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 | Plug-in night-light (`NightLight`) | A soft glow by the floor (the catalog says at home; D-250: anywhere) · Switch (DOORS' lighter) | works: a lamp, 60 s | Common · 2 · floor 1 up ✓ | |
 | Tea light in a jar (`TeaLight`) | A small glow for about a minute · Light (DOORS' lighter) | works: 60 s | Common · 3 · floor 1 up ✓ | |
 | Desk lamp (`DeskLamp`) | A warm pool of light (at home; D-250: anywhere) · Switch | works | Common · 4 · floor 1 up ✓ | |
-| Bundle of glow sticks (`GlowSticks`) | One stick lights a small spot for the rest of the floor; three to a bundle · Crack | works for one crack; the other two sticks are missing (V5) | Common · 5 · floor 1 up ✓ | |
+| Bundle of glow sticks (`GlowSticks`) | One stick lights a small spot for the rest of the floor; three to a bundle · Crack | works: each press cracks the next stick, three to a bundle, each snapping and lit for good, the bottom two kinked out and shaken (V5b, D-292) | Common · 5 · floor 1 up ✓ | Nov 17, V5b: given (GiveFind), pressed four times in hand (`ToolUse` from the Client): the stamp's count 1, 2, 3, the fourth press refused; in your view's copy the top stick bent to 32 degrees at 0.56 s and dropped back, the front one to 34 at 0.60 s then shaken (12, 6, 16, 14, 5, 12 ...), the back one to 30 at 0.67 s and shaken; each stick's glow (2.0) and light (0.7, 0.25, 0.25) on in turn; the snap heard at 0.60, 0.60, 0.65 s, the slosh at 0.72 and 0.78 s; not watched holding a Mannequin (its reach is unchanged) |
 | String fairy lights (`FairyLights`) | Lay them along a hall for a dim line of light · Switch | works as a switch in your hand; laying them along a hall is missing (V5) | Uncommon · 12 · floor 1 up ✓ | |
 | Camping lantern (`CampLantern`) | A wide light for 90 seconds · Switch | works | Uncommon · 15 · floor 1 up ✓ | |
 | Moon lamp (`MoonLamp`) | It glows (D-250: anywhere); tap it to change its phase · Switch, Tap | works as a switch; the phase tap waits on the home chain | Uncommon · 16 · floor 1 up ✓ | |
@@ -142,7 +143,7 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 4. **V5 needs five pieces; split it before starting:** (a) a press on a one-mesh find, which has
    no joints or motions: the boombox's music on the lure and the teddy's hug (done Nov 17, V5a:
    `Finds/OneMesh`, D-286); (b) the glow
-   sticks' other two sticks (one more crack each; the art has one `Crack`); (c) the fairy
+   sticks' other two sticks (done Nov 17, V5b: a press that counts, `more`, D-292); (c) the fairy
    lights laid along a hall; (d) the Old lamp holding a Mannequin while it lies lit, as D-234's
    found lights do (done Nov 17, V5d: its row says found lit, D-289); (e) fragile: the oil lamp and the glass lamp chip to half their worth when
    dropped hard (R.E.P.O.'s valuables).
@@ -246,6 +247,22 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, V5b (the glow sticks' other two sticks; seen in Play; V5c next).** A light's press
+  can carry `more` (steps): each later press plays the next once the last one's motions are over,
+  and the stamp carries `count` (`UseCount`, written before `UseAt`; `Use.chain`, `stepAt` and
+  `started` take it). The art split the bottom two sticks like the top one (`Stick2Tip`,
+  `Stick3Tip`, kinking out about their outer sides) with `Crack2` and `Crack3` (`gs_crack`: a
+  bend, the snap, a shake) and a small light each that follows its own stick's glow. Every crack
+  now snaps (`GLOW_CRACK`, measured: its crack 0.13 s into the recording). **Fixed in passing:**
+  `FindUseView` gathered cue sounds from a press's `on` steps only; it takes `more`'s too.
+  `Finds/Order.luau` is hand-kept: a set that gains a motion needs its line there (findpose
+  spec), and `kitrows.spec`'s `CHANGED` lists a press changed on purpose. **Uploaded and
+  imported** (Edit; FBX 73530047626071, emissive 128490583062620); the owner saves the place.
+  **Seen in Play:** A1's table. Output: only the known lines. **Not done:** by ear and on a phone
+  (OWNER.md's lights test covers the look). **For V5c:** read the catalog's fairy lights line and
+  the Switch row in its "Every button" table first (`read` with `kind: "search"` on node
+  fe61d455-843c); the fairy lights' art is a coiled string with no motion to lay it out.
 
 - **Nov 17, V5d (the Old lamp holds a Mannequin; seen in Play; V5b next).** The lamp has no
   press (D-229), so it never carries `UseKey` or a stamp: a game row can now say `lit=True`
