@@ -183,6 +183,20 @@ nowhere else.
   5. Pick it up, face a wall from 3 studs away and press Push: it should stop at the wall, not go
      through. (The roll's sound cuts off as it slows; a fade is ROADMAP polish.)
   6. With two players: both should see the car roll the same way and stop in the same place.
+- [ ] **Try (F-G1e1, built Nov 17, D-267 and D-269; each squash measured in Studio Play, not
+  watched on a phone):** squeeze the squishies and the rubber duck.
+  1. In Studio, set Workspace's `DevFloorNumber` to 1 and press Play. In the command bar (Server),
+     run `workspace:SetAttribute("GiveFind", "MochiBun")`: the bun lands in your hand and a
+     **Squeeze** button shows.
+  2. Press Squeeze: the bun squashes flat in your hand with a soft puff and slowly puffs back up;
+     the button stays away until it has. Does the squash feel soft, and is it big enough to see
+     at phone size?
+  3. Do the same with "ButterStick" (a dent the size of a fingertip that slowly fills back in),
+     "JumboStrawberry" (its dent takes about ten seconds to rise), "StressBall" (it squashes and
+     its eyes bulge), "ToastSlice", "PaperSquishy", "Capybara", "GelBeadBall",
+     "GlitterGooBall", "GalaxyGooBall" and "RubberDuck" (a squeak that wakes a monster down the
+     hall). Each squashes about the middle of where your hand holds it.
+  4. With two players: one squeezes; the other should see it squash in their friend's hand.
 - [ ] **Try (F-G1b3b, built Nov 16, D-234; seen in Studio Play, not on a phone):** drop a lit
   lantern to stop the Mannequin.
   1. In Studio, set Workspace's `DevFloorNumber` to 1 and press Play. In the command bar (Server),

@@ -38,7 +38,8 @@ export type Key = { any } -- { number, number, string, string }; a tuple Luau ca
 -- A bone that bends its part in one place (a squishy's dent, F-05a): a Bone named Name inside the
 -- part's MeshPart (the mesh is skinned to it), At from the find's pivot as drawn. A track's
 -- `move` on it slides it Axis-ward by that many studs, carrying the mesh near it, and `turn`
--- tips it that many degrees about Hinge through At (Bone.Transform, docs/STUDIO.md "Bones").
+-- tips it that many degrees about Hinge through At (its CFrame moved from where it rests,
+-- docs/STUDIO.md "Bones").
 export type Bone = {
 	Name: string,
 	Part: string,

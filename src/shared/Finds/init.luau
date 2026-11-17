@@ -28,6 +28,7 @@ Finds.Names = { "Boombox", "Television", "Teddy", "Skates" } :: { Name }
 local DRAWN = "FindDrawn"
 local DRAWN_SIZE = "FindDrawnSize"
 local POSED = "FindPosed"
+local BONE_REST = "FindBoneRest" -- a bone's CFrame unbent, at the art's size (`bend`)
 Finds.PosedAttribute = POSED
 -- The smallest a part is drawn (a MeshPart can't be size 0): a part scaled to nothing is hidden.
 local TINY = 0.001
@@ -147,7 +148,11 @@ end
 
 -- Bends its parts where its bones say (a squishy's dent, F-05a): each bone's `move` slides it
 -- along its Axis, `scale` times as far, and its `turn` tips it about its Hinge, in its part's
--- frame as drawn (docs/STUDIO.md "Bones").
+-- frame as drawn (docs/STUDIO.md "Bones"). It moves the bone's CFrame from where it rests, never
+-- its Transform: a character's Animator puts every Bone.Transform in the character back each
+-- frame, so a dent written there never shows in a hand (F-G1e1b). The rest is recorded on the
+-- bone at the art's size the first time it's bent (a copy carries it, and a copy shown scaled
+-- scales it).
 local function bend(
 	find: Art.Find,
 	parts: { [string]: BasePart },
@@ -162,15 +167,29 @@ local function bend(
 		local part = parts[spec.Part]
 		local bone = if part then part:FindFirstChild(spec.Name, true) else nil
 		if part and bone and bone:IsA("Bone") then
+			local recorded = bone:GetAttribute(BONE_REST)
+			if typeof(recorded) ~= "CFrame" then
+				recorded = bone.CFrame.Rotation + bone.CFrame.Position / scale
+				bone:SetAttribute(BONE_REST, recorded)
+			end
+			local rest = (recorded :: CFrame).Rotation + (recorded :: CFrame).Position * scale
+			local parent = bone.Parent
+			local held = if parent and parent:IsA("Bone") then parent.WorldCFrame else part.CFrame
 			local v = values[spec.Name]
 			local slide = (if v then v.move else nil) or 0
-			local turned = part.CFrame:ToObjectSpace(bone.WorldCFrame).Rotation
+			local turned = part.CFrame:ToObjectSpace(held * rest).Rotation
 			local moved = CFrame.new(turned:VectorToObjectSpace(spec.Axis * (slide * scale)))
 			local hinge = spec.Hinge
 			local tip = (if v then v.turn else nil) or 0
-			bone.Transform = if hinge and tip ~= 0
-				then moved * CFrame.fromAxisAngle(turned:VectorToObjectSpace(hinge), math.rad(tip))
-				else moved
+			bone.CFrame = rest
+				* (
+					if hinge and tip ~= 0
+						then moved * CFrame.fromAxisAngle(
+							turned:VectorToObjectSpace(hinge),
+							math.rad(tip)
+						)
+						else moved
+				)
 		end
 	end
 end
@@ -228,20 +247,6 @@ function Finds.pose(model: Model, name: string, values: Pose.Values)
 	bend(find, parts, values, 1)
 end
 
--- Whether a root's values take it over the floor or lean it (the toy car's x, z, yaw, pitch, roll;
--- the tin bird's hop, y).
-local function travelling(v: { [string]: number }?): boolean
-	return v ~= nil
-		and (
-			(v.x or 0) ~= 0
-			or (v.y or 0) ~= 0
-			or (v.z or 0) ~= 0
-			or (v.yaw or 0) ~= 0
-			or (v.pitch or 0) ~= 0
-			or (v.roll or 0) ~= 0
-		)
-end
-
 -- Where a kit-built find's root stands for `values`, in the find's frame (its travel over the
 -- floor included), from where `model`'s root was drawn; nil before `pose` has stood it.
 function Finds.rootAt(model: Model, name: string, values: Pose.Values): CFrame?
@@ -262,8 +267,8 @@ end
 	is in the character's assembly, and setting a part's CFrame there would drag the player. Each
 	part's place in the find's frame comes from where it was drawn (`pose` recorded it) and the
 	kit's sums; each Motor6D then holds its part there from its Part0. The root stays where it
-	stands: a find whose root travels (the toy car rolling) keeps its shape round it, its wheels
-	turning, unless `from` is given. `from` is where the find's frame stood as its motion began,
+	stands, sized about its middle (a squishy squashing in your hand): a find whose root travels
+	(the toy car rolling) keeps its shape round it, its wheels turning, unless `from` is given. `from` is where the find's frame stood as its motion began,
 	for a find lying loose only: its root is moved along the travel from there, on this screen
 	alone (never in a hand: that would drag the player). `scale` is the copy's size against the
 	art (your view's copy is drawn at `Hands.Scale`); `lights` false leaves its lights off. Parts
@@ -284,30 +289,25 @@ function Finds.joints(
 	local moved = Pose.solve(find, values)
 	local parts: { [string]: BasePart } = {}
 	local places: { [BasePart]: CFrame } = {}
-	local travels = from ~= nil or travelling(values[find.Parts[1].Name])
 	for i, spec in find.Parts do
 		local part = model:FindFirstChild(spec.Name)
 		if part and part:IsA("BasePart") then
 			parts[spec.Name] = part
 			local drawn, drawnSize = part:GetAttribute(DRAWN), part:GetAttribute(DRAWN_SIZE)
 			local posed = part:GetAttribute(POSED)
-			if
-				i == 1
-				and travels
-				and typeof(drawn) == "CFrame"
-				and typeof(drawnSize) == "Vector3"
-			then
-				local at = placed(drawn, drawnSize, moved[spec.Name])
+			if typeof(drawn) == "CFrame" and typeof(drawnSize) == "Vector3" then
+				-- every part sized as the sums say, the root too (a squishy squashing in your
+				-- hand, F-G1e1b): the root's middle stays where the hand or the floor holds it,
+				-- and the rest are placed round the root's place, so the whole find squashes
+				-- about the root's middle
+				local at, size = placed(drawn, drawnSize, moved[spec.Name])
 				places[part] = at.Rotation + at.Position * scale
-				if from then
+				part.Size = size * scale
+				if i == 1 and from then
 					part.CFrame = from * places[part]
 				end
 			elseif i == 1 and typeof(posed) == "CFrame" then
 				places[part] = posed.Rotation + posed.Position * scale
-			elseif i > 1 and typeof(drawn) == "CFrame" and typeof(drawnSize) == "Vector3" then
-				local at, size = placed(drawn, drawnSize, moved[spec.Name])
-				places[part] = at.Rotation + at.Position * scale
-				part.Size = size * scale
 			end
 		end
 	end

@@ -124,9 +124,16 @@ verified: a doc page, Studio, or "untested".
   that turn, not only slide.
 - **A Bone is an Attachment** (`IsA("Attachment")` is true): code clearing a part's
   attachments deletes its bones too. `Kit.prepare` keeps them.
-- Not checked yet: a skinned MeshPart resized (a find shown scaled) keeps its bones where they
-  were, so the bend may land off; the game's `Finds.joints` scales a bone's slide but not its
-  place. Check it before a boned find is ever shown at another size.
+- **A character's Animator wipes `Bone.Transform`** (F-G1e1b, Nov 17, seen in Play): a find in a
+  hand is in the character, and every bone's Transform there reads back to nothing after the
+  animation step (set, then PreAnimation: kept; PreSimulation: gone). A bone's `CFrame` is kept
+  and bends the skinned mesh just as well (seen: the butter stick's dent showed), so `bend` sets
+  the CFrame from a recorded rest (`FindBoneRest`).
+- **`Model:ScaleTo` scales bones with their part** (F-G1e1b): your view's copy at 0.3 had every
+  bone at 0.3 of its place, and its dent measured the same as the held one's once divided by 0.3.
+- **A clone of a pressed find keeps playing**: it carries the find's tag, so FindUseView poses
+  it from the stamp. To freeze a find mid-press for a capture, remove the clone's tags
+  (`GetTags`, `RemoveTag`) before parenting it.
 
 - **An Open Cloud "Decal" upload answers with the Decal's ID, not the image's** (Edit): the glow
   mask came back as AssetTypeId 13. `InsertService:LoadAsset(decalId)` gives a Model holding a

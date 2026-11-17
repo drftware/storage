@@ -2667,7 +2667,8 @@ actions themselves and dealing the new finds on floors are later game tickets.
     the squishies (the dent filling back in, the beads, glitter and stars swirling, the
     capybara's sigh). Split by the third find run's audit (Nov 16, A1: `art/finds/WAVES.md`,
     "Every built find, in the game"), each seen in Studio Play before it's ticked:
-    - [ ] **F-G1e1 Squeeze (the run's V1).** The ten built squishies and the rubber duck: each
+    - [x] **F-G1e1 Squeeze (the run's V1).** (Nov 17, V1a and V1b; D-267, D-269) The ten built
+      squishies and the rubber duck: each
       squashes (its stretch or its bones) and squishes, squeaks or crinkles with a sound of its
       own. New piece, built once here: a loudness for each noisy find (how far monsters hear it,
       in place of the air horn's one reach) and a cap on lures at once and how often, for
@@ -2676,7 +2677,9 @@ actions themselves and dealing the new finds on floors are later game tickets.
       - [x] **F-G1e1a** (Nov 17, V1; D-267): the loudness (`heard`, `Use.loudness`) and the cap
         (`Use.Din`); all eleven presses as data with a sound each; seen in Play: each pressed,
         stamped and its sound playing, the duck's squeak waking a Mannequin 46 studs off.
-      - [ ] **F-G1e1b The squash in your hand.** Seen in Play: `Finds.joints` never sizes a
+      - [x] **F-G1e1b The squash in your hand.** (Nov 17, V1b; D-269: the root sized, bones bent
+        by their CFrame since a character's Animator resets Bone.Transform; all eleven measured
+        squashing in hand and in your view in Play.) Seen in Play before: `Finds.joints` never sizes a
         find's first part (its root, `i == 1`) and the strawberry's bones didn't move in hand,
         so the duck, mochi bun, paper squishy, toast, butter stick and strawberry don't squash at
         all, and the others' bodies stay still while their insides move. Size the root about its

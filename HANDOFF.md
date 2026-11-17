@@ -15,7 +15,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   Verified in Studio Play by flipping the attribute on the server: the rocker rocks, both lamps
   ease out over 0.2 s, the lamp goes plain; shut in, the fills drop to 0.2. NOT verified: a real
   press. E took the door's Lift (so it's T now); T from 3 studs did nothing either.
-- Find art (third find run): another session is working; `src/shared/Finds/init.luau` is theirs.
+- Find art (third find run): P1 and V1 done (D-265 to D-269): every kit find dealt from its
+  art spec; the squishies and duck squeeze, squash in your hand and sound, the duck luring.
+  Next: V2, wind and go (ROADMAP F-G1e2; `art/finds/WAVES.md`).
 
 ## Next task: S5-03a2b4 The switch's button shows and presses
 The moment: inside your home by the door you press Switch and the light answers at once.

@@ -6917,3 +6917,19 @@ by the door and the light eases off (Animal Crossing's house lights; a real room
   (S5-03a3 decides with the owner's D-263 pick, "only the owner").
 - **Not chosen:** the lamp on the door like a climb bulb (the home is a room you live in, not a
   fridge); a stutter (the climb's); hum (a home is quiet).
+
+## D-269 A squishy squashes in your hand: the root sized, bones bent by their CFrame (F-G1e1b, Nov 17, V1b)
+
+- **The root is sized too.** `Finds.joints` sizes every part as the kit's sums say, the root
+  included, and places the others round the root's place in the sums. The root itself never
+  moves (a hand's weld or a floor holds it), so a find squashes about the root's middle. Seen in
+  Play: the root stays put against the hand that holds it (0.0000 studs) through every squash.
+- **Bones bend through `Bone.CFrame`, never `Bone.Transform`.** A character's Animator puts
+  every `Bone.Transform` in the character back to nothing each frame, between PreAnimation and
+  PreSimulation (seen in Play), so a dent written there never showed in a hand. `bend` records
+  each bone's unbent CFrame at the art's size (attribute `FindBoneRest`, carried by copies) and
+  sets the CFrame from it, scaled for a copy drawn smaller (your view's, 0.3).
+- **On the floor:** a press needs the find in your hand (`Slots.used`), so a squishy can't be
+  squeezed lying down; one dropped mid-squash finishes it about its middle where it lies.
+- **Not chosen:** squashing about the grip (the ticket's call: about the middle); moving the
+  root (it would drag the player, `Finds.joints`); stopping the Animator (it runs your arms).
