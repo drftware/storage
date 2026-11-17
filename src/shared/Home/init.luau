@@ -58,7 +58,7 @@ local PLAIN: { [string]: boolean } = { Switch = true, SwitchToggle = true, Lamp 
 Home.FrontParts = { "Facade", "FacadeBack", "Casing", "Frame", "Switch", "SwitchToggle", "Lamp" }
 -- The M's parts a home has no use for (the home's own stand in for the first three; its owner's
 -- name hangs over it, D-266). The M's padlock stays on the latch, drawn only while the door is
--- padlocked: a spare home's, rented out (the home doc's idea 2, D-274); yours wears none.
+-- padlocked: a spare home's, rented out (the home doc's idea 2, D-275); yours wears none.
 Home.Replaced = { "Facade", "FacadeBack", "Frame", "NumberPlate" }
 -- The M's door rig, re-dressed in HomeDoor: the same meshes, the DoorKit's own UV layout.
 Home.DoorParts =

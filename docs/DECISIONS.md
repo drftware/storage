@@ -7051,7 +7051,7 @@ the air horn). Sounds measured in Studio: the kazoo's hum is Pro Sound Effects' 
 drum's bang a snare hit pitched up. The arrow, as built, stops on the cat, so V3b's spinner ships
 the meow; a server pick of the animal is ROADMAP polish.
 
-## D-274 · 2026-11-17 · Your home is handed to you as you join, and only you open its door (S5-03a3b)
+## D-275 · 2026-11-17 · Your home is handed to you as you join, and only you open its door (S5-03a3b)
 
 The home doc's ideas 1 to 3 and the owner's Nov 16 answers ("Doors start open. Pulled down, a door
 keeps everyone out, friends too."), on Brix's Plots (D-273).

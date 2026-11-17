@@ -206,7 +206,7 @@ for _, state in Door.States do
 	end
 end
 
--- --- a held door: a home's (D-274) ------------------------------------------------------------
+-- --- a held door: a home's (D-275) ------------------------------------------------------------
 
 local function held(state: Door.State, action: Door.Action, side: Door.Side, holder: boolean)
 	return Door.decideHeld(state, action, side, BOTH, holder)

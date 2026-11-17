@@ -206,7 +206,7 @@ function Doors.new(): Doors
 	-- can't be seen. Its number is painted on the door. Only Open and Lift carry it, the head of
 	-- each side, so it shows once.
 	local function nameOf(entry: Entry, action: Door.Action): string
-		-- a home's door (held, D-274) says nothing: its padlock and its holder's name are in sight
+		-- a home's door (held, D-275) says nothing: its padlock and its holder's name are in sight
 		local held = entry.unit:GetAttribute(Door.HolderAttribute) ~= nil
 		if entry.state == "Locked" and not held and (action == "Open" or action == "Lift") then
 			return "Padlocked"
@@ -301,7 +301,7 @@ function Doors.new(): Doors
 		return frame:PointToWorldSpace(Vector3.new(x, y, home.Z))
 	end
 
-	-- For a held door (a home's, D-274), whether `player` holds it; nil for the climb's doors.
+	-- For a held door (a home's, D-275), whether `player` holds it; nil for the climb's doors.
 	local function holds(entry: Entry, player: Player): boolean?
 		local holder = entry.unit:GetAttribute(Door.HolderAttribute)
 		if type(holder) ~= "number" then
@@ -617,7 +617,7 @@ function Doors.new(): Doors
 	local BURSTS: { [Door.State]: true } =
 		{ Closed = true, Peeking = true, Closing = true, Slamming = true }
 	local OPENS: { [Door.State]: true } = { Closed = true, Peeking = true }
-	-- the game pulling a door down (a home let go, D-274): any door that's up or going up
+	-- the game pulling a door down (a home let go, D-275): any door that's up or going up
 	local CLOSES: { [Door.State]: true } =
 		{ Peeking = true, Opening = true, Open = true, Lifting = true }
 	-- the tap's answer (S2-05a) lands only a door still easing down over its sleeper

@@ -2377,7 +2377,7 @@ Done when players watch the results to the end and change their perks between cl
         with `PlotPick.inOrder()` and `Roblox.PlayerPlots` (a plot claimed on join, let go on leave,
         a line when full, signals and a `Plot` attribute), its suite and specs green; the pin moved
         to `482368f`. Brix's `main` isn't pushed yet (OWNER.md).
-      - [x] **S5-03a3b The game's homes on it** (D-274; seen in Studio Play with one player, the
+      - [x] **S5-03a3b The game's homes on it** (D-275; seen in Studio Play with one player, the
         two-player door test waits on `OWNER.md`): FrontOffice adopts `PlayerPlots` for the twelve homes:
         your name over your door, doors up by default, a pulled-down door locked to all but its
         holder (the climb's locked rattle), unclaimed homes padlocked, the switch the holder's only

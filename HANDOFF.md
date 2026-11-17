@@ -7,8 +7,8 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 ## State
 - The home (D-259; the Claude Doc https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools
   only) is built a ROADMAP piece a session (S5-03). Ground floor, fronts, starter sets, switch
-  (D-268, D-271) and now a home each (D-274).
-- S5-03a3b (D-274): FrontOffice hands each joiner a home with Brix's `Plots`/`PlayerPlots`, nearest
+  (D-268, D-271) and now a home each (D-275).
+- S5-03a3b (D-275): FrontOffice hands each joiner a home with Brix's `Plots`/`PlayerPlots`, nearest
   the spawn first (`Home.Holding`). 1.5 s after you stand there your name sprays onto its card
   (HomeCards, with a hiss) and its padlock comes off as the door rolls up. A held door
   (`Door.decideHeld`, `Door.HolderAttribute` on the unit) opens from the hall only for its holder;
@@ -55,7 +55,7 @@ the beam follows the look; on the ground floor it doesn't run down; two-client v
    Play logs assets 92259888500166 and 203785492. The front office's counter and shelves are
    still the climb's steel. The lobby's cart seats (`Cart1.RideSeat`) didn't seat a server
    `Seat:Sit` in a quick try (S5-03a2b4); look before blaming them. A spare home lifted from
-   inside stays unpadlocked until someone holds it and leaves (D-274); fine for now.
+   inside stays unpadlocked until someone holds it and leaves (D-275); fine for now.
 
 ## Kickoff for the next agent
 ```text

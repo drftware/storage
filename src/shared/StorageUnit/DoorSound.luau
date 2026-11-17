@@ -320,7 +320,7 @@ end
 -- padlock coming off, which only bolt cutters do: the jaw's snap, the padlock hitting the floor
 -- a moment later, then the bolt slid back. A jolt for whoever's right at the door. A held door's
 -- padlock (a spare home's, `keyed`) comes off with its key: the shackle clicks open, the bolt
--- slides back, nothing snaps or falls (D-274).
+-- slides back, nothing snaps or falls (D-275).
 DoorSound.CutShake = 0.18
 function DoorSound.lockCues(locked: boolean, keyed: boolean?): { Cue }
 	if not locked and keyed then

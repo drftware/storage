@@ -1,6 +1,6 @@
 --!strict
 --[[
-	Holding: a home each, handed out as players join (S5-03a3b, D-259, D-273, D-274). Brix's Plots
+	Holding: a home each, handed out as players join (S5-03a3b, D-259, D-273, D-275). Brix's Plots
 	keeps who holds which; this is the game's side of it, pure so the Lune tests cover it.
 
 	The moment: you load in and one of the twelve homes is yours. A beat after you're standing

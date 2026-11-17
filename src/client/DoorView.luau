@@ -114,7 +114,7 @@ function DoorView.new(): Brix.System
 			conn = unit:GetAttributeChangedSignal(ATTR_LOCKED):Connect(function()
 				local entry = watched[unit]
 				local locked = unit:GetAttribute(ATTR_LOCKED) == true
-				-- a home's padlock comes off with its key, so it stays out of the hall (D-274)
+				-- a home's padlock comes off with its key, so it stays out of the hall (D-275)
 				local keyed = unit:GetAttribute(StorageUnit.Door.HolderAttribute) ~= nil
 				if entry and entry.locked and not locked and not keyed then
 					throw(unit)

@@ -502,7 +502,7 @@ function RollUpDoor.spec(unit: Model): Spec
 end
 
 -- A room's own size, where it isn't its door's unit's (a home's: the climb's M door in a room 20
--- wide and 30 deep, D-274), as the unit's attributes: wall to wall and facade face to back wall.
+-- wide and 30 deep, D-275), as the unit's attributes: wall to wall and facade face to back wall.
 RollUpDoor.RoomWidth = "RoomWidth"
 RollUpDoor.RoomDepth = "RoomDepth"
 
@@ -565,7 +565,7 @@ function RollUpDoor.play(unit: Model, kind: Motion.Kind): number
 	local t = now()
 	local from = RollUpDoor.rise(unit, t)
 	-- a keeper's bang jolts the door where it is, peeked or shut; a rattle too (a home's door
-	-- tried by someone not its holder may be peeked: it jerks there and stays, D-274)
+	-- tried by someone not its holder may be peeked: it jerks there and stays, D-275)
 	local to = if kind == "Bang" or kind == "Rattle" then from else Motion.target(kind, spec.Rise)
 	if unit:GetAttribute(ATTR_LOCKED) == true and to > from then
 		return 0

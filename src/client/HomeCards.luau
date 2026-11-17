@@ -1,6 +1,6 @@
 --!strict
 --[[
-	HomeCards: the names over the homes' doors on this player's screen (S5-03a3b, D-274). The server
+	HomeCards: the names over the homes' doors on this player's screen (S5-03a3b, D-275). The server
 	letters a holder's name on their home's card (FrontOffice); this plays its arrival, the
 	moment you're handed your home:
 

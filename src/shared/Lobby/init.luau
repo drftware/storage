@@ -346,7 +346,7 @@ function Lobby.front(template: Model, home: Model?, pivot: CFrame, slot: Specs.S
 	StorageUnit.RollUpDoor.fitCollider(unit)
 	unit:SetAttribute("LobbySlot", slot.Number)
 	if home then
-		-- a spare home until FrontOffice hands it out: held by nobody, shut and padlocked (D-274)
+		-- a spare home until FrontOffice hands it out: held by nobody, shut and padlocked (D-275)
 		unit:SetAttribute(StorageUnit.Door.HolderAttribute, 0)
 		StorageUnit.RollUpDoor.setLocked(unit, true)
 		-- its room is the slot's (Inside), not the M's 12 by 12: ShutIn counts you in to the back

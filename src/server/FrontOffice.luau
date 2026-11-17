@@ -10,7 +10,7 @@
 	flips the unit's light (Home.LightAttribute), which every screen draws (HomeLights). Only the
 	home's holder flips it (D-263); a spare home's switch answers nobody.
 
-	A home each (S5-03a3b, D-274): Brix's Plots and PlayerPlots hand each player one of the twelve
+	A home each (S5-03a3b, D-275): Brix's Plots and PlayerPlots hand each player one of the twelve
 	homes as they join, nearest the spawn first (Home.Holding.order). A beat after they first stand
 	in the lobby their name goes on the home's card (HomeCards sprays it on) and its padlock comes
 	off as the door rolls up; it's theirs (Door.HolderAttribute) until they leave, when the card

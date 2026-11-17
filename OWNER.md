@@ -9,7 +9,7 @@ nowhere else.
   `482368f` (the plots each player's home comes from), which is only on this Mac. In `../engine`,
   `git push origin main`, then this repository. Pushed the other way round, a fresh clone can't find
   the pinned commit.
-- [ ] **Your home, with a friend** (S5-03a3b, D-274; seen with one player only). Studio's Test
+- [ ] **Your home, with a friend** (S5-03a3b, D-275; seen with one player only). Studio's Test
   tab, Clients and Servers, 2 players. Look for: each player gets a home by the front door (1 then
   7), their name sprays onto its card with a soft hiss and the door rolls up. Player 1 pulls their
   door down; player 2 presses Open and Peek on it: it rattles and stays shut, no words. Player 1
