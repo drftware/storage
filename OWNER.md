@@ -74,8 +74,9 @@ nowhere else.
   squeal for a calm home? My defaults, say which to change: each press tries the next colour
   (no choosing at home; the counter's mirror will try the card's colour); anyone at any mirror
   may try one, a visiting friend too; you're held still the whole 5.6 s; the button is on R.
-- [ ] **Try a colour on from the counter's shop** (S5-03f4b, D-319, D-320; I saw it in Studio
-  Play, but not the last fix, which keeps you in the middle of the glass: connect Rojo first). From the spawn walk left to the counter. Look for: the framed
+- [ ] **Try a colour on from the counter's shop** (S5-03f4b, D-319, D-320; I saw all of it in
+  Studio Play on the A16, pictures in `docs/art/S5-03f4b3-*.jpg`; judge the feel on a real phone,
+  Rojo connected). From the spawn walk left to the counter. Look for: the framed
   mirror leaning on the front wall just past the counter, you in it as you come up; the Shop
   button now at the counter (it used to stand by a home's door). Press Shop: each colour's
   figure has a "Try on" pill. Tap a figure (say Pink): the card pops, the shop slides away, your

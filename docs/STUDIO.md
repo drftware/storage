@@ -3074,3 +3074,9 @@ verified: a doc page, Studio, or "untested".
   cards' figures the same way. `screen_capture` timed out all session with Studio drawing at 60
   frames a second; the macOS window capture (above) and a background loop of `screencapture`
   every 0.25 s, tiled with ffmpeg, caught the try-on's moments.
+- **On the A16 simulator a tap lands 47 points left of where `user_mouse_input` aims it**
+  (S5-03f4b3): aiming at the Shop button's middle (or giving its `instance_path`) touched its
+  left edge and missed. Aim at its middle's X + 47 in AbsolutePosition terms (the Shop button:
+  x 310, y -29; Y needs no change); hook `UserInputService.TouchStarted` once to read where a tap
+  really landed. Back-to-back `screencapture` with no sleep takes about 0.1 s a frame; crop the
+  phone at 660x310 from (360, 362) of Studio's 1386x972 window.

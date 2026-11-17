@@ -2569,7 +2569,7 @@ Done when players watch the results to the end and change their perks between cl
       on; you turn once round as the film winds up you in the next colour on the shelf, stand
       wrapped three seconds, then it loosens with a crinkle and slumps to a heap. Free, nothing
       saved. Seen in Play on the A16 (`docs/art/S5-03f4a-*.jpg`).
-    - [ ] **S5-03f4b The counter's mirror** (idea 24, D-319), in two:
+    - [x] **S5-03f4b The counter's mirror** (idea 24, D-319), in three:
       - [x] **S5-03f4b1 Built**: the home's framed mirror leaning on the front wall past the
         counter's door end (`Shop.Mirror`, `Home.mirrorAt`), its picture standing the front
         office's walls (`Lobby.MirrorRoom`); each colour card's figure a Try on near a mirror
@@ -2580,10 +2580,11 @@ Done when players watch the results to the end and change their perks between cl
         Fixed what the eye found: a flash in the glass at each try-on sound (MirrorView copied your
         body again for every sound), and you off the glass's edge from the counter (the mirror
         moved in line with the counter's button; the cards' Try on only when you'd see yourself).
-      - [ ] **S5-03f4b3 In line, seen**: the two fixes patched into Studio and watched in Play:
-        from the counter facing it, a card's Try on turns you to yourself centred in the glass,
-        and no flash through the peel. Also look at a dark glass for a moment as a mirror comes on
-        screen (seen once as the view swung to it).
+      - [x] **S5-03f4b3 In line, seen** (D-320): from the counter facing it, Pink's Try on turns
+        you to yourself centred in the glass, wound in pink, with no slab through the peel; three
+        studs to one side the cards carry no Try on. Seen in Play on the A16
+        (`docs/art/S5-03f4b3-*`). The dark glass came once, on the session's first look; the
+        polish section has it.
   - [ ] **S5-03g Walls, floor, door, name cards and furniture** (ideas 18 to 20), art first:
     - [ ] **S5-03g1 The art**: the paints and floors, door colours, name card styles and the
       counter's furniture as Blender scripts the unit's way (`art/home/`), calm and warm (D-263).
@@ -3098,6 +3099,12 @@ actions themselves and dealing the new finds on floors are later game tickets.
 
 ## Polish waiting for a slot
 
+- **A mirror's first look in a session** (S5-03f4b3, D-320): the first time a mirror's picture
+  goes live in a play session, its room can show dark behind you for a beat (about a quarter
+  second) while you show lit; every later look, and a mirror rebuilt later, came in whole. Most
+  likely the room's textures loading into the picture on first draw: try
+  `ContentProvider:PreloadAsync` on the picture as MirrorView builds it, and judge in a fresh
+  Play.
 - **The rail's motion** (S5-03f2b, D-316): the hat lifting off the rail toward your head as you
   wear it (now it's gone from the rail as it lands on you, with its knock and click), and
   settling onto the shelf with a small drop as you hang it up (now a glint at your head and its

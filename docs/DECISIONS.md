@@ -8161,4 +8161,11 @@ the peel and the heap (`docs/art/S5-03f4b-*.jpg`). The eye found two faults, bot
   button's x (`Shop.Mirror`, 49.6; the counter ends 4.8 studs short of it), and the cards' Try on
   shows only while you're in line with a glass (`TryOn.inLine`, half its width; the server
   forgives `TryOn.SideSlack` more), never as a refusal. The mirror's own button is unchanged.
-  Passes checks, untested in Studio: S5-03f4b3 sees it.
+
+**Seen in Play (S5-03f4b3, the A16):** from the counter facing it, Pink's Try on swings your
+view to the mirror with you in the middle of the glass, wound in pink; the peel and the slump go
+by with no slab in the glass; three studs to one side the cards show no Try on, and the shop
+still opens (`docs/art/S5-03f4b3-*.jpg`). The dark glass came back once, on the session's very
+first look at the counter's mirror (you lit, the room behind you dark, for about a quarter
+second); three later swings, one with a freshly rebuilt picture, came in whole. Left as polish
+(ROADMAP), since it's once a session and brief.
