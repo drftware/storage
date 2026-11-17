@@ -2,43 +2,46 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-17, session 226 (the home look in the game) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `c9f6667`.
+**Updated:** 2026-11-17, session 227 (the home switch seen to press) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `c9f6667`.
 
 ## State
 - The home (D-259; the Claude Doc https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools
-  only) is built a ROADMAP piece a session (S5-03). S5-03a2b3 (D-268) put the calm ground floor
-  and the home fronts in the game: `Props.Lobby` (re-uploaded) and the new `Props.Home` are in
-  the open Studio place (NOT saved by me), each unit's gap a home front on the M's door rig
-  (`Home.dress`), its starter set inside, 24 plants, 10 benches, 2 planters, hall lights only
-  over the cars, warm fills tagged so a shut unit goes dark.
-- The switch: server state `Home.LightAttribute`, drawn by `src/client/HomeLights.luau`.
-  Verified in Studio Play by flipping the attribute on the server: the rocker rocks, both lamps
-  ease out over 0.2 s, the lamp goes plain; shut in, the fills drop to 0.2. NOT verified: a real
-  press. E took the door's Lift (so it's T now); T from 3 studs did nothing either.
-- Find art (third find run): P1 and V1 done (D-265 to D-269): every kit find dealt from its
-  art spec; the squishies and duck squeeze, squash in your hand and sound, the duck luring.
-  Next: V2, wind and go (ROADMAP F-G1e2; `art/finds/WAVES.md`).
+  only) is built a ROADMAP piece a session (S5-03). The calm ground floor, the home fronts,
+  their starter sets and the light switch are in the game (D-268). `Props.Lobby` and
+  `Props.Home` are in the open Studio place (not saved by me).
+- S5-03a2b4: the switch was never broken. A button shows only while it's on screen, and the
+  last test's first-person view faced away from it. Verified in Studio Play: T flipped the
+  light with the door down and up (the click played, both lamps went out), and on the Galaxy
+  A16 simulator a tap on the drawn button flipped it. Every seat (beanbag, bench, planter)
+  sits you facing out. Only the FrontOffice comment changed in code.
+- Not seen: any picture. `screen_capture` timed out all session (Studio drew at 15 fps, likely
+  hidden behind other windows), so the look at phone size is the owner's (OWNER.md "Walk into
+  your home").
+- Find art (third find run): another session is working; its uncommitted files (Finds,
+  FindUses, FindUseView, art/finds, CODEMAP, one OWNER.md and one DECISIONS hunk) are theirs.
 
-## Next task: S5-03a2b4 The switch's button shows and presses
-The moment: inside your home by the door you press Switch and the light answers at once.
-1. In Studio Play, stand in Unit 1 by its switch (FrontOffice's `wireSwitch` hangs the button on
-   `SwitchSpot`, 0.6 off the plate) and find out whether the button shows at all: hook
-   `ProximityPromptService.PromptShown` on the client, or turn `RequiresLineOfSight` off to test.
-2. Fix the cause (line of sight through the front's colliders, `Exclusivity`, ButtonView, or the
-   MCP's simulated key not reaching prompts: try a click on the drawn button too).
-3. See a real press flip it with the door up and with it down; the click heard; Output clean.
-4. Look at a home at phone size (Galaxy A16) in Play: the front, the lamp lit and off, the
-   seats (sit on each); fix what reads wrong. Then S5-03a2c.
-**Acceptance:** check green; a real press in Studio Play flips the light (seen in Output or the
-attribute); OWNER.md's "Walk into your home" step 3 made true.
-**Read first:** D-268 (grep "^## D-268" docs/DECISIONS.md); `src/server/FrontOffice.luau`
-(`wireSwitch`); `src/server/Prompts.luau` (`make`); `src/client/ButtonView.luau` (grep
-`PromptShown`); `src/client/HomeLights.luau`; `docs/STUDIO.md` (tail).
+## Next task: S5-03a2c The ground floor weighed for a phone
+The moment: on a cheap phone the calm ground floor runs smooth from the spawn to your home and
+on to a car, with every home lit.
+1. Read the GDD tech plan's caps (real lights, awake keepers, triangles): docs tools, search the
+   heading, don't pull the whole doc.
+2. In Studio Play on the Galaxy A16 simulator (STUDIO.md "The Device Simulator's calls"), count
+   the ground floor's enabled real lights (now 6 fills, 12 ceiling lamps, 12 floor lamps, 6
+   car lamps, the porch) and its triangles, with every home lit, and frames a second over 5 s
+   at the spawn, inside a home and at the cars.
+3. Trim what's over the caps: the floor lamps' real light only near you (UnitLight's near-bulb
+   budget is the pattern), fewer fills, a front's hidden parts. Each light that goes keeps its
+   glow (the shade or glass colour) so nothing reads dark.
+4. Time the run from the spawn to a car (under 15 s); carts, cars and trips unchanged.
+**Acceptance:** check green; the counts and frame rates, before and after, in STUDIO.md; within
+the caps, or the gap in OWNER.md with a default chosen.
+**Read first:** the GDD tech plan section; `src/shared/Lobby/init.luau` (grep `Fill`);
+`src/shared/UnitLight.luau` (the near-bulb budget); `src/client/HomeLights.luau`; D-268 (grep
+"^## D-268" docs/DECISIONS.md); `docs/STUDIO.md` (grep "A button off screen").
 
 ## Queue (next sessions, the owner's ticket order)
-1. S5-03a2c the ground floor weighed for a phone (now 6 fills, 12 ceiling lamps, 12 floor
-   lamps, 6 car lamps, the porch), then S5-03a3 a unit each (a Brix plots system first, D-252;
-   the switch then the owner's only, D-263), F-G1b4a the hard hat, S5-03b the mirror, S5-03c-h.
+1. S5-03a3 a unit each (a Brix plots system first, D-252; the switch then the owner's only,
+   D-263), F-G1b4a the hard hat, S5-03b the mirror, S5-03c-h.
 2. ShutIn's "inside" uses the M's 12-stud depth, so deep in a home (30 deep) BehindDoors
    doesn't count you shut in: the fills light the back of a shut home. Fix with a3.
 3. F-G1b4b the hard hat spent and broken; F-G1b5 waits for its art.
@@ -49,7 +52,8 @@ attribute); OWNER.md's "Walk into your home" step 3 made true.
 7. Once the owner's real purchase passes: mark Brix's ENG-23e done in `../engine`'s HANDOFF.
 8. Spread late arrivals off `ClimbEnd.spot`; the driving torch's rules vs what's seen (D-257);
    Play logs assets 92259888500166 and 203785492. The front office's counter and shelves are
-   still the climb's steel.
+   still the climb's steel. The lobby's cart seats (`Cart1.RideSeat`) didn't seat a server
+   `Seat:Sit` in a quick try (S5-03a2b4); look before blaming them.
 
 ## Kickoff for the next agent
 ```text

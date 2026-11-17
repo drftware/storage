@@ -40,14 +40,16 @@ nowhere else.
      white ceiling on wood beams, oak plank floors, a deep red runner down the middle to the
      cars. Look at `art/sheets/lobby-spawn.png`, `lobby-unit.png` and `lobby-inside.png`.
   10. A home's light starts on, and anyone may flip its switch until homes have owners (D-268).
-- [ ] **Walk into your home** (S5-03a2b3, D-268; seen in Studio Play by me, the switch's own
-  press not yet working, S5-03a2b4). Press Play, or publish and play on a phone (Galaxy A16):
+- [ ] **Walk into your home** (S5-03a2b3 and b4, D-268; seen in Studio Play by me, the switch
+  pressed with T and with a tap on the A16 simulator, but I couldn't take a single picture, so
+  how it looks is yours). Press Play, or publish and play on a phone (Galaxy A16):
   1. From the spawn: does the floor read calm and warm, a plant by every door, benches between,
      two planters in the middle, the cars' steel only at the far end?
   2. Open a unit: is the round lamp on over a rug, a beanbag and a floor lamp? Sit on a bench,
      a planter's rim and the beanbag: do you sit facing the right way?
-  3. Once S5-03a2b4 lands: inside by the door press Switch: a click, the rocker rocks, the
-     light eases off. Pull the door down with it off: is it dark?
+  3. Inside by the door, look at the switch (its button shows only while it's on screen) and
+     press Switch (T, or tap): a click, the rocker rocks, the light eases off. Pull the door
+     down with it off: is it dark? Is the switch easy to find when you turn round to leave?
 - [ ] **Walk the new ground floor** (S5-03a2a, D-262; seen in Studio Play by me, not on a
   phone). Press Play in Studio (or publish and play on your phone, Galaxy A16 or similar):
   1. You load in just inside the glass door, facing the six cars 150 studs away, twelve roll-up

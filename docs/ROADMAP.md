@@ -2353,11 +2353,12 @@ Done when players watch the results to the end and change their perks between cl
           starter set (`Home.Specs.Starter`) and the floor's furnishings
           (`Lobby.Specs.Dressing`: 24 plants, 10 benches, 2 planters) placed, with colliders
           and Seats on the benches and planters; the floor lamp's PointLight.
-        - [ ] **S5-03a2b4 The switch's button shows and presses** (D-268): in Studio Play, standing
-          in Unit 1 by the switch with the door shut, neither E (the door's Lift took it) nor T
-          (its key now) flipped the light, so the button likely never showed. Find why (the
-          line-of-sight check, `Exclusivity`, ButtonView, or the simulated key), fix it, and see
-          a real press flip it with the door up and down; then judge the home at phone size.
+        - [x] **S5-03a2b4 The switch's button shows and presses** (D-268): the switch was never
+          broken. The test's first-person view faced away from it, and a button off screen never
+          shows. Facing it in Studio Play, T flipped the light with the door down and up (the
+          click played, both lamps went out), and on the Galaxy A16 simulator a tap on the drawn
+          button flipped it. Every seat sits you facing out. The look at phone size waits on the
+          owner (captures timed out all session).
       - [ ] **S5-03a2c The ground floor weighed for a phone** (after the new look): up to 25 real lights (6 fills,
         12 home bulbs, 6 car lamps, the porch) and the room's 87,446 triangles plus twelve M
         fronts and six cars, weighed at Galaxy A16 size against the GDD tech plan's caps;

@@ -34,8 +34,8 @@ local function wireSwitch(unit: Model): RBXScriptConnection?
 		return nil
 	end
 	-- the button hangs on a spot of its own just off the plate, into the room (the plate's frame is
-	-- the unit's: +Z is in): the plate sits inside the front's wall collider, and the line-of-sight
-	-- check aims at the button's part, so on the plate it never showed (Studio, S5-03a2b3)
+	-- the unit's: +Z is in): the plate sits inside the front's wall collider, which would stand in
+	-- the way of the line-of-sight check. Seen to show and press from here (Studio, S5-03a2b4)
 	local spot = Instance.new("Part")
 	spot.Name = "SwitchSpot"
 	spot.Anchored = true

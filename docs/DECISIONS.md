@@ -6912,7 +6912,8 @@ by the door and the light eases off (Animal Crossing's house lights; a real room
   boxes; Seats: two on a bench, one each side of a planter, one in the beanbag.
 - **The switch's key is T** (pad d-pad up): inside a shut home the door's Lift has E and took the
   press. Its button hangs on a spot of its own just off the plate (the plate sits inside the
-  front's wall collider). **Not yet seen to press** in Studio (S5-03a2b4).
+  front's wall collider). Seen to press in Studio Play (S5-03a2b4): T with the door up and
+  down, and a tap on the A16 simulator; its button shows only while it is on screen.
 - **Defaults** (`OWNER.md`): the light starts on; anyone may flip it until homes have owners
   (S5-03a3 decides with the owner's D-263 pick, "only the owner").
 - **Not chosen:** the lamp on the door like a climb bulb (the home is a room you live in, not a

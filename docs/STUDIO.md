@@ -2719,7 +2719,18 @@ verified: a doc page, Studio, or "untested".
   run. Read the state before running it again.
 - **Two buttons on one key: the nearer wins** (S5-03a2b3): inside a shut home, the switch on E
   and the door's Lift on E; pressing E lifted the door. Give a button inside a unit its own key.
-- **The switch's button didn't show** (S5-03a2b3, unresolved): on the plate (inside the front's
-  wall collider) and then on a spot 0.6 off it, with line of sight on, a simulated T press from
-  3 studs away did nothing. S5-03a2b4 finds why.
+- **A button off screen never shows** (S5-03a2b4): `PromptShown` fires only while the prompt's
+  point is in the camera's view, line of sight on or off. A Client `PivotTo` in first person
+  turns the body, not the camera (the body turns back to the camera), so a prompt beside you
+  stays hidden and a simulated key does nothing. Aim the view with a Client
+  `BindToRenderStep` at `RenderPriority.Last + 50` setting `CFrame.lookAt` to the prompt's
+  point, then press. Unbind it after. That was the home switch's whole "bug" (S5-03a2b3).
+- **The MCP's mouse doesn't reach a world button's chip on a computer** (S5-03a2b4): a click at
+  the chip's viewport point, or by `instance_path` to ButtonView's `Tap`, didn't press it in
+  first person (a BillboardGui; ScreenGui buttons do click). On the Galaxy A16 simulator the
+  click arrives as a Touch and the tap did press it (at (X + 47, Y - 58), as below).
+- **`screen_capture` timed out for a whole session** (S5-03a2b4) with the display awake
+  (`caffeinate -d -u`) and Studio drawing 15 frames a second: Studio was likely hidden behind
+  other windows. Judge by state (`PromptShown`, attributes, `Sound.Played`) and leave the look
+  to the owner.
 
