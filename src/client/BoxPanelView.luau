@@ -23,6 +23,13 @@
 	find back (InFlight). Shelf: it flies up toward the cubby and lands with the shelf's tink. The
 	card counts one fewer, and goes at none. With your hands full, Take shakes the three hands; a
 	take the server refuses settles the picture back onto its card. Never a word.
+
+	Selling one (S5-03c3a): over the panel's other top corner sits your cash, sent as the box
+	opened. The picked card's Sell (its price on it) lifts its picture off the card, and when the
+	server answers with your new cash it flies into your cash, which rings (the coins' chink) and
+	counts up to the new total the way the results board does (Cash: fast, then slowing, a tick
+	for each step, rising, landing with a swell and a jingle). The count ticks down; the last
+	one's card shrinks away. A refused sale settles back onto its card.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -30,6 +37,8 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Cash = require(ReplicatedStorage.Shared.Cash)
+local Coins = require(ReplicatedStorage.Shared.Coins)
 local FreeCursor = require(script.Parent.FreeCursor)
 local Grades = require(ReplicatedStorage.Shared.Grades)
 local Home = require(ReplicatedStorage.Shared.Home)
@@ -51,6 +60,7 @@ local WELL = Color3.fromRGB(19, 27, 31)
 local RIM = Color3.fromRGB(106, 138, 147)
 local INK = Lobby.Ink
 local DARK = Color3.fromRGB(24, 22, 20)
+local GOLD = Color3.fromRGB(240, 196, 92) -- money: the Sell button's fill and your cash's figure
 
 local RISE = TweenInfo.new(JobBox.Lid.Open, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
 local POP = TweenInfo.new(0.26, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
@@ -62,6 +72,7 @@ local FLY = TweenInfo.new(BoxPanel.Fly, Enum.EasingStyle.Quad, Enum.EasingDirect
 local BACK = TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local LAND = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local GONE = TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+local SWELL = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 
 -- A card on the panel: what it shows and its parts.
 type Shown = {
@@ -92,6 +103,18 @@ local function colourOf(grade: Grades.Grade): Color3
 	return Color3.fromRGB(c[1], c[2], c[3])
 end
 
+-- One of the coins' recordings (Coins' sounds) played on your screen: a cut of a longer file.
+local function coinSound(spec: Coins.Sound, parent: Instance): Sound
+	local s = Instance.new("Sound")
+	s.SoundId = spec.id
+	s.Volume = spec.volume
+	s.PlaybackSpeed = spec.pitch or 1
+	s.PlaybackRegionsEnabled = true
+	s.PlaybackRegion = NumberRange.new(spec.from, spec.from + spec.length)
+	s.Parent = parent
+	return s
+end
+
 local function corner(parent: Instance, radius: UDim)
 	local c = Instance.new("UICorner")
 	c.CornerRadius = radius
@@ -116,6 +139,10 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 	local asks: { Ask } = {} -- takes asked and not yet answered, oldest first
 	local landing: { [number]: boolean } = {} -- a hand a find is flying into: drawn as it lands
 	local wells: { Well } = {}
+	local counting: Tween? = nil -- your cash counting up to a sale's new total
+	local countFrom, countTotal = 0, 0 -- where that count started, and where it lands
+	local countTurn, countLast = 0, -math.huge -- the tick sounds taking turns, and when one last played
+	local guard = -math.huge -- until then taps on cards wait: one just left (BoxPanel.Guard)
 
 	-- built in start
 	local backdrop: TextButton
@@ -136,6 +163,15 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 	local takePop: UIScale
 	local shelfButton: TextButton
 	local shelfPop: UIScale
+	local sellButton: TextButton
+	local sellPop: UIScale
+	local purse: Frame -- your cash, over the panel's top right corner
+	local purseText: TextLabel
+	local pursePop: UIScale
+	local purseValue: NumberValue
+	local ticks: { Sound } = {}
+	local chink: Sound
+	local jingle: Sound
 	local layer: Frame
 
 	local function play(pitch: number)
@@ -205,6 +241,9 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 			w.frame.Size = UDim2.fromOffset(well, well)
 			w.frame.Position = UDim2.fromOffset((i - 1) * (well + wellGap), 0)
 		end
+		local tall = math.floor(well * 0.72)
+		purse.Size = UDim2.fromOffset(math.floor(tall * 3.2), tall)
+		purse.Position = UDim2.new(1, -pad, 0, -wellGap)
 	end
 
 	-- Takes asked and not yet answered, of find `key` (nil: any) going `way` (nil: either).
@@ -285,7 +324,45 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 	local function paintVerbs()
 		local both = free - pending(nil, BoxPanel.Ways.Shelf) > 0
 		shelfButton.Visible = both
-		takeButton.Size = if both then UDim2.new(0.5, -2, 1, 0) else UDim2.fromScale(1, 1)
+		takeButton.Size = if both then UDim2.new(0.5, -2, 0.47, 0) else UDim2.fromScale(1, 0.47)
+	end
+
+	-- Your cash counts up from what it shows to `total`, as the results board's does: fast, then
+	-- slowing, a tick each step rising as it goes, landing with a swell and a jingle.
+	local function countTo(total: number)
+		local run = counting
+		if run then
+			run:Cancel()
+		end
+		local from = purseValue.Value
+		if total <= from then
+			counting = nil
+			purseValue.Value = total
+			purseText.Text = Cash.text(total)
+			return
+		end
+		countFrom, countTotal = from, total
+		local tween = TweenService:Create(
+			purseValue,
+			TweenInfo.new(
+				Cash.countFor(total - from),
+				Enum.EasingStyle.Cubic,
+				Enum.EasingDirection.Out
+			),
+			{ Value = total }
+		)
+		counting = tween
+		tween.Completed:Connect(function(state: Enum.PlaybackState)
+			if state ~= Enum.PlaybackState.Completed or counting ~= tween then
+				return
+			end
+			counting = nil
+			purseText.Text = Cash.text(total)
+			pursePop.Scale = Cash.Pop
+			TweenService:Create(pursePop, SWELL, { Scale = 1 }):Play()
+			jingle:Play()
+		end)
+		tween:Play()
 	end
 
 	-- The picked card set down again, its verbs gone.
@@ -302,6 +379,11 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 
 	-- A card tapped: it lifts and glows, its verbs over its name. Tapped again, it settles.
 	local function pick(s: Shown)
+		local now = os.clock()
+		if now < guard then
+			guard = now + BoxPanel.Guard -- still mashing: wait until the thumb rests
+			return -- a card just left: this one slid under a thumb still tapping
+		end
 		if picked == s then
 			unpick()
 			play(0.9)
@@ -312,6 +394,8 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		TweenService:Create(s.pop, LIFT, { Scale = BoxPanel.Lift }):Play()
 		TweenService:Create(s.rim, GLOW, { Thickness = BoxPanel.Glow, Transparency = 0 }):Play()
 		paintVerbs()
+		local row = (Tools.Catalog :: any)[s.card.key] -- any: the catalog is keyed by text
+		sellButton.Text = `{BoxPanel.Words.sell} {Cash.text(BoxPanel.price(row or {}))}`
 		verbs.Parent = s.frame
 		verbs.Visible = true
 		verbsPop.Scale = 0.6
@@ -527,13 +611,21 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 
 	-- The server opened `model` for us with `finds` in it and `spots` free on the shelf: rise with
 	-- its lid.
-	local function openFor(model: Model, finds: { [string]: number }, spots: number)
+	local function openFor(model: Model, finds: { [string]: number }, spots: number, cash: number)
 		if box then
 			close()
 		end
 		clear()
 		box = model
 		free = spots
+		local run = counting
+		counting = nil
+		if run then
+			run:Cancel()
+		end
+		purseValue.Value = cash
+		purseText.Text = Cash.text(cash)
+		pursePop.Scale = 1
 		for i = 1, Carry.Slots do
 			drawWell(i)
 		end
@@ -606,6 +698,7 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 				break
 			end
 			table.remove(shown, i)
+			guard = os.clock() + BoxPanel.Guard
 			if picked == s then
 				unpick()
 			end
@@ -711,10 +804,18 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 			free = math.max(free - 1, 0)
 		end
 		tick(key)
+		local total = if way == BoxPanel.Ways.Sell
+				and type(at) == "number"
+				and at == at
+			then math.max(math.floor(at), 0)
+			else nil
 		if not a then
 			if box then
 				paintVerbs()
 				drawWells()
+				if total then
+					countTo(total)
+				end
 			end
 			return -- answered after the screen gave up on it: counted, nothing left to fly
 		end
@@ -733,6 +834,26 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 				pic.Visible = true
 			end
 		end)
+		if way == BoxPanel.Ways.Sell then
+			-- into your cash, shrinking to a coin, then the ring and the count
+			fly(
+				ask,
+				function(): (Vector2, number)
+					return purse.AbsolutePosition + purse.AbsoluteSize / 2,
+						purse.AbsoluteSize.Y * 0.6
+				end,
+				true,
+				function()
+					chink:Play()
+					if total and box then
+						pursePop.Scale = 1.12
+						TweenService:Create(pursePop, SETTLE, { Scale = 1 }):Play()
+						countTo(total)
+					end
+				end
+			)
+			return
+		end
 		local slot = if way == BoxPanel.Ways.Hand and type(at) == "number" then at else nil
 		local w = if slot then wells[slot] else nil
 		if way == BoxPanel.Ways.Hand then
@@ -1014,12 +1135,12 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 			table.insert(wells, { frame = f, picture = vf, rim = rim, pop = pop, key = "" })
 		end
 
-		-- the picked card's verbs, over its name: Take, and Shelf while a cubby is free
+		-- the picked card's verbs, over its name: Take, and Shelf while a cubby is free; Sell above
 		verbs = Instance.new("Frame")
 		verbs.Name = "Verbs"
 		verbs.BackgroundTransparency = 1
-		verbs.Position = UDim2.fromScale(0.05, 0.74)
-		verbs.Size = UDim2.fromScale(0.9, 0.21)
+		verbs.Position = UDim2.fromScale(0.05, 0.5)
+		verbs.Size = UDim2.fromScale(0.9, 0.45)
 		verbs.ZIndex = 3
 		verbs.Visible = false
 		verbs.Parent = panel
@@ -1045,13 +1166,18 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 			bp.Parent = b
 			return b
 		end
+		sellButton = verb("Sell", BoxPanel.Words.sell, GOLD, DARK)
+		sellButton.Size = UDim2.fromScale(1, 0.47)
+		sellPop = Instance.new("UIScale")
+		sellPop.Parent = sellButton
 		takeButton = verb("Take", BoxPanel.Words.take, INK, DARK)
+		takeButton.Position = UDim2.fromScale(0, 0.53)
 		takePop = Instance.new("UIScale")
 		takePop.Parent = takeButton
 		shelfButton = verb("Shelf", BoxPanel.Words.shelf, WELL, INK)
 		shelfButton.AnchorPoint = Vector2.new(1, 0)
-		shelfButton.Position = UDim2.fromScale(1, 0)
-		shelfButton.Size = UDim2.new(0.5, -2, 1, 0)
+		shelfButton.Position = UDim2.fromScale(1, 0.53)
+		shelfButton.Size = UDim2.new(0.5, -2, 0.47, 0)
 		local shelfRim = Instance.new("UIStroke")
 		shelfRim.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 		shelfRim.Color = INK
@@ -1059,6 +1185,66 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		shelfRim.Parent = shelfButton
 		shelfPop = Instance.new("UIScale")
 		shelfPop.Parent = shelfButton
+
+		-- your cash, over the panel's top right corner: where a find you sell goes
+		purse = Instance.new("Frame")
+		purse.Name = "Cash"
+		purse.AnchorPoint = Vector2.new(1, 1)
+		purse.BackgroundColor3 = PANEL
+		purse.BackgroundTransparency = 0.08
+		purse.Parent = panel
+		corner(purse, UDim.new(0.5, 0))
+		local purseRim = Instance.new("UIStroke")
+		purseRim.Color = GOLD
+		purseRim.Thickness = 1.5
+		purseRim.Transparency = 0.35
+		purseRim.Parent = purse
+		pursePop = Instance.new("UIScale")
+		pursePop.Parent = purse
+		purseText = Instance.new("TextLabel")
+		purseText.Name = "Figure"
+		purseText.BackgroundTransparency = 1
+		purseText.Size = UDim2.fromScale(1, 1)
+		purseText.FontFace = Font.fromEnum(Enum.Font.BuilderSansExtraBold)
+		purseText.TextColor3 = GOLD
+		purseText.TextScaled = true
+		purseText.Text = Cash.text(0)
+		purseText.Parent = purse
+		local pp = Instance.new("UIPadding")
+		pp.PaddingTop, pp.PaddingBottom = UDim.new(0.2, 0), UDim.new(0.2, 0)
+		pp.PaddingLeft, pp.PaddingRight = UDim.new(0.12, 0), UDim.new(0.12, 0)
+		pp.Parent = purseText
+		purseValue = Instance.new("NumberValue")
+		purseValue.Name = "Counted"
+		purseValue.Parent = purse
+		-- two ticks taking turns, so a fast run isn't cut short each time one starts again
+		ticks = { coinSound(Coins.Tick, g), coinSound(Coins.Tick, g) }
+		chink = coinSound(Coins.Chink, g)
+		jingle = coinSound(Coins.Jingle, g)
+		table.insert(
+			connections,
+			purseValue.Changed:Connect(function(v: number)
+				if not counting then
+					return
+				end
+				local n = math.floor(v + 0.5)
+				local text = Cash.text(n)
+				if text == purseText.Text then
+					return
+				end
+				purseText.Text = text
+				local now = os.clock()
+				if now - countLast >= Cash.TickGap then
+					countLast = now
+					countTurn = countTurn % #ticks + 1
+					local beat = ticks[countTurn]
+					local span = math.max(countTotal - countFrom, 1)
+					beat.PlaybackSpeed = (Coins.Tick.pitch or 1)
+						+ Cash.TickRise * math.clamp((n - countFrom) / span, 0, 1)
+					beat:Play()
+				end
+			end)
+		)
 
 		-- over everything: a find's picture flying out of the panel
 		layer = Instance.new("Frame")
@@ -1108,6 +1294,12 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 				takeOut(BoxPanel.Ways.Shelf, shelfPop)
 			end)
 		)
+		table.insert(
+			connections,
+			sellButton.Activated:Connect(function()
+				takeOut(BoxPanel.Ways.Sell, sellPop)
+			end)
+		)
 		-- your hands follow your slots while the panel is up
 		for i = 1, Carry.Slots do
 			table.insert(
@@ -1153,15 +1345,20 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 				table.insert(
 					connections,
 					-- any: a remote's arguments, checked here
-					remote.OnClientEvent:Connect(function(model: any, finds: any, spots: any)
-						local list = BoxPanel.read(finds)
-						local n = if type(spots) == "number" and spots == spots
-							then math.clamp(math.floor(spots), 0, 99)
-							else 0
-						if typeof(model) == "Instance" and model:IsA("Model") and list then
-							openFor(model, list, n)
+					remote.OnClientEvent:Connect(
+						function(model: any, finds: any, spots: any, cash: any)
+							local list = BoxPanel.read(finds)
+							local n = if type(spots) == "number" and spots == spots
+								then math.clamp(math.floor(spots), 0, 99)
+								else 0
+							local money = if type(cash) == "number" and cash == cash
+								then math.max(math.floor(cash), 0)
+								else 0
+							if typeof(model) == "Instance" and model:IsA("Model") and list then
+								openFor(model, list, n, money)
+							end
 						end
-					end)
+					)
 				)
 			end
 		end)

@@ -149,6 +149,43 @@ do
 	ok(BoxPanel.took(cards, "Crown") == nil, "no card: nothing")
 end
 
+-- Selling one from the box (S5-03c3a): its price is its catalog worth; one comes off what you own,
+-- the price goes on your cash, in one step; never one on the shelf, out, or past what's in the box.
+do
+	ok(BoxPanel.way("Sell") == "Sell", "selling reads as a way")
+	ok(BoxPanel.price({ grade = "Uncommon", worth = 12 }) == 12, "the price is its worth")
+	ok(BoxPanel.price({ grade = "Rare", worth = 31.7 }) == 31, "a whole number")
+	ok(BoxPanel.price({ grade = "Epic" }) == 90, "no worth: its grade's least")
+	ok(BoxPanel.price({}) == 1, "no worth, no grade: one")
+	ok(
+		BoxPanel.price({ worth = 0 / 0 }) == 1 and BoxPanel.price({ worth = -5 }) == 1,
+		"never nothing"
+	)
+	ok(BoxPanel.price({ worth = math.huge }) == BoxPanel.PriceMost, "never past the dearest find")
+
+	local data = Save.fresh()
+	data.cash = 10
+	data.finds = { Teddy = 3, Crown = 1 }
+	ok(Save.shelve(data, "Teddy", Save.Fresh.Seen, 6) == 1, "one Teddy on the shelf")
+	local out = { Teddy = 1 } -- one in your hands
+	local sold, cash = 0, data.cash
+	for _ = 1, 10 do
+		local total = BoxPanel.sell(data, Save.boxed(data, out), "Teddy", 4)
+		if total then
+			sold += 1
+			cash = total
+		end
+	end
+	ok(sold == 1, "ten asks sell only the one in the box, not the shelf's or the one out")
+	ok(data.finds.Teddy == 2 and cash == 14 and data.cash == 14, "one fewer owned, its price paid")
+	ok(BoxPanel.sell(data, Save.boxed(data, {}), "Crown", 300) == 314, "the last Crown sold")
+	ok(data.finds.Crown == nil, "none left: its name leaves the save (counts are one or more)")
+	ok(BoxPanel.sell(data, Save.boxed(data, {}), "Crown", 300) == nil, "none to sell: refused")
+	ok(data.cash == 314, "and nothing paid")
+	ok(BoxPanel.sell(data, Save.boxed(data, {}), "Teddy", 0) == nil, "no price: refused")
+	ok(data.finds.Teddy == 2, "and nothing struck off")
+end
+
 print(`boxpanel: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

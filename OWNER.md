@@ -68,6 +68,15 @@ nowhere else.
   that size, does the rise feel slow or right (it takes the lid's 1.1 s), and is the deep blue
   calm. My defaults, yours to change: rarest first then by name; chips only for rarities you own;
   a card shows the find as your slots draw it, with no price yet (selling is S5-03c3).
+- [ ] **Sell a find from your job box** (S5-03c3a, D-297). Seen working in Studio Play at
+  computer size on Nov 17, sounds not heard. Yours, at Galaxy A16 size: open the box, tap a kind
+  you have several of, press the gold Sell (it shows the price): the picture should fly into your
+  cash over the panel's top right, which chinks and counts up with rising ticks, landing with a
+  jingle; the x5 goes to x4. Sell the rest quickly, then keep tapping where the card was: nothing
+  else should be picked until you stop. Say: does a sale feel rewarding, is the price on the
+  button welcome or clutter, can you hit Sell, Take and Shelf on a card that small. My defaults,
+  yours to change: a find sells for its catalog worth; no "are you sure" (a Secret sells on one
+  tap too: say if the rarest should ask first).
 - [ ] **Take a find out of your job box** (S5-03c2b2, D-293, D-295). Seen working in Studio Play
   at computer size on Nov 17, sounds not heard. Yours, at Galaxy A16 size: open the box, tap a card
   (it lifts and glows), press Take: it should fly into one of the three round hands over the

@@ -7570,3 +7570,33 @@ nothing on screen explains it. The save counts cracked finds per name (`chipped`
 never more than you keep), since finds are kept by name; which of two is the cracked one isn't
 tracked. A find out of your job box doesn't crack yet (its save is the home chain's): waits on
 S5-03. Selling (S5-03c3) reads `chipped` and `Chip.worth`.
+
+## D-297 · 2026-11-17 · Selling from the job box: its catalog worth, paid and struck in one step (S5-03c3a)
+
+The home doc's idea 9 ("from the panel you ... sell it") and D-251 ("sell whatever you want").
+Precedents: Pet Simulator's sell from the inventory, Animal Crossing's Nook box (sell from what
+you hold, the bells counted out), Bloxburg's sell button that shows its price.
+- **The price is the find's catalog worth** (`BoxPanel.price`): the item catalog's value, the
+  number the Packrat weighs (`Carry.worth`); with none, its grade's least (`Grades.Worth`); whole,
+  1 at least, 12000 at most. The climb's coins aren't involved: D-251 moved a find's cash to the
+  box.
+- **The server sells, in one step** (`BoxPanel.sell`): Sell is the take's third way on
+  `JobBoxTake`, through the same checks and rate limit (now 4 a second, 5 at once). Only one in
+  the box sells (`Save.boxed`): never the shelf's or one out in someone's hands. One comes off
+  `finds` (the name gone at none) and the price goes on `cash` in the same step, so any save ever
+  written holds both or neither: never paid twice, never a find lost on a failed write. The answer
+  on `JobBoxTook` carries the new cash.
+- **One write per run of sales:** the save is written `BoxPanel.SellSave` (6) seconds after the
+  first sale of a run (a DataStore key takes a write in six seconds); the autosave, a leave and a
+  shutdown write it too. A crash in between undoes the whole sale.
+- **The screen (my defaults, OWNER.md):** your cash sits over the panel's top right corner, as
+  your hands sit over its left, sent as the box opens. The picked card shows a gold "Sell $22"
+  over Take and Shelf (two rows: three side by side don't fit a phone's card). Pressed, the picture
+  lifts, flies in a bow into your cash and fades; the cash chinks (the coins' chink) and counts up
+  as the results board's does (Cash's curve, rising ticks, a swell and a jingle). The count ticks
+  down; the last one's card shrinks away.
+- **A tap guard** (found in Play): after a card leaves, the next slides under your thumb, so a
+  mashed Sell picked it and the next tap would have sold it. Taps on cards wait 0.6 s after a card
+  leaves, and each tap in that time starts the wait again (`BoxPanel.Guard`).
+- **Cracked finds** (D-296, committed by the find run as this was built): a sale doesn't read
+  `chipped` yet; S5-03c3a2 sells a cracked one first, at half, one off `chipped`.

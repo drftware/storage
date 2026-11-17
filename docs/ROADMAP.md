@@ -2437,9 +2437,13 @@ Done when players watch the results to the end and change their perks between cl
       don't own or have none left of refused with nothing changed; a rejoin finds the box whole.
       Fixed: a hand drew the find before its picture arrived (it now waits for the landing).
       `docs/art/S5-03c2b2-pick.jpg`, `-flight.jpg`, `-shelf.jpg`. Sounds not heard (OWNER.md).
-    - [ ] **S5-03c3a Selling from the panel** (D-251: "sell whatever you want"): a Sell verb on
-      the picked card, cash counted up with its own sound and motion, the server owning the price
-      (the find's worth, as the climb's haul counts it) and striking one off `finds`.
+    - [x] **S5-03c3a Selling from the panel, seen** (Nov 17, D-297): Sell on the picked card
+      with its price ("Sell $22", the find's catalog worth, `BoxPanel.price`); the server strikes
+      one and pays in one step (`BoxPanel.sell`) and writes the save 6 s after a run of sales; the
+      picture flies into your cash over the panel's corner, which chinks and counts up as the
+      results board's does. A tap guard after a card leaves. Seen in Play, a rejoin keeping it.
+    - [ ] **S5-03c3a2 Selling a cracked find** (D-296, D-297): a name with `chipped` sells a
+      cracked one first at `Chip.worth`, one off `chipped`, so `chipped` never tops `finds`.
     - [ ] **S5-03c3b Four make a Gold** (D-188, D-251): with four of a kind in the box, the panel
       offers Gold; a big animation, the four become one Gold find (Pet Simulator's golden pets).
     - Polish for the panel (later): a chip tap you can hear differently per rarity; cards drawn

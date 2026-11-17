@@ -31,6 +31,14 @@
 	(Save.shelve, seen: you put it there), the shelf laid at once; the autosave keeps it, and a crash
 	before it only leaves the find in the box. Every take past the type checks is answered on
 	`TookRemote`, so the screen lands or settles its picture.
+
+	Selling one (S5-03c3a): Sell is the third way, through the same checks and rate limit. Priced at
+	its catalog worth (`BoxPanel.price`), one comes off what the holder owns and the price goes on
+	their cash in one step (`BoxPanel.sell`), and the answer carries their new cash. The save is
+	written `BoxPanel.SellSave` seconds after a run of sales (one write for the run); it holds the
+	sale from the moment it's made, so the autosave, a leave or a shutdown write it too, and a crash
+	before any of them undoes the whole sale, never half. The list sent as the lid opens carries
+	the holder's cash, so the panel shows it from the start.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -70,6 +78,7 @@ function JobBoxes.new(): Brix.System
 	local limit = Brix.RateLimit.bucket(BoxPanel.Limit)
 	local takeLimit = Brix.RateLimit.bucket(BoxPanel.TakeLimit)
 	local spots = #Home.Specs.Shelf.Spots -- every home is small until the sizes come (S5-03h)
+	local writing: { [Player]: true } = {} -- a write after a sale is waiting
 
 	local function holderOf(box: Box): Player?
 		local id = box.unit:GetAttribute(Door.HolderAttribute)
@@ -123,7 +132,8 @@ function JobBoxes.new(): Brix.System
 			local s = slots
 			local boxed = if data and s then Save.boxed(data, s:fromBox(player)) else {}
 			local free = if data then Save.free(data, spots) else 0
-			listRemote:FireClient(player, box.model, BoxPanel.list(boxed), free)
+			local cash = if data then data.cash else 0
+			listRemote:FireClient(player, box.model, BoxPanel.list(boxed), free, cash)
 		end
 	end
 
@@ -137,7 +147,22 @@ function JobBoxes.new(): Brix.System
 		return nil
 	end
 
-	-- Take from the panel: one `name` out of `player`'s open box, `way` Hand or Shelf.
+	-- The save written once a run of sales has settled (BoxPanel.SellSave): one write for the run.
+	local function keepSale(player: Player)
+		if writing[player] then
+			return
+		end
+		writing[player] = true
+		task.delay(BoxPanel.SellSave, function()
+			writing[player] = nil
+			local s = saving
+			if s and player.Parent and s:data(player) then
+				s:save(player)
+			end
+		end)
+	end
+
+	-- Take from the panel: one `name` out of `player`'s open box, `way` Hand, Shelf or Sell.
 	local function takeAsked(player: Player, name: unknown, way: unknown)
 		if not takeLimit:take(player, os.clock()) then
 			return -- asked too often: refused before the payload is read
@@ -154,12 +179,25 @@ function JobBoxes.new(): Brix.System
 		local data = if saving then saving:data(player) else nil
 		local s, sh = slots, shelves
 		local row = (Tools.Catalog :: any)[key] -- any: the catalog is keyed by text
+		local boxed = if data and s then Save.boxed(data, s:fromBox(player)) else {}
 		if
 			not (data and s and sh and openOf(player) and row and row.find)
 			or Prompts.wrapped(player)
-			or not BoxPanel.canTake(Save.boxed(data, s:fromBox(player)), key)
+			or not BoxPanel.canTake(boxed, key)
 		then
 			answer(false)
+			return
+		end
+		if to == BoxPanel.Ways.Sell then
+			local price = BoxPanel.price(row)
+			local cash = BoxPanel.sell(data, boxed, key, price)
+			if cash then
+				keepSale(player)
+				if RunService:IsStudio() then
+					print(`JobBoxes: {player.Name} sold a {key} for {price}, cash now {cash}`)
+				end
+			end
+			answer(cash ~= nil, cash)
 			return
 		end
 		if to == BoxPanel.Ways.Hand then
@@ -295,6 +333,7 @@ function JobBoxes.new(): Brix.System
 				Players.PlayerRemoving:Connect(function(player: Player)
 					limit:forget(player)
 					takeLimit:forget(player)
+					writing[player] = nil -- their save is written as it's let go
 				end)
 			)
 			for _, unit in laid.units do
@@ -345,6 +384,7 @@ function JobBoxes.new(): Brix.System
 			end
 			table.clear(boxes)
 			table.clear(open)
+			table.clear(writing)
 			for _, r in remotes do
 				r:Destroy()
 			end

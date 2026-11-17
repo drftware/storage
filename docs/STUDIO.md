@@ -280,6 +280,10 @@ verified: a doc page, Studio, or "untested".
   in a row as a background shell command (about ten a second), 0.3 s after it starts click
   with the MCP; the frames whose file sizes change hold the motion. Don't `rm` a glob in a
   scratch folder (the safety check refuses it): give each burst a new folder.
+- **`user_mouse_input`'s clicks land slower than its waits** (S5-03c3a, Nov 17): clicks asked
+  150 to 250 ms apart arrived 0.37 to 0.45 s apart, and a pick then a Sell 0.35 s apart arrived
+  0.9 s apart. To test timing, log `UserInputService.InputBegan` from a Client `execute_luau`
+  (keep the connection in `_G`) and read it back after the clicks.
 - **Checking your work when the checkout is red from another session** (S5-03c1b): `git worktree
   add --detach <scratch>/wt HEAD`, copy in only your changed files and `roblox.d.luau`, and copy
   `vendor/brix` in whole (it's a submodule, empty in a new worktree, and Lune won't follow a

@@ -15,6 +15,11 @@
 	the shelf's and what's out). Tap a card, Take or Shelf; the screen asks `TakeRemote` with the
 	name and the way, the server checks it (`way`, `name`, `canTake`) and answers on `TookRemote`,
 	and the card counts one fewer (`took`).
+
+	Selling one (S5-03c3a): Sell is the take's third way. The server prices it at its catalog worth
+	(`price`), strikes one off what you own and puts the price on your cash in one step (`sell`),
+	so a save written at any moment holds both or neither; it answers with your new cash. Only one
+	in the box sells: never the shelf's, never one out in someone's hands.
 ]]
 local Grades = require("../Grades")
 
@@ -31,12 +36,19 @@ BoxPanel.TakeRemote = "JobBoxTake"
 -- Server to the holder, every take answered: the name, the way, whether it came out, and where it
 -- went (the slot it went into, or the shelf spot's place in the world).
 BoxPanel.TookRemote = "JobBoxTook"
--- Takes a player may ask: three quick ones fill your hands, and a fourth tap never piles up more
-BoxPanel.TakeLimit = { perSecond = 3, burst = 4 }
+-- Takes and sales a player may ask: three quick ones fill your hands, a run of sales sells at a
+-- brisk tap, and mashing never piles up more
+BoxPanel.TakeLimit = { perSecond = 4, burst = 5 }
+-- Seconds after a sale before the server writes the save, so a run of sales is one write (a
+-- DataStore key takes one write in six seconds). The sale is in the save it holds at once: a crash
+-- in between only undoes the whole sale, the find back and the cash with it.
+BoxPanel.SellSave = 6
+-- The most one find sells for: the dearest Secret's worth (Grades.Worth).
+BoxPanel.PriceMost = 12000
 
--- Where a find taken out goes: into your hands, or onto a free spot of your shelf.
-export type Way = "Hand" | "Shelf"
-BoxPanel.Ways = table.freeze({ Hand = "Hand" :: Way, Shelf = "Shelf" :: Way })
+-- Where a find taken out goes: into your hands, onto a free spot of your shelf, or sold for cash.
+export type Way = "Hand" | "Shelf" | "Sell"
+BoxPanel.Ways = table.freeze({ Hand = "Hand" :: Way, Shelf = "Shelf" :: Way, Sell = "Sell" :: Way })
 
 BoxPanel.SearchMax = 24 -- characters the search box takes: a find's name is never longer
 BoxPanel.KindsMax = 2000 -- kinds a list carries at most: far past every find there is
@@ -44,7 +56,7 @@ BoxPanel.NameMax = 64 -- characters a find's name from the wire may have (the sa
 
 -- A way from the wire, or nil when it isn't one.
 function BoxPanel.way(value: unknown): Way?
-	if value == "Hand" or value == "Shelf" then
+	if value == "Hand" or value == "Shelf" or value == "Sell" then
 		return value :: Way
 	end
 	return nil
@@ -62,6 +74,50 @@ end
 function BoxPanel.canTake(boxed: { [string]: number }, name: string): boolean
 	local n = boxed[name]
 	return type(n) == "number" and n >= 1
+end
+
+-- What one find sells for (S5-03c3a): its catalog worth, as the Packrat weighs it and the item
+-- catalog prices it, whole; with none, its grade's least (Grades.Worth); never under 1 or over
+-- PriceMost.
+function BoxPanel.price(row: { grade: Grades.Grade?, worth: number? }): number
+	local worth = row.worth
+	if type(worth) ~= "number" or worth ~= worth then
+		local range = if row.grade then Grades.Worth[row.grade] else nil
+		worth = if range then range[1] else 1
+	end
+	return math.clamp(math.floor(worth :: number), 1, BoxPanel.PriceMost)
+end
+
+-- What a sale changes: what you own and your cash (the save's Data is one of these).
+export type Sellable = { finds: { [string]: number }, cash: number }
+
+-- Sells one `name` from a box holding `boxed` (Save.boxed) for `price`: one fewer owned (its name
+-- gone at none) and the price on the cash, together. Returns the cash after, or nil, changing
+-- nothing, when none is in the box or the price isn't one.
+function BoxPanel.sell(
+	data: Sellable,
+	boxed: { [string]: number },
+	name: string,
+	price: number
+): number?
+	local owned = data.finds[name]
+	if
+		not BoxPanel.canTake(boxed, name)
+		or type(owned) ~= "number"
+		or owned < 1
+		or price ~= price
+		or price < 1
+	then
+		return nil
+	end
+	local left = math.floor(owned) - 1
+	if left >= 1 then
+		data.finds[name] = left
+	else
+		data.finds[name] = nil -- the save's counts are one or more
+	end
+	data.cash = math.floor(data.cash) + math.floor(price)
+	return data.cash
 end
 
 -- A kind of find you own, as its card shows it.
@@ -207,6 +263,7 @@ BoxPanel.Words = table.freeze({
 	empty = "Empty",
 	take = "Take",
 	shelf = "Shelf",
+	sell = "Sell", -- with its price after it: "Sell $4"
 })
 -- Taking one out (S5-03c2b2): tap a card and it lifts and glows, its verbs over its name; Take, and
 -- its picture flies out of the panel into a free one of your hands (the three wells over the
@@ -217,6 +274,10 @@ BoxPanel.Rise = 1.18 -- the picture's scale the moment Take or Shelf is pressed,
 BoxPanel.Fly = 0.42 -- seconds the picture takes from its card to your hand or the cubby
 BoxPanel.Arc = 0.16 -- of the screen's height: how high the flight bows over a straight line
 BoxPanel.Wait = 1.5 -- seconds the screen waits for the server's answer before giving up quietly
+-- Seconds the cards ignore taps after one leaves the panel (S5-03c3a), each ignored tap starting
+-- them again: the next card slides into its place under your thumb, so a mashed Sell never picks
+-- it, and then sells it, by mistake. Rest your thumb this long and you can pick again.
+BoxPanel.Guard = 0.6
 BoxPanel.Well = 0.17 -- a hand's well, a share of the panel's height (44 points on a Galaxy A16)
 BoxPanel.Shake = 0.24 -- seconds the wells shake when your hands are full and Take is pressed
 BoxPanel.Height = 0.76 -- the panel's height, a share of the screen's: the lid shows above it
