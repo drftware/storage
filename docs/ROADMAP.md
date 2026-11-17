@@ -2477,14 +2477,20 @@ Done when players watch the results to the end and change their perks between cl
       (Aboard: yours stays out, nothing written; a friend's is kept into theirs and struck off
       yours, one between you; Lost: struck off; Back: its crack comes home); `tests/taken.spec`.
       Nothing wired yet.
-    - [ ] **S5-03d2 Wired on the server**: Slots and GatePay settle every taken-up find through
-      `Taken.settle` (a friend's carried aboard moves; one left on a floor the climb leaves
-      behind, or on a climb that's over, is lost; its owner leaving mid-climb loses it and frees
-      it for a friend; its owner leaving at home sends it back); a taken-up find can crack on the
-      climb; each owner's save written at once.
-    - [ ] **S5-03d3 Taking finds up, seen**: Studio Play with one player (take a lamp up, carry it
-      aboard: still in your hand; drop it and let the gate shut: struck off; rejoin: the rest
-      kept), captures; the two-player steps go to OWNER.md.
+    - [x] **S5-03d2 Wired on the server** (Nov 17, D-304): a find out of a job box goes up as its
+      holder rides a lobby car into floor 1 (`Slots:up`); Slots' `taken` (Lost, Back) and `keep`'s
+      `Moved` reach GatePay, which settles each through `Taken.settle` and writes every touched
+      save at once; an owner leaving mid-climb strikes theirs in their last write (Saving's
+      `leaving`) and frees them for a friend; nothing settles as the server stops. Passes checks,
+      untested in Studio.
+    - [ ] **S5-03d3 Taking finds up, seen**: Studio Play with one player on the same server (take
+      a lamp up, carry it aboard: still in your hand; drop it and let the gate shut: struck off;
+      rejoin: the rest kept), captures; the two-player steps go to OWNER.md.
+    - [ ] **S5-03d4 Across the trip** (D-304): a live climb runs on a server of its own and the
+      teleport carries nothing, so what you take up stays home. The trip's data carries each
+      rider's taken-up finds (keys, cracked); the climb's server checks each against the rider's
+      save (`Save.boxed`) and deals them into their slots, already up; the lobby doesn't recall
+      what left on the trip. Untestable in Studio: the steps go to OWNER.md.
   - [ ] **S5-03e Arrange** (ideas 11 to 15), after a placements system built in Brix (D-252):
     lift, drag, a half-stud grid, quarter turns, Free for everyone, floor, tabletop, wall and
     ceiling spots (a column in the catalog), red where it can't go, Place, Put away, Done, the

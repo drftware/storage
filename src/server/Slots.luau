@@ -49,9 +49,13 @@
 	with it (`lose`).
 
 	A find out of its owner's job box (S5-03c2b2, D-293: `unbox`) is carried like any other, but
-	it is still theirs in their save, so it's marked with whose box it came from and no gate keeps
-	it for anyone: it stays in your slots through the gate. What's in the box is what you own less
-	these (`fromBox`, Save.boxed), and when its owner leaves each goes back into the box in a glint.
+	it is still theirs in their save, so it's marked with whose box it came from. What's in the box
+	is what you own less these (`fromBox`, Save.boxed), and when its owner leaves at home each goes
+	back into the box in a glint. Taken up into the climb (S5-03d2, D-302: `up`, as its holder
+	rides a lobby car into floor 1) it's at risk: carried aboard by its owner it stays in their
+	slots; by a friend it's kept as theirs (`keep`'s moved); gone with a floor, the climb, used up
+	or its owner leaving mid-climb, it's lost (`taken`), and then a friend may still carry it
+	aboard as any find.
 
 	A fragile find (F-G1e5e, D-296: its row names its glass) let go hard (`Chip.hard`: you were
 	running or falling, or it fell far from your hand) cracks as it lands, once: its crack heard
@@ -125,6 +129,17 @@ export type Change = {
 
 -- A press of ToolUse that passed: who, the tool's catalog key, and its model in their hand.
 export type Use = { player: Player, key: string, model: Model }
+-- A find taken up out of a job box ending somewhere other than a gate (S5-03d2, D-302, D-304):
+-- "Lost" as it goes for good on the climb (left with a floor, the climb over, used up, its owner
+-- gone), "Back" as it goes back into its owner's box at home. The save is settled from it.
+export type Taken = {
+	home: number, -- the UserId whose box it came out of
+	name: string, -- its name in the save (a Gold's "Teddy:Gold")
+	how: "Lost" | "Back",
+	cracked: boolean, -- its glass cracked while it was out (D-296)
+}
+-- A friend's find taken up, carried aboard by someone else as a gate shut (`keep`): theirs now.
+export type Moved = { home: number, name: string, cracked: boolean }
 -- A dropped tool hitting the floor: its clank, heard `reach` studs off (Carry.DropHeard).
 export type Landed = { key: string, at: Vector3, reach: number }
 -- A find's piece out on a floor away from the rest (the RC car set down, F-G1b3c3), as the
@@ -148,6 +163,12 @@ export type Slots = Brix.System & {
 	-- Fires as the finds lying loose change (S2-06b2): one laid, dropped, picked up, cleared,
 	-- lifted by a monster or laid on its pile. The Packrat is told (`Keepers`).
 	loose: Brix.Signal<nil>,
+	-- Fires as a find taken up out of a job box is lost on the climb or back in its owner's box
+	-- (`Taken`; a gate's ends come from `keep`). Fired as its owner leaves too, in that frame.
+	taken: Brix.Signal<Taken>,
+	-- Every find out of a job box in `player`'s slots or on their head goes up into the climb
+	-- (they rode a lobby car into it, S5-03d2): from now on it can be lost (`taken`).
+	up: (self: any, player: Player) -> (),
 	-- Find `model` has a piece out on a floor (`out`), or not any more (nil). Monsters see the find
 	-- where the piece is (`finds`). Call it again with the same `out` when the piece has moved, so
 	-- they're told.
@@ -219,8 +240,10 @@ export type Slots = Brix.System & {
 	worn: (self: any, each: (player: Player, model: Model) -> ()) -> (),
 	-- Takes every find out of `player`'s slots for good (the gate shut with them aboard, S1-06):
 	-- each goes from their hand with a glint everyone near sees, and their tools stay. The kept
-	-- finds' catalog keys, slot order, and the keys of those with cracked glass (F-G1e5e).
-	keep: (self: any, player: Player) -> ({ string }, { string }),
+	-- finds' catalog keys, slot order, and the keys of those with cracked glass (F-G1e5e). A
+	-- find taken up out of their own job box stays in their slots, at risk on the next floor; one
+	-- out of a friend's goes like the rest but comes back apart (`Moved`, S5-03d2): theirs now.
+	keep: (self: any, player: Player) -> ({ string }, { string }, { Moved }),
 	-- What the Packrat would take from `player` if it reached them now (S2-06c, `Carry.prize`):
 	-- that thing's number, or 0 for nothing it takes. Allocates nothing.
 	prize: (self: any, player: Player) -> number,
@@ -252,6 +275,8 @@ type Tool = {
 	-- the UserId whose job box it came out of (S5-03c2b2, D-293): still theirs in their save, so
 	-- no gate ever keeps it for anyone; nil for a find from a floor
 	home: number?,
+	-- taken up into the climb (`up`, S5-03d2): from then a find out of a job box can be lost
+	up: boolean?,
 	-- its glass cracked (a fragile find dropped hard, F-G1e5e): worth half, never cracks again
 	chipped: boolean?,
 	-- a Gold of its find (S5-03c3b3, D-298): `key` stays the find's, so its row, model and sounds
@@ -394,6 +419,7 @@ function Slots.new(): Slots
 	local used = Brix.Signal.new() :: Brix.Signal<Use>
 	local landed = Brix.Signal.new() :: Brix.Signal<Landed>
 	local loose = Brix.Signal.new() :: Brix.Signal<nil>
+	local taken = Brix.Signal.new() :: Brix.Signal<Taken>
 	local lying: Folder? = nil
 	-- where each lying tool's middle stands on the floor (its id's), for `finds`
 	local grounds: { [string]: Vector3 } = {}
@@ -782,6 +808,28 @@ function Slots.new(): Slots
 		end
 	end
 
+	-- A find out of a job box `t` going for good (S5-03d2, D-302): taken up into the climb, it's
+	-- lost to its owner's save; one that never went up is simply back in the box, nothing told.
+	local function lost(t: Tool)
+		local home = t.home
+		if home and t.up then
+			taken:fire({ home = home, name = named(t), how = "Lost", cracked = t.chipped == true })
+		end
+	end
+
+	-- Its owner `home` left mid-climb (S5-03d2, D-302): each of theirs taken up is lost to their
+	-- save as they go, and stays where it is, a find like any other now, so a friend who carries
+	-- it aboard keeps it. Fired in the frame they leave, so it rides in their save's last write.
+	local function strand(home: number)
+		for _, t in tools do
+			if t.home == home and t.up then
+				lost(t)
+				t.home = nil
+				t.up = nil
+			end
+		end
+	end
+
 	-- Every find out of the job box of UserId `home` goes back into it (its owner left, D-293): out
 	-- of whoever's hands or off whoever's head holds it, or off the floor where it lies, in a glint.
 	-- One set down (`place`), with its piece out, or in a monster's arms is left to its system.
@@ -821,6 +869,8 @@ function Slots.new(): Slots
 			if t.model.Parent then
 				glint(t.body.Position)
 			end
+			-- back in the box: a crack it took while out comes home with it (D-296)
+			taken:fire({ home = home, name = named(t), how = "Back", cracked = t.chipped == true })
 			t.owner = nil
 			stow(t)
 			t.model:Destroy()
@@ -846,6 +896,7 @@ function Slots.new(): Slots
 			return -- gone already: kept, or the floor it lay on cleared
 		end
 		tools[t.id] = nil
+		lost(t) -- used up on the climb
 		local row = Catalog[t.key]
 		local w = row.wear
 		local owner = t.owner
@@ -1252,6 +1303,7 @@ function Slots.new(): Slots
 		used = used,
 		landed = landed,
 		loose = loose,
+		taken = taken,
 	}
 
 	function system.start(_: any, _context: Brix.Context)
@@ -1290,7 +1342,8 @@ function Slots.new(): Slots
 				dropAll(player, rootOf(player))
 				hands[player] = nil
 				heads[player] = nil
-				recall(player.UserId)
+				strand(player.UserId) -- taken up: lost, and a friend's to carry aboard
+				recall(player.UserId) -- the rest: back in the box
 			end)
 		)
 		for _, player in Players:GetPlayers() do
@@ -1311,6 +1364,7 @@ function Slots.new(): Slots
 		used:disconnectAll()
 		landed:disconnectAll()
 		loose:disconnectAll()
+		taken:disconnectAll()
 	end
 
 	function system.lay(_: any, key: string, at: Vector3, yaw: number): string?
@@ -1346,6 +1400,7 @@ function Slots.new(): Slots
 			if t.owner == nil and t.model.Parent == lying and inside(t.body.Position) then
 				tools[id] = nil
 				grounds[id] = nil
+				lost(t) -- left with a floor the climb leaves, or the climb over
 				unoffer(t)
 				t.model:Destroy()
 				gone += 1
@@ -1598,25 +1653,31 @@ function Slots.new(): Slots
 		dropAll(player, rootOf(player))
 	end
 
-	function system.keep(_: any, player: Player): ({ string }, { string })
+	function system.keep(_: any, player: Player): ({ string }, { string }, { Moved })
 		local h = hands[player]
 		if not h then
-			return {}, {}
+			return {}, {}, {}
+		end
+		-- a find out of a job box that no gate keeps for `player`: one out of their own (D-302),
+		-- or one that never went up (D-293: kept for no one)
+		local function mine(t: Tool): boolean
+			return t.home ~= nil and (t.home == player.UserId or not t.up)
 		end
 		local ids = Carry.keep(h.carry, function(id: string): boolean
 			local t = tools[id]
 			local row = if t then Catalog[t.key] else nil
 			-- a find whose piece is still out is left behind with the floor (F-G1b3c3): it stays
-			-- in your slots till the piece goes with the floor (`lose`); one out of a job box is
-			-- already its owner's, so it stays in your slots too, kept for no one (D-293)
-			return row ~= nil and row.find == true and not (t and (outs[t.model] or t.home ~= nil))
+			-- in your slots till the piece goes with the floor (`lose`); one out of your own job
+			-- box is already yours, so it stays in your slots, at risk on the next floor (D-302)
+			return row ~= nil and row.find == true and not (t and (outs[t.model] or mine(t)))
 		end)
 		local keys: { string } = {}
 		local chipped: { string } = {}
+		local moved: { Moved } = {}
 		-- the find on your head is kept with the rest, going from your head in a glint
 		local worn = heads[player]
 		local w = if worn then tools[worn] else nil
-		if w and not outs[w.model] and w.home == nil then
+		if w and not outs[w.model] and not mine(w) then
 			glint(w.body.Position)
 			offHead(player)
 			table.insert(ids, w.id)
@@ -1625,9 +1686,18 @@ function Slots.new(): Slots
 			local t = tools[id]
 			if t then
 				tools[id] = nil
-				table.insert(keys, named(t))
-				if t.chipped then
-					table.insert(chipped, t.key)
+				local home = t.home
+				if home then
+					-- a friend's, taken up: theirs now (S5-03d2), told apart for both saves
+					table.insert(
+						moved,
+						{ home = home, name = named(t), cracked = t.chipped == true }
+					)
+				else
+					table.insert(keys, named(t))
+					if t.chipped then
+						table.insert(chipped, t.key)
+					end
 				end
 				if t.model.Parent then
 					glint(t.body.Position) -- the one in your hand, as everyone near saw it
@@ -1636,12 +1706,21 @@ function Slots.new(): Slots
 				t.model:Destroy()
 			end
 		end
-		if #keys > 0 then
+		if #keys + #moved > 0 then
 			dress(player)
 			publish(player)
 			changed:fire({ player = player, kind = "Keep" })
 		end
-		return keys, chipped
+		return keys, chipped, moved
+	end
+
+	function system.up(_: any, player: Player)
+		local worn = heads[player]
+		for id, t in tools do
+			if t.home and (t.owner == player or id == worn) then
+				t.up = true
+			end
+		end
 	end
 
 	function system.lose(_: any, model: Model, sound: Tools.SoundSpec)
@@ -1658,6 +1737,7 @@ function Slots.new(): Slots
 		end
 		tools[t.id] = nil
 		grounds[t.id] = nil
+		lost(t) -- its piece gone with a floor
 		unoffer(t)
 		local owner = t.owner
 		local h = if owner then hands[owner] else nil
@@ -1702,6 +1782,7 @@ function Slots.new(): Slots
 		end
 		Carry.release(h.carry)
 		tools[t.id] = nil
+		lost(t)
 		stow(t)
 		t.model:Destroy()
 		publish(player)

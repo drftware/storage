@@ -932,6 +932,13 @@ function Climbs.new(): Climbs
 			end
 			playing = on
 			started = now()
+			-- what they took up out of their job boxes is on the climb now, at risk (S5-03d2)
+			local s = slots
+			if s then
+				for _, rider in moved do
+					s:up(rider)
+				end
+			end
 			began:fire(on)
 			armAfterArrival(on, on.elevator :: Model, mine)
 			if STUDIO then

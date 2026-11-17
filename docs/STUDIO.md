@@ -2925,3 +2925,13 @@ verified: a doc page, Studio, or "untested".
   (`Finds.CanvasPosition = Vector2.new(0, 10000)` in a Client call), then click.
 - `ServerStorage.ShelfTest:Invoke(player, "", i)` empties cubby `i` so Shelf shows on a card
   (Shelf is hidden while the shelf is full).
+
+## Changing a save as its player leaves (S5-03d2, Nov 17)
+
+- Brix's PlayerSaves lets a save go in its own PlayerRemoving handler, and from then
+  `Saving:data(player)` is nil. Handlers' order isn't promised, so use `Saving:leaving(userId)`
+  (kept two seconds) to change a leaving player's save.
+- The let-go's write reads the data inside DataStore `UpdateAsync`'s transform, which runs only
+  after the store answers, so a change made in the PlayerRemoving frame (or a `task.defer` from
+  it) rides in it. Studio's in-memory store, used when Studio can't reach DataStores, may run
+  the transform at once: there a change made after the let-go can miss.

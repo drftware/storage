@@ -7723,3 +7723,32 @@ where a crewmate died stays on the moon unless someone carries it back).
   neon pink. Built, not yet seen in Play: S2b imports it (the alpha must survive the FBX upload:
   check the template's ColorMap tints only the prints) and plays it.
 
+
+## D-304 · 2026-11-17 · Taking finds up, wired: up as you ride into floor 1, settled where it ends (S5-03d2)
+
+D-302's rules, wired on the server. Precedents as D-302: Minecraft and Lethal Company.
+- **A find out of a job box goes up as its holder rides a lobby car into floor 1** (Climbs'
+  `board` calls `Slots:up` for each rider carried). Only then can it be lost: a find out of the
+  box that never went up is back in the box whatever happens to it (D-293), so a save is struck
+  only for a find the climb really had.
+- **Every end reaches one place.** Slots' `taken` fires Lost as a taken-up find goes for good
+  (cleared with a floor the climb leaves or with the climb's end, its piece gone with a floor,
+  used up, spent) and Back as one goes back into its owner's box at home (`recall`, bringing its
+  crack). A gate's end comes from `keep`: its owner's own stays in their slots; a friend's comes
+  back apart (`Moved`) and rises out of the rider's slot as any kept find. GatePay settles each
+  through `Home.Taken.settle` and writes every touched save at once.
+- **Its owner leaving mid-climb:** each of theirs that went up is struck off as they go and its
+  mark cleared where it is, so a friend who carries it aboard keeps it as any find. Their save is
+  let go in that same frame, so Saving keeps it reachable a moment longer (`leaving`): the let-go's
+  last write reads the data only after the store answers, so a strike made in that frame rides
+  in it. Studio's in-memory store (no API access) may write first: such a strike can miss there.
+- **A server stopping settles nothing:** GatePay stops listening as the server closes and settles
+  a step later (`task.defer`) behind a `closing` flag. Known edge: a shutdown whose kicks land
+  before the server's close begins looks like everyone leaving mid-climb; untested, OWNER.md.
+- **Known edges, safe side:** a taken-up find in a monster's arms when its floor goes is never
+  settled, so it stays in its owner's save. A friend's find carried aboard while the rider's save
+  hasn't loaded is held for them (as any kept find) and struck off its owner's at once.
+- **Not yet across a trip:** a live climb runs on a server of its own (L-08e1c), and the
+  teleport carries nothing, so on a live server what you take up is back in your box as you
+  leave the lobby. Carrying it across is S5-03d4; Studio (and a lobby's fallback) climb on the
+  same server, where all of this runs.

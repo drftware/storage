@@ -47,6 +47,8 @@ local STUDIO_STORE = "Saves.studio"
 -- with it waits to load elsewhere; Brix's defaults, 30 and 90.
 local AUTOSAVE = 30
 local LEASE = 90
+-- Seconds a leaving player's save stays reachable (`leaving`): far past the frame they leave in.
+local GOING = 2
 
 -- A player whose save this server now holds, and its data.
 export type Loaded = Brix.LoadedSave<Save.Data>
@@ -58,6 +60,10 @@ export type SavingSystem = Brix.System & {
 	loaded: Brix.Signal<Loaded>,
 	-- A player's save while this server holds it: nil before it has loaded and after they leave.
 	data: (self: any, player: Player) -> Save.Data?,
+	-- The save of UserId `userId` while this server holds it, and through the frame they leave in
+	-- (S5-03d2, D-304): a change made then rides in their save's last write, which reads the data
+	-- only once the store answers. Nil for a save never held here, or a moment after they've gone.
+	leaving: (self: any, userId: number) -> Save.Data?,
 	-- Writes a player's save now, after something worth keeping at once. May yield.
 	save: (self: any, player: Player) -> (),
 	-- The saves underneath, once made (see `began`); nil before then and after the server stops.
@@ -153,6 +159,9 @@ function Saving.new(): SavingSystem
 	local held: Brix.Saves<Save.Data>? = nil
 	local stopped = false
 	local forward: Brix.SignalConnection? = nil
+	-- each held save by UserId, kept `GOING` seconds past its player's leaving (`leaving`)
+	local last: { [number]: Save.Data } = {}
+	local leaves: RBXScriptConnection? = nil
 
 	local function begin(store: Brix.SaveStore)
 		if stopped then
@@ -174,6 +183,7 @@ function Saving.new(): SavingSystem
 			end,
 		})
 		forward = made.loaded:connect(function(each: Loaded)
+			last[each.player.UserId] = each.data
 			loaded:fire(each)
 		end)
 		playerSaves = made
@@ -199,6 +209,15 @@ function Saving.new(): SavingSystem
 	}
 
 	function system.start(_: any, _context: Brix.Context)
+		leaves = Players.PlayerRemoving:Connect(function(player: Player)
+			local userId = player.UserId
+			local data = last[userId]
+			task.delay(GOING, function()
+				if last[userId] == data then
+					last[userId] = nil
+				end
+			end)
+		end)
 		if not RunService:IsStudio() then
 			begin(logged(dataStore(LIVE_STORE), false))
 			return
@@ -223,6 +242,10 @@ function Saving.new(): SavingSystem
 	function system.stop(_: any)
 		stopped = true
 		held = nil
+		if leaves then
+			leaves:Disconnect()
+			leaves = nil
+		end
 		if forward then
 			forward:disconnect()
 			forward = nil
@@ -240,6 +263,13 @@ function Saving.new(): SavingSystem
 	function system.data(_: any, player: Player): Save.Data?
 		local current = playerSaves
 		return if current then current:data(player) else nil
+	end
+
+	function system.leaving(_: any, userId: number): Save.Data?
+		local player = Players:GetPlayerByUserId(userId)
+		local current = playerSaves
+		local data = if player and current then current:data(player) else nil
+		return data or last[userId]
 	end
 
 	function system.saves(_: any): Brix.Saves<Save.Data>?

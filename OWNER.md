@@ -76,6 +76,18 @@ nowhere else.
   lost to you, as if you'd been caught, and a friend who carries it aboard keeps it. The other
   way, leaving would be a free way to save a find from a bad climb. A server crash never costs
   one either way. Say if you'd rather leaving sent it home.
+- [ ] **Decide: does a find you take up ever come home to you?** (S5-03d2, D-302, D-304). As
+  built:
+  1. You take your lamp out of your job box and ride a lobby car up. It's on the climb now.
+  2. Each time the gate shuts with it in your hand, it stays in your hand, so you can use it on
+     the next floor too. Finds you found that floor rise out of your slots as usual.
+  3. There's no top floor, so every climb ends with everyone caught. When you're caught, what
+     you carry drops where you stood, your lamp too, and the floor goes with the climb.
+  4. So your lamp only comes home if a friend picks it up and carries it aboard, and then it's
+     theirs. Otherwise it's struck off your save.
+  The other way: when the gate shuts with your own taken-up find in your hand, it goes home into
+  your box like any find you keep (it rises out of your slot), so it helps you for one floor and
+  is safe after. My default is as built (it's what D-302 says); say if you want the other way.
 - [ ] **Judge: a Gold on your shelf** (S5-03c3b3, D-300). Seen in Studio in your hand (it reads as
   solid gold under the bulb) and in the hand wells, but the shelf's cubby never came clear in a
   capture. Open your job box, pick a Gold card, press Shelf, then stand at the shelf: does it
