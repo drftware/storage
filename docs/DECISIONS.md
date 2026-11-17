@@ -7319,3 +7319,32 @@ home stands on your shelf, sparkling. Precedents: Animal Crossing's museum, Fort
   again).
 - **A Studio-only test hook** (`ServerStorage.ShelfTest`, as CatchTest is): keeps a find for a
   player as a gate does, so a test sees it land without a climb.
+
+## D-286 · 2026-11-17 · The boombox plays and the teddy hugs: a press on a one-mesh find (F-G1e5a, V5a)
+
+- **The moment.** You press Play: the key clacks down, then loud 80s electro booms out, the case
+  thumping on every beat and swaying from its handle in your fist, and every monster on the floor
+  comes to look, wherever you carry it or leave it; 15 seconds on the stop key clacks. You hug
+  the teddy: it squashes in your arms with a tiny muffled squeak and wiggles back.
+- **Precedents.** The boombox: the catalog's R.E.P.O. music box, through the cymbal monkey's lure
+  (D-233): heard as far as the air horn (130 studs) every 2 seconds while it plays, a toy that
+  takes no press mid-song; the case pulsing with its music, as Fortnite's Boom Box does. The
+  teddy: the squishies' Squeeze (V1), quiet.
+- **One-mesh presses are written by hand** in `Finds/OneMesh`, as the bedroom set's catalog rows
+  are (PIPELINE.md "Not here"): each find's pivot (its grip), its motions on its one mesh in the
+  kit's key format, and its press. `Finds.art` makes each a one-part find (its size from Specs),
+  so `Use`, `FindUses`, `FindUseView`, `Pose` and `Finds.joints`/`shift`/`grip` play it unchanged;
+  `Tools`' template records where the mesh was drawn (`Finds.pose`, its pivot set to the bottom's
+  middle for that one call). The squash and swell show about the mesh's middle (V1b's root
+  sizing), the sway and hop by moving the grip (V3c's carry). Pivots are plain numbers so Lune
+  reads the module.
+- **The song: APM's "Electroboogie"** (1842805228), from 8.04 s (a kick at 8.06), 113 beats a
+  minute measured in Play: the motion is two beats (0.532 s each) and the song runs 28 beats, so
+  it stops on a beat and the case comes to rest. Its length is 0.35 s short because `Tools.play`
+  lets a sound run half a second past it: cut under the stop key's clack (finduse.spec holds it).
+- **A tune is joined where it is** (`Use.join`, `Use.started`, `JoinLong` 2 s, `JoinLeft` 0.5 s):
+  dropping a find parents it to nothing for a moment, so every screen gets a new copy and a sound
+  under the old one dies; and a find walked up to mid-press was silent. Now a step sound of 2 s
+  or more (a tune: the song, the carousel's, the siren's wail) is joined from where it is now for
+  a find first seen part way through; a click never is. Seen in Play: dropped 2.5 s in, the song
+  carried on from 10.6 s in its recording.

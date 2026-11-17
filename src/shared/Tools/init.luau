@@ -163,10 +163,16 @@ local function findTemplate(key: string, row: Catalog.Row): Model?
 	inert(body)
 	body.CastShadow = true
 	body.CFrame = CFrame.new(piece.Centre)
-	body.PivotOffset = CFrame.new(-piece.Centre)
 	local model = Instance.new("Model")
 	model.Name = key
 	body.Parent = model
+	-- a one-mesh find with a press (the boombox's Play, F-G1e5a): where its mesh was drawn from
+	-- its bottom's middle, so its press can squash it and carry its grip (`Finds.pose`)
+	if Finds.art(row.template) then
+		body.PivotOffset = CFrame.new(0, -body.Size.Y / 2, 0)
+		Finds.pose(model, row.template, Finds.rest(row.template))
+	end
+	body.PivotOffset = CFrame.new(-piece.Centre)
 	model.PrimaryPart = body
 	model.WorldPivot = CFrame.identity
 	findTemplates[key] = model

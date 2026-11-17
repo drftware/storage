@@ -6,9 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** V5a (ROADMAP F-G1e5a, a press on a one-mesh find: the boombox's music on the lure and
-the teddy's hug), the first of V5's pieces. V4 (the siren car) is done and seen in Play (Nov 17,
-V4b).
+**Next:** V5f (ROADMAP F-G1e5f, the carousel's tune slows as it runs down), then V5's pieces d,
+b, c, e in that order. V5a (the boombox's Play and the teddy's Hug) is done and seen in Play (Nov
+17, V5a).
 
 ## The third run's plan (owner's brief, Nov 16 night)
 
@@ -45,7 +45,7 @@ head, belong to the home chain (ROADMAP S5-03, F-G1b4): listed as waiting, not b
    the defaults OWNER.md names: the cord's whirr, the motor's hum).
 6. **V4 The siren car** (done Nov 17: V4a built it; V4b saw it in Play and set the wail's start): it rolls as the die-cast car does, its beacon spins and lights the hall,
    and its wail lures.
-7. **V5 onwards**: whatever else A1 finds missing that isn't at home only.
+7. **V5 onwards** (V5a done Nov 17: the boombox and the teddy): whatever else A1 finds missing that isn't at home only.
 8. **S1 to S4 The last four squishies**, each from photos to playable through PIPELINE.md, its
    first proof: S1 the goo ball (oozes between your fingers and slowly comes back, on bones);
    S2 the colour-change goo ball (changes colour where pressed: find the way that holds up in
@@ -120,9 +120,9 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 | Jumbo slow-rise strawberry (`JumboStrawberry`) | The dent takes ten seconds to rise back · Squeeze | works: squeezed, a dent that slowly rises back, its own sound (V1) | Uncommon · 18 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; no dent seen in hand (bones, V1b); Nov 17, V1b: pressed in hand, its dent bones 0.047 studs down in hand and in your view's copy, rising back slowly |
 | Squishy capybara (`Capybara`) | A tiny, happy sigh · Squeeze | works: squeezed, squashes in hand (to 0.79), its orange moves, a sigh (V1) | Rare · 55 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; its orange moves a little; its body stays still in hand (V1b); Nov 17, V1b: pressed in hand, squashed to 0.79 of its height in hand and in your view's copy, its root still in the hand |
 | Galaxy goo ball (`GalaxyGooBall`) | Stars drift and swirl inside · Squeeze | works: squeezed, squashes in hand (to 0.71), its insides move, its own sound (V1) | Legendary · 350 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; its insides move; its body stays still in hand (V1b); Nov 17, V1b: pressed in hand, squashed to 0.71 of its height in hand and in your view's copy, its root still in the hand |
-| Boombox (`Boombox`, bedroom set) | Loud music wherever you leave it, monsters come to look; at home it plays your tapes · Play, a noise (R.E.P.O.'s music box) | missing: a press on a one-mesh find (V5); the tapes wait on the home chain | Uncommon · 25 · floor 1 up ✓ | |
+| Boombox (`Boombox`, bedroom set) | Loud music wherever you leave it, monsters come to look; at home it plays your tapes · Play, a noise (R.E.P.O.'s music box) | works (V5a, D-286): its key clacks, 80s electro 15 s, the case thumping each beat and swaying from its handle, lures every 2 s, 130 studs, in hand or where you leave it; the tapes wait on the home chain | Uncommon · 25 · floor 1 up ✓ | Nov 17, V5a: given (GiveFind), pressed in hand: the key dipped it to 0.975, then it swelled to 1.04 every 0.53 s, swaying up to 3 degrees and hopping 0.035 studs from the handle, the same in your view's copy; the song from 0.36 s; the Mannequin 56 studs off woke, came and caught me ("lured 8 times (130 studs)"). Again, dropped 2.5 s in and me lifted away: the song carried on from where it was (10.6 s into the recording), the case thumping on the floor; the Mannequin went to it and stood looking |
 | Small box TV (`Television`, bedroom set) | At home: it plays your tapes and films · Play (Animal Crossing's records) | waits on the home chain | Uncommon · 22 · floor 1 up ✓ | |
-| Small teddy bear (`Teddy`, bedroom set) | A tiny squeak · Hug (quiet) | missing: a press on a one-mesh find (V5) | Common · 4 · floor 1 up ✓ | |
+| Small teddy bear (`Teddy`, bedroom set) | A tiny squeak · Hug (quiet) | works (V5a, D-286): hugged, squashes, a tiny squeak, wiggles back; quiet | Common · 4 · floor 1 up ✓ | Nov 17, V5a: given, pressed in hand: squashed to 0.78 at 0.17 s in hand and in your view's copy, tipped 6 degrees, sprang to 1.07 and settled by 1.05 s; the cloth at 0.08 s, the squeak at 0.17 s |
 | Roller skates (`Skates`, bedroom set) | You move faster, but the wheels are loud on concrete · Wear (DOORS' vitamins) | waits on the home chain and the owner (F-G1b5; monsters don't hear feet yet, D-251) | Uncommon · 18 · floor 1 up ✓ | |
 
 **Verbs missing, and who shares each** (this sets V1 to V5):
@@ -140,7 +140,8 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 3. **A light that shines only while a toy plays:** the siren car's beacon (V4; built Nov 17, V4a, seen in Play V4b: a toy's frame
    is lit only while it plays, and `walks` keeps a wall stop from holding it lit; D-281).
 4. **V5 needs five pieces; split it before starting:** (a) a press on a one-mesh find, which has
-   no joints or motions: the boombox's music on the lure and the teddy's hug; (b) the glow
+   no joints or motions: the boombox's music on the lure and the teddy's hug (done Nov 17, V5a:
+   `Finds/OneMesh`, D-286); (b) the glow
    sticks' other two sticks (one more crack each; the art has one `Crack`); (c) the fairy
    lights laid along a hall; (d) the Old lamp holding a Mannequin while it lies lit, as D-234's
    found lights do; (e) fragile: the oil lamp and the glass lamp chip to half their worth when
@@ -245,6 +246,21 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, V5a (the boombox and the teddy; seen in Play; V5f next).** A one-mesh find's press is
+  written by hand in `src/shared/Finds/OneMesh.luau` (its pivot as plain numbers, its motions in
+  the kit's key format, its press), as its catalog row is; `Finds.art` makes it a one-part find,
+  so every press path plays it unchanged, and `Tools`' template records where its mesh was drawn.
+  The Catalog rows got `verb`. **The song:** APM's "Electroboogie" 1842805228 (loud from 8 s, 113
+  beats a minute measured by onset autocorrelation in Play; APM's library searches well for
+  music, "80s hip hop beat"). **Fixed in passing:** dropping a find hands every screen a new copy
+  (Slots stows it to nil and back), so a long step sound under the old copy died: `Use.join`
+  now joins a tune (2 s or more) where it is for a find first seen part way through. That also
+  covers the carousel's tune and the siren's wail when dropped or walked up to. **Seen in Play:**
+  A1's table. **For V5f:** the carousel's `Play` step plays `CAROUSEL_TUNE` once; a slowing tune
+  could be cues of the same recording at falling pitch, or a `Sound` pitch ramp (no field for one
+  yet: the step's sound is one `Tools.play`). Play can't measure in Edit (`PlaybackLoudness` is 0
+  there; `PlayLocalSound` doesn't play). Output: only the known lines.
 
 - **Nov 17, V4b (the siren car seen in Play; V4 done).** No code changed: only its wail
   (`SIREN` in `kit/game.py`, then `scripts/art.sh rows`). **Measured** (Client, `PlaybackLoudness`

@@ -5,6 +5,7 @@
 -- what's left of its light; the jack-in-the-box can't be wound mid-tune, is shut before it's
 -- wound again, and its bang comes as its Pop starts.
 local Fixture = require("./fixtures/finds")
+local OneMesh = require("../src/shared/Finds/OneMesh")
 local Pose = require("../src/shared/Finds/Pose")
 local Use = require("../src/shared/Finds/Use")
 
@@ -26,12 +27,14 @@ local function near(a: number, b: number): boolean
 	return math.abs(a - b) < 1e-6
 end
 
--- a find's motions' lengths, as its set wrote them
+-- a find's motions' lengths, as its set wrote them (a one-mesh find's, as `OneMesh` does)
 local function durations(name: string): { [string]: number }
 	local out: { [string]: number } = {}
 	local find = Fixture.kit[name]
-	if find then
-		for motion, m in find.Motions do
+	local one = OneMesh[name]
+	local motions = if find then find.Motions else if one then one.motions else nil
+	if motions then
+		for motion, m in motions do
 			out[motion] = m.Duration
 		end
 	end
@@ -41,7 +44,7 @@ end
 -- every row's motions are its find's own
 for name, row in Use.Rows do
 	local d = durations(name)
-	ok(Fixture.kit[name] ~= nil, `{name}: a kit-built find`)
+	ok(Fixture.kit[name] ~= nil or OneMesh[name] ~= nil, `{name}: a kit-built or one-mesh find`)
 	local steps: { Use.Step } = table.clone(row.on)
 	for _, s in row.out or {} do
 		table.insert(steps, s)
@@ -738,6 +741,80 @@ do
 			)
 		end
 	end
+end
+
+-- The one-mesh finds (F-G1e5a): each motion starts and ends where the find rests. The boombox's
+-- Play key clacks, its song plays a whole number of thumps and is heard as far as the air horn
+-- every 2 s all through it, then its stop key clacks as the song is cut; it can't be pressed
+-- mid-song, and plays again after. The teddy's hug is quiet, its squeak at the squash.
+do
+	local REST = { scale = 1, stretch = 1 }
+	for name, entry in OneMesh do
+		for motion, m in entry.motions do
+			for _, track in m.Tracks do
+				local rest = REST[track.Channel] or 0
+				local first, last = track.Keys[1], track.Keys[#track.Keys]
+				ok(
+					track.Part == name and first[1] == 0 and first[2] == rest and last[2] == rest,
+					`{name} {motion} {track.Channel}: from rest to rest`
+				)
+				ok(near(last[1], m.Duration), `{name} {motion} {track.Channel}: keys to its end`)
+			end
+		end
+	end
+
+	local row, d = Use.Rows.Boombox, durations("Boombox")
+	local song = row.on[2]
+	ok(row.verb == "Play" and Use.toy(row) and row.noise == "Play", "boombox: Play, a toy, noisy")
+	ok(Use.loudness(row) == Use.LureReach and row.lure == 2, "boombox: as loud as the horn, 2 s")
+	local loops = (song.loop :: number) / d.Play
+	ok(math.abs(loops - math.round(loops)) < 1e-6, "boombox: the song ends on a whole thump")
+	ok(near(Use.noiseAt(row, "On", d) :: number, d.Key), "boombox: heard once its key is down")
+	ok(
+		near(Use.lureUntil(row, "On", d) :: number, d.Key + (song.loop :: number)),
+		"boombox: lures until the song stops"
+	)
+	local stamp: Use.Stamp = { state = "On", at = 0, left = Use.Forever }
+	local f = Use.frame(row, stamp, 0.1, d)
+	ok(f.motion == "Key" and f.step == 1, "boombox: its key pressed")
+	f = Use.frame(row, stamp, d.Key + d.Play * 3 + 0.2, d)
+	ok(f.motion == "Play" and f.step == 2 and near(f.t, 0.2), "boombox: thumping on, looped")
+	ok(Use.press(row, stamp, 8, d) == nil, "boombox: no press mid-song")
+	local stop = d.Key + (song.loop :: number)
+	f = Use.frame(row, stamp, stop + 0.1, d)
+	ok(f.motion == "Stop" and f.step == 3, "boombox: its stop key")
+	-- `Tools.play` lets a sound run half a second past its length: cut as the stop key clacks
+	-- (0.14 s into its recording)
+	local cut = d.Key + (song.sound :: Use.Sound).length + 0.5
+	ok(math.abs(cut - (stop + 0.14)) < 0.05, "boombox: the song cut under the stop key")
+	ok(Use.press(row, stamp, stop + d.Stop, d) == "Again", "boombox: plays again after")
+
+	-- dropped mid-song (every screen gets a new copy) or walked up to: the song joined where it is
+	ok(Use.started(row, "On", 2, d) == d.Key, "boombox: the song starts once its key is down")
+	ok(near(Use.started(row, "On", 3, d) :: number, stop), "boombox: the stop key after the song")
+	local into = 5
+	local joined = Use.join(song.sound :: Use.Sound, into)
+	ok(
+		joined ~= nil
+			and near(joined.from, (song.sound :: Use.Sound).from + into)
+			and near(joined.length, (song.sound :: Use.Sound).length - into),
+		"boombox: the song joined 5 s in, where it is"
+	)
+	ok(
+		Use.join(song.sound :: Use.Sound, (song.sound :: Use.Sound).length - 0.2) == nil,
+		"boombox: not joined in its last moment"
+	)
+	ok(Use.join(row.on[1].sound :: Use.Sound, 0.1) == nil, "boombox: its key's click never joined")
+	local slow = { id = "x", from = 1, length = 6, volume = 1, pitch = 0.5 }
+	local j = Use.join(slow, 2)
+	ok(j ~= nil and near(j.from, 2) and near(j.length, 5), "a slowed tune joined by its pitch")
+
+	local teddy, td = Use.Rows.Teddy, durations("Teddy")
+	ok(teddy.verb == "Hug" and Use.toy(teddy), "teddy: Hug, a toy")
+	ok(teddy.noise == nil and Use.noiseAt(teddy, "On", td) == nil, "teddy: quiet")
+	local cues = Use.timeline(teddy.on[1], OneMesh.Teddy.motions.Hug)
+	ok(#cues == 1 and cues[1].t > 0 and cues[1].t < 0.2, "teddy: its squeak at the squash")
+	ok(Use.press(teddy, stamp, td.Hug + 0.01, td) == "Again", "teddy: hugged again once back")
 end
 
 print(`finduse: {checks - failures}/{checks} passed`)

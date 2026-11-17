@@ -2790,8 +2790,13 @@ actions themselves and dealing the new finds on floors are later game tickets.
         lobby (`docs/art/V4b-siren-car-*.jpg`); a Mannequin 64 studs off walked to it and
         stood looking. Output: nothing from this work.
     - [ ] **F-G1e5 The rest the audit found (V5).** Each seen in Play before it's ticked:
-      - [ ] **F-G1e5a A press on a one-mesh find** (no joints or motions): the boombox's loud
-        music on the lure (R.E.P.O.'s music box) and the teddy's hug squeak.
+      - [x] **F-G1e5a A press on a one-mesh find** (Nov 17, V5a; seen in Studio Play, not on a
+        phone; D-286): the boombox's Play (its key clacks, 80s electro for 15 s, the case thumping
+        on each beat and swaying from its handle, lures every 2 s as far as the air horn, in hand
+        or where you leave it) and the teddy's Hug (squashed to 0.78, a tiny squeak, a wiggle
+        back). `Finds/OneMesh` by hand; a tune joins where it is for a find come upon part way
+        (`Use.join`). Seen: a Mannequin 56 studs off woke and came, then went to the dropped
+        boombox; the song carried on after the drop.
       - [ ] **F-G1e5b The glow sticks' other two sticks** (three to a bundle): one more crack
         each, the art has one `Crack`.
       - [ ] **F-G1e5c The fairy lights laid along a hall** for a dim line of light.

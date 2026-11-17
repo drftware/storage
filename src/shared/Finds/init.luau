@@ -9,6 +9,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Art = require(script.Art)
+local OneMesh = require(script.OneMesh)
 local Order = require(script.Order)
 local Pose = require(script.Pose)
 local Specs = require(script.Specs)
@@ -33,10 +34,38 @@ Finds.PosedAttribute = POSED
 -- The smallest a part is drawn (a MeshPart can't be size 0): a part scaled to nothing is hidden.
 local TINY = 0.001
 
--- Every kit-built find's data by name, from the generated sets (Finds/Sets), read once.
+-- Every kit-built find's data by name, from the generated sets (Finds/Sets) and the one-mesh
+-- finds with a press (`OneMesh`), read once.
 local kitFinds: { [string]: Art.Find }? = nil
 
--- A kit-built find's data (its parts, lights and motions), nil for the bedroom set.
+-- A one-mesh find with a press (the boombox, F-G1e5a) as a kit find of one part, its whole mesh,
+-- so its press plays as any kit find's does: its size from its Specs, its motions from `OneMesh`.
+local function oneMesh(name: string, entry: OneMesh.Entry): Art.Find?
+	local spec = Specs.Finds[name]
+	if not spec then
+		return nil
+	end
+	local p = entry.pivot
+	return {
+		Size = spec.Size,
+		Centre = Vector3.new(0, spec.Size.Y / 2, 0),
+		Triangles = spec.Triangles,
+		Texture = 0, -- the bedroom set's texture is its own, never the kit's
+		Parts = {
+			{
+				Name = name,
+				Pivot = Vector3.new(p[1], p[2], p[3]),
+				Size = spec.Size,
+				Triangles = spec.Triangles,
+			},
+		},
+		Lights = {},
+		Motions = entry.motions,
+	}
+end
+
+-- A find's data for its press (its parts, lights and motions): a kit-built find's, or a one-mesh
+-- find's that has a press (`OneMesh`); nil for the rest of the bedroom set.
 function Finds.art(name: string): Art.Find?
 	if kitFinds then
 		return kitFinds[name]
@@ -49,6 +78,12 @@ function Finds.art(name: string): Art.Find?
 				for n, find in (require :: any)(m) :: { [string]: Art.Find } do
 					made[n] = find
 				end
+			end
+		end
+		for n, entry in OneMesh do
+			local one = oneMesh(n, entry)
+			if one then
+				made[n] = one
 			end
 		end
 		kitFinds = made

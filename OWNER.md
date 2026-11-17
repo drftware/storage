@@ -284,6 +284,17 @@ nowhere else.
      seconds. The tune doesn't slow as it runs down yet (ROADMAP polish). Loudness defaults
      chosen: the robot and bird carry 90 studs (as the teeth), the mouse and carousel 60 (down
      the hall, as the duck). Right?
+- [ ] **Try (F-G1e5a, built Nov 17, D-286; seen in Studio Play Nov 17, V5a, not on a phone):**
+  the **boombox** and the **teddy**. `GiveFind` each, then press.
+  1. Press **Play** on the boombox: its key clacks, then 80s electro (APM's "Electroboogie")
+     plays for 15 seconds, the case swelling on each beat and swaying from its handle; a monster
+     across the floor comes to it. Drop it mid-song and walk off: the music plays on where it
+     lies and the monster goes to it, not you. Then the stop key clacks. Is this the song (an
+     80s boombox, not a club)? Is the thump big enough to read at phone size? My defaults, say
+     which to change: 15 seconds a press (the monkey's 20 stays the longest); as loud as the air
+     horn (130 studs), every 2 seconds; no stopping it mid-song.
+  2. **Hug** the teddy: it squashes in your hand, gives a tiny muffled squeak and wiggles back.
+     Is the squeak small enough for a teddy (the duck's, higher and quiet)? No monster hears it.
 - [ ] **Try (F-G1e4, built Nov 17, D-281; seen in Studio Play Nov 17, V4b, not on a phone):**
   the **siren car**, on a phone, in a dark hall. `GiveFind` it, face down the hall,
   press Push: it's set down, pushed twice, and rolls off wailing, its red roof light turning and

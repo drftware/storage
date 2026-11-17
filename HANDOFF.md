@@ -22,6 +22,8 @@ github.com/drftware/storage); Brix pinned at `482368f`, NOT on Brix's `origin` y
 - Dev path: `ServerStorage.ShelfTest:Invoke(player, key)` (Studio) keeps a find as a gate does.
 - Save version 5 (`Save.luau`): `shelf` spots `{ find, fresh }`; `Save.keep` leaves a find in
   `finds` alone when the shelf is full: that's the job box's (S5-03c2a).
+- Find art (third find run): the boombox plays and the teddy hugs, seen in Play (V5a, D-286).
+  Next there: V5f, the carousel's tune slowing as it runs down (`art/finds/WAVES.md`).
 
 ## Next task: S5-03c2a The job box
 The moment: the shelf's full, you keep one more at the gate, and when you come home the job box's

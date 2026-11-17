@@ -10,7 +10,8 @@
 	and the server clock (`Use.frame`) and stands its parts there by their joints alone
 	(`Finds.joints`: a find in a hand is part of a character, so no part is ever moved). Only a
 	find whose frame moves is posed again: a lantern held lit holds still and costs nothing. A
-	step's sound plays at the find as the step starts, never for a find just come into view.
+	step's sound plays at the find as the step starts, never for a find just come into view, but a
+	tune (the boombox's song) is joined where it is (`Use.join`).
 
 	Your own find in hand is drawn twice: the real one in your character (what friends see) and
 	your view's copy near your eye (`ToolView`); your copy plays the same frame and carries the
@@ -352,6 +353,21 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 			local late = e.heardStep < 0 and elapsed > FRESH
 			e.heardState, e.heardAt = stamp.state, stamp.at
 			e.heardStep = if late then step else 0
+			-- come upon part way through a tune (walked up to, or dropped from a hand, which hands
+			-- every screen a new copy): the boombox's song joined where it is now (`Use.join`)
+			if late then
+				local s = Use.stepAt(e.row, stamp.state, step)
+				local started = Use.started(e.row, stamp.state, step, e.durations)
+				local joined = if s
+						and s.sound
+						and started
+					then Use.join(s.sound, elapsed - started)
+					else nil
+				local body = Tools.body(e.model)
+				if joined and body then
+					Tools.play(joined, body, Use.Reach)
+				end
+			end
 		end
 		if step == e.heardStep then
 			return

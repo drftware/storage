@@ -9,6 +9,7 @@
 -- leaves out of the deal any find whose art isn't in the place.
 local Catalog = require("../src/shared/Tools/Catalog")
 local Deal = require("../src/shared/Deal")
+local OneMesh = require("../src/shared/Finds/OneMesh")
 local Rows = require("../src/shared/Finds/Rows")
 local Use = require("../src/shared/Finds/Use")
 local Was = require("./fixtures/kitrows") :: any -- a frozen literal: read field by field below
@@ -111,7 +112,8 @@ for i, row in Rows do
 end
 ok(#kit == #Rows, `the deal's kit finds ({#kit}) are the generated rows ({#Rows})`)
 for key in Use.Rows do
-	local found = false
+	-- the one-mesh finds' presses are written by hand, as their catalog rows are (F-G1e5a)
+	local found = OneMesh[key] ~= nil
 	for _, row in Rows do
 		found = found or row.key == key
 	end

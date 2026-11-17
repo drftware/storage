@@ -19,6 +19,7 @@
 
 local Art = require("./Art")
 local Game = require("./Game")
+local OneMesh = require("./OneMesh")
 local Rows = require("./Rows")
 
 local Use = {}
@@ -100,6 +101,11 @@ for _, row in Rows do
 	if row.judged and row.press then
 		Use.Rows[row.key] = row.press
 	end
+end
+-- the one-mesh finds' presses (the boombox's Play, the teddy's Hug), written by hand as their
+-- catalog rows are (F-G1e5a)
+for key, entry in OneMesh do
+	Use.Rows[key] = entry.press
 end
 
 -- Whether `row` is a toy: pressed again once its motions end (`toy`, or the jack's `reset`).
@@ -229,6 +235,44 @@ function Use.press(
 		return "Again", stamp.left
 	end
 	return nil, 0
+end
+
+-- A step's sound at least this long (seconds, as heard) is a tune, not a click: a find come into
+-- view part way through it (walked up to, dropped from a hand, which hands every screen a new
+-- copy) joins it where it is now, so a boombox you walk toward is already playing.
+Use.JoinLong = 2
+-- Less than this left of a tune (seconds) isn't worth starting: it would only blip.
+Use.JoinLeft = 0.5
+
+-- Seconds after a press in state `state` that its step `n` starts (`Frame.step`); nil for a
+-- step of `out` or none.
+function Use.started(row: Row, state: State, n: number, durations: { [string]: number }): number?
+	local steps = Use.chain(row, state)
+	if n < 1 or n > #steps then
+		return nil
+	end
+	local at = 0
+	for i = 1, n - 1 do
+		at += Use.length(steps[i], durations)
+	end
+	return at
+end
+
+-- `sound` joined `into` seconds after its step started: the rest of a tune from where it is now,
+-- or nil for a click (shorter than `JoinLong`) or a tune nearly over (`JoinLeft`).
+function Use.join(sound: Sound, into: number): Sound?
+	local pitch = sound.pitch or 1
+	local gone = math.max(into, 0) * pitch -- seconds of the recording already played
+	if sound.length / pitch < Use.JoinLong or (sound.length - gone) / pitch < Use.JoinLeft then
+		return nil
+	end
+	return {
+		id = sound.id,
+		from = sound.from + gone,
+		length = sound.length - gone,
+		volume = sound.volume,
+		pitch = sound.pitch,
+	}
 end
 
 -- The step numbered `n` in a frame (`Frame.step`): the press's steps, then `out`'s; nil for 0.
