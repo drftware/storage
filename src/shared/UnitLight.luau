@@ -85,6 +85,26 @@ UnitLight.HumVolume = 0.12
 UnitLight.HumNear = 3
 UnitLight.HumReach = 14
 
+-- A home's bulb: the ground floor's units (Lobby.front marks its glass with this attribute). An XL
+-- unit is three times an M's depth and someone keeps their things in it, so it hangs stronger and
+-- reaches further: lit, it fills the unit and spills a warm pool out of the doorway onto the
+-- lobby's cold-lit concrete, so every open unit reads from the spawn as a lit doorway (the home's
+-- point, D-259: everyone sees everyone's units on the way to the cars). It casts no shadow, so all
+-- twelve can throw real light at once on a phone without the shadow cost: a home bulb is never
+-- one of the NearBulbs, it throws light whenever it's lit. With no shadow it reaches through the
+-- unit's walls; its neighbours are homes too, and the warm wash on the lobby's wall between two
+-- open doors reads as more of the same light.
+UnitLight.HomeAttribute = "HomeBulb"
+UnitLight.Home = table.freeze({
+	Range = 22, -- from the glass (15 in, 9.8 up) to the floor a few studs out of the doorway
+	Strength = 1.7, -- times a climb bulb's brightness: about 1, just under the hall tube's 1.2
+})
+
+-- Whether `glass` is a home's bulb (UnitLight.Home).
+function UnitLight.isHome(glass: BasePart): boolean
+	return glass:GetAttribute(UnitLight.HomeAttribute) == true
+end
+
 local function lightOf(glass: BasePart): PointLight
 	local found = glass:FindFirstChildWhichIsA("PointLight")
 	if found then
@@ -92,8 +112,9 @@ local function lightOf(glass: BasePart): PointLight
 	end
 	local light = Instance.new("PointLight")
 	light.Color = UnitLight.Colour
-	light.Range = UnitLight.Range
-	light.Shadows = UnitLight.Shadows
+	local home = UnitLight.isHome(glass)
+	light.Range = if home then UnitLight.Home.Range else UnitLight.Range
+	light.Shadows = UnitLight.Shadows and not home
 	light:AddTag(HallLight.Tag)
 	light.Parent = glass
 	return light
@@ -103,7 +124,9 @@ end
 -- throwing none when `real` is false.
 function UnitLight.light(glass: BasePart, level: number, real: boolean?)
 	local light = lightOf(glass)
-	light.Brightness = UnitLight.Brightness * level
+	light.Brightness = UnitLight.Brightness
+		* level
+		* (if UnitLight.isHome(glass) then UnitLight.Home.Strength else 1)
 	light:SetAttribute(HallLight.LitAttribute, light.Brightness)
 	light.Enabled = level > 0 and real ~= false
 	glass.CastShadow = false

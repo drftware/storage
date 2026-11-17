@@ -2317,13 +2317,20 @@ Done when players watch the results to the end and change their perks between cl
       M's front, bulb and stand-in boxes in every gap. Export checked (every part under 20,000,
       87,446 triangles); not imported: Specs.luau waits for a2a.
     - [ ] **S5-03a2 The floor in the game**, split (D-261):
-      - [ ] **S5-03a2a Into the game with its unit fronts**: export and import together (Specs
-        and FBX), `Lobby.prepare` for the new parts, the M unit's front (walls dropped,
-        `UnitKit.dropWall`) laid in each gap with its door working, the spawn just inside the
-        door; Play: walk from the spawn into a car and climb.
-      - [ ] **S5-03a2b Lights for 156 deep**: the floor before the spawn is black in the sheets
-        and the open units need their bulbs; within the phone light cap (GDD tech plan), the
-        carts and their rack, the cars and trips untouched, a new player in a car within 15 s.
+      - [x] **S5-03a2a Into the game with its unit fronts** (D-262): the new FBX exported,
+        uploaded and imported with its Specs (`Slots`); `Lobby.prepare` squares the joists and
+        units' parts; `Lobby.front` stands the climb's M unit in each gap (walls, floor and top
+        dropped, oxblood door, teal facade, its number on the plate, tagged so the door rolls,
+        slams and locks as on a climb, anyone may open it until a3). Pulled in from a2b at the
+        conductor's ask: the fills in three rows down the room and each unit's bulb hung as a
+        home's (`UnitLight.Home`: stronger, further, no shadow, always real when lit), so from
+        the spawn every open unit reads as a warm doorway. Verified in Studio Play: twelve
+        fronts, a door rolling, the lit view from the spawn, a car taking you to floor 1.
+      - [ ] **S5-03a2b The ground floor weighed for a phone**: up to 25 real lights (6 fills,
+        12 home bulbs, 6 car lamps, the porch) and the room's 87,446 triangles plus twelve M
+        fronts and six cars, weighed at Galaxy A16 size against the GDD tech plan's caps;
+        trimmed where they pass (fewer fills, a front's hidden parts); the run from the spawn
+        to a car timed (under 15 s); the carts, cars and trips unchanged.
     - [ ] **S5-03a3 A unit each**: a unit for each player as they join (12; a plots system
       built in Brix first, D-252), your name over your door, doors open by default, pulled down
       keeping everyone out with a locked rattle, spare units padlocked.

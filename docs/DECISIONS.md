@@ -6690,3 +6690,38 @@ either side, as the climb's units share theirs.
   front office's. Imported alone, the new mesh would leave twelve open holes in the game's side
   walls until the M fronts stand in them, so a2a exports, imports and lays the fronts together.
 - **Split S5-03a2** into the import with the unit fronts (a2a) and the lights for 156 deep (a2b).
+
+## D-262 · 2026-11-16 · The ground floor in the game: the climb's M fronts in the gaps, lit as homes (S5-03a2a)
+
+The 156-deep ground floor (D-260, D-261) is in the game: its FBX and `Lobby/Specs.luau` exported,
+uploaded and imported together, the template in the place replaced and saved. `Lobby.front`
+stands a copy of the climb's M unit (`ReplicatedStorage.Units.M`) in each of the twelve gaps,
+pivoted so its doorway's outer face sits on the slot's `Door` looking `Out`, as
+`FloorBuilder.unit` stands a climb's unit at a door face.
+
+- **The front is built in `Lobby`, not by `FloorBuilder.unit`**: that one is a server module
+  that lifts the unit's floor and hangs a climb bulb under the unit's top, and the lobby drops
+  both (`Lobby.Dropped`: both side walls, the back wall, the floor and the top, which the
+  lobby's mesh stands). Each front is tagged as every unit is, so the Doors system gives it the
+  climb's buttons and its door rolls, slams, peeks and locks the same. No floor deals it, so
+  it's empty; anyone may open any one until a3 makes each a player's. Its plate shows its slot
+  number.
+- **Oxblood doors**, the climb's, on facades in the lobby's teal: warm against the walls either
+  side, so twelve doors read as doors from the spawn, not more wall (`OWNER.md`).
+- **The light, pulled forward from a2b** at the conductor's ask, after Studio showed it: from
+  the spawn only the three open units nearest you threw real light (`UnitLight.NearBulbs`, the
+  climb's phone cap) and the rest read as grey holes, when the home's point is that everyone
+  sees everyone's units on the way to the cars. So each front's bulb (the climb's, wired to its
+  door as on a climb) is marked a home's (`UnitLight.Home`): reach 22 and 1.7 times a climb
+  bulb's brightness, so it fills the XL unit and spills a warm pool out of the doorway; no
+  shadow; and never counted among the nearest, it throws light whenever it's lit. The room's
+  two fills became a pair in each of three rows (26, 78 and 130 studs from the cars), so you
+  load in to a lit floor running away to the cars. Judged in Studio's Play viewport (1380 by
+  761), not the A16 emulator: ten open units warm down both walls, two shut ones red.
+- **Not chosen:** a higher `NearBulbs` everywhere (the climb's budget is the climb's);
+  shadowed home bulbs (twelve shadowed lights are the costliest thing a phone can draw);
+  haze or other mood effects (AGENTS.md: loop before atmosphere).
+- **The cost, for a2b:** up to 25 real lights in the lobby (6 fills, 12 home bulbs, 6 car
+  lamps, the porch), none shadowed but the porch's. Unshadowed, a home bulb reaches through its
+  unit's walls; its neighbours are homes too, and the warm wash on the wall between two open
+  doors reads as more of the same light. a2b weighs it all on a phone.

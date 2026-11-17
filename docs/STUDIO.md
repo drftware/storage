@@ -517,6 +517,12 @@ verified: a doc page, Studio, or "untested".
   lamp was switched off on the client. Turning the client's camera instead (Client view:
   `workspace.CurrentCamera.CFrame = CFrame.lookAt(itsPosition, target)`; first person keeps the
   new heading) and capturing with no camera gave the live view, the lobby black with the lamp off.
+- **A capture with no camera given can be an old frame** (S5-03a2a, 2026-11-16): right after
+  Play started, `screen_capture` gave the spawn view black but for the neon tubes, and a later
+  capture with the camera barely moved gave back an earlier capture's image pixel for pixel.
+  Setting the client's camera (`CameraType` Scriptable, `CFrame` set) before each capture gave
+  the live, lit view every time. Compare two captures before believing a black or unchanged one.
+
 - **A SurfaceGui draws on an invisible part, and in captures** (L-05a2): a Transparency 1 card
   shows its text. But the first note made in the session drew no digits until its SurfaceGui was
   switched off and on (Kalam's first use, Edit); later notes drew at once.
@@ -2448,6 +2454,12 @@ verified: a doc page, Studio, or "untested".
   own sight table, and call its `step` by hand; the real instance leaves an unlit mark alone.
 
 ## Pressing a prompt from a test (S2-06b2a, Nov 14)
+
+- **To see a door roll without pressing its prompt** (S5-03a2a, Nov 16): a Client
+  `InputHoldBegin` on a lobby unit's Open (the player 4 studs out, facing it) moved nothing, as
+  below. Server: `require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor).play(unit, "Open")`
+  rolls it on every screen and lights its bulb (UnitLights reads the motion), though the Doors
+  system's own state still thinks it shut.
 
 - Through the Studio MCP, neither a key sent with `user_keyboard_input` nor the client calling
   `ProximityPrompt:InputHoldBegin()` / `InputHoldEnd()` fired the dev floor's post (R, hold 0,

@@ -32,6 +32,16 @@ nowhere else.
      9 seconds from loading in to the cars, past all 12 units.
   6. Each unit's door is the climb's 8-wide door, in a unit 20 wide. A 12-wide door would show
      more of each unit from the floor, but that door's paint still stretches (D-260).
+  7. The units' doors are the climb's oxblood, on the lobby's teal walls (D-262).
+- [ ] **Walk the new ground floor** (S5-03a2a, D-262; seen in Studio Play by me, not on a
+  phone). Press Play in Studio (or publish and play on your phone, Galaxy A16 or similar):
+  1. You load in just inside the glass door, facing the six cars 150 studs away, twelve roll-up
+     doors down the side walls. Is the hall lit all the way, or too bright and flat for night?
+  2. Walk to a unit and press Open: the door rolls up, the bulb inside clicks and stutters on,
+     and warm light spills out of the doorway. Open a few more and walk back to the door: do
+     the open units read as warm doorways from where you loaded in?
+  3. On the phone: does it run smoothly with several units open? (Every open unit's bulb is a
+     real light here, unlike on a climb.) Then step into a car: it still takes you up.
 
 - [ ] **Find the new finds** (F-G1a, D-203; seen in Studio Play by me on floor 1, not on a
   phone): play a climb and open doors. Floor 1 now deals the Nov 15 finds beside the bedroom

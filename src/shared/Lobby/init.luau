@@ -1,13 +1,15 @@
 --!strict
 --[[
-	Lobby: Everkeep's front office at night (GDD "The lobby", D-112, art/lobby/README.md). You load
-	in just inside the glass front door, facing six freight cars along the back wall, the counter
-	and its shelves to your left, the cart rack to your right of the door.
+	Lobby: Everkeep's ground floor at night (GDD "The lobby", D-112, D-259, art/lobby/README.md).
+	You load in just inside the glass front door, facing six freight cars along the back wall 150
+	studs away, the counter and its shelves to your left, the cart rack to your right of the door,
+	and six storage units down each side wall between you and the cars, one a player (D-260).
 
 	The art is one imported model (art/lobby/out/Lobby.fbx), kept in the place at
 	ReplicatedStorage.Props.Lobby (D-009) and made a template once in Edit by `Lobby.prepare`.
 	`Lobby.lay` copies it into the world with what the game adds: Everkeep's paint, the numbers and
-	signs, the boxes on the shelves, the hall lights and, in each bay, the climb's own car with its
+	signs, the boxes on the shelves, the hall lights, in each unit's gap the climb's own M unit front
+	with its door working as on a climb (`front`), and, in each bay, the climb's own car with its
 	gate folded open, marked a lobby car (Boarding): the way into a climb (LobbyCars, L-08e1b1).
 
 	Frame: the lobby's pivot is on the floor at the middle of the bay wall's face, its LookVector
@@ -23,6 +25,8 @@ local Elevator = require(script.Parent.Elevator)
 local Gate = require(script.Parent.Elevator.Gate)
 local HallLight = require(script.Parent.HallLight)
 local Specs = require(script.Specs)
+local StorageUnit = require(script.Parent.StorageUnit)
+local UnitLight = require(script.Parent.UnitLight)
 
 local Lobby = {}
 Lobby.Specs = Specs
@@ -46,6 +50,13 @@ Lobby.Paint = {
 	Plate = Color3.fromRGB(38, 40, 42), -- under the plates' texture, if it fails to load
 }
 
+-- The units' roll-up doors: the climb's oxblood, warm against the teal walls either side, so the
+-- twelve doors read as doors from the spawn, not as more wall (their facades wear Paint.Walls).
+Lobby.UnitDoor = StorageUnit.UnitKit.Colours.Door.Oxblood
+-- The parts of the climb's M unit each front leaves out: the lobby's mesh stands the unit's walls,
+-- floor and top behind the gap (D-261), so only the facade, frame and door are the M's.
+Lobby.Dropped = { "WallLeft", "WallRight", "WallBack", "Floor", "Top" }
+
 -- The writing on the signs: Builder Sans Bold, off-white, a little self-lit so a bay's number
 -- reads from the door on a phone even where the hall lights don't reach it.
 Lobby.Ink = Color3.fromRGB(236, 231, 216)
@@ -53,15 +64,19 @@ Lobby.InkLight = 0.35 -- the SurfaceGuis' LightInfluence: 0 glows, 1 is lit only
 Lobby.Words = { Name = "EVERKEEP SELF STORAGE", Carts = "CARTS" } :: { [string]: string }
 
 -- The room's light. The hall lights glow (Neon) but throw no light of their own: the room is lit
--- by two wide fills that cast no shadow, and the cars by their own lamps, so the six cars are the
--- brightest things you see. Real lights: these two, the six lamps and the porch light outside.
+-- by wide fills that cast no shadow, a pair in each of three rows down its 156 studs, and the cars
+-- by their own lamps, so the six cars are the brightest things ahead and the open units' warm
+-- doorways the brightest either side. Real lights: these six, the six lamps, the porch light and
+-- each open unit's bulb (UnitLight.Home).
 Lobby.Fill = {
 	Colour = Color3.fromRGB(214, 228, 230), -- the tubes' cold white, a touch warmer
 	Brightness = 0.55,
-	Range = 60, -- a PointLight's most: the two together reach every corner
+	Range = 60, -- a PointLight's most: each row's reach overlaps the next's
 	Height = 10, -- under the joists, over the cars' heads
 	Across = 27, -- each one this far either side of the room's middle, over the middle row
-	Deep = 26, -- this far from the bay wall
+	-- each row this far from the bay wall: the first over the cars' zones, the last 20 studs ahead
+	-- of the spawn, so you load in to a lit floor running away to the cars, not a black hall
+	Deep = { 26, 78, 130 },
 }
 
 -- The porch light outside over the front door: a sodium lamp's pool on the concrete, so the
@@ -177,8 +192,10 @@ function Lobby.prepare(model: Model): Model
 	paint.Color = Lobby.Paint.Stripes
 	paint.Transparency = 0.12 -- worn: the concrete's tone comes through
 	paint.CastShadow = false
-	for _, name in { "Floor", "Ceiling", "Panel" } do
-		-- the floor has nothing under it to shade, the deck and the panels nothing over them
+	for _, name in { "Floor", "Ceiling", "Panel", "JoistsLeft", "JoistsRight", "UnitTops" } do
+		-- the floor has nothing under it to shade; the deck, the panels, the joists and the units'
+		-- closed tops nothing over them (every light is under them). The units' walls do cast:
+		-- they keep each unit's bulb out of the next unit.
 		part(model, name).CastShadow = false
 	end
 	part(model, "Signs").Color = Lobby.Paint.Plate
@@ -243,11 +260,49 @@ local function card(pivot: CFrame, spec: Specs.Card, text: string, parent: Insta
 	return p
 end
 
+-- The climb's M unit, in the place at ReplicatedStorage.Units.M (FloorBuilder.units), if it's there.
+local function unitTemplate(): Model?
+	local units = ReplicatedStorage:FindFirstChild("Units")
+	local found = if units then units:FindFirstChild("M") else nil
+	return if found and found:IsA("Model") then found else nil
+end
+
+-- Slot `slot`'s front (Specs.Slots): a copy of the climb's M unit with Lobby.Dropped left out, its
+-- doorway's outer face on the slot's Door looking Out onto the floor, as FloorBuilder.unit stands a
+-- climb's unit at a door face. Its facade wears the lobby's walls and its door is shut, unlocked
+-- and tagged, so the Doors system gives it the climb's buttons and it rolls, slams and locks the
+-- same, its bulb (UnitLight.Home) coming on as it lifts; no floor deals it, so it's empty (a3 makes
+-- it a player's).
+function Lobby.front(template: Model, pivot: CFrame, slot: Specs.Slot): Model
+	local unit = template:Clone()
+	for _, name in Lobby.Dropped do
+		StorageUnit.UnitKit.dropWall(unit, name)
+	end
+	local spec = StorageUnit.RollUpDoor.spec(unit)
+	local outer = StorageUnit.RollUpDoor.frame(unit) * CFrame.new(0, 0, -spec.CurtainPlane)
+	local door = pivot * vec(slot.Door)
+	local face = CFrame.lookAt(door, door + pivot:VectorToWorldSpace(vec(slot.Out)))
+	unit:PivotTo(face * outer:ToObjectSpace(unit:GetPivot()))
+	unit.Name = `Unit{slot.Number}`
+	StorageUnit.UnitKit.paint(unit, Lobby.UnitDoor, Lobby.Paint.Walls)
+	StorageUnit.UnitKit.number(unit, tostring(slot.Number))
+	StorageUnit.RollUpDoor.fitCollider(unit)
+	if CorridorKit.template("Bulb") then
+		-- the climb's bulb, wired to the door the same, hung as a home's (UnitLight.Home)
+		local bulb = CorridorKit.hangBulb(CFrame.new(pivot * vec(slot.Bulb)), unit)
+		bulb.glass:SetAttribute(UnitLight.HomeAttribute, true)
+	end
+	unit:SetAttribute("LobbySlot", slot.Number)
+	return unit
+end
+
 export type Laid = {
 	folder: Folder,
 	model: Model,
 	pivot: CFrame,
 	cars: { Model },
+	-- each slot's front by its number (Specs.Slots), when the place has the M unit
+	units: { [number]: Model },
 }
 
 -- Lays a copy of the front office at `pivot` under a new folder in `parent`, with everything the
@@ -285,23 +340,25 @@ function Lobby.lay(pivot: CFrame, parent: Instance): Laid?
 		end
 	end
 	local f = Lobby.Fill
-	for _, side in { -1, 1 } do
-		local a = Instance.new("Part")
-		a.Name = "Fill"
-		a.Anchored = true
-		a.CanCollide = false
-		a.CanTouch = false
-		a.CanQuery = false
-		a.Transparency = 1
-		a.Size = Vector3.one * 0.2
-		a.CFrame = pivot * CFrame.new(side * f.Across, f.Height, -f.Deep)
-		local light = Instance.new("PointLight")
-		light.Color = f.Colour
-		light.Brightness = f.Brightness
-		light.Range = f.Range
-		light.Shadows = false
-		light.Parent = a
-		a.Parent = dressing
+	for _, deep in f.Deep do
+		for _, side in { -1, 1 } do
+			local a = Instance.new("Part")
+			a.Name = "Fill"
+			a.Anchored = true
+			a.CanCollide = false
+			a.CanTouch = false
+			a.CanQuery = false
+			a.Transparency = 1
+			a.Size = Vector3.one * 0.2
+			a.CFrame = pivot * CFrame.new(side * f.Across, f.Height, -deep)
+			local light = Instance.new("PointLight")
+			light.Color = f.Colour
+			light.Brightness = f.Brightness
+			light.Range = f.Range
+			light.Shadows = false
+			light.Parent = a
+			a.Parent = dressing
+		end
 	end
 	local porch = Instance.new("Part")
 	porch.Name = "Porch"
@@ -338,6 +395,22 @@ function Lobby.lay(pivot: CFrame, parent: Instance): Laid?
 	end
 	dressing.Parent = folder
 
+	-- the climb's M unit standing in each gap the side walls leave, its door shut (`front`)
+	local units: { [number]: Model } = {}
+	local front = unitTemplate()
+	if front then
+		local fronts = Instance.new("Folder")
+		fronts.Name = "Units"
+		for _, slot in Specs.Slots do
+			local unit = Lobby.front(front, pivot, slot)
+			unit.Parent = fronts
+			units[slot.Number] = unit
+		end
+		fronts.Parent = folder
+	else
+		warn("Lobby: no unit template at ReplicatedStorage.Units.M, so the units' gaps stand open")
+	end
+
 	-- the climb's own car in each bay, its gate folded open and its lamp lit, marked a lobby car
 	-- with its bay before it's tagged, so every screen knows its keypad sleeps (LobbyCars runs it)
 	local cars = {}
@@ -359,7 +432,7 @@ function Lobby.lay(pivot: CFrame, parent: Instance): Laid?
 		warn("Lobby: no elevator template, so the bays stand empty (art/elevator/README.md)")
 	end
 	folder.Parent = parent
-	return { folder = folder, model = model, pivot = pivot, cars = cars }
+	return { folder = folder, model = model, pivot = pivot, cars = cars, units = units }
 end
 
 return Lobby

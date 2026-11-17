@@ -82,6 +82,9 @@ lights, a porch light outside over the door, and the climb's car in each bay (`S
    `Lobby/init.luau`, check the template took the new values (STUDIO.md).
 3. Save the place (Studio's save, never Publish): the template lives only there (D-009).
 
+`Lobby.lay` also needs the climb's M unit at `ReplicatedStorage.Units.M`: it stands a copy in
+each unit's gap (`Lobby.front`), or warns and leaves the gaps open.
+
 The server's `FrontOffice` system lays it at `Lobby.Origin` on every server; the test hall's
 "Go to the lobby" post (R) takes you there and "Come back" by the lobby's door returns you.
 
@@ -111,7 +114,8 @@ art/lobby/build.py  stages export | renders; scripts/art.sh lobby runs both
 
 ## Not verified yet
 
-- The full lighting on a real low-end phone: two fills, the porch light and six car lamps (each
-  car's keypad adds a tiny glow), measured only in Studio's Galaxy A16 view (`OWNER.md`).
+- The full lighting on a real low-end phone: six fills in three rows, each open unit's home
+  bulb (`UnitLight.Home`, D-262), the porch light and six car lamps (each car's keypad adds a
+  tiny glow), seen only in Studio's Play viewport (`OWNER.md`); a2b weighs it.
 - The cars are dressing: untagged, so the climb's keypad, gate clock and ride ignore them.
   L-08e1b1 makes them the way into a climb and decides what the keypad beside each becomes.

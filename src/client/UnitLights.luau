@@ -10,7 +10,8 @@
 	  and stays out through the slam's bounce.
 
 	Only doors in motion are sampled each frame. Only the lit bulbs nearest a point ahead of the
-	camera throw real light and hum (UnitLight.NearBulbs); the rest glow. A unit that streams in
+	camera throw real light and hum (UnitLight.NearBulbs); the rest glow. A home's bulb (the ground
+	floor's units, UnitLight.Home) throws light whenever it's lit. A unit that streams in
 	with its door already up just shows lit. Lights are set only through UnitLight, so they carry
 	HallLight's tag and BehindDoors dims them for whoever is shut in another unit; this runs before
 	BehindDoors each frame, so that dimming lands on a stuttering bulb too.
@@ -92,7 +93,9 @@ function UnitLights.new(): Brix.System
 			+ (if look.Magnitude > 1e-3 then look.Unit * UnitLight.NearLead else Vector3.zero)
 		table.clear(ranked)
 		for _, s in shown do
-			if s.on then
+			if s.on and UnitLight.isHome(s.glass) then
+				setReal(s, true) -- a home's bulb throws its light whenever it's lit
+			elseif s.on then
 				-- one already lit keeps its light until another is clearly nearer
 				nearness[s] = (s.glass.Position - from).Magnitude
 					- (if s.real then UnitLight.NearMargin else 0)

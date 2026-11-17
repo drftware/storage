@@ -2,47 +2,45 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-16, session 222 (the ground floor's build and sheets) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `c9f6667`.
+**Updated:** 2026-11-16, session 223 (the ground floor in the game) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `c9f6667`.
 
 ## State
 - The home (D-259; the Claude Doc https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools
-  only) is built a ROADMAP piece a session (S5-03). S5-03a1 is done (D-260, D-261):
-  `art/lobby/build.py` builds the 156-deep ground floor, a gap per unit in the side walls, the
-  units' shells from the unit kit at XL, the joists as `JoistsLeft`/`JoistsRight`. Every part is
-  under 20,000; the room is 87,446 triangles. Sheets `art/sheets/lobby-*.png` (new: `unit`,
-  `inside`) stand the M's front in each gap, ten open and lit, two shut.
-- `art/lobby/out/Lobby.fbx` is the new floor, but `src/shared/Lobby/Specs.luau` is still the
-  48-deep front office and the place still holds the old mesh: export, upload and import go
-  together in a2a, never Specs alone.
+  only) is built a ROADMAP piece a session (S5-03). S5-03a2a is done (D-262): the 156-deep
+  ground floor is exported, uploaded (asset 80376262399856), imported as `Props.Lobby` and the
+  place saved (version 57). `Lobby.front` stands the climb's M unit in each of the 12 gaps
+  (walls, floor, top dropped; oxblood door; tagged, so Doors runs it; anyone may open any one).
+- Light (pulled in from a2b): fills in three rows of two; each front's bulb is a home's
+  (`UnitLight.Home`: reach 22, 1.7 times as bright, no shadow, real whenever lit). Verified in
+  Studio Play: twelve fronts, a door rolling, every open unit warm from the spawn, a car taking
+  you to floor 1. Not yet on a phone or in the A16 emulator.
+- The name cards over the doors (`Specs.Cards` `Unit1` to `Unit12`) are laid empty: a3 writes
+  each owner's name.
 
-## Next task: S5-03a2a Into the game with its unit fronts
-The moment: you load in just inside the glass door, the floor runs away to the cars, and twelve
-roll-up doors line the walls, each one a real door that rolls the way it does on a climb.
-1. `scripts/art.sh lobby export` (writes the FBX and `Lobby/Specs.luau` with `Slots`, the new
-   `Parts` and the units' colliders), then `scripts/check.sh`: fix what the new Specs breaks.
-2. `Lobby.prepare`: square the new parts (`JoistsLeft`, `JoistsRight`, `UnitWallsLeft`,
-   `UnitWallsRight`, `UnitTops`); its `{ "Floor", "Ceiling", "Panel" }` list (init.luau ~180)
-   decides something per part: put the joists and unit parts where they belong.
-3. `Lobby.lay`: for each `Specs.Slots` row, a copy of the climb's M unit (find how the floor
-   builder places one: grep `dropWall` in `src/`), its WallLeft, WallRight, WallBack, Floor and
-   Top dropped, pivoted so its doorway's outer face sits on `Door` looking along `Out`; paint
-   its facade the lobby's walls (`Lobby.Paint.Walls`); its door shut and working as on a climb
-   (a3 decides who opens it). The bulbs and the units' lights wait for a2b.
-4. `lune run scripts/upload_art Lobby`, then Studio by `art/lobby/README.md` "Into Studio":
-   insert, `Lobby.prepare`, replace `Props.Lobby`, save. Play: you land just inside the door
-   facing the cars, no holes in the side walls, a unit's door rolls, a car takes you up.
-**Acceptance:** check green; `Lobby/Specs` has `Slots`; Play lays the floor with twelve M fronts
-in their gaps and you climb from a car (or say why not and leave the import with Specs undone).
-**Read first:** D-261 (grep "^## D-261" docs/DECISIONS.md); `src/shared/Lobby/init.luau`
-(`prepare` 126-213, `lay` 255 on); `src/shared/StorageUnit/UnitKit.luau`; the floor builder's
-use of `dropWall` (grep); `art/lobby/spec.py` 283-376 (`slot_rows`, `write_luau`);
-`art/lobby/README.md` "Into Studio". Read by ranges: 300k is the cap.
+## Next task: S5-03a2b The ground floor weighed for a phone
+The moment: on a low-end Android you load in and run 150 studs to the cars past twelve lit
+units, and it never stutters.
+1. Count what the lobby draws, all twelve doors open: triangles (the room's `Specs.Parts`
+   sum, 87,446, plus twelve M fronts and six cars), real lights (Client: enabled `Light`s under
+   `Workspace.FrontOffice`; expect 25: 6 fills, 12 home bulbs, 6 car lamps, the porch) and
+   shadowed ones. Compare with the GDD tech plan's caps.
+2. Trim where it passes: try 4 fills (rows at, say, 40 and 116) and judge the spawn view by
+   captures; leave out of each front any part nobody sees (look at `FacadeBack` and the slat
+   templates); keep the cars, carts and trips untouched.
+3. Time the run from the spawn to a car at the game's walk speed (GDD: under 15 s).
+4. Write the numbers in D-263 and the phone steps in `OWNER.md` ("Walk the new ground floor").
+**Acceptance:** check green; D-263 has the counts before and after; the spawn view still reads
+lit with warm doorways (set the client's camera before each capture, STUDIO.md); a car still
+takes you up.
+**Read first:** D-262 (grep "^## D-262" docs/DECISIONS.md); the GDD's tech plan section (docs
+tools, search the heading); `src/shared/Lobby/init.luau` (`Fill` ~66-82, `front`, `lay`);
+`src/shared/UnitLight.luau` (`Home`); `docs/STUDIO.md` "The hall's render cost" (583 on);
+`art/lobby/README.md` "Not verified yet".
 
 ## Queue (next sessions, the owner's ticket order)
-1. S5-03a2b lights for 156 deep (the floor before the spawn is black in `lobby-spawn.png`; each
-   open unit's bulb; the phone light cap), S5-03a3 a unit each (a Brix plots system first,
-   D-252), F-G1b4a the hard hat on your head (no run-down at home, D-259), S5-03b the mirror
-   test, then S5-03c to h.
+1. S5-03a3 a unit each (a Brix plots system first, D-252; the owner's name on its card, the
+   doors' rules), F-G1b4a the hard hat on your head (no run-down at home, D-259), S5-03b the
+   mirror test, then S5-03c to h.
 2. F-G1b4b the hard hat spent and broken; F-G1b5 waits for its art.
 3. Brix ticket: Driving's stick read needs `PlayerScripts.PlayerModule`; fall back to the camera-
    turned `Humanoid.MoveDirection` as `input` does (D-254). Built in `../engine`, then the pin.
