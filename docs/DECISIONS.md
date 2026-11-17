@@ -8471,3 +8471,38 @@ across the floor. Precedent: Bloxburg's and Adopt Me's neon house signs (D-322).
 - **On the A16:** from the far wall (108 studs) the lit name is a bright white-pink bar and spare
   neon plates a thin pink outline; from mid-floor (40) the name reads, small; close up the wash
   is plain on the cream wall and ceiling. Pictures `docs/art/S5-03g3b2-neon-*.jpg`.
+
+## D-333 The counter's furniture: a weekly stock from the date, bought for cash, saved first (S5-03g4a, 2026-11-17)
+
+Idea 19. The moment: back from a climb with cash, this week's pieces are at the counter and you
+buy the camp bed; it's yours, saved, waiting in your job box. Precedents: Animal Crossing's Nook's
+Cranny and Fortnite's item shop (a stock that changes, the same for everyone), Lethal Company's
+ship store (bought with the run's pay).
+- **The pieces are rows** (`Home/Furniture.luau`): the eight art pieces of D-323 and D-324 by
+  their `Specs.Pieces` names, each with a cash price, how it stands (floor; the string lights the
+  ceiling; the neon moon a wall) and a cap on how many one player owns. Prices are counted in a
+  first floor's gate pay (`Pay.forFloor(1)`, 10): a crate is 3 of it, the camp bed 15, the neon
+  moon 25, so they move with the pay. Defaults in `OWNER.md`.
+- **The stock is worked out from the date alone, never rolled.** The pieces sit on a ring set by
+  hand; a week shows five in a row round it and each Monday 00:00 UTC the window turns three
+  places on. So every server shows the same stock all week, three pieces change each week, and a
+  piece out this week is always back next week (the spec walks 200 weeks). No randomness at all,
+  so nothing random is ever sold, and a piece is always bought by name. Two minutes' grace after
+  the turn sells last week's pieces, so a shop left open over midnight isn't refused.
+- **Save version 12** adds `furniture`, owned counts by piece id (listed only while one is owned);
+  version 11 saves load with none. The version-11 shape is now built from a fields table that
+  version 12 clones and adds to, rather than another 50 copied lines; the shapes are unchanged.
+- **The buy is written before it's yours.** `BuyFurniture` (a piece's id) is rate-limited, then
+  checked: a short string naming a piece, then the stock, the cap and the cash (`Furniture.buy`
+  takes the price and adds the piece in one step, so any write from that moment holds both or
+  neither). Then the save is written at once (`Saving.save` now answers why a write failed, nil
+  once written), and only then does `FurnitureBought` answer the buyer: the id, their cash, how
+  many they own, and "" or the refusal. A failed write undoes the buy whole (`Furniture.unbuy`:
+  relative, so a sale from the job box during the write is kept) and answers "save". One buy at a
+  time per player ("busy" while one's write is out). Unlike the job box's sales, which batch one
+  write per run, a buy writes at once: one tap, one write, and it can't be undone by a crash.
+- **Seen in Studio Play** (the server's `ServerStorage.FurnitureTest`): this week's stock was
+  MilkCrate, Pallet, SteelShelf, CampBed, NeonSign; a Blanket was refused out of stock; the camp
+  bed bought, the save written (version 12, cash 478 to 328) before the answer; with
+  `DevSaveFails` on, a crate was undone ("save", cash and count as before); a crate bought through
+  the remote from the client answered in 0.5 s after the write, cash 298.

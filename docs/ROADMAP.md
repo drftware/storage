@@ -2696,7 +2696,7 @@ Done when players watch the results to the end and change their perks between cl
       store for buying furniture with what the run earned). The moment: back from a climb with
       cash, you see this week's pieces at the counter, buy the camp bed, and it's in your job
       box waiting to be set out. Split (S5-03g3b2's session, too big for one):
-      - [ ] **S5-03g4a The stock and the sale, server and save.** A pure `Home/Furniture.luau`:
+      - [x] **S5-03g4a The stock and the sale, server and save.** (D-333; seen in Studio Play.) A pure `Home/Furniture.luau`:
         the eight pieces (D-323, D-324) as rows (id, parts, cash price, how it stands: floor,
         wall or ceiling, a cap on how many you own); this week's stock from the date alone
         (the same in every server, every piece back at least every other week; never a random
@@ -2708,7 +2708,9 @@ Done when players watch the results to the end and change their perks between cl
       - [ ] **S5-03g4b The furniture at the counter on screen**: a second tab beside the wrap
         colours in the counter's shop (ShopView): this week's pieces turning in their cards, each
         with its price and Buy; a buy answers with the coins ticking down, a thunk and the card
-        saying it's in your box; one you can't afford dims its price, with no popup.
+        saying it's in your box; one you can't afford dims its price, with no popup. The server
+        answers each buy on `FurnitureBought` after the save's write: "busy" and "save" need a
+        gentle settle (the coins never tick for those); a "notStocked" means the week turned.
       - [ ] **S5-03g4c Bought furniture in the job box and set out with Arrange**: the box's
         panel lists it; Set out opens Arrange holding it; floor pieces stand on the floor clear
         of the walls, the starter set and each other, saved in `placed` and laid by the server

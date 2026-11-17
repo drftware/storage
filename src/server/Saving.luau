@@ -64,8 +64,10 @@ export type SavingSystem = Brix.System & {
 	-- (S5-03d2, D-304): a change made then rides in their save's last write, which reads the data
 	-- only once the store answers. Nil for a save never held here, or a moment after they've gone.
 	leaving: (self: any, userId: number) -> Save.Data?,
-	-- Writes a player's save now, after something worth keeping at once. May yield.
-	save: (self: any, player: Player) -> (),
+	-- Writes a player's save now, after something worth keeping at once. Answers nil once written,
+	-- else why not (a buy that must be written before it's yours, Furnishing, undoes itself on
+	-- one). May yield.
+	save: (self: any, player: Player) -> string?,
 	-- The saves underneath, once made (see `began`); nil before then and after the server stops.
 	saves: (self: any) -> Brix.Saves<Save.Data>?,
 	-- The saves underneath were made: at start on a live server, a moment later in Studio.
@@ -276,11 +278,13 @@ function Saving.new(): SavingSystem
 		return held
 	end
 
-	function system.save(_: any, player: Player)
+	function system.save(_: any, player: Player): string?
 		local current = playerSaves
-		if current then
-			current:save(player)
+		if not current then
+			return "Saving: no saves yet"
 		end
+		local refusal = current:save(player)
+		return if refusal then refusal.message else nil
 	end
 
 	return system

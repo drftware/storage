@@ -52,6 +52,8 @@ local function played(): Save.Data
 			{ id = "Boombox#1", on = "JobBoxTop", x = 0, y = 0, turn = 0 },
 		},
 	}
+	data.furniture.CampBed = 1
+	data.furniture.MilkCrate = 2
 	return data
 end
 
@@ -75,9 +77,9 @@ local function same(a: unknown, b: unknown): boolean
 	return true
 end
 
--- A new player: nothing yet, at version 11.
+-- A new player: nothing yet, at version 12.
 do
-	ok(format:latest() == 11, "the save is at version 11")
+	ok(format:latest() == 12, "the save is at version 12")
 	local fresh = format:fresh()
 	ok(fresh.cash == 0 and fresh.bestFloor == 0, "a new player has no cash and no best floor")
 	ok(next(fresh.finds) == nil and next(fresh.sealed) == nil, "a new player keeps no finds")
@@ -95,6 +97,7 @@ do
 	ok(fresh.boxFresh == Save.Fresh.Seen, "a new player's job box is quiet")
 	ok(next(fresh.chipped) == nil, "a new player has nothing cracked")
 	ok(fresh.placed.form == 1 and #fresh.placed.rows == 0, "a new player has nothing set out")
+	ok(next(fresh.furniture) == nil, "a new player owns no furniture")
 	ok(
 		fresh.looks.paint == "WarmWhite"
 			and fresh.looks.floor == "Boards"
@@ -112,7 +115,7 @@ do
 	local data = played()
 	local stored, problem = format:encode(data)
 	ok(stored ~= nil, `a played save can be stored ({problem})`)
-	local back, decodeProblem = format:decode(11, stored)
+	local back, decodeProblem = format:decode(12, stored)
 	ok(back ~= nil and same(back, data), `a played save comes back the same ({decodeProblem})`)
 end
 
@@ -138,6 +141,12 @@ do
 	end)
 	refused("a find with no name", function(data)
 		data.finds[""] = 1
+	end)
+	refused("a piece of furniture owned zero times", function(data)
+		data.furniture.CampBed = 0
+	end)
+	refused("half a piece of furniture", function(data)
+		data.furniture.CampBed = 1.5
 	end)
 	refused("a field the save doesn't have", function(data)
 		data.gems = 3
@@ -321,6 +330,20 @@ do
 			and #ten.placed.rows == 1,
 		`version 10 loads with its door and the stencilled card ({tenProblem})`
 	)
+	-- Version 11 as the DataStore holds it (Nov 17): a chalk card; no furniture yet.
+	local v11 = table.clone(v10)
+	v11.looks = table.clone(v10.looks)
+	v11.looks.card = "Chalk"
+	local eleven, elevenProblem = format:decode(11, v11)
+	ok(
+		eleven ~= nil
+			and eleven.looks.card == "Chalk"
+			and eleven.looks.door == "Mustard"
+			and eleven.cash == v11.cash
+			and #eleven.placed.rows == 1
+			and next(eleven.furniture) == nil,
+		`version 11 loads with its card and no furniture ({elevenProblem})`
+	)
 	local dressed = format:fresh()
 	dressed.looks = {
 		paint = "Sage",
@@ -331,7 +354,7 @@ do
 		card = "Chalk",
 	}
 	local kept = format:encode(dressed)
-	local dressedBack = format:decode(11, kept)
+	local dressedBack = format:decode(12, kept)
 	ok(
 		dressedBack ~= nil
 			and dressedBack.looks.paper == "Leaves"
@@ -340,7 +363,7 @@ do
 			and dressedBack.looks.card == "Chalk",
 		"a home's look, its door and its card are kept"
 	)
-	local newer, newerProblem = format:decode(12, v1)
+	local newer, newerProblem = format:decode(13, v1)
 	ok(newer == nil and newerProblem ~= nil, "a save from a newer version is refused")
 end
 
@@ -457,7 +480,7 @@ do
 	Save.chip(data, { "Teddy" })
 	ok(data.chipped.Teddy == nil, "a find you don't keep is never marked cracked")
 	local stored = format:encode(data)
-	local back = format:decode(11, stored)
+	local back = format:decode(format:latest(), stored)
 	ok(back ~= nil and back.chipped.OilLamp == 2, "the cracks are saved")
 end
 
@@ -482,7 +505,7 @@ do
 	ok(Save.placedName("Floor") == nil and Save.placedName("#3") == nil, "an area is no find")
 	local stored, problem = format:encode(data)
 	ok(stored ~= nil, `what's set out can be stored ({problem})`)
-	local back = format:decode(11, stored)
+	local back = format:decode(format:latest(), stored)
 	ok(back ~= nil and #back.placed.rows == 2 and back.placed.rows[2].turn == 45, "set out, saved")
 	data.placed.rows[1].x = 0 / 0
 	local nan = format:encode(data)

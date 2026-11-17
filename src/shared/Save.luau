@@ -42,6 +42,8 @@
 	- `looks`: your home's paint, paper, floor and floor colour (S5-03g2b, D-326), your door's
 	  colour (S5-03g3a, D-329), ids from `Home.Specs.Looks` (`Home.Looks`), and your name card's
 	  style (S5-03g3b, D-331), an id from `Home.Specs.Cards`; a new home's are the first of each.
+	- `furniture`: the counter's furniture you own (S5-03g4a, D-333), by piece id
+	  (`Home.Furniture`, "CampBed"), each with how many. A piece is listed only while you own one.
 
 	The tickets that earn each write it (GDD "Saving", "The collection book"). So far: `finds` and
 	the book's `finds` page, as finds are kept at the gate (S1-06, `keep`), `cash`, as the coins
@@ -97,6 +99,7 @@ export type Data = {
 	chipped: Counts,
 	placed: Placed,
 	looks: Looks.Chosen,
+	furniture: Counts,
 }
 
 -- The parts of Brix's SaveFormat contract the server and the spec call (`Brix.SaveFormat<Data>`).
@@ -142,6 +145,7 @@ function Save.fresh(): Data
 		chipped = {},
 		placed = { form = 1, rows = {} },
 		looks = Looks.start(),
+		furniture = {},
 	}
 end
 
@@ -646,7 +650,7 @@ function Save.format(brix: any): Format
 
 	-- Version 11 (S5-03g3b, Nov 17): version 10 plus your name card's style, an id from
 	-- Home.Specs.Cards.
-	local eleventh = Schema.shape({
+	local eleventhFields = {
 		cash = Schema.number({ min = 0, integer = true }),
 		finds = Schema.map(name, count),
 		sealed = Schema.map(name, count),
@@ -692,7 +696,13 @@ function Save.format(brix: any): Format
 			door = look,
 			card = look,
 		}),
-	})
+	}
+	local eleventh = Schema.shape(table.clone(eleventhFields))
+
+	-- Version 12 (S5-03g4a, Nov 17): version 11 plus the counter's furniture you own, by piece id.
+	local twelfthFields = table.clone(eleventhFields)
+	twelfthFields.furniture = Schema.map(name, count)
+	local twelfth = Schema.shape(twelfthFields)
 
 	return brix.SaveFormat.versioned({
 		versions = {
@@ -883,6 +893,15 @@ function Save.format(brix: any): Format
 					local after = table.clone(old)
 					after.looks = table.clone(old.looks)
 					after.looks.card = Looks.start().card -- the stencilled steel every home had
+					return after
+				end,
+			},
+			{
+				schema = twelfth,
+				-- any: a version 11 save as Brix hands it over, already checked against `eleventh`
+				migrate = function(old: any): any
+					local after = table.clone(old)
+					after.furniture = {} -- nothing bought at the counter yet
 					return after
 				end,
 			},
