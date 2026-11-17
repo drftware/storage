@@ -2411,11 +2411,16 @@ Done when players watch the results to the end and change their perks between cl
       `JobBoxes` (Open/Close for the holder, closes when they walk away), `JobBoxView` (the lid's
       eased swing, creak, clunk, sparkle, the chime for a new kind). The home bulb's light hangs
       3 studs under the lamp so the ceiling catches it. Passes checks, untested in Studio.
-    - [ ] **S5-03c2a2 The job box, in Studio** (split for context): upload and import Home.fbx,
-      ShelfTest six finds then a seventh, see the lid sparkle, Open, Close, walk away, rejoin;
-      judge the ceiling from the door; capture to `docs/art/S5-03c2a-*.jpg`; tune what's off.
-    - [ ] **S5-03c2b The job box's panel**: press it: the panel (each kind once, x2, search,
-      rarity filters), take a find into your hands or onto a free shelf spot.
+    - [x] **S5-03c2a2 The job box, in Studio** (D-290): Home.fbx uploaded and imported (from a
+      fresh copy of the Home module: a stale one left the box grey and unanchored); seen in Play:
+      the lid twinkles for a seventh find, Open eases it to 88 degrees with the creak and burst,
+      Close drops it with the clunk, walking off shuts it, a rejoin finds it quiet; the ceiling
+      reads warm past the lamp. `docs/art/S5-03c2a-from-door.jpg`, `-open.jpg`.
+    - [ ] **S5-03c2b1 The job box's panel, to look through**: Open slides the panel in as the lid
+      lifts, Close (or walking off) slams it away as the lid drops: every find you own, each kind
+      once with its count (x2), a search box and rarity filters, phone first.
+    - [ ] **S5-03c2b2 Taking a find out**: from the panel, into your hands or onto a free shelf
+      spot; one remote, checked on the server (yours, owned, a free hand or spot), rate-limited.
     - [ ] **S5-03c3 Selling and Gold** from the panel.
   - [ ] **S5-03d Taking finds up** (idea 10, D-251): take any find from the chest into a slot and
     carry it to the elevator. On the climb it's at risk like any find: stolen, dropped where

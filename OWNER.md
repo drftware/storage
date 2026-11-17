@@ -50,14 +50,15 @@ nowhere else.
   Stop and Play again: they're all still there, no longer sparkling. On the Device Simulator's
   Galaxy A16: is the twinkle visible from the door, is "New" readable, is the tink too quiet?
   Then play a real climb, keep a find at a gate, ride home: it's on the shelf, sparkling.
-- [ ] **Open your job box** (S5-03c2a1, D-287; built, not yet in the place: the next session
-  uploads and imports it and checks it in Play first). After that, in Play with one player, keep
-  six finds with ShelfTest (above), then a seventh: from your doorway the blue job box against the
-  left wall has a gold twinkle over its lid. Walk up and press Open (E): the lid swings up slowly
-  with a soft steel creak and the twinkle bursts off it; press Close: it falls shut with a clunk.
-  Walk away with it open: it shuts by itself. Stop and Play again: the box is quiet. Look at the
-  ceiling from the door: warm all over, not black past the lamp. Say: does the creak sound like a
-  steel lid, and is the box's blue calm in your home?
+- [ ] **Hear your job box** (S5-03c2a, D-287, D-290). Seen working in Studio Play on Nov 17
+  (`docs/art/S5-03c2a-from-door.jpg`, `-open.jpg`): the twinkle, Open, Close, walking away, quiet
+  after a rejoin, and the ceiling warm past the lamp. What's left is yours to hear and judge. In
+  Play with one player and your shelf full, keep one more find with ShelfTest (above): from your
+  doorway the blue box by the lamp has a faint gold twinkle on its lid. Walk up and press Open (E):
+  listen to the creak as the lid swings up (and the shelf's chime if it was a kind you'd never
+  had); press Close and listen for the clunk as it lands. Say: does the creak sound like a steel
+  lid and the clunk like a heavy one, can you see the twinkle from the door at Galaxy A16 size, and
+  is the box's blue calm in your home?
 - [ ] **If Studio stops getting changes, click Connect** in Studio's Rojo plugin (connected Nov 13
   at 23:30; each session checks it first and says so in HANDOFF.md).
 - [ ] **Playing on your phone** (D-109): with Rojo connected, use File > Publish to Roblox (Save

@@ -2,60 +2,61 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-17, session 237 (the job box built, D-287) · **Checks:** green · **Git:**
-`main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `482368f`,
-NOT on Brix's `origin` yet (push Brix first, OWNER.md).
+**Updated:** 2026-11-17, session 238 (the job box seen in Studio, D-290) · **Checks:** green ·
+**Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at
+`482368f`, NOT on Brix's `origin` yet (push Brix first, OWNER.md).
 
 ## State
 - The home (D-259; the Claude Doc https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools
   only) is built a ROADMAP piece a session (S5-03): ground floor, fronts, starter sets, switch,
   a home each (D-275), the hard hat (D-277, D-283), the mirror (D-280), the oak shelf with finds
-  standing on it (D-284, D-285), and now the job box, built but not yet in the place (D-287).
-- S5-03c2a1 (D-287), passes checks, untested in Studio: `art/home/furnish.py` builds the box
-  (JobBox, JobBoxLid, JobBoxFittings, JobBoxRunners; `Specs.JobBox.Hinge`), in the Starter set
-  against the left wall by the shelf (look sheet `art/sheets/lobby-inside.png`). Home.fbx is
-  exported, NOT uploaded or imported: until it is, `Home.has` skips the box with one warning and
-  `JobBoxes` wires none. Save version 6 adds `boxFresh` (`Save.keep` raises it with the shelf
-  full; `Save.open` clears it). `JobBoxes` (server: Open/Close on E for the holder, `Lid` and
-  `Fresh` attributes, shuts on walking 14 studs off) follows Shelves' new `laid` signal;
-  `JobBoxView` (client) swings the lid by `JobBox.angle`, creaks, clunks, sparkles.
-- The ceiling: the home bulb's light now hangs 3 studs under the lamp (`UnitLight.Home.Drop`) so
-  the plaster ceiling catches it; nothing re-captured yet (the old dark one is
-  `docs/art/S5-03c1b-from-door.jpg`).
+  (D-284, D-285), and the job box (D-287), now in the place and seen working (D-290).
+- S5-03c2a2: Home.fbx uploaded (same asset id) and imported into `ReplicatedStorage.Props.Home`
+  in Edit, not saved by me. Verified in Studio Play: the lid twinkles for a find the full shelf
+  can't hold; Open eases it to 88 degrees with the creak and burst; Close drops it with the clunk;
+  walking 14 studs off shuts it; a rejoin finds it quiet. The ceiling reads warm past the lamp.
+  Captures: `docs/art/S5-03c2a-from-door.jpg`, `-open.jpg`. The sounds are the owner's to hear.
+- Import gotcha: the MCP's Edit `require` keeps its first copy of a module all session; prepare
+  from a fresh clone (`art/home/README.md` "Into Studio", `docs/STUDIO.md`).
 - Dev path: `ServerStorage.ShelfTest:Invoke(player, key)` (Studio) keeps a find as a gate does;
-  the seventh with a six-spot shelf goes in the box.
-- Find art (third find run): the carousel's tune slows with its top, pitch held (V5f, D-288),
-  seen in Play. Next there: V5d, the Old lamp holding a Mannequin (`art/finds/WAVES.md`).
+  with the shelf full it goes in the box. The owner's save has six on the shelf already.
+- Find art: V5d done (D-289, the Old lamp holds a Mannequin); next in `art/finds/WAVES.md`.
 
-## Next task: S5-03c2a2 The job box, in Studio
-The moment: the shelf's full, you keep one more, and when you come home the job box's lid
-sparkles; press Open and the lid swings up with a soft steel creak.
-1. Upload and import: `lune run scripts/upload_art Home` (same asset id), then in Edit LoadAsset,
-   `Home.prepare`, replace `ReplicatedStorage.Props.Home` (art/home/README.md "Into Studio"; c1b
-   did it). Check Output for the `Home:` warning gone.
-2. Play: ShelfTest six finds, then a seventh. From the doorway the lid twinkles. Open: the lid
-   swings up eased (88 degrees, clear of the wall), creak, twinkle bursts off. Close: it falls
-   with a clunk. Open and walk away: it shuts. Stop and Play: the box is quiet.
-3. Capture at half scale: `docs/art/S5-03c2a-from-door.jpg` (the ceiling: warm past the lamp now?)
-   and `-open.jpg`. If the ceiling is still dark, tune `UnitLight.Home.Drop` and `Range`, then the
-   UnitTops paint (`Lobby.Paint.UnitTops`); if the sounds are wrong, swap them in `Home/JobBox`.
-4. Tick it in ROADMAP, update OWNER.md's "Open your job box" to what was seen.
-**Acceptance:** check green; in Studio Play the seventh find makes the lid twinkle; Open lifts it
-and the twinkle stops; Close drops it; after a rejoin the box is quiet; the ceiling reads warm.
-**Read first:** ROADMAP S5-03c2a2; D-287; art/home/README.md "Into Studio";
-`src/server/JobBoxes.luau`; `src/client/JobBoxView.luau`; `src/shared/Home/JobBox.luau`.
+## Next task: S5-03c2b1 The job box's panel, to look through
+The moment: you open the job box and, as the lid lifts, a panel slides up with everything you
+own, each kind once with its count; you type or tap a rarity and it narrows at once; Close, or
+walking off, slams it away as the lid drops.
+1. Read the home doc's job box idea (9) and "What you decided (Nov 16)" with the docs tools, by
+   heading only. Settle the card's look (the find's model in a ViewportFrame as ShopView does,
+   or a still), counts, the search and the rarity chips. Defaults go in OWNER.md.
+2. Pure rules in `Home.JobBox` (or a sibling module): group owned finds into one card a kind with
+   its count, the search match, the rarity filter, the sort; Lune specs first.
+3. Server (`JobBoxes`): on Open, send the holder their list (from the save's `finds`), once; any
+   ask from the client is validated (type, holder, rate-limited). Nothing to take out yet (c2b2).
+4. Client panel (new, ShopView's pattern): slides up over the lid's 1.1 s lift, cards dealt in,
+   x2 badges, a search box, rarity chips with a tap sound; slams down over the 0.42 s drop on
+   Close, walking off, or the lid shutting for any reason. Phone first: judge at Galaxy A16 size.
+5. Studio Play: keep a few finds with ShelfTest, open the box, search, filter, close, capture.
+**Acceptance:** check green; specs cover grouping, search and filter; in Studio Play the panel
+rides the lid in and out, lists every find you own a kind a card with its count, search and
+filters narrow it, and it reads at phone size.
+**Read first:** ROADMAP S5-03c2b1; the home doc's idea 9 and "What you decided (Nov 16)"; D-287
+and D-290; `src/server/JobBoxes.luau`; `src/client/ShopView.luau`; `src/shared/Save.luau` (`finds`).
 
 ## Queue (next sessions, the owner's ticket order)
-1. S5-03c2b the panel (the lid lifts as it slides in, the slam as it closes), c3 selling; S5-03d-h; S5-03a2d the cars' hidden triangles; F-G1b4a2 the
-   headlamp's beam (ROADMAP Step 4); F-G1b4b the hat spent (start its minute when a hat worn at
-   home leaves the ground floor).
-2. F-G1b5 waits for its art. Brix: ENG-25b's two-client run (OWNER.md's home test covers it).
-3. Brix ticket: Driving's stick read needs `PlayerScripts.PlayerModule`; fall back to the
+1. S5-03c2b2 taking a find out (hands or a free shelf spot), c3 selling; S5-03d-h; S5-03a2d the
+   cars' hidden triangles; F-G1b4a2 the headlamp's beam (ROADMAP Step 4); F-G1b4b the hat spent
+   (start its minute when a hat worn at home leaves the ground floor).
+2. The home's warm fill (D-290): faces turned from the bulb go near black (the shelf's end and
+   back, seen from the box); D-263 wants the room calm and warm all round. A dim warm fill or the
+   lobby's ambient, judged from the box and the door at phone size.
+3. F-G1b5 waits for its art. Brix: ENG-25b's two-client run (OWNER.md's home test covers it).
+4. Brix ticket: Driving's stick read needs `PlayerScripts.PlayerModule`; fall back to the
    camera-turned `Humanoid.MoveDirection` as `input` does (D-254). Built in `../engine`.
-4. S4-02 monsters by lowest floor, S4-03 the elevator's choice, S4-04 trapping pays, S4-05.
-5. The item catalog doc and the design doc's finds section need D-250, D-251, D-259 and D-277.
-6. Once the owner's real purchase passes: mark Brix's ENG-23e done in `../engine`'s HANDOFF.
-7. Spread late arrivals off `ClimbEnd.spot`; the driving torch's rules vs what's seen (D-257);
+5. S4-02 monsters by lowest floor, S4-03 the elevator's choice, S4-04 trapping pays, S4-05.
+6. The item catalog doc and the design doc's finds section need D-250, D-251, D-259 and D-277.
+7. Once the owner's real purchase passes: mark Brix's ENG-23e done in `../engine`'s HANDOFF.
+8. Spread late arrivals off `ClimbEnd.spot`; the driving torch's rules vs what's seen (D-257);
    Play logs asset 203785492 ("asset type does not match"). The front office's counter and
    shelves are still the climb's steel. The lobby's cart seats didn't seat a server `Seat:Sit`
    (S5-03a2b4). A spare home lifted from inside stays unpadlocked until held and left (D-275).

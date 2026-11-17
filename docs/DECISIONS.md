@@ -7419,3 +7419,22 @@ Five Nights at Freddy's, as the hall lights do), and this one never runs down (t
   the map's clear line. In a hand it still holds nothing (D-234's default, OWNER.md's question).
 - Every screen already shows it lit at rest (its `Switch` motion's first key glows), so nothing
   changes on screen: only that the Mannequin now obeys what players see.
+
+## D-290 · 2026-11-17 · The job box seen in Studio; its home keeps the c2a1 layout (S5-03c2a2)
+
+- **Seen in Play** (one player, Studio): with the shelf full, a kept find twinkles faintly on the
+  lid, seen from the doorway; Open eases the lid to 88 degrees in 1.1 s, clear of the wall, with
+  the creak, the shelf's chime for a kind never owned, and the twinkle bursting off; Close drops
+  it in 0.42 s with the clunk on the landing and a 2.4-degree kick; the lid stays up at 10 studs
+  and shuts 0.43 s after its holder passes 14; Stop and Play finds it quiet. The sounds are the
+  owner's to hear (`OWNER.md`).
+- **The ceiling is warm now:** `UnitLight.Home.Drop` 3 lights the plaster ceiling cream all the
+  way past the lamp; Range and the UnitTops paint stay as they were.
+- **The import needs a fresh Home module:** the first import ran `prepare` from the MCP's cached
+  copy, which knew no job box, so the box came in grey, unanchored and solid and was knocked about
+  in Play. Re-imported from a clone (`docs/STUDIO.md`, `art/home/README.md`).
+- **The layout stays** (D-287's default): from the door the floor lamp's pole crosses the box's
+  right end, but it stands 2.5 studs to the side, never in the way of a player opening it.
+- **Found, queued:** faces turned from the home bulb go near black (the shelf's end and back,
+  seen from the box): the room needs a warm fill to be the calm place D-263 asks for.
+- **Split:** the panel is two pieces, c2b1 looking through it and c2b2 taking a find out.

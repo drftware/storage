@@ -5,6 +5,12 @@ verified: a doc page, Studio, or "untested".
 
 ## Getting assets into Roblox
 
+- **The MCP's Edit `require` keeps a module's first copy for the whole Studio session**
+  (S5-03c2a2, Nov 17): Rojo's later edits don't reach it. `Home.prepare` run from it knew no job
+  box, so the box came in grey, unanchored and solid and was knocked about in Play. Import with a
+  fresh copy: clone `ReplicatedStorage.Shared.Home` under a temporary folder in ServerStorage,
+  `require` the clone, prepare, then destroy the folder (`art/home/README.md`, "Into Studio").
+  A Play session's Server and Client datamodels start fresh, so this bites only in Edit.
 - **Nobody can stand on a unit's top** (L-13b2d3a, 2026-11-09): the halls' ceiling
   (`Colliders.Ceiling`) is at 14 studs and a unit's steel top at 10.14, so there are 3.86 studs
   up there; a standing body needs about 5.2 and its view sits 4.8 up. A move played on the tops
@@ -2487,6 +2493,11 @@ verified: a doc page, Studio, or "untested".
 
 ## Pressing a prompt from a test (S2-06b2a, Nov 14)
 
+- **A Client `InputHoldBegin` only presses a prompt that's on screen** (S5-03c2a2, Nov 17): with
+  `RequiresLineOfSight` the check runs from the camera, so a held camera with the beanbag or the
+  floor lamp between it and the job box's button left the press doing nothing. Hold the camera
+  over the character, looking at the button, wait for `ProximityPromptService.PromptShown`, then
+  `InputHoldBegin`/`End` (0.03 s apart for a prompt with no hold) works.
 - **To see a door roll without pressing its prompt** (S5-03a2a, Nov 16): a Client
   `InputHoldBegin` on a lobby unit's Open (the player 4 studs out, facing it) moved nothing, as
   below. Server: `require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor).play(unit, "Open")`
