@@ -6,9 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** V4b (ROADMAP F-G1e4b), the siren car in Studio Play: it's built (Nov 17, V4a), but
-Studio was in the home chain's Play all through its session's end, so measure its wail, see it
-roll lit and lure, and fill its "seen in Play". Then V5a (ROADMAP F-G1e5, split into a to f).
+**Next:** V5a (ROADMAP F-G1e5a, a press on a one-mesh find: the boombox's music on the lure and
+the teddy's hug), the first of V5's pieces. V4 (the siren car) is done and seen in Play (Nov 17,
+V4b).
 
 ## The third run's plan (owner's brief, Nov 16 night)
 
@@ -43,7 +43,7 @@ head, belong to the home chain (ROADMAP S5-03, F-G1b4): listed as waiting, not b
 5. **V3 One press, one noise** (V3a done Nov 17: the cues, the kazoo and the drum; V3b done Nov 17: the spinner, doll and fish; V3c done Nov 17: the kazoo's lift in hand; V3d done Nov 17: the spinner lands on any animal): the kazoo, toy drum, farm-animal spinner, cowboy doll and singing
    fish, each with its motion, its sound and a loudness on the lure (the doll and the fish ship
    the defaults OWNER.md names: the cord's whirr, the motor's hum).
-6. **V4 The siren car** (V4a built Nov 17, not yet seen in Play; V4b sees it): it rolls as the die-cast car does, its beacon spins and lights the hall,
+6. **V4 The siren car** (done Nov 17: V4a built it; V4b saw it in Play and set the wail's start): it rolls as the die-cast car does, its beacon spins and lights the hall,
    and its wail lures.
 7. **V5 onwards**: whatever else A1 finds missing that isn't at home only.
 8. **S1 to S4 The last four squishies**, each from photos to playable through PIPELINE.md, its
@@ -98,7 +98,7 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 | Remote-control car (`RCCar`) | Drive it (at home; D-250: anywhere, and the collector steals it) · Drive (Rainbow Six Siege's drones) | works (D-250 to D-258); at home waits on the home chain | Rare · 60 · floor 1 up ✓ | |
 | Kazoo (`Kazoo`) | A buzzy note · Blow, a noise (Lethal Company's airhorn) | works: blown, one note once at your lips, heard 60 studs (V3a); it tips up toward your lips in hand, about 7.5 degrees, and settles back (V3c) | Common · 2 · floor 1 up ✓ | Nov 17, V3a: given (GiveFind), pressed in hand: its hum played 0.43 s in (the fanfare's held note, 0.75 pitch); "made its noise (60 studs); 1 heard it", the Mannequin 16 studs along the halls woke and turned to it, then caught me; its skin's buzz not measured (a fraction of a mm). Nov 17, V3c: its body against the left hand tipped to 7.5 degrees and 0.014 studs by 0.8 s, the same in your view's copy, back to 0.0000 by 2.3 s |
 | Squeaky rubber duck (`RubberDuck`) | A squeak you can hear down the hall · Squeeze, a noise | works: squeezed, squashes in hand (to 0.70), squeaks, heard 60 studs (V1) | Common · 3 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its squeak played; a Mannequin asleep 46 studs off along the halls woke, turned and came to look; no squash seen; Nov 17, V1b: pressed in hand, squashed to 0.70 of its height in hand and in your view's copy, its root still in the hand |
-| Toy siren car (`SirenCar`) | It rolls off, wailing · Push, a noise that moves | built, not yet seen in Play (V4a): pushed, set down, rolls off wailing, its roof light turning and lit while it plays, lures every 2 s where it is, 90 studs; at a wall its wheels spin on until it runs down (D-281) | Common · 5 · floor 1 up ✓ | |
+| Toy siren car (`SirenCar`) | It rolls off, wailing · Push, a noise that moves | works (V4a, seen V4b): pushed, set down, rolls off wailing, its roof light turning and lit while it plays, lures every 2 s where it is, 90 studs; at a wall its wheels spin on until it runs down (D-281) | Common · 5 · floor 1 up ✓ | Nov 17, V4b: given, pressed in floor 1's lobby, hall lights off: set down, pushed twice, the wail from the first push; ran down 9.6 studs on its own, or rolled 6 studs into the east wall (`UseStop` 2.6 s) and held there, wheels and beacon turning on; lit to 6.9 s, then out; the red beam sweeping the dark lobby (`docs/art/V4b-siren-car-*.jpg`); a Mannequin 64 studs down the hall heard it, walked to it and stood looking |
 | Wind-up chattering teeth (`ChatteringTeeth`) | They chatter off across the floor; monsters come to look · Wind (R.E.P.O.'s music box; the monkey's lure) | works: wound, set down, chatters off, a clack each snap, lures every 2 s where it is along its path, 90 studs (V2a) | Common · 6 · floor 1 up ✓ | Nov 17, V2a: given (GiveFind), pressed: set down, wound (its ratchet), 52 clacks over 9 s, the jaw swinging 0.51 rad, walked 0.93 studs and stopped; a Mannequin asleep 58 studs off heard the lure, woke and walked to the teeth and stood looking there while I was 97 studs away; walking on at a wall seen with the mouse (V2b) |
 | Toy drum (`ToyDrum`) | Loud · Bang, a noise | works: banged, left, right, left, right, then both, a bang each hit, heard 130 studs (V3a) | Uncommon · 10 · floor 1 up ✓ | Nov 17, V3a: given (GiveFind), pressed in hand: bangs at 0.28, 0.61, 0.88, 1.14 and 1.68 s (the third heard twice, ROADMAP polish); the left stick lifting 25 degrees and striking three times; "made its noise (130 studs); 1 heard it", the Mannequin woke, turned to it and caught me |
 | Wind-up mouse (`WindupMouse`) | It zips off and squeaks wherever it stops · Wind | works: wound, set down, zips off, squeaks where it stalls, lures every 2 s where it is, 60 studs (V2b) | Uncommon · 12 · floor 1 up ✓ | Nov 17, V2b: given (GiveFind), pressed facing the lobby's west wall: set down, wound, zipped 7 studs into the wall (`UseStop` 4.7 s) and held there, its run playing on: two squeaks at 7.25 and 7.39 s where it stalls |
@@ -137,7 +137,7 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 2. **A lure heard where a set-down find is along its path.** Today the server lays a set-down
    find at its end at once (D-233), so a lure would be heard from there. The teeth, robot, tin
    bird and the mouse's squeak where it stops (V2), then the siren car's wail (V4).
-3. **A light that shines only while a toy plays:** the siren car's beacon (V4; built Nov 17, V4a: a toy's frame
+3. **A light that shines only while a toy plays:** the siren car's beacon (V4; built Nov 17, V4a, seen in Play V4b: a toy's frame
    is lit only while it plays, and `walks` keeps a wall stop from holding it lit; D-281).
 4. **V5 needs five pieces; split it before starting:** (a) a press on a one-mesh find, which has
    no joints or motions: the boombox's music on the lure and the teddy's hug; (b) the glow
@@ -245,6 +245,26 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, V4b (the siren car seen in Play; V4 done).** No code changed: only its wail
+  (`SIREN` in `kit/game.py`, then `scripts/art.sh rows`). **Measured** (Client, `PlaybackLoudness`
+  every 20 ms): 4.77 s, silent to 0.36 s, faint whoops to 1.25 s, full whoops every 0.3 s to 2.8 s
+  (peak 191), gone at 3.67 s. Played from 0.34 s, the first second of a press was near silent
+  (0 to 3 under both pushes), so it now starts at 1.0 s, at 0.7 and volume 1.4 (the meow's peak):
+  the press answers within half a second and it fades out at 3.8 s while the car crawls on under
+  its roll. **Seen in Play:** see A1's table; finduse.spec's wall-stop rule held (lit to 6.9 s at
+  a wall, then out). **Traps:** the home chain stopped my Play and started its own twice, a few
+  seconds after I pressed (the capture then said "Target is closed"); wait it out and keep each
+  check to a few calls, logs read before any capture. `screen_capture` timed out while Play drew
+  at 60 frames a second; STUDIO.md's macOS window capture worked. A press fired 0.1 s after
+  setting the camera set the car down the old way (the server's facing lags; STUDIO.md): wait a
+  second. Output: nothing from this work (the known ConfigService keys, asset 203785492, and
+  `rbxassethash` permission lines that came with the home chain's art). **Left:** the wail that
+  follows the flywheel stays in ROADMAP's polish; OWNER.md has the phone test. **For V5a:** the
+  travelling recipe here works as V2b's did: stand the Mannequin first, then a server thread that
+  lifts you out of sight (anchored, 40 studs up) the moment the find's `UseAt` lands.
+  (My ROADMAP tick and OWNER.md update went in with the home chain's commit 0a7dcf8, which
+  took those whole files while I was waiting on checks.)
 
 - **Nov 17, V4a (the siren car built; passes checks; NOT seen in Play: V4b left).** Studio was in
   someone else's Play (the home chain's) from my first look to 20 minutes of waiting, so nothing

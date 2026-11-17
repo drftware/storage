@@ -1046,10 +1046,10 @@ local Rows: { Game.Row } = {
 					motion = "Push",
 					sound = {
 						id = "rbxassetid://9120221867",
-						from = 0,
-						length = 4.8,
-						volume = 0.8,
-						pitch = 0.85,
+						from = 1.0,
+						length = 2.67,
+						volume = 1.4,
+						pitch = 0.7,
 					},
 					cues = {
 						{

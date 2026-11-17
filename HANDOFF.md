@@ -18,7 +18,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   Kind 2). `Save.keep(data, names, now, spots)` lands each kept find on the first empty spot;
   GatePay passes `#Home.Specs.Shelf.Spots`; `Save.seen(data, i)`. `tests/save.spec` covers it.
 - Still over the triangle default: the cars' 51k, ticketed as S5-03a2d.
-- Find art (third find run): V4b is next there (ROADMAP F-G1e4b, `art/finds/WAVES.md`).
+- Find art (third find run): the siren car is done and seen in Play (V4b): it rolls off
+  wailing, its red beacon sweeping a dark hall, and a Mannequin comes to it. Next there: V5a,
+  a press on a one-mesh find (ROADMAP F-G1e5a, `art/finds/WAVES.md`).
 
 ## Next task: S5-03c1b Finds on the shelf, sparkling (D-284)
 The moment: your door goes up after a climb and what you brought home stands on your shelf,

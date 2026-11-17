@@ -257,7 +257,13 @@ verified: a doc page, Studio, or "untested".
   bring Studio to the front (`osascript -e 'tell application "RobloxStudio" to activate'`; it then
   drew at 60 frames a second), get its window number from a few lines of Swift run with `swift`
   (`CGWindowListCopyWindowInfo`, owner "Roblox Studio"), then `screencapture -x -o -l <number> -t
-  jpg out.jpg`. osascript can't read window bounds here (no assistive access).
+  jpg out.jpg`. osascript can't read window bounds here (no assistive access). It can time out
+  while Play draws at 60 frames a second too (V4b, Nov 17: twice, the client counting 61 frames
+  a second); the macOS capture worked at once. Shrink it with `sips --resampleWidth 693`.
+- **A set-down press fired right after the camera turns goes the old way** (V4b, Nov 17): the
+  game turns your character to face the camera, and the server's copy of that facing lags. A
+  test that set a Scriptable camera and fired `ToolUse` 0.1 s later had the siren car set down
+  behind it, rolling back toward the camera. Set the camera, wait a second, then press.
 - **Holding a shot in Play** (S5-03b): the game puts the camera back to Custom, so a Client
   `BindToRenderStep` at `Camera.Value + 0.5` that sets Scriptable and the CFrame every frame holds
   it (and runs before MirrorView at + 1). A find worn while it holds isn't hidden from your own

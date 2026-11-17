@@ -145,9 +145,15 @@ WHIRR = sound("rbxassetid://9118399720", 0.2, 1.9, 1.6, 0.8)
 # 19" (4.64 s, steady from 0.12 s to 4.4 s, measured), lower, so it runs the press's 6 s.
 MOTOR = sound("rbxassetid://9118401640", 0.12, 4.2, 1.4, 0.7)
 # The siren car's wail (F-G1e4): Pro Sound Effects' "Toy Siren Four Variations 1" (a small
-# whooper toy siren, 4.8 s), from the first push as its flywheel revs, played a little lower
-# so it whoops on until the car stops.
-SIREN = sound("rbxassetid://9120221867", 0, 4.8, 0.8, 0.85)
+# whooper toy siren, 4.77 s). Measured in Studio Play (Nov 17, V4b) by `PlaybackLoudness` every
+# 20 ms: silent to 0.36 s, quiet whoops building to 1.25 s (the flywheel revving), full whoops
+# every 0.3 s to 2.8 s (peak 191), dying away to nothing at 3.67 s. Played from 0.34 s, the first
+# second of a press was near silent in Play (loudness 0 to 3 under both pushes), so it starts at
+# 1.0 s, where the whoops become audible: at 0.7 the first whoop answers the press within half a
+# second, the full wail comes as the car leaves the hand, and it whimpers away as the flywheel
+# runs down (silent at 3.8 s; the car crawls on under its roll to about 5.6 s). Its volume
+# brings its peak to the meow's, about 265.
+SIREN = sound("rbxassetid://9120221867", 1.0, 2.67, 1.4, 0.7)
 
 # How far along the halls monsters hear a noisy find (studs: a press's `heard`, its loudness,
 # `Use.loudness`). A press with a noise and no `heard` carries as far as the air horn, 130 (the
