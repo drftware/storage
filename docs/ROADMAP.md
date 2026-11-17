@@ -2829,7 +2829,15 @@ actions themselves and dealing the new finds on floors are later game tickets.
         count 1, 2, 3 and a fourth press refused; each stick's glow and light on in turn; the
         bends peaking 32, 34 and 30 degrees, the shakes after; the snaps at 0.60, 0.60 and
         0.65 s, the slosh at 0.72 and 0.78 s.
-      - [ ] **F-G1e5c The fairy lights laid along a hall** for a dim line of light.
+      - [x] **F-G1e5c The fairy lights laid along a hall** (Nov 17, V5c; seen in Studio Play, not
+        on a phone; D-294): set down lit, the string runs out 8 studs along the floor from the box
+        in 0.6 s with a soft slither, twenty warm LEDs and the copper wire lying loose, the coil
+        hidden; away from whoever let it go (on ahead, or back down the hall when dropped at a
+        run), the longest clear way, to the first wall or the floor's edge. A Mannequin is held
+        all along it, 4 studs either side (`Finds/Strand`, `StrandView`); one real light more.
+        Seen: laid from -638.2 to -646.2; the Mannequin heard the drop 18 studs off, came for me
+        and froze at -650.0, 3.8 studs past the far end (the coil's own hold ends 7.2 from the
+        box), held 20 s with me in sight.
       - [x] **F-G1e5d The Old lamp holds a Mannequin while it lies lit** (Nov 17, V5d; seen in
         Studio Play, D-289): its row says found lit (`lit`), and the server reads it as lit for
         good with no press (`Use.lampUntil`). Seen: dropped in a hall, its clank woke a Mannequin

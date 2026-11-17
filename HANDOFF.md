@@ -22,6 +22,8 @@ FairyLights: `StrandView`, `Keepers`, `kitrows.spec`) · **Git:** `main`, commit
   came from (`unbox`), counts what's out live (`fromBox`), never keeps one at a gate, and recalls
   them when the owner leaves. Shelf: `Save.shelve` (seen) and `Shelves:lay`. Lune:
   `tests/boxpanel.spec` (91 checks) covers boxed, free, canTake, the wire, took.
+- Find art: V5c seen in Play (D-294, the fairy lights set down lit lay out along the hall and
+  hold a Mannequin along the line); next V5e, fragile lamps (`art/finds/WAVES.md`).
 
 ## Next task: S5-03c2b2b Taking a find out, seen in Studio
 The moment: you tap the Boombox card, it lifts and glows, Take; it flies out of the panel into

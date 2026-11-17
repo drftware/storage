@@ -7520,3 +7520,29 @@ you need), Animal Crossing's house storage, Pet Simulator's inventory.
   shrinks away. Hands full: the hands shake, nothing is asked. A refused take settles back onto its
   card. No words.
 - **Split** (context): c2b2a this, built and green; c2b2b sees it in Studio Play and captures it.
+
+## D-294 · 2026-11-17 · The fairy lights lay out along the floor when set down lit (F-G1e5c)
+- **The catalog's line:** "Switch on: lay them along a hall for a dim line of light", and its
+  Switch row: "Set it down lit and it lights the space round it." So the press stays a switch in
+  your hand, and setting them down lit (the drop) is what lays them: no second word. Precedent:
+  Minecraft's torches laid along a tunnel to light the way, with the game's own rule that light
+  stops a Mannequin.
+- **Where it runs:** away from whoever let it go (a player within 8 studs: dropped ahead of you
+  it runs on ahead; dropped at your heels as you run, back down the hall behind you), else its
+  own facing. Ten ways are tried, ahead first (`Strand.Ways`); the first within 85% of the
+  longest clear run wins (`Strand.pick`), so in a hall it runs along the hall, and boxed in under
+  1.5 studs it lies as the coil. It stops 0.3 short of a wall and where the floor falls away.
+  The server decides (`FindUses.layStrand`, on `Slots.loose`) and tags it `LaidStrand` with its
+  two ends and the time; lifted, carried off or gone, it's the coil again, still lit.
+- **The hold:** points along the line no more than 4 studs apart, each holding a Mannequin 4
+  studs round (`Strand.Reach`, under half a lamp's), added to the floor's lamps beside the box's
+  own hold (`Keepers.tellLying`). A dim light, but it fills most of a hall's width.
+- **The look, cheap on phones:** every screen draws it in a folder of its own (`StrandView`):
+  the art's twenty LEDs (0.4 apart) as small neon drops that glow with no light of their own,
+  the copper wire as beams between them, lying in a lazy wave (`Strand.sway`), one dim real
+  light 70% along (range 7, brightness 0.55; the coil's own still lights the box end), the coil
+  hidden. Just laid, it runs out over 0.6 s with the rustle played lower (`lays.sound`); a
+  string seen later is drawn whole, in silence.
+- **The row:** a press can carry `lays = { length, sound }` (`rows.py` refuses it with `toy`,
+  `down` or `lasts`); the fairy lights' is 8 studs, the art's twenty LEDs 0.4 apart.
+- **Defaults for the owner (OWNER.md):** the length, the reach, and that it runs away from you.

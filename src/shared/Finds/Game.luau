@@ -84,6 +84,11 @@ export type Press = {
 	-- forward, not its going. It plays on where it stands, chattering against the wall, and its
 	-- lure with it. None: it holds the frame it stopped short in, as the toy car does.
 	walks: boolean?,
+	-- a string of lights laid along the floor when it's set down lit (the fairy lights, F-G1e5c,
+	-- as Minecraft's torches light a tunnel): it runs out `length` studs from where it lands, the
+	-- longest clear way along the hall, with `sound`; a Mannequin in that line of light can't move
+	-- (`Finds/Strand`). Picked up again, it's the coil in your hand, still lit.
+	lays: { length: number, sound: Sound }?,
 }
 
 export type Row = {

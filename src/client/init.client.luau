@@ -51,6 +51,7 @@ local KneelView = require(script.KneelView)
 local MinimapView = require(script.MinimapView)
 local MirrorView = require(script.MirrorView)
 local ShelfView = require(script.ShelfView)
+local StrandView = require(script.StrandView)
 local JobBoxView = require(script.JobBoxView)
 local BoxPanelView = require(script.BoxPanelView)
 local LadderView = require(script.LadderView)
@@ -127,6 +128,8 @@ local host = Brix.Host.new({
 		{ slot = "boxPanelView", system = BoxPanelView.new(needCursor) },
 		-- the find on your head kept out of your own eye, still on you for friends and the mirror
 		{ slot = "headView", system = HeadView.new() },
+		-- the fairy lights laid along a hall, on every screen (F-G1e5c)
+		{ slot = "strandView", system = StrandView.new() },
 		{ slot = "behindDoors", system = BehindDoors.new() },
 		{ slot = "elevatorView", system = elevatorView },
 		{ slot = "keypadPad", system = KeypadPad.new(pressKeypad, needCursor) },

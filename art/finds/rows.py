@@ -34,7 +34,8 @@ ROW = ["key", "catalog", "name", "grade", "worth", "from_", "loose", "lit", "gri
        "pickUp", "drop", "verb", "press"]
 NEEDED = ["key", "catalog", "name", "grade", "worth", "grip", "heft", "size", "pickUp", "drop"]
 PRESS = ["verb", "on", "more", "lasts", "out", "off", "reset", "noise", "heard", "lure", "toy", "down",
-         "walks"]
+         "walks", "lays"]
+LAYS = ["length", "sound"]
 STEP = ["motion", "loop", "sound", "hit", "cues", "lands"]
 SOUND = ["id", "from", "length", "volume", "pitch", "slows"]
 SLOWS = ["at", "stop", "fade"]
@@ -154,6 +155,15 @@ def press(where, p):
     for k in ("off", "reset"):
         if k in out:
             out[k] = step(f"{where}.{k}", out[k])
+    if "lays" in out:
+        lays = out["lays"]
+        check_keys(where + ".lays", lays, LAYS)
+        length = lays.get("length")
+        if not (isinstance(length, (int, float)) and length > 0) or "sound" not in lays:
+            fail(f"{where}.lays: a string's length (studs) and the sound it runs out with")
+        if out.get("toy") or out.get("down") or "lasts" in out:
+            fail(f"{where}.lays: a light laid lit that stays lit (no toy, down or lasts)")
+        out["lays"] = {"length": lays["length"], "sound": sound(where + ".lays.sound", lays["sound"])}
     return out
 
 

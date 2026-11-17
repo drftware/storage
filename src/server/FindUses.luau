@@ -35,6 +35,7 @@ local Keepers = require(script.Parent.Keepers)
 local Lobby = require(ReplicatedStorage.Shared.Lobby)
 local LobbySpecs = require(ReplicatedStorage.Shared.Lobby.Specs)
 local Slots = require(script.Parent.Slots)
+local Strand = require(ReplicatedStorage.Shared.Finds.Strand)
 local Use = require(ReplicatedStorage.Shared.Finds.Use)
 
 local FindUses = {}
@@ -52,6 +53,13 @@ type Path = {
 	stop: number?,
 	laid: Vector3,
 }
+
+-- A string laid lit (the fairy lights, F-G1e5c): how far above the floor its way is looked along
+-- for walls (over a kerb or a door's track, under anything it would have to go round), how far
+-- short of a wall it stops, and how near a player must be to have let it go (it runs away from them).
+local STRAND_RISE = 0.5
+local STRAND_CLEAR = 0.3
+local STRAND_DROPPER = 8
 
 -- The stamp on `model`, nil if it was never pressed.
 local function stampOf(model: Model): Use.Stamp?
@@ -382,6 +390,108 @@ function FindUses.new(): Brix.System
 		end
 	end
 
+	--[[
+		Lays the lit string lying at `at` along the floor (F-G1e5c): away from whoever just let it
+		go (dropped ahead of you, or at your heels as you ran: back down the hall behind you), else
+		its own facing; the longest clear way of `Strand.Ways`, preferring that one (`Strand.pick`),
+		to the first wall or the floor's edge. Its line goes on the model and it's tagged, for every
+		screen and for Keepers. False if it's boxed in: it lies as the coil.
+	]]
+	local function layStrand(model: Model, at: Vector3, length: number): boolean
+		local params = RaycastParams.new()
+		params.FilterType = Enum.RaycastFilterType.Exclude
+		local skip: { Instance } = { model.Parent or model } -- every find lying loose
+		local ahead = model:GetPivot().LookVector
+		local nearest = STRAND_DROPPER
+		for _, p in Players:GetPlayers() do
+			local character = p.Character
+			if character then
+				table.insert(skip, character)
+				local body = character:FindFirstChild("HumanoidRootPart")
+				local off = if body and body:IsA("BasePart") then at - body.Position else nil
+				local flat = if off then Vector3.new(off.X, 0, off.Z) else nil
+				if flat and flat.Magnitude > 0.2 and flat.Magnitude < nearest then
+					nearest, ahead = flat.Magnitude, flat
+				end
+			end
+		end
+		params.FilterDescendantsInstances = skip
+		ahead = Vector3.new(ahead.X, 0, ahead.Z)
+		if ahead.Magnitude < 1e-3 then
+			return false
+		end
+		ahead = ahead.Unit
+		local from = at + Vector3.new(0, STRAND_RISE, 0)
+		local runs: { number } = table.create(#Strand.Ways)
+		local ways: { Vector3 } = table.create(#Strand.Ways)
+		for i, turn in Strand.Ways do
+			local way = CFrame.fromAxisAngle(Vector3.yAxis, math.rad(turn))
+				:VectorToWorldSpace(ahead)
+			local hit = Workspace:Raycast(from, way * length, params)
+			runs[i] = if hit then math.max(0, hit.Distance - STRAND_CLEAR) else length
+			ways[i] = way
+		end
+		local i = Strand.pick(runs)
+		if not i then
+			return false
+		end
+		-- along it, a stud at a time: it ends where the floor falls away (a shaft, a stair)
+		local way, laid, d = ways[i], 0, 0
+		local down = Vector3.new(0, -(STRAND_RISE + 1), 0)
+		while d < runs[i] do
+			d = math.min(d + 1, runs[i])
+			if not Workspace:Raycast(from + way * d, down, params) then
+				break
+			end
+			laid = d
+		end
+		if laid < Strand.Least then
+			return false
+		end
+		model:SetAttribute(Strand.FromAttribute, at)
+		model:SetAttribute(Strand.ToAttribute, at + way * laid)
+		model:SetAttribute(Strand.AtAttribute, Workspace:GetServerTimeNow())
+		CollectionService:AddTag(model, Strand.Tag)
+		return true
+	end
+
+	-- The strings laid now; each find lying lit whose press `lays` is laid once as it lands, and
+	-- is the coil again once it's lifted, carried off or gone (`Slots.loose`).
+	local strands: { [Model]: true } = {}
+	local function strandsChanged()
+		local s = slots
+		if not s then
+			return
+		end
+		local now = Workspace:GetServerTimeNow()
+		local seen: { [Model]: true } = {}
+		s:finds(function(_n: number, at: Vector3, model: Model)
+			local key = model:GetAttribute(Use.KeyAttribute)
+			local row = if type(key) == "string" then Use.Rows[key] else nil
+			local lays = if row then row.lays else nil
+			if not (row and lays) then
+				return
+			end
+			if strands[model] then
+				seen[model] = true
+				return
+			end
+			local till = Use.litUntil(row, stampOf(model))
+			if till and till > now and layStrand(model, at, lays.length) then
+				strands[model], seen[model] = true, true
+			end
+		end)
+		for model in strands do
+			if not seen[model] then
+				strands[model] = nil
+				CollectionService:RemoveTag(model, Strand.Tag)
+				model:SetAttribute(Strand.FromAttribute, nil)
+				model:SetAttribute(Strand.ToAttribute, nil)
+				model:SetAttribute(Strand.AtAttribute, nil)
+			end
+		end
+	end
+
 	local system = { name = "FindUses" }
 
 	function system.start(_: any, context: Brix.Context)
@@ -390,6 +500,7 @@ function FindUses.new(): Brix.System
 		slots = s
 		if s then
 			table.insert(connections, s.used:connect(onUsed))
+			table.insert(connections, s.loose:connect(strandsChanged))
 		else
 			warn("FindUses: no Slots system, so nobody can use a find")
 		end
@@ -409,6 +520,7 @@ function FindUses.new(): Brix.System
 		end
 		table.clear(last)
 		table.clear(paths)
+		table.clear(strands)
 		din = Use.din()
 	end
 

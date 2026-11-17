@@ -163,6 +163,18 @@ nowhere else.
      firefly jar 60 s, each lamp 60 s; the glow stick, fairy lights and disco ball never run
      down. A switch (lantern, hat, lamps, fairy lights, disco ball) keeps what's left when you
      switch it off.
+- [ ] **Try (F-G1e5c, built Nov 17, D-294; seen in Studio Play by me, not on a phone):** the
+  fairy lights laid along a hall.
+  1. Play with `DevFloorNumber` 1; Server: `workspace:SetAttribute("GiveFind", "FairyLights")`.
+     Press Switch: they light in your hand.
+  2. Drop them in a dark hall, facing along it: the string should slither out ahead of you along
+     the floor, a dotted line of warm lights. On a phone, does it read as fairy lights, not a row
+     of sparks? Pick it up: it's the coil again, still lit.
+  3. Drop them while running: the string should lie back down the hall behind you.
+  4. Server: `workspace:SetAttribute("StandMannequin", true)` stands a Mannequin down the hall;
+     slam a door by the lobby. Does it stop dead where it meets the line?
+  5. **Decide (defaults in):** the string is 8 studs (the art's twenty lights); it holds a
+     Mannequin 4 studs either side; it runs away from whoever dropped it.
 - [ ] **Try (F-G1b3c1, built Nov 16, D-250; the desk lamp and neon sign checked in Studio Play,
   not on a phone):** the lamps switch on anywhere now.
   1. In Studio, set Workspace's `DevFloorNumber` to 1 and press Play. In the command bar (Server),

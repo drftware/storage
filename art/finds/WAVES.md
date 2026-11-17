@@ -6,10 +6,11 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** V5c (ROADMAP F-G1e5c, the fairy lights laid along a hall for a dim line of light),
-then V5e (fragile). V5a (the boombox and the teddy), V5f (the carousel's tune slows), V5d (the
-Old lamp holds a Mannequin) and V5b (the glow sticks' other two sticks) are done and seen in Play
-(Nov 17).
+**Next:** V5e (ROADMAP F-G1e5e, fragile: the oil lamp and the glass lamp chip to half their
+worth when dropped hard), the last of V5; then S1 (the goo ball, through PIPELINE.md). V5a (the
+boombox and the teddy), V5f (the carousel's tune slows), V5d (the Old lamp holds a Mannequin), V5b
+(the glow sticks' other two sticks) and V5c (the fairy lights laid along a hall) are done and seen
+in Play (Nov 17).
 
 ## The third run's plan (owner's brief, Nov 16 night)
 
@@ -46,7 +47,7 @@ head, belong to the home chain (ROADMAP S5-03, F-G1b4): listed as waiting, not b
    the defaults OWNER.md names: the cord's whirr, the motor's hum).
 6. **V4 The siren car** (done Nov 17: V4a built it; V4b saw it in Play and set the wail's start): it rolls as the die-cast car does, its beacon spins and lights the hall,
    and its wail lures.
-7. **V5 onwards** (V5a done Nov 17: the boombox and the teddy; V5f done Nov 17: the carousel's tune slows; V5d done Nov 17: the Old lamp holds a Mannequin; V5b done Nov 17: three sticks to a bundle): whatever else A1 finds missing that isn't at home only.
+7. **V5 onwards** (V5a done Nov 17: the boombox and the teddy; V5f done Nov 17: the carousel's tune slows; V5d done Nov 17: the Old lamp holds a Mannequin; V5b done Nov 17: three sticks to a bundle; V5c done Nov 17: the fairy lights laid along a hall): whatever else A1 finds missing that isn't at home only.
 8. **S1 to S4 The last four squishies**, each from photos to playable through PIPELINE.md, its
    first proof: S1 the goo ball (oozes between your fingers and slowly comes back, on bones);
    S2 the colour-change goo ball (changes colour where pressed: find the way that holds up in
@@ -83,7 +84,7 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 | Tea light in a jar (`TeaLight`) | A small glow for about a minute · Light (DOORS' lighter) | works: 60 s | Common · 3 · floor 1 up ✓ | |
 | Desk lamp (`DeskLamp`) | A warm pool of light (at home; D-250: anywhere) · Switch | works | Common · 4 · floor 1 up ✓ | |
 | Bundle of glow sticks (`GlowSticks`) | One stick lights a small spot for the rest of the floor; three to a bundle · Crack | works: each press cracks the next stick, three to a bundle, each snapping and lit for good, the bottom two kinked out and shaken (V5b, D-292) | Common · 5 · floor 1 up ✓ | Nov 17, V5b: given (GiveFind), pressed four times in hand (`ToolUse` from the Client): the stamp's count 1, 2, 3, the fourth press refused; in your view's copy the top stick bent to 32 degrees at 0.56 s and dropped back, the front one to 34 at 0.60 s then shaken (12, 6, 16, 14, 5, 12 ...), the back one to 30 at 0.67 s and shaken; each stick's glow (2.0) and light (0.7, 0.25, 0.25) on in turn; the snap heard at 0.60, 0.60, 0.65 s, the slosh at 0.72 and 0.78 s; not watched holding a Mannequin (its reach is unchanged) |
-| String fairy lights (`FairyLights`) | Lay them along a hall for a dim line of light · Switch | works as a switch in your hand; laying them along a hall is missing (V5) | Uncommon · 12 · floor 1 up ✓ | |
+| String fairy lights (`FairyLights`) | Lay them along a hall for a dim line of light · Switch | works: a switch in your hand; set down lit, the string runs out 8 studs along the floor, the longest clear way away from you, and holds a Mannequin 4 studs either side (V5c, D-294) | Uncommon · 12 · floor 1 up ✓ | Nov 17, V5c: given (GiveFind), switched on in hand (`ToolUse`), dropped (`ToolDrop`) in floor 1's hall: laid from -638.2 to -646.2 ahead of me, the twenty LEDs running out over 0.6 s on my screen (4, 9, 14, 18, 19, 20 by tenths), the coil hidden, its light on; dropped facing back, it ran the other way, as the rule says; the Mannequin heard the drop 18 studs off, came for me and froze at -650.0, 3.8 studs past the string's far end (the coil's own hold would end at -645.4), held 20 s ("freezes in the light of a find on the floor"); not looked at by eye or on a phone |
 | Camping lantern (`CampLantern`) | A wide light for 90 seconds · Switch | works | Uncommon · 15 · floor 1 up ✓ | |
 | Moon lamp (`MoonLamp`) | It glows (D-250: anywhere); tap it to change its phase · Switch, Tap | works as a switch; the phase tap waits on the home chain | Uncommon · 16 · floor 1 up ✓ | |
 | Blob lamp (`BlobLamp`) | Coloured blobs rise and fall (D-250: anywhere) · Switch | works | Uncommon · 18 · floor 1 up ✓ | |
@@ -144,7 +145,7 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
    no joints or motions: the boombox's music on the lure and the teddy's hug (done Nov 17, V5a:
    `Finds/OneMesh`, D-286); (b) the glow
    sticks' other two sticks (done Nov 17, V5b: a press that counts, `more`, D-292); (c) the fairy
-   lights laid along a hall; (d) the Old lamp holding a Mannequin while it lies lit, as D-234's
+   lights laid along a hall (done Nov 17, V5c: `Finds/Strand`, D-294); (d) the Old lamp holding a Mannequin while it lies lit, as D-234's
    found lights do (done Nov 17, V5d: its row says found lit, D-289); (e) fragile: the oil lamp and the glass lamp chip to half their worth when
    dropped hard (R.E.P.O.'s valuables).
 
@@ -247,6 +248,22 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, V5c (the fairy lights laid along a hall; seen in Play; V5e next).** No new press:
+  setting the lit fairy lights down (the drop) lays them, as the catalog's Switch row says. A
+  press can carry `lays = { length, sound }` (`rows.py`; `kitrows.spec`'s `CHANGED` has the
+  fairy lights). The server lays it on `Slots.loose` (`FindUses.layStrand`: away from the
+  nearest player within 8 studs, the longest clear way of `Strand.Ways`, to a wall or the
+  floor's edge), tags it `LaidStrand` with `StrandFrom`, `StrandTo`, `StrandAt`, and clears it
+  once it's no longer lying. `Keepers.tellLying` adds holds along the line (`Strand.holds`,
+  4 studs). `StrandView` draws it on every screen in `Workspace.LaidStrands` (neon LEDs, beam
+  wire, one dim light, the coil hidden). No art changed, nothing to import. **Seen in Play:**
+  A1's table. Output: only the known lines. **Not done:** looked at by eye or on a phone
+  (OWNER.md's fairy lights item). **For V5e:** a drop's height isn't known today (`Slots`'
+  `dropPoint` lays it on the floor in front of you, the fall a 0.32 s tween); "hard" needs the
+  server's own measure (a drop while running, from a height, or thrown), and the worth halved
+  once must be saved with the find: Slots and Save are the home chain's (both have its
+  uncommitted edits now), so read them, wait for a clean point, and keep your edits small.
 
 - **Nov 17, V5b (the glow sticks' other two sticks; seen in Play; V5c next).** A light's press
   can carry `more` (steps): each later press plays the next once the last one's motions are over,

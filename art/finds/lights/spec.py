@@ -761,11 +761,14 @@ GAME = [
         size="Small",
         pickUp=RUSTLE,
         drop=pitched(PLASTIC, 1.6, 0.55),
-        # "Switch on: a dim line of light"; on a battery box that doesn't run down
+        # "Switch on: lay them along a hall for a dim line of light"; on a battery box that doesn't
+        # run down. Set down lit, the string runs out along the hall (F-G1e5c): its twenty LEDs
+        # 0.4 apart are 8 studs of wire, paid out with a soft slither (the rustle, lower)
         press=dict(
             verb="Switch",
             on=[dict(motion="SwitchOn", sound=CLICK_ON)],
             off=dict(motion="SwitchOff", sound=CLICK_OFF),
+            lays=dict(length=8.0, sound=pitched(RUSTLE, 0.8)),
         ),
     ),
     dict(

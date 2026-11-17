@@ -16,8 +16,9 @@ local Was = require("./fixtures/kitrows") :: any -- a frozen literal: read field
 
 -- Finds whose press was changed on purpose since the freeze, each tested in its own spec: the
 -- hard hat's Switch became Wear (F-G1b4a1, D-277; tests/head.spec); the glow sticks' one crack
--- became three, a sound each (F-G1e5b; tests/finduse.spec).
-local CHANGED: { [string]: boolean } = { HardHat = true, GlowSticks = true }
+-- became three, a sound each (F-G1e5b; tests/finduse.spec); the fairy lights' Switch lays its
+-- string along the floor when set down lit (F-G1e5c; tests/strand.spec).
+local CHANGED: { [string]: boolean } = { HardHat = true, GlowSticks = true, FairyLights = true }
 
 local failures, checks = 0, 0
 local function ok(cond: boolean, what: string)

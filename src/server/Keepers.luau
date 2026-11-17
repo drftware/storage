@@ -108,6 +108,7 @@ local Kept = require(ReplicatedStorage.Shared.Kept)
 local Keeper = require(ReplicatedStorage.Shared.Keeper)
 local Torch = require(ReplicatedStorage.Shared.Flashlight.Torch)
 local Tools = require(ReplicatedStorage.Shared.Tools)
+local Strand = require(ReplicatedStorage.Shared.Finds.Strand)
 local Use = require(ReplicatedStorage.Shared.Finds.Use)
 local KeeperMap = require(ReplicatedStorage.Shared.KeeperMap)
 local KeeperMotion = require(ReplicatedStorage.Shared.KeeperMotion)
@@ -1215,6 +1216,19 @@ function Keepers.new(): Keepers
 							local l = on.lamps
 							l.count += 1
 							l.at[l.count], l.reach[l.count], l.till[l.count] = here, reach, till
+							-- a string laid along the floor (the fairy lights, F-G1e5c): held all
+							-- along its line of light too, `Strand.Reach` either side
+							local a = model:GetAttribute(Strand.FromAttribute)
+							local b = model:GetAttribute(Strand.ToAttribute)
+							if typeof(a) == "Vector3" and typeof(b) == "Vector3" then
+								local long = (b - a).Magnitude
+								for _, d in Strand.holds(long, Strand.Reach) do
+									local w = on.origin:PointToObjectSpace(a:Lerp(b, d / long))
+									l.count += 1
+									l.at[l.count] = vector.create(w.X, w.Y, w.Z)
+									l.reach[l.count], l.till[l.count] = Strand.Reach, till
+								end
+							end
 						end
 						return
 					end

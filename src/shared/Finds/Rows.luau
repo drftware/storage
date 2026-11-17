@@ -309,6 +309,16 @@ local Rows: { Game.Row } = {
 					volume = 1.4,
 				},
 			},
+			lays = {
+				length = 8.0,
+				sound = {
+					id = "rbxassetid://9125745465",
+					from = 0.2,
+					length = 0.45,
+					volume = 0.7,
+					pitch = 0.8,
+				},
+			},
 		},
 	},
 	{
