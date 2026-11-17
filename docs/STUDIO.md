@@ -2707,4 +2707,12 @@ verified: a doc page, Studio, or "untested".
   plays the lunge with a stand-in, and `player:SetAttribute("Kept", true)` marks you caught (alone,
   ClimbEnds then says everyone's caught; stop Play after). KeptPlayers isn't told, so nothing
   drops: good for checking what the caught mark alone does.
+- **An Edit `execute_luau` can run and lose its reply** (S5-03a2b3): a long call (two
+  `LoadAsset`s and two prepares) came back "Target is not reachable", yet everything in it had
+  run. Read the state before running it again.
+- **Two buttons on one key: the nearer wins** (S5-03a2b3): inside a shut home, the switch on E
+  and the door's Lift on E; pressing E lifted the door. Give a button inside a unit its own key.
+- **The switch's button didn't show** (S5-03a2b3, unresolved): on the plate (inside the front's
+  wall collider) and then on a spot 0.6 off it, with line of sight on, a simulated T press from
+  3 studs away did nothing. S5-03a2b4 finds why.
 

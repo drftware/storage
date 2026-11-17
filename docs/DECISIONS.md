@@ -6881,3 +6881,39 @@ hotel lobby's planters and benches).
 - The squishies are quiet (the catalog's Squeeze): `squeeze(sound)` in `kit/game.py`, a toy
   pressed again once it has come back. Their sounds are borrowed Pro Sound Effects stretches,
   measured in Studio; their own recordings are ROADMAP polish ("Finds' own sounds").
+
+## D-268 · 2026-11-17 · The home look in the game, and its light switch (S5-03a2b3)
+
+The ground floor's new art (D-264) and the home's kit (D-266) are in the place and the game.
+The moment: you load in to a calm, warmly lit room, a row of little homes down each side, a
+plant by every door, and inside your own a lamp on, a rug and a beanbag waiting; flick the switch
+by the door and the light eases off (Animal Crossing's house lights; a real room's switch).
+
+- **Templates:** `ReplicatedStorage.Props.Lobby` (asset 80376262399856, updated in place) and
+  the new `Props.Home` (asset 110439035194989, `Home.prepare`: its pivot the identity, so each
+  part's CFrame is its place in a unit's frame or on a piece's origin).
+- **A home is the M's rig re-dressed** (`Home.dress`): the climb's M unit, walls dropped, keeps
+  its door parts and RollUpDoor rig; they swap their SurfaceAppearance for HomeDoor (same meshes,
+  same UVs) and paint clay; the M's facade, frame, padlock and number plate give way to the
+  home's facade (sage), its back (warm white), the oak casing, the mechanism frame, the switch
+  and the round lamp. Doors runs it as on a climb. With no Home template, the old M front stands.
+- **The light is the switch's, not the door's:** `Home.LightAttribute` on the unit, on when laid,
+  flipped by the server (FrontOffice: one "Switch" button per home, a 0.2 s cooldown per unit,
+  refused to the wrapped). Every screen draws it (`HomeLights`): a click at the plate, the rocker
+  tweened 12 degrees (top in for on), the ceiling lamp and the starter floor lamp easing over
+  0.2 s. The ceiling lamp is a home bulb through UnitLight, now a clean warm white
+  (`UnitLight.Home.Colour`, `GlassLit`, `GlassDark`) rather than the climb's dirty amber.
+- **Dark with the door down and the light off:** the room's fills now carry HallLight's tag, so
+  BehindDoors keeps them out of a shut unit on your screen (seen in Play: 3.3 down to 0.2).
+- **The room:** plaster parts painted the sheets' colours (sage, cream, soft white ceiling, warm
+  white units) through Overlay; the 28 round lamps Neon, warm; the runner Fabric; the hall
+  fixtures only over the cars (nearer the bay wall than the first partition); the fills a warm
+  white. 24 plants, 10 benches, 2 planters placed (`Home.piece`), solid parts colliding as
+  boxes; Seats: two on a bench, one each side of a planter, one in the beanbag.
+- **The switch's key is T** (pad d-pad up): inside a shut home the door's Lift has E and took the
+  press. Its button hangs on a spot of its own just off the plate (the plate sits inside the
+  front's wall collider). **Not yet seen to press** in Studio (S5-03a2b4).
+- **Defaults** (`OWNER.md`): the light starts on; anyone may flip it until homes have owners
+  (S5-03a3 decides with the owner's D-263 pick, "only the owner").
+- **Not chosen:** the lamp on the door like a climb bulb (the home is a room you live in, not a
+  fridge); a stutter (the climb's); hum (a home is quiet).

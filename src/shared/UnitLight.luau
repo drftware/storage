@@ -85,7 +85,7 @@ UnitLight.HumVolume = 0.12
 UnitLight.HumNear = 3
 UnitLight.HumReach = 14
 
--- A home's bulb: the ground floor's units (Lobby.front marks its glass with this attribute). An XL
+-- A home's bulb: the ground floor's units (Lobby.front marks its lamp with this attribute). An XL
 -- unit is three times an M's depth and someone keeps their things in it, so it hangs stronger and
 -- reaches further: lit, it fills the unit and spills a warm pool out of the doorway onto the
 -- lobby's cold-lit concrete, so every open unit reads from the spawn as a lit doorway (the home's
@@ -98,6 +98,11 @@ UnitLight.HomeAttribute = "HomeBulb"
 UnitLight.Home = table.freeze({
 	Range = 22, -- from the glass (15 in, 9.8 up) to the floor a few studs out of the doorway
 	Strength = 1.7, -- times a climb bulb's brightness: about 1, just under the hall tube's 1.2
+	-- A home's round ceiling lamp (Home, S5-03a2b3) is a clean, warm white, not the climb bulb's
+	-- dirty amber: the oak and the plaster read as themselves, softly warmed.
+	Colour = Color3.fromRGB(255, 214, 168),
+	GlassLit = Color3.fromRGB(255, 240, 220), -- its diffuser lit: a soft cream disc
+	GlassDark = Color3.fromRGB(214, 208, 196), -- off: white plastic in shadow, not a dead bulb
 })
 
 -- Whether `glass` is a home's bulb (UnitLight.Home).
@@ -111,8 +116,8 @@ local function lightOf(glass: BasePart): PointLight
 		return found
 	end
 	local light = Instance.new("PointLight")
-	light.Color = UnitLight.Colour
 	local home = UnitLight.isHome(glass)
+	light.Color = if home then UnitLight.Home.Colour else UnitLight.Colour
 	light.Range = if home then UnitLight.Home.Range else UnitLight.Range
 	light.Shadows = UnitLight.Shadows and not home
 	light:AddTag(HallLight.Tag)
@@ -130,13 +135,16 @@ function UnitLight.light(glass: BasePart, level: number, real: boolean?)
 	light:SetAttribute(HallLight.LitAttribute, light.Brightness)
 	light.Enabled = level > 0 and real ~= false
 	glass.CastShadow = false
+	local home = UnitLight.isHome(glass)
+	local dark = if home then UnitLight.Home.GlassDark else UnitLight.GlassDark
 	if level > 0 then
 		glass.Material = Enum.Material.Neon
 		-- a stuttering bulb glows dimmer too, so its glow matches its light
-		glass.Color = UnitLight.GlassDark:Lerp(UnitLight.GlassLit, math.min(1, 0.2 + level))
+		local lit = if home then UnitLight.Home.GlassLit else UnitLight.GlassLit
+		glass.Color = dark:Lerp(lit, math.min(1, 0.2 + level))
 	else
 		glass.Material = Enum.Material.SmoothPlastic
-		glass.Color = UnitLight.GlassDark
+		glass.Color = dark
 	end
 end
 

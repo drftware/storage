@@ -132,6 +132,12 @@ local ART: { Art } = {
 		description = "A self-storage building's front office at night: six freight elevator bays, a glass front door, a counter, shelves and a cart rack",
 	},
 	{
+		key = "Home",
+		path = "art/home/out/Home.fbx",
+		manifest = "art/home/assets.json",
+		description = "A home's storage unit front with a roll-up door and light switch, and its furnishings: plants, benches, a planter, a rug, a beanbag and a floor lamp",
+	},
+	{
 		key = "Boxes",
 		path = "art/boxes/out/Boxes.fbx",
 		manifest = "art/boxes/assets.json",

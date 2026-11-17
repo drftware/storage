@@ -2,64 +2,52 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-17, session 225 (the home front and furnishings) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `c9f6667`.
+**Updated:** 2026-11-17, session 226 (the home look in the game) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `c9f6667`.
 
 ## State
 - The home (D-259; the Claude Doc https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools
-  only) is built a ROADMAP piece a session (S5-03). The home look (S5-03a2b, D-263): b1 the
-  room (D-264) and b2 the front and furnishings (D-266) are art only; b3 puts them in the game.
-- b2 (D-266, `art/home/README.md`): `art/home/out/Home.fbx`, 25 parts, 10,664 triangles: the
-  home front (the M's door rig in an oak-cased doorway, the sage wall across, HomeDoor kept
-  new and tinted clay, a light switch with its own rocker, the unit's round lamp), a snake
-  plant in a pot, an oak bench, a planter island with a seat round it, the starter rug,
-  beanbag and floor lamp. `src/shared/Home/Specs.luau` (generated) has the switch, lamp,
-  pieces, starter set and every part's box; `Lobby.Specs.Dressing` places 24 plants, 10
-  benches and 2 planters. Sheets: `art/sheets/lobby-home.png`, `lobby-nook.png`, and the
-  spawn, unit and inside sheets re-drawn. NOTHING uploaded: the place still holds the old
-  lobby template (version 57) with the climb's M fronts, which keeps working.
-- Find art (third find run): P1 and V1a done (D-265 to D-267): every kit find dealt from its
-  art spec; noisy finds have a loudness and a noise cap; the squishies and duck squeeze with a
-  sound each. Next: V1b, the squash in your hand (ROADMAP F-G1e1b; `art/finds/WAVES.md`).
+  only) is built a ROADMAP piece a session (S5-03). S5-03a2b3 (D-268) put the calm ground floor
+  and the home fronts in the game: `Props.Lobby` (re-uploaded) and the new `Props.Home` are in
+  the open Studio place (NOT saved by me), each unit's gap a home front on the M's door rig
+  (`Home.dress`), its starter set inside, 24 plants, 10 benches, 2 planters, hall lights only
+  over the cars, warm fills tagged so a shut unit goes dark.
+- The switch: server state `Home.LightAttribute`, drawn by `src/client/HomeLights.luau`.
+  Verified in Studio Play by flipping the attribute on the server: the rocker rocks, both lamps
+  ease out over 0.2 s, the lamp goes plain; shut in, the fills drop to 0.2. NOT verified: a real
+  press. E took the door's Lift (so it's T now); T from 3 studs did nothing either.
+- Find art (third find run): another session is working; `src/shared/Finds/init.luau` is theirs.
 
-## Next task: S5-03a2b3 The home look in the game
-The moment: you load in and the ground floor is plainly a calm home, your unit a little house
-with a clay door, a plant either side, its lamp on and a beanbag waiting (D-263).
-1. Look at `art/sheets/lobby-spawn.png`, `lobby-home.png`, `lobby-nook.png` first (I ran out
-   of room to judge them at phone size: fix anything that reads wrong before uploading).
-2. Upload and import `art/lobby/out/Lobby.fbx` and `art/home/out/Home.fbx` in Studio (the
-   unit's way, `docs/STUDIO.md`); keep the templates where `Lobby` finds its parts.
-3. `Lobby.prepare`: paint the new parts (`Lobby.Paint`: walls, ceiling, the units' insides,
-   the front's Facade sage and FacadeBack warm white, the door clay, pots cream, the beanbag
-   mustard), Lamps Neon, the runner Fabric; the hall lights only over the cars.
-4. The home front in each gap in place of the climb's M, on `RollUpDoor` with the HomeDoor
-   slats, curtain and bar (no padlock, no number plate); each unit's Lamp for the bulb.
-5. Place the starter set (`Home.Specs.Starter`) in each unit and `Lobby.Specs.Dressing` round
-   the floor, with colliders and Seats on benches and planters; a PointLight in each floor lamp.
-6. The switch: Switch (the lamps' verb), a click, the rocker rocks (`Home.Specs.Switch.Tilt`),
-   the light warms up or down over about 0.2 s; dark with the door down and the light off.
-Split if it won't fit (the import and paint, then the switch and furnishings).
-**Acceptance:** check green; Play in Studio shows the home fronts, furnishings and the switch
-working (Output clean); OWNER.md lists what to try on a phone.
-**Read first:** D-266 (grep "^## D-266" docs/DECISIONS.md); ROADMAP S5-03a2b3;
-`src/shared/Home/Specs.luau`; `art/home/README.md`; `src/shared/Lobby` (grep `prepare`);
-`docs/STUDIO.md` (the FBX import recipe).
+## Next task: S5-03a2b4 The switch's button shows and presses
+The moment: inside your home by the door you press Switch and the light answers at once.
+1. In Studio Play, stand in Unit 1 by its switch (FrontOffice's `wireSwitch` hangs the button on
+   `SwitchSpot`, 0.6 off the plate) and find out whether the button shows at all: hook
+   `ProximityPromptService.PromptShown` on the client, or turn `RequiresLineOfSight` off to test.
+2. Fix the cause (line of sight through the front's colliders, `Exclusivity`, ButtonView, or the
+   MCP's simulated key not reaching prompts: try a click on the drawn button too).
+3. See a real press flip it with the door up and with it down; the click heard; Output clean.
+4. Look at a home at phone size (Galaxy A16) in Play: the front, the lamp lit and off, the
+   seats (sit on each); fix what reads wrong. Then S5-03a2c.
+**Acceptance:** check green; a real press in Studio Play flips the light (seen in Output or the
+attribute); OWNER.md's "Walk into your home" step 3 made true.
+**Read first:** D-268 (grep "^## D-268" docs/DECISIONS.md); `src/server/FrontOffice.luau`
+(`wireSwitch`); `src/server/Prompts.luau` (`make`); `src/client/ButtonView.luau` (grep
+`PromptShown`); `src/client/HomeLights.luau`; `docs/STUDIO.md` (tail).
 
 ## Queue (next sessions, the owner's ticket order)
-1. S5-03a2c the ground floor weighed for a phone, then S5-03a3 a unit each (a Brix plots
-   system first, D-252), F-G1b4a the hard hat on your head, S5-03b the mirror test, then
-   S5-03c to h.
-2. F-G1b4b the hard hat spent and broken; F-G1b5 waits for its art.
-3. Brix ticket: Driving's stick read needs `PlayerScripts.PlayerModule`; fall back to the camera-
-   turned `Humanoid.MoveDirection` as `input` does (D-254). Built in `../engine`, then the pin.
-4. S4-02 monsters by lowest floor (its plan is in ROADMAP), then S4-03 the choice on the
-   elevator's buttons, S4-04 trapping pays (5 coins a trapped monster), S4-05 the big find.
-5. The item catalog doc and the design doc's finds section need D-250, D-251 and D-259 when
-   next opened (lamps and RC car "at home"; hard hat, skates, slippers).
-6. Once the owner's real purchase passes: mark Brix's ENG-23e done in `../engine`'s HANDOFF.
-7. Spread late arrivals off the one arrival spot (`ClimbEnd.spot`); the driving torch's rules
-   vs what's seen (D-257); Play logs assets 92259888500166 (box opens, 27 fails) and 203785492
-   (type mismatch). Small polish: ROADMAP lists it. The front office's counter and shelves are
-   still the climb's steel (a later home piece may re-do the shop).
+1. S5-03a2c the ground floor weighed for a phone (now 6 fills, 12 ceiling lamps, 12 floor
+   lamps, 6 car lamps, the porch), then S5-03a3 a unit each (a Brix plots system first, D-252;
+   the switch then the owner's only, D-263), F-G1b4a the hard hat, S5-03b the mirror, S5-03c-h.
+2. ShutIn's "inside" uses the M's 12-stud depth, so deep in a home (30 deep) BehindDoors
+   doesn't count you shut in: the fills light the back of a shut home. Fix with a3.
+3. F-G1b4b the hard hat spent and broken; F-G1b5 waits for its art.
+4. Brix ticket: Driving's stick read needs `PlayerScripts.PlayerModule`; fall back to the
+   camera-turned `Humanoid.MoveDirection` as `input` does (D-254). Built in `../engine`.
+5. S4-02 monsters by lowest floor, S4-03 the elevator's choice, S4-04 trapping pays, S4-05.
+6. The item catalog doc and the design doc's finds section need D-250, D-251 and D-259.
+7. Once the owner's real purchase passes: mark Brix's ENG-23e done in `../engine`'s HANDOFF.
+8. Spread late arrivals off `ClimbEnd.spot`; the driving torch's rules vs what's seen (D-257);
+   Play logs assets 92259888500166 and 203785492. The front office's counter and shelves are
+   still the climb's steel.
 
 ## Kickoff for the next agent
 ```text

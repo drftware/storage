@@ -41,6 +41,7 @@ local FreeCursor = require(script.FreeCursor)
 local GateClock = require(script.GateClock)
 local HallHaze = require(script.HallHaze)
 local HallLights = require(script.HallLights)
+local HomeLights = require(script.HomeLights)
 local KeeperSounds = require(script.KeeperSounds)
 local KeeperView = require(script.KeeperView)
 local KeypadPad = require(script.KeypadPad)
@@ -110,6 +111,8 @@ local host = Brix.Host.new({
 		{ slot = "hallLights", system = HallLights.new() },
 		-- before BehindDoors too, so a unit's stuttering bulb is dimmed for whoever is shut in next door
 		{ slot = "unitLights", system = UnitLights.new() },
+		-- a home's lamps on its switch (S5-03a2b3), before BehindDoors for the same reason
+		{ slot = "homeLights", system = HomeLights.new() },
 		{ slot = "behindDoors", system = BehindDoors.new() },
 		{ slot = "elevatorView", system = elevatorView },
 		{ slot = "keypadPad", system = KeypadPad.new(pressKeypad, needCursor) },

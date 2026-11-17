@@ -2342,7 +2342,7 @@ Done when players watch the results to the end and change their perks between cl
           frame with no diamond plate, a light switch plate inside by the door); potted
           plants by the doors and benches between units on the ground floor, a couple of
           islands in the open middle; a rug, a beanbag and a floor lamp for every unit.
-        - [ ] **S5-03a2b3 The home look in the game**: upload and import the ground floor and
+        - [x] **S5-03a2b3 The home look in the game** (D-268; all but the switch's press, b4): upload and import the ground floor and
           the home front; `Lobby.prepare` paints the new parts (`Lobby.Paint`), makes Lamps
           glow (Neon) and the runner Fabric; the hall lights only over the cars; the home
           front in each gap in place of the climb's M; the switch (Switch; a click; the light
@@ -2353,6 +2353,11 @@ Done when players watch the results to the end and change their perks between cl
           starter set (`Home.Specs.Starter`) and the floor's furnishings
           (`Lobby.Specs.Dressing`: 24 plants, 10 benches, 2 planters) placed, with colliders
           and Seats on the benches and planters; the floor lamp's PointLight.
+        - [ ] **S5-03a2b4 The switch's button shows and presses** (D-268): in Studio Play, standing
+          in Unit 1 by the switch with the door shut, neither E (the door's Lift took it) nor T
+          (its key now) flipped the light, so the button likely never showed. Find why (the
+          line-of-sight check, `Exclusivity`, ButtonView, or the simulated key), fix it, and see
+          a real press flip it with the door up and down; then judge the home at phone size.
       - [ ] **S5-03a2c The ground floor weighed for a phone** (after the new look): up to 25 real lights (6 fills,
         12 home bulbs, 6 car lamps, the porch) and the room's 87,446 triangles plus twelve M
         fronts and six cars, weighed at Galaxy A16 size against the GDD tech plan's caps;

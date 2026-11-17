@@ -42,3 +42,9 @@ Rug (512², baked colours), HomeDoor (1024², the DoorKit's layout, tinted).
 Home.fbx: 10,664 triangles in 25 parts. Sheets (drawn by `art/lobby`): `lobby-home.png` (your
 unit from the floor), `lobby-nook.png` (a bench and a planter), `lobby-unit.png`,
 `lobby-inside.png`, `lobby-spawn.png`.
+
+## Into Studio (S5-03a2b3, D-268)
+
+`lune run scripts/upload_art Home` (asset 110439035194989 in `assets.json`), then in Edit load it
+(`InsertService:LoadAsset`), `require(game.ReplicatedStorage.Shared.Home).prepare(model)` and put
+it at `ReplicatedStorage.Props.Home`. `Lobby.lay` dresses every unit's gap and the floor from it.
