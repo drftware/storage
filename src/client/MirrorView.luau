@@ -24,6 +24,7 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Home = require(ReplicatedStorage.Shared.Home)
+local Lobby = require(ReplicatedStorage.Shared.Lobby)
 local Mirror = require(ReplicatedStorage.Shared.Mirror)
 local TryOn = require(ReplicatedStorage.Shared.TryOn)
 
@@ -151,20 +152,48 @@ function MirrorView.new(): Brix.System
 		return reflected(cf, c, n, across)
 	end
 
-	-- The unit's walls and baseboards, stood in the picture as plain parts (Home.Mirror.Room):
-	-- the real ones are in the lobby's merged meshes, which Mirror.keeps leaves out. The wall
-	-- the mirror leans on is left out the same way, being behind the glass.
-	local function copyWalls(s: Shown, g: Mirror.Glass)
-		local unit = s.unit
+	-- The room round the glass (Mirror.Room) and its frame: a home's from its unit's size, the
+	-- counter's the front office's (its glass marked Room "FrontOffice"); nil for any other glass.
+	local function roomOf(s: Shown): (CFrame?, Mirror.Room?)
 		local face = s.glass:GetAttribute("Face")
+		if typeof(face) ~= "CFrame" then
+			return nil, nil
+		end
+		if s.glass:GetAttribute("Room") == "FrontOffice" then
+			return face, Lobby.MirrorRoom
+		end
+		local unit = s.unit
 		local width = if unit then unit:GetAttribute("RoomWidth") else nil
 		local depth = if unit then unit:GetAttribute("RoomDepth") else nil
-		if typeof(face) ~= "CFrame" or type(width) ~= "number" or type(depth) ~= "number" then
+		if type(width) ~= "number" or type(depth) ~= "number" then
+			return nil, nil
+		end
+		local r = Home.Mirror.Room
+		return face,
+			{
+				width = width,
+				depth = depth,
+				height = r.Height,
+				front = r.Front,
+				gap = r.Gap,
+				base = r.Base,
+				partition = r.Partition,
+				wall = Home.Mirror.Wall,
+				oak = Home.Mirror.Oak,
+			}
+	end
+
+	-- The room's walls and baseboards, stood in the picture as plain parts (Mirror.Room): the
+	-- real ones are in the lobby's merged meshes, which Mirror.keeps leaves out. The wall the
+	-- mirror leans on is left out the same way, being behind the glass.
+	local function copyWalls(s: Shown, g: Mirror.Glass)
+		local face, room = roomOf(s)
+		if not (face and room) then
 			return
 		end
-		local room = Home.Mirror.Room
-		local w2, h, f, t, b = width / 2, room.Height, room.Front, room.Partition, room.Base
-		local gap = room.Gap / 2
+		local width, depth = room.width, room.depth
+		local w2, h, f, t, b = width / 2, room.height, room.front, room.partition, room.base
+		local gap = room.gap / 2
 		-- one wall or baseboard: its middle and size in the face's frame (+Z in from the door, X across)
 		local function slab(at: Vector3, size: Vector3, colour: Color3)
 			local cf = (face :: CFrame) * CFrame.new(at)
@@ -184,7 +213,7 @@ function MirrorView.new(): Brix.System
 			p.CFrame = behind(cf, size, g.c, g.n)
 			p.Parent = s.world
 		end
-		local wall, oak = Home.Mirror.Wall, Home.Mirror.Oak
+		local wall, oak = room.wall, room.oak
 		local mid, long = (f + depth) / 2, depth - f
 		local side = (w2 + gap) / 2 -- the front wall's middle either side of the doorway
 		local off = t / 2 + 0.03 -- a baseboard's middle off its wall's middle
@@ -194,7 +223,13 @@ function MirrorView.new(): Brix.System
 			slab(Vector3.new(x * (w2 - off), b / 2, mid), Vector3.new(0.06, b, long - 2 * t), oak)
 			slab(Vector3.new(x * side, b / 2, f + 0.03), Vector3.new(w2 - gap, b, 0.06), oak)
 		end
-		slab(Vector3.new(0, h / 2, depth), Vector3.new(width, h, t), wall) -- the back wall
+		local back = room.back
+		local bh = if back then back.height else h
+		slab(
+			Vector3.new(0, bh / 2, depth),
+			Vector3.new(width, bh, t),
+			if back then back.colour else wall
+		)
 		slab(Vector3.new(0, b / 2, depth - off), Vector3.new(width - 2 * t, b, 0.06), oak)
 	end
 

@@ -4,9 +4,15 @@
 -- the counter's shelf, round and round; the film winds on from the ankles as you turn once round
 -- to face the glass, stays a few seconds, then peels down to a heap and fades; nobody starts a
 -- second one while the first is on.
+local roblox = require("@lune/roblox")
+
 local Kept = require("../src/shared/Kept")
+local LobbySpecs = require("../src/shared/Lobby/Specs")
+local Shop = require("../src/shared/Shop")
 local TryOn = require("../src/shared/TryOn")
 local WrapColours = require("../src/shared/WrapColours")
+
+local Vector3 = roblox.Vector3
 
 local failures, checks = 0, 0
 local function ok(cond: boolean, what: string)
@@ -107,6 +113,51 @@ do
 	ok(not TryOn.busy(nil, 100), "nothing on: free")
 	ok(TryOn.busy(100, 100 + TryOn.length() / 2), "while it's on: busy")
 	ok(not TryOn.busy(100, 100 + TryOn.length() + 0.01), "once it's off: free")
+end
+
+-- In front of a glass (S5-03f4b): within reach across the floor, on its picture's side, and not
+-- standing in it; how high you stand doesn't matter.
+do
+	local c, n = Vector3.new(10, 3, 0), Vector3.new(0, 0, 1)
+	ok(TryOn.before(c, n, Vector3.new(10, 0, 5), 7), "five studs in front: yes")
+	ok(TryOn.before(c, n, Vector3.new(14, 6, 5), 7), "off to one side and higher, still in reach")
+	ok(not TryOn.before(c, n, Vector3.new(10, 0, 8), 7), "eight studs off: out of reach")
+	ok(not TryOn.before(c, n, Vector3.new(10, 0, -3), 7), "behind the glass: no")
+	ok(not TryOn.before(c, n, Vector3.new(10, 0, 0.2), 7), "in the glass itself: no way to face it")
+end
+
+-- The counter's shop and its mirror (S5-03f4b): the counter's button stands just in front of the
+-- counter's face as the lobby is now (it once stood where the old, shorter lobby had it), and
+-- from where you'd stand to press it you're in front of the counter's mirror, within the shop's
+-- Try on reach, so every card's Try on shows.
+do
+	local front = LobbySpecs.Parts.CounterFront
+	local at = Shop.CounterAt
+	ok(
+		math.abs(at[3] - front.Centre[3]) <= front.Size[3] / 2,
+		"the counter's button stands along the counter's face"
+	)
+	ok(
+		at[1] < front.Centre[1] and at[1] > front.Centre[1] - 2,
+		"just in front of the counter's face, on the room's side"
+	)
+	local m = Shop.Mirror
+	local turn = math.rad(m.Turn)
+	-- the glass looks along the foot's front (-Z) turned about Y
+	local look = Vector3.new(-math.sin(turn), 0, -math.cos(turn))
+	local glass = Vector3.new(m.At[1], 3, m.At[3])
+	for _, step in { Vector3.new(-1.5, 0, 0), Vector3.new(-3, 0, 2), Vector3.new(-2, 0, -1) } do
+		local stand = Vector3.new(at[1], 0, at[3]) + step
+		ok(
+			TryOn.before(glass, look, stand, Shop.TryReach),
+			`standing at the counter {step}: in front of the mirror`
+		)
+	end
+	local wall = LobbySpecs.Parts.Counter
+	ok(
+		math.abs(m.At[1] - wall.Centre[1]) > wall.Size[1] / 2 + 1.6,
+		"the mirror stands clear of the counter"
+	)
 end
 
 print(`tryon.spec: {checks - failures}/{checks} passed`)

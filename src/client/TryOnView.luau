@@ -21,6 +21,7 @@
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
@@ -31,6 +32,10 @@ local TryOn = require(ReplicatedStorage.Shared.TryOn)
 
 -- Seconds after its moment a sound still plays: a film seen a touch late still zips; later, not.
 local LATE = 0.3
+-- Your view's turn to the glass: bound just after Roblox's camera has placed it each frame, so the
+-- camera starts the next frame from where this leaves it and the turn sticks once it's done.
+local LOOK_BIND = "TryOnLook"
+local LOOK_PRIORITY = Enum.RenderPriority.Camera.Value + 1
 
 -- A film on someone: the part and its weld, the body's root, where the root stood and the way it
 -- ends up facing, the way it faced before, the film's full size and offset on the root, when it
@@ -58,6 +63,42 @@ function TryOnView.new(): Brix.System
 	local on: { [BasePart]: On } = {}
 	local connections: { RBXScriptConnection } = {}
 	local running = false
+	local looking = false -- your view is turning to a glass
+
+	local function stopLooking()
+		if looking then
+			looking = false
+			RunService:UnbindFromRenderStep(LOOK_BIND)
+		end
+	end
+
+	-- Your view turned from where it looks now to `target` (the glass's middle) over `TryOn.Look`,
+	-- eased out, its position left to the camera (your eye).
+	local function lookAt(target: Vector3)
+		local camera = Workspace.CurrentCamera
+		if not camera then
+			return
+		end
+		stopLooking()
+		local start = camera.CFrame.Rotation
+		local began = os.clock()
+		looking = true
+		RunService:BindToRenderStep(LOOK_BIND, LOOK_PRIORITY, function()
+			local cam = Workspace.CurrentCamera
+			if not cam then
+				stopLooking()
+				return
+			end
+			local a = math.clamp((os.clock() - began) / TryOn.Look, 0, 1)
+			local eased = 1 - (1 - a) ^ 3
+			local at = cam.CFrame.Position
+			local aim = CFrame.lookAt(at, target).Rotation
+			cam.CFrame = CFrame.new(at) * start:Lerp(aim, eased)
+			if a >= 1 then
+				stopLooking()
+			end
+		end)
+	end
 
 	-- The mirrors' Try on buttons shown (`shown`) or hidden on this screen.
 	local function buttons(shown: boolean)
@@ -117,6 +158,13 @@ function TryOnView.new(): Brix.System
 		}
 		if mine then
 			buttons(false)
+			local target = inst:GetAttribute(TryOn.LookAttribute)
+			if
+				typeof(target) == "Vector3"
+				and Workspace:GetServerTimeNow() - wound < TryOn.Wind
+			then
+				lookAt(target)
+			end
 		end
 	end
 
@@ -194,6 +242,7 @@ function TryOnView.new(): Brix.System
 		end,
 		stop = function(_: any)
 			running = false
+			stopLooking()
 			for _, c in connections do
 				c:Disconnect()
 			end

@@ -354,18 +354,17 @@ function Home.piece(template: Model, kind: string, at: CFrame, parent: Instance)
 	return model
 end
 
--- The mirror (Specs.Mirror) in `unit`, whose doorway's outer face is `face`: the art's oak frame,
--- bevel and felt pads from the place's Home `template` (left out with a warning if it predates
--- them), and its glass, a plain part tagged Mirror.Tag whose Front face is the picture, set in
--- the frame where the art says. MirrorView draws the reflection on it; the server only stands it.
-function Home.mirror(template: Model, unit: Model, face: CFrame): Model
+-- A framed mirror (Specs.Mirror's art) standing on `at`, its glass looking along the foot's front
+-- and its top leaning back as the art leans, under `parent`: the art's oak frame, bevel and felt
+-- pads from the place's Home `template` (left out with a warning if it predates them), and its
+-- glass, a plain part tagged Mirror.Tag whose Front face is the picture, set in the frame where the
+-- art says. MirrorView draws the reflection on it; the server only stands it. Its glass is returned
+-- too, for what the room round it is (`Home.mirror`; the counter's, Lobby.lay).
+function Home.mirrorAt(template: Model, at: CFrame, parent: Instance): (Model, Part)
 	local m = Specs.Mirror
-	local foot = face
-		* CFrame.new(vec(m.At))
-		* CFrame.Angles(0, math.rad(m.Turn), 0) -- the glass looks across the unit, off its wall
-		* CFrame.Angles(math.rad(m.Lean), 0, 0) -- its top back against the wall
+	local foot = at * CFrame.Angles(math.rad(m.Lean), 0, 0) -- its top back against the wall
 	local model = if Home.has(template, "Mirror")
-		then Home.piece(template, "Mirror", foot, unit)
+		then Home.piece(template, "Mirror", foot, parent)
 		else Instance.new("Model")
 	model.Name = "Mirror"
 	local thick = 0.04
@@ -383,10 +382,20 @@ function Home.mirror(template: Model, unit: Model, face: CFrame): Model
 	glass.TopSurface = Enum.SurfaceType.Smooth
 	glass.BottomSurface = Enum.SurfaceType.Smooth
 	glass:AddTag("Mirror")
-	glass:SetAttribute("Face", face) -- the unit's door face, for the walls MirrorView stands
 	glass.Parent = model
 	model.WorldPivot = foot
-	model.Parent = unit
+	model.Parent = parent
+	return model, glass
+end
+
+-- The mirror (Specs.Mirror) in `unit`, whose doorway's outer face is `face`: leaning on the unit's
+-- left wall by the rug (`Home.mirrorAt`), its glass marked with the door's face for the walls
+-- MirrorView stands in the picture.
+function Home.mirror(template: Model, unit: Model, face: CFrame): Model
+	local m = Specs.Mirror
+	local at = face * CFrame.new(vec(m.At)) * CFrame.Angles(0, math.rad(m.Turn), 0) -- the glass looks across the unit, off its wall
+	local model, glass = Home.mirrorAt(template, at, unit)
+	glass:SetAttribute("Face", face) -- the unit's door face, for the walls MirrorView stands
 	return model
 end
 

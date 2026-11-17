@@ -81,6 +81,26 @@ end
 
 -- A mirror's glass: its Front face's middle, its normal out into the room, its right and up as
 -- someone facing it sees them, and its size in studs.
+-- The walls round a mirror that the picture stands as plain parts, since the real ones are merged
+-- into meshes that run behind the glass (MirrorView): in a frame on the floor at the room's front
+-- wall (+Z into the room, X across). Studs: its width between the side walls' middles, its depth
+-- in to the back wall's middle, the walls' height, the front wall's inside, the doorway's width,
+-- the baseboard's height and the walls' thickness; the walls' and the wood's colours; and, for a
+-- room whose back wall isn't its side walls (the front office's bay wall), that wall's own colour
+-- and height. A home's is Home.Mirror.Room with its unit's size; the counter's is Lobby.MirrorRoom.
+export type Room = {
+	width: number,
+	depth: number,
+	height: number,
+	front: number,
+	gap: number,
+	base: number,
+	partition: number,
+	wall: Color3,
+	oak: Color3,
+	back: { colour: Color3, height: number }?,
+}
+
 export type Glass = {
 	c: Vector3,
 	n: Vector3,

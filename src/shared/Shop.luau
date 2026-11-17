@@ -15,6 +15,8 @@
 	- `WearWrap` (RemoteEvent, a colour's name or empty for the plain film): puts on one you own.
 	A purchase or a change lands as the Player's `WrapColour` attribute (WrapColours), which the
 	screen hears to flip the card.
+	A fourth, `TryWrap` (RemoteEvent, a colour's name), is the cards' Try on (S5-03f4b, D-319): the
+	server (TryOns) wraps you in that colour at the counter's mirror for a few seconds, free.
 
 	Every feel number the screen uses is here.
 ]]
@@ -26,6 +28,7 @@ Shop.RemoteFolder = "Remotes"
 Shop.ShelfRemote = "ShopShelf"
 Shop.BuyRemote = "BuyWrap"
 Shop.WearRemote = "WearWrap"
+Shop.TryRemote = "TryWrap"
 
 -- Seconds between a player's asks the server takes, each remote alike: a mashed button costs
 -- nothing, and a shop never needs answering faster.
@@ -50,13 +53,25 @@ Shop.Words = table.freeze({
 	worn = "Worn",
 	plain = "Plain",
 	open = "Shop", -- the counter's prompt and the lobby's button
+	try = "Try on", -- a card's figure: you in that colour at the mirror beside the counter
 })
 
 -- The counter's prompt: in the lobby's own frame, just in front of the counter's face (its front
--- is at x 51, the counter 14 long down z, centred at z -35; Lobby.Specs), at a hand's height.
-Shop.CounterAt = table.freeze({ 49.6, 3.2, -35 })
+-- is at x 51, the counter 14 long down z, from z -150 to -136; Lobby.Specs), at a hand's height,
+-- toward its end by the front door: the end you reach first from the spawn, and the mirror's.
+Shop.CounterAt = table.freeze({ 49.6, 3.2, -147.5 })
 -- Studs from the counter its prompt shows: walking up to it, not across the room.
 Shop.CounterReach = 9
+
+-- The counter's mirror (S5-03f4b, idea 24): the home's framed floor mirror (Home.mirrorAt), its
+-- foot in the lobby's frame, leaning on the front wall (its face at z -156) just past the counter's
+-- door end, turned (degrees about Y) so its glass looks into the room. You see yourself in it as you
+-- walk up to the counter, and from the shop you try a colour on in it.
+Shop.Mirror = table.freeze({ At = table.freeze({ 47.5, 0, -155.2 }), Turn = 180 })
+-- Studs across the floor from a mirror's glass that a card's Try on shows within, and works from
+-- (the server forgives TryOn.Slack more): from anywhere you'd stand at the counter, you're
+-- turned to face the glass and see yourself in it, without walking over.
+Shop.TryReach = 12
 
 -- The screen's feel.
 -- Seconds the shop takes to slide up from the bottom, and to drop away.

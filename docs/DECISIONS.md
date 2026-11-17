@@ -8101,3 +8101,40 @@ avatar shop's try-on button; DOORS' and Fortnite's look before you buy.
   `-peeling-a16.jpg`): Rojo wasn't connected, so Studio's copies were patched from Edit
   (STUDIO.md); the server tried Blue on, the mirror showed you wrapped, then the heap at your feet.
   The catch's film itself (KeptPlayers through `Film.make`) passes checks, untested in Studio.
+
+## D-319 · 2026-11-17 · The counter's mirror: try a card's colour on beside the shop (S5-03f4b)
+
+The moment (idea 24): at the counter's shop you see yourself in a colour on its card, tap the
+figure, the shop slides away, your view turns to the mirror beside the counter, and there you are
+wrapped in that very colour. Every Roblox avatar shop's Try On button, with Fortnite's and DOORS'
+look before you buy; the film is the catch's own (D-318).
+
+- **The mirror is the home's** (`Home.mirrorAt`, the same oak frame and glass), leaning on the
+  front wall just past the counter's door end (`Shop.Mirror`, lobby frame x 47.5, foot z -155.2),
+  its glass looking into the room. Walking from the spawn to the counter you pass it and see
+  yourself. Any Mirror-tagged glass gets the mirror's own Try on (R), so this one has it too.
+- **Its picture stands the front office's walls** (`Lobby.MirrorRoom`, a `Mirror.Room`): the
+  side walls' sage below the rail, their oak baseboard, the bay wall's teal 156 studs off. The
+  floor, ceiling and cream upper walls are the lobby's own meshes, which `Mirror.keeps` lets
+  through (level, wholly below or above the glass); the home fronts along the side walls are
+  left out, as a home's mirror leaves out its neighbours.
+- **The counter's Shop button had been left at the old lobby's spot** (z -35, by a home's door
+  since D-262 made the floor 156 deep) and the shop's "in the lobby" box covered only the cars'
+  end. Both moved: the button to the counter's door end (z -147.5, the end you reach first), the
+  box to the whole floor.
+- **Try on on each colour's card** (my default, OWNER.md): the whole figure is the button, with
+  a "Try on" pill at its foot in the colour's rim; shown only while you stand in front of a
+  mirror's glass within `Shop.TryReach` (12 studs, so anywhere you'd stand at the counter) with
+  no film on, never a refusal. A tap pops the card, clicks, fires `TryWrap` with the colour's
+  name and shuts the shop. The plain film's card has none. Not owned, not saved, free; no price
+  or timer by it.
+- **On the server** (`TryOns`): `TryWrap` takes a colour's name checked by `Shop.name` (a colour
+  only), the mirror button's rate limit, then that colour at the nearest glass you stand in
+  front of within `Shop.TryReach` plus `TryOn.Slack`; with none, nothing. The same checks as
+  the mirror's button otherwise; the next press of the mirror's button carries on after it.
+- **Your view turns to the glass** (`TryOn.LookAttribute`, `TryOn.Look` 0.45 s, TryOnView):
+  the game is first person, and from the shop you face the counter, so without it you'd miss
+  yourself. Eased out on your screen only, from the glass's middle stamped on the film; from
+  the mirror's own button it barely moves.
+- **Passes checks, untested in Studio**: Rojo isn't connected and this session ran out of room
+  to patch Studio's nine changed modules by hand; S5-03f4b2 sees it in Play.

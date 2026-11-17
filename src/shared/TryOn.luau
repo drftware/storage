@@ -23,18 +23,27 @@ local TryOn = {}
 TryOn.Tag = "TryOnFilm"
 TryOn.WoundAttribute = "TriedAt"
 TryOn.FromAttribute = "TriedFrom"
+-- The glass's middle (a Vector3), set by the server too: your own view turns to it as the film
+-- winds on, so a Try on pressed from the counter's shop, facing the counter, still shows you the
+-- glass (S5-03f4b).
+TryOn.LookAttribute = "TriedLook"
 
 -- The mirror's button: one verb. On R (and the pad's Y), apart from the clothes rail's E beside it.
 TryOn.Press = "Try on"
 -- Studs from the glass you can press from, and the slack the server forgives a moving player.
 TryOn.Reach = 7
 TryOn.Slack = 3
+-- The least distance across the floor from the glass's middle that still gives a way to face it.
+TryOn.Closest = 0.5
 -- Presses a second, and a short burst: one try-on runs for seconds anyway.
 TryOn.Limit = { perSecond = 1, burst = 2 }
 
 -- Seconds the film takes to wind on as you turn once round: quicker than the catch's, so the
 -- funny part comes fast.
 TryOn.Wind = 1.1
+-- Seconds your own view takes to turn to the glass as the film starts up you (TryOnView): quick,
+-- so you're looking before it's past your knees.
+TryOn.Look = 0.45
 -- Seconds you stand wrapped, looking: long enough to turn your camera about and laugh.
 TryOn.Show = 3
 -- The film coming off: as the catch's tear (Kept.Tear) but gentler and quicker, a loosening
@@ -76,6 +85,14 @@ function TryOn.next(last: string?): string
 		end
 	end
 	return shelf[1].name
+end
+
+--- Whether someone standing at `at` is in front of a glass whose picture's middle is `c` and which
+--- looks along `n`: within `reach` of it across the floor, on its picture's side, and not in it.
+function TryOn.before(c: Vector3, n: Vector3, at: Vector3, reach: number): boolean
+	local to = at - c
+	local flat = math.sqrt(to.X * to.X + to.Z * to.Z)
+	return flat <= reach and flat >= TryOn.Closest and n:Dot(to) > 0
 end
 
 --- Seconds from the film going on until it's gone.

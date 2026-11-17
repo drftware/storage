@@ -28,6 +28,8 @@ local Elevator = require(script.Parent.Elevator)
 local Gate = require(script.Parent.Elevator.Gate)
 local HallLight = require(script.Parent.HallLight)
 local Home = require(script.Parent.Home)
+local Mirror = require(script.Parent.Mirror)
+local Shop = require(script.Parent.Shop)
 local Specs = require(script.Specs)
 local StorageUnit = require(script.Parent.StorageUnit)
 local UnitLight = require(script.Parent.UnitLight)
@@ -60,6 +62,25 @@ Lobby.Paint = {
 	Glass = Color3.fromRGB(70, 84, 88),
 	Plate = Color3.fromRGB(38, 40, 42), -- under the plates' texture, if it fails to load
 }
+
+-- The counter's mirror's room (Shop.Mirror, S5-03f4b; Mirror.Room): the walls its picture stands as
+-- plain parts, the front office's as they stand in the lobby's merged meshes. The frame sits on
+-- the floor at the front wall's middle, `MirrorFace` in from the lobby's pivot, so the wall's inside
+-- (z -156) is `front` in. The side walls' sage up to the rail (the cream above is the lobby's own
+-- mesh, copied as it is), their oak baseboard, and the bay wall's teal at the far end, 156 off.
+Lobby.MirrorFace = CFrame.new(0, 0, -156.29)
+Lobby.MirrorRoom = table.freeze({
+	width = 120.25,
+	depth = 156.42,
+	height = 10,
+	front = 0.29,
+	gap = 24,
+	base = 0.55,
+	partition = 0.25,
+	wall = Color3.fromHex("#93A68F"), -- Paint.Sage
+	oak = Color3.fromHex("#B98A5E"), -- the home's oak trim
+	back = { colour = Color3.fromRGB(47, 100, 102), height = 14.2 }, -- Paint.Walls, to the deck
+}) :: Mirror.Room
 
 -- The units' roll-up doors: the climb's oxblood, warm against the teal walls either side, so the
 -- twelve doors read as doors from the spawn, not as more wall (their facades wear Paint.Walls).
@@ -492,6 +513,17 @@ function Lobby.lay(pivot: CFrame, parent: Instance): Laid?
 			local place = pivot * CFrame.new(vec(d.At)) * CFrame.Angles(0, math.rad(d.Turn), 0)
 			Home.piece(home, d.Kind, place, dressing)
 		end
+		-- the counter's mirror (Shop.Mirror, S5-03f4b): you see yourself as you walk up to the
+		-- counter, and its shop's Try on shows you in a colour in it (TryOns gives it its button)
+		local m = Shop.Mirror
+		local mirror, glass = Home.mirrorAt(
+			home,
+			pivot * CFrame.new(vec(m.At)) * CFrame.Angles(0, math.rad(m.Turn), 0),
+			dressing
+		)
+		mirror.Name = "CounterMirror"
+		glass:SetAttribute("Face", pivot * Lobby.MirrorFace)
+		glass:SetAttribute("Room", "FrontOffice")
 	else
 		warn("Lobby: no home template at ReplicatedStorage.Props.Home (art/home/README.md)")
 	end

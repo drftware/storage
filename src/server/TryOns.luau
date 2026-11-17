@@ -15,6 +15,13 @@
 	faced before. Every screen winds it on, plays the zip and the crinkle and peels it off from that
 	stamp (TryOnView); the mirror shows it (MirrorView). Once `TryOn.length()` has passed the film
 	goes and they're let go. Nothing is saved and nothing owned changes: it's free.
+
+	The counter's shop tries a colour on too (S5-03f4b, D-319): a card's Try on fires `TryWrap`
+	(Shop.TryRemote) with that colour's name, checked as `WearWrap`'s is (`Shop.name`, a colour
+	only) and rate-limited with the mirror's button. That colour, not the next, goes on at the
+	nearest mirror they stand in front of within `Shop.TryReach` (the counter's, beside it); with
+	none, nothing happens. The film is stamped with the glass's middle too, so their own view turns
+	to it as the film winds on (TryOnView): from the shop they were facing the counter.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -26,12 +33,11 @@ local Mirror = require(ReplicatedStorage.Shared.Mirror)
 local TryOn = require(ReplicatedStorage.Shared.TryOn)
 local Film = require(script.Parent.Film)
 local Prompts = require(script.Parent.Prompts)
+local Shop = require(ReplicatedStorage.Shared.Shop)
 
 -- Studs below the glass's middle, and out in front of it, its button sits: about chest height.
 local BUTTON_DOWN = 0.6
 local BUTTON_OUT = 0.3
--- The least flat distance from the root to the glass's middle that still gives a way to face.
-local FACE_MIN = 0.5
 
 -- Someone trying a colour on: their film, their root (held still), and the wait that lets them go.
 type Trying = { wound: number, film: BasePart, root: BasePart, done: thread }
@@ -45,6 +51,7 @@ function TryOns.new(): Brix.System
 	local last: { [Player]: string } = {} -- the colour each player last tried
 	local connections: { RBXScriptConnection } = {}
 	local respawns: { [Player]: RBXScriptConnection } = {}
+	local remote: RemoteEvent? = nil
 
 	-- The film off `player` and them let go (early, should they leave or respawn).
 	local function release(player: Player)
@@ -62,15 +69,9 @@ function TryOns.new(): Brix.System
 		end
 	end
 
-	local function press(player: Player, glass: BasePart)
-		if not limit:take(player, os.clock()) or Prompts.wrapped(player) then
-			return
-		end
-		local now = Workspace:GetServerTimeNow()
-		local busy = trying[player]
-		if TryOn.busy(if busy then busy.wound else nil, now) then
-			return
-		end
+	-- The root of `player`'s body if they could have a film put on: alive, standing (not sat or
+	-- in the air) and not held by anything else.
+	local function standing(player: Player): (Model?, BasePart?)
 		local character = player.Character
 		local root = if character then character:FindFirstChild("HumanoidRootPart") else nil
 		local humanoid = if character then character:FindFirstChildOfClass("Humanoid") else nil
@@ -81,33 +82,55 @@ function TryOns.new(): Brix.System
 			or root.Anchored -- something else holds them
 			or humanoid.FloorMaterial == Enum.Material.Air
 		then
+			return nil, nil
+		end
+		return character, root
+	end
+
+	-- `player` wrapped in the colour `name` (the next on the shelf after their last when nil) at
+	-- `glass`, if they may: rate-limited, not kept, not trying one on already, standing, and in
+	-- front of the glass within `reach` and its slack.
+	local function try(player: Player, glass: BasePart, name: string?, reach: number)
+		if not limit:take(player, os.clock()) or Prompts.wrapped(player) then
 			return
 		end
-		local to = glass.Position - root.Position
-		local flat = Vector3.new(to.X, 0, to.Z)
+		local now = Workspace:GetServerTimeNow()
+		local busy = trying[player]
+		if TryOn.busy(if busy then busy.wound else nil, now) then
+			return
+		end
+		local character, root = standing(player)
+		if not (character and root) then
+			return
+		end
 		if
-			flat.Magnitude > TryOn.Reach + TryOn.Slack
-			or flat.Magnitude < FACE_MIN
-			or glass.CFrame.LookVector:Dot(to) >= 0 -- behind the glass
+			not TryOn.before(
+				glass.Position,
+				glass.CFrame.LookVector,
+				root.Position,
+				reach + TryOn.Slack
+			)
 		then
 			return
 		end
-		local name = TryOn.next(last[player])
+		local colour = name or TryOn.next(last[player])
+		local to = glass.Position - root.Position
+		local dir = Vector3.new(to.X, 0, to.Z).Unit
 		local look = root.CFrame.LookVector
 		local from = math.atan2(-look.X, -look.Z)
-		local dir = flat.Unit
 		root.Anchored = true
 		root.CFrame = CFrame.new(root.Position) * CFrame.Angles(0, math.atan2(-dir.X, -dir.Z), 0)
-		local film = Film.make(character, root, name)
+		local film = Film.make(character, root, colour)
 		if not film then
 			root.Anchored = false
 			return
 		end
-		last[player] = name
+		last[player] = colour
 		film.Name = "TryOnFilm"
 		film:AddTag(TryOn.Tag)
 		film:SetAttribute(TryOn.WoundAttribute, now)
 		film:SetAttribute(TryOn.FromAttribute, from)
+		film:SetAttribute(TryOn.LookAttribute, glass.Position)
 		film.Parent = character
 		trying[player] = {
 			wound = now,
@@ -115,6 +138,34 @@ function TryOns.new(): Brix.System
 			root = root,
 			done = task.delay(TryOn.length(), release, player),
 		}
+	end
+
+	-- A card's Try on in the counter's shop: that colour at the nearest mirror they're in front of.
+	local function fromShop(player: Player, value: unknown)
+		local name = Shop.name(value, false)
+		local _, root = standing(player)
+		if name == nil or root == nil then
+			return
+		end
+		local best: BasePart? = nil
+		local nearest = math.huge
+		for glass in buttons do
+			local d = (glass.Position - root.Position).Magnitude
+			if
+				d < nearest
+				and TryOn.before(
+					glass.Position,
+					glass.CFrame.LookVector,
+					root.Position,
+					Shop.TryReach + TryOn.Slack
+				)
+			then
+				best, nearest = glass, d
+			end
+		end
+		if best then
+			try(player, best, name, Shop.TryReach)
+		end
 	end
 
 	local function addGlass(inst: Instance)
@@ -136,7 +187,7 @@ function TryOns.new(): Brix.System
 		buttons[glass] = {
 			at = at,
 			pressed = prompt.Triggered:Connect(function(player: Player)
-				press(player, glass)
+				try(player, glass, nil, TryOn.Reach)
 			end),
 		}
 	end
@@ -159,6 +210,19 @@ function TryOns.new(): Brix.System
 	return {
 		name = "TryOns",
 		start = function(_: any, _context: Brix.Context)
+			-- the shop's Try on, beside its other remotes (Wearing makes the folder too)
+			local folder = ReplicatedStorage:FindFirstChild(Shop.RemoteFolder)
+			if not (folder and folder:IsA("Folder")) then
+				local made = Instance.new("Folder")
+				made.Name = Shop.RemoteFolder
+				made.Parent = ReplicatedStorage
+				folder = made
+			end
+			local r = Instance.new("RemoteEvent")
+			r.Name = Shop.TryRemote
+			r.Parent = folder
+			remote = r
+			table.insert(connections, r.OnServerEvent:Connect(fromShop))
 			for _, glass in CollectionService:GetTagged(Mirror.Tag) do
 				addGlass(glass)
 			end
@@ -203,6 +267,10 @@ function TryOns.new(): Brix.System
 				dropGlass(glass)
 			end
 			table.clear(last)
+			if remote then
+				remote:Destroy()
+				remote = nil
+			end
 		end,
 	}
 end

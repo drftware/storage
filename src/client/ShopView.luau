@@ -19,7 +19,14 @@
 	The figures are a copy of your character (scripts stripped) in a ViewportFrame per card, the
 	film (`Props.KeptWrap`) fitted round it as the server fits it and tinted as it does. They're
 	made as the shop opens and gone when it closes; only while it's open does anything step.
+
+	Try on (S5-03f4b, D-319): standing in front of a mirror within `Shop.TryReach` (the counter's,
+	beside it), each colour's figure carries a Try on. A tap anywhere on the figure pops the card
+	and the shop slides away, and the server wraps you in exactly that colour at the mirror, your
+	view turning to it (TryOns, TryOnView). Away from a mirror, or while a film is on you, there's
+	no Try on to press.
 ]]
+local CollectionService = game:GetService("CollectionService")
 local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -32,7 +39,9 @@ local CutFree = require(ReplicatedStorage.Shared.CutFree)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local KeptWrap = require(ReplicatedStorage.Shared.KeptWrap.Specs)
 local Lobby = require(ReplicatedStorage.Shared.Lobby)
+local Mirror = require(ReplicatedStorage.Shared.Mirror)
 local Shop = require(ReplicatedStorage.Shared.Shop)
+local TryOn = require(ReplicatedStorage.Shared.TryOn)
 local WrapColours = require(ReplicatedStorage.Shared.WrapColours)
 
 local INK = Lobby.Ink
@@ -51,8 +60,11 @@ local FADE = TweenInfo.new(0.16)
 local FLASH = TweenInfo.new(Shop.FlashTime, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 -- How often (seconds) the lobby check runs while the shop is shut.
 local LOOK_EVERY = 0.25
--- The front office in its own frame: "in the lobby" inside this box (the floor's 120 by 72).
-local ROOM_X, ROOM_Z, ROOM_Y = 60, 72, 20
+-- The front office in its own frame: "in the lobby" inside this box (the floor's 120 by 156, from
+-- the bay wall at z 0 to the front wall at -156; the homes are past the side walls).
+local ROOM_X, ROOM_Z, ROOM_Y = 60, 157, 20
+-- Seconds after a Try on's pop that the shop starts to slide away: the pop reads first.
+local TRY_SHUT = 0.12
 local CAMERA_FOV = 30
 
 -- A card on the shelf: its colour's name (empty for the plain film), its parts, and its figure.
@@ -64,6 +76,9 @@ type Card = {
 	button: TextButton,
 	buttonPop: UIScale,
 	buttonRing: UIStroke,
+	try: TextButton?, -- the figure as a Try on (none on the plain film)
+	tryPill: Frame?,
+	tryPop: UIScale?,
 	viewport: ViewportFrame,
 	camera: Camera,
 	centre: number, -- the film's middle height, for the camera's aim
@@ -152,6 +167,7 @@ function ShopView.new(): Brix.System
 	local since = 0 -- seconds since the lobby check
 	local inLobby = false
 	local openedAt = -math.huge -- os.clock the shop last opened
+	local canTry = false -- the cards' Try on shows: in front of a mirror, no film on
 
 	-- built in start
 	local topButton: TextButton
@@ -323,6 +339,67 @@ function ShopView.new(): Brix.System
 		end
 	end
 
+	local close: () -> () -- shuts the shop; made below
+
+	-- A card's Try on: its figure pops, the shop slides away, and the server wraps you in that
+	-- colour at the mirror. Ignored when there's no Try on to press.
+	local function tryOn(card: Card)
+		if not (open and canTry) or os.clock() - openedAt < Shop.SlideIn then
+			return
+		end
+		card.pop.Scale = 1.08
+		TweenService:Create(card.pop, POP, { Scale = 1 }):Play()
+		local pill = card.tryPop
+		if pill then
+			spring(pill)
+		end
+		play(1.1)
+		fire(Shop.TryRemote, card.name)
+		task.delay(TRY_SHUT, close)
+	end
+
+	-- Whether the cards' Try on shows: you stand in front of a mirror's glass within
+	-- `Shop.TryReach` (as the server checks), with no try-on film on you already.
+	local function nearMirror(): boolean
+		local character = player.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		if not (character and root and root:IsA("BasePart")) then
+			return false
+		end
+		if character:FindFirstChild("TryOnFilm") then
+			return false
+		end
+		for _, glass in CollectionService:GetTagged(Mirror.Tag) do
+			if
+				glass:IsA("BasePart")
+				and TryOn.before(
+					glass.Position,
+					glass.CFrame.LookVector,
+					root.Position,
+					Shop.TryReach
+				)
+			then
+				return true
+			end
+		end
+		return false
+	end
+
+	-- Every colour card's Try on shown or hidden as `canTry` is now; popping in when it appears.
+	local function showTry()
+		for _, card in cards do
+			local b, pill, pop = card.try, card.tryPill, card.tryPop
+			if b and pill and pop then
+				if canTry and not b.Visible then
+					pop.Scale = 0.6
+					TweenService:Create(pop, POP, { Scale = 1 }):Play()
+				end
+				b.Visible = canTry
+				pill.Visible = canTry
+			end
+		end
+	end
+
 	-- One card for the colour named `name` (empty for the plain film), its figure in its film.
 	local function makeCard(name: string, label: string, order: number, character: Model?): Card
 		local frame = Instance.new("Frame")
@@ -415,6 +492,56 @@ function ShopView.new(): Brix.System
 		local buttonPop = Instance.new("UIScale")
 		buttonPop.Parent = button
 
+		-- the figure as a Try on: the whole figure takes the tap, a pill at its foot says it
+		local try: TextButton? = nil
+		local tryPill: Frame? = nil
+		local tryPop: UIScale? = nil
+		if name ~= "" then
+			local t = Instance.new("TextButton")
+			t.Name = "TryOn"
+			t.BackgroundTransparency = 1
+			t.AutoButtonColor = false
+			t.Text = ""
+			t.Size = UDim2.fromScale(1, 0.66)
+			t.ZIndex = 2
+			t.Visible = false
+			t.Parent = frame
+			local pill = Instance.new("Frame")
+			pill.Name = "TryPill"
+			pill.AnchorPoint = Vector2.new(0.5, 1)
+			pill.Position = UDim2.fromScale(0.5, 0.64)
+			pill.Size = UDim2.fromScale(0.7, 0.12)
+			pill.BackgroundColor3 = WELL
+			pill.BackgroundTransparency = 0.25
+			pill.ZIndex = 3
+			pill.Visible = false
+			pill.Parent = frame
+			local pc = Instance.new("UICorner")
+			pc.CornerRadius = UDim.new(0.5, 0)
+			pc.Parent = pill
+			local ps = Instance.new("UIStroke")
+			ps.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+			ps.Color = WrapColours.tint(name)
+			ps.Thickness = 1.5
+			ps.Parent = pill
+			local words = Instance.new("TextLabel")
+			words.Name = "Words"
+			words.BackgroundTransparency = 1
+			words.Size = UDim2.fromScale(1, 1)
+			words.FontFace = Font.fromEnum(Enum.Font.BuilderSansBold)
+			words.TextScaled = true
+			words.TextColor3 = INK
+			words.Text = Shop.Words.try
+			words.ZIndex = 3
+			words.Parent = pill
+			local wp = Instance.new("UIPadding")
+			wp.PaddingTop, wp.PaddingBottom = UDim.new(0.18, 0), UDim.new(0.18, 0)
+			wp.Parent = words
+			local popScale = Instance.new("UIScale")
+			popScale.Parent = pill
+			try, tryPill, tryPop = t, pill, popScale
+		end
+
 		local card: Card = {
 			name = name,
 			frame = frame,
@@ -423,6 +550,9 @@ function ShopView.new(): Brix.System
 			button = button,
 			buttonPop = buttonPop,
 			buttonRing = ring,
+			try = try,
+			tryPill = tryPill,
+			tryPop = tryPop,
 			viewport = viewport,
 			camera = camera,
 			centre = fit.centre[2],
@@ -439,6 +569,14 @@ function ShopView.new(): Brix.System
 				press(card)
 			end)
 		)
+		if try then
+			table.insert(
+				cardLinks,
+				try.Activated:Connect(function()
+					tryOn(card)
+				end)
+			)
+		end
 		paint(card)
 		return card
 	end
@@ -506,7 +644,7 @@ function ShopView.new(): Brix.System
 		table.clear(byName)
 	end
 
-	local function close()
+	function close()
 		if not open then
 			return
 		end
@@ -554,6 +692,8 @@ function ShopView.new(): Brix.System
 		for _, card in cards do
 			card.frame.Parent = row
 		end
+		canTry = nearMirror()
+		showTry()
 		layout()
 		row.CanvasPosition = Vector2.zero
 		backdrop.Visible = true
@@ -602,6 +742,13 @@ function ShopView.new(): Brix.System
 			end
 			if not inLobby then
 				close()
+			end
+		end
+		if open then
+			local could = canTry
+			canTry = nearMirror()
+			if canTry ~= could then
+				showTry()
 			end
 		end
 	end

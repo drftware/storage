@@ -2569,13 +2569,21 @@ Done when players watch the results to the end and change their perks between cl
       on; you turn once round as the film winds up you in the next colour on the shelf, stand
       wrapped three seconds, then it loosens with a crinkle and slumps to a heap. Free, nothing
       saved. Seen in Play on the A16 (`docs/art/S5-03f4a-*.jpg`).
-    - [ ] **S5-03f4b The counter's mirror** (idea 24): a framed mirror beside the counter's shop
-      (`Home.mirror`'s art, any glass tagged Mirror gets Try on already), and a Try on on each
-      shop card (ShopView) that tries that colour, not the next (a colour name sent to the
-      server, checked as `WearWrap` is). Ends with seeing a colour on you by the counter.
-  - [ ] **S5-03g Walls, floor, door, name cards and furniture** (ideas 18 to 20): paint and floors
-    on the Arrange screen, door colours, name card styles, furniture at the counter in a weekly
-    stock.
+    - [ ] **S5-03f4b The counter's mirror** (idea 24, D-319), in two:
+      - [x] **S5-03f4b1 Built**: the home's framed mirror leaning on the front wall past the
+        counter's door end (`Shop.Mirror`, `Home.mirrorAt`), its picture standing the front
+        office's walls (`Lobby.MirrorRoom`); each colour card's figure a Try on near a mirror
+        (`TryWrap`, that colour); your view eased to the glass as the film winds. The counter's
+        Shop button moved to the counter (it stood at the old lobby's z -35). Passes checks.
+      - [ ] **S5-03f4b2 Seen in Play**: Studio's copies patched (Rojo isn't connected), the
+        mirror and its picture judged at phone size, a card's Try on pressed by the counter,
+        captured; anything the eye finds fixed.
+  - [ ] **S5-03g Walls, floor, door, name cards and furniture** (ideas 18 to 20), art first:
+    - [ ] **S5-03g1 The art**: the paints and floors, door colours, name card styles and the
+      counter's furniture as Blender scripts the unit's way (`art/home/`), calm and warm (D-263).
+    - [ ] **S5-03g2 Paint and floors on the Arrange screen**, saved per home.
+    - [ ] **S5-03g3 Door colours and name card styles**, chosen at home, seen from the lobby.
+    - [ ] **S5-03g4 Furniture at the counter in a weekly stock.**
   - [ ] **S5-03h Four sizes and the walls that move** (ideas 30, 31): small to start, medium for
     cash, large and XL for Robux; the partitions grind back and the door widens, everything set
     out staying where it was.
