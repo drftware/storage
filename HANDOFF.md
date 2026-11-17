@@ -14,6 +14,8 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   (`UnitLight.Home`: reach 22, 1.7 times as bright, no shadow, real whenever lit). Verified in
   Studio Play: twelve fronts, a door rolling, every open unit warm from the spawn, a car taking
   you to floor 1. Not yet on a phone or in the A16 emulator.
+- Find art (third find run): A1's audit is in `art/finds/WAVES.md` ("Every built find, in the
+  game"); all 46 built finds match the catalog's grade and worth. Next: P1 (ROADMAP F-G1f).
 - The name cards over the doors (`Specs.Cards` `Unit1` to `Unit12`) are laid empty: a3 writes
   each owner's name.
 

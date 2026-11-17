@@ -6,8 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** A1, the third run's audit (below). The second run's steps 14 and 15 (the last four
-squishies and their Studio look) are now the third run's S1 to S4 and L1.
+**Next:** P1, the pipeline (the third run's plan, below; ROADMAP F-G1f). A1, the audit, is done
+(Nov 16): "Every built find, in the game" below is the map. The second run's steps 14 and 15
+(the last four squishies and their Studio look) are now the third run's S1 to S4 and L1.
 
 ## The third run's plan (owner's brief, Nov 16 night)
 
@@ -18,7 +19,7 @@ worse. One step a session or less: a session that doesn't finish its step says e
 stands, and the next carries on. Actions that only happen at home, and the hard hat on your
 head, belong to the home chain (ROADMAP S5-03, F-G1b4): listed as waiting, not built here.
 
-1. **A1 The audit** (short). A table in this file, "Every built find, in the game": each built
+1. **A1 The audit** (short; done Nov 16, A1: "Every built find, in the game", below). A table in this file, "Every built find, in the game": each built
    find, its catalog action, today's state (works / its verb exists and needs data / its verb is
    missing / waits on the home chain or the owner), its grade, worth and floors checked against
    the catalog, and one column for "seen in Play" (empty until Q1).
@@ -64,6 +65,101 @@ catalog row. (3) The deal takes every generated, judged find with a template in 
 (4) An art session ends in the game: import, then one Studio Play check that the find turns up in
 a unit and its verb plays when pressed. (5) Only three things stay separate: a verb nobody has
 built, the owner's decisions, and feel tests on a phone or with friends (OWNER.md).
+
+## Every built find, in the game
+
+A1 (Nov 16). Today: **works** (its press is in the game), **needs data** (its verb is built; it
+needs its row in `Finds/Use`, its sound and maybe a loudness), **missing** (a piece of its verb
+nobody has built), **waits** (on the home chain or the owner). Grade, worth and floors are what
+`Tools/Catalog.luau` and `Deal.luau` deal today, checked against the catalog doc; ✓ means they
+match. "Floor 1 up" is every floor by its grade's odds (`Grades.odds`, D-203). The verbs'
+precedents are the catalog's "Every button" table. Seen in Play is Q1's.
+
+| Find (`Deal.Finds`) | Catalog action · verb (precedent) | Today | Grade · worth · floors | Seen in Play |
+|---|---|---|---|---|
+| Plug-in night-light (`NightLight`) | A soft glow by the floor (the catalog says at home; D-250: anywhere) · Switch (DOORS' lighter) | works: a lamp, 60 s | Common · 2 · floor 1 up ✓ | |
+| Tea light in a jar (`TeaLight`) | A small glow for about a minute · Light (DOORS' lighter) | works: 60 s | Common · 3 · floor 1 up ✓ | |
+| Desk lamp (`DeskLamp`) | A warm pool of light (at home; D-250: anywhere) · Switch | works | Common · 4 · floor 1 up ✓ | |
+| Bundle of glow sticks (`GlowSticks`) | One stick lights a small spot for the rest of the floor; three to a bundle · Crack | works for one crack; the other two sticks are missing (V5) | Common · 5 · floor 1 up ✓ | |
+| String fairy lights (`FairyLights`) | Lay them along a hall for a dim line of light · Switch | works as a switch in your hand; laying them along a hall is missing (V5) | Uncommon · 12 · floor 1 up ✓ | |
+| Camping lantern (`CampLantern`) | A wide light for 90 seconds · Switch | works | Uncommon · 15 · floor 1 up ✓ | |
+| Moon lamp (`MoonLamp`) | It glows (D-250: anywhere); tap it to change its phase · Switch, Tap | works as a switch; the phase tap waits on the home chain | Uncommon · 16 · floor 1 up ✓ | |
+| Blob lamp (`BlobLamp`) | Coloured blobs rise and fall (D-250: anywhere) · Switch | works | Uncommon · 18 · floor 1 up ✓ | |
+| Oil lamp (`OilLamp`) | Warm light that runs down slowly; fragile · Light | works: 150 s; fragile is missing (V5) | Rare · 40 · floor 1 up ✓ | |
+| Disco ball (`DiscoBall`) | Spots of light race round the walls · Spin | works | Rare · 45 · floor 1 up ✓ | |
+| Neon OPEN sign (`NeonSign`) | It buzzes and glows pink (D-250: anywhere) · Switch | works | Rare · 60 · floor 1 up ✓ | |
+| Miner's hard hat (`HardHat`) | A lamp on your head lights what you look at, a minute · Wear (Phasmophobia's head torch, D-251) | works as a switch in your hand; Wear waits on the home chain (F-G1b4a, F-G1b4b) | Rare · 70 · floor 1 up ✓ | |
+| Jar of fireflies (`FireflyJar`) | Fireflies drift out and light the unit for a minute · Open | works | Epic · 110 · floor 1 up ✓ | |
+| Theatre spotlight (not dealt; art `Spotlight`) | At home: point it at your best find; a big find | waits on the home chain and on a floor with a big-find place | catalog: Epic · 240, big find; game: not dealt, no catalog row (right until a floor has a big-find place) | |
+| Stained-glass lamp (`StainedGlassLamp`) | Coloured patterns on the walls (D-250: anywhere); fragile · Switch | works; fragile is missing (V5) | Legendary · 480 · floor 1 up ✓ | |
+| A lamp that's on when you find it (`UnpluggedLamp`, "Old lamp") | It never runs down; in a power cut the only light on the floor · none, found lit | found lit at rest; it holds no Mannequin, since D-234 reads only a press's stamp (V5) | Secret · 7,000 · floor 25 up, standing loose (too tall for the box) ✓ | |
+| Die-cast car (`DiecastCar`) | It rolls off down the hall · Push (quiet: "just for the feel") | works (D-233) | Common · 4 · floor 1 up ✓ | |
+| Remote-control car (`RCCar`) | Drive it (at home; D-250: anywhere, and the collector steals it) · Drive (Rainbow Six Siege's drones) | works (D-250 to D-258); at home waits on the home chain | Rare · 60 · floor 1 up ✓ | |
+| Kazoo (`Kazoo`) | A buzzy note · Blow, a noise (Lethal Company's airhorn) | needs data and a loudness (V3) | Common · 2 · floor 1 up ✓ | |
+| Squeaky rubber duck (`RubberDuck`) | A squeak you can hear down the hall · Squeeze, a noise | needs data and a loudness (V1) | Common · 3 · floor 1 up ✓ | |
+| Toy siren car (`SirenCar`) | It rolls off, wailing · Push, a noise that moves | the roll is built; the wail heard as it goes and the beacon lighting the hall are missing (V4) | Common · 5 · floor 1 up ✓ | |
+| Wind-up chattering teeth (`ChatteringTeeth`) | They chatter off across the floor; monsters come to look · Wind (R.E.P.O.'s music box; the monkey's lure) | set down and travelling are built, and so is the lure; the lure heard where it is along its path is missing (V2) | Common · 6 · floor 1 up ✓ | |
+| Toy drum (`ToyDrum`) | Loud · Bang, a noise | needs data and a loudness (V3) | Uncommon · 10 · floor 1 up ✓ | |
+| Wind-up mouse (`WindupMouse`) | It zips off and squeaks wherever it stops · Wind | travelling is built; the squeak heard where it stops is missing (V2) | Uncommon · 12 · floor 1 up ✓ | |
+| Wind-up walking robot (`WalkingRobot`) | It clanks off in a straight line for 15 seconds · Wind | as the teeth (V2) | Uncommon · 15 · floor 1 up ✓ | |
+| Farm-animal spinner (`FarmSpinner`) | The arrow spins and an animal noise plays · Pull, a noise | needs data and a loudness (V3) | Uncommon · 16 · floor 1 up ✓ | |
+| Jack-in-the-box (`JackInTheBox`) | A tune, then a bang as it pops · Wind | works (D-229, D-231) | Uncommon · 18 · floor 1 up ✓ | |
+| Cymbal monkey (`CymbalMonkey`) | Cymbals for 20 seconds, loud, the strongest lure · Wind (Call of Duty Zombies' Monkey Bomb) | works (D-233) | Rare · 40 · floor 1 up ✓ | |
+| Pull-string cowboy doll (`CowboyDoll`) | It says one of six lines · Pull, a noise | needs data and a loudness (V3); its voice waits on the owner (default: the cord's whirr) | Rare · 45 · floor 1 up ✓ | |
+| Singing fish plaque (`SingingFish`) | Its head turns and it sings · Press, a noise | needs data and a loudness (V3); its song waits on the owner (default: the motor's hum) | Rare · 50 · floor 1 up ✓ | |
+| Clockwork tin bird (`TinBird`) | It hops and whistles · Wind | as the teeth (V2) | Epic · 140 · floor 1 up ✓ | |
+| Wind-up tin carousel (`TinCarousel`) | It turns and plays a tune · Wind | needs data and a loudness: the monkey's lure, in place (V2) | Epic · 200 · floor 1 up ✓ | |
+| Stress ball with a face (`StressBall`) | Its eyes bulge out · Squeeze (quiet; the squishy craze itself) | needs data and its own sound (V1) | Common · 2 · floor 1 up ✓ | |
+| Squishy butter stick (`ButterStick`) | A dent that slowly fills back in · Squeeze | needs data (V1; bones) | Common · 4 · floor 1 up ✓ | |
+| Mochi bun (`MochiBun`) | A soft puff of a sound · Squeeze | needs data (V1) | Common · 4 · floor 1 up ✓ | |
+| Paper squishy with a drawn face (`PaperSquishy`) | It crinkles · Squeeze | needs data (V1) | Uncommon · 10 · floor 1 up ✓ | |
+| Squishy toast slice (`ToastSlice`) | Springs back like real bread · Squeeze | needs data (V1) | Uncommon · 11 · floor 1 up ✓ | |
+| Gel bead ball (`GelBeadBall`) | The beads swirl inside · Squeeze | needs data (V1) | Uncommon · 12 · floor 1 up ✓ | |
+| Glitter goo ball (`GlitterGooBall`) | Glitter swirls, then settles · Squeeze | needs data (V1) | Uncommon · 15 · floor 1 up ✓ | |
+| Jumbo slow-rise strawberry (`JumboStrawberry`) | The dent takes ten seconds to rise back · Squeeze | needs data (V1; bones) | Uncommon · 18 · floor 1 up ✓ | |
+| Squishy capybara (`Capybara`) | A tiny, happy sigh · Squeeze | needs data (V1) | Rare · 55 · floor 1 up ✓ | |
+| Galaxy goo ball (`GalaxyGooBall`) | Stars drift and swirl inside · Squeeze | needs data (V1; its glow from its rest keys, D-249) | Legendary · 350 · floor 1 up ✓ | |
+| Boombox (`Boombox`, bedroom set) | Loud music wherever you leave it, monsters come to look; at home it plays your tapes · Play, a noise (R.E.P.O.'s music box) | missing: a press on a one-mesh find (V5); the tapes wait on the home chain | Uncommon · 25 · floor 1 up ✓ | |
+| Small box TV (`Television`, bedroom set) | At home: it plays your tapes and films · Play (Animal Crossing's records) | waits on the home chain | Uncommon · 22 · floor 1 up ✓ | |
+| Small teddy bear (`Teddy`, bedroom set) | A tiny squeak · Hug (quiet) | missing: a press on a one-mesh find (V5) | Common · 4 · floor 1 up ✓ | |
+| Roller skates (`Skates`, bedroom set) | You move faster, but the wheels are loud on concrete · Wear (DOORS' vitamins) | waits on the home chain and the owner (F-G1b5; monsters don't hear feet yet, D-251) | Uncommon · 18 · floor 1 up ✓ | |
+
+**Verbs missing, and who shares each** (this sets V1 to V5):
+1. **A loudness for each noisy find** (how far monsters hear it, in place of the air horn's one
+   reach, `Use.LureReach`) and a cap on how many lures sound at once and how often, for low-end
+   phones. Built once in V1 for the duck; then the kazoo, drum, spinner, doll and fish (V3), the
+   carousel and the travelling wind-ups (V2), the siren car (V4), the boombox (V5) and the mega
+   goo ball (S3) take it as data. The rest of Squeeze is built: a toy press playing its motion
+   with a sound (`Use.Rows`), and the view plays stretch and bones (`Finds.joints`). Untested:
+   bones and stretch in one press. The catalog's Squeeze is quiet, so only the duck and the mega
+   goo ball lure.
+2. **A lure heard where a set-down find is along its path.** Today the server lays a set-down
+   find at its end at once (D-233), so a lure would be heard from there. The teeth, robot, tin
+   bird and the mouse's squeak where it stops (V2), then the siren car's wail (V4).
+3. **A light that shines only while a toy plays:** the siren car's beacon (V4).
+4. **V5 needs five pieces; split it before starting:** (a) a press on a one-mesh find, which has
+   no joints or motions: the boombox's music on the lure and the teddy's hug; (b) the glow
+   sticks' other two sticks (one more crack each; the art has one `Crack`); (c) the fairy
+   lights laid along a hall; (d) the Old lamp holding a Mannequin while it lies lit, as D-234's
+   found lights do; (e) fragile: the oil lamp and the glass lamp chip to half their worth when
+   dropped hard (R.E.P.O.'s valuables).
+
+**Grade, worth and floor mismatches P1 must fix: none.** All 46 match the catalog's grade and
+worth, every one is dealt from floor 1 by its grade's odds, and the Old lamp from floor 25, as
+the catalog says. P1 keeps it that way from the generated rows, deals the four squishies as
+they're built, and keeps the theatre spotlight out until a floor has a big-find place. The
+catalog doc still says "at home" for the lamps and the RC car (D-250 changed both; HANDOFF's
+Queue has the doc's update).
+
+**Waits on the home chain:** the theatre spotlight, the moon lamp's phase tap, the TV, the
+boombox's tapes, the RC car at home, the hard hat's Wear (F-G1b4a, F-G1b4b), the skates (F-G1b5).
+**On the owner:** the doll's lines and the fish's song (OWNER.md, the talking finds' voices).
+
+**The four last squishies, from the catalog:** goo ball, Common, 3, "oozes between your fingers
+and slowly comes back"; colour-change goo ball, Rare, 40, "changes colour where your fingers
+pressed"; squishy cake slice, Rare, 45, "frosting squishes out of the side"; mega goo ball, Epic,
+120, "both hands, and a deep squelch that carries", loud enough to draw a monster. No floor rule
+for any: floor 1 up by their grades' odds. All Squeeze (V1's data); the mega goo ball lures.
 
 ## The second run's plan (owner's yes, Nov 15)
 
@@ -147,6 +243,20 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 16, A1 (the audit; no game code changed).** The table "Every built find, in the game"
+  is above, with the verbs each V step needs. What P1 needs to know: grade, worth and floors
+  already match the catalog for all 46 built finds (catalog rows in `Tools/Catalog.luau` via
+  `built(...)`, the deal list `Deal.Finds`, the Old lamp's `from = 25`); the theatre spotlight
+  has no catalog row and isn't in `Deal.Finds`, on purpose. The bedroom set (Boombox,
+  Television, Teddy, Skates) are one-mesh finds with no kit spec, so P1's generated rows cover
+  the 42 kit finds and leave those four hand-written. What V1 needs: `Use.Rows` takes a toy
+  press as data (`verb`, `on` steps with `motion` and `sound`, `toy`, `noise`, `lure`), and
+  `Finds.joints` already sizes parts and bends bones, so Squeeze is data plus the loudness and
+  the lure cap (`FindUses`' `lure` calls `k:hear(pos, Use.LureReach, ...)`: the reach is the
+  natural place for a loudness). Every squishy's motion is `Squeeze`; the wind-ups' are
+  `Wind` then `Chatter`, `Walk`, `Zip`, `Hop` or `Play`, and `Blow`, `Bang`, `Pull`, `Press`.
+  ROADMAP: F-G1e split into F-G1e1 to F-G1e5 (V1 to V5); P1 is F-G1f.
 
 - **Nov 16, F-05d3 (the galaxy goo ball built; step 13 done; uploaded 128329446635375 and imported, its
   template checked by code, not looked at in Studio's view: the context cap; the second run ends

@@ -2642,7 +2642,40 @@ actions themselves and dealing the new finds on floors are later game tickets.
     squeaks, the tin bird hops and whistles, the carousel turns and plays, the siren car rolls
     off wailing; the kazoo, duck, drum, spinner, cowboy doll and fish on a press), and squeezing
     the squishies (the dent filling back in, the beads, glitter and stars swirling, the
-    capybara's sigh). About 22 rows: split it here before starting.
+    capybara's sigh). Split by the third find run's audit (Nov 16, A1: `art/finds/WAVES.md`,
+    "Every built find, in the game"), each seen in Studio Play before it's ticked:
+    - [ ] **F-G1e1 Squeeze (the run's V1).** The ten built squishies and the rubber duck: each
+      squashes (its stretch or its bones) and squishes, squeaks or crinkles with a sound of its
+      own. New piece, built once here: a loudness for each noisy find (how far monsters hear it,
+      in place of the air horn's one reach) and a cap on lures at once and how often, for
+      low-end phones. The duck's squeak lures down the hall; the squishies are quiet (the
+      catalog's Squeeze). Untested: bones and stretch in one press.
+    - [ ] **F-G1e2 Wind and go (V2).** The chattering teeth, walking robot, wind-up mouse and
+      tin bird are set down and travel on their own paths, stopping at walls (the toy car's
+      way), luring as they go: the lure heard where each one is along its path, not where it
+      ends; the mouse's squeak where it stops. The tin carousel plays in place on the monkey's
+      lure. Each with its loudness.
+    - [ ] **F-G1e3 One press, one noise (V3).** The kazoo, toy drum, farm-animal spinner,
+      cowboy doll and singing fish: each its motion, its sound and a loudness on the jack's
+      one-shot noise. The doll and the fish ship the owner's defaults (the cord's whirr, the
+      motor's hum) until their voices are recorded (`OWNER.md`).
+    - [ ] **F-G1e4 The siren car (V4).** It rolls as the toy car does, its beacon spins and
+      lights the hall while it rolls, and its wail lures along its path (F-G1e2's lure).
+    - [ ] **F-G1e5 The rest the audit found (V5).** Split before starting: (a) a press on a
+      one-mesh find, which has no joints or motions: the boombox's loud music on the lure and
+      the teddy's hug squeak; (b) the glow sticks' other two sticks (three to a bundle); (c) the
+      fairy lights laid along a hall for a dim line of light; (d) the Old lamp holds a
+      Mannequin while it lies lit; (e) fragile: the oil lamp and glass lamp chip to half their
+      worth when dropped hard (R.E.P.O.'s valuables).
+  - [ ] **F-G1f Each find's game row comes from its art (the run's P1).** `art/finds/PIPELINE.md`
+    (photos to playable in one ticket); each kit find's grade, worth, floors, verb, the verb's
+    numbers and sounds in its art spec; the export generates the catalog rows beside
+    `Finds/Sets` and a judged flag for the finds ticked in `art/finds/WAVES.md`; the deal takes
+    every generated, judged find with a template in the place, so no hand-kept list for kit
+    finds. Lune specs prove the generated rows match today's hand-written ones before those go
+    (the audit found no grade, worth or floor mismatch). The theatre spotlight stays out of the
+    deal until a floor has a big-find place; the bedroom set stays hand-written. Split it (P1a,
+    P1b) if it won't fit.
 - [x] **F-04 Wind-ups and noisemakers.** Built, in `art/finds/windups/`: F-04a the cymbal monkey,
   F-04b the jack-in-the-box, F-04c the chattering teeth (Nov 15), F-04c2 the walking robot,
   F-04d the wind-up mouse, F-04d2 the clockwork tin bird, F-04e the toy siren car and F-04e2 the
