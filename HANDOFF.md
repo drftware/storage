@@ -2,43 +2,42 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-16, session 218 (the RC car sees in the dark) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `c9f6667`.
+**Updated:** 2026-11-16, session 219 (the Packrat steals the RC car) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `c9f6667`.
 
 ## State
-- F-G1b3c2e is done (D-257): driving into a dark hall, the hood view clicks and flickers over to
-  grainy green, a lamp only your screen has lights 30 studs ahead, and monsters' eyes shine as
-  two pale points (`Finds/Infrared`, `InfraredView`). A lit hall light's pool, a unit with its
-  door up or the elevator's lamp gives colour back the same way; Back is colour at once. Your
-  torch is put away while you drive (FlashlightView's `away`) and lit again when you're back.
-- Seen in Studio Play: all of the above in the dev hall and on the laid floor with a Mannequin.
-  Not run: a phone, a friend's view (OWNER.md, the RC car's steps 8-9).
-- Fixed on the way: a streamed-out elevator lamp read as sitting on the dev hall (STUDIO.md).
+- F-G1b3c3 is done (D-258): to monsters the RC car is where its car is (`Slots.out`); the
+  Packrat's hands closing on the car bring the transmitter to it and the whole find goes to its
+  pile, taken back with Take. The driver's view lifts, tips, shakes, cuts to the feed's snow and
+  hiss, and comes home (`Drive.lifted`). Robbed from a driver's hands, the car comes home first.
+  The car lives in its floor's model; at the gate an RC car with its car out isn't kept, and the
+  transmitter dies in your hand as the floor below goes (`Slots.lose`).
+- Seen in Studio Play: the theft from a roof, the rob from hands, pocketing leaving the car out
+  (it used to destroy the car: fixed), the floor destroyed with the car out. Not run: taking it
+  back off the pile, a real gate shut, a phone, a friend (OWNER.md, the RC car's steps 10-12).
 
-## Next task: F-G1b3c3 The collector steals the car
-The moment: you're nosing the car down a dark hall, the Packrat's pale hands close round it, the
-view lifts off the floor, shakes, cuts to static, and you're back in your own eyes. The car is on
-its pile, there to take back. (Owner, ROADMAP F-G1b3c3; Dandy's World's and Piggy's item thieves.)
-One session: the Packrat's seeking, carrying and pile are built. The gap: it sees only finds
-lying loose (`Slots:finds`), and a car set down isn't one (its find stays in your hand).
-1. Let `Slots:finds` list each car out on the floor as a lying find, at the car's spot, so
-   `tellLying` hands it to the Packrat with the rest.
-2. When its hands close on the car (`tookFind`, `s:lift`): the drive ends, the car joins its
-   find again and the whole RC car goes into its arms, as `robbed` takes from hands (default; the
-   transmitter left in your hand driving nothing is the other choice: an OWNER.md line).
-3. On the driver's screen: the view lifts, shakes (CameraShake), cuts to the feed's snow
-   (`Feed.Snow`, `Feed.InSound`), and your view is home. Friends see it carried off.
-4. On its pile it's an ordinary find, taken back as any is.
-5. The car belongs to its floor: set down into the floor's model, not `Workspace.Driven`
-   (`Drives`, line ~479), so a car still out when the elevator leaves is left with the floor.
-**Acceptance:** check green; in Play a car left out when the gate shuts is gone with the floor; a
-Packrat sent at a car (StandPackrat, STUDIO.md) takes it with the lift, shake and static on the
-driver's screen, lays it on its pile, and it can be taken back.
-**Read first:** `docs/ROADMAP.md` (grep "F-G1b3c3"); D-179 (grep "^## D-179" docs/DECISIONS.md);
-`src/server/Drives.luau`; `src/server/Keepers.luau` lines 1180-1300; `src/server/Slots.luau`
-lines 1050-1110 (`finds`, `lift`); STUDIO.md "Testing a drop in front of a hunting Packrat".
+## Next task: F-G1b4a The hard hat on your head and lit
+The moment: your torch stutters out, no battery, the Mannequin two halls off, and you pull the
+hard hat on; its tight white beam goes where you look. (Owner, ROADMAP F-G1b4a, D-251;
+Phasmophobia's head torch.) F-G1b4b (it running out and breaking) is next, not this.
+1. A head place on the character apart from the three slots: the worn hat welded to the head
+   as the ladder is welded to the shoulder (`Slots`' `dress`), shown to everyone, and saved
+   nowhere yet (it's a find: kept at the gate like one; default, an OWNER.md line).
+2. The hat's one word becomes Wear (`Finds/Use.luau`'s `HardHat`, now Switch): it lifts onto
+   your head with the shell's knock and the lamp's click, lit, and its slot is free.
+3. Its beam: tighter and whiter than the torch's (`FlashlightView`'s own light as the pattern),
+   from your forehead where you look, bobbing with your walk; friends see the lamp lit on your
+   forehead and its light on the walls.
+4. It holds a Mannequin as any found light does: Keepers' `lampOf` stamp, now from the head.
+5. Caught (or dying), it drops with everything else, still lit, as a dropped lamp lies.
+**Acceptance:** check green; in Play `GiveFind` "HardHat", Wear: it's on your head lit, the slot
+empty, the beam where you look; a Mannequin walked into its beam stops; caught, it drops.
+**Read first:** `docs/ROADMAP.md` (grep "F-G1b4a"); D-251 (grep "^## D-251"
+docs/DECISIONS.md); `src/shared/Finds/Use.luau` (the header and `HardHat`);
+`src/server/Slots.luau` lines 405-455 (`dress`, the shoulder weld); `src/server/Keepers.luau`
+lines 1150-1180 (`lampOf`); `src/client/FlashlightView.luau` (grep "Beam" for the light).
 
 ## Queue (next sessions, the owner's ticket order)
-1. F-G1b4 the hard hat; F-G1b5 waits for its art.
+1. F-G1b4b the hard hat spent and broken; F-G1b5 waits for its art.
 2. Brix ticket: Driving's default stick read requires `PlayerScripts.PlayerModule`, which places
    on Roblox's Input Action System lack; fall back to `Humanoid.MoveDirection` turned by the
    camera, as this game's `input` does (D-254). Built in `../engine` by its rules, then the pin.
@@ -54,13 +53,14 @@ lines 1050-1110 (`finds`, `lift`); STUDIO.md "Testing a drop in front of a hunti
    where the hood looks, though friends see it held at the floor (D-257). Make the rules match
    what's seen (aim it at the floor while driving) or put it to the owner.
 8. Small (ROADMAP lists them): the RC car's polish (buttons hidden while driving, Ackermann,
-   the aerial telescoping, the view's transmitter grip, infrared's bonnet and hiss); the lamps
-   going out, the finds' press sounds and hand, the monkey and toy car's polish; B-05b2b's box
-   round the bend; L-08e3c, L-14b2d wait; S3-04b's polish; Free Everyone's swap sound; `sell*`
-   Config warnings, a dropped find bumps a walker (D-182), the save's "best floor" still 0
-   after a ride, S1-07a to S2-07b2 leftovers, box words (D-215); opening a box in Play logs
-   rbxassetid://92259888500166 failing 27 times; Play logs rbxassetid://203785492 "Asset type
-   does not match" six times (find what loads it).
+   the aerial telescoping, the view's transmitter grip, infrared's bonnet and hiss, infrared
+   through the lift, the car's crackle as it's lifted, the car seen going when its driver is
+   robbed); the lamps going out, the finds' press sounds and hand, the monkey and toy car's
+   polish; B-05b2b's box round the bend; L-08e3c, L-14b2d wait; S3-04b's polish; Free
+   Everyone's swap sound; `sell*` Config warnings, a dropped find bumps a walker (D-182), the
+   save's "best floor" still 0 after a ride, S1-07a to S2-07b2 leftovers, box words (D-215);
+   opening a box in Play logs rbxassetid://92259888500166 failing 27 times; Play logs
+   rbxassetid://203785492 "Asset type does not match" six times (find what loads it).
 9. F-G1e pressing the wind-ups and squishies (ROADMAP), when the owner slots it in.
 
 ## Kickoff for the next agent

@@ -12,6 +12,12 @@
 	is. While your car is out, the transmitter in your view's hand has no car on it; while you
 	drive, your view's hand is hidden (it's back at your body).
 
+	Taken (F-G1b3c3): the server's word that a monster's hands closed on the car you drive
+	(`Drive.TakenRemote`). Your view stays on the hood as it lifts off the floor, tipping and
+	shaking (`Drive.lifted`, CameraShake), cuts to a dead channel's snow with the security feed's
+	hiss, and comes home to your own eyes as the snow clears. Its word and the car going can reach
+	this screen in either order, so a word just after the drive ended still plays from the hood.
+
 	Everyone's: each car out turns its wheels as it rolls and points its front wheels into a turn
 	(yours from your stick, at once; a friend's from how it turns), leans on its springs, and
 	whines while someone drives it, rising with speed. A car taken back clacks into its
@@ -22,14 +28,18 @@ local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local SoundService = game:GetService("SoundService")
+local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Catalog = require(ReplicatedStorage.Shared.Tools.Catalog)
 local Drive = require(ReplicatedStorage.Shared.Finds.Drive)
+local Feed = require(ReplicatedStorage.Shared.Feed)
 local Finds = require(ReplicatedStorage.Shared.Finds)
 local Pose = require(ReplicatedStorage.Shared.Finds.Pose)
+local SoundPrimer = require(script.Parent.SoundPrimer)
 local ToolView = require(script.Parent.ToolView)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 
@@ -50,6 +60,10 @@ local BACK_ACTION = "DriveBack"
 local EYE = 1.5
 -- Studio only: the player attribute a test steers with, the stick as a Vector3 (x right, z back)
 local STICK = "DriveStick"
+-- The taken car's snow (the feed's): points each tile covers, one point a pixel, as the feed's.
+local TILE = 128
+-- Seconds a hiss's slice runs on past its fade, silent (a tween can start a frame late).
+local FADE_SLACK = 0.1
 
 type Car = {
 	model: Model,
@@ -77,6 +91,16 @@ type Driving = {
 	savedFov: number,
 	view: CFrame?, -- the hood's view as last drawn
 	putBack: number, -- the last put back seen, server clock
+}
+
+-- The car you drove, lifted off the floor in a monster's hands (F-G1b3c3).
+type Stolen = {
+	from: CFrame, -- the hood's view as the hands closed
+	since: number, -- os.clock then
+	savedType: Enum.CameraType, -- your own view, to come home to
+	savedFov: number,
+	snowed: boolean,
+	home: boolean,
 }
 
 export type Api = {
@@ -123,6 +147,14 @@ function DriveView.new(hand: ToolView.Hand, kick: (amount: number) -> ()): (Brix
 	local gui: ScreenGui? = nil
 	local shownView: Model? = nil -- your view's copy as last hidden or shown
 	local shownHidden = -1 -- 0 whole, 1 car hidden, 2 all hidden
+	local stolen: Stolen? = nil
+	-- the hood's view as your last drive ended, for a word it was taken that comes just after
+	local last: { view: CFrame, at: number, savedType: Enum.CameraType, savedFov: number }? = nil
+	local takenGui: ScreenGui? = nil
+	local snow: ImageLabel? = nil
+	local hiss: Sound? = nil -- made once and replayed: a new Sound starts late (docs/STUDIO.md)
+	local hissFade: Tween? = nil
+	local random = Random.new()
 
 	local function click()
 		local character = player.Character
@@ -134,7 +166,26 @@ function DriveView.new(hand: ToolView.Hand, kick: (amount: number) -> ()): (Brix
 		end
 	end
 
-	local function stopDriving(told: boolean)
+	-- Your view back in your own eyes, the camera as it was before the drive.
+	local function homeView(savedType: Enum.CameraType, savedFov: number)
+		local camera = Workspace.CurrentCamera
+		if not camera then
+			return
+		end
+		local character = player.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		camera.CameraType = if savedType == Enum.CameraType.Scriptable
+			then Enum.CameraType.Custom
+			else savedType
+		if humanoid then
+			camera.CameraSubject = humanoid
+		end
+		camera.FieldOfView = savedFov
+	end
+
+	-- The drive over on this screen. `keepView`: the camera stays where it is (taken: the lift
+	-- plays from the hood), else your view is home at once.
+	local function stopDriving(told: boolean, keepView: boolean?)
 		local d = driving
 		if not d then
 			return
@@ -147,21 +198,132 @@ function DriveView.new(hand: ToolView.Hand, kick: (amount: number) -> ()): (Brix
 		end
 		d.wheels:stop()
 		ContextActionService:UnbindAction(BACK_ACTION)
-		local camera = Workspace.CurrentCamera
-		if camera then
-			local character = player.Character
-			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-			camera.CameraType = if d.savedType == Enum.CameraType.Scriptable
-				then Enum.CameraType.Custom
-				else d.savedType
-			if humanoid then
-				camera.CameraSubject = humanoid
-			end
-			camera.FieldOfView = d.savedFov
+		if not keepView then
+			local view = d.view
+			last = if view
+				then { view = view, at = os.clock(), savedType = d.savedType, savedFov = d.savedFov }
+				else nil
+			homeView(d.savedType, d.savedFov)
 		end
 		local g = gui
 		if g then
 			g.Enabled = false
+		end
+	end
+
+	-- The security feed's hiss as the snow cuts in, fading as your own eyes come back.
+	local function playHiss()
+		local h = hiss
+		if not h then
+			return
+		end
+		if hissFade then
+			hissFade:Cancel()
+		end
+		h.Volume = Feed.InVolume
+		h.PlaybackRegion =
+			NumberRange.new(Feed.InFrom, Feed.InFrom + Drive.TakenSnow + Feed.InTail + FADE_SLACK)
+		h.TimePosition = Feed.InFrom
+		h:Play()
+		local fade = TweenService:Create(
+			h,
+			TweenInfo.new(
+				Feed.InTail,
+				Enum.EasingStyle.Quad,
+				Enum.EasingDirection.In,
+				0,
+				false,
+				Drive.TakenSnow
+			),
+			{ Volume = 0 }
+		)
+		hissFade = fade
+		fade:Play()
+	end
+
+	-- The server's word that a monster's hands closed on the car you drive: the lift starts from
+	-- the hood (or from where it was as your drive just ended, if the car went first).
+	local function taken()
+		local d = driving
+		local camera = Workspace.CurrentCamera
+		local from: CFrame?, savedType: Enum.CameraType?, savedFov: number?
+		if d then
+			from = d.view or (camera and camera.CFrame)
+			savedType, savedFov = d.savedType, d.savedFov
+			stopDriving(true, true)
+		else
+			local l = last
+			if l and os.clock() - l.at < Drive.TakenLate then
+				from, savedType, savedFov = l.view, l.savedType, l.savedFov
+			end
+		end
+		last = nil
+		if not (from and savedType and savedFov) then
+			return
+		end
+		stolen = {
+			from = from,
+			since = os.clock(),
+			savedType = savedType,
+			savedFov = savedFov,
+			snowed = false,
+			home = false,
+		}
+		kick(Drive.LiftKick)
+	end
+
+	-- This frame of the taken car's lift, snow and coming home (`Drive.lifted`).
+	local function lift(st: Stolen)
+		local t = os.clock() - st.since
+		local up, pitch, roll, see, home = Drive.lifted(t)
+		local camera = Workspace.CurrentCamera
+		if not home then
+			if camera then
+				camera.CameraType = Enum.CameraType.Scriptable
+				camera.CFrame = (st.from + Vector3.new(0, up, 0))
+					* CFrame.Angles(math.rad(pitch), 0, math.rad(roll))
+			end
+		elseif not st.home then
+			st.home = true
+			homeView(st.savedType, st.savedFov)
+		end
+		local l = snow
+		if l then
+			l.Visible = see < 1
+			l.ImageTransparency = see
+			l.BackgroundTransparency = see
+			if see < 1 then
+				l.Position = UDim2.fromOffset(
+					-random:NextInteger(0, TILE - 1),
+					-random:NextInteger(0, TILE - 1)
+				)
+			end
+		end
+		if see < 1 and not st.snowed then
+			st.snowed = true
+			playHiss()
+		end
+		if t >= Drive.TakenEnds then
+			stolen = nil
+			if l then
+				l.Visible = false
+			end
+		end
+	end
+
+	-- Puts an unfinished lift away at once: your own eyes, no snow (caught, stopped).
+	local function endLift()
+		local st = stolen
+		if not st then
+			return
+		end
+		stolen = nil
+		if not st.home then
+			homeView(st.savedType, st.savedFov)
+		end
+		local l = snow
+		if l then
+			l.Visible = false
 		end
 	end
 
@@ -373,7 +535,10 @@ function DriveView.new(hand: ToolView.Hand, kick: (amount: number) -> ()): (Brix
 		local character = player.Character
 		local held = character and character:FindFirstChild(Tools.HeldName)
 		local out = held ~= nil and held:GetAttribute(Drive.OutAttribute) == true
-		local hidden = if driving then 2 elseif key == Drive.Key and out then 1 else 0
+		-- all of it hidden while you drive, and while the car you drove is lifted away (the view
+		-- isn't in your eyes, and your hand's transmitter is being torn from it)
+		local lifting = stolen ~= nil and not (stolen :: Stolen).home
+		local hidden = if driving or lifting then 2 elseif key == Drive.Key and out then 1 else 0
 		if view == shownView and hidden == shownHidden then
 			return
 		end
@@ -470,28 +635,50 @@ function DriveView.new(hand: ToolView.Hand, kick: (amount: number) -> ()): (Brix
 		b.Activated:Connect(back)
 		g.Parent = pg
 		gui = g
+
+		-- the taken car's snow over everything, the whole screen, hidden till then
+		local t = Instance.new("ScreenGui")
+		t.Name = "DriveTaken"
+		t.ResetOnSpawn = false
+		t.IgnoreGuiInset = true
+		t.DisplayOrder = 20
+		local l = Instance.new("ImageLabel")
+		l.Name = "Snow"
+		l.Image = Feed.Snow
+		l.ScaleType = Enum.ScaleType.Tile
+		l.TileSize = UDim2.fromOffset(TILE, TILE)
+		l.Size = UDim2.new(1, TILE * 2, 1, TILE * 2) -- room to jump without an edge showing
+		l.BackgroundColor3 = Color3.new(0, 0, 0)
+		l.BorderSizePixel = 0
+		l.Visible = false
+		l.Parent = t
+		t.Parent = pg
+		takenGui, snow = t, l
 	end
 
 	local api: Api = {
 		press = function(): boolean
-			if driving or not alive() then
+			if driving or stolen or not alive() then
 				return false
 			end
 			click()
 			return true
 		end,
 		can = function(): boolean
-			return driving == nil and alive()
+			return driving == nil and stolen == nil and alive()
 		end,
 		viewing = function(): boolean
-			return driving ~= nil
+			return driving ~= nil or (stolen ~= nil and not (stolen :: Stolen).home)
 		end,
 		hull = function(): BasePart?
 			local d = driving
 			return if d then d.hull else nil
 		end,
 		leave = function()
-			if not driving then
+			local st = stolen
+			local lifting = st ~= nil and not st.home
+			endLift()
+			if not (driving or lifting) then
 				return
 			end
 			stopDriving(false)
@@ -515,7 +702,19 @@ function DriveView.new(hand: ToolView.Hand, kick: (amount: number) -> ()): (Brix
 			if r and r:IsA("RemoteEvent") then
 				backRemote = r
 			end
+			-- nothing to check: the server's word only, and it only ever plays your own lift
+			local t = folder and folder:WaitForChild(Drive.TakenRemote, 30)
+			if t and t:IsA("RemoteEvent") then
+				table.insert(connections, t.OnClientEvent:Connect(taken))
+			end
 		end)
+		local h = Instance.new("Sound")
+		h.Name = "DriveTakenHiss"
+		h.SoundId = Feed.InSound
+		h.PlaybackRegionsEnabled = true
+		h.Parent = SoundService
+		hiss = h
+		task.spawn(SoundPrimer.prime, { Feed.InSound })
 		task.spawn(makeGui)
 		table.insert(
 			connections,
@@ -541,6 +740,10 @@ function DriveView.new(hand: ToolView.Hand, kick: (amount: number) -> ()): (Brix
 	end
 
 	function system.step(_: any, dt: number)
+		local st = stolen
+		if st then
+			lift(st)
+		end
 		local camera = Workspace.CurrentCamera
 		local eye = if camera then camera.CFrame.Position else Vector3.zero
 		local d = driving
@@ -611,6 +814,15 @@ function DriveView.new(hand: ToolView.Hand, kick: (amount: number) -> ()): (Brix
 
 	function system.stop(_: any)
 		stopDriving(true)
+		endLift()
+		if hiss then
+			hiss:Destroy()
+			hiss = nil
+		end
+		if takenGui then
+			takenGui:Destroy()
+			takenGui, snow = nil, nil
+		end
 		for _, c in connections do
 			c:Disconnect()
 		end

@@ -39,6 +39,14 @@
 	it jolts out of your hand with its own snap and a burst of its bits, tumbles to the floor with
 	its clank, lies there a moment and fades. Your screen is told (ToolBroke) to break it in your
 	view; until it goes, your hand can't move and the tool can't be used.
+
+	A find can have a piece out on a floor away from the rest (`out`, F-G1b3c3: the RC car set down
+	while its transmitter stays in your hand). Monsters see that find where its piece is, never
+	where the rest is: the Packrat goes for the car, and its hands closing on it bring the whole
+	find together there (`Out.gather`) and into its arms, out of whoever's slots it was in; torn
+	from your hands instead, its piece comes home into it first. It isn't kept at the gate while
+	its piece is out: it's left behind with the floor, and goes from your hand when the piece goes
+	with it (`lose`).
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -68,6 +76,9 @@ local DROP_AHEAD = 2.2 -- studs in front of your middle where a dropped tool lan
 local DROP_BEHIND = 1.8
 local RUNNING = 6
 local REACH_SLACK = 2 -- studs the server allows past a prompt's reach (lag, a long arm)
+-- Studs across the floor from a monster's chest a find's piece out (the RC car) may be as its
+-- hands close: it reaches about 4 ahead (the Packrat's `grab`); driven farther, it slipped them.
+local OUT_GRASP = 7
 -- A kept find's glint as it goes from your hand, for everyone near: the coins' sparkle, warm gold.
 local GLINT_TEXTURE = "rbxasset://textures/particles/sparkles_main.dds"
 local GLINT_BURST = 0.18 -- seconds the glint throws sparks: a short burst, then gone
@@ -102,6 +113,16 @@ export type Change = {
 export type Use = { player: Player, key: string, model: Model }
 -- A dropped tool hitting the floor: its clank, heard `reach` studs off (Carry.DropHeard).
 export type Landed = { key: string, at: Vector3, reach: number }
+-- A find's piece out on a floor away from the rest (the RC car set down, F-G1b3c3), as the
+-- system that set it there (`Drives`) answers for it.
+export type Out = {
+	-- the floor point under the piece now, or nil while no monster could take it from anywhere
+	at: () -> Vector3?,
+	-- the piece back in its find. `there`: the rest brought to where the piece stands (a monster's
+	-- hands closed on the piece; the find already out of any hand and off any floor, its body
+	-- anchored), else the piece brought to the rest (a monster tearing the rest from your hands)
+	gather: (there: boolean) -> (),
+}
 
 export type Slots = Brix.System & {
 	-- Fires as anyone's slots change, for whoever cares.
@@ -113,12 +134,22 @@ export type Slots = Brix.System & {
 	-- Fires as the finds lying loose change (S2-06b2): one laid, dropped, picked up, cleared,
 	-- lifted by a monster or laid on its pile. The Packrat is told (`Keepers`).
 	loose: Brix.Signal<nil>,
+	-- Find `model` has a piece out on a floor (`out`), or not any more (nil). Monsters see the find
+	-- where the piece is (`finds`). Call it again with the same `out` when the piece has moved, so
+	-- they're told.
+	out: (self: any, model: Model, out: Out?) -> (),
+	-- Find `model` goes for good wherever it is (a hand, a pocket, a floor), its piece gone with the
+	-- floor it was left on: `sound` from where it was, and from a hand it breaks away in its
+	-- carrier's view (ToolBroke). Never kept.
+	lose: (self: any, model: Model, sound: Tools.SoundSpec) -> (),
 	-- Calls `each` with every find lying loose on a floor: its number, the floor point under its
-	-- middle (the world's) and its model (a found light's stamp, F-G1b3b). Allocates nothing.
+	-- middle (the world's) and its model (a found light's stamp, F-G1b3b). A find with a piece out
+	-- (`out`) is there, at the piece, wherever the rest is. Allocates nothing.
 	finds: (self: any, each: (n: number, at: Vector3, model: Model) -> ()) -> (),
 	-- A monster's hands close on find `n` lying loose (the Packrat's take, S2-06b2): its prompt
 	-- goes and it's welded to `part`, its middle where it lay, in `holder` (the monster's body).
-	-- The weld, or nil if it no longer lies loose.
+	-- One with a piece out is gathered where the piece is first, out of whoever's slots it was in
+	-- (their screen told, as `snatch`'s). The weld, or nil if it no longer lies loose.
 	lift: (self: any, n: number, part: BasePart, holder: Instance) -> Weld?,
 	-- Lays lifted find `n` on the floor at `at`, turned `yaw` degrees, quietly (the Packrat's
 	-- pile): "Take" again, as any find. It eases there from `from` (its middle in the world, where
@@ -286,6 +317,8 @@ function Slots.new(): Slots
 	local lying: Folder? = nil
 	-- where each lying tool's middle stands on the floor (its id's), for `finds`
 	local grounds: { [string]: Vector3 } = {}
+	-- each find with a piece out on a floor (`out`), by its model
+	local outs: { [Model]: Out } = {}
 	local notice: RemoteEvent? = nil
 	local broke: RemoteEvent? = nil
 	local snatched: RemoteEvent? = nil
@@ -1053,8 +1086,26 @@ function Slots.new(): Slots
 		return gone
 	end
 
+	function system.out(_: any, model: Model, out: Out?)
+		if out then
+			outs[model] = out
+		else
+			outs[model] = nil
+		end
+		loose:fire(nil)
+	end
+
 	function system.finds(_: any, each: (n: number, at: Vector3, model: Model) -> ())
 		for id, t in tools do
+			local out = outs[t.model]
+			if out then
+				-- where its piece is, however the rest is held (not in a monster's arms)
+				local at = if t.weld and t.weld.Name == Tools.CarriedName then nil else out.at()
+				if at then
+					each(t.n, at, t.model)
+				end
+				continue
+			end
 			local at = grounds[id]
 			if at and t.owner == nil and t.model.Parent == lying and Catalog[t.key].find then
 				each(t.n, at, t.model)
@@ -1072,13 +1123,72 @@ function Slots.new(): Slots
 		return nil
 	end
 
-	function system.lift(_: any, n: number, part: BasePart, holder: Instance): Weld?
-		local t = numbered(n, false)
-		if not (t and t.model.Parent == lying) then
-			return nil
+	-- Find `t`, its piece out, taken out of wherever it is so the piece can bring it together for
+	-- a monster's hands in `holder`: out of its carrier's slots (their screen told, as `snatch`'s)
+	-- or off the floor, anchored where it is.
+	local function free(t: Tool, holder: Instance)
+		local owner = t.owner
+		local h = if owner then hands[owner] else nil
+		local slot = if h then Carry.find(h.carry, t.id) else nil
+		if h then
+			Carry.remove(h.carry, t.id)
 		end
 		unoffer(t)
 		grounds[t.id] = nil
+		if t.weld then
+			t.weld:Destroy()
+			t.weld = nil
+		end
+		t.owner = nil
+		t.body.Anchored = true
+		t.model.Name = t.key -- no longer the one in a hand, for anyone looking this frame
+		if owner and h then
+			dress(owner)
+			publish(owner)
+			if snatched and slot then
+				snatched:FireClient(owner, t.key, slot, holder)
+			end
+			changed:fire({ player = owner, kind = "Taken" })
+		end
+	end
+
+	-- The find numbered `n` with a piece out, if one is.
+	local function outNumbered(n: number): Tool?
+		for _, t in tools do
+			if t.n == n and outs[t.model] then
+				return t
+			end
+		end
+		return nil
+	end
+
+	function system.lift(_: any, n: number, part: BasePart, holder: Instance): Weld?
+		local away = outNumbered(n)
+		local t = away or numbered(n, false)
+		if not t then
+			return nil
+		end
+		local out = outs[t.model]
+		if away and out then
+			-- the car out on the floor (F-G1b3c3): the whole find, together where the car is
+			local at = out.at()
+			local d = if at then at - part.Position else nil
+			if
+				not d
+				or Vector3.new(d.X, 0, d.Z).Magnitude > OUT_GRASP
+				or (t.weld and t.weld.Name == Tools.CarriedName)
+			then
+				return nil
+			end
+			free(t, holder)
+			outs[t.model] = nil
+			out.gather(true)
+		elseif t.model.Parent == lying then
+			unoffer(t)
+			grounds[t.id] = nil
+		else
+			return nil
+		end
 		local box = Tools.bounds(t.key)
 		local middle = t.body.PivotOffset * CFrame.new(box.Centre)
 		local weld = Instance.new("Weld")
@@ -1159,6 +1269,12 @@ function Slots.new(): Slots
 		if not t then
 			return nil, nil
 		end
+		local out = outs[t.model]
+		if out then
+			-- its piece out (the RC car, F-G1b3c3): home into it first, the whole find torn away
+			outs[t.model] = nil
+			out.gather(false)
+		end
 		local box = Tools.bounds(t.key)
 		local middle = t.body.PivotOffset * CFrame.new(box.Centre)
 		-- where it was: in their hand (or on their shoulder) as everyone saw it, else their middle
@@ -1219,7 +1335,9 @@ function Slots.new(): Slots
 		local ids = Carry.keep(h.carry, function(id: string): boolean
 			local t = tools[id]
 			local row = if t then Catalog[t.key] else nil
-			return row ~= nil and row.find == true
+			-- a find whose piece is still out is left behind with the floor (F-G1b3c3): it stays
+			-- in your slots till the piece goes with the floor (`lose`)
+			return row ~= nil and row.find == true and not (t and outs[t.model])
 		end)
 		local keys: { string } = {}
 		for _, id in ids do
@@ -1240,6 +1358,55 @@ function Slots.new(): Slots
 			changed:fire({ player = player, kind = "Keep" })
 		end
 		return keys
+	end
+
+	function system.lose(_: any, model: Model, sound: Tools.SoundSpec)
+		outs[model] = nil
+		local t: Tool? = nil
+		for _, c in tools do
+			if c.model == model then
+				t = c
+				break
+			end
+		end
+		if not t then
+			return
+		end
+		tools[t.id] = nil
+		grounds[t.id] = nil
+		unoffer(t)
+		local owner = t.owner
+		local h = if owner then hands[owner] else nil
+		local inHand = h ~= nil and t.weld ~= nil and t.model.Parent ~= nil
+		-- its sound from where it was: its carrier (in a hand or a pocket), else where it lay
+		local root = if owner then rootOf(owner) else nil
+		if root then
+			Tools.play(sound, root, HAND_SOUND_REACH)
+		elseif t.model.Parent then
+			local spot = Instance.new("Attachment")
+			spot.Name = "Lost"
+			spot.WorldPosition = t.body.Position
+			spot.Parent = Workspace.Terrain
+			Tools.play(sound, spot, HAND_SOUND_REACH)
+			task.delay(sound.length / (sound.pitch or 1) + 1, function()
+				spot:Destroy()
+			end)
+		end
+		if h then
+			Carry.remove(h.carry, t.id)
+		end
+		t.owner = nil
+		stow(t)
+		t.model:Destroy()
+		if owner and h then
+			dress(owner)
+			publish(owner)
+			if inHand and broke then
+				broke:FireClient(owner, t.key)
+			end
+			changed:fire({ player = owner, kind = "Spend" })
+		end
+		loose:fire(nil)
 	end
 
 	function system.spend(_: any, player: Player, key: string): boolean

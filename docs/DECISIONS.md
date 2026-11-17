@@ -6565,3 +6565,40 @@ Built from D-255. The choices that weren't the owner's:
 - **Your torch is put away while your view is on the car,** its light out, lit again as it was
   when you're back; while away it lights no faint mark. In the game's rules it's still on in your
   hand (the server tests it from your head along where you look), unchanged here.
+
+## D-258 · 2026-11-16 · The Packrat steals the RC car, and a car left out stays with its floor (F-G1b3c3)
+
+- **To monsters the find is where its car is.** Slots learns that a find can have a piece out on
+  a floor (`Slots.out`, the RC car's `Drives` answers for it): `finds` lists it at the car's
+  floor point, whatever holds the transmitter (a hand, a pocket, the floor), and never at the
+  transmitter's own spot, so each find has one place. Drives tells Slots again each time the car
+  has moved 1.5 studs (`Drive.ToldMoved`), and the Packrat's brain already follows a find that
+  moves, letting go of its reach when it's driven out from under its hand.
+- **Its hands closing on the car take the whole RC car.** `Slots.lift` frees the find from
+  wherever it is (out of its holder's slots, their screen told as a snatch: the transmitter torn
+  away in the hand, its picture off the wheel), then the car gathers it: the transmitter is
+  brought to the car, not the car to it, so the whole find lies where the car was, and every
+  screen eases it from there into the hands. The car must still be within 7 studs of its chest
+  (it reaches about 4 ahead). On its pile it's an ordinary find, taken back with "Take".
+- **The driver's screen: lift, shake, static, home.** Drives tells the driver first
+  (`Drive.TakenRemote`); DriveView keeps the camera where the hood was, raises it 2.8 studs over
+  half a second, tipped up 24 degrees and rolled 16, with a 0.8 shake as the hands close, then the
+  security feed's snow over the whole screen with its hiss for 0.35 s, and your own eyes as the
+  snow clears (`Drive.lifted`). A word arriving just after the drive ended (it and the car going
+  can cross) still plays from the last hood view, within half a second. Your view's hand, your
+  torch and your body stay as while driving until you're home.
+- **Robbed from your hands, the car comes home first.** The Packrat's pick from a driver is
+  still the RC car: `snatch` brings the car home into the transmitter (it vanishes from the
+  floor) and the whole find is torn away, so a driver it reaches is robbed, not caught.
+- **The car belongs to its floor.** It's set down into the model of the floor it's on
+  (`Floor.modelName`, FloorBuilder's `Floor<n>`), the dev hall's off-floor spots keeping
+  `Workspace.Driven`. At the gate an RC car whose car is still out isn't kept: it rides up in
+  your hand, and as the floor below is cleared (the ride's hand-off) its transmitter dies in
+  your hand with the feed's set-off crackle and the break answer (`Slots.lose`, `Drive.Lost`).
+  Default, open to the owner: the transmitter goes with its car; keeping it as a dud or keeping
+  the whole car are the alternatives (OWNER.md). Drive it to your feet or walk to it before the
+  gate shuts to keep it.
+- **Fixed on the way: pocketing or switching off the transmitter destroyed the car out.** Slots
+  takes a find out of the world (`Parent` nil) when it's pocketed, and Drives took any `Parent`
+  nil as the find going. It now watches the find's `Destroying`, and the car's own `Destroying`
+  (which fires for a destroyed ancestor) for its floor going.

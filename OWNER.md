@@ -47,8 +47,8 @@ nowhere else.
   5. Drop a lit one in the hall with the Mannequin coming (the lantern's steps below): it stops
      where the lamp's light reaches. The desk lamp's pool is small (about 4 studs); the
      night-light's barely reaches at all.
-- [ ] **Try (F-G1b3c2c, F-G1b3c2d and F-G1b3c2e, built Nov 16, D-254, D-256 and D-257; driven
-  by script in Studio Play, not on a phone, not with a friend):** drive the RC car.
+- [ ] **Try (F-G1b3c2c to F-G1b3c3, built Nov 16, D-254, D-256, D-257 and D-258; driven by
+  script in Studio Play, not on a phone, not with a friend):** drive the RC car.
   1. In Studio press Play. In the command bar (Server), run
      `workspace:SetAttribute("GiveFind", "RCCar")`: a **Drive** button shows.
   2. Face down the test hall and press Drive: the transmitter clicks, the car is set down in front
@@ -83,6 +83,23 @@ nowhere else.
      looking back, and are they big enough on a phone far down a hall? Turn your torch on before
      you drive: it's out while you drive and lit again when you press Back. A friend standing
      by you sees no light on the car.
+  10. The Packrat steals it: drive the car out by the lobby, then Server
+     `workspace:SetAttribute("StandPackrat", true)` stands one in the unit nearest the lobby.
+     Keep the car in its way: its pale hands close on it, your view lifts off the floor, tips
+     and shakes, cuts to static with a hiss, and you're back in your own eyes. Does the lift
+     read as being picked up, and is the static long enough to feel like the signal died
+     (`Drive.LiftTime`, `Drive.TakenSnow`)? Follow it home and take the whole car back off its
+     pile with Take.
+  11. Let it reach you instead while you drive (stand in its way, the car parked away): it
+     tears the transmitter from your hands and the car is gone from the floor with it. Does
+     that read, or should the car be seen flying to its hands?
+  12. Leave the car out when the gate shuts (drive it somewhere and walk to the elevator): no
+     glint for it at the gate, and as the floor below goes the transmitter crackles dead in
+     your hand. Is losing it fair, and does the crackle say why?
+- [ ] **Decide (default in, F-G1b3c3):** an RC car whose car is still out when the gate shuts
+  is lost: the car stays with the floor and the transmitter dies in your hand as the floor goes.
+  Default: lost, so racing the car back to the elevator is a moment. Other ways: you keep the
+  transmitter alone (worth little, a reminder), or the whole RC car is kept anyway.
 - [ ] **Decide (default in, F-G1b3c2e):** does the RC car trip the motion lights as it drives
   under them, as you do? Default: no, it's too small and low for their sensors, so a dark hall
   stays dark and its view goes infrared. If yes, the car lights its own way down the halls and

@@ -36,6 +36,7 @@ Drive.CarName = "RCCarOut" -- the car's model out on the floor
 Drive.HullName = "RCCar_Hull" -- the invisible box it slides on and bumps walls with
 Drive.RemoteFolder = "Driving"
 Drive.BackRemote = "DriveBack" -- the driver's client: take me back to my own eyes
+Drive.TakenRemote = "DriveTaken" -- the server to the driver: a monster's hands closed on your car
 
 --[[
 	The handling (Brix's `Handling.car`), what each number does to the player. It leaps off: from
@@ -122,6 +123,40 @@ Drive.TakeHeight = 4
 -- since the drive began, coming back within `TakeReach` takes it back. It's set down closer than
 -- that, so it doesn't snap straight back into your hands as you start.
 Drive.HomeAway = 4.5
+
+-- Studs a car out moves before monsters are told where it is now (F-G1b3c3): the Packrat follows
+-- a car driven off from under its hands, never long behind it.
+Drive.ToldMoved = 1.5
+
+--[[
+	The Packrat steals it (F-G1b3c3; Dandy's World's and Piggy's item thieves). The car you drive
+	is a find lying loose to it; as its hands close, your view on the hood lifts off the floor and
+	tips as it's turned in the hands, shaking, then cuts to a dead channel's snow (the security
+	feed's, with its hiss), and you're back in your own eyes as the snow clears. `lifted` is where
+	the view is along the way.
+]]
+Drive.LiftTime = 0.5 -- seconds it rises in the hands: long enough to see the floor drop away
+Drive.LiftUp = 2.8 -- studs it rises: from the floor to a Packrat's chest
+Drive.LiftPitch = 24 -- degrees the view tips up as it rises: the hall's ceiling swinging in
+Drive.LiftRoll = 16 -- degrees it rolls: turned in the hands, never held level
+Drive.LiftKick = 0.8 -- the shake's trauma as the hands close (CameraShake; 1 is the most)
+Drive.TakenSnow = 0.35 -- seconds of solid snow before your own eyes: a cut, not a wait
+Drive.SnowClear = 0.15 -- seconds the snow takes to clear off your own view
+Drive.TakenEnds = Drive.LiftTime + Drive.TakenSnow + Drive.SnowClear
+-- Seconds after the drive ended that the server's word the car was taken still plays (its word
+-- and the car going can reach your screen in either order).
+Drive.TakenLate = 0.5
+
+-- A car left out when the elevator leaves stays with the floor, and its transmitter dies in your
+-- hand as the floor goes (F-G1b3c3): the security feed's set switching off (Feed.OutSound), a
+-- burst of static cut dead. Heard close by.
+Drive.Lost = {
+	id = "rbxassetid://9126097099",
+	from = 5.0,
+	length = 0.7,
+	volume = 0.55,
+	pitch = 1,
+}
 
 --[[
 	The driver's body (F-G1b3c2d): while you drive, every screen, yours included, crouches your
@@ -259,6 +294,25 @@ function Drive.home(away: boolean, dx: number, dy: number, dz: number): (boolean
 			or math.abs(dy) > Drive.TakeHeight
 	end
 	return away, away and Drive.takes(dx, dy, dz)
+end
+
+--[[
+	The taken car's view `t` seconds after the hands closed: studs up, degrees tipped up and rolled
+	(its own frame), the snow's see-through (1 none, 0 solid), and whether your view is home in
+	your own eyes. Eased out: snatched up fast, slowing at the chest.
+]]
+function Drive.lifted(t: number): (number, number, number, number, boolean)
+	local k = math.clamp(t / Drive.LiftTime, 0, 1)
+	local e = 1 - (1 - k) * (1 - k)
+	local snowAt = Drive.LiftTime
+	local homeAt = snowAt + Drive.TakenSnow
+	local see = 1
+	if t >= snowAt and t < homeAt then
+		see = 0
+	elseif t >= homeAt then
+		see = math.clamp((t - homeAt) / Drive.SnowClear, 0, 1)
+	end
+	return Drive.LiftUp * e, Drive.LiftPitch * e, Drive.LiftRoll * e, see, t >= homeAt
 end
 
 return Drive

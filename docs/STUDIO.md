@@ -2677,6 +2677,20 @@ verified: a doc page, Studio, or "untested".
   `RenderStepped` (DriveView's hood, after bound steps), so stop driving first. In first person
   your body turns to face where the camera looks: set `Humanoid.AutoRotate` false, or you only
   ever see its back. Unhide your body's parts in the same bound step.
+- **A pocketed find is out of the world, not gone** (F-G1b3c3): Slots stows a tool that isn't
+  in your hand by setting its model's `Parent` to nil (switching slots or pocketing), so a find's
+  `AncestryChanged` to nil doesn't mean it went. Watch `Destroying` for that (it also fires when
+  an ancestor is destroyed: a car inside a floor's model hears its floor go).
+- **The dev floor is `Workspace.DevCorridor.Floor1` now** (Nov 16), its lobby at (0, 0, -600) and
+  its first hall running toward -Z (Unit101 at x 4, z -616). Pivot to (0, 3.5, -604) facing -Z
+  before `GiveFind` "RCCar"; ToolUse sets the car down in front of you and drives.
+- **Testing the Packrat stealing the car from the MCP** (F-G1b3c3): drive from Unit106's roof
+  (bounding box top + 3) so it never sees you, then `StandPackrat` true: it stands in Unit101,
+  walks out and takes a car parked near the lobby's mouth within 4 s. A Client logger connected
+  to `Driving.DriveTaken` that samples `CurrentCamera` each RenderStepped into a Player attribute
+  shows the lift. Standing in its way instead, it robs the transmitter from your hand. Going to
+  its pile afterwards it catches you (empty-handed): a client `PivotTo` beside the pile and a
+  `ProximityPrompt:InputHoldBegin` both run before the server sees you there.
 - **A catch without a keeper:** Server `ReplicatedStorage.Remotes.Caught:FireClient(player, nil)`
   plays the lunge with a stand-in, and `player:SetAttribute("Kept", true)` marks you caught (alone,
   ClimbEnds then says everyone's caught; stop Play after). KeptPlayers isn't told, so nothing

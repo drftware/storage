@@ -138,6 +138,26 @@ do
 	ok(c.Down > 0 and c.Sink > 0 and c.Sink < 0.6, "crouched, not sat on the floor")
 end
 
+-- taken (F-G1b3c3): the view rises and tips in the hands, then solid snow, then home and clear
+do
+	local up0, pitch0, roll0, see0, home0 = Drive.lifted(0)
+	ok(up0 == 0 and pitch0 == 0 and roll0 == 0, "it starts where the hood view was")
+	ok(see0 == 1 and not home0, "no snow yet as the hands close")
+	local half = Drive.lifted(Drive.LiftTime / 2)
+	ok(half > Drive.LiftUp / 2, "snatched up: more than half way in half the time")
+	local up, pitch, roll, see, home = Drive.lifted(Drive.LiftTime - 1e-3)
+	ok(math.abs(up - Drive.LiftUp) < 0.05, "at the chest as the snow cuts in")
+	ok(pitch > 0 and roll > 0 and see == 1 and not home, "tipped and turned, still the hall")
+	_, _, _, see, home = Drive.lifted(Drive.LiftTime + 0.01)
+	ok(see == 0 and not home, "a dead channel's snow, solid")
+	local back = Drive.LiftTime + Drive.TakenSnow
+	_, _, _, see, home = Drive.lifted(back + 0.001)
+	ok(home and see < 0.1, "your own eyes behind the snow as it starts to clear")
+	_, _, _, see, home = Drive.lifted(back + Drive.SnowClear)
+	ok(home and see == 1, "clear")
+	ok(Drive.TakenEnds == back + Drive.SnowClear, "it's over once clear")
+end
+
 -- the handling's numbers make sense together
 do
 	local h = Drive.Handling

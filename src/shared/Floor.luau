@@ -276,6 +276,15 @@ export type Random = {
 	nextInteger: (self: any, min: number, max: number) -> number,
 }
 
+-- A laid floor's model's name (FloorBuilder), and whether `name` is one: what's set down on a
+-- floor and must go with it (the RC car, F-G1b3c3) finds its floor by it.
+function Floor.modelName(number: number): string
+	return `Floor{number}`
+end
+function Floor.isModel(name: string): boolean
+	return string.match(name, "^Floor%d+$") ~= nil
+end
+
 -- The way Dir `d` points across the floor.
 function Floor.dir(d: number): (number, number)
 	d %= 4

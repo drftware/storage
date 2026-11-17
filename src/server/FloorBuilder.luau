@@ -695,7 +695,7 @@ function FloorBuilder.lay(
 	end)
 
 	local model = Instance.new("Model")
-	model.Name = `Floor{floor.number}`
+	model.Name = Floor.modelName(floor.number)
 	model.WorldPivot = origin
 	-- publishing the tops and building the lobby each get a frame of their own when the slice runs
 	-- over: together they made one long frame (46 ms laying floor 12 in Play; 6 ms at most after,

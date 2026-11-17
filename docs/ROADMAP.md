@@ -2512,13 +2512,28 @@ actions themselves and dealing the new finds on floors are later game tickets.
             Polish, by name: the car's own front is black in infrared (the lamp lights only
             ahead; a faint spill on the bonnet); a quiet hiss under the infrared; a friend's
             torch on the car, or a lit find on the floor, counted as light (D-257 left them out).
-        - [ ] **F-G1b3c3 The collector steals it.** A driven car is a find lying loose, so the
-          Packrat takes it as it takes any (S2-06b): on the driver's screen the view lifts off
-          the floor, shakes, cuts to static, and you're back in your own eyes; it goes on the
-          pile, there to take back. A friend picking the car up ends your drive too; a car
-          still out when the elevator leaves is left behind with the floor (today it lives in
-          `Workspace.Driven`, outside any floor, so it would stay: move it into its floor's
-          model, and a transmitter whose car is lost becomes what?).
+        - [x] **F-G1b3c3 The collector steals it** (Nov 16, D-258). The car out is where the
+          Packrat sees the RC car (`Slots.out`, told again as it moves); its hands closing on it
+          bring the transmitter to the car and take the whole find to its pile, where it's taken
+          back as any find. The driver's view lifts 2.8 studs, tips and rolls, shakes, cuts to
+          the feed's snow and hiss, and comes home (`Drive.lifted`). Robbed from a driver's
+          hands, the car comes home into the transmitter first. The car lives in its floor's
+          model; at the gate an RC car with its car out isn't kept, and its transmitter dies
+          with a crackle as the floor below is cleared (`Slots.lose`). Fixed: pocketing the
+          transmitter destroyed the car. In Studio Play: driving from a unit's roof, a Packrat
+          stood in Unit101 walked out and took the car at 3.6 s; the driver's camera rose 2.8
+          studs over 0.5 s, solid snow 0.35 s, then home with the snow gone by 1.1 s; it laid
+          the whole car (14 parts) on its pile with "Take"; standing in its way with the car
+          parked, it robbed the transmitter and the car came home into it; pocketing left the
+          car out; destroying Floor1 with the car out took the transmitter from the hand with
+          the break answer. Not run: taking it back off the pile (it caught me there twice),
+          a real gate shut, a phone, a friend's view (OWNER.md, the RC car's steps 10-12).
+          Polish, by name: infrared stays on through the lift when the car was in the dark
+          (it goes to colour as the car leaves the floor); the car's own crackle through the
+          transmitter's speaker as it's lifted; a friend seeing the car vanish from the floor
+          when the Packrat robs its driver (a puff, or the car flying to the hands); A friend
+          picking the car up to end your drive (in the old line, not built: nobody can pick
+          the car up; it's out of anyone's reach but its transmitter's).
         - Home: it drives round your home too, once home is built (S5-03).
     - [ ] **F-G1b4 The hard hat goes on your head** (the owner, Nov 16, D-251; Phasmophobia's
       head torch). The moment: your flashlight stutters out, no battery, the Mannequin two halls
@@ -2530,7 +2545,16 @@ actions themselves and dealing the new finds on floors are later game tickets.
       stuttering out as the flashlight dies, and no battery refills it: spent, it falls off your
       head and breaks as the saw does (D-141's break: bits fly, a clank monsters hear, a fade).
       Caught, it drops with everything else. On a phone only the nearest few headlamps light
-      the walls, as the hall lights do.
+      the walls, as the hall lights do. Split for one session each (Nov 16):
+      - [ ] **F-G1b4a On your head and lit.** A head place on the character apart from the
+        slots, welded as the ladder is; Wear (the hat's one word, replacing its Switch) lifts it
+        on with the shell's knock and the lamp's click, lit, and frees its slot; the beam,
+        tighter and whiter than the torch's, where you look, bobbing with your walk; friends
+        see the light on your forehead; it holds a Mannequin as any found light does (its
+        stamp in `Slots:finds`' place, now from your head); caught, it drops with the rest.
+      - [ ] **F-G1b4b Spent and broken.** Its minute dims and stutters out as the flashlight
+        dies; spent, it falls off your head and breaks (D-141); on a phone only the nearest
+        few headlamps light the walls.
     - [ ] **F-G1b5 Skates and slippers**, their art first (not yet in `art/finds/WAVES.md`):
       Wear puts them on your feet. Slippers are looks only. Skates make you faster (default:
       faster than your walk, still slower than a chasing monster, tuned in play), with the

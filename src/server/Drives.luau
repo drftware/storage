@@ -22,8 +22,16 @@
 	world. The car stays where it stopped, anchored so nobody kicks it about. Drive again with the
 	transmitter in hand and it drives on from there. Walk to it with the transmitter in your hand,
 	or drive it back to your feet once it has been away (`Drive.home`), and it's back in your hand:
-	its parts go back into the find, joined to the transmitter as they were. A find that goes takes
-	its car with it.
+	its parts go back into the find, joined to the transmitter as they were. A find that goes
+	(destroyed, not just pocketed) takes its car with it.
+
+	The car belongs to the floor it's set down on (F-G1b3c3): it's put in that floor's model, so a
+	car still out when the elevator leaves stays with the floor, and as the floor goes its
+	transmitter dies wherever it is (`Slots.lose`, `Drive.Lost`). To monsters the find is where its
+	car is (`Slots.out`, told again as it moves): the Packrat goes for the car, and as its hands
+	close the driver's screen is told (`Drive.TakenRemote`: the view lifts, shakes and cuts to
+	static), the transmitter is brought to the car and the whole find goes into its arms, to its
+	pile, where it's taken back as any find.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -34,6 +42,7 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local Drive = require(ReplicatedStorage.Shared.Finds.Drive)
 local Finds = require(ReplicatedStorage.Shared.Finds)
+local Floor = require(ReplicatedStorage.Shared.Floor)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Slots = require(script.Parent.Slots)
 local Tools = require(ReplicatedStorage.Shared.Tools)
@@ -64,7 +73,10 @@ type Car = {
 	driver: Player?,
 	character: Model?, -- the driver's, tagged `Drive.BodyTag` while they drive
 	away: boolean, -- the car has been `Drive.HomeAway` from its driver's feet this drive
-	going: RBXScriptConnection,
+	out: Slots.Out, -- where monsters see the find, and how they take it (`Slots.out`)
+	told: Vector3, -- where the hull was when monsters were last told
+	going: RBXScriptConnection, -- the find destroyed
+	lost: RBXScriptConnection, -- the car gone from the world with its floor
 }
 
 local Drives = {}
@@ -118,6 +130,18 @@ end
 -- Their joint to anything else must be let go first: setting a part's CFrame moves its whole
 -- assembly, and a find in a hand is in the character's. Every place is worked out before any
 -- part moves, since moving one moves the rest of its assembly with it.
+-- The floor's model a car set down on `ground` belongs to (FloorBuilder's), or nil (the dev hall).
+local function floorOf(ground: Instance): Instance?
+	local at = ground:FindFirstAncestorWhichIsA("Model")
+	while at do
+		if Floor.isModel(at.Name) then
+			return at
+		end
+		at = at:FindFirstAncestorWhichIsA("Model")
+	end
+	return nil
+end
+
 local function carry(parts: { BasePart }, body: BasePart, at: CFrame)
 	local move = at * body.CFrame:Inverse()
 	local places = table.create(#parts)
@@ -140,6 +164,8 @@ function Drives.new(): Brix.System
 		bunch = Drive.CheckBunch,
 	})
 	local folder: Folder? = nil
+	local slots: Slots.Slots? = nil
+	local takenRemote: RemoteEvent? = nil
 	local takeIn = 0
 
 	local function say(text: string)
@@ -177,11 +203,25 @@ function Drives.new(): Brix.System
 		say(`{if driver then driver.Name else "?"} stopped driving ({why})`)
 	end
 
-	-- `car` back in its find, joined to the transmitter as it was; the car out on the floor gone.
-	local function takeBack(car: Car, why: string)
-		endDrive(car, why)
+	-- `car` no longer out: forgotten here and by monsters.
+	local function forget(car: Car)
 		cars[car.find] = nil
 		car.going:Disconnect()
+		car.lost:Disconnect()
+		local s = slots
+		if s then
+			s:out(car.find, nil)
+		end
+	end
+
+	--[[
+		`car` back in its find, joined to the transmitter as it was; the car out on the floor gone.
+		`there`: the transmitter is brought to the car, not the car to it (a monster's hands closed on
+		the car, the find already out of any hand and anchored).
+	]]
+	local function takeBack(car: Car, why: string, there: boolean?)
+		endDrive(car, why)
+		forget(car)
 		local find = car.find
 		local body = car.joint.Part1
 		local back: { BasePart } = {}
@@ -191,7 +231,11 @@ function Drives.new(): Brix.System
 			end
 		end
 		car.joint.Part0 = nil
-		if body and body.Parent ~= nil and find.Parent ~= nil then
+		if body and body.Parent ~= nil and there then
+			local move = body.CFrame * (car.jointFrom.CFrame * car.jointC0):Inverse()
+			find:PivotTo(move * find:GetPivot())
+		elseif body and body.Parent ~= nil and car.jointFrom.Parent ~= nil then
+			-- (a pocketed find is out of the world, its parts still placed: carried to it all the same)
 			carry(back, body, car.jointFrom.CFrame * car.jointC0)
 		end
 		for _, part in back do
@@ -211,6 +255,18 @@ function Drives.new(): Brix.System
 		say(`the car is back with its transmitter ({why})`)
 	end
 
+	-- A monster's hands closed on `car` (F-G1b3c3, `Slots.lift`; the find already out of any hand):
+	-- its driver's screen told first (the view lifts, shakes and cuts to static: DriveView), then
+	-- the transmitter brought to the car, the whole find together there for its arms.
+	local function stolen(car: Car)
+		local driver = car.driver
+		local r = takenRemote
+		if driver and r then
+			r:FireClient(driver)
+		end
+		takeBack(car, "a monster took it", true)
+	end
+
 	--[[
 		Sets `find`'s car down in front of `player`: on the floor, facing where they face, short of
 		a wall. Nil, and it stays together, if there's no floor there or the find isn't whole.
@@ -218,8 +274,7 @@ function Drives.new(): Brix.System
 	local function setDown(player: Player, find: Model): Car?
 		local root = rootOf(player)
 		local art = Finds.art(Drive.Key)
-		local f = folder
-		if not (root and art and art.Drive and f) then
+		if not (root and art and art.Drive and folder) then
 			return nil
 		end
 		local names = Drive.carParts(art)
@@ -271,6 +326,7 @@ function Drives.new(): Brix.System
 		if not floor then
 			return nil
 		end
+		local home = floorOf(floor.Instance) or folder
 		-- the car's frame: on the floor, its front (-Z) the way you face
 		local at = CFrame.lookAt(floor.Position, floor.Position + flat)
 		local hullAt = CFrame.new(0, Drive.HullHeight / 2, 0)
@@ -334,20 +390,54 @@ function Drives.new(): Brix.System
 			driver = nil,
 			character = nil,
 			away = false,
-			-- a find that goes takes its car with it
-			going = find.AncestryChanged:Connect(function()
-				if find.Parent == nil and cars[find] == car then
+			out = {
+				-- to monsters the find lies where its car is: the floor under the hull
+				at = function(): Vector3?
+					if not hull:IsDescendantOf(Workspace) then
+						return nil
+					end
+					return hull.Position - hull.CFrame.UpVector * (Drive.HullHeight / 2)
+				end,
+				gather = function(there: boolean)
+					if there then
+						stolen(car)
+					else
+						takeBack(car, "torn from its holder's hands")
+					end
+				end,
+			},
+			told = hull.Position,
+			-- a find that goes (kept, cleared with a floor) takes its car with it; pocketed or
+			-- switched away from it's only out of the world a while, and the car stays
+			going = find.Destroying:Connect(function()
+				if cars[find] == car then
 					endDrive(car, "the find went")
-					cars[find] = nil
-					car.going:Disconnect()
+					forget(car)
 					model:Destroy()
+				end
+			end),
+			-- its floor went, the car with it (Destroying fires for a destroyed ancestor too):
+			-- the find dies wherever it is, never kept
+			lost = model.Destroying:Connect(function()
+				if cars[find] == car then
+					endDrive(car, "left with its floor")
+					forget(car)
+					local s = slots
+					if s then
+						s:lose(find, Drive.Lost)
+					end
+					say("a car was left with its floor; its transmitter died")
 				end
 			end),
 		}
 		CollectionService:AddTag(model, Drive.Tag)
-		model.Parent = f
+		model.Parent = home
 		find:SetAttribute(Drive.OutAttribute, true)
 		cars[find] = car
+		local s = slots
+		if s then
+			s:out(find, car.out)
+		end
 		say(`{player.Name} set the car down`)
 		return car
 	end
@@ -440,6 +530,15 @@ function Drives.new(): Brix.System
 			return
 		end
 		takeIn = TAKE_EVERY
+		-- a car that's moved: monsters told where it is now (the Packrat follows it)
+		local s = slots
+		for _, car in cars do
+			local at = car.hull.Position
+			if s and car.hull.Parent and (at - car.told).Magnitude >= Drive.ToldMoved then
+				car.told = at
+				s:out(car.find, car.out)
+			end
+		end
 		-- a car walked to with its transmitter in hand, or driven back to its driver's feet
 		local back: { Car } = {}
 		local why: { string } = {}
@@ -469,12 +568,14 @@ function Drives.new(): Brix.System
 	local system = { name = "Drives" }
 
 	function system.start(_: any, context: Brix.Context)
-		local slots = (context.registry:get("slots") :: any) :: Slots.Slots? -- any: the registry's
-		if slots then
-			table.insert(connections, slots.used:connect(onUsed))
+		slots = (context.registry:get("slots") :: any) :: Slots.Slots? -- any: the registry's
+		local s = slots
+		if s then
+			table.insert(connections, s.used:connect(onUsed))
 		else
 			warn("Drives: no Slots system, so nobody can drive the RC car")
 		end
+		-- where a car set down off any laid floor lives (the dev hall); on a floor, its model
 		local f = Instance.new("Folder")
 		f.Name = "Driven"
 		f.Parent = Workspace
@@ -488,6 +589,10 @@ function Drives.new(): Brix.System
 		local back = Instance.new("RemoteEvent")
 		back.Name = Drive.BackRemote
 		back.Parent = remotes
+		local taken = Instance.new("RemoteEvent")
+		taken.Name = Drive.TakenRemote
+		taken.Parent = remotes
+		takenRemote = taken
 		table.insert(roblox, back.OnServerEvent:Connect(onBack))
 		table.insert(roblox, RunService.Heartbeat:Connect(onFrame))
 	end
