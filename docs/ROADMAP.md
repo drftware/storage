@@ -2657,11 +2657,22 @@ Done when players watch the results to the end and change their perks between cl
             tabs while a floor rolls, or lift the camera a touch on this tab.
     - [ ] **S5-03g3 Door colours and name card styles**, chosen at home, seen from the lobby, in
       three:
-      - [ ] **S5-03g3a The door's colour**: `Specs.Looks.Doors` (eight, D-321) saved with the
-        looks (`door`, a save migration), a fifth kind for `PickLook`, the roll-up door's slats
-        painted on every screen (the lobby's door of a held home), a third row of dots in the paint
-        tab or a dot row beside the paints. The answer is the door itself: a quick roll of colour
-        down the slats as you watch from inside (the door's inside face), a squish.
+      - [ ] **S5-03g3a The door's colour**, in two:
+        - [x] **S5-03g3a1 The door's colour saved, painted and rolled** (D-329): `looks.door` (save
+          version 10, clay for older saves), a fifth kind for `PickLook`, the id on the unit
+          (`Looks.DoorAttribute`), apart from the room's look so a door pick never stops a wall's
+          wipe. Every screen rolls the colour down the slats from the top in half a second
+          (`RollUpDoor.paint`, `Looks.rollShare`) with a quicker squish of the roller; the server
+          paints the door itself 0.8 s on (`Home.paintDoor`); a home let go goes back to clay.
+          Seen in Studio Play on the A16 simulator from the hall (picked through `LookTest`):
+          top first, foot last, then the shut door's one mesh in the new colour. Pictures
+          `docs/art/S5-03g3a-*.jpg`.
+        - [ ] **S5-03g3a2 Your front, a third tab** on the Arrange tray (D-329): the eight door
+          dots don't fit beside the floor's row at 685 wide (408 points over 197 spare) and a third
+          row would take 174 of the A16's 280. So a third tab (a little roll-up door icon), one row
+          of door dots (66 points tall), and g3c's card styles take its second row. On this tab the
+          camera eases round from the dollhouse corner to face the door from inside, the coil and
+          doorway in view; back on the other tabs it eases back. The roll is the answer.
       - [ ] **S5-03g3b The name card plates.** The chosen style's parts (`Specs.Cards`) replace
         the lobby's plain card plate over each door (`art/lobby/build.py signs()` drops its unit
         cards); the name is written on `Face` in its `Font` (Font.fromName) and `Ink`; the neon's

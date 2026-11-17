@@ -8373,3 +8373,25 @@ Seen in Studio Play on the Galaxy A16 simulator (685x338; the gui is 280 tall un
 - **Nothing to buy here.** Every look is free (D-326), so no chip is marked. When card styles or
   looks are sold, a chip you don't own shows a small coin or Robux mark and never opens a popup
   (S5-03g3c).
+
+## D-329 The door's colour rolls down its slats, apart from the room's look (S5-03g3a1, 2026-11-17)
+
+Idea 18's door (Animal Crossing's house front, Bloxburg's paint on any surface). The moment: you tap
+Mustard and your roll-up door turns from the top down as you watch; the hall sees whose door it is.
+- **Saved with the looks** (`looks.door`, save version 10; an older save's door is clay). Picked
+  through the same `PickLook` remote, its fifth kind, under the same rate limit.
+- **Apart from the room.** The door's id rides on the unit by itself (`Looks.DoorAttribute`), never
+  in the room's encoded look, and the server paints it on its own timer. Folding it into the room's
+  look would have restarted a wall's wipe on a door pick and pulled its sheets early (a flash).
+- **The roll is every screen's, the paint the server's.** Each screen that draws the door holds its
+  38-slat chain out, even on a shut door, and turns each slat over 0.15 s from the top down, the
+  whole door in 0.5 s (`RollUpDoor.paint`, `Looks.rollShare`), with the roller's squish pitched up.
+  An open door turns round its coil from the outside wrap, the part seen from inside. The server
+  paints the door 0.8 s after the pick, once every roll is done, so nothing snaps; a screen that
+  lags past that sees the rest of its roll jump to the colour, nothing worse. A home let go is clay
+  again, as every spare home is.
+- **A third tab, not a third row** (for S5-03g3a2): the door's eight dots don't fit beside the floor
+  row on the Galaxy A16 (they need 408 points, 197 are free), and a third row would cover 174 of its
+  280. The Arrange camera looks away from the door, so a "your front" tab turns it round to face
+  the door, and the name card styles (S5-03g3c) take that tab's second row. Bloxburg's build mode
+  has a tab per part of the house.

@@ -54,7 +54,8 @@ ok(matsFloor.set == "FloorMatting" and matsFloor.colour == "#3D3B39", "matting w
 
 -- The remote's ask: type and length first.
 ok(Looks.ask("paper", "Leaves") == "paper", "a fair ask")
-ok(Looks.ask("door", "Clay") == nil, "doors aren't picked here yet")
+ok(Looks.ask("door", "Clay") == "door", "a door colour is a fair ask")
+ok(Looks.ask("card", "Neon") == nil, "card styles aren't picked here yet")
 ok(Looks.ask("paper", 4) == nil and Looks.ask(nil, "Leaves") == nil, "wrong types refused")
 ok(Looks.ask("paper", string.rep("a", 33)) == nil and Looks.ask("paper", "") == nil, "lengths")
 
@@ -78,6 +79,44 @@ local wallsChanged, floorChanged = Looks.changes(start, leaves :: Looks.Chosen)
 ok(wallsChanged and not floorChanged, "a paper changes the walls only")
 wallsChanged, floorChanged = Looks.changes(start, carpet)
 ok(floorChanged and not wallsChanged, "a floor changes the floor only")
+
+-- The door's colour (S5-03g3a): clay to start, any of the eight, kept apart from the room's look.
+ok(start.door == "Clay", "a new home's door is clay")
+local mustard = Looks.pick(start, "door", "Mustard") :: Looks.Chosen
+ok(mustard.door == "Mustard" and mustard.paint == start.paint, "a door colour picked")
+ok(start.door == "Clay", "a door pick never changes what it was given")
+ok(Looks.pick(start, "door", "Sage") == nil, "a paint isn't a door colour")
+ok(Looks.pick(sage, "door", "Plum").floorColour == "Sage", "a door pick keeps the floor")
+ok(Looks.doorOf("Mustard") == "#CF9F3C" and Looks.doorOf("Gone") == "#B5684E", "door hexes")
+ok(Looks.tidy(table.clone(mustard)).door == "Mustard", "a door colour kept")
+local lost = table.clone(mustard)
+lost.door = "Gone"
+ok(Looks.tidy(lost).door == "Clay", "a dropped door colour goes back to clay")
+local wallsDoor, floorDoor = Looks.changes(start, mustard)
+ok(not wallsDoor and not floorDoor, "a door colour changes neither the walls nor the floor")
+ok(not Looks.same(start, mustard) and Looks.same(start, Looks.start()), "same looks")
+ok(Looks.encode(mustard) == Looks.encode(start), "the room's look carries no door")
+local withDoor = Looks.decode(Looks.encode(sage), "Plum") :: Looks.Chosen
+ok(withDoor.door == "Plum" and withDoor.floorColour == "Sage", "decoded with the unit's door")
+ok((Looks.decode(Looks.encode(sage)) :: Looks.Chosen).door == "Clay", "no door: clay")
+
+-- The colour's roll down the slats (slat 1 at the foot): top first, the coil's with the top,
+-- an open door's coil round from its outside wrap; every slat turned by the roll's end.
+local roll = Looks.DoorRoll
+ok(Looks.rollShare(30, 30, 0) == 0, "nothing turned at the start")
+ok(Looks.rollShare(30, 30, roll.Fade) == 1 and Looks.rollShare(1, 30, roll.Fade) == 0, "top first")
+ok(Looks.rollShare(36, 30, 0.1) == Looks.rollShare(30, 30, 0.1), "the coil turns with the top")
+local mid = roll.Seconds / 2
+ok(Looks.rollShare(20, 30, mid) > Looks.rollShare(10, 30, mid), "it runs down the door")
+ok(Looks.rollShare(1, 0, roll.Fade) == 1 and Looks.rollShare(roll.Coil, 0, roll.Fade) == 0, "coil")
+local all = true
+for slat = 1, 40 do
+	for _, hanging in { 0, 1, 2, 30 } do
+		all = all and Looks.rollShare(slat, hanging, roll.Seconds) == 1
+	end
+end
+ok(all, "every slat turned by the roll's end")
+ok(Looks.DoorAfter > roll.Seconds, "the server paints the door after every screen's roll")
 
 -- Every look has a swatch to wear.
 for _, f in Specs.Looks.Floors do

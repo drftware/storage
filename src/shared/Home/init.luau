@@ -277,7 +277,7 @@ function Home.dress(template: Model, unit: Model, face: CFrame)
 		if d:IsA("BasePart") and d.Parent == unit then
 			local n = d.Name
 			if n == "CurtainClosed" or n:sub(1, 5) == "Slat_" then
-				d.Color = Home.Paint.Door
+				continue -- the door: painted below
 			elseif TINTED[n] then
 				d.Color = TINTED[n]
 			elseif not PLAIN[n] and n ~= "DoorCollider" and n ~= "DoorOrigin" then
@@ -285,7 +285,20 @@ function Home.dress(template: Model, unit: Model, face: CFrame)
 			end
 		end
 	end
+	Home.paintDoor(unit, Home.Paint.Door)
 	unit:SetAttribute(Home.LightAttribute, true)
+end
+
+-- Paints a home's door `colour` (the server's word, S5-03g3a): the shut door's one mesh and the
+-- three slats every screen's moving door is cloned from (RollUpDoor recolours a moving chain
+-- when they change). Tinted parts: the colour shows where the door's map is clear.
+function Home.paintDoor(unit: Model, colour: Color3)
+	for _, name in { "CurtainClosed", "Slat_A", "Slat_B", "Slat_C" } do
+		local p = unit:FindFirstChild(name)
+		if p and p:IsA("BasePart") then
+			p.Color = colour
+		end
+	end
 end
 
 -- Whether the place's home template has every part of furnishing `kind` (a piece added to the art

@@ -1,10 +1,16 @@
 --!strict
 --[[
 	Looks: the paint, paper and floor a player gives their home (S5-03g2b, D-326; idea 18, Animal
-	Crossing's wallpaper and flooring, Bloxburg's paint). A save keeps ids from `Specs.Looks`: the
-	paint (the walls' colour), the paper over it, the floor, and the floor's colour (one of that
-	floor's own, "" for the oak boards, whose colour is baked). Every look is free for now. Pure:
-	the server judges a pick with it, the screens draw with it, Lune tests it (homepick.spec).
+	Crossing's wallpaper and flooring, Bloxburg's paint), and their door's colour (S5-03g3a,
+	D-329). A save keeps ids from `Specs.Looks`: the paint (the walls' colour), the paper over it,
+	the floor, the floor's colour (one of that floor's own, "" for the oak boards, whose colour is
+	baked) and the door's. Every look is free for now. Pure: the server judges a pick with it, the
+	screens draw with it, Lune tests it (homepick.spec).
+
+	The door is the lobby's, seen by the whole hall, and travels apart from the room: its id on
+	the unit (`DoorAttribute`), never in `encode`, so a door pick never stops a wall's wipe. Every
+	screen rolls the new colour down the slats (`rollShare`, `DoorRoll`); the server paints the
+	door itself `DoorAfter` seconds on, once every roll is done.
 
 	A pick isn't instant. The server stamps the new look on the unit (`Attribute`, its start in
 	`SinceAttribute`) and dresses the home's panels `Wipe` seconds later (`WornAttribute` then
@@ -17,8 +23,14 @@
 ]]
 local Specs = require("./Specs")
 
-export type Chosen = { paint: string, paper: string, floor: string, floorColour: string }
-export type Kind = "paint" | "paper" | "floor" | "floorColour"
+export type Chosen = {
+	paint: string,
+	paper: string,
+	floor: string,
+	floorColour: string,
+	door: string,
+}
+export type Kind = "paint" | "paper" | "floor" | "floorColour" | "door"
 -- What one surface wears: its set's swatch (`Specs.Swatches`) and the part's colour (hex, or ""
 -- for white: a baked set's colour is its own).
 export type Wear = { set: string, colour: string }
@@ -31,12 +43,22 @@ Looks.SinceAttribute = "LookSince" -- the server time the newest pick's wipe beg
 Looks.WornAttribute = "LookWorn" -- `encode` of what its panels wear now
 Looks.FrameAttribute = "LookFrame" -- the unit's frame (CFrame), for the screens' wipes
 Looks.Tag = "HomeLook" -- a held home's unit, with the attributes above
+Looks.DoorAttribute = "LookDoor" -- on a held home's unit: its door's colour id
 Looks.Folder = "Looks" -- its panels, in the unit
 -- How long a new look takes to cross the room: long enough to watch it travel round you, short
 -- enough that the next tap of a picker isn't kept waiting.
 Looks.Wipe = 1.1
 -- Picks a second, and in a burst: quick taps through the chips all land, a flood doesn't.
 Looks.Limit = { perSecond = 3, burst = 6 }
+-- A new door colour's roll down the slats, on every screen that has the door.
+Looks.DoorRoll = table.freeze({
+	Seconds = 0.5, -- top to foot: quick enough to watch whole, slow enough to see it travel
+	Fade = 0.15, -- one slat's turn: a soft edge running down the door, not a hard line
+	Coil = 12, -- slats round an open door's coil, about a wrap: what shows of it from inside
+})
+-- When the server paints the door itself, after a pick: past every screen's roll, so the
+-- replicated colour lands on a door already that colour and nothing snaps.
+Looks.DoorAfter = 0.8
 -- How far the panels stand off the lobby's walls, and how thick they are (PANEL_PROUD).
 Looks.Proud = 0.02
 
@@ -47,6 +69,12 @@ local function find<T>(list: { T }, id: string): T?
 		end
 	end
 	return nil
+end
+
+-- The colour (hex) of door colour `id`, or the start's clay for one not offered.
+function Looks.doorOf(id: string): string
+	local door = find(Specs.Looks.Doors, id) or Specs.Looks.Doors[1]
+	return door.Colour
 end
 
 function Looks.floorOf(id: string): Specs.Floor?
@@ -67,6 +95,7 @@ function Looks.start(): Chosen
 		paper = Specs.Looks.Papers[1].Id,
 		floor = floor.Id,
 		floorColour = firstColour(floor),
+		door = Specs.Looks.Doors[1].Id,
 	}
 end
 
@@ -84,10 +113,11 @@ function Looks.tidy(chosen: Chosen): Chosen
 		floorColour = if find(f.Colours, chosen.floorColour)
 			then chosen.floorColour
 			else firstColour(f),
+		door = if find(Specs.Looks.Doors, chosen.door) then chosen.door else start.door,
 	}
 end
 
-local KINDS = { paint = true, paper = true, floor = true, floorColour = true }
+local KINDS = { paint = true, paper = true, floor = true, floorColour = true, door = true }
 
 -- A remote's (kind, id), checked for type and length only: a kind of look and a short id.
 function Looks.ask(kind: unknown, id: unknown): (Kind?, string?)
@@ -115,6 +145,11 @@ function Looks.pick(chosen: Chosen, kind: Kind, id: string): Chosen?
 			return nil
 		end
 		after.paper = id
+	elseif kind == "door" then
+		if not find(Specs.Looks.Doors, id) then
+			return nil
+		end
+		after.door = id
 	elseif kind == "floor" then
 		local floor = Looks.floorOf(id)
 		if not floor then
@@ -134,11 +169,22 @@ function Looks.pick(chosen: Chosen, kind: Kind, id: string): Chosen?
 	return after
 end
 
+-- Whether two looks are the same, door and all.
+function Looks.same(a: Chosen, b: Chosen): boolean
+	return a.paint == b.paint
+		and a.paper == b.paper
+		and a.floor == b.floor
+		and a.floorColour == b.floorColour
+		and a.door == b.door
+end
+
+-- The room's look (walls and floor) as the unit carries it; the door goes on its own.
 function Looks.encode(chosen: Chosen): string
 	return `{chosen.paint}|{chosen.paper}|{chosen.floor}|{chosen.floorColour}`
 end
 
-function Looks.decode(text: unknown): Chosen?
+-- A room's look from `encode`, with the unit's `door` (its `DoorAttribute`; clay when there's none).
+function Looks.decode(text: unknown, door: unknown?): Chosen?
 	if type(text) ~= "string" then
 		return nil
 	end
@@ -146,7 +192,13 @@ function Looks.decode(text: unknown): Chosen?
 	if not (paint and paper and floor and colour) then
 		return nil
 	end
-	return { paint = paint, paper = paper, floor = floor, floorColour = colour }
+	return {
+		paint = paint,
+		paper = paper,
+		floor = floor,
+		floorColour = colour,
+		door = if type(door) == "string" then door else Specs.Looks.Doors[1].Id,
+	}
 end
 
 -- What the walls and the floor wear for `chosen` (tidied first).
@@ -166,6 +218,22 @@ end
 function Looks.changes(before: Chosen, after: Chosen): (boolean, boolean)
 	return before.paint ~= after.paint or before.paper ~= after.paper,
 		before.floor ~= after.floor or before.floorColour ~= after.floorColour
+end
+
+-- How far a new door colour has turned slat `slat` (1 at the door's foot) `t` seconds into its
+-- roll, from 0 to 1, when `hanging` slats hang below the coil: the hanging ones from the top
+-- down, the coil's with the top; an open door (under two hanging) round its coil from the
+-- outside wrap in, the part that shows from inside.
+function Looks.rollShare(slat: number, hanging: number, t: number): number
+	local roll = Looks.DoorRoll
+	local place, places
+	if hanging >= 2 then
+		place, places = math.max(hanging - slat, 0), hanging
+	else
+		place, places = math.clamp(slat - 1, 0, roll.Coil - 1), roll.Coil
+	end
+	local start = place / (places - 1) * (roll.Seconds - roll.Fade)
+	return math.clamp((t - start) / roll.Fade, 0, 1)
 end
 
 -- How far a wipe has reached at `t` seconds of `Wipe`, as a share from 0 to 1: it eases in and

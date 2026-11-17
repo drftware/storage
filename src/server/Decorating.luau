@@ -1,8 +1,10 @@
 --!strict
 --[[
 	Decorating: each held home's paint, paper and floor (S5-03g2b, D-326; idea 18, Animal
-	Crossing's wallpaper and flooring). The moment: you pick a paper and it rolls round the room
-	from the back wall to the door, for you and every friend in there; it's still up after a rejoin.
+	Crossing's wallpaper and flooring), and its door's colour (S5-03g3a, D-329; idea 18, Animal
+	Crossing's house front). The moment: you pick a paper and it rolls round the room from the back
+	wall to the door, for you and every friend in there; it's still up after a rejoin. Pick Mustard
+	and your door rolls mustard down its slats, and the whole hall sees whose door it is.
 
 	A home wears its look on its own panels (Home.fbx's PanelFloor, PanelLeft, PanelBack,
 	PanelRight, PanelFront, `Specs.Panels`), laid over the lobby's shared walls and floor only once
@@ -17,6 +19,11 @@
 	(D-326). The pick goes into the save at once; the unit takes the new look in `Looks.Attribute`
 	with the wipe's start, and the panels change `Looks.Wipe` seconds later, under the screens'
 	wipes (LooksView), then `Looks.WornAttribute` says so. A pick during a wipe starts it again.
+
+	The door goes apart from the room (D-329): a door pick puts its id in `Looks.DoorAttribute`,
+	every screen rolls the colour down the slats (LooksView, RollUpDoor.paint), and the server
+	paints the door itself `Looks.DoorAfter` seconds on (`Home.paintDoor`), on its own timer, so a
+	door pick never restarts a wall's wipe. A home let go goes back to clay.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -46,12 +53,18 @@ type Held = {
 	walls: { MeshPart },
 	floor: { MeshPart },
 	pending: thread?,
+	doorPending: thread?, -- the door's paint, waiting for every screen's roll
 }
 
 local Decorating = {}
 
-local ATTRIBUTES =
-	{ Looks.Attribute, Looks.SinceAttribute, Looks.WornAttribute, Looks.FrameAttribute }
+local ATTRIBUTES = {
+	Looks.Attribute,
+	Looks.SinceAttribute,
+	Looks.WornAttribute,
+	Looks.FrameAttribute,
+	Looks.DoorAttribute,
+}
 
 local function vec(v: { number }): Vector3
 	return Vector3.new(v[1], v[2], v[3])
@@ -156,7 +169,11 @@ function Decorating.new(): DecoratingSystem
 		if home.pending then
 			task.cancel(home.pending)
 		end
+		if home.doorPending then
+			task.cancel(home.doorPending)
+		end
 		home.folder:Destroy()
+		Home.paintDoor(home.unit, Home.Paint.Door) -- let go: clay again, as every spare home is
 		for _, name in ATTRIBUTES do
 			home.unit:SetAttribute(name, nil)
 		end
@@ -187,9 +204,12 @@ function Decorating.new(): DecoratingSystem
 			walls = {},
 			floor = {},
 			pending = nil,
+			doorPending = nil,
 		}
 		homes[player] = home
 		dress(home)
+		Home.paintDoor(unit, Color3.fromHex(Looks.doorOf(home.chosen.door)))
+		unit:SetAttribute(Looks.DoorAttribute, home.chosen.door) -- before the tag: no roll on a join
 		unit:SetAttribute(Looks.FrameAttribute, frame)
 		unit:SetAttribute(Looks.Attribute, Looks.encode(home.chosen))
 		CollectionService:AddTag(unit, Looks.Tag)
@@ -207,11 +227,25 @@ function Decorating.new(): DecoratingSystem
 		if not after then
 			return "notALook"
 		end
-		if Looks.encode(after) == Looks.encode(home.chosen) then
+		local before = home.chosen
+		if Looks.same(after, before) then
 			return ""
 		end
 		home.chosen = after
 		data.looks = table.clone(after) -- the autosave and the leave keep it
+		if after.door ~= before.door then
+			home.unit:SetAttribute(Looks.DoorAttribute, after.door) -- every screen rolls it
+			if home.doorPending then
+				task.cancel(home.doorPending)
+			end
+			home.doorPending = task.delay(Looks.DoorAfter, function()
+				home.doorPending = nil
+				if homes[player] == home then
+					Home.paintDoor(home.unit, Color3.fromHex(Looks.doorOf(home.chosen.door)))
+				end
+			end)
+			return ""
+		end
 		home.unit:SetAttribute(Looks.SinceAttribute, Workspace:GetServerTimeNow())
 		home.unit:SetAttribute(Looks.Attribute, Looks.encode(after))
 		if home.pending then
@@ -265,7 +299,7 @@ function Decorating.new(): DecoratingSystem
 
 			-- Studio only: `ServerStorage.LookTest:Invoke(player, kind, id)` picks as the screen
 			-- does, unthrottled, and answers "" or the refusal; `:Invoke(player)` answers the
-			-- save's look encoded. No client reaches it.
+			-- save's look encoded, and its door. No client reaches it.
 			if RunService:IsStudio() then
 				local test = Instance.new("BindableFunction")
 				test.Name = "LookTest"
@@ -276,7 +310,10 @@ function Decorating.new(): DecoratingSystem
 					end
 					if kind == nil then
 						local data = if saving then saving:data(player) else nil
-						return if data then Looks.encode(data.looks) else nil
+						if not data then
+							return nil
+						end
+						return Looks.encode(data.looks), data.looks.door
 					end
 					local k, i = Looks.ask(kind, id)
 					return if k and i then pick(player, k :: Looks.Kind, i) else "badAsk"

@@ -325,6 +325,12 @@ verified: a doc page, Studio, or "untested".
   the same Heartbeat count, then the save's last write. Anything deferred from PlayerRemoving
   (`task.defer`) runs before the close; `Heartbeat:Wait()` never returns. So a stop mid-climb
   struck a taken-up find (Skates 3 to 2) until GatePay settled on the next Heartbeat (D-305).
+- **A Client `execute_luau` can't leave the camera Scriptable** (S5-03g3a1, Nov 17): Studio's
+  assistant puts `CameraType` back to Custom after the call ("The execute_luau changed camera
+  type. Resetting"), so an aimed view lasts only until the call returns. Aim the character
+  instead (move its root on the Server, facing what you want), or set the camera and capture in
+  the same call. To check a quick colour change, sample the parts' `Color` in one Client call
+  at set times (a door's roll: `docs/art/S5-03g3a-*.jpg`).
 - **Catching a motion under half a second** (S5-03c2b2b): run 25 `screencapture -l <number>`
   in a row as a background shell command (about ten a second), 0.3 s after it starts click
   with the MCP; the frames whose file sizes change hold the motion. Don't `rm` a glob in a

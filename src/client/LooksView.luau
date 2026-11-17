@@ -14,6 +14,10 @@
 	in as the wipe reaches it, a copy of its panel. The sheets go once the panels wear the look
 	and this screen has fetched what they draw with.
 
+	A new door colour (S5-03g3a, D-329) rolls down the door's slats from the top, on every screen
+	that has the door (`RollUpDoor.paint`, `Looks.rollShare`), with a quicker, lighter squish of
+	the same roller; the server's own paint of the door lands once the roll is done.
+
 	A set's maps and the panels' meshes download the first time something shows them, about 3 s
 	in Studio (S5-03g2b2): a first paper wiped in as plain colour and its pattern popped in after,
 	and a first floor flashed the old boards back. So every look's maps and the panels' meshes are
@@ -30,6 +34,7 @@ local Brix = require(ReplicatedStorage.Brix)
 local Home = require(ReplicatedStorage.Shared.Home)
 local Looks = require(ReplicatedStorage.Shared.Home.Looks)
 local Specs = require(ReplicatedStorage.Shared.Home.Specs)
+local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
 
 -- Which way a Texture's OffsetStudsU and V move its tiles (Studio, S5-03g2b): 1 when a larger
 -- offset moves them right and down as you face the texture.
@@ -46,6 +51,8 @@ local FLOOR_PITCH = 0.8
 local HEARD = 45 -- studs: heard across your home and the hall outside it, not the lobby
 local LATE = 3 -- seconds past the wipe a sheet waits for the panels before it goes anyway
 local SETTLE = 0.05 -- seconds the sheets stay once the panels wear the look: a frame or two
+local DOOR_PITCH = 1.25 -- the door's squish: a quick roller over light slats
+local DOOR_UP = 4 -- studs over the doorway's foot the door's squish comes from
 
 -- One wall a wipe crosses: where it stands, how far round the room its middle is, half its width.
 type Wall = { cf: CFrame, mid: number, half: number, sheet: Part, texture: Texture }
@@ -142,6 +149,7 @@ end
 
 function LooksView.new(): Brix.System
 	local seen: { [Model]: string? } = {}
+	local seenDoor: { [Model]: string? } = {}
 	local wipes: { [Model]: Wipe } = {}
 	local watches: { [Model]: RBXScriptConnection } = {}
 	local connections: { RBXScriptConnection } = {}
@@ -367,6 +375,53 @@ function LooksView.new(): Brix.System
 		begin(unit, before, after, since)
 	end
 
+	-- The squish of the roller down the door, from the doorway, easing off as the roll ends.
+	local function doorSquish(unit: Model)
+		local frame = unit:GetAttribute(Looks.FrameAttribute)
+		if typeof(frame) ~= "CFrame" then
+			return
+		end
+		local at = Instance.new("Part")
+		at.Anchored = true
+		at.CanCollide = false
+		at.CanTouch = false
+		at.CanQuery = false
+		at.Transparency = 1
+		at.Size = Vector3.new(0.05, 0.05, 0.05)
+		at.CFrame = frame * CFrame.new(0, DOOR_UP, 0)
+		local sound = Instance.new("Sound")
+		sound.SoundId = ROLLER
+		sound.Volume = ROLLER_VOLUME
+		sound.PlaybackSpeed = DOOR_PITCH
+		sound.RollOffMode = Enum.RollOffMode.InverseTapered
+		sound.RollOffMinDistance = 10
+		sound.RollOffMaxDistance = HEARD
+		sound.Parent = at
+		at.Parent = Workspace
+		sound:Play()
+		local fade = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+		task.delay(Looks.DoorRoll.Seconds - 0.1, function()
+			TweenService:Create(sound, fade, { Volume = 0 }):Play()
+		end)
+		task.delay(Looks.DoorRoll.Seconds + 0.2, function()
+			at:Destroy()
+		end)
+	end
+
+	-- A new door colour: rolled down the slats here, if this screen draws that door.
+	local function doorChanged(unit: Model)
+		local now = unit:GetAttribute(Looks.DoorAttribute)
+		local before = seenDoor[unit]
+		seenDoor[unit] = if type(now) == "string" then now else nil
+		if not (before and type(now) == "string") or before == now then
+			return
+		end
+		local colour = Color3.fromHex(Looks.doorOf(now))
+		if RollUpDoor.paint(unit, colour, Looks.DoorRoll.Seconds, Looks.rollShare) then
+			doorSquish(unit)
+		end
+	end
+
 	local function worn(unit: Model)
 		local w = wipes[unit]
 		if w and unit:GetAttribute(Looks.WornAttribute) == w.target then
@@ -412,11 +467,15 @@ function LooksView.new(): Brix.System
 		local unit = instance
 		local look = unit:GetAttribute(Looks.Attribute)
 		seen[unit] = if type(look) == "string" then look else nil
+		local door = unit:GetAttribute(Looks.DoorAttribute)
+		seenDoor[unit] = if type(door) == "string" then door else nil
 		watches[unit] = unit.AttributeChanged:Connect(function(name: string)
 			if name == Looks.Attribute then
 				changed(unit)
 			elseif name == Looks.WornAttribute then
 				worn(unit)
+			elseif name == Looks.DoorAttribute then
+				doorChanged(unit)
 			end
 		end)
 	end
@@ -431,6 +490,7 @@ function LooksView.new(): Brix.System
 			watches[instance] = nil
 		end
 		seen[instance] = nil
+		seenDoor[instance] = nil
 		finish(instance)
 	end
 

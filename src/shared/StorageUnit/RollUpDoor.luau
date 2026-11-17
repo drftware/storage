@@ -22,6 +22,12 @@
 	clone the 38-slat chain from three templates, posed with one BulkMoveTo per frame.
 	Place and paint units before parenting them to Workspace: rigs cache the door's frame.
 
+	A new colour (S5-03g3a, a home's door): `RollUpDoor.paint(unit, colour, seconds, share)` on a
+	client holds the chain out, even on a shut door, and turns each slat to the colour as `share`
+	says (a slat, how many hang below the coil, seconds in), then paints the merged mesh and the
+	templates and lets the chain go. The server's own paint lands after, on a door already that
+	colour.
+
 	The dent (L-06b3d2): a door a trapped keeper beats on keeps its chain, and the dent's step
 	(`Dent.step` of the unit's `DoorDent`) swaps in that step's bowed ribs from
 	ReplicatedStorage.Props.DoorDent_<Size> (art/unit/dent.py), each while it hangs below the
@@ -50,6 +56,10 @@ local SHUT = 1e-4
 local DENT_KIT = "DoorDent_" -- ReplicatedStorage.Props.DoorDent_<Size>: the dent's bowed ribs
 
 type Moving = { part: BasePart, offset: CFrame }
+-- A new colour turning the slats (`RollUpDoor.paint`): each slat's colour as it began, and how
+-- far each has turned: `share(slat, hanging, seconds in)`, 0 to 1.
+export type Share = (slat: number, hanging: number, t: number) -> number
+type Painting = { from: { Color3 }, to: Color3, start: number, seconds: number, share: Share }
 type Playing = {
 	kind: Motion.Kind,
 	from: number,
@@ -84,6 +94,8 @@ export type Rig = {
 	bowed: { [number]: BasePart }, -- by chain index: that step's bowed rib, cloned from the kit
 	bowedOffsets: { [number]: CFrame },
 	showBowed: { [number]: boolean }, -- whether the bowed rib stands in for the plain one now
+	painting: Painting?, -- a new colour turning the slats: the chain stays out until it's done
+	hanging: number, -- slats below the coil at the last pose
 	pose: (self: Rig, rise: number, locked: boolean?, moving: boolean?) -> (),
 	setDent: (self: Rig, step: number) -> (),
 	destroy: (self: Rig) -> (),
@@ -196,6 +208,8 @@ function RollUpDoor.rig(unit: Model): Rig
 		bowed = {},
 		bowedOffsets = {},
 		showBowed = {},
+		painting = nil,
+		hanging = 0,
 	}, Rig) :: any
 	for _, v in { "A", "B", "C" } do
 		local t = unit:FindFirstChild("Slat_" .. v, true) :: BasePart?
@@ -324,7 +338,16 @@ function Rig.pose(self: Rig, rise: number, locked: boolean?, isMoving: boolean?)
 	local spec = self.spec
 	rise = math.clamp(rise, 0, spec.Rise.Open + 0.4)
 	-- a dented door keeps its chain: the merged curtain is the plain door
-	local useChain = isMoving == true or rise > SHUT or not self.closed or self.dent > 0
+	local useChain = isMoving == true
+		or rise > SHUT
+		or not self.closed
+		or self.dent > 0
+		or self.painting ~= nil
+	self.hanging = math.clamp(
+		math.floor((spec.DoorHeight - spec.Curtain.BottomClosed - rise) / spec.Curtain.Pitch),
+		0,
+		spec.Curtain.Count
+	)
 	local parts, cframes = self.parts, self.cframes
 	local f = self.frame
 	local n = 0
@@ -688,10 +711,40 @@ local function step(rig: Rig, t: number): boolean
 	return done
 end
 
+-- Turns `rig`'s slats toward its new colour; true once none is turning. At the end the merged
+-- mesh and the templates take the colour (the templates' change recolours the chain) and the door
+-- poses again, letting the chain go if it's shut.
+local function paintStep(rig: Rig, t: number, clock: number): boolean
+	local p = rig.painting
+	if not p then
+		return true
+	end
+	local el = clock - p.start
+	if el >= p.seconds then
+		rig.painting = nil
+		for _, template in rig.templates do
+			template.Color = p.to
+		end
+		if rig.closed then
+			rig.closed.part.Color = p.to
+		end
+		return step(rig, t)
+	end
+	for i, s in rig.slats do
+		local from = p.from[i]
+		if from then
+			s.Color = from:Lerp(p.to, p.share(i, rig.hanging, el))
+		end
+	end
+	return false
+end
+
 local function clientStep()
 	local t = now()
+	local clock = os.clock()
 	for unit, rig in active do
-		if step(rig, t) then
+		local still = step(rig, t)
+		if paintStep(rig, t, clock) and still then
 			active[unit] = nil
 		end
 	end
@@ -718,7 +771,7 @@ local function refresh(unit: Model)
 		dur = Motion.duration(kind, from, to, rig.spec.Rise.Open),
 		locked = unit:GetAttribute(ATTR_LOCKED) == true,
 	}
-	if step(rig, now()) then -- pose now, so nothing shows a frame out of place
+	if step(rig, now()) and not rig.painting then -- pose now, so nothing shows out of place
 		active[unit] = nil
 		return
 	end
@@ -774,6 +827,30 @@ local function bind(unit: Instance)
 		end)
 	)
 	refresh(unit)
+end
+
+--[[
+	Client: turn `unit`'s door to `colour` over `seconds`, slat by slat as `share` says (a slat,
+	1 at the foot; how many hang below the coil; seconds in), whether it's shut, moving or open.
+	False when this screen isn't drawing that door (streamed out): the server's paint shows it.
+]]
+function RollUpDoor.paint(unit: Model, colour: Color3, seconds: number, share: Share): boolean
+	local rig = rigs[unit]
+	if not rig then
+		return false
+	end
+	local p: Painting =
+		{ from = {}, to = colour, start = os.clock(), seconds = seconds, share = share }
+	rig.painting = p
+	step(rig, now()) -- the chain out, even on a shut door, each slat in the colour it has now
+	for i, s in rig.slats do
+		p.from[i] = s.Color
+	end
+	active[unit] = rig
+	if not clientConn then
+		clientConn = RunService.Heartbeat:Connect(clientStep)
+	end
+	return true
 end
 
 --[[
