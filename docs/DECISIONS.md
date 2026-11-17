@@ -6602,3 +6602,46 @@ Built from D-255. The choices that weren't the owner's:
   takes a find out of the world (`Parent` nil) when it's pocketed, and Drives took any `Parent`
   nil as the find going. It now watches the find's `Destroying`, and the car's own `Destroying`
   (which fires for a destroyed ancestor) for its floor going.
+
+## D-259 · 2026-11-16 · Your home: a unit of your own on a re-laid ground floor (the owner's plan, S5-03)
+
+The owner asked for a world-class home where players keep, set out and show off their finds, with
+a real mirror for what they wear, and approved the plan on Nov 16. The plan is its own Claude Doc,
+"Your unit: the home in the lobby" (https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, read with
+the docs tools): 31 numbered ideas, each naming its precedent. Its section "What you decided
+(Nov 16)" and its last table hold the answers. It extends D-251, which stands where this doesn't
+change it. The design doc's "The lobby" and "Your unit" sections link it.
+
+- **The front office is re-laid as the building's ground floor** (owner: "re-lay so everyone
+  sees everyone's stuff"). Six units down each side wall, doors facing the open middle; the six
+  cars, the front door, the counter and the cart rack stay. Precedent: Grow a Garden and Steal a
+  Brainrot lay every player's plot round the same open ground. Not chosen: keeping the front office
+  and opening its right-hand wall onto a hall of units (my first pick: less rebuilding and lighter
+  on phones, but the units are out of sight from the main room).
+- **12 players on a public lobby server, 12 units**, one handed to each player as they join
+  (Grow a Garden's plots); spare units padlocked. The place's max players is the owner's to set.
+- **You load in facing the cars**, as today. Adopt Me's load-in-at-home is not taken.
+- **Doors start open.** Pulled down, a door keeps everyone out, friends too.
+- **Arrange** (ideas 11 to 15): any find placed anywhere in your unit, a half-stud grid and
+  quarter turns, a Free switch for everyone and never sold, floor, tabletop, wall and ceiling
+  spots, a per-size limit for phones. Precedent: Bloxburg's build mode, Lethal Company's ship
+  furniture, Animal Crossing's furniture.
+- **The mirror** (ideas 21, 22): a ViewportFrame on the glass holding a back-to-front copy of the
+  unit and left/right-swapped posed copies of each player in front of it, its camera at your eye
+  reflected through the glass; one live mirror at a time. `ViewportFrame.IsMirrored` exists but is
+  locked to CoreGui (DevForum, read Nov 16); if Roblox opens it, the mirror moves to it. Built
+  first as a test the owner judges. Precedent: Animal Crossing's mirrors.
+- **The clothes rail** (idea 23): press to wear (Lethal Company's suit rack). **At home nothing
+  worn or switched on runs down** (owner: yes), so the hard hat's minute starts only on a climb.
+- **Four sizes**: small to start, medium for cash, large and XL for Robux (owner; D-251 had
+  medium and large for Robux). XL is 20 by 30 studs (my default). Every slot is built at XL and a
+  smaller unit stands inside behind partitions that move when it grows (Animal Crossing's house
+  growing; Bloxburg's bigger plot for Robux).
+- **Order** (owner: "sure"): the ground floor (S5-03a), the hard hat on your head (F-G1b4a), the
+  mirror test (S5-03b), then the rest of S5-03 in the doc's build order, all ahead of S4-02, by a
+  chain of sessions capped at 300k context (owner, Nov 16).
+- **Later, each its own ticket**: finds doing things at home (16), living finds (17), the home
+  score, visits to friends on other servers, photos (27 to 29; 29 has no precedent and waits).
+
+Starting guesses (`OWNER.md`): shelf spots 6, 10, 16, 24 and placed things 25, 50, 100, 150 for
+small to XL; 4 lamps cast real light in a unit, the rest glow.

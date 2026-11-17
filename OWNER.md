@@ -19,6 +19,16 @@ nowhere else.
   arrive on your group's server) and a running `rojo serve` only reads those at start. Without
   it the trip works, but the front office may flash for a moment as you arrive.
 
+- [ ] **Set public servers to 12 players** (the home, D-259): each player on a lobby server gets
+  one of the ground floor's 12 units. In the Creator Hub, open the place's settings and set its
+  maximum players to 12. Nothing in the repo sets it.
+- [ ] **Decide (defaults in, the home, D-259; change any in the home doc or here):**
+  1. An XL unit is 20 by 30 studs (large is 16 by 20).
+  2. Shelf spots for finds on show: 6 small, 10 medium, 16 large, 24 XL.
+  3. Things you can set out with Arrange: 25 small, 50 medium, 100 large, 150 XL, so a full
+     unit runs smoothly on a low-end phone.
+  4. Four lamps in a unit cast real light; any more just glow.
+
 - [ ] **Find the new finds** (F-G1a, D-203; seen in Studio Play by me on floor 1, not on a
   phone): play a climb and open doors. Floor 1 now deals the Nov 15 finds beside the bedroom
   four: glow sticks, night-lights, tea lights and toy cars often, a disco ball or lantern now

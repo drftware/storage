@@ -2292,25 +2292,56 @@ Done when players watch the results to the end and change their perks between cl
   six grades (Secret on top, from floor 10; D-188); about one in
   twenty still in its packaging, worth three times as much. A padlocked unit's find draws a
   grade better (GDD: "the best chance of something great"; S1-07a left it a plain find).
-- [ ] **S5-03 Your home unit, and taking finds up** (the owner, Nov 16, D-251; Grow a Garden's
-  plots, Animal Crossing's house storage, Minecraft's and Lethal Company's lost gear). Every
-  find you carry onto the elevator goes home, commons and copies too, with no menu. Moved up
-  from after launch (PROPOSAL idea 29), since your finds are now your gear. Split into these;
-  the first gets its full plan when it's next:
-  - [ ] **S5-03a The hall of units.** A unit of your own off the lobby, one per player on the
-    server, the same storage unit the floors are built from, open to friends; your name on it.
-    Its art first (the hall, the shelf, the chest), the unit's way.
-  - [ ] **S5-03b The shelf and the chest.** Finds that come home walk onto your shelf, or into
-    the chest when it's full. Press the chest: a panel of everything you own, each kind of find
-    once with its count ("x2"), a search bar and rarity filters; put a find on the shelf,
-    swapping one off when full; sell whatever you want. With four of one kind the panel offers
-    Gold: a big animation, and the four become one Gold. A lamp on the shelf lights your unit;
-    the item list's "at home" actions come later, a find at a time. Trading comes later.
-  - [ ] **S5-03c Taking finds up.** Take any find from the chest into a slot and carry it to the
-    elevator. On the climb it's at risk like any find: stolen, dropped where you're caught or
-    where you leave, lost if it isn't aboard when the elevator leaves. Whoever carries a find
-    aboard takes it home, wherever it came from. The save marks a find out until its climb ends
-    and strikes it off only when lost on a climb that ended properly; a crash never costs one.
+- [ ] **S5-03 Your home: a unit of your own on the ground floor** (the owner's plan, Nov 16, D-251
+  and D-259). The plan is its own Claude Doc, "Your unit: the home in the lobby"
+  (https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, read with the docs tools, never WebFetch):
+  31 numbered ideas, each a moment, what the player sees and does, and its precedent; its "What
+  you decided (Nov 16)" section wins where an idea differs. Built next, ahead of S4-02 (owner,
+  Nov 16), by a chain of sessions at 300k context. In this order; a session splits a piece
+  further (a1, a2...) when it won't fit:
+  - [ ] **S5-03a The ground floor** (ideas 1 to 5; the doc's "Where it goes", re-laid). The
+    moment: you walk out of the car across the ground floor, every open unit down both walls
+    shows someone's finds, and yours has your name over it. a1 the art: `art/lobby` re-laid
+    (deeper; six XL unit slots, 20 by 30, down each side wall, their roll-up doors the climb's
+    door opening onto the floor; a name card frame over each; a warm bulb inside; the cars'
+    wall and bays, front door, counter and cart rack kept), look sheets at phone size,
+    `Lobby/Specs` with each slot's door, inside and name card. a2 laid in the game: load in
+    facing the cars (a new player in a car within 15 s), the carts and their rack, the lights,
+    the cars and trips untouched. a3 a unit for each player as they join (12; a plots system
+    built in Brix first, D-252), your name over your door, doors open by default, pulled down
+    keeping everyone out with a locked rattle, spare units padlocked.
+  - [ ] **F-G1b4a The hard hat on your head** (its own ticket in Step 4's finds; the owner put
+    it here, Nov 16).
+  - [ ] **S5-03b The mirror test** (ideas 21, 22): one mirror in a unit, built as D-259 says,
+    judged at Galaxy A16 size; what Roblox does and doesn't draw goes in `docs/STUDIO.md`. The
+    owner judges it in Studio before S5-03f.
+  - [ ] **S5-03c The shelf and the chest** (ideas 6 to 9, D-251): finds that come home land on
+    the shelf (6, 10, 16, 24 spots by size), sparkling until you walk up to them, a never-owned
+    kind chiming and turning; when it's full they go in the job box. Press it: the panel (each
+    kind once with its count, a search box, rarity filters): into your hands, out in your unit,
+    sell, four make a Gold.
+  - [ ] **S5-03d Taking finds up** (idea 10, D-251): take any find from the chest into a slot and
+    carry it to the elevator. On the climb it's at risk like any find: stolen, dropped where
+    you're caught or where you leave, lost if it isn't aboard when the elevator leaves. Whoever
+    carries a find aboard takes it home. The save marks a find out until its climb ends and
+    strikes it off only when lost on a climb that ended properly; a crash never costs one.
+  - [ ] **S5-03e Arrange** (ideas 11 to 15), after a placements system built in Brix (D-252):
+    lift, drag, a half-stud grid, quarter turns, Free for everyone, floor, tabletop, wall and
+    ceiling spots (a column in the catalog), red where it can't go, Place, Put away, Done, the
+    limit bar (25, 50, 100, 150 by size); saved in a new save version; every move checked on the
+    server.
+  - [ ] **S5-03f The mirror and the clothes rail** (ideas 21 to 24): the tested mirror in every
+    unit; the rail (press to wear, with the find's own sound); nothing worn or switched on runs
+    down at home; wrap colours tried on, with a mirror by the counter.
+  - [ ] **S5-03g Walls, floor, door, name cards and furniture** (ideas 18 to 20): paint and floors
+    on the Arrange screen, door colours, name card styles, furniture at the counter in a weekly
+    stock.
+  - [ ] **S5-03h Four sizes and the walls that move** (ideas 30, 31): small to start, medium for
+    cash, large and XL for Robux; the partitions grind back and the door widens, everything set
+    out staying where it was.
+  Later, each its own ticket: finds doing things at home, a find at a time (idea 16); living
+  finds (17); the home score, visits to friends on other servers, photos (27 to 29; 29 is
+  untested and waits on the owner). Trading comes later still.
 - [ ] **S5-04 The collection book.** A page for every kind of find, stamped "New" the first
   time; each kind of monster trapped; sets.
 - [ ] **S5-05 The shelf in the elevator.** The host's three best finds, shown in the car.
@@ -2320,8 +2351,8 @@ Done when players watch the results to the end and change their perks between cl
   decor. Then the friend's matching beam colour for joining on your link, and cart cosmetics
   (D-112). The luck boost: one use, used in the elevator, better odds of rare finds next floor;
   its odds shown before buying and while it's on, never sold where Roblox restricts paid random
-  items (D-188). A bigger home unit, more shelf space (D-251, Bloxburg's larger plot): medium
-  and large, both for Robux; the chest holds everything for everyone.
+  items (D-188). The home's Robux sizes, large and XL
+  (D-259; medium is bought with cash, S5-03h); the chest holds everything for everyone.
 
 ### Step 6: Coming back
 
