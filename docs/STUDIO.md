@@ -2767,6 +2767,12 @@ verified: a doc page, Studio, or "untested".
   few seconds: the Creator Store meow (83454004588488) and the drum's snare load. A press's
   sounds reach a `workspace.DescendantAdded` logger about 0.05 s after their cue; when the
   Mannequin catches you the dropped find plays on where it lands.
+- **Measuring a sound's loudness** (F-G1e3d, Nov 17): in Edit a `Sound` loads (`IsLoaded`,
+  `TimeLength`) but `PlaybackLoudness` stays 0 when played; in Play, a Client `Sound` in
+  SoundService played at volume 0.05 and sampled every 20 ms gives its peak and where it rises
+  and falls (the reading ignores `Volume`). A find in your hand is the character's `HeldTool`
+  model (server and client); your view's copy is `Workspace.YourTool.<Key>` on the client, and
+  the slots' pictures are ViewportFrames under `PlayerGui.Slots.Hud`.
 - **Generated rows: a cue list's sounds all carry a pitch or none do** (F-G1e3b): Luau types a
   table literal's list by its first entry, so a cue without `pitch` after one with it fails strict
   types in `Rows.luau`. Give it `pitch` 1.0 in `kit/game.py`.

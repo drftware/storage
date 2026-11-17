@@ -34,7 +34,7 @@ ROW = ["key", "catalog", "name", "grade", "worth", "from_", "loose", "grip", "he
        "pickUp", "drop", "verb", "press"]
 NEEDED = ["key", "catalog", "name", "grade", "worth", "grip", "heft", "size", "pickUp", "drop"]
 PRESS = ["verb", "on", "lasts", "out", "off", "reset", "noise", "heard", "lure", "toy", "down", "walks"]
-STEP = ["motion", "loop", "sound", "hit", "cues"]
+STEP = ["motion", "loop", "sound", "hit", "cues", "lands"]
 SOUND = ["id", "from", "length", "volume", "pitch"]
 
 
@@ -125,6 +125,15 @@ def step(where, s):
             check_keys(f"{where}.cues[{i + 1}]", c, ["at", "sound"])
             cues.append({"at": c["at"], "sound": sound(where, c["sound"])})
         out["cues"] = cues
+    if "lands" in out:
+        w = where + ".lands"
+        check_keys(w, out["lands"], ["part", "every", "at", "calls"])
+        lands = out["lands"]
+        calls = lands["calls"]
+        if len(calls) < 2 or abs(lands["every"] * len(calls) - 360) > 1e-6:
+            fail(f"{w}: its calls must go once round the face, {lands['every']} degrees apart")
+        out["lands"] = {"part": lands["part"], "every": lands["every"], "at": lands["at"],
+                        "calls": [sound(f"{w}.calls[{i + 1}]", c) for i, c in enumerate(calls)]}
     return out
 
 

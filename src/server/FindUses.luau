@@ -66,6 +66,7 @@ function FindUses.new(): Brix.System
 	local connections: { Brix.SignalConnection } = {}
 	local leaving: RBXScriptConnection? = nil
 	local last: { [Player]: number } = {} -- each player's last press that took, os.clock
+	local random = Random.new() -- the spinner's animal each pull
 	local keepers: Keepers.Keepers? = nil
 	local slots: Slots.Slots? = nil
 	local din: Use.Din<Model> = Use.din() -- the noises monsters hear: lures sounding, last heard
@@ -339,6 +340,15 @@ function FindUses.new(): Brix.System
 			end
 		end
 		last[player] = t
+		-- an arrow that lands (the farm spinner, F-G1e3d): a new animal each pull, picked here,
+		-- with the one it set off from, so every screen spins it from there to this one
+		local lands = Use.lands(row)
+		if lands and lands.lands then
+			local stops = #lands.lands.calls
+			local on = Use.stop(model:GetAttribute(Use.LandAttribute), stops)
+			model:SetAttribute(Use.LandFromAttribute, on)
+			model:SetAttribute(Use.LandAttribute, Use.pick(stops, on, random:NextNumber()))
+		end
 		model:SetAttribute(Use.KeyAttribute, use.key)
 		model:SetAttribute(Use.StateAttribute, state)
 		model:SetAttribute(Use.LeftAttribute, Use.encode(left))

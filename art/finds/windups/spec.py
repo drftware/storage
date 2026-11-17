@@ -866,18 +866,25 @@ from game import (  # noqa: E402
     CLASH,
     CLICK_ON,
     CLINK,
+    COW,
     CRUNCH,
+    DOG,
     DOWN_THE_HALL,
     EEK,
     DRUM_HIT,
+    DUCK,
     HOLLOW,
+    HORSE,
     HUM,
     LEVER,
     MEOW,
     MOTOR,
     MUSIC_BOX,
+    PIG,
     PLASTIC,
     POP,
+    ROOSTER,
+    SHEEP,
     SLAP,
     SNAP,
     SOFT,
@@ -1106,12 +1113,16 @@ GAME = [
         drop=pitched(PLASTIC, 1.0),
         # "Pull: the arrow spins and an animal noise plays": the lever slams back up, the arrow
         # spins, slows and ticks into its last three notches, and the animal it stops on calls
-        # through the speaker; monsters down the hall turn to it. As built it always stops on the
-        # cat (the server's pick is ROADMAP polish)
+        # through the speaker; monsters down the hall turn to it. The server picks the animal
+        # each pull, never the one it's on, and every screen bends the spin to end there
+        # (F-G1e3d): the face's eight clockwise from the cow the arrow is made pointing at, an
+        # eighth (45 degrees) apart; the art's own spin is 29 eighths, to the cat
         press=dict(
             verb="Pull",
             on=[dict(motion="Pull", hit=dict(part="FarmSpinner_Arrow", sound=TICK),
-                     cues=[dict(at=0.47, sound=LEVER), dict(at=3.2, sound=MEOW)])],
+                     cues=[dict(at=0.47, sound=LEVER)],
+                     lands=dict(part="FarmSpinner_Arrow", every=45, at=3.2,
+                                calls=[COW, PIG, SHEEP, HORSE, DUCK, MEOW, ROOSTER, DOG]))],
             noise="Pull",
             heard=DOWN_THE_HALL,
             toy=True,

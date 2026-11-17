@@ -606,7 +606,101 @@ do
 		"spinner: on the arrow's hops"
 	)
 	local all = if pull then Use.timeline(pull, Fixture.kit.FarmSpinner.Motions.Pull) else {}
-	ok(#all == 5 and all[#all].t > ticks[3], "spinner: the animal calls once it stops")
+	ok(#all == 4, `spinner: the lever and three ticks before its stop is known ({#all})`)
+end
+
+-- The spinner lands on any animal (F-G1e3d): the server picks one of the eight each pull, never
+-- the one it's on; every screen bends the art's spin so the arrow sets off from where it rests
+-- and ends on that animal, its ticks where the art has them, and its call plays as it stops.
+do
+	local spinner = Use.Rows.FarmSpinner
+	local pull = spinner and Use.lands(spinner)
+	local lands = pull and pull.lands
+	local motion = Fixture.kit.FarmSpinner.Motions.Pull
+	ok(
+		lands ~= nil and #lands.calls == 8 and lands.every == 45,
+		"spinner: eight animals, an eighth apart"
+	)
+	if pull and lands then
+		ok(
+			Use.spins(lands, motion) == 29,
+			`spinner: the art spins 29 eighths ({Use.spins(lands, motion)})`
+		)
+		-- the pick: never where it is, always one of the eight, every other one reachable
+		local fair = true
+		for on = 0, 7 do
+			local seen: { [number]: boolean } = {}
+			for k = 0, 69 do
+				local to = Use.pick(8, on, k / 70)
+				fair = fair and to ~= on and to >= 0 and to <= 7 and to == math.floor(to)
+				seen[to] = true
+			end
+			local n = 0
+			for _ in seen do
+				n += 1
+			end
+			fair = fair and n == 7 and Use.pick(8, on, 0.9999999) ~= on
+		end
+		ok(fair, "spinner: the pick is a new animal, any of the other seven")
+		ok(
+			Use.stop(nil, 8) == 0
+				and Use.stop(3, 8) == 3
+				and Use.stop(8, 8) == 0
+				and Use.stop(2.5, 8) == 0
+				and Use.stop("3", 8) == 0,
+			"spinner: a stop read from its attribute is a whole stop or the first"
+		)
+		-- the bend: from each stop to each other, it sets off where it rests and ends on the pick
+		local track = function(m: any): any
+			for _, t in m.Tracks do
+				if t.Part == lands.part and t.Channel == "turn" then
+					return t
+				end
+			end
+			return nil
+		end
+		local art = track(motion)
+		local ticks = Use.beats(motion, lands.part, "turn")
+		local bent = true
+		for from = 0, 7 do
+			for to = 0, 7 do
+				if to == from then
+					continue
+				end
+				local m = Use.bend(motion, lands, from, to)
+				local keys = track(m).Keys
+				local first, last = keys[1][2], keys[#keys][2]
+				local spun = last - first
+				bent = bent
+					and near(first, from * 45)
+					and near((last / 45) % 8, to)
+					and spun >= art.Keys[#art.Keys][2] - 1e-6
+					and spun < art.Keys[#art.Keys][2] + 360
+					and #keys == #art.Keys
+				local beats = Use.beats(m, lands.part, "turn")
+				bent = bent and #beats == #ticks
+				for i, t in ticks do
+					bent = bent and beats[i] ~= nil and near(beats[i], t)
+				end
+				-- its other tracks are the art's own; the art itself is untouched
+				bent = bent and #m.Tracks == #motion.Tracks and m.Duration == motion.Duration
+			end
+		end
+		ok(bent, "spinner: bent from every animal to every other, ticks unchanged")
+		ok(track(motion).Keys[#art.Keys][2] == 1305, "spinner: the art's own keys untouched")
+		-- its call: the animal it lands on, as it stops
+		for stop = 0, 7 do
+			local cues = Use.timeline(pull, motion, stop)
+			local call = cues[#cues]
+			ok(
+				#cues == 5
+					and call.sound == lands.calls[stop + 1]
+					and near(call.t, lands.at)
+					and call.t > ticks[3],
+				`spinner: animal {stop}'s call as the arrow stops`
+			)
+		end
+	end
 end
 
 print(`finduse: {checks - failures}/{checks} passed`)

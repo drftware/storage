@@ -32,6 +32,11 @@ export type Step = {
 	-- press starts: the kazoo's hum once it's at your lips, the spinner's animal as its arrow
 	-- stops (`Use.timeline`)
 	cues: { { at: number, sound: Sound } }?,
+	-- an arrow that lands on a new stop each press, the server's pick (the farm spinner, F-G1e3d):
+	-- `part` turns `every` degrees a stop, and `calls` are each stop's sound in the face's order
+	-- from the one it's made pointing at, the landed one's played `at` seconds in as it stops
+	-- (`Use.bend`, `Use.timeline`)
+	lands: { part: string, every: number, at: number, calls: { Sound } }?,
 }
 
 export type Press = {

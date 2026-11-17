@@ -20,6 +20,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   the phone's frame rate in front of it) waits on OWNER.md; if it doesn't convince, a fix goes in
   ahead of S5-03f.
 - Still over the triangle default: the cars' 51k, ticketed as S5-03a2d.
+- Find art (third find run): V3 done (V3d, D-279: the farm spinner lands on a new animal each
+  pull, the server's pick, its call as it stops; seen in Play). Next: V4 the siren car (ROADMAP
+  F-G1e4, `art/finds/WAVES.md`).
 
 ## Next task: S5-03c The shelf and the chest (the owner's order, D-259)
 The moment: you come home from a climb and the find you carried lands on your shelf with a

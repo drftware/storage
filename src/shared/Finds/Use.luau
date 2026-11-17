@@ -322,9 +322,10 @@ export type Cue = { t: number, sound: Sound }
 --[[
 	Every sound a step plays after it starts, in time order (`step.sound` plays as it starts): its
 	`hit` on each beat of `motion` (`Use.beats`) and its `cues` (the kazoo's hum once it's at your
-	lips; the spinner's ticks into each notch and then its animal as the arrow stops).
+	lips; the spinner's ticks into each notch) and, for an arrow that `lands`, the call of the
+	`stop` it lands on as it stops.
 ]]
-function Use.timeline(step: Step, motion: Art.Motion?): { Cue }
+function Use.timeline(step: Step, motion: Art.Motion?, stop: number?): { Cue }
 	local out: { Cue } = {}
 	local hit = step.hit
 	if hit then
@@ -338,10 +339,101 @@ function Use.timeline(step: Step, motion: Art.Motion?): { Cue }
 			table.insert(out, { t = c.at, sound = c.sound })
 		end
 	end
+	-- the animal the arrow lands on, as it stops: known once the stop is (`Use.bend`)
+	local lands = step.lands
+	local call = lands and stop and lands.calls[stop + 1]
+	if lands and call then
+		table.insert(out, { t = lands.at, sound = call })
+	end
 	table.sort(out, function(a: Cue, b: Cue)
 		return a.t < b.t
 	end)
 	return out
+end
+
+--[[
+	An arrow that lands on a new stop each press (the farm spinner, F-G1e3d), as a prize wheel
+	does: the server picks the stop beside its stamp and every screen bends the art's one spin to
+	end there, so you pull again and again to see which animal it is.
+]]
+export type Lands = { part: string, every: number, at: number, calls: { Sound } }
+
+-- The stop an arrow that lands rests on (0, the first call, is where it's made pointing), and the
+-- one it set off from on its last press: the server's, written before its stamp's clock.
+Use.LandAttribute = "UseLand"
+Use.LandFromAttribute = "UseLandFrom"
+
+-- The step of `row` whose arrow lands, if any.
+function Use.lands(row: Row): Step?
+	for _, s in row.on do
+		if s.lands then
+			return s
+		end
+	end
+	return nil
+end
+
+local function arrow(motion: Art.Motion, part: string): Art.Track?
+	for _, track in motion.Tracks do
+		if track.Part == part and track.Channel == "turn" then
+			return track
+		end
+	end
+	return nil
+end
+
+-- How many stops the art's own spin turns its arrow (the spinner's 1305 degrees: 29 eighths).
+function Use.spins(lands: Lands, motion: Art.Motion?): number
+	local track = if motion then arrow(motion, lands.part) else nil
+	if not track or #track.Keys == 0 then
+		return 0
+	end
+	local keys = track.Keys
+	return math.round((keys[#keys][2] - keys[1][2]) / lands.every)
+end
+
+-- The stop it lands on next from the one it's `on`: any of the others, never that one again, so
+-- every pull shows a new animal (`roll` from 0 up to 1, the server's random number).
+function Use.pick(stops: number, on: number, roll: number): number
+	local k = math.clamp(math.floor(roll * (stops - 1)), 0, stops - 2)
+	return (on + 1 + k) % stops
+end
+
+-- A stop as its attribute carries it: a whole number below `stops`, else the first (never pressed).
+function Use.stop(v: unknown, stops: number): number
+	if type(v) == "number" and v == math.floor(v) and v >= 0 and v < stops then
+		return v
+	end
+	return 0
+end
+
+--[[
+	`motion` bent so its arrow sets off from stop `from` and lands on stop `to`: every key of the
+	arrow's turn on by `from` stops, and the keys from its first move on by the whole stops more
+	that bring its end round to `to` (none to all but one more: it spins a little further, never
+	back). Its hops into each notch stay where the art has them, so the ticks do too. A new motion
+	sharing the art's other tracks; the art is untouched. Once a press, not each frame.
+]]
+function Use.bend(motion: Art.Motion, lands: Lands, from: number, to: number): Art.Motion
+	local track = arrow(motion, lands.part)
+	if not track or #track.Keys == 0 then
+		return motion
+	end
+	local stops = #lands.calls
+	local more = (to - from - Use.spins(lands, motion)) % stops
+	local keys: { Art.Key } = {}
+	local first = track.Keys[1][2]
+	local moved = false
+	for i, k in track.Keys do
+		moved = moved or k[2] ~= first
+		local by = (from + if moved then more else 0) * lands.every
+		keys[i] = { k[1], k[2] + by, k[3], k[4] }
+	end
+	local tracks: { Art.Track } = {}
+	for i, t in motion.Tracks do
+		tracks[i] = if t == track then { Part = t.Part, Channel = t.Channel, Keys = keys } else t
+	end
+	return { Duration = motion.Duration, Tracks = tracks }
 end
 
 -- `left` as the attribute carries it.

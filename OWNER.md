@@ -283,6 +283,14 @@ nowhere else.
   spinner, the cowboy doll and the singing fish. Same setup, `GiveFind` each, then press.
   1. Pull the **spinner**: the lever clacks back, the arrow spins, ticks into three notches and
      a cat meows. It always lands on the cat for now; does the pull still feel worth doing?
+     (Since F-G1e3d it lands on a new animal each pull: the next item.)
+- [ ] **Listen (F-G1e3d, built Nov 17, D-279; seen in Studio Play, not judged by ear):** the farm
+  spinner landing on any animal. `GiveFind` "FarmSpinner", then pull it ten times or so.
+  1. Each pull lands on a different animal from the last (cow, pig, sheep, horse, duck, cat,
+     rooster, dog) and that animal calls as the arrow stops. Do you laugh at which one it is?
+  2. The seven new calls were picked and leveled by measurement, not by ear (`art/finds/kit/
+     game.py`: COW to DOG). Are they clean, about as loud as the cat, and short enough? The
+     rooster's recording is quiet and plays near full volume: listen for hiss.
   2. Pull the **doll**: its cord whirs home under the governor and clacks in (its voice waits on
      the talking finds' question below). Does the whirr read as a pull-string toy?
   3. Press the **fish**: a click, its motors hum, the head swings out and back with two knocks.

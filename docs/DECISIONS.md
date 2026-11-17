@@ -7139,6 +7139,27 @@ part puts the hat on your head and lights it; F-G1b4a2 draws the headlamp's own 
   `FindGripRest` so shifts never add up) and your view's copy (`Hand.shift`). A find set down to
   play (`down`) never plays in a hand, so it's left out.
 
+
+## D-279 The farm spinner lands on a new animal each pull, the server's pick (F-G1e3d, Nov 17)
+- **The moment:** you pull the spinner's lever again and again to see which animal it lands on, a
+  moo, an oink, a rooster's crow, and each one is a noise the monster down the hall may hear.
+  Precedent: the prize wheel (Wheel of Fortune, every game's daily spin): one spin, the stop is
+  the house's, you watch it slow into it.
+- **The rule:** a step's `lands` (art spec, `rows.py`, `Game.Step`): the arrow part, the stop size
+  (45 degrees), when the call plays (3.2 s) and the eight calls in the face's order from the cow
+  the arrow is made pointing at. The server picks each press (`Use.pick`: any of the other seven,
+  never the one it's on, so every pull shows something new) and writes `UseLandFrom` and
+  `UseLand` before the stamp's clock. Every screen bends the art's one spin once a press
+  (`Use.bend`): all the arrow's keys on by where it set off, and the keys from its first move on
+  by the whole eighths that bring its end round to the pick (none to seven more: it spins a
+  little further, never back), so the ticks stay on the art's hops. `Use.timeline` takes the stop
+  and adds that animal's call. The last frame holds, so the arrow stays on its animal until the
+  next pull; a find never pulled points at the cow.
+- **Your own pull, shown at once:** it spins from where it rests to where the art's spin takes it;
+  the server's pick arrives in the 0.4 s before the arrow moves and bends it there.
+- **Defaults (OWNER.md):** the seven calls besides the meow are Creator Store uploads and Pro
+  Sound Effects recordings, picked and leveled by measurement, not by ear.
+
 ## D-280 · 2026-11-17 · The mirror test: a world built behind the glass, seen through it (S5-03b)
 
 The moment: you walk into your unit, turn to the mirror and see yourself, the right way round,

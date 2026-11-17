@@ -2725,7 +2725,7 @@ actions themselves and dealing the new finds on floors are later game tickets.
         and sounds on V2a's verb, all four seen in Play: the robot's clanks drew a Mannequin to
         it, the mouse zipped into a wall and squeaked on there, the bird whistled in pairs (a hop
         no longer reads as a wall), the carousel's tune. Ticks F-G1e2.
-    - [ ] **F-G1e3 One press, one noise (V3).** The kazoo, toy drum, farm-animal spinner,
+    - [x] **F-G1e3 One press, one noise (V3).** (Nov 17, V3a to V3d) The kazoo, toy drum, farm-animal spinner,
       cowboy doll and singing fish: each its motion, its sound and a loudness on the jack's
       one-shot noise. The doll and the fish ship the owner's defaults (the cord's whirr, the
       motor's hum) until their voices are recorded (`OWNER.md`). Split at a find:
@@ -2742,7 +2742,9 @@ actions themselves and dealing the new finds on floors are later game tickets.
         tip and lift move the grip that holds it (`Pose.carry`, `Finds.shift`, `Finds.grip`,
         `Hand.shift`): the kazoo tips 7.5 degrees in your hand and your view, and settles back;
         the squishies still squash about their middle. Seen in Play.
-      - [ ] **F-G1e3d The farm spinner lands on any animal.** The server picks one of the eight
+      - [x] **F-G1e3d The farm spinner lands on any animal.** (Nov 17, V3d; D-279; seen in
+        Play: six pulls landed rooster, cow, cat, rooster, dog, rooster, your view's copy with
+        the held one, each call about 3.25 s in.) The server picks one of the eight
         each pull (never the one it's on) and writes it with where it started beside the stamp;
         every screen bends the arrow's keys so it ends there (all keys plus the start, the keys
         from its first move plus whole extra eighths) and plays that animal's call, the ticks
@@ -2832,7 +2834,7 @@ actions themselves and dealing the new finds on floors are later game tickets.
   the wall, under the path's stacks. Both read as wedged under the boxes; a fall that stops on
   the stacks would be better.
 
-- **The farm spinner's arrow lands on any animal (now ticket F-G1e3d):** as built it always stops on
+- **The farm spinner's arrow lands on any animal (done Nov 17, F-G1e3d):** as built it always stops on
   the cat. The server picks an animal each pull, the view adds 45 degrees a step to the arrow's
   spin keys and plays that animal's call; the next pull starts from where it stopped (the art's
   README, "For the game"), not snapping back to the cow.

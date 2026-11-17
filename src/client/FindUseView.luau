@@ -86,6 +86,17 @@ type Entry = {
 	-- the stamp that frame is for
 	held: Pose.Values?,
 	heldAt: number,
+	-- an arrow that lands (the farm spinner, F-G1e3d): its step, how many stops and how many the
+	-- art's spin turns; the server's last pick (where it set off, where it lands); its motion
+	-- bent for one pick, and which; each stop's sounds (its ticks, then that animal's call)
+	lands: Use.Step?,
+	stops: number,
+	spins: number,
+	landFrom: number,
+	landTo: number,
+	bent: Art.Motion?,
+	bentFor: number,
+	calls: { [number]: { Use.Cue } },
 	connections: { RBXScriptConnection },
 }
 
@@ -132,6 +143,11 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 		e.from = if typeof(from) == "CFrame" then from else nil
 		e.stop = if type(stop) == "number" then stop else nil
 		e.held = nil
+		if e.lands then
+			e.landFrom = Use.stop(m:GetAttribute(Use.LandFromAttribute), e.stops)
+			e.landTo = Use.stop(m:GetAttribute(Use.LandAttribute), e.stops)
+		end
+		e.dirty = true
 	end
 
 	local function add(model: Model, key: string): Entry?
@@ -148,6 +164,14 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 		for _, step in row.on do
 			if step.hit or step.cues then
 				beats[step.motion] = Use.timeline(step, art.Motions[step.motion])
+			end
+		end
+		local lands = Use.lands(row)
+		local landing = lands and lands.lands
+		local calls: { [number]: { Use.Cue } } = {}
+		if lands and landing then
+			for stop = 0, #landing.calls - 1 do
+				calls[stop] = Use.timeline(lands, art.Motions[lands.motion], stop)
 			end
 		end
 		local e: Entry = {
@@ -180,6 +204,14 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 			root = art.Parts[1].Name,
 			held = nil,
 			heldAt = -1,
+			lands = lands,
+			stops = if landing then #landing.calls else 0,
+			spins = if lands and landing then Use.spins(landing, art.Motions[lands.motion]) else 0,
+			landFrom = 0,
+			landTo = 0,
+			bent = nil,
+			bentFor = -1,
+			calls = calls,
 			connections = {},
 		}
 		entries[model] = e
@@ -285,6 +317,32 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 		end,
 	}
 
+	-- Where an arrow that lands sets off and lands for `stamp`: the server's pick, or for your own
+	-- press shown early, from where it rests to where the art's spin takes it (the server's word
+	-- comes in the 0.4 s before the arrow moves, and bends it to its pick).
+	local function landing(e: Entry, stamp: Use.Stamp): (number, number)
+		if stamp == e.stamp then
+			return e.landFrom, e.landTo
+		end
+		return e.landTo, (e.landTo + e.spins) % e.stops
+	end
+
+	-- The motion `name` as `e` plays it for `stamp`: the art's, its landing arrow's bent to land.
+	local function motionOf(e: Entry, stamp: Use.Stamp?, name: string): Art.Motion?
+		local m = e.motions[name]
+		local step = e.lands
+		local lands = step and step.lands
+		if not (m and stamp and step and lands and step.motion == name) then
+			return m
+		end
+		local from, to = landing(e, stamp)
+		local key = from * e.stops + to
+		if e.bentFor ~= key then
+			e.bent, e.bentFor = Use.bend(m, lands, from, to), key
+		end
+		return e.bent
+	end
+
 	-- A step's sound as it starts, at the find.
 	local function hear(e: Entry, stamp: Use.Stamp, step: number, elapsed: number)
 		if e.heardState ~= stamp.state or e.heardAt ~= stamp.at then
@@ -311,6 +369,10 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 	local function beat(e: Entry, stamp: Use.Stamp, f: Use.Frame)
 		local s = Use.stepAt(e.row, stamp.state, f.step)
 		local times = s and e.beats[s.motion]
+		if s and s.lands then
+			local _, to = landing(e, stamp)
+			times = e.calls[to]
+		end
 		if not (s and times and f.motion == s.motion) then
 			return
 		end
@@ -457,7 +519,7 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 			end
 			e.dirty, e.motion, e.t, e.view, e.posedLights =
 				false, f.motion, f.t, shownView, e.lights
-			local motion = if f.motion then e.motions[f.motion] else nil
+			local motion = if f.motion then motionOf(e, stamp, f.motion) else nil
 			local values = if motion then Pose.at(motion, f.t, e.rest) else e.rest
 			-- a wind-up stopped short by a wall: held where it stopped over the floor
 			if stamp and travel < elapsed then

@@ -121,9 +121,22 @@ LEVER = pitched(CLACK, 1.25, 0.8)
 TICK = sound("rbxassetid://9119728830", 0.15, 0.12, 0.4, 2.8)
 # The cat the arrow stops on as built: "Cat Meow Sound" (Creator Store, 0.97 s; measured in Studio,
 # AudioAnalyzer PeakLevel in 60 ms bins: the meow from 0.06 s, loudest to 0.4 s, gone by 0.6 s),
-# through the toy's little speaker. Each animal's own call waits on the server's pick (ROADMAP
-# polish, "The farm spinner's arrow lands on any animal").
+# through the toy's little speaker.
 MEOW = sound("rbxassetid://83454004588488", 0.04, 0.65, 1.3, 1.0)  # a pitch, as its cue list's other sounds have: Luau types a list by its first entry
+# The other seven animals the arrow lands on (F-G1e3d), each one short, clean call through the same
+# little speaker. Measured in Studio Play (Nov 17, V3d) by `PlaybackLoudness` every 20 ms, which
+# reads the recording, not the Sound's volume: each starts just before its call rises above a
+# sixth of its peak and ends as it falls back, and its volume brings its peak to the meow's (205
+# at 1.3, about 265). Pro Sound Effects where its farm recordings have the animal, Creator Store
+# uploads where they don't. The rooster's recording is quiet, so it plays near the top of
+# Roblox's volume.
+COW = sound("rbxassetid://96686849712218", 0.6, 1.25, 0.6, 1.0)  # "Cow sound", 2.12 s: peak 456, 0.66 to 1.8 s
+PIG = sound("rbxassetid://9117352464", 0.18, 0.55, 0.8, 1.0)  # Pro Sound Effects "Pig Grunts 3": peak 321, 0.23 to 0.6 s
+SHEEP = sound("rbxassetid://9119065374", 0.22, 0.95, 1.6, 1.0)  # Pro Sound Effects "Sheep Blats 1": peak 163, 0.27 to 1.1 s
+HORSE = sound("rbxassetid://609578817", 0.12, 1.0, 1.5, 1.0)  # "horse_exterior_whinny_05": peak 181, 0.17 to 1.03 s
+DUCK = sound("rbxassetid://105918663447014", 0.0, 0.65, 1.5, 1.0)  # "QUACK": peak 180, 0 to 0.6 s
+ROOSTER = sound("rbxassetid://83144094730313", 0.15, 1.6, 7.0, 1.0)  # "rooster": peak 38, 0.2 to 1.7 s
+DOG = sound("rbxassetid://78467017795178", 0.03, 0.7, 2.6, 1.0)  # "Dog Bark SFX V2": peak 102, 0.07 to 0.67 s
 # The cowboy doll's cord creeping home under its governor, the owner's default until its six
 # lines are recorded (OWNER.md): Pro Sound Effects' "Robot Servo 3" (3.98 s, a steady dual-tone
 # whine from 0.18 s, measured), lower and slower so it runs the cord's whole 2.4 s creep.
