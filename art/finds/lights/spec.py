@@ -641,3 +641,290 @@ UNPLUGGED = dict(
     kelvin=2400,                # a touch warmer than any bulb in the building (2,700 K)
     dust=0.75, seed=9.4,
 )
+
+
+# --- The game rows (F-G1f, D-265; art/finds/PIPELINE.md) ----------------------------------------
+# What the game deals and plays for each find, in the order the deal lists them. art/finds/rows.py
+# (plain Python: `scripts/art.sh rows`, and every export) writes them into
+# src/shared/Finds/Rows.luau; never edit that file. `catalog` is the find's line in the item
+# catalog as art/finds/WAVES.md's table names it: a find is dealt once that line is ticked built.
+# Grade and worth are the catalog's; `from_` the lowest floor it's dealt on (none: floor 1); its
+# grip in studs from the middle of its bottom (across, up, front to back); heft how heavy it feels
+# (0 to 1); size where it sits in your view; `press` its one press (Finds/Use's row).
+from game import (  # noqa: E402
+    CLACK,
+    CLICK_OFF,
+    CLICK_ON,
+    CLINK,
+    CRUNCH,
+    FOREVER,
+    HOLLOW,
+    MATCH_ID,
+    PLASTIC,
+    RUSTLE,
+    SLAP,
+    STEEL,
+    TIN,
+    lamp,
+    pitched,
+    sound,
+)
+
+GAME = [
+    # The theatre spotlight has no row: a big find (both hands), not dealt until a floor has a
+    # big-find place (Deal.luau).
+    dict(
+        key="NightLight",
+        catalog="Plug-in night-light",
+        name="Night-light",
+        grade="Common",
+        worth=2,
+        grip=(0, 0.3, 0),  # round its plug body
+        heft=0.04,
+        size="Small",
+        pickUp=pitched(CLACK, 1.5),
+        drop=pitched(PLASTIC, 1.7, 0.55),
+        # "Switch on: a soft glow by the floor" (D-250: anywhere, about a minute)
+        press=lamp([dict(motion="SwitchOn", sound=CLICK_ON)]),
+    ),
+    dict(
+        key="TeaLight",
+        catalog="Tea light in a jar",
+        name="Tea light",
+        grade="Common",
+        worth=3,
+        grip=(0, 0.4, 0),  # the jar's rim
+        heft=0.12,
+        size="Small",
+        pickUp=pitched(CLINK, 1.6),
+        drop=pitched(TIN, 1.7, 0.6),
+        # "Light: a small glow for about a minute": the wick catches, flickers, then gutters out
+        press=dict(
+            verb="Light",
+            on=[
+                dict(motion="Light", sound=sound(MATCH_ID, 0, 1.3, 0.9)),
+                dict(motion="Flicker", loop=FOREVER),
+            ],
+            lasts=60,
+            out=[dict(motion="GoOut")],
+        ),
+    ),
+    dict(
+        key="DeskLamp",
+        catalog="Desk lamp",
+        name="Desk lamp",
+        grade="Common",
+        worth=4,
+        grip=(0, 0.7, 0.4),  # its arm, above the base
+        heft=0.45,
+        size="Large",
+        pickUp=pitched(SLAP, 1.0),
+        drop=pitched(STEEL, 1.3),
+        # "Switch on: a warm pool of light" (D-250: anywhere, about a minute)
+        press=lamp([dict(motion="SwitchOn", sound=CLICK_ON)]),
+    ),
+    dict(
+        key="GlowSticks",
+        catalog="Bundle of glow sticks",
+        name="Glow sticks",
+        grade="Common",
+        worth=5,
+        grip=(0, 0.06, 0),  # round the band
+        heft=0.03,
+        size="Small",
+        pickUp=RUSTLE,
+        drop=pitched(PLASTIC, 1.9, 0.45),
+        # "Crack: one stick lights a small spot for the rest of the floor"
+        press=dict(verb="Crack", on=[dict(motion="Crack")]),
+    ),
+    dict(
+        key="FairyLights",
+        catalog="String fairy lights",
+        name="Fairy lights",
+        grade="Uncommon",
+        worth=12,
+        grip=(0, 0.06, 0.03),  # the box with the string coiled on it
+        heft=0.08,
+        size="Small",
+        pickUp=RUSTLE,
+        drop=pitched(PLASTIC, 1.6, 0.55),
+        # "Switch on: a dim line of light"; on a battery box that doesn't run down
+        press=dict(
+            verb="Switch",
+            on=[dict(motion="SwitchOn", sound=CLICK_ON)],
+            off=dict(motion="SwitchOff", sound=CLICK_OFF),
+        ),
+    ),
+    dict(
+        key="CampLantern",
+        catalog="Camping lantern",
+        name="Lantern",
+        grade="Uncommon",
+        worth=15,
+        grip=(0, 0.66, 0.05),  # its handle on top
+        heft=0.35,
+        size="Medium",
+        pickUp=pitched(HOLLOW, 1.15),
+        drop=pitched(PLASTIC, 1.15),
+        # "Switch on: a wide light for 90 seconds"; switched off, it keeps what's left
+        press=dict(
+            verb="Switch",
+            on=[dict(motion="SwitchOn", sound=CLICK_ON)],
+            lasts=90,
+            out=[dict(motion="RunDown")],
+            off=dict(motion="SwitchOff", sound=CLICK_OFF),
+        ),
+    ),
+    dict(
+        key="MoonLamp",
+        catalog="Moon lamp",
+        name="Moon lamp",
+        grade="Uncommon",
+        worth=16,
+        grip=(0, 0.3, 0),  # the moon in its cradle
+        heft=0.25,
+        size="Medium",
+        pickUp=pitched(HOLLOW, 1.3),
+        drop=pitched(CRUNCH, 1.1),
+        # "It glows"; its tap to change the moon's phase stays at home for now
+        press=lamp([dict(motion="SwitchOn", sound=CLICK_ON)]),
+    ),
+    dict(
+        key="BlobLamp",
+        catalog="Blob lamp",
+        name="Blob lamp",
+        grade="Uncommon",
+        worth=18,
+        grip=(-0.09, 0.75, 0.23),  # round the bottle's waist
+        heft=0.5,
+        size="Medium",
+        pickUp=pitched(SLAP, 0.9),
+        drop=pitched(STEEL, 1.2),
+        # "Coloured blobs rise and fall": it warms up, then flows for as long as it's lit
+        press=lamp([dict(motion="SwitchOn", sound=CLICK_ON), dict(motion="Flow", loop=FOREVER)]),
+    ),
+    dict(
+        key="OilLamp",
+        catalog="Oil lamp",
+        name="Oil lamp",
+        grade="Rare",
+        worth=40,
+        grip=(0, 0.45, 0),  # the brass fount
+        heft=0.4,
+        size="Medium",
+        pickUp=pitched(CLINK, 1.2),
+        drop=pitched(TIN, 1.1),
+        # "Light: warm light that runs down slowly": longer than any other found light
+        press=dict(
+            verb="Light",
+            on=[
+                dict(motion="Light", sound=sound(MATCH_ID, 0, 2.4, 0.9)),
+                dict(motion="Burn", loop=FOREVER),
+            ],
+            lasts=150,
+            out=[dict(motion="RunDown")],
+        ),
+    ),
+    dict(
+        key="DiscoBall",
+        catalog="Disco ball",
+        name="Disco ball",
+        grade="Rare",
+        worth=45,
+        grip=(0, 0.25, 0),  # its stand
+        heft=0.45,
+        size="Medium",
+        pickUp=CLINK,
+        drop=TIN,
+        # "Spin: spots of light race round the walls"; a battery motor that spins until stopped
+        press=dict(
+            verb="Spin",
+            on=[dict(motion="Spin"), dict(motion="Spinning", loop=FOREVER)],
+            off=dict(motion="SpinDown"),
+        ),
+    ),
+    dict(
+        key="NeonSign",
+        catalog="Neon OPEN sign",
+        name="Neon sign",
+        grade="Rare",
+        worth=60,
+        grip=(0, 0.98, 0.05),  # its top edge
+        heft=0.55,
+        size="Large",
+        pickUp=pitched(HOLLOW, 0.9),
+        drop=pitched(CRUNCH, 0.85),
+        # "It buzzes and glows pink": it stutters on, then buzzes (a real neon hum is ROADMAP polish)
+        press=lamp([dict(motion="SwitchOn", sound=CLICK_ON), dict(motion="Buzz", loop=FOREVER)]),
+    ),
+    dict(
+        key="HardHat",
+        catalog="Miner's hard hat",
+        name="Hard hat",
+        grade="Rare",
+        worth=70,
+        grip=(0, 0.75, 0),  # the crown of its shell
+        heft=0.3,
+        size="Medium",
+        pickUp=HOLLOW,
+        drop=pitched(PLASTIC, 0.95),
+        # "A lamp on your head lights whatever you look at, for a minute"; worn later (D-188's
+        # worn finds, F-G1b4), switched on in your hand for now
+        press=dict(
+            verb="Switch",
+            on=[dict(motion="SwitchOn", sound=CLICK_ON)],
+            lasts=60,
+            out=[dict(motion="RunDown")],
+            off=dict(motion="SwitchOff", sound=CLICK_OFF),
+        ),
+    ),
+    dict(
+        key="FireflyJar",
+        catalog="Jar of fireflies",
+        name="Firefly jar",
+        grade="Epic",
+        worth=110,
+        grip=(0, 0.6, 0),  # the lid
+        heft=0.2,
+        size="Small",
+        pickUp=pitched(CLINK, 1.45),
+        drop=pitched(TIN, 1.5, 0.65),
+        # "Open: fireflies drift out and light the unit for a minute, then they're gone"
+        press=dict(
+            verb="Open",
+            on=[dict(motion="Open"), dict(motion="Drift", loop=FOREVER)],
+            lasts=60,
+            out=[dict(motion="Gone")],
+        ),
+    ),
+    dict(
+        key="StainedGlassLamp",
+        catalog="Stained-glass lamp",
+        name="Glass lamp",
+        grade="Legendary",
+        worth=480,
+        grip=(0, 0.8, 0),  # its stem, under the shade
+        heft=0.8,
+        size="Large",
+        pickUp=pitched(CLINK, 0.9),
+        drop=STEEL,
+        # "It throws coloured patterns on your walls"
+        press=lamp([dict(motion="SwitchOn", sound=CLICK_ON)]),
+    ),
+    dict(
+        key="UnpluggedLamp",
+        catalog="A lamp that's on when you find it",
+        name="Old lamp",
+        grade="Secret",
+        worth=7000,
+        from_=25,
+        grip=(0, 0.9, 0),  # its stem
+        heft=0.6,
+        size="Large",
+        pickUp=pitched(CLINK, 0.85),
+        drop=pitched(STEEL, 0.95),
+        # the catalog's rules: found lit and never runs down, so no press (D-229); loose only, never
+        # in the marked box; from floor 25
+        loose=True,
+    ),
+]

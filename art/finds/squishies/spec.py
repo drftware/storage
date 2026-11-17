@@ -540,3 +540,141 @@ GALAXY_RISE_MID = glitter_rise(0.2, 1.8, 5.6, 0.004)
 GALAXY_RISE_LOW = glitter_rise(0.3, 2.1, 6.2, 0.0035)
 GALAXY_GLOW = [(0.0, 0.8), (0.3, 0.8), (1.2, 1.0, "Sine", "Out"), (4.4, 1.0),
                (8.0, 0.8, "Sine", "InOut")]
+
+
+# --- The game rows (F-G1f, D-265; art/finds/PIPELINE.md) ----------------------------------------
+# What the game deals and plays for each find, in the order the deal lists them. art/finds/rows.py
+# (plain Python: `scripts/art.sh rows`, and every export) writes them into
+# src/shared/Finds/Rows.luau; never edit that file. `catalog` is the find's line in the item
+# catalog as art/finds/WAVES.md's table names it: a find is dealt once that line is ticked built.
+# Grade and worth are the catalog's; `from_` the lowest floor it's dealt on (none: floor 1); its
+# grip in studs from the middle of its bottom (across, up, front to back); heft how heavy it feels
+# (0 to 1); size where it sits in your view; `press` its one press (Finds/Use's row).
+from game import (  # noqa: E402
+    RUSTLE,
+    SOFT,
+    pitched,
+)
+
+GAME = [
+    dict(
+        key="StressBall",
+        catalog="Stress ball with a face",
+        name="Stress ball",
+        grade="Common",
+        worth=2,
+        grip=(0, 0.14, 0),  # round the ball
+        heft=0.04,
+        size="Small",
+        pickUp=pitched(SOFT, 1.5),
+        drop=pitched(SOFT, 1.2, 0.5),
+    ),
+    dict(
+        key="ButterStick",
+        catalog="Squishy butter stick",
+        name="Butter stick",
+        grade="Common",
+        worth=4,
+        grip=(0, 0.08, 0),  # round the stick
+        heft=0.04,
+        size="Small",
+        pickUp=pitched(SOFT, 1.45),
+        drop=pitched(SOFT, 1.15, 0.5),
+    ),
+    dict(
+        key="MochiBun",
+        catalog="Mochi bun",
+        name="Mochi bun",
+        grade="Common",
+        worth=4,
+        grip=(0, 0.09, 0),  # round the bun
+        heft=0.02,
+        size="Small",
+        pickUp=pitched(SOFT, 1.6),
+        drop=pitched(SOFT, 1.3, 0.45),
+    ),
+    dict(
+        key="PaperSquishy",
+        catalog="Paper squishy with a drawn face",
+        name="Paper squishy",
+        grade="Uncommon",
+        worth=10,
+        grip=(0, 0.2, 0),  # round its middle
+        heft=0.01,
+        size="Small",
+        pickUp=RUSTLE,
+        drop=pitched(RUSTLE, 0.8, 0.5),
+    ),
+    dict(
+        key="ToastSlice",
+        catalog="Squishy toast slice",
+        name="Toast slice",
+        grade="Uncommon",
+        worth=11,
+        grip=(0, 0.22, 0),  # pinched by its crust
+        heft=0.02,
+        size="Small",
+        pickUp=pitched(SOFT, 1.4),
+        drop=pitched(SOFT, 1.1, 0.5),
+    ),
+    dict(
+        key="GelBeadBall",
+        catalog="Gel bead ball",
+        name="Gel bead ball",
+        grade="Uncommon",
+        worth=12,
+        grip=(0, 0.13, 0),  # round the ball
+        heft=0.05,
+        size="Small",
+        pickUp=pitched(SOFT, 1.35),
+        drop=pitched(SOFT, 1.05, 0.55),
+    ),
+    dict(
+        key="GlitterGooBall",
+        catalog="Glitter goo ball",
+        name="Glitter goo ball",
+        grade="Uncommon",
+        worth=15,
+        grip=(0, 0.12, 0),  # round the ball
+        heft=0.05,
+        size="Small",
+        pickUp=pitched(SOFT, 1.35),
+        drop=pitched(SOFT, 1.05, 0.55),
+    ),
+    dict(
+        key="JumboStrawberry",
+        catalog="Jumbo slow-rise strawberry",
+        name="Jumbo strawberry",
+        grade="Uncommon",
+        worth=18,
+        grip=(0, 0.25, 0),  # round its middle
+        heft=0.08,
+        size="Medium",
+        pickUp=pitched(SOFT, 1.15),
+        drop=pitched(SOFT, 0.9, 0.55),
+    ),
+    dict(
+        key="Capybara",
+        catalog="Squishy capybara",
+        name="Squishy capybara",
+        grade="Rare",
+        worth=55,
+        grip=(0, 0.14, 0),  # round its back
+        heft=0.04,
+        size="Small",
+        pickUp=pitched(SOFT, 1.3),
+        drop=pitched(SOFT, 1.0, 0.55),
+    ),
+    dict(
+        key="GalaxyGooBall",
+        catalog="Galaxy goo ball",
+        name="Galaxy goo ball",
+        grade="Legendary",
+        worth=350,
+        grip=(0, 0.14, 0),  # round the ball
+        heft=0.05,
+        size="Small",
+        pickUp=pitched(SOFT, 1.25),
+        drop=pitched(SOFT, 0.95, 0.55),
+    ),
+]

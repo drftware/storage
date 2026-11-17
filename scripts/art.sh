@@ -98,6 +98,10 @@
 #                                       "The kit"): bake, FBX and Luau, sheets and motion previews.
 #                                       Name stages (textures export renders, or quick: fast,
 #                                       rough sheets) and a find (DeskLamp) to do less
+#                                       Its export also writes the finds' game rows (below)
+#   scripts/art.sh rows                 every kit find's game row from its art spec into
+#                                       src/shared/Finds/Rows.luau: plain Python, no Blender
+#                                       (art/finds/rows.py, PIPELINE.md; seconds)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 if [ "${1:-}" = "set" ]; then
@@ -114,7 +118,13 @@ if [ "${1:-}" = "set" ]; then
 		echo "== $name $st ${only}"
 		blender -b --factory-startup -P "art/finds/$name/build.py" -- --stage "$st" ${only:+--find "$only"} 2>&1 \
 			| grep -E -i "error|traceback|RENDERED|BAKED|FBX|SPEC|skip|DONE|assert" || true
+		# the game rows ride every export, so a find's row and its art land together
+		if [ "$st" = "export" ]; then PATH="$HOME/.rokit/bin:$PATH" python3 art/finds/rows.py; fi
 	done
+	exit 0
+fi
+if [ "${1:-}" = "rows" ]; then
+	PATH="$HOME/.rokit/bin:$PATH" python3 art/finds/rows.py
 	exit 0
 fi
 if [ "${1:-}" = "elevator" ]; then

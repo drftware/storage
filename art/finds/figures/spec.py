@@ -107,3 +107,52 @@ DC_PUSH = dict(
     rattle=0.55,              # degrees the body rocks on its axles at full speed
     nose=0.036,               # degrees of nose-up a stud/s^2 as the hand shoves it
 )
+
+
+# --- The game rows (F-G1f, D-265; art/finds/PIPELINE.md) ----------------------------------------
+# What the game deals and plays for each find, in the order the deal lists them. art/finds/rows.py
+# (plain Python: `scripts/art.sh rows`, and every export) writes them into
+# src/shared/Finds/Rows.luau; never edit that file. `catalog` is the find's line in the item
+# catalog as art/finds/WAVES.md's table names it: a find is dealt once that line is ticked built.
+# Grade and worth are the catalog's; `from_` the lowest floor it's dealt on (none: floor 1); its
+# grip in studs from the middle of its bottom (across, up, front to back); heft how heavy it feels
+# (0 to 1); size where it sits in your view; `press` its one press (Finds/Use's row).
+from game import (  # noqa: E402
+    CLACK,
+    CLINK,
+    CRUNCH,
+    ROLL,
+    STEEL,
+    pitched,
+)
+
+GAME = [
+    dict(
+        key="DiecastCar",
+        catalog="Die-cast car",
+        name="Toy car",
+        grade="Common",
+        worth=4,
+        grip=(0, 0.06, 0),  # pinched by its roof
+        heft=0.02,
+        size="Small",
+        pickUp=pitched(CLINK, 1.8, 0.55),
+        drop=pitched(STEEL, 2.2, 0.45),
+        # "Push: it rolls off down the hall": let go in front of you, it rolls about seven studs,
+        # wandering, and slows to a stop where it can be picked up again
+        press=dict(verb="Push", on=[dict(motion="Push", sound=ROLL)], toy=True, down=True),
+    ),
+    dict(
+        key="RCCar",
+        catalog="Remote-control car",
+        name="RC car",
+        grade="Rare",
+        worth=60,
+        grip=(0, 0.45, 0),  # the car's roof, its transmitter riding beside it
+        heft=0.45,
+        size="Large",
+        pickUp=CLACK,
+        drop=pitched(CRUNCH, 1.15),
+        verb="Drive",  # its press is Finds/Drive, a system of its own (D-250 to D-258)
+    ),
+]

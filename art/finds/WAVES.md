@@ -6,9 +6,11 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** P1, the pipeline (the third run's plan, below; ROADMAP F-G1f). A1, the audit, is done
-(Nov 16): "Every built find, in the game" below is the map. The second run's steps 14 and 15
-(the last four squishies and their Studio look) are now the third run's S1 to S4 and L1.
+**Next:** P1b, the game takes the generated rows (the third run's plan, below; ROADMAP F-G1f2).
+P1a is done (Nov 17): every kit find's game row is in its art spec and generated into
+`Finds/Rows`, proven equal to the hand-written rows; its note says what P1b does. Then V1. The
+second run's steps 14 and 15 (the last four squishies and their Studio look) are now the third
+run's S1 to S4 and L1.
 
 ## The third run's plan (owner's brief, Nov 16 night)
 
@@ -23,7 +25,8 @@ head, belong to the home chain (ROADMAP S5-03, F-G1b4): listed as waiting, not b
    find, its catalog action, today's state (works / its verb exists and needs data / its verb is
    missing / waits on the home chain or the owner), its grade, worth and floors checked against
    the catalog, and one column for "seen in Play" (empty until Q1).
-2. **P1 The pipeline.** `art/finds/PIPELINE.md` (the workflow below, plain and short); each find's
+2. **P1 The pipeline** (P1a done Nov 17: the rows in the specs, generated and proven equal; P1b
+   left: the game takes them, PIPELINE.md, the Play check). `art/finds/PIPELINE.md` (the workflow below, plain and short); each find's
    game row (grade, worth, floors, verb, the verb's numbers, its sounds) in its art spec; the
    export generates the catalog rows next to `Finds/Sets`; the deal takes every generated find
    that has a template in the place and is marked judged (a flag the export writes only for
@@ -243,6 +246,29 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, P1a (the rows in the art; the game unchanged, so nothing new to see in Play; P1b
+  left).** Every kit find's game row is now the `GAME` list at the end of its set's `spec.py`
+  (D-265): `key`, `catalog` (its line in this file's set tables, written exactly as there),
+  `name`, `grade`, `worth`, `from_`, `loose`, `grip`, `heft`, `size`, `pickUp`, `drop`, and
+  `press` (Use's row as Python dicts; `FOREVER` loops until the light's out; the sounds and
+  `lamp()` come from `art/finds/kit/game.py`). `python3 art/finds/rows.py` (`scripts/art.sh
+  rows`; every set's export runs it) writes `src/shared/Finds/Rows.luau`, and check.sh fails if
+  it's stale. `judged` comes from this file: a set table's row with a dated Built cell.
+  `tests/kitrows.spec` holds the 41 generated rows to the hand-written ones, frozen in
+  `tests/fixtures/kitrows.luau`. 41, not 42: the audit's 46 are these, the bedroom four and the
+  spotlight. **What P1b does:** in `Tools/Catalog.luau`, the 41 `built(...)` calls and the
+  sound locals (`CLINK` to `SOFT`, `pitched`) give way to a loop over `Finds/Rows`' judged rows
+  calling `built` (its `Built` type becomes `Game.Row`; HOLD stays); in `Finds/Use.luau`,
+  `Use.Rows`' literal, its sound locals and `lamp` give way to the rows' presses
+  (`Use.LampLasts` is read nowhere else; finduse.spec reads `Use.Rows.<key>`, unchanged);
+  `Deal.Finds` becomes the four bedroom names then each judged row's key, and a
+  `Deal.onlyWith(has)` called once by `Deals.new` leaves out any find with no template in
+  `ReplicatedStorage.Props.Finds`; `Deals`' `layBoxed` lays a `loose` find loose (add `loose`
+  to `Catalog.Row`). kitrows.spec should pass unchanged. Then PIPELINE.md, CRAFT.md's two
+  pointers, and the Play check (the brief's step 5). **For V1 on (once P1b lands):** a press is
+  data: add `press=dict(...)` to the find's row and run `scripts/art.sh rows`; a new sound goes
+  in `kit/game.py`.
 
 - **Nov 16, A1 (the audit; no game code changed).** The table "Every built find, in the game"
   is above, with the verbs each V step needs. What P1 needs to know: grade, worth and floors

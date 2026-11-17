@@ -21,6 +21,9 @@ if ! echo "$lint" | grep -q "^0 errors" || ! echo "$lint" | grep -q "^0 warnings
 	fail=1
 fi
 
+# the kit finds' generated game rows match their art specs (F-G1f): never edited by hand
+python3 art/finds/rows.py --check || fail=1
+
 rojo sourcemap default.project.json -o sourcemap.json >/dev/null 2>&1 || { echo "FAIL: rojo sourcemap"; fail=1; }
 
 types=$(luau-lsp analyze --definitions=roblox.d.luau --sourcemap=sourcemap.json --base-luaurc=.luaurc src 2>&1 \

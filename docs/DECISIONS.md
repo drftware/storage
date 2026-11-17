@@ -6783,3 +6783,39 @@ joists, the hall lights, the striped zones and the cars. Past it the floor is a 
 - **Not chosen:** a carpeted floor (reads as an office, and shows nothing of the light); posts
   and pilasters on the home's walls (they were the climb's steel rhythm); the counter and shelves
   re-done (the shop's own piece).
+
+## D-265 · 2026-11-17 · Each kit find's game row lives in its art spec (F-G1f1, the run's P1a)
+
+The owner's third find run (Nov 16 night): a find goes from photos to playable in one ticket, so
+what the game deals and plays for a find lives beside its art, not in lists kept by hand in the
+game's code.
+
+- **The row in the spec.** Each set's `art/finds/<set>/spec.py` ends in `GAME`, one row a find in
+  the deal's order: its key, its line in the item catalog (as `art/finds/WAVES.md`'s table names
+  it), its name on screen, grade, worth, lowest floor (`from_`), the catalog's rules (`loose`),
+  grip, heft, size in your view, pick-up and drop sounds, and its press (`Finds/Use`'s row: its
+  word, steps, how long it lasts, its noise and lure). The sounds and the lamp's press are named
+  once in `art/finds/kit/game.py`, plain Python.
+- **Generated, never by hand.** `art/finds/rows.py` (plain Python, no Blender, so a number changes
+  without rebuilding a mesh) reads the specs and writes `src/shared/Finds/Rows.luau`, formatted by
+  StyLua. `scripts/art.sh rows` runs it alone and every set's export runs it; `scripts/check.sh`
+  fails if the module is stale or edited by hand. It refuses a row with a field it doesn't know
+  or one missing, a grade or size it doesn't know, a key twice, no art in its set's generated
+  module, or a catalog line WAVES.md doesn't have.
+- **Judged means ticked built.** A row is `judged` when its catalog line in WAVES.md's set tables
+  has a dated Built cell, the art's tick. P1b deals only judged rows.
+- **The press types moved** from `Finds/Use` to `Finds/Game` (types only), so the generated rows
+  and `Use` share one definition without a require loop; `Use` keeps their old names.
+- **The proof.** `tests/fixtures/kitrows.luau` freezes the 41 hand-written kit rows as they
+  stood; `tests/kitrows.spec` holds every generated row to it: every field, every press step, the
+  deal's order, the Old lamp's floor 25 and loose only. A deliberate change updates its line in
+  the fixture in the same commit; a press added where there was none needs nothing there.
+- **Order matters.** `Deal.findFrom` picks by place within a grade, so the generator writes the
+  sets in the order they were built (lights, figures, windups, squishies) and a new set goes last.
+- **Left out:** the bedroom set stays hand-written (one-mesh finds with no kit spec); the theatre
+  spotlight has no row (a big find, not dealt until a floor has a big-find place); the RC car's
+  row names its verb, Drive, since its press is `Finds/Drive`.
+- **P1b next:** the hand-written kit rows in `Tools.Catalog` and `Finds/Use` go, both built from
+  `Finds/Rows`' judged rows; `Deal.Finds` becomes the bedroom set plus the judged rows, less any
+  with no template in the place (checked by the server as it starts), and the Old lamp's `loose`
+  is read where the marked box is chosen; then `art/finds/PIPELINE.md` and one Studio Play check.

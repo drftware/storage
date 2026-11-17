@@ -846,3 +846,220 @@ RIDE = dict(
     winds=4,                        # half turns of the key to wind it
     end=16.4,
 )
+
+
+# --- The game rows (F-G1f, D-265; art/finds/PIPELINE.md) ----------------------------------------
+# What the game deals and plays for each find, in the order the deal lists them. art/finds/rows.py
+# (plain Python: `scripts/art.sh rows`, and every export) writes them into
+# src/shared/Finds/Rows.luau; never edit that file. `catalog` is the find's line in the item
+# catalog as art/finds/WAVES.md's table names it: a find is dealt once that line is ticked built.
+# Grade and worth are the catalog's; `from_` the lowest floor it's dealt on (none: floor 1); its
+# grip in studs from the middle of its bottom (across, up, front to back); heft how heavy it feels
+# (0 to 1); size where it sits in your view; `press` its one press (Finds/Use's row).
+from game import (  # noqa: E402
+    CLACK,
+    CLANG,
+    CLASH,
+    CLINK,
+    CRUNCH,
+    HOLLOW,
+    MUSIC_BOX,
+    PLASTIC,
+    POP,
+    SLAP,
+    SOFT,
+    TIN,
+    WIND,
+    pitched,
+)
+
+GAME = [
+    dict(
+        key="CymbalMonkey",
+        catalog="Cymbal monkey",
+        name="Cymbal monkey",
+        grade="Rare",
+        worth=40,
+        grip=(0, 0.55, 0),  # round its middle
+        heft=0.3,
+        size="Medium",
+        pickUp=pitched(CLANG, 1.5),
+        drop=pitched(TIN, 1.15),
+        # "Wind: it bashes its cymbals for 20 seconds, loud", "the strongest lure in the set":
+        # every monster on the floor keeps coming to it, every 2 seconds, until it stalls
+        press=dict(
+            verb="Wind",
+            on=[
+                dict(motion="Wind", sound=WIND),
+                dict(motion="Play", hit=dict(part="CymbalMonkey_ArmL", sound=CLASH)),
+            ],
+            noise="Play",
+            lure=2,
+            toy=True,
+        ),
+    ),
+    dict(
+        key="JackInTheBox",
+        catalog="Jack-in-the-box",
+        name="Jack-in-the-box",
+        grade="Uncommon",
+        worth=18,
+        grip=(0, 0.45, 0),  # the tin box, shut
+        heft=0.3,
+        size="Medium",
+        pickUp=pitched(SLAP, 1.1),
+        drop=TIN,
+        # "Wind: a tune, then a bang as it pops. The bang comes a few seconds after you let go":
+        # wind it, set it down, walk away, and see what comes to look
+        press=dict(
+            verb="Wind",
+            on=[dict(motion="Wind", sound=MUSIC_BOX), dict(motion="Pop", sound=POP)],
+            reset=dict(motion="Shut"),
+            noise="Pop",
+        ),
+    ),
+    dict(
+        key="Kazoo",
+        catalog="Kazoo",
+        name="Kazoo",
+        grade="Common",
+        worth=2,
+        grip=(0, 0.05, 0.05),  # its tube, behind the bump
+        heft=0.02,
+        size="Small",
+        pickUp=pitched(CLACK, 1.9, 0.6),
+        drop=pitched(PLASTIC, 2.1, 0.4),
+    ),
+    dict(
+        key="RubberDuck",
+        catalog="Squeaky rubber duck",
+        name="Rubber duck",
+        grade="Common",
+        worth=3,
+        grip=(0, 0.15, 0),  # round its body
+        heft=0.04,
+        size="Small",
+        pickUp=pitched(HOLLOW, 1.7, 0.6),
+        drop=pitched(HOLLOW, 1.4, 0.55),
+    ),
+    dict(
+        key="SirenCar",
+        catalog="Toy siren car",
+        name="Siren car",
+        grade="Common",
+        worth=5,
+        grip=(0, 0.14, 0),  # round its middle, under the light bar
+        heft=0.06,
+        size="Small",
+        pickUp=pitched(CLACK, 1.6),
+        drop=pitched(PLASTIC, 1.8, 0.5),
+    ),
+    dict(
+        key="ChatteringTeeth",
+        catalog="Wind-up chattering teeth",
+        name="Chattering teeth",
+        grade="Common",
+        worth=6,
+        grip=(0, 0.12, 0),  # round the jaws, shut
+        heft=0.05,
+        size="Small",
+        pickUp=pitched(CLACK, 1.75),
+        drop=pitched(PLASTIC, 1.9, 0.5),
+    ),
+    dict(
+        key="ToyDrum",
+        catalog="Toy drum",
+        name="Toy drum",
+        grade="Uncommon",
+        worth=10,
+        grip=(0, 0.3, 0),  # its tin shell
+        heft=0.3,
+        size="Medium",
+        pickUp=pitched(SLAP, 1.15),
+        drop=pitched(TIN, 0.95),
+    ),
+    dict(
+        key="WindupMouse",
+        catalog="Wind-up mouse",
+        name="Wind-up mouse",
+        grade="Uncommon",
+        worth=12,
+        grip=(0, 0.09, 0),  # round its tin body
+        heft=0.04,
+        size="Small",
+        pickUp=pitched(SLAP, 1.6, 0.55),
+        drop=pitched(TIN, 1.75, 0.55),
+    ),
+    dict(
+        key="WalkingRobot",
+        catalog="Wind-up walking robot",
+        name="Wind-up robot",
+        grade="Uncommon",
+        worth=15,
+        grip=(0, 0.45, 0),  # round its chest
+        heft=0.15,
+        size="Small",
+        pickUp=pitched(SLAP, 1.35),
+        drop=pitched(TIN, 1.35),
+    ),
+    dict(
+        key="FarmSpinner",
+        catalog="Farm-animal spinner",
+        name="Farm spinner",
+        grade="Uncommon",
+        worth=16,
+        grip=(0, 1.0, 0),  # the handle on its top
+        heft=0.35,
+        size="Large",
+        pickUp=pitched(HOLLOW, 1.0),
+        drop=pitched(PLASTIC, 1.0),
+    ),
+    dict(
+        key="CowboyDoll",
+        catalog="Pull-string cowboy doll",
+        name="Cowboy doll",
+        grade="Rare",
+        worth=45,
+        grip=(0, 0.75, 0),  # round its chest, under the hat
+        heft=0.25,
+        size="Medium",
+        pickUp=SOFT,
+        drop=pitched(SOFT, 0.75, 0.6),
+    ),
+    dict(
+        key="SingingFish",
+        catalog="Singing fish plaque",
+        name="Singing fish",
+        grade="Rare",
+        worth=50,
+        grip=(0, 0.8, 0),  # the plaque's top edge
+        heft=0.4,
+        size="Large",
+        pickUp=pitched(HOLLOW, 0.95),
+        drop=pitched(CRUNCH, 0.9),
+    ),
+    dict(
+        key="TinBird",
+        catalog="Clockwork tin bird",
+        name="Tin bird",
+        grade="Epic",
+        worth=140,
+        grip=(0, 0.12, 0),  # round its tin body
+        heft=0.06,
+        size="Small",
+        pickUp=pitched(CLINK, 1.6),
+        drop=pitched(TIN, 1.85, 0.55),
+    ),
+    dict(
+        key="TinCarousel",
+        catalog="Wind-up tin carousel",
+        name="Tin carousel",
+        grade="Epic",
+        worth=200,
+        grip=(0, 0.75, 0),  # the pole under its canopy
+        heft=0.4,
+        size="Medium",
+        pickUp=pitched(CLANG, 1.3),
+        drop=pitched(TIN, 1.0),
+    ),
+]

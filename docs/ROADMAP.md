@@ -2686,8 +2686,20 @@ actions themselves and dealing the new finds on floors are later game tickets.
     every generated, judged find with a template in the place, so no hand-kept list for kit
     finds. Lune specs prove the generated rows match today's hand-written ones before those go
     (the audit found no grade, worth or floor mismatch). The theatre spotlight stays out of the
-    deal until a floor has a big-find place; the bedroom set stays hand-written. Split it (P1a,
-    P1b) if it won't fit.
+    deal until a floor has a big-find place; the bedroom set stays hand-written. Split in two:
+    - [x] **F-G1f1 The rows in the art (P1a; Nov 17, D-265).** Each kit set's spec ends in its
+      `GAME` rows (grade, worth, floors, the Old lamp's loose only, grip, heft, view, sounds,
+      press); `art/finds/rows.py`, plain Python, writes `src/shared/Finds/Rows.luau` (with
+      `judged` from WAVES.md's ticks) on every export or `scripts/art.sh rows`; `check.sh`
+      fails a stale or hand-edited module; `tests/kitrows.spec` holds all 41 generated rows
+      to the hand-written ones, frozen in `tests/fixtures/kitrows.luau`. The game unchanged.
+    - [ ] **F-G1f2 The game takes the rows (P1b).** The hand-written kit rows in
+      `Tools.Catalog` and `Finds/Use` go, both built from `Finds/Rows`' judged rows;
+      `Deal.Finds` becomes the bedroom set plus the judged rows, less any with no template
+      in the place (the server as it starts); the Old lamp's `loose` read where the marked
+      box is chosen (`Deals` `layBoxed`); `art/finds/PIPELINE.md` and CRAFT.md's pointers;
+      one Studio Play check: kit finds still turn up in units and the jack or the monkey
+      plays when pressed.
 - [x] **F-04 Wind-ups and noisemakers.** Built, in `art/finds/windups/`: F-04a the cymbal monkey,
   F-04b the jack-in-the-box, F-04c the chattering teeth (Nov 15), F-04c2 the walking robot,
   F-04d the wind-up mouse, F-04d2 the clockwork tin bird, F-04e the toy siren car and F-04e2 the
