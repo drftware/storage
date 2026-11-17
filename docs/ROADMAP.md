@@ -2483,19 +2483,32 @@ Done when players watch the results to the end and change their perks between cl
       save at once; an owner leaving mid-climb strikes theirs in their last write (Saving's
       `leaving`) and frees them for a friend; nothing settles as the server stops. Passes checks,
       untested in Studio.
-    - [ ] **S5-03d3 Taking finds up, seen**: Studio Play with one player on the same server (take
-      a lamp up, carry it aboard: still in your hand; drop it and let the gate shut: struck off;
-      rejoin: the rest kept), captures; the two-player steps go to OWNER.md.
+    - [x] **S5-03d3 Taking finds up, seen** (Nov 17, D-305): seen in Studio Play with one player
+      (the Blob lamp up, kept in your hand at the gate, dropped on floor 2 and struck as it went,
+      the rest kept across a rejoin, one left at home never struck; `docs/art/S5-03d3-*.jpg`).
+      Found and fixed: Studio's Stop mid-climb struck a taken-up find; GatePay now settles on
+      the next Heartbeat. The two-player steps are in OWNER.md.
     - [ ] **S5-03d4 Across the trip** (D-304): a live climb runs on a server of its own and the
       teleport carries nothing, so what you take up stays home. The trip's data carries each
       rider's taken-up finds (keys, cracked); the climb's server checks each against the rider's
       save (`Save.boxed`) and deals them into their slots, already up; the lobby doesn't recall
-      what left on the trip. Untestable in Studio: the steps go to OWNER.md.
+      what left on the trip. Untestable in Studio: the steps go to OWNER.md, with a live
+      shutdown mid-climb (D-305: nothing taken up may be struck).
   - [ ] **S5-03e Arrange** (ideas 11 to 15), after a placements system built in Brix (D-252):
     lift, drag, a half-stud grid, quarter turns, Free for everyone, floor, tabletop, wall and
     ceiling spots (a column in the catalog), red where it can't go, Place, Put away, Done, the
     limit bar (25, 50, 100, 150 by size); saved in a new save version; every move checked on the
-    server.
+    server. Split for context:
+    - [ ] **S5-03e1 Placements, in Brix** (D-252): a pure placements system built in `../engine`
+      by Brix's own AGENTS.md (neutral names, its checks and specs, its commit): a room's
+      surfaces (floor, tabletop, wall, ceiling), footprints snapped to a half-stud grid with
+      quarter turns, in-bounds and overlap checks with a reason for each refusal, a limit; then
+      the pin moves here. No game code beyond the pin.
+    - [ ] **S5-03e2 Arranged, saved and checked**: a new save version holding each home's
+      placements (with its migration), the catalog's spot column, every move checked on the
+      server through e1 and rate-limited.
+    - [ ] **S5-03e3 The Arrange screen**: lift, drag, red where it can't go, Place, Put away,
+      Done, the limit bar, Free for everyone; seen in Studio at phone size.
   - [ ] **S5-03f The mirror and the clothes rail** (ideas 21 to 24): the tested mirror in every
     unit, its real frame built the unit's way in `art/home` (the test's is plain parts, D-280); the rail (press to wear, with the find's own sound); nothing worn or switched on runs
     down at home; wrap colours tried on, with a mirror by the counter.

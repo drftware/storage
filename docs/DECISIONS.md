@@ -7752,3 +7752,24 @@ D-302's rules, wired on the server. Precedents as D-302: Minecraft and Lethal Co
   teleport carries nothing, so on a live server what you take up is back in your box as you
   leave the lobby. Carrying it across is S5-03d4; Studio (and a lobby's fallback) climb on the
   same server, where all of this runs.
+
+## D-305 · 2026-11-17 · A taken-up find settles on the server's next step, so a stop never costs one (S5-03d3)
+
+Seen in Studio Play (one player): taking a find up, keeping it at a gate, losing it with a floor
+and a rejoin all did what D-302 and D-304 say. One thing didn't: Studio's Stop, mid-climb, struck
+a taken-up find (Skates 3 to 2). Stop removes every player first (PlayerRemoving), then begins
+the close 0.1 s later with no Heartbeat between, so a settle put off with `task.defer` ran before
+GatePay heard the close and struck the find as if its owner had left. That is D-304's flagged
+edge, and it breaks D-302's rule that a server going down never costs a find.
+- **GatePay settles each taken-up find's end on the server's next Heartbeat**, then only if the
+  server isn't closing. A stopping server steps no more, so nothing is settled. A real leave on a
+  running server settles a frame later, still before the leaver's save is read for its last
+  write (the store answers after a frame): a Kick mid-climb in Studio struck the Skates (2 to 1)
+  and the let-go wrote it.
+- `Enum.PlayerExitReason` can't tell a stop from a leave: Studio gave Unknown, and the enum has
+  only Unknown, PlatformKick and CreatorKick.
+- **Still open, safe side:** a live server going down might step between kicking players and
+  closing; if it did, a taken-up find could be struck. It matters once finds cross to a climb's
+  own server (S5-03d4), so that ticket's OWNER.md steps include a live shutdown mid-climb. If a
+  store ever answered within a frame, a leaver's strike would miss their last write and they'd
+  keep the find (no loss; a friend carrying it aboard would make two).

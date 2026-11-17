@@ -88,6 +88,17 @@ nowhere else.
   The other way: when the gate shuts with your own taken-up find in your hand, it goes home into
   your box like any find you keep (it rises out of your slot), so it helps you for one floor and
   is safe after. My default is as built (it's what D-302 says); say if you want the other way.
+- [ ] **Test: taking finds up with a friend** (S5-03d3, D-304, D-305). Seen in Studio with one
+  player on Nov 17: a lamp taken up stayed in hand at the gate, was struck off the save when left
+  on a floor, and nothing was lost or doubled across a rejoin or a Stop. Yours, two players
+  (Studio's Test tab, Clients and Servers, 2 players; Studio climbs on the same server):
+  1. Player 1 takes a find out of their job box and both ride a lobby car up. On floor 1, Player
+     1 drops it; Player 2 picks it up and is aboard as the gate shuts. It should rise out of
+     Player 2's slot. Back home, Player 1's box has one fewer and Player 2's one more.
+  2. Player 1 takes another find up, then leaves mid-climb (close their window). Output prints
+     "GatePay: … out of …'s job box: Lost". Player 2 picks it up and carries it aboard: theirs.
+     Player 1 rejoins: one fewer.
+  Look for: nothing doubled, nothing else gone.
 - [ ] **Judge: a Gold on your shelf** (S5-03c3b3, D-300). Seen in Studio in your hand (it reads as
   solid gold under the bulb) and in the hand wells, but the shelf's cubby never came clear in a
   capture. Open your job box, pick a Gold card, press Shelf, then stand at the shelf: does it

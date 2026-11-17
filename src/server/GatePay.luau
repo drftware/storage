@@ -23,7 +23,8 @@
 	and struck off its owner's in the same step. One lost on the climb (left with a floor, the
 	climb over, used up, its owner gone mid-climb) is struck off its owner's save, and one back in
 	its owner's box brings home its crack (Slots' `taken`). A leaving owner's strike rides in their
-	save's last write (Saving's `leaving`). A server stopping settles nothing.
+	save's last write (Saving's `leaving`). A server stopping settles nothing: each is settled on
+	the server's next step, and a stopping server steps no more (D-305).
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -140,9 +141,13 @@ function GatePay.new(): GatePaySystem
 	end
 
 	-- A find taken up was lost on the climb or is back in its owner's box (Slots' `taken`). Settled
-	-- a step later, in the same frame: a server stopping settles nothing (D-302).
+	-- on the server's next step, so a server stopping settles nothing (D-302): it steps no more.
+	-- A stop removes everyone before its close begins, with no step between (seen in Studio,
+	-- S5-03d3, D-305), so settling within that frame struck a find as the server stopped. A real
+	-- leave still settles a frame on, in time for their save's last write (the store answers later).
 	local function onTaken(t: Slots.Taken)
-		task.defer(function()
+		task.spawn(function()
+			RunService.Heartbeat:Wait()
 			local s = saving
 			if closing or not s then
 				return

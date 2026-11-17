@@ -293,6 +293,29 @@ verified: a doc page, Studio, or "untested".
   `LocalPlayer.PlayerGui.JobBoxPanel.Panel.Finds.Boombox.Pick`) moves to the button and clicks
   it for real; no screen sums needed (an `IgnoreGuiInset` gui's `AbsolutePosition` is 58 points
   off the window's). Move, wait 50 ms, click.
+- **Taking finds up, seen** (S5-03d3, Nov 17, one player, verified in Studio Play): watch the
+  save itself from a Server `execute_luau`:
+  `DataStoreService:GetDataStore("Saves.studio"):GetAsync("player_<UserId>").data.finds` (Play
+  reaches it; the 30 s autosave prints "[Saving] saved" on its own, so judge a write by that
+  read, not by Output). Your home is the unit whose `DoorHolder` is your UserId (Unit1). Open its
+  box: Server pivot 3.5 studs out from `JobBoxSpot.JobBoxButton` along the spot's LookVector;
+  Client turn the camera to it for 1.5 s, then `InputHoldBegin`/`End` (retry until its
+  `ActionText` reads "Close"). Take: Client `Remotes.JobBoxTake:FireServer("BlobLamp", "Hand")`,
+  then `JobBoxClose`. Up: Client pivot into `FrontOffice.Car1` (`* CFrame.new(0, 3, 6)`) and
+  `Remotes.CarPanel:FireServer(car, "Go", true)`; the climb is `Workspace.LobbyClimb` (x -1600),
+  its codes in Output's second and later "floor n's code is" lines; punch as in "Testing the
+  climb". Seen: the take wrote nothing; the gate kept nothing ("kept no finds") and the lamp
+  stayed in slot 1; dropped on floor 2 and left, Output printed "GatePay: BlobLamp out of
+  …'s job box: Lost" as floor 2 went, 14 s after its gate, and the save was written 0.2 s
+  later with no Blob lamp (40 finds to 39, nothing else); after Stop and Play the box listed the
+  rest (counts are the save less the shelf); a find taken out and left at home through a Stop
+  was still there. A `player:Kick()` from the Server is a real leave on a running server.
+- **Studio's Stop removes players before the server's close, with no step between** (S5-03d3,
+  Nov 17, measured): PlayerRemoving (its reason `Enum.PlayerExitReason.Unknown`; the enum has
+  only Unknown, PlatformKick and CreatorKick in Studio 0.747), then `BindToClose` 0.1 s later on
+  the same Heartbeat count, then the save's last write. Anything deferred from PlayerRemoving
+  (`task.defer`) runs before the close; `Heartbeat:Wait()` never returns. So a stop mid-climb
+  struck a taken-up find (Skates 3 to 2) until GatePay settled on the next Heartbeat (D-305).
 - **Catching a motion under half a second** (S5-03c2b2b): run 25 `screencapture -l <number>`
   in a row as a background shell command (about ten a second), 0.3 s after it starts click
   with the MCP; the frames whose file sizes change hold the motion. Don't `rm` a glob in a
