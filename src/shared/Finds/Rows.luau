@@ -2296,6 +2296,48 @@ local Rows: { Game.Row } = {
 			toy = true,
 		},
 	},
+	{
+		key = "CakeSlice",
+		set = "Squishies",
+		judged = false,
+		name = "Cake slice",
+		grade = "Rare",
+		worth = 45,
+		grip = { 0, 0.14, 0 },
+		heft = 0.04,
+		size = "Small",
+		pickUp = {
+			id = "rbxassetid://9117373366",
+			from = 0.4,
+			length = 0.4,
+			volume = 0.75,
+			pitch = 1.35,
+		},
+		drop = {
+			id = "rbxassetid://9117373366",
+			from = 0.4,
+			length = 0.4,
+			volume = 0.5,
+			pitch = 1.05,
+		},
+		verb = "Squeeze",
+		press = {
+			verb = "Squeeze",
+			on = {
+				{
+					motion = "Squeeze",
+					sound = {
+						id = "rbxassetid://9117373366",
+						from = 0.4,
+						length = 0.5,
+						volume = 0.8,
+						pitch = 0.9,
+					},
+				},
+			},
+			toy = true,
+		},
+	},
 }
 
 return Rows

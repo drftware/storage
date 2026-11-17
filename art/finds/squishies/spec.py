@@ -653,6 +653,76 @@ MEGA_OOZE = [
     (6.6, 0.0, "Cubic", "Out"),       # then slowly comes back round
 ]
 
+# --- The squishy cake slice (S4) -----------------------------------------------------------------
+# References (README): slow-rise PU foam layer cake slices sold in 2026 run 3.5 in (a sweet shop
+# series' banana chocolate slice) to jumbo 5 to 5.8 in long (a 5 in rainbow layer cake squishy;
+# a 4 x 3.1 x 5.8 in jumbo): a wedge of an eighth of a round cake, its tip blunt, thick bright
+# sponge layers split by thin white cream lines on both cut sides, white frosting over the top
+# and round the back, sprinkles on top, a cream rosette and a berry at the back. Pressed on top,
+# the foam squashes and the cream lines push out of the sides. Ours is 5 in long, 3.7 in across
+# the back and 2.8 in tall to the frosting: four layers of its own colours (sky, mint, lemon,
+# pink, bottom to top), three piped rosettes along the back, a glossy cherry on the middle one.
+# Lengths in mm; y from the tip (-) to the back (+), z up from the floor.
+CAKE = dict(
+    length=127.0,     # the tip to the back (5 in): the round cake's radius
+    angle=44.0,       # the wedge's angle (degrees): an eighth of a cake is 45
+    tip_r=8.0,        # how blunt the tip is (the radius it is rounded to, seen from above)
+    corner_r=6.0,     # the back corners' radius (no smaller than top_r)
+    top_r=5.0,        # the frosting's soft rounded top edge
+    foot_r=2.0,       # the bottom edge's roundness
+    # the layers from the floor up (mm): sponge, cream, sponge, cream, sponge, cream, sponge,
+    # then the frosting on top; the sponges' colours bottom to top
+    layers=[12.0, 5.5, 12.0, 5.5, 12.0, 5.5, 12.0, 7.0],
+    sponges=["#4FB4F2", "#4ED39A", "#F9D53C", "#F7698F"],
+    back_frost=2.4,   # the white frosting round the back, this thick on the cut faces (mm)
+    # the game mesh: points this far apart along the cut sides (where the cream bulges), round
+    # the back and up the walls, closer through the cream lines and just past them (the detailed
+    # mesh halves them all)
+    side_step=4.0, back_step=7.0, ring=3.0, ring_cream=1.1,
+    # the rosettes: three piped swirls along the back (mm in from the back edge), their radius
+    # and height, how many ridges the star tip leaves and how far they twist (degrees)
+    rosettes=3, rosette_in=12.0, rosette_r=11.5, rosette_h=13.0, ridges=8, twist=150.0,
+    # the cherry on the middle rosette: its radius, how much squatter than round, how deep it
+    # sinks into the cream, the stem (radius, length, how far it leans back, degrees)
+    cherry_r=8.6, cherry_squat=0.9, cherry_sink=3.0, stem_r=0.9, stem_l=17.0, stem_lean=24.0,
+    # sprinkles on the top: rods this long and wide (mm), this many a square cm, none within
+    # this far of the edge or under the rosettes
+    sprinkle_l=5.0, sprinkle_w=1.5, sprinkles=3.0, sprinkle_edge=4.0,
+    # the thumb's press on top: how far the top goes down (mm) and how far each cream line, the
+    # sponges, the lines where they meet and the top frosting push out of the cut sides at the
+    # deepest (the cream most, so it squeezes out between the sponges)
+    press_d=24.0, bulge_cream=7.0, bulge_sponge=1.6, bulge_edge=2.2, bulge_top=3.0,
+    dust=0.15, seed=83.0,
+)
+
+# The squeeze: a thumb pressed down on its top, slowing as the foam fights it, the cream lines
+# pushing out of both sides; held; let go, a little give back at once, then the slow-rise foam
+# eases up and the cream draws back in over about seven seconds, quickest first (seconds, share
+# of the full press[, style, way]).
+FROST = [
+    (0.0, 0.0),
+    (0.36, 1.0, "Quad", "Out"),     # the thumb goes down, the cream pushes out of the sides
+    (1.1, 1.0),                     # held
+    (1.4, 0.9, "Sine", "Out"),      # let go: the first little give back
+    (3.9, 0.42, "Quad", "Out"),     # the slow rise, quickest first
+    (8.4, 0.0, "Sine", "Out"),      # easing the last of the way up
+]
+
+# The cherry's nod on its rosette (degrees, leaning back toward +Y is positive): it rocks back
+# as the top drops, swings over and settles; let go, it rocks again as the top starts back up.
+NOD = [
+    (0.0, 0.0),
+    (0.2, 7.0, "Quad", "Out"),
+    (0.5, -3.5, "Sine", "InOut"),
+    (0.8, 1.5, "Sine", "InOut"),
+    (1.1, 0.0, "Sine", "InOut"),
+    (1.4, 0.0),
+    (1.58, -4.0, "Quad", "Out"),
+    (1.9, 2.0, "Sine", "InOut"),
+    (2.3, -0.7, "Sine", "InOut"),
+    (2.8, 0.0, "Sine", "InOut"),
+]
+
 
 # --- The game rows (F-G1f, D-265; art/finds/PIPELINE.md) ----------------------------------------
 # What the game deals and plays for each find, in the order the deal lists them. art/finds/rows.py
@@ -853,5 +923,19 @@ GAME = [
         # "both hands, and a deep squelch that carries": the goo ball's squelch an octave down
         # and loud, heard by monsters across the floor (round a corner or two)
         press=squeeze(pitched(SQUELCH, 0.5, 1.0), noisy=True, heard=ACROSS_THE_FLOOR),
+    ),
+    dict(
+        key="CakeSlice",
+        catalog="Squishy cake slice",
+        name="Cake slice",
+        grade="Rare",
+        worth=45,
+        grip=(0, 0.14, 0),  # round its middle
+        heft=0.04,
+        size="Small",
+        pickUp=pitched(SOFT, 1.35),
+        drop=pitched(SOFT, 1.05, 0.5),
+        # "frosting squishes out of the side": the foam's soft squish, a little wetter and lower
+        press=squeeze(pitched(SQUISH_SOUND, 0.9, 0.8)),
     ),
 ]

@@ -3007,7 +3007,9 @@ actions themselves and dealing the new finds on floors are later game tickets.
   studs); not ticked, imported or seen in Play. S3b (Nov 17, D-310): its ribbons kept to their
   width with hard edges (no grey), its hug deeper; ticked, held in both hands at your chest (a
   row's `bothHands`), imported and seen in Play (dealt, taken, switching refused, squeezed, a
-  Mannequin woken). Next S4, the squishy cake slice. Polish: friends' arms round a hugged find
+  Mannequin woken). S4a (Nov 17): the squishy cake slice's art and row (Rare, 45: a 5 in rainbow
+  layer slice, rosettes and a cherry; pressed, the cream lines push out of both cut sides on 47
+  bones in bands); not ticked, imported or seen in Play. Next S4b. Polish: friends' arms round a hugged find
   (`Joints`, as `HornView` raises the horn arm); the mega goo ball banked at the gate. Polish: a squishy squeezed
   again before its press is over (the colour ball's fade could then run 8 s).
 - [ ] **F-06 Plush.**

@@ -31,6 +31,7 @@ return {
 	GooBall = { "Squeeze" },
 	ColourGooBall = { "Squeeze" },
 	MegaGooBall = { "Squeeze" },
+	CakeSlice = { "Squeeze" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },

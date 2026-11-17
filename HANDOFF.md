@@ -23,6 +23,8 @@ github.com/drftware/storage); Brix pinned at `7f25310`, NOT on Brix's `origin` y
 - Studio's Device Simulator is left on the Galaxy A16, landscape.
 - Stage only your own paths; the find run commits its own `art/finds/`, `src/shared/Finds/`,
   `src/shared/Tools/Catalog.luau`, and may have hunks in `docs/`: stage yours as a blob then.
+- Find art (third run): S4a done, the squishy cake slice's art and row (cream pushes out of its
+  sides on 47 bones), not ticked, imported or seen in Play. Next: S4b (WAVES.md's Next).
 
 ## Next task: S5-03e3b The limit bar, the lid and friends
 The moment: arranging, a small bar fills as you set finds out (12 of 25), so you see room left

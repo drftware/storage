@@ -2994,9 +2994,416 @@ MEGA_GOO_BALL = kit.Find(
     dust=MG["dust"], seed=MG["seed"], texels=600,
 )
 
+# --- The squishy cake slice (S4) ------------------------------------------------------------------
+# A slow-rise foam layer cake slice of our own (README): a blunt-tipped wedge, four bright sponge
+# layers split by white cream lines on both cut sides, white frosting over the top and round the
+# back, sprinkles on top, three piped rosettes along the back and a glossy cherry on the middle
+# one. One part (a boned find is one mesh, F-05c's trap): the wedge lofted ring by ring from its
+# bottom up its walls, round its top edge and in over its top, the rosettes and the cherry in the
+# same mesh. Its squeeze: a thumb presses the top down and the cream lines push out of both cut
+# sides, on bones in bands up the walls: each band goes down in step with its height (an even
+# squash), and its side bones go down the same and out of their side as well (the bulge), so
+# their shares never fight. The cherry nods on its own bone.
+
+CS = K.CAKE
+CS_CAKE, CS_CREAM, CS_CHERRY, CS_STEM = 40, 41, 42, 43
+CS_L = CS["length"]
+CS_A = math.radians(CS["angle"] / 2)                       # half the wedge's angle
+CS_ZS = [float(z) for z in np.cumsum([0.0] + CS["layers"])]  # each layer's floor, then the top (mm)
+CS_H = CS_ZS[-1]
+CS_RT, CS_RC = CS["tip_r"], CS["corner_r"]
+# from above (mm): the sharp wedge's apex, set back so the slice's length is centred on the pivot;
+# the tip's round's middle; the back corners' rounds' middles (right, left); each cut side's
+# outward normal and its way from the tip to the back; a side's straight run
+CS_AP = Vector((0.0, -(CS_L + CS_RT / math.sin(CS_A) - CS_RT) / 2))
+CS_TC = CS_AP + Vector((0.0, CS_RT / math.sin(CS_A)))
+CS_PHI = CS_A - math.asin(CS_RC / (CS_L - CS_RC))
+CS_BC = [CS_AP + (CS_L - CS_RC) * Vector((s * math.sin(CS_PHI), math.cos(CS_PHI))) for s in (1, -1)]
+CS_N = [Vector((math.cos(CS_A), -math.sin(CS_A))), Vector((-math.cos(CS_A), -math.sin(CS_A)))]
+CS_U = [Vector((math.sin(CS_A), math.cos(CS_A))), Vector((-math.sin(CS_A), math.cos(CS_A)))]
+CS_SIDE = (CS_BC[0] - CS_TC).dot(CS_U[0])
+# the top's middle (a sector's centroid), where its rings are drawn in to
+CS_MID = CS_AP + Vector((0.0, 2 * CS_L * math.sin(CS_A) / (3 * CS_A)))
+
+
+def cs_arc(c, r, a0, a1, n):
+    return [c + r * Vector((math.cos(a0 + (a1 - a0) * k / n), math.sin(a0 + (a1 - a0) * k / n)))
+            for k in range(n)]
+
+
+def cs_outline(d, hi):
+    """The slice seen from above, moved in d mm all round (for a rounded edge): anticlockwise from
+    the tip's middle, up the right side, its back corner, the back's arc, the left corner and
+    down the left side. Every ring has the same count, point for point."""
+    f = 2 if hi else 1
+    nt = nc = 4 * f
+    ns = round(CS_SIDE / CS["side_step"]) * f
+    nb = round(CS_L * 2 * CS_PHI / CS["back_step"]) * f
+    rt, rc, R = CS_RT - d, CS_RC - d, CS_L - d
+    pts = cs_arc(CS_TC, rt, -math.pi / 2, -CS_A, nt)
+    a, b = CS_TC + rt * CS_N[0], CS_BC[0] + rc * CS_N[0]
+    pts += [a + (b - a) * k / ns for k in range(ns)]
+    pts += cs_arc(CS_BC[0], rc, -CS_A, math.pi / 2 - CS_PHI, nc)
+    pts += cs_arc(CS_AP, R, math.pi / 2 - CS_PHI, math.pi / 2 + CS_PHI, nb)
+    pts += cs_arc(CS_BC[1], rc, math.pi / 2 + CS_PHI, math.pi + CS_A, nc)
+    a, b = CS_BC[1] + rc * CS_N[1], CS_TC + rt * CS_N[1]
+    pts += [a + (b - a) * k / ns for k in range(ns)]
+    pts += cs_arc(CS_TC, rt, math.pi + CS_A, 1.5 * math.pi, nt)
+    return pts
+
+
+def cs_rosette_at():
+    """The rosettes' middles from above, along the back, side by side."""
+    R = CS_L - CS["rosette_in"]
+    da = (2 * CS["rosette_r"] + 0.8) / R
+    n = CS["rosettes"]
+    return [CS_AP + R * Vector((math.sin(da * (k - (n - 1) / 2)), math.cos(da * (k - (n - 1) / 2))))
+            for k in range(n)]
+
+
+def cs_rosette(sh, c, hi, turn):
+    """A piped rosette: a star tip's ridges swirling up a dome to a little peak, its foot sunk a
+    millimetre into the frosting."""
+    nr = CS["ridges"]
+    m = nr * (6 if hi else 4)
+    nz = 14 if hi else 7
+    Rr, Hr, tw = CS["rosette_r"], CS["rosette_h"], math.radians(CS["twist"])
+    rings = []
+    for i in range(nz):
+        u = i / nz
+        r0 = Rr * (1 - u ** 1.7) ** 0.55
+        amp = 0.17 * (1 - u) ** 0.5
+        z = CS_H - 1.0 + (Hr + 1.0) * u
+        ring = []
+        for j in range(m):
+            th = 2 * math.pi * j / m
+            r = r0 * (1 + amp * math.cos(nr * (th - tw * u) + turn))
+            ring.append((mm(c.x + r * math.cos(th)), mm(c.y + r * math.sin(th)), mm(z)))
+        rings.append(ring)
+    rings.append([(mm(c.x), mm(c.y), mm(CS_H + Hr))])
+    sh.loft(rings, CS_CREAM, cap_bottom=CS_CREAM)
+
+
+def cs_cherry_at():
+    """The cherry's middle (mm): on the middle rosette, sunk into its peak."""
+    c = cs_rosette_at()[CS["rosettes"] // 2]
+    zc = CS_H + CS["rosette_h"] - CS["cherry_sink"] + CS["cherry_r"] * CS["cherry_squat"]
+    return Vector((c.x, c.y, zc))
+
+
+def cs_cherry(sh, hi):
+    """A glossy cherry, a touch squat, a dimple on top where its stem grows, the stem bending back."""
+    C = cs_cherry_at()
+    r, sq = CS["cherry_r"], CS["cherry_squat"]
+    n = 16 if hi else 8
+    prof = []
+    for k in range(n + 1):
+        t = -math.pi / 2 + math.pi * k / n
+        rr, z = r * math.cos(t), r * sq * math.sin(t)
+        dip = 1.8 * max(0.0, 1 - (rr / (r * 0.45)) ** 2) if t > 0 else 0.0
+        prof.append((mm(rr), mm(z - dip)))
+    M = Matrix.Translation((mm(C.x), mm(C.y), mm(C.z)))
+    sh.lathe(prof, CS_CHERRY, 32 if hi else 16, M=M)
+    p = C + Vector((0.0, 0.0, r * sq - 2.6))
+    pts = [p.copy()]
+    m = 8 if hi else 5
+    for k in range(1, m + 1):
+        a = math.radians(CS["stem_lean"]) * (k / m) ** 1.3
+        p = p + (CS["stem_l"] / m) * Vector((0.0, math.sin(a), math.cos(a)))
+        pts.append(p.copy())
+    sh.tube([tuple(mm(v) for v in q) for q in pts], mm(CS["stem_r"]), CS_STEM, sides=8 if hi else 5)
+
+
+def cs_wall(z0, z1, f):
+    """The wall rings' heights from z0 to z1: ring_cream apart through each cream line and a
+    millimetre and a half past it (where the bulge bends), ring apart elsewhere."""
+    creams = [(CS_ZS[i] - 1.5, CS_ZS[i + 1] + 1.5) for i in range(1, len(CS["layers"]), 2)]
+
+    def step(z):
+        fine = any(a <= z <= b for a, b in creams)
+        return (CS["ring_cream"] if fine else CS["ring"]) / f
+
+    zs = [z0]
+    while zs[-1] + step(zs[-1]) < z1 - 0.3 * step(zs[-1]):
+        zs.append(zs[-1] + step(zs[-1]))
+    zs.append(z1)
+    return zs
+
+
+def cs_body(hi):
+    f = 2 if hi else 1
+    ne = 3 * f
+    fr, tr = CS["foot_r"], CS["top_r"]
+    rings = []
+    for k in range(ne + 1):                                   # the bottom edge, rounded
+        a = math.radians(90 * k / ne)
+        rings.append((fr * (1 - math.sin(a)), fr * (1 - math.cos(a))))
+    for z in cs_wall(fr, CS_H - tr, f)[1:-1]:                # up the walls
+        rings.append((0.0, z))
+    for k in range(2 * ne + 1):                               # the frosting's soft top edge
+        a = math.radians(90 * k / (2 * ne))
+        rings.append((tr * (1 - math.cos(a)), CS_H - tr + tr * math.sin(a)))
+    out = [[(p.x, p.y, z) for p in cs_outline(d, hi)] for d, z in rings]
+    top = out[-1]
+    for t in (0.82, 0.62, 0.42, 0.24, 0.1):                   # in over the top to its middle
+        out.append([(CS_MID.x + (x - CS_MID.x) * t, CS_MID.y + (y - CS_MID.y) * t, CS_H)
+                    for x, y, _ in top])
+    out.append([(CS_MID.x, CS_MID.y, CS_H)])
+    sh = Shape()
+    sh.loft([[(mm(x), mm(y), mm(z)) for x, y, z in r] for r in out], CS_CAKE, cap_bottom=CS_CAKE)
+    for k, c in enumerate(cs_rosette_at()):
+        cs_rosette(sh, c, hi, 1.7 * k)
+    cs_cherry(sh, hi)
+    return sh
+
+
+# The bands up the walls: one at each layer's middle and one where each two meet, the last at the
+# top (the rosettes and the cherry ride it); how far each goes down at the full press (in step with its height) and how far
+# its side bones push out of the cut sides (the cream lines most)
+CS_NODES, CS_OUT = [], []
+for _i, (_a, _b) in enumerate(zip(CS_ZS, CS_ZS[1:])):
+    if _i:
+        CS_NODES.append(_a)
+        CS_OUT.append(CS["bulge_edge"])
+    CS_NODES.append((_a + _b) / 2)
+    CS_OUT.append(CS["bulge_top"] if _b == CS_H else CS["bulge_cream"] if _i % 2 else
+                  CS["bulge_sponge"])
+CS_NODES.append(CS_H)
+CS_DOWN = [CS["press_d"] * z / CS_H for z in CS_NODES]
+CS_CACHE = {}
+
+
+def cs_smooth(u):
+    u = max(0.0, min(1.0, u))
+    return u * u * (3 - 2 * u)
+
+
+def cs_hat(z):
+    """Each band's share of a height: straight-line shares between the bands' heights (below the
+    first, the rest stays with the root), so the squash is even all the way up."""
+    zs = [0.0] + CS_NODES
+    w = [0.0] * len(CS_NODES)
+    if z >= CS_H:
+        w[-1] = 1.0
+        return w
+    for i in range(len(zs) - 1):
+        if z < zs[i + 1]:
+            u = max(0.0, (z - zs[i]) / (zs[i + 1] - zs[i]))
+            if i > 0:
+                w[i - 1] = 1 - u
+            w[i] = u
+            break
+    return w
+
+
+def cs_side(p):
+    """How much of each cut side's bulge (right, left) a point carries (x, y mm from above): all of
+    it on the side's face, fading out 7 mm in, and along the side a hump that is nothing at the
+    tip and at the back corner, fullest a little past half way."""
+    out = []
+    for n, u in zip(CS_N, CS_U):
+        d = p - CS_TC
+        near = 1.0 - cs_smooth((CS_RT - d.dot(n)) / 7.0)
+        q = max(0.0, min(1.0, (d.dot(u) / CS_SIDE - 0.06) / 0.9))
+        out.append(near * math.sin(math.pi * q) ** 0.8)
+    return out
+
+
+def cs_in_cherry(p):
+    C, r = cs_cherry_at(), CS["cherry_r"]
+    bottom = C.z - r * CS["cherry_squat"]
+    return p.z > bottom + 1.2 and math.hypot(p.x - C.x, p.y - C.y) < r + 1.0 + max(0.0, p.z - C.z)
+
+
+def cs_weights(co):
+    key = (round(co.x, 6), round(co.y, 6), round(co.z, 6))
+    w = CS_CACHE.get(key)
+    if w is None:
+        p = Vector(co) * K.STUD_MM
+        hat = cs_hat(p.z)
+        sr, sl = cs_side(p.xy)
+        keep = 0.0 if cs_in_cherry(p) else 1.0
+        w = {"Cherry": 1.0 - keep, "Top": hat[-1] * keep}
+        for i in range(len(CS_NODES) - 1):
+            w[f"Band{i + 1}"] = hat[i] * (1 - sr - sl) * keep
+            w[f"Band{i + 1}R"] = hat[i] * sr * keep
+            w[f"Band{i + 1}L"] = hat[i] * sl * keep
+        CS_CACHE[key] = w
+    return w
+
+
+def cs_bones():
+    def share(name):
+        return lambda co: cs_weights(co)[name]
+    down = Vector((0.0, 0.0, -1.0))
+    bones = []
+    for i, z in enumerate(CS_NODES[:-1]):
+        bones.append(kit.Bone(f"Band{i + 1}", (0.0, mm(CS_MID.y), mm(z)), axis=tuple(down),
+                              weight=share(f"Band{i + 1}")))
+        for s, side in enumerate("RL"):
+            at = CS_TC + CS_RT * CS_N[s] + CS_U[s] * (CS_SIDE * 0.52)
+            way = Vector((CS_N[s].x * CS_OUT[i], CS_N[s].y * CS_OUT[i], -CS_DOWN[i]))
+            bones.append(kit.Bone(f"Band{i + 1}{side}", (mm(at.x), mm(at.y), mm(z)),
+                                  axis=tuple(way.normalized()), weight=share(f"Band{i + 1}{side}")))
+    bones.append(kit.Bone("Top", (0.0, mm(CS_MID.y), mm(CS_H)), axis=tuple(down),
+                          weight=share("Top")))
+    C = cs_cherry_at()
+    foot = (mm(C.x), mm(C.y), mm(C.z - CS["cherry_r"] * CS["cherry_squat"]))
+    # a positive nod leans it back (+Y): about -X by the right hand
+    bones.append(kit.Bone("Cherry", foot, axis=tuple(down), weight=share("Cherry"),
+                          hinge=(-1.0, 0.0, 0.0)))
+    return bones
+
+
+def cs_squeeze():
+    """The tracks from FROST: each band down by its share of the press, its side bones down and
+    out together; the top and the cherry the whole way down, the cherry nodding."""
+    def scaled(v):
+        return [(k[0], k[1] * v, *k[2:]) for k in K.FROST]
+    tracks = []
+    for i in range(len(CS_NODES) - 1):
+        tracks.append((f"Band{i + 1}", "move", scaled(mm(CS_DOWN[i]))))
+        for side in "RL":
+            tracks.append((f"Band{i + 1}{side}", "move",
+                           scaled(mm(math.hypot(CS_OUT[i], CS_DOWN[i])))))
+    tracks.append(("Top", "move", scaled(mm(CS["press_d"]))))
+    tracks.append(("Cherry", "move", scaled(mm(CS["press_d"]))))
+    tracks.append(("Cherry", "turn", list(K.NOD)))
+    return round(K.FROST[-1][0] + 0.4, 2), tracks
+
+
+CS_SPRINKLES = ["#FF5FA2", "#FFD93A", "#3FA9F5", "#4CD07D", "#FF8A3D", "#A66BFF"]
+CS_BOX = (-52.0, -66.0, 52.0, 66.0)    # the sprinkle images' extent from above (mm)
+
+
+def cs_inside(p, margin):
+    """Whether a point from above lies on the top at least `margin` mm in from its edge."""
+    for n in CS_N:
+        if CS_RT - (p - CS_TC).dot(n) < margin:
+            return False
+    if (p - CS_AP).length > CS_L - margin:
+        return False
+    return (p - CS_TC).y >= 0.0 or (p - CS_TC).length <= CS_RT - margin
+
+
+def cs_sprinkle_ink(res=8.0):
+    """The sprinkles from above: little rods with round ends scattered over the top at random
+    turns and lengths, never touching, none near the edge or under the rosettes; a mask a colour."""
+    x0, y0, x1, y1 = CS_BOX
+    W, H = int((x1 - x0) * res), int((y1 - y0) * res)
+    masks = [np.zeros((H, W)) for _ in CS_SPRINKLES]
+    rng = np.random.default_rng(int(CS["seed"]))
+    n = int(CS["sprinkles"] * CS_A * CS_L * CS_L / 100.0)
+    ros, placed, tries = cs_rosette_at(), [], 0
+    hw = CS["sprinkle_w"] / 2
+    while len(placed) < n and tries < n * 60:
+        tries += 1
+        p = Vector((rng.uniform(x0, x1), rng.uniform(y0, y1)))
+        if not cs_inside(p, CS["sprinkle_edge"]):
+            continue
+        if any((p - c).length < CS["rosette_r"] + 1.5 for c in ros):
+            continue
+        if any((p - q).length < CS["sprinkle_l"] * 0.8 for q in placed):
+            continue
+        placed.append(p)
+        a = rng.uniform(0, math.pi)
+        half = CS["sprinkle_l"] / 2 * rng.uniform(0.8, 1.1) - hw
+        e = Vector((math.cos(a), math.sin(a))) * half
+        reach = int(math.ceil((half + hw + 1.0) * res))
+        cx, cy = int((p.x - x0) * res), int((p.y - y0) * res)
+        cols = np.arange(max(0, cx - reach), min(W, cx + reach + 1))
+        rows = np.arange(max(0, cy - reach), min(H, cy + reach + 1))
+        X = ((cols + 0.5) / res + x0 - p.x)[None, :]
+        Y = ((rows + 0.5) / res + y0 - p.y)[:, None]
+        t = np.clip((X * e.x + Y * e.y) / max(1e-6, e.length_squared), -1.0, 1.0)
+        dist = np.hypot(X - t * e.x, Y - t * e.y)
+        rod = np.clip((hw - dist) * res + 0.5, 0.0, 1.0)
+        k = int(rng.integers(len(CS_SPRINKLES)))
+        masks[k][np.ix_(rows, cols)] = np.maximum(masks[k][np.ix_(rows, cols)], rod)
+    return masks
+
+
+def cake_look(L, f):
+    nb = L.nb
+    xm, ym, zm = nb.mul(L.x, K.STUD_MM), nb.mul(L.y, K.STUD_MM), nb.mul(L.z, K.STUD_MM)
+    body = L.k(CS_CAKE)
+    # the layers: each line a hair wavy along its run, as a moulded squishy's are; the sponges
+    # their own bright colours, matt; the cream lines and the frosting a warm white, smoother
+    zw = nb.add(zm, nb.mul(nb.sub(L.noise(18.0, 1, detail=3), 0.5), 1.6))
+    CREAM = hexc("#FFF5E8")
+    C = Coat(L, hexc(CS["sponges"][0]), 0.86)
+    cream = None
+    for i in range(1, len(CS["layers"])):
+        col = CREAM if i % 2 else hexc(CS["sponges"][i // 2])
+        C.paint(nb.ss(zw, CS_ZS[i] - 0.25, CS_ZS[i] + 0.25), col, 0.58 if i % 2 else 0.86)
+        if i % 2:
+            band = nb.band(zw, CS_ZS[i], CS_ZS[i + 1], 0.25)
+            cream = band if cream is None else nb.add(cream, band, clamp=True)
+    # the frosting round the back: as thick as back_frost on the cut sides
+    dy = nb.sub(ym, CS_AP.y)
+    rad = nb.math("SQRT", nb.add(nb.mul(xm, xm), nb.mul(dy, dy)))
+    back = nb.ss(rad, CS_L - CS["back_frost"] - 0.3, CS_L - CS["back_frost"] + 0.2)
+    C.paint(nb.mul(body, back), CREAM, 0.58)
+    frost = nb.add(nb.add(cream, back, clamp=True), nb.ss(zw, CS_ZS[-2] - 0.25, CS_ZS[-2] + 0.25),
+                   clamp=True)
+    sponge = nb.mul(body, nb.inv(frost))
+    # the sponge: an open crumb, its pores a shade deeper, a few bigger pits; mottled lighter
+    pores = nb.ss(L.noise(900.0, 2, detail=2), 0.56, 0.72)
+    pits = nb.ss(L.noise(260.0, 3, detail=2), 0.64, 0.73)
+    crumb = nb.add(pores, nb.mul(pits, 0.9), clamp=True)
+    C.paint(nb.mul(sponge, nb.mul(crumb, 0.22)), hexc("#1A0F0A"), height=-0.5)
+    C.paint(nb.mul(sponge, nb.mul(nb.ss(L.noise(60.0, 4, detail=3), 0.55, 0.8), 0.07)),
+            hexc("#FFFFFF"))
+    # the frosting: smooth, a spatula's soft swirls in it
+    swirl = nb.ss(L.noise(26.0, 5, stretch=(1.0, 1.0, 0.4), detail=2), 0.4, 0.75)
+    C.paint(nb.mul(frost, nb.mul(swirl, 0.6)), height=0.35)
+    C.paint(nb.mul(frost, nb.ss(L.noise(600.0, 6, detail=1), 0.5, 0.75)), height=0.08)
+    # the sprinkles on the top, standing a little proud, a touch glossy
+    top = nb.mul(body, nb.mul(nb.ss(zm, CS_H - 0.6, CS_H - 0.15), nb.ss(L.nz, 0.8, 0.95)))
+    x0, y0, x1, y1 = CS_BOX
+    uv = nb.comb(nb.mul(nb.sub(xm, x0), 1 / (x1 - x0)), nb.mul(nb.sub(ym, y0), 1 / (y1 - y0)), 0.0)
+    for k, mask in enumerate(cs_sprinkle_ink()):
+        t = nb.node("ShaderNodeTexImage", image=bu_image(f"CakeSprinkles{k}", mask),
+                    interpolation="Cubic", extension="CLIP")
+        nb.put(t.inputs["Vector"], uv)
+        C.paint(nb.mul(top, t.outputs["Color"]), hexc(CS_SPRINKLES[k]), 0.4, height=0.9)
+    # the rosettes: piped cream, a touch glossier than the frosting
+    C.paint(L.k(CS_CREAM), CREAM, 0.5)
+    # the cherry: deep glossy red, darker underneath; its stem green going brown at the tip
+    cherry = L.k(CS_CHERRY)
+    cz = cs_cherry_at().z
+    C.paint(cherry, hexc("#C0142C"), 0.16)
+    C.paint(nb.mul(cherry, nb.inv(nb.ss(zm, cz - CS["cherry_r"], cz + 2.0))), hexc("#7E0718"))
+    C.paint(nb.mul(cherry, nb.mul(nb.ss(L.noise(90.0, 7, detail=2), 0.55, 0.75), 0.3)),
+            hexc("#E0283F"))
+    stem = L.k(CS_STEM)
+    C.paint(stem, hexc("#5E7A2A"), 0.7)
+    C.paint(nb.mul(stem, nb.ss(zm, cz + 15.0, cz + 23.0)), hexc("#7A5A30"))
+    C.finish(f.dust, grime=0.2)
+    return C.surface(bump_dist=mm(0.12), bump=0.5)
+
+
+CS_DUR, CS_TRACKS = cs_squeeze()
+
+CAKE_SLICE = kit.Find(
+    "CakeSlice",
+    [kit.Part("Cake", cs_body, bones=cs_bones())],
+    cake_look,
+    motions={
+        # a thumb pressed down on its top and let go: the cake squashes and the cream lines push
+        # out of both cut sides, held; then the slow-rise foam eases back up and the cream draws
+        # in, the cherry nodding on top (the game's soft squish on the press)
+        "Squeeze": dict(duration=CS_DUR, tracks=CS_TRACKS,
+                        focus=(0.0, mm(CS_MID.y - 14.0), mm(CS_H * 0.55)),
+                        distance=0.85, view=(-1.25, -1.5, 0.7), drop=0.0),
+    },
+    # the rosettes and the cherry sink into the cream: shorter rays, or they bake black rims
+    dust=CS["dust"], seed=CS["seed"], texels=900, cage=0.0016,
+)
+
 FINDS = [BUTTER_STICK, STRESS_BALL, MOCHI_BUN, TOAST_SLICE, JUMBO_STRAWBERRY, CAPYBARA,
          PAPER_SQUISHY, GEL_BEAD_BALL, GLITTER_GOO_BALL, GALAXY_GOO_BALL, GOO_BALL,
-         COLOUR_GOO_BALL, MEGA_GOO_BALL]
+         COLOUR_GOO_BALL, MEGA_GOO_BALL, CAKE_SLICE]
 
 if __name__ == "__main__":
     kit.main("Squishies", HERE, FINDS)

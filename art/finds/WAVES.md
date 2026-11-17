@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** S4 (the squishy cake slice: frosting squishes out of the side; from photos to playable
-through PIPELINE.md; S3b's note has the kit's state). V5e2 (a cracked lamp seen drawn and banked) waits for Q1.
+**Next:** S4b (the squishy cake slice: look at its full sheets, tick it, import it and see it in
+Play; S4a's note has where it stands). V5e2 (a cracked lamp seen drawn and banked) waits for Q1.
 V5a to V5f are done and seen in Play (Nov 17), but for V5e2.
 
 ## The third run's plan (owner's brief, Nov 16 night)
@@ -251,6 +251,28 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, S4a (the squishy cake slice's art and row; not ticked, imported or seen in Play;
+  S4b next).** Stopped at the run's 200k context line after the art. `CakeSlice` in
+  `squishies/build.py` (prefix `cs_`/`CS_`, kinds 40 to 43; spec `CAKE`, `FROST`, `NOD`; README
+  section; `Order.luau`): a 5 in rainbow layer cake slice of our own, one boned mesh (the wedge
+  lofted ring by ring, three piped rosettes, a cherry on a curved stem). **The squeeze, on
+  bones in bands:** a band at every layer's middle and wherever two meet goes down in step with
+  its height (an even squash, the shares straight-line between bands, so they never fight); each
+  band's right and left bones go down the same and out of their cut side, along the side as a
+  hump, the cream lines 7 mm, so the cream pushes out as its own bead; the cherry nods on its
+  own bone. Up to four bones a point (two bands, the middle and one side). 47 bones, 9,892
+  triangles, 1024 at 1096 texels a stud. Judged on quick sheets three times (README). **Row:**
+  Rare, 45, floors by its grade's odds, `squeeze(pitched(SQUISH_SOUND, 0.9, 0.8))`; written,
+  not ticked. **Full sheets** rendered last (`textures export renders`), not yet looked at.
+  **For S4b:** look at `art/sheets/cakeslice-front.png`, `-held.png`, `-squeeze.png` (the rims
+  at the rosettes' and cherry's feet should be gone with `cage=0.0016`; if the bake now shows
+  holes there, raise the rosettes' foot to the frosting); tick its Squishies line (`Nov 17,
+  S4b`), `scripts/art.sh rows`, the deal's fingerprint (PIPELINE.md step 5); `git checkout`
+  the set's other FBX if the export touched them, `lune run scripts/upload_art`, import in Edit
+  from a clone of `Shared` (1 part, 47 Bones plus its root), then Play: `DevBox` =
+  `CakeSlice`, take it, squeeze it, see the cream push out (bones bend by `CFrame` from
+  `FindBoneRest` in Play, S3b's trap); fill its A1 row; then Next to L1.
 
 - **Nov 17, S3b (the mega goo ball finished, imported and seen in Play; S4 next).** **Art:**
   the pale loops came from ribbons drawn by the swirl's level alone (wide where it runs flat):
