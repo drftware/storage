@@ -67,7 +67,9 @@ Shop.CounterReach = 9
 -- foot in the lobby's frame, leaning on the front wall (its face at z -156) just past the counter's
 -- door end, turned (degrees about Y) so its glass looks into the room. You see yourself in it as you
 -- walk up to the counter, and from the shop you try a colour on in it.
-Shop.Mirror = table.freeze({ At = table.freeze({ 47.5, 0, -155.2 }), Turn = 180 })
+-- Its x is the counter's button's (Shop.CounterAt), so standing there you're in line with the
+-- glass and see yourself in it (TryOn.inLine; at x 47.5 you were a sliver at its edge).
+Shop.Mirror = table.freeze({ At = table.freeze({ 49.6, 0, -155.2 }), Turn = 180 })
 -- Studs across the floor from a mirror's glass that a card's Try on shows within, and works from
 -- (the server forgives TryOn.Slack more): from anywhere you'd stand at the counter, you're
 -- turned to face the glass and see yourself in it, without walking over.

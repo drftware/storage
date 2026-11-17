@@ -3052,3 +3052,25 @@ verified: a doc page, Studio, or "untested".
   `Triggered` as a real press does (the player must be in its reach and it must be Enabled on
   that screen). Gui buttons still need `user_mouse_input`.
 
+
+## Patching Studio by hand, cheaply (S5-03f4b2, Nov 17)
+
+- **Send hunks, not whole files.** A generator in Python (kept in the session's scratchpad, easy to
+  rewrite) turns `git diff -U0 <base> HEAD -- file` into `{old, new}` string pairs: each hunk's
+  removed lines with one line before (more until the old file has it once), written as quoted
+  strings with `\n` and `\t` escapes so tabs survive being typed, applied bottom up with plain
+  `string.find`, each found exactly once, and the result's length checked against HEAD. Nine
+  modules took about 18 KB this way instead of 132 KB. A module an earlier session pasted in
+  without comments (Studio's TryOn, TryOns, TryOnView were) won't take hunks: send it whole with
+  its comments and blank lines stripped (a third the size; compile it with Lune first).
+- **For a ReplicatedStorage module, make the patched source a new ModuleScript** (Source from the
+  old one's plus the hunks), move the old one's children across and destroy every copy, doubles
+  included. Studio had doubled Shop, Mirror, Home and ShopView, MirrorView; both of a client
+  double in StarterPlayerScripts need patching (`script.X` takes whichever comes first).
+- **A server `PivotTo` on your character doesn't hold in Play**: the client owns it and puts it
+  back. Move yourself from a Client `execute_luau` (`character:PivotTo`), then set the camera.
+- **The counter's Shop prompt pressed with `InputHoldBegin`/`End` didn't open the shop** (the
+  shop opens on the client); tap the HUD's Shop button at (its AbsolutePosition X + 47, Y), the
+  cards' figures the same way. `screen_capture` timed out all session with Studio drawing at 60
+  frames a second; the macOS window capture (above) and a background loop of `screencapture`
+  every 0.25 s, tiled with ffmpeg, caught the try-on's moments.

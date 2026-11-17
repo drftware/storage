@@ -8138,3 +8138,27 @@ look before you buy; the film is the catch's own (D-318).
   the mirror's own button it barely moves.
 - **Passes checks, untested in Studio**: Rojo isn't connected and this session ran out of room
   to patch Studio's nine changed modules by hand; S5-03f4b2 sees it in Play.
+
+## D-320 · 2026-11-17 · The counter's mirror, seen: in line with the glass, and no flash (S5-03f4b2)
+
+Seen in Studio Play on the Galaxy A16 (Rojo still unconnected, Studio patched by hand): the
+counter's mirror leans on the front wall by the counter and you see yourself in it walking up;
+its picture holds the front office's walls, floor and ceiling with no dark gaps. With the shop
+open in front of it, every colour's figure carries its Try on pill (not the plain film's); a tap
+on Pink's pops it, the shop slides away and the counter's mirror shows you wound in pink, then
+the peel and the heap (`docs/art/S5-03f4b-*.jpg`). The eye found two faults, both fixed in code:
+
+- **A flash in the glass at each sound.** A try-on plays six sounds from your body (the zip, the
+  crinkle, the thud, each added and later removed). MirrorView copied your whole body again for
+  each one, and the fresh copy stood unposed where you stand, in front of the picture's camera,
+  for a frame: a black slab across the glass at the peel. Now only a change to how you look (a
+  part, clothes, a face, a mesh: `looksChange`) copies you again, and a copy is posed in the
+  glass before it's shown. Patched into Studio; not yet watched through a peel.
+- **From the counter you were off the glass's edge.** Your reflection is straight out from you
+  along the glass, so you show in a 2.4-stud glass only standing within 1.2 of its middle to
+  either side. The mirror stood at x 47.5, the counter's button at 49.6: from the shop your view
+  turned to the glass and showed a pink sliver at its edge. The mirror now stands at the
+  button's x (`Shop.Mirror`, 49.6; the counter ends 4.8 studs short of it), and the cards' Try on
+  shows only while you're in line with a glass (`TryOn.inLine`, half its width; the server
+  forgives `TryOn.SideSlack` more), never as a refusal. The mirror's own button is unchanged.
+  Passes checks, untested in Studio: S5-03f4b3 sees it.

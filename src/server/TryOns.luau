@@ -159,6 +159,12 @@ function TryOns.new(): Brix.System
 					root.Position,
 					Shop.TryReach + TryOn.Slack
 				)
+				and TryOn.inLine(
+					glass.Position,
+					glass.CFrame.RightVector,
+					root.Position,
+					glass.Size.X / 2 + TryOn.SideSlack
+				)
 			then
 				best, nearest = glass, d
 			end

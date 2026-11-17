@@ -33,6 +33,9 @@ TryOn.Press = "Try on"
 -- Studs from the glass you can press from, and the slack the server forgives a moving player.
 TryOn.Reach = 7
 TryOn.Slack = 3
+-- Studs more to either side of a glass's half width that the server forgives a shop's Try on
+-- (TryOn.inLine), for a body still settling as the press arrives.
+TryOn.SideSlack = 1
 -- The least distance across the floor from the glass's middle that still gives a way to face it.
 TryOn.Closest = 0.5
 -- Presses a second, and a short burst: one try-on runs for seconds anyway.
@@ -93,6 +96,15 @@ function TryOn.before(c: Vector3, n: Vector3, at: Vector3, reach: number): boole
 	local to = at - c
 	local flat = math.sqrt(to.X * to.X + to.Z * to.Z)
 	return flat <= reach and flat >= TryOn.Closest and n:Dot(to) > 0
+end
+
+-- Whether someone at `at` sees themself in a glass whose middle is `c` and whose right (across
+-- its face, level) is `right`: your reflection is straight out from you along the glass, so you
+-- show in it only while you stand within `half` of its middle to either side. Half the glass's
+-- width shows you at least half in it (S5-03f4b2: from the counter, 1.7 studs aside of the
+-- 2.4-wide glass, you were a pink sliver at its edge).
+function TryOn.inLine(c: Vector3, right: Vector3, at: Vector3, half: number): boolean
+	return math.abs((at - c):Dot(right)) <= half
 end
 
 --- Seconds from the film going on until it's gone.

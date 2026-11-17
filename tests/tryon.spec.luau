@@ -126,6 +126,16 @@ do
 	ok(not TryOn.before(c, n, Vector3.new(10, 0, 0.2), 7), "in the glass itself: no way to face it")
 end
 
+-- In line with a glass (S5-03f4b2): you see yourself only standing within half its width of its
+-- middle, to either side; how far out or how high doesn't matter.
+do
+	local c, right = Vector3.new(10, 3, 0), Vector3.new(1, 0, 0)
+	ok(TryOn.inLine(c, right, Vector3.new(10, 0, 8), 1.2), "straight out: yes")
+	ok(TryOn.inLine(c, right, Vector3.new(8.9, 6, 3), 1.2), "a little aside: yes")
+	ok(not TryOn.inLine(c, right, Vector3.new(11.7, 0, 7), 1.2), "1.7 aside: off its edge")
+	ok(not TryOn.inLine(c, right, Vector3.new(7, 0, 2), 1.2), "3 aside the other way: no")
+end
+
 -- The counter's shop and its mirror (S5-03f4b): the counter's button stands just in front of the
 -- counter's face as the lobby is now (it once stood where the old, shorter lobby had it), and
 -- from where you'd stand to press it you're in front of the counter's mirror, within the shop's
@@ -153,9 +163,18 @@ do
 			`standing at the counter {step}: in front of the mirror`
 		)
 	end
+	-- standing at the counter's button you're in line with the glass (2.4 wide), so you see yourself
+	local right = Vector3.new(math.cos(turn), 0, -math.sin(turn))
+	ok(
+		TryOn.inLine(glass, right, Vector3.new(at[1], 0, at[3]), 1.2),
+		"standing at the counter's button: in line with the glass"
+	)
+	-- clear of the counter one way or the other: aside of it, or past its end (frame 3.2 wide, its
+	-- foot and lean 1 deep)
 	local wall = LobbySpecs.Parts.Counter
 	ok(
-		math.abs(m.At[1] - wall.Centre[1]) > wall.Size[1] / 2 + 1.6,
+		math.abs(m.At[1] - wall.Centre[1]) > wall.Size[1] / 2 + 1.6
+			or math.abs(m.At[3] - wall.Centre[3]) > wall.Size[3] / 2 + 1,
 		"the mirror stands clear of the counter"
 	)
 end

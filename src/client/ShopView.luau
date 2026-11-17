@@ -359,7 +359,8 @@ function ShopView.new(): Brix.System
 	end
 
 	-- Whether the cards' Try on shows: you stand in front of a mirror's glass within
-	-- `Shop.TryReach` (as the server checks), with no try-on film on you already.
+	-- `Shop.TryReach` and in line with it, so you'd see yourself (as the server checks), with no
+	-- try-on film on you already.
 	local function nearMirror(): boolean
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart")
@@ -377,6 +378,12 @@ function ShopView.new(): Brix.System
 					glass.CFrame.LookVector,
 					root.Position,
 					Shop.TryReach
+				)
+				and TryOn.inLine(
+					glass.Position,
+					glass.CFrame.RightVector,
+					root.Position,
+					glass.Size.X / 2
 				)
 			then
 				return true

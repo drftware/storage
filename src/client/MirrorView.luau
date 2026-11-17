@@ -68,6 +68,21 @@ type Shown = {
 
 local MirrorView = {}
 
+-- Whether something put on or taken off a body changes how it looks, so the picture copies the
+-- body again: a part (a film, a held find), clothes, a face, a mesh. A sound played from the body
+-- (a try-on's zip, crinkle and thud, footsteps) doesn't: copying the body for each one cost a whole
+-- clone and drew the fresh copy unposed for a frame, a black slab across the glass (S5-03f4b2).
+local function looksChange(d: Instance): boolean
+	return d:IsA("BasePart")
+		or d:IsA("Accessory")
+		or d:IsA("Clothing")
+		or d:IsA("ShirtGraphic")
+		or d:IsA("Decal")
+		or d:IsA("BodyColors")
+		or d:IsA("DataModelMesh")
+		or d:IsA("SurfaceAppearance")
+end
+
 -- A copy for the picture: no physics, no sound, no scripts, nothing but how it looks.
 local function strip(root: Instance)
 	for _, d in root:GetDescendants() do
@@ -385,11 +400,19 @@ function MirrorView.new(): Brix.System
 			table.insert(body.parts, to)
 			table.insert(body.cframes, to.CFrame)
 		end
-		local function dirty()
-			body.dirty = true
+		local function dirty(d: Instance)
+			if looksChange(d) then
+				body.dirty = true
+			end
 		end
 		table.insert(body.connections, character.DescendantAdded:Connect(dirty))
 		table.insert(body.connections, character.DescendantRemoving:Connect(dirty))
+		-- posed in the glass before it's shown: unposed, it stands where you do, in front of the
+		-- picture's camera, until the next draw
+		local c, n = glassFrame(s.glass)
+		for _, pair in body.pairs do
+			pair.to.CFrame = reflected(pair.from.CFrame, c, n, pair.across.CFrame.XVector)
+		end
 		model.Parent = s.world
 		s.bodies[character] = body
 		return body

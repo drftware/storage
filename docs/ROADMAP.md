@@ -2575,9 +2575,15 @@ Done when players watch the results to the end and change their perks between cl
         office's walls (`Lobby.MirrorRoom`); each colour card's figure a Try on near a mirror
         (`TryWrap`, that colour); your view eased to the glass as the film winds. The counter's
         Shop button moved to the counter (it stood at the old lobby's z -35). Passes checks.
-      - [ ] **S5-03f4b2 Seen in Play**: Studio's copies patched (Rojo isn't connected), the
-        mirror and its picture judged at phone size, a card's Try on pressed by the counter,
-        captured; anything the eye finds fixed.
+      - [x] **S5-03f4b2 Seen in Play** (D-320): the mirror by the counter and its picture judged
+        on the A16, the cards' Try on pills, Pink tried on from the shop (`docs/art/S5-03f4b-*`).
+        Fixed what the eye found: a flash in the glass at each try-on sound (MirrorView copied your
+        body again for every sound), and you off the glass's edge from the counter (the mirror
+        moved in line with the counter's button; the cards' Try on only when you'd see yourself).
+      - [ ] **S5-03f4b3 In line, seen**: the two fixes patched into Studio and watched in Play:
+        from the counter facing it, a card's Try on turns you to yourself centred in the glass,
+        and no flash through the peel. Also look at a dark glass for a moment as a mirror comes on
+        screen (seen once as the view swung to it).
   - [ ] **S5-03g Walls, floor, door, name cards and furniture** (ideas 18 to 20), art first:
     - [ ] **S5-03g1 The art**: the paints and floors, door colours, name card styles and the
       counter's furniture as Blender scripts the unit's way (`art/home/`), calm and warm (D-263).
