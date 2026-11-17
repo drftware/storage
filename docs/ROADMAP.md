@@ -2586,8 +2586,28 @@ Done when players watch the results to the end and change their perks between cl
         (`docs/art/S5-03f4b3-*`). The dark glass came once, on the session's first look; the
         polish section has it.
   - [ ] **S5-03g Walls, floor, door, name cards and furniture** (ideas 18 to 20), art first:
-    - [ ] **S5-03g1 The art**: the paints and floors, door colours, name card styles and the
-      counter's furniture as Blender scripts the unit's way (`art/home/`), calm and warm (D-263).
+    - [ ] **S5-03g1 The art**, the unit's way (`art/home/`), calm and warm (D-263), in three. The
+      plan doc's ideas: paint or paper the partitions; lay a floor of boards, carpet, checkerboard
+      tiles or rubber matting; colour your roll-up door, which is what the hall sees while it's
+      down; a name card over the door in stencil (everyone's to start), hand-painted, chalkboard
+      or neon (it glows down the hall; neon for Robux, the rest for cash); furniture at the
+      counter: milk crates, pallets, moving blankets, a folding table, a camp bed, a beanbag, a
+      rug, string lights, a steel shelf, a neon sign.
+      - [ ] **S5-03g1a Floors, papers, paints and door colours**: first see what a home's floor
+        and partitions are now (`art/lobby`'s unit shells, `Lobby.Paint`). The floors as texture
+        sets in `art/home/looks.py` (carpet, checkerboard tiles, rubber matting; boards are the
+        Wood set) and two or three wallpapers; the paints and the door colours as one palette
+        each in `home_spec.py`, written to `Home.Specs` (paint is the part's Color, D-004; the
+        HomeDoor set takes a tint already). A look sheet of one unit in each, judged at phone
+        size.
+      - [ ] **S5-03g1b The name card's four styles**: a plate each over the door (`art/lobby`'s
+        `CARD`, 6 by 1.4 studs): stencilled steel, hand-painted board, chalkboard in a wood
+        frame, neon tubes on a backing that lights the hall's wall; the lettering's font and
+        colour per style. A look sheet from down the hall.
+      - [ ] **S5-03g1c The counter's furniture** (idea 19; the beanbag and rug exist): milk
+        crate, pallet, moving blanket, folding table, camp bed, string lights, steel shelf
+        (powder-coated, like the job box, not the climb's raw steel), neon sign, in
+        `art/home/furnish.py`. Split in two if eight won't fit.
     - [ ] **S5-03g2 Paint and floors on the Arrange screen**, saved per home.
     - [ ] **S5-03g3 Door colours and name card styles**, chosen at home, seen from the lobby.
     - [ ] **S5-03g4 Furniture at the counter in a weekly stock.**

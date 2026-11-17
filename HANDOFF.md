@@ -2,49 +2,48 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-17, session 261 (S5-03f4b2, the counter's mirror seen, D-320) ·
-**Checks:** green in the shared checkout · **Git:** `main`, committed, not pushed (`origin` is
-github.com/drftware/storage); Brix pinned at `7f25310`, NOT on Brix's `origin` yet.
+**Updated:** 2026-11-17, session 262 (S5-03f4b3, the counter's mirror in line, seen; S5-03g1
+split) · **Checks:** green in the shared checkout · **Git:** `main`, committed, not pushed
+(`origin` is github.com/drftware/storage); Brix pinned at `7f25310`, NOT on Brix's `origin` yet.
 
 ## State
 - The home (D-259; the Claude Doc https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools
-  only) is built a ROADMAP piece a session (S5-03), up to f4b2: the counter's mirror, seen.
-- Seen in Play on the A16 (D-320, `docs/art/S5-03f4b-*.jpg`): the mirror by the counter, you in
-  it, its picture whole; the cards' Try on pills; Pink tried on from the shop, the shop sliding
-  away, you wound in pink in the glass, the peel. Two faults fixed in code: MirrorView copied your
-  body again for every sound (a black slab in the glass at the peel; now `looksChange` and a
-  copy posed before it's shown), and from the counter you stood off the glass's edge (the mirror
-  moved to the button's x 49.6, `Shop.Mirror`; the cards' Try on only in line, `TryOn.inLine`).
-- Studio (Rojo still unconnected) holds ae5b614's code, patched by hand, plus MirrorView's fix;
-  NOT the in-line fix (Shop, TryOn, ShopView, TryOns). The doubled Shop, Mirror, Home are single
-  now. Studio's TryOn, TryOns and TryOnView are comment-stripped copies (hunks won't anchor).
-- The test save: one HardHat (on the rail), cash 478. Device Simulator: Galaxy A16, landscape.
-  `screen_capture` timed out all session: capture Studio's window from macOS (STUDIO.md).
+  only) is built a ROADMAP piece a session (S5-03), up to f4b3: the counter's mirror, all seen.
+- Seen in Play on the A16 (D-320, `docs/art/S5-03f4b3-*.jpg`): from the counter facing it, Pink's
+  Try on swings you to the mirror, centred in the glass, wound in pink; no slab through the peel;
+  three studs aside, no Try on pills. A mirror's very first look in a session can show its room
+  dark behind you for about a quarter second: ROADMAP's polish section has it.
+- S5-03g1 is split in ROADMAP into g1a (floors, papers, paints, door colours), g1b (the name
+  card's four styles) and g1c (the counter's furniture), with the plan doc's lists in it: no need
+  to read the doc again for g1.
+- Studio (Rojo still unconnected) holds all of HEAD's code, patched by hand; Shop and TryOn are
+  fresh ModuleScripts (TryOn comment-stripped). Not saved by me. In the A16 simulator a
+  `user_mouse_input` tap lands 47 points left of its aim (STUDIO.md): the Shop button is (310, -29).
+- The test save: one HardHat (on the rail), cash 478, Green worn. Device Simulator: Galaxy A16.
 - Stage only your own paths; the find run commits its own `art/finds/`, `src/shared/Finds/`,
   `tests/stuffdeal.spec.luau`, and may have hunks in `docs/`: stage yours as a blob then.
 
-## Next task: S5-03f4b3 The counter's mirror, in line, seen
-The moment: at the counter you open the shop facing it, tap Pink's figure, and your view swings
-to the mirror beside you with you in the middle of the glass, wound in Pink; no flash as it peels.
-1. Patch Studio from Edit (STUDIO.md "Patching Studio by hand, cheaply"): Shop and TryOn as NEW
-   ModuleScripts (old one's Source plus hunks for Shop; TryOn sent whole, comment-stripped),
-   ShopView (both copies) and TryOns by hunks or whole. `git diff ae5b614 HEAD -- src/`.
-2. Play; from a Client `execute_luau` stand at (49.6, 3, 452.4) facing the counter (+x). Tap the
-   HUD Shop button (its AbsolutePosition X + 47, Y), then Pink's figure the same way, with a
-   background `screencapture` loop running (every 0.25 s; window number from Swift).
-3. Look for: you centred in the glass, wound in pink; no black slab through the peel; the glass
-   not going dark as it swings on screen (seen once in S5-03f4b2: if it does, find why in
-   MirrorView's `pick`, a `PixelsPerStud` change or the still picture, and fix). Stand 3 studs to
-   one side: no pills.
-4. Capture to `docs/art/S5-03f4b3-*.jpg`. Then start S5-03g1 (ROADMAP): the art first.
-**Acceptance:** check green; seen in Play with pictures, or exact steps in OWNER.md.
-**Read first:** ROADMAP S5-03f4b3, S5-03g; D-320; STUDIO.md "Patching Studio by hand, cheaply",
-"When `screen_capture` times out"; `src/client/MirrorView.luau` (`pick`, `addBody`).
+## Next task: S5-03g1a Floors, papers, paints and door colours (art)
+The moment: on the Arrange screen (g2) you pick a floor and a wall, and your unit turns from a
+bare box into somewhere you'd hang out; your door's colour is what the hall sees.
+1. See what a home's floor and partitions are now: `art/lobby/spec.py`'s unit shells,
+   `Lobby.Paint` (`src/shared/Lobby/init.luau`), `art/sheets/lobby-inside.png`.
+2. In `art/home/looks.py`, the unit's way: floor sets for carpet, checkerboard tiles and rubber
+   matting (boards are the Wood set), and two or three wallpapers; calm and warm (D-263), each
+   registered with its size in `build.py`. Keep each set as small as reads at phone size.
+3. In `home_spec.py`: the paints (six to eight, the units' warm white `#E8DFCF` first) and the
+   door colours (six to eight) as palettes, written to `Home.Specs` by `write_luau`.
+4. `scripts/art.sh home`; a look sheet of one unit in each floor and paper
+   (`art/sheets/home-floors.png`), judged at phone size. Update `art/home/README.md`'s tables.
+5. Then g1b (ROADMAP), if context allows.
+**Acceptance:** check green; the sets baked, the sheet judged, the palettes in `Home.Specs`.
+**Read first:** ROADMAP S5-03g1; `art/home/README.md`; `art/home/looks.py` (`plaster`, `wood`,
+`fabric`); `art/home/home_spec.py` (`write_luau`); `art/unit/README.md`; D-263.
 
 ## Queue (next sessions, the owner's ticket order)
-1. S5-03g (split: g1 art first, g2 paint and floors, g3 doors and name cards, g4 furniture), h;
-   S5-03d4 across the trip (unblocked); S5-03a2d the cars' hidden triangles; F-G1b4a2 the
-   headlamp's beam (ROADMAP Step 4); F-G1b4b the hat spent.
+1. S5-03g1b, g1c, then g2 (paint and floors on Arrange), g3 (doors and name cards), g4
+   (furniture at the counter), h; S5-03d4 across the trip (unblocked); S5-03a2d the cars' hidden
+   triangles; F-G1b4a2 the headlamp's beam (ROADMAP Step 4); F-G1b4b the hat spent.
 2. The home's warm fill (D-290): faces turned from the bulb go near black (D-263: warm all round).
 3. F-G1b5 waits for its art. Brix: ENG-25b's two-client run; Driving's stick read needs
    `PlayerModule`, fall back to the camera-turned `MoveDirection` (D-254), built in `../engine`.
@@ -61,7 +60,7 @@ to the mirror beside you with you in the middle of the glass, wound in Pink; no 
    own string: share one constant (a "camera held" attribute) when next in those files.
 9. S5-03d4's climb server must restamp the lights it receives (`Use.leave`), as Climbs does.
 10. The catch's film now comes from `Film.make`: watch a catch in Play once Rojo is connected.
-11. The HUD coin count read 0 in Play with the save's cash at 478: check it counts up.
+11. The HUD coin count read 0 in Play again (S5-03f4b3) with the save's cash at 478: find why.
 
 ## Kickoff for the next agent
 ```text
