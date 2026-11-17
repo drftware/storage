@@ -7403,3 +7403,19 @@ marks (what's new shows until you look).
   (seen in Play), so its tune plays on; a tune already playing on the find is never joined again
   (this also kept the boombox's song from doubling).
 - **Untested by ear:** the shifters' quality at two octaves (OWNER.md, the wind-ups' feel test).
+
+## D-289 The Old lamp holds a Mannequin wherever it lies, for good, with no press (F-G1e5d, Nov 17)
+
+The moment: deep in the climb you find the Old lamp standing lit in a unit, and a Mannequin that
+comes for you stops dead at the edge of its pool; carry it and set it down behind you, and it
+holds one there as long as you like. Found lights hold a Mannequin (D-188, D-234; SCP-173 and
+Five Nights at Freddy's, as the hall lights do), and this one never runs down (the catalog).
+- **Lit is now a row's word, not only a press's stamp.** The lamp has no press (D-229), so it
+  never carries `UseKey` or a stamp. Its game row says `lit=True` (art spec, generated into
+  `Finds/Rows`; the export refuses `lit` with a press), `Use.FoundLit` lists it, and
+  `Use.lampUntil(key, stamp)` gives `math.huge` for it and the press's stamp for every other
+  find. `Keepers`' `lampOf` reads it, naming a never-pressed find by its `Tool` attribute.
+- **Reach and shade are D-234's:** its widest point light (10) times `LightShare`, 8 studs, along
+  the map's clear line. In a hand it still holds nothing (D-234's default, OWNER.md's question).
+- Every screen already shows it lit at rest (its `Switch` motion's first key glows), so nothing
+  changes on screen: only that the Mannequin now obeys what players see.

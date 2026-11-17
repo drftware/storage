@@ -108,6 +108,13 @@ end
 for key, entry in OneMesh do
 	Use.Rows[key] = entry.press
 end
+-- The finds found lit, with no press and never running down (the Old lamp, D-229), by key.
+Use.FoundLit = {} :: { [string]: true }
+for _, row in Rows do
+	if row.judged and row.lit then
+		Use.FoundLit[row.key] = true
+	end
+end
 
 -- Whether `row` is a toy: pressed again once its motions end (`toy`, or the jack's `reset`).
 function Use.toy(row: Row): boolean
@@ -646,6 +653,17 @@ function Use.litUntil(row: Row, stamp: Stamp?): number?
 		return nil
 	end
 	return stamp.at + stamp.left
+end
+
+-- The server clock until which the find `key` lying with `stamp` is lit, or nil: a find found lit
+-- (the Old lamp, F-G1e5d) for good without a press, as every screen shows it at rest; any other by
+-- its press's stamp (`litUntil`); a find with neither is no light.
+function Use.lampUntil(key: string, stamp: Stamp?): number?
+	if Use.FoundLit[key] then
+		return math.huge
+	end
+	local row = Use.Rows[key]
+	return if row then Use.litUntil(row, stamp) else nil
 end
 
 -- How far a found light lying lit holds a Mannequin, along the floor (studs): its widest point

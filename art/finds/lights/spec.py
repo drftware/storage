@@ -927,5 +927,7 @@ GAME = [
         # the catalog's rules: found lit and never runs down, so no press (D-229); loose only, never
         # in the marked box; from floor 25
         loose=True,
+        # lying anywhere it holds a Mannequin in its light for good (D-234, F-G1e5d)
+        lit=True,
     ),
 ]

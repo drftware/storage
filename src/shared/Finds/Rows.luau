@@ -728,6 +728,7 @@ local Rows: { Game.Row } = {
 		worth = 7000,
 		from = 25,
 		loose = true,
+		lit = true,
 		grip = { 0, 0.9, 0 },
 		heft = 0.6,
 		size = "Large",

@@ -93,6 +93,9 @@ export type Row = {
 	from: number?, -- the lowest floor it's dealt on; none: from floor 1
 	-- the catalog says loose only: it stands on the unit's floor, never in the marked box
 	loose: boolean?,
+	-- found lit: on as it's found and never runs down, with no press (the Old lamp, D-229). Lying
+	-- anywhere it holds a Mannequin for good, as a pressed light lying lit does (D-234, F-G1e5d)
+	lit: boolean?,
 	grip: { number }, -- where your hand closes, studs from the middle of its bottom
 	heft: number, -- how heavy it feels in your hand, 0 to 1
 	size: "Small" | "Medium" | "Large", -- where it sits in your view (`Tools.Catalog`'s HOLD)

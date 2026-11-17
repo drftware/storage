@@ -284,6 +284,20 @@ do
 		"lantern: 12 studs of light, cut"
 	)
 	ok(Use.reach(nil) == 0, "no art: no reach")
+	-- the Old lamp is found lit with no press and never runs down (D-229): lying anywhere it holds
+	-- a Mannequin for good, as a cracked glow stick does (F-G1e5d); a pressed light still goes by
+	-- its stamp, and a find that's neither is no light
+	ok(Use.Rows.UnpluggedLamp == nil, "Old lamp: no press")
+	ok(Use.lampUntil("UnpluggedLamp", nil) == math.huge, "Old lamp: lit for good, never pressed")
+	local old = Fixture.kit.UnpluggedLamp
+	ok(old ~= nil and near(Use.reach(old), 10 * Use.LightShare), "Old lamp: its 10 studs, cut")
+	ok(Use.lampUntil("CampLantern", nil) == nil, "lantern: never pressed, it isn't lit")
+	ok(
+		Use.lampUntil("CampLantern", { state = "On", at = 5, left = 90 }) == 95,
+		"lantern: lit by its stamp"
+	)
+	ok(Use.lampUntil("CymbalMonkey", { state = "On", at = 5, left = 20 }) == nil, "monkey: a toy")
+	ok(Use.lampUntil("Nothing", nil) == nil, "no such find: no light")
 	local monkey = Fixture.kit.CymbalMonkey
 	ok(monkey == nil or Use.reach(monkey) == 0, "monkey: no light of its own")
 end

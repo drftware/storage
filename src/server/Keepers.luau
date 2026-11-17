@@ -107,6 +107,7 @@ local Keypad = require(ReplicatedStorage.Shared.Elevator.Keypad)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Keeper = require(ReplicatedStorage.Shared.Keeper)
 local Torch = require(ReplicatedStorage.Shared.Flashlight.Torch)
+local Tools = require(ReplicatedStorage.Shared.Tools)
 local Use = require(ReplicatedStorage.Shared.Finds.Use)
 local KeeperMap = require(ReplicatedStorage.Shared.KeeperMap)
 local KeeperMotion = require(ReplicatedStorage.Shared.KeeperMotion)
@@ -1153,22 +1154,26 @@ function Keepers.new(): Keepers
 	-- Tells every Packrat what lies loose on its floor (S2-06b2): each find Slots has lying on a
 	-- floor, by the floor under it. Once a step at most, after a find or a door changed.
 	-- A find lying loose as a found light (F-G1b3b): the server clock it's lit until
-	-- (`Use.litUntil`) and how far it holds a Mannequin, or nil if it isn't a lit light. A find
-	-- takes presses only in a hand, so its stamp can't change while it lies: it's read as it lands.
+	-- (`Use.lampUntil`: by its press's stamp, or for good if it was found lit, the Old lamp) and
+	-- how far it holds a Mannequin, or nil if it isn't a lit light. A find takes presses only in a
+	-- hand, so its stamp can't change while it lies: it's read as it lands.
 	local function lampOf(model: Model): (number?, number)
-		local key = model:GetAttribute(Use.KeyAttribute)
-		local row = if type(key) == "string" then Use.Rows[key] else nil
-		if type(key) ~= "string" or not row then
+		-- a pressed find's stamp names it; one never pressed (the Old lamp) by its tool's key
+		local key = model:GetAttribute(Use.KeyAttribute) or model:GetAttribute(Tools.KindAttribute)
+		if type(key) ~= "string" then
 			return nil, 0
 		end
-		local till = Use.litUntil(
-			row,
+		local till = Use.lampUntil(
+			key,
 			Use.read(
 				model:GetAttribute(Use.StateAttribute),
 				model:GetAttribute(Use.AtAttribute),
 				model:GetAttribute(Use.LeftAttribute)
 			)
 		)
+		if not till then
+			return nil, 0
+		end
 		local reach = reaches[key]
 		if not reach then
 			reach = Use.reach(Finds.art(key))
