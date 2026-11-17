@@ -7675,3 +7675,28 @@ D-296 and D-297. Precedent: R.E.P.O.'s valuables, whose price drops on screen on
 - **A Studio-only hook** (`ServerStorage.StudioCrack`, a BindableFunction made only in Studio,
   never a remote): Invoke(player, name) cracks one of a find in that player's save as a climb's
   gate does (`Save.chip`), so a cracked sale is tested without a climb.
+
+## D-302 · 2026-11-17 · Taking finds up: the save changes only at a proper end, and never doubles (S5-03d1)
+
+D-251 ("a find taken out stays in the save, marked out, until its climb ends; it's struck off only
+when it was lost on a climb that ended properly") and D-293 (what's out is counted live, never
+stored). Precedents: Minecraft (what you carry drops where you die) and Lethal Company (gear left
+where a crewmate died stays on the moon unless someone carries it back).
+- **No save field for "out"**: a find out of your box is already counted live from the finds
+  themselves (D-293), so the save keeps it all climb and no new save version is needed. A crash or
+  a shutdown settles nothing: you come back to it in your box.
+- **The save changes only at an end the server sees** (`Home.Taken.settle`), written at once:
+  carried aboard by you, nothing (it stays in your hands, at risk on the next floor too); carried
+  aboard by a friend, kept into their save as any find and struck off yours (`Save.lose`) in the
+  same moment, so the two saves hold one between them; never carried aboard and left behind on a
+  floor the climb leaves, or on a climb that's over, struck off yours; back in your box at home,
+  nothing struck.
+- **Leaving mid-climb loses it** (my default, OWNER.md): struck off as you leave, and a friend who
+  carries it aboard keeps it as a find of their own. Otherwise leaving would save a find from a
+  bad climb.
+- **A crack it takes on the climb comes home with it** (D-296): into the save of whoever has it
+  at the end. Losing a whole one leaves your cracked count alone, never above what you own.
+- **Known edge:** the friend's keep and your strike are two saves' writes; a crash between them
+  could leave both holding it. Both are written in the same server step, so the window is tiny.
+- **Split** (context): d1 these rules, pure and tested; d2 wires them in Slots and GatePay; d3
+  sees it in Studio Play.

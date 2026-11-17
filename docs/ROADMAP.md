@@ -2467,11 +2467,24 @@ Done when players watch the results to the end and change their perks between cl
     - Polish for the panel (later): a hairline crack drawn over a card's picture while its next
       one is cracked (D-301); a chip tap you can hear differently per rarity; cards drawn
       only as they scroll into view if a player ever owns 60 kinds or more (ViewportFrames cost).
-  - [ ] **S5-03d Taking finds up** (idea 10, D-251): take any find from the chest into a slot and
-    carry it to the elevator. On the climb it's at risk like any find: stolen, dropped where
-    you're caught or where you leave, lost if it isn't aboard when the elevator leaves. Whoever
-    carries a find aboard takes it home. The save marks a find out until its climb ends and
-    strikes it off only when lost on a climb that ended properly; a crash never costs one.
+  - [ ] **S5-03d Taking finds up** (idea 10, D-251, D-302): take any find from the chest into a
+    slot and carry it to the elevator. On the climb it's at risk like any find: stolen, dropped
+    where you're caught or where you leave, lost if it isn't aboard when the elevator leaves.
+    Whoever carries a find aboard takes it home. The save marks a find out until its climb ends
+    and strikes it off only when lost on a climb that ended properly; a crash never costs one.
+    Split for context:
+    - [x] **S5-03d1 The save's rules, pure** (Nov 17, D-302): `Save.lose` and `Home.Taken.settle`
+      (Aboard: yours stays out, nothing written; a friend's is kept into theirs and struck off
+      yours, one between you; Lost: struck off; Back: its crack comes home); `tests/taken.spec`.
+      Nothing wired yet.
+    - [ ] **S5-03d2 Wired on the server**: Slots and GatePay settle every taken-up find through
+      `Taken.settle` (a friend's carried aboard moves; one left on a floor the climb leaves
+      behind, or on a climb that's over, is lost; its owner leaving mid-climb loses it and frees
+      it for a friend; its owner leaving at home sends it back); a taken-up find can crack on the
+      climb; each owner's save written at once.
+    - [ ] **S5-03d3 Taking finds up, seen**: Studio Play with one player (take a lamp up, carry it
+      aboard: still in your hand; drop it and let the gate shut: struck off; rejoin: the rest
+      kept), captures; the two-player steps go to OWNER.md.
   - [ ] **S5-03e Arrange** (ideas 11 to 15), after a placements system built in Brix (D-252):
     lift, drag, a half-stud grid, quarter turns, Free for everyone, floor, tabletop, wall and
     ceiling spots (a column in the catalog), red where it can't go, Place, Put away, Done, the

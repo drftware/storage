@@ -233,6 +233,30 @@ function Save.chip(data: Data, names: { string })
 	end
 end
 
+-- A find of yours lost on a climb the server ended properly (S5-03d, D-302): one of `name` struck
+-- off what you own (its name gone at none), its cracks never more than what's left. Its book page
+-- stays. Never touches the shelf: one out of your box is never the shelf's (`boxed`). Whether
+-- there was one to strike.
+function Save.lose(data: Data, name: string): boolean
+	local owned = math.floor(data.finds[name] or 0)
+	if owned < 1 then
+		return false
+	end
+	local left = owned - 1
+	if left >= 1 then
+		data.finds[name] = left
+	else
+		data.finds[name] = nil -- the save's counts are one or more
+	end
+	local cracked = math.min(math.floor(data.chipped[name] or 0), left)
+	if cracked >= 1 then
+		data.chipped[name] = cracked
+	else
+		data.chipped[name] = nil
+	end
+	return true
+end
+
 -- Cash earned (S1-12, the coins left at a climb's end): `cash` more in `data.cash`, whole and never
 -- below what it was. Returns the total after.
 function Save.earn(data: Data, cash: number): number

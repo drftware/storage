@@ -72,6 +72,10 @@ nowhere else.
   make one Gold worth five times the find (the item catalog's table), so making one beats selling
   the four a little; cracked lamps go into a Gold first and come out whole; no Secret Golds; a Gold
   is solid gold, so it never cracks when dropped (D-300).
+- [ ] **Decide: leaving mid-climb with a find you took up** (S5-03d1, D-302). My default: it's
+  lost to you, as if you'd been caught, and a friend who carries it aboard keeps it. The other
+  way, leaving would be a free way to save a find from a bad climb. A server crash never costs
+  one either way. Say if you'd rather leaving sent it home.
 - [ ] **Judge: a Gold on your shelf** (S5-03c3b3, D-300). Seen in Studio in your hand (it reads as
   solid gold under the bulb) and in the hand wells, but the shelf's cubby never came clear in a
   capture. Open your job box, pick a Gold card, press Shelf, then stand at the shelf: does it
