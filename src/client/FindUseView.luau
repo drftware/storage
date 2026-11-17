@@ -23,7 +23,9 @@
 	A step with a `hit` sounds on every beat of its motion (the cymbal monkey's every clash), only
 	the beats still to come for a find just come into view. A find set down to play (the toy car)
 	rolls from where it was set down to where the server laid it, its root moved on this screen
-	alone while it lies loose and rolls; it holds where it stopped short if it met a wall.
+	alone while it lies loose and rolls; it holds where it stopped short if it met a wall. A
+	wind-up that `walks` (the chattering teeth) plays on against the wall, held where it stopped
+	over the floor (F-G1e2a).
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -79,6 +81,11 @@ type Entry = {
 	beatNext: number,
 	from: CFrame?, -- where a find set down to play set off (the server's stamp)
 	stop: number?, -- the seconds into its press it stopped short
+	root: string, -- its root part's name: what travels over the floor
+	-- a wind-up stopped by a wall: its frame where it stopped (it plays on, held there), and
+	-- the stamp that frame is for
+	held: Pose.Values?,
+	heldAt: number,
 	connections: { RBXScriptConnection },
 }
 
@@ -124,30 +131,7 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 		local from, stop = m:GetAttribute(Use.FromAttribute), m:GetAttribute(Use.StopAttribute)
 		e.from = if typeof(from) == "CFrame" then from else nil
 		e.stop = if type(stop) == "number" then stop else nil
-	end
-
-	-- The beats of `motion` that sound a `hit` on `part`: every key where its turn is furthest.
-	local function beatsOf(motion: Art.Motion?, part: string): { number }
-		local out: { number } = {}
-		if not motion then
-			return out
-		end
-		for _, track in motion.Tracks do
-			if track.Part == part and track.Channel == "turn" then
-				local far = 0
-				for _, k in track.Keys do
-					if math.abs(k[2]) > math.abs(far) then
-						far = k[2]
-					end
-				end
-				for _, k in track.Keys do
-					if far ~= 0 and math.abs(k[2] - far) < 1e-3 then
-						table.insert(out, k[1])
-					end
-				end
-			end
-		end
-		return out
+		e.held = nil
 	end
 
 	local function add(model: Model, key: string): Entry?
@@ -164,7 +148,7 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 		for _, step in row.on do
 			local hit = step.hit
 			if hit then
-				beats[step.motion] = beatsOf(art.Motions[step.motion], hit.part)
+				beats[step.motion] = Use.beats(art.Motions[step.motion], hit.part, hit.channel)
 			end
 		end
 		local e: Entry = {
@@ -194,6 +178,9 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 			beatNext = 1,
 			from = nil,
 			stop = nil,
+			root = art.Parts[1].Name,
+			held = nil,
+			heldAt = -1,
 			connections = {},
 		}
 		entries[model] = e
@@ -431,7 +418,10 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 			local stamp = stampOf(e)
 			-- a stop short is the server's stamp's: your own press shown early has none
 			local stop = if stamp and stamp == e.stamp then e.stop else nil
-			local elapsed = if stamp then Use.played(now - stamp.at, stop) else 0
+			local elapsed, travel = 0, 0
+			if stamp then
+				elapsed, travel = Use.played(e.row, now - stamp.at, stop)
+			end
 			local f = Use.frame(e.row, stamp, elapsed, e.durations)
 			e.glowing = e.shines
 				and not f.spent
@@ -447,7 +437,9 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 				for _, step in Use.chain(e.row, stamp.state) do
 					total += Use.length(step, e.durations)
 				end
-				if now - stamp.at <= (stop or total) + 0.5 and loose(model) then
+				-- a wind-up stopped by a wall plays on where it stands, bobbing as it goes
+				local ends = if e.row.walks then total else stop or total
+				if now - stamp.at <= ends + 0.5 and loose(model) then
 					from = e.from
 				end
 			end
@@ -465,6 +457,16 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 				false, f.motion, f.t, shownView, e.lights
 			local motion = if f.motion then e.motions[f.motion] else nil
 			local values = if motion then Pose.at(motion, f.t, e.rest) else e.rest
+			-- a wind-up stopped short by a wall: held where it stopped over the floor
+			if stamp and travel < elapsed then
+				if not e.held or e.heldAt ~= stamp.at then
+					local g = Use.frame(e.row, stamp, travel, e.durations)
+					local gm = if g.motion then e.motions[g.motion] else nil
+					e.held = if gm then Pose.at(gm, g.t, e.rest) else e.rest
+					e.heldAt = stamp.at
+				end
+				values = Pose.hold(values, e.held :: Pose.Values, e.root, Use.Holds)
+			end
 			if shownView then
 				Finds.joints(model, e.key, values, model:GetScale(), false)
 				Finds.joints(shownView, e.key, values, shownView:GetScale(), e.lights)

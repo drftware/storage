@@ -33,7 +33,7 @@ SIZES = ["Small", "Medium", "Large"]
 ROW = ["key", "catalog", "name", "grade", "worth", "from_", "loose", "grip", "heft", "size",
        "pickUp", "drop", "verb", "press"]
 NEEDED = ["key", "catalog", "name", "grade", "worth", "grip", "heft", "size", "pickUp", "drop"]
-PRESS = ["verb", "on", "lasts", "out", "off", "reset", "noise", "heard", "lure", "toy", "down"]
+PRESS = ["verb", "on", "lasts", "out", "off", "reset", "noise", "heard", "lure", "toy", "down", "walks"]
 STEP = ["motion", "loop", "sound", "hit"]
 SOUND = ["id", "from", "length", "volume", "pitch"]
 
@@ -116,8 +116,9 @@ def step(where, s):
     if "sound" in out:
         out["sound"] = sound(where, out["sound"])
     if "hit" in out:
-        check_keys(where + ".hit", out["hit"], ["part", "sound"])
-        out["hit"] = {"part": out["hit"]["part"], "sound": sound(where, out["hit"]["sound"])}
+        check_keys(where + ".hit", out["hit"], ["part", "channel", "sound"])
+        out["hit"] = ordered({**out["hit"], "sound": sound(where, out["hit"]["sound"])},
+                             ["part", "channel", "sound"])
     return out
 
 

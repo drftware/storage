@@ -17,8 +17,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - Not seen: any picture. `screen_capture` timed out all session (Studio drew at 15 fps, likely
   hidden behind other windows), so the look at phone size is the owner's (OWNER.md "Walk into
   your home").
-- Find art (third find run): another session is working; its uncommitted files (Finds,
-  FindUses, FindUseView, art/finds, CODEMAP, one OWNER.md and one DECISIONS hunk) are theirs.
+- Find art (third find run): V2a done (D-270): a set-down find lures where it is along its
+  path; the chattering teeth wind, chatter off and draw a Mannequin, seen in Play. Next: V2b,
+  the robot, mouse, bird and carousel (ROADMAP F-G1e2b; `art/finds/WAVES.md`).
 
 ## Next task: S5-03a2c The ground floor weighed for a phone
 The moment: on a cheap phone the calm ground floor runs smooth from the spawn to your home and

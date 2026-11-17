@@ -133,6 +133,20 @@ function Pose.at(motion: Art.Motion, t: number, base: Values): Values
 	return values
 end
 
+-- `values` with `part`'s `channels` taken from `from` (a wind-up stopped by a wall: where it is
+-- over the floor held, its legs and bob playing on, `Use.Holds`). That part's channels are a copy,
+-- so a `values` shared with others (a find's rest) is left alone.
+function Pose.hold(values: Values, from: Values, part: string, channels: { string }): Values
+	local mine = table.clone(values[part] or {})
+	local theirs = from[part] or {}
+	for _, ch in channels do
+		mine[ch] = theirs[ch] or Pose.default(ch)
+	end
+	local out = table.clone(values)
+	out[part] = mine
+	return out
+end
+
 -- How each part moved from where it was drawn, for `values`. Parents come before their children
 -- in a find's Parts (the kit writes them so).
 function Pose.solve(find: Art.Find, values: Values): { [string]: Affine }

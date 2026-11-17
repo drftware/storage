@@ -857,6 +857,7 @@ RIDE = dict(
 # grip in studs from the middle of its bottom (across, up, front to back); heft how heavy it feels
 # (0 to 1); size where it sits in your view; `press` its one press (Finds/Use's row).
 from game import (  # noqa: E402
+    ACROSS_THE_FLOOR,
     CLACK,
     CLANG,
     CLASH,
@@ -867,6 +868,7 @@ from game import (  # noqa: E402
     PLASTIC,
     POP,
     SLAP,
+    SNAP,
     SOFT,
     SQUEAK,
     TIN,
@@ -970,6 +972,24 @@ GAME = [
         size="Small",
         pickUp=pitched(CLACK, 1.75),
         drop=pitched(PLASTIC, 1.9, 0.5),
+        # "They chatter off across the floor; monsters come to look": wound and set down, they
+        # chatter away, a clack each snap, and every monster across the floor keeps turning to
+        # where they are now, every 2 seconds, until they run down; a wall stops them going,
+        # not chattering (R.E.P.O.'s music box; the monkey's lure)
+        press=dict(
+            verb="Wind",
+            on=[
+                dict(motion="Wind", sound=WIND),
+                dict(motion="Chatter",
+                     hit=dict(part="ChatteringTeeth_Base", channel="pitch", sound=SNAP)),
+            ],
+            noise="Chatter",
+            heard=ACROSS_THE_FLOOR,
+            lure=2,
+            toy=True,
+            down=True,
+            walks=True,
+        ),
     ),
     dict(
         key="ToyDrum",

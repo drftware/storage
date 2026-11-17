@@ -89,10 +89,16 @@ CRINKLE = sound("rbxassetid://9125723588", 0, 0.47, 1.6)
 # little higher and soft: the capybara's tiny, happy sigh.
 SIGH = sound("rbxassetid://9117408118", 0, 0.8, 0.7, 1.2)
 
+# The chattering teeth's every snap (F-G1e2): the hard plastic clack (`CLACK`), higher and cut
+# short, as their plastic jaws slam shut seven times a second.
+SNAP = sound("rbxassetid://9119728830", 0.15, 0.2, 0.5, 2.2)
+
 # How far along the halls monsters hear a noisy find (studs: a press's `heard`, its loudness,
 # `Use.loudness`). A press with a noise and no `heard` carries as far as the air horn, 130 (the
 # cymbal monkey, the jack).
 DOWN_THE_HALL = 60  # a squeak you can hear down the hall you're in, no further (the duck)
+# a clatter that carries round a corner or two, under the cymbals (the chattering teeth)
+ACROSS_THE_FLOOR = 90
 
 
 def squeeze(s, noisy=False):

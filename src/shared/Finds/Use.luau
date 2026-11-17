@@ -259,9 +259,59 @@ Use.Tag = "FindUsed"
 Use.FromAttribute = "UseFrom"
 Use.StopAttribute = "UseStop"
 
--- Where a find is in its press as every screen plays it: `elapsed`, held at a stop short.
-function Use.played(elapsed: number, stop: number?): number
-	return if stop then math.min(elapsed, stop) else elapsed
+-- The channels of its root a find that `walks` holds once a wall stops it short (where it is
+-- over the floor and which way it faces): it chatters, clanks or hops on where it stands.
+Use.Holds = { "x", "z", "yaw" }
+
+-- Where a find is in its press as every screen plays it, `elapsed` after its stamp, then how far
+-- its travel over the floor has gone (the seconds of its press whose travel it has reached). At a
+-- stop short the toy car holds the frame it stopped in; a wind-up that `walks` plays on, its
+-- travel held at the stop (`Use.Holds`).
+function Use.played(row: Row, elapsed: number, stop: number?): (number, number)
+	local travel = if stop then math.min(elapsed, stop) else elapsed
+	return if row.walks then elapsed else travel, travel
+end
+
+-- Of a hit's furthest swing, how big a peak must be to beat: the teeth's last weak snaps as they
+-- run down still clack, a wobble as a part settles doesn't.
+Use.BeatShare = 0.15
+
+--[[
+	The beats of `motion` that sound a step's `hit` (seconds into it): each key where `part`'s
+	`channel` (none: its turn) peaks on the side it swings furthest, and at least `Use.BeatShare`
+	of that far (the cymbal monkey's every clash as its arms swing in; the teeth's every snap as
+	the body jolts forward, slowing as the spring runs down). A peak held over keys beats once.
+]]
+function Use.beats(motion: Art.Motion?, part: string, channel: string?): { number }
+	local out: { number } = {}
+	if not motion then
+		return out
+	end
+	local ch = channel or "turn"
+	for _, track in motion.Tracks do
+		if track.Part == part and track.Channel == ch then
+			local keys = track.Keys
+			local far = 0
+			for _, k in keys do
+				if math.abs(k[2]) > math.abs(far) then
+					far = k[2]
+				end
+			end
+			if far == 0 then
+				continue
+			end
+			local side = math.sign(far)
+			for i, k in keys do
+				local v = k[2] * side -- how far out on the far side
+				local before = if i > 1 then keys[i - 1][2] * side else -math.huge
+				local after = if i < #keys then keys[i + 1][2] * side else -math.huge
+				if v >= Use.BeatShare * math.abs(far) and v >= before and v > after then
+					table.insert(out, k[1])
+				end
+			end
+		end
+	end
+	return out
 end
 
 -- `left` as the attribute carries it.

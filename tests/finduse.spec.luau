@@ -5,6 +5,7 @@
 -- what's left of its light; the jack-in-the-box can't be wound mid-tune, is shut before it's
 -- wound again, and its bang comes as its Pop starts.
 local Fixture = require("./fixtures/finds")
+local Pose = require("../src/shared/Finds/Pose")
 local Use = require("../src/shared/Finds/Use")
 
 -- Seconds a lamp stays lit in all (D-250): about a minute, D-188's default for a found light
@@ -400,6 +401,80 @@ do
 	ok(lures.lures[#lures.lures] == 2 and #lures.lures == Use.LuresAtOnce, "wound again: newest")
 	Use.stopLure(lures, 2)
 	ok(not Use.luring(lures, 2) and #lures.lures == Use.LuresAtOnce - 1, "a lure that ends stops")
+end
+
+-- Wind and go (F-G1e2): the chattering teeth set down chatter off on their own path, a clack
+-- each snap, luring as they go; a wall stops their going forward, not their chattering.
+do
+	local teeth = Use.Rows.ChatteringTeeth
+	ok(teeth ~= nil, "teeth: a press")
+	if teeth then
+		ok(teeth.down == true and teeth.walks == true, "teeth: set down, and walk on at a wall")
+		ok(teeth.noise == "Chatter" and teeth.lure ~= nil, "teeth: lure all through the chatter")
+		ok(
+			Use.loudness(teeth) > 60 and Use.loudness(teeth) < Use.LureReach,
+			"teeth: louder than a squeak, under the cymbals"
+		)
+		local frame, travel = Use.played(teeth, 7, 3)
+		ok(frame == 7 and travel == 3, "teeth at a wall: chattering on, held where they stopped")
+		frame, travel = Use.played(teeth, 2, 3)
+		ok(frame == 2 and travel == 2, "teeth before the wall: going")
+		local hit = teeth.on[2].hit
+		local chatter = Fixture.kit.ChatteringTeeth.Motions.Chatter
+		local beats = if hit then Use.beats(chatter, hit.part, hit.channel) else {}
+		-- seven snaps a second for most of the chatter, slowing as the spring gives out
+		ok(#beats >= 40, `teeth: a clack each snap ({#beats})`)
+		local rising = true
+		for i = 2, #beats do
+			rising = rising and beats[i] > beats[i - 1]
+		end
+		ok(
+			rising and beats[1] < 0.5 and beats[#beats] < chatter.Duration,
+			"teeth: snaps in order, through the chatter"
+		)
+	end
+	local car = Use.Rows.DiecastCar
+	if car then
+		local frame, travel = Use.played(car, 7, 3)
+		ok(frame == 3 and travel == 3, "the toy car at a wall: holds the frame it stopped in")
+		frame, travel = Use.played(car, 2, nil)
+		ok(frame == 2 and travel == 2, "the toy car: no wall, no hold")
+	end
+	-- the monkey still clashes on every full swing, as the old rule had it
+	local monkey = Use.Rows.CymbalMonkey
+	local hit = monkey and monkey.on[2].hit
+	if hit then
+		local play = Fixture.kit.CymbalMonkey.Motions.Play
+		local beats = Use.beats(play, hit.part, hit.channel)
+		local set: { [number]: boolean } = {}
+		for _, t in beats do
+			set[t] = true
+		end
+		local full, kept = 0, 0
+		for _, track in play.Tracks do
+			if track.Part == hit.part and track.Channel == "turn" then
+				local far = 0
+				for _, k in track.Keys do
+					if math.abs(k[2]) > math.abs(far) then
+						far = k[2]
+					end
+				end
+				for _, k in track.Keys do
+					if math.abs(k[2] - far) < 1e-3 then
+						full += 1
+						kept += if set[k[1]] then 1 else 0
+					end
+				end
+			end
+		end
+		ok(full > 0 and kept == full, `monkey: every full swing still clashes ({kept}/{full})`)
+	end
+	-- held at a wall: its place over the floor from where it stopped, the rest from now
+	local base = { Root = { x = 1, y = 2, yaw = 30 }, Leg = { turn = 5 } }
+	local held = Pose.hold(base, { Root = { x = 9, z = 4, yaw = 90, y = 7 } }, "Root", Use.Holds)
+	ok(held.Root.x == 9 and held.Root.z == 4 and held.Root.yaw == 90, "held: where it stopped")
+	ok(held.Root.y == 2 and held.Leg.turn == 5, "held: its bob and legs play on")
+	ok(base.Root.x == 1 and base.Root.z == nil, "held: the values it came from left alone")
 end
 
 print(`finduse: {checks - failures}/{checks} passed`)

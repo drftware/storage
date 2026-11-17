@@ -199,6 +199,20 @@ nowhere else.
      "GlitterGooBall", "GalaxyGooBall" and "RubberDuck" (a squeak that wakes a monster down the
      hall). Each squashes about the middle of where your hand holds it.
   4. With two players: one squeezes; the other should see it squash in their friend's hand.
+- [ ] **Try (F-G1e2a, built Nov 17, D-270; see WAVES.md's table for what Studio Play showed, not
+  watched on a phone):** wind the chattering teeth and let them draw a monster away.
+  1. In Studio, set Workspace's `DevFloorNumber` to 1 and press Play. In the command bar (Server),
+     run `workspace:SetAttribute("StandMannequin", true)` (a Mannequin asleep down the hall past
+     the lobby), then `workspace:SetAttribute("GiveFind", "ChatteringTeeth")`.
+  2. Face down a hall and press **Wind**: the teeth sit on the floor in front of you, the key
+     turns with a ratchet, then they chatter off for about ten seconds, a clack each snap,
+     waddling and veering a little. Do the clacks keep time with the jaw, and can you hear them
+     at phone volume?
+  3. Wake the Mannequin, then wind the teeth again and run the other way: it should turn toward
+     the clatter, following the teeth as they go, not you. Is 90 studs (round a corner or two,
+     under the cymbals) the right reach, or should they carry further or less?
+  4. Face a wall from 2 studs and wind them: they walk into it and keep chattering against it,
+     staying put, until they run down.
 - [ ] **Try (F-G1b3b, built Nov 16, D-234; seen in Studio Play, not on a phone):** drop a lit
   lantern to stop the Mannequin.
   1. In Studio, set Workspace's `DevFloorNumber` to 1 and press Play. In the command bar (Server),

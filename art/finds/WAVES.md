@@ -6,10 +6,10 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** V2, wind and go (ROADMAP F-G1e2): the chattering teeth, walking robot, wind-up mouse
-and tin bird travel across the floor, luring as they go; the carousel plays in place. V1 is
-done (Nov 17): all eleven squeeze, squash and sound, measured in Play. P1 is done: a press is
-data (`PIPELINE.md`, read it whole).
+**Next:** V2b, wind and go for the rest (ROADMAP F-G1e2b): the walking robot, wind-up mouse and
+tin bird travel across the floor luring as they go (now only their rows: V2a built the verb),
+the carousel plays in place; see one walk into a wall and chatter on. V2a is done (Nov 17): the
+chattering teeth, seen in Play. P1 is done: a press is data (`PIPELINE.md`, read it whole).
 
 ## The third run's plan (owner's brief, Nov 16 night)
 
@@ -38,7 +38,7 @@ head, belong to the home chain (ROADMAP S5-03, F-G1b4): listed as waiting, not b
 3. **V1 Squeeze** (done Nov 17: V1a loudness, cap, presses and sounds; V1b the squash in hand): the squishies and the rubber duck. Each squashes (its bones or its stretch) and
    squeaks or squelches; the mega goo ball's squelch draws monsters through the cymbal monkey's
    lure (D-233) with its own loudness.
-4. **V2 Wind and go**: the chattering teeth, walking robot, wind-up mouse and tin bird travel
+4. **V2 Wind and go** (V2a done Nov 17: the verb and the teeth; V2b left): the chattering teeth, walking robot, wind-up mouse and tin bird travel
    across the floor on their travel channels, luring as they go and stopping at walls. The
    carousel plays in place.
 5. **V3 One press, one noise**: the kazoo, toy drum, farm-animal spinner, cowboy doll and singing
@@ -100,7 +100,7 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 | Kazoo (`Kazoo`) | A buzzy note · Blow, a noise (Lethal Company's airhorn) | needs data and a loudness (V3) | Common · 2 · floor 1 up ✓ | |
 | Squeaky rubber duck (`RubberDuck`) | A squeak you can hear down the hall · Squeeze, a noise | works: squeezed, squashes in hand (to 0.70), squeaks, heard 60 studs (V1) | Common · 3 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its squeak played; a Mannequin asleep 46 studs off along the halls woke, turned and came to look; no squash seen; Nov 17, V1b: pressed in hand, squashed to 0.70 of its height in hand and in your view's copy, its root still in the hand |
 | Toy siren car (`SirenCar`) | It rolls off, wailing · Push, a noise that moves | the roll is built; the wail heard as it goes and the beacon lighting the hall are missing (V4) | Common · 5 · floor 1 up ✓ | |
-| Wind-up chattering teeth (`ChatteringTeeth`) | They chatter off across the floor; monsters come to look · Wind (R.E.P.O.'s music box; the monkey's lure) | set down and travelling are built, and so is the lure; the lure heard where it is along its path is missing (V2) | Common · 6 · floor 1 up ✓ | |
+| Wind-up chattering teeth (`ChatteringTeeth`) | They chatter off across the floor; monsters come to look · Wind (R.E.P.O.'s music box; the monkey's lure) | works: wound, set down, chatters off, a clack each snap, lures every 2 s where it is along its path, 90 studs (V2a) | Common · 6 · floor 1 up ✓ | Nov 17, V2a: given (GiveFind), pressed: set down, wound (its ratchet), 52 clacks over 9 s, the jaw swinging 0.51 rad, walked 0.93 studs and stopped; a Mannequin asleep 58 studs off heard the lure, woke and walked to the teeth and stood looking there while I was 97 studs away; walking on at a wall not yet seen (V2b) |
 | Toy drum (`ToyDrum`) | Loud · Bang, a noise | needs data and a loudness (V3) | Uncommon · 10 · floor 1 up ✓ | |
 | Wind-up mouse (`WindupMouse`) | It zips off and squeaks wherever it stops · Wind | travelling is built; the squeak heard where it stops is missing (V2) | Uncommon · 12 · floor 1 up ✓ | |
 | Wind-up walking robot (`WalkingRobot`) | It clanks off in a straight line for 15 seconds · Wind | as the teeth (V2) | Uncommon · 15 · floor 1 up ✓ | |
@@ -245,6 +245,29 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, V2a (the travel lure and the teeth; seen in Play; V2b left).** The verb is built
+  (D-270): a noisy `down` find keeps its path on the server while it plays (`FindUses`' `Path`,
+  `where`) and every hearing asks where along it the find is now; a row's `walks` makes a wind-up
+  play on against a wall, its root's x, z and yaw held where it stopped (`Use.Holds`,
+  `Pose.hold`, client and server alike); `Use.played(row, elapsed, stop)` now returns the frame
+  and the travel. A `hit` now beats on every peak of `hit.channel` (none: turn) on its far side,
+  at least `Use.BeatShare` of the furthest (`Use.beats`, moved out of FindUseView). New in
+  `kit/game.py`: `SNAP` (the clack, high and short) and `ACROSS_THE_FLOOR` (90). **For V2b:** each
+  wind-up is now only its row: copy the teeth's (`down`, `walks`, `noise` the travel motion,
+  `lure=2`, a loudness, a `hit` on the part and channel whose peaks are its beats: the robot's
+  footfalls, the bird's whistles at its `HOP_BEATS`, the mouse's squeak at its stall, which may
+  need a channel that peaks only there, its rock onto the nose). The carousel: the monkey's lure
+  in place (no `down`). New sounds (a whistle, a clank, a whirr, a tune) are Pro Sound Effects,
+  found with `search_asset` and measured. **Traps:** the teeth walk only 0.93 studs in ten
+  seconds (the art's real pace), so the path lure only shows with the robot and mouse; the client
+  draws no find more than 90 studs from your camera (`STEP_RANGE`), so stand near to see it move;
+  a press from `Remotes.ToolUse` faces where your camera faces (setting the character's facing
+  from a script didn't hold), so stand with the wall you want ahead along the camera; the
+  Mannequin stood with `StandMannequin` sees you if you stand in its hall, so the lure test
+  teleports you away from a server thread the moment the find is stamped. Output: no errors from
+  this work (the known asset 203785492 warning only). Play started at 23 min of someone else's
+  Play: I waited it out.
 
 - **Nov 17, V1b (the squash in your hand; measured in Play; V1 done).** Two fixes in
   `Finds/init.luau` (D-269). (1) `Finds.joints` now sizes the root too and places the other

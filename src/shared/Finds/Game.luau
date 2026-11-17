@@ -24,9 +24,10 @@ export type Step = {
 	-- `Use.Forever` until the light runs out. None: it plays once through.
 	loop: number?,
 	sound: Sound?, -- heard at the find as the step starts
-	-- a sound at every beat of the step's motion: each key where `part`'s turn is at its furthest
-	-- (the cymbal monkey's every clash, as its arms swing in)
-	hit: { part: string, sound: Sound }?,
+	-- a sound at every beat of the step's motion: each key where `part`'s `channel` (none: its
+	-- turn) peaks on the side it reaches furthest (the cymbal monkey's every clash, as its arms
+	-- swing in; the chattering teeth's every snap, as the body jolts forward), `Use.beats`
+	hit: { part: string, channel: string?, sound: Sound }?,
 }
 
 export type Press = {
@@ -60,6 +61,10 @@ export type Press = {
 	-- set down to play: the press takes it out of your hand and stands it on the floor in front of
 	-- you, and it plays there, travelling as its motion travels (the toy car let go to roll off)
 	down: boolean?,
+	-- a wind-up set down that walks on its spring (the chattering teeth): a wall stops it going
+	-- forward, not its going. It plays on where it stands, chattering against the wall, and its
+	-- lure with it. None: it holds the frame it stopped short in, as the toy car does.
+	walks: boolean?,
 }
 
 export type Row = {

@@ -2691,6 +2691,12 @@ actions themselves and dealing the new finds on floors are later game tickets.
       way), luring as they go: the lure heard where each one is along its path, not where it
       ends; the mouse's squeak where it stops. The tin carousel plays in place on the monkey's
       lure. Each with its loudness.
+      - [x] **F-G1e2a The travel lure and the teeth.** (Nov 17, V2a; D-270) A noisy set-down
+        find heard where it is along its path; a wind-up `walks` on at a wall; a hit on every
+        peak (`Use.beats`); the chattering teeth wound, set down, chattering off with a clack
+        each snap, a Mannequin drawn to them. Seen in Play, except the walk at a wall.
+      - [ ] **F-G1e2b The robot, mouse, bird and carousel.** Their rows (and sounds) on V2a's
+        verb; see one walk into a wall and play on. Ticks F-G1e2.
     - [ ] **F-G1e3 One press, one noise (V3).** The kazoo, toy drum, farm-animal spinner,
       cowboy doll and singing fish: each its motion, its sound and a loudness on the jack's
       one-shot noise. The doll and the fish ship the owner's defaults (the cord's whirr, the

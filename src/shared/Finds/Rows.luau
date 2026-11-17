@@ -1036,6 +1036,41 @@ local Rows: { Game.Row } = {
 			volume = 0.5,
 			pitch = 1.9,
 		},
+		verb = "Wind",
+		press = {
+			verb = "Wind",
+			on = {
+				{
+					motion = "Wind",
+					sound = {
+						id = "rbxassetid://9120219923",
+						from = 0,
+						length = 2.4,
+						volume = 1,
+					},
+				},
+				{
+					motion = "Chatter",
+					hit = {
+						part = "ChatteringTeeth_Base",
+						channel = "pitch",
+						sound = {
+							id = "rbxassetid://9119728830",
+							from = 0.15,
+							length = 0.2,
+							volume = 0.5,
+							pitch = 2.2,
+						},
+					},
+				},
+			},
+			noise = "Chatter",
+			heard = 90,
+			lure = 2,
+			toy = true,
+			down = true,
+			walks = true,
+		},
 	},
 	{
 		key = "ToyDrum",

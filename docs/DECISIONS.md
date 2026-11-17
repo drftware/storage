@@ -6934,3 +6934,29 @@ by the door and the light eases off (Animal Crossing's house lights; a real room
   squeezed lying down; one dropped mid-squash finishes it about its middle where it lies.
 - **Not chosen:** squashing about the grip (the ticket's call: about the middle); moving the
   root (it would drag the player, `Finds.joints`); stopping the Animator (it runs your arms).
+
+## D-270 Wind and go: a set-down find is heard along its path; a wind-up walks on at a wall (F-G1e2a, Nov 17, V2a)
+
+- **Heard where it is, not where it ends.** The server still lays a find set down to play where
+  its travel ends, at once (D-233: that's where it is for picking up and for the Packrat). For a
+  noisy one it now keeps the path it walked (where it set off, its root's place along the press,
+  where it stopped short) while it plays, and every hearing (`heardAt`) asks where along it the
+  find is now (`Use.played`'s travel). The chattering teeth lure from each place they chatter
+  through, every 2 seconds, so a monster follows them across the floor, away from you. A find
+  picked up or moved since it was laid is heard where it is. No server stepping: the place is
+  worked out only when a noise is heard.
+- **A wind-up walks on at a wall** (a row's `walks`). The toy car meets a wall and holds the frame
+  it stopped in. A wind-up meeting a wall stops going forward but not its going, as a real one
+  does: its root's place over the floor and its facing (`Use.Holds`: x, z, yaw) hold where it
+  stopped, while its legs, jaw and bob play on (`Pose.hold`), its clacks sound and its lure goes
+  on. The server lays it where its last frame stands, held at the wall.
+- **A hit beats on every peak, not only the furthest.** `Use.beats` (moved from FindUseView so a
+  spec can hold it): each key where the hit part's channel (`hit.channel`, none: its turn) peaks on
+  the side it swings furthest, at least `Use.BeatShare` (0.15) of that far. The teeth's snaps
+  slow and weaken as the spring runs down and each still clacks; the monkey still clashes on every
+  full swing (the spec checks it).
+- **The teeth:** Wind sets them down in front of you; the key turns (the wind-up recording), then
+  ten seconds of chatter, a clack each snap (the body's forward jolt, `hit` on its pitch), heard
+  `ACROSS_THE_FLOOR` (90 studs, between the duck's squeak and the cymbals) every 2 seconds.
+  Precedent: R.E.P.O.'s music box and the cymbal monkey's lure (the catalog's Wind row). The
+  loudness is a default for the owner to feel (OWNER.md).
