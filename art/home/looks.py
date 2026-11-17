@@ -381,6 +381,60 @@ def door_bar(nb):
     return Channels(col, 1.0, rough, metal, nb.mul(body, nb.mul(br, 0.05)), bump_dist=0.003)
 
 
+# --- the name card's plates (S5-03g1b, D-322): each bake is one plate's whole front ---------------
+BOARD = hexc("#2F4F3F")  # the painted board's fallback; the game paints it (Overlay)
+BOARD_SIZE = (6.3, 1.56)  # home_spec.py CARD_BOARD's face (checked by tests/homecards.spec)
+SLATE_SIZE = (6.0, 1.4)   # home_spec.py CARD_SLATE
+
+
+def plate_xz(nb, size):
+    """The plate's front in studs from its bottom-left corner: x across, z up."""
+    u, v, _ = nb.sep(nb.uv())
+    return nb.mul(u, size[0]), nb.mul(v, size[1])
+
+
+def streaks(nb, x, z, along, across, seed):
+    """Noise drawn out along x: a brush's strokes, a plank's grain."""
+    return (nb.comb(nb.mul(x, along), nb.mul(z, across), seed * 1.7), nb.val(seed))
+
+
+def sign_board(nb):
+    """A sign-writer's board: brushed enamel over the plank (the part's colour, Overlay), its grain
+    just reading through, and a cream pinstripe CARD_STRIPE in from the edge, hand-laid."""
+    from home_spec import CARD_STRIPE
+    w, h = BOARD_SIZE
+    x, z = plate_xz(nb, BOARD_SIZE)
+    brush = nb.noise(streaks(nb, x, z, 0.35, 9.0, 61), 4.0, detail=3, rough=0.55)
+    grain = nb.noise(streaks(nb, x, z, 0.25, 4.0, 62), 6.0, detail=5, rough=0.6, distortion=0.5)
+    wob = nb.noise(streaks(nb, x, z, 1.5, 1.5, 63), 3.0, detail=2)
+    d = nb.mn(nb.mn(x, nb.sub(w, x)), nb.mn(z, nb.sub(h, z)))
+    off = nb.absf(nb.sub(nb.add(d, nb.mul(nb.sub(wob, 0.5), 0.012)), CARD_STRIPE))
+    stripe = nb.ss(off, 0.02, 0.012)
+    st = Stack(nb, BOARD, nb.mr(brush, 0.3, 0.7, 0.34, 0.5), 0.0,
+               nb.add(nb.mul(brush, 0.25), nb.mul(grain, 0.35)))
+    st.over(hexc("#000000"), nb.mr(grain, 0.42, 0.62, 0.0, 0.1))
+    st.over(hexc("#FFFFFF"), nb.mr(brush, 0.6, 0.85, 0.0, 0.05))
+    st.over(hexc("#EFE3C4"), stripe, rough=0.4, height=0.3)
+    col, a = st.result(BOARD)
+    return Channels(col, a, st.rough, 0.0, st.h, bump_dist=0.003, bump_strength=0.5)
+
+
+def chalkboard(nb):
+    """A slate, wiped but never clean: a green-black ground, the ghosts of old words in wide
+    swirls where a duster went over them, and dust settled along its foot."""
+    w, h = SLATE_SIZE
+    x, z = plate_xz(nb, SLATE_SIZE)
+    ground = nb.noise(streaks(nb, x, z, 1.0, 1.0, 71), 9.0, detail=4, rough=0.6)
+    swirl = nb.noise(streaks(nb, x, z, 0.45, 1.2, 72), 1.3, detail=3, distortion=2.4)
+    fine = nb.noise(streaks(nb, x, z, 1.0, 1.0, 73), 60.0, detail=2)
+    slate = nb.mixc(nb.mr(ground, 0.3, 0.7), hexc("#262E2A"), hexc("#323C37"))
+    st = Stack(nb, slate, nb.mr(fine, 0.3, 0.7, 0.82, 0.92), 0.0, nb.mul(fine, 0.1), 1.0)
+    st.over(hexc("#8E948F"), nb.mul(nb.mr(swirl, 0.48, 0.72, 0.0, 0.16), nb.mr(fine, 0.2, 0.8, 0.6, 1.0)))
+    st.over(hexc("#A6AAA4"), nb.mul(nb.mr(z, 0.0, 0.16, 0.3, 0.0), nb.mr(fine, 0.25, 0.75, 0.5, 1.0)))
+    col, _ = st.result(slate)
+    return Channels(col, 1.0, st.rough, 0.0, st.h, bump_dist=0.002, bump_strength=0.4)
+
+
 # set -> (recipe, bake plane in studs, map size); HomeDoor bakes on the door's own parts (build.py)
 LOOKS = {"Plaster": (plaster, (4.0, 4.0), (512, 512)), "Wood": (wood, (8.0, 8.0), (1024, 1024)),
          "Leaf": (leaf, (2.0, 4.0), (512, 1024)), "Fabric": (fabric, (2.0, 2.0), (512, 512)),
@@ -390,7 +444,9 @@ LOOKS = {"Plaster": (plaster, (4.0, 4.0), (512, 512)), "Wood": (wood, (8.0, 8.0)
          "FloorMatting": (matting, (8.0, 8.0), (1024, 1024)),
          "PaperStripes": (stripes, (4.0, 4.0), (512, 512)),
          "PaperLeaves": (leaves, (4.0, 4.0), (1024, 1024)),
-         "PaperDaisies": (daisies, (4.0, 4.0), (512, 512))}
+         "PaperDaisies": (daisies, (4.0, 4.0), (512, 512)),
+         "SignBoard": (sign_board, BOARD_SIZE, (1024, 256)),
+         "Chalkboard": (chalkboard, SLATE_SIZE, (1024, 256))}
 SIZES = {"HomeDoor": (1024, 1024)}
 TINTED = {"Plaster", "Fabric", "HomeDoor", "FloorCarpet", "FloorTiles", "FloorMatting",
-          "PaperStripes", "PaperLeaves", "PaperDaisies"}  # ColorMap alpha = overlay: the part's colour
+          "PaperStripes", "PaperLeaves", "PaperDaisies", "SignBoard"}  # ColorMap alpha = overlay: the part's colour

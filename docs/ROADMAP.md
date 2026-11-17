@@ -2599,20 +2599,26 @@ Done when players watch the results to the end and change their perks between cl
         `Home.Specs.Looks` (`tests/homelooks.spec`). A look's colour is the part's (Overlay), so a
         checker's squares, a carpet, a mat's rubber and a paper's ground take what you pick.
         Judged at phone size on `art/sheets/home-floors.png` (eight units, the doors on the teal).
-      - [ ] **S5-03g1b The name card's four styles**: a plate each over the door (`art/lobby`'s
-        `CARD`, 6 by 1.4 studs): stencilled steel, hand-painted board, chalkboard in a wood
-        frame, neon tubes on a backing that lights the hall's wall; the lettering's font and
-        colour per style. A look sheet from down the hall.
-      - [ ] **S5-03g1c The counter's furniture** (idea 19; the beanbag and rug exist): milk
-        crate, pallet, moving blanket, folding table, camp bed, string lights, steel shelf
-        (powder-coated, like the job box, not the climb's raw steel), neon sign, in
-        `art/home/furnish.py`. Split in two if eight won't fit.
+      - [x] **S5-03g1b The name card's four styles** (D-322): stencilled steel, a painted board, a
+        chalkboard in oak and pink neon that lights the wall, each its own parts in Home.fbx
+        (`art/home/cards.py`), lettered in Studio's own fonts; `Home.Specs.Cards`; the sheet
+        `art/sheets/home-cards.png` from the floor, down the hall and across it. Not uploaded.
+      - [ ] **S5-03g1c The counter's furniture** (idea 19; the beanbag and rug exist), in
+        `art/home/furnish.py`, split in two (S5-03g1b):
+        - [ ] **S5-03g1c1** milk crate, pallet, folding table, steel shelf (powder-coated, like the
+          job box, not the climb's raw steel).
+        - [ ] **S5-03g1c2** moving blanket, camp bed, string lights, neon sign (the name card's
+          tube, `cards.py`'s `rounded` and `neon_path`).
     - [ ] **S5-03g2 Paint and floors on the Arrange screen**, saved per home. The art first: one
       floor panel (UVs in studs over `Looks.FloorTile`) and one wall panel (over `PaperTile`) per
       partition, back and front wall, in `art/home`; a swatch part per set in Home.fbx carries its
       SurfaceAppearance into Studio, and the game clones it onto the panels (game scripts can't
       write a SurfaceAppearance's maps, STUDIO.md); the lobby's merged unit walls stay under them.
-    - [ ] **S5-03g3 Door colours and name card styles**, chosen at home, seen from the lobby.
+    - [ ] **S5-03g3 Door colours and name card styles**, chosen at home, seen from the lobby. The
+      chosen style's parts (`Specs.Cards`) replace the lobby's plain card plate over each door
+      (`art/lobby/build.py signs()` drops its unit cards); the name is written on `Face` in its
+      `Font` (Font.fromName) and `Ink`; the neon's tube goes Neon in `Glow`, its name gets a glow
+      stroke and a light (`CardLight`) on the wall; the spray (Holding.Card) still lands the name.
     - [ ] **S5-03g4 Furniture at the counter in a weekly stock.**
   - [ ] **S5-03h Four sizes and the walls that move** (ideas 30, 31): small to start, medium for
     cash, large and XL for Robux; the partitions grind back and the door widens, everything set

@@ -13,6 +13,18 @@ export type Placed = { Kind: string, At: Vec, Turn: number }
 export type Swatch = { Id: string, Colour: string }
 export type Floor = { Id: string, Set: string, Colours: { Swatch } }
 export type Paper = { Id: string, Set: string }
+export type CardStyle = {
+	Id: string,
+	Sold: string,
+	Parts: { string },
+	Face: Vec,
+	FaceSize: Vec,
+	Font: string,
+	Weight: string,
+	Ink: string,
+	Paint: string?,
+	Glow: string?,
+}
 
 local Specs = {
 	DoorSize = "M", -- the climb's door rig it's built round
@@ -155,6 +167,58 @@ local Specs = {
 			{ Id = "Daisies", Set = "PaperDaisies" },
 		} :: { Paper },
 	},
+	-- The name card's styles (D-322): each a plate over the door on one origin, the card's
+	-- middle on the wall's face, its front toward -Z. Face: the writing's middle in that
+	-- frame; FaceSize, across and tall. Font: a family for Font.fromName and its weight
+	-- (Enum.FontWeight). Ink: the lettering's colour; Paint, the plate's (nil: baked); Glow,
+	-- the neon's tube and light colour. Sold: Starter (every home), Cash or Robux.
+	Cards = {
+		{
+			Id = "Stencil",
+			Sold = "Starter",
+			Parts = { "CardSteel", "CardSteelBolts" },
+			Face = { -0.000, 0.000, -0.185 },
+			FaceSize = { 5.620, 1.060 },
+			Font = "Oswald",
+			Weight = "Bold",
+			Ink = "#EFE7D6",
+			Paint = "#34414F",
+		},
+		{
+			Id = "Painted",
+			Sold = "Cash",
+			Parts = { "CardBoard", "CardBoardScrews" },
+			Face = { -0.000, 0.000, -0.205 },
+			FaceSize = { 5.780, 1.180 },
+			Font = "LuckiestGuy",
+			Weight = "Regular",
+			Ink = "#F2E6C9",
+			Paint = "#2F4F3F",
+		},
+		{
+			Id = "Chalk",
+			Sold = "Cash",
+			Parts = { "CardSlate", "CardChalkFrame", "CardChalkStick" },
+			Face = { -0.000, 0.000, -0.105 },
+			FaceSize = { 5.700, 1.200 },
+			Font = "AmaticSC",
+			Weight = "Bold",
+			Ink = "#F1F0E8",
+		},
+		{
+			Id = "Neon",
+			Sold = "Robux",
+			Parts = { "CardNeonBack", "CardNeonTube" },
+			Face = { -0.000, 0.000, -0.260 },
+			FaceSize = { 5.680, 1.080 },
+			Font = "Nunito",
+			Weight = "Regular",
+			Ink = "#FFF0F6",
+			Paint = "#16171C",
+			Glow = "#FF4F9E",
+		},
+	} :: { CardStyle },
+	CardLight = { Range = 9.0, Brightness = 1.40 },
 	-- Each MeshPart's box as imported (its centre is its CFrame in its frame).
 	Parts = {
 		Beanbag = {
@@ -171,6 +235,51 @@ local Specs = {
 			Size = { 8.640, 0.501, 0.497 },
 			Centre = { -0.000, 0.310, 0.544 },
 			Triangles = 912,
+		},
+		CardBoard = {
+			Size = { 6.300, 1.560, 0.200 },
+			Centre = { -0.000, 0.000, -0.100 },
+			Triangles = 68,
+		},
+		CardBoardScrews = {
+			Size = { 6.255, 0.068, 0.012 },
+			Centre = { -0.000, 0.000, -0.206 },
+			Triangles = 72,
+		},
+		CardChalkFrame = {
+			Size = { 6.400, 1.830, 0.296 },
+			Centre = { -0.000, -0.015, -0.148 },
+			Triangles = 152,
+		},
+		CardChalkStick = {
+			Size = { 0.420, 0.064, 0.064 },
+			Centre = { -1.900, -0.828, -0.236 },
+			Triangles = 28,
+		},
+		CardNeonBack = {
+			Size = { 6.400, 1.700, 0.260 },
+			Centre = { -0.000, 0.000, -0.130 },
+			Triangles = 588,
+		},
+		CardNeonTube = {
+			Size = { 6.170, 1.470, 0.135 },
+			Centre = { -0.000, -0.000, -0.238 },
+			Triangles = 444,
+		},
+		CardSlate = {
+			Size = { 6.120, 1.520, 0.050 },
+			Centre = { -0.000, 0.000, -0.075 },
+			Triangles = 12,
+		},
+		CardSteel = {
+			Size = { 6.000, 1.400, 0.146 },
+			Centre = { -0.000, 0.000, -0.123 },
+			Triangles = 396,
+		},
+		CardSteelBolts = {
+			Size = { 5.946, 1.350, 0.204 },
+			Centre = { -0.000, 0.000, -0.102 },
+			Triangles = 256,
 		},
 		Casing = {
 			Size = { 12.000, 10.020, 0.600 },

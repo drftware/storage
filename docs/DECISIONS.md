@@ -8191,3 +8191,31 @@ out; your door's colour is what the hall sees.
 - **Ids are what a home's save keeps**: never rename one; add looks at the ends.
 - My defaults, all waiting on the owner (`OWNER.md`): the looks, their colours and their order.
 
+
+## D-322 · 2026-11-17 · The name card's four styles: stencilled steel, a painted board, chalk and neon (S5-03g1b)
+
+Idea 20, the unit's way. The moment: walking down the hall your friends' names are stencilled,
+painted, chalked and glowing over their doors, and yours is the one you chose. Precedent: Bloxburg's
+and Adopt Me's house signs and Animal Crossing's mailbox styles, each home's front its own.
+- **Four plates, each its own parts on one origin** (the card's middle on the wall's face, its
+  front out): `CardSteel` and its bolts (powder-coated steel, the job box's Plaster stipple, not the
+  climb's raw steel), `CardBoard` and two brass screws (a sign-writer's board, the new SignBoard
+  bake: brushed paint over the grain, a cream pinstripe), `CardSlate`, `CardChalkFrame`,
+  `CardChalkStick` (the Chalkboard bake in a moulded oak frame with a chalk ledge), `CardNeonBack`
+  and `CardNeonTube` (a glass tube round a dark backing; the game makes it Neon).
+- **Every plate is dark** because the cards hang on the hall's cream upper wall (Lobby.Paint.Cream):
+  a slate-blue steel with cream stencil letters, a forest-green board with cream lettering, the
+  green-black slate with chalk, the near-black backing under pink neon.
+- **Lettering in Studio's own fonts** (families in Studio's `content/fonts/families`, Font.fromName):
+  Oswald Bold stencilled, Luckiest Guy painted, Patrick Hand chalked (Amatic SC was chalkier but
+  its thin strokes vanished from across the floor), Nunito for the neon's tube lettering with its
+  glow. The sheet renders them from Studio's own font files, so what it shows is what the game draws.
+- **The neon lights the wall round it**: a light in the glow colour just in front of the plate
+  (`Specs.CardLight`, range 9), the one style that's a light source. Seen on the sheet as a pink
+  wash on the cream wall and the ceiling; it's what you see first from across the floor.
+- **Who has which**: stencil every home's to start, painted and chalk for cash, neon for Robux (the
+  ticket's split). The prices and the colours wait on the owner (`OWNER.md`).
+- The plates sit inside 10.3 to 13.6 studs up (the cap at 10, the deck at 14); the writing faces
+  are `Specs.Cards[i].Face` and `FaceSize`. `tests/homecards.spec.luau` holds it.
+- Not in Studio yet: g3 uploads Home.fbx with them, puts the chosen style over each door in place
+  of the lobby's plain plate (the lobby's `signs()` card plates go then) and writes the name on it.

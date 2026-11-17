@@ -3080,3 +3080,14 @@ verified: a doc page, Studio, or "untested".
   x 310, y -29; Y needs no change); hook `UserInputService.TouchStarted` once to read where a tap
   really landed. Back-to-back `screencapture` with no sleep takes about 0.1 s a frame; crop the
   phone at 660x310 from (360, 362) of Studio's 1386x972 window.
+
+## Fonts Studio ships (S5-03g1b, Nov 17)
+
+- Studio's fonts live in `/Applications/RobloxStudio.app/Contents/Resources/content/fonts`, each
+  family a JSON under `families/` naming its faces. `Font.fromName("Oswald", Enum.FontWeight.Bold)`
+  is `Font.new("rbxasset://fonts/families/Oswald.json", Bold)`. A face whose `assetId` is
+  `rbxasset://fonts/...` is on disk; one that's `rbxassetid://...` downloads on first use (Nunito
+  Bold, Kalam Bold, Oswald's middle weights), so the name cards use only on-disk faces: Oswald Bold,
+  LuckiestGuy, PatrickHand, Nunito Regular. Blender renders them from the same files (`font_file`
+  in `art/home/build.py`), so a look sheet shows the game's own letters.
+- There's no stencil family: the stencil card is Oswald Bold on the plate.

@@ -1,6 +1,6 @@
 """Build the home's kit, headless (art/home/README.md).
 
-    blender -b --factory-startup -P art/home/build.py -- --stage textures|door|export|looks
+    blender -b --factory-startup -P art/home/build.py -- --stage textures|door|export|looks|cards
                                                           [--sets FloorTiles,PaperLeaves]
 
 Stages:
@@ -28,6 +28,7 @@ sys.path.insert(0, HERE)
 import bpy  # noqa: E402
 
 import bake  # noqa: E402
+import cards  # noqa: E402
 import front  # noqa: E402
 import furnish  # noqa: E402
 import home_spec as K  # noqa: E402
@@ -68,7 +69,7 @@ def door_unit(uk, coll):
 
 def material(name, set_name, for_export):
     if set_name is None:
-        return render.simple(f"plain_{name}", front.PLAIN[name], 0.4)
+        return render.simple(f"plain_{name}", front.PLAIN.get(name) or cards.PLAIN_COLOURS[name], 0.4)
     return bake.textured(set_name, TEX if set_name in SETS else UNIT_TEX, for_export=for_export)
 
 
@@ -76,6 +77,7 @@ def texsets():
     """Every exported part's texture set (None: plain, the game sets its Material and Color)."""
     out = {n: front.TEXSET.get(n) for n in front.BUILDERS}
     out.update(furnish.TEXSET)
+    out.update(cards.TEXSET)
     out.update({n: "HomeDoor" for n in front.DOOR_PARTS})
     return out
 
@@ -130,7 +132,8 @@ def stage_export():
                 bpy.data.meshes.remove(me)
     coll = bpy.context.scene.collection
     objs = {n: unit.objs[n] for n in front.DOOR_PARTS}
-    for name, mesh in list(front.meshes(s).items()) + list(furnish.meshes().items()):
+    for name, mesh in list(front.meshes(s).items()) + list(furnish.meshes().items()) + \
+            list(cards.meshes().items()):
         objs[name] = mesh.build(coll)
     sets = texsets()
     rows = {}
@@ -159,7 +162,7 @@ def stage_export():
     plate, toggle = front.switch_at(s)
     lua = os.path.join(K.ROOT, "src", "shared", "Home", "Specs.luau")
     os.makedirs(os.path.dirname(lua), exist_ok=True)
-    K.write_luau(lua, rows, plate, toggle, front.lamp_at(s))
+    K.write_luau(lua, rows, plate, toggle, front.lamp_at(s), {k: list(v) for k, v in cards.STYLES.items()})
 
 
 # --- the looks' sheet (S5-03g1a, D-321) ------------------------------------------------------------
@@ -294,8 +297,162 @@ def stage_looks():
     print("SHEET", out)
 
 
+# --- the name cards' sheet (S5-03g1b, D-322) ------------------------------------------------------
+# Four homes along the hall, a style over each door, lettered in the game's own fonts (Studio's
+# font files, as Font.fromName finds them): a close-up of each from the floor, then the four from
+# down the hall and from across the floor. art/sheets/home-cards.png, judged at phone size.
+FONTS = "/Applications/RobloxStudio.app/Contents/Resources/content/fonts"
+CARD_NAMES = ("MAPLEFOX", "SKYE", "JUNIPER_88", "NOVA")
+CARD_XS = (-30.0, -10.0, 10.0, 30.0)  # the four homes' middles along the wall (the slots' pitch)
+CARD_Z = 11.4                         # the card's middle (art/lobby/spec.py CARD)
+HALL_DOOR = (8.4, 8.4)                # a doorway: across, tall
+
+
+def font_file(family, weight):
+    """The font file Studio draws `family` at `weight` with (its families JSON)."""
+    import json
+    want = {"Regular": 400, "Medium": 500, "SemiBold": 600, "Bold": 700}[weight]
+    with open(os.path.join(FONTS, "families", f"{family}.json")) as f:
+        faces = json.load(f)["faces"]
+    face = next(x for x in faces if x["weight"] == want and x["style"] == "normal")
+    assert face["assetId"].startswith("rbxasset://fonts/"), f"{family} {weight} isn't on disk"
+    return os.path.join(FONTS, face["assetId"][len("rbxasset://fonts/"):])
+
+
+def lettering(body, family, weight, at, size, mat, coll, offset=0.0):
+    """Words fitted to a face (TextScaled's way: as big as fits), centred, facing -y."""
+    import math
+    from mathutils import Matrix
+    cu = bpy.data.curves.new("card_words", "FONT")
+    cu.body = body
+    cu.font = bpy.data.fonts.load(font_file(family, weight), check_existing=True)
+    cu.align_x, cu.align_y = "CENTER", "CENTER"
+    cu.size, cu.offset = 1.0, offset
+    ob = bpy.data.objects.new("card_words", cu)
+    coll.objects.link(ob)
+    ob.data.materials.append(mat)
+    bpy.context.view_layer.update()
+    w, h = ob.dimensions.x, ob.dimensions.y
+    k = min(size[0] / max(w, 1e-6), size[1] / max(h, 1e-6))
+    ob.matrix_world = (Matrix.Translation(at) @ Matrix.Rotation(math.pi / 2, 4, "X")
+                       @ Matrix.Scale(k, 4))
+    return ob
+
+
+def hall(coll):
+    """The hall's wall with four doorways: sage below the oak rail at 10, cream above to the deck,
+    oak casings, the doors down in four of the home's colours, an oak floor and a white ceiling."""
+    sage = render.simple("hall_sage", render.hexc("#93A68F"), 0.85)
+    cream = render.simple("hall_cream", render.hexc("#E6DDCC"), 0.85)
+    oak = render.simple("hall_oak", render.hexc("#B98A5E"), 0.5)
+    floor = render.simple("hall_floor", render.hexc("#9C7553"), 0.45)
+    ceil = render.emissive("hall_ceil", render.hexc("#F5F2EB"), 0.6)  # lit by lamps not drawn
+    x0, x1 = -70.0, 70.0
+    dw, dh = HALL_DOOR
+    box = lambda n, lo, hi, m: render.box_obj(n, lo, hi, m, coll)
+    edges = [x0] + [e for x in CARD_XS for e in (x - dw / 2, x + dw / 2)] + [x1]
+    for i in range(0, len(edges), 2):
+        box("hall_low", (edges[i], 0.0, 0.0), (edges[i + 1], 0.4, 10.0), sage)
+    for k, x in enumerate(CARD_XS):
+        box("hall_lintel", (x - dw / 2, 0.0, dh), (x + dw / 2, 0.4, 10.0), sage)
+        door = render.simple(f"hall_door{k}", render.hexc(K.DOORS[k][1]), 0.45)
+        groove = render.simple(f"hall_groove{k}", tuple(c * 0.6 for c in render.hexc(K.DOORS[k][1])), 0.6)
+        box("hall_door", (x - dw / 2, 0.3, 0.0), (x + dw / 2, 0.4, dh), door)
+        z = 0.55
+        while z < dh:
+            box("hall_slat", (x - dw / 2, 0.27, z), (x + dw / 2, 0.3, z + 0.05), groove)
+            z += 0.55
+        for sx in (-1, 1):
+            a, b = sorted((x + sx * dw / 2, x + sx * (dw / 2 + 0.5)))
+            box("hall_casing", (a, -0.12, 0.0), (b, 0.0, dh + 0.5), oak)
+        box("hall_head", (x - dw / 2 - 0.5, -0.12, dh), (x + dw / 2 + 0.5, 0.0, dh + 0.5), oak)
+    box("hall_up", (x0, 0.0, 10.0), (x1, 0.4, 14.0), cream)
+    box("hall_rail", (x0, -0.12, 10.0 - 0.16), (x1, 0.0, 10.0 + 0.16), oak)
+    box("hall_base", (x0, -0.07, 0.0), (x1, 0.0, 0.55), oak)
+    box("hall_floor", (x0, -80.0, -0.2), (x1, 0.4, 0.0), floor)
+    box("hall_ceiling", (x0, -80.0, 14.0), (x1, 0.4, 14.2), ceil)
+    for sx, m in ((-1, sage), (1, sage)):  # the hall's two ends, so nothing shows past them
+        a, b = sorted((sx * 70.0, sx * 70.4))
+        box("hall_end", (a, -80.0, 0.0), (b, 0.4, 14.0), m)
+    for x in (-40.0, -20.0, 0.0, 20.0, 40.0):
+        for y in (-9.0, -30.0):
+            ld = bpy.data.lights.new("hall_lamp", "AREA")
+            ld.shape, ld.size, ld.energy = "DISK", 2.2, 900.0
+            ld.color = (1.0, 0.88, 0.72)
+            lo = bpy.data.objects.new("hall_lamp", ld)
+            lo.location = (x, y, 13.8)
+            coll.objects.link(lo)
+
+
+def hall_cards(coll):
+    """Each style's plate over its door, its lettering, and the neon's light on the wall."""
+    faces = K.card_faces()
+    for k, (style, _, paint, (fam, weight), ink, glow) in enumerate(K.CARDS):
+        x = CARD_XS[k]
+        for name in cards.STYLES[style]:
+            ob = cards.BUILDERS[name]().build(coll)
+            ob.data.materials.clear()
+            if name == "CardNeonTube":
+                ob.data.materials.append(render.emissive("neon_tube", render.hexc(glow), 6.0))
+            else:
+                ob.data.materials.append(material(name, cards.TEXSET[name], False))
+            ob.location = (x, 0.0, CARD_Z)
+            tinted = cards.TEXSET[name] in looks.TINTED and paint
+            ob["tint"] = (*render.hexc(paint), 1.0) if tinted else (1.0, 1.0, 1.0, 1.0)
+        (cx, cy, cz), size = faces[style]
+        at = (x + cx, cy - 0.004, CARD_Z + cz)
+        if glow:
+            core = render.emissive("neon_core", render.hexc(ink), 5.0)
+            halo = render.emissive("neon_halo", render.hexc(glow), 3.0)
+            lettering(CARD_NAMES[k], fam, weight, at, size, core, coll)
+            lettering(CARD_NAMES[k], fam, weight, (at[0], at[1] + 0.002, at[2]), size, halo, coll, 0.025)
+            rng, _ = K.CARD_LIGHT
+            ld = bpy.data.lights.new("neon_light", "POINT")
+            ld.energy, ld.color, ld.shadow_soft_size = 60.0 * rng / 9.0, render.hexc(glow), 0.4
+            lo = bpy.data.objects.new("neon_light", ld)
+            lo.location = (x, -0.9, CARD_Z)
+            coll.objects.link(lo)
+        else:
+            mat = render.simple(f"ink_{style}", render.hexc(ink), 0.7)
+            lettering(CARD_NAMES[k], fam, weight, at, size, mat, coll)
+
+
+def stage_cards():
+    import numpy as np
+    import tempfile
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    register()
+    coll = bpy.context.scene.collection
+    render.setup(64, (640, 360))
+    render.world((0.16, 0.15, 0.13), 1.0)
+    hall(coll)
+    hall_cards(coll)
+    tmp = os.environ.get("CARD_SHOTS") or tempfile.mkdtemp(prefix="home-cards-")  # each shot
+    os.makedirs(tmp, exist_ok=True)
+    scene = bpy.context.scene
+
+    def shot(name, loc, target, lens, res):
+        scene.render.resolution_x, scene.render.resolution_y = res
+        path = os.path.join(tmp, f"{name}.png")
+        render.shoot(render.camera(loc, target, lens=lens), path)
+        img = bpy.data.images.load(path)
+        out = (bake.pixels(img)[..., :3] * 255.0 + 0.5).astype(np.uint8)
+        bpy.data.images.remove(img)
+        return out
+    # close up: standing in front of each door, looking up at its card
+    close = [shot(f"close{k}", (x - 2.0, -12.0, 5.0), (x, 0.0, 10.4), 24.0, (640, 360))
+             for k, x in enumerate(CARD_XS)]
+    # down the hall from beside the first door, and from across the floor
+    far = [shot("hall", (-62.0, -14.0, 5.0), (30.0, 0.0, 10.0), 32.0, (1280, 720)),
+           shot("across", (0.0, -50.0, 5.0), (0.0, 0.0, 8.6), 24.0, (1280, 720))]
+    sheet = np.vstack([np.hstack(close), np.hstack(far)])
+    out = os.path.join(K.ROOT, "art", "sheets", "home-cards.png")
+    bake.write_png(out, sheet)
+    print("SHEET", out)
+
+
 STAGES = {"textures": stage_textures, "door": stage_door, "export": stage_export,
-          "looks": stage_looks}
+          "looks": stage_looks, "cards": stage_cards}
 
 if __name__ == "__main__":
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []

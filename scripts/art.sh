@@ -88,7 +88,8 @@
 #   scripts/art.sh home [stages]        the home's kit: textures (plaster, oak, leaf, fabric, rug, the
 #                                       floors and papers), door (HomeDoor), export (Home.fbx,
 #                                       src/shared/Home/Specs.luau) (seconds; the ground floor wears
-#                                       them); looks draws art/sheets/home-floors.png
+#                                       them); looks draws art/sheets/home-floors.png, cards
+#                                       art/sheets/home-cards.png (the name card's styles)
 #   scripts/art.sh lobby                the front office: FBX, Specs module, look sheets (it wears the
 #                                       unit's textures and stands the elevator in its bays: build
 #                                       both first; about 3 minutes)

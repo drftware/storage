@@ -200,6 +200,73 @@ PAPERS = (("Plain", "Plaster"), ("Stripes", "PaperStripes"), ("Leaves", "PaperLe
           ("Daisies", "PaperDaisies"))
 
 
+# The name card over a home's door (S5-03g1b, D-322): four plates, each its own part(s) on one
+# origin, the card's middle on the wall's face (the lobby's R-panel), its front toward -y. The
+# lobby's CARD (art/lobby/spec.py) is 6 by 1.4 studs, its middle 11.4 up, between the units' cap
+# at 10 and the deck at 14: every plate stays inside 10.3 to 13.6. Lettering is a SurfaceGui on
+# Face (the writing's middle, how far out from the wall) over FaceSize; Font a family under
+# Studio's content/fonts/families (Font.fromName), checked there (STUDIO.md).
+CARD_STEEL = (6.0, 1.4, 0.06, 0.12)   # the steel plate: across, tall, thick, its back off the wall
+CARD_FOLD = 0.07                      # its edges folded back toward the wall, a sign blank's return
+CARD_BEAD = 0.13                      # the pressed bead round its face, in from the edge
+CARD_BOARD = (6.3, 1.56, 0.12, 0.08)  # the painted board: across, tall, thick; the cleats behind it
+CARD_STRIPE = 0.11                    # the sign-writer's pinstripe, in from the board's edge
+CARD_SLATE = (6.0, 1.4)               # the chalkboard's slate, inside its frame
+CARD_FRAME = 0.2                      # the oak frame's face, out from the slate's edge
+CARD_LEDGE = (0.14, 0.07)             # the chalk ledge under it: how far proud, thick
+CARD_NEON = (6.4, 1.7, 0.08, 0.1)     # the neon's dark backing: across, tall, thick, off the wall
+CARD_TUBE = (0.045, 0.16, 0.08)       # the border tube: radius, in from the backing's edge, off it
+# Each reads on the hall's cream upper wall (Lobby.Paint.Cream #E6DDCC), so every plate is dark.
+# id, who has it (Starter: every home; Cash; Robux), the plate's colour (None: baked), the
+# lettering's family and weight, its ink, the glow (neon only: the tube and the light).
+CARDS = (("Stencil", "Starter", "#34414F", ("Oswald", "Bold"), "#EFE7D6", None),
+         ("Painted", "Cash", "#2F4F3F", ("LuckiestGuy", "Regular"), "#F2E6C9", None),
+         ("Chalk", "Cash", None, ("PatrickHand", "Regular"), "#F1F0E8", None),
+         ("Neon", "Robux", "#16171C", ("Nunito", "Regular"), "#FFF0F6", "#FF4F9E"))
+CARD_LIGHT = (9.0, 1.4)               # the neon's light on the wall round it: range, brightness
+
+
+def card_faces():
+    """Each style's writing: (middle as (x, y, z) Blender, (across, tall))."""
+    w, h, t, off = CARD_STEEL
+    bw, bh, bt, cleat = CARD_BOARD
+    sw, sh = CARD_SLATE
+    nw, nh, nt, noff = CARD_NEON
+    r, tin, toff = CARD_TUBE
+    return {"Stencil": ((0.0, -off - t - 0.005, 0.0), (w - 2 * CARD_BEAD - 0.12, h - 2 * CARD_BEAD - 0.08)),
+            "Painted": ((0.0, -cleat - bt - 0.005, 0.0), (bw - 2 * CARD_STRIPE - 0.3, bh - 2 * CARD_STRIPE - 0.16)),
+            "Chalk": ((0.0, -card_slate_y() - 0.005, 0.0), (sw - 0.3, sh - 0.2)),
+            "Neon": ((0.0, -noff - nt - toff, 0.0), (nw - 2 * tin - 0.4, nh - 2 * tin - 0.3))}
+
+
+def card_slate_y():
+    """How far the slate's face stands off the wall: just behind the frame's inner lip."""
+    return 0.1
+
+
+def luau_cards(parts_of):
+    """The name cards' lines for Home.Specs; parts_of: {style: [part names]}."""
+    faces = card_faces()
+    L = ["\t-- The name card's styles (D-322): each a plate over the door on one origin, the card's",
+         "\t-- middle on the wall's face, its front toward -Z. Face: the writing's middle in that",
+         "\t-- frame; FaceSize, across and tall. Font: a family for Font.fromName and its weight",
+         "\t-- (Enum.FontWeight). Ink: the lettering's colour; Paint, the plate's (nil: baked); Glow,",
+         "\t-- the neon's tube and light colour. Sold: Starter (every home), Cash or Robux.",
+         "\tCards = {"]
+    for i, sold, paint, (fam, weight), ink, glow in CARDS:
+        (c, (fw, fh)) = faces[i]
+        L.append(f"\t\t{{ Id = \"{i}\", Sold = \"{sold}\", Parts = {{ "
+                 + ", ".join(f"\"{n}\"" for n in parts_of[i]) + " },")
+        extra = f", Paint = \"{paint}\"" if paint else ""
+        extra += f", Glow = \"{glow}\"" if glow else ""
+        L.append(f"\t\t\tFace = {lua_vec(b2r(c))}, FaceSize = {{ {fw:.3f}, {fh:.3f} }},")
+        L.append(f"\t\t\tFont = \"{fam}\", Weight = \"{weight}\", Ink = \"{ink}\"{extra} }},")
+    rng, bright = CARD_LIGHT
+    L += ["\t} :: { CardStyle },",
+          f"\tCardLight = {{ Range = {rng:.1f}, Brightness = {bright:.2f} }},"]
+    return L
+
+
 def luau_looks():
     """The looks' lines for Home.Specs."""
     def swatches(rows, ind):
@@ -238,7 +305,7 @@ def lua_vec(v, nd=3):
     return "{ " + ", ".join(f"{c:.{nd}f}" for c in v) + " }"
 
 
-def write_luau(path, parts, switch, toggle, lamp):
+def write_luau(path, parts, switch, toggle, lamp, cards_of):
     """parts: {name: dict(size=(x, y, z) Roblox, centre=Blender, tris=n)}; switch, toggle, lamp:
     their middles in the unit frame (Blender)."""
     L = [
@@ -257,6 +324,8 @@ def write_luau(path, parts, switch, toggle, lamp):
         "export type Swatch = { Id: string, Colour: string }",
         "export type Floor = { Id: string, Set: string, Colours: { Swatch } }",
         "export type Paper = { Id: string, Set: string }",
+        "export type CardStyle = { Id: string, Sold: string, Parts: { string }, Face: Vec, FaceSize: Vec,",
+        "\tFont: string, Weight: string, Ink: string, Paint: string?, Glow: string? }",
         "",
         "local Specs = {",
         f"\tDoorSize = \"{DOOR_SIZE}\", -- the climb's door rig it's built round",
@@ -326,6 +395,7 @@ def write_luau(path, parts, switch, toggle, lamp):
           "\t\tHangers = { " + ", ".join(f"{-x:.3f}" for x in GARMENT_HANGERS) + " } :: { number },",
           "\t},"]
     L += luau_looks()
+    L += luau_cards(cards_of)
     L += [
           "\t-- Each MeshPart's box as imported (its centre is its CFrame in its frame).",
           "\tParts = {"]

@@ -75,6 +75,25 @@ reading against the lobby's teal. `scripts/art.sh home looks` draws `art/sheets/
 and lamp; under them the door colours as flat doors on the teal, until g3 shows them on the door.
 The sets aren't in Home.fbx: g2's panels carry them into Studio.
 
+## The name card's styles (S5-03g1b, D-322)
+
+The plate over a home's door that the hall sees (idea 20). Built in `cards.py`, numbers in
+`home_spec.py` (`CARD_*`, `CARDS`), each style its own parts on one origin: the card's middle on
+the wall's face, its front out. `Home.Specs.Cards` gives each style's parts, its writing face, its
+font family and weight (Font.fromName), its ink, paint and glow, and who has it.
+
+| Style | Parts | Sets | Tris | What it is | Lettering |
+|---|---|---|---|---|---|
+| Stencil | CardSteel, CardSteelBolts | Plaster (tinted slate blue), plain | 396, 256 | a powder-coated sign blank, edges folded back, a pressed bead, four bolted standoffs | Oswald Bold, cream |
+| Painted | CardBoard, CardBoardScrews | SignBoard (1024x256, tinted forest green), plain brass | 68, 72 | a sign-writer's board: brushed paint over the grain, a cream pinstripe 0.11 in | Luckiest Guy, cream |
+| Chalk | CardSlate, CardChalkFrame, CardChalkStick | Chalkboard (1024x256, baked), Wood, plain | 12, 152, 28 | a wiped slate in a moulded oak frame, a chalk ledge, a stick of chalk | Patrick Hand, chalk white |
+| Neon | CardNeonBack, CardNeonTube | plain dark, plain (Neon) | 588, 444 | a dark backing on polished standoffs, a pink tube round its edge on little posts | Nunito, white-pink core, pink glow |
+
+`scripts/art.sh home cards` draws `art/sheets/home-cards.png` (30 seconds): each style over a door
+from the floor, then the four from down the hall and from across the floor, lettered with Studio's
+own font files. Judged at phone size: all four read from across the floor; the neon is what you
+see first. Home.fbx: 16,748 triangles in 47 parts. Not uploaded until g3.
+
 ## Into Studio (S5-03a2b3, D-268)
 
 `lune run scripts/upload_art Home` (asset 110439035194989 in `assets.json`), then in Edit load it

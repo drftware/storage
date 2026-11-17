@@ -92,6 +92,12 @@ nowhere else.
   rubber mats; walls are plain (a home's), stripes, leaves and daisies; eight paints from warm
   white to ink; eight door colours from clay; carpet, checker and mats each come in five colours;
   every paper takes the wall's paint as its ground.
+- [ ] **Your name card's four styles** (S5-03g1b, D-322; art only, not in the game until
+  S5-03g3). Open `art/sheets/home-cards.png` on your phone: along the top, each style over a door
+  from the floor; below, the four from down the hall and from across the floor. Look for: can you
+  read every name from across the floor, and does the neon one make you want it? My defaults, say
+  which to change: stencilled steel (slate blue, cream letters) is every home's; a painted board
+  (forest green, cream pinstripe) and a chalkboard in oak are for cash; neon (pink) is for Robux.
 - [ ] **Come home to your shelf** (S5-03c1b, D-285; seen in Studio Play Nov 17 on a 1380x761
   window, not at phone size; pictures in `docs/art/S5-03c1b-*.jpg`). Play with one player. On the
   Server, `game.ServerStorage.ShelfTest:Invoke(game.Players:GetPlayers()[1], "Boombox")` keeps a
