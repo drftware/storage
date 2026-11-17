@@ -23,6 +23,8 @@ the find run's uncommitted `src/shared/Finds/Rows.luau` and `tests/stuffdeal.spe
 - Studio: watch the save with a Server `GetAsync` on "Saves.studio" (STUDIO.md "Taking finds up,
   seen"). The test save: cash 476, 37 finds (no Blob lamp, Skates 1, Boombox 9), Gold Teddies.
 - Stage only your own paths; the find run commits its own `art/finds/` and `src/shared/Finds/`.
+- Find art: the colour-change goo ball is done and seen in Play (S2b: fingertip prints bloom
+  and cool back); next S3, the mega goo ball (`art/finds/WAVES.md`'s Next line).
 
 ## Next task: S5-03e1 Placements, in Brix
 The moment it serves: you lift your lava lamp off the shelf, it glides over a half-stud grid on

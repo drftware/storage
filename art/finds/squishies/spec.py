@@ -587,13 +587,18 @@ COLOURBALL = dict(
     warm="#E058D2",    # orchid where a warm finger pressed: far from the blue in hue, as bright,
     #                    so the prints read on a phone under the unit's warm bulb
     rough=0.3,         # satin: a soft, wide highlight, not the goo ball's wet one
-    # the prints, where the five presses dent it (between the blisters): a finger's pad lying up
-    # the ball, thumb first; each its half width and half height and how far above the waist its
-    # middle sits (degrees on the ball), uneven as a real grip is
-    fingers=[(16.0, 28.0, -6.0), (13.0, 36.0, 3.0), (13.5, 40.0, 5.0), (13.0, 36.0, 2.0),
-             (11.5, 29.0, -3.0)],
-    soft=4.5,          # degrees over which a print's edge fades into the blue: the heat spreading
-    crease=0.25,       # how much of the warmth a finger's joint creases miss (thin cool lines)
+    # the prints, where the five presses dent it (between the blisters): a fingertip's pad, an
+    # oval a little taller than wide, thumb first; each its half width and half height (degrees
+    # on the ball, where the warmth fades out: the pad pressed flat into the dent and up its
+    # walls, the heat spread past it), how far above the waist its middle sits and how far it
+    # leans (degrees), uneven as a real grip is. S2b: S2a's long capsules with joint creases
+    # read as hard bars, and a 16 mm pad was a dot in the dent's shadow
+    fingers=[(28.0, 32.0, -8.0, 12.0), (24.0, 28.0, 5.0, -7.0), (25.0, 30.0, 8.0, 0.0),
+             (24.0, 28.0, 4.0, 6.0), (21.0, 25.0, -3.0, 10.0)],
+    core=0.4,          # how much of a print, from its middle out, is warmed all the way
+    halo=(0.3, 1.4),   # the faint warmth round it (its share, how far out as a share of the
+    #                     print): the heat spreading into the skin, as on a thermochromic handprint
+    ragged=0.16,       # how uneven its edge is (a share of its size): a real print isn't an oval
     dust=0.3, seed=67.0,
 )
 

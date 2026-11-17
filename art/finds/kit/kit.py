@@ -677,6 +677,19 @@ def values_at(trs, t):
     return {(part, ch): ease.sample(ks, t) for part, ch, ks in trs}
 
 
+def warmest(find):
+    """A tinted find's pose halfway through the time its first tinting motion holds the tint
+    at its height ({(part, channel): value}), or None for a find with no tint."""
+    for action in find.motions if find.tint else ():
+        _, trs = tracks(find, action)
+        for _, ch, ks in trs:
+            if ch == "tint":
+                top = max(k[1] for k in ks)
+                at = [k[0] for k in ks if k[1] >= top - 1e-6]
+                return values_at(trs, (at[0] + at[-1]) / 2)
+    return None
+
+
 # --- previews ----------------------------------------------------------------------------------
 
 def place(find, objs, M, coll, values=None, lights=True):
@@ -819,6 +832,16 @@ def stage_renders(find, set_dir, quick=False):
         ob.matrix_world = M @ ob.matrix_world
     cam = render.camera(eye, eye + fwd, lens=12)
     shoot(cam, sheet("held"), (844, 390), S)
+    # a find whose colour changes in your hands (the colour-change goo ball) is held again in the
+    # middle of its warmest moment, posed as its press stands then: what you see squeezing it
+    warm = warmest(find)
+    if warm:
+        for vals in ({**rest, **warm}, rest):
+            pose(find, objs, vals)
+            for ob in objs.values():
+                ob.matrix_world = M @ ob.matrix_world
+            if vals is not rest:
+                shoot(cam, sheet("held-warm"), (844, 390), S)
     for ob in objs.values():
         ob.matrix_world = M.inverted() @ ob.matrix_world
     for p in find.parts:

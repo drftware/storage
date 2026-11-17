@@ -100,6 +100,12 @@ verified: a doc page, Studio, or "untested".
   by what the rest tint takes off, and tween the Color (kit.Find `tint`, D-303). A Gold has no
   SurfaceAppearance (`Gold.gild`), so it never tints. `screen_capture` timed out three times in
   Edit here; the macOS window capture below worked at once.
+- **Reading a tint in Play** (S2b, Nov 17): the server only stamps a press (`UseAt`), so the
+  held ball's `SurfaceAppearance.Color` on the Server stays at Rest. Each screen plays it: read
+  the Client's `Workspace.YourTool` (your view's copy) and the character's `HeldTool` (what
+  friends see); both went Rest to Warm and back together. Under the unit's warm bulb sky blue
+  reads teal and orchid reads red-pink: the hue gap holds. (`lune run scripts/upload_art dry`
+  is the dry run; `--dry` is read as an art key and does nothing.)
 - **Glow on a textured find** (Studio Edit, F-01, Nov 15): a SurfaceAppearance has
   `EmissiveMaskContent`, `EmissiveStrength` (default 1) and `EmissiveTint`. A boombox copy given
   its own colour map as the mask glowed only where the map was light (the chrome handle and

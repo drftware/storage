@@ -72,10 +72,11 @@ ok(Deal.stuffFrom(Deal.StuffShare - 1e-9) == Deal.Stuff[#Deal.Stuff], "the highe
 local SEEDS = 200
 local FLOORS = { 1, 3, 6 }
 local BUILD: Deal.Situation = { mood = "Build", awake = 0 }
--- the deal of seeds 1 to 60 since S1b (the goo ball dealt; F-G1d's, 22 more finds, was 2152783747,
+-- the deal of seeds 1 to 60 since S2b (the colour-change goo ball dealt; S1b's, the goo ball,
+-- was 3262220213; F-G1d's, 22 more finds, was 2152783747,
 -- B-04a's 1444159843, F-G1a's 2876030496, S2-06b2b's 2130601506; with the Packrat switched off,
 -- S2-01's 3999933310). Each new find ticked built changes it: check it is only that, then update.
-local FINGERPRINT = 3262220213
+local FINGERPRINT = 311108866
 local SEEDS_PRINTED = 60
 
 local print_ = 7

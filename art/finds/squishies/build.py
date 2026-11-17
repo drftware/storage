@@ -2829,9 +2829,11 @@ CC = K.COLOURBALL
 
 
 def cc_prints(L):
-    """The five finger-shaped prints (0 to 1): a capsule up the ball over each dent, its edge
-    fading over `soft`, the core mottled where the warmth is uneven, and the joints' creases left
-    cool (two on a finger, one on the thumb)."""
+    """The five fingertip prints (0 to 1), one over each dent: an oval, leaning a little, warmed
+    all the way in its middle (`core`) and feathering out to nothing at its edge, ragged where the
+    heat spread unevenly, with a faint wider halo round it (`halo`), and a little patchy inside.
+    Strongest in the middle, so as the tint cools the print seems to shrink to where the finger
+    pressed hardest, as a real one does."""
     nb = L.nb
     rad = math.radians
     zc = mm(GO_ZC)
@@ -2839,25 +2841,27 @@ def cc_prints(L):
     flat = nb.math("SQRT", nb.add(nb.mul(L.x, L.x), nb.mul(L.y, L.y)))
     ph = nb.math("ARCTAN2", nb.sub(L.z, zc), flat)
     lat = nb.cos(ph)
-    soft = rad(CC["soft"])
+    # the edge's unevenness, shared by all five (each print lands on a different part of it)
+    rag = nb.mul(nb.sub(L.noise(40.0, 8, detail=2), 0.5), 2 * CC["ragged"])
+    share, reach = CC["halo"]
     out = None
-    for k, (w, h, mid) in enumerate(CC["fingers"]):
-        w, h, mid = rad(w), rad(h), rad(mid)
+    for k, (w, h, mid, lean) in enumerate(CC["fingers"]):
+        w, h, mid, lean = rad(w), rad(h), rad(mid), rad(lean)
         thk = GO_FRONT + (k + 0.5) * 2 * math.pi / GO["presses"]
         d_th = nb.sub(th, thk)
         across = nb.mul(nb.math("ARCTAN2", nb.sin(d_th), nb.cos(d_th)), lat)
         up = nb.sub(ph, mid)
-        spine = nb.math("MAXIMUM", nb.sub(nb.absf(up), h - w), 0.0)
-        d = nb.math("SQRT", nb.add(nb.mul(across, across), nb.mul(spine, spine)))
-        m = nb.inv(nb.ss(d, w - soft, w + soft * 0.6))
-        joints = (0.0,) if k == 0 else (-0.3, 0.32)
-        for j in joints:
-            line = nb.inv(nb.ss(nb.absf(nb.sub(up, j * h)), rad(0.5), rad(1.8)))
-            m = nb.mul(m, nb.inv(nb.mul(line, CC["crease"])))
+        a = nb.sub(nb.mul(across, math.cos(lean)), nb.mul(up, math.sin(lean)))
+        b = nb.add(nb.mul(across, math.sin(lean)), nb.mul(up, math.cos(lean)))
+        r = nb.math("SQRT", nb.add(nb.mul(nb.div(a, w), nb.div(a, w)),
+                                   nb.mul(nb.div(b, h), nb.div(b, h))))
+        r = nb.mul(r, nb.add(1.0, rag))
+        m = nb.inv(nb.ss(r, CC["core"], 1.0))
+        m = nb.mx(m, nb.mul(nb.inv(nb.ss(r, 0.7, reach)), share))
         out = m if out is None else nb.mx(out, m)
     # uneven warmth: a little patchy inside, as a real print is
     patchy = nb.ss(L.noise(25.0, 7, detail=2), 0.3, 0.7)
-    return nb.mul(out, nb.add(0.86, nb.mul(patchy, 0.14)))
+    return nb.mul(out, nb.add(0.88, nb.mul(patchy, 0.12)))
 
 
 def cc_look(L, f):

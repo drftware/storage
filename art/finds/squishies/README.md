@@ -472,9 +472,9 @@ and squeeze.
 **Size.** The goo ball's: 64 mm across (2.5 in), 0.25 studs.
 
 **Tells.** Plain sky blue and satin as found (drier than the goo ball's wet pink, no mark);
-squeezed, five orchid fingerprints bloom up the dents where the fingers pressed, the thumb's
-wider and shorter, each finger's two joint creases faintly cooler, the edges soft; they hold a
-moment and slowly cool back to blue.
+squeezed, five orchid fingertip prints bloom in the dents where the fingers pressed, the
+thumb's widest, the little finger's smallest, each strongest in its middle and feathered out to
+nothing; they hold a moment and slowly cool back to blue, seeming to shrink as they go.
 
 **How the colour changes** (D-303): the skin's tint mask (kit.Find `tint`): the prints are the
 colour map's alpha, their texels baked lighter so the Rest tint (Roblox `SurfaceAppearance.Color`
@@ -483,6 +483,14 @@ Warm. The previews multiply the same way, so the sheets show what Roblox will.
 
 **Judged** (quick sheets, twice): the first prints were thin purple stripes cut into four by the
 creases; widened (a finger pad 26 degrees across), the orchid brighter, the creases fainter.
-At rest the prints don't show at all (the rest tint is exact). Full sheets rendered at the end of
-S2a, not yet looked at: S2b judges them.
+At rest the prints don't show at all (the rest tint is exact).
+**S2b** (Nov 17): S2a's full sheets showed hard-edged bars cut by crease stripes, not fingertips.
+Looked at a real thermochromic handprint (commons.wikimedia.org, "thermochromic hand": rounded
+fingertip ends, warmest in the middle, a soft halo) and a squeezed colour-change gel ball
+(vat19.com). Each print is now an oval fingertip (`cc_prints`; spec `fingers`, `core`, `halo`,
+`ragged`). A 16 mm pad was a dot in the dent's shadow on the first quick sheet; widened onto the
+dent's walls (24 to 28 degrees across), it reads as pink blooms either side of the front blister
+in the new `-held-warm` sheet (the held view at its warmest). Full sheets judged; in Studio Edit
+the warmed copy showed the prints and the copy at rest stayed plain blue (the alpha survived the
+upload: FBX 111826517480983, 1 part, 42 Bones). Seen in Play (`docs/art/S2b-colour-goo-ball-squeezed.jpg`).
 

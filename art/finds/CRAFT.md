@@ -143,7 +143,8 @@ set's `build.py` as an example; you shouldn't need the kit's code.
   shade.
 - **Previews.** Renders: `-lineup` (beside a 5.4-stud person), `-front`, `-back`, `-held` (first
   person on a phone: in your hands 0.3 right, 0.34 down and 1.05 ahead of your eye, further for
-  a big find, turned three quarters, the floor far below), `-gold`, `-offon` (in the dark, up close), `-unit` (a medium
+  a big find, turned three quarters, the floor far below; a tinted find also `-held-warm`, posed
+  in the middle of its warmest moment), `-gold`, `-offon` (in the dark, up close), `-unit` (a medium
   unit's doorway on a phone, off above on, deeper than the bulb), and per action a ten-frame
   filmstrip `-<action>.png` plus `out/<find>-<action>.mp4` at 24 frames a second.
 - **The generated Luau.** Export writes `src/shared/Finds/Sets/<Set>.luau`, typed by

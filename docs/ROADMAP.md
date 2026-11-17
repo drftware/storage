@@ -2968,8 +2968,11 @@ actions themselves and dealing the new finds on floors are later game tickets.
   stretch; ticked, imported and seen in Play (dealt, taken, squeezed, its squelch). S2a (Nov 17,
   D-303): the colour-change goo ball's trick proven in Studio (a tint mask in its skin) and its
   art and row: sky blue, orchid fingerprints that bloom as you squeeze and cool back; not ticked,
-  imported or seen in Play. Next S2b (judge the full sheets, tick, import, Play). Polish: a
-  squishy squeezed again before its press is over (the colour ball's fade could then run 8 s).
+  imported or seen in Play. S2b (Nov 17): its prints made soft fingertip ovals, strongest in
+  the middle (S2a's were hard bars); ticked, imported and seen in Play (dealt, taken, squeezed:
+  the prints bloom and cool back on your view's copy and on the ball friends see, its squelch).
+  Next S3, the mega goo ball. Polish: a squishy squeezed again before its press is over (the
+  colour ball's fade could then run 8 s).
 - [ ] **F-06 Plush.**
 - [ ] **F-07 Night Shift Minis and their blind box.**
 - [ ] **F-08 Boxes and tins.**

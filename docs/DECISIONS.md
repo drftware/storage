@@ -7722,6 +7722,11 @@ where a crewmate died stays on the moon unless someone carries it back).
 - **Colours:** sky blue to orchid, a real pair's look (blue to pink) kept clear of the goo ball's
   neon pink. Built, not yet seen in Play: S2b imports it (the alpha must survive the FBX upload:
   check the template's ColorMap tints only the prints) and plays it.
+- **S2b (Nov 17): the prints are fingertips.** S2a's long capsules with joint creases read as
+  hard bars; each print is now an oval fingertip, leaning a little, warmed all the way in its
+  middle and feathered out to nothing, with a faint halo and a ragged edge, as a real
+  thermochromic handprint is. Strongest in the middle, so as the one tint cools the print seems
+  to shrink toward where the finger pressed hardest. The alpha survived the upload; seen in Play.
 
 
 ## D-304 · 2026-11-17 · Taking finds up, wired: up as you ride into floor 1, settled where it ends (S5-03d2)
