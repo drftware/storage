@@ -542,6 +542,38 @@ GALAXY_GLOW = [(0.0, 0.8), (0.3, 0.8), (1.2, 1.0, "Sine", "Out"), (4.4, 1.0),
                (8.0, 0.8, "Sine", "InOut")]
 
 
+# --- The goo ball (S1) ---------------------------------------------------------------------------
+# References (README): the 2.5 in goo-filled squeeze balls sold in 2026 (2.5 x 2.5 x 2.5 in, 4.6 oz):
+# an opaque, matte, velvety TPR skin in one bright colour, a fine crinkle in its skin, a soft sheen
+# on top, a small sealed fill plug; squeezed in a fist, the goo pushes out between the fingers in
+# round blisters (Wikimedia Commons, "Stress ball manipulation.jpg", "Stress release.jpg"). Ours
+# is neon pink, with no mark (tangerine read as an orange, the fruit: S1).
+GOOBALL = dict(
+    r=32.0,            # the ball's radius: 64 mm across (2.5 in)
+    sink=1.4,          # how far it settles onto the floor: heavy goo slumps a little
+    # the squeeze: five presses round its waist (four fingers and a thumb), the goo pushed out
+    # between them; a blister's height (mm), a finger's dent (mm), how far up and down the ball
+    # both reach (degrees from the waist), and the top pushed up (mm)
+    presses=5, bulge=5.6, dent=5.0, reach=50.0, rise=2.4,
+    front=-90.0,       # a blister faces the front (degrees round from +X): the held view sees one
+    # the bones: two rings, this far above and below the waist (degrees); four bones a press
+    ring=17.0, per=4,
+    plug_r=2.6,        # the sealed fill plug on its top, flush (mm): raised, it read as a stem
+    dust=0.25, seed=61.0,
+)
+
+# The squeeze, as a share of the full press: the fingers close and the goo bulges out between them
+# at once, then keeps oozing further while held; let go, it gives a little back at once and
+# then creeps round again slowly, the way thick goo does (seconds, share[, style, way]).
+OOZE = [
+    (0.0, 0.0),
+    (0.34, 0.7, "Quad", "Out"),       # the fingers close: blisters pushed out between them
+    (1.3, 1.0, "Sine", "InOut"),      # held: the goo keeps oozing out
+    (1.48, 0.8, "Quad", "Out"),       # let go: it gives a little back at once
+    (4.9, 0.0, "Cubic", "Out"),       # then slowly comes back round
+]
+
+
 # --- The game rows (F-G1f, D-265; art/finds/PIPELINE.md) ----------------------------------------
 # What the game deals and plays for each find, in the order the deal lists them. art/finds/rows.py
 # (plain Python: `scripts/art.sh rows`, and every export) writes them into
@@ -550,15 +582,17 @@ GALAXY_GLOW = [(0.0, 0.8), (0.3, 0.8), (1.2, 1.0, "Sine", "Out"), (4.4, 1.0),
 # Grade and worth are the catalog's; `from_` the lowest floor it's dealt on (none: floor 1); its
 # grip in studs from the middle of its bottom (across, up, front to back); heft how heavy it feels
 # (0 to 1); size where it sits in your view; `press` its one press (Finds/Use's row).
+# (a sound named as a motion above, SQUISH, SIGH, CRINKLE, SLOSH, takes _SOUND: the build reads
+# the motion's keys from this module, and the import replaced them, S1)
 from game import (  # noqa: E402
-    CRINKLE,
+    CRINKLE as CRINKLE_SOUND,
     RUBBER,
     RUSTLE,
-    SIGH,
-    SLOSH,
+    SIGH as SIGH_SOUND,
+    SLOSH as SLOSH_SOUND,
     SOFT,
     SQUELCH,
-    SQUISH,
+    SQUISH as SQUISH_SOUND,
     pitched,
     squeeze,
 )
@@ -588,7 +622,7 @@ GAME = [
         size="Small",
         pickUp=pitched(SOFT, 1.45),
         drop=pitched(SOFT, 1.15, 0.5),
-        press=squeeze(pitched(SQUISH, 1.1)),  # "a dent that slowly fills back in"
+        press=squeeze(pitched(SQUISH_SOUND, 1.1)),  # "a dent that slowly fills back in"
     ),
     dict(
         key="MochiBun",
@@ -601,7 +635,7 @@ GAME = [
         size="Small",
         pickUp=pitched(SOFT, 1.6),
         drop=pitched(SOFT, 1.3, 0.45),
-        press=squeeze(pitched(SQUISH, 1.4, 0.6)),  # "a soft puff of a sound"
+        press=squeeze(pitched(SQUISH_SOUND, 1.4, 0.6)),  # "a soft puff of a sound"
     ),
     dict(
         key="PaperSquishy",
@@ -614,7 +648,7 @@ GAME = [
         size="Small",
         pickUp=RUSTLE,
         drop=pitched(RUSTLE, 0.8, 0.5),
-        press=squeeze(CRINKLE),  # "it crinkles"
+        press=squeeze(CRINKLE_SOUND),  # "it crinkles"
     ),
     dict(
         key="ToastSlice",
@@ -627,7 +661,7 @@ GAME = [
         size="Small",
         pickUp=pitched(SOFT, 1.4),
         drop=pitched(SOFT, 1.1, 0.5),
-        press=squeeze(pitched(SQUISH, 0.95)),  # "springs back like real bread"
+        press=squeeze(pitched(SQUISH_SOUND, 0.95)),  # "springs back like real bread"
     ),
     dict(
         key="GelBeadBall",
@@ -640,7 +674,7 @@ GAME = [
         size="Small",
         pickUp=pitched(SOFT, 1.35),
         drop=pitched(SOFT, 1.05, 0.55),
-        press=squeeze(SLOSH),  # "the beads swirl inside"
+        press=squeeze(SLOSH_SOUND),  # "the beads swirl inside"
     ),
     dict(
         key="GlitterGooBall",
@@ -666,7 +700,7 @@ GAME = [
         size="Medium",
         pickUp=pitched(SOFT, 1.15),
         drop=pitched(SOFT, 0.9, 0.55),
-        press=squeeze(pitched(SQUISH, 0.8, 1.0)),  # "ten seconds to rise back": deep
+        press=squeeze(pitched(SQUISH_SOUND, 0.8, 1.0)),  # "ten seconds to rise back": deep
     ),
     dict(
         key="Capybara",
@@ -679,7 +713,7 @@ GAME = [
         size="Small",
         pickUp=pitched(SOFT, 1.3),
         drop=pitched(SOFT, 1.0, 0.55),
-        press=squeeze(SIGH),  # "a tiny, happy sigh"
+        press=squeeze(SIGH_SOUND),  # "a tiny, happy sigh"
     ),
     dict(
         key="GalaxyGooBall",
@@ -693,5 +727,18 @@ GAME = [
         pickUp=pitched(SOFT, 1.25),
         drop=pitched(SOFT, 0.95, 0.55),
         press=squeeze(pitched(SQUELCH, 0.9, 0.7)),  # "stars drift and swirl inside"
+    ),
+    dict(
+        key="GooBall",
+        catalog="Goo ball",
+        name="Goo ball",
+        grade="Common",
+        worth=3,
+        grip=(0, 0.12, 0),  # round the ball
+        heft=0.06,
+        size="Small",
+        pickUp=pitched(SOFT, 1.3),
+        drop=pitched(SOFT, 0.95, 0.6),
+        press=squeeze(pitched(SQUELCH, 0.75, 0.55)),  # "oozes between your fingers": slow, wet
     ),
 ]

@@ -23,9 +23,12 @@ file is the order things happen in and the commands.
 ## The steps
 
 1. **The art.** `CRAFT.md` whole: references, real size, parts on real hinges, its motions,
-   sheets judged and fixed. `scripts/art.sh set <set> quick <Find>` while working, the full
-   `scripts/art.sh set <set> textures export renders <Find>` at the end (`<set>` is the folder:
-   `lights`, `figures`, `windups`, `squishies`).
+   sheets judged and fixed. `scripts/art.sh set <set> textures quick <Find>` while working (a
+   new find has no baked `.blend` yet, so `quick` alone fails; about 3 minutes for a ball), the
+   full `scripts/art.sh set <set> textures export renders <Find>` at the end, in the background
+   (`<set>` is the folder: `lights`, `figures`, `windups`, `squishies`). To look at a sheet
+   without filling the context, shrink it first: `sips -Z 1000 -s format jpeg <png> --out <jpg>`
+   into your scratchpad (the system Python has no PIL).
 2. **Its game row.** Add a `dict(...)` to the `GAME` list at the end of the set's `spec.py`, in
    the order the finds were built (the deal's order). The fields (`src/shared/Finds/Game.luau`
    says what each one does):
@@ -59,6 +62,18 @@ file is the order things happen in and the commands.
    see the Sound play, and for a noisy one a monster turning toward it. Bank it at the elevator.
    Read Output for errors and for "Deals: no art in the place for ...". Stop Play. Write what
    you saw in `WAVES.md`'s "Every built find, in the game" table.
+
+## What the first proof found (S1, the goo ball)
+
+- **One find, two sessions.** References, a boned find's art and two rounds of sheets took a
+  whole session's context (200k): stop after step 3 (its row written, not ticked) and hand
+  steps 4 to 7 to the next session, which looks at the full sheets, ticks, imports and plays.
+  A find that reuses a builder (the mega goo ball) may fit in one.
+- **A sound named like a motion.** A set's `spec.py` imports its sounds from `game.py` at the
+  bottom, after its motions' keys: a sound with the same name (the squishies' `SQUISH`, `SIGH`,
+  `CRINKLE`, `SLOSH`) replaced the keys, and from P1a until S1 the set didn't build at all.
+  Import such a sound as `<NAME>_SOUND`. `scripts/check.sh` doesn't build art, so nothing
+  caught it: a set's first build after a spec change is its check.
 
 ## Not here
 

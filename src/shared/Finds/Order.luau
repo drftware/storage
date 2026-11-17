@@ -28,6 +28,7 @@ return {
 	GelBeadBall = { "Squeeze" },
 	GlitterGooBall = { "Squeeze" },
 	GalaxyGooBall = { "Squeeze" },
+	GooBall = { "Squeeze" },
 	CymbalMonkey = { "Wind", "Play" },
 	DeskLamp = { "SwitchOn", "SwitchOff" },
 	DiecastCar = { "Push" },

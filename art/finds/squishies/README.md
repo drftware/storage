@@ -416,3 +416,33 @@ so its clouds drift round the ball; all stop where they began (a seamless loop).
   (`ReplicatedStorage.Props.Finds.GalaxyGooBall`): the skin clear with no shadow, the gel and
   the star bands carrying the glow mask, the light in place and disabled. Not yet looked at in
   Studio's view: check the faint glow from a doorway with its strength at 0.8 of 1.5.
+
+## Goo ball (S1, Nov 17)
+
+`GooBall` (prefix `go_`/`GO_`, kinds 38 and 39; spec `GOOBALL`, `OOZE`). Common, 3, "Squeeze:
+it oozes between your fingers and slowly comes back".
+
+**References** (looked at, not saved). The 2.5 in goo-filled squeeze balls sold in 2026: a
+Walmart listing of the best-known one (walmart.com/ip/347608165) and ToyWiz's 2.5 in listings
+(2.5 x 2.5 x 2.5 in, 4.6 oz, "filled with a jelly-like compound"): one bright colour (neon
+pink, orange, green, blue, purple), an opaque, matte, velvety skin with a fine crinkle in it
+and a soft sheen on top, the maker's name embossed on its side, a sealed fill plug on top.
+Squeezed: Wikimedia Commons' "Stress ball manipulation.jpg" and "Stress release.jpg", a fist
+round a ball with it bulging out between the fingers in round blisters.
+
+**Size.** 64 mm across (2.5 in): 0.25 studs, settled 1.4 mm onto its flat spot.
+
+**Tells.** One saturated colour, solid (the gel bead, glitter and galaxy balls are clear and
+full of things), matte (the stress ball is glossy lime); squeezed, five blisters pushed out
+round its waist. Neon pink, not tangerine: tangerine with a grain read as an orange, the fruit,
+and a raised plug as its stem (the first quick sheets). No mark of any maker.
+
+**Squeeze.** Bones, not `stretch`: two rings of twenty round the waist (17 degrees above and
+below), four for each of five presses, and one on top. Each ring bone slides out or in by the
+blister's height where it sits and turns by the skin's slope there, so its share of the mesh
+leans the way the blister's surface does and the light follows each blister (a bone that only
+slides leaves the normals flat, F-05a's trap); shares hand over smoothly between neighbours,
+like a Hermite curve. A vertex has at most four bones, Roblox's most. One shape scaled by
+`OOZE` in time: the fingers close (0.34 s), the goo keeps oozing out while held (to 1.3 s), let
+go it gives a little back at once, then comes back round over 3.4 s (Cubic Out). The top lifts
+2.4 mm as the goo is pushed up. Judged on quick sheets twice; full sheets rendered once.

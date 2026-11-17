@@ -2618,8 +2618,197 @@ GALAXY_GOO_BALL = kit.Find(
     dust=GX["dust"], seed=GX["seed"], texels=1000, cage=0.0016,
 )
 
+# --- The goo ball (S1) ---------------------------------------------------------------------------
+# A goo-filled squeeze ball of our own (README): an opaque, matte neon-pink TPR skin, velvety, a fine
+# crinkle through it and a soft sheen on top, a little sealed plug where it was filled. Squeezed,
+# five fingers press dents round its waist and the goo bulges out between them in round blisters,
+# oozing further while held; let go, it slowly comes back round. Bones do it (kit.Bone): two rings
+# of them round the waist, four a press, each sliding out or in by the blister's height where it
+# sits and tipped by its slope there, so the light follows each blister (the butter stick's trap);
+# their shares blend like a Hermite curve, and a bone on top lifts it as the goo is pushed up.
+
+GO = K.GOOBALL
+GO_SKIN, GO_PLUG = 38, 39
+GO_R = GO["r"]
+GO_SOFT = 2.0                          # how gently its flat spot rounds into the ball (mm)
+
+
+def go_flat(zr):
+    """The ball's height over the floor for its sphere's height zr (mm, the floor at -sink)."""
+    lo = (-GO["sink"] + math.sqrt(GO["sink"] ** 2 + GO_SOFT ** 2)) / 2
+    return (zr + math.sqrt(zr * zr + GO_SOFT ** 2)) / 2 - lo
+
+
+GO_ZC = go_flat(GO_R - GO["sink"])     # the ball's middle, over the pivot on the floor (mm)
+GO_FRONT = math.radians(GO["front"])
+GO_REACH = math.radians(GO["reach"])
+
+
+def go_body(hi):
+    """The ball, spun from pole to pole, and the fill plug on its top."""
+    n, seg = (120, 200) if hi else (30, 60)
+    prof = [(0.0, 0.0)]
+    for i in range(1, n):
+        a = -math.pi / 2 + math.pi * i / n
+        prof.append((mm(GO_R * math.cos(a)), mm(go_flat(GO_ZC + GO_R * math.sin(a)))))
+    top = go_flat(GO_ZC + GO_R)
+    prof.append((0.0, mm(top)))
+    sh = Shape()
+    sh.lathe(prof, GO_SKIN, seg, split=2)
+    r = GO["plug_r"]
+
+    def cap(rho):
+        return GO_ZC + math.sqrt(GO_R ** 2 - rho ** 2)
+    plug = [(r + 0.4, cap(r + 0.4) - 0.3), (r + 0.05, cap(r) + 0.01), (r - 0.25, cap(r) + 0.1),
+            (r * 0.55, cap(r * 0.55) + 0.12), (0.0, cap(0.0) + 0.12)]
+    sh.lathe([(mm(a), mm(b)) for a, b in plug], GO_PLUG, 40 if hi else 14)
+    return sh
+
+
+def go_f(th):
+    """The blister's height round the waist (mm): out between the presses, in at each finger;
+    the dents narrower than the blisters, as a finger is."""
+    u = math.cos(GO["presses"] * (th - GO_FRONT))
+    return GO["bulge"] * ((1 + u) / 2) ** 1.5 - GO["dent"] * ((1 - u) / 2) ** 3
+
+
+def go_g(ph):
+    """How much of it reaches this far up or down the ball (1 at the waist, none past reach)."""
+    x = min(1.0, abs(ph) / GO_REACH)
+    return (1 - x * x) ** 2
+
+
+def go_frame(th, ph):
+    """The skin's outward normal, east and north there (a right-handed frame)."""
+    n = Vector((math.cos(ph) * math.cos(th), math.cos(ph) * math.sin(th), math.sin(ph)))
+    e = Vector((-math.sin(th), math.cos(th), 0.0))
+    north = Vector((-math.sin(ph) * math.cos(th), -math.sin(ph) * math.sin(th), math.cos(ph)))
+    return n, e, north
+
+
+def go_angles(co):
+    """A point's way round (theta) and up (phi) from the ball's middle (co in studs)."""
+    d = Vector(co) * K.STUD_MM - Vector((0.0, 0.0, GO_ZC))
+    return math.atan2(d.y, d.x), math.atan2(d.z, math.hypot(d.x, d.y))
+
+
+def go_smooth(t):
+    t = max(0.0, min(1.0, t))
+    return t * t * (3 - 2 * t)
+
+
+def go_bones():
+    """The squeeze's bones: per ring (above and below the waist) `presses * per` bones round it,
+    each on the skin, sliding out along its normal by the blister's height there and tipped by
+    its slope (both at full press: the tracks scale them by OOZE); a share in theta that hands
+    over to the next bone, times one in phi that hands over to the other ring across the waist
+    and fades out by `reach`. A vertex has at most two bones in each ring and the root, or a ring,
+    the top and the root: four, Roblox's most."""
+    n = GO["presses"] * GO["per"]
+    h = 2 * math.pi / n
+    pr = math.radians(GO["ring"])
+    bones, moves = [], []
+
+    def share(k, up):
+        th_k = GO_FRONT + k * h
+
+        def w(co):
+            th, ph = go_angles(co)
+            d = abs((th - th_k + math.pi) % (2 * math.pi) - math.pi)
+            wt = go_smooth(1 - d / h)
+            s = ph if up else -ph
+            if s < -pr:
+                return 0.0
+            if s <= pr:
+                return wt * go_smooth((s + pr) / (2 * pr))
+            return wt * (1 - go_smooth((s - pr) / (GO_REACH - pr)))
+        return w
+
+    for up in (True, False):
+        ph = pr if up else -pr
+        for k in range(n):
+            th = GO_FRONT + k * h
+            nrm, e, north = go_frame(th, ph)
+            at = Vector((0.0, 0.0, GO_ZC)) + nrm * GO_R
+            f, g = go_f(th), go_g(ph)
+            dth = 1e-4
+            gth = (go_f(th + dth) - go_f(th - dth)) / (2 * dth) * g / (GO_R * math.cos(ph))
+            gph = f * (go_g(ph + dth) - go_g(ph - dth)) / (2 * dth) / GO_R
+            w = north * (-gth) + e * gph
+            ang = math.degrees(w.length)
+            hinge = tuple(w.normalized()) if w.length > 1e-6 else tuple(e)
+            name = f"{'Up' if up else 'Low'}{k + 1}"
+            bones.append(kit.Bone(name, tuple(at / K.STUD_MM), weight=share(k, up),
+                                  axis=tuple(nrm), hinge=hinge))
+            moves.append((name, mm(f * g), ang if w.length > 1e-6 else 0.0))
+    top0, top1 = math.radians(44.0), math.radians(80.0)
+
+    def top(co):
+        _, ph = go_angles(co)
+        return go_smooth((ph - top0) / (top1 - top0))
+    # a hinge it never turns about: Luau types a list of bones by its first, which has one
+    bones.append(kit.Bone("Top", (0.0, 0.0, mm(GO_ZC + GO_R)), weight=top, axis=(0, 0, 1),
+                          hinge=(1, 0, 0)))
+    moves.append(("Top", mm(GO["rise"]), 0.0))
+    return bones, moves
+
+
+GO_BONES, GO_MOVES = go_bones()
+
+
+def go_squeeze():
+    """Each bone's tracks: OOZE scaled to its full move (studs) and tip (degrees)."""
+    def scaled(v):
+        return [(k[0], round(k[1] * v, 6), *k[2:]) for k in K.OOZE]
+    tracks = []
+    for name, mv, ang in GO_MOVES:
+        tracks.append((name, "move", scaled(mv)))
+        if ang:
+            tracks.append((name, "turn", scaled(ang)))
+    return round(K.OOZE[-1][0] + 0.4, 2), tracks
+
+
+GO_DUR, GO_TRACKS = go_squeeze()
+
+
+def goo_look(L, f):
+    nb = L.nb
+    plug = L.k(GO_PLUG)
+    # the skin: a neon-pink TPR, matte and velvety, its colour a touch deeper where the rotocast
+    # wall runs thick and lighter where it stretches thin (gently: strong mottling read as fruit
+    # peel); a fine crinkle through it (the soft creases a goo-filled skin takes) and a faint grain
+    C = Coat(L, hexc("#FF3F93"), 0.56)
+    C.paint(nb.mul(nb.ss(L.noise(5.0, 1, detail=2), 0.45, 0.75), 0.35), hexc("#EC3283"), 0.58)
+    C.paint(nb.mul(nb.ss(L.noise(14.0, 2, detail=2), 0.55, 0.75), 0.3), hexc("#FF5DA6"), 0.54)
+    crinkle = nb.ss(L.noise(120.0, 3, stretch=(1.0, 1.0, 2.6), detail=4), 0.63, 0.69)
+    C.paint(nb.mul(crinkle, 0.35), hexc("#F0398A"), height=-0.35)
+    grain = nb.ss(L.noise(1400.0, 4, detail=1), 0.42, 0.78)
+    C.paint(grain, height=0.1)
+    # a soft sheen on top, where hands rub it smooth
+    sheen = nb.mul(nb.ss(L.nz, 0.55, 0.95), nb.ss(L.noise(30.0, 5, detail=2), 0.35, 0.7))
+    C.paint(nb.mul(sheen, 0.6), rough=0.4)
+    # the plug: the same rubber, flush, a little glossier, only its pinched edge a shade deeper
+    C.paint(plug, hexc("#F23A8C"), 0.42)
+    C.finish(f.dust, grime=0.25)
+    return C.surface(bump_dist=mm(0.12), bump=0.45)
+
+
+GOO_BALL = kit.Find(
+    "GooBall",
+    [kit.Part("Body", go_body, bones=GO_BONES)],
+    goo_look,
+    motions={
+        # squeezed in a fist: five fingers press in round its waist and the goo bulges out
+        # between them, oozing further while held (the game's slow squelch); let go, it gives a
+        # little back at once, then slowly comes back round
+        "Squeeze": dict(duration=GO_DUR, tracks=GO_TRACKS, focus=(0.0, 0.0, mm(GO_ZC)),
+                        distance=0.95, view=(-0.9, -1.8, 1.0)),
+    },
+    dust=GO["dust"], seed=GO["seed"], texels=1000,
+)
+
 FINDS = [BUTTER_STICK, STRESS_BALL, MOCHI_BUN, TOAST_SLICE, JUMBO_STRAWBERRY, CAPYBARA,
-         PAPER_SQUISHY, GEL_BEAD_BALL, GLITTER_GOO_BALL, GALAXY_GOO_BALL]
+         PAPER_SQUISHY, GEL_BEAD_BALL, GLITTER_GOO_BALL, GALAXY_GOO_BALL, GOO_BALL]
 
 if __name__ == "__main__":
     kit.main("Squishies", HERE, FINDS)

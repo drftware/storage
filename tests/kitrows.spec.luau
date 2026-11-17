@@ -56,10 +56,14 @@ local HOLD: { [string]: { number } } = {
 	Large = { -1.55, -0.8, -2.4 },
 }
 
--- The generated rows are the hand-written ones, in the deal's order.
-ok(#Rows == #Was.order, `{#Rows} generated rows for {#Was.order} hand-written`)
+-- The generated rows begin with the hand-written ones, in the deal's order; finds built since
+-- P1 (the goo ball on) follow them.
+ok(#Rows >= #Was.order, `{#Rows} generated rows for {#Was.order} hand-written`)
 for i, row in Rows do
 	local key = row.key
+	if i > #Was.order then
+		continue
+	end
 	ok(key == Was.order[i], `row {i}: {key}, where the deal had {Was.order[i]}`)
 	local was = Was.rows[key]
 	if not was then
@@ -105,14 +109,27 @@ for _, name in Deal.Finds do
 		table.insert(kit, name)
 	end
 end
-for i, row in Rows do
+-- A row whose line isn't ticked built yet (its art made, not yet judged and in the place: S1a)
+-- is in the game nowhere.
+local judged = {}
+for _, row in Rows do
+	if row.judged then
+		table.insert(judged, row)
+	else
+		ok(
+			Catalog[row.key] == nil and Use.Rows[row.key] == nil,
+			`{row.key}: not ticked built, so not in the game`
+		)
+	end
+end
+for i, row in judged do
 	local c = Catalog[row.key]
 	ok(c ~= nil and c.find == true and c.template == row.key, `{row.key}: a find's catalog row`)
 	ok(c ~= nil and c.verb == row.verb, `{row.key}: the catalog's verb is its row's`)
 	ok(same(Use.Rows[row.key], row.press), `{row.key}: Finds/Use plays its row's press`)
 	ok(kit[i] == row.key, `{row.key}: dealt in its place ({kit[i]})`)
 end
-ok(#kit == #Rows, `the deal's kit finds ({#kit}) are the generated rows ({#Rows})`)
+ok(#kit == #judged, `the deal's kit finds ({#kit}) are the judged rows ({#judged})`)
 for key in Use.Rows do
 	-- the one-mesh finds' presses are written by hand, as their catalog rows are (F-G1e5a)
 	local found = OneMesh[key] ~= nil

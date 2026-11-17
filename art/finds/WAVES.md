@@ -6,9 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** V5e2 (ROADMAP F-G1e5e2: see the cracked glass drawn and a cracked lamp banked, the
-last of V5); then S1 (the goo ball, through PIPELINE.md). V5e built the crack (Nov 17, seen in
-Play but for those two). V5a, V5f, V5d, V5b and V5c are done and seen in Play (Nov 17).
+**Next:** S1b (the goo ball: look at its full sheets, tick it, upload and import it, the Play
+check; S1a built its art and row). Then S2. V5e2 (a cracked lamp seen drawn and banked) waits
+for Q1. V5a to V5f are done and seen in Play (Nov 17), but for V5e2.
 
 ## The third run's plan (owner's brief, Nov 16 night)
 
@@ -120,6 +120,7 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 | Jumbo slow-rise strawberry (`JumboStrawberry`) | The dent takes ten seconds to rise back · Squeeze | works: squeezed, a dent that slowly rises back, its own sound (V1) | Uncommon · 18 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; no dent seen in hand (bones, V1b); Nov 17, V1b: pressed in hand, its dent bones 0.047 studs down in hand and in your view's copy, rising back slowly |
 | Squishy capybara (`Capybara`) | A tiny, happy sigh · Squeeze | works: squeezed, squashes in hand (to 0.79), its orange moves, a sigh (V1) | Rare · 55 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; its orange moves a little; its body stays still in hand (V1b); Nov 17, V1b: pressed in hand, squashed to 0.79 of its height in hand and in your view's copy, its root still in the hand |
 | Galaxy goo ball (`GalaxyGooBall`) | Stars drift and swirl inside · Squeeze | works: squeezed, squashes in hand (to 0.71), its insides move, its own sound (V1) | Legendary · 350 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; its insides move; its body stays still in hand (V1b); Nov 17, V1b: pressed in hand, squashed to 0.71 of its height in hand and in your view's copy, its root still in the hand |
+| Goo ball (`GooBall`) | Oozes between your fingers and slowly comes back · Squeeze (quiet; the squishy craze itself) | built, not yet seen in Play: its art and row (S1a); not ticked, uploaded or imported (S1b) | Common · 3 · floor 1 up ✓ | |
 | Boombox (`Boombox`, bedroom set) | Loud music wherever you leave it, monsters come to look; at home it plays your tapes · Play, a noise (R.E.P.O.'s music box) | works (V5a, D-286): its key clacks, 80s electro 15 s, the case thumping each beat and swaying from its handle, lures every 2 s, 130 studs, in hand or where you leave it; the tapes wait on the home chain | Uncommon · 25 · floor 1 up ✓ | Nov 17, V5a: given (GiveFind), pressed in hand: the key dipped it to 0.975, then it swelled to 1.04 every 0.53 s, swaying up to 3 degrees and hopping 0.035 studs from the handle, the same in your view's copy; the song from 0.36 s; the Mannequin 56 studs off woke, came and caught me ("lured 8 times (130 studs)"). Again, dropped 2.5 s in and me lifted away: the song carried on from where it was (10.6 s into the recording), the case thumping on the floor; the Mannequin went to it and stood looking |
 | Small box TV (`Television`, bedroom set) | At home: it plays your tapes and films · Play (Animal Crossing's records) | waits on the home chain | Uncommon · 22 · floor 1 up ✓ | |
 | Small teddy bear (`Teddy`, bedroom set) | A tiny squeak · Hug (quiet) | works (V5a, D-286): hugged, squashes, a tiny squeak, wiggles back; quiet | Common · 4 · floor 1 up ✓ | Nov 17, V5a: given, pressed in hand: squashed to 0.78 at 0.17 s in hand and in your view's copy, tipped 6 degrees, sprang to 1.07 and settled by 1.05 s; the cloth at 0.08 s, the squeak at 0.17 s |
@@ -246,6 +247,33 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, S1a (the goo ball's art and row; not ticked, imported or seen in Play; S1b next).**
+  `GooBall` in `squishies/build.py` (prefix `go_`/`GO_`, kinds 38 and 39; spec `GOOBALL`,
+  `OOZE`; README section): a 2.5 in neon-pink goo-filled ball, matte and velvety. **Squeeze on
+  bones only** (no `stretch`, so bones and stretch together stay untested): two rings of twenty
+  bones round the waist and one on top (41), each sliding by the blister's height where it sits
+  and turned by the skin's slope there, so the light follows each blister; one shape scaled by
+  `OOZE` in time, so each bone has a `move` and a `turn` track (81 tracks). Five fingers press,
+  five blisters bulge between them, ooze further while held, and come back over 3.4 s. A vertex
+  has at most four bones (Roblox's most). Its row: Common, 3, `squeeze(pitched(SQUELCH, 0.75,
+  0.55))`, quiet. **Found:** tangerine with a grain read as an orange (the fruit), its raised plug
+  as the stem: neon pink, the plug flush. **Fixed:** the squishies set hadn't built since P1a:
+  its spec's sound imports `SQUISH`, `SIGH`, `CRINKLE`, `SLOSH` replaced the motion keys of the
+  same names; they're `<NAME>_SOUND` now (PIPELINE.md, "What the first proof found"). Judged on
+  quick sheets twice (the squeeze, the held view); full sheets rendered, not yet looked at.
+  **For S1b:** look at `art/sheets/gooball-*.png` (front, held, unit, squeeze) beside the
+  README's references; tick `Goo ball` in the Squishies table (`Nov 17, S1b`), `scripts/art.sh
+  rows`, check; `lune run scripts/upload_art` after `git checkout` of the set's other FBX; import
+  in Edit (`import("Squishies", {"GooBall"})`, check its 41 bones came through: a Bone is an
+  Attachment); Play: `DevBox` = `GooBall`, open, take, press in hand, see the blisters (read a
+  bone's `CFrame` against `FindBoneRest`) and hear the squelch; then fill its row above. Its
+  `Finds.joints` bones run every frame of the press (41): watch for a hitch. **Also changed:**
+  `tests/kitrows.spec` lets a row that isn't ticked yet sit after the frozen 41 and checks it is
+  in the game nowhere (a find stopped between its row and its tick, as here, failed the checks);
+  `Finds/Order.luau` has `GooBall`; a bone with no hinge after one with a hinge fails the strict
+  types (the top bone has an unused hinge). The other chain's commit 124deda swept up this
+  session's ROADMAP line (F-05's S1a), so it is already in.
 
 - **Nov 17, V5e (fragile built; seen in Play but for the crack drawn and the bank; V5e2 next).**
   A row's `fragile` names its glass part (`fragile="Chimney"` in `lights/spec.py`; `rows.py`
