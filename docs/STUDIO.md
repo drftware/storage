@@ -260,6 +260,15 @@ verified: a doc page, Studio, or "untested".
   jpg out.jpg`. osascript can't read window bounds here (no assistive access). It can time out
   while Play draws at 60 frames a second too (V4b, Nov 17: twice, the client counting 61 frames
   a second); the macOS capture worked at once. Shrink it with `sips --resampleWidth 693`.
+- **Catching a moment that lasts two seconds** (S5-03c1b, Nov 17): a capture made after the MCP
+  call that sets it off lands too late (Swift's start alone takes about a second). Start the
+  capture first as a background shell command (`sleep 2.6; screencapture -l <number> ...`, the
+  window number found beforehand), then fire the moment with the MCP. In first person the camera
+  turns where you set `workspace.CurrentCamera.CFrame` from the client, and stays turned.
+- **Checking your work when the checkout is red from another session** (S5-03c1b): `git worktree
+  add --detach <scratch>/wt HEAD`, copy in only your changed files and `roblox.d.luau`, and copy
+  `vendor/brix` in whole (it's a submodule, empty in a new worktree, and Lune won't follow a
+  symlink to it); run `scripts/check.sh` there, then `git worktree remove --force` it.
 - **A set-down press fired right after the camera turns goes the old way** (V4b, Nov 17): the
   game turns your character to face the camera, and the server's copy of that facing lags. A
   test that set a Scriptable camera and fired `ToolUse` 0.1 s later had the siren car set down

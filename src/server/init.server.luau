@@ -24,6 +24,7 @@ local Flashlights = require(script.Flashlights)
 local Drives = require(script.Drives)
 local FindUses = require(script.FindUses)
 local FrontOffice = require(script.FrontOffice)
+local Shelves = require(script.Shelves)
 local GatePay = require(script.GatePay)
 local Horns = require(script.Horns)
 local Keepers = require(script.Keepers)
@@ -109,6 +110,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "cashOut", system = CashOut.new() },
 	-- Everkeep's front office, the lobby: where everyone loads in, facing its six cars.
 	{ slot = "frontOffice", system = FrontOffice.new() },
+	-- each player's kept finds on their home's shelf (after frontOffice and gatePay: it reads both)
+	{ slot = "shelves", system = Shelves.new() },
 	-- The lobby's platform carts: Ride, handed to the rider's screen, its pace watched, parked again.
 	{ slot = "carts", system = Carts.new() },
 	-- A lobby car's group to a server of its own; on that server, the group stood in floor 1's car.

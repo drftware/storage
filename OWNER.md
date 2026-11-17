@@ -39,6 +39,17 @@ nowhere else.
   light in the picture (an even warm light), its walls are plain paint without the plaster's
   grain, and writing on clothes reads the right way round. Say: convincing, or not. My defaults,
   say which to change: the left wall by the rug, 2.4 by 5.6 studs, leaning 6 degrees.
+- [ ] **Come home to your shelf** (S5-03c1b, D-285; seen in Studio Play Nov 17 on a 1380x761
+  window, not at phone size; pictures in `docs/art/S5-03c1b-*.jpg`). Play with one player. On the
+  Server, `game.ServerStorage.ShelfTest:Invoke(game.Players:GetPlayers()[1], "Boombox")` keeps a
+  find as a gate does (try "Teddy", "WalkingRobot" too; a kind your save has never had chimes).
+  Stand in your doorway. Look for: each find in its own cubby, square and facing you, a big one
+  shrunk to fit, a slow gold twinkle on each new one that you notice from the door. Walk up to
+  the shelf: within about 7 studs each new one answers once, the twinkle bursts and stops with a
+  soft tink; a kind never owned chimes, turns once slowly and shows a small "New" that fades.
+  Stop and Play again: they're all still there, no longer sparkling. On the Device Simulator's
+  Galaxy A16: is the twinkle visible from the door, is "New" readable, is the tink too quiet?
+  Then play a real climb, keep a find at a gate, ride home: it's on the shelf, sparkling.
 - [ ] **If Studio stops getting changes, click Connect** in Studio's Rojo plugin (connected Nov 13
   at 23:30; each session checks it first and says so in HANDOFF.md).
 - [ ] **Playing on your phone** (D-109): with Rojo connected, use File > Publish to Roblox (Save
@@ -61,7 +72,9 @@ nowhere else.
   2. Shelf spots for finds on show: 6 small, 10 medium, 16 large, 24 XL. The shelf (D-284) is
      oak with a cream back, not the plan's steel (D-263's calm), and stands behind the rug facing
      the door, so it's the first thing you see as your door goes up; the small unit's back
-     partition (S5-03h) goes right behind it. A find too big for its cubby is shrunk to fit.
+     partition (S5-03h) goes right behind it. A find too big for its cubby is shrunk to fit,
+     a long one lying deep is turned a quarter to stand bigger (D-285); a small one is never grown.
+     A new find answers when you come within 7 studs of it, and finds on the shelf never light.
   3. Things you can set out with Arrange: 25 small, 50 medium, 100 large, 150 XL, so a full
      unit runs smoothly on a low-end phone.
   4. Four lamps in a unit cast real light; any more just glow.

@@ -2400,14 +2400,16 @@ Done when players watch the results to the end and change their perks between cl
       (`art/home`, `Home.Specs.Shelf`); save version 5 keeps each spot's find and how new it is,
       and every find kept at the gate takes the first empty spot (`Save.keep`), a kind never owned
       marked to chime. Passes checks; the art isn't uploaded or in the place yet (c1b).
-    - [ ] **S5-03c1b Finds on the shelf, sparkling** (D-284): upload and import the new Home.fbx;
+    - [x] **S5-03c1b Finds on the shelf, sparkling** (D-284, done D-285): upload and import the new Home.fbx;
       the server stands each spot's find in its cubby, fitted and scaled down to fit; a new one
       sparkles until you walk up (a soft tink, the sparkle bursts and stops), a never-owned kind
       chimes, turns once slowly and shows "New"; the server checks you're near before marking it
       seen. Seen in Studio Play at Galaxy A16 size and captured; stays after a rejoin.
-    - [ ] **S5-03c2 The job box and its panel**: the steel job-site box (calm, D-263), the lid's
-      sparkle when finds went in it; press it: the panel (each kind once, x2, search, rarity
-      filters), into your hands, onto the shelf.
+    - [ ] **S5-03c2a The job box** (split for context): its art the unit's way in `art/home`
+      (the steel job-site box, calm, D-263), in every home's starter set; a find kept with the
+      shelf full goes in it and its lid sparkles until you open it. Seen in Studio Play, captured.
+    - [ ] **S5-03c2b The job box's panel**: press it: the panel (each kind once, x2, search,
+      rarity filters), take a find into your hands or onto a free shelf spot.
     - [ ] **S5-03c3 Selling and Gold** from the panel.
   - [ ] **S5-03d Taking finds up** (idea 10, D-251): take any find from the chest into a slot and
     carry it to the elevator. On the climb it's at risk like any find: stolen, dropped where

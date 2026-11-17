@@ -7294,3 +7294,28 @@ shelf, Fortnite's locker marking what's new until you've looked.
   server checking you're near before it marks one seen, seen in Studio Play; c2 the job box and
   its panel; c3 selling and Gold.
 
+
+## D-285 · 2026-11-17 · Finds stand on the shelf and sparkle till you walk up (S5-03c1b)
+
+The plan's ideas 6 to 8 (D-284) made visible: your door goes up after a climb and what you brought
+home stands on your shelf, sparkling. Precedents: Animal Crossing's museum, Fortnite's locker marks.
+
+- **The server stands every find** (`Shelves`): each spot of the save's `shelf` gets a copy of its
+  find, inert and still, in the cubby, when the save loads, when you're handed a home, and each
+  time a gate keeps finds for you (so it's there when you ride home). Every screen sees it; a
+  visitor sees your shelf too. It goes when you leave.
+- **Fitted, never grown** (`Home/Shelf.fit`, tested): shrunk to the cubby's room, square to the
+  shelf, or turned a quarter when that lets a long thing lying deep stand bigger. Small finds (the
+  windup mouse) stay small: true to size reads better than a row of equal blobs.
+- **Its lights are off and its sounds gone**: a find on a shelf isn't switched on, and a phone's
+  real lights are few.
+- **New finds twinkle** at 3 glints a second, 0.5 studs: 1.4 and 0.32 were lost from the door in
+  Studio. Walking up within 7 studs (looked for every 0.2 s) plays the answer: New a soft tink
+  (the coin chink pitched up, quiet), Kind the box reveal's falling twinkles, one 1.8 s eased turn
+  and a small "New" (warm white, clay edge) that pops, holds 2.4 s and fades.
+- **The server checks the walk-up** (`ShelfSeen`): type and range, a new find of yours on that
+  spot, your root within 11 studs (reach plus slack), Brix's bucket limit (4 a second, 8 at once).
+  Seen isn't written at once; the autosave and the leave flush keep it (a lost one only sparkles
+  again).
+- **A Studio-only test hook** (`ServerStorage.ShelfTest`, as CatchTest is): keeps a find for a
+  player as a gate does, so a test sees it land without a climb.

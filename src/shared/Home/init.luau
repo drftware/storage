@@ -43,6 +43,9 @@ Home.Paint = {
 	LampShade = Color3.fromHex("#F1E8D6"), -- a linen drum
 	Switch = Color3.fromHex("#F2EEE6"), -- the plate and its rocker: off-white plastic
 	ShelfBack = Color3.fromHex("#EFE6D4"), -- the shelf's painted back: a warm cream behind finds
+	Sparkle = Color3.fromHex("#FFE296"), -- a new find's glints: the kept glint's warm gold
+	Word = Color3.fromHex("#FFF6E2"), -- the "New" over a kind never owned: warm white
+	WordEdge = Color3.fromHex("#B5684E"), -- its outline: the door's clay, so it reads on cream
 }
 local TINTED: { [string]: Color3 } = {
 	Facade = Home.Paint.Facade,
