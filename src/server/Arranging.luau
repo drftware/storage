@@ -36,8 +36,10 @@ local ServerStorage = game:GetService("ServerStorage")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Home = require(ReplicatedStorage.Shared.Home)
 local Arrange = require(ReplicatedStorage.Shared.Home.Arrange)
 local Arranged = require(ReplicatedStorage.Shared.Home.Arranged)
+local Furniture = require(ReplicatedStorage.Shared.Home.Furniture)
 local Gold = require(ReplicatedStorage.Shared.Home.Gold)
 local Holding = require(ReplicatedStorage.Shared.Home.Holding)
 local LobbySpecs = require(ReplicatedStorage.Shared.Lobby.Specs)
@@ -104,6 +106,58 @@ function Arranging.new(): ArrangingSystem
 		return Arrange.poseFrame(home.room, id)
 	end
 
+	-- Makes the counter's furniture piece `kind` set out as `id` (D-336): the home's own art, as
+	-- the starter set stands (`Home.piece`), every part solid as a box and pickable by a tap, its
+	-- names and tag as a find's. Nil when the place's art lacks it.
+	local function drawPiece(home: HomeSet, id: string, kind: string, owner: Player): Drawn?
+		local template = Home.template()
+		if not (template and Home.has(template, kind)) then
+			return nil
+		end
+		local model = Home.piece(template, kind, CFrame.identity, home.folder)
+		local n = tonumber(string.match(id, "#(%d+)$")) or 1
+		local crate = Home.CrateColours[(n - 1) % #Home.CrateColours + 1] -- each crate the next colour
+		for _, d in model:GetDescendants() do
+			if d:IsA("BasePart") and d.Name == "MilkCrate" then
+				d.Color = crate
+			end
+			if d:IsA("BasePart") then
+				d.CanCollide = true -- a bed or a shelf stops you, as the starter set's pieces do
+				d.CanTouch = false
+				d.CanQuery = true
+			end
+		end
+		local size, centre = Arranged.bounds(model)
+		if not (size and centre) then
+			model:Destroy()
+			return nil
+		end
+		model.Name = id
+		model:SetAttribute(Spots.IdAttribute, id)
+		model:SetAttribute(Spots.OwnerAttribute, owner.UserId)
+		model:AddTag(Spots.Tag)
+		model.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
+		local drawn = { model = model, size = size, centre = centre }
+		home.drawn[id] = drawn
+		home.room.heights[id] = size.Y
+		return drawn
+	end
+
+	-- What `player` may set out, by name: their finds less the shelf's and what's out of the box
+	-- (`Save.settable`), and each piece of furniture they own by its placed name (D-336).
+	local function settable(player: Player, data: Save.Data): Save.Counts
+		local out = Save.settable(data, outOf(player))
+		for name, n in Furniture.settable(data.furniture) do
+			out[name] = n
+		end
+		return out
+	end
+
+	-- The furniture in `data`'s job box, by piece id: owned less set out.
+	local function boxedPieces(data: Save.Data): { [string]: number }
+		return Furniture.boxed(data.furniture, Save.placedCounts(data))
+	end
+
 	-- Draws find `id` where it stands now (made the first time), then whatever stands on it.
 	-- `moved`: by a Place, just now (stamped, so other screens settle it in), not as it's laid.
 	local function draw(home: HomeSet, id: string, owner: Player, moved: boolean)
@@ -112,7 +166,11 @@ function Arranging.new(): ArrangingSystem
 		if not (name and t) then
 			return
 		end
-		local drawn = home.drawn[id]
+		local drawn: Drawn? = home.drawn[id]
+		local piece = Furniture.ofPlaced(name)
+		if not drawn and piece then
+			drawn = drawPiece(home, id, piece.id, owner)
+		end
 		if not drawn then
 			local base = Gold.base(name) -- a Gold ("Teddy:Gold") stands as its find, gilded
 			local model = Tools.clone(base or name, CFrame.identity)
@@ -228,7 +286,7 @@ function Arranging.new(): ArrangingSystem
 		local folder = Instance.new("Folder")
 		folder.Name = FOLDER
 		folder.Parent = unit
-		local rows = Spots.owned(data.placed.rows, Save.settable(data, outOf(player)))
+		local rows = Spots.owned(data.placed.rows, settable(player, data))
 		local dropped = placements:load({ form = data.placed.form, rows = rows }, shapeOf)
 		local home: HomeSet = {
 			unit = unit,
@@ -259,6 +317,19 @@ function Arranging.new(): ArrangingSystem
 			if not home.placements:poseOf(what) then
 				return "", "notPlaced" -- not set out: nothing of yours to move
 			end
+		elseif Furniture.ofPlaced(what) then
+			local piece = Furniture.ofPlaced(what) :: Furniture.Piece
+			local template = Home.template()
+			if piece.stands ~= "Floor" then
+				return "", "notYet" -- the lit pieces on walls and ceilings come with their lights (g4d)
+			elseif (boxedPieces(data)[piece.id] or 0) < 1 then
+				return "", Spots.Refusals.NotInBox
+			elseif not (template and Home.has(template, piece.id)) then
+				return "", Spots.Refusals.Unknown
+			end
+			id = Spots.nextId(what, function(each: string): boolean
+				return home.placements:poseOf(each) ~= nil
+			end)
 		else
 			if (Save.boxed(data, outOf(player))[what] or 0) < 1 then
 				return "", Spots.Refusals.NotInBox
@@ -308,7 +379,13 @@ function Arranging.new(): ArrangingSystem
 		if boxRemote and data then
 			local out = if home then Spots.setOut(home.placements:save().rows) else 0
 			local most = if home then home.limit else Spots.limit(Spots.Start)
-			boxRemote:FireClient(player, Save.boxed(data, outOf(player)), out, most)
+			boxRemote:FireClient(
+				player,
+				Save.boxed(data, outOf(player)),
+				out,
+				most,
+				boxedPieces(data)
+			)
 		end
 	end
 
@@ -426,7 +503,8 @@ function Arranging.new(): ArrangingSystem
 					elseif verb == "rows" then
 						local data = if saving then saving:data(player) else nil
 						return if data then data.placed.rows else nil,
-							if data then Save.boxed(data, outOf(player)) else nil
+							if data then Save.boxed(data, outOf(player)) else nil,
+							if data then boxedPieces(data) else nil
 					elseif verb == "relay" then
 						clear(player)
 						lay(player)

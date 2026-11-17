@@ -8554,3 +8554,30 @@ left their colours to the game ("plain, the game colours it"; tinted Plaster and
 - `Home.paint(part)` is `prepare`'s paint on its own, so a template already in the place is
   repainted when the paints change without re-importing it; done in Edit for the sixteen parts.
 - Seen in Studio Play on the A16 (`docs/art/S5-03g4b-tab.jpg`, re-captured).
+
+## D-336 Bought furniture is set out as a find is, under a name of its own (S5-03g4c1, 2026-11-17)
+
+The moment it serves: home from the counter, the camp bed out of your box and slid by the wall,
+there when you come back and there for friends who visit (The Sims' and Bloxburg's build mode;
+Animal Crossing's furniture from your pockets).
+- **One judge, one save list.** A piece goes through the same Place and Put away the finds use
+  (`Arranging`, Brix's Placements), so it stands clear of the walls, the starter set and every
+  find and piece set out, and its rows live in the save's `placed` beside the finds'. No save
+  version: the rows' shape is unchanged.
+- **Its own name there**, "CampBed:Furniture#1" (`Furniture.Mark`, `Furniture.placed`,
+  `ofPlaced`): the catalog has a find called NeonSign too, so a bare id would read as a find, and
+  the finds' box counts, sales and shelf must never count a piece.
+- **In the box** means owned less set out (`Furniture.boxed`); a load keeps a set-out row only
+  while you own it (`Spots.owned` with the furniture in what's settable).
+- **Its footprint is the art's** (`Spots.pieceBox`: its parts' boxes in `Specs.Parts`); floor
+  pieces fit the floor only, and nothing stands on them yet (their tops, `Specs.Tops`, later).
+- **Drawn as the starter set's pieces are** (`Home.piece`), every part solid as a box (you walk
+  round a bed, not through it) and pickable by a tap, with a find's id, owner and tag.
+- **Counted against the home's limit** like a find: the limit bar is everything set out, as
+  Bloxburg's build budget counts everything placed.
+- **Wall and ceiling pieces wait for their lights** (g4d): the neon moon and the string lights
+  are refused "notYet" until then.
+- The box remote sends the furniture in the box as its fourth value, for g4c2's panel.
+- Seen in Studio Play (`ArrangeTest`): set out at (-4, 6) beside the rug after one overlap
+  refused, drawn in Unit1 in its canvas and aluminium, saved, re-laid from the save, turned in
+  place, put back, in the box again. Not yet seen by a second client (`OWNER.md` after g4c2).

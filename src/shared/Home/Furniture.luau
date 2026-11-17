@@ -119,6 +119,53 @@ Furniture.Limit = table.freeze({ perSecond = 2, burst = 3 })
 -- How often one player's shelf asks are answered: an open and a tab flip or two.
 Furniture.ShelfLimit = table.freeze({ perSecond = 2, burst = 4 })
 
+-- A piece set out in a home (S5-03g4c, D-336) is named in the save's `placed` rows by its id and
+-- this mark, "CampBed:Furniture#1", so it never reads as a find of the same name (there's a find
+-- called NeonSign too), and the finds' box and sales never count it.
+Furniture.Mark = ":Furniture"
+
+-- The name piece `id` is set out under in `placed` (an id of its own is that and "#n").
+function Furniture.placed(id: string): string
+	return id .. Furniture.Mark
+end
+
+-- The piece a placed name is ("CampBed:Furniture"), or nil for a find's name or anything else.
+function Furniture.ofPlaced(name: string): Piece?
+	local n = #Furniture.Mark
+	if #name > n and string.sub(name, -n) == Furniture.Mark then
+		return byId[string.sub(name, 1, -n - 1)]
+	end
+	return nil
+end
+
+-- What may be set out, by placed name: each piece you own, as many as you own (`furniture`).
+function Furniture.settable(furniture: { [string]: number }): { [string]: number }
+	local out: { [string]: number } = {}
+	for id, n in furniture do
+		local count = math.floor(n)
+		if byId[id] and count >= 1 then
+			out[Furniture.placed(id)] = count
+		end
+	end
+	return out
+end
+
+-- The pieces in your job box, by id: each you own less those set out (`placed`, counts by placed
+-- name, as `Save.placedCounts` gives them). Only those with one at least.
+function Furniture.boxed(
+	furniture: { [string]: number },
+	placed: { [string]: number }
+): { [string]: number }
+	local out: { [string]: number } = {}
+	for id, n in furniture do
+		local left = math.floor(n) - (placed[Furniture.placed(id)] or 0)
+		if byId[id] and left >= 1 then
+			out[id] = left
+		end
+	end
+	return out
+end
+
 -- What the shelf answers: your cash and how many of each piece you own (by id, owned ones only).
 export type Shelf = { cash: number, owned: { [string]: number } }
 

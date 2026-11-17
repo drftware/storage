@@ -294,6 +294,13 @@ verified: a doc page, Studio, or "untested".
   jpg out.jpg`. osascript can't read window bounds here (no assistive access). It can time out
   while Play draws at 60 frames a second too (V4b, Nov 17: twice, the client counting 61 frames
   a second); the macOS capture worked at once. Shrink it with `sips --resampleWidth 693`.
+- **Aiming a shot in first person** (S5-03g4c1, Nov 17): setting the camera's CFrame (even
+  Scriptable) from a Client `execute_luau` is undone at once: the MCP resets the type to Custom
+  and the game's first-person camera takes the view back; `screen_capture` with a camera
+  position timed out. Bind it instead: `RunService:BindToRenderStep("ShotCam",
+  Enum.RenderPriority.Last.Value + 1, ...)` setting `CurrentCamera.CFrame` each frame, unbound by
+  a `task.delay(6, ...)`, then the macOS window capture; stand the character out of the shot
+  (inside it, its body fills the frame grey).
 - **Catching a moment that lasts two seconds** (S5-03c1b, Nov 17): a capture made after the MCP
   call that sets it off lands too late (Swift's start alone takes about a second). Start the
   capture first as a background shell command (`sleep 2.6; screencapture -l <number> ...`, the

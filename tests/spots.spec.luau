@@ -300,6 +300,37 @@ do
 	)
 end
 
+-- The counter's furniture set out (S5-03g4c, D-336): its spot from its row, never a find's of the
+-- same name; its box from its parts; a floor footprint with no top; kept up to what you own.
+do
+	ok(Spots.spot("CampBed:Furniture") == "Floor", "a camp bed stands on the floor")
+	ok(Spots.spot("NeonSign:Furniture") == "Wall", "the neon moon hangs on a wall")
+	ok(Spots.spot("StringLights:Furniture") == "Ceiling", "the string lights hang from the ceiling")
+	local box, mid = Spots.pieceBox("MilkCrate")
+	ok(
+		box ~= nil and near(box[1], 1.9) and near(box[2], 1.65) and near(box[3], 1.9),
+		"a crate's box is its part's"
+	)
+	ok(mid ~= nil and near(mid[2], 0.825), "a crate's middle stands half its height up")
+	local bed = Spots.pieceBox("CampBed")
+	ok(
+		bed ~= nil and near(bed[1], 6.54) and math.abs(bed[2] - 1.592) < 0.01,
+		"a camp bed's box spans its frame and pillow"
+	)
+	ok(Spots.pieceBox("Teddy") == nil, "no piece: no box")
+	local shape = Spots.shape("Pallet:Furniture", Spots.pieceBox("Pallet"))
+	ok(
+		has(shape.fits, Spots.Kinds.Floor) and not has(shape.fits, Spots.Kinds.Top),
+		"a pallet stands only on the floor"
+	)
+	ok(shape.top == nil, "nothing stands on furniture yet")
+	local kept = Spots.owned({
+		{ id = "CampBed:Furniture#1", on = "Floor", x = 0, y = 0, turn = 0 },
+		{ id = "CampBed:Furniture#2", on = "Floor", x = 3, y = 0, turn = 0 },
+	}, { ["CampBed:Furniture"] = 1 })
+	ok(#kept == 1 and kept[1].id == "CampBed:Furniture#1", "only the beds you own stay set out")
+end
+
 print(`spots.spec: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

@@ -20,6 +20,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Brix = require(ReplicatedStorage.Brix)
 local Arranged = require(script.Parent.Arranged)
 local Finds = require(ReplicatedStorage.Shared.Finds)
+local Furniture = require(script.Parent.Furniture)
 local Gold = require(script.Parent.Gold)
 local HomeSpecs = require(script.Parent.Specs)
 local LobbySpecs = require(ReplicatedStorage.Shared.Lobby.Specs)
@@ -190,8 +191,13 @@ Arrange.Fixed = (function(): { Spots.Fixed }
 	}
 end)()
 
--- Find `name`'s art box as Spots takes it (across, up, front to back), nil when the place lacks it.
+-- Find `name`'s art box as Spots takes it (across, up, front to back), nil when the place lacks it;
+-- a piece of the counter's furniture's ("CampBed:Furniture", D-336) from its parts' boxes.
 function Arrange.boxOf(name: string): Spots.Vec?
+	local piece = Furniture.ofPlaced(name)
+	if piece then
+		return (Spots.pieceBox(piece.id))
+	end
 	local box = Finds.box(Gold.base(name) or name)
 	return if box then { box.Size.X, box.Size.Y, box.Size.Z } else nil
 end

@@ -227,6 +227,29 @@ do
 	ok(Furniture.card("Teddy", 9999, 0) == "capped", "not a piece: never Buy")
 end
 
+-- Set out in a home (S5-03g4c, D-336): a piece's placed name, read back; what may be set out;
+-- what's left in the box once some are set out.
+do
+	ok(Furniture.placed("CampBed") == "CampBed:Furniture", "a piece's placed name carries the mark")
+	local bed = Furniture.ofPlaced("CampBed:Furniture")
+	ok(bed ~= nil and bed.id == "CampBed", "the placed name reads back as its piece")
+	ok(Furniture.ofPlaced("NeonSign") == nil, "the find NeonSign is never the neon moon")
+	ok(Furniture.ofPlaced("Teddy:Furniture") == nil, "a mark on no piece is nothing")
+	ok(Furniture.ofPlaced(":Furniture") == nil, "the mark alone is nothing")
+	local settable = Furniture.settable({ CampBed = 2, MilkCrate = 0, Teddy = 3 })
+	ok(settable["CampBed:Furniture"] == 2, "both beds may be set out")
+	ok(
+		settable["MilkCrate:Furniture"] == nil and settable["Teddy:Furniture"] == nil,
+		"none, or no piece: not listed"
+	)
+	local boxed = Furniture.boxed(
+		{ CampBed = 2, MilkCrate = 1 },
+		{ ["CampBed:Furniture"] = 1, ["MilkCrate:Furniture"] = 1, CampBed = 5 }
+	)
+	ok(boxed.CampBed == 1, "one bed set out, one in the box")
+	ok(boxed.MilkCrate == nil, "the only crate set out: none in the box")
+end
+
 print(`furniture: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

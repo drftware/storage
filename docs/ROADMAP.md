@@ -2712,10 +2712,23 @@ Done when players watch the results to the end and change their perks between cl
         saying it's in your box; one you can't afford dims its price, with no popup. The server
         answers each buy on `FurnitureBought` after the save's write: "busy" and "save" need a
         gentle settle (the coins never tick for those); a "notStocked" means the week turned.
-      - [ ] **S5-03g4c Bought furniture in the job box and set out with Arrange**: the box's
-        panel lists it; Set out opens Arrange holding it; floor pieces stand on the floor clear
-        of the walls, the starter set and each other, saved in `placed` and laid by the server
-        for everyone; put back, it returns to the box.
+      - [ ] **S5-03g4c Bought furniture in the job box and set out with Arrange**, split (too big
+        for one session):
+        - [x] **S5-03g4c1 The server sets it out** (D-336; seen in Studio Play through
+          `ArrangeTest`, `docs/art/S5-03g4c-camp-bed.jpg`): a floor piece set out under its
+          placed name ("CampBed:Furniture#1") in `placed` (no new save version), checked like a
+          find (in the box: owned less set out; its footprint from its parts' boxes, the floor
+          only; clear of walls, the starter set and everything set out), drawn for everyone as
+          the home's own art, solid; moved, turned, re-laid from the save, put back to the box.
+          Wall and ceiling pieces are refused ("notYet") until g4d. The box remote now sends the
+          furniture in the box as a fourth value. Before it, the counter's pictures were white:
+          the furniture got its paints (D-335).
+        - [ ] **S5-03g4c2 The box and Arrange on screen**: the job box's panel lists each piece in
+          the box (the box remote's fourth value) with its picture (the painted art, as the
+          counter's tab draws it) and a Set out verb, no sale; Set out opens Arrange holding it
+          (`what` = `Furniture.placed(id)`), the lifted piece green or red as a find is, Turn
+          as finds turn; let down, it lands with a knock; a piece tapped in the room lifts and
+          Put back sends it to the box. Wall and ceiling pieces listed without Set out.
       - [ ] **S5-03g4d The lit pieces**: the string lights hang from the ceiling by their
         origin, the neon moon from a wall like a name card; their Neon parts Neon in `Colour`,
         clear parts Glass (`Specs.Glows`), their one light made only near you as the neon

@@ -27,6 +27,7 @@
 	`Home.Arranged`'s.
 ]]
 local Save = require("../Save")
+local Furniture = require("./Furniture")
 local HomeSpecs = require("./Specs")
 
 local Spots = {}
@@ -131,6 +132,10 @@ end
 
 -- Where find `name` may stand.
 function Spots.spot(name: string): Spot
+	local piece = Furniture.ofPlaced(name)
+	if piece then
+		return piece.stands -- the counter's furniture stands as its row says (D-336)
+	end
 	local row = Spots.Rows[base(name)]
 	if row then
 		return row.spot
@@ -153,7 +158,7 @@ function Spots.shape(name: string, box: Vec?): Shape
 		depth = rounded(if spot == "Wall" then b[2] else b[3]),
 		fits = fits(spot),
 	}
-	local row = Spots.Rows[base(name)]
+	local row = if Furniture.ofPlaced(name) then nil else Spots.Rows[base(name)]
 	if row and row.top then
 		shape.top = {
 			kind = Spots.Kinds.Top,
@@ -162,6 +167,31 @@ function Spots.shape(name: string, box: Vec?): Shape
 		}
 	end
 	return shape
+end
+
+-- A piece of the home's art's box (across, up, front to back) on its own origin, from its parts'
+-- boxes in `Specs.Parts`, and where its middle stands from that origin; nil for a piece not known.
+function Spots.pieceBox(kind: string): (Vec?, Vec?)
+	local names = HomeSpecs.Pieces[kind]
+	if not names then
+		return nil, nil
+	end
+	local low, high = { math.huge, math.huge, math.huge }, { -math.huge, -math.huge, -math.huge }
+	for _, name in names do
+		local part = HomeSpecs.Parts[name]
+		if not part then
+			return nil, nil
+		end
+		for i = 1, 3 do
+			low[i] = math.min(low[i], part.Centre[i] - part.Size[i] / 2)
+			high[i] = math.max(high[i], part.Centre[i] + part.Size[i] / 2)
+		end
+	end
+	return { high[1] - low[1], high[2] - low[2], high[3] - low[3] }, {
+		(high[1] + low[1]) / 2,
+		(high[2] + low[2]) / 2,
+		(high[3] + low[3]) / 2,
+	}
 end
 
 -- How far a find's top stands above what it stands on, from its art's box (studs): its height.

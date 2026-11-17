@@ -160,6 +160,12 @@ nowhere else.
      it nudges your cash pill with a dull click. Is that enough of an answer, with no words?
   4. Buy one piece up to its cap: its button says Owned and does nothing.
   5. Flip back to Wraps and out: the tab you were on is the one the shop opens to next.
+- [ ] **Furniture set out at home: my defaults** (S5-03g4c1, D-335, D-336; you'll see it once
+  g4c2 puts it on screen). Say which to change:
+  1. A piece set out counts against your home's limit, the same as a find (Bloxburg's budget).
+  2. A piece is solid: you walk round a camp bed or a shelf, not through it.
+  3. Their colours are the furniture sheet's: a mustard crate, a sage shelf, an olive canvas bed,
+     a mover's blue blanket. Crates set out come in mustard, teal and terracotta in turn.
 - [ ] **Come home to your shelf** (S5-03c1b, D-285; seen in Studio Play Nov 17 on a 1380x761
   window, not at phone size; pictures in `docs/art/S5-03c1b-*.jpg`). Play with one player. On the
   Server, `game.ServerStorage.ShelfTest:Invoke(game.Players:GetPlayers()[1], "Boombox")` keeps a
