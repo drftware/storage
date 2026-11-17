@@ -2691,10 +2691,32 @@ Done when players watch the results to the end and change their perks between cl
       - [ ] **S5-03g3c Choosing a card's style** in the paint tab: Starter styles free, Cash and
         Robux ones shown as not yours yet (a small coin or Robux mark on the chip, never a popup);
         a tap on one you don't own does nothing until the counter sells it (the store's rules).
-    - [ ] **S5-03g4 Furniture at the counter in a weekly stock.** The lit pieces from
-      `Specs.Glows`: their Neon parts Neon in `Colour`, clear parts Glass, their one light thrown
-      only near you as the floor lamps' are (`Home.FloorLamp.Near`, D-271); the string lights hang
-      from the ceiling by their origin, the neon sign from a wall like a name card.
+    - [ ] **S5-03g4 Furniture at the counter in a weekly stock** (idea 19; Animal Crossing's
+      Nook's Cranny and Fortnite's item shop for the stock that changes, Lethal Company's ship
+      store for buying furniture with what the run earned). The moment: back from a climb with
+      cash, you see this week's pieces at the counter, buy the camp bed, and it's in your job
+      box waiting to be set out. Split (S5-03g3b2's session, too big for one):
+      - [ ] **S5-03g4a The stock and the sale, server and save.** A pure `Home/Furniture.luau`:
+        the eight pieces (D-323, D-324) as rows (id, parts, cash price, how it stands: floor,
+        wall or ceiling, a cap on how many you own); this week's stock from the date alone
+        (the same in every server, every piece back at least every other week; never a random
+        roll you pay for); the buy check. Save version 12: `furniture` (owned counts) with its
+        migration and a save.spec sample. Server: a `BuyFurniture` remote (a string id, in this
+        week's stock, under the cap, cash enough; rate-limited) takes the cash, adds the piece,
+        writes the save and only then answers. Lune specs for the stock, the check, the
+        migration. Prices are defaults for the owner (`OWNER.md`), scaled from a floor's pay.
+      - [ ] **S5-03g4b The furniture at the counter on screen**: a second tab beside the wrap
+        colours in the counter's shop (ShopView): this week's pieces turning in their cards, each
+        with its price and Buy; a buy answers with the coins ticking down, a thunk and the card
+        saying it's in your box; one you can't afford dims its price, with no popup.
+      - [ ] **S5-03g4c Bought furniture in the job box and set out with Arrange**: the box's
+        panel lists it; Set out opens Arrange holding it; floor pieces stand on the floor clear
+        of the walls, the starter set and each other, saved in `placed` and laid by the server
+        for everyone; put back, it returns to the box.
+      - [ ] **S5-03g4d The lit pieces**: the string lights hang from the ceiling by their
+        origin, the neon moon from a wall like a name card; their Neon parts Neon in `Colour`,
+        clear parts Glass (`Specs.Glows`), their one light made only near you as the neon
+        cards' are (HomeCards' wash, D-332) within the A16's budget (D-271).
   - [ ] **S5-03h Four sizes and the walls that move** (ideas 30, 31): small to start, medium for
     cash, large and XL for Robux; the partitions grind back and the door widens, everything set
     out staying where it was.
