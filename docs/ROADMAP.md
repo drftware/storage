@@ -2326,7 +2326,16 @@ Done when players watch the results to the end and change their perks between cl
         home's (`UnitLight.Home`: stronger, further, no shadow, always real when lit), so from
         the spawn every open unit reads as a warm doorway. Verified in Studio Play: twelve
         fronts, a door rolling, the lit view from the spawn, a car taking you to floor 1.
-      - [ ] **S5-03a2b The ground floor weighed for a phone**: up to 25 real lights (6 fills,
+      - [ ] **S5-03a2b The home look: calm, welcoming, yours** (the owner, Nov 16, D-263). The
+        moment: you step out of the car and the building breathes out: soft warm light, a
+        finished ceiling, plants by the doors, twelve units that look like little homes rather
+        than the climb's lockups; in yours you flick the light switch and it's warm. The
+        ground floor's ceiling, walls, floor and light re-done calm (the cars' wall keeps the
+        climb's edge); a home unit kit of its own (smooth painted partitions, a finished
+        ceiling, a clean door in a warm colour, the same door rig); a light switch inside by
+        the door; a rug, a beanbag and a floor lamp in every unit to start. Art first, then
+        the game; split as needed.
+      - [ ] **S5-03a2c The ground floor weighed for a phone** (after the new look): up to 25 real lights (6 fills,
         12 home bulbs, 6 car lamps, the porch) and the room's 87,446 triangles plus twelve M
         fronts and six cars, weighed at Galaxy A16 size against the GDD tech plan's caps;
         trimmed where they pass (fewer fills, a front's hidden parts); the run from the spawn

@@ -17,28 +17,33 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - The name cards over the doors (`Specs.Cards` `Unit1` to `Unit12`) are laid empty: a3 writes
   each owner's name.
 
-## Next task: S5-03a2b The ground floor weighed for a phone
-The moment: on a low-end Android you load in and run 150 studs to the cars past twelve lit
-units, and it never stutters.
-1. Count what the lobby draws, all twelve doors open: triangles (the room's `Specs.Parts`
-   sum, 87,446, plus twelve M fronts and six cars), real lights (Client: enabled `Light`s under
-   `Workspace.FrontOffice`; expect 25: 6 fills, 12 home bulbs, 6 car lamps, the porch) and
-   shadowed ones. Compare with the GDD tech plan's caps.
-2. Trim where it passes: try 4 fills (rows at, say, 40 and 116) and judge the spawn view by
-   captures; leave out of each front any part nobody sees (look at `FacadeBack` and the slat
-   templates); keep the cars, carts and trips untouched.
-3. Time the run from the spawn to a car at the game's walk speed (GDD: under 15 s).
-4. Write the numbers in D-263 and the phone steps in `OWNER.md` ("Walk the new ground floor").
-**Acceptance:** check green; D-263 has the counts before and after; the spawn view still reads
-lit with warm doorways (set the client's camera before each capture, STUDIO.md); a car still
-takes you up.
-**Read first:** D-262 (grep "^## D-262" docs/DECISIONS.md); the GDD's tech plan section (docs
-tools, search the heading); `src/shared/Lobby/init.luau` (`Fill` ~66-82, `front`, `lay`);
-`src/shared/UnitLight.luau` (`Home`); `docs/STUDIO.md` "The hall's render cost" (583 on);
-`art/lobby/README.md` "Not verified yet".
+## Next task: S5-03a2b The home look: calm, welcoming, yours
+The moment: you step out of the car and the building breathes out: soft warm light, a finished
+ceiling, plants by the doors, twelve units that look like little homes rather than the climb's
+lockups; in yours you flick the light switch and it's warm (owner, Nov 16, D-263; Lethal
+Company's ship and Resident Evil's save rooms, the safe place set against the danger).
+1. Read D-263, then look at `art/sheets/lobby-spawn.png`, `lobby-unit.png`, `lobby-inside.png`.
+2. Re-do the ground floor calm in `art/lobby`: a finished ceiling with warm, soft lights in
+   place of the bare joists and strip lights, warmer walls, a cared-for floor, potted plants
+   by the units, a bench. The six cars and their back wall keep the climb's edge.
+3. A home unit kit of its own (built the unit's way, its own folder or a home variant of
+   `art/unit`): smooth painted partitions, a finished ceiling in place of the wire top, a clean
+   roll-up door in a warm colour, the same door rig so it rolls, a light switch plate inside by
+   the door; a rug, a beanbag and a floor lamp to start. The climb's units don't change.
+4. In the game: home units in the twelve gaps in place of the climb's M fronts (D-262); the
+   switch (Switch; a click; the light warms up or down over about 0.2 s; dark inside with the
+   door down and the light off; starts on; anyone may switch it until a3 gives units owners).
+5. Judge at Galaxy A16 size: calm, safe, somewhere you'd hang out, plainly not the climb.
+Split it (art, then the game) if it won't fit; the art alone may be a session.
+**Acceptance:** check green; new sheets show a calm ground floor and a home unit unlike the
+climb's; in Studio Play the switch works, a door rolls, and a car still takes you up.
+**Read first:** D-263 and D-262 (grep "^## D-26" docs/DECISIONS.md); `art/lobby/README.md`;
+`art/unit/README.md`; `src/shared/Lobby/init.luau` (`front`, `lay`); `src/shared/UnitLight.luau`.
 
 ## Queue (next sessions, the owner's ticket order)
-1. S5-03a3 a unit each (a Brix plots system first, D-252; the owner's name on its card, the
+1. S5-03a2c the ground floor weighed for a phone, after the new look (ROADMAP has its steps:
+   triangles and real lights with every door open against the GDD caps, trim, time spawn to
+   car), then S5-03a3 a unit each (a Brix plots system first, D-252; the owner's name on its card, the
    doors' rules), F-G1b4a the hard hat on your head (no run-down at home, D-259), S5-03b the
    mirror test, then S5-03c to h.
 2. F-G1b4b the hard hat spent and broken; F-G1b5 waits for its art.

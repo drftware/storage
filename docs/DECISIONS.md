@@ -6725,3 +6725,32 @@ pivoted so its doorway's outer face sits on the slot's `Door` looking `Out`, as
   lamps, the porch), none shadowed but the porch's. Unshadowed, a home bulb reaches through its
   unit's walls; its neighbours are homes too, and the warm wash on the wall between two open
   doors reads as more of the same light. a2b weighs it all on a phone.
+
+## D-263 · 2026-11-16 · The ground floor and its units look like a home, not the climb (the owner's direction, S5-03a2b)
+
+The owner, as the ground floor went in: "I just want to ensure that the art isn't quite so
+strictly identical to the game. The lobby should feel calm and peaceful. Right now the ceiling
+is very industrial, the units are all very rugged. The lobby and home base units should feel
+welcoming and when decorated, fun and somewhere to hang out (within reason). Units should have
+light switches as well because shutting the door makes it dark inside. ... The elevators are
+uncertain, taking you to floors where god knows what happens, but the units on the base floor
+are safe and a space all your own, so I want that vibe fully delivered as well."
+
+- **Two moods in one building.** The six cars and their back wall keep the climb's edge: they
+  are the way into the unknown. The rest of the ground floor is the building at its calmest and
+  best kept: a finished ceiling with warm, soft lights in place of the bare joists and strip
+  lights, warmer walls, a cared-for floor, and a few things that say someone looks after it
+  (potted plants by the units, a bench). Precedent: Lethal Company's ship and Resident Evil's
+  save rooms, the safe place set against the danger; Animal Crossing's homes for the warmth.
+- **Home units are a kit of their own**, not the climb's M front: the same footprint and door
+  rig, so the door still rolls, but smooth painted partitions in place of raw corrugated sheet,
+  a finished ceiling in place of the wire top, a clean roll-up door in a warm colour. The
+  climb's units don't change. This replaces D-262's climb fronts in the gaps.
+- **A light switch in every unit**, by the door inside: Switch (the lamps' verb), a click, the
+  warm light coming up or going down over a moment; with the door down and the light off it's
+  dark. It starts on. Only the unit's owner switches it once a3 hands units out (my default,
+  `OWNER.md`); everyone sees it as it is.
+- **Welcoming from the first visit** (my default, `OWNER.md`): every unit starts with a rug, a
+  beanbag and a floor lamp, as Animal Crossing's first tent comes with a sleeping bag, a lamp
+  and a radio. Movable once Arrange exists (S5-03e).
+- The phone weighing moves to S5-03a2c, after this, since the new look changes what's drawn.
