@@ -44,6 +44,7 @@ local function played(): Save.Data
 		{ find = "Teddy", fresh = Save.Fresh.Kind },
 	}
 	data.boxFresh = Save.Fresh.New
+	data.chipped.Teddy = 1
 	return data
 end
 
@@ -67,9 +68,9 @@ local function same(a: unknown, b: unknown): boolean
 	return true
 end
 
--- A new player: nothing yet, at version 6.
+-- A new player: nothing yet, at version 7.
 do
-	ok(format:latest() == 6, "the save is at version 6")
+	ok(format:latest() == 7, "the save is at version 7")
 	local fresh = format:fresh()
 	ok(fresh.cash == 0 and fresh.bestFloor == 0, "a new player has no cash and no best floor")
 	ok(next(fresh.finds) == nil and next(fresh.sealed) == nil, "a new player keeps no finds")
@@ -85,6 +86,7 @@ do
 	)
 	ok(#fresh.shelf == 0, "a new player's shelf is empty")
 	ok(fresh.boxFresh == Save.Fresh.Seen, "a new player's job box is quiet")
+	ok(next(fresh.chipped) == nil, "a new player has nothing cracked")
 	ok(fresh ~= format:fresh(), "each new save is its own table")
 	local stored, problem = format:encode(fresh)
 	ok(stored ~= nil and problem == nil, `a new save can be stored ({problem})`)
@@ -95,7 +97,7 @@ do
 	local data = played()
 	local stored, problem = format:encode(data)
 	ok(stored ~= nil, `a played save can be stored ({problem})`)
-	local back, decodeProblem = format:decode(6, stored)
+	local back, decodeProblem = format:decode(7, stored)
 	ok(back ~= nil and same(back, data), `a played save comes back the same ({decodeProblem})`)
 end
 
@@ -241,7 +243,19 @@ do
 			and five.boxFresh == Save.Fresh.Seen,
 		`version 5 loads with its shelf and a quiet job box ({fiveProblem})`
 	)
-	local newer, newerProblem = format:decode(7, v1)
+	-- Version 6 as the DataStore holds it (Nov 17): the job box new; nothing cracked yet.
+	local v6 = table.clone(v5)
+	v6.boxFresh = 1
+	local six, sixProblem = format:decode(6, v6)
+	ok(
+		six ~= nil
+			and six.boxFresh == Save.Fresh.New
+			and six.finds.Teddy == 2
+			and #six.shelf == 2
+			and next(six.chipped) == nil,
+		`version 6 loads with its job box and nothing cracked ({sixProblem})`
+	)
+	local newer, newerProblem = format:decode(8, v1)
 	ok(newer == nil and newerProblem ~= nil, "a save from a newer version is refused")
 end
 
@@ -345,6 +359,21 @@ do
 		local passed, err = pcall(case)
 		ok(passed, `{label}: {err}`)
 	end
+end
+
+-- Finds kept with cracked glass (F-G1e5e): counted per name, never more than you keep.
+do
+	local data = Save.fresh()
+	Save.keep(data, { "OilLamp", "OilLamp" }, 1794700000, 0)
+	Save.chip(data, { "OilLamp" })
+	ok(data.finds.OilLamp == 2 and data.chipped.OilLamp == 1, "one of two oil lamps kept cracked")
+	Save.chip(data, { "OilLamp", "OilLamp" })
+	ok(data.chipped.OilLamp == 2, "never more cracked than kept")
+	Save.chip(data, { "Teddy" })
+	ok(data.chipped.Teddy == nil, "a find you don't keep is never marked cracked")
+	local stored = format:encode(data)
+	local back = format:decode(7, stored)
+	ok(back ~= nil and back.chipped.OilLamp == 2, "the cracks are saved")
 end
 
 print(`save.spec: {checks - failures}/{checks} passed`)

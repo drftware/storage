@@ -105,6 +105,9 @@ export type Row = {
 	-- found lit: on as it's found and never runs down, with no press (the Old lamp, D-229). Lying
 	-- anywhere it holds a Mannequin for good, as a pressed light lying lit does (D-234, F-G1e5d)
 	lit: boolean?,
+	-- fragile (the catalog's word, F-G1e5e): the glass part that cracks when it's dropped hard,
+	-- by its name in the art ("OilLamp_Chimney"); cracked, it's worth half (`Finds/Chip`)
+	fragile: string?,
 	grip: { number }, -- where your hand closes, studs from the middle of its bottom
 	heft: number, -- how heavy it feels in your hand, 0 to 1
 	size: "Small" | "Medium" | "Large", -- where it sits in your view (`Tools.Catalog`'s HOLD)

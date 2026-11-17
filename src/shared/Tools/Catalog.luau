@@ -87,6 +87,9 @@ export type Row = {
 	-- The catalog says loose only (the Old lamp, found lit): it stands on the unit's floor, never in
 	-- its marked box (`Deals`).
 	loose: boolean?,
+	-- Fragile (F-G1e5e, as R.E.P.O.'s valuables): the glass part that cracks when it's dropped
+	-- hard, by name; cracked once, it's worth half for good (`Finds/Chip`, `Slots`).
+	fragile: string?,
 	-- It wears out (S1-08). None: it never does (the ladder, a find), or it's used up whole as it's
 	-- placed (the padlock hung on a door, the roll laid across a hall: `Slots:spend`).
 	wear: Wear?,
@@ -472,6 +475,7 @@ for _, row in Rows do
 		worth = row.worth,
 		from = row.from,
 		loose = row.loose,
+		fragile = row.fragile,
 		grip = row.grip,
 		heft = row.heft,
 		hold = hold.at,

@@ -30,7 +30,7 @@ SETS = ["lights", "figures", "windups", "squishies"]
 
 GRADES = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Secret"]  # Grades.Names
 SIZES = ["Small", "Medium", "Large"]
-ROW = ["key", "catalog", "name", "grade", "worth", "from_", "loose", "lit", "grip", "heft", "size",
+ROW = ["key", "catalog", "name", "grade", "worth", "from_", "loose", "lit", "fragile", "grip", "heft", "size",
        "pickUp", "drop", "verb", "press"]
 NEEDED = ["key", "catalog", "name", "grade", "worth", "grip", "heft", "size", "pickUp", "drop"]
 PRESS = ["verb", "on", "more", "lasts", "out", "off", "reset", "noise", "heard", "lure", "toy", "down",
@@ -196,6 +196,8 @@ def rows():
                 fail(f"{where}: a verb of its own and a press; the press's verb is its word")
             if g.get("lit") and (p or g.get("verb")):
                 fail(f"{where}: found lit takes no press (D-229)")
+            if g.get("fragile") and not re.search(rf'Name = "{key}_{g["fragile"]}"', art):
+                fail(f"{where}: fragile names {g['fragile']!r}, no part of its art (Finds/Sets/{luau_set}.luau)")
             row = {
                 "key": key,
                 "set": luau_set,
@@ -206,6 +208,7 @@ def rows():
                 "from": g.get("from_"),
                 "loose": g.get("loose"),
                 "lit": g.get("lit"),
+                "fragile": f"{key}_{g['fragile']}" if g.get("fragile") else None,
                 "grip": list(g["grip"]),
                 "heft": g["heft"],
                 "size": g["size"],

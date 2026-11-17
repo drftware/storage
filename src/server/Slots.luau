@@ -52,6 +52,11 @@
 	it is still theirs in their save, so it's marked with whose box it came from and no gate keeps
 	it for anyone: it stays in your slots through the gate. What's in the box is what you own less
 	these (`fromBox`, Save.boxed), and when its owner leaves each goes back into the box in a glint.
+
+	A fragile find (F-G1e5e, D-296: its row names its glass) let go hard (`Chip.hard`: you were
+	running or falling, or it fell far from your hand) cracks as it lands, once: its crack heard
+	over its clank and drawn on its glass for everyone (`Chip.mark`; the model's `Chipped`
+	attribute for your view's copy), worth half from then, and `keep` names it so the save does.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -61,6 +66,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Chip = require(ReplicatedStorage.Shared.Finds.Chip)
 local Head = require(ReplicatedStorage.Shared.Finds.Head)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local Prompts = require(script.Parent.Prompts)
@@ -212,8 +218,8 @@ export type Slots = Brix.System & {
 	worn: (self: any, each: (player: Player, model: Model) -> ()) -> (),
 	-- Takes every find out of `player`'s slots for good (the gate shut with them aboard, S1-06):
 	-- each goes from their hand with a glint everyone near sees, and their tools stay. The kept
-	-- finds' catalog keys, slot order.
-	keep: (self: any, player: Player) -> { string },
+	-- finds' catalog keys, slot order, and the keys of those with cracked glass (F-G1e5e).
+	keep: (self: any, player: Player) -> ({ string }, { string }),
 	-- What the Packrat would take from `player` if it reached them now (S2-06c, `Carry.prize`):
 	-- that thing's number, or 0 for nothing it takes. Allocates nothing.
 	prize: (self: any, player: Player) -> number,
@@ -245,6 +251,8 @@ type Tool = {
 	-- the UserId whose job box it came out of (S5-03c2b2, D-293): still theirs in their save, so
 	-- no gate ever keeps it for anyone; nil for a find from a floor
 	home: number?,
+	-- its glass cracked (a fragile find dropped hard, F-G1e5e): worth half, never cracks again
+	chipped: boolean?,
 }
 
 type Hand = {
@@ -640,7 +648,27 @@ function Slots.new(): Slots
 	end
 
 	-- Lays `t` on the floor at `pose`; falls there from `from` if given, clanking as it lands.
-	local function layDown(t: Tool, pose: CFrame, from: CFrame?)
+	-- A fragile find's glass cracks where it landed (F-G1e5e): heard over its clank, drawn on
+	-- every screen, worth half from now on. Once.
+	local function crack(t: Tool)
+		local glass = Catalog[t.key].fragile
+		if t.chipped or not glass then
+			return
+		end
+		t.chipped = true
+		Chip.mark(t.model, glass)
+		t.model:SetAttribute(Chip.Attribute, true)
+		Tools.play(Chip.Sound, t.body, Chip.Heard)
+	end
+
+	-- Whether `t`, let go by someone moving `speed` studs a second, falling `fall` studs from
+	-- their hand to the floor, cracks as it lands (`Chip.cracks`).
+	local function cracks(t: Tool, speed: number, fall: number): boolean
+		return Chip.cracks(Catalog[t.key].fragile, t.chipped == true, speed, fall)
+	end
+
+	-- `hard`: it was let go hard enough to crack its glass as it lands (`cracks`).
+	local function layDown(t: Tool, pose: CFrame, from: CFrame?, hard: boolean?)
 		t.owner = nil
 		stow(t)
 		t.model.Name = t.key
@@ -661,6 +689,9 @@ function Slots.new(): Slots
 			tween.Completed:Once(function()
 				if t.owner == nil and t.model.Parent == lying then
 					Tools.play(Catalog[t.key].drop, t.body, Carry.DropHeard)
+					if hard then
+						crack(t)
+					end
 					landed:fire({ key = t.key, at = t.body.Position, reach = Carry.DropHeard })
 				end
 			end)
@@ -715,10 +746,14 @@ function Slots.new(): Slots
 			if t then
 				local at = if root then dropPoint(root) else Vector3.zero
 				local fromCF = if root then root.CFrame else nil
+				-- caught or fallen while running, a fragile find cracks as one let go does
+				local hard = root ~= nil
+					and cracks(t, root.AssemblyLinearVelocity.Magnitude, root.Position.Y - at.Y)
 				layDown(
 					t,
 					resting(t.key, at + Vector3.new(0.4 * (k - 1), 0, 0), math.random(0, 359)),
-					fromCF
+					fromCF,
+					hard
 				)
 			end
 		end
@@ -1088,7 +1123,10 @@ function Slots.new(): Slots
 		local _, facing = root.CFrame:ToOrientation()
 		-- crosswise in front of you, as a dropped tool lands, a little askew
 		local yaw = math.deg(facing) + 90 + math.random(-25, 25)
-		layDown(t, resting(t.key, dropPoint(root), yaw), from)
+		local at = dropPoint(root)
+		-- let go at a run, mid-fall or from high up, a fragile find cracks as it lands (F-G1e5e)
+		local hard = cracks(t, root.AssemblyLinearVelocity.Magnitude, from.Position.Y - at.Y)
+		layDown(t, resting(t.key, at, yaw), from, hard)
 		changed:fire({ player = player, kind = "Drop" })
 	end
 
@@ -1540,10 +1578,10 @@ function Slots.new(): Slots
 		dropAll(player, rootOf(player))
 	end
 
-	function system.keep(_: any, player: Player): { string }
+	function system.keep(_: any, player: Player): ({ string }, { string })
 		local h = hands[player]
 		if not h then
-			return {}
+			return {}, {}
 		end
 		local ids = Carry.keep(h.carry, function(id: string): boolean
 			local t = tools[id]
@@ -1554,6 +1592,7 @@ function Slots.new(): Slots
 			return row ~= nil and row.find == true and not (t and (outs[t.model] or t.home ~= nil))
 		end)
 		local keys: { string } = {}
+		local chipped: { string } = {}
 		-- the find on your head is kept with the rest, going from your head in a glint
 		local worn = heads[player]
 		local w = if worn then tools[worn] else nil
@@ -1567,6 +1606,9 @@ function Slots.new(): Slots
 			if t then
 				tools[id] = nil
 				table.insert(keys, t.key)
+				if t.chipped then
+					table.insert(chipped, t.key)
+				end
 				if t.model.Parent then
 					glint(t.body.Position) -- the one in your hand, as everyone near saw it
 				end
@@ -1579,7 +1621,7 @@ function Slots.new(): Slots
 			publish(player)
 			changed:fire({ player = player, kind = "Keep" })
 		end
-		return keys
+		return keys, chipped
 	end
 
 	function system.lose(_: any, model: Model, sound: Tools.SoundSpec)

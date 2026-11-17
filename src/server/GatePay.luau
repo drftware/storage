@@ -50,7 +50,8 @@ end
 function GatePay.new(): GatePaySystem
 	local keptSignal = Brix.Signal.new() :: Brix.Signal<Kept>
 	local paid: { [Player]: { [number]: boolean } } = {} -- the floors each player was paid for
-	local waiting: { [Player]: { string } } = {} -- kept finds for a save not loaded yet
+	-- kept finds for a save not loaded yet, and those of them with cracked glass (F-G1e5e)
+	local waiting: { [Player]: { kept: { string }, chipped: { string } } } = {}
 	local signals: { Brix.SignalConnection } = {}
 	local connections: { RBXScriptConnection } = {}
 	local remote: RemoteEvent? = nil
@@ -58,19 +59,22 @@ function GatePay.new(): GatePaySystem
 	local slots: Slots.Slots? = nil
 	local saving: Saving.SavingSystem? = nil
 
-	-- Puts `kept` into `player`'s save and writes it, or holds them until it loads.
-	local function store(player: Player, kept: { string })
+	-- Puts `kept` into `player`'s save and writes it, or holds them until it loads. `chipped`: the
+	-- names among them with cracked glass, each worth half (F-G1e5e, `Save.chip`).
+	local function store(player: Player, kept: { string }, chipped: { string })
 		local s = saving
 		local data = if s then s:data(player) else nil
 		if not (s and data) then
-			local held = waiting[player] or {}
-			table.move(kept, 1, #kept, #held + 1, held)
+			local held = waiting[player] or { kept = {}, chipped = {} }
+			table.move(kept, 1, #kept, #held.kept + 1, held.kept)
+			table.move(chipped, 1, #chipped, #held.chipped + 1, held.chipped)
 			waiting[player] = held
 			return
 		end
 		-- each lands on the shelf at home too, its first empty spot (D-284; every home is small
 		-- until the sizes come, S5-03h)
 		Save.keep(data, kept, os.time(), #Home.Specs.Shelf.Spots)
+		Save.chip(data, chipped)
 		task.spawn(function()
 			s:save(player)
 		end)
@@ -88,7 +92,7 @@ function GatePay.new(): GatePaySystem
 			local mine = paid[player] or {}
 			paid[player] = mine
 			local owed = Pay.owed(mine, event.from.number, false)
-			local kept = sl:keep(player)
+			local kept, chipped = sl:keep(player)
 			if owed == 0 and #kept == 0 then
 				continue
 			end
@@ -97,7 +101,7 @@ function GatePay.new(): GatePaySystem
 			end
 			c:pay(player, owed)
 			if #kept > 0 then
-				store(player, kept)
+				store(player, kept, chipped)
 				keptSignal:fire({ player = player, finds = kept, floor = event.from.number })
 			end
 			if RunService:IsStudio() then
@@ -144,7 +148,7 @@ function GatePay.new(): GatePaySystem
 				local held = waiting[each.player]
 				if held then
 					waiting[each.player] = nil
-					store(each.player, held)
+					store(each.player, held.kept, held.chipped)
 				end
 			end)
 		)

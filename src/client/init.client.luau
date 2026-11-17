@@ -35,6 +35,7 @@ local FlashlightView = require(script.FlashlightView)
 local DriveView = require(script.DriveView)
 local DriverBodies = require(script.DriverBodies)
 local InfraredView = require(script.InfraredView)
+local ChipView = require(script.ChipView)
 local FindUseView = require(script.FindUseView)
 local HornView = require(script.HornView)
 local FreeCursor = require(script.FreeCursor)
@@ -130,6 +131,8 @@ local host = Brix.Host.new({
 		{ slot = "headView", system = HeadView.new() },
 		-- the fairy lights laid along a hall, on every screen (F-G1e5c)
 		{ slot = "strandView", system = StrandView.new() },
+		-- a cracked find's crack on your view's copy of it (F-G1e5e)
+		{ slot = "chipView", system = ChipView.new(myHand) },
 		{ slot = "behindDoors", system = BehindDoors.new() },
 		{ slot = "elevatorView", system = elevatorView },
 		{ slot = "keypadPad", system = KeypadPad.new(pressKeypad, needCursor) },

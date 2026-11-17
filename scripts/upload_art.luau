@@ -257,6 +257,15 @@ local ART: { Art } = {
 		manifest = "art/tophole/assets.json",
 		description = "A hole sawn down through a storage unit's steel top, its cut-out panel fallen below",
 	},
+	-- the crack a fragile find's glass shows once it's dropped hard (art/finds/kit/crack.py); its
+	-- image ID goes in Finds/Chip by hand
+	{
+		key = "Crack",
+		path = "art/finds/kit/out/Crack.png",
+		manifest = "art/finds/kit/assets.json",
+		description = "A crack in a lamp's glass, where it was dropped",
+		image = true,
+	},
 }
 local MODEL: OpenCloud.Kind = { assetType = "Model", contentType = "model/fbx" }
 -- An Open Cloud "Decal" upload answers with the image's own ID, which a SurfaceAppearance's

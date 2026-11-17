@@ -830,6 +830,7 @@ GAME = [
         size="Medium",
         pickUp=pitched(CLINK, 1.2),
         drop=pitched(TIN, 1.1),
+        fragile="Chimney",  # "fragile": dropped hard, its glass chimney cracks (Finds/Chip)
         # "Light: warm light that runs down slowly": longer than any other found light
         press=dict(
             verb="Light",
@@ -925,6 +926,7 @@ GAME = [
         size="Large",
         pickUp=pitched(CLINK, 0.9),
         drop=STEEL,
+        fragile="Shade",  # "fragile": dropped hard, its glass shade cracks (Finds/Chip)
         # "It throws coloured patterns on your walls"
         press=lamp([dict(motion="SwitchOn", sound=CLICK_ON)]),
     ),

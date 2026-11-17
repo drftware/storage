@@ -32,6 +32,9 @@
 	  the shelf full goes in the box (it holds every find in `finds`), and its lid sparkles till you
 	  open it. What's in it is what you own less the shelf's and what's out of it (`boxed`, D-293):
 	  a find taken out into your hands is still yours here, never written as gone or kept twice.
+	- `chipped`: how many of the finds you keep (`finds`) have cracked glass, by name (F-G1e5e,
+	  D-296: a fragile find dropped hard, `Finds/Chip`): each is worth half. Never more of a name
+	  than you keep; listed only while one or more is.
 
 	The tickets that earn each write it (GDD "Saving", "The collection book"). So far: `finds` and
 	the book's `finds` page, as finds are kept at the gate (S1-06, `keep`), `cash`, as the coins
@@ -75,6 +78,7 @@ export type Data = {
 	wornWrap: string,
 	shelf: { Spot },
 	boxFresh: number,
+	chipped: Counts,
 }
 
 -- The parts of Brix's SaveFormat contract the server and the spec call (`Brix.SaveFormat<Data>`).
@@ -114,6 +118,7 @@ function Save.fresh(): Data
 		wornWrap = "",
 		shelf = {},
 		boxFresh = 0,
+		chipped = {},
 	}
 end
 
@@ -214,6 +219,18 @@ function Save.open(data: Data): number
 	local was = data.boxFresh
 	data.boxFresh = Save.Fresh.Seen
 	return was
+end
+
+-- Finds kept with cracked glass (F-G1e5e, D-296): one more of each name in `names` marked
+-- chipped, never more of a name than `data.finds` keeps (call it after `keep` has counted them).
+function Save.chip(data: Data, names: { string })
+	for _, name in names do
+		local owned = math.floor(data.finds[name] or 0)
+		local chipped = math.min(owned, math.floor(data.chipped[name] or 0) + 1)
+		if chipped >= 1 then
+			data.chipped[name] = chipped
+		end
+	end
 end
 
 -- Cash earned (S1-12, the coins left at a climb's end): `cash` more in `data.cash`, whole and never
@@ -356,6 +373,35 @@ function Save.format(brix: any): Format
 		boxFresh = Schema.number({ min = 0, max = 2, integer = true }),
 	})
 
+	-- Version 7 (F-G1e5e, Nov 17): version 6 plus how many of each find you keep have cracked
+	-- glass (fragile, dropped hard), each worth half.
+	local seventh = Schema.shape({
+		cash = Schema.number({ min = 0, integer = true }),
+		finds = Schema.map(name, count),
+		sealed = Schema.map(name, count),
+		stamps = Schema.shape({
+			finds = Schema.map(name, stamped),
+			sealed = Schema.map(name, stamped),
+			keepers = Schema.map(name, stamped),
+		}),
+		bestFloor = Schema.number({ min = 0, integer = true }),
+		purchases = Schema.list(name),
+		recipients = Schema.map(name, name),
+		bought = Schema.map(name, count),
+		spares = Schema.map(name, count),
+		wraps = Schema.map(name, stamped),
+		wornWrap = Schema.string({ maxLength = 64 }),
+		shelf = Schema.list(
+			Schema.shape({
+				find = Schema.string({ maxLength = 64 }),
+				fresh = Schema.number({ min = 0, max = 2, integer = true }),
+			}),
+			{ maxCount = Save.ShelfMost }
+		),
+		boxFresh = Schema.number({ min = 0, max = 2, integer = true }),
+		chipped = Schema.map(name, count),
+	})
+
 	return brix.SaveFormat.versioned({
 		versions = {
 			{ schema = first },
@@ -449,6 +495,28 @@ function Save.format(brix: any): Format
 						wornWrap = old.wornWrap,
 						shelf = old.shelf,
 						boxFresh = 0,
+					}
+				end,
+			},
+			{
+				schema = seventh,
+				-- any: a version 6 save as Brix hands it over, already checked against `sixth`
+				migrate = function(old: any): any
+					return {
+						cash = old.cash,
+						finds = old.finds,
+						sealed = old.sealed,
+						stamps = old.stamps,
+						bestFloor = old.bestFloor,
+						purchases = old.purchases,
+						recipients = old.recipients,
+						bought = old.bought,
+						spares = old.spares,
+						wraps = old.wraps,
+						wornWrap = old.wornWrap,
+						shelf = old.shelf,
+						boxFresh = old.boxFresh,
+						chipped = {},
 					}
 				end,
 			},
