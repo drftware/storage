@@ -7796,3 +7796,19 @@ The owner's word (D-252): a system the home needs that Brix lacks is built in Br
   plots), each ask is checked and rate-limited (`Brix.RateLimit.bucket`), and every change is told to
   every client. Brix's adapter for this (its ENG-26b) waits until the game has wired its own.
 - Footprints are flat: a tall floor find and a low wall find may cross. Not judged until it shows.
+
+## D-307 · 2026-11-17 · The mega goo ball: 8 in, marbled violet, heard across the floor (S3a)
+
+The catalog's mega goo ball (Epic, 120, "both hands, and a deep squelch that carries").
+- **Size:** 200 mm across (7.9 in), the jumbo stress balls sold for both hands (Giggle Zone's 8 in;
+  Vat19's 5 in "Giant Stress Ball"): as big as your head, which is the moment.
+- **Its look:** acid slime green with violet folded through it in smooth ribbons, as a marbled
+  squeeze ball's (Vat19's "Mondo Marble"). Plain green read as a green apple, its fill plug as the
+  stem; the violet also says Epic, as most games' rarity colours do. No plug on top.
+- **Its squeeze:** the goo ball's builder (now the class `Goo` in `squishies/build.py`) with two
+  palms for five fingers, each dent as wide as a palm; slower to close, a heavy wobble back.
+- **How far it carries:** `squeeze(s, noisy=True, heard=ACROSS_THE_FLOOR)`, 90 studs, the
+  clatter of the chattering teeth and the tin bird, round a corner or two; the duck's squeak is
+  60. Its squelch is the goo ball's an octave down, at full volume.
+- **Both hands** (built in S3b): the ladder's `bothHands` rule, Lethal Company's two-handed items
+  (no switching slots or picking up while it's in your hands), with a hold of its own in your view.

@@ -494,3 +494,35 @@ in the new `-held-warm` sheet (the held view at its warmest). Full sheets judged
 the warmed copy showed the prints and the copy at rest stayed plain blue (the alpha survived the
 upload: FBX 111826517480983, 1 part, 42 Bones). Seen in Play (`docs/art/S2b-colour-goo-ball-squeezed.jpg`).
 
+
+## Mega goo ball (S3a, Nov 17)
+
+`MegaGooBall` (the goo ball's builder, now the class `Goo`, with its own numbers; kinds 38 and
+39; spec `MEGABALL`, `MEGA_OOZE`). Epic, 120, "Squeeze: both hands, and a deep squelch that
+carries", loud enough to draw a monster.
+
+**References** (looked at, not saved). Vat19's "Giant Stress Ball" (vat19.com/item/giant-stress-ball):
+5 in (12.7 cm) of TPR, 13 oz, sold as a ball you "dig into with both hands"; its photo shows a
+fist sunk deep into a glossy turquoise skin, which creases round it. Giggle Zone's Jumbo Stress
+Ball (thetoyinsider.com, Sunny Days Entertainment): 8 in across; Vat19's "Mondo Marble Stress
+Ball" (listed beside it): two colours folded together. The goo ball's references (the
+2.5 in goo balls, Wikimedia Commons' stress ball photos) for its skin, plug and ooze.
+
+**Size.** 200 mm across (7.9 in, the 8 in jumbo): 0.79 studs, as big as your head; it slumps
+7 mm onto the floor under its own weight.
+
+**Tells.** Its size, held in both arms; acid slime green (the other goo balls are pink, sky
+blue, clear aqua and dark violet), wet and glossy, violet folded through it in smooth ribbons in
+pairs (its grade, Epic); squeezed, two palms flatten its sides and the goo heaves out front and
+back between them and up its top, then it slumps half back with a heavy wobble and creeps round.
+
+**Judged** (quick sheets, three rounds): plain green with its fill plug on top it read as a
+green apple and its stem: marbled violet, the plug gone from the top. Jagged fractal veins and a
+pale shimmer read as a globe's coastlines and clouds: smooth paired ribbons, the shimmer gone.
+On the full sheets their soft edges mixed lime and lilac into grey bands: crisp edges. Pale
+loops remain where the lighter rim spreads over flat stretches of the swirl (S3b fixes it).
+The squeeze's filmstrip reads: the sides flatten, the goo heaves front and back.
+
+**The squeeze** (25 bones: two rings of twelve and one on top): the goo ball's blisters with two
+presses for five, each dent as wide as a palm (`dent_pow` 2, a finger's is 3), slower to close
+(0.55 s) and longer to come back (6.6 s) than the goo ball's.

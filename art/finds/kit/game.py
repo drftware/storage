@@ -186,12 +186,13 @@ ACROSS_THE_FLOOR = 90
 AS_FAR_AS_THE_HORN = 130
 
 
-def squeeze(s, noisy=False):
+def squeeze(s, noisy=False, heard=DOWN_THE_HALL):
     """A squishy's press: one squash and its sound, again once it has come back. `noisy`: the
-    squeak is heard by monsters down the hall (the duck)."""
+    squeak is heard by monsters as far as `heard` (the duck's down the hall; the mega goo
+    ball's deep squelch across the floor)."""
     p = dict(verb="Squeeze", on=[dict(motion="Squeeze", sound=s)], toy=True)
     if noisy:
-        p.update(noise="Squeeze", heard=DOWN_THE_HALL)
+        p.update(noise="Squeeze", heard=heard)
     return p
 
 

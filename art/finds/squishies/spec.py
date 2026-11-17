@@ -615,6 +615,44 @@ WARM = [
 ]
 
 
+# --- The mega goo ball (S3) ---------------------------------------------------------------------
+# References (README): the jumbo stress balls sold for both hands, 5 in (Vat19's "Giant Stress
+# Ball", 13 oz of TPR: "dig into it with both hands") to 8 in across (Giggle Zone's Jumbo Stress
+# Ball); a fist or a palm sinks deep into the glossy skin and it creases round it. Ours is the
+# 8 in one, as big as your head, filled with goo: heavy, so it slumps where it sits. Acid slime
+# green, unlike the other goo balls, marbled with violet for its grade (Epic; Vat19's "Mondo
+# Marble Stress Ball" folds two colours so): plain green, it read as a green apple (S3a). Held
+# in both arms, two palms press in on its sides and the goo heaves out front and back between
+# them and up its top: the goo ball's builder (`Goo`) with two presses and its own numbers.
+MEGABALL = dict(
+    r=100.0,           # the ball's radius: 200 mm across (7.9 in), the 8 in jumbo
+    sink=7.0,          # how far it settles onto the floor: a big bag of goo slumps
+    soft=9.0,          # how gently that flat spot rounds into the ball (mm)
+    # the squeeze: two palms press in on its left and right; the goo's height out front and back
+    # (mm), a palm's dent (mm), how far up and down both reach (degrees from the waist) and the
+    # top pushed up (mm); `dent_pow` 2 makes a dent as wide as a palm (the goo ball's 3: a finger)
+    presses=2, bulge=18.0, dent=21.0, dent_pow=2.0, reach=66.0, rise=11.0,
+    front=-90.0,       # a blister faces the front (your view sees it heave towards you)
+    ring=20.0, per=6,  # the bones: rings this far above and below the waist, six a press
+    plug_r=0.0,        # no plug on top: on a big green ball it read as an apple's stem (S3a)
+    rounds=((140, 240), (40, 80)),  # the lathe's rings and segments (detailed, game): held big
+    dust=0.25, seed=71.0,
+)
+
+# The squeeze, as a share of the full press: both arms close slowly round a heavy ball and the
+# goo heaves out between them, still oozing while hugged; let go, its weight slumps it half back
+# at once with a heavy wobble, then it creeps round again slowly (seconds, share[, style, way]).
+MEGA_OOZE = [
+    (0.0, 0.0),
+    (0.55, 0.72, "Quad", "Out"),      # both arms close: its sides flatten, the goo heaves out
+    (1.7, 1.0, "Sine", "InOut"),      # hugged: it keeps oozing out
+    (1.95, 0.5, "Quad", "Out"),       # let go: its weight slumps it half back at once
+    (2.35, 0.62, "Sine", "InOut"),    # and it wobbles
+    (2.75, 0.5, "Sine", "InOut"),
+    (6.6, 0.0, "Cubic", "Out"),       # then slowly comes back round
+]
+
+
 # --- The game rows (F-G1f, D-265; art/finds/PIPELINE.md) ----------------------------------------
 # What the game deals and plays for each find, in the order the deal lists them. art/finds/rows.py
 # (plain Python: `scripts/art.sh rows`, and every export) writes them into
@@ -626,6 +664,7 @@ WARM = [
 # (a sound named as a motion above, SQUISH, SIGH, CRINKLE, SLOSH, takes _SOUND: the build reads
 # the motion's keys from this module, and the import replaced them, S1)
 from game import (  # noqa: E402
+    ACROSS_THE_FLOOR,
     CRINKLE as CRINKLE_SOUND,
     RUBBER,
     RUSTLE,
@@ -795,5 +834,20 @@ GAME = [
         drop=pitched(SOFT, 0.95, 0.6),
         # "changes colour where your fingers pressed": the goo ball's squelch, a touch drier
         press=squeeze(pitched(SQUELCH, 0.84, 0.5)),
+    ),
+    dict(
+        key="MegaGooBall",
+        catalog="Mega goo ball",
+        name="Mega goo ball",
+        grade="Epic",
+        worth=120,
+        grip=(0, 0.4, 0),  # round its middle
+        heft=0.45,  # an 8 in ball of goo, about 3 lb: it sags as it lands in your arms
+        size="Large",
+        pickUp=pitched(SOFT, 0.8, 0.9),
+        drop=pitched(SQUELCH, 0.6, 0.8),  # it lands in a heavy, wet slap
+        # "both hands, and a deep squelch that carries": the goo ball's squelch an octave down
+        # and loud, heard by monsters across the floor (round a corner or two)
+        press=squeeze(pitched(SQUELCH, 0.5, 1.0), noisy=True, heard=ACROSS_THE_FLOOR),
     ),
 ]

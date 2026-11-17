@@ -6,8 +6,8 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** S3 (the mega goo ball: Epic, 120, both hands and a deep squelch that carries, loud
-enough to draw a monster; through PIPELINE.md, reusing the goo ball's builder). V5e2 (a cracked lamp seen drawn and banked) waits for Q1.
+**Next:** S3b (the mega goo ball: judge its full sheets, tick it, hold it in both hands,
+import it and see it in Play; S3a's note says where it stands). V5e2 (a cracked lamp seen drawn and banked) waits for Q1.
 V5a to V5f are done and seen in Play (Nov 17), but for V5e2.
 
 ## The third run's plan (owner's brief, Nov 16 night)
@@ -123,6 +123,7 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 | Galaxy goo ball (`GalaxyGooBall`) | Stars drift and swirl inside · Squeeze | works: squeezed, squashes in hand (to 0.71), its insides move, its own sound (V1) | Legendary · 350 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; its insides move; its body stays still in hand (V1b); Nov 17, V1b: pressed in hand, squashed to 0.71 of its height in hand and in your view's copy, its root still in the hand |
 | Colour-change goo ball (`ColourGooBall`) | Changes colour where your fingers pressed · Squeeze (quiet; the squishy craze itself) | works: squeezed, the goo ball's ooze, and five orchid fingertip prints bloom on its sky-blue skin and cool back over 4.6 s (S2a, S2b, D-303); quiet | Rare · 40 · floor 1 up ✓ | Nov 17, S2b: dealt (`DevBox`, seed 7, floor 1's Unit107: "held a find, the ColourGooBall in its box"), taken from its box into slot 1, squeezed in hand twice: the server stamped it (`UseAt`, `UseCount` 1); its tint from Rest (0.38, 1, 1) to Warm (1, 0.50, 0.93) by 0.6 to 1.0 s, held to 1.9 s, back to Rest by 6.2 s, on your view's copy and on the ball in your character's hand (what friends see) alike; its squelch at 0.09 s; under the unit's bulb the ball reads teal and the prints red-pink, two either side of the front blister (`docs/art/S2b-colour-goo-ball-squeezed.jpg`); not banked, no monster in reach (it's quiet) |
 | Goo ball (`GooBall`) | Oozes between your fingers and slowly comes back · Squeeze (quiet; the squishy craze itself) | works: squeezed, five blisters ooze out between your fingers on bones and slowly come back, its own squelch; quiet (S1) | Common · 3 · floor 1 up ✓ | Nov 17, S1b: dealt (`DevBox`, seed 7, floor 1's Unit107: "held a find, the GooBall in its box"), taken from its box into slot 1, pressed in hand twice, stamped On: its bones out to 0.017 studs and turned up to 35 degrees at 1.2 s, back by 4.5 s, the same in your view's copy; its squelch from 0.07 s; not banked, no monster in reach (it's quiet) |
+| Mega goo ball (`MegaGooBall`) | Both hands, and a deep squelch that carries; loud enough to draw a monster · Squeeze (heard 90 studs, D-307) | built, not yet seen in Play: art and row (S3a), not ticked; both hands waits for S3b | Epic · 120 · floor 1 up ✓ | |
 | Boombox (`Boombox`, bedroom set) | Loud music wherever you leave it, monsters come to look; at home it plays your tapes · Play, a noise (R.E.P.O.'s music box) | works (V5a, D-286): its key clacks, 80s electro 15 s, the case thumping each beat and swaying from its handle, lures every 2 s, 130 studs, in hand or where you leave it; the tapes wait on the home chain | Uncommon · 25 · floor 1 up ✓ | Nov 17, V5a: given (GiveFind), pressed in hand: the key dipped it to 0.975, then it swelled to 1.04 every 0.53 s, swaying up to 3 degrees and hopping 0.035 studs from the handle, the same in your view's copy; the song from 0.36 s; the Mannequin 56 studs off woke, came and caught me ("lured 8 times (130 studs)"). Again, dropped 2.5 s in and me lifted away: the song carried on from where it was (10.6 s into the recording), the case thumping on the floor; the Mannequin went to it and stood looking |
 | Small box TV (`Television`, bedroom set) | At home: it plays your tapes and films · Play (Animal Crossing's records) | waits on the home chain | Uncommon · 22 · floor 1 up ✓ | |
 | Small teddy bear (`Teddy`, bedroom set) | A tiny squeak · Hug (quiet) | works (V5a, D-286): hugged, squashes, a tiny squeak, wiggles back; quiet | Common · 4 · floor 1 up ✓ | Nov 17, V5a: given, pressed in hand: squashed to 0.78 at 0.17 s in hand and in your view's copy, tipped 6 degrees, sprang to 1.07 and settled by 1.05 s; the cloth at 0.08 s, the squeak at 0.17 s |
@@ -249,6 +250,37 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, S3a (the mega goo ball's art and row; not ticked, imported or seen in Play; S3b
+  next).** **Kit:** the goo ball's builder is now the class `Goo(spec, ooze)` in
+  `squishies/build.py` (`body`, `bones`, `tracks`, `dur`, `zc`, `front`, `reach`); the goo ball
+  and colour ball use `GOO = Goo(K.GOOBALL, K.OOZE)` through their old names, and the export's
+  `Squishies.luau` diff proves them unchanged. New spec keys: `dent_pow` (3 a finger, 2 a palm),
+  `soft`, `rounds`, and `plug_r` 0 for no plug. **Art:** `MegaGooBall` (spec `MEGABALL`,
+  `MEGA_OOZE`; README section): 200 mm (0.79 studs), acid green `#84D92F`, glossy, violet folded
+  through in paired ribbons; two palms press its sides, the goo heaves front and back and up its
+  top, then it slumps half back with a wobble and creeps round (6.6 s); 25 bones; 1024 texture at
+  624 texels a stud, 6,240 triangles. Judged on quick sheets three times (an apple, then a globe:
+  README's "Judged"). Full sheets rendered twice and the front and held views looked at: crisp
+  violet ribbons read as a marbled toy, but **pale grey-lilac loops remain** on its lower front:
+  the lighter rim (`#9B4FEA`, `ribbon(at, half + 0.008, ...)` in `mega_look`) spreads wide where
+  the swirl's noise is flat. S3b's first fix: drop the rim layer or widen by the noise's slope. **Row:** Epic, 120,
+  grip (0, 0.4, 0), heft 0.45, `Large`, `squeeze(pitched(SQUELCH, 0.5, 1.0), noisy=True,
+  heard=ACROSS_THE_FLOOR)` (`squeeze` takes `heard` now; D-307); `Finds/Order.luau` has it.
+  **For S3b:** look at `art/sheets/megagooball-*.png` (front, held, unit, squeeze, gold) and fix
+  what reads wrong; tick its Squishies line (`Nov 17, S3b`), `scripts/art.sh rows`, the deal's
+  fingerprint (PIPELINE.md step 5). **Both hands:** no find has a two-hand hold yet. The ladder
+  has one (`Catalog` row `bothHands`: no switching slots or picking up, Lethal Company's
+  two-handed items; `Slots`, `ToolView`, `MarkedBoxes`, `Carry` already obey it), but it rides
+  on your shoulder (`shoulder`). Build it once as data: a row field (say `hands=2`) written by
+  `art/finds/rows.py` into `Finds/Rows` and `Finds/Game.luau`'s type, which `Tools/Catalog`'s
+  kit loop turns into `bothHands = true`, a centred hold in your view (a `HOLD` entry: low,
+  middle, nearer than `Large`) and, for friends, the ball at your chest (`shoulder` from the
+  upper torso, about (0, -0.5, -1.2)); friends' arms round it (`Joints`, as `HornView` raises
+  the horn arm) is polish if it doesn't fit. Then `git checkout` the set's other FBX, `lune
+  run scripts/upload_art`, import in Edit from a clone of `Shared` (1 part, 25 Bones), and Play:
+  `DevBox` = `MegaGooBall`, take it, try to switch slots (refused), squeeze it by a Mannequin
+  and see it turn to the noise; fill its A1 row.
 
 - **Nov 17, S2b (the colour-change goo ball finished, imported and seen in Play; S3 next).**
   Its prints were hard bars cut by crease stripes: now oval fingertips (`cc_prints`, spec

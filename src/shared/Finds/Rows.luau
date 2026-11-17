@@ -2251,6 +2251,50 @@ local Rows: { Game.Row } = {
 			toy = true,
 		},
 	},
+	{
+		key = "MegaGooBall",
+		set = "Squishies",
+		judged = false,
+		name = "Mega goo ball",
+		grade = "Epic",
+		worth = 120,
+		grip = { 0, 0.4, 0 },
+		heft = 0.45,
+		size = "Large",
+		pickUp = {
+			id = "rbxassetid://9117373366",
+			from = 0.4,
+			length = 0.4,
+			volume = 0.9,
+			pitch = 0.8,
+		},
+		drop = {
+			id = "rbxassetid://9114519462",
+			from = 0,
+			length = 0.6,
+			volume = 0.8,
+			pitch = 0.6,
+		},
+		verb = "Squeeze",
+		press = {
+			verb = "Squeeze",
+			on = {
+				{
+					motion = "Squeeze",
+					sound = {
+						id = "rbxassetid://9114519462",
+						from = 0,
+						length = 0.6,
+						volume = 1.0,
+						pitch = 0.5,
+					},
+				},
+			},
+			noise = "Squeeze",
+			heard = 90,
+			toy = true,
+		},
+	},
 }
 
 return Rows
