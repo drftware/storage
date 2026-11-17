@@ -99,6 +99,17 @@ nowhere else.
      "GatePay: … out of …'s job box: Lost". Player 2 picks it up and carries it aboard: theirs.
      Player 1 rejoins: one fewer.
   Look for: nothing doubled, nothing else gone.
+- [ ] **Arrange's limit bar, the lid and a friend's finds** (S5-03e3b, D-313; the bar filling
+  and the lid seen in Studio Play on the Galaxy A16, `docs/art/S5-03e3b-*`; a friend and a full
+  room not seen). Studio's Test tab, 2 players. Player 1 walks into their home and taps Arrange:
+  a small bar top middle shows how many finds are out of 25; Place one and it fills a little,
+  the count popping. Player 2 stands in player 1's doorway: each find player 1 sets out drops a
+  hand's width into place with a soft knock, never just appears; a disco ball on the ceiling
+  rises up into place. Player 1 opens the job box with the moon lamp on its lid: the lamp rides
+  the lid up and back down. Look at it from the side: the lid stops at about 60 degrees, the
+  lamp leaning back to the wall, with a knock (my default: a lid with something on it opens only
+  as far as it can go; the other way is the lamp hidden through the wall). To see the room full,
+  set 25 out: the cards dim, and a press on one shakes it and pulses the bar.
 - [ ] **Judge: a Gold on your shelf** (S5-03c3b3, D-300). Seen in Studio in your hand (it reads as
   solid gold under the bulb) and in the hand wells, but the shelf's cubby never came clear in a
   capture. Open your job box, pick a Gold card, press Shelf, then stand at the shelf: does it

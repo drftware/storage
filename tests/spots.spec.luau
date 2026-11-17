@@ -76,6 +76,26 @@ do
 	ok(most <= Save.PlacedMost, "the save holds every size's limit")
 end
 
+-- The limit bar: finds set out count, the room's own pieces don't; how full, and full at the limit.
+do
+	local rows: { Save.PlacedRow } = {}
+	for _, id in { "BlobLamp#1", "Shelf", "Teddy:Gold#2", "JobBox", "Floor" } do
+		table.insert(rows, { id = id, on = "Floor", x = 0, y = 0, turn = 0 })
+	end
+	ok(Spots.setOut(rows) == 2, "two finds set out among the room's own pieces")
+	ok(Spots.setOut({}) == 0, "an empty room: none set out")
+	local f, full = Spots.fill(12, 25)
+	ok(near(f, 0.48) and not full, "12 of 25: a little under half, not full")
+	f, full = Spots.fill(25, 25)
+	ok(near(f, 1) and full, "25 of 25: full")
+	f, full = Spots.fill(30, 25)
+	ok(near(f, 1) and full, "past a lowered limit: full, the bar no further")
+	f, full = Spots.fill(0, 25)
+	ok(near(f, 0) and not full, "none set out: empty")
+	f, full = Spots.fill(0, 0)
+	ok(near(f, 1) and full, "a limit of none: full")
+end
+
 -- The room from an XL box (20 across, 10 tall, 29.75 deep, its middle 15.125 in): its floor,
 -- ceiling, back and side walls, each face into the room.
 do

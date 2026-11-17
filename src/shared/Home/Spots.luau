@@ -179,6 +179,27 @@ function Spots.limit(name: string): number
 	return Spots.Sizes[1].limit
 end
 
+-- How many of a room's placed things (`rows`, as Placements saves them) are finds set out: the
+-- room's own pieces never count against the limit.
+function Spots.setOut(rows: { Save.PlacedRow }): number
+	local n = 0
+	for _, row in rows do
+		if Spots.name(row.id) then
+			n += 1
+		end
+	end
+	return n
+end
+
+-- The limit bar (Bloxburg's build budget): how full it stands, 0 to 1, with `count` finds set out
+-- of `limit`, and whether it's full (a find in the box can't come out; one set out still moves).
+function Spots.fill(count: number, limit: number): (number, boolean)
+	if limit <= 0 then
+		return 1, true
+	end
+	return math.clamp(count / limit, 0, 1), count >= limit
+end
+
 -- The room's areas, in the unit's frame, from its inside box's middle `centre` and its size
 -- `size` (across, tall, deep). The front wall is the door's, so it holds nothing.
 function Spots.room(centre: Vec, size: Vec): { [string]: RoomArea }

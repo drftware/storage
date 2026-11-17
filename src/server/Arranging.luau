@@ -23,13 +23,17 @@
 	ownership (only the asker's own home, a name only while one is in their box, an id only while
 	it's set out). Arranged(what, id, refusal) answers the asker: the id it now stands as and ""
 	when it stood; "" and "" when one was put away. ArrangeBox (`Arrange.BoxRemote`, S5-03e3a)
-	sends the asker's job box (counts by name) when the screen asks, and after every change.
+	sends the asker's job box (counts by name), how many finds they have set out and the limit
+	(the screen's limit bar, S5-03e3b) when the screen asks, and after every change. A find drawn
+	by a move carries the server's time (`Arrange.WhenAttribute`), so another screen settles it in
+	with a knock rather than letting it appear; one drawn as the home is laid carries none.
 	The room's set-up is shared with the screen (`Arrange.room`), so both judge alike.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
+local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local Arrange = require(ReplicatedStorage.Shared.Home.Arrange)
@@ -47,12 +51,14 @@ local Slots = require(script.Parent.Slots)
 -- A find as drawn: its model, and its box (`Arranged.bounds`) measured once.
 type Drawn = { model: Model, size: Vector3, centre: Vector3 }
 
--- One held home: its unit, its room (`Arrange.room`: its judge, each area's frame), what's drawn,
--- and whether its save is newer than this server (then it's never written).
+-- One held home: its unit, its room (`Arrange.room`: its judge, each area's frame), how many
+-- finds it holds set out, what's drawn, and whether its save is newer than this server (then it's
+-- never written).
 type HomeSet = {
 	unit: Model,
 	room: Arrange.Room,
 	placements: Brix.Placements,
+	limit: number,
 	drawn: { [string]: Drawn },
 	folder: Folder,
 	stale: boolean,
@@ -99,7 +105,8 @@ function Arranging.new(): ArrangingSystem
 	end
 
 	-- Draws find `id` where it stands now (made the first time), then whatever stands on it.
-	local function draw(home: HomeSet, id: string, owner: Player)
+	-- `moved`: by a Place, just now (stamped, so other screens settle it in), not as it's laid.
+	local function draw(home: HomeSet, id: string, owner: Player, moved: boolean)
 		local name = Spots.name(id)
 		local t = poseFrame(home, id)
 		if not (name and t) then
@@ -148,15 +155,18 @@ function Arranging.new(): ArrangingSystem
 			d.model:SetAttribute(Arrange.OnAttribute, pose.on)
 			d.model:SetAttribute(Arrange.AtAttribute, Vector3.new(pose.x, pose.y, pose.turn))
 		end
+		if moved then
+			d.model:SetAttribute(Arrange.WhenAttribute, Workspace:GetServerTimeNow())
+		end
 		d.model.Parent = home.folder
 		for _, rider in home.placements:standingOn(id) do
-			draw(home, rider, owner)
+			draw(home, rider, owner, moved)
 		end
 	end
 
 	-- Draws what changed since the last take: placed and moved finds (and their riders), and
-	-- removed ones taken away. The room's own things are never drawn.
-	local function apply(home: HomeSet, owner: Player)
+	-- removed ones taken away. The room's own things are never drawn. `moved` as `draw`'s.
+	local function apply(home: HomeSet, owner: Player, moved: boolean)
 		for _, e in home.placements:takeEvents() do
 			if e.kind == "removed" then
 				local drawn = home.drawn[e.id]
@@ -166,7 +176,7 @@ function Arranging.new(): ArrangingSystem
 				end
 				home.room.heights[e.id] = nil
 			elseif Spots.name(e.id) then
-				draw(home, e.id, owner)
+				draw(home, e.id, owner, moved)
 			end
 		end
 	end
@@ -212,7 +222,8 @@ function Arranging.new(): ArrangingSystem
 		if have or not (data and unit and slot and laid and player.Parent) then
 			return
 		end
-		local room = Arrange.room(unit, slot, laid.pivot, Spots.limit(Spots.Start))
+		local most = Spots.limit(Spots.Start) -- S5-03h: the unit's own size
+		local room = Arrange.room(unit, slot, laid.pivot, most)
 		local placements = room.placements
 		local folder = Instance.new("Folder")
 		folder.Name = FOLDER
@@ -223,6 +234,7 @@ function Arranging.new(): ArrangingSystem
 			unit = unit,
 			room = room,
 			placements = placements,
+			limit = most,
 			drawn = {},
 			folder = folder,
 			stale = dropped == nil,
@@ -231,7 +243,7 @@ function Arranging.new(): ArrangingSystem
 		if dropped and (#dropped > 0 or #rows < #data.placed.rows) then
 			keep(home, data) -- what no longer fits is back in the box
 		end
-		apply(home, player)
+		apply(home, player, false)
 	end
 
 	-- Place: sets `what` (a find's name, out of the box; or an id set out, moved) at `pose`. The id
@@ -263,7 +275,7 @@ function Arranging.new(): ArrangingSystem
 			return "", refusal
 		end
 		keep(home, data)
-		apply(home, player)
+		apply(home, player, true)
 		return id, ""
 	end
 
@@ -284,15 +296,19 @@ function Arranging.new(): ArrangingSystem
 		end
 		away(id)
 		keep(home, data)
-		apply(home, player)
+		apply(home, player, true)
 		return ""
 	end
 
-	-- Sends `player` what's in their job box now (counts by name), for the screen's tray.
+	-- Sends `player` what's in their job box now (counts by name), for the screen's tray, and how
+	-- many finds they have set out of the most their home holds, for its limit bar.
 	local function sendBox(player: Player)
 		local data = if saving then saving:data(player) else nil
+		local home = homes[player]
 		if boxRemote and data then
-			boxRemote:FireClient(player, Save.boxed(data, outOf(player)))
+			local out = if home then Spots.setOut(home.placements:save().rows) else 0
+			local most = if home then home.limit else Spots.limit(Spots.Start)
+			boxRemote:FireClient(player, Save.boxed(data, outOf(player)), out, most)
 		end
 	end
 

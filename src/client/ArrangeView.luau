@@ -63,6 +63,8 @@ local POP = TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local QUICK = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 local LAND = TweenInfo.new(Feel.Land, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 local BACK = TweenInfo.new(Feel.Back, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+local FILL = TweenInfo.new(Feel.Fill, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local HONEY = Color3.fromRGB(247, 201, 120) -- the limit bar's fill: warm, the home's own light
 
 -- A button pressed: the job box panel's click.
 local PRESS: Arrange.Sound = {
@@ -71,6 +73,15 @@ local PRESS: Arrange.Sound = {
 	length = 0.3,
 	volume = BoxPanel.Click.volume,
 	pitch = BoxPanel.Click.pitch,
+}
+
+-- A card pressed while the room holds all it can: the same click, low and dull.
+local REFUSE: Arrange.Sound = {
+	id = BoxPanel.Click.id,
+	from = 0,
+	length = 0.3,
+	volume = BoxPanel.Click.volume,
+	pitch = (BoxPanel.Click.pitch or 1) * 0.62,
 }
 
 local STILL = "ArrangeStill"
@@ -199,6 +210,12 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 	local placeButton: TextButton? = nil
 	local awayButton: TextButton? = nil
 	local cards: { [string]: TextButton } = {}
+	-- The limit bar: how many finds are set out of the most the home holds (the server's count,
+	-- sent with the box), and whether that's all (then a card in the tray won't lift).
+	local meter: Frame? = nil
+	local meterFill: Frame? = nil
+	local meterCount: TextLabel? = nil
+	local setOut, most, full = 0, Spots.limit(Spots.Start), false
 
 	local function remote(name: string): RemoteEvent?
 		local folder = ReplicatedStorage:FindFirstChild(Spots.RemoteFolder)
@@ -578,6 +595,9 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 
 	-- Lifts a find out of the box, under screen point `at`.
 	local function liftBoxed(key: string, at: Vector2)
+		if full then
+			return -- the room holds all it can: the card dims and won't lift
+		end
 		local r = room
 		local base = Gold.base(key)
 		local ghost = if r then Tools.clone(base or key, CFrame.identity) else nil
@@ -835,8 +855,52 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 	----------------------------------------------------------------------------------------------
 	-- The tray: what's in your job box
 
+	-- Dims a tray card while the room holds all it can (no words: it just won't lift), or brings it
+	-- back; eased when it changes as you watch.
+	local function dim(card: TextButton, on: boolean, eased: boolean)
+		local function to(inst: Instance?, goal: { [string]: number })
+			if not inst then
+				return
+			elseif eased then
+				TweenService:Create(inst, FILL, goal):Play()
+			else
+				for k, v in goal do
+					(inst :: any)[k] = v -- any: a property named by the goal, as a tween sets it
+				end
+			end
+		end
+		to(card, { BackgroundTransparency = if on then 0.55 else 0 })
+		to(
+			card:FindFirstChildOfClass("ViewportFrame"),
+			{ ImageTransparency = if on then 0.6 else 0 }
+		)
+		to(card:FindFirstChildOfClass("UIStroke"), { Transparency = if on then 0.7 else 0 })
+		to(card:FindFirstChildOfClass("TextLabel"), { TextTransparency = if on then 0.6 else 0 })
+	end
+
+	-- A dimmed card pressed: it shakes its head, the bar pulses, a dull click. That's the answer:
+	-- the bar is full.
+	local function refuse(card: TextButton)
+		play(REFUSE, sounds())
+		card.Rotation = 0
+		local shake =
+			TweenInfo.new(0.06, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, 3, true)
+		TweenService:Create(card, shake, { Rotation = 7 }):Play()
+		local m = meter
+		local mScale = if m then m:FindFirstChildOfClass("UIScale") else nil
+		if mScale then
+			mScale.Scale = 1.14
+			TweenService:Create(mScale, POP, { Scale = 1 }):Play()
+		end
+		local f = meterFill
+		if f then
+			f.BackgroundColor3 = Color3.new(1, 1, 1)
+			TweenService:Create(f, FILL, { BackgroundColor3 = HONEY }):Play()
+		end
+	end
+
 	-- Rebuilds the tray's cards from the box's counts, rarest first.
-	local function fillTray(counts: { [string]: number })
+	local function fillTray(counts: { [string]: number }, dimmedBefore: boolean)
 		local s = list
 		if not s then
 			return
@@ -883,11 +947,11 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 			end
 			b.InputBegan:Connect(function(input: InputObject)
 				local t = input.UserInputType
-				if
-					(t == Enum.UserInputType.Touch or t == Enum.UserInputType.MouseButton1)
-					and not lifted
-					and not pending
-				then
+				local pressed = t == Enum.UserInputType.Touch
+					or t == Enum.UserInputType.MouseButton1
+				if pressed and full and not lifted then
+					refuse(b)
+				elseif pressed and not lifted and not pending then
 					pending = {
 						key = card.key,
 						input = input,
@@ -897,14 +961,57 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 			end)
 			b.Parent = s
 			cards[card.key] = b
+			if full then
+				dim(b, true, not dimmedBefore) -- it fills up as you watch: the cards dim, eased
+			elseif dimmedBefore then
+				dim(b, true, false) -- room again: they light back up
+				dim(b, false, true)
+			end
 		end
 	end
 
-	local function onBox(counts: unknown)
-		local read = BoxPanel.read(counts)
-		if read and open then
-			fillTray(read)
+	-- The limit bar shows `count` set out of `limit`: the fill eases there, the count pops when it
+	-- changes, and the cards dim at the limit.
+	local function showMeter(count: number, limit: number)
+		local changed = count ~= setOut or limit ~= most
+		setOut, most = count, limit
+		local f, isFull = Spots.fill(count, limit)
+		full = isFull
+		local fill, label = meterFill, meterCount
+		if fill then
+			TweenService:Create(fill, FILL, { Size = UDim2.fromScale(f, 1) }):Play()
 		end
+		if label then
+			label.Text = `{count}/{limit}`
+			TweenService:Create(label, FILL, { TextColor3 = if isFull then HONEY else INK }):Play()
+			local pop = label:FindFirstChildOfClass("UIScale")
+			if pop and changed then
+				pop.Scale = 1.25
+				TweenService:Create(pop, POP, { Scale = 1 }):Play()
+			end
+		end
+	end
+
+	-- The box's counts, then how many finds are set out of the most the home holds.
+	local function onBox(counts: unknown, out: unknown, limit: unknown)
+		local read = BoxPanel.read(counts)
+		if not (read and open) then
+			return
+		end
+		local before = full
+		if
+			type(out) == "number"
+			and type(limit) == "number"
+			and out == out // 1
+			and limit == limit // 1
+			and out >= 0
+			and out <= 1000
+			and limit >= 0
+			and limit <= 1000
+		then
+			showMeter(out, limit)
+		end
+		fillTray(read, before)
 	end
 
 	----------------------------------------------------------------------------------------------
@@ -1071,9 +1178,14 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		camera.CameraType = Enum.CameraType.Scriptable
 		TweenService:Create(camera, RISE, { CFrame = view(r) }):Play()
 		grid = makeGrid(r)
-		local d, t = doneButton, tray
+		local d, t, m = doneButton, tray, meter
 		if d then
 			d.Visible = true
+		end
+		if m then
+			m.Visible = true
+			m.Position = UDim2.new(0.5, 0, 0, -60)
+			TweenService:Create(m, RISE, { Position = UDim2.new(0.5, 0, 0, 20) }):Play()
 		end
 		if t then
 			t.Visible = true
@@ -1125,9 +1237,18 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 		if g then
 			Debris:AddItem(g, 0)
 		end
-		local d, t = doneButton, tray
+		local d, t, m = doneButton, tray, meter
 		if d then
 			d.Visible = false
+		end
+		if m then
+			local tw = TweenService:Create(m, QUICK, { Position = UDim2.new(0.5, 0, 0, -60) })
+			tw.Completed:Once(function()
+				if not open then
+					m.Visible = false
+				end
+			end)
+			tw:Play()
 		end
 		if t then
 			local tw = TweenService:Create(t, QUICK, { Position = UDim2.new(0.5, 0, 1, 120) })
@@ -1245,6 +1366,64 @@ function ArrangeView.new(need: FreeCursor.Need): Brix.System
 			closeNow()
 		end)
 		doneButton = done
+
+		-- The limit bar, top middle while arranging: four squares (the Arrange button's), a track
+		-- that fills honey as you set finds out, and the count. Bloxburg's build budget bar.
+		local m = Instance.new("Frame")
+		m.AnchorPoint = Vector2.new(0.5, 0)
+		m.Position = UDim2.new(0.5, 0, 0, -60)
+		m.Size = UDim2.fromOffset(176, 36)
+		m.BackgroundColor3 = PANEL
+		m.BackgroundTransparency = 0.1
+		m.Visible = false
+		corner(m, UDim.new(0.5, 0))
+		local mStroke = Instance.new("UIStroke")
+		mStroke.Color = RIM
+		mStroke.Transparency = 0.4
+		mStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		mStroke.Parent = m
+		Instance.new("UIScale").Parent = m
+		m.Parent = g
+		meter = m
+		for i, at in { { -4, 4 }, { 4, 4 }, { -4, -4 }, { 4, -4 } } do
+			local sq = Instance.new("Frame")
+			sq.AnchorPoint = Vector2.new(0.5, 0.5)
+			sq.Position = UDim2.new(0, 24 + at[1], 0.5, at[2])
+			sq.Size = UDim2.fromOffset(7, 7)
+			sq.BackgroundColor3 = if i == 4 then HONEY else RIM
+			sq.BorderSizePixel = 0
+			corner(sq, UDim.new(0, 2))
+			sq.Parent = m
+		end
+		local track = Instance.new("Frame")
+		track.AnchorPoint = Vector2.new(0, 0.5)
+		track.Position = UDim2.new(0, 40, 0.5, 0)
+		track.Size = UDim2.fromOffset(78, 10)
+		track.BackgroundColor3 = CARD
+		track.BorderSizePixel = 0
+		track.ClipsDescendants = true
+		corner(track, UDim.new(0.5, 0))
+		track.Parent = m
+		local fill = Instance.new("Frame")
+		fill.Size = UDim2.fromScale(0, 1)
+		fill.BackgroundColor3 = HONEY
+		fill.BorderSizePixel = 0
+		corner(fill, UDim.new(0.5, 0))
+		fill.Parent = track
+		meterFill = fill
+		local count = Instance.new("TextLabel")
+		count.BackgroundTransparency = 1
+		count.AnchorPoint = Vector2.new(1, 0.5)
+		count.Position = UDim2.new(1, -12, 0.5, 0)
+		count.Size = UDim2.fromOffset(46, 22)
+		count.TextXAlignment = Enum.TextXAlignment.Right
+		count.FontFace = HEAVY
+		count.TextSize = 16
+		count.TextColor3 = INK
+		count.Text = `{setOut}/{most}`
+		Instance.new("UIScale").Parent = count
+		count.Parent = m
+		meterCount = count
 
 		-- The tray along the bottom: the box's finds.
 		local t = Instance.new("Frame")

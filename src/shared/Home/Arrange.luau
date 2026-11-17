@@ -41,12 +41,16 @@ export type Room = {
 }
 
 -- The box remote (in `Spots.RemoteFolder`): the screen fires it with nothing to ask what's in its
--- job box; the server fires back (counts by name) then, and after every move or put away.
+-- job box; the server fires back (counts by name, then how many finds are set out and the most the
+-- home holds, for the limit bar) then, and after every move or put away.
 Arrange.BoxRemote = "ArrangeBox"
 -- What a drawn find stands on and where (x, y, turn), set by the server as it draws it, so the
 -- owner's screen loads its judge from what it sees.
 Arrange.OnAttribute = "PlacedOn"
 Arrange.AtAttribute = "PlacedAt"
+-- When a move drew it (the server's `GetServerTimeNow`), so another player's screen settles a find
+-- just set out in with a short drop and a knock, and leaves one streaming in or laid at a join.
+Arrange.WhenAttribute = "PlacedWhen"
 -- The folder in a home unit that holds what's set out in it.
 Arrange.Folder = "Placed"
 -- The lobby slot a unit was laid in (Lobby.front).
@@ -79,6 +83,17 @@ Arrange.Feel = table.freeze({
 	Back = 0.35,
 	-- The puff of dust as it lands: this many motes.
 	Puff = 10,
+	-- The limit bar fills or empties over this long (seconds) as a Place or Put away is answered,
+	-- and slides in from above as Arrange opens over `Rise`.
+	Fill = 0.35,
+	-- A friend's find set out or moved settles in (SettleView): it drops this far (studs) over this
+	-- long (seconds), easing in like a thing set down, with the knock heard this far away (studs).
+	-- Only finds drawn this recently (seconds, by the server's clock) settle: older ones streaming
+	-- in, or laid at a join, simply stand there.
+	Drop = 0.5,
+	Settle = 0.22,
+	Hearing = 30,
+	Fresh = 1.5,
 })
 
 -- The grid snap the screen drags by: half a stud, quarter turns (Bloxburg's grid).

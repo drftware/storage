@@ -2984,6 +2984,23 @@ verified: a doc page, Studio, or "untested".
   `get_studio_state` and start again. `character_navigation` fails before the character loads;
   a Client `PivotTo` after `CharacterAdded` works.
 
+## The limit bar and the lid's riders, seen in Play (S5-03e3b, Nov 17)
+
+- **Tapping the Arrange button on the A16:** `user_mouse_input` with `instance_path` hovers the
+  button but the tap lands 47 points left of it and misses (a 66-point round button); click at
+  the button's `AbsolutePosition + AbsoluteSize / 2` plus (47, 0) instead. Tray cards and the
+  Place pill the same way.
+- **The job box's wall is 0.79 studs behind its hinge** (Unit1, hinge-local z, the lid's turn
+  about X: a point (y, z) goes to y sin + z cos). A rider on the lid at 88 degrees reached 0.5
+  into the partition; the cap stops the moon lamp's lid at 60 with 0.09 to spare.
+- **Client scripts don't reload in a running Play:** Rojo syncs the Edit DataModel; stop and
+  start Play to run a changed client module.
+- **Some client modules show twice** under `StarterPlayerScripts.Client` in Edit (22 recent ones,
+  ArrangeView among them), each pair with the same source; `require(script.X)` takes one, so it's
+  harmless, but a Rojo reconnect (OWNER.md) would tidy it.
+- `screen_capture` with a camera position timed out in Play again; hold the camera with
+  `BindToRenderStep` at `RenderPriority.Last` for a few seconds and capture the window from macOS.
+
 ## Arranging, seen in Play (S5-03e2b, Nov 17)
 
 - One player, Unit1, the owner's test save, all from a Server `execute_luau` through

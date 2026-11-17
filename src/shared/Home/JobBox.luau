@@ -36,6 +36,10 @@ JobBox.Lid = {
 	Close = 0.42, -- seconds a full drop takes, gathering speed: it falls shut
 	Bounce = { Degrees = 2.5, Seconds = 0.16 }, -- the little kick as it lands, from a full drop
 }
+-- How far behind the hinge (studs) a find riding the lid may reach as it lifts: the wall stands
+-- about 0.79 behind it, so a lid with a lamp on it stops where the lamp would touch the wall,
+-- propped there (S5-03e3b; at 88 degrees the moon lamp reached half a stud into the wall).
+JobBox.Behind = 0.7
 
 -- How the lid sparkles while something new is in the box (Shelf's twinkle, spread over the lid).
 JobBox.Sparkle = {

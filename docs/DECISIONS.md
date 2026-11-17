@@ -7934,3 +7934,25 @@ own way. What changed:
 - Kept: the fixed camera high by the door (OWNER.md home defaults 12); a lifted find jumps under
   the finger (a thumb offset is ROADMAP polish).
 
+## D-313 · 2026-11-17 · The limit bar, the lid's riders and friends' finds settling (S5-03e3b)
+
+The moment: arranging, a small bar top middle fills honey as you set finds out (4/25), so you
+see the room left without a word; open your job box and the moon lamp on its lid rides up with
+it; a friend's find drops into place with a knock. Bloxburg's build budget bar is the bar.
+- **The server's count:** ArrangeBox now carries, after the box's counts, how many finds are set
+  out (`Spots.setOut` over the saved rows, the room's own pieces left out) and the most the home
+  holds (`HomeSet.limit`, `Spots.limit(Spots.Start)` until S5-03h). The screen eases the fill
+  (`Spots.fill`, `Feel.Fill`) and pops the count; at the limit the tray's cards dim (eased) and
+  won't lift; a press on one shakes it, pulses the bar and clicks low. No words. A find already
+  set out still moves at the limit, as Brix's judge allows.
+- **Riders on the lid** are carried on each screen (JobBoxView): the server draws them on the lid
+  shut; the screen turns them about the hinge with the lid, takes up any the server moves (a
+  pivot not where the screen left it), and leaves them once it's shut. **The lid stops propped**
+  where a rider's corner would pass `JobBox.Behind` (0.7 studs behind the hinge; the wall is
+  0.79): at 88 degrees the moon lamp stood half a stud into the wall and showed next door. With
+  the lamp on it the lid opens to 60 and knocks as it's propped (my pick, in OWNER.md).
+- **Friends' finds settle in** (SettleView): a find drawn by a move carries the server's time
+  (`Arrange.WhenAttribute`); on another player's screen one younger than `Feel.Fresh` (1.5 s) is
+  lifted `Feel.Drop` (0.5; a ceiling find rises instead) and eased down over `Feel.Settle` with
+  the Arrange knock heard within 30 studs. Finds laid at a join carry no time and stream in
+  standing. Your own are left to your Arrange screen's ghost.

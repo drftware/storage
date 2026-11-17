@@ -2537,9 +2537,14 @@ Done when players watch the results to the end and change their perks between cl
           your own body, torch and the tool wheel in the room, the verbs row over the find (now
           a corner cluster, the tray sliding away while a find is lifted). `docs/art/S5-03e3a2-*`.
           Not seen: a find riding the TV's top (the test save has no TV or drum; OWNER.md).
-      - [ ] **S5-03e3b The limit bar, the lid and friends**: how many of the limit are out; finds
-        on the job box's lid ride it as it opens (JobBoxView poses the lid on each screen; D-308);
-        friends see a find move as it's set down (a short settle, not a snap).
+      - [x] **S5-03e3b The limit bar, the lid and friends** (D-313): a bar top middle while
+        arranging fills honey as Place answers (the server's count and limit, sent with the box;
+        3/25 to 4/25 seen on the A16); at the limit the tray's cards dim and a press shakes the
+        card and pulses the bar. Finds on the job box's lid ride it up and back down; the lid
+        stops propped where a rider would touch the wall (the lamp reached half a stud into it
+        at 88 degrees; now 60, seen). A friend's find set out drops in with a knock
+        (SettleView; needs two players, OWNER.md). `docs/art/S5-03e3b-*`.
+        S5-03e (Arrange) is done.
   - [ ] **S5-03f The mirror and the clothes rail** (ideas 21 to 24): the tested mirror in every
     unit, its real frame built the unit's way in `art/home` (the test's is plain parts, D-280); the rail (press to wear, with the find's own sound); nothing worn or switched on runs
     down at home; wrap colours tried on, with a mirror by the counter.
@@ -3028,7 +3033,9 @@ actions themselves and dealing the new finds on floors are later game tickets.
   a lifted find riding a thumb's width above the finger, or keeping where it was grabbed, so the
   thumb never covers it (S5-03e3a2: it jumps under the finger, small at the far wall); the grid
   fading in under the lifted find only; the ceiling unreachable near the door from the camera's
-  corner (a disco ball goes in the far half).
+  corner (a disco ball goes in the far half). From S5-03e3b: a friend's find put away lifts off
+  and fades rather than vanishing (the server destroys it, so the screen would keep a copy); the
+  job box's Open prompt hidden while arranging; the bar's count rolling up a digit at a time.
 - **The finds' press sounds** (F-G1b2): the glow stick's snap, the firefly jar's lid and shimmer,
   the disco ball's motor hum, and a real spring bang for the jack's Pop (now the catalog's tin
   clang, lower and louder); time the music box against the Wind (its winding into the tune) and
