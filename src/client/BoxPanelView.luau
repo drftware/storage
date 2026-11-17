@@ -14,6 +14,15 @@
 	Each card is the find as your slots draw it (ToolPicture), its rim in its rarity's colour
 	(Grades.Colours), its name, and x2 for two or more. Rarest first. On a computer the mouse goes
 	free while it's open (FreeCursor's `need`). Nothing steps: tweens only, made as it opens.
+
+	Taking one out (S5-03c2b2, D-293): tap a card and it lifts and glows, Take (and Shelf while a
+	cubby is free) over its name. Over the panel's corner sit your three hands (your slots, as the
+	wheel draws them), so you see where it goes. Take: its picture rises off the card at once and,
+	when the server answers (`BoxPanel.TookRemote`), flies in an arc into the hand it went to,
+	which pops as it lands with the find's own pick-up sound; until then your view holds the new
+	find back (InFlight). Shelf: it flies up toward the cubby and lands with the shelf's tink. The
+	card counts one fewer, and goes at none. With your hands full, Take shakes the three hands; a
+	take the server refuses settles the picture back onto its card. Never a word.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -24,12 +33,16 @@ local Brix = require(ReplicatedStorage.Brix)
 local FreeCursor = require(script.Parent.FreeCursor)
 local Grades = require(ReplicatedStorage.Shared.Grades)
 local Home = require(ReplicatedStorage.Shared.Home)
+local InFlight = require(script.Parent.InFlight)
 local Lobby = require(ReplicatedStorage.Shared.Lobby)
 local ToolPicture = require(script.Parent.ToolPicture)
 local Tools = require(ReplicatedStorage.Shared.Tools)
 
 local BoxPanel = require(ReplicatedStorage.Shared.Home.BoxPanel)
+local Shelf = require(ReplicatedStorage.Shared.Home.Shelf)
 local JobBox = Home.JobBox
+local Carry = Tools.Carry
+local me = Players.LocalPlayer
 
 -- The box's own dusty blue (D-287), deepened: the panel reads as the box's inside, calm (D-263).
 local PANEL = Color3.fromRGB(29, 40, 45)
@@ -44,9 +57,33 @@ local POP = TweenInfo.new(0.26, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local SETTLE = TweenInfo.new(0.16, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local SPRING = TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local GLOW = TweenInfo.new(0.15)
+local LIFT = TweenInfo.new(0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+local FLY = TweenInfo.new(BoxPanel.Fly, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut)
+local BACK = TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local LAND = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+local GONE = TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 
 -- A card on the panel: what it shows and its parts.
-type Shown = { card: BoxPanel.Card, frame: Frame, pop: UIScale }
+type Shown = {
+	card: BoxPanel.Card,
+	frame: Frame,
+	pop: UIScale,
+	rim: UIStroke,
+	picture: ViewportFrame,
+	badge: TextLabel,
+}
+-- A take asked of the server and not yet answered: the find, the way, its card, and its picture
+-- lifted off the card over everything.
+type Ask = {
+	key: string,
+	way: BoxPanel.Way,
+	shown: Shown,
+	copy: ViewportFrame,
+	scale: UIScale,
+	done: boolean,
+}
+-- One of your hands over the panel's corner: its well, the find drawn in it, and its pop.
+type Well = { frame: Frame, picture: ViewportFrame, rim: UIStroke, pop: UIScale, key: string }
 -- A chip: its rarity (nil for All), its button, its pop.
 type Chip = { grade: Grades.Grade?, button: TextButton, pop: UIScale, colour: Color3 }
 
@@ -74,6 +111,11 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 	local all: { BoxPanel.Card } = {} -- every card on the panel, in its order
 	local chips: { Chip } = {}
 	local grade: Grades.Grade? = nil
+	local free = 0 -- the shelf's free spots, as the server said as the box opened
+	local picked: Shown? = nil
+	local asks: { Ask } = {} -- takes asked and not yet answered, oldest first
+	local landing: { [number]: boolean } = {} -- a hand a find is flying into: drawn as it lands
+	local wells: { Well } = {}
 
 	-- built in start
 	local backdrop: TextButton
@@ -87,6 +129,14 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 	local cells: UIGridLayout
 	local message: TextLabel
 	local click: Sound
+	local hands: Frame
+	local verbs: Frame
+	local verbsPop: UIScale
+	local takeButton: TextButton
+	local takePop: UIScale
+	local shelfButton: TextButton
+	local shelfPop: UIScale
+	local layer: Frame
 
 	local function play(pitch: number)
 		click.PlaybackSpeed = BoxPanel.Click.pitch * pitch
@@ -147,6 +197,115 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		message.TextSize = math.floor(header * 0.55)
 		message.Position = UDim2.fromOffset(0, top)
 		message.Size = UDim2.new(1, 0, 1, -top - pad)
+		local well = math.floor(height * BoxPanel.Well)
+		local wellGap = math.floor(well * 0.18)
+		hands.Size = UDim2.fromOffset(well * Carry.Slots + wellGap * (Carry.Slots - 1), well)
+		hands.Position = UDim2.fromOffset(pad, -wellGap)
+		for i, w in wells do
+			w.frame.Size = UDim2.fromOffset(well, well)
+			w.frame.Position = UDim2.fromOffset((i - 1) * (well + wellGap), 0)
+		end
+	end
+
+	-- Draws hand `i` from your slot (unless a find is still flying into it), its rim lit while
+	-- it's the hand you hold out.
+	local function drawWell(i: number)
+		local w = wells[i]
+		if not w or landing[i] then
+			return
+		end
+		local value = me:GetAttribute(`{Tools.SlotAttribute}{i}`)
+		local key = if type(value) == "string" then value else ""
+		if key ~= w.key then
+			w.key = key
+			w.picture:ClearAllChildren()
+			if key ~= "" then
+				ToolPicture.draw(w.picture, key)
+			end
+		end
+		w.rim.Transparency = if me:GetAttribute(Tools.HandAttribute) == i and key ~= ""
+			then 0.05
+			else 0.5
+	end
+
+	-- Takes asked and not yet answered, of find `key` (nil: any) going `way` (nil: either).
+	local function pending(key: string?, way: BoxPanel.Way?): number
+		local n = 0
+		for _, a in asks do
+			if (key == nil or a.key == key) and (way == nil or a.way == way) then
+				n += 1
+			end
+		end
+		return n
+	end
+
+	-- Whether a hand is free for one more find: none holds a two-handed thing, and an empty slot
+	-- is left once the finds already flying to you land.
+	local function room(): boolean
+		local held = me:GetAttribute(Tools.HandAttribute)
+		local inHand = if type(held) == "number"
+			then me:GetAttribute(`{Tools.SlotAttribute}{held}`)
+			else nil
+		local row = if type(inHand) == "string" then (Tools.Catalog :: any)[inHand] else nil -- any: keyed by text
+		if row and row.bothHands and me:GetAttribute(Tools.PocketedAttribute) ~= true then
+			return false
+		end
+		local empty = 0
+		for i = 1, Carry.Slots do
+			local key = me:GetAttribute(`{Tools.SlotAttribute}{i}`)
+			if key == nil or key == "" then
+				empty += 1
+			end
+		end
+		return empty - pending(nil, BoxPanel.Ways.Hand) > 0
+	end
+
+	-- Your hands full: the three wells shake, as a head does.
+	local function shake()
+		hands.Position += UDim2.fromOffset(8, 0)
+		local back = hands.Position - UDim2.fromOffset(8, 0)
+		TweenService:Create(
+			hands,
+			TweenInfo.new(BoxPanel.Shake, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out),
+			{ Position = back }
+		):Play()
+	end
+
+	local function paintVerbs()
+		local both = free - pending(nil, BoxPanel.Ways.Shelf) > 0
+		shelfButton.Visible = both
+		takeButton.Size = if both then UDim2.new(0.5, -2, 1, 0) else UDim2.fromScale(1, 1)
+	end
+
+	-- The picked card set down again, its verbs gone.
+	local function unpick()
+		local s = picked
+		picked = nil
+		verbs.Visible = false
+		verbs.Parent = panel
+		if s then
+			TweenService:Create(s.pop, SETTLE, { Scale = 1 }):Play()
+			TweenService:Create(s.rim, GLOW, { Thickness = 1.5, Transparency = 0.25 }):Play()
+		end
+	end
+
+	-- A card tapped: it lifts and glows, its verbs over its name. Tapped again, it settles.
+	local function pick(s: Shown)
+		if picked == s then
+			unpick()
+			play(0.9)
+			return
+		end
+		unpick()
+		picked = s
+		TweenService:Create(s.pop, LIFT, { Scale = BoxPanel.Lift }):Play()
+		TweenService:Create(s.rim, GLOW, { Thickness = BoxPanel.Glow, Transparency = 0 }):Play()
+		paintVerbs()
+		verbs.Parent = s.frame
+		verbs.Visible = true
+		verbsPop.Scale = 0.6
+		TweenService:Create(verbsPop, POP, { Scale = 1 }):Play()
+		play(1.1)
 	end
 
 	local function paintChips()
@@ -165,6 +324,9 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 
 	-- Shows the cards the search and the chip leave, re-dealt quickly so the change reads.
 	local function narrow(ripple: boolean)
+		if ripple then
+			unpick()
+		end
 		local keep = BoxPanel.shown(all, search.Text, grade)
 		local wanted: { [BoxPanel.Card]: true } = {}
 		for _, card in keep do
@@ -236,26 +398,42 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		cap.MinTextSize = 8
 		cap.Parent = name
 
-		local badge = BoxPanel.badge(card.count)
-		if badge ~= "" then
-			local b = Instance.new("TextLabel")
-			b.Name = "Count"
-			b.AnchorPoint = Vector2.new(1, 0)
-			b.Position = UDim2.fromScale(0.95, 0.04)
-			b.Size = UDim2.fromScale(0.36, 0.16)
-			b.BackgroundColor3 = INK
-			b.FontFace = Font.fromEnum(Enum.Font.BuilderSansExtraBold)
-			b.TextScaled = true
-			b.TextColor3 = DARK
-			b.Text = badge
-			b.Parent = frame
-			corner(b, UDim.new(0.5, 0))
-			local bp = Instance.new("UIPadding")
-			bp.PaddingTop, bp.PaddingBottom = UDim.new(0.12, 0), UDim.new(0.12, 0)
-			bp.Parent = b
-		end
+		local b = Instance.new("TextLabel")
+		b.Name = "Count"
+		b.AnchorPoint = Vector2.new(1, 0)
+		b.Position = UDim2.fromScale(0.95, 0.04)
+		b.Size = UDim2.fromScale(0.36, 0.16)
+		b.BackgroundColor3 = INK
+		b.FontFace = Font.fromEnum(Enum.Font.BuilderSansExtraBold)
+		b.TextScaled = true
+		b.TextColor3 = DARK
+		b.Text = BoxPanel.badge(card.count)
+		b.Visible = b.Text ~= ""
+		b.Parent = frame
+		corner(b, UDim.new(0.5, 0))
+		local bp = Instance.new("UIPadding")
+		bp.PaddingTop, bp.PaddingBottom = UDim.new(0.12, 0), UDim.new(0.12, 0)
+		bp.Parent = b
+
+		-- the whole card is what you tap to pick it
+		local hit = Instance.new("TextButton")
+		hit.Name = "Pick"
+		hit.AutoButtonColor = false
+		hit.BackgroundTransparency = 1
+		hit.Text = ""
+		hit.Size = UDim2.fromScale(1, 1)
+		hit.ZIndex = 2
+		hit.Parent = frame
 		frame.Parent = grid
-		return { card = card, frame = frame, pop = pop }
+		local made: Shown =
+			{ card = card, frame = frame, pop = pop, rim = rim, picture = picture, badge = b }
+		table.insert(
+			watching,
+			hit.Activated:Connect(function()
+				pick(made)
+			end)
+		)
+		return made
 	end
 
 	local function makeChip(chipGrade: Grades.Grade?, order: number): Chip
@@ -294,6 +472,7 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 	end
 
 	local function clear()
+		unpick()
 		for _, c in watching do
 			c:Disconnect()
 		end
@@ -335,13 +514,18 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		end)
 	end
 
-	-- The server opened `model` for us with `finds` in it: rise with its lid.
-	local function openFor(model: Model, finds: { [string]: number })
+	-- The server opened `model` for us with `finds` in it and `spots` free on the shelf: rise with
+	-- its lid.
+	local function openFor(model: Model, finds: { [string]: number }, spots: number)
 		if box then
 			close()
 		end
 		clear()
 		box = model
+		free = spots
+		for i = 1, Carry.Slots do
+			drawWell(i)
+		end
 		openedAt = os.clock()
 		generation += 1
 		local mine = generation
@@ -392,6 +576,266 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 				end
 			end)
 		end
+	end
+
+	-- One of `key` came out: its card counts one fewer and goes, shrinking, at none; the cards
+	-- after it settle into their new places.
+	local function tick(key: string)
+		local card = BoxPanel.took(all, key)
+		if not card then
+			return
+		end
+		for i, s in shown do
+			if s.card ~= card then
+				continue
+			end
+			if card.count >= 1 then
+				s.badge.Text = BoxPanel.badge(card.count)
+				s.badge.Visible = s.badge.Text ~= ""
+				break
+			end
+			table.remove(shown, i)
+			if picked == s then
+				unpick()
+			end
+			local order = s.frame.LayoutOrder
+			TweenService:Create(s.pop, GONE, { Scale = 0 }):Play()
+			task.delay(GONE.Time, function()
+				s.frame:Destroy()
+				for _, after in shown do
+					if after.frame.LayoutOrder > order and after.frame.Visible then
+						after.pop.Scale = 0.92
+						TweenService:Create(after.pop, SETTLE, { Scale = 1 }):Play()
+					end
+				end
+				if #all == 0 and box then
+					message.Text = BoxPanel.Words.empty
+					message.Visible = true
+				end
+			end)
+			break
+		end
+	end
+
+	-- A take that didn't happen (refused, or no answer in time): its picture settles back onto its
+	-- card, or fades if the card is gone. Quietly.
+	local function settle(a: Ask)
+		if a.done then
+			return
+		end
+		a.done = true
+		local i = table.find(asks, a)
+		if i then
+			table.remove(asks, i)
+		end
+		if a.way == BoxPanel.Ways.Hand then
+			InFlight.land(me, "tool")
+		end
+		local pic = a.shown.picture
+		if pic:IsDescendantOf(panel) then
+			local at = pic.AbsolutePosition + pic.AbsoluteSize / 2
+			TweenService:Create(a.copy, BACK, { Position = UDim2.fromOffset(at.X, at.Y) }):Play()
+			TweenService:Create(a.scale, BACK, { Scale = 1 }):Play()
+		else
+			TweenService:Create(a.copy, BACK, { ImageTransparency = 1 }):Play()
+		end
+		task.delay(BACK.Time, function()
+			a.copy:Destroy()
+			pic.Visible = true
+		end)
+		if box then
+			paintVerbs()
+		end
+	end
+
+	-- Flies `a`'s picture in a bow from where it is to `target()` (followed as it moves: the hands
+	-- fall with the panel), shrinking to the size given; `fade` thins it out at the end. Then
+	-- `arrive`.
+	local function fly(a: Ask, target: () -> (Vector2, number), fade: boolean, arrive: () -> ())
+		local from = Vector2.new(a.copy.Position.X.Offset, a.copy.Position.Y.Offset)
+		local base = math.max(a.copy.Size.X.Offset, 1)
+		local rise = a.scale.Scale
+		local camera = Workspace.CurrentCamera
+		local bow = (if camera then camera.ViewportSize.Y else 400) * BoxPanel.Arc
+		local t = Instance.new("NumberValue")
+		local step = t.Changed:Connect(function(u: number)
+			local to, wide = target()
+			local mid = (from + to) / 2 - Vector2.new(0, bow)
+			local at = from:Lerp(mid, u):Lerp(mid:Lerp(to, u), u)
+			a.copy.Position = UDim2.fromOffset(at.X, at.Y)
+			a.scale.Scale = rise + (wide / base - rise) * u
+			if fade then
+				a.copy.ImageTransparency = math.clamp((u - 0.65) / 0.35, 0, 1)
+			end
+		end)
+		local tween = TweenService:Create(t, FLY, { Value = 1 })
+		tween.Completed:Connect(function()
+			step:Disconnect()
+			t:Destroy()
+			a.copy:Destroy()
+			arrive()
+		end)
+		tween:Play()
+	end
+
+	-- The server's answer to a take: `key` went `way` (or didn't), to slot or spot `at`.
+	local function took(key: string, way: BoxPanel.Way, ok: boolean, at: unknown)
+		local a: Ask? = nil
+		for _, x in asks do
+			if x.key == key and x.way == way and not x.done then
+				a = x
+				break
+			end
+		end
+		if not ok then
+			if a then
+				settle(a)
+			end
+			return
+		end
+		if way == BoxPanel.Ways.Shelf then
+			free = math.max(free - 1, 0)
+		end
+		tick(key)
+		if not a then
+			if box then
+				paintVerbs()
+			end
+			return -- answered after the screen gave up on it: counted, nothing left to fly
+		end
+		local ask = a :: Ask
+		ask.done = true
+		local i = table.find(asks, ask)
+		if i then
+			table.remove(asks, i)
+		end
+		if box then
+			paintVerbs()
+		end
+		local pic = ask.shown.picture
+		task.delay(BoxPanel.Fly * 0.5, function()
+			if ask.shown.card.count >= 1 then
+				pic.Visible = true
+			end
+		end)
+		local slot = if way == BoxPanel.Ways.Hand and type(at) == "number" then at else nil
+		local w = if slot then wells[slot] else nil
+		if way == BoxPanel.Ways.Hand then
+			if not (slot and w) then
+				InFlight.land(me, "tool")
+				ask.copy:Destroy()
+				return
+			end
+			local well = w :: Well
+			landing[slot] = true
+			fly(
+				ask,
+				function(): (Vector2, number)
+					local p = well.picture
+					return p.AbsolutePosition + p.AbsoluteSize / 2, p.AbsoluteSize.X
+				end,
+				false,
+				function()
+					landing[slot] = nil
+					InFlight.land(me, "tool")
+					drawWell(slot)
+					well.pop.Scale = 1.3
+					TweenService:Create(well.pop, LAND, { Scale = 1 }):Play()
+					local row = (Tools.Catalog :: any)[key] -- any: the catalog is keyed by text
+					if row and gui then
+						Tools.play(row.pickUp, gui, 50)
+					end
+				end
+			)
+			return
+		end
+		local spot = if typeof(at) == "Vector3" then at else nil
+		local base = ask.copy.Size.X.Offset
+		fly(
+			ask,
+			function(): (Vector2, number)
+				local camera = Workspace.CurrentCamera
+				local view = if camera then camera.ViewportSize else Vector2.new(800, 600)
+				if not (camera and spot) then
+					return Vector2.new(view.X / 2, -40), base * 0.3
+				end
+				local p = camera:WorldToViewportPoint(spot)
+				-- behind you: up off the top of the screen, on the side it's on
+				local x = if p.Z < 0 then view.X - p.X else p.X
+				local y = if p.Z < 0 then -40 else p.Y
+				return Vector2.new(math.clamp(x, 0, view.X), math.clamp(y, -40, view.Y)), base * 0.3
+			end,
+			true,
+			function()
+				if spot then
+					local mark = Instance.new("Attachment")
+					mark.Name = "ShelfTink"
+					mark.WorldPosition = spot
+					mark.Parent = Workspace.Terrain
+					Tools.play(Shelf.Tink, mark, Shelf.Hearing)
+					task.delay(2, function()
+						mark:Destroy()
+					end)
+				end
+			end
+		)
+	end
+
+	-- Take or Shelf pressed on the picked card: its picture rises off the card at once and the
+	-- server is asked; the answer flies it (`took`). Hands full: the hands shake, nothing asked.
+	local function takeOut(way: BoxPanel.Way, pop: UIScale)
+		local s = picked
+		if not (s and box) then
+			return
+		end
+		spring(pop)
+		local key = s.card.key
+		if s.card.count - pending(key, nil) < 1 then
+			return -- every one of it is already on its way out
+		end
+		if way == BoxPanel.Ways.Hand and not room() then
+			play(0.7)
+			shake()
+			return
+		end
+		if way == BoxPanel.Ways.Shelf and free - pending(nil, way) < 1 then
+			return
+		end
+		local folder = ReplicatedStorage:FindFirstChild(BoxPanel.RemoteFolder)
+		local remote = folder and folder:FindFirstChild(BoxPanel.TakeRemote)
+		if not (remote and remote:IsA("RemoteEvent")) then
+			return
+		end
+		play(1.25)
+		local pic = s.picture
+		local copy = Instance.new("ViewportFrame")
+		copy.Name = "Taking"
+		copy.BackgroundTransparency = 1
+		copy.Ambient = pic.Ambient
+		copy.LightColor = pic.LightColor
+		copy.LightDirection = pic.LightDirection
+		copy.AnchorPoint = Vector2.new(0.5, 0.5)
+		local at = pic.AbsolutePosition + pic.AbsoluteSize / 2
+		copy.Position = UDim2.fromOffset(at.X, at.Y)
+		copy.Size = UDim2.fromOffset(pic.AbsoluteSize.X, pic.AbsoluteSize.Y)
+		local scale = Instance.new("UIScale")
+		scale.Parent = copy
+		copy.Parent = layer
+		ToolPicture.draw(copy, key)
+		TweenService:Create(scale, LIFT, { Scale = BoxPanel.Rise }):Play()
+		local a: Ask = { key = key, way = way, shown = s, copy = copy, scale = scale, done = false }
+		table.insert(asks, a)
+		-- the last one lifts off its card: the card's own picture goes with it
+		pic.Visible = s.card.count - pending(key, nil) > 0
+		if way == BoxPanel.Ways.Hand then
+			InFlight.hold(me, "tool")
+		else
+			paintVerbs()
+		end
+		remote:FireServer(key, way)
+		task.delay(BoxPanel.Wait, function()
+			settle(a)
+		end)
 	end
 
 	local function askClose()
@@ -521,6 +965,93 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		message.Visible = false
 		message.Parent = panel
 
+		-- your three hands, over the panel's corner: where a find you take goes
+		hands = Instance.new("Frame")
+		hands.Name = "Hands"
+		hands.AnchorPoint = Vector2.new(0, 1)
+		hands.BackgroundTransparency = 1
+		hands.Parent = panel
+		for i = 1, Carry.Slots do
+			local f = Instance.new("Frame")
+			f.Name = `Hand{i}`
+			f.BackgroundColor3 = PANEL
+			f.BackgroundTransparency = 0.08
+			f.Parent = hands
+			corner(f, UDim.new(0.5, 0))
+			local rim = Instance.new("UIStroke")
+			rim.Color = INK
+			rim.Thickness = 1.5
+			rim.Transparency = 0.5
+			rim.Parent = f
+			local pop = Instance.new("UIScale")
+			pop.Parent = f
+			local vf = Instance.new("ViewportFrame")
+			vf.Name = "Picture"
+			vf.AnchorPoint = Vector2.new(0.5, 0.5)
+			vf.BackgroundTransparency = 1
+			vf.Position = UDim2.fromScale(0.5, 0.5)
+			vf.Size = UDim2.fromScale(0.8, 0.8)
+			vf.Ambient = Color3.fromRGB(150, 145, 140)
+			vf.LightColor = Color3.fromRGB(255, 240, 220)
+			vf.LightDirection = Vector3.new(-0.4, -1, -0.6)
+			vf.Parent = f
+			table.insert(wells, { frame = f, picture = vf, rim = rim, pop = pop, key = "" })
+		end
+
+		-- the picked card's verbs, over its name: Take, and Shelf while a cubby is free
+		verbs = Instance.new("Frame")
+		verbs.Name = "Verbs"
+		verbs.BackgroundTransparency = 1
+		verbs.Position = UDim2.fromScale(0.05, 0.74)
+		verbs.Size = UDim2.fromScale(0.9, 0.21)
+		verbs.ZIndex = 3
+		verbs.Visible = false
+		verbs.Parent = panel
+		verbsPop = Instance.new("UIScale")
+		verbsPop.Parent = verbs
+		local function verb(name: string, text: string, fill: Color3, ink: Color3): TextButton
+			local b = Instance.new("TextButton")
+			b.Name = name
+			b.AutoButtonColor = false
+			b.BackgroundColor3 = fill
+			b.FontFace = Font.fromEnum(Enum.Font.BuilderSansExtraBold)
+			b.Text = text
+			b.TextColor3 = ink
+			b.TextScaled = true
+			b.Parent = verbs
+			corner(b, UDim.new(0.5, 0))
+			local cap = Instance.new("UITextSizeConstraint")
+			cap.MaxTextSize = 18
+			cap.MinTextSize = 9
+			cap.Parent = b
+			local bp = Instance.new("UIPadding")
+			bp.PaddingTop, bp.PaddingBottom = UDim.new(0.16, 0), UDim.new(0.16, 0)
+			bp.Parent = b
+			return b
+		end
+		takeButton = verb("Take", BoxPanel.Words.take, INK, DARK)
+		takePop = Instance.new("UIScale")
+		takePop.Parent = takeButton
+		shelfButton = verb("Shelf", BoxPanel.Words.shelf, WELL, INK)
+		shelfButton.AnchorPoint = Vector2.new(1, 0)
+		shelfButton.Position = UDim2.fromScale(1, 0)
+		shelfButton.Size = UDim2.new(0.5, -2, 1, 0)
+		local shelfRim = Instance.new("UIStroke")
+		shelfRim.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		shelfRim.Color = INK
+		shelfRim.Transparency = 0.4
+		shelfRim.Parent = shelfButton
+		shelfPop = Instance.new("UIScale")
+		shelfPop.Parent = shelfButton
+
+		-- over everything: a find's picture flying out of the panel
+		layer = Instance.new("Frame")
+		layer.Name = "Flying"
+		layer.BackgroundTransparency = 1
+		layer.Size = UDim2.fromScale(1, 1)
+		layer.ZIndex = 5
+		layer.Parent = g
+
 		table.insert(
 			connections,
 			search:GetPropertyChangedSignal("Text"):Connect(function()
@@ -549,7 +1080,56 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 		)
 		table.insert(connections, closeButton.Activated:Connect(askClose))
 		table.insert(connections, backdrop.Activated:Connect(askClose))
+		table.insert(
+			connections,
+			takeButton.Activated:Connect(function()
+				takeOut(BoxPanel.Ways.Hand, takePop)
+			end)
+		)
+		table.insert(
+			connections,
+			shelfButton.Activated:Connect(function()
+				takeOut(BoxPanel.Ways.Shelf, shelfPop)
+			end)
+		)
+		-- your hands follow your slots while the panel is up
+		for i = 1, Carry.Slots do
+			table.insert(
+				connections,
+				me:GetAttributeChangedSignal(`{Tools.SlotAttribute}{i}`):Connect(function()
+					if box then
+						drawWell(i)
+					end
+				end)
+			)
+		end
+		table.insert(
+			connections,
+			me:GetAttributeChangedSignal(Tools.HandAttribute):Connect(function()
+				if box then
+					for i = 1, Carry.Slots do
+						drawWell(i)
+					end
+				end
+			end)
+		)
 
+		task.spawn(function()
+			local folder = ReplicatedStorage:WaitForChild(BoxPanel.RemoteFolder, 60)
+			local remote = folder and folder:WaitForChild(BoxPanel.TookRemote, 60)
+			if gui == g and remote and remote:IsA("RemoteEvent") then
+				table.insert(
+					connections,
+					-- any: a remote's arguments, checked here
+					remote.OnClientEvent:Connect(function(key: any, way: any, ok: any, at: any)
+						local name, to = BoxPanel.name(key), BoxPanel.way(way)
+						if name and to and type(ok) == "boolean" then
+							took(name, to :: BoxPanel.Way, ok, at) -- the frozen module widens it to string
+						end
+					end)
+				)
+			end
+		end)
 		task.spawn(function()
 			local folder = ReplicatedStorage:WaitForChild(BoxPanel.RemoteFolder, 60)
 			local remote = folder and folder:WaitForChild(BoxPanel.ListRemote, 60)
@@ -557,10 +1137,13 @@ function BoxPanelView.new(need: FreeCursor.Need): Brix.System
 				table.insert(
 					connections,
 					-- any: a remote's arguments, checked here
-					remote.OnClientEvent:Connect(function(model: any, finds: any)
+					remote.OnClientEvent:Connect(function(model: any, finds: any, spots: any)
 						local list = BoxPanel.read(finds)
+						local n = if type(spots) == "number" and spots == spots
+							then math.clamp(math.floor(spots), 0, 99)
+							else 0
 						if typeof(model) == "Instance" and model:IsA("Model") and list then
-							openFor(model, list)
+							openFor(model, list, n)
 						end
 					end)
 				)

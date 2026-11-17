@@ -30,7 +30,8 @@
 	- `boxFresh`: how new what went into your home's job box since you last opened it is (S5-03c2a,
 	  D-287), as `Fresh`: seen when nothing did; new, or a kind you'd never owned. A find kept with
 	  the shelf full goes in the box (it holds every find in `finds`), and its lid sparkles till you
-	  open it.
+	  open it. What's in it is what you own less the shelf's and what's out of it (`boxed`, D-293):
+	  a find taken out into your hands is still yours here, never written as gone or kept twice.
 
 	The tickets that earn each write it (GDD "Saving", "The collection book"). So far: `finds` and
 	the book's `finds` page, as finds are kept at the gate (S1-06, `keep`), `cash`, as the coins
@@ -162,6 +163,39 @@ function Save.shelve(data: Data, name: string, fresh: number, spots: number): nu
 		end
 	end
 	return nil
+end
+
+-- What's in your job box (S5-03c2b2, D-293): each find you own, less those standing on your shelf
+-- and those `out` of the box (in someone's hands or lying somewhere, by name), each name listed only
+-- while one or more is in it. What may come out of the box is exactly this, so no more of a find is
+-- ever out, on the shelf or in the box than you own.
+function Save.boxed(data: Data, out: Counts): Counts
+	local shelved: Counts = {}
+	for _, spot in data.shelf do
+		if spot.find ~= "" then
+			shelved[spot.find] = (shelved[spot.find] or 0) + 1
+		end
+	end
+	local boxed: Counts = {}
+	for name, count in data.finds do
+		local left = math.floor(count) - (shelved[name] or 0) - math.floor(out[name] or 0)
+		if left >= 1 then
+			boxed[name] = left
+		end
+	end
+	return boxed
+end
+
+-- How many of the shelf's first `spots` stand empty (a find from the box can go on one).
+function Save.free(data: Data, spots: number): number
+	local free = 0
+	for i = 1, math.min(spots, Save.ShelfMost) do
+		local spot = data.shelf[i]
+		if spot == nil or spot.find == "" then
+			free += 1
+		end
+	end
+	return free
 end
 
 -- Marks spot `i` seen (you walked up to it). Returns whether it was new until now.

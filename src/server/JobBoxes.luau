@@ -17,9 +17,20 @@
 	by the autosave). The lid closes on Close, when its holder walks away (JobBox.Away, looked at
 	every JobBox.Every seconds while a lid is up) and when the home changes hands.
 
-	The panel (S5-03c2b1, BoxPanel): as the lid opens the holder's screen is sent the box and every
-	find they own (`BoxPanel.ListRemote`), once. Its X, or a tap outside it, asks `CloseRemote`
-	(nothing carried): rate-limited, then it shuts the box only if it's this player's and open.
+	The panel (S5-03c2b1, BoxPanel): as the lid opens the holder's screen is sent the box, what's
+	in it (Save.boxed: every find they own less the shelf's and those out of it, D-293) and how many
+	shelf spots stand free (`BoxPanel.ListRemote`), once. Its X, or a tap outside it, asks
+	`CloseRemote` (nothing carried): rate-limited, then it shuts the box only if it's this player's
+	and open.
+
+	Taking one out (S5-03c2b2, D-293): `TakeRemote` carries a find's name and a way, Hand or Shelf.
+	Rate-limited first, then checked: the types (`BoxPanel.name`, `BoxPanel.way`), this player's
+	own box open, a find the catalog knows, one of it in the box (`BoxPanel.canTake` on
+	Save.boxed). Hand: into a free slot as a find from this box (Slots' `unbox`); the save is not
+	touched, so a crash or a failed save never costs or doubles one. Shelf: onto the first free spot
+	(Save.shelve, seen: you put it there), the shelf laid at once; the autosave keeps it, and a crash
+	before it only leaves the find in the box. Every take past the type checks is answered on
+	`TookRemote`, so the screen lands or settles its picture.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -33,6 +44,8 @@ local FrontOffice = require(script.Parent.FrontOffice)
 local Prompts = require(script.Parent.Prompts)
 local Saving = require(script.Parent.Saving)
 local Shelves = require(script.Parent.Shelves)
+local Slots = require(script.Parent.Slots)
+local Tools = require(ReplicatedStorage.Shared.Tools)
 
 local BoxPanel = Home.BoxPanel
 local JobBox = Home.JobBox
@@ -48,10 +61,15 @@ function JobBoxes.new(): Brix.System
 	local signals: { Brix.SignalConnection } = {}
 	local connections: { RBXScriptConnection } = {}
 	local saving: Saving.SavingSystem? = nil
+	local slots: Slots.Slots? = nil
+	local shelves: Shelves.ShelvesSystem? = nil
 	local untilLook = 0
 	local remotes: { RemoteEvent } = {}
 	local listRemote: RemoteEvent? = nil
+	local tookRemote: RemoteEvent? = nil
 	local limit = Brix.RateLimit.bucket(BoxPanel.Limit)
+	local takeLimit = Brix.RateLimit.bucket(BoxPanel.TakeLimit)
+	local spots = #Home.Specs.Shelf.Spots -- every home is small until the sizes come (S5-03h)
 
 	local function holderOf(box: Box): Player?
 		local id = box.unit:GetAttribute(Door.HolderAttribute)
@@ -102,8 +120,60 @@ function JobBoxes.new(): Brix.System
 		box.model:SetAttribute(JobBox.FreshAttribute, Save.Fresh.Seen)
 		box.prompt.ActionText = "Close"
 		if listRemote then
-			listRemote:FireClient(player, box.model, BoxPanel.list(if data then data.finds else {}))
+			local s = slots
+			local boxed = if data and s then Save.boxed(data, s:fromBox(player)) else {}
+			local free = if data then Save.free(data, spots) else 0
+			listRemote:FireClient(player, box.model, BoxPanel.list(boxed), free)
 		end
+	end
+
+	-- `player`'s own open box, if they have one open.
+	local function openOf(player: Player): Box?
+		for box in open do
+			if box.unit:GetAttribute(Door.HolderAttribute) == player.UserId then
+				return box
+			end
+		end
+		return nil
+	end
+
+	-- Take from the panel: one `name` out of `player`'s open box, `way` Hand or Shelf.
+	local function takeAsked(player: Player, name: unknown, way: unknown)
+		if not takeLimit:take(player, os.clock()) then
+			return -- asked too often: refused before the payload is read
+		end
+		local key, to = BoxPanel.name(name), BoxPanel.way(way)
+		if not (key and to) then
+			return
+		end
+		local function answer(ok: boolean, at: (number | Vector3)?)
+			if tookRemote then
+				tookRemote:FireClient(player, key, to, ok, at)
+			end
+		end
+		local data = if saving then saving:data(player) else nil
+		local s, sh = slots, shelves
+		local row = (Tools.Catalog :: any)[key] -- any: the catalog is keyed by text
+		if
+			not (data and s and sh and openOf(player) and row and row.find)
+			or Prompts.wrapped(player)
+			or not BoxPanel.canTake(Save.boxed(data, s:fromBox(player)), key)
+		then
+			answer(false)
+			return
+		end
+		if to == BoxPanel.Ways.Hand then
+			local slot = s:unbox(player, key)
+			answer(slot ~= nil, slot)
+			return
+		end
+		local i = Save.shelve(data, key, Save.Fresh.Seen, spots)
+		if not i then
+			answer(false)
+			return
+		end
+		sh:lay(player)
+		answer(true, sh:spot(player, i))
 	end
 
 	-- Close from the panel: `player`'s own open box shuts. Nothing carried, so nothing to read.
@@ -111,10 +181,9 @@ function JobBoxes.new(): Brix.System
 		if not limit:take(player, os.clock()) then
 			return
 		end
-		for box in open do
-			if box.unit:GetAttribute(Door.HolderAttribute) == player.UserId then
-				shut(box)
-			end
+		local box = openOf(player)
+		if box then
+			shut(box)
 		end
 	end
 
@@ -191,7 +260,9 @@ function JobBoxes.new(): Brix.System
 			-- any: the registry hands back plain Systems; each slot is filled by its system (init.server)
 			local frontOffice = (registry:get("frontOffice") :: any) :: FrontOffice.FrontOffice
 			saving = (registry:get("saving") :: any) :: Saving.SavingSystem -- any: as above
-			local shelves = (registry:get("shelves") :: any) :: Shelves.ShelvesSystem -- any: as above
+			slots = (registry:get("slots") :: any) :: Slots.Slots -- any: as above
+			local sh = (registry:get("shelves") :: any) :: Shelves.ShelvesSystem -- any: as above
+			shelves = sh
 			local laid = frontOffice:laid()
 			if not laid then
 				return -- no lobby in this place: no homes
@@ -202,18 +273,28 @@ function JobBoxes.new(): Brix.System
 				folder.Name = BoxPanel.RemoteFolder
 				folder.Parent = ReplicatedStorage
 			end
-			for _, name in { BoxPanel.ListRemote, BoxPanel.CloseRemote } do
+			for _, name in
+				{
+					BoxPanel.ListRemote,
+					BoxPanel.CloseRemote,
+					BoxPanel.TakeRemote,
+					BoxPanel.TookRemote,
+				}
+			do
 				local r = Instance.new("RemoteEvent")
 				r.Name = name
 				r.Parent = folder
 				table.insert(remotes, r)
 			end
 			listRemote = remotes[1]
+			tookRemote = remotes[4]
 			table.insert(connections, remotes[2].OnServerEvent:Connect(closeAsked))
+			table.insert(connections, remotes[3].OnServerEvent:Connect(takeAsked))
 			table.insert(
 				connections,
 				Players.PlayerRemoving:Connect(function(player: Player)
 					limit:forget(player)
+					takeLimit:forget(player)
 				end)
 			)
 			for _, unit in laid.units do
@@ -225,7 +306,7 @@ function JobBoxes.new(): Brix.System
 			-- the box follows each lay of a player's home finds (a load, a home handed over, a keep)
 			table.insert(
 				signals,
-				shelves.laid:connect(function(player: Player)
+				sh.laid:connect(function(player: Player)
 					for _, box in boxes do
 						if box.unit:GetAttribute(Door.HolderAttribute) == player.UserId then
 							show(box)
@@ -269,6 +350,7 @@ function JobBoxes.new(): Brix.System
 			end
 			table.clear(remotes)
 			listRemote = nil
+			tookRemote = nil
 		end,
 	}
 end

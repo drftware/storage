@@ -10,6 +10,11 @@
 	The server (JobBoxes) sends the holder their finds (`list`) as the lid opens; the screen
 	(BoxPanelView) reads them (`read`), deals one card a kind (`cards`) and narrows them (`shown`).
 	Every feel number the screen uses is here.
+
+	Taking one out (S5-03c2b2, D-293): what's listed is what's in the box (Save.boxed: owned, less
+	the shelf's and what's out). Tap a card, Take or Shelf; the screen asks `TakeRemote` with the
+	name and the way, the server checks it (`way`, `name`, `canTake`) and answers on `TookRemote`,
+	and the card counts one fewer (`took`).
 ]]
 local Grades = require("../Grades")
 
@@ -21,9 +26,43 @@ BoxPanel.ListRemote = "JobBoxList"
 -- The holder's screen to the server, nothing carried: shut my open box (its X, or a tap outside).
 BoxPanel.CloseRemote = "JobBoxClose"
 BoxPanel.Limit = { perSecond = 3, burst = 4 } -- Close asks a player may make: mashing costs nothing
+-- The holder's screen to the server (S5-03c2b2): take one find, by name, out of my open box, a way.
+BoxPanel.TakeRemote = "JobBoxTake"
+-- Server to the holder, every take answered: the name, the way, whether it came out, and where it
+-- went (the slot it went into, or the shelf spot's place in the world).
+BoxPanel.TookRemote = "JobBoxTook"
+-- Takes a player may ask: three quick ones fill your hands, and a fourth tap never piles up more
+BoxPanel.TakeLimit = { perSecond = 3, burst = 4 }
+
+-- Where a find taken out goes: into your hands, or onto a free spot of your shelf.
+export type Way = "Hand" | "Shelf"
+BoxPanel.Ways = table.freeze({ Hand = "Hand" :: Way, Shelf = "Shelf" :: Way })
 
 BoxPanel.SearchMax = 24 -- characters the search box takes: a find's name is never longer
 BoxPanel.KindsMax = 2000 -- kinds a list carries at most: far past every find there is
+BoxPanel.NameMax = 64 -- characters a find's name from the wire may have (the save's own limit)
+
+-- A way from the wire, or nil when it isn't one.
+function BoxPanel.way(value: unknown): Way?
+	if value == "Hand" or value == "Shelf" then
+		return value :: Way
+	end
+	return nil
+end
+
+-- A find's name from the wire, or nil when it isn't one (text, 1 to NameMax characters).
+function BoxPanel.name(value: unknown): string?
+	if type(value) ~= "string" or #value < 1 or #value > BoxPanel.NameMax then
+		return nil
+	end
+	return value
+end
+
+-- Whether one of `name` may come out of a box holding `boxed` (Save.boxed): one at least is in it.
+function BoxPanel.canTake(boxed: { [string]: number }, name: string): boolean
+	local n = boxed[name]
+	return type(n) == "number" and n >= 1
+end
 
 -- A kind of find you own, as its card shows it.
 export type Card = { key: string, name: string, grade: Grades.Grade, count: number }
@@ -145,9 +184,41 @@ function BoxPanel.badge(count: number): string
 	return if count > 1 then `x{count}` else ""
 end
 
+-- One of `key` came out (S5-03c2b2): its card counts one fewer, and goes from `cards` at none.
+-- The card, or nil when there was none for it.
+function BoxPanel.took(cards: { Card }, key: string): Card?
+	for i, card in cards do
+		if card.key == key then
+			card.count -= 1
+			if card.count < 1 then
+				table.remove(cards, i)
+			end
+			return card
+		end
+	end
+	return nil
+end
+
 -- The screen's feel.
-BoxPanel.Words =
-	table.freeze({ search = "Search", all = "All", none = "No match", empty = "Empty" })
+BoxPanel.Words = table.freeze({
+	search = "Search",
+	all = "All",
+	none = "No match",
+	empty = "Empty",
+	take = "Take",
+	shelf = "Shelf",
+})
+-- Taking one out (S5-03c2b2): tap a card and it lifts and glows, its verbs over its name; Take, and
+-- its picture flies out of the panel into a free one of your hands (the three wells over the
+-- panel's corner, your slots), or Shelf, up to the cubby it lands in, the count ticking down.
+BoxPanel.Lift = 1.08 -- a picked card's scale: lifted off the panel
+BoxPanel.Glow = 3 -- a picked card's rim, points thick, fully lit
+BoxPanel.Rise = 1.18 -- the picture's scale the moment Take or Shelf is pressed, before it flies
+BoxPanel.Fly = 0.42 -- seconds the picture takes from its card to your hand or the cubby
+BoxPanel.Arc = 0.16 -- of the screen's height: how high the flight bows over a straight line
+BoxPanel.Wait = 1.5 -- seconds the screen waits for the server's answer before giving up quietly
+BoxPanel.Well = 0.17 -- a hand's well, a share of the panel's height (44 points on a Galaxy A16)
+BoxPanel.Shake = 0.24 -- seconds the wells shake when your hands are full and Take is pressed
 BoxPanel.Height = 0.76 -- the panel's height, a share of the screen's: the lid shows above it
 BoxPanel.HeightRange = { 230, 470 } -- points: a phone's 338-point-tall screen gets 257
 BoxPanel.Width = 0.94 -- of the screen's width, up to WidthMax points

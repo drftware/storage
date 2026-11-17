@@ -41,6 +41,10 @@ export type ShelvesSystem = Brix.System & {
 	-- Fires each time a player's home finds are laid from their save (it loaded, they were handed
 	-- a home, a gate or the test hook kept finds for them): the job box follows it (JobBoxes).
 	laid: Brix.Signal<Player>,
+	-- Lays `player`'s shelf from their save now: a find shelved from the job box (JobBoxes).
+	lay: (self: any, player: Player) -> (),
+	-- Where spot `i` of `player`'s home shelf is in the world, or nil when they hold no home.
+	spot: (self: any, player: Player, i: number) -> Vector3?,
 }
 
 local SPOTS = HomeSpecs.Shelf.Spots
@@ -214,6 +218,13 @@ function Shelves.new(): ShelvesSystem
 	return {
 		name = "Shelves",
 		laid = laidSignal,
+		lay = function(_: any, player: Player)
+			lay(player)
+		end,
+		spot = function(_: any, player: Player, i: number): Vector3?
+			local shelf = shelfOf(player)
+			return if shelf and SPOTS[i] then spotAt(shelf, i).Position else nil
+		end,
 		start = function(_: any, context: Brix.Context)
 			local registry = context.registry
 			-- any: the registry hands back plain Systems; each slot is filled by its system (init.server)

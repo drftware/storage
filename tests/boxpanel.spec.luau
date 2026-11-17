@@ -3,9 +3,12 @@
 -- The job box's panel (S5-03c2b1): one card a kind you own with its count, rarest first, then by
 -- name; finds the catalog doesn't know are left out; the search ignores case, spaces and dashes;
 -- a rarity narrows to its own; the chips are the rarities you own; the screen refuses a list that
--- isn't one.
+-- isn't one. Taking one out (S5-03c2b2): what's in the box is owned less the shelf's and what's
+-- out, so asks past that take nothing; the take's way and name from the wire are checked; a card
+-- counts one fewer and goes at none.
 local BoxPanel = require("../src/shared/Home/BoxPanel")
 local Catalog = require("../src/shared/Tools/Catalog")
+local Save = require("../src/shared/Save")
 
 local failures, checks = 0, 0
 local function ok(cond: boolean, what: string)
@@ -84,6 +87,66 @@ do
 	ok(BoxPanel.read({ Teddy = 0 }) == nil, "a count under one: refused")
 	local empty = BoxPanel.read({})
 	ok(empty ~= nil and next(empty) == nil, "an empty box reads as empty")
+end
+
+-- What's in the box (S5-03c2b2, D-293): owned, less the shelf's and what's out of it.
+do
+	local data = Save.fresh()
+	Save.keep(data, { "Teddy", "Teddy", "Boombox", "Crown", "Teddy" }, 100, 2)
+	-- the shelf's two spots took the first Teddy and the second Teddy; the rest went in the box
+	ok(data.shelf[1].find == "Teddy" and data.shelf[2].find == "Teddy", "the shelf filled first")
+	local boxed = Save.boxed(data, {})
+	ok(boxed.Teddy == 1 and boxed.Boombox == 1 and boxed.Crown == 1, "the box: owned less shelved")
+	ok(Save.free(data, 2) == 0 and Save.free(data, 6) == 4, "free spots: full, and four of six")
+	local out = Save.boxed(data, { Boombox = 1, Teddy = 1 })
+	ok(out.Boombox == nil and out.Teddy == nil and out.Crown == 1, "one out of the box: none left")
+	ok(BoxPanel.canTake(boxed, "Teddy"), "one in the box may come out")
+	ok(not BoxPanel.canTake(out, "Teddy"), "all out or on the shelf: none may come out")
+	ok(not BoxPanel.canTake(boxed, "Mystery"), "a find never owned never comes out")
+	local over = Save.boxed(data, { Crown = 5 })
+	ok(over.Crown == nil, "more out than owned never reads as less than none in the box")
+
+	-- taking out every one there is, one at a time, never takes more than you own
+	local finds = { Teddy = 3 }
+	local held: { [string]: number } = {}
+	local taken = 0
+	local d = Save.fresh()
+	d.finds = finds
+	for _ = 1, 10 do
+		if BoxPanel.canTake(Save.boxed(d, held), "Teddy") then
+			held.Teddy = (held.Teddy or 0) + 1
+			taken += 1
+		end
+	end
+	ok(taken == 3 and d.finds.Teddy == 3, "ten asks take out the three owned, the save untouched")
+
+	-- shelving one from the box: the save's count stays, the box holds one fewer
+	local s = Save.fresh()
+	s.finds = { Boombox = 2 }
+	ok(Save.boxed(s, {}).Boombox == 2, "two in the box")
+	ok(Save.shelve(s, "Boombox", Save.Fresh.Seen, 6) == 1, "onto the first free spot")
+	ok(Save.boxed(s, {}).Boombox == 1 and s.finds.Boombox == 2, "the box one fewer, still owned")
+	ok(Save.free(s, 6) == 5, "one spot fewer free")
+end
+
+-- The take from the wire: a way and a name, checked.
+do
+	ok(BoxPanel.way("Hand") == "Hand" and BoxPanel.way("Shelf") == "Shelf", "both ways read")
+	ok(BoxPanel.way("hand") == nil and BoxPanel.way(1) == nil, "anything else is refused")
+	ok(BoxPanel.name("Teddy") == "Teddy", "a name reads")
+	ok(BoxPanel.name("") == nil and BoxPanel.name(5) == nil, "empty or not text: refused")
+	ok(BoxPanel.name(string.rep("a", BoxPanel.NameMax + 1)) == nil, "too long: refused")
+end
+
+-- The card counts one fewer as one comes out, and goes at none.
+do
+	local cards = BoxPanel.cards({ Teddy = 2, Crown = 1 }, catalog)
+	local teddy = BoxPanel.took(cards, "Teddy")
+	ok(teddy ~= nil and teddy.count == 1 and #cards == 2, "two, one taken: one left")
+	ok(BoxPanel.badge(teddy and teddy.count or 0) == "", "and its x2 goes")
+	local crown = BoxPanel.took(cards, "Crown")
+	ok(crown ~= nil and crown.count == 0 and #cards == 1, "the last one taken: its card goes")
+	ok(BoxPanel.took(cards, "Crown") == nil, "no card: nothing")
 end
 
 print(`boxpanel: {checks - failures}/{checks} passed`)

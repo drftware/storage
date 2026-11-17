@@ -68,6 +68,17 @@ nowhere else.
   that size, does the rise feel slow or right (it takes the lid's 1.1 s), and is the deep blue
   calm. My defaults, yours to change: rarest first then by name; chips only for rarities you own;
   a card shows the find as your slots draw it, with no price yet (selling is S5-03c3).
+- [ ] **Take a find out of your job box** (S5-03c2b2a, D-293). Built and passing checks; the next
+  session sees it in Studio first. Yours, after that, at Galaxy A16 size: open the box, tap a card
+  (it lifts and glows), press Take: it should fly into one of the three round hands over the
+  panel's corner with its pick-up sound, the x2 dropping to none. Take two more, then press Take
+  again with your hands full (the hands shake). Tap another card and press Shelf: it flies up and
+  the shelf tinks. Close the box: the find is in your hand. Say: does the flight feel quick and
+  sure, can you tap Take and Shelf on a card that small, and do the three hands read as yours. My
+  defaults, yours to change: the panel now lists only what's in the box (not what's on the shelf
+  or in your hands); a find taken out stays yours and is never kept again at a gate (taking it up
+  for real, with the risk, is S5-03d); when you leave, every find out of your box goes back in it,
+  even one a friend is holding.
 - [ ] **If Studio stops getting changes, click Connect** in Studio's Rojo plugin (connected Nov 13
   at 23:30; each session checks it first and says so in HANDOFF.md).
 - [ ] **Playing on your phone** (D-109): with Rojo connected, use File > Publish to Roblox (Save

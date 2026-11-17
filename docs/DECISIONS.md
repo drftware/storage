@@ -7486,3 +7486,37 @@ filters).
 - **The sound:** every crack snaps (Pro Sound Effects' "Plastic Crack 2", from 0.1 s, its crack
   at 0.13 s, pitch 1.35, the third 1.25); the second and third slosh as they're shaken (`SLOSH`,
   short, soft, 1.7). The first crack had no sound before.
+
+
+## D-293 · 2026-11-17 · A find out of the job box stays yours in the save, and no gate keeps it twice (S5-03c2b2a)
+
+The home doc's idea 9 ("from the panel you put a find in your hands") and the start of idea 10.
+Precedents: Resident Evil's item box (the box and what you carry side by side; take out only what
+you need), Animal Crossing's house storage, Pet Simulator's inventory.
+- **What's in the box is what you own, less the shelf's and what's out** (`Save.boxed`). The panel
+  lists that now, not every find you own (D-291 listed all of `finds`): a find on the shelf or in
+  your hands isn't in the box. What may come out is exactly what's in it, so nothing ever comes
+  out past what you own (Lune specs: ten asks take out the three owned).
+- **Taking one out never writes the save.** A find in your hands at home is still counted in
+  `finds`; Slots marks it with whose box it came from (`unbox`), and what's out is counted from
+  those live finds (`fromBox`), never stored. So a crash or a failed save can't lose or double
+  one: a find out of the box that's destroyed for any reason (a floor cleared, a leave) is simply
+  back in the box.
+- **No gate keeps a find from a job box** (`Slots.keep` skips it): it stays in whoever's slots it
+  is in, so carrying your own find aboard can never add a second to your save, and a friend
+  carrying it can't take it into theirs. S5-03d builds the climb's risk on top (out until the
+  climb ends, struck off only when lost on a climb that ended properly).
+- **Its owner leaving takes it back** (`recall`): out of anyone's hands or head, or off the floor,
+  in a glint. One set down by its system, with a piece out or in a monster's arms is left to its
+  system (the floor clearing returns it).
+- **Shelf moves one from the box to the first free cubby**, seen (you put it there), laid at once;
+  the autosave keeps it, and a crash before that only leaves it in the box.
+- **The screen (my defaults, OWNER.md):** tap a card, it lifts (1.08) and its rim lights; Take, and
+  Shelf while a cubby is free, sit over its name. Your three hands sit over the panel's corner as
+  round wells, drawn from your slots, so you see where it goes. The picture rises off the card the
+  moment you press, then flies in a bow (0.42 s) into the hand the server put it in, which pops
+  with the find's own pick-up sound; your view holds the find back until it lands (InFlight). Shelf
+  flies it up toward the cubby with the shelf's tink. The count ticks down; the last one's card
+  shrinks away. Hands full: the hands shake, nothing is asked. A refused take settles back onto its
+  card. No words.
+- **Split** (context): c2b2a this, built and green; c2b2b sees it in Studio Play and captures it.

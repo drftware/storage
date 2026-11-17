@@ -2421,8 +2421,18 @@ Done when players watch the results to the end and change their perks between cl
       every find you own a kind a card (its picture as your slots draw it, rim in its rarity's
       colour, x2), rarest first; a search box and the rarities you own as chips narrow it at once.
       Seen in Studio Play at computer size: `docs/art/S5-03c2b1-open.jpg`, `-search.jpg`.
-    - [ ] **S5-03c2b2 Taking a find out**: from the panel, into your hands or onto a free shelf
-      spot; one remote, checked on the server (yours, owned, a free hand or spot), rate-limited.
+    - [x] **S5-03c2b2a Taking a find out, built** (D-293): the panel lists what's in the box
+      (owned, less the shelf's and what's out, `Save.boxed`); tap a card, it lifts and glows, Take
+      (and Shelf while a cubby is free) over its name; your three hands sit over the panel's
+      corner; the picture rises at once and flies in a bow into the hand it went to with its
+      pick-up sound, or up to the cubby with the shelf's tink; the count ticks down; hands full
+      shakes the hands. One remote (`JobBoxTake`), rate-limited, checked: types, your open box, a
+      known find, one in the box; answered on `JobBoxTook`. A find out of the box is still yours
+      in the save, never kept at a gate, and goes back in the box when you leave. Passes checks,
+      untested in Studio.
+    - [ ] **S5-03c2b2b Taking a find out, seen in Studio**: Play, keep finds, open the box, take
+      one to hand, shelve one, fill your hands and press Take, watch the counts; capture at half
+      scale (`docs/art/S5-03c2b2-*.jpg`); fix what looks wrong.
     - [ ] **S5-03c3 Selling and Gold** from the panel.
     - Polish for the panel (later): a chip tap you can hear differently per rarity; cards drawn
       only as they scroll into view if a player ever owns 60 kinds or more (ViewportFrames cost).

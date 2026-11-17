@@ -47,6 +47,11 @@
 	from your hands instead, its piece comes home into it first. It isn't kept at the gate while
 	its piece is out: it's left behind with the floor, and goes from your hand when the piece goes
 	with it (`lose`).
+
+	A find out of its owner's job box (S5-03c2b2, D-293: `unbox`) is carried like any other, but
+	it is still theirs in their save, so it's marked with whose box it came from and no gate keeps
+	it for anyone: it stays in your slots through the gate. What's in the box is what you own less
+	these (`fromBox`, Save.boxed), and when its owner leaves each goes back into the box in a glint.
 ]]
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -185,6 +190,13 @@ export type Slots = Brix.System & {
 	-- at the car's machine, S1-10c2), with its pick-up sound. False, and nothing made, if they have
 	-- no room, a big tool in their hands, no living character, or the place lacks its art.
 	give: (self: any, player: Player, key: string, quiet: boolean?) -> boolean,
+	-- A find `key` out of `player`'s job box (S5-03c2b2, D-293) into a free slot and their hand,
+	-- as `give` with `quiet` (their screen plays the pick-up as the picture lands), marked as
+	-- from their box. The slot it went into, or nil when it can't (as `give`).
+	unbox: (self: any, player: Player, key: string) -> number?,
+	-- How many of each find out of `player`'s job box are in the world now (in anyone's hands,
+	-- on a head, lying or set down), by name: Save.boxed takes them off what's in the box.
+	fromBox: (self: any, player: Player) -> { [string]: number },
 	-- Lays placed tool `id` on the floor at `at`, turned `yaw` degrees (its front gone from under it).
 	-- `still`: stood there at once, no fall and no clank (the toy car let go to roll: every screen
 	-- plays its roll there from where it was set down).
@@ -230,6 +242,9 @@ type Tool = {
 	weld: Weld?,
 	placed: boolean?, -- standing in the world (`place`), not in a hand or on a floor
 	uses: number?, -- uses left before it breaks (S1-08); nil: it never wears out
+	-- the UserId whose job box it came out of (S5-03c2b2, D-293): still theirs in their save, so
+	-- no gate ever keeps it for anyone; nil for a find from a floor
+	home: number?,
 }
 
 type Hand = {
@@ -712,6 +727,61 @@ function Slots.new(): Slots
 		end
 	end
 
+	-- Every find out of the job box of UserId `home` goes back into it (its owner left, D-293): out
+	-- of whoever's hands or off whoever's head holds it, or off the floor where it lies, in a glint.
+	-- One set down (`place`), with its piece out, or in a monster's arms is left to its system.
+	local function recall(home: number)
+		local gone = false
+		for id, t in tools do
+			if t.home ~= home or t.placed or outs[t.model] then
+				continue
+			end
+			local holder: Player? = nil
+			for p, h in hands do
+				if Carry.find(h.carry, id) then
+					holder = p
+					break
+				end
+			end
+			local wearer: Player? = nil
+			for p, worn in heads do
+				if worn == id then
+					wearer = p
+					break
+				end
+			end
+			if not (holder or wearer or grounds[id]) then
+				continue
+			end
+			if wearer then
+				offHead(wearer)
+			end
+			local h = if holder then hands[holder] else nil
+			if h then
+				Carry.remove(h.carry, id)
+			end
+			tools[id] = nil
+			grounds[id] = nil
+			unoffer(t)
+			if t.model.Parent then
+				glint(t.body.Position)
+			end
+			t.owner = nil
+			stow(t)
+			t.model:Destroy()
+			gone = true
+			for _, p in { holder, wearer } do
+				if p and p.Parent then
+					dress(p)
+					publish(p)
+				end
+			end
+		end
+		if gone then
+			loose:fire(nil)
+		end
+	end
+
 	-- A worn-out tool breaking (S1-08), wherever it is now: out of its owner's slots, it jumps out
 	-- of the hand with its own snap and a burst of its bits, tumbles to the floor and clanks as it
 	-- lands (keepers hear it, as a dropped tool), lies there a moment, then fades. Never silent,
@@ -1162,6 +1232,7 @@ function Slots.new(): Slots
 				dropAll(player, rootOf(player))
 				hands[player] = nil
 				heads[player] = nil
+				recall(player.UserId)
 			end)
 		)
 		for _, player in Players:GetPlayers() do
@@ -1478,14 +1549,15 @@ function Slots.new(): Slots
 			local t = tools[id]
 			local row = if t then Catalog[t.key] else nil
 			-- a find whose piece is still out is left behind with the floor (F-G1b3c3): it stays
-			-- in your slots till the piece goes with the floor (`lose`)
-			return row ~= nil and row.find == true and not (t and outs[t.model])
+			-- in your slots till the piece goes with the floor (`lose`); one out of a job box is
+			-- already its owner's, so it stays in your slots too, kept for no one (D-293)
+			return row ~= nil and row.find == true and not (t and (outs[t.model] or t.home ~= nil))
 		end)
 		local keys: { string } = {}
 		-- the find on your head is kept with the rest, going from your head in a glint
 		local worn = heads[player]
 		local w = if worn then tools[worn] else nil
-		if w and not outs[w.model] then
+		if w and not outs[w.model] and w.home == nil then
 			glint(w.body.Position)
 			offHead(player)
 			table.insert(ids, w.id)
@@ -1672,13 +1744,15 @@ function Slots.new(): Slots
 		return nil
 	end
 
-	-- `quiet`: no pick-up sound here, as the screens play it when the thing reaches the hand
-	-- (a buy at the car's machine, MachineVend).
-	function system.give(_: any, player: Player, key: string, quiet: boolean?): boolean
+	-- A new `key` into a free slot of `player`'s and their hand: the slot, or nil. `quiet`: no
+	-- pick-up sound here, as the screens play it when the thing reaches the hand (a buy at the
+	-- car's machine, MachineVend; a find out of the job box, BoxPanelView). `home`: the UserId
+	-- whose job box it came out of.
+	local function make(player: Player, key: string, quiet: boolean?, home: number?): number?
 		local root = rootOf(player)
 		local h = handOfPlayer(player)
 		if not root or Catalog[key] == nil or bothHands(h) or Carry.room(h.carry) == nil then
-			return false
+			return nil
 		end
 		local model = Tools.clone(key, root.CFrame)
 		local body = if model then Tools.body(model) else nil
@@ -1686,7 +1760,7 @@ function Slots.new(): Slots
 			if model then
 				model:Destroy()
 			end
-			return false
+			return nil
 		end
 		nextId += 1
 		local t: Tool = {
@@ -1697,9 +1771,10 @@ function Slots.new(): Slots
 			body = body,
 			owner = player,
 			uses = Wear.full(key),
+			home = home,
 		}
 		tools[t.id] = t
-		Carry.take(h.carry, t.id)
+		local slot = Carry.take(h.carry, t.id)
 		dress(player)
 		publish(player)
 		if not quiet then
@@ -1708,7 +1783,29 @@ function Slots.new(): Slots
 			Tools.play(Catalog[key].pickUp, hand or root, HAND_SOUND_REACH)
 		end
 		changed:fire({ player = player, kind = "PickUp" })
-		return true
+		return slot
+	end
+
+	function system.give(_: any, player: Player, key: string, quiet: boolean?): boolean
+		return make(player, key, quiet, nil) ~= nil
+	end
+
+	function system.unbox(_: any, player: Player, key: string): number?
+		local row = Catalog[key]
+		if not (row and row.find) then
+			return nil
+		end
+		return make(player, key, true, player.UserId)
+	end
+
+	function system.fromBox(_: any, player: Player): { [string]: number }
+		local out: { [string]: number } = {}
+		for _, t in tools do
+			if t.home == player.UserId then
+				out[t.key] = (out[t.key] or 0) + 1
+			end
+		end
+		return out
 	end
 
 	function system.lower(_: any, id: string, at: Vector3, yaw: number, still: boolean?)
