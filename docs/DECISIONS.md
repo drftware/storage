@@ -7441,3 +7441,29 @@ nobody near, and held again while hunting the player from 12.6 studs.
 - **Found, queued:** faces turned from the home bulb go near black (the shelf's end and back,
   seen from the box): the room needs a warm fill to be the calm place D-263 asks for.
 - **Split:** the panel is two pieces, c2b1 looking through it and c2b2 taking a find out.
+
+## D-291 · 2026-11-17 · The job box's panel rides the lid: every find you own, a kind a card (S5-03c2b1)
+
+The home doc's idea 9: press the box, the lid creaks up and a panel slides in with each kind you
+own shown once with how many, a search box and rarity filters. Precedents: Resident Evil's item
+box, Animal Crossing's house storage, Pet Simulator's inventory (rarest first, search, rarity
+filters).
+- **It rides the lid.** The server sends the holder the box and their finds (`JobBoxList`) as it
+  sets the lid up, once. The panel rises over the lid's 1.1 s on the lid's own curve (the lid's
+  `(1 - cos)/2` is Sine in-out), and falls on the lid's curve when `Lid` goes to 0 for any reason
+  (Quad in over `JobBox.landing` of how far the lid had risen), gone as the clunk lands. Its X and
+  a tap outside ask `JobBoxClose` (nothing carried, rate-limited, the asker's own open box only):
+  the panel waits for the lid rather than leaving before it.
+- **The cards (my defaults, OWNER.md):** the find as your slots draw it (ToolPicture), its rim and a
+  faint wash in its rarity's colour (Grades.Colours), its name, x2 for two or more; rarest first,
+  then by name. Dealt in as the panel rises (all within 0.6 s), re-dealt in a quick ripple when a
+  search or chip narrows them, so a narrowing never snaps.
+- **Search and chips:** the search ignores case, spaces and dashes ("night light" finds the
+  Night-light), 24 characters; chips are All plus only the rarities you own, so a chip never
+  shows an empty panel; the lit chip tapped again goes back to All. "No match" and "Empty" are the
+  only words beyond the chips.
+- **The look (D-263):** the box's own dusty blue, deepened, with the lobby's cream ink: the panel
+  reads as the box's inside. 76% of the screen's height (257 points on a Galaxy A16), so the
+  raised lid shows above it.
+- **Seen in Studio Play** at computer size (1380x761): 18 kinds, four chips, "lamp" left the two
+  lamps, the X dropped it with the lid. The phone check is the owner's (OWNER.md).

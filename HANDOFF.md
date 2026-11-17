@@ -2,7 +2,7 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-17, session 238 (the job box seen in Studio, D-290) · **Checks:** green ·
+**Updated:** 2026-11-17, session 239 (the job box's panel, D-291) · **Checks:** green ·
 **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at
 `482368f`, NOT on Brix's `origin` yet (push Brix first, OWNER.md).
 
@@ -10,43 +10,43 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
 - The home (D-259; the Claude Doc https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools
   only) is built a ROADMAP piece a session (S5-03): ground floor, fronts, starter sets, switch,
   a home each (D-275), the hard hat (D-277, D-283), the mirror (D-280), the oak shelf with finds
-  (D-284, D-285), and the job box (D-287), now in the place and seen working (D-290).
-- S5-03c2a2: Home.fbx uploaded (same asset id) and imported into `ReplicatedStorage.Props.Home`
-  in Edit, not saved by me. Verified in Studio Play: the lid twinkles for a find the full shelf
-  can't hold; Open eases it to 88 degrees with the creak and burst; Close drops it with the clunk;
-  walking 14 studs off shuts it; a rejoin finds it quiet. The ceiling reads warm past the lamp.
-  Captures: `docs/art/S5-03c2a-from-door.jpg`, `-open.jpg`. The sounds are the owner's to hear.
-- Import gotcha: the MCP's Edit `require` keeps its first copy of a module all session; prepare
-  from a fresh clone (`art/home/README.md` "Into Studio", `docs/STUDIO.md`).
-- Dev path: `ServerStorage.ShelfTest:Invoke(player, key)` (Studio) keeps a find as a gate does;
-  with the shelf full it goes in the box. The owner's save has six on the shelf already.
-- Find art: V5d seen in Play (D-289, the Old lamp holds a Mannequin); next V5b (`art/finds/WAVES.md`).
+  (D-284, D-285), the job box (D-287, D-290), and now its panel (D-291).
+- S5-03c2b1: open the box and the panel rises with the lid on the lid's curve, every find you own
+  a kind a card (picture as the slots draw it, rarity rim, x2), rarest first; a search box and
+  chips for the rarities you own narrow it with a quick re-deal; Close, the X, a tap outside or
+  walking off and it falls with the lid. `Home/BoxPanel` (pure, `tests/boxpanel.spec`),
+  `client/BoxPanelView`, `JobBoxes`' two remotes (`JobBoxList`, `JobBoxClose`).
+- Verified in Studio Play at 1380x761: 18 kinds and four chips, "lamp" left two lamps, the X
+  dropped it with the lid. Captures `docs/art/S5-03c2b1-open.jpg`, `-search.jpg`. Not checked at
+  Galaxy A16 size or chip taps by hand (OWNER.md). `screen_capture` timed out; the macOS window
+  capture works (STUDIO.md). Dev path: `ServerStorage.ShelfTest:Invoke(player, key)` keeps a find;
+  open the box from a Client with the prompt's `InputHoldBegin`/`End`, a Scriptable camera on it.
 
-## Next task: S5-03c2b1 The job box's panel, to look through
-The moment: you open the job box and, as the lid lifts, a panel slides up with everything you
-own, each kind once with its count; you type or tap a rarity and it narrows at once; Close, or
-walking off, slams it away as the lid drops.
-1. Read the home doc's job box idea (9) and "What you decided (Nov 16)" with the docs tools, by
-   heading only. Settle the card's look (the find's model in a ViewportFrame as ShopView does,
-   or a still), counts, the search and the rarity chips. Defaults go in OWNER.md.
-2. Pure rules in `Home.JobBox` (or a sibling module): group owned finds into one card a kind with
-   its count, the search match, the rarity filter, the sort; Lune specs first.
-3. Server (`JobBoxes`): on Open, send the holder their list (from the save's `finds`), once; any
-   ask from the client is validated (type, holder, rate-limited). Nothing to take out yet (c2b2).
-4. Client panel (new, ShopView's pattern): slides up over the lid's 1.1 s lift, cards dealt in,
-   x2 badges, a search box, rarity chips with a tap sound; slams down over the 0.42 s drop on
-   Close, walking off, or the lid shutting for any reason. Phone first: judge at Galaxy A16 size.
-5. Studio Play: keep a few finds with ShelfTest, open the box, search, filter, close, capture.
-**Acceptance:** check green; specs cover grouping, search and filter; in Studio Play the panel
-rides the lid in and out, lists every find you own a kind a card with its count, search and
-filters narrow it, and it reads at phone size.
-**Read first:** ROADMAP S5-03c2b1; the home doc's idea 9 and "What you decided (Nov 16)"; D-287
-and D-290; `src/server/JobBoxes.luau`; `src/client/ShopView.luau`; `src/shared/Save.luau` (`finds`).
+## Next task: S5-03c2b2 Taking a find out of the job box
+The moment: in the open panel you tap the Boombox card, it lifts and glows, Take; it flies out of
+the panel into your hand with its pick-up sound and the card's count drops by one (or Shelf: it
+flies to a free cubby and lands on the shelf with the shelf's tink).
+1. Read the home doc's ideas 9 and 10 by heading (docs tools). Settle: tap a card to pick it, one
+   verb button on it (Take; Shelf when a cubby is free); what a find in your hand at home is in the
+   save (still owned; never more out than you own). Defaults go in OWNER.md.
+2. Pure rules (BoxPanel or Save): what may come out (owned, not all already out), the count left;
+   Lune specs first.
+3. Server: one remote, checked (type, the box open and yours, a known find you own, a free slot in
+   `Slots` or a free shelf spot), rate-limited; gives it into a slot or shelves it (`Save.shelve`).
+4. Client (`BoxPanelView`): the picked card's lift and glow, the button, the picture flying to the
+   slot or cubby (world to screen), the count ticking down, refused presses ignored, never worded.
+5. Studio Play: keep finds, open the box, take one to hand, shelve one, capture half scale.
+**Acceptance:** check green; specs cover what may come out; in Studio Play a find goes from the
+panel into your hand and onto the shelf with its motion and sound, the count updates, and nothing
+more than you own ever comes out.
+**Read first:** ROADMAP S5-03c2b2 and S5-03d; the home doc's ideas 9 and 10; D-291 and D-284;
+`src/client/BoxPanelView.luau`; `src/server/Slots.luau` (how a find goes into a hand);
+`src/shared/Save.luau` (`shelve`, `keep`).
 
 ## Queue (next sessions, the owner's ticket order)
-1. S5-03c2b2 taking a find out (hands or a free shelf spot), c3 selling; S5-03d-h; S5-03a2d the
-   cars' hidden triangles; F-G1b4a2 the headlamp's beam (ROADMAP Step 4); F-G1b4b the hat spent
-   (start its minute when a hat worn at home leaves the ground floor).
+1. S5-03c3 selling and Gold; S5-03d-h; S5-03a2d the cars' hidden triangles; F-G1b4a2 the
+   headlamp's beam (ROADMAP Step 4); F-G1b4b the hat spent (its minute starts when a hat worn at
+   home leaves the ground floor).
 2. The home's warm fill (D-290): faces turned from the bulb go near black (the shelf's end and
    back, seen from the box); D-263 wants the room calm and warm all round. A dim warm fill or the
    lobby's ambient, judged from the box and the door at phone size.

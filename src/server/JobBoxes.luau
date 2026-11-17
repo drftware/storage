@@ -16,6 +16,10 @@
 	Open is for the holder only, as the switch is; opening marks what's in it seen (Save.open, kept
 	by the autosave). The lid closes on Close, when its holder walks away (JobBox.Away, looked at
 	every JobBox.Every seconds while a lid is up) and when the home changes hands.
+
+	The panel (S5-03c2b1, BoxPanel): as the lid opens the holder's screen is sent the box and every
+	find they own (`BoxPanel.ListRemote`), once. Its X, or a tap outside it, asks `CloseRemote`
+	(nothing carried): rate-limited, then it shuts the box only if it's this player's and open.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -30,6 +34,7 @@ local Prompts = require(script.Parent.Prompts)
 local Saving = require(script.Parent.Saving)
 local Shelves = require(script.Parent.Shelves)
 
+local BoxPanel = Home.BoxPanel
 local JobBox = Home.JobBox
 
 -- One home's box as wired: its unit, the piece, its button and when it last answered a press.
@@ -44,6 +49,9 @@ function JobBoxes.new(): Brix.System
 	local connections: { RBXScriptConnection } = {}
 	local saving: Saving.SavingSystem? = nil
 	local untilLook = 0
+	local remotes: { RemoteEvent } = {}
+	local listRemote: RemoteEvent? = nil
+	local limit = Brix.RateLimit.bucket(BoxPanel.Limit)
 
 	local function holderOf(box: Box): Player?
 		local id = box.unit:GetAttribute(Door.HolderAttribute)
@@ -93,6 +101,21 @@ function JobBoxes.new(): Brix.System
 		box.model:SetAttribute(JobBox.LidAttribute, 1 + found)
 		box.model:SetAttribute(JobBox.FreshAttribute, Save.Fresh.Seen)
 		box.prompt.ActionText = "Close"
+		if listRemote then
+			listRemote:FireClient(player, box.model, BoxPanel.list(if data then data.finds else {}))
+		end
+	end
+
+	-- Close from the panel: `player`'s own open box shuts. Nothing carried, so nothing to read.
+	local function closeAsked(player: Player)
+		if not limit:take(player, os.clock()) then
+			return
+		end
+		for box in open do
+			if box.unit:GetAttribute(Door.HolderAttribute) == player.UserId then
+				shut(box)
+			end
+		end
 	end
 
 	-- The box in `unit`'s starter set, its button set in front of it. Nil for a unit with none.
@@ -173,6 +196,26 @@ function JobBoxes.new(): Brix.System
 			if not laid then
 				return -- no lobby in this place: no homes
 			end
+			local folder = ReplicatedStorage:FindFirstChild(BoxPanel.RemoteFolder)
+			if not folder then
+				folder = Instance.new("Folder")
+				folder.Name = BoxPanel.RemoteFolder
+				folder.Parent = ReplicatedStorage
+			end
+			for _, name in { BoxPanel.ListRemote, BoxPanel.CloseRemote } do
+				local r = Instance.new("RemoteEvent")
+				r.Name = name
+				r.Parent = folder
+				table.insert(remotes, r)
+			end
+			listRemote = remotes[1]
+			table.insert(connections, remotes[2].OnServerEvent:Connect(closeAsked))
+			table.insert(
+				connections,
+				Players.PlayerRemoving:Connect(function(player: Player)
+					limit:forget(player)
+				end)
+			)
 			for _, unit in laid.units do
 				local box = wire(unit)
 				if box then
@@ -221,6 +264,11 @@ function JobBoxes.new(): Brix.System
 			end
 			table.clear(boxes)
 			table.clear(open)
+			for _, r in remotes do
+				r:Destroy()
+			end
+			table.clear(remotes)
+			listRemote = nil
 		end,
 	}
 end

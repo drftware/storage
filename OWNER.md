@@ -59,6 +59,15 @@ nowhere else.
   had); press Close and listen for the clunk as it lands. Say: does the creak sound like a steel
   lid and the clunk like a heavy one, can you see the twinkle from the door at Galaxy A16 size, and
   is the box's blue calm in your home?
+- [ ] **Look through your job box on a phone** (S5-03c2b1, D-291). Seen in Studio Play at
+  computer size on Nov 17 (`docs/art/S5-03c2b1-open.jpg`, `-search.jpg`): the panel rose with the
+  lid, 18 kinds with their counts, typing "lamp" left the two lamps, the X dropped it with the lid.
+  Yours: in the Device Simulator's Galaxy A16, open your job box (E, or its button). Watch the
+  panel rise with the lid and fall with it; tap a rarity chip, tap it again; type in the search
+  box; tap outside the panel; walk away with it open. Say: can you read the names and the x2 at
+  that size, does the rise feel slow or right (it takes the lid's 1.1 s), and is the deep blue
+  calm. My defaults, yours to change: rarest first then by name; chips only for rarities you own;
+  a card shows the find as your slots draw it, with no price yet (selling is S5-03c3).
 - [ ] **If Studio stops getting changes, click Connect** in Studio's Rojo plugin (connected Nov 13
   at 23:30; each session checks it first and says so in HANDOFF.md).
 - [ ] **Playing on your phone** (D-109): with Rojo connected, use File > Publish to Roblox (Save

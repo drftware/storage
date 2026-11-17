@@ -52,6 +52,7 @@ local MinimapView = require(script.MinimapView)
 local MirrorView = require(script.MirrorView)
 local ShelfView = require(script.ShelfView)
 local JobBoxView = require(script.JobBoxView)
+local BoxPanelView = require(script.BoxPanelView)
 local LadderView = require(script.LadderView)
 local LobbyView = require(script.LobbyView)
 local MachineMenu = require(script.MachineMenu)
@@ -123,6 +124,7 @@ local host = Brix.Host.new({
 		{ slot = "mirrorView", system = MirrorView.new() },
 		{ slot = "shelfView", system = ShelfView.new() },
 		{ slot = "jobBoxView", system = JobBoxView.new() },
+		{ slot = "boxPanelView", system = BoxPanelView.new(needCursor) },
 		-- the find on your head kept out of your own eye, still on you for friends and the mirror
 		{ slot = "headView", system = HeadView.new() },
 		{ slot = "behindDoors", system = BehindDoors.new() },

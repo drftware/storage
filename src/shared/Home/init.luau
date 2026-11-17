@@ -26,6 +26,7 @@ local Home = {}
 Home.Specs = Specs
 Home.Holding = require(script.Holding)
 Home.JobBox = require(script.JobBox)
+Home.BoxPanel = require(script.BoxPanel)
 
 -- A home's name card over its door (Lobby lays it, FrontOffice letters its holder's name on it,
 -- HomeCards sprays the name on): the card's part carries this tag and its slot's number.

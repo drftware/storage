@@ -2416,12 +2416,16 @@ Done when players watch the results to the end and change their perks between cl
       the lid twinkles for a seventh find, Open eases it to 88 degrees with the creak and burst,
       Close drops it with the clunk, walking off shuts it, a rejoin finds it quiet; the ceiling
       reads warm past the lamp. `docs/art/S5-03c2a-from-door.jpg`, `-open.jpg`.
-    - [ ] **S5-03c2b1 The job box's panel, to look through**: Open slides the panel in as the lid
-      lifts, Close (or walking off) slams it away as the lid drops: every find you own, each kind
-      once with its count (x2), a search box and rarity filters, phone first.
+    - [x] **S5-03c2b1 The job box's panel, to look through** (D-291): the panel rises with the
+      lid on the lid's own curve and falls with it on Close, its X, a tap outside or walking off;
+      every find you own a kind a card (its picture as your slots draw it, rim in its rarity's
+      colour, x2), rarest first; a search box and the rarities you own as chips narrow it at once.
+      Seen in Studio Play at computer size: `docs/art/S5-03c2b1-open.jpg`, `-search.jpg`.
     - [ ] **S5-03c2b2 Taking a find out**: from the panel, into your hands or onto a free shelf
       spot; one remote, checked on the server (yours, owned, a free hand or spot), rate-limited.
     - [ ] **S5-03c3 Selling and Gold** from the panel.
+    - Polish for the panel (later): a chip tap you can hear differently per rarity; cards drawn
+      only as they scroll into view if a player ever owns 60 kinds or more (ViewportFrames cost).
   - [ ] **S5-03d Taking finds up** (idea 10, D-251): take any find from the chest into a slot and
     carry it to the elevator. On the climb it's at risk like any find: stolen, dropped where
     you're caught or where you leave, lost if it isn't aboard when the elevator leaves. Whoever
