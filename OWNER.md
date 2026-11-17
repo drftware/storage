@@ -50,6 +50,14 @@ nowhere else.
   Stop and Play again: they're all still there, no longer sparkling. On the Device Simulator's
   Galaxy A16: is the twinkle visible from the door, is "New" readable, is the tink too quiet?
   Then play a real climb, keep a find at a gate, ride home: it's on the shelf, sparkling.
+- [ ] **Open your job box** (S5-03c2a1, D-287; built, not yet in the place: the next session
+  uploads and imports it and checks it in Play first). After that, in Play with one player, keep
+  six finds with ShelfTest (above), then a seventh: from your doorway the blue job box against the
+  left wall has a gold twinkle over its lid. Walk up and press Open (E): the lid swings up slowly
+  with a soft steel creak and the twinkle bursts off it; press Close: it falls shut with a clunk.
+  Walk away with it open: it shuts by itself. Stop and Play again: the box is quiet. Look at the
+  ceiling from the door: warm all over, not black past the lamp. Say: does the creak sound like a
+  steel lid, and is the box's blue calm in your home?
 - [ ] **If Studio stops getting changes, click Connect** in Studio's Rojo plugin (connected Nov 13
   at 23:30; each session checks it first and says so in HANDOFF.md).
 - [ ] **Playing on your phone** (D-109): with Rojo connected, use File > Publish to Roblox (Save
@@ -75,6 +83,8 @@ nowhere else.
      partition (S5-03h) goes right behind it. A find too big for its cubby is shrunk to fit,
      a long one lying deep is turned a quarter to stand bigger (D-285); a small one is never grown.
      A new find answers when you come within 7 studs of it, and finds on the shelf never light.
+     The job box (D-287) is powder-coated dusty blue on oak runners, against the left wall beside
+     the shelf, facing the room; its lid opens to 88 degrees and shuts when you walk 14 studs off.
   3. Things you can set out with Arrange: 25 small, 50 medium, 100 large, 150 XL, so a full
      unit runs smoothly on a low-end phone.
   4. Four lamps in a unit cast real light; any more just glow.
