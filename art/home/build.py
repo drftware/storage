@@ -420,11 +420,11 @@ def hall_cards(coll):
             halo = render.emissive("neon_halo", render.hexc(glow), 3.0)
             lettering(CARD_NAMES[k], fam, weight, at, size, core, coll)
             lettering(CARD_NAMES[k], fam, weight, (at[0], at[1] + 0.002, at[2]), size, halo, coll, 0.025)
-            rng, _ = K.CARD_LIGHT
+            rng, _, out = K.CARD_LIGHT
             ld = bpy.data.lights.new("neon_light", "POINT")
             ld.energy, ld.color, ld.shadow_soft_size = 60.0 * rng / 9.0, render.hexc(glow), 0.4
             lo = bpy.data.objects.new("neon_light", ld)
-            lo.location = (x, -0.9, CARD_Z)
+            lo.location = (x, -out, CARD_Z)
             coll.objects.link(lo)
         else:
             mat = render.simple(f"ink_{style}", render.hexc(ink), 0.7)

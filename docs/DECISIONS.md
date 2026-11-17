@@ -8446,3 +8446,28 @@ Crossing's mailbox styles (D-322).
   slate plate; from mid-floor (40 studs) the name is small, the size the plain plate's was; from
   the far wall (100 studs) the plates are dark bars. The neon's tube already reads from far
   off; its glow stroke and light are g3b2.
+
+## D-332 The neon card lit: a glowing name and a pink wall, near you only (S5-03g3b2, 2026-11-17)
+
+The moment: down the calm ground floor one name glows over its door, the first thing you see from
+across the floor. Precedent: Bloxburg's and Adopt Me's neon house signs (D-322).
+- **The name glows** (`CardPlate.hang`, server): a Glow style's SurfaceGui takes LightInfluence 0
+  and its lettering a UIStroke in the glow colour (`CardPlate.Neon.Stroke` 3 px at 60 px a stud,
+  `Haze` 0.3), so the white Nunito reads as a lit tube in a pink halo; any other style goes back
+  to the lobby's ink light (kept on the card as `CardInk` when Lobby lays it, since Lobby can't be
+  required from CardPlate) with no stroke. HomeCards' spray settles onto the style's own light,
+  read at the spray, and retargets if the plate changes mid-settle (a claim's name and plate can
+  arrive in either order).
+- **The wall's pink wash is a real light thrown only near you** (D-271's budget): each screen
+  makes a PointLight (`Specs.CardLight`: range 9, `Out` 0.9 studs in front of the plate) for the
+  two neon cards nearest a point just ahead of the camera within 48 studs (the floor lamps' pick,
+  `UnitLight.NearLead`, `NearMargin`), fades it in over 0.6 s and fades it out and destroys it.
+  A third neon card further on keeps its glowing name on a plain wall. Seen: two lit, the third
+  taking over as one went back to the stencil, none after walking off.
+- **Brightness 2.6, not the sheet's 1.4**: in Play on the A16 the hall's fills drowned 1.4 (a
+  faint tint); 3.5 at range 11 turned the whole wall and ceiling pink; 2.6 at 9 reads as a
+  pink glow round the plate from mid-floor. The light's place (`Out`) moved into the art spec so
+  the sheet and the game hang it in the same spot.
+- **On the A16:** from the far wall (108 studs) the lit name is a bright white-pink bar and spare
+  neon plates a thin pink outline; from mid-floor (40) the name reads, small; close up the wash
+  is plain on the cream wall and ceiling. Pictures `docs/art/S5-03g3b2-neon-*.jpg`.

@@ -2681,7 +2681,7 @@ Done when players watch the results to the end and change their perks between cl
           its face in its font and ink; a spare home wears the blank stencil. Seen in Play on the
           A16: the stencil with the name close up and from mid-floor, and the painted, chalk and
           neon plates hung from the server down the row. Pictures `docs/art/S5-03g3b1-*.jpg`.
-        - [ ] **S5-03g3b2 The neon lit**: its name in a glow stroke (UIStroke in `Glow`,
+        - [x] **S5-03g3b2 The neon lit** (D-332; seen in Play on the A16): its name in a glow stroke (UIStroke in `Glow`,
           LightInfluence 0 so the tube's letters glow), the tube Neon (done in g3b1) and a light
           on the wall (`Specs.CardLight`, range 9) thrown only near you, as the floor lamps' are
           (`Home.FloorLamp.Near`, D-271), so a hall of neon cards stays inside the A16's light

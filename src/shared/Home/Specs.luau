@@ -306,7 +306,8 @@ local Specs = {
 			Glow = "#FF4F9E",
 		},
 	} :: { CardStyle },
-	CardLight = { Range = 9.0, Brightness = 1.40 },
+	-- The neon's light in its glow colour: Out studs in front of the card's middle (-Z).
+	CardLight = { Range = 9.0, Brightness = 2.60, Out = 0.90 },
 	-- Each MeshPart's box as imported (its centre is its CFrame in its frame).
 	Parts = {
 		Beanbag = {

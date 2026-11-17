@@ -430,6 +430,7 @@ function Lobby.lay(pivot: CFrame, parent: Instance): Laid?
 		if number then
 			p:SetAttribute(Home.CardSlot, number)
 			p:SetAttribute(CardPlate.WallAttribute, p.CFrame * CFrame.new(0, 0, Lobby.CardDepth))
+			p:SetAttribute(CardPlate.InkAttribute, Lobby.InkLight)
 			if homeTemplate then
 				CardPlate.hang(p, nil, homeTemplate) -- blank on the Starter stencil until held
 			end

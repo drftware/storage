@@ -336,7 +336,9 @@ CARDS = (("Stencil", "Starter", "#34414F", ("Oswald", "Bold"), "#EFE7D6", None),
          ("Painted", "Cash", "#2F4F3F", ("LuckiestGuy", "Regular"), "#F2E6C9", None),
          ("Chalk", "Cash", None, ("PatrickHand", "Regular"), "#F1F0E8", None),
          ("Neon", "Robux", "#16171C", ("Nunito", "Regular"), "#FFF0F6", "#FF4F9E"))
-CARD_LIGHT = (9.0, 1.4)               # the neon's light on the wall round it: range, brightness
+CARD_LIGHT = (9.0, 2.6, 0.9)          # the neon's light on the wall round it: range, brightness (2.6
+                                      # in Play on the A16: the hall's fills drowned 1.4),
+                                      # and how far out from the wall it hangs
 
 
 def card_faces():
@@ -374,9 +376,10 @@ def luau_cards(parts_of):
         extra += f", Glow = \"{glow}\"" if glow else ""
         L.append(f"\t\t\tFace = {lua_vec(b2r(c))}, FaceSize = {{ {fw:.3f}, {fh:.3f} }},")
         L.append(f"\t\t\tFont = \"{fam}\", Weight = \"{weight}\", Ink = \"{ink}\"{extra} }},")
-    rng, bright = CARD_LIGHT
+    rng, bright, out = CARD_LIGHT
     L += ["\t} :: { CardStyle },",
-          f"\tCardLight = {{ Range = {rng:.1f}, Brightness = {bright:.2f} }},"]
+          "\t-- The neon's light in its glow colour: Out studs in front of the card's middle (-Z).",
+          f"\tCardLight = {{ Range = {rng:.1f}, Brightness = {bright:.2f}, Out = {out:.2f} }},"]
     return L
 
 

@@ -3014,6 +3014,9 @@ verified: a doc page, Studio, or "untested".
   doesn't stick; the camera attribute `CaughtSeized` is its own rule for out of sight.
 - **A yellow blob by the door in the Arrange view is the beanbag**, not your hat: a ray from
   the camera hits your (hidden) hair first, since `Raycast` ignores local transparency.
+- **Aiming the view in Play** (S5-03g3b2): a Client `PivotTo` of your body doesn't turn the
+  camera; set `workspace.CurrentCamera.CFrame = CFrame.lookAt(cam.CFrame.Position, target)` a
+  beat after and it stays. The neon cards' pink wash only shows within 48 studs (two at most).
 - `start_stop_play` true right after a stop can report "Game Started" and stay in Edit: check
   `get_studio_state` and start again. `character_navigation` fails before the character loads;
   a Client `PivotTo` after `CharacterAdded` works.

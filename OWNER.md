@@ -122,8 +122,12 @@ nowhere else.
   your door, every spare home has a blank one. Walk to the middle of the floor and look back. Look
   for: can you read your name from there (on the A16 it's small, the size the old plain plate's
   was; say if the plates should be bigger), and does the neon one make you want it (pictures
-  `docs/art/S5-03g3b1-*.jpg`; the neon's glow comes next)? My defaults, say which to change:
-  stencilled steel is every home's; the painted board and the chalkboard for cash; neon for Robux.
+  `docs/art/S5-03g3b1-*.jpg`, and lit, `docs/art/S5-03g3b2-neon-*.jpg`)? My defaults, say which
+  to change: stencilled steel is every home's; the painted board and the chalkboard for cash;
+  neon for Robux. Neon on a real phone (S5-03g3b2, D-332): its name glows white in a pink halo and
+  the wall round it goes pink, but only the two neon cards nearest you light their walls, so a
+  third further down shows its glowing name on a plain wall. Say if the pink wash is too strong or
+  too weak, and whether your phone holds its frame rate walking past three neon cards.
 - [ ] **The counter's furniture** (S5-03g1c1 and c2, D-323, D-324; art only, not in the game
   until S5-03g4). Open `art/sheets/home-furniture.png` on your phone: top left, a milk crate, a
   pallet coffee table, a folding table and a steel shelf by a person for scale; top right, a
