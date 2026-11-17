@@ -2,7 +2,7 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-17, session 233 (the mirror seen and fixed, S5-03b) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `482368f`, NOT on Brix's `origin` yet (push Brix first, OWNER.md).
+**Updated:** 2026-11-17, session 234 (the hard hat on top of your head, D-283) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `482368f`, NOT on Brix's `origin` yet (push Brix first, OWNER.md).
 
 ## State
 - The home (D-259; the Claude Doc https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools
@@ -19,6 +19,8 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   stand in it as plain parts, and it sharpens up close. You, the right way round, your room
   behind you, 60 frames a second. The owner's look and the phone's frame rate wait on OWNER.md.
 - The hat you wear is out of your own eye (D-282, `HeadView`): seen in Play, `docs/art/F-G1b4a-own-view.jpg`.
+- The worn hard hat sits on top of your head, by its rim, grown with your head and over your hair
+  (D-283, `Head.seat`): seen in Play and in the mirror, `docs/art/F-G1b4a-on-head-*.jpg`.
 - Still over the triangle default: the cars' 51k, ticketed as S5-03a2d.
 - Find art (third find run): V4a built the siren car (D-281: rolls off wailing, its roof light
   lit only while it plays, a 90-stud lure); NOT seen in Play (Studio was busy). Next: V4b, its
@@ -57,9 +59,7 @@ sparkle, and stays there after a rejoin.
    `Seat:Sit` in a quick try (S5-03a2b4). A spare home lifted from inside stays unpadlocked
    until someone holds it and leaves (D-275). The worn hat's first-Wear dark screen (STUDIO.md):
    if it comes back, make `FindUseView` re-read a tagged model whose key arrives late.
-8. The worn hard hat sits on your chin (seen in the mirror, D-280): `Slots`' head weld seats the
-   find's pivot, which isn't at the hat's rim; fit it so the shell sits on your head (F-G1b4a's).
-   After a respawn under a held camera, Roblox never re-hid your body in first person (D-282).
+8. After a respawn under a held camera, Roblox never re-hid your body in first person (D-282).
    The finds session's work (D-278, D-279) is still uncommitted in the shared checkout.
 
 ## Kickoff for the next agent

@@ -264,23 +264,43 @@ local function handOf(character: Model): (BasePart?, CFrame)
 	return hand, CFrame.new(at)
 end
 
--- The head and where a worn find sits on it (`Head.fit`): its hat point (the top of the head),
--- moved down, ahead and tipped by the fit.
-local function headOf(character: Model, fit: Head.Fit): (BasePart?, CFrame)
+-- Studs from a worn find's pivot (its grip, the hat's crown) down to the lowest edge of its rim
+-- part (`Head.Fit.rim`), at its own size: what `Head.seat` sits it by. Its parts' boxes, in its
+-- pivot's frame; 0 (sat by its pivot) if it has no such part.
+local function rimDepth(model: Model, fit: Head.Fit): number
+	local part = model:FindFirstChild(fit.rim, true)
+	if not (part and part:IsA("BasePart")) then
+		return 0
+	end
+	local pivot = model:GetPivot()
+	local half = part.Size / 2
+	local low = math.huge
+	for _, x in { -1, 1 } do
+		for _, y in { -1, 1 } do
+			for _, z in { -1, 1 } do
+				local corner = part.CFrame:PointToWorldSpace(half * Vector3.new(x, y, z))
+				low = math.min(low, pivot:PointToObjectSpace(corner).Y)
+			end
+		end
+	end
+	return -low / model:GetScale()
+end
+
+-- The head, the size a worn find grows to on it, and where its pivot sits (`Head.seat`): over
+-- the head's hat point (the top of the head) so its rim lands over the brow, tipped by the fit.
+local function headOf(character: Model, model: Model, fit: Head.Fit): (BasePart?, number, CFrame)
 	local head = character:FindFirstChild("Head")
 	if not (head and head:IsA("BasePart")) then
-		return nil, CFrame.identity
+		return nil, 1, CFrame.identity
 	end
 	local hat = head:FindFirstChild("HatAttachment")
 	local top = if hat and hat:IsA("Attachment")
 		then hat.Position
 		else Vector3.new(0, head.Size.Y / 2, 0)
+	local scale, up, ahead = Head.seat(fit, head.Size.Y, rimDepth(model, fit))
 	return head,
-		CFrame.new(top + Vector3.new(0, -fit.down, -fit.ahead)) * CFrame.Angles(
-			math.rad(-fit.tip),
-			0,
-			0
-		)
+		scale,
+		CFrame.new(top + Vector3.new(0, up, -ahead)) * CFrame.Angles(math.rad(-fit.tip), 0, 0)
 end
 local function rootOf(player: Player): BasePart?
 	local character = player.Character
@@ -502,7 +522,7 @@ function Slots.new(): Slots
 			stow(t)
 			return
 		end
-		local head, on = headOf(character, fit)
+		local head, scale, on = headOf(character, t.model, fit)
 		if not head then
 			stow(t)
 			return
@@ -513,8 +533,8 @@ function Slots.new(): Slots
 		if t.weld then
 			t.weld:Destroy()
 		end
-		if t.model:GetScale() ~= fit.scale then
-			t.model:ScaleTo(fit.scale)
+		if t.model:GetScale() ~= scale then
+			t.model:ScaleTo(scale)
 		end
 		for _, name in fit.hide do
 			local part = t.model:FindFirstChild(name, true)

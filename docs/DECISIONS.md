@@ -7251,3 +7251,22 @@ you slip the other way. Built from rows on verbs that already existed:
   light, so the lamp still lights the hall; MirrorView's copy keeps its own look, so the mirror
   still shows the hat on you. Tested in `tests/head.spec`; seen in Play (same respawn: the hat's
   parts at 1, both lights on; a fresh Play: nothing over your view, the mirror showing the hat).
+
+## D-283 · 2026-11-17 · The hard hat sits on top of your head, by its rim (F-G1b4a1c)
+
+The mirror showed the worn hard hat at your chin, and so did a third-person camera in Studio Play:
+the real weld was low, not the mirror's copy. A find's pivot is its grip, which for the hat is the
+crown of its shell, but D-277's fit put that pivot where the rim should go, so the shell sat a
+whole hat-height low, its lamp on your mouth (and its brim round your eye before D-282).
+
+- **Sat by its rim.** A fit names its rim part (`HardHat_Shell`); `Slots` measures how far that
+  part's lowest edge is below the find's pivot, and `Head.seat` lifts the pivot so the rim lands
+  `down` under the top of the head. Tested in `tests/head.spec` (failing first).
+- **Grown with your head.** Fits are numbered for a standard 1.2-stud head and scale with yours,
+  size and depth alike: seen at head scales 0.8, 1 and 1.5 in Play, the same look each time.
+- **Bigger, over your hair** (seen in Play, `docs/art/F-G1b4a-on-head-*.jpg`): at 1.4 the shell
+  was 1.25 studs across and the free Pal Hair (1.76) buried it; at 1.7 (1.5 across, a Roblox
+  hat's width) it reads as a miner's hard hat from any side, with hair under its brim. Its rim
+  sits 0.3 under the top of the head, the brim level over the brow. The owner's look waits on
+  OWNER.md.
+- Your own view stays clear (D-282's `HeadView`, seen: every worn part hidden at the eye).

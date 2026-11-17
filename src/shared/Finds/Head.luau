@@ -23,25 +23,35 @@ Head.WeldName = "HeadWeld"
 Head.ModelName = "WornFind"
 
 --[[
-	How a find sits on a head. `scale`: the find's model is built real size (D-196) and a Roblox
-	head is bigger than a person's, so the hat is grown to fit it. `down`: studs its rim sits below
-	the head's hat point (the top of the head), so the shell covers the crown, not perched on it.
-	`ahead`: studs it sits forward, its brim over your brow. `tip`: degrees its front tips down,
-	the lamp looking a little ahead of your feet as a real cap lamp does. `hide`: parts hidden
-	while it's worn (the hat's cord and battery case, which a miner wears at the hip).
+	How a find sits on a head, numbered for a standard head (`Standard` studs tall, the classic
+	R15 head) and grown with yours, so a bigger avatar's hat is bigger and just as deep (D-283).
+	`scale`: the find's model is built real size (D-196) and a Roblox head is bigger than a
+	person's, so the hat is grown to fit it. `rim`: the part whose lowest edge is its rim (the
+	shell, brim and all). `down`: studs that rim sits below the head's hat point (the top of the
+	head): the shell covers the crown and the brim rides level over your brow, a miner's hard hat,
+	not perched on top and never down at the chin. `ahead`: studs it sits forward. `tip`: degrees
+	its front tips down, the lamp looking a little ahead of your feet as a real cap lamp does.
+	`hide`: parts hidden while it's worn (the hat's cord and battery case, which a miner wears at
+	the hip).
 ]]
 export type Fit = {
 	scale: number,
+	rim: string,
 	down: number,
 	ahead: number,
 	tip: number,
 	hide: { string },
 }
 
+Head.Standard = 1.2 -- studs: the classic R15 head's height, the one `Fits` are numbered for
+
 Head.Fits = {
 	HardHat = {
-		scale = 1.4,
-		down = 0.42,
+		-- 1.7: its shell 1.5 studs across, a Roblox hat's width, so it sits over most hair (the
+		-- free Pal Hair is 1.76 across) as a hat does, not buried in it; seen in Play (D-283)
+		scale = 1.7,
+		rim = "HardHat_Shell",
+		down = 0.3,
 		ahead = 0.05,
 		tip = 4,
 		hide = { "HardHat_Pack" },
@@ -51,6 +61,18 @@ Head.Fits = {
 -- How `key` sits on a head, or nil if it isn't worn there.
 function Head.fit(key: string): Fit?
 	return Head.Fits[key]
+end
+
+--[[
+	Where a find sits on a head `height` studs tall (D-283). A find's pivot is its grip, which for
+	the hat is the crown of its shell, so it's sat by its rim: `depth` is studs from its pivot down
+	to its rim's lowest edge at its own size (scale 1). Gives the size to grow it to, and how far
+	its pivot sits up from and ahead of the head's hat point, so the rim lands `down` under it.
+]]
+function Head.seat(fit: Fit, height: number, depth: number): (number, number, number)
+	local k = if height > 0 then height / Head.Standard else 1
+	local scale = fit.scale * k
+	return scale, depth * scale - fit.down * k, fit.ahead * k
 end
 
 --[[

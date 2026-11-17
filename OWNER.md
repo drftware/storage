@@ -31,8 +31,9 @@ nowhere else.
   from the rug: the mirror leans on the wall. Look for: you facing you, moving the right way round
   (turn, jump, walk sideways); stepping side to side shifts the room behind you as a real mirror
   does; your rug, plant, lamp and walls behind you. Come right up to it: your outline stays
-  smooth. Flip the switch: the reflection dims with the room and its ceiling lamp goes dark. The
-  hard hat shows on your chin for now: that's where it's worn, a bug queued for a fix. Then the
+  smooth. Flip the switch: the reflection dims with the room and its ceiling lamp goes dark. Wear
+  the hard hat: it sits on top of your head over your hair, brim over your brow, lamp on your
+  forehead (D-283, `docs/art/F-G1b4a-on-head-*.jpg`): bigger or smaller? higher or lower? Then the
   Device Simulator's Galaxy A16: does the frame rate hold in front of it? Walk out: the mirror
   goes still. With 2 players, your friend shows behind you. Known limits: no shadows and no lamp
   light in the picture (an even warm light), its walls are plain paint without the plaster's

@@ -47,6 +47,27 @@ for key, f in Head.Fits do
 	ok(f.scale > 1 and f.scale < 2, `{key}: grown to a Roblox head, not a giant's`)
 	ok(f.down > 0 and f.down < 0.8, `{key}: its rim below the top of the head`)
 	ok(math.abs(f.tip) <= 15, `{key}: its front tipped a little at most`)
+	ok(f.down < Head.Standard / 2, `{key}: its rim over the brow, above the head's middle`)
+	ok(type(f.rim) == "string" and f.rim ~= "", `{key}: names the part whose edge is its rim`)
+end
+
+-- sat by its rim, not its grip (D-283): a find's pivot is its grip, the hat's crown, so the
+-- crown goes over the top of the head and the rim lands `down` below it, never at the chin
+if fit then
+	local depth = 0.75 -- the hat's crown to its rim at its own size (its grip's height, spec.py)
+	local scale, up, ahead = Head.seat(fit, Head.Standard, depth)
+	ok(scale == fit.scale, "a standard head wears it at its fit's size")
+	ok(up > 0, "its crown sits over the top of the head, not inside it")
+	ok(math.abs((up - depth * scale) - -fit.down) < 1e-9, "its rim lands `down` under the top")
+	ok(ahead == fit.ahead, "and as far forward as its fit says")
+	-- a bigger head (a larger avatar's) wears it bigger and just as deep, in proportion
+	local k = 1.5
+	local big, bigUp, bigAhead = Head.seat(fit, Head.Standard * k, depth)
+	ok(math.abs(big - fit.scale * k) < 1e-9, "a head half again as big grows the hat with it")
+	ok(math.abs((bigUp - depth * big) - -fit.down * k) < 1e-9, "its rim as deep for its size")
+	ok(math.abs(bigAhead - fit.ahead * k) < 1e-9, "and as far forward for its size")
+	local none = Head.seat(fit, 0, depth)
+	ok(none == fit.scale, "a head with no height wears it at the standard size")
 end
 
 -- the ground floor: the room (120 across, 156 back), the homes off its walls; not the climb

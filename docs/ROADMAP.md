@@ -2661,6 +2661,8 @@ actions themselves and dealing the new finds on floors are later game tickets.
         with the rest; aboard at the gate, it's kept with your finds; on the ground floor its
         light never runs down.
       - [x] **F-G1b4a1b Out of your own eye** (D-282; seen in Studio Play, `docs/art/F-G1b4a-own-view.jpg`).
+      - [x] **F-G1b4a1c On top of your head** (D-283; it sat at your chin: seated by its rim, grown
+        with your head, big enough to sit over your hair; seen in Play and in the mirror).
         With your camera at your head, the hat you wear is hidden from you alone (`HeadView`,
         eased), even under a camera the game holds, where Roblox's own first-person hiding
         stops; friends and the mirror still see it on you, and its lamp still lights the way.
