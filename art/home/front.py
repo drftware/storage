@@ -132,7 +132,9 @@ TEXSET = {"Facade": "Plaster", "FacadeBack": "Plaster", "Casing": "Wood", "Frame
 PLAIN = {"Switch": (0.93, 0.91, 0.86), "SwitchToggle": (0.96, 0.95, 0.92),
          "Lamp": (1.0, 0.9, 0.76), "JobBoxFittings": (0.29, 0.31, 0.32),
          "MirrorBevel": (0.84, 0.88, 0.89), "MirrorPads": (0.29, 0.25, 0.22),
-         "RailSteel": (0.29, 0.31, 0.32), "RailWheels": (0.16, 0.15, 0.14)}
+         "RailSteel": (0.29, 0.31, 0.32), "RailWheels": (0.16, 0.15, 0.14),
+         "MilkCrate": (0.62, 0.36, 0.25), "FoldingTableLegs": (0.29, 0.31, 0.32),
+         "SteelShelfBolts": (0.55, 0.56, 0.55)}
 # The door's parts the home front takes from the M as they are, in HomeDoor (the padlock and the
 # number plate stay on the climb: a home's door latches, and its owner's name is over it).
 DOOR_PARTS = ("CurtainClosed", "Slat_A", "Slat_B", "Slat_C", "BottomBar", "LatchBolt",

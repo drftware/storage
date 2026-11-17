@@ -1,6 +1,6 @@
 """Build the home's kit, headless (art/home/README.md).
 
-    blender -b --factory-startup -P art/home/build.py -- --stage textures|door|export|looks|cards
+    blender -b --factory-startup -P art/home/build.py -- --stage textures|door|export|looks|cards|furniture
                                                           [--sets FloorTiles,PaperLeaves]
 
 Stages:
@@ -451,8 +451,101 @@ def stage_cards():
     print("SHEET", out)
 
 
+# --- the counter's furniture sheet (S5-03g1c1, D-323) ---------------------------------------------
+# The four new pieces set out as a shop would, by a person for scale, then a unit made into a place
+# to hang out: the pallet on the rug, crates and the beanbag round it, the folding table on the
+# right wall, the steel shelf on the back with boxes on it. art/sheets/home-furniture.png.
+FURN_RES = (640, 360)  # a panel: a phone's landscape screen at about half size
+
+
+def place(name, at, turn, tint=None):
+    """One part of a piece at `at` in a unit, turned about z (degrees); a plain part in `tint`
+    when given, a tinted set's part painted it."""
+    import math
+    ob = furnish.BUILDERS[name]().build(bpy.context.scene.collection)
+    ob.data.materials.clear()
+    set_name = furnish.TEXSET.get(name)
+    if set_name is None and tint:
+        mat = render.simple(f"plain_{name}_{tint}", render.hexc(tint), 0.45)
+    else:
+        mat = material(name, set_name, False)
+    ob.data.materials.append(mat)
+    ob.location = (at[0], at[1], 0.0)
+    ob.rotation_euler = (0.0, 0.0, math.radians(turn))
+    ob["tint"] = (*render.hexc(tint), 1.0) if tint and set_name else (1.0, 1.0, 1.0, 1.0)
+    return ob
+
+
+def piece(kind, at, turn, tints=None):
+    return [place(n, at, turn, (tints or {}).get(n)) for n in K.PIECES[kind]]
+
+
+def person(at):
+    """A plain stand-in, 5.4 tall, for scale."""
+    from geo import Mesh
+    import geo
+    m = Mesh("Person")
+    for sx in (-0.45, 0.45):
+        geo.cylinder(m, "z", (at[0] + sx, at[1], 1.2), 0.32, 2.4, segs=10)
+    geo.box(m, (at[0] - 0.95, at[1] - 0.45, 2.4), (at[0] + 0.95, at[1] + 0.45, 4.3), bevel=0.2, segments=2)
+    geo.cylinder(m, "z", (at[0], at[1], 4.85), 0.5, 1.0, segs=14, bevel=0.2)
+    ob = m.build(bpy.context.scene.collection)
+    ob.data.materials.append(render.simple("person", render.hexc("#8C929C"), 0.6))
+    return [ob]
+
+
+TINTS = {"FoldingTable": "#E5DFD2", "SteelShelf": "#93A88E"}  # the sheet's paints (the game's, g4)
+
+
+def stage_furniture():
+    import numpy as np
+    import tempfile
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    register()
+    render.setup(48, FURN_RES)
+    render.world((0.02, 0.018, 0.015), 1.0)
+    look_lights()
+    look_room("Boards", None, "Plain", "WarmWhite")
+    coll = bpy.context.scene.collection
+    show = person((-3.4, 27.2)) + piece("SteelShelf", (-6.6, 28.4), 0.0, TINTS) + \
+        piece("FoldingTable", (1.0, 27.2), 0.0, TINTS) + piece("Pallet", (6.2, 25.4), -18.0) + \
+        piece("MilkCrate", (2.4, 23.0), 15.0, {"MilkCrate": "#D2A23A"})
+    hang = piece("Rug", (0.0, 11.5), 0.0) + piece("Pallet", (0.0, 11.5), 0.0) + \
+        piece("MilkCrate", (-3.7, 10.6), 20.0, {"MilkCrate": "#D2A23A"}) + \
+        piece("MilkCrate", (3.6, 12.6), -105.0, {"MilkCrate": "#5E8C7E"}) + \
+        piece("Beanbag", (0.8, 6.9), 175.0, {"Beanbag": "#B98A3C"}) + \
+        piece("FloorLamp", (-6.6, 13.5), 0.0) + \
+        piece("FoldingTable", (8.2, 18.5), -90.0, TINTS) + \
+        piece("MilkCrate", (6.2, 17.4), 80.0, {"MilkCrate": "#B8613F"}) + \
+        piece("SteelShelf", (-4.8, 28.4), 0.0, TINTS)
+    for z in K.STEEL_TIERS[:3]:  # boxes standing in for finds on the shelf's tiers
+        hang.append(render.box_prop(coll, (-5.6, 28.4, z), (1.3, 1.0, 0.9), 0.07))
+        hang.append(render.box_prop(coll, (-3.9, 28.3, z), (0.9, 0.8, 0.7), -0.1))
+    shots = []
+    tmp = tempfile.mkdtemp(prefix="home-furn-")
+    views = (("show", (0.0, 12.0, 4.6), (0.0, 26.0, 2.0), 24.0),
+             ("unit", (-1.5, -1.0, 6.2), (0.8, 18.0, 3.2), 16.0),
+             ("sit", (6.0, 5.5, 3.6), (-1.5, 13.5, 1.2), 22.0),
+             ("wall", (0.5, 11.5, 4.6), (7.0, 19.5, 2.0), 26.0))
+    for name, loc, target, lens in views:
+        for ob in show:
+            ob.hide_render = name != "show"
+        for ob in hang:
+            ob.hide_render = name == "show"
+        cam = render.camera(loc, target, lens=lens)
+        path = os.path.join(tmp, f"{name}.png")
+        render.shoot(cam, path)
+        img = bpy.data.images.load(path)
+        shots.append((bake.pixels(img)[..., :3] * 255.0 + 0.5).astype(np.uint8))
+        bpy.data.images.remove(img)
+    sheet = np.vstack([np.hstack(shots[0:2]), np.hstack(shots[2:4])])
+    out = os.path.join(K.ROOT, "art", "sheets", "home-furniture.png")
+    bake.write_png(out, sheet)
+    print("SHEET", out)
+
+
 STAGES = {"textures": stage_textures, "door": stage_door, "export": stage_export,
-          "looks": stage_looks, "cards": stage_cards}
+          "looks": stage_looks, "cards": stage_cards, "furniture": stage_furniture}
 
 if __name__ == "__main__":
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []

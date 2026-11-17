@@ -2605,8 +2605,11 @@ Done when players watch the results to the end and change their perks between cl
         `art/sheets/home-cards.png` from the floor, down the hall and across it. Not uploaded.
       - [ ] **S5-03g1c The counter's furniture** (idea 19; the beanbag and rug exist), in
         `art/home/furnish.py`, split in two (S5-03g1b):
-        - [ ] **S5-03g1c1** milk crate, pallet, folding table, steel shelf (powder-coated, like the
-          job box, not the climb's raw steel).
+        - [x] **S5-03g1c1** milk crate, pallet, folding table, steel shelf (D-323): an upturned
+          crate you sit on, holes through it; two pine pallets stacked into a coffee table (the
+          `Pine` set, nails where the boards cross); a pale moulded table on graphite legs; a
+          sage powder-coated shelf, four tiers on angle posts. `Home.Specs.Tops` gives their flat
+          tops. Sheet `art/sheets/home-furniture.png`, judged at phone size. Not uploaded.
         - [ ] **S5-03g1c2** moving blanket, camp bed, string lights, neon sign (the name card's
           tube, `cards.py`'s `rounded` and `neon_path`).
     - [ ] **S5-03g2 Paint and floors on the Arrange screen**, saved per home. The art first: one

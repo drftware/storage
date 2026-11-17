@@ -94,6 +94,27 @@ from the floor, then the four from down the hall and from across the floor, lett
 own font files. Judged at phone size: all four read from across the floor; the neon is what you
 see first. Home.fbx: 16,748 triangles in 47 parts. Not uploaded until g3.
 
+## The counter's furniture, part one (S5-03g1c1, D-323)
+
+What turns a unit into somewhere friends hang out (idea 19): each piece something to sit on, set a
+find on or gather round. Built in `furnish.py`, numbers in `home_spec.py` (`CRATE*`, `PALLET*`,
+`TABLE*`, `STEEL*`); `Home.Specs.Tops` gives each one's flat tops (a find stands there, or you sit).
+
+| Piece | Parts | Sets | Tris | What it is |
+|---|---|---|---|---|
+| MilkCrate | MilkCrate | plain (the game colours it) | 768 | upturned to sit on (top 1.65): square holes through its sides and top, rounded corner posts, a hand slot through its rim |
+| Pallet | Pallet | Pine | 2112 | the coffee table (top 1.2): two pallets stacked, three notched stringers, seven deck boards over and five under, each a hair off true |
+| FoldingTable | FoldingTable, FoldingTableLegs | Plaster (painted pale), plain graphite | 196, 460 | a blow-moulded top at 2.8, its corners rounded, on splayed legs with a crossbar and a brace |
+| SteelShelf | SteelShelf, SteelShelfBolts | Plaster (painted sage), plain zinc | 720, 816 | four tiers on angle posts, powder-coated like the job box, bolts and rubber feet |
+
+`Pine` (1024², not tiled): eight rough-sawn boards across, each running 4.4 studs down the set, its
+own pale shade, grain and late-wood lines, a knot, a saw's faint arcs, and on the first six (deck
+boards) nail heads at `pallet_nails()`; `pine_uv` lays a board down a strip in studs from its end,
+so the nails meet the stringers. Bake it alone: `--stage textures --sets Pine`.
+`--stage furniture` (10 s) draws `art/sheets/home-furniture.png`: the four by a person for scale,
+then a unit made into a hangout from the door, from a seat and by the wall. Home.fbx: 21,820
+triangles in 53 parts. Not uploaded until g4.
+
 ## Into Studio (S5-03a2b3, D-268)
 
 `lune run scripts/upload_art Home` (asset 110439035194989 in `assets.json`), then in Edit load it

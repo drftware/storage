@@ -8219,3 +8219,31 @@ and Adopt Me's house signs and Animal Crossing's mailbox styles, each home's fro
   are `Specs.Cards[i].Face` and `FaceSize`. `tests/homecards.spec.luau` holds it.
 - Not in Studio yet: g3 uploads Home.fbx with them, puts the chosen style over each door in place
   of the lobby's plain plate (the lobby's `signs()` card plates go then) and writes the name on it.
+
+## D-323 · 2026-11-17 · The counter's furniture, part one: a milk crate, a pallet table, a folding table, a steel shelf (S5-03g1c1)
+
+Idea 19, the unit's way. The moment: at the counter you see things you'd put in your own unit and
+want them, because each invites you to sit on it, set a find on it or gather round it. Precedent:
+Lethal Company's crew buying furniture at the ship's terminal; Animal Crossing's furniture, each
+piece with a flat top a find can stand on (idea 14).
+- **The milk crate is upturned**, as people sit on one: its top (the crate's base, a grid of holes)
+  is the seat at 1.65, a little under the bench's 1.7 so a sitting avatar's feet stay on the floor,
+  and a top a find can stand on. Square holes through its four sides and top (geometry, so you see
+  through it at phone size), rounded corner posts, a hand slot through its rim on two sides. Plain
+  plastic: the game colours it (a buyable colour; mustard, teal and terracotta on the sheet).
+- **The coffee table is two pallets stacked** (top at 1.2, under the seat): three notched
+  stringers along each, seven deck boards over and five under, each a hair off true. Rough pine
+  needed its own set (`Pine`, 1024², not tiled): oiled oak read as furniture, not a pallet. Each
+  board is a strip of the set mapped in studs from its end, so the baked nail heads land where
+  deck boards cross stringers (`home_spec.pallet_nails`).
+- **The folding table** is a blow-moulded top (Plaster: the stipple reads as pebbled plastic; the
+  game paints it pale) at 2.8, on graphite legs splayed a little with a crossbar and a brace.
+- **The steel shelf** is four tiers on angle posts, powder-coated (Plaster, like the job box; sage
+  on the sheet), tiers 1.85 apart so a find fits between, zinc bolts and rubber feet in their own
+  plain part. Not the climb's raw steel.
+- `Home.Specs.Tops` gives each new piece's flat tops (middle and size) for the finds and seats g4
+  sets out; `tests/homefurniture.spec.luau` holds the heights. Sheet `art/sheets/home-furniture.png`
+  (`build.py --stage furniture`, 10 s): the four set out by a person for scale, then a unit made
+  into a hangout from the door, from a seat and by the wall. Judged at phone size: all four read.
+- Not in Studio: g4 uploads Home.fbx and sets them out at the counter. Their prices and default
+  colours wait on the owner (`OWNER.md`).

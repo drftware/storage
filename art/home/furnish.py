@@ -12,6 +12,12 @@ its footprint on the floor, its front toward -y (home_spec.py).
     Rail, RailHangers,          the clothes rail by the mirror: oak posts, shoe rack and hat shelf,
     RailSteel, RailWheels       oak hangers, a graphite bar, hooks and castors (Wood, Wood, plain,
                                 plain; D-315)
+    MilkCrate                   an upturned milk crate to sit on (plain: the game colours it)
+    Pallet                      a coffee table of two pine pallets (Pine)
+    FoldingTable,               a folding table: a pale moulded top (Plaster), graphite legs
+    FoldingTableLegs            (plain)
+    SteelShelf, SteelShelfBolts a powder-coated steel shelf, four tiers on angle posts (Plaster),
+                                zinc bolts and rubber feet (plain; D-323)
 """
 
 import math
@@ -596,13 +602,259 @@ def rail_wheels():
 BUILDERS.update({"Rail": rail, "RailHangers": rail_hangers, "RailSteel": rail_steel,
                  "RailWheels": rail_wheels})
 
+# --- the counter's furniture, part one (S5-03g1c1, D-323) -----------------------------------------
+# What turns a unit into somewhere friends hang out (idea 19): an upturned milk crate to sit on, a
+# coffee table of two pallets, a folding table, a powder-coated steel shelf. Each has a flat top a
+# find can stand on (home_spec.furniture_tops), and none looks like the climb: clean plastic, pale
+# pine, fresh paint.
+
+PLAIN = geo.map_floor(1.0)  # plain parts: the game sets their Material and Color
+
+
+def grid(m, axes, u, v, n, holes, rib, mapper):
+    """A panel of square holes: the ribs between them, (u0, u1) along axes[0], (v0, v1) along
+    axes[1], (n0, n1) its thickness along axes[2]; holes (across, up). The ribs up it run the full
+    thickness, those across sit a hair in from both faces, so no two share a face."""
+    def box(a0, a1, b0, b1, c0, c1):
+        lo, hi = [0.0] * 3, [0.0] * 3
+        for ax, (p, q) in zip(axes, ((a0, a1), (b0, b1), (c0, c1))):
+            lo[ax], hi[ax] = min(p, q), max(p, q)
+        geo.box(m, lo, hi, mapper)
+    (u0, u1), (v0, v1), (n0, n1) = u, v, n
+    hu, hv = holes
+    cu = (u1 - u0 - (hu - 1) * rib) / hu
+    cv = (v1 - v0 - (hv - 1) * rib) / hv
+    for i in range(1, hu):
+        a = u0 + i * cu + (i - 1) * rib
+        box(a, a + rib, v0, v1, n0, n1)
+    for j in range(1, hv):
+        b = v0 + j * cv + (j - 1) * rib
+        box(u0, u1, b, b + rib, n0 + 0.012, n1 - 0.012)
+
+
+def milk_crate():
+    """The milk crate, upturned to sit on: square holes in its four sides and its top, rounded
+    posts at its corners, a band round its top's edge, and the solid rim it stands on with a hand
+    slot through its left and right. Plain plastic: the game colours it."""
+    m = Mesh("MilkCrate")
+    W, D, H, t = K.CRATE
+    nx, nz, nt = K.CRATE_GRID
+    rim, band, rib = K.CRATE_BANDS
+    sw, sh = K.CRATE_SLOT
+    x, y, c = W / 2, D / 2, 0.26  # c: a corner post's width
+    upright = lambda e, ctr, size: abs(e.verts[0].co.z - e.verts[1].co.z) > 1e-4
+    for sx in (-1, 1):  # the corner posts, their upright edges rounded
+        for sy in (-1, 1):
+            a, b = sorted((sx * x, sx * (x - c)))
+            p, q = sorted((sy * y, sy * (y - c)))
+            geo.box(m, (a, p, 0.0), (b, q, H), PLAIN, bevel=0.1, segments=3, edges=upright)
+    for sy in (-1, 1):  # front and back: the rim, the band, the holes between
+        p, q = sorted((sy * y, sy * (y - t)))
+        geo.box(m, (-x + c, p, 0.0), (x - c, q, rim), PLAIN)
+        geo.box(m, (-x + c, p, H - band), (x - c, q, H), PLAIN)
+        grid(m, (0, 2, 1), (-x + c, x - c), (rim, H - band), (p, q), (nx, nz), rib, PLAIN)
+    z0 = (rim - sh) / 2
+    for sx in (-1, 1):  # left and right: the rim with its hand slot, the band, the holes
+        a, b = sorted((sx * x, sx * (x - t)))
+        geo.box(m, (a, -y + c, 0.0), (b, y - c, z0), PLAIN)
+        geo.box(m, (a, -y + c, z0 + sh), (b, y - c, rim), PLAIN)
+        for p, q in ((-y + c, -sw / 2), (sw / 2, y - c)):
+            geo.box(m, (a, p, z0), (b, q, z0 + sh), PLAIN)
+        geo.box(m, (a, -y + c, H - band), (b, y - c, H), PLAIN)
+        grid(m, (1, 2, 0), (-y + c, y - c), (rim, H - band), (a, b), (nx, nz), rib, PLAIN)
+    # the top you sit on: a ring inside the walls, the holes across it
+    for sy in (-1, 1):
+        p, q = sorted((sy * (y - t), sy * (y - t - rib)))
+        geo.box(m, (-x + c, p, H - t), (x - c, q, H), PLAIN)
+    for sx in (-1, 1):
+        a, b = sorted((sx * (x - t), sx * (x - t - rib)))
+        geo.box(m, (a, -y + c, H - t), (b, y - c, H), PLAIN)
+    grid(m, (0, 1, 2), (-x + t + rib, x - t - rib), (-y + t + rib, y - t - rib), (H - t, H),
+         (nt, nt), rib, PLAIN)
+    return m
+
+
+def pine_uv(col, axis, lo, hi):
+    """Pallet pine (looks.py's Pine set: K.PINE boards across, each running its height in studs):
+    the piece's length (axis) down board `col` in studs from lo, so a deck board's baked nails meet
+    the stringers; across it over the strip, from the whole board's box (lo, hi), so a notched
+    stringer's parts keep one grain; end grain onto a sliver at the strip's far end."""
+    strips, long_ = K.PINE
+    def f(vs, n):
+        ax = max(range(3), key=lambda i: abs(n[i]))
+        others = [i for i in range(3) if i not in (ax, axis)]
+        k = others[0] if others else [i for i in range(3) if i != ax][0]
+        span = max(hi[k] - lo[k], 1e-6)
+        u = lambda v: (col + 0.06 + 0.88 * (v[k] - lo[k]) / span) / strips
+        if ax == axis:
+            return [(u(v), 0.985) for v in vs]
+        return [(u(v), (v[axis] - lo[axis]) / long_) for v in vs]
+    return f
+
+
+def pine_box(m, lo, hi, col, axis, whole=None):
+    a, b = whole or (lo, hi)
+    geo.box(m, lo, hi, pine_uv(col, axis, a, b), bevel=0.01)
+
+
+def pallet():
+    """The coffee table: two pallets stacked, each three stringers along its length with their
+    fork notches under them, seven deck boards across the top and five under, nailed where they
+    cross (the Pine set). Every board sits a hair off true, as a pallet's do."""
+    m = Mesh("Pallet")
+    L, D, H = K.PALLET
+    bw, bt, ntop, nbot = K.PALLET_BOARD
+    s = K.PALLET_STRINGER
+    nl, nh = K.PALLET_NOTCH
+    rnd = random.Random(19)
+    last = -1
+    for k in range(K.PALLET_STACK):
+        z0, dx = k * H, (0.05 if k else 0.0)
+        for j, yc in enumerate((-D / 2 + s / 2, 0.0, D / 2 - s / 2)):
+            a, b, zl, zh = yc - s / 2, yc + s / 2, z0 + bt, z0 + H - bt
+            whole = ((-L / 2 + dx, a, zl), (L / 2 + dx, b, zh))
+            col = 6 + (j + k) % 2
+            pine_box(m, (-L / 2 + dx, a, zl + nh), (L / 2 + dx, b, zh), col, 0, whole)
+            cuts = (-L / 2, -L / 4 - nl / 2, -L / 4 + nl / 2, L / 4 - nl / 2, L / 4 + nl / 2, L / 2)
+            for x0, x1 in zip(cuts[0::2], cuts[1::2]):
+                pine_box(m, (x0 + dx, a, zl), (x1 + dx, b, zl + nh), col, 0, whole)
+        for n, z in ((ntop, z0 + H - bt), (nbot, z0)):
+            for i in range(n):
+                xc = -L / 2 + bw / 2 + i * (L - bw) / (n - 1) + dx + rnd.uniform(-0.02, 0.02)
+                col = rnd.choice([c for c in range(6) if c != last])
+                last = col
+                dz, dy = rnd.uniform(-0.006, 0.006), rnd.uniform(-0.03, 0.03)
+                pine_box(m, (xc - bw / 2, -D / 2 + dy, z + dz), (xc + bw / 2, D / 2 + dy, z + bt + dz),
+                         col, 1, ((xc - bw / 2, -D / 2, z + dz), (xc + bw / 2, D / 2, z + bt + dz)))
+    return m
+
+
+def loft(m, rings, mapper, cap_top=True, cap_bottom=True):
+    """Rounded rectangles [(half across, half deep, corner radius, z)] bottom to top, joined into
+    one smooth-sided solid (cards.py's rounded outline, laid flat), capped."""
+    from cards import rounded
+    loops = [[m.vert((px, py, z)) for px, py in rounded(a, b, r, 4)] for a, b, r, z in rings]
+    def put(idx, normal, smooth):
+        m.face(idx, mapper([m.verts[i] for i in idx], normal), smooth)
+    n = len(loops[0])
+    for lo, hi in zip(loops, loops[1:]):
+        for i in range(n):
+            j = (i + 1) % n
+            q = [lo[i], lo[j], hi[j], hi[i]]
+            vs = [m.verts[k] for k in q]
+            put(q, geo._normal(vs), True)
+    if cap_top:
+        put(loops[-1], (0, 0, 1), False)
+    if cap_bottom:
+        put(list(reversed(loops[0])), (0, 0, -1), False)
+
+
+def folding_table():
+    """The folding table's moulded top: a pale slab, its corners rounded, its top edge eased
+    (Plaster: the stipple reads as the pebbled plastic of a blow-moulded table; the game paints
+    it)."""
+    m = Mesh("FoldingTable")
+    L, D, H = K.TABLE
+    _, rim, r = K.TABLE_TOP
+    a, b = L / 2, D / 2
+    loft(m, ((a - 0.03, b - 0.03, r - 0.03, H - rim), (a, b, r, H - rim + 0.04),
+             (a, b, r, H - 0.05), (a - 0.022, b - 0.022, r - 0.022, H - 0.012),
+             (a - 0.06, b - 0.06, r - 0.06, H)), plaster_uv(2.0))
+    return m
+
+
+def folding_table_legs():
+    """Its graphite steel: a rail under each long side, and at each end a pair of legs splayed a
+    little, a pivot bar under the top, a crossbar, a brace in to the middle, rubber feet."""
+    m = Mesh("FoldingTableLegs")
+    L, D, H = K.TABLE
+    _, rim, _ = K.TABLE_TOP
+    tr, inset, spread = K.TABLE_LEG
+    under = H - rim
+    for sy in (-1, 1):  # the rails under the top
+        p, q = sorted((sy * (D / 2 - 0.28), sy * (D / 2 - 0.36)))
+        geo.box(m, (-L / 2 + 0.3, p, under - 0.09), (L / 2 - 0.3, q, under), PLAIN)
+    geo.box(m, (-0.5, -0.06, under - 0.07), (0.5, 0.06, under), PLAIN)  # the braces' bracket
+    for sx in (-1, 1):
+        xt = sx * (L / 2 - inset)
+        xb = xt + sx * 0.14
+        top = under - tr - 0.02
+        geo.cylinder(m, "y", (xt, 0.0, top), tr * 1.15, 2 * spread + 0.2, segs=8, mapper=PLAIN)
+        for sy in (-1, 1):
+            geo.sweep(m, [(xt, sy * spread, top), (xb, sy * spread, 0.08)], tr, segs=8, mapper=PLAIN)
+            geo.cylinder(m, "z", (xb, sy * spread, 0.045), tr * 1.45, 0.09, segs=10, mapper=PLAIN)
+        zc = 1.15
+        xc = xt + (xb - xt) * (top - zc) / (top - 0.08)
+        geo.cylinder(m, "y", (xc, 0.0, zc), tr * 0.9, 2 * spread, segs=8, mapper=PLAIN)
+        geo.sweep(m, [(xc, 0.0, zc), (sx * 0.45, 0.0, under - 0.06)], tr * 0.9, segs=8, mapper=PLAIN)
+    return m
+
+
+def steel_posts():
+    """The steel shelf's four angle posts: (x0, x1, y0, y1) for each leg of each L, the leg along
+    the front or back wrapping the corner, the side one butting up to it."""
+    W, D, H = K.STEEL
+    a, t = K.STEEL_ANGLE
+    out = []
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            out.append(sorted((sx * W / 2, sx * (W / 2 - a))) + sorted((sy * D / 2, sy * (D / 2 - t))))
+            out.append(sorted((sx * W / 2, sx * (W / 2 - t))) + sorted((sy * (D / 2 - t), sy * (D / 2 - a))))
+    return out
+
+
+def steel_shelf():
+    """The steel shelf: four angle posts and four tiers of folded sheet between them, powder-coated
+    (Plaster, like the job box: the game paints it), its tiers set in behind the posts' faces."""
+    m = Mesh("SteelShelf")
+    W, D, H = K.STEEL
+    a, t = K.STEEL_ANGLE
+    pu = plaster_uv(2.0)
+    for x0, x1, y0, y1 in steel_posts():
+        geo.box(m, (x0, y0, 0.05), (x1, y1, H), pu, bevel=0.008)
+    for z in K.STEEL_TIERS:
+        geo.box(m, (-W / 2 + t, -D / 2 + t, z - t), (W / 2 - t, D / 2 - t, z), pu, bevel=0.012)
+        for sy in (-1, 1):  # the folded edges, front and back, under the tier
+            p, q = sorted((sy * (D / 2 - t), sy * (D / 2 - 2 * t)))
+            geo.box(m, (-W / 2 + t, p, z - K.STEEL_LIP), (W / 2 - t, q, z - t), pu)
+        for sx in (-1, 1):  # and the shallower ones at its ends
+            p, q = sorted((sx * (W / 2 - t), sx * (W / 2 - 2 * t)))
+            geo.box(m, (p, -D / 2 + 2 * t, z - 0.1), (q, D / 2 - 2 * t, z - t), pu)
+    return m
+
+
+def steel_shelf_bolts():
+    """Its zinc: a bolt through each post into each tier's edge, front and side, and a rubber foot
+    under each post."""
+    m = Mesh("SteelShelfBolts")
+    W, D, H = K.STEEL
+    a, t = K.STEEL_ANGLE
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            for z in K.STEEL_TIERS:
+                zb = z - K.STEEL_LIP / 2 if z < H - 0.2 else z - 0.07
+                geo.cylinder(m, "y", (sx * (W / 2 - a * 0.5), sy * (D / 2 + 0.015), zb), 0.04,
+                             0.03, segs=6, mapper=PLAIN, smooth=False)
+                geo.cylinder(m, "x", (sx * (W / 2 + 0.015), sy * (D / 2 - a * 0.55), zb), 0.04,
+                             0.03, segs=6, mapper=PLAIN, smooth=False)
+            x0, x1 = sorted((sx * W / 2, sx * (W / 2 - a)))
+            y0, y1 = sorted((sy * D / 2, sy * (D / 2 - a)))
+            geo.box(m, (x0, y0, 0.0), (x1, y1, 0.05), PLAIN, bevel=0.012)
+    return m
+
+
+BUILDERS.update({"MilkCrate": milk_crate, "Pallet": pallet, "FoldingTable": folding_table,
+                 "FoldingTableLegs": folding_table_legs, "SteelShelf": steel_shelf,
+                 "SteelShelfBolts": steel_shelf_bolts})
+
 TEXSET = {"Pot": "Plaster", "Plant": "Leaf", "Bench": "Wood", "Planter": "Plaster",
           "PlanterSeat": "Wood", "PlanterPlants": "Leaf", "Rug": "Rug", "Beanbag": "Fabric",
           "FloorLamp": "Wood", "LampShade": "Fabric", "Shelf": "Wood", "ShelfBack": "Plaster",
           "JobBox": "Plaster", "JobBoxLid": "Plaster", "JobBoxFittings": None,
           "JobBoxRunners": "Wood", "MirrorFrame": "Wood", "MirrorBevel": None,
           "MirrorPads": None, "Rail": "Wood", "RailHangers": "Wood", "RailSteel": None,
-          "RailWheels": None}
+          "RailWheels": None, "MilkCrate": None, "Pallet": "Pine", "FoldingTable": "Plaster",
+          "FoldingTableLegs": None, "SteelShelf": "Plaster", "SteelShelfBolts": None}
 
 
 def meshes():

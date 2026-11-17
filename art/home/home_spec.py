@@ -123,6 +123,56 @@ def jobbox_hinge():
     return (0.0, D / 2 + JOBBOX_LIP, run + H - JOBBOX_SKIRT)
 
 
+# The counter's furniture, part one (S5-03g1c1, D-323): what turns a unit into somewhere friends
+# hang out (idea 19), each something you'd sit on, set a find on or gather round. Sized to the
+# game's chunky scale (a person 5.4 tall, the bench's seat at 1.7).
+CRATE = (1.9, 1.9, 1.65, 0.075)  # the milk crate, upturned to sit on: across, deep, tall (its top is
+                                 # the seat, a little under the bench's); its plastic, thick
+CRATE_GRID = (4, 3, 4)           # its holes: across each side, up each side, each way across its top
+CRATE_BANDS = (0.3, 0.13, 0.11)  # the solid bands: the rim on the floor (its hand slots in it), the
+                                 # top's edge, and the ribs' width between the holes
+CRATE_SLOT = (0.75, 0.12)        # the hand slot through the rim on its left and right: wide, tall
+PALLET = (4.4, 3.6, 0.6)         # one pallet: long (its stringers), deep (its deck boards), tall
+PALLET_BOARD = (0.46, 0.11, 7, 5)  # a deck board: wide, thick; how many on top, how many under
+PALLET_STRINGER = 0.26           # the three stringers' width (their notched faces look out the front)
+PALLET_NOTCH = (0.95, 0.2)       # the fork notches under each stringer: long, tall
+PALLET_STACK = 2                 # pallets stacked into the coffee table (its top at 1.2: knee height)
+TABLE = (4.6, 2.3, 2.8)          # the folding table: long, deep, its top's height (a seat at 1.7)
+TABLE_TOP = (0.07, 0.22, 0.22)   # its moulded top: the plate's thickness, the rim's depth under it,
+                                 # the corners' radius
+TABLE_LEG = (0.055, 0.45, 0.8)   # the legs' steel tube radius; each leg frame in from the top's ends;
+                                 # the two legs' half spread across its depth
+STEEL = (3.6, 1.5, 6.0)          # the steel shelf: across, deep, tall
+STEEL_TIERS = (0.35, 2.2, 4.05, 5.9)  # each tier's top: four, the room between them a find's
+STEEL_ANGLE = (0.22, 0.04)       # the angle posts: each leg's width, the steel's thickness
+STEEL_LIP = 0.16                 # each tier's edge folded down from its top, front and back
+
+
+PINE = (8, 4.4)  # the Pine set (looks.py): boards across it, each running its height in studs; the
+                 # first six the deck boards, nailed at pallet_nails(), the last two the stringers'
+
+
+def pallet_nails():
+    """Where a deck board crosses the stringers, studs along it from its end: the Pine set bakes
+    a pair of nail heads at each (looks.py)."""
+    d, s = PALLET[1], PALLET_STRINGER
+    return (s / 2, d / 2, d - s / 2)
+
+
+def furniture_tops():
+    """Each new piece's flat tops a find can stand on or you sit on (idea 14): the top's middle in
+    the piece's frame (Blender) and its size across and deep."""
+    cw, cd, ch, _ = CRATE
+    pl, pd, ph = PALLET
+    tl, td, th = TABLE
+    sw, sd, _ = STEEL
+    a, t = STEEL_ANGLE
+    return {"MilkCrate": [((0.0, 0.0, ch), (cw, cd))],
+            "Pallet": [((0.0, 0.0, ph * PALLET_STACK), (pl, pd))],
+            "FoldingTable": [((0.0, 0.0, th), (tl, td))],
+            "SteelShelf": [((0.0, 0.0, z), (sw - 2 * t, sd - 2 * t)) for z in STEEL_TIERS]}
+
+
 # Where each piece of a unit's starter set stands, in the unit frame (x, y in from the doorway),
 # turned about z in degrees (0: its front toward the door). From the doorway: the rug in the
 # middle, the beanbag on its far left corner facing you, the lamp glowing behind it. The job box
@@ -138,7 +188,10 @@ PIECES = {"Plant": ("Pot", "Plant"), "Bench": ("Bench",), "Planter": ("Planter",
           "FloorLamp": ("FloorLamp", "LampShade"), "Shelf": ("Shelf", "ShelfBack"),
           "JobBox": ("JobBox", "JobBoxLid", "JobBoxFittings", "JobBoxRunners"),
           "Mirror": ("MirrorFrame", "MirrorBevel", "MirrorPads"),
-          "Rail": ("Rail", "RailHangers", "RailSteel", "RailWheels")}
+          "Rail": ("Rail", "RailHangers", "RailSteel", "RailWheels"),
+          "MilkCrate": ("MilkCrate",), "Pallet": ("Pallet",),
+          "FoldingTable": ("FoldingTable", "FoldingTableLegs"),
+          "SteelShelf": ("SteelShelf", "SteelShelfBolts")}
 
 
 def mirror_box():
@@ -321,6 +374,7 @@ def write_luau(path, parts, switch, toggle, lamp, cards_of):
         "export type Vec = { number } -- x, y, z",
         "export type Part = { Size: Vec, Centre: Vec, Triangles: number }",
         "export type Placed = { Kind: string, At: Vec, Turn: number }",
+        "export type Top = { At: Vec, Size: { number } }",
         "export type Swatch = { Id: string, Colour: string }",
         "export type Floor = { Id: string, Set: string, Colours: { Swatch } }",
         "export type Paper = { Id: string, Set: string }",
@@ -394,6 +448,15 @@ def write_luau(path, parts, switch, toggle, lamp, cards_of):
           f"\t\tRack = {rack + slat:.3f},",
           "\t\tHangers = { " + ", ".join(f"{-x:.3f}" for x in GARMENT_HANGERS) + " } :: { number },",
           "\t},"]
+    L += ["\t-- The counter's furniture (D-323): each piece's flat tops, a find standing on one or you",
+          "\t-- sitting on it: the top's middle in the piece's frame, and its size across and deep.",
+          "\tTops = {"]
+    for kind, tops in furniture_tops().items():
+        L.append(f"\t\t{kind} = {{")
+        for c, (w, d) in tops:
+            L.append(f"\t\t\t{{ At = {lua_vec(b2r(c))}, Size = {{ {w:.3f}, {d:.3f} }} }},")
+        L.append("\t\t},")
+    L += ["\t} :: { [string]: { Top } },"]
     L += luau_looks()
     L += luau_cards(cards_of)
     L += [

@@ -10,6 +10,7 @@
 export type Vec = { number } -- x, y, z
 export type Part = { Size: Vec, Centre: Vec, Triangles: number }
 export type Placed = { Kind: string, At: Vec, Turn: number }
+export type Top = { At: Vec, Size: { number } }
 export type Swatch = { Id: string, Colour: string }
 export type Floor = { Id: string, Set: string, Colours: { Swatch } }
 export type Paper = { Id: string, Set: string }
@@ -45,6 +46,10 @@ local Specs = {
 		JobBox = { "JobBox", "JobBoxLid", "JobBoxFittings", "JobBoxRunners" },
 		Mirror = { "MirrorFrame", "MirrorBevel", "MirrorPads" },
 		Rail = { "Rail", "RailHangers", "RailSteel", "RailWheels" },
+		MilkCrate = { "MilkCrate" },
+		Pallet = { "Pallet" },
+		FoldingTable = { "FoldingTable", "FoldingTableLegs" },
+		SteelShelf = { "SteelShelf", "SteelShelfBolts" },
 	} :: { [string]: { string } },
 	-- A unit's starter set (D-263): each piece's origin in the unit's frame, turned about Y
 	-- (degrees, 0 with its front toward the door).
@@ -97,6 +102,25 @@ local Specs = {
 		Rack = 0.680,
 		Hangers = { 1.250, -0.000, -1.250 } :: { number },
 	},
+	-- The counter's furniture (D-323): each piece's flat tops, a find standing on one or you
+	-- sitting on it: the top's middle in the piece's frame, and its size across and deep.
+	Tops = {
+		MilkCrate = {
+			{ At = { -0.000, 1.650, 0.000 }, Size = { 1.900, 1.900 } },
+		},
+		Pallet = {
+			{ At = { -0.000, 1.200, 0.000 }, Size = { 4.400, 3.600 } },
+		},
+		FoldingTable = {
+			{ At = { -0.000, 2.800, 0.000 }, Size = { 4.600, 2.300 } },
+		},
+		SteelShelf = {
+			{ At = { -0.000, 0.350, 0.000 }, Size = { 3.520, 1.420 } },
+			{ At = { -0.000, 2.200, 0.000 }, Size = { 3.520, 1.420 } },
+			{ At = { -0.000, 4.050, 0.000 }, Size = { 3.520, 1.420 } },
+			{ At = { -0.000, 5.900, 0.000 }, Size = { 3.520, 1.420 } },
+		},
+	} :: { [string]: { Top } },
 	-- The looks a player gives their home (D-321). Ids are what a home's save keeps; each
 	-- list starts with a new home's. Colours are hex for Color3.fromHex. Floors tile at
 	-- FloorTile studs and papers at PaperTile, so one floor panel and one wall panel (UVs in
@@ -201,8 +225,8 @@ local Specs = {
 			Parts = { "CardSlate", "CardChalkFrame", "CardChalkStick" },
 			Face = { -0.000, 0.000, -0.105 },
 			FaceSize = { 5.700, 1.200 },
-			Font = "AmaticSC",
-			Weight = "Bold",
+			Font = "PatrickHand",
+			Weight = "Regular",
 			Ink = "#F1F0E8",
 		},
 		{
@@ -311,6 +335,16 @@ local Specs = {
 			Centre = { -0.000, 2.650, 0.000 },
 			Triangles = 288,
 		},
+		FoldingTable = {
+			Size = { 4.600, 0.220, 2.300 },
+			Centre = { -0.000, 2.690, 0.000 },
+			Triangles = 196,
+		},
+		FoldingTableLegs = {
+			Size = { 4.132, 2.580, 1.800 },
+			Centre = { -0.000, 1.290, 0.000 },
+			Triangles = 460,
+		},
 		Frame = {
 			Size = { 9.500, 10.000, 0.539 },
 			Centre = { -0.000, 5.000, 0.520 },
@@ -356,6 +390,11 @@ local Specs = {
 			Centre = { -4.050, 0.415, 0.366 },
 			Triangles = 180,
 		},
+		MilkCrate = {
+			Size = { 1.900, 1.650, 1.900 },
+			Centre = { -0.000, 0.825, 0.000 },
+			Triangles = 768,
+		},
 		MirrorBevel = {
 			Size = { 2.520, 5.720, 0.060 },
 			Centre = { -0.000, 3.180, 0.000 },
@@ -370,6 +409,11 @@ local Specs = {
 			Size = { 3.000, 6.220, 0.220 },
 			Centre = { -0.000, 3.110, 0.040 },
 			Triangles = 176,
+		},
+		Pallet = {
+			Size = { 4.460, 1.205, 3.657 },
+			Centre = { -0.030, 0.599, -0.000 },
+			Triangles = 2112,
 		},
 		Plant = {
 			Size = { 2.170, 3.089, 1.966 },
@@ -437,6 +481,16 @@ local Specs = {
 			Size = { 8.640, 0.300, 0.063 },
 			Centre = { -0.000, 0.510, 0.535 },
 			Triangles = 40,
+		},
+		SteelShelf = {
+			Size = { 3.600, 5.950, 1.500 },
+			Centre = { -0.000, 3.025, 0.000 },
+			Triangles = 720,
+		},
+		SteelShelfBolts = {
+			Size = { 3.660, 5.870, 1.560 },
+			Centre = { -0.000, 2.935, 0.000 },
+			Triangles = 816,
 		},
 		Switch = {
 			Size = { 0.450, 0.700, 0.050 },

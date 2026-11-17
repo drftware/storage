@@ -436,6 +436,61 @@ def chalkboard(nb):
 
 
 # set -> (recipe, bake plane in studs, map size); HomeDoor bakes on the door's own parts (build.py)
+# --- pallet pine (S5-03g1c1, D-323) ------------------------------------------------------------
+
+def pine(nb):
+    """Rough-sawn pallet pine, not tiled: K.PINE boards across, each running the set's height in
+    studs and its own pale shade, grain and dark late-wood lines down it, a knot or two, the faint
+    arcs a mill's saw leaves, and on the first six (the deck boards) a pair of nail heads wherever
+    they cross a stringer (K.pallet_nails). Pale and clean: a pallet someone chose for a home."""
+    from home_spec import PINE, pallet_nails
+    strips, long_ = PINE
+    u, v, _ = nb.sep(nb.uv())
+    across = nb.mul(u, float(strips))
+    fx = nb.fract(across)
+    col_i = nb.sub(across, fx)
+    z = nb.mul(v, long_)
+    x = nb.add(nb.mul(fx, 0.5), nb.mul(col_i, 3.7))  # studs across a board, each its own stretch
+    rnd = cell_rnd(nb, col_i)
+    rnd2 = cell_rnd(nb, col_i, 78.233, 12543.137)
+    grain = nb.noise(streaks(nb, x, z, 7.0, 0.35, 71), 3.0, detail=6, rough=0.6, distortion=0.3)
+    figure = nb.noise(streaks(nb, x, z, 2.5, 0.12, 72), 2.0, detail=3, distortion=0.8)
+    late = nb.band(nb.fract(nb.add(nb.mul(figure, 7.0), nb.mul(x, 5.0))), 0.0, 0.16, 0.05)
+    pale, warm, grey = hexc("#DCC398"), hexc("#CBA676"), hexc("#BDAA8A")
+    c = nb.mixc(nb.mr(rnd, 0.0, 1.0, 0.1, 0.9), pale, warm)
+    c = nb.mixc(nb.mul(nb.ss(rnd2, 0.7, 0.95), 0.6), c, grey)
+    c = nb.tint(c, nb.mr(grain, 0.3, 0.7, 0.88, 1.08))
+    c = nb.mixc(nb.mul(late, 0.45), c, hexc("#9C7449"))
+    # a knot on most boards, somewhere along it, toward its middle across
+    kz = nb.mul(nb.add(0.15, nb.mul(rnd2, 0.7)), long_)
+    kx = nb.add(nb.mul(col_i, 3.7), nb.add(0.16, nb.mul(rnd, 0.18)))
+    dx, dz = nb.sub(x, kx), nb.mul(nb.sub(z, kz), 0.55)
+    kr = nb.pw(nb.add(nb.mul(dx, dx), nb.mul(dz, dz)), 0.5)
+    knot = nb.mul(nb.ss(nb.sub(0.05, kr), 0.0, 0.012), nb.ss(rnd, 0.15, 0.2))
+    halo = nb.mul(nb.ss(nb.sub(0.12, kr), 0.0, 0.07), nb.ss(rnd, 0.15, 0.2))
+    c = nb.mixc(nb.mul(halo, 0.35), c, hexc("#A97E4F"))
+    c = nb.mixc(knot, c, hexc("#6B4527"))
+    # the saw's arcs: faint curved bands across each board
+    bow = nb.mul(nb.sub(fx, 0.5), nb.sub(fx, 0.5))
+    arcs = nb.fract(nb.mul(nb.add(z, nb.mul(bow, 0.9)), 9.0))
+    saw = nb.mul(nb.band(arcs, 0.0, 0.35, 0.2), 0.06)
+    c = nb.mixc(saw, c, hexc("#8E6D4C"))
+    # the deck boards' nails: two across at each stringer
+    nail = None
+    for zn in pallet_nails():
+        for xn in (0.28, 0.72):
+            ddx, ddz = nb.sub(fx, xn), nb.sub(z, zn)
+            r = nb.pw(nb.add(nb.mul(nb.mul(ddx, 0.5), nb.mul(ddx, 0.5)), nb.mul(ddz, ddz)), 0.5)
+            one = nb.ss(nb.sub(0.034, r), 0.0, 0.006)
+            nail = one if nail is None else nb.mx(nail, one)
+    nail = nb.mul(nail, nb.ss(nb.sub(5.5, col_i), 0.0, 0.01))  # the deck boards only
+    c = nb.mixc(nail, c, hexc("#4D4A46"))
+    rough = nb.mixf(nail, nb.mr(grain, 0.3, 0.7, 0.78, 0.9), 0.5)
+    h = nb.add(nb.mul(grain, 0.2), nb.add(nb.mul(late, -0.25), nb.add(nb.mul(saw, 1.5),
+               nb.add(nb.mul(knot, -0.3), nb.mul(nail, 0.4)))))
+    return Channels(c, 1.0, rough, 0.0, h, bump_dist=0.004, bump_strength=0.7)
+
+
 LOOKS = {"Plaster": (plaster, (4.0, 4.0), (512, 512)), "Wood": (wood, (8.0, 8.0), (1024, 1024)),
          "Leaf": (leaf, (2.0, 4.0), (512, 1024)), "Fabric": (fabric, (2.0, 2.0), (512, 512)),
          "Rug": (rug, (8.0, 6.0), (512, 512)),
@@ -446,7 +501,8 @@ LOOKS = {"Plaster": (plaster, (4.0, 4.0), (512, 512)), "Wood": (wood, (8.0, 8.0)
          "PaperLeaves": (leaves, (4.0, 4.0), (1024, 1024)),
          "PaperDaisies": (daisies, (4.0, 4.0), (512, 512)),
          "SignBoard": (sign_board, BOARD_SIZE, (1024, 256)),
-         "Chalkboard": (chalkboard, SLATE_SIZE, (1024, 256))}
+         "Chalkboard": (chalkboard, SLATE_SIZE, (1024, 256)),
+         "Pine": (pine, (4.0, 4.4), (1024, 1024))}
 SIZES = {"HomeDoor": (1024, 1024)}
 TINTED = {"Plaster", "Fabric", "HomeDoor", "FloorCarpet", "FloorTiles", "FloorMatting",
           "PaperStripes", "PaperLeaves", "PaperDaisies", "SignBoard"}  # ColorMap alpha = overlay: the part's colour
