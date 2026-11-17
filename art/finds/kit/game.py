@@ -144,6 +144,10 @@ WHIRR = sound("rbxassetid://9118399720", 0.2, 1.9, 1.6, 0.8)
 # The singing fish's motors under its latex, the default until its song is recorded: "Robot Servo
 # 19" (4.64 s, steady from 0.12 s to 4.4 s, measured), lower, so it runs the press's 6 s.
 MOTOR = sound("rbxassetid://9118401640", 0.12, 4.2, 1.4, 0.7)
+# The siren car's wail (F-G1e4): Pro Sound Effects' "Toy Siren Four Variations 1" (a small
+# whooper toy siren, 4.8 s), from the first push as its flywheel revs, played a little lower
+# so it whoops on until the car stops.
+SIREN = sound("rbxassetid://9120221867", 0, 4.8, 0.8, 0.85)
 
 # How far along the halls monsters hear a noisy find (studs: a press's `heard`, its loudness,
 # `Use.loudness`). A press with a noise and no `heard` carries as far as the air horn, 130 (the

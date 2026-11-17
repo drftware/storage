@@ -267,6 +267,13 @@ nowhere else.
      seconds. The tune doesn't slow as it runs down yet (ROADMAP polish). Loudness defaults
      chosen: the robot and bird carry 90 studs (as the teeth), the mouse and carousel 60 (down
      the hall, as the duck). Right?
+- [ ] **Try (F-G1e4, built Nov 17, D-281; not yet seen in Studio Play, the run's V4b sees it
+  first):** the **siren car**, on a phone, in a dark hall. `GiveFind` it, face down the hall,
+  press Push: it's set down, pushed twice, and rolls off wailing, its red roof light turning and
+  sweeping the walls; a monster across the floor comes after it. Push it at a wall: its wheels
+  spin on there and it wails until it runs down, then its light goes out. Does the wail sound
+  like a toy siren (a small whooper, picked by its name, not yet heard)? Does the red sweep read
+  on the walls at phone size? Loudness default: 90 studs, as the robot. Right?
 - [ ] **Try (F-G1e3a, built Nov 17, D-274; seen in Studio Play, not on a phone):** the kazoo and
   the toy drum. Same setup, `GiveFind` each, then press.
   1. Blow the **kazoo**: one buzzy note once it's at your lips, about a second. Does it sound

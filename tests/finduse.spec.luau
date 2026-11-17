@@ -458,6 +458,43 @@ do
 	end
 end
 
+-- The siren car (F-G1e4): pushed off, it rolls as the toy car does, wailing and luring where it
+-- is as it goes; a wall stops it going, not its flywheel. Its roof light shines only while it
+-- plays: lit as it rolls, out once it has run down, even stopped short at a wall (a frame held
+-- at the wall would stay lit for good). A toy, so its light never holds a Mannequin.
+do
+	local row = Use.Rows.SirenCar
+	local art = Fixture.kit.SirenCar
+	ok(row ~= nil and row.verb == "Push", "siren car: pushed")
+	if row and art then
+		local push = art.Motions.Push
+		local durations = { Push = push.Duration }
+		ok(row.down == true and row.walks == true, "siren car: set down, wheels on at a wall")
+		ok(
+			row.noise == "Push" and row.lure ~= nil and row.toy == true,
+			"siren car: lures as it goes"
+		)
+		ok(Use.loudness(row) < Use.LureReach, "siren car: under the cymbals")
+		ok(row.on[1].sound ~= nil, "siren car: wails from the first push")
+		local cues = Use.timeline(row.on[1], push)
+		ok(#cues >= 1 and cues[1].t > 0.9 and cues[1].t < 1.2, "siren car: rolls as it's let go")
+		local stamp: Use.Stamp = { state = "On", at = 0, left = Use.Forever }
+		local function litAt(e: number, stop: number?): boolean
+			local elapsed = Use.played(row, e, stop)
+			return Use.frame(row, stamp, elapsed, durations).lit
+		end
+		ok(litAt(3) and litAt(3, 1.5), "siren car: lit as it rolls, and against a wall")
+		ok(not litAt(push.Duration + 0.1), "siren car: out once it has run down")
+		ok(not litAt(push.Duration + 0.1, 1.5), "siren car: out after a wall too")
+		ok(Use.litUntil(row, stamp) == nil, "siren car: never holds a Mannequin")
+		local beacon = false
+		for _, light in art.Lights do
+			beacon = beacon or light.Part == "SirenCar_Beacon"
+		end
+		ok(beacon and Use.reach(art) > 0, "siren car: its light on the turning beacon")
+	end
+end
+
 -- Wind and go (F-G1e2): the chattering teeth set down chatter off on their own path, a clack
 -- each snap, luring as they go; a wall stops their going forward, not their chattering.
 do

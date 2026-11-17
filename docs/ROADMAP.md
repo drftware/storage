@@ -2754,12 +2754,29 @@ actions themselves and dealing the new finds on floors are later game tickets.
         V3c note.
     - [ ] **F-G1e4 The siren car (V4).** It rolls as the toy car does, its beacon spins and
       lights the hall while it rolls, and its wail lures along its path (F-G1e2's lure).
-    - [ ] **F-G1e5 The rest the audit found (V5).** Split before starting: (a) a press on a
-      one-mesh find, which has no joints or motions: the boombox's loud music on the lure and
-      the teddy's hug squeak; (b) the glow sticks' other two sticks (three to a bundle); (c) the
-      fairy lights laid along a hall for a dim line of light; (d) the Old lamp holds a
-      Mannequin while it lies lit; (e) fragile: the oil lamp and glass lamp chip to half their
-      worth when dropped hard (R.E.P.O.'s valuables).
+      - [x] **F-G1e4a Built** (Nov 17, V4; D-281; passes checks, not yet seen in Play: Studio
+        was in the home chain's Play for the session's last 20 minutes). Its row (`down`,
+        `walks`, the wail from the first push, the roll as it's let go, a 90-stud lure every
+        2 s); a find's real lights only within the 90 studs screens pose finds, put out when
+        it leaves (`FindUseView`); finduse.spec holds its light out after a wall stop.
+      - [ ] **F-G1e4b See it in Play.** Measure the wail (`IsLoaded`, `TimeLength`, its
+        loudness over time; set `SIREN`'s start, length and pitch in `kit/game.py` so it
+        whoops from the first push to the stop), then `GiveFind` it and press: set down,
+        rolling with the beacon lit and turning, the red spot on the walls, stopping at a
+        wall with its wheels on, its light out at the end, a Mannequin drawn to it. Output
+        clean. Fill its "seen in Play" in WAVES.md's A1 table; tick F-G1e4.
+    - [ ] **F-G1e5 The rest the audit found (V5).** Each seen in Play before it's ticked:
+      - [ ] **F-G1e5a A press on a one-mesh find** (no joints or motions): the boombox's loud
+        music on the lure (R.E.P.O.'s music box) and the teddy's hug squeak.
+      - [ ] **F-G1e5b The glow sticks' other two sticks** (three to a bundle): one more crack
+        each, the art has one `Crack`.
+      - [ ] **F-G1e5c The fairy lights laid along a hall** for a dim line of light.
+      - [ ] **F-G1e5d The Old lamp holds a Mannequin while it lies lit**, as D-234's found
+        lights do (D-234 reads only a press's stamp).
+      - [ ] **F-G1e5e Fragile:** the oil lamp and the glass lamp chip to half their worth when
+        dropped hard (R.E.P.O.'s valuables).
+      - [ ] **F-G1e5f The carousel's tune slows as it runs down** (F-G1e2b left it): a
+        recording of a box running down, or a tempo change that keeps the pitch.
   - [x] **F-G1f Each find's game row comes from its art (the run's P1; Nov 17).** `art/finds/PIPELINE.md`
     (photos to playable in one ticket); each kit find's grade, worth, floors, verb, the verb's
     numbers and sounds in its art spec; the export generates the catalog rows beside
@@ -2843,6 +2860,9 @@ actions themselves and dealing the new finds on floors are later game tickets.
   predicted one. Count by the server clock so a played beat isn't due again.
 - **The carousel's tune slows as it runs down (F-G1e2b, D-272):** its music box plays at full
   speed to the end. A recording of a box running down, or a tempo change that keeps the pitch.
+- **The siren car's wail follows its flywheel (F-G1e4, D-281):** today one toy-siren recording
+  plays from the first push; a real friction siren's pitch rises with each push and falls as the
+  car slows, and dies with a whimper at the end.
 - **Finds' own sounds (F-G1a):** the Nov 15 finds borrow the tools' and the bedroom set's pick-up
   and drop sounds, pitched (`Tools/Catalog.luau`'s CLINK, TIN and the rest). Glass wants a glass
   clink (the tea light, the firefly jar, the glass lamp), tin a hollow tin knock (the wind-ups),

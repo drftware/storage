@@ -18,7 +18,8 @@
 	will get (`press`) until the server's lands, and `can` hides the button while a press would do
 	nothing (a tea light burning, a jack mid-tune, a spent glow stick).
 
-	Real lights shine on the `Use.LightsShown` nearest lit finds only; the rest still glow.
+	Real lights shine on the `Use.LightsShown` nearest lit finds within `STEP_RANGE` only; the rest
+	still glow.
 
 	A step with a `hit` sounds on every beat of its motion (the cymbal monkey's every clash), only
 	the beats still to come for a find just come into view. A find set down to play (the toy car)
@@ -409,11 +410,11 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 		local lit: { Entry } = {}
 		local far: { [Entry]: number } = {}
 		for _, e in entries do
-			if e.glowing then
+			local d = if e.model == mine then -1 else (e.model:GetPivot().Position - eye).Magnitude
+			-- only near enough to be posed: past that its light can't be put out when it ends
+			if e.glowing and d <= STEP_RANGE then
 				table.insert(lit, e)
-				far[e] = if e.model == mine
-					then -1
-					else (e.model:GetPivot().Position - eye).Magnitude
+				far[e] = d
 			end
 		end
 		table.sort(lit, function(a, b)
@@ -476,7 +477,14 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 				continue
 			end
 			local own = model == mine and view ~= nil and viewKey == e.key
-			if not own and (model:GetPivot().Position - eye).Magnitude > STEP_RANGE then
+			-- a far find holds its pose, posed once more if its lights must go out (a siren car
+			-- you walked away from mid-roll stops costing a real light)
+			local goingOut: boolean = e.posedLights and not e.lights
+			if
+				not own
+				and (model:GetPivot().Position - eye).Magnitude > STEP_RANGE
+				and not goingOut
+			then
 				continue
 			end
 			local stamp = stampOf(e)

@@ -19,9 +19,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   stand in it as plain parts, and it sharpens up close. You, the right way round, your room
   behind you, 60 frames a second. The owner's look and the phone's frame rate wait on OWNER.md.
 - Still over the triangle default: the cars' 51k, ticketed as S5-03a2d.
-- Find art (third find run): V3 done (V3d, D-279: the farm spinner lands on a new animal each
-  pull, the server's pick, its call as it stops; seen in Play). Next: V4 the siren car (ROADMAP
-  F-G1e4, `art/finds/WAVES.md`).
+- Find art (third find run): V4a built the siren car (D-281: rolls off wailing, its roof light
+  lit only while it plays, a 90-stud lure); NOT seen in Play (Studio was busy). Next: V4b, its
+  wail measured and the Play check (ROADMAP F-G1e4b, `art/finds/WAVES.md`), then V5a.
 
 ## Next task: S5-03c The shelf and the chest (the owner's order, D-259)
 The moment: you come home from a climb and the find you carried lands on your shelf with a

@@ -6,9 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** V4 (ROADMAP F-G1e4), the siren car: it rolls as the die-cast car does, its beacon spins
-and lights the hall, and its wail lures along its path. V3 is done (Nov 17, V3d: the farm spinner
-lands on any animal).
+**Next:** V4b (ROADMAP F-G1e4b), the siren car in Studio Play: it's built (Nov 17, V4a), but
+Studio was in the home chain's Play all through its session's end, so measure its wail, see it
+roll lit and lure, and fill its "seen in Play". Then V5a (ROADMAP F-G1e5, split into a to f).
 
 ## The third run's plan (owner's brief, Nov 16 night)
 
@@ -43,7 +43,7 @@ head, belong to the home chain (ROADMAP S5-03, F-G1b4): listed as waiting, not b
 5. **V3 One press, one noise** (V3a done Nov 17: the cues, the kazoo and the drum; V3b done Nov 17: the spinner, doll and fish; V3c done Nov 17: the kazoo's lift in hand; V3d done Nov 17: the spinner lands on any animal): the kazoo, toy drum, farm-animal spinner, cowboy doll and singing
    fish, each with its motion, its sound and a loudness on the lure (the doll and the fish ship
    the defaults OWNER.md names: the cord's whirr, the motor's hum).
-6. **V4 The siren car**: it rolls as the die-cast car does, its beacon spins and lights the hall,
+6. **V4 The siren car** (V4a built Nov 17, not yet seen in Play; V4b sees it): it rolls as the die-cast car does, its beacon spins and lights the hall,
    and its wail lures.
 7. **V5 onwards**: whatever else A1 finds missing that isn't at home only.
 8. **S1 to S4 The last four squishies**, each from photos to playable through PIPELINE.md, its
@@ -98,7 +98,7 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 | Remote-control car (`RCCar`) | Drive it (at home; D-250: anywhere, and the collector steals it) · Drive (Rainbow Six Siege's drones) | works (D-250 to D-258); at home waits on the home chain | Rare · 60 · floor 1 up ✓ | |
 | Kazoo (`Kazoo`) | A buzzy note · Blow, a noise (Lethal Company's airhorn) | works: blown, one note once at your lips, heard 60 studs (V3a); it tips up toward your lips in hand, about 7.5 degrees, and settles back (V3c) | Common · 2 · floor 1 up ✓ | Nov 17, V3a: given (GiveFind), pressed in hand: its hum played 0.43 s in (the fanfare's held note, 0.75 pitch); "made its noise (60 studs); 1 heard it", the Mannequin 16 studs along the halls woke and turned to it, then caught me; its skin's buzz not measured (a fraction of a mm). Nov 17, V3c: its body against the left hand tipped to 7.5 degrees and 0.014 studs by 0.8 s, the same in your view's copy, back to 0.0000 by 2.3 s |
 | Squeaky rubber duck (`RubberDuck`) | A squeak you can hear down the hall · Squeeze, a noise | works: squeezed, squashes in hand (to 0.70), squeaks, heard 60 studs (V1) | Common · 3 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its squeak played; a Mannequin asleep 46 studs off along the halls woke, turned and came to look; no squash seen; Nov 17, V1b: pressed in hand, squashed to 0.70 of its height in hand and in your view's copy, its root still in the hand |
-| Toy siren car (`SirenCar`) | It rolls off, wailing · Push, a noise that moves | the roll is built; the wail heard as it goes and the beacon lighting the hall are missing (V4) | Common · 5 · floor 1 up ✓ | |
+| Toy siren car (`SirenCar`) | It rolls off, wailing · Push, a noise that moves | built, not yet seen in Play (V4a): pushed, set down, rolls off wailing, its roof light turning and lit while it plays, lures every 2 s where it is, 90 studs; at a wall its wheels spin on until it runs down (D-281) | Common · 5 · floor 1 up ✓ | |
 | Wind-up chattering teeth (`ChatteringTeeth`) | They chatter off across the floor; monsters come to look · Wind (R.E.P.O.'s music box; the monkey's lure) | works: wound, set down, chatters off, a clack each snap, lures every 2 s where it is along its path, 90 studs (V2a) | Common · 6 · floor 1 up ✓ | Nov 17, V2a: given (GiveFind), pressed: set down, wound (its ratchet), 52 clacks over 9 s, the jaw swinging 0.51 rad, walked 0.93 studs and stopped; a Mannequin asleep 58 studs off heard the lure, woke and walked to the teeth and stood looking there while I was 97 studs away; walking on at a wall seen with the mouse (V2b) |
 | Toy drum (`ToyDrum`) | Loud · Bang, a noise | works: banged, left, right, left, right, then both, a bang each hit, heard 130 studs (V3a) | Uncommon · 10 · floor 1 up ✓ | Nov 17, V3a: given (GiveFind), pressed in hand: bangs at 0.28, 0.61, 0.88, 1.14 and 1.68 s (the third heard twice, ROADMAP polish); the left stick lifting 25 degrees and striking three times; "made its noise (130 studs); 1 heard it", the Mannequin woke, turned to it and caught me |
 | Wind-up mouse (`WindupMouse`) | It zips off and squeaks wherever it stops · Wind | works: wound, set down, zips off, squeaks where it stalls, lures every 2 s where it is, 60 studs (V2b) | Uncommon · 12 · floor 1 up ✓ | Nov 17, V2b: given (GiveFind), pressed facing the lobby's west wall: set down, wound, zipped 7 studs into the wall (`UseStop` 4.7 s) and held there, its run playing on: two squeaks at 7.25 and 7.39 s where it stalls |
@@ -137,7 +137,8 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 2. **A lure heard where a set-down find is along its path.** Today the server lays a set-down
    find at its end at once (D-233), so a lure would be heard from there. The teeth, robot, tin
    bird and the mouse's squeak where it stops (V2), then the siren car's wail (V4).
-3. **A light that shines only while a toy plays:** the siren car's beacon (V4).
+3. **A light that shines only while a toy plays:** the siren car's beacon (V4; built Nov 17, V4a: a toy's frame
+   is lit only while it plays, and `walks` keeps a wall stop from holding it lit; D-281).
 4. **V5 needs five pieces; split it before starting:** (a) a press on a one-mesh find, which has
    no joints or motions: the boombox's music on the lure and the teddy's hug; (b) the glow
    sticks' other two sticks (one more crack each; the art has one `Crack`); (c) the fairy
@@ -244,6 +245,23 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, V4a (the siren car built; passes checks; NOT seen in Play: V4b left).** Studio was in
+  someone else's Play (the home chain's) from my first look to 20 minutes of waiting, so nothing
+  here was run in Studio. Built as rows on the old verbs (D-281): its `press` in
+  `windups/spec.py` (`down`, `walks`, `noise="Push"`, `lure=2`, `ACROSS_THE_FLOOR`), the wail
+  `SIREN` in `kit/game.py` (Pro Sound Effects "Toy Siren Four Variations 1", 9120221867, 4.8 s
+  by its listing: start, length, volume and pitch are guesses until V4b measures it) as the
+  step's sound from the first push, and the toy car's `ROLL` lower as a cue at 1.05 s (let go).
+  `walks` matters: a car that holds the frame it stopped in at a wall would stay lit for good;
+  finduse.spec now holds that. The beacon needed no new code: a toy's frame is lit while it
+  plays and the art's glow channel drives its spot and point lights. `FindUseView` now lights
+  only finds within its 90-stud `STEP_RANGE` and puts out the lights of one that leaves it.
+  **For V4b:** measure the wail (`IsLoaded`, `TimeLength`, `PlaybackLoudness` every 20 ms); the
+  run is pushes to 1.05 s, rolling to about 5.65 s, the light out by 7.1 s; set `SIREN` to
+  whoop from 0.12 s to the stop, `scripts/art.sh rows`, then the Play check (ROADMAP F-G1e4b):
+  `GiveFind` SirenCar, face down a hall (the press faces your camera), `Remotes.ToolUse` from the
+  Client, and watch the Beacon's `Light1`/`Light2` Enabled, the model's pivot and a Mannequin.
 
 - **Nov 17, V3d (the farm spinner lands on any animal; seen in Play; V3 done).** As V3c designed
   (D-279): a step's `lands` (`rows.py` checks the calls go once round the face; `Game.Step`);

@@ -883,8 +883,10 @@ from game import (  # noqa: E402
     PIG,
     PLASTIC,
     POP,
+    ROLL,
     ROOSTER,
     SHEEP,
+    SIREN,
     SLAP,
     SNAP,
     SOFT,
@@ -990,6 +992,23 @@ GAME = [
         size="Small",
         pickUp=pitched(CLACK, 1.6),
         drop=pitched(PLASTIC, 1.8, 0.5),
+        # "Push: it rolls off, wailing": set down and pushed twice, its flywheel revs and its
+        # siren starts to whoop, then it rolls off down the hall, its roof light turning and
+        # lighting the walls red, and every monster across the floor keeps turning to where it
+        # is now. A wall stops it going, not its flywheel: its wheels spin on there and it wails
+        # until it runs down (a friction toy against a wall; the robot's walk, R.E.P.O.'s music
+        # box). The die-cast car's roll, as the cymbal monkey lures
+        press=dict(
+            verb="Push",
+            on=[dict(motion="Push", sound=SIREN,
+                     cues=[dict(at=1.05, sound=pitched(ROLL, 0.8, 0.45))])],
+            noise="Push",
+            heard=ACROSS_THE_FLOOR,
+            lure=2,
+            toy=True,
+            down=True,
+            walks=True,
+        ),
     ),
     dict(
         key="ChatteringTeeth",

@@ -1038,6 +1038,40 @@ local Rows: { Game.Row } = {
 			volume = 0.5,
 			pitch = 1.8,
 		},
+		verb = "Push",
+		press = {
+			verb = "Push",
+			on = {
+				{
+					motion = "Push",
+					sound = {
+						id = "rbxassetid://9120221867",
+						from = 0,
+						length = 4.8,
+						volume = 0.8,
+						pitch = 0.85,
+					},
+					cues = {
+						{
+							at = 1.05,
+							sound = {
+								id = "rbxassetid://99838569349900",
+								from = 0,
+								length = 3.4,
+								volume = 0.45,
+								pitch = 0.8,
+							},
+						},
+					},
+				},
+			},
+			noise = "Push",
+			heard = 90,
+			lure = 2,
+			toy = true,
+			down = true,
+			walks = true,
+		},
 	},
 	{
 		key = "ChatteringTeeth",

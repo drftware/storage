@@ -7208,3 +7208,27 @@ copies; this is how it's built, as a test the owner judges before S5-03f.
 - The mirror showed a bug that isn't its own: the worn hard hat sits on your chin, its shell's
   middle 0.4 studs below your head's (the head weld in `Slots` seats the find's pivot, which isn't
   at the hat's rim). Queued in HANDOFF.
+
+## D-281 The siren car rolls off wailing, its roof light lit only while it plays (F-G1e4, Nov 17, V4)
+
+The moment: you set the toy siren car down, push it twice and it zooms off down the dark hall,
+its red roof light turning and sweeping the walls, its wail pulling the monster after it while
+you slip the other way. Built from rows on verbs that already existed:
+- **The roll is the toy car's** (D-233): set down, its path walked for walls, every screen rolls
+  it there. Its noise is heard where it is along that path, every 2 seconds, across the floor
+  (90 studs, under the cymbals), the walking robot's lure (D-270).
+- **A wall stops it going, not its flywheel** (`walks`): a friction toy pushed into a wall sits
+  there with its wheels spinning and its siren winding down, so it plays on held at the wall
+  and its lure with it, as the wind-up mouse does. This is also what puts its light out: a find
+  that holds the frame it stopped in stays at that frame, lit, for good.
+- **Its light shines only while it plays**: a toy's frame is lit until its motions end, and the
+  art's beacon glow (up on the first push, out 0.9 s after it stops) drives its two lights, the
+  spot on the turning dome sweeping the walls. A toy, so it never holds a Mannequin (D-234): it
+  draws the monster, it doesn't stop it.
+- **The real-light cap holds for things that move away**: a find's lights shine only within the
+  90 studs where screens pose finds, still the 2 nearest, and one that leaves that range lit is
+  posed once more to put its lights out (before, a siren car you walked away from mid-roll
+  would have kept its light on after it stopped, past the cap).
+- **Its sounds**: the wail is Pro Sound Effects' small whooper toy siren from the first push;
+  the toy car's wheels roll under it as it's let go. A recording of a real friction siren and
+  its pitch following the flywheel are ROADMAP polish.
