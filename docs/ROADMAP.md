@@ -2372,9 +2372,15 @@ Done when players watch the results to the end and change their perks between cl
     - [ ] **S5-03a3 A unit each**: a unit for each player as they join (12; a plots system
       built in Brix first, D-252), your name over your door, doors open by default, pulled down
       keeping everyone out with a locked rattle, spare units padlocked. Split if it won't fit:
-      **a3a** Brix's plots system (in `../engine`, by its AGENTS.md, then the pin moves);
-      **a3b** the game's homes on it (the name, the doors, the switch the owner's only, D-263;
-      ShutIn's depth for a home).
+      Split in two:
+      - [x] **S5-03a3a Brix's plots system** (D-273): built in `../engine` as its ENG-25a, `Plots`
+        with `PlotPick.inOrder()` and `Roblox.PlayerPlots` (a plot claimed on join, let go on leave,
+        a line when full, signals and a `Plot` attribute), its suite and specs green; the pin moved
+        to `482368f`. Brix's `main` isn't pushed yet (OWNER.md).
+      - [ ] **S5-03a3b The game's homes on it**: FrontOffice adopts `PlayerPlots` for the twelve homes:
+        your name over your door, doors up by default, a pulled-down door locked to all but its
+        holder (the climb's locked rattle), unclaimed homes padlocked, the switch the holder's only
+        (D-263), ShutIn's depth for a home. It runs Brix's ENG-25b in Studio as it goes.
   - [ ] **F-G1b4a The hard hat on your head** (its own ticket in Step 4's finds; the owner put
     it here, Nov 16).
   - [ ] **S5-03b The mirror test** (ideas 21, 22): one mirror in a unit, built as D-259 says,

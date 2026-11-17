@@ -24,7 +24,7 @@ The keepers' brain is the exception: it is built in this game (owner, 2026-11-09
 
 ## What this game uses from Brix today
 
-At the pinned commit, `c9f6667` (2026-11-16, moved from `5cdb8c2` for F-G1b3c2c). Checked against `src/` on 2026-11-16.
+At the pinned commit, `482368f` (2026-11-17, moved from `c9f6667` for S5-03a3a; not yet pushed to Brix's `origin`). Checked against `src/` on 2026-11-16.
 
 | Brix piece | What the game does with it | Where |
 | --- | --- | --- |
@@ -44,11 +44,12 @@ the other zones (sphere, polygon, any-of, grown), the floor pathing and the sphe
 
 ## What Brix has built since the pin
 
-These are in the pin (moved to `c9f6667` for F-G1b3c2c), still not used here.
+These are in the pin (moved to `482368f` for S5-03a3a), still not used here.
 Moving the pin is its own small step, taken when a ticket first needs something newer.
 
 | Brix piece | State in Brix | This game's use |
 | --- | --- | --- |
+| Plots, `PlotPick.inOrder` and `Roblox.PlayerPlots` (ENG-25a): a plot claimed for each player on join, let go on leave, a line when full | Built; not yet run in Studio (its ENG-25b) | S5-03a3b: each player's home in `src/server/FrontOffice.luau` |
 | The frame driver (`Brix.Roblox.HostDriver`): steps a Host each Heartbeat, catches up after a hitch of up to half a second and says when it had to drop time | Built, not yet run in Studio (its ENG-07a) | Take it when the pin moves; today the server steps the Host from Heartbeat itself |
 | Remotes and the RemoteEvent transport (ENG-09): declared asks and tells, checked and rate-limited | Built | The game's own remotes stand in until a ticket moves them |
 | LiveConfig, `Roblox.ConfigSource.configService`, `Roblox.ConfigRefresher` (ENG-11) | Built, run in Studio | S3-02b uses it for the offers' switches; L-09's tuning later |

@@ -5,6 +5,10 @@ nowhere else.
 
 ## Now
 
+- [ ] **Push Brix before you push this game** (S5-03a3a, D-273): the game now pins Brix at
+  `482368f` (the plots each player's home comes from), which is only on this Mac. In `../engine`,
+  `git push origin main`, then this repository. Pushed the other way round, a fresh clone can't find
+  the pinned commit.
 - [ ] **If Studio stops getting changes, click Connect** in Studio's Rojo plugin (connected Nov 13
   at 23:30; each session checks it first and says so in HANDOFF.md).
 - [ ] **Playing on your phone** (D-109): with Rojo connected, use File > Publish to Roblox (Save

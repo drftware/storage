@@ -2,43 +2,42 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-17, session 228 (the ground floor weighed for a phone) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `c9f6667`.
+**Updated:** 2026-11-17, session 229 (Brix's plots, S5-03a3a) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `482368f`, which is NOT on Brix's `origin` yet (push Brix first, OWNER.md).
 
 ## State
 - The home (D-259; the Claude Doc https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools
   only) is built a ROADMAP piece a session (S5-03). The calm ground floor, the home fronts,
-  their starter sets and the light switch are in the game (D-268).
-- S5-03a2c (D-271): weighed in Studio Play on the Galaxy A16 simulator, every home lit. Real
-  lights 43 down to 31 (33 in a home): only the two floor lamps nearest you throw real light,
-  eased, the rest glowing. The spawn view 160k triangles down to 145k: a front's drum and head
-  plates are drawn only from inside that home. Run from the spawn to a car: 8.5 s.
-- Still over the triangle default (a climb floor's 61k-112k): the cars' 51k, ticketed as
-  S5-03a2d after a3. A phone's frame rate is the owner's (Studio draws 15 fps in the background).
-- Find art (third find run): V2 done (D-272): the robot, mouse, tin bird and carousel wind up
-  and play, seen in Play; a hop no longer reads as a wall. Next: V3, the kazoo, drum, spinner,
-  doll and fish (ROADMAP F-G1e3; `art/finds/WAVES.md`).
+  their starter sets and the light switch are in the game (D-268), weighed for a phone (D-271).
+- S5-03a3a (D-273): Brix has Plots (its ENG-25a, `482368f`): `Brix.Plots.new({ plots, pick })`,
+  `Brix.PlotPick.inOrder()`, and `Brix.Roblox.PlayerPlots.new({ plots, players, attribute? })`,
+  which claims a plot by UserId on join, lets it go on leave, puts a thirteenth player in line,
+  fires `claimed`/`released` with `{ player, plot }` and writes the plot's name on the player
+  (attribute `Plot`). Specs green in Brix; not yet run in Studio (Brix's ENG-25b). The game
+  pins it but doesn't use it yet.
+- Still over the triangle default: the cars' 51k, ticketed as S5-03a2d after a3.
+- Find art (third find run): V2 done (D-272). Next: V3 (ROADMAP F-G1e3; `art/finds/WAVES.md`).
 
-## Next task: S5-03a3 A unit each (Brix's plots system first, D-252)
+## Next task: S5-03a3b Your home, claimed as you join (on Brix's Plots)
 The moment: you load in and one of the twelve homes is yours, your name over its door, its door
 up and its light on, waiting; pull it down and only you get back in (a locked rattle for anyone
 else). Precedent: Bee Swarm Simulator's and Grow a Garden's plots, one claimed per player on join.
-Split in ROADMAP if it won't fit: a3a the Brix system, a3b the game's homes on it.
-1. Read the home doc's "What you decided (Nov 16)" and its unit-each idea (docs tools, search the
-   headings). Check `docs/FRAMEWORK.md` and `../engine` for anything plot-shaped first.
-2. a3a, in `../engine` by its own AGENTS.md (neutral names, its checks, its commits): a plots
-   system. Claim a free plot for each player on join, free it on leave, a signal for both, a
-   pure core with Lune specs (no plot twice, full server). Then move this game's pin.
-3. a3b: FrontOffice adopts it for the twelve homes: the owner's name on the front (the name
-   card's place, Lobby Specs `Card`), doors up by default, a pulled-down door locked to all but
-   the owner (the climb's locked rattle), unclaimed homes padlocked, the switch the owner's only
-   (D-263). Every refusal answers with sound and motion, no text.
-4. Queue 2: ShutIn's "inside" uses the M's 12-stud depth, so deep in a home (30 deep) it doesn't
-   count you shut in and the fills light the back of a shut home. Use the home's own depth.
-**Acceptance:** check green; the Brix specs pass and the pin moved; in Studio Play your home is
-claimed and named, a shut door refuses another player (two-client steps in OWNER.md).
-**Read first:** the home doc's decisions section; `docs/FRAMEWORK.md`; `../engine/AGENTS.md`;
-`src/server/FrontOffice.luau` (grep `Switch`); D-263 (grep "^## D-263" docs/DECISIONS.md);
-`src/shared/StorageUnit/ShutIn.luau`.
+1. Read `docs/modules/Plots.md` in `vendor/brix` (the whole API in 30 lines) and FrontOffice's
+   homes (grep `Switch`, `Card`, the home list). Name the twelve homes nearest the spawn first.
+2. In FrontOffice, make `Brix.Plots` + `Brix.Roblox.PlayerPlots`; on `claimed`, write the holder's
+   name on the home's card (Lobby Specs `Card`, the stencil lettering) and raise its door with the
+   slow loud open; on `released`, blank the card, drop the door and padlock it. Unclaimed homes
+   start shut and padlocked (the home doc's idea 2).
+3. A pulled-down door opens for its holder only: anyone else gets the climb's locked rattle and
+   no motion (D-263 says the switch is the holder's only too). Server checks every press.
+4. Queue item from a3: ShutIn's "inside" uses the M's 12-stud depth, so deep in a home (30 deep)
+   it doesn't count you shut in. Use the home's own depth.
+5. Run it in Studio Play (one player gets the nearest home, named), log it in `docs/STUDIO.md`
+   and in Brix's `docs/STUDIO.md` as ENG-25b's run; tick ENG-25b in Brix's ROADMAP (its commit).
+**Acceptance:** check green; in Studio Play your home is claimed, named and open; a shut door
+refuses another player (two-client steps in OWNER.md); Brix's ENG-25b logged and ticked.
+**Read first:** `vendor/brix/docs/modules/Plots.md`; `src/server/FrontOffice.luau` (grep
+`Switch`); D-263 and D-273 (grep "^## D-26[3]\|^## D-273" docs/DECISIONS.md);
+`src/shared/StorageUnit/ShutIn.luau`; the home doc's idea 3 "Your door" (docs tools, search).
 
 ## Queue (next sessions, the owner's ticket order)
 1. F-G1b4a the hard hat, S5-03b the mirror, S5-03c-h; S5-03a2d the cars' hidden triangles.

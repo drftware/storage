@@ -7019,3 +7019,19 @@ to a car, with every home lit.
   first landing pointed the ray down into the floor and read as a wall: it stopped 2.1 s in, on
   open floor. It now casts only the step's going over the floor (`FindUses`); the bird hops its
   0.78 studs.
+
+## D-273 · 2026-11-17 · A home each comes from Brix's Plots (S5-03a3a)
+
+The home doc's idea 1 (agreed Nov 16, D-251): as you join you're given one of the twelve homes, yours
+until you leave, as Grow a Garden and Bee Swarm Simulator hand each player a plot.
+
+- **Built in Brix** (D-252) as its ENG-25a: `Brix.Plots.new({ plots, pick })` keeps who holds which
+  home, `Brix.PlotPick.inOrder()` gives a newcomer the first free one in the game's list, and
+  `Brix.Roblox.PlayerPlots` claims on join, lets go on leave, fires `claimed` and `released` and
+  writes the home's name on the player as an attribute. Nothing about this game is in Brix.
+- **The game lists its homes nearest the spawn first**, so a half-full server's homes sit together
+  and you walk the least to yours. Not chosen: a random home, which scatters a small group.
+- **A full server** (13 players for 12 homes, which Roblox's player cap should prevent): the
+  thirteenth waits in line and gets the next home let go, rather than having none.
+- **Brix's pin moved to `482368f` before Brix's `main` was pushed**, since the owner wasn't there to
+  say yes to a push. Brix must be pushed before this game is (OWNER.md).
