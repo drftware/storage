@@ -7270,3 +7270,27 @@ whole hat-height low, its lamp on your mouth (and its brim round your eye before
   sits 0.3 under the top of the head, the brim level over the brow. The owner's look waits on
   OWNER.md.
 - Your own view stays clear (D-282's `HeadView`, seen: every worn part hidden at the eye).
+
+## D-284 · 2026-11-17 · The shelf: oak behind the rug, and finds kept land on its spots in the save (S5-03c1a)
+
+The plan's ideas 6 to 8 (every find carried aboard comes home; new finds wait sparkling; the shelf
+is what's on show). Precedents: Animal Crossing's museum and house storage, Lethal Company's ship
+shelf, Fortnite's locker marking what's new until you've looked.
+
+- **The shelf is oak with a cream painted back**, not the plan's steel storage shelf: D-263 keeps
+  the climb's steel out of the home. Six cubbies (three across, two up) on short legs, 7.5 studs
+  wide and 5.5 tall, 384 triangles in the Wood and Plaster sets (`art/home/furnish.py`).
+- **It stands behind the rug, facing the door** (my default, `OWNER.md`), the first thing you see
+  as your door goes up. The plan has it on the back wall; the homes are the XL slot until the
+  sizes come (S5-03h), so the small unit's back partition goes right behind it then.
+- **The save keeps the shelf (version 5):** each spot's find by name ("" for empty) and how new it
+  is: seen, new, or a kind you'd never owned (`Save.Fresh`). The shelf shows finds you own, so a
+  find on it is counted in `finds` too; up to 24 spots, the XL unit's.
+- **A find lands as it's kept at the gate** (`Save.keep`): the moment it's yours it takes the
+  first empty spot, a kind stamped just now marked to chime. A full shelf leaves it in `finds`
+  alone, for the job box (S5-03c2). So the shelf fills during the climb and is there, sparkling,
+  when you get home, with nothing to press.
+- **Split** (context): c1a this; c1b the finds standing on the shelf, sparkle, chime and turn, the
+  server checking you're near before it marks one seen, seen in Studio Play; c2 the job box and
+  its panel; c3 selling and Gold.
+

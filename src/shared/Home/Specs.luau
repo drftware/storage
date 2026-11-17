@@ -26,6 +26,7 @@ local Specs = {
 		Rug = { "Rug" },
 		Beanbag = { "Beanbag" },
 		FloorLamp = { "FloorLamp", "LampShade" },
+		Shelf = { "Shelf", "ShelfBack" },
 	} :: { [string]: { string } },
 	-- A unit's starter set (D-263): each piece's origin in the unit's frame, turned about Y
 	-- (degrees, 0 with its front toward the door).
@@ -33,7 +34,22 @@ local Specs = {
 		{ Kind = "Rug", At = { -0.000, 0.000, 9.500 }, Turn = 0.0 },
 		{ Kind = "Beanbag", At = { 2.300, 0.000, 10.600 }, Turn = -22.0 },
 		{ Kind = "FloorLamp", At = { 5.400, 0.000, 12.800 }, Turn = 0.0 },
+		{ Kind = "Shelf", At = { -0.000, 0.000, 15.200 }, Turn = 0.0 },
 	} :: { Placed },
+	-- The shelf (D-284): each spot's middle on its board in the Shelf piece's frame, left to
+	-- right facing it, bottom row first; Room, the box a find is fitted into there (across,
+	-- tall, deep), a find's bottom on the spot.
+	Shelf = {
+		Spots = {
+			{ -2.440, 0.590, -0.040 },
+			{ 0.000, 0.590, -0.040 },
+			{ 2.440, 0.590, -0.040 },
+			{ -2.440, 2.930, -0.040 },
+			{ 0.000, 2.930, -0.040 },
+			{ 2.440, 2.930, -0.040 },
+		} :: { Vec },
+		Room = { 2.000, 2.000, 1.300 } :: Vec,
+	},
 	-- Each MeshPart's box as imported (its centre is its CFrame in its frame).
 	Parts = {
 		Beanbag = {
@@ -128,6 +144,16 @@ local Specs = {
 		},
 		Pot = { Size = { 1.720, 1.600, 1.720 }, Centre = { -0.000, 0.800, 0.000 }, Triangles = 236 },
 		Rug = { Size = { 8.000, 0.040, 6.000 }, Centre = { -0.000, 0.025, 0.000 }, Triangles = 12 },
+		Shelf = {
+			Size = { 7.460, 5.490, 1.600 },
+			Centre = { -0.000, 2.745, 0.000 },
+			Triangles = 372,
+		},
+		ShelfBack = {
+			Size = { 7.180, 4.820, 0.080 },
+			Centre = { -0.000, 2.860, 0.760 },
+			Triangles = 12,
+		},
 		Slat_A = {
 			Size = { 8.640, 0.300, 0.063 },
 			Centre = { -0.000, 1.410, 0.535 },

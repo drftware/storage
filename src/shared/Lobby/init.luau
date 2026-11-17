@@ -330,8 +330,10 @@ function Lobby.front(template: Model, home: Model?, pivot: CFrame, slot: Specs.S
 		local starter = Instance.new("Folder")
 		starter.Name = "Starter"
 		for _, s in Home.Specs.Starter do
-			local at = face * CFrame.new(vec(s.At)) * CFrame.Angles(0, math.rad(s.Turn), 0)
-			Home.piece(home, s.Kind, at, starter)
+			if Home.has(home, s.Kind) then
+				local at = face * CFrame.new(vec(s.At)) * CFrame.Angles(0, math.rad(s.Turn), 0)
+				Home.piece(home, s.Kind, at, starter)
+			end
 		end
 		starter.Parent = unit
 		Home.mirror(unit, face)

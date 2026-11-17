@@ -7,7 +7,8 @@
 	The instant a floor's gate hits its post with friends aboard (Climbs' `shut`), each rider who is
 	alive and not wrapped is paid the floor's coins (`Pay.owed`: the same for everyone, a little
 	more each floor, once a floor a climb) into their count (Coins' `pay`), and the finds in their
-	slots are kept (Slots' `keep`): out of the slots and into their save (`Save.keep`), which is
+	slots are kept (Slots' `keep`): out of the slots and into their save (`Save.keep`, landing on
+	the shelf at home as well, D-284), which is
 	written at once, since a find kept is worth keeping. A wrapped rider gets nothing for the floor
 	(GDD "Earning nothing"), and keeps the finds in their slots for a later gate, if they have any.
 
@@ -21,6 +22,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Home = require(ReplicatedStorage.Shared.Home)
 local Pay = require(ReplicatedStorage.Shared.Pay)
 local Save = require(ReplicatedStorage.Shared.Save)
 local Climbs = require(script.Parent.Climbs)
@@ -66,7 +68,9 @@ function GatePay.new(): GatePaySystem
 			waiting[player] = held
 			return
 		end
-		Save.keep(data, kept, os.time())
+		-- each lands on the shelf at home too, its first empty spot (D-284; every home is small
+		-- until the sizes come, S5-03h)
+		Save.keep(data, kept, os.time(), #Home.Specs.Shelf.Spots)
 		task.spawn(function()
 			s:save(player)
 		end)

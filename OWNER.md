@@ -58,7 +58,10 @@ nowhere else.
   maximum players to 12. Nothing in the repo sets it.
 - [ ] **Decide (defaults in, the home, D-259; change any in the home doc or here):**
   1. An XL unit is 20 by 30 studs (large is 16 by 20).
-  2. Shelf spots for finds on show: 6 small, 10 medium, 16 large, 24 XL.
+  2. Shelf spots for finds on show: 6 small, 10 medium, 16 large, 24 XL. The shelf (D-284) is
+     oak with a cream back, not the plan's steel (D-263's calm), and stands behind the rug facing
+     the door, so it's the first thing you see as your door goes up; the small unit's back
+     partition (S5-03h) goes right behind it. A find too big for its cubby is shrunk to fit.
   3. Things you can set out with Arrange: 25 small, 50 medium, 100 large, 150 XL, so a full
      unit runs smoothly on a low-end phone.
   4. Four lamps in a unit cast real light; any more just glow.
@@ -268,13 +271,14 @@ nowhere else.
      seconds. The tune doesn't slow as it runs down yet (ROADMAP polish). Loudness defaults
      chosen: the robot and bird carry 90 studs (as the teeth), the mouse and carousel 60 (down
      the hall, as the duck). Right?
-- [ ] **Try (F-G1e4, built Nov 17, D-281; not yet seen in Studio Play, the run's V4b sees it
-  first):** the **siren car**, on a phone, in a dark hall. `GiveFind` it, face down the hall,
+- [ ] **Try (F-G1e4, built Nov 17, D-281; seen in Studio Play Nov 17, V4b, not on a phone):**
+  the **siren car**, on a phone, in a dark hall. `GiveFind` it, face down the hall,
   press Push: it's set down, pushed twice, and rolls off wailing, its red roof light turning and
   sweeping the walls; a monster across the floor comes after it. Push it at a wall: its wheels
   spin on there and it wails until it runs down, then its light goes out. Does the wail sound
-  like a toy siren (a small whooper, picked by its name, not yet heard)? Does the red sweep read
-  on the walls at phone size? Loudness default: 90 studs, as the robot. Right?
+  like a toy siren (a small whooper, played a little low so it lasts the roll; it fades out
+  while the car crawls its last stud or two)? Does the red sweep read on the walls at phone
+  size? Loudness default: 90 studs, as the robot. Right?
 - [ ] **Try (F-G1e3a, built Nov 17, D-274; seen in Studio Play, not on a phone):** the kazoo and
   the toy drum. Same setup, `GiveFind` each, then press.
   1. Blow the **kazoo**: one buzzy note once it's at your lips, about a second. Does it sound

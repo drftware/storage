@@ -22,6 +22,11 @@
 	  bought (`WrapColours`, S3-04a).
 	- `wornWrap`: the wrap colour you wear when caught, an offer name in `wraps`, or empty for the
 	  plain clear film.
+	- `shelf`: your home's shelf (S5-03c1a, D-284), its spots in order, each with the find on show
+	  there by name ("" for an empty spot) and how new it is (`Fresh`): seen, new (it sparkles
+	  till you walk up), or a kind you'd never owned (it chimes and turns as well). What's on the
+	  shelf is counted in `finds` too: the shelf shows finds you own, never more of one than you
+	  have.
 
 	The tickets that earn each write it (GDD "Saving", "The collection book"). So far: `finds` and
 	the book's `finds` page, as finds are kept at the gate (S1-06, `keep`), `cash`, as the coins
@@ -44,6 +49,9 @@ export type Counts = { [string]: number }
 -- When each page was first stamped, by name, in `os.time` seconds.
 export type Stamps = { [string]: number }
 
+-- One spot on your home's shelf: the find there by name ("" for none) and how new it is.
+export type Spot = { find: string, fresh: number }
+
 export type Data = {
 	cash: number,
 	finds: Counts,
@@ -60,6 +68,7 @@ export type Data = {
 	spares: Counts,
 	wraps: Stamps,
 	wornWrap: string,
+	shelf: { Spot },
 }
 
 -- The parts of Brix's SaveFormat contract the server and the spec call (`Brix.SaveFormat<Data>`).
@@ -97,22 +106,62 @@ function Save.fresh(): Data
 		spares = {},
 		wraps = {},
 		wornWrap = "",
+		shelf = {},
 	}
 end
 
+-- How new a find on the shelf is (D-284): seen; new, sparkling till you walk up to it; or a kind
+-- you'd never owned before it came home, which chimes and turns as you come near as well.
+Save.Fresh = table.freeze({ Seen = 0, New = 1, Kind = 2 })
+-- The most spots any shelf has (the XL unit's, D-259): what the save holds at most.
+Save.ShelfMost = 24
+
 -- Finds kept at the gate (S1-06): one more of each name in `names` in `data.finds`, and the
--- book's finds page stamped `now` for any name never stamped before. Returns the names stamped
--- for the first time, in order, each once.
-function Save.keep(data: Data, names: { string }, now: number): { string }
+-- book's finds page stamped `now` for any name never stamped before. Each also lands on the first
+-- empty spot of the shelf's first `spots` (D-284: a home's shelf, 6 in a small unit), new, or a
+-- kind never owned if it was stamped just now; with the shelf full it stays in `finds` alone (the
+-- job box, S5-03c2). Returns the names stamped for the first time, in order, each once.
+function Save.keep(data: Data, names: { string }, now: number, spots: number?): { string }
 	local fresh: { string } = {}
 	for _, name in names do
 		data.finds[name] = (data.finds[name] or 0) + 1
-		if data.stamps.finds[name] == nil then
+		local kind = data.stamps.finds[name] == nil
+		if kind then
 			data.stamps.finds[name] = math.max(0, math.floor(now))
 			table.insert(fresh, name)
 		end
+		Save.shelve(data, name, if kind then Save.Fresh.Kind else Save.Fresh.New, spots or 0)
 	end
 	return fresh
+end
+
+-- Puts one `name` on the first empty spot of the shelf's first `spots`, `fresh` as Save.Fresh
+-- says, growing the list with empty spots to reach it. Returns the spot, or nil when they're full.
+function Save.shelve(data: Data, name: string, fresh: number, spots: number): number?
+	local shelf = data.shelf
+	for i = 1, math.min(spots, Save.ShelfMost) do
+		local spot = shelf[i]
+		if spot == nil then
+			spot = { find = "", fresh = Save.Fresh.Seen }
+			shelf[i] = spot
+		end
+		if spot.find == "" then
+			spot.find = name
+			spot.fresh = fresh
+			return i
+		end
+	end
+	return nil
+end
+
+-- Marks spot `i` seen (you walked up to it). Returns whether it was new until now.
+function Save.seen(data: Data, i: number): boolean
+	local spot = data.shelf[i]
+	if spot == nil or spot.find == "" or spot.fresh == Save.Fresh.Seen then
+		return false
+	end
+	spot.fresh = Save.Fresh.Seen
+	return true
 end
 
 -- Cash earned (S1-12, the coins left at a climb's end): `cash` more in `data.cash`, whole and never
@@ -200,6 +249,33 @@ function Save.format(brix: any): Format
 		wornWrap = Schema.string({ maxLength = 64 }),
 	})
 
+	-- Version 5 (S5-03c1a, Nov 17): version 4 plus your home's shelf, each spot's find by name
+	-- ("" for an empty spot) and how new it is (Save.Fresh).
+	local fifth = Schema.shape({
+		cash = Schema.number({ min = 0, integer = true }),
+		finds = Schema.map(name, count),
+		sealed = Schema.map(name, count),
+		stamps = Schema.shape({
+			finds = Schema.map(name, stamped),
+			sealed = Schema.map(name, stamped),
+			keepers = Schema.map(name, stamped),
+		}),
+		bestFloor = Schema.number({ min = 0, integer = true }),
+		purchases = Schema.list(name),
+		recipients = Schema.map(name, name),
+		bought = Schema.map(name, count),
+		spares = Schema.map(name, count),
+		wraps = Schema.map(name, stamped),
+		wornWrap = Schema.string({ maxLength = 64 }),
+		shelf = Schema.list(
+			Schema.shape({
+				find = Schema.string({ maxLength = 64 }),
+				fresh = Schema.number({ min = 0, max = 2, integer = true }),
+			}),
+			{ maxCount = Save.ShelfMost }
+		),
+	})
+
 	return brix.SaveFormat.versioned({
 		versions = {
 			{ schema = first },
@@ -252,6 +328,26 @@ function Save.format(brix: any): Format
 						spares = old.spares,
 						wraps = {},
 						wornWrap = "",
+					}
+				end,
+			},
+			{
+				schema = fifth,
+				-- any: a version 4 save as Brix hands it over, already checked against `fourth`
+				migrate = function(old: any): any
+					return {
+						cash = old.cash,
+						finds = old.finds,
+						sealed = old.sealed,
+						stamps = old.stamps,
+						bestFloor = old.bestFloor,
+						purchases = old.purchases,
+						recipients = old.recipients,
+						bought = old.bought,
+						spares = old.spares,
+						wraps = old.wraps,
+						wornWrap = old.wornWrap,
+						shelf = {},
 					}
 				end,
 			},

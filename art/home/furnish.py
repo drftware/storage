@@ -282,9 +282,50 @@ def lamp_shade():
 BUILDERS = {"Pot": pot, "Plant": plant, "Bench": bench, "Planter": planter,
             "PlanterSeat": planter_seat, "PlanterPlants": planter_plants, "Rug": rug,
             "Beanbag": beanbag, "FloorLamp": floor_lamp, "LampShade": lamp_shade}
+
+
+def shelf():
+    """The shelf's oak (D-284): two ends on short legs, a board under each row and one on top,
+    the uprights between the cubbies, a rail along the top's back. Its front toward -y."""
+    m = Mesh("Shelf")
+    cols, rows, w, h, d, t, legs = K.SHELF
+    width = cols * w + (cols + 1) * t
+    top = legs + rows * (h + t) + t
+    x0, x1, y0, y1 = -width / 2, width / 2, -d / 2, d / 2
+    for sx in (-1, 1):  # the two ends, floor to top, and their feet set back from the front
+        a, b = (x0, x0 + t) if sx < 0 else (x1 - t, x1)
+        wood_box(m, (a, y0, legs), (b, y1, top), 3, bevel=0.02)
+        wood_box(m, (a, y0 + 0.08, 0.0), (b, y0 + 0.3, legs), 5)
+        wood_box(m, (a, y1 - 0.3, 0.0), (b, y1 - 0.08, legs), 5)
+    wood_box(m, (x0 + t, y0 + 0.12, legs - 0.2), (x1 - t, y0 + 0.24, legs), 8)  # the kick rail
+    for r in range(rows + 1):  # boards: under each row, and the top
+        z = legs + r * (h + t)
+        wood_box(m, (x0 + t, y0, z), (x1 - t, y1 - K.SHELF_BACK, z + t), 2 + r, bevel=0.015)
+    for c in range(1, cols):  # the uprights between cubbies
+        x = x0 + t + c * w + (c - 1) * t
+        for r in range(rows):
+            z = legs + t + r * (h + t)
+            wood_box(m, (x, y0 + 0.04, z), (x + t, y1 - K.SHELF_BACK, z + h), 6 + c)
+    wood_box(m, (x0 + 0.04, y1 - 0.2, top), (x1 - 0.04, y1, top + 0.22), 9, bevel=0.02)  # top rail
+    return m
+
+
+def shelf_back():
+    """The shelf's back, painted the units' cream, between its ends from the bottom board up."""
+    m = Mesh("ShelfBack")
+    cols, rows, w, h, d, t, legs = K.SHELF
+    width = cols * w + (cols + 1) * t
+    top = legs + rows * (h + t) + t
+    geo.box(m, (-width / 2 + t, d / 2 - K.SHELF_BACK, legs), (width / 2 - t, d / 2, top),
+            plaster_uv())
+    return m
+
+
+BUILDERS.update({"Shelf": shelf, "ShelfBack": shelf_back})
+
 TEXSET = {"Pot": "Plaster", "Plant": "Leaf", "Bench": "Wood", "Planter": "Plaster",
           "PlanterSeat": "Wood", "PlanterPlants": "Leaf", "Rug": "Rug", "Beanbag": "Fabric",
-          "FloorLamp": "Wood", "LampShade": "Fabric"}
+          "FloorLamp": "Wood", "LampShade": "Fabric", "Shelf": "Wood", "ShelfBack": "Plaster"}
 
 
 def meshes():

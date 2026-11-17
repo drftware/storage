@@ -2394,7 +2394,21 @@ Done when players watch the results to the end and change their perks between cl
     the shelf (6, 10, 16, 24 spots by size), sparkling until you walk up to them, a never-owned
     kind chiming and turning; when it's full they go in the job box. Press it: the panel (each
     kind once with its count, a search box, rarity filters): into your hands, out in your unit,
-    sell, four make a Gold.
+    sell, four make a Gold. Split (context, Nov 17):
+    - [x] **S5-03c1a The shelf's art and its spots in the save** (D-284): an oak open shelf with a
+      cream painted back, six cubbies, in every home's starter set behind the rug facing the door
+      (`art/home`, `Home.Specs.Shelf`); save version 5 keeps each spot's find and how new it is,
+      and every find kept at the gate takes the first empty spot (`Save.keep`), a kind never owned
+      marked to chime. Passes checks; the art isn't uploaded or in the place yet (c1b).
+    - [ ] **S5-03c1b Finds on the shelf, sparkling** (D-284): upload and import the new Home.fbx;
+      the server stands each spot's find in its cubby, fitted and scaled down to fit; a new one
+      sparkles until you walk up (a soft tink, the sparkle bursts and stops), a never-owned kind
+      chimes, turns once slowly and shows "New"; the server checks you're near before marking it
+      seen. Seen in Studio Play at Galaxy A16 size and captured; stays after a rejoin.
+    - [ ] **S5-03c2 The job box and its panel**: the steel job-site box (calm, D-263), the lid's
+      sparkle when finds went in it; press it: the panel (each kind once, x2, search, rarity
+      filters), into your hands, onto the shelf.
+    - [ ] **S5-03c3 Selling and Gold** from the panel.
   - [ ] **S5-03d Taking finds up** (idea 10, D-251): take any find from the chest into a slot and
     carry it to the elevator. On the climb it's at risk like any find: stolen, dropped where
     you're caught or where you leave, lost if it isn't aboard when the elevator leaves. Whoever
@@ -2758,19 +2772,21 @@ actions themselves and dealing the new finds on floors are later game tickets.
         the eight calls in the face's order), rows.py and `Game.Step`, pure rules in `Finds/Use`
         with a Lune spec. The design and the sounds found so far are in `art/finds/WAVES.md`'s
         V3c note.
-    - [ ] **F-G1e4 The siren car (V4).** It rolls as the toy car does, its beacon spins and
+    - [x] **F-G1e4 The siren car (V4).** It rolls as the toy car does, its beacon spins and
       lights the hall while it rolls, and its wail lures along its path (F-G1e2's lure).
       - [x] **F-G1e4a Built** (Nov 17, V4; D-281; passes checks, not yet seen in Play: Studio
         was in the home chain's Play for the session's last 20 minutes). Its row (`down`,
         `walks`, the wail from the first push, the roll as it's let go, a 90-stud lure every
         2 s); a find's real lights only within the 90 studs screens pose finds, put out when
         it leaves (`FindUseView`); finduse.spec holds its light out after a wall stop.
-      - [ ] **F-G1e4b See it in Play.** Measure the wail (`IsLoaded`, `TimeLength`, its
-        loudness over time; set `SIREN`'s start, length and pitch in `kit/game.py` so it
-        whoops from the first push to the stop), then `GiveFind` it and press: set down,
-        rolling with the beacon lit and turning, the red spot on the walls, stopping at a
-        wall with its wheels on, its light out at the end, a Mannequin drawn to it. Output
-        clean. Fill its "seen in Play" in WAVES.md's A1 table; tick F-G1e4.
+      - [x] **F-G1e4b See it in Play** (Nov 17, V4b; seen in Studio Play, not on a phone).
+        The wail measured (4.77 s, whoops audible from 1.0 s, dead at 3.67 s) and set to start
+        there at 0.7 and 1.4, so the press answers at once and it whimpers away as the car
+        slows (from 0.34 s the pushes were near silent). Seen: set down, pushed, rolled 9.6
+        studs and ran down, or 6 studs into the lobby's wall at 2.6 s and held there with its
+        wheels and beacon turning; lit till 6.9 s, then out; the red beam sweeping the dark
+        lobby (`docs/art/V4b-siren-car-*.jpg`); a Mannequin 64 studs off walked to it and
+        stood looking. Output: nothing from this work.
     - [ ] **F-G1e5 The rest the audit found (V5).** Each seen in Play before it's ticked:
       - [ ] **F-G1e5a A press on a one-mesh find** (no joints or motions): the boombox's loud
         music on the lure (R.E.P.O.'s music box) and the teddy's hug squeak.

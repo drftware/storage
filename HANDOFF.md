@@ -2,47 +2,45 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-17, session 234 (the hard hat on top of your head, D-283) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `482368f`, NOT on Brix's `origin` yet (push Brix first, OWNER.md).
+**Updated:** 2026-11-17, session 235 (the shelf's art and its spots in the save, D-284) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `482368f`, NOT on Brix's `origin` yet (push Brix first, OWNER.md).
 
 ## State
 - The home (D-259; the Claude Doc https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools
   only) is built a ROADMAP piece a session (S5-03): ground floor, fronts, starter sets, switch,
-  a home each handed out as you join (D-275), the hard hat on your head (D-277).
-- S5-03b (D-280): every home has a mirror leaning on its left wall by the rug (`Home.mirror`,
-  plain parts for the test). `MirrorView` puts a ViewportFrame on its glass holding a world
-  built behind it: the room copied once, the door, lamps and switch each frame, each person near
-  posed each frame with left and right swapped (`Shared.Mirror`'s maths, `tests/mirror.spec`).
-  Your camera looks square into the glass and the picture is cut to it, so it's a window onto
-  the reflected world. One mirror at a time: live within 24 studs and on screen, still within 70.
-- Seen in Studio Play (session 233, `docs/art/S5-03b-*.jpg`): it was blank, the lobby's merged
-  walls copied in front of the glass. Now `Mirror.keeps` picks what's copied, the unit's walls
-  stand in it as plain parts, and it sharpens up close. You, the right way round, your room
-  behind you, 60 frames a second. The owner's look and the phone's frame rate wait on OWNER.md.
-- The hat you wear is out of your own eye (D-282, `HeadView`): seen in Play, `docs/art/F-G1b4a-own-view.jpg`.
-- The worn hard hat sits on top of your head, by its rim, grown with your head and over your hair
-  (D-283, `Head.seat`): seen in Play and in the mirror, `docs/art/F-G1b4a-on-head-*.jpg`.
+  a home each as you join (D-275), the hard hat on your head (D-277, D-283), the mirror (D-280).
+- S5-03c split in ROADMAP: c1a (done), c1b, c2 the job box and panel, c3 selling and Gold.
+- S5-03c1a (D-284): an oak open shelf, cream back, six cubbies, in every home's starter set behind
+  the rug facing the door (`art/home/furnish.py` `shelf`, `Home.Specs.Shelf.Spots`/`Room`: each
+  spot's middle on its board in the piece's frame, the box a find fits in). Built: `Home.fbx`
+  11,048 triangles. NOT uploaded or imported: the place's `Props.Home` has no Shelf, so
+  `Home.has` leaves it out with one warning until c1b re-imports it.
+- Save version 5 (`Save.luau`): `shelf`, each spot `{ find, fresh }` (`Save.Fresh` Seen 0, New 1,
+  Kind 2). `Save.keep(data, names, now, spots)` lands each kept find on the first empty spot;
+  GatePay passes `#Home.Specs.Shelf.Spots`; `Save.seen(data, i)`. `tests/save.spec` covers it.
 - Still over the triangle default: the cars' 51k, ticketed as S5-03a2d.
-- Find art (third find run): V4a built the siren car (D-281: rolls off wailing, its roof light
-  lit only while it plays, a 90-stud lure); NOT seen in Play (Studio was busy). Next: V4b, its
-  wail measured and the Play check (ROADMAP F-G1e4b, `art/finds/WAVES.md`), then V5a.
+- Find art (third find run): V4b is next there (ROADMAP F-G1e4b, `art/finds/WAVES.md`).
 
-## Next task: S5-03c The shelf and the chest (the owner's order, D-259)
-The moment: you come home from a climb and the find you carried lands on your shelf with a
-sparkle; a kind you've never owned chimes and turns. Precedent: Animal Crossing's museum and
-house storage, Lethal Company's ship shelf. It's big: split it in ROADMAP first (likely c1 the
-shelf and finds landing on it, c2 the job box and its panel) and build only the first part.
-1. Read ROADMAP S5-03c (grep "S5-03c The shelf") and D-251 (grep -n "^## D-251"
-   docs/DECISIONS.md). Read the plan doc's ideas 6 to 9 only (docs tools, search by heading; its
-   "What you decided (Nov 16)" wins).
-2. Split S5-03c in ROADMAP. Build the shelf's art the unit's way (`art/home`, `art/unit/README.md`):
-   6, 10, 16, 24 spots by unit size; the small unit's 6 now.
-3. Finds that come home land on its spots (the server owns which, saved in the profile's finds),
-   sparkling until you walk up; a never-owned kind chimes and turns. Every action answers.
-4. Judge at Galaxy A16 size in Studio Play. OWNER.md: the owner's look, exact steps; defaults.
-**Acceptance:** check green; in Studio Play a find carried home stands on your shelf with its
-sparkle, and stays there after a rejoin.
-**Read first:** ROADMAP S5-03c; D-251; the plan doc's ideas 6 to 9; `src/shared/Home/init.luau`
-(`Home.piece`, `Home.mirror`); `src/server/FrontOffice.luau` (the homes); `art/unit/README.md`.
+## Next task: S5-03c1b Finds on the shelf, sparkling (D-284)
+The moment: your door goes up after a climb and what you brought home stands on your shelf,
+sparkling; walk up and it answers with a soft tink; a kind you'd never owned chimes, turns once
+slowly and shows "New". Precedent: Animal Crossing's museum, Fortnite's locker marks.
+1. `lune run scripts/upload_art Home`; in Edit load it, `Home.prepare`, replace
+   `ReplicatedStorage.Props.Home` (art/home/README.md "Into Studio"). The shelf stands in Play.
+2. A server system (`Shelves`, after frontOffice in init.server): a player's home is the unit for
+   their `Plot` attribute (`Holding.number`, `FrontOffice:laid().units`); when their save loads
+   and on GatePay's `kept`, stand each spot's find (`Tools.clone`, inert, fitted into
+   `Specs.Shelf.Room` from its parts' box in pivot space, shrunk never grown, its bottom on the
+   spot); attributes Fresh, Spot, Owner; clear on leave.
+3. A remote: Seen(spot): type, range, a fresh spot, your root within reach of it, rate-limited;
+   `Save.seen`. Client `ShelfView`: sparkle (the glint texture Slots uses) on Fresh > 0; your
+   own within ~7 studs (checked every 0.2 s, not per frame): New a tink and a burst, Kind
+   Boxes' falling twinkles, one slow eased turn and a small "New" billboard; then fire Seen.
+4. Studio Play at Galaxy A16 size: keep a find via the dev path, come home, capture at half
+   scale to `docs/art/S5-03c1b-*.jpg`; rejoin, it's still there. OWNER.md: the look, steps.
+**Acceptance:** check green; in Studio Play a kept find stands on your shelf sparkling, the walk-up
+plays, and it's still there after a rejoin.
+**Read first:** ROADMAP S5-03c1b; D-284; `src/server/GatePay.luau` (kept, store); `src/shared/Save.luau`
+(`keep`, `seen`); `src/shared/Tools/init.luau` (`clone`, `inert`); `src/server/FrontOffice.luau`.
 
 ## Queue (next sessions, the owner's ticket order)
 1. S5-03d-h; S5-03a2d the cars' hidden triangles; F-G1b4a2 the headlamp's beam (ROADMAP Step 4);

@@ -38,8 +38,9 @@ Rug (512², baked colours), HomeDoor (1024², the DoorKit's layout, tinted).
 | Planter, PlanterSeat, PlanterPlants | Plaster, Wood, Leaf | 24, 176, 2196 | the island you sit round |
 | Rug, Beanbag | Rug, Fabric | 12, 360 | the starter rug and beanbag |
 | FloorLamp, LampShade | Wood, Fabric | 288, 192 | the starter floor lamp |
+| Shelf, ShelfBack | Wood, Plaster | 372, 12 | the shelf (S5-03c1a, D-284): oak, six cubbies, a cream back |
 
-Home.fbx: 10,664 triangles in 25 parts. Sheets (drawn by `art/lobby`): `lobby-home.png` (your
+Home.fbx: 11,048 triangles in 27 parts (with the shelf; not yet uploaded, S5-03c1b). Sheets (drawn by `art/lobby`): `lobby-home.png` (your
 unit from the floor), `lobby-nook.png` (a bench and a planter), `lobby-unit.png`,
 `lobby-inside.png`, `lobby-spawn.png`.
 

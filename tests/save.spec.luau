@@ -38,6 +38,11 @@ local function played(): Save.Data
 	data.spares.cutFree = 1
 	data.wraps.wrapBlue = 1794700400
 	data.wornWrap = "wrapBlue"
+	data.shelf = {
+		{ find = "Boombox", fresh = Save.Fresh.Seen },
+		{ find = "", fresh = Save.Fresh.Seen },
+		{ find = "Teddy", fresh = Save.Fresh.Kind },
+	}
 	return data
 end
 
@@ -61,9 +66,9 @@ local function same(a: unknown, b: unknown): boolean
 	return true
 end
 
--- A new player: nothing yet, at version 4.
+-- A new player: nothing yet, at version 5.
 do
-	ok(format:latest() == 4, "the save is at version 4")
+	ok(format:latest() == 5, "the save is at version 5")
 	local fresh = format:fresh()
 	ok(fresh.cash == 0 and fresh.bestFloor == 0, "a new player has no cash and no best floor")
 	ok(next(fresh.finds) == nil and next(fresh.sealed) == nil, "a new player keeps no finds")
@@ -77,6 +82,7 @@ do
 		next(fresh.wraps) == nil and fresh.wornWrap == "",
 		"a new player owns no wrap colours and wears the plain film"
 	)
+	ok(#fresh.shelf == 0, "a new player's shelf is empty")
 	ok(fresh ~= format:fresh(), "each new save is its own table")
 	local stored, problem = format:encode(fresh)
 	ok(stored ~= nil and problem == nil, `a new save can be stored ({problem})`)
@@ -87,7 +93,7 @@ do
 	local data = played()
 	local stored, problem = format:encode(data)
 	ok(stored ~= nil, `a played save can be stored ({problem})`)
-	local back, decodeProblem = format:decode(4, stored)
+	local back, decodeProblem = format:decode(5, stored)
 	ok(back ~= nil and same(back, data), `a played save comes back the same ({decodeProblem})`)
 end
 
@@ -190,8 +196,62 @@ do
 			and three.wornWrap == "",
 		`version 3 loads with its spares, no wrap colours and the plain film ({threeProblem})`
 	)
-	local newer, newerProblem = format:decode(5, v1)
+	-- Version 4 as the DataStore holds it (Nov 15): a wrap colour worn.
+	local v4 = {
+		cash = 7,
+		finds = { Teddy = 1 },
+		sealed = {},
+		stamps = { finds = { Teddy = 1794700100 }, sealed = {}, keepers = {} },
+		bestFloor = 3,
+		purchases = {},
+		recipients = {},
+		bought = { wrapBlue = 1 },
+		spares = {},
+		wraps = { wrapBlue = 1794700400 },
+		wornWrap = "wrapBlue",
+	}
+	local four, fourProblem = format:decode(4, v4)
+	ok(
+		four ~= nil and four.wornWrap == "wrapBlue" and four.finds.Teddy == 1 and #four.shelf == 0,
+		`version 4 loads with its wrap and an empty shelf ({fourProblem})`
+	)
+	local newer, newerProblem = format:decode(6, v1)
 	ok(newer == nil and newerProblem ~= nil, "a save from a newer version is refused")
+end
+
+-- Finds kept at the gate land on the shelf (D-284): the first empty spot of the unit's, new, or a
+-- kind never owned; past the unit's spots they're kept but not shown; a spot is seen once.
+do
+	local data = Save.fresh()
+	local stamped = Save.keep(data, { "Teddy", "Teddy", "Boombox" }, 100, 2)
+	ok(#stamped == 2 and stamped[1] == "Teddy" and stamped[2] == "Boombox", "two kinds stamped")
+	ok(data.finds.Teddy == 2 and data.finds.Boombox == 1, "every kept find is counted")
+	ok(
+		#data.shelf == 2
+			and data.shelf[1].find == "Teddy"
+			and data.shelf[1].fresh == Save.Fresh.Kind
+			and data.shelf[2].find == "Teddy"
+			and data.shelf[2].fresh == Save.Fresh.New,
+		"the first teddy is a new kind, the second only new, and the boombox finds the shelf full"
+	)
+	ok(Save.seen(data, 1) and data.shelf[1].fresh == Save.Fresh.Seen, "walking up marks it seen")
+	ok(not Save.seen(data, 1), "a spot is seen once")
+	ok(not Save.seen(data, 5), "a spot past the shelf is never seen")
+	data.shelf[1].find = ""
+	Save.keep(data, { "Teddy" }, 200, 2)
+	ok(
+		data.shelf[1].find == "Teddy" and data.shelf[1].fresh == Save.Fresh.New,
+		"an emptied spot takes the next find, a kind you own now only new"
+	)
+	Save.keep(data, { "Boombox" }, 300)
+	ok(#data.shelf == 2 and data.finds.Boombox == 2, "with no spots given, nothing lands")
+	local stored, problem = format:encode(data)
+	ok(stored ~= nil, `a save with a shelf can be stored ({problem})`)
+	local full = Save.fresh()
+	for _ = 1, Save.ShelfMost + 3 do
+		Save.keep(full, { "Teddy" }, 1, 99)
+	end
+	ok(#full.shelf == Save.ShelfMost, "the shelf never holds more than the largest unit's")
 end
 
 -- Keys: one per player, under the 50 characters a DataStore key may have, and back to the UserId.

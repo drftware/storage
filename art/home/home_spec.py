@@ -53,16 +53,39 @@ FLOOR_LAMP = (0.55, 5.3, 0.85, 0.66, 1.1)  # base radius, the stem's top, the sh
                                            # the foot and the top, the shade's height
 SHADE_GAP = 0.25         # how far the shade's foot sits below the stem's top (the bulb's in it)
 
+# The shelf (S5-03c1a, D-284): an open oak shelf, a cream painted back, finds on show in its cubbies.
+# The small unit's six: across, up, each cubby's inside width and height, its depth front to
+# back, the oak boards' thickness, the legs' height under the bottom board.
+SHELF = (3, 2, 2.3, 2.2, 1.6, 0.14, 0.45)
+SHELF_BACK = 0.08        # the painted back's thickness, set in from the frame's back edge
+SHELF_ROOM = (2.0, 2.0, 1.3)  # the box a find is fitted into on its spot: across, tall, deep
+                         # (inside a cubby, clear of its sides, its board above and its back)
+
+
+def shelf_spots():
+    """Each spot's middle on its board, in the shelf's frame (front toward -y), left to right
+    as you face it, bottom row first."""
+    cols, rows, w, h, d, t, legs = SHELF
+    width = cols * w + (cols + 1) * t
+    out = []
+    for r in range(rows):
+        z = legs + t + r * (h + t)
+        for c in range(cols):
+            x = width / 2 - t - w / 2 - c * (w + t)  # facing it from -y, its left is +x
+            out.append((x, -SHELF_BACK / 2, z))
+    return out
+
+
 # Where each piece of a unit's starter set stands, in the unit frame (x, y in from the doorway),
 # turned about z in degrees (0: its front toward the door). From the doorway: the rug in the
 # middle, the beanbag on its far left corner facing you, the lamp glowing behind it.
 STARTER = (("Rug", (0.0, 9.5), 0.0), ("Beanbag", (-2.3, 10.6), -22.0),
-           ("FloorLamp", (-5.4, 12.8), 0.0))
+           ("FloorLamp", (-5.4, 12.8), 0.0), ("Shelf", (0.0, 15.2), 0.0))
 
 # Each furnishing's parts: a game piece is these MeshParts standing on one origin.
 PIECES = {"Plant": ("Pot", "Plant"), "Bench": ("Bench",), "Planter": ("Planter", "PlanterSeat",
           "PlanterPlants"), "Rug": ("Rug",), "Beanbag": ("Beanbag",),
-          "FloorLamp": ("FloorLamp", "LampShade")}
+          "FloorLamp": ("FloorLamp", "LampShade"), "Shelf": ("Shelf", "ShelfBack")}
 
 
 def b2r(v):
@@ -111,6 +134,17 @@ def write_luau(path, parts, switch, toggle, lamp):
     for kind, (x, y), turn in STARTER:
         L.append(f"\t\t{{ Kind = \"{kind}\", At = {lua_vec(b2r((x, y, 0.0)))}, Turn = {turn:.1f} }},")
     L += ["\t} :: { Placed },",
+          "\t-- The shelf (D-284): each spot's middle on its board in the Shelf piece's frame, left to",
+          "\t-- right facing it, bottom row first; Room, the box a find is fitted into there (across,",
+          "\t-- tall, deep), a find's bottom on the spot.",
+          "\tShelf = {",
+          "\t\tSpots = {"]
+    for p in shelf_spots():
+        L.append(f"\t\t\t{lua_vec(b2r(p))},")
+    rx, ry, rz = SHELF_ROOM
+    L += ["\t\t} :: { Vec },",
+          f"\t\tRoom = {{ {rx:.3f}, {ry:.3f}, {rz:.3f} }} :: Vec,",
+          "\t},",
           "\t-- Each MeshPart's box as imported (its centre is its CFrame in its frame).",
           "\tParts = {"]
     for name in sorted(parts):

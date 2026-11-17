@@ -42,6 +42,7 @@ Home.Paint = {
 	Beanbag = Color3.fromHex("#B98A3C"), -- mustard, the rug's own
 	LampShade = Color3.fromHex("#F1E8D6"), -- a linen drum
 	Switch = Color3.fromHex("#F2EEE6"), -- the plate and its rocker: off-white plastic
+	ShelfBack = Color3.fromHex("#EFE6D4"), -- the shelf's painted back: a warm cream behind finds
 }
 local TINTED: { [string]: Color3 } = {
 	Facade = Home.Paint.Facade,
@@ -50,6 +51,7 @@ local TINTED: { [string]: Color3 } = {
 	Planter = Home.Paint.Planter,
 	Beanbag = Home.Paint.Beanbag,
 	LampShade = Home.Paint.LampShade,
+	ShelfBack = Home.Paint.ShelfBack,
 }
 -- Imported with no map: the game gives them their look.
 local PLAIN: { [string]: boolean } = { Switch = true, SwitchToggle = true, Lamp = true }
@@ -141,6 +143,7 @@ local SOLID: { [string]: boolean } = {
 	PlanterSeat = true,
 	Beanbag = true,
 	FloorLamp = true,
+	Shelf = true,
 }
 
 local function vec(v: { number }): Vector3
@@ -255,7 +258,24 @@ function Home.dress(template: Model, unit: Model, face: CFrame)
 	unit:SetAttribute(Home.LightAttribute, true)
 end
 
--- One furnishing (Specs.Pieces: Plant, Bench, Planter, Rug, Beanbag, FloorLamp) standing at `at`,
+-- Whether the place's home template has every part of furnishing `kind` (a piece added to the art
+-- before the place's Home is re-imported, as the shelf was, D-284, is left out with a warning).
+local warned: { [string]: boolean } = {}
+function Home.has(template: Model, kind: string): boolean
+	local names: { string } = Specs.Pieces[kind] or {}
+	for _, name in names do
+		if not template:FindFirstChild(name, true) then
+			if not warned[kind] then
+				warned[kind] = true
+				warn(`Home: the place's Home has no {name}; re-import it (art/home/README.md)`)
+			end
+			return false
+		end
+	end
+	return true
+end
+
+-- One furnishing (Specs.Pieces: Plant, Bench, Planter, Rug, Beanbag, FloorLamp, Shelf) standing at `at`,
 -- its front looking the way `at` does, in a Model named for it: its meshes (the solid ones collide
 -- as boxes), its Seats, and the floor lamp's light (tagged LampTag, off until a screen lights it).
 function Home.piece(template: Model, kind: string, at: CFrame, parent: Instance): Model
