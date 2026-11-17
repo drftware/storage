@@ -968,6 +968,24 @@ local Rows: { Game.Row } = {
 			volume = 0.55,
 			pitch = 1.4,
 		},
+		verb = "Squeeze",
+		press = {
+			verb = "Squeeze",
+			on = {
+				{
+					motion = "Squeeze",
+					sound = {
+						id = "rbxassetid://9125994570",
+						from = 0,
+						length = 0.5,
+						volume = 1.2,
+					},
+				},
+			},
+			noise = "Squeeze",
+			heard = 60,
+			toy = true,
+		},
 	},
 	{
 		key = "SirenCar",
@@ -1242,6 +1260,23 @@ local Rows: { Game.Row } = {
 			volume = 0.5,
 			pitch = 1.2,
 		},
+		verb = "Squeeze",
+		press = {
+			verb = "Squeeze",
+			on = {
+				{
+					motion = "Squeeze",
+					sound = {
+						id = "rbxassetid://9125994310",
+						from = 0,
+						length = 0.5,
+						volume = 0.45,
+						pitch = 0.55,
+					},
+				},
+			},
+			toy = true,
+		},
 	},
 	{
 		key = "ButterStick",
@@ -1266,6 +1301,23 @@ local Rows: { Game.Row } = {
 			length = 0.4,
 			volume = 0.5,
 			pitch = 1.15,
+		},
+		verb = "Squeeze",
+		press = {
+			verb = "Squeeze",
+			on = {
+				{
+					motion = "Squeeze",
+					sound = {
+						id = "rbxassetid://9117373366",
+						from = 0.4,
+						length = 0.5,
+						volume = 0.9,
+						pitch = 1.1,
+					},
+				},
+			},
+			toy = true,
 		},
 	},
 	{
@@ -1292,6 +1344,23 @@ local Rows: { Game.Row } = {
 			volume = 0.45,
 			pitch = 1.3,
 		},
+		verb = "Squeeze",
+		press = {
+			verb = "Squeeze",
+			on = {
+				{
+					motion = "Squeeze",
+					sound = {
+						id = "rbxassetid://9117373366",
+						from = 0.4,
+						length = 0.5,
+						volume = 0.6,
+						pitch = 1.4,
+					},
+				},
+			},
+			toy = true,
+		},
 	},
 	{
 		key = "PaperSquishy",
@@ -1315,6 +1384,22 @@ local Rows: { Game.Row } = {
 			length = 0.45,
 			volume = 0.5,
 			pitch = 0.8,
+		},
+		verb = "Squeeze",
+		press = {
+			verb = "Squeeze",
+			on = {
+				{
+					motion = "Squeeze",
+					sound = {
+						id = "rbxassetid://9125723588",
+						from = 0,
+						length = 0.47,
+						volume = 1.6,
+					},
+				},
+			},
+			toy = true,
 		},
 	},
 	{
@@ -1341,6 +1426,23 @@ local Rows: { Game.Row } = {
 			volume = 0.5,
 			pitch = 1.1,
 		},
+		verb = "Squeeze",
+		press = {
+			verb = "Squeeze",
+			on = {
+				{
+					motion = "Squeeze",
+					sound = {
+						id = "rbxassetid://9117373366",
+						from = 0.4,
+						length = 0.5,
+						volume = 0.9,
+						pitch = 0.95,
+					},
+				},
+			},
+			toy = true,
+		},
 	},
 	{
 		key = "GelBeadBall",
@@ -1365,6 +1467,22 @@ local Rows: { Game.Row } = {
 			length = 0.4,
 			volume = 0.55,
 			pitch = 1.05,
+		},
+		verb = "Squeeze",
+		press = {
+			verb = "Squeeze",
+			on = {
+				{
+					motion = "Squeeze",
+					sound = {
+						id = "rbxassetid://9120502356",
+						from = 0.05,
+						length = 1.2,
+						volume = 0.9,
+					},
+				},
+			},
+			toy = true,
 		},
 	},
 	{
@@ -1391,6 +1509,23 @@ local Rows: { Game.Row } = {
 			volume = 0.55,
 			pitch = 1.05,
 		},
+		verb = "Squeeze",
+		press = {
+			verb = "Squeeze",
+			on = {
+				{
+					motion = "Squeeze",
+					sound = {
+						id = "rbxassetid://9114519462",
+						from = 0,
+						length = 0.6,
+						volume = 0.6,
+						pitch = 1.15,
+					},
+				},
+			},
+			toy = true,
+		},
 	},
 	{
 		key = "JumboStrawberry",
@@ -1415,6 +1550,23 @@ local Rows: { Game.Row } = {
 			length = 0.4,
 			volume = 0.55,
 			pitch = 0.9,
+		},
+		verb = "Squeeze",
+		press = {
+			verb = "Squeeze",
+			on = {
+				{
+					motion = "Squeeze",
+					sound = {
+						id = "rbxassetid://9117373366",
+						from = 0.4,
+						length = 0.5,
+						volume = 1.0,
+						pitch = 0.8,
+					},
+				},
+			},
+			toy = true,
 		},
 	},
 	{
@@ -1441,6 +1593,23 @@ local Rows: { Game.Row } = {
 			volume = 0.55,
 			pitch = 1.0,
 		},
+		verb = "Squeeze",
+		press = {
+			verb = "Squeeze",
+			on = {
+				{
+					motion = "Squeeze",
+					sound = {
+						id = "rbxassetid://9117408118",
+						from = 0,
+						length = 0.8,
+						volume = 0.7,
+						pitch = 1.2,
+					},
+				},
+			},
+			toy = true,
+		},
 	},
 	{
 		key = "GalaxyGooBall",
@@ -1465,6 +1634,23 @@ local Rows: { Game.Row } = {
 			length = 0.4,
 			volume = 0.55,
 			pitch = 0.95,
+		},
+		verb = "Squeeze",
+		press = {
+			verb = "Squeeze",
+			on = {
+				{
+					motion = "Squeeze",
+					sound = {
+						id = "rbxassetid://9114519462",
+						from = 0,
+						length = 0.6,
+						volume = 0.7,
+						pitch = 0.9,
+					},
+				},
+			},
+			toy = true,
 		},
 	},
 }

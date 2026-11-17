@@ -551,9 +551,16 @@ GALAXY_GLOW = [(0.0, 0.8), (0.3, 0.8), (1.2, 1.0, "Sine", "Out"), (4.4, 1.0),
 # grip in studs from the middle of its bottom (across, up, front to back); heft how heavy it feels
 # (0 to 1); size where it sits in your view; `press` its one press (Finds/Use's row).
 from game import (  # noqa: E402
+    CRINKLE,
+    RUBBER,
     RUSTLE,
+    SIGH,
+    SLOSH,
     SOFT,
+    SQUELCH,
+    SQUISH,
     pitched,
+    squeeze,
 )
 
 GAME = [
@@ -568,6 +575,7 @@ GAME = [
         size="Small",
         pickUp=pitched(SOFT, 1.5),
         drop=pitched(SOFT, 1.2, 0.5),
+        press=squeeze(RUBBER),  # "its eyes bulge out": the rubber skin squeezed
     ),
     dict(
         key="ButterStick",
@@ -580,6 +588,7 @@ GAME = [
         size="Small",
         pickUp=pitched(SOFT, 1.45),
         drop=pitched(SOFT, 1.15, 0.5),
+        press=squeeze(pitched(SQUISH, 1.1)),  # "a dent that slowly fills back in"
     ),
     dict(
         key="MochiBun",
@@ -592,6 +601,7 @@ GAME = [
         size="Small",
         pickUp=pitched(SOFT, 1.6),
         drop=pitched(SOFT, 1.3, 0.45),
+        press=squeeze(pitched(SQUISH, 1.4, 0.6)),  # "a soft puff of a sound"
     ),
     dict(
         key="PaperSquishy",
@@ -604,6 +614,7 @@ GAME = [
         size="Small",
         pickUp=RUSTLE,
         drop=pitched(RUSTLE, 0.8, 0.5),
+        press=squeeze(CRINKLE),  # "it crinkles"
     ),
     dict(
         key="ToastSlice",
@@ -616,6 +627,7 @@ GAME = [
         size="Small",
         pickUp=pitched(SOFT, 1.4),
         drop=pitched(SOFT, 1.1, 0.5),
+        press=squeeze(pitched(SQUISH, 0.95)),  # "springs back like real bread"
     ),
     dict(
         key="GelBeadBall",
@@ -628,6 +640,7 @@ GAME = [
         size="Small",
         pickUp=pitched(SOFT, 1.35),
         drop=pitched(SOFT, 1.05, 0.55),
+        press=squeeze(SLOSH),  # "the beads swirl inside"
     ),
     dict(
         key="GlitterGooBall",
@@ -640,6 +653,7 @@ GAME = [
         size="Small",
         pickUp=pitched(SOFT, 1.35),
         drop=pitched(SOFT, 1.05, 0.55),
+        press=squeeze(pitched(SQUELCH, 1.15)),  # "glitter swirls, then settles"
     ),
     dict(
         key="JumboStrawberry",
@@ -652,6 +666,7 @@ GAME = [
         size="Medium",
         pickUp=pitched(SOFT, 1.15),
         drop=pitched(SOFT, 0.9, 0.55),
+        press=squeeze(pitched(SQUISH, 0.8, 1.0)),  # "ten seconds to rise back": deep
     ),
     dict(
         key="Capybara",
@@ -664,6 +679,7 @@ GAME = [
         size="Small",
         pickUp=pitched(SOFT, 1.3),
         drop=pitched(SOFT, 1.0, 0.55),
+        press=squeeze(SIGH),  # "a tiny, happy sigh"
     ),
     dict(
         key="GalaxyGooBall",
@@ -676,5 +692,6 @@ GAME = [
         size="Small",
         pickUp=pitched(SOFT, 1.25),
         drop=pitched(SOFT, 0.95, 0.55),
+        press=squeeze(pitched(SQUELCH, 0.9, 0.7)),  # "stars drift and swirl inside"
     ),
 ]

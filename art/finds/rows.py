@@ -33,7 +33,7 @@ SIZES = ["Small", "Medium", "Large"]
 ROW = ["key", "catalog", "name", "grade", "worth", "from_", "loose", "grip", "heft", "size",
        "pickUp", "drop", "verb", "press"]
 NEEDED = ["key", "catalog", "name", "grade", "worth", "grip", "heft", "size", "pickUp", "drop"]
-PRESS = ["verb", "on", "lasts", "out", "off", "reset", "noise", "lure", "toy", "down"]
+PRESS = ["verb", "on", "lasts", "out", "off", "reset", "noise", "heard", "lure", "toy", "down"]
 STEP = ["motion", "loop", "sound", "hit"]
 SOUND = ["id", "from", "length", "volume", "pitch"]
 

@@ -17,7 +17,9 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   benches and 2 planters. Sheets: `art/sheets/lobby-home.png`, `lobby-nook.png`, and the
   spawn, unit and inside sheets re-drawn. NOTHING uploaded: the place still holds the old
   lobby template (version 57) with the climb's M fronts, which keeps working.
-- Find art (third find run): P1a done (D-265); next there P1b (ROADMAP F-G1f2).
+- Find art (third find run): P1 and V1a done (D-265 to D-267): every kit find dealt from its
+  art spec; noisy finds have a loudness and a noise cap; the squishies and duck squeeze with a
+  sound each. Next: V1b, the squash in your hand (ROADMAP F-G1e1b; `art/finds/WAVES.md`).
 
 ## Next task: S5-03a2b3 The home look in the game
 The moment: you load in and the ground floor is plainly a calm home, your unit a little house

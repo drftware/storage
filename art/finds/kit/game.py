@@ -69,6 +69,41 @@ CLASH = sound("rbxassetid://867306119", 0, 0.35, 0.9, 1.9)
 # slows (a fade is ROADMAP polish).
 ROLL = sound("rbxassetid://99838569349900", 0, 3.4, 0.6)
 
+# Squeezing it (F-G1e1): each squishy squashes with a sound of its own, measured in Studio
+# (AudioPlayer to AudioAnalyzer, 0.1 s bins; all Pro Sound Effects, Roblox's licensed library).
+# "Squeeze Toy Squeaky Rubber With Noisemaker Hits 10" (0.51 s, the squeak in its first 0.1 s):
+# the duck's squeak.
+SQUEAK = sound("rbxassetid://9125994570", 0, 0.5, 1.2)
+# "Squeeze Toy Squeaky Rubber With Noisemaker Hits 1" (0.51 s, one hit at its start): low and
+# quiet, the stress ball's rubber skin squeezed, its squeaker muffled by the flour inside.
+RUBBER = sound("rbxassetid://9125994310", 0, 0.5, 0.45, 0.55)
+# "Pillow Blanket 1" (`SOFT`, loudest 0.5 to 0.6 s), a little longer: foam squashed in a hand.
+SQUISH = sound("rbxassetid://9117373366", 0.4, 0.5, 0.9)
+# "Food Glop Wet 8" (2.51 s, a glop at its start and a smaller one at 0.3 s): goo squelching.
+SQUELCH = sound("rbxassetid://9114519462", 0, 0.6, 0.6)
+# "Water Bottle 14" (2.25 s, a soft slosh from 0.1 s): gel beads swirling in their skin.
+SLOSH = sound("rbxassetid://9120502356", 0.05, 1.2, 0.9)
+# "Paper Packet Handling Unfolding Crumpled Sheets 2" (0.47 s, quiet): a paper squishy crinkling.
+CRINKLE = sound("rbxassetid://9125723588", 0, 0.47, 1.6)
+# "Plastic Bag Breathing Hard Inhales Exhales 7" (0.8 s, a breath out in its first 0.1 s), a
+# little higher and soft: the capybara's tiny, happy sigh.
+SIGH = sound("rbxassetid://9117408118", 0, 0.8, 0.7, 1.2)
+
+# How far along the halls monsters hear a noisy find (studs: a press's `heard`, its loudness,
+# `Use.loudness`). A press with a noise and no `heard` carries as far as the air horn, 130 (the
+# cymbal monkey, the jack).
+DOWN_THE_HALL = 60  # a squeak you can hear down the hall you're in, no further (the duck)
+
+
+def squeeze(s, noisy=False):
+    """A squishy's press: one squash and its sound, again once it has come back. `noisy`: the
+    squeak is heard by monsters down the hall (the duck)."""
+    p = dict(verb="Squeeze", on=[dict(motion="Squeeze", sound=s)], toy=True)
+    if noisy:
+        p.update(noise="Squeeze", heard=DOWN_THE_HALL)
+    return p
+
+
 # A step that loops until the light runs out, or for good (`Use.Forever`).
 FOREVER = float("inf")
 

@@ -6,11 +6,10 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** V1 Squeeze, the squishies and the rubber duck (the third run's plan, below; ROADMAP
-F-G1e1). P1 is done (Nov 17): the game deals and presses every kit find from the rows in its art
-spec, and `PIPELINE.md` is the workflow (read it whole). A press is now data: P1b's note says
-how. The second run's steps 14 and 15 (the last four squishies and their Studio look) are now
-the third run's S1 to S4 and L1.
+**Next:** V1b, the squash in your hand (ROADMAP F-G1e1b): V1a (Nov 17) built the loudness and
+the noise cap and gave all eleven their press and sound, seen in Play, but a find's root part
+never squashes in hand and the strawberry's bones didn't bend (V1a's note). Then V2. P1 is done:
+a press is data (`PIPELINE.md`, read it whole).
 
 ## The third run's plan (owner's brief, Nov 16 night)
 
@@ -36,7 +35,7 @@ head, belong to the home chain (ROADMAP S5-03, F-G1b4): listed as waiting, not b
    catalog's own rules where it names one (the lamp that's on when you find it: loose only,
    floor 25 up); big finds not dealt until a floor has a big-find place (the theatre spotlight's
    precedent in `Deal.luau`). Split it (P1a, P1b) if it won't fit.
-3. **V1 Squeeze**: the squishies and the rubber duck. Each squashes (its bones or its stretch) and
+3. **V1 Squeeze** (V1a done Nov 17: loudness, cap, presses and sounds; V1b the squash in hand): the squishies and the rubber duck. Each squashes (its bones or its stretch) and
    squeaks or squelches; the mega goo ball's squelch draws monsters through the cymbal monkey's
    lure (D-233) with its own loudness.
 4. **V2 Wind and go**: the chattering teeth, walking robot, wind-up mouse and tin bird travel
@@ -99,7 +98,7 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 | Die-cast car (`DiecastCar`) | It rolls off down the hall · Push (quiet: "just for the feel") | works (D-233) | Common · 4 · floor 1 up ✓ | |
 | Remote-control car (`RCCar`) | Drive it (at home; D-250: anywhere, and the collector steals it) · Drive (Rainbow Six Siege's drones) | works (D-250 to D-258); at home waits on the home chain | Rare · 60 · floor 1 up ✓ | |
 | Kazoo (`Kazoo`) | A buzzy note · Blow, a noise (Lethal Company's airhorn) | needs data and a loudness (V3) | Common · 2 · floor 1 up ✓ | |
-| Squeaky rubber duck (`RubberDuck`) | A squeak you can hear down the hall · Squeeze, a noise | needs data and a loudness (V1) | Common · 3 · floor 1 up ✓ | |
+| Squeaky rubber duck (`RubberDuck`) | A squeak you can hear down the hall · Squeeze, a noise | works: squeezed, squeaks, heard 60 studs (V1); no squash in hand (its one part is its root, V1b) | Common · 3 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its squeak played; a Mannequin asleep 46 studs off along the halls woke, turned and came to look; no squash seen |
 | Toy siren car (`SirenCar`) | It rolls off, wailing · Push, a noise that moves | the roll is built; the wail heard as it goes and the beacon lighting the hall are missing (V4) | Common · 5 · floor 1 up ✓ | |
 | Wind-up chattering teeth (`ChatteringTeeth`) | They chatter off across the floor; monsters come to look · Wind (R.E.P.O.'s music box; the monkey's lure) | set down and travelling are built, and so is the lure; the lure heard where it is along its path is missing (V2) | Common · 6 · floor 1 up ✓ | |
 | Toy drum (`ToyDrum`) | Loud · Bang, a noise | needs data and a loudness (V3) | Uncommon · 10 · floor 1 up ✓ | |
@@ -112,16 +111,16 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 | Singing fish plaque (`SingingFish`) | Its head turns and it sings · Press, a noise | needs data and a loudness (V3); its song waits on the owner (default: the motor's hum) | Rare · 50 · floor 1 up ✓ | |
 | Clockwork tin bird (`TinBird`) | It hops and whistles · Wind | as the teeth (V2) | Epic · 140 · floor 1 up ✓ | |
 | Wind-up tin carousel (`TinCarousel`) | It turns and plays a tune · Wind | needs data and a loudness: the monkey's lure, in place (V2) | Epic · 200 · floor 1 up ✓ | |
-| Stress ball with a face (`StressBall`) | Its eyes bulge out · Squeeze (quiet; the squishy craze itself) | needs data and its own sound (V1) | Common · 2 · floor 1 up ✓ | Nov 17, P1b: dealt (seed 7, floor 1, Unit104), taken, banked; no press yet (V1) |
-| Squishy butter stick (`ButterStick`) | A dent that slowly fills back in · Squeeze | needs data (V1; bones) | Common · 4 · floor 1 up ✓ | |
-| Mochi bun (`MochiBun`) | A soft puff of a sound · Squeeze | needs data (V1) | Common · 4 · floor 1 up ✓ | |
-| Paper squishy with a drawn face (`PaperSquishy`) | It crinkles · Squeeze | needs data (V1) | Uncommon · 10 · floor 1 up ✓ | |
-| Squishy toast slice (`ToastSlice`) | Springs back like real bread · Squeeze | needs data (V1) | Uncommon · 11 · floor 1 up ✓ | |
-| Gel bead ball (`GelBeadBall`) | The beads swirl inside · Squeeze | needs data (V1) | Uncommon · 12 · floor 1 up ✓ | |
-| Glitter goo ball (`GlitterGooBall`) | Glitter swirls, then settles · Squeeze | needs data (V1) | Uncommon · 15 · floor 1 up ✓ | |
-| Jumbo slow-rise strawberry (`JumboStrawberry`) | The dent takes ten seconds to rise back · Squeeze | needs data (V1; bones) | Uncommon · 18 · floor 1 up ✓ | |
-| Squishy capybara (`Capybara`) | A tiny, happy sigh · Squeeze | needs data (V1) | Rare · 55 · floor 1 up ✓ | |
-| Galaxy goo ball (`GalaxyGooBall`) | Stars drift and swirl inside · Squeeze | needs data (V1; its glow from its rest keys, D-249) | Legendary · 350 · floor 1 up ✓ | |
+| Stress ball with a face (`StressBall`) | Its eyes bulge out · Squeeze (quiet; the squishy craze itself) | pressed with its own sound (V1); its eyes bulge; its body stays still in hand (V1b) | Common · 2 · floor 1 up ✓ | Nov 17, P1b: dealt (seed 7, floor 1, Unit104), taken, banked; no press yet (V1); Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; its eyes bulge; its body stays still in hand (V1b) |
+| Squishy butter stick (`ButterStick`) | A dent that slowly fills back in · Squeeze | pressed with its own sound (V1); no dent seen in hand (bones, V1b) | Common · 4 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; no dent seen in hand (bones, V1b) |
+| Mochi bun (`MochiBun`) | A soft puff of a sound · Squeeze | pressed with its own sound (V1); no squash in hand (its one part is its root, V1b) | Common · 4 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; no squash in hand (its one part is its root, V1b) |
+| Paper squishy with a drawn face (`PaperSquishy`) | It crinkles · Squeeze | pressed with its own sound (V1); no squash in hand (its one part is its root, V1b) | Uncommon · 10 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; no squash in hand (its one part is its root, V1b) |
+| Squishy toast slice (`ToastSlice`) | Springs back like real bread · Squeeze | pressed with its own sound (V1); no squash in hand (its one part is its root, V1b) | Uncommon · 11 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; no squash in hand (its one part is its root, V1b) |
+| Gel bead ball (`GelBeadBall`) | The beads swirl inside · Squeeze | pressed with its own sound (V1); its insides move; its body stays still in hand (V1b) | Uncommon · 12 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; its insides move; its body stays still in hand (V1b) |
+| Glitter goo ball (`GlitterGooBall`) | Glitter swirls, then settles · Squeeze | pressed with its own sound (V1); its insides move; its body stays still in hand (V1b) | Uncommon · 15 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; its insides move; its body stays still in hand (V1b) |
+| Jumbo slow-rise strawberry (`JumboStrawberry`) | The dent takes ten seconds to rise back · Squeeze | pressed with its own sound (V1); no dent seen in hand (bones, V1b) | Uncommon · 18 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; no dent seen in hand (bones, V1b) |
+| Squishy capybara (`Capybara`) | A tiny, happy sigh · Squeeze | pressed with its own sound (V1); its orange moves a little; its body stays still in hand (V1b) | Rare · 55 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; its orange moves a little; its body stays still in hand (V1b) |
+| Galaxy goo ball (`GalaxyGooBall`) | Stars drift and swirl inside · Squeeze | pressed with its own sound (V1); its insides move; its body stays still in hand (V1b) | Legendary · 350 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; its insides move; its body stays still in hand (V1b) |
 | Boombox (`Boombox`, bedroom set) | Loud music wherever you leave it, monsters come to look; at home it plays your tapes · Play, a noise (R.E.P.O.'s music box) | missing: a press on a one-mesh find (V5); the tapes wait on the home chain | Uncommon · 25 · floor 1 up ✓ | |
 | Small box TV (`Television`, bedroom set) | At home: it plays your tapes and films · Play (Animal Crossing's records) | waits on the home chain | Uncommon · 22 · floor 1 up ✓ | |
 | Small teddy bear (`Teddy`, bedroom set) | A tiny squeak · Hug (quiet) | missing: a press on a one-mesh find (V5) | Common · 4 · floor 1 up ✓ | |
@@ -246,6 +245,29 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, V1a (loudness, the noise cap, the eleven presses; seen in Play; V1b left).** A press
+  has `heard` (studs monsters hear its noise along the halls, `Use.loudness`; none: 130, the air
+  horn's), and `FindUses` hears every noise and lure through one `Use.Din`: a find at most once
+  a `HearGap` (1.5 s), lures every `Use.lureBeat`, `LuresAtOnce` (3) lures, the newest (D-267).
+  For a noisy find add `noise=` and `heard=` to its press (`squeeze(s, noisy=True)` does it for a
+  squeezed one); loudness names live in `kit/game.py` (`DOWN_THE_HALL` 60). New sounds there:
+  `SQUEAK`, `RUBBER`, `SQUISH`, `SQUELCH`, `SLOSH`, `CRINKLE`, `SIGH`, all Pro Sound Effects,
+  measured in Studio. The ten squishies and the duck press `Squeeze` (`squeeze(...)`), pitched
+  so no two share a sound (finduse.spec checks it). **Seen in Play** (seed 7, floor 1, Workspace
+  `GiveFind` puts a find in your hand: DevCorridor's hook; `Remotes.ToolUse`/`ToolDrop` from the
+  Client): all eleven pressed, stamped On, each one's sound playing at it; the duck by a
+  Mannequin stood with `StandMannequin` at (0, 0, -656): "heard a find's noise 46 studs off ...
+  wakes, turns to it and goes to look", then it caught me. No errors. **Found (V1b):**
+  `Finds.joints` sizes only parts after the first (`i > 1`), so a stretch on a find's root never
+  plays in hand: the duck, mochi bun, paper squishy and toast are one part and don't squash; the
+  stress ball's, capybara's and goo balls' bodies stay still while their other parts move. The
+  butter stick's and strawberry's `Bone.Transform` read unchanged in hand through the squash.
+  Bones and stretch in one press: no built find has both (each plays one). V1b: size the root
+  about its middle in hand (the grip holds it, it can't move), find why bones don't bend in
+  hand (is `bend` reached for a held model, are its bones in `HeldTool`?), then see all eleven
+  squash. A pressed squishy can't be squeezed again until it has come back (`Use.press`'s toy
+  rule): the button hides meanwhile.
 
 - **Nov 17, P1b (the game takes the rows; seen in Play).** `Tools/Catalog` makes a catalog row
   for each judged row in `Finds/Rows` (its 41 `built(...)` calls and sound locals are gone);

@@ -868,9 +868,11 @@ from game import (  # noqa: E402
     POP,
     SLAP,
     SOFT,
+    SQUEAK,
     TIN,
     WIND,
     pitched,
+    squeeze,
 )
 
 GAME = [
@@ -941,6 +943,9 @@ GAME = [
         size="Small",
         pickUp=pitched(HOLLOW, 1.7, 0.6),
         drop=pitched(HOLLOW, 1.4, 0.55),
+        # "Squeeze: a squeak you can hear down the hall": it squashes and squeaks, and every
+        # monster within a hall's length turns to look
+        press=squeeze(SQUEAK, noisy=True),
     ),
     dict(
         key="SirenCar",

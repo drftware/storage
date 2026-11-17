@@ -46,6 +46,10 @@ export type Press = {
 	-- the motion whose start every monster on the floor hears, as an air horn's blast (the jack's
 	-- Pop): a noisy find draws monsters only when it's used (D-188)
 	noise: string?,
+	-- how far along the halls monsters hear its noise, in studs: its loudness (F-G1e1). The duck's
+	-- squeak carries down the hall you're in; none: as far as the air horn (`Use.LureReach`), the
+	-- cymbal monkey's and the jack's
+	heard: number?,
 	-- seconds between hearings for as long as the `noise` step plays: monsters keep coming to the
 	-- find all through it, not just at its start (the cymbal monkey, Call of Duty Zombies' Monkey
 	-- Bomb)

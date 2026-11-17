@@ -323,6 +323,85 @@ do
 	ok(Use.Rows.UnpluggedLamp == nil, "the Secret lamp: found lit, no press")
 end
 
+-- Squeeze (F-G1e1): every squishy and the duck squash in your hand, each with a sound of its own,
+-- and can be squeezed again once they've come back; only the duck is heard, down the hall,
+-- nearer than the air horn; the squishies are quiet (the catalog's Squeeze).
+do
+	local squishies = {
+		"StressBall",
+		"ButterStick",
+		"MochiBun",
+		"PaperSquishy",
+		"ToastSlice",
+		"GelBeadBall",
+		"GlitterGooBall",
+		"JumboStrawberry",
+		"Capybara",
+		"GalaxyGooBall",
+		"RubberDuck",
+	}
+	local sounds: { [string]: string } = {}
+	for _, name in squishies do
+		local row, d = Use.Rows[name], durations(name)
+		ok(row ~= nil and row.verb == "Squeeze", `{name}: squeezed`)
+		if row then
+			local step = row.on[1]
+			local sound = step.sound
+			ok(#row.on == 1 and step.motion == "Squeeze", `{name}: one squash`)
+			ok(sound ~= nil, `{name}: squashes with a sound`)
+			if sound then
+				local id = `{sound.id} {sound.from} {sound.pitch or 1}`
+				ok(sounds[id] == nil, `{name}: a sound of its own, not {sounds[id]}'s`)
+				sounds[id] = name
+			end
+			ok(Use.press(row, nil, 0, d) == "On", `{name}: squeezed once`)
+			local on: Use.Stamp = { state = "On", at = 0, left = Use.Forever }
+			ok(Use.press(row, on, d.Squeeze * 0.5, d) == nil, `{name}: not again mid-squash`)
+			ok(Use.press(row, on, d.Squeeze + 0.01, d) == "Again", `{name}: again once it's back`)
+			ok(not Use.frame(row, on, d.Squeeze + 0.01, d).lit, `{name}: over once it's back`)
+			ok(Use.litUntil(row, on) == nil, `{name}: no light to hold a monster`)
+			if name ~= "RubberDuck" then
+				ok(row.noise == nil and row.lure == nil, `{name}: quiet: no monster hears it`)
+			end
+		end
+	end
+	local duck, d = Use.Rows.RubberDuck, durations("RubberDuck")
+	if duck then
+		ok(Use.noiseAt(duck, "On", d) == 0, "duck: heard as the squeeze starts")
+		ok(Use.lureUntil(duck, "On", d) == nil, "duck: one squeak a squeeze, not a lure")
+		local loud = Use.loudness(duck)
+		ok(loud >= 40 and loud < Use.LureReach, "duck: heard down the hall, not two halls round")
+	end
+	ok(Use.loudness(Use.Rows.CymbalMonkey) == Use.LureReach, "monkey: as far as the air horn")
+	ok(Use.loudness(Use.Rows.JackInTheBox) == Use.LureReach, "jack: as far as the air horn")
+	ok(Use.lureBeat(Use.Rows.CymbalMonkey) == 2, "monkey: heard every 2 seconds, as before")
+end
+
+-- The noise cap (F-G1e1): one find heard once a `HearGap` at most, however fast it's pressed;
+-- `LuresAtOnce` lures heard at once, the newest.
+do
+	local din: Use.Din<string> = Use.din()
+	ok(Use.hear(din, "duck", 0), "a first squeak is heard")
+	ok(not Use.hear(din, "duck", Use.HearGap * 0.5), "mashed: not heard again so soon")
+	ok(Use.hear(din, "jack", Use.HearGap * 0.5), "another find is heard meanwhile")
+	ok(Use.hear(din, "duck", Use.HearGap), "heard again after the gap")
+	Use.hear(din, "monkey", 100)
+	ok(din.last.duck == nil and din.last.jack == nil, "finds heard long ago are let go")
+	ok(Use.lureBeat({ verb = "Wind", on = {}, lure = 0.1 }) == Use.HearGap, "no lure beats faster")
+
+	local lures: Use.Din<number> = Use.din()
+	for i = 1, Use.LuresAtOnce do
+		ok(Use.startLure(lures, i) == nil, `lure {i}: heard alongside the rest`)
+	end
+	ok(Use.startLure(lures, 99) == 1, "one past the cap: the oldest stops being heard")
+	ok(not Use.luring(lures, 1) and Use.luring(lures, 99), "the newest is heard instead")
+	ok(#lures.lures == Use.LuresAtOnce, "never more than the cap")
+	ok(Use.startLure(lures, 2) == nil, "wound again: nothing dropped")
+	ok(lures.lures[#lures.lures] == 2 and #lures.lures == Use.LuresAtOnce, "wound again: newest")
+	Use.stopLure(lures, 2)
+	ok(not Use.luring(lures, 2) and #lures.lures == Use.LuresAtOnce - 1, "a lure that ends stops")
+end
+
 print(`finduse: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

@@ -6867,3 +6867,17 @@ hotel lobby's planters and benches).
 - **Not chosen:** a padlock on home doors; carpet in the units (the oak reads warmer); a round
   planter (four boards read cleaner at phone size than a ring); the climb's bulb kept.
 
+## D-267 A loudness for each noisy find, and a cap on noise (F-G1e1a, Nov 17, V1)
+
+- A press's noise carries as far as its row's `heard` (studs along the halls, `Use.loudness`),
+  written in its art spec; none is the air horn's 130, so the cymbal monkey and the jack are as
+  before. The duck's squeak is `DOWN_THE_HALL`, 60 (`art/finds/kit/game.py`). Later noisy finds
+  (V2 to V5, the mega goo ball) set `heard` and nothing else.
+- One noise ledger per server (`Use.Din`): monsters hear a find at most once every `HearGap`
+  (1.5 s) however fast it's pressed, a lure's beat is never quicker, and only `LuresAtOnce` (3)
+  lures are heard at once: a new one past that silences the oldest (it plays on unheard), since
+  monsters go to the newest noise anyway. This bounds the server's hall searches on a low-end
+  phone's game; each press still plays its own sound on every screen.
+- The squishies are quiet (the catalog's Squeeze): `squeeze(sound)` in `kit/game.py`, a toy
+  pressed again once it has come back. Their sounds are borrowed Pro Sound Effects stretches,
+  measured in Studio; their own recordings are ROADMAP polish ("Finds' own sounds").

@@ -7,9 +7,11 @@
 	spent glow stick or a jack still mid-tune takes none). Then the stamp: the model gets its
 	state, the server clock and the light left as attributes, and the tag, and every screen plays
 	it from there (`FindUseView`). The same model moves from hand to floor and back, so a lantern
-	dropped lit stays lit. A noisy find (the jack) is heard by every monster on the floor as its
-	bang starts, where the find is then, unless it was pressed again since; a lure (the cymbal
-	monkey) is heard again every few seconds for as long as it plays (F-G1b3a).
+	dropped lit stays lit. A noisy find (the jack, the duck) is heard by every monster on the floor
+	as its noise starts, where the find is then, unless it was pressed again since; a lure (the
+	cymbal monkey) is heard again every few seconds for as long as it plays (F-G1b3a). Each is
+	heard as far as its loudness (`Use.loudness`, F-G1e1), one find at most once a `Use.HearGap`,
+	and only `Use.LuresAtOnce` lures at a time: the newest (`Use.Din`).
 
 	A find set down to play (the toy car, `down`) leaves your hand: it's stood on the floor in
 	front of you, and its path is walked here first, so it stops short where it would roll into a
@@ -50,50 +52,85 @@ function FindUses.new(): Brix.System
 	local last: { [Player]: number } = {} -- each player's last press that took, os.clock
 	local keepers: Keepers.Keepers? = nil
 	local slots: Slots.Slots? = nil
+	local din: Use.Din<Model> = Use.din() -- the noises monsters hear: lures sounding, last heard
 
-	-- The jack's bang, `delay` seconds after the press stamped `at`: heard where the find is then.
-	local function bang(model: Model, at: number, delay: number, who: string)
+	-- Every monster on the floor hears `model`'s noise where it is now, as far as `row`'s
+	-- loudness, unless it was heard under `Use.HearGap` ago: how many heard it, nil if it wasn't.
+	local function heardAt(model: Model, row: Use.Row, what: string): number?
+		local k = keepers
+		if not (k and Use.hear(din, model, os.clock())) then
+			return nil
+		end
+		return k:hear(model:GetPivot().Position, Use.loudness(row), what)
+	end
+
+	-- A noise (the jack's bang, the duck's squeak), `delay` seconds after the press stamped `at`:
+	-- heard where the find is then.
+	local function bang(model: Model, row: Use.Row, at: number, delay: number, who: string)
 		task.delay(delay, function()
 			if model.Parent == nil or model:GetAttribute(Use.AtAttribute) ~= at then
 				return
 			end
-			local heard = if keepers then keepers:hearHorn(model:GetPivot().Position) else 0
+			local heard = heardAt(model, row, "a find's noise")
 			if RunService:IsStudio() then
+				local key = model:GetAttribute(Use.KeyAttribute)
 				print(
-					`FindUses: {who}'s {model:GetAttribute(Use.KeyAttribute)} went bang; {heard} heard it`
+					if heard
+						then `FindUses: {who}'s {key} made its noise ({Use.loudness(row)} studs); {heard} heard it`
+						else `FindUses: {who}'s {key} made its noise; heard too lately to be heard again`
 				)
 			end
 		end)
 	end
 
 	-- A lure (the cymbal monkey) heard by every monster on the floor from `from` seconds after the
-	-- press stamped `at` until `to`, every `every` seconds, wherever the find is then: one task a
-	-- press, ended by another press, the find's going or the end of its play.
+	-- press stamped `at` until `to`, every `Use.lureBeat`, wherever the find is then: one task a
+	-- press, ended by another press, the find's going, the end of its play, or newer lures
+	-- past `Use.LuresAtOnce`.
 	local function lure(
 		model: Model,
+		row: Use.Row,
 		at: number,
 		from: number,
 		to: number,
-		every: number,
 		who: string
 	)
+		-- a function, so the checker reads the parent fresh each time (it can go between waits)
+		local function gone(): boolean
+			return model.Parent == nil
+		end
+		local loud = Use.loudness(row)
 		task.delay(from, function()
+			if gone() or model:GetAttribute(Use.AtAttribute) ~= at then
+				if gone() then
+					Use.stopLure(din, model) -- gone before its lure began: never counted again
+				end
+				return
+			end
+			Use.startLure(din, model)
 			local times, heard = 0, 0
-			while model.Parent ~= nil and model:GetAttribute(Use.AtAttribute) == at do
+			while
+				not gone()
+				and model:GetAttribute(Use.AtAttribute) == at
+				and Use.luring(din, model)
+			do
 				if Workspace:GetServerTimeNow() - at >= to then
 					break
 				end
-				local k = keepers
-				if k then
-					heard =
-						math.max(heard, k:hear(model:GetPivot().Position, Use.LureReach, "a lure"))
+				local n = heardAt(model, row, "a lure")
+				if n then
+					heard = math.max(heard, n)
+					times += 1
 				end
-				times += 1
-				task.wait(every)
+				task.wait(Use.lureBeat(row))
+			end
+			-- wound again since, its new lure is its own
+			if gone() or model:GetAttribute(Use.AtAttribute) == at then
+				Use.stopLure(din, model)
 			end
 			if RunService:IsStudio() then
 				print(
-					`FindUses: {who}'s {model:GetAttribute(Use.KeyAttribute)} lured {times} times; {heard} heard it`
+					`FindUses: {who}'s {model:GetAttribute(Use.KeyAttribute)} lured {times} times ({loud} studs); {heard} heard it`
 				)
 			end
 		end)
@@ -229,9 +266,9 @@ function FindUses.new(): Brix.System
 		local delay = Use.noiseAt(row, state, durations)
 		local to = Use.lureUntil(row, state, durations)
 		if delay and to and row.lure then
-			lure(model, now, delay, to, row.lure, player.Name)
+			lure(model, row, now, delay, to, player.Name)
 		elseif delay then
-			bang(model, now, delay, player.Name)
+			bang(model, row, now, delay, player.Name)
 		end
 	end
 
@@ -261,6 +298,7 @@ function FindUses.new(): Brix.System
 			leaving = nil
 		end
 		table.clear(last)
+		din = Use.din()
 	end
 
 	return system :: any -- any: a plain Brix system built field by field

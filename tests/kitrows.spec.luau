@@ -61,6 +61,11 @@ for i, row in Rows do
 	local c = was.catalog
 	ok(row.judged, `{key}: judged (its line in WAVES.md ticked built)`)
 	for _, field in { "name", "grade", "worth", "from", "grip", "heft", "pickUp", "drop", "verb" } do
+		-- a verb added where there was none comes with its new press (V1 on): its press's word
+		if field == "verb" and c.verb == nil and not was.press and row.press then
+			ok(row.verb == row.press.verb, `{key}: its new verb is its press's`)
+			continue
+		end
 		ok(same((row :: any)[field], c[field]), `{key}: {field} as it was`)
 	end
 	ok(same(HOLD[row.size], c.hold), `{key}: sits in your view as it did ({row.size})`)

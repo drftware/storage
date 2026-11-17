@@ -72,6 +72,19 @@ Use.Predict = 1.5
 -- every monster two halls round to it, again and again, while you work somewhere else.
 Use.LureReach = 130
 
+-- The least seconds between monsters hearing one find again (F-G1e1): a duck squeezed as fast as
+-- you can press squeaks every press, but monsters hear it once in this at most, and a lure's
+-- beat is never quicker. What it does to the player: mashing a noisy toy draws monsters no more
+-- than squeezing it now and then; and on a low-end phone's server, the halls are searched for a
+-- noise every second or two, not on every press.
+Use.HearGap = 1.5
+
+-- The most lures heard at once on a server (the cymbal monkey's cymbals, later the wind-ups that
+-- travel): a new one past it takes the place of the oldest, which plays on unheard (monsters go
+-- to the newest noise anyway). What it does to the player: a pile of wound monkeys still pulls
+-- every monster to the last one wound, and never sets a crowd of them flipping between noises.
+Use.LuresAtOnce = 3
+
 -- Studs in front of your middle a find set down to play is stood (the toy car let go): just past
 -- your feet, so it rolls away from in front of you, never out from under you.
 Use.SetAhead = 1.6
@@ -297,6 +310,70 @@ function Use.noiseAt(row: Row, state: State, durations: { [string]: number }): n
 		at += Use.length(step, durations)
 	end
 	return nil
+end
+
+-- How far along the halls monsters hear `row`'s noise (studs): its loudness, the row's `heard`
+-- (the duck's squeak down the hall), or as far as the air horn (the monkey's cymbals, the jack's
+-- bang).
+function Use.loudness(row: Row): number
+	return row.heard or Use.LureReach
+end
+
+-- Seconds between a lure's hearings while it plays: its row's `lure`, never quicker than
+-- `Use.HearGap`.
+function Use.lureBeat(row: Row): number
+	return math.max(row.lure or Use.HearGap, Use.HearGap)
+end
+
+--[[
+	The noises monsters hear on a server (F-G1e1): the finds whose lures sound now, oldest first,
+	and when each find was last heard. One per server; `K` is a find's model there (plain values
+	in the specs). Every hearing asks `Use.hear` first, and a lure starts with `Use.startLure`.
+]]
+export type Din<K> = { lures: { K }, last: { [K]: number } }
+
+function Use.din<K>(): Din<K>
+	return { lures = {}, last = {} }
+end
+
+-- Whether `id` is a lure monsters still hear.
+function Use.luring<K>(din: Din<K>, id: K): boolean
+	return table.find(din.lures, id) ~= nil
+end
+
+-- `id`'s lure stops being heard (its play ended, it was taken away).
+function Use.stopLure<K>(din: Din<K>, id: K)
+	local i = table.find(din.lures, id)
+	if i then
+		table.remove(din.lures, i)
+	end
+end
+
+-- `id`'s lure starts (wound again: it becomes the newest, counted once). Past
+-- `Use.LuresAtOnce`, the oldest stops being heard: that one is returned.
+function Use.startLure<K>(din: Din<K>, id: K): K?
+	Use.stopLure(din, id)
+	local dropped: K? = nil
+	if #din.lures >= Use.LuresAtOnce then
+		dropped = table.remove(din.lures, 1)
+	end
+	table.insert(din.lures, id)
+	return dropped
+end
+
+-- Whether monsters hear `id`'s noise at `now` (seconds on one clock), marking it heard: not if it
+-- was heard less than `Use.HearGap` before. Finds heard longer ago than that are let go.
+function Use.hear<K>(din: Din<K>, id: K, now: number): boolean
+	for k, at in din.last do
+		if now - at >= Use.HearGap then
+			din.last[k] = nil
+		end
+	end
+	if din.last[id] ~= nil then
+		return false
+	end
+	din.last[id] = now
+	return true
 end
 
 -- A found light lying lit holds a Mannequin this share of its light's range from it (F-G1b3b):

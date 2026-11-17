@@ -2668,6 +2668,15 @@ actions themselves and dealing the new finds on floors are later game tickets.
       in place of the air horn's one reach) and a cap on lures at once and how often, for
       low-end phones. The duck's squeak lures down the hall; the squishies are quiet (the
       catalog's Squeeze). Untested: bones and stretch in one press.
+      - [x] **F-G1e1a** (Nov 17, V1; D-267): the loudness (`heard`, `Use.loudness`) and the cap
+        (`Use.Din`); all eleven presses as data with a sound each; seen in Play: each pressed,
+        stamped and its sound playing, the duck's squeak waking a Mannequin 46 studs off.
+      - [ ] **F-G1e1b The squash in your hand.** Seen in Play: `Finds.joints` never sizes a
+        find's first part (its root, `i == 1`) and the strawberry's bones didn't move in hand,
+        so the duck, mochi bun, paper squishy, toast, butter stick and strawberry don't squash at
+        all, and the others' bodies stay still while their insides move. Size the root about its
+        middle in hand (it can't move: the grip holds it) and find why bones don't bend in hand;
+        then see all eleven squash in Play. Ticks F-G1e1.
     - [ ] **F-G1e2 Wind and go (V2).** The chattering teeth, walking robot, wind-up mouse and
       tin bird are set down and travel on their own paths, stopping at walls (the toy car's
       way), luring as they go: the lure heard where each one is along its path, not where it
