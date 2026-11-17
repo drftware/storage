@@ -92,6 +92,9 @@ nowhere else.
   rubber mats; walls are plain (a home's), stripes, leaves and daisies; eight paints from warm
   white to ink; eight door colours from clay; carpet, checker and mats each come in five colours;
   every paper takes the wall's paint as its ground.
+- [ ] **Should any paint, paper or floor cost cash?** (S5-03g2b1, D-326.) My default: all free,
+  since a home is the calm reward for climbing and no price was agreed. Say which, if any, should
+  be bought (and for how much) and I'll gate them at the counter.
 - [ ] **Your name card's four styles** (S5-03g1b, D-322; art only, not in the game until
   S5-03g3). Open `art/sheets/home-cards.png` on your phone: along the top, each style over a door
   from the floor; below, the four from down the hall and from across the floor. Look for: can you

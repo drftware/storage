@@ -153,7 +153,8 @@ UVs are in studs over the tile: a paper's rows run level all round (V is the hei
 round both back corners (U runs round the room from the back wall's middle). `--stage looks` now
 dresses its eight rooms in the real panels, with the lobby's ceiling and baseboards, and adds a
 row looking back at the doorway. Home.fbx: 33,714 triangles in 76 parts, 18.8 MB with the looks'
-maps. Not uploaded until g2b.
+maps. Uploaded in S5-03g2b1 (the same asset, 18.8 MB taken by Open Cloud); not yet inserted
+in Studio. The game lays these panels and dresses them (`Decorating`, D-326).
 
 ## Into Studio (S5-03a2b3, D-268)
 

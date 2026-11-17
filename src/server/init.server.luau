@@ -27,6 +27,7 @@ local FrontOffice = require(script.FrontOffice)
 local Shelves = require(script.Shelves)
 local JobBoxes = require(script.JobBoxes)
 local Arranging = require(script.Arranging)
+local Decorating = require(script.Decorating)
 local GatePay = require(script.GatePay)
 local Horns = require(script.Horns)
 local Keepers = require(script.Keepers)
@@ -120,6 +121,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "jobBoxes", system = JobBoxes.new() },
 	-- the finds each player sets out in their home: judged, saved and drawn (after jobBoxes)
 	{ slot = "arranging", system = Arranging.new() },
+	-- each home's paint, paper and floor: picked, saved and worn on its panels (S5-03g2b)
+	{ slot = "decorating", system = Decorating.new() },
 	-- what each player wears standing on their home's clothes rail, and Wear and Hang up there
 	{ slot = "rails", system = Rails.new() },
 	-- a wrap colour tried on at any mirror: the film for a few seconds, free, nothing saved

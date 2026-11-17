@@ -39,6 +39,8 @@
 	  its `form` and a row for each find out (its id, `Spots.id`: the find's name and a number, and
 	  where it stands). A find set out is still yours and still in `finds`; it's simply not in the
 	  job box (`boxed` takes it off, as it does the shelf's), so it's never counted twice.
+	- `looks`: your home's paint, paper, floor and floor colour (S5-03g2b, D-326), ids from
+	  `Home.Specs.Looks` (`Home.Looks`); a new home's are the first of each list.
 
 	The tickets that earn each write it (GDD "Saving", "The collection book"). So far: `finds` and
 	the book's `finds` page, as finds are kept at the gate (S1-06, `keep`), `cash`, as the coins
@@ -57,6 +59,9 @@
 ]]
 
 -- How many of each find you keep, by its name.
+-- your home's paint, paper and floor (S5-03g2b)
+local Looks = require("./Home/Looks")
+
 export type Counts = { [string]: number }
 -- When each page was first stamped, by name, in `os.time` seconds.
 export type Stamps = { [string]: number }
@@ -90,6 +95,7 @@ export type Data = {
 	boxFresh: number,
 	chipped: Counts,
 	placed: Placed,
+	looks: Looks.Chosen,
 }
 
 -- The parts of Brix's SaveFormat contract the server and the spec call (`Brix.SaveFormat<Data>`).
@@ -134,6 +140,7 @@ function Save.fresh(): Data
 		boxFresh = 0,
 		chipped = {},
 		placed = { form = 1, rows = {} },
+		looks = Looks.start(),
 	}
 end
 
@@ -538,6 +545,55 @@ function Save.format(brix: any): Format
 		}),
 	})
 
+	-- Version 9 (S5-03g2b, Nov 17): version 8 plus your home's paint, paper, floor and floor
+	-- colour, ids from Home.Specs.Looks (a floor colour "" for the boards, baked).
+	local look = Schema.string({ nonEmpty = true, maxLength = 32 })
+	local ninth = Schema.shape({
+		cash = Schema.number({ min = 0, integer = true }),
+		finds = Schema.map(name, count),
+		sealed = Schema.map(name, count),
+		stamps = Schema.shape({
+			finds = Schema.map(name, stamped),
+			sealed = Schema.map(name, stamped),
+			keepers = Schema.map(name, stamped),
+		}),
+		bestFloor = Schema.number({ min = 0, integer = true }),
+		purchases = Schema.list(name),
+		recipients = Schema.map(name, name),
+		bought = Schema.map(name, count),
+		spares = Schema.map(name, count),
+		wraps = Schema.map(name, stamped),
+		wornWrap = Schema.string({ maxLength = 64 }),
+		shelf = Schema.list(
+			Schema.shape({
+				find = Schema.string({ maxLength = 64 }),
+				fresh = Schema.number({ min = 0, max = 2, integer = true }),
+			}),
+			{ maxCount = Save.ShelfMost }
+		),
+		boxFresh = Schema.number({ min = 0, max = 2, integer = true }),
+		chipped = Schema.map(name, count),
+		placed = Schema.shape({
+			form = Schema.number({ min = 1, max = 1000, integer = true }),
+			rows = Schema.list(
+				Schema.shape({
+					id = where,
+					on = where,
+					x = Schema.number({ min = -500, max = 500 }),
+					y = Schema.number({ min = -500, max = 500 }),
+					turn = Schema.number({ min = -360, max = 360 }),
+				}),
+				{ maxCount = Save.PlacedMost }
+			),
+		}),
+		looks = Schema.shape({
+			paint = look,
+			paper = look,
+			floor = look,
+			floorColour = Schema.string({ maxLength = 32 }),
+		}),
+	})
+
 	return brix.SaveFormat.versioned({
 		versions = {
 			{ schema = first },
@@ -676,6 +732,30 @@ function Save.format(brix: any): Format
 						boxFresh = old.boxFresh,
 						chipped = old.chipped,
 						placed = { form = 1, rows = {} }, -- nothing set out yet
+					}
+				end,
+			},
+			{
+				schema = ninth,
+				-- any: a version 8 save as Brix hands it over, already checked against `eighth`
+				migrate = function(old: any): any
+					return {
+						cash = old.cash,
+						finds = old.finds,
+						sealed = old.sealed,
+						stamps = old.stamps,
+						bestFloor = old.bestFloor,
+						purchases = old.purchases,
+						recipients = old.recipients,
+						bought = old.bought,
+						spares = old.spares,
+						wraps = old.wraps,
+						wornWrap = old.wornWrap,
+						shelf = old.shelf,
+						boxFresh = old.boxFresh,
+						chipped = old.chipped,
+						placed = old.placed,
+						looks = Looks.start(), -- the home as it always looked
 					}
 				end,
 			},

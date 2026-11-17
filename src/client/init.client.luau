@@ -57,6 +57,7 @@ local StrandView = require(script.StrandView)
 local JobBoxView = require(script.JobBoxView)
 local BoxPanelView = require(script.BoxPanelView)
 local ArrangeView = require(script.ArrangeView)
+local LooksView = require(script.LooksView)
 local SettleView = require(script.SettleView)
 local LadderView = require(script.LadderView)
 local LobbyView = require(script.LobbyView)
@@ -136,6 +137,8 @@ local host = Brix.Host.new({
 		{ slot = "arrangeView", system = ArrangeView.new(needCursor) },
 		-- a friend's find set out drops into place with a knock (S5-03e3b)
 		{ slot = "settleView", system = SettleView.new() },
+		-- a home's new paper or floor rolling round the room on every screen (S5-03g2b)
+		{ slot = "looksView", system = LooksView.new() },
 		-- the find on your head kept out of your own eye, still on you for friends and the mirror
 		{ slot = "headView", system = HeadView.new() },
 		-- the fairy lights laid along a hall, on every screen (F-G1e5c)

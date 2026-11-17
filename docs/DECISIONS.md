@@ -8297,3 +8297,29 @@ to make a room theirs; Animal Crossing's lit furniture.
   SurfaceAppearance reaches Studio, since game scripts can't write its maps; the game clones a
   swatch's onto a panel and sets the part's Color (Overlay). The swatch doubles as the picker's
   chip in a ViewportFrame. Home.fbx: 33,714 triangles in 76 parts, 18.8 MB with the looks' maps.
+
+## D-326 A home's look: saved, judged by the server, wiped round the room (S5-03g2b1, 2026-11-17)
+
+- **The save keeps ids** (version 9, `looks`): paint, paper, floor and floor colour from
+  `Home.Specs.Looks`; a new home's are the first of each (warm white plaster on oak boards, whose
+  colour is baked, so its floor colour is ""). A look dropped later falls back to the start's
+  (`Looks.tidy`). A floor colour is one of that floor's own; a new floor keeps the colour when it
+  has one by that name (sage carpet to sage checker), else takes its first.
+- **Every paint, paper and floor is free for now** (my default; OWNER.md). Animal Crossing sells
+  its papers, but a home is the calm reward for climbing (D-263), and no price was agreed; a
+  price would be one check in `Decorating.pick`.
+- **Panels only where a home differs.** A held home's four wall panels are laid once its paint or
+  paper isn't a new home's, its floor panel once its floor isn't: five parts at most a home, none
+  for a home as it starts (the lobby's own walls show). They cast no shadow and take no clicks or
+  rays (the Arrange screen's aim passes to the lobby's floor under them).
+- **The wipe is the answer** (idea 18). The server saves the pick at once, stamps the unit's new
+  look and the time, and changes the panels `Looks.Wipe` (1.1 s) later; meanwhile each screen near
+  grows sheets of the new look over the old: plain parts in the paint or floor colour with the
+  set's colour map as a Texture (its clear bits show the colour, as Overlay does), tiled in studs
+  and lined up with the panels' own tiles. The paper starts at the back wall's middle and goes
+  round both back corners to the door (the panels' U: studs round the room), the front wall's
+  inside fading in last as a copy of its panel (a Texture can't leave the doorway's hole); the
+  floor unrolls from the back wall to the door. A roller's wet squish plays from the room's
+  middle, lower for a floor, heard to 45 studs. The sheets go once the panels wear the look, so
+  nothing jumps; a screen that sees a pick late just sees the panels.
+

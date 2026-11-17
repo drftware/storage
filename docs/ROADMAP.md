@@ -2624,12 +2624,22 @@ Done when players watch the results to the end and change their perks between cl
         corners (`art/home/panels.py`); a swatch per look set; `Specs.Panels`, `Specs.Swatches`,
         `tests/homepanels.spec`. The looks sheet now dresses its rooms in the real panels and adds
         a row looking back at the doorway. Not uploaded.
-      - [ ] **S5-03g2b The picker and the save**: the Arrange screen's paint, paper and floor
-        picker (each look's swatch as its chip), the home's panels laid and dressed by the server
-        from the save (Animal Crossing's wallpaper and flooring). Upload Home.fbx first (18.8 MB:
-        if it's refused, the swatches go to their own FBX). The game clones a swatch's
-        SurfaceAppearance onto each panel and sets the part's Color (Overlay); the panels cast no
-        shadow. A pick answers at once: the walls or floor change round you with a soft sound.
+      - [ ] **S5-03g2b The picker and the save** (Animal Crossing's wallpaper and flooring), in
+        three:
+        - [x] **S5-03g2b1 Saved, worn and wiped in** (D-326): Home.fbx uploaded (18.8 MB taken,
+          same asset); the save's `looks` (version 9, a migration, `tests/save.spec`);
+          `Home.Looks` judges a pick and plans the wipe (`tests/homepick.spec`); `Decorating`
+          lays a held home's panels once its look isn't a new home's, dresses them from the save,
+          and takes `PickLook(kind, id)` (rate-limited, checked, your own home, saved at once),
+          changing the panels as the wipe ends; `LooksView` grows the new paper from the back
+          wall's middle round to the door and the floor from the back wall, with a roller's
+          squish, on every screen near. Passes checks, untested in Studio.
+        - [ ] **S5-03g2b2 Seen in Play**: insert the uploaded Home, pick through `LookTest`, watch
+          the wipe on the A16; line the sheets' tiles up with the panels' (`LooksView.SHIFT`),
+          hear the roller (swap it if it doesn't load), judge it calm and warm (D-263).
+        - [ ] **S5-03g2b3 The paint tab on the Arrange screen**: paper and floor chips (each
+          set's swatch in a ViewportFrame, tinted), paint and floor colour dots; a tap fires
+          `PickLook`, the chip pressed in with a soft click; the wipe is the answer.
     - [ ] **S5-03g3 Door colours and name card styles**, chosen at home, seen from the lobby. The
       chosen style's parts (`Specs.Cards`) replace the lobby's plain card plate over each door
       (`art/lobby/build.py signs()` drops its unit cards); the name is written on `Face` in its
