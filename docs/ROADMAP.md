@@ -2967,6 +2967,9 @@ actions themselves and dealing the new finds on floors are later game tickets.
         a set-down standing didn't crack; let go 4 studs up, it cracked, heard on the clank.
       - [ ] **F-G1e5e2 Fragile, seen whole:** the crack drawn (its image ID fixed after Play), in
         your hand too (`ChipView`), and a cracked lamp banked at a gate (`chipped` in the save).
+        (Nov 17, Q1a part two: banked cracked, `chipped` OilLamp 1 in the save; the dropped
+        lamp's two decals fetched on your screen. Left: the crack on your view's copy in hand,
+        and a look by eye, which the locked Mac didn't allow.)
       - [x] **F-G1e5f The carousel's tune slows as it runs down** (Nov 17, V5f; seen in Studio
         Play, not heard on a phone; D-288): no recording of a box running down was found, so a
         tempo change that keeps the pitch: the tune's speed follows the top's own run-down
@@ -2983,7 +2986,10 @@ actions themselves and dealing the new finds on floors are later game tickets.
         chosen find into the shut unit nearest you and lifts its door. Then the 15 dealt Lights,
         the two cars, the Boombox, TV, Teddy and Skates, and F-G1e5e2 (a cracked lamp drawn and
         banked). (Nov 17: `DealFind` built and used in Studio Play; ten Lights dealt, taken,
-        carried and pressed, six banked at the gate; the rest is WAVES.md's Next line.)
+        carried and pressed, six banked at the gate. Nov 17, part two: nine more banked over
+        three floors, the night light, fairy lights, oil lamp and glass lamp lit in hand, and
+        most of F-G1e5e2: the oil lamp cracked, taken back up and banked cracked. Left: the Old
+        lamp, the two cars, the TV, teddy and skates, the crack in hand, WAVES.md's Next line.)
       - [ ] **F-G1e6q2 The firefly jar's light, and a press right after a slot switch (Q2).**
         Seen in Play (Q1a): `DealFind` the neon sign, disco ball and firefly jar (Units 107,
         106, 105 on seed 7's floor 1), open the three boxes, then for slots 1 to 3 fire

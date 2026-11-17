@@ -1469,6 +1469,10 @@ verified: a doc page, Studio, or "untested".
   `screen_capture` timed out, while Heartbeat ran on. `caffeinate -u` woke the display for 30 s
   only; `caffeinate -d -u -t 2400` kept it on, and Studio drew at about 15 frames a second behind
   the lock screen. Check with a one-second count of `RenderStepped` before trusting a log.
+  On Nov 17 (Q1a) that held under a minute; a background loop of `caffeinate -u -t 5` kept
+  Studio drawing at 15 to 60 frames a second. A Client that anchors its own root to move it is
+  never seen there by the server (an anchored part has no network owner): a prompt pressed
+  from there does nothing, without an error.
 - **Scaled text stops at 100 px** (L-08d): a `TextScaled` label never draws past 100 px, so a
   `UIScale` over it grew its box but not its text on a big screen. A title that has to grow
   (EndView's slam) takes a fixed `TextSize` from the screen's height instead.
