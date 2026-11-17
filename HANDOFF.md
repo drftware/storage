@@ -24,7 +24,7 @@ Brix pinned at `482368f`, NOT on Brix's `origin` yet.
   the camera on it. Buttons are clicked with `user_mouse_input`'s `instance_path`; card frames
   are named by key, and a Gold's key has no dot, so "Finds.Teddy:Gold.Verbs.Sell" works.
 - Stage only your own paths: the find run shares this checkout.
-- Find art: S1a built the goo ball's art and row (neon pink, oozes out between five fingers on
+- Find art: S1a (6e3518d) built the goo ball's art and row (neon pink, oozes out between five fingers on
   bones), not ticked or imported; next S1b (`art/finds/WAVES.md`): judge, tick, import, Play.
 
 ## Next task: S5-03c3b2 Four make a Gold, the big animation, seen
