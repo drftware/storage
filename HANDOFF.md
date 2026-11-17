@@ -12,30 +12,30 @@ _Overwrite every session, keeping this layout, under 70 lines. History lives in 
   torch is put away while you drive (FlashlightView's `away`) and lit again when you're back.
 - Seen in Studio Play: all of the above in the dev hall and on the laid floor with a Mannequin.
   Not run: a phone, a friend's view (OWNER.md, the RC car's steps 8-9).
-- Found and fixed on the way: a streamed-out elevator's lamp read as sitting on the dev hall
-  (STUDIO.md, the RC car's section). Positions are now read when used.
+- Fixed on the way: a streamed-out elevator lamp read as sitting on the dev hall (STUDIO.md).
 
 ## Next task: F-G1b3c3 The collector steals the car
 The moment: you're nosing the car down a dark hall, the Packrat's pale hands close round it, the
 view lifts off the floor, shakes, cuts to static, and you're back in your own eyes. The car is on
 its pile, there to take back. (Owner, ROADMAP F-G1b3c3; Dandy's World's and Piggy's item thieves.)
-This likely won't fit one session: split it in ROADMAP first, e.g. c3a and c3b below.
-1. (c3a) The car belongs to its floor: set down into the floor's model, not `Workspace.Driven`
+One session: the Packrat's seeking, carrying and pile are built. The gap: it sees only finds
+lying loose (`Slots:finds`), and a car set down isn't one (its find stays in your hand).
+1. Let `Slots:finds` list each car out on the floor as a lying find, at the car's spot, so
+   `tellLying` hands it to the Packrat with the rest.
+2. When its hands close on the car (`tookFind`, `s:lift`): the drive ends, the car joins its
+   find again and the whole RC car goes into its arms, as `robbed` takes from hands (default; the
+   transmitter left in your hand driving nothing is the other choice: an OWNER.md line).
+3. On the driver's screen: the view lifts, shakes (CameraShake), cuts to the feed's snow
+   (`Feed.Snow`, `Feed.InSound`), and your view is home. Friends see it carried off.
+4. On its pile it's an ordinary find, taken back as any is.
+5. The car belongs to its floor: set down into the floor's model, not `Workspace.Driven`
    (`Drives`, line ~479), so a car still out when the elevator leaves is left with the floor.
-   Decide what the transmitter does when its car is lost (default: it stays a transmitter that
-   drives nothing until its car is back in hand; an OWNER.md line).
-2. (c3a) A friend picking the car up ends your drive too.
-3. (c3b) The Packrat sees a car out on the floor as a find lying loose (`Keepers`' `tellLying`,
-   `tookFind`, `laidFind`, lines ~1180-1300) and takes it as it takes any; the drive ends.
-4. (c3b) On the driver's screen: the view lifts, shakes (CameraShake), cuts to the feed's snow
-   (`Feed.Snow`, `Feed.InSound`) and your view is home. Friends see it carried off.
-5. (c3b) Taken back from the pile with the transmitter in hand, as walking to it does today.
 **Acceptance:** check green; in Play a car left out when the gate shuts is gone with the floor; a
 Packrat sent at a car (StandPackrat, STUDIO.md) takes it with the lift, shake and static on the
 driver's screen, lays it on its pile, and it can be taken back.
-**Read first:** `docs/ROADMAP.md` (grep "F-G1b3c3"); D-179 and D-180 (grep "^## D-179\|^## D-180"
-docs/DECISIONS.md); `src/server/Drives.luau`; `src/server/Keepers.luau` lines 1180-1300; CODEMAP
-rows for Slots and FeedView; STUDIO.md "Testing a drop in front of a hunting Packrat".
+**Read first:** `docs/ROADMAP.md` (grep "F-G1b3c3"); D-179 (grep "^## D-179" docs/DECISIONS.md);
+`src/server/Drives.luau`; `src/server/Keepers.luau` lines 1180-1300; `src/server/Slots.luau`
+lines 1050-1110 (`finds`, `lift`); STUDIO.md "Testing a drop in front of a hunting Packrat".
 
 ## Queue (next sessions, the owner's ticket order)
 1. F-G1b4 the hard hat; F-G1b5 waits for its art.
