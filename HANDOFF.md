@@ -2,49 +2,45 @@
 
 _Overwrite every session, keeping this layout, under 70 lines. History lives in `git log`. What waits on the owner lives in `OWNER.md`, not here._
 
-**Updated:** 2026-11-17, session 231 (the hard hat on your head, F-G1b4a1) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `482368f`, NOT on Brix's `origin` yet (push Brix first, OWNER.md).
+**Updated:** 2026-11-17, session 232 (the mirror test, S5-03b) · **Checks:** green · **Git:** `main`, committed, not pushed (`origin` is github.com/drftware/storage); Brix pinned at `482368f`, NOT on Brix's `origin` yet (push Brix first, OWNER.md).
 
 ## State
 - The home (D-259; the Claude Doc https://claude.ai/artifact/EUdGarQ2sEiUC6BU5E7Tww, docs tools
   only) is built a ROADMAP piece a session (S5-03): ground floor, fronts, starter sets, switch,
-  a home each handed out as you join (D-275).
-- F-G1b4a1 (D-277): the hard hat's word is Wear. Pressed in hand it goes onto your head
-  (`Slots:toHead`, `Finds/Head`'s fit: 1.4 times, battery hidden), its slot freed, the shell's
-  knock then the lamp's click; lit with the hat's own warm lamp for everyone; a lit worn hat holds
-  a Mannequin from your head (Keepers' glows); caught it drops, at the gate it's kept, on the
-  ground floor (`Head.home`) its light never runs down. Seen in Studio Play with one player
-  (worn, slot freed, lit, forever at home); its look on a head and the two-client view wait on
-  OWNER.md. Once, the first Wear after starting Play stayed dark on the wearer's screen
-  (`docs/STUDIO.md`); a restart lit at once.
-- F-G1b4a2 (the headlamp's own beam, following your look and bobbing) is split off, queued.
+  a home each handed out as you join (D-275), the hard hat on your head (D-277).
+- S5-03b (D-280): every home has a mirror leaning on its left wall by the rug (`Home.mirror`,
+  plain parts for the test). `MirrorView` puts a ViewportFrame on its glass holding a world
+  built behind it: the room copied once, the door, lamps and switch each frame, each person near
+  posed each frame with left and right swapped (`Shared.Mirror`'s maths, `tests/mirror.spec`).
+  Your camera looks square into the glass and the picture is cut to it, so it's a window onto
+  the reflected world. One mirror at a time: live within 24 studs and on screen, still within 70.
+- Checked by numbers in Studio Play: copies within 0.002 studs of their reflections, your right
+  hand's reflection on your right, the copy's head facing back out. The picture itself was NOT
+  seen: Studio drew at 15 frames a second and every screenshot timed out. The owner's look (and
+  the phone's frame rate in front of it) waits on OWNER.md; if it doesn't convince, a fix goes in
+  ahead of S5-03f.
 - Still over the triangle default: the cars' 51k, ticketed as S5-03a2d.
-- Find art (third find run): V3c done (D-278: a find's own tip and lift move the grip that holds
-  it; the kazoo tips to your lips, seen in Play). Next: V3d, the spinner lands on any animal
-  (ROADMAP F-G1e3d), then V4 the siren car (`art/finds/WAVES.md`).
 
-## Next task: S5-03b The mirror test (the owner's order, D-259)
-The moment: you walk into your home, see yourself in a real mirror, the hard hat on your head
-lit, and turn to look at it. Precedent: Animal Crossing's mirrors. The owner judges it in Studio
-before S5-03f is built, so this is a test piece, built to the home's calm look (D-263).
-1. Read ROADMAP S5-03b (grep "S5-03b The mirror test") and D-259's mirror line (grep -n
-   "The mirror\*\*" docs/DECISIONS.md). Read the plan doc's ideas 21 and 22 only (docs tools,
-   search by heading; its "What you decided (Nov 16)" wins).
-2. Build one mirror in your home (FrontOffice's homes, `Lobby.front`): a ViewportFrame on the
-   glass with a back-to-front copy of the room and of every character near, posed from theirs
-   each frame (only while you're near and facing it; one live mirror at a time). Real frame art
-   the unit's way (`art/unit/README.md`) if it needs a model.
-3. Judge it at Galaxy A16 size in Studio Play: you, a worn hat (`GiveFind` "HardHat", Wear),
-   the room behind. Write what Roblox draws and doesn't (lights, glow, LocalTransparency of your
-   own head in first person) in `docs/STUDIO.md`.
-4. OWNER.md: the owner's look at it, exact steps; defaults you picked.
-**Acceptance:** check green; in Studio Play you see yourself and the room back to front in the
-mirror, it follows you as you move, nothing costs frames on a phone when you're away from it.
-**Read first:** ROADMAP S5-03b; D-259's mirror line and D-263 (the home's look); the plan doc's
-ideas 21 and 22; `src/server/FrontOffice.luau` (the homes); `src/shared/Lobby/init.luau`
-(grep "function Lobby.front"); `art/unit/README.md`.
+## Next task: S5-03c The shelf and the chest (the owner's order, D-259)
+The moment: you come home from a climb and the find you carried lands on your shelf with a
+sparkle; a kind you've never owned chimes and turns. Precedent: Animal Crossing's museum and
+house storage, Lethal Company's ship shelf. It's big: split it in ROADMAP first (likely c1 the
+shelf and finds landing on it, c2 the job box and its panel) and build only the first part.
+1. Read ROADMAP S5-03c (grep "S5-03c The shelf") and D-251 (grep -n "^## D-251"
+   docs/DECISIONS.md). Read the plan doc's ideas 6 to 9 only (docs tools, search by heading; its
+   "What you decided (Nov 16)" wins).
+2. Split S5-03c in ROADMAP. Build the shelf's art the unit's way (`art/home`, `art/unit/README.md`):
+   6, 10, 16, 24 spots by unit size; the small unit's 6 now.
+3. Finds that come home land on its spots (the server owns which, saved in the profile's finds),
+   sparkling until you walk up; a never-owned kind chimes and turns. Every action answers.
+4. Judge at Galaxy A16 size in Studio Play. OWNER.md: the owner's look, exact steps; defaults.
+**Acceptance:** check green; in Studio Play a find carried home stands on your shelf with its
+sparkle, and stays there after a rejoin.
+**Read first:** ROADMAP S5-03c; D-251; the plan doc's ideas 6 to 9; `src/shared/Home/init.luau`
+(`Home.piece`, `Home.mirror`); `src/server/FrontOffice.luau` (the homes); `art/unit/README.md`.
 
 ## Queue (next sessions, the owner's ticket order)
-1. S5-03c-h; S5-03a2d the cars' hidden triangles; F-G1b4a2 the headlamp's beam (ROADMAP Step 4);
+1. S5-03d-h; S5-03a2d the cars' hidden triangles; F-G1b4a2 the headlamp's beam (ROADMAP Step 4);
    F-G1b4b the hat spent (also: start its minute when a hat worn at home leaves the ground floor).
 2. F-G1b5 waits for its art. Brix: ENG-25b's two-client run (OWNER.md's home test covers it).
 3. Brix ticket: Driving's stick read needs `PlayerScripts.PlayerModule`; fall back to the
@@ -58,6 +54,9 @@ ideas 21 and 22; `src/server/FrontOffice.luau` (the homes); `src/shared/Lobby/in
    `Seat:Sit` in a quick try (S5-03a2b4). A spare home lifted from inside stays unpadlocked
    until someone holds it and leaves (D-275). The worn hat's first-Wear dark screen (STUDIO.md):
    if it comes back, make `FindUseView` re-read a tagged model whose key arrives late.
+8. The mirror once seen: if the picture spills past the glass, a ViewportFrame larger than its
+   SurfaceGui isn't being cut; clip it in a Frame or a CanvasGroup. The finds session's work
+   (D-278, D-279) was left uncommitted in the shared checkout, not staged here.
 
 ## Kickoff for the next agent
 ```text

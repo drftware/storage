@@ -334,6 +334,7 @@ function Lobby.front(template: Model, home: Model?, pivot: CFrame, slot: Specs.S
 			Home.piece(home, s.Kind, at, starter)
 		end
 		starter.Parent = unit
+		Home.mirror(unit, face)
 	else
 		StorageUnit.UnitKit.paint(unit, Lobby.UnitDoor, Lobby.Paint.Walls)
 		StorageUnit.UnitKit.number(unit, tostring(slot.Number))

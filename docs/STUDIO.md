@@ -2802,3 +2802,12 @@ verified: a doc page, Studio, or "untested".
   `FindGripRest` attribute (client-set, so local too). Measured in Play: the kazoo's root against
   `LeftHand` tipped 7.5 degrees and came back to 0.0000 studs; the stress ball's stayed within
   0.00003 studs as it squashed to 0.66 of its height.
+- **The mirror, as far as the numbers go** (S5-03b, Nov 17): a character's clone needs
+  `Archivable` set true for the clone and back; its copy's parts, joints gone, take poses by
+  `WorldModel:BulkMoveTo` inside a ViewportFrame, landing within 0.002 studs of the reflections
+  worked out. Mark each original part with an attribute before cloning to pair it with its copy
+  (clone order isn't promised). Copies keep the original's `LocalTransparencyModifier`, so set it
+  to 0 or your own head vanishes from the mirror in first person. A room's copy in a home was 110
+  parts with the neighbours' units in; skip them. Not yet seen on screen: whether a
+  ViewportFrame bigger than its SurfaceGui is cut to the glass, and how SurfaceAppearance, Neon
+  and layered clothing draw in it (OWNER.md's mirror test says what to look at).

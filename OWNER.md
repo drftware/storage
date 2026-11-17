@@ -26,6 +26,19 @@ nowhere else.
   size looks right on a Roblox head. My defaults, say which to change: a worn hat is kept at the
   gate with your other finds (it goes from your head in a glint); you can't wear a second hat over
   one; the Packrat robs your hands, never your head.
+- [ ] **The mirror test** (S5-03b, D-280; checked by numbers in Studio Play, the picture not yet
+  seen: Studio wasn't drawing that night). Play with one player; walk into your home and turn
+  left from the rug: the mirror leans on the wall. Look for: you facing you, moving the right way
+  round (turn, jump, walk sideways); stepping side to side shifts the room behind you as a real
+  mirror does; your rug, beanbag, floor lamp and door behind you. On the Server,
+  `workspace:SetAttribute("GiveFind", "HardHat")`, press Wear: the hat is on your head in the
+  mirror, its lamp a bright patch. Flip the switch: the reflection dims with the room. Then the
+  Device Simulator's Galaxy A16: is the glass sharp enough from 3 to 6 studs, and does the frame
+  rate hold in front of it? Walk out: the mirror goes still. With 2 players, your friend shows
+  behind you. Known limits: no shadows and no lamp light in the picture (an even warm light), and
+  writing on clothes reads the right way round. Say: convincing, or not (then it's fixed before
+  anything else leans on it). My defaults, say which to change: the left wall by the rug, 2.4 by
+  5.6 studs, leaning 6 degrees.
 - [ ] **If Studio stops getting changes, click Connect** in Studio's Rojo plugin (connected Nov 13
   at 23:30; each session checks it first and says so in HANDOFF.md).
 - [ ] **Playing on your phone** (D-109): with Rojo connected, use File > Publish to Roblox (Save

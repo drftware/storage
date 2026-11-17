@@ -7139,3 +7139,32 @@ part puts the hat on your head and lights it; F-G1b4a2 draws the headlamp's own 
   `FindGripRest` so shifts never add up) and your view's copy (`Hand.shift`). A find set down to
   play (`down`) never plays in a hand, so it's left out.
 
+## D-280 · 2026-11-17 · The mirror test: a world built behind the glass, seen through it (S5-03b)
+
+The moment: you walk into your unit, turn to the mirror and see yourself, the right way round,
+your unit behind you. D-259 wanted a ViewportFrame on the glass with left/right-swapped posed
+copies; this is how it's built, as a test the owner judges before S5-03f.
+
+- **A world behind the glass, not a flipped picture.** Roblox can't flip a picture
+  (`ViewportFrame.IsMirrored` is locked) or a model, so every copy stands where its reflection
+  would, behind the glass, turned to face back out, and the picture's camera is your own camera
+  looking square into the glass. The picture is sized and placed so the glass is exactly a window
+  onto that world (`Mirror.view`), so the reflection shifts as you step about, as a real one does.
+  (D-259 put the camera at your eye reflected; that needs the flip Roblox doesn't allow.)
+- **Copies turn, never flip.** Each copy is reflected and turned over along the one direction the
+  thing is the same both ways across, and two flips make a real rotation: a body part across its
+  own left and right, drawn with its partner (your right hand's reflection is your left hand's
+  copy); a hat across your head; a wall or rug along its long level side. What can't come out
+  right: writing on clothes reads the right way round, and a one-sided thing keeps its side.
+- **One mirror at a time** (D-259): the nearest within 70 studs holds the room's copy, still, from
+  a step in front; within 24 studs and on screen it moves with you every frame. Further off, plain
+  glass. The room is copied once (only what's in front of the glass, within 34 studs, never a
+  neighbour's unit, at most 900 parts); the door, the lamps and the switch each frame; people
+  each frame, again whenever what they wear changes.
+- **Light**: a ViewportFrame has no lamps or shadows, only an even light; it's warm while the
+  unit's switch is on and dim when it's off (`MirrorView`'s LIT and DARK).
+- **Where** (my default, OWNER.md): leaning on the unit's left wall by the rug, glass toward the
+  floor lamp, 2.4 by 5.6 studs, an oak frame from plain parts for the test; the real frame is
+  art for S5-03f.
+- **It lives in this game for now**: it's a test. If the owner keeps it, S5-03f weighs moving its
+  maths to Brix as a neutral part (D-252).

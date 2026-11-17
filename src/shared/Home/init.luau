@@ -96,6 +96,21 @@ Home.FloorLamp = {
 -- its head plates and axle, above the doorway behind the front wall. A screen draws them only
 -- while its camera is in that home or within InsideMargin studs out of its doorway: from the
 -- lobby all twelve were 16k of the spawn view's 160k triangles, every one behind a wall.
+-- The mirror test (S5-03b, D-280): a full-length mirror leaning on the unit's left wall by the
+-- rug, its glass toward the room, so you turn from the rug and see yourself with your unit behind
+-- you. Plain parts for the test; real frame art comes with S5-03f. At: its foot's middle on the
+-- floor in the unit's frame (StorageUnit.Specs: +Z in from the door, X across). Glass: width
+-- and height, studs. Border: the oak frame's width round it; Depth: the frame's thickness.
+-- Lean: degrees back from upright against the wall, as a cheap floor mirror stands.
+Home.Mirror = {
+	At = { -9.25, 0, 12.5 },
+	Glass = { 2.4, 5.6 },
+	Border = 0.22,
+	Depth = 0.2,
+	Lean = 6,
+	Oak = Color3.fromHex("#B98A5E"), -- the home's oak trim
+	Backing = Color3.fromHex("#C9D3D6"), -- the glass where no picture is drawn: cool, pale
+}
 Home.InsideOnly = { "Drum", "Hardware" }
 Home.InsideMargin = 2
 
@@ -276,6 +291,48 @@ function Home.piece(template: Model, kind: string, at: CFrame, parent: Instance)
 	end
 	model.WorldPivot = at
 	model.Parent = parent
+	return model
+end
+
+-- The test mirror (Home.Mirror) in `unit`, whose doorway's outer face is `face`: an oak frame and
+-- its glass, a plain part tagged Mirror.Tag whose Front face is the glass. MirrorView draws the
+-- reflection on it; the server only stands it there.
+function Home.mirror(unit: Model, face: CFrame): Model
+	local m = Home.Mirror
+	local w, h, b, d = m.Glass[1], m.Glass[2], m.Border, m.Depth
+	local foot = face
+		* CFrame.new(m.At[1], m.At[2], m.At[3])
+		* CFrame.Angles(0, -math.pi / 2, 0) -- the glass looks across the unit, away from its wall
+		* CFrame.Angles(math.rad(m.Lean), 0, 0) -- its top back against the wall
+	local model = Instance.new("Model")
+	model.Name = "Mirror"
+	local function slab(name: string, size: Vector3, at: CFrame, colour: Color3): Part
+		local p = Instance.new("Part")
+		p.Name = name
+		p.Size = size
+		p.CFrame = foot * at
+		p.Color = colour
+		p.Material = Enum.Material.SmoothPlastic
+		p.Anchored = true
+		p.CanTouch = false
+		p.CanQuery = false
+		p.TopSurface = Enum.SurfaceType.Smooth
+		p.BottomSurface = Enum.SurfaceType.Smooth
+		p.Parent = model
+		return p
+	end
+	local tall = h + 2 * b
+	slab("Back", Vector3.new(w + 2 * b, tall, d * 0.4), CFrame.new(0, tall / 2, d * 0.3), m.Oak)
+	slab("Left", Vector3.new(b, tall, d), CFrame.new(-(w + b) / 2, tall / 2, 0), m.Oak)
+	slab("Right", Vector3.new(b, tall, d), CFrame.new((w + b) / 2, tall / 2, 0), m.Oak)
+	slab("Top", Vector3.new(w, b, d), CFrame.new(0, tall - b / 2, 0), m.Oak)
+	slab("Bottom", Vector3.new(w, b, d), CFrame.new(0, b / 2, 0), m.Oak)
+	local glass =
+		slab("Glass", Vector3.new(w, h, 0.04), CFrame.new(0, b + h / 2, -d / 2 + 0.06), m.Backing)
+	glass.CastShadow = false
+	glass.Reflectance = 0.2
+	glass:AddTag("Mirror")
+	model.Parent = unit
 	return model
 end
 

@@ -2385,9 +2385,11 @@ Done when players watch the results to the end and change their perks between cl
   - [x] **F-G1b4a1 The hard hat on your head, lit** (D-277; its own ticket in Step 4's finds,
     the owner put it here, Nov 16; seen in Studio Play with one player).
   - [ ] **F-G1b4a2 The headlamp's beam** (after S5-03b; see Step 4's F-G1b4a2).
-  - [ ] **S5-03b The mirror test** (ideas 21, 22): one mirror in a unit, built as D-259 says,
-    judged at Galaxy A16 size; what Roblox does and doesn't draw goes in `docs/STUDIO.md`. The
-    owner judges it in Studio before S5-03f.
+  - [x] **S5-03b The mirror test** (ideas 21, 22; D-280): a mirror leaning in every home, a
+    world built behind its glass; checked by numbers in Studio Play (copies within 0.002 studs of
+    their reflections, your right hand on your right), the picture itself not yet seen (Studio
+    wasn't drawing). The owner judges it before S5-03f (OWNER.md); if it doesn't convince, a fix
+    ticket goes in here first.
   - [ ] **S5-03c The shelf and the chest** (ideas 6 to 9, D-251): finds that come home land on
     the shelf (6, 10, 16, 24 spots by size), sparkling until you walk up to them, a never-owned
     kind chiming and turning; when it's full they go in the job box. Press it: the panel (each
@@ -2404,7 +2406,7 @@ Done when players watch the results to the end and change their perks between cl
     limit bar (25, 50, 100, 150 by size); saved in a new save version; every move checked on the
     server.
   - [ ] **S5-03f The mirror and the clothes rail** (ideas 21 to 24): the tested mirror in every
-    unit; the rail (press to wear, with the find's own sound); nothing worn or switched on runs
+    unit, its real frame built the unit's way in `art/home` (the test's is plain parts, D-280); the rail (press to wear, with the find's own sound); nothing worn or switched on runs
     down at home; wrap colours tried on, with a mirror by the counter.
   - [ ] **S5-03g Walls, floor, door, name cards and furniture** (ideas 18 to 20): paint and floors
     on the Arrange screen, door colours, name card styles, furniture at the counter in a weekly

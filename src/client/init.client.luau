@@ -48,6 +48,7 @@ local KeeperView = require(script.KeeperView)
 local KeypadPad = require(script.KeypadPad)
 local KneelView = require(script.KneelView)
 local MinimapView = require(script.MinimapView)
+local MirrorView = require(script.MirrorView)
 local LadderView = require(script.LadderView)
 local LobbyView = require(script.LobbyView)
 local MachineMenu = require(script.MachineMenu)
@@ -115,6 +116,8 @@ local host = Brix.Host.new({
 		-- a home's lamps on its switch (S5-03a2b3), before BehindDoors for the same reason
 		{ slot = "homeLights", system = HomeLights.new() },
 		{ slot = "homeCards", system = HomeCards.new() },
+		-- the mirror in your home: you, the right way round, your unit behind you (S5-03b)
+		{ slot = "mirrorView", system = MirrorView.new() },
 		{ slot = "behindDoors", system = BehindDoors.new() },
 		{ slot = "elevatorView", system = elevatorView },
 		{ slot = "keypadPad", system = KeypadPad.new(pressKeypad, needCursor) },
