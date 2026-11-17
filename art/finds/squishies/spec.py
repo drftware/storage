@@ -544,10 +544,11 @@ GALAXY_GLOW = [(0.0, 0.8), (0.3, 0.8), (1.2, 1.0, "Sine", "Out"), (4.4, 1.0),
 
 # --- The goo ball (S1) ---------------------------------------------------------------------------
 # References (README): the 2.5 in goo-filled squeeze balls sold in 2026 (2.5 x 2.5 x 2.5 in, 4.6 oz):
-# an opaque, matte, velvety TPR skin in one bright colour, a fine crinkle in its skin, a soft sheen
-# on top, a small sealed fill plug; squeezed in a fist, the goo pushes out between the fingers in
-# round blisters (Wikimedia Commons, "Stress ball manipulation.jpg", "Stress release.jpg"). Ours
-# is neon pink, with no mark (tangerine read as an orange, the fruit: S1).
+# an opaque TPR skin in one bright colour, stretched thin enough over the goo to look wet (S1b:
+# matte read as a rubber ball), a fine crinkle in its skin, a small sealed fill plug; squeezed in
+# a fist, the goo pushes out between the fingers in round blisters (Wikimedia Commons, "Stress
+# ball manipulation.jpg", "Stress release.jpg"). Ours is neon pink, with no mark (tangerine read
+# as an orange, the fruit: S1).
 GOOBALL = dict(
     r=32.0,            # the ball's radius: 64 mm across (2.5 in)
     sink=1.4,          # how far it settles onto the floor: heavy goo slumps a little

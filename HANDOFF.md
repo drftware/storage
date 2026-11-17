@@ -25,6 +25,9 @@ Brix pinned at `482368f`, NOT on Brix's `origin` yet.
   character (STUDIO.md "Aiming a capture in Play"). Scroll the panel's `Finds` before clicking a
   card's verb. The test save: Gold Teddies (one on the shelf's cubby 1), no plain Teddy.
 - Stage only your own paths: the find run shares this checkout.
+- Find art: S1 the goo ball is done (S1b: wet glossy skin, imported, seen in Play: dealt, taken,
+  squeezed, its squelch). Next S2, the colour-change goo ball (`art/finds/WAVES.md`'s Next line,
+  `art/finds/PIPELINE.md`).
 
 ## Next task: S5-03c3a2 Selling a cracked find
 The moment: you sell a lamp whose glass cracked on the climb, and it goes for half, the price on

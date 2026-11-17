@@ -433,8 +433,8 @@ round a ball with it bulging out between the fingers in round blisters.
 **Size.** 64 mm across (2.5 in): 0.25 studs, settled 1.4 mm onto its flat spot.
 
 **Tells.** One saturated colour, solid (the gel bead, glitter and galaxy balls are clear and
-full of things), matte (the stress ball is glossy lime); squeezed, five blisters pushed out
-round its waist. Neon pink, not tangerine: tangerine with a grain read as an orange, the fruit,
+full of things), wet-glossy, a tight highlight that curls over each blister as it swells;
+squeezed, five blisters pushed out round its waist. Neon pink, not tangerine: tangerine with a grain read as an orange, the fruit,
 and a raised plug as its stem (the first quick sheets). No mark of any maker.
 
 **Squeeze.** Bones, not `stretch`: two rings of twenty round the waist (17 degrees above and
@@ -446,3 +446,11 @@ like a Hermite curve. A vertex has at most four bones, Roblox's most. One shape 
 `OOZE` in time: the fingers close (0.34 s), the goo keeps oozing out while held (to 1.3 s), let
 go it gives a little back at once, then comes back round over 3.4 s (Cubic Out). The top lifts
 2.4 mm as the goo is pushed up. Judged on quick sheets twice; full sheets rendered once.
+
+**Skin, S1b.** The first full sheets read matte, a rubber ball: a real goo ball's skin is
+stretched so thin over the goo that it looks wet. Roughness 0.17 (0.11 to 0.3 across the
+skin; the fine crinkle duller, so it breaks the highlight up a little), and the skin painted
+lighter and smoother where the blisters rise (the squeeze's own bulge shape, round the waist
+between the fingers): a Roblox skin can't change colour as a bone moves, so it is baked,
+faint at rest and showing as each blister swells into the light. Judged beside the gel bead,
+glitter and galaxy balls held and in a unit: its shine sits with the clear balls' gloss.

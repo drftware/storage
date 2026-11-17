@@ -202,6 +202,9 @@ set's `build.py` as an example; you shouldn't need the kit's code.
   beads) is bands of it, each its own part turning about the find's upright through the pivot
   on the floor: a turn about Z commutes with the squash, so it rides the body's `stretch`
   without shearing in Roblox.
+  A skin's colour can't change as its bones move: where a squeeze stretches the skin lighter or
+  glossier (the goo ball's blisters, S1b), paint it there in the look from the squeeze's own
+  shape, faint enough at rest, and let the bulge carry it into the light.
 - **Vehicles and rollers.** Wheels are parts on their axles, steered wheels turn on their real
   kingpins, and the spec gives wheel radius, wheelbase, steering lock and suspension travel, so
   driving the RC car later is wiring, not modelling.

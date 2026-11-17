@@ -31,6 +31,7 @@ return {
 		GalaxyGooBall = { Model = 128329446635375, Emissive = 80360072013614 },
 		GelBeadBall = { Model = 79353970920181 },
 		GlitterGooBall = { Model = 81331925763211 },
+		GooBall = { Model = 73237673219847 },
 		JumboStrawberry = { Model = 81603530188772 },
 		MochiBun = { Model = 75693422662417 },
 		PaperSquishy = { Model = 84002820704702 },

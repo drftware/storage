@@ -2774,21 +2774,31 @@ GO_DUR, GO_TRACKS = go_squeeze()
 def goo_look(L, f):
     nb = L.nb
     plug = L.k(GO_PLUG)
-    # the skin: a neon-pink TPR, matte and velvety, its colour a touch deeper where the rotocast
-    # wall runs thick and lighter where it stretches thin (gently: strong mottling read as fruit
-    # peel); a fine crinkle through it (the soft creases a goo-filled skin takes) and a faint grain
-    C = Coat(L, hexc("#FF3F93"), 0.56)
-    C.paint(nb.mul(nb.ss(L.noise(5.0, 1, detail=2), 0.45, 0.75), 0.35), hexc("#EC3283"), 0.58)
-    C.paint(nb.mul(nb.ss(L.noise(14.0, 2, detail=2), 0.55, 0.75), 0.3), hexc("#FF5DA6"), 0.54)
+    # the skin: a neon-pink TPR stretched so thin over the goo that it looks wet: glossy, with a
+    # tight highlight (S1b: at 0.56 it read as a matte rubber ball); its colour a touch deeper
+    # where the rotocast wall runs thick (gently: strong mottling read as fruit peel); a fine
+    # crinkle (the soft creases a goo-filled skin takes) a little duller, so it breaks the
+    # highlight up as real skin does, and a faint grain
+    C = Coat(L, hexc("#FF3F93"), 0.17)
+    C.paint(nb.mul(nb.ss(L.noise(5.0, 1, detail=2), 0.45, 0.75), 0.35), hexc("#EC3283"), 0.2)
+    C.paint(nb.mul(nb.ss(L.noise(14.0, 2, detail=2), 0.55, 0.75), 0.3), hexc("#FF5DA6"), 0.15)
     crinkle = nb.ss(L.noise(120.0, 3, stretch=(1.0, 1.0, 2.6), detail=4), 0.63, 0.69)
-    C.paint(nb.mul(crinkle, 0.35), hexc("#F0398A"), height=-0.35)
+    C.paint(nb.mul(crinkle, 0.35), hexc("#F0398A"), 0.3, height=-0.22)
     grain = nb.ss(L.noise(1400.0, 4, detail=1), 0.42, 0.78)
-    C.paint(grain, height=0.1)
-    # a soft sheen on top, where hands rub it smooth
-    sheen = nb.mul(nb.ss(L.nz, 0.55, 0.95), nb.ss(L.noise(30.0, 5, detail=2), 0.35, 0.7))
-    C.paint(nb.mul(sheen, 0.6), rough=0.4)
-    # the plug: the same rubber, flush, a little glossier, only its pinched edge a shade deeper
-    C.paint(plug, hexc("#F23A8C"), 0.42)
+    C.paint(grain, height=0.05)
+    # where the goo bulges out between the fingers the skin stretches thinnest: lighter, the goo
+    # showing through, and smoother. A Roblox skin can't change colour as a bone moves, so it is
+    # painted where the blisters rise (go_f's bulge round the waist, go_g's reach up and down):
+    # faint at rest, it reads as each blister swells into the light
+    th = nb.math("ARCTAN2", L.y, L.x)
+    u = nb.cos(nb.mul(nb.sub(th, GO_FRONT), float(GO["presses"])))
+    out = nb.pw(nb.mul(nb.add(u, 1.0), 0.5), 1.5)
+    s = nb.absf(nb.div(nb.sub(L.z, mm(GO_ZC)), mm(GO_R)))
+    q = nb.inv(nb.pw(nb.mn(nb.div(s, math.sin(GO_REACH)), 1.0), 2.0))
+    stretched = nb.mul(out, nb.mul(q, q))
+    C.paint(nb.mul(stretched, 0.8), hexc("#FF7DBA"), 0.11)
+    # the plug: the same rubber, flush, a shade deeper at its pinched edge
+    C.paint(plug, hexc("#F23A8C"), 0.24)
     C.finish(f.dust, grime=0.25)
     return C.surface(bump_dist=mm(0.12), bump=0.45)
 

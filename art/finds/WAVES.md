@@ -6,9 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** S1b (the goo ball: look at its full sheets, tick it, upload and import it, the Play
-check; S1a built its art and row). Then S2. V5e2 (a cracked lamp seen drawn and banked) waits
-for Q1. V5a to V5f are done and seen in Play (Nov 17), but for V5e2.
+**Next:** S2 (the colour-change goo ball, from photos to playable through PIPELINE.md; S1 the
+goo ball is done and seen in Play). V5e2 (a cracked lamp seen drawn and banked) waits for Q1.
+V5a to V5f are done and seen in Play (Nov 17), but for V5e2.
 
 ## The third run's plan (owner's brief, Nov 16 night)
 
@@ -120,7 +120,7 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 | Jumbo slow-rise strawberry (`JumboStrawberry`) | The dent takes ten seconds to rise back · Squeeze | works: squeezed, a dent that slowly rises back, its own sound (V1) | Uncommon · 18 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; no dent seen in hand (bones, V1b); Nov 17, V1b: pressed in hand, its dent bones 0.047 studs down in hand and in your view's copy, rising back slowly |
 | Squishy capybara (`Capybara`) | A tiny, happy sigh · Squeeze | works: squeezed, squashes in hand (to 0.79), its orange moves, a sigh (V1) | Rare · 55 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; its orange moves a little; its body stays still in hand (V1b); Nov 17, V1b: pressed in hand, squashed to 0.79 of its height in hand and in your view's copy, its root still in the hand |
 | Galaxy goo ball (`GalaxyGooBall`) | Stars drift and swirl inside · Squeeze | works: squeezed, squashes in hand (to 0.71), its insides move, its own sound (V1) | Legendary · 350 · floor 1 up ✓ | Nov 17, V1: given (GiveFind), pressed, stamped On, its sound played; its insides move; its body stays still in hand (V1b); Nov 17, V1b: pressed in hand, squashed to 0.71 of its height in hand and in your view's copy, its root still in the hand |
-| Goo ball (`GooBall`) | Oozes between your fingers and slowly comes back · Squeeze (quiet; the squishy craze itself) | built, not yet seen in Play: its art and row (S1a); not ticked, uploaded or imported (S1b) | Common · 3 · floor 1 up ✓ | |
+| Goo ball (`GooBall`) | Oozes between your fingers and slowly comes back · Squeeze (quiet; the squishy craze itself) | works: squeezed, five blisters ooze out between your fingers on bones and slowly come back, its own squelch; quiet (S1) | Common · 3 · floor 1 up ✓ | Nov 17, S1b: dealt (`DevBox`, seed 7, floor 1's Unit107: "held a find, the GooBall in its box"), taken from its box into slot 1, pressed in hand twice, stamped On: its bones out to 0.017 studs and turned up to 35 degrees at 1.2 s, back by 4.5 s, the same in your view's copy; its squelch from 0.07 s; not banked, no monster in reach (it's quiet) |
 | Boombox (`Boombox`, bedroom set) | Loud music wherever you leave it, monsters come to look; at home it plays your tapes · Play, a noise (R.E.P.O.'s music box) | works (V5a, D-286): its key clacks, 80s electro 15 s, the case thumping each beat and swaying from its handle, lures every 2 s, 130 studs, in hand or where you leave it; the tapes wait on the home chain | Uncommon · 25 · floor 1 up ✓ | Nov 17, V5a: given (GiveFind), pressed in hand: the key dipped it to 0.975, then it swelled to 1.04 every 0.53 s, swaying up to 3 degrees and hopping 0.035 studs from the handle, the same in your view's copy; the song from 0.36 s; the Mannequin 56 studs off woke, came and caught me ("lured 8 times (130 studs)"). Again, dropped 2.5 s in and me lifted away: the song carried on from where it was (10.6 s into the recording), the case thumping on the floor; the Mannequin went to it and stood looking |
 | Small box TV (`Television`, bedroom set) | At home: it plays your tapes and films · Play (Animal Crossing's records) | waits on the home chain | Uncommon · 22 · floor 1 up ✓ | |
 | Small teddy bear (`Teddy`, bedroom set) | A tiny squeak · Hug (quiet) | works (V5a, D-286): hugged, squashes, a tiny squeak, wiggles back; quiet | Common · 4 · floor 1 up ✓ | Nov 17, V5a: given, pressed in hand: squashed to 0.78 at 0.17 s in hand and in your view's copy, tipped 6 degrees, sprang to 1.07 and settled by 1.05 s; the cloth at 0.08 s, the squeak at 0.17 s |
@@ -247,6 +247,24 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, S1b (the goo ball finished, imported and seen in Play; S2 next).** Its skin was
+  matte (a rubber ball): now wet and glossy, roughness 0.17 (the crinkle 0.3, so it breaks the
+  highlight a little), and painted lighter and smoother where the blisters rise, from the
+  squeeze's own shape (`goo_look`): a Roblox skin can't change colour as its bones move, so it is
+  baked, faint at rest (CRAFT.md, "Squish and squeeze"). Quick sheets, then the full set after a
+  fix (the tint stronger, the crinkle shallower); judged held and in a unit beside the gel bead,
+  glitter and galaxy balls: its shine sits with theirs. Ticked; FBX 73237673219847; imported in
+  Edit (1 part, 42 Bones). **Ticking a find changes the deal's fingerprint**
+  (`tests/stuffdeal.spec.luau`, now 3262220213): proven to be only the goo ball by running it
+  with HEAD's `Rows.luau`. **Seen in Play:** A1's table. Output: only the known lines (the
+  ContentId and ConfigService warnings). **Traps** (PIPELINE.md now has them): `DevBox` deals
+  only the climb's floor, `DevCorridor.Floor1`'s units, not the spawn's test units of the same
+  names; a box's find goes straight into a slot as it opens (no Take prompt); a press's Sound
+  is made new, so watch `DescendantAdded`, and measure a bone against its own pose before the
+  press (`FindBoneRest` is in the root bone's space). The home chain's Play stopped mine once:
+  wait, then start again. **For S2:** the colour-change goo ball can reuse `go_body` and
+  `go_bones` (its own spec numbers); colour where pressed is the open question (WAVES plan 8).
 
 - **Nov 17, S1a (the goo ball's art and row; not ticked, imported or seen in Play; S1b next).**
   `GooBall` in `squishies/build.py` (prefix `go_`/`GO_`, kinds 38 and 39; spec `GOOBALL`,
@@ -2159,7 +2177,7 @@ The set that teaches noise. Wind one, drop it, walk away, and see what comes to 
 | Find | Grade | What it does | Notes | Built |
 |---|---|---|---|---|
 | Stress ball with a face | Common | Squeeze: its eyes bulge out |  | Nov 16, F-05b |
-| Goo ball | Common | Squeeze: it oozes between your fingers and slowly comes back | The craze of 2026 | |
+| Goo ball | Common | Squeeze: it oozes between your fingers and slowly comes back | The craze of 2026 | Nov 17, S1b |
 | Squishy butter stick | Common | Squeeze: leaves a dent that slowly fills back in | A 2026 squishy trend | Nov 16, F-05a |
 | Mochi bun | Common | Squeeze: a soft puff of a sound |  | Nov 16, F-05b2 |
 | Paper squishy with a drawn face | Uncommon | Squeeze: it crinkles | Looks homemade; cheap to build | Nov 16, F-05c3 |

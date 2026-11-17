@@ -28,7 +28,12 @@ file is the order things happen in and the commands.
    full `scripts/art.sh set <set> textures export renders <Find>` at the end, in the background
    (`<set>` is the folder: `lights`, `figures`, `windups`, `squishies`). To look at a sheet
    without filling the context, shrink it first: `sips -Z 1000 -s format jpeg <png> --out <jpg>`
-   into your scratchpad (the system Python has no PIL).
+   into your scratchpad (the system Python has no PIL). Judge it beside the finds nearest it in
+   kind, at phone size, in one picture: `ffmpeg` is installed (ImageMagick isn't), e.g. four held
+   views cropped to the find and tiled two by two:
+   `ffmpeg -i a.png -i b.png -i c.png -i d.png -filter_complex "[0]crop=iw/2:ih/2:iw/4:ih/3,scale=480:-1[a];...;[a][b][c][d]xstack=inputs=4:layout=0_0|w0_0|0_h0|w0_h0" four.jpg`.
+   Run a long render in the background and wait on its log in the foreground (a loop of
+   `sleep 15` until it prints its exit), so the session doesn't end while it runs.
 2. **Its game row.** Add a `dict(...)` to the `GAME` list at the end of the set's `spec.py`, in
    the order the finds were built (the deal's order). The fields (`src/shared/Finds/Game.luau`
    says what each one does):
@@ -49,16 +54,28 @@ file is the order things happen in and the commands.
 4. **Judge.** Tick the find's line in its `WAVES.md` set table with the date and the step
    (`Nov 17, S1`), then `scripts/art.sh rows` again: the row is now `judged`, so the catalog
    (`Tools/Catalog`), the presses (`Finds/Use`) and the deal (`Deal.Finds`) all take it.
-5. **Check.** `scripts/check.sh` passes. A new press shape gets a Lune spec first
+5. **Check.** `scripts/check.sh` passes. A newly judged find joins the deal, so
+   `tests/stuffdeal.spec.luau` fails with a new fingerprint of what seeds 1 to 60 deal: prove
+   it is only the new find (copy `git show HEAD:src/shared/Finds/Rows.luau` over the file, run
+   `lune run tests/stuffdeal.spec`, put yours back), then write the new number and the find
+   in the comment over `FINGERPRINT`. A new press shape gets a Lune spec first
    (`tests/finduse.spec`); `tests/kitrows.spec` holds the rows that were hand-written before P1
    to what they were.
 6. **Import.** `lune run scripts/upload_art` (when only one find changed, `git checkout` the
    set's other FBX first, or they all go up again), then in Studio's Edit view, Rojo synced:
    `require(game.ReplicatedStorage.Shared.Finds.Kit).import("<Set>", {"<Find>"})`
-   (`CRAFT.md`, "Into Studio"). Import only in Edit. The owner saves the place.
+   (`CRAFT.md`, "Into Studio"). Import only in Edit. A first import also adds the find's line to
+   `Finds/Uploads.luau`, which Studio may already have required: import from a clone of
+   `Shared` (parent it to ServerStorage, `require(clone.Finds.Kit).import(...)`, destroy it).
+   Then count the template's parts and Bones (the goo ball: 1 part, 42 Bones). The owner saves
+   the place.
 7. **Play check.** Start Play. From the Server, set Workspace's `DevBox` attribute to the find's
    key: the next unit opened deals it in a marked box (`docs/STUDIO.md`, "Opening a marked box in
-   Play"). Open a unit, open the box, take the find, press it: see its motion, hear its sound or
+   Play"). Only the climb's floor deals: `DevCorridor.Floor1`'s units, not the test units of
+   the same names by the spawn (`DevCorridor.Unit101` to `108`, which open and deal nothing).
+   Seed 7's `Floor1.T3.Unit107`: its door at (-3.8, 4, -654) faces +X, so stand at
+   (0.7, 3, -654); the box stands at (-14.1, 0, -650). Another session may stop or start Play
+   while you check: if Studio leaves your Play, wait for theirs to end, then start again. Open a unit, open the box, take the find, press it: see its motion, hear its sound or
    see the Sound play, and for a noisy one a monster turning toward it. Bank it at the elevator.
    Read Output for errors and for "Deals: no art in the place for ...". Stop Play. Write what
    you saw in `WAVES.md`'s "Every built find, in the game" table.
