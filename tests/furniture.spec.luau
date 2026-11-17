@@ -204,6 +204,29 @@ do
 	ok(Furniture.ask(string.rep("x", 1000)) == nil, "a long string is refused unread")
 end
 
+-- What the counter's screen is told and reads back (S5-03g4b): cash and owned pieces only.
+do
+	for _, p in Furniture.Pieces do
+		ok(#p.name > 0 and #p.name <= 14, `{p.id} has a short name for its card`)
+	end
+	local shelf =
+		Furniture.shelf({ cash = 298, furniture = { CampBed = 1, Teddy = 3, Pallet = 0 } })
+	ok(shelf.cash == 298 and shelf.owned.CampBed == 1, "the shelf answers cash and owned")
+	ok(shelf.owned.Teddy == nil and shelf.owned.Pallet == nil, "and only pieces, owned")
+	local back = Furniture.read({ cash = 298.6, owned = { CampBed = 2, Teddy = 1, Pallet = "x" } })
+	ok(back ~= nil and back.cash == 298 and back.owned.CampBed == 2, "a shelf reads back")
+	ok(back ~= nil and back.owned.Teddy == nil and back.owned.Pallet == nil, "odd rows dropped")
+	ok(
+		Furniture.read(nil) == nil and Furniture.read({ cash = 0 / 0, owned = {} }) == nil,
+		"junk isn't one"
+	)
+	ok(Furniture.read({ cash = "1", owned = {} }) == nil, "cash must be a number")
+	ok(Furniture.card("CampBed", 150, 0) == "buy", "enough cash: Buy")
+	ok(Furniture.card("CampBed", 149, 0) == "short", "a dollar short: dimmed")
+	ok(Furniture.card("CampBed", 9999, 2) == "capped", "at its cap: Owned, whatever the cash")
+	ok(Furniture.card("Teddy", 9999, 0) == "capped", "not a piece: never Buy")
+end
+
 print(`furniture: {checks - failures}/{checks} passed`)
 if failures > 0 then
 	error(`{failures} failed`)

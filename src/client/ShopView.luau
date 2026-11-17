@@ -36,6 +36,7 @@ local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
 local CutFree = require(ReplicatedStorage.Shared.CutFree)
+local FurnitureTab = require(script.Parent.FurnitureTab)
 local Kept = require(ReplicatedStorage.Shared.Kept)
 local KeptWrap = require(ReplicatedStorage.Shared.KeptWrap.Specs)
 local Lobby = require(ReplicatedStorage.Shared.Lobby)
@@ -66,6 +67,9 @@ local ROOM_X, ROOM_Z, ROOM_Y = 60, 157, 20
 -- Seconds after a Try on's pop that the shop starts to slide away: the pop reads first.
 local TRY_SHUT = 0.12
 local CAMERA_FOV = 30
+-- The shop's tabs, left to right (S5-03g4b): the wrap colours, then this week's furniture.
+type TabName = "wraps" | "furniture"
+local TABS: { TabName } = { "wraps", "furniture" }
 
 -- A card on the shelf: its colour's name (empty for the plain film), its parts, and its figure.
 type Card = {
@@ -168,6 +172,7 @@ function ShopView.new(): Brix.System
 	local inLobby = false
 	local openedAt = -math.huge -- os.clock the shop last opened
 	local canTry = false -- the cards' Try on shows: in front of a mirror, no film on
+	local onTab: TabName = "wraps" -- the tab showing, kept between opens
 
 	-- built in start
 	local topButton: TextButton
@@ -176,6 +181,10 @@ function ShopView.new(): Brix.System
 	local panel: Frame
 	local row: ScrollingFrame
 	local closeButton: TextButton
+	local tabBar: Frame
+	local tabButtons: { [TabName]: TextButton } = {}
+	local underline: Frame
+	local furniture: FurnitureTab.Tab
 	local click: Sound
 	local squeal: Sound
 
@@ -603,6 +612,21 @@ function ShopView.new(): Brix.System
 		for _, card in cards do
 			card.frame.Size = UDim2.fromOffset(math.floor(cardHeight * Shop.CardAspect), cardHeight)
 		end
+		furniture.layout(cardHeight)
+		-- the tabs: words at a fixed size on the header's line, the one you're on underlined
+		local tall = math.floor(height * 0.11)
+		tabBar.Position = UDim2.fromOffset(math.floor(width * 0.035), math.floor(height * 0.03))
+		tabBar.Size = UDim2.fromOffset(math.floor(width * 0.6), tall)
+		local barList = tabBar:FindFirstChildWhichIsA("UIListLayout")
+		if barList then
+			barList.Padding = UDim.new(0, math.floor(tall * 0.8))
+		end
+		for _, b in tabButtons do
+			b.TextSize = math.floor(tall * 0.92)
+		end
+		local closeSize = math.floor(height * 0.1)
+		furniture.purse.Size = UDim2.fromOffset(math.floor(tall * 3), tall)
+		furniture.purse.Position = UDim2.new(1, -(20 + closeSize), 0, math.floor(height * 0.03))
 		local list = row:FindFirstChildWhichIsA("UIListLayout")
 		if list then
 			list.Padding = UDim.new(0, math.floor(cardHeight * Shop.CardGap))
@@ -616,6 +640,10 @@ function ShopView.new(): Brix.System
 	end
 
 	local function step(dt: number)
+		if onTab == "furniture" then
+			furniture.step(dt)
+			return
+		end
 		local spin = os.clock() * Shop.Spin * math.pi * 2
 		for i, card in cards do
 			local a = spin + i * 0.7
@@ -649,6 +677,58 @@ function ShopView.new(): Brix.System
 		end
 		table.clear(cards)
 		table.clear(byName)
+		furniture.clear()
+	end
+
+	-- The wrap cards dealt out left to right, as the shop opens or their tab is flipped to.
+	local function dealWraps()
+		for i, card in cards do
+			card.frame.Visible = true
+			card.pop.Scale = 0
+			task.delay(Shop.SlideIn * 0.4 + (i - 1) * Shop.DealEvery, function()
+				if open and onTab == "wraps" then
+					TweenService:Create(card.pop, POP, { Scale = 1 }):Play()
+				end
+			end)
+		end
+	end
+
+	-- The underline under the tab you're on, and the others' words dimmed.
+	local function markTab(eased: boolean)
+		local b = tabButtons[onTab]
+		local x = b.AbsolutePosition.X - panel.AbsolutePosition.X
+		local y = tabBar.AbsolutePosition.Y + tabBar.AbsoluteSize.Y - panel.AbsolutePosition.Y
+		local goal = {
+			Position = UDim2.fromOffset(x, y + 2),
+			Size = UDim2.fromOffset(b.AbsoluteSize.X, 3),
+		}
+		if eased then
+			TweenService
+				:Create(underline, TweenInfo.new(Shop.TabSlide, Enum.EasingStyle.Quint), goal)
+				:Play()
+		else
+			underline.Position, underline.Size = goal.Position, goal.Size
+		end
+		for name, button in tabButtons do
+			button.TextTransparency = if name == onTab then 0 else Shop.TabDim
+		end
+	end
+
+	-- Shows tab `name`: its cards dealt into the row, the other tab's hidden (their views stop).
+	local function showTab(name: TabName)
+		onTab = name
+		row.CanvasPosition = Vector2.zero
+		if name == "furniture" then
+			for _, card in cards do
+				card.frame.Visible = false
+			end
+			furniture.show()
+		else
+			furniture.hide()
+			dealWraps()
+		end
+		layout()
+		markTab(true)
 	end
 
 	function close()
@@ -709,13 +789,16 @@ function ShopView.new(): Brix.System
 		TweenService:Create(backdrop, SLIDE_IN, { BackgroundTransparency = 0.55 }):Play()
 		panel.Position = UDim2.fromScale(0.5, 1 + Shop.SlideFrom)
 		TweenService:Create(panel, SLIDE_IN, { Position = UDim2.new(0.5, 0, 1, -10) }):Play()
-		for i, card in cards do
-			task.delay(Shop.SlideIn * 0.4 + (i - 1) * Shop.DealEvery, function()
-				if open then
-					TweenService:Create(card.pop, POP, { Scale = 1 }):Play()
-				end
-			end)
+		if onTab == "furniture" then
+			for _, card in cards do
+				card.frame.Visible = false
+			end
+			furniture.show()
+			layout()
+		else
+			dealWraps()
 		end
+		task.defer(markTab, false)
 		play(Shop.OpenPitch)
 		step(0)
 		stepping = RunService.RenderStepped:Connect(step)
@@ -816,17 +899,38 @@ function ShopView.new(): Brix.System
 		ps.Thickness = 1
 		ps.Parent = panel
 
-		local title = Instance.new("TextLabel")
-		title.Name = "Title"
-		title.BackgroundTransparency = 1
-		title.Position = UDim2.fromScale(0.035, 0.03)
-		title.Size = UDim2.fromScale(0.5, 0.11)
-		title.FontFace = Font.fromEnum(Enum.Font.BuilderSansExtraBold)
-		title.TextScaled = true
-		title.TextXAlignment = Enum.TextXAlignment.Left
-		title.TextColor3 = INK
-		title.Text = Shop.Words.title
-		title.Parent = panel
+		-- the tabs where the title was: Wraps, Furniture
+		tabBar = Instance.new("Frame")
+		tabBar.Name = "Tabs"
+		tabBar.BackgroundTransparency = 1
+		tabBar.Parent = panel
+		local barList = Instance.new("UIListLayout")
+		barList.FillDirection = Enum.FillDirection.Horizontal
+		barList.SortOrder = Enum.SortOrder.LayoutOrder
+		barList.VerticalAlignment = Enum.VerticalAlignment.Center
+		barList.Parent = tabBar
+		for i, name in TABS do
+			local b = Instance.new("TextButton")
+			b.Name = name
+			b.LayoutOrder = i
+			b.AutoButtonColor = false
+			b.BackgroundTransparency = 1
+			b.AutomaticSize = Enum.AutomaticSize.X
+			b.Size = UDim2.fromScale(0, 1)
+			b.FontFace = Font.fromEnum(Enum.Font.BuilderSansExtraBold)
+			b.TextColor3 = INK
+			b.Text = if name == "wraps" then Shop.Words.title else Shop.Words.furniture
+			b.Parent = tabBar
+			tabButtons[name :: TabName] = b
+		end
+		underline = Instance.new("Frame")
+		underline.Name = "Underline"
+		underline.BackgroundColor3 = INK
+		underline.BorderSizePixel = 0
+		underline.Parent = panel -- beside the tabs' row, not in its list
+		local ul = Instance.new("UICorner")
+		ul.CornerRadius = UDim.new(0.5, 0)
+		ul.Parent = underline
 
 		closeButton = Instance.new("TextButton")
 		closeButton.Name = "Close"
@@ -876,6 +980,19 @@ function ShopView.new(): Brix.System
 		squeal.PlaybackSpeed = Shop.SnapPitch
 		squeal.Volume = Shop.SnapVolume
 		squeal.Parent = g
+
+		furniture = FurnitureTab.new(panel, row, { click = play })
+		for name, b in tabButtons do
+			table.insert(
+				connections,
+				b.Activated:Connect(function()
+					if open and onTab ~= name and os.clock() - openedAt >= Shop.SlideIn then
+						play(1.1)
+						showTab(name :: TabName)
+					end
+				end)
+			)
+		end
 
 		g.Parent = player:WaitForChild("PlayerGui")
 		layout()
@@ -960,6 +1077,7 @@ function ShopView.new(): Brix.System
 		end
 		table.clear(connections)
 		clear()
+		furniture.destroy()
 		if gui then
 			gui:Destroy()
 			gui = nil

@@ -16,7 +16,9 @@
 	that fails undoes the buy whole (`Furniture.unbuy`), and the buyer is told "save": never a
 	piece shown as yours that a rejoin would take away, never cash gone with nothing for it.
 
-	No screen yet (S5-03g4b). In Studio, `ServerStorage.FurnitureTest:Invoke(player, id)` buys as
+	`FurnitureShelf` (`Furniture.ShelfRemote`, a RemoteFunction, rate-limited) answers the counter's
+	screen (FurnitureTab, S5-03g4b) the asker's cash and owned pieces; it works the stock out
+	itself. In Studio, `ServerStorage.FurnitureTest:Invoke(player, id)` buys as
 	the remote does, unthrottled, and answers "" or the refusal; `:Invoke(player)` answers this
 	week's stock, the save's cash and its furniture.
 ]]
@@ -40,6 +42,7 @@ function Furnishing.new(): FurnishingSystem
 	local connections: { RBXScriptConnection } = {}
 	local made: { Instance } = {}
 	local limit = Brix.RateLimit.bucket(Furniture.Limit)
+	local shelfLimit = Brix.RateLimit.bucket(Furniture.ShelfLimit)
 	local saving: Saving.SavingSystem? = nil
 	local bought: RemoteEvent? = nil
 	local buying: { [Player]: true } = {} -- a buy's write is out
@@ -115,8 +118,19 @@ function Furnishing.new(): FurnishingSystem
 			answer.Name = Furniture.BoughtRemote
 			answer.Parent = folder
 			bought = answer
+			local shelf = Instance.new("RemoteFunction")
+			shelf.Name = Furniture.ShelfRemote
+			shelf.OnServerInvoke = function(player: Player): Furniture.Shelf?
+				if not shelfLimit:take(player, os.clock()) then
+					return nil
+				end
+				local data = if saving then saving:data(player) else nil
+				return if data then Furniture.shelf(data) else nil
+			end
+			shelf.Parent = folder
 			table.insert(made, ask)
 			table.insert(made, answer)
+			table.insert(made, shelf)
 			table.insert(connections, ask.OnServerEvent:Connect(onBuy))
 
 			-- Studio only (see the header). No client reaches it.
@@ -145,6 +159,7 @@ function Furnishing.new(): FurnishingSystem
 				connections,
 				Players.PlayerRemoving:Connect(function(player: Player)
 					limit:forget(player)
+					shelfLimit:forget(player)
 					buying[player] = nil
 				end)
 			)

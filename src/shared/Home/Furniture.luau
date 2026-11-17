@@ -32,6 +32,7 @@ export type Stands = "Floor" | "Wall" | "Ceiling"
 -- One piece at the counter.
 export type Piece = {
 	id: string, -- its art piece's name in `Specs.Pieces`, and what a save counts it by
+	name: string, -- what a player calls it, on its card
 	parts: { string }, -- its MeshParts in the home's art
 	price: number, -- cash, whole
 	stands: Stands,
@@ -48,9 +49,10 @@ export type Wallet = { cash: number, furniture: { [string]: number } }
 -- One floor's pay at its gate, the first floor's: the yardstick every price is counted in.
 local GATE = Pay.forFloor(1)
 
-local function row(id: string, floors: number, stands: Stands, cap: number): Piece
+local function row(id: string, name: string, floors: number, stands: Stands, cap: number): Piece
 	return table.freeze({
 		id = id,
+		name = name,
 		parts = table.freeze(table.clone(Specs.Pieces[id] or {})),
 		price = GATE * floors,
 		stands = stands,
@@ -64,14 +66,14 @@ end
 -- as a player would (seats round a table, a bed or two, a few lights) without one buying the
 -- counter bare. All defaults for the owner (`OWNER.md`).
 Furniture.Pieces = table.freeze({
-	row("MilkCrate", 3, "Floor", 6), -- a seat and a stand: the first thing anyone buys
-	row("Blanket", 4, "Floor", 4), -- a floor cushion round the coffee table
-	row("FoldingTable", 6, "Floor", 2), -- a table to gather round
-	row("Pallet", 8, "Floor", 2), -- the coffee table
-	row("SteelShelf", 10, "Floor", 3), -- four tiers of finds on show
-	row("CampBed", 15, "Floor", 2), -- the sleepover: a good climb's pay
-	row("StringLights", 18, "Ceiling", 4), -- warm bulbs across the ceiling
-	row("NeonSign", 25, "Wall", 2), -- the glowing moon: saved up for
+	row("MilkCrate", "Milk crate", 3, "Floor", 6), -- a seat and a stand: the first thing anyone buys
+	row("Blanket", "Blanket", 4, "Floor", 4), -- a floor cushion round the coffee table
+	row("FoldingTable", "Folding table", 6, "Floor", 2), -- a table to gather round
+	row("Pallet", "Pallet", 8, "Floor", 2), -- the coffee table
+	row("SteelShelf", "Steel shelf", 10, "Floor", 3), -- four tiers of finds on show
+	row("CampBed", "Camp bed", 15, "Floor", 2), -- the sleepover: a good climb's pay
+	row("StringLights", "String lights", 18, "Ceiling", 4), -- warm bulbs across the ceiling
+	row("NeonSign", "Neon moon", 25, "Wall", 2), -- the glowing moon: saved up for
 }) :: { Piece }
 
 local byId: { [string]: Piece } = {}
@@ -108,8 +110,21 @@ Furniture.Grace = 120
 -- ("save" when the write failed and the buy was undone, "busy" while a buy's write is out).
 Furniture.Remote = "BuyFurniture"
 Furniture.BoughtRemote = "FurnitureBought"
+-- `FurnitureShelf` (a RemoteFunction, nothing carried) answers the counter's screen what it can't
+-- work out itself: the asker's cash and the pieces they own (`Shelf`). The stock it works out
+-- from the date, as the server does.
+Furniture.ShelfRemote = "FurnitureShelf"
 -- How often one player's buys are heard: a tap every so often, never a stream.
 Furniture.Limit = table.freeze({ perSecond = 2, burst = 3 })
+-- How often one player's shelf asks are answered: an open and a tab flip or two.
+Furniture.ShelfLimit = table.freeze({ perSecond = 2, burst = 4 })
+
+-- What the shelf answers: your cash and how many of each piece you own (by id, owned ones only).
+export type Shelf = { cash: number, owned: { [string]: number } }
+
+-- A card's state for a piece, as its button reads: its price to Buy, its price dimmed (short of
+-- cash: the press does nothing), or Owned (as many as you may have: no Buy).
+export type Card = "buy" | "short" | "capped"
 
 -- The longest id the remote takes: every piece's is far shorter.
 local ID_MAX = 32
@@ -213,6 +228,47 @@ function Furniture.unbuy(data: Wallet, id: string)
 	else
 		data.furniture[id] = nil
 	end
+end
+
+-- What the shelf answers for a save: its cash and its owned pieces (known ones only).
+function Furniture.shelf(data: Wallet): Shelf
+	local owned: { [string]: number } = {}
+	for id, n in data.furniture do
+		if byId[id] and n > 0 then
+			owned[id] = n
+		end
+	end
+	return { cash = data.cash, owned = owned }
+end
+
+-- The shelf the screen was answered, read safely (plain data typed at the one boundary): nil if
+-- it isn't one. Unknown pieces and odd counts are dropped.
+function Furniture.read(value: unknown): Shelf?
+	if type(value) ~= "table" then
+		return nil
+	end
+	local t = value :: { [string]: unknown }
+	local cash, owned = t.cash, t.owned
+	if type(cash) ~= "number" or cash ~= cash or type(owned) ~= "table" then
+		return nil
+	end
+	local out: { [string]: number } = {}
+	for id, n in owned :: { [unknown]: unknown } do
+		if type(id) == "string" and byId[id] and type(n) == "number" and n == n and n >= 1 then
+			out[id] = math.floor(n)
+		end
+	end
+	return { cash = math.max(0, math.floor(cash)), owned = out }
+end
+
+-- A card's state for piece `id` with `cash` and `owned` of it: Owned at its cap, dimmed short of
+-- its price, else Buy.
+function Furniture.card(id: string, cash: number, owned: number): Card
+	local piece = byId[id]
+	if not piece or owned >= piece.cap then
+		return "capped"
+	end
+	return if cash < piece.price then "short" else "buy"
 end
 
 -- The value the remote carried, as a piece's id, or nil when it isn't one: never trusts the

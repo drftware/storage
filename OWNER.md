@@ -140,7 +140,7 @@ nowhere else.
   a cream pillow, twelve warm globe bulbs in three swags, and a moon and star for the neon (warm
   yellow; the name card's neon is the word, this one the picture).
 - [ ] **The furniture's prices, how many you may own, and the weekly stock** (S5-03g4a, D-333;
-  sold on the server now, no screen until S5-03g4b). Prices are counted in a first floor's gate
+  on the counter's Furniture tab now, S5-03g4b). Prices are counted in a first floor's gate
   pay (10 cash), so they move if the pay does. My defaults, say which to change:
   1. Milk crate 30 (own up to 6). Moving blanket 40 (4). Folding table 60 (2). Pallet coffee
      table 80 (2). Steel shelf 100 (3). Camp bed 150 (2). String lights 180 (4). Neon moon 250 (2).
@@ -149,6 +149,17 @@ nowhere else.
      next week, never a random roll. Say if you'd rather show all eight, or a different count.
   3. A buy made in the two minutes after Monday's change still sells last week's piece, so a
      shop left open on Sunday night isn't refused.
+- [ ] **Buy furniture at the counter** (S5-03g4b, D-334; seen in Studio Play on the A16:
+  `docs/art/S5-03g4b-tab.jpg`, `docs/art/S5-03g4b-in-your-box.jpg`). On your phone:
+  1. Walk up to the counter, press Shop, tap Furniture: five pieces turn in their cards, your
+     cash in the gold pill top right. Do the pieces read at that size, and is the turn calm?
+  2. Buy a milk crate: the button stays pressed for half a second, then your cash ticks down in a
+     rattle of coins, the crate drops toward the button with the job box lid's clunk, the button
+     says "In your box" and the crate's ×count pops. Does it feel like a buy, and is it quick?
+  3. With less cash than a price (sell nothing, buy until short), that price is dimmed; tapping
+     it nudges your cash pill with a dull click. Is that enough of an answer, with no words?
+  4. Buy one piece up to its cap: its button says Owned and does nothing.
+  5. Flip back to Wraps and out: the tab you were on is the one the shop opens to next.
 - [ ] **Come home to your shelf** (S5-03c1b, D-285; seen in Studio Play Nov 17 on a 1380x761
   window, not at phone size; pictures in `docs/art/S5-03c1b-*.jpg`). Play with one player. On the
   Server, `game.ServerStorage.ShelfTest:Invoke(game.Players:GetPlayers()[1], "Boombox")` keeps a

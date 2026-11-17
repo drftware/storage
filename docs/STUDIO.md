@@ -280,6 +280,13 @@ verified: a doc page, Studio, or "untested".
   `screen_capture` timed out. A Client `execute_luau` counting `RenderStepped` for a second read
   0: the viewport wasn't drawing (the Mac's screen asleep or Studio hidden). Count frames first
   when prompts won't show; nothing on screen works until it draws again.
+- **A black capture means the display is asleep** (S5-03g4b, Nov 17): with the owner away,
+  `screencapture -l` said "could not create image from window" and a whole-screen capture was
+  black. Run `caffeinate -u -t 8 &` first (it counts as the user's touch and wakes the display),
+  then capture; it worked at once. Both need the sandbox off.
+- **Clicking a ScreenGui button on the A16** (S5-03g4b): for a gui object's `AbsolutePosition`
+  (gx, gy) in an `IgnoreGuiInset` ScreenGui, click at (gx + 47, gy): the touch's y is already in
+  the gui's space. `user_mouse_input`'s `instance_path` missed (it landed on the shop's backdrop).
 - **When `screen_capture` times out, capture the window from macOS** (S5-03b seen, Nov 17):
   bring Studio to the front (`osascript -e 'tell application "RobloxStudio" to activate'`; it then
   drew at 60 frames a second), get its window number from a few lines of Swift run with `swift`

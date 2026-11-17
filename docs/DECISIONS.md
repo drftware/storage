@@ -8506,3 +8506,32 @@ ship store (bought with the run's pay).
   bed bought, the save written (version 12, cash 478 to 328) before the answer; with
   `DevSaveFails` on, a crate was undone ("save", cash and count as before); a crate bought through
   the remote from the client answered in 0.5 s after the write, cash 298.
+
+## D-334 The counter's furniture on screen: a second tab, held until the save answers (S5-03g4b, 2026-11-17)
+
+The moment: back from a climb you flip the counter's shop to Furniture and this week's pieces turn
+in their cards; you buy the camp bed and your cash ticks down, the bed drops into its box with a
+clunk and the card says it's in your box. Fortnite's item shop and Nook's Cranny (a stock that
+changes), Lethal Company's ship store.
+- **A tab beside the wraps, not a second shop.** The shop's title became two words, Wraps and
+  Furniture, the one you're on underlined; the shop opens on the tab you last used. The cards
+  share the wraps' row, size and deal; the furniture lives in its own module (FurnitureTab) that
+  ShopView hosts, as Arrange hosts LooksTab.
+- **The screen works the stock out itself** from the server's clock (`GetServerTimeNow`), the
+  same sum the server does; only your cash and owned counts come from the server, on a new
+  `FurnitureShelf` RemoteFunction (rate-limited) rather than the wraps' shelf, so the wraps'
+  answer stays the wraps'.
+- **Never yours before the save says so.** Buy holds the button pressed and dimmed until
+  `FurnitureBought` answers (after the write); only "" ticks the cash down and drops the piece.
+  Every other answer settles the card to the server's numbers, the coins silent; "notStocked"
+  deals this week's pieces again. An answer lost for 8 s settles the card and asks again.
+- **The answer's sounds are the game's own**: the coins' tick from the job box's count (falling
+  in pitch as cash goes out, where a sale's rises) and the job box lid's clunk, lighter, as the
+  piece lands: "it's in your box" heard as the box you know.
+- **Short of cash: the price dimmed, no words.** A press on it nudges your cash pill with a dull
+  click (the vending machine's blinking price for too few coins). At its cap a card says Owned.
+- **The pieces are the home's real art** (`Home.template()`), framed from `Specs.Parts`' boxes.
+  Floor pieces turn; the neon moon and the string lights sway either side of facing you, since
+  their backs are bare. Five small viewports, rendered only while the tab shows.
+- **Seen in Studio Play on the A16** (685x338): the five cards, $298, the crate and bed ×1; a crate
+  bought through the screen ticked $298 to $268 and said In your box, ×2.

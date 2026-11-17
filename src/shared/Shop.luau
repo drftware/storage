@@ -54,6 +54,9 @@ Shop.Words = table.freeze({
 	plain = "Plain",
 	open = "Shop", -- the counter's prompt and the lobby's button
 	try = "Try on", -- a card's figure: you in that colour at the mirror beside the counter
+	furniture = "Furniture", -- the second tab: this week's pieces for your home (S5-03g4b)
+	owned = "Owned", -- a piece you own as many of as you may
+	inBox = "In your box", -- a piece just bought: it waits in your job box
 })
 
 -- The counter's prompt: in the lobby's own frame, just in front of the counter's face (its front
@@ -111,6 +114,38 @@ Shop.FlashTime = 0.6
 Shop.Click = table.freeze({ id = "rbxassetid://15675059323", pitch = 1, volume = 0.35 })
 -- The shop's open: the click pitched down, a slide's thunk.
 Shop.OpenPitch = 0.8
+
+-- The furniture tab (S5-03g4b, FurnitureTab). The moment: you flip to Furniture and this week's
+-- pieces turn slowly in their cards; Buy, and your cash ticks down, the piece drops into its box
+-- with the job box lid's clunk and the card says it's in your box.
+-- Turns a second a floor piece makes in its card, and how far (degrees) a wall or ceiling piece
+-- sways either side of facing you (its back is bare, so it never turns round).
+Shop.PieceSpin = 0.09
+Shop.PieceSway = 35
+-- Degrees the cards' cameras look down on a piece: you see its top, as you would standing by it.
+Shop.PieceTilt = 18
+-- Seconds the tabs' underline slides, and the cards' dim of a tab you're not on.
+Shop.TabSlide = 0.22
+Shop.TabDim = 0.55
+-- The buy's answer: seconds the cash takes to tick down (a fast rattle of the coins' ticks, each
+-- lower than the last), the piece's drop into its box, and how long the card says it's in your box
+-- before its price comes back.
+Shop.SpendTime = 0.55
+Shop.SpendFall = 0.45 -- how much lower the last tick is than the first
+Shop.DropTime = 0.32
+Shop.InBoxFor = 1.6
+-- The clunk as the piece lands: the job box lid's (JobBox.Clunk's cut), a touch lighter.
+Shop.Clunk = table.freeze({
+	id = "rbxassetid://9116436662",
+	from = 1.45,
+	length = 0.5,
+	volume = 0.5,
+	pitch = 0.8,
+})
+-- A press on a price you can't pay yet: no words, your cash nudges side to side (the cause, on
+-- screen) with a dull click, as the vending machine's price blinks for too few coins.
+Shop.ShortNudge = 0.3
+Shop.ShortPitch = 0.6
 
 -- The value a remote carried, as a colour's name for `WearWrap` (empty for the plain film) or
 -- `BuyWrap` (`plain` false: a colour only), or nil when it isn't one: never trusts the client.

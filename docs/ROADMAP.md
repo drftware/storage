@@ -2705,7 +2705,8 @@ Done when players watch the results to the end and change their perks between cl
         week's stock, under the cap, cash enough; rate-limited) takes the cash, adds the piece,
         writes the save and only then answers. Lune specs for the stock, the check, the
         migration. Prices are defaults for the owner (`OWNER.md`), scaled from a floor's pay.
-      - [ ] **S5-03g4b The furniture at the counter on screen**: a second tab beside the wrap
+      - [x] **S5-03g4b The furniture at the counter on screen** (D-334; seen in Studio Play on the
+        A16, `docs/art/S5-03g4b-*.jpg`): a second tab beside the wrap
         colours in the counter's shop (ShopView): this week's pieces turning in their cards, each
         with its price and Buy; a buy answers with the coins ticking down, a thunk and the card
         saying it's in your box; one you can't afford dims its price, with no popup. The server
