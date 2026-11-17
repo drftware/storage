@@ -123,7 +123,7 @@ function InfraredView.new(hull: () -> BasePart?): Brix.System
 			then
 				local p = RollUpDoor.frame(unit):PointToObjectSpace(at)
 				if
-					ShutIn.inside(RollUpDoor.spec(unit), p.X, p.Y, p.Z)
+					ShutIn.inside(RollUpDoor.room(unit), p.X, p.Y, p.Z)
 					and RollUpDoor.rise(unit) > ShutIn.BulbOffRise
 				then
 					return true, `{unit.Name}'s bulb` -- in a unit, its door up: its bulb is lit

@@ -2377,7 +2377,8 @@ Done when players watch the results to the end and change their perks between cl
         with `PlotPick.inOrder()` and `Roblox.PlayerPlots` (a plot claimed on join, let go on leave,
         a line when full, signals and a `Plot` attribute), its suite and specs green; the pin moved
         to `482368f`. Brix's `main` isn't pushed yet (OWNER.md).
-      - [ ] **S5-03a3b The game's homes on it**: FrontOffice adopts `PlayerPlots` for the twelve homes:
+      - [x] **S5-03a3b The game's homes on it** (D-274; seen in Studio Play with one player, the
+        two-player door test waits on `OWNER.md`): FrontOffice adopts `PlayerPlots` for the twelve homes:
         your name over your door, doors up by default, a pulled-down door locked to all but its
         holder (the climb's locked rattle), unclaimed homes padlocked, the switch the holder's only
         (D-263), ShutIn's depth for a home. It runs Brix's ENG-25b in Studio as it goes.
@@ -2716,7 +2717,16 @@ actions themselves and dealing the new finds on floors are later game tickets.
     - [ ] **F-G1e3 One press, one noise (V3).** The kazoo, toy drum, farm-animal spinner,
       cowboy doll and singing fish: each its motion, its sound and a loudness on the jack's
       one-shot noise. The doll and the fish ship the owner's defaults (the cord's whirr, the
-      motor's hum) until their voices are recorded (`OWNER.md`).
+      motor's hum) until their voices are recorded (`OWNER.md`). Split at a find:
+      - [x] **F-G1e3a The timed sound, the kazoo and the drum.** (Nov 17, V3a; D-274) A step's
+        `cues` play sounds partway into its motion (`Use.timeline`, with its `hit`'s beats); the
+        kazoo hums once at your lips, heard 60 studs; the drum bangs at each of its five hits,
+        heard 130. Both seen in Play, each waking a Mannequin that turned to it.
+      - [ ] **F-G1e3b The spinner, the doll and the fish.** Their rows on V3a's `cues` (the
+        spinner: the lever's clack, a tick each notch on `FarmSpinner_Arrow`'s turn, the cat's
+        meow at 3.07 s, where its arrow stops as built; the doll: the cord's whirr at 0.62 s; the
+        fish: the motor's hum from 0.28 s), each a `heard`; and the kazoo's lift to your lips in
+        hand (its root's motion, which the hand holds still today, so only its skin moves).
     - [ ] **F-G1e4 The siren car (V4).** It rolls as the toy car does, its beacon spins and
       lights the hall while it rolls, and its wail lures along its path (F-G1e2's lure).
     - [ ] **F-G1e5 The rest the audit found (V5).** Split before starting: (a) a press on a
@@ -2799,6 +2809,13 @@ actions themselves and dealing the new finds on floors are later game tickets.
   the wall, under the path's stacks. Both read as wedged under the boxes; a fall that stops on
   the stacks would be better.
 
+- **The farm spinner's arrow lands on any animal (F-G1e3, D-274):** as built it always stops on
+  the cat. The server picks an animal each pull, the view adds 45 degrees a step to the arrow's
+  spin keys and plays that animal's call; the next pull starts from where it stopped (the art's
+  README, "For the game"), not snapping back to the cow.
+- **A beat heard twice when the server's stamp lands (F-G1e3a):** the drum's third bang played
+  twice in Play; `FindUseView`'s `beat` recounts from the server's stamp once it replaces your
+  predicted one. Count by the server clock so a played beat isn't due again.
 - **The carousel's tune slows as it runs down (F-G1e2b, D-272):** its music box plays at full
   speed to the end. A recording of a box running down, or a tempo change that keeps the pitch.
 - **Finds' own sounds (F-G1a):** the Nov 15 finds borrow the tools' and the bedroom set's pick-up

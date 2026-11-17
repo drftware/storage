@@ -9,6 +9,13 @@ nowhere else.
   `482368f` (the plots each player's home comes from), which is only on this Mac. In `../engine`,
   `git push origin main`, then this repository. Pushed the other way round, a fresh clone can't find
   the pinned commit.
+- [ ] **Your home, with a friend** (S5-03a3b, D-274; seen with one player only). Studio's Test
+  tab, Clients and Servers, 2 players. Look for: each player gets a home by the front door (1 then
+  7), their name sprays onto its card with a soft hiss and the door rolls up. Player 1 pulls their
+  door down; player 2 presses Open and Peek on it: it rattles and stays shut, no words. Player 1
+  opens it again. Player 2 doesn't see player 1's light switch. Close player 2's window: their card
+  fades blank, their door comes down and a padlock clicks on. Listen: is the hiss right for a name
+  going up? And my default: anyone may pull an open home's door down; only opening is the holder's.
 - [ ] **If Studio stops getting changes, click Connect** in Studio's Rojo plugin (connected Nov 13
   at 23:30; each session checks it first and says so in HANDOFF.md).
 - [ ] **Playing on your phone** (D-109): with Rojo connected, use File > Publish to Roblox (Save
@@ -238,6 +245,14 @@ nowhere else.
      seconds. The tune doesn't slow as it runs down yet (ROADMAP polish). Loudness defaults
      chosen: the robot and bird carry 90 studs (as the teeth), the mouse and carousel 60 (down
      the hall, as the duck). Right?
+- [ ] **Try (F-G1e3a, built Nov 17, D-274; seen in Studio Play, not on a phone):** the kazoo and
+  the toy drum. Same setup, `GiveFind` each, then press.
+  1. Blow the **kazoo**: one buzzy note once it's at your lips, about a second. Does it sound
+     like a kazoo, not a trumpet? (It's the last note of a kazoo fanfare, played a little low.)
+  2. Bang the **drum**: left, right, left, right, then both sticks, a bang each. Does the double
+     sound louder? (One recording for all five today.)
+  3. Loudness defaults chosen: the kazoo carries 60 studs (down the hall, as the duck), the drum
+     130 (as the air horn: the catalog says "loud"). Right?
 - [ ] **Try (F-G1b3b, built Nov 16, D-234; seen in Studio Play, not on a phone):** drop a lit
   lantern to stop the Mannequin.
   1. In Studio, set Workspace's `DevFloorNumber` to 1 and press Play. In the command bar (Server),

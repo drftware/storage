@@ -206,6 +206,33 @@ for _, state in Door.States do
 	end
 end
 
+-- --- a held door: a home's (D-274) ------------------------------------------------------------
+
+local function held(state: Door.State, action: Door.Action, side: Door.Side, holder: boolean)
+	return Door.decideHeld(state, action, side, BOTH, holder)
+end
+ok(held("Closed", "Open", "Hall", true).motion == "Open", "a home opens for its holder")
+local stranger = held("Closed", "Open", "Hall", false)
+ok(
+	not stranger.ok and stranger.motion == "Rattle" and stranger.refusal == nil,
+	"anyone else's open rattles, wordless"
+)
+ok(held("Closed", "Peek", "Hall", false).motion == "Rattle", "anyone else's peek rattles too")
+ok(
+	held("Peeking", "Open", "Hall", false).motion == "Rattle",
+	"a peeked home won't open for them either"
+)
+ok(held("Open", "Close", "Hall", false).ok, "an open home can be pulled down by anyone")
+ok(held("Closed", "Lift", "Inside", false).motion == "LiftInside", "anyone shut in lifts out")
+local spare = held("Locked", "Lift", "Inside", false)
+ok(
+	spare.ok and spare.motion == "LiftInside" and spare.lock == false,
+	"a padlocked home lifts from inside"
+)
+ok(held("Locked", "Open", "Hall", true).refusal == nil, "a spare home rattles, wordless")
+ok(not held("Locked", "Cut", "Hall", true).ok, "nobody cuts a home's padlock")
+ok(not held("Closed", "Lock", "Hall", true).ok, "nobody padlocks a home")
+
 print(string.format("door: %d checks, %d failures", checks, failures))
 if failures > 0 then
 	error("door spec failed")

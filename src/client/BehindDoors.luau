@@ -35,6 +35,7 @@ type Room = {
 	unit: Model,
 	frame: CFrame,
 	spec: Specs.Spec,
+	room: ShutIn.Room, -- the room behind it: a home's is deeper than its door's unit's
 	viewerInside: boolean, -- refreshed each step from the camera
 }
 
@@ -180,6 +181,7 @@ function BehindDoors.new(): Brix.System
 			unit = inst,
 			frame = RollUpDoor.frame(inst),
 			spec = RollUpDoor.spec(inst),
+			room = RollUpDoor.room(inst),
 			viewerInside = false,
 		})
 	end
@@ -280,7 +282,7 @@ function BehindDoors.new(): Brix.System
 	local function behindShutDoor(at: Vector3): boolean
 		for _, r in rooms do
 			local p = r.frame:PointToObjectSpace(at)
-			local inside = ShutIn.inside(r.spec, p.X, p.Y, p.Z)
+			local inside = ShutIn.inside(r.room, p.X, p.Y, p.Z)
 			-- Only a room exactly one of you is in can hide; read the door only then.
 			if
 				inside ~= r.viewerInside
@@ -336,7 +338,7 @@ function BehindDoors.new(): Brix.System
 			local shutIn: Room? = nil
 			for _, r in rooms do
 				local p = r.frame:PointToObjectSpace(eye)
-				r.viewerInside = ShutIn.inside(r.spec, p.X, p.Y, p.Z)
+				r.viewerInside = ShutIn.inside(r.room, p.X, p.Y, p.Z)
 				if r.viewerInside then
 					shutIn = r
 				end

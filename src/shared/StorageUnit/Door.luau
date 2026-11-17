@@ -287,4 +287,44 @@ function Door.decide(state: State, action: Action, side: Side, tools: Tools): Ve
 	return { ok = true, motion = MOTIONS[action] }
 end
 
+--[[
+	A held door: a home's (D-259, S5-03a3b), its holder's to open. The holder's UserId is on the
+	unit as `HolderAttribute`, 0 while nobody holds it (a spare home); a door without it is the
+	climb's, anyone's. Precedent: Adopt Me's house locked against anyone but its owner.
+]]
+Door.HolderAttribute = "DoorHolder"
+
+--[[
+	`decide` for a held door, `holder` saying whether the presser holds it. From the hall only its
+	holder opens or peeks it; anyone else's try rattles it against the lock and it doesn't move,
+	with no words (the holder's name is over the door, a spare's padlock is on it). Nobody puts a
+	padlock on or cuts one off by hand: the game does. From inside it always lifts, padlocked or
+	not (the padlock comes off as it goes up): nobody is ever shut in at home.
+]]
+function Door.decideHeld(
+	state: State,
+	action: Action,
+	side: Side,
+	tools: Tools,
+	holder: boolean
+): Verdict
+	if action == "Lock" or action == "Cut" then
+		return REFUSED
+	end
+	local inHall = side == "Hall"
+	if state == "Locked" then
+		if action == "Lift" and not inHall then
+			return { ok = true, motion = "LiftInside", lock = false }
+		elseif (action == "Open" or action == "Peek") and inHall then
+			return { ok = false, motion = "Rattle" }
+		end
+		return REFUSED
+	end
+	if (action == "Open" or action == "Peek") and inHall and not holder then
+		local v = Door.decide(state, action, side, tools)
+		return if v.ok then { ok = false, motion = "Rattle" } else v
+	end
+	return Door.decide(state, action, side, tools)
+end
+
 return Door

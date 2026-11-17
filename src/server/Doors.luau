@@ -94,7 +94,8 @@ export type Doors = Brix.System & {
 	-- the way up by itself ("Open", a wrong code's, S2-04), only from shut or peeked. Fires `acted`
 	-- with its sound's reach, so keepers hear it as they hear a player's. Or the tap's answer on a
 	-- door still easing down over its sleeper (S2-05a): set down soft ("Settle") or dropped with a
-	-- bang ("Drop"). Whether it moved.
+	-- bang ("Drop"). Or a door pulled down by the game ("Close", a home let go), from any rise.
+	-- Whether it moved.
 	move: (self: any, unit: Model, kind: Motion.Kind) -> boolean,
 }
 
@@ -205,7 +206,9 @@ function Doors.new(): Doors
 	-- can't be seen. Its number is painted on the door. Only Open and Lift carry it, the head of
 	-- each side, so it shows once.
 	local function nameOf(entry: Entry, action: Door.Action): string
-		if entry.state == "Locked" and (action == "Open" or action == "Lift") then
+		-- a home's door (held, D-274) says nothing: its padlock and its holder's name are in sight
+		local held = entry.unit:GetAttribute(Door.HolderAttribute) ~= nil
+		if entry.state == "Locked" and not held and (action == "Open" or action == "Lift") then
 			return "Padlocked"
 		end
 		return ""
@@ -233,11 +236,14 @@ function Doors.new(): Doors
 			return
 		end
 		entry.state = state
+		-- nobody padlocks a home or cuts one's padlock off: the game does (Door.decideHeld)
+		local held = unit:GetAttribute(Door.HolderAttribute) ~= nil
 		for _, point: Door.Side in Door.Sides do
 			local offered = Door.offers(state, point)
 			for action, p in entry.buttons do
 				if (action == "Lift") == (point == "Inside") then
-					p.Enabled = table.find(offered, action) ~= nil
+					local byGame = held and (action == "Lock" or action == "Cut")
+					p.Enabled = table.find(offered, action) ~= nil and not byGame
 				end
 			end
 		end
@@ -295,18 +301,29 @@ function Doors.new(): Doors
 		return frame:PointToWorldSpace(Vector3.new(x, y, home.Z))
 	end
 
+	-- For a held door (a home's, D-274), whether `player` holds it; nil for the climb's doors.
+	local function holds(entry: Entry, player: Player): boolean?
+		local holder = entry.unit:GetAttribute(Door.HolderAttribute)
+		if type(holder) ~= "number" then
+			return nil
+		end
+		return holder ~= 0 and holder == player.UserId
+	end
+
 	--[[
 		How `action` by someone whose body is `root`, carrying `tools`, is decided: where the server
 		sees them or a moment on (Arrival), the first moment that lets it happen, else the answer
 		where it sees them. With `reach`, only moments within it of the button's spot count, and nil
-		if none is. Only a body crossing the door line as it lands sees two sides here.
+		if none is. Only a body crossing the door line as it lands sees two sides here. `held` is
+		`holds`'s answer: a home's door is decided by Door.decideHeld.
 	]]
 	local function judge(
 		entry: Entry,
 		action: Door.Action,
 		root: BasePart,
 		tools: Door.Tools,
-		reach: number?
+		reach: number?,
+		held: boolean?
 	): Door.Verdict?
 		local from = root.Position
 		local v = root.AssemblyLinearVelocity
@@ -315,7 +332,13 @@ function Doors.new(): Doors
 		for i = 0, Arrival.Steps do
 			local at = from + v * Arrival.ahead(i)
 			if not reach or (at - nearest(entry, spot, at)).Magnitude <= reach then
-				local verdict = Door.decide(entry.state, action, sideOf(entry, at), tools)
+				local side: Door.Side = sideOf(entry, at)
+				local verdict: Door.Verdict
+				if held ~= nil then
+					verdict = Door.decideHeld(entry.state, action, side, tools, held)
+				else
+					verdict = Door.decide(entry.state, action, side, tools)
+				end
 				if verdict.ok then
 					return verdict
 				end
@@ -343,7 +366,14 @@ function Doors.new(): Doors
 		end
 		local reach = if action == "Lift" then INSIDE_REACH else HALL_REACH
 		refresh(entry)
-		local verdict = judge(entry, action, root, carries(slots, player), reach + RANGE_SLACK)
+		local verdict = judge(
+			entry,
+			action,
+			root,
+			carries(slots, player),
+			reach + RANGE_SLACK,
+			holds(entry, player)
+		)
 		if not verdict then
 			return
 		end
@@ -354,10 +384,14 @@ function Doors.new(): Doors
 		if easing then
 			motion = "Ease" -- over a sleeper: it hangs a foot up while the tap's bar runs
 		end
+		if verdict.lock == false and motion then
+			-- a home's padlock comes off as its door lifts from inside: off first, or it won't lift
+			RollUpDoor.setLocked(entry.unit, false)
+		end
 		if motion then
 			RollUpDoor.play(entry.unit, motion)
 		end
-		if verdict.lock ~= nil then
+		if verdict.lock ~= nil and not (verdict.lock == false and motion) then
 			-- the padlock leaves your hand for the door (decide just saw it there, nothing yields);
 			-- or the cutters in your hand took one off, and wear (S1-08)
 			if RollUpDoor.setLocked(entry.unit, verdict.lock) and slots then
@@ -474,7 +508,14 @@ function Doors.new(): Doors
 						if not (body and body:IsA("BasePart")) then
 							return
 						end
-						local verdict = judge(entry, button.action, body, carries(slots, player))
+						local verdict = judge(
+							entry,
+							button.action,
+							body,
+							carries(slots, player),
+							nil,
+							holds(entry, player)
+						)
 						if verdict and verdict.refusal then
 							entry.refusers[p](verdict.refusal, player)
 						end
@@ -576,6 +617,9 @@ function Doors.new(): Doors
 	local BURSTS: { [Door.State]: true } =
 		{ Closed = true, Peeking = true, Closing = true, Slamming = true }
 	local OPENS: { [Door.State]: true } = { Closed = true, Peeking = true }
+	-- the game pulling a door down (a home let go, D-274): any door that's up or going up
+	local CLOSES: { [Door.State]: true } =
+		{ Peeking = true, Opening = true, Open = true, Lifting = true }
 	-- the tap's answer (S2-05a) lands only a door still easing down over its sleeper
 	local LANDS: { [Door.State]: true } = { Closing = true, Peeking = true }
 
@@ -589,6 +633,7 @@ function Doors.new(): Doors
 			then BANGS
 			elseif kind == "Burst" then BURSTS
 			elseif kind == "Open" then OPENS
+			elseif kind == "Close" then CLOSES
 			elseif kind == "Settle" or kind == "Drop" then LANDS
 			else nil
 		local easing = Motion.decode(unit:GetAttribute(ATTR_MOTION) :: string?) == "Ease"

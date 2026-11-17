@@ -22,6 +22,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Door = require(ReplicatedStorage.Shared.StorageUnit.Door)
 local DoorSound = require(ReplicatedStorage.Shared.StorageUnit.DoorSound)
 local Motion = require(ReplicatedStorage.Shared.StorageUnit.Motion)
 local RollUpDoor = require(ReplicatedStorage.Shared.StorageUnit.RollUpDoor)
@@ -207,7 +208,8 @@ function DoorSounds.new(kick: (amount: number) -> ()): Brix.System
 		local function current(): boolean
 			return door.locked == locked
 		end
-		for _, cue in DoorSound.lockCues(locked) do
+		local keyed = door.unit:GetAttribute(Door.HolderAttribute) ~= nil -- a home's: a key, no cutters
+		for _, cue in DoorSound.lockCues(locked, keyed) do
 			schedule(door, cue, cue.at, current)
 		end
 	end

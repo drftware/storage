@@ -101,6 +101,11 @@ ok(names(DoorSound.lockCues(true)) == "Latch,PadlockShut", "locking")
 ok(names(DoorSound.lockCues(false)) == "Snap,PadlockFall,Latch", "cutting")
 ok(DoorSound.lockCues(false)[1].shake > 0, "the snap jolts whoever's at the door")
 ok(
+	names(DoorSound.lockCues(false, true)) == "PadlockShut,Latch",
+	"a home's padlock comes off with its key"
+)
+ok(names(DoorSound.lockCues(true, true)) == "Latch,PadlockShut", "and goes on as any")
+ok(
 	DoorSound.Sounds.Snap.Reach > DoorSound.Sounds.PadlockShut.Reach,
 	"a cut carries farther than a padlock snapping shut"
 )

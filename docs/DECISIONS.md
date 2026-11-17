@@ -7035,3 +7035,51 @@ until you leave, as Grow a Garden and Bee Swarm Simulator hand each player a plo
   thirteenth waits in line and gets the next home let go, rather than having none.
 - **Brix's pin moved to `482368f` before Brix's `main` was pushed**, since the owner wasn't there to
   say yes to a push. Brix must be pushed before this game is (OWNER.md).
+
+## D-274 · 2026-11-17 · A sound partway into a press: a step's cues (F-G1e3a, V3a)
+A find's press could sound only as a step starts (`sound`) or on its motion's beats (`hit`), but
+the noisemakers' sounds come partway in: the kazoo hums once it's at your lips (0.36 s), the
+doll talks as the cord is let go (0.62 s), the spinner's animal calls as its arrow stops
+(3.07 s). A step now has `cues`, each a sound at a moment into its motion, merged with the
+hit's beats into one time-ordered list (`Use.timeline`) that `FindUseView` plays as the motion
+passes them; several due at once after a hitch play each different sound once. Monsters still
+hear a noise as its step starts (`noiseAt` unchanged): a monster takes seconds to arrive, and the
+press itself is the noise. The kazoo (Blow) and toy drum (Bang) are the jack's one-shot noise,
+toys, no lure: the kazoo heard 60 studs (down the hall), the drum 130 (the catalog's "loud", as
+the air horn). Sounds measured in Studio: the kazoo's hum is Pro Sound Effects' "Kazoo Fanfare
+3" last held note (one pitch from 2.68 s, swelling), at 0.75 pitch to last its 1.22 s note; the
+drum's bang a snare hit pitched up. The arrow, as built, stops on the cat, so V3b's spinner ships
+the meow; a server pick of the animal is ROADMAP polish.
+
+## D-274 · 2026-11-17 · Your home is handed to you as you join, and only you open its door (S5-03a3b)
+
+The home doc's ideas 1 to 3 and the owner's Nov 16 answers ("Doors start open. Pulled down, a door
+keeps everyone out, friends too."), on Brix's Plots (D-273).
+
+- **Handed out nearest the front door first**: 1, 7, 2, 8 and so on (`Home.Holding.order`).
+  A beat after you first stand in the lobby (1.5 s), your name goes on the card over your door in
+  the building's capitals and, 0.6 s later, the padlock comes off and the door rolls up with its
+  slow, loud open. Precedent: Grow a Garden's and Bee Swarm Simulator's plots.
+- **The name is sprayed on through the stencil** on every screen (HomeCards): the letters come up
+  from nothing, shrinking onto the card, the fresh ink glowing then settling, with a can's short
+  hiss heard across the floor (Pro Sound Effects' "Spray Paint 4", 9119522956; not yet judged by
+  ear). A name blanked as its holder leaves fades off.
+- **A held door** (`Door.HolderAttribute`, `Door.decideHeld`): from the hall only its holder
+  opens or peeks it; anyone else's try rattles it against the lock and it doesn't move, with no
+  words (their name is over the door). Precedent: Adopt Me's house locked to its owner. From
+  inside it always lifts, padlocked or not: nobody is ever shut in at home. Lock and Cut never
+  show on a home. A rattle now keeps the door where it was (a peeked home rattles at its peek).
+- **Anyone may pull an open home's door down** (my default, `OWNER.md`), as on the climb; only
+  opening it is the holder's. Not chosen: closing kept to the holder too, which hides buttons
+  everyone sees on every other door.
+- **Spare homes wear the climb's padlock** (idea 2: rented out), drawn only while padlocked;
+  yours wears none, so D-266's "no padlock at home" still holds for a home that's someone's. A
+  home's padlock comes off with its key (the shackle's click and the bolt), never the cutters'
+  snap, and isn't thrown into the hall.
+- **Let go** (its holder leaves): the card blanks, the door comes down and the padlock goes back
+  on once it lands; the light is left on for the next holder.
+- **The switch is the holder's** (D-263): the server answers only their press, and the button
+  shows only on their screen.
+- **A home's room is its own size** (`RoomWidth`, `RoomDepth` on the unit, from the lobby slot's
+  Inside, 20 by 30): ShutIn counts you shut in anywhere in it, not just the M's first 12 studs.
+

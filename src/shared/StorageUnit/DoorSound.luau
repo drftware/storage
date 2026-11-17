@@ -318,9 +318,14 @@ end
 
 -- The one-shots of locking (the bolt shoots, then the padlock snaps shut), quiet; or of the
 -- padlock coming off, which only bolt cutters do: the jaw's snap, the padlock hitting the floor
--- a moment later, then the bolt slid back. A jolt for whoever's right at the door.
+-- a moment later, then the bolt slid back. A jolt for whoever's right at the door. A held door's
+-- padlock (a spare home's, `keyed`) comes off with its key: the shackle clicks open, the bolt
+-- slides back, nothing snaps or falls (D-274).
 DoorSound.CutShake = 0.18
-function DoorSound.lockCues(locked: boolean): { Cue }
+function DoorSound.lockCues(locked: boolean, keyed: boolean?): { Cue }
+	if not locked and keyed then
+		return { cue(0, "PadlockShut", 0.6, 1.2), cue(0.18, "Latch", 0.6, 1.05) }
+	end
 	if locked then
 		return { cue(0, "Latch", 0.8, 1.05), cue(0.32, "PadlockShut", 1, 1) }
 	end

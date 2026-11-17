@@ -2754,3 +2754,21 @@ verified: a doc page, Studio, or "untested".
   `RenderStepped` logger over Sounds under the find's model gives every beat. Anchoring a
   Mannequin's root to keep it away doesn't hold it: it still came and caught me, which ends the
   climb and clears the floor; set your own root away instead (V2a's way).
+- **Pressing a noisy find in hand, from the MCP** (F-G1e3a, Nov 17): the Mannequin stood with
+  `StandMannequin` is 16 studs along the halls from (0, 3.5, -641); it heard the drum and the
+  kazoo, woke and caught me within about a second, which drops your find (its drop sound plays)
+  and re-adds its playing Sounds (a `DescendantAdded` logger sees them again, mid-play). Read
+  what monsters heard from a Server `LogService:GetLogHistory()` filtered for "heard a find" and
+  "made its noise", not the whole Output. A find's motion channels in `Finds/Sets` are Roblox's
+  axes: the art's up (Blender z) is `y`, so a `hit` on a part's rise or dip names `channel="y"`.
+
+## A home each, seen in Play (S5-03a3b, Nov 17)
+
+- One player joining got Unit1 (nearest the spawn): `Plot` = "Unit1" on the player, the unit's
+  `DoorHolder` their UserId, its padlock off, its door rolling up ("Open"), the card reading the
+  display name in capitals. Unit7 stayed a spare: `DoorHolder` 0, padlocked. Both homes' rooms
+  read 20 wide, 30 deep. No errors in Output; the card's hiss (9119522956) logged no failure.
+- `ProximityPrompt:InputHoldBegin()`/`InputHoldEnd()` from the Client datamodel did nothing on a
+  door's Close with the character moved in front of it by script: don't count on it to press a
+  prompt in a test; the two-player door test is the owner's (`OWNER.md`).
+

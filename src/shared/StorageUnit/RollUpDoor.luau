@@ -462,10 +462,11 @@ end
 -- pick-up check and the screen's hiding of its prompt (Slots, BehindDoors) both ask this.
 function RollUpDoor.keepsApart(unit: Model, a: Vector3, b: Vector3): boolean
 	local spec = specFor(unit)
+	local room = RollUpDoor.room(unit)
 	local frame = RollUpDoor.frame(unit)
 	local pa, pb = frame:PointToObjectSpace(a), frame:PointToObjectSpace(b)
-	local aIn = ShutIn.inside(spec, pa.X, pa.Y, pa.Z)
-	local bIn = ShutIn.inside(spec, pb.X, pb.Y, pb.Z)
+	local aIn = ShutIn.inside(room, pa.X, pa.Y, pa.Z)
+	local bIn = ShutIn.inside(room, pb.X, pb.Y, pb.Z)
 	return aIn ~= bIn and not ShutIn.reaches(RollUpDoor.rise(unit), spec.Rise.Open, aIn, bIn)
 end
 
@@ -498,6 +499,26 @@ end
 -- The unit's size spec (its UnitSize attribute; M when unset).
 function RollUpDoor.spec(unit: Model): Spec
 	return specFor(unit)
+end
+
+-- A room's own size, where it isn't its door's unit's (a home's: the climb's M door in a room 20
+-- wide and 30 deep, D-274), as the unit's attributes: wall to wall and facade face to back wall.
+RollUpDoor.RoomWidth = "RoomWidth"
+RollUpDoor.RoomDepth = "RoomDepth"
+
+-- The room behind `unit`'s door, for ShutIn: its spec's, or its own size where it has one.
+function RollUpDoor.room(unit: Model): ShutIn.Room
+	local spec = specFor(unit)
+	local w, d = unit:GetAttribute(RollUpDoor.RoomWidth), unit:GetAttribute(RollUpDoor.RoomDepth)
+	if type(w) ~= "number" and type(d) ~= "number" then
+		return spec
+	end
+	return {
+		Width = if type(w) == "number" then w else spec.Width,
+		Depth = if type(d) == "number" then d else spec.Depth,
+		WallHeight = spec.WallHeight,
+		CurtainPlane = spec.CurtainPlane,
+	}
 end
 
 --[[
@@ -543,8 +564,9 @@ function RollUpDoor.play(unit: Model, kind: Motion.Kind): number
 	local frame = RollUpDoor.frame(unit)
 	local t = now()
 	local from = RollUpDoor.rise(unit, t)
-	-- a keeper's bang jolts the door where it is, peeked or shut
-	local to = if kind == "Bang" then from else Motion.target(kind, spec.Rise)
+	-- a keeper's bang jolts the door where it is, peeked or shut; a rattle too (a home's door
+	-- tried by someone not its holder may be peeked: it jerks there and stays, D-274)
+	local to = if kind == "Bang" or kind == "Rattle" then from else Motion.target(kind, spec.Rise)
 	if unit:GetAttribute(ATTR_LOCKED) == true and to > from then
 		return 0
 	end

@@ -345,6 +345,19 @@ function Lobby.front(template: Model, home: Model?, pivot: CFrame, slot: Specs.S
 	end
 	StorageUnit.RollUpDoor.fitCollider(unit)
 	unit:SetAttribute("LobbySlot", slot.Number)
+	if home then
+		-- a spare home until FrontOffice hands it out: held by nobody, shut and padlocked (D-274)
+		unit:SetAttribute(StorageUnit.Door.HolderAttribute, 0)
+		StorageUnit.RollUpDoor.setLocked(unit, true)
+		-- its room is the slot's (Inside), not the M's 12 by 12: ShutIn counts you in to the back
+		local into = -vec(slot.Out)
+		local size = vec(slot.Inside.Size)
+		local back = (vec(slot.Inside.Centre) - vec(slot.Door)):Dot(into)
+			+ math.abs(size:Dot(into)) / 2
+		local across = Vector3.new(into.Z, 0, -into.X) -- level, square to `into`
+		unit:SetAttribute(StorageUnit.RollUpDoor.RoomDepth, back)
+		unit:SetAttribute(StorageUnit.RollUpDoor.RoomWidth, math.abs(size:Dot(across)))
+	end
 	return unit
 end
 
@@ -355,6 +368,8 @@ export type Laid = {
 	cars: { Model },
 	-- each slot's front by its number (Specs.Slots), when the place has the M unit
 	units: { [number]: Model },
+	-- each slot's name card over its door, by its number (Specs.Slots' Card), blank until held
+	cards: { [number]: TextLabel },
 }
 
 -- Lays a copy of the front office at `pivot` under a new folder in `parent`, with everything the
@@ -373,9 +388,21 @@ function Lobby.lay(pivot: CFrame, parent: Instance): Laid?
 
 	local dressing = Instance.new("Folder")
 	dressing.Name = "Dressing"
+	-- a home's card is blank until someone holds it (FrontOffice letters their name on)
+	local slotOf: { [string]: number } = {}
+	for _, slot in Specs.Slots do
+		slotOf[slot.Card] = slot.Number
+	end
+	local cards: { [number]: TextLabel } = {}
 	for _, c in Specs.Cards do
 		local words = if c.Name:sub(1, 3) == "Bay" then c.Name:sub(4) else Lobby.Words[c.Name]
-		card(pivot, c, words or "", dressing)
+		local p = card(pivot, c, words or "", dressing)
+		local number = slotOf[c.Name]
+		if number then
+			p:SetAttribute(Home.CardSlot, number)
+			p:AddTag(Home.CardTag)
+			cards[number] = p:FindFirstChildWhichIsA("TextLabel", true) :: TextLabel
+		end
 	end
 	for _, s in Specs.Stock do
 		local at = pivot * vec(s.At)
@@ -504,7 +531,14 @@ function Lobby.lay(pivot: CFrame, parent: Instance): Laid?
 		warn("Lobby: no elevator template, so the bays stand empty (art/elevator/README.md)")
 	end
 	folder.Parent = parent
-	return { folder = folder, model = model, pivot = pivot, cars = cars, units = units }
+	return {
+		folder = folder,
+		model = model,
+		pivot = pivot,
+		cars = cars,
+		units = units,
+		cards = cards,
+	}
 end
 
 return Lobby
