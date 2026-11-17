@@ -24,8 +24,7 @@ github.com/drftware/storage); Brix pinned at `482368f`, NOT on Brix's `origin` y
 - Studio: the Edit DataModel can't reach DataStores from the MCP. To crack one in the test save,
   in Play: `ServerStorage.StudioCrack:Invoke(player, "BlobLamp")` (Studio-only, JobBoxes), then
   shut and reopen the job box. The test save: cash 476, one Blob lamp (whole), Gold Teddies.
-- Stage only your own paths: the find run shares this checkout. Its uncommitted files (`art/finds/`,
-  `src/shared/Finds/`) are left for it to commit, by the chain's rules (never sweep them in).
+- Stage only your own paths; the find run commits its own `art/finds/` and `src/shared/Finds/`.
 
 ## Next task: S5-03d2 Taking finds up, wired on the server
 The moment: you bring your lamp up, get caught on floor 3, and your friend grabs it and sprints
