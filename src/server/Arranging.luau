@@ -22,7 +22,9 @@
 	before its payload is read, then checked for type and range (`Spots.ask`, `Spots.askId`), then
 	ownership (only the asker's own home, a name only while one is in their box, an id only while
 	it's set out). Arranged(what, id, refusal) answers the asker: the id it now stands as and ""
-	when it stood; "" and "" when one was put away.
+	when it stood; "" and "" when one was put away. ArrangeBox (`Arrange.BoxRemote`, S5-03e3a)
+	sends the asker's job box (counts by name) when the screen asks, and after every change.
+	The room's set-up is shared with the screen (`Arrange.room`), so both judge alike.
 ]]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -30,12 +32,10 @@ local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
 
 local Brix = require(ReplicatedStorage.Brix)
+local Arrange = require(ReplicatedStorage.Shared.Home.Arrange)
 local Arranged = require(ReplicatedStorage.Shared.Home.Arranged)
-local Finds = require(ReplicatedStorage.Shared.Finds)
 local Gold = require(ReplicatedStorage.Shared.Home.Gold)
 local Holding = require(ReplicatedStorage.Shared.Home.Holding)
-local Home = require(ReplicatedStorage.Shared.Home)
-local HomeSpecs = require(ReplicatedStorage.Shared.Home.Specs)
 local LobbySpecs = require(ReplicatedStorage.Shared.Lobby.Specs)
 local Save = require(ReplicatedStorage.Shared.Save)
 local Spots = require(ReplicatedStorage.Shared.Home.Spots)
@@ -47,12 +47,12 @@ local Slots = require(script.Parent.Slots)
 -- A find as drawn: its model, and its box (`Arranged.bounds`) measured once.
 type Drawn = { model: Model, size: Vector3, centre: Vector3 }
 
--- One held home: its unit, its judge, each area's frame, what's drawn, and whether its save is
--- newer than this server (then it's never written).
+-- One held home: its unit, its room (`Arrange.room`: its judge, each area's frame), what's drawn,
+-- and whether its save is newer than this server (then it's never written).
 type HomeSet = {
 	unit: Model,
+	room: Arrange.Room,
 	placements: Brix.Placements,
-	frames: { [string]: CFrame },
 	drawn: { [string]: Drawn },
 	folder: Folder,
 	stale: boolean,
@@ -62,51 +62,9 @@ local Arranging = {}
 
 export type ArrangingSystem = Brix.System
 
--- The folder in a unit that holds what's set out in it.
-local FOLDER = "Placed"
+local FOLDER = Arrange.Folder
 
-local slotOf: { [number]: LobbySpecs.Slot } = {}
-for _, slot in LobbySpecs.Slots do
-	slotOf[slot.Number] = slot
-end
-
--- What's fixed in every home besides its starter pieces: the round lamp in the ceiling, and the
--- mirror leaning on the right wall (its glass on the wall, its foot on the floor).
-local FIXED: { Spots.Fixed } = (function()
-	local lamp = HomeSpecs.Parts.Lamp
-	local m = Home.Mirror
-	local wide = m.Glass[1] + 2 * m.Border
-	local tall = m.Glass[2] + 2 * m.Border
-	return {
-		{
-			id = "Lamp",
-			on = "Ceiling",
-			at = HomeSpecs.Lamp,
-			width = lamp.Size[1],
-			depth = lamp.Size[3],
-		},
-		{
-			id = "Mirror",
-			on = "RightWall",
-			at = { m.At[1], tall / 2, m.At[3] },
-			width = wide,
-			depth = tall,
-		},
-		{ id = "MirrorFoot", on = "Floor", at = m.At, width = 1.5, depth = wide },
-	}
-end)()
-
--- Find `name`'s art box as Spots takes it (across, up, front to back), nil when the place lacks it.
-local function boxOf(name: string): Spots.Vec?
-	local box = Finds.box(Gold.base(name) or name)
-	return if box then { box.Size.X, box.Size.Y, box.Size.Z } else nil
-end
-
--- The footprint of what id `id` names (a find set out), for Brix to judge it by.
-local function shapeOf(id: string): Brix.PlacementShape?
-	local name = Spots.name(id)
-	return if name then Spots.shape(name, boxOf(name)) else nil
-end
+local shapeOf = Arrange.shapeOf
 
 function Arranging.new(): ArrangingSystem
 	local homes: { [Player]: HomeSet } = {}
@@ -116,6 +74,7 @@ function Arranging.new(): ArrangingSystem
 	local limit = Brix.RateLimit.bucket(Spots.Limit)
 	local made: { Instance } = {}
 	local answerRemote: RemoteEvent? = nil
+	local boxRemote: RemoteEvent? = nil
 	local frontOffice: FrontOffice.FrontOffice? = nil
 	local saving: Saving.SavingSystem? = nil
 	local slots: Slots.Slots? = nil
@@ -126,7 +85,7 @@ function Arranging.new(): ArrangingSystem
 		local n = if type(plot) == "string" then Holding.number(plot) else nil
 		local laid = if frontOffice then frontOffice:laid() else nil
 		local unit = if n and laid then laid.units[n] else nil
-		return unit, if n then slotOf[n] else nil
+		return unit, if n then Arrange.slot(n) else nil
 	end
 
 	-- What `player` holds out of their box (in hands or lying somewhere), by name.
@@ -135,27 +94,8 @@ function Arranging.new(): ArrangingSystem
 		return if s then s:fromBox(player) else {}
 	end
 
-	local poseFrame: (home: HomeSet, id: string) -> CFrame?
-
-	-- The frame of area or top `on`: a room or furniture area's, or a find's own top.
-	local function frameOn(home: HomeSet, on: string): CFrame?
-		local frame = home.frames[on]
-		if frame then
-			return frame
-		end
-		local t = poseFrame(home, on)
-		local name = Spots.name(on)
-		if not (t and name) then
-			return nil
-		end
-		local drawn = home.drawn[on]
-		return Arranged.top(t, if drawn then drawn.size.Y else Spots.topHeight(boxOf(name)))
-	end
-
-	function poseFrame(home: HomeSet, id: string): CFrame?
-		local pose = home.placements:poseOf(id)
-		local a = if pose then frameOn(home, pose.on) else nil
-		return if pose and a then Arranged.pose(a, pose.x, pose.y, pose.turn) else nil
+	local function poseFrame(home: HomeSet, id: string): CFrame?
+		return Arrange.poseFrame(home.room, id)
 	end
 
 	-- Draws find `id` where it stands now (made the first time), then whatever stands on it.
@@ -199,9 +139,15 @@ function Arranging.new(): ArrangingSystem
 			model.ModelStreamingMode = Enum.ModelStreamingMode.Atomic -- a screen gets it whole
 			drawn = { model = model, size = size, centre = centre }
 			home.drawn[id] = drawn
+			home.room.heights[id] = size.Y -- a top's height is the drawn box's
 		end
 		local d = drawn :: Drawn
 		d.model:PivotTo(Arranged.pivot(t, Spots.spot(name), d.size, d.centre))
+		local pose = home.placements:poseOf(id)
+		if pose then -- the owner's screen loads its judge from these (ArrangeView)
+			d.model:SetAttribute(Arrange.OnAttribute, pose.on)
+			d.model:SetAttribute(Arrange.AtAttribute, Vector3.new(pose.x, pose.y, pose.turn))
+		end
 		d.model.Parent = home.folder
 		for _, rider in home.placements:standingOn(id) do
 			draw(home, rider, owner)
@@ -218,6 +164,7 @@ function Arranging.new(): ArrangingSystem
 					drawn.model:Destroy()
 					home.drawn[e.id] = nil
 				end
+				home.room.heights[e.id] = nil
 			elseif Spots.name(e.id) then
 				draw(home, e.id, owner)
 			end
@@ -265,39 +212,8 @@ function Arranging.new(): ArrangingSystem
 		if have or not (data and unit and slot and laid and player.Parent) then
 			return
 		end
-		local face = Arranged.face(laid.pivot, slot.Door, slot.Out)
-		local centre, size = Arranged.inside(laid.pivot, face, slot.Inside.Centre, slot.Inside.Size)
-		local room = Spots.room(centre, size)
-		local areas: { [string]: Brix.PlacementArea } = {}
-		local frames: { [string]: CFrame } = {}
-		for name, r in room do
-			areas[name] = { kind = r.kind, width = r.width, depth = r.depth }
-			frames[name] = Arranged.area(face, r)
-		end
-		local starter = unit:FindFirstChild("Starter")
-		local present: { HomeSpecs.Placed } = {}
-		for _, s in HomeSpecs.Starter do
-			if starter and starter:FindFirstChild(s.Kind) then
-				table.insert(present, s)
-			end
-		end
-		for name, f in Spots.Furniture do
-			local piece = if starter then starter:FindFirstChild(f.piece) else nil
-			local part = HomeSpecs.Parts[f.part]
-			if piece and piece:IsA("Model") and part then
-				areas[name] = (Spots.furnitureTop(part.Size, part.Centre))
-				frames[name] = Arranged.furniture(piece:GetPivot(), part.Size, part.Centre)
-			end
-		end
-		local blocks = Spots.blocks(room, present, HomeSpecs.Pieces, HomeSpecs.Parts, FIXED)
-		local placements =
-			Brix.Placements.new({ areas = areas, limit = Spots.limit(Spots.Start) + #blocks })
-		for _, b in blocks do
-			local refusal = placements:place(b.id, b.shape, b.pose)
-			if refusal then
-				warn(`Arranging: the room's {b.id} doesn't stand in unit {slot.Number} ({refusal})`)
-			end
-		end
+		local room = Arrange.room(unit, slot, laid.pivot, Spots.limit(Spots.Start))
+		local placements = room.placements
 		local folder = Instance.new("Folder")
 		folder.Name = FOLDER
 		folder.Parent = unit
@@ -305,8 +221,8 @@ function Arranging.new(): ArrangingSystem
 		local dropped = placements:load({ form = data.placed.form, rows = rows }, shapeOf)
 		local home: HomeSet = {
 			unit = unit,
+			room = room,
 			placements = placements,
-			frames = frames,
 			drawn = {},
 			folder = folder,
 			stale = dropped == nil,
@@ -372,9 +288,28 @@ function Arranging.new(): ArrangingSystem
 		return ""
 	end
 
+	-- Sends `player` what's in their job box now (counts by name), for the screen's tray.
+	local function sendBox(player: Player)
+		local data = if saving then saving:data(player) else nil
+		if boxRemote and data then
+			boxRemote:FireClient(player, Save.boxed(data, outOf(player)))
+		end
+	end
+
+	-- Answers the asker, then sends their box when the move changed it.
 	local function answer(player: Player, what: string, id: string, refusal: string)
 		if answerRemote then
 			answerRemote:FireClient(player, what, id, refusal)
+		end
+		if refusal == "" then
+			sendBox(player)
+		end
+	end
+
+	-- The screen asks what's in the box as Arrange opens.
+	local function onBox(player: Player)
+		if limit:take(player, os.clock()) then
+			sendBox(player)
 		end
 	end
 
@@ -438,6 +373,9 @@ function Arranging.new(): ArrangingSystem
 			table.insert(connections, remote(Spots.PlaceRemote).OnServerEvent:Connect(onPlace))
 			table.insert(connections, remote(Spots.PutAwayRemote).OnServerEvent:Connect(onPutAway))
 			answerRemote = remote(Spots.AnswerRemote)
+			local box = remote(Arrange.BoxRemote)
+			boxRemote = box
+			table.insert(connections, box.OnServerEvent:Connect(onBox))
 
 			-- Studio only: `ServerStorage.ArrangeTest:Invoke(player, "place", what, on, x, y, turn)`
 			-- asks as the screen does, unthrottled, and answers (id, refusal);
@@ -530,6 +468,7 @@ function Arranging.new(): ArrangingSystem
 			end
 			table.clear(made)
 			answerRemote = nil
+			boxRemote = nil
 		end,
 	}
 end

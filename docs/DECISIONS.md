@@ -7887,3 +7887,29 @@ obey).
 - **The Packrat leaves it**, as it leaves the ladder (`Carry.worth`): what it takes is what your
   hand can let go of.
 - **Not built:** friends' arms round it (ROADMAP polish); the hold judged on a phone (OWNER.md).
+
+## D-311 · 2026-11-17 · The Arrange screen: lift, drag, Place (S5-03e3a1)
+
+The moment: in your unit you tap Arrange, the camera eases up into the corner by the door, a faint
+grid on the floor; you slide your lava lamp up out of the tray and it lifts with a whoosh, outlined
+white, ticking from square to square under your thumb, green on the job box, red in the shelf;
+Place, and it drops with a soft knock and a puff of dust. Bloxburg's build mode, on a phone.
+- **One set-up, two judges:** `Home/Arrange.room(unit, slot, pivot, limit)` builds the room's
+  `Brix.Placements` (areas, frames, the room's own things placed first) for the server (Arranging)
+  and the screen (ArrangeView) alike, so the ghost's green is the server's answer before it's
+  asked. The screen loads what's set out from the server's drawn finds: each carries its pose as
+  attributes (`PlacedOn`, `PlacedAt` = x, y, turn).
+- **The tray** is the server's count of your job box, on a new remote `ArrangeBox` (the screen
+  asks as Arrange opens, rate-limited with the others; the server sends it again after every
+  move). Rarest first, as the box's panel deals them.
+- **Place is a button, not letting go** (my pick, in OWNER.md): with one thumb you can't drag and
+  turn at once, so the find stays lifted where you let go, green or red, until Place, Turn, Put
+  away or ×. Place does nothing while it's red (no words). A tray card lifts when the finger goes
+  up out of the tray; sideways scrolls; a tap drops it on the room's middle.
+- **Arranging takes the screen:** touch controls hidden (`GuiService.TouchControlsEnabled`), the
+  move keys sunk, the mouse free; the camera Scriptable, eased up and back over 0.7 s. The
+  button shows only to the holder standing inside their home, checked four times a second.
+- The ghost lands where the server's find will stand and waits (up to 1.5 s) for the drawn find
+  to arrive there before it goes, so there's never a gap; no answer in 3 s slides it back.
+- Riders stay put while the find under them is dragged and jump when it's set down (ROADMAP polish).
+

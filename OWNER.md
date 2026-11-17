@@ -182,6 +182,9 @@ nowhere else.
       home lit, so the floor keeps 31 (33 in a home), 7 of them shadowed (the 6 cars' lamps and
       the porch). Its busiest view, the spawn's, is 145k triangles against a climb floor's 61k
       to 112k; the cars' 51k is the next cut (S5-03a2d). Say if a phone of yours stutters there.
+  12. Arranging (D-311): a find you drag stays lifted where you let go, green or red, until you
+      press Place (or Turn, Put away, ×), rather than setting down the moment you let go, so a
+      phone can turn it first. The camera sits high in the corner by the door and doesn't move.
 - [ ] **Walk into your home** (S5-03a2b3 and b4, D-268; seen in Studio Play by me, the switch
   pressed with T and with a tap on the A16 simulator, but I couldn't take a single picture, so
   how it looks is yours). Press Play, or publish and play on a phone (Galaxy A16):

@@ -55,6 +55,7 @@ local ShelfView = require(script.ShelfView)
 local StrandView = require(script.StrandView)
 local JobBoxView = require(script.JobBoxView)
 local BoxPanelView = require(script.BoxPanelView)
+local ArrangeView = require(script.ArrangeView)
 local LadderView = require(script.LadderView)
 local LobbyView = require(script.LobbyView)
 local MachineMenu = require(script.MachineMenu)
@@ -127,6 +128,8 @@ local host = Brix.Host.new({
 		{ slot = "shelfView", system = ShelfView.new() },
 		{ slot = "jobBoxView", system = JobBoxView.new() },
 		{ slot = "boxPanelView", system = BoxPanelView.new(needCursor) },
+		-- lift, drag and set down your finds in your home (S5-03e3a)
+		{ slot = "arrangeView", system = ArrangeView.new(needCursor) },
 		-- the find on your head kept out of your own eye, still on you for friends and the mirror
 		{ slot = "headView", system = HeadView.new() },
 		-- the fairy lights laid along a hall, on every screen (F-G1e5c)

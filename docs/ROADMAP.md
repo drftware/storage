@@ -2524,12 +2524,15 @@ Done when players watch the results to the end and change their perks between cl
         Studio Play: four set out, six refused, kept through a set-up from the save and the
         DataStore, all put away; a true Stop and Play rejoin not yet watched.
     - [ ] **S5-03e3 The Arrange screen** (split for context):
-      - [ ] **S5-03e3a Lift, drag and set down**: an Arrange button at home; tap a find in the box
-        list or one set out to lift it; it follows your finger over the room's areas, snapped
-        (`Brix.PlacementSnap.grid`), a ghost green where it stands and red where it can't (the
-        client's own `Placements` from `Spots` and `Arranged`), a turn button; let go to Place;
-        Put away; the server's answer settles it (a refused one slides back). Every action
-        answers: a soft lift, a set-down knock, a slide back. Seen in Studio at phone size.
+      - [ ] **S5-03e3a Lift, drag and set down** (split for context):
+        - [x] **S5-03e3a1 The screen, built** (D-311): `ArrangeView` (the Arrange button in your
+          own home, the camera up in the corner, a faint grid, the box's tray, lift from the tray
+          or the room, drag snapped on the client's own judge, green or red, Turn, Place, Put
+          away, ×, Done) and `Home/Arrange` (the room's set-up shared with the server, the box
+          remote). Passes checks, untested in Studio.
+        - [ ] **S5-03e3a2 Seen in Studio at phone size**: place, refused, turned, put away, a
+          find on the TV's top; then a true Stop and Play rejoin (the finds stand again). Fix
+          what's off; capture into `docs/art/`.
       - [ ] **S5-03e3b The limit bar, the lid and friends**: how many of the limit are out; finds
         on the job box's lid ride it as it opens (JobBoxView poses the lid on each screen; D-308);
         friends see a find move as it's set down (a short settle, not a snap).
@@ -3013,6 +3016,9 @@ actions themselves and dealing the new finds on floors are later game tickets.
 
 ## Polish waiting for a slot
 
+- **Arranging's extras** (S5-03e3a1, D-311): finds standing on a lifted find ride its ghost (now
+  they stay put until it's set down); pinch and pan the Arrange camera in a bigger unit; a faint
+  grid on the walls for a hanging find; the tray's card lifting off as its find rises out of it.
 - **The finds' press sounds** (F-G1b2): the glow stick's snap, the firefly jar's lid and shimmer,
   the disco ball's motor hum, and a real spring bang for the jack's Pop (now the catalog's tin
   clang, lower and louder); time the music box against the Wind (its winding into the tune) and
