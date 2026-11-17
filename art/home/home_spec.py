@@ -170,6 +170,65 @@ def rail_at():
     return (SLOT[0] / 2 - PARTITION / 2 - GARMENT_OFF - GARMENT[1] / 2 - GARMENT_TOP[0], GARMENT_IN)
 
 
+# --- the looks a player gives their home (S5-03g1a, D-321) ---------------------------------------
+# Calm and warm (D-263), a couple of fun ones, nothing that looks like the climb. Each list starts
+# with what a home has before anyone changes it. Ids are what a home's save keeps: never rename one.
+# Each floor set tiles at FLOOR_TILE studs and each paper at PAPER_TILE (looks.py), so the game's
+# one floor panel and one wall panel wear any of them; the colour a look takes is the part's Color.
+FLOOR_TILE = 8.0
+PAPER_TILE = 4.0
+# The paint on a home's walls (plain plaster or under a paper's print).
+PAINTS = (("WarmWhite", "#E8DFCF"), ("Butter", "#EAD8A4"), ("Blush", "#E3BDB1"),
+          ("Sage", "#A9B899"), ("DuckEgg", "#A8C4C5"), ("Lavender", "#BEB3CF"),
+          ("Terracotta", "#C98A6B"), ("Ink", "#41506A"))
+# The roll-up door, what the hall sees while it's down: each reads against the lobby's teal.
+DOORS = (("Clay", "#B5684E"), ("Mustard", "#CF9F3C"), ("Tomato", "#C24A3A"), ("Rose", "#D9919A"),
+         ("Plum", "#7A4C6B"), ("Sky", "#8DB3CC"), ("Mint", "#A3CFB8"), ("Cream", "#E6D9BF"))
+# The floors: id, texture set, the colours it takes (none: its colours are baked).
+FLOORS = (("Boards", "Wood", ()),
+          ("Carpet", "FloorCarpet", (("Oatmeal", "#CDBFA6"), ("Sage", "#9DAA8C"),
+                                     ("Rose", "#C99A93"), ("Denim", "#7F95A8"),
+                                     ("Cocoa", "#7A5E4C"))),
+          ("Checker", "FloorTiles", (("Terracotta", "#B8654A"), ("Sage", "#7F9672"),
+                                     ("Sky", "#86A9BE"), ("Cherry", "#B23A3A"),
+                                     ("Charcoal", "#3C3A38"))),
+          ("Matting", "FloorMatting", (("Charcoal", "#3D3B39"), ("Slate", "#4A5866"),
+                                       ("Forest", "#3F5546"), ("Plum", "#5A4152"),
+                                       ("Clay", "#8A5A47"))))
+# The walls: id, texture set. Every paper takes the wall's paint as its ground.
+PAPERS = (("Plain", "Plaster"), ("Stripes", "PaperStripes"), ("Leaves", "PaperLeaves"),
+          ("Daisies", "PaperDaisies"))
+
+
+def luau_looks():
+    """The looks' lines for Home.Specs."""
+    def swatches(rows, ind):
+        return [f"{ind}{{ Id = \"{i}\", Colour = \"{c}\" }}," for i, c in rows]
+    L = ["\t-- The looks a player gives their home (D-321). Ids are what a home's save keeps; each",
+         "\t-- list starts with a new home's. Colours are hex for Color3.fromHex. Floors tile at",
+         "\t-- FloorTile studs and papers at PaperTile, so one floor panel and one wall panel (UVs in",
+         "\t-- studs over the tile) wear any set; a look's colour is the part's Color (Overlay).",
+         "\tLooks = {",
+         f"\t\tFloorTile = {FLOOR_TILE:.1f},",
+         f"\t\tPaperTile = {PAPER_TILE:.1f},",
+         "\t\tPaints = {"]
+    L += swatches(PAINTS, "\t\t\t")
+    L += ["\t\t} :: { Swatch },", "\t\tDoors = {"]
+    L += swatches(DOORS, "\t\t\t")
+    L += ["\t\t} :: { Swatch },", "\t\tFloors = {"]
+    for i, s, cols in FLOORS:
+        if cols:
+            L.append(f"\t\t\t{{ Id = \"{i}\", Set = \"{s}\", Colours = {{")
+            L += swatches(cols, "\t\t\t\t")
+            L.append("\t\t\t} },")
+        else:
+            L.append(f"\t\t\t{{ Id = \"{i}\", Set = \"{s}\", Colours = {{}} }},")
+    L += ["\t\t} :: { Floor },", "\t\tPapers = {"]
+    L += [f"\t\t\t{{ Id = \"{i}\", Set = \"{s}\" }}," for i, s in PAPERS]
+    L += ["\t\t} :: { Paper },", "\t},"]
+    return L
+
+
 def b2r(v):
     """A Blender point in Roblox's frame."""
     return (-v[0], v[2], v[1])
@@ -195,6 +254,9 @@ def write_luau(path, parts, switch, toggle, lamp):
         "export type Vec = { number } -- x, y, z",
         "export type Part = { Size: Vec, Centre: Vec, Triangles: number }",
         "export type Placed = { Kind: string, At: Vec, Turn: number }",
+        "export type Swatch = { Id: string, Colour: string }",
+        "export type Floor = { Id: string, Set: string, Colours: { Swatch } }",
+        "export type Paper = { Id: string, Set: string }",
         "",
         "local Specs = {",
         f"\tDoorSize = \"{DOOR_SIZE}\", -- the climb's door rig it's built round",
@@ -263,6 +325,7 @@ def write_luau(path, parts, switch, toggle, lamp):
           f"\t\tRack = {rack + slat:.3f},",
           "\t\tHangers = { " + ", ".join(f"{-x:.3f}" for x in GARMENT_HANGERS) + " } :: { number },",
           "\t},"]
+    L += luau_looks()
     L += [
           "\t-- Each MeshPart's box as imported (its centre is its CFrame in its frame).",
           "\tParts = {"]

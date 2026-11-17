@@ -47,6 +47,34 @@ Home.fbx: 15,576 triangles in 38 parts (with the clothes rail, uploaded in place
 unit from the floor), `lobby-nook.png` (a bench and a planter), `lobby-unit.png`,
 `lobby-inside.png`, `lobby-spawn.png`, `lobby-mirror*.png`, `lobby-rail*.png`.
 
+## The looks a player gives their home (S5-03g1a, D-321)
+
+What a player picks to make the unit theirs (idea 18; Animal Crossing's wallpaper and flooring,
+Bloxburg's paint), calm and warm (D-263) with a couple of fun ones. Recipes in `looks.py`, the
+palettes in `home_spec.py` (written to `Home.Specs.Looks`; ids are what a save keeps). Every floor
+set tiles at 8 x 8 studs and every paper at 4 x 4, so one floor panel and one wall panel (UVs in
+studs over the tile, S5-03g2) wear any. A look's colour is the part's Color (Overlay).
+`scripts/art.sh home textures` bakes every set; to bake a few, `blender -b --factory-startup -P
+art/home/build.py -- --stage textures --sets FloorTiles,PaperLeaves` (the rest keep their maps).
+
+| Look | Set | Size | Tiles | What it is | Its colour |
+|---|---|---|---|---|---|
+| Boards | Wood | 1024² | 8 x 8 | the oak planks a home starts with | baked |
+| Carpet | FloorCarpet | 512² | 8 x 8 | a soft cut pile, a heather of lighter fibres, faint vacuum lanes that come and go | Oatmeal, Sage, Rose, Denim, Cocoa |
+| Checker | FloorTiles | 1024² | 8 x 8 | 1.33-stud glazed squares, cream ones baked, pale grout, rounded edges | Terracotta, Sage, Sky, Cherry, Charcoal |
+| Matting | FloorMatting | 1024² | 8 x 8 | 2-stud interlocking rubber mats, square teeth at the joins, cream, clay, teal and mustard crumb | Charcoal, Slate, Forest, Plum, Clay |
+| Plain | Plaster | 512² | 4 x 4 | painted plaster, as a home starts | the paint |
+| Stripes | PaperStripes | 512² | 4 x 4 | half-stud satin cream stripes, a pinstripe down each painted one | the paint |
+| Leaves | PaperLeaves | 1024² | 4 x 4 | a tossed leaf and a small one in every stud square, sage, deep green and olive | the paint |
+| Daisies | PaperDaisies | 512² | 4 x 4 | a five-petal cream daisy, mustard middle, in every stud square | the paint |
+
+Paints: WarmWhite `#E8DFCF` (a home's), Butter, Blush, Sage, DuckEgg, Lavender, Terracotta, Ink.
+Door colours: Clay `#B5684E` (a home's), Mustard, Tomato, Rose, Plum, Sky, Mint, Cream, each
+reading against the lobby's teal. `scripts/art.sh home looks` draws `art/sheets/home-floors.png`
+(seconds): eight units as you walk in, each a floor, a paper and a paint, with the starter beanbag
+and lamp; under them the door colours as flat doors on the teal, until g3 shows them on the door.
+The sets aren't in Home.fbx: g2's panels carry them into Studio.
+
 ## Into Studio (S5-03a2b3, D-268)
 
 `lune run scripts/upload_art Home` (asset 110439035194989 in `assets.json`), then in Edit load it

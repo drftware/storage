@@ -8169,3 +8169,25 @@ still opens (`docs/art/S5-03f4b3-*.jpg`). The dark glass came back once, on the 
 first look at the counter's mirror (you lit, the room behind you dark, for about a quarter
 second); three later swings, one with a freshly rebuilt picture, came in whole. Left as polish
 (ROADMAP), since it's once a session and brief.
+
+## D-321 · 2026-11-17 · The looks a player gives their home: four floors, four walls, eight paints, eight doors (S5-03g1a)
+
+The art for idea 18 (Animal Crossing's wallpaper and flooring, Bloxburg's paint), the unit's way.
+The moment: on Arrange you pick a floor and a wall and the bare box becomes somewhere you'd hang
+out; your door's colour is what the hall sees.
+- **Four floors**: the oak boards a home starts with, a soft carpet, checkerboard tiles and
+  interlocking rubber mats flecked with coloured crumb. **Four walls**: plain plaster (as a home
+  starts), a regency stripe, a botanical of tossed leaves and a daisy print. Calm and warm
+  (D-263); the checker in cherry and the daisies are the fun ones.
+- **A look takes a colour where it should** (Overlay, the part's Color): a checker's coloured
+  squares, the carpet, the mats' rubber and every paper's ground. What's printed keeps its own
+  colour: the cream squares, the crumb, the leaves, the daisies. So a few sets make many homes,
+  and the papers always agree with the paint. Each floor lists its own colours (five each; tiles
+  want stronger ones than walls); the papers take the wall's paint.
+- **Eight paints**, warm white first, from Butter to Ink; **eight door colours**, clay first, each
+  reading against the lobby's teal walls (no teal or navy, which vanish there).
+- **One tile size per kind**: every floor tiles at 8 by 8 studs (the oak's), every paper at 4 by 4
+  (the plaster's), so g2 needs one floor panel and one wall panel, whatever the look.
+- **Ids are what a home's save keeps**: never rename one; add looks at the ends.
+- My defaults, all waiting on the owner (`OWNER.md`): the looks, their colours and their order.
+

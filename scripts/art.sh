@@ -85,9 +85,10 @@
 #   scripts/art.sh feed                 the security camera feed's grain and snow pictures (seconds)
 #   scripts/art.sh mark                 the faint mark on a note's door frame: its chalk texture
 #                                       (drawn with numpy, no bake), FBX, look sheet (seconds)
-#   scripts/art.sh home [stages]        the home's kit: textures (plaster, oak, leaf, fabric, rug), door
-#                                       (HomeDoor), export (Home.fbx, src/shared/Home/Specs.luau)
-#                                       (seconds; the ground floor wears them)
+#   scripts/art.sh home [stages]        the home's kit: textures (plaster, oak, leaf, fabric, rug, the
+#                                       floors and papers), door (HomeDoor), export (Home.fbx,
+#                                       src/shared/Home/Specs.luau) (seconds; the ground floor wears
+#                                       them); looks draws art/sheets/home-floors.png
 #   scripts/art.sh lobby                the front office: FBX, Specs module, look sheets (it wears the
 #                                       unit's textures and stands the elevator in its bays: build
 #                                       both first; about 3 minutes)

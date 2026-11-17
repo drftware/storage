@@ -10,6 +10,9 @@
 export type Vec = { number } -- x, y, z
 export type Part = { Size: Vec, Centre: Vec, Triangles: number }
 export type Placed = { Kind: string, At: Vec, Turn: number }
+export type Swatch = { Id: string, Colour: string }
+export type Floor = { Id: string, Set: string, Colours: { Swatch } }
+export type Paper = { Id: string, Set: string }
 
 local Specs = {
 	DoorSize = "M", -- the climb's door rig it's built round
@@ -81,6 +84,76 @@ local Specs = {
 		Bar = 4.300,
 		Rack = 0.680,
 		Hangers = { 1.250, -0.000, -1.250 } :: { number },
+	},
+	-- The looks a player gives their home (D-321). Ids are what a home's save keeps; each
+	-- list starts with a new home's. Colours are hex for Color3.fromHex. Floors tile at
+	-- FloorTile studs and papers at PaperTile, so one floor panel and one wall panel (UVs in
+	-- studs over the tile) wear any set; a look's colour is the part's Color (Overlay).
+	Looks = {
+		FloorTile = 8.0,
+		PaperTile = 4.0,
+		Paints = {
+			{ Id = "WarmWhite", Colour = "#E8DFCF" },
+			{ Id = "Butter", Colour = "#EAD8A4" },
+			{ Id = "Blush", Colour = "#E3BDB1" },
+			{ Id = "Sage", Colour = "#A9B899" },
+			{ Id = "DuckEgg", Colour = "#A8C4C5" },
+			{ Id = "Lavender", Colour = "#BEB3CF" },
+			{ Id = "Terracotta", Colour = "#C98A6B" },
+			{ Id = "Ink", Colour = "#41506A" },
+		} :: { Swatch },
+		Doors = {
+			{ Id = "Clay", Colour = "#B5684E" },
+			{ Id = "Mustard", Colour = "#CF9F3C" },
+			{ Id = "Tomato", Colour = "#C24A3A" },
+			{ Id = "Rose", Colour = "#D9919A" },
+			{ Id = "Plum", Colour = "#7A4C6B" },
+			{ Id = "Sky", Colour = "#8DB3CC" },
+			{ Id = "Mint", Colour = "#A3CFB8" },
+			{ Id = "Cream", Colour = "#E6D9BF" },
+		} :: { Swatch },
+		Floors = {
+			{ Id = "Boards", Set = "Wood", Colours = {} },
+			{
+				Id = "Carpet",
+				Set = "FloorCarpet",
+				Colours = {
+					{ Id = "Oatmeal", Colour = "#CDBFA6" },
+					{ Id = "Sage", Colour = "#9DAA8C" },
+					{ Id = "Rose", Colour = "#C99A93" },
+					{ Id = "Denim", Colour = "#7F95A8" },
+					{ Id = "Cocoa", Colour = "#7A5E4C" },
+				},
+			},
+			{
+				Id = "Checker",
+				Set = "FloorTiles",
+				Colours = {
+					{ Id = "Terracotta", Colour = "#B8654A" },
+					{ Id = "Sage", Colour = "#7F9672" },
+					{ Id = "Sky", Colour = "#86A9BE" },
+					{ Id = "Cherry", Colour = "#B23A3A" },
+					{ Id = "Charcoal", Colour = "#3C3A38" },
+				},
+			},
+			{
+				Id = "Matting",
+				Set = "FloorMatting",
+				Colours = {
+					{ Id = "Charcoal", Colour = "#3D3B39" },
+					{ Id = "Slate", Colour = "#4A5866" },
+					{ Id = "Forest", Colour = "#3F5546" },
+					{ Id = "Plum", Colour = "#5A4152" },
+					{ Id = "Clay", Colour = "#8A5A47" },
+				},
+			},
+		} :: { Floor },
+		Papers = {
+			{ Id = "Plain", Set = "Plaster" },
+			{ Id = "Stripes", Set = "PaperStripes" },
+			{ Id = "Leaves", Set = "PaperLeaves" },
+			{ Id = "Daisies", Set = "PaperDaisies" },
+		} :: { Paper },
 	},
 	-- Each MeshPart's box as imported (its centre is its CFrame in its frame).
 	Parts = {

@@ -84,6 +84,14 @@ nowhere else.
   mirror, or stand to one side of it, and open the shop from the top bar: no Try on pills. My defaults, say which to change:
   the mirror's spot (front wall, counter's door end); Try on works within 12 studs of the glass,
   so anywhere at the counter; the whole figure is the button; your view turns to the glass.
+- [ ] **Your home's looks** (S5-03g1a, D-321; art only, not in the game until S5-03g2). Open
+  `art/sheets/home-floors.png` on your phone: eight units as you'd walk in, each a floor, a wall
+  and a paint, and the door colours on the lobby's teal along the bottom. Look for: would you want
+  each one, and show it off to a friend walking past? Does anything look like the climb? My
+  defaults, say which to change: floors are oak boards (a home's), carpet, checker tiles and
+  rubber mats; walls are plain (a home's), stripes, leaves and daisies; eight paints from warm
+  white to ink; eight door colours from clay; carpet, checker and mats each come in five colours;
+  every paper takes the wall's paint as its ground.
 - [ ] **Come home to your shelf** (S5-03c1b, D-285; seen in Studio Play Nov 17 on a 1380x761
   window, not at phone size; pictures in `docs/art/S5-03c1b-*.jpg`). Play with one player. On the
   Server, `game.ServerStorage.ShelfTest:Invoke(game.Players:GetPlayers()[1], "Boombox")` keeps a

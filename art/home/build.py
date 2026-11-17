@@ -1,6 +1,7 @@
 """Build the home's kit, headless (art/home/README.md).
 
-    blender -b --factory-startup -P art/home/build.py -- --stage textures|door|export
+    blender -b --factory-startup -P art/home/build.py -- --stage textures|door|export|looks
+                                                          [--sets FloorTiles,PaperLeaves]
 
 Stages:
     textures  the home's texture sets (looks.py LOOKS) into art/home/out/textures, with the unit's
@@ -79,10 +80,13 @@ def texsets():
     return out
 
 
-def stage_textures():
+def stage_textures(only=None):
+    """only: the sets to bake (`--sets FloorTiles,PaperLeaves`), so the rest keep their maps."""
     bpy.ops.wm.read_factory_settings(use_empty=True)
     register()
     for name, (recipe, (w, h), _) in looks.LOOKS.items():
+        if only and name not in only:
+            continue
         p = bake.plane(f"bake_{name}", w, h)
         bake.bake_set(name, [(p, bake.Rig(f"bk_{name}", recipe))], TEX, samples=12)
         bpy.data.objects.remove(p)
@@ -158,11 +162,149 @@ def stage_export():
     K.write_luau(lua, rows, plate, toggle, front.lamp_at(s))
 
 
-STAGES = {"textures": stage_textures, "door": stage_door, "export": stage_export}
+# --- the looks' sheet (S5-03g1a, D-321) ------------------------------------------------------------
+# Eight units as you walk in, each a floor, a paper and a paint, with the starter beanbag and lamp;
+# under them the door colours on the lobby's teal. art/sheets/home-floors.png, judged at phone size.
+LOOK_ROOM = (20.0, 30.0, 10.0)   # a home's inside (the XL slot): across, deep, tall
+LOOK_PANELS = (("Boards", None, "Plain", "WarmWhite"), ("Carpet", "Oatmeal", "Stripes", "Blush"),
+               ("Checker", "Cherry", "Daisies", "Butter"), ("Matting", "Charcoal", "Leaves", "Sage"),
+               ("Carpet", "Denim", "Leaves", "DuckEgg"), ("Checker", "Charcoal", "Stripes", "Ink"),
+               ("Boards", None, "Daisies", "Lavender"), ("Matting", "Slate", "Plain", "Terracotta"))
+LOOK_RES = (640, 360)            # a panel: a phone's landscape screen at about half size
+
+
+def look_wall(name, set_name, w, h, tile, loc, rot, tint):
+    """A plane w x h studs, its UVs in studs over the set's tile, stood at loc turned by rot."""
+    import math
+    ob = bake.plane(name, w, h, (0.0, 0.0, w / tile, h / tile))
+    ob.location = loc
+    ob.rotation_euler = tuple(math.radians(r) for r in rot)
+    ob.data.materials.append(material(name, set_name, False))
+    ob["tint"] = (*render.hexc(tint), 1.0) if tint else (1.0, 1.0, 1.0, 1.0)
+    return ob
+
+
+def look_room(floor, floor_tint, paper, paint):
+    """One unit's inside wearing a look: walls, floor and ceiling, origin at the doorway's middle."""
+    w, d, h = LOOK_ROOM
+    floors = {i: s for i, s, _ in K.FLOORS}
+    papers = dict(K.PAPERS)
+    hexes = dict(K.PAINTS)
+    fcols = {i: dict(c) for i, _, c in K.FLOORS}
+    tint = fcols[floor].get(floor_tint) if floor_tint else None
+    out = [look_wall("LookFloor", floors[floor], w, d, K.FLOOR_TILE, (-w / 2, 0.0, 0.0), (0, 0, 0), tint)]
+    pt, tile = hexes[paint], K.PAPER_TILE
+    out.append(look_wall("LookLeft", papers[paper], d, h, tile, (-w / 2, 0.0, 0.0), (90, 0, 90), pt))
+    out.append(look_wall("LookRight", papers[paper], d, h, tile, (w / 2, d, 0.0), (90, 0, -90), pt))
+    out.append(look_wall("LookBack", papers[paper], w, h, tile, (-w / 2, d, 0.0), (90, 0, 0), pt))
+    out.append(look_wall("LookTop", "Plaster", w, d, 4.0, (-w / 2, d, h), (180, 0, 0), "#F1EBDF"))
+    oak = render.simple("look_oak", render.hexc("#B98A5E"), 0.5)
+    b, pr = K.BASE, K.BASE_PROUD
+    for name, lo, hi in (("BaseL", (-w / 2, 0, 0), (-w / 2 + pr, d, b)),
+                         ("BaseR", (w / 2 - pr, 0, 0), (w / 2, d, b)),
+                         ("BaseB", (-w / 2, d - pr, 0), (w / 2, d, b))):
+        out.append(render.box_obj(name, lo, hi, oak, bpy.context.scene.collection))
+    return out
+
+
+def look_furniture():
+    """The starter beanbag and floor lamp, where a new home has them about."""
+    import math
+    coll = bpy.context.scene.collection
+    out = []
+    for name, at, turn, tint in (("Beanbag", (5.2, 11.5), -22.0, "#B98A3C"),
+                                 ("FloorLamp", (7.6, 14.5), 0.0, None),
+                                 ("LampShade", (7.6, 14.5), 0.0, "#F1E8D6")):
+        ob = furnish.BUILDERS[name]().build(coll)
+        ob.data.materials.clear()
+        ob.data.materials.append(material(name, furnish.TEXSET[name], False))
+        ob.location = (at[0], at[1], 0.0)
+        ob.rotation_euler = (0.0, 0.0, math.radians(turn))
+        ob["tint"] = (*render.hexc(tint), 1.0) if tint else (1.0, 1.0, 1.0, 1.0)
+        out.append(ob)
+    return out
+
+
+def look_lights():
+    w, d, h = LOOK_ROOM
+    ld = bpy.data.lights.new("look_lamp", "AREA")
+    ld.shape, ld.size, ld.energy = "DISK", K.LAMP[0], 2600.0
+    ld.color = (1.0, 0.86, 0.68)
+    lamp = bpy.data.objects.new("look_lamp", ld)
+    lamp.location = (0.0, K.LAMP_AT, h - 0.2)
+    bpy.context.scene.collection.objects.link(lamp)
+    fd = bpy.data.lights.new("look_door", "AREA")
+    fd.shape, fd.size, fd.energy = "RECTANGLE", 8.0, 700.0
+    fd.size_y = 8.0
+    fd.color = (1.0, 0.93, 0.84)
+    fill = bpy.data.objects.new("look_door", fd)
+    fill.location = (0.0, -3.0, 7.0)
+    fill.rotation_euler = (-1.2, 0.0, 0.0)
+    bpy.context.scene.collection.objects.link(fill)
+
+
+def door_strip(width, height):
+    """The door colours as roll-up doors' worth of colour on the lobby's teal, sRGB, top row first."""
+    import numpy as np
+    def srgb(hx):
+        hx = hx.lstrip("#")
+        return [int(hx[i:i + 2], 16) for i in (0, 2, 4)]
+    img = np.zeros((height, width, 3), dtype=np.uint8)
+    img[:, :] = srgb("#2F6466")
+    n = len(K.DOORS)
+    pitch = width // n
+    dw, top = int(pitch * 0.62), int(height * 0.14)
+    for k, (_, hx) in enumerate(K.DOORS):
+        x0 = k * pitch + (pitch - dw) // 2
+        img[top:height, x0 - 8:x0 + dw + 8] = srgb("#B98A5E")  # the oak casing
+        img[top + 8:height, x0:x0 + dw] = srgb(hx)
+        for y in range(top + 8 + 14, height, 14):  # the slats' shadow lines
+            img[y:y + 2, x0:x0 + dw] = (img[y:y + 2, x0:x0 + dw] * 0.82).astype(np.uint8)
+    return img
+
+
+def stage_looks():
+    import numpy as np
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    register()
+    render.setup(48, LOOK_RES)
+    render.world((0.02, 0.018, 0.015), 1.0)
+    look_lights()
+    look_furniture()
+    w, d, h = LOOK_ROOM
+    cam = render.camera((-1.5, -1.0, 6.2), (0.8, 18.0, 3.2), lens=16.0)
+    import tempfile
+    tmp = tempfile.mkdtemp(prefix="home-looks-")  # the panels; only the sheet is kept
+    shots = []
+    for k, (floor, ft, paper, paint) in enumerate(LOOK_PANELS):
+        parts = look_room(floor, ft, paper, paint)
+        path = os.path.join(tmp, f"look{k + 1}.png")
+        render.shoot(cam, path)
+        img = bpy.data.images.load(path)
+        shots.append((bake.pixels(img)[..., :3] * 255.0 + 0.5).astype(np.uint8))
+        bpy.data.images.remove(img)
+        for ob in parts:
+            me = ob.data
+            bpy.data.objects.remove(ob)
+            bpy.data.meshes.remove(me)
+    rows = [np.hstack(shots[i:i + 4]) for i in range(0, len(shots), 4)]
+    sheet = np.vstack(rows + [door_strip(rows[0].shape[1], 220)])
+    out = os.path.join(K.ROOT, "art", "sheets", "home-floors.png")
+    bake.write_png(out, sheet)
+    print("SHEET", out)
+
+
+STAGES = {"textures": stage_textures, "door": stage_door, "export": stage_export,
+          "looks": stage_looks}
 
 if __name__ == "__main__":
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     ap = argparse.ArgumentParser()
     ap.add_argument("--stage", choices=list(STAGES), required=True)
-    STAGES[ap.parse_args(argv).stage]()
+    ap.add_argument("--sets", default="", help="textures: only these sets, comma separated")
+    args = ap.parse_args(argv)
+    if args.stage == "textures":
+        stage_textures([n for n in args.sets.split(",") if n])
+    else:
+        STAGES[args.stage]()
     print("DONE")
