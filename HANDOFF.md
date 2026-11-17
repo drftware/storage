@@ -19,6 +19,8 @@ Brix pinned at `482368f`, NOT on Brix's `origin` yet.
 - Studio: `ServerStorage.ShelfTest:Invoke(player, "", i)` empties cubby `i` into the box, so
   Shelf can be tried on a full shelf. Buttons are clicked with `user_mouse_input`'s
   `instance_path` (STUDIO.md).
+- Find art: V5e fragile lamps built (D-296: dropped hard, the glass cracks, worth half, save v7
+  `chipped`), seen cracking in Play; next V5e2 (the crack drawn, banked), then S1 (`art/finds/WAVES.md`).
 
 ## Next task: S5-03c3a Selling from the panel
 The moment: you pick a common you've got five of, press Sell, the picture drops into a cash

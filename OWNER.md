@@ -3753,3 +3753,8 @@ D-071 and D-072 answer it, and the tickets are in ROADMAP's L-06b3 to L-06b5.
   three fixtures hanging straight between the joists, nothing floating or poking through the deck; and from last
   session, no line where two floor pieces meet (x = -12 and 12) and footsteps that sound like
   concrete.
+- **Fragile lamps (V5e, D-296), by ear and on a phone:** drop the oil lamp while running and
+  set one down standing still. Does the crack (a 0.7 s glass crack over the clank) sound right,
+  and does the crack on the chimney read at phone size? Defaults to judge: it cracks at 10
+  studs a second or a 4.5 stud fall (`Finds/Chip`), and being caught while running cracks it
+  too. A lamp out of your job box doesn't crack yet (waits on the home chain).

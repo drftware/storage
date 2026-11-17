@@ -7560,3 +7560,13 @@ you need), Animal Crossing's house storage, Pet Simulator's inventory.
   a take refused or given up redraws the hands from your slots.
 - **A cubby can be emptied in Studio** for a test: `ShelfTest:Invoke(player, "", i)` puts cubby
   `i`'s find back in the box (server-side, Studio only).
+
+## D-296 · 2026-11-17 · Fragile finds crack once when dropped hard, worth half (F-G1e5e)
+As R.E.P.O.'s valuables. "Hard" is the server's own measure as you let go: your body's speed
+(10 studs a second, two thirds of the walk) or the fall from your hand to the floor (4.5 studs);
+the same for everything dropped where you're caught. The crack is a code-drawn picture on the
+glass part the row names (two Decals, no art rebuild) and a short glass crack over the clank;
+nothing on screen explains it. The save counts cracked finds per name (`chipped`, version 7,
+never more than you keep), since finds are kept by name; which of two is the cracked one isn't
+tracked. A find out of your job box doesn't crack yet (its save is the home chain's): waits on
+S5-03. Selling (S5-03c3) reads `chipped` and `Chip.worth`.

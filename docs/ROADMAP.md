@@ -2851,8 +2851,12 @@ actions themselves and dealing the new finds on floors are later game tickets.
         good with no press (`Use.lampUntil`). Seen: dropped in a hall, its clank woke a Mannequin
         17 studs off, which stopped 8.0 studs from it (its reach) and held there 50 s, hunting
         the player from 12.6 studs. Not seen: lifting it again to watch it walk on.
-      - [ ] **F-G1e5e Fragile:** the oil lamp and the glass lamp chip to half their worth when
-        dropped hard (R.E.P.O.'s valuables).
+      - [x] **F-G1e5e Fragile, built** (Nov 17, V5e; D-296): the oil lamp's chimney and the glass
+        lamp's shade crack when let go hard (a run, a fall, or from high up; `Finds/Chip`): heard
+        over the clank, drawn on the glass, once, worth half, saved (version 7, `chipped`). Seen:
+        a set-down standing didn't crack; let go 4 studs up, it cracked, heard on the clank.
+      - [ ] **F-G1e5e2 Fragile, seen whole:** the crack drawn (its image ID fixed after Play), in
+        your hand too (`ChipView`), and a cracked lamp banked at a gate (`chipped` in the save).
       - [x] **F-G1e5f The carousel's tune slows as it runs down** (Nov 17, V5f; seen in Studio
         Play, not heard on a phone; D-288): no recording of a box running down was found, so a
         tempo change that keeps the pitch: the tune's speed follows the top's own run-down

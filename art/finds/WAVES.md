@@ -6,11 +6,9 @@ first. The rows come from the catalog doc, "Unit finds: the item catalog"
 don't read it whole, it is 250,000 characters): its wave 1 is 133 finds, built here in the
 order below. Each session works from the Next line and moves it on.
 
-**Next:** V5e (ROADMAP F-G1e5e, fragile: the oil lamp and the glass lamp chip to half their
-worth when dropped hard), the last of V5; then S1 (the goo ball, through PIPELINE.md). V5a (the
-boombox and the teddy), V5f (the carousel's tune slows), V5d (the Old lamp holds a Mannequin), V5b
-(the glow sticks' other two sticks) and V5c (the fairy lights laid along a hall) are done and seen
-in Play (Nov 17).
+**Next:** V5e2 (ROADMAP F-G1e5e2: see the cracked glass drawn and a cracked lamp banked, the
+last of V5); then S1 (the goo ball, through PIPELINE.md). V5e built the crack (Nov 17, seen in
+Play but for those two). V5a, V5f, V5d, V5b and V5c are done and seen in Play (Nov 17).
 
 ## The third run's plan (owner's brief, Nov 16 night)
 
@@ -88,13 +86,13 @@ precedents are the catalog's "Every button" table. Seen in Play is Q1's.
 | Camping lantern (`CampLantern`) | A wide light for 90 seconds · Switch | works | Uncommon · 15 · floor 1 up ✓ | |
 | Moon lamp (`MoonLamp`) | It glows (D-250: anywhere); tap it to change its phase · Switch, Tap | works as a switch; the phase tap waits on the home chain | Uncommon · 16 · floor 1 up ✓ | |
 | Blob lamp (`BlobLamp`) | Coloured blobs rise and fall (D-250: anywhere) · Switch | works | Uncommon · 18 · floor 1 up ✓ | |
-| Oil lamp (`OilLamp`) | Warm light that runs down slowly; fragile · Light | works: 150 s; fragile is missing (V5) | Rare · 40 · floor 1 up ✓ | |
+| Oil lamp (`OilLamp`) | Warm light that runs down slowly; fragile · Light | works: 150 s; fragile built (V5e, D-296): dropped hard, its chimney cracks, worth 20 | Rare · 40 · floor 1 up ✓ | Nov 17, V5e: given (GiveFind), set down standing (`ToolDrop`): no crack; let go held 4 studs up: the crack heard 0.37 s after, on the clank, `Chipped` set, two Crack decals on the chimney; the decal's ID was the Decal asset (fixed to its image, not yet seen drawn); not banked |
 | Disco ball (`DiscoBall`) | Spots of light race round the walls · Spin | works | Rare · 45 · floor 1 up ✓ | |
 | Neon OPEN sign (`NeonSign`) | It buzzes and glows pink (D-250: anywhere) · Switch | works | Rare · 60 · floor 1 up ✓ | |
 | Miner's hard hat (`HardHat`) | A lamp on your head lights what you look at, a minute · Wear (Phasmophobia's head torch, D-251) | works as a switch in your hand; Wear waits on the home chain (F-G1b4a, F-G1b4b) | Rare · 70 · floor 1 up ✓ | |
 | Jar of fireflies (`FireflyJar`) | Fireflies drift out and light the unit for a minute · Open | works | Epic · 110 · floor 1 up ✓ | |
 | Theatre spotlight (not dealt; art `Spotlight`) | At home: point it at your best find; a big find | waits on the home chain and on a floor with a big-find place | catalog: Epic · 240, big find; game: not dealt, no catalog row (right until a floor has a big-find place) | |
-| Stained-glass lamp (`StainedGlassLamp`) | Coloured patterns on the walls (D-250: anywhere); fragile · Switch | works; fragile is missing (V5) | Legendary · 480 · floor 1 up ✓ | |
+| Stained-glass lamp (`StainedGlassLamp`) | Coloured patterns on the walls (D-250: anywhere); fragile · Switch | works; fragile built (V5e, D-296): dropped hard, its shade cracks, worth 240 | Legendary · 480 · floor 1 up ✓ | |
 | A lamp that's on when you find it (`UnpluggedLamp`, "Old lamp") | It never runs down; in a power cut the only light on the floor · none, found lit | works: found lit at rest, and lying anywhere it holds a Mannequin for good, 8 studs (V5d, D-289) | Secret · 7,000 · floor 25 up, standing loose (too tall for the box) ✓ | Nov 17, V5d: given (GiveFind), dropped in floor 1's hall: its clank woke the Mannequin 17 studs off, which came and stopped 8.0 studs from the lamp ("freezes in the light of a find on the floor"), held there 50 s with me parked away, and again hunting me from 12.6 studs ("sees drftware, 13 studs off" then held); not lifted again (the custom Take prompt didn't fire from the MCP) |
 | Die-cast car (`DiecastCar`) | It rolls off down the hall · Push (quiet: "just for the feel") | works (D-233) | Common · 4 · floor 1 up ✓ | |
 | Remote-control car (`RCCar`) | Drive it (at home; D-250: anywhere, and the collector steals it) · Drive (Rainbow Six Siege's drones) | works (D-250 to D-258); at home waits on the home chain | Rare · 60 · floor 1 up ✓ | |
@@ -248,6 +246,23 @@ find built with the date and session (`Nov 15, F-02a`) only when it meets CRAFT.
 ## Notes from the sessions
 
 Newest first. What the next session needs to know: kit changes, traps, what's half done.
+
+- **Nov 17, V5e (fragile built; seen in Play but for the crack drawn and the bank; V5e2 next).**
+  A row's `fragile` names its glass part (`fragile="Chimney"` in `lights/spec.py`; `rows.py`
+  checks the part exists). `Finds/Chip` (pure): `hard(speed, fall)` (10 studs/s, 4.5 studs),
+  `cracks`, `worth` (half, rounded down), `mark` (two Decals on the glass). `Slots` measures each
+  drop (your body's speed, the hand's height over the floor; `dropAll` too) and cracks it as it
+  lands, once (`Chipped` attribute, the crack heard over the clank); `keep` returns the cracked
+  names, `GatePay` writes them with `Save.chip` (save version 7, `chipped`). `ChipView` marks
+  your view's copy. The crack is `art/finds/kit/crack.py` (pure Python PNG). **Trap:** an Open
+  Cloud "Decal" upload's ID is the Decal asset; a Decal's `Texture` needs the image inside it
+  (`InsertService:LoadAsset(id)`'s Decal.Texture): 121564436382422. **Seen in Play:** A1's
+  table (soft: no crack; held 4 studs up and let go: cracked, heard). A scripted run didn't
+  work: `Humanoid:Move` is overridden by the control script and `MoveTo` hit a wall near the
+  spawn in 5 studs. **For V5e2:** in Play, give an oil lamp, hold the root 4 up on the Client
+  (Heartbeat sets its CFrame) and fire `Remotes.ToolDrop`; look at the chimney (the crack drawn,
+  no "Asset type" error), take it, see it in your hand, ride a gate and read the save's
+  `chipped.OilLamp`. Then tick F-G1e5 and move Next to S1.
 
 - **Nov 17, V5c (the fairy lights laid along a hall; seen in Play; V5e next).** No new press:
   setting the lit fairy lights down (the drop) lays them, as the catalog's Switch row says. A

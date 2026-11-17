@@ -29,8 +29,9 @@ Chip.HardSpeed = 10
 -- more than this.
 Chip.HardFall = 4.5
 
--- The crack drawn on the glass (art/finds/kit/crack.py, uploaded by scripts/upload_art: Crack).
-Chip.Image = "rbxassetid://140562657168117"
+-- The crack drawn on the glass (art/finds/kit/crack.py, uploaded by scripts/upload_art as Decal
+-- 140562657168117; a Decal's Texture takes the image inside it, read with InsertService).
+Chip.Image = "rbxassetid://121564436382422"
 -- The crack heard as it lands, over its own clank: "glass crack" (0.7 s), a short sharp crack
 -- with no shatter after it, since it still works.
 Chip.Sound =
