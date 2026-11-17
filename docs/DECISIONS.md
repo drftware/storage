@@ -8071,3 +8071,33 @@ down there.
   27.06 s of it burned at home: lit until 60 s after arrival. Your screen running it down wasn't
   seen: Rojo wasn't connected and the client kept the old `Use` (STUDIO.md, "Patching scripts
   without Rojo"); the pure rule is tested in `tests/leavehome.spec.luau`, the rest in OWNER.md.
+
+## D-318 · 2026-11-17 · A wrap colour tried on at any mirror: the catch's film for a few seconds, free (S5-03f4a)
+
+The moment (idea 24): press Try on at the mirror, turn once round as the film winds up you from
+the ankles, and there you are in the glass wrapped in a colour from the counter; three seconds
+later it loosens with a crinkle, slumps to a heap round your ankles and fades. Every Roblox
+avatar shop's try-on button; DOORS' and Fortnite's look before you buy.
+
+- **It's the real film, not a picture.** The server wraps you in the catch's own film, made one
+  way for both now (`Film.make`, moved out of KeptPlayers), tinted the colour, so the mirror shows
+  it with nothing new: MirrorView copies the film as it copies anything on you, and follows its
+  size and see-through each frame while it winds and peels (`TryOn.Tag`).
+- **Held still, facing the glass.** Your root is anchored as the catch anchors a kept player, for
+  the whole `TryOn.length()` (5.6 s): wound in film you can't walk, and the peel plays on you in
+  the glass. Every screen turns you once round as the film climbs (`TryOn.turn`, the shorter way
+  round plus one turn), from the stamp of when it went on and which way you faced.
+- **Which colour** (my default, OWNER.md): each press tries the next on the counter's shelf after
+  the one you last tried, owned or not, round and round, in memory only. No name on the button:
+  you see the colour in the glass.
+- **Who and where** (my default, OWNER.md): every glass tagged Mirror gets Try on on R (the pad's
+  Y), apart from the rail's E; anyone may press it, a visiting friend too. Checked on the server:
+  rate-limited, not kept, not trying one already, alive, standing, in front of that glass within
+  reach. Refused presses are ignored, no words; your own button hides while your film is on.
+- **Sounds**: the catch's squeal cut short and pitched up as a quick zip; the cellophane crunch
+  pitched up as the crinkle, and as it is when the heap lands.
+- **Free, saves nothing**: no save field, no purchase, no timer by any Robux price.
+- **Seen in Studio Play, Nov 17, on the A16** (`docs/art/S5-03f4a-tried-on-a16.jpg`,
+  `-peeling-a16.jpg`): Rojo wasn't connected, so Studio's copies were patched from Edit
+  (STUDIO.md); the server tried Blue on, the mirror showed you wrapped, then the heap at your feet.
+  The catch's film itself (KeptPlayers through `Film.make`) passes checks, untested in Studio.

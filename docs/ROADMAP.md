@@ -2565,8 +2565,14 @@ Done when players watch the results to the end and change their perks between cl
       light lit at home burns for good there; as the lobby car lands on floor 1, each one you
       carry or wear gets its own full minute from then, its press not played again. Server seen
       in Play (the hat's light read forever, then 60 s from arrival); your screen in OWNER.md.
-    - [ ] **S5-03f4 Wrap colours tried on** (idea 24): seen on you in the mirror for a few
-      seconds, peeling off with a crinkle; a mirror by the counter to try one before buying.
+    - [x] **S5-03f4a Trying a wrap colour on at a mirror** (idea 24, D-318): every mirror has Try
+      on; you turn once round as the film winds up you in the next colour on the shelf, stand
+      wrapped three seconds, then it loosens with a crinkle and slumps to a heap. Free, nothing
+      saved. Seen in Play on the A16 (`docs/art/S5-03f4a-*.jpg`).
+    - [ ] **S5-03f4b The counter's mirror** (idea 24): a framed mirror beside the counter's shop
+      (`Home.mirror`'s art, any glass tagged Mirror gets Try on already), and a Try on on each
+      shop card (ShopView) that tries that colour, not the next (a colour name sent to the
+      server, checked as `WearWrap` is). Ends with seeing a colour on you by the counter.
   - [ ] **S5-03g Walls, floor, door, name cards and furniture** (ideas 18 to 20): paint and floors
     on the Arrange screen, door colours, name card styles, furniture at the counter in a weekly
     stock.

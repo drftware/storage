@@ -41,6 +41,7 @@ local Prompts = require(script.Prompts)
 local Live = require(script.Live)
 local Purchasing = require(script.Purchasing)
 local Rails = require(script.Rails)
+local TryOns = require(script.TryOns)
 local CutFrees = require(script.CutFrees)
 local Wearing = require(script.Wearing)
 local Recording = require(script.Recording)
@@ -121,6 +122,8 @@ local systems: { Brix.HostEntry } = {
 	{ slot = "arranging", system = Arranging.new() },
 	-- what each player wears standing on their home's clothes rail, and Wear and Hang up there
 	{ slot = "rails", system = Rails.new() },
+	-- a wrap colour tried on at any mirror: the film for a few seconds, free, nothing saved
+	{ slot = "tryOns", system = TryOns.new() },
 	-- The lobby's platform carts: Ride, handed to the rider's screen, its pace watched, parked again.
 	{ slot = "carts", system = Carts.new() },
 	-- A lobby car's group to a server of its own; on that server, the group stood in floor 1's car.

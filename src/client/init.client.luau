@@ -51,6 +51,7 @@ local KeypadPad = require(script.KeypadPad)
 local KneelView = require(script.KneelView)
 local MinimapView = require(script.MinimapView)
 local MirrorView = require(script.MirrorView)
+local TryOnView = require(script.TryOnView)
 local ShelfView = require(script.ShelfView)
 local StrandView = require(script.StrandView)
 local JobBoxView = require(script.JobBoxView)
@@ -126,6 +127,8 @@ local host = Brix.Host.new({
 		{ slot = "homeCards", system = HomeCards.new() },
 		-- the mirror in your home: you, the right way round, your unit behind you (S5-03b)
 		{ slot = "mirrorView", system = MirrorView.new() },
+		-- a wrap colour tried on at a mirror: the film winds on, stays, peels off (S5-03f4a)
+		{ slot = "tryOnView", system = TryOnView.new() },
 		{ slot = "shelfView", system = ShelfView.new() },
 		{ slot = "jobBoxView", system = JobBoxView.new() },
 		{ slot = "boxPanelView", system = BoxPanelView.new(needCursor) },

@@ -620,6 +620,11 @@ verified: a doc page, Studio, or "untested".
   client script calling a new function errored. And a Client `execute_luau`'s `require` gets the
   plugin's own copy of a module, not the game's, so patching that table changes nothing. So such
   a patch verifies server code only; a client change waits for Rojo (and goes to OWNER.md).
+  A **new** ModuleScript made from Edit does reach the client (S5-03f4a, Nov 17): a new
+  `ReplicatedStorage.Shared.TryOn` and a new client `TryOnView`, plus string patches to
+  StarterPlayerScripts' `MirrorView` and `Client`, all ran in Play (the mirror played the peel).
+  So put new client code in new modules when Rojo is down; only edits to existing ReplicatedStorage
+  modules stay stale on the client. A home's holder is the unit's `DoorHolder` attribute.
 - **Rojo may not push a project-file change to Studio** (2026-11-06): a new Lighting child in
   `default.project.json` built fine with `rojo build` but never showed in Studio over a running
   `rojo serve`. Reconnect, or restart `rojo serve`, after editing the project file.

@@ -360,6 +360,19 @@ Kept.BangOut = 0.3
 -- The film coming off, the same on every screen: torn, it bulges (the yank), then slumps down the
 -- body under its own weight to a heap at the ankles, settles, lies a moment and fades. Never a
 -- vanish. Seconds and shares of the wrap's own size.
+export type Peel = {
+	yank: number,
+	bulge: number,
+	fall: number,
+	heap: number,
+	wide: number,
+	deep: number,
+	settle: number,
+	tilt: number,
+	rest: number,
+	fade: number,
+	see: number,
+}
 Kept.Tear = {
 	yank = 0.08, -- the bulge as it's torn
 	bulge = 0.12, -- how much wider at the bulge's peak
@@ -374,25 +387,26 @@ Kept.Tear = {
 	rest = 0.75, -- lying there
 	fade = 0.6, -- fading out
 	see = 0.35, -- its part Transparency once down, before it fades
-}
+} :: Peel
 
 -- The wrap `t` seconds after the tear: its height (`squash`), width (`wide`, across the door)
 -- and depth (`deep`) as shares of its own, its part Transparency (`see`), and how far it lists
 -- (`lean`, 0 upright to 1 the full `Tear.tilt`). Its foot stays on the floor throughout.
 export type TearPose = { squash: number, wide: number, deep: number, see: number, lean: number }
 
---- Seconds from the tear until the wrap is gone.
-function Kept.tearLength(): number
-	local T = Kept.Tear
+--- Seconds from the tear until the wrap is gone; `peel` times a film coming off some other way
+--- (a try-on's, TryOn.Peel), `Tear` when nil.
+function Kept.tearLength(peel: Peel?): number
+	local T = peel or Kept.Tear
 	return T.yank + T.fall + T.settle + T.rest + T.fade
 end
 
---- The wrap's pose `t` seconds after the tear (`TearPose`).
-function Kept.tearPose(t: number): TearPose
-	local T = Kept.Tear
+--- The wrap's pose `t` seconds after the tear (`TearPose`), or after `peel` starts (as above).
+function Kept.tearPose(t: number, peel: Peel?): TearPose
+	local T = peel or Kept.Tear
 	if t <= 0 then
 		return { squash = 1, wide = 1, deep = 1, see = Kept.WrapBlend, lean = 0 }
-	elseif t >= Kept.tearLength() then
+	elseif t >= Kept.tearLength(T) then
 		return { squash = T.heap, wide = T.wide, deep = T.deep, see = 1, lean = 1 }
 	end
 	if t < T.yank then

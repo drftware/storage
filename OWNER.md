@@ -64,6 +64,16 @@ nowhere else.
   lit about a minute, then dim and go out; nothing should click or knock again as you arrive. Also
   switch a lantern on at home: it shouldn't run down there, and should get its own minute once
   you ride up. Say: is a minute from the car right, or should the ride itself count?
+- [ ] **Try a wrap colour on at your mirror** (S5-03f4a, D-318; seen in Play on the A16 with the
+  server's film, `docs/art/S5-03f4a-*.jpg`; Studio's copies were patched, so connect Rojo first).
+  In your home, stand in front of the mirror and press Try on (R, or tap the chip). Look for: you
+  turn once round as the film winds up you from the ankles with a quick zip; three seconds
+  wrapped in Blue in the glass; a crinkle, the film slumps to a heap round your feet with a soft
+  crunch and fades; then you can walk. Press again: Red, then Green, Pink, Orange, Black, Blue.
+  With 2 players, your friend sees you spin and wrap too. Listen: is the zip too like the catch's
+  squeal for a calm home? My defaults, say which to change: each press tries the next colour
+  (no choosing at home; the counter's mirror will try the card's colour); anyone at any mirror
+  may try one, a visiting friend too; you're held still the whole 5.6 s; the button is on R.
 - [ ] **Come home to your shelf** (S5-03c1b, D-285; seen in Studio Play Nov 17 on a 1380x761
   window, not at phone size; pictures in `docs/art/S5-03c1b-*.jpg`). Play with one player. On the
   Server, `game.ServerStorage.ShelfTest:Invoke(game.Players:GetPlayers()[1], "Boombox")` keeps a

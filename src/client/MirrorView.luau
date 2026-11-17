@@ -25,6 +25,7 @@ local Workspace = game:GetService("Workspace")
 local Brix = require(ReplicatedStorage.Brix)
 local Home = require(ReplicatedStorage.Shared.Home)
 local Mirror = require(ReplicatedStorage.Shared.Mirror)
+local TryOn = require(ReplicatedStorage.Shared.TryOn)
 
 local BIND = "MirrorView"
 local INDEX = "MirrorIndex" -- set on a person's parts here only, to find each one's copy
@@ -47,6 +48,7 @@ type Body = {
 	pairs: { Pair },
 	parts: { BasePart },
 	cframes: { CFrame },
+	films: { Pair }, -- a try-on's film (TryOn.Tag): its size and see-through followed each frame
 	dirty: boolean,
 	connections: { RBXScriptConnection },
 }
@@ -322,6 +324,7 @@ function MirrorView.new(): Brix.System
 			pairs = {},
 			parts = {},
 			cframes = {},
+			films = {},
 			dirty = false,
 			connections = {},
 		}
@@ -339,7 +342,11 @@ function MirrorView.new(): Brix.System
 				end
 				across = from
 			end
-			table.insert(body.pairs, { from = from, to = to, across = across })
+			local pair = { from = from, to = to, across = across }
+			table.insert(body.pairs, pair)
+			if from:HasTag(TryOn.Tag) then
+				table.insert(body.films, pair)
+			end
 			table.insert(body.parts, to)
 			table.insert(body.cframes, to.CFrame)
 		end
@@ -399,6 +406,14 @@ function MirrorView.new(): Brix.System
 				body.cframes[i] = reflected(pair.from.CFrame, c, n, pair.across.CFrame.XVector)
 			end
 			s.world:BulkMoveTo(body.parts, body.cframes, Enum.BulkMoveMode.FireCFrameChanged)
+			for _, f in body.films do -- winding on and peeling off (TryOnView)
+				if f.to.Size ~= f.from.Size then
+					f.to.Size = f.from.Size
+				end
+				if f.to.Transparency ~= f.from.Transparency then
+					f.to.Transparency = f.from.Transparency
+				end
+			end
 		end
 		for _, m in s.movers do
 			m.to.CFrame = behind(m.from.CFrame, m.from.Size, c, n)
