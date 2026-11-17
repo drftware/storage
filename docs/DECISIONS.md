@@ -8535,3 +8535,22 @@ changes), Lethal Company's ship store.
   their backs are bare. Five small viewports, rendered only while the tab shows.
 - **Seen in Studio Play on the A16** (685x338): the five cards, $298, the crate and bed ×1; a crate
   bought through the screen ticked $298 to $268 and said In your box, ×2.
+
+## D-335 The counter's furniture wears the sheet's paints (S5-03g4b's fix, 2026-11-17)
+
+The furniture tab showed the milk crate, steel shelf, camp bed and neon moon plain white: the art
+left their colours to the game ("plain, the game colours it"; tinted Plaster and Fabric) and
+`Home.prepare`'s paint tables never got them. Now they do, the furniture sheet's own
+(`art/home/build.py` TINTS, `art/home/front.py` PLAIN):
+- **Tinted over their maps:** the steel shelf sage, the folding table pale, the blanket a mover's
+  blue with a cream binding, the camp bed's canvas olive with a cream pillow.
+- **Plain:** the milk crate mustard plastic, the shelf's bolts zinc, the table's legs graphite,
+  the camp bed's frame aluminium, the string lights' cable near black, the bulbs and the moon's
+  tube Neon in their light's colour (`Specs.Glows`), its standoffs pale metal, and its acrylic
+  backing SmoothPlastic at 0.85 clear. Not Glass: Glass drew a flat grey card in the picture and
+  reads black from a lit room (STUDIO.md).
+- **The crates come in three colours,** mustard, teal and terracotta (`Home.CrateColours`), as
+  the sheet stacks them, for when they're set out (S5-03g4c).
+- `Home.paint(part)` is `prepare`'s paint on its own, so a template already in the place is
+  repainted when the paints change without re-importing it; done in Edit for the sixteen parts.
+- Seen in Studio Play on the A16 (`docs/art/S5-03g4b-tab.jpg`, re-captured).

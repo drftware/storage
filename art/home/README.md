@@ -166,3 +166,5 @@ clone all of `ReplicatedStorage.Shared` into a temporary folder in ServerStorage
 requires `"../Save"` by path, so a lone clone of Home fails to load), require its Home, then
 destroy the folder (S5-03c2a2: a stale copy left the job box grey and unanchored). Check the
 result: every new piece painted and `Anchored`, and `prepare`'s worst under a hundredth of a stud.
+When only the paints change (`Home.Paint`, its TINTED and PLAIN tables), run `Home.paint(part)`
+from a fresh copy on each changed part of the place's template instead (D-335).

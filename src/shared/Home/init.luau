@@ -61,7 +61,26 @@ Home.Paint = {
 	-- The clothes rail's castors (D-315): a soft dark rubber; its bar and hooks are the
 	-- job box's graphite steel.
 	Rubber = Color3.fromHex("#2B2826"),
+	-- The counter's furniture (D-323, D-324, D-335), the furniture sheet's own paints
+	-- (art/home/build.py TINTS, art/home/front.py PLAIN): a mustard milk crate, a sage steel
+	-- shelf, a pale folding table, a mover's blue blanket with a cream binding, a camp bed's
+	-- olive canvas and cream pillow on bright aluminium.
+	Crate = Color3.fromHex("#D2A23A"),
+	SteelShelf = Color3.fromHex("#93A88E"),
+	Zinc = Color3.fromHex("#8C8F8C"),
+	FoldingTable = Color3.fromHex("#E5DFD2"),
+	Blanket = Color3.fromHex("#4F6F8F"),
+	Binding = Color3.fromHex("#D8C9A6"),
+	Canvas = Color3.fromHex("#9C9A78"),
+	Pillow = Color3.fromHex("#EDE6D8"),
+	Aluminium = Color3.fromHex("#B8BABD"),
+	Cable = Color3.fromHex("#141414"),
+	Standoff = Color3.fromHex("#BFC2C4"),
+	Acrylic = Color3.fromHex("#D9E6EB"),
 }
+-- The milk crates' colours, a crate at a time in the order you set them out (D-335): the sheet's
+-- mustard, teal and terracotta, so a stack of them reads as a hangout, not a warehouse.
+Home.CrateColours = { Home.Paint.Crate, Color3.fromHex("#5E8C7E"), Color3.fromHex("#B8613F") }
 local TINTED: { [string]: Color3 } = {
 	Facade = Home.Paint.Facade,
 	FacadeBack = Home.Paint.FacadeBack,
@@ -72,9 +91,16 @@ local TINTED: { [string]: Color3 } = {
 	ShelfBack = Home.Paint.ShelfBack,
 	JobBox = Home.Paint.JobBox,
 	JobBoxLid = Home.Paint.JobBox,
+	SteelShelf = Home.Paint.SteelShelf,
+	FoldingTable = Home.Paint.FoldingTable,
+	Blanket = Home.Paint.Blanket,
+	BlanketBinding = Home.Paint.Binding,
+	CampBed = Home.Paint.Canvas,
+	CampBedPillow = Home.Paint.Pillow,
 }
--- Imported with no map: the game gives them their look, a material and a colour.
-local PLAIN: { [string]: { material: Enum.Material, colour: Color3 } } = {
+-- Imported with no map: the game gives them their look, a material and a colour (and the neon
+-- sign's acrylic backing, how clear it is).
+local PLAIN: { [string]: { material: Enum.Material, colour: Color3, clear: number? } } = {
 	Switch = { material = Enum.Material.SmoothPlastic, colour = Home.Paint.Switch },
 	SwitchToggle = { material = Enum.Material.SmoothPlastic, colour = Home.Paint.Switch },
 	Lamp = { material = Enum.Material.SmoothPlastic, colour = Color3.fromRGB(214, 208, 196) },
@@ -83,6 +109,27 @@ local PLAIN: { [string]: { material: Enum.Material, colour: Color3 } } = {
 	MirrorPads = { material = Enum.Material.Fabric, colour = Home.Paint.Felt },
 	RailSteel = { material = Enum.Material.Metal, colour = Home.Paint.Fittings },
 	RailWheels = { material = Enum.Material.SmoothPlastic, colour = Home.Paint.Rubber },
+	MilkCrate = { material = Enum.Material.Plastic, colour = Home.Paint.Crate },
+	SteelShelfBolts = { material = Enum.Material.Metal, colour = Home.Paint.Zinc },
+	FoldingTableLegs = { material = Enum.Material.Metal, colour = Home.Paint.Fittings },
+	CampBedFrame = { material = Enum.Material.Metal, colour = Home.Paint.Aluminium },
+	StringLights = { material = Enum.Material.SmoothPlastic, colour = Home.Paint.Cable },
+	-- The lit pieces' tubes and bulbs glow in their light's own colour (Specs.Glows), even unlit.
+	StringBulbs = {
+		material = Enum.Material.Neon,
+		colour = Color3.fromHex(Specs.Glows.StringLights.Colour),
+	},
+	NeonSignTube = {
+		material = Enum.Material.Neon,
+		colour = Color3.fromHex(Specs.Glows.NeonSign.Colour),
+	},
+	-- not Glass: Roblox's Glass reads as a grey card in a picture and black from a lit room
+	NeonSignBack = {
+		material = Enum.Material.SmoothPlastic,
+		colour = Home.Paint.Acrylic,
+		clear = 0.85,
+	},
+	NeonSignFittings = { material = Enum.Material.Metal, colour = Home.Paint.Standoff },
 }
 
 -- The home front's own parts, set into a unit in place of the M's facade and frame.
@@ -188,6 +235,35 @@ function Home.template(): Model?
 	return if found and found:IsA("Model") then found else nil
 end
 
+-- Gives one of the template's parts its look by its name: a tinted part its paint over its map,
+-- a plain part its material and colour (its map dropped), the rest white under their maps.
+-- `prepare` runs it on every part; on its own it repaints a template already in the place when
+-- the paints change (art/home/README.md, "Into Studio").
+function Home.paint(p: BasePart)
+	local name = p.Name
+	p.Color = TINTED[name] or Color3.new(1, 1, 1)
+	local look = p:FindFirstChildOfClass("SurfaceAppearance")
+	if look and TINTED[name] then
+		look.AlphaMode = Enum.AlphaMode.Overlay -- the paint shows where the map is clear
+	end
+	local plain = PLAIN[name]
+	if plain then
+		if look then
+			look:Destroy()
+		end
+		p.Material = plain.material
+		p.Color = plain.colour
+		p.Transparency = plain.clear or 0
+	end
+	if name == "MirrorBevel" then
+		p.Reflectance = 0.3 -- it catches the light as a bevelled edge does
+	end
+	-- flat things and things up high shade nothing that matters; the lamp's glow casts none
+	if name == "Rug" or name == "Lamp" or name == "Switch" or name == "SwitchToggle" then
+		p.CastShadow = false
+	end
+end
+
 -- Makes an inserted Home.fbx model the template, once, in Edit (art/home/README.md, "Into
 -- Studio"): squared on the unit's frame from Specs, anchored and out of physics, painted, its
 -- pivot at the identity. Returns how far the worst part stood from where Specs puts it (a check
@@ -218,26 +294,7 @@ function Home.prepare(model: Model): (Model, number)
 			p.CollisionFidelity = Enum.CollisionFidelity.Box
 		end
 		p.CFrame = at
-		p.Color = TINTED[name] or Color3.new(1, 1, 1)
-		local look = p:FindFirstChildOfClass("SurfaceAppearance")
-		if look and TINTED[name] then
-			look.AlphaMode = Enum.AlphaMode.Overlay -- the paint shows where the map is clear
-		end
-		local plain = PLAIN[name]
-		if plain then
-			if look then
-				look:Destroy()
-			end
-			p.Material = plain.material
-			p.Color = plain.colour
-		end
-		if name == "MirrorBevel" then
-			p.Reflectance = 0.3 -- it catches the light as a bevelled edge does
-		end
-		-- flat things and things up high shade nothing that matters; the lamp's glow casts none
-		if name == "Rug" or name == "Lamp" or name == "Switch" or name == "SwitchToggle" then
-			p.CastShadow = false
-		end
+		Home.paint(p)
 	end
 	model.WorldPivot = frame
 	model:PivotTo(CFrame.identity)
