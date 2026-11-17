@@ -62,6 +62,7 @@ local Trip = require(ReplicatedStorage.Shared.Lobby.Trip)
 local Wrap = require(ReplicatedStorage.Shared.Tools.Wrap)
 local Deals = require(script.Parent.Deals)
 local Elevators = require(script.Parent.Elevators)
+local FindUses = require(script.Parent.FindUses)
 local FloorBuilder = require(script.Parent.FloorBuilder)
 local Keepers = require(script.Parent.Keepers)
 local KeptPlayers = require(script.Parent.KeptPlayers)
@@ -238,6 +239,7 @@ function Climbs.new(): Climbs
 	local wraps: Wraps.Wraps? = nil
 	local minimaps: Minimaps.Minimaps? = nil
 	local slots: Slots.Slots? = nil
+	local findUses: FindUses.FindUsesSystem? = nil
 	local watching: Watching.Watching? = nil
 	local options: Options? = nil
 	local lastOptions: Options? = nil
@@ -805,6 +807,7 @@ function Climbs.new(): Climbs
 		wraps = (registry:get("wraps") :: any) :: Wraps.Wraps -- any: as above
 		minimaps = (registry:get("minimaps") :: any) :: Minimaps.Minimaps -- any: as above
 		slots = (registry:get("slots") :: any) :: Slots.Slots -- any: as above
+		findUses = (registry:get("findUses") :: any) :: FindUses.FindUsesSystem -- any: as above
 		local w = (registry:get("watching") :: any) :: Watching.Watching -- any: as above
 		watching = w
 		w:setArrival(arrivalSpot)
@@ -932,11 +935,15 @@ function Climbs.new(): Climbs
 			end
 			playing = on
 			started = now()
-			-- what they took up out of their job boxes is on the climb now, at risk (S5-03d2)
-			local s = slots
-			if s then
-				for _, rider in moved do
+			-- what they took up out of their job boxes is on the climb now, at risk (S5-03d2), and
+			-- what they lit at home starts running down (S5-03f3)
+			local s, u = slots, findUses
+			for _, rider in moved do
+				if s then
 					s:up(rider)
+				end
+				if u then
+					u:leave(rider)
 				end
 			end
 			began:fire(on)

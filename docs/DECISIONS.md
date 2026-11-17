@@ -8039,3 +8039,35 @@ you. Press again and it hangs back up.
   on the rail with Wear; pressed, on your head and lit, Hang up over the empty shelf, yourself
   in the hat in the mirror; Hang up, back on the rail, Wear again; no errors.
 
+
+## D-317 · 2026-11-17 · Nothing worn or switched on runs down at home; its minute starts on the climb (S5-03f3)
+
+The moment (the home doc's idea 23, the owner's yes in D-259): at home your hard hat burns for
+good, and so does a lantern you switch on; ride a lobby car up and the minute starts as you step
+out on floor 1, so the climb's danger is real and home stays safe. Before this a hat lit at home
+stayed lit for good all the way up (D-277's last bullet), and a lantern switched on at home ran
+down there.
+
+- **At home any light lit burns for good** (`Use.home`): a press that switches a light on, on the
+  ground floor (`Head.home`, as D-277), is stamped forever, the hat's Wear (from your hand or the
+  rail) and a lantern's Switch alike. Switched off, a toy, or a light that never runs down anyway
+  (the glow sticks) is stamped as anywhere.
+- **Riding up gives each one its own full light from then** (`Use.leave`, `FindUses:leave`):
+  Climbs calls it for each rider beside `Slots:up`, as the lobby car lands on floor 1 (my
+  default: the ride itself doesn't count; OWNER.md asks). Every find in your slots or on your
+  head (`Slots:onThem`) stamped forever gets its row's `lasts` from now; one switched off keeps a
+  full light for later. One lit on a climb is left as it is.
+- **Only the light changes, never the press's clock.** The stamp keeps its `at` and its `left`
+  grows to the time already burned plus the full light, so no screen plays the knock or the
+  click again; only `UseLeft` is written. Screens re-read a stamp only as its clock changes, so
+  `FindUseView` also listens to `UseLeft` and takes the new light through `Use.relit` (the same
+  press, a light lit for good given its minute; anything else waits for the clock). Monsters
+  read the worn light each step (`Keepers`), so a Mannequin sees it go out.
+- **A bundle's next stick gets its own full light** (`Use.press`: the row's `lasts`, not what the
+  last stick had left), so a stick restamped as you left never hands its longer light on. No
+  row has a bundle that runs down yet; the glow sticks never do, so nothing changes today.
+- **Seen in Studio Play, Nov 17, server side:** worn from the rail at home, the hat's light read
+  forever (`UseLeft` -1); the car landed on floor 1 and it read 87.03, its clock unchanged,
+  27.06 s of it burned at home: lit until 60 s after arrival. Your screen running it down wasn't
+  seen: Rojo wasn't connected and the client kept the old `Use` (STUDIO.md, "Patching scripts
+  without Rojo"); the pure rule is tested in `tests/leavehome.spec.luau`, the rest in OWNER.md.

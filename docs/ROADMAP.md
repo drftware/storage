@@ -2561,8 +2561,10 @@ Done when players watch the results to the end and change their perks between cl
       knock and click, lit for good at home, and Hang up puts it back in a glint with its knock.
       Only you see the presses; the server checks them. Seen on the A16: wear it, see it in the
       mirror, hang it back. `docs/art/S5-03f2b-*`.
-    - [ ] **S5-03f3 Nothing worn or switched on runs down at home** (idea 23's rule): the hard
-      hat's minute starts only once you're on a climb.
+    - [x] **S5-03f3 Nothing worn or switched on runs down at home** (idea 23's rule, D-317): any
+      light lit at home burns for good there; as the lobby car lands on floor 1, each one you
+      carry or wear gets its own full minute from then, its press not played again. Server seen
+      in Play (the hat's light read forever, then 60 s from arrival); your screen in OWNER.md.
     - [ ] **S5-03f4 Wrap colours tried on** (idea 24): seen on you in the mirror for a few
       seconds, peeling off with a crinkle; a mirror by the counter to try one before buying.
   - [ ] **S5-03g Walls, floor, door, name cards and furniture** (ideas 18 to 20): paint and floors

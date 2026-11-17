@@ -248,6 +248,26 @@ function FindUseView.new(hand: ToolView.Hand): (Brix.System, Api)
 				reread(e)
 			end)
 		)
+		-- the light alone changing (S5-03f3: lit at home, given its minute as you ride up): the
+		-- same press runs down from here, nothing played again (`Use.relit`)
+		table.insert(
+			e.connections,
+			model:GetAttributeChangedSignal(Use.LeftAttribute):Connect(function()
+				local s = Use.relit(
+					e.stamp,
+					Use.read(
+						model:GetAttribute(Use.StateAttribute),
+						model:GetAttribute(Use.AtAttribute),
+						model:GetAttribute(Use.LeftAttribute),
+						model:GetAttribute(Use.CountAttribute)
+					)
+				)
+				if s then
+					e.stamp = s
+					e.dirty = true
+				end
+			end)
+		)
 		table.insert(
 			e.connections,
 			model.DescendantAdded:Connect(function()

@@ -58,6 +58,12 @@ nowhere else.
   the hat back on the rail. Say: the hat on the rail the right size (it stands at the size you
   wear it, so the brim overhangs the shelf a little), and whether it wants to lift off and settle
   back with motion (ROADMAP polish, "The rail's motion").
+  **Its minute starts on the climb** (S5-03f3, D-317; the server side seen in Studio Play, your
+  screen not, see STUDIO.md "Patching scripts without Rojo"). With Rojo connected, wear the hat
+  from the rail, wait a while at home, then ride a lobby car up. On floor 1 the lamp should stay
+  lit about a minute, then dim and go out; nothing should click or knock again as you arrive. Also
+  switch a lantern on at home: it shouldn't run down there, and should get its own minute once
+  you ride up. Say: is a minute from the car right, or should the ride itself count?
 - [ ] **Come home to your shelf** (S5-03c1b, D-285; seen in Studio Play Nov 17 on a 1380x761
   window, not at phone size; pictures in `docs/art/S5-03c1b-*.jpg`). Play with one player. On the
   Server, `game.ServerStorage.ShelfTest:Invoke(game.Players:GetPlayers()[1], "Boombox")` keeps a

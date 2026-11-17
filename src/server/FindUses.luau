@@ -73,6 +73,8 @@ end
 
 export type FindUsesSystem = Brix.System & {
 	wearLit: (self: any, player: Player, model: Model, key: string) -> (),
+	-- `player` rode a lobby car up: the lights they carry or wear lit at home start running down.
+	leave: (self: any, player: Player) -> (),
 }
 
 function FindUses.new(): FindUsesSystem
@@ -338,14 +340,15 @@ function FindUses.new(): FindUsesSystem
 				last[player] = t
 				return
 			end
-			if atHome(player) then
-				left = Use.Forever
-			end
 		end
 		if not pressed then
 			return
 		end
 		local state: Use.State = pressed :: Use.State
+		-- at home nothing worn or switched on runs down (D-259): its light starts as you ride up
+		if atHome(player) then
+			left = Use.home(row, state, left)
+		end
 		local path: Path? = nil
 		if row.down then
 			path = setDown(use, row, state, durations)
@@ -511,7 +514,7 @@ function FindUses.new(): FindUsesSystem
 			return
 		end
 		if atHome(player) then
-			left = Use.Forever
+			left = Use.home(row, pressed :: Use.State, left)
 		end
 		last[player] = os.clock()
 		model:SetAttribute(Use.KeyAttribute, key)
@@ -520,6 +523,26 @@ function FindUses.new(): FindUsesSystem
 		model:SetAttribute(Use.CountAttribute, count)
 		model:SetAttribute(Use.AtAttribute, Workspace:GetServerTimeNow()) -- last: the stamp is whole
 		CollectionService:AddTag(model, Use.Tag)
+	end
+
+	-- `player` rode a lobby car up into a climb (S5-03f3): each light they carry or wear that was lit
+	-- at home, burning for good there (D-259), gets its own full light from now (`Use.leave`). Only
+	-- its light changes, the press's clock kept, so every screen runs it down from here without
+	-- playing the press again (FindUseView reads the light as it changes, `Use.relit`).
+	function system.leave(_: any, player: Player)
+		local s = slots
+		if not s then
+			return
+		end
+		local now = Workspace:GetServerTimeNow()
+		s:onThem(player, function(model: Model)
+			local key = model:GetAttribute(Use.KeyAttribute)
+			local row = if type(key) == "string" then Use.Rows[key] else nil
+			local stamp = if row then Use.leave(row, stampOf(model), now) else nil
+			if stamp then
+				model:SetAttribute(Use.LeftAttribute, Use.encode(stamp.left))
+			end
+		end)
 	end
 
 	function system.start(_: any, context: Brix.Context)

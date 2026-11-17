@@ -612,6 +612,14 @@ verified: a doc page, Studio, or "untested".
   old scripts. In Edit, `execute_luau` a find in a changed script's `Source` first. The MCP
   can't sync around it: Studio's Assistant refuses HTTP to localhost or 127.0.0.1 ("not in the
   Assistant HTTP allowlist"), so only the owner's Connect click fixes it.
+- **Patching scripts without Rojo** (S5-03f3, 2026-11-17): with the plugin unconnected and the
+  owner away, an Edit `execute_luau` can apply a `git diff -U0` to each changed script's `Source`
+  (line hunks, checked by the result's length against the file on disk; Studio's copies matched
+  HEAD). In Play the server and StarterPlayerScripts ran the new code, but the client's copy of
+  a changed ReplicatedStorage module kept its old `Source` (27078 bytes, the new one 29233), so a
+  client script calling a new function errored. And a Client `execute_luau`'s `require` gets the
+  plugin's own copy of a module, not the game's, so patching that table changes nothing. So such
+  a patch verifies server code only; a client change waits for Rojo (and goes to OWNER.md).
 - **Rojo may not push a project-file change to Studio** (2026-11-06): a new Lighting child in
   `default.project.json` built fine with `rojo build` but never showed in Studio over a running
   `rojo serve`. Reconnect, or restart `rojo serve`, after editing the project file.

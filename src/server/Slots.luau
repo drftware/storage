@@ -248,6 +248,9 @@ export type Slots = Brix.System & {
 	-- Each living player's find on their head, and its model (for keepers: a lit hat holds a
 	-- Mannequin from where the head is).
 	worn: (self: any, each: (player: Player, model: Model) -> ()) -> (),
+	-- Each find's model `player` has on them now, in their slots (held or pocketed) or on their head
+	-- (S5-03f3: the lights they ride up with get their minute).
+	onThem: (self: any, player: Player, each: (model: Model) -> ()) -> (),
 	-- Takes every find out of `player`'s slots for good (the gate shut with them aboard, S1-06):
 	-- each goes from their hand with a glint everyone near sees, and their tools stay. The kept
 	-- finds' catalog keys, slot order, and the keys of those with cracked glass (F-G1e5e). A
@@ -1866,6 +1869,22 @@ function Slots.new(): Slots
 			if t and t.model.Parent and rootOf(player) then
 				each(player, t.model)
 			end
+		end
+	end
+
+	function system.onThem(_: any, player: Player, each: (model: Model) -> ())
+		local h = handOfPlayer(player)
+		for i = 1, Carry.Slots do
+			local id = h.carry.slots[i]
+			local t = if id then tools[id] else nil
+			if t then
+				each(t.model)
+			end
+		end
+		local worn = heads[player]
+		local t = if worn then tools[worn] else nil
+		if t then
+			each(t.model)
 		end
 	end
 

@@ -254,9 +254,58 @@ function Use.press(
 	local more = row.more
 	local count = stamp.count or 1
 	if more and stamp.state == "On" and elapsed >= length and count <= #more then
-		return "On", stamp.left, count + 1
+		-- each stick its own full light, never what one restamped as you left home had (`leave`)
+		return "On", row.lasts or Use.Forever, count + 1
 	end
 	return nil, 0, nil
+end
+
+--[[
+	At home nothing worn or switched on runs down (D-259, S5-03f3): the light a press in state
+	`state` starts with on the ground floor, for good for a light lit there (the hard hat worn, a
+	lantern switched on), else `left` as pressed (switched off, a toy, a light that never runs
+	down anyway).
+]]
+function Use.home(row: Row, state: State, left: number): number
+	if state == "On" and row.lasts and not Use.toy(row) then
+		return Use.Forever
+	end
+	return left
+end
+
+--[[
+	The stamp a find lit at home takes as you ride a lobby car up (S5-03f3): its own full light
+	(`lasts`) from `now`, the server clock, as if just lit, so the climb's danger is real. Its
+	press's clock is kept and only its light grows, so no screen plays the press again; switched
+	off, it keeps a full light for later. Nil when it needs none: never pressed, lit on a climb
+	(running down already), a toy, or a light that never runs down.
+]]
+function Use.leave(row: Row, stamp: Stamp?, now: number): Stamp?
+	local lasts = row.lasts
+	if not (stamp and lasts and stamp.left == Use.Forever) or Use.toy(row) then
+		return nil
+	end
+	local left = if stamp.state == "Off" then lasts else math.max(now - stamp.at, 0) + lasts
+	return { state = stamp.state, at = stamp.at, left = left, count = stamp.count }
+end
+
+--[[
+	On a screen: the stamp `shown` with the light just `read` from the attributes, when only the
+	light changed (`leave`: the same state, the same stick, the same clock or your own press's
+	near it, and a light lit for good given its minute); nil when it's a new press, to be re-read
+	whole as its clock changes. Your press's clock is kept, so nothing plays twice.
+]]
+function Use.relit(shown: Stamp?, read: Stamp?): Stamp?
+	if not (shown and read) or shown.state ~= read.state or shown.count ~= read.count then
+		return nil
+	end
+	if shown.left ~= Use.Forever or read.left == Use.Forever then
+		return nil
+	end
+	if math.abs(shown.at - read.at) >= Use.Predict then
+		return nil
+	end
+	return { state = shown.state, at = shown.at, left = read.left, count = shown.count }
 end
 
 -- A step's sound at least this long (seconds, as heard) is a tune, not a click: a find come into
