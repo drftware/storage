@@ -779,7 +779,26 @@ def furnishings(coll):
     objs = home_parts(coll, home_furnish.meshes(), sets)
     objs["LampShade"].data.materials.clear()  # lit from inside: the cloth glows warm
     objs["LampShade"].data.materials.append(render.emissive("shade_lit", render.hexc(HOME_TINT["LampShade"]), 1.2))
-    return {kind: [objs[n] for n in names] for kind, names in K.HOME.PIECES.items()}
+    out = {kind: [objs[n] for n in names] for kind, names in K.HOME.PIECES.items()}
+    # the mirror's glass, a real mirror here (in the game it's MirrorView's picture, D-280)
+    gw, gh = K.HOME.MIRROR_GLASS
+    _, _, mid, _, _ = K.HOME.mirror_box()
+    y = K.HOME.mirror_glass_y()
+    gm = Mesh("MirrorGlass")
+    geo.box(gm, (-gw / 2, y, mid - gh / 2), (gw / 2, y + 0.04, mid + gh / 2))
+    glass = gm.build(coll)
+    glass.data.materials.append(render.simple("mirror_glass", (0.9, 0.92, 0.93), 0.02, 1.0))
+    glass.hide_render = True
+    out["Mirror"].append(glass)
+    return out
+
+
+def mirror_frame(at):
+    """Where a unit's mirror stands (Specs.Mirror): its foot, turned to look across the unit,
+    leaning back onto the left wall."""
+    x, y = K.HOME.mirror_at()
+    return (at @ Matrix.Translation((x, y, 0.0)) @ Matrix.Rotation(math.radians(-90), 4, "Z")
+            @ Matrix.Rotation(math.radians(-K.HOME.MIRROR_LEAN), 4, "X"))
 
 
 def turned(x, y, turn, at=None):
@@ -829,6 +848,7 @@ def home_fronts(coll, pieces):
         lo.location = at @ Vector((lamp[0], lamp[1], lamp[2] - hang / 2 - 0.02))
         if n in SHUT:
             continue
+        place(coll, pieces["Mirror"], mirror_frame(at))
         for kind, (x, y), turn in K.HOME.STARTER:
             place(coll, pieces[kind], turned(x, y, turn, at))
             if kind == "FloorLamp":
@@ -957,6 +977,13 @@ def stage_renders(only=None):
         # a bench between two doors and the planter in the middle, from across the floor
         ("nook", (-6.0, -96.0, 5.0), (-40.0, -70.0, 2.4), 16.0, 0.4),
     ]
+    for n, side, door_at, _, _, _ in K.slot_rows():
+        if n == 9:  # your own unit's mirror (S5-03f1), from the rug and close up
+            at = slot_frame(side, door_at[1])
+            shots.append(("mirror", tuple(at @ Vector((2.0, 6.5, 4.6))),
+                          tuple(at @ Vector((9.0, 12.5, 3.0))), 18.0, 0.4))
+            shots.append(("mirror-close", tuple(at @ Vector((6.2, 10.0, 4.4))),
+                          tuple(at @ Vector((9.4, 12.5, 4.6))), 24.0, 0.4))
     for name, loc, target, lens, ex in shots:
         if only and name not in only:
             continue

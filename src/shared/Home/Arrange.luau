@@ -21,7 +21,6 @@ local Brix = require(ReplicatedStorage.Brix)
 local Arranged = require(script.Parent.Arranged)
 local Finds = require(ReplicatedStorage.Shared.Finds)
 local Gold = require(script.Parent.Gold)
-local Home = require(script.Parent)
 local HomeSpecs = require(script.Parent.Specs)
 local LobbySpecs = require(ReplicatedStorage.Shared.Lobby.Specs)
 local Spots = require(script.Parent.Spots)
@@ -149,9 +148,8 @@ end
 -- mirror leaning on the right wall (its glass on the wall, its foot on the floor).
 Arrange.Fixed = (function(): { Spots.Fixed }
 	local lamp = HomeSpecs.Parts.Lamp
-	local m = Home.Mirror
-	local wide = m.Glass[1] + 2 * m.Border
-	local tall = m.Glass[2] + 2 * m.Border
+	local m = HomeSpecs.Mirror
+	local wide, tall = m.Size[1], m.Size[2]
 	return {
 		{
 			id = "Lamp",

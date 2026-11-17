@@ -8,6 +8,7 @@ lobby's do (Roblox X = -x, Y = z, Z = y). Named home_spec.py, not spec.py: the u
 import their own `spec` by name.
 """
 
+import math
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -59,6 +60,18 @@ SHADE_GAP = 0.25         # how far the shade's foot sits below the stem's top (t
 SHELF = (3, 2, 2.3, 2.2, 1.6, 0.14, 0.45)
 SHELF_BACK = 0.08        # the painted back's thickness, set in from the frame's back edge
 SHELF_ROOM = (2.0, 2.0, 1.3)  # the box a find is fitted into on its spot: across, tall, deep
+# The mirror (S5-03f1, D-314): a full-length floor mirror in a moulded oak frame, leaning on the
+# unit's left wall by the rug. The glass is the picture MirrorView draws (D-280): across, tall.
+MIRROR_GLASS = (2.4, 5.6)
+MIRROR_BEVEL = 0.06      # the glass's bevelled edge round the picture, catching the light
+MIRROR_FACE = 0.28       # the oak moulding's width from the bevel out
+MIRROR_DEPTH = 0.22      # the frame front (its rounded crown) to back
+MIRROR_SET = 0.08        # how far the glass sits back from the crown, so the frame casts a lip
+MIRROR_FEET = 0.04       # the felt pads it stands on, and the two on its top's back
+MIRROR_LEAN = 6.0        # degrees its top leans back onto the wall, as a floor mirror stands
+MIRROR_IN = 12.5         # its foot's middle, this far in from the doorway; across, it stands
+                         # where its top pads just touch the left wall (mirror_at)
+PARTITION = 0.25         # the units' side walls, thick (art/lobby/spec.py), the wall it leans on
                          # (inside a cubby, clear of its sides, its board above and its back)
 
 
@@ -107,7 +120,31 @@ STARTER = (("Rug", (0.0, 9.5), 0.0), ("Beanbag", (-2.3, 10.6), -22.0),
 PIECES = {"Plant": ("Pot", "Plant"), "Bench": ("Bench",), "Planter": ("Planter", "PlanterSeat",
           "PlanterPlants"), "Rug": ("Rug",), "Beanbag": ("Beanbag",),
           "FloorLamp": ("FloorLamp", "LampShade"), "Shelf": ("Shelf", "ShelfBack"),
-          "JobBox": ("JobBox", "JobBoxLid", "JobBoxFittings", "JobBoxRunners")}
+          "JobBox": ("JobBox", "JobBoxLid", "JobBoxFittings", "JobBoxRunners"),
+          "Mirror": ("MirrorFrame", "MirrorBevel", "MirrorPads")}
+
+
+def mirror_box():
+    """The mirror's sizes: the opening's half width and half height (the glass and its bevel),
+    the opening's middle's height, and the whole frame across and tall."""
+    w, h = MIRROR_GLASS
+    a, b = w / 2 + MIRROR_BEVEL, h / 2 + MIRROR_BEVEL
+    return a, b, MIRROR_FEET + MIRROR_FACE + b, 2 * (a + MIRROR_FACE), MIRROR_FEET + 2 * (b + MIRROR_FACE)
+
+
+def mirror_glass_y():
+    """The glass's front, front to back in the piece's frame (front toward -y)."""
+    return -MIRROR_DEPTH / 2 + MIRROR_SET
+
+
+def mirror_at():
+    """Where the mirror's foot stands in the unit frame (x across, y in), so that leaning back
+    MIRROR_LEAN degrees its top pads just touch the left wall's face."""
+    _, _, _, _, tall = mirror_box()
+    lean = math.radians(MIRROR_LEAN)
+    pad_back, pad_top = MIRROR_DEPTH / 2 + MIRROR_FEET, tall - 0.1
+    reach = pad_top * math.sin(lean) + pad_back * math.cos(lean)
+    return (SLOT[0] / 2 - PARTITION / 2 - reach, MIRROR_IN)
 
 
 def b2r(v):
@@ -169,7 +206,22 @@ def write_luau(path, parts, switch, toggle, lamp):
           "\t},",
           "\t-- The job box (D-287): its lid's hinge line's middle in the JobBox piece's frame; the lid",
           "\t-- (JobBoxLid) turns about X through it, a positive turn lifting its front.",
-          f"\tJobBox = {{ Hinge = {lua_vec(b2r(jobbox_hinge()))} :: Vec }},"]
+          f"\tJobBox = {{ Hinge = {lua_vec(b2r(jobbox_hinge()))} :: Vec }},",
+          "\t-- The mirror (D-314): its foot's middle in the unit's frame, its glass looking across the",
+          "\t-- unit (turned -90 about Y), leaning back Lean degrees about its own X onto the left wall.",
+          "\t-- In the Mirror piece's frame: Glass, the middle of the glass's front face; GlassSize, the",
+          "\t-- picture across and tall; Size, the whole frame across and tall.",
+          "\tMirror = {"]
+    gw, gh = MIRROR_GLASS
+    _, _, mid, wide, tall = mirror_box()
+    ax, ay = mirror_at()
+    L += [f"\t\tAt = {lua_vec(b2r((ax, ay, 0.0)))} :: Vec,",
+          "\t\tTurn = -90,",
+          f"\t\tLean = {MIRROR_LEAN:.1f},",
+          f"\t\tGlass = {lua_vec(b2r((0.0, mirror_glass_y(), mid)))} :: Vec,",
+          f"\t\tGlassSize = {{ {gw:.3f}, {gh:.3f} }} :: Vec,",
+          f"\t\tSize = {{ {wide:.3f}, {tall:.3f} }} :: Vec,",
+          "\t},"]
     L += [
           "\t-- Each MeshPart's box as imported (its centre is its CFrame in its frame).",
           "\tParts = {"]

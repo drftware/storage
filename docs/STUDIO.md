@@ -11,6 +11,9 @@ verified: a doc page, Studio, or "untested".
   fresh copy: clone `ReplicatedStorage.Shared.Home` under a temporary folder in ServerStorage,
   `require` the clone, prepare, then destroy the folder (`art/home/README.md`, "Into Studio").
   A Play session's Server and Client datamodels start fresh, so this bites only in Edit.
+  Since Home holds modules that require by path (`Spots`: `require("../Save")`), clone all of
+  `ReplicatedStorage.Shared`, not Home alone: a lone clone fails with only "Requested module
+  experienced an error while loading" (S5-03f1).
 - **Nobody can stand on a unit's top** (L-13b2d3a, 2026-11-09): the halls' ceiling
   (`Colliders.Ceiling`) is at 14 studs and a unit's steel top at 10.14, so there are 3.86 studs
   up there; a standing body needs about 5.2 and its view sits 4.8 up. A move played on the tops

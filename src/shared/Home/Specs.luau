@@ -28,6 +28,7 @@ local Specs = {
 		FloorLamp = { "FloorLamp", "LampShade" },
 		Shelf = { "Shelf", "ShelfBack" },
 		JobBox = { "JobBox", "JobBoxLid", "JobBoxFittings", "JobBoxRunners" },
+		Mirror = { "MirrorFrame", "MirrorBevel", "MirrorPads" },
 	} :: { [string]: { string } },
 	-- A unit's starter set (D-263): each piece's origin in the unit's frame, turned about Y
 	-- (degrees, 0 with its front toward the door).
@@ -55,6 +56,18 @@ local Specs = {
 	-- The job box (D-287): its lid's hinge line's middle in the JobBox piece's frame; the lid
 	-- (JobBoxLid) turns about X through it, a positive turn lifting its front.
 	JobBox = { Hinge = { -0.000, 2.160, 1.160 } :: Vec },
+	-- The mirror (D-314): its foot's middle in the unit's frame, its glass looking across the
+	-- unit (turned -90 about Y), leaning back Lean degrees about its own X onto the left wall.
+	-- In the Mirror piece's frame: Glass, the middle of the glass's front face; GlassSize, the
+	-- picture across and tall; Size, the whole frame across and tall.
+	Mirror = {
+		At = { -9.076, 0.000, 12.500 } :: Vec,
+		Turn = -90,
+		Lean = 6.0,
+		Glass = { -0.000, 3.180, -0.030 } :: Vec,
+		GlassSize = { 2.400, 5.600 } :: Vec,
+		Size = { 3.080, 6.320 } :: Vec,
+	},
 	-- Each MeshPart's box as imported (its centre is its CFrame in its frame).
 	Parts = {
 		Beanbag = {
@@ -146,6 +159,21 @@ local Specs = {
 			Size = { 0.620, 0.100, 0.131 },
 			Centre = { -4.050, 0.415, 0.366 },
 			Triangles = 180,
+		},
+		MirrorBevel = {
+			Size = { 2.520, 5.720, 0.060 },
+			Centre = { -0.000, 3.180, 0.000 },
+			Triangles = 32,
+		},
+		MirrorFrame = {
+			Size = { 3.080, 6.280, 0.220 },
+			Centre = { -0.000, 3.180, 0.000 },
+			Triangles = 124,
+		},
+		MirrorPads = {
+			Size = { 3.000, 6.220, 0.220 },
+			Centre = { -0.000, 3.110, 0.040 },
+			Triangles = 176,
 		},
 		Plant = {
 			Size = { 2.170, 3.089, 1.966 },

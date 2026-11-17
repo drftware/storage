@@ -40,8 +40,9 @@ Rug (512², baked colours), HomeDoor (1024², the DoorKit's layout, tinted).
 | FloorLamp, LampShade | Wood, Fabric | 288, 192 | the starter floor lamp |
 | Shelf, ShelfBack | Wood, Plaster | 372, 12 | the shelf (S5-03c1a, D-284): oak, six cubbies, a cream back |
 | JobBox, JobBoxLid, JobBoxFittings, JobBoxRunners | Plaster, Plaster, plain, Wood | 760, 308, 432, 88 | the job box (S5-03c2a1, D-287): an open steel chest and its tray lid (the game paints them dusty blue), graphite handles, hasp and piano hinge, oak runners; the lid hinges on `Specs.JobBox.Hinge` |
+| MirrorFrame, MirrorBevel, MirrorPads | Wood, plain, plain | 124, 32, 176 | the mirror (S5-03f1, D-314): a moulded oak frame mitred round the glass (`ring`), the glass's bevelled edge, felt pads; where it stands and its glass are `Specs.Mirror` |
 
-Home.fbx: 12,636 triangles in 31 parts (with the job box; not yet uploaded, S5-03c2a2). Sheets (drawn by `art/lobby`): `lobby-home.png` (your
+Home.fbx: 12,968 triangles in 34 parts (with the mirror, uploaded in place, S5-03f1). Sheets (drawn by `art/lobby`): `lobby-home.png` (your
 unit from the floor), `lobby-nook.png` (a bench and a planter), `lobby-unit.png`,
 `lobby-inside.png`, `lobby-spawn.png`.
 
@@ -51,6 +52,7 @@ unit from the floor), `lobby-nook.png` (a bench and a planter), `lobby-unit.png`
 (`InsertService:LoadAsset`), run `prepare(model)` from a fresh copy of the Home module and put it
 at `ReplicatedStorage.Props.Home`. `Lobby.lay` dresses every unit's gap and the floor from it.
 The fresh copy matters: the MCP's Edit `require` keeps the first copy it loaded all session, so
-clone `ReplicatedStorage.Shared.Home` into a temporary folder in ServerStorage, require the clone,
-then destroy the folder (S5-03c2a2: a stale copy left the job box grey and unanchored). Check the
+clone all of `ReplicatedStorage.Shared` into a temporary folder in ServerStorage (Home's `Spots`
+requires `"../Save"` by path, so a lone clone of Home fails to load), require its Home, then
+destroy the folder (S5-03c2a2: a stale copy left the job box grey and unanchored). Check the
 result: every new piece painted and `Anchored`, and `prepare`'s worst under a hundredth of a stud.

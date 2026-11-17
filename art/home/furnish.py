@@ -414,11 +414,91 @@ def jobbox_runners():
 BUILDERS.update({"JobBox": jobbox, "JobBoxLid": jobbox_lid, "JobBoxFittings": jobbox_fittings,
                  "JobBoxRunners": jobbox_runners})
 
+# The mirror's moulding (D-314) in cross-section, from the opening's edge out: (out, front to
+# back), front toward -y. A bead round the glass, a quirk, a face sloping up to a rounded crown,
+# the outer edge, then straight back. Its last point closes onto the first along the back.
+MOULDING = ((0.0, -0.075), (0.012, -0.092), (0.03, -0.1), (0.048, -0.092), (0.058, -0.078),
+            (0.072, -0.08), (0.16, -0.098), (0.2, -0.108), (0.235, -0.11), (0.258, -0.104),
+            (0.273, -0.091), (0.28, -0.07), (0.28, 0.11), (0.0, 0.11))
+
+
+def ring(m, profile, a, b, zc, mapper_of, smooth=True):
+    """`profile` [(out, y)] swept round a rectangle mitred at its corners: the opening's half width
+    `a`, half height `b`, its middle at height `zc`. mapper_of(side, lo, hi) gives each side's
+    UVs: 0 the bottom, 1 the right, 2 the top, 3 the left facing it (x across, z up)."""
+    corners = ((-1, -1), (1, -1), (1, 1), (-1, 1))
+    outs = (Vector((0, 0, -1)), Vector((1, 0, 0)), Vector((0, 0, 1)), Vector((-1, 0, 0)))
+    n = len(profile)
+    area = sum(profile[i][0] * profile[(i + 1) % n][1] - profile[(i + 1) % n][0] * profile[i][1]
+               for i in range(n))
+    def at(c, p):
+        return Vector((c[0] * (a + p[0]), p[1], zc + c[1] * (b + p[0])))
+    for side in range(4):
+        c0, c1 = corners[side], corners[(side + 1) % 4]
+        pts = [at(c, p) for c in (c0, c1) for p in profile]
+        lo = [min(v[i] for v in pts) for i in range(3)]
+        hi = [max(v[i] for v in pts) for i in range(3)]
+        mapper = mapper_of(side, lo, hi)
+        for i in range(n):
+            p, q = profile[i], profile[(i + 1) % n]
+            du, dy = q[0] - p[0], q[1] - p[1]
+            nu, ny = (dy, -du) if area > 0 else (-dy, du)  # the profile's outward normal
+            want = outs[side] * nu + Vector((0, ny, 0))
+            quad = [at(c0, p), at(c1, p), at(c1, q), at(c0, q)]
+            if (quad[1] - quad[0]).cross(quad[2] - quad[0]).dot(want) < 0:
+                quad.reverse()
+            idx = [m.vert(v) for v in quad]
+            m.face(idx, mapper(quad, want.normalized()) if mapper else None, smooth)
+
+
+def mirror_frame():
+    """The mirror's oak (D-314): a moulding mitred round the glass, each side cut from its own
+    plank, the grain along it; a board across its back."""
+    m = Mesh("MirrorFrame")
+    a, b, zc, _, _ = K.mirror_box()
+    cols = (2, 5, 7, 9)
+    def mapper_of(side, lo, hi):
+        return wood_uv(0 if side % 2 == 0 else 2, lo, hi, cols[side])
+    ring(m, MOULDING, a, b, zc, mapper_of)
+    back = K.MIRROR_DEPTH / 2
+    wood_box(m, (-a - 0.02, back - 0.05, zc - b - 0.02), (a + 0.02, back, zc + b + 0.02), 4)
+    return m
+
+
+def mirror_bevel():
+    """The glass's bevelled edge (D-314), round the picture: from the glass's front at its edge,
+    out and a little back to the moulding's bead. The game gives it a pale sheen."""
+    m = Mesh("MirrorBevel")
+    gw, gh = K.MIRROR_GLASS
+    y = K.mirror_glass_y()
+    _, _, zc, _, _ = K.mirror_box()
+    # out from the glass's edge (its middle's half sizes), front to back
+    ring(m, ((-K.MIRROR_BEVEL, y), (0.0, y + 0.025), (0.0, y + 0.06), (-K.MIRROR_BEVEL, y + 0.06)),
+         gw / 2 + K.MIRROR_BEVEL, gh / 2 + K.MIRROR_BEVEL, zc, lambda *_: None, smooth=False)
+    return m
+
+
+def mirror_pads():
+    """The felt it stands on: two pads under its foot and two on its top's back, against the wall."""
+    m = Mesh("MirrorPads")
+    a, _, _, wide, tall = K.mirror_box()
+    f, back = K.MIRROR_FEET, K.MIRROR_DEPTH / 2
+    for sx in (-1, 1):
+        x0, x1 = sorted((sx * (a + 0.02), sx * (a + 0.24)))
+        geo.box(m, (x0, -back + 0.04, 0.0), (x1, back - 0.04, f), bevel=0.01)
+        geo.box(m, (x0, back, tall - 0.34), (x1, back + f, tall - 0.1), bevel=0.01)
+    return m
+
+
+BUILDERS.update({"MirrorFrame": mirror_frame, "MirrorBevel": mirror_bevel,
+                 "MirrorPads": mirror_pads})
+
 TEXSET = {"Pot": "Plaster", "Plant": "Leaf", "Bench": "Wood", "Planter": "Plaster",
           "PlanterSeat": "Wood", "PlanterPlants": "Leaf", "Rug": "Rug", "Beanbag": "Fabric",
           "FloorLamp": "Wood", "LampShade": "Fabric", "Shelf": "Wood", "ShelfBack": "Plaster",
           "JobBox": "Plaster", "JobBoxLid": "Plaster", "JobBoxFittings": None,
-          "JobBoxRunners": "Wood"}
+          "JobBoxRunners": "Wood", "MirrorFrame": "Wood", "MirrorBevel": None,
+          "MirrorPads": None}
 
 
 def meshes():

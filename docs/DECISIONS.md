@@ -7956,3 +7956,26 @@ it; a friend's find drops into place with a knock. Bloxburg's build budget bar i
   lifted `Feel.Drop` (0.5; a ceiling find rises instead) and eased down over `Feel.Settle` with
   the Arrange knock heard within 30 studs. Finds laid at a join carry no time and stream in
   standing. Your own are left to your Arrange screen's ghost.
+
+## D-314 · 2026-11-17 · The mirror's real frame: moulded oak, a bevelled edge, felt pads (S5-03f1)
+
+The moment: you walk into your home and the long mirror leaning by the wall is a real piece of
+furniture, the first thing you check your hat in. The test's frame was plain parts (D-280).
+
+- **The look** (D-263's calm home): a floor mirror in a warm oak moulding mitred at its corners,
+  each side cut from its own plank with the grain along it (the shelf's Wood set): a bead round
+  the glass, a quirk, a face rising to a rounded crown, the glass set 0.08 studs back so the
+  frame casts a lip. Round the picture a 0.06-stud bevelled edge, pale cool glass with a sheen
+  (`Home.Paint.Bevel`, Reflectance 0.3). Two felt pads under its foot and two on its top's back.
+  `art/home/furnish.py` (`ring` sweeps a profile round a mitred rectangle), `MirrorFrame`,
+  `MirrorBevel`, `MirrorPads`: 332 triangles. Sheets `art/sheets/lobby-mirror*.png`.
+- **The art owns where it stands.** `Specs.Mirror` (from `home_spec.py`): its foot, turn, lean
+  (still 6 degrees), the glass's front face's middle and size in the piece's frame, and the whole
+  frame's size. The foot stands where the top pads just touch the left wall's face (9.076 across,
+  was 9.25, which put the old frame's top 0.1 into the wall). `Home.mirror(template, unit, face)`
+  sets the art's pieces from the place's Home and makes the glass part where the art says; the
+  glass stays 2.4 by 5.6 and MirrorView and `Mirror.luau` are untouched. Arrange's fixed
+  footprint is the frame's size (3.08 by 6.32). The frame stops you (a box), as the plain one did.
+- **Seen in Studio Play on the A16, Nov 17** (`docs/art/S5-03f1-*.jpg`): the oak frame at phone
+  size, you facing out of it, the shelf, the floor lamp and the ceiling lamp behind you. The hard
+  hat in it was not checked again (the copies' maths didn't change; D-283's look stands).

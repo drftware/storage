@@ -38,7 +38,13 @@ nowhere else.
   goes still. With 2 players, your friend shows behind you. Known limits: no shadows and no lamp
   light in the picture (an even warm light), its walls are plain paint without the plaster's
   grain, and writing on clothes reads the right way round. Say: convincing, or not. My defaults,
-  say which to change: the left wall by the rug, 2.4 by 5.6 studs, leaning 6 degrees.
+  say which to change: the left wall by the rug, 2.4 by 5.6 studs, leaning 6 degrees. While this
+  is open the build goes on as if it convinces (S5-03f1 built its real frame on it).
+  **Its frame** (S5-03f1, D-314; seen in Play on the A16, `docs/art/S5-03f1-*.jpg`, sheets
+  `art/sheets/lobby-mirror*.png`): a moulded oak frame, the glass's bevelled edge a pale sheen
+  round the picture, felt pads under it and on its top's back against the wall. Look at it at
+  phone size from the rug and close up. Say: warm and real, or not; the frame wider or slimmer
+  (0.28 studs of oak), the bevel brighter or quieter.
 - [ ] **Come home to your shelf** (S5-03c1b, D-285; seen in Studio Play Nov 17 on a 1380x761
   window, not at phone size; pictures in `docs/art/S5-03c1b-*.jpg`). Play with one player. On the
   Server, `game.ServerStorage.ShelfTest:Invoke(game.Players:GetPlayers()[1], "Boombox")` keeps a

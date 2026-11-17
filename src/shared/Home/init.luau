@@ -54,6 +54,10 @@ Home.Paint = {
 	-- the gold sparkle reads on it. Its handles, hasp and hinge a soft graphite steel.
 	JobBox = Color3.fromHex("#6A8A93"),
 	Fittings = Color3.fromHex("#4A4E52"),
+	-- The mirror (D-314): its glass's bevelled edge a pale cool glass with a sheen round the
+	-- picture; the felt it stands on a soft brown.
+	Bevel = Color3.fromHex("#DCE4E6"),
+	Felt = Color3.fromHex("#5A4E44"),
 }
 local TINTED: { [string]: Color3 } = {
 	Facade = Home.Paint.Facade,
@@ -66,9 +70,15 @@ local TINTED: { [string]: Color3 } = {
 	JobBox = Home.Paint.JobBox,
 	JobBoxLid = Home.Paint.JobBox,
 }
--- Imported with no map: the game gives them their look.
-local PLAIN: { [string]: boolean } =
-	{ Switch = true, SwitchToggle = true, Lamp = true, JobBoxFittings = true }
+-- Imported with no map: the game gives them their look, a material and a colour.
+local PLAIN: { [string]: { material: Enum.Material, colour: Color3 } } = {
+	Switch = { material = Enum.Material.SmoothPlastic, colour = Home.Paint.Switch },
+	SwitchToggle = { material = Enum.Material.SmoothPlastic, colour = Home.Paint.Switch },
+	Lamp = { material = Enum.Material.SmoothPlastic, colour = Color3.fromRGB(214, 208, 196) },
+	JobBoxFittings = { material = Enum.Material.Metal, colour = Home.Paint.Fittings },
+	MirrorBevel = { material = Enum.Material.SmoothPlastic, colour = Home.Paint.Bevel },
+	MirrorPads = { material = Enum.Material.Fabric, colour = Home.Paint.Felt },
+}
 
 -- The home front's own parts, set into a unit in place of the M's facade and frame.
 Home.FrontParts = { "Facade", "FacadeBack", "Casing", "Frame", "Switch", "SwitchToggle", "Lamp" }
@@ -112,18 +122,11 @@ Home.FloorLamp = {
 -- its head plates and axle, above the doorway behind the front wall. A screen draws them only
 -- while its camera is in that home or within InsideMargin studs out of its doorway: from the
 -- lobby all twelve were 16k of the spawn view's 160k triangles, every one behind a wall.
--- The mirror test (S5-03b, D-280): a full-length mirror leaning on the unit's left wall by the
--- rug, its glass toward the room, so you turn from the rug and see yourself with your unit behind
--- you. Plain parts for the test; real frame art comes with S5-03f. At: its foot's middle on the
--- floor in the unit's frame (StorageUnit.Specs: +Z in from the door, X across). Glass: width
--- and height, studs. Border: the oak frame's width round it; Depth: the frame's thickness.
--- Lean: degrees back from upright against the wall, as a cheap floor mirror stands.
+-- The mirror (S5-03b, D-280; its frame S5-03f1, D-314): a full-length floor mirror in a
+-- moulded oak frame leaning on the unit's left wall by the rug, its glass toward the room, so you
+-- turn from the rug and see yourself with your unit behind you. Where it stands, its lean and its
+-- glass's size and place are the art's (Specs.Mirror, art/home/home_spec.py).
 Home.Mirror = {
-	At = { -9.25, 0, 12.5 },
-	Glass = { 2.4, 5.6 },
-	Border = 0.22,
-	Depth = 0.2,
-	Lean = 6,
 	Oak = Color3.fromHex("#B98A5E"), -- the home's oak trim
 	Backing = Color3.fromHex("#C9D3D6"), -- the glass where no picture is drawn: cool, pale
 	-- The room's walls as the mirror shows them (S5-03b seen): the real ones are merged into the
@@ -160,6 +163,7 @@ local SOLID: { [string]: boolean } = {
 	Shelf = true,
 	JobBox = true,
 	JobBoxLid = true,
+	MirrorFrame = true,
 }
 
 local function vec(v: { number }): Vector3
@@ -213,17 +217,16 @@ function Home.prepare(model: Model): (Model, number)
 		if look and TINTED[name] then
 			look.AlphaMode = Enum.AlphaMode.Overlay -- the paint shows where the map is clear
 		end
-		if PLAIN[name] then
+		local plain = PLAIN[name]
+		if plain then
 			if look then
 				look:Destroy()
 			end
-			p.Material = if name == "JobBoxFittings"
-				then Enum.Material.Metal
-				else Enum.Material.SmoothPlastic
-			p.Color = if name == "Lamp"
-				then Color3.fromRGB(214, 208, 196)
-				elseif name == "JobBoxFittings" then Home.Paint.Fittings
-				else Home.Paint.Switch
+			p.Material = plain.material
+			p.Color = plain.colour
+		end
+		if name == "MirrorBevel" then
+			p.Reflectance = 0.3 -- it catches the light as a bevelled edge does
 		end
 		-- flat things and things up high shade nothing that matters; the lamp's glow casts none
 		if name == "Rug" or name == "Lamp" or name == "Switch" or name == "SwitchToggle" then
@@ -345,45 +348,38 @@ function Home.piece(template: Model, kind: string, at: CFrame, parent: Instance)
 	return model
 end
 
--- The test mirror (Home.Mirror) in `unit`, whose doorway's outer face is `face`: an oak frame and
--- its glass, a plain part tagged Mirror.Tag whose Front face is the glass. MirrorView draws the
--- reflection on it; the server only stands it there.
-function Home.mirror(unit: Model, face: CFrame): Model
-	local m = Home.Mirror
-	local w, h, b, d = m.Glass[1], m.Glass[2], m.Border, m.Depth
+-- The mirror (Specs.Mirror) in `unit`, whose doorway's outer face is `face`: the art's oak frame,
+-- bevel and felt pads from the place's Home `template` (left out with a warning if it predates
+-- them), and its glass, a plain part tagged Mirror.Tag whose Front face is the picture, set in
+-- the frame where the art says. MirrorView draws the reflection on it; the server only stands it.
+function Home.mirror(template: Model, unit: Model, face: CFrame): Model
+	local m = Specs.Mirror
 	local foot = face
-		* CFrame.new(m.At[1], m.At[2], m.At[3])
-		* CFrame.Angles(0, -math.pi / 2, 0) -- the glass looks across the unit, away from its wall
+		* CFrame.new(vec(m.At))
+		* CFrame.Angles(0, math.rad(m.Turn), 0) -- the glass looks across the unit, off its wall
 		* CFrame.Angles(math.rad(m.Lean), 0, 0) -- its top back against the wall
-	local model = Instance.new("Model")
+	local model = if Home.has(template, "Mirror")
+		then Home.piece(template, "Mirror", foot, unit)
+		else Instance.new("Model")
 	model.Name = "Mirror"
-	local function slab(name: string, size: Vector3, at: CFrame, colour: Color3): Part
-		local p = Instance.new("Part")
-		p.Name = name
-		p.Size = size
-		p.CFrame = foot * at
-		p.Color = colour
-		p.Material = Enum.Material.SmoothPlastic
-		p.Anchored = true
-		p.CanTouch = false
-		p.CanQuery = false
-		p.TopSurface = Enum.SurfaceType.Smooth
-		p.BottomSurface = Enum.SurfaceType.Smooth
-		p.Parent = model
-		return p
-	end
-	local tall = h + 2 * b
-	slab("Back", Vector3.new(w + 2 * b, tall, d * 0.4), CFrame.new(0, tall / 2, d * 0.3), m.Oak)
-	slab("Left", Vector3.new(b, tall, d), CFrame.new(-(w + b) / 2, tall / 2, 0), m.Oak)
-	slab("Right", Vector3.new(b, tall, d), CFrame.new((w + b) / 2, tall / 2, 0), m.Oak)
-	slab("Top", Vector3.new(w, b, d), CFrame.new(0, tall - b / 2, 0), m.Oak)
-	slab("Bottom", Vector3.new(w, b, d), CFrame.new(0, b / 2, 0), m.Oak)
-	local glass =
-		slab("Glass", Vector3.new(w, h, 0.04), CFrame.new(0, b + h / 2, -d / 2 + 0.06), m.Backing)
+	local thick = 0.04
+	local glass = Instance.new("Part")
+	glass.Name = "Glass"
+	glass.Size = Vector3.new(m.GlassSize[1], m.GlassSize[2], thick)
+	glass.CFrame = foot * CFrame.new(vec(m.Glass) + Vector3.new(0, 0, thick / 2))
+	glass.Color = Home.Mirror.Backing
+	glass.Material = Enum.Material.SmoothPlastic
+	glass.Anchored = true
+	glass.CanTouch = false
+	glass.CanQuery = false
 	glass.CastShadow = false
 	glass.Reflectance = 0.2
+	glass.TopSurface = Enum.SurfaceType.Smooth
+	glass.BottomSurface = Enum.SurfaceType.Smooth
 	glass:AddTag("Mirror")
 	glass:SetAttribute("Face", face) -- the unit's door face, for the walls MirrorView stands
+	glass.Parent = model
+	model.WorldPivot = foot
 	model.Parent = unit
 	return model
 end
